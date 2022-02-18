@@ -213,8 +213,9 @@
    
 #else
    !! To Program
-   !! variables  SUBSTANCE known via 
+   !! variables  SUBSTANCE and variable from croco known via 
    USE comsubstance
+   Use module_substance
 #endif
 
    USE comMUSTANG 

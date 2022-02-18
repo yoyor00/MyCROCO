@@ -108,7 +108,7 @@
    USE comvars2d,    ONLY : hx,hy
 #endif
    USE comsubstance, ONLY : nvpc,igrav1,igrav2,imud1,imud2,isand1,isand2,irk_fil,ros_r, &
-                            diam_r,nb_ws_max,iv_ws_max,l_subs2d,name_var,tocd,  &
+                            diam_r,l_subs2d,name_var,tocd,  &
                             dhmin,unit_modif_mudbio_N2dw,irkm_var_assoc
    USE parameters,   ONLY : valmanq,l_testcase
    USE_MPI toolmpi,  ONLY : MASTER
@@ -121,6 +121,7 @@
     !!  To Program
    !USE sed_MUSTANG_HOST,  ONLY : MUSTANG_morphoinit_mesh,sed_exchange_hxe_HOST
    USE comsubstance
+   USE module_substance
 #endif
 
    IMPLICIT NONE
@@ -1944,7 +1945,7 @@ ENDIF
    !! * Executable part
 
 ! valable aussi pour les graviers ???
-    DO iv=1,isand2
+    DO iv = 1, isand2
       ! here, for simplification, water density = 1000. kg/m3 
       rosmrowsros(iv)=(ros(iv)-rhoref)/ros(iv)
       psi_sed(iv)=LOG(diam_sed(iv)*1000.0_rsh)/LOG(2.0_rsh)
@@ -1963,11 +1964,11 @@ ENDIF
       END IF
     ENDDO
 
-    DO iv=isand1,isand2
+    DO iv = isand1, isand2
       E0_sand(iv) = MUSTANG_E0sand(diam_sed(iv), stresscri0(iv), ros(iv), ws_sand(iv))
     ENDDO
 
-    DO iv=imud1,imud2
+    DO iv = imud1, imud2
       rosmrowsros(iv)=(ros(iv)-rhoref)/ros(iv)
     ENDDO
     ! homogeneous sand density

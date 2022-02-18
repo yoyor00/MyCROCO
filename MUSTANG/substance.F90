@@ -27,25 +27,21 @@ MODULE substance
    PUBLIC   substance_read_alloc   ! called by main.F
    PUBLIC   substance_surfcell     ! called by main.F
    
-   !CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: name_var,long_name_var,standard_name_var,unit_var_r, &
-   !                                                    init_cv_name_r,obc_cv_name_r
-   CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: long_name_var,unit_var_r,init_cv_name_r,obc_cv_name_r
-   CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE  :: name_var_n,long_name_var_n,standard_name_var_n, &
-                                                      unit_var_n,init_cv_name_n,obc_cv_name_n
-   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r,cv_rain_r,cini_wat_r,cini_air_r,cobc_wat_r
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n,cv_rain_n,cini_wat_n,cini_air_n,cobc_wat_n  
-   LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r 
-   LOGICAL, DIMENSION(:),ALLOCATABLE               :: l_out_subs_n 
+
+   ! variables for all ntrc_subs
+   CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: long_name_var, unit_var_r, init_cv_name_r, obc_cv_name_r
    
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r, cv_rain_r, cini_wat_r, cini_air_r, cobc_wat_r
+   LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r 
+
+   ! local variable to read each namelist with different length (variables by group of substances)
+   CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE  :: name_var_n, long_name_var_n, standard_name_var_n, &
+                                                      unit_var_n, init_cv_name_n, obc_cv_name_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n, cv_rain_n, cini_wat_n, cini_air_n, cobc_wat_n  
+   LOGICAL, DIMENSION(:),ALLOCATABLE               :: l_out_subs_n    
 #ifdef MUSTANG
-   !REAL, DIMENSION(ntrc_subs)       :: cini_sed_r
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: cini_sed_n
 #endif
-
-#if defined MUSTANG && defined key_sand2D
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC                :: l_outsandrouse
-#endif
-
 
    !!----------------------------------------------------------------------
    
@@ -80,7 +76,7 @@ CONTAINS
 
    INTEGER,DIMENSION(ntrc_subs)            :: itypv_r
    REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: ws_free_min_r,ws_free_max_r
-   CHARACTER(LEN=lchain),DIMENSION(ntfix)  :: long_name_var_fix,unit_var_fix
+   CHARACTER(LEN=lchain),DIMENSION(ntfix)  :: long_name_var_fix, unit_var_fix, standard_name_var_fix, name_var_fix
    LOGICAL,DIMENSION(ntfix)                :: l_out_subs_fix
 
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE       :: ws_free_min_n,ws_free_max_n
@@ -156,8 +152,6 @@ CONTAINS
    !!----------------------------------------------------------------------
    !! * Executable part
 
-   ! save into simu.log
-   !-------------------
    MPI_master_only   WRITE(stdout,*) ' '
    MPI_master_only   WRITE(stdout,*) ' '
    MPI_master_only   WRITE(stdout,*) ' '
@@ -166,8 +160,8 @@ CONTAINS
    MPI_master_only   WRITE(stdout,*) '**************** substance_read_alloc ************'
    MPI_master_only   WRITE(stdout,*) '**************************************************'
    MPI_master_only   WRITE(stdout,*) ' '
-   !   WRITE(stdout,*) 'namelist file defining simulated substances (other than temperature and salinity) :'
-   !   WRITE(stdout,*) TRIM(name_filesubs)
+
+
 #ifdef MUSTANG
 # ifdef key_CROCO
    lstr=lenstr(sedname_subst)
@@ -621,7 +615,6 @@ CONTAINS
     ALLOCATE(cini_air(itsubs1:itsubs2))
     ALLOCATE(ws_part(GLOBAL_2D_ARRAY,N,itsubs1:itsubs2))
     ALLOCATE(typdiss(itsubs1:itsubs2))
-    !ALLOCATE(itypv(itsubs1:itsubs2))
     ALLOCATE(name_var_mod(ntrc_subs))      
     ALLOCATE(standard_name_var_mod(ntrc_subs))      
     ws_part(:,:,:,:)=0.0
@@ -850,7 +843,6 @@ CONTAINS
      
    DO iv=1,ntrc_subs
      ivr=iv+ivTS
-     !itypv(ivr)=itypv_r(iv)
      name_var_mod(iv)=name_var(irk_fil(iv))
      standard_name_var_mod(iv)=standard_name_var(irk_fil(iv))
      unit_var(ivr)=unit_var_r(irk_fil(iv))

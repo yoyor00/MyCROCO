@@ -438,9 +438,7 @@
 !
 # if defined SUBSTANCE
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
-      INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
-      INTEGER,PARAMETER :: lchain=200
-      integer  itsubs1,itsubs2,ntfix
+      integer  itsubs1, itsubs2, ntfix
 #  ifdef SED_TOY
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined TIDAL_FLAT

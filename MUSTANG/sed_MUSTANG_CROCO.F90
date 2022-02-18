@@ -117,6 +117,8 @@
 
    USE comMUSTANG
    USE comsubstance
+   USE module_MUSTANG
+   USE module_substance
    
    IMPLICIT NONE
 
@@ -1508,7 +1510,6 @@ OMPMPI flush(flx_bx,flx_by)
    !&E--------------------------------------------------------------------------
    !! * Modules used
    !!   ------------
-   USE parameters,   ONLY :  riosh,rg_valmanq_io,lchain
    USE comvars2d,    ONLY :  lon2d_g,lat2d_g,lon2d,lat2d,l_saverestart_bydate,date_ref, &
                              tsauv,cdate,saverestart_step,name_out_h0,name_out_xe,t
    USE_MPI toolmpi,  ONLY : ADD_TAG

@@ -2226,9 +2226,8 @@ C 				  endif
      &   ,varspecif3Dnv_save,varspecif2D_save
 #endif
 #ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D,nv_grav,nv_sand
-      USE substance,    ONLY : l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp,rouse2d
+      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
+      USE comMUSTANG,   ONLY : sum_tmp, rouse2d
 #endif
 #endif
           IMPLICIT NONE
