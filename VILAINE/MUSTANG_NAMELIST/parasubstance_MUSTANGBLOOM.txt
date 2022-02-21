@@ -1,0 +1,597 @@
+
+:=============================================================================
+:         ENREGISTREMENT DES PARAMETRES ET DES SUBSTANCES SOUS FORME DE NAMELIST
+:         INPUT PARAMETERS AND SUBSTANCES LIST NAMELIST
+:=============================================================================
+:
+:      with  CPP key : SUBSTANCE (without CPP key MUSTANG)
+:      and with keys : MUSTANG and BLOOM and key_BLOOMinsed
+:=============================================================================
+:
+:-----------------------------------------------------------------------------
+:
+: nmlnbvar : nombres de substances de chaque type a definir (autre que T et S)
+:          : number of each type of substance to be defined (other than T & S)
+:    other variables can be created in addition with keys : contaminant, peptic, P_tracer, N_tracer
+:-----------------------------------------------------------------------------
+ &nmlnbvar
+    nv_dis=6    ! number of dissolved susbtances
+    nv_ncp=12    ! number of  Non Constitutive Particulate subtances
+    nv_fix=3    ! number of  fixed susbtances (not advected)
+    nv_sorb=1   ! number of particulate susbtances sorbed on an other particule
+    nv_bent=0   ! number of benthic susbtances
+    nv_grav=0   ! number of susbtances type GRAVELS (only if MUSTANG and option V2) 
+    nv_sand=2   ! number of susbtances type SAND (only if MUSTANG)
+    nv_mud=1 /  ! number of susbtances type MUD (only if MUSTANG) 
+
+:-----------------------------------------------------------------------------
+: Namelist pour chaque type de substance  :
+: Namelist for each type of substance 
+:-----------------------------------------------------------------------------
+:    name_var_n() : name of variable
+:    long_name_var_n() : long name of variable
+:    standard_name_var_n() : standard name of variable
+:    unit_var_n() : unit of concentration of variable
+:    flx_atm_n() : uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : initial concentration in water column (unit/m3)
+:    cobc_wat_n() : boundaries uniform and constant concentration  (unit/m3)
+:    cini_sed_n() : initial concentration in sediment (unity change with type of substance )
+:    cini_air_n() : initial concentration in air
+:    l_bedload_n() : .TRUE. if bedload transport (works only with key_MUSTANG_bedload)
+:    l_out_subs_n() : saving in output file if TRUE
+:    init_cv_name_n() : name of substance read from initial condition file
+:    obc_cv_name_n() : name of substance read from obc file
+:-----------------------------------------------------------------------------
+:
+: nmlgravels : Caracterisation des substances de type GRAVIERS (utilise seulement si  key_sed_MUSTANG)
+:            : Characterization of GRAVEL substances (used only if defined key_sed_MUSTANG)
+:    si nv_grav = 0 la namelist n est pas lue
+:    If nv_grav = 0 this namelist is not read
+:-----------------------------------------------------------------------------
+:    tocd_n() : critical stress of deposition
+:    ros_n()  : density of particle
+:    diam_n() : diameter of particles
+
+:   
+ &nmlgravels
+:: nmlsands : Caracterisation des substances de type SABLE (utilise seulement si  key_sed_MUSTANG)
+:            : Characterization of SAND substances (used only if defined key_sed_MUSTANG)
+:    si nv_sand = 0 la namelist n est pas lue
+:    If nv_sand = 0 this namelist is not read
+:-----------------------------------------------------------------------------
+:    tocd_n() : critical stress of deposition
+:    ros_n()  : density of particle
+:    diam_n() : diameter of particles
+:    l_sand2D() : TRUE if this sand variable is treated as 2D variable (used only if key_sand2D)
+:    l_outsandrouse()  : TRUE if using reconstitution of a ROUSE profil for output in water column (used only if key_sand2D and l_sand2D is TRUE for this variable)
+:
+:  ATTENTION si plusieurs sables : commencer par les sables les plus grossiers et continuer de plus en plus fins
+:  WARNING if several sands: start with the coarser sands and continue more and more finely
+:
+ &nmlsands
+    name_var_n(1)='GRAV'
+      long_name_var_n(1)='GRAV'
+      standard_name_var_n(1)='GRAV'
+      unit_var_n(1)='kg.m-3'
+      flx_atm_n(1)=0.0
+      cv_rain_n(1)=0.0
+      cini_wat_n(1)=0.0
+      cini_sed_n(1)=0.2
+      cini_air_n(1)=0.0
+      l_out_subs_n(1)=.TRUE.
+      l_bedload_n(1)=.FALSE.
+      init_cv_name_n(1)='GRAV'
+      obc_cv_name_n(1)='GRAV'
+      tocd_n(1)=1000.
+      ros_n(1)=2600.0
+      diam_n(1)=0.008
+      l_sand2D_n(1)=.FALSE.
+      l_outsandrouse_n(1)=.FALSE. 
+    name_var_n(2)='SAND'
+      long_name_var_n(2)='SAND'
+      standard_name_var_n(2)='SAND'
+      unit_var_n(2)='kg.m-3'
+      flx_atm_n(2)=0.0
+      cv_rain_n(2)=0.0
+      cini_wat_n(2)=0.0
+      cini_sed_n(2)=0.2
+      cini_air_n(2)=0.0
+      l_out_subs_n(2)=.TRUE.
+      l_bedload_n(2)=.FALSE.
+      init_cv_name_n(2)='SAND'
+      obc_cv_name_n(2)='SAND'
+      tocd_n(2)=1000.
+      ros_n(2)=2600.0
+      diam_n(2)=0.0002
+      l_sand2D_n(2)=.FALSE.
+      l_outsandrouse_n(2)=.FALSE.  /
+    
+: nmlmuds : Caracterisation des substances de type VASE (utilise seulement si  key_sed_MUSTANG)
+:            : Characterization of MUD substances (used only if defined key_sed_MUSTANG)
+:    si nv_mud = 0 la namelist n est pas lue
+:    If nv_mud = 0 this namelist is not read
+:-----------------------------------------------------------------------------
+:    tocd_n() : critical stress of deposition
+:    ros_n()  : density of particle
+:    ws_free_opt_n() : choice of free settling formulation : 0 constant, 1 Van Leussen, 2 Winterwerp, 3 Wolanski
+:    ws_free_min_n() : minimum setling velocity (m/s)
+:    ws_free_max_n() : maximum setling velocity (m/s)
+:    ws_free_para_n(1:4,num substance) : 4 additional parameters
+:    ws_hind_opt_n() : choice of hindered settling formulation : 0 no hindered settling, 1 Scott, 2 Winterwerp, 3 Wolanski
+:    ws_hind_para_n(1:2,num substance) : 2 additional parameters 
+:
+ &nmlmuds
+    name_var_n(1)='MUD1'
+      long_name_var_n(1)='MUD1'
+      standard_name_var_n(1)='MUD1'
+      unit_var_n(1)='kg.m-3'
+      flx_atm_n(1)=0.0
+      cv_rain_n(1)=0.0
+      cini_wat_n(1)=0.0
+      cobc_wat_n(1)=0.0
+      cini_sed_n(1)=0.6
+      cini_air_n(1)=0.0
+      l_out_subs_n(1)=.TRUE.
+      init_cv_name_n(1)='MUD1'
+      obc_cv_name_n(1)='MUD1'
+      tocd_n(1)=1000.
+      ros_n(1)=2600.0
+      ws_free_opt_n(1)=1
+      ws_free_min_n(1)=0.00002
+      ws_free_max_n(1)=0.004
+      ws_free_para_n(1,1)=0.005,  ws_free_para_n(2,1)=0.7, ws_free_para_n(3,1)=0.3, ws_free_para_n(4,1)=0.09
+      ws_hind_opt_n(1)=0
+      ws_hind_para_n(1,1)=0.0 ,  ws_hind_para_n(2,1)=0.0 /
+ 
+:----- ------------------------------------------------------------------------
+: nmlpartnc : NON constitutive substances with defined key_MUSTANG
+:-----------------------------------------------------------------------------
+:    cini_sed_n() : initial concentration in sediment (quantity/kg of dry sediment )
+:    tocd_n() : critical stress of deposition
+:    ros_n()  : density of particle
+:    ws_free_opt_n() : choice of free settling formulation : 0 constant, 1 Van Leussen, 2 Winterwerp, 3 Wolanski
+:    ws_free_min_n() : minimum setling velocity (m/s)
+:    ws_free_max_n() : maximum setling velocity (m/s)
+:    ws_free_para_n(1:4,num substance) : 4 additional parameters
+:    ws_hind_opt_n() : choice of hindered settling formulation : 0 no hindered settling, 1 Scott, 2 Winterwerp, 3 Wolanski
+:    ws_hind_para_n(1:2,num substance) : 2 additional parameters 
+:
+ &nmlpartnc
+    name_var_n(1)='detrital_nitrogen_refractory'
+      long_name_var_n(1)='detrital_nitrogen_refractory'
+      standard_name_var_n(1)='mole_concentration_of_refractory_organic_detritus_expressed_as_nitrogen_in_sea_water'
+      unit_var_n(1)='micromole.l-1'
+      flx_atm_n(1)=0.0
+      cv_rain_n(1)=0.0
+      cini_wat_n(1)=0.0001
+      cobc_wat_n(1)=0.0001
+      cini_sed_n(1)=2.
+      cini_air_n(1)=0.0
+      l_out_subs_n(1)=.TRUE.
+      init_cv_name_n(1)='none'
+      obc_cv_name_n(1)='none'
+      tocd_n(1)=1000.0
+      ros_n(1)=2600.0
+      ws_free_opt_n(1)=0
+      ws_free_min_n(1)=0.0001
+      ws_free_max_n(1)=0.0015
+      ws_free_para_n(1,1)=0.003,  ws_free_para_n(2,1)=0.79,  ws_free_para_n(3,1)=0.3,  ws_free_para_n(4,1)=0.18
+      ws_hind_opt_n(1)=0
+      ws_hind_para_n(1,1)=0.0 , ws_hind_para_n(2,1)=0.0 
+
+    name_var_n(2)='nanopicoplankton_nitrogen'
+       long_name_var_n(2)='nanopicoplankton_nitrogen'
+       standard_name_var_n(2)='mole_concentration_of_nanoplankton_expressed_as_nitrogen_in_sea_water'
+       unit_var_n(2)='micromole.l-1'
+       flx_atm_n(2)=0.0
+       cv_rain_n(2)=0.0
+       cini_wat_n(2)=0.04
+       cobc_wat_n(2)=0.04
+       cini_sed_n(2)=0.0
+       cini_air_n(2)=0.0
+       l_out_subs_n(2)=.TRUE.
+       init_cv_name_n(2)='none'
+       obc_cv_name_n(2)='none'
+       tocd_n(2)=1000.0
+       ros_n(2)=2600.0
+       ws_free_opt_n(2)=0
+       ws_free_min_n(2)=1.e-7
+       ws_free_max_n(2)=1.e-7
+       ws_free_para_n(1,2)=0.003,  ws_free_para_n(2,2)=0.79,  ws_free_para_n(3,2)=0.3,  ws_free_para_n(4,2)=0.18
+       ws_hind_opt_n(2)=0
+       ws_hind_para_n(1,2)=0.0 , ws_hind_para_n(2,2)=0.0 
+
+    name_var_n(3)='diatom_nitrogen'
+       long_name_var_n(3)='diatom_nitrogen'
+       standard_name_var_n(3)='mole_concentration_of_diatoms_expressed_as_nitrogen_in_sea_water'
+       unit_var_n(3)='micromole.l-1'
+       flx_atm_n(3)=0.0
+       cv_rain_n(3)=0.0
+       cini_wat_n(3)=1.
+       cobc_wat_n(3)=1.
+       cini_sed_n(3)=0.
+       cini_air_n(3)=0.0
+       l_out_subs_n(3)=.TRUE.
+       init_cv_name_n(3)='none'
+       obc_cv_name_n(3)='none'
+       tocd_n(3)=1000.0
+       ros_n(3)=2600.0
+       ws_free_opt_n(3)=0
+       ws_free_min_n(3)=0.00001
+       ws_free_max_n(3)=0.00003 
+       ws_free_para_n(1,3)=0.003,  ws_free_para_n(2,3)=0.79,  ws_free_para_n(3,3)=0.3,  ws_free_para_n(4,3)=0.18
+       ws_hind_opt_n(3)=0
+       ws_hind_para_n(1,3)=0.0 , ws_hind_para_n(2,3)=0.0 
+
+    name_var_n(4)='dinoflagellate_nitrogen'
+       long_name_var_n(4)='dinoflagellate_nitrogen'
+       standard_name_var_n(4)='mole_concentration_of_dinoflagellates_expressed_as_nitrogen_in_sea_water'
+       unit_var_n(4)='micromole.l-1'
+       flx_atm_n(4)=0.0
+       cv_rain_n(4)=0.0
+       cini_wat_n(4)=0.015
+       cobc_wat_n(4)=0.015
+       cini_sed_n(4)=0.0
+       cini_air_n(4)=0.0
+       l_out_subs_n(4)=.TRUE.
+       init_cv_name_n(4)='none'
+       obc_cv_name_n(4)='none'
+       tocd_n(4)=1000.0
+       ros_n(4)=2600.0
+       ws_free_opt_n(4)=0
+       ws_free_min_n(4)=1.e-7
+       ws_free_max_n(4)=1.e-7  
+       ws_free_para_n(1,4)=0.003,  ws_free_para_n(2,4)=0.79,  ws_free_para_n(3,4)=0.3,  ws_free_para_n(4,4)=0.18
+       ws_hind_opt_n(4)=0
+       ws_hind_para_n(1,4)=0.0 , ws_hind_para_n(2,4)=0.0 
+
+    name_var_n(5)='microzooplankton_nitrogen'
+       long_name_var_n(5)='microzooplankton_nitrogen'
+       standard_name_var_n(5)='mole_concentration_of_microzooplankton_expressed_as_nitrogen_in_sea_water'
+       unit_var_n(5)='micromole.l-1'
+       flx_atm_n(5)=0.0
+       cv_rain_n(5)=0.0
+       cini_wat_n(5)=0.08
+       cobc_wat_n(5)=0.08
+       cini_sed_n(5)=0.0
+       cini_air_n(5)=0.0
+       l_out_subs_n(5)=.TRUE.
+       init_cv_name_n(5)='none'
+       obc_cv_name_n(5)='none'
+       tocd_n(5)=1000.0
+       ros_n(5)=2600.0
+       ws_free_opt_n(5)=0
+       ws_free_min_n(5)=1.e-7
+       ws_free_max_n(5)=1.e-7  
+       ws_free_para_n(1,5)=0.003,  ws_free_para_n(2,5)=0.79,  ws_free_para_n(3,5)=0.3,  ws_free_para_n(4,5)=0.18
+       ws_hind_opt_n(5)=0
+       ws_hind_para_n(1,5)=0.0 , ws_hind_para_n(2,5)=0.0 
+
+    name_var_n(6)='mesozooplankton_nitrogen'
+       long_name_var_n(6)='mesozooplankton_nitrogen'
+       standard_name_var_n(6)='mole_concentration_of_mesozooplankton_expressed_as_nitrogen_in_sea_water'
+       unit_var_n(6)='micromole.l-1'
+       flx_atm_n(6)=0.0
+       cv_rain_n(6)=0.0
+       cini_wat_n(6)=0.05
+       cini_sed_n(6)=0.0
+       cini_air_n(6)=0.0
+       cobc_wat_n(6)=0.05
+       l_out_subs_n(6)=.TRUE.
+       init_cv_name_n(6)='none'
+       obc_cv_name_n(6)='none'
+       tocd_n(6)=1000.0
+       ros_n(6)=2600.0
+       ws_free_opt_n(6)=0
+       ws_free_min_n(6)=1.e-7
+       ws_free_max_n(6)=1.e-7 
+       ws_free_para_n(1,6)=0.003,  ws_free_para_n(2,6)=0.79,  ws_free_para_n(3,6)=0.3,  ws_free_para_n(4,6)=0.18
+       ws_hind_opt_n(6)=0
+       ws_hind_para_n(1,6)=0.0 , ws_hind_para_n(2,6)=0.0 
+
+    name_var_n(7)='detrital_nitrogen'
+       long_name_var_n(7)='detrital_nitrogen'
+       standard_name_var_n(7)='mole_concentration_of_organic_detritus_expressed_as_nitrogen_in_sea_water'
+       unit_var_n(7)='micromole.l-1'
+       flx_atm_n(7)=0.0
+       cv_rain_n(7)=0.0
+       cini_wat_n(7)=0.1
+       cini_sed_n(7)=0.0
+       cini_air_n(7)=0.0
+       cobc_wat_n(7)=0.1
+       l_out_subs_n(7)=.TRUE.
+       init_cv_name_n(7)='none'
+       obc_cv_name_n(7)='none'
+       tocd_n(7)=1000.0
+       ros_n(7)=2600.0
+       ws_free_opt_n(7)=0
+       ws_free_min_n(7)=0.00005
+       ws_free_max_n(7)=0.00005 
+       ws_free_para_n(1,7)=0.003,  ws_free_para_n(2,7)=0.79,  ws_free_para_n(3,7)=0.3,  ws_free_para_n(4,7)=0.18
+       ws_hind_opt_n(7)=0
+       ws_hind_para_n(1,7)=0.0 , ws_hind_para_n(2,7)=0.0 
+
+    name_var_n(8)='detrital_biogenic_silica'
+       long_name_var_n(8)='detrital_biogenic_silica'
+       standard_name_var_n(8)='mole_concentration_of_organic_detritus_expressed_as_silicon_in_sea_water'
+       unit_var_n(8)='micromole.l-1'
+       flx_atm_n(8)=0.0
+       cv_rain_n(8)=0.0
+       cini_wat_n(8)=0.1
+       cobc_wat_n(8)=0.1
+       cini_sed_n(8)=0.0
+       cini_air_n(8)=0.0
+       l_out_subs_n(8)=.TRUE.
+       init_cv_name_n(8)='none'
+       obc_cv_name_n(8)='none'
+       tocd_n(8)=1000.0
+       ros_n(8)=2600.0
+       ws_free_opt_n(8)=0
+       ws_free_min_n(8)=0.00005
+       ws_free_max_n(8)=0.00005 
+       ws_free_para_n(1,8)=0.003,  ws_free_para_n(2,8)=0.79,  ws_free_para_n(3,8)=0.3,  ws_free_para_n(4,8)=0.18
+       ws_hind_opt_n(8)=0
+       ws_hind_para_n(1,8)=0.0 , ws_hind_para_n(2,8)=0.0 
+
+    name_var_n(9)='detrital_phosphorus'
+       long_name_var_n(9)='detrital_phosphorus'
+       standard_name_var_n(9)='mole_concentration_of_organic_detritus_expressed_as_phosphorus_in_sea_water'
+       unit_var_n(9)='micromole.l-1'
+       flx_atm_n(9)=0.0
+       cv_rain_n(9)=0.0
+       cini_wat_n(9)=0.005
+       cobc_wat_n(9)=0.005
+       cini_sed_n(9)=0.0
+       cini_air_n(9)=0.0
+       l_out_subs_n(9)=.TRUE.
+       init_cv_name_n(9)='none'
+       obc_cv_name_n(9)='none'
+       tocd_n(9)=1000.0
+       ros_n(9)=2600.0
+       ws_free_opt_n(9)=0
+       ws_free_min_n(9)=0.00005
+       ws_free_max_n(9)=0.00005 
+       ws_free_para_n(1,9)=0.003,  ws_free_para_n(2,9)=0.79,  ws_free_para_n(3,9)=0.3,  ws_free_para_n(4,9)=0.18
+       ws_hind_opt_n(9)=0
+       ws_hind_para_n(1,9)=0.0 , ws_hind_para_n(2,9)=0.0 
+
+    name_var_n(10)='detrital_phosphorus_refractory'
+      long_name_var_n(10)='detrital_phosphorus_refractory'
+      standard_name_var_n(10)='mole_concentration_of_refractory_organic_detritus_expressed_as_phosphorus_in_sea_water'
+      unit_var_n(10)='micromole.l-1'
+      flx_atm_n(10)=0.0
+      cv_rain_n(10)=0.0
+      cini_wat_n(10)=0.005
+      cobc_wat_n(10)=0.005
+      cini_sed_n(10)=12.
+      cini_air_n(10)=0.0
+      l_out_subs_n(10)=.TRUE.
+      init_cv_name_n(10)='none'
+      obc_cv_name_n(10)='none'
+      tocd_n(10)=1000.0
+      ros_n(10)=2600.0
+      ws_free_opt_n(10)=0
+      ws_free_min_n(10)=0.0001
+      ws_free_max_n(10)=0.0015
+      ws_free_para_n(1,10)=0.003,  ws_free_para_n(2,10)=0.79,  ws_free_para_n(3,10)=0.3,  ws_free_para_n(4,10)=0.18
+      ws_hind_opt_n(10)=0
+      ws_hind_para_n(1,10)=0.0 , ws_hind_para_n(2,10)=0.0 
+
+    name_var_n(11)='PFe'
+      long_name_var_n(11)='PFe'
+      standard_name_var_n(11)='iron_bound_phosphorus'
+      unit_var_n(11)='micromoleP.l-1'
+      flx_atm_n(11)=0.0
+      cv_rain_n(11)=0.0
+      cini_wat_n(11)=0.000
+      cobc_wat_n(11)=0.000
+      cini_sed_n(11)=5.
+      cini_air_n(11)=0.0
+      l_out_subs_n(11)=.TRUE.
+      init_cv_name_n(11)='none'
+      obc_cv_name_n(11)='none'
+      tocd_n(11)=1000.0
+      ros_n(11)=2600.0
+      ws_free_opt_n(11)=0
+      ws_free_min_n(11)=0.0001
+      ws_free_max_n(11)=0.0001
+      ws_free_para_n(1,11)=0.003,  ws_free_para_n(2,11)=0.79,  ws_free_para_n(3,11)=0.3,  ws_free_para_n(4,11)=0.18
+      ws_hind_opt_n(11)=0
+      ws_hind_para_n(1,11)=0.0 , ws_hind_para_n(2,11)=0.0 
+
+    name_var_n(12)='MES'
+      long_name_var_n(12)='MES'
+      standard_name_var_n(12)='MES'
+      unit_var_n(12)='g.l-1'
+      flx_atm_n(12)=0.0
+      cv_rain_n(12)=0.0
+      cini_wat_n(12)=1.0
+      cobc_wat_n(12)=1.
+      cini_sed_n(12)=0.6
+      cini_air_n(12)=0.0
+      l_out_subs_n(12)=.TRUE.
+      init_cv_name_n(12)='MES'
+      obc_cv_name_n(12)='MES'
+      tocd_n(12)=1000.0
+      ros_n(12)=2600.0
+      ws_free_opt_n(12)=0
+      ws_free_min_n(12)=0.0001
+      ws_free_max_n(12)=0.0015
+      ws_free_para_n(1,12)=0.003,  ws_free_para_n(2,12)=0.79,  ws_free_para_n(3,12)=0.3,  ws_free_para_n(4,12)=0.18
+      ws_hind_opt_n(12)=0
+      ws_hind_para_n(1,12)=0.0 , ws_hind_para_n(2,12)=0.0 /
+
+
+
+: nmlpartsorb : SORBED SUBSTANCES  IF key_MUSTANG
+:-----------------------------------------------------------------------------
+:    tocd_n() : critical stress of deposition
+:    ros_n()  : density of particle
+:    name_varpc_assoc_n() : name of associated particulate substance on which this substance is sorbed
+:
+:
+ &nmlpartsorb
+    name_var_n(1)='sorbed_phosphate'
+      long_name_var_n(1)='sorbed_phosphate'
+      standard_name_var_n(1)='mole_concentration_of_sorbed_phosphate_in_sea_water'
+      name_varpc_assoc_n(1)='MUD1'
+      unit_var_n(1)='micromole.l-1'
+      flx_atm_n(1)=0.0
+      cv_rain_n(1)=0.0
+      cini_wat_n(1)=0.0
+      cobc_wat_n(1)=0.
+      cini_sed_n(1)=0.
+      cini_air_n(1)=0.0
+      l_out_subs_n(1)=.TRUE.
+      init_cv_name_n(1)='none'
+      obc_cv_name_n(1)='none' /
+
+ : nmlvardiss : DISSOLVED SUBSTANCES
+:    name_var_n() : name of variable
+:    long_name_var_n() : long name of variable
+:    standard_name_var_n() : standard name of variable
+:    unit_var_n() : unit of concentration of variable
+:    flx_atm_n() : uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : initial concentration in water column (unit/m3)
+:    cobc_wat_n() : boundaries uniform and constant concentration  (unit/m3)
+:    cini_air_n() : initial concentration in air
+:    l_out_subs_n() : saving in output file if TRUE
+:    init_cv_name_n() : name of substance read from initial condition file
+:    obc_cv_name_n() : name of substance read from obc file
+:    D0_funcT_opt_n() : type of linear regression used for evaluation of D0 against Temp
+:    D0_m0_n(),D0_m1_n() : linear regression coeffs (m0, m1) used in the evaluation of D0 against Temp
+:------------------------------------------------------------------------------------------------------
+:
+&nmlvardiss
+    name_var_n(1)='ammonium'
+       long_name_var_n(1)='ammonium'
+       standard_name_var_n(1)='mole_concentration_of_ammonium_in_sea_water'
+       unit_var_n(1)='micromole.l-1'
+       flx_atm_n(1)=0.0
+       cv_rain_n(1)=0.0
+       cini_wat_n(1)=100
+       cobc_wat_n(1)=100.
+       cini_sed_n(1)=0.
+       cini_air_n(1)=0.0
+       l_out_subs_n(1)=.TRUE.
+       init_cv_name_n(1)='none'
+       obc_cv_name_n(1)='none'
+       D0_funcT_opt_n(1)= 1
+       D0_m0_n(1)= 9.5   ,   D0_m1_n(1)= 0.413
+       
+    name_var_n(2)='nitrate'
+       long_name_var_n(2)='nitrate'
+       standard_name_var_n(2)='mole_concentration_of_nitrate_in_sea_water'
+       unit_var_n(2)='micromole.l-1'
+       flx_atm_n(2)=0.0
+       cv_rain_n(2)=0.0
+       cini_wat_n(2)=1.0
+       cobc_wat_n(2)=1.
+       cini_sed_n(2)=0.
+       cini_air_n(2)=0.0
+       l_out_subs_n(2)=.TRUE.
+       init_cv_name_n(2)='none'
+       obc_cv_name_n(2)='none'  
+       D0_funcT_opt_n(2)= 1
+       D0_m0_n(2)= 9.5   ,   D0_m1_n(2)= 0.388
+
+    name_var_n(3)='dissolved_silicate'
+       long_name_var_n(3)='dissolved_silicate'
+       standard_name_var_n(3)='mole_concentration_of_silicate_in_sea_water'
+       unit_var_n(3)='micromole.l-1'
+       flx_atm_n(3)=0.0
+       cv_rain_n(3)=0.0
+       cini_wat_n(3)=3.5
+       cobc_wat_n(3)=3.5
+       cini_sed_n(3)=0.
+       cini_air_n(3)=0.0
+       l_out_subs_n(3)=.TRUE.
+       init_cv_name_n(3)='none'
+       obc_cv_name_n(3)='none' 
+       D0_funcT_opt_n(3)= 1
+       D0_m0_n(3)= 3.61   ,   D0_m1_n(3)= 0.33
+
+    name_var_n(4)='dissolved_phosphate'
+       long_name_var_n(4)='dissolved_phosphate'
+       standard_name_var_n(4)='mole_concentration_of_phosphate_in_sea_water'
+       unit_var_n(4)='micromole.l-1'
+       flx_atm_n(4)=0.0
+       cv_rain_n(4)=0.0
+       cini_wat_n(4)=0.4
+       cobc_wat_n(4)=0.4
+       cini_sed_n(4)=0.
+       cini_air_n(4)=0.0
+       l_out_subs_n(4)=.TRUE.
+       init_cv_name_n(4)='none'
+       obc_cv_name_n(4)='none'
+       D0_funcT_opt_n(4)= 1
+       D0_m0_n(4)= 3.26   ,   D0_m1_n(4)= 0.177
+
+    name_var_n(5)='dissolved_oxygen'
+       long_name_var_n(5)='dissolved_oxygen'
+       standard_name_var_n(5)='dissolved_oxygen_in_water_column'
+       unit_var_n(5)='mg.l-1'
+       flx_atm_n(5)=0.0
+       cv_rain_n(5)=0.0
+       cini_wat_n(5)=8.5
+       cobc_wat_n(5)=8.5
+       cini_sed_n(5)=0.
+       cini_air_n(5)=0.0
+       l_out_subs_n(5)=.TRUE.
+       init_cv_name_n(5)='none'
+       obc_cv_name_n(5)='none' 
+       D0_funcT_opt_n(5)= 2
+       D0_m0_n(5)= 0.2604   ,   D0_m1_n(5)= 0.006383
+
+    name_var_n(6)='ODU'
+       long_name_var_n(6)='ODU'
+       standard_name_var_n(6)='oxygen_demand_anaerobic_unit'
+       unit_var_n(6)='micromoleODU.l-1'
+       flx_atm_n(6)=0.0
+       cv_rain_n(6)=0.0
+       cini_wat_n(6)=0.
+       cobc_wat_n(6)=0.
+       cini_sed_n(6)=0.
+       cini_air_n(6)=0.0
+       l_out_subs_n(6)=.TRUE.
+       init_cv_name_n(6)='none'
+       obc_cv_name_n(6)='none' 
+       D0_funcT_opt_n(6)= 1
+       D0_m0_n(6)= 10.4   ,   D0_m1_n(6)= 0.273 /
+
+
+ : nmlvarfix : FIXED SUBSTANCES (not advected)
+:-----------------------------------------------------------------------------
+:     
+
+ &nmlvarfix
+    name_var_fix(1)='cumulative_nanoflagellate_carbon_production'
+       long_name_var_fix(1)='cumulative_nanoflagellate_carbon_production'
+       standard_name_var_fix(1)='cumulative_nanoflagellate_production_expressed_as_carbon_in_sea_water'
+       unit_var_fix(1)='g.m-3_from_01jan'
+       cini_wat_fix(1)=0.0
+       l_out_subs_fix(1)=.TRUE.
+       init_cv_name_fix(1)='none'  
+
+    name_var_fix(2)='cumulative_diatom_carbon_production'
+       long_name_var_fix(2)='cumulative_diatom_carbon_production'
+       standard_name_var_fix(2)='cumulative_diatom_production_expressed_as_carbon_in_sea_water'
+       unit_var_fix(2)='g.m-3_from_01jan'
+       cini_wat_fix(2)=0.0
+       l_out_subs_fix(2)=.TRUE.
+       init_cv_name_fix(2)='none' 
+
+    name_var_fix(3)='cumulative_dinoflagellate_carbon_production'
+       long_name_var_fix(3)='cumulative_dinoflagellate_carbon_production'
+       standard_name_var_fix(3)='cumulative_dinoflagellate_production_expressed_as_carbon_in_sea_water'
+       unit_var_fix(3)='g.m-3_from_01jan'
+       cini_wat_fix(3)=0.0
+       l_out_subs_fix(3)=.TRUE.
+       init_cv_name_fix(3)='none' /
+
+
+  : nmlbent : used only if defined key_benthic 
+:-----------------------------------------------------------------------------
+: & nmlvarbent

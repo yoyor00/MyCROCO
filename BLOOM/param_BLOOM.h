@@ -13,7 +13,7 @@
 #else
 #ifdef key_BLOOM_insed
       ! add PFe & ODU & NdetR & PdetR
-      INTEGER,PARAMETER :: nb_var_bio=17
+      INTEGER,PARAMETER :: nb_var_bio=18
 #else
       INTEGER,PARAMETER :: nb_var_bio=13
 #endif

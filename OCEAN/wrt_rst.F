@@ -99,7 +99,7 @@
 !
 ! Create/open restart file; write grid arrays, if so needed.
 !
-      call def_rst (ncidrst, nrecrst, ierr)
+      call def_rst (ncidrst, nrecrst, ierr) 
       if (ierr .ne. nf_noerr) goto 99
       lstr=lenstr(rstname)
 !                                            !!! WARNING: Here it is
