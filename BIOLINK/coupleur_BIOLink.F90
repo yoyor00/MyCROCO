@@ -527,16 +527,17 @@
 #if defined key_MARS 
 #  if defined key_turbclim && defined key_daily_climato_kpar
     USE comvars2d,     ONLY : mes_sat ! I have no idea
-#  endif /* key_MARS */     
+#  endif /* key_turbclim && key_daily */  
+#endif /* key_MARS */     
 
      !====================================================================
      ! External arguments
      !====================================================================
 
-   INTEGER, INTENT(IN)                                        :: ifirst,ilast,jfirst,jlast
+   INTEGER, INTENT(IN) :: ifirst,ilast,jfirst,jlast
 #if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
    REAL(KIND=rsh),DIMENSION(ARRAY_CELL_SURF),INTENT(IN)          :: CELL_SURF
-#endif /* key_MARS && (key_oyster_SFG || key_oyster_DEB )
+#endif /* key_MARS && (key_oyster_SFG || key_oyster_DEB ) */
    
      !====================================================================
      ! Local declarations of variables
@@ -545,7 +546,7 @@
    INTEGER                :: i,j,k,iv ! Counter variables
    INTEGER                :: kmaxmod,itend ! Index of termination for
                                                        ! vertical and time loops
-   INTEGER                :: tooljulien ! Function to determine the julian day
+   INTEGER                :: tool_julien ! Function to determine the julian day
    CHARACTER(LEN=19)      :: tool_sectodat,cdate ! Function to change the second to date
    REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY)   :: forcSPM ! Something related to 
                                                          ! suspended particulate matter
