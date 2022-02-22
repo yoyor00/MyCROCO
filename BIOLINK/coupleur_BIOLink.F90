@@ -512,6 +512,7 @@
   !&E       !  2019-08  (B.Thouvenin)  creation 
   !&E       !  2022-02  (G. Koenig) Commenting
   !&E---------------------------------------------------------------------
+
      !====================================================================
      ! Routines from external models
      !====================================================================
@@ -561,6 +562,7 @@
      !====================================================================
      ! Local declarations of variables
      !====================================================================
+
    REAL(KIND=rlg)         :: dt_bio_cor ! Timestep for biology models
    INTEGER                :: i,j,k,iv ! Counter variables
    INTEGER                :: kmaxmod,itend ! Index of termination for
@@ -575,6 +577,7 @@
                                                                       ! Matter with a vertical
                                                                       ! Dimension
 #endif 
+
      !====================================================================
      ! Execution of the function
      !====================================================================
@@ -896,102 +899,149 @@
 
   END SUBROUTINE BIOLink_update
 
-  !!======================================================================
   SUBROUTINE BIOLink_water_column(ifirst,ilast,jfirst,jlast)
 
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_water_column ***
   !&E
-  !&E ** Purpose : memorize total water hight and vertical water layer thicknesses 
+  !&E ** Purpose : Computation of total water thickness and thickness of 
+  !&E              each vertical layer
   !&E
+  !&E ** Description : We read the depth and water elevation from the 
+  !&E                  hydro model and use it to compute the total water
+  !&E                  thickness. Then we use the difference of height
+  !&E                  of each cell to compute the thickness of each cell
   !&E
-  !&E            ******* ATTENTION  we are in a OMP session   **************
+  !&E ** Called by : BIOLink_update
   !&E
-  !&E ** Description :
-  !&E
-  !&E ** Called by : 
-  !&E
-  !&E ** External calls :
+  !&E ** External calls : limitation of the subgrid given by MPI ifirst,
+  !&E                     ilast, jfirst and jlast
   !&E
   !&E ** Reference :
   !&E
-  !&E ** History :
+  !&E ** History : Creation by B. Thouvenin ( date unknown)
+  !&E              Commenting by G. Koenig ( february 2022)
   !&E
   !&E---------------------------------------------------------------------
-  !! * Modules used
-#ifdef key_MARS
+
+     !====================================================================
+     ! Routines from external models
+     !====================================================================
+
+#if defined key_MARS
+
    USE toolgeom,     ONLY : f_dzu,f_dzw
    USE comvars2d,    ONLY : ig,id,jb,jh,hm
-#else
-#endif
-   !! * Arguments 
+
+#endif /* key_MARS */
+
+     !====================================================================
+     ! External arguments
+     !====================================================================
+
    INTEGER, INTENT(IN)                           :: ifirst,ilast,jfirst,jlast
  
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
 
-  !! * Local declarations
-    INTEGER                  :: i,j,k,kmaxmod
+   INTEGER                  :: i,j,k,kmaxmod
 
     
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
 
-  !!----------------------------------------------------------------------
-  !! * Executable part
+      !******************* Water height computation ************************!
 
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod)
-   DO j=jfirst,jlast
-#ifdef key_MARS
-      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
+
+   DO j=jfirst,jlast ! The loop is on the entire meridional direction
+
+#if defined key_MARS
+
+      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1) ! I do not know
+
         IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1) THEN
 #else
-      DO i=ifirst,ilast
-      ! ATTENTION : not need to calculate at boundaries meshes where MUSTANG is not applied
-#endif
+
+      DO i=ifirst,ilast ! And on the entire zonal direction
+
+#endif /* key_MARS */
 
 #if ! defined MUSTANG
-          !  htot : total water height
-          ! already knwon if MUSTANG
-          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MARS
-          TOTAL_WATER_HEIGHT(i,j)=BATHY_H0(i,j)+WATER_ELEVATION(i,j)
-#else
-        !! To Program HYDRO
-        !! CROCO : 
-           TOTAL_WATER_HEIGHT(i,j)=z_w(i,j,N)+h(i,j)
-#endif
-#endif
-            ! thickness of  water layer
-            !  thickness_C : centered around C, T, S
-            !  thickness_W : centered around Wz, kz, interface
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MARS
+
+#  if defined key_MARS
+
+          TOTAL_WATER_HEIGHT(i,j)=BATHY_H0(i,j)+                 & ! The to
+                                  WATER_ELEVATION(i,j) ! tal water thickness 
+                                                       ! is computed from 
+                                                       ! the depth
+          
+#  else
+
+           TOTAL_WATER_HEIGHT(i,j)=z_w(i,j,N)+h(i,j) ! The total water 
+                                                     ! thickness is computed
+                                                     ! from the top of the 
+                                                     ! last vertical layer
+
+
+#  endif /* key_MARS */
+
+#endif /* MUSTANG */
+
+#if defined key_MARS
+
             IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
+
                kmaxmod=1
+
             ELSE
- :diff              kmaxmod=NB_LAYER_WAT
+ 
+               kmaxmod=NB_LAYER_WAT
+
             ENDIF
 
             IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
+
                 THICKLAYERWC(1,i,j)=TOTAL_WATER_HEIGHT(i,j)
                 THICKLAYERWW(1,i,j)=TOTAL_WATER_HEIGHT(i,j)*0.5_rsh
                 THICKLAYERWC(2:NB_LAYER_WAT,i,j)=0.0_rsh
                 THICKLAYERWW(2:NB_LAYER_WAT,i,j)=THICKLAYERWW(1,i,j)
+
             ELSE
+
               DO k=1,kmaxmod          
+
                 THICKLAYERWC(k,i,j)=f_dzu(BATHY_H0(i,j),WATER_ELEVATION(i,j),k,i,j)
                 THICKLAYERWW(k,i,j)=f_dzw(BATHY_H0(i,j),WATER_ELEVATION(i,j),k,i,j)
+
               ENDDO
+
             ENDIF
+
         ENDIF
+
 #else
-        !! To Program HYDRO
-        !! CROCO : 
+
           DO k=1,NB_LAYER_WAT-1          
-                THICKLAYERWC(k,i,j)=z_w(i,j,k)-z_w(i,j,k-1)
-                THICKLAYERWW(k,i,j)=z_r(i,j,k+1)-z_r(i,j,k)
+
+                THICKLAYERWC(k,i,j)=z_w(i,j,k)-z_w(i,j,k-1) ! The thickness
+                THICKLAYERWW(k,i,j)=z_r(i,j,k+1)-z_r(i,j,k) ! of each cell
+                                                            ! is computed by
+                                                            ! the height 
+                                                            ! difference of 
+                                                            ! the cells,
+                                                            ! both from top
+                                                            ! and center
+
           ENDDO
-          k=NB_LAYER_WAT
+
+          k=NB_LAYER_WAT ! Last layer
           THICKLAYERWC(k,i,j)=z_w(i,j,k)-z_w(i,j,k-1)
           THICKLAYERWW(k,i,j)=0._rsh
-#endif
+
+#endif /* key_MARS */
 
       ENDDO
    ENDDO
