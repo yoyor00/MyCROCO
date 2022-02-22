@@ -356,6 +356,8 @@
      ! Execution of the function
      !====================================================================
 
+     !************** Determination of the time steps *********************!
+     
 #ifdef key_MARS
    t_bio=MAX(CURRENT_TIME,tdebsubs) 
 #else
@@ -364,7 +366,10 @@
                                           ! With a transport time step
 #endif /* key_MARS */
 
+     !********************* Sinking velocity *****************************!
+
 #if ! defined MUSTANG
+
      ! Initialization of the sinking rate for all the tracers at all depth and position
      ! The initialization is taken at the mean between the maximum and minimum sinking depth
      DO j=jfirst,jlast
@@ -376,52 +381,68 @@
           ENDDO
         END DO
       END DO
+
 #endif /* MUSTANG */
 
+     !****************** Verification of conservation *********************!
+
 #if defined BIOLink_verif_conserv 
-! Definition of the name for the conservation file
-     logfilename='conservBIOLink_'//TRIM(suffix_fileres)//'.log'
-! I think iscreenlog_conserv is initialized at 66 and never changed
-! So this should always happen
-! Opening of the log file to test the conservativity
-     IF (iscreenlog_conserv/=6) OPEN(unit=iscreenlog_conserv,file=logfilename)
+     
+      logfilename='conservBIOLink_'//TRIM(suffix_fileres)//'.log' ! Name
+                                                                  ! for cons
+                                                                  ! -servati
+                                                                  ! on file
+      IF (iscreenlog_conserv/=6) OPEN(unit=iscreenlog_conserv,file=logfilename)
+      ! Opening of the log file to test the conservativity
+      ! I think iscreenlog_conserv is initialized at 66 and never changed
+      ! So this should always happen
+
 #endif /* BIOLink_verif_conserv */
 
 #if defined BLOOM
-    ! Initialization of tables in the biological/tracer models
-   CALL bloom_userinit(ifirst,ilast,jfirst,jlast)
+
+      CALL bloom_userinit(ifirst,ilast,jfirst,jlast) ! Initialization of tab
+                                                     ! -les in the biological
+                                                     ! /tracer models
 #elif defined METeOR
-    ! reading reactions between contaminant species
-    CALL meteor_read_react
+
+      CALL meteor_read_react ! reading reactions between contaminant species
+
 #endif /* BLOOM/METeOR */
 
+     !****************** Wave orbital velocities *********************!
 
 #if defined key_MANGAbio && defined key_MANGAbiovague
-   ! Initialization of wave orbital velocities
-   ubr_vague(:,:,:)=0.0_rsh
-   vbr_vague(:,:,:)=0.0_rsh
-   hs_vague(:,:,:)=0.0_rsh
+   
+      ubr_vague(:,:,:)=0.0_rsh ! Initialization of 
+      vbr_vague(:,:,:)=0.0_rsh ! wave orbital 
+      hs_vague(:,:,:)=0.0_rsh  ! velocities and height
+
    DO j=jfirst,jlast
 #  ifdef key_MARS
+
      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
+
 #  else
+
      DO i=ifirst,ilast
+
 #  endif /* key_MARS */
+
        IF (BATHY_H0(i,j) .EQ. -valmanq) THEN
-         ! Initialization to NaN value in case of land
-         ! grid
-         ubr_vague(i,j,:)=valmanq
-         vbr_vague(i,j,:)=valmanq
-         hs_vague(i,j,:)=valmanq
+         ubr_vague(i,j,:)=valmanq ! Initialization to NaN value 
+         vbr_vague(i,j,:)=valmanq ! in case of land
+         hs_vague(i,j,:)=valmanq  ! cell
        END IF
      END DO
    END DO
    
-   !!! fichier climato des vitesses orbitales de vague
-   !!! routine dans le coupleur (dependant du code)
-   CALL bloom_wavefile_MANGAbio(ifirst,ilast,jfirst,jlast,0)
+   CALL bloom_wavefile_MANGAbio(ifirst,ilast,jfirst,jlast,0) ! Reading
+                                                             ! wave climato
+                                                             ! -logy file
 #endif /* key_MANGAbio && key_MANGAbiovague */
 
+     !*********** Satellital measurement of suspended matter ****************!
 
 #if defined key_messat
    ! initialization of the suspended matter measured by satellite
@@ -448,15 +469,13 @@
      ENDIF_MPI
    END IF
 
-   ! read  climato MES file
-   !----------------------------------------
-   CALL BIOLink_SPMsat_file(ifirst,ilast,jfirst,jlast,0)
-
+   CALL BIOLink_SPMsat_file(ifirst,ilast,jfirst,jlast,0) ! Reading of sus-
+                                                         ! pended matter
+                                                         ! file
 #endif /* key_messat */
 
   END SUBROUTINE BIOLink_init
 
-  !!======================================================================
 
   SUBROUTINE BIOLink_update(ifirst,ilast,jfirst,jlast   &
 #if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
@@ -560,35 +579,49 @@
      ! Execution of the function
      !====================================================================
 
-   itend=0 ! Initialization of the end time counter
-   IF(CURRENT_TIME .GE. t_bio) THEN ! Updating of variables
-      
-      ! updating of time steps
-      dt_bio_cor=MAX(ECO_TIME_STEP,TRANSPORT_TIME_STEP)
-      BIO_TIME_STEP=dt_bio_cor+(CURRENT_TIME-t_bio)
 
-      ! Conversion of time to date for some routines in biological models
-      cdate = tool_sectodat(CURRENT_TIME)
-      CALL tool_decompdate(cdate,ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK, &
-                           iheure_BIOLINK,iminu_BIOLINK,isec_BIOLINK) 
-      jjulien_BIOLINK=tool_julien(ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK)&
-                      - tool_julien(1,1,ian_BIOLINK)+1
+     !************** Determination of the time steps *********************!
 
-      ! Evaluation of the height of the water column
-      CALL BIOLink_water_column(ifirst,ilast,jfirst,jlast)
+      itend=0 ! Initialization of the end time counter
+      IF(CURRENT_TIME .GE. t_bio) THEN ! Updating of variables
       
-      ! Conversion of the arrays in the order of BIOLink
-      CALL BIOLink_convarray(ifirst,ilast,jfirst,jlast     &
+        dt_bio_cor=MAX(ECO_TIME_STEP,TRANSPORT_TIME_STEP) ! Updating of
+        BIO_TIME_STEP=dt_bio_cor+(CURRENT_TIME-t_bio) ! time steps
+
+        cdate = tool_sectodat(CURRENT_TIME) ! Conversion of time to date 
+        CALL tool_decompdate(cdate,ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK, &
+                             iheure_BIOLINK,iminu_BIOLINK,isec_BIOLINK) 
+        
+        jjulien_BIOLINK=tool_julien(ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK)&
+                                   - tool_julien(1,1,ian_BIOLINK)+1
+
+        !*********** Computation of physical variables ********************!
+
+        CALL BIOLink_water_column(ifirst,ilast,jfirst,jlast) ! Height of the
+                                                             ! water column
+      
+        CALL BIOLink_convarray(ifirst,ilast,jfirst,jlast     & ! Conversion
+                                                               ! of arrays 
+                                                               ! in BIOLink
+                                                               ! order
+
 #if defined key_nosubstmodule
+
                   ,WAT_SETTL                                     &
+
 #endif /* key_nosubstmodule */
+
 #ifdef key_MARS
+
                   ,TEMPERATURE_MOD,SALINITY_MOD                  &
+
 #endif /* key_MARS */
                   )     
-      ! Evaluation and limitation of the sinking rate 
-      CALL BIOLink_sinking_rate(ifirst,ilast,jfirst,jlast)
+      CALL BIOLink_sinking_rate(ifirst,ilast,jfirst,jlast) ! Evaluation and
+                                                           ! limitation of 
+                                                           ! sinking rates
 
+      !*********************** Blue Öyster Cult ***************************!
 
       ! Reinitialization of the number of oyster for the 1rst january of each year
 #if defined BLOOM && defined key_oyster_DEB
@@ -611,104 +644,105 @@
      ENDDO
 #endif /* BLOOM && key_oyster_DEB */
 
+      !*********************** Estimation of PAR ***************************!
+
 #if defined BIOLink_PAR_eval
-      !!=================================================================================
-      !!!    steps to evaluate PAR via SPM, CHLORO, EXTINCTION...
-      !!            DONE BY BIOLink
-      !!        otherwise the BIO module take charge PAR estimation
-      !!=================================================================================
-
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!!  update SPM evaluation from satellite or model  ==> forcSPM
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !$OMP SINGLE
-      forcSPM(:,:)=0.0_rsh
+      forcSPM(:,:)=0.0_rsh ! Initialization of the SPM forcing
 
-#if defined key_messat
-      ! SPM read from satellite input file
+#  if defined key_messat
       CALL BIOLink_SPMsat_file(ifirst,ilast,jfirst,jlast,1,forcSPM=forcSPM)
-#else
+      ! SPM read from satellite input file
+#  else
       ! SPM read from climato file
-#if defined key_MARS
+#    if defined key_MARS
 
-#if defined key_turbclim && defined key_daily_climato_kpar
-     !! mes_sat lu dans sflxsurf avec le KPAR pour le code hydro
-      forcSPM(:,:)=mes_sat(:,:)
-#endif
+#      if defined key_turbclim && defined key_daily_climato_kpar
 
-#else
-    ! To Program HYDRO
-    ! not MARS : define SPM if forced by readed value (satellite or other mordel or ..)
-     ! forcSPM(:,:)=
-#endif
+      forcSPM(:,:)=mes_sat(:,:) ! Reading of the MES by the hydro code
 
-#endif
+#      endif /* key_turbclim && key_daily_climato_kpar */
 
-#if defined key_MANGAbio && defined key_MANGAbiovague
-     !! forced SPM  with wave action which create a surface_bottom gradient
-      CALL bloom_wavefile_MANGAbio(ifirst,ilast,jfirst,jlast,1,forcSPMk=forcSPMk)
-     
-#endif
+#    endif /* key_MARS */
+
+#  endif /* key_messat */
+
+#  if defined key_MANGAbio && defined key_MANGAbiovague
+      
+      CALL bloom_wavefile_MANGAbio(ifirst,ilast,jfirst,          & ! Reading
+                                   jlast,1,forcSPMk=forcSPMk) ! of waves fro
+                                                              ! m an externa
+                                                              ! file
+#  endif /* key_MANGAbio && key_MANGAbiovague */
 !$OMP END SINGLE
 
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!! concentrations of mineral and organic suspension particles and cholorophylle
-      !!!  for extinction and PAR estimation ( To Program BIO )
-      !!!   ***** ATTENTION*** unity of chloro depending on bio module ??? 
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if defined PEPTIC    
-      CALL peptic_SPMtot_Chla(ifirst,ilast,jfirst,jlast)
+#  if defined PEPTIC    
 
-#elif defined BLOOM
-      CALL bloom_SPMtot_Chla(ifirst,ilast,jfirst,jlast          &
-#if defined key_MANGAbio && defined key_MANGAbiovague
+      CALL peptic_SPMtot_Chla(ifirst,ilast,jfirst,jlast) ! Impact of 
+                                                         ! SPM on Chla
+                                                         ! from the PEPTIC
+                                                         ! model
+
+#  elif defined BLOOM
+
+      CALL bloom_SPMtot_Chla(ifirst,ilast,jfirst,jlast          & ! Impact 
+                                                         ! of SPM on Chla
+                                                         ! from the BLOOM
+                                                         ! model
+
+#     if defined key_MANGAbio && defined key_MANGAbiovague
+
                              ,forcSPMk                          &
-#endif 
-#if defined key_messat
+
+#     endif /* key_MANGAbio && key_MANGAbiovague */
+
+#     if defined key_messat
+
                               ,forcSPM                          &
-#endif
+
+#     endif /* key_messat */
+
                          )
 
-#endif  
+#  endif /* BLOOM */  
 
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!! solar radiation extinction/attenuation / PAR
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      CALL BIOLink_eval_PAR(ifirst,ilast,jfirst,jlast,cdate)
+      CALL BIOLink_eval_PAR(ifirst,ilast,jfirst,jlast,cdate) ! Computation 
+                                                             ! of solar ra
+                                                             ! -diation and
+                                                             ! extinction
+
+#  if defined BLOOM
+      
+      CALL bloom_extinction_avg(ifirst,ilast,jfirst,jlast) ! Computation of
+                                                           ! 4 days extinct
+                                                           ! -ion average in
+                                                           ! BLOOM
+
+#  endif /* BLOOM */
+
+#  if defined PEPTIC && defined key_rand_extinc
+   
+      CALL peptic_abondance(ifirst,ilast,jfirst,jlast) ! I do not know
+
+#  endif /* PEPTIC && key_rand_extinc */
+
+#endif /* BIOLink_PAR_eval */
+
+      !********************* Diagnostic variables **************************!
 
 #if defined BLOOM
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!! module BLOOM : extinction average on 4 days
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      CALL bloom_extinction_avg(ifirst,ilast,jfirst,jlast)
-#endif
 
-#if defined PEPTIC && defined key_rand_extinc
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!! module PEPTIC : abondance verification (not ready)
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      CALL peptic_abondance(ifirst,ilast,jfirst,jlast)  
-#endif
+      CALL  bloom_eval_diag2d(ifirst,ilast,jfirst,jlast) ! Bloom function
+                                                         ! for diagnostic
+                                                         ! evaluations
 
-      !!=================================================================================
-#endif
+#endif /* BLOOM */
 
-#if defined BLOOM
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!! module bloom : evaluation de certaines variables diagnostiques 2D 
-      !!! (production primaire cumulee,  phytos max, position et date...)
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      CALL  bloom_eval_diag2d(ifirst,ilast,jfirst,jlast)
-
-#endif
+      !**************** Wind speed for some BLOOM keys *********************!
 
 #if defined key_oxygen || defined key_zostera || defined METeOR
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !!! NEED TO KNOW WIND SPEED
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!   in  MARS : known
-!   in CROCO known only if BULK_FLUX
-#if ! defined key_MARS && ! defined BULK_FLUX
+
+#  if ! defined key_MARS && ! defined BULK_FLUX
 
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod)
      DO j=jfirst,jlast
@@ -725,46 +759,63 @@
       ENDDO
 !$OMP END DO
 
-#endif
-#endif
+#  endif /* key_MARS && BULK_FLUX */
+
+#endif /* defined key_oxygen || defined key_zostera || defined METeOR */
+
  
-     
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !   calcul des sources et puits biologiques   To Program BIO
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !******************* Tracers sources and sinks ***********************!
+    
 #if defined PEPTIC
-     CALL peptic_sksc_wat(ifirst,ilast,jfirst,jlast)
+
+     CALL peptic_sksc_wat(ifirst,ilast,jfirst,jlast) ! Source and sink 
+                                                     ! terms for PEPTIC
 
 #elif defined BLOOM
 
-     CALL bloom_sksc_wat(ifirst,ilast,jfirst,jlast                          &
-#if defined BLOOM
-#if defined GLS_MIXING
+     CALL bloom_sksc_wat(ifirst,ilast,jfirst,jlast               & ! Source 
+                                                                   ! and sin
+                                                                   ! k terms
+                                                                   ! for 
+                                                                   ! BLOOM
+
+#  if defined GLS_MIXING
+
                           ,CIN_TURBULENT_ENERGY                                    &
-#endif
-#if defined key_zostera || defined key_oxygen
+
+#  endif /* GLS_MIXING */
+
+#  if defined key_zostera || defined key_oxygen
+
                           ,WIND_SPEED                                              &
-#endif
-#if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
+
+#  endif /* key_zostera || key_oxygen */
+
+#  if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
+
                        ,CELL_SURF                                            &
-#endif
-#endif
+
+#  endif /* key_MARS && ( key_oyster_SFG || key_oyster_DEB) */
+
                                  ) 
 #elif defined METeOR
+
     IF ( l_treat_re_dc) THEN
         CALL meteor_sksc_wat(ifirst,ilast,jfirst,jlast,WIND_SPEED)
     ENDIF                      
-#endif
+
+#endif /* BLOOM/METeOR */
    
+      !**************** Conversion of the order of arrays  *****************!
 
 #if ! defined key_MARS 
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   !!  Conversion array BIOLink   to hydro host model
-   !!   for settling velocities if changed by bio module
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       CALL BIOLink2hydro(ifirst,ilast,jfirst,jlast)     
-#endif
-     
+
+#endif /* key_MARS */
+
+      !*********************** Final time stepping *************************!
+    
 !$OMP SINGLE
      t_bio=t_bio+BIO_TIME_STEP
 !$OMP END SINGLE
@@ -772,78 +823,76 @@
  
    ENDIF  ! t>t_bio
 
+     !****************** Update of tracer concentration ********************!
+     !****************** if not computed by hydro model ********************!
+
 #if defined BIOLink_UPDATE_CONCBIO 
-   ! a chaque pas de temps, mise a jour des concentrations apres transformations bio
-   ! si modele hydro ne le prend pas en charge en resolvant les equations de conservation de la masse
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   !!  Conversion array BIOLink   to hydro host model
-   !!   for settling velocities if changed by bio module
-   !!     and resolution of dc/dt=bio_sink_sources if it is not taking into account in transport equations
-   !!     then change water concentrations
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if defined METeOR && ! defined BLOOM && ! defined PEPTIC && ! defined ECO3M
+
+#  if defined METeOR && ! defined BLOOM && ! defined PEPTIC && ! defined ECO3M
+
     IF ( l_treat_re_dc) THEN
-#endif   
+
+#  endif /* METeOR && BLOOM && PEPTIC && ECO3M */   
 
       CALL BIOLink_updateconc_BIO(ifirst,ilast,jfirst,jlast)
 
-#if defined METeOR && ! defined BLOOM && ! defined PEPTIC && ! defined ECO3M
-    ENDIF 
-#endif
-#endif
+#  if defined METeOR && ! defined BLOOM && ! defined PEPTIC && ! defined ECO3M
 
+    ENDIF 
+
+#  endif /* METeOR && BLOOM && PEPTIC && ECO3M */
+
+#endif /* BIOLink_UPDATE_CONCBIO */
 
 
 #if defined METeOR
-   ! Contaminant - equilibrium or very fast reactions ==> new concentrations
-   ! a each time step
-   ! -----------------------------------------------------------------------
+
+       ! Update of the concentration at each time step for 
+       ! Rapid chemical reactions
+
        IF ( nreacmax > 0 .AND. l_treat_re_eq) THEN
+
         IF (itend == 0)THEN
+
          cdate = tool_sectodat(CURRENT_TIME)
+
          CALL BIOLink_water_column(ifirst,ilast,jfirst,jlast)
          CALL BIOLink_convarray(ifirst,ilast,jfirst,jlast)
-#if defined BIOLink_PAR_eval
+
+#  if defined BIOLink_PAR_eval
 !$OMP SINGLE
          forcSPM(:,:)=0.0_rsh
 !$OMP END SINGLE
          CALL BIOLink_eval_PAR(ifirst,ilast,jfirst,jlast,cdate)
-#endif
+#  endif /* BIOLink_PAR_eval */
         ENDIF
        
         CALL meteor_reac_equi(ifirst,ilast,jfirst,jlast,WIND_SPEED)
  
        ENDIF
-#endif
 
+#endif /* METeOR */
 
+      !***************** Evolution of fixed variables **********************!
 
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     ! evolution des variables fixees :
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-           !  les variables fixees sont calculees directement 
-           !  pour les autres variables (celles qui sont advectees), 
-           !            soit elles sont calculees directement (dans routine BIOLink2hydro)
-           !            soit les termes sources et puits sont pris en compte dans les equations de conservation de la masse
      IF (nv_fix > 0 ) THEN
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod)
-      DO j=jfirst,jlast
-     DO i=ifirst,ilast
-      ! ATTENTION : not need to calculate at boundaries meshes where MUSTANG is not applied
-        kmaxmod=NB_LAYER_WAT
+       DO j=jfirst,jlast
+         DO i=ifirst,ilast
 
-          DO k=1,kmaxmod
-             FIXED_VAR_CONC(FIXED_VAR_INDEXkij)=FIXED_VAR_CONC(FIXED_VAR_INDEXkij) &
+            kmaxmod=NB_LAYER_WAT ! The fixed variables are only computed 
+                                 ! where MUSTANG is not used
+
+            DO k=1,kmaxmod
+
+              FIXED_VAR_CONC(FIXED_VAR_INDEXkij)=FIXED_VAR_CONC(FIXED_VAR_INDEXkij) &
                                        +TRANSPORT_TIME_STEP*BIO_SKSC_FIX(FIXED_SKSC_INDEXkij)
 
+            ENDDO
           ENDDO
         ENDDO
-       ENDDO
 !$OMP END DO
      ENDIF
-
-    PRINT_DBG*, 'END BIOLink_update'
-
 
   END SUBROUTINE BIOLink_update
 
