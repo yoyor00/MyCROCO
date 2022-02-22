@@ -1050,7 +1050,6 @@
  
   END SUBROUTINE  BIOLink_water_column
 
-   !!======================================================================
   SUBROUTINE BIOLink_convarray(ifirst,ilast,jfirst,jlast  &
 #if defined key_nosubstmodule
                   ,WAT_SETTL                                     &
@@ -1062,159 +1061,203 @@
   !&E
   !&E ** Purpose : conversion of 3D or 4D array from hydro model to BIOLink
   !&E
-  !&E ** Description :
+  !&E ** Description : Everything is said in the purpose
   !&E
-  !&E ** Called by : 
+  !&E ** Called by : BIOLink_update
   !&E
-  !&E ** External calls :
+  !&E ** External calls : None
   !&E
   !&E ** Reference :
   !&E
-  !&E ** History :
+  !&E ** History : Creation by B. Thouvenin ( date unknown)
+  !&E              Commenting and editing by G. Koenig (February 2022)
   !&E
   !&E---------------------------------------------------------------------
-  !! * Modules used
-#ifdef key_MARS
+
+     !====================================================================
+     ! Routines from external models
+     !====================================================================
+
+#if defined key_MARS
    USE toolgeom,     ONLY : f_dzu,f_dzw
    USE comvars2d,    ONLY : ig,id,jb,jh,hm
-#endif
-   !! * Arguments 
-   INTEGER, INTENT(IN)                           :: ifirst,ilast,jfirst,jlast
+#endif /* key_MARS */
+ 
+     !====================================================================
+     ! External arguments
+     !====================================================================
 
-  !! * Local declarations
-    INTEGER                  :: i,j,k,kmaxmod,iv
+   INTEGER, INTENT(IN) :: ifirst,ilast,jfirst,jlast
 
-    
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
 
-  !!----------------------------------------------------------------------
-  !! * Executable part
+   INTEGER :: i,j,k,kmaxmod,iv
+
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
+
 
 #if defined PEPTIC || defined BLOOM 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!! modules BIO PEPTIC and BLOOM : index ordre : iv,k,i,j
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! PEPTIC and BLOOM are in the order : iv (tracer), k (vertical),
+! i (zonal) and j (meridional)
+! but CROCO is in the order : iv (tracer), i (zonal), j (meridional)
+! and k (vertical). 
 
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod,iv)
+
      DO j=jfirst,jlast
      
-#ifdef key_MARS
+#  if defined key_MARS
+
        DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
+
+#  else
+
        DO i=ifirst,ilast
-#endif
 
-          kmaxmod=NB_LAYER_WAT
-          WATCONCPOS(:,:,i,j)=0.0_rsh
-          FIXCONCPOS(:,:,i,j)=0.0_rsh
-#ifdef key_benthic
-          BENTCONCPOS(:,i,j)=0.0_rsh
-#endif
-          DO k=1,kmaxmod
-#if ! defined key_MARS
-            ! conversion index order if not MARS
-            TEMP_BIOLink(k,i,j)=TEMPHYDRO_ijk
-            SAL_BIOLink(k,i,j)=SALHYDRO_ijk
-#endif
-#if defined BLOOM && defined key_benthos
-            bottom_current(i,j)=BOTTOM_CURRENT_ij
-#endif
-            ! variables d etat transportees
-            DO iv=1,nv_adv
-              WATCONCPOS(iv,k,i,j)=0.5_rsh*(WAT_CONCADV_ivkij+ABS(WAT_CONCADV_ivkij))
-            END DO
-            ! variables fixees (connu via comsubstance)
-            DO iv=1,nv_fix
-              FIXCONCPOS(iv,k,i,j)=0.5_rsh*(WAT_CONCFIX_ifixkij+ABS(WAT_CONCFIX_ifixkij))
-            END DO
-!#if ! defined key_MARS
-            ! conversion index order if not MARS si on a cree un tableau pour avoir le bon ordre
-          !  DO iv=1,nv_adv
-          !    BIO_SKSC_ADV(iv,k,i,j)=BIO_SINKSOURCES(ADV_VAR_INDEXkij)
-          !  ENDDO
-!#endif
-          ENDDO
-#ifdef key_benthic
-            ! variables benthiques (connu via comsubstance)
-            DO iv=1,nspb
-              BENTCONCPOS(iv,i,j)=0.5_rsh*(WAT_CONCBENT_ivij+ABS(WAT_CONCBENT_ivij))
-            END DO
-#endif
+#  endif /* key_MARS */
 
-#ifdef key_oyster_DEB
-! Reinitialisation des huitres au 1er janvier de chaque annee.
-        IF ((imois_BIOLink.eq.1).and.(ijour_BIOLink.eq.1).and.(iheure_BIOLink.eq.0)) THEN
-          IF (nbhuitre(i,j).ne.0.0_rsh) THEN
-             k=1
-             iv=iv_oysdeb_res
-             BENTHIC_CONCENTRATION(BENTH_INDEXij)=50.0_rsh
-             iv=iv_oysdeb_gon
-             BENTHIC_CONCENTRATION(BENTH_INDEXij)=500.0_rsh
-             iv=iv_oysdeb_str
-             BENTHIC_CONCENTRATION(BENTH_INDEXij)=310.0_rsh
-          ENDIF
-        ENDIF
+         kmaxmod=NB_LAYER_WAT
+
+         WATCONCPOS(:,:,i,j)=0.0_rsh
+         FIXCONCPOS(:,:,i,j)=0.0_rsh
+
+#  if defined key_benthic
+
+         BENTCONCPOS(:,i,j)=0.0_rsh
+
+#  endif /* key_benthic */
+ 
+         DO k=1,kmaxmod
+
+#  if ! defined key_MARS
+            
+           TEMP_BIOLink(k,i,j)=TEMPHYDRO_ijk ! Inverting of the place of
+           SAL_BIOLink(k,i,j)=SALHYDRO_ijk   ! the vertical index
+
+#  endif /* key_MARS */
+
+#  if defined BLOOM && defined key_benthos
+   
+           bottom_current(i,j)=BOTTOM_CURRENT_ij
+
+#  endif /* BLOOM && key_benthos */
+
+           DO iv=1,nv_adv ! Advected variables
+           
+             WATCONCPOS(iv,k,i,j)=0.5_rsh*(WAT_CONCADV_ivkij+ABS(WAT_CONCADV_ivkij))
+            
+           END DO ! nv_adv
+           
+           DO iv=1,nv_fix ! Fixed variables
+             
+             FIXCONCPOS(iv,k,i,j)=0.5_rsh*(WAT_CONCFIX_ifixkij+ABS(WAT_CONCFIX_ifixkij))
+           
+           END DO ! nv_fix
+         END DO ! kmax_mod
+
+#  if defined key_benthic
+
+         DO iv=1,nspb
+
+           BENTCONCPOS(iv,i,j)=0.5_rsh*(WAT_CONCBENT_ivij+ABS(WAT_CONCBENT_ivij))
+           
+         END DO ! nspb
+#  endif /* key_benthic */
+
+#  if defined key_oyster_DEB
+         ! Reinitialization of oysters for the 1rst of each year
+         IF ((imois_BIOLink.eq.1).and.(ijour_BIOLink.eq.1).and.(iheure_BIOLink.eq.0)) THEN
+           IF (nbhuitre(i,j).ne.0.0_rsh) THEN
+              k=1
+              iv=iv_oysdeb_res
+              BENTHIC_CONCENTRATION(BENTH_INDEXij)=50.0_rsh
+              iv=iv_oysdeb_gon
+              BENTHIC_CONCENTRATION(BENTH_INDEXij)=500.0_rsh
+              iv=iv_oysdeb_str
+              BENTHIC_CONCENTRATION(BENTH_INDEXij)=310.0_rsh
+           ENDIF
+         ENDIF
 ! Mortalite huitres par cohortes
-        nbhuitre(i,j)=nbhuitre(i,j)-txmorthuitco1(imois_BIOLink)*nbhuitre(i,j)*dtbio/86400.
-#endif  
+         nbhuitre(i,j)=nbhuitre(i,j)-txmorthuitco1(imois_BIOLink)*nbhuitre(i,j)*dtbio/86400.
+#  endif /* key_oyster_DEB */
 
-        END DO
-      END DO
+       END DO ! i
+     END DO ! j
 !$OMP END DO
 
-#if ! defined key_MARS
+#  if ! defined key_MARS
 !$OMP DO SCHEDULE(RUNTIME)
      DO j=jfirst,jlast   
-      DO i=ifirst,ilast
-        DO iv=1,nv_adv
-          DO k=1,NB_LAYER_WAT
-            ! conversion index order if not MARS
-              WS_BIOLink(k,iv,i,j)=WAT_SETTL_ivkij
-            ENDDO
-          ENDDO
-        END DO
-      END DO
-!$OMP END DO
-#endif
 
-!!!!!!!!!! END MODULES BIO PEPTIC &&& BLOOM
+       DO i=ifirst,ilast
+
+        DO iv=1,nv_adv
+
+          DO k=1,NB_LAYER_WAT
+
+              WS_BIOLink(k,iv,i,j)=WAT_SETTL_ivkij ! Conversion of the 
+                                                   ! index order 
+            ENDDO ! k
+
+          ENDDO ! iv
+
+        END DO ! i
+
+      END DO ! j
+!$OMP END DO
+#  endif /* key_MARS */
 
 #elif defined METeOR && ! defined ECO3M
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!! modules METeOR : index ordre : iv,k,i,j
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! METeOR is in the order : iv (tracer), k (vertical),
+! i (zonal) and j (meridional)
+! but CROCO is in the order : iv (tracer), i (zonal), j (meridional)
+! and k (vertical). 
 
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod,iv)
      DO j=jfirst,jlast
+
        DO i=ifirst,ilast
+
           kmaxmod=NB_LAYER_WAT
+
           WATCONCPOS(:,:,i,j)=0.0_rsh
           FIXCONCPOS(:,:,i,j)=0.0_rsh
+
           DO k=1,kmaxmod
-            ! conversion index order if not MARS
+
             TEMP_BIOLink(k,i,j)=TEMPHYDRO_ijk
             SAL_BIOLink(k,i,j)=SALHYDRO_ijk
-            ! variables d etat transportees
-            DO iv=1,nv_adv
-              WATCONCPOS(iv,k,i,j)=0.5_rsh*(WAT_CONCADV_ivkij+ABS(WAT_CONCADV_ivkij))
-            END DO
-            ! variables fixees (connu via comsubstance)
-            DO iv=1,nv_fix
-              FIXCONCPOS(iv,k,i,j)=0.5_rsh*(WAT_CONCFIX_ifixkij+ABS(WAT_CONCFIX_ifixkij))
-            END DO
-          ENDDO 
-        END DO
-      END DO
-!$OMP END DO
 
-!!!!!!!!!! END METeOR
+            DO iv=1,nv_adv
+
+              WATCONCPOS(iv,k,i,j)=0.5_rsh*(WAT_CONCADV_ivkij+ABS(WAT_CONCADV_ivkij))
+
+            END DO ! iv
+
+            DO iv=1,nv_fix
+
+              FIXCONCPOS(iv,k,i,j)=0.5_rsh*(WAT_CONCFIX_ifixkij+ABS(WAT_CONCFIX_ifixkij))
+
+            END DO ! iv
+
+          END DO ! k
+
+        END DO ! i
+
+      END DO ! j
+!$OMP END DO
 
 #elif defined ECO3M
 
-#endif
+#endif /* BLOOM/PEPTIC/ECO3M */
 
    END SUBROUTINE  BIOLink_convarray
 
-   !!======================================================================
    SUBROUTINE BIOLink_sinking_rate(ifirst,ilast,jfirst,jlast)
 
    !&E---------------------------------------------------------------------
