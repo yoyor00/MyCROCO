@@ -2299,182 +2299,233 @@ END SUBROUTINE  BIOLink_eval_PAR
   END SUBROUTINE BIOLink_read_vardiag
 
 
-   !!======================================================================
+
 #if ! defined key_MARS 
+
   SUBROUTINE BIOLink2hydro(ifirst,ilast,jfirst,jlast  &
-#if defined key_nosubstmodule
+
+#  if defined key_nosubstmodule
+
                                ,WAT_SETTL  &
-#endif
+
+#  endif
                                  )     
 
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink2hydro ***
   !&E
-  !&E ** Purpose : conversion of setling velocities array from BIOLink to hydro model 
-  !&E                  if needed
+  !&E ** Purpose : Conversion of setling velocities array from BIOLink 
+  !&E              to hydro model 
   !&E
-  !&E ** Description :
+  !&E ** Description : The array in BIOLink are first indexed with the depth,
+  !&E                  while the ones of hydro models are first indexed by
+  !&E                  horizontal positions. Here we convert the array of 
+  !&E                  BIOLink to the hydro model format
   !&E
-  !&E ** Called by : 
+  !&E ** Called by :  BIOLink_update
   !&E
-  !&E ** External calls :
+  !&E ** External calls : None
   !&E
   !&E ** Reference :
   !&E
-  !&E ** History :
+  !&E ** History : ! Created by B. Thouvenin 
+  !&E              ! Commented by G. Koenig ( february 2022)
   !&E
   !&E---------------------------------------------------------------------
-  !! * Modules used
-   !! * Arguments 
-   INTEGER, INTENT(IN)                           :: ifirst,ilast,jfirst,jlast
-#if defined key_nosubstmodule
+
+
+     !====================================================================
+     ! External arguments
+     !====================================================================
+ 
+   INTEGER, INTENT(IN)    :: ifirst,ilast,jfirst,jlast ! Limits of the MPI
+                                                       ! subdomain
+
+#  if defined key_nosubstmodule
+
    REAL(KIND=rsh),DIMENSION(ARRAY_WAT_SETTL), INTENT(INOUT)   :: WAT_SETTL
-#endif
+                                             ! Array for storing the sett-
+                                             ! ling velocities
+#  endif
 
-  !! * Local declarations
-    INTEGER                  :: i,j,k,iv
-    INTEGER                  :: i1,i2,i3,i4
-    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0) :: xnegtr
-    REAL(KIND=rsh)           :: ztra
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
+
+    INTEGER                  :: i,j,k,iv ! Spatial and tracer counters
+    INTEGER                  :: i1,i2,i3,i4 ! Internal BIOLink counters
+    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0) :: xnegtr ! Array for
+                                                           ! negative
+                                                           ! tracers
+                                                           ! concentrations
+    REAL(KIND=rsh)           :: ztra ! I do not know
     
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
 
-  !!----------------------------------------------------------------------
-  !! * Executable part
+ !****************** Conversion for the index order of *********************!
+ !***************** BIOLink to the one of the hydro model ******************!
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! conversion index order for settling velocities array from BIOLink to hydro host model
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 !$OMP DO SCHEDULE(RUNTIME)
+
      DO j=jfirst,jlast
+
        DO i=ifirst,ilast
+
           DO k=1,NB_LAYER_WAT
-            ! conversion index order if not MARS
+
             DO iv=1,nv_adv
+
               WAT_SETTL_ivkij=WS_BIOLink(k,iv,i,j)
-            ENDDO
-          ENDDO
+
+            END DO
+
+          END DO
+
         END DO
+
       END DO
+
 !$OMP END DO
 
-
-   ! If needed, echange MPI because WATER_CONCENTRATION have changed
-      ! To Program HYDRO
-
-   ! (for MARS : CALL BIOLink_exchgMPI_cvwat), but MARS include IO_SINKSURCES in mass conservation equations, so it is not necessary here)
-   
 END SUBROUTINE  BIOLink2hydro
-#endif
 
-   !!======================================================================
+#endif /* key_MARS */
+
 #if defined BIOLink_UPDATE_CONCBIO 
+
   SUBROUTINE BIOLink_updateconc_BIO(ifirst,ilast,jfirst,jlast)     
 
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_updateconc_BIO ***
   !&E
-  !&E ** Purpose :  update concentrations (depending on hydro host model)
+  !&E ** Purpose : Updating tracers concentration
   !&E
-  !&E ** Description : 
+  !&E ** Description : First there is a loop to determine if the conce
+  !&E                  ntrations are going to become negative. If is the 
+  !&E                  case we limit the sources and sink terms. And then
+  !&E                  we compute the advective flux of tracers in the cell
+  !&E                  with the hydro time steps.
   !&E
-  !&E ** Called by : 
+  !&E ** Called by : BIOLink_update
   !&E
   !&E ** External calls :
   !&E
   !&E ** Reference :
   !&E
-  !&E ** History :
+  !&E ** History : ! Created by B. Thouvenin
+  !&E              ! Commented by G. Koenig ( february 2022 )
   !&E
   !&E---------------------------------------------------------------------
-  !! * Modules used
-   !! * Arguments 
-   INTEGER, INTENT(IN)                           :: ifirst,ilast,jfirst,jlast
 
-  !! * Local declarations
-    INTEGER                  :: i,j,k,iv
-    INTEGER                  :: i1,i2,i3,i4
-    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0) :: xnegtr
-    REAL(KIND=rsh)           :: ztra,sinsksourcesdt
+     !====================================================================
+     ! External arguments
+     !====================================================================
+ 
+   INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast ! Limits of the MPI
+                                                     ! subdomain
+
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
+
+    INTEGER                  :: i,j,k,iv ! Spatial and tracer counters
+    INTEGER                  :: i1,i2,i3,i4 ! Internal BIOLink counters
+    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0) :: xnegtr ! Variable to 
+                                                           ! limit the 
+                                                           ! flux out
+                                                           ! or in the 
+                                                           ! cell
+    REAL(KIND=rsh)           :: ztra ! Ratio between the concentration
+                                     ! and the flux
+    REAL(KIND=rsh)           :: sinsksourcesdt ! Sink and source terms 
+                                               ! multiplied by timestep                                               
     
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
 
-  !!----------------------------------------------------------------------
-  !! * Executable part
+ !****************** We test if the tracer concentration *******************!
+ !************************** becomes negative ******************************!
 
+         xnegtr(:,:,:) = 1.e+0 ! 
 
-!**********************
-!    To Program HYDRO
-!**********************
-!  2 solutions :
-!     - either the hydro model integrates the terms of sources and sinks in the mass conservation equations 
-!                   in this case, sources and sinks terms (BIO_SINKSOURCES) must be known by hydro host model
-!                      . if the BIO_SINKSOURCES array is declared in the hydro host model (in substance module as in MARS)
-!                            it is known in BIOLink module, because we do "USE comsubstance" at the beginning of the module 
-!                            number and order of indexes of BIO_SINKSOURCES array are those from hydro model (ARRAY_SINKSOURCES)
-!                            and it is the same in BIOLink 
-!                               (we choose not to create a new array for the BIO module in order not to use memory and time for the transfer,
-!                                even if this is not effective at the time of their evaluation in the BIO module 
-!                                 if the order of loops i, j, k, iv is not appropriate)
-!                      . if the BIO_SINKSOURCES array is declared in the BIOLink module (in comBIOLink)
-!                                with the dimensions from hydro model (ARRAY_SINKSOURCES)
-!                                the hydro host model must know the BIO_SINKSOURCES array and must load it when the source and sink terms 
-!                                are taken into account in the mass conservation equations. (USE comBIOLink, ONLY : ..)                          
-!
-!     - either the BIOLink coupler updates the concentrations of the BIO variables in water column, 
-!       after having calculated the terms of sources and sinks.
-!                   in this case, sources and sinks terms (BIO_SINKSOURCES) are known only by BIOLink module
-!                   and resolution of sink_sources equations for each variable is necessary here 
-!                   in order to update concentrations modified by bio transformations
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! CROCO : resolution of sink_sources equations in order to have new concentrations 
-!                 modified by bio transformations
-!  loop in order of hydro host model because WATER_CONCENTRATION and BIO_SKSC_ADV array index
-!           are in the order of hydro model (chnage the order in coupleur_define_BIOLINK.h)
-!  code inspired by  PISCES  
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! BIO_SKSC_ADV are in masse/volume/time (second), evaluated avery dt_bio time step
-! but  concentrations update is evaluated every hydro time step (TRANSPORT_TIME_STEP)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-         ! test if tracers concentrations fall below 0.
-         xnegtr(:,:,:) = 1.e+0
 !$OMP DO SCHEDULE(RUNTIME)
+
          DO i1=IRANGE1
+
            DO i2=IRANGE2
+
              DO i3=IRANGE3
+
                DO i4=IRANGE4
-                  sinsksourcesdt=BIO_SKSC_ADV(BIOSKSC_INDEX_EQ)*TRANSPORT_TIME_STEP
+
+                  sinsksourcesdt=BIO_SKSC_ADV(BIOSKSC_INDEX_EQ)  & ! Total
+                                 *TRANSPORT_TIME_STEP ! flux of tracer in 
+                                                      ! the cell in one
+                                                      ! time step
+                  
+                  ! Test if the flux makes the concentration go negative
                   IF( (WATER_CONCENTRATION(WATCONC_INDEX_EQ)+ sinsksourcesdt ) < 0.0_rsh ) THEN
-                     ztra            = ABS(  ( WATER_CONCENTRATION(WATCONC_INDEX_EQ) - epsilon_BIOLink ) &
-                                               / ( sinsksourcesdt + epsilon_BIOLink ) )
-                        xnegtr(i4,i3,i2) = MIN( xnegtr(i4,i3,i2),  ztra )
+
+                     ztra = ABS( ( WATER_CONCENTRATION(WATCONC_INDEX_EQ) &
+                                   - epsilon_BIOLink ) &
+                                / ( sinsksourcesdt + epsilon_BIOLink ) )
+                            ! Computation of the absolute value of the
+                            ! ratio between the concentration and the 
+                            ! flux with a precision epsilon_BIOLink
+
+                     xnegtr(i4,i3,i2) = MIN( xnegtr(i4,i3,i2), ztra )
+                            ! Limiting test. If the ratio ztra is
+                            ! above 1 we reduce it so that it does not
+                            ! make the concentration goes to 0.
+                            ! This being said it also filters the 
+                            ! addition to the cell.
+
                   ENDIF
+
                END DO
+
              END DO
+
            END DO
+
          END DO
 !$OMP END DO
-         !                                ! where at least 1 tracer concentration becomes negative
-         !                                ! 
+
 !$OMP DO SCHEDULE(RUNTIME)
+
          DO i1=IRANGE1
+
            DO i2=IRANGE2
+
              DO i3=IRANGE3
+
                DO i4=IRANGE4  
-                     WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
-                         &           + xnegtr(i4,i3,i2) * BIO_SKSC_ADV(BIOSKSC_INDEX_EQ)*TRANSPORT_TIME_STEP    
+
+                 WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
+                                                         + xnegtr(i4,i3,i2) &
+                                                         * BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) &
+                                                         * TRANSPORT_TIME_STEP    
+                 ! Computation of the flux from the advection terms 
+                 ! with the transport time step
                END DO
+
              END DO
+
            END DO
+
          END DO
+
 !$OMP END DO
      
    
 END SUBROUTINE  BIOLink_updateconc_BIO
-#endif
+#endif /* BIOLink_update_CONCBIO */
 
 
-   !!===========================================================================
 #ifdef key_MARS
   SUBROUTINE BIOLink_exchgMPI_cvwat
 
