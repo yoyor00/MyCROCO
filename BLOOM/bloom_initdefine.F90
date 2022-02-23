@@ -21,6 +21,8 @@
 #include "coupleur_define_BIOLink.h"
 
   USE comBIOLink
+  USE comBIOLink_physics
+  USE comBIOLink_helping
   USE module_BIOLink
 
 

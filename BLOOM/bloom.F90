@@ -28,6 +28,9 @@
 
    !! * Modules used
    USE comBIOLink
+   USE comBIOLink_physics
+   USE comBIOLink_helping
+
 #if defined MUSTANG
    USE comMUSTANG
 #endif

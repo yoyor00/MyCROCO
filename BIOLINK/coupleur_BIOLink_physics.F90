@@ -46,6 +46,12 @@
 
    USE comBIOLink     ! Common variables of the BIOLink coupler
 
+   USE comBIOLink_helping ! Common variables for the helping functions
+                          ! of BIOLink
+
+   USE comBIOLink_physics ! Common variables for the physical functions
+                          ! of BIOLink
+
 #if defined MUSTANG
    USE comMUSTANG ,  ONLY : htot ! Height of the water column
 #endif /*MUSTANG*/
