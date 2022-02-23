@@ -2447,8 +2447,8 @@ END SUBROUTINE  BIOLink2hydro
      ! Execution of the function
      !====================================================================
 
- !****************** We test if the tracer concentration *******************!
- !************************** becomes negative ******************************!
+      !***************** We test if the tracer concentration ***************!
+      !************************* becomes negative **************************!
 
          xnegtr(:,:,:) = 1.e+0 ! 
 
@@ -2526,7 +2526,7 @@ END SUBROUTINE  BIOLink_updateconc_BIO
 #endif /* BIOLink_update_CONCBIO */
 
 
-#ifdef key_MARS
+#if defined key_MARS
   SUBROUTINE BIOLink_exchgMPI_cvwat
 
    !&E--------------------------------------------------------------------------
@@ -2542,23 +2542,25 @@ END SUBROUTINE  BIOLink_updateconc_BIO
    !&E ** Reference : 
    !&E
    !&E ** History :
-    !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS=MUSTANG
+   !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS=MUSTANG
+   !&E       !  2022-02  (G. Koenig) Commenting
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
+
+     !====================================================================
+     ! Routines from external models
+     !====================================================================
+
    USE_MPI toolmpi,  ONLY : ex_i_rsh,ex_j_rsh
    USE parameters,   ONLY : liminm1,limaxp2,ljminm1,ljmaxp2
 
-   !! * Arguments
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
 
+      !******************* Calling of a function in hybrid *****************!
+      !*************************** OMP/MPI mode ****************************!
 
-  !! * Local declarations
-
-   !!---------------------------------------------------------------------------
-   !! * Executable part
-
-
-! echange MPI
 
 OMPMPI barrier
 OMPMPI master
@@ -2566,46 +2568,53 @@ OMPMPI master
      CALL_MPI ex_j_rsh(-1,2,nv_state*kmax,liminm1,limaxp2,ljminm1,ljmaxp2,cv_wat(1:nv_state,:,liminm1:limaxp2,ljminm1:ljmaxp2))
 OMPMPI end master
 OMPMPI barrier
+
 OMPMPI flush(cv_wat)
 
 
   END SUBROUTINE BIOLink_exchgMPI_cvwat
-#endif
-   !!======================================================================
+#endif /* key_MARS */
    
+
 #if defined key_nosubstmodule
+
   SUBROUTINE BIOLink_substance(icall)
  
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE coupl_BIOLink_dim  ***
    !&E
-   !&E ** Purpose : If there is no substance module installed in the code, 
-   !&E      this routine makes it possible to define the number and the type of 
-   !&E      variables (substances) and to classify them in the desired order by MUSTANG
-   !&E             (not used in CROCO)
+   !&E ** Purpose : Remplacement of substance module for the settlement
+   !&E              and interaction with the sediment
    !&E
    !&E ** Description : 
    !&E
-   !&E ** Called by : 
+   !&E ** Called by : BIOLink_update
    !&E
-   !&E ** External calls : 
+   !&E ** External calls : None
    !&E
    !&E ** Reference :
    !&E
    !&E ** History :
    !&E       !  2016-11  (B. Thouvenin) 
-   !&E
+   !&E       !  2022-02  (G. Koenig)
    !&E--------------------------------------------------------------------------
-   !! * Modules used
 
-   !! * Arguments
-   INTEGER,INTENT(IN)  :: icall
+     !====================================================================
+     ! External arguments
+     !====================================================================
+ 
+   INTEGER,INTENT(IN)  :: icall ! if = 0 we just count the number of 
+                                ! variables. If not we initialize the array
 
-   !! * Local declarations
-   INTEGER    :: iv
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
 
-   !!--------------------------------------------------------------------------
-   !! * Executable part
+   INTEGER    :: iv ! Tracer counter
+
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
 
    IF(icall==0) THEN
 
@@ -2616,6 +2625,7 @@ OMPMPI flush(cv_wat)
      ! definition here ??? 
      ! or read a data file or a namelist file 
      !==========================================================================
+
      ! number of particulate variables  type gravel 
       nv_grav=0
      ! number de particulate variables type sand 
@@ -2629,39 +2639,48 @@ OMPMPI flush(cv_wat)
 
 
       ! initialize the number of variables according to their type
-      nvpc=nv_mud+nv_sand+nv_grav
-      nvp=nvpc+nv_ncp+nv_sorb
-      nv_adv=nvp+nv_dis
-      nv_state=nv_adv
-      nv_tot=nv_state
+      nvpc=nv_mud+nv_sand+nv_grav ! Constitutive particulate variables
+      nvp=nvpc+nv_ncp+nv_sorb ! Total particulate variables
+      nv_adv=nvp+nv_dis ! Advected variables
+      nv_state=nv_adv ! Variables whose quantity changes
+      nv_tot=nv_state ! Total number of variables
     
     ELSE
-    !  icall =1 apres sed_alloc 
+    ! if icall = 1
 
-      ALLOCATE(name_var(1,nv_tot))
-      ALLOCATE(typart(nv_state))
-      ALLOCATE(typdiss(nv_adv))
-      ALLOCATE(itypv(nv_tot)
-      ALLOCATE(irk_fil(nv_tot))
+      ALLOCATE(name_var(1,nv_tot)) ! Name array
+      ALLOCATE(typart(nv_state)) ! Particulate variables array
+      ALLOCATE(typdiss(nv_adv)) ! Dissolved variables array
+      ALLOCATE(itypv(nv_tot) ! Total variables array
+      ALLOCATE(irk_fil(nv_tot)) ! Order in the module array
+
       IF (nvp > 0) THEN
-        ALLOCATE(ws_free_opt(nvp)) 
-        ALLOCATE(ws_hind_opt(nvp)) 
-        ALLOCATE(ws_free_para(4,nvp)) 
-        ALLOCATE(ws_free_min(nvp)) 
-        ALLOCATE(ws_free_max(nvp)) 
-        ALLOCATE(ws_hind_para(2,nvp)) 
-        ALLOCATE(tocd(nvp))
-        ws_free_min(:)=0.0_rsh
-        ws_free_max(:)=0.0_rsh
-        ws_free_para(:,:)=0.0_rsh
-        ws_hind_para(:,:)=0.0_rsh
-        ws_free_opt(:)=0
-        ws_hind_opt(:)=0
+
+        ALLOCATE(ws_free_opt(nvp)) ! Settling
+        ws_free_opt(:)=0 ! velocity 
+
+        ALLOCATE(ws_hind_opt(nvp)) ! Settling velocity
+        ws_hind_opt(:)=0 ! of last time step
+
+        ALLOCATE(ws_free_para(4,nvp)) ! Parameters of 
+        ws_free_para(:,:)=0.0_rsh ! water settling
+
+        ALLOCATE(ws_free_min(nvp)) ! Minimal water
+                                   ! settling velocity
+        ALLOCATE(ws_free_max(nvp)) ! Maximal water 
+        ws_free_max(:)=0.0_rsh     ! settling velocity
+
+        ALLOCATE(ws_hind_para(2,nvp)) ! Parameters of the
+        ws_hind_para(:,:)=0.0_rsh ! the water settling velocity
+                                  ! at the last time step
+        ALLOCATE(tocd(nvp)) ! I do not know
         tocd(:)=0.0_rsh
+
       ENDIF
+
       ALLOCATE(l_subs2D(nv_adv))
-      ALLOCATE(ws3(ARRAY_WAT_SETTL))
-      ALLOCATE(cv_wat(ARRAY_WATER_CONC))
+      ALLOCATE(ws3(ARRAY_WAT_SETTL)) ! Water settling 3d array
+      ALLOCATE(cv_wat(ARRAY_WATER_CONC)) ! Concentration of tracer in water
 
 ! and info on  variables
     ! variable names (name_var), type (itypv), settling velocities  (ws_free..), 
@@ -2701,11 +2720,10 @@ OMPMPI flush(cv_wat)
   
 
    END SUBROUTINE BIOLink_substance
-#endif
 
-   !!==============================================================================
+#endif /* key_nosubstmodule */
 
-    !!==============================================================================
+
 #if defined key_messat
      SUBROUTINE BIOLink_SPMsat_file(ifirst,ilast,jfirst,jlast,icall,forcSPM)
  
@@ -2716,175 +2734,273 @@ OMPMPI flush(cv_wat)
    !&E
    !&E ** Description : 
    !&E
-   !&E ** Called by : 
+   !&E ** Called by : BIOLink_update
    !&E
    !&E ** External calls : 
    !&E
    !&E ** Reference :
    !&E
-   !&E ** History :
+   !&E ** History : !Creation by B. Thouvenin 
+   !&E              ! Commenting by G. Koenig ( February 2022)
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-#ifdef key_MARS
+
+     !====================================================================
+     ! Routines from external models
+     !====================================================================
+
+#  if defined key_MARS
+
    USE ionc4,       ONLY : ionc4_openr,ionc4_read_dimt,ionc4_read_time, &
                            ionc4_read_xyt,ionc4_close
    USE comvars2d,    ONLY : ig,id,jb,jh
-#endif
 
-   !! * Arguments
-   INTEGER, INTENT(IN)                                        :: ifirst,ilast,jfirst,jlast
-   INTEGER, INTENT(IN)                                        :: icall
+#  endif /* key_MARS */
+
+     !====================================================================
+     ! External arguments
+     !====================================================================
+
+   INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast ! Limits of the 
+                                                     ! horizontal domain
+   INTEGER, INTENT(IN)  :: icall
    REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY),INTENT(OUT),OPTIONAL  :: forcSPM
 
-   !! * Local declarations
-   INTEGER    :: k,i,j,iv,it
-   INTEGER                       :: ijour,imois,ian,iheure,iminu,isec
-   INTEGER                       :: jjulien_init,tool_julien
-   CHARACTER(LEN=19)             :: date_start,tool_sectodat
-   REAL(kind=rlg)                :: tbid
-   REAL(kind=riosh), DIMENSION(COMPLETE_ARRAY) :: tab_mes
-   INTEGER, DIMENSION(51)        :: t_clim_messat_int
-   CHARACTER(LEN=lchain)         :: nomfic
-   INTEGER                       :: IERR_MPI 
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
+
+   INTEGER    :: k,i,j,iv,it ! Spatial, tracer and temporal counters
+   INTEGER    :: ijour,imois,ian,iheure,iminu,isec
+   INTEGER    :: jjulien_init,tool_julien ! Date and time tool
+   CHARACTER(LEN=19) :: date_start,tool_sectodat
+   REAL(kind=rlg)    :: tbid
+   REAL(kind=riosh), DIMENSION(COMPLETE_ARRAY) :: tab_mes ! Table of 
+                                                          ! suspended matter
+   INTEGER, DIMENSION(51)        :: t_clim_messat_int ! Weekly climatology
+                                                      ! of satellite 
+                                                      ! suspended matter
+   CHARACTER(LEN=lchain)         :: nomfic ! Name of the climatology file
+   INTEGER                       :: IERR_MPI ! Error flag for MPI
    REAL(kind=rlg)                :: torigin,tool_datosec
-   !!--------------------------------------------------------------------------
-   !! * Executable part
-   
- IF (icall == 0) THEN
+
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
+
+      !******************* Opening of the climatology file *****************!
+
+   IF (icall == 0) THEN
      !! first call - initialization - open and read files
         
-#ifdef key_MARS
+#  if defined key_MARS
 
    IF (l_messat_clim .EQV. .TRUE.) THEN
+
      IF_MPI (MASTER) THEN
+
        MPI_master_only WRITE(iscreenlog,*)'------------------------------------------------'
        MPI_master_only WRITE(iscreenlog,*)'lecture fichier climato pour mes-sat  '
        MPI_master_only WRITE(iscreenlog,*)'     donnees en g.l-1', TRIM(filemessat_clim)
+
      ENDIF_MPI
+
      CALL ionc4_openr(filemessat_clim)
+
      idimt_messat=ionc4_read_dimt(filemessat_clim)
+
      DO it=1,idimt_messat
+
        CALL ionc4_read_time(filemessat_clim,it,t_clim_messat(it))
+
      END DO
 
-     !!reading
+#  endif /* key_MARS */
+
      DO it=1,idimt_messat
+
        CALL ionc4_read_xyt(filemessat_clim,'MES',tab_mes,imin,imax,jmin,jmax,it)
+
        DO j=jfirst,jlast
-#ifdef key_MARS
+#  if defined key_MARS
+
          DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
+
+#  else
+
          DO i=ifirst,ilast
-#endif
+
+#  endif /* key_MARS */
+
           IF(h0(i,j).GT.-valmanq) THEN
+
             IF (tab_mes(i,j).LT.valmanq) THEN
-             messat(i,j,it)=tab_mes(i,j)
-             IF(messat(i,j,it) .LT. 0.0_rsh) THEN
-                   MPI_master_only WRITE(iscreenlog,*)'pb messat maille ',i,j,it,messat(i,j,it)
-             END IF
+
+              messat(i,j,it)=tab_mes(i,j)
+
+              IF(messat(i,j,it) .LT. 0.0_rsh) THEN
+
+                MPI_master_only WRITE(iscreenlog,*)'pb messat maille ',i,j,it,messat(i,j,it)
+
+              END IF
+
             ELSE
+
                    MPI_master_only WRITE(iscreenlog,*)'pas de MES climato en ',i,j,it,tab_mes(i,j)
+
             END IF
+
           END IF
-         END DO
-       END DO
-       MPI_master_only WRITE(iscreenlog,*) t_clim_messat(it)
-     END DO
 
-     CALL ionc4_close(filemessat_clim)
+        END DO
 
-#ifdef key_agrif
+      END DO
+
+      MPI_master_only WRITE(iscreenlog,*) t_clim_messat(it)
+
+    END DO
+
+    CALL ionc4_close(filemessat_clim)
+
+#  if defined key_agrif
+
      IF (.NOT. l_initfromfile) THEN
+
        date_start=tool_sectodat(tdebagrif_messat)
+
        CALL tool_decompdate(date_start,ijour,imois,ian,iheure,iminu,isec)
+
        jjulien_init=tool_julien(ijour,imois,ian)-tool_julien(1,1,ian)+1
+
        date_s_annee_messat=jjulien_init*24*60*60
+
      ELSE
-       !date_start=tool_sectodat(CURRENT_TIME)
+
        date_s_annee_messat=jjulien_BIOLINK*24*60*60
+
      END IF
-#else
-     !date_start=tool_sectodat(CURRENT_TIME)
+
+#  else
+
      date_s_annee_messat=jjulien_BIOLINK*24*60*60
-#endif
+
+#  endif /* key_agrif */
+
      it=1
      idateinf_messat=1
      t_clim_messat_int(1:idimt_messat)=INT(t_clim_messat(1:idimt_messat))
+
      IF (date_s_annee_messat .LE. t_clim_messat_int(1)) THEN
+
         idatesup_messat=1
         idateinf_messat=idimt_messat
+
      ELSE
+
         DO WHILE ((it .LT. idimt_messat) .AND.      &
              (t_clim_messat_int(it+1) .LT. date_s_annee_messat))
+
           it=it+1
           idateinf_messat=it
+
         END DO
+
         IF (idateinf_messat .EQ. idimt_messat) THEN
+
           idatesup_messat=1
+
         ELSE
+
           idatesup_messat=idateinf_messat+1
+
         END IF
+
      END IF
+
      IF_MPI (MASTER) THEN
+
        MPI_master_only WRITE(iscreenlog,*) 'Fin de lecture fichier climato satellite MES'
        MPI_master_only WRITE(iscreenlog,*) it,' champs MES lus'
        MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', idateinf_messat,' et ',idatesup_messat
        MPI_master_only WRITE(iscreenlog,*) 'date du run  = ',date_s_annee_messat
        MPI_master_only WRITE(iscreenlog,*)'----------------------------------------------------'
        MPI_master_only WRITE(iscreenlog,*)''
+
      ENDIF_MPI
 
-   END IF !endif sur l_messat_clim
+   END IF 
 
    IF (l_messat_obs) THEN
 
-    IF_MPI (MASTER) THEN
-      MPI_master_only WRITE(iscreenlog,*)'------------------------------------------------'
-      MPI_master_only WRITE(iscreenlog,*)'lecture fichier obs moyennes quizaines pour mes-sat  '
-      MPI_master_only WRITE(iscreenlog,*)'     donnees en g.l-1', TRIM(filemessat_obs)
-    ENDIF_MPI
+     IF_MPI (MASTER) THEN
 
-    CALL ionc4_openr(filemessat_obs)
-    idimt_messat_obs=ionc4_read_dimt(filemessat_obs)
-!   idimt_messat=26*6  !attention entree en dur de la taille du fichier- a modif
-    ALLOCATE(messat_obs(limin:limax,ljmin:ljmax,idimt_messat_obs))
-    ALLOCATE(t_obs_messat(idimt_messat_obs))
-#if defined key_MANGAbio
-   ! include time lag if time origine is not 01/01/1900 in file
+       MPI_master_only WRITE(iscreenlog,*)'------------------------------------------------'
+       MPI_master_only WRITE(iscreenlog,*)'lecture fichier obs moyennes quizaines pour mes-sat  '
+       MPI_master_only WRITE(iscreenlog,*)'     donnees en g.l-1', TRIM(filemessat_obs)
+
+     ENDIF_MPI
+
+     CALL ionc4_openr(filemessat_obs)
+     idimt_messat_obs=ionc4_read_dimt(filemessat_obs)
+     ALLOCATE(messat_obs(limin:limax,ljmin:ljmax,idimt_messat_obs))
+     ALLOCATE(t_obs_messat(idimt_messat_obs))
+#  if defined key_MANGAbio
+
     torigin=tool_datosec('01/01/1900 00:00:00')-tool_datosec('01/01/1998 00:00:00')
-#endif
+
+#  endif /* key_MANGAbio */
 
     DO it=1,idimt_messat_obs
+
       CALL ionc4_read_time(filemessat_obs,it,t_obs_messat(it))
+
     END DO
+
     t_obs_messat(:)=t_obs_messat(:)-torigin
+
     MPI_master_only WRITE(*,*)'tobd_messat debut et fin=',t_obs_messat(1),t_obs_messat(idimt_messat_obs)
 
-    !!reading
     DO it=1,idimt_messat_obs
+
       CALL ionc4_read_xyt(filemessat_obs,'MES_SAT',tab_mes,imin,imax,jmin,jmax,it)
-!     CALL ionc4_read_xyt(filemessat_clim,'MES_SAT',tab_mes,limin,limax,ljmin,ljmax,it)
-     DO j=jfirst,jlast
-#ifdef key_MARS
+      DO j=jfirst,jlast
+
+#  if defined key_MARS
+
        DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
+
+#  else
+
        DO i=ifirst,ilast
-#endif
+
+#  endif /* key_MARS */
 
          IF(h0(i,j).GT.-valmanq) THEN
-            IF (tab_mes(i,j).LT.valmanq) THEN
+
+           IF (tab_mes(i,j).LT.valmanq) THEN
+
              messat_obs(i,j,it)=tab_mes(i,j)
+
              IF(messat_obs(i,j,it) .LT. 0.0_rsh) THEN
-              MPI_master_only WRITE(iscreenlog,*)'pb messat_obs maille ',i,j,it,messat_obs(i,j,it)
+
+               MPI_master_only WRITE(iscreenlog,*)'pb messat_obs maille ',i,j,it,messat_obs(i,j,it)
+ 
              END IF
-            ELSE
+
+           ELSE
+
              MPI_master_only WRITE(iscreenlog,*)'pas de MES climato en ',i,j,it,tab_mes(i,j)
-            END IF
-          END IF
+
+           END IF
+
+         END IF
+
        END DO
-      END DO
-      MPI_master_only WRITE(iscreenlog,*) t_obs_messat(it)
+
+     END DO
+
+       MPI_master_only WRITE(iscreenlog,*) t_obs_messat(it)
+
     END DO
 
     CALL ionc4_close(filemessat_obs)
@@ -2892,160 +3008,214 @@ OMPMPI flush(cv_wat)
     it=1
     idateinf_messat=1
     tbid=CURRENT_TIME
+
     IF (l_initfromfile .and. l_init_rtime) then
+
        CALL ionc4_openr(file_init)
        CALL ionc4_read_time(file_init,1,tbid)
        CALL ionc4_close(file_init)
+
     END IF
+
     date_start=tool_sectodat(tbid)
     MPI_master_only WRITE(iscreenlog,*)'date_start=',date_start
+
     IF (tbid .LE. t_obs_messat(1)) THEN
-       IF_MPI (MASTER) THEN
-          MPI_master_only WRITE(ierrorlog,*)'la date de depart est anterieure a la premiere date du fichier messat'
-          CALL_MPI MPI_FINALIZE(IERR_MPI)
-         STOP
+
+      IF_MPI (MASTER) THEN
+
+        MPI_master_only WRITE(ierrorlog,*)'la date de depart est anterieure a la premiere date du fichier messat'
+        CALL_MPI MPI_FINALIZE(IERR_MPI)
+        STOP
+
        ENDIF_MPI
+
     ELSE
-       DO WHILE ((it .LT. idimt_messat_obs) .AND.(t_obs_messat(it+1) .LT. tbid))
+
+      DO WHILE ((it .LT. idimt_messat_obs) .AND.(t_obs_messat(it+1) .LT. tbid))
+
           it=it+1
           idateinf_messat=it
-       END DO
-       IF (idateinf_messat .EQ. idimt_messat_obs) THEN
-         IF_MPI (MASTER) THEN
-            MPI_master_only WRITE(ierrorlog,*)'la date de depart est posterieure a la derniere date du fichier messat'    
-            CALL_MPI MPI_FINALIZE(IERR_MPI)
-            STOP
-         ENDIF_MPI
-       ELSE
+
+      END DO
+
+      IF (idateinf_messat .EQ. idimt_messat_obs) THEN
+
+        IF_MPI (MASTER) THEN
+
+          MPI_master_only WRITE(ierrorlog,*)'la date de depart est posterieure a la derniere date du fichier messat'    
+          CALL_MPI MPI_FINALIZE(IERR_MPI)
+          STOP
+
+        ENDIF_MPI
+
+      ELSE
+
          idatesup_messat=idateinf_messat+1
-       END IF
+
+      END IF
+
     END IF
    
     IF_MPI (MASTER) THEN
-     MPI_master_only WRITE(iscreenlog,*) 'Fin de lecture fichier observation quinzaine satellite MES'
-     MPI_master_only WRITE(iscreenlog,*) it,' champs MES lus'
-     MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', idateinf_messat,' et ',idatesup_messat
-     MPI_master_only WRITE(iscreenlog,*) 'date du run  = ',tbid
-     MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', t_obs_messat(idateinf_messat),' et ',t_obs_messat(idatesup_messat)
-     MPI_master_only WRITE(iscreenlog,*)'----------------------------------------------------'
-     MPI_master_only WRITE(iscreenlog,*)''
-     MPI_master_only WRITE(iscreenlog,*) 'date du run  = ',tbid
-     MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', idateinf_messat,' et ',idatesup_messat
-     MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', t_obs_messat(idateinf_messat),' et ',t_obs_messat(idatesup_messat)
+
+      MPI_master_only WRITE(iscreenlog,*) 'Fin de lecture fichier observation quinzaine satellite MES'
+      MPI_master_only WRITE(iscreenlog,*) it,' champs MES lus'
+      MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', idateinf_messat,' et ',idatesup_messat
+      MPI_master_only WRITE(iscreenlog,*) 'date du run  = ',tbid
+      MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', t_obs_messat(idateinf_messat),' et ',t_obs_messat(idatesup_messat)
+      MPI_master_only WRITE(iscreenlog,*)'----------------------------------------------------'
+      MPI_master_only WRITE(iscreenlog,*)''
+      MPI_master_only WRITE(iscreenlog,*) 'date du run  = ',tbid
+      MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', idateinf_messat,' et ',idatesup_messat
+      MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', t_obs_messat(idateinf_messat),' et ',t_obs_messat(idatesup_messat)
+
     ENDIF_MPI
 
-   END IF !endif sur l_messat_obs
-#endif
+  END IF !endif sur l_messat_obs
 
+      !******************* Evaluation of spm at time t *********************!
 
   ELSE IF (icall == 1) THEN
-     !!  during run :: evaluation of SPM a time t
 
-           ! ==================================================================
-           ! calcul du facteur d interpolation des MES lues dans fichiers de donnees satellitales
-           ! ==================================================================
+      !***************** Interpolation factor computation ******************!
 
-   IF (l_messat_clim) THEN
+    IF (l_messat_clim) THEN
 
-     IF (date_s_annee_messat .NE. jjulien_BIOLINK*24*60*60) THEN ! Definit des dates inf et sup pour l interp
+      IF (date_s_annee_messat .NE. jjulien_BIOLINK*24*60*60) THEN ! Definit des dates inf et sup pour l interp
+ 
         date_s_annee_messat= jjulien_BIOLINK*24*60*60              ! de la climato
+
         IF (idateinf_messat .LT. idatesup_messat) THEN
+
           IF (date_s_annee_messat .GT. INT(t_clim_messat(idatesup_messat))) THEN
+
             idateinf_messat=idatesup_messat
+
             IF (idatesup_messat .NE. idimt_messat) THEN
+
               idatesup_messat=idatesup_messat+1
+
             ELSE
+
               idatesup_messat=1
+
             END IF
+
           END IF
+
         ELSE
+
           IF ((date_s_annee_messat .GT. INT(t_clim_messat(idatesup_messat))) .AND.   &
                (date_s_annee_messat .LT. INT(t_clim_messat(idateinf_messat)))) THEN
+
              idateinf_messat=1
              idatesup_messat=idatesup_messat+1
           END IF
-        END IF
 
-!        MPI_master_only WRITE(iscreenlog,*) 'Simul a la date',date_s_annee_messat,jjulien_BIOLINK,imois_BIOLINK,ijour_BIOLINK
-!        MPI_master_only WRITE(iscreenlog,*) 'interpolation entre ',idateinf_messat,'et',idatesup_messat
-!        MPI_master_only WRITE(iscreenlog,*) 'soit, en s, entre ',INT(t_clim_messat(idateinf_messat)), &
-!                               ' et ',INT(t_clim_messat(idatesup_messat))
+        END IF
 
      END IF !endif on date_s_annee_messat
 
      IF (idatesup_messat .GT. idateinf_messat)  THEN
+
          interp= (date_s_annee_messat -t_clim_messat(idateinf_messat))/        &
                  (t_clim_messat(idatesup_messat)-t_clim_messat(idateinf_messat))
+
      ELSE
+
         IF (date_s_annee_messat .GE. INT(t_clim_messat(idateinf_messat))) THEN
+
            interp= (date_s_annee_messat-t_clim_messat(idateinf_messat))/&
                   ((366*24*60*60+t_clim_messat(idatesup_messat))-t_clim_messat(idateinf_messat))
+
         ELSE
+
            interp=(date_s_annee_messat+366*24*60*60-t_clim_messat(idateinf_messat))/ &
                   ((366*24*60*60+t_clim_messat(idatesup_messat))-t_clim_messat(idateinf_messat))
+
         END IF
+
      END IF
 
    END IF  !endif on l_messat_clim
 
    IF (l_messat_obs) THEN
-!       file_mes_obs_path=TRIM(filemessat_obs)//'/'//CHAR(ian)//'/'//    &
-!                         CHAR(ian)//CHAR(imois)//CHAR(ijour)//'.nc'
-      IF (t .GT. t_obs_messat(idatesup_messat)) THEN
-          idateinf_messat=idatesup_messat
-          IF (idatesup_messat .NE. idimt_messat_obs) THEN
-              idatesup_messat=idatesup_messat+1
-          ELSE
-              MPI_master_only WRITE(*,*)'derniere date du fichier messat depassee'
-              stop
-          END IF
-      END IF
-!   MPI_master_only WRITE(iscreenlog,*) 'date du run  = ',t
-!   MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', idateinf_messat,' et ',idatesup_messat
-!   MPI_master_only WRITE(iscreenlog,*) ' champs MES interp entre', t_obs_messat(idateinf_messat),' et ',t_obs_messat(idatesup_messat)
-      IF (idatesup_messat .GT. idateinf_messat)  THEN
+
+     IF (t .GT. t_obs_messat(idatesup_messat)) THEN
+
+       idateinf_messat=idatesup_messat
+
+       IF (idatesup_messat .NE. idimt_messat_obs) THEN
+
+         idatesup_messat=idatesup_messat+1
+
+       ELSE
+
+         MPI_master_only WRITE(*,*)'derniere date du fichier messat depassee'
+
+         STOP
+
+       END IF
+
+     END IF
+
+     IF (idatesup_messat .GT. idateinf_messat)  THEN
+
         interp= (t -t_obs_messat(idateinf_messat))/        &
                  (t_obs_messat(idatesup_messat)-t_obs_messat(idateinf_messat))
-      END IF
+
+     END IF
        
    END IF
 
 !$OMP DO SCHEDULE(RUNTIME)
+
      DO j=jfirst,jlast
-#ifdef key_MARS
+
+#  if defined key_MARS
+
        DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
+
+#  else
+
        DO i=ifirst,ilast
-#endif
+#  endif /* key_MARS */
+
          IF (TOTAL_WATER_HEIGHT .LE. RESIDUAL_THICKNESS_WAT) THEN
+
             forcSPM(i,j)=valmanq
+
          ELSE
 
-            ! calcul du forcage MES par donnees satellitales
-            ! -----------------------------------------------
-            IF (l_messat_obs) THEN
+           IF (l_messat_obs) THEN
+
                forcSPM(i,j)=messat_obs(i,j,idateinf_messat)+                                &
                (messat_obs(i,j,idatesup_messat)-messat_obs(i,j,idateinf_messat))*interp
 
-            END IF !endifon l_messat_obs
+           END IF !endifon l_messat_obs
 
-            IF (l_messat_clim) THEN
-              forcSPM(i,j)=messat(i,j,idateinf_messat)+                                &
+           IF (l_messat_clim) THEN
+
+             forcSPM(i,j)=messat(i,j,idateinf_messat)+                                &
                  (messat(i,j,idatesup_messat)-messat(i,j,idateinf_messat))*interp
 
-            END IF  !endif on l_messat_clim
-         END IF  !endif on htot
+           ENDIF  !endif on l_messat_clim
+
+         ENDIF  !endif on htot
+
         END DO
+
       END DO
 !$OMP END DO
   
-  ENDIF
+  ENDIF ! icall
 
    END SUBROUTINE BIOLink_SPMsat_file
-#endif
-   !!======================================================================
 
-#endif
+#endif /* key_messat */
+
+#endif /* BIOLink */
 
 END MODULE coupleur_BIOLink
 
