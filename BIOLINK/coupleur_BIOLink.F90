@@ -67,7 +67,9 @@
 #endif /* key_MARS */
 
    USE comBIOLink     ! Common variables of the BIOLink coupler
+
    USE comBIOLink_helping ! Variables for the helping functions of BIOLink
+
    USE comBIOLink_physics ! Variables for the physics of BIOLink
 
    USE coupleur_BIOLink_helping ! For the helping functions of BIOLink
