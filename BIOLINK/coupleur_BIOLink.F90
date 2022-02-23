@@ -994,11 +994,11 @@
 
             IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
 
-               kmaxmod=1
+              kmaxmod=1
 
             ELSE
  
-               kmaxmod=NB_LAYER_WAT
+              kmaxmod=NB_LAYER_WAT
 
             ENDIF
 
