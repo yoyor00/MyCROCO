@@ -155,7 +155,8 @@ include Makedefs
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
         comsubstance.F90        substance.F90\
         bloom_initdefine.F90 bloom.F90\
-        tooljulien.F90 comBIOLink.F90 coupleur_BIOLink_helping.F90 coupleur_BIOLink.F90 \
+        tooljulien.F90 comBIOLink.F90\
+        coupleur_BIOLink_physics.F90 coupleur_BIOLink_helping.F90 coupleur_BIOLink.F90 \
         comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
         sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 

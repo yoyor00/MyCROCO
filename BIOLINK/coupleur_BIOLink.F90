@@ -26,13 +26,11 @@
    !&E                                          BIO modules  - routine called 
    !&E                                          by main 
    !&E                                                                        
+   !&E     subroutine BIOLink_alloc            ! Allocates different tables 
+   !&E                                           used by BIOLink 
    !&E     subroutine BIOLink_update           ! evaluation of sinks and sources 
    !&E                                          terms  - routine called by step
    !&E                
-   !&E     subroutine BIOLink_water_column     ! evaluation of total water height and 
-   !&E                                          vertical meshes thickness - 
-   !&E                                          called by BIOLink_update
-   !&E
    !&E     subroutine BIOLink_convarray        ! conversion of 3D or 4D array from 
    !&E                                           hydro model to BIOLink - 
    !&E                                           called by BIOLink_update
@@ -70,6 +68,10 @@
 
    USE comBIOLink     ! Common variables of the BIOLink coupler
 
+   USE coupleur_BIOLink_helping ! For the helping functions of BIOLink
+
+   USE coupleur_BIOLink_physics ! For the physics related functions of 
+                                ! BIOLink
 #if defined MUSTANG
    USE comMUSTANG ,  ONLY : htot ! Height of the water column
 #endif /*MUSTANG*/
@@ -97,6 +99,7 @@
     PUBLIC BIOLink_init           ! Initialization of some of BIOLink tables 
                                   ! - called by main
                                                                            
+    PUBLIC BIOLink_alloc          ! Allocation of different tables
     PUBLIC BIOLink_update         ! Update of BIOLink and biology model variables
                                   ! - called by main
 
@@ -104,10 +107,6 @@
     PUBLIC BIOLink_exchgMPI_cvwat ! I do not know
 #endif
 
-#if defined key_nosubstmodule
-    PUBLIC BIOLink_substance      ! Declaration of the characteristics of the tracers
-                                  ! If the module substance is not declared
-#endif
 
 !*****************************************************************************************!
 !                                                                                         !
@@ -456,6 +455,250 @@
 
   END SUBROUTINE BIOLink_init
 
+  !!======================================================================
+  SUBROUTINE BIOLink_alloc()
+
+  !&E---------------------------------------------------------------------
+  !&E                 ***  ROUTINE BIOLink_alloc ***
+  !&E
+  !&E ** Purpose : allocation of common variables tables. Those variables 
+  !&E              were declared earlier but their dimensions depends on 
+  !&E              the reading of some parametrization files that are read  
+  !&E              later in the CROCO model. Once those files are read, we 
+  !&E              can allocate the tables their final shapes.
+  !&E                            
+  !&E
+  !&E ** Description : The entire function consist of a succession of 
+  !&E                  memory allocation followed by value initialization 
+  !&E                  of the tables to dummy values.
+  !&E
+  !&E ** Called by : coupleur_BIOLink in the second call of the subroutine 
+  !&E                   "BIOLink_initialization"
+  !&E
+  !&E ** External calls :  All the tables are declared as public and 
+  !&E                      therefore are accessible even if they are not
+  !&E                      given as argument of the subroutine. 
+  !&E
+  !&E ** Reference : None
+  !&E
+  !&E ** History : Not sure. Probably created by B. Thouvenin.
+  !&E
+  !&E---------------------------------------------------------------------      
+
+     !*************************************************************************!
+     !*************************************************************************!
+     !****************** Variables for the biological or **********************!
+     !*********************** chemical model **********************************!
+     !*************************************************************************!
+     !*************************************************************************!
+
+     !===================================================================
+     ! Table of positive concentrations for tracer variables
+     !===================================================================
+
+#  if ! defined ECO3M  
+      ALLOCATE(WATCONCPOS(nv_adv,NB_LAYER_WAT,PROC_IN_ARRAY))
+      WATCONCPOS(:,:,:,:)=0.0_rsh
+#  endif /* ECO3M */
+
+     !===================================================================
+     ! Table of positive concentrations for fixed variables
+     !===================================================================
+
+      ALLOCATE(FIXCONCPOS(nv_fix,NB_LAYER_WAT,PROC_IN_ARRAY))
+      FIXCONCPOS(:,:,:,:)=0.0_rsh
+
+     !===================================================================
+     ! Table of positive concentrations for benthic variables
+     !===================================================================
+
+#  ifdef key_benthic
+      ALLOCATE(BENTCONCPOS(nv_bent,PROC_IN_ARRAY))
+      BENTCONCPOS(:,:,:,:)=0.0_rsh
+#  endif /* key_benthic */ 
+
+     !===================================================================
+     ! Table of source and sink terms for tracer variables
+     !===================================================================
+
+      ALLOCATE( BIO_SINKSOURCES(ARRAY_SINKSOURCES))
+      BIO_SINKSOURCES(:,:,:,:)=0.0_rsh
+
+     !===================================================================
+     ! Table of sink and source terms for fixed variables
+     !===================================================================
+
+      ALLOCATE(BIO_SKSC_FIX (ARRAY_FIXED_SKSC))
+      BIO_SKSC_FIX (:,:,:,:)=0.0_rsh
+
+     !*************************************************************************!
+     !*************************************************************************!
+     !******************** Variables from the hydro model *********************!
+     !*************************************************************************!
+     !*************************************************************************! 
+
+     !====================================================================
+     ! Height of the water column tables
+     !====================================================================
+
+#  if ! defined MUSTANG
+        ALLOCATE( TOTAL_WATER_HEIGHT(PROC_IN_ARRAY_m2p2))
+#  endif /* MUSTANG */
+        
+        ALLOCATE( THICKLAYERWC(NB_LAYER_WAT,PROC_IN_ARRAY))
+        THICKLAYERWC(:,:,:)=0.0_rsh
+        
+        ALLOCATE( THICKLAYERWW(NB_LAYER_WAT,PROC_IN_ARRAY))
+        THICKLAYERWW(:,:,:)=0.0_rsh
+
+     !=====================================================================
+     !  Temperature and salinity variables
+     !=====================================================================
+
+      ALLOCATE( TEMP_BIOLink(NB_LAYER_WAT,PROC_IN_ARRAY))
+      TEMP_BIOLink(:,:,:)=0.0_rsh
+
+      ALLOCATE( SAL_BIOLink(NB_LAYER_WAT,PROC_IN_ARRAY))
+      SAL_BIOLink(:,:,:)=0.0_rsh
+
+     !=====================================================================
+     !  Bottom current variables
+     !=====================================================================
+
+#  if defined BLOOM && defined key_benthos
+      ALLOCATE(BOTTCURRENTBIO(PROC_IN_ARRAY)) 
+#  endif /* BLOOM && key_benthos */
+
+
+     !*************************************************************************!
+     !*************************************************************************!
+     !*************** Tables for the model helping routines ****************!
+     !********************* Or sediment model *********************************!
+     !*************************************************************************!
+     !*************************************************************************!
+
+     !=====================================================================
+     !  Sinking velocity of tracers tables
+     !=====================================================================
+
+      ALLOCATE( WS_BIOLink(NB_LAYER_WAT,nv_adv,PROC_IN_ARRAY))
+      WS_BIOLink(:,:,:,:)=0.0_rsh
+
+     !=====================================================================
+     !  Radiation tables
+     !=====================================================================
+
+     ! Photosynthetic available radiations
+
+#  if defined  BIOLink_PAR_eval
+      ALLOCATE( PAR_top_layer(0:NB_LAYER_WAT,PROC_IN_ARRAY) )
+      PAR_top_layer(:,:,:)=0.0_rsh
+
+#    if defined PEPTIC
+      ALLOCATE( PAR_avg_layer_phyto(1,NB_LAYER_WAT,PROC_IN_ARRAY) )
+      PAR_top_layer_day(:,:,:)=0.0_rsh
+      ALLOCATE( PAR_top_layer_day(NB_LAYER_WAT,PROC_IN_ARRAY))
+      PAR_avg_layer_phyto(1,:,:,:)=0.0_rsh
+
+#    elif defined METeOR
+      ALLOCATE( Flimrad_layer(0:NB_LAYER_WAT,PROC_IN_ARRAY) )
+
+#    endif /* PEPTIC/METEOR */
+#  endif /* BIOLink_PAR_eval */
+
+     ! Extinction and attenuation
+
+#  if defined  BIOLink_PAR_eval
+      ALLOCATE( EXTINCTION_RAD(NB_LAYER_WAT,PROC_IN_ARRAY) )
+      EXTINCTION_RAD(:,:,:)=0.0_rsh
+#  endif /* BIOLink_PAR_eval */
+
+#  if defined BLOOM
+      ALLOCATE(extinction_ave4d(NB_LAYER_WAT,PROC_IN_ARRAY))
+      extinction_ave4d(:,:,:)=0.0_rsh
+      ALLOCATE(extinction_aveh(NB_LAYER_WAT,PROC_IN_ARRAY))
+      extinction_aveh(:,:,:)=0.0_rsh
+      ALLOCATE(extinction_tab(4,24,NB_LAYER_WAT,PROC_IN_ARRAY))
+      extinction_tab(:,:,:,:,:)=0.0_rsh
+      t_cum_extinctionh=0.0_rsh
+      ihour_previous=0
+
+#  endif /* BLOOM */
+
+     ! Variables that affect the extinction
+ 
+      ALLOCATE( SPMTOT_MGL(NB_LAYER_WAT,PROC_IN_ARRAY))
+      SPMTOT_MGL(:,:,:)=0.0_rsh
+
+#  if defined  BIOLink_PAR_eval
+      ALLOCATE( BIOLink_chloro(NB_LAYER_WAT,PROC_IN_ARRAY) )  
+      BIOLink_chloro(:,:,:)=0.0_rsh
+#  endif /* BIOLink_PAR_eval */
+
+#  if defined BLOOM
+
+      ALLOCATE( effetlumiere_day_diat(NB_LAYER_WAT,PROC_IN_ARRAY) )
+      effetlumiere_day_diat(:,:,:)=0.0_rsh
+      ALLOCATE( effetlumiere_day_dino(NB_LAYER_WAT,PROC_IN_ARRAY) )
+      effetlumiere_day_dino(:,:,:)=0.0_rsh
+      ALLOCATE( effetlumiere_day_nano(NB_LAYER_WAT,PROC_IN_ARRAY) )
+      effetlumiere_day_nano(:,:,:)=0.0_rsh
+
+#    ifdef key_karenia
+      ALLOCATE( effetlumiere_day_karenia(NB_LAYER_WAT,PROC_IN_ARRAY) )
+      effetlumiere_day_karenia(:,:,:)=0.0_rsh
+#    endif /* key_karenia */
+
+#    ifdef key_psnz
+      ALLOCATE( effetlumiere_day_psnz(NB_LAYER_WAT,PROC_IN_ARRAY) )
+      effetlumiere_day_psnz(:,:,:)=0.0_rsh
+#    endif /* key_psnz */
+
+#    ifdef key_phaeocystis
+      ALLOCATE( effetlumiere_day_phaeocystis(NB_LAYER_WAT,PROC_IN_ARRAY) )
+      effetlumiere_day_phaeocystis(:,:,:)=0.0_rsh
+#    endif /* key_phaeocystis */
+
+#  endif /* BLOOM */
+
+     !=====================================================================
+     !  Wind variables
+     !=====================================================================
+
+#  if ! defined BULK_FLUX
+      ALLOCATE( WIND_SPEED(PROC_IN_ARRAY))
+      WIND_SPEED(:,:)=0.0_rsh
+#  endif /* BULK_FLUX */
+
+     !=====================================================================
+     !  Estimation of the suspended matter via satellite
+     !=====================================================================
+
+#  ifdef key_messat
+      ALLOCATE(messat(PROC_IN_ARRAY,51))
+      messat(:,:,:)=0.0_rsh
+#  endif /* key_messat */
+
+     !=====================================================================
+     !  Oyster related variables
+     !=====================================================================
+
+#  if defined BLOOM
+#    ifdef key_oyster_SFG
+      ALLOCATE(tpostpontecoq(PROC_IN_ARRAY))
+      ALLOCATE(tpostpontegam(PROC_IN_ARRAY))
+#    endif /* key_oyster_SFG */
+
+#    if defined key_oyster_benthos || defined key_oyster_DEB || defined key_oyster_SFG
+      ALLOCATE(nbhuitre(PROC_IN_ARRAY))
+      hautable(:,:)=0.0_rsh
+      ALLOCATE(hautable(PROC_IN_ARRAY))
+      nbhuitre(:,:)=0.0_rsh
+#    endif /* key_oyster_benthos */
+#  endif /* BLOOM */
+
+
+END SUBROUTINE  BIOLink_alloc
 
   SUBROUTINE BIOLink_update(ifirst,ilast,jfirst,jlast   &
 #if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
@@ -879,157 +1122,6 @@
 
   END SUBROUTINE BIOLink_update
 
-  SUBROUTINE BIOLink_water_column(ifirst,ilast,jfirst,jlast)
-
-  !&E---------------------------------------------------------------------
-  !&E                 ***  ROUTINE BIOLink_water_column ***
-  !&E
-  !&E ** Purpose : Computation of total water thickness and thickness of 
-  !&E              each vertical layer
-  !&E
-  !&E ** Description : We read the depth and water elevation from the 
-  !&E                  hydro model and use it to compute the total water
-  !&E                  thickness. Then we use the difference of height
-  !&E                  of each cell to compute the thickness of each cell
-  !&E
-  !&E ** Called by : BIOLink_update
-  !&E
-  !&E ** External calls : limitation of the subgrid given by MPI ifirst,
-  !&E                     ilast, jfirst and jlast
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History : Creation by B. Thouvenin ( date unknown)
-  !&E              Commenting by G. Koenig ( february 2022)
-  !&E
-  !&E---------------------------------------------------------------------
-
-     !====================================================================
-     ! Routines from external models
-     !====================================================================
-
-#if defined key_MARS
-
-   USE toolgeom,     ONLY : f_dzu,f_dzw
-   USE comvars2d,    ONLY : ig,id,jb,jh,hm
-
-#endif /* key_MARS */
-
-     !====================================================================
-     ! External arguments
-     !====================================================================
-
-   INTEGER, INTENT(IN)      :: ifirst,ilast,jfirst,jlast
- 
-     !====================================================================
-     ! Local declarations of variables
-     !====================================================================
-
-   INTEGER                  :: i,j,k,kmaxmod
-
-    
-     !====================================================================
-     ! Execution of the function
-     !====================================================================
-
-      !******************* Water height computation ************************!
-
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod)
-
-   DO j=jfirst,jlast ! The loop is on the entire meridional direction
-
-#if defined key_MARS
-
-      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1) ! I do not know
-
-        IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1) THEN
-#else
-
-      DO i=ifirst,ilast ! And on the entire zonal direction
-
-#endif /* key_MARS */
-
-#if ! defined MUSTANG
-
-#  if defined key_MARS
-
-          TOTAL_WATER_HEIGHT(i,j)=BATHY_H0(i,j)+                 & ! The to
-                                  WATER_ELEVATION(i,j) ! tal water thickness 
-                                                       ! is computed from 
-                                                       ! the depth
-          
-#  else
-
-           TOTAL_WATER_HEIGHT(i,j)=z_w(i,j,N)+h(i,j) ! The total water 
-                                                     ! thickness is computed
-                                                     ! from the top of the 
-                                                     ! last vertical layer
-
-
-#  endif /* key_MARS */
-
-#endif /* MUSTANG */
-
-#if defined key_MARS
-
-            IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
-
-              kmaxmod=1
-
-            ELSE
- 
-              kmaxmod=NB_LAYER_WAT
-
-            ENDIF
-
-            IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
-
-                THICKLAYERWC(1,i,j)=TOTAL_WATER_HEIGHT(i,j)
-                THICKLAYERWW(1,i,j)=TOTAL_WATER_HEIGHT(i,j)*0.5_rsh
-                THICKLAYERWC(2:NB_LAYER_WAT,i,j)=0.0_rsh
-                THICKLAYERWW(2:NB_LAYER_WAT,i,j)=THICKLAYERWW(1,i,j)
-
-            ELSE
-
-              DO k=1,kmaxmod          
-
-                THICKLAYERWC(k,i,j)=f_dzu(BATHY_H0(i,j),WATER_ELEVATION(i,j),k,i,j)
-                THICKLAYERWW(k,i,j)=f_dzw(BATHY_H0(i,j),WATER_ELEVATION(i,j),k,i,j)
-
-              ENDDO
-
-            ENDIF
-
-        ENDIF
-
-#else
-
-          DO k=1,NB_LAYER_WAT-1          
-
-                THICKLAYERWC(k,i,j)=z_w(i,j,k)-z_w(i,j,k-1) ! The thickness
-                THICKLAYERWW(k,i,j)=z_r(i,j,k+1)-z_r(i,j,k) ! of each cell
-                                                            ! is computed by
-                                                            ! the height 
-                                                            ! difference of 
-                                                            ! the cells,
-                                                            ! both from top
-                                                            ! and center
-
-          ENDDO
-
-          k=NB_LAYER_WAT ! Last layer
-          THICKLAYERWC(k,i,j)=z_w(i,j,k)-z_w(i,j,k-1)
-          THICKLAYERWW(k,i,j)=0._rsh
-
-#endif /* key_MARS */
-
-      ENDDO
-   ENDDO
-!$OMP END DO
-
- 
-  END SUBROUTINE  BIOLink_water_column
-
   SUBROUTINE BIOLink_convarray(ifirst,ilast,jfirst,jlast  &
 #if defined key_nosubstmodule
                   ,WAT_SETTL                                     &
@@ -1242,598 +1334,6 @@
 
     !!============================================================================== 
  
-  SUBROUTINE BIOLink_read_vardiag
-
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE BIOLink_read_vardiag  ***
-   !&E
-   !&E ** Purpose : Reading of the file describing the diagnostic variables
-   !&E
-   !&E ** Description :
-   !&E
-   !&E ** Called by : BIOLink_update
-   !&E
-   !&E ** External calls : bloom_init_id,bloom_create_var_diagtracer 
-   !&E                     from bloom_initdefine
-   !&E                     nb_var_tracerN,nb_var_tracerP from parameters
-   !&E                    
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2019-08 (B. Thouvenin) issued from sub_read_vardiag 
-   !&E       !  2022-02 (G. Koenig) commenting 
-   !&E
-   !&E---------------------------------------------------------------------
-
-     !====================================================================
-     ! Routines from external models
-     !====================================================================
-
-#if defined BLOOM
-
-   USE bloom_initdefine, ONLY : bloom_init_id
-
-#  if defined key_N_tracer
-
-#    if defined key_MARS
-
-   USE parameters, ONLY : nb_var_tracerN 
-
-#    endif /* key_MARS */
-
-   USE bloom_initdefine, ONLY : bloom_create_vardiagtracer
-
-#  endif /* key_N_tracer */
-
-#  if defined key_P_tracer
-
-#    if defined key_MARS 
-
-   USE parameters, ONLY : nb_var_tracerP 
-
-#    endif /* key_MARS */
-
-   USE bloom_initdefine, ONLY : bloom_create_vardiagtracer
-
-#  endif /* key_P_tracer */
-
-#endif /* BLOOM */
-
-     !====================================================================
-     ! Local declarations of variables
-     !====================================================================
-
-   LOGICAL               :: ex,l_diag_wat,l_diag_sed
-   INTEGER               :: eof,isubs,isubs_r,dimvar,it,ind_white,IERR_MPI
-   CHARACTER(LEN=lchain) :: namvar_r,long_name_var_r,standard_name_var_r,unitvar_r
-   CHARACTER(LEN=5)      :: comment
-
-#if defined key_N_tracer || defined key_P_tracer
-
-   INTEGER               :: is,id,ivtra
-
-#endif /* key_N_tracer || key_P_tracer */
-
-     !====================================================================
-     ! Execution of the function
-     !====================================================================
-
-      !********************** Saving into simu.log *************************!
-
-   IF_MPI (MASTER) THEN
-     MPI_master_only WRITE(iscreenlog,*) ' '
-     MPI_master_only WRITE(iscreenlog,*) ' '
-     MPI_master_only WRITE(iscreenlog,*) ' '
-     MPI_master_only WRITE(iscreenlog,*) '**************************************************'
-     MPI_master_only WRITE(iscreenlog,*) '**************** VAR_READ_DIAG.F90 ***************'
-     MPI_master_only WRITE(iscreenlog,*) '**************************************************'
-     MPI_master_only WRITE(iscreenlog,*) ' '
-     MPI_master_only WRITE(iscreenlog,*) 'file defining usefull diagnostic variables : ',TRIM(filevardiag)
-
-   ENDIF_MPI
-
-      ! Initialize number of diagnostic variables according to their dimensions
-      ndiag_1d = 0
-      ndiag_2d = 0
-      ndiag_3d = 0
-      ndiag_3d_wat = 0
-      ndiag_3d_sed = 0
-      ndiag_2d_sed = 0
-      ndiag_tot = 0
-      isubs = 0
-      l_out_subs_diag=.false.  ! no saving of diagnoses variable by default
-
-#if defined MUSTANG
-
-      l_out_subs_diag_sed=.false.  ! no saving of diagnoses variable by default
-
-#endif /* MUSTANG */
-
-      ! read total number of diagnostic variables
-
-      eof = 0
-
-      INQUIRE(file=filevardiag,exist=ex)
-
-      IF (ex) THEN
-        
-        OPEN(49,file = filevardiag,form='formatted')
-     
-        comment='debut'
-       
-        DO
-
-          READ(49,'(a)',iostat=eof) comment
-
-          IF (comment.EQ.'*****') EXIT
-
-        END DO
-
-        DO WHILE(eof==0)
-
-          READ(49,*,iostat=eof) ! variable number
-          READ(49,'(a)',iostat=eof) ! variable name
-          READ(49,'(a)',iostat=eof) !variable long_name
-          READ(49,'(a)',iostat=eof) !variable standard_name
-          READ(49,'(a)',iostat=eof) !unit
-          READ(49,*,iostat=eof)     !variable valid_min value
-          READ(49,*,iostat=eof)     !variable valid_max value
-          READ(49,*,iostat=eof)     !dimension (1=1D ; 2=2D ; 3=3D)
-          READ(49,*,iostat=eof)     !variable in water    (k,i,j)
-          READ(49,*,iostat=eof)     !variable in sediment (i,j,k)
-          READ(49,*,iostat=eof)     !saving in file
-
-          IF (eof==0) ndiag_tot=ndiag_tot+1
-            READ(49,'(a)',iostat=eof)
-
-        END DO
-
-     CLOSE(49)
-
-#if defined BLOOM
-
-#  if defined key_N_tracer
-
-       ndiag_tracerN=0
-
-       DO is=1,nb_source_tracerN
-
-            ndiag_tot=ndiag_tot+nb_var_tracerN+1
-            ndiag_tracerN=ndiag_tracerN+nb_var_tracerN+1
-
-#    if defined key_age_tracer
-
-            ndiag_tot=ndiag_tot+nb_var_tracerN+1
-            ndiag_tracerN=ndiag_tracerN+nb_var_tracerN+1
-
-#    endif /* key_age_tracer */
-
-       END DO ! is
-
-#  endif /* key_N_tracer */
-
-#  if defined key_P_tracer
-
-       ndiag_tracerP=0
-
-       DO is=1,nb_source_tracerP
-
-            ndiag_tot=ndiag_tot+nb_var_tracerP+1
-            ndiag_tracerP=ndiag_tracerP+nb_var_tracerP+1
-
-#    if defined key_age_tracer
-
-            ndiag_tot=ndiag_tot+nb_var_tracerP+1
-            ndiag_tracerP=ndiag_tracerP+nb_var_tracerP+1
-
-#    endif /* key_age_tracer */
-
-       END DO ! is
-
-#  endif / key_P_tracer */
-
-#endif /* BLOOM */
-
-     IF_MPI (MASTER) THEN
-
-        MPI_master_only WRITE(iscreenlog,*) 'Number of diagnostic variables = ',ndiag_tot
-
-     ENDIF_MPI
-
-   ! allocate arrays for diagnostic variables
-     ALLOCATE( idimv_r(ndiag_tot) )
-     ALLOCATE( l_diagBIOLink_out(ndiag_tot) )
-     ALLOCATE( name_vardiag(ndiag_tot) )
-     ALLOCATE( long_name_vardiag(ndiag_tot) )
-     ALLOCATE( standard_name_vardiag(ndiag_tot) )
-     ALLOCATE( unit_vardiag(ndiag_tot) )
-     ALLOCATE( valid_min_vardiag(ndiag_tot) )
-     ALLOCATE( valid_max_vardiag(ndiag_tot) )
-     ALLOCATE( irk_diag(ndiag_tot) )
-
-
-   ! read diagnostic variables and order them according to their matrix dimensions
-     OPEN(49,file = filevardiag,form='formatted')
-
-     comment='debut'
-
-     DO WHILE (comment /= '*****')
-
-       READ(49,'(a)',iostat=eof) comment
-
-     END DO
-
-     DO WHILE(eof==0)
-
-       READ(49,*,iostat=eof) isubs_r
-
-       isubs=isubs+1
-
-       IF (eof==0) THEN
-
-         READ(49,'(a)',iostat=eof) namvar_r
-
-         ind_white=INDEX(namvar_r,' ')
-         name_vardiag(isubs)=TRIM(ADJUSTL(ADJUSTR(namvar_r(1:ind_white))))
-
-         READ(49,'(a)',iostat=eof) long_name_var_r
-         ind_white=INDEX(long_name_var_r,' ') 
-         long_name_vardiag(isubs)=TRIM(ADJUSTL(ADJUSTR(long_name_var_r(1:ind_white))))
-
-         READ(49,'(a)',iostat=eof) standard_name_var_r
-         ind_white=INDEX(standard_name_var_r,' ')
-         standard_name_vardiag(isubs)=TRIM(ADJUSTL(ADJUSTR(standard_name_var_r(1:ind_white))))
-
-         READ(49,'(a)',iostat=eof) unitvar_r
-         ind_white=INDEX(unitvar_r,' ')
-         unit_vardiag(isubs)=TRIM(ADJUSTL(ADJUSTR(unitvar_r(1:ind_white))))
-
-         READ(49,*,iostat=eof) valid_min_vardiag(isubs)
-         READ(49,*,iostat=eof) valid_max_vardiag(isubs)
-         READ(49,*,iostat=eof) dimvar
-
-         IF (dimvar==1) THEN
-
-           idimv_r(isubs)=1
-           ndiag_1d=ndiag_1d+1
-
-         ELSE IF (dimvar==2) THEN
-
-           idimv_r(isubs)=2
-           ndiag_2d=ndiag_2d+1
-
-         ELSE IF (dimvar==3) THEN
-
-           idimv_r(isubs)=3
-           ndiag_3d=ndiag_3d+1
-
-         END IF
-
-         READ(49,*,iostat=eof) l_diag_wat
-
-         IF (l_diag_wat .and. dimvar==3) ndiag_3d_wat=ndiag_3d_wat+1
-
-         READ(49,*,iostat=eof) l_diag_sed
-
-         IF (l_diag_sed .and. dimvar==2) THEN
-
-           ndiag_2d_sed=ndiag_2d_sed+1
-           idimv_r(isubs)=6
-
-         END IF
-
-         IF (l_diag_sed .and. dimvar==3) THEN
-
-           ndiag_3d_sed=ndiag_3d_sed+1
-
-           IF (l_diag_wat) THEN
-
-             idimv_r(isubs)=4
-
-           ELSE
-
-             idimv_r(isubs)=5
-
-           ENDIF
-
-         END IF
-
-         READ(49,*,iostat=eof) l_diagBIOLink_out(isubs)
-         READ(49,*,iostat=eof)
-
-         IF (l_diag_sed) THEN
-
-#if ! defined MUSTANG
-
-          IF_MPI (MASTER) THEN
-
-           MPI_master_only WRITE(iscreenlog,*)' '
-           MPI_master_only WRITE(iscreenlog,*)' WARNING : diagnostic variable in sediment '
-           MPI_master_only WRITE(iscreenlog,*)'           without CPP key MUSTANG '
-           MPI_master_only WRITE(iscreenlog,*)' DIAG. VAR. NAME : ',TRIM(name_vardiag(isubs))
-
-          ENDIF_MPI
-#else
-
-          IF (l_diagBIOLink_out(isubs)) THEN
-
-             l_out_subs_diag_sed=.true.
-
-          ENDIF
-
-#endif /* MUSTANG */
-
-         ELSE
-
-           IF (l_diagBIOLink_out(isubs))  l_out_subs_diag=.true.
-
-         ENDIF
-         
-         IF_MPI (MASTER) THEN
-
-           MPI_master_only WRITE(iscreenlog,*)' '
-           MPI_master_only WRITE(iscreenlog,*)' DIAG. VAR. NAME : ',TRIM(name_vardiag(isubs))
-           MPI_master_only WRITE(iscreenlog,*)' UNIT            : ',TRIM(unit_vardiag(isubs))
-           MPI_master_only WRITE(iscreenlog,*)' DIMENSION       : ', dimvar,'D'
-           MPI_master_only WRITE(iscreenlog,*)' DIAG SAVE ?     : ', l_diagBIOLink_out(isubs)
-
-           IF (l_diag_wat)THEN
-
-              MPI_master_only WRITE(iscreenlog,*)' DIAGNOSTIC INTO THE SEA'
-
-           ENDIF
-
-           IF (l_diag_sed) THEN
-
-              MPI_master_only WRITE(iscreenlog,*)' DIAGNOSTIC INTO THE SEDIMENT'
-
-           ENDIF
-
-         ENDIF_MPI
-
-       END IF
-
-     END DO
-
-     CLOSE(49)
-
-   ELSE
-
-     MPI_master_only WRITE(iscreenlog,*)' filevardiag', TRIM(filevardiag), ' not found  !! '
-
-   END IF
-
-#if defined BLOOM && (defined key_N_tracer || defined key_P_tracer)
-
-       call bloom_create_vardiagtracer
-
-#endif /* BLOOM && ( key_N_tracer || key_P_tracer ) */
-
-   IF_MPI (MASTER) THEN
-
-     MPI_master_only WRITE(iscreenlog,*)' '
-     MPI_master_only WRITE(iscreenlog,*)' STOCK OF DIAGNOSTIC VARIABLES'
-     MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables total :',ndiag_tot
-     MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 1 dim :',ndiag_1d
-     MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 2 dim :',ndiag_2d
-     MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 3 dim :',ndiag_3d
-     MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 3d wat:',ndiag_3d_wat
-     MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 2d sed:',ndiag_2d_sed
-     MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 3d sed:',ndiag_3d_sed
-
-   ENDIF_MPI
-
-   IF (ndiag_tot /= ndiag_1d+ndiag_2d+ndiag_3d) THEN
-
-      MPI_master_only PRINT*,'WARNING number of diagnostic variables is incoherent.'
-      MPI_master_only PRINT*,'Check in file :',filevardiag
-
-   END IF
-
-#if ! defined MUSTANG
-
-   IF (ndiag_3d_sed /= 0 .OR. ndiag_2d_sed /= 0 ) THEN
-
-      MPI_master_only PRINT*,'WARNING no MUSTANG, you should not have any diagnostic variable for sediment'
-      MPI_master_only PRINT*,'simulation stopped'
-      CALL_MPI MPI_FINALIZE(IERR_MPI)
-      STOP
-
-   END IF
-#endif /* MUSTANG */
-
-   ! allocate diagnostic variables
-   ALLOCATE( diag_1d(1:ndiag_1d) )
-   diag_1d(:)=0.0_rsh
-
-   ALLOCATE( diag_2d(ndiag_1d+1:ndiag_1d+ndiag_2d,PROC_IN_ARRAY) )
-   diag_2d(:,:,:)=0.0_rsh
-
-   ALLOCATE( diag_3d_wat(ndiag_2d+1:ndiag_2d+ndiag_3d_wat,NB_LAYER_WAT,PROC_IN_ARRAY) )
-   diag_3d_wat(:,:,:,:)=0.0_rsh
-
-#if defined MUSTANG && defined key_BLOOM_insed
-
-   ALLOCATE( diag_3D_sed(ndiag_tot-ndiag_3d_sed+1:ndiag_tot,ksdmin:ksdmax,PROC_IN_ARRAY) ) 
-   diag_3d_sed(:,:,:,:)=0.0_rsh
-
-   ALLOCATE( diag_2D_sed(ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d,PROC_IN_ARRAY) )
-   diag_2D_sed(:,:,:)=0.0_rsh
-
-#endif /* MUSTANG && key_BLOOM_insed */
-
-   ! Storage of diagnostic variables within reading order
-#if defined BLOOM
-
-   it = 0
-   ! dimvar=1 : diag1D, =2 diag2D
-   ! dimvar=3 : diag3D in wat only
-   ! dimvar=4 : diag 3D in wat and in sed
-   ! dimvar=5 : diag3D in sed only
-   ! dimvar=6 : diag2D in sed only
-
-#  if defined key_BLOOM_insed
-   ! dimvar=1 : diag1D, =2 diag2D
-
-   DO dimvar = 1,2
-
-     DO isubs = 1,ndiag_tot
-
-       IF (idimv_r(isubs) == dimvar) THEN
-
-         it=it+1
-!         irk_diag(it)=isubs
-         irk_diag(isubs)=it
-
-#    if defined key_N_tracer
-
-         IF(isubs <= ndiag_tot-ndiag_tracerN .or. isubs==ndiag_tot) CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    elif defined key_P_tracer
-
-         IF(isubs <= ndiag_tot-ndiag_tracerP .or. isubs==ndiag_tot) CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    else
-
-         CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    endif /* key_N_tracer */
-
-       END IF
-
-     END DO
-
-   END DO
-
-   ! dimvar=6 : diag2D in sed only
-   dimvar=6
-
-   DO isubs = 1,ndiag_tot
-
-       IF (idimv_r(isubs) == dimvar) THEN
-
-         it=it+1
-         irk_diag(isubs)=it
-
-#    if defined key_N_tracer && defined BLOOM
-
-         IF(isubs <= ndiag_tot-ndiag_tracerN .or. isubs==ndiag_tot) CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    elif defined key_P_tracer && defined BLOOM
-
-         IF(isubs <= ndiag_tot-ndiag_tracerP .or. isubs==ndiag_tot) CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    else
-         CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    endif /* key_N_P_tracer && BLOOM */
-
-       END IF
-
-   END DO
-
-   ! dimvar=3 : diag3D in wat only
-   ! dimvar=4 : diag 3D in wat and in sed
-   ! dimvar=5 : diag3D in sed only
-
-   DO dimvar = 3,5
-
-     DO isubs = 1,ndiag_tot
-
-       IF (idimv_r(isubs) == dimvar) THEN
-
-         it=it+1
-
-         irk_diag(isubs)=it
-
-#    if defined key_N_tracer && defined BLOOM
-
-         IF(isubs <= ndiag_tot-ndiag_tracerN .or. isubs==ndiag_tot) CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    elif defined key_P_tracer && defined BLOOM
-
-         IF(isubs <= ndiag_tot-ndiag_tracerP .or. isubs==ndiag_tot) CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    else
-
-         CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    endif
-
-       END IF
-
-     END DO
-
-   END DO
-
-#  else
-
-   DO dimvar = 1,6
-
-     DO isubs = 1,ndiag_tot
-
-       IF (idimv_r(isubs) == dimvar) THEN
-
-         it=it+1
-         irk_diag(isubs)=it
-
-#    if defined key_N_tracer && defined BLOOM
-
-         IF(isubs <= ndiag_tot-ndiag_tracerN .or. isubs==ndiag_tot) CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    elif defined key_P_tracer && defined BLOOM
-
-         IF(isubs <= ndiag_tot-ndiag_tracerP .or. isubs==ndiag_tot) CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    else
-
-         CALL bloom_init_id(isubs,standard_name_vardiag(isubs))
-
-#    endif /* key_N_P_tracer && BLOOM */
-
-       END IF
-
-     END DO
-
-   END DO
-#  endif /* BLOOM */
-
-#endif /* key_BLOOM_insed */
-
-#if defined PEPTIC
-
-   it = 0
-
-   DO dimvar = 1,4
-
-    DO isubs = 1,ndiag_tot
-
-       IF (idimv_r(isubs) == dimvar) THEN
-
-         it=it+1
-         irk_diag(isubs)=it
-
-       END IF
-
-    END DO
-
-   END DO
-
-#endif /* PEPTIC */
-
-   IF_MPI (MASTER) THEN
-
-     DO isubs = 1,ndiag_tot
-
-        MPI_master_only WRITE(iscreenlog,*) isubs,TRIM(name_vardiag(isubs)),idimv_r(isubs),irk_diag(isubs)
-
-     END DO
-
-   ENDIF_MPI
-
-  END SUBROUTINE BIOLink_read_vardiag
-
 
 
 #if ! defined key_MARS 
