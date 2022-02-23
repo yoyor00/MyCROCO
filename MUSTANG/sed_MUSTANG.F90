@@ -3608,258 +3608,217 @@
 #endif
    !!==============================================================================
 
-  SUBROUTINE sed_MUSTANG_comp_tocr_mixsed(k,i,j,xeros,excespowr,sed_tocr_mixsed)
- 
+  SUBROUTINE sed_MUSTANG_comp_tocr_mixsed(k, i, j, xeros, excespowr, taucr)
+
    !&E--------------------------------------------------------------------------
    !&E                 ***  SUBROUTINE sed_MUSTANG_comp_tocr_mixsed  ***
    !&E
-   !&E ** Purpose : the critical shear stress for erosion in sediment layer k
+   !&E ** Purpose : Compute the erosion parameters in sediment layer k : 
+   !&E   - xeros : erosion constant (kg.m-2.s-1)
+   !&E   - excespowr : power of the excess shear stress
+   !&E   - taucr : critical shear stress (N.m-2)
    !&E
-   !&E ** Description : 0D in a cell
-   !&E                    variables OUT : xeros,excespowr,sed_tocr_mixsed
-   !&E          estimated from cv_sed, diam_sed,rosn stresscri0
-   !&E                         E0_sand,n_eros_sand,coef_frmudcr1,frmudcr2
-   !&E                         E0_sand_option,E0_sand_para,E0_sand_Cst
-   !&E                         E0_mud,x1toce_mud,x2toce_mud,n_eros_mud
-   !&E                         l_xexp_ero_cst,crel_mud
+   !&E ** Description : 0D in a cell, variables OUT : xeros,excespowr,taucr
+   !&E          Variables used from module
+   !&E                         cv_sed, ros_sand_homogen, ros
+   !&E                         diam_sed, stresscri0
+   !&E                         E0_sand, n_eros_sand, coef_frmudcr1, frmudcr2
+   !&E                         E0_sand_option, E0_sand_para, E0_sand_Cst
+   !&E                         E0_mud, x1toce_mud, x2toce_mud, n_eros_mud
+   !&E                         l_xexp_ero_cst
+   !&E                         in V2 : crel_mud
+   !&E  
+   !&E  !**************************************************************!
+   !&E  ! WARNING : the proposed formulas for erosion of               !
+   !&E  ! sandy-muddy mixtures are questionable                        !
+   !&E  ! and must be tested, improved, changed ...                    !
+   !&E  ! Each user can write his law                                  !  
+   !&E  !**************************************************************!
    !&E
    !&E ** Called by :  sed_MUSTANG_erosion
    !&E 
    !&E ** External calls : none
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2009-02  (P. Le Hir) extracted from (SiAM) new "Marennes-Oleron"
-   !&E                               sand/mud sediment model
-   !&E       !  2016-02  (B. Mengual, B. Thouvenin) : modification of erosion formulations - several choices
-   !&E       !  2018     (B.Thouvenin) reorganization for module MUSTANG
-   !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
-
+ 
    !! * Arguments
-   INTEGER,INTENT(in) :: k,i,j
-   REAL(KIND=rsh),INTENT(out) :: xeros,excespowr,sed_tocr_mixsed
+   INTEGER,INTENT(in) :: k, i, j           ! cell location (i,j) and layer location (k)
+   REAL(KIND=rsh),INTENT(out) :: xeros     ! erosion constant (kg.m-2.s-1)
+   REAL(KIND=rsh),INTENT(out) :: excespowr ! power of the excess shear stress
+   REAL(KIND=rsh),INTENT(out) :: taucr      ! ! critical shear stress (N.m-2)
 
    !! * Local declarations
-   INTEGER            :: iv
-   REAL(KIND=rsh)     :: sommud,somsan,diamsan,critstressan,frvolsan,frvolgrv,somgrav,   &
-                         somsedsusp,frvolsangrv,frmudsup,frmudcr1,pinterp,cmudr,frgrav, &
-                         diamsanstar, wssand
+   INTEGER            :: iv  ! sediment class
+   REAL(KIND=rsh)     :: diamsan ! diameter characteristic of gravel and sand present in the layer (balanced sum of diam of gravels and sands) in m
+   REAL(KIND=rsh)     :: taucr_sand ! critical shear stress characteristic of gravel and sand present in the layer(balanced sum of tauc_susp of gravels and sands) in N.m-2 
+   REAL(KIND=rsh)     :: cmudr ! relative mud concentration in kg.m-3
+   REAL(KIND=rsh)     :: frmudsup ! mud fraction 
+   REAL(KIND=rsh)     :: frmudcr1 ! critical mud fraction under which the behaviour is purely sandy
+   REAL(KIND=rsh)     :: sommud, somsan, somgrav
+   REAL(KIND=rsh)     :: frvolsan, frvolgrv,  frvolsangrv
+   REAL(KIND=rsh)     :: pinterp, taucr_mud
+   REAL(KIND=rsh)     :: diamsanstar, wssand
    ! use of the van Rijn relation for erosion flux (only valid if sand only)
-   REAL(KIND=rsh)     :: rossan,xeromud,coef_tmp,rapexpcoef
+   REAL(KIND=rsh)     :: rossan, xeromud, coef_tmp, rapexpcoef
    REAL(KIND=rsh)     :: E0_sand_loc
 
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-   sommud=0.0_rsh     
-   DO iv=imud1,imud2
-     sommud=sommud+cv_sed(iv,k,i,j)
+   ! compute each type (mud/sand/gravel) quantities and fraction
+   sommud = 0.0_rsh     
+   somsan = 0.0_rsh
+   somgrav = 0.0_rsh
+   frvolsan = 0.0_rsh   
+   frvolgrv = 0.0_rsh
+   DO iv = imud1, imud2
+     sommud = sommud + cv_sed(iv,k,i,j)
    ENDDO
-   somsan=0.0_rsh
-   somgrav=0.0_rsh
-   diamsan=0.0_rsh
-   critstressan=0.0_rsh
-   frvolsan=0.0_rsh   
-   frvolgrv=0.0_rsh         
-   E0_sand_loc=0.0_rsh
-   !rossan=0.0_rsh
-   !!!!!!!!!!!!!!!!!
-   !!! ATTENTION: EVEN IF SEVERAL SANDS, WE ASSUME THAT THEY HAVE THE SAME DENSITY
-   rossan=ros_sand_homogen
-   !!!!!!!!!!!!!!!!!
-
-#if ! defined key_MUSTANG_V2
-   DO iv=isand1,isand2   
-     IF (diam_sed(iv).LT.0.002) THEN   ! to remove gravels that are declared as sand 
-                                       ! in our configuration before computing mean parameters 
-                                       !(i.e. gravels are not working and are declared as sands in Mustang V1)
-#else
-   DO iv=igrav1,isand2
-#endif
-     somsan=somsan+cv_sed(iv,k,i,j)
-     diamsan=diamsan+diam_sed(iv)*cv_sed(iv,k,i,j)
-     critstressan=critstressan+stresscri0(iv)*cv_sed(iv,k,i,j)
-     frvolsan=frvolsan+cv_sed(iv,k,i,j)/ros(iv)
-     !rossan=rossan+ros(iv)*cv_sed(iv,k,i,j)
-#ifdef key_MUSTANG_V2
-     E0_sand_loc=E0_sand_loc+E0_sand(iv)*cv_sed(iv,k,i,j)
-#endif
-#if ! defined key_MUSTANG_V2
-     ENDIF
-#endif
+   DO iv = isand1,isand2
+     somsan = somsan + cv_sed(iv,k,i,j)
+     frvolsan = frvolsan + cv_sed(iv,k,i,j) / ros(iv)
    ENDDO
-   somsedsusp=sommud+somsan
-   IF(somsedsusp.LE.0.0_rsh)THEN
-     ! surficial sediment non transportable in suspension
-     sed_tocr_mixsed=1000.0_rsh
-   ELSE
-     IF (isand2>0 .AND. somsan>0.0_rsh) THEN
-       diamsan=MAX(diamsan/(somsan+epsilon_MUSTANG),diam_sed(isand2))
-       critstressan=MAX(critstressan/(somsan+epsilon_MUSTANG),stresscri0(isand2))
-#ifdef key_MUSTANG_V2
-       E0_sand_loc=MAX(E0_sand_loc/(somsan+epsilon_MUSTANG),E0_sand(isand2))
-#endif
-     ENDIF
-    
-     DO iv=igrav1,igrav2
-       somgrav=somgrav+cv_sed(iv,k,i,j)
-       frvolgrv=frvolgrv+cv_sed(iv,k,i,j)/ros(iv)
-     ENDDO
-     frvolsangrv=frvolgrv+frvolsan
-     frgrav=somgrav/(somgrav+sommud+somsan)
-     IF(frgrav == 1._rsh) THEN
-!****************************************!
-! There is only GRAVELS ! 
-!****************************************!
-       xeros=0.0_rsh
-       excespowr=n_eros_sand
-       sed_tocr_mixsed=critstressan
-     ELSE      
-!**************************************************************!
-! There is potentially SAND and / or MUD                       !
-!                                                              !
-! ATTENTION: the proposed formulas for erosion                 !
-! sandy-muddy mixtures are questionable                        !
-! and must be tested, improved, changed                        !
-! each user can write his law                                  !  
-!**************************************************************!
-       frmudsup=sommud/(sommud+somsan)
-#ifdef key_MUSTANG_specif_outputs
-       varspecif2D_save(1,i,j)=frmudsup           
-#endif
-       frmudcr1=MIN(coef_frmudcr1*diamsan,frmudcr2)
-       
-       IF(frmudsup.LE.frmudcr1)THEN
-       !************************************!
-       !************************************!
-       ! I) Sandy behavior of the mixture   !
-       !************************************!
-       !************************************!
-#if ! defined key_MUSTANG_V2
-!  version V1
-          diamsanstar=diamsan * 10000.0_rsh * (GRAVITY * (rossan / RHOREF - 1.0_rsh))**0.33_rsh
-          ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
-          wssand=.000001_rsh * ((107.33_rsh + 1.049_rsh * diamsanstar**3)**0.5_rsh - 10.36_rsh) / diamsan
-          E0_sand_loc = MUSTANG_E0sand(diamsan, critstressan, rossan, wssand) 
-#endif          
-          IF (ero_option == 0) THEN
-#ifdef key_MUSTANG_V2
-              cmudr=crel_mud(k,i,j)
-#else          
-              cmudr=sommud/(1.0_rsh-frvolsangrv)
-#endif
-              xeros=E0_mud
-              sed_tocr_mixsed=x1toce_mud*cmudr**x2toce_mud
-              excespowr=n_eros_mud
-          ELSE
-              xeros=E0_sand_loc
-              sed_tocr_mixsed=critstressan
-              excespowr=n_eros_sand
-          ENDIF
-          
+   DO iv = igrav1,igrav2
+     somgrav = somgrav + cv_sed(iv,k,i,j)
+     frvolgrv = frvolgrv + cv_sed(iv,k,i,j) / ros(iv)
+   ENDDO
+   frvolsangrv = frvolgrv + frvolsan
+   frmudsup = sommud / (somgrav + sommud + somsan)
 
-       ELSE IF(frmudsup.LE.frmudcr2)THEN
-       !****************************************!
-       !****************************************!
-       ! II) Intermediate sand / mud            !
-       !****************************************!
-       !****************************************!
-#ifdef key_MUSTANG_V2
-          cmudr=crel_mud(k,i,j)
-#else          
-          cmudr=sommud/(1.0_rsh-frvolsangrv)
-#endif
-#if ! defined key_MUSTANG_V2
-!  version V1
-          diamsanstar=diamsan * 10000.0_rsh * (GRAVITY * (rossan / RHOREF - 1.0_rsh))**0.33_rsh
-          ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
-          wssand=.000001_rsh * ((107.33_rsh + 1.049_rsh * diamsanstar**3)**0.5_rsh - 10.36_rsh) / diamsan
-          E0_sand_loc = MUSTANG_E0sand(diamsan, critstressan, rossan, wssand) 
-#endif
-          pinterp=(frmudcr2-frmudsup)/(frmudcr2-frmudcr1)
-
-          IF (ero_option == 0) THEN
-
-            !!! We keep constant parameters (by default those defined for the mud)
-            xeros=E0_mud
-            sed_tocr_mixsed=x1toce_mud*cmudr**x2toce_mud
-            excespowr=n_eros_mud
-
-          ELSE IF (ero_option == 1) THEN
-
-            !!! Initial formulation with linear transition in the case of an intermediate mixture
-            !!! Le Hir et al (2011)
-            
-            xeros=pinterp*E0_sand_loc+(1.0_rsh-pinterp)*E0_mud
-            excespowr=pinterp*n_eros_sand+(1.0_rsh-pinterp)*n_eros_mud
-            sed_tocr_mixsed=critstressan*pinterp+(1.0_rsh-pinterp)*x1toce_mud*cmudr**x2toce_mud
-
-          ELSE IF (ero_option .EQ. 2) THEN
-
-            !!! Formulation of Julie Vareilles (2013) 
-            !!! according to Van Ledden (2001) and Carniello et al (2012)
-            xeromud=x1toce_mud*cmudr**x2toce_mud
-            xeros = ( (E0_sand_loc/E0_mud)**pinterp )*E0_mud
-            sed_tocr_mixsed = ( (critstressan/xeromud)**pinterp )*xeromud
-            excespowr = ( (n_eros_sand/n_eros_mud)**pinterp )*n_eros_mud
-
-          ELSE IF (ero_option .EQ. 3) THEN
-           
-           !!! Formulation of Baptiste Mengual (2017)
-            !!!Mengual, B.; Le Hir, P.; Cayocca, F.; Garlan, T. Modelling Fine Sediment Dynamics: Towards a Common Erosion Law for Fine Sand, Mud and Mixtures. Water 2017, 9, 564.
-            !!! Exponential Formulations of Parameters for a Sand/mud Mixture            
-            xeromud=x1toce_mud*cmudr**x2toce_mud
-#ifdef key_MUSTANG_V2
-            IF (.NOT. l_xexp_ero_cst) xexp_ero=78.48_rsh*frmudcr1 - 2.037_rsh !xexp_ero=f(diamsan) with min/max values based on frmudcr1
-                                                                      !Mainly based on Fig 2 in Le Hir et al. CSR (2011) but
-                                                                      !consitent with other experiments from the literature
-            coef_tmp=xexp_ero*(frmudcr1-frmudsup) ! Here, frmudcr2 is just a max prescribed for frmudcr1 
-                                                    ! but does not constitute a critical mud fraction 
-            ! the correction of F.Ganthy is not done here for version V2. 
-            !  Should we add it to do as in version V1 ?
-            rapexpcoef=EXP(coef_tmp)
-#else
-            coef_tmp=xexp_ero*(frmudcr1-frmudsup)/(frmudcr2-frmudcr1) 
-            ! correction of  F.Ganthy which allows to avoid the shift when one approaches frmudcr2, 
-            !   and allows to have a linear relation when xexp_ero tends towards 0 (but must remain different from 0)
-            rapexpcoef=(EXP(coef_tmp)-1.0_rsh)/(EXP(xexp_ero)-1.0_rsh)
-#endif
-            !!! Erodability Parameters 
-            xeros = (E0_sand_loc-E0_mud)*rapexpcoef + E0_mud       
-            !!! Critical stress for erosion
-            sed_tocr_mixsed = (critstressan -xeromud) * rapexpcoef + xeromud
-            !!! Puissance
-            excespowr = (n_eros_sand-n_eros_mud)*rapexpcoef + n_eros_mud
-
-
-          END IF
-
-       ELSE
-       !****************************************!
-       !****************************************!
-       ! III) Mud Behavior               !
-       !****************************************!
-       !****************************************!
-
-#ifdef key_MUSTANG_V2
-          cmudr=crel_mud(k,i,j)
-#else          
-          cmudr=sommud/(1.0_rsh-frvolsangrv)
-#endif
-          sed_tocr_mixsed=x1toce_mud*cmudr**x2toce_mud
-          excespowr=n_eros_mud
-          xeros=E0_mud
-
-       ENDIF
-
-     ENDIF
+   ! calculation of diamsan and taucr_sand from gravels and sands properties
+   diamsan = 0.0_rsh
+   taucr_sand = 0.0_rsh
+   E0_sand_loc = 0.0_rsh
+   rossan = ros_sand_homogen !!! WARNING: EVEN IF SEVERAL SANDS, WE ASSUME THAT THEY HAVE THE SAME DENSITY
+#ifdef key_MUSTANG_V2 /* gravel & sands */
+   DO iv = igrav1, isand2   
+     diamsan = diamsan + diam_sed(iv) * cv_sed(iv,k,i,j)
+     taucr_sand = taucr_sand + stresscri0(iv) * cv_sed(iv,k,i,j)
+     E0_sand_loc = E0_sand_loc + E0_sand(iv) * cv_sed(iv,k,i,j)
+   ENDDO
+   IF (isand2 > 0 .AND. (somsan + somgrav) > 0.0_rsh) THEN ! if there is at least one sand or gravel defined and in the layer k 
+     diamsan = MAX(diamsan / (somsan + somgrav + epsilon_MUSTANG), diam_sed(isand2))
+     taucr_sand = MAX(taucr_sand / (somsan + somgrav + epsilon_MUSTANG), stresscri0(isand2))
+     E0_sand_loc = MAX(E0_sand_loc / (somsan + somgrav + epsilon_MUSTANG), E0_sand(isand2))
    ENDIF
-      
-   END SUBROUTINE sed_MUSTANG_comp_tocr_mixsed
+   cmudr = crel_mud(k,i,j)
+#else  /*version V1 :  gravel are not taking into account in V1*/         
+   DO iv = isand1, isand2   
+     IF (diam_sed(iv) .LT. 0.002) THEN   ! to remove gravels that are declared as sand 
+                                      ! in our configuration before computing mean parameters 
+                                      !(i.e. gravels are not working and are declared as sands in Mustang V1)
+       diamsan = diamsan + diam_sed(iv) * cv_sed(iv,k,i,j)
+       taucr_sand = taucr_sand + stresscri0(iv) * cv_sed(iv,k,i,j)
+     ENDIF
+   ENDDO
+   IF (isand2 > 0 .AND. somsan > 0.0_rsh) THEN
+     diamsan = MAX(diamsan / (somsan + epsilon_MUSTANG), diam_sed(isand2))
+     taucr_sand = MAX(taucr_sand / (somsan + epsilon_MUSTANG), stresscri0(isand2))
+   ENDIF
+   diamsanstar = diamsan * 10000.0_rsh * (GRAVITY * (rossan / RHOREF - 1.0_rsh))**0.33_rsh
+   ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
+   wssand = .000001_rsh * ((107.33_rsh + 1.049_rsh * diamsanstar**3)**0.5_rsh - 10.36_rsh) / diamsan
+   E0_sand_loc = MUSTANG_E0sand(diamsan, taucr_sand, rossan, wssand) 
+   cmudr = sommud / (1.0_rsh - frvolsangrv)
+#endif
+  
+   frmudcr1 = MIN(coef_frmudcr1 * diamsan, frmudcr2)
+   taucr_mud = x1toce_mud * cmudr**x2toce_mud
+   
+    IF (ero_option == 0) THEN ! keep mud constant values
+
+      xeros = E0_mud
+      taucr = taucr_mud
+      excespowr = n_eros_mud
+
+    ELSE IF (ero_option == 1) THEN
+
+      IF(frmudsup  .LE. frmudcr1) THEN ! I) Sandy behavior of the mixture
+        xeros = E0_sand_loc
+        taucr = taucr_sand
+        excespowr = n_eros_sand
+      ELSE IF(frmudsup .LE. frmudcr2) THEN ! II) Intermediate sand / mud 
+        pinterp = (frmudcr2-frmudsup) / (frmudcr2-frmudcr1)
+        !!! Initial formulation with linear transition in the case of an intermediate mixture
+        !!! Le Hir et al (2011) 
+        xeros = pinterp * E0_sand_loc + (1.0_rsh - pinterp) * E0_mud
+        excespowr = pinterp * n_eros_sand + (1.0_rsh - pinterp) * n_eros_mud
+        taucr = taucr_sand * pinterp + (1.0_rsh - pinterp) * taucr_mud
+      ELSE ! III) Mud Behavior 
+        xeros = E0_mud
+        taucr = taucr_mud
+        excespowr = n_eros_mud
+      ENDIF ! frmudsusp
+
+    ELSE IF (ero_option .EQ. 2) THEN
+
+      IF(frmudsup  .LE. frmudcr1) THEN ! I) Sandy behavior of the mixture
+        xeros = E0_sand_loc
+        taucr = taucr_sand
+        excespowr = n_eros_sand
+      ELSE IF(frmudsup .LE. frmudcr2) THEN ! II) Intermediate sand / mud 
+        pinterp = (frmudcr2-frmudsup) / (frmudcr2-frmudcr1)
+        !!! Formulation of Julie Vareilles (2013) 
+        !!! according to Van Ledden (2001) and Carniello et al (2012)
+        xeros = ( (E0_sand_loc / E0_mud)**pinterp ) * E0_mud
+        taucr = ( (taucr_sand / taucr_mud)**pinterp ) * taucr_mud
+        excespowr = ( (n_eros_sand / n_eros_mud)**pinterp ) * n_eros_mud
+      ELSE ! III) Mud Behavior 
+        xeros = E0_mud
+        taucr = taucr_mud
+        excespowr = n_eros_mud
+      ENDIF ! frmudsusp
+
+    ELSE IF (ero_option .EQ. 3) THEN  
+
+        !!! Formulation of Baptiste Mengual (2017)
+        !!! Mengual, B.; Le Hir, P.; Cayocca, F.; Garlan, T. 
+        !!! Modelling Fine Sediment Dynamics: Towards a Common Erosion Law for Fine Sand, Mud and Mixtures. Water 2017, 9, 564.
+        !!! Exponential Formulations of Parameters for a Sand/mud Mixture            
+#ifdef key_MUSTANG_V2
+      IF(frmudsup  .LE. frmudcr1) THEN ! I) Sandy behavior of the mixture
+        xeros = E0_sand_loc
+        taucr = taucr_sand
+        excespowr = n_eros_sand
+      ELSE ! II) Intermediate sand / mud, no frmudcr2 in V2
+        IF (.NOT. l_xexp_ero_cst) xexp_ero = 78.48_rsh * frmudcr1 - 2.037_rsh !xexp_ero=f(diamsan) with min/max values based on frmudcr1
+                                                                  !Mainly based on Fig 2 in Le Hir et al. CSR (2011) but
+                                                                  !consitent with other experiments from the literature
+        coef_tmp = xexp_ero * (frmudcr1 - frmudsup) ! Here, frmudcr2 is just a max prescribed for frmudcr1 
+                                                ! but does not constitute a critical mud fraction 
+        ! the correction of F.Ganthy is not done here for version V2. 
+        !  Should we add it to do as in version V1 ?
+        rapexpcoef = EXP(coef_tmp)
+        taucr = (taucr_sand - taucr_mud) * rapexpcoef + taucr_mud
+        excespowr = (n_eros_sand - n_eros_mud) * rapexpcoef + n_eros_mud
+        xeros = (E0_sand_loc - E0_mud) * rapexpcoef + E0_mud 
+      END IF !frmudsusp
+#else /* V1 */
+      IF(frmudsup  .LE. frmudcr1) THEN ! I) Sandy behavior of the mixture
+        xeros = E0_sand_loc
+        taucr = taucr_sand
+        excespowr = n_eros_sand
+      ELSE IF(frmudsup .LE. frmudcr2) THEN ! II) Intermediate sand / mud 
+        coef_tmp = xexp_ero * (frmudcr1 - frmudsup) / (frmudcr2 - frmudcr1) 
+        ! correction of  F.Ganthy which allows to avoid the shift when one approaches frmudcr2, 
+        !   and allows to have a linear relation when xexp_ero tends towards 0 (but must remain different from 0)
+        rapexpcoef = (EXP(coef_tmp) - 1.0_rsh) / (EXP(xexp_ero) - 1.0_rsh)
+        taucr = (taucr_sand - taucr_mud) * rapexpcoef + taucr_mud
+        excespowr = (n_eros_sand - n_eros_mud) * rapexpcoef + n_eros_mud
+        xeros = (E0_sand_loc - E0_mud) * rapexpcoef + E0_mud 
+      ELSE ! III) Mud Behavior 
+        xeros = E0_mud
+        taucr = taucr_mud
+        excespowr = n_eros_mud
+      ENDIF ! frmudsusp
+#endif    
+
+    END IF ! ero_option = 0/1/2/3 
+
+#ifdef key_MUSTANG_specif_outputs
+   varspecif2D_save(1,i,j)=frmudsup           
+#endif
+  END SUBROUTINE sed_MUSTANG_comp_tocr_mixsed
    !!==============================================================================
 
   SUBROUTINE sed_MUSTANG_comp_eros_flx(tenfo,toce,csurface,excespowr,xeros,sed_eros_flx)

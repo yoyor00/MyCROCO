@@ -137,7 +137,7 @@
    corfluer1=0.01         ! correction factors for erosion flux computations : Increases the erosion flow when the concentration of mud in the sediment is low (mud cream)
    corfluer2=350.        ! corfluero=1.+corfluer1*MAX(0.0_rsh,corfluer2-csed_tot_surface) typically, increase erosion flow if Crelmud <350 g/L  
    htncrit_eros=0.0      ! critical water height so as to prevent erosion under a given threshold (the threshold value is different for flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
-   tau_cri_option=1      ! 0: Shields ; 1: Wu and Lin (2014)
+   tau_cri_option = 0    ! 0: Shields ; 1: Wu and Lin (2014)
    tau_cri_mud_option_eroindep=1 !  V2 only : 0: x1toce_mud*cmudr**x2toce_mud
                                  !  1: toce_meansan if somsan>eps (else->case0)
                                  !  2: minval(toce_sand*cvsed/cvsed+eps) if >0 (else->case0)
