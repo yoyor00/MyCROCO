@@ -1,46 +1,5 @@
-!***************************************************************************
-!***************************************************************************
-!Copyright or (c) or Copr. : IFREMER
-!contributor(s) : IFREMER/DYNECO/DHYSED
-!
-!contact Ifremer : mustang@ifremer.fr
-!
-!This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
-!computer program whose purpose is to perform sediment transport process 
-!modelling coupled to hydrodynamic models.
-!
-!This software is governed by the CeCILL-C license under French law and
-!abiding by the rules of distribution of free software. You can use, 
-!modify and/ or redistribute the software under the terms of the CeCILL-C
-!license as circulated by CEA, CNRS and INRIA at the following URL
-!"http://www.cecill.info". 
-!
-!As a counterpart to the access to the source code and rights to copy,
-!modify and redistribute granted by the license, users are provided only
-!with a limited warranty  and the software''s author,  the holder of the
-!economic rights,  and the successive licensors  have only  limited
-!liability. 
-!
-!In this respect, the user''s attention is drawn to the risks associated
-!with loading,  using,  modifying and/or developing or reproducing the
-!software by the user in light of its specific status of free software,
-!that may mean  that it is complicated to manipulate,  and  that  also
-!therefore means  that it is reserved for developers  and  experienced
-!professionals having in-depth computer knowledge. Users are therefore
-!encouraged to load and test the software''s suitability as regards their
-!requirements in conditions enabling the security of their systems and/or 
-!data to be ensured and,  more generally, to use and operate it in the 
-!same conditions as regards security. 
-!
-!The fact that you are presently reading this means that you have had
-!knowledge of the CeCILL license and that you accept its terms.
-!***************************************************************************
-!***************************************************************************
-
 !---------------------------------------------------------------------------
-!
-                     MODULE initMUSTANG
-!
+MODULE initMUSTANG
 !---------------------------------------------------------------------------
 
 #include "cppdefs.h"
@@ -71,13 +30,6 @@
    !&E     subroutine flocmod_init           ! initialize flocs characteristics
    !&E     subroutine flocmod_kernels        !   computations of agregation/fragmentation kernels for FLOCMOD
    !&E     subroutine flocmod_agregation_statistics ! computation of shear / differential settling statistics
-   !&E
-   !&E ** History :
-   !&E     ! 2015-12  (B.Thouvenin ) : extract from old sedim.F90  for reorganization of module SEDIMARS
-   !&E     ! 2018     (B.Thouvenin ) : reorganization of module MUSTANG
-   !&E     ! 2019-01  (B.Thouvenin, R. Verney ) : integration of flocmod module into MUSTANG
-   !&E     ! 2019-04  (B.Thouvenin, P. Le Hir ) : integration of morphodynamic option into MUSTANG
-   !&E     ! 2019-06  (B.Thouvenin, P. Le Hir, B. Mengual ) :  MUSTANG V2 with bedload and new porosity evaluation
    !&E
    !&E==========================================================================
    !! * Modules used
@@ -793,11 +745,6 @@ ENDIF
    !&E
    !&E ** External calls : tool_datosec(), tool_sectodat()
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2015 (B. Thouvenin)
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
    
@@ -1150,12 +1097,6 @@ ENDIF
    !&E
    !&E ** Called by :  MUSTANG_init_sediment
    !&E                 only if not.l_repsed
-   !&E 
-   !&E
-   !&E ** History :
-   !&E       !  2008-09  (Pierre Le Hir) extracted from subsedim.F90 (from F. Dufois)
-   !&E       !  2009-02  (P. Le Hir, F. Cayocca) modified for new sand/mud sediment 
-   !&E       !  2015-04  (F. Grasso) modified initialization at -valmanq instead of valmanq
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1469,11 +1410,6 @@ ENDIF
    !&E 
    !&E ** External calls : 
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2018-06  (B.Thouvenin) extracted from sedimoutput.F90
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 #if defined key_BLOOM_insed
@@ -1616,11 +1552,6 @@ ENDIF
    !&E                     and AgrifUser)
    !&E
    !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  march 2009 (P. Le Hir) enables morphodynamics computation
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1872,18 +1803,7 @@ ENDIF
   !&E ** Called by : flocmod_main
   !&E
   !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E
-  !&E--------------------------------------------------------------------------
-  !! * Modules used
-  !! * Arguments
-
-  !! * Local declarations
-  
-  !!--------------------------------------------------------------------------
+  !&E --------------------------------------------------------------------------
   !! * Executable part
 
    !! morpho0(i,j)=1._rsh   !! mesh where morphodynamic coupling is effective
@@ -2411,11 +2331,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
    !&E           in MARS : coupleur_dimhydro.h (USE ..)
    !&E           in CROCO : module_MUSTANG.F (include..)
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2018-06  (B.Thouvenin) extracted from sedimoutput.F90
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 
@@ -2461,11 +2376,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   !&E ** Called by : flocmod_init
   !&E
   !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
   !&E
   !&E--------------------------------------------------------------------------
 
@@ -2699,11 +2609,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   !&E ** Called by : flocmod_kernels
   !&E
   !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
   !&E
   !&E--------------------------------------------------------------------------
 

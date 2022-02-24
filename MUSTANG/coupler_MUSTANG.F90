@@ -1,47 +1,6 @@
-!***************************************************************************
-!***************************************************************************
-!Copyright or (c) or Copr. : IFREMER
-!contributor(s) : IFREMER/DYNECO/DHYSED
-!
-!contact Ifremer : mustang@ifremer.fr
-!
-!This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
-!computer program whose purpose is to perform sediment transport process 
-!modelling coupled to hydrodynamic models.
-!
-!This software is governed by the CeCILL-C license under French law and
-!abiding by the rules of distribution of free software. You can use, 
-!modify and/ or redistribute the software under the terms of the CeCILL-C
-!license as circulated by CEA, CNRS and INRIA at the following URL
-!"http://www.cecill.info". 
-!
-!As a counterpart to the access to the source code and rights to copy,
-!modify and redistribute granted by the license, users are provided only
-!with a limited warranty  and the software''s author,  the holder of the
-!economic rights,  and the successive licensors  have only  limited
-!liability. 
-!
-!In this respect, the user''s attention is drawn to the risks associated
-!with loading,  using,  modifying and/or developing or reproducing the
-!software by the user in light of its specific status of free software,
-!that may mean  that it is complicated to manipulate,  and  that  also
-!therefore means  that it is reserved for developers  and  experienced
-!professionals having in-depth computer knowledge. Users are therefore
-!encouraged to load and test the software''s suitability as regards their
-!requirements in conditions enabling the security of their systems and/or 
-!data to be ensured and,  more generally, to use and operate it in the 
-!same conditions as regards security. 
-!
-!The fact that you are presently reading this means that you have had
-!knowledge of the CeCILL license and that you accept its terms.
-!***************************************************************************
-!***************************************************************************
-
 #include "cppdefs.h"
 !---------------------------------------------------------------------------
-!
-                     MODULE coupler_MUSTANG
-!
+MODULE coupler_MUSTANG
 !---------------------------------------------------------------------------
    
 
@@ -58,9 +17,6 @@
    !&E     subroutine coupl_MUSTANG_substance   ! definition number et type of variables 
    !&E     subroutine coupl_conv2MUSTANG        ! calculation of some variables needed by MUSTANG
    !&E     subroutine coupl_MUSTANG2hydro       ! transfert from MUSTANG to hydro code
-   !&E
-   !&E ** History :
-   !&E     ! 2016-11  (B.Thouvenin) : 
    !&E
 !&E===================================================================================================================
 #ifdef key_MARS
@@ -146,9 +102,6 @@
    !&E    
    !&E ** Called by :  MUSTANG_init_sediment (iappel=0)
    !&E                 sed_MUSTANG_update (iappel=1) & sed_MUSTANG_deposition (iappel=2)
-   !&E
-   !&E ** History :
-   !&E       !  2016-11  (B.Thouvenin) 
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -331,9 +284,6 @@
    !&E     
    !&E     
    !&E ** Called by :  sed_MUSTANG_update
-   !&E
-   !&E ** History :
-   !&E       !  2016-11  (B.Thouvenin) 
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used

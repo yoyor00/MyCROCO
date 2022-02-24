@@ -1,45 +1,5 @@
-!***************************************************************************
-!***************************************************************************
-!Copyright or (c) or Copr. : IFREMER
-!Copyright or © or Copr. CNRS/IRD/Université de la Méditerranée
-
-!
-!This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
-!computer program whose purpose is to perform sediment transport process 
-!modelling coupled to hydrodynamic models.
-!
-!This software is governed by the CeCILL-C license under French law and
-!abiding by the rules of distribution of free software. You can use, 
-!modify and/ or redistribute the software under the terms of the CeCILL-C
-!license as circulated by CEA, CNRS and INRIA at the following URL
-!"http://www.cecill.info". 
-!
-!As a counterpart to the access to the source code and rights to copy,
-!modify and redistribute granted by the license, users are provided only
-!with a limited warranty  and the software''s author,  the holder of the
-!economic rights,  and the successive licensors  have only  limited
-!liability. 
-!
-!In this respect, the user''s attention is drawn to the risks associated
-!with loading,  using,  modifying and/or developing or reproducing the
-!software by the user in light of its specific status of free software,
-!that may mean  that it is complicated to manipulate,  and  that  also
-!therefore means  that it is reserved for developers  and  experienced
-!professionals having in-depth computer knowledge. Users are therefore
-!encouraged to load and test the software''s suitability as regards their
-!requirements in conditions enabling the security of their systems and/or 
-!data to be ensured and,  more generally, to use and operate it in the 
-!same conditions as regards security. 
-!
-!The fact that you are presently reading this means that you have had
-!knowledge of the CeCILL license and that you accept its terms.
-!***************************************************************************
-!***************************************************************************
-
 !---------------------------------------------------------------------------
-!
-                     MODULE sed_MUSTANG_CROCO
-!
+ MODULE sed_MUSTANG_CROCO
 !---------------------------------------------------------------------------
 
 #include "cppdefs.h"
@@ -62,52 +22,6 @@
    !&E     subroutine sed_exchange_w2s_MARS  ! echange MPI de flux verticaux a l'interface WS
    !&E     subroutine sed_exchange_s2w_MARS  ! echange MPI de flux verticaux a l'interface WS
    !&E     subroutine sed_outsaverestart ! save related field for future runs
-   !&E
-   !&E                    *********************************************************************
-   !&E                    *****         ATTENTION                                           ***
-   !&E                    *****                                                             ***
-   !&E                    *****     OMP : fast all subroutines are into parallel section    ***
-   !&E                    *****                                                             ***
-   !&E                    *********************************************************************
-   !&E ** History :
-   !&E     !  2009-03  (Pierre Le Hir, Florence Cayocca)
-   !&E     !  2010-06  (F. Cayocca, V. Garnier) MPI
-   !&E     !  2010-07  (B. Thouvenin) taking into account of non constitutive particulate variables
-   !&E     !  2011-01  (R. Ramel Alyotech) Ionc library in fortran 90/95, netcdf4 and MPI
-   !&E     !  2011-02  (B. Thouvenin) * unique dynamical allocation of raphbx, raphby, frofonx, frofony
-   !&E                                * get restart file at a different date
-   !&E                                * evolution of diffusion/consolidation
-   !&E                                * re-estimate of ndt_part according to the real settling velocity (key_parsub_newdt)
-   !&E     !  2012-11 (F. Grasso) add a boolean to use "sandbottomcell" (need to add a line in variable.dat)
-   !&E     !  2012-12 (F. Grasso) modif from Y. Kervella for Non Uniform Bed Coverage
-   !&E     !  2012-12 (F. Grasso) to add a layer of fluid mud (creme de vase)
-   !&E     !  2013-01 (F. Grasso) change the fill_value for sed conc, sal and temp (-rg_valmanq_io)
-   !&E     !  2013-01 (F. Grasso) limitation of tenfon tot (<6 N.m-2)
-   !&E     !  2014    (B. Thouvenin)  Evolutions, introduction of key_sand2D, introduction of initial adjustment of the sediment height 
-   !&E     !  2014-05 (F. Grasso)    Modifications on consolidation subroutines based on "Grasso et al. (Ocean Dynynamics, 2014)"
-   !&E                                * subroutine sed_consolid_mixsed
-   !&E                                * subroutine sed_constitutivrel
-   !&E     !  2014-05 (F. Cayocca) Update and modifs some names
-   !&E                                * sand/mud erosion laws
-   !&E                                * morpho module
-   !&E     ! 2014-05  (R. Verney)  : Modification of settling velocities laws and formulations
-   !&E     ! 2014-05  (F. Cayocca)   beginning of update morphodynamic (not operationnal - TO SEE LATER) -  
-   !&E     ! 2014-05  (F. Cayocca) Update and modifs some names
-   !&E     ! 2014-12  (B.Thouvenin) : parallelization OMP
-   !&E     ! 2015-01  (B.Thouvenin) : corrections skinstress..
-   !&E     ! 2015-02  (B.Thouvenin) : add key_nosubs_Dbio_insed if using sedimento only for constitutive particules
-   !&E                                (with key_biolo and key_benthos for example) 
-   !&E                                (idem as key_nosedflux of Katerina Kombiadou)
-   !&E     ! 2015-04  (B.Thouvenin)  settling velocity of sand variables introduce in sed_init_ws_sand  
-   !&E     ! 2015-07  (F. Grasso) Mise en place dragages et contrainte de fond (vague+courant) selon Soulsby (1995)
-   !&E     ! 2015-04  (B.Thouvenin  P. Le Hir) : gestion of dissolved variables in interstitial (pore) waters  
-   !E      ! 2015-04  (F.Cayocca, P. Le Hir, B. Thouvenin) corrections for morphodynamic and introduction of lateral slip
-   !&E     ! 2015-04  (B.Thouvenin  P. Le Hir) : gestion of dissolved variables in interstitial (pore) waters  
-   !&E     ! 2015-07  (B.Thouvenin  P. Le Hir) : correction lateral erosion of dry cell  
-   !&E     ! 2015-07  (F. Grasso) Mise en place dragages et contrainte de fond (vague+courant) selon Soulsby (1995)
-   !&E     ! 2015-09  (B.Thouvenin  P. Le Hir) : correction consolidation+diffusion and add bioturbation  (for key_mixsed) 
-   !&E     ! 2015-12  (B.Thouvenin) : extraction of routines  for reorganization of module SEDIMARS to MUSTANG
-   !&E     ! 2018     (B.Thouvenin) :  reorganization of module MUSTANG
    !&E
    !&E==========================================================================
 
@@ -167,19 +81,9 @@
    !&E  use module MUSTANG variables  :
    !&E         ros(iv)
    !&E         ws_sand(iv)
-   !&E     
-   !&E     
-   !&E     
+   !&E        
    !&E ** Called by :  sed_MUSTANG_update
    !&E
-   !&E ** Reference : Settling velocity computed after Van Leussen (1994)
-   !&E                Ws=Ws*(1+aG)/(a+bG**2) with a=0.3 and b=0.09 (Ems estuary)
-   !&E                G=sqrt(eps(k,i,j)/nz(k,i,j))
-   !&E
-   !&E ** History :
-   !&E       !  2008-09  (Pierre Le Hir) extracted from init.F90
-   !&E       !  2008-10  (F. Cayocca) inserted into module_sedimento.F90
-   !&E       !  2014-05  (R. Verney) modifying available settling velocity formulations
    !&E
    !&E--------------------------------------------------------------------------
 
@@ -353,11 +257,6 @@
    !&E
    !&E ** Called by :  step
    !&E
-   !&E ** Reference : 
-   !&E
-   !&E ** History :
-    !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 #ifdef key_MARS
@@ -438,14 +337,6 @@
    !&E ** Called by :  sed_MUSTANG_update
    !&E
    !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2008-09  (Pierre Le Hir) extracted from init.F90
-   !&E       !  2008-10  (F. Cayocca) inserted into module_sedimento.F90
-   !&E       ! 2011-11 (J. Vareilles) Change in the expression of the bottom stress to be compatible with the 2D/3D
-   !&E                              distinctions as is done in the hydrodynamic part
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -728,13 +619,6 @@
    !&E ** External calls : ionc4_openr, ionc4_read_time,
    !&E                     ionc4_read_subxyt, ionc4_read_subzxyt
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2008-09  (Pierre Le Hir) extracted from init.F90
-   !&E       !  oct.2008 inserted into module_sedimento.F90 by F. Cayocca
-   !&E       !  2009-02  modified for new sand/mud sediment (P. Le Hir & F. Cayocca)
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
       implicit none
@@ -939,11 +823,6 @@
    !&E ** External calls : ionc4_openr, ionc4_read_time,
    !&E                     ionc4_read_subxyt, ionc4_read_subzxyt
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2019-07  (B. Thouvenin, Pierre Le Hir) new
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 
@@ -988,12 +867,6 @@
    !&E ** Called by : sed_MUSTANG_update
    !&E
    !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2008-09  (Pierre Le Hir) extracted from traceur.F90
-   !&E       !  2008-10  (F. Cayocca)
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1143,12 +1016,6 @@
    !&E
    !&E ** External calls : 
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2008-09  (Pierre Le Hir) extracted from traceur.F90
-   !&E       !  2008-10  (F. Cayocca)
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
    USE parameters,   ONLY : limin,limax,limaxp1,ljmin,ljmax,ljmaxp1
@@ -1189,11 +1056,6 @@ OMPMPI flush(corflux,corfluy)
    !&E ** Description : used only if slopefac .NE. 0 (slip deposit if steep slope)
    !&E
    !&E ** Called by :  sed_MUSTANG_deposition
-   !&E
-   !&E ** Reference : 
-   !&E
-   !&E ** History :
-    !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS=MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1238,11 +1100,6 @@ OMPMPI flush(flx_w2s_corim1,flx_w2s_corip1,flx_w2s_corjm1,flx_w2s_corjp1)
    !&E
    !&E ** Called by :  sed_MUSTANG_update
    !&E
-   !&E ** Reference : 
-   !&E
-   !&E ** History :
-    !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS=MUSTANG
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
    USE_MPI toolmpi,  ONLY : ex_i_rsh,ex_j_rsh
@@ -1284,11 +1141,6 @@ OMPMPI flush(flx_s2w_corim1,flx_s2w_corip1,flx_s2w_corjm1,flx_s2w_corjp1)
   !&E ** Called by : morpho
   !&E
   !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
   !&E
   !&E--------------------------------------------------------------------------
   !! * Modules used
@@ -1350,11 +1202,6 @@ OMPMPI flush(hx,hy)
    !&E
    !&E ** Called by :  sed_MUSTANG_update
    !&E
-   !&E ** Reference : 
-   !&E
-   !&E ** History :
-    !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS=MUSTANG
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
    USE_MPI toolmpi,  ONLY : ex_i_rsh,ex_j_rsh
@@ -1394,11 +1241,6 @@ OMPMPI flush(sedimask_h0plusxe)
    !&E ** Description :
    !&E
    !&E ** Called by :  sed_MUSTANG_update
-   !&E
-   !&E ** Reference : 
-   !&E
-   !&E ** History :
-    !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS=MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1444,13 +1286,6 @@ OMPMPI flush(flx_bx,flx_by)
    !&E ** Called by :  step 
    !&E
    !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E
-   !&E       !  2008-10  (F. Cayocca) inserted into module_sedimento.F90
-   !&E       !  2009-02  (P. Le Hir) modified declarations
    !
    !objet    :  gestion de la reprise de calcul a partir d un etat
          !           enregistre dans un fichier (netcdf ou binaire acces direct)

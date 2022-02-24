@@ -9,8 +9,6 @@ MODULE substance
    !! Substances conservative or not, dissolved or particulate   :  
    !!                    module for tracers/substances defined
    !!======================================================================
-   !! History :    !  2018-08  (B.Thouvenin)  
-   !!----------------------------------------------------------------------
 
 #if defined SUBSTANCE
 

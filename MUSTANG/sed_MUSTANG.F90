@@ -1,46 +1,5 @@
-!***************************************************************************
-!***************************************************************************
-!Copyright or (c) or Copr. : IFREMER
-!contributor(s) : IFREMER/DYNECO/DHYSED
-!
-!contact Ifremer : mustang@ifremer.fr
-!
-!This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
-!computer program whose purpose is to perform sediment transport process 
-!modelling coupled to hydrodynamic models.
-!
-!This software is governed by the CeCILL-C license under French law and
-!abiding by the rules of distribution of free software. You can use, 
-!modify and/ or redistribute the software under the terms of the CeCILL-C
-!license as circulated by CEA, CNRS and INRIA at the following URL
-!"http://www.cecill.info". 
-!
-!As a counterpart to the access to the source code and rights to copy,
-!modify and redistribute granted by the license, users are provided only
-!with a limited warranty  and the software''s author,  the holder of the
-!economic rights,  and the successive licensors  have only  limited
-!liability. 
-!
-!In this respect, the user''s attention is drawn to the risks associated
-!with loading,  using,  modifying and/or developing or reproducing the
-!software by the user in light of its specific status of free software,
-!that may mean  that it is complicated to manipulate,  and  that  also
-!therefore means  that it is reserved for developers  and  experienced
-!professionals having in-depth computer knowledge. Users are therefore
-!encouraged to load and test the software''s suitability as regards their
-!requirements in conditions enabling the security of their systems and/or 
-!data to be ensured and,  more generally, to use and operate it in the 
-!same conditions as regards security. 
-!
-!The fact that you are presently reading this means that you have had
-!knowledge of the CeCILL license and that you accept its terms.
-!***************************************************************************
-!***************************************************************************
-
 !---------------------------------------------------------------------------
-!
-                     MODULE sed_MUSTANG
-!
+MODULE sed_MUSTANG
 !---------------------------------------------------------------------------
    
 #include "cppdefs.h"
@@ -95,56 +54,6 @@
    !&E     subroutine flocmod_main              ! main routine used to compute aggregation /fragmentation processes 
    !&E     subroutine flocmod_comp_fsd          ! computation of floc size distribution
    !&E     subroutine flocmod_collfrag          ! computation of collision fragmentation term, based on McAnally and Mehta, 2001
-   !&E
-   !&E                    *********************************************************************
-   !&E                    *****         ATTENTION                                           ***
-   !&E                    *****                                                             ***
-   !&E                    *****     OMP : fast all subroutines are into parallel section    ***
-   !&E                    *****                                                             ***
-   !&E                    *********************************************************************
-   !&E
-   !&E ** History :
-   !&E     !  2009-03  (Pierre Le Hir, Florence Cayocca)
-   !&E     !  2010-06  (F. Cayocca, V. Garnier) MPI
-   !&E     !  2010-07  (B. Thouvenin) taking into account of non constitutive particulate variables
-   !&E     !  2011-02  (B. Thouvenin) * unique dynamical allocation of raphbx, raphby, frofonx, frofony
-   !&E                                * get restart file at a different date
-   !&E                                * evolution of diffusion/consolidation
-   !&E                                * re-estimate of ndt_part according to the real settling velocity (key_parsub_newdt)
-   !&E     !  2012-11 (F. Grasso) add a boolean to use "sandbottomcell" (need to add a line in variable.dat)
-   !&E     !  2012-12 (F. Grasso) modif from Y. Kervella for Non Uniform Bed Coverage
-   !&E     !  2012-12 (F. Grasso) to add a layer of fluid mud (creme de vase)
-   !&E     !  2013-01 (F. Grasso) change the fill_value for sed conc, sal and temp (-rg_valmanq_io)
-   !&E     !  2013-01 (F. Grasso) limitation of tenfon tot (<6 N.m-2)
-   !&E     !  2014    (B. Thouvenin)  Evolutions, introduction of key_sand2D, introduction of initial adjustment of the sediment height 
-   !&E     !  2014-05  (F. Grasso)    Modifications on consolidation subroutines based on "Grasso et al. (Ocean Dynynamics, 2014)"
-   !&E                                * subroutine sed_consolid_mixsed
-   !&E                                * subroutine sed_constitutivrel
-   !&E     !  2014-05  (F. Cayocca) Update and modifs some names
-   !&E                                * sand/mud erosion laws
-   !&E                                * morpho module
-   !&E     ! 2014-05  (R. Verney)  : Modification of settling velocities laws and formulations
-   !&E     ! 2014-05  (F. Cayocca)  : beginning of update morphodynamic (not operationnal - TO SEE LATER) -  
-   !&E     ! 2014-05  (F. Cayocca) : Update and modifs some names
-   !&E     ! 2014-12  (B.Thouvenin) : parallelization OMP
-   !&E     ! 2015-01  (B.Thouvenin) : corrections skinstress..
-   !&E     ! 2015-02  (B.Thouvenin) : add key_nosubs_Dbio_insed if using sedimento only for constitutive particules
-   !&E                                (with key_biolo and key_benthos for example) 
-   !&E                                (idem as key_nosedflux of Katerina Kombiadou)
-   !&E     ! 2015-04  (B.Thouvenin) : settling velocity of sand variables introduce in sed_init_ws_sand  
-   !&E     ! 2015-04  (B.Thouvenin  P. Le Hir) : gestion of dissolved variables in interstitial (pore) waters  
-   !E      ! 2015-04  (F.Cayocca, P. Le Hir, B. Thouvenin) corrections for morphodynamic and introduction of lateral slip
-   !&E     ! 2015-04  (B.Thouvenin  P. Le Hir) : gestion of dissolved variables in interstitial (pore) waters  
-   !&E     ! 2015-07  (B.Thouvenin  P. Le Hir) : correction lateral erosion of dry cell  
-   !&E     ! 2015-07  (F. Grasso)  : Mise en place dragages et contrainte de fond (vague+courant) selon Soulsby (1995)
-   !&E     ! 2015-09  (B.Thouvenin  P. Le Hir) : correction consolidation+diffusion and add bioturbation  (for key_mixsed) 
-   !&E     ! 2015-12  (B.Thouvenin) : extraction of routines  for reorganization of module SEDIMARS to MUSTANG
-   !&E     ! 2018     (B.Thouvenin) :  reorganization of module MUSTANG
-   !&E     ! 2019-01  (B.Thouvenin, R. Verney ) : integration of flocmod module into MUSTANG
-   !&E     ! 2019-02  (B.Thouvenin ) : removal of key parsub_newdt, ws3max - local fractionnary step for particulate vertical transport -
-   !&E     ! 2019-06  (B.Thouvenin, P. Le Hir, B. Mengual ) :  MUSTANG V2 with bedload and new porosity evaluation
-   !&E     ! 2019-10  (F. Ganthy) : add computation of sediment roughness length based on local sediment diameter
-
    !&E
    !&E  **********************************************************************
    !&E  *** requires to have advected substances in a specific order       ***
@@ -288,14 +197,8 @@
    !&E        
    !&E ** Called by :  step before mouvement and transport equations
    !&E
-   !&E ** Reference : 
-   !&E
-   !&E ** History :
-    !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS=MUSTANG
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-
 
 #if defined key_MARS 
    USE sed_MUSTANG_MARS,    ONLY :  sed_MUSTANG_settlveloc,sed_skinstress,sed_gradvit
@@ -882,9 +785,6 @@
    !&E
    !&E ** Called by :  step after transport equations
    !&E
-   !&E ** History :
-    !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 #ifdef key_MARS
@@ -1028,12 +928,6 @@
    !&E ** Called by :  step, at the end
    !&E
    !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2009-03  (P. Le Hir) enables morphodynamics computation
-   !&E       !  2011-11  (V. Garnier) Spatial extension of ssh(liminm2:limaxp2,ljminm2:ljmaxp2)
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1276,9 +1170,6 @@
    !&E
    !&E ** Called by :  sed_outMUSTANG_MARS
    !&E
-   !&E ** History :
-    !&E       !  2018  (B.Thouvenin) reorganization of module MUSTANG
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 #ifdef key_BLOOM_insed
@@ -1505,10 +1396,6 @@
    !&E
    !&E ** Called by :  sed_MUSTANG_outres
    !&E
-
-   !&E ** History :
-    !&E       !  2018  (B.Thouvenin) reorganization of module MUSTANG
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 
@@ -1657,11 +1544,6 @@
    !&E         
    !&E
    !&E ** Called by  :  sed_MUSTANG_outres
-   !&E
-   !&E ** Reference : 
-   !&E
-   !&E ** History :
-   !&E       !  2018  (B.Thouvenin) reorganization of module MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1822,11 +1704,7 @@
    !&E  variables OUT:
    !&E         z0sed : roughness length (mm)
    !&E
-   !&E
    !&E ** Called by :  MUSTANG_update
-   !&E 
-   !&E ** History :
-   !&E       !  2019-10 (F. Ganthy) extracted from sedim.F90 (from P. Le Hir)
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1898,9 +1776,6 @@
    !&E
    !&E
    !&E ** Called by :  initMUSTANG and MUSTANG_update
-   !&E 
-   !&E ** History :
-   !&E       !  2020-01 (B. Thouvenin) extracted from sedim.F90 (from P. Le Hir)
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1987,14 +1862,9 @@
    !&E  need to be know by code treated substance 
    !&E         igrav2,isand2, nvpc, nvp, nv_adv : 
    !&E         irkm_var_assoc (ivp)
-   !&E         tocd(iv)
-   !&E      
+   !&E         tocd(iv)  
    !&E
    !&E ** Called by :  MUSTANG_update
-   !&E 
-   !&E ** History :
-   !&E       !  2009-03  (F. Cayocca) extracted from marsedim.F90 (from F. Dufois)
-   !&E       !  2018     (B.Thouvenin) reorganization for module MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -2099,12 +1969,6 @@
    !&E         ustarbot (evaluated in sed_gravit)
    !&E
    !&E ** Called by :  MUSTANG_update
-   !&E
-   !&E ** History :
-   !&E       !  2008-09  (P. Le Hir) extracted from init.F90
-   !&E       !  2008-10  (F. Cayocca) inserted into module_sedimento.F90
-   !&E       !  2009-02  (P. Le Hir)
-   !&E       !  2018     (B.Thouvenin) reorganization for module MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -2302,15 +2166,6 @@
    !&E
    !&E
    !&E ** Called by :  MUSTANG_update
-   !&E 
-   !&E ** History :
-   !&E       !  2008-09  (P. Le Hir) extracted from subsedim.F90 (from F. Dufois)
-   !&E       !  2008-10  (F. Cayocca) included into module_sedimento
-   !&E       !  2008-02  (P. Le Hir) replaced by new "Marennes-Oleron" sand/mud sediment model
-   !&E       !  2011-04  (F. Cayocca) introduction of the fraction of wet cell (fwetp)
-   !&E       !  2015-07  (B.Thouvenin  P. Le Hir) : correction lateral erosion of dry cell  
-   !&E       !  2018-2019 (B.Thouvenin) reorganization for module MUSTANG
-   !&E       !  2019-06  (B. Mengual, P. Le Hir, B.Thouvenin) : new version  
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -3175,15 +3030,6 @@
    !&E
    !&E
    !&E ** Called by :  MUSTANG_update
-   !&E 
-
-   !&E ** History :
-   !&E       !  2008-09  (P. Le Hir) extracted from subsedim.F90 (from F. Dufois)
-   !&E       !  2008-10  (F. Cayocca) included into module_sedimento
-   !&E       !  2008-02  (P. Le Hir) replaced by new "Marennes-Oleron" sand/mud sediment model
-   !&E       !  2011-04  (F. Cayocca) introduction of the fraction of wet cell (fwetp)
-   !&E       !  2015-07  (B.Thouvenin  P. Le Hir) : correction lateral erosion of dry cell  
-   !&E       !  2018     (B.Thouvenin) reorganization for module MUSTANG
   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -3833,10 +3679,6 @@
    !&E ** Description : Partheniades or adapted Partheniades
    !&E
    !&E ** Called by :  sed_erosion
-   !&E 
-   !&E ** History :
-   !&E       !  2009-02  (P. Le Hir) extracted from (SiAM) new "Marennes-Oleron"
-   !&E                               sand/mud sediment model
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -3879,17 +3721,7 @@
    !&E           phieau_s2w
    !&E           flx_w2s
    !&E
-   !&E
    !&E ** Called by :  MUSTANG_deposition
-   !&E 
-   !&E ** History :
-   !&E       !  2008-09  (P. Le Hir) extracted from subsedim.F90 (from F. Dufois)
-   !&E       !  2008-10  (F. Cayocca) included into module_sedimento
-   !&E       !  2008-02  (P. Le Hir)replaced by new "Marennes-Oleron" sand/mud sediment model
-   !&E       !  2010-07  (B. Thouvenin) taking into account of non constitutive particulate variables
-   !&E       !  2015-10  (F. Grasso) Modification from B. Mengual on mud deposition
-   !&E       !  2018     (B.Thouvenin) reorganization for module MUSTANG
-   !&E       !  2019-06  (B. Mengual, P. Le Hir, B.Thouvenin) : new version  
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -4815,17 +4647,7 @@
    !&E           phieau_s2w
    !&E           flx_w2s
    !&E
-   !&E
    !&E ** Called by :  MUSTANG_deposition
-   !&E 
-
-   !&E ** History :
-   !&E       !  2008-09  (P. Le Hir) extracted from subsedim.F90 (from F. Dufois)
-   !&E       !  2008-10  (F. Cayocca) included into module_sedimento
-   !&E       !  2008-02  (P. Le Hir)replaced by new "Marennes-Oleron" sand/mud sediment model
-   !&E       !  2010-07  (B. Thouvenin) taking into account of non constitutive particulate variables
-   !&E       !  2015-10  (F. Grasso) Modification from B. Mengual on mud deposition
-   !&E       !  2018     (B.Thouvenin) reorganization for module MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -5558,13 +5380,7 @@
    !&E  arguments OUT:
    !&E         ksmaxhere : new number of sediment layer after fusion 
    !&E              
-   !&E
-   !&E
    !&E ** Called by :  sed_effdep
-   !&E 
-   !&E ** History :
-   !&E       !  2009-03 (P. Le Hir) reproduces s_fusion in new "Marennes-Oleron" sand/mud sediment model
-   !&E       !  2018     (B.Thouvenin) fusion of layers from bottom to surface (not only the first)
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -5736,17 +5552,7 @@
    !&E         flx_w2s_corip1,flx_w2s_corim1,flx_w2s_corjp1,flx_w2s_corjm1
    !&E         flx_w2s_corin
    !&E          
-   !&E
    !&E ** Called by :  MUSTANG_deposition
-   !&E 
-
-   !&E ** History :
-   !&E       !  2008-09  (P. Le Hir) extracted from subsedim.F90 (from F. Dufois)
-   !&E       !  2008-10  (F. Cayocca) included into module_sedimento
-   !&E       !  2008-02  (P. Le Hir)replaced by new "Marennes-Oleron" sand/mud sediment model
-   !&E       !  2010-07  (B. Thouvenin) taking into account of non constitutive particulate variables
-   !&E       !  2015-10  (F. Grasso) Modification from B. Mengual on mud deposition
-   !&E       !  2018     (B.Thouvenin) reorganization for module MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -5825,11 +5631,6 @@
    !&E ** Called by :  MUSTANG_update
    !&E
    !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2019     (B.Thouvenin, F. Grasso) resolution of thermic diffusion  in sediment (Guarini ?) 
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -6055,17 +5856,6 @@
    !&E ** Called by :  MUSTANG_update
    !&E
    !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2008-09  (P. Le Hir) extracted from init.F90
-   !&E       !  2008-10  (F. Cayocca) inserted into module_sedimento.F90
-   !&E       !  2009-02  (P. Le Hir) new version from SiAM "sable-vase"
-   !&E       !  2014-05  (F. Grasso) modifications based on "Grasso et al. (Ocean Dynynamics, 2015)"
-   !&E       !  2015-07  (F. Grasso, P. Le Hir)  rewriting             
-   !&E       !  2017-03  (B.Thouvenin) fusion of consolidation and diffusion for module mixsed and corrections for dissolved subst
-   !&E       !  2018     (B.Thouvenin) reorganization for module MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -7060,10 +6850,6 @@
    !&E
    !&E ** Called by :  MUSTANG_update
    !&E
-   !&E
-   !&E ** History :
-   !&E       !  2018-07  (B.Thouvenin)
-   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 
@@ -7358,17 +7144,10 @@
    !&E ** Purpose :     Bioturbation coefficient in sediment (particulate )
    !&E
    !&E ** Description : 1DV 
-   !&E  arguments IN : i,j 
-   !&E               
-   !&E          
+   !&E  arguments IN : i,j         
    !&E  arguments OUT: difbio bioturbation coefficient (treated as a diffusion coefficient)
-   !&E              
-   !&E        
-   !&E
+   !&E 
    !&E ** Called by :  sed_MUSTANG_consol_diff_bioturb
-   !&E
-   !&E ** History :
-   !&E       !  20?  (B.Thouvenin)
    !&E
 ! **********************************************************************
    !&E
@@ -7437,17 +7216,10 @@
    !&E ** Purpose :     Bioturbation coefficient in sediment dissolved
    !&E
    !&E ** Description : 1DV 
-   !&E  arguments IN : i,j 
-   !&E               
-   !&E          
+   !&E  arguments IN : i,j                   
    !&E  arguments OUT: difbio bioturbation coefficient (treated as a diffusion coefficient)
    !&E              
-   !&E        
-   !&E
    !&E ** Called by :  sed_MUSTANG_consol_diff_bioturb
-   !&E
-   !&E ** History :
-   !&E       !  20?  (B.Thouvenin)
    !&E
 ! **********************************************************************
    !&E
@@ -7539,10 +7311,6 @@
    !&E           in CROCO : module_MUSTANG.F (include..)
    !&E
    !&E ** Called by :  sed_MUSTANG_consol_diff_bioturb
-   !&E
-   !&E ** History :
-   !&E       !  2009-02  new version from SiAM"sande-vase" by P. Le Hir
-   !&E       !  2014-05  (F. Grasso) modifications based on "Grasso et al. (Ocean Dynynamics, 2014)"
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -7640,12 +7408,7 @@
    !&E                         isitcohesive,dzs
    !&E                         c_sedtot,poro,poro_mud,crel_mud,
    !&E 
-   !&E 
    !&E ** Called by :  sed_MUSTANG__erosion
-   !&E 
-   !&E
-   !&E ** History :
-   !&E       !  2017-12  (B. Mengual) Original code
    !&E
    !&E--------------------------------------------------------------------------
 
@@ -7910,9 +7673,6 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
    !&E
    !&E ** Called by :  MUSTANGV2_manage_active_layer
    !&E
-   !&E ** History :
-   !&E       !  2017-12  (B. Mengual) Original code
-   !&E
    !&E--------------------------------------------------------------------------
 
    !! * Modules used
@@ -8126,11 +7886,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
    !&E
    !&E         variables OUT : sed_eros_flx_class_by_class
    !&E
-   !&E
    !&E ** Called by :  sed_erosion
-   !&E
-   !&E ** History :
-   !&E       !  2017-12  (B. Mengual, P. Le Hir) Original code
    !&E
    !&E--------------------------------------------------------------------------
 
@@ -8425,10 +8181,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
    !&E                          c_sedtot, poro_mud, ksmax
    !&E
    !&E ** Called by :  sed_erosion
-   !&E 
-   !&E
-   !&E ** History :
-   !&E       !  2017-12  (B. Mengual, P. Le Hir) Original code
    !&E
    !&E--------------------------------------------------------------------------
 
@@ -8811,14 +8563,7 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
    !&E              variables OUT : ksmax,dzs, cv_sed, poro, poro_mud, crel_mud
    !&E                             c_sedtot
    !&E
-   !&E
    !&E ** Called by :  MUSTANGV2_comp_poro_mixsed
-   !&E 
-   !&E ** External calls : 
-   !&E
-   !&E
-   !&E ** History :
-   !&E       !  2017-12  (B. Mengual) Original code
    !&E
    !&E--------------------------------------------------------------------------
 
@@ -9016,11 +8761,6 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
    !&E
    !&E ** Called by :  fusion_with_poro, manage_small_mass__in_ksmax
    !&E                 borne_and_apply_erosion_tot, effdep, erosion
-   !&E ** External calls : 
-   !&E
-   !&E
-   !&E ** History :
-   !&E       !  2017-09  (B. Mengual) Original code
    !&E
    !&E--------------------------------------------------------------------------
 
@@ -9232,13 +8972,6 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
    !&E              morphodynamic with MF different to 1 is not compatible with dissolved variables and interstitial water
    !&E
    !&E ** Called by :  sed_erosion,..
-   !&E 
-   !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2019-08 (B. Thouvenin) Creation
    !&E
    !&E--------------------------------------------------------------------------
 
@@ -9551,16 +9284,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
    !&E           in MARS : coupleur_dimhydro.h (USE ..)
    !&E           in CROCO : module_MUSTANG.F (include..)
    !&E
-   !&E
    !&E ** Called by :  sed_erosion
-   !&E 
-   !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2016 (A RIVIER) Creation
-   !&E       !  2017-12  (B. Mengual) Modifications
    !&E
    !&E--------------------------------------------------------------------------
 
@@ -9768,11 +9492,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E ** Called by : 
   !&E
   !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
   !&E
   !&E--------------------------------------------------------------------------
   !! * Modules used
@@ -10000,13 +9719,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E
   !&E ** Called by : flocmod_main
   !&E
-  !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
-  !&E
   !&E--------------------------------------------------------------------------
   !! * Modules used
 
@@ -10119,11 +9831,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E ** Called by : flocmod_comp_fsd
   !&E
   !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
   !&E
   !&E--------------------------------------------------------------------------
   !! * Modules used
@@ -10322,11 +10029,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E
   !&E ** External calls : 
   !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
-  !&E
   !&E--------------------------------------------------------------------------
   !! * Modules used
 
@@ -10368,11 +10070,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E ** Called by : flocmod_main
   !&E
   !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
   !&E
   !&E--------------------------------------------------------------------------
   !! * Modules used
