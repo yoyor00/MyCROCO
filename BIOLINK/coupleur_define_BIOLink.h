@@ -48,7 +48,6 @@
   ! MPI and system commands
   !====================================================================*/
 
-# if ! defined key_MARS
 !/* MPI */
 #   define CALL_MPI !call_MPI
 #   define IF_MPI !if
@@ -57,11 +56,11 @@
 #   define PRINT_DBG !print
 #   define IF_AGRIF !if
 #   define OMPMPI  !OMPMPI
+
 !/*CROCO */
 #   define iscreenlog stdout
 #   define ierrorlog stdout
 #   define iwarnlog stdout
-# endif
 
 /*!====================================================================
   ! Definition of the hydrodynamical model used
@@ -142,9 +141,7 @@
 ! Variables related to the names and characteristics of tracers
 !======================================================================*/
 
-# if ! defined key_MARS
-#   define NAME_SUBS vname(1,indxT+ntrc_salt+isubs) /* Array of name of substance variables */
-# endif /* key_MARS */
+# define NAME_SUBS vname(1,indxT+ntrc_salt+isubs) /* Array of name of substance variables */
 
 /*=====================================================================
 ! Number of tracer variables and table of the hydro model where 
@@ -161,6 +158,7 @@
 !======================================================================*/
 
 # if defined BIOLink_UPDATE_CONCBIO 
+
 #   define IRANGE1 1,nv_adv /* Index for the tracer variable,
                                first loop of BIOLink update_concbio */
 #   define IRANGE2 1,N /* Index for the vertical levels,
@@ -169,11 +167,14 @@
                                    third loop of BIOLink_update_concbio */
 #   define IRANGE4 ifirst,ilast /* Index for the zonal direction,
                                    Fourth loop of the BIOLink_update_concbio */
+
 # endif /* BIOLink_UPDATE_CONCBIO */
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
+
 #   define IVERIF_BIOLINK i_BIOLink_verif /* Counter for the zonal direction in BIOLink */
 #   define JVERIF_BIOLINK j_BIOLink_verif /* Counter for the meridional direction in BIOLink */
+
 # endif /* PEPTIC/BLOOM/METeOR */
 
 /*=====================================================================
@@ -181,12 +182,14 @@
 !======================================================================*/
 
 # if defined BIOLink_UPDATE_CONCBIO 
+
 #   define WATCONC_INDEX_EQ i4,i3,i2,nnew,itemp+ntrc_salt+i1 /* index for the concentration
                                                                 with the BIOLink counter 
                                                                 variables i4,i3,i2 */
 #   define BIOSKSC_INDEX_EQ i4,i3,i2,i1                     /* index for sink and source terms
                                                                with the BIOLink counter 
                                                                variables i4,i3,i2 */
+
 # endif /* BIOLink_UPDATE_CONCBIO */
 
 # define STATE_VAR_INDEXkij 1:nv_state,k,i,j /* Index of the state variable */
@@ -264,17 +267,13 @@
                                          provided by the biological model */
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
-#   if defined key_MARS
-#     define BIO_SKSC_ADV dcdt    /* Sink and source terms for the concentration 
-                                     tracer variables */
-#   else
-#     define BIO_SKSC_ADV dcdt_adv    /* Sink and source terms for the concentration 
-                                        of tracer variables */
-#   endif/* key_MARS */
 
+#   define BIO_SKSC_ADV dcdt_adv    /* Sink and source terms for the concentration 
+                                        of tracer variables */
 # elif defined ECO3M
 
 #   define BIO_SKSC_ADV tend    /* Source and sink terms computed by BIOLink at index i,j */
+
 # endif  /* PEPTIC/BLOOM/METeOR/ECO3M */
 
 /*=====================================================================
@@ -299,7 +298,9 @@
 !======================================================================*/
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
+
 #   define FIXCONCPOS cvfix_wat_pos /* Concentration of fixed varibles */
+
 # endif /* PEPTIC/BLOOM/METeOR */
 
 /*=====================================================================
@@ -311,13 +312,9 @@
                                                                    variables */
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
-#   if defined key_MARS
-#     define BIO_SKSC_FIX dcdt   /*  Sink and source terms for the concentration 
-                                     of fixed variables */
-#   else
-#     define BIO_SKSC_FIX dcdt_fix   /* Sink and source terms for the concentration
+
+#   define BIO_SKSC_FIX dcdt_fix   /* Sink and source terms for the concentration
                                         of fixed variables */
-#   endif/* key_MARS */
 # endif /* PEPTIC/BLOOM/METeOR */
 
 
@@ -328,11 +325,14 @@
 !======================================================================*/
 
 # if defined BLOOM
+
 #   define BENTH_INDEX_RANGE :,:,2:NB_LAYER_WAT,iv-nv_adv /* Index range of benthic variables */
 #   define BENTH_INDEXij i,j,1,iv-nv_adv /* Index of benthic variables in the cvfix table */
+
 # endif /* BLOOM */
 
 # if defined BLOOM
+
 #   define BENTHIC_CONCENTRATION cvfix_wat /* Concentration of fixed variable in the benthos. 
                                               Currently it is the same table as the one for 
                                               fixed variables */
@@ -346,7 +346,9 @@
 !======================================================================*/
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
+
 #   define BENTCONCPOS cv_bent_pos  /* Concentration of benthic variables */
+
 # endif /* PEPTIC/BLOOM/METeOR */
 
 /*************************************************************************/
@@ -370,7 +372,9 @@
                                                               itemp+ntrc_salt+iv */
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
+
 #   define  WS_BIOLink ws3             /* Settling velocity computed by BIOLink at index i,j,k */
+
 # endif /* PEPTIC/BLOOM/METeOR */
 
 /*=====================================================================
@@ -388,10 +392,13 @@
 !======================================================================*/
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
+
 #   define SPMTOT_MGL cmes_3dmgl /* Concentration of suspended matter */
+
 # endif /* PEPTIC/BLOOM/METeOR */
 
-# ifdef PEPTIC
+# if defined PEPTIC
+
 #   define PARAM_WAT_EXTINCT bd_fp%extincwat /* Extinction parameter */
 #   define PARAM_CHLORO1_EXTINCT bd_fp%extincChl1 /* Parameter of extinction 
                                                      due to chlorophyll */
@@ -401,7 +408,8 @@
                                                   /* Index of plankton, I am not sure */
 # endif /* PEPTIC */
 
-# ifdef BLOOM
+# if defined BLOOM
+
 #   define PARAM_WAT_EXTINCT p_extincwat /* Extinction parameter */
 #   define PARAM_CHLORO1_EXTINCT p_extincChl1 /* Extinction parameter due 
                                                  to chlorophyll */
@@ -410,9 +418,13 @@
 # endif /* BLOOM */
 
 # if defined METeOR 
+
 #   if ! defined PEPTIC && ! defined BLOOM
+
 #     define PARAM_WAT_EXTINCT p_extincwat /* Extinction parameter */
+
 #   endif /* PEPTIC/BLOOM */
+
 # endif /* METeOR */
 
 /*=====================================================================
@@ -420,9 +432,13 @@
 !======================================================================*/
 
 # ifdef BULK_FLUX
+
 #   define WIND_SPEED wspd  /*  m.s-1 */
+
 # else
+
 #   define WIND_SPEED win10  /*  m.s-1 */
+
 # endif /* BULK_FLUX */
 
 # define ARRAY_WINDSPEED GLOBAL_2D_ARRAY /* The table to store the windspeed */
@@ -438,11 +454,17 @@
 !======================================================================*/
 
 # define BATHY_H0 h /* Depth */
-# ifdef WET_DRY
+
+# if defined WET_DRY
+
 #   define RESIDUAL_THICKNESS_WAT D_wetdry
+
 # else
+
 #   define RESIDUAL_THICKNESS_WAT 0.
-# endif /* Residual thickness if the wetting and drying is activated or not */
+
+# endif /* WET_DRY */
+
 # define WATER_ELEVATION zeta /* Water elevation variations */
 # define WATER_ELEV_ij zeta(i,j,1) /* Water elevation at the index i,j */
 
@@ -451,12 +473,15 @@
 !======================================================================*/
 
 # if defined ECO3M
+
 #   define TOTAL_WATER_HEIGHT prof     /* Total height of the water column computed by BIOLink at
                                           index i,j */
 #   define THICKLAYERWC dz /* Thickness of the vertical grid cells at index i,j */
+
 # endif /* ECO3M */
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
+
 #   define TOTAL_WATER_HEIGHT htot    /* Total height of the water column computed by BIOLink at
                                          index i,j */
 #   define THICKLAYERWC thicklayerW_C  /* Thickness of the vertical grid cells measured from their
@@ -480,17 +505,24 @@
 
 /* If METeOR is used we compute a center approximation for the magnitude of bottom current */
 # if defined METeOR
+
 #   define BOTTOM_CURRENT_kmimjm 0.5_rsh*sqrt((ZONAL_VELOCITY_UZ(im-1,jm,km,nnew)+ZONAL_VELOCITY_UZ(im,jm,km,nnew))**2.+(MERIDIONAL_VELOCITY_VZ(im,jm,km,nnew)+MERIDIONAL_VELOCITY_VZ(im,jm-1,km,nnew))**2.)
+
 # endif /* METeOR */
 
 # if defined BIOLink_UPDATE_CONCBIO 
 
 #   if defined BLOOM
+
 #     if defined key_benthos
+
 #       define BOTTOM_CURRENT_ij 0.5_rsh*sqrt((ZONAL_VELOCITY_UZ(i-1,j,1,nnew)+ZONAL_VELOCITY_UZ(i,j,1,nnew))**2.+(MERIDIONAL_VELOCITY_VZ(i,j,1,nnew)+MERIDIONAL_VELOCITY_VZ(i,j-1,1,nnew))**2.)
                               /* Interpolated velocity of the bottom current at index i,j */
+
 #     endif /* key_benthos */
+
 #     define BOTTCURRENTBIO bottom_current /* Velocity of the bottom current */
+
 #   endif /*BLOOM*/
 
 # endif /* BIOLink_UPDATE_CONCBIO */

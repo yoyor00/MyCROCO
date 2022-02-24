@@ -49,15 +49,10 @@
                                      ! Tracer and biological model. Also contains a function
                                      ! For the allocation of the main tables
 
-#ifdef key_MARS
-#include "coupleur_dimhydro_BIOLink.h"
-   USE sflxatm,      ONLY : rad
-#else
    USE module_BIOLink ! script that groups all the files of BIOLink together and allows the 
                       ! access to their functions/subroutines/variables
    USE comsubstance   ! Access to the functions/variables of SUBSTANCE ( from the MUSTANG
                       ! sediment model)
-#endif /* key_MARS */
 
    USE comBIOLink     ! Common variables of the BIOLink coupler
 
@@ -68,7 +63,9 @@
                           ! For physics functions 
 
 #if defined MUSTANG
+
    USE comMUSTANG ,  ONLY : htot ! Height of the water column
+
 #endif /*MUSTANG*/
 
 
@@ -142,23 +139,11 @@ CONTAINS
 
 #  if defined key_N_tracer
 
-#    if defined key_MARS
-
-   USE parameters, ONLY : nb_var_tracerN 
-
-#    endif /* key_MARS */
-
    USE bloom_initdefine, ONLY : bloom_create_vardiagtracer
 
 #  endif /* key_N_tracer */
 
 #  if defined key_P_tracer
-
-#    if defined key_MARS 
-
-   USE parameters, ONLY : nb_var_tracerP 
-
-#    endif /* key_MARS */
 
    USE bloom_initdefine, ONLY : bloom_create_vardiagtracer
 
@@ -530,6 +515,7 @@ CONTAINS
 #endif /* MUSTANG && key_BLOOM_insed */
 
    ! Storage of diagnostic variables within reading order
+
 #if defined BLOOM
 
    it = 0
@@ -730,17 +716,6 @@ CONTAINS
    !&E---------------------------------------------------------------------
 
      !====================================================================
-     ! Routines from external models
-     !====================================================================
-
-#if defined key_MARS
-
-   USE comvars2d,    ONLY : ig,id,hm
-   USE obccombine, ONLY : l_obc_south, l_obc_north, l_obc_west, l_obc_east
-
-#endif /* key_MARS */
-
-     !====================================================================
      ! External arguments
      !====================================================================
 
@@ -768,15 +743,7 @@ CONTAINS
 
    DO j=jfirst,jlast ! Meridional loop
 
-#if defined key_MARS
-
-      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-
-#else
-
       DO i=ifirst,ilast ! Zonal loop
-
-#endif /* key_MARS */
 
         IF (TOTAL_WATER_HEIGHT(i,j) .GT. RESIDUAL_THICKNESS_WAT) THEN
 
@@ -791,6 +758,7 @@ CONTAINS
              END DO ! k
 
            END DO ! iv
+
 #endif /* MUSTANG */
  
 #if defined PEPTIC
@@ -1044,36 +1012,18 @@ CONTAINS
 
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod,attenuation)
 
-      !******************* Extinction du to water ************************!
+      !******************* Extinction due to water ************************!
 
    DO j=jfirst,jlast
-
-#  if defined key_MARS
-
-     DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-
-       IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
-
-               kmaxmod=1
-
-       ELSE
-
-               kmaxmod=NB_LAYER_WAT
-
-       ENDIF ! TOTAL_WATER_HEIGHT
-
-#  else
 
      DO i=ifirst,ilast
 
         kmaxmod=NB_LAYER_WAT ! We only compute at boundary layers
                              ! where MUSTANG is not applied 
 
-#  endif /* key_MARS */
-
-       PAR_top_layer(:,i,j)=0.0_rsh ! Initialization of tables
-       EXTINCTION_RAD(:,i,j)=0.0_rsh ! for the extinction and the 
-       attenuation(:)=0.0_rsh ! PAR 
+        PAR_top_layer(:,i,j)=0.0_rsh ! Initialization of tables
+        EXTINCTION_RAD(:,i,j)=0.0_rsh ! for the extinction and the 
+        attenuation(:)=0.0_rsh ! PAR 
 
 #  if defined METeOR
 
@@ -1237,15 +1187,7 @@ CONTAINS
 
       DO j = jfirst,jlast
 
-#    if defined key_MARS
-
-        DO i = MAX0(limin,ig(j)+1),MIN0(limax,id(j)-1)
-
-#    else 
-
         DO i=ifirst,ilast
-
-#    endif /* key_MARS */
 
           IF ((i==i_BIOLink_verif) .and. (j==j_BIOLink_verif)) THEN
 
@@ -1267,15 +1209,7 @@ CONTAINS
 
       DO j = jfirst,jlast
 
-#    if defined key_MARS
-
-        DO i = MAX0(limin,ig(j)+1),MIN0(limax,id(j)-1)
-
-#    else 
-
         DO i=ifirst,ilast
-
-#    endif /* key_MARS */
 
            PAR_top_layer_day(:,i,j)=PAR_top_layer_day(:,i,j) + PAR_top_layer(:,i,j)*BIO_TIME_STEP
 
@@ -1319,13 +1253,9 @@ END SUBROUTINE  BIOLink_eval_PAR
      ! Routines from external models
      !====================================================================
 
-#  if defined key_MARS
 
    USE ionc4,       ONLY : ionc4_openr,ionc4_read_dimt,ionc4_read_time, &
                            ionc4_read_xyt,ionc4_close
-   USE comvars2d,    ONLY : ig,id,jb,jh
-
-#  endif /* key_MARS */
 
      !====================================================================
      ! External arguments
@@ -1363,44 +1293,13 @@ END SUBROUTINE  BIOLink_eval_PAR
    IF (icall == 0) THEN
      !! first call - initialization - open and read files
         
-#  if defined key_MARS
-
-   IF (l_messat_clim .EQV. .TRUE.) THEN
-
-     IF_MPI (MASTER) THEN
-
-       MPI_master_only WRITE(iscreenlog,*)'------------------------------------------------'
-       MPI_master_only WRITE(iscreenlog,*)'lecture fichier climato pour mes-sat  '
-       MPI_master_only WRITE(iscreenlog,*)'     donnees en g.l-1', TRIM(filemessat_clim)
-
-     ENDIF_MPI
-
-     CALL ionc4_openr(filemessat_clim)
-
-     idimt_messat=ionc4_read_dimt(filemessat_clim)
-
-     DO it=1,idimt_messat
-
-       CALL ionc4_read_time(filemessat_clim,it,t_clim_messat(it))
-
-     END DO
-
-#  endif /* key_MARS */
-
-     DO it=1,idimt_messat
+    DO it=1,idimt_messat
 
        CALL ionc4_read_xyt(filemessat_clim,'MES',tab_mes,imin,imax,jmin,jmax,it)
 
        DO j=jfirst,jlast
-#  if defined key_MARS
-
-         DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-
-#  else
 
          DO i=ifirst,ilast
-
-#  endif /* key_MARS */
 
           IF(h0(i,j).GT.-valmanq) THEN
 
@@ -1514,11 +1413,6 @@ END SUBROUTINE  BIOLink_eval_PAR
      idimt_messat_obs=ionc4_read_dimt(filemessat_obs)
      ALLOCATE(messat_obs(limin:limax,ljmin:ljmax,idimt_messat_obs))
      ALLOCATE(t_obs_messat(idimt_messat_obs))
-#  if defined key_MANGAbio
-
-    torigin=tool_datosec('01/01/1900 00:00:00')-tool_datosec('01/01/1998 00:00:00')
-
-#  endif /* key_MANGAbio */
 
     DO it=1,idimt_messat_obs
 
@@ -1535,15 +1429,7 @@ END SUBROUTINE  BIOLink_eval_PAR
       CALL ionc4_read_xyt(filemessat_obs,'MES_SAT',tab_mes,imin,imax,jmin,jmax,it)
       DO j=jfirst,jlast
 
-#  if defined key_MARS
-
-       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-
-#  else
-
        DO i=ifirst,ilast
-
-#  endif /* key_MARS */
 
          IF(h0(i,j).GT.-valmanq) THEN
 
@@ -1743,14 +1629,7 @@ END SUBROUTINE  BIOLink_eval_PAR
 
      DO j=jfirst,jlast
 
-#  if defined key_MARS
-
-       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-
-#  else
-
        DO i=ifirst,ilast
-#  endif /* key_MARS */
 
          IF (TOTAL_WATER_HEIGHT .LE. RESIDUAL_THICKNESS_WAT) THEN
 

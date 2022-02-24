@@ -134,14 +134,12 @@
       REAL(KIND=rsh)            :: sflx_sub_atm_depth
 
    
-#if ! defined key_MARS
 #if defined MUSTANG || defined BIOLink 
      ! ----------------------------------------------------------------------------
      !  declaration and evaluation of surface cells if not known in hydro host model
      !    needing for MUSTANG and Bloom/oyster
      ! ----------------------------------------------------------------------------
      REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE            :: surf_cell
-#endif
 #endif
 
 #endif /* SUBSTANCE */

@@ -34,15 +34,10 @@
                                      ! Tracer and biological model. Also contains a function
                                      ! For the allocation of the main tables
 
-#ifdef key_MARS
-#include "coupleur_dimhydro_BIOLink.h"
-   USE sflxatm,      ONLY : rad
-#else
    USE module_BIOLink ! script that groups all the files of BIOLink together and allows the 
                       ! access to their functions/subroutines/variables
    USE comsubstance   ! Access to the functions/variables of SUBSTANCE ( from the MUSTANG
                       ! sediment model)
-#endif /* key_MARS */
 
    USE comBIOLink     ! Common variables of the BIOLink coupler
 
@@ -53,11 +48,15 @@
                           ! of BIOLink
 
 #if defined MUSTANG
+
    USE comMUSTANG ,  ONLY : htot ! Height of the water column
+
 #endif /*MUSTANG*/
 
 #if defined ECO3M   
+
    USE COUPLEUR_PHY_BIO ! Internal functions of coupling of ECO3M
+
 #endif /* ECO3M */
 
  
@@ -103,16 +102,6 @@
   !&E
   !&E---------------------------------------------------------------------
 
-     !====================================================================
-     ! Routines from external models
-     !====================================================================
-
-#if defined key_MARS
-
-   USE toolgeom,     ONLY : f_dzu,f_dzw
-   USE comvars2d,    ONLY : ig,id,jb,jh,hm
-
-#endif /* key_MARS */
 
      !====================================================================
      ! External arguments
@@ -137,71 +126,18 @@
 
    DO j=jfirst,jlast ! The loop is on the entire meridional direction
 
-#if defined key_MARS
-
-      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1) ! I do not know
-
-        IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1) THEN
-#else
-
       DO i=ifirst,ilast ! And on the entire zonal direction
-
-#endif /* key_MARS */
 
 #if ! defined MUSTANG
 
-#  if defined key_MARS
-
-          TOTAL_WATER_HEIGHT(i,j)=BATHY_H0(i,j)+                 & ! The to
-                                  WATER_ELEVATION(i,j) ! tal water thickness 
-                                                       ! is computed from 
-                                                       ! the depth
-          
-#  else
-
+         
            TOTAL_WATER_HEIGHT(i,j)=z_w(i,j,N)+h(i,j) ! The total water 
                                                      ! thickness is computed
                                                      ! from the top of the 
                                                      ! last vertical layer
 
 
-#  endif /* key_MARS */
-
 #endif /* MUSTANG */
-
-#if defined key_MARS
-
-            IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
-
-              kmaxmod=1
-
-            ELSE
- 
-              kmaxmod=NB_LAYER_WAT
-
-            ENDIF
-
-            IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
-
-                THICKLAYERWC(1,i,j)=TOTAL_WATER_HEIGHT(i,j)
-                THICKLAYERWW(1,i,j)=TOTAL_WATER_HEIGHT(i,j)*0.5_rsh
-                THICKLAYERWC(2:NB_LAYER_WAT,i,j)=0.0_rsh
-                THICKLAYERWW(2:NB_LAYER_WAT,i,j)=THICKLAYERWW(1,i,j)
-
-            ELSE
-
-              DO k=1,kmaxmod          
-
-                THICKLAYERWC(k,i,j)=f_dzu(BATHY_H0(i,j),WATER_ELEVATION(i,j),k,i,j)
-                THICKLAYERWW(k,i,j)=f_dzw(BATHY_H0(i,j),WATER_ELEVATION(i,j),k,i,j)
-
-              ENDDO
-
-            ENDIF
-
-        ENDIF
-
-#else
 
           DO k=1,NB_LAYER_WAT-1          
 
@@ -220,10 +156,9 @@
           THICKLAYERWC(k,i,j)=z_w(i,j,k)-z_w(i,j,k-1)
           THICKLAYERWW(k,i,j)=0._rsh
 
-#endif /* key_MARS */
+      END DO
 
-      ENDDO
-   ENDDO
+   END DO
 !$OMP END DO
 
  

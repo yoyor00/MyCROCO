@@ -56,15 +56,10 @@
                                      ! Tracer and biological model. Also contains a function
                                      ! For the allocation of the main tables
 
-#ifdef key_MARS
-#include "coupleur_dimhydro_BIOLink.h"
-   USE sflxatm,      ONLY : rad
-#else
    USE module_BIOLink ! script that groups all the files of BIOLink together and allows the 
                       ! access to their functions/subroutines/variables
    USE comsubstance   ! Access to the functions/variables of SUBSTANCE ( from the MUSTANG
                       ! sediment model)
-#endif /* key_MARS */
 
    USE comBIOLink     ! Common variables of the BIOLink coupler
 
@@ -77,11 +72,15 @@
    USE coupleur_BIOLink_physics ! For the physics related functions of 
                                 ! BIOLink
 #if defined MUSTANG
+
    USE comMUSTANG ,  ONLY : htot ! Height of the water column
+
 #endif /*MUSTANG*/
 
 #if defined ECO3M   
+
    USE COUPLEUR_PHY_BIO ! Internal functions of coupling of ECO3M
+
 #endif /* ECO3M */
 
  
@@ -106,10 +105,6 @@
     PUBLIC BIOLink_alloc          ! Allocation of different tables
     PUBLIC BIOLink_update         ! Update of BIOLink and biology model variables
                                   ! - called by main
-
-#ifdef key_MARS
-    PUBLIC BIOLink_exchgMPI_cvwat ! I do not know
-#endif
 
 
 !*****************************************************************************************!
@@ -153,17 +148,24 @@
      !====================================================================
 
 #if defined PEPTIC
+
   USE peptic_initdefine, ONLY : peptic_param,peptic_alloc_var
   ! Functions for the reading of parameter files and allocation of variables
   ! of the PEPTIC biological model
+
 #elif defined BLOOM
+
   USE bloom_initdefine, ONLY : bloom_param,bloom_init_iv
   ! Function for the reading of parameter files and allocation of variables
   ! of the BLOOM biological model
+
 #elif defined METeOR
+
   USE meteor_initdefine, ONLY : meteor_param
   ! Function for the reading of parameter files of METeOR contaminant model
-#endif
+
+#endif /* PEPTIC/BLOOM/METeOR */
+
 
      !====================================================================
      ! External arguments
@@ -187,23 +189,23 @@
    IF (icall==0) THEN ! First call of the function, we read the parameter
                       ! files
 
-#if ! defined key_MARS
-#  if defined PEPTIC
+#if defined PEPTIC
+
     CALL peptic_param('r')
 
-#  elif defined BLOOM
+#elif defined BLOOM
+
     CALL bloom_param('r')
 
-#  elif defined METeOR
+#elif defined METeOR
+
     CALL meteor_param('r')
 
-#  endif /* PEPTIC/BLOOM/METeOR */
-#endif /* key_MARS */
+#endif /* PEPTIC/BLOOM/METeOR */
 
    ELSE ! Second call of the function, now we initialize the variable of the 
         ! Biology/Tracer models
 
-#if ! defined key_MARS
 
      TIME_BEGIN=CURRENT_TIME ! Time begin is the beginning time for BIOLink and 
                              ! biological/tracer models, while current time
@@ -218,47 +220,65 @@
 ! Initialization of the tracer/fixed variables in biological/tracer models
 ! with their names and characteristics
 
-#  ifdef BLOOM 
+#if defined BLOOM 
+
      DO isubs=1,nv_adv ! Counter for tracer variables
+
        CALL bloom_init_iv(isubs,standard_name_var(isubs),1)
-     END DO
+
+     END DO ! isubs
 
      DO isubs=nv_adv+1,nv_adv+nv_fix !Counter for fixed variables
+
        CALL bloom_init_iv(isubs,standard_name_var_fix(isubs-nv_adv),2)
-     END DO
 
-#    ifdef key_benthic
+     END DO ! isubs
+
+#  ifdef key_benthic
+
      DO isubs=nv_adv+nv_fix+nv_bent ! Counter for benthic variables
-       CALL bloom_init_iv(isubs,standard_name_var_bent(isubs-nv_adv-nv_fix),3)
-     END DO
-#    endif /* key_benthic */
-#  endif /* BLOOM */
 
-#  if defined PEPTIC
+       CALL bloom_init_iv(isubs,standard_name_var_bent(isubs-nv_adv-nv_fix),3)
+
+     END DO ! isubs
+
+#  endif /* key_benthic */
+
+#elif defined PEPTIC
+
      CALL peptic_alloc_var ! For PEPTIC all the variables 
                            ! are declared in the same function
-#  endif /* PEPTIC */
 
-#  if defined ECO3M 
+#elif defined ECO3M 
+
      CALL ALLOC_VAR_Eco3M ! 
      nbcallbio = -1 ! Internal variable of ECO3M
      CALL main_bio(0.0)
-#  endif /* ECO3M */
+
+#endif /* BLOOM/PEPTIC/ECO3M */
   
   ! Writing of the biological parameters used in an external file
-#  if defined PEPTIC
-     CALL peptic_param('w')
-#  elif defined BLOOM
-     CALL bloom_param('w')
-#  elif defined METeOR
-     CALL meteor_param('w')
-#  endif /* PEPTIC/BLOOM/METeOR */
 
-#endif /* ! defined key_MARS */
+#if defined PEPTIC
+
+     CALL peptic_param('w')
+
+#elif defined BLOOM
+
+     CALL bloom_param('w')
+
+#elif defined METeOR
+
+     CALL meteor_param('w')
+
+#endif /* PEPTIC/BLOOM/METeOR */
 
   ! Allocation of diagnostic variables for BLOOM
+
 #if defined BLOOM
+
      CALL BIOLink_read_vardiag
+
 #endif /* BLOOM */
 
    ENDIF ! /* icall parameter */
@@ -303,18 +323,15 @@
      !====================================================================
 
 #if defined BLOOM
+
    USE bloom_initdefine, ONLY : bloom_userinit ! Initialization of the tables
                                                ! used to store variables of BLOOM
-#  if defined key_MANGAbio && defined key_MANGAbiovague
-   USE bloom,            ONLY : bloom_wavefile_MANGAbio ! Reading of a file
-                                                        ! With orbital velocity of 
-                                                        ! Waves for the Manche/Golfe de 
-                                                        ! Gascogne model
-#  endif /* key_MANGAbio && key_MANGAbiovague */
 #endif /* BLOOM */
 
 #if defined METeOR
+
    USE meteor_initdefine, ONLY : meteor_read_react      ! I do not know
+
 #endif /* METeOR */
 
   IMPLICIT NONE
@@ -324,10 +341,10 @@
      !====================================================================
 
 
-  !! * Arguments
-   INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast ! Horizontal indexes for 
+  INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast ! Horizontal indexes for 
                                                      ! the navigation in the 
                                                      ! table.
+
      !====================================================================
      ! Local declarations of variables
      !====================================================================
@@ -341,13 +358,9 @@
 
      !************** Determination of the time steps *********************!
      
-#ifdef key_MARS
-   t_bio=MAX(CURRENT_TIME,tdebsubs) 
-#else
-   t_bio=CURRENT_TIME+TRANSPORT_TIME_STEP ! The biology time steps is updated 
+  t_bio=CURRENT_TIME+TRANSPORT_TIME_STEP ! The biology time steps is updated 
                                           ! From the hydrodynamical model 
                                           ! With a transport time step
-#endif /* key_MARS */
 
      !********************* Sinking velocity *****************************!
 
@@ -356,13 +369,21 @@
      ! Initialization of the sinking rate for all the tracers at all depth and position
      ! The initialization is taken at the mean between the maximum and minimum sinking depth
      DO j=jfirst,jlast
+
       DO i=ifirst,ilast
+
         DO iv=1,nvp
+
           DO k=1,NB_LAYER_WAT
+
               WS_BIOLink(k,iv,i,j)=(ws_free_min(iv)+ws_free_max(iv))/2.0_rsh
+
             ENDDO
+
           ENDDO
+
         END DO
+
       END DO
 
 #endif /* MUSTANG */
@@ -393,53 +414,24 @@
 
 #endif /* BLOOM/METeOR */
 
-     !****************** Wave orbital velocities *********************!
-
-#if defined key_MANGAbio && defined key_MANGAbiovague
-   
-      ubr_vague(:,:,:)=0.0_rsh ! Initialization of 
-      vbr_vague(:,:,:)=0.0_rsh ! wave orbital 
-      hs_vague(:,:,:)=0.0_rsh  ! velocities and height
-
-   DO j=jfirst,jlast
-#  ifdef key_MARS
-
-     DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-
-#  else
-
-     DO i=ifirst,ilast
-
-#  endif /* key_MARS */
-
-       IF (BATHY_H0(i,j) .EQ. -valmanq) THEN
-         ubr_vague(i,j,:)=valmanq ! Initialization to NaN value 
-         vbr_vague(i,j,:)=valmanq ! in case of land
-         hs_vague(i,j,:)=valmanq  ! cell
-       END IF
-     END DO
-   END DO
-   
-   CALL bloom_wavefile_MANGAbio(ifirst,ilast,jfirst,jlast,0) ! Reading
-                                                             ! wave climato
-                                                             ! -logy file
-#endif /* key_MANGAbio && key_MANGAbiovague */
-
      !*********** Satellital measurement of suspended matter ****************!
 
 #if defined key_messat
    ! initialization of the suspended matter measured by satellite
    messat(:,:,:)=0.0_rsh
+
    DO j=jfirst,jlast
-#  ifdef key_MARS
-     DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#  else
+
      DO i=ifirst,ilast
-#  endif /* key_MARS */
+
        IF (BATHY_H0(i,j) .EQ. -valmanq) THEN
+
          messat(i,j,:)=valmanq
+
        END IF
+
      END DO
+
    END DO
 
    IF (l_messat_clim .and. l_messat_obs) THEN
@@ -500,10 +492,12 @@
      ! Table of positive concentrations for tracer variables
      !===================================================================
 
-#  if ! defined ECO3M  
+#if ! defined ECO3M  
+
       ALLOCATE(WATCONCPOS(nv_adv,NB_LAYER_WAT,PROC_IN_ARRAY))
       WATCONCPOS(:,:,:,:)=0.0_rsh
-#  endif /* ECO3M */
+
+#endif /* ECO3M */
 
      !===================================================================
      ! Table of positive concentrations for fixed variables
@@ -516,10 +510,12 @@
      ! Table of positive concentrations for benthic variables
      !===================================================================
 
-#  ifdef key_benthic
+#ifdef key_benthic
+
       ALLOCATE(BENTCONCPOS(nv_bent,PROC_IN_ARRAY))
       BENTCONCPOS(:,:,:,:)=0.0_rsh
-#  endif /* key_benthic */ 
+
+#endif /* key_benthic */ 
 
      !===================================================================
      ! Table of source and sink terms for tracer variables
@@ -545,9 +541,11 @@
      ! Height of the water column tables
      !====================================================================
 
-#  if ! defined MUSTANG
+#if ! defined MUSTANG
+
         ALLOCATE( TOTAL_WATER_HEIGHT(PROC_IN_ARRAY_m2p2))
-#  endif /* MUSTANG */
+
+#endif /* MUSTANG */
         
         ALLOCATE( THICKLAYERWC(NB_LAYER_WAT,PROC_IN_ARRAY))
         THICKLAYERWC(:,:,:)=0.0_rsh
@@ -569,9 +567,11 @@
      !  Bottom current variables
      !=====================================================================
 
-#  if defined BLOOM && defined key_benthos
+#if defined BLOOM && defined key_benthos
+
       ALLOCATE(BOTTCURRENTBIO(PROC_IN_ARRAY)) 
-#  endif /* BLOOM && key_benthos */
+
+#endif /* BLOOM && key_benthos */
 
 
      !*************************************************************************!
@@ -594,30 +594,37 @@
 
      ! Photosynthetic available radiations
 
-#  if defined  BIOLink_PAR_eval
+#if defined  BIOLink_PAR_eval
+
       ALLOCATE( PAR_top_layer(0:NB_LAYER_WAT,PROC_IN_ARRAY) )
       PAR_top_layer(:,:,:)=0.0_rsh
 
-#    if defined PEPTIC
+#  if defined PEPTIC
+
       ALLOCATE( PAR_avg_layer_phyto(1,NB_LAYER_WAT,PROC_IN_ARRAY) )
       PAR_top_layer_day(:,:,:)=0.0_rsh
       ALLOCATE( PAR_top_layer_day(NB_LAYER_WAT,PROC_IN_ARRAY))
       PAR_avg_layer_phyto(1,:,:,:)=0.0_rsh
 
-#    elif defined METeOR
+#  elif defined METeOR
+
       ALLOCATE( Flimrad_layer(0:NB_LAYER_WAT,PROC_IN_ARRAY) )
 
-#    endif /* PEPTIC/METEOR */
-#  endif /* BIOLink_PAR_eval */
+#  endif /* PEPTIC/METEOR */
+
+#endif /* BIOLink_PAR_eval */
 
      ! Extinction and attenuation
 
-#  if defined  BIOLink_PAR_eval
+#if defined  BIOLink_PAR_eval
+
       ALLOCATE( EXTINCTION_RAD(NB_LAYER_WAT,PROC_IN_ARRAY) )
       EXTINCTION_RAD(:,:,:)=0.0_rsh
-#  endif /* BIOLink_PAR_eval */
 
-#  if defined BLOOM
+#endif /* BIOLink_PAR_eval */
+
+#if defined BLOOM
+
       ALLOCATE(extinction_ave4d(NB_LAYER_WAT,PROC_IN_ARRAY))
       extinction_ave4d(:,:,:)=0.0_rsh
       ALLOCATE(extinction_aveh(NB_LAYER_WAT,PROC_IN_ARRAY))
@@ -627,19 +634,21 @@
       t_cum_extinctionh=0.0_rsh
       ihour_previous=0
 
-#  endif /* BLOOM */
+#endif /* BLOOM */
 
      ! Variables that affect the extinction
  
       ALLOCATE( SPMTOT_MGL(NB_LAYER_WAT,PROC_IN_ARRAY))
       SPMTOT_MGL(:,:,:)=0.0_rsh
 
-#  if defined  BIOLink_PAR_eval
+#if defined  BIOLink_PAR_eval
+
       ALLOCATE( BIOLink_chloro(NB_LAYER_WAT,PROC_IN_ARRAY) )  
       BIOLink_chloro(:,:,:)=0.0_rsh
-#  endif /* BIOLink_PAR_eval */
 
-#  if defined BLOOM
+#endif /* BIOLink_PAR_eval */
+
+#if defined BLOOM
 
       ALLOCATE( effetlumiere_day_diat(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_diat(:,:,:)=0.0_rsh
@@ -648,64 +657,80 @@
       ALLOCATE( effetlumiere_day_nano(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_nano(:,:,:)=0.0_rsh
 
-#    ifdef key_karenia
+#  if defined key_karenia
+
       ALLOCATE( effetlumiere_day_karenia(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_karenia(:,:,:)=0.0_rsh
-#    endif /* key_karenia */
 
-#    ifdef key_psnz
+#  endif /* key_karenia */
+
+#  if defined key_psnz
+
       ALLOCATE( effetlumiere_day_psnz(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_psnz(:,:,:)=0.0_rsh
-#    endif /* key_psnz */
 
-#    ifdef key_phaeocystis
+#  endif /* key_psnz */
+
+#  if defined key_phaeocystis
+
       ALLOCATE( effetlumiere_day_phaeocystis(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_phaeocystis(:,:,:)=0.0_rsh
-#    endif /* key_phaeocystis */
 
-#  endif /* BLOOM */
+#  endif /* key_phaeocystis */
+
+#endif /* BLOOM */
 
      !=====================================================================
      !  Wind variables
      !=====================================================================
 
-#  if ! defined BULK_FLUX
+#if ! defined BULK_FLUX
+
       ALLOCATE( WIND_SPEED(PROC_IN_ARRAY))
       WIND_SPEED(:,:)=0.0_rsh
-#  endif /* BULK_FLUX */
+
+#endif /* BULK_FLUX */
 
      !=====================================================================
      !  Estimation of the suspended matter via satellite
      !=====================================================================
 
-#  ifdef key_messat
+#ifdef key_messat
+
       ALLOCATE(messat(PROC_IN_ARRAY,51))
       messat(:,:,:)=0.0_rsh
-#  endif /* key_messat */
+
+#endif /* key_messat */
 
      !=====================================================================
      !  Oyster related variables
      !=====================================================================
 
-#  if defined BLOOM
-#    ifdef key_oyster_SFG
+#if defined BLOOM
+
+#  if defined key_oyster_SFG
+
       ALLOCATE(tpostpontecoq(PROC_IN_ARRAY))
       ALLOCATE(tpostpontegam(PROC_IN_ARRAY))
-#    endif /* key_oyster_SFG */
 
-#    if defined key_oyster_benthos || defined key_oyster_DEB || defined key_oyster_SFG
+#  endif /* key_oyster_SFG */
+
+#  if defined key_oyster_benthos || defined key_oyster_DEB || defined key_oyster_SFG
+
       ALLOCATE(nbhuitre(PROC_IN_ARRAY))
       hautable(:,:)=0.0_rsh
       ALLOCATE(hautable(PROC_IN_ARRAY))
       nbhuitre(:,:)=0.0_rsh
-#    endif /* key_oyster_benthos */
-#  endif /* BLOOM */
+
+#  endif /* key_oyster_benthos */
+
+#endif /* BLOOM */
 
 
 END SUBROUTINE  BIOLink_alloc
 
   SUBROUTINE BIOLink_update(ifirst,ilast,jfirst,jlast   &
-#if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
+#if defined defined key_oyster_SFG || defined key_oyster_DEB
           , CELL_SURF                                                &
 #endif
          )
@@ -745,22 +770,19 @@ END SUBROUTINE  BIOLink_alloc
      !====================================================================
 
 #if defined PEPTIC
+
   USE peptic,            ONLY : peptic_sksc_wat, peptic_SPMtot_Chla
                                 ! Computation of source and sink terms in 
                                 ! the water column and the total concentration
                                 ! Of suspended matter and chlorophyll A
 #elif defined BLOOM
+
   USE bloom,            ONLY : bloom_sksc_wat,bloom_eval_diag2d, bloom_SPMtot_Chla, &
                                bloom_extinction_avg
                                ! Computation of source and sink terms, diagnostic 2D
                                ! Concentration of total suspended particulate matter 
                                ! and average extinction of light
 
-#  if defined key_MANGAbio && defined key_MANGAbiovague
-  USE bloom,            ONLY : bloom_wavefile_MANGAbio
-                               ! Reading of the orbital velocity of waves in an external
-                               ! file
-#  endif /* key_MANGAbio && key_MANGAbiovague */
 
 #elif defined ECO3M
   USE COUPLEUR_PHY_BIO   ! Internal coupleur of ECO3M
@@ -771,20 +793,11 @@ END SUBROUTINE  BIOLink_alloc
                               ! Equilibrium reactions 
 #endif /* PEPTIC/BLOOM/ECO3M/METeOR */
 
-#if defined key_MARS 
-#  if defined key_turbclim && defined key_daily_climato_kpar
-    USE comvars2d,     ONLY : mes_sat ! I have no idea
-#  endif /* key_turbclim && key_daily */  
-#endif /* key_MARS */     
-
      !====================================================================
      ! External arguments
      !====================================================================
 
    INTEGER, INTENT(IN) :: ifirst,ilast,jfirst,jlast
-#if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
-   REAL(KIND=rsh),DIMENSION(ARRAY_CELL_SURF),INTENT(IN)          :: CELL_SURF
-#endif /* key_MARS && (key_oyster_SFG || key_oyster_DEB ) */
    
      !====================================================================
      ! Local declarations of variables
@@ -798,13 +811,6 @@ END SUBROUTINE  BIOLink_alloc
    CHARACTER(LEN=19)      :: tool_sectodat,cdate ! Function to change the second to date
    REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY)   :: forcSPM ! Something related to 
                                                          ! suspended particulate matter
-#if defined key_MANGAbio && defined key_MANGAbiovague
-   REAL(KIND=rsh), DIMENSION(NB_LAYER_WAT,PROC_IN_ARRAY)  :: forcSPMk ! Something related
-                                                                      ! to suspended particulate
-                                                                      ! Matter with a vertical
-                                                                      ! Dimension
-#endif 
-
      !====================================================================
      ! Execution of the function
      !====================================================================
@@ -841,12 +847,8 @@ END SUBROUTINE  BIOLink_alloc
 
 #endif /* key_nosubstmodule */
 
-#ifdef key_MARS
+                )     
 
-                  ,TEMPERATURE_MOD,SALINITY_MOD                  &
-
-#endif /* key_MARS */
-                  )     
       CALL BIOLink_sinking_rate(ifirst,ilast,jfirst,jlast) ! Evaluation and
                                                            ! limitation of 
                                                            ! sinking rates
@@ -877,33 +879,17 @@ END SUBROUTINE  BIOLink_alloc
       !*********************** Estimation of PAR ***************************!
 
 #if defined BIOLink_PAR_eval
+
 !$OMP SINGLE
       forcSPM(:,:)=0.0_rsh ! Initialization of the SPM forcing
 
 #  if defined key_messat
+
       CALL BIOLink_SPMsat_file(ifirst,ilast,jfirst,jlast,1,forcSPM=forcSPM)
       ! SPM read from satellite input file
-#  else
-      ! SPM read from climato file
-#    if defined key_MARS
-
-#      if defined key_turbclim && defined key_daily_climato_kpar
-
-      forcSPM(:,:)=mes_sat(:,:) ! Reading of the MES by the hydro code
-
-#      endif /* key_turbclim && key_daily_climato_kpar */
-
-#    endif /* key_MARS */
 
 #  endif /* key_messat */
 
-#  if defined key_MANGAbio && defined key_MANGAbiovague
-      
-      CALL bloom_wavefile_MANGAbio(ifirst,ilast,jfirst,          & ! Reading
-                                   jlast,1,forcSPMk=forcSPMk) ! of waves fro
-                                                              ! m an externa
-                                                              ! file
-#  endif /* key_MANGAbio && key_MANGAbiovague */
 !$OMP END SINGLE
 
 #  if defined PEPTIC    
@@ -919,12 +905,6 @@ END SUBROUTINE  BIOLink_alloc
                                                          ! of SPM on Chla
                                                          ! from the BLOOM
                                                          ! model
-
-#     if defined key_MANGAbio && defined key_MANGAbiovague
-
-                             ,forcSPMk                          &
-
-#     endif /* key_MANGAbio && key_MANGAbiovague */
 
 #     if defined key_messat
 
@@ -972,7 +952,7 @@ END SUBROUTINE  BIOLink_alloc
 
 #if defined key_oxygen || defined key_zostera || defined METeOR
 
-#  if ! defined key_MARS && ! defined BULK_FLUX
+#  if ! defined BULK_FLUX
 
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod)
      DO j=jfirst,jlast
@@ -989,7 +969,7 @@ END SUBROUTINE  BIOLink_alloc
       ENDDO
 !$OMP END DO
 
-#  endif /* key_MARS && BULK_FLUX */
+#  endif /* BULK_FLUX */
 
 #endif /* defined key_oxygen || defined key_zostera || defined METeOR */
 
@@ -1021,12 +1001,6 @@ END SUBROUTINE  BIOLink_alloc
 
 #  endif /* key_zostera || key_oxygen */
 
-#  if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
-
-                       ,CELL_SURF                                            &
-
-#  endif /* key_MARS && ( key_oyster_SFG || key_oyster_DEB) */
-
                                  ) 
 #elif defined METeOR
 
@@ -1038,11 +1012,7 @@ END SUBROUTINE  BIOLink_alloc
    
       !**************** Conversion of the order of arrays  *****************!
 
-#if ! defined key_MARS 
-
       CALL BIOLink2hydro(ifirst,ilast,jfirst,jlast)     
-
-#endif /* key_MARS */
 
       !*********************** Final time stepping *************************!
     
@@ -1090,11 +1060,16 @@ END SUBROUTINE  BIOLink_alloc
          CALL BIOLink_convarray(ifirst,ilast,jfirst,jlast)
 
 #  if defined BIOLink_PAR_eval
+
 !$OMP SINGLE
+
          forcSPM(:,:)=0.0_rsh
 !$OMP END SINGLE
+
          CALL BIOLink_eval_PAR(ifirst,ilast,jfirst,jlast,cdate)
+
 #  endif /* BIOLink_PAR_eval */
+
         ENDIF
        
         CALL meteor_reac_equi(ifirst,ilast,jfirst,jlast,WIND_SPEED)
@@ -1106,8 +1081,11 @@ END SUBROUTINE  BIOLink_alloc
       !***************** Evolution of fixed variables **********************!
 
      IF (nv_fix > 0 ) THEN
+
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod)
+
        DO j=jfirst,jlast
+
          DO i=ifirst,ilast
 
             kmaxmod=NB_LAYER_WAT ! The fixed variables are only computed 
@@ -1118,10 +1096,14 @@ END SUBROUTINE  BIOLink_alloc
               FIXED_VAR_CONC(FIXED_VAR_INDEXkij)=FIXED_VAR_CONC(FIXED_VAR_INDEXkij) &
                                        +TRANSPORT_TIME_STEP*BIO_SKSC_FIX(FIXED_SKSC_INDEXkij)
 
-            ENDDO
-          ENDDO
-        ENDDO
+            END DO
+
+          END DO
+
+        END DO
+
 !$OMP END DO
+
      ENDIF
 
   END SUBROUTINE BIOLink_update
@@ -1150,15 +1132,7 @@ END SUBROUTINE  BIOLink_alloc
   !&E
   !&E---------------------------------------------------------------------
 
-     !====================================================================
-     ! Routines from external models
-     !====================================================================
 
-#if defined key_MARS
-   USE toolgeom,     ONLY : f_dzu,f_dzw
-   USE comvars2d,    ONLY : ig,id,jb,jh,hm
-#endif /* key_MARS */
- 
      !====================================================================
      ! External arguments
      !====================================================================
@@ -1186,15 +1160,7 @@ END SUBROUTINE  BIOLink_alloc
 
      DO j=jfirst,jlast
      
-#  if defined key_MARS
-
-       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-
-#  else
-
        DO i=ifirst,ilast
-
-#  endif /* key_MARS */
 
          kmaxmod=NB_LAYER_WAT
 
@@ -1209,12 +1175,8 @@ END SUBROUTINE  BIOLink_alloc
  
          DO k=1,kmaxmod
 
-#  if ! defined key_MARS
-            
            TEMP_BIOLink(k,i,j)=TEMPHYDRO_ijk ! Inverting of the place of
            SAL_BIOLink(k,i,j)=SALHYDRO_ijk   ! the vertical index
-
-#  endif /* key_MARS */
 
 #  if defined BLOOM && defined key_benthos
    
@@ -1265,7 +1227,6 @@ END SUBROUTINE  BIOLink_alloc
      END DO ! j
 !$OMP END DO
 
-#  if ! defined key_MARS
 !$OMP DO SCHEDULE(RUNTIME)
      DO j=jfirst,jlast   
 
@@ -1285,7 +1246,6 @@ END SUBROUTINE  BIOLink_alloc
 
       END DO ! j
 !$OMP END DO
-#  endif /* key_MARS */
 
 #elif defined METeOR && ! defined ECO3M
 
@@ -1340,15 +1300,13 @@ END SUBROUTINE  BIOLink_alloc
  
 
 
-#if ! defined key_MARS 
-
   SUBROUTINE BIOLink2hydro(ifirst,ilast,jfirst,jlast  &
 
-#  if defined key_nosubstmodule
+#if defined key_nosubstmodule
 
                                ,WAT_SETTL  &
 
-#  endif
+#endif
                                  )     
 
   !&E---------------------------------------------------------------------
@@ -1431,8 +1389,6 @@ END SUBROUTINE  BIOLink_alloc
 !$OMP END DO
 
 END SUBROUTINE  BIOLink2hydro
-
-#endif /* key_MARS */
 
 #if defined BIOLink_UPDATE_CONCBIO 
 
@@ -1566,54 +1522,6 @@ END SUBROUTINE  BIOLink_updateconc_BIO
 #endif /* BIOLink_update_CONCBIO */
 
 
-#if defined key_MARS
-  SUBROUTINE BIOLink_exchgMPI_cvwat
-
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE BIOLink_exchgMPI_cvwat  ***
-   !&E
-   !&E ** Purpose :  exchange MPI cv_wat or fixed variables
-   !&E                 ATTENTION ON EST EN ZONE PARALLEL OMP
-   !&E
-   !&E ** Description :
-   !&E
-   !&E ** Called by :  sed_BIOLink_update
-   !&E
-   !&E ** Reference : 
-   !&E
-   !&E ** History :
-   !&E       !  2015-12  (B.Thouvenin) reorganization of module SEDIMARS=MUSTANG
-   !&E       !  2022-02  (G. Koenig) Commenting
-   !&E
-   !&E--------------------------------------------------------------------------
-
-     !====================================================================
-     ! Routines from external models
-     !====================================================================
-
-   USE_MPI toolmpi,  ONLY : ex_i_rsh,ex_j_rsh
-   USE parameters,   ONLY : liminm1,limaxp2,ljminm1,ljmaxp2
-
-     !====================================================================
-     ! Execution of the function
-     !====================================================================
-
-      !******************* Calling of a function in hybrid *****************!
-      !*************************** OMP/MPI mode ****************************!
-
-
-OMPMPI barrier
-OMPMPI master
-     CALL_MPI ex_i_rsh(-1,2,nv_state*kmax,liminm1,limaxp2,ljminm1,ljmaxp2,cv_wat(1:nv_state,:,liminm1:limaxp2,ljminm1:ljmaxp2))
-     CALL_MPI ex_j_rsh(-1,2,nv_state*kmax,liminm1,limaxp2,ljminm1,ljmaxp2,cv_wat(1:nv_state,:,liminm1:limaxp2,ljminm1:ljmaxp2))
-OMPMPI end master
-OMPMPI barrier
-
-OMPMPI flush(cv_wat)
-
-
-  END SUBROUTINE BIOLink_exchgMPI_cvwat
-#endif /* key_MARS */
    
 #endif /* BIOLink */
 
