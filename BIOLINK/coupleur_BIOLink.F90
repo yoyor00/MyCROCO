@@ -730,7 +730,7 @@
 END SUBROUTINE  BIOLink_alloc
 
   SUBROUTINE BIOLink_update(ifirst,ilast,jfirst,jlast   &
-#if defined defined key_oyster_SFG || defined key_oyster_DEB
+#if defined key_oyster_SFG || defined key_oyster_DEB
           , CELL_SURF                                                &
 #endif
          )
