@@ -132,36 +132,10 @@
                   WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_free_min(iv)
                 ELSEIF (ws_free_opt(iv) == 1) THEN ! Van Leussen 1994
 
-# ifdef MANGAE2500
-                 !BM MANGAE2500
-                 IF (t(i,j,k,1,itemp+1) .GT. 25.0_rsh) THEN
-                   ! Lorsque la salinite est superieure a 25 psu, on applique Van Leussen (~milieu oceanique)
-                   IF (cmes .GE. 0.010_rsh .AND. cmes .LE. 0.700_rsh) THEN
                   WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_free_para(1,iv)*cmes**ws_free_para(2,iv) &
-                              *(1._rsh+ws_free_para(3,iv)*gradvit(k,i,j))/  &
-                               (1._rsh+ws_free_para(4,iv)*gradvit(k,i,j)**2._rsh)
-                   ELSEIF (cmes .LT. 0.010_rsh) THEN
-                  !   WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=(0.73_rsh*cmes**1.78_rsh) &
-                  !            *(1._rsh+ws_free_para(3,iv)*gradvit)/(1._rsh+ws_free_para(4,iv)*gradvit**2._rsh)
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=0.73_rsh*cmes**1.78_rsh &
                               *(1._rsh+ws_free_para(3,iv)*gradvit(k,i,j))/  &
                                (1._rsh+ws_free_para(4,iv)*gradvit(k,i,j)**2._rsh)
 
-                   ELSEIF (cmes .GT. 0.700_rsh) THEN
-                     WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_free_max(iv)
-                   END IF
-                 ELSE
-                   ! Dans le cas contraire,i.e. lorsquon se place aux embouchure des fleuves, on impose
-                   ! la vitesse de chute min prescrite dans le variable.dat
-                   ! BUT : faire en sorte que les MES ne restent pas piegees dans les estuaires
-                   WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_free_min(iv)
-                 END IF
-                 ! end MANGAE2500
-# else
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_free_para(1,iv)*cmes**ws_free_para(2,iv) &
-                              *(1._rsh+ws_free_para(3,iv)*gradvit(k,i,j))/  &
-                               (1._rsh+ws_free_para(4,iv)*gradvit(k,i,j)**2._rsh)
-# endif
                 ELSEIF (ws_free_opt(iv) == 2) THEN ! Winterwerp 1999
                   De=ws_free_para(1,iv)+ws_free_para(2,iv)*cmes/(ws_free_para(3,iv)*sqrt(gradvit(k,i,j)))
                   IF (De.GT.sqrt(nuw/gradvit(k,i,j))) THEN 
@@ -509,9 +483,6 @@
             ! --------------------------
             tenfonw(i,j)=((rho(i,j,1)+rho0)*fws2ij*Uwave(i,j)**2)
 
-            !tenfon(i,j)=SQRT(tenfonw(i,j)**2+tenfonc(i,j)**2)
-            tenfonw(i,j)=min(8.0_rsh,tenfonw(i,j))  !limitation sur tenfonw, FG(21/07/2015)
-
             courant=SQRT(ubar(i,j,nnew)**2+vbar(i,j,nnew)**2)
             IF(tenfonc(i,j) > 0.0_rsh .AND. tenfonw(i,j) > 0.0_rsh .AND. courant> 0.0_rsh) THEN
 
@@ -520,7 +491,6 @@
             ! calculation of  tenfonc (courrent) influenced by the waves
             ! ----------------------------------------------------
               tenfonc(i,j)=tenfonc(i,j)*(1+(1.2*(tenfonw(i,j)/(tenfonw(i,j)+tenfonc(i,j)))**3.2))
-              !tenfonc(i,j)=min(10.0_rsh,tenfonc(i,j))  !limitation on tenfonc, FG(21/07/2015)
 
             ! calculating the difference in angle between the direction of the waves and the current
             ! ---------------------------------------------------------------------------
