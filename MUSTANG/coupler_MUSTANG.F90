@@ -130,8 +130,6 @@ MODULE coupler_MUSTANG
 
    !!---------------------------------------------------------------------------
    !! * Executable part
-
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j)
    DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -175,12 +173,10 @@ MODULE coupler_MUSTANG
 
        ENDDO
    ENDDO
-!$OMP END DO
 
    IF(iappel > 0 ) THEN
    ! ATTENTION : need to calculate htot at all meshes (imin+1:imax, jmin+1: jmax)
    ! at interior meshes : for ljmin-1 and ljmax+1 , BATHY_H0 and ssh are known if MPI exchange was done after change
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j)
     DO j=jfirst-1,jlast+1
       DO i=ifirst-1,ilast+1
 
@@ -195,7 +191,7 @@ MODULE coupler_MUSTANG
 
        ENDDO
     ENDDO
-!$OMP END DO
+
 !     MPI exchange of total heights if needed in i+1 or i-1.
 !      in the case of lateral erosion and deposit slip
 !      and if not MPI exchange before
@@ -213,7 +209,6 @@ MODULE coupler_MUSTANG
    IF (iappel == 1) THEN
    ! first call before evaluation of settling velocities, erosion, consolidation, diffusion
    
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j)
      DO j=jfirst,jlast
 #ifdef key_MARS
        DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -240,13 +235,11 @@ MODULE coupler_MUSTANG
 #endif
        ENDDO
      ENDDO
-!$OMP END DO
 
     ELSE IF (iappel==2) THEN
 #if ! defined key_MARS
    ! second call before evaluation of sediment deposition :  cumulated settling flux only if no key_MARS
 
-!$OMP DO SCHEDULE(RUNTIME)
      DO j=jfirst,jlast
       DO i=ifirst,ilast
 #if defined key_noTSdiss_insed
@@ -258,7 +251,6 @@ MODULE coupler_MUSTANG
          ENDDO
      ENDDO
      ENDDO
-!$OMP END DO
 #endif
     ENDIF
 
@@ -302,7 +294,6 @@ MODULE coupler_MUSTANG
    !! * Executable part
 
    ! exchange erosion and settling fluxes
-!$OMP DO SCHEDULE(RUNTIME)
 
 # if defined MUSTANG && defined MUSTANG_CORFLUX
       DO j=jfirst-1,jlast
@@ -341,8 +332,6 @@ MODULE coupler_MUSTANG
         ! for dissolved variables (EROS_FLUX_s2w=erosion-settling+consolidation-diffusion) 
       ENDDO
       ENDDO
-!$OMP END DO
-
 
   END SUBROUTINE coupl_MUSTANG2hydro    
 #endif

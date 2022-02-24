@@ -173,10 +173,6 @@ MODULE sed_MUSTANG
    !&E
    !&E         for MARS : ifirst=imin+2, ilast=imax-1, jfirst=jmin+2,  jlast=jmax-1
    !&E                    for interior processors : ifirst=limin, ilast=limax, jfirst=ljmin,  jlast=ljmax
-   !&E   
-   !&E                 =============================
-   !&E                 WARNING WE ARE IN OMP REGION 
-   !&E                 =============================
    !&E         
    !&E ** Description :
    !&E
@@ -297,7 +293,6 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FORCING :     u*=ustarbot            !!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!$OMP DO SCHEDULE(RUNTIME)
       DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -318,8 +313,6 @@ MODULE sed_MUSTANG
 #endif
       ENDDO
       ENDDO
-!$OMP END DO
-
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FORCING : G dU/dz (taux de cisaillement : shear rate)   !!!!!
@@ -380,9 +373,7 @@ MODULE sed_MUSTANG
     IF (isand2.GE.1) THEN
 #if defined key_MARS
               ! routine MARS dependent dans MUSTANG_MARS.F90  
-!$OMP SINGLE
          CALL sed_obc_corflu
-!$OMP END SINGLE
 #if defined key_MPI_2D
          CALL sed_exchange_corflu_MARS
 #endif
@@ -405,7 +396,6 @@ MODULE sed_MUSTANG
     
       ! corflux are interpolated on mesh edges (in u & v)
       ! -------------------------------------------------
-!$OMP SINGLE
         DO j=jfirst,jlast
 #ifdef key_MARS 
            DO i=MAX0(limin,ig(j)+1),MIN0(limax,id(j)-1)
@@ -428,7 +418,6 @@ MODULE sed_MUSTANG
 #ifdef key_MARS
               ! routine MARS dependent dans MUSTANG_MARS.F90  
         CALL sed_obc_corflu
-!$OMP END SINGLE
 #else
 #ifdef MPI
    do iv=isand1,isand2
@@ -445,14 +434,12 @@ MODULE sed_MUSTANG
 #endif
 #endif 
         !! for substances which are sorbed or associated with sand variables
-!$OMP SINGLE
          DO ivp=nvpc+1,nvp
             IF(irkm_var_assoc(ivp) .NE. 0 .AND. irkm_var_assoc(ivp) .LT. imud1 ) THEN
                 corflux(ivp,:,:)=corflux(irkm_var_assoc(ivp),:,:)
                 corfluy(ivp,:,:)=corfluy(irkm_var_assoc(ivp),:,:)
                ENDIF
          ENDDO             
-!$OMP END SINGLE
     ENDIF
 
    dtinv=1.0_rsh/REAL(dt_true,rsh)
@@ -494,7 +481,6 @@ MODULE sed_MUSTANG
 
 #if defined key_MUSTANG_lateralerosion
 ! initialization LATERAL EROSION 
-!$OMP SINGLE
    IF(coef_erolat .NE. 0.0_rsh) THEN
       flx_s2w_corip1(:,:,:)=0.0_rsh
       flx_s2w_corim1(:,:,:)=0.0_rsh
@@ -507,21 +493,16 @@ MODULE sed_MUSTANG
       phieau_s2w_corjm1(:,:)=0.0_rsh
 #endif
    ENDIF  ! end if coef_erolat
-!$OMP END SINGLE
 #endif
    
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
 ! initialization BEDLOAD fluxes and masks 
-!$OMP SINGLE
    flx_bx(:,:,:)=0.0_rsh
    flx_by(:,:,:)=0.0_rsh
-!$OMP END SINGLE
 
-   
-!$OMP SINGLE
+
    sedimask_h0plusxe(:,:)=0.0_rsh
-!$OMP END SINGLE
-!$OMP DO SCHEDULE(RUNTIME) private(i,j,iv) 
+
    DO j=jfirst-1,jlast+1
      DO i=ifirst-1,ilast+1
          IF (htot(i,j) .GT. hmin_bedload) THEN
@@ -529,7 +510,6 @@ MODULE sed_MUSTANG
          ENDIF
      ENDDO
    ENDDO
-!$OMP END DO
 
 #if defined key_MARS && defined key_MPI_2D
    CALL sed_exchange_maskbedload_MARS
@@ -538,10 +518,8 @@ MODULE sed_MUSTANG
 #endif
 
 #ifdef key_MUSTANG_specif_outputs
-!$OMP SINGLE
   ! flx_bx and by
   varspecif3Dnv_save(5:6,:,:,:)=0.0_rsh
-!$OMP END SINGLE
 #endif
 
 #if defined MORPHODYN_MUSTANG_byHYDRO   
@@ -646,7 +624,6 @@ MODULE sed_MUSTANG
 #endif
 
       ! correction : neighboring cells of eroded laterally  dry cell receive one fraction of eroded sediment 
-!$OMP DO SCHEDULE(RUNTIME) private(i,j,iv) 
       DO j=jfirst,jlast
 #ifdef key_MARS
         DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -671,7 +648,6 @@ MODULE sed_MUSTANG
 #endif
         END DO
       END DO
-!$OMP END DO
                           
    ENDIF  ! end if coef_erolat
 #endif
@@ -686,7 +662,6 @@ MODULE sed_MUSTANG
 #else
    IF(l_outsed_flx_WS_all) THEN
 #endif
-!$OMP DO SCHEDULE(RUNTIME) private(i,j,iv) 
       DO j=jfirst,jlast
 #ifdef key_MARS
         DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -718,7 +693,6 @@ MODULE sed_MUSTANG
 #endif
        END DO
      END DO
-!$OMP END DO
    ENDIF
 #endif
 
@@ -740,10 +714,8 @@ MODULE sed_MUSTANG
 !    due to erosion and consolidation                                                                !!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  !! WATER_FLUX_INPUT_BOTCELL = WATER_FLUX_INPUTS (k,i,j) in bottom cell = phieau(1,:,:)
-!$OMP SINGLE
     WATER_FLUX_INPUT_BOTCELL=WATER_FLUX_INPUT_BOTCELL+phieau_s2w(:,:)/dt_true
     phieau_s2w(:,:)=0.0_rlg
-!$OMP END SINGLE
 #endif
 
 
@@ -765,10 +737,6 @@ MODULE sed_MUSTANG
    !&E
    !&E         for MARS : ifirst=imin+2, ilast=imax-1, jfirst=jmin+2,  jlast=jmax-1
    !&E                    for interior processors : ifirst=limin, ilast=limax, jfirst=ljmin,  jlast=ljmax
-   !&E
-   !&E                 =============================
-   !&E                 WARNING WE ARE IN OMP REGION 
-   !&E                 =============================
    !&E
    !&E ** Description : 
    !&E  arguments IN : 
@@ -816,14 +784,12 @@ MODULE sed_MUSTANG
 #endif
    !! * Executable part 
   
-   !deposit if strong bottom slope 
-!$OMP SINGLE  
+   !deposit if strong bottom slope   
      flx_w2s_corim1(:,:,:)=0.0_rsh   
      flx_w2s_corip1(:,:,:)=0.0_rsh
      flx_w2s_corjm1(:,:,:)=0.0_rsh
      flx_w2s_corjp1(:,:,:)=0.0_rsh
      flx_w2s_corin(:,:,:)=0.0_rsh 
-!$OMP END SINGLE
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!! coupler for some calculations specific to each model                  !!!!!!
@@ -840,10 +806,8 @@ MODULE sed_MUSTANG
 !!!! initialization
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if ! defined key_noTSdiss_insed
-!$OMP SINGLE  
    flx_w2s(nvp+1:nv_adv,:,:)=0.0_rsh
    flx_w2s(-1:0,:,:)=0.0_rsh
-!$OMP END SINGLE
 #endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -972,7 +936,6 @@ MODULE sed_MUSTANG
 
 !   1- reactualisation des hsed
 !   ---------------------------
-!$OMP DO SCHEDULE(static) PRIVATE(i,j,k)
      DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1) 
@@ -990,7 +953,6 @@ MODULE sed_MUSTANG
 #endif
       ENDDO
      ENDDO
-!$OMP END DO
 
 !      1b- OBC Cas test dune
 #if defined key_MARS && defined key_castest
@@ -1019,8 +981,6 @@ MODULE sed_MUSTANG
 !     3- reactualisation des cotes de fond de maille
 !        et de la surface libre
 !     ----------------------------------------------
-
-!$OMP DO SCHEDULE(static) PRIVATE(i,j)
      DO j=jfirst,jlast
      DO i=ifirst,ilast
       IF(h0_bedrock(i,j) .NE. -valmanq) THEN
@@ -1043,7 +1003,6 @@ MODULE sed_MUSTANG
       ENDIF
      ENDDO
      ENDDO
-!$OMP END DO
 #endif
 
 
@@ -1059,7 +1018,6 @@ MODULE sed_MUSTANG
 #ifdef key_MARS
 !     5- reactualisation des hx et hy (for MARS)
 !     -------------------------------
-!$OMP DO SCHEDULE(static) PRIVATE(i,j)
      DO j=jfirst,jlast
      DO i=ifirst,ilast
         IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1 .AND. i.GT.imin .AND. i.LT.imax) THEN
@@ -1071,7 +1029,6 @@ MODULE sed_MUSTANG
         ENDIF
      ENDDO
      ENDDO
-!$OMP END DO
 #endif
      
 #if defined key_MARS && defined key_MPI_2D 
@@ -1086,7 +1043,6 @@ MODULE sed_MUSTANG
 !     ---------------------------------------------------------------------
 #if defined key_oasis && defined key_oasis_mars_ww3       
        IF (l_transfer2hydro_dhsed) THEN  
-!$OMP DO SCHEDULE(static) PRIVATE(i,j)
            DO j=jfirst,jlast
 #ifdef key_MARS
              DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -1102,12 +1058,10 @@ MODULE sed_MUSTANG
                dhsed_save(i,j)=dhsed(i,j)
              ENDDO
            ENDDO
-!$OMP END DO
         END IF
 #endif
 
 #if defined MORPHODYN_MUSTANG_byHYDRO
-!$OMP DO SCHEDULE(static) PRIVATE(i,j)
         DO j=jfirst,jlast
          DO i=ifirst,ilast
            IF (l_MF_dhsed) THEN
@@ -1118,7 +1072,6 @@ MODULE sed_MUSTANG
            hsed_previous(i,j)=hsed(i,j)
          ENDDO
         ENDDO
-!$OMP END DO
 #endif
 
 !
@@ -1133,12 +1086,10 @@ MODULE sed_MUSTANG
 #endif
 #endif
 
-!$OMP SINGLE
         t_morpho=t_morpho+dt_morpho
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && defined MORPHODYN_MUSTANG_byHYDRO
         it_morphoYes=1
 #endif
-!$OMP END SINGLE
 
   END SUBROUTINE MUSTANG_morpho      
   
@@ -1719,7 +1670,6 @@ MODULE sed_MUSTANG
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-!$OMP DO SCHEDULE(RUNTIME)
      DO j=jfirst,jlast
 #ifdef key_MARS
        DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -1753,7 +1703,6 @@ MODULE sed_MUSTANG
 #endif
        ENDDO
      ENDDO
-!$OMP END DO
 
    END SUBROUTINE sed_MUSTANG_comp_z0sed
 
@@ -1790,7 +1739,6 @@ MODULE sed_MUSTANG
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-!$OMP DO SCHEDULE(RUNTIME)
      DO j=jfirst,jlast
 #ifdef key_MARS
        DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -1835,7 +1783,6 @@ MODULE sed_MUSTANG
 #endif
        ENDDO
      ENDDO
-!$OMP END DO
 
    END SUBROUTINE sed_MUSTANG_comp_z0hydro
 
@@ -1880,7 +1827,6 @@ MODULE sed_MUSTANG
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,ivp,tocdpe,depo)
       DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -1932,7 +1878,6 @@ MODULE sed_MUSTANG
 #endif
        ENDDO
        ENDDO
-!$OMP END DO
          
   END SUBROUTINE sed_MUSTANG_depflx
 
@@ -1992,17 +1937,9 @@ MODULE sed_MUSTANG
    !! * Executable part
 
 
-!$OMP SINGLE
     corflux(:,:,:)=1.0_rsh
     corfluy(:,:,:)=1.0_rsh
-!$OMP END SINGLE
 
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,altc1,extrap,ivp,alogaltc1sz0  &
-!$OMP ,hzi,izz        &
-#ifdef key_sand2D
-!$OMP ,hzisdbot       &
-#endif
-!$OMP ,rouse,rouse1,som,einstein,hzed,dzcche,ashmapwrouse)
       DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -2129,7 +2066,6 @@ MODULE sed_MUSTANG
 #endif
        ENDDO
        ENDDO
-!$OMP END DO 
          
 #ifdef key_MARS
     PRINT_DBG*, 'END SED_SANDCONCEXTRAP'
@@ -2202,18 +2138,6 @@ MODULE sed_MUSTANG
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,iv,ksmax,ksup,ksmaxa,isplit        &
-!$OMP ,dt1,toce,cvolgrv,csanmud,erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w       &
-!$OMP ,cvolp,volerod,poroa,poroam1,dflusve, xeros,sed_tocr_mixsed   &
-!$OMP ,diamgravsan,somgravsan,frmudcr1,cv_sed_tot,dzs_activelayer_ij        &
-!$OMP ,niter_ero_noncoh,niter_ero_coh,isthere_erosion                       &
-!$OMP ,dt_ero_max,dts2,mass_tot,cvolgrvsan,sommud,dzs_ini,poro_ini          &
-!$OMP ,frac_sed,mass_sed,sed_eros_flx_class_by_class,dt_ero,flx_bxij,flx_byij,cv_sed_ini &
-#if ! defined key_noTSdiss_insed || ! defined key_nofluxwat_IWS
-!$OMP ,porowater1,porowater_new   &
-#endif
-!$OMP ,sed_eros_flx,excespowr,heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron)
-!!!$OMP SINGLE
     DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -2991,7 +2915,6 @@ MODULE sed_MUSTANG
 
      END DO
    END DO
-!$OMP END DO
 
 #ifdef key_MARS
    PRINT_DBG*, 'FIN SED_EROSION'
@@ -3055,11 +2978,6 @@ MODULE sed_MUSTANG
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,iv,ksmax,ksup,ksmaxa,phieau_ero_ij,flx_s2w_eroij &
-!$OMP ,dt1,toce,cvolgrv,csanmud,erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w         &
-!$OMP ,cvolp,volerod,poroa,poroam1,dflusve, xeros,sed_tocr_mixsed,isplit          &
-!$OMP ,sed_eros_flx,excespowr,dzpoi,heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron)
-!!!$OMP SINGLE
       DO j=jfirst,jlast
 #ifdef key_MARS
         DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -3443,7 +3361,6 @@ MODULE sed_MUSTANG
 
       END DO
    END DO
-!$OMP END DO
 
 #ifdef key_MARS
    PRINT_DBG*, 'END SED_EROSION'
@@ -3756,36 +3673,17 @@ MODULE sed_MUSTANG
    !!----------------------------------------------------------------------
    !! * Executable part
 #if defined key_MUSTANG_debug
-!$OMP SINGLE
    IF (l_debug_effdep .AND. CURRENT_TIME> t_start_debug .AND. htot(i_MUSTANG_debug,j_MUSTANG_debug) > h0fond ) THEN
      print *,''
      print *,' ************************'
      print *,' ENTER sed_effdep_mixsed'
      print *,' ************************'
-   ENDIF
-!$OMP END SINGLE          
+   ENDIF        
 #endif
 
    ddzsici=-1000.0_rsh
-!$OMP SINGLE
-   iexchge_MPI_cvwat=0
-!$OMP END SINGLE          
+   iexchge_MPI_cvwat=0       
 
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,iv,flx_w2s_loc,fludep,frdep,isplit,   &
-!$OMP    ddzs,ddzs1,ddzs2,dzsa,dzsisu,dzsi,dzsaici,flx_w2s_loca,             &
-!$OMP    dzsgrv,dzssan,dzsmud,dzsnew,dzsa2,dzsa3,ddzs3,ddzs4,ddzs5,ddzs6,    &
-!$OMP    poroa,somalp,somala,cdepiv,porosi,porodep,fluxdissous,              &
-!$OMP    ddzsici,voldepgrv,voldepsan,masdepmud,dzskmanew,porewatera,         &
-!$OMP    sommud,cvolinigrv,cvolinisan,cvolp,cmudr,porewater,                 &
-!$OMP    dvolgrv,dvolsan,dmasmud,dmasmudgrav,dmasmudsand,cordepflu,          &
-!$OMP    cordepfluw,cordepflue,cordepflus,cordepflun,qdep,vitdepo,           &
-!$OMP    l_createnewlayer,mass_tot_dep, poro_mud_dep, poro_dep, dzs_dep,     &
-!$OMP    mass_tot, poro_muda, poro_mud_new,porewaterdep,                     &
-!$OMP    dzsmin_dep,dzsmina,crel_mud_new,crel_mud_dep,mass_sed,              &
-#ifdef key_MUSTANG_bedload
-!$OMP    flx_bedload_in,                                                     &    
-#endif
-!$OMP    frac_sed_dep, cv_sed_dep, frac_sed, frac_seda,frac_sed_depa,mass_tot_depa )  
       DO j=jfirst,jlast
 #ifdef key_MARS
         DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -4617,7 +4515,6 @@ MODULE sed_MUSTANG
           END IF ! test on htot
         END DO  ! loop on i
     END DO    ! loop on j
-!$OMP END DO
 
 #ifdef key_MARS
    PRINT_DBG*, 'FIN SED_EFFDEP'   
@@ -4675,12 +4572,9 @@ MODULE sed_MUSTANG
 
    ddzsici=-1000.0_rsh
    flx_w2s_loc(:)=0.0_rsh
-   frdep(:)=0.0_rsh
-!$OMP SINGLE          
-   iexchge_MPI_cvwat=0
-!$OMP END SINGLE          
+   frdep(:)=0.0_rsh        
+   iexchge_MPI_cvwat=0         
 
-!$OMP DO SCHEDULE(RUNTIME)   
       DO j=jfirst,jlast
 #ifdef key_MARS
         DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -5352,7 +5246,6 @@ MODULE sed_MUSTANG
           END IF ! test on htot
         END DO  ! loop on i
     END DO    ! loop on j
-!$OMP END DO
 
 #ifdef key_MARS
    PRINT_DBG*, 'END SED_EFFDEP'   
@@ -5568,7 +5461,6 @@ MODULE sed_MUSTANG
 
    !!----------------------------------------------------------------------
    !! * Executable part 
-!$OMP DO SCHEDULE(RUNTIME)   
    DO j=jfirst,jlast 
    
 #ifdef key_MARS
@@ -5606,7 +5498,6 @@ MODULE sed_MUSTANG
 #endif
       ENDDO
    ENDDO
-!$OMP END DO
 
   END SUBROUTINE sed_MUSTANG_slipdepo
 #endif
@@ -5661,10 +5552,6 @@ MODULE sed_MUSTANG
 
      PRINT_DBG*, 'BEGINNING OF  TEMPERATUR DIFFUSION in sediment '
 
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,iv,  &
-!$OMP dzsiin,ksmax,ksmin,somcmud, &
-!$OMP frmud,mu0_tempsed,hsedloc,                 &
-!$OMP disvi,dzssdt,hcrit,aa,bb,cc,dd,phi_surfsed,phi_bottsed)
      DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1) 
@@ -5824,8 +5711,6 @@ MODULE sed_MUSTANG
 
       ENDDO
     ENDDO
-!$OMP END DO
-
    
   END SUBROUTINE sed_MUSTANG_Temperatur_in_sed
 #endif
@@ -5916,27 +5801,10 @@ MODULE sed_MUSTANG
      dt_sed_cor=MAX(dt_dyninsed,dt_true)
      dt_sed_eff=dt_sed_cor+(CURRENT_TIME-t_dyninsed)
      dt_sed_inv=1.0_rsh/REAL(dt_sed_eff,rsh)
-!$OMP SINGLE
      phieau_s2w_consol(:,:)=0.0_rsh
-!$OMP END SINGLE
 
      PRINT_DBG*, 'DEBUT DE DIFFUSION et CONSOL et Bioturb '
 
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kp,iv,volpwak,celldry,volpwa_tot,  &
-!$OMP poroin,dzsiin,ksmax,ksmin,kl,winter,roro,rowinv,sed_rate,hinder,      &
-!$OMP volak,volakm1,dtrest,volpwk,sigmapsg,ivv,                             &
-!$OMP cseda,dtiter,sigmadjge,somdeltaro,halfmaslayer,loadograv,permeab,csednew, &
-!$OMP stateconsol,somcgrav,somcsan,somcmud,dtsdzs,dtsdzsmin,difbio,cvsednew, &
-!$OMP cvolp,rapcsed,dzsa,ksmaxa,ksmax_turb_part,ksmax_turb_diss,dzsam1,   &
-!$OMP poroam1,poroa,dzsisu,vola,vola_inv,                                 &
-#if ! defined key_noTSdiss_insed
-!$OMP disvi,dzssdt,hcrit,aa,bb,cc,dd,conc_bottom,xdifs1b,Sc,p,mu,nu,D0,   &
-#endif
-#if defined key_MUSTANG_V2
-!$OMP sommud,cvolgrvsan,frac_sed,   &
-#endif
-!$OMP volpwnv_tot)
-!!!$OMP SINGLE
      DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1) 
@@ -6821,15 +6689,14 @@ MODULE sed_MUSTANG
   
       ENDDO
     ENDDO
-!$OMP END DO
-!$OMP SINGLE
+
      t_dyninsed=CURRENT_TIME+dt_sed_cor
-!$OMP END SINGLE
+
     ELSE
-!$OMP SINGLE
+
             fluconsol(:,:,:)=0.0_rsh
             fludif(0:nv_adv,:,:)=0.0_rsh
-!$OMP END SINGLE
+
     ENDIF
    
   END SUBROUTINE sed_MUSTANG_consol_diff_bioturb
@@ -9529,9 +9396,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
     ENDIF
 #endif
 
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,dtmin,f_dt,dttemp,cvtotmud,iv1,iv2,  &
-!$OMP&   f_csum, dt1, mneg, Gval, NNin, NNout ,cv_tmp,f_ld50,f_ld10,f_ld90,   &
-!$OMP&   sum_flocs, f_g4, f_l4 )
      DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1) 
@@ -9697,8 +9561,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
       ENDIF
     ENDDO
   ENDDO
-!$OMP END DO
-
 
   PRINT_DBG*, 'END flocmod_main'
 

@@ -100,8 +100,6 @@
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-!$OMP DO SCHEDULE(RUNTIME) private(j,i,k,ivpc,iv,phi &
-!$OMP& ,cmes,De,phiv)  
       DO j = jfirst, jlast
       DO i = ifirst, ilast
            
@@ -234,8 +232,6 @@
 
        ENDDO
        ENDDO
-!$OMP END DO
-
 
   END SUBROUTINE sed_MUSTANG_settlveloc     
 
@@ -247,7 +243,6 @@
    !&E                 ***  ROUTINE sed_gradvit  ***
    !&E
    !&E ** Purpose : calculation of the turbulence energy G  depending on hydro code ?
-   !&E                 ATTENTION WE are in  PARALLEL OMP region
    !&E
    !&E ** Description : G= sqrt(turbulence dissipation/viscosity)
    !&E                 to be programmed using hydrodynamic knowledge
@@ -266,7 +261,7 @@
 #  include "mixing.h"
 #  include "ocean3d.h"
 
-   !! * Arguments (Private variables for OMP because locales variables)
+   !! * Arguments 
    INTEGER, INTENT(IN)                        :: ifirst,ilast,jfirst,jlast
    REAL(KIND=rsh),INTENT(IN)                  :: h0fond
 
@@ -275,7 +270,6 @@
    REAL(KIND=rsh) :: dist_surf_on_bottom,nuw
 
       nuw=1.0e-6
-!$OMP DO SCHEDULE(RUNTIME)
       DO j=jfirst,jlast
 #ifdef key_MARS
       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
@@ -314,7 +308,6 @@
 #endif
       ENDDO
       ENDDO
-!$OMP END DO
 
   END SUBROUTINE sed_gradvit
 
@@ -886,8 +879,7 @@
 
    !!--------------------------------------------------------------------------
    !! * Executable part
-   
-!$OMP SINGLE
+
      ! hypothese gradient nul aux frontieres 
      IF_MPI (ljmax == jmax) THEN
 #ifdef key_MARS 
@@ -991,8 +983,6 @@
         ENDDO
      ENDIF
 #endif
-
-!$OMP END SINGLE
 
 
    PRINT_DBG*, 'FIN SED_OBC_corflu'

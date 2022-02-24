@@ -1768,7 +1768,6 @@ ENDIF
 #endif
 
 #if defined MORPHODYN_MUSTANG_byHYDRO
-!$OMP DO SCHEDULE(static) PRIVATE(i,j)
            DO j=jfirst,jlast
              DO i=ifirst,ilast
                dhsed(i,j)=hsed0(i,j)-hsed(i,j)
@@ -1781,7 +1780,6 @@ ENDIF
 #endif
              ENDDO
            ENDDO
-!$OMP END DO
 #endif
 
 
