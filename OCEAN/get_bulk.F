@@ -632,7 +632,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # endif
                 uwnd(i,j)=val6
                 vwnd(i,j)=val7
-                wspd(i,j) = SQRT(uwnd(i,j)**2.0+vwnd(i,j)**2.0)
+                wspd(i,j) = SQRT(val6**2.0+val7**2.0)
               enddo
             enddo
           endif
