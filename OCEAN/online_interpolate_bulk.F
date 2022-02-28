@@ -111,10 +111,6 @@
             tairg(i,j,iblkrec)=tairg(i,j,iblkrec)-273.15
           enddo
         enddo
-# ifdef MPI
-	call exchange_r2d_tile(1,Lm,1,Mm,
-     &                         tairg(START_2D_ARRAY,iblkrec))
-# endif
 
       elseif  (blkvar_id.eq.2) then
 !
@@ -139,10 +135,6 @@
           enddo
         enddo
 #endif        
-# ifdef MPI
-	call exchange_r2d_tile(1,Lm,1,Mm,
-     &                         rhumg(START_2D_ARRAY,iblkrec))
-# endif
 
       elseif (blkvar_id.eq.3) then
 !
@@ -308,10 +300,6 @@
      &                lonr(GLOBAL_2D_ARRAY), 
      &                latr(GLOBAL_2D_ARRAY),
      &                patmg(GLOBAL_2D_ARRAY,iblkrec))
-# ifdef MPI
-	call exchange_r2d_tile(1,Lm,1,Mm,
-     &                         patmg(START_2D_ARRAY,iblkrec))
-#endif
 # endif
       endif
  
