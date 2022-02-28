@@ -1,8 +1,7 @@
 #include "cppdefs.h"
 !---------------------------------------------------------------------------
 MODULE coupler_MUSTANG
-!---------------------------------------------------------------------------
-   
+!--------------------------------------------------------------------------- 
 
 #if defined MUSTANG 
 
@@ -19,9 +18,7 @@ MODULE coupler_MUSTANG
    !&E     subroutine coupl_MUSTANG2hydro       ! transfert from MUSTANG to hydro code
    !&E
 !&E===================================================================================================================
-#ifdef key_MARS
-#include "toolcpp.h"
-#endif
+
 #include "coupler_define_MUSTANG.h"
 
    USE comMUSTANG
@@ -30,27 +27,11 @@ MODULE coupler_MUSTANG
    USE module_substance
 
    IMPLICIT NONE
-   
-   !! * Interface
-   
-   
-   !! * Accessibility
 
    ! functions & routines of this module, called outside :
-#if ! defined key_MARS 
-    PUBLIC coupl_conv2MUSTANG, coupl_MUSTANG2hydro
-#else
-    PUBLIC coupl_conv2MUSTANG
-#endif
+   PUBLIC coupl_conv2MUSTANG, coupl_MUSTANG2hydro
 
    PRIVATE
-
-
-#if ! defined key_MARS
-   !! * Shared or public module variables (variables used by MUSTANG but issued from hydro model or substances module  )
-   !! * for MARS_MODEL, these variables are stored in comvar.. or comsubstance which are not the same for other model
-
-#endif
  
  CONTAINS
    !!===========================================================================
@@ -73,7 +54,7 @@ MODULE coupler_MUSTANG
    !&E                    domain limited by the coast thanks to ig,id,jb,jh (non calculation at land)
    !&E
    !&E ** Description :  
-   !&E  arguments IN : BATHY_H0,ssh,WATER_CONCENTRATION, SALINITY_MOD, TEMPERATURE_MOD
+   !&E  arguments IN : BATHY_H0,ssh,WATER_CONCENTRATION
    !&E  arguments OUT: no (all variables  in comMUSTANG)
    !&E     
    !&E   variables OUT :   
@@ -105,47 +86,25 @@ MODULE coupler_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-#ifdef key_MARS
-   USE comvars2d,    ONLY : ig,id,jb,jh,fwet
-   USE comvars3d,    ONLY : dsigu,sigw,sig
-   USE toolgeom,     ONLY : f_dzu
-   USE_MPI toolmpi,    ONLY : ex_i_rsh,ex_j_rsh
-#if defined key_siggen || defined key_gencoord
-   USE toolgeom,       ONLY : f_hzu
-#endif
-#else
+
 #include "scalars_F90.h"
-#endif
+
    !! * Arguments 
    INTEGER, INTENT(IN)                           :: ifirst,ilast,jfirst,jlast,iappel
    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)       :: BATHY_H0                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(IN):: ssh                         
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION  
-   !REAL(KIND=rsh),DIMENSION(ARRAY_TEMPSAL), INTENT(IN)   :: SALINITY_MOD,TEMPERATURE_MOD  
-   
+   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
    INTEGER                            :: iv,k,i,j
-
-
 
    !!---------------------------------------------------------------------------
    !! * Executable part
    DO j=jfirst,jlast
-#ifdef key_MARS
-      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-        IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1) THEN
-#else
       DO i=ifirst,ilast
-      ! ATTENTION : not need to calculate at boundaries meshes where MUSTANG is not applied
-#endif
+      ! WARNING : not need to calculate at boundaries meshes where MUSTANG is not applied
 
            ! extraction of  concentrations in the bottom of the water column
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MARS
-            sal_bottom_MUSTANG(i,j)=SALINITY_MOD(1,i,j)
-            temp_bottom_MUSTANG(i,j)=TEMPERATURE_MOD(1,i,j)
-            cw_bottom_MUSTANG(:,i,j)=WATER_CONCENTRATION(:,1,i,j)
-#else
 ! CROCO vecteur au temps 1, 2 ou 3 ????
 # ifdef SALINITY
             sal_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,1,itemp+1)
@@ -158,87 +117,45 @@ MODULE coupler_MUSTANG
             temp_bottom_MUSTANG(i,j)=15.
 # endif
             cw_bottom_MUSTANG(1:nv_adv,i,j)=WATER_CONCENTRATION(i,j,1,1,itsubs1:itsubs2)
-#endif
+
             ! thickness of the bottom water layer or altitude at the top of the bottom layer
             ! + water density in the bottom water layer
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MARS
-            epn_bottom_MUSTANG(i,j)=f_dzu(BATHY_H0(i,j),ssh(i,j),1,i,j)
-        ENDIF
-#else
+
       ! CROCO z_w connu via scalars.h
                epn_bottom_MUSTANG(i,j)=z_w(i,j,1)-z_w(i,j,0)
                roswat_bot(i,j)= rho(i,j,1)+rho0  
-#endif
 
        ENDDO
    ENDDO
 
    IF(iappel > 0 ) THEN
-   ! ATTENTION : need to calculate htot at all meshes (imin+1:imax, jmin+1: jmax)
+   ! WARNING : need to calculate htot at all meshes (imin+1:imax, jmin+1: jmax)
    ! at interior meshes : for ljmin-1 and ljmax+1 , BATHY_H0 and ssh are known if MPI exchange was done after change
     DO j=jfirst-1,jlast+1
       DO i=ifirst-1,ilast+1
-
           !  htot : total water height
-          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MARS
-          htot(i,j)=BATHY_H0(i,j)+ssh(i,j)
-#else
-        ! CROCO
           htot(i,j)=z_w(i,j,N)+h(i,j)
-#endif
-
        ENDDO
     ENDDO
-
-!     MPI exchange of total heights if needed in i+1 or i-1.
-!      in the case of lateral erosion and deposit slip
-!      and if not MPI exchange before
-!#ifdef key_MARS     
-!OMPMPI barrier
-!OMPMPI master
-!    CALL_MPI ex_i_rsh(-2,2,1,liminm2,limaxp2,ljminm2,ljmaxp2,htot(liminm2:limaxp2,ljminm2:ljmaxp2))
-!    CALL_MPI ex_j_rsh(-2,2,1,liminm2,limaxp2,ljminm2,ljmaxp2,htot(liminm2:limaxp2,ljminm2:ljmaxp2))
-!OMPMPI end master
-!OMPMPI barrier
-!OMPMPI flush(htot)
-!#endif
 
    ENDIF
    IF (iappel == 1) THEN
    ! first call before evaluation of settling velocities, erosion, consolidation, diffusion
    
      DO j=jfirst,jlast
-#ifdef key_MARS
-       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-        IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1) THEN
-#else
        DO i=ifirst,ilast
-#endif
-   
           ! alt_cw1 : altitude of the computation point of Cw in the  bottom layer
           ! could be eliminated if the concentration calculation point is always in the middle of the layer
           ! but if not true, you have to calculate this altitude differently
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MARS
-            alt_cw1(i,j)=0.5_rsh*f_dzu(BATHY_H0(i,j),ssh(i,j),1,i,j)
-#else
-   ! other modele than MARS
-     ! CROCO
           alt_cw1(i,j) = z_r(i,j,1)-z_w(i,j,0) 
-#endif
-          
-
-#ifdef key_MARS
-        ENDIF
-#endif
        ENDDO
      ENDDO
 
     ELSE IF (iappel==2) THEN
-#if ! defined key_MARS
-   ! second call before evaluation of sediment deposition :  cumulated settling flux only if no key_MARS
+
+   ! second call before evaluation of sediment deposition :  cumulated settling flux 
 
      DO j=jfirst,jlast
       DO i=ifirst,ilast
@@ -251,16 +168,14 @@ MODULE coupler_MUSTANG
          ENDDO
      ENDDO
      ENDDO
-#endif
+
     ENDIF
 
   END SUBROUTINE coupl_conv2MUSTANG      
 
    !!==============================================================================
-#if ! defined key_MARS
   SUBROUTINE coupl_MUSTANG2hydro(ifirst,ilast,jfirst,jlast)
                                           
-
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE coupl_MUSTANG2flx ***
    !&E
@@ -280,22 +195,17 @@ MODULE coupler_MUSTANG
    !&E--------------------------------------------------------------------------
    !! * Modules used
 
-
    !! * Arguments 
-   INTEGER, INTENT(IN)                                    :: ifirst,ilast,jfirst,jlast                  
- 
-   
+   INTEGER, INTENT(IN)                                    :: ifirst,ilast,jfirst,jlast                     
    !! * Local declarations
    INTEGER                            :: iv,k,i,j
-
-
 
    !!---------------------------------------------------------------------------
    !! * Executable part
 
    ! exchange erosion and settling fluxes
 
-# if defined MUSTANG && defined MUSTANG_CORFLUX
+# if defined MUSTANG_CORFLUX
       DO j=jfirst-1,jlast
       DO i=ifirst,ilast
         DO iv=1,nvp
@@ -312,7 +222,6 @@ MODULE coupler_MUSTANG
       ENDDO
       ENDDO
 # endif
-
 
       DO j=jfirst,jlast
       DO i=ifirst,ilast
@@ -334,10 +243,7 @@ MODULE coupler_MUSTANG
       ENDDO
 
   END SUBROUTINE coupl_MUSTANG2hydro    
-#endif
-
-   !!==============================================================================
-#endif
+!!==============================================================================
+#endif /* ifdef MUSTANG */
 
 END MODULE coupler_MUSTANG
-

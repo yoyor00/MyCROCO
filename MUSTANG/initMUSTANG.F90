@@ -39,37 +39,9 @@ MODULE initMUSTANG
    USE sed_MUSTANG_HOST,  ONLY : sedinit_fromfile
    USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
 
-#ifdef key_MARS
-   USE sed_MUSTANG_MARS,  ONLY : bathy_actu_fromfile
-#if defined  key_MPI_2D 
-   USE sed_MUSTANG_MARS,  ONLY :  sed_exchange_hxe_MARS
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && defined key_MPI_2D
-   USE sed_MUSTANG_MARS,  ONLY :  sed_exchange_maskxybedload_MARS
-#endif
-#endif
-
-   USE ionc4,       ONLY : ionc4_openr,ionc4_read_subxyt,ionc4_read_subzxyt,ionc4_close,  &
-                           ionc4_createfile,ionc4_read_xy 
-   USE comvars2d,    ONLY : iscreenlog,ierrorlog,iwarnlog,dt,ig,id,l_initfromfile
-#ifdef key_MUSTANG_bedload
-   USE comvars2d,    ONLY : hx,hy
-#endif
-   USE comsubstance, ONLY : nvpc,igrav1,igrav2,imud1,imud2,isand1,isand2,irk_fil,ros_r, &
-                            diam_r,l_subs2d,name_var,tocd,  &
-                            dhmin,unit_modif_mudbio_N2dw,irkm_var_assoc
-   USE parameters,   ONLY : valmanq,l_testcase
-   USE_MPI toolmpi,  ONLY : MASTER
-
-#if defined key_oasis && defined key_oasis_mars_ww3
-   USE comoasis,     ONLY : l_ww3morpho
-#endif
-   
-#else
-    !!  To Program
    !USE sed_MUSTANG_HOST,  ONLY : MUSTANG_morphoinit_mesh,sed_exchange_hxe_HOST
    USE comsubstance
    USE module_substance
-#endif
 
    IMPLICIT NONE
 
@@ -111,9 +83,7 @@ MODULE initMUSTANG
    !! * Executable part
 
     ! reading namelist paraMUSTANGV1.txt or  or V2.txt
-#if ! defined key_MARS
     CALL MUSTANG_param('r')
-#endif
     CALL MUSTANG_alloc
     CALL MUSTANG_init_param()
 #ifdef key_MUSTANG_flocmod
@@ -123,10 +93,8 @@ MODULE initMUSTANG
     cp_s(:,:)=cp_suni
     emissivity_s(:,:)=emissivity_sed
 #endif
-    
-#if ! defined key_MARS
+
     CALL MUSTANG_param('w')  
-#endif
 
     PRINT_DBG*, 'END MUSTANG_initialization'
 
@@ -167,11 +135,7 @@ MODULE initMUSTANG
 #ifdef key_MUSTANG_V2
    USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
 #ifdef key_MUSTANG_bedload
-#if defined key_MARS
-   USE sed_MUSTANG_MARS,  ONLY : sed_bottom_slope_bedload_MARS
-#else
    USE sed_MUSTANG_HOST,  ONLY : sed_bottom_slope
-#endif
 #endif
 #endif
 
@@ -209,12 +173,9 @@ MODULE initMUSTANG
       ! reading new bathy issued from a previous run with morphocoupl 
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       IF(l_bathy_actu) THEN
-#if defined key_MARS
         ! this routine depends on hydrodynamic hos model because reading save file from a revious run
-        CALL bathy_actu_fromfile(BATHY_H0)
-#else
-     ! To Program
-#endif
+        ! CALL bathy_actu_fromfile(BATHY_H0) **TODO** has not been program for CROCO
+
       ENDIF
 
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
@@ -224,11 +185,7 @@ MODULE initMUSTANG
 #if defined MORPHODYN_MUSTANG_byHYDRO
       it_morphoYes=0
 #endif
-#ifdef key_MARS
-      CALL sed_bottom_slope_bedload_MARS(ifirst,ilast,jfirst,jlast,BATHY_H0,CELL_DX,CELL_DY)
-#else
       CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, BATHY_H0)
-#endif
 #endif
 
 
@@ -245,11 +202,7 @@ MODULE initMUSTANG
       ! porosity estimation
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       DO j=jfirst,jlast
-#ifdef key_MARS
-        DO i=MAX0(ifirst,ig(j)),MIN0(ilast,id(j))
-#else
         DO i=ifirst,ilast
-#endif
           IF(ksma(i,j).NE.0)THEN
 
 #ifdef key_MUSTANG_splitlayersurf
@@ -333,16 +286,11 @@ MODULE initMUSTANG
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       ! verification of CPP keys for compatiblity
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-#ifdef key_MARS
-   IF(.NOT. l_testcase) THEN
-#endif
      CALL MUSTANG_compatibility()
-#ifdef key_MARS
-   ENDIF
-#endif
+
     
 #ifdef key_MUSTANG_debug
-#if defined key_MARS  || defined SPHERICAL
+#if defined SPHERICAL
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       ! initialization of position of point where we want informations for debug
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
@@ -1196,11 +1144,7 @@ ENDIF
       ENDIF
 
       DO j=jfirst,jlast
-#ifdef key_MARS
-        DO i=MAX0(ifirst,ig(j)),MIN0(ilast,id(j))
-#else
         DO i=ifirst,ilast
-#endif
           IF(BATHY_H0(i,j) /= -valmanq) THEN
             DO k=ksmi(i,j),ksma(i,j)
               c_sedtot(k,i,j)=0.0_rsh
@@ -1256,69 +1200,12 @@ ENDIF
 
       ! non uniform bed :
       ! -----------------------
-
       PRINT*, 'NON UNIFORM BED COVERAGE'
       PRINT*, 'you have to read a netcdf file describing for each grid cell (file_inised)'
       PRINT*, 'the values for hsed(i,j),z0sed(i,j),ksmi(i,j),ksma(i,j)'
       PRINT*, 'c_sedtot(i,j),cini_sed(iv,iv=1:nvstate)'
       STOP
       
-
-!      ALLOCATE(cv_sedini(1:nvpc))
-! variables a declarer
-! nom du fichier des numeros de facies a mettre dans le paraMUSTANGV1 or paraMUSTANGV2
-! lire dans ce fichier i,j,hsed(i,j),z0sed(i,j),ksmi_file(i,j),ksma_file(i,j)
-!                      c_sedtot_file(i,j),cini_sed(iv,iv=1:nvstate)
-!
-!      ksmi(PROC_IN_ARRAY)=ksmi_file(PROC_IN_ARRAY)
-!      DO j=jfirst,jlast
-!!#ifdef key_MARS
-!        DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-!!#else
-!!        DO i=ifirst,ilast
-!!#endif
-!          DO k=ksmi(i,j),ksma(i,j)
-!            c_sedtot(k,i,j)=c_sedtot_file(i,j)
-!            somalp=0.
-!            DO iv=1,nvpc
-!            ! - constitutive variables : cini_sed as percentage of sediment mass
-!              cv_sed(iv,k,i,j)=cini_sed(iv)*c_sedtot(k,i,j)
-!              somalp=somalp+cv_sed(iv,k,i,j)/ros(iv)
-!            ENDDO
-!            poro(k,i,j)=1.-somalp
-!            DO iv=nvpc+1,nvp
-!            ! - non constitutive variables : cini_sed in conc/kg of sediment
-!              cv_sed(iv,k,i,j)=cini_sed(iv)*c_sedtot(k,i,j)
-!            ENDDO
-!            DO iv=nvp+1,nv_adv
-!            ! - dissolved variables : cini_sed in conc/m3 of pore water
-!             cv_sed(iv,k,i,j)=cini_sed(iv)
-!            ENDDO
-!            cv_sed(-1,k,i,j)=tini_sed
-!            cv_sed( 0,k,i,j)=sini_sed
-!          ENDDO
-!
-!  reinitializes sediment thickness
-!    !!! Concentration massique
-!       IF(l_init_hsed) THEN
-!          DO iv=1,nvpc
-!         ! constitutive variables : cini_sed in % of cseduni
-!           cv_sedini(iv)=0.0_rsh
-!           DO k=ksmi(i,j),ksma(i,j)
-!              cv_sedini(iv)=cv_sedini(iv)+cv_sed(iv,k,i,j)
-!           ENDDO
-!          ENDDO
-!          CALL MUSTANG_init_hsed(cv_sedini)
-!          hsed(i,j)=hsed_new
-!          IF (hsed(i,j) == 0.0_rsh) ksma(i,j)=0
-!        ENDIF
-
-
-!        ENDDO
-!      ENDDO
-
-!      DEALLOCATE(cv_sedini)
-
     ENDIF
 !
 !   END NON UNIFORM BED COVERAGE L_UNISED
@@ -1328,11 +1215,7 @@ ENDIF
 !   ---------------------
 
     DO j=jfirst,jlast
-#ifdef key_MARS
-      DO i=MAX0(ifirst,ig(j)),MIN0(ilast,id(j))
-#else
       DO i=ifirst,ilast
-#endif
         IF(ksma(i,j).NE.0)THEN
           dzsf=hsed(i,j)/float(ksma(i,j)-ksmi(i,j)+1)
           DO k=ksmi(i,j),ksma(i,j)
@@ -1343,19 +1226,6 @@ ENDIF
         ENDIF
       ENDDO
     ENDDO
-!#if defined CHANNEL  || defined DUNE
-!#if defined key_ANA_bedload  || defined ANA_DUNE
-!!    dzs(1,i,j)=1.
-!!    dzs(2,i,j)=1.
-!!    dzs(3:11,i,j)=0.1
-!    dzs(:,:,:)=0.2727
-!#else
-!!    dzs(1,i,j)=1.
-!!    dzs(2,i,j)=1.
-!!    dzs(3:10,i,j)=0.1
-!    dzs(:,:,:)=0.3
-!#endif
-!#endif
 
 ! DZSmax non uniform
     IF(.NOT. l_dzsmaxuni) THEN
@@ -1388,8 +1258,7 @@ ENDIF
 
        ! or to be read in a data file (to be programmed) 
         
-    ENDIF
-    
+    ENDIF 
     
     PRINT_DBG*, 'END sed_MUSTANG_sedINIT'
 
@@ -1555,9 +1424,6 @@ ENDIF
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-#ifdef key_MARS
-   USE comvars2d,      ONLY : hx,hy,ig,id,jb,jh
-#endif
 
    !! * Arguments 
    INTEGER, INTENT(IN)                    :: ifirst,ilast,jfirst,jlast
@@ -1582,22 +1448,11 @@ ENDIF
            ! morpho = 0 if depth not vary
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#ifdef key_MARS
-        morphox(ARRAY_morphox)=1.0_rsh
-        morphoy(ARRAY_morphoy)=1.0_rsh
-#else
         morpho0(ARRAY_morpho)=1.0_rsh
-#endif
        ! morpho=0 aux limites du domaine
-#ifdef key_MARS
-        IF(limin == imin)morphox(imin:imin+1,:)=0.0_rsh
-        IF(limax == imax)morphox(imax-1:imax,:)=0.0_rsh
-        IF(ljmin == jmin)morphoy(:,jmin:jmin+1)=0.0_rsh
-        IF(ljmax == jmax)morphoy(:,jmax-1:jmax)=0.0_rsh
-#else
-     ! To Program
+
+     !  **TODO** To Program
      !   morpho0(boundaries)=0.0_rsh
-#endif
        
         ! call a special routine if morpho must be intialize at 0 in some meshes
         !     routine in sed_MUSTANG_HOST
@@ -1620,23 +1475,12 @@ ENDIF
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       DO j=jfirst,jlast
-#ifdef key_MARS
-       DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
        DO i=ifirst,ilast
-      !  ATTENTION : not in first and last mesh on i and j axis (boundaries)
-#endif
-#ifdef key_MARS
-        IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1) THEN
-#endif
+      !  WARNING : not in first and last mesh on i and j axis (boundaries)
           hsed(i,j)=0.0_rsh
           DO k=ksmi(i,j),ksma(i,j)
             hsed(i,j)=hsed(i,j)+dzs(k,i,j)
           ENDDO
-          
-#ifdef key_MARS
-        ENDIF
-#endif
        ENDDO
       ENDDO       
 
@@ -1645,12 +1489,8 @@ ENDIF
         IF (l_MF_dhsed) THEN
 #endif
          DO j=jfirst,jlast
-#ifdef key_MARS
-           DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
            DO i=ifirst,ilast
-           !  ATTENTION : not in first and last mesh on i and j axis (boundaries)
-#endif
+           !  WARNING: not in first and last mesh on i and j axis (boundaries)
              hsed_previous(i,j)=hsed(i,j)
            ENDDO
          ENDDO       
@@ -1661,12 +1501,8 @@ ENDIF
         IF(.NOT.l_repsed)THEN   
           hsed0(:,:)=0.0_rsh
           DO j=jfirst,jlast
-#ifdef key_MARS
-            DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
             DO i=ifirst,ilast
-           !  ATTENTION : not in first and last mesh on i and j axis (boundaries)
-#endif
+           !  WARNING : not in first and last mesh on i and j axis (boundaries)
               hsed0(i,j)=hsed(i,j)
             ENDDO
           ENDDO
@@ -1694,73 +1530,26 @@ ENDIF
            !!  *5*  update bathy and water elevation if initalisation from file !!!
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          DO j=jfirst,jlast
-#ifdef key_MARS
-          DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-           IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1) THEN
-#else
           DO i=ifirst,ilast
-#endif
              !ssh(i,j)=MAX(ssh(i,j),-BATHY_H0(i,j))         
              SURF_ELEVATION_ij=MAX(SURF_ELEVATION_ij,-BATHY_H0(i,j))         
-#ifdef key_MARS          
-           ENDIF
-#endif
           ENDDO
          ENDDO
          
            !!  *6* echange MPI of BATHY_H0 and WATER_ELEVATION for neighboring cells
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-#if defined key_MARS && defined key_MPI_2D 
-           CALL sed_exchange_hxe_MARS(1,xh0=BATHY_H0,xssh=WATER_ELEVATION)
-#else
-            !! To Program
-#endif
+           !! To Program, has not been program for CROCO **TODO** CALL sed_exchange_hxe_MARS(1,xh0=BATHY_H0,xssh=WATER_ELEVATION)
 
        ENDIF   ! endif l_repsed
 
-#ifdef key_MARS
-           !!  *7* update hx and hy a initial time
-           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-
-         DO j=jfirst,jlast
-          DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-              hxi(i,j)=hx(i,j)
-              hyi(i,j)=hy(i,j)
-              hx(i,j)=morphox(i,j)*(MIN(BATHY_H0(i,j),BATHY_H0(i+1,j))-h0fond)+(1.0_rsh-morphox(i,j))*hxi(i,j)
-              hy(i,j)=morphoy(i,j)*(MIN(BATHY_H0(i,j),BATHY_H0(i,j+1))-h0fond)+(1.0_rsh-morphoy(i,j))*hyi(i,j)
-!?            hx(i,j)=morphox(i,j)*(MIN(BATHY_H0(i,j),BATHY_H0(i+1,j))-h0fond)                                          &
-!?	            +(1.0_rsh-morphox(i,j))*(MIN(hxi(i,j),(MIN(BATHY_H0(i,j),BATHY_H0(i+1,j))-h0fond)))
-!?            hy(i,j)=morphoy(i,j)*(MIN(BATHY_H0(i,j),BATHY_H0(i,j+1))-h0fond)                                          &
-!?	            +(1.0_rsh-morphoy(i,j))*(MIN(hyi(i,j),(MIN(BATHY_H0(i,j),BATHY_H0(i,j+1))-h0fond)))
-          ENDDO
-         ENDDO
-         
-           !!  *8* echange MPI of hx and hy for neighboring cells (only for MARS)
-          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-#if defined key_MPI_2D 
-         CALL sed_exchange_hxe_MARS(2)
-#else
-            !! To Program
-#endif
-#endif
 
           !!  *9* transfer dhsed (variation from initial time) if need for coupling WW3 with oasis
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
 #if defined key_oasis && defined key_oasis_mars_ww3       
          IF (l_transfer2hydro_dhsed) THEN  
            DO j=jfirst,jlast
-#ifdef key_MARS
-             DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-
-          !plh attention dans ce qui suit, ne faut-il pas ajouter la min ou max de (hy-BATHY_H0)(1-morphoy),(hx-BATHY_H0)(1-morphox)?
-               dhsed(i,j)=hsed0(i,j)-hsed(i,j)+((hy(i,j)-BATHY_H0(i,j))*(1.0_rsh-morphoy(i,j)))   &
-                                              +((hx(i,j)-BATHY_H0(i,j))*(1.0_rsh-morphox(i,j)))
-#else
              DO i=ifirst,ilast
                dhsed(i,j)=hsed0(i,j)-hsed(i,j)
-
-#endif
-
                dhsed_save(i,j)=dhsed(i,j)
              ENDDO
            ENDDO
@@ -1781,7 +1570,6 @@ ENDIF
              ENDDO
            ENDDO
 #endif
-
 
       ENDIF        ! endif l_morphocoupl
 
@@ -1828,25 +1616,10 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   !&E
   !&E--------------------------------------------------------------------------
 
-
-#ifdef key_MARS
-  USE parameters,   ONLY : l_testcase
-  USE comvars2d,    ONLY : iscreenlog
-  USE comsubstance, ONLY : irk_fil,diam_r,nvpc,   &
-                           cini_sed_r, irkm_var_assoc,ros_r,unit_modif_mudbio_N2dw
-#ifdef key_MUSTANG_flocmod
-  USE comsubstance, ONLY : nv_mud
-  USE parameters,   ONLY : num_testcase
-
-#endif
-
-#else
   USE comsubstance
-#endif
 
   !! * Arguments
   LOGICAL, INTENT(IN), OPTIONAL   :: l_filesubs
-
   !! * Local declarations
   INTEGER               :: iv
   CHARACTER(len=lchain) :: filepc
@@ -1859,13 +1632,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   ELSE
     l_filesubsr=.FALSE.
   ENDIF
-
-!  allocation of 1DV variables 
-  !ALLOCATE(ros(nvp))
-  !ALLOCATE(diam_sed(nvp))
-  
-  !ros(1:nvp)=0.0_rsh
-  !diam_sed(1:nvp)=0.0_rsh
   
   ALLOCATE(ws_sand(nvp))        
   ALLOCATE(diamstar(nvp))
@@ -1873,12 +1639,10 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   ALLOCATE(stresscri0(nvp))
   ALLOCATE(tetacri0(nvp))
   ALLOCATE(xnielsen(nvp))
-#if ! defined key_MARS
   ALLOCATE (typart(-1:nv_adv))
   typart(-1:0)=0.0_rsh
   typart(1:nvpc)=1.0_rsh
   typart(nvpc+1:nv_adv)=0.0_rsh
-#endif
 #ifdef key_MUSTANG_V2
   ALLOCATE(E0_sand(nvp))
   E0_sand(1:nvp)=0.0_rsh
@@ -1951,19 +1715,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   tenfonw(PROC_IN_ARRAY)=0.0_rsh
   ustarbot(PROC_IN_ARRAY)=0.0_rsh
   
-#if defined key_MARS && defined key_castest_2DVSN
-   tenfoncshtx_jmin=0.0_rsh
-#ifdef key_wave_crossshore
-   ALLOCATE(hwave(jmin:jmax))
-    hwave(:)=0.0_rsh
-   ALLOCATE(uwave(jmin:jmax))
-   ALLOCATE(wave_hs(PROC_IN_ARRAY))
-   riog_valid_min_wave_hs=-0.1
-   riog_valid_max_wave_hs=20.0
-   name_out_wave_hs="hs"
-#endif
-#endif
-
   dzsmax(PROC_IN_ARRAY)=0.0_rsh
   htot(PROC_IN_ARRAY_m2p2)=0.0_rsh
   alt_cw1(PROC_IN_ARRAY)=0.0_rsh
@@ -2143,24 +1894,9 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
 ! Initialization
   ALLOCATE(cini_sed(nv_state))
   
-#ifdef key_MARS
-  IF ((.NOT.l_testcase) .OR. (l_testcase .AND. l_filesubsr)) THEN
-     DO iv=1,nvp
-       ros(iv)=ros_r(irk_fil(iv))
-       diam_sed(iv)=diam_r(irk_fil(iv))
-     ENDDO
-     ! def of inital concentrations in sediment and for particulate variable MUDB 
-     ! conversion of initial value in sediment expressed in mmole/kg (as NoCP variable)
-     ! in kg/kg of sediment
-     DO iv=1,nv_state
-       cini_sed(iv)=cini_sed_r(irk_fil(iv))*unit_modif_mudbio_N2dw(irk_fil(iv))
-     ENDDO
-  ENDIF
-#else
      DO iv=1,nv_adv
        cini_sed(iv)=cini_sed_r(irk_fil(iv))*unit_modif_mudbio_N2dw(irk_fil(iv))
-     ENDDO
-#endif    
+     ENDDO   
 
 #ifdef key_Pconstitonly_insed 
      nv_use=nvpc
@@ -2184,25 +1920,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
 !!!!!!!!!!!!!!!!!!!!
   IF(l_morphocoupl) THEN
 !! Warning : no hx, hy in other model than MARS 
-#ifdef key_MARS
-      ALLOCATE(hsed0(PROC_IN_ARRAY))
-      ALLOCATE(hsed_previous(PROC_IN_ARRAY))
-#if defined key_oasis && defined key_oasis_mars_ww3  
-      ALLOCATE(dhsed_save(PROC_IN_ARRAY))  
-#endif
-      ALLOCATE(morphox(ARRAY_morphox))
-      ALLOCATE(morphoy(ARRAY_morphoy))
-      ALLOCATE(hxi(ARRAY_hxi))
-      ALLOCATE(hyi(ARRAY_hyi))
-      ALLOCATE(h0_bedrock(ARRAY_h0_bedrock))
-      hxi(ARRAY_hxi)=0.0_rsh
-      hyi(ARRAY_hyi)=0.0_rsh
-      hsed0(PROC_IN_ARRAY)=0.0_rsh
-      hsed_previous(PROC_IN_ARRAY)=0.0_rsh
-#if defined key_oasis && defined key_oasis_mars_ww3  
-      dhsed_save(PROC_IN_ARRAY)=0.0_rsh
-#endif
-#else
       ALLOCATE(morpho0(ARRAY_morpho))
       ALLOCATE(h0_bedrock(ARRAY_h0_bedrock))
       ALLOCATE(hsed0(PROC_IN_ARRAY))
@@ -2212,10 +1929,9 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
 #endif
       hsed0(PROC_IN_ARRAY)=0.0_rsh
       hsed_previous(PROC_IN_ARRAY)=0.0_rsh
-#endif
+
   ENDIF
 
-#if ! defined key_MARS
  !! declaration of the MUSTANG variables needed in the hydro model 
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ALLOCATE(EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w))
@@ -2232,17 +1948,7 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS)=0.0_rsh
   
   ALLOCATE(fwet(PROC_IN_ARRAY))
-  ALLOCATE(fwetp(PROC_IN_ARRAY))
   fwet(:,:)=1.0_rsh
-  fwetp(:,:)=1.0_rsh
-
-  ! if temperature and salinity not ranged in the same table as substances concentrations
-  !ALLOCATE(EROS_FLUX_s2w_TEMP(ARRAY_EROS_FLUX_s2w_TEMPSAL))
-  !ALLOCATE(EROS_FLUX_s2w_SAL(ARRAY_EROS_FLUX_s2w_TEMPSAL))
-  !EROS_FLUX_s2w_TEMP(ARRAY_EROS_FLUX_s2w_TEMPSAL)=0.0_rsh
-  !EROS_FLUX_s2w_SAL(ARRAY_EROS_FLUX_s2w_TEMPSAL)=0.0_rsh
-
-#endif
   
 #ifdef key_MUSTANG_flocmod
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

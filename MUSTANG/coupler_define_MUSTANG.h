@@ -144,13 +144,6 @@
 !*/
 # define EROS_FLUX_s2w flx_s2w_CROCO /* Erosion flux from sediment to water  */
 
-/* if TEMP and SAL not inclued in other concentrations table
-!#if ! defined key_MARS  
-!# define EROS_FLUX_TEMP_s2w ??
-!# define EROS_FLUX_SAL_s2w ??
-!#endif
-*/
-
 # define SETTL_FLUX_w2s flx_w2s_CROCO  /* Tendance Flux de depot eau vers sediment (=flx_s2w in MARS) only for particulate */
 # define CORFLUX_SAND corflux_CROCO /* correction transport Flux  for sands in hydro module (=corflux (iv,i,j))*/
 # define CORFLUY_SAND corfluy_CROCO
@@ -190,4 +183,3 @@
 # define SLOPE_S ((BATHY_H0(i,j-1)-BATHY_H0(i,j))/CELL_DY(i,j))
 
 #endif
-

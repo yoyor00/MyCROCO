@@ -111,7 +111,6 @@
       LOGICAL                 :: l_cvrain_readfile, l_subflxatm_readfile
       REAL(KIND = rsh)        :: sflx_sub_atm_depth
 
-#if ! defined key_MARS
 #if defined MUSTANG || defined BIOLink 
       ! ----------------------------------------------------------------------------
       !  Declaration and evaluation of surface cells if not known in hydro host model
@@ -119,7 +118,6 @@
       ! ----------------------------------------------------------------------------
       REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE  :: surf_cell
 #endif /* ifdef MUSTANG & BIOLink */
-#endif /* ifndef MARS */
 
 #endif /* ifdef SUBSTANCE */
 

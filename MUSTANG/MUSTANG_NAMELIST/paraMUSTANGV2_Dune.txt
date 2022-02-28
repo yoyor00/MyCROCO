@@ -73,6 +73,7 @@
                          !     E0_sand_option= 2 E0_sand evaluated with erodimetry formulation (min(0.27,1000*d50-0.01)*toce**n_eros_sand)
                          !     E0_sand_option= 3  then E0_sand evaluated with Wu and Lin (2014) formulation
    E0_sand_Cst=0.0000    ! Constant erosion flux for sand (used if E0_sand_option= 0)
+   tau_cri_option = 1
              /
 :------------------------------------------------------------------------------
 :  namsedim_poro : Namelist relative to porosity

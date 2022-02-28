@@ -45,13 +45,6 @@
 #endif
    CHARACTER(len=19)  :: date_start_dyninsed,date_start_morpho
    
-#ifdef key_MARS
-   ! for a hydrodynamic model other than MARS
-   ! these 2 variables must be declared in comsubstance if module substance is installed
-   !    (diam_sed and ros initalized in substance.F90)
-   ! but in MARS, they are declared in comMUSTANG and allocate/initialized in subreaddat
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: diam_sed,ros
-#endif
    REAL(KIND=rsh)                             :: aref_sand  ! parametre used in sandconcextrap
 
 #ifdef key_MUSTANG_flocmod
@@ -110,11 +103,9 @@
 #endif
    REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w,phieau_s2w_consol,phieau_s2w_drycell
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot,htot,alt_cw1
-#if defined key_MARS
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: morphox,morphoy,hxi,hyi,h0_bedrock
-#else
+
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: morpho0,h0_bedrock
-#endif
+
  
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: sal_bottom_MUSTANG,temp_bottom_MUSTANG,epn_bottom_MUSTANG
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: cw_bottom_MUSTANG,ws3_bottom_MUSTANG
@@ -122,27 +113,6 @@
 
 #ifdef key_sand2D
    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE     :: rouse2D,sum_tmp  ! definition nombre de Rouse2D et SUM(dzcche*((htot-hzed)/hzed)**rouse) 
-#endif
-
-!#ifdef key_dredging
-!   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE        :: dredgmassloc
-!   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE        :: dredgmassloc_cum
-!   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE          :: dredgmass
-!   INTEGER,DIMENSION(imin:imax,jmin:jmax)           :: dredgflag
-!   REAL(KIND=rsh),DIMENSION(9)                      :: dredglev
-!   CHARACTER(len=lchain)   :: filsauvdredg,filrepdredg,filoutdredg
-!#endif
-#ifdef key_MARS
-#if defined key_castest_2DVSN
-   REAL(KIND=rsh)     :: tenfoncshtx_jmin
-#ifdef key_wave_crossshore
-   REAL(KIND=rsh)     :: hwaveoff,phas_fracan_wave,break_factor_cas2DV,fact_fws2_cas2DV
-   CHARACTER(LEN=lchain)  :: name_wave_hs,name_out_wave_hs
-   REAL(KIND=riosh)       :: riog_valid_min_wave_hs,riog_valid_max_wave_hs
-   REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE      :: hwave,uwave,htw,sqrthtw
-   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE ::  wave_hs
-#endif
-#endif
 #endif
 
    ! ---------------------------------------------------------------------------
@@ -282,14 +252,10 @@
                                                         epsedmin_tempsed,epsedmax_tempsed,cp_suni   !!!FG(29/06/2018)
 #endif
 
-
-#if ! defined key_MARS
  !-------------------------------------------------------------------
  !  declaration of variables used both in MUSTANG and hydro modele
  !  and used only with module MUSTANG
  !  and which must have specific names and dimensions, different from those in MUSTANG
- !  not used in MARS because same variable (name and dimensions) in MUSTANG and  in hydro modele
- !  (ksdmin and ksdmax defined in parameters in MARS)
  !-------------------------------------------------------------------
    
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EROS_FLUX_s2w , SETTL_FLUX_w2s ,SETTL_FLUXSUM_w2s
@@ -299,19 +265,13 @@
    !REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EROS_FLUX_s2w_TEMP,EROS_FLUX_s2w_SAL
    
   !   + fixed data used by MUSTANG but specific to MARS and therefore not necessarily known for another model
-   LOGICAL :: l_testcase=.FALSE.
    REAL(kind=rsh)  ,PARAMETER :: valmanq=999.0
    REAL(kind=riosh),PARAMETER :: rg_valmanq_io=999.0
-    ! fwet et fwetp =1 if not used  
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE   :: fwet,fwetp
+    ! fwet =1 if not used  
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE   :: fwet
 
-#endif
-
-
- CONTAINS
+   CONTAINS
  
-
 #endif /* ifdef MUSTANG */
 
 END MODULE comMUSTANG
-
