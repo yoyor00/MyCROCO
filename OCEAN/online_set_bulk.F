@@ -148,7 +148,11 @@
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
               wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
+            enddo
+          enddo
 # ifdef CFB_WIND_TRA
+          do j=JstrR,min(JendR,Mm)
+            do i=IstrR,min(IendR,Lm)
               cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
               uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
      &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
@@ -157,9 +161,10 @@
      &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
      &                   )
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
-# endif
             enddo
           enddo
+# endif
+
 # ifdef READ_PATM
         elseif (blkvar_id.eq.10) then
           do j=JstrR,JendR
