@@ -384,6 +384,7 @@
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
 #   define key_pisces
+#   define key_ligand
 #  endif
 #  ifdef BIO_NChlPZD
 #   define  OXYGEN
@@ -395,6 +396,8 @@
 #  define DIAGNOSTICS_BIO
 #  if defined DIAGNOSTICS_BIO && defined PISCES
 #   define key_trc_diaadd
+#   define key_trc_dia3d
+/*#   define key_iomput */
 #  endif
 # endif
                       /*   Lagrangian floats model    */
