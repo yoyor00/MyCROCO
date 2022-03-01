@@ -247,8 +247,9 @@
         do j=J_RANGE
           do i=I_RANGE
 ! Compute wind speed module
-           wspdg(i,j,iblkrec)=sqrt(uwndg_norot(i,j,iblkrec)*uwndg_norot(i,j,iblkrec)
-     &                           +vwndg(i,j,iblkrec)*vwndg(i,j,iblkrec))
+            wspdg(i,j,iblkrec)=sqrt(uwndg_norot(i,j,iblkrec)*
+     &                             uwndg_norot(i,j,iblkrec)+
+     &                             vwndg(i,j,iblkrec)*vwndg(i,j,iblkrec))
 #  ifdef CURVGRID
             blk_dum1(i,j)=uwndg_norot(i,j,iblkrec)*COS(angler(i,j))+
      &                    vwndg(i,j,iblkrec)*SIN(angler(i,j))
