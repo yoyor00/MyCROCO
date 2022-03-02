@@ -148,15 +148,29 @@
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
               wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
+            enddo
+          enddo
 # ifdef CFB_WIND_TRA
               cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+          do j=JstrR,JendR
+            do i=IstrR,IendR+1
               uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
      &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
      &                   )
+            enddo
+          enddo
+          do j=JstrR,JendR+1
+            do i=IstrR,IendR
               vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
      &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
      &                   )
+            enddo
+          enddo
+          do j=JstrR,JendR
+            do i=IstrR,IendR
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+            enddo
+          enddo
 # endif
             enddo
           enddo
