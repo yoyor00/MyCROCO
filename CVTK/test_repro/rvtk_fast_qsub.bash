@@ -190,9 +190,8 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
 	echo " "
 	echo "OPEN-MP ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=${NBPROCS_X},\ NSUB_E=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
-	sed 's/'NPP=4'/'NPP=4'/' < param.h.$par1.tmp > param.h.$par1
+	sed 's/'NPP=4'/'NPP=$(( $NBPROCS_X * $NBPROCS_Y ))'/' < param.h.$par1.tmp > param.h.$par1
     fi
-    \mv param.h.$par1.tmp param.h.$par1
     #
     sed '/'${par1}[[:graph:]]'/!s/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
     \mv cppdefs.h.$par1.tmp cppdefs.h.$par1
