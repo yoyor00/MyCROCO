@@ -210,6 +210,7 @@ if [[ $TIME_SCHED == 0 ]]; then
 	NUMTIMES=$((NUMTIMES * 12))
 fi
 
+DT0=$DT
 LEVEL=0
 while [[ $LEVEL != $NLEVEL ]]; do
     if [[ ${LEVEL} == 0 ]]; then
@@ -252,6 +253,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
     
     LEVEL=$((LEVEL + 1))
 done
+DT=$DT0
 #
 ###########################################################
 #  Compute
