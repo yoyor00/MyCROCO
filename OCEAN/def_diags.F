@@ -34,7 +34,7 @@
 # include "netcdf.inc"
 #ifdef NC4PAR
 # include "mpi_cpl.h"
-      include "mpif.h"
+      include 'mpif.h'
 #endif
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
