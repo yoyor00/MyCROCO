@@ -172,8 +172,6 @@
             enddo
           enddo
 # endif
-            enddo
-          enddo
 # ifdef READ_PATM
         elseif (blkvar_id.eq.10) then
           do j=JstrR,JendR
