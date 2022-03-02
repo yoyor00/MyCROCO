@@ -189,7 +189,7 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
     else
 	echo " "
 	echo "OPEN-MP ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
-	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
+	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=${NBPROCS_X},\ NSUB_E=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
 	sed 's/'NPP=4'/'NPP=4'/' < param.h.$par1.tmp > param.h.$par1
     fi
     \mv param.h.$par1.tmp param.h.$par1
