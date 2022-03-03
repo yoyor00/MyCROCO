@@ -163,10 +163,76 @@
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
             enddo
           enddo
-#  ifdef MPI
-          call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
-     &                           wspd_cfb(START_2D_ARRAY))
+# endif
+# ifndef EW_PERIODIC
+            if (WESTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd(Istr-1,j)=wspd(Istr,j)
+#  ifdef CFB_WIND_TRA
+                wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
+#  endif                 
+              enddo
+            endif
+            if (EASTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd(Iend+1,j)=wspd(Iend,j)
+#  ifdef CFB_WIND_TRA
+                wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)
+#  endif            
+              enddo
+            endif
+# endif
+# ifndef NS_PERIODIC
+            if (SOUTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd(i,Jstr-1)=wspd(i,Jstr)
+#  ifdef CFB_WIND_TRA 
+                wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
+#  endif                  
+              enddo
+            endif
+            if (NORTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd(i,Jend+1)=wspd(i,Jend)
+#  ifdef CFB_WIND_TRA 
+                wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
+#  endif                  
+              enddo
+            endif
+#  ifndef EW_PERIODIC
+            if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
+#   ifdef CFB_WIND_TRA 
+              wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
+#   endif                
+            endif
+            if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
+#   ifdef CFB_WIND_TRA  
+              wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)
+#   endif               
+            endif
+            if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
+#   ifdef CFB_WIND_TRA 
+              wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
+#   endif                
+            endif
+            if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
+#   ifdef CFB_WIND_TRA 
+              wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
+#   endif                
+            endif
 #  endif
+# endif
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+            call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                             wspd(START_2D_ARRAY))
+#  ifdef CFB_WIND_TRA 
+            call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                             wspd_cfb(START_2D_ARRAY))
+#  endif      
 # endif
 # ifdef READ_PATM
         elseif (blkvar_id.eq.10) then
