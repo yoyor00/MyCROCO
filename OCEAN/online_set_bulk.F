@@ -163,9 +163,47 @@
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
             enddo
           enddo
-#  ifdef MPI
-          call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
-     &                           wspd_cfb(START_2D_ARRAY))
+#  ifndef EW_PERIODIC
+            if (WESTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
+              enddo
+            endif
+            if (EASTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)
+              enddo
+            endif
+#  endif
+#  ifndef NS_PERIODIC
+            if (SOUTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
+              enddo
+            endif
+            if (NORTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
+              enddo
+            endif
+#   ifndef EW_PERIODIC
+            if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
+            endif
+            if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)
+            endif
+            if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
+            endif
+            if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
+            endif
+#   endif
+#  endif
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+            call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                             wspd_cfb(START_2D_ARRAY))
 #  endif
 # endif
 # ifdef READ_PATM
