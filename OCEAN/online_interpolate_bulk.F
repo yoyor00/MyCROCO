@@ -129,7 +129,8 @@
      &                lonr(GLOBAL_2D_ARRAY), 
      &                latr(GLOBAL_2D_ARRAY),
      &                rhumg(GLOBAL_2D_ARRAY,iblkrec))
-#ifndef AROME        
+
+# ifndef AROME        
         do j=J_RANGE
           do i=I_RANGE
             ew=6.1121*(1.0007+3.46e-6*Pref)*
@@ -139,7 +140,8 @@
             rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
           enddo
         enddo
-#endif        
+# endif        
+
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,
      &                         rhumg(START_2D_ARRAY,iblkrec))
@@ -166,15 +168,20 @@
             endif
           enddo
         enddo
+
+# ifdef MPI
+        call exchange_r2d_tile(1,Lm,1,Mm,
+     &                         prateg(START_2D_ARRAY,iblkrec))
+# endif
       
       elseif (blkvar_id.eq.4) then
 !
 ! 4 process radsw (warning!! first (4) downward then (5) upward)
 ! Net solar shortwave radiation: Downwards short wave  
 !
-#  if defined ERA_ECMWF || defined AROME
+# if defined ERA_ECMWF || defined AROME
 ! In the case of ERA we used the net short wave - downward short wave is not used
-#  else
+# else
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
@@ -182,7 +189,13 @@
      &                latr(GLOBAL_2D_ARRAY),
      &       radswg_down(GLOBAL_2D_ARRAY,iblkrec))
 
-#  endif      
+#  ifdef MPI
+        call exchange_r2d_tile(1,Lm,1,Mm,
+     &                         radswg_down(START_2D_ARRAY,iblkrec))
+#  endif
+
+# endif
+      
       elseif (blkvar_id.eq.5) then
 !
 ! 5 process radsw (warning!! first (4) downward then (5) upward)
@@ -197,17 +210,23 @@
 
         do j=J_RANGE
           do i=I_RANGE
-#  if defined ERA_ECMWF || defined AROME
+
+# if defined ERA_ECMWF || defined AROME
             radswg(i,j,iblkrec)=blk_dum1(i,j)
-#  else
+# else
             radswg(i,j,iblkrec)=radswg_down(i,j,iblkrec)
      &                         -blk_dum1(i,j)
-#  endif      
+# endif      
             if (1e-10.gt.abs(radswg(i,j,iblkrec))) then
               radswg(i,j,iblkrec)=0.
             endif
           enddo
         enddo
+
+# ifdef MPI
+        call exchange_r2d_tile(1,Lm,1,Mm,
+     &                         radswg(START_2D_ARRAY,iblkrec))
+# endif
 
       elseif (blkvar_id.eq.6) then
 !
@@ -221,7 +240,10 @@
      &                latr(GLOBAL_2D_ARRAY),
      &                radlwg(GLOBAL_2D_ARRAY,iblkrec))
 
-
+# ifdef MPI
+        call exchange_r2d_tile(1,Lm,1,Mm,
+     &                         radlwg(START_2D_ARRAY,iblkrec))
+# endif
       
       elseif (blkvar_id.eq.7) then
 !
@@ -259,41 +281,41 @@
             wspdg(i,j,iblkrec)=sqrt(uwndg_norot(i,j,iblkrec)*
      &                             uwndg_norot(i,j,iblkrec)+
      &                             vwndg(i,j,iblkrec)*vwndg(i,j,iblkrec))
-#  ifdef CURVGRID
+# ifdef CURVGRID
             blk_dum1(i,j)=uwndg_norot(i,j,iblkrec)*COS(angler(i,j))+
      &                    vwndg(i,j,iblkrec)*SIN(angler(i,j))
             blk_dum2(i,j)=vwndg(i,j,iblkrec)*COS(angler(i,j))-
      &                    uwndg_norot(i,j,iblkrec)*SIN(angler(i,j))
-#  else
+# else
             blk_dum1(i,j)=uwndg_norot(i,j,iblkrec)
             blk_dum2(i,j)=vwndg(i,j,iblkrec)
-#  endif
+# endif
            enddo
         enddo
 	 
-#  ifdef MPI
+# ifdef MPI
         do j=0,Mmmpi+1
           do i=1,Lmmpi+1
-#  else
+# else
         do j=0,MMm+1
           do i=1,LLm+1
-#  endif
+# endif
             uwndg(i,j,iblkrec)=0.5*(blk_dum1(i-1,j)+blk_dum1(i,j))
           enddo
         enddo
 
-#  ifdef MPI
+# ifdef MPI
         do j=1,Mmmpi+1
           do i=0,Lmmpi+1
-#  else
+# else
         do j=1,MMm+1
           do i=0,LLm+1
-#  endif
+# endif
             vwndg(i,j,iblkrec)=0.5*(blk_dum2(i,j-1)+blk_dum2(i,j))
           enddo
         enddo
 
-#  ifdef MPI
+# ifdef MPI
 	call exchange_u2d_tile(1,Lm,1,Mm,
      &                         uwndg(START_2D_ARRAY,iblkrec))
 
@@ -302,9 +324,10 @@
 
         call exchange_r2d_tile(1,Lm,1,Mm,
      &                         wspdg(START_2D_ARRAY,iblkrec))
-#  endif
+# endif
 
       elseif (blkvar_id.eq.10) then
+
 # ifdef READ_PATM
 ! 10 process sea surface pressure
         call MYINTERP(1, NXref, 1, NYref,
@@ -313,11 +336,12 @@
      &                lonr(GLOBAL_2D_ARRAY), 
      &                latr(GLOBAL_2D_ARRAY),
      &                patmg(GLOBAL_2D_ARRAY,iblkrec))
-# ifdef MPI
+#  ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,
      &                         patmg(START_2D_ARRAY,iblkrec))
-#endif
+#  endif
 # endif
+
       endif
  
       return
