@@ -39,49 +39,9 @@ before_script:
   - mkdir -p TESTROOT/REG
   - cd -
 
-ana_run:
-  #only:
-  #  - pushes    
-  script:
-    - cd $CVTKHOME/Scripts_ana
-    - ./create_link_master_ana.sh
-    - cd -
-    - cd $CVTKWORK/KTEST
-   
-    - ./mk_TESTALL.bash CONFIGURE_ANA ana
-    - ./gather_recap.bash KTEST > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    
-  artifacts:
-    paths:
-      - $CVTKWORK/ftp
-    when: always
-
-vort_run:
-  only:
-    - schedules
-  script:
-    - cd $CVTKHOME/Scripts_vort
-    - ./create_link_master_vort.sh
-    - cd -
-    - cd $CVTKWORK/VORT
-    
-    - ./mk_TESTALL.bash CONFIGURE_VORT vort
-    - ./gather_recap.bash VORT > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
-
-  artifacts:
-    paths:
-       - $CVTKWORK/ftp
-    when: always
-   
 reg_run:
-  only:
-    - schedules  
+  #  only:
+  #  - schedules  
   script:
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
