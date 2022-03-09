@@ -64,6 +64,7 @@
       CHARACTER(LEN=lchain),DIMENSION(:) ,ALLOCATABLE :: init_cv_name,unit_var
       REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE           :: ws_part
       REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE       :: ws_free_min, ws_free_max
+   
       ! REAL,ALLOCATABLE,DIMENSION(:,:,:,:) :: phicon
       ! REAL,ALLOCATABLE,DIMENSION(:,:,:,:) :: phicon_drycell
       ! REAL,DIMENSION(:,:,:),ALLOCATABLE   :: phicon_atm
@@ -132,14 +133,13 @@
       LOGICAL         :: l_cvrain_readfile,l_subflxatm_readfile
       REAL(KIND=rsh)            :: sflx_sub_atm_depth
 
-#if ! defined key_MARS
+   
 #if defined MUSTANG || defined BIOLink 
      ! ----------------------------------------------------------------------------
      !  declaration and evaluation of surface cells if not known in hydro host model
      !    needing for MUSTANG and Bloom/oyster
      ! ----------------------------------------------------------------------------
      REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE            :: surf_cell
-#endif
 #endif
 
 #endif /* SUBSTANCE */
