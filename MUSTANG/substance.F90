@@ -195,11 +195,15 @@ CHARACTER(LEN=80)                         :: para_file
 # ifdef BLOOM
    para_file = REPFICNAMELIST//'/parasubstance_MUSTANGBLOOM.txt'
    OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
-   MPI_master_only   PRINT*,'Ouverture de parasubstance_MUSTANGBLOOM.txt dans',REPFICNAMELIST
+   MPI_master_only   PRINT*,'Opening of parasubstance_MUSTANGBLOOM.txt in',REPFICNAMELIST
+# elif defined TIDAL_FLAT
+   para_file = REPFICNAMELIST//'/parasubstance_MUSTANG_Tidal_flat.txt'
+   OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
+   MPI_master_only   PRINT*,'Opening of parasubstance_MUSTANG_Tidal_flat.txt in',REPFICNAMELIST
 # else
    para_file = REPFICNAMELIST//'/parasubstance_MUSTANG.txt'
    OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
-   MPI_master_only   PRINT*,'OUVERTURE de parasubstance_MUSTANG.txt dans', REPFICNAMELIST
+   MPI_master_only   PRINT*,'Opening of parasubstance_MUSTANG.txt in', REPFICNAMELIST
 
 # endif
 ! only substance
