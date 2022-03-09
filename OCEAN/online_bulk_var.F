@@ -149,7 +149,7 @@
 
       ! U-component_of_wind 
       blk_vname(1,8)='u10m                                     '
-      blk_vname(2,8)='v10m                                     '
+      blk_vname(2,8)='u10m                                     '
       blk_vname(3,8)='m/s                                      '
       blk_vname(4,8)='??????                                   '
 
