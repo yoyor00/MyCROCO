@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #set -ue
 #set -vx
 #
@@ -30,17 +30,20 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     -e "s/time_step                           =.*/time_step                           =${DT_ATM} ,/g" \
     -e "s/<max_domains>/${NB_dom}/g" \
     -e "s/<interval_s>/${interval_seconds}/g"  -e "s/<sst_int_m>/${auxinput4_interval}/g" \
-    -e "s/<nbmetsoil>/4/g" \
+    -e "s/<nbmetlev>/${nbmetlevel}/g"     -e "s/<nbmetsoil>/${nbmetsoil}/g"  \
+    -e "s/<nudge_d01>/${switch_fdda}/g"             -e "s/<nudge_coef>/${nudge_coef}/g" \
+    -e "s/<nudge_end_h>/${nudge_end_h}/g" -e "s/<nudge_int_m>/${nudge_interval_m}/g"\
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
 
-for dom in $wrfcpldom ; do
+for domnb in `seq 1 $NB_dom` ; do
+    dom="d$( printf "%02d" ${domnb})"
     if [[ ${RESTART_FLAG} == "FALSE" ]]; then
         file="wrfinput_${dom}"
     else
         file="wrfrst_${dom}*"
     fi
 #
-    searchf=("<xdim_${dom}>" "<ydim_${dom}>" "<nbvertlev>" "<dx_${dom}>" "<dy_${dom}>" "<i_str_${dom}>" "<j_str_${dom}>" "<coef_${dom}>")
+    searchf=("<xdim_${dom}>" "<ydim_${dom}>" "<nbvertlev>" "<dx_${dom}>" "<dy_${dom}>" "<i_str_${dom}>" "<j_str_${dom}>" "<coef_${dom}>" "<ptop>")
 #
     dimx=$( ncdump -h  $file  | grep "west_east_stag =" | cut -d ' ' -f 3)
     dimy=$( ncdump -h  $file  | grep "south_north_stag =" | cut -d ' ' -f 3)
@@ -50,6 +53,7 @@ for dom in $wrfcpldom ; do
     istrt=$( ncdump -h  $file  | grep "I_PARENT_START =" | cut -d ' ' -f 3)
     jstrt=$( ncdump -h  $file  | grep "J_PARENT_START =" | cut -d ' ' -f 3)
     coef=$( ncdump -h  $file  | grep "PARENT_GRID_RATIO =" | cut -d ' ' -f 3)
+    ptop=$( ncdump -v P_TOP $file | grep "P_TOP =" | cut -d '=' -f 2 | cut -d ' ' -f 2  ) 
 
     sed -e "s/${searchf[0]}/${dimx}/g" \
         -e "s/${searchf[1]}/${dimy}/g" \
@@ -59,6 +63,7 @@ for dom in $wrfcpldom ; do
         -e "s/${searchf[5]}/${istrt}/g" \
         -e "s/${searchf[6]}/${jstrt}/g" \
         -e "s/${searchf[7]}/${coef}/g" \
+        -e "s/${searchf[8]}/${ptop}/g" \
         ./namelist.input > ./namelist.input.tmp
         mv namelist.input.tmp namelist.input
     chmod 755 namelist.input
@@ -80,14 +85,12 @@ sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom     
 ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
-if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
-    cplwavdom=""
-    for dom in `seq 1 $NB_dom`; do
-        cplwavdom="$cplwavdom 5,"
-    done
-    sed -e "s/isftcflx                            = 0,/isftcflx                            = $cplwavdom/g" \
+sed -e "s/<isftcflx>/${isftcflx}/g" \
     ./namelist.input > ./namelist.input.tmp
-    mv namelist.input.tmp namelist.input
+mv namelist.input.tmp namelist.input
+
+if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
+    [[ ${isftcflx} -ne 5 ]] && { echo "ERROR... Atm parameter (in namelist.input) isftcflx need to be 5 when coupling with WAV..." ; exit ; }
 fi
 
 sed -e "s/<xdim_d.*>/1/g"  -e "s/<ydim_d.*>/1/g"\

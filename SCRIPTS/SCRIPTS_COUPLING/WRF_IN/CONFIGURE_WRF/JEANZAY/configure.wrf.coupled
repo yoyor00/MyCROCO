@@ -120,7 +120,7 @@ LIBWRFLIB = libwrflib.a
  LIB_EXTERNAL    = \
                       -L$(WRF_SRC_ROOT_DIR)/external/io_netcdf -lwrfio_nf \
 		      -L$(OA3MCT_ROOT_DIR)/lib -lpsmile.MPI1 -lmct -lmpeu -lscrip \
-		      -L${NETCDF}/lib -lnetcdff \
+		      $(shell nf-config --flibs) \
 		      -L$(OA3MCT_ROOT_DIR)/lib -lpsmile.MPI1 -lmct -lmpeu -lscrip
 
 

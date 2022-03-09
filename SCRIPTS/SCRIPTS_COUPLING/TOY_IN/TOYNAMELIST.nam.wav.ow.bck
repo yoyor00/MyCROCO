@@ -11,12 +11,11 @@
                  CRCVFIELDS(2)='TOY_UOCE',
                  CRCVFIELDS(3)='TOY_VOCE' /
 
-&NAM_SEND_FIELDS NB_SEND_FIELDS=8,
+&NAM_SEND_FIELDS NB_SEND_FIELDS=7,
                  CSNDFIELDS(1)='TOY_T0M1',
                  CSNDFIELDS(2)='TOY___HS',
-                 CSNDFIELDS(3)='TOY_CDIR',
-                 CSNDFIELDS(4)='TOY_SDIR',
-                 CSNDFIELDS(5)='TOY_TWOX', 
-                 CSNDFIELDS(6)='TOY_TWOY',
-                 CSNDFIELDS(7)='TOY_TAWX', 
-                 CSNDFIELDS(8)='TOY_TAWY' /
+                 CSNDFIELDS(3)='TOY__DIR',
+                 CSNDFIELDS(4)='TOY_TWOX', 
+                 CSNDFIELDS(5)='TOY_TWOY',
+                 CSNDFIELDS(6)='TOY_TAWX', 
+                 CSNDFIELDS(7)='TOY_TAWY' /

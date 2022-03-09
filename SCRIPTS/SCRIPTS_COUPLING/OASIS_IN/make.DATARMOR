@@ -10,10 +10,10 @@ CHAN            = MPI1
 # Paths for libraries, object files and binaries
 #
 # COUPLE	: path for oasis3-mct main directory
-COUPLE          = $(HOME)/oasis/OASIS3-MCT_3.0_branch/oasis3-mct
+COUPLE          = $(HOME)/oasis/oasis3-mct
 #
 # ARCHDIR       : directory created when compiling
-ARCHDIR         = $(HOME)/oasis/OASIS3-MCT_3.0_branch/compile_oasis3-mct
+ARCHDIR         = $(HOME)/oasis/compile_oasis3-mct
 #
 # NetCDF library
 NETCDF_INCLUDE  = $(shell $(NETCDF_CONFIG) --includedir) 

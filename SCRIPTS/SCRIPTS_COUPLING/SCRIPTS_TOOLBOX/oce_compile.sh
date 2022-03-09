@@ -12,58 +12,75 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] || [[ ! -f "${OCE_EXE_DIR}/croco.${RUNtype}"
 #-------------------------------------------------------------------------------
     cd ${OCE_EXE_DIR}
     # Option of compilation
-#    sed -e "s/-O3 /-O3 -xAVX /" jobcomp > tmp$$i
+#    sed -e "s/-O3 /-O3 -xAVX /" jobcomp > tmp$$
 sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
-    -e "s|FC=.*|FC=${FC}|g" \
+    -e "s|FC=gfortran|FC=${FC}|g" \
     -e "s|MPIF90=.*|MPIF90=${MPIF90}|g" \
-    -e "s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR="${CPL}"|g" \
-    -e "s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=${XIOS}|g" \
-    -e "s|-O3|-O3|g" \
+    -e "s|-O3|-O2|g" \
     ./jobcomp > tmp$$
     mv tmp$$ jobcomp
+    #
+    line=$(grep -n -m1 'PRISM_ROOT_DIR=' jobcomp | cut -d: -f1)
+    sed "${line} s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=${CPL}|" ./jobcomp > tmp$$
+    mv tmp$$ jobcomp
+    #
+    line=$(grep -n -m1 'XIOS_ROOT_DIR=' jobcomp | cut -d: -f1)
+    sed "${line} s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=${XIOS}|" ./jobcomp > tmp$$
+    mv tmp$$ jobcomp
+    ####
 
     # MPI and Grid size
     sed -e "s/# define BENGUELA_LR/# define ${CEXPER}/g" \
         -e "s/# undef  MPI/# define  MPI/g" \
-        ./cppdefs.h > tmp$$
+        ./cppdefs.h.base > tmp$$
     mv tmp$$ cppdefs.h
     printf "\n\nReading grid size in ${OCE_FILES_DIR}/croco_grd.nc \n\n"
+    cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     dimx=$( ncdump -h  ${OCE_FILES_DIR}/croco_grd.nc  | grep "xi_rho =" | cut -d ' ' -f 3)
     dimy=$( ncdump -h  ${OCE_FILES_DIR}/croco_grd.nc | grep "eta_rho =" | cut -d ' ' -f 3)
-    dimz=$( ncdump -h  ${OCE_FILES_DIR}/croco_${ini_ext}*.nc | grep "s_rho =" | cut -d ' ' -f 3)
+    dimz=$( ncdump -h  ${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc | grep "s_rho =" | cut -d ' ' -f 3)
     printf "\nGrid size is (in Lx X Ly X Nz ) : ${dimx}X${dimy}X${dimz}\n"
     #add new line for new conf in param.h
     sed -e "s/(LLm0=xx, MMm0=xx, N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
-        param.h > tmp$$
+        param.h.base > tmp$$
     mv tmp$$ param.h
     # update necessary things
     sed -e "s/NP_XI *= *[0-9]* *,/NP_XI=${NP_OCEX},/g" \
         -e "s/NP_ETA *= *[0-9]* *,/NP_ETA=${NP_OCEY},/g" \
         param.h > tmp$$ 
-   mv tmp$$ param.h
+    mv tmp$$ param.h
+    if [[ ${MPI_NOLAND} == "TRUE" ]]; then
+      sed -e "s|NNODES=NP_XI\*NP_ETA|NNODES=${MY_NODES}|g" \
+          param.h > tmp$
+      mv tmp$$ param.h 
+
+      sed -e "s/# *undef  MPI_NOLAND/# define MPI_NOLAND/g" cppdefs.h > tmp$$
+      mv tmp$$ cppdefs.h
+    fi
+#
+    sed -e "s/# undef  LOGFILE/# define  LOGFILE/g" cppdefs.h > tmp$$
+    mv tmp$$ cppdefs.h
 #
     if [ $USE_CPL -ge 1 ]; then
         if [ $USE_ATM -eq 1 ] || [ $USE_TOYATM -eq 1 ]; then 
             sed -e "s/#  *undef  *OA_COUPLING/# define OA_COUPLING/g" cppdefs.h > tmp$$
             printf "\n Coupling with ATM \n"
 	    mv tmp$$ cppdefs.h
-            if [ $USE_ATM -eq 1 ] && [ ${USE_XIOS_ATM} -eq 1 ]; then
-                sed -e "s/# *undef XIOS_ATM/#  define XIOS_ATM/g" cppdefs_dev.h > tmp$$
-                mv tmp$$ cppdefs_dev.h
-            else
-                sed -e "s/# *define XIOS_ATM/#  undef XIOS_ATM/g" cppdefs_dev.h > tmp$$
-                mv tmp$$ cppdefs_dev.h
-            fi
 	else
             sed -e "s/#  *define  *OA_COUPLING/# undef OA_COUPLING/g" cppdefs.h > tmp$$
 	    mv tmp$$ cppdefs.h
 	fi
         if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
-            sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" cppdefs.h > tmp$$
+            sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" \
+                -e "s/# *undef *MRL_WCI/# define MRL_WCI/g" \
+                cppdefs.h > tmp$$
             printf "\n Coupling with WAV \n"
 	    mv tmp$$ cppdefs.h
         else
-            sed -e "s/#  *define  *OW_COUPLING/# undef OW_COUPLING/g" cppdefs.h > tmp$$
+            sed -e "s/#  *define  *OW_COUPLING/# undef OW_COUPLING/g" \
+                -e "s/# *define *MRL_WCI/# undef  MRL_WCI/g" \
+                cppdefs.h > tmp$$
 	    mv tmp$$ cppdefs.h
         fi
             
@@ -73,9 +90,22 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 	sed -e "s/#  *undef  *BULK_FLUX/# define BULK_FLUX/g" cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
         if [ ${interponline} == 1 ]; then
-	    sed -e "s/#  *undef  *ONLINE/# define ONLINE/g" \
-		-e "s/#  *undef  *${frc_ext}/# define ${frc_ext}/g" \
-	    cppdefs.h > tmp$$
+            sed -e "s/#  *undef  *ONLINE/# define ONLINE/g" cppdefs.h > tmp$$
+            mv tmp$$ cppdefs.h
+            if [[ ${frc_ext} == *'AROME'* || ${frc_ext} == *'ARPEGE'* ]]; then
+                sed -e "s/#  *undef  *AROME/# define AROME/g" \
+                    cppdefs.h > tmp$$
+            else
+                sed -e "s/#  *define  *AROME/# undef  AROME/g" \
+                    cppdefs.h > tmp$$
+            fi
+            if [[ ${frc_ext} == *'ECMWF'* ]]; then
+                sed -e "s/#  *undef  *ECMWF/# define ECMWF/g" \
+                    cppdefs.h > tmp$$
+            else
+                sed -e "s/#  *define  *ECMWF/# undef  ECMWF/g" \
+                    cppdefs.h > tmp$$
+            fi
             printf "\n Online bulk activated with ${frc_ext}\n"
             mv tmp$$ cppdefs.h
         elif [ ${interponline} == 0 ]; then
@@ -87,7 +117,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
         sed -e "s/#  *define  *BULK_FLUX/# undef BULK_FLUX/g"  cppdefs.h > tmp$$
     fi
 
-    if [[ ${bry_ext} == *'bry'* ]]; then
+    if [[ ${bdy_ext} == *'bry'* ]]; then
         sed -e "s/#  *define  *CLIMATOLOGY/# undef CLIMATOLOGY/g" \
 	    -e "s/#  *undef *FRC_BRY/# define FRC_BRY/g" \
 	cppdefs.h > tmp$$
@@ -109,10 +139,34 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
         mv tmp$$ cppdefs.h
     fi
 #
+    if [ ${river_flag} == "TRUE" ]; then
+        sed -e "s/#  *undef  *PSOURCE/# define PSOURCE/g" \
+            -e "s/#  *undef  *PSOURCE_NCFILE/# define PSOURCE_NCFILE/g" \
+            -e "s/#  *undef *PSOURCE_NCFILE_TS/#  define PSOURCE_NCFILE_TS/g" \
+            cppdefs.h > tmp$$
+        mv tmp$$ cppdefs.h
+        printf "\n Tides are taken into account\n"
+    else
+        sed -e "s/#  *define  *PSOURCE/# undef PSOURCE/g"\
+            -e "s/#  *define  *PSOURCE_NCFILE/# undef PSOURCE_NCFILE/g" \
+            -e "s/#  *define  *PSOURCE_NCFILE_TS/#  undef PSOURCE_NCFILE_TS/g" \
+             cppdefs.h > tmp$$
+        mv tmp$$ cppdefs.h
+    fi
+
+#
     if [ ${USE_XIOS_OCE} -eq 1 ]; then
 	sed -e "s/#  *undef  *XIOS/# define XIOS/g" cppdefs.h > tmp$$
     	mv tmp$$ cppdefs.h
         printf "\n Output will be handled by XIOS\n"
+        if [ ${USE_XIOS_ATM} -eq 1 ]; then
+            sed -e "s/#  *undef  *XIOS_ATM/# define XIOS_ATM/g" cppdefs_dev.h > tmp$$
+            mv tmp$$ cppdefs_dev.h
+            printf "\n XIOS for ATM is also on\n"
+        else
+            sed -e "s/#  *define  *XIOS_ATM/# undef XIOS_ATM/g" cppdefs_dev.h > tmp$$
+            mv tmp$$ cppdefs_dev.h
+        fi
     else
         sed -e "s/#  *define  *XIOS/# undef XIOS/g" cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
@@ -145,15 +199,18 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 
     chmod 755 jobcomp
     time ./jobcomp >& log.compil
-    [ "$?" -eq "2" ] && { printf "ERROR while compiling CROCO.\n Please check ${PWD}/log.compil"; exit ; }
+    [ "$?" -gt "0" ] && { printf "\nERROR while compiling CROCO.\n Please check ${PWD}/log.compil"; exit ; }
     mv croco croco.${RUNtype}
+    cp cppdefs.h cppdefs.h.${RUNtype}
+    cp param.h param.h.${RUNtype}
 # save exe for next jobs
     rsync -av croco.${RUNtype} ${EXEDIR}/crocox
-    [ ${USE_XIOS_OCE} -eq 1 ] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
+    #    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
     cd ${EXEDIR}
 else
     
     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
-
+    #    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
+    
 fi
 

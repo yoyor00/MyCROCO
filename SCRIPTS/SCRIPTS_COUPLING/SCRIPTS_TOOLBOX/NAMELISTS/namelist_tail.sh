@@ -12,6 +12,7 @@
 [[ -z ${USE_TOYOCE+x} ]] && export USE_TOYOCE=0
 [[ -z ${USE_TOYWAV+x} ]] && export USE_TOYWAV=0
 [[ -z ${istoy+x} ]] && export istoy=""
+[[ -z ${ONLINE_XML+x} ]] && export ONLINE_XML="FALSE"
 
 
 if [ ${USE_ATM} == 0 ]; then
@@ -38,6 +39,8 @@ export nbtoy=${#toytype[@]}
 export model_to_toy=()
 export toynamelist=()
 export DT_TOY=()
+if [[ ${USE_TOY} -ge 1 ]]; then
+[[ ${USE_TOY} != $nbtoy ]] && { echo "There is an incoherence between the number of USE_TOY_* activated and the number of arguement in toytype. Make Sure they are coherent." ; exit;}
 for k in `seq 0 $(( ${nbtoy} - 1))` ; do
     [ ${toytype[$k]} == "oce" ] && model_to_toy+=("croco")
     [ ${toytype[$k]} == "atm" ] && model_to_toy+=("wrf")
@@ -65,5 +68,6 @@ for k in `seq 0 $(( ${nbtoy} - 1))` ; do
         DT_TOY+=("${tsp}")
     fi
 done
+fi
 ######
 

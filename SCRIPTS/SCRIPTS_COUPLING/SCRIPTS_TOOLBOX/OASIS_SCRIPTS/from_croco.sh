@@ -71,17 +71,17 @@ mytmp=$mydir/from_croco_tmp.nc
 
     if [ -z $gridlevels ] ; then
       echo 'Default grid level is assumed: 0 for parent...'
-      gridlevels='0'
+      gridlevels=''
     fi
 
     # Model variables
-    if [ $var == SRMUOCE$gridlevels ] ; then
+    if [ $var == CROCO_UOCE$gridlevels ] ; then
       varin=u
-    elif [ $var == SRMVOCE$gridlevels ] ; then
+    elif [ $var == CROCO_VOCE$gridlevels ] ; then
       varin=v
-    elif [ $var == SRMSSHV$gridlevels ] ; then
+    elif [ $var == CROCO_SSHV$gridlevels ] ; then
       varin=zeta
-    elif [ $var == SRMSSTV$gridlevels ] ; then
+    elif [ $var == CROCO_SSTV$gridlevels ] ; then
       varin=temp
     else
       echo 'ERROR: '$var' variable not implemented yet'

@@ -772,6 +772,9 @@ C$    integer omp_get_thread_num
           svstr(i,j)=init
 # ifdef OA_COUPLING
           smstr(i,j)=init
+#  if defined READ_PATM && defined OBC_PATM
+          patm2d(i,j)=paref
+# endif
 # endif
 # ifdef OW_COUPLING
           twox(i,j)=init

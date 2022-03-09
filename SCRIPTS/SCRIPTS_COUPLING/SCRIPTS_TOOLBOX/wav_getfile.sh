@@ -16,6 +16,7 @@ sed -e "s/<wavdt>/${DT_WAV}/g" \
     -e "s/<wavdtPRO>/${DT_WW_PRO}/g"  -e "s/<wavdtREF>/${DT_WW_REF}/g"  -e "s/<wavdtSRC>/${DT_WW_SRC}/g"  \
     -e "s/<wavnx>/${wavnx}/g"   -e "s/<wavny>/${wavny}/g"  \
     -e "s/<hmin>/${hmin}/g" \
+    -e "s/<CEXPER>/${CEXPER}/g" \
     ${WAV_NAM_DIR}/ww3_grid.inp.base > ./ww3_grid.inp
 
  ## - Fill ww3_ounf.inp file -##
@@ -35,11 +36,35 @@ echo 'link ww3 input files and copy associated settings files'
 lengthforc=${#forcww3[@]}
 
 for k in `seq 0 $(( ${lengthforc} - 1))` ; do
-    echo "ln -sf ${WAV_FILES_DIR}/${forcin[$k]} ./${forcww3[$k]}.nc"
-    ${io_getfile} ${WAV_FILES_DIR}/${forcin[$k]} ./${forcww3[$k]}.nc
+    module load ${ncomod}
+    if [[ ${JOB_DUR_MTH} -le 1 ]]; then
+        cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+        cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+        ${io_getfile} ${WAV_FILES_DIR}/${forcin[$k]}_Y${cur_Y}M${cur_M}.nc ./${forcww3[$k]}.nc
+    else
+        echo "Concatenate necessary files for ${forcww3[$k]}.nc"
+        for i in `seq 0 $(( ${JOB_DUR_MTH} ))`; do
+            mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
+            cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
+            cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+            [[ ! -f ${WAV_FILES_DIR}/${forcin[$k]}_Y${cur_Y}M${cur_M}.nc ]] && { echo "Missing ${WAV_FILES_DIR}/${forcin[$k]}_Y${cur_Y}M${cur_M}.nc to build ${forcww3[$k]}.nc file."; exit ;}
+            if [[ $i == 0 ]]; then
+                ncrcat ${WAV_FILES_DIR}/${forcin[$k]}_Y${cur_Y}M${cur_M}.nc ./${forcww3[$k]}.nc
+            else
+                ncrcat -O ${forcww3[$k]}.nc ${WAV_FILES_DIR}/${forcin[$k]}_Y${cur_Y}M${cur_M}.nc ./${forcww3[$k]}.nc
+            fi
+        done
+    fi
+    module unload ${ncomod}
+done
 
-    echo "cp -f ${WAV_NAM_DIR}/ww3_prnc.inp.${forcww3[$k]} ./"
-    cpfile ${WAV_NAM_DIR}/ww3_prnc.inp.${forcww3[$k]} ./
- done
+if [ ! -z $bouncin ]; then
+    echo "link ww3 boundary files"
+    echo "ln -sf ${WAV_FILES_DIR}/$bouncin* ./"
+    ${io_getfile} ${WAV_FILES_DIR}/$bouncin* ./
+
+    echo "cp -f ${WAV_NAM_DIR}/ww3_bounc.inp ./"
+    cpfile ${WAV_NAM_DIR}/ww3_bounc.inp ./
+fi
 
 cp ${WAV_FILES_DIR}/*.inp ./.

@@ -14,6 +14,7 @@ export PATH=${PATH}:/home/datawork-wave/NETCDF2019/INTEL/bin
 export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/INTEL/include
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/INTEL/lib
 export NETCDF=/home/datawork-wave/NETCDF2019/INTEL
+export NETCDF_CONFIG=${NETCDF}/bin/nf-config
 
 # -- Option for job launching
 export MPI_ext="-configfile"
@@ -27,4 +28,5 @@ export FC=ifort
 export F90=ifort
 export F77=ifort
 export MPIF90=mpiifort
+export MPICC=mpiicc
 

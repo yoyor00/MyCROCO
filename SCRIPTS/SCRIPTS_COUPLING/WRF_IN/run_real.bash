@@ -6,14 +6,14 @@
 #
 # --------------------------------------------------
 #
-# Run : ./run_real.bash configure.namelist.real_CONFIG NBPROCS
+# Run : ./run_real.bash configure.namelist.real NBPROCS
 #
 # Usage : 
 #  - multiple nested domains (3 max currently)
 # 
 # Dependence : 
 #  - need namelist.input.base
-#  - read "configure.namelist.wps_CONFIG" defining basic domain and 
+#  - read "configure.namelist.real" defining basic domain and 
 #    run parameters
 #  - Vtable : Vtable.AMIP or Vtable.GFS
 #  - Vtable : Vtable.SSTROMS     
@@ -121,7 +121,7 @@ else
     exit
 fi
 #
-cp inputs_wrf/namelist.input.base.complete ${REAL_WORK_DIR}/.
+cp namelist.input.base.complete ${REAL_WORK_DIR}/.
 # MPI parameters
 nprocX=-1
 nprocY=-1
@@ -262,70 +262,93 @@ sed -e "s/<interval_s>/${interval_s}/g"         \
     -e "s/<i_str_d02>/${i_str_d02}/g"     -e "s/<i_str_d03>/${i_str_d03}/g"                                \
     -e "s/<j_str_d02>/${j_str_d02}/g"     -e "s/<j_str_d03>/${j_str_d03}/g"                                \
     -e "s/<coef_d02>/${refine_d02}/g"     -e "s/<coef_d03>/${refine_d03}/g"                                \
-    -e "s/<nudge_d01>/${nudge}/g"             -e "s/<nudge_coef>/${nudge_coef}/g"                              \
+    -e "s/<nudge_d01>/${nudge}/g"         -e "s/<nudge_coef>/${nudge_coef}/g"                              \
     -e "s/<nudge_end_h>/${nudge_end_h}/g" -e "s/<nudge_int_m>/${nudge_interval_m}/g"                       \
+    -e "s/<isftcflx>/${isftcflx}/g" \
     namelist.input.base.complete > namelist.input.prep.${domain_name}
  
     echo " "
     echo "   Then create namelist.input adding run, time and output settings     "
     echo " "
+    lmonth=( 1 3 5 7 8 10 12 )
 
-sed -e "s/<yr1>/$start_y/g"   -e "s/<yr2>/$end_y/g"  \
-    -e "s/<mo1>/$start_m/g"   -e "s/<mo2>/$end_m/g"  \
-    -e "s/<dy1>/$start_d/g"   -e "s/<dy2>/$end_d/g"  \
-    -e "s/<hr1>/$start_h/g"   -e "s/<hr2>/$end_h/g"  \
-    -e "s/<rst>/$rst/g"                    -e "s/<rst_int_h>/$rst_interval_h/g"   \
-    -e "s/<his_int_h>/${his_interval_h}/g" -e "s/<his_nb_out>/${his_frames}/g"    \
-    -e "s/<xtrm_int_m>/${diag_int_m}/g"    -e "s/<xtrm_nb_out>/${diag_frames}/g"  \
-    -e "s/<nproc_x>/$nprocX/g"             -e "s/<nproc_y>/$nprocY/g"             \
-    -e "s/<niotaskpg>/$niowrf/g"           -e "s/<niogp>/$niogp/g"                \
-    -e "s/<dt>/${dt}/g"  \
-    namelist.input.prep.${domain_name} > namelist.input
+# Remove heading 0 
+while [ `echo ${start_m} | cut -b 1` -eq 0 ]; do
+        start_m=`echo ${start_m} | cut -b 2-`
+done
+while [ `echo ${end_m} | cut -b 1` -eq 0 ]; do
+        end_m=`echo ${end_m} | cut -b 2-`
+done
+#
+for yy in `seq $start_y $end_y`; do
+    [[ $yy == $start_y ]] && { mstart=$start_m ;} || { mstart=1 ;}
+    [[ $yy == $end_y ]] && { mend=$end_m ;} || { mend=12 ;}
 
- chmod +x namelist.input
- cp namelist.input namelist.input.real.${domain_name}
- cp namelist.input.prep.${domain_name} $WRF_IN_DIR
- cp namelist.input.real.${domain_name} $WRF_IN_DIR 
+    for mm in `seq $mstart $mend`; do      
+        [[ $yy == $start_y && $mm == $start_m ]] && { sday=$start_d ; shour=$start_h;} || { sday=01 ; shour=00;}
+        [[ $yy == $end_y && $mm == $end_m ]] && { emth=$mm ; eday=$end_d ; ehour=$end_h ;} || { emth=$(( $mm + 1 )) ; eday=01 ; ehour=00;}
+
+        if [ $yy == $end_y ] && [ $mm == $end_m ] && [ $eday == $sday ] && [ $ehour == $shour ] ; then
+                exit
+        fi
+         
+        sed -e "s/<yr1>/$yy/g"   -e "s/<yr2>/$yy/g"  \
+            -e "s/<mo1>/$mm/g"   -e "s/<mo2>/$emth/g"  \
+            -e "s/<dy1>/$sday/g"   -e "s/<dy2>/$eday/g"  \
+            -e "s/<hr1>/$shour/g"   -e "s/<hr2>/$ehour/g"  \
+            -e "s/<rst>/$rst/g"                    -e "s/<rst_int_h>/$rst_interval_h/g"   \
+            -e "s/<his_int_h>/${his_interval_h}/g" -e "s/<his_nb_out>/${his_frames}/g"    \
+            -e " s/<xtrm_int_m>/${diag_int_m}/g"    -e "s/<xtrm_nb_out>/${diag_frames}/g"  \
+            -e "s/<nproc_x>/$nprocX/g"             -e "s/<nproc_y>/$nprocY/g"             \
+            -e "s/<niotaskpg>/$niowrf/g"           -e "s/<niogp>/$niogp/g"                \
+            -e "s/<dt>/${dt}/g"  \
+            namelist.input.prep.${domain_name} > namelist.input
+
+        chmod +x namelist.input
+        cp namelist.input namelist.input.real.${domain_name}
+        cp namelist.input.prep.${domain_name} $WRF_IN_DIR
+        cp namelist.input.real.${domain_name} $WRF_IN_DIR 
  # RUN real.exe
-  echo "   Run real.exe    "
-  date
-  ${myMPI}real.exe >& real.log
-  date
+        echo "   Run real.exe    "
+        date
+        ${myMPI}real.exe >& real.log
+        date
 
- ls -l *
+        ls -l *
 
 # Finalize with real outputs, rename and mov
+        tdigit=$( printf "%02d" $mm)
+        if [ -e wrfinput_d01 -a -e wrfbdy_d01 -a -e wrflowinp_d01 ] ; then
+            echo "SUCCESS d01"
+        # Create output data directory if needed
+            if ! [ -e ${REAL_OUT_DIR} ] ; then
+                mkdir ${REAL_OUT_DIR}
+            fi 
+            mv -f wrfinput_d01 ${REAL_OUT_DIR}/wrfinput_d01_${yy}_${tdigit}
+            mv -f wrfbdy_d01 ${REAL_OUT_DIR}/wrfbdy_d01_${yy}_${tdigit}
+            mv -f wrflowinp_d01 ${REAL_OUT_DIR}/wrflowinp_d01_${yy}_${tdigit}
+            if  [ $switch_fdda -ne 0 ]; then
+                mv -f wrffdda_d01 ${REAL_OUT_DIR}/wrffdda_d01_${yy}_${tdigit}
+            fi  
+        else
+            echo "REAL ERROR d01"
+        fi
 
- if [ -e wrfinput_d01 -a -e wrfbdy_d01 -a -e wrflowinp_d01 ] ; then
-  echo "SUCCESS d01"
-  # Create output data directory if needed
-  if ! [ -e ${REAL_OUT_DIR}/ ] ; then
-   mkdir ${REAL_OUT_DIR}/
-  fi 
-  mv -f wrfinput_d01 ${REAL_OUT_DIR}/
-  mv -f wrfbdy_d01 ${REAL_OUT_DIR}/
-  mv -f wrflowinp_d01 ${REAL_OUT_DIR}/
-  if  [ $switch_fdda -ne 0 ]; then
-    mv -f wrffdda_d01 ${REAL_OUT_DIR}/
-  fi  
- else
-  echo "REAL ERROR d01"
- fi
-
- if [ $max_domains -ge 2 -a -e wrfinput_d02 -a -e wrflowinp_d02 ] ; then
-  echo "SUCCESS d02"
-  mv -f wrfinput_d02 ${REAL_OUT_DIR}/
-  mv -f wrflowinp_d02 ${REAL_OUT_DIR}/
- else
-  echo "REAL ERROR or NON-EXISTENT d02"
- fi
- if [ $max_domains -eq 3 -a -e wrfinput_d03 -a -e wrflowinp_d03 ] ; then
-  echo "SUCCESS d03"
-  mv -f wrfinput_d03 ${REAL_OUT_DIR}/
-  mv -f wrflowinp_d03 ${REAL_OUT_DIR}/
- else
-  echo "REAL ERROR or NON-EXISTENT d03"
- fi
-
+        if [ $max_domains -ge 2 -a -e wrfinput_d02 -a -e wrflowinp_d02 ] ; then
+            echo "SUCCESS d02"
+            mv -f wrfinput_d02 ${REAL_OUT_DIR}/wrfinput_d02_${yy}_${tdigit}
+            mv -f wrflowinp_d02 ${REAL_OUT_DIR}/wrflowinp_d02_${yy}_${tdigit}
+        else
+            echo "REAL ERROR or NON-EXISTENT d02"
+        fi
+        if [ $max_domains -eq 3 -a -e wrfinput_d03 -a -e wrflowinp_d03 ] ; then
+            echo "SUCCESS d03"
+            mv -f wrfinput_d03 ${REAL_OUT_DIR}/wrfinput_d03_${yy}_${tdigit}
+            mv -f wrflowinp_d03 ${REAL_OUT_DIR}/wrflowinp_d03_${yy}_${tdigit}
+        else
+            echo "REAL ERROR or NON-EXISTENT d03"
+        fi
+    done
+done
 # O  O  O  O  O  O  O  O  O        END real.exe        O  O  O  O  O  O  O  O  O
 

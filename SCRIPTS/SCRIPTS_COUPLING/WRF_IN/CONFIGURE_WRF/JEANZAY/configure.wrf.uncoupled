@@ -117,8 +117,7 @@ LIBWRFLIB = libwrflib.a
 
  LIB_EXTERNAL    = \
                       -L$(WRF_SRC_ROOT_DIR)/external/io_netcdf -lwrfio_nf \
-                      -L${NETCDF}/lib -lnetcdff \
-                      -L/gpfslocalsup/spack_soft/netcdf/4.7.2/intel-19.0.4-d3s3pwkikmdg2raagnfscdegnlrni5kz/lib -lnetcdf \
+                      $(shell nf-config --flibs)
 
 
 #### Architecture specific settings ####

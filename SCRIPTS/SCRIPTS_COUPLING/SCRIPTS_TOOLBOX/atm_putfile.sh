@@ -5,12 +5,12 @@
 
 if [ ${USE_XIOS_ATM} -eq 1 ] ; then
     for file in ${ATM_XIOS_NAME}; do
-        mvfile2 ${file}* ${OUTPUTDIR}/${file}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
+	mv ${file}*.nc* ${OUTPUTDIR}/
     done
 else
     module load $ncomod
     for dom in `seq 1 $NB_dom`; do
-        ncrcat -O -F -d Time,1,-1 wrfout_d0${dom}_${YEAR_BEGIN_JOB}-* wrfout_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
+        ncrcat -O -F -d Time,1,-2 wrfout_d0${dom}_${YEAR_BEGIN_JOB}-* wrfout_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
         mv wrfout_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc ${OUTPUTDIR}/.
         \rm wrfout_d0${dom}_${YEAR_BEGIN_JOB}-*
         mv wrfxtrm_d0${dom}_${YEAR_BEGIN_JOB}-* ${OUTPUTDIR}/wrfxtrm_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc

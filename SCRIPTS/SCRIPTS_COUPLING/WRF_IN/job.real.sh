@@ -16,4 +16,4 @@
 umask 022
 set -u
 
-./run_real.bash configure.namelist.wps_BENGUELA 8
+./run_real.bash configure.namelist.real 8

@@ -46,7 +46,7 @@
 #endif
 
 /* 
-   GILDAS Take care need to use a debug.F specific 
+   Take care need to use a debug.F specific 
 */
 
 #if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
@@ -70,6 +70,8 @@
 # undef  OPENMP
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
+# define READ_PATM
+# define OBC_PATM
 # undef  OA_GRID_UV
 # undef  BULK_FLUX
 # undef  QCORRECTION
@@ -116,9 +118,6 @@
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
 # define START_DATE
-# ifdef OA_COUPLING
-#  undef XIOS_ATM
-# endif
 #endif
   
 /*
@@ -658,7 +657,11 @@
 */
 #ifdef BULK_FLUX
 # ifdef ONLINE
-#  define CUBIC_INTERP
+#  define CUBIC_INTERP  
+#  ifdef BULK_MONTH_1DIGIT   /* Check if options are defined in cppdefs.h */
+#  else
+#   undef BULK_MONTH_1DIGIT
+#  endif
 # endif
 # ifdef BULK_ECUMEV0
 #  define BULK_GUSTINESS
@@ -1003,6 +1006,15 @@
 # endif
 
 #endif /* AGRIF */
+
+#if defined AGRIF && defined EXACT_RESTART
+#error "AGRIF with EXACT_RESTART is not yet implemented"
+#endif
+
+#if defined AGRIF && defined XIOS && \
+      ( defined OA_COUPLING || defined OW_COUPLING )
+#error "AGRIF + XIOS + OASIS coupling is not yet implemented"
+#endif     
 
 /*
 ======================================================================

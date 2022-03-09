@@ -9,9 +9,9 @@ umask 022
 #-------------------------------------------------------------------------------
 #cat mypath.sh >> mynamelist.tmp
 cat mynamelist.sh > mynamelist.tmp
-cat ./ROUTINES/NAMELISTS/namelist_tail.sh >> mynamelist.tmp
+cat ./SCRIPTS_TOOLBOX/NAMELISTS/namelist_tail.sh >> mynamelist.tmp
 cat myjob.sh >> mynamelist.tmp
-cat ./ROUTINES/common_definitions.sh >> mynamelist.tmp
+cat ./SCRIPTS_TOOLBOX/common_definitions.sh >> mynamelist.tmp
 
 . ./mynamelist.tmp
 
@@ -21,9 +21,9 @@ cd ${JOBDIR_ROOT}
 ls ${jobname}  > /dev/null  2>&1 
 if [ "$?" -eq "0" ] ; then
    if [ ${CHAINED_JOB} == "FALSE" ]; then 
-       printf "\n\n\n\n  Un fichier ${jobname} existe deja  dans  ${JOBDIR_ROOT} \n             => exit. \n\n  Nettoyer et relancer\n\n\n\n"; exit
+       printf "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n             => exit. \n\n  Clean up and restart\n\n\n\n"; exit
    elif [ ${CHAINED_JOB} == "TRUE" ] && [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
-       printf "\n\n\n\n  Un fichier ${jobname} existe deja  dans  ${JOBDIR_ROOT} \n             => exit. \n\n  Nettoyer et relancer\n\n\n\n"; exit
+       printf "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n             => exit. \n\n  Clean up and restart\n\n\n\n"; exit
    fi
       
 fi
@@ -52,7 +52,15 @@ fi
 # create job and submit it
 #-------------------------------------------------------------------------------
 
-[ ${USE_OCE}  -eq 1 ] && TOTOCE=$(( $NP_OCEX * $NP_OCEY )) || TOTOCE=0
+if [ ${USE_OCE}  -eq 1 ]; then
+    if [[ ${MPI_NOLAND} == "TRUE" ]]; then
+        TOTOCE=${MY_NODES}
+    else
+        TOTOCE=$(( $NP_OCEX * $NP_OCEY )) 
+   fi
+else
+    TOTOCE=0
+fi
 [ ${USE_ATM}  -eq 1 ] && TOTATM=$NP_ATM  || TOTATM=0
 [ ${USE_WAV}  -eq 1 ] && TOTWAV=$NP_WAV  || TOTWAV=0
 [ ${USE_TOY}  -eq 1 ] && { for k in `seq 0 $(( ${nbtoy} - 1))`; do TOTTOY+=$NP_TOY ; done;}  || TOTTOY=0
@@ -75,8 +83,8 @@ sed -e "/< insert here variables definitions >/r mynamelist.tmp" \
     -e "s/<nmpi>/${totalcore}/g" \
     -e "s/<projectid>/${projectid}/g" \
     -e "s/<timedur>/${timedur}/g" \
-    ./ROUTINES/MACHINE/${MACHINE}/header.${COMPUTER} > HEADER_tmp
-    cat HEADER_tmp ./ROUTINES/job.base.sh >  ${JOBDIR_ROOT}/${jobname}
+    ./SCRIPTS_TOOLBOX/MACHINE/${MACHINE}/header.${COMPUTER} > HEADER_tmp
+    cat HEADER_tmp ./SCRIPTS_TOOLBOX/job.base.sh >  ${JOBDIR_ROOT}/${jobname}
     \rm HEADER_tmp
     \rm ./mynamelist.tmp
 
@@ -100,17 +108,17 @@ printf "  RESTDIR_OUT: ${RESTDIR_ROOT}\n"
 printf "  JOBDIR: ${JOBDIR_ROOT}\n"  
 
 if [ "${SCRIPT_DEBUG}" == "TRUE" ] ; then
-   printf "\n\n\n\n  SCRIPT_DEBUG=${SCRIPT_DEBUG}  Mode script debug => Pas de soumission en queue\n\n\n\n"
+   printf "\n\n\n\n  SCRIPT_DEBUG=${SCRIPT_DEBUG}  Script debug mode => No submission in the queue\n\n\n\n"
 else 
     if [ ${CHAINED_JOB} == "TRUE" ]; then
 #        [[ ${RESTART_FLAG} == "FALSE" ]] && . ${SCRIPTDIR}/chained_job.sh
         . ${SCRIPTDIR}/chained_job.sh
     else
-       ${QSUB} ${jobname}
+       ${QSUB}${jobname}
     fi 
 #
     if [ "${MODE_TEST}" != "" ] ; then
-        printf "\n\n\n\n  MODE_TEST=${MODE_TEST}  Mode test et non production => Pas d'enchainement de jobs.\n\n\n\n"
+        printf "\n\n\n\n  MODE_TEST=${MODE_TEST}  Test mode and non production => No job chaining.\n\n\n\n"
     fi
 fi
 

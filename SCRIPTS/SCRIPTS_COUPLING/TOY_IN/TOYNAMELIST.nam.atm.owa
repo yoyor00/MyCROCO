@@ -12,7 +12,7 @@
                  CRCVFIELDS(3)='TOY_VOCE',
                  CRCVFIELDS(4)='TOY__SST' /
 
-&NAM_SEND_FIELDS NB_SEND_FIELDS=8,
+&NAM_SEND_FIELDS NB_SEND_FIELDS=9,
                  CSNDFIELDS(1)='TOY_TAUX',
                  CSNDFIELDS(2)='TOY_TAUY',
                  CSNDFIELDS(3)='TOY_TAUM',
@@ -20,4 +20,5 @@
                  CSNDFIELDS(5)='TOYSRFLX',
                  CSNDFIELDS(6)='TOY__EMP',
                  CSNDFIELDS(7)='TOY_U_01',
-                 CSNDFIELDS(8)='TOY_V_01' /
+                 CSNDFIELDS(8)='TOY_V_01',
+		 CSNDFIELDS(9)='TOY_PSFC' /

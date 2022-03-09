@@ -16,7 +16,7 @@ export CWORK=/home2/datawork/mlecorre/COUPLING/CONFIG/$CONFIG
 #-------------------------------------------------------------------------------
 # Tools paths
 #-------------------------------------------------------------------------------
-export SCRIPTDIR=$CHOME/ROUTINES
+export SCRIPTDIR=$CHOME/SCRIPTS_TOOLBOX
 
 #-------------------------------------------------------------------------------
 # Model source paths #Insert the full path ( do not use "~" for home )

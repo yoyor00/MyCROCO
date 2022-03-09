@@ -3,9 +3,9 @@
 #===============================================================================
 #  Print
 #===============================================================================
-printf "\n Period of Experiment:\n"
-printf  "%12s%10d%22s%14d%17s\n" "BEGINING:" ${DATE_BEGIN_EXP} "(in ${CALTYPE} calendar)" ${JDAY_BEGIN_EXP} "(in Julian days)"
-printf  "%12s%10d%22s\n\n" "END:" ${DATE_END_EXP} "(in ${CALTYPE} calendar)"
+#printf "\n Period of Experiment:\n"
+#printf  "%12s%10d%22s%14d%17s\n" "BEGINING:" ${DATE_BEGIN_EXP} "(in ${CALTYPE} calendar)" ${JDAY_BEGIN_EXP} "(in Julian days)"
+#printf  "%12s%10d%22s\n\n" "END:" ${DATE_END_EXP} "(in ${CALTYPE} calendar)"
 
 #printf  "%16s%10d%20s%10d\n"     "YEAR_BEGIN_EXP:  " ${YEAR_BEGIN_EXP}   "YEAR_END_EXP:  " ${YEAR_END_EXP}
 #printf  "%16s%10d%20s%10d\n"     "MONTH_BEGIN_EXP: " ${MONTH_BEGIN_EXP}  "MONTH_END_EXP: " ${MONTH_END_EXP}

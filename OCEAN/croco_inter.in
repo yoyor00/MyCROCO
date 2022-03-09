@@ -45,14 +45,14 @@ averages: NTSAVG, NAVG, NRPFAVG / filename
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    40*T
-auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen Bhfl Bwfl HEL
+auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                              F   F     T   F    T    F   F    F       F       T   T    T     F      F     T    T    T    T    T   10*T
 gls_history_fields:   TKE  GLS  Lscale
                        T     T    T
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
                    T    T    T    T  T   40*T
-auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Bvf Visc3d Diff3d HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen Bhfl Bwfl HEL
+auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Bvf Visc3d Diff3d HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                      F   T     T   F    T    F    F    F     F      T   T    T     F     F     T   T    T     T    T   10*T
 gls_averages:   TKE  GLS  Lscale
                 T    T    T
@@ -73,7 +73,7 @@ vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
                    0.d0    30*0.d0
 
 bottom_drag:     RDRG [m/s],  RDRG2,  Zob [m],  Cdb_min, Cdb_max
-                 3.0d-04      0.d-3    0.d-3     1.d-4    1.d-1 
+                 0.0d-04      0.d-3    1.d-2     1.d-4    1.d-1 
 
 gamma2:
                  1.d0
@@ -268,10 +268,9 @@ psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
 psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
                                   croco_runoff.nc
                  2
-                         24  35  0  -1   30*T   20.0  15.0
-                         35  13  1  -1   30*T   20.0  15.0
+                         24  35  0  -1   T T   20.0  15.0
+                         35  13  1  -1   T T   20.0  15.0
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
            NYONLINE   NMONLINE      4             2011     3
           DATA/CFSR_Benguela_LR/
-

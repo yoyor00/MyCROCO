@@ -619,10 +619,6 @@ C$OMP BARRIER
           wkx(i,j,wnew)=wkx(i,j,wnew)*rmask(i,j)
           wke(i,j,wnew)=wke(i,j,wnew)*rmask(i,j)
 # endif
-!# ifdef WET_DRY
-!          wkx(i,j,wnew)=wkx(i,j,wnew)*rmask_wet(i,j) ! unstable
-!          wke(i,j,wnew)=wke(i,j,wnew)*rmask_wet(i,j)
-!# endif
         enddo
       enddo                ! <-- discard kvx,kue
 # undef kvx
@@ -672,9 +668,9 @@ C$OMP BARRIER
 # ifdef MASKING
           wac(i,j,wnew)=wac(i,j,wnew)*rmask(i,j)
 # endif
-!# ifdef WET_DRY
-!          wac(i,j,wnew)=wac(i,j,wnew)*rmask_wet(i,j) ! unstable
-!# endif
+# ifdef WET_DRY
+          wac(i,j,wnew)=wac(i,j,wnew)*rmask_wet(i,j)
+# endif
         enddo
       enddo           ! <--- discard acx,ace
 !
@@ -710,19 +706,19 @@ C$OMP BARRIER
         do i=istr,iend
           war(i,j,wnew) =war(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &               *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
-# ifdef WKB_ADD_DIFFXXX
+#  ifdef WKB_ADD_DIFFXXX
      &                           -on_r(i,j)*(war(i+1,j,wprv)
      &                         -2.*war(i,j,wprv)+war(i-1,j,wprv))
      &                           -om_r(i,j)*(war(i,j+1,wprv)
      &                         -2.*war(i,j,wprv)+war(i,j-1,wprv))
-# endif
+#  endif
      &                )-wkb_roller*wsb(i,j,wstp)+wsr(i,j,wstp) )
 #  ifdef MASKING
           war(i,j,wnew) = war(i,j,wnew)*rmask(i,j)
 #  endif
-!#  ifdef WET_DRY
-!          war(i,j,wnew) =war(i,j,wnew)*rmask_wet(i,j) ! unstable
-!#  endif
+#  ifdef WET_DRY
+          war(i,j,wnew) =war(i,j,wnew)*rmask_wet(i,j)
+#  endif
         enddo
       enddo           ! <--- discard acx,ace
 # endif    /* WAVE_ROLLER */

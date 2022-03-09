@@ -80,7 +80,8 @@ NY_END=10
 NM_START=1
 NM_END=12
 #
-#  Exact restart - EXACT_RST=0 --> Exact restart OFF
+# Set month format at 1 or 2 digits (for output files): "%01d" = 1 digit/ "%02d" = 2 digit  
+MTH_FORMAT="%01d"
 #                - EXACT_RST=1 --> Exact restart ON
 EXACT_RST=0
 #
@@ -146,7 +147,7 @@ if [[ $RSTFLAG != 0 ]]; then
 	    NM=12 
 	    NY=$((NY - 1))
 	fi
-	TIME=Y${NY}M${NM}
+	TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
     fi
     RSTFILE=${MODEL}_rst_${TIME}.nc
 fi
@@ -209,6 +210,7 @@ if [[ $TIME_SCHED == 0 ]]; then
 	NUMTIMES=$((NUMTIMES * 12))
 fi
 
+DT0=$DT
 LEVEL=0
 while [[ $LEVEL != $NLEVEL ]]; do
     if [[ ${LEVEL} == 0 ]]; then
@@ -251,6 +253,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
     
     LEVEL=$((LEVEL + 1))
 done
+DT=$DT0
 #
 ###########################################################
 #  Compute
@@ -279,7 +282,7 @@ while [[ $NY != $NY_END ]]; do
 	if [[ $TIME_SCHED == 0 ]]; then
 	    TIME=Y${NY}
 	else
-	    TIME=Y${NY}M${NM}
+	    TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
 	fi
 	
 	#
@@ -300,8 +303,6 @@ while [[ $NY != $NY_END ]]; do
 	#
 	sed -e 's/NUMRECINI/'$NUMRECINI'/' < ${MODEL}_inter.in${ENDF}.tmp1 > ${MODEL}.in${ENDF}
 	#
-	#end GC
-	
 	#
 	#  COMPUTE
 	#

@@ -840,16 +840,16 @@
 
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
-      parameter (indxQBAR=indxSUSTR+92)
+      parameter (indxQBAR=indxSUSTR+122)
 # ifdef PSOURCE_NCFILE_TS
       integer indxTsrc
-      parameter (indxTsrc=indxSUSTR+93)
+      parameter (indxTsrc=indxSUSTR+123)
 # endif
 #endif /* PSOURCE_NCFILE */
 
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+94)
+      parameter (indxShflx_rswbio=indxSUSTR+124)
 #endif
 #if defined BHFLUX
       integer indxBhflx
@@ -1431,7 +1431,7 @@
 #ifdef SOLVE3D
 # define NWRTHIS 500+NT
 #else
-# define NWRTHIS 90
+# define NWRTHIS 500
 #endif
       logical wrthis(NWRTHIS)
 #ifdef AVERAGES
