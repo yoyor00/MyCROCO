@@ -16,6 +16,11 @@
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat,nv_adv
 #endif
+
+#if defined BIOLink_PAR_EVAL
+      USE comBIOLink_helping, ONLY : PAR_top_layer
+#endif /* BIOLink_PAR_EVAL */ 
+
 #ifdef MUSTANG
       USE comsubstance, ONLY : nv_adv,nvpc,nvp
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
@@ -1362,6 +1367,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
          indx=indx+1
          if (wrthis(indx)) then
            work2d(:,:)=varspecif2D_save(k,:,:)
+
            call fillvalue2d(work2d,ncidhis,
      &                 hisMust(ntrc_subs+6+ik),indx,record,r2dvar,type)
          endif
@@ -1369,6 +1375,20 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 #  endif
 # endif /* MUSTANG */
 
+!
+!  PAR evaluation from BIOLink
+!
+
+# if defined BIOLink_PAR_eval
+
+      if (wrthis(indxPAR)) then
+        work2d=PAR_top_layer
+        call fillvalue2d(work2d,ncidhis,hisPAR,indxPAR,
+     &        record,r2dvar,type)
+CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
+      endif
+
+# endif /* BIOLink_PAR_eval */
 #endif /* SOLVE3D */
 
  1    format(/1x,'WRT_HIS ERROR while writing variable ''', A,

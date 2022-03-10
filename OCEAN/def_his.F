@@ -40,19 +40,12 @@
      &                      nv_out2D_specif, nv_out3Dk_specif
 #endif
 
-! If we use the PAR from BIOLink !
-
-#ifdef BIOLink_PAR_eval
-
-      USE comBIOLink_helping, ONLY : PAR_top_layer 
-
-#endif
-
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3), auxil(2), checkdims
      &      , b3dgrd(4)
+      integer i
 #ifdef NC4PAR
      &      , csize,cmode
 #endif
@@ -153,6 +146,9 @@
 # ifdef SST_SKIN
 #  define vidSST_skin hisSST_skin
 # endif
+# ifdef BIOLink_PAR_eval
+#   define vidPAR hisPAR
+# endif /* BIOLink_PAR_eval */
 # define vidM hisMust
 
 #else
@@ -228,7 +224,9 @@
 # ifdef SST_SKIN
 #  define vidSST_skin avgSST_skin
 # endif
-
+# ifdef BIOLink_PAR_eval
+#   define vidPAR hisPAR
+# endif /* BIOLink_PAR_eval */
 # define vidM avgMust
 #endif
 !
@@ -2376,7 +2374,7 @@
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
-#if defined BIOLink_PAR_EVAL
+#if defined BIOLink_PAR_eval
 !
 ! PAR_top_layer : PAR reaching the top layer from the BIOLink functions
 !
@@ -2662,6 +2660,23 @@
           endif
         enddo
 # endif
+
+!
+! Photosynthetic Available Radiation from BIOLink
+!
+
+#if defined BIOLink_PAR_eval
+
+        if (wrt(indxPAR)) then
+          lvar=lenstr(vname(1,indxPAR))
+          ierr=nf_inq_varid (ncid, vname(1,indxPAR)(1:lvar), vidPAR)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxPAR)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+#endif /* BIOLink_PAR_eval */
+
 !
 ! Density anomaly.
 !
@@ -3277,6 +3292,7 @@
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
+#
       MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_HIS/AVG -- Opened ',
      &                     'existing file  from record =', rec
@@ -3385,7 +3401,9 @@
 #undef vidKAPS
 #undef vidHm
 #undef vidM
-
+#if defined BIOLink_PAR_eval
+#  undef vidPAR
+#endif /* BIOLink_PAR_eval */
 #ifdef AVERAGES
 # ifndef AVRH
 #  define AVRH

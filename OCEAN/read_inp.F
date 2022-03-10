@@ -1352,7 +1352,13 @@ c        close(testunit)
 # endif
      &     ) wrthis(indxTime)=.true.
 
+! For the PAR with BIOLink 
 
+#if defined BIOLink_PAR_EVAL
+
+      wrthis(indxPAR) = .true.
+
+#endif /* BIOLink_PAR_EVAL */
         MPI_master_only write(stdout,'(8(/6x,l1,2x,A,1x,A))')
      &    wrthis(indxR),    'write RHO  ', 'Density anomaly.'
      &  , wrthis(indxO),    'write Omega', 'Omega vertical velocity.'

@@ -156,6 +156,8 @@
 !
 ! ** DIAGNOSTICS_EDDY **
 !
+! ** LIGHT FROM BIOLINK**
+!  indxPAR                       : PAR at the top layer
 !=======================================================================
 ! Output file codes
       integer filetype_his, filetype_avg
@@ -860,6 +862,14 @@
       parameter (indxBwflx=indxSUSTR+132)
 #endif
 
+#if defined BIOLink_PAR_eval
+
+      integer indxPAR
+      parameter (indxPAR=indxSUSTR+154)
+/*      parameter (indxPAR=indxSUSTR+133)*/
+
+#endif /* BIOLink_PAR_EVAL */
+
 #ifdef ICE
       integer indxAi
       parameter (indxAi=????)
@@ -1126,6 +1136,10 @@
 #  endif
      &               )
 # endif /* MUSTANG */
+
+# ifdef BIOLink_PAR_eval
+      integer hisPAR
+# endif /* BIOLink_PAR_EVAL */
 
 # if defined DIAGNOSTICS_TS
       integer nciddia, nrecdia, nrpfdia
@@ -1609,6 +1623,12 @@
      &      , hisMust
 # endif
 #endif
+
+#ifdef BIOLink_PAR_eval
+     &      , hisPAR
+#endif /* BIOLink_PAR_EVAL */
+
+
 #ifdef BBL
      &      , hisBBL
 #endif
