@@ -39,6 +39,15 @@
       USE comMUSTANG, ONLY :nk_nivsed_out, nv_out3Dnv_specif,
      &                      nv_out2D_specif, nv_out3Dk_specif
 #endif
+
+! If we use the PAR from BIOLink !
+
+#ifdef BIOLink_PAR_eval
+
+      USE comBIOLink_helping, ONLY : PAR_top_layer 
+
+#endif
+
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -2366,6 +2375,33 @@
         endif
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
+
+#if defined BIOLink_PAR_EVAL
+!
+! PAR_top_layer : PAR reaching the top layer from the BIOLink functions
+!
+        if (wrt(indxPAR)) then
+          lvar=lenstr(vname(1,indxPAR))
+          ierr=nf_def_var (ncid, vname(1,indxPAR)(1:lvar), NF_FOUT,
+     &                                           3, r2dgrd, vidPAR)
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidPAR,nf_collective)
+#endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxPAR))
+          ierr=nf_put_att_text (ncid, vidPAR, 'long_name', lvar,
+     &                                  vname(2,indxPAR)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxPAR)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidPAR, 'long_name', lvar,
+     &                                              text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxPAR))
+          ierr=nf_put_att_text (ncid, vidPAR, 'units',     lvar,
+     &                                 vname(3,indxPAR)(1:lvar))
+        endif
+#endif /* BIOLink_PAR_EVAL */
 
 !
 ! Leave definition mode.
