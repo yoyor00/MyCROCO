@@ -1382,6 +1382,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 # if defined BIOLink_PAR_eval
 
       if (wrthis(indxPAR)) then
+        MPI_master_only PRINT*, "Shape of PAR is",SHAPE(PAR_top_layer)
         work2d=PAR_top_layer
         call fillvalue2d(work2d,ncidhis,hisPAR,indxPAR,
      &        record,r2dvar,type)
@@ -1389,7 +1390,6 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
       endif
 
 # endif /* BIOLink_PAR_eval */
-#endif /* SOLVE3D */
 
  1    format(/1x,'WRT_HIS ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',
