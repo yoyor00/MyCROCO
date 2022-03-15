@@ -320,7 +320,8 @@ while [ $NY != $NY_END ]; do
     echo "YEAR = $NY MONTH = $NM DAYS = $NDAYS DT = $DT NTIMES = $NUMTIMES"
     NUMTIMES=$((NDAYS * 24 * 3600))
     NUMTIMES=$((NUMTIMES / DT))
-    
+
+    DT0=$DT
     LEVEL=0
     while [[ $LEVEL != $NLEVEL ]]; do
 	if [[ ${LEVEL} == 0 ]]; then
@@ -380,6 +381,7 @@ while [ $NY != $NY_END ]; do
 	
 	LEVEL=$((LEVEL + 1))
     done
+    DT=$DT0
     #
     #  COMPUTE
     #
