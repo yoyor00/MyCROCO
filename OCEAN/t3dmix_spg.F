@@ -266,7 +266,7 @@
           do i=Istr,Iend
           FE(i,j)=0.25*(diff2_sponge(i,j)+diff2_sponge(i,j-1))
      &                     *pnom_v(i,j)*(Hz(i,j,k)+Hz(i,j-1,k))*(
-     &                 t(i,j,k,nrhs,itrc)-t(i#if defined TS_DIF2 || defined SPONGE_DIF2,j-1,k,nrhs,itrc)
+     &                 t(i,j,k,nrhs,itrc)-t(i,j-1,k,nrhs,itrc)
 #  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE 
      &                    -TCLM(i,j,k,itrc)+TCLM(i,j-1,k,itrc)
 #  endif
