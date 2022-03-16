@@ -108,6 +108,8 @@ C$    trd=omp_get_thread_num()
 #  endif
 #endif
 !
+!$acc kernels default(present)
+
 #if defined M2_FRC_BRY || defined M2CLIMATOLOGY
       tau_in=dtfast*tauM_in
       tau_out=dtfast*tauM_out
@@ -948,7 +950,7 @@ C$    trd=omp_get_thread_num()
 !
 #endif /* NBQ */
 
-
+!$acc end kernels
       return
       end
 #ifndef CHILD

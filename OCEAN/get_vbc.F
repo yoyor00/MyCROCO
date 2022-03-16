@@ -27,6 +27,7 @@
 !                 [temperature: degC m/s; salinity: PSU m/s].
 !-------------------------------------------------------------------
 !
+      USE debug
       implicit none
 #include "param.h"
 #include "sources.h"
@@ -196,6 +197,7 @@
 !                                     the ETA-direction (m^2/s^2).
 !----------------------------------------------------------------
 !
+      USE debug
 #ifdef AGRIF
       use Agrif_Util
 #endif
@@ -217,6 +219,7 @@
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk2(PRIVATE_2D_SCRATCH_ARRAY)
+      real maxzob
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -311,6 +314,7 @@
 !
 ! If BULK_FLUX is defined, correction is done in bulk_flux
 !
+!$acc parallel loop default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,itemp)=stflx(i,j,itemp)+
@@ -333,6 +337,7 @@
 !
 ! Multiply flux by surface salinity.
 !
+!$acc parallel loop default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,isalt)=stflx(i,j,isalt)*t(i,j,N,nrhs,isalt)
@@ -354,6 +359,7 @@
 !
 ! If BULK_FLUX is defined, correction is done in bulk_flux
 !
+!$acc parallel loop default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,isalt)=stflx(i,j,isalt)
@@ -385,6 +391,7 @@
 !---------------------------------------------------------------
 !
 #  ifdef WET_DRY
+!$acc parallel loop default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
 #   ifdef TEMPERATURE
@@ -433,6 +440,7 @@
 ! Multiply flux by bottom salinity.
 !---------------------------------------------------------------
 !
+!$acc parallel loop default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           btflx(i,j,isalt)=btflx(i,j,isalt)*t(i,j,1,nrhs,isalt)
@@ -468,8 +476,12 @@
 !  Set bottom stress using logarithmic or linear
 !  and/or quadratic formulation.
 !
+!$acc kernels default(present)
 #   define CDRAG wrk
-      if (maxval(Zob).ne.0.) then
+      maxzob = maxval(Zob)
+!$acc end kernels
+!$acc kernels default(present)
+      if (maxzob.ne.0.) then
         do j=JstrV-1,Jend     !! for currents
           do i=IstrU-1,Iend
             cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob(i,j))
@@ -681,6 +693,7 @@
 #   endif
       ENDIF
 #  endif
+!$acc end kernels
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend, bustr)
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend, bvstr)
@@ -740,14 +753,18 @@ C$OMP END MASTER
 #if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
-      call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u')
-      call check_tab3d(v(:,:,:,nrhs),'#end v in set_vbc','v')
+      call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u',
+     &  ondevice=.TRUE.)
+      call check_tab3d(v(:,:,:,nrhs),'#end v in set_vbc','v',
+     &  ondevice=.TRUE.)
 
 # ifdef TEMPERATURE
-      call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r')
+      call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r',
+     & ondevice=.TRUE.)
 # endif
 # ifdef SALINITY
-      call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in set_vbc','r')
+      call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in set_vbc','r',
+     & ondevice=.TRUE.)
 # endif
 C$OMP END MASTER
 #endif

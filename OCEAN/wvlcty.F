@@ -97,6 +97,8 @@
       jmin=Jstr
       jmax=Jend
 # endif
+
+!$acc kernels default(present)
 !
 !   Compute "omega" vertical velocity by means of integration of 
 ! mass divergence of mass fluxes from bottom up. In this computation,
@@ -112,6 +114,7 @@
 ! Once omega vertical velocity is computed, interpolate it to
 ! vertical RHO-points.
 !
+!$acc loop private(Wrk)
       do j=jmin,jmax
         do i=imin,imax
           Wrk(i,0)=0.D0
@@ -144,6 +147,7 @@ c**    Wrk(i,k)=0.!(uncomment to test the second part)
 ! motions along S=const surfaces by multiplying horizontal
 ! velocity components by slops S-coordinate surfaces:
 !
+!$acc loop private(Wxi,Weta) gang vector(1)
       do k=1,N
         do j=jmin,jmax
           do i=imin,imax+1
@@ -221,6 +225,7 @@ c**    Wrk(i,k)=0.!(uncomment to test the second part)
       endif
 #  endif
 # endif
+!$acc end kernels
       return
       end
 #else

@@ -99,6 +99,7 @@ C$    trd=omp_get_thread_num()
 !
 !======================================================================
 !
+      USE debug
       implicit none
 #include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
@@ -109,6 +110,7 @@ C$    trd=omp_get_thread_num()
      &        is,
 #endif
      &        imin,imax,jmin,jmax
+      integer,dimension(2) :: ijmax
       real sum_c
       real    VMAX,VMAXL
       real zeta_new(PRIVATE_2D_SCRATCH_ARRAY),  cff,
@@ -250,6 +252,8 @@ C$    trd=omp_get_thread_num()
 # define JU_EXT_RANGE max(Jstr-2,0),min(Jend+2,Mm+1)
 #endif
 !
+!$acc kernels default(present)
+
       do j=jmin,jmax
         do i=imin,imax
           Drhs(i,j)=cff1*zeta(i,j,kstp)+cff2*zeta(i,j,kbak)
@@ -334,12 +338,16 @@ C$    trd=omp_get_thread_num()
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 #endif
 
+!$acc end kernels
 #ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab2d(zeta(:,:,kstp),'zeta step2d #1','r')
-       call check_tab2d(ubar(:,:,kstp),'ubar step2d #1','u')
-       call check_tab2d(vbar(:,:,kstp),'vbar step2d #1','v')
+       call check_tab2d(zeta(:,:,kstp),'zeta step2d #1','r',
+     &   ondevice=.TRUE.)
+       call check_tab2d(ubar(:,:,kstp),'ubar step2d #1','u',
+     &   ondevice=.TRUE.)
+       call check_tab2d(vbar(:,:,kstp),'vbar step2d #1','v',
+     &   ondevice=.TRUE.)
 C$OMP END MASTER
 #endif
 !
@@ -395,6 +403,8 @@ C$OMP END MASTER
 #define rzeta  UFe
 #define rzeta2  VFe
 #define rzetaSA VFx
+
+!$acc kernels default(present)
 !
 !-----------------------------------------------------------------------
 ! Computes zeta(n+1)
@@ -526,24 +536,17 @@ C$OMP END MASTER
        if (.not.agrif_Root()) then
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (index 0) step2d','r')
-       call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (index 0) step2d','u')
-       call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (index 0) step2d','v')
+       call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (index 0) step2d','r',
+     &   ondevice=.TRUE.)
+       call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (index 0) step2d','u',
+     &   ondevice=.TRUE.)
+       call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (index 0) step2d','v',
+     &   ondevice=.TRUE.)
 C$OMP END MASTER
        endif
 # endif
 #endif /* AGRIF */
 !
-!-----------------------------------------------------------------------
-! Debug zeta
-!-----------------------------------------------------------------------
-!
-#ifdef RVTK_DEBUG_ADVANCED
-C$OMP BARRIER
-C$OMP MASTER
-       call check_tab2d(zeta(:,:,knew),'zeta step2d #2','rint')
-C$OMP END MASTER
-#endif
 !
 !-----------------------------------------------------------------------
 ! Compute wet/dry masks
@@ -558,6 +561,19 @@ C$OMP END MASTER
 C$OMP BARRIER
 #endif
 
+!$acc end kernels
+
+!-----------------------------------------------------------------------
+! Debug zeta
+!-----------------------------------------------------------------------
+!
+#ifdef RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+       call check_tab2d(zeta(:,:,knew),'zeta step2d #2','rint',
+     &   ondevice=.TRUE.)
+C$OMP END MASTER
+#endif
 
 !
 !-----------------------------------------------------------------------
@@ -578,6 +594,7 @@ C$OMP BARRIER
 #ifdef SOLVE3D
       cff1=weight(1,iif)
       cff2=weight(2,iif)
+!$acc kernels default(present)
       if (FIRST_2D_STEP) then
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1200,6 +1217,7 @@ C$OMP BARRIER
         enddo
       enddo
 #endif
+!$acc end kernels
 !
 !-----------------------------------------------------------------------
 ! Coupling between 2D and 3D parts.
@@ -1236,6 +1254,7 @@ C$OMP BARRIER
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1=1.5+cff3                  ! maximum stability (with
         endif                            ! special care for startup)
+!$acc kernels default(present)
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=rufrc(i,j)-rubar(i,j)
@@ -1316,7 +1335,7 @@ C$OMP BARRIER
 # undef rzeta2
 # undef rzeta
 # undef zwrk
-
+!$acc end kernels
       endif   !<-- FIRST_2D_STEP
 
 #endif /* SOLVE3D */
@@ -1335,7 +1354,7 @@ C$OMP BARRIER
 !
 
 #define Dstp DUon
-
+!$acc kernels default(present)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           Dstp(i,j)=zeta(i,j,kstp)+h(i,j)
@@ -1544,6 +1563,7 @@ C$OMP BARRIER
         enddo
       enddo
 #endif
+!$acc end kernels
 !
 !-----------------------------------------------------------------------
 ! Set boundary conditions and compute integral mass flux accross
@@ -1562,6 +1582,7 @@ C$OMP BARRIER
 ! boundaries.
 !-----------------------------------------------------------------------
 !
+!$acc kernels default(present)
 #ifdef SOLVE3D
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
@@ -1587,7 +1608,10 @@ C$OMP BARRIER
         enddo
       endif
 # endif
+!$acc end kernels
+
       cff1=0.5*weight(1,iif)
+!$acc kernels default(present)
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
@@ -1734,17 +1758,6 @@ C$OMP BARRIER
 # endif
 #endif
 !
-!-----------------------------------------------------------------------
-!  Debugging ubar,vbar
-!-----------------------------------------------------------------------
-!
-#ifdef RVTK_DEBUG_ADVANCED
-C$OMP BARRIER
-C$OMP MASTER
-       call check_tab2d(ubar(:,:,knew),'ubar step2d #2','u')
-       call check_tab2d(vbar(:,:,knew),'vbar step2d #2','v')
-C$OMP END MASTER
-#endif
 !
 !-----------------------------------------------------------------------
 !  Apply conservation requirements for nesting
@@ -1782,9 +1795,12 @@ C$OMP END MASTER
 # ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step2d','r')
-       call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step2d','u')
-       call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step2d','v')
+       call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step2d','r',
+     &   ondevice=.TRUE.)
+       call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step2d','u',
+     &   ondevice=.TRUE.)
+       call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step2d','v',
+     &   ondevice=.TRUE.)
 C$OMP END MASTER
 # endif
       endif
@@ -1817,28 +1833,41 @@ C$OMP END MASTER
 !
       VMAXL=100.
       VMAX=0.
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          cff1=ubar(i,j,knew)
-          cff2=vbar(i,j,knew)
-          cff=max(abs(cff1),abs(cff2))
-          IF (cff.GE.VMAX .or. cff1.ne.cff1 .or. cff2.ne.cff2) THEN
-            IF (cff.GE.VMAX .and. cff1.eq.cff1 .and. cff2.eq.cff2) THEN
-              VMAX=cff
-            ELSE
-              VMAX=666.
-            ENDIF
-#ifdef MPI
-            imax=i+iminmpi-1
-            jmax=j+jminmpi-1
-#else
-            imax=i
-            jmax=j
+
+      cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
+      cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+      VMAX=max(cff1,cff2)
+!$acc end kernels
+
+!
+!-----------------------------------------------------------------------
+!  Debugging ubar,vbar
+!-----------------------------------------------------------------------
+!
+#ifdef RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+       call check_tab2d(ubar(:,:,knew),'ubar step2d #2','u',
+     &   ondevice=.TRUE.)
+       call check_tab2d(vbar(:,:,knew),'vbar step2d #2','v',
+     &   ondevice=.TRUE.)
+C$OMP END MASTER
 #endif
-          ENDIF
-        enddo
-      enddo
+
       IF (VMAX.GT.VMAXL) THEN
+        cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
+        cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+        IF (cff1>cff2) THEN
+          ijmax= maxloc(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
+        ELSE
+          ijmax= maxloc(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+        ENDIF
+        imax=ijmax(1)
+        jmax=ijmax(2)
+#ifdef MPI
+        imax=imax+iminmpi-1
+        jmax=jmax+jminmpi-1
+#endif
         write(stdout,'(9(A/))')
      &     '                                         ',
      &     '                                         ',

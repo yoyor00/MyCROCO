@@ -183,7 +183,7 @@
        call check_tab3d(Hz_bak(:,:,:),'Hz_bak in prestep3d','r')
        call check_tab3d(Huon(:,:,:),'Huon in prestep3d','r')
 #endif
-
+!$acc kernels default(present)
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -257,6 +257,7 @@
 !======================================================================
 !
 # ifdef TRACERS
+!$acc loop seq
       do itrc=1,NT
         do k=1,N
 
@@ -439,7 +440,7 @@
 #   endif
 #  endif
 # endif
-
+!$acc loop private(FC,DC,CF)
       do j=Jstr,Jend
 # ifdef TRACERS
 
@@ -889,6 +890,7 @@
         enddo
       enddo
 # endif
+!$acc end kernels
 !
 !--------------------------------------------------------------------
 !
@@ -970,6 +972,8 @@
 ! (needed for OPENMP parallelization)
 !======================================================================
 !
+!$acc kernels default(present)
+
 # ifdef GLS_MIXING
       do k=0,N
         do j=Jstr-1,Jend+1
@@ -1009,7 +1013,7 @@
       enddo     
 #  endif
 # endif
-!
+!$acc end kernels
 # undef IU_RANGE
 # undef JU_RANGE
 # undef IV_RANGE

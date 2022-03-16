@@ -21,15 +21,16 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call omega_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd)
+     &                                    , A2d(1,2,trd)
 # ifdef VADV_ADAPT_IMP
-     &                                     ,A2d(1,2,trd)
+     &                                     ,A2d(1,3,trd)
 # endif
      &                                                  )
       return
       end
 !======================================================================
 !
-      subroutine omega_tile (Istr,Iend,Jstr,Jend, wrk
+      subroutine omega_tile (Istr,Iend,Jstr,Jend, wrk, wrk2
 # ifdef VADV_ADAPT_IMP
      &      ,Cu_adv
 # endif
@@ -115,6 +116,8 @@
 !
 !---------------------------------------------------------
 ! 
+!$acc kernels default(present)
+!$acc loop private(wrk,wrk2)
       do j=Jstr,Jend
 !
 !---------------------------------------------------------
@@ -287,7 +290,7 @@
       endif
 #  endif
 # endif
-
+!$acc end kernels
 # if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend, 

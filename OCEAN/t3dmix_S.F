@@ -136,6 +136,8 @@
       jmin=jstr-1
       jmax=jend+1
 #endif
+
+!$acc kernels default(present)
       do k=1,N
 
 !++=============================================================
@@ -559,6 +561,9 @@
       endif
 #  endif /* DIAGNOSTICS_DEBUG */
 # endif /* DIAGNOSTICS_TS */
+
+!$acc end kernels
+
 !------------------------------------------------------------------
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #  ifdef THREE_GHOST_POINTS_TS

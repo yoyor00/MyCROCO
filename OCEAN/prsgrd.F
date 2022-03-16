@@ -155,6 +155,8 @@ c********************************************************************
       GRho=g/rho0
       HalfGRho=0.5*GRho
 
+!$acc kernels default(present)
+!$acc loop private(dZ,dR)
       do j=JstrV-1,Jend
         do k=1,N-1
           do i=IstrU-1,Iend
@@ -238,8 +240,25 @@ c********************************************************************
       imin=Istr-1
       imax=Iend+1
 #  endif
+#  ifndef NS_PERIODIC
+        if (SOUTHERN_EDGE) then
+          jmin=JstrV
+        else
+          jmin=JstrV-1
+        endif
+        if (NORTHERN_EDGE) then
+          jmax=Jend
+        else
+          jmax=Jend+1
+        endif
+#  else
+        jmin=Jstr-1
+        jmax=Jend+1
+#  endif
 # endif /* PGF_FLAT_BOTTOM */
 
+!!$acc loop private(FC,rx,dRx,dZx) gang vector(1)
+!$acc loop seq
       do k=N,1,-1    !<-- k loop
 
 # ifndef PGF_FLAT_BOTTOM
@@ -360,21 +379,6 @@ c********************************************************************
 !-------------- -- -------- -------- -----
 !
 # ifndef PGF_FLAT_BOTTOM
-#  ifndef NS_PERIODIC
-        if (SOUTHERN_EDGE) then
-          jmin=JstrV
-        else
-          jmin=JstrV-1
-        endif
-        if (NORTHERN_EDGE) then
-          jmax=Jend
-        else
-          jmax=Jend+1
-        endif
-#  else
-        jmin=Jstr-1
-        jmax=Jend+1
-#  endif
 
         do j=jmin,jmax
           do i=Istr,Iend
@@ -925,6 +929,9 @@ c********************************************************************
         enddo
       enddo
 #endif
+
+!$acc end kernels
+
 !
 !--------------------------------------------------------------------
 !

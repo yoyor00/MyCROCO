@@ -80,6 +80,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
       tau_out=dt*tauT_out
 # endif
 !
+!$acc kernels default(present)
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -105,7 +106,9 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #  elif defined OBC_COM_WEST && defined OBC_COM_TORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
+!$acc loop private(grad)
         do k=1,N
+!$acc loop vector
           do j=Jstr,Jend+1
             grad(Istr-1,j)=( t(Istr-1,j  ,k,nstp,itrc)
      &                      -t(Istr-1,j-1,k,nstp,itrc))
@@ -118,6 +121,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                   *vmask(Istr,j)
 #   endif
           enddo
+!$acc loop vector
           do j=Jstr,Jend
             dft=t(Istr,j,k,nstp,itrc)-t(Istr  ,j,k,indx,itrc)
             dfx=t(Istr,j,k,indx,itrc)-t(Istr+1,j,k,indx,itrc)
@@ -218,7 +222,9 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #  elif defined OBC_COM_EAST && defined OBC_COM_TORLANSKI
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
+!$acc loop private(grad)
         do k=1,N
+!$acc loop vector
           do j=Jstr,Jend+1
            grad(Iend  ,j)=( t(Iend  ,j  ,k,nstp,itrc)
      &                     -t(Iend  ,j-1,k,nstp,itrc))
@@ -231,6 +237,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                *vmask(Iend+1,j)
 #   endif
           enddo
+!$acc loop vector
           do j=Jstr,Jend
             dft=t(Iend,j,k,nstp,itrc)-t(Iend  ,j,k,indx,itrc)
             dfx=t(Iend,j,k,indx,itrc)-t(Iend-1,j,k,indx,itrc)
@@ -330,6 +337,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #  elif defined OBC_COM_SOUTH && defined OBC_COM_TORLANSKI
 !                                          Southern edge radiation BC
 !                                          ======== ==== ========= ==
+!$acc loop private(grad)
         do k=1,N
           do i=Istr,Iend+1
             grad(i,Jstr  )=( t(i  ,Jstr  ,k,nstp,itrc)
@@ -440,6 +448,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #  elif defined OBC_COM_NORTH && defined OBC_COM_TORLANSKI
 !                                          Northern edge radiation BC
 !                                          ======== ==== ========= ==
+!$acc loop private(grad)
         do k=1,N
           do i=Istr,Iend+1
             grad(i,Jend  )=( t(i  ,Jend  ,k,nstp,itrc)
@@ -578,6 +587,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
         enddo
       endif
 # endif
+!$acc end kernels
       return
       end
 #else

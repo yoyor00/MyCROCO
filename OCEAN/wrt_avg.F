@@ -122,6 +122,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     components in XI-,ETA-directions.
 !
       if (wrtavg(indxZ)) then
+!$acc update host(zeta_avg)
          work2d=zeta_avg
 # ifdef WET_DRY
          do j=0,Mm
@@ -137,12 +138,14 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       endif
 
       if (wrtavg(indxUb)) then
+!$acc update host(ubar_avg)
          work2d=ubar_avg
          call fillvalue2d(work2d,ncidavg,avgUb,indxUb,
      &                      record,u2dvar,type)
       endif
 
       if (wrtavg(indxVb)) then
+!$acc update host(vbar_avg)
          work2d=vbar_avg
          call fillvalue2d(work2d,ncidavg,avgVb,indxVb,
      &                   record,v2dvar,type)
@@ -235,12 +238,14 @@ CR      write(*,*) 'wrt_avg: VWstr' MYID
 !     3D momentum components in XI- and ETA-directions.
 !
       if (wrtavg(indxU)) then
+!$acc update host(u_avg)
          workr=u_avg
          call fillvalue3d(workr,ncidavg,avgU,indxU,record,u3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtU' MYID
       endif
 !
       if (wrtavg(indxV)) then
+!$acc update host(v_avg)
          workr=v_avg
          call fillvalue3d(workr,ncidavg,avgV,indxV,record,v3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtV' MYID
@@ -251,6 +256,7 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
 #  ifdef TRACERS
       do itrc=1,NT
          if (wrtavg(indxV+itrc)) then
+!$acc update host(t_avg(:,:,:,itrc))
             workr=t_avg(:,:,:,itrc)
             call fillvalue3d(workr,ncidavg,avgT(itrc),indxV+itrc,
      &           record,r3dvar,type)

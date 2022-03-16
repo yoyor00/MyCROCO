@@ -65,6 +65,8 @@ C$    integer omp_get_thread_num
 # else
 #  define J_RANGE JstrR,JendR
 # endif
+
+!$acc kernels default(present)
 !
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
@@ -219,6 +221,8 @@ C$    integer omp_get_thread_num
         enddo
       endif
 #  endif
+
+!$acc end kernels
 
 #  undef I_RANGE
 #  undef J_RANGE
@@ -408,7 +412,7 @@ C$    integer omp_get_thread_num
 #   define JU_RANGE JstrR,JendR
 #   define JV_RANGE Jstr,JendR
 #  endif
-
+!$acc kernels default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -446,6 +450,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels
 #  undef IU_RANGE
 #  undef JU_RANGE
 #  undef IV_RANGE
@@ -628,6 +633,8 @@ C$    integer omp_get_thread_num
 #   define JV_RANGE Jstr,JendR
 #  endif
 
+!$acc kernels default(present)
+!$acc loop private(DC,FC(:,0))
       do j=JU_RANGE
         do i=IU_RANGE
           DC(i,0)=0.
@@ -664,6 +671,8 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
+
+!$acc loop private(DC,FC(:,0))
       do j=JV_RANGE
         do i=IV_RANGE
           DC(i,0)=0.
@@ -699,6 +708,8 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+
+!$acc end kernels
 
 #  undef IU_RANGE
 #  undef JU_RANGE

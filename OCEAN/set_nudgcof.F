@@ -72,6 +72,7 @@
 #  endif
 # endif /* SPONGE_GRID */
 
+!$acc kernels default(present)
 !
       do j=max(-1,JstrR-1),JendR
         do i=max(-1,IstrR-1),IendR
@@ -283,6 +284,7 @@
         enddo
       enddo
 # endif
+!$acc end kernels
 #else
       subroutine set_nudgcof_empty
 #endif /* TNUDGING || ZNUDGING || SPONGE */

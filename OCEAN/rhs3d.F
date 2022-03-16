@@ -159,6 +159,8 @@
       endif
 # endif
 
+!$acc kernels default(present)
+
 # ifdef BODYFORCE
 !====================================================================
 !
@@ -386,6 +388,7 @@
 #  undef Uwrk
 # endif /* BODYFORCE */
 
+!$acc loop seq
       do k=1,N
 
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)
@@ -1249,6 +1252,7 @@
 
       enddo    ! <-- k
 
+!$acc loop private(FC,DC,CF)
       do j=Jstr,Jend
 
 # ifdef UV_ADV
@@ -1483,7 +1487,10 @@
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
-        if (j.ge.JstrV) then
+      enddo
+
+!$acc loop private(FC,DC,CF)
+      do j=JstrV,Jend
 !
 #  ifdef UV_VADV_SPLINES
           do k=1,N
@@ -1695,8 +1702,6 @@
           endif
 #  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
 
-        endif !<- j.ge.JstrV
-
 # endif /* UV_ADV */
 !
 !======================================================================
@@ -1764,6 +1769,7 @@
          enddo
       enddo
 # endif   /* MRL_WCI */
+       enddo
 !
 !======================================================================
 !
@@ -1779,6 +1785,7 @@
 !
 !======================================================================
 !
+       do j=Jstr,Jend
         do i=IstrU,Iend
           rufrc(i,j)=ru(i,j,1)
 # ifndef BODYFORCE
@@ -1819,6 +1826,8 @@
         endif
 
       enddo      !<-- j loop
+
+!$acc end kernels
 
       return
       end

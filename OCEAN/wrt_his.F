@@ -202,6 +202,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     components in XI-,ETA-directions.
 !
       if (wrthis(indxZ)) then
+!$acc update host(zeta(:,:,fast_indx_out))
         work2d=zeta(:,:,fast_indx_out)
 #if defined WET_DRY && ! defined ZETA_DRY_IO 
         do j=0,Mm
@@ -217,6 +218,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
       endif
 !
       if (wrthis(indxUb)) then
+!$acc update host(ubar(:,:,fast_indx_out))
         work2d(:,:)=ubar(:,:,fast_indx_out)
         call fillvalue2d(work2d,ncidhis,hisUb,indxUb,
      &        record,u2dvar,type)
@@ -224,6 +226,7 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
       endif
 !
       if (wrthis(indxVb)) then
+!$acc update host(vbar(:,:,fast_indx_out))
         work2d(:,:)=vbar(:,:,fast_indx_out)
         call fillvalue2d(work2d,ncidhis,hisVb,indxVb,
      &        record,v2dvar,type)
@@ -604,6 +607,7 @@ CR      write(*,*) 'wrt_his:  wrtKaps' MYID
 !     3D momentum components in XI- and ETA-directions.
 !
       if (wrthis(indxU)) then
+!$acc update host(u(:,:,:,nstp))
         workr=u(:,:,:,nstp)
         call fillvalue3d(workr,ncidhis,hisU,indxU,
      &        record,u3dvar,type)
@@ -611,6 +615,7 @@ CR      write(*,*) 'wrt_his:  wrtU  ' MYID
       endif
 !
       if (wrthis(indxV)) then
+!$acc update host(v(:,:,:,nstp))
         workr=v(:,:,:,nstp)
         call fillvalue3d(workr,ncidhis,hisV,indxV,
      &        record,v3dvar,type)
@@ -622,6 +627,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 #ifdef TRACERS
       do itrc=1,NT
          if (wrthis(indxV+itrc)) then
+!$acc update host(t(:,:,:,nstp,itrc))
             workr=t(:,:,:,nstp,itrc)
 #ifdef MASKING
             if (iic.eq.0) then

@@ -122,6 +122,7 @@ c**        call opencdf (frcname,N)
         if (lsusgrd.eq.1) then
           ierr=nf_fread(sustrg(START_2D_ARRAY,i), ncidfrc, susid,
      &                                              sms_rec, u2dvar)
+!$acc update device(sustrg(:,:,i))
         else
           ierr=nf_get_var1_FTYPE(ncidfrc,susid,sms_rec,sustrp(i))
         endif
@@ -133,6 +134,7 @@ c**        call opencdf (frcname,N)
         if (lsvsgrd.eq.1) then
           ierr=nf_fread(svstrg(START_2D_ARRAY,i), ncidfrc, svsid,
      &                                              sms_rec, v2dvar)
+!$acc update device(svstrg(:,:,i))
         else
           ierr=nf_get_var1_FTYPE(ncidfrc,svsid,sms_rec,svstrp(i))
         endif
@@ -202,11 +204,13 @@ c**        call opencdf (frcname,N)
       if (sms_cycle.lt.0.) then
         if (FIRST_RST_TIME_STEP) then
           if (lsusgrd.eq.1 .and. lsvsgrd.eq.1) then
+!$acc parallel loop default(present)
             do j=JstrR,JendR
               do i=Istr,IendR
                 sustr(i,j)=sms_scale*sustrg(i,j,itsms)
               enddo
             enddo
+!$acc parallel loop default(present)
             do j=Jstr,JendR
               do i=IstrR,IendR
                 svstr(i,j)=sms_scale*svstrg(i,j,itsms)
@@ -215,6 +219,7 @@ c**        call opencdf (frcname,N)
           else
             ustress=sms_scale*sustrp(itsms)
             vstress=sms_scale*svstrp(itsms)
+!$acc parallel loop default(present)
             do j=JstrR,JendR
               do i=Istr,IendR
 # ifdef SMFLUX_CURVGRID
@@ -225,6 +230,7 @@ c**        call opencdf (frcname,N)
 # endif
               enddo
             enddo
+!$acc parallel loop default(present)
             do j=Jstr,JendR
               do i=IstrR,IendR
 # ifdef SMFLUX_CURVGRID
@@ -251,11 +257,13 @@ c**        call opencdf (frcname,N)
 ! rotated by the appropriate angle in curvilinear configurations.
 !
         if (lsusgrd.eq.1 .and. lsvsgrd.eq.1) then
+!$acc parallel loop default(present)
           do j=JstrR,JendR
             do i=Istr,IendR
               sustr(i,j)=cff1*sustrg(i,j,it1)+cff2*sustrg(i,j,it2)
             enddo
           enddo
+!$acc parallel loop default(present)
           do j=Jstr,JendR
             do i=IstrR,IendR
               svstr(i,j)=cff1*svstrg(i,j,it1)+cff2*svstrg(i,j,it2)
@@ -268,12 +276,14 @@ c**        call opencdf (frcname,N)
           ustress=cff1*sustrp(it1)+cff2*sustrp(it2)
           vstress=cff1*svstrp(it1)+cff2*svstrp(it2)
 # ifdef SMFLUX_CURVGRID
+!$acc parallel loop default(present)
           do j=JstrR,JendR
             do i=Istr,IendR
               cff=0.5*(angler(i,j)+angler(i-1,j))
               sustr(i,j)=ustress*cos(cff)+vstress*sin(cff)
             enddo
           enddo
+!$acc parallel loop default(present)
           do j=Jstr,JendR
             do i=IstrR,IendR
               cff=0.5*(angler(i,j)+angler(i,j-1))
@@ -281,11 +291,13 @@ c**        call opencdf (frcname,N)
             enddo
           enddo
 # else
+!$acc parallel loop default(present)
           do j=JstrR,JendR
             do i=Istr,IendR
               sustr(i,j)=ustress
             enddo
           enddo
+!$acc parallel loop default(present)
           do j=Jstr,JendR
             do i=IstrR,IendR
               svstr(i,j)=vstress
@@ -295,11 +307,13 @@ c**        call opencdf (frcname,N)
         endif
 #  if defined SFLUX_CFB && !defined BULK_FLUX
 !
+!$acc parallel loop default(present)
         do j=JstrR,JendR
           do i=Istr,IendR
              sustr(i,j)=sustr(i,j) + sms_scale*stau*u(i,j,N,nstp)
           enddo
         enddo
+!$acc parallel loop default(present)
         do j=Jstr,JendR
           do i=IstrR,IendR
              svstr(i,j)=svstr(i,j) + sms_scale*stau*v(i,j,N,nstp)

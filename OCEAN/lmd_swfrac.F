@@ -42,27 +42,35 @@
       real Zscale, Z(PRIVATE_2D_SCRATCH_ARRAY),
      &             swdk(PRIVATE_2D_SCRATCH_ARRAY)
       integer lmd_Jwt
-      real lmd_mu1(5), lmd_mu2(5), lmd_r1(5), cff1, cff2, cff3 ,cff4
+      real cff1, cff2, cff3 ,cff4
 
-      lmd_mu1(1)=0.35    !  Define reciprocal of the absorption
-      lmd_mu1(2)=0.6     !  coefficient for each of two solar
-      lmd_mu1(3)=1.0     !  wavelength bands as a function 
-      lmd_mu1(4)=1.5     !  of water type (Ref: Paulson and
-      lmd_mu1(5)=1.4     !  Simpson, 1977).
+      real,parameter,dimension(5)::lmd_mu1=(/0.35,0.6,1.0,1.5,1.4/)
 
-      lmd_mu2(1)=23.0
-      lmd_mu2(2)=20.0
-      lmd_mu2(3)=17.0
-      lmd_mu2(4)=14.0
-      lmd_mu2(5)=7.9
+  !    lmd_mu1(1)=0.35    !  Define reciprocal of the absorption
+  !    lmd_mu1(2)=0.6     !  coefficient for each of two solar
+  !    lmd_mu1(3)=1.0     !  wavelength bands as a function 
+  !    lmd_mu1(4)=1.5     !  of water type (Ref: Paulson and
+  !    lmd_mu1(5)=1.4     !  Simpson, 1977).
 
-      lmd_r1(1)=0.58    !  Define fraction of the total radiance 
-      lmd_r1(2)=0.62    !  for wavelength band 1 as a function of 
-      lmd_r1(3)=0.67    !  Jerlov water type. The fraction for
-      lmd_r1(4)=0.77    !  wavelength band 2 is lmd_r2=1-lmd_r1.
-      lmd_r1(5)=0.78
+      real,parameter,dimension(5)::lmd_mu2=(/23.,20.,17.,14.,7.9/)
+
+  !    lmd_mu2(1)=23.0
+  !    lmd_mu2(2)=20.0
+  !    lmd_mu2(3)=17.0
+  !    lmd_mu2(4)=14.0
+  !    lmd_mu2(5)=7.9
+
+      real,parameter,dimension(5)::lmd_r1=(/0.58,0.62,0.67,0.77,0.78/)
+
+  !    lmd_r1(1)=0.58    !  Define fraction of the total radiance 
+  !    lmd_r1(2)=0.62    !  for wavelength band 1 as a function of 
+  !    lmd_r1(3)=0.67    !  Jerlov water type. The fraction for
+  !    lmd_r1(4)=0.77    !  wavelength band 2 is lmd_r2=1-lmd_r1.
+  !    lmd_r1(5)=0.78
                         !  Set Jerlov water type to assign
       lmd_Jwt=1         !  everywhere; an integer from 1 to 5.
+
+!$acc kernels default(present)
 
 !
 !  On first call: initialize (for now) initialize index for Jerlov
@@ -98,6 +106,7 @@
           swdk(i,j)=cff3+cff4
         enddo
       enddo
+!$acc end kernels
       return
       end
 
@@ -132,25 +141,32 @@
       real Zscale, Z(PRIVATE_2D_SCRATCH_ARRAY),
      &             swdk(PRIVATE_2D_SCRATCH_ARRAY)
       integer lmd_Jwt
-      real lmd_mu1(5), lmd_mu2(5), lmd_r1(5), cff1, cff2, cff3 ,cff4
+      real cff1, cff2, cff3 ,cff4
 
-      lmd_mu1(1)=0.35    !  Define reciprocal of the absorption
-      lmd_mu1(2)=0.6     !  coefficient for each of two solar
-      lmd_mu1(3)=1.0     !  wavelength bands as a function 
-      lmd_mu1(4)=1.5     !  of water type (Ref: Paulson and
-      lmd_mu1(5)=1.4     !  Simpson, 1977).
+      real,parameter,dimension(5)::lmd_mu1=(/0.35,0.6,1.0,1.5,1.4/)
 
-      lmd_mu2(1)=23.0
-      lmd_mu2(2)=20.0
-      lmd_mu2(3)=17.0
-      lmd_mu2(4)=14.0
-      lmd_mu2(5)=7.9
+  !    lmd_mu1(1)=0.35    !  Define reciprocal of the absorption
+  !    lmd_mu1(2)=0.6     !  coefficient for each of two solar
+  !    lmd_mu1(3)=1.0     !  wavelength bands as a function 
+  !    lmd_mu1(4)=1.5     !  of water type (Ref: Paulson and
+  !    lmd_mu1(5)=1.4     !  Simpson, 1977).
 
-      lmd_r1(1)=0.58    !  Define fraction of the total radiance 
-      lmd_r1(2)=0.62    !  for wavelength band 1 as a function of 
-      lmd_r1(3)=0.67    !  Jerlov water type. The fraction for
-      lmd_r1(4)=0.77    !  wavelength band 2 is lmd_r2=1-lmd_r1.
-      lmd_r1(5)=0.78
+      real,parameter,dimension(5)::lmd_mu2=(/23.,20.,17.,14.,7.9/)
+
+  !    lmd_mu2(1)=23.0
+  !    lmd_mu2(2)=20.0
+  !    lmd_mu2(3)=17.0
+  !    lmd_mu2(4)=14.0
+  !    lmd_mu2(5)=7.9
+
+      real,parameter,dimension(5)::lmd_r1=(/0.58,0.62,0.67,0.77,0.78/)
+
+  !    lmd_r1(1)=0.58    !  Define fraction of the total radiance 
+  !    lmd_r1(2)=0.62    !  for wavelength band 1 as a function of 
+  !    lmd_r1(3)=0.67    !  Jerlov water type. The fraction for
+  !    lmd_r1(4)=0.77    !  wavelength band 2 is lmd_r2=1-lmd_r1.
+  !    lmd_r1(5)=0.78
+
                         !  Set Jerlov water type to assign
       lmd_Jwt=1         !  everywhere; an integer from 1 to 5.
 
@@ -184,6 +200,8 @@
       endif
 #  define J_EXT_RANGE jmin,jmax
 # endif
+
+!$acc kernels default(present)
 
 !
 !  On first call: initialize (for now) initialize index for Jerlov
@@ -219,6 +237,7 @@
           swdk(i,j)=cff3+cff4
         enddo
       enddo
+!$acc end kernels
       return
       end
 #else

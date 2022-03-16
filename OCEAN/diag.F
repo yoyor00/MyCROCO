@@ -154,6 +154,7 @@
 ! verical summation at this stage.
 !
       if (mod(iic-1,ninfo).eq.0) then
+!$acc kernels default(present)
         do j=Jstr,Jend
 #ifdef SOLVE3D
           do i=Istr,Iend
@@ -222,6 +223,7 @@
           my_avgpe =my_avgpe +pe2d(i,Jstr-1)
           my_avgke =my_avgke +ke2d(i,Jstr-1)
         enddo
+!$acc end kernels
         if (SINGLE_TILE_MODE) then
           NSUB=1
         else

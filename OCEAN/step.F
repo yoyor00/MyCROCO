@@ -116,6 +116,9 @@ C$OMP END PARALLEL
 # include "zoom.h"
 # endif
 #endif
+#ifdef RVTK_DEBUG
+      use debug
+#endif
 #ifdef ONLINE_ANALYSIS
       use module_interface_oa, only : if_oa
 #endif
@@ -136,6 +139,9 @@ C$OMP END PARALLEL
 #endif
 #if ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST )
 # include "mixing.h"
+#endif
+#if defined RVTK_DEBUG_ADVANCED
+#include "coupling.h"
 #endif
 
 #ifdef STATIONS
@@ -545,10 +551,19 @@ C$OMP MASTER
 
 #if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
+       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r',
+     &  ondevice=.TRUE.)
       enddo
-      call check_tab3d(u(:,:,:,nnew),'u prestep3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v')
+      call check_tab3d(u(:,:,:,nnew),'u prestep3d','u',
+     &  ondevice=.TRUE.)
+      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v',
+     &  ondevice=.TRUE.)
+#endif
+#if defined RVTK_DEBUG_ADVANCED
+      call check_tab2d(rufrc,'rufrc prestep3d','uint',
+     &  ondevice=.TRUE.)
+      call check_tab2d(rvfrc,'rvfrc prestep3d','vint',
+     &  ondevice=.TRUE.)
 #endif
 
       nrhs=3
@@ -591,6 +606,9 @@ C$OMP BARRIER
 
 #ifdef AGRIF
       use Agrif_Util
+#endif
+#ifdef RVTK_DEBUG
+      use debug
 #endif
       implicit none
 #include "param.h"
@@ -810,9 +828,12 @@ C$OMP MASTER
         !!call check_tab3d(qdmv_nbq,'qdmv_nbq step3d_fast','v')
 #  endif
 # else
-       call check_tab2d(zeta(:,:,knew),'zeta step2d','r')
-       call check_tab2d(ubar(:,:,knew),'ubar step2d','u')
-       call check_tab2d(vbar(:,:,knew),'vbar step2d','v')
+       call check_tab2d(zeta(:,:,knew),'zeta step2d','r',
+     &  ondevice=.TRUE.)
+       call check_tab2d(ubar(:,:,knew),'ubar step2d','u',
+     &  ondevice=.TRUE.)
+       call check_tab2d(vbar(:,:,knew),'vbar step2d','v',
+     &  ondevice=.TRUE.)
 # endif
 C$OMP END MASTER
 #endif
@@ -828,6 +849,7 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
+      use debug
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -964,6 +986,9 @@ C$OMP END MASTER
       subroutine step3D_t_thread()
 #ifdef AGRIF
       use Agrif_Util
+#endif
+#ifdef RVTK_DEBUG
+      use debug
 #endif
 #ifdef MUSTANG
       use plug_MUSTANG_CROCO, only: mustang_update_main
@@ -1140,11 +1165,14 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
-        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
+        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r',
+     &    ondevice=.TRUE.)
         !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
       enddo
-      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v step3d','v')
+      call check_tab3d(u(:,:,:,nnew),'u step3d','u',
+     &    ondevice=.TRUE.)
+      call check_tab3d(v(:,:,:,nnew),'v step3d','v',
+     &    ondevice=.TRUE.)
 C$OMP END MASTER
 #endif
 

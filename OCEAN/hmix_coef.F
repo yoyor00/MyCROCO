@@ -487,6 +487,8 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
+!$acc kernels default(present)
+
 # if defined GLS_MIXING_3D
 !---------------------------------------------------------------
 !  GLS horizontal viscosity at RHO points
@@ -593,7 +595,7 @@
         enddo
       enddo
 # endif /* TS_HADV_RSUP3 */
-
+!$acc end kernels
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #  ifdef TS_DIF_SMAGO
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,diff3d_r)

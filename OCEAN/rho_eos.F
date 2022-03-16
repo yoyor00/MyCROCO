@@ -182,7 +182,7 @@
       call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
 #endif
-
+!$acc kernels default(present)
       do j=JstrR,JendR
 
         do k=1,N                                       ! NONLINEAR
@@ -334,6 +334,7 @@
 !  refered to rho0
 !-----------------------------------------------------------------------
 !
+!$acc kernels default(present)
       do j=JstrR,JendR
         do k=1,N
           do i=IstrR,IendR
@@ -483,6 +484,7 @@
 # endif /* VAR_RHO_2D */
 
       enddo    ! <-- j
+!$acc end kernels
       return
       end
 
@@ -555,6 +557,8 @@
 #  ifdef NONLIN_EOS
       dr00=r00-1000.
 #  endif
+
+!$acc update host(Hz)
       do k=1,N
         do j=Jstr,Jend
           do i=Istr,Iend

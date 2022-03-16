@@ -152,6 +152,7 @@ C$    integer omp_get_thread_num
           endif
         endif
 
+!$acc kernels default(present)
         if (wrtavg(indxZ)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -263,16 +264,16 @@ C$    integer omp_get_thread_num
         endif
 # ifdef TRACERS
         do itrc=1,NT
-          if (wrtavg(indxV+itrc)) then
             do k=1,N
               do j=JstrR,JendR
                 do i=IstrR,IendR
-                  t_avg(i,j,k,itrc)=cff*( cff1*t_avg(i,j,k,itrc)
+                  if (wrtavg(indxV+itrc)) then
+                    t_avg(i,j,k,itrc)=cff*( cff1*t_avg(i,j,k,itrc)
      &                                        +t(i,j,k,nstp,itrc))
+                  endif
                 enddo
               enddo
             enddo
-          endif
         enddo
 # endif
         if (wrtavg(indxR)) then
@@ -880,7 +881,7 @@ C$    integer omp_get_thread_num
         endif
 #  endif  /* SOLVE3D */
 # endif   /* MRL_WCI */
-
+!$acc end kernels
       endif
       return
       end

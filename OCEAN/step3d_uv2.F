@@ -22,15 +22,16 @@
 
       call step3d_uv2_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd),
      &                                  A2d(1,2,trd), A2d(1,3,trd),
-     &                                                A2d(1,4,trd)
+     &                                  A2d(1,4,trd), A2d(1,4,trd)
 #ifdef VADV_ADAPT_IMP
-     &                                               ,A2d(1,5,trd)
+     &                                               ,A2d(1,6,trd)
 #endif
      &                                                            )
       return
       end
 
-      subroutine step3d_uv2_tile (Istr,Iend,Jstr,Jend, BC,CF,FC,DC
+      subroutine step3d_uv2_tile (Istr,Iend,Jstr,Jend,
+     & BC,CF,FC,DC, grad
 #ifdef VADV_ADAPT_IMP
      &                                                         ,WC
 #endif
@@ -152,7 +153,8 @@
 # endif
 !###########################
 
-
+!$acc kernels default(present)
+!$acc loop private(FC,CF,DC,BC)
       do j=Jstr,Jend
 !
 ! The vertical viscosity term is not added as an explicit divergence term
@@ -868,10 +870,12 @@
 ! Set PHYSICAL lateral boundary conditions.
 !--------------------------------------------------------------------
 !
+!$acc end kernels
+
       call v3dbc_tile (Istr,Iend,Jstr,Jend, grad)
       call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)
 
-
+!$acc kernels default(present)
 !
 !
 !--------------------------------------------------------------------
@@ -927,6 +931,7 @@
 !  Couple XI-component of velocity
 !--------------------------------------------------
 !
+!$acc loop private(FC,CF,DC)
       do j=JU_RANGE
         do i=IU_RANGE
           DC(i,0)=0.
@@ -2079,6 +2084,8 @@
           enddo
 
 #endif /* DIAGNOSTICS_PV */
+
+!$acc end kernels
 
 # undef IU_RANGE
 # undef JU_RANGE

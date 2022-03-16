@@ -679,6 +679,7 @@ c              goto 99                                     !--> ERROR
          ierr=nf_fread (tclima(START_2D_ARRAY,1,i,itrc),
      &                              ncidclm, tclm_id(itrc),
      &                              tclm_rec(itrc), r3dvar)
+!$acc update device(tclima(:,:,:,i,itrc))
          if (ierr.ne.NF_NOERR) then
            lvar=lenstr(vname(1,indxV+itrc))
            write(stdout,6) vname(1,indxV+itrc)(1:lvar),
@@ -767,6 +768,7 @@ C$    integer  trd, omp_get_thread_num
 
         if (tclm_cycle(itrc).lt.0.) then            ! Load time-
           if (iic.eq.0) then                        ! invariant
+!$acc parallel loop default(present)
             do k=1,N                                ! tracer
               do j=JstrR,JendR                      ! climatology.
                 do i=IstrR,IendR
@@ -779,6 +781,7 @@ C$    integer  trd, omp_get_thread_num
           cff=1./(cff1+cff2)                        ! Interpolate
           cff1=cff1*cff                             ! tracer 
           cff2=cff2*cff                             ! climatology 
+!$acc parallel loop default(present)
           do k=1,N                                  ! climatology
             do j=JstrR,JendR                        ! in time.
               do i=IstrR,IendR

@@ -152,6 +152,8 @@
 !
 !======================================================================
 !
+!$acc kernels default(present)
+!$acc loop seq
       do itrc=1,NT
         do k=1,N
 
@@ -364,6 +366,7 @@
 
         enddo    !<-- k
       enddo    !<-- itrc
+!$acc end kernels
 !
 !----------------------------------------------------------
 ! Compute fraction of the solar shortwave flux "swdk"
@@ -375,12 +378,14 @@
 #   define wrk1 FX
 #   define wrk2 FE
       do k=1,N-1
+!$acc parallel loop default(present)
         do j=Jstr,Jend
           do i=Istr,Iend
             wrk1(i,j)=z_w(i,j,k)-z_w(i,j,N)
           enddo
         enddo
         call lmd_swfrac_tile (Istr,Iend,Jstr,Jend,1.,wrk1,wrk2)
+!$acc parallel loop default(present)
         do j=Jstr,Jend
           do i=Istr,Iend
             swdk(i,j,k)=wrk2(i,j)
@@ -398,6 +403,8 @@
 !
 !======================================================================
 !
+!$acc kernels default(present)
+!$acc loop private(FC,CF,DC)
       do j=Jstr,Jend
         do itrc=1,NT
 !
@@ -666,6 +673,9 @@
 #  endif
 
       enddo      ! <-- j
+
+!$acc end kernels
+
 !
 !======================================================================
 !  Set lateral boundary conditions; nudge toward tracer climatology;
@@ -683,6 +693,8 @@
 #  ifdef BIOLOGY
       call biology_tile (Istr,Iend,Jstr,Jend)
 #  endif
+
+!$acc kernels default(present)
 !
 !======================================================================
 !  Compute inverse vertical Rho gradients for use in t3dmix
@@ -762,7 +774,8 @@
 !
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 !
-!
+! 
+!$acc loop seq
       do itrc=1,NT   !<-- itrc
 !
 !======================================================================
@@ -1021,7 +1034,7 @@
 #  endif
 
       enddo   ! <-- itrc
-
+!$acc end kernels
       return
       end
 # endif  /* TRACERS */      

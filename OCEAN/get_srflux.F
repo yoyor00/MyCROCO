@@ -136,6 +136,7 @@
         if (lsrfgrd.eq.1) then
           ierr=nf_fread (srflxg(START_2D_ARRAY,i), ncidfrc, srf_id,
      &                                             srf_rec, r2dvar)
+!$acc update device(srflxg(:,:,i))
         else
           ierr=nf_get_var1_FTYPE (ncidfrc,srf_id,srf_rec,srflxp(i))
         endif
@@ -152,6 +153,7 @@
         if (lsrfbiogrd.eq.1) then
           ierr=nf_fread (srflxbiog(START_2D_ARRAY,i), ncidfrc,
      &                        srfbio_id, srf_rec,  r2dvar)
+!$acc update device(srflxbiog(:,:,i))
         else
           ierr=nf_get_var1_FTYPE (ncidfrc,srfbio_id,
      &                            srf_rec ,srflxbiop(i))
@@ -237,6 +239,7 @@
       if (srf_cycle.lt.0.) then
         if (FIRST_RST_TIME_STEP) then
           if (lsrfgrd.eq.1) then
+!$acc parallel loop default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 srflx(i,j)=srf_scale*srflxg(i,j,itsrf)
@@ -250,6 +253,7 @@
 # ifdef DIURNAL_INPUT_SRFLX
             srflxbio=srf_scale*srflxbiop(itsrf)
 # endif
+!$acc parallel loop default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 srflx(i,j)=srf
@@ -272,6 +276,7 @@
         cff1=cff1*cff
         cff2=cff2*cff
         if (lsrfgrd.eq.1) then
+!$acc parallel loop default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               srflx(i,j)=cff1*srflxg(i,j,it1)+cff2*srflxg(i,j,it2)
@@ -287,6 +292,7 @@
           srfbio=cff1*srflxbiop(it1)
      &                        +cff2*srflxbiop(it2)
 # endif
+!$acc parallel loop default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
               srflx(i,j)=srf
@@ -348,6 +354,7 @@
 ! Initialize fixed parameters
 !
       if (FIRST_RST_TIME_STEP) then
+!$acc parallel loop default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             phi=latr(i,j)*deg2rad
@@ -375,6 +382,7 @@
 !  --> use Greenwich hour angle: 
 !      cos_h=1 at solar noon in Greenwich
 !
+!$acc parallel loop default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           cos_h=cos(hour-lonr(i,j)*deg2rad)
