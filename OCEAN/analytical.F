@@ -120,6 +120,7 @@
 !
 #  include "compute_auxiliary_bounds.h"
 !
+!$acc kernels default(present)
 #  ifdef TEMPERATURE       
       if (itrc.eq.itemp) then
 !
@@ -178,7 +179,8 @@
         enddo
 #  if defined SALINITY || defined TEMPERATURE
       endif
-#  endif /* SALINITY || TEMPERATURE*/      
+#  endif /* SALINITY || TEMPERATURE*/     
+!$acc end kernels 
       return
       end
 # endif /* ANA_BTFLUX */
