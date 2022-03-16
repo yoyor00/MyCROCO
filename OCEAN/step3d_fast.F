@@ -109,6 +109,9 @@ C$    trd=omp_get_thread_num()
 !
 !***********************************************************************
 !
+# ifdef RVTK_DEBUG
+      USE debug
+#endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, kbak,kold,
