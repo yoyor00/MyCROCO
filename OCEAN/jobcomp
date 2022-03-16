@@ -38,6 +38,11 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 FC=gfortran
 
+# if the name of the compiler is specified in the default environment
+if [ -v CROCO_FC ]; then
+	FC=$CROCO_FC
+fi
+
 #
 # set MPI directories if needed
 #
@@ -162,6 +167,13 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
+	elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+    	CPP1="cpp  -traditional -DLinux -DXLF"
+    	CFT1=$FC
+    	FFLAGS1="-g -fast -r8 -i4"
+	else
+		echo "Unknown Fortran Compiler"
+		exit
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
         CPP1="cpp -traditional -DLinux"
@@ -299,6 +311,18 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 	elif [[ $OS == AIX ]] ; then
 		FFLAGS1="$FFLAGS1 -qsmp=omp"
 		CFT1="xlf95_r"
+	fi
+fi
+
+#
+# determine if OPENACC compilation is needed
+#
+unset COMPILEOPENACC
+echo "Checking COMPILEOPENACC..."
+if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
+	COMPILEOPENACC=TRUE
+	if [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+		  FFLAGS1="$FFLAGS1 -acc -Minfo=accel"
 	fi
 fi
 

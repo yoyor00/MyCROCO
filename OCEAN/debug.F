@@ -27,15 +27,17 @@
           parameter (start_debug0=3)
           parameter (start_debug=start_debug0)
           parameter (start_debug_read=start_debug)
-# endif         
-         end module debug
+# endif        
+          logical, parameter :: non_strict = .TRUE.
+          real, parameter :: max_tolerance = 1.D-10
+          real :: tolerance
+          contains
 !
 !======================================================================
 !                    debug_ini
 !======================================================================
 !
           subroutine debug_ini()
-          USE debug
           implicit none
 #include "param.h"
 #include "scalars.h"
@@ -80,6 +82,13 @@
           open(107,file=filename,form='unformatted',
      &            status='UNKNOWN')
 #endif
+ 
+          if (non_strict) then
+            tolerance = max_tolerance
+          else
+            tolerance = 0.
+          endif
+
           return
 
           end subroutine debug_ini
@@ -88,8 +97,7 @@
 !                    check_tab2d
 !======================================================================
 !
-          subroutine check_tab2d(tab,comment,typevar)
-      USE debug
+          subroutine check_tab2d(tab,comment,typevar,ondevice)
       implicit none
 # include "param.h"
 # include "scalars.h"  
@@ -103,9 +111,16 @@
       integer lb(2),ub(2)
       real,dimension(:,:),allocatable :: tabread
       character*(*) :: comment,typevar
+      logical, optional :: ondevice
       integer i0,j0,i,j,i1,j1,i2,j2
 #if !defined RVTK_DEBUG_WRITE
       integer i1_r,i2_r,j1_r,j2_r,nb
+#endif
+#if !defined RVTK_DEBUG_WRITE && defined OPENACC
+      real,dimension(GLOBAL_2D_ARRAY) :: temp_host
+      logical :: ondevice_l
+#else
+      logical, parameter :: ondevice_l=.FALSE.
 #endif
 # ifdef OPENMP
 #  undef mynode
@@ -117,6 +132,8 @@
       logical globstop
       integer ierr
 # endif
+      real max_abs
+      integer imax,jmax
           
 # if defined OPENMP && !defined MPI
       mynode=0 
@@ -157,7 +174,14 @@
 # endif
 
 #else /* defined RVTK_DEBUG_WRITE   */
-      
+#ifdef OPENACC
+      ondevice_l = .false.
+      if (present(ondevice)) ondevice_l = ondevice
+      if (ondevice_l) then
+        temp_host=tab
+!$acc update host(tab)
+      endif
+#endif
 # if defined RVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read
 #  if defined DEBUG_MPI_MASTER_ONLY && defined MPI
@@ -168,6 +192,8 @@
         write(*,*)'iic.gt.start_debug_read check_tab2d read'
 # endif /* RVTK_DEBUG_PERFRST */
         
+      if (non_strict) max_abs=0.
+
       do nb = 0, nbprocs_in-1
       read(debug_procs_units(nb))i1_r,i2_r,j1_r,j2_r
       read(debug_procs_units(nb))lb
@@ -188,7 +214,13 @@
                   j0 = j+jminmpi-1
                   do i=max(i1,iseq1-iminmpi+1),min(i2,iseq2-iminmpi+1)
                     i0 = i+iminmpi-1
-                    if (tabread(i0,j0)/=tab(i,j)) then
+                    if (non_strict) then
+                        if (abs(tabread(i0,j0)-tab(i,j))>max_abs) then
+                                imax=i;jmax=j
+                                max_abs=abs(tabread(i0,j0)-tab(i,j))
+                        endif
+                    endif
+                    if (abs(tabread(i0,j0)-tab(i,j))>tolerance) then
                        write(*,'(A,A,2x,5i4,3e20.12)')'BUGBIN = ',
      &                 comment,mynode,i0,j0,i,j,
      &                 tabread(i0,j0),tab(i,j),
@@ -230,15 +262,26 @@
 # if defined RVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read) then
 # endif
-
+      if (non_strict) then
+        MPI_master_only print *,'CHECK ',comment,' PASSED with MAX_ABS = ',
+     & max_abs
+#  ifdef AGRIF
+     &                       ,' ON GRID ',Agrif_CFixed()
+#  endif
+     &, 'AT POINT ',imax,jmax
+      else
       MPI_master_only print *,'CHECK ',comment,' PASSED'
 #  ifdef AGRIF
      &                       ,' ON GRID ',Agrif_CFixed()
 #  endif
+      endif
 
 # if defined RVTK_DEBUG_PERFRST      
       endif
 # endif
+#ifdef OPENACC
+      if (ondevice_l) tab=temp_host
+#endif
 #endif /*  !defined RVTK_DEBUG_WRITE     */
 
           return
@@ -248,8 +291,7 @@
 !                    check_tab3d
 !======================================================================
 !
-          subroutine check_tab3d(tab,comment,typevar)
-      USE debug
+          subroutine check_tab3d(tab,comment,typevar,ondevice)
       implicit none
 # include "param.h"
 # include "scalars.h"  
@@ -267,9 +309,16 @@
       integer lb(3),ub(3)
       real,dimension(:,:,:),allocatable :: tabread
       character*(*) :: comment,typevar
+      logical, optional :: ondevice
       integer i0,j0,k,i,j,i1,i2,j1,j2
 #if !defined RVTK_DEBUG_WRITE
       integer i1_r,i2_r,j1_r,j2_r,nb
+#endif
+#if !defined RVTK_DEBUG_WRITE && defined OPENACC
+      real,dimension(GLOBAL_2D_ARRAY,N) :: temp_host
+      logical :: ondevice_l
+#else
+      logical, parameter :: ondevice_l=.FALSE.
 #endif
       character*80 :: comment_k
 # ifdef OPENMP
@@ -277,7 +326,30 @@
 # endif
       integer iseq1, iseq2, jseq1, jseq2 
       logical mystop     
-          
+      real :: max_abs
+      integer :: imax,jmax,kmax
+
+#ifdef OPENACC
+      ondevice_l = .false.
+      if (present(ondevice)) ondevice_l = ondevice
+#endif
+
+      if (typevar == 'w') then
+        do k=1,N+1
+          write(comment_k,'(a,a,i0)')TRIM(comment),' layer : ',k-1
+          call check_tab2d(tab(START_2D_ARRAY,k),
+     &                     TRIM(comment_k),'r',ondevice_l)
+        enddo
+        return
+      elseif (typevar == 'wint') then
+        do k=1,N+1
+          write(comment_k,'(a,a,i0)')TRIM(comment),' layer : ',k-1
+          call check_tab2d(tab(START_2D_ARRAY,k),
+     &                         TRIM(comment_k),'rint',ondevice_l)
+        enddo
+        return
+      endif 
+
 # if defined OPENMP && !defined MPI
           mynode=0 
 # endif
@@ -326,6 +398,15 @@
         write(*,*)'iic.gt.start_debug_read check_tab3d read'
 # endif /* defined RVTK_DEBUG_PERFRST  */
       
+#ifdef OPENACC
+      if (ondevice_l) then
+        temp_host=tab
+!$acc update host(tab)
+      endif
+#endif
+
+      if (non_strict) max_abs=0.
+
       do nb = 0, nbprocs_in-1
       read(debug_procs_units(nb))i1_r,i2_r,j1_r,j2_r
       read(debug_procs_units(nb))lb
@@ -346,7 +427,14 @@
                  j0 = j+jminmpi-1
                 do i=max(i1,iseq1-iminmpi+1),min(i2,iseq2-iminmpi+1)
                     i0 = i+iminmpi-1
-                     if (tabread(i0,j0,k)/=tab(i,j,k)) then
+                     if (non_strict) then
+                      if (abs(tabread(i0,j0,k)-tab(i,j,k))>max_abs) then
+                              imax=i;jmax=j;kmax=k
+                              max_abs=abs(tabread(i0,j0,k)-tab(i,j,k))
+                      endif
+                     endif
+                     if (abs(tabread(i0,j0,k)-tab(i,j,k))>tolerance)
+     &                              then
                        write(*,'(A,A,2x,6i4,3e20.12)')'BUGBIN = ',
      &                 comment,
      &                 mynode,i0,j0,i,j,k,
@@ -395,20 +483,34 @@
 #  endif
      &     ) then
 # endif
-      MPI_master_only print *,'CHECK ',comment,' PASSED'
+      if (non_strict) then
+        MPI_master_only print *,'CHECK ',comment,' PASSED with MAX_ABS = ',
+     & max_abs
 #  ifdef AGRIF
      &                       ,' ON GRID ',Agrif_CFixed()
 #  endif
+     &, 'AT POINT ',imax,jmax,kmax
+      else
+        MPI_master_only print *,'CHECK ',comment,' PASSED'
+#  ifdef AGRIF
+     &                       ,' ON GRID ',Agrif_CFixed()
+#  endif
+      endif
 # if defined RVTK_DEBUG_PERFRST      
       endif
 # endif
+#ifdef OPENACC
+      if (ondevice_l) tab=temp_host
+#endif
 #endif /* !defined RVTK_DEBUG_WRITE  */
           return
           end subroutine check_tab3d    
+
+      end module debug
           
 #else /*  RVTK_DEBUG */
 
-        subroutine debug_empty()
-        return
-        end subroutine debug_empty
+      module debug
+      end module debug
+
 #endif                
