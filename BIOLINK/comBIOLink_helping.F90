@@ -44,6 +44,8 @@
      ! Photosynthetic available radiations
 
 #  if defined  BIOLink_PAR_eval
+      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: PAR
+      ! Photosynthetic Available Radiation to be read in CROCO
       REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: PAR_top_layer
       ! Photosynthetic Available Radiation in the top layer
       REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: PAR_avg_layer_phyto 

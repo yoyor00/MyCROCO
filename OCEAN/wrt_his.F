@@ -17,9 +17,9 @@
       USE comsubstance, ONLY : cvfix_wat,nv_adv
 #endif
 
-#if defined BIOLink_PAR_EVAL
-      USE comBIOLink_helping, ONLY : PAR_top_layer
-#endif /* BIOLink_PAR_EVAL */ 
+#if defined BIOLink_PAR_eval
+      USE comBIOLink_helping, ONLY : PAR
+#endif /* BIOLink_PAR_eval */ 
 
 #ifdef MUSTANG
       USE comsubstance, ONLY : nv_adv,nvpc,nvp
@@ -1382,10 +1382,9 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 # if defined BIOLink_PAR_eval
 
       if (wrthis(indxPAR)) then
-        MPI_master_only PRINT*, "Shape of PAR is",SHAPE(PAR_top_layer)
-        work2d=PAR_top_layer
-        call fillvalue2d(work2d,ncidhis,hisPAR,indxPAR,
-     &        record,r2dvar,type)
+        MPI_master_only PRINT*, "PAR is", PAR
+        call fillvalue3d(PAR,ncidhis,hisPAR,indxPAR,
+     &        record,r3dvar,type)
 CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
       endif
 

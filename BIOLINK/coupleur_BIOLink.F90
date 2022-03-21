@@ -450,6 +450,7 @@
                                                          ! file
 #endif /* key_messat */
 
+
   END SUBROUTINE BIOLink_init
 
   !!======================================================================
@@ -512,7 +513,6 @@
      !===================================================================
 
 #ifdef key_benthic
-
       ALLOCATE(BENTCONCPOS(nv_bent,PROC_IN_ARRAY))
       BENTCONCPOS(:,:,:,:)=0.0_rsh
 
@@ -600,6 +600,13 @@
       ALLOCATE( PAR_top_layer(0:NB_LAYER_WAT,PROC_IN_ARRAY) )
       PAR_top_layer(:,:,:)=0.0_rsh
 
+      ALLOCATE( PAR(PROC_IN_ARRAY,NB_LAYER_WAT) ) ! It is smaller than 
+      PAR(:,:,:)=0.0_rsh                            ! PAR_top_layer
+                                                    ! because there seems
+                                                    ! to be one MUSTANG
+                                                    ! cell in PAR_top_layer
+
+ 
 #  if defined PEPTIC
 
       ALLOCATE( PAR_avg_layer_phyto(1,NB_LAYER_WAT,PROC_IN_ARRAY) )
@@ -740,7 +747,7 @@ END SUBROUTINE  BIOLink_alloc
   !&E
   !&E ** Purpose : Update of the BIOLink concentration, sources and sinks
   !&E              and helping variables (settling velocities, number of 
-  !&E              oyster, etc...) at each time step.
+  !&E             oyster, etc...) at each time step.
   !&E
   !&E ** Description : 
   !&E
@@ -815,7 +822,6 @@ END SUBROUTINE  BIOLink_alloc
      !====================================================================
      ! Execution of the function
      !====================================================================
-
 
      !************** Determination of the time steps *********************!
 
@@ -922,6 +928,13 @@ END SUBROUTINE  BIOLink_alloc
                                                              ! -diation and
                                                              ! extinction
 
+
+      PAR = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT,     &
+                                PAR_top_layer) ! We do not take the first
+                                               ! layer because it is appa
+                                               ! rently related to the 
+                                               ! interface with MUSTANG
+      
 #  if defined BLOOM
       
       CALL bloom_extinction_avg(ifirst,ilast,jfirst,jlast) ! Computation of
@@ -1069,6 +1082,12 @@ END SUBROUTINE  BIOLink_alloc
 
          CALL BIOLink_eval_PAR(ifirst,ilast,jfirst,jlast,cdate)
 
+         ! I convert the array to send it in CROCO
+         PAR = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
+                                PAR_top_layer) ! We do not take the first
+                                               ! layer because it is appa
+                                               ! rently related to the 
+                                               ! interface with MUSTANG
 #  endif /* BIOLink_PAR_eval */
 
         ENDIF
@@ -1299,6 +1318,84 @@ END SUBROUTINE  BIOLink_alloc
 
     !!============================================================================== 
  
+  FUNCTION BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,kfirst,klast,VAR)     
+
+  !&E---------------------------------------------------------------------
+  !&E                 ***  ROUTINE BIOLink2hydro ***
+  !&E
+  !&E ** Purpose : Conversion of a 3 variables from the BIOLink order (z,x,y)
+  !&E              to the CROCO order (x,y,z)
+  !&E
+  !&E ** Description : The array in BIOLink are first indexed with the depth,
+  !&E                  while the ones of hydro models are first indexed by
+  !&E                  horizontal positions. Here we convert the array of 
+  !&E                  BIOLink to the hydro model format
+  !&E
+  !&E ** Called by :  BIOLink_update
+  !&E
+  !&E ** External calls : None
+  !&E
+  !&E ** Reference :
+  !&E
+  !&E ** History : ! Created by G. Koenig (march 2022)
+  !&E
+  !&E---------------------------------------------------------------------
+
+
+     !====================================================================
+     ! External arguments
+     !====================================================================
+ 
+   INTEGER, INTENT(IN)    :: ifirst,ilast,jfirst,jlast ! Limits of the MPI
+                                                       ! subdomain
+   INTEGER, INTENT(IN)    :: kfirst,klast ! Limits of the vertical subdomain
+
+   REAL(KIND=rsh),DIMENSION(NB_LAYER_WAT,PROC_IN_ARRAY), INTENT(IN)   :: VAR
+                                             ! Input array to be modified
+
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
+
+    INTEGER                  :: i,j,k ! Spatial and tracer counters
+    INTEGER                  :: i1,i2,i3 ! Internal BIOLink counters
+    REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY,NB_LAYER_WAT) :: BIOLink2hydro_3D ! Array for
+                                                           ! returning the 
+                                                           ! transformed
+                                                           ! variable
+    
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
+
+ !******************Allocation of the array for storing the variables*******!
+
+     BIOLink2hydro_3D(:,:,:)=0.0_rsh
+
+ !****************** Conversion for the index order of *********************!
+ !***************** BIOLink to the one of the hydro model ******************!
+
+
+!$OMP DO SCHEDULE(RUNTIME)
+     DO i = ifirst,ilast
+
+       DO j = jfirst,jlast
+
+          DO k=kfirst,klast
+              
+              BIOLink2hydro_3D(i,j,k) = VAR(k,i,j)
+
+          END DO
+
+        END DO
+
+      END DO
+
+
+!$OMP END DO
+
+END FUNCTION  BIOLink2hydro_3D
+
 
 
   SUBROUTINE BIOLink2hydro(ifirst,ilast,jfirst,jlast  &
@@ -1493,7 +1590,6 @@ END SUBROUTINE  BIOLink2hydro
 !$OMP END DO
 
 !$OMP DO SCHEDULE(RUNTIME)
-
          DO i1=IRANGE1
 
            DO i2=IRANGE2
@@ -1522,8 +1618,6 @@ END SUBROUTINE  BIOLink2hydro
 END SUBROUTINE  BIOLink_updateconc_BIO
 #endif /* BIOLink_update_CONCBIO */
 
-
-   
 #endif /* BIOLink */
 
 END MODULE coupleur_BIOLink

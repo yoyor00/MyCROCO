@@ -2381,7 +2381,7 @@
         if (wrt(indxPAR)) then
           lvar=lenstr(vname(1,indxPAR))
           ierr=nf_def_var (ncid, vname(1,indxPAR)(1:lvar), NF_FOUT,
-     &                                           3, r2dgrd, vidPAR)
+     &                                           3, r3dgrd, vidPAR)
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidPAR,nf_collective)
 #endif

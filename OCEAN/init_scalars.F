@@ -4708,7 +4708,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
 CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
       vname(1,indxPAR)='PAR                                   '
       vname(2,indxPAR)='Photosynthetic available radiation    '
-      vname(3,indxPAR)='microeinstein/(m2.s)                  '
+      vname(3,indxPAR)='W.m-2.s-1                  '
       vname(4,indxPAR)='PAR, scalar, series                   '
       vname(5,indxPAR)='                                        '
       vname(6,indxPAR)='lat_rho lon_rho                         '
