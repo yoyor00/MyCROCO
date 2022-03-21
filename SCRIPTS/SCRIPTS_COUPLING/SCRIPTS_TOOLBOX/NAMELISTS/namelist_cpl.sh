@@ -2,7 +2,10 @@
 # CPL
 #-------------------------------------------------------------------------------
 # namelist
-export namcouplename=namcouple.base.${RUNtype}
+#!!!! WARNING !!! 
+# If you are using pre-built weight. Please modified manually the netcdf used in the namcouple
+# add .smtho2a if you want to smooth
+export namcouplename=namcouple.base.${RUNtype} 
 
 # coupling frequency
 export CPL_FREQ=3600

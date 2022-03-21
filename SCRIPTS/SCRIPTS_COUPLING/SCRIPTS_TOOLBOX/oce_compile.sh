@@ -99,6 +99,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
                 sed -e "s/#  *define  *AROME/# undef  AROME/g" \
                     cppdefs.h > tmp$$
             fi
+            mv tmp$$ cppdefs.h
             if [[ ${frc_ext} == *'ECMWF'* ]]; then
                 sed -e "s/#  *undef  *ECMWF/# define ECMWF/g" \
                     cppdefs.h > tmp$$
