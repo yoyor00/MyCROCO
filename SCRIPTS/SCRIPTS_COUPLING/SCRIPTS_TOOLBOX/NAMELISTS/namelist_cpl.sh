@@ -18,3 +18,11 @@ export oce_rst_file=""
 export atm_rst_file=""
 export wav_rst_file""
 
+# Use pre-build weight files (need to be in OASIS_FILES)
+#!!!! WARNING !!!!
+# At the moment only workd with 1-atm and 1-oce domain
+#!!!!!!!!!!!!!!!!!
+export WEIGHT_FLAG=0 
+export weight_o2a=""
+export weight_a2o=""
+

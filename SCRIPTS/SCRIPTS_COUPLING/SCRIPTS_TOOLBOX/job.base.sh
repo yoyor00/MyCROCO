@@ -92,6 +92,7 @@ cp ${JOBDIR_ROOT}/${jobname} ./
 
 	[ ${USE_CPL} -ge 1 ] && printf "\n ************* get OA3MCT RESTART files *****************\n\n"
 	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_getrst.sh ; }
+        [ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_getfile.sh ; }
 
         [ ${USE_TOY} -ge 1 ] && printf "\n ************* get TOY CONFIGURATION files *****************\n\n"
         [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/toy_getfile.sh ; }
