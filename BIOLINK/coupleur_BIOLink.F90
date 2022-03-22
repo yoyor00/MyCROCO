@@ -521,8 +521,10 @@
      ! Table of source and sink terms for tracer variables
      !===================================================================
 
+#if ! defined ECO3M  
       ALLOCATE( BIO_SINKSOURCES(ARRAY_SINKSOURCES))
       BIO_SINKSOURCES(:,:,:,:)=0.0_rsh
+#endif /* ECO3M */
 
      !===================================================================
      ! Table of sink and source terms for fixed variables
@@ -547,22 +549,23 @@
 
 #endif /* MUSTANG */
         
+#if ! defined ECO3M  
         ALLOCATE( THICKLAYERWC(NB_LAYER_WAT,PROC_IN_ARRAY))
         THICKLAYERWC(:,:,:)=0.0_rsh
-        
+#endif        
         ALLOCATE( THICKLAYERWW(NB_LAYER_WAT,PROC_IN_ARRAY))
         THICKLAYERWW(:,:,:)=0.0_rsh
 
      !=====================================================================
      !  Temperature and salinity variables
      !=====================================================================
-
+#  if !defined ECO3M
       ALLOCATE( TEMP_BIOLink(NB_LAYER_WAT,PROC_IN_ARRAY))
       TEMP_BIOLink(:,:,:)=0.0_rsh
 
       ALLOCATE( SAL_BIOLink(NB_LAYER_WAT,PROC_IN_ARRAY))
       SAL_BIOLink(:,:,:)=0.0_rsh
-
+#  endif /* ECO3M */
      !=====================================================================
      !  Bottom current variables
      !=====================================================================

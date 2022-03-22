@@ -31,9 +31,12 @@
      !=====================================================================
      !  Height of the water column variables
      !=====================================================================
-
-      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE  :: THICKLAYERWC,THICKLAYERWW 
-      ! Thickness of the water column (?) and of the wave layer (?), I am not sure
+#if !defined ECO3M
+      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE  :: THICKLAYERWC 
+      ! Thickness of cells (dz), centered around C,T,Sal
+#endif
+      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE  :: THICKLAYERWW 
+      ! Thickness of cells (dz), centered around W, interface
 #  if ! defined MUSTANG
       REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: TOTAL_WATER_HEIGHT 
       ! Total water height of the column
@@ -51,10 +54,10 @@
      !=====================================================================
      !  Temperature and salinity variables
      !=====================================================================
-
+#  if !defined ECO3M
       REAL(kind=rsh),ALLOCATABLE,DIMENSION(:,:,:)               :: SAL_BIOLink,TEMP_BIOLink
       ! Salinity and temperature in the water column
-
+#  endif /* ECO3M */
 
 
      CONTAINS
