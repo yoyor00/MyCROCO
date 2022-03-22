@@ -56,7 +56,7 @@
                                 xsigma2, xdifs1,xdifs2,xdifsi1,xdifsi2,                        &
                                 epdifi,fexcs,cexcs,activlayer,frmudcr2,coef_frmudcr1,          &
                                 x1toce_mud,x2toce_mud,E0_sand_para,n_eros_sand,E0_mud,         &
-                                n_eros_mud,corfluer1,corfluer2,MF,MF_dhsed,htncrit_eros,       &
+                                n_eros_mud, MF, MF_dhsed, htncrit_eros,       &
                                 slopefac,csegreg,csandseg,xexp_ero,E0_sand_Cst,                &
                                 coef_z0_coupl,z0_hydro_mud,z0_hydro_bed,                       &
                                 xbioturbmax_part,xbioturbk_part,dbiotu0_part,dbiotum_part,     &

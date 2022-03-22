@@ -2151,7 +2151,7 @@ MODULE sed_MUSTANG
 
               IF(htot(i,j).GT.h0fond) THEN
                 IF(tenfon(i,j).GT.toce)THEN
-                  CALL sed_MUSTANG_comp_eros_flx(tenfon(i,j),toce,c_sedtot(ksmax,i,j),excespowr,xeros,sed_eros_flx)
+                  CALL sed_MUSTANG_comp_eros_flx(tenfon(i,j), toce, excespowr, xeros, sed_eros_flx)
                   ero=sed_eros_flx*fwet(i,j)    
 
 #if defined key_MUSTANG_lateralerosion
@@ -2661,7 +2661,7 @@ MODULE sed_MUSTANG
 
             IF(htot(i,j).GT.h0fond) THEN
               IF(tenfon(i,j).GT.toce)THEN
-                CALL sed_MUSTANG_comp_eros_flx(tenfon(i,j),toce,c_sedtot(ksmax,i,j),excespowr,xeros,sed_eros_flx)
+                CALL sed_MUSTANG_comp_eros_flx(tenfon(i,j), toce, excespowr, xeros, sed_eros_flx)
                 ero=sed_eros_flx*fwet(i,j)    
 
 #if defined key_MUSTANG_lateralerosion
@@ -3239,7 +3239,7 @@ MODULE sed_MUSTANG
   END SUBROUTINE sed_MUSTANG_comp_tocr_mixsed
    !!==============================================================================
 
-  SUBROUTINE sed_MUSTANG_comp_eros_flx(tenfo,toce,csurface,excespowr,xeros,sed_eros_flx)
+  SUBROUTINE sed_MUSTANG_comp_eros_flx(tenfo, toce, excespowr, xeros, sed_eros_flx)
  
    !&E--------------------------------------------------------------------------
    !&E                 ***  SUBROUTINE sed_erosion_flux  ***
@@ -3255,20 +3255,15 @@ MODULE sed_MUSTANG
    !&E--------------------------------------------------------------------------
    !! * Modules used
    !! * Arguments
-   REAL(KIND=rsh),INTENT(in) :: csurface,tenfo,toce
-   REAL(KIND=rsh),INTENT(in) :: excespowr,xeros
+   REAL(KIND=rsh),INTENT(in) :: tenfo, toce
+   REAL(KIND=rsh),INTENT(in) :: excespowr, xeros
    REAL(KIND=rsh),INTENT(out) :: sed_eros_flx
-
-   !! * Local declarations   
-   REAL(KIND=rsh) ::  corfluero
 
    !!---------------------------------------------------------------------------
    !! * Executable part
    
-   !corfluero=1.0_rsh+corfluer1*MAX(0.0_rsh,corfluer2-csurface)     
-   corfluero=1.0_rsh    
    ! Partheniades :
-   sed_eros_flx=xeros*corfluero*(tenfo/toce-1.0_rsh)**excespowr
+   sed_eros_flx = xeros * (tenfo/toce - 1.0_rsh)**excespowr
 !   or choice one other formula 
 !  sed_eros_flx=xeros*corfluero*(tenfo-toce)**excespowr
     

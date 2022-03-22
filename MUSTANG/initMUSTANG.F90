@@ -373,7 +373,7 @@ MODULE initMUSTANG
    NAMELIST/namsedim_erosion/ activlayer,frmudcr2,coef_frmudcr1,         &
                        x1toce_mud,x2toce_mud,E0_sand_option,E0_sand_para,&
                        n_eros_sand,E0_mud,n_eros_mud,ero_option,xexp_ero,&
-                       corfluer1,corfluer2,htncrit_eros,E0_sand_Cst,     &
+                       htncrit_eros,E0_sand_Cst,     &
                        tau_cri_option,tau_cri_mud_option_eroindep,       &
                        l_peph_suspension,l_xexp_ero_cst,l_eroindep_mud,  &
                        l_eroindep_noncoh,E0_mud_para_indep

@@ -121,8 +121,6 @@
                          !   ero_option= 2 : formulation derived from that of J. Vareilles (2013)
                          !   ero_option= 3 : formulations proposed by B. Mengual (2015) with exponential coefficients depend on proportions of the mixture
    xexp_ero = 2.0        ! used only if ero_option=3 : adjustment on exponential variation  (more brutal when xexp_ero high)
-   corfluer1=0.01         ! correction factors for erosion flux computations : Increases the erosion flow when the concentration of mud in the sediment is low (mud cream)
-   corfluer2=350.        ! corfluero=1.+corfluer1*MAX(0.0_rsh,corfluer2-csed_tot_surface) typically, increase erosion flow if Crelmud <350 g/L 
    htncrit_eros=0.0  /   ! critical water height so as to prevent erosion under a given threshold (the threshold value is different for flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
 :
 :
