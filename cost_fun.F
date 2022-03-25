@@ -1,13 +1,13 @@
-      subroutine ad_step()
+      subroutine ad_step(nstep)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
-      integer k,iifroot
+      integer k,iifroot,nstep
 
       write(*,*) 'start ad_step'
-C$AD BINOMIAL-CKP ad_ns+2 90 1
-      do k=1,ad_ns+1
+C$AD BINOMIAL-CKP nstep+2 80 1
+      do k=1,nstep
          do iifroot = 0,nfast+2
             call step()
          end do
@@ -39,9 +39,13 @@ c         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
       nbstep3d = 0
       iic = ntstart
 
+      if (ad_main_st.gt.0) then
+         call ad_step(ad_main_st)
+      end if
+
       do ta=1,ad_nt
-         call ad_step()
-         call cost_fun_step(ad_x,icost,ta*10,3)
+         call ad_step(ad_ns+1)
+         call cost_fun_step(ad_x,icost,ad_ast-1+ta,3)
          write(*,*) '==icost3==>',icost
 c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
       end do
@@ -150,7 +154,8 @@ c      end do
                   k=k+1
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta)
                   dpena = (pena_h(i,j) - pena_h(i-1,j)) / om_u(i,j)
-                  icost = icost + delta_z*delta_z + 1.0D-5*dpena*dpena
+                  icost = icost + delta_z*delta_z
+c     &             + 1.0D-2*dpena*dpena
 
 c                  write(*,*) '=====>',zeta(i,j,knew)
 c     &                 ,ad_obs(i,j,ta-1),ad_obs(i,j,ta),ad_obs(i,j,ta+1)
@@ -169,16 +174,17 @@ c$$$     &                 zeta(i,j,knew),ad_obs(i,j,ta+2),
 c$$$     &                 h(i,j),h_bck(i,j),
 c$$$     &                 delta_z,
 c$$$  &                 delta_h
-c$$$                  if (zeta(i,j,knew).gt.0) then
-c$$$                     if ((ta.gt.3).and.(ta.lt.ad_ns*ad_nt)) then
-c$$$                        write(*,*) 'BBBBB',ta,mynode,i,j,zeta(i,j,knew),
-c$$$     &                       ad_obs(i,j,ta+2),
-c$$$     &                       ad_obs(i,j,ta+1),
-c$$$     &                       ad_obs(i,j,ta),
-c$$$     &                       ad_obs(i,j,ta-1),
-c$$$     &                       ad_obs(i,j,ta-2)
-c$$$                     end if
-c$$$                  end if
+c                  if (zeta(i,j,knew).gt.0) then
+c                     if ((ta.gt.3).and.(ta.lt.ad_ns*ad_nt)) then
+                  write(*,*) 'BBBBB',ad_sim_iicroot,ta,mynode,i,j,
+     &                 zeta(i,j,knew),
+     &                 ad_obs(i,j,ta+2),
+     &                 ad_obs(i,j,ta+1),
+     &                 ad_obs(i,j,ta),
+     &                 ad_obs(i,j,ta-1),
+     &                 ad_obs(i,j,ta-2)
+c                     end if
+c                  end if
                   ad_cost_counter = ad_cost_counter + 1
                end if
             end do
@@ -606,8 +612,8 @@ c      call grid_stiffness(tile)
 
 c set a lower depth
       depth=2000
-      ridge_width = 29.8e3
-      ridge_height = 1500
+      ridge_width = 30e3
+      ridge_height = 1600
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
@@ -629,8 +635,8 @@ c set a lower depth
       enddo
 
 
-      ridge_width = 32e3
-      ridge_height = 1650
+      ridge_width = 30e3
+      ridge_height = 1600
 
       cff1=1./(ridge_width*ridge_width)
       j=JstrR
@@ -642,7 +648,8 @@ c set a lower depth
          else
             cff=1-(xr(i,j)*xr(i,j)*cff1);
          endif
-         ad_x(k) = depth-ridge_height*cff*cff - 100;
+         ad_x(k) = depth-ridge_height*cff*cff
+c     &        - 100;
          k=k+1
       enddo
 
