@@ -190,7 +190,7 @@
      &             )
      &             
               vwnd_r = 0.5*( cff1*vwndg(i,j+1,it1)+
-     &                                        cff2*vwndg(i,j+1,it2))
+     &                                        cff2*vwndg(i,j+1,it2)
      &             +       ( cff1*vwndg(i,j  ,it1)+
      &                                        cff2*vwndg(i,j  ,it2)) )
      &                     - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs)
