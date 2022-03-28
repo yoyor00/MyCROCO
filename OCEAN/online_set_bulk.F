@@ -169,8 +169,6 @@
 # ifdef CFB_WIND_TRA
           cff      = 1.-swparam
 # if !defined OPENMP
-!$$$          do j=JstrR,min(JendR,Mm)
-!$$$  do i=IstrR,min(IendR,Lm)
           do j=JstrR,min(JendR,Mm)
             do i=IstrR,min(IendR,Lm)
               uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
