@@ -910,7 +910,7 @@ CONTAINS
    vname(7,indx)=' '
    indx=indxT+ntrc_salt+ntrc_substot+3
    wrthis(indx)=.TRUE.
-   vname(1,indx)='TENFON'
+   vname(1,indx)='TAUSKIN'
    vname(2,indx)='total bottom shear stress for erosion'
    vname(3,indx)='N/m2'
    vname(4,indx)=' '

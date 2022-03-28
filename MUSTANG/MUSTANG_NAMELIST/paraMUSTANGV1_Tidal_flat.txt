@@ -83,10 +83,10 @@
                          !     E0_sand_option= 2 E0_sand evaluated with erodimetry formulation (min(0.27,1000*d50-0.01)*toce**n_eros_sand)
    E0_sand_Cst=0.0002    ! 0.0002 Constant erosion flux for sand (used if E0_sand_option= 0) 
    E0_sand_para=1.       ! coefficient used to modulate erosion flux for sand   (=1 if no correction )
-   n_eros_sand=1.6       ! parameters for erosion flux for sand (E0_sand*corfluero*(tenfo/toce-1.)**n_eros_sand )
+   n_eros_sand=1.6       ! parameters for erosion flux for sand (E0_sand*(tenfo/toce-1.)**n_eros_sand )
                          ! WARNING : choose parameters compatible with E0_sand_option (example : n_eros_sand=1.6 for E0_sand_option=1)
    E0_mud=0.0002         ! parameters for erosion flux for pure mud 
-   n_eros_mud=1.         ! E0_mud*corfluero*(tenfo/toce-1.)**n_eros_mud
+   n_eros_mud=1.         ! E0_mud*(tenfo/toce-1.)**n_eros_mud
    ero_option = 1        ! choice of erosion formulation for mixing sand-mud
                          !   ero_option= 0 : pure mud behavior (for all particles and whatever the mixture)
                          !   ero_option= 1 : linear interpolation between sand and mud behavior, depend on proportions of the mixture

@@ -2703,7 +2703,7 @@ MODULE sed_MUSTANG
 #endif
             ENDIF
 
-            erosi = M * dt1 * ero
+            erosi = MF * dt1 * ero
 
             IF(erosi >  0.0_rsh)THEN
               IF(erosi.LE.erodab)THEN
