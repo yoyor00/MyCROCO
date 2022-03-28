@@ -181,7 +181,7 @@
 #else
 !(on change les boucles et on utilise uwndg)
           do j=JstrR,JendR
-            do i=i=IstrR,IendR
+            do i=IstrR,IendR
               uwnd_r = 0.5*( cff1*uwndg(i+1,j,it1)+
      &                                        cff2*uwndg(i+1,j,it2)
      &             +       ( cff1*uwndg(i  ,j,it1)+
