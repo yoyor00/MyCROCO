@@ -178,7 +178,7 @@
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
             enddo
           enddo
-        else
+#else
 !(on change les boucles et on utilise uwndg)
           do j=JstrR,JendR
             do i=i=IstrR,IendR
