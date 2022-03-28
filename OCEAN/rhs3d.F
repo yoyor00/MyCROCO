@@ -23,12 +23,16 @@
       call rhs3d_tile (Istr,Iend,Jstr,Jend,
      &                                    A3d(1,1,trd), A3d(1,2,trd),
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
+     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
+     &                      A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
      &                      A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd),
      &                      A3d(1,6,trd), A3d(1,7,trd), A3d(1,8,trd))
       return
       end
 
       subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
+     &                                 wrk1,wrk2, UFx,UFe,
+     &                                 VFx,VFe,
      &                                 wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
      &                                 VFx_3D,VFe_3D)
       implicit none
@@ -77,13 +81,14 @@
      &    UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &    VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
      &    VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),    gamma
+      real wrk1(PRIVATE_2D_SCRATCH_ARRAY),
+     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),
+     &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
+     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
+     &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
+     &    VFe(PRIVATE_2D_SCRATCH_ARRAY)
 
-#define wrk1(i,j) wrk1_3D(i,j,k)
-#define wrk2(i,j) wrk2_3D(i,j,k)
-#define UFx(i,j) UFx_3D(i,j,k)
-#define UFe(i,j) UFe_3D(i,j,k)
-#define VFx(i,j) VFx_3D(i,j,k)
-#define VFe(i,j) VFe_3D(i,j,k)
+
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -396,6 +401,14 @@
 #  undef Vwrk
 #  undef Uwrk
 # endif /* BODYFORCE */
+
+! TO BE CHANGED, hugly
+#define wrk1(i,j) wrk1_3D(i,j,k)
+#define wrk2(i,j) wrk2_3D(i,j,k)
+#define UFx(i,j) UFx_3D(i,j,k)
+#define UFe(i,j) UFe_3D(i,j,k)
+#define VFx(i,j) VFx_3D(i,j,k)
+#define VFe(i,j) VFe_3D(i,j,k)
 
       do k=1,N
 
