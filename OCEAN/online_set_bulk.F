@@ -150,60 +150,58 @@
               wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
             enddo
           enddo
-C$OMP BARRIER
+!!!! GC C$OMP BARRIER
           
-# ifdef CFB_WIND_TRA
-          cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
-          do j=JstrR,min(JendR,Mm)
-            do i=IstrR,min(IendR,Lm)
-              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
-     &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
-     &                   )
-              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
-     &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
-     &                   )
-              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
-            enddo
-          enddo
-!$$$! begin GC
 !$$$# ifdef CFB_WIND_TRA
-!$$$          cff      = 1.-swparam
-!$$$# if !defined OPENMP
+!$$$          cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
 !$$$          do j=JstrR,min(JendR,Mm)
 !$$$            do i=IstrR,min(IendR,Lm)
 !$$$              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
 !$$$     &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
-!$$$     &             )
+!$$$     &                   )
 !$$$              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
 !$$$     &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
-!$$$     &             )
+!$$$     &                   )
 !$$$              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
 !$$$            enddo
 !$$$          enddo
-!$$$#else
-!$$$!     (on change les boucles et on utilise uwndg et vwndg)
-!$$$          do j=JstrR,JendR-1
-!$$$            do i=IstrR,IendR-1
-!$$$              !!uwndg_r =
-!$$$              !!vwndg_r =
-!$$$              uwnd_r = 0.5*( cff1*uwndg(i+1,j,it1)+
-!$$$     &                                        cff2*uwndg(i+1,j,it2)
-!$$$     &             +       ( cff1*uwndg(i  ,j,it1)+
-!$$$     &                                        cff2*uwndg(i  ,j,it2)) )
-!$$$     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs)
-!$$$     &             )
-!$$$     &             
-!$$$              vwnd_r = 0.5*( cff1*vwndg(i,j+1,it1)+
-!$$$     &                                        cff2*vwndg(i,j+1,it2)
-!$$$     &             +       ( cff1*vwndg(i,j  ,it1)+
-!$$$     &                                        cff2*vwndg(i,j  ,it2)) )
-!$$$     &                     - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs)
-!$$$     &             )
-!$$$              
-!$$$              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
-!$$$            enddo
-!$$$          enddo    
-!$$$!! end GC
+! begin GC
+# ifdef CFB_WIND_TRA
+          cff      = 1.-swparam
+# if !defined OPENMP
+          do j=JstrR,min(JendR,Mm)
+            do i=IstrR,min(IendR,Lm)
+              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
+     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
+     &                       )
+              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
+     &                       - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+     &                       )
+              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+            enddo
+          enddo
+#else
+!     (on change les boucles et on utilise uwndg et vwndg)
+          do j=JstrR,JendR-1
+            do i=IstrR,IendR-1
+              uwnd_r = 0.5*( cff1*uwndg(i+1,j,it1)+
+     &                                        cff2*uwndg(i+1,j,it2)
+     &             +         cff1*uwndg(i  ,j,it1)+
+     &                                        cff2*uwndg(i  ,j,it2)
+     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))  
+     &                      )
+     &             
+              vwnd_r = 0.5*( cff1*vwndg(i,j+1,it1)+
+     &                                        cff2*vwndg(i,j+1,it2)
+     &             +         cff1*vwndg(i,j  ,it1)+
+     &                                        cff2*vwndg(i,j  ,it2)
+     &                     - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+     &                      )
+              
+              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+            enddo
+          enddo    
+!! end GC
 #  ifndef EW_PERIODIC
             if (WESTERN_EDGE) then
               do j=Jstr,Jend
