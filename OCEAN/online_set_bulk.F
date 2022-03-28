@@ -163,7 +163,7 @@
 !$$$              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
 !$$$            enddo
 !$$$  enddo
-          ! begin GC
+! begin GC
 # ifdef CFB_WIND_TRA
           cff      = 1.-swparam
 # if !defined OPENMP
@@ -201,7 +201,6 @@
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
             enddo
           enddo    
-#endif
 !! end GC
 #  ifndef EW_PERIODIC
             if (WESTERN_EDGE) then
