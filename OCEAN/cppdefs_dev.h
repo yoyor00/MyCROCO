@@ -1045,6 +1045,18 @@
 /*
 ======================================================================
 
+                  Exchange at boundaries
+
+======================================================================
+*/
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI || (defined OPENACC && defined OPENMP)
+#define BD_EXCHANGE
+#else
+#undef BD_EXCHANGE
+#endif
+/*
+======================================================================
+
                   Consistency for 2D configurations
 
 ======================================================================
@@ -1101,4 +1113,10 @@
 # undef BIOLOGY
 #endif
 
-
+#if !defined OPENACC
+#define ENDDOLOOP2D enddo
+#define DOLOOP2D_R(irange,jrange) do j=jrange
+#define DOLOOP2D(i1,i2,j1,j2) do j=j1,j2
+#else
+#define DOLOOP2D_R(irange,jrange) DOLOOP2D(irange,jrange)
+#endif

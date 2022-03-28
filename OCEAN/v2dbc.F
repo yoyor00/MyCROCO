@@ -108,14 +108,14 @@ C$    trd=omp_get_thread_num()
 #  endif
 #endif
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
 #if defined M2_FRC_BRY || defined M2CLIMATOLOGY
       tau_in=dtfast*tauM_in
       tau_out=dtfast*tauM_out
 #endif
 !
-#if defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_WEST || defined OBC_COM_M2CHARACT_EAST
+#if defined OBC_COM_M2ORLANSKI
       grad = 1.
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then

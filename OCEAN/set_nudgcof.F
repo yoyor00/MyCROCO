@@ -72,7 +72,7 @@
 #  endif
 # endif /* SPONGE_GRID */
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !
       do j=max(-1,JstrR-1),JendR
         do i=max(-1,IstrR-1),IendR

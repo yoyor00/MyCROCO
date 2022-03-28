@@ -118,7 +118,7 @@
       Vtc=lmd_Cv*sqrt(-lmd_betaT)/( sqrt(lmd_cs*lmd_epsilon)
      &                                        *Ric*vonKar*vonKar )
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !
 !  Compute turbulent friction velocity [m/s] "ustar" from bottom stress
 !  at RHO-points. (Bottom stress includes wave effects if activated in BBL)
@@ -428,7 +428,7 @@
 #  endif
 # endif
 !$acc end kernels
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,hbbl(START_2D_ARRAY))
 # endif
 

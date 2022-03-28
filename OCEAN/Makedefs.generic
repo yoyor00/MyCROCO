@@ -10,7 +10,9 @@
 	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > $*.f
 
 .F.o:
-	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > $*_.f
+	$(CPP) -P $(CPPFLAGS) $*.F > $*_.f1
+	python3 ./change_loops.py $*_.f1 tempfile
+	cat tempfile | ./mpc > $*_.f
 	$(CFT) -c $(FFLAGS) $*_.f -o $*.o
 
 .f90.o:

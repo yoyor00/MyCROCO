@@ -98,7 +98,7 @@
       endif
 #  define J_EXT_RANGE jmin,jmax
 # endif
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
 # ifdef NONLIN_EOS 

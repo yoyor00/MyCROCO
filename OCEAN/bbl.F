@@ -682,7 +682,7 @@
         bvstrw(IENDp,JENDp)=0.5*(bvstrw(IENDp,Jend)+bvstrw(Iend,JENDp))
       ENDIF
 # endif
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Abed)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Hripple)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Lripple)

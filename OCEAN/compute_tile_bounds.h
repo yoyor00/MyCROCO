@@ -63,3 +63,10 @@ C$      if (trd.gt.0) return !--> just return, if not master thread
 #ifdef  ALLOW_SINGLE_BLOCK_MODE
       endif
 #endif
+#if defined OPENACC
+#if defined MPI
+!$acc set device_num(my_acc_device)
+#else
+!$acc set device_num(tile)
+#endif
+#endif

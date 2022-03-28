@@ -200,7 +200,7 @@
 ! Exchange periodic boundaries and computational margins.
 !--------------------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,nnew))

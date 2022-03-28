@@ -13,7 +13,9 @@
 #ifdef MPI
 
       subroutine MPI_Setup (ierr)
-
+#ifdef OPENACC
+      use openacc
+#endif
 !     implicit none
 # include "param.h"
       integer ierr, nsize, ii_W, ii_E, jj_S, jj_N
@@ -34,6 +36,9 @@
 # else
       parameter (Npts=3)
 # endif
+#ifdef OPENACC
+      integer number_of_devices
+#endif
 
              
 # include "scalars.h"
@@ -50,6 +55,12 @@
         ierr=99
         return
       endif
+
+#ifdef OPENACC
+      number_of_devices=acc_get_num_devices(acc_device_default)
+      my_acc_device=mod(mynode,number_of_devices)
+      compute_on_device=.TRUE.
+#endif
       
 !       write(200+mynode,*) mynode,nsize,NNODES
 !       stop'toto'

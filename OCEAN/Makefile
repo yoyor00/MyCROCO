@@ -127,7 +127,8 @@ include Makedefs
 \
         online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
         scal0d_oa_out_loc.F scal0d_oa_out_full.F\
-        output_oa.F
+        output_oa.F\
+        copy_to_devices.F exchange_device_host.F
 
 
 
@@ -294,3 +295,4 @@ my_barrier.o: my_barrier.f
 #
 
 -include Make.depend
+step.o : debug.o

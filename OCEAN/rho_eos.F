@@ -182,7 +182,7 @@
       call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
 #endif
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
 
         do k=1,N                                       ! NONLINEAR
@@ -334,7 +334,7 @@
 !  refered to rho0
 !-----------------------------------------------------------------------
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do k=1,N
           do i=IstrR,IendR
@@ -399,7 +399,7 @@
           enddo
         enddo
       enddo
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_TS
       call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             rho1(START_2D_ARRAY,1))
@@ -558,7 +558,7 @@
       dr00=r00-1000.
 #  endif
 
-!$acc update host(Hz)
+!$acc update if(compute_on_device) host(Hz)
       do k=1,N
         do j=Jstr,Jend
           do i=Istr,Iend

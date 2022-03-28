@@ -145,7 +145,7 @@
 #endif
 !
       indx=3-nstp    !--> time index for target arrays;
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !
 !  Compute flux-components of the horizontal divergence of the stress
 !  tensor (m5/s2) in XI- and ETA-directions.

@@ -152,7 +152,7 @@ C$    integer omp_get_thread_num
           endif
         endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
         if (wrtavg(indxZ)) then
           do j=JstrR,JendR
             do i=IstrR,IendR

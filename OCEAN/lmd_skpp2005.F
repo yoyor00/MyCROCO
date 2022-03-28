@@ -166,7 +166,7 @@
 # define  beta Bo
       call alfabeta_tile (Istr,Iend,Jstr,Jend, alpha,beta)
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 
 !  Compute surface turbulent buoyancy forcing "Bo" [m^2/s^3].
 !  Remove incoming solar shortwave radiation because this
@@ -228,14 +228,14 @@
 #  define wrk1 wrk3
 #  define wrk2 my_hbl
       do k=0,N-1
-!$acc parallel loop
+!$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
             wrk1(i,j)=z_w(i,j,k)-z_w(i,j,N)
           enddo
         enddo
         call lmd_swfrac_ER_tile (Istr,Iend,Jstr,Jend,1.,wrk1,wrk2)
-!$acc parallel loop
+!$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
             swr_frac(i,j,k)=wrk2(i,j)
@@ -244,8 +244,9 @@
       enddo
 #  undef wrk1
 #  undef wrk2
+!$acc wait
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
           swr_frac(i,j,N)=1.
@@ -587,7 +588,7 @@
 #  endif
 # endif
 !$acc end kernels
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (istr,iend,jstr,jend,
      &                     hbls(START_2D_ARRAY,3-nstp))
 # endif

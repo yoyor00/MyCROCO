@@ -66,7 +66,6 @@ C$    integer omp_get_thread_num
 #  define J_RANGE JstrR,JendR
 # endif
 
-!$acc kernels default(present)
 !
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
@@ -76,6 +75,7 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
       if (iic.eq.0) then
+!$acc kernels if(compute_on_device) default(present)
         do j=J_RANGE
           do i=I_RANGE
 # ifdef WET_DRY
@@ -116,8 +116,8 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 # endif
-
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!$acc end kernels
+# if defined BD_EXCHANGE
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
 #  ifdef WET_DRY
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
@@ -145,9 +145,10 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
 # ifdef SOLVE3D
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
 #  endif
+!$acc kernels if(compute_on_device) default(present)
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent 
         do i=I_RANGE            !!!          with omega.F
@@ -175,7 +176,7 @@ C$    integer omp_get_thread_num
 #  if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #  endif
-            z_w0=cff_w+cff1_w*h(i,j) 
+            z_w0=cff_w+cff1_w*h(i,j)
             z_r0=cff_r+cff1_r*h(i,j)            
 #  ifdef NEW_S_COORD
             z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
@@ -227,7 +228,7 @@ C$    integer omp_get_thread_num
 #  undef I_RANGE
 #  undef J_RANGE
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
@@ -351,7 +352,7 @@ C$    integer omp_get_thread_num
 #   undef I_RANGE
 #   undef J_RANGE
 
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#   if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
@@ -412,7 +413,7 @@ C$    integer omp_get_thread_num
 #   define JU_RANGE JstrR,JendR
 #   define JV_RANGE Jstr,JendR
 #  endif
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -458,7 +459,7 @@ C$    integer omp_get_thread_num
 !
 ! Exchange periodic boundaries, if so prescribed.
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
@@ -567,7 +568,7 @@ C$    integer omp_get_thread_num
 !
 ! Exchange periodic boundaries, if so prescribed.
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
@@ -633,7 +634,7 @@ C$    integer omp_get_thread_num
 #   define JV_RANGE Jstr,JendR
 #  endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !$acc loop private(DC,FC(:,0))
       do j=JU_RANGE
         do i=IU_RANGE
@@ -718,7 +719,7 @@ C$    integer omp_get_thread_num
 !
 ! Exchange periodic boundaries, if so prescribed.
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV  
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))

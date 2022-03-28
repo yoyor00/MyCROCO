@@ -127,7 +127,7 @@
       enddo
 # endif /* CANYON_STRAT */
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)
 #  ifdef TEMPERATURE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,

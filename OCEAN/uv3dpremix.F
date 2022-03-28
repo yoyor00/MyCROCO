@@ -365,7 +365,7 @@ C$OMP BARRIER
       enddo
       enddo
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                                 usponge(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,

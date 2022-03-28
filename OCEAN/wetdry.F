@@ -280,7 +280,7 @@ C$OMP BARRIER
 !
 !  Exchange boundary data.
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  rmask_wet)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  rmask_wet_avg)
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  umask_wet)

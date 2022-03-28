@@ -116,7 +116,7 @@
 !
 !---------------------------------------------------------
 ! 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !$acc loop private(wrk,wrk2)
       do j=Jstr,Jend
 !

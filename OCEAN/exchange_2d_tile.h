@@ -1,5 +1,7 @@
-#ifndef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
       subroutine exchange_2d_tile (Istr,Iend,Jstr,Jend, A)
+#elif defined MP_1PTS
+      subroutine exchange_2d_1pts_tile (Istr,Iend,Jstr,Jend, A)
 #else
       subroutine exchange_2d_3pts_tile (Istr,Iend,Jstr,Jend, A)
 #endif
@@ -16,8 +18,10 @@
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-# ifndef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
       parameter (Npts=2)
+#elif defined MP_1PTS
+      parameter (Npts=1)
 # else
       parameter (Npts=3)
 # endif
@@ -121,17 +125,39 @@
 # endif
 #endif
 #ifdef MPI
-# ifndef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
       call MessPass2D_tile (Istr,Iend,Jstr,Jend,  A)
+#elif defined MP_1PTS
+      call MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend,  A)
 # else
       call MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend,  A)
 # endif
 #endif
+#if defined OPENMP && defined OPENACC
+      if (.not.SOUTHERN_EDGE) then
+!$acc update host(A(:,Jstr:Jstr+Npts-1))
+      endif
+      if (.not.NORTHERN_EDGE) then
+!$acc update host(A(:,Jend-Npts+1:Jend))
+      endif
+C$OMP BARRIER
+      if (.not.SOUTHERN_EDGE) then
+!$acc update device(A(:,Jstr-Npts:Jstr-1))
+      endif
+      if (.not.NORTHERN_EDGE) then
+!$acc update device(A(:,Jend+1:Jend+Npts))
+      endif
+#endif
       return
       end
 
-# ifndef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
 #  define MP_3PTS
 #  include "exchange_2d_tile.h"
 #  undef MP_3PTS
+#ifndef MP_1PTS
+#define MP_1PTS
+#include "exchange_2d_tile.h"
+#undef MP_1PTS
+#endif
 # endif

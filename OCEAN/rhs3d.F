@@ -23,13 +23,14 @@
       call rhs3d_tile (Istr,Iend,Jstr,Jend,
      &                                    A3d(1,1,trd), A3d(1,2,trd),
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
+     &                      A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd),
+     &                      A3d(1,6,trd), A3d(1,7,trd), A3d(1,8,trd))
       return
       end
 
       subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
-     &                                 wrk1,wrk2, UFx,UFe, VFx,VFe)
+     &                                 wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
+     &                                 VFx_3D,VFe_3D)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
@@ -70,12 +71,19 @@
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,cff1,cff2,
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffX,
      &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,
-     &   wrk1(PRIVATE_2D_SCRATCH_ARRAY),     curvX,
-     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),     curvE,
-     &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
-     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
-     &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
-     &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma
+     &   wrk1_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),     curvX,
+     &   wrk2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),     curvE,
+     &    UFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &    UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &    VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
+     &    VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),    gamma
+
+#define wrk1(i,j) wrk1_3D(i,j,k)
+#define wrk2(i,j) wrk2_3D(i,j,k)
+#define UFx(i,j) UFx_3D(i,j,k)
+#define UFe(i,j) UFe_3D(i,j,k)
+#define VFx(i,j) VFx_3D(i,j,k)
+#define VFe(i,j) VFe_3D(i,j,k)
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -88,6 +96,7 @@
 # ifdef MRL_WCI
       real vstu,dudx,dvdx,ustv,dude,dvde
 # endif
+#include "openacc.h"
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -159,7 +168,7 @@
       endif
 # endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 
 # ifdef BODYFORCE
 !====================================================================
@@ -388,7 +397,6 @@
 #  undef Uwrk
 # endif /* BODYFORCE */
 
-!$acc loop seq
       do k=1,N
 
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)
@@ -693,6 +701,7 @@
 #    endif
 #   endif
 
+!$acc loop collapse(2)
         do j=Jstr,Jend
           do i=IU_EXT_RANGE
             uxx(i,j)=(u(i-1,j,k,nrhs)-2.*u(i,j,k,nrhs)
@@ -946,6 +955,7 @@
 #    endif
 #   endif
 
+!$acc loop collapse(2)
         do j=JstrV,Jend
           do i=IV_EXT_RANGE
             vxx(i,j)=(v(i-1,j,k,nrhs)-v(i,j,k,nrhs)) SWITCH pmask(i  ,j)
@@ -1252,8 +1262,7 @@
 
       enddo    ! <-- k
 
-!$acc loop private(FC,DC,CF)
-      do j=Jstr,Jend
+      DOLOOP2D(IstrU,Iend,Jstr,Jend)
 
 # ifdef UV_ADV
 !
@@ -1487,10 +1496,10 @@
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
-      enddo
+      ENDDOLOOP2D
 
-!$acc loop private(FC,DC,CF)
-      do j=JstrV,Jend
+
+      DOLOOP2D(Istr,Iend,JstrV,Jend)
 !
 #  ifdef UV_VADV_SPLINES
           do k=1,N
@@ -1769,7 +1778,7 @@
          enddo
       enddo
 # endif   /* MRL_WCI */
-       enddo
+        ENDDOLOOP2D
 !
 !======================================================================
 !

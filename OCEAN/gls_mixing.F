@@ -915,7 +915,7 @@
 ! Exchange computational margines and/or periodic boundaries:
 !--------- ------------- -------- ------ -------- -----------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        trb(START_2D_ARRAY,0,nnew,itke))
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,

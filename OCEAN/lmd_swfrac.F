@@ -44,7 +44,7 @@
       integer lmd_Jwt
       real cff1, cff2, cff3 ,cff4
 
-      real,parameter,dimension(5)::lmd_mu1=(/0.35,0.6,1.0,1.5,1.4/)
+!     real,parameter,dimension(5)::lmd_mu1=(/0.35,0.6,1.0,1.5,1.4/)
 
   !    lmd_mu1(1)=0.35    !  Define reciprocal of the absorption
   !    lmd_mu1(2)=0.6     !  coefficient for each of two solar
@@ -52,7 +52,7 @@
   !    lmd_mu1(4)=1.5     !  of water type (Ref: Paulson and
   !    lmd_mu1(5)=1.4     !  Simpson, 1977).
 
-      real,parameter,dimension(5)::lmd_mu2=(/23.,20.,17.,14.,7.9/)
+!     real,parameter,dimension(5)::lmd_mu2=(/23.,20.,17.,14.,7.9/)
 
   !    lmd_mu2(1)=23.0
   !    lmd_mu2(2)=20.0
@@ -60,7 +60,7 @@
   !    lmd_mu2(4)=14.0
   !    lmd_mu2(5)=7.9
 
-      real,parameter,dimension(5)::lmd_r1=(/0.58,0.62,0.67,0.77,0.78/)
+!     real,parameter,dimension(5)::lmd_r1=(/0.58,0.62,0.67,0.77,0.78/)
 
   !    lmd_r1(1)=0.58    !  Define fraction of the total radiance 
   !    lmd_r1(2)=0.62    !  for wavelength band 1 as a function of 
@@ -70,8 +70,7 @@
                         !  Set Jerlov water type to assign
       lmd_Jwt=1         !  everywhere; an integer from 1 to 5.
 
-!$acc kernels default(present)
-
+!$acc kernels if(compute_on_device) default(present) async(1)
 !
 !  On first call: initialize (for now) initialize index for Jerlov
 !  water type to 1 (type I). This variable is used in the computation
@@ -143,7 +142,7 @@
       integer lmd_Jwt
       real cff1, cff2, cff3 ,cff4
 
-      real,parameter,dimension(5)::lmd_mu1=(/0.35,0.6,1.0,1.5,1.4/)
+!     real,parameter,dimension(5)::lmd_mu1=(/0.35,0.6,1.0,1.5,1.4/)
 
   !    lmd_mu1(1)=0.35    !  Define reciprocal of the absorption
   !    lmd_mu1(2)=0.6     !  coefficient for each of two solar
@@ -151,7 +150,7 @@
   !    lmd_mu1(4)=1.5     !  of water type (Ref: Paulson and
   !    lmd_mu1(5)=1.4     !  Simpson, 1977).
 
-      real,parameter,dimension(5)::lmd_mu2=(/23.,20.,17.,14.,7.9/)
+!     real,parameter,dimension(5)::lmd_mu2=(/23.,20.,17.,14.,7.9/)
 
   !    lmd_mu2(1)=23.0
   !    lmd_mu2(2)=20.0
@@ -159,7 +158,7 @@
   !    lmd_mu2(4)=14.0
   !    lmd_mu2(5)=7.9
 
-      real,parameter,dimension(5)::lmd_r1=(/0.58,0.62,0.67,0.77,0.78/)
+!     real,parameter,dimension(5)::lmd_r1=(/0.58,0.62,0.67,0.77,0.78/)
 
   !    lmd_r1(1)=0.58    !  Define fraction of the total radiance 
   !    lmd_r1(2)=0.62    !  for wavelength band 1 as a function of 
@@ -201,7 +200,7 @@
 #  define J_EXT_RANGE jmin,jmax
 # endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
 !
 !  On first call: initialize (for now) initialize index for Jerlov

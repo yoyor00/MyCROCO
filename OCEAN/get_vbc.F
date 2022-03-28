@@ -314,7 +314,7 @@
 !
 ! If BULK_FLUX is defined, correction is done in bulk_flux
 !
-!$acc parallel loop default(present)
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,itemp)=stflx(i,j,itemp)+
@@ -337,7 +337,7 @@
 !
 ! Multiply flux by surface salinity.
 !
-!$acc parallel loop default(present)
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,isalt)=stflx(i,j,isalt)*t(i,j,N,nrhs,isalt)
@@ -359,7 +359,7 @@
 !
 ! If BULK_FLUX is defined, correction is done in bulk_flux
 !
-!$acc parallel loop default(present)
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,isalt)=stflx(i,j,isalt)
@@ -391,7 +391,7 @@
 !---------------------------------------------------------------
 !
 #  ifdef WET_DRY
-!$acc parallel loop default(present)
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
 #   ifdef TEMPERATURE
@@ -440,7 +440,7 @@
 ! Multiply flux by bottom salinity.
 !---------------------------------------------------------------
 !
-!$acc parallel loop default(present)
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           btflx(i,j,isalt)=btflx(i,j,isalt)*t(i,j,1,nrhs,isalt)
@@ -476,11 +476,11 @@
 !  Set bottom stress using logarithmic or linear
 !  and/or quadratic formulation.
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 #   define CDRAG wrk
       maxzob = maxval(Zob)
 !$acc end kernels
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       if (maxzob.ne.0.) then
         do j=JstrV-1,Jend     !! for currents
           do i=IstrU-1,Iend
@@ -694,7 +694,7 @@
       ENDIF
 #  endif
 !$acc end kernels
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend, bustr)
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend, bvstr)
 #   ifdef SEDIMENT
@@ -711,7 +711,7 @@
 #endif
 
 #ifdef SOLVE3D
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
 #  ifdef TEMPERATURE

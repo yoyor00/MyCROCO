@@ -154,7 +154,7 @@
 ! verical summation at this stage.
 !
       if (mod(iic-1,ninfo).eq.0) then
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
         do j=Jstr,Jend
 #ifdef SOLVE3D
           do i=Istr,Iend

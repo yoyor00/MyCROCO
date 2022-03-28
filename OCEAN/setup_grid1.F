@@ -36,6 +36,7 @@ C$    integer omp_get_thread_num
 # endif
 !
 #include "compute_extended_bounds.h"
+!$acc kernels if(compute_on_device) default(present)
 !
 !  Set f/mn,at horizontal RHO-points.
 !
@@ -223,7 +224,9 @@ C$    integer omp_get_thread_num
 #undef JR_RANGE
 #undef JV_RANGE
 
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+
+#if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   om_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   on_r)

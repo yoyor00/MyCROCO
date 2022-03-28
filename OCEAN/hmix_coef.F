@@ -304,7 +304,7 @@
       endif
 # endif /* !EW_PERIODIC && !NS_PERIODIC */
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 !      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,visc3d_r)
 #  endif
 !
@@ -320,7 +320,7 @@
         enddo
       enddo
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_p3d_tile(Istr,Iend,Jstr,Jend,visc3d_p)
 #  endif
 
@@ -417,7 +417,7 @@
       endif
 #   endif
 #  endif
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!#  if defined BD_EXCHANGE
 !      call exchange_w3d_tile (istr,iend,jstr,jend, Akv)
 !      call exchange_w3d_tile (istr,iend,jstr,jend,
 !     &                        Akt(START_2D_ARRAY,0,itemp))
@@ -487,7 +487,7 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 
 # if defined GLS_MIXING_3D
 !---------------------------------------------------------------
@@ -596,7 +596,7 @@
       enddo
 # endif /* TS_HADV_RSUP3 */
 !$acc end kernels
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef TS_DIF_SMAGO
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,diff3d_r)
 #  endif

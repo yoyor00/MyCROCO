@@ -102,6 +102,7 @@
 # ifdef M3FAST
 #  include "nbq.h"
 # endif
+#include "openacc.h"
 # ifdef MASKING
 #  define SWITCH *
 # else
@@ -183,7 +184,7 @@
        call check_tab3d(Hz_bak(:,:,:),'Hz_bak in prestep3d','r')
        call check_tab3d(Huon(:,:,:),'Huon in prestep3d','r')
 #endif
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -426,7 +427,7 @@
         enddo
       enddo
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,nstp))
@@ -440,18 +441,18 @@
 #   endif
 #  endif
 # endif
-!$acc loop private(FC,DC,CF)
-      do j=Jstr,Jend
+
+        DOLOOP2D(Istr,Iend,Jstr,Jend)
 # ifdef TRACERS
-
-        do i=Istr,Iend
 # ifndef VADV_ADAPT_IMP 
-           do k=1,N
+        do k=1,N
+          do i=Istr,Iend
              DC(i,k)=1./Hz_half(i,j,k)
-           enddo   
+          enddo
+        enddo
 # endif
+        do i=Istr,Iend
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
-
         enddo
 # endif /* TRACERS */
 
@@ -511,6 +512,7 @@
 # endif          
 !
         enddo   !<-- itrc  !--> discard DC
+        ENDDOLOOP2D
 # endif /* TRACERS */
 !
 !======================================================================
@@ -519,6 +521,11 @@
 !
 !======================================================================
 !
+#undef DC
+#undef FC
+#undef CF
+!$acc loop private(DC)
+      do j=Jstr,Jend
         do i=IstrU,Iend
           DC(i,0)=pm_u(i,j)*pn_u(i,j)
         enddo
@@ -901,7 +908,7 @@
 # if defined TRACERS
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))
@@ -944,7 +951,7 @@
 ! Set PHYSICAL lateral boundary conditions for momentum.
 !======================================================================
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,nnew))
@@ -972,7 +979,7 @@
 ! (needed for OPENMP parallelization)
 !======================================================================
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 
 # ifdef GLS_MIXING
       do k=0,N
@@ -997,12 +1004,13 @@
 !======================================================================
 !
 # ifndef M2FILTER_NONE 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do j=JU_RANGE
         do i=IV_RANGE
           zeta(i,j,knew)=Zt_avg1(i,j)
         enddo
       enddo
+!$acc end kernels
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          zeta(START_2D_ARRAY,knew))
 #  else
@@ -1011,9 +1019,9 @@
           zeta(i,j,knew)=Zt_avg1(i,j)
         enddo
       enddo     
+!$acc end kernels
 #  endif
 # endif
-!$acc end kernels
 # undef IU_RANGE
 # undef JU_RANGE
 # undef IV_RANGE

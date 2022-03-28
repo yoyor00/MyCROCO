@@ -145,6 +145,21 @@
       call MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend,  A,k)
 # endif
 #endif
+#if defined OPENMP && defined OPENACC
+      if (.not.SOUTHERN_EDGE) then
+!$acc update host(A(:,Jstr:Jstr+Npts-1,KSTART:N))
+      endif
+      if (.not.NORTHERN_EDGE) then
+!$acc update host(A(:,Jend-Npts+1:Jend,KSTART:N))
+      endif
+C$OMP BARRIER
+      if (.not.SOUTHERN_EDGE) then
+!$acc update device(A(:,Jstr-Npts:Jstr-1,KSTART:N))
+      endif
+      if (.not.NORTHERN_EDGE) then
+!$acc update device(A(:,Jend+1:Jend+Npts,KSTART:N))
+      endif
+#endif
       return
       end
 

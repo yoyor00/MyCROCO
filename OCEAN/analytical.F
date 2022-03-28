@@ -120,7 +120,7 @@
 !
 #  include "compute_auxiliary_bounds.h"
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 #  ifdef TEMPERATURE       
       if (itrc.eq.itemp) then
 !
@@ -1283,7 +1283,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       do itrc=1,NT
 #  ifndef ANA_TCLIMA
         if (.not.got_tclm(itrc)) then
@@ -1399,7 +1399,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  ubclm)
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,  vbclm)
 #  endif
@@ -1420,7 +1420,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  uclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vclm)
 #  endif
@@ -1530,7 +1530,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vnbqclm)
 #  ifdef NBQ
@@ -1899,7 +1899,7 @@ C$    integer  trd, omp_get_thread_num
 
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       do ised=1,NST
         do ilay=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,

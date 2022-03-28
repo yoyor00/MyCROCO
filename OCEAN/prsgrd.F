@@ -98,6 +98,7 @@ c********************************************************************
 # ifdef SED_TOY
 #  include "forces.h"
 # endif
+#include "openacc.h"
 !
 #ifdef MASKING
 # define SWITCH *
@@ -155,9 +156,9 @@ c********************************************************************
       GRho=g/rho0
       HalfGRho=0.5*GRho
 
-!$acc kernels default(present)
-!$acc loop private(dZ,dR)
-      do j=JstrV-1,Jend
+!$acc kernels if(compute_on_device) default(present)
+      !do j=JstrV-1,Jend
+      DOLOOP2D(IstrU-1,Iend,JstrV-1,Jend)
         do k=1,N-1
           do i=IstrU-1,Iend
             dZ(i,k)=z_r(i,j,k+1)-z_r(i,j,k)
@@ -218,7 +219,7 @@ c********************************************************************
      &                                                            ))
           enddo
         enddo
-      enddo   !<-- j
+        ENDDOLOOP2D   !<-- j
 
 !
 ! Compute XI-component of pressure gradient term:

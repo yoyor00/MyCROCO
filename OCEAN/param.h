@@ -221,6 +221,11 @@
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
+#ifdef OPENACC
+      integer my_acc_device
+      logical compute_on_device
+      common/comm_my_device/my_acc_device,compute_on_device
+#endif
 #elif defined OPENMP
       parameter (NPP=4)
 # ifdef AUTOTILING
@@ -235,6 +240,10 @@
 # else
       parameter (NSUB_X=1, NSUB_E=NPP)
 # endif
+#ifdef OPENACC
+      integer,parameter :: my_acc_device = 0
+      logical,parameter :: compute_on_device = .true.
+#endif
 #endif
 
 !

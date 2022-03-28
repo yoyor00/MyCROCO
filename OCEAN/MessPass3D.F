@@ -26,6 +26,7 @@
 # include "scalars.h"
 # include "mpi_cpl.h"
       include 'mpif.h'
+#include "mpi_buffers.h"
 !
 ! Nb of boundary points involved in communication
 !
@@ -41,27 +42,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j,k, isize,jsize,ksize,
      &        req(8), status(MPI_STATUS_SIZE,8), ierr
       integer iter, mdii, mdjj
-      integer sub_X,size_X, sub_E,size_E, size_Z
 
 # ifndef AGRIF
-      parameter (size_Z=Npts*Npts*(N+1),
-     &     sub_X=(Lm+NSUB_X-1)/NSUB_X, size_X=(N+1)*Npts*(sub_X+2*Npts),
-     &     sub_E=(Mm+NSUB_E-1)/NSUB_E, size_E=(N+1)*Npts*(sub_E+2*Npts))
-
-      real buf_snd4(size_Z),  ibuf_sndN(size_X),  buf_snd2(size_Z),
-     &     buf_rev4(size_Z),  ibuf_revN(size_X),  buf_rev2(size_Z),
-     &    jbuf_sndW(size_E),                      jbuf_sndE(size_E),
-     &    jbuf_revW(size_E),                      jbuf_revE(size_E),
-     &     buf_snd1(size_Z),  ibuf_sndS(size_X),  buf_snd3(size_Z),
-     &     buf_rev1(size_Z),  ibuf_revS(size_X),  buf_rev3(size_Z)
 # else
+      NEEDREPAIR
       real, dimension(:), allocatable ::
-     &     buf_snd4,  ibuf_sndN,  buf_snd2,
-     &     buf_rev4,  ibuf_revN,  buf_rev2,
-     &    jbuf_sndW,             jbuf_sndE,
-     &    jbuf_revW,             jbuf_revE,
-     &     buf_snd1,  ibuf_sndS,  buf_snd3,
-     &     buf_rev1,  ibuf_revS,  buf_rev3
+     &     buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
+     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
+     &    jbuf_sndW_3D,             jbuf_sndE_3D,
+     &    jbuf_revW_3D,             jbuf_revE_3D,
+     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
+     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D
 # endif
 !
 # include "compute_message_bounds.h"
@@ -73,12 +64,12 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       sub_E=(Mm+NSUB_E-1)/NSUB_E
       size_E=(N+1)*Npts*(sub_E+2*Npts)
 
-      Allocate(buf_snd4(size_Z),  ibuf_sndN(size_X),  buf_snd2(size_Z),
-     &         buf_rev4(size_Z),  ibuf_revN(size_X),  buf_rev2(size_Z),
-     &        jbuf_sndW(size_E),                     jbuf_sndE(size_E),
-     &        jbuf_revW(size_E),                     jbuf_revE(size_E),
-     &         buf_snd1(size_Z),  ibuf_sndS(size_X),  buf_snd3(size_Z),
-     &         buf_rev1(size_Z),  ibuf_revS(size_X),  buf_rev3(size_Z))
+      Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  buf_snd2_3D(size_Z),
+     &         buf_rev4_3D(size_Z),  ibuf_revN_3D(size_X),  buf_rev2_3D(size_Z),
+     &        jbuf_sndW_3D(size_E),                     jbuf_sndE_3D(size_E),
+     &        jbuf_revW_3D(size_E),                     jbuf_revE_3D(size_E),
+     &         buf_snd1_3D(size_Z),  ibuf_sndS_3D(size_X),  buf_snd3_3D(size_Z),
+     &         buf_rev1_3D(size_Z),  ibuf_revS_3D(size_X),  buf_rev3_3D(size_Z))
 # endif
 !
       ksize=Npts*Npts*nmax               ! message sizes for
@@ -102,65 +93,79 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 ! Prepare to receive and send: sides....
         if (mdii.eq.0) then
           if ((WEST_INTER2)) then
+!$acc parallel loop if(compute_on_device) collapse(3)
             do k=1,nmax
               do j=jmin,jmax
                 do ipts=1,Npts
-                  jbuf_sndW(k+nmax*(j-jmin+(ipts-1)*jshft))=A(ipts,j,k)
+                  jbuf_sndW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))=A(ipts,j,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (jbuf_revW, jsize, MPI_DOUBLE_PRECISION,
+!$acc host_data if(compute_on_device)
+!$acc&   use_device(jbuf_revW_3D,jbuf_sndW_3D)
+            call MPI_Irecv (jbuf_revW_3D, jsize, MPI_DOUBLE_PRECISION,
      &                         p_W, 2, MPI_COMM_WORLD, req(1), ierr)
-            call MPI_Send  (jbuf_sndW, jsize, MPI_DOUBLE_PRECISION,
+            call MPI_Send  (jbuf_sndW_3D, jsize, MPI_DOUBLE_PRECISION,
      &                         p_W, 1, MPI_COMM_WORLD,         ierr)
+!$acc end host_data
           endif
         else
           if (EAST_INTER2) then
+!$acc parallel loop if(compute_on_device) collapse(3)
             do k=1,nmax
               do j=jmin,jmax
                 do ipts=1,Npts
-                  jbuf_sndE(k+nmax*(j-jmin+(ipts-1)*jshft))=
+                  jbuf_sndE_3D(k+nmax*(j-jmin+(ipts-1)*jshft))=
      &                                       A(Lmmpi-Npts+ipts,j,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (jbuf_revE, jsize, MPI_DOUBLE_PRECISION,
+!$acc host_data if(compute_on_device)
+!$acc&   use_device(jbuf_revE_3D,jbuf_sndE_3D)
+            call MPI_Irecv (jbuf_revE_3D, jsize, MPI_DOUBLE_PRECISION,
      &                        p_E, 1, MPI_COMM_WORLD, req(2), ierr)
-            call MPI_Send  (jbuf_sndE, jsize, MPI_DOUBLE_PRECISION,
+            call MPI_Send  (jbuf_sndE_3D, jsize, MPI_DOUBLE_PRECISION,
      &                        p_E, 2, MPI_COMM_WORLD,         ierr)
+!$acc end host_data
           endif
         endif
 
         if (mdjj.eq.0) then
           if (SOUTH_INTER2) then
-            ibuf_snds = 0.
+!$acc parallel loop if(compute_on_device) collapse(3)
             do k=1,nmax
-              do i=imin,imax
-                do jpts=1,Npts
-                  ibuf_sndS(k+nmax*(i-imin+(jpts-1)*ishft))=A(i,jpts,k)
+              do jpts=1,Npts
+                do i=imin,imax
+                  ibuf_sndS_3D(k+nmax*(i-imin+(jpts-1)*ishft))=A(i,jpts,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (ibuf_revS, isize, MPI_DOUBLE_PRECISION,
+!$acc host_data if(compute_on_device)
+!$acc&   use_device(ibuf_revS_3D,ibuf_sndS_3D)
+            call MPI_Irecv (ibuf_revS_3D, isize, MPI_DOUBLE_PRECISION,
      &                         p_S, 4, MPI_COMM_WORLD, req(3), ierr)
-            call MPI_Send  (ibuf_sndS, isize, MPI_DOUBLE_PRECISION,
+            call MPI_Send  (ibuf_sndS_3D, isize, MPI_DOUBLE_PRECISION,
      &                         p_S, 3, MPI_COMM_WORLD,         ierr)
+!$acc end host_data
           endif
         else
           if (NORTH_INTER2) then
-            ibuf_sndn = 0.
+!$acc parallel loop if(compute_on_device) collapse(3)
             do k=1,nmax
-              do i=imin,imax
-                do jpts=1,Npts
-                  ibuf_sndN(k+nmax*(i-imin+(jpts-1)*ishft))=
+              do jpts=1,Npts
+                do i=imin,imax
+                  ibuf_sndN_3D(k+nmax*(i-imin+(jpts-1)*ishft))=
      &                                         A(i,Mmmpi-Npts+jpts,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (ibuf_revN, isize, MPI_DOUBLE_PRECISION,
+!$acc host_data if(compute_on_device)
+!$acc&   use_device(ibuf_revN_3D,ibuf_sndN_3D)
+            call MPI_Irecv (ibuf_revN_3D, isize, MPI_DOUBLE_PRECISION,
      &                         p_N, 3, MPI_COMM_WORLD, req(4), ierr)
-            call MPI_Send  (ibuf_sndN, isize, MPI_DOUBLE_PRECISION,
+            call MPI_Send  (ibuf_sndN_3D, isize, MPI_DOUBLE_PRECISION,
      &                         p_N, 4, MPI_COMM_WORLD,         ierr)
+!$acc end host_data
           endif
         endif
 !
@@ -168,64 +173,80 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 !
         if (mdii.eq.0) then
           if (CORNER_SW) then
+!$acc parallel loop if(compute_on_device) collapse(3)
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
-                  buf_snd1(k+nmax*(ipts-1+Npts*(jpts-1)))=A(ipts,jpts,k)
+                  buf_snd1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=A(ipts,jpts,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (buf_rev1, ksize, MPI_DOUBLE_PRECISION, p_SW,
+!$acc host_data if(compute_on_device)
+!$acc&   use_device(buf_rev1_3D,buf_snd1_3D)
+            call MPI_Irecv (buf_rev1_3D, ksize, MPI_DOUBLE_PRECISION, p_SW,
      &                                6, MPI_COMM_WORLD, req(5),ierr)
-            call MPI_Send  (buf_snd1, ksize, MPI_DOUBLE_PRECISION, p_SW,
+            call MPI_Send  (buf_snd1_3D, ksize, MPI_DOUBLE_PRECISION, p_SW,
      &                                5, MPI_COMM_WORLD,        ierr)
+!$acc end host_data
           endif
         else
           if (CORNER_NE) then
+!$acc parallel loop if(compute_on_device) collapse(3)
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
-                  buf_snd2(k+nmax*(ipts-1+Npts*(jpts-1)))=
+                  buf_snd2_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=
      &                            A(Lmmpi+ipts-Npts,Mmmpi+jpts-Npts,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (buf_rev2, ksize, MPI_DOUBLE_PRECISION, p_NE,
+!$acc host_data if(compute_on_device)
+!$acc&   use_device(buf_rev2_3D,buf_snd2_3D)
+            call MPI_Irecv (buf_rev2_3D, ksize, MPI_DOUBLE_PRECISION, p_NE,
      &                                  5, MPI_COMM_WORLD, req(6),ierr)
-            call MPI_Send  (buf_snd2, ksize, MPI_DOUBLE_PRECISION, p_NE,
+            call MPI_Send  (buf_snd2_3D, ksize, MPI_DOUBLE_PRECISION, p_NE,
      &                                  6, MPI_COMM_WORLD,        ierr)
+!$acc end host_data
           endif
         endif
 
         if (mdii.eq.1) then
           if (CORNER_SE) then
+!$acc parallel loop if(compute_on_device) collapse(3)
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
-                  buf_snd3(k+nmax*(ipts-1+Npts*(jpts-1)))=
+                  buf_snd3_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=
      &                                A(Lmmpi+ipts-Npts,jpts,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (buf_rev3, ksize, MPI_DOUBLE_PRECISION, p_SE,
+!$acc host_data if(compute_on_device)
+!$acc&   use_device(buf_rev3_3D,buf_snd3_3D)
+            call MPI_Irecv (buf_rev3_3D, ksize, MPI_DOUBLE_PRECISION, p_SE,
      &                                8, MPI_COMM_WORLD, req(7),ierr)
-            call MPI_Send  (buf_snd3, ksize, MPI_DOUBLE_PRECISION, p_SE,
+            call MPI_Send  (buf_snd3_3D, ksize, MPI_DOUBLE_PRECISION, p_SE,
      &                                7, MPI_COMM_WORLD,        ierr)
+!$acc end host_data
           endif
         else
           if (CORNER_NW) then
+!$acc parallel loop if(compute_on_device) collapse(3)
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
-                  buf_snd4(k+nmax*(ipts-1+Npts*(jpts-1)))=
+                  buf_snd4_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=
      &                                A(ipts,Mmmpi+jpts-Npts,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (buf_rev4, ksize, MPI_DOUBLE_PRECISION, p_NW,
+!$acc host_data if(compute_on_device)
+!$acc&   use_device(buf_rev4_3D,buf_snd4_3D)
+            call MPI_Irecv (buf_rev4_3D, ksize, MPI_DOUBLE_PRECISION, p_NW,
      &                                7, MPI_COMM_WORLD, req(8),ierr)
-            call MPI_Send  (buf_snd4, ksize, MPI_DOUBLE_PRECISION, p_NW,
+            call MPI_Send  (buf_snd4_3D, ksize, MPI_DOUBLE_PRECISION, p_NW,
      &                                8, MPI_COMM_WORLD,        ierr)
+!$acc end host_data
           endif
         endif
       enddo   !<-- iter
@@ -235,15 +256,20 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 !
       if (WEST_INTER2) then
         call MPI_Wait (req(1),status(1,1),ierr)
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
-             A(ipts-Npts,j,k)=jbuf_revW(k+nmax*(j-jmin+(ipts-1)*jshft))
+             A(ipts-Npts,j,k)=jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
             enddo
           enddo
         enddo
       endif
       if (WEST_INTER .and. .not. WEST_INTER2) then
+#ifdef OPENACC
+        print *,'NOT READY FOR OPENACC'
+        stop
+#endif
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
@@ -255,11 +281,12 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
       if (EAST_INTER2) then
         call MPI_Wait (req(2),status(1,2),ierr)
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
               A(Lmmpi+ipts,j,k)=
-     &                         jbuf_revE(k+nmax*(j-jmin+(ipts-1)*jshft))
+     &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
             enddo
           enddo
         enddo
@@ -277,10 +304,11 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
       if (SOUTH_INTER2) then
         call MPI_Wait (req(3),status(1,3),ierr)
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
-          do i=imin,imax
-            do jpts=1,Npts
-              A(i,jpts-Npts,k)=ibuf_revS(k+nmax*(i-imin+(jpts-1)*ishft))
+          do jpts=1,Npts
+            do i=imin,imax
+              A(i,jpts-Npts,k)=ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)*ishft))
             enddo
           enddo
         enddo
@@ -297,11 +325,12 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
       if (NORTH_INTER2) then
         call MPI_Wait (req(4),status(1,4),ierr)
+!$acc parallel loop if(compute_on_device) collapse(3)
         do k=1,nmax
-          do i=imin,imax
-            do jpts=1,Npts
+          do jpts=1,Npts
+            do i=imin,imax
               A(i,Mmmpi+jpts,k)=
-     &                         ibuf_revN(k+nmax*(i-imin+(jpts-1)*ishft))
+     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft))
             enddo
           enddo
         enddo
@@ -320,17 +349,22 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 !
       if (CORNER_SW) then
         call MPI_Wait (req(5),status(1,5),ierr)
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
               A(ipts-Npts,jpts-Npts,k)=
-     &                           buf_rev1(k+nmax*(ipts-1+Npts*(jpts-1)))
+     &                           buf_rev1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
             enddo
           enddo
         enddo
       endif
       if (.not. CORNER_SW  .and.
      &   SOUTH_INTER .and.  WEST_INTER ) then
+#ifdef OPENACC
+        print *,'NOT READY FOR OPENACC'
+        stop
+#endif
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -343,11 +377,12 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
       if (CORNER_NE) then
         call MPI_Wait (req(6),status(1,6),ierr)
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
               A(Lmmpi+ipts,Mmmpi+jpts,k)=
-     &                           buf_rev2(k+nmax*(ipts-1+Npts*(jpts-1)))
+     &                           buf_rev2_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
             enddo
           enddo
         enddo
@@ -367,11 +402,12 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      
       if (CORNER_SE) then
         call MPI_Wait (req(7),status(1,7),ierr)
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
               A(Lmmpi+ipts,jpts-Npts,k)=
-     &                           buf_rev3(k+nmax*(ipts-1+Npts*(jpts-1)))
+     &                           buf_rev3_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
             enddo
           enddo
         enddo
@@ -391,11 +427,12 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
       if (CORNER_NW) then
         call MPI_Wait (req(8),status(1,8),ierr)
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
               A(ipts-Npts,Mmmpi+jpts,k)=
-     &                           buf_rev4(k+nmax*(ipts-1+Npts*(jpts-1)))
+     &                           buf_rev4_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
             enddo
           enddo
         enddo
@@ -412,12 +449,12 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
        endif 
 
 # if defined AGRIF
-        DeAllocate(buf_snd4,  ibuf_sndN,  buf_snd2,
-     &     buf_rev4,  ibuf_revN,  buf_rev2,
-     &    jbuf_sndW,                      jbuf_sndE,
-     &    jbuf_revW,                      jbuf_revE,
-     &     buf_snd1,  ibuf_sndS,  buf_snd3,
-     &     buf_rev1,  ibuf_revS,  buf_rev3)
+        DeAllocate(buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
+     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
+     &    jbuf_sndW_3D,                      jbuf_sndE_3D,
+     &    jbuf_revW_3D,                      jbuf_revE_3D,
+     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
+     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D)
 # endif
 
       return

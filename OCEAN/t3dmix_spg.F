@@ -184,6 +184,7 @@
 # ifdef AGRIF
 #  include "zoom.h"
 # endif
+#include "openacc.h"
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -240,7 +241,7 @@
 
    
    
-!$acc kernels default(present) 
+!$acc kernels if(compute_on_device) default(present) 
 # ifdef TS_MIX_S
 !==================================================================
 !
@@ -546,8 +547,7 @@
 !========================================================
 !
 #   define FC FFC
-!$acc loop private(CD,FFC,DC,CF)
-      do j=jstr,jend 
+      DOLOOP2D(Istr,Iend,Jstr,Jend)
 #   ifdef SALINITY
         indx=min(itrc,isalt)
 #   else
@@ -636,7 +636,7 @@
           enddo
 #   endif /* DIAGNOSTICS_TS */
 
-       enddo ! j loop
+          ENDDOLOOP2D ! j loop
 #  endif /* TS_SPONGE_IMP */
 
 #  undef MIN
@@ -832,7 +832,7 @@
 ! Data exchange at the boundaries or interfaces
 !==========================================================
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))

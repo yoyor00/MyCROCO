@@ -82,7 +82,7 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
       tau_out=dt*tauM_out
 # endif
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 # ifndef NS_COM_PERIODIC
 !
 !====================================================================

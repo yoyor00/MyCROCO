@@ -231,9 +231,9 @@
 !
 #ifdef M3FAST
 # define FIRST_FAST_STEP iif.eq.1
-# define LAST_FAST_STEP iif.eq.nfast
 # define NOT_LAST_FAST_STEP iif.lt.nfast+1
 #endif
+# define LAST_FAST_STEP iif.eq.nfast
 
 /* Switch ON/OFF double precision for real type variables (since this
  is mostly controlled by mpc and/or compuler options, this CPP-switch

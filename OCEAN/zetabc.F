@@ -83,7 +83,7 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,15+9*NWEIGHT))
 #endif
 ! 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #ifndef EW_COM_PERIODIC
 !
 !====================================================================

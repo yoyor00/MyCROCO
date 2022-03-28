@@ -80,7 +80,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
       tau_out=dt*tauT_out
 # endif
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -106,7 +106,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #  elif defined OBC_COM_WEST && defined OBC_COM_TORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
-!$acc loop private(grad)
         do k=1,N
 !$acc loop vector
           do j=Jstr,Jend+1
@@ -222,7 +221,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #  elif defined OBC_COM_EAST && defined OBC_COM_TORLANSKI
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
-!$acc loop private(grad)
         do k=1,N
 !$acc loop vector
           do j=Jstr,Jend+1
@@ -337,7 +335,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #  elif defined OBC_COM_SOUTH && defined OBC_COM_TORLANSKI
 !                                          Southern edge radiation BC
 !                                          ======== ==== ========= ==
-!$acc loop private(grad)
         do k=1,N
           do i=Istr,Iend+1
             grad(i,Jstr  )=( t(i  ,Jstr  ,k,nstp,itrc)
@@ -448,7 +445,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #  elif defined OBC_COM_NORTH && defined OBC_COM_TORLANSKI
 !                                          Northern edge radiation BC
 !                                          ======== ==== ========= ==
-!$acc loop private(grad)
         do k=1,N
           do i=Istr,Iend+1
             grad(i,Jend  )=( t(i  ,Jend  ,k,nstp,itrc)

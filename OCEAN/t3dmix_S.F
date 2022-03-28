@@ -137,7 +137,7 @@
       jmax=jend+1
 #endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
 
 !++=============================================================
@@ -565,7 +565,7 @@
 !$acc end kernels
 
 !------------------------------------------------------------------
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))

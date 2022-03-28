@@ -98,7 +98,7 @@
       jmax=Jend
 # endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !
 !   Compute "omega" vertical velocity by means of integration of 
 ! mass divergence of mass fluxes from bottom up. In this computation,
@@ -147,7 +147,6 @@ c**    Wrk(i,k)=0.!(uncomment to test the second part)
 ! motions along S=const surfaces by multiplying horizontal
 ! velocity components by slops S-coordinate surfaces:
 !
-!$acc loop private(Wxi,Weta) gang vector(1)
       do k=1,N
         do j=jmin,jmax
           do i=imin,imax+1

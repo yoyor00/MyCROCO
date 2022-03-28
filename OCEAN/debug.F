@@ -13,6 +13,9 @@
 #if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 
           module debug
+#if defined OPENACC
+          use exchange_device_host
+#endif
 !$AGRIF_DO_NOT_TREAT
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
@@ -179,7 +182,7 @@
       if (present(ondevice)) ondevice_l = ondevice
       if (ondevice_l) then
         temp_host=tab
-!$acc update host(tab)
+        call update_host(tab)
       endif
 #endif
 # if defined RVTK_DEBUG_PERFRST      
@@ -328,6 +331,7 @@
       logical mystop     
       real :: max_abs
       integer :: imax,jmax,kmax
+      real :: diff
 
 #ifdef OPENACC
       ondevice_l = .false.
@@ -401,7 +405,7 @@
 #ifdef OPENACC
       if (ondevice_l) then
         temp_host=tab
-!$acc update host(tab)
+        call update_host(tab)
       endif
 #endif
 
@@ -428,18 +432,26 @@
                 do i=max(i1,iseq1-iminmpi+1),min(i2,iseq2-iminmpi+1)
                     i0 = i+iminmpi-1
                      if (non_strict) then
-                      if (abs(tabread(i0,j0,k)-tab(i,j,k))>max_abs) then
+                        if (abs(tabread(i0,j0,k))>1.D-8) then
+                          diff =
+     &             abs(tabread(i0,j0,k)-tab(i,j,k))/abs(tabread(i0,j0,k))
+                        else
+                          diff = abs(tabread(i0,j0,k)-tab(i,j,k))
+                        endif
+                      if (diff>max_abs) then
                               imax=i;jmax=j;kmax=k
-                              max_abs=abs(tabread(i0,j0,k)-tab(i,j,k))
+                              max_abs=diff
                       endif
+                     else
+                        diff=abs(tabread(i0,j0,k)-tab(i,j,k))
                      endif
-                     if (abs(tabread(i0,j0,k)-tab(i,j,k))>tolerance)
+                     if (diff>tolerance)
      &                              then
                        write(*,'(A,A,2x,6i4,3e20.12)')'BUGBIN = ',
      &                 comment,
      &                 mynode,i0,j0,i,j,k,
      &                 tabread(i0,j0,k),tab(i,j,k),
-     &                 abs(tabread(i0,j0,k)-tab(i,j,k))
+     &                 diff
 !                      print *,'iif = ',iif,iic
 #  ifdef AGRIF
                        print *,'GRID# ',Agrif_CFixed()

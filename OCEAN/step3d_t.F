@@ -89,6 +89,7 @@
 #  ifdef TS_VADV_FCT
       real tmax,tmin,Ppos,Qpos,Pneg,Qneg,lmdmax
 #  endif
+#include "openacc.h"
       parameter (epsil=1.E-16)
 !
 #  ifdef MASKING
@@ -152,7 +153,7 @@
 !
 !======================================================================
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !$acc loop seq
       do itrc=1,NT
         do k=1,N
@@ -378,20 +379,21 @@
 #   define wrk1 FX
 #   define wrk2 FE
       do k=1,N-1
-!$acc parallel loop default(present)
+!$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
             wrk1(i,j)=z_w(i,j,k)-z_w(i,j,N)
           enddo
         enddo
         call lmd_swfrac_tile (Istr,Iend,Jstr,Jend,1.,wrk1,wrk2)
-!$acc parallel loop default(present)
+!$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
             swdk(i,j,k)=wrk2(i,j)
           enddo
         enddo
       enddo
+!$acc wait
 #   undef wrk1
 #   undef wrk2
 #  endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */
@@ -403,9 +405,8 @@
 !
 !======================================================================
 !
-!$acc kernels default(present)
-!$acc loop private(FC,CF,DC)
-      do j=Jstr,Jend
+!$acc kernels if(compute_on_device) default(present)
+      DOLOOP2D(Istr,Iend,Jstr,Jend)
         do itrc=1,NT
 !
 !----------------------------------------------------------
@@ -416,7 +417,9 @@
 #  include "compute_vert_tracer_fluxes.h"
 
 #  ifdef TS_HADV_TEST
-      FC(Istr:Iend,0:N) = 0.0
+        do i=Istr,Iend
+          FC(i,0:N)=0.
+        enddo
 #  endif
 
 !----------------------------------------------------------
@@ -563,7 +566,7 @@
           if (itrc .le. 1) then                  ! active tracers
 #   endif
             do k=1,N
-              do i=istr,iend
+              do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
               enddo
             enddo
@@ -600,7 +603,7 @@
 #     define TS_MIX_IMP
 #    else
             do k=1,N
-              do i=istr,iend
+              do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
               enddo
             enddo
@@ -672,7 +675,7 @@
         enddo
 #  endif
 
-      enddo      ! <-- j
+      ENDDOLOOP2D ! <-- j
 
 !$acc end kernels
 
@@ -694,7 +697,7 @@
       call biology_tile (Istr,Iend,Jstr,Jend)
 #  endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !
 !======================================================================
 !  Compute inverse vertical Rho gradients for use in t3dmix
@@ -767,7 +770,8 @@
       enddo
 #   endif /* TS_MIX_ISO */
 !
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+#   if defined BD_EXCHANGE
       call exchange_w3d_tile (  istr,iend,jstr,jend,
      &                          idRz(START_2D_ARRAY,0)  )
 #   endif
@@ -775,6 +779,7 @@
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 !
 ! 
+!$acc kernels if(compute_on_device) default(present)
 !$acc loop seq
       do itrc=1,NT   !<-- itrc
 !
@@ -1018,12 +1023,17 @@
 #   undef I_RANGE
 #   undef J_RANGE
 #  endif /* MASKING */
+
+      enddo   ! <-- itrc
+!$acc end kernels
+
+      do itrc=1,NT
 !
 !----------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.
 !----------------------------------------------------------
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
@@ -1032,9 +1042,8 @@
      &                          t(START_2D_ARRAY,1,nnew,itrc))
 #   endif
 #  endif
+      enddo
 
-      enddo   ! <-- itrc
-!$acc end kernels
       return
       end
 # endif  /* TRACERS */      

@@ -16,7 +16,11 @@
 !                               !          theta_s, theta_b 
 ! Define S-coordinate system.   !
 !                               ! Output:  hc, sc_w(0:N), Cs_w(0:N)
-      implicit none             !              sc_r(1:N), Cs_r(1:N)
+                                !              sc_r(1:N), Cs_r(1:N)
+#ifdef OPENACC
+      use exchange_device_host
+#endif
+      implicit none
 # include "param.h"
 # include "scalars.h"
       integer k
@@ -116,6 +120,12 @@
      &                                               inc_faststep
 # endif /* BSTRESS_FAST */
 
+#ifdef OPENACC
+      call update_device(sc_w)
+      call update_device(sc_r)
+      call update_device(Cs_w)
+      call update_device(Cs_r)
+#endif
       return
       end
 !======================================================================

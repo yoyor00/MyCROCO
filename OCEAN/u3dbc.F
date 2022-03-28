@@ -83,7 +83,7 @@
       tau_out=dt*tauM_out
 # endif
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================

@@ -252,7 +252,7 @@ C$    trd=omp_get_thread_num()
 # define JU_EXT_RANGE max(Jstr-2,0),min(Jend+2,Mm+1)
 #endif
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
       do j=jmin,jmax
         do i=imin,imax
@@ -338,16 +338,18 @@ C$    trd=omp_get_thread_num()
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 #endif
 
-!$acc end kernels
 #ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
+!$acc end kernels
+!$acc wait
        call check_tab2d(zeta(:,:,kstp),'zeta step2d #1','r',
      &   ondevice=.TRUE.)
        call check_tab2d(ubar(:,:,kstp),'ubar step2d #1','u',
      &   ondevice=.TRUE.)
        call check_tab2d(vbar(:,:,kstp),'vbar step2d #1','v',
      &   ondevice=.TRUE.)
+!$acc kernels if(compute_on_device) default(present) async(1)
 C$OMP END MASTER
 #endif
 !
@@ -404,7 +406,6 @@ C$OMP END MASTER
 #define rzeta2  VFe
 #define rzetaSA VFx
 
-!$acc kernels default(present)
 !
 !-----------------------------------------------------------------------
 ! Computes zeta(n+1)
@@ -523,7 +524,7 @@ C$OMP END MASTER
         enddo
       endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   Zt_avg3(START_2D_ARRAY,0))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -570,6 +571,7 @@ C$OMP BARRIER
 #ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
+!$acc wait
        call check_tab2d(zeta(:,:,knew),'zeta step2d #2','rint',
      &   ondevice=.TRUE.)
 C$OMP END MASTER
@@ -594,7 +596,7 @@ C$OMP END MASTER
 #ifdef SOLVE3D
       cff1=weight(1,iif)
       cff2=weight(2,iif)
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       if (FIRST_2D_STEP) then
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1254,7 +1256,7 @@ C$OMP END MASTER
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1=1.5+cff3                  ! maximum stability (with
         endif                            ! special care for startup)
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=rufrc(i,j)-rubar(i,j)
@@ -1354,7 +1356,7 @@ C$OMP END MASTER
 !
 
 #define Dstp DUon
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           Dstp(i,j)=zeta(i,j,kstp)+h(i,j)
@@ -1582,7 +1584,7 @@ C$OMP END MASTER
 ! boundaries.
 !-----------------------------------------------------------------------
 !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #ifdef SOLVE3D
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
@@ -1610,8 +1612,8 @@ C$OMP END MASTER
 # endif
 !$acc end kernels
 
-      cff1=0.5*weight(1,iif)
-!$acc kernels default(present)
+      cff1=0.5*weight(1,iif)  
+!$acc kernels if(compute_on_device) default(present) async(1)
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
@@ -1738,17 +1740,18 @@ C$OMP END MASTER
 #ifndef SOLVE3D
       call diag_tile (Istr,Iend,Jstr,Jend, UFx,UFe)
 #endif
+!$acc end kernels
 !
 !-----------------------------------------------------------------------
 !  Exchange boundary information.
 !-----------------------------------------------------------------------
 !
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew))
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_u2d_1pts_tile (Istr,Iend,Jstr,Jend,
      &                   ubar(START_2D_ARRAY,knew))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_v2d_1pts_tile (Istr,Iend,Jstr,Jend,
      &                   vbar(START_2D_ARRAY,knew))
 # if defined MRL_WCI && defined WET_DRY
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -1763,6 +1766,7 @@ C$OMP END MASTER
 !  Apply conservation requirements for nesting
 !-----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present) async(1)
 #ifdef AGRIF
       if (.NOT.Agrif_Root()) THEN
         do j=Jstr-1,Jend+1
@@ -1783,7 +1787,7 @@ C$OMP END MASTER
           enddo
         enddo
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        Zt_avg3(START_2D_ARRAY,iif))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -1833,12 +1837,17 @@ C$OMP END MASTER
 !
       VMAXL=100.
       VMAX=0.
-
-      cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
-      cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
-      VMAX=max(cff1,cff2)
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          VMAX=max(VMAX,abs(ubar(i,j,knew)))
+        enddo
+      enddo
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          VMAX=max(VMAX,abs(vbar(i,j,knew)))
+        enddo
+      enddo
 !$acc end kernels
-
 !
 !-----------------------------------------------------------------------
 !  Debugging ubar,vbar
@@ -1855,6 +1864,8 @@ C$OMP END MASTER
 #endif
 
       IF (VMAX.GT.VMAXL) THEN
+!$acc update if(compute_on_device) host(ubar(Istr:Iend,Jstr:Jend,knew))
+!$acc update if(compute_on_device) host(vbar(Istr:Iend,Jstr:Jend,knew))
         cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
         cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
         IF (cff1>cff2) THEN
@@ -1907,6 +1918,9 @@ C$OMP END MASTER
 #endif
       ENDIF
 
+      if (LAST_FAST_STEP) then
+!$acc wait
+      endif
       return
       end
 #else

@@ -188,6 +188,7 @@
 #ifdef AGRIF
 # include "zoom.h"
 #endif
+#include "openacc.h"
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -245,7 +246,7 @@
 ! First compute diffusivity coefficient according to model
 ! configuration
 !=============================================================
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=jmin,jmax
           do i=imin,imax+1
@@ -876,17 +877,16 @@
       enddo   ! --> k
 
 # ifdef TS_MIX_IMP
-!$acc loop private(CD,FFC,DC,CF)
-      do j=jstr,jend 
+       DOLOOP2D(Istr,Iend,Jstr,Jend)
 #  ifdef VADV_ADAPT_IMP
-       do i=Istr,Iend
+        do i=Istr,Iend
             DC(i,0)=dt*pn(i,j)*pm(i,j)
-       enddo
+        enddo
 #  endif
 # define FC FFC
 # include "t3dmix_tridiagonal.h"
 # undef FC   
-      enddo
+      ENDDOLOOP2D
 # endif
 
 # undef MIN
@@ -1037,7 +1037,7 @@
 ! Data exchange at the boundaries or interfaces
 !==========================================================
 !
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#if defined BD_EXCHANGE
 # ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))

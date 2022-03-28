@@ -211,7 +211,7 @@
 !  tensor (m5/s2) in XI- and ETA-directions.
 !
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend

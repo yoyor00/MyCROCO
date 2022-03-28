@@ -849,7 +849,7 @@ C$OMP BARRIER
 !
 #  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
 C$OMP BARRIER
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   if defined BD_EXCHANGE
         if (IstrU.le.Iend) then
           call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,FX_r)
         endif
@@ -1268,7 +1268,7 @@ C$OMP BARRIER
       endif
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 taucb(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -1386,7 +1386,7 @@ C$OMP BARRIER
       endif
 #  endif
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do ised=1,NST
         do k=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -1695,7 +1695,7 @@ C$OMP BARRIER
 !
 !  Exchange for output purpose
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do ised=1,NST
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          settling_flux(START_2D_ARRAY,ised))
@@ -1854,7 +1854,7 @@ C$OMP BARRIER
 !
 !  Exchange for output purpose
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do ised=1,NST
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          ero_flux(START_2D_ARRAY,ised))
@@ -2296,7 +2296,7 @@ C$OMP BARRIER
       endif
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       do ised=1,NST
         do k=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -2381,7 +2381,7 @@ C$OMP BARRIER
       endif
 #  endif
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                         bed_thick_tot(START_2D_ARRAY,nnew))
 #  endif
@@ -3361,7 +3361,7 @@ C$OMP BARRIER
       endif
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       do ised=1,NST
         do k=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -3450,7 +3450,7 @@ C$OMP BARRIER
       endif
 #  endif
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                         bed_thick_tot(START_2D_ARRAY,nnew))
 #  endif
@@ -3701,7 +3701,7 @@ C$OMP BARRIER
         Sdens(Iend+1,Jend+1)=0.5*(Sdens(Iend,Jend+1)+Sdens(Iend+1,Jend))
       endif
 # endif
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 taucb(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,

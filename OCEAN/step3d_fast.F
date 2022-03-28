@@ -504,7 +504,7 @@ C$OMP END MASTER
         enddo 
       endif
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        Zt_avg3(START_2D_ARRAY,0))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -620,7 +620,7 @@ C$OMP END MASTER
         enddo
       enddo 
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+#  if defined BD_EXCHANGE
       if (IstrU.le.Iend) then
         call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                          usurf_nbq(START_2D_ARRAY))
@@ -833,7 +833,7 @@ C$OMP END MASTER
 !  Perform exchanges
 !-----------------------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,knew))
 # endif
@@ -1357,7 +1357,7 @@ C$OMP END MASTER
 # undef rv_ext_nbq 
 
 # ifdef NBQ
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
      &                        ru_int_nbq(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
@@ -1577,7 +1577,7 @@ C$OMP END MASTER
         bvstr(Iend+1,Jend+1)=0.5*(bvstr(Iend+1,Jend)+bvstr(Iend,Jend+1))
       END IF
 #  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
 #  endif
@@ -2225,7 +2225,7 @@ C$OMP END MASTER
 ! Exchange periodic boundaries and computational margins
 !-----------------------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+# if defined BD_EXCHANGE
 #  ifndef NBQ
       if ((mod(iif-1,inc_faststep) .eq. inc_faststep-1) .OR.
      &     (LAST_FAST_STEP)) then
@@ -2305,7 +2305,7 @@ C$OMP END MASTER
       call wnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 
 #   ifdef UV_COR_NT
-#    if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#    if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        qdmw_nbq(START_2D_ARRAY,0))
 #    endif
@@ -2986,7 +2986,7 @@ C$OMP END MASTER
 #   endif
 
 #   ifdef UV_COR_NT
-#    if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#    if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        qdmw_nbq(START_2D_ARRAY,0))
 #    endif
@@ -3034,7 +3034,7 @@ C$OMP END MASTER
 
       enddo  !<-- j loop
 !                 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv_nbq(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -3064,7 +3064,7 @@ C$OMP END MASTER
 
 !     call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) !!! leave commented
 !
-!# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!# if defined BD_EXCHANGE
 !      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
 !     &                       rho_nbq(START_2D_ARRAY,1))
 !# endif
@@ -3122,7 +3122,7 @@ C$OMP END MASTER
 !      
 ! LAURENT: the next exchange should not be needed
 !
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#   if defined BD_EXCHANGE
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
      &                           rhobar_nbq(START_2D_ARRAY,knew))
 #   endif
@@ -3289,7 +3289,7 @@ C$OMP END MASTER
 ! Exchange NBQ coupling
 !-----------------------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# if defined BD_EXCHANGE
 #  ifdef NBQ_MASS
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        rhobar_nbq_avg1(START_2D_ARRAY))
@@ -3580,7 +3580,7 @@ C$OMP END MASTER
 !
 ! zeta vill be recomputed via depth-integrated continuity equation
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        ubar(START_2D_ARRAY,knew))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
@@ -3593,7 +3593,7 @@ C$OMP END MASTER
 
 !      call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 !      call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+!#  if defined BD_EXCHANGE
 !      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
 !     &                        qdmu_nbq(START_2D_ARRAY,1))
 !      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
@@ -3837,7 +3837,7 @@ C$OMP END MASTER
             Zt_avg1(i,j)=zeta(i,j,knew)
           enddo
         enddo
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!#  if defined BD_EXCHANGE
 !        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
 !     &                          Zt_avg1(START_2D_ARRAY))
 !#  endif
@@ -3868,7 +3868,7 @@ C$OMP END MASTER
             enddo
           enddo
         enddo
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI      
+#   if defined BD_EXCHANGE
         call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                          z_w(START_2D_ARRAY,0))
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -3903,7 +3903,7 @@ C$OMP END MASTER
 !  Exchange boundary information.
 !-----------------------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,knew))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -3948,7 +3948,7 @@ C$OMP END MASTER
           enddo
         enddo
  
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined BD_EXCHANGE
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          Zt_avg3(START_2D_ARRAY,iif))
         call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -4023,7 +4023,7 @@ C$OMP END MASTER
           enddo
         enddo
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined BD_EXCHANGE
         call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                          DU_avg2(START_2D_ARRAY))
         call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
@@ -4064,7 +4064,7 @@ C$OMP END MASTER
           enddo
         enddo
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined BD_EXCHANGE
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                          Hz(START_2D_ARRAY,1))
 !# ifdef NBQ_MASS

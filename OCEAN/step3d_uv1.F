@@ -57,7 +57,7 @@
 #  define SWITCH !
 # endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 
       cff=0.25*dt
 !$acc loop private(DC(:,0))

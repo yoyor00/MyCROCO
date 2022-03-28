@@ -46,6 +46,9 @@
 #ifdef RVTK_DEBUG
       use debug
 #endif
+#ifdef OPENACC
+      use openacc
+#endif
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -63,7 +66,6 @@
 #include "climat.h"
 #include "averages.h"
 #include "work.h"
-#include "lmd_kpp.h"
 #endif
 #include "mpi_cpl.h"
 #ifdef FLOATS
@@ -255,6 +257,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 CR      write(*,*) '-11' MYID
 !
+! Copy to device(s)
+!
+#if defined OPENACC
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call copy_to_devices (tile)
+      enddo
+#endif
+!
 !----------------------------------------------------------------------
 !  Set horizontal grid, model bathymetry and Land/Sea mask
 !----------------------------------------------------------------------
@@ -317,18 +328,11 @@ CR      write(*,*) ' -8' MYID
 !  which may be needed by ana_initial
 !  (here it is assumed that free surface zeta=0).
 !
-!$acc data copy(z_w,z_r,Hz_bak,Hz,
-!$acc& cs_r,sc_r,cs_w,sc_w,h,hinv,zeta,Zt_avg1
-#ifdef MASKING
-!$acc& ,rmask
-#endif
-!$acc& )
+
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
-!$acc end data
-      
 
 CR      write(*,*) ' -7' MYID
 !
@@ -337,6 +341,20 @@ CR      write(*,*) ' -7' MYID
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call grid_stiffness (tile)
+      enddo
+#endif
+
+#if defined OPENACC
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call copy_from_devices (tile)
+      enddo
+#endif
+
+#if defined OPENACC
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call copy_to_devices_2 (tile)
       enddo
 #endif
 !
@@ -483,81 +501,7 @@ CR      write(*,*)  ' -5' MYID0
 !  zeta is also corrected here for Wetting/Drying
 !  in both 2D and 3D cases
 !
-!$acc data copy(rho,rho1,t,We,u,v
-#ifdef VAR_RHO_2D
-!$acc& , rhoS, rhoA
-#endif
-!$acc& ,A2d, Huon, Hvom, on_r, om_r
-!$acc& ,om_v,on_u, Hz_bak, Hz, z_w, z_r
-!$acc& ,cs_r,sc_r,cs_w,sc_w,h,hinv,zeta,Zt_avg1
-!$acc& ,Zob
-#ifdef MASKING
-!$acc& ,rmask
-#endif
-#if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
-!$acc& ,bvf
-#endif
-#if defined NONLIN_EOS && defined SPLIT_EOS
-!$acc& ,qp1
-#endif
-#if defined TS_DIF4
-!$acc& ,diff4_sponge, diff2_sponge
-#endif
-#if defined UV_VIS2 || defined SPONGE_VIS2
-!$acc& , visc2_sponge_p, visc2_sponge_r
-#endif
-!$acc& ,pn,pm
-#if defined ZNUDGING
-!$acc&, Znudgcof
-#endif
-#if defined M2NUDGING
-!$acc&, M2nudgcof
-#endif
-#if defined M3NUDGING
-!$acc&, M3nudgcof
-#endif
-#if defined TNUDGING
-!$acc&, Tnudgcof
-#endif
-#if defined TCLIMATOLOGY && !defined ANA_TCLIMA
-!$acc&, tclima
-#endif
-#if defined M2CLIMATOLOGY && !defined ANA_M2CLIMA ||\
-     (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
-!$acc& ,ubclima,vbclima,uclima,vclima
-#endif
-#if defined ZCLIMATOLOGY && !defined ANA_SSH
-!$acc& ,sshg
-#endif
-#ifndef ANA_SMFLUX
-!$acc& ,sustrg,svstrg
-#endif
-#if !defined ANA_STFLUX || !defined ANA_SSFLUX
-!$acc& ,stflxg
-#endif
-#ifndef ANA_SRFLUX
-!$acc& ,srflxg
-#endif
-# ifdef ANA_DIURNAL_SW
-!$acc& ,tan_phi, sin_phi, cos_phi
-#endif
-#ifdef SPHERICAL
-!$acc&, latr, lonr
-#endif
-# if defined QCORRECTION && (defined TEMPERATURE || defined SALINITY)
-!$acc& ,dqdt, sst
-#ifndef ANA_SST
-!$acc&, sstg, dqdtg
-#endif
-#endif
-# if defined SALINITY && defined SFLX_CORR
-!$acc& , sss
-#ifndef ANA_SSS
-!$acc& ,sssg
-#endif
-#endif
-!$acc& )
+
 #if defined SOLVE3D || defined WET_DRY
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -673,7 +617,6 @@ CR      write(*,*) ' -2' MYID
 !
 
       call get_vbc
-!$acc end data
 !
 !----------------------------------------------------------------------
 !  Read tidal harmonics from NetCDF file
@@ -910,10 +853,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         enddo
       endif
 #else
-!$acc data copyin(Hvom,Huon,pn,pm,v,u,z_r,workr,
-!$acc& zeta,ubar,vbar,t)
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
-!$acc end data
 #endif
 
 #ifdef MUSTANG
@@ -972,153 +912,6 @@ CR      write(*,*) '  0' MYID
       start_time1=PMPI_Wtime()
 #endif
 
-!$acc data copyin(A2d,A3d
-!$acc& ,pm_u,pn_u,u,v,pm,pn,pn_v,t,pm_v
-!$acc& ,om_v,on_u,on_r,om_r,fomn,pnom_p,pmon_p,om_p,on_p
-!$acc& ,on_v,om_u
-!$acc& ,pnom_r,pmon_r, pnom_v, pmon_u
-!$acc& ,huon,hvom,We
-!$acc& ,weight
-!$acc& ,Hz_bak,Zt_avg1,zeta
-!$acc& ,rho,Hz,rho1,z_w,z_r
-!$acc& ,rufrc,rvfrc,sustr,svstr,bustr,bvstr,Zob
-!$acc& ,visc2_r,visc2_p
-!$acc& ,cs_r,sc_r,cs_w,sc_w,h,hinv
-!$acc& , DU_avg2, DV_avg2, DU_avg1, DV_avg1, ubar, vbar
-!$acc& , Akv, Akt, diff2
-!$acc& , btflx, stflx
-!$acc& , rufrc_bak, rvfrc_bak
-!$acc& , srflx,f
-#ifdef VAR_RHO_2D
-!$acc& ,rhoA,rhoS
-#endif
-#ifdef MASKING
-!$acc& ,rmask, umask, vmask, pmask, pmask2
-#endif
-#if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
-!$acc& ,bvf
-#endif
-#if defined NONLIN_EOS && defined SPLIT_EOS
-!$acc& ,qp1
-#endif
-# if defined CURVGRID && defined UV_ADV
-!$acc& ,dmde,dndx
-#endif
-#if defined OBC_EAST || defined OBC_WEST || defined OBC_NORTH || defined OBC_SOUTH
-#if defined T_FRC_BRY
-#else
-!$acc&, tclm, uclm, vclm, ssh, vbclm, ubclm
-#endif
-#endif
-#if defined ZNUDGING
-!$acc&, Znudgcof
-#endif
-#if defined M2NUDGING
-!$acc&, M2nudgcof
-#endif
-#if defined M3NUDGING
-!$acc&, M3nudgcof
-#endif
-#if defined TNUDGING
-!$acc&, Tnudgcof
-#endif
-#if defined TS_MIX_ISO || defined TS_MIX_GEO
-!$acc&, dRdx,dRde, idRz
-#endif
-#if defined LMD_SKPP || defined LMD_BKPP
-!$acc&, kbl, kbbl, hbbl
-#ifdef LMD_SKPP2005
-!$acc&, hbls
-#endif
-#ifdef LMD_NONLOCAL
-!$acc&, ghats
-#endif
-#endif
-#ifdef DIF_COEF_3D
-!$acc&, diff3d_u, diff3d_v
-#endif
-#ifdef TS_DIF4
-!$acc&, diff4
-#endif
-#if defined TS_DIF2 || defined SPONGE_DIF2
-!$acc& ,diff2_sponge
-#endif
-#ifdef LMD_MIXING
-!$acc& ,ustar
-#endif
-# if defined SEDIMENT || defined LMD_MIXING
-!$acc& ,B2d
-#endif
-#if defined UV_VIS2 || defined SPONGE_VIS2
-!$acc& , visc2_sponge_p, visc2_sponge_r
-#endif
-#ifdef AVERAGES
-!$acc& ,wrtavg
-!$acc& ,srflx_avg, stflx_avg, sustr_avg, svstr_avg, wstr_avg
-!$acc& ,bustr_avg, bvstr_avg, bostr_avg
-!$acc& ,omega_avg, rho_avg, t_avg, u_avg, v_avg, w_avg
-!$acc& ,zeta_avg, ubar_avg, vbar_avg
-!$acc& ,workr
-#ifdef AVERAGES_K
-!$acc& ,Akv_avg, Akt_avg
-#endif
-#if defined LMD_SKPP || defined GLS_MIXING
-!$acc& ,hbl_avg
-#endif
-# ifdef LMD_BKPP
-!$acc& ,hbbl_avg
-#endif
-#ifdef DIF_COEF_3D
-!$acc& ,diff3d_avg
-#endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
-!$acc& , bvf_avg
-#endif
-#endif
-#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
-!$acc& ,Jwtype
-#endif
-#if defined TCLIMATOLOGY && !defined ANA_TCLIMA
-!$acc& ,tclima
-#endif
-#if defined M2CLIMATOLOGY && !defined ANA_M2CLIMA ||\
-   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
-!$acc& ,ubclima,vbclima,uclima,vclima
-#endif
-#if defined ZCLIMATOLOGY && !defined ANA_SSH
-!$acc& ,sshg
-#endif
-#ifndef ANA_SMFLUX
-!$acc& ,sustrg,svstrg
-#endif
-#if !defined ANA_STFLUX || !defined ANA_SSFLUX
-!$acc& ,stflxg
-#endif
-#ifndef ANA_SRFLUX
-!$acc& ,srflxg
-#endif
-# ifdef ANA_DIURNAL_SW
-!$acc& ,tan_phi, sin_phi, cos_phi
-#endif
-#ifdef SPHERICAL
-!$acc&, latr, lonr
-#endif
-# if defined QCORRECTION && (defined TEMPERATURE || defined SALINITY)
-!$acc& ,dqdt, sst
-#ifndef ANA_SST
-!$acc&, sstg, dqdtg
-#endif
-#endif
-#if defined SALINITY && defined SFLX_CORR
-!$acc& , sss
-#ifndef ANA_SSS
-!$acc& ,sssg
-#endif
-#endif
-!$acc& )
       do iicroot=ntstart,ntimes+1
 #ifdef MPI_TIME
         start_time1_1=PMPI_Wtime()
@@ -1156,11 +949,8 @@ CR      write(*,*) '  0' MYID
         exe_time_1 = start_time1_2 - start_time1_1
           if (mynode.eq.0) write(97,*) exe_time_1
 #endif
-#if !defined OPENACC
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
-#endif
       enddo                                !-->  end of time step
-!$acc end data
   99  continue                             ! SHUTDOWN:
 #ifdef MPI_TIME
       start_time2=PMPI_Wtime()
