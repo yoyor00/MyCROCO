@@ -6,7 +6,7 @@
       integer k,iifroot,nstep
 
       write(*,*) 'start ad_step'
-C$AD BINOMIAL-CKP nstep+2 80 1
+C$AD BINOMIAL-CKP nstep+1 80 1
       do k=1,nstep
          do iifroot = 0,nfast+2
             call step()
@@ -155,7 +155,7 @@ c      end do
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta)
                   dpena = (pena_h(i,j) - pena_h(i-1,j)) / om_u(i,j)
                   icost = icost + delta_z*delta_z
-c     &             + 1.0D-2*dpena*dpena
+     &                 + 1.0D-2*dpena*dpena
 
 c                  write(*,*) '=====>',zeta(i,j,knew)
 c     &                 ,ad_obs(i,j,ta-1),ad_obs(i,j,ta),ad_obs(i,j,ta+1)
@@ -176,13 +176,13 @@ c$$$     &                 delta_z,
 c$$$  &                 delta_h
 c                  if (zeta(i,j,knew).gt.0) then
 c                     if ((ta.gt.3).and.(ta.lt.ad_ns*ad_nt)) then
-                  write(*,*) 'BBBBB',ad_sim_iicroot,ta,mynode,i,j,
-     &                 zeta(i,j,knew),
-     &                 ad_obs(i,j,ta+2),
-     &                 ad_obs(i,j,ta+1),
-     &                 ad_obs(i,j,ta),
-     &                 ad_obs(i,j,ta-1),
-     &                 ad_obs(i,j,ta-2)
+c                  write(*,*) 'BBBBB',ad_sim_iicroot,ta,mynode,i,j,
+c     &                 zeta(i,j,knew),
+c     &                 ad_obs(i,j,ta+2),
+c     &                 ad_obs(i,j,ta+1),
+c     &                 ad_obs(i,j,ta),
+c     &                 ad_obs(i,j,ta-1),
+c     &                 ad_obs(i,j,ta-2)
 c                     end if
 c                  end if
                   ad_cost_counter = ad_cost_counter + 1
@@ -482,6 +482,8 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       CALL PUSHREAL8ARRAY(hinv, (lm+padd_x+4)*(mm+padd_e+4))
 
       write(*,*) 'save------'
+      write(*,*) 'time=',time
+      write(*,*) 'ad_cost_counter=',ad_cost_counter
       write(*,*) '----------'
 
       end subroutine save_croco_state
@@ -542,6 +544,8 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       CALL POPINTEGER4(ad_cost_counter)
 
       write(*,*) 'restore+++'
+      write(*,*) 'time=',time
+      write(*,*) 'ad_cost_counter=',ad_cost_counter
       write(*,*) '++++++++++'
 
       end subroutine restore_croco_state
@@ -612,8 +616,8 @@ c      call grid_stiffness(tile)
 
 c set a lower depth
       depth=2000
-      ridge_width = 30e3
-      ridge_height = 1600
+      ridge_width = 29.8e3
+      ridge_height = 1500
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
@@ -635,8 +639,8 @@ c set a lower depth
       enddo
 
 
-      ridge_width = 30e3
-      ridge_height = 1600
+      ridge_width = 32e3
+      ridge_height = 1650
 
       cff1=1./(ridge_width*ridge_width)
       j=JstrR
@@ -649,7 +653,7 @@ c set a lower depth
             cff=1-(xr(i,j)*xr(i,j)*cff1);
          endif
          ad_x(k) = depth-ridge_height*cff*cff
-c     &        - 100;
+     &        - 100;
          k=k+1
       enddo
 

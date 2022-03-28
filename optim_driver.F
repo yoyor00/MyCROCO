@@ -33,6 +33,13 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
 
       integer i
 
+c     spinup
+c      if (ad_main_st.gt.0) then
+c         write(*,*) 'spinup: calling ad_step(',ad_main_st,')'
+c         call ad_step(ad_main_st)
+c         write(*,*) 'spinup: end ad_step:', iicroot
+c      end if
+
       ad_sim_iicroot = iicroot
       ad_cost_counter = 1
       ad_cost = 1
