@@ -179,9 +179,11 @@
             enddo
           enddo
 #else
-!(on change les boucles et on utilise uwndg)
-          do j=JstrR,JendR
-            do i=IstrR,IendR
+!     (on change les boucles et on utilise uwndg)
+          do j=JstrR,JendR-1
+            do i=IstrR,IendR-1
+              uwndg_r =
+              vwndg_r =
               uwnd_r = 0.5*( cff1*uwndg(i+1,j,it1)+
      &                                        cff2*uwndg(i+1,j,it2)
      &             +       ( cff1*uwndg(i  ,j,it1)+
