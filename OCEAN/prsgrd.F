@@ -98,7 +98,7 @@ c********************************************************************
 # ifdef SED_TOY
 #  include "forces.h"
 # endif
-#include "openacc.h"
+#include "openacc_work.h"
 !
 #ifdef MASKING
 # define SWITCH *

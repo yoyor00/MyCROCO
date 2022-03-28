@@ -102,7 +102,7 @@
 # ifdef M3FAST
 #  include "nbq.h"
 # endif
-#include "openacc.h"
+#include "openacc_work.h"
 # ifdef MASKING
 #  define SWITCH *
 # else

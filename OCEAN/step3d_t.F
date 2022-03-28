@@ -89,7 +89,7 @@
 #  ifdef TS_VADV_FCT
       real tmax,tmin,Ppos,Qpos,Pneg,Qneg,lmdmax
 #  endif
-#include "openacc.h"
+#include "openacc_work.h"
       parameter (epsil=1.E-16)
 !
 #  ifdef MASKING

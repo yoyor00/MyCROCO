@@ -188,7 +188,7 @@
 #ifdef AGRIF
 # include "zoom.h"
 #endif
-#include "openacc.h"
+#include "openacc_work.h"
 !
 #include "compute_auxiliary_bounds.h"
 !
