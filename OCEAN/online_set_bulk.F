@@ -182,14 +182,20 @@
 !(on change les boucles et on utilise uwndg)
           do j=JstrR,JendR
             do i=i=IstrR,IendR
-              uwnd_r = 0.5*( cff1*uwndg(i+1,j,it1)+cff2*uwndg(i+1,j,it2)
-     &                       cff1*uwndg(i  ,j,it1)+cff2*uwndg(i  ,j,it2)
-     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
+              uwnd_r = 0.5*( cff1*uwndg(i+1,j,it1)+
+     &                                        cff2*uwndg(i+1,j,it2)
+     &             +       ( cff1*uwndg(i  ,j,it1)+
+     &                                        cff2*uwndg(i  ,j,it2)) )
+     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs)
      &             )
-              vwnd_r = 0.5*( cff1*vwndg(i,j+1,it1)+cff2*vwndg(i,j+1,it2)
-     &                       cff1*vwndg(i,j  ,it1)+cff2*vwndg(i,j  ,it2)
-     &                     - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+     &             
+              vwnd_r = 0.5*( cff1*vwndg(i,j+1,it1)+
+     &                                        cff2*vwndg(i,j+1,it2))
+     &             +       ( cff1*vwndg(i,j  ,it1)+
+     &                                        cff2*vwndg(i,j  ,it2)) )
+     &                     - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs)
      &             )
+              
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
             enddo
           enddo    
