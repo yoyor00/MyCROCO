@@ -63,7 +63,7 @@
                                 xbioturbmax_diss,xbioturbk_diss,dbiotu0_diss,dbiotum_diss,     &
                                 xbioturbmax,xbioturbk,dbiotu0,dbiotum,frmud_db_max,frmud_db_min, &
                                 dt_consolid,dt_diffused,dt_bioturb,subdt_bioturb
-   REAL(KIND=rsh)                                :: hsed_new,coef_erolat,coef_tenfon_lat
+   REAL(KIND=rsh)                                :: hsed_new,coef_erolat,coef_tauskin_lat
    REAL(KIND=rsh)                                :: sed_difint,sed_difsed 
    
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE       :: alp1,alp2,alp3,alp4,alp5,typart
@@ -96,10 +96,16 @@
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: dhsed_save
 #endif
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tenfon,tenfonc,tenfonw
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphbx,raphby,frofonx,frofony
-#if defined key_tenfon_upwind
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tenfonx,tenfony
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin ! max bottom stress due to the combinaison current/wave (N.m-2)
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c ! bottom stress due to current (N.m-2)
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_w ! bottom stress due to wave (N.m-2)
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c_u ! bottom stress due to current, compute at u point
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c_v ! bottom stress due to current, compute at v point
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphbx
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphby
+#if defined key_tauskin_upwind
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_x ! bottom stress (N.m-2) - component on x axis
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_y ! bottom stress (N.m-2) - component on y axis
 #endif
    REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w,phieau_s2w_consol,phieau_s2w_drycell
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot,htot,alt_cw1
@@ -158,11 +164,11 @@
    ! Sedim output
    ! ---------------------------------------------------------------------------
    LOGICAL                               :: l_outsed_saltemp,l_outsed_poro
-   CHARACTER(len=lchain)   :: name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tenfon,&
-                                     name_out_tenfonc,name_out_tenfonw
+   CHARACTER(len=lchain)   :: name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tauskin,&
+                                     name_out_tauskin_c,name_out_tauskin_w
    REAL(kind=riosh)             :: riog_valid_min_hsed,riog_valid_max_hsed,riog_valid_min_nbniv, &
                                    riog_valid_max_nbniv,riog_valid_min_dzs,riog_valid_max_dzs,     &
-                                   riog_valid_min_tenfon,riog_valid_max_tenfon
+                                   riog_valid_min_tauskin,riog_valid_max_tauskin
    INTEGER                                    :: nk_nivsed_out,choice_nivsed_out
    INTEGER                                    :: nv_out3Dk_specif,nv_out3Dnv_specif,nv_out2D_specif
 

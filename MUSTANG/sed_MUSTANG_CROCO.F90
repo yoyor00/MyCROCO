@@ -288,7 +288,7 @@
 
    INTEGER, INTENT(IN)                        :: ifirst,ilast,jfirst,jlast
    INTEGER i,j,k
-   REAL    vit2
+   REAL    speed ! current speed
 
 # ifdef MPI
    REAL(KIND=rsh),DIMENSION(ifirst-2:ilast+1,jfirst-2:jlast+1)  :: Zr
@@ -298,9 +298,9 @@
 # endif
 
 # ifdef WAVE_OFFLINE
-   REAL(KIND=rsh)                                   :: fws2ij,courant,alpha,beta,cosamb,sinamb
+   REAL(KIND=rsh)                                   :: fws2ij,speedbar,alpha,beta,cosamb,sinamb
 # endif
-# ifdef key_tenfon_upwind   
+# ifdef key_tauskin_upwind   
    REAL(KIND=rsh)                                   :: cff4,cff1,cff2,cff3
 # endif  
    
@@ -315,10 +315,9 @@
 #  ifdef BBL /*warning, d50 is constant (160microns) in the bustrw/bvstrw computation see bbl.F */
       do j=jfirst,jlast
         do i=ifirst,ilast
-          tenfon(i,j)=sqrt( bustrw(i,j)**2 &
-                        +bvstrw(i,j)**2)*RHOREF
+          tauskin(i,j)=sqrt( bustrw(i,j)**2 + bvstrw(i,j)**2)*RHOREF
 #  ifdef WET_DRY AND MASKING
-          tenfon(i,j)=tenfon(i,j)*rmask_wet(i,j)
+          tauskin(i,j) = tauskin(i,j)*rmask_wet(i,j)
 #  endif
         enddo
       enddo
@@ -344,8 +343,8 @@
         DO i=ifirst-1,ilast
 #  endif
           raphbx(i,j)=ABS(u(i+1,j,1,nnew))/(ABS(u(i+1,j,1,nnew))+epsilon_MUSTANG)
-#ifdef key_MUSTANG_tenfonUbar
-          vit2=SQRT(0.0625_rsh*(vbar(i,j+1,nnew)+vbar(i+1,j+1,nnew)+  &
+#ifdef key_tauskin_c_ubar
+          speed=SQRT(0.0625_rsh*(vbar(i,j+1,nnew)+vbar(i+1,j+1,nnew)+  &
                   vbar(i,j,nnew)+vbar(i+1,j,nnew))**2         &
                   +ubar(i+1,j,nnew)**2) *ubar(i+1,j,nnew)
 #ifdef MPI
@@ -353,18 +352,18 @@
 #else
           if (float(i       ) .GE. 0) then
 #endif
-          frofonx(i,j)=0.16_rsh*(LOG( ( z_w(i,j,N)-z_w(i,j,0))/   &
-                  (z0sed(i,j)*2.718)))**(-2)*vit2
+            tauskin_c_u(i,j)=0.16_rsh*(LOG( ( z_w(i,j,N)-z_w(i,j,0))/   &
+                  (z0sed(i,j)*2.718)))**(-2)*speed
           else
-          frofonx(i,j)=0.
+            tauskin_c_u(i,j)=0.
           endif
 
 #else
-          vit2=SQRT(0.0625_rsh*(v(i,j+1,1,nnew)+v(i+1,j+1,1,nnew)+  &
+          speed=SQRT(0.0625_rsh*(v(i,j+1,1,nnew)+v(i+1,j+1,1,nnew)+  &
                   v(i,j,1,nnew)+v(i+1,j,1,nnew))**2         &
                   +u(i+1,j,1,nnew)**2) *u(i+1,j,1,nnew)   
-          frofonx(i,j)=0.16_rsh*(LOG(0.5*(Zr(i+1,j)+Zr(i,j))/   &
-                  z0sed(i,j)))**(-2)*vit2
+          tauskin_c_u(i,j)=0.16_rsh*(LOG(0.5*(Zr(i+1,j)+Zr(i,j))/   &
+                  z0sed(i,j)))**(-2)*speed
 
 #endif
        enddo
@@ -377,8 +376,8 @@
         DO i=ifirst,ilast
 #  endif  
           raphby(i,j)=ABS(v(i,j+1,1,nnew))/(ABS(v(i,j+1,1,nnew))+epsilon_MUSTANG)
-#ifdef key_MUSTANG_tenfonUbar
-          vit2=SQRT(0.0625_rsh*(ubar(i+1,j,nnew)+ubar(i+1,j+1,nnew)+  &
+#ifdef key_tauskin_c_ubar
+          speed=SQRT(0.0625_rsh*(ubar(i+1,j,nnew)+ubar(i+1,j+1,nnew)+  &
                   ubar(i,j+1,nnew)+ubar(i,j,nnew))**2         &
                   +vbar(i,j+1,nnew)**2) *vbar(i,j+1,nnew)
 #ifdef MPI
@@ -386,17 +385,17 @@
 #else
           if (float(j       ) .GE. 0) then
 #endif
-          frofony(i,j)=0.16_rsh*(LOG( (z_w(i,j,N)-z_w(i,j,0))  /   &
-                  (z0sed(i,j)*2.718)))**(-2)*vit2
+            tauskin_c_v(i,j)=0.16_rsh*(LOG( (z_w(i,j,N)-z_w(i,j,0))  /   &
+                  (z0sed(i,j)*2.718)))**(-2)*speed
           else
-          frofony(i,j)=0.
+            tauskin_c_v(i,j)=0.
           endif
 #else
-          vit2=SQRT(0.0625_rsh*(u(i+1,j,1,nnew)+u(i+1,j+1,1,nnew)+  &
+          speed=SQRT(0.0625_rsh*(u(i+1,j,1,nnew)+u(i+1,j+1,1,nnew)+  &
                   u(i,j+1,1,nnew)+u(i,j,1,nnew))**2         &
                   +v(i,j+1,1,nnew)**2) *v(i,j+1,1,nnew)
-          frofony(i,j)=0.16_rsh*(LOG(0.5*(Zr(i,j+1)+Zr(i,j))/   &
-                  z0sed(i,j)))**(-2)*vit2
+          tauskin_c_v(i,j)=0.16_rsh*(LOG(0.5*(Zr(i,j+1)+Zr(i,j))/   &
+                  z0sed(i,j)))**(-2)*speed
 #endif
        enddo
       enddo
@@ -408,31 +407,31 @@
       DO j=jfirst,jlast
         DO i=ifirst,ilast
 #  endif  
-# ifdef key_tenfon_upwind
-            cff1=0.5*(1.0+SIGN(1.0,frofonx(i,j)))
-            cff2=0.5*(1.0-SIGN(1.0,frofonx(i,j)))
-            cff3=0.5*(1.0+SIGN(1.0,frofonx(i-1  ,j)))
-            cff4=0.5*(1.0-SIGN(1.0,frofonx(i-1 ,j)))
-            tenfonx(i,j)=cff3*(cff1*frofonx(i-1,j)+                     &
-                       cff2*0.5*(frofonx(i-1,j)+frofonx(i,j)))+    &
-                       cff4*(cff2*frofonx(i,j)+                   &
-                       cff1*0.5*(frofonx(i-1,j)+frofonx(i,j)))
+# ifdef key_tauskin_upwind
+            cff1=0.5*(1.0+SIGN(1.0,tauskin_c_u(i,j)))
+            cff2=0.5*(1.0-SIGN(1.0,tauskin_c_u(i,j)))
+            cff3=0.5*(1.0+SIGN(1.0,tauskin_c_u(i-1  ,j)))
+            cff4=0.5*(1.0-SIGN(1.0,tauskin_c_u(i-1 ,j)))
+            tauskin_x(i,j)=cff3*(cff1*tauskin_c_u(i-1,j)+                     &
+                       cff2*0.5*(tauskin_c_u(i-1,j)+tauskin_c_u(i,j)))+    &
+                       cff4*(cff2*tauskin_c_u(i,j)+                   &
+                       cff1*0.5*(tauskin_c_u(i-1,j)+tauskin_c_u(i,j)))
 
-            cff1=0.5*(1.0+SIGN(1.0,frofony(i,j)))
-            cff2=0.5*(1.0-SIGN(1.0,frofony(i,j)))
-            cff3=0.5*(1.0+SIGN(1.0,frofony(i,j-1)))
-            cff4=0.5*(1.0-SIGN(1.0,frofony(i,j-1)))
-            tenfony(i,j)=cff3*(cff1*frofony(i,j-1)+                      &
-                      cff2*0.5*(frofony(i,j-1)+frofony(i,j)))+      &
-                       cff4*(cff2*frofony(i,j)+                     &
-                       cff1*0.5*(frofony(i,j-1)+frofony(i,j)))
+            cff1=0.5*(1.0+SIGN(1.0,tauskin_c_v(i,j)))
+            cff2=0.5*(1.0-SIGN(1.0,tauskin_c_v(i,j)))
+            cff3=0.5*(1.0+SIGN(1.0,tauskin_c_v(i,j-1)))
+            cff4=0.5*(1.0-SIGN(1.0,tauskin_c_v(i,j-1)))
+            tauskin_y(i,j)=cff3*(cff1*tauskin_c_v(i,j-1)+                      &
+                      cff2*0.5*(tauskin_c_v(i,j-1)+tauskin_c_v(i,j)))+      &
+                       cff4*(cff2*tauskin_c_v(i,j)+                     &
+                       cff1*0.5*(tauskin_c_v(i,j-1)+tauskin_c_v(i,j)))
 
-            tenfonc(i,j)=SQRT(tenfonx(i,j)**2+tenfony(i,j)**2)*(rho(i,j,1)+rho0)
+            tauskin_c(i,j)=SQRT(tauskin_x(i,j)**2+tauskin_y(i,j)**2)*(rho(i,j,1)+rho0)
 # else
-            tenfonc(i,j)=SQRT(((frofonx(i,j)*raphbx(i,j)+frofonx(i-1,j)        &
+            tauskin_c(i,j)=SQRT(((tauskin_c_u(i,j)*raphbx(i,j)+tauskin_c_u(i-1,j)        &
                      *raphbx(i-1,j))/(raphbx(i,j)                             &
-                     +raphbx(i-1,j)+epsilon_MUSTANG))**2+((frofony(i,j)*raphby(i,j)   &
-                     +frofony(i,j-1)*raphby(i,j-1))/(raphby(i,j)              &
+                     +raphbx(i-1,j)+epsilon_MUSTANG))**2+((tauskin_c_v(i,j)*raphby(i,j)   &
+                     +tauskin_c_v(i,j-1)*raphby(i,j-1))/(raphby(i,j)              &
                      +raphby(i,j-1)+epsilon_MUSTANG))**2)*(rho(i,j,1)+rho0)
 # endif
 
@@ -443,44 +442,44 @@
               fws2ij=0.5_rsh*1.39_rsh*(Uwave(i,j)*Pwave(i,j)/REAL(2.0_rlg*pi*z0sed(i,j),rsh))**(-0.52_rsh)
             ENDIF
 
-            ! calculation of shear stress due to waves tenfonw 
+            ! calculation of shear stress due to waves tauskin_w 
             ! --------------------------
-            tenfonw(i,j)=((rho(i,j,1)+rho0)*fws2ij*Uwave(i,j)**2)
+            tauskin_w(i,j) = ((rho(i,j,1)+rho0) * fws2ij * Uwave(i,j)**2)
 
-            courant=SQRT(ubar(i,j,nnew)**2+vbar(i,j,nnew)**2)
-            IF(tenfonc(i,j) > 0.0_rsh .AND. tenfonw(i,j) > 0.0_rsh .AND. courant> 0.0_rsh) THEN
+            speedbar = SQRT(ubar(i,j,nnew)**2+vbar(i,j,nnew)**2)
+            IF(tauskin_c(i,j) > 0.0_rsh .AND. tauskin_w(i,j) > 0.0_rsh .AND. speedbar> 0.0_rsh) THEN
 
             ! calculation of shear stress with the formula of Soulsby (1995)
             ! ======================================================
-            ! calculation of  tenfonc (courrent) influenced by the waves
+            ! calculation of  tauskin_c (current) influenced by the waves
             ! ----------------------------------------------------
-              tenfonc(i,j)=tenfonc(i,j)*(1+(1.2*(tenfonw(i,j)/(tenfonw(i,j)+tenfonc(i,j)))**3.2))
+              tauskin_c(i,j) = tauskin_c(i,j)*(1+(1.2*(tauskin_w(i,j)/(tauskin_w(i,j)+tauskin_c(i,j)))**3.2))
 
             ! calculating the difference in angle between the direction of the waves and the current
             ! ---------------------------------------------------------------------------
             ! calculating the direction of the current relative to the north
-              alpha=ACOS(vbar(i,j,nnew)/courant)   ! en radians
+              alpha = ACOS(vbar(i,j,nnew)/speedbar)   ! en radians
             ! calculation of wave orientation relative to north
-              beta=Dwave(i,j)   ! beta and Dwave in radians
+              beta = Dwave(i,j)   ! beta and Dwave in radians
             ! calculation of cos(alpha-beta) and sin(alpha-beta)
-              cosamb=ABS(COS(alpha-beta))
-              sinamb=ABS(SIN(alpha-beta))
+              cosamb = ABS(COS(alpha-beta))
+              sinamb = ABS(SIN(alpha-beta))
 
-            ! calculation of tenfon (waves + current)
+            ! calculation of tauskin (waves + current)
             ! -----------------------------------
-              tenfon(i,j)=SQRT((tenfonc(i,j)+tenfonw(i,j)*cosamb)**2 +(tenfonw(i,j)*sinamb)**2)
+              tauskin(i,j) = SQRT( (tauskin_c(i,j) + tauskin_w(i,j) * cosamb)**2 + (tauskin_w(i,j) * sinamb)**2 )
 
           ELSE
-              tenfon(i,j)=tenfonw(i,j)+tenfonc(i,j)
+            tauskin(i,j) = tauskin_w(i,j) + tauskin_c(i,j)
           ENDIF
 
 
 # else
-          tenfon(i,j)=tenfonc(i,j)
+    tauskin(i,j) = tauskin_c(i,j)
 # endif
 
 # if defined WET_DRY && defined MASKING 
-          tenfon(i,j)=tenfon(i,j)*rmask_wet(i,j)
+    tauskin(i,j) = tauskin(i,j) * rmask_wet(i,j)
 #  endif
         enddo
       enddo

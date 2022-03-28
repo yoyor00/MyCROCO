@@ -388,7 +388,7 @@ MODULE initMUSTANG
                                    coef_z0_coupl,z0_hydro_mud,z0_hydro_bed
    NAMELIST/namsedim_deposition/ cfreshmud,csedmin,cmudcr,aref_sand,     &
                        cvolmaxsort,cvolmaxmel,slopefac
-   NAMELIST/namsedim_lateral_erosion/coef_erolat,coef_tenfon_lat,        &
+   NAMELIST/namsedim_lateral_erosion/coef_erolat,coef_tauskin_lat,        &
                        l_erolat_wet_cell
    NAMELIST/namsedim_consolidation/ l_consolid,xperm1,xperm2,xsigma1,    &
                        xsigma2,csegreg,csandseg,dt_consolid,subdt_consol
@@ -402,11 +402,11 @@ MODULE initMUSTANG
                             l_dredging,l_MF_dhsed,l_bathy_actu,dt_morpho, &
                             l_transfer2hydro_dhsed                                  
 
-   NAMELIST/namsedoutput/ name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tenfon,      &
-                          name_out_tenfonc,name_out_tenfonw,choice_nivsed_out,            &
+   NAMELIST/namsedoutput/ name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tauskin,      &
+                          name_out_tauskin_c,name_out_tauskin_w,choice_nivsed_out,            &
                           riog_valid_min_hsed,riog_valid_max_hsed,                        &
                           riog_valid_min_nbniv,riog_valid_max_nbniv,riog_valid_min_dzs,   &
-                          riog_valid_max_dzs,riog_valid_min_tenfon,riog_valid_max_tenfon, &
+                          riog_valid_max_dzs,riog_valid_min_tauskin,riog_valid_max_tauskin, &
                           nk_nivsed_out,ep_nivsed_out,epmax_nivsed_out,                   &
                           l_outsed_flx_Bload_all,l_outsed_flx_WS_all,                     &
                           l_outsed_poro,l_outsed_activlayer,l_outsed_surf,                &
@@ -1673,9 +1673,9 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   ALLOCATE(ksma(PROC_IN_ARRAY))
   ALLOCATE(hsed(PROC_IN_ARRAY))  
   ALLOCATE(z0sed(PROC_IN_ARRAY))
-  ALLOCATE(tenfon(PROC_IN_ARRAY))
-  ALLOCATE(tenfonc(PROC_IN_ARRAY))
-  ALLOCATE(tenfonw(PROC_IN_ARRAY))
+  ALLOCATE(tauskin(PROC_IN_ARRAY))
+  ALLOCATE(tauskin_c(PROC_IN_ARRAY))
+  ALLOCATE(tauskin_w(PROC_IN_ARRAY))
   ALLOCATE(ustarbot(PROC_IN_ARRAY))
   ALLOCATE(dzsmax(PROC_IN_ARRAY))
 #if ! defined key_noTSdiss_insed
@@ -1710,9 +1710,9 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   ksma(PROC_IN_ARRAY)=0
   hsed(PROC_IN_ARRAY)=0.0_rsh
   z0sed(PROC_IN_ARRAY)=0.0_rsh
-  tenfon(PROC_IN_ARRAY)=0.0_rsh
-  tenfonc(PROC_IN_ARRAY)=0.0_rsh
-  tenfonw(PROC_IN_ARRAY)=0.0_rsh
+  tauskin(PROC_IN_ARRAY)=0.0_rsh
+  tauskin_c(PROC_IN_ARRAY)=0.0_rsh
+  tauskin_w(PROC_IN_ARRAY)=0.0_rsh
   ustarbot(PROC_IN_ARRAY)=0.0_rsh
   
   dzsmax(PROC_IN_ARRAY)=0.0_rsh
@@ -1865,10 +1865,10 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   phieau_s2w_drycell(PROC_IN_ARRAY)=0.0_rlg
   phieau_s2w_consol(PROC_IN_ARRAY)=0.0_rlg
 
-  ALLOCATE( raphbx(PROC_IN_ARRAY_m1p1),raphby(PROC_IN_ARRAY_m1p1) )
-  ALLOCATE( frofonx(PROC_IN_ARRAY_m1p1),frofony(PROC_IN_ARRAY_m1p1) )
-#ifdef key_tenfon_upwind
-  ALLOCATE( tenfonx(PROC_IN_ARRAY),tenfony(PROC_IN_ARRAY) )
+  ALLOCATE( raphbx(PROC_IN_ARRAY_m1p1), raphby(PROC_IN_ARRAY_m1p1) )
+  ALLOCATE( tauskin_c_u(PROC_IN_ARRAY_m1p1), tauskin_c_v(PROC_IN_ARRAY_m1p1) )
+#ifdef key_tauskin_upwind
+  ALLOCATE( tauskin_x(PROC_IN_ARRAY), tauskin_y(PROC_IN_ARRAY) )
 #endif
   ALLOCATE( dry_cell(PROC_IN_ARRAY))
   raphbx(PROC_IN_ARRAY_m1p1)=0.0_rsh

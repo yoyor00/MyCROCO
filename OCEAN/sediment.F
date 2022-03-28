@@ -6194,7 +6194,7 @@ C$OMP BARRIER
 !!--------------------------------------------------------------------------
 !! * Executable part
 !    nueau=1.06e-6
-!    ustar=sqrt(tenfon(i,j)/rhoref)
+!    ustar=sqrt(tauskin(i,j)/rhoref)
 !    htn=h0(i,j)+ssh(i,j)
 !    z=(1.0+sig(k))*htn
       

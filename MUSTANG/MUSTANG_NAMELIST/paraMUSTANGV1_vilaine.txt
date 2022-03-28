@@ -129,7 +129,7 @@
 :------------------------------------------------------------------------------
 &namsedim_lateral_erosion
    coef_erolat=0.000           !0.002  slope effect multiplicative factor 
-   coef_tenfon_lat=5.0          !  parameter to evaluate the lateral stress as a function of the average tangential velocity on the vertical
+   coef_tauskin_lat=5.0          !  parameter to evaluate the lateral stress as a function of the average tangential velocity on the vertical
    l_erolat_wet_cell=.FALSE. /  ! .true in order to take into account wet cells lateral erosion
 :
 :
@@ -214,17 +214,17 @@
    name_out_hsed='HSED'         ! name of variable saved in sediment output file
    name_out_nbniv='NBNIV'
    name_out_dzs='DZS'
-   name_out_tenfon='TENFON'
-   name_out_tenfonc='TENFONC'
-   name_out_tenfonw='TENFONW'
+   name_out_tauskin='TAUSKIN'
+   name_out_tauskin_c='TAUSKIN_C'
+   name_out_tauskin_w='TAUSKIN_W'
    riog_valid_min_hsed=0       ! scalar specifying the minimum valid value for the XXX variable
    riog_valid_max_hsed=100
    riog_valid_min_nbniv=0
    riog_valid_max_nbniv=200
    riog_valid_min_dzs=0
    riog_valid_max_dzs=100
-   riog_valid_min_tenfon=0
-   riog_valid_max_tenfon=50
+   riog_valid_min_tauskin=0
+   riog_valid_max_tauskin=50
    choice_nivsed_out=1         ! choice of saving output ( see just above)
    nk_nivsed_out=2            ! number of saved sediment layers (<6 if choice_nivsed_out=4, <ksdmax if choice_nivsed_out=2, unused if choice_nivsed_out=1 or 3)
    ep_nivsed_out(1)=0.,ep_nivsed_out(2)=0.,ep_nivsed_out(3)=0.,ep_nivsed_out(4)=0.,ep_nivsed_out(5)=0. ! 5 values of sediment layer thickness (mm), beginning with surface layer (used if choice_nivsed_out=4).

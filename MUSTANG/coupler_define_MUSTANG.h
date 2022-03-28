@@ -126,18 +126,18 @@
 
 /* surface elevation (i,j) and current could have different dimensions*/
 # define SURF_ELEVATION_ij WATER_ELEVATION(i,j,3) 
-# define COURANTU_ij BAROTROP_VELOCITY_U(i+1,j,3) 
-# define COURANTV_ij BAROTROP_VELOCITY_V(i,j+1,3) 
+# define CURRENTU_ij BAROTROP_VELOCITY_U(i+1,j,3) 
+# define CURRENTV_ij BAROTROP_VELOCITY_V(i,j+1,3) 
 
-# define COURANTV_ip1jm1 BAROTROP_VELOCITY_V(i+1,j,3) 
-# define COURANTV_ip1j   BAROTROP_VELOCITY_V(i+1,j+1,3) 
-# define COURANTV_im1jm1 BAROTROP_VELOCITY_V(i-1,j,3)
-# define COURANTV_im1j   BAROTROP_VELOCITY_V(i-1,j+1,3)
+# define CURRENTV_ip1jm1 BAROTROP_VELOCITY_V(i+1,j,3) 
+# define CURRENTV_ip1j   BAROTROP_VELOCITY_V(i+1,j+1,3) 
+# define CURRENTV_im1jm1 BAROTROP_VELOCITY_V(i-1,j,3)
+# define CURRENTV_im1j   BAROTROP_VELOCITY_V(i-1,j+1,3)
 
-# define COURANTU_im1jp1 BAROTROP_VELOCITY_U(i,j+1,3) 
-# define COURANTU_ijp1   BAROTROP_VELOCITY_U(i+1,j+1,3) 
-# define COURANTU_im1jm1 BAROTROP_VELOCITY_U(i,j-1,3) 
-# define COURANTU_ijm1   BAROTROP_VELOCITY_U(i+1,j-1,3) 
+# define CURRENTU_im1jp1 BAROTROP_VELOCITY_U(i,j+1,3) 
+# define CURRENTU_ijp1   BAROTROP_VELOCITY_U(i+1,j+1,3) 
+# define CURRENTU_im1jm1 BAROTROP_VELOCITY_U(i,j-1,3) 
+# define CURRENTU_ijm1   BAROTROP_VELOCITY_U(i+1,j-1,3) 
 
 
 /* name of fluxes exchange between MUSTANG and hydro model 
@@ -169,10 +169,10 @@
 # define SURF_NEAR_W CELL_SURF(i-1,j)
 # define SURF_NEAR_N CELL_SURF(i,j+1)
 # define SURF_NEAR_S CELL_SURF(i,j-1)
-# define V_NEAR_E (COURANTV_ip1jm1 + COURANTV_ip1j)
-# define V_NEAR_W (COURANTV_im1jm1 + COURANTV_im1j)
-# define U_NEAR_N (COURANTU_im1jp1 + COURANTU_ijp1)
-# define U_NEAR_S (COURANTU_im1jm1 + COURANTU_ijm1)
+# define V_NEAR_E (CURRENTV_ip1jm1 + CURRENTV_ip1j)
+# define V_NEAR_W (CURRENTV_im1jm1 + CURRENTV_im1j)
+# define U_NEAR_N (CURRENTU_im1jp1 + CURRENTU_ijp1)
+# define U_NEAR_S (CURRENTU_im1jm1 + CURRENTU_ijm1)
 
 /* sliding proces of fluid mud
 !   slope of the bottom in the neighboring cells (could depend on grid architecture)
