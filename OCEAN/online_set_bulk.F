@@ -150,6 +150,8 @@
               wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
             enddo
           enddo
+C$OMP BARRIER
+          
 !$$$# ifdef CFB_WIND_TRA
 !$$$          cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
 !$$$          do j=JstrR,min(JendR,Mm)
