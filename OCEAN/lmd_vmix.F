@@ -258,7 +258,6 @@ C$OMP BARRIER
             Rig(i,Jend+1,k)=Rig(i,Jend,k)
           enddo
         endif
-#    endif
 #    ifndef EW_PERIODIC
         if (WESTERN_EDGE.and.SOUTHERN_EDGE) then
           Rig(Istr-1,Jstr-1,k)=Rig(Istr,Jstr,k)
@@ -272,6 +271,7 @@ C$OMP BARRIER
         if (EASTERN_EDGE.and.NORTHERN_EDGE) then
           Rig(Iend+1,Jend+1,k)=Rig(Iend,Jend,k)
         endif
+#    endif
 #   endif
         enddo
 #   undef I_EXT_RANGE
