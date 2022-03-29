@@ -299,13 +299,13 @@ m1qn3.o: m1qn3.F
 	$(CFT) $(FFLAGS) -c $^ -o $@
 
 
-pre_step3d.tap.f: pre_step3d.F
-	$(CPP) -P $(CPPFLAGS) -D__TAPENADE__ pre_step3d.F > pre_step3d.1.f
-	emacs -Q --script fsplit.el pre_step3d.1.f pre_step3d.tap.f	
+# pre_step3d.tap.f: pre_step3d.F
+# 	$(CPP) -P $(CPPFLAGS) -D__TAPENADE__ pre_step3d.F > pre_step3d.1.f
+# 	emacs -Q --script fsplit.el pre_step3d.1.f pre_step3d.tap.f	
 
-pre_step3d.f: pre_step3d.F
-	$(CPP) -P $(CPPFLAGS) pre_step3d.F > pre_step3d.2.f
-	emacs -Q --script fsplit.el pre_step3d.2.f pre_step3d.f
+# pre_step3d.f: pre_step3d.F
+# 	$(CPP) -P $(CPPFLAGS) pre_step3d.F > pre_step3d.2.f
+# 	emacs -Q --script fsplit.el pre_step3d.2.f pre_step3d.f
 
 pre_step3d.o: pre_step3d.f
 	$(CFT) -c $(FFLAGS) pre_step3d.f -o $@

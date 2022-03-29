@@ -1,6 +1,6 @@
 #!/bin/bash
-#OAR --project moise-modeling
-#OAR -l /nodes=1/cpu=1/core=4,walltime=5:00:00
+#OAR --project airsea-modeling
+#OAR -l /nodes=1/cpu=1/core=1,walltime=30:00:00
 ################################################################################
 case $1 in
   --env-ok)
@@ -13,18 +13,19 @@ case $1 in
   *)
     set -x
     # guix environment setup
-    [ -f /applis/site/guix.sh ] && . /applis/site/guix.sh
-    export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
-    export PATH="$HOME/.config/guix/current/bin:${PATH}"
+    export PATH=/var/guix/profiles/per-user/root/current-guix/bin:$PATH
+    export GUIX_DAEMON_SOCKET=guix://luke.u-ga.fr
+    #[ -f /applis/site/guix-start.sh ] && . /applis/site/guix-start.sh
+    #export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
+    #export PATH="$HOME/.config/guix/current/bin:${PATH}"
     pwd=`pwd`
     rm -f $pwd/.croco-guix-profile
     packages="gcc-toolchain gfortran-toolchain make \
         netcdf netcdf-fortran \
         mpich openssh adjoinable-mpi \
         openblas lapack \
-        emacs \
         openjdk coreutils binutils sed grep bash which time patch gdb"
-    guix_cmd="guix time-machine --commit=398ec3c1e265a3f89ed07987f33b264db82e4080 -- time-machine --url=git@github.com:bremond/guix.git --branch=check-master-mpich --"
+    guix_cmd="guix time-machine --commit=398ec3c1e265a3f89ed07987f33b264db82e4080 -- time-machine --url=https://github.com/bremond/guix --branch=check-master-mpich --"
     exec $guix_cmd environment --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac
