@@ -54,9 +54,9 @@ MODULE initMUSTANG
  CONTAINS
  
 !!===========================================================================================
-   SUBROUTINE MUSTANG_initialization(                       &
+   SUBROUTINE MUSTANG_initialization(        &
 #ifdef key_MUSTANG_flocmod
-                 TRANSPORT_TIME_STEP,                               &
+                 TRANSPORT_TIME_STEP         &
 #endif
                  )
  
@@ -101,12 +101,12 @@ MODULE initMUSTANG
   END SUBROUTINE MUSTANG_initialization
   
  !!===========================================================================================
-   SUBROUTINE MUSTANG_init_sediment(ifirst,ilast,jfirst,jlast,  &
-           WATER_ELEVATION,                                   &
+   SUBROUTINE MUSTANG_init_sediment(ifirst, ilast, jfirst, jlast,  &
+           WATER_ELEVATION,                                        &
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN  
            dhsed,                                                      &
 #endif
-           h0fond,z0hydro,WATER_CONCENTRATION )
+           h0fondin, z0hydro, WATER_CONCENTRATION )
  
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE MUSTANG_init_sediment  ***
@@ -141,7 +141,7 @@ MODULE initMUSTANG
 
    !! * Arguments 
    INTEGER, INTENT(IN)                    :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN)              :: h0fond
+   REAL(KIND=rsh),INTENT(IN)              :: h0fondin
    REAL(KIND=rsh),DIMENSION(ARRAY_Z0HYDRO),INTENT(INOUT)        :: z0hydro                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)       :: WATER_CONCENTRATION  
@@ -160,7 +160,7 @@ MODULE initMUSTANG
 
    !!--------------------------------------------------------------------------
    !! * Executable part
-
+   h0fond = h0fondin
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      ! recovery of concentrations at the bottom layer
      ! which could be used to initiate concentrations in the sediment
@@ -264,7 +264,7 @@ MODULE initMUSTANG
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
       !IF(l_morphocoupl .AND. .NOT.l_initfromfile)THEN
       ! appelle meme si pas morpho pour si dredging et initialisation de hsed dans tous les cas, meme si initfromfile
-      CALL MUSTANG_morphoinit(ifirst,ilast,jfirst,jlast,BATHY_H0,h0fond,WATER_ELEVATION   &
+      CALL MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION   &
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
                                                    ,dhsed               &
 #endif
@@ -1402,7 +1402,7 @@ ENDIF
   END SUBROUTINE MUSTANG_init_output
    !!===========================================================================
 
- SUBROUTINE MUSTANG_morphoinit(ifirst,ilast,jfirst,jlast,BATHY_H0,h0fond,WATER_ELEVATION  &
+ SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION  &
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
                   ,dhsed                                                &
 #endif
@@ -1426,15 +1426,14 @@ ENDIF
    !! * Modules used
 
    !! * Arguments 
-   INTEGER, INTENT(IN)                    :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN)              :: h0fond
+   INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(INOUT)        :: BATHY_H0                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)           :: dhsed                       
 #endif
    !! * Local declarations
-   INTEGER                  :: i,j,k
+   INTEGER                  :: i, j, k
 
    !!--------------------------------------------------------------------------  
    !! * Executable part
@@ -1867,7 +1866,7 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
 
   ALLOCATE( raphbx(PROC_IN_ARRAY_m1p1), raphby(PROC_IN_ARRAY_m1p1) )
   ALLOCATE( tauskin_c_u(PROC_IN_ARRAY_m1p1), tauskin_c_v(PROC_IN_ARRAY_m1p1) )
-#ifdef key_tauskin_upwind
+#ifdef key_tauskin_c_upwind
   ALLOCATE( tauskin_x(PROC_IN_ARRAY), tauskin_y(PROC_IN_ARRAY) )
 #endif
   ALLOCATE( dry_cell(PROC_IN_ARRAY))

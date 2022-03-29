@@ -63,6 +63,7 @@
                                 xbioturbmax_diss,xbioturbk_diss,dbiotu0_diss,dbiotum_diss,     &
                                 xbioturbmax,xbioturbk,dbiotu0,dbiotum,frmud_db_max,frmud_db_min, &
                                 dt_consolid,dt_diffused,dt_bioturb,subdt_bioturb
+   REAL(KIND=rsh)            :: h0fond  ! RESIDUAL_THICKNESS_WAT
    REAL(KIND=rsh)                                :: hsed_new,coef_erolat,coef_tauskin_lat
    REAL(KIND=rsh)                                :: sed_difint,sed_difsed 
    
@@ -103,9 +104,9 @@
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c_v ! bottom stress due to current, compute at v point
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphbx
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphby
-#if defined key_tauskin_upwind
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_x ! bottom stress (N.m-2) - component on x axis
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_y ! bottom stress (N.m-2) - component on y axis
+#if defined key_tauskin_c_upwind
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_x ! bottom stress - component on x axis
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_y ! bottom stress - component on y axis
 #endif
    REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w,phieau_s2w_consol,phieau_s2w_drycell
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot,htot,alt_cw1

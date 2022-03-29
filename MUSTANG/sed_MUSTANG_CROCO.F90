@@ -48,7 +48,7 @@
  !!===========================================================================================
  
   SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
-                     h0fond, WATER_CONCENTRATION) 
+                     WATER_CONCENTRATION) 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_settlveloc  ***
    !&E
@@ -56,7 +56,6 @@
    !&E
    !&E ** Description : use arguments and common variable 
    !&E  arguments IN : 
-   !&E         h0fond, : RESIDUAL_THICKNESS_WAT (m) 
    !&E         WATER_CONCENTRATION=t : WATER_CONCENTRATION 
    !&E  arguments OUT:
    !&E         WAT_SETTL: settling velocities for CROCO
@@ -82,7 +81,6 @@
 
    !! * Arguments
    INTEGER, INTENT(IN)                               :: ifirst, ilast, jfirst, jlast
-   REAL(KIND=rsh), INTENT(IN)                         :: h0fond
    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN)  :: WATER_CONCENTRATION  ! CROCO : directly t 
    
    !! * Local declarations
@@ -204,7 +202,7 @@
 
 !!===========================================================================================
 
-  SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast, h0fond)
+  SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_gradvit  ***
@@ -213,7 +211,7 @@
    !&E
    !&E ** Description : G= sqrt(turbulence dissipation/viscosity)
    !&E                 to be programmed using hydrodynamic knowledge
-   !&E           using htot, RESIDUAL_THICKNESS_WAT (h0fond), RHOREF, sig, epn, nz ..
+   !&E           using htot, RHOREF, sig, epn, nz ..
    !&E
    !&E     output : gradvit (in comMUSTANG)
    !&E
@@ -226,7 +224,6 @@
 
    !! * Arguments 
    INTEGER, INTENT(IN)       :: ifirst, ilast, jfirst, jlast
-   REAL(KIND=rsh),INTENT(IN) :: h0fond
 
    !! * Local declarations
    INTEGER        :: i, j, k
@@ -260,7 +257,7 @@
    !&E
    !&E ** Description :  bottom shear stress related to current and also to waves
    !&E            to be programmed from hydrodynamic variables
-   !&E                   RHOREF,  hx, hy, ssh, h0fond, u,uz, v, vz, hminfrot,hmaxfrot,
+   !&E                   RHOREF,  hx, hy, ssh, u,uz, v, vz, hminfrot,hmaxfrot,
    !&E         using some parameters and variables of MUSTANG :
    !&E                    z0sed,  htncrit
    !&E               and Wave coupling
@@ -300,7 +297,7 @@
 # ifdef WAVE_OFFLINE
    REAL(KIND=rsh)                                   :: fws2ij,speedbar,alpha,beta,cosamb,sinamb
 # endif
-# ifdef key_tauskin_upwind   
+# ifdef key_tauskin_c_upwind   
    REAL(KIND=rsh)                                   :: cff4,cff1,cff2,cff3
 # endif  
    
@@ -407,7 +404,7 @@
       DO j=jfirst,jlast
         DO i=ifirst,ilast
 #  endif  
-# ifdef key_tauskin_upwind
+# ifdef key_tauskin_c_upwind
             cff1=0.5*(1.0+SIGN(1.0,tauskin_c_u(i,j)))
             cff2=0.5*(1.0-SIGN(1.0,tauskin_c_u(i,j)))
             cff3=0.5*(1.0+SIGN(1.0,tauskin_c_u(i-1  ,j)))

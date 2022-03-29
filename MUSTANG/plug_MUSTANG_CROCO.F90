@@ -30,15 +30,14 @@ CONTAINS
       INTEGER :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
-      CALL MUSTANG_update (Istr,Iend,Jstr,Jend,  & 
-                   RESIDUAL_THICKNESS_WAT,       &
-                   WATER_CONCENTRATION,Z0HYDRO,  &
-                   WATER_ELEVATION,              &
+      CALL MUSTANG_update (Istr, Iend, Jstr, Jend,  & 
+                   WATER_CONCENTRATION, Z0HYDRO,    &
+                   WATER_ELEVATION,                 &
 # if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-                   BAROTROP_VELOCITY_U,          &
-                   BAROTROP_VELOCITY_V,          &
+                   BAROTROP_VELOCITY_U,             &
+                   BAROTROP_VELOCITY_V,             &
 # endif
-                   SALREF_LIN,TEMPREF_LIN,&
+                   SALREF_LIN, TEMPREF_LIN,         &
                    TRANSPORT_TIME_STEP)
       end subroutine
 !
@@ -49,9 +48,8 @@ CONTAINS
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
-      CALL MUSTANG_deposition (Istr,Iend,Jstr,Jend, &
-                   WATER_ELEVATION,                 &
-                   RESIDUAL_THICKNESS_WAT,          &
+      CALL MUSTANG_deposition (Istr, Iend, Jstr, Jend, &
+                   WATER_ELEVATION,                    &
                    WATER_CONCENTRATION)
       end subroutine
 
@@ -69,17 +67,17 @@ CONTAINS
 !
       call MUSTANG_initialization(  &
 # ifdef key_MUSTANG_flocmod
-               TRANSPORT_TIME_STEP, &
+               TRANSPORT_TIME_STEP &
 # endif
                )
 
 
-      CALL MUSTANG_init_sediment (Istr,Iend,Jstr,Jend,   &
-                   WATER_ELEVATION,                    &
+      CALL MUSTANG_init_sediment (Istr, Iend, Jstr, Jend, &
+                   WATER_ELEVATION,                       &
 # if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN
-                   DHSED,                                &
+                   DHSED,                                 &
 # endif
-                   RESIDUAL_THICKNESS_WAT,Z0HYDRO,       &
+                   RESIDUAL_THICKNESS_WAT, Z0HYDRO,       &
                    WATER_CONCENTRATION)
       end subroutine
 
@@ -92,12 +90,12 @@ CONTAINS
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-      CALL MUSTANG_morpho (Istr,Iend,Jstr,Jend,     &
-                   WATER_ELEVATION,                 &
+      CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, &
+                   WATER_ELEVATION                 &
 # if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN
-                   DHSED,                           &
+                   , DHSED                         &
 # endif                                     
-                   RESIDUAL_THICKNESS_WAT)
+                   )
       end subroutine
 !
 !-----------------------------------------------------------------------

@@ -127,13 +127,13 @@ MODULE sed_MUSTANG
  
 !!==============================================================================
  
-  SUBROUTINE MUSTANG_update(ifirst,ilast,jfirst,jlast,              &
-               h0fond,WATER_CONCENTRATION,z0hydro,                  &
-               WATER_ELEVATION,                            &
+  SUBROUTINE MUSTANG_update(ifirst, ilast, jfirst, jlast,     &
+               WATER_CONCENTRATION, z0hydro,                  &
+               WATER_ELEVATION,                               &
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-               BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V,             &
+               BAROTROP_VELOCITY_U, BAROTROP_VELOCITY_V,             &
 #endif
-               saliref_lin,temperef_lin,dt_true)
+               saliref_lin, temperef_lin, dt_true)
 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE MUSTANG_update ***
@@ -149,7 +149,6 @@ MODULE sed_MUSTANG
    !&E
    !&E  arguments IN : 
    !&E         loops  :ifirst,ilast,jfirst,jlast
-   !&E         bathy  :h0fond=RESIDUAL_THICKNESS_WAT
    !&E         parametres ref  :RHOREF, saliref_lin,temperef_lin
    !&E         time  :dt_true,t (DOUBLE PRECISION)
    !&E         hydro  :WATER_ELEVATION,BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V
@@ -179,7 +178,7 @@ MODULE sed_MUSTANG
 
    !! * Arguments
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
-   REAL(KIND=rsh),INTENT(IN)                                 :: h0fond, saliref_lin, temperef_lin 
+   REAL(KIND=rsh),INTENT(IN)                                 :: saliref_lin, temperef_lin 
    REAL(KIND=rlg),INTENT(IN)                                 :: dt_true  ! !  (dt_true=halfdt in MARS)
    REAL(KIND=rsh),DIMENSION(ARRAY_Z0HYDRO),INTENT(INOUT)          :: z0hydro                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT)  :: WATER_ELEVATION                         
@@ -229,16 +228,16 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FORCING :     u*=ustarbot            !!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      DO j=jfirst,jlast
-      DO i=ifirst,ilast
-          IF(htot(i,j).GT.h0fond)  THEN
-            IF(tauskin(i,j) < 0.) THEN
-              ustarbot(i,j)=0.0_rsh
+      DO j= jfirst, jlast
+        DO i= ifirst, ilast
+          IF (htot(i, j) .GT. h0fond)  THEN
+            IF (tauskin(i, j) < 0.) THEN
+              ustarbot(i, j) = 0.0_rsh
             ELSE
-              ustarbot(i,j)=(tauskin(i,j)/RHOREF)**0.5_rsh
+              ustarbot(i, j) = (tauskin(i, j) / RHOREF)**0.5_rsh
             ENDIF
           ENDIF
-      ENDDO
+        ENDDO
       ENDDO
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -246,20 +245,20 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      ! computing  gradvit and ustarbot - depending on hydro code ==> in MUSTANG_HYDROCODE.F90
       ! out : gradvit in common comMUSTANG
-    CALL sed_gradvit(ifirst, ilast, jfirst, jlast, h0fond)
+    CALL sed_gradvit(ifirst, ilast, jfirst, jlast)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! vitesse de chute : settling rate     !!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    CALL sed_MUSTANG_settlveloc(ifirst,ilast,jfirst,jlast,              &
-                           h0fond,WATER_CONCENTRATION)
+    CALL sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
+                           WATER_CONCENTRATION)
 
 #ifdef key_MUSTANG_flocmod
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FLOCMOD :    compute aggregation /fragmentation processes  !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    CALL flocmod_main(ifirst,ilast,jfirst,jlast,dt_true,  &
-                        h0fond,WATER_CONCENTRATION)
+    CALL flocmod_main(ifirst, ilast, jfirst, jlast, dt_true,  &
+                        WATER_CONCENTRATION)
                         
     ! MPI exchange of new water concentrations
     ! ** TODO** in CROCO CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION)
@@ -270,14 +269,14 @@ MODULE sed_MUSTANG
 !!!!!!!!!! tendance au depot : deposit tendency   flx_w2s (m.s-1) !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          
-    CALL sed_MUSTANG_depflx(ifirst,ilast,jfirst,jlast)
+    CALL sed_MUSTANG_depflx(ifirst, ilast, jfirst, jlast)
     
     
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!! Correction for sand horizontal transport  corflux,corfluy ,flx_w2s(sand)  !!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    CALL sed_MUSTANG_sandconcextrap(ifirst,ilast,jfirst,jlast,h0fond)
+    CALL sed_MUSTANG_sandconcextrap(ifirst, ilast, jfirst, jlast)
 
    
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -352,15 +351,15 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! TEMERATURE in SEDIMENT                             !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   CALL sed_MUSTANG_Temperatur_in_sed(ifirst,ilast,jfirst,jlast,  &
-                                                h0fond,dt_true,dtinv)
+   CALL sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast,  &
+                                                dt_true, dtinv)
 #endif
                            
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! BIO PROCESSES in SEDIMENT                                        !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    CALL reactions_in_sed(ifirst,ilast,jfirst,jlast,BATHY_H0,h0fond,dt_true,dtinv)
+    CALL reactions_in_sed(ifirst, ilast, jfirst, jlast, BATHY_H0, dt_true, dtinv)
 
     !**TODO** : create sed_exchange_cvwat in sed_MUSTANG_CROCO
     !IF(p_txfiltbenthmax .NE. 0.0_rsh) THEN
@@ -374,8 +373,8 @@ MODULE sed_MUSTANG
 ! CONSOLIDATION & DIFFUSION   !!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   IF(l_dyn_insed)CALL sed_MUSTANG_consol_diff_bioturb(ifirst,ilast,jfirst,jlast,  &
-               h0fond,saliref_lin,temperef_lin,dt_true)
+   IF(l_dyn_insed)CALL sed_MUSTANG_consol_diff_bioturb(ifirst, ilast, jfirst, jlast,  &
+                saliref_lin, temperef_lin, dt_true)
     
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !          EROSION             !!!!!!!!!!
@@ -433,9 +432,9 @@ MODULE sed_MUSTANG
 ! end key_MUSTANG_bedload (version V2)
 #endif
 
-   CALL sed_MUSTANG_erosion(ifirst,ilast,jfirst,jlast,h0fond,dtinv,     &
+   CALL sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv,     &
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-                           BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V,     &
+                           BAROTROP_VELOCITY_U, BAROTROP_VELOCITY_V,     &
 #endif
                              dt_true)
 
@@ -587,9 +586,9 @@ MODULE sed_MUSTANG
   
   !!==============================================================================
   
-  SUBROUTINE MUSTANG_deposition(ifirst,ilast,jfirst,jlast,          &
-                        WATER_ELEVATION,         &
-                        h0fond,WATER_CONCENTRATION)
+  SUBROUTINE MUSTANG_deposition(ifirst, ilast, jfirst, jlast,  &
+                        WATER_ELEVATION,                       &
+                        WATER_CONCENTRATION)
               
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE MUSTANG_deposition  ***
@@ -604,7 +603,6 @@ MODULE sed_MUSTANG
    !&E ** Description : 
    !&E  arguments IN : 
    !&E         loops  :ifirst,ilast,jfirst,jlast
-   !&E         bathy  :h0fond
    !&E         hydro  :WATER_ELEVATION
    !&E         concentrations  : WATER_CONCENTRATION,SALINITY_MOD,TEMPERATURE_MOD
    !&E
@@ -620,8 +618,7 @@ MODULE sed_MUSTANG
    !! * Modules used
 
    !! * Arguments
-   INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN) :: h0fond
+   INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast 
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
 #if defined key_BLOOM_insed
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT)  :: WATER_CONCENTRATION   
@@ -669,7 +666,7 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef key_MUSTANG_slipdeposit
    IF(slopefac .NE. 0.0_rsh) THEN
-     CALL sed_MUSTANG_slipdepo(ifirst,ilast,jfirst,jlast,h0fond)
+     CALL sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
      !**TODO** create sed_exchange_w2s in sed_MUSTANG_CROCO
 #if defined MPI
    DO iv=isand2+1,nvp
@@ -706,7 +703,7 @@ MODULE sed_MUSTANG
 !!!! effective deposit after variables transport and settling =>  sedimentation   !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   call sed_MUSTANG_effdep(ifirst,ilast,jfirst,jlast,h0fond,iexchge_MPI_cvwat)
+   call sed_MUSTANG_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
 
     !**TODO** code sed_exchange_cvwat CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION,iexchge_MPI_cvwat)
                      
@@ -716,11 +713,11 @@ MODULE sed_MUSTANG
  
    !!===========================================================================
  
-  SUBROUTINE MUSTANG_morpho(ifirst,ilast,jfirst,jlast,WATER_ELEVATION,       &
+  SUBROUTINE MUSTANG_morpho(ifirst, ilast, jfirst, jlast, WATER_ELEVATION       &
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
-                                      dhsed,                            &
+                                      ,dhsed                            &
 #endif                                     
-                                       h0fond)
+                                      )
  
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE MUSTANG_morpho  ***
@@ -741,8 +738,7 @@ MODULE sed_MUSTANG
 #endif
 
    !! * Arguments
-   INTEGER, INTENT(IN)                :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN)          :: h0fond
+   INTEGER, INTENT(IN)                :: ifirst, ilast, jfirst, jlast
 #if defined MORPHODYN_MUSTANG_byHYDRO
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(IN) :: WATER_ELEVATION                    
 #else
@@ -1577,7 +1573,7 @@ MODULE sed_MUSTANG
 
 !!==============================================================================
 
-  SUBROUTINE sed_MUSTANG_sandconcextrap(ifirst, ilast, jfirst, jlast, h0fond)
+  SUBROUTINE sed_MUSTANG_sandconcextrap(ifirst, ilast, jfirst, jlast)
 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_sandconcextrap  ***
@@ -1589,7 +1585,6 @@ MODULE sed_MUSTANG
    !&E
    !&E  arguments IN : 
    !&E         loops  :ifirst,ilast,jfirst,jlast
-   !&E         h0fond (RESIDUAL_THICKNESS_WAT)
    !&E
    !&E  variables OUT : (in comMUSTANG) 
    !&E     flx_w2s : tendances aux depots corriges pour sables 
@@ -1614,8 +1609,6 @@ MODULE sed_MUSTANG
 
    !! * Arguments
    INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
-   REAL(KIND=rsh),INTENT(IN)                  :: h0fond
-
    !! * Local declarations
    INTEGER                              :: izz,ivp,i,j,ivpp
    REAL(KIND=rsh)                       :: altc1,extrap,rouse,som,dzcche,hzed,     &
@@ -1638,7 +1631,7 @@ MODULE sed_MUSTANG
       DO i=ifirst,ilast
 
           altc1=alt_cw1(i,j)
-          IF(altc1.LE.aref_sand .OR. htot(i,j).LE.h0fond)THEN
+          IF(altc1 .LE. aref_sand .OR. htot(i,j) .LE. h0fond)THEN
             extrap=1.0_rsh
             ! in this case, flx_w2s(ivp,i,j) is not changed
             DO ivp=isand1,isand2
@@ -1751,9 +1744,9 @@ MODULE sed_MUSTANG
 !!==============================================================================
       
 #ifdef key_MUSTANG_V2
-  SUBROUTINE sed_MUSTANG_erosion(ifirst,ilast,jfirst,jlast,h0fond,dtinv, &
+  SUBROUTINE sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv, &
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-                                    BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V, &
+                                    BAROTROP_VELOCITY_U, BAROTROP_VELOCITY_V, &
 #endif
                                     dt_true) 
    !&E--------------------------------------------------------------------------
@@ -1764,7 +1757,6 @@ MODULE sed_MUSTANG
    !&E ** Description : 
    !&E       arguments IN :
    !&E          loops  :ifirst,ilast,jfirst,jlast
-   !&E          h0fond : RESIDUAL_THICKNESS_WAT
    !&E          dtinv, dt_true : 1/dt  and dt
    !&E          u,v :   BAROTROP_VELOCITY_U, BAROTROP_VELOCITY_V
    !&E      
@@ -1782,8 +1774,8 @@ MODULE sed_MUSTANG
    !! * Modules used
 
 
-   INTEGER, INTENT(IN)                        :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN)                  :: h0fond,dtinv
+   INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
+   REAL(KIND=rsh),INTENT(IN)                  :: dtinv
    REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
    REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)   :: BAROTROP_VELOCITY_U
@@ -1967,12 +1959,10 @@ MODULE sed_MUSTANG
 #ifdef key_MUSTANG_bedload 
               ! IN : i,j,ksmax / OUT : flx_bxij,flx_byij (bedload Flux in kg/m/s)
 
-              CALL MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,  &
-                                         h0fond)    !,CELL_DX,CELL_DY)
-
+              CALL MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)  
 #else
-              flx_bxij(:)=0.0_rsh
-              flx_byij(:)=0.0_rsh
+              flx_bxij(:) = 0.0_rsh
+              flx_byij(:) = 0.0_rsh
 #endif
 
               ! On calcule un flux derosion pour chaque classe (en kg/m2/s)
@@ -2571,9 +2561,9 @@ MODULE sed_MUSTANG
 #else
 !  version V1
    !!==============================================================================
-  SUBROUTINE sed_MUSTANG_erosion(ifirst,ilast,jfirst,jlast,h0fond,dtinv,  &
+  SUBROUTINE sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv,  &
 #if defined key_MUSTANG_lateralerosion 
-                                 BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V, &
+                                 BAROTROP_VELOCITY_U, BAROTROP_VELOCITY_V, &
 #endif
                                   dt_true) 
    !&E--------------------------------------------------------------------------
@@ -2584,7 +2574,6 @@ MODULE sed_MUSTANG
    !&E ** Description : 
    !&E       arguments IN :
    !&E          loops  :ifirst,ilast,jfirst,jlast
-   !&E          h0fond : RESIDUAL_THICKNESS_WAT
    !&E          dtinv, dt_true : 1/dt  and dt
    !&E          CELL_SURF : cells surface
    !&E          u,v :   BAROTROP_VELOCITY_U, BAROTROP_VELOCITY_V
@@ -2601,8 +2590,8 @@ MODULE sed_MUSTANG
    !&E--------------------------------------------------------------------------
    !! * Modules used
 
-   INTEGER, INTENT(IN)                        :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN)                  :: h0fond,dtinv
+   INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
+   REAL(KIND=rsh),INTENT(IN)                  :: dtinv
    REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
 #if defined key_MUSTANG_lateralerosion 
    REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)   :: BAROTROP_VELOCITY_U
@@ -3271,7 +3260,7 @@ MODULE sed_MUSTANG
 
    !!==============================================================================
 #ifdef key_MUSTANG_V2
- SUBROUTINE sed_MUSTANG_effdep(ifirst,ilast,jfirst,jlast,h0fond,iexchge_MPI_cvwat)
+ SUBROUTINE sed_MUSTANG_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
     
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_effdep version V2 ***
@@ -3282,7 +3271,7 @@ MODULE sed_MUSTANG
    !&E
    !&E       arguments IN :
    !&E          loops  :ifirst,ilast,jfirst,jlast
-   !&E          CELL_SURF,h0fond
+   !&E          CELL_SURF
    !&E          
    !&E       variables OUT :
    !&E           phieau_s2w
@@ -3296,7 +3285,6 @@ MODULE sed_MUSTANG
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast
    INTEGER, INTENT(INOUT)  :: iexchge_MPI_cvwat
-   REAL(KIND=rsh),INTENT(IN) :: h0fond
 
    !! * Local declarations
    REAL(KIND=rsh),DIMENSION(nvp)  :: flx_w2s_loc
@@ -4169,7 +4157,7 @@ MODULE sed_MUSTANG
 
 #else
 !! version V1
-  SUBROUTINE sed_MUSTANG_effdep(ifirst,ilast,jfirst,jlast,h0fond,iexchge_MPI_cvwat)
+  SUBROUTINE sed_MUSTANG_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
     
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_effdep version V1 ***
@@ -4180,7 +4168,6 @@ MODULE sed_MUSTANG
    !&E
    !&E       arguments IN :
    !&E          loops  :ifirst,ilast,jfirst,jlast
-   !&E          h0fond
    !&E          
    !&E       variables OUT :
    !&E           phieau_s2w
@@ -4194,7 +4181,6 @@ MODULE sed_MUSTANG
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast
    INTEGER, INTENT(INOUT)  :: iexchge_MPI_cvwat
-   REAL(KIND=rsh),INTENT(IN) :: h0fond
 
    !! * Local declarations
    REAL(KIND=rsh),DIMENSION(nvp)  :: flx_w2s_loc
@@ -5055,7 +5041,7 @@ MODULE sed_MUSTANG
  
 !!==============================================================================
 #if defined key_MUSTANG_slipdeposit
-  SUBROUTINE sed_MUSTANG_slipdepo(ifirst,ilast,jfirst,jlast, h0fond)
+  SUBROUTINE sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
    
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_slipdepo  ***
@@ -5065,7 +5051,6 @@ MODULE sed_MUSTANG
    !&E ** Description :  
    !&E  arguments IN : 
    !&E          loops : ifirst,ilast,jfirst,jlast
-   !&E          bathy : _ h0fond,  
    !&E          
    !&E   variables in  (comMUSTANG)      flx_w2s_sum 
    !&E          
@@ -5079,8 +5064,7 @@ MODULE sed_MUSTANG
    !! * Modules used
 
    !! * Arguments
-   INTEGER, INTENT(IN)                    :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN)              :: h0fond
+   INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
 
    !! * Local declarations
    INTEGER                :: iv,i,j
@@ -5121,7 +5105,7 @@ MODULE sed_MUSTANG
 #endif
     !!==============================================================================
 #if ! defined key_noTSdiss_insed
-   SUBROUTINE sed_MUSTANG_Temperatur_in_sed(ifirst,ilast,jfirst,jlast,h0fond,dt_true,dtinv)
+   SUBROUTINE sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast, dt_true, dtinv)
 ! 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_Temperatur_in_sed ***
@@ -5130,7 +5114,6 @@ MODULE sed_MUSTANG
    !&E
    !&E ** Description :
    !&E        arguments IN :
-   !&E            h0fond : RESIDUAL_THICKNESS_WAT
    !&E            dt_true : time step
    !&E            parameters : 
    !&E
@@ -5148,7 +5131,7 @@ MODULE sed_MUSTANG
 
    !! * Arguments
    INTEGER, INTENT(IN)            :: ifirst,ilast,jfirst,jlast                           
-   REAL(KIND=rsh),INTENT(IN)      :: h0fond,dtinv
+   REAL(KIND=rsh),INTENT(IN)      :: dtinv
    REAL(KIND=rlg),INTENT(IN)      :: dt_true
 
    
@@ -5330,8 +5313,8 @@ MODULE sed_MUSTANG
 #endif
     !!==============================================================================
 
-   SUBROUTINE sed_MUSTANG_consol_diff_bioturb(ifirst,ilast,jfirst,jlast,  &
-                h0fond,saliref_lin,temperef_lin,dt_true)
+   SUBROUTINE sed_MUSTANG_consol_diff_bioturb(ifirst, ilast, jfirst, jlast,  &
+                saliref_lin, temperef_lin, dt_true)
 ! 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_consol_diff_bioturb ***
@@ -5341,7 +5324,6 @@ MODULE sed_MUSTANG
    !&E
    !&E ** Description :
    !&E        arguments IN :
-   !&E            h0fond : RESIDUAL_THICKNESS_WAT
    !&E            dt_true : time step
    !&E            parameters : saliref_lin,temperef_lin
    !&E
@@ -5361,8 +5343,8 @@ MODULE sed_MUSTANG
 
 
    !! * Arguments
-   INTEGER, INTENT(IN)            :: ifirst,ilast,jfirst,jlast                           
-   REAL(KIND=rsh),INTENT(IN)      :: h0fond,saliref_lin,temperef_lin
+   INTEGER, INTENT(IN)            :: ifirst, ilast, jfirst, jlast                           
+   REAL(KIND=rsh),INTENT(IN)      :: saliref_lin, temperef_lin
    REAL(KIND=rlg),INTENT(IN)      :: dt_true
    
    !! * Local declarations
@@ -8742,8 +8724,7 @@ END SUBROUTINE MUSTANGV2_eval_dissvar_IWSflux
 
 #if defined key_MUSTANG_bedload
   !!============================================================================== 
-SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
-                                   h0fond) 
+SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij) 
 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE MUSTANGV2_eval_bedload  ***
@@ -8752,7 +8733,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
    !&E              with hinding/exposure processes
    !&E
    !&E ** Description : 0D
-   !&E                variables IN :  ksmax,CELL_DX,CELL_DY,h0fond,ibedload1,ibedload2
+   !&E                variables IN :  ksmax,CELL_DX,CELL_DY, ibedload1,ibedload2
    !&E                              diam_sed,cv_sed,c_sedtot,roswat_bot
    !&E                              stresscri0, tauskin,ros,raphbx,raphby,
    !&E                              tauskin_c_u,tauskin_c_v,
@@ -8776,7 +8757,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
    !! * Arguments
    INTEGER,INTENT(IN)                                      :: i, j, ksmax
    REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(out)             :: flx_bxij, flx_byij 
-   REAL(KIND=rsh),INTENT(IN)                               :: h0fond
 
    !! * Local declarations
    INTEGER        ::  iv, jiv
@@ -8852,18 +8832,14 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
      flx_bxij(iv)=qb*((tauskin_c_u(i,j)*raphbx(i,j)+tauskin_c_u(i-1,j)   &
                     *raphbx(i-1,j))/(raphbx(i,j)                 &
                     +raphbx(i-1,j)+epsilon_MUSTANG))*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG) 
-
-#if defined key_tauskin_c_decentred_DUNE
-     flx_bxij(iv)=qb*tauskin_c_u(i-1,j)*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
-#endif
-
+    
      flx_byij(iv)=qb*((tauskin_c_v(i,j)*raphby(i,j)+tauskin_c_v(i,j-1)   &
                     *raphby(i,j-1))/(raphby(i,j)                 &
                     +raphby(i,j-1)+epsilon_MUSTANG))*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
 # if defined key_ANA_bedload || defined ANA_DUNE
      flx_byij(iv)=0.
 #endif
-#if defined key_tauskin_upwind
+#if defined key_tauskin_c_upwind
      flx_bxij(iv)=qb*tauskin_x(i,j)*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
      flx_byij(iv)=qb*tauskin_y(i,j)*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
 #endif
@@ -8958,8 +8934,8 @@ END SUBROUTINE MUSTANGV2_eval_bedload
 
 #ifdef key_MUSTANG_flocmod
   
-  SUBROUTINE flocmod_main(ifirst,ilast,jfirst,jlast,dt_true,  &
-                        h0fond,WATER_CONCENTRATION)
+  SUBROUTINE flocmod_main(ifirst, ilast, jfirst, jlast, dt_true,  &
+                        WATER_CONCENTRATION)
  
   !&E--------------------------------------------------------------------------
   !&E                 ***  ROUTINE flocmod_main  ***
@@ -8977,8 +8953,7 @@ END SUBROUTINE MUSTANGV2_eval_bedload
    USE sed_MUSTANG_HOST,    ONLY :  flocmod_comp_g
 
   !! * Arguments
-   INTEGER, INTENT(IN)            :: ifirst,ilast,jfirst,jlast                           
-   REAL(KIND=rsh),INTENT(IN)      :: h0fond
+   INTEGER, INTENT(IN)            :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rlg),INTENT(IN)      :: dt_true             ! !  (dt_true=halfdt in MARS)
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT) :: WATER_CONCENTRATION         
 
