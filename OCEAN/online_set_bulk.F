@@ -51,11 +51,30 @@
 # endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2, blkvar_id
       real cff,cff1,cff2, cff3,cff4
+      integer imax,jmax
 # ifdef SALINITY
       real cff5,cff6
 # endif      
 # ifdef CFB_WIND_TRA
       real uwnd_r, vwnd_r
+# endif
+      # ifdef EW_PERIODIC
+      imax=Iend+2
+# else
+      if (EASTERN_EDGE) then
+        imax=Iend+1
+      else
+        imax=Iend+2
+      endif
+# endif
+# ifdef NS_PERIODIC
+      jmax=Jend+2
+# else
+      if (NORTHERN_EDGE) then
+        jmax=Jend+1
+      else
+        jmax=Jend+2
+      endif
 # endif
 !     
 # include "compute_extended_bounds.h"
@@ -143,15 +162,42 @@
             enddo
           enddo
         elseif (blkvar_id.eq.9) then
+!$$$          do j=JstrR,JendR
+!$$$            do i=IstrR,IendR
+!$$$              uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
+!$$$              vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
+!$$$              wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
+!$$$            enddo
+!$$$  enddo
           do j=JstrR,JendR
-            do i=IstrR,IendR
+            do i=IstrR,imax
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
-              vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
-              wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
             enddo
           enddo
-!!!! GC C$OMP BARRIER
+          do j=JstrR,jmax
+            do i=IstrR,IendR
+              vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
+            enddo
+          enddo
+          do j=JstrR,min(JendR,Mm)
+            do i=IstrR,min(IendR,Lm)
+              wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
+     &                       0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
+# ifdef CFB_WIND_TRA
+              cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
+     &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
+     &                   )
+              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
+     &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+     &                   )
+              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+# endif
+            enddo
+          enddo
           
+!!!!C$OMP BARRIER
+!!!!!! BARRIER is needed to avoid tile desynchronization when using CFB_WIND_TRA          
 !$$$# ifdef CFB_WIND_TRA
 !$$$          cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
 !$$$          do j=JstrR,min(JendR,Mm)
@@ -164,85 +210,114 @@
 !$$$     &                   )
 !$$$              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
 !$$$            enddo
+!$$$  enddo
+          
+!$$$! begin GC
+!$$$# ifdef CFB_WIND_TRA
+!$$$          cff      = 1.-swparam
+!$$$# if !defined OPENMP
+!$$$          do j=JstrR,min(JendR,Mm)
+!$$$            do i=IstrR,min(IendR,Lm)
+!$$$              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
+!$$$     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
+!$$$     &                       )
+!$$$              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
+!$$$     &                       - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+!$$$     &                       )
+!$$$              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+!$$$            enddo
 !$$$          enddo
-! begin GC
-# ifdef CFB_WIND_TRA
-          cff      = 1.-swparam
-# if !defined OPENMP
-          do j=JstrR,min(JendR,Mm)
-            do i=IstrR,min(IendR,Lm)
-              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
-     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
-     &                       )
-              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
-     &                       - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
-     &                       )
-              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
-            enddo
-          enddo
-#else
-!     (on change les boucles et on utilise uwndg et vwndg)
-          do j=JstrR,JendR-1
-            do i=IstrR,IendR-1
-              uwnd_r = 0.5*( cff1*uwndg(i+1,j,it1)+
-     &                                        cff2*uwndg(i+1,j,it2)
-     &             +         cff1*uwndg(i  ,j,it1)+
-     &                                        cff2*uwndg(i  ,j,it2)
-     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))  
-     &                      )
-     &             
-              vwnd_r = 0.5*( cff1*vwndg(i,j+1,it1)+
-     &                                        cff2*vwndg(i,j+1,it2)
-     &             +         cff1*vwndg(i,j  ,it1)+
-     &                                        cff2*vwndg(i,j  ,it2)
-     &                     - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
-     &                      )
-              
-              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
-            enddo
-          enddo    
-!! end GC
-#  ifndef EW_PERIODIC
+!$$$#else
+!$$$!     (on change les boucles et on utilise uwndg et vwndg)
+!$$$          do j=JstrR,JendR-1
+!$$$            do i=IstrR,IendR-1
+!$$$              uwnd_r = 0.5*( cff1*uwndg(i+1,j,it1)+
+!$$$     &                                        cff2*uwndg(i+1,j,it2)
+!$$$     &             +         cff1*uwndg(i  ,j,it1)+
+!$$$     &                                        cff2*uwndg(i  ,j,it2)
+!$$$     &                       - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))  
+!$$$     &                      )
+!$$$     &             
+!$$$              vwnd_r = 0.5*( cff1*vwndg(i,j+1,it1)+
+!$$$     &                                        cff2*vwndg(i,j+1,it2)
+!$$$     &             +         cff1*vwndg(i,j  ,it1)+
+!$$$     &                                        cff2*vwndg(i,j  ,it2)
+!$$$     &                     - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+!$$$     &                      )
+!$$$              
+!$$$              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+!$$$            enddo
+!$$$          enddo    
+!$$$!! end GC
+# ifndef EW_PERIODIC
             if (WESTERN_EDGE) then
               do j=Jstr,Jend
-                wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
+                wspd(Istr-1,j)=wspd(Istr,j)
+#  ifdef CFB_WIND_TRA                
+                wspd_cfb(Istr-1,j)=wspd(Istr,j)
+#  endif       
               enddo
             endif
             if (EASTERN_EDGE) then
               do j=Jstr,Jend
+                wspd(Iend+1,j)=wspd_cfb(Iend,j)
+#  ifdef CFB_WIND_TRA          
                 wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)
+#  endif        
               enddo
             endif
 #  endif
 #  ifndef NS_PERIODIC
             if (SOUTHERN_EDGE) then
               do i=Istr,Iend
+                wspd(i,Jstr-1)=wspd(i,Jstr)
+#   ifdef CFB_WIND_TRA                          
                 wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
+#   endif
               enddo
             endif
             if (NORTHERN_EDGE) then
               do i=Istr,Iend
+                wspd(i,Jend+1)=wspd(i,Jend)
+#   ifdef CFB_WIND_TRA          
                 wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
+#   endif
               enddo
             endif
 #   ifndef EW_PERIODIC
             if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
+#    ifdef CFB_WIND_TRA    
               wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
+#    endif    
             endif
             if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
+#    ifdef CFB_WIND_TRA    
               wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)
+#    endif    
             endif
             if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
+#    ifdef CFB_WIND_TRA    
               wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
+#    endif    
             endif
             if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
+#    ifdef CFB_WIND_TRA    
               wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
+#    endif              
             endif
 #   endif
 #  endif
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
-     &                             wspd_cfb(START_2D_ARRAY))
+     &           wspd(START_2D_ARRAY))
+#    ifdef CFB_WIND_TRA                
+            call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &           wspd_cfb(START_2D_ARRAY))
+#    endif
 #  endif
 # endif
 # ifdef READ_PATM
