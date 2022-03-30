@@ -262,7 +262,7 @@
             endif
             if (EASTERN_EDGE) then
               do j=Jstr,Jend
-                wspd(Iend+1,j)=wspd_cfb(Iend,j)
+                wspd(Iend+1,j)=wspd(Iend,j)
 #  ifdef CFB_WIND_TRA          
                 wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)
 #  endif        
