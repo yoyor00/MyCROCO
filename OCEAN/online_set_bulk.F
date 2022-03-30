@@ -58,7 +58,7 @@
 # ifdef CFB_WIND_TRA
       real uwnd_r, vwnd_r
 # endif
-      # ifdef EW_PERIODIC
+# ifdef EW_PERIODIC
       imax=Iend+2
 # else
       if (EASTERN_EDGE) then
