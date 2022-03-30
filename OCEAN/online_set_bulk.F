@@ -266,60 +266,61 @@
 #  endif        
               enddo
             endif
-#  endif
-#  ifndef NS_PERIODIC
+# endif
+# ifndef NS_PERIODIC
             if (SOUTHERN_EDGE) then
               do i=Istr,Iend
                 wspd(i,Jstr-1)=wspd(i,Jstr)
-#   ifdef CFB_WIND_TRA                          
+#  ifdef CFB_WIND_TRA                          
                 wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
-#   endif
+#  endif
               enddo
             endif
             if (NORTHERN_EDGE) then
               do i=Istr,Iend
                 wspd(i,Jend+1)=wspd(i,Jend)
-#   ifdef CFB_WIND_TRA          
+#  ifdef CFB_WIND_TRA          
                 wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
-#   endif
+#  endif
               enddo
             endif
-#   ifndef EW_PERIODIC
+# endif            
+# ifndef EW_PERIODIC
             if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
               wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
-#    ifdef CFB_WIND_TRA    
+#   ifdef CFB_WIND_TRA    
               wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
-#    endif    
+#   endif    
             endif
             if (WESTERN_EDGE .and. NORTHERN_EDGE) then
               wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
-#    ifdef CFB_WIND_TRA    
+#   ifdef CFB_WIND_TRA    
               wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)
-#    endif    
+#   endif    
             endif
             if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
               wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
-#    ifdef CFB_WIND_TRA    
+#   ifdef CFB_WIND_TRA    
               wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
-#    endif    
+#   endif    
             endif
             if (EASTERN_EDGE .and. NORTHERN_EDGE) then
               wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
-#    ifdef CFB_WIND_TRA    
+#   ifdef CFB_WIND_TRA    
               wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
-#    endif              
+#   endif              
             endif
-#   endif
-#  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# endif
+
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &           wspd(START_2D_ARRAY))
-#    ifdef CFB_WIND_TRA                
+#   ifdef CFB_WIND_TRA                
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &           wspd_cfb(START_2D_ARRAY))
-#    endif
-#  endif
+#   endif
 # endif
+            
 # ifdef READ_PATM
         elseif (blkvar_id.eq.10) then
           do j=JstrR,JendR
