@@ -379,9 +379,14 @@
           frc(i,j)=wramp2*wepd(i,j)*kw(i,j)
      &                             *inv_f(i,j)      ! 2DH friction term
 #  elif defined WAVE_FRICTION
+#   if defined OW_COUPLING_FULL
+          urms=ubr(i,j)
+          fw=1.39*(fr(i,j)*Zob(i,j)/max(urms,eps))**0.52
+#   else          
           abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
           fw=1.39*(Zob(i,j)/max(abot,eps))**0.52    ! Soulsby (1995)
+#   endif          
           cff=0.5/sqrt(pi)*fw*urms**3               ! ep_d/rho
           frc(i,j)=wramp2*cff*kw(i,j)*inv_f(i,j)    ! 2DH friction term
 #  else
