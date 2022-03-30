@@ -117,7 +117,7 @@ else
         -e "s/<nudge_coef_d.*>/0/g" \
         -e "s/<nudge_end_h_d.*>/0/g" \
         -e "s/<nudge_int_m_d.*>/0/g" \
-        namelist.input.prep> namelist.tmp
+        namelist.input> namelist.tmp
     mv namelist.tmp namelist.input
     chmod 755 namelist.input
 fi
@@ -205,7 +205,7 @@ if [[ ${ATM_CASE} == "MOVING_NEST" ]]; then
      mv namelist.input.tmp namelist.input
      chmod 755 namelist.input
 else
-    sed -e "s|<sst_int_m>|${auxinput4_interval}|"\
+    sed -e "s|<sst_int_m>|${auxinput4_interval}|g"\
         -e "s/<max_domains>/${NB_dom}/g" \
         ./namelist.input > ./namelist.input.tmp
      mv namelist.input.tmp namelist.input

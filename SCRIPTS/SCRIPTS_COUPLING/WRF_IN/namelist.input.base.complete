@@ -102,6 +102,7 @@
  sst_skin                            = 0,
  isftcflx                            = <isftcflx>,
  prec_acc_dt                         = 360.,360.,
+ num_land_cat                        = 21,
  /
 
  &dynamics
