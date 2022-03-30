@@ -49,6 +49,9 @@
 #  include "ocean3d.h"
 #  include "params_bulk.h"
 # endif
+!     
+# include "compute_extended_bounds.h"
+!
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2, blkvar_id
       real cff,cff1,cff2, cff3,cff4
       integer imax,jmax
@@ -76,9 +79,7 @@
         jmax=Jend+2
       endif
 # endif
-!     
-# include "compute_extended_bounds.h"
-!
+
        
       !===== == === === ======= ========= 
       ! Loop on all the forcing datasets:
