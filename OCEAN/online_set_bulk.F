@@ -51,7 +51,6 @@
 # endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2, blkvar_id
       real cff,cff1,cff2, cff3,cff4
-      real
 # ifdef SALINITY
       real cff5,cff6
 # endif      
