@@ -51,10 +51,12 @@
 # endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2, blkvar_id
       real cff,cff1,cff2, cff3,cff4
+      real
 # ifdef SALINITY
       real cff5,cff6
 # endif      
 # ifdef CFB_WIND_TRA
+      real cffu1,cffu2,cffv1,cffv2
       real uwnd_r, vwnd_r
 # endif
 !     
@@ -154,15 +156,15 @@
           cff      = 1.-swparam ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
           do j=JstrR,min(JendR,Mm)
             do i=IstrR,min(IendR,Lm)
-              cff3=cff1*uwndg(i ,j,it1)+cff2*uwndg(i  ,j,it2)
-              cff4=cff1*uwndg(i+1,j,it1)+cff2*uwndg(i+1,j,it2)
-              uwnd_r   = 0.5*( cff4 + cff3
+              cffu1=cff1*uwndg(i  ,j,it1)+cff2*uwndg(i  ,j,it2)
+              cffu2=cff1*uwndg(i+1,j,it1)+cff2*uwndg(i+1,j,it2)
+              uwnd_r   = 0.5*( cffu1 + cffu2 
      &             - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
      &             )
 
-              cff5=cff1*vwndg(i,j  ,it1)+cff2*vwndg(i,j  ,it2)
-              cff6=cff1*vwndg(i,j+1,it1)+cff2*vwndg(i,j+1,it2)
-              vwnd_r   = 0.5*( cff6 + cff5
+              cffv1=cff1*vwndg(i,j  ,it1)+cff2*vwndg(i,j  ,it2)
+              cffv2=cff1*vwndg(i,j+1,it1)+cff2*vwndg(i,j+1,it2)
+              vwnd_r   = 0.5*( cffv1 + cffv2
      &             - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
      &             )
 
@@ -175,8 +177,9 @@
 !$$$     &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
 !$$$     &                   )
 !$$$              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
-!$$$            enddo
-!$$$          enddo
+
+            enddo
+          enddo
 
 #  ifndef EW_PERIODIC
             if (WESTERN_EDGE) then
