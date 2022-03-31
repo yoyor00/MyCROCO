@@ -153,6 +153,7 @@
           enddo
 # ifdef CFB_WIND_TRA
           cff      = 1.-swparam ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+          
           do j=JstrR,min(JendR,Mm)
             do i=IstrR,min(IendR,Lm)
               cffu1=cff1*uwndg(i  ,j,it1)+cff2*uwndg(i  ,j,it2)
