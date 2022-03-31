@@ -168,6 +168,8 @@
      &             - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
      &             )
 
+              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+
 !$$$          do j=JstrR,min(JendR,Mm)
 !$$$            do i=IstrR,min(IendR,Lm)
 !$$$              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
