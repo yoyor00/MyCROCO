@@ -135,18 +135,24 @@ C$OMP BARRIER
 C$OMP MASTER
           call check_tab2d(uwndg(:,:,1),'uwndg1 bef on_set_bulk','u')
           call check_tab2d(uwndg(:,:,2),'uwndg2 bef on_set_bulk','u')
+          
           call check_tab2d(vwndg(:,:,1),'vwndg1 bef on_set_bulk','v')
           call check_tab2d(vwndg(:,:,2),'vwndg2 bef on_set_bulk','v')
-          call check_tab2d(tairg(:,1),'tairg1 bef on_set_bulk','r')
-          call check_tab2d(tairg(:,2),'tairg1 bef on_set_bulk','r')
-          call check_tab2d(rhumg(:,1),'rhumg1 bef on_set_bulk','r')
-          call check_tab2d(rhumg(:,2),'rhumg2 bef on_set_bulk','r')
-          call check_tab2d(prateg(:,1),'prateg1 bef on_set_bulk','r')
-          call check_tab2d(prateg(:,2),'prateg2 bef on_set_bulk','r')
-          call check_tab2d(radlwg(:,1),'radlwg1 bef on_set_bulk','r')
-          call check_tab2d(radlwg(:,2),'radlwg2 bef on_set_bulk','r')
-          call check_tab2d(radswg(:,1),'radswg1 bef on_set_bulk','r')
-          call check_tab2d(radswg(:,2),'radswg2 bef on_set_bulk','r')          
+          
+          call check_tab2d(tairg(:,:,1),'tairg1 bef on_set_bulk','r')
+          call check_tab2d(tairg(:,:,2),'tairg1 bef on_set_bulk','r')
+          
+          call check_tab2d(rhumg(:,:,1),'rhumg1 bef on_set_bulk','r')
+          call check_tab2d(rhumg(:,:,2),'rhumg2 bef on_set_bulk','r')
+          
+          call check_tab2d(prateg(:,:,),'prateg1 bef on_set_bulk','r')
+          call check_tab2d(prateg(:,:,2),'prateg2 bef on_set_bulk','r')
+          
+          call check_tab2d(radlwg(:,:,1),'radlwg1 bef on_set_bulk','r')
+          call check_tab2d(radlwg(:,:,2),'radlwg2 bef on_set_bulk','r')
+          
+          call check_tab2d(radswg(:,:,1),'radswg1 bef on_set_bulk','r')
+          call check_tab2d(radswg(:,:,2),'radswg2 bef on_set_bulk','r')          
 C$OMP END MASTER          
         elseif (blkvar_id.eq.5) then
           do j=JstrR,JendR
