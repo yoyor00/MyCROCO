@@ -8,7 +8,7 @@
 
    ! pass from fix (F) to free format (F90)
 
-      USE module_substance
+      use module_substance
 
 #include "ocean3d.h"
 

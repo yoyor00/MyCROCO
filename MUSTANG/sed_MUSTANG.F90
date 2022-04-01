@@ -8829,20 +8829,13 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
      !============Projection sur x et y en fonction de la direction de la tension sur le fond ==============
 
-     flx_bxij(iv)=qb*((tauskin_c_u(i,j)*raphbx(i,j)+tauskin_c_u(i-1,j)   &
-                    *raphbx(i-1,j))/(raphbx(i,j)                 &
-                    +raphbx(i-1,j)+epsilon_MUSTANG))*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG) 
-    
-     flx_byij(iv)=qb*((tauskin_c_v(i,j)*raphby(i,j)+tauskin_c_v(i,j-1)   &
-                    *raphby(i,j-1))/(raphby(i,j)                 &
-                    +raphby(i,j-1)+epsilon_MUSTANG))*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
 # if defined key_ANA_bedload || defined ANA_DUNE
      flx_byij(iv)=0.
 #endif
-#if defined key_tauskin_c_upwind
+
      flx_bxij(iv)=qb*tauskin_x(i,j)*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
      flx_byij(iv)=qb*tauskin_y(i,j)*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
-#endif
+
 
 
 #ifdef key_MUSTANG_debug

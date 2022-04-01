@@ -104,10 +104,8 @@
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c_v ! bottom stress due to current, compute at v point
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphbx
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphby
-#if defined key_tauskin_c_upwind
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_x ! bottom stress - component on x axis
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_y ! bottom stress - component on y axis
-#endif
    REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w,phieau_s2w_consol,phieau_s2w_drycell
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot,htot,alt_cw1
 

@@ -248,7 +248,7 @@
   END SUBROUTINE sed_gradvit
 
    !!==============================================================================
-   SUBROUTINE sed_skinstress(ifirst,ilast,jfirst,jlast)
+   SUBROUTINE sed_skinstress(ifirst, ilast, jfirst, jlast)
  
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_skinstress  ***
@@ -283,26 +283,18 @@
 #  include "ocean2d.h"
 
 
-   INTEGER, INTENT(IN)                        :: ifirst,ilast,jfirst,jlast
+   INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
    INTEGER i,j,k
    REAL    speed ! current speed
 
-# ifdef MPI
-   REAL(KIND=rsh),DIMENSION(ifirst-2:ilast+1,jfirst-2:jlast+1)  :: Zr
-   REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch  
-# else
-   REAL(KIND=rsh),DIMENSION(ifirst-1:ilast+1,jfirst-1:jlast+1)  :: Zr
-# endif
+   REAL(KIND=rsh),DIMENSION(ifirst-1: ilast+1, jfirst-1: jlast+1)  :: Zr
 
 # ifdef WAVE_OFFLINE
-   REAL(KIND=rsh)                                   :: fws2ij,speedbar,alpha,beta,cosamb,sinamb
+   REAL(KIND=rsh)    :: fws2ij, speedbar, alpha, beta, cosamb, sinamb
 # endif
 # ifdef key_tauskin_c_upwind   
-   REAL(KIND=rsh)                                   :: cff4,cff1,cff2,cff3
+   REAL(KIND=rsh)    :: cff1, cff2, cff3, cff4
 # endif  
-   
-   !!--------------------------------------------------------------------------
-   !! * Executable part
 
 !-----------------------------------------------------------------------
 !  Compute bottom skin-friction stress due to combined maximum wave
@@ -310,35 +302,26 @@
 !-----------------------------------------------------------------------
 !
 #  ifdef BBL /*warning, d50 is constant (160microns) in the bustrw/bvstrw computation see bbl.F */
-      do j=jfirst,jlast
-        do i=ifirst,ilast
-          tauskin(i,j)=sqrt( bustrw(i,j)**2 + bvstrw(i,j)**2)*RHOREF
+      do j = jfirst, jlast
+        do i = ifirst, ilast
+          tauskin(i, j) = sqrt( bustrw(i, j)**2 + bvstrw(i, j)**2) * RHOREF
 #  ifdef WET_DRY AND MASKING
-          tauskin(i,j) = tauskin(i,j)*rmask_wet(i,j)
+          tauskin(i, j) = tauskin(i, j) * rmask_wet(i, j)
 #  endif
         enddo
       enddo
 
 #  else /* else on #ifdef BBL */
 
-# ifdef MPI
-      DO j=jfirst-2,jlast+1
-        DO i=ifirst-2,ilast+1
-# else
-      DO j=jfirst-1,jlast+1
-        DO i=ifirst-1,ilast+1
-#  endif
-         Zr(i,j)=  max(z_r(i,j,1)-z_w(i,j,0),z0sed(i,j)+1.E-4)
+
+      do j = jfirst-1, jlast+1
+        do i = ifirst-1, ilast+1
+         Zr(i, j) =  max(z_r(i, j, 1) - z_w(i, j, 0), z0sed(i, j) + 1.E-4)
        enddo
       enddo
 
-# ifdef MPI
-      DO j=jfirst-1,jlast
-        DO i=ifirst-2,ilast
-# else   
-      DO j=jfirst,jlast
-        DO i=ifirst-1,ilast
-#  endif
+      do j = jfirst, jlast
+        do i = ifirst-1, ilast
           raphbx(i,j)=ABS(u(i+1,j,1,nnew))/(ABS(u(i+1,j,1,nnew))+epsilon_MUSTANG)
 #ifdef key_tauskin_c_ubar
           speed=SQRT(0.0625_rsh*(vbar(i,j+1,nnew)+vbar(i+1,j+1,nnew)+  &
@@ -364,14 +347,9 @@
 
 #endif
        enddo
-      enddo
-# ifdef MPI
-      DO j=jfirst-2,jlast
-        DO i=ifirst-1,ilast
-# else   
+      enddo  
       DO j=jfirst-1,jlast
         DO i=ifirst,ilast
-#  endif  
           raphby(i,j)=ABS(v(i,j+1,1,nnew))/(ABS(v(i,j+1,1,nnew))+epsilon_MUSTANG)
 #ifdef key_tauskin_c_ubar
           speed=SQRT(0.0625_rsh*(ubar(i+1,j,nnew)+ubar(i+1,j+1,nnew)+  &
@@ -396,14 +374,9 @@
 #endif
        enddo
       enddo
-
-# ifdef MPI
-      DO j=jfirst-1,jlast
-        DO i=ifirst-1,ilast
-# else   
+  
       DO j=jfirst,jlast
         DO i=ifirst,ilast
-#  endif  
 # ifdef key_tauskin_c_upwind
             cff1=0.5*(1.0+SIGN(1.0,tauskin_c_u(i,j)))
             cff2=0.5*(1.0-SIGN(1.0,tauskin_c_u(i,j)))
@@ -422,15 +395,17 @@
                       cff2*0.5*(tauskin_c_v(i,j-1)+tauskin_c_v(i,j)))+      &
                        cff4*(cff2*tauskin_c_v(i,j)+                     &
                        cff1*0.5*(tauskin_c_v(i,j-1)+tauskin_c_v(i,j)))
-
-            tauskin_c(i,j)=SQRT(tauskin_x(i,j)**2+tauskin_y(i,j)**2)*(rho(i,j,1)+rho0)
 # else
-            tauskin_c(i,j)=SQRT(((tauskin_c_u(i,j)*raphbx(i,j)+tauskin_c_u(i-1,j)        &
-                     *raphbx(i-1,j))/(raphbx(i,j)                             &
-                     +raphbx(i-1,j)+epsilon_MUSTANG))**2+((tauskin_c_v(i,j)*raphby(i,j)   &
-                     +tauskin_c_v(i,j-1)*raphby(i,j-1))/(raphby(i,j)              &
-                     +raphby(i,j-1)+epsilon_MUSTANG))**2)*(rho(i,j,1)+rho0)
+            tauskin_x(i,j) = (tauskin_c_u(i,j)*raphbx(i,j)+tauskin_c_u(i-1,j)   &
+                   *raphbx(i-1,j))/(raphbx(i,j)                 &
+                    +raphbx(i-1,j)+epsilon_MUSTANG)
+
+            tauskin_y(i,j) = (tauskin_c_v(i,j)*raphby(i,j)+tauskin_c_v(i,j-1)   &
+                    *raphby(i,j-1))/(raphby(i,j)                 &
+                    +raphby(i,j-1)+epsilon_MUSTANG)
 # endif
+   tauskin_c(i,j)=SQRT(tauskin_x(i,j)**2+tauskin_y(i,j)**2)*(rho(i,j,1)+rho0)
+
 
 # ifdef WAVE_OFFLINE
             fws2ij=fws2
