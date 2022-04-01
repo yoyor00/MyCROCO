@@ -55,6 +55,7 @@
       real cff5,cff6
 # endif      
 # ifdef CFB_WIND_TRA
+      real cffu1,cffu2,cffv1,cffv2
       real uwnd_r, vwnd_r
 # endif
 !     
@@ -152,14 +153,21 @@
           enddo
 # ifdef CFB_WIND_TRA
           cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+          
           do j=JstrR,min(JendR,Mm)
             do i=IstrR,min(IendR,Lm)
-              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
+              cffu1=cff1*uwndg(i  ,j,it1)+cff2*uwndg(i  ,j,it2)
+              cffu2=cff1*uwndg(i+1,j,it1)+cff2*uwndg(i+1,j,it2)
+              uwnd_r   = 0.5*( cffu1 + cffu2 
      &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
      &                   )
-              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
+
+              cffv1=cff1*vwndg(i,j  ,it1)+cff2*vwndg(i,j  ,it2)
+              cffv2=cff1*vwndg(i,j+1,it1)+cff2*vwndg(i,j+1,it2)
+              vwnd_r   = 0.5*( cffv1 + cffv2
      &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
      &                   )
+
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
             enddo
           enddo
