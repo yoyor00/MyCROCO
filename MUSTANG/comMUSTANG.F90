@@ -100,14 +100,12 @@
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin ! max bottom stress due to the combinaison current/wave (N.m-2)
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c ! bottom stress due to current (N.m-2)
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_w ! bottom stress due to wave (N.m-2)
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c_u ! bottom stress due to current, compute at u point
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c_v ! bottom stress due to current, compute at v point
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphbx
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphby
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_x ! bottom stress - component on x axis
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_y ! bottom stress - component on y axis
-   REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w,phieau_s2w_consol,phieau_s2w_drycell
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot,htot,alt_cw1
+   REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w, phieau_s2w_consol, phieau_s2w_drycell
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot, htot, alt_cw1
 
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: morpho0,h0_bedrock
 

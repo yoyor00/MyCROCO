@@ -288,6 +288,8 @@
    REAL    speed ! current speed
 
    REAL(KIND=rsh),DIMENSION(ifirst-1: ilast+1, jfirst-1: jlast+1)  :: Zr
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY) :: tauskin_c_u ! bottom stress due to current, compute at u point
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY) :: tauskin_c_v ! bottom stress due to current, compute at v point
 
 # ifdef WAVE_OFFLINE
    REAL(KIND=rsh)    :: fws2ij, speedbar, alpha, beta, cosamb, sinamb
@@ -308,8 +310,7 @@
 #  ifdef WET_DRY AND MASKING
           tauskin(i, j) = tauskin(i, j) * rmask_wet(i, j)
 #  endif
-        enddo
-      enddo
+
 
 #  else /* else on #ifdef BBL */
 
@@ -453,10 +454,22 @@
 # if defined WET_DRY && defined MASKING 
     tauskin(i,j) = tauskin(i,j) * rmask_wet(i,j)
 #  endif
+
+
+!!!!!!!!!!!!!!!! FORCING :     u*=ustarbot    
+    if (htot(i, j) .GT. h0fond) then
+      if (tauskin(i, j) < 0.) then
+        ustarbot(i, j) = 0.0_rsh
+      else
+        ustarbot(i, j) = (tauskin(i, j) / RHOREF)**0.5_rsh
+      endif
+    endif
+
+#  endif  /* end of #ifdef BBL */
         enddo
       enddo
 
-#  endif  /* end of #ifdef BBL */
+
 
   END SUBROUTINE sed_skinstress
    !!==============================================================================

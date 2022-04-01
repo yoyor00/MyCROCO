@@ -1865,7 +1865,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   phieau_s2w_consol(PROC_IN_ARRAY)=0.0_rlg
 
   ALLOCATE( raphbx(PROC_IN_ARRAY_m1p1), raphby(PROC_IN_ARRAY_m1p1) )
-  ALLOCATE( tauskin_c_u(PROC_IN_ARRAY_m1p1), tauskin_c_v(PROC_IN_ARRAY_m1p1) )
   ALLOCATE( tauskin_x(PROC_IN_ARRAY), tauskin_y(PROC_IN_ARRAY) )
   ALLOCATE( dry_cell(PROC_IN_ARRAY))
   raphbx(PROC_IN_ARRAY_m1p1)=0.0_rsh

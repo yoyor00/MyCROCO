@@ -221,36 +221,23 @@ MODULE sed_MUSTANG
 
     ! Update sediment roughness length
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    IF(.NOT.l_z0seduni)CALL sed_MUSTANG_comp_z0sed(ifirst,ilast,jfirst,jlast,BATHY_H0)
+    if (.not. l_z0seduni) then
+      call sed_MUSTANG_comp_z0sed(ifirst, ilast, jfirst, jlast, BATHY_H0)
+    endif
 
-    CALL sed_skinstress(ifirst,ilast,jfirst,jlast)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!! FORCING :     u*=ustarbot            !!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      DO j= jfirst, jlast
-        DO i= ifirst, ilast
-          IF (htot(i, j) .GT. h0fond)  THEN
-            IF (tauskin(i, j) < 0.) THEN
-              ustarbot(i, j) = 0.0_rsh
-            ELSE
-              ustarbot(i, j) = (tauskin(i, j) / RHOREF)**0.5_rsh
-            ENDIF
-          ENDIF
-        ENDDO
-      ENDDO
+    call sed_skinstress(ifirst, ilast, jfirst, jlast)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FORCING : G dU/dz (taux de cisaillement : shear rate)   !!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     ! computing  gradvit and ustarbot - depending on hydro code ==> in MUSTANG_HYDROCODE.F90
+     ! computing  gradvit - depending on hydro code ==> in MUSTANG_HYDROCODE.F90
       ! out : gradvit in common comMUSTANG
-    CALL sed_gradvit(ifirst, ilast, jfirst, jlast)
+    call sed_gradvit(ifirst, ilast, jfirst, jlast)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! vitesse de chute : settling rate     !!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    CALL sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
+    call sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
                            WATER_CONCENTRATION)
 
 #ifdef key_MUSTANG_flocmod
