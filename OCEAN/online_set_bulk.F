@@ -145,7 +145,7 @@ C$OMP MASTER
           call check_tab2d(rhumg(:,:,1),'rhumg1 bef on_set_bulk','r')
           call check_tab2d(rhumg(:,:,2),'rhumg2 bef on_set_bulk','r')
           
-          call check_tab2d(prateg(:,:,),'prateg1 bef on_set_bulk','r')
+          call check_tab2d(prateg(:,:,1),'prateg1 bef on_set_bulk','r')
           call check_tab2d(prateg(:,:,2),'prateg2 bef on_set_bulk','r')
           
           call check_tab2d(radlwg(:,:,1),'radlwg1 bef on_set_bulk','r')
