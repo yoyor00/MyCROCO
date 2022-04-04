@@ -18,6 +18,9 @@
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
+# ifdef WAVE_DRY
+      call wavedry_tile(istr,iend,jstr,jend)  
+# endif      
       call mrl_wci_tile (istr,iend,jstr,jend,
 # ifdef SOLVE3D
      &            A3d(1,1,trd),A3d(1,2,trd),
@@ -173,6 +176,11 @@
 # else
 #  define SWITCH_WET !
 # endif
+# ifdef WAVE_DRY
+#  define SWITCH_WAVEDRY *
+# else
+#  define SWITCH_WAVEDRY !
+# endif      
 
 ! explicit wavenumber estimator
 
@@ -421,6 +429,13 @@
           brk(i,j) =brk(i,j)*rmask_wet(i,j)
           frc(i,j) =frc(i,j)*rmask_wet(i,j)
 # endif /* WET_DRY */
+# ifdef WAVE_DRY
+           kw(i,j) = kw(i,j)*rmask_wavewet(i,j)
+           kD(i,j) = kD(i,j)*rmask_wavewet(i,j)
+          act(i,j) =act(i,j)*rmask_wavewet(i,j)
+          brk(i,j) =brk(i,j)*rmask_wavewet(i,j)
+          frc(i,j) =frc(i,j)*rmask_wavewet(i,j)
+# endif          
         enddo
       enddo              ! <-- discard inv_d
 
@@ -432,8 +447,9 @@
         do i=istrR,iendR
           sup(i,j)=-0.125*(wh(i,j)**2)*kw(i,j)
      &              /max(sinh(2.*min(kD(i,j),khmax)),eps)
-     &                                  SWITCH rmask(i,j)
-     &                                  SWITCH_WET rmask_wet(i,j)
+     &                                 SWITCH rmask(i,j)
+     &                                 SWITCH_WET rmask_wet(i,j)
+     &                                 SWITCH_WAVEDRY rmask_wavewet(i,j)
         enddo
       enddo
 !
@@ -464,6 +480,13 @@
           wepd(i,j)=wepd(i,j)*rmask_wet(i,j)
 #  ifdef WAVE_ROLLER
           wepr(i,j)=wepr(i,j)*rmask_wet(i,j)
+#  endif
+# endif
+ # ifdef WAVE_DRY
+          wepb(i,j)=wepb(i,j)*rmask_wavewet(i,j)
+          wepd(i,j)=wepd(i,j)*rmask_wavewet(i,j)
+#  ifdef WAVE_ROLLER
+          wepr(i,j)=wepr(i,j)*rmask_wavewet(i,j)
 #  endif
 # endif
         enddo
@@ -497,6 +520,10 @@
           brk2dx(i,j) =brk2dx(i,j)*umask_wet(i,j)
           frc2dx(i,j) =frc2dx(i,j)*umask_wet(i,j)
 # endif
+# ifdef WAVE_DRY
+          brk2dx(i,j) =brk2dx(i,j)*umask_wavewet(i,j)
+          frc2dx(i,j) =frc2dx(i,j)*umask_wavewet(i,j)
+# endif          
         enddo
       enddo
       do j=jstr,jendR
@@ -510,6 +537,10 @@
 # ifdef WET_DRY
           brk2de(i,j) =brk2de(i,j)*vmask_wet(i,j)
           frc2de(i,j) =frc2de(i,j)*vmask_wet(i,j)
+# endif
+# ifdef WAVE_DRY
+          brk2de(i,j) =brk2de(i,j)*vmask_wavewet(i,j)
+          frc2de(i,j) =frc2de(i,j)*vmask_wavewet(i,j)
 # endif
         enddo
       enddo
@@ -661,6 +692,7 @@
      &                    *( cff1+cff2+cff3+cff4 )
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
+     &                            SWITCH_WAVEDRY rmask_wavewet(i,j)
           cff=0.
           do k=1,N
             cff = cff +  d2kv(k)*
@@ -684,6 +716,7 @@
 #  endif
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
+     &                            SWITCH_WAVEDRY rmask_wavewet(i,j)
         enddo
       enddo      ! <-- discard kv, dkvdz, d2kv, & inv_ex
 #  undef kv
@@ -740,6 +773,7 @@
             kvf(i,j,k)=0.5*( kvr(i,j,k)+kvr(i,j,k-1) )
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
+     &                            SWITCH_WAVEDRY rmask_wavewet(i,j)
           enddo
         enddo
       enddo           ! <-- discard ust_r, kvfx, kvfy, kvr
@@ -783,6 +817,7 @@
             Akw(i,j,k) = cff*(cff3-E_pre(i,j,k))
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
+     &                            SWITCH_WAVEDRY rmask_wavewet(i,j)
             E_pre(i,j,k) = cff3   ! store this for the next time step.
           enddo
         enddo
@@ -803,6 +838,7 @@
             Akw(i,j,k) = 0.1*kw(i,j)*fr(i,j)*cff2**3
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
+     &                            SWITCH_WAVEDRY rmask_wavewet(i,j)
           enddo
         enddo
       enddo
@@ -942,7 +978,12 @@
 #   ifdef WET_DRY
           do k=0,N
             Akb(i,j,k)=Akb(i,j,k)*rmask_wet(i,j)
-          enddo
+          enddo          
+#   endif
+ #   ifdef WAVE_DRY
+          do k=0,N
+            Akb(i,j,k)=Akb(i,j,k)*rmask_wavewet(i,j)
+          enddo          
 #   endif
         enddo
       enddo        ! <-- discard kb0
@@ -1012,6 +1053,7 @@
      &                         +brk_r(i  ,j,k)*wdrx(i  ,j) )
      &                            SWITCH umask(i,j)
      &                            SWITCH_WET umask_wet(i,j)
+     &                            SWITCH_WAVEDRY umask_wavewet(i,j)
           enddo
         enddo
 
@@ -1021,6 +1063,7 @@
      &                         +brk_r(i,j  ,k)*wdre(i,j  ) )
      &                            SWITCH vmask(i,j)
      &                            SWITCH_WET vmask_wet(i,j)
+     &                            SWITCH_WAVEDRY vmask_wavewet(i,j)
           enddo
         enddo
       enddo       ! <-- discard brk_r, but keep ust_r
@@ -1075,11 +1118,13 @@
      &                     +frc2d(i  ,j)*wdrx(i  ,j) )
      &                            SWITCH umask(i,j)
      &                            SWITCH_WET umask_wet(i,j)
+     &                            SWITCH_WAVEDRY umask_wavewet(i,j)
           do k=1,N
             frc3dx(i,j,k)=0.5*( frc_r(i-1,j,k)*wdrx(i-1,j)
      &                         +frc_r(i  ,j,k)*wdrx(i  ,j) )
      &                            SWITCH umask(i,j)
      &                            SWITCH_WET umask_wet(i,j)
+     &                            SWITCH_WAVEDRY umask_wavewet(i,j)
           enddo
         enddo
       enddo
@@ -1089,11 +1134,13 @@
      &                     +frc2d(i,j  )*wdre(i,j  ) )
      &                            SWITCH vmask(i,j)
      &                            SWITCH_WET vmask_wet(i,j)
+     &                            SWITCH_WAVEDRY vmask_wavewet(i,j)
           do k=1,N
             frc3de(i,j,k)=0.5*( frc_r(i,j-1,k)*wdre(i,j-1)
      &                         +frc_r(i,j  ,k)*wdre(i,j  ) )
      &                            SWITCH vmask(i,j)
      &                            SWITCH_WET vmask_wet(i,j)
+     &                            SWITCH_WAVEDRY vmask_wavewet(i,j)
           enddo
         enddo
       enddo       ! <-- discard frc_r, frc2d
