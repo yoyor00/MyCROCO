@@ -255,13 +255,25 @@
    !&E
    !&E ** Purpose : computes  bottom shear stress
    !&E
-   !&E ** Description :  bottom shear stress related to current and also to waves
-   !&E            to be programmed from hydrodynamic variables
-   !&E                   RHOREF,  hx, hy, ssh, u,uz, v, vz, hminfrot,hmaxfrot,
-   !&E         using some parameters and variables of MUSTANG :
-   !&E                    z0sed,  htncrit
-   !&E               and Wave coupling
-   !&E
+   !&E ** Description :  
+   !&E 
+   !&E Compute bottom skin-friction stress due to combined maximum wave and current 
+   !&E interaction
+   !&E 
+   !&E Available options to compute tauskin (combine current + wave (if WAVE_OFFLINE 
+   !&E is defined)) and tauskin_x/tauskin_y (components / rho) :
+   !&E - default : Soulsby formulation (with z0sed)
+   !&E - BBL : d50 is constant (160microns) in the bustrw/bvstrw computation see 
+   !&E bbl.F (and optionnal key_tauskin* do not apply)
+   !&E 
+   !&E Available options to compute tauskin_c
+   !&E - default : compute at u,v points and then compute at rho point 
+   !&E     with ubar if key_tauskin_c_ubar is defined, with bottom u(1) if not, 
+   !&E     this case use 12 u,v points to compute tauc at rho point
+   !&E     if key_tauskin_c_upwind is defined, x/y component used are tauskin 
+   !&E     computed at uv point upwind from current
+   !&E - key_tauskin_c_rho : compute at rho point from immediate u,v value 
+   !&E     with ubar if key_tauskin_c_ubar is definde, with bottom u(1) if not
    !&E
    !&E ** Called by :  sed_MUSTANG_update
    !&E
@@ -286,13 +298,14 @@
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
    INTEGER i,j,k
    REAL    speed ! current speed
+   REAL(KIND=rsh)    :: urho, vrho
 
    REAL(KIND=rsh),DIMENSION(ifirst-1: ilast+1, jfirst-1: jlast+1)  :: Zr
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY) :: tauskin_c_u ! bottom stress due to current, compute at u point
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY) :: tauskin_c_v ! bottom stress due to current, compute at v point
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY) :: tauskin_c_u ! bottom stress due to current / rho, compute at u point
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY) :: tauskin_c_v ! bottom stress due to current / rho, compute at v point
 
 # ifdef WAVE_OFFLINE
-   REAL(KIND=rsh)    :: fws2ij, speedbar, alpha, beta, cosamb, sinamb
+   REAL(KIND=rsh)    :: fws2ij, speedbar, alpha, beta, cosamb, sinamb, tauskin_cw
 # endif
 # ifdef key_tauskin_c_upwind   
    REAL(KIND=rsh)    :: cff1, cff2, cff3, cff4
@@ -310,16 +323,62 @@
 #  ifdef WET_DRY AND MASKING
           tauskin(i, j) = tauskin(i, j) * rmask_wet(i, j)
 #  endif
+#  ifdef key_MUSTANG_bedload
+          urho = 0.5 * (u(i, j, 1, nnew) + u(i+1, j, 1, nnew))
+          vrho = 0.5 * (v(i, j, 1, nnew) + v(i, j+1, 1, nnew))
+          speed = SQRT(urho**2 + vrho**2))
+          tauskin_c(i, j) = tauskin(i, j) ! used in eval_bedload
+          tauskin_x(i, j) = urho / (speed + epsilon_MUSTANG) * tauskin_c(i, j) / (rho(i, j, 1) + rho0)
+          tauskin_y(i, j) = vrho / (speed + epsilon_MUSTANG) * tauskin_c(i, j) / (rho(i, j, 1) + rho0)
+#  endif
 
 
 #  else /* else on #ifdef BBL */
 
-
       do j = jfirst-1, jlast+1
         do i = ifirst-1, ilast+1
-         Zr(i, j) =  max(z_r(i, j, 1) - z_w(i, j, 0), z0sed(i, j) + 1.E-4)
-       enddo
+          Zr(i, j) =  max(z_r(i, j, 1) - z_w(i, j, 0), z0sed(i, j) + 1.E-4)
+        enddo
       enddo
+
+# ifdef key_tauskin_c_rho
+  do j = jfirst, jlast
+    do i = ifirst-1, ilast
+      raphbx(i, j) = ABS(u(i+1, j, 1, nnew)) / (ABS(u(i+1, j, 1, nnew)) + epsilon_MUSTANG)
+    enddo
+  enddo
+
+  do j = jfirst-1, jlast
+    do i = ifirst, ilast
+      raphby(i, j) = ABS(v(i, j+1, 1, nnew)) / (ABS(v(i, j+1, 1, nnew)) + epsilon_MUSTANG)
+    enddo
+  enddo
+
+  do j = jfirst, jlast
+    do i = ifirst, ilast
+#ifdef key_tauskin_c_ubar
+#ifdef MPI
+      if ((float(j + jj * Mm) .GE. 0) .and. (float(i + ii * Lm) .GE. 0) )then
+#else
+      if ((float(j       ) .GE. 0) .and. (float(i       ) .GE. 0)) then
+#endif
+      urho = 0.5 * (ubar(i, j, nnew) + ubar(i+1, j, nnew))
+      vrho = 0.5 * (vbar(i, j, nnew) + vbar(i, j+1, nnew))  
+    else
+      urho = 0.
+      vrho = 0.
+    endif  
+# else
+      urho = 0.5 * (u(i, j, 1, nnew) + u(i+1, j, 1, nnew))
+      vrho = 0.5 * (v(i, j, 1, nnew) + v(i, j+1, 1, nnew))
+# endif
+      speed = SQRT(urho**2 + vrho**2))
+      tauskin_c(i, j) = 0.16_rsh * (LOG( ( z_w(i, j, N) - z_w(i, j, 0)) /   &
+                    (z0sed(i, j) * 2.718)))**(-2) * speed**2                &
+                    * (rho(i, j, 1) + rho0)
+      tauskin_x(i, j) = urho / (speed + epsilon_MUSTANG) * tauskin_c(i, j) / (rho(i, j, 1) + rho0)
+      tauskin_y(i, j) = vrho / (speed + epsilon_MUSTANG) * tauskin_c(i, j) / (rho(i, j, 1) + rho0)
+# else /* else on #ifdef key_tauskin_c_rho */
 
       do j = jfirst, jlast
         do i = ifirst-1, ilast
@@ -407,6 +466,7 @@
 # endif
    tauskin_c(i,j)=SQRT(tauskin_x(i,j)**2+tauskin_y(i,j)**2)*(rho(i,j,1)+rho0)
 
+# endif /* end of #ifdef key_tauskin_c_rho */
 
 # ifdef WAVE_OFFLINE
             fws2ij=fws2
@@ -426,7 +486,7 @@
             ! ======================================================
             ! calculation of  tauskin_c (current) influenced by the waves
             ! ----------------------------------------------------
-              tauskin_c(i,j) = tauskin_c(i,j)*(1+(1.2*(tauskin_w(i,j)/(tauskin_w(i,j)+tauskin_c(i,j)))**3.2))
+              tauskin_cw = tauskin_c(i,j)*(1+(1.2*(tauskin_w(i,j)/(tauskin_w(i,j)+tauskin_c(i,j)))**3.2))
 
             ! calculating the difference in angle between the direction of the waves and the current
             ! ---------------------------------------------------------------------------
@@ -440,7 +500,7 @@
 
             ! calculation of tauskin (waves + current)
             ! -----------------------------------
-              tauskin(i,j) = SQRT( (tauskin_c(i,j) + tauskin_w(i,j) * cosamb)**2 + (tauskin_w(i,j) * sinamb)**2 )
+              tauskin(i,j) = SQRT( (tauskin_cw + tauskin_w(i,j) * cosamb)**2 + (tauskin_w(i,j) * sinamb)**2 )
 
           ELSE
             tauskin(i,j) = tauskin_w(i,j) + tauskin_c(i,j)

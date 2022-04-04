@@ -8820,9 +8820,8 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
      flx_byij(iv)=0.
 #endif
 
-     flx_bxij(iv)=qb*tauskin_x(i,j)*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
-     flx_byij(iv)=qb*tauskin_y(i,j)*roswat_bot(i,j)/(tauskin_c(i,j)+epsilon_MUSTANG)
-
+     flx_bxij(iv) = qb * tauskin_x(i, j) * roswat_bot(i,j) / (tauskin_c(i,j) + epsilon_MUSTANG)
+     flx_byij(iv) = qb * tauskin_y(i, j) * roswat_bot(i,j) / (tauskin_c(i,j) + epsilon_MUSTANG)
 
 
 #ifdef key_MUSTANG_debug
