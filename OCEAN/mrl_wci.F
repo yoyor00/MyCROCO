@@ -482,7 +482,7 @@
           wepr(i,j)=wepr(i,j)*rmask_wet(i,j)
 #  endif
 # endif
- # ifdef WAVE_DRY
+# ifdef WAVE_DRY
           wepb(i,j)=wepb(i,j)*rmask_wavewet(i,j)
           wepd(i,j)=wepd(i,j)*rmask_wavewet(i,j)
 #  ifdef WAVE_ROLLER
@@ -980,7 +980,7 @@
             Akb(i,j,k)=Akb(i,j,k)*rmask_wet(i,j)
           enddo          
 #   endif
- #   ifdef WAVE_DRY
+#   ifdef WAVE_DRY
           do k=0,N
             Akb(i,j,k)=Akb(i,j,k)*rmask_wavewet(i,j)
           enddo          

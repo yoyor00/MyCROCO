@@ -37,14 +37,14 @@
 #include "compute_auxiliary_bounds.h"
 !
 !-----------------------------------------------------------------------
-! If wet/drying, compute new masks for cells with depth < Dcrit.
+! If WAVE_DRY CPP-key, compute new masks for cells with depth < D_wavedry.
 !-----------------------------------------------------------------------
 !
 # ifdef SOLVE3D
       IF (iif.le.nfast) THEN
 # endif
 !
-!  Wet/dry mask at RHO-points.
+!  Wave dry mask at RHO-points.
 !
         DO j=Jstr-1,JendR
           DO i=Istr-1,IendR
@@ -64,7 +64,7 @@
           END DO
         END DO
 !
-!  Wet/dry mask at PSI-points.
+!  Wave dry mask at PSI-points.
 !
         DO j=Jstr,JendR
           DO i=Istr,IendR
@@ -74,7 +74,7 @@
           END DO
         END DO
 !
-!  Wet/dry mask at U-points.
+!  Wave dry mask at U-points.
 !
         DO j=JstrR,JendR
           DO i=Istr,IendR
@@ -85,7 +85,7 @@
           END DO
         END DO
 !
-!  Wet/dry mask at V-points.
+!  Wave dry mask at V-points.
 !
         DO j=Jstr,JendR
           DO i=IstrR,IendR
@@ -100,105 +100,10 @@
       END IF
 # endif
 !
-!--------------------------------------------------------------------
-!  Averaged wet/dry mask for 3D slow mode if M2 filter
-!--------------------------------------------------------------------
-!
-# if defined SOLVE3D && !defined M2FILTER_NONE
-!
-!  Wet/dry mask at RHO-points, averaged over all fast time-steps.
-!
-      IF (iif.le.nfast) THEN
-        IF (FIRST_2D_STEP) THEN
-          DO j=JstrR,JendR
-            DO i=IstrR,IendR
-              rmask_wavewet_avg(i,j)=wave_wetdry(i,j)
-            END DO
-          END DO
-        ELSE
-          DO j=JstrR,JendR
-            DO i=IstrR,IendR
-              rmask_wavewet_avg(i,j)=rmask_wavewet_avg(i,j)
-     &                               +wave_wetdry(i,j)
-            END DO
-          END DO
-        END IF
-      END IF
-!
-!  If done fast time-stepping, scale mask by 2 nfast.
-!
-      IF (iif.eq.nfast+1) THEN
-        cff=1./REAL(nfast)
-        DO j=Jstr-1,JendR
-          DO i=Istr-1,IendR
-            wave_wetdry(i,j)=AINT(rmask_wavewet_avg(i,j)*cff)
-          END DO
-        END DO
-!
-!  Wet/dry mask at RHO-points, averaged over all fast time-steps.
-!
-        DO j=JstrR,JendR
-          DO i=IstrR,IendR
-            rmask_wavewet(i,j)=wave_wetdry(i,j)
-          END DO
-        END DO
-!
-!  Wet/dry mask at PSI-points, averaged over all fast time-steps.
-!
-        DO j=Jstr,JendR
-          DO i=Istr,IendR
-            pmask_wavewet(i,j)=wave_wetdry(i-1,j  )
-     &                        *wave_wetdry(i  ,j  )* 
-     &                     wave_wetdry(i-1,j-1)*wave_wetdry(i  ,j-1)
-          END DO
-        END DO
-!
-!  Wet/dry mask at U-points, averaged over all fast time-steps.
-!
-        DO j=JstrR,JendR
-          DO i=Istr,IendR
-            cff1=wave_wetdry(i-1,j)+wave_wetdry(i,j)
-            IF (cff1.eq.1.) THEN
-              cff1=wave_wetdry(i-1,j)-wave_wetdry(i,j)
-            END IF
-            cff2=ABS(ABS(cff1)-1.)
-            cff3=0.5+SIGN(0.5,DU_avg1(i,j,nnew))*cff1
-            umask_wavewet(i,j)=0.5*cff1*cff2+cff3*(1.-cff2)
-!                                                    catch lone ponds
-            IF (DU_avg1(i,j,nnew).eq.0. .and.
-     &          wave_wetdry(i-1,j)+wave_wetdry(i,j).le.1.) THEN
-              umask_wavewet(i,j)=0.
-            END IF
-          END DO
-        END DO
-!
-!  Wet/dry mask at V-points, averaged over all fast time-steps.
-!
-        DO j=Jstr,JendR
-          DO i=IstrR,IendR
-            cff1=wave_wetdry(i,j-1)+wave_wetdry(i,j)
-            IF (cff1.eq.1.) THEN
-              cff1=wave_wetdry(i,j-1)-wave_wetdry(i,j)
-            END IF
-            cff2=ABS(ABS(cff1)-1.)
-            cff3=0.5+SIGN(0.5,DV_avg1(i,j,nnew))*cff1
-            vmask_wavewet(i,j)=0.5*cff1*cff2+cff3*(1.-cff2)
-!                                                    catch lone ponds
-            IF (DV_avg1(i,j,nnew).eq.0. .and.
-     &          wave_wetdry(i,j-1)+wave_wetdry(i,j).le.1.) THEN
-              vmask_wavewet(i,j)=0.
-            END IF
-          END DO
-        END DO
-!
-      END IF
-# endif
-!
 !  Exchange boundary data.
 !
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  rmask_wavewet)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  rmask_wavewet_avg)
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  umask_wavewet)
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,  vmask_wavewet)
       call exchange_p2d_tile (Istr,Iend,Jstr,Jend,  pmask_wavewet)
