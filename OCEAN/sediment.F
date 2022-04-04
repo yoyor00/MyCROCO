@@ -1850,6 +1850,9 @@ C$OMP BARRIER
 #   ifdef MASKING
      &                                               *rmask(i,j)
 #   endif
+          enddo
+        enddo
+      enddo
 #  endif /* DIAGNOSTICS_TS */
 !
 !  Exchange for output purpose
