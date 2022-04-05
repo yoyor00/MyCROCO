@@ -326,7 +326,7 @@
 #  ifdef key_MUSTANG_bedload
           urho = 0.5 * (u(i, j, 1, nnew) + u(i+1, j, 1, nnew))
           vrho = 0.5 * (v(i, j, 1, nnew) + v(i, j+1, 1, nnew))
-          speed = SQRT(urho**2 + vrho**2))
+          speed = SQRT(urho**2 + vrho**2)
           tauskin_c(i, j) = tauskin(i, j) ! used in eval_bedload
           tauskin_x(i, j) = urho / (speed + epsilon_MUSTANG) * tauskin_c(i, j) / (rho(i, j, 1) + rho0)
           tauskin_y(i, j) = vrho / (speed + epsilon_MUSTANG) * tauskin_c(i, j) / (rho(i, j, 1) + rho0)
@@ -358,9 +358,9 @@
     do i = ifirst, ilast
 #ifdef key_tauskin_c_ubar
 #ifdef MPI
-      if ((float(j + jj * Mm) .GE. 0) .and. (float(i + ii * Lm) .GE. 0) )then
+    if ((float(j + jj * Mm) .GE. 0) .and. (float(i + ii * Lm) .GE. 0) )then
 #else
-      if ((float(j       ) .GE. 0) .and. (float(i       ) .GE. 0)) then
+    if ((float(j       ) .GE. 0) .and. (float(i       ) .GE. 0)) then
 #endif
       urho = 0.5 * (ubar(i, j, nnew) + ubar(i+1, j, nnew))
       vrho = 0.5 * (vbar(i, j, nnew) + vbar(i, j+1, nnew))  
@@ -368,14 +368,19 @@
       urho = 0.
       vrho = 0.
     endif  
+    speed = SQRT(urho**2 + vrho**2)
+    tauskin_c(i, j) = 0.16_rsh * (LOG( ( z_w(i, j, N) - z_w(i, j, 0)) /   &
+                  (z0sed(i, j) * 2.718)))**(-2) * speed**2                &
+                  * (rho(i, j, 1) + rho0)
 # else
-      urho = 0.5 * (u(i, j, 1, nnew) + u(i+1, j, 1, nnew))
-      vrho = 0.5 * (v(i, j, 1, nnew) + v(i, j+1, 1, nnew))
+    urho = 0.5 * (u(i, j, 1, nnew) + u(i+1, j, 1, nnew))
+    vrho = 0.5 * (v(i, j, 1, nnew) + v(i, j+1, 1, nnew))
+    speed = SQRT(urho**2 + vrho**2)
+    tauskin_c(i, j) = 0.16_rsh * (LOG( ( Zr(i, j) ) /   &
+                  (z0sed(i, j))))**(-2) * speed**2                &
+                  * (rho(i, j, 1) + rho0)
 # endif
-      speed = SQRT(urho**2 + vrho**2))
-      tauskin_c(i, j) = 0.16_rsh * (LOG( ( z_w(i, j, N) - z_w(i, j, 0)) /   &
-                    (z0sed(i, j) * 2.718)))**(-2) * speed**2                &
-                    * (rho(i, j, 1) + rho0)
+      
       tauskin_x(i, j) = urho / (speed + epsilon_MUSTANG) * tauskin_c(i, j) / (rho(i, j, 1) + rho0)
       tauskin_y(i, j) = vrho / (speed + epsilon_MUSTANG) * tauskin_c(i, j) / (rho(i, j, 1) + rho0)
 # else /* else on #ifdef key_tauskin_c_rho */
