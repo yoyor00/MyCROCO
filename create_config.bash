@@ -314,6 +314,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
        cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
        cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
        cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
+       cp -Rf $TOOLS_DIR/Oforc_OGCM/download_glorys_data.sh $MY_CROCO_DIR.
 # Edit start.m
        sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
            -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
@@ -348,6 +349,7 @@ if [[ ${options[@]} =~ "prepro" && ${options[@]} =~ "oce-prod" ]] ; then
     mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
     mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
     mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/.
 fi
 
 # WW3
