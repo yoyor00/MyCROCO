@@ -599,14 +599,12 @@
 
       ALLOCATE( PAR_top_layer(0:NB_LAYER_WAT,PROC_IN_ARRAY) )
       PAR_top_layer(:,:,:)=0.0_rsh
-
       ALLOCATE( PAR(PROC_IN_ARRAY,NB_LAYER_WAT) ) ! It is smaller than 
       PAR(:,:,:)=0.0_rsh                            ! PAR_top_layer
                                                     ! because there seems
                                                     ! to be one MUSTANG
                                                     ! cell in PAR_top_layer
 
- 
 #  if defined PEPTIC
 
       ALLOCATE( PAR_avg_layer_phyto(1,NB_LAYER_WAT,PROC_IN_ARRAY) )
@@ -930,7 +928,7 @@ END SUBROUTINE  BIOLink_alloc
 
 
       PAR = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT,     &
-                                PAR_top_layer) ! We do not take the first
+                                PAR_top_layer,0,NB_LAYER_WAT) ! We do not take the first
                                                ! layer because it is appa
                                                ! rently related to the 
                                                ! interface with MUSTANG
@@ -1084,7 +1082,7 @@ END SUBROUTINE  BIOLink_alloc
 
          ! I convert the array to send it in CROCO
          PAR = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
-                                PAR_top_layer) ! We do not take the first
+                                PAR_top_layer,0,NB_LAYER_WAT) ! We do not take the first
                                                ! layer because it is appa
                                                ! rently related to the 
                                                ! interface with MUSTANG
@@ -1318,7 +1316,7 @@ END SUBROUTINE  BIOLink_alloc
 
     !!============================================================================== 
  
-  FUNCTION BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,kfirst,klast,VAR)     
+  FUNCTION BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,kfirst,klast,VAR,zstart_var,zend_var)     
 
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink2hydro ***
@@ -1350,7 +1348,9 @@ END SUBROUTINE  BIOLink_alloc
                                                        ! subdomain
    INTEGER, INTENT(IN)    :: kfirst,klast ! Limits of the vertical subdomain
 
-   REAL(KIND=rsh),DIMENSION(NB_LAYER_WAT,PROC_IN_ARRAY), INTENT(IN)   :: VAR
+   INTEGER, INTENT(IN)    :: zstart_var,zend_var ! ( Vertical index for the 
+                                                 ! z dimension )
+   REAL(KIND=rsh),DIMENSION(zstart_var:zend_var,PROC_IN_ARRAY), INTENT(IN)   :: VAR
                                              ! Input array to be modified
 
      !====================================================================

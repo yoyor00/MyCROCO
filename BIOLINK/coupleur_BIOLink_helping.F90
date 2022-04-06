@@ -1014,6 +1014,7 @@ CONTAINS
 
       !******************* Extinction due to water ************************!
 
+
    DO j=jfirst,jlast
 
      DO i=ifirst,ilast
@@ -1104,7 +1105,6 @@ CONTAINS
 #    endif /* key_growth_diurne */
 
 #  elif defined BLOOM
-
          PAR_top_layer(kmaxmod,i,j)=SOLAR_RAD(i,j)*p_parradratio / RAD_SRFSCALE 
 
 #  elif defined METeOR
@@ -1116,7 +1116,6 @@ CONTAINS
          DO k=LOOPK_SUBSURF_TO_BOTTOM_WAT 
 
             PAR_top_layer(k,i,j) = PAR_top_layer(ABOVE_K,i,j) * attenuation(ABOVE_K)       
-
 #  if defined METeOR
 
             Flimrad_layer(k,i,j)=Flimrad_layer(ABOVE_K,i,j)* attenuation(k)
@@ -1128,7 +1127,7 @@ CONTAINS
          k=0 ! at bottom
 
          PAR_top_layer(k,i,j) = PAR_top_layer(ABOVE_K,i,j) * attenuation(ABOVE_K)
-
+         
        !************* Estimation of PAR averaged in each layer *************! 
 
 #  if defined PEPTIC
@@ -1222,8 +1221,6 @@ CONTAINS
     ENDIF
 
 #  endif /* PEPTIC */
-
-
 END SUBROUTINE  BIOLink_eval_PAR
 
 #endif /* BIOLink_PAR_eval */
