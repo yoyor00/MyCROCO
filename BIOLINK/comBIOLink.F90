@@ -52,7 +52,10 @@
                                 jjulien_BIOLINK ! Variables used in the BLOOM module that 
                                                 ! Relies on julian days
 
-      REAL(KIND=rlg),PUBLIC                     :: t_bio,BIO_TIME_STEP,DT_CONSERV_BIOLINK
+      REAL(KIND=rlg),PUBLIC                     :: t_bio,DT_CONSERV_BIOLINK
+#if !defined ECO3M                                       
+  REAL(KIND=rlg),PUBLIC                     :: BIO_TIME_STEP          ! effective time step for evaluation bio sources and sinkks
+#endif
       !Time and time steps variables used in the biological models 
       REAL(KIND=rlg)                             :: ECO_TIME_STEP,TIME_START_ECO 
       ! Timestep of the hydrodynamical model
@@ -87,8 +90,11 @@
      ! Sources and sink terms for tracer variables
      !===================================================================
       
+#if ! defined ECO3M
       REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: BIO_SINKSOURCES 
       ! For the variables in the water column
+      ! ECO3M has it own array because it is a code that can run by itself
+#endif /* ECO3M */
 
      !===================================================================
      ! Sources and sink terms for fixed variables
