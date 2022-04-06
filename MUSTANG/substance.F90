@@ -495,36 +495,47 @@ CONTAINS
 #ifdef MUSTANG
    ! identification of igrav1,igrav2,isand1,isand2,imud1,imud2
    ! ---------------------------------------------------------
-   igrav1=1
-   igrav2=nv_grav
-   isand1=igrav2+1
-   isand2=igrav2+nv_sand
-   imud1=isand2+1
-   imud2=isand2+nv_mud
+   igrav1 = 1
+   igrav2 = nv_grav
+   isand1 = igrav2 + 1
+   isand2 = igrav2 + nv_sand
+   imud1 = isand2 + 1
+   imud2 = isand2 + nv_mud
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-   l_ibedload1=.FALSE.
-   DO iv=igrav1,isand2
-     IF (l_bedload_r(iv) .AND. (.NOT. l_ibedload1)) THEN
-       l_ibedload1=.TRUE.
-       ibedload1=iv
-     END IF
-   END DO
+   ! initialize without any sediment activating bedload
+   ibedload1 = isand2 + 1
+   ibedload2 = isand2
+   l_ibedload1 = .FALSE.
+   l_ibedload2 = .FALSE.
 
-   l_ibedload2=.FALSE.
-   DO iv=ibedload1+1,isand2
-     IF ((.NOT. l_bedload_r(iv)) .AND. (.NOT. l_ibedload2)) THEN
-       l_ibedload2=.TRUE.
-       ibedload2=iv-1
-     END IF
-   END DO
+   do iv = igrav1,isand2
+     if (l_bedload_r(iv) .AND. (.NOT. l_ibedload1)) then
+       l_ibedload1 = .TRUE.
+       ibedload1 = iv
+     endif
+   enddo
 
-   IF (.NOT. l_ibedload2) ibedload2=isand2
+   do iv = ibedload1+1, isand2
+      if ((l_ibedload2) .AND. l_bedload_r(iv)) then
+         MPI_master_only  write(stdout,*)'ERROR - for iv = ', iv
+         MPI_master_only  write(stdout,*)'ibedload1 = ', ibedload1
+         MPI_master_only  write(stdout,*)'ibedload2 = ', ibedload2
+         MPI_master_only  write(stdout,*)'iv is greater than ibedload2 and l_bedload is True'
+         MPI_master_only  write(stdout,*)'l_bedload should be true for all sediment between ibedload1 and iv'
+         MPI_master_only  write(stdout,*)'The simulation is stopped, you should review parasubstance.txt'
+         may_day_flag=77
+         goto 99
+      endif
+
+      if ((.NOT. l_bedload_r(iv)) .AND. (.NOT. l_ibedload2)) then
+         l_ibedload2 = .TRUE.
+         ibedload2 = iv - 1
+      endif 
+
+   enddo
 
 #endif
-
 #endif
-
-
 
    ! initialize the number of variables according to their type
    nvpc=nv_mud+nv_sand+nv_grav
@@ -569,8 +580,6 @@ CONTAINS
      irk_fil(isubs)=isubs
      irk_mod(isubs)=isubs
    ENDDO
-
-
 
    IF (nv_adv /= ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
