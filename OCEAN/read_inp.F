@@ -1354,7 +1354,7 @@ c        close(testunit)
 
 ! For the PAR with BIOLink 
 
-#if defined BIOLink_PAR_EVAL
+#if defined BIOLink_PAR_eval
 
       wrthis(indxPAR) = .true.
 

@@ -49,6 +49,7 @@
 #  endif
 
 #  ifdef BIOLink
+       USE comBIOLink_helping, ONLY : PAR, PAR_top_layer
        USE coupleur_BIOLink, ONLY : BIOLink_update
 #  endif
       implicit none
@@ -706,7 +707,16 @@
 #  endif
 
 #  ifdef BIOLink
-       call BIOLink_update(Istr,Iend,Jstr,Jend)
+!       MPI_master_only PRINT*, "Maximum value of PAR is",MAXVAL(PAR)
+!       MPI_master_only PRINT*, "Minimum value of PAR is",MINVAL(PAR)
+!       MPI_master_only PRINT*, "Max PAR_top", MAXVAL(PAR_top_layer)
+!       MPI_master_only PRINT*, "Min PAR_top ",MINVAL(PAR_top_layer)  
+      call BIOLink_update(Istr,Iend,Jstr,Jend)
+!       MPI_master_only PRINT*, "Max PAR after", MAXVAL(PAR)
+!       MPI_master_only PRINT*, "Min PAR after", MINVAL(PAR)
+!       MPI_master_only PRINT*, "Max PAR_top ", MAXVAL(PAR_top_layer)
+!       MPI_master_only PRINT*, "Min PAR_top ", MINVAL(PAR_top_layer)  
+
 #  endif
 !
 !======================================================================

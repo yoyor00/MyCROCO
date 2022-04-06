@@ -1273,6 +1273,7 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
      &                SWITCH rmask(:,:)
 #  endif
           enddo
+          MPI_master_only PRINT*, "Shape of workr", shape(workr)
           call fillvalue3d(workr,ncidhis,hisT(NT+itrc),
      &                     indxT+NT+itrc-1,record,r3dvar,type)
 CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
@@ -1382,7 +1383,10 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 # if defined BIOLink_PAR_eval
 
       if (wrthis(indxPAR)) then
-        MPI_master_only PRINT*, "PAR is", PAR
+!        MPI_master_only PRINT*,"The shape of PAR is", shape(PAR)
+!        MPI_master_only PRINT*,"The maximum of PAR is", MAXVAL(PAR)
+!        MPI_master_only PRINT*,"The minimum of PAR is", MINVAL(PAR)
+
         call fillvalue3d(PAR,ncidhis,hisPAR,indxPAR,
      &        record,r3dvar,type)
 CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
