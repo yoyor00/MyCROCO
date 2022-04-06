@@ -3320,7 +3320,6 @@ MODULE sed_MUSTANG
             flx_w2s_loca(:)=0.0_rsh
             frdep(:)=0.0_rsh
             frac_sed_depa(:)=0.0_rsh
-            flx_bedload_in(:)=0.0_rsh
 
 #ifdef key_MUSTANG_debug
                IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
@@ -3335,6 +3334,7 @@ MODULE sed_MUSTANG
 #endif 
 
 #ifdef key_MUSTANG_bedload
+            flx_bedload_in(:)=0.0_rsh
             ! bedload fluxes
             !   ATTENTION : need to know fls_bx in i+1,J+1,i-1,j-1
             !               have been exchanged with the neighboring processors  in sedim_MUSTANG_update after erosion
