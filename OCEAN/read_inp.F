@@ -1359,6 +1359,15 @@ c        close(testunit)
       wrthis(indxPAR) = .true.
 
 #endif /* BIOLink_PAR_EVAL */
+
+! For the BLOOM diagnostics
+
+#if defined BLOOM
+
+      wrthis(indxBLMdiag2D) = .true.
+
+#endif /* BLOOM */
+
         MPI_master_only write(stdout,'(8(/6x,l1,2x,A,1x,A))')
      &    wrthis(indxR),    'write RHO  ', 'Density anomaly.'
      &  , wrthis(indxO),    'write Omega', 'Omega vertical velocity.'

@@ -231,6 +231,10 @@
 # ifdef BIOLink_PAR_eval
 #   define vidPAR hisPAR
 # endif /* BIOLink_PAR_eval */
+# ifdef BLOOM
+#   define vidBLMdiag2D hisBLMdiag2D
+# endif /* BLOOM */
+
 # define vidM avgMust
 #endif
 !
@@ -3452,6 +3456,10 @@
 #if defined BIOLink_PAR_eval
 #  undef vidPAR
 #endif /* BIOLink_PAR_eval */
+#if defined BLOOM
+#  undef vidBLMdiag2D
+#endif /* BLOOM */
+
 #ifdef AVERAGES
 # ifndef AVRH
 #  define AVRH
