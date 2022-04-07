@@ -149,6 +149,10 @@
 # ifdef BIOLink_PAR_eval
 #   define vidPAR hisPAR
 # endif /* BIOLink_PAR_eval */
+# ifdef BLOOM
+#   define vidBLMdiag2D hisBLMdiag2D
+# endif /* BLOOM */
+
 # define vidM hisMust
 
 #else
@@ -2401,6 +2405,34 @@
         endif
 #endif /* BIOLink_PAR_EVAL */
 
+#if defined BLOOM
+!
+! Diagnostic of BLOOM model
+!
+        if (wrt(indxBLMdiag2D)) then
+          lvar=lenstr(vname(1,indxBLMdiag2D))
+          ierr=nf_def_var (ncid, vname(1,indxBLMdiag2D)(1:lvar), NF_FOUT,
+     &                                           4, r2dgrd, vidBLMdiag2D)
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBLMdiag2D,nf_collective)
+#endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxBLMdiag2D))
+          ierr=nf_put_att_text (ncid, vidBLMdiag2D, 'long_name', lvar,
+     &                                  vname(2,indxPAR)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxBLMdiag2D)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBLMdiag2D, 'long_name', lvar,
+     &                                              text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxBLMdiag2D))
+          ierr=nf_put_att_text (ncid, vidBLMdiag2D, 'units',     lvar,
+     &                                 vname(3,indxBLMdiag2D)(1:lvar))
+        endif
+#endif /* BLOOM */
+
+
 !
 ! Leave definition mode.
 !
@@ -2676,6 +2708,22 @@
           endif
         endif
 #endif /* BIOLink_PAR_eval */
+
+!
+! Diagnostics from BLOOM
+!
+
+#if defined BLOOM
+
+        if (wrt(indxBLMdiag2D)) then
+          lvar=lenstr(vname(1,indxBLMdiag2D))
+          ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag2D)(1:lvar), vidBLMdiag2D)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxBLMdiag2D)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+#endif /* BLOOM */
 
 !
 ! Density anomaly.

@@ -4716,6 +4716,19 @@ CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
 
 #endif /* BIOLink_PAR_EVAL */
 
+#if defined BLOOM
+
+CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
+      vname(1,indxBLMdiag2D)='diag2D                                   '
+      vname(2,indxBLMdiag2D)='2d diagnostic ( but which one ?)    '
+      vname(3,indxBLMdiag2D)='Some mysteries are to remain unsolved    '
+      vname(4,indxBLMdiag2D)='diag2D,scalar                   '
+      vname(5,indxBLMdiag2D)='                                        '
+      vname(6,indxBLMdiag2D)='lat_rho lon_rho                         '
+      vname(7,indxBLMdiag2D)='                                        '
+
+#endif /* BLOOM */
+
 #if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS
 !
 !     flag to read in climatology for tracer type variables.

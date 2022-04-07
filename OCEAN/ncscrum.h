@@ -158,6 +158,9 @@
 !
 ! ** LIGHT FROM BIOLINK**
 !  indxPAR                       : PAR at the top layer
+!
+! ** DIAGNOSTICS FROM BLOOM **
+!  indxBLMdiag2D                 : 2D diagnostics from BLOOM
 !=======================================================================
 ! Output file codes
       integer filetype_his, filetype_avg
@@ -870,6 +873,14 @@
 
 #endif /* BIOLink_PAR_EVAL */
 
+#if defined BLOOM
+
+      integer indxBLMdiag2D
+      parameter (indxBLMdiag2D=indxSUSTR+155)
+/*      parameter (indxPAR=indxSUSTR+133)*/
+
+#endif /* BIOLink_PAR_EVAL */
+
 #ifdef ICE
       integer indxAi
       parameter (indxAi=????)
@@ -1140,6 +1151,10 @@
 # ifdef BIOLink_PAR_eval
       integer hisPAR
 # endif /* BIOLink_PAR_EVAL */
+
+# ifdef BLOOM
+      integer hisBLMdiag2D
+# endif /* BLOOM  */
 
 # if defined DIAGNOSTICS_TS
       integer nciddia, nrecdia, nrpfdia
@@ -1628,6 +1643,9 @@
      &      , hisPAR
 #endif /* BIOLink_PAR_EVAL */
 
+#ifdef BLOOM
+     &      , hisBLMdiag2D
+#endif /* BLOOM */
 
 #ifdef BBL
      &      , hisBBL
