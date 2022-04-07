@@ -1159,7 +1159,7 @@
 ! Open boundary condition (valid only for idealized situations)
 ! =============================================================
 !
-# ifdef ANA_BRY
+# if defined ANA_BRY && !defined REGIONAL && !defined COASTAL
 #  ifndef SHOREFACE
       z_tide=0.0 !wkb_tide
 #  else
