@@ -8820,8 +8820,8 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
      flx_byij(iv)=0.
 #endif
 
-     flx_bxij(iv) = qb * tauskin_x(i, j) * roswat_bot(i,j) / (tauskin_c(i,j) + epsilon_MUSTANG)
-     flx_byij(iv) = qb * tauskin_y(i, j) * roswat_bot(i,j) / (tauskin_c(i,j) + epsilon_MUSTANG)
+     flx_bxij(iv) = qb * tauskin_x(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
+     flx_byij(iv) = qb * tauskin_y(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
 
 
 #ifdef key_MUSTANG_debug
@@ -8873,17 +8873,18 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
      ! sedimask_h0plusxe : = 1 si BATHY_H0(i,j)+WATER_ELEVATION(i,j) .GT. 1    = 0 sinon
      ! ==> Le flux charrie en X et Y est mis a 0 si la maille voisine est a terre
+     !TODO : put this in subroutine in sed_MUSTANG_HOST because it is host dependant (raphbx&raphby)
 
-     flx_bxij(iv)=(flx_bxij(iv)+abs(flx_bxij(iv)))*0.5_rsh*raphbx(i,j)*sedimask_h0plusxe(i+1,j)+ &
-                  (flx_bxij(iv)-abs(flx_bxij(iv)))*0.5_rsh*raphbx(i-1,j)*sedimask_h0plusxe(i-1,j)
+     flx_bxij(iv) = (flx_bxij(iv) + abs(flx_bxij(iv))) * 0.5_rsh * raphbx(i+1, j) * sedimask_h0plusxe(i+1, j)+ &
+                    (flx_bxij(iv) - abs(flx_bxij(iv))) * 0.5_rsh * raphbx(  i, j) * sedimask_h0plusxe(i-1, j)
 
-     flx_byij(iv)=(flx_byij(iv)+abs(flx_byij(iv)))*0.5_rsh*raphby(i,j)*sedimask_h0plusxe(i,j+1)+ &
-                  (flx_byij(iv)-abs(flx_byij(iv)))*0.5_rsh*raphby(i,j-1)*sedimask_h0plusxe(i,j-1)
+     flx_byij(iv) = (flx_byij(iv) + abs(flx_byij(iv))) * 0.5_rsh * raphby(i, j+1) * sedimask_h0plusxe(i, j+1)+ &
+                    (flx_byij(iv) - abs(flx_byij(iv))) * 0.5_rsh * raphby(i,   j) * sedimask_h0plusxe(i, j-1)
 
     ! Morphological factor
 
-     flx_bxij(iv)=MF*fwet(i,j)*flx_bxij(iv)
-     flx_byij(iv)=MF*fwet(i,j)*flx_byij(iv)
+     flx_bxij(iv) = MF * fwet(i, j) * flx_bxij(iv)
+     flx_byij(iv) = MF * fwet(i, j) * flx_byij(iv)
 
 #if defined key_MUSTANG_specif_outputs        
      ! flx_bx_int and flx_by_int
