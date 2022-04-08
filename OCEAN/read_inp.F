@@ -1268,6 +1268,8 @@ c        close(testunit)
 # else 
      &                                          ,  dumboolean
 # endif
+
+
 # if defined BIOLOGY && !defined PISCES
      &                                          ,  wrthis(indxHel)
 #  ifdef BIO_NChlPZD
@@ -1352,21 +1354,8 @@ c        close(testunit)
 # endif
      &     ) wrthis(indxTime)=.true.
 
-! For the PAR with BIOLink 
 
-#if defined BIOLink_PAR_eval
 
-      wrthis(indxPAR) = .true.
-
-#endif /* BIOLink_PAR_EVAL */
-
-! For the BLOOM diagnostics
-
-#if defined BLOOM
-
-      wrthis(indxBLMdiag2D) = .true.
-
-#endif /* BLOOM */
 
         MPI_master_only write(stdout,'(8(/6x,l1,2x,A,1x,A))')
      &    wrthis(indxR),    'write RHO  ', 'Density anomaly.'
@@ -1478,7 +1467,22 @@ c        close(testunit)
      &   , wrthis(indxLsc), 'write Lscale ', 
      &                                  'vertical mixing length scale.'
 # endif
+
 #endif /* SOLVE3D */
+
+#if defined BIOLink
+      MPI_master_only PRINT*, "I am in BIOLink"
+      elseif (keyword(1:kwlen).eq.'auxiliary_history_BIOLink') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95)
+# if defined BLOOM
+     &                                             ,wrthis(indxBLMdiag2D)
+# endif /* BLOOM */
+
+# if defined BIOLink_PAR_eval
+     &                                             ,wrthis(indxPAR)
+# endif /* BIOLink_PAR_EVAL */v
+#endif /* BIOLink */
 
 #ifdef AVERAGES
 !
