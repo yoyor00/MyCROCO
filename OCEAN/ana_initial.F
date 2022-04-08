@@ -1132,7 +1132,7 @@ C$OMP BARRIER
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #    endif  
 #    ifdef SALINITY
-              t(i,j,k,1,isalt)=0.
+              t(i,j,k,1,isalt)=35.5
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
             enddo
@@ -1148,7 +1148,7 @@ C$OMP BARRIER
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #    endif
 #    ifdef SALINITY
-              t(i,j,k,1,isalt)=0.
+              t(i,j,k,1,isalt)=35.5
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
             enddo

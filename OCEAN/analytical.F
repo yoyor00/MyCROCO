@@ -2570,7 +2570,7 @@ C$    integer  trd, omp_get_thread_num
               enddo
 #    endif
 #    ifdef SUBSTANCE
-#     if defined TIDAL_FLAT
+#     ifdef TIDAL_FLAT
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
 #     else
@@ -2624,9 +2624,14 @@ C$    integer  trd, omp_get_thread_num
 #    endif
 #    ifdef T_FRC_BRY
 #     ifdef SUBSTANCE
+#      ifdef TIDAL_FLAT
+             tbry_west(j,k,1)=10.
+             tbry_west(j,k,2)=35.5
+#      else
              do itrc=1,itsubs1-1
                tbry_west(j,k,itrc)=0.
              enddo
+#      endif
              do itrc=itsubs1,NT
                tbry_west(j,k,itrc)=cobc_wat(itrc)
              enddo
@@ -2636,7 +2641,7 @@ C$    integer  trd, omp_get_thread_num
              tbry_west(j,k,2)=35.
              tbry_west(j,k,3)=0. ! tracer Coarse Sand
              tbry_west(j,k,4)=0. ! tracer Fine Sand
-             tbry_west(j,k,5)=0. ! tracer Mud
+             tbry_west(j,k,5)=0.02 ! tracer Mud
 #      else
              do itrc=1,NT
                tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
