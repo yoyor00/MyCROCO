@@ -161,10 +161,10 @@
    ! Sedim output
    ! ---------------------------------------------------------------------------
    LOGICAL                               :: l_outsed_saltemp,l_outsed_poro
-   CHARACTER(len=lchain)   :: name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tauskin,&
+   CHARACTER(len=lchain)   :: name_out_hsed,name_out_nblaysed,name_out_dzs,name_out_tauskin,&
                                      name_out_tauskin_c,name_out_tauskin_w
-   REAL(kind=riosh)             :: riog_valid_min_hsed,riog_valid_max_hsed,riog_valid_min_nbniv, &
-                                   riog_valid_max_nbniv,riog_valid_min_dzs,riog_valid_max_dzs,     &
+   REAL(kind=riosh)             :: riog_valid_min_hsed,riog_valid_max_hsed,riog_valid_min_nblaysed, &
+                                   riog_valid_max_nblaysed,riog_valid_min_dzs,riog_valid_max_dzs,     &
                                    riog_valid_min_tauskin,riog_valid_max_tauskin
    INTEGER                                    :: nk_nivsed_out,choice_nivsed_out
    INTEGER                                    :: nv_out3Dk_specif,nv_out3Dnv_specif,nv_out2D_specif

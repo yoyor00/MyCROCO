@@ -901,7 +901,7 @@ CONTAINS
 #endif
    indx=indxT+ntrc_salt+ntrc_substot+1
    wrthis(indx)=.TRUE.
-   vname(1,indx)='NBNIV'
+   vname(1,indx)='NB_LAY_SED'
    vname(2,indx)='number of sediment layers'
    vname(3,indx)='no units'
    vname(4,indx)=' '

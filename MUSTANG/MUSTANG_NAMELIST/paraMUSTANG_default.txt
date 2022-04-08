@@ -31,7 +31,7 @@
    date_start_morpho='01/01/0000 00:00:00'   ! starting date for morphodynamic processes 
    l_repsed=.false.        ! boolean set to .true. if sedimentary variables are initialized from a previous run
    filrepsed='./' ! file from which the model is initialized for the continuation of a previous run
-                           ! ATTENTION : filrepsed must be given if l_bathy_actu=.T. in order to read new h0 even if l_repsed=.F.
+                           ! WARNING : filrepsed must be given if l_bathy_actu=.T. in order to read new h0 even if l_repsed=.F.
    l_initsed_vardiss=.false. ! set to .true. if initialization of dissolved variables, temperature and salinity in sediment 
                            ! will be done with concentrations in water at bottom (k=1)
    l_unised = .true.       ! boolean set to true for a uniform bottom initialization
@@ -318,15 +318,15 @@
    l_outsed_flx_Bload_int=.TRUE.    ! V2 only
    l_outsed_bil_Bload_int=.TRUE.    ! V2 only
    name_out_hsed='HSED'         ! name of variable saved in sediment output file
-   name_out_nbniv='NBNIV'
+   name_out_nblaysed='NB_LAY_SED'
    name_out_dzs='DZS'
    name_out_tauskin='TAUSKIN'
    name_out_tauskin_c='TAUSKIN_C'
    name_out_tauskin_w='TAUSKIN_W'
    riog_valid_min_hsed=0       ! scalar specifying the minimum valid value for the XXX variable
    riog_valid_max_hsed=100
-   riog_valid_min_nbniv=0
-   riog_valid_max_nbniv=200
+   riog_valid_min_nblaysed=0
+   riog_valid_max_nblaysed=200
    riog_valid_min_dzs=0
    riog_valid_max_dzs=100
    riog_valid_min_tauskin=0

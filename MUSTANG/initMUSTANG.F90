@@ -402,10 +402,10 @@ MODULE initMUSTANG
                             l_dredging,l_MF_dhsed,l_bathy_actu,dt_morpho, &
                             l_transfer2hydro_dhsed                                  
 
-   NAMELIST/namsedoutput/ name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tauskin,      &
+   NAMELIST/namsedoutput/ name_out_hsed,name_out_nblaysed,name_out_dzs,name_out_tauskin,      &
                           name_out_tauskin_c,name_out_tauskin_w,choice_nivsed_out,            &
                           riog_valid_min_hsed,riog_valid_max_hsed,                        &
-                          riog_valid_min_nbniv,riog_valid_max_nbniv,riog_valid_min_dzs,   &
+                          riog_valid_min_nblaysed,riog_valid_max_nblaysed,riog_valid_min_dzs,   &
                           riog_valid_max_dzs,riog_valid_min_tauskin,riog_valid_max_tauskin, &
                           nk_nivsed_out,ep_nivsed_out,epmax_nivsed_out,                   &
                           l_outsed_flx_Bload_all,l_outsed_flx_WS_all,                     &
