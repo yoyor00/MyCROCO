@@ -2390,6 +2390,7 @@
           lvar=lenstr(vname(1,indxPAR))
           ierr=nf_def_var (ncid, vname(1,indxPAR)(1:lvar), NF_FOUT,
      &                                           4, r3dgrd, vidPAR)
+          MPI_master_only PRINT*,'ierr of PAR is',ierr
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidPAR,nf_collective)
 #endif
@@ -2416,14 +2417,15 @@
         if (wrt(indxBLMdiag2D)) then
           lvar=lenstr(vname(1,indxBLMdiag2D))
           ierr=nf_def_var (ncid, vname(1,indxBLMdiag2D)(1:lvar), NF_FOUT,
-     &                                           4, r2dgrd, vidBLMdiag2D)
+     &                                           3, r2dgrd, vidBLMdiag2D)
+          MPI_master_only PRINT*,'ierr of BLMdiag2D is',ierr
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidBLMdiag2D,nf_collective)
 #endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxBLMdiag2D))
           ierr=nf_put_att_text (ncid, vidBLMdiag2D, 'long_name', lvar,
-     &                                  vname(2,indxPAR)(1:lvar))
+     &                                  vname(2,indxBLMdiag2D)(1:lvar))
 #  else
           text='averaged '/ /vname(2,indxBLMdiag2D)
           lvar=lenstr(text)
