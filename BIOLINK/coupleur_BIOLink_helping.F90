@@ -354,6 +354,12 @@ CONTAINS
            idimv_r(isubs)=2
            ndiag_2d=ndiag_2d+1
 
+           ! I add the name in the vname table
+           vname(1,indxBLMdiag2D+ndiag_2d) = namvar_r
+           vname(2,indxBLMdiag2D+ndiag_2d) = long_name_var_r
+           vname(3,indxBLMdiag2D+ndiag_2d) = standard_name_var_r
+           vname(4,indxBLMdiag2D+ndiag_2d) = unitvar_r
+
          ELSE IF (dimvar==3) THEN
 
            idimv_r(isubs)=3

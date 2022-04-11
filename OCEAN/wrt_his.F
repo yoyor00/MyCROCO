@@ -21,6 +21,10 @@
       USE comBIOLink_helping, ONLY : PAR
 #endif /* BIOLink_PAR_eval */ 
 
+#if defined BLOOM
+      USE comBIOLINK, ONLY: diag_2D,ndiag_2d
+#endif
+
 #ifdef MUSTANG
       USE comsubstance, ONLY : nv_adv,nvpc,nvp
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
@@ -1273,7 +1277,6 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
      &                SWITCH rmask(:,:)
 #  endif
           enddo
-          MPI_master_only PRINT*, "Shape of workr", shape(workr)
           call fillvalue3d(workr,ncidhis,hisT(NT+itrc),
      &                     indxT+NT+itrc-1,record,r3dvar,type)
 CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
@@ -1383,16 +1386,26 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 # if defined BIOLink_PAR_eval
 
       if (wrthis(indxPAR)) then
-!        MPI_master_only PRINT*,"The shape of PAR is", shape(PAR)
-!        MPI_master_only PRINT*,"The maximum of PAR is", MAXVAL(PAR)
-!        MPI_master_only PRINT*,"The minimum of PAR is", MINVAL(PAR)
-
         call fillvalue3d(PAR,ncidhis,hisPAR,indxPAR,
      &        record,r3dvar,type)
 CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
       endif
 
 # endif /* BIOLink_PAR_eval */
+
+!
+!  BLOOM 2D diagnostics
+!
+
+# if defined BLOOM
+      do i=1,ndiag_2D
+        if (wrthis(indxBLMdiag2D+i)) then
+          call fillvalue2d(diag_2D(i,:,:),ncidhis,hisBLMdiag2D(i),
+     &         indxBLMdiag2D+i,record,r2dvar,type)
+        endif
+      end do
+
+# endif /* BLOOM */
 
  1    format(/1x,'WRT_HIS ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',

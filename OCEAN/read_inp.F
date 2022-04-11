@@ -22,6 +22,9 @@
 #ifdef SEDIMENT                                        
 # include "sediment.h"
 #endif
+# if defined BLOOM
+      USE comBIOLINK, ONLY :ndiag_2d    
+# endif
 #ifdef FLOATS
 # include "ncscrum_floats.h"
 #endif
@@ -55,6 +58,9 @@
       logical dumboolean
 #ifdef USE_CALENDAR
       real  dt_his,dt_avg,dt_rst
+#endif
+#ifdef BLOOM
+      integer i
 #endif
 !
 ! Use pre-set default startup filename for known applications,
@@ -1476,7 +1482,7 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
 # if defined BLOOM
-     &                                             ,wrthis(indxBLMdiag2D)
+     &                     (wrthis(indxBLMdiag2D+i), i=1,ndiag_2d)
 # endif /* BLOOM */
 
 # if defined BIOLink_PAR_eval

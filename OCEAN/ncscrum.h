@@ -182,6 +182,7 @@
      &           filetype_surf=13, filetype_surf_avg=14,
      &           filetype_diabio=15,filetype_diabio_avg=16)
 !
+! For the loop 
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
       parameter (indxTime=1, indxZ=2, indxUb=3, indxVb=4)
@@ -869,17 +870,13 @@
 
       integer indxPAR
       parameter (indxPAR=indxSUSTR+154)
-/*      parameter (indxPAR=indxSUSTR+133)*/
 
 #endif /* BIOLink_PAR_EVAL */
 
 #if defined BLOOM
-
       integer indxBLMdiag2D
       parameter (indxBLMdiag2D=indxSUSTR+155)
-/*      parameter (indxPAR=indxSUSTR+133)*/
-
-#endif /* BIOLink_PAR_EVAL */
+#endif /* BLOOM */
 
 #ifdef ICE
       integer indxAi
@@ -1153,7 +1150,7 @@
 # endif /* BIOLink_PAR_EVAL */
 
 # ifdef BLOOM
-      integer hisBLMdiag2D
+      integer hisBLMdiag2D(ndiag_2D)
 # endif /* BLOOM  */
 
 # if defined DIAGNOSTICS_TS
