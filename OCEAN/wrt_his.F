@@ -22,7 +22,9 @@
 #endif /* BIOLink_PAR_eval */ 
 
 #if defined BLOOM
-      USE comBIOLINK, ONLY: diag_1D,ndiag_1d,diag_2D,ndiag_2d
+      USE comBIOLINK, ONLY: diag_1D,ndiag_1d,
+     &                      diag_2D,ndiag_2d,
+     &                      diag_3D_wat,ndiag_3d
 #endif
 
 #ifdef MUSTANG
@@ -1403,7 +1405,7 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
         if (wrthis(indxBLMdiag1D+i)) then
 
           ierr=nf_put_var1_FTYPE (ncidhis, hisBLMdiag1D(i), 
-     &                            record, ndiag_1D(i))
+     &                            record, diag_1D(i))
           if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxBLMdiag1D+i))
             MPI_master_only write(stdout,1)
@@ -1426,6 +1428,18 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
      &         indxBLMdiag2D+i,record,r2dvar,type)
         endif
       end do
+
+!
+!  BLOOM 3D diagnostics
+!
+
+      do i=1,ndiag_3D
+        if (wrthis(indxBLMdiag3D+i)) then
+          call fillvalue2d(diag_3D_wat(i,:,:,:),ncidhis,hisBLMdiag3D(i),
+     &         indxBLMdiag3D+i,record,r3dvar,type)
+        endif
+      end do
+
 
 # endif /* BLOOM */
 

@@ -1482,7 +1482,7 @@ c        close(testunit)
 # if defined BLOOM
      &                     (wrthis(indxBLMdiag1D+i), i=1,20)
      &                    ,(wrthis(indxBLMdiag2D+i), i=1,30)
-
+     &                    ,(wrthis(indxBLMdiag3D+i), i=1,30)
 # endif /* BLOOM */
 
 # if defined BIOLink_PAR_eval

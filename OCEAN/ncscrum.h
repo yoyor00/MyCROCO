@@ -160,8 +160,9 @@
 !  indxPAR                       : PAR at the top layer
 !
 ! ** DIAGNOSTICS FROM BLOOM **
-!  indxBLMdiag2D                 : 1D diagnostics from BLOOM
+!  indxBLMdiag1D                 : 1D diagnostics from BLOOM
 !  indxBLMdiag2D                 : 2D diagnostics from BLOOM
+!  indxBLMdiag3D                 : 3D diagnostics from BLOOM
 !=======================================================================
 ! Output file codes
       integer filetype_his, filetype_avg
@@ -879,6 +880,8 @@
       parameter (indxBLMdiag1D=indxSUSTR+155)
       integer indxBLMdiag2D
       parameter (indxBLMdiag2D=indxSUSTR+175)
+      integer indxBLMdiag3D
+      parameter (indxBLMdiag3D=indxSUSTR+205)
 
 #endif /* BLOOM */
 
@@ -1156,6 +1159,7 @@
 # ifdef BLOOM
       integer hisBLMdiag1D(20)
       integer hisBLMdiag2D(30)
+      integer hisBLMdiag3D(30)
 # endif /* BLOOM  */
 
 # if defined DIAGNOSTICS_TS
@@ -1648,6 +1652,7 @@
 #ifdef BLOOM
      &      , hisBLMdiag1D
      &      , hisBLMdiag2D
+     &      , hisBLMdiag3D
 #endif /* BLOOM */
 
 #ifdef BBL

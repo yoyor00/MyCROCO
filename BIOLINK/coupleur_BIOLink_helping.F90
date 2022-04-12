@@ -369,6 +369,13 @@ CONTAINS
 
            idimv_r(isubs)=3
            ndiag_3d=ndiag_3d+1
+           ! I add the name in the vname table
+           vname(1,indxBLMdiag3D+ndiag_3d) = namvar_r
+           vname(2,indxBLMdiag3D+ndiag_3d) = long_name_var_r
+           vname(3,indxBLMdiag3D+ndiag_3d) = standard_name_var_r
+           vname(4,indxBLMdiag3D+ndiag_3d) = unitvar_r
+
+
 
          END IF
 

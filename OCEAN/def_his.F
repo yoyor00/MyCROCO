@@ -41,7 +41,7 @@
 #endif
 
 # if defined BLOOM
-      USE comBIOLINK, ONLY :ndiag_1d,ndiag_2d    
+      USE comBIOLINK, ONLY :ndiag_1d,ndiag_2d,ndiag_3d    
 # endif
 
       implicit none
@@ -156,6 +156,7 @@
 # ifdef BLOOM
 #   define vidBLMdiag1D hisBLMdiag1D
 #   define vidBLMdiag2D hisBLMdiag2D
+#   define vidBLMdiag3D hisBLMdiag3D
 # endif /* BLOOM */
 
 # define vidM hisMust
@@ -239,6 +240,7 @@
 # ifdef BLOOM
 #   define vidBLMdiag1D hisBLMdiag1D
 #   define vidBLMdiag2D hisBLMdiag2D
+#   define vidBLMdiag3D hisBLMdiag3D
 # endif /* BLOOM */
 
 # define vidM avgMust
@@ -2480,6 +2482,34 @@
      &                                 vname(3,indxBLMdiag2D+i)(1:lvar))
           endif
         end do
+
+!
+! 3D Diagnostic of BLOOM model
+!
+        do i=1,ndiag_3d
+          if (wrt(indxBLMdiag3D+i)) then
+            lvar=lenstr(vname(1,indxBLMdiag3D+i))
+            ierr=nf_def_var (ncid, vname(1,indxBLMdiag3D+i)(1:lvar),NF_FOUT,
+     &                                        4, r3dgrd, vidBLMdiag3D(i))
+#ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidBLMdiag3D(i),nf_collective)
+#endif
+#  ifndef AVRH
+            lvar=lenstr(vname(2,indxBLMdiag3D+i))
+            ierr=nf_put_att_text (ncid, vidBLMdiag3D+i, 'long_name', lvar,
+     &                                  vname(2,indxBLMdiag3D+i)(1:lvar))
+#  else
+            text='averaged '/ /vname(2,indxBLMdiag3D+i)
+            lvar=lenstr(text)
+            ierr=nf_put_att_text (ncid, vidBLMdiag3D(i), 'long_name', lvar,
+     &                                              text(1:lvar))
+#  endif
+            lvar=lenstr(vname(3,indxBLMdiag3D+i))
+            ierr=nf_put_att_text (ncid, vidBLMdiag3D(i), 'units',     lvar,
+     &                                 vname(3,indxBLMdiag3D+i)(1:lvar))
+          endif
+        end do
+
 #endif /* BLOOM */
 
 
@@ -2794,6 +2824,24 @@
             endif
           endif
         end do
+
+!
+! 3D Diagnostics from BLOOM
+!
+
+
+        do i=1,ndiag_3D
+          if (wrt(indxBLMdiag3D+i)) then
+            lvar=lenstr(vname(1,indxBLMdiag3D+i))
+            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3D+i)(1:lvar) 
+     &                          ,vidBLMdiag3D(i))
+            if (ierr .ne. nf_noerr) then
+              write(stdout,1) vname(1,indxBLMdiag3D+i)(1:lvar), ncname(1:lstr)
+              goto 99                                       !--> ERROR
+            endif
+          endif
+        end do
+
 #endif /* BLOOM */
 
 !
@@ -3526,6 +3574,7 @@
 #if defined BLOOM
 #  undef vidBLMdiag1D
 #  undef vidBLMdiag2D
+#  undef vidBLMdiag3D
 #endif /* BLOOM */
 
 #ifdef AVERAGES
