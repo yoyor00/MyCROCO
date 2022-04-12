@@ -15,16 +15,15 @@
                                         ! script file using keywords
                                         ! to recognize variables.
 !     implicit none
-
+# if defined BLOOM
+      USE comBIOLINK, ONLY :ndiag_2d    
+# endif
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #ifdef SEDIMENT                                        
 # include "sediment.h"
 #endif
-# if defined BLOOM
-      USE comBIOLINK, ONLY :ndiag_2d    
-# endif
 #ifdef FLOATS
 # include "ncscrum_floats.h"
 #endif
@@ -1477,17 +1476,21 @@ c        close(testunit)
 #endif /* SOLVE3D */
 
 #if defined BIOLink
-      MPI_master_only PRINT*, "I am in BIOLink"
       elseif (keyword(1:kwlen).eq.'auxiliary_history_BIOLink') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
 # if defined BLOOM
-     &                     (wrthis(indxBLMdiag2D+i), i=1,ndiag_2d)
+     &                     (wrthis(indxBLMdiag2D+i), i=1,20)
+
 # endif /* BLOOM */
 
 # if defined BIOLink_PAR_eval
      &                                             ,wrthis(indxPAR)
-# endif /* BIOLink_PAR_EVAL */v
+# endif /* BIOLink_PAR_EVAL */
+        MPI_master_only PRINT*, "wrthis BLMdiag ", 
+     &                     (wrthis(indxBLMdiag2D+i), i=1,20)
+        MPI_master_only PRINT*, "wrthis PAR ",wrthis(indxPAR) 
+
 #endif /* BIOLink */
 
 #ifdef AVERAGES
