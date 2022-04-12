@@ -1480,16 +1480,14 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
 # if defined BLOOM
-     &                     (wrthis(indxBLMdiag2D+i), i=1,20)
+     &                     (wrthis(indxBLMdiag1D+i), i=1,20)
+     &                    ,(wrthis(indxBLMdiag2D+i), i=1,30)
 
 # endif /* BLOOM */
 
 # if defined BIOLink_PAR_eval
      &                                             ,wrthis(indxPAR)
 # endif /* BIOLink_PAR_EVAL */
-        MPI_master_only PRINT*, "wrthis BLMdiag ", 
-     &                     (wrthis(indxBLMdiag2D+i), i=1,20)
-        MPI_master_only PRINT*, "wrthis PAR ",wrthis(indxPAR) 
 
 #endif /* BIOLink */
 

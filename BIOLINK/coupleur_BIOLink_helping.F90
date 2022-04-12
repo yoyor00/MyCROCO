@@ -348,12 +348,17 @@ CONTAINS
 
            idimv_r(isubs)=1
            ndiag_1d=ndiag_1d+1
+           ! I add the name in the vname table
+           vname(1,indxBLMdiag1D+ndiag_1d) = namvar_r
+           vname(2,indxBLMdiag1D+ndiag_1d) = long_name_var_r
+           vname(3,indxBLMdiag1D+ndiag_1d) = standard_name_var_r
+           vname(4,indxBLMdiag1D+ndiag_1d) = unitvar_r
+
 
          ELSE IF (dimvar==2) THEN
 
            idimv_r(isubs)=2
            ndiag_2d=ndiag_2d+1
-
            ! I add the name in the vname table
            vname(1,indxBLMdiag2D+ndiag_2d) = namvar_r
            vname(2,indxBLMdiag2D+ndiag_2d) = long_name_var_r
