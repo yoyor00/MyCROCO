@@ -31,7 +31,10 @@
      &                                            A2d(1,4,trd), 
 # endif           
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
-     &                                          , A3d(1,4,trd)         
+#ifdef OPENACC
+     &   ,A3d(1,4,trd),A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd)
+#endif
+     &                                          , A3d(1,8,trd)         
      &                                                        )
       return
       end
@@ -42,6 +45,9 @@
      &                                                       WC, 
 # endif     
      &                                               FX,FE,WORK
+#ifdef OPENACC
+     &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
+#endif
      &                                                 ,Hz_half
      &                                                         )  
 !
@@ -78,6 +84,12 @@
      &       FX(PRIVATE_2D_SCRATCH_ARRAY),      epsil,
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
      &     WORK(PRIVATE_2D_SCRATCH_ARRAY)
+#ifdef OPENACC
+      real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     WORK_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#endif
 # ifdef VADV_ADAPT_IMP      
       real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
@@ -199,6 +211,7 @@
           enddo
         enddo
       enddo
+!$acc end kernels
 !
 !  Set extended range
 !
@@ -257,11 +270,12 @@
 !
 !======================================================================
 !
-# ifdef TRACERS
-!$acc loop seq
-      do itrc=1,NT
-        do k=1,N
 
+# ifdef TRACERS
+      do itrc=1,NT
+#if !defined OPENACC
+      do k=1,N
+#endif
 # ifdef BIO_HADV_WENO5
 #  if defined TEMPERATURE && defined SALINITY
           if (itrc .le. 2) then
@@ -275,7 +289,11 @@
 !----------------------------------------------------------
 !
 #  define PREDICTOR
+#if !defined OPENACC
 #  include "compute_horiz_tracer_fluxes.h"
+#else
+#  include "compute_horiz_tracer_fluxes_3D.h"
+#endif
 #  undef PREDICTOR
 
 !
@@ -350,31 +368,47 @@
 !
           if (FIRST_TIME_STEP) then
             cff=0.5*dt
+!$acc parallel loop if(compute_on_device) default(present)
+#if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#endif
             do j=Jstr,Jend
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nstp,itrc)
-     &                      -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                            +FE(i,j+1)-FE(i,j))
+     &                 -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
+     &                                      +FE(i,j+1)-FE(i,j))
               enddo
             enddo
+#if defined OPENACC
+            ENDDOEXTEND
+#endif
           else
             cff=(1.-gamma)*dt
             cff1=0.5+gamma
             cff2=0.5-gamma
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3)
+#if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#endif
             do j=Jstr,Jend
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=cff1*Hz(i,j,k)*t(i,j,k,nstp,itrc)
      &                            +cff2*Hz_bak(i,j,k)*t(i,j,k,indx,itrc)
-     &                         -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                               +FE(i,j+1)-FE(i,j))
+     &                -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
+     &                                     +FE(i,j+1)-FE(i,j))
               enddo
             enddo
+#if defined OPENACC
+            ENDDOEXTEND
+#endif
           endif
-
+#if !defined OPENACC
         enddo   ! <-- k
+#endif
       enddo       ! <-- itrc
 # endif /* TRACERS */
-
+!$acc kernels if(compute_on_device) default(present)
 !
 ! Continue computation of the auxiliary tracer field: auxiliary
 ! continuity equation (the same for all tracers): DC=1/Hz_half_new,
@@ -1021,6 +1055,8 @@
       enddo     
 !$acc end kernels
 #  endif
+#else
+!$acc end kernels
 # endif
 # undef IU_RANGE
 # undef JU_RANGE

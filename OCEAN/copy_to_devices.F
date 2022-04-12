@@ -52,6 +52,8 @@
 #endif
 #ifdef SPHERICAL
 !$acc&, latr, lonr, latu, lonu, latv, lonv
+#else
+!$acc& ,xp,xr,yp,yr
 #endif
 #ifdef MPI
 !$acc&, buf_snd4,buf_snd2,buf_rev4,buf_rev2

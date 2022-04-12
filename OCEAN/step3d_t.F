@@ -28,14 +28,22 @@
      &                    A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                    A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                    A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
-     &                                                A3d(1,1,trd))
+     &                                                A3d(1,1,trd)
+#ifdef OPENACC
+     &   ,A3d(1,2,trd),A3d(1,3,trd),A3d(1,4,trd),A3d(1,5,trd)
+#endif
+     &                            )
 # endif /* TRACERS */      
       return
       end
 
 # ifdef TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
-     &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
+     &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk
+#ifdef OPENACC
+     &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
+#endif
+     &  )
 
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav,nvp,ws_part,nv_sand
@@ -84,6 +92,12 @@
      &     EC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     GC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     swdk(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#ifdef OPENACC
+      real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     WORK_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#endif
       real cff1,cff2,gama,dRz,hbltmp,sig,dXmax,dEmax,
      &     dpth,smax,amax,amaxx
 #  ifdef TS_VADV_FCT
@@ -153,10 +167,11 @@
 !
 !======================================================================
 !
-!$acc kernels if(compute_on_device) default(present)
-!$acc loop seq
+
       do itrc=1,NT
-        do k=1,N
+#if !defined OPENACC
+      do k=1,N
+#endif
 
 #  ifdef BIO_HADV_WENO5
 #   if defined TEMPERATURE && defined SALINITY
@@ -171,7 +186,11 @@
 !----------------------------------------------------------
 !
 #  undef PREDICTOR
+#if !defined OPENACC
 #  include "compute_horiz_tracer_fluxes.h"
+#else
+#  include "compute_horiz_tracer_fluxes_3D.h"
+#endif
 !
 !----------------------------------------------------------
 ! WENO5 advection for passive tracers (biology ...)
@@ -262,6 +281,11 @@
 ! Finalize horizontal advection: compute flux divergences
 !----------------------------------------------------------
 !
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3)
+#if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#endif
           do j=Jstr,Jend
             do i=Istr,Iend
 #  if !(defined MUSTANG && defined key_sand2D)
@@ -305,6 +329,9 @@
      &      +dt*FE(IstrR:IendR,JstrR:JendR)
           endif
 #  endif
+#if defined OPENACC
+            ENDDOEXTEND
+#endif
 !
 !----------------------------------------------------------
 ! Store diagnostic transport term
@@ -364,10 +391,11 @@
         enddo
 #   endif
 #  endif /* DIAGNOSTICS_TS */
-
+#if !defined OPENACC
         enddo    !<-- k
+#endif
       enddo    !<-- itrc
-!$acc end kernels
+
 !
 !----------------------------------------------------------
 ! Compute fraction of the solar shortwave flux "swdk"
@@ -697,7 +725,7 @@
       call biology_tile (Istr,Iend,Jstr,Jend)
 #  endif
 
-!$acc kernels if(compute_on_device) default(present)
+
 !
 !======================================================================
 !  Compute inverse vertical Rho gradients for use in t3dmix
@@ -705,7 +733,7 @@
 !
 #  if !defined TS_MIX_S && \
       (defined TS_DIF4 || defined TS_DIF2 || defined SPONGE_DIF2)
-
+!$acc kernels if(compute_on_device) default(present)
 #   ifdef TS_MIX_GEO
 !
 ! --- Geopotential diffusion: idRz contains idZ values ---

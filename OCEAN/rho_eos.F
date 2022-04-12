@@ -558,7 +558,7 @@
       dr00=r00-1000.
 #  endif
 
-!$acc update if(compute_on_device) host(Hz)
+!$acc kernels default(present)
       do k=1,N
         do j=Jstr,Jend
           do i=Istr,Iend
@@ -605,7 +605,8 @@
           enddo
         enddo
       enddo
-      
+!$acc end kernels
+
       mrho=mrho/vol
 !
 !  Make global volume average of sigma-t(T,S) ~ sigma-t(T0,S0)

@@ -75,19 +75,35 @@ def doloop2d_treat(result,lines,file_out_main):
 		lines=lines[ibegin:len(lines)]
 	file_out_main.write("      ENDDO; ENDDO\n")
 
+def doextend_treat(result,lines,file_out_main):
+	file_out_main.write("      DO %s=%s,%s\n" % (result.group(1),result.group(2),result.group(3)))
+	lines = re.sub(r"FX\(([^)]*),([^)]*)\)",r"FX_3D(\1,\2,k)",lines)
+	arrays=result.group(4).split(',')
+	for array in arrays:
+		replace_string_in=r"%s\(([^)]*),([^)]*)\)"  % (array)
+		replace_string_out=r"%s_3D(\1,\2,k)" % (array)
+		lines = re.sub(replace_string_in,replace_string_out,lines)
+		print("replace = ",replace_string_in,replace_string_out)
+	file_out_main.write(lines)
+	file_out_main.write("      ENDDO\n")
+
+#	print('lines = ',lines)
+	(lines,cd1d) = re.subn(r"CD\(i,([^)]*)\)",r"CD1D(\1)",lines)
 if __name__=="__main__":
 	parser=argparse.ArgumentParser()
 	parser.add_argument('infile')
 	parser.add_argument('outfile')
 	args=parser.parse_args()
-	file = open(args.infile,'r')
-	file_out_main=open(args.outfile,'w')
+	file = open(args.infile,'r',encoding='iso-8859-1')
+	file_out_main=open(args.outfile,'w',encoding='iso-8859-1')
 	insubroutine=False
 	listoflines=[]
 	listofuses=[]
 	myfile=''.join(file.readlines())
 	doloop2ddeclare=re.compile(r"^[ \t]*DOLOOP2D\((.*),(.*),(.*),(.*)\).*\n")
 	enddoloop2ddecalre=re.compile(r"[ \t]*ENDDOLOOP2D.*\n")
+	doextenddeclare=re.compile(r"^[ \t]*DOEXTEND\(([^,]*),([^,])*,([^,])*,(.*)\).*\n")
+	enddoextenddeclare=re.compile(r"[ \t]*ENDDOEXTEND.*\n")
 	get_nextline=re.compile(r".*(\n|$)")
 	while myfile:
 		doloop2d = doloop2ddeclare.match(myfile)
@@ -108,10 +124,28 @@ if __name__=="__main__":
 					ibegin=nextline.end()
 					myfile=myfile[ibegin:len(myfile)]
 		else:
-			nextline=get_nextline.match(myfile)
-			file_out_main.write("%s" % nextline.group(0))
-			ibegin=nextline.end()
-			myfile=myfile[ibegin:len(myfile)]
+                    doextend=doextenddeclare.match(myfile)
+                    if doextend:
+                        ibegin=doextend.end()
+                        myfile=myfile[ibegin:len(myfile)]
+                        lines=""
+                        while myfile:
+                            enddoextend=enddoextenddeclare.match(myfile)
+                            if enddoextend:
+                                doextend_treat(doextend,lines,file_out_main)
+                                ibegin=enddoextend.end()
+                                myfile=myfile[ibegin:len(myfile)]
+                                break
+                            else:
+                                nextline=get_nextline.match(myfile)
+                                lines=lines+nextline.group(0)
+                                ibegin=nextline.end()
+                                myfile=myfile[ibegin:len(myfile)]
+                    else:
+                        nextline=get_nextline.match(myfile)
+                        file_out_main.write("%s" % nextline.group(0))
+                        ibegin=nextline.end()
+                        myfile=myfile[ibegin:len(myfile)]
 
 	file.close()
 	file_out_main.close()

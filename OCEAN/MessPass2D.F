@@ -34,6 +34,7 @@
 #else
       parameter (Npts=3)
 #endif
+      logical, parameter :: use_host_device = .TRUE.
 #include "mpi_buffers.h"
 !
 ! Nb of boundary points involved in communication
@@ -97,7 +98,9 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
                 jbuf_sndW(j-jmin+(ipts-1)*jshft)=A(ipts,j)
               enddo
             enddo
-!$acc host_data if(compute_on_device) use_device(jbuf_revW, jbuf_sndW)
+!$acc update host(jbuf_sndW) if(.not.use_host_device)
+!$acc host_data if(compute_on_device.and.use_host_device) 
+!$&acc& use_device(jbuf_revW, jbuf_sndW)
             call MPI_Irecv (jbuf_revW, jsize, MPI_DOUBLE_PRECISION,
      &                         p_W, 2, MPI_COMM_WORLD, req(1), ierr)
             call MPI_Send  (jbuf_sndW, jsize, MPI_DOUBLE_PRECISION,
@@ -133,7 +136,9 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
                 ibuf_sndS(i-imin+(jpts-1)*ishft)=A(i,jpts)
               enddo
             enddo
-!$acc host_data if(compute_on_device) use_device(ibuf_revS, ibuf_sndS)
+!$acc update host(ibuf_sndS) if(.not.use_host_device)
+!$acc host_data if(compute_on_device.and.use_host_device)
+!$acc&  use_device(ibuf_revS, ibuf_sndS)
             call MPI_Irecv (ibuf_revS, isize, MPI_DOUBLE_PRECISION,
      &                         p_S, 4, MPI_COMM_WORLD, req(3), ierr)
             call MPI_Send  (ibuf_sndS, isize, MPI_DOUBLE_PRECISION,
@@ -150,7 +155,9 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
                 ibuf_sndN(i-imin+(jpts-1)*ishft)=A(i,Mmmpi-Npts+jpts)
               enddo
             enddo
-!$acc host_data if(compute_on_device) use_device(ibuf_revN, ibuf_sndN)
+!$acc update host(ibuf_sndN) if(.not.use_host_device)
+!$acc host_data if(compute_on_device.and.use_host_device)
+!$acc&  use_device(ibuf_revN, ibuf_sndN)
             call MPI_Irecv (ibuf_revN, isize, MPI_DOUBLE_PRECISION,
      &                         p_N, 3, MPI_COMM_WORLD, req(4), ierr)
             call MPI_Send  (ibuf_sndN, isize, MPI_DOUBLE_PRECISION,
@@ -280,6 +287,7 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
       if (SOUTH_INTER2) then
         write(*,*) 'MessPass2D: 2.3', mynode
         call MPI_Wait (req(3),status(1,3),ierr)
+!$acc update device(ibuf_revS) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
         do jpts=1,Npts
@@ -299,6 +307,7 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
       if (NORTH_INTER2) then
         write(*,*) 'MessPass2D: 2.4', mynode
         call MPI_Wait (req(4),status(1,4),ierr)
+!$acc update device(ibuf_revN) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
         do jpts=1,Npts

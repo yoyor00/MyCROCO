@@ -26,6 +26,7 @@
 # include "scalars.h"
 # include "mpi_cpl.h"
       include 'mpif.h'
+      logical, parameter :: use_host_device = .TRUE.
 #include "mpi_buffers.h"
 !
 ! Nb of boundary points involved in communication
@@ -132,7 +133,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
         if (mdjj.eq.0) then
           if (SOUTH_INTER2) then
-!$acc parallel loop if(compute_on_device) collapse(3)
+!$acc parallel loop if(compute_on_device) 
+!$acc& default(present) collapse(3)
             do k=1,nmax
               do jpts=1,Npts
                 do i=imin,imax
@@ -140,7 +142,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
-!$acc host_data if(compute_on_device)
+!$acc update host(ibuf_sndS_3D(1:isize)) if(.not.use_host_device)
+!$acc host_data if(compute_on_device.and.use_host_device)
 !$acc&   use_device(ibuf_revS_3D,ibuf_sndS_3D)
             call MPI_Irecv (ibuf_revS_3D, isize, MPI_DOUBLE_PRECISION,
      &                         p_S, 4, MPI_COMM_WORLD, req(3), ierr)
@@ -150,7 +153,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           endif
         else
           if (NORTH_INTER2) then
-!$acc parallel loop if(compute_on_device) collapse(3)
+!$acc parallel loop if(compute_on_device)
+!$acc& default(present) collapse(3)
             do k=1,nmax
               do jpts=1,Npts
                 do i=imin,imax
@@ -159,7 +163,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
-!$acc host_data if(compute_on_device)
+!$acc update host(ibuf_sndN_3D(1:isize)) if(.not.use_host_device)
+!$acc host_data if(compute_on_device.and.use_host_device)
 !$acc&   use_device(ibuf_revN_3D,ibuf_sndN_3D)
             call MPI_Irecv (ibuf_revN_3D, isize, MPI_DOUBLE_PRECISION,
      &                         p_N, 3, MPI_COMM_WORLD, req(4), ierr)
@@ -304,6 +309,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
       if (SOUTH_INTER2) then
         call MPI_Wait (req(3),status(1,3),ierr)
+!$acc update device(ibuf_revS_3D(1:isize)) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
@@ -325,6 +331,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
       if (NORTH_INTER2) then
         call MPI_Wait (req(4),status(1,4),ierr)
+!$acc update device(ibuf_revN_3D(1:isize)) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) collapse(3)
         do k=1,nmax
           do jpts=1,Npts

@@ -365,6 +365,7 @@ C$    integer  trd, omp_get_thread_num
 
       windamp = 0.
 
+!$acc kernels default(present)
 # ifdef BASIN
       cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
       cff2=2.*pi/el
@@ -494,6 +495,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif
+!$acc end kernels
       return
       end
 #endif /* ANA_SMFLUX */
@@ -839,6 +841,7 @@ c
 # include "compute_auxiliary_bounds.h"
 c
 # ifdef TRACERS
+!$acc kernels default(present)
 # ifdef TEMPERATURE
       
       if (itrc.eq.itemp) then
@@ -894,6 +897,7 @@ c
 # if defined SALINITY || defined TEMPERATURE
       endif
 # endif /* SALINITY || TEMPERATURE*/
+!$acc end kernels
 # endif /* TRACERS */
       return
       end

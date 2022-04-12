@@ -123,6 +123,8 @@
 #endif
 
 #ifdef ANA_INITIAL
+
+!$acc kernels default(present)
 !
 !----------------------------------------------------------------------
 !  Initial conditions for free surface and 2D momentum components.
@@ -1176,6 +1178,7 @@ C$OMP BARRIER
       endif   !  nrrec.eq.0.
 !
 # endif /*SOLVE3D */
+!$acc end kernels
 #endif /* ANA_INITIAL */
 
 #ifdef SOLVE3D

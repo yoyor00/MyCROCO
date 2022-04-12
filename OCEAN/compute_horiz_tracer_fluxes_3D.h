@@ -144,7 +144,9 @@
 #   endif
 #  endif
 !-------------------------------------------------------------------
-!$acc loop collapse(2)
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3) async(1)
+          DOEXTEND(k,1,N,FX,FE,WORK)
           do j=Jstr,Jend
             do i=I_EXT_RANGE
               FX(i,j)=(t(i,j,k,nadv,itrc)-t(i-1,j,k,nadv,itrc))
@@ -153,7 +155,10 @@
 #  endif
             enddo
           enddo
+          ENDDOEXTEND
 
+!$acc parallel loop if(compute_on_device) default(present) async(1)
+          DOEXTEND(k,1,N,FX,FE,WORK)
 #  undef I_EXT_RANGE
 #  ifndef EW_PERIODIC 
           if (WESTERN_EDGE) then
@@ -173,8 +178,11 @@
 #   endif
           endif
 #  endif
+          ENDDOEXTEND
 !---------------------------------------------------------------------
-!$acc loop collapse(2)
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3) async(1)
+          DOEXTEND(k,1,N,FX,FE,WORK)
           do j=Jstr,Jend 
             do i=Istr-1,Iend+1
 #  if (defined TS_HADV_C4 || defined PREDICTOR)
@@ -191,7 +199,10 @@
 #  endif
             enddo
           enddo             !--> discard FX
-!$acc loop collapse(2)
+          ENDDOEXTEND
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3) async(1)
+          DOEXTEND(k,1,N,FX,FE,WORK)
           do j=Jstr,Jend
             do i=Istr,Iend+1
 #  if (defined TS_HADV_UP3 && !defined PREDICTOR)
@@ -209,8 +220,18 @@
 #   endif
             enddo
           enddo            !--> discard grad
+          ENDDOEXTEND
 !---------------------------------------------------------------------
-!$acc loop collapse(2)
+#  ifdef TS_HADV_UP3
+#undef curv
+#   define curv WORK2
+#  else
+#undef grad
+#   define grad WORK2
+#  endif
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3) async(2)
+          DOEXTEND(k,1,N,FX,FE,WORK2)
           do j=J_EXT_RANGE
             do i=Istr,Iend
               FE(i,j)=(t(i,j,k,nadv,itrc)-t(i,j-1,k,nadv,itrc))
@@ -219,6 +240,10 @@
 #  endif
             enddo
           enddo
+          ENDDOEXTEND
+
+!$acc parallel loop if(compute_on_device) default(present) async(2)
+          DOEXTEND(k,1,N,FX,FE,WORK2)
 #  undef J_EXT_RANGE
 #  ifndef NS_PERIODIC
           if (SOUTHERN_EDGE) then
@@ -238,8 +263,11 @@
 #   endif
           endif
 #  endif
+          ENDDOEXTEND
 !---------------------------------------------------------------------
-!$acc loop collapse(2)
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3) async(2)
+          DOEXTEND(k,1,N,FX,FE,WORK2)
           do j=Jstr-1,Jend+1           !<-- C4 [only for pred]
             do i=Istr,Iend
 #  if (defined TS_HADV_C4 || defined PREDICTOR)
@@ -256,6 +284,10 @@
 #  endif
             enddo
           enddo            !--> discard FE
+          ENDDOEXTEND
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3) async(2)
+          DOEXTEND(k,1,N,FX,FE,WORK2)
           do j=Jstr,Jend+1
             do i=Istr,Iend
 #  if (defined TS_HADV_UP3 && !defined PREDICTOR)
@@ -275,6 +307,8 @@
 #  endif
             enddo
           enddo            !--> discard grad
+          ENDDOEXTEND
+!$acc wait
 !---------------------------------------------------------------------
 # endif /* TS_HADV_UP5 */
 
