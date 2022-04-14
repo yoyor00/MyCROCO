@@ -935,6 +935,10 @@ END SUBROUTINE  BIOLink_alloc
                                                ! rently related to the 
                                                ! interface with MUSTANG
       
+!        MPI_master_only PRINT*,"ifirst,ilast,jfirst,jlast",ifirst,ilast,jfirst,jlast
+!        MPI_master_only PRINT*,"shape PAR_top_layer",shape(PAR_top_layer)
+!        MPI_master_only PRINT*,"Shape PAR",shape(PAR)
+
 #  if defined BLOOM
       
       CALL bloom_extinction_avg(ifirst,ilast,jfirst,jlast) ! Computation of
@@ -960,10 +964,12 @@ END SUBROUTINE  BIOLink_alloc
                                                          ! for diagnostic
                                                          ! evaluations
       ! Here I convert the shape of the 3D diagnostics so that CROCO can use them
-
+      MPI_master_only PRINT*, "shape diag_3D_BIOLink", shape(diag_3D_wat)
+      MPI_master_only PRINT*, "shape diag_3D_CROCO", shape(diag_3D_CROCO)
       do i=1,ndiag_3d
         diag_3D_CROCO(i,:,:,:) = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
                                 diag_3D_wat(i,:,:,:),1,NB_LAYER_WAT)
+!        MPI_master_only PRINT*,"ifirst,ilast,jfirst,jlast",ifirst,ilast,jfirst,jlast
       end do
 
 
@@ -1369,7 +1375,7 @@ END SUBROUTINE  BIOLink_alloc
 
     INTEGER                  :: i,j,k ! Spatial and tracer counters
     INTEGER                  :: i1,i2,i3 ! Internal BIOLink counters
-    REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY,NB_LAYER_WAT) :: BIOLink2hydro_3D ! Array for
+    REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY,kfirst:klast) :: BIOLink2hydro_3D ! Array for
                                                            ! returning the 
                                                            ! transformed
                                                            ! variable
@@ -1381,6 +1387,8 @@ END SUBROUTINE  BIOLink_alloc
  !******************Allocation of the array for storing the variables*******!
 
      BIOLink2hydro_3D(:,:,:)=0.0_rsh
+
+     MPI_master_only PRINT*,"SHAPE BIOLink2hydro", shape(BIOLink2hydro_3D)
 
  !****************** Conversion for the index order of *********************!
  !***************** BIOLink to the one of the hydro model ******************!
