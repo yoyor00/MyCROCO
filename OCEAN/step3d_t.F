@@ -707,7 +707,7 @@
 #  endif
 
 #  ifdef BIOLink
-     call BIOLink_update(Istr,Iend,Jstr,Jend)
+      call BIOLink_update(Istr-1,Iend,Jstr,Jend)
 #  endif
 !
 !======================================================================

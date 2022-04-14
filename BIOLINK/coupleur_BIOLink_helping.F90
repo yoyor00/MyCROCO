@@ -522,6 +522,9 @@ CONTAINS
    ALLOCATE( diag_3d_wat(ndiag_2d+1:ndiag_2d+ndiag_3d_wat,NB_LAYER_WAT,PROC_IN_ARRAY) )
    diag_3d_wat(:,:,:,:)=0.0_rsh
 
+   ALLOCATE( diag_3d_CROCO(ndiag_2d+1:ndiag_2d+ndiag_3d_wat,PROC_IN_ARRAY,NB_LAYER_WAT) )
+   diag_3d_CROCO(:,:,:,:)=0.0_rsh
+
 #if defined MUSTANG && defined key_BLOOM_insed
 
    ALLOCATE( diag_3D_sed(ndiag_tot-ndiag_3d_sed+1:ndiag_tot,ksdmin:ksdmax,PROC_IN_ARRAY) ) 

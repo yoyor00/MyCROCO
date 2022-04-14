@@ -182,7 +182,6 @@
      !====================================================================
   
   INTEGER               :: isubs
-   
      !====================================================================
      ! Execution of the function
      !====================================================================
@@ -960,6 +959,14 @@ END SUBROUTINE  BIOLink_alloc
       CALL  bloom_eval_diag2d(ifirst,ilast,jfirst,jlast) ! Bloom function
                                                          ! for diagnostic
                                                          ! evaluations
+      ! Here I convert the shape of the 3D diagnostics so that CROCO can use them
+
+      do i=1,ndiag_3d
+        diag_3D_CROCO(i,:,:,:) = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
+                                diag_3D_wat(i,:,:,:),1,NB_LAYER_WAT)
+      end do
+
+
 
 #endif /* BLOOM */
 

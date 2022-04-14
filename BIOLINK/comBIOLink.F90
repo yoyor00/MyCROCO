@@ -204,6 +204,9 @@
       REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:,:,:,:),PUBLIC :: diag_3d_wat
       !Table for storing diagnostics variables of dimensions 
       !(index of var, vertical dimension, horizontal dimensions)
+      REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:,:,:,:),PUBLIC :: diag_3d_CROCO
+      ! Table for storing diagnostics 3D variables and exporting them in CROCO
+      
 
 #  ifdef MUSTANG
       REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:,:,:,:),PUBLIC :: diag_3d_sed

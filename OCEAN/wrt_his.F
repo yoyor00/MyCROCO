@@ -24,7 +24,7 @@
 #if defined BLOOM
       USE comBIOLINK, ONLY: diag_1D,ndiag_1d,
      &                      diag_2D,ndiag_2d,
-     &                      diag_3D_wat,ndiag_3d
+     &                      diag_3D_CROCO,ndiag_3d
 #endif
 
 #ifdef MUSTANG
@@ -647,6 +647,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
                enddo
             endif
 #endif
+            MPI_master_only PRINT*,'workr',shape(workr)
             call fillvalue3d(workr,ncidhis,hisT(itrc),
      &           indxV+itrc,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
@@ -1435,8 +1436,9 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
 
       do i=1,ndiag_3D
         if (wrthis(indxBLMdiag3D+i)) then
-          call fillvalue2d(diag_3D_wat(i,:,:,:),ncidhis,hisBLMdiag3D(i),
-     &         indxBLMdiag3D+i,record,r3dvar,type)
+          MPI_master_only PRINT*,'diag_3D',shape(diag_3D_CROCO(i,:,:,:))
+          call fillvalue3d(diag_3D_CROCO(i,:,:,:),ncidhis,
+     &         hisBLMdiag3D(i),indxBLMdiag3D+i,record,r3dvar,type)
         endif
       end do
 
