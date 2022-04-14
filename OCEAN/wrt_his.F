@@ -647,7 +647,6 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
                enddo
             endif
 #endif
-            MPI_master_only PRINT*,'workr',shape(workr)
             call fillvalue3d(workr,ncidhis,hisT(itrc),
      &           indxV+itrc,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
@@ -1436,8 +1435,17 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
 
       do i=1,ndiag_3D
         if (wrthis(indxBLMdiag3D+i)) then
-          MPI_master_only PRINT*,'diag_3D',shape(diag_3D_CROCO(i,:,:,:))
-          call fillvalue3d(diag_3D_CROCO(i,:,:,:),ncidhis,
+          workr = diag_3D_CROCO(i,:,:,:)
+          do k=1,N
+            workr(:,:,k)=workr(:,:,k) 
+#  ifdef WET_DRY
+     &                SWITCH rmask_wet(:,:)
+#  else
+     &                SWITCH rmask(:,:)
+#  endif
+          enddo
+ 
+          call fillvalue3d(workr,ncidhis,
      &         hisBLMdiag3D(i),indxBLMdiag3D+i,record,r3dvar,type)
         endif
       end do
