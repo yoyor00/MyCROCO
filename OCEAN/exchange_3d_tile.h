@@ -27,6 +27,7 @@
 !
 #include "compute_auxiliary_bounds.h"
 !
+!$acc kernels if(compute_on_device) default(present)  
 #ifdef EW_PERIODIC
 # ifdef NS_PERIODIC
 #  define J_RANGE Jstr,Jend
@@ -137,6 +138,7 @@
       endif
 # endif
 #endif
+!$acc end kernels		   
 #ifdef MPI
       k=N-KSTART+1
 # ifndef MP_3PTS

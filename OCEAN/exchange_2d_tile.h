@@ -30,6 +30,8 @@
 !
 #include "compute_auxiliary_bounds.h"
 !
+
+!$acc kernels if(compute_on_device) default(present)  
 #ifdef EW_PERIODIC
 # ifdef NS_PERIODIC
 #  define J_RANGE Jstr,Jend
@@ -38,8 +40,8 @@
 # endif
 # ifdef MPI
       if (NP_XI.eq.1) then
-# endif
-        if (WESTERN_EDGE) then
+# endif	
+        if (WESTERN_EDGE) then		    
           do j=J_RANGE
             do ipts=1,Npts
               A(Lm+ipts,j)=A(ipts,j)
@@ -124,6 +126,9 @@
       endif
 # endif
 #endif
+!$acc end kernels
+		 
+		 
 #ifdef MPI
 #if (!defined MP_3PTS) && (!defined MP_1PTS)
       call MessPass2D_tile (Istr,Iend,Jstr,Jend,  A)
