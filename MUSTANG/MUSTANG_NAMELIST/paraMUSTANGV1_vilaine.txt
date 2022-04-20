@@ -27,7 +27,7 @@
    l_repsed=.true.        ! boolean set to .true. if sedimentary variables are initialized from a previous run
    filrepsed='./CROCO_FILES/sed_init.nc' ! file from which the model is initialized for the continuation of a previous run
                            ! ATTENTION : filrepsed must be given if l_bathy_actu=.T. in order to read new h0 even if l_repsed=.F.
-   l_initsed_vardiss=.false.! set to .true. if initialization of dissolved variables, temperature and salinity in sediment 
+   l_initsed_vardiss=.false. ! set to .true. if initialization of dissolved variables, temperature and salinity in sediment 
                            ! will be done with concentrations in water at bottom (k=1)
    l_unised = .true.       ! boolean set to true for a uniform bottom initialization
    fileinised =  './Init.nc' ! File for initialisation (if l_unised is False)
