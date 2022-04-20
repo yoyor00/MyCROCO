@@ -71,6 +71,9 @@ C$    integer omp_get_thread_num
 # ifdef TIDAL_FLAT
       real depth_shallow,depth_deep
 # endif
+# ifdef ESTUARY
+      real depth_shallow,depth_deep
+# endif
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
 # endif
@@ -247,6 +250,11 @@ C$    integer omp_get_thread_num
                      depth_deep=16.
                      f0=0.
                      beta=0.
+# elif defined ESTUARY
+                     depth_shallow=-1.
+                     depth_deep=16.
+                     f0=0.
+                     beta=0.
 # else
                      depth=???
                      f0=???
@@ -369,6 +377,9 @@ C$    integer omp_get_thread_num
 # elif defined TIDAL_FLAT
                      Length_ETA= 1500.0
                      Length_XI = 100000.0
+# elif defined ESTUARY
+                     Length_ETA= 9000.0   ! dy =100m
+                     Length_XI = 120000.0  ! dx = 600m
 # else
                      Length_XI =???
                      Length_ETA=??? 
@@ -888,6 +899,23 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       enddo
 
 # elif defined TIDAL_FLAT
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+#  ifdef MPI
+          cff=(float(i +ii*Lm) )
+#  else  
+          cff=(float(i       ) )
+#  endif
+          if (cff.lt.2) then
+            h(i,j)=depth_deep
+          else
+            h(i,j)=depth_deep-(cff-1)/float(LLm+1)
+     &                        *(depth_deep-depth_shallow)
+          endif
+        enddo
+      enddo
+
+# elif defined ESTUARY
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef MPI

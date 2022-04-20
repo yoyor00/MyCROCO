@@ -1107,7 +1107,7 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
-#   elif defined TIDAL_FLAT
+#   elif defined TIDAL_FLAT || defined ESTUARY
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1225,7 +1225,7 @@ C$OMP BARRIER
             else
               t(i,j,k,1,itpas)=0
             endif
-#  elif defined TIDAL_FLAT
+#  elif defined TIDAL_FLAT || defined ESTUARY
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
             else
@@ -1257,7 +1257,7 @@ C$OMP BARRIER
               if (.not.got_tini(iv)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
                 t(i,j,k,1,iv)=cini_wat(iv)
-#  elif defined TIDAL_FLAT
+#  elif defined TIDAL_FLAT || defined ESTUARY
                 if (h(i,j).gt.0) then
 ! ---------------- mud+diss case -----------------!
                   if (iv<=itsubs1+1) then

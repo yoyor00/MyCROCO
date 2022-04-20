@@ -171,6 +171,8 @@
 # endif
 #elif defined TIDAL_FLAT
       parameter (LLm0=200,  MMm0=3,    N=10)   ! TIDAL_FLAT
+#elif defined ESTUARY
+      parameter (LLm0=200,  MMm0=90,    N=10)   ! ESTUARY
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -271,7 +273,7 @@
       parameter (D_wetdry=0.001)
 # elif defined THACKER
       parameter (D_wetdry=0.01)
-# elif defined SANDBAR || defined TIDAL_FLAT
+# elif defined SANDBAR || defined TIDAL_FLAT || defined ESTUARY
       parameter (D_wetdry=0.1)
 # else
       parameter (D_wetdry=0.2)
@@ -443,6 +445,8 @@
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#  elif defined ESTUARY
+      parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined VILAINE 
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
@@ -513,7 +517,7 @@
       integer ksdmin,ksdmax
 #  if defined ANA_DUNE || defined key_ANA_bedload
       parameter (ksdmin=1,ksdmax=11)
-#  elif defined TIDAL_FLAT
+#  elif defined TIDAL_FLAT || defined ESTUARY
       parameter (ksdmin=1,ksdmax=3)
 #  else
       parameter (ksdmin=1,ksdmax=10)
