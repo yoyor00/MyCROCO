@@ -902,16 +902,14 @@
 #else
           diat_iksmith=p_diat_iksmith
 #endif
-
           fluxrelatifsurf=PAR_top_layer(k,i,j)/(diat_iksmith+0.0000000001_rsh)
           fluxrelatiffond=PAR_top_layer(k-1,i,j)/(diat_iksmith+0.0000000001_rsh)
           effetlumierediat=1.0_rsh/epn/EXTINCTION_RAD(k,i,j)*                     &
                   log((fluxrelatifsurf+sqrt(1.0_rsh+fluxrelatifsurf*                  &
           fluxrelatifsurf))/(fluxrelatiffond+                                 &
                   sqrt(1.0_rsh+fluxrelatiffond*fluxrelatiffond)))
-
-          IF ((effetlumierediat.lt.0.0_rsh).or.(effetlumierediat.gt.1.0_rsh)) &
-
+          
+!          IF ((effetlumierediat.lt.0.0_rsh).or.(effetlumierediat.gt.1.0_rsh)) &
           effetnitdiat=c(iv_nutr_NO3)/(c(iv_nutr_NO3)+p_diat_kNO3+               &
                    (c(iv_nutr_NH4)*p_diat_kNO3/p_diat_kNH4))
           effetamdiat=c(iv_nutr_NH4)/(c(iv_nutr_NH4)+p_diat_kNH4+                &
@@ -923,6 +921,7 @@
 #else
           effetsilice=c(iv_nutr_SiOH)/(c(iv_nutr_SiOH)+p_diat_kSi)
 #endif
+
           effetphosphorediat=c(iv_nutr_PO4)/(c(iv_nutr_PO4)+p_diat_kPO4)
 
           effetselnutdiat=min(effetazotediat,effetsilice,effetphosphorediat)
@@ -1375,7 +1374,6 @@
                    -fractionno3diat*rationdiat*c(iv_phyto_diat_N)    &
                    -fractionno3dino*rationdino*c(iv_phyto_dino_N)    &
                    -fractionno3nano*rationnano*c(iv_phyto_nano_N)
-
    ! Evolution de la silice dissoute
    ! -------------------------------
           dc(iv_nutr_SiOH)= -rapsiaz*rationdiat*c(iv_phyto_diat_N)   &
@@ -1582,10 +1580,12 @@
 
          ! effet lumiere DIAT : somme a chaque pas de temps = moyenne a minuit pour memoriser la variable diagnostique
           effetlumiere_day_diat(k,i,j)=effetlumiere_day_diat(k,i,j)+effetlumierediat*dtbio
-          IF(iheure_BIOLINK==0 .and. iminu_BIOLINK ==0 .and. isec_BIOLINK <= dtbio) THEN
-             diag_3d_wat(irk_diag(id_diat_limlight),k,i,j)=effetlumiere_day_diat(k,i,j)/86400.0_rsh
-             effetlumiere_day_diat(k,i,j)=0.0_rsh
-          ENDIF
+          diag_3d_wat(irk_diag(id_diat_limlight),k,i,j)=effetlumierediat
+
+!          IF(iheure_BIOLINK==0 .and. iminu_BIOLINK ==0 .and. isec_BIOLINK <= dtbio) THEN
+!             diag_3d_wat(irk_diag(id_diat_limlight),k,i,j)=effetlumiere_day_diat(k,i,j)/86400.0_rsh
+!             effetlumiere_day_diat(k,i,j)=0.0_rsh
+!          ENDIF
 
           diag_3d_wat(irk_diag(id_diat_limN),k,i,j)=effetazotediat
           diag_3d_wat(irk_diag(id_diat_limSi),k,i,j)=effetsilice
@@ -1597,7 +1597,6 @@
              diag_3d_wat(irk_diag(id_dino_limlight),k,i,j)=effetlumiere_day_dino(k,i,j)/86400.0_rsh
              effetlumiere_day_dino(k,i,j)=0.0_rsh
           ENDIF
-
           diag_3d_wat(irk_diag(id_dino_limN),k,i,j)=effetazotedino
           diag_3d_wat(irk_diag(id_dino_limP),k,i,j)=effetphosphoredino
 
