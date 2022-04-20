@@ -958,7 +958,7 @@
           fluxrelatifsurf))/(fluxrelatiffond+                                 &
                   sqrt(1.0_rsh+fluxrelatiffond*fluxrelatiffond)))
 
-          IF ((effetlumieredino.lt.0.0_rsh).or.(effetlumieredino.gt.1.0_rsh)) &
+!          IF ((effetlumieredino.lt.0.0_rsh).or.(effetlumieredino.gt.1.0_rsh)) &
 
           effetnitdino=c(iv_nutr_NO3)/(c(iv_nutr_NO3)+p_dino_kNO3+                               &
                    (c(iv_nutr_NH4)*p_dino_kNO3/p_dino_kNH4))
@@ -997,7 +997,7 @@
             fluxrelatifsurf))/(fluxrelatiffond+                                 &
                   sqrt(1.0_rsh+fluxrelatiffond*fluxrelatiffond)))
 
-          IF ((effetlumierenano.lt.0.0_rsh).or.(effetlumierenano.gt.1.0_rsh)) &
+!          IF ((effetlumierenano.lt.0.0_rsh).or.(effetlumierenano.gt.1.0_rsh)) &
 
 
           effetnitnano=c(iv_nutr_NO3)/(c(iv_nutr_NO3)+p_nano_kNO3+                                 &
