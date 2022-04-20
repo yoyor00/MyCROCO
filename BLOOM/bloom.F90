@@ -1593,19 +1593,22 @@
 
           ! effet lumiere DINO : somme a chaque pas de temps = moyenne a minuit pour memoriser la variable diagnostique
           effetlumiere_day_dino(k,i,j)=effetlumiere_day_dino(k,i,j)+effetlumieredino*dtbio
-          IF(iheure_BIOLINK==0 .and. iminu_BIOLINK ==0 .and. isec_BIOLINK <= dtbio) THEN
-             diag_3d_wat(irk_diag(id_dino_limlight),k,i,j)=effetlumiere_day_dino(k,i,j)/86400.0_rsh
-             effetlumiere_day_dino(k,i,j)=0.0_rsh
-          ENDIF
+          diag_3d_wat(irk_diag(id_dino_limlight),k,i,j)=effetlumieredino
+
+!          IF(iheure_BIOLINK==0 .and. iminu_BIOLINK ==0 .and. isec_BIOLINK <= dtbio) THEN
+!             diag_3d_wat(irk_diag(id_dino_limlight),k,i,j)=effetlumiere_day_dino(k,i,j)/86400.0_rsh
+!             effetlumiere_day_dino(k,i,j)=0.0_rsh
+!          ENDIF
           diag_3d_wat(irk_diag(id_dino_limN),k,i,j)=effetazotedino
           diag_3d_wat(irk_diag(id_dino_limP),k,i,j)=effetphosphoredino
 
           ! effet lumiere NANO : somme a chaque pas de temps = moyenne a minuit pour memoriser la variable diagnostique
           effetlumiere_day_nano(k,i,j)=effetlumiere_day_nano(k,i,j)+effetlumierenano*dtbio
-          IF(iheure_BIOLINK==0 .and. iminu_BIOLINK ==0 .and. isec_BIOLINK <= dtbio) THEN
-             diag_3d_wat(irk_diag(id_nano_limlight),k,i,j)=effetlumiere_day_nano(k,i,j)/86400.0_rsh
-             effetlumiere_day_nano(k,i,j)=0.0_rsh
-          ENDIF
+          diag_3d_wat(irk_diag(id_nano_limlight),k,i,j)=effetlumierenano
+!          IF(iheure_BIOLINK==0 .and. iminu_BIOLINK ==0 .and. isec_BIOLINK <= dtbio) THEN
+!             diag_3d_wat(irk_diag(id_nano_limlight),k,i,j)=effetlumiere_day_nano(k,i,j)/86400.0_rsh
+!             effetlumiere_day_nano(k,i,j)=0.0_rsh
+!          ENDIF
 
           diag_3d_wat(irk_diag(id_nano_limN),k,i,j)=effetazotenano
           diag_3d_wat(irk_diag(id_nano_limP),k,i,j)=effetphosphorenano
