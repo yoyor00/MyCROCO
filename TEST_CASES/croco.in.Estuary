@@ -2,7 +2,7 @@ title:
         Estuary TEST MODEL
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                8640      5       5       10
+                8640      5       5       1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      500.0d0

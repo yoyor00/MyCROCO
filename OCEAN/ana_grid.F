@@ -69,10 +69,17 @@ C$    integer omp_get_thread_num
 #   endif
 # endif
 # ifdef TIDAL_FLAT
-      real depth_shallow,depth_deep
+      real depth_shallow, depth_deep
 # endif
 # ifdef ESTUARY
-      real depth_shallow,depth_deep
+      real cff2, l2i, l2n, l2ml1m, l3ml1m
+      integer jmiddle, imouth, itmp
+      real hl1imouth, hl1mimouth, shtimouth, l1imouth, l2imouth, l3imouth
+      real m, estCWM, estCWM_para, estHupstream, estHmouth, estHoff
+      real estMS, estMS_para, estMS_para2, estCS, estCS2, estGamma2
+      real, dimension(GLOBAL_1D_ARRAYXI) :: xbot, l1, l2, l3
+      real, dimension(GLOBAL_1D_ARRAYXI) :: hl1, hl1m, sht
+      real, dimension(GLOBAL_1D_ARRAYETA) :: ybot
 # endif
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
@@ -96,6 +103,8 @@ C$    integer omp_get_thread_num
 #endif
 !
 # include "compute_extended_bounds.h"
+
+
 !
 !----------------------------------------------------------------------
 ! Configuration parameters (h,f,beta)
@@ -251,8 +260,6 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined ESTUARY
-                     depth_shallow=-1.
-                     depth_deep=16.
                      f0=0.
                      beta=0.
 # else
@@ -916,21 +923,121 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       enddo
 
 # elif defined ESTUARY
-      do j=JstrR,JendR
-        do i=IstrR,IendR
+
+      imouth = 40
+      jmiddle = int(MMm/2)
+      m = 2.0 ! half tide height (m)
+      estCWM = 200.0 ! estuary Channel Widht at Mouth (m)
+      estCWM_para = 1.0/36000.0  ! estuary Channel Widht at Mouth exponentiel parameter
+      estHupstream = 2.5 ! estuary height upstream (m)
+      estHmouth = 10.0 ! estuary height at mouth (m)
+      estHoff = 20.0 ! estuary height offshore (m)
+      estMS = 10000.0 ! estuary Mouth Section width (m)
+      estMS_para = 1.0/24000.0 ! estuary Mouth Section width exponentiel parameter
+      estMS_para2 = 1.0/3000.0 ! estuary Off Section width exponentiel parameter
+      estCS = (estHupstream - estHmouth) / (dx * float(LLm - imouth)) ! estuary channel slope in estuary
+      estCS2 = (estHmouth - estHoff) / (dx * float(imouth)) ! estuary channel slope offshore
+      estGamma2 = 1.1**2
+
+      do i = IstrR, IendR
 #  ifdef MPI
-          cff=(float(i +ii*Lm) )
+        cff  = (float(i +ii*Lm) )
 #  else  
-          cff=(float(i       ) )
+        cff  = (float(i       ) )
 #  endif
-          if (cff.lt.2) then
-            h(i,j)=depth_deep
+ 
+        xbot(i) = dx * (cff - imouth)
+        
+        if (cff .ge. imouth) then
+          l1(i) = estCWM * exp( - estCWM_para * xbot(i))
+          hl1(i) = estHmouth + estCS * xbot(i)
+          hl1m(i) = hl1(i) - m
+          sht(i) = estMS * exp( - estMS_para * xbot(i))! section half tide
+          l2i = 100.0
+          do itmp = 1, 1000
+            l2n = (sht(i) - l1(i) * hl1m(i)) / (hl1m(i) + 1.5 * m +
+     &             0.5 * m * (1.0 + 4.0 * (m / hl1m(i)) * l2i / 
+     &            (l1(i) + l2i))**2 / estGamma2)
+            l2i = l2n
+          enddo
+          l2(i) = l2n
+          if (l2(i) .ge. l1(i)) then
+            l3(i) = l2(i) * (1.0 + 4.0 * (m / hl1m(i)) * l2(i) / 
+     &         (l1(i) + l2(i) ))**2 / estGamma2
           else
-            h(i,j)=depth_deep-(cff-1)/float(LLm+1)
-     &                        *(depth_deep-depth_shallow)
+            l2(i) = l1(i) 
+            l3(i) = (sht(i) - hl1m(i) * (l1(i) + l2(i)) - 2.0 * 
+     &              m * l2(i)) * 2.0 / m - l2(i)
           endif
+        else  ! cff < imouth
+
+          l1imouth = estCWM
+          hl1imouth = estHmouth
+          hl1mimouth = hl1imouth - m
+          shtimouth = estMS ! section half tide at imouth
+          l2i = 100.0
+          do itmp = 1, 1000
+            l2n = (shtimouth - l1imouth * hl1mimouth) / (hl1mimouth +
+     &            1.5 * m + 0.5 * m * (1.0 + 4.0 * (m / hl1mimouth) *
+     &            l2i / (l1imouth + l2i) )**2 / estGamma2)
+            l2i = l2n
+          enddo
+          l2imouth = l2n
+          if (l2imouth .ge. l1imouth) then
+            l3imouth = l2imouth * (1.0 + 4.0 * (m / hl1mimouth) * 
+     &            l2imouth / (l1imouth + l2imouth ))**2 / estGamma2
+          else
+            l2imouth = l1imouth 
+            l3imouth = (shtimouth - hl1mimouth * (l1imouth + l2imouth) - 
+     &             2.0 * m * l2imouth) * 2.0 / m - l2imouth
+          endif
+
+          l2ml1m = l2imouth - l1imouth
+          l3ml1m = l3imouth - l1imouth
+        
+          hl1(i) = estHmouth + estCS2 * xbot(i)
+          hl1m(i) = hl1(i) - m 
+          sht(i) = estMS * exp( - estMS_para2 * xbot(i))! section half tide
+          l1(i) = (sht(i) - l2ml1m * (hl1m(i) + 1.5 * m ) -
+     &            0.5 * l3ml1m * m) / (2.0 * hl1m(i) + 2.0 * m)
+          l2(i) = l1(i) + l2ml1m
+          l3(i) = l1(i) + l3ml1m
+        endif
+
+        do j = JstrR, JendR
+#  ifdef MPI
+          cff  = (float(i +ii*Lm) )
+          cff2 = (float(j +jj*Mm) )
+#  else  
+          cff  = (float(i       ) )
+          cff2 = (float(j       ) )
+#  endif
+          ybot(j) = dy * abs(cff2 - jmiddle)
+
+          if (ybot(j) .le. l1(i)) then
+            h(i,j) = hl1(i)
+          else if (ybot(j) .le. l2(i)) then
+            h(i,j) = hl1(i) + (m - hl1(i)) / (l2(i) - l1(i)) 
+     &             * (ybot(j) - l1(i))
+          else
+            h(i,j) = amax1(-7.0, m - 2.0 * m / (l3(i) - l2(i)) 
+     &             * (ybot(j)-l2(i)))
+            ! if (h(i,j-1) .le. -7.0) then    !!! ADD BASIN TEST !! **TODO**???
+            !   h(i,j) = h(i,j-1) - 1.0 
+            ! endif                               
+          endif
+
+    !       ! walls at limits North and South
+    !         if ((cff2 .ge. MMm) .or. (cff2 .lt. 1))   then
+    !             h(:,j) = -7.0
+    !         endif
         enddo
+    !     ! walls at limit East
+        if (cff .ge. LLm) then
+          h(i, :) = -7.0
+        endif
       enddo
+
 
 # else
       do j=JstrR,JendR

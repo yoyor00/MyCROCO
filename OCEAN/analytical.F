@@ -2582,12 +2582,18 @@ C$    integer  trd, omp_get_thread_num
               tbry_west(j,k,itrc)=cobc_wat(itrc)
             enddo
 #    else
-#     if defined TIDAL_FLAT || defined ESTUARY 
+#     if defined TIDAL_FLAT
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
             tbry_west(j,k,3)=0.   ! tracer Coarse Sand
             tbry_west(j,k,4)=0.   ! tracer Fine Sand
             tbry_west(j,k,5)=0.02 ! tracer Mud
+#     endif
+#     if defined ESTUARY 
+            tbry_west(j,k,1)=10.
+            tbry_west(j,k,2)=35.5
+            tbry_west(j,k,3)=0.0   ! tracer Fine Sand
+            tbry_west(j,k,4)=0.0   ! tracer Mud
 #     endif
 #    endif
             enddo
@@ -2642,6 +2648,11 @@ C$    integer  trd, omp_get_thread_num
              tbry_west(j,k,3)=0. ! tracer Coarse Sand
              tbry_west(j,k,4)=0. ! tracer Fine Sand
              tbry_west(j,k,5)=0.02 ! tracer Mud
+#     elif defined ESTUARY 
+             tbry_west(j,k,1)=10.
+             tbry_west(j,k,2)=35.5
+             tbry_west(j,k,3)=0.0   ! tracer Fine Sand
+             tbry_west(j,k,4)=0.0   ! tracer Mud
 #      else
              do itrc=1,NT
                tbry_west(j,k,itrc)=t(0,j,k,1,itrc)

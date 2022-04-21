@@ -172,7 +172,7 @@
 #elif defined TIDAL_FLAT
       parameter (LLm0=200,  MMm0=3,    N=10)   ! TIDAL_FLAT
 #elif defined ESTUARY
-      parameter (LLm0=200,  MMm0=90,    N=10)   ! ESTUARY
+      parameter (LLm0=200,  MMm0=90,    N=5)   ! ESTUARY
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -446,7 +446,7 @@
 #  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined ESTUARY
-      parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+      parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined VILAINE 
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
