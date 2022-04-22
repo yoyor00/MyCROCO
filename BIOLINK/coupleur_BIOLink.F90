@@ -965,9 +965,10 @@ END SUBROUTINE  BIOLink_alloc
                                                          ! evaluations
       ! Here I convert the shape of the 3D diagnostics so that CROCO can use them
       do i=1,ndiag_3d
-        diag_3D_CROCO(i,:,:,:) = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
+
+       diag_3D_CROCO(i,:,:,:) = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
                                 diag_3D_wat(i,:,:,:),1,NB_LAYER_WAT)
-!        MPI_master_only PRINT*,"ifirst,ilast,jfirst,jlast",ifirst,ilast,jfirst,jlast
+  
       end do
 
 
@@ -1386,7 +1387,6 @@ END SUBROUTINE  BIOLink_alloc
 
      BIOLink2hydro_3D(:,:,:)=0.0_rsh
 
-     MPI_master_only PRINT*,"SHAPE BIOLink2hydro", shape(BIOLink2hydro_3D)
 
  !****************** Conversion for the index order of *********************!
  !***************** BIOLink to the one of the hydro model ******************!

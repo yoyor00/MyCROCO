@@ -1435,7 +1435,7 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
 
       do i=1,ndiag_3D
         if (wrthis(indxBLMdiag3D+i)) then
-          workr = diag_3D_CROCO(i,:,:,:)
+         workr = diag_3D_CROCO(i,:,:,:)
           do k=1,N
             workr(:,:,k)=workr(:,:,k) 
 #  ifdef WET_DRY

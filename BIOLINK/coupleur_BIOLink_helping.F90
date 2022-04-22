@@ -348,30 +348,30 @@ CONTAINS
 
            idimv_r(isubs)=1
            ndiag_1d=ndiag_1d+1
-           ! I add the name in the vname table
+
            vname(1,indxBLMdiag1D+ndiag_1d) = namvar_r
            vname(2,indxBLMdiag1D+ndiag_1d) = long_name_var_r
-           vname(3,indxBLMdiag1D+ndiag_1d) = standard_name_var_r
+           vname(3,indxBLMdiag1d+ndiag_1d) = standard_name_var_r
            vname(4,indxBLMdiag1D+ndiag_1d) = unitvar_r
-
 
          ELSE IF (dimvar==2) THEN
 
            idimv_r(isubs)=2
            ndiag_2d=ndiag_2d+1
-           ! I add the name in the vname table
+
            vname(1,indxBLMdiag2D+ndiag_2d) = namvar_r
            vname(2,indxBLMdiag2D+ndiag_2d) = long_name_var_r
-           vname(3,indxBLMdiag2D+ndiag_2d) = standard_name_var_r
+           vname(3,indxBLMdiag2d+ndiag_2d) = standard_name_var_r
            vname(4,indxBLMdiag2D+ndiag_2d) = unitvar_r
+
          ELSE IF (dimvar==3) THEN
 
            idimv_r(isubs)=3
            ndiag_3d=ndiag_3d+1
-           ! I add the name in the vname table
+
            vname(1,indxBLMdiag3D+ndiag_3d) = namvar_r
            vname(2,indxBLMdiag3D+ndiag_3d) = long_name_var_r
-           vname(3,indxBLMdiag3D+ndiag_3d) = standard_name_var_r
+           vname(3,indxBLMdiag3d+ndiag_3d) = standard_name_var_r
            vname(4,indxBLMdiag3D+ndiag_3d) = unitvar_r
 
 
@@ -518,7 +518,7 @@ CONTAINS
    diag_2d(:,:,:)=0.0_rsh
 
    ALLOCATE( diag_3d_wat(ndiag_2d+1:ndiag_2d+ndiag_3d_wat,NB_LAYER_WAT,PROC_IN_ARRAY) )
-   diag_3d_wat(:,:,:,:)=210.0_rsh
+   diag_3d_wat(:,:,:,:)=0.0_rsh
 
    ALLOCATE( diag_3d_CROCO(ndiag_2d+1:ndiag_2d+ndiag_3d_wat,PROC_IN_ARRAY,NB_LAYER_WAT) )
    diag_3d_CROCO(:,:,:,:)=0.0_rsh
