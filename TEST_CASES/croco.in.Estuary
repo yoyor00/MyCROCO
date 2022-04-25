@@ -63,3 +63,6 @@ sponge:          X_SPONGE [m],    V_SPONGE [m^2/sec]
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
                 1.      360.      3.      360.
 
+psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
+            1
+                  201  45     0   -400.  T T T T  10. 0. 0. 0.05

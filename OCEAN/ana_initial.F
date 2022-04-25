@@ -95,6 +95,9 @@
 #  include "work.h"
 # endif      
 #endif
+#ifdef ESTUARY
+      real cff
+#endif
 #ifdef DUNE
       real cff, cff2
 # ifdef DUNE3D
@@ -1107,7 +1110,7 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
-#   elif defined TIDAL_FLAT || defined ESTUARY
+#   elif defined TIDAL_FLAT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1117,6 +1120,26 @@ C$OMP BARRIER
 #    endif
 #    ifdef SALINITY
               t(i,j,k,1,isalt)=35.5
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
+            enddo
+          enddo
+        enddo
+#   elif defined ESTUARY
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif
+#    ifdef SALINITY
+#  ifdef MPI
+        cff  = (float(i +ii*Lm) )
+#  else  
+        cff  = (float(i       ) )
+#  endif
+              t(i,j,k,1,isalt)= max(0., 35.5 * (1. - cff / LLm))  ! linear gradient from offshore to river
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
             enddo

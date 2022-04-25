@@ -26,7 +26,7 @@
    l_unised = .true.       ! boolean set to true for a uniform bottom initialization
    l_z0seduni=.true.       ! boolean set to false for z0sed computation from sediment diameter (if true, z0seduni is used)
    z0seduni = 0.0001       ! uniforme bed roughness (m)
-   hseduni = 0.5        ! initial uniform sediment thickness(m)
+   hseduni = 0.01        ! initial uniform sediment thickness(m)
    cseduni= 978.3          ! initial sediment concentration
    csed_mud_ini = 300.0    ! mud concentration into initial sediment (if =0. ==> csed_mud_ini=cfreshmud)
    ksmiuni = 1             ! lower grid cell indices in the sediment

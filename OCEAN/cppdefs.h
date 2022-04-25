@@ -1898,6 +1898,8 @@
 # define NO_FRCFILE
 # undef  ZETA_DRY_IO
 # undef  RVTK_DEBUG
+# define PSOURCE
+# define ANA_PSOURCE
 
 #endif /* END OF CONFIGURATION CHOICE */
 

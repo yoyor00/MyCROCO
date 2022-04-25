@@ -290,6 +290,8 @@
       parameter (Msrc=2)         ! ====== == ===== =======
 # elif defined VILAINE
       parameter (Msrc=2)        ! ====== == ===== =======
+# elif defined ESTUARY
+      parameter (Msrc=1)        ! ====== == ===== =======
 # else 
       parameter (Msrc=0)        ! ====== == ===== =======
 # endif

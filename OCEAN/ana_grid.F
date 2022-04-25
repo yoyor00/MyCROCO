@@ -1035,7 +1035,9 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
     !     ! walls at limit East
         if (cff .ge. LLm) then
           h(i, :) = -7.0
+          h(i, jmiddle) = estHupstream
         endif
+        
       enddo
 
 
