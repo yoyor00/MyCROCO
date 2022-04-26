@@ -46,15 +46,134 @@
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="setup-on-datarmor">
 <span id="id1"></span><h2>Setup on datarmor<a class="headerlink" href="#setup-on-datarmor" title="Permalink to this headline">¶</a></h2>
+<p>You can download the latest version of CROCO with BIOLink in the folder :</p>
+<p>/home1/homework/gkoenig/croco/</p>
+<p>This folder can be downloaded in your working directory with the command :</p>
+<p>cp -r /home1/homework/gkoenig/croco/ .</p>
+</div>
+<div class="section" id="exploration-of-the-folder">
+<h2>Exploration of the folder<a class="headerlink" href="#exploration-of-the-folder" title="Permalink to this headline">¶</a></h2>
+<p>In this folder you will find the usual folders of CROCO, with three supplementary folders :
+BIOLink, BLOOM and VILAINE. Those folders contain the coupler, the BLOOM NPZD model and the the VILAINE configuration for CROCO and BLOOM.</p>
+<p>The codes in themselves are not to be modified, but feel free to explore them. Configuration files are stored in the VILAINE folder to modify the parameters of the BLOOM model. There are seven of those files.</p>
+<table border="1" class="colwidths-given docutils" id="id4">
+<caption><span class="caption-text">Parameter files to be modified for using BIOLink</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">File</th>
+<th class="head">Position</th>
+<th class="head">Model</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>cppdefs.h</td>
+<td>VILAINE/</td>
+<td>CROCO</td>
+</tr>
+<tr class="row-odd"><td>param.h</td>
+<td>VILAINE/</td>
+<td>CROCO</td>
+</tr>
+<tr class="row-even"><td>croco.in</td>
+<td>VILAINE/</td>
+<td>CROCO</td>
+</tr>
+<tr class="row-odd"><td>parasubstance_BLOOM.txt</td>
+<td>VILAINE/MUSTANG_NAMELIST</td>
+<td>SUBSTANCE</td>
+</tr>
+<tr class="row-even"><td>parabloom.txt</td>
+<td>VILAINE/FIC_NAMELIST</td>
+<td>BLOOM</td>
+</tr>
+<tr class="row-odd"><td>param_BLOOM.h</td>
+<td>BLOOM/</td>
+<td>BLOOM</td>
+</tr>
+<tr class="row-even"><td>vardiag.dat_debase</td>
+<td>BLOOM/</td>
+<td>BLOOM</td>
+</tr>
+</tbody>
+</table>
+<p>The different files are dedicated to activate different options in the models. The files of CROCO change the number of tracers, the size of the grid and the precompilation (cpp) keys.</p>
+<p>The precompilation keys are grouped in cppdefs after the define SUBSTANCE and define BIOLink part :</p>
+<div class="figure" id="id5">
+<img alt="_images/cppdefsBIOLink.png" src="_images/cppdefsBIOLink.png" />
+<p class="caption"><span class="caption-text">Example of the modifications of the cppkeys for BIOLink</span></p>
+</div>
+<p>The SUBSTANCE and TRACERS keys are required because handles the biological/sediment variables as tracers. The SUBSTANCE submodel is required for the variables that can change the density of seawater or for particulate variables that can sink.</p>
+<p>The file param.h also have to be partly modified.</p>
+<div class="figure" id="id6">
+<img alt="_images/paramh.png" src="_images/paramh.png" />
+<p class="caption"><span class="caption-text">Example of modification of param.h for BIOLink</span></p>
+</div>
+<p>Here we declare three new variables to count the number of tracers: ntrc_sedim, ntrc_biol and ntrc_fix which are the number of variables of the sediments, biological and fixed. The ntrc_biol and ntrc_fix numbers are determined in the file param_bloom.h</p>
+<p>The croco.in file contains the post-compilation parameters. This includes the position of forcing files, variables recorded in the history and averaged files and the diffusion coefficients values. The number of tracers as to be modified in several places to correspond to the number declared with BIOLink.</p>
+<p>The first changes appear around the line 43.</p>
+<dl class="docutils">
+<dt>primary_history_fields: zeta UBAR VBAR U V wrtT(1:NT)</dt>
+<dd>T    T    T   T T  30*T</dd>
+</dl>
+<p>and 50 :</p>
+<dl class="docutils">
+<dt>primary_averages: zeta UBAR VBAR U V wrtT(1:NT)</dt>
+<dd>F    F    F   F F  30*F</dd>
+</dl>
+<p>The lines after “primary_history_fields” and “primary_averages” are not read. The modifications are to be made under the wrtT(1:NT) where the numbers 30*T and 30*F are to be changed to the number of tracers ( including the salinity and temperature). If it is not known exactly, any number superior to the number of tracers will work.</p>
+<p>The same modifications are to be made for the vertical and horizontal diffusion coefficients.</p>
+<dl class="docutils">
+<dt>tracer_diff2: TNU2(1:NT)</dt>
+<dd>30*0.d-2 [m^2/sec for all]</dd>
+<dt>tracer_diff4: TNU4(1:NT)</dt>
+<dd>30*0.d11 [m^4/sec for all]</dd>
+<dt>vertical_mixing: Akv_bak, Akt_bak [m^2/sec]</dt>
+<dd>0.d0    30*0.d0</dd>
+</dl>
+<p>In the same way, the first number of values written under TNU2, TNU4 and Akt_bak are to be adjusted to the number of tracers.</p>
+<p>Next one needs to change the path to the parameter file of BLOOM, which will be described further.</p>
+<p>substance: input file (parasubstance)
+MUSTANG_NAMELIST/parasubstance_BLOOM.txt</p>
+<p>Finally, the number of tracers as to be modified one last time to corresponds to the river inputs. Those are in the lines 115 to 119 :</p>
+<p>psource_ncfile: Nsrc Isrc Jsrc Dsrc qbardir Lsrc Tsrc
+runoff file name
+CROCO_FILES/croco_runoff_vilaine_bloom_var.nc</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>2</dt>
+<dd>167 56 0 -1   30*T 20.0 15.0 Loire
+91 99 0 -1    30*T 20.0 15.0 Vilaine_arzal</dd>
+</dl>
+</div></blockquote>
+<p>Once again, the number of tracers before the <a href="#id2"><span class="problematic" id="id3">*</span></a>T have to be modified to agree with the number of tracers.</p>
+<p>Next we have to modify the file parasubstance_BLOOM.txt for substance. THe substance submodel is a code developed to interface the sedimentary model MUSTANG with the hydrodynamical model CROCO. It has been extended to handle non-sedimentary variables. It is used in BIOLink to defined characteristics of various tracer variables. Those characteristics are defined in the file parasubstance_BLOOM.txt. It contains a set of namelists which describe the tracers. The first namelist contains the number of variables and must be coherent with the number declared in croco.in and param_bloom.h</p>
+<p>&amp;nmlnbvar
+nv_dis=4 ! number of dissolved susbtances
+nv_dis=4 ! number of Non Constitutive Particulate subtances
+nv_ncp=9 ! number of fixed susbtances (not advected)
+nv_fix=3 ! number of of particulate susbtances sorbed on an other particule
+nv_sorb=1 ! number of of benthic susbtances
+nv_bent=0 /</p>
+<p>The different kind of variables correspond to different behaviors inherited from the sedimentary model. For example if the variables sink or not.</p>
+<p>For BLOOM there are three configuration files. The first, parabloom.txt contains parameters for the model BLOOM itself. The second, param_BLOOM.txt contains the number of variables used as tracer in BLOOM and finally, vardiag.dat_debase contains the diagnostic variables of BLOOM. Those files have not been modified for the model in VILAINE.</p>
 </div>
 <div class="section" id="compilation">
 <h2>Compilation<a class="headerlink" href="#compilation" title="Permalink to this headline">¶</a></h2>
+<p>The Makefile has already been modified and everything for the compilation on datarmor has been included in the script batch_comp_datarmor. You can launch it with the command :</p>
+<p>qsub batch_comp_datarmor</p>
 </div>
 <div class="section" id="first-run">
 <h2>First run<a class="headerlink" href="#first-run" title="Permalink to this headline">¶</a></h2>
+<p>The model can then be run with the datarmor command</p>
+<p>qsub batch_mpt</p>
 </div>
 <div class="section" id="analysis-of-outputs">
 <h2>Analysis of outputs<a class="headerlink" href="#analysis-of-outputs" title="Permalink to this headline">¶</a></h2>
+<p>The outputs will appear in a history file given in the croco.in file.</p>
 </div>
 </div>
 
@@ -68,6 +187,7 @@
   <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#setup-on-datarmor">Setup on datarmor</a></li>
+<li><a class="reference internal" href="#exploration-of-the-folder">Exploration of the folder</a></li>
 <li><a class="reference internal" href="#compilation">Compilation</a></li>
 <li><a class="reference internal" href="#first-run">First run</a></li>
 <li><a class="reference internal" href="#analysis-of-outputs">Analysis of outputs</a></li>
