@@ -1095,7 +1095,11 @@
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           ks=30.*Zob_my(i,j)
+#   ifdef OW_COUPLING_FULL
+          abot=ubr(i,j)/max(fr(i,j),eps)
+#   else          
           abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
+#   endif          
           delta=0.09*ks*(abot/ks)**0.82                ! WBL thickness
           kfrc=1./min(max(a_frc*delta,eps),Dstp(i,j))  ! friction scale
           frc2d(i,j)=0.
