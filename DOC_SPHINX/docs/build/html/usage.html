@@ -44,14 +44,24 @@
             
   <div class="section" id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id1">
-<span id="id2"></span><h2>Usage<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="general-description-of-a-coupler">
+<span id="id1"></span><h2>General description of a coupler<a class="headerlink" href="#general-description-of-a-coupler" title="Permalink to this headline">¶</a></h2>
+<p>The general objective of a coupler is to transfer information between one model and another. Here those informations are relatives to the biological/chemical variables that are considered as passive variables in the physical model and reactive in biological model.</p>
+<div class="figure">
+<img alt="_images/General_interest_coupler.png" src="_images/General_interest_coupler.png" />
+</div>
+</div>
+<div class="section" id="id2">
+<h2>Usage<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>To use it one needs to activate the cppkeys BIOLink in the cppdefs file, as well as the cppkeys linked to the model being used with CROCO ( BLOOM/PEPTIC/METEOR). Specific files linked with those models can be required.</p>
 </div>
 <div class="section" id="internal-functioning">
 <h2>Internal functioning<a class="headerlink" href="#internal-functioning" title="Permalink to this headline">¶</a></h2>
 <p>BIOLink uses the tracer variables of CROCO and adds sources and sink terms on their evolution equation. At each baroclinic timestep, BIOLink is called and transfers the values of concentration of tracers to the biogeochemical models. It can transfer other variables such as temperature or salinity if they are required by the biogeochemical model.</p>
-<p>The biogeochmical models computes the source and sink terms. Those terms are recovered by BIOLink that updates the concentration of tracers and sends it back to CROCO.</p>
+<p>The biogeochmical models computes the source and sink terms. Those terms are recovered by BIOLink that updates the concentration of tracers and sends it back to CROCO. It is presented in the scheme behind :</p>
+<div class="figure">
+<img alt="_images/Coupler_functioning.png" src="_images/Coupler_functioning.png" />
+</div>
 <p>The physical evolution of tracers is entirely computed by CROCO. BIOLink only handles the source and sink terms. Therefore, each cell is treated independantly in BIOLink.</p>
 </div>
 <div class="section" id="supplementary-functions">
@@ -69,7 +79,8 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Usage</a><ul>
-<li><a class="reference internal" href="#id1">Usage</a></li>
+<li><a class="reference internal" href="#general-description-of-a-coupler">General description of a coupler</a></li>
+<li><a class="reference internal" href="#id2">Usage</a></li>
 <li><a class="reference internal" href="#internal-functioning">Internal functioning</a></li>
 <li><a class="reference internal" href="#supplementary-functions">Supplementary functions</a></li>
 </ul>
