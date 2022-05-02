@@ -807,9 +807,12 @@ CONTAINS
            DO iv=nvpc+1,nvp
 
                  DO k = NB_LAYER_WAT,1,-1
-
+#if !defined ECO3M
                    WS_BIOLink(k,iv,i,j)=sign(MIN(0.95_rlg*THICKLAYERWC(k,i,j)/TRANSPORT_TIME_STEP,REAL(ABS(WS_BIOLink(k,iv,i,j)),rlg)),WS_BIOLink(k,iv,i,j))
-                 
+#else
+! THICKLAYERWC is a (i,j,k) array 
+                   WS_BIOLink(k,iv,i,j)=sign(MIN(0.95_rlg*THICKLAYERWC(i,j,k)/TRANSPORT_TIME_STEP,REAL(ABS(WS_BIOLink(k,iv,i,j)),rlg)),WS_BIOLink(k,iv,i,j))
+#endif
                  END DO ! k
 
            END DO  !iv

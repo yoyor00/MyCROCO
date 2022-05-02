@@ -81,6 +81,10 @@
 #if defined ECO3M   
 
    USE COUPLEUR_PHY_BIO ! Internal functions of coupling of ECO3M
+   USE mod_eco3m_irrad, ONLY : irrad
+   USE mod_eco3m, ONLY : nx_min, nx_max, ny_min, ny_max, nz_max, VAR
+   USE mod_eco3m, ONLY : BIO_TIME_STEP, WATCONCPOS_tab, TEMP_BIOLink,&
+                         SAL_BIOLink,BIO_SKSC_ADV, THICKLAYERWC 
 
 #endif /* ECO3M */
 
@@ -250,10 +254,12 @@
                            ! are declared in the same function
 
 #elif defined ECO3M 
-
-     CALL ALLOC_VAR_Eco3M ! 
-     nbcallbio = -1 ! Internal variable of ECO3M
-     CALL main_bio(0.0)
+     nx_min = ifirst
+     nx_max = ilast
+     ny_min = jfirst
+     ny_max = jlast
+     nz_max = NB_LAYER_WAT
+     CALL eco3m_init_config 
 
 #endif /* BLOOM/PEPTIC/ECO3M */
   
@@ -1034,8 +1040,10 @@ END SUBROUTINE  BIOLink_alloc
     IF ( l_treat_re_dc) THEN
         CALL meteor_sksc_wat(ifirst,ilast,jfirst,jlast,WIND_SPEED)
     ENDIF                      
+#elif defined ECO3M
+     CALL eco3m_main
 
-#endif /* BLOOM/METeOR */
+#endif /* BLOOM/METeOR/ECO3M */
    
       !**************** Conversion of the order of arrays  *****************!
 
@@ -1559,7 +1567,7 @@ END SUBROUTINE  BIOLink2hydro
 
       !***************** We test if the tracer concentration ***************!
       !************************* becomes negative **************************!
-
+#if ! defined ECO3M
          xnegtr(:,:,:) = 1.e+0 ! 
 
 !$OMP DO SCHEDULE(RUNTIME)
@@ -1604,6 +1612,7 @@ END SUBROUTINE  BIOLink2hydro
 
          END DO
 !$OMP END DO
+#endif
 
 !$OMP DO SCHEDULE(RUNTIME)
          DO i1=IRANGE1
@@ -1613,11 +1622,15 @@ END SUBROUTINE  BIOLink2hydro
              DO i3=IRANGE3
 
                DO i4=IRANGE4  
-
+#if !defined ECO3M
                  WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
                                                          + xnegtr(i4,i3,i2) &
                                                          * BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) &
                                                          * TRANSPORT_TIME_STEP    
+#else
+                 WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
+                                                         * BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) 
+#endif
                  ! Computation of the flux from the advection terms 
                  ! with the transport time step
                END DO
