@@ -2230,6 +2230,9 @@ C 				  endif
       USE substance,    ONLY : l_outsandrouse
       USE comMUSTANG,   ONLY : sum_tmp,rouse2d
 #endif
+# if defined ECO3M
+      USE mod_eco3m, only : E_PARZ, VAR, nbvar
+#endif
 #endif
           IMPLICIT NONE
 
@@ -2328,7 +2331,11 @@ C 				  endif
 
 #endif
 
-
+# if defined ECO3M
+      real var_eco3m_3D(GLOBAL_2D_ARRAY, N)
+      character(len=2500) name_XIOS_ECO3M
+      integer ivar 
+#  endif
 
 # include "compute_auxiliary_bounds.h"
 !
@@ -2535,6 +2542,23 @@ C 				  endif
       call xios_send_field("salt",t(:,:,:,nstp,isalt))
       call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
 # endif /* SALINITY */
+# if defined ECO3M
+      write(*,*) 'cmzy: send xios e_parz, shape=', shape(e_parz),
+     &                     ' ,var_eco3m_3D shape=', shape(var_eco3m_3D),
+     &                      istr,iend, jstr, jend, padd_X, padd_E
+      var_eco3m_3D(istr:iend,jstr:jend,:)=e_parz(:,:,:)
+      call xios_send_field("e_parz",var_eco3m_3D)
+
+      do ivar=1,nbvar
+         var_eco3m_3D(istr:iend,jstr:jend,:)=VAR(ivar)%conc(:,:,:)
+         name_XIOS_ECO3M=TRIM(ADJUSTL(VAR(ivar)%comp))//'_'
+     &                 //TRIM(ADJUSTL(VAR(ivar)%scomp))//'_'
+     &                 //TRIM(ADJUSTL(VAR(ivar)%elmt))
+         write(*,*) 'cmzy, write XIOS ', TRIM(ADJUSTL(name_XIOS_ECO3M))
+         call xios_send_field(TRIM(ADJUSTL(name_XIOS_ECO3M)),var_eco3m_3D)
+      end do
+
+#endif /* ECO3M */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
 ! but I found it quiet ugly
