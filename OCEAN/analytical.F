@@ -365,7 +365,7 @@ C$    integer  trd, omp_get_thread_num
 
       windamp = 0.
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 # ifdef BASIN
       cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
       cff2=2.*pi/el
@@ -841,7 +841,7 @@ c
 # include "compute_auxiliary_bounds.h"
 c
 # ifdef TRACERS
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 # ifdef TEMPERATURE
       
       if (itrc.eq.itemp) then

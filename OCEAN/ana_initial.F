@@ -124,7 +124,7 @@
 
 #ifdef ANA_INITIAL
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Initial conditions for free surface and 2D momentum components.

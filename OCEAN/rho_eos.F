@@ -558,7 +558,7 @@
       dr00=r00-1000.
 #  endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=Jstr,Jend
           do i=Istr,Iend

@@ -415,7 +415,7 @@ C$    integer omp_get_thread_num
       y0=y0-0.5*Length_ETA  
 # endif
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
 CR     &                                'x0=',x0, 'y0=',y0, mynode
 !
