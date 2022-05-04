@@ -281,7 +281,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab2d(h(:,:),'h initialisation #1','r')
+       call check_tab2d(h(:,:),'h initialisation #1','r',
+     &      ondevice=.TRUE.)
 C$OMP END MASTER
 # endif
 #else

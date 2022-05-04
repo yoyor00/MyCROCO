@@ -524,6 +524,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set kinematic surface solar shortwave radiation [degC m/s] at
 !  horizontal RHO-points.
 !
+!$acc kernels if(compute_on_device) default(present)
 # if defined INNERSHELF && !defined INNERSHELF_EKMAN
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -550,6 +551,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif /* INNERSHELF */
+!$acc end kernels
       return
       end
 #endif /* ANA_SRFLUX */

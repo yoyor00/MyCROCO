@@ -86,6 +86,8 @@
 
 # undef OBC_COM_NBQORLANSKI
 
+!$acc kernels if(compute_on_device) default(present)
+
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -587,7 +589,7 @@
         enddo
       endif
 # endif
-
+!$acc end kernels
       return
       end
 #else

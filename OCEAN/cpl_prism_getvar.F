@@ -9,6 +9,7 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+#if defined OA_COUPLING || defined OW_COUPLING
       SUBROUTINE cpl_prism_getvar(prcv_id, msk, nmaxa, tab_t_tmp, 
      &                                                 rcvtime, iok)    
       
@@ -21,7 +22,7 @@
 !     !----------------------------------------------------------------------
       
 #include "cppdefs.h"
-#if defined OA_COUPLING || defined OW_COUPLING
+
       USE mod_prism             ! OASIS3 prism module
 # ifdef AGRIF
       use Agrif_Util
@@ -104,6 +105,7 @@
 !     
  
 #else
+      SUBROUTINE cpl_prism_getvar
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------

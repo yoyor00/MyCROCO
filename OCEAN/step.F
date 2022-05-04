@@ -818,9 +818,12 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef M3FAST
-       call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r')
-       call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u')
-       call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v')
+       call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r',
+     &    ondevice=.TRUE.)
+       call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u',
+     &    ondevice=.TRUE.)
+       call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v',
+     &    ondevice=.TRUE.)
 #  ifdef RVTK_DEBUG_ADVANCED
         call check_tab2d(bustr,'bustr step3d_fast','u')
         call check_tab2d(bvstr,'bvstr step3d_fast','v')

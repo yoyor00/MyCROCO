@@ -1085,6 +1085,7 @@
      defined BEDLOAD_WENO5
 !    
       function flux5_weno(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+!$acc routine(flux5_weno) seq
 !
 !     WENO5: Weighted Essentially Non-Oscillatory scheme 
 !            with 5th-order accuracy
@@ -1220,6 +1221,8 @@
 !======================================================================
 !
       function flux3_weno( q_im2, q_im1, q_i, q_ip1, ua)
+!$acc routine(flux3_weno) seq
+
 !
 !     WENO3: Weighted Essentially Non-Oscillatory of 3rd-order Accuracy
 !
