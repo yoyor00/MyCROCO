@@ -6,7 +6,7 @@
       integer k,iifroot,nstep
 
       write(*,*) 'start ad_step'
-C$AD BINOMIAL-CKP nstep+1 80 1
+C$AD BINOMIAL-CKP nstep+1 50 1
       do k=1,nstep
          do iifroot = 0,nfast+2
             call step()
@@ -153,7 +153,8 @@ c      end do
                if (rmask(i,j).ne.0) then
                   k=k+1
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta)
-                  dpena = (pena_h(i,j) - pena_h(i-1,j)) / om_u(i,j)
+                  dpena = (pena_h(i+1,j) + pena_h(i-1,j)) /
+     &                 (om_u(i,j)*om_u(i,j))
                   icost = icost + delta_z*delta_z
      &                 + 1.0D-2*dpena*dpena
 
@@ -482,8 +483,6 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       CALL PUSHREAL8ARRAY(hinv, (lm+padd_x+4)*(mm+padd_e+4))
 
       write(*,*) 'save------'
-      write(*,*) 'time=',time
-      write(*,*) 'ad_cost_counter=',ad_cost_counter
       write(*,*) '----------'
 
       end subroutine save_croco_state
@@ -544,8 +543,6 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       CALL POPINTEGER4(ad_cost_counter)
 
       write(*,*) 'restore+++'
-      write(*,*) 'time=',time
-      write(*,*) 'ad_cost_counter=',ad_cost_counter
       write(*,*) '++++++++++'
 
       end subroutine restore_croco_state
@@ -653,7 +650,7 @@ c set a lower depth
             cff=1-(xr(i,j)*xr(i,j)*cff1);
          endif
          ad_x(k) = depth-ridge_height*cff*cff
-     &        - 100;
+c     &        - 100;
          k=k+1
       enddo
 

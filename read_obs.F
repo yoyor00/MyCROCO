@@ -49,11 +49,11 @@ c     this file is not differentiated
 
       integer Istr,Iend,Jstr,Jend,fid,i,j,k
 
-      do k=ad_ast,ad_ast+ad_nobs-1
+      do k=1,ad_nobs
          do j=Jstr,Jend
             do i=Istr,Iend
-               read(fid) ad_obs(i,j,k-ad_ast+1)
-c               write (*,*) 'ad_obs:',i,j,k,ad_obs(i,j,k-ad_ast+1)
+               read(fid) ad_obs(i,j,k)
+c               write (*,*) 'ad_obs:',i,j,k,ad_obs(i,j,k)
             end do
          end do
       end do
