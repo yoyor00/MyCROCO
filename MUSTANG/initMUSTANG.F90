@@ -785,10 +785,9 @@ ENDIF
            IF(diam_sed(irk_fil(iv)) > diam_sed(irk_fil(iv2))) THEN
              MPI_master_only WRITE(ierrorlog,*)
              MPI_master_only WRITE(ierrorlog,*)'****************************'
-             MPI_master_only WRITE(ierrorlog,*)' The "SAND" variables should be stored in variable.dat '
+             MPI_master_only WRITE(ierrorlog,*)' The "SAND" variables should be stored in substance file '
              MPI_master_only WRITE(ierrorlog,*)'in order of decreasing diameters (the coarsest sand to the finest sand)'
-             MPI_master_only WRITE(ierrorlog,*)' It is not the case : (see in variable.dat) '
-!             MPI_master_only WRITE(ierrorlog,*)' diam_r(',irk_fil(iv),')=',diam_sed(irk_fil(iv)),' > diam_r(',irk_fil(iv2),')=',diam_sed(irk_fil(iv2))
+             MPI_master_only WRITE(ierrorlog,*)' It is not the case : (see in substance file) '
 
              CALL_MPI MPI_FINALIZE(IERR_MPI)
              STOP
