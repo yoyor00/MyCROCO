@@ -969,7 +969,11 @@ C$OMP END MASTER
       use plug_MUSTANG_CROCO, only: mustang_update_main
       use plug_MUSTANG_CROCO, only: mustang_deposition_main
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
-      use comMUSTANG , only : l_morphocoupl,t_morpho
+      use comMUSTANG, only : l_morphocoupl, t_morpho
+#if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+      use comMUSTANG , only : flx_bx, flx_by, 
+      use comsubstance, only : ibedload1, ibedload2
+#endif
 # include "coupler_define_MUSTANG.h"
 #endif
       implicit none
@@ -1056,13 +1060,21 @@ C$OMP BARRIER
 
 # if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
 C$OMP MASTER
-      do itrc=1,NT
+      do itrc = 1, NT
         call check_tab3d(Akt(:,:,1:N,itrc),'Akt step3d_t','r')
       enddo
 #  if defined GLS_MIXING
         call check_tab3d(trb(:,:,1:N,nstp,igls),'gls step3d_t','r')
         call check_tab3d(trb(:,:,1:N,nstp,itke),'tke step3d_t','r')
 #  endif
+# if defined MUSTANG 
+# if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+      do itrc = ibedload1, ibedload2
+        call check_tab2d(flx_bx(itrc, :, :),'flx_bx step3d_t','r')
+        call check_tab2d(flx_by(itrc, :, :),'flx_by step3d_t','r')
+      enddo
+# endif
+# endif
 C$OMP END MASTER
 # endif
 

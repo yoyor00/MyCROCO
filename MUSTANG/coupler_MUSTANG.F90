@@ -13,7 +13,6 @@ MODULE coupler_MUSTANG
    !&E              
    !&E 
    !&E ** Description :
-   !&E     subroutine coupl_MUSTANG_substance   ! definition number et type of variables 
    !&E     subroutine coupl_conv2MUSTANG        ! calculation of some variables needed by MUSTANG
    !&E     subroutine coupl_MUSTANG2hydro       ! transfert from MUSTANG to hydro code
    !&E

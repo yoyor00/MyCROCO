@@ -38,10 +38,10 @@
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
 #  ifdef SUBSTANCE
-      USE comsubstance, ONLY : nv_grav,nvp,ws_part,nv_sand
+      USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand
 #   ifdef MUSTANG
-      USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
-      USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO,corflux_CROCO
+      USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO, corfluy_CROCO
+      USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO, corflux_CROCO
 #    ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D
 #    endif
