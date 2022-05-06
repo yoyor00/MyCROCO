@@ -971,7 +971,7 @@ C$OMP END MASTER
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
       use comMUSTANG, only : l_morphocoupl, t_morpho
 #if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
-      use comMUSTANG , only : flx_bx, flx_by, 
+      use comMUSTANG , only : flx_bx, flx_by 
       use comsubstance, only : ibedload1, ibedload2
 #endif
 # include "coupler_define_MUSTANG.h"
