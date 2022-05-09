@@ -450,17 +450,17 @@ MODULE sed_MUSTANG
   ! **TODO** create sed_exchange_flxbedload in sed_MUSTANG_CROCO with the folowing lines
 #if defined key_MUSTANG_bedload && defined MPI 
 !RB
-   do iv=ibedload1,ibedload2
-     workexch(:,:) = flx_bx(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_bx(iv,:,:) = workexch(:,:)
+!    do iv=ibedload1,ibedload2
+!      workexch(:,:) = flx_bx(iv,:,:)
+!      call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+!           &          workexch(START_2D_ARRAY))
+!      flx_bx(iv,:,:) = workexch(:,:)
 
-     workexch(:,:) = flx_by(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_by(iv,:,:) = workexch(:,:)
-   enddo
+!      workexch(:,:) = flx_by(iv,:,:)
+!      call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+!           &          workexch(START_2D_ARRAY))
+!      flx_by(iv,:,:) = workexch(:,:)
+!    enddo
 #endif                             
                            
 
