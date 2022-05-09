@@ -164,9 +164,9 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8"
+		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -std=legacy"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-#			-fbounds-check -finit-real=nan -finit-integer=8888"
+#			-fbounds-check -finit-real=nan -finit-integer=8888 -std=legacy"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
     	CPP1="cpp  -traditional -DLinux -DXLF"

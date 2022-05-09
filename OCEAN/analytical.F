@@ -365,7 +365,7 @@ C$    integer  trd, omp_get_thread_num
 
       windamp = 0.
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 # ifdef BASIN
       cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
       cff2=2.*pi/el
@@ -524,6 +524,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set kinematic surface solar shortwave radiation [degC m/s] at
 !  horizontal RHO-points.
 !
+!$acc kernels if(compute_on_device) default(present)
 # if defined INNERSHELF && !defined INNERSHELF_EKMAN
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -550,6 +551,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif /* INNERSHELF */
+!$acc end kernels
       return
       end
 #endif /* ANA_SRFLUX */
@@ -841,7 +843,7 @@ c
 # include "compute_auxiliary_bounds.h"
 c
 # ifdef TRACERS
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 # ifdef TEMPERATURE
       
       if (itrc.eq.itemp) then

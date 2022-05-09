@@ -32,6 +32,9 @@
 #ifdef MPI
 #include "mpi_buffers.h"
 #endif
+#if defined NBQ
+#include "nbq.h"
+#endif
 
 !$acc enter data if(compute_on_device) copyin(z_w,z_r,Hz_bak,Hz,
 !$acc& cs_r,sc_r,cs_w,sc_w,h,hinv,zeta,Zt_avg1
@@ -71,6 +74,13 @@
 !$acc&     ibuf_sndS_3D, ibuf_revS_3D,
 !$acc&     jbuf_sndW_3D, jbuf_sndE_3D,
 !$acc&     jbuf_revW_3D, jbuf_revE_3D
+#endif
+#endif
+#if defined NBQ
+!$acc&  , rho_nbq, rho_grd
+!$acc&  , wz
+#if defined NBQ_MASS
+!$acc&  , Hzr
 #endif
 #endif
 !$acc& )
@@ -134,6 +144,9 @@
 #include "ncscrum.h"
 #include "averages.h"
 #include "lmd_kpp.h"
+#if defined NBQ
+#include "nbq.h"
+#endif
 
 
 !$acc enter data if(compute_on_device) copyin(A2d,A3d
@@ -143,20 +156,23 @@
 !$acc& ,Hz_bak,Zt_avg1,zeta
 !$acc& ,rho,Hz,rho1,z_w,z_r
 !$acc& ,rufrc,rvfrc,sustr,svstr,bustr,bvstr
-#if defined UV_VIS2
+#if defined UV_VIS2 || defined SPONGE_VIS2
 !$acc& ,visc2_r,visc2_p
 #endif
 !$acc& ,cs_r,sc_r,cs_w,sc_w,h,hinv
 !$acc& , DU_avg2, DV_avg2, DU_avg1, DV_avg1, ubar, vbar
 !$acc& , Akv, Akt
-#if defined TS_DIF2
-!$acc& , diff2
-#endif
 !$acc& , btflx, stflx
 !$acc& , rufrc_bak, rvfrc_bak
 !$acc& , srflx
+#if defined TS_DIF2 || defined SPONGE_DIF2
+!$acc& , diff2, diff2_sponge
+#endif
 #if defined TS_DIF4
-!$acc& ,diff4_sponge, diff2_sponge
+!$acc& ,diff4_sponge
+#if !defined SPONGE_DIF2
+!$acc& ,diff2_sponge
+#endif
 #endif
 #ifdef VAR_RHO_2D
 !$acc& ,rhoA,rhoS
@@ -229,6 +245,7 @@
 #if defined UV_VIS2 || defined SPONGE_VIS2
 !$acc& , visc2_sponge_p, visc2_sponge_r
 #endif
+!$acc& , work2d
 #ifdef AVERAGES
 !$acc& ,wrtavg
 !$acc& ,srflx_avg, stflx_avg, sustr_avg, svstr_avg, wstr_avg
@@ -289,6 +306,28 @@
 !$acc& , sss
 #ifndef ANA_SSS
 !$acc& ,sssg
+#endif
+#endif
+#if defined M3FAST
+!$acc& ,rv_int_nbq, rv_nbq, rv_nbq_avg2, rv_int_nbq_2d
+!$acc& ,ru_int_nbq, ru_nbq, ru_nbq_avg2, ru_int_nbq_2d
+!$acc& ,DU_nbq, DV_nbq, qdmu_nbq, qdmv_nbq
+!$acc& ,soundspeed_nbq, soundspeed2_nbq, Hzw_half_nbq
+#if defined NBQ
+!$acc& , rw_nbq_avg2, rw_nbq, rw_int_nbq
+!$acc& , rho_bak
+!$acc& , qdmw_nbq
+!$acc& ,wsurf_nbq,usurf_nbq,vsurf_nbq
+!$acc& ,thetadiv_nbq,thetadiv2_nbq,thetadiv3_nbq
+!$acc& ,zw_nbq
+!$acc& ,dthetadiv_nbqdz, dZdxq_w, dZdyq_w
+#if defined NBQ_MASS
+!$acc& ,rhobar_nbq, rho_nbq_avg1
+!$acc& ,rhobar_nbq_avg1
+#endif
+#endif
+#if defined NBQ_HZCORRECT
+!$acc& ,Hz_correct
 #endif
 #endif
 !$acc& )

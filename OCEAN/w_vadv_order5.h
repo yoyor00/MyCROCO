@@ -4,6 +4,8 @@
 ! using 5th-order WENO scheme
 !----------------------------------------------------------
 !
+
+!$acc loop independent
           do k=3,N-2
             do i=Istr,Iend
               FC(i,k)=We_r(i,k)*FLUX5(

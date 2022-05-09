@@ -187,7 +187,13 @@ C$    integer omp_get_thread_num
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
+          enddo
+        enddo
+      enddo
 
+      do k=1,N
+        do j=J_RANGE
+          do i=I_RANGE
 #  ifdef NBQ
 #   ifdef NBQ_GRID_SLOW
             if (LAST_FAST_STEP)  Hz_bak(i,j,k)=Hz(i,j,k)
@@ -199,7 +205,7 @@ C$    integer omp_get_thread_num
 #   endif
 #  else
             Hz_bak(i,j,k)=Hz(i,j,k)
-#  endif 
+#  endif
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
 
 #  ifdef NBQ_MASS
