@@ -143,10 +143,15 @@
 !$acc& ,Hz_bak,Zt_avg1,zeta
 !$acc& ,rho,Hz,rho1,z_w,z_r
 !$acc& ,rufrc,rvfrc,sustr,svstr,bustr,bvstr
+#if defined UV_VIS2
 !$acc& ,visc2_r,visc2_p
+#endif
 !$acc& ,cs_r,sc_r,cs_w,sc_w,h,hinv
 !$acc& , DU_avg2, DV_avg2, DU_avg1, DV_avg1, ubar, vbar
-!$acc& , Akv, Akt, diff2
+!$acc& , Akv, Akt
+#if defined TS_DIF2
+!$acc& , diff2
+#endif
 !$acc& , btflx, stflx
 !$acc& , rufrc_bak, rvfrc_bak
 !$acc& , srflx
@@ -167,7 +172,19 @@
      OBC_SOUTH
 #if defined T_FRC_BRY
 #else
-!$acc&, tclm, uclm, vclm, ssh, vbclm, ubclm
+#if defined SOLVE3D && (defined M3CLIMATOLOGY || \
+                        (defined AGRIF && !defined M3_FRC_BRY))
+!$acc&, uclm, vclm,
+#endif                        
+#if defined M2CLIMATOLOGY || (defined AGRIF && !defined M2_FRC_BRY)
+!$acc&, vbclm, ubclm                        
+#endif  
+#if defined TRACERS && (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY))
+!$acc&, tclm,
+#endif
+#if defined ZCLIMATOLOGY || defined AGRIF                        
+!$acc&, ssh,                  
+#endif
 #endif
 #endif
 #if defined ZNUDGING
@@ -201,7 +218,7 @@
 !$acc&, diff4
 #endif
 #if defined TS_DIF2 || defined SPONGE_DIF2
-!$acc& ,diff2_sponge
+!$acc& ,diff2, diff2_sponge
 #endif
 #ifdef LMD_MIXING
 !$acc& ,ustar
