@@ -43,7 +43,9 @@
 # ifdef key_MUSTANG_bedload
    PUBLIC sed_bottom_slope
 # endif
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
    PUBLIC sed_exchange_corflu
+# endif
 
    PRIVATE
    
