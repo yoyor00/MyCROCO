@@ -89,8 +89,8 @@
 
    REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE   :: cv_sed
 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: c_sedtot,poro,dzs       
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corflux,corfluy,gradvit       
+   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: c_sedtot, poro, dzs       
+   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corflux, corfluy, gradvit       
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: fludif,fluconsol,fluconsol_drycell,flu_dyninsed
    
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed,z0sed,hsed0,dzsmax,hsed_previous
@@ -262,7 +262,6 @@
  !-------------------------------------------------------------------
    
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EROS_FLUX_s2w , SETTL_FLUX_w2s ,SETTL_FLUXSUM_w2s
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: CORFLUX_SAND,CORFLUY_SAND 
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: WATER_FLUX_INPUTS 
    ! if temperature and salinity not ranged in the same table as substances concentrations
    !REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EROS_FLUX_s2w_TEMP,EROS_FLUX_s2w_SAL

@@ -9,7 +9,6 @@ MODULE sed_MUSTANG
    !&E==========================================================================
    !&E                   ***  MODULE  sed_MUSTANG  ***
    !&E
-   !&E
    !&E ** Purpose : concerns subroutines related to sediment dynamics 
    !&E 
    !&E ** Description :
@@ -164,11 +163,18 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-     !! To Program in sed_MUSTANG_CROCO sed_exchange_s2w_HOST, sed_obc_corflu
-    USE sed_MUSTANG_HOST,    ONLY :  sed_MUSTANG_settlveloc, sed_skinstress, sed_gradvit
+     !! To Program in sed_MUSTANG_CROCO sed_exchange_s2w_HOST
+    USE sed_MUSTANG_HOST,    ONLY :  sed_MUSTANG_settlveloc
+    USE sed_MUSTANG_HOST,    ONLY :  sed_skinstress
+    USE sed_MUSTANG_HOST,    ONLY :  sed_gradvit
+    USE sed_MUSTANG_HOST,    ONLY :  sed_obc_corflu
+    USE sed_MUSTANG_HOST,    ONLY :  sed_meshedges_corflu
 #ifdef key_MUSTANG_bedload
     USE sed_MUSTANG_HOST,    ONLY :  sed_bottom_slope
     !! To Program in sed_MUSTANG_CROCO sed_exchange_maskbedload_HOST,sed_exchange_flxbedload_HOST
+#endif
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_corflu
 #endif
 
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
@@ -195,7 +201,7 @@ MODULE sed_MUSTANG
    !! * Local declarations
    INTEGER        ::  i,j,k,iv,ivp,ksmin,ksmax,iappel
    REAL(KIND=rsh) ::  dtinv
-   REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch    !RB
+   REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
    !!---------------------------------------------------------------------------
    !! * Executable part
 
@@ -270,65 +276,24 @@ MODULE sed_MUSTANG
 !!!!!! interpolation of corflux,corfluy at mesh edges  and                               !!
 !!!!!! treatment of corflux,corfluy at grid corners and exchange between MPI processors  !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     IF (isand2.GE.1) THEN
-
-         ! **TODO** : code it for CROCO CALL sed_obc_corflu
-         ! **TODO** : place the folowing lines in ifdef MPI in CALL sed_exchange_corflu in sed_MUSTANG_CROCO 
-#ifdef MPI
-   do iv=isand1,isand2
-     workexch(:,:) = corflux(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     corflux(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = corfluy(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     corfluy(iv,:,:) = workexch(:,:)
-   enddo
+        CALL sed_obc_corflu(ifirst, ilast, jfirst, jlast)
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+        CALL sed_exchange_corflu(ifirst, ilast, jfirst, jlast, 0)
 #endif
-
-    
-      ! corflux are interpolated on mesh edges (in u & v)
-      ! -------------------------------------------------
-        DO j=jfirst,jlast
-           DO i=ifirst,ilast
-             DO iv=isand1,isand2
-               corflux(iv,i,j)=0.5_rsh*(corflux(iv,i,j)+corflux(iv,i+1,j))
-               corfluy(iv,i,j)=0.5_rsh*(corfluy(iv,i,j)+corfluy(iv,i,j+1))
-               DO ivp=nvpc+1,nvp
-                 IF(irkm_var_assoc(ivp) .EQ. iv) THEN  
-                   corflux(ivp,i,j)=0.5_rsh*(corflux(ivp,i,j)+corflux(ivp,i+1,j))
-                   corfluy(ivp,i,j)=0.5_rsh*(corfluy(ivp,i,j)+corfluy(ivp,i,j+1))
-                 ENDIF               
-               ENDDO
-             ENDDO
-           ENDDO
-        ENDDO
-
-       ! **TODO** : code it for CROCO CALL sed_obc_corflu
-       ! **TODO** : place the folowing lines in ifdef MPI in CALL sed_exchange_corflu in sed_MUSTANG_CROCO
-#ifdef MPI
-   do iv=isand1,isand2
-     workexch(:,:) = corflux(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     corflux(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = corfluy(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     corfluy(iv,:,:) = workexch(:,:)
-   enddo
+        ! corflux are interpolated on mesh edges (in u & v) 
+        ! depends on model mesh (ARAKAWA grid), coded in sed_MUSTANG_HOST
+        CALL sed_meshedges_corflu(ifirst, ilast, jfirst, jlast)
+        CALL sed_obc_corflu(ifirst, ilast, jfirst, jlast)
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+        CALL sed_exchange_corflu(ifirst, ilast, jfirst, jlast, 1)
 #endif
-
         !! for substances which are sorbed or associated with sand variables
-         DO ivp=nvpc+1,nvp
+         DO ivp = nvpc+1, nvp
             IF(irkm_var_assoc(ivp) .NE. 0 .AND. irkm_var_assoc(ivp) .LT. imud1 ) THEN
-                corflux(ivp,:,:)=corflux(irkm_var_assoc(ivp),:,:)
-                corfluy(ivp,:,:)=corfluy(irkm_var_assoc(ivp),:,:)
-               ENDIF
+                corflux(ivp, :, :) = corflux(irkm_var_assoc(ivp), :, :)
+                corfluy(ivp, :, :) = corfluy(irkm_var_assoc(ivp), :, :)
+            ENDIF
          ENDDO             
     ENDIF
 

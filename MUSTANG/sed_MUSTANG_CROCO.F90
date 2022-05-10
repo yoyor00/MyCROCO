@@ -1,27 +1,25 @@
-!---------------------------------------------------------------------------
+!------------------------------------------------------------------------------
  MODULE sed_MUSTANG_CROCO
-!---------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
 #include "cppdefs.h"
 #if defined MUSTANG 
 
-   !&E==========================================================================
+   !&E=========================================================================
    !&E                   ***  MODULE  sed_MUSTANG_CROCO  ***
    !&E
-   !&E
-   !&E ** Purpose : concerns subroutines related to sediment dynamics link to hydrodynamic model
-   !&E              to be used in CROCO system
+   !&E ** Purpose : concerns subroutines related to sediment dynamics link to 
+   !&E              hydrodynamic model to be used in CROCO system
    !&E 
    !&E ** Description :
-   !&E     subroutine sed_MUSTANG_settlveloc     ! settling velocity in the water column
-   !&E     subroutine sed_gradvit         ! calcul gradient de vitesse, u*
-   !&E     subroutine sed_skinstress     ! computes the skin stress
+   !&E     subroutine sed_MUSTANG_settlveloc ! settling velocity in the water 
+   !&E                                         column
+   !&E     subroutine sed_gradvit            ! calcul gradient de vitesse, u*
+   !&E     subroutine sed_skinstress         ! computes the skin stress
+   !&E     subroutine sed_bottom_slope
    !&E     subroutine sedinit_fromfile  ! reads filrepsed where all results of 
-   !&E                                   ! sediment dyn. are stored (depends on hydro model)
-   !&E     subroutine sed_obc_corflu      ! echange MPI des corrections de flux horizontaux pour sables
-   !&E     subroutine sed_exchange_w2s_MARS  ! echange MPI de flux verticaux a l'interface WS
-   !&E     subroutine sed_exchange_s2w_MARS  ! echange MPI de flux verticaux a l'interface WS
-   !&E     subroutine sed_outsaverestart ! save related field for future runs
+   !&E                                    sediment dyn. are stored (depends on 
+   !&E                                    hydro model)
    !&E
    !&E==========================================================================
 
@@ -36,39 +34,46 @@
    IMPLICIT NONE
 
    !! * Accessibility 
-   PUBLIC sedinit_fromfile, sed_skinstress, sed_gradvit, sed_MUSTANG_settlveloc
+   PUBLIC sedinit_fromfile
+   PUBLIC sed_skinstress
+   PUBLIC sed_gradvit
+   PUBLIC sed_MUSTANG_settlveloc
+   PUBLIC sed_obc_corflu
+   PUBLIC sed_meshedges_corflu
 # ifdef key_MUSTANG_bedload
    PUBLIC sed_bottom_slope
 # endif
+   PUBLIC sed_exchange_corflu
 
    PRIVATE
    
  CONTAINS
  
- !!===========================================================================================
- 
+ !!============================================================================
   SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
-                     WATER_CONCENTRATION) 
-   !&E--------------------------------------------------------------------------
+                                    WATER_CONCENTRATION) 
+   !&E-------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_settlveloc  ***
    !&E
    !&E ** Purpose : settling velocity computation
    !&E
    !&E ** Description : use arguments and common variable 
    !&E  arguments IN : 
-   !&E         WATER_CONCENTRATION=t : WATER_CONCENTRATION 
+   !&E         WATER_CONCENTRATION = t : WATER_CONCENTRATION 
    !&E  arguments OUT:
    !&E         WAT_SETTL: settling velocities for CROCO
    !&E         ws3_bottom_MUSTANG: WAT_SETTL_MUSTANG in  bottom cell
    !&E
    !&E  need to be know by hydrodynamic code:
-   !&E          GRAVITY
+   !&E         GRAVITY
    !&E         kmax=NB_LAYER_WAT  : connu via coupleur_dimhydro_MUSTANG.h
    !&E          
-   !&E  need to be know by code treated substance (if not ==> coupler_MUSTANG.F90)
-   !&E         imud1, nvpc, nvp, nv_adv, isand1,isand2
+   !&E  need to be know by code treated substance 
+   !&E  (if not ==> coupler_MUSTANG.F90)
+   !&E         imud1, nvpc, nvp, nv_adv, isand1, isand2
    !&E         f_ws(iv) (if key_MUSTANG_flocmod)
-   !&E         ws_free_opt,ws_free_para,ws_free_min,ws_free_max,ws_hind_opt,ws_hind_para :    
+   !&E         ws_free_opt, ws_free_para, ws_free_min, ws_free_max,
+   !&E         ws_hind_opt, ws_hind_para   
    !&E     
    !&E  use module MUSTANG variables  :
    !&E         ros(iv)
@@ -76,19 +81,19 @@
    !&E        
    !&E ** Called by :  sed_MUSTANG_update
    !&E
-   !&E
-   !&E--------------------------------------------------------------------------
+   !&E-------------------------------------------------------------------------
 
    !! * Arguments
-   INTEGER, INTENT(IN)                               :: ifirst, ilast, jfirst, jlast
-   REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN)  :: WATER_CONCENTRATION  ! CROCO : directly t 
+   INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
+   REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION  
+   !! CROCO : WATER_CONCENTRATION  is directly t 
    
    !! * Local declarations
    INTEGER                            :: iv, k, ivpc, i, j
    REAL(KIND=rsh)                     :: cmes, phi, phiv, De
-   REAL(KIND=rsh), PARAMETER           :: nuw = 0.00000102_rsh
+   REAL(KIND=rsh), PARAMETER          :: nuw = 0.00000102_rsh
 
-   !!---------------------------------------------------------------------------
+   !!--------------------------------------------------------------------------
    !! * Executable part
 
       DO j = jfirst, jlast
@@ -200,7 +205,7 @@
 
   END SUBROUTINE sed_MUSTANG_settlveloc     
 
-!!===========================================================================================
+!!=============================================================================
   SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
   !&E--------------------------------------------------------------------------
   !&E                 ***  ROUTINE sed_gradvit  ***
@@ -564,7 +569,7 @@
    !&E
    !&E--------------------------------------------------------------------------
    !! * Arguments
-   INTEGER, INTENT(IN)                                  :: ifirst, ilast, jfirst, jlast
+   INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: bathy  ! bathymetry (m)
 
    !! * Local declarations
@@ -588,10 +593,10 @@
   END SUBROUTINE sed_bottom_slope
 #endif
 
-    !!==============================================================================
+!!=============================================================================
   SUBROUTINE sedinit_fromfile(BATHY_H0)
  
-   !&E--------------------------------------------------------------------------
+   !&E-------------------------------------------------------------------------
    !&E                 ***  ROUTINE sedinit_fromfile  ***
    !&E
    !&E ** Purpose : manages the fields to be re-initialized in case of the 
@@ -605,12 +610,12 @@
    !&E ** External calls : ionc4_openr, ionc4_read_time,
    !&E                     ionc4_read_subxyt, ionc4_read_subzxyt
    !&E
-   !&E--------------------------------------------------------------------------
+   !&E-------------------------------------------------------------------------
    !! * Modules used
       implicit none
 
       !! * Arguments
-      REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)       :: BATHY_H0                         
+      REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN) :: BATHY_H0                         
 
 # include "netcdf.inc"
       real time_scale
@@ -790,15 +795,200 @@
       return
       
   END SUBROUTINE sedinit_fromfile
-    !!==============================================================================
+!!=============================================================================
 
+  SUBROUTINE sed_exchange_corflu(ifirst, ilast, jfirst, jlast, type)
+   !&E-------------------------------------------------------------------------
+   !&E                 ***  ROUTINE sed_exchange_corflu_MARS ***
+   !&E
+   !&E ** Purpose : treatment of horizontal flow corrections for the transport 
+   !&E              of sand in suspension
+   !&E
+   !&E ** Description : periodic borders and MPI exchange between processors
+   !&E
+   !&E ** Called by : sed_MUSTANG_update
+   !&E-------------------------------------------------------------------------
 
-  
-  
+    !! * Arguments
+    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast, type
+
+    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
+    INTEGER :: iv
+    
+    if (type .eq. 0) then  ! corflux and corfluy are still at rho point
+        do iv = isand1, isand2
+            workexch(:, :) = corflux(iv, :, :)
+            call exchange_r2d_tile (ifirst, ilast, jfirst, jlast,  &
+                &          workexch(START_2D_ARRAY))
+            corflux(iv, :, :) = workexch(:, :)
+    
+            workexch(:, :) = corfluy(iv, :, :)
+            call exchange_r2d_tile (ifirst, ilast, jfirst, jlast,  &
+                &          workexch(START_2D_ARRAY))
+            corfluy(iv, :, :) = workexch(:, :)
+        enddo
+    else  ! corflux and corfluy are at u,v point
+        do iv = isand1, isand2
+            workexch(:, :) = corflux(iv, :, :)
+            call exchange_u2d_tile (ifirst, ilast, jfirst, jlast,  &
+                &          workexch(START_2D_ARRAY))
+            corflux(iv, :, :) = workexch(:, :)
+    
+            workexch(:, :) = corfluy(iv, :, :)
+            call exchange_v2d_tile (ifirst, ilast, jfirst, jlast,  &
+                &          workexch(START_2D_ARRAY))
+            corfluy(iv, :, :) = workexch(:, :)
+        enddo
+    endif
+
+   END SUBROUTINE sed_exchange_corflu
+!!=============================================================================
+   
+   SUBROUTINE sed_obc_corflu(ifirst, ilast, jfirst, jlast)
+ 
+    !&E------------------------------------------------------------------------
+    !&E                 ***  ROUTINE sed_obc_corflu ***
+    !&E
+    !&E ** Purpose : treatment of horizontal flow corrections for the transport 
+    !&E              of sand in suspension
+    !&E
+    !&E ** Description : extrapolation at borders
+    !&E
+    !&E ** Called by : sed_MUSTANG_update
+    !&E--------------------------------------------------------------------------
+ 
+    !! * Arguments
+    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
+ 
+    !! * Local declarations
+    INTEGER :: i, j, ivp
+
+    do ivp = isand1, isand2
+
+    !! * Executable part
+#if defined MPI 
+    if (float(ifirst + ii * Lm) .EQ. IMIN_GRID) then
+#else
+    if (float(ifirst) .EQ. IMIN_GRID) then
+#endif
+        corflux(ivp, ifirst, :) = corflux(ivp, ifirst+1, :)
+        corfluy(ivp, ifirst, :) = corfluy(ivp, ifirst+1, :)
+        corflux(ivp, ifirst-1, :) = corflux(ivp, ifirst+1, :)
+        corfluy(ivp, ifirst-1, :) = corfluy(ivp, ifirst+1, :)
+    endif
+#if defined MPI 
+    if (float(ilast + ii * Lm) .EQ. IMAX_GRID) then
+#else
+    if (float(ilast) .EQ. IMAX_GRID) then
+#endif
+        corflux(ivp, ilast, :) = corflux(ivp, ilast-1, :)
+        corfluy(ivp, ilast, :) = corfluy(ivp, ilast-1, :)
+        corflux(ivp, ilast+1, :) = corflux(ivp, ilast-1, :)
+        corfluy(ivp, ilast+1, :) = corfluy(ivp, ilast-1, :)
+    endif
+
+#if defined MPI 
+    if (float(jfirst + jj * Mm) .EQ. JMIN_GRID) then
+#else
+    if (float(jfirst) .EQ. JMIN_GRID) then
+#endif
+        corflux(ivp, :, jfirst) = corflux(ivp, :, jfirst+1)
+        corfluy(ivp, :, jfirst) = corfluy(ivp, :, jfirst+1)
+        corflux(ivp, :, jfirst-1) = corflux(ivp, :, jfirst+1)
+        corfluy(ivp, :, jfirst-1) = corfluy(ivp, :, jfirst+1)
+    endif
+#if defined MPI 
+    if (float(jlast + jj * Mm) .EQ. JMAX_GRID) then
+#else
+    if (float(jlast) .EQ. JMAX_GRID) then
+#endif
+        corflux(ivp, :, jlast) = corflux(ivp, :, jlast-1)
+        corfluy(ivp, :, jlast) = corfluy(ivp, :, jlast-1)
+        corflux(ivp, :, jlast+1) = corflux(ivp, :, jlast-1)
+        corfluy(ivp, :, jlast+1) = corfluy(ivp, :, jlast-1)
+    endif
+
+! corners
+#if defined MPI 
+    if ((float(ifirst + ii * Lm) .EQ. IMIN_GRID) .and.  &
+        (float(jfirst + jj * Mm) .EQ. JMIN_GRID)) then
+#else
+    if ((float(ifirst) .EQ. IMIN_GRID) .and.  &
+        (float(jfirst) .EQ. JMIN_GRID)) then
+#endif
+        corflux(ivp, ifirst, jfirst) = corflux(ivp, ifirst+1, jfirst+1)
+        corfluy(ivp, ifirst, jfirst) = corfluy(ivp, ifirst+1, jfirst+1)
+    endif
+#if defined MPI 
+    if ((float(ifirst + ii * Lm) .EQ. IMIN_GRID) .and.  &
+        (float(jlast + jj * Mm) .EQ. JMAX_GRID)) then
+#else
+    if ((float(ifirst) .EQ. IMIN_GRID) .and.  &
+        (float(jlast) .EQ. JMAX_GRID)) then
+#endif
+        corflux(ivp, ifirst, jlast) = corflux(ivp, ifirst+1, jlast-1)
+        corfluy(ivp, ifirst, jlast) = corfluy(ivp, ifirst+1, jlast-1)
+    endif
+#if defined MPI 
+    if ((float(ilast + ii * Lm) .EQ. IMAX_GRID) .and.  &
+        (float(jlast + jj * Mm) .EQ. JMAX_GRID)) then
+#else
+    if ((float(ilast) .EQ. IMAX_GRID) .and.  &
+        (float(jlast) .EQ. JMAX_GRID)) then
+#endif
+        corflux(ivp, ilast, jlast) = corflux(ivp, ilast-1, jlast-1)
+        corfluy(ivp, ilast, jlast) = corfluy(ivp, ilast-1, jlast-1)
+    endif
+#if defined MPI 
+    if ((float(ilast + ii * Lm) .EQ. IMAX_GRID) .and.  &
+        (float(jfirst + jj * Mm) .EQ. JMIN_GRID)) then
+#else
+    if ((float(ilast) .EQ. IMAX_GRID) .and.  &
+        (float(jfirst) .EQ. JMIN_GRID)) then
+#endif
+        corflux(ivp, ilast, jfirst) = corflux(ivp, ilast-1, jfirst+1)
+        corfluy(ivp, ilast, jfirst) = corfluy(ivp, ilast-1, jfirst+1)
+    endif
+
+    enddo ! ivp
+
+    END SUBROUTINE sed_obc_corflu
+!!=============================================================================
+   
+    SUBROUTINE sed_meshedges_corflu(ifirst, ilast, jfirst, jlast)
+ 
+        !&E------------------------------------------------------------------------
+        !&E                 ***  ROUTINE sed_meshedges_corflu ***
+        !&E
+        !&E ** Purpose :  interpolate corflux and corfluy on mesh edges (in u & v) 
+        !&E
+        !&E ** Description :  make interpolation from rho point to u,v points
+        !&E
+        !&E ** Called by : sed_MUSTANG_update
+        !&E--------------------------------------------------------------------------
+        !! * Arguments
+        INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
+    
+        !! * Local declarations
+        INTEGER :: i,j,iv, ivp
+
+        !! * Executable part
+        DO j = jfirst, jlast+1
+            DO i = ifirst, ilast+1
+                DO iv = isand1, isand2
+                    corflux(iv, i, j) = 0.5_rsh * (corflux(iv, i-1, j) + corflux(iv, i, j))
+                    corfluy(iv, i, j) = 0.5_rsh * (corfluy(iv, i, j-1) + corfluy(iv, i, j))
+                ENDDO
+            ENDDO
+        ENDDO
+    
+    END SUBROUTINE sed_meshedges_corflu
+!!=============================================================================
+   
+
+ 
 ! **TODO** code for CROCO
 ! SUBROUTINE bathy_actu_fromfile(h0)
-! SUBROUTINE sed_obc_corflu
-! SUBROUTINE sed_exchange_corflu_MARS
 ! SUBROUTINE sed_exchange_w2s_MARS
 ! SUBROUTINE sed_exchange_s2w_MARS 
 ! subroutine sed_exchange_hxe_MARS(iwhat,xh0,xssh) 

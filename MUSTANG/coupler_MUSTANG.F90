@@ -8,10 +8,8 @@ MODULE coupler_MUSTANG
    !&E==========================================================================
    !&E                   ***  MODULE  coupler_MUSTANG  ***
    !&E
-   !&E
    !&E ** Purpose : concerns coupling MUSTANG with hydro code
    !&E              
-   !&E 
    !&E ** Description :
    !&E     subroutine coupl_conv2MUSTANG        ! calculation of some variables needed by MUSTANG
    !&E     subroutine coupl_MUSTANG2hydro       ! transfert from MUSTANG to hydro code
@@ -89,12 +87,12 @@ MODULE coupler_MUSTANG
 #include "scalars_F90.h"
 
    !! * Arguments 
-   INTEGER, INTENT(IN)                           :: ifirst,ilast,jfirst,jlast,iappel
-   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)       :: BATHY_H0                         
+   INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel
+   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: BATHY_H0                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(IN):: ssh                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
-   INTEGER                            :: iv,k,i,j
+   INTEGER  :: iv,k,i,j
 
    !!---------------------------------------------------------------------------
    !! * Executable part
@@ -173,7 +171,7 @@ MODULE coupler_MUSTANG
   END SUBROUTINE coupl_conv2MUSTANG      
 
    !!==============================================================================
-  SUBROUTINE coupl_MUSTANG2hydro(ifirst,ilast,jfirst,jlast)
+  SUBROUTINE coupl_MUSTANG2hydro(ifirst, ilast, jfirst, jlast)
                                           
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE coupl_MUSTANG2flx ***
@@ -184,7 +182,6 @@ MODULE coupler_MUSTANG
    !&E ** Description : conversion for hydro code 
    !&E  arguments OUT: no because stored in comMUSTANG
    !&E     SETTL_FLUX_w2s : deposit trends 
-   !&E     corflux_SAND,corfluy_SAND : correction of horizontal flux for sands 
    !&E     EROS_FLUX_s2w : erosion flux 
    !&E     EROS_FLUX_TEMP_s2w et eros_flix_SAL : erosion flux for temperature, salinity
    !&E     
@@ -195,32 +192,14 @@ MODULE coupler_MUSTANG
    !! * Modules used
 
    !! * Arguments 
-   INTEGER, INTENT(IN)                                    :: ifirst,ilast,jfirst,jlast                     
+   INTEGER, INTENT(IN) :: ifirst,ilast,jfirst,jlast                     
    !! * Local declarations
-   INTEGER                            :: iv,k,i,j
+   INTEGER :: iv,k,i,j
 
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-   ! exchange erosion and settling fluxes
-
-# if defined MUSTANG_CORFLUX
-      DO j=jfirst-1,jlast
-      DO i=ifirst,ilast
-        DO iv=1,nvp
-            CORFLUY_SAND(i,j+1,IV_HOSTMODEL)=corfluy(iv,i,j)
-        ENDDO
-      ENDDO
-      ENDDO
-
-      DO j=jfirst,jlast
-      DO i=ifirst-1,ilast
-        DO iv=1,nvp
-            CORFLUX_SAND(i+1,j,IV_HOSTMODEL)=corflux(iv,i,j)
-        ENDDO
-      ENDDO
-      ENDDO
-# endif
+   ! exchange erosion  fluxes
 
       DO j=jfirst,jlast
       DO i=ifirst,ilast

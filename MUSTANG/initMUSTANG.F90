@@ -1738,8 +1738,8 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   ALLOCATE(flx_s2w(-1:nv_adv,PROC_IN_ARRAY))
   ALLOCATE(flx_w2s(-1:nv_adv,PROC_IN_ARRAY))
   ALLOCATE(flx_w2s_sum(-1:nv_adv,PROC_IN_ARRAY))
-  ALLOCATE(corflux(nv_adv,PROC_IN_ARRAY_m1p1  ))
-  ALLOCATE(corfluy(nv_adv,PROC_IN_ARRAY_m1p1))
+  ALLOCATE(corflux(nv_adv, PROC_IN_ARRAY_m1p1))
+  ALLOCATE(corfluy(nv_adv, PROC_IN_ARRAY_m1p1))
   ALLOCATE(fludif(-1:nv_adv,PROC_IN_ARRAY))
   ALLOCATE(fluconsol(-1:nv_adv,PROC_IN_ARRAY))
   ALLOCATE(fluconsol_drycell(-1:nv_adv,PROC_IN_ARRAY))
@@ -1753,8 +1753,8 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   flx_s2w(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
   flx_w2s(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
   flx_w2s_sum(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-  corflux(1:nv_adv,PROC_IN_ARRAY_m1p1  )=1.0_rsh
-  corfluy(1:nv_adv,PROC_IN_ARRAY_m1p1)=1.0_rsh
+  corflux(1:nv_adv, PROC_IN_ARRAY_m1p1) = 1.0_rsh
+  corfluy(1:nv_adv, PROC_IN_ARRAY_m1p1) = 1.0_rsh
   fludif(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
   fluconsol(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
   fluconsol_drycell(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
@@ -1932,14 +1932,10 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   ALLOCATE(EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w))
   ALLOCATE(SETTL_FLUX_w2s(ARRAY_SETTL_FLUX_w2s))
   ALLOCATE(SETTL_FLUXSUM_w2s(ARRAY_SETTL_FLUXSUM_w2s))
-  ALLOCATE(CORFLUX_SAND(ARRAY_CORFLUX_SAND))
-  ALLOCATE(CORFLUY_SAND(ARRAY_CORFLUY_SAND))
   ALLOCATE(WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS))
   EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w)=0.0_rsh
   SETTL_FLUX_w2s(ARRAY_SETTL_FLUX_w2s)=0.0_rsh
   SETTL_FLUXSUM_w2s(ARRAY_SETTL_FLUXSUM_w2s)=0.0_rsh
-  CORFLUX_SAND(ARRAY_CORFLUX_SAND )=1.0_rsh
-  CORFLUY_SAND(ARRAY_CORFLUY_SAND)=1.0_rsh
   WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS)=0.0_rsh
   
   ALLOCATE(fwet(PROC_IN_ARRAY))

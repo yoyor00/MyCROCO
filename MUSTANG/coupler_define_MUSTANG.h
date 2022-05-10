@@ -61,8 +61,6 @@
 # define ARRAY_EROS_FLUX_s2w PROC_IN_ARRAY,1:NT
 # define ARRAY_SETTL_FLUX_w2s PROC_IN_ARRAY,1:NT
 # define ARRAY_SETTL_FLUXSUM_w2s PROC_IN_ARRAY,1:NT
-# define ARRAY_CORFLUX_SAND PROC_IN_ARRAY_m1p1,itsubs1:itsubs2
-# define ARRAY_CORFLUY_SAND PROC_IN_ARRAY_m1p1,itsubs1:itsubs2
 # define ARRAY_WATER_FLUX_INPUTS PROC_IN_ARRAY,1:NB_LAYER_WAT
 # define ARRAY_BATHY_H0 GLOBAL_2D_ARRAY
 # define ARRAY_WATER_ELEVATION GLOBAL_2D_ARRAY,1:4
@@ -145,8 +143,6 @@
 # define EROS_FLUX_s2w flx_s2w_CROCO /* Erosion flux from sediment to water  */
 
 # define SETTL_FLUX_w2s flx_w2s_CROCO  /* Tendance Flux de depot eau vers sediment (=flx_s2w in MARS) only for particulate */
-# define CORFLUX_SAND corflux_CROCO /* correction transport Flux  for sands in hydro module (=corflux (iv,i,j))*/
-# define CORFLUY_SAND corfluy_CROCO
 # define SETTL_FLUXSUM_w2s flx_w2s_sum_CROCO /* effective deposit Flux (sum) from water to sediment in hydro model (=flx_w2s_sum in MARS)*/
 
 /* to locate the number of variables simulated by MUSTANG in the host hydro model (used in coupleur to tranfer exchange arrays  */      
