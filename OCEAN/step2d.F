@@ -429,6 +429,7 @@ C$OMP END MASTER
 !
 #ifdef ZNUDGING
 # ifdef ZONAL_NUDGING
+!$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         if (FIRST_2D_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
@@ -441,6 +442,7 @@ C$OMP END MASTER
      &                   ssh(START_2D_ARRAY),sshzon)
         endif
       endif
+!$acc kernels if(compute_on_device) default(present) async(1)
 # endif  /* ZONAL_NUDGING */
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -1462,6 +1464,7 @@ C$OMP END MASTER
 #if defined M2NUDGING && defined M2CLIMATOLOGY
 
 # ifdef ZONAL_NUDGING
+!$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         if (FIRST_2D_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
@@ -1478,6 +1481,7 @@ C$OMP END MASTER
      &                   vbclm(START_2D_ARRAY),vbclmzon)
         endif
       endif
+!$acc kernels if(compute_on_device) default(present) async(1)
 # endif /* ZONAL_NUDGING */
 
       do j=Jstr,Jend

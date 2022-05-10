@@ -1329,6 +1329,7 @@
 # if defined M3NUDGING && defined M3CLIMATOLOGY
 
 #  ifdef ZONAL_NUDGING
+!$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         call zonavg_3d(istr,iend,jstr,jend,
      &                        u(START_2D_ARRAY,1,nnew),uzon)
@@ -1341,6 +1342,7 @@
         call zonavg_3d(istr,iend,jstr,jend,
      &                        vclm(START_2D_ARRAY,1),vclmzon)
       endif
+!$acc kernels if(compute_on_device) default(present)
 #  endif /* ZONAL_NUDGING */
 
       do k=1,N

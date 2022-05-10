@@ -95,6 +95,7 @@
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"
+# include "weno_interfaces.h"
 # ifdef NBQ
 #  include "nbq.h"
 # endif
@@ -117,6 +118,7 @@
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
       REAL    :: ua, vel, cdiff, cdif
+!$acc declare create(vel)
       REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
       REAL    :: flx2, flx3, flx4, flx5
       REAL    :: mask0, mask1, mask2, mask3
@@ -143,9 +145,7 @@
      &      -sign(1.,ua)*(
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
-# if  defined UV_HADV_WENO5 || defined UV_VADV_WENO5
-      REAL    :: flux3_weno, flux5_weno
-# endif
+
 !
 # include "compute_auxiliary_bounds.h"
 !

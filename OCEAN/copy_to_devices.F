@@ -29,6 +29,7 @@
 #include "ocean3d.h"
 #include "grid.h"
 #include "coupling.h"
+#include "climat.h"
 #ifdef MPI
 #include "mpi_buffers.h"
 #endif
@@ -81,6 +82,38 @@
 !$acc&  , wz
 #if defined NBQ_MASS
 !$acc&  , Hzr
+#endif
+#endif
+#if defined ZCLIMATOLOGY || defined AGRIF
+!$acc& ,ssh
+#endif
+# if defined TRACERS && (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY))
+!$acc& ,tclm
+# endif
+#if defined M2CLIMATOLOGY || (defined AGRIF && !defined M2_FRC_BRY)
+!$acc&, ubclm, vbclm
+#endif
+#if defined SOLVE3D && (defined M3CLIMATOLOGY || \
+                        (defined AGRIF && !defined M3_FRC_BRY))
+!$acc&, uclm, vclm
+#endif
+#if defined ZNUDGING
+!$acc&, Znudgcof
+#endif
+#if defined M2NUDGING
+!$acc&, M2nudgcof
+#endif
+#if defined M3NUDGING
+!$acc&, M3nudgcof
+#endif
+#if defined TNUDGING
+!$acc&, Tnudgcof
+#endif
+#ifdef ZONAL_NUDGING
+!$acc& ,zetazon,ubzon,vbzon,uzon,vzon
+!$acc& ,sshzon,ubclmzon,vbclmzon,uclmzon,vclmzon
+#ifdef TRACERS
+!$acc& ,tzon,tclmzon
 #endif
 #endif
 !$acc& )
@@ -139,7 +172,6 @@
 #include "private_scratch.h"
 #include "mixing.h"
 #include "forces.h"
-#include "climat.h"
 #include "work.h"
 #include "ncscrum.h"
 #include "averages.h"
@@ -184,37 +216,6 @@
 #if defined NONLIN_EOS && defined SPLIT_EOS
 !$acc& ,qp1
 #endif
-#if defined OBC_EAST || defined OBC_WEST || defined OBC_NORTH || defined \
-     OBC_SOUTH
-#if defined T_FRC_BRY
-#else
-#if defined SOLVE3D && (defined M3CLIMATOLOGY || \
-                        (defined AGRIF && !defined M3_FRC_BRY))
-!$acc&, uclm, vclm,
-#endif                        
-#if defined M2CLIMATOLOGY || (defined AGRIF && !defined M2_FRC_BRY)
-!$acc&, vbclm, ubclm                        
-#endif  
-#if defined TRACERS && (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY))
-!$acc&, tclm,
-#endif
-#if defined ZCLIMATOLOGY || defined AGRIF                        
-!$acc&, ssh,                  
-#endif
-#endif
-#endif
-#if defined ZNUDGING
-!$acc&, Znudgcof
-#endif
-#if defined M2NUDGING
-!$acc&, M2nudgcof
-#endif
-#if defined M3NUDGING
-!$acc&, M3nudgcof
-#endif
-#if defined TNUDGING
-!$acc&, Tnudgcof
-#endif
 #if defined TS_MIX_ISO || defined TS_MIX_GEO
 !$acc&, dRdx,dRde, idRz
 #endif
@@ -234,7 +235,7 @@
 !$acc&, diff4
 #endif
 #if defined TS_DIF2 || defined SPONGE_DIF2
-!$acc& ,diff2, diff2_sponge
+!$acc& ,diff2_sponge
 #endif
 #ifdef LMD_MIXING
 !$acc& ,ustar
@@ -246,13 +247,15 @@
 !$acc& , visc2_sponge_p, visc2_sponge_r
 #endif
 !$acc& , work2d
+#ifdef SOLVE3D
+!$acc& , workr
+#endif
 #ifdef AVERAGES
 !$acc& ,wrtavg
 !$acc& ,srflx_avg, stflx_avg, sustr_avg, svstr_avg, wstr_avg
 !$acc& ,bustr_avg, bvstr_avg, bostr_avg
 !$acc& ,omega_avg, rho_avg, t_avg, u_avg, v_avg, w_avg
 !$acc& ,zeta_avg, ubar_avg, vbar_avg
-!$acc& ,workr
 #ifdef AVERAGES_K
 !$acc& ,Akv_avg, Akt_avg
 #endif

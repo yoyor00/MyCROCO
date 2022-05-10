@@ -69,7 +69,7 @@ C$    trd=omp_get_thread_num()
      &                          ,Hzw_half_nbq_inv,  Hzr_half_nbq_inv 
      &                          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
      &                          ,Hzu_half_qdmu,     Hzv_half_qdmv
-     &                          ,qdmw_nbq_old, dthetadiv_nbqdz_uv
+     &                          ,FX_3D, FY_3D
 # endif
      &                          )
 !
@@ -185,8 +185,10 @@ C$    trd=omp_get_thread_num()
      &                   DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &                   CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &                   BC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
-     &         qdmw_nbq_old(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &         dthetadiv_nbqdz_uv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+     &         FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &         FY_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#define qdmw_nbq_old FX_3D
+#define dthetadiv_nbqdz_uv FY_3D
 # endif
 # ifdef UV_COR_NT
       real
@@ -2676,7 +2678,11 @@ C$OMP END MASTER
 !  Compute total horizontal Divergence divH(qdmH(m+1))
 !-----------------------------------------------------------------------
 !
+#ifdef OPENACC
+      DOEXTEND(k,1,N,FX,FY)
+#else
       do k=1,N !<-- k loop
+#endif
 
         if (IstrU.le.Iend) then
           do j=Jstr,Jend
@@ -2724,8 +2730,11 @@ C$OMP END MASTER
             enddo
           enddo
         endif  
-
+#ifdef OPENACC
+      ENDDOEXTEND
+#else
       enddo ! <-- k=1,N
+#endif
 !
 !-----------------------------------------------------------------------
 !  thetadiv2_nbq: complet time-corrective term  (dh/dt included) 

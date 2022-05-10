@@ -108,6 +108,7 @@
 # include "forces.h"
 # include "mixing.h"
 # include "scalars.h"
+# include "weno_interfaces.h"
 # ifdef PSOURCE
 #  include "sources.h"
 # endif
@@ -170,9 +171,6 @@
      &                                      + 10.*(q_i - q_im1) )/60.
 
 # endif
-#  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
-      REAL    :: flux3_weno, flux5_weno
-#  endif
 !
 !--------------------------------------------------------------------
 !
