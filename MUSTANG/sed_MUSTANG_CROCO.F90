@@ -40,6 +40,9 @@
    PUBLIC sed_MUSTANG_settlveloc
 # ifdef key_MUSTANG_bedload
    PUBLIC sed_bottom_slope
+#if defined MPI 
+   PUBLIC sed_exchange_flxbedload
+#endif
 # endif
 #if defined MUSTANG_CORFLUX
    PUBLIC sed_obc_corflu
@@ -83,7 +86,7 @@
    !&E         ros(iv)
    !&E         ws_sand(iv)
    !&E        
-   !&E ** Called by :  sed_MUSTANG_update
+   !&E ** Called by :  MUSTANG_update
    !&E
    !&E-------------------------------------------------------------------------
 
@@ -222,7 +225,7 @@
   !&E
   !&E     output : gradvit (in comMUSTANG)
   !&E
-  !&E ** Called by :  sed_MUSTANG_update
+  !&E ** Called by :  MUSTANG_update
   !&E
   !&E--------------------------------------------------------------------------
   !! * Modules used
@@ -282,7 +285,7 @@
   !&E - key_tauskin_c_center : compute at rho point from immediate u,v value 
   !&E     with ubar if key_tauskin_c_ubar is definde, with bottom u(1) if not
   !&E
-  !&E ** Called by :  sed_MUSTANG_update
+  !&E ** Called by :  MUSTANG_update
   !&E
   !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -567,9 +570,7 @@
    !&E ** Description : depend on host model grid, compute slope_dhdx and 
    !&E    slope_dhdy from bathy of neigbour cells if they are not masked
    !&E
-   !&E ** Called by :  
-   !&E
-   !&E ** External calls :
+   !&E ** Called by :  MUSTANG_update, MUSTANG_morpho 
    !&E
    !&E--------------------------------------------------------------------------
    !! * Arguments
@@ -577,7 +578,7 @@
    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: bathy  ! bathymetry (m)
 
    !! * Local declarations
-   INTEGER          :: i, j
+   INTEGER :: i, j
 
       DO j = jfirst, jlast
         DO i = ifirst, ilast
@@ -595,7 +596,41 @@
       ENDDO
 
   END SUBROUTINE sed_bottom_slope
-#endif
+!!=============================================================================
+#if defined MPI
+  SUBROUTINE sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)
+    !&E--------------------------------------------------------------------------                         
+    !&E                 ***  ROUTINE sed_exchange_flxbedload  ***
+    !&E
+    !&E ** Purpose : treatment of bedload fluxes
+    !&E
+    !&E ** Description : MPI exchange between processors
+    !&E
+    !&E ** Called by :  MUSTANG_update
+    !&E
+    !&E--------------------------------------------------------------------------
+    ! * Arguments
+    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
+
+    !! * Local declarations
+    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
+    INTEGER :: iv
+
+    do iv=ibedload1,ibedload2
+        workexch(:,:) = flx_bx(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+             &          workexch(START_2D_ARRAY))
+        flx_bx(iv,:,:) = workexch(:,:)
+   
+        workexch(:,:) = flx_by(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+             &          workexch(START_2D_ARRAY))
+        flx_by(iv,:,:) = workexch(:,:)
+    enddo
+
+  END SUBROUTINE sed_exchange_flxbedload
+#endif /* MPI */
+#endif /* key_MUSTANG_bedload */
 
 !!=============================================================================
   SUBROUTINE sedinit_fromfile(BATHY_H0)
@@ -812,7 +847,7 @@
    !&E
    !&E ** Description : periodic borders and MPI exchange between processors
    !&E
-   !&E ** Called by : sed_MUSTANG_update
+   !&E ** Called by : MUSTANG_update
    !&E-------------------------------------------------------------------------
 
     !! * Arguments
@@ -848,7 +883,7 @@
     endif
 
    END SUBROUTINE sed_exchange_corflu
-#endif
+#endif /* defined EW_PERIODIC || defined NS_PERIODIC || defined MPI */
 !!=============================================================================
    
    SUBROUTINE sed_obc_corflu(ifirst, ilast, jfirst, jlast)
@@ -861,7 +896,7 @@
     !&E
     !&E ** Description : extrapolation at borders
     !&E
-    !&E ** Called by : sed_MUSTANG_update
+    !&E ** Called by : MUSTANG_update
     !&E--------------------------------------------------------------------------
  
     !! * Arguments
@@ -971,7 +1006,7 @@
         !&E
         !&E ** Description :  make interpolation from rho point to u,v points
         !&E
-        !&E ** Called by : sed_MUSTANG_update
+        !&E ** Called by : MUSTANG_update
         !&E--------------------------------------------------------------------------
         !! * Arguments
         INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
@@ -1000,7 +1035,6 @@
 ! SUBROUTINE sed_exchange_s2w_MARS 
 ! subroutine sed_exchange_hxe_MARS(iwhat,xh0,xssh) 
 ! SUBROUTINE sed_exchange_maskbedload_MARS
-! SUBROUTINE sed_exchange_flxbedload_MARS
 ! SUBROUTINE sed_outsaverestart(h0)
 
 #endif

@@ -169,7 +169,10 @@ MODULE sed_MUSTANG
     USE sed_MUSTANG_HOST,    ONLY :  sed_gradvit
 #ifdef key_MUSTANG_bedload
     USE sed_MUSTANG_HOST,    ONLY :  sed_bottom_slope
-    !! To Program in sed_MUSTANG_CROCO sed_exchange_maskbedload_HOST,sed_exchange_flxbedload_HOST
+#if defined MPI 
+    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_flxbedload
+#endif
+    !! To Program in sed_MUSTANG_CROCO sed_exchange_maskbedload_HOST
 #endif
 #if defined MUSTANG_CORFLUX
     USE sed_MUSTANG_HOST,    ONLY :  sed_obc_corflu
@@ -415,21 +418,8 @@ MODULE sed_MUSTANG
 # endif
 #endif
 
-
-  ! **TODO** create sed_exchange_flxbedload in sed_MUSTANG_CROCO with the folowing lines
 #if defined key_MUSTANG_bedload && defined MPI 
-!RB
-   do iv=ibedload1,ibedload2
-     workexch(:,:) = flx_bx(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_bx(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = flx_by(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_by(iv,:,:) = workexch(:,:)
-   enddo
+    sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)
 #endif                             
                            
 
