@@ -38,13 +38,15 @@
    PUBLIC sed_skinstress
    PUBLIC sed_gradvit
    PUBLIC sed_MUSTANG_settlveloc
-   PUBLIC sed_obc_corflu
-   PUBLIC sed_meshedges_corflu
 # ifdef key_MUSTANG_bedload
    PUBLIC sed_bottom_slope
 # endif
+#if defined MUSTANG_CORFLUX
+   PUBLIC sed_obc_corflu
+   PUBLIC sed_meshedges_corflu
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
    PUBLIC sed_exchange_corflu
+# endif
 # endif
 
    PRIVATE
