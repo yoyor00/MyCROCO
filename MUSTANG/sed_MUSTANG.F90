@@ -167,14 +167,16 @@ MODULE sed_MUSTANG
     USE sed_MUSTANG_HOST,    ONLY :  sed_MUSTANG_settlveloc
     USE sed_MUSTANG_HOST,    ONLY :  sed_skinstress
     USE sed_MUSTANG_HOST,    ONLY :  sed_gradvit
-    USE sed_MUSTANG_HOST,    ONLY :  sed_obc_corflu
-    USE sed_MUSTANG_HOST,    ONLY :  sed_meshedges_corflu
 #ifdef key_MUSTANG_bedload
     USE sed_MUSTANG_HOST,    ONLY :  sed_bottom_slope
     !! To Program in sed_MUSTANG_CROCO sed_exchange_maskbedload_HOST,sed_exchange_flxbedload_HOST
 #endif
+#if defined MUSTANG_CORFLUX
+    USE sed_MUSTANG_HOST,    ONLY :  sed_obc_corflu
+    USE sed_MUSTANG_HOST,    ONLY :  sed_meshedges_corflu
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
     USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_corflu
+#endif
 #endif
 
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
@@ -276,6 +278,7 @@ MODULE sed_MUSTANG
 !!!!!! interpolation of corflux,corfluy at mesh edges  and                               !!
 !!!!!! treatment of corflux,corfluy at grid corners and exchange between MPI processors  !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#if defined MUSTANG_CORFLUX
     IF (isand2.GE.1) THEN
         CALL sed_obc_corflu(ifirst, ilast, jfirst, jlast)
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -296,6 +299,7 @@ MODULE sed_MUSTANG
             ENDIF
          ENDDO             
     ENDIF
+#endif
 
    dtinv=1.0_rsh/REAL(dt_true,rsh)
   

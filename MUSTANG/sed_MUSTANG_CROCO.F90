@@ -799,6 +799,8 @@
   END SUBROUTINE sedinit_fromfile
 !!=============================================================================
 
+#if defined MUSTANG_CORFLUX
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
   SUBROUTINE sed_exchange_corflu(ifirst, ilast, jfirst, jlast, type)
    !&E-------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_exchange_corflu_MARS ***
@@ -844,6 +846,7 @@
     endif
 
    END SUBROUTINE sed_exchange_corflu
+#endif
 !!=============================================================================
    
    SUBROUTINE sed_obc_corflu(ifirst, ilast, jfirst, jlast)
@@ -986,7 +989,7 @@
     
     END SUBROUTINE sed_meshedges_corflu
 !!=============================================================================
-   
+#endif /* MUSTANG_CORFLUX */
 
  
 ! **TODO** code for CROCO
