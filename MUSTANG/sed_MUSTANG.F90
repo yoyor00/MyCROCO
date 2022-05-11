@@ -419,7 +419,7 @@ MODULE sed_MUSTANG
 #endif
 
 #if defined key_MUSTANG_bedload && defined MPI 
-    sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)
+    call sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)
 #endif                             
                            
 
