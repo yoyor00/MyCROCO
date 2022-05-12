@@ -62,23 +62,16 @@ CONTAINS
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-!
-!  General initialization for MUSTANG ( parameters ..)
-!
-      call MUSTANG_initialization(  &
-# ifdef key_MUSTANG_flocmod
-               TRANSPORT_TIME_STEP &
-# endif
-               )
-
-
       CALL MUSTANG_init_sediment (Istr, Iend, Jstr, Jend, &
-                   WATER_ELEVATION,                       &
+                    WATER_ELEVATION,                       &
 # if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN
-                   DHSED,                                 &
+                    DHSED,                                 &
 # endif
-                   RESIDUAL_THICKNESS_WAT, Z0HYDRO,       &
-                   WATER_CONCENTRATION)
+# ifdef key_MUSTANG_flocmod
+                    TRANSPORT_TIME_STEP,                   &
+# endif
+                    RESIDUAL_THICKNESS_WAT, Z0HYDRO,       &
+                    WATER_CONCENTRATION)
       end subroutine
 
 !

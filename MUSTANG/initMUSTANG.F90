@@ -1,37 +1,49 @@
-!---------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 MODULE initMUSTANG
-!---------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
 #include "cppdefs.h"
 
 #ifdef MUSTANG
 
-   !&E==========================================================================
-   !&E                   ***  MODULE  initMUSTANG  ***
-   !&E
-   !&E
-   !&E ** Purpose : concerns all subroutines related to sediment initialization
-   !&E 
-   !&E ** Description :
-   !&E     subroutine MUSTANG_initialization !  routine for initialize the parameters of sediment module
-   !&E     subroutine MUSTANG_init_sediment  !  routine for initialize the sediment layers
-   !&E     subroutine MUSTANG_param          ! defines parameterization of sediment
-   !&E     subroutine MUSTANG_compatibility  ! verification of compatibility between the various parameters
-   !&E
-   !&E     subroutine MUSTANG_sedinit        ! initialize the sediment if not from file
-   !&E
-   !&E     subroutine MUSTANG_init_hsed      ! initialize the sediment thickness function sediment parameters (MUSTANG_mixsed)
-   !&E     subroutine MUSTANG_init_param   ! initialize the settling velocity of sand variables and erosion parameters
-   !&E     subroutine MUSTANG_init_output    ! initialize dimensions of output tables
-   !&E     subroutine MUSTANG_morphoinit     ! initialize 
-   !&E     subroutine MUSTANG_morphoinit_mesh     ! initialize 
-   !&E
-   !&E   If key_MUSTANG_flocmod (floculation module, Verney et all, 2011):
-   !&E     subroutine flocmod_init           ! initialize flocs characteristics
-   !&E     subroutine flocmod_kernels        !   computations of agregation/fragmentation kernels for FLOCMOD
-   !&E     subroutine flocmod_agregation_statistics ! computation of shear / differential settling statistics
-   !&E
-   !&E==========================================================================
+!&E============================================================================
+!&E                   ***  MODULE  initMUSTANG  ***
+!&E
+!&E
+!&E ** Purpose : concerns all subroutines related to sediment initialization
+!&E 
+!&E ** Description :
+!&E     subroutine MUSTANG_init_sediment  ! initialize the 
+!&E                                         parameters of sediment module
+!&E                                       ! and the sediment layers
+!&E     subroutine MUSTANG_param          ! defines parameterization of 
+!&E                                         sediment
+!&E     subroutine MUSTANG_compatibility  ! verification of compatibility 
+!&E                                         between the various parameters
+!&E
+!&E     subroutine MUSTANG_sedinit        ! initialize the sediment if not 
+!&E                                         from file
+!&E
+!&E     subroutine MUSTANG_init_hsed      ! initialize the sediment thickness 
+!&E                                         function sediment parameters 
+!&E                                         (MUSTANG_mixsed)
+!&E     subroutine MUSTANG_init_param     ! initialize the settling velocity 
+!&E                                         of sand variables and erosion 
+!&E                                         parameters
+!&E     subroutine MUSTANG_init_output    ! initialize dimensions of output 
+!&E                                         tables
+!&E     subroutine MUSTANG_morphoinit      ! initialize 
+!&E     subroutine MUSTANG_morphoinit_mesh ! initialize 
+!&E
+!&E   If key_MUSTANG_flocmod (floculation module, Verney et all, 2011):
+!&E     subroutine flocmod_init           ! initialize flocs characteristics
+!&E     subroutine flocmod_kernels        ! computations of 
+!&E                                         agregation/fragmentation kernels 
+!&E                                         for FLOCMOD
+!&E     subroutine flocmod_agregation_statistics ! computation of shear / 
+!&E                                         differential settling statistics
+!&E
+!&E============================================================================
    !! * Modules used
 #include "coupler_define_MUSTANG.h"
 
@@ -46,86 +58,35 @@ MODULE initMUSTANG
    IMPLICIT NONE
 
    !! * Accessibility
-   PUBLIC MUSTANG_initialization !**TODO** regroup these two routines ??
    PUBLIC MUSTANG_init_sediment
 
    PRIVATE
 
  CONTAINS
- 
-!!===========================================================================================
-   SUBROUTINE MUSTANG_initialization(        &
-#ifdef key_MUSTANG_flocmod
-                 TRANSPORT_TIME_STEP         &
-#endif
-                 )
- 
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANG_initialization  ***
-   !&E
-   !&E ** Purpose : initialize the sediment parameters, allocation 
-   !&E
-   !&E ** Description : call  MUSTANG routines
-   !&E
-   !&E ** Called by :  main
-   !&E 
-   !&E--------------------------------------------------------------------------
-   !! * Modules used
-
-   !! * Arguments
-#ifdef key_MUSTANG_flocmod
-   REAL(KIND=rlg),INTENT(IN)          :: TRANSPORT_TIME_STEP    
-#endif 
-   !! * Local declarations
-
-
-   !!--------------------------------------------------------------------------
-   !! * Executable part
-
-    ! reading namelist paraMUSTANGV1.txt or  or V2.txt
-    CALL MUSTANG_param('r')
-    CALL MUSTANG_alloc
-    CALL MUSTANG_init_param()
-#ifdef key_MUSTANG_flocmod
-    CALL flocmod_init(TRANSPORT_TIME_STEP)
-#endif
-#if ! defined key_noTSdiss_insed
-    cp_s(:,:)=cp_suni
-    emissivity_s(:,:)=emissivity_sed
-#endif
-
-    CALL MUSTANG_param('w')  
-
-    PRINT_DBG*, 'END MUSTANG_initialization'
-
-  END SUBROUTINE MUSTANG_initialization
   
- !!===========================================================================================
+!!=============================================================================
    SUBROUTINE MUSTANG_init_sediment(ifirst, ilast, jfirst, jlast,  &
-           WATER_ELEVATION,                                        &
+            WATER_ELEVATION,                                       &
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN  
-           dhsed,                                                      &
+            dhsed,                                                 &
 #endif
-           h0fondin, z0hydro, WATER_CONCENTRATION )
+# ifdef key_MUSTANG_flocmod
+            TRANSPORT_TIME_STEP,                                   &
+# endif
+            h0fondin, z0hydro, WATER_CONCENTRATION )
  
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANG_init_sediment  ***
-   !&E
-   !&E ** Purpose : initialize the sediment layers (only inside the domain, not at boundaries)
-   !&E
-   !&E         for MARS : ifirst=imin+2, ilast=imax-1, jfirst=jmin+2,  jlast=jmax-1
-   !&E                    for interior processors : ifirst=limin, ilast=limax, jfirst=ljmin,  jlast=ljmax
-   !&E   
-   !&E
-   !&E ** Description : called at the beginning of the simulation
-   !&E                  call MUSTANG routines for initialization
-   !&E
-   !&E ** Called by :  main
-   !&E 
-   !&E ** External calls : 
-   !&E
-   !&E
-   !&E--------------------------------------------------------------------------
+    !&E------------------------------------------------------------------------
+    !&E                 ***  ROUTINE MUSTANG_init_sediment  ***
+    !&E
+    !&E ** Purpose : initialize the sediment layers (only inside the domain,
+    !&E              not at boundaries)
+    !&E
+    !&E ** Description : called at the beginning of the simulation
+    !&E                  call MUSTANG routines for initialization
+    !&E
+    !&E ** Called by : mustang_init_sediment_main
+    !&E
+    !&E------------------------------------------------------------------------
    !! * Modules used
    USE coupler_MUSTANG,  ONLY : coupl_conv2MUSTANG
    USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
@@ -139,8 +100,8 @@ MODULE initMUSTANG
 #endif
 #endif
 
-   !! * Arguments 
-   INTEGER, INTENT(IN)                    :: ifirst,ilast,jfirst,jlast
+   !! * Arguments
+   INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
    REAL(KIND=rsh),INTENT(IN)              :: h0fondin
    REAL(KIND=rsh),DIMENSION(ARRAY_Z0HYDRO),INTENT(INOUT)        :: z0hydro                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
@@ -148,6 +109,9 @@ MODULE initMUSTANG
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)          :: dhsed                       
 #endif
+#ifdef key_MUSTANG_flocmod
+   REAL(KIND=rlg),INTENT(IN)          :: TRANSPORT_TIME_STEP    
+#endif 
    !! * Local declarations
     INTEGER   :: i,j,k,iv,isplit
 #ifdef key_MUSTANG_V2
@@ -160,6 +124,19 @@ MODULE initMUSTANG
 
    !!--------------------------------------------------------------------------
    !! * Executable part
+
+    CALL MUSTANG_param('r')
+    CALL MUSTANG_alloc
+    CALL MUSTANG_init_param()
+#ifdef key_MUSTANG_flocmod
+    CALL flocmod_init(TRANSPORT_TIME_STEP)
+#endif
+#if ! defined key_noTSdiss_insed
+    cp_s(:,:)=cp_suni
+    emissivity_s(:,:)=emissivity_sed
+#endif
+    CALL MUSTANG_param('w')  
+
    h0fond = h0fondin
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      ! recovery of concentrations at the bottom layer
@@ -2245,9 +2222,9 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
     ENDDO
   ENDDO  
  
- !********************************************************************************
- !  Shear agregation : LOSS : f_l1
- !********************************************************************************
+!********************************************************************************
+!  Shear agregation : LOSS : f_l1
+!********************************************************************************
  
   DO iv1=1,nv_mud
     DO iv2=1,nv_mud
@@ -2265,9 +2242,9 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
     ENDDO
   ENDDO
  
-  !********************************************************************************
- !  Shear fragmentation : LOSS : f_l2
- !********************************************************************************
+!********************************************************************************
+!  Shear fragmentation : LOSS : f_l2
+!********************************************************************************
  
  
   DO iv1=1,nv_mud
@@ -2307,7 +2284,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   !&E
   !&E--------------------------------------------------------------------------
 
-
   !! * Local declarations
   INTEGER      :: iv1,iv2
   !REAL(KIND=rsh), PARAMETER :: mu=0.001
@@ -2334,10 +2310,8 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   END SUBROUTINE flocmod_agregation_statistics
  
  !!===========================================================================
-#endif
+#endif /* key_MUSTANG_flocmod */
 
-   !!===========================================================================
- 
-#endif
+#endif /* MUSTANG */
 
 END MODULE initMUSTANG
