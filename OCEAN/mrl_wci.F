@@ -213,6 +213,8 @@
 ! 2DH Stokes velocities, breaking, roller and bottom-friction 
 ! dissipation terms, defined at horizontal rho-points.
 !
+!$acc kernels if(compute_on_device) default(present)
+
       inv_g = 1./g
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
@@ -1161,6 +1163,8 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       endif
 #  endif  /* OBC_EAST */
 # endif  /* ANA_BRY */
+
+!$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile(istr,iend,jstr,jend,sup)
