@@ -7,7 +7,7 @@
       USE module_MUSTANG
       USE sed_MUSTANG, ONLY : MUSTANG_update, MUSTANG_deposition
       USE sed_MUSTANG, ONLY : MUSTANG_morpho
-      USE initMUSTANG, ONLY : MUSTANG_init_sediment, MUSTANG_initialization
+      USE initMUSTANG, ONLY : MUSTANG_init_sediment
 
 # include "coupler_define_MUSTANG.h"
 
