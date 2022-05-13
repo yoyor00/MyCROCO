@@ -116,8 +116,11 @@
 !  Pseudoacoustic speed:
 !   should be around 5 times external phase speed sqrt(g*h)
 !
+
+!$acc kernels if(compute_on_device) default(present)
         soundspeed_nbq =csound_nbq
         soundspeed2_nbq=csound_nbq**2
+!$acc end kernels
 !
 !  Grid update time-step
 !
@@ -126,6 +129,7 @@
 #  else
         dtgrid_nbq = dtfast
 #  endif
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Initializes vertical grid spaces
@@ -155,11 +159,15 @@
             enddo
           enddo
         enddo
+!$acc end kernels
+
         call grid_nbq_tile(Istr,Iend,Jstr,Jend
      &                    ,Hzw_half_nbq_inv,   Hzr_half_nbq_inv
      &                    ,Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v
      &                    ,Hzu_half_qdmu,      Hzv_half_qdmv
      &                    )
+
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !   Compressible density initializations
@@ -202,13 +210,14 @@
           enddo
         enddo
 #  endif
-
+!$acc end kernels
 # endif /* NBQ */
 !
 !----------------------------------------------------------------------
 !  NBQ Momentum initialization
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
 #ifndef EXACT_RESTART
 
 ! Note that if EXACT_RESTART CPP-switch is defined
@@ -260,6 +269,7 @@
           enddo
         enddo
 # endif
+!$acc end kernels
 !
 !----------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.

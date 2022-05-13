@@ -807,6 +807,26 @@
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 !
 ! 
+
+!
+!======================================================================
+!  Compute Nudging terms
+!======================================================================
+!
+#  if defined TNUDGING && defined TCLIMATOLOGY
+#   ifdef ZONAL_NUDGING
+      do itrc=1,NT   !<-- itrc
+        if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
+          call zonavg_3d(istr,iend,jstr,jend,
+     &               t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
+        endif
+        if (iic.eq.ntstart) then
+          call zonavg_3d(istr,iend,jstr,jend,
+     &              tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
+        endif
+      enddo   ! <-- itrc
+#   endif /* ZONAL_NUDGING */
+#endif
 !$acc kernels if(compute_on_device) default(present)
 !$acc loop seq
       do itrc=1,NT   !<-- itrc
@@ -816,16 +836,6 @@
 !======================================================================
 !
 #  if defined TNUDGING && defined TCLIMATOLOGY
-#   ifdef ZONAL_NUDGING
-        if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
-          call zonavg_3d(istr,iend,jstr,jend,
-     &               t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
-        endif
-        if (iic.eq.ntstart) then
-          call zonavg_3d(istr,iend,jstr,jend,
-     &              tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
-        endif
-#   endif /* ZONAL_NUDGING */
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -1085,6 +1095,7 @@
      defined BEDLOAD_WENO5
 !    
       function flux5_weno(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+!$acc routine(flux5_weno) seq
 !
 !     WENO5: Weighted Essentially Non-Oscillatory scheme 
 !            with 5th-order accuracy
@@ -1220,6 +1231,8 @@
 !======================================================================
 !
       function flux3_weno( q_im2, q_im1, q_i, q_ip1, ua)
+!$acc routine(flux3_weno) seq
+
 !
 !     WENO3: Weighted Essentially Non-Oscillatory of 3rd-order Accuracy
 !

@@ -175,7 +175,7 @@
       real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods7/ dZdyq_w
 #  else
-      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY)
+      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,0:N)
       common /nbq_nods3/ dthetadiv_nbqdz
       real dZdxq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods5/ dZdxq_w

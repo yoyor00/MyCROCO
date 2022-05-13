@@ -81,6 +81,8 @@
 # else
 #  define SWITCH !
 # endif
+
+!$acc kernels if(compute_on_device) default(present)
 !
 !---------------------------------------------------------------------- 
 !  Apply right-hand-side
@@ -189,6 +191,7 @@
       ENDDO
 
 # endif /* NBQ_WDIF */
+!$acc end kernels
 !
 !--------------------------------------------------------------------
 ! Set PHYSICAL lateral boundary conditions.

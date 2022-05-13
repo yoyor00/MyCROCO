@@ -33,8 +33,9 @@
 !
       CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A3d(1,3,trd),
      &             A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &             A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
-     &             A2d(1,7,trd), A3d(1,4,trd), A3d(1,5,trd))
+     &             A2d(1,4,trd), A2d(1,5,trd),
+     &             A3d(1,4,trd), A3d(1,5,trd),
+     &             A3d(1,6,trd), A3d(1,7,trd))
       return
       END
       
@@ -42,7 +43,8 @@
       
       SUBROUTINE rhs3d_w_tile (istr, iend,   jstr,   jend, rw ,
      &                           CF,   FC,  We_r ,    lap, Hzw, 
-     &                          WFx,  WFe, HUon_w, HVom_w       )      
+     &                          HUon_w, HVom_w,
+     &                          WFx, WFe)      
       IMPLICIT NONE
       !!
       INTEGER  :: Istr,Iend,Jstr,Jend
@@ -57,9 +59,9 @@
       REAL     :: FC     (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)  
       REAL     :: We_r   (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)        
       REAL     :: lap    (PRIVATE_2D_SCRATCH_ARRAY      )
-      REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )      
-      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY      ) 
-      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY      )
+      REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
+      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY,0:N  ) 
+      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       !!    
@@ -74,6 +76,7 @@
 # include "forces.h"
 # include "scalars.h"  
 # include "nbq.h"
+# include "weno_interfaces.h"
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -114,9 +117,6 @@
      &      -sign(1.,ua)*( 
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
-# if  defined W_HADV_WENO5 || defined W_VADV_WENO5
-      REAL    :: flux3_weno, flux5_weno
-# endif
 
 # include "compute_auxiliary_bounds.h"
  
@@ -136,6 +136,7 @@
 #   define JV_RANGE Jstr,JendR
 # endif
 
+!$acc kernels if(compute_on_device) default(present)
       DO j=Jstr,Jend
         DO i=Istr,Iend+1
           HUon_w(i,j,0)=0.5*HUon(i,j,1)                
@@ -262,7 +263,6 @@
 #   endif
 #  endif /* W_HADV_WENO5 */
 
- 
       DO k=0,N             
 
 #  ifdef W_HADV_C2
@@ -484,7 +484,7 @@
 #    define FLUX3 flux4
 #    define FLUX2 flux2
 #    undef  UP5_MASKING
-          cdif=0. 
+          cdif=0.
 #    include "w_hadv_order5.h"
 #    undef FLUX5
 #    undef FLUX3
@@ -591,16 +591,18 @@
           ENDDO
         ENDDO 
 #  endif /* W_HADV_C2 */
+      ENDDO  !<-- outer loop k
 
 !
 !-------------------------------------------------------
 ! Finalize horizontal advection: compute flux divergence
 !-------------------------------------------------------
 !
+      DO k=0,N
         DO j=Jstr,Jend
           DO i=Istr,Iend
-            rw(i,j,k)= rw(i,j,k) - WFx(i+1,j) + WFx(i,j)
-     &                           - WFe(i,j+1) + WFe(i,j)    
+            rw(i,j,k)= rw(i,j,k) - WFx(i+1,j,k) + WFx(i,j,k)
+     &                           - WFe(i,j+1,k) + WFe(i,j,k)  
           ENDDO
         ENDDO
 
@@ -781,7 +783,7 @@
       ENDDO  !<-- j loop
                      
 # endif /* UV_ADV && W_VADV */
-
+!$acc end kernels
       return
       end
 !

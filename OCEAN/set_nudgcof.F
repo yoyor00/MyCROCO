@@ -61,6 +61,7 @@
       isp=10
 #  endif
 # else
+!$acc update host(pm(1,1))
 #  ifdef MPI
       if (ii.eq.0.and.jj.eq.0.and.Istr.eq.1.and.Jstr.eq.1) then
         isp=int(x_sponge*pm(1,1))

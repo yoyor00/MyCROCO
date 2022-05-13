@@ -80,7 +80,9 @@
 #ifdef KH_INST 
       real rho1_exp,rho2_exp,h1_exp, Lt
       real d(0:N)
+!$acc declare create(d)
       real zu0,zr0,zint,depth,dz,gam,del,hint,du,drho
+      real hintu
       real zdye10,zdye20
       real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
@@ -124,7 +126,7 @@
 
 #ifdef ANA_INITIAL
 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Initial conditions for free surface and 2D momentum components.
@@ -423,6 +425,7 @@
         hu0    = 10.
         eps3D  = 0.   ! 3D perturbation
 !
+!$acc loop private (hint,hintu)
         do j=JR_RANGE
           do i=IU_RANGE
             depth=h(i,j)
@@ -430,6 +433,7 @@
 !           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
             hup0=0.15*depth  ! perturbation
             hint = 0.
+            hintu = 0.
             do k=1,N
               u(i,j,k,1)  = -du*tanh((z_r(1,1,k)-zu0)/hu0)
               u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
@@ -439,18 +443,16 @@
      &                       *(1.+eps3D*(sin( 2.*4.*pi/el*yr(i,j))))
 
               u(i,j,k,2)  = u(i,j,k,1)
-              ubar(i,j,1) = ubar(i,j,1) + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-     &                                  * u(i,j,k,1)
-              hint = hint               + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+              hintu = hintu + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &                          * u(i,j,k,1)
+              hint = hint   + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
             enddo
-            ubar(i,j,1) = ubar(i,j,1) / hint
-            ubar(i,j,:) = ubar(i,j,1)
+            hintu = hintu / hint
             do k=1,N
-                u(i,j,k,1) = u(i,j,k,1) - ubar(i,j,1) 
+                u(i,j,k,1) = u(i,j,k,1) - hintu
                 u(i,j,k,2) = u(i,j,k,1)
-            enddo
-            ubar(i,j,1) = 0. 
-            ubar(i,j,:) = ubar(i,j,1)
+            enddo 
+            ubar(i,j,:) = 0.
           enddo
         enddo
 
@@ -1077,6 +1079,7 @@
 !      and restart procedures
 !
       endif  ! nrrec.eq.0.
+!$acc end kernels
 !
 ! This is a quick fix to get the initialisation reproducible 
 ! (and right...) with OpenMP or tiling. This initialisation is performed
@@ -1178,7 +1181,9 @@ C$OMP BARRIER
       endif   !  nrrec.eq.0.
 !
 # endif /*SOLVE3D */
+#if !defined JET
 !$acc end kernels
+#endif
 #endif /* ANA_INITIAL */
 
 #ifdef SOLVE3D
@@ -1796,6 +1801,7 @@ C$OMP BARRIER
      &    dRx(PRIVATE_2D_SCRATCH_ARRAY),
      &    dR(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &    dZ(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+!$acc declare create(rhoprof,ru,rv,P)
 # ifdef MPI
       include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
@@ -1849,8 +1855,15 @@ C$OMP BARRIER
 !     from first call to PGF routine 
 !
       knew=tndx  ! --> set_depth
+
+!$acc kernels if(compute_on_device) default(present)
       zeta(:,:,tndx)=0.
+!$acc end kernels
+
       call set_depth_tile (Istr,Iend,Jstr,Jend)
+
+!$acc kernels if(compute_on_device) default(present)
+
 !
 ! --- Build northern and southern density profiles ---
 !
@@ -1937,6 +1950,8 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
+!$acc end kernels
+
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #  ifdef THREE_GHOST_POINTS_TS
       call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -1956,6 +1971,8 @@ C$OMP BARRIER
 !
       call prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
      &                  dR,dZ, FC,dZx,rx,dRx)
+
+!$acc kernels if(compute_on_device) default(present)
 
 !
 ! Compute zeta so as to cancel bottom pressure perturbation
@@ -1978,7 +1995,11 @@ C$OMP BARRIER
         enddo
       enddo
       mssh=mssh/area
+!$acc end kernels
 # ifdef MPI
+#ifdef OPENACC
+      NOTREADY
+#endif
       call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
      &                allmssh,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
@@ -1994,6 +2015,9 @@ C$OMP BARRIER
       mssh=mssh/area
 # endif
       mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
+
+!$acc kernels if(compute_on_device) default(present)
+
       do j=Jstr,Jend
         do i=Istr,Iend
           zeta(i,j,tndx)=zeta(i,j,tndx)
@@ -2013,6 +2037,8 @@ C$OMP BARRIER
           zeta(i,Jend+1,tndx)=zeta(i,Jend,tndx)
         enddo
       endif
+!$acc end kernels
+
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (istr,iend,jstr,jend,
      &                        zeta(START_2D_ARRAY,tndx))
@@ -2025,6 +2051,7 @@ C$OMP BARRIER
       call prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
      &                  dR,dZ, FC,dZx,rx,dRx)
 
+!$acc kernels if(compute_on_device) default(present)
 # define WORK rho1
       do k=1,N
         do j=JstrV,Jend
@@ -2047,12 +2074,14 @@ C$OMP BARRIER
           enddo
         enddo
       endif
+!$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        WORK(START_2D_ARRAY,1))
 # endif
 
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrV-1,Jend+1
           do i=Istr-1,Iend+1
@@ -2082,12 +2111,14 @@ C$OMP BARRIER
           enddo
         enddo
       endif
+!$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                        WORK(START_2D_ARRAY,1))
 # endif
 
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
@@ -2191,7 +2222,7 @@ C$OMP BARRIER
         enddo
       endif
 # endif
-
+!$acc end kernels
       return
       end
 #endif /* JET */
