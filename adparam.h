@@ -35,7 +35,7 @@ C     number of cost function computations
 C     number of obs in observation file
       integer ad_nobs
 #if defined INTERNAL
-      parameter(ad_nobs = 31)
+      parameter(ad_nobs = 62)
 #endif
 
 C     start of assimilation in the obs file
