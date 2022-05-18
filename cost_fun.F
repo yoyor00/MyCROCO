@@ -156,7 +156,7 @@ c      end do
                   dpena = (pena_h(i+1,j) + pena_h(i-1,j)-2*pena_h(i,j))/
      &                 (om_u(i,j)*om_u(i,j))
                   icost = icost + delta_z*delta_z
-     &                 + 1.0*dpena*dpena
+     &                 + 10000.0*dpena*dpena
 
                   ad_irms = ad_irms + delta_z*delta_z
 c                  write(*,*) '=====>',zeta(i,j,knew)
