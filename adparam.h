@@ -45,12 +45,12 @@ C     start of assimilation in the obs file
 #elif defined AD_ATLN
       parameter (ad_ast = 388)
 #elif defined INTERNAL
-      parameter (ad_ast = 30)
+      parameter (ad_ast = 42)
 #endif
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st
-      parameter (ad_main_st = 928)
+      parameter (ad_main_st = 1312)
 
 c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY,ad_nt*ad_ns+3)
