@@ -44,6 +44,7 @@
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
  max_dom                             = <max_domains>,
+ max_cpldom                          = <max_cpldom>,
  e_we                                = <xdim_d01>,<xdim_d02>,<xdim_d03>,
  e_sn                                = <ydim_d01>,<ydim_d02>,<ydim_d03>,
  e_vert                              = <nbvertlev>,<nbvertlev>,<nbvertlev>,

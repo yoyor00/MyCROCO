@@ -127,8 +127,19 @@ if [[ ${nestfeedback} == "FALSE" ]]; then
     ./namelist.input > ./namelist.input.tmp
     mv namelist.input.tmp namelist.input
 fi
-#   
+###### handle cpl dom ######
 maxatmdom=$( echo "$wrfcpldom" | wc -w )
+if [[ ${maxatmdom} > 0 ]] ; then
+    max_cpldom=$( echo "${wrfcpldom}" | cut -d ' ' -f ${maxatmdom} | cut -d '0' -f 2)
+    [[ ${max_cpldom} > 2 ]] && { echo "In the current state WRF can not couple more than 2 domains, we stop..."; exit; }
+else
+    max_cpldom=0
+fi
+#
+sed -e "s/<max_cpldom>/${max_cpldom},/g" \
+    ./namelist.input > ./namelist.input.tmp
+mv namelist.input.tmp namelist.input
+
 if [[ $maxatmdom == 1 && $AGRIFZ > 1 ]];then 
     numextmod=$(( $AGRIFZ + 1 ))
 else
@@ -137,7 +148,8 @@ fi
 sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            = $numextmod,/g" \
 ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
-#
+####
+
 sed -e "s/<isftcflx>/${isftcflx}/g" \
     ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input

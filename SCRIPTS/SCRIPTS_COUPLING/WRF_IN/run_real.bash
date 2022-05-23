@@ -252,7 +252,7 @@ fi
 
 sed -e "s/<interval_s>/${interval_s}/g"         \
     -e "s/<sst_int_m>/${sst_interval_m}/g"      \
-    -e "s/<max_domains>/${max_domains}/g"       \
+    -e "s/<max_domains>/${max_domains}/g" -e "s/<max_cpldom>/0/g"     \
     -e "s/<nbvertlev>/${nbvertlevel}/g"   -e  "s/<eta_lev>/${eta_levels}/g" -e "s/<ptop>/${ptop}/g"        \
     -e "s/<nbmetlev>/${nbmetlevel}/g"     -e "s/<nbmetsoil>/${nbmetsoil}/g"                                \
     -e "s/<xdim_d01>/${xdim_d01}/g"       -e "s/<xdim_d02>/${xdim_d02}/g"  -e "s/<xdim_d03>/${xdim_d03}/g" \
