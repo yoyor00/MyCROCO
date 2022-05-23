@@ -45,7 +45,7 @@ if [ ${USE_ATM} == 1 ]; then
         if   [[ ${ATM_CASE} == "MOVING_NEST" ]]; then
             coef=1
             for nest_nb in `seq 1 ${num_mv_nest}`; do
-                coef=${coef}*$( echo "${ref_coef}" | cut -d " " -f $(( ${nest_nb})) )
+                coef=$(( ${coef}*$( echo "${ref_coef}" | cut -d " " -f $(( ${nest_nb})) ) ))
             done
             sed -e "s|<atmdt>|$(( ${DT_ATM} / ${coef} ))|g" \
                 ./namcouple>tmp$$
@@ -58,10 +58,11 @@ if [ ${USE_ATM} == 1 ]; then
         fi
     done
     if [[ ${WEIGHT_FLAG} == 1 ]]; then
-        for file in ${weight_a2o}; then
+        for file in ${weight_a2o}; do
             sed -e "s|<mozaic_atm>|${file}|g" \
                 ./namcouple>tmp$$
             mv tmp$$ namcouple
+        done
     fi   
 fi
 
@@ -94,10 +95,11 @@ if [ ${USE_OCE} == 1 ]; then
         mv tmp$$ namcouple    
     done
     if [[ ${WEIGHT_FLAG} == 1 ]]; then
-        for file in ${weight_o2a}; then
+        for file in ${weight_o2a}; do 
             sed -e "s|<mozaic_oce>|${file}|g" \
                 ./namcouple>tmp$$
             mv tmp$$ namcouple
+        done
     fi
 fi
 

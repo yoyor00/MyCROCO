@@ -124,8 +124,8 @@ elif  [ $model == croco ] ; then
 
     varlist=(CROCO_UOCE${gridlevels} \
             CROCO_VOCE${gridlevels} \
-            CROCO_SSTV${gridlevels} \
-            CROCO_SHV${gridlevels})
+            CROCO_SST${gridlevels} \
+            CROCO_SSH${gridlevels})
 
     dimtime=time
 

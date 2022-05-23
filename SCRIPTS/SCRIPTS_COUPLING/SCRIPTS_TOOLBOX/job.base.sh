@@ -183,6 +183,7 @@ cd ${EXEDIR}
         [ ${USE_CPL} -ge 1 ] && printf "\n ************* put OA3MCT OUTPUT/RESTART files *****************\n\n" 
         [ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_putfile.sh ; }
 
+        chmod -R ${permission} ${OUTPUTDIR} ${RESTDIR_OUT}
 #-------------------------------------------------------------------------------
 #  save output control ascii files in jobs directory
 #-------------------------------------------------------------------------------

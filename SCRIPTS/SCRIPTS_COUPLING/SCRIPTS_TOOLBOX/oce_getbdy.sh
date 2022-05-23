@@ -11,6 +11,8 @@ else
 fi
 
 # put 1-d stuff inside bdy file
+cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
 varlist="spherical,Vtransform,Vstretching,tstart,tend,theta_s,theta_b,Tcline,hc,sc_r,sc_w,Cs_r,Cs_w"
 ncks -A -v "${varlist}"  ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc ${bryfile}
 #
