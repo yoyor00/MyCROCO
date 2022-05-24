@@ -45,6 +45,8 @@
 ! If wet/drying, compute new masks for cells with depth < Dcrit.
 !-----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
+
 # ifdef SOLVE3D
       IF (iif.le.nfast) THEN
 # endif
@@ -277,6 +279,8 @@ C$OMP BARRIER
 
       END IF
 # endif
+!$acc end kernels
+
 !
 !  Exchange boundary data.
 !
@@ -294,6 +298,7 @@ C$OMP BARRIER
 !  Set masks for I/O purposes.
 !-----------------------------------------------------------------------
 !
+!$acc  kernels if(compute_on_device) default(present)
 #  ifdef SOLVE3D
       IF (iif.gt.nfast) THEN
 #  else
@@ -340,6 +345,7 @@ C$OMP BARRIER
 #  endif
 
       END IF
+!$acc end kernels      
 # endif /* WETDRY_IO */
 
       RETURN

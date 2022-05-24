@@ -555,6 +555,7 @@ C$OMP END MASTER
 ! Compute wet/dry masks
 !-----------------------------------------------------------------------
 !
+!$acc end kernels
 
 #ifdef WET_DRY
       call wetdry_tile (Istr,Iend,Jstr,Jend)
@@ -564,7 +565,6 @@ C$OMP END MASTER
 C$OMP BARRIER
 #endif
 
-!$acc end kernels
 
 !-----------------------------------------------------------------------
 ! Debug zeta
@@ -618,6 +618,8 @@ C$OMP END MASTER
           enddo
         enddo
       endif
+#else      
+!$acc kernels if(compute_on_device) default(present) async(1)
 #endif
 
 !
@@ -1741,10 +1743,10 @@ C$OMP END MASTER
 !  Diagnostics
 !-----------------------------------------------------------------------
 !
+!$acc end kernels
 #ifndef SOLVE3D
       call diag_tile (Istr,Iend,Jstr,Jend, UFx,UFe)
 #endif
-!$acc end kernels
 !
 !-----------------------------------------------------------------------
 !  Exchange boundary information.
@@ -1922,9 +1924,11 @@ C$OMP END MASTER
 #endif
       ENDIF
 
+#ifdef SOLVE3D
       if (LAST_FAST_STEP) then
 !$acc wait
       endif
+#endif       
       return
       end
 #else
