@@ -171,7 +171,11 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
     	CPP1="cpp  -traditional -DLinux -DXLF"
     	CFT1=$FC
-    	FFLAGS1="-g -fast -r8 -i4"
+    	FFLAGS1="-g -fast -r8 -i4 -mcmodel=medium"
+	#FFLAGS1="-g -O0 -C -Kieee -r8 -i4 -traceback"
+	if [[ $HOSTNAME == "jean-zay"* ]]; then
+		CPP1=$CPP1" -DJEANZAY"
+	fi
 	else
 		echo "Unknown Fortran Compiler"
 		exit

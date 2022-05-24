@@ -110,6 +110,14 @@
 #endif
 !
 #include "dynderivparam.h"
+
+#ifdef JEANZAY
+! Initialise OpenACC...
+#ifdef OPENACC
+        call initialisation_openacc
+#endif
+! ... before initialise MPI
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize communicators and subgrids decomposition:
