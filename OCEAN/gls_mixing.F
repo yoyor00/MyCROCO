@@ -111,6 +111,7 @@
       REAL            ::  flux_top, flux_bot, lgthsc, L_lim, du,dv,dw
       REAL            ::  trb_new, trb_sfc, trb_bot, z0_s, z0_b, gls_min
       REAL            ::  HUon_w, HVom_w, trb_min(2), Denom
+!$acc declare create(trb_min)      
       REAL            ::  su_r,sv_r
 # ifdef MRL_WCI
       REAL            ::  cmu_fac, cb_wallE, gls_sigp_cb
@@ -242,10 +243,12 @@
 ! Horizontal advection (first-order upwind)
 !--------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
 # ifdef GLS_HADV_UP1
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
       ig=itke         ! <-- TKE
+!$acc loop private(ustar_bot_sq,ustar_sfc_sq)
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
@@ -281,6 +284,7 @@
       ENDDO
 !
       ig=igls         ! <-- GLS
+!$acc loop private(ustar_bot_sq,ustar_sfc_sq)
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
@@ -326,6 +330,7 @@
         ENDDO
       ENDDO
 # endif /* GLS_HADV_UP1 */
+
 !
 !--------------------------------------------------------------------
 ! Vertical advection (first-order upwind)
@@ -333,6 +338,7 @@
 !
 # ifdef GLS_VADV_UP1
       ig=itke         ! <-- TKE
+!$acc loop private(FC)
       DO j=jmin,jmax
         DO k=1,N
           DO i=imin,imax
@@ -352,6 +358,7 @@
       ENDDO
 !
       ig=igls         ! <-- GLS
+!$acc loop private(FC)
       DO j=jmin,jmax
         DO k=1,N
           DO i=imin,imax
@@ -382,6 +389,7 @@
 !--------------------------------------------------------------------
 !
       tind  = nrhs
+!---$acc kernels if(compute_on_device) default(present)
       DO k=1,N-1
          DO j=jmin,jmax
             DO i=imin,imax
@@ -431,7 +439,6 @@
            ENDDO
          ENDDO
       ENDDO
-!
 !--------------------------------------------------------------------
 !  Compute ustar squared at the surface and at the bottom
 !--------------------------------------------------------------------
@@ -452,6 +459,7 @@
       ENDDO
 
       !--------------------------------------------------
+!$acc loop private(diss) 
       DO j=jmin,jmax         !<-- j-outer loop
       !--------------------------------------------------
 
@@ -465,6 +473,7 @@
          ENDDO !<-- terminate i-loop
 
          !--------------------------------------------------
+!$acc loop private(gls_new,tke_new,dc,rh,fc,cf) 
          DO ig = 1,ngls     ! ig = 2 for gls and = 1 for tke
          !--------------------------------------------------
 
@@ -628,6 +637,7 @@
       !--------------------------------------------------
       ENDDO     ! j loop
       !--------------------------------------------------
+!$acc end kernels
 
 !
 !--------------------------------------------------------------------
@@ -672,6 +682,7 @@
 !    Compute Akv & Lscale
 !--------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       !--------------------------------------------------
       DO j=jstr,jend  !<-- j-outer loop
       !--------------------------------------------------
@@ -911,6 +922,8 @@
           enddo
         enddo
       enddo
+!$acc end kernels
+
 !
 ! Exchange computational margines and/or periodic boundaries:
 !--------- ------------- -------- ------ -------- -----------
