@@ -15,6 +15,9 @@
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
+#ifdef OPENACC
+      use exchange_device_host
+#endif
       implicit none
 # include "param.h" 
 # include "scalars.h"
@@ -273,6 +276,9 @@
       if (wwagrd.eq.1.) then
         ierr=nf_fread (wwag(START_2D_ARRAY,i), ncidwave, wwa_id,
      &                                           ww_rec, r2dvar)
+#ifdef OPENACC
+        call update_device(wwag(:,:,i))
+#endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwa_id,ww_rec,wwap(i))
       endif
@@ -287,6 +293,9 @@
       if (wwdgrd.eq.1.) then
         ierr=nf_fread (wwdg(START_2D_ARRAY,i), ncidwave, wwd_id,
      &                                           ww_rec, r2dvar)
+#ifdef OPENACC
+        call update_device(wwdg(:,:,i))
+#endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwd_id,ww_rec,wwdp(i))
       endif
@@ -301,6 +310,9 @@
       if (wwpgrd.eq.1.) then
         ierr=nf_fread (wwpg(START_2D_ARRAY,i), ncidwave, wwp_id,
      &                                           ww_rec, r2dvar)
+#ifdef OPENACC
+        call update_device(wwpg(:,:,i))
+#endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwp_id,ww_rec,wwpp(i))
       endif
@@ -316,6 +328,9 @@
       if (wwugrd.eq.1.) then
         ierr=nf_fread (wwug(START_2D_ARRAY,i), ncidwave, wwu_id,
      &                                           ww_rec, r2dvar)
+#ifdef OPENACC
+        call update_device(wwug(:,:,i))
+#endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwu_id,ww_rec,wwup(i))
       endif
@@ -332,6 +347,9 @@
       if (wwebgrd.eq.1.) then
         ierr=nf_fread (wweb(START_2D_ARRAY,i), ncidwave, wweb_id,
      &                                           ww_rec, r2dvar)
+#ifdef OPENACC
+        call update_device(wweb(:,:,i))
+#endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wweb_id,ww_rec,wwebp(i))
       endif
@@ -348,7 +366,10 @@
       if (wwedgrd.eq.1.) then
         ierr=nf_fread (wwedd(START_2D_ARRAY,i), ncidwave, wwed_id,
      &                                           ww_rec, r2dvar)
-      else
+#ifdef OPENACC
+        call update_device(wwedd(:,:,i))
+#endif
+     else
         ierr=nf_get_var1_FTYPE (ncidwave,wwed_id,ww_rec,wwedp(i))
       endif
 
@@ -364,6 +385,9 @@
       if (wwergrd.eq.1.) then
         ierr=nf_fread (wwer(START_2D_ARRAY,i), ncidwave, wwer_id,
      &                                           ww_rec, r2dvar)
+#ifdef OPENACC
+        call update_device(wwer(:,:,i))
+#endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwer_id,ww_rec,wwerp(i))
       endif
@@ -491,7 +515,8 @@
 # if defined MRL_WCI && defined WAVE_OFFLINE_ROLLER   
             wwEpr=wwer_scale*wwerp(itww)
 # endif
-          
+
+!$acc parallel loop if(compute_on_device) default(present)          
             do j=JstrR,JendR
               do i=IstrR,IendR
                 Awave(i,j)=(wwagrd)*wwa_scale*wwag(i,j,itww) +
@@ -570,6 +595,7 @@
         wwEpr=fac61*wwerp(it1)+fac62*wwerp(it2)
 # endif
         
+!$acc parallel loop if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             Awave(i,j)=wwagrd*(fac11*wwag(i,j,it1)+fac12*wwag(i,j,it2))
@@ -616,6 +642,7 @@
 !          measured clockwise from geographic North.
 !
 # if defined CURVGRID || !defined SHOREFACE
+!$acc parallel loop if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
 #  if !defined SHOREFACE && !defined MUSTANG 
@@ -641,6 +668,7 @@
 !--------------------------------------------------------------------
 !
 # if !defined MRL_WCI || defined MEKONG
+!$acc parallel loop if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
           Dstp=max(h(i,j)+z_w(i,j,N),1.e-3)
@@ -680,6 +708,7 @@
 !--------------------------------------------------------------------
 !
 # ifdef MRL_WCI
+!$acc parallel loop if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
           whrm(i,j)=2*Awave(i,j)                  ! Amp to Hrms conversion
