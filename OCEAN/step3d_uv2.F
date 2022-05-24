@@ -855,6 +855,7 @@
         enddo
 # endif /* DIAGNOSTICS_EK */
 
+!$acc end kernels
 
 !
 !--------------------------------------------------------------------
@@ -869,7 +870,6 @@
 ! Set PHYSICAL lateral boundary conditions.
 !--------------------------------------------------------------------
 !
-!$acc end kernels
 
       call v3dbc_tile (Istr,Iend,Jstr,Jend, grad)
       call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)

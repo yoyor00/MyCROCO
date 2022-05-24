@@ -235,7 +235,12 @@
 !----------------------------------------------------------
 !
 #  ifdef PSOURCE
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(2)
           do is=1,Nsrc
+#   if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#   endif
 #   ifdef MPI
            i=Isrc_mpi(is,mynode)
            j=Jsrc_mpi(is,mynode)
@@ -274,6 +279,9 @@
                 endif
               endif
             endif
+#   if defined OPENACC
+            ENDDOEXTEND
+#   endif
           enddo
 #  endif /* PSOURCE */
 !
