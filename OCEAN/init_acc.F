@@ -1,4 +1,5 @@
         subroutine initialisation_openacc
+#ifdef OPENACC
 #ifdef JEANZAY
         USE openacc
         implicit none
@@ -35,4 +36,5 @@
             stop 1
         end if
 #endif
+#endif        
         end subroutine initialisation_openacc
