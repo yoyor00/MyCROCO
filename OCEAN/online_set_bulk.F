@@ -45,11 +45,18 @@
 # include "scalars.h"
 # include "grid.h"
 # include "online.h"
+# ifdef CFB_WIND_TRA
+#  include "ocean3d.h"
+#  include "params_bulk.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2, blkvar_id
       real cff,cff1,cff2, cff3,cff4
 # ifdef SALINITY
       real cff5,cff6
 # endif      
+# ifdef CFB_WIND_TRA
+      real uwnd_r, vwnd_r
+# endif
 !     
 # include "compute_extended_bounds.h"
 !
@@ -140,8 +147,65 @@
             do i=IstrR,IendR
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
+              wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
             enddo
           enddo
+# ifdef CFB_WIND_TRA
+          cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+          do j=JstrR,min(JendR,Mm)
+            do i=IstrR,min(IendR,Lm)
+              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
+     &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
+     &                   )
+              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
+     &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+     &                   )
+              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+            enddo
+          enddo
+#  ifndef EW_PERIODIC
+            if (WESTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
+              enddo
+            endif
+            if (EASTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)
+              enddo
+            endif
+#  endif
+#  ifndef NS_PERIODIC
+            if (SOUTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
+              enddo
+            endif
+            if (NORTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
+              enddo
+            endif
+#   ifndef EW_PERIODIC
+            if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
+            endif
+            if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)
+            endif
+            if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
+            endif
+            if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
+            endif
+#   endif
+#  endif
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+            call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                             wspd_cfb(START_2D_ARRAY))
+#  endif
+# endif
 # ifdef READ_PATM
         elseif (blkvar_id.eq.10) then
           do j=JstrR,JendR

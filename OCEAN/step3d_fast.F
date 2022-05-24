@@ -129,12 +129,11 @@ C$    trd=omp_get_thread_num()
 # else
       real,parameter :: thetaimp_nbq = 1.
 # endif
-
-# if defined TANK || defined SWASH
-      real,parameter :: gammau=0.45   ! NBQ pressure gradient scheme
-# else
-      real,parameter :: gammau=1.0    ! 1.0 --> second-order
-# endif
+!
+! Parameters for NBQ pressure gradient scheme
+!
+      real,parameter :: gammau=1.0  ! 1.0  --> second-order
+                                    ! 0.45 --> increased stability range
       real,parameter :: gammau_2=(1./3.)*(1.-gammau)
 
       real

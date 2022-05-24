@@ -324,8 +324,8 @@ CONTAINS         ! Write model prognostic
         cmode = ior(cmode, nf_mpiio)
         csize = xi_rho*eta_rho/NNODES
         WRITE(stdout,*)'CREATE RST NC4 PARALLEL FILE'
-        ierr  = nf_create_par(cn_sedrst_out(1:lstr),cmode,
-        &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
+        ierr  = nf_create_par(cn_sedrst_out(1:lstr),cmode, &
+        &       MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
 
         IF (ierr .NE. nf_noerr) THEN

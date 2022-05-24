@@ -1456,7 +1456,7 @@
 # undef  MPI
 # define NBQ
 # ifdef NBQ
-#  undef  NBQ_PRECISE
+#  define NBQ_PRECISE
 # endif
 # define M2FILTER_NONE
 # define SOLVE3D
@@ -1504,31 +1504,6 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
-
-*/
-# undef  MPI
-# define ANA_MORPHODYN
-# define NBQ
-# define NBQ_PRECISE
-# define M2FILTER_NONE
-# define SOLVE3D
-# define NEW_S_COORD
-# undef  PASSIVE_TRACER
-# define UV_ADV
-# define TS_HADV_WENO5
-# define TS_VADV_WENO5
-# define UV_HADV_WENO5
-# define UV_VADV_WENO5
-# define W_HADV_WENO5
-# define W_VADV_WENO5
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_VMIX
-# define ANA_BTFLUX
-# define ANA_SMFLUX
-# define ANA_SRFLUX
-# define ANA_STFLUX
-# define NO_FRCFILE
 # undef  RVTK_DEBUG
 
 #elif defined ACOUSTIC
@@ -1540,7 +1515,6 @@
 # define NBQ
 # ifdef NBQ
 #  undef  NBQ_PRECISE
-#  define NBQ_PERF
 # endif
 # undef  UV_VIS2
 # define SOLVE3D
@@ -1563,12 +1537,18 @@
 # undef  MPI
 # undef  NBQ
 # undef  XIOS
-# define UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# ifdef NBQ
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+# endif
+# undef  UV_VIS2
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -1589,16 +1569,20 @@
 !  J. Fluid Mech., 434:181-207.
 !
 */
-# undef  OPENMP
 # undef  MPI
 # define NBQ
 # undef  XIOS
-# define UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# undef  UV_VIS2
+# undef  TS_DIF2
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -1616,7 +1600,7 @@
 */
 # undef  KH_INSTY
 # undef  KH_INST3D
-# undef MPI
+# undef  MPI
 # define NBQ
 # undef  NBQ_PRECISE
 # undef  XIOS
