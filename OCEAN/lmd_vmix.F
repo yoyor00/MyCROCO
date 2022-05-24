@@ -324,6 +324,8 @@ C$OMP BARRIER
         enddo
       enddo
 #  endif /* RI_VSMOOTH */
+#  else
+!$acc kernels if(compute_on_device) default(present)
 # endif /* LMD_RIMIX */
 
       do k=1,N-1

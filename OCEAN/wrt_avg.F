@@ -153,6 +153,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 
 # ifdef MORPHODYN
       if (wrtavg(indxHm)) then
+!$acc update if(compute_on_device) host(h_avg)
          work2d=h_avg
          call fillvalue2d(work2d,ncidavg,avgHm,indxHm,
      &                    record,r2dvar,type)
@@ -162,6 +163,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     Write out kinematic bottom stress (N/m2).
 !
       if (wrtavg(indxBostr)) then
+!$acc update if(compute_on_device) host(bostr_avg)
          work2d=bostr_avg
          call fillvalue2d(work2d,ncidavg,avgBostr,indxBostr,
      &        record,r2dvar,type)
@@ -171,6 +173,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     Write out kinematic U  bottom stress (N/m2).
 !
       if (wrtavg(indxBustr)) then
+!$acc update if(compute_on_device) host(bustr_avg)
          work2d=bustr_avg
          call fillvalue2d(work2d,ncidavg,avgBustr,indxBustr,
      &        record,u2dvar,type)
@@ -181,6 +184,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     Write out kinematic V  bottom stress (N/m2).
 !
       if (wrtavg(indxBvstr)) then
+!$acc update if(compute_on_device) host(bvstr_avg)
          work2d=bvstr_avg
          call fillvalue2d(work2d,ncidavg,avgBvstr,indxBvstr,
      &        record,v2dvar,type)
@@ -195,6 +199,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     Write out kinematic surface stress (N/m2).
 !
       if (wrtavg(indxWstr)) then
+!$acc update if(compute_on_device) host(wstr_avg)
          ierr=nf_fwrite(wstr_avg, ncidavg, avgWstr, record, r2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxWstr))
@@ -208,6 +213,7 @@ CR      write(*,*) 'wrt_avg:  Wstr' MYID
 !     Write out kinematic U surface stress component (N/m2).
 !
       if (wrtavg(indxUWstr)) then
+!$acc update if(compute_on_device) host(sustr_avg)
          ierr=nf_fwrite(sustr_avg, ncidavg, avgUWstr, record, u2dvar)
         if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxUWstr))
@@ -221,7 +227,8 @@ CR      write(*,*) 'wrt_avg: UWstr' MYID
 !     Write out kinematic V surface stress component (N/m2).
 !
       if (wrtavg(indxVWstr)) then
-         ierr=nf_fwrite(svstr_avg, ncidavg, avgVWstr, record, v2dvar)
+!$acc update if(compute_on_device) host(svstr_avg)
+        ierr=nf_fwrite(svstr_avg, ncidavg, avgVWstr, record, v2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxVWstr))
             write(stdout,1) vname(1,indxVWstr)(1:lvar), record, ierr
@@ -268,6 +275,7 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
 !     Density anomaly.
 !
       if (wrtavg(indxR)) then
+!$acc update if(compute_on_device) host(rho_avg)
          workr=rho_avg+rho0-1000.
          call fillvalue3d(workr,ncidavg,avgR,indxR,record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
@@ -279,6 +287,7 @@ CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
 !     Brunt vaisala frequency.
 !
       if (wrtavg(indxbvf)) then
+!$acc update if(compute_on_device) host(bvf_avg)
          work=bvf_avg
          call fillvalue3d_w(work,ncidavg,avgbvf,indxbvf,
      &           record,w3dvar,type)
@@ -289,6 +298,7 @@ CR      write(*,*) 'wrt_avg:  wrtbvf' MYID
 !     Write out S-coordinate omega vertical velocity (m/s).
 !
       if (wrtavg(indxO)) then
+!$acc update if(compute_on_device) host(omega_avg)
          work=omega_avg
          call fillvalue3d_w(work,ncidavg,avgO,indxO,record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
@@ -297,6 +307,7 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrtavg(indxW)) then
+!$acc update if(compute_on_device) host(w_avg)
 # ifdef NBQ
          work=w_avg
          call fillvalue3d(work ,ncidavg,avgW,indxW,record,w3dvar,type)
@@ -312,6 +323,7 @@ CR      write(*,*) 'wrt_avg:  wrtW' MYID
 !     Write out skin temperature (degC)
 !
       if (wrtavg(indxT)) then
+!$acc update if(compute_on_device) host(sst_skin_avg)
          work2d=sst_skin_avg
          call fillvalue2d(work2d,ncidavg,avgSST_skin,indxSST_skin,
      &                    record,r2dvar,type)
@@ -324,6 +336,7 @@ CR      write(*,*) 'wrt_avg:  wrtW' MYID
 !     Write out Horizontal viscosity coefficient.
 !
       if (wrtavg(indxVisc)) then
+!$acc update if(compute_on_device) host(visc3d_avg)
          workr=visc3d_avg
          call fillvalue3d(workr,ncidavg,avgVisc,indxVisc,
      &        record,r3dvar,type)
@@ -335,6 +348,7 @@ CR      write(*,*) 'wrt_avg:  wrtVisc' MYID
 !     Write out Horizontal diffusivity coefficient.
 !
       if (wrtavg(indxDiff)) then
+!$acc update if(compute_on_device) host(diff3d_avg)
          workr=diff3d_avg
          call fillvalue3d(workr,ncidavg,avgDiff,indxDiff,
      &        record,r3dvar,type)
@@ -346,6 +360,7 @@ CR      write(*,*) 'wrt_avg:  wrtDiff' MYID
 !     Write out vertical viscosity coefficient.
 !
       if (wrtavg(indxAkv)) then
+!$acc update if(compute_on_device) host(Akv_avg)
          work=Akv_avg
          call fillvalue3d_w(work,ncidavg,avgAkv,indxAkv,
      &        record,w3dvar,type)
@@ -356,6 +371,7 @@ CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
 !
 #    ifdef TEMPERATURE
       if (wrtavg(indxAkt)) then
+!$acc update if(compute_on_device) host(Akt_avg(:,:,:,itemp))
          work=Akt_avg(:,:,:,itemp)
          call fillvalue3d_w(work,ncidavg,avgAkt,indxAkt,
      &        record,w3dvar,type)
@@ -367,6 +383,7 @@ CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
 !     Write out vertical diffusion coefficient for salinity.
 !
       if (wrtavg(indxAks)) then
+!$acc update if(compute_on_device) host(Akt_avg(:,:,:,isalt))
          work=Akt_avg(:,:,:,isalt)
          call fillvalue3d_w(work,ncidavg,avgAks,indxAks,
      &        record,w3dvar,type)
@@ -380,6 +397,7 @@ CR       write(*,*) 'wrt_avg:  wrtAks' MYID
 !     Write out depth of planetary boundary layer (m).
 !
       if (wrtavg(indxHbl)) then
+!$acc update if(compute_on_device) host(hbl_avg)
          work2d=hbl_avg
          call fillvalue2d(work2d,ncidavg,avgHbl,indxHbl,
      &        record,r2dvar,type)
@@ -391,6 +409,7 @@ CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
 !     Write out depth of planetary boundary layer (m).
 !
       if (wrtavg(indxHbbl)) then
+!$acc update if(compute_on_device) host(hbbl_avg)
          work2d=hbbl_avg
          call fillvalue2d(work2d,ncidavg,avgHbbl,indxHbbl,
      &        record,r2dvar,type)
@@ -403,6 +422,7 @@ CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
 !     Write out turbulent kinetic energy.
 !
       if (wrtavg(indxTke)) then
+!$acc update if(compute_on_device) host(tke_avg)
          work=tke_avg
          call fillvalue3d_w(work,ncidavg,avgTke,indxTke,
      &        record,w3dvar,type)
@@ -412,6 +432,7 @@ CR      write(*,*) 'wrt_avg:  wrtTke' MYID
 !     Write out generic length scale
 !
       if (wrtavg(indxGls)) then
+!$acc update if(compute_on_device) host(gls_avg)
          work=gls_avg
          call fillvalue3d_w(work,ncidavg,avgGls,indxGls,
      &        record,w3dvar,type)
@@ -421,6 +442,7 @@ CR      write(*,*) 'wrt_avg:  wrtGls' MYID
 !     Write out vertical mixing length scale
 !
       if (wrtavg(indxLsc)) then
+!$acc update if(compute_on_device) host(Lscale_avg)
          work=Lscale_avg
          call fillvalue3d_w(work,ncidavg,avgLsc,indxLsc,
      &        record,w3dvar,type)
@@ -433,6 +455,7 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
 !     Write out total heat flux [W/m2]
 !
       if (wrtavg(indxShflx)) then
+!$acc update if(compute_on_device) host(stflx_avg(:,:,itemp))
          work2d=stflx_avg(:,:,itemp)
      &          SWITCH rmask
 !
@@ -454,6 +477,7 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
 !     Write out bottom heat flux
 !
       if (wrtavg(indxBhflx)) then
+!$acc update if(compute_on_device) host(btflx_avg(:,:,itemp))
         work2d=btflx_avg(:,:,itemp)
      &         SWITCH rmask
 !
@@ -475,6 +499,7 @@ CR      write(*,*) 'wrt_avg:  btflx(:,:,itemp)' MYID
 !     Write out surface E-P flux [cm/d]
 !
       if (wrtavg(indxSwflx)) then
+!$acc update if(compute_on_device) host(stflx_avg(:,:,isalt))
          work2d=stflx_avg(:,:,isalt)
      &         SWITCH rmask
 !
@@ -496,6 +521,7 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
 !     Write out bottom fresh water flux [cm/d]
 !
       if (wrtavg(indxBwflx)) then
+!$acc update if(compute_on_device) host(btflx_avg(:,:,isalt))
          work2d=btflx_avg(:,:,isalt)
      &         SWITCH rmask
 !
@@ -518,9 +544,11 @@ CR      write(*,*) 'wrt_avg:  btflx(:,:,isalt)' MYID
 !
       if (wrtavg(indxShflx_rsw)) then
 #  ifdef BULK_FLUX
+!$acc update if(compute_on_device) host(shflx_rsw_avg)
          ierr=nf_fwrite(shflx_rsw_avg, ncidavg, avgShflx_rsw,
      &                  record, r2dvar)
 #  else
+!$acc update if(compute_on_device) host(srflx_avg)
          ierr=nf_fwrite(srflx_avg, ncidavg, avgShflx_rsw,
      &                  record, r2dvar)
 #  endif
@@ -534,6 +562,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       endif
 #  ifdef BULK_FLUX
       if (wrtavg(indxShflx_rlw)) then
+!$acc update if(compute_on_device) host(shflx_rlw_avg)
          ierr=nf_fwrite(shflx_rlw_avg, ncidavg, avgShflx_rlw, record,
      &        r2dvar)
          if (ierr .ne. nf_noerr) then
@@ -545,6 +574,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       endif
 
       if (wrtavg(indxShflx_lat)) then
+!$acc update if(compute_on_device) host(shflx_lat_avg)
          ierr=nf_fwrite(shflx_lat_avg, ncidavg, avgShflx_lat, record,
      &        r2dvar)
          if (ierr .ne. nf_noerr) then
@@ -556,6 +586,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       endif
 
       if (wrtavg(indxShflx_sen)) then
+!$acc update if(compute_on_device) host(shflx_sen_avg)
          ierr=nf_fwrite(shflx_sen_avg, ncidavg, avgShflx_sen, record,
      &        r2dvar)
          if (ierr .ne. nf_noerr) then
@@ -572,6 +603,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !     Write out depth of the euphotic layer (m).
 !
       if (wrtavg(indxHel)) then
+!$acc update if(compute_on_device) host(hel_avg)
          work2d=hel_avg
          call fillvalue2d(work2d,ncidavg,avgHel,indxHel,
      &        record,r2dvar,type)
@@ -581,22 +613,26 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !
 #   ifdef BIO_NChlPZD
       if (wrtavg(indxChC)) then
+!$acc update if(compute_on_device) host(theta_avg)
          workr=theta_avg
          call fillvalue3d(workr,ncidavg,avgChC,indxChC,
      &        record,r3dvar,type)
       endif
 #     ifdef OXYGEN
       if (wrtavg(indxU10)) then
+!$acc update if(compute_on_device) host(u10_avg)
          work2d=u10_avg
          call fillvalue2d(work2d,ncidavg,avgU10,indxU10,
      &        record,r2dvar,type)
       endif
       if (wrtavg(indxKvO2)) then
+!$acc update if(compute_on_device) host(Kv_O2_avg)
          work2d=Kv_O2_avg
          call fillvalue2d(work2d,ncidavg,avgKvO2,indxKvO2,
      &        record,r2dvar,type)
       endif
       if (wrtavg(indxO2sat)) then
+!$acc update if(compute_on_device) host(O2satu_avg)
          work2d=O2satu_avg
          call fillvalue2d(work2d,ncidavg,avgO2sat,indxO2sat,
      &        record,r2dvar,type)
@@ -605,11 +641,13 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !
 #   elif defined BIO_BioEBUS
       if (wrtavg(indxAOU)) then
+!$acc update if(compute_on_device) host(AOU_avg)
          workr=AOU_avg
          call fillvalue3d(workr,ncidavg,avgAOU,indxAOU,
      &        record,r3dvar,type)
       endif
        if (wrtavg(indxWIND10)) then
+!$acc update if(compute_on_device) host(wind10_avg)
          work2d=wind10_avg
          call fillvalue2d(work2d,ncidavg,avgwind10,indxWIND10,
      &        record,r2dvar,type)
@@ -623,12 +661,14 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)
 !
       if (wrtavg(indxBTHK)) then
+!$acc update if(compute_on_device) host(bed_thick_avg)
          worksed_bed=bed_thick_avg
          call fillvalue3d(worksed_bed,ncidavg,avgSed(2),indxBTHK,
      &        record,b3dvar,type)
       endif
 !
       if (wrtavg(indxBPOR)) then
+!$acc update if(compute_on_device) host(bed_poros_avg)
          worksed_bed=bed_poros_avg
          call fillvalue3d(worksed_bed,ncidavg,avgSed(3),indxBPOR,
      &        record,b3dvar,type)
@@ -637,6 +677,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       do itrc=1,NST
          indxWrk=indxBFRA(1)+itrc-1
          if (wrtavg(indxWrk)) then
+!$acc update if(compute_on_device) host(bed_frac_avg(:,:,:,itrc))
             worksed_frac=bed_frac_avg(:,:,:,itrc)
             call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+3),
      &           indxWrk,record,b3dvar,type)
@@ -647,6 +688,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       do itrc=1,NST
          indxWrk=indxDFLX(1)+itrc-1
          if (wrtavg(indxWrk)) then
+!$acc update if(compute_on_device) host(settling_flux_avg(:,:,itrc))
             work2d=settling_flux_avg(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+NST),
      &           indxWrk,record,r2dvar,type)
@@ -655,6 +697,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       do itrc=1,NST
          indxWrk=indxEFLX(1)+itrc-1
          if (wrtavg(indxWrk)) then
+!$acc update if(compute_on_device) host(ero_flux_avg(:,:,itrc))
             work2d=ero_flux_avg(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+2*NST),
      &           indxWrk,record,r2dvar,type)
@@ -665,6 +708,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       do itrc=1,NST
          indxWrk=indxBDLU(1)+itrc-1
          if (wrtavg(indxWrk)) then
+!$acc update if(compute_on_device) host(bedldu_avg(:,:,itrc))
             work2d=bedldu_avg(:,:,itrc)
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+3*NST),
      &           indxWrk,record,r2dvar,type)
@@ -673,6 +717,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       do itrc=1,NST
          indxWrk=indxBDLV(1)+itrc-1
          if (wrtavg(indxWrk)) then
+!$acc update if(compute_on_device) host(bedldv_avg(:,:,itrc))
             work2d=bedldv_avg(:,:,itrc)
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+4*NST),
      &           indxWrk,record,r2dvar,type)
@@ -685,6 +730,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 
 # ifdef WAVE_IO
       if (wrtavg(indxHRM)) then
+!$acc update if(compute_on_device) host(whrm_avg)
         ierr=nf_fwrite (whrm_avg(START_2D_ARRAY), ncidavg, avgWAVE(1),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -696,6 +742,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 CR      write(*,*) 'wrt_avg:  wrtHrm' MYID
       endif
       if (wrtavg(indxFRQ)) then
+!$acc update if(compute_on_device) host(wfrq_avg)
         ierr=nf_fwrite (wfrq_avg(START_2D_ARRAY), ncidavg, avgWAVE(2),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -708,6 +755,7 @@ CR      write(*,*) 'wrt_avg:  wrtFrq' MYID
       endif
 #  ifdef WKB_WWAVE
       if (wrtavg(indxWAC)) then
+!$acc update if(compute_on_device) host(wac_avg)
         ierr=nf_fwrite (wac_avg(START_2D_ARRAY), ncidavg, avgWAVE(3),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -720,6 +768,7 @@ CR      write(*,*) 'wrt_avg:  wrtWac' MYID
       endif
 #  endif
       if (wrtavg(indxWKX)) then
+!$acc update if(compute_on_device) host(wkx_avg)
         ierr=nf_fwrite (wkx_avg(START_2D_ARRAY), ncidavg, avgWAVE(4),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -731,6 +780,7 @@ CR      write(*,*) 'wrt_avg:  wrtWac' MYID
 CR      write(*,*) 'wrt_avg:  wrtWkx' MYID
       endif
       if (wrtavg(indxWKE)) then
+!$acc update if(compute_on_device) host(wke_avg)
         ierr=nf_fwrite (wke_avg(START_2D_ARRAY), ncidavg, avgWAVE(5),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -742,6 +792,7 @@ CR      write(*,*) 'wrt_avg:  wrtWkx' MYID
 CR      write(*,*) 'wrt_avg:  wrtWke' MYID
       endif
       if (wrtavg(indxEPB)) then
+!$acc update if(compute_on_device) host(wepb_avg)
         ierr=nf_fwrite (wepb_avg(START_2D_ARRAY), ncidavg, avgWAVE(6),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -753,6 +804,7 @@ CR      write(*,*) 'wrt_avg:  wrtWke' MYID
 CR      write(*,*) 'wrt_avg:  wrtEpb' MYID
       endif
       if (wrtavg(indxEPD)) then
+!$acc update if(compute_on_device) host(wepd_avg)
         ierr=nf_fwrite (wepd_avg(START_2D_ARRAY), ncidavg, avgWAVE(7),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -766,6 +818,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpd' MYID
 #  ifdef WAVE_ROLLER
 #   ifdef WKB_WWAVE
       if (wrtavg(indxWAR)) then
+!$acc update if(compute_on_device) host(war_avg)
         ierr=nf_fwrite (war_avg(START_2D_ARRAY), ncidavg, avgWAVE(8),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -778,6 +831,7 @@ CR      write(*,*) 'wrt_avg:  wrtWar' MYID
       endif
 #   endif
       if (wrtavg(indxEPR)) then
+!$acc update if(compute_on_device) host(wepr_avg)
         ierr=nf_fwrite (wepr_avg(START_2D_ARRAY), ncidavg, avgWAVE(9),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -793,6 +847,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpr' MYID
 
 # ifdef MRL_WCI
       if (wrtavg(indxSUP)) then
+!$acc update if(compute_on_device) host(sup_avg)
         ierr=nf_fwrite (sup_avg(START_2D_ARRAY), ncidavg, avgSUP,
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -804,6 +859,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpr' MYID
 CR      write(*,*) 'wrt_avg:  wrtSup' MYID
       endif
       if (wrtavg(indxUST2D)) then
+!$acc update if(compute_on_device) host(ust2d_avg)
         ierr=nf_fwrite (ust2d_avg(START_2D_ARRAY), ncidavg, avgUST2D,
      &                                                record, u2dvar)
         if (ierr .ne. nf_noerr) then
@@ -815,6 +871,7 @@ CR      write(*,*) 'wrt_avg:  wrtSup' MYID
 CR      write(*,*) 'wrt_avg:  wrtUst2D' MYID
       endif
       if (wrtavg(indxVST2D)) then
+!$acc update if(compute_on_device) host(vst2d_avg)
         ierr=nf_fwrite (vst2d_avg(START_2D_ARRAY), ncidavg, avgVST2D,
      &                                                record, v2dvar)
         if (ierr .ne. nf_noerr) then
@@ -827,6 +884,7 @@ CR      write(*,*) 'wrt_avg:  wrtVst2D' MYID
       endif
 #  ifdef SOLVE3D
       if (wrtavg(indxUST)) then
+!$acc update if(compute_on_device) host(ust_avg)
         ierr=nf_fwrite (ust_avg(START_2D_ARRAY,1), ncidavg, avgUST,
      &                                              record, u3dvar)
         if (ierr .ne. nf_noerr) then
@@ -838,6 +896,7 @@ CR      write(*,*) 'wrt_avg:  wrtVst2D' MYID
 CR      write(*,*) 'wrt_avg:  wrtUst' MYID
       endif
       if (wrtavg(indxVST)) then
+!$acc update if(compute_on_device) host(vst_avg)
         ierr=nf_fwrite (vst_avg(START_2D_ARRAY,1), ncidavg, avgVST,
      &                                              record, v3dvar)
         if (ierr .ne. nf_noerr) then
@@ -849,6 +908,7 @@ CR      write(*,*) 'wrt_avg:  wrtUst' MYID
 CR      write(*,*) 'wrt_avg:  wrtVst' MYID
       endif
       if (wrtavg(indxWST)) then
+!$acc update if(compute_on_device) host(wst_avg)
         ierr=nf_fwrite (wst_avg(START_2D_ARRAY,1), ncidavg, avgWST,
      &                                              record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -860,6 +920,7 @@ CR      write(*,*) 'wrt_avg:  wrtVst' MYID
 CR      write(*,*) 'wrt_avg:  wrtWst' MYID
       endif
       if (wrtavg(indxAkb)) then
+!$acc update if(compute_on_device) host(akb_avg)
         ierr=nf_fwrite (akb_avg(START_2D_ARRAY,0), ncidavg,
      &                                avgAkb, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -871,6 +932,7 @@ CR      write(*,*) 'wrt_avg:  wrtWst' MYID
 CR      write(*,*) 'wrt_avg:  wrtAkb' MYID
       endif
       if (wrtavg(indxAkw)) then
+!$acc update if(compute_on_device) host(akw_avg)
         ierr=nf_fwrite (akw_avg(START_2D_ARRAY,0), ncidavg,
      &                                avgAkw, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -882,6 +944,7 @@ CR      write(*,*) 'wrt_avg:  wrtAkb' MYID
 CR      write(*,*) 'wrt_avg:  wrtAkw' MYID
       endif
       if (wrtavg(indxKVF)) then
+!$acc update if(compute_on_device) host(kvf_avg)
         ierr=nf_fwrite (kvf_avg(START_2D_ARRAY,1), ncidavg, avgKVF,
      &                                              record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -893,6 +956,7 @@ CR      write(*,*) 'wrt_avg:  wrtAkw' MYID
 CR      write(*,*) 'wrt_avg:  wrtKvf' MYID
       endif
       if (wrtavg(indxCALP)) then
+!$acc update if(compute_on_device) host(calp_avg)
         ierr=nf_fwrite (calp_avg(START_2D_ARRAY), ncidavg, avgCALP,
      &                                              record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -904,6 +968,7 @@ CR      write(*,*) 'wrt_avg:  wrtKvf' MYID
 CR      write(*,*) 'wrt_avg:  wrtCalp' MYID
       endif
       if (wrtavg(indxKAPS)) then
+!$acc update if(compute_on_device) host(kaps_avg)
         ierr=nf_fwrite (kaps_avg(START_2D_ARRAY), ncidavg, avgKAPS,
      &                                              record, r2dvar)
         if (ierr .ne. nf_noerr) then

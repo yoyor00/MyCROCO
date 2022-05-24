@@ -740,12 +740,14 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
+
 # ifdef EQUATOR
 ! SST = 25C and lineraly decreases to 10C 1200km from the Equator.
       y1=1200.E+3
       y2=1500.E+3
       sst1=10.
       sst2=25.
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=sst1
@@ -762,20 +764,25 @@ C$    integer  trd, omp_get_thread_num
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
+!$acc end kernels      
 # elif defined INNERSHELF
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=24.
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
+!$acc end kernels
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=25
           dqdt(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 # endif
       return
       end
@@ -1972,6 +1979,7 @@ C$    integer  trd, omp_get_thread_num
       real    xno3,temp,SiO4,zsrc
 # include "compute_auxiliary_bounds.h" 
 
+!$acc kernels if(compute_on_device) default(present)
       if (iic.eq.ntstart) then
 !
 ! Set-up nondimensional shape Qshape, must add to unity
@@ -2459,6 +2467,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 #  endif /* BIOLOGY */
 # endif /* SOLVE3D */
+!$acc end kernels 
       return
       end
 #endif /* PSOURCE && ANA_PSOURCE */
