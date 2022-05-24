@@ -172,6 +172,7 @@
 !
 ! Free-surface.
 !
+!$acc update if(compute_on_device) host(zeta(:,:,fast_indx_out))
       ierr=nf_fwrite(zeta(START_2D_ARRAY,fast_indx_out), ncidrst,
      &                                      rstZ, record, r2dvar)
       if (ierr .ne. nf_noerr) then
@@ -184,6 +185,7 @@
 !
 ! 2D momentum component in XI-direction.
 !
+!$acc update if(compute_on_device) host(ubar(:,:,fast_indx_out))
       ierr=nf_fwrite(ubar(START_2D_ARRAY,fast_indx_out), ncidrst,
      &                                     rstUb, record, u2dvar)
       if (ierr .ne. nf_noerr) then
@@ -195,6 +197,7 @@
 !
 ! 2D momentum component in ETA-direction.
 !
+!$acc update if(compute_on_device) host(vbar(:,:,fast_indx_out))
       ierr=nf_fwrite(vbar(START_2D_ARRAY,fast_indx_out), ncidrst,
      &                                     rstVb, record, v2dvar)
       if (ierr .ne. nf_noerr) then
@@ -208,6 +211,7 @@
 !
 ! 3D momentum component in XI-direction.
 !
+!$acc update if(compute_on_device) host(u(:,:,:,nstp))
       ierr=nf_fwrite(u(START_2D_ARRAY,1,nstp), ncidrst, rstU,
      &                                        record, u3dvar)
       if (ierr .ne. nf_noerr) then
@@ -219,6 +223,7 @@
 !
 ! 3D momentum component in ETA-direction.
 !
+!$acc update if(compute_on_device) host(v(:,:,:,nstp))
       ierr=nf_fwrite(v(START_2D_ARRAY,1,nstp), ncidrst, rstV,
      &                                        record, v3dvar)
       if (ierr .ne. nf_noerr) then
@@ -231,6 +236,7 @@
 ! Tracer variables.
 !
 #  ifdef TRACERS
+!$acc update if(compute_on_device) host(t(:,:,:,nstp,:))
       do itrc=1,NT
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
@@ -249,6 +255,7 @@
 !
 #  ifdef LMD_SKPP
 #   ifdef LMD_SKPP2005
+!$acc update if(compute_on_device) host(hbls(:,:,3-nstp))
         ierr=nf_fwrite(hbls(START_2D_ARRAY,3-nstp), ncidrst,
      &                             rstHbl, record, r2dvar)
 !#   else
@@ -268,6 +275,7 @@
 !
 !     Write out depth of bottom planetary boundary layer (m).
 !
+!$acc update if(compute_on_device) host(hbbl(:,:))
         ierr=nf_fwrite(hbbl(START_2D_ARRAY), ncidrst,
      &                             rstHbbl, record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -284,6 +292,7 @@
 !
 ! Turbulent kinetic energy.
 !
+!$acc update if(compute_on_device) host(trb(:,:,nstp,:))
         ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,itke), ncidrst,
      &                             rstTke, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -306,6 +315,7 @@
 !
 ! Vertical viscosity coefficient.
 !
+!$acc update if(compute_on_device) host(Akv(:,:,:))
         ierr=nf_fwrite(Akv(START_2D_ARRAY,0), ncidrst,
      &                             rstAkv, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -317,6 +327,7 @@
 !
 ! Write out vertical diffusion coefficient for potential temperature.
 !
+!$acc update if(compute_on_device) host(Akt(:,:,:,itemp))
         ierr=nf_fwrite(Akt(START_2D_ARRAY,0,itemp), ncidrst,
      &                             rstAkt, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -329,6 +340,7 @@
 !
 ! Write out vertical diffusion coefficient for potential temperature.
 !
+!$acc update if(compute_on_device) host(Akt(:,:,:,isalt))
         ierr=nf_fwrite(Akt(START_2D_ARRAY,0,isalt), ncidrst,
      &                             rstAks, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -345,6 +357,7 @@
 !
 ! Write out bottom stress u component 
 !
+!$acc update if(compute_on_device) host(bustr(:,:))
         ierr=nf_fwrite(bustr(START_2D_ARRAY), ncidrst,
      &                             rstBustr, record, u2dvar)
         if (ierr .ne. nf_noerr) then
@@ -356,6 +369,7 @@
 !
 ! Write out bottom stress v component 
 !
+!$acc update if(compute_on_device) host(bvstr(:,:))
         ierr=nf_fwrite(bvstr(START_2D_ARRAY), ncidrst,
      &                             rstBvstr, record, v2dvar)
         if (ierr .ne. nf_noerr) then
