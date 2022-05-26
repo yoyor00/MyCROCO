@@ -6,7 +6,7 @@
       integer k,iifroot,nstep
 
       write(*,*) 'start ad_step'
-C$AD BINOMIAL-CKP nstep+1 50 1
+C$AD BINOMIAL-CKP nstep+1 40 1
       do k=1,nstep
          do iifroot = 0,nfast+2
             call step()
@@ -156,7 +156,7 @@ c      end do
                   dpena = (pena_h(i+1,j) + pena_h(i-1,j)-2*pena_h(i,j))/
      &                 (om_u(i,j)*om_u(i,j))
                   icost = icost + delta_z*delta_z
-     &                 + 10000.0*dpena*dpena
+     &                 + 1.D5*dpena*dpena
 
                   ad_irms = ad_irms + delta_z*delta_z
 c                  write(*,*) '=====>',zeta(i,j,knew)

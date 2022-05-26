@@ -1,6 +1,6 @@
 #!/bin/bash
 #OAR --project airsea-modeling
-#OAR -l /nodes=1/cpu=1/core=1,walltime=30:00:00
+#OAR -l /nodes=1/cpu=1/core=1,walltime=48:00:00
 ################################################################################
 case $1 in
   --env-ok)

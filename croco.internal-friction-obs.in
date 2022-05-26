@@ -1,7 +1,7 @@
 title:
 	Internal Tide 2D-V Example
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                1984     400       60       10
+                4160     400       60       10
 S-coord: THETA_S,   THETA_B,    Hc (m)
          1.0d0      0.0d0       2000.d0
 initial: NRREC  filename
