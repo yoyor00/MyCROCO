@@ -614,8 +614,8 @@ c      call grid_stiffness(tile)
 
 c set a lower depth
       depth=2000
-      ridge_width = 29.8D3
-      ridge_height = 1550
+      ridge_width = 28.0D3
+      ridge_height = 1400
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
@@ -636,8 +636,8 @@ c set a lower depth
        enddo
       enddo
 
-      ridge_width = 29.8D3
-      ridge_height = 1550
+      ridge_width = 28.0D3
+      ridge_height = 1400
 
       cff1=1./(ridge_width*ridge_width)
       j=JstrR
