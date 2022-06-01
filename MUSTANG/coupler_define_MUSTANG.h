@@ -25,39 +25,33 @@
 # define IF_MPI !if
 # define ENDIF_MPI !endif
 # define PRINT_DBG !print
-/*CROCO */
+/* CROCO */
 # define iscreenlog stdout
 # define ierrorlog stdout
 # define iwarnlog stdout
 # define NAME_SUBS vname(1,indxT+ntrc_salt+isubs)
 
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!/*         Directory where are namelists files
-!/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+/* Directory where are namelists files */
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
 
 # ifdef key_CROCO
 #  define IF_MUSTANG_MORPHO_CPL if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) 
 # endif
 
-/* Spatial Grid limits definition  of loops
-!/*   inside the domain - except meshes at open boundaries
-!*/
+/* Spatial Grid limits definition  of loops inside the domain - except meshes at open boundaries */
 # define IMIN_GRID 1
 # define IMAX_GRID Lm
 # define JMIN_GRID 1
 # define JMAX_GRID Mm
 
-!/* dimensions table definition 
-!*/
+/* dimensions table definition */
 # define PROC_IN_ARRAY       GLOBAL_2D_ARRAY   
 # define PROC_IN_ARRAY_m1p2  GLOBAL_2D_ARRAY
 # define PROC_IN_ARRAY_m1p1  GLOBAL_2D_ARRAY
 # define PROC_IN_ARRAY_m2p2  GLOBAL_2D_ARRAY
 # define PROC_IN_ARRAY_0p1   GLOBAL_2D_ARRAY
 
-!/* dimensions of variables in hydro modele
-!*/
+/* dimensions of variables in hydro modele */
 # define ARRAY_EROS_FLUX_s2w PROC_IN_ARRAY,1:NT
 # define ARRAY_SETTL_FLUX_w2s PROC_IN_ARRAY,1:NT
 # define ARRAY_SETTL_FLUXSUM_w2s PROC_IN_ARRAY,1:NT
@@ -72,7 +66,6 @@
 /* dimensions of variables in hydro modele !*/
 # define ARRAY_WAT_SETTL GLOBAL_2D_ARRAY,N,itsubs1:itsubs2
 # define ARRAY_WATER_CONC GLOBAL_2D_ARRAY,N,3,NT
-!# define ARRAY_TEMPSAL GLOBAL_2D_ARRAY,N 
 # define ARRAY_DHSED GLOBAL_2D_ARRAY 
 # define ARRAY_FROFON GLOBAL_2D_ARRAY 
 # define ARRAY_Z0HYDRO PROC_IN_ARRAY 
@@ -83,7 +76,6 @@
 
 #define  ARRAY_morpho GLOBAL_2D_ARRAY
 #define  ARRAY_h0_bedrock GLOBAL_2D_ARRAY
-
 
 /* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/
@@ -137,26 +129,17 @@
 # define CURRENTU_im1jm1 BAROTROP_VELOCITY_U(i,j-1,3) 
 # define CURRENTU_ijm1   BAROTROP_VELOCITY_U(i+1,j-1,3) 
 
-
-/* name of fluxes exchange between MUSTANG and hydro model 
-!*/
-# define EROS_FLUX_s2w flx_s2w_CROCO /* Erosion flux from sediment to water  */
-
+/* name of fluxes exchange between MUSTANG and hydro model */
+# define EROS_FLUX_s2w flx_s2w_CROCO /* Erosion flux from sediment to water */
 # define SETTL_FLUX_w2s flx_w2s_CROCO  /* Tendance Flux de depot eau vers sediment (=flx_s2w in MARS) only for particulate */
 # define SETTL_FLUXSUM_w2s flx_w2s_sum_CROCO /* effective deposit Flux (sum) from water to sediment in hydro model (=flx_w2s_sum in MARS)*/
-
 /* to locate the number of variables simulated by MUSTANG in the host hydro model (used in coupleur to tranfer exchange arrays  */      
 # define IV_HOSTMODEL itsubs1+iv-1
 # define ITEMP_HOSTMODEL itemp
 # define ISAL_HOSTMODEL itemp+1
-
 # define WATER_FLUX_INPUT_BOTCELL phieau_CROCO(:,:,1) /* Flux d eau apporte dans la maille de fond in hydro model (=phieau in MARS) */
 
-
-/* Lateral Erosion
-!   in neighboring cells (could depend on grid architecture) 
-!*/
-
+/* Lateral Erosion in neighboring cells (could depend on grid architecture) */
 # define HTOT_NEAR_E htot(i+1,j)
 # define HTOT_NEAR_W htot(i-1,j)
 # define HTOT_NEAR_N htot(i,j+1)
@@ -170,9 +153,8 @@
 # define U_NEAR_N (CURRENTU_im1jp1 + CURRENTU_ijp1)
 # define U_NEAR_S (CURRENTU_im1jm1 + CURRENTU_ijm1)
 
-/* sliding proces of fluid mud
-!   slope of the bottom in the neighboring cells (could depend on grid architecture)
-!*/
+/* sliding proces of fluid mud slope of the bottom in the neighboring cells 
+(could depend on grid architecture) */
 # define SLOPE_W ((BATHY_H0(i-1,j)-BATHY_H0(i,j))/CELL_DX(i,j))
 # define SLOPE_E ((BATHY_H0(i+1,j)-BATHY_H0(i,j))/CELL_DX(i,j))
 # define SLOPE_N ((BATHY_H0(i,j+1)-BATHY_H0(i,j))/CELL_DY(i,j))

@@ -1,89 +1,86 @@
 #include "cppdefs.h"
-!---------------------------------------------------------------------------
+!----------------------------------------------------------------------------
 MODULE coupler_MUSTANG
-!--------------------------------------------------------------------------- 
+!---------------------------------------------------------------------------- 
 
 #if defined MUSTANG 
 
-   !&E==========================================================================
-   !&E                   ***  MODULE  coupler_MUSTANG  ***
-   !&E
-   !&E ** Purpose : concerns coupling MUSTANG with hydro code
-   !&E              
-   !&E ** Description :
-   !&E     subroutine coupl_conv2MUSTANG        ! calculation of some variables needed by MUSTANG
-   !&E     subroutine coupl_MUSTANG2hydro       ! transfert from MUSTANG to hydro code
-   !&E
-!&E===================================================================================================================
+!&E==========================================================================
+!&E                   ***  MODULE  coupler_MUSTANG  ***
+!&E
+!&E ** Purpose : concerns coupling MUSTANG with hydro code
+!&E              
+!&E ** Description :
+!&E   subroutine coupl_conv2MUSTANG ! calculation of some variables needed 
+!&E                                   by MUSTANG
+!&E   subroutine coupl_MUSTANG2hydro ! transfert from MUSTANG to hydro code
+!&E
+!&E==========================================================================
 
 #include "coupler_define_MUSTANG.h"
 
-   USE comMUSTANG
-   USE comsubstance
-   USE module_MUSTANG
-   USE module_substance
+    USE comMUSTANG
+    USE comsubstance
+    USE module_MUSTANG
+    USE module_substance
 
-   IMPLICIT NONE
+    IMPLICIT NONE
 
-   ! functions & routines of this module, called outside :
-   PUBLIC coupl_conv2MUSTANG, coupl_MUSTANG2hydro
+    ! functions & routines of this module, called outside :
+    PUBLIC coupl_conv2MUSTANG, coupl_MUSTANG2hydro
 
-   PRIVATE
- 
- CONTAINS
-   !!===========================================================================
+    PRIVATE
 
-  SUBROUTINE coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,BATHY_H0,ssh,    &
-                     WATER_CONCENTRATION)
-
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE coupl_conv2MUSTANG  ***
-   !&E
-   !&E ** Purpose : transfer cv_Wat and htot et alt_cw1 computation
-   !&E               only inside the domain, not at boundaries meshes
-   !&E
-   !&E         for MARS : ifirst=imin+2, ilast=imax-1, jfirst=jmin+2,  jlast=jmax-1
-   !&E                    for interior processors : ifirst=limin, ilast=limax, jfirst=ljmin,  jlast=ljmax
-   !&E                    to be inside the domain and not at boundaries :
-   !&E                                              from jmin+2=jb+1 a jmax-1=jlast=jh-1 
-   !&E                                          and from imin+2=id+1 a imax-1=ilast=id-1
-   !&E                    ig(j)=imin+1 & id(j)=imax 
-   !&E                    domain limited by the coast thanks to ig,id,jb,jh (non calculation at land)
-   !&E
-   !&E ** Description :  
-   !&E  arguments IN : BATHY_H0,ssh,WATER_CONCENTRATION
-   !&E  arguments OUT: no (all variables  in comMUSTANG)
-   !&E     
-   !&E   variables OUT :   
-   !&E       htot (total water height )
-   !&E       epn_bottom (thickness of water the bottom layer)
-   !&E       sal_bottom_MUSTANG,temp_bottom_MUSTANG (salinity, temperature in the water bottom layer)
-   !&E       cw_bottom_MUSTANG ( concentrations in the water bottom layer)
-   !&E       roswat_bot ( water density  in the water bottom layer)
-   !&E     
-   !&E   initial call  (iappel=0 for initialization):  
-   !&E      extraction of thickness, salinity, temperature and water concentrations and densities
-   !&E                 in the bottom of the water column
-   !&E
-   !&E   first call (iappel=1) :  
-   !&E      extraction of thickness, salinity, temperature and water concentrations and densities
-   !&E                 in the bottom of the water column
-   !&E       calculation of total water height    
-   !&E       calculation of  alt_cw1  : altitude of the computation point of Cw in the  bottom layer
-   !&E     
-   !&E   second call (iappel=2) :  
-   !&E      extraction of thickness, salinity, temperature and water concentrations and densities
-   !&E                 in the bottom of the water column
-   !&E       calculation of total water height    
-   !&E       si not MARS : conversion to transmit to MUSTANG the hydro variables:
-   !&E                     SETTL_FLUXSUM_w2s: effective deposit flux of the particle variables during transport
-   !&E    
-   !&E ** Called by :  MUSTANG_init_sediment (iappel=0)
-   !&E                 sed_MUSTANG_update (iappel=1) & sed_MUSTANG_deposition (iappel=2)
-   !&E
-   !&E--------------------------------------------------------------------------
+    CONTAINS
+    !!=======================================================================
+    SUBROUTINE coupl_conv2MUSTANG(ifirst, ilast, jfirst, jlast, iappel,     &
+                                  BATHY_H0, ssh, WATER_CONCENTRATION)
+    !&E----------------------------------------------------------------------
+    !&E                 ***  ROUTINE coupl_conv2MUSTANG  ***
+    !&E
+    !&E ** Purpose : transfer cv_Wat and htot et alt_cw1 computation
+    !&E               only inside the domain, not at boundaries meshes
+    !&E
+    !&E ** Description :  
+    !&E  arguments IN : BATHY_H0, ssh, WATER_CONCENTRATION
+    !&E  arguments OUT: no (all variables  in comMUSTANG)
+    !&E     
+    !&E   variables OUT :   
+    !&E       htot (total water height )
+    !&E       epn_bottom (thickness of water the bottom layer)
+    !&E       sal_bottom_MUSTANG,temp_bottom_MUSTANG (salinity, temperature 
+    !&E           in the water bottom layer)
+    !&E       cw_bottom_MUSTANG ( concentrations in the water bottom layer)
+    !&E       roswat_bot ( water density  in the water bottom layer)
+    !&E     
+    !&E   initial call  (iappel=0 for initialization):  
+    !&E       extraction of thickness, salinity, temperature and water 
+    !&E           concentrations and densities in the bottom of the water 
+    !&E           column
+    !&E
+    !&E   first call (iappel=1) :  
+    !&E       extraction of thickness, salinity, temperature and water 
+    !&E           concentrations and densities in the bottom of the water
+    !&E           column
+    !&E       calculation of total water height    
+    !&E       calculation of  alt_cw1  : altitude of the computation point 
+    !&E           of Cw in the  bottom layer
+    !&E     
+    !&E   second call (iappel=2) :  
+    !&E       extraction of thickness, salinity, temperature and water 
+    !&E           concentrations and densities in the bottom of the water 
+    !&E           column
+    !&E       calculation of total water height    
+    !&E       if not MARS : conversion to transmit to MUSTANG the hydro 
+    !&E           variables: SETTL_FLUXSUM_w2s: effective deposit flux  
+    !&E           of the particle variables during transport
+    !&E    
+    !&E ** Called by :  MUSTANG_init (iappel=0)
+    !&E                 sed_MUSTANG_update (iappel=1)
+    !&E                 sed_MUSTANG_deposition (iappel=2)
+    !&E
+    !&E----------------------------------------------------------------------
    !! * Modules used
-
 #include "scalars_F90.h"
 
    !! * Arguments 
@@ -92,9 +89,8 @@ MODULE coupler_MUSTANG
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(IN):: ssh                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
-   INTEGER  :: iv,k,i,j
+   INTEGER  :: iv, i, j
 
-   !!---------------------------------------------------------------------------
    !! * Executable part
    DO j=jfirst,jlast
       DO i=ifirst,ilast
@@ -169,59 +165,50 @@ MODULE coupler_MUSTANG
     ENDIF
 
   END SUBROUTINE coupl_conv2MUSTANG      
+!!===========================================================================
+    SUBROUTINE coupl_MUSTANG2hydro(ifirst, ilast, jfirst, jlast)                                         
+    !&E----------------------------------------------------------------------
+    !&E                 ***  ROUTINE coupl_MUSTANG2flx ***
+    !&E
+    !&E ** Purpose : transfer flx_w2s , ws3 ,flx_s2w for hydro code 
+    !&E
+    !&E ** Description : conversion for hydro code 
+    !&E  arguments OUT: no because stored in comMUSTANG
+    !&E     SETTL_FLUX_w2s : deposit trends 
+    !&E     EROS_FLUX_s2w : erosion flux 
+    !&E     EROS_FLUX_TEMP_s2w et eros_flix_SAL : erosion flux for 
+    !&E                                           temperature, salinity
+    !&E     
+    !&E ** Called by :  sed_MUSTANG_update
+    !&E
+    !&E----------------------------------------------------------------------
+    !! * Arguments 
+    INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast                     
+    !! * Local declarations
+    INTEGER :: iv, i, j
 
-   !!==============================================================================
-  SUBROUTINE coupl_MUSTANG2hydro(ifirst, ilast, jfirst, jlast)
-                                          
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE coupl_MUSTANG2flx ***
-   !&E
-   !&E ** Purpose : transfer corflux, corfluy, flx_w2s , ws3 ,flx_s2w
-   !&E               for hydro code 
-   !&E
-   !&E ** Description : conversion for hydro code 
-   !&E  arguments OUT: no because stored in comMUSTANG
-   !&E     SETTL_FLUX_w2s : deposit trends 
-   !&E     EROS_FLUX_s2w : erosion flux 
-   !&E     EROS_FLUX_TEMP_s2w et eros_flix_SAL : erosion flux for temperature, salinity
-   !&E     
-   !&E     
-   !&E ** Called by :  sed_MUSTANG_update
-   !&E
-   !&E--------------------------------------------------------------------------
-   !! * Modules used
-
-   !! * Arguments 
-   INTEGER, INTENT(IN) :: ifirst,ilast,jfirst,jlast                     
-   !! * Local declarations
-   INTEGER :: iv,k,i,j
-
-   !!---------------------------------------------------------------------------
-   !! * Executable part
-
-   ! exchange erosion  fluxes
-
-      DO j=jfirst,jlast
-      DO i=ifirst,ilast
-
-        DO iv=1,nvp
-            SETTL_FLUX_w2s(i,j,IV_HOSTMODEL)=flx_w2s(iv,i,j)
+    !! * Executable part
+    ! exchange erosion  fluxes
+    DO j = jfirst, jlast
+        DO i = ifirst, ilast
+            DO iv = 1, nvp
+                SETTL_FLUX_w2s(i, j, IV_HOSTMODEL) = flx_w2s(iv, i, j)
+            ENDDO
+            DO iv = 1, nv_adv
+                EROS_FLUX_s2w(i, j, IV_HOSTMODEL) = flx_s2w(iv, i, j)
+            ENDDO
+            ! temperature
+            EROS_FLUX_s2w(i, j, ITEMP_HOSTMODEL) = flx_s2w(-1, i, j)
+            ! salinity
+            EROS_FLUX_s2w(i, j, ISAL_HOSTMODEL) = flx_s2w(0, i, j)
+        ! no transfer of SETTL_FLUX_w2s_TEMP et SAL and for dissolved subst. 
+        ! because they are merged in EROS_FLUX_s2w for dissolved variables
+        ! (EROS_FLUX_s2w=erosion-settling+consolidation-diffusion) 
         ENDDO
-        DO iv=1,nv_adv
-            EROS_FLUX_s2w(i,j,IV_HOSTMODEL)=flx_s2w(iv,i,j)
-        ENDDO
-        ! temperature
-        EROS_FLUX_s2w(i,j,ITEMP_HOSTMODEL)=flx_s2w(-1,i,j)
-        ! salinity
-        EROS_FLUX_s2w(i,j,ISAL_HOSTMODEL)=flx_s2w(0,i,j)
+    ENDDO
 
-        ! no transfer of SETTL_FLUX_w2s_TEMP et SAL and for dissolved subst. because they are merged in EROS_FLUX_s2w
-        ! for dissolved variables (EROS_FLUX_s2w=erosion-settling+consolidation-diffusion) 
-      ENDDO
-      ENDDO
-
-  END SUBROUTINE coupl_MUSTANG2hydro    
-!!==============================================================================
+END SUBROUTINE coupl_MUSTANG2hydro    
+!!===========================================================================
 #endif /* ifdef MUSTANG */
 
 END MODULE coupler_MUSTANG

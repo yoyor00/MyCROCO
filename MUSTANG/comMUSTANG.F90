@@ -52,7 +52,7 @@
 #endif
 
    REAL(KIND=rsh)            :: fricwav,fws2,dzsmin,cfreshmud,csedmin,cmudcr,ros_sand_homogen, &
-                                cvolmaxsort,cvolmaxmel,xperm1,xperm2,xsigma1,xsigma1sg,        &
+                                cvolmaxsort,cvolmaxmel,xperm1,xperm2,xsigma1,                  &
                                 xsigma2, xdifs1,xdifs2,xdifsi1,xdifsi2,                        &
                                 epdifi,fexcs,cexcs,activlayer,frmudcr2,coef_frmudcr1,          &
                                 x1toce_mud,x2toce_mud,E0_sand_para,n_eros_sand,E0_mud,         &
@@ -250,7 +250,7 @@
 #if ! defined key_noTSdiss_insed
  ! Temperature in sediment 
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: phitemp_s,phitemp_sout
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: cp_s,mu_tempsedsurf,poro_sedsurf
+   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: cp_s,poro_sedsurf
    REAL(KIND=rsh)                            :: mu_tempsed1,mu_tempsed2,mu_tempsed3,  &
                                                         epsedmin_tempsed,epsedmax_tempsed,cp_suni   !!!FG(29/06/2018)
 #endif

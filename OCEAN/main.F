@@ -36,7 +36,7 @@
           USE substance, ONLY : substance_surfcell
 #endif
 #ifdef MUSTANG
-          USE plug_MUSTANG_CROCO, ONLY : mustang_init_sediment_main
+          USE plug_MUSTANG_CROCO, ONLY : mustang_init_main
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
@@ -434,7 +434,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #ifdef MUSTANG
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call MUSTANG_init_sediment_main (tile)
+        call MUSTANG_init_main (tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
 #endif

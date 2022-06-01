@@ -7,7 +7,7 @@
       USE module_MUSTANG
       USE sed_MUSTANG, ONLY : MUSTANG_update, MUSTANG_deposition
       USE sed_MUSTANG, ONLY : MUSTANG_morpho
-      USE initMUSTANG, ONLY : MUSTANG_init_sediment
+      USE initMUSTANG, ONLY : MUSTANG_init
 
 # include "coupler_define_MUSTANG.h"
 
@@ -17,11 +17,10 @@
 
       PUBLIC   mustang_update_main
       PUBLIC   mustang_deposition_main
-      PUBLIC   mustang_init_sediment_main
+      PUBLIC   mustang_init_main
       PUBLIC   mustang_morpho_main
 
 CONTAINS
-
 !
 !-----------------------------------------------------------------------
 !
@@ -52,17 +51,16 @@ CONTAINS
                    WATER_ELEVATION,                    &
                    WATER_CONCENTRATION)
       end subroutine
-
 !
 !-----------------------------------------------------------------------
 !
-      subroutine mustang_init_sediment_main (tile)
+      subroutine mustang_init_main (tile)
 
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-      CALL MUSTANG_init_sediment (Istr, Iend, Jstr, Jend, &
+      CALL MUSTANG_init (Istr, Iend, Jstr, Jend, &
                     WATER_ELEVATION,                       &
 # if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN
                     DHSED,                                 &
@@ -73,7 +71,6 @@ CONTAINS
                     RESIDUAL_THICKNESS_WAT, Z0HYDRO,       &
                     WATER_CONCENTRATION)
       end subroutine
-
 !
 !-----------------------------------------------------------------------
 !
@@ -101,4 +98,3 @@ CONTAINS
       end module plug_MUSTANG_CROCO_empty
       
 #endif /* MUSTANG */
-
