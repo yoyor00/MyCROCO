@@ -580,7 +580,8 @@ CONTAINS
            MPI_master_only WRITE(iwarnlog, *) '  WARNING    '
            MPI_master_only WRITE(iwarnlog, *) ' You are not taking into account CONSOLIDATION PROCESS'
            MPI_master_only WRITE(iwarnlog, *) ' fresh deposit concentration (cfreshmud) = ', cfreshmud
-           MPI_master_only WRITE(iwarnlog, *) ' and critical stress of deposition (tocd) of isusb=', isubs, ' exceed 1 Pa :', tocd(isubs)
+           MPI_master_only WRITE(iwarnlog, *) ' and critical stress of deposition (tocd) of isusb=', isubs, &
+                                              ' exceed 1.5 Pa :', tocd(isubs)
            MPI_master_only WRITE(iwarnlog, *) ' it should be smaller (0.5 to 1 ?) '
          ENDIF
        ENDDO
