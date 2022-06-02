@@ -21,8 +21,10 @@
    !&E                                    sediment dyn. are stored (depends on 
    !&E                                    hydro model)
    !&E     subroutine sed_exchange_w2s ! MPI treatment of slip deposit fluxes
-   !&E     subroutine sed_exchange_s2w ! MPI treatment of lateral erosion fluxes
+   !&E     subroutine sed_exchange_s2w ! MPI treatment of lateral erosion 
    !&E     subroutine sed_exchange_flxbedload ! MPI treatment of bedload fluxes
+   !&E     subroutine sed_exchange_maskbedload ! MPI exchange of mask for 
+   !&E                                           bedload
    !&E     subroutine sed_exchange_corflu ! MPI treatment of corflu fluxes
    !&E     subroutine sed_obc_corflu ! corflu fluxes at boundaries
    !&E     subroutine sed_meshedges_corflu ! corflu fluxes interpolation at 
@@ -49,6 +51,7 @@
    PUBLIC sed_bottom_slope
 #if defined MPI 
    PUBLIC sed_exchange_flxbedload
+   PUBLIC sed_exchange_maskbedload
 #endif
 #endif
 #if defined MPI  && defined key_MUSTANG_slipdeposit
@@ -847,10 +850,35 @@
       return
       
   END SUBROUTINE sedinit_fromfile
+!!=============================================================================
+
+#if defined MPI && defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+    SUBROUTINE sed_exchange_maskbedload(ifirst, ilast, jfirst, jlast)
+    !&E-------------------------------------------------------------------------
+    !&E                 ***  ROUTINE sed_exchange_maskbedload ***
+    !&E
+    !&E ** Purpose : exchange MPI mask for bedload
+    !&E
+    !&E ** Description : exchange MPI mask for bedload
+    !&E
+    !&E ** Called by : MUSTANG_update
+    !&E-------------------------------------------------------------------------
+
+    !! * Arguments
+    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
+
+    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
+    workexch(:,:) = sedimask_h0plusxe(:,:)
+    call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+              &           workexch(START_2D_ARRAY))
+    sedimask_h0plusxe(:,:) = workexch(:,:)
+
+    END SUBROUTINE sed_exchange_maskbedload
+#endif /* defined MPI && defined key_MUSTANG_V2 && defined key_MUSTANG_bedload */
 
 !!=============================================================================
 
-#if defined MPI  && defined key_MUSTANG_slipdeposit
+#if defined MPI && defined key_MUSTANG_slipdeposit
     SUBROUTINE sed_exchange_w2s(ifirst, ilast, jfirst, jlast)
     !&E-------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_exchange_w2s ***
@@ -864,7 +892,7 @@
     !&E-------------------------------------------------------------------------
 
     !! * Arguments
-    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast, type
+    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
 
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
     INTEGER :: iv
@@ -901,7 +929,7 @@
 
 !!=============================================================================
 
-#if defined MPI  && defined key_MUSTANG_lateralerosion
+#if defined MPI && defined key_MUSTANG_lateralerosion
     SUBROUTINE sed_exchange_s2w(ifirst, ilast, jfirst, jlast)
     !&E-------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_exchange_s2w ***
@@ -915,7 +943,7 @@
     !&E-------------------------------------------------------------------------
 
     !! * Arguments
-    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast, type
+    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
 
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
     INTEGER :: iv

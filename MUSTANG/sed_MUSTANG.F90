@@ -171,8 +171,8 @@ MODULE sed_MUSTANG
     USE sed_MUSTANG_HOST,    ONLY :  sed_bottom_slope
 #if defined MPI 
     USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_flxbedload
+    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_maskbedload
 #endif
-    !! To Program in sed_MUSTANG_CROCO sed_exchange_maskbedload_HOST
 #endif
 #if defined MPI  && defined key_MUSTANG_slipdeposit
     USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_w2s
@@ -366,18 +366,17 @@ MODULE sed_MUSTANG
    flx_bx(:,:,:)=0.0_rsh
    flx_by(:,:,:)=0.0_rsh
 
-
-   sedimask_h0plusxe(:,:)=0.0_rsh
-
-   DO j=jfirst-1,jlast+1
-     DO i=ifirst-1,ilast+1
+   sedimask_h0plusxe(:,:) = 0.0_rsh
+   DO j = jfirst-1, jlast+1
+     DO i = ifirst-1, ilast+1
          IF (htot(i,j) .GT. hmin_bedload) THEN
-           sedimask_h0plusxe(i,j)=1.0_rsh
+           sedimask_h0plusxe(i,j) = 1.0_rsh
          ENDIF
      ENDDO
    ENDDO
-
-   !**TODO** still to code for CROCO with MPI CALL sed_exchange_maskbedload_MARS
+#if defined MPI
+   CALL sed_exchange_maskbedload(ifirst, ilast, jfirst, jlast)
+#endif
 
 #ifdef key_MUSTANG_specif_outputs
   ! flx_bx and by
@@ -394,8 +393,7 @@ MODULE sed_MUSTANG
      ENDIF
 #endif   
 
-! end key_MUSTANG_bedload (version V2)
-#endif
+#endif  /*end key_MUSTANG_bedload (version V2)*/
 
    CALL sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv,     &
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
@@ -559,10 +557,6 @@ MODULE sed_MUSTANG
 
    !! * Local declarations
    INTEGER        :: iappel,iexchge_MPI_cvwat
-#if defined key_MUSTANG_slipdeposit && defined MPI
-   REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch    
-   INTEGER        :: iv
-#endif
    !! * Executable part 
   
    !deposit if strong bottom slope   
@@ -598,7 +592,7 @@ MODULE sed_MUSTANG
    IF(slopefac .NE. 0.0_rsh) THEN
      CALL sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
 #if defined MPI
-    CALL sed_MUSTANG_exchange_w2s(ifirst, ilast, jfirst, jlast)
+    CALL sed_exchange_w2s(ifirst, ilast, jfirst, jlast)
 #endif
    ENDIF 
 #endif
@@ -4965,40 +4959,36 @@ MODULE sed_MUSTANG
    !&E ** Called by :  MUSTANG_deposition
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
    !! * Arguments
-   INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
+   INTEGER, INTENT(IN)    :: ifirst, ilast, jfirst, jlast
 
    !! * Local declarations
-   INTEGER                :: iv,i,j
-   REAL(KIND=rsh)         :: cordepfluw,cordepflue,cordepflus,cordepflun,cordepflu
+   INTEGER                :: iv, i, j
+   REAL(KIND=rsh)         :: cordepfluw, cordepflue, cordepflus, cordepflun, cordepflu
 
-
-   !!----------------------------------------------------------------------
    !! * Executable part 
-   DO j=jfirst,jlast 
-     DO i=ifirst,ilast
+   DO j = jfirst, jlast 
+     DO i = ifirst, ilast
         IF(htot(i,j) > h0fond) THEN
 
-         cordepfluw=max(0.0_rsh,slopefac*SLOPE_W)
-         cordepflue=max(0.0_rsh,slopefac*SLOPE_E)
-         cordepflus=max(0.0_rsh,slopefac*SLOPE_S)
-         cordepflun=max(0.0_rsh,slopefac*SLOPE_N)
+         cordepfluw = max(0.0_rsh, slopefac * SLOPE_W)
+         cordepflue = max(0.0_rsh, slopefac * SLOPE_E)
+         cordepflus = max(0.0_rsh, slopefac * SLOPE_S)
+         cordepflun = max(0.0_rsh, slopefac * SLOPE_N)
          cordepflu=cordepfluw+cordepflue+cordepflus+cordepflun
          IF (cordepflu.gt.1.0_rsh)THEN
-           cordepfluw=cordepfluw/cordepflu
-           cordepflue=cordepflue/cordepflu
-           cordepflus=cordepflus/cordepflu
-           cordepflun=cordepflun/cordepflu
-           cordepflu=1.0_rsh
+           cordepfluw = cordepfluw / cordepflu
+           cordepflue = cordepflue / cordepflu
+           cordepflus = cordepflus / cordepflu
+           cordepflun = cordepflun / cordepflu
+           cordepflu = 1.0_rsh
          ENDIF
-         DO iv=isand2+1,nvp
-           flx_w2s_corim1(iv,i,j)=cordepfluw*flx_w2s_sum(iv,i,j)*CELL_SURF(i,j)/SURF_NEAR_W
-           flx_w2s_corip1(iv,i,j)=cordepflue*flx_w2s_sum(iv,i,j)*CELL_SURF(i,j)/SURF_NEAR_E
-           flx_w2s_corjm1(iv,i,j)=cordepflus*flx_w2s_sum(iv,i,j)*CELL_SURF(i,j)/SURF_NEAR_S
-           flx_w2s_corjp1(iv,i,j)=cordepflun*flx_w2s_sum(iv,i,j)*CELL_SURF(i,j)/SURF_NEAR_N
-           flx_w2s_corin(iv,i,j)=-cordepflu*flx_w2s_sum(iv,i,j)
+         DO iv = isand2+1, nvp
+           flx_w2s_corim1(iv,i,j) = cordepfluw * flx_w2s_sum(iv,i,j) * CELL_SURF(i,j) / SURF_NEAR_W
+           flx_w2s_corip1(iv,i,j) = cordepflue * flx_w2s_sum(iv,i,j) * CELL_SURF(i,j) / SURF_NEAR_E
+           flx_w2s_corjm1(iv,i,j) = cordepflus * flx_w2s_sum(iv,i,j) * CELL_SURF(i,j) / SURF_NEAR_S
+           flx_w2s_corjp1(iv,i,j) = cordepflun * flx_w2s_sum(iv,i,j) * CELL_SURF(i,j) / SURF_NEAR_N
+           flx_w2s_corin(iv,i,j) = -cordepflu * flx_w2s_sum(iv,i,j)
          ENDDO
         ENDIF
 
