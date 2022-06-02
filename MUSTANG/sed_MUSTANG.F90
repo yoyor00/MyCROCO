@@ -177,6 +177,9 @@ MODULE sed_MUSTANG
 #if defined MPI  && defined key_MUSTANG_slipdeposit
     USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_w2s
 #endif
+#if defined MPI  && defined key_MUSTANG_lateralerosion
+    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_s2w
+#endif
 #if defined MUSTANG_CORFLUX
     USE sed_MUSTANG_HOST,    ONLY :  sed_obc_corflu
     USE sed_MUSTANG_HOST,    ONLY :  sed_meshedges_corflu
@@ -432,30 +435,8 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    IF(coef_erolat .NE. 0.0_rsh) THEN
      ! lateral erosion of dry cell
-     ! exchange MPI
-   ! **TODO** create sed_exchange_s2w in sed_MUSTANG_CROCO with the following lines
 #if defined MPI
-   DO iv=-1,nv_adv
-     workexch(:,:) = flx_s2w_corip1(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_s2w_corip1(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = flx_s2w_corim1(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_s2w_corim1(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = flx_s2w_corjp1(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_s2w_corjp1(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = flx_s2w_corjm1(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_s2w_corjm1(iv,:,:) = workexch(:,:)
-   enddo
+    call sed_exchange_s2w(ifirst, ilast, jfirst, jlast)
 #endif
 
       ! correction : neighboring cells of eroded laterally  dry cell receive one fraction of eroded sediment 

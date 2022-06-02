@@ -20,6 +20,13 @@
    !&E     subroutine sedinit_fromfile  ! reads filrepsed where all results of 
    !&E                                    sediment dyn. are stored (depends on 
    !&E                                    hydro model)
+   !&E     subroutine sed_exchange_w2s ! MPI treatment of slip deposit fluxes
+   !&E     subroutine sed_exchange_s2w ! MPI treatment of lateral erosion fluxes
+   !&E     subroutine sed_exchange_flxbedload ! MPI treatment of bedload fluxes
+   !&E     subroutine sed_exchange_corflu ! MPI treatment of corflu fluxes
+   !&E     subroutine sed_obc_corflu ! corflu fluxes at boundaries
+   !&E     subroutine sed_meshedges_corflu ! corflu fluxes interpolation at 
+   !&E                                       mesh edges
    !&E
    !&E==========================================================================
 
@@ -46,6 +53,9 @@
 #endif
 #if defined MPI  && defined key_MUSTANG_slipdeposit
    PUBLIC sed_exchange_w2s
+#endif
+#if defined MPI  && defined key_MUSTANG_lateralerosion
+   PUBLIC sed_exchange_s2w
 #endif
 #if defined MUSTANG_CORFLUX
    PUBLIC sed_obc_corflu
@@ -887,9 +897,57 @@
     enddo
   
     END SUBROUTINE sed_exchange_w2s
-#endif /* defined MPI */
+#endif /* defined MPI && defined key_MUSTANG_slipdeposit */
 
 !!=============================================================================
+
+#if defined MPI  && defined key_MUSTANG_lateralerosion
+    SUBROUTINE sed_exchange_s2w(ifirst, ilast, jfirst, jlast)
+    !&E-------------------------------------------------------------------------
+    !&E                 ***  ROUTINE sed_exchange_s2w ***
+    !&E
+    !&E ** Purpose : MPI exchange of lateral erosion flux between processors
+    !&E
+    !&E ** Description : MPI exchange between processors
+    !&E      used only if scoef_erolat .NE. 0 
+    !&E
+    !&E ** Called by : MUSTANG_update
+    !&E-------------------------------------------------------------------------
+
+    !! * Arguments
+    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast, type
+
+    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
+    INTEGER :: iv
+      
+    do iv=-1,nv_adv
+        workexch(:,:) = flx_s2w_corip1(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_s2w_corip1(iv,:,:) = workexch(:,:)
+
+        workexch(:,:) = flx_s2w_corim1(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_s2w_corim1(iv,:,:) = workexch(:,:)
+
+        workexch(:,:) = flx_s2w_corjp1(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_s2w_corjp1(iv,:,:) = workexch(:,:)
+
+        workexch(:,:) = flx_s2w_corjm1(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_s2w_corjm1(iv,:,:) = workexch(:,:)
+    enddo
+  
+    END SUBROUTINE sed_exchange_s2w
+#endif /* defined MPI && defined key_MUSTANG_lateralerosion */
+
+!!=============================================================================
+
+
 
 #if defined MUSTANG_CORFLUX
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -1086,7 +1144,6 @@
  
 ! **TODO** code for CROCO
 ! SUBROUTINE bathy_actu_fromfile(h0)
-! SUBROUTINE sed_exchange_s2w_MARS 
 ! subroutine sed_exchange_hxe_MARS(iwhat,xh0,xssh) 
 ! SUBROUTINE sed_exchange_maskbedload_MARS
 ! SUBROUTINE sed_outsaverestart(h0)
