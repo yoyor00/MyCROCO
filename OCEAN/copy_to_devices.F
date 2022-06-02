@@ -124,8 +124,9 @@
 !$acc& ,tzon,tclmzon
 #  endif
 # endif
-# if defined PSOURCE || defined PSOURCE_NCFILE
-!$acc& ,Isrc,Jsrc
+# if defined RIVER || defined PSOURCE || defined PSOURCE_NCFILE
+!$acc& ,Isrc,Jsrc,Tsrc, Tsrc0, qsrc, qbar, qbar0,qshape
+!$acc& ,dsrc, lsrc                   
 #  ifdef MPI
 !$acc& ,Isrc_mpi,Jsrc_mpi
 #  endif
