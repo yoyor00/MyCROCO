@@ -616,7 +616,7 @@
 :    l_outsed_flx_WS_int : boolean, set to .true. if output fluxes threw 
 :                          interface Water/sediment (integration on all 
 :                          constitutive particulate variables)
-:  choice_nivsed_out : integer, choice of saving output  
+:    choice_nivsed_out : integer, choice of saving output  
 :                  1 : all the layers (ksdmin to ksdmax) are saved 
 :                      (k=1 : bottom layer) (nk_nivsed_out, ep_nivsed_out,
 :                      epmax_nivsed_out are not used)
