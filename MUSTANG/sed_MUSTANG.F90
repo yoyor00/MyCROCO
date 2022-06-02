@@ -174,6 +174,9 @@ MODULE sed_MUSTANG
 #endif
     !! To Program in sed_MUSTANG_CROCO sed_exchange_maskbedload_HOST
 #endif
+#if defined MPI  && defined key_MUSTANG_slipdeposit
+    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_w2s
+#endif
 #if defined MUSTANG_CORFLUX
     USE sed_MUSTANG_HOST,    ONLY :  sed_obc_corflu
     USE sed_MUSTANG_HOST,    ONLY :  sed_meshedges_corflu
@@ -613,34 +616,8 @@ MODULE sed_MUSTANG
 #ifdef key_MUSTANG_slipdeposit
    IF(slopefac .NE. 0.0_rsh) THEN
      CALL sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
-     !**TODO** create sed_exchange_w2s in sed_MUSTANG_CROCO
 #if defined MPI
-   DO iv=isand2+1,nvp
-     workexch(:,:) = flx_w2s_corim1(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_w2s_corim1(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = flx_w2s_corip1(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_w2s_corip1(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = flx_w2s_corjm1(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_w2s_corjm1(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = flx_w2s_corjp1(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_w2s_corjp1(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = flx_w2s_corin(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     flx_w2s_corin(iv,:,:) = workexch(:,:)
-   enddo
+    CALL sed_MUSTANG_exchange_w2s(ifirst, ilast, jfirst, jlast)
 #endif
    ENDIF 
 #endif

@@ -44,6 +44,9 @@
    PUBLIC sed_exchange_flxbedload
 #endif
 #endif
+#if defined MPI  && defined key_MUSTANG_slipdeposit
+   PUBLIC sed_exchange_w2s
+#endif
 #if defined MUSTANG_CORFLUX
    PUBLIC sed_obc_corflu
    PUBLIC sed_meshedges_corflu
@@ -834,13 +837,65 @@
       return
       
   END SUBROUTINE sedinit_fromfile
+
+!!=============================================================================
+
+#if defined MPI  && defined key_MUSTANG_slipdeposit
+    SUBROUTINE sed_exchange_w2s(ifirst, ilast, jfirst, jlast)
+    !&E-------------------------------------------------------------------------
+    !&E                 ***  ROUTINE sed_exchange_w2s ***
+    !&E
+    !&E ** Purpose : MPI exchange of slip deposit flux between processors
+    !&E
+    !&E ** Description : MPI exchange between processors
+    !&E      used only if slopefac .NE. 0 (slip deposit if steep slope)
+    !&E
+    !&E ** Called by : MUSTANG_update
+    !&E-------------------------------------------------------------------------
+
+    !! * Arguments
+    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast, type
+
+    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
+    INTEGER :: iv
+      
+    do iv = isand2+1, nvp
+        workexch(:,:) = flx_w2s_corim1(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_w2s_corim1(iv,:,:) = workexch(:,:)
+
+        workexch(:,:) = flx_w2s_corip1(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_w2s_corip1(iv,:,:) = workexch(:,:)
+
+        workexch(:,:) = flx_w2s_corjm1(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_w2s_corjm1(iv,:,:) = workexch(:,:)
+
+        workexch(:,:) = flx_w2s_corjp1(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_w2s_corjp1(iv,:,:) = workexch(:,:)
+
+        workexch(:,:) = flx_w2s_corin(iv,:,:)
+        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+                &          workexch(START_2D_ARRAY))
+        flx_w2s_corin(iv,:,:) = workexch(:,:)
+    enddo
+  
+    END SUBROUTINE sed_exchange_w2s
+#endif /* defined MPI */
+
 !!=============================================================================
 
 #if defined MUSTANG_CORFLUX
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
   SUBROUTINE sed_exchange_corflu(ifirst, ilast, jfirst, jlast, type)
    !&E-------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_exchange_corflu_MARS ***
+   !&E                 ***  ROUTINE sed_exchange_corflu ***
    !&E
    !&E ** Purpose : treatment of horizontal flow corrections for the transport 
    !&E              of sand in suspension
@@ -1000,7 +1055,7 @@
     SUBROUTINE sed_meshedges_corflu(ifirst, ilast, jfirst, jlast)
  
         !&E------------------------------------------------------------------------
-        !&E                 ***  ROUTINE sed_meshedges_corflu ***
+        !&E       ***  ROUTINE sed_meshedges_corflu ***
         !&E
         !&E ** Purpose :  interpolate corflux and corfluy on mesh edges (in u & v) 
         !&E
@@ -1031,7 +1086,6 @@
  
 ! **TODO** code for CROCO
 ! SUBROUTINE bathy_actu_fromfile(h0)
-! SUBROUTINE sed_exchange_w2s_MARS
 ! SUBROUTINE sed_exchange_s2w_MARS 
 ! subroutine sed_exchange_hxe_MARS(iwhat,xh0,xssh) 
 ! SUBROUTINE sed_exchange_maskbedload_MARS
