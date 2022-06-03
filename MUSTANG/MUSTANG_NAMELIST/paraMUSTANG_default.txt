@@ -102,7 +102,7 @@
 :  namsedim_layer : Namelist relative to sediment layers characterization and 
 :                   active layer
 :------------------------------------------------------------------------------
-:    l_dzsminuni : boolean, set to .true. if dzsmin vary with sediment bed 
+:    l_dzsminuni : boolean, set to .false. if dzsmin vary with sediment bed 
 :                  composition, else dzsmin =  dzsminuni
 :                  (used if key_MUSTANG_V2 only)
 :    dzsminuni : real, minimum sediment layer thickness (m) 

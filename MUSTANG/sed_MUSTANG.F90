@@ -9447,7 +9447,8 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   END SUBROUTINE flocmod_mass_redistribute
  
 !!===========================================================================  
-#endif  
+#endif  /* key_MUSTANG_flocmod */
+
 !!===========================================================================
 real function MUSTANG_E0sand(diamsan, taucr, rossan, ws_sand)
 !&E--------------------------------------------------------------------------
