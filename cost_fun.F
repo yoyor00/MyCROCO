@@ -45,7 +45,7 @@ c         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
       end if
 
       do ta=1,ad_nt
-         call ad_step(ad_ns+1)
+         call ad_step(ad_ns)
          call cost_fun_step(ad_x,icost,ad_ast-1+ta,3)
          write(*,*) '==icost3==>',icost
 c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
@@ -156,7 +156,7 @@ c      end do
                   dpena = (pena_h(i+1,j) + pena_h(i-1,j)-2*pena_h(i,j))/
      &                 (om_u(i,j)*om_u(i,j))
                   icost = icost + delta_z*delta_z
-     &                 + 1.D3*dpena*dpena
+c     &                 + 1.D3*dpena*dpena
 
                   ad_irms = ad_irms + delta_z*delta_z
 c                  write(*,*) '=====>',zeta(i,j,knew)
@@ -178,13 +178,13 @@ c$$$     &                 delta_z,
 c$$$  &                 delta_h
 c                  if (zeta(i,j,knew).gt.0) then
 c                     if ((ta.gt.3).and.(ta.lt.ad_ns*ad_nt)) then
-c                  write(*,*) 'BBBBB',ad_sim_iicroot,ta,mynode,i,j,
-c     &                 zeta(i,j,knew),
-c     &                 ad_obs(i,j,ta+2),
-c     &                 ad_obs(i,j,ta+1),
-c     &                 ad_obs(i,j,ta),
-c     &                 ad_obs(i,j,ta-1),
-c     &                 ad_obs(i,j,ta-2)
+                  write(*,*) 'BBBBB',ad_sim_iicroot,ta,mynode,i,j,
+     &                 zeta(i,j,knew),
+     &                 ad_obs(i,j,ta+2),
+     &                 ad_obs(i,j,ta+1),
+     &                 ad_obs(i,j,ta),
+     &                 ad_obs(i,j,ta-1),
+     &                 ad_obs(i,j,ta-2)
 c                     end if
 c                  end if
                   ad_cost_counter = ad_cost_counter + 1
@@ -614,8 +614,8 @@ c      call grid_stiffness(tile)
 
 c set a lower depth
       depth=2000
-      ridge_width = 28.0D3
-      ridge_height = 1400
+      ridge_width = 30.0D3
+      ridge_height = 1600
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
@@ -636,8 +636,8 @@ c set a lower depth
        enddo
       enddo
 
-      ridge_width = 28.0D3
-      ridge_height = 1400
+      ridge_width = 30.0D3
+      ridge_height = 1600
 
       cff1=1./(ridge_width*ridge_width)
       j=JstrR

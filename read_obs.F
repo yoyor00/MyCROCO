@@ -53,7 +53,7 @@ c     this file is not differentiated
          do j=Jstr,Jend
             do i=Istr,Iend
                read(fid) ad_obs(i,j,k)
-c               write (*,*) 'ad_obs:',i,j,k,ad_obs(i,j,k)
+               write (*,*) 'ad_obs:',i,j,k,ad_obs(i,j,k)
             end do
          end do
       end do
