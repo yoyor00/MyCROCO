@@ -29,7 +29,7 @@ C     number of cost function computations
 #elif defined AD_ATLN
       parameter (ad_nt = 48)
 #elif defined INTERNAL
-      parameter (ad_nt = 3)
+      parameter (ad_nt = 7)
 #endif
 
 C     number of obs in observation file

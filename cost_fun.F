@@ -6,7 +6,7 @@
       integer k,iifroot,nstep
 
       write(*,*) 'start ad_step'
-C$AD BINOMIAL-CKP nstep+1 40 1
+C$AD BINOMIAL-CKP nstep+1 70 1
       do k=1,nstep
          do iifroot = 0,nfast+2
             call step()
@@ -156,7 +156,7 @@ c      end do
                   dpena = (pena_h(i+1,j) + pena_h(i-1,j)-2*pena_h(i,j))/
      &                 (om_u(i,j)*om_u(i,j))
                   icost = icost + delta_z*delta_z
-c     &                 + 1.D3*dpena*dpena
+     &                 + 1.D4*dpena*dpena
 
                   ad_irms = ad_irms + delta_z*delta_z
 c                  write(*,*) '=====>',zeta(i,j,knew)
@@ -613,9 +613,9 @@ c      call grid_stiffness(tile)
 # include "compute_extended_bounds.h"
 
 c set a lower depth
-      depth=2000
-      ridge_width = 30.0D3
-      ridge_height = 1600
+      depth=2100
+      ridge_width = 28.0D3
+      ridge_height = 1400
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
@@ -636,8 +636,8 @@ c set a lower depth
        enddo
       enddo
 
-      ridge_width = 30.0D3
-      ridge_height = 1600
+      ridge_width = 28.0D3
+      ridge_height = 1400
 
       cff1=1./(ridge_width*ridge_width)
       j=JstrR
