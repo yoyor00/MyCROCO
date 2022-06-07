@@ -573,10 +573,8 @@ C$OMP BARRIER
 #  endif
         if (IstrR.le.i .and. i.le.IendR .and.
      &      JstrR.le.j .and. j.le.JendR) then
-          if (Dsrc(is).eq.2) then
-            zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &      Qbar(is)*pm(i,j)*pn(i,j)*dtfast 
-          endif
+          zeta(i,j,knew)=zeta(i,j,knew)+ 
+     &    Qbar(is)*pm(i,j)*pn(i,j)*dtfast 
         endif
       enddo
 #endif

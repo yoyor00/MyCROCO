@@ -390,17 +390,15 @@
            if (Istr.le.i .and. i.le.Iend+1
      &        .and. Jstr.le.j .and. j.le.Jend+1) then
              cff1=dt*pm(i,j)*pn(i,j)
-             if (Dsrc(is).eq.2) then
-              do k=1,N 
-                if (Lsrc(is,itrc)) then
-                  cff2=Tsrc(is,k,itrc)
-                else
-                  cff2=t(i,j,k,nstp,itrc)
-                endif
-                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+
-     &           cff1*Qsrc(is,k)*cff2
-              enddo
-             endif
+             do k=1,N 
+               if (Lsrc(is,itrc)) then
+                 cff2=Tsrc(is,k,itrc)
+               else
+                 cff2=t(i,j,k,nstp,itrc)
+               endif
+                t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+
+     &          cff1*Qsrc(is,k)*cff2
+             enddo
            endif
           enddo ! source
         enddo ! itrc

@@ -410,7 +410,6 @@
 #   endif
            if (Istr.le.iis .and. iis.le.Iend+1
      &        .and. Jstr.le.jjs .and. jjs.le.Jend+1) then
-             if (Dsrc(is).eq.2) then
               cff1=dt*pm(iis,jjs)*pn(iis,jjs)
               do k=1,N 
                 if (Lsrc(is,itrc)) then
@@ -421,7 +420,6 @@
                  t(iis,jjs,k,nnew,itrc)=t(iis,jjs,k,nnew,itrc)+
      &           cff1*Qsrc(is,k)*cff2
               enddo
-             endif
            endif
           enddo ! source
         enddo ! itrc
