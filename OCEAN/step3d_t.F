@@ -64,7 +64,7 @@
 #  endif
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx, kmld
      &       ,imin,imax,jmin,jmax,iAkt,nadv
-#  ifdef PSOURCE
+#  if defined PSOURCE || defined PSOURCE_MASS
      &       ,is
 #  endif
 #  ifdef PSOURCE_MASS

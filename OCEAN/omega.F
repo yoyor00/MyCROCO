@@ -164,7 +164,6 @@
 !
 !---------------------------------------------------------
 #ifdef PSOURCE_MASS
-# ifdef PSOURCE
       do is=1,Nsrc
 #  ifdef MPI
         iis=Isrc_mpi(is,mynode)
@@ -193,7 +192,6 @@
           endif
         endif
       enddo
-# endif
 #endif
 !
 !---------------------------------------------------------

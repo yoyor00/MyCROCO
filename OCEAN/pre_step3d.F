@@ -66,7 +66,7 @@
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
      &       ,imin,imax,jmin,jmax,nadv,iAkt
-# ifdef PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS
      &       ,is
 # endif
       real   ru(PRIVATE_2D_SCRATCH_ARRAY,N),    cff,
@@ -96,7 +96,7 @@
 # include "forces.h"
 # include "mixing.h"
 # include "scalars.h"
-# ifdef PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS
 #  include "sources.h"
 # endif
 # ifdef M3FAST

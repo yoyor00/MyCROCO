@@ -105,7 +105,7 @@ C$    trd=omp_get_thread_num()
 #ifdef MPI
      &         err,
 #endif
-#ifdef PSOURCE
+#if defined PSOURCE || defined PSOURCE_MASS
      &        is,
 #endif
      &        imin,imax,jmin,jmax
@@ -308,7 +308,7 @@ C$    trd=omp_get_thread_num()
             urhs(i,j)=2.*Qbar(is)/( on_u(i,j)
      &                             *(Drhs(i-1,j)+Drhs(i,j)) )
             DUon(i,j)=Qbar(is)
-          else
+          elseif (Dsrc(is).eq.1) then
             vrhs(i,j)=2.*Qbar(is)/( om_v(i,j)
      &                             *(Drhs(i,j-1)+Drhs(i,j)) )
             DVom(i,j)=Qbar(is)
