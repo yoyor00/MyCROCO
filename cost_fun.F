@@ -6,7 +6,7 @@
       integer k,iifroot,nstep
 
       write(*,*) 'start ad_step'
-C$AD BINOMIAL-CKP nstep+1 70 1
+C$AD BINOMIAL-CKP nstep+1 72 1
       do k=1,nstep
          do iifroot = 0,nfast+2
             call step()
@@ -156,7 +156,7 @@ c      end do
                   dpena = (pena_h(i+1,j) + pena_h(i-1,j)-2*pena_h(i,j))/
      &                 (om_u(i,j)*om_u(i,j))
                   icost = icost + delta_z*delta_z
-     &                 + 1.D4*dpena*dpena
+     &                 + 1.D2*dpena*dpena
 
                   ad_irms = ad_irms + delta_z*delta_z
 c                  write(*,*) '=====>',zeta(i,j,knew)
@@ -178,13 +178,13 @@ c$$$     &                 delta_z,
 c$$$  &                 delta_h
 c                  if (zeta(i,j,knew).gt.0) then
 c                     if ((ta.gt.3).and.(ta.lt.ad_ns*ad_nt)) then
-                  write(*,*) 'BBBBB',ad_sim_iicroot,ta,mynode,i,j,
-     &                 zeta(i,j,knew),
-     &                 ad_obs(i,j,ta+2),
-     &                 ad_obs(i,j,ta+1),
-     &                 ad_obs(i,j,ta),
-     &                 ad_obs(i,j,ta-1),
-     &                 ad_obs(i,j,ta-2)
+c                  write(*,*) 'BBBBB',ad_sim_iicroot,ta,mynode,i,j,
+c     &                 zeta(i,j,knew),
+c     &                 ad_obs(i,j,ta+2),
+c     &                 ad_obs(i,j,ta+1),
+c     &                 ad_obs(i,j,ta),
+c     &                 ad_obs(i,j,ta-1),
+c     &                 ad_obs(i,j,ta-2)
 c                     end if
 c                  end if
                   ad_cost_counter = ad_cost_counter + 1
