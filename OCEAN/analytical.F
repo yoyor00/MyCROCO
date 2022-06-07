@@ -1945,7 +1945,7 @@ C$    integer  trd, omp_get_thread_num
 !                   subroutine ana_psource
 !======================================================================
 !
-#if defined PSOURCE && defined ANA_PSOURCE
+#if (defined PSOURCE || defined PSOURCE_MASS) && defined ANA_PSOURCE
 !
 !----------------------------------------------------------------------
 !  Set analytical tracer and mass point sources and sinks
@@ -1969,12 +1969,32 @@ C$    integer  trd, omp_get_thread_num
 ! Set-up nondimensional shape Qshape, must add to unity
 !
 # ifdef RIVER
-#  define EXP_SHAPE
+
+#  ifdef PSOURCE_MASS
+     !if the source is applied as volume vertical influx 
+     !the distribution must be either uniform or located at the bottom
+     !if you want a bottom influx you should use GLS_MIXING instead of LMD
+#    define CST_SHAPE
+!#    define BOTTOM_SHAPE
+#  else
+!#   define EXP_SHAPE
+#   define CST_SHAPE
+#  endif
+
 #  ifdef CST_SHAPE
         cff=1./float(N)
         do k=1,N                       ! Uniform vertical
           do is=1,Nsrc                 ! distribution
             Qshape(is,k)=cff
+          enddo
+        enddo
+#  elif defined BOTTOM_SHAPE
+        do is=1,Nsrc
+         Qshape(is,1)=1
+        enddo
+        do k=2,N                       ! All flux at bottom
+          do is=1,Nsrc                 
+            Qshape(is,k)=0.
           enddo
         enddo
 #  elif defined EXP_SHAPE

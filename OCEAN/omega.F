@@ -164,7 +164,6 @@
 !
 !---------------------------------------------------------
 #ifdef PSOURCE_MASS
-# ifdef PSOURCE
       do is=1,Nsrc
 #  ifdef MPI
         iis=Isrc_mpi(is,mynode)
@@ -176,24 +175,17 @@
         if (IstrR.le.iis .and. iis.le.IendR .and.
      &      JstrR.le.jjs .and. jjs.le.JendR .and.
      &      jjs.eq.j) then
-          if (Dsrc(is).eq.2) then
-            do k=1,N
-!          if (is==2 .and. k==1)
-!     &     write(100,*)'omega W',We(iis,jjs,k)
-              We(iis,jjs,k)=We(iis,jjs,k-1)-                           
-     &                   (Huon(iis+1,jjs,k)-Huon(iis,jjs,k)+            
-     &                    Hvom(iis,jjs+1,k)-Hvom(iis,jjs,k))          
-     &                       -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
-     &                                  *om_r(iis,jjs)*on_r(iis,jjs)
-     &                       + Qsrc(is,k)
+          do k=1,N
+            We(iis,jjs,k)=We(iis,jjs,k-1)-                           
+     &                 (Huon(iis+1,jjs,k)-Huon(iis,jjs,k)+            
+     &                  Hvom(iis,jjs+1,k)-Hvom(iis,jjs,k))          
+     &                     -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
+     &                                *om_r(iis,jjs)*on_r(iis,jjs)
+     &                     + Qsrc(is,k)
 
-!         if (is==2 .and. k==1)
-!    &     write(100,*)'omega W +Qsrc',We(iis,jjs,k),Qsrc(is,k)
-            enddo 
-          endif
+          enddo 
         endif
       enddo
-# endif
 #endif
 !
 !---------------------------------------------------------

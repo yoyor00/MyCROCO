@@ -66,7 +66,7 @@
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
      &       ,imin,imax,jmin,jmax,nadv,iAkt
-# ifdef PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS
      &       ,is
 # endif
       real   ru(PRIVATE_2D_SCRATCH_ARRAY,N),    cff,
@@ -96,7 +96,7 @@
 # include "forces.h"
 # include "mixing.h"
 # include "scalars.h"
-# ifdef PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS
 #  include "sources.h"
 # endif
 # ifdef M3FAST
@@ -390,17 +390,15 @@
            if (Istr.le.i .and. i.le.Iend+1
      &        .and. Jstr.le.j .and. j.le.Jend+1) then
              cff1=dt*pm(i,j)*pn(i,j)
-             if (Dsrc(is).eq.2) then
-              do k=1,N 
-                if (Lsrc(is,itrc)) then
-                  cff2=Tsrc(is,k,itrc)
-                else
-                  cff2=t(i,j,k,nstp,itrc)
-                endif
-                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+
-     &           cff1*Qsrc(is,k)*cff2
-              enddo
-             endif
+             do k=1,N 
+               if (Lsrc(is,itrc)) then
+                 cff2=Tsrc(is,k,itrc)
+               else
+                 cff2=t(i,j,k,nstp,itrc)
+               endif
+                t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+
+     &          cff1*Qsrc(is,k)*cff2
+             enddo
            endif
           enddo ! source
         enddo ! itrc

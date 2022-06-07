@@ -630,9 +630,12 @@
     PSOURCE / PSOURCE_NCFILE option
 ======================================================================
 */
-#if defined PSOURCE
+#if defined PSOURCE || defined PSOURCE_MASS
 #  define ANA_PSOURCE  /* ON: set vertical profil for qbar */
 #  undef RIVER_RAMP
+#endif
+#ifdef PSOURCE_MASS
+#  undef PSOURCE
 #endif
 #if defined PSOURCE_NCFILE
 # define PSOURCE

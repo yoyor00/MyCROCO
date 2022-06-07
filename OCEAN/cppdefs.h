@@ -907,6 +907,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define PSOURCE
+# undef PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
 # undef  FLOATS
