@@ -4522,7 +4522,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
 
         vname(1,indxbioFlux+Nmeso2-1)=
      &     'meso2                                      '
-        vname(2,indxbioFlux+Nmeso2-1)
+        vname(2,indxbioFlux+Nmeso2-1)=
      &     'O2 comsumption by mesozoo                  '
         vname(3,indxbioFlux+Nmeso2-1)=
      &     'molC/m3/s                                  '
@@ -4658,7 +4658,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
 
       vname(1,indxbioVSink+Nsildep-1)=
      &     'Sildep                           '
-      vname(2,indxbioVSink+Nsildep-1)
+      vname(2,indxbioVSink+Nsildep-1)=
      &     'Silicate surface deposition flux '
       vname(3,indxbioVSink+Nsildep-1)=
      &     'molSi/m2/s                       '
