@@ -132,7 +132,7 @@ CONTAINS
 
          ! Impact of the day duration on phytoplankton growth
       DO jk = KRANGE
-         DO jj = 1 ,jpj
+         DO jj = JRANGE
             DO ji = IRANGE
                IF( etot_ndcy(ji,jj,jk) > 1.E-3 ) THEN
                   zval = MAX( 1., zstrn(ji,jj) )
