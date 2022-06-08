@@ -386,7 +386,7 @@ C$    integer omp_get_thread_num
                      Length_XI = 100000.0
 # elif defined ESTUARY
                      Length_ETA= 9000.0   ! dy =100m
-                     Length_XI = 120000.0  ! dx = 600m
+                     Length_XI = 120000.0  ! dx = 600m or 100m if ESTUARY_SQUARE
 # else
                      Length_XI =???
                      Length_ETA=??? 
@@ -924,7 +924,11 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 
 # elif defined ESTUARY
 
+# if defined ESTUARY_SQUARE
+      imouth = 240 
+# else
       imouth = 40
+# endif
       jmiddle = int(MMm/2)
       m = 2.0 ! half tide height (m)
       estCWM = 200.0 ! estuary Channel Widht at Mouth (m)
@@ -1006,11 +1010,9 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 
         do j = JstrR, JendR
 #  ifdef MPI
-          cff  = (float(i +ii*Lm) )
-          cff2 = (float(j +jj*Mm) )
+          cff2 = (float(j + jj*Mm) )
 #  else  
-          cff  = (float(i       ) )
-          cff2 = (float(j       ) )
+          cff2 = (float(j        ) )
 #  endif
           ybot(j) = dy * abs(cff2 - jmiddle)
 
@@ -1021,25 +1023,25 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
      &             * (ybot(j) - l1(i))
           else
             h(i,j) = amax1(-7.0, m - 2.0 * m / (l3(i) - l2(i)) 
-     &             * (ybot(j)-l2(i)))
-            ! if (h(i,j-1) .le. -7.0) then    !!! ADD BASIN TEST !! **TODO**???
-            !   h(i,j) = h(i,j-1) - 1.0 
-            ! endif                               
+     &             * (ybot(j)-l2(i)))                              
           endif
 
-    !       ! walls at limits North and South
-    !         if ((cff2 .ge. MMm) .or. (cff2 .lt. 1))   then
-    !             h(:,j) = -7.0
-    !         endif
-        enddo
-    !     ! walls at limit East
-        if (cff .ge. LLm) then
+        enddo  ! j
+        ! walls at limit East
+        if (cff .ge. LLm0) then
           h(i, :) = -7.0
-          h(i, jmiddle) = estHupstream
+#  ifdef MPI
+          if (((JstrR + jj*Mm) .le. jmiddle) .and.
+     &      ((JendR + jj*Mm) .ge. jmiddle)) then
+            h(i, int(jmiddle - jj*Mm)) = estHupstream
+          endif
+#  else  
+            h(i, jmiddle) = estHupstream
+
+            #  endif
         endif
         
-      enddo
-
+      enddo ! i
 
 # else
       do j=JstrR,JendR

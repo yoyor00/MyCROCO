@@ -5,14 +5,14 @@
 :-----------------------------------------------------------------------------
 : nmlnbvar : number of each type of substance to be defined (other than T & S)
 :-----------------------------------------------------------------------------
-:    nv_dis : number of dissolved susbtances
-:    nv_ncp : number of  Non Constitutive Particulate subtances
-:    nv_fix : number of  fixed susbtances (not advected)
-:    nv_bent : number of benthic susbtances
-:    nv_grav : number of susbtances type GRAVELS (only if cppkey MUSTANG)
-:    nv_sand : number of susbtances type SAND (only if cppkey MUSTANG)
-:    nv_mud : number of susbtances type MUD (only if cppkey MUSTANG)
-:    nv_sorb : number of particulate susbtances sorbed on an other particule
+:    nv_dis : number of dissolved substances
+:    nv_ncp : number of  Non Constitutive Particulate substances
+:    nv_fix : number of  fixed substances (not advected)
+:    nv_bent : number of benthic substances
+:    nv_grav : number of substances type GRAVELS (only if cppkey MUSTANG)
+:    nv_sand : number of substances type SAND (only if cppkey MUSTANG)
+:    nv_mud : number of substances type MUD (only if cppkey MUSTANG)
+:    nv_sorb : number of particulate substances sorbed on an other particule
 :
  &nmlnbvar
     nv_dis=0

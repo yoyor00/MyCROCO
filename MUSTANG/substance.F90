@@ -4,11 +4,12 @@
 #endif
 
 MODULE substance
-   !!======================================================================
-   !!                      ***  MODULE  substance  ***
-   !! Substances conservative or not, dissolved or particulate   :  
-   !! module for tracers/substances defined
-   !!======================================================================
+
+!!======================================================================
+!! ***  MODULE  substance  ***
+!! Substances conservative or not, dissolved or particulate   :  
+!! module for tracers/substances defined
+!!======================================================================
 
 #if defined SUBSTANCE
 
@@ -43,7 +44,7 @@ CONTAINS
 
    !!======================================================================
 
-  SUBROUTINE substance_read_alloc(may_day_flag,indxT,indxTsrc)
+  SUBROUTINE substance_read_alloc(may_day_flag, indxT, indxTsrc)
       !!-------------------------------------------------------------------
       !!                    *** ROUTINE substance_read_alloc ***
       !!-------------------------------------------------------------------
@@ -51,7 +52,7 @@ CONTAINS
    
    !! Argument
    INTEGER,INTENT(INOUT)                     ::  may_day_flag
-   INTEGER,INTENT(IN)                        ::  indxT,indxTsrc
+   INTEGER,INTENT(IN)                        ::  indxT, indxTsrc
    
    !! Local declarations
    LOGICAL                                   :: l_varassoc
@@ -1405,14 +1406,7 @@ ENDDO
 
  END SUBROUTINE substance_surfcell
 
-  !!======================================================================
-
-#else
-  !!----------------------------------------------------------------------
-  !!  Empty module :                                     No substance
-  !!----------------------------------------------------------------------
-#endif
-
-  !!======================================================================
+#endif /* ifdef SUBSTANCE */
+!!======================================================================
 
 END MODULE substance

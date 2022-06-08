@@ -348,15 +348,15 @@ MODULE sed_MUSTANG
 #if defined key_MUSTANG_lateralerosion
 ! initialization LATERAL EROSION 
    IF(coef_erolat .NE. 0.0_rsh) THEN
-      flx_s2w_corip1(:,:,:)=0.0_rsh
-      flx_s2w_corim1(:,:,:)=0.0_rsh
-      flx_s2w_corjp1(:,:,:)=0.0_rsh
-      flx_s2w_corjm1(:,:,:)=0.0_rsh
+      flx_s2w_corip1(:,:,:) = 0.0_rsh
+      flx_s2w_corim1(:,:,:) = 0.0_rsh
+      flx_s2w_corjp1(:,:,:) = 0.0_rsh
+      flx_s2w_corjm1(:,:,:) = 0.0_rsh
 #if ! defined key_nofluxwat_IWS
-      phieau_s2w_corip1(:,:)=0.0_rsh
-      phieau_s2w_corim1(:,:)=0.0_rsh
-      phieau_s2w_corjp1(:,:)=0.0_rsh
-      phieau_s2w_corjm1(:,:)=0.0_rsh
+      phieau_s2w_corip1(:,:) = 0.0_rsh
+      phieau_s2w_corim1(:,:) = 0.0_rsh
+      phieau_s2w_corjp1(:,:) = 0.0_rsh
+      phieau_s2w_corjm1(:,:) = 0.0_rsh
 #endif
    ENDIF  ! end if coef_erolat
 #endif
@@ -2043,21 +2043,25 @@ MODULE sed_MUSTANG
                   ero = sed_eros_flx * fwet(i, j)    
 
 #if defined key_MUSTANG_lateralerosion
-                  ! lateral erosion :  wet cell (cellule mouillee)
-                  IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN  
-                                                           
-                      heaue = HTOT_NEAR_E - htncrit_eros
-                      heauw = HTOT_NEAR_W - htncrit_eros
-                      heaus = HTOT_NEAR_S - htncrit_eros
-                      heaun = HTOT_NEAR_N - htncrit_eros
-                      heau_milieu = htot(i, j) - h0fond
-                      eroe = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_E**2 - toce) * max(0.0_rsh, heaue - heau_milieu)
-                      erow = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_W**2 - toce) * max(0.0_rsh, heauw - heau_milieu)
-                      eros = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_S**2 - toce) * max(0.0_rsh, heaus - heau_milieu)
-                      eron = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_N**2 - toce) * max(0.0_rsh, heaun - heau_milieu)
-                      ero = ero + coef_erolat * (eroe + erow + eros + eron)
-                                                                      
-                  ENDIF
+                    ! lateral erosion :  wet cell (cellule mouillee)
+                    IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN  
+                                                            
+                        heaue = HTOT_NEAR_E - htncrit_eros
+                        heauw = HTOT_NEAR_W - htncrit_eros
+                        heaus = HTOT_NEAR_S - htncrit_eros
+                        heaun = HTOT_NEAR_N - htncrit_eros
+                        heau_milieu = htot(i, j) - h0fond
+                        eroe = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_E**2 - toce) &
+                            * max(0.0_rsh, heaue - heau_milieu)
+                        erow = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_W**2 - toce) &
+                            * max(0.0_rsh, heauw - heau_milieu)
+                        eros = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_S**2 - toce) &
+                            * max(0.0_rsh, heaus - heau_milieu)
+                        eron = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_N**2 - toce) &
+                            * max(0.0_rsh, heaun - heau_milieu)
+                        ero = ero + coef_erolat * (eroe + erow + eros + eron)
+                                                                        
+                    ENDIF
 #endif
                 ENDIF
               ELSE
@@ -2065,15 +2069,19 @@ MODULE sed_MUSTANG
                 ! lateral erosion :  dry cell 
                 IF (coef_erolat .NE. 0.0_rsh) THEN
 
-                   heaue = max(0., HTOT_NEAR_E - htncrit_eros)
-                   heauw = max(0., HTOT_NEAR_W - htncrit_eros)
-                   heaus = max(0., HTOT_NEAR_S - htncrit_eros)
-                   heaun = max(0., HTOT_NEAR_N - htncrit_eros)
-                   eroe = coef_erolat * max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_E**2 - toce) * heaue
-                   erow = coef_erolat * max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_W**2 - toce) * heauw
-                   eros = coef_erolat * max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_S**2 - toce) * heaus
-                   eron = coef_erolat * max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_N**2 - toce) * heaun
-                   ero = eroe + erow + eros + eron
+                    heaue = max(0., HTOT_NEAR_E - htncrit_eros)
+                    heauw = max(0., HTOT_NEAR_W - htncrit_eros)
+                    heaus = max(0., HTOT_NEAR_S - htncrit_eros)
+                    heaun = max(0., HTOT_NEAR_N - htncrit_eros)
+                    eroe = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
+                        4.0_rsh * V_NEAR_E**2 - toce) * heaue
+                    erow = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
+                        4.0_rsh * V_NEAR_W**2 - toce) * heauw
+                    eros = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
+                        4.0_rsh * U_NEAR_S**2 - toce) * heaus
+                    eron = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
+                        4.0_rsh * U_NEAR_N**2 - toce) * heaun
+                    ero = eroe + erow + eros + eron
 
                 ENDIF
 #endif
@@ -2553,40 +2561,44 @@ MODULE sed_MUSTANG
 
 #if defined key_MUSTANG_lateralerosion
                 ! lateral erosion :  wet cell (cellule mouillee)
-                IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN      
-                                                           
+                IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN                                                              
                     heaue = HTOT_NEAR_E - htncrit_eros
                     heauw = HTOT_NEAR_W - htncrit_eros
                     heaus = HTOT_NEAR_S - htncrit_eros
                     heaun = HTOT_NEAR_N - htncrit_eros
                     heau_milieu = htot(i,j) - h0fond
-                    eroe = max(0.0_rsh,coef_tauskin_lat /4.0_rsh * V_NEAR_E**2 - toce) * max(0.0_rsh, heaue - heau_milieu)
-                    erow = max(0.0_rsh,coef_tauskin_lat /4.0_rsh * V_NEAR_W**2 - toce) * max(0.0_rsh, heauw - heau_milieu)
-                    eros = max(0.0_rsh,coef_tauskin_lat /4.0_rsh * U_NEAR_S**2 - toce) * max(0.0_rsh, heaus - heau_milieu)
-                    eron = max(0.0_rsh,coef_tauskin_lat /4.0_rsh * U_NEAR_N**2 - toce) * max(0.0_rsh, heaun - heau_milieu)
-                    ero = ero + coef_erolat * (eroe + erow + eros + eron)
-                                                                        
+                    eroe = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_E**2 - toce) &
+                        * max(0.0_rsh, heaue - heau_milieu)
+                    erow = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_W**2 - toce) &
+                        * max(0.0_rsh, heauw - heau_milieu)
+                    eros = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_S**2 - toce) &
+                        * max(0.0_rsh, heaus - heau_milieu)
+                    eron = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_N**2 - toce) &
+                        * max(0.0_rsh, heaun - heau_milieu)
+                    ero = ero + coef_erolat * (eroe + erow + eros + eron)                                                                       
                 ENDIF
 #endif
               ENDIF
             ELSE
 #if defined key_MUSTANG_lateralerosion
               ! lateral erosion :  dry cell 
-              IF (coef_erolat .NE. 0.0_rsh) THEN
-                   write(*,*)'l_erolat_dry_cell'
-
-                 heaue = max(0., HTOT_NEAR_E - htncrit_eros)
-                 heauw = max(0., HTOT_NEAR_W - htncrit_eros)
-                 heaus = max(0., HTOT_NEAR_S - htncrit_eros)
-                 heaun = max(0., HTOT_NEAR_N - htncrit_eros)
-                 eroe = coef_erolat * max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_E**2 - toce) * heaue
-                 erow = coef_erolat * max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_W**2 - toce) * heauw
-                 eros = coef_erolat * max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_S**2 - toce) * heaus
-                 eron = coef_erolat * max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_N**2 - toce) * heaun
-                 ero = eroe + erow + eros + eron
-                   write(*,*)'l_erolat_dry_cell',ero
-
-              ENDIF
+                IF (coef_erolat .NE. 0.0_rsh) THEN
+                    !write(*,*)'l_erolat_dry_cell'
+                    heaue = max(0., HTOT_NEAR_E - htncrit_eros)
+                    heauw = max(0., HTOT_NEAR_W - htncrit_eros)
+                    heaus = max(0., HTOT_NEAR_S - htncrit_eros)
+                    heaun = max(0., HTOT_NEAR_N - htncrit_eros)
+                    eroe = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
+                        4.0_rsh * V_NEAR_E**2 - toce) * heaue
+                    erow = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
+                        4.0_rsh * V_NEAR_W**2 - toce) * heauw
+                    eros = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
+                        4.0_rsh * U_NEAR_S**2 - toce) * heaus
+                    eron = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
+                        4.0_rsh * U_NEAR_N**2 - toce) * heaun
+                    ero = eroe + erow + eros + eron
+                    !write(*,*)'l_erolat_dry_cell',ero
+                ENDIF
 #endif
             ENDIF
 

@@ -658,6 +658,16 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j)=ETA0*sin(omega*time)
         enddo
       enddo
+# if defined ESTUARY_TIDE
+      ! adding another wave to modulate tide
+      omega=2.*pi/((24.0+50./60.)/2.*3600)
+      ETA0=2.0
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j) = ssh(i,j) + ETA0*sin(omega*time)
+        enddo
+      enddo
+#endif
 
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
@@ -2536,6 +2546,11 @@ C$    integer  trd, omp_get_thread_num
 #    endif
 #    if defined TIDAL_FLAT || defined ESTUARY 
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#      if defined ESTUARY_TIDE
+            ! adding another wave to modulate tide
+            zetabry_west(j) = zetabry_west(j) + 
+     &          2.*sin(2.*pi*time/((24.0+50./60.)/2.*3600.0))
+#      endif
 #    endif
           enddo
 #   endif
@@ -2608,6 +2623,11 @@ C$    integer  trd, omp_get_thread_num
 #    endif
 #    if defined TIDAL_FLAT || defined ESTUARY 
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#      if defined ESTUARY_TIDE
+            ! adding another wave to modulate tide
+            zetabry_west(j) = zetabry_west(j) + 
+     &          2.*sin(2.*pi*time/((24.0+50./60.)/2.*3600.0))
+#      endif
 #    endif
           enddo
 #   endif
@@ -2642,7 +2662,7 @@ C$    integer  trd, omp_get_thread_num
                tbry_west(j,k,itrc)=cobc_wat(itrc)
              enddo
 #     else
-#      if defined TIDAL_FLAT || defined ESTUARY 
+#      if defined TIDAL_FLAT
              tbry_west(j,k,1)=10.
              tbry_west(j,k,2)=35.
              tbry_west(j,k,3)=0. ! tracer Coarse Sand
