@@ -72,14 +72,14 @@ C$    integer omp_get_thread_num
       real depth_shallow, depth_deep
 # endif
 # ifdef ESTUARY
-      real cff2, l2i, l2n, l2ml1m, l3ml1m
+      real cff2, l2n, l2ml1m, l3ml1m
       integer jmiddle, imouth, itmp
       real hl1imouth, hl1mimouth, shtimouth, l1imouth, l2imouth, l3imouth
       real m, estCWM, estCWM_para, estHupstream, estHmouth, estHoff
       real estMS, estMS_para, estMS_para2, estCS, estCS2, estGamma2
-      real, dimension(GLOBAL_1D_ARRAYXI) :: xbot, l1, l2, l3
-      real, dimension(GLOBAL_1D_ARRAYXI) :: hl1, hl1m, sht
-      real, dimension(GLOBAL_1D_ARRAYETA) :: ybot
+      real xboti, l1i, l2i, l3i
+      real hl1i, hl1mi, shti
+      real ybotj
 # endif
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
@@ -950,28 +950,28 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         cff  = (float(i       ) )
 #  endif
  
-        xbot(i) = dx * (cff - imouth)
+        xboti = dx * (cff - imouth)
         
         if (cff .ge. imouth) then
-          l1(i) = estCWM * exp( - estCWM_para * xbot(i))
-          hl1(i) = estHmouth + estCS * xbot(i)
-          hl1m(i) = hl1(i) - m
-          sht(i) = estMS * exp( - estMS_para * xbot(i))! section half tide
+          l1i = estCWM * exp( - estCWM_para * xboti)
+          hl1i = estHmouth + estCS * xboti
+          hl1mi = hl1i - m
+          shti = estMS * exp( - estMS_para * xboti)! section half tide
           l2i = 100.0
           do itmp = 1, 1000
-            l2n = (sht(i) - l1(i) * hl1m(i)) / (hl1m(i) + 1.5 * m +
-     &             0.5 * m * (1.0 + 4.0 * (m / hl1m(i)) * l2i / 
-     &            (l1(i) + l2i))**2 / estGamma2)
+            l2n = (shti - l1i * hl1mi) / (hl1mi + 1.5 * m +
+     &             0.5 * m * (1.0 + 4.0 * (m / hl1mi) * l2i / 
+     &            (l1i + l2i))**2 / estGamma2)
             l2i = l2n
           enddo
-          l2(i) = l2n
-          if (l2(i) .ge. l1(i)) then
-            l3(i) = l2(i) * (1.0 + 4.0 * (m / hl1m(i)) * l2(i) / 
-     &         (l1(i) + l2(i) ))**2 / estGamma2
+          l2i = l2n
+          if (l2i .ge. l1i) then
+            l3i = l2i * (1.0 + 4.0 * (m / hl1mi) * l2i / 
+     &         (l1i + l2i ))**2 / estGamma2
           else
-            l2(i) = l1(i) 
-            l3(i) = (sht(i) - hl1m(i) * (l1(i) + l2(i)) - 2.0 * 
-     &              m * l2(i)) * 2.0 / m - l2(i)
+            l2i = l1i 
+            l3i = (shti - hl1mi * (l1i + l2i) - 2.0 * 
+     &              m * l2i) * 2.0 / m - l2i
           endif
         else  ! cff < imouth
 
@@ -999,47 +999,43 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           l2ml1m = l2imouth - l1imouth
           l3ml1m = l3imouth - l1imouth
         
-          hl1(i) = estHmouth + estCS2 * xbot(i)
-          hl1m(i) = hl1(i) - m 
-          sht(i) = estMS * exp( - estMS_para2 * xbot(i))! section half tide
-          l1(i) = (sht(i) - l2ml1m * (hl1m(i) + 1.5 * m ) -
-     &            0.5 * l3ml1m * m) / (2.0 * hl1m(i) + 2.0 * m)
-          l2(i) = l1(i) + l2ml1m
-          l3(i) = l1(i) + l3ml1m
+          hl1i = estHmouth + estCS2 * xboti
+          hl1mi = hl1i - m 
+          shti = estMS * exp( - estMS_para2 * xboti)! section half tide
+          l1i = (shti - l2ml1m * (hl1mi + 1.5 * m ) -
+     &            0.5 * l3ml1m * m) / (2.0 * hl1mi + 2.0 * m)
+          l2i = l1i + l2ml1m
+          l3i = l1i + l3ml1m
         endif
 
         do j = JstrR, JendR
 #  ifdef MPI
-          cff2 = (float(j + jj*Mm) )
+          cff2 = (float(j +jj*Mm) )
 #  else  
-          cff2 = (float(j        ) )
+          cff2 = (float(j       ) )
 #  endif
-          ybot(j) = dy * abs(cff2 - jmiddle)
+          ybotj = dy * abs(cff2 - jmiddle)
 
-          if (ybot(j) .le. l1(i)) then
-            h(i,j) = hl1(i)
-          else if (ybot(j) .le. l2(i)) then
-            h(i,j) = hl1(i) + (m - hl1(i)) / (l2(i) - l1(i)) 
-     &             * (ybot(j) - l1(i))
+          if (ybotj .le. l1i) then
+            h(i,j) = hl1i
+          else if (ybotj .le. l2i) then
+            h(i,j) = hl1i + (m - hl1i) / (l2i - l1i) 
+     &             * (ybotj - l1i)
           else
-            h(i,j) = amax1(-7.0, m - 2.0 * m / (l3(i) - l2(i)) 
-     &             * (ybot(j)-l2(i)))                              
+            h(i,j) = amax1(-7.0, m - 2.0 * m / (l3i - l2i) 
+     &             * (ybotj-l2i))                              
+          endif
+
+          ! walls at limit East
+          if (cff .ge. LLm) then
+            h(i, j) = -7.0
+            if (cff2 .eq. jmiddle) then
+              h(i, j) = estHupstream
+            endif
           endif
 
         enddo  ! j
-        ! walls at limit East
-        if (cff .ge. LLm0) then
-          h(i, :) = -7.0
-#  ifdef MPI
-          if (((JstrR + jj*Mm) .le. jmiddle) .and.
-     &      ((JendR + jj*Mm) .ge. jmiddle)) then
-            h(i, int(jmiddle - jj*Mm)) = estHupstream
-          endif
-#  else  
-            h(i, jmiddle) = estHupstream
 
-            #  endif
-        endif
         
       enddo ! i
 
