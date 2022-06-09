@@ -17,6 +17,7 @@
    !&E                                    coupling with any hydro model 
    !&E
    !&E     ! 2022-02 (G. Koenig) : Ordering of variables and updates of comments
+   !&E     ! 2022-06 (C. Mazoyer & M. Baklouti) : adding ECO3M biogeochemical model 				   
    !&E==========================================================================
 
 /*************************************************************************/
@@ -237,8 +238,6 @@
                                                    concentrations, the dimension 
                                                    are (iv,k), or the tracer
                                                    indexes and the depth */
-#   define WATCONCPOS_ivijk  VAR(iv)%conc(i,j,k) /* Positive concentration of the
-                                                    tracer iv at index i,j,k*/
 # endif  /* PEPTIC/BLOOM/METeOR/ECO3M */
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
@@ -252,7 +251,12 @@
                                                    the dimension are (iv,k), or the tracer
                                                    indexes and the depth */
 #   define WATCONCPOS_ivijk  VAR(iv)%conc(i,j,k) /* Positive concentration of the tracer 
-                                                    iv at index i,j,k*/
+                                                   iv at index i,j,k*/
+#   define WATCONCPOS_iv  VAR(iv)%conc(:,:,:)
+#   define WATCONCPOS_ij  VAR(:)%conc(i,j,:)
+#   define WATCONCPOS_all  VAR(:)%conc(:,:,:)
+#   define WATCONCPOS_tab  VAR
+
 # endif  /* PEPTIC/BLOOM/METeOR/ECO3M */
 
 /*=====================================================================
@@ -371,7 +375,7 @@
                                                               For the index i,j,k and the variable
                                                               itemp+ntrc_salt+iv */
 
-# if defined PEPTIC || defined BLOOM || defined METeOR 
+# if defined PEPTIC || defined BLOOM || defined METeOR || defined ECO3M
 
 #   define  WS_BIOLink ws3             /* Settling velocity computed by BIOLink at index i,j,k */
 
@@ -474,8 +478,9 @@
 
 # if defined ECO3M
 
-#   define TOTAL_WATER_HEIGHT prof     /* Total height of the water column computed by BIOLink at
+#   define TOTAL_WATER_HEIGHT bathymetry     /* Total height of the water column computed by BIOLink at
                                           index i,j */
+#   define THICKLAYERWCkij dz(i,j,k) /*! declared in module mod_eco3m (eco3m.F90); allocated in eco3m_irrad_init (eco3m_extinc.F90), dz(i,j,k)*/ 
 #   define THICKLAYERWC dz /* Thickness of the vertical grid cells at index i,j */
 
 # endif /* ECO3M */
