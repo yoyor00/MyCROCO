@@ -91,8 +91,10 @@
     PUBLIC BIOLink_sinking_rate   ! Handles the sinking rate in the absence
                                   ! of MUSTANG
 
+#if defined BIOLink_PAR_eval
     PUBLIC BIOLink_eval_PAR       ! Evaluates the PAR in the case where no 
                                   ! PAR modules are available
+#endif
 #if defined key_messat
     PUBLIC BIOLink_SPMsat_file    ! Determines the concentration of 
                                   ! suspended matter by satellite 
