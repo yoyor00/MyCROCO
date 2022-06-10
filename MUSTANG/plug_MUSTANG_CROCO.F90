@@ -62,7 +62,7 @@ CONTAINS
 
       CALL MUSTANG_init (Istr, Iend, Jstr, Jend, &
                     WATER_ELEVATION,                       &
-# if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN
+# if defined MORPHODYN
                     DHSED,                                 &
 # endif
 # ifdef key_MUSTANG_flocmod
@@ -82,7 +82,7 @@ CONTAINS
 
       CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, &
                    WATER_ELEVATION                 &
-# if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN
+# if defined MORPHODYN
                    , DHSED                         &
 # endif                                     
                    )

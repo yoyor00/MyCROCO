@@ -10,7 +10,7 @@ MODULE comMUSTANG
 !!============================================================================
 
 !! * Modules used
-USE comsubstance ! for lchain, rsh...
+USE comsubstance ! for lchain, rsh, rlg, riosh
 
 implicit none
 
@@ -19,259 +19,446 @@ public
 
 #include "coupler_define_MUSTANG.h"
   
-   !! * Shared or public variables for MUSTANG (common at all threads) but spatialized 
+    !! * Shared or public variables for MUSTANG 
 
-   REAL(kind=rlg)  ,PARAMETER :: epsi30_MUSTANG=1.e-30 , epsilon_MUSTANG=1.e-09 
+    ! parameters
+    REAL(kind=rlg), PARAMETER :: epsi30_MUSTANG = 1.e-30
+    REAL(kind=rlg), PARAMETER :: epsilon_MUSTANG = 1.e-09 
+    REAL(kind=rsh), PARAMETER :: valmanq = 999.0
+    REAL(kind=riosh), PARAMETER :: rg_valmanq_io = 999.0
 
-   REAL(KIND=rlg)          :: tstart_dyninsed,  &   ! time beginning consolidation/diffusion/bioturbation/morphodynamic
-                              tstart_morpho,    &   ! time beginning consolidation/diffusion/bioturbation/morphodynamic
-                              t_dyninsed,       &   ! time of next dynamic in sediment step
-                              subdt_consol,     &   ! sub time step for consolidation and particulate bioturbation  in sediment
-                              dt_dyninsed,      &   ! time step for dynamic in sediment
-                              t_morpho,         &   ! time of next morphodynamic  step
-                              dt_morpho             ! time step for morphodynamic
+    ! namelists
 
-   LOGICAL            :: l_fricwave,l_diffused,l_consolid,l_bioturb,l_biodiffs,l_dyn_insed
-   LOGICAL            :: l_morphocoupl,l_bathy_smoothing,l_erolat_wet_cell,l_morphomesh
-   LOGICAL            :: l_transfer2hydro_dhsed,l_z0hydro_coupl_init,l_z0hydro_coupl
-   LOGICAL            :: l_dredging,l_MF_dhsed,l_bathy_actu,l_out_subs_diag_sed
-   INTEGER            :: choice_flxdiss_diffsed,ero_option,E0_sand_option,nv_use,nlayer_surf_sed
+    ! namsedim_init
+    CHARACTER(len=19) :: date_start_dyninsed ! starting date for dynamic processes in sediment format '01/01/0000 00:00:00'
+    CHARACTER(len=19) :: date_start_morpho ! starting date for morphodynamic format '01/01/0000 00:00:00'
+    LOGICAL  :: l_repsed
+    LOGICAL  :: l_initsed_vardiss
+    LOGICAL  :: l_unised
+    LOGICAL  :: l_init_hsed
+    CHARACTER(len=lchain) :: filrepsed 
+    CHARACTER(len=lchain) :: fileinised
+    REAL(KIND=rsh) :: cseduni
+    REAL(KIND=rsh) :: hseduni     
+    REAL(KIND=rsh) :: csed_mud_ini     
+    INTEGER        :: ksmiuni
+    INTEGER        :: ksmauni  
+    REAL(KIND=rsh) :: sini_sed
+    REAL(KIND=rsh) :: tini_sed
+    REAL(KIND=rsh) :: poro_mud_ini !only if key_MUSTANG_V2
 
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   INTEGER            :: tau_cri_option,tau_cri_mud_option_eroindep
+
+    ! namsedim_layer
+    LOGICAL  :: l_dzsmaxuni
+    LOGICAL  :: l_dzsminuni !only if key_MUSTANG_V2
+    REAL(KIND=rsh) :: dzsminuni !only if key_MUSTANG_V2
+    REAL(KIND=rsh) :: dzsmin
+    REAL(KIND=rsh) :: dzsmaxuni
+    REAL(KIND=rsh) :: dzsmax_bottom
+    REAL(KIND=rsh) :: k1HW97 !only if key_MUSTANG_V2
+    REAL(KIND=rsh) :: k2HW97 !only if key_MUSTANG_V2
+    REAL(KIND=rsh) :: fusion_para_activlayer !only if key_MUSTANG_V2
+    INTEGER :: nlayer_surf_sed
+
+
+    ! namsedim_bottomstress
+    LOGICAL  :: l_z0seduni
+    REAL(KIND=rsh) :: z0seduni
+    REAL(KIND=rsh) :: z0sedmud
+    REAL(KIND=rsh) :: z0sedbedrock
+    LOGICAL :: l_fricwave
+    LOGICAL :: l_z0hydro_coupl_init
+    LOGICAL :: l_z0hydro_coupl
+    REAL(KIND=rsh) :: fricwav
+    REAL(KIND=rsh) :: coef_z0_coupl
+    REAL(KIND=rsh) :: z0_hydro_mud
+    REAL(KIND=rsh) :: z0_hydro_bed
+
+
+    ! namsedim_deposition
+    REAL(KIND=rsh) :: cfreshmud
+    REAL(KIND=rsh) :: csedmin
+    REAL(KIND=rsh) :: cmudcr    
+    REAL(KIND=rsh) :: aref_sand  ! parameter used in sandconcextrap
+    REAL(KIND=rsh) :: cvolmaxsort
+    REAL(KIND=rsh) :: cvolmaxmel
+    REAL(KIND=rsh) :: slopefac
+
+
+    ! namsedim_erosion
+    REAL(KIND=rsh) :: activlayer
+    REAL(KIND=rsh) :: frmudcr2
+    REAL(KIND=rsh) :: coef_frmudcr1
+    REAL(KIND=rsh) :: x1toce_mud
+    REAL(KIND=rsh) :: x2toce_mud
+    REAL(KIND=rsh) :: E0_sand_para
+    REAL(KIND=rsh) :: n_eros_sand
+    REAL(KIND=rsh) :: E0_mud
+    REAL(KIND=rsh) :: n_eros_mud
+    INTEGER        :: ero_option
+    INTEGER        :: E0_sand_option
+    REAL(KIND=rsh) :: xexp_ero
+    REAL(KIND=rsh) :: E0_sand_Cst
+    REAL(KIND=rsh) :: E0_mud_para_indep !only if key_MUSTANG_V2
+    LOGICAL        :: l_peph_suspension !only if key_MUSTANG_V2
+    LOGICAL        :: l_eroindep_noncoh !only if key_MUSTANG_V2
+    LOGICAL        :: l_eroindep_mud !only if key_MUSTANG_V2
+    LOGICAL        :: l_xexp_ero_cst !only if key_MUSTANG_V2
+    INTEGER        :: tau_cri_option !only if key_MUSTANG_V2
+    INTEGER        :: tau_cri_mud_option_eroindep !only if key_MUSTANG_V2
+
+
 #ifdef key_MUSTANG_V2
-   INTEGER            :: poro_option
+    ! namsedim_poro 
+    INTEGER :: poro_option
+    REAL(KIND=rsh) :: Awooster
+    REAL(KIND=rsh) :: Bwooster
+    REAL(KIND=rsh) :: Bmax_wu
+    REAL(KIND=rsh) :: poro_min
 #endif
-   CHARACTER(len=19)  :: date_start_dyninsed,date_start_morpho
-   
-   REAL(KIND=rsh)                             :: aref_sand  ! parametre used in sandconcextrap
+
+
+#ifdef key_MUSTANG_V2 && key_MUSTANG_bedload
+    ! namsedim_bedload 
+    LOGICAL :: l_peph_bedload
+    LOGICAL :: l_slope_effect_bedload
+    LOGICAL :: l_fsusp
+    REAL(KIND=rsh) :: alphabs
+    REAL(KIND=rsh) :: alphabn
+    REAL(KIND=rsh) :: hmin_bedload  
+#endif
+
+
+!**TODO** put under cpp key #ifdef key_MUSTANG_lateralerosion
+    ! namsedim_lateral_erosion 
+    REAL(KIND=rsh) :: htncrit_eros
+    REAL(KIND=rsh) :: coef_erolat
+    REAL(KIND=rsh) :: coef_tauskin_lat
+    LOGICAL        :: l_erolat_wet_cell
+!**TODO** put under cpp key #endif
+
+
+    ! namsedim_consolidation 
+    LOGICAL        :: l_consolid
+    REAL(KIND=rsh) :: dt_consolid
+    REAL(KIND=rlg) :: subdt_consol ! sub time step for consolidation and 
+                                   ! particulate bioturbation  in sediment
+    REAL(KIND=rsh) :: csegreg
+    REAL(KIND=rsh) :: csandseg
+    REAL(KIND=rsh) :: xperm1
+    REAL(KIND=rsh) :: xperm2
+    REAL(KIND=rsh) :: xsigma1
+    REAL(KIND=rsh) :: xsigma2
+
+
+    ! namsedim_diffusion     
+    LOGICAL        :: l_diffused
+    REAL(KIND=rsh) :: dt_diffused
+    INTEGER        :: choice_flxdiss_diffsed
+    REAL(KIND=rsh) :: xdifs1
+    REAL(KIND=rsh) :: xdifs2
+    REAL(KIND=rsh) :: xdifsi1
+    REAL(KIND=rsh) :: xdifsi2
+    REAL(KIND=rsh) :: epdifi
+    REAL(KIND=rsh) :: fexcs
+
+
+    ! namsedim_bioturb  
+    LOGICAL        :: l_bioturb
+    LOGICAL        :: l_biodiffs 
+    REAL(KIND=rsh) :: dt_bioturb
+    REAL(KIND=rsh) :: subdt_bioturb
+    REAL(KIND=rsh) :: xbioturbmax_part
+    REAL(KIND=rsh) :: xbioturbk_part
+    REAL(KIND=rsh) :: dbiotu0_part
+    REAL(KIND=rsh) :: dbiotum_part
+    REAL(KIND=rsh) :: xbioturbmax_diss
+    REAL(KIND=rsh) :: xbioturbk_diss
+    REAL(KIND=rsh) :: dbiotu0_diss
+    REAL(KIND=rsh) :: dbiotum_diss
+    REAL(KIND=rsh) :: frmud_db_max
+    REAL(KIND=rsh) :: frmud_db_min
+
+
+    ! namsedim_morpho   
+    LOGICAL :: l_morphocoupl
+    LOGICAL :: l_MF_dhsed
+    LOGICAL :: l_bathy_actu
+    REAL(KIND=rsh) :: MF
+    REAL(KIND=rlg) :: dt_morpho ! time step for morphodynamic 
+
+#if  ! defined key_noTSdiss_insed
+    ! namtempsed  
+    REAL(KIND=rsh) :: mu_tempsed1
+    REAL(KIND=rsh) :: mu_tempsed2
+    REAL(KIND=rsh) :: mu_tempsed3
+    REAL(KIND=rsh) :: epsedmin_tempsed
+    REAL(KIND=rsh) :: epsedmax_tempsed
+#endif
+
+
+    ! namsedoutput  
+    LOGICAL :: l_outsed_flx_WS_all
+    LOGICAL :: l_outsed_flx_WS_int
+    LOGICAL :: l_outsed_saltemp
+    INTEGER :: nk_nivsed_out
+    INTEGER :: choice_nivsed_out
+    REAL(KIND=rsh), DIMENSION(5) :: ep_nivsed_out
+    REAL(KIND=rsh) :: epmax_nivsed_out ! Max thickness from the sediment surface
+
+
+#if defined key_MUSTANG_debug && defined key_MUSTANG_V2
+    ! namsedim_debug 
+    LOGICAL        :: l_debug_effdep
+    LOGICAL        :: l_debug_erosion
+    REAL(kind=rlg)   :: lon_debug
+    REAL(kind=rlg)   :: lat_debug
+    INTEGER          :: i_MUSTANG_debug
+    INTEGER          :: j_MUSTANG_debug
+    CHARACTER(len=19):: date_start_debug
+#endif
+
 
 #ifdef key_MUSTANG_flocmod
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE   :: f_ws
+    ! namflocmod  
+    LOGICAL :: l_ASH
+    LOGICAL :: l_ADS
+    LOGICAL :: l_COLLFRAG
+    INTEGER :: f_ero_iv
+    REAL(KIND=rsh) :: f_ater
+    REAL(KIND=rsh) :: f_dmin_frag
+    REAL(KIND=rsh) :: f_ero_frac
+    REAL(KIND=rsh) :: f_ero_nbfrag
+    REAL(KIND=rsh) :: f_mneg_param
+    REAL(KIND=rsh) :: f_collfragparam
+    REAL(KIND=rsh) :: f_cfcst
+    REAL(KIND=rsh) :: f_fp
+    REAL(KIND=rsh) :: f_fy
+    REAL(KIND=rsh) :: f_dp0
+    REAL(KIND=rsh) :: f_alpha
+    REAL(KIND=rsh) :: f_beta
+    REAL(KIND=rsh) :: f_nb_frag
+    REAL(KIND=rsh) :: f_nf
 #endif
 
-   REAL(KIND=rsh)            :: fricwav,fws2,dzsmin,cfreshmud,csedmin,cmudcr,ros_sand_homogen, &
-                                cvolmaxsort,cvolmaxmel,xperm1,xperm2,xsigma1,                  &
-                                xsigma2, xdifs1,xdifs2,xdifsi1,xdifsi2,                        &
-                                epdifi,fexcs,cexcs,activlayer,frmudcr2,coef_frmudcr1,          &
-                                x1toce_mud,x2toce_mud,E0_sand_para,n_eros_sand,E0_mud,         &
-                                n_eros_mud, MF, MF_dhsed, htncrit_eros,       &
-                                slopefac,csegreg,csandseg,xexp_ero,E0_sand_Cst,                &
-                                coef_z0_coupl,z0_hydro_mud,z0_hydro_bed,                       &
-                                xbioturbmax_part,xbioturbk_part,dbiotu0_part,dbiotum_part,     &
-                                xbioturbmax_diss,xbioturbk_diss,dbiotu0_diss,dbiotum_diss,     &
-                                xbioturbmax,xbioturbk,dbiotu0,dbiotum,frmud_db_max,frmud_db_min, &
-                                dt_consolid,dt_diffused,dt_bioturb,subdt_bioturb
-   REAL(KIND=rsh)            :: h0fond  ! RESIDUAL_THICKNESS_WAT
-   REAL(KIND=rsh)                                :: hsed_new,coef_erolat,coef_tauskin_lat
-   REAL(KIND=rsh)                                :: sed_difint,sed_difsed 
-   
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE       :: alp1,alp2,alp3,alp4,alp5,typart
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE       :: diamstar,ws_sand,rosmrowsros,       &
-                                                           stresscri0,tetacri0,xnielsen
-   INTEGER       ,DIMENSION(:)      ,ALLOCATABLE        :: D0_funcT_opt
-   REAL(KIND=rsh),DIMENSION(:)      ,ALLOCATABLE        :: D0_m0,D0_m1
+! end namelist variables
 
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   REAL(KIND=rsh)     :: k1HW97,k2HW97,E0_mud_para_indep,fusion_para_activlayer
-#ifdef key_MUSTANG_V2
-   REAL(KIND=rsh)     :: Awooster,Bwooster,Bmax_wu,     &
-                                poro_min,alphabs,alphabn
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE   :: sigmapsg,stateconsol,permeab,E0_sand
-#endif
-                                                      
-   INTEGER,DIMENSION(:,:),ALLOCATABLE              :: ksmi,ksma
-   INTEGER, DIMENSION(:,:), ALLOCATABLE            :: dry_cell
-#if  ! defined key_noTSdiss_insed
-   INTEGER,DIMENSION(:), ALLOCATABLE               :: ivdiss
-#endif
 
-   REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE   :: cv_sed
+    REAL(KIND=rsh) :: h0fond  ! RESIDUAL_THICKNESS_WAT
 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: c_sedtot, poro, dzs       
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corflux, corfluy, gradvit       
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: fludif,fluconsol,fluconsol_drycell,flu_dyninsed
-   
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed,z0sed,hsed0,dzsmax,hsed_previous
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: dhsed_save
-#endif
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin ! max bottom stress due to the combinaison current/wave (N.m-2)
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_c ! bottom stress due to current (N.m-2)
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_w ! bottom stress due to wave (N.m-2)
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphbx
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphby
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_x ! bottom stress - component on x axis
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tauskin_y ! bottom stress - component on y axis
-   REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w, phieau_s2w_consol, phieau_s2w_drycell
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot, htot, alt_cw1
+    ! fwet =1 if not used  
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: fwet
 
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: morpho0,h0_bedrock
+    ! Initialization 
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_sed
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cv_sedini
+    REAL(KIND=rsh) :: hsed_new
 
- 
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: sal_bottom_MUSTANG,temp_bottom_MUSTANG,epn_bottom_MUSTANG
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: cw_bottom_MUSTANG,ws3_bottom_MUSTANG
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: roswat_bot
+    ! Fluxes at the interface water-sediment
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_sum
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: EROS_FLUX_s2w
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUX_w2s
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUXSUM_w2s
+
+    ! Sediment parameters
+    REAL(KIND=rsh)            :: ros_sand_homogen 
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: typart
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: diamstar
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: ws_sand
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: rosmrowsros
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: stresscri0
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: tetacri0
+
+
+    INTEGER :: nv_use
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: ksmi
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: ksma
+    REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE   :: cv_sed
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: c_sedtot
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: poro
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: dzs       
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: dzsmax
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: gradvit       
+
+    ! Sediment height
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed0
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed_previous
+
+    ! Bottom stress variables
+    REAL(KIND=rsh) :: fws2  ! fricwav/2   
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE     :: z0sed
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin ! max bottom stress due to the combinaison current/wave (N.m-2)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin_c ! bottom stress due to current (N.m-2)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin_w ! bottom stress due to wave (N.m-2)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin_x ! bottom stress - component on x axis
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin_y ! bottom stress - component on y axis
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: ustarbot
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: raphbx
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: raphby
+
+    REAL(KIND=rlg), DIMENSION(:,:), ALLOCATABLE   :: phieau_s2w
+    REAL(KIND=rlg), DIMENSION(:,:), ALLOCATABLE   :: phieau_s2w_consol
+    REAL(KIND=rlg), DIMENSION(:,:), ALLOCATABLE   :: phieau_s2w_drycell
+
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: htot
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: alt_cw1
+
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: sal_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: temp_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: epn_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: cw_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: ws3_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: roswat_bot
+
+!**TODO** put under cppkey MUSTANG_CORFLUX
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corflux
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corfluy
 
 #ifdef key_sand2D
-   REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE     :: rouse2D,sum_tmp  ! definition nombre de Rouse2D et SUM(dzcche*((htot-hzed)/hzed)**rouse) 
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: rouse2D ! Rouse2D number
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: sum_tmp ! SUM(dzcche*((htot-hzed)/hzed)**rouse) 
 #endif
 
-   ! ---------------------------------------------------------------------------
-   ! VARIABLES FLUXES AT THE INTERFACE WATER-SEDIMENT
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_s2w,flx_w2s,flx_w2s_sum
 
-   ! ---------------------------------------------------------------------------
-   ! Initialization
-   ! ---------------------------------------------------------------------------
-   LOGICAL          :: l_repsed,l_unised,l_z0seduni,l_initsed_vardiss,l_dzsmaxuni,l_init_hsed
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   LOGICAL          :: l_peph_suspension,l_dzsminuni
-   LOGICAL          :: l_eroindep_noncoh,l_eroindep_mud,l_xexp_ero_cst
+    ! Dynamic in sediment (consolidation/diffusion/bioturbation)
+    REAL(KIND=rlg)   :: tstart_dyninsed ! time beginning dynamic in sediment
+    REAL(KIND=rlg)   :: t_dyninsed      ! time of next dynamic in sediment step
+    REAL(KIND=rlg)   :: dt_dyninsed     ! time step for dynamic in sediment (min of dt for each process)
+    LOGICAL :: l_dyn_insed ! true if (l_consolid .OR. l_bioturb .OR. l_diffused .OR. l_biodiffs)
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: fludif
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: fluconsol
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: fluconsol_drycell
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flu_dyninsed
+   
+    ! Diffusion
+    REAL(KIND=rsh) :: cexcs
+
+    ! Morphodynamic
+    REAL(KIND=rlg) :: tstart_morpho   ! time beginning morphodynamic
+    REAL(KIND=rlg) :: t_morpho        ! time of next morphodynamic step
+    REAL(KIND=rsh) :: MF_dhsed
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: morpho0
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: h0_bedrock
+
 #ifdef key_MUSTANG_V2
-   LOGICAL          :: l_peph_bedload
-   LOGICAL          :: l_slope_effect_bedload,l_fsusp
-   REAL(KIND=rsh)   :: coeff_dzsmin
+    REAL(KIND=rsh) :: coeff_dzsmin
+    LOGICAL,DIMENSION(:,:),ALLOCATABLE :: l_isitcohesive
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: psi_sed
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: poro_mud
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: crel_mud
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: sigmapsg
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: stateconsol
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: permeab
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: E0_sand
+#ifdef  key_MUSTANG_bedload
+        REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_bx
+        REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_by
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdx
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdy
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: sedimask_h0plusxe
+#if defined MORPHODYN_MUSTANG_byHYDRO
+            INTEGER :: it_morphoYes
+#endif
+#endif
 #ifdef key_MUSTANG_debug
-   LOGICAL        :: l_debug_effdep,l_debug_erosion
-   REAL(kind=rlg)   :: lon_debug,lat_debug
-   INTEGER          :: i_MUSTANG_debug,j_MUSTANG_debug
-   CHARACTER(len=19):: date_start_debug
-   REAL(KIND=rlg)   :: t_start_debug
+        REAL(KIND=rlg)   :: t_start_debug
 #endif
 #endif
-   INTEGER          :: ksmiuni,ksmauni
-   REAL(KIND=rsh)   :: cseduni,hseduni,sini_sed,tini_sed,dzsmaxuni,csed_mud_ini
-   REAL(KIND=rsh)   :: z0seduni,z0sedmud,z0sedbedrock
-   REAL(KIND=rsh)   :: dzsmax_bottom
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: cini_sed,cv_sedini
+   
 
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   REAL(KIND=rsh)                                    :: dzsminuni,poro_mud_ini
-#ifdef key_MUSTANG_V2
-   LOGICAL,DIMENSION(:,:),ALLOCATABLE :: l_isitcohesive
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE       :: psi_sed
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: poro_mud
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: crel_mud
-   REAL(KIND=rsh)                                :: hmin_bedload ! out of key_sedim_bedload because in paraMUSTANGV2.txt
-#endif
-
-   ! ---------------------------------------------------------------------------
-   ! Sedim output
-   ! ---------------------------------------------------------------------------
-   LOGICAL                               :: l_outsed_saltemp,l_outsed_poro
-   CHARACTER(len=lchain)   :: name_out_hsed,name_out_nblaysed,name_out_dzs,name_out_tauskin,&
-                                     name_out_tauskin_c,name_out_tauskin_w
-   REAL(kind=riosh)             :: riog_valid_min_hsed,riog_valid_max_hsed,riog_valid_min_nblaysed, &
-                                   riog_valid_max_nblaysed,riog_valid_min_dzs,riog_valid_max_dzs,     &
-                                   riog_valid_min_tauskin,riog_valid_max_tauskin
-   INTEGER                                    :: nk_nivsed_out,choice_nivsed_out
-   INTEGER                                    :: nv_out3Dk_specif,nv_out3Dnv_specif,nv_out2D_specif
-
-   REAL(KIND=rsh),DIMENSION(5)                :: ep_nivsed_out
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: ep_nivsed_outp1,nivsed_out
-   REAL(KIND=rsh)                             :: epmax_nivsed_out ! Max thickness from the sediment surface  
-   REAL(KIND=riosh),  DIMENSION(:,:,:,:),ALLOCATABLE  :: var3D_cvsed
-   REAL(KIND=riosh),  DIMENSION(:,:,:),ALLOCATABLE    :: var3D_dzs,var3D_TEMP,var3D_SAL
+    ! Sedim output
+    INTEGER :: nv_out3Dk_specif
+    INTEGER :: nv_out3Dnv_specif
+    INTEGER :: nv_out2D_specif
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: ep_nivsed_outp1
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: nivsed_out
+    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_cvsed
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_dzs
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_TEMP
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_SAL
 #if defined key_BLOOM_insed
-   REAL(KIND=riosh),  DIMENSION(:,:,:,:),ALLOCATABLE  :: var3D_diagsed
-   REAL(KIND=riosh),  DIMENSION(:,:,:),ALLOCATABLE  :: var2D_diagsed
+    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_diagsed
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_diagsed
 #endif
 #ifdef key_MUSTANG_specif_outputs
-   REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE    :: varspecif3Dk_save,varspecif3Dnv_save
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE      :: varspecif2D_save
-   REAL(KIND=riosh),DIMENSION(:,:,:),ALLOCATABLE    :: varspecif2D_out
-   REAL(KIND=riosh),DIMENSION(:,:,:,:),ALLOCATABLE  :: var3D_specifout,varspecif3Dnv_out
+    REAL(KIND=rsh), DIMENSION(:,:,:,:), ALLOCATABLE    :: varspecif3Dk_save
+    REAL(KIND=rsh), DIMENSION(:,:,:,:), ALLOCATABLE    :: varspecif3Dnv_save
+    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: varspecif3Dnv_out
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE      :: varspecif2D_save
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE    :: varspecif2D_out
+    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_specifout
 #endif
 
-   CHARACTER(len=lchain)   :: filrepsed,filoutsed,fileinised
 
-   LOGICAL          :: l_outsed_flx_WS_all,l_outsed_toce,l_outsed_frmudsup
-   LOGICAL          :: l_outsed_dzs_ksmax
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   LOGICAL          :: l_outsed_flx_Bload_all,l_outsed_bil_Bload_all,l_outsed_fsusp
-   LOGICAL          :: l_outsed_activlayer,l_outsed_surf,l_outsed_peph,l_outsed_eroiter
-   LOGICAL          :: l_outsed_z0sed,l_outsed_flx_WS_int,l_outsed_flx_Bload_int
-!
-   LOGICAL          :: l_outsed_bil_Bload_int
-#ifdef key_MUSTANG_V2
-#ifdef key_MUSTANG_bedload
-!  bedload 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE  :: flx_bx,flx_by
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE    :: slope_dhdx,slope_dhdy
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE    :: sedimask_h0plusxe
-#if defined MORPHODYN_MUSTANG_byHYDRO
-   INTEGER  :: it_morphoYes
-#endif
-#endif
-#endif
-   ! ---------------------------------------------------------------------------
-
+!**TODO** put under cpp key #if defined key_MUSTANG_lateralerosion
 !  used in erosion only but exchange and dimensions could depend on grid model 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_s2w_corim1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_s2w_corip1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_s2w_corjm1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_s2w_corjp1
-#if ! defined key_nofluxwat_IWS
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: phieau_s2w_corim1
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: phieau_s2w_corip1
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: phieau_s2w_corjm1
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: phieau_s2w_corjp1
-#endif
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corim1
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corip1
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjm1
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjp1
+!**TODO** put under cpp key #if ! defined key_nofluxwat_IWS
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corim1
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corip1
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
+!**TODO** put under cpp key #endif
+!**TODO** put under cpp key #endif
+
+! slipdeposit : **TODO** put under cpp key key_MUSTANG_slipdeposit
    !  used in accretion (settling) only bud exchange and dimensions could depend on grid model 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_w2s_corin
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_w2s_corim1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_w2s_corip1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_w2s_corjm1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_w2s_corjp1
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corin
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corim1
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corip1
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corjm1
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corjp1
+
+
+#if ! defined key_noTSdiss_insed
+    ! Temperature in sediment 
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phitemp_s
+    INTEGER, DIMENSION(:), ALLOCATABLE  :: ivdiss
+    INTEGER       , DIMENSION(:), ALLOCATABLE :: D0_funcT_opt
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: D0_m0
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: D0_m1
+#endif
+
+#if ! defined key_nofluxwat_IWS && ! defined key_noTSdiss_insed
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: WATER_FLUX_INPUTS ! not operationnal, stil to code **TODO**
+#endif
+
 
 #ifdef key_MUSTANG_flocmod
-  !--------------------------
-  !   explicit FLOCULATION 
-  !--------------------------
-  LOGICAL                :: l_ASH,l_ADS,l_COLLFRAG,l_out_MUDtot,l_out_f_dtmin,l_out_G, &
-                                   l_out_f_d90,l_out_f_d10
-
-  INTEGER               :: f_ero_iv
-  REAL(KIND=rsh)         :: f_nf, f_dp0,f_alpha,f_beta,f_nb_frag,f_fter,f_ater,f_dmin_frag, &
-                                   f_ero_frac,f_ero_nbfrag,f_mneg_param,f_collfragparam,f_cfcst,f_fp,f_fy
-  REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE     :: f_diam,f_vol,f_rho,f_mass,f_cv,f_l3
-
-  REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE   :: f_coll_prob_sh,f_coll_prob_ds,f_l1_sh,f_l1_ds,f_g3
-  
-  REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: f_g1_sh,f_g1_ds
-  REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: f_d50,f_d90,f_d10,f_davg,f_dtmin
+    ! Explicit FLOCULATION 
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_diam
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_ws
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_vol
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_rho
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_mass
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_l3
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_coll_prob_sh
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_coll_prob_ds
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_l1_sh
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_l1_ds
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_g3
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_sh
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_ds
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d50
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d90
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d10
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_davg
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_dtmin
 #endif
 
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: emissivity_s
-   REAL(KIND=rsh)                            :: alb,emissivity_sed
- 
-#if ! defined key_noTSdiss_insed
- ! Temperature in sediment 
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: phitemp_s,phitemp_sout
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE :: cp_s,poro_sedsurf
-   REAL(KIND=rsh)                            :: mu_tempsed1,mu_tempsed2,mu_tempsed3,  &
-                                                        epsedmin_tempsed,epsedmax_tempsed,cp_suni   !!!FG(29/06/2018)
+
+#ifdef key_BLOOM_insed
+    LOGICAL :: l_out_subs_diag_sed
 #endif
 
- !-------------------------------------------------------------------
- !  declaration of variables used both in MUSTANG and hydro modele
- !  and used only with module MUSTANG
- !  and which must have specific names and dimensions, different from those in MUSTANG
- !-------------------------------------------------------------------
-   
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EROS_FLUX_s2w , SETTL_FLUX_w2s ,SETTL_FLUXSUM_w2s
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: WATER_FLUX_INPUTS 
-   ! if temperature and salinity not ranged in the same table as substances concentrations
-   !REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EROS_FLUX_s2w_TEMP,EROS_FLUX_s2w_SAL
-   
-  !   + fixed data used by MUSTANG but specific to MARS and therefore not necessarily known for another model
-   REAL(kind=rsh)  ,PARAMETER :: valmanq=999.0
-   REAL(kind=riosh),PARAMETER :: rg_valmanq_io=999.0
-    ! fwet =1 if not used  
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE   :: fwet
 
-   CONTAINS
+    CONTAINS
  
 #endif /* ifdef MUSTANG */
 

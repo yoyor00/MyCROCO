@@ -1151,7 +1151,7 @@
         !&E--------------------------------------------------------------------------
         !! * Arguments
         INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
-    
+
         !! * Local declarations
         INTEGER :: i,j,iv, ivp
 
@@ -1164,7 +1164,7 @@
                 ENDDO
             ENDDO
         ENDDO
-    
+
     END SUBROUTINE sed_meshedges_corflu
 !!=============================================================================
 #endif /* MUSTANG_CORFLUX */

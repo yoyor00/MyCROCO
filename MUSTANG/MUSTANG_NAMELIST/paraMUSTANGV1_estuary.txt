@@ -15,10 +15,6 @@
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 :                            (only if key_MUSTANG_lateralerosion)
-: namsedim_time_dyninsed   : relative to time step for 
-:                            the  calculation of consolidation/diffusion or 
-:                            bioturbation in sediment 
-:                            (only if key_MUSTANG_V2)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -34,8 +30,6 @@
 
 &namsedim_init
    l_unised = .true.
-   l_z0seduni=.true.
-   z0seduni = 0.0001 
    hseduni = 0.01   
    cseduni= 978.3 
    csed_mud_ini = 300.0  
@@ -50,6 +44,8 @@
    nlayer_surf_sed=1 
 /  
 &namsedim_bottomstress
+   l_z0seduni=.true.
+   z0seduni = 0.0001 
 /
 &namsedim_deposition
    cfreshmud=400.0  

@@ -15,10 +15,6 @@
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 :                            (only if key_MUSTANG_lateralerosion)
-: namsedim_time_dyninsed   : relative to time step for 
-:                            the  calculation of consolidation/diffusion or 
-:                            bioturbation in sediment 
-:                            (only if key_MUSTANG_V2)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -52,13 +48,6 @@
 :    l_unised : boolean, set to .true. for a uniform bottom initialization
 :    fileinised : string, file path for initialization (if l_unised is 
 :                 False)
-:    l_z0seduni : boolean, set to .false. for z0sed computation from 
-:                 sediment diameter (if true, z0seduni is used)
-:    z0seduni : real, uniform bed roughness (m)
-:    z0sedmud : real, mud (i.e.minimum) bed roughness (m) (used only if 
-:               l_unised is false)
-:    z0sedbedrock : real, bed roughness for bedrock (no sediment) (m) (used 
-:                   only if l_unised is false)
 :    hseduni : real, initial uniform sediment thickness (m)
 :    cseduni : real, initial sediment concentration (kg/m3)
 :    l_init_hsed : boolean, set to .true. if we want to adjust the sediment 
@@ -83,11 +72,7 @@
    filrepsed = './' 
    l_initsed_vardiss = .false. 
    l_unised = .true.       
-   fileinised =  './' 
-   l_z0seduni = .true.       
-   z0seduni = 0.00002      
-   z0sedmud = 0.0001    
-   z0sedbedrock = 0.005    
+   fileinised =  './'   
    hseduni = 1. 
    cseduni = 1500.0        
    l_init_hsed = .FALSE.   
@@ -151,6 +136,13 @@
 :------------------------------------------------------------------------------
 :  namsedim_bottomstress : Namelist relative to bottom shear stress
 :------------------------------------------------------------------------------
+:    l_z0seduni : boolean, set to .false. for z0sed computation from 
+:                 sediment diameter (if true, z0seduni is used)
+:    z0seduni : real, uniform bed roughness (m)
+:    z0sedmud : real, mud (i.e.minimum) bed roughness (m) (used only if 
+:               l_unised is false)
+:    z0sedbedrock : real, bed roughness for bedrock (no sediment) (m) (used 
+:                   only if l_unised is false)
 :    l_fricwave : boolean, set to .true. if using wave related friction factor 
 :                 for bottom shear stress (from wave orbital velocity and 
 :                 period)
@@ -168,6 +160,10 @@
 :    z0_hydro_bed : real, z0hydro if no sediment (m)
 :------------------------------------------------------------------------------
 &namsedim_bottomstress
+   l_z0seduni = .true.       
+   z0seduni = 0.00002      
+   z0sedmud = 0.0001    
+   z0sedbedrock = 0.005  
    l_fricwave = .true. 
    fricwav = 0.06  
    l_z0hydro_coupl_init = .FALSE. 
@@ -256,10 +252,6 @@
 :                     (key_MUSTANG_V2 only)
 :    xexp_ero : real, used only if ero_option=3 : adjustment on exponential 
 :               variation  (more brutal when xexp_ero high)
-:    htncrit_eros : real, critical water height so as to prevent erosion under 
-:                   a given threshold (the threshold value is different for 
-:                   flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
-:                   (key_MUSTANG_lateralerosion only)
 :    tau_cri_option : integer, choice of critical stress formulation 
 :                     0: Shields
 :                     1: Wu and Lin (2014)
@@ -304,7 +296,6 @@
    ero_option = 3
    l_xexp_ero_cst = .FALSE. 
    xexp_ero = 40.0 
-   htncrit_eros = 0.0 
    tau_cri_option = 0  
    tau_cri_mud_option_eroindep = 1 
    l_eroindep_noncoh = .TRUE.
@@ -376,11 +367,15 @@
 :                       vertical
 :    l_erolat_wet_cell : boolean, set to .true in order to take into account 
 :                        wet cells lateral erosion
+:    htncrit_eros : real, critical water height so as to prevent erosion under 
+:                   a given threshold (the threshold value is different for 
+:                   flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
 :------------------------------------------------------------------------------
 &namsedim_lateral_erosion
    coef_erolat = 0.002 
    coef_tauskin_lat = 5.0  
-   l_erolat_wet_cell = .FALSE. /  
+   l_erolat_wet_cell = .FALSE.
+   htncrit_eros = 0.0  /  
 :
 :------------------------------------------------------------------------------
 :  namsedim_consolidation : Namelist relative to sediment consolidation 
@@ -428,10 +423,7 @@
 :                 1 : Fick law : gradient between Cv_wat at dz(1)/2
 :                 2 : Fick law : gradient between Cv_wat at distance epdifi
 :    xdifs1 : real, diffusion coefficients within the sediment
-:    xdifs2 : real, diffusion coefficients within the sediment (NOT USED)
 :    xdifsi1 : real, diffusion coefficients at the water sediment interface
-:    xdifsi2 : real, diffusion coefficients at the water sediment interface 
-:              (NOT USED)
 :    epdifi : real, diffusion thickness in the water at the sediment-water 
 :             interface
 :    fexcs : real, factor of eccentricity of concentrations in vertical fluxes 
@@ -442,10 +434,8 @@
    l_diffused = .false. 
    dt_diffused = 500.0
    choice_flxdiss_diffsed = 3 
-   xdifs1 = 1.e-8   
-   xdifs2 = 0.0    
-   xdifsi1 = 1.e-6  
-   xdifsi2 = 0.0     
+   xdifs1 = 1.e-8     
+   xdifsi1 = 1.e-6     
    epdifi = 0.01  
    fexcs = 0.5 / 
 :
@@ -513,14 +503,6 @@
 :         (morphological evolutions over a MF*T duration are assumed to be 
 :         equal to MF * the morphological evolutions over T). 
 :    dt_morpho : real, time step for morphodynamic (s)
-:    l_morphomesh : boolean, set to .true. in order to define meshes where 
-:                   morphodynamic is not applied (morpho=0)
-:                   to program in routine sed_MUSTANG_morphoinit_mesh 
-:                   in initMUSTANG.F90       
-:                   !!! NOT IMPLEMENTED YET !!!
-:    l_dredging : boolean, set to .true. if taking into account dredging 
-:                (works only if key_dredging - not operational)
-:                 !!! NOT IMPLEMENTED YET !!!
 :    l_MF_dhsed : boolean, set to .true. if morphodynamic applied with 
 :                 sediment height variation amplification 
 :                 (MF_dhsed=MF; then MF will be = 0)
@@ -530,22 +512,13 @@
 :                   previous run and saved in filrepsed 
 :                   (given in namelist namsedim_init)
 :                   !!! NOT IMPLEMENTED YET !!!
-:    l_transfer2hydro_dhsed : boolean, set to .true. only for transfer dhsed 
-:              to WW3 with oasis (used only if  key_oasis & key_oasis_mars_ww3)
-:    l_bathy_smoothing : boolean, set to .true. in order to apply bathymetric 
-:                        smoothing (only when l_morphocoupl .TRUE.)
-:                        !!! NOT IMPLEMENTED YET !!!
 :------------------------------------------------------------------------------
 &namsedim_morpho
   l_morphocoupl=.false. 
   MF = 1.0 
-  dt_morpho = 0.1  
-  l_morphomesh = .false.       
-  l_dredging = .false. 
+  dt_morpho = 0.1      
   l_MF_dhsed = .false. 
-  l_bathy_actu = .false.
-  l_transfer2hydro_dhsed= .false. 
-  l_bathy_smoothing=.FALSE. / 
+  l_bathy_actu = .false. / 
 :
 :------------------------------------------------------------------------------
 :  namtempsed : Namelist relative to temperature estimation in sediment 
@@ -563,51 +536,17 @@
 :    epsedmax_tempsed : real, sediment thickness limits for estimation heat 
 :                       loss at bottom, if hsed > epsedmax_tempsed : heat loss 
 :                        at sediment bottom = 0.
-:    alb : real, water albedo
-:    emissivity_sed : real 
-:    cp_suni : real, initial calorific capacity value
 :------------------------------------------------------------------------------
 &namtempsed
     epsedmin_tempsed = 0.2  
     epsedmax_tempsed = 2. 
     mu_tempsed1 = 8.e-7 
     mu_tempsed2 = -1.4e-6 
-    mu_tempsed3 = 9.e-7 
-    alb = 0.06 
-    emissivity_sed = 0.94 
-    cp_suni = 1000.0 /
+    mu_tempsed3 = 9.e-7 /
 :
 :------------------------------------------------------------------------------
 :  namsedoutput : Namelist relative to OUTPUT in sediment
 :------------------------------------------------------------------------------
-:    l_outsed_poro : boolean, - NOT USED
-:    l_outsed_activlayer : boolean,  - NOT USED
-:    l_outsed_surf : boolean,  - NOT USED
-:    l_outsed_flx_Bload_all : boolean,  - NOT USED
-:    l_outsed_toce : boolean,  - NOT USED
-:    l_outsed_frmudsup : boolean,  - NOT USED
-:    l_outsed_bil_Bload_all : boolean,  - NOT USED
-:    l_outsed_fsusp : boolean,  - NOT USED
-:    l_outsed_dzs_ksmax : boolean,  - NOT USED
-:    l_outsed_peph : boolean,  - NOT USED
-:    l_outsed_eroiter : boolean,  - NOT USED
-:    l_outsed_z0sed : boolean,  - NOT USED
-:    l_outsed_flx_Bload_int : boolean,  - NOT USED
-:    l_outsed_bil_Bload_int : boolean,  - NOT USED
-:    name_out_hsed : string,  - NOT USED
-:    name_out_nblaysed : string,  - NOT USED
-:    name_out_dzs : string,  - NOT USED
-:    name_out_tauskin : string,  - NOT USED
-:    name_out_tauskin_c : string,  - NOT USED
-:    name_out_tauskin_w : string,  - NOT USED
-:    riog_valid_min_hsed : real,  - NOT USED
-:    riog_valid_max_hsed : real,  - NOT USED
-:    riog_valid_min_nblaysed= : real,  - NOT USED
-:    riog_valid_max_nblaysed : real,  - NOT USED
-:    riog_valid_min_dzs : real,  - NOT USED
-:    riog_valid_max_dzs : real,  - NOT USED
-:    riog_valid_min_tauskin : real,  - NOT USED
-:    riog_valid_max_tauskin : real,  - NOT USED
 :    l_outsed_saltemp : boolean, set to .true. if output Salinity and 
 :                       Temperature in sediment
 :    l_outsed_flx_WS_all : boolean, set to .true. if output fluxes threw 
@@ -646,36 +585,8 @@
 :------------------------------------------------------------------------------
 &namsedoutput
    l_outsed_saltemp =.TRUE. 
-   l_outsed_poro  = .TRUE. 
-   l_outsed_activlayer  =.TRUE. 
-   l_outsed_surf =.TRUE.  
-   l_outsed_flx_Bload_all=.TRUE. 
-   l_outsed_flx_WS_all=.TRUE.
-   l_outsed_toce=.TRUE.
-   l_outsed_frmudsup=.TRUE.
-   l_outsed_bil_Bload_all=.TRUE. 
-   l_outsed_fsusp=.TRUE. 
-   l_outsed_dzs_ksmax=.TRUE.
-   l_outsed_peph=.TRUE.  
-   l_outsed_eroiter=.TRUE. 
-   l_outsed_z0sed=.TRUE.   
+   l_outsed_flx_WS_all=.TRUE. 
    l_outsed_flx_WS_int=.TRUE.
-   l_outsed_flx_Bload_int=.TRUE. 
-   l_outsed_bil_Bload_int=.TRUE. 
-   name_out_hsed='HSED'
-   name_out_nblaysed='NB_LAY_SED'
-   name_out_dzs='DZS'
-   name_out_tauskin='TAUSKIN'
-   name_out_tauskin_c='TAUSKIN_C'
-   name_out_tauskin_w='TAUSKIN_W'
-   riog_valid_min_hsed=0 
-   riog_valid_max_hsed=100
-   riog_valid_min_nblaysed=0
-   riog_valid_max_nblaysed=200
-   riog_valid_min_dzs=0
-   riog_valid_max_dzs=100
-   riog_valid_min_tauskin=0
-   riog_valid_max_tauskin=50
    choice_nivsed_out=1 
    nk_nivsed_out=5   
    ep_nivsed_out(1)=0.
@@ -742,15 +653,6 @@
 :    f_collfragparam : real, fraction of shear aggregation leading to 
 :                      fragmentation by collision (default 0.0, must be less 
 :                      than 1.0)
-:    l_out_f_dtmin : boolean, set to .true. if output dtmin for floculation 
-:                    (sub time step) - NOT USED
-:    l_out_f_d10 : boolean, set to .true. if output d10 
-:                  Percentile10 flocsizediameter) - NOT USED
-:    l_out_f_d90 : boolean, set to .true. if output d90 (Percentile90 
-:                  flocsizediameter) - NOT USED
-:    l_out_G : boolean, set to .true. if output G (shear rate)  - NOT USED
-:    l_out_MUDtot : boolean, set to .true. if output total Mud concentration
-:                   NOT USED
 :------------------------------------------------------------------------------
 &namflocmod
    l_ADS = .FALSE. 
@@ -770,12 +672,7 @@
    f_cfcst = 0.1875   
    f_fp = 0.1     
    f_fy = 1.0e-10   
-   f_collfragparam = 0.01 
-   l_out_f_dtmin = .TRUE. 
-   l_out_f_d10 =.TRUE. 
-   l_out_f_d90 =.TRUE. 
-   l_out_G  = .FALSE.
-   l_out_MUDtot = .FALSE.  / 
+   f_collfragparam = 0.01   / 
 
 
 

@@ -492,7 +492,7 @@ MODULE sed_MUSTANG
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!   conversion of deposit flux, and corflux for  hydro code                                           !!!!!
+!   conversion of deposit flux for  hydro code                                                        !!!!!
 ! + conversion of erosion flux                                                                         !!!!
 ! + water flux at interface sediment/water resulting from deposit at previous time step and of erosion  !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -612,7 +612,7 @@ MODULE sed_MUSTANG
    !!===========================================================================
  
   SUBROUTINE MUSTANG_morpho(ifirst, ilast, jfirst, jlast, WATER_ELEVATION       &
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
+#if defined MORPHODYN_MUSTANG_byHYDRO
                                       ,dhsed                            &
 #endif                                     
                                       )
@@ -642,7 +642,7 @@ MODULE sed_MUSTANG
 #else
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION  
 #endif                  
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
+#if defined MORPHODYN_MUSTANG_byHYDRO
    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)           :: dhsed                        
 #endif                                     
 
@@ -703,21 +703,6 @@ MODULE sed_MUSTANG
 !     ----------------------------------------------
      ! **TODO** create sed_exchange_hxe in sed_MUSTANG_CROCO CALL sed_exchange_hxe_MARS(1,xh0=BATHY_H0,xssh=WATER_ELEVATION)             
 
-
-
-!     7. evaluate variation of sediment thickness from initial time to save and  transfer to hydro
-!         for coupling with WW3 with oasis
-!     ---------------------------------------------------------------------
-#if defined key_oasis && defined key_oasis_mars_ww3       
-       IF (l_transfer2hydro_dhsed) THEN  
-           DO j=jfirst,jlast
-             DO i=ifirst,ilast
-               dhsed(i,j)=hsed0(i,j)-hsed(i,j)
-               dhsed_save(i,j)=dhsed(i,j)
-             ENDDO
-           ENDDO
-        END IF
-#endif
 
 #if defined MORPHODYN_MUSTANG_byHYDRO
         DO j=jfirst,jlast
@@ -4987,7 +4972,7 @@ MODULE sed_MUSTANG
          cordepflue = max(0.0_rsh, slopefac * SLOPE_E)
          cordepflus = max(0.0_rsh, slopefac * SLOPE_S)
          cordepflun = max(0.0_rsh, slopefac * SLOPE_N)
-         cordepflu=cordepfluw+cordepflue+cordepflus+cordepflun
+         cordepflu = cordepfluw + cordepflue + cordepflus + cordepflun
          IF (cordepflu.gt.1.0_rsh)THEN
            cordepfluw = cordepfluw / cordepflu
            cordepflue = cordepflue / cordepflu
@@ -5200,9 +5185,6 @@ MODULE sed_MUSTANG
            ENDIF
 
          ENDIF
-
-         ! porosity in sediment surface, used in sflxsurf
-          poro_sedsurf(i,j)=poro(ksma(i,j),i,j)
 !
         ELSE
           phitemp_s(i,j)=0.0_rsh

@@ -15,10 +15,6 @@
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 :                            (only if key_MUSTANG_lateralerosion)
-: namsedim_time_dyninsed   : relative to time step for 
-:                            the  calculation of consolidation/diffusion or 
-:                            bioturbation in sediment 
-:                            (only if key_MUSTANG_V2)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -35,8 +31,6 @@
 &namsedim_init
    date_start_morpho='01/01/2019 00:00:00'  
    l_unised = .true.  
-   l_z0seduni=.TRUE.  
-   z0seduni = 0.0001  
    hseduni = 3.   
    cseduni= 702.0 
    ksmiuni = 1  
@@ -50,7 +44,9 @@
    dzsmaxuni= 0.1
    nlayer_surf_sed=5  
 /
-&namsedim_bottomstress
+&namsedim_bottomstress 
+   l_z0seduni=.TRUE.  
+   z0seduni = 0.0001 
 /
 &namsedim_deposition
 /

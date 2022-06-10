@@ -88,9 +88,9 @@ MODULE comsubstance
 
 #ifdef key_benthic
     ! -------------------------------------------------------------------------
-    ! Benthic variables - NOT USED ??? to keep ???
+    ! Benthic variables - NOT USED in MUSTANG, used in BLOOM
     ! -------------------------------------------------------------------------
-    CHARACTER(LEN = lchain)                            :: filespcbenthic ! - NOT USED
+    CHARACTER(LEN = lchain)                            :: filespcbenthic
     CHARACTER(LEN = lchain), DIMENSION(:), ALLOCATABLE :: name_var_bent
     CHARACTER(LEN = lchain), DIMENSION(:), ALLOCATABLE :: long_name_var_bent
     CHARACTER(LEN = lchain), DIMENSION(:), ALLOCATABLE :: standard_name_var_bent

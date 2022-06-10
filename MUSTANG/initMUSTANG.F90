@@ -31,7 +31,6 @@ MODULE initMUSTANG
 !&E     subroutine MUSTANG_init_output    ! initialize dimensions of output 
 !&E                                         tables
 !&E     subroutine MUSTANG_morphoinit      ! initialize 
-!&E     subroutine MUSTANG_morphoinit_mesh ! initialize 
 !&E   If key_MUSTANG_flocmod (floculation module, Verney et all, 2011):
 !&E     subroutine flocmod_init           ! initialize flocs characteristics
 !&E     subroutine flocmod_kernels        ! computations of 
@@ -47,7 +46,7 @@ MODULE initMUSTANG
     USE comMUSTANG
     USE sed_MUSTANG_HOST,  ONLY : sedinit_fromfile
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
-    !USE sed_MUSTANG_HOST,  ONLY : MUSTANG_morphoinit_mesh,sed_exchange_hxe_HOST
+    !USE sed_MUSTANG_HOST,  ONLY : sed_exchange_hxe_HOST
     USE comsubstance
     USE module_substance
 
@@ -62,7 +61,6 @@ MODULE initMUSTANG
     ! declaration of namelists, variables described in comMUSTANG
     namelist /namsedim_init/ l_repsed, filrepsed, l_unised, fileinised,       &
                              date_start_morpho, date_start_dyninsed,          &
-                             l_z0seduni, z0seduni, z0sedmud, z0sedbedrock,    &
                              hseduni, cseduni, ksmiuni, ksmauni,              &
                              sini_sed, tini_sed,                              &
                              l_init_hsed, csed_mud_ini,                       &
@@ -80,14 +78,16 @@ MODULE initMUSTANG
                                 E0_sand_option, E0_sand_para, n_eros_sand,    &
                                 E0_mud, n_eros_mud,                           &
                                 ero_option, xexp_ero,                         &
-                                htncrit_eros, E0_sand_Cst,                    &
+                                E0_sand_Cst,                    &
                                 tau_cri_option,                               &
                                 tau_cri_mud_option_eroindep,                  &
                                 l_peph_suspension, l_xexp_ero_cst,            &
                                 l_eroindep_mud, l_eroindep_noncoh,            &
                                 E0_mud_para_indep
 
-    namelist /namsedim_bottomstress/ l_fricwave, fricwav,                     &
+    namelist /namsedim_bottomstress/ l_z0seduni,                              &
+                                     z0seduni, z0sedmud, z0sedbedrock,        &
+                                     l_fricwave, fricwav,                     &
                                      l_z0hydro_coupl_init,                    & 
                                      l_z0hydro_coupl,                         &
                                      coef_z0_coupl,                           &
@@ -98,14 +98,14 @@ MODULE initMUSTANG
                                    cvolmaxsort, cvolmaxmel, slopefac
 
     namelist /namsedim_lateral_erosion/ coef_erolat, coef_tauskin_lat,        &
-                                        l_erolat_wet_cell
+                                        l_erolat_wet_cell, htncrit_eros 
 
     namelist /namsedim_consolidation/ l_consolid, xperm1, xperm2, xsigma1,    &
                                       xsigma2, csegreg, csandseg,             &
                                       dt_consolid, subdt_consol
 
     namelist /namsedim_diffusion/ l_diffused, choice_flxdiss_diffsed,         &
-                                  xdifs1, xdifs2, xdifsi1, xdifsi2,           &
+                                  xdifs1, xdifsi1,           &
                                   epdifi, fexcs, dt_diffused
 
     namelist /namsedim_bioturb/ l_bioturb, l_biodiffs,                        &
@@ -116,31 +116,14 @@ MODULE initMUSTANG
                                 frmud_db_min, frmud_db_max,                   &
                                 dt_bioturb, subdt_bioturb
 
-    namelist /namsedim_morpho/ l_morphocoupl, l_morphomesh, MF,               &
-                               l_bathy_smoothing,                             &
-                               l_dredging, l_MF_dhsed, l_bathy_actu,          &
-                               dt_morpho, l_transfer2hydro_dhsed                                  
+    namelist /namsedim_morpho/ l_morphocoupl, MF,               &
+                               l_MF_dhsed, l_bathy_actu,                      &
+                               dt_morpho                                  
 
-    namelist /namsedoutput/ name_out_hsed,                                    &
-                            name_out_nblaysed,                                &
-                            name_out_dzs,                                     &
-                            name_out_tauskin,                                 &
-                            name_out_tauskin_c,                               &
-                            name_out_tauskin_w,                               &
-                            choice_nivsed_out,                                &
-                            riog_valid_min_hsed, riog_valid_max_hsed,         &
-                            riog_valid_min_nblaysed, riog_valid_max_nblaysed, &
-                            riog_valid_min_dzs, riog_valid_max_dzs,           &
-                            riog_valid_min_tauskin, riog_valid_max_tauskin,   &
+    namelist /namsedoutput/ choice_nivsed_out,                                &
                             nk_nivsed_out, ep_nivsed_out, epmax_nivsed_out,   &
-                            l_outsed_flx_Bload_all, l_outsed_flx_WS_all,      &
-                            l_outsed_poro, l_outsed_activlayer,               &
-                            l_outsed_surf, l_outsed_saltemp, l_outsed_toce,   &
-                            l_outsed_frmudsup, l_outsed_bil_Bload_all,        &
-                            l_outsed_fsusp, l_outsed_dzs_ksmax,               &
-                            l_outsed_peph, l_outsed_eroiter, l_outsed_z0sed,  &
-                            l_outsed_flx_WS_int, l_outsed_flx_Bload_int,      &
-                            l_outsed_bil_Bload_int
+                            l_outsed_flx_WS_int, l_outsed_flx_WS_all,         &
+                            l_outsed_saltemp
 
 #ifdef key_MUSTANG_V2
     namelist /namsedim_poro/ poro_option, poro_min,                           &
@@ -168,7 +151,7 @@ MODULE initMUSTANG
 #if !defined key_noTSdiss_insed
     namelist /namtempsed/ mu_tempsed1, mu_tempsed2, mu_tempsed3,              &
                           epsedmin_tempsed,                                   &
-                          epsedmax_tempsed, alb, cp_suni, emissivity_sed
+                          epsedmax_tempsed
 #endif
 
 CONTAINS
@@ -176,7 +159,7 @@ CONTAINS
 !!=============================================================================
     SUBROUTINE MUSTANG_init(ifirst, ilast, jfirst, jlast,                     &
             WATER_ELEVATION,                                                  &
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN  
+#if defined MORPHODYN  
             dhsed,                                                            &
 #endif
 # ifdef key_MUSTANG_flocmod
@@ -212,7 +195,7 @@ CONTAINS
     REAL(KIND=rsh),DIMENSION(ARRAY_Z0HYDRO),INTENT(INOUT)        :: z0hydro                         
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)       :: WATER_CONCENTRATION  
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
+#if defined MORPHODYN_MUSTANG_byHYDRO  
     REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)          :: dhsed                       
 #endif
 #ifdef key_MUSTANG_flocmod
@@ -359,10 +342,10 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Estimation of sediment heights and bathy bedrock for morphodynamic
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-    ! call even if no morpho for dredging and initialization of hsed in all cases, 
+    ! call even if no morpho, initialization of hsed in all cases, 
     ! even if initfromfile
     CALL MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION   &
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
+#if defined MORPHODYN_MUSTANG_byHYDRO  
                                                 ,dhsed               &
 #endif
             )
@@ -719,7 +702,6 @@ CONTAINS
     !&E       * ws_sand
     !&E       * tetacri0
     !&E       * stresscri0
-    !&E       * xnielsen
     !&E       * psi_sed (in V2)
     !&E    - compute for each sand (for isand1 to isand2) 
     !&E       * E0_sand (in V2)
@@ -805,9 +787,7 @@ CONTAINS
     l_dyn_insed = .FALSE.
     IF (l_consolid .OR. l_bioturb .OR. l_diffused .OR. l_biodiffs) l_dyn_insed = .TRUE.
 
-#if defined key_oasis && defined key_oasis_mars_ww3  
-    IF (l_ww3morpho) l_transfer2hydro_dhsed = .TRUE.    
-#endif
+
 
     ! conversion of thickness reading in mm to m for computation
     epmax_nivsed_out = epmax_nivsed_out / 1000.0_rsh
@@ -825,7 +805,7 @@ CONTAINS
       diamstar(iv) = diam_sed(iv) * 10000.0_rsh * (GRAVITY * (ros(iv) / RHOREF - 1.0_rsh))**0.33_rsh
       ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
       ws_sand(iv)=.000001_rsh*((107.33_rsh+1.049_rsh*diamstar(iv)**3)**0.5_rsh-10.36_rsh)/diam_sed(iv)
-      xnielsen(iv)=12.0_rsh*1000.0_rsh/GRAVITY/(1.0_rsh-RHOREF/ros(iv))
+
 
        ! Critical shear stress in erosion law (N/m2)
       IF (tau_cri_option == 0) THEN
@@ -1293,8 +1273,8 @@ CONTAINS
 !!===========================================================================
 
     SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION  &
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
-                  ,dhsed                                                &
+#if defined MORPHODYN_MUSTANG_byHYDRO  
+                  , dhsed                                                &
 #endif
                   )
 
@@ -1302,7 +1282,7 @@ CONTAINS
     !&E                 ***  ROUTINE morphoinit  ***
     !&E
     !&E ** Purpose : initialization of hsed, hsed0, h0_bedrock, hsed_previous,
-    !&E                 morpho0 or morphox & morphoy (MARS)
+    !&E                 morpho0 
     !&E
     !&E ** Description :
     !&E
@@ -1314,17 +1294,15 @@ CONTAINS
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
     REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(INOUT)        :: BATHY_H0                         
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
+#if defined MORPHODYN_MUSTANG_byHYDRO  
     REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)           :: dhsed                       
 #endif
     !! * Local declarations
-    INTEGER                  :: i, j, k
+    INTEGER :: i, j, k
 
     !! * Executable part
 
     IF(l_morphocoupl) THEN
-        !!  *1*  initialisation of morphox, morphoy  !!!
-                !!! ATTENTION si pas de hx,hy pas de morphox, morphoy
         ! morpho = 1 if morphodynamic effective
         ! morpho = 0 if depth not vary
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1334,20 +1312,12 @@ CONTAINS
 
         !  **TODO** To Program
         !   morpho0(boundaries)=0.0_rsh
-       
-        ! call a special routine if morpho must be intialize at 0 in some meshes
-        !     routine in sed_MUSTANG_HOST
-      
-        IF(l_morphomesh) CALL MUSTANG_morphoinit_mesh
      
         !!  *2*  deallocate unused array   !!!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if !defined MORPHODYN_MUSTANG_byHYDRO
         IF(.NOT. l_MF_dhsed )  DEALLOCATE (hsed_previous)
 #endif
-#if defined key_oasis && defined key_oasis_mars_ww3          
-        IF (.NOT. l_transfer2hydro_dhsed) DEALLOCATE (dhsed_save)
-#endif   
     ENDIF
  
  
@@ -1365,7 +1335,7 @@ CONTAINS
     ENDDO
     ENDDO       
 
-    IF(l_morphocoupl .OR. l_dredging)THEN
+    IF(l_morphocoupl)THEN
 #if !defined MORPHODYN_MUSTANG_byHYDRO
         IF (l_MF_dhsed) THEN
 #endif
@@ -1402,7 +1372,7 @@ CONTAINS
             ENDIF
         ENDDO
         ENDDO
-    ENDIF   ! endif l_morphocoupl (OR l_dredging)
+    ENDIF   ! endif l_morphocoupl
 
     IF(l_morphocoupl)THEN    
 
@@ -1424,27 +1394,13 @@ CONTAINS
         ENDIF   ! endif l_repsed
 
 
-        !!  *9* transfer dhsed (variation from initial time) if need for coupling WW3 with oasis
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-#if defined key_oasis && defined key_oasis_mars_ww3       
-        IF (l_transfer2hydro_dhsed) THEN  
-            DO j=jfirst,jlast
-            DO i=ifirst,ilast
-                dhsed(i,j)=hsed0(i,j)-hsed(i,j)
-                dhsed_save(i,j)=dhsed(i,j)
-            ENDDO
-            ENDDO
-        END IF
-#endif
 
 #if defined MORPHODYN_MUSTANG_byHYDRO
         DO j=jfirst,jlast
         DO i=ifirst,ilast
             dhsed(i,j)=hsed0(i,j)-hsed(i,j)
-            ! dhsed_savedd(i,j)=dhsed(i,j)
 #ifdef key_MUSTANG_debug
             IF (i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-             ! if (i.eq.20.and.j.eq.2) then
                 MPI_master_only write(*,*) 'dhsed(',i,',',j,') initial:',dhsed(i,j),hsed0(i,j),hsed(i,j)
             ENDIF
 #endif
@@ -1458,27 +1414,6 @@ CONTAINS
 
     END SUBROUTINE MUSTANG_morphoinit
 !!===========================================================================
-
-    SUBROUTINE MUSTANG_morphoinit_mesh 
-    !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_morphoinit_mesh  ***
-    !&E
-    !&E ** Purpose : initalize morpho0 in the domain
-    !&E 
-    !&E ** Description :
-    !&E
-    !&E ** Called by : flocmod_main
-    !&E
-    !&E --------------------------------------------------------------------------
-    !! * Executable part
-
-    !! morpho0(i,j)=1._rsh   !! mesh where morphodynamic coupling is effective
-    !! morpho0(i,j)=0._rsh   !! mesh where bathy cannot change (i.e. dam ..)
-
-    PRINT_DBG*, 'END MUSTANG_morphoinit_mesh'
-
-    END SUBROUTINE MUSTANG_morphoinit_mesh
-!!===========================================================================  
 
     SUBROUTINE MUSTANG_alloc()
     !&E--------------------------------------------------------------------------
@@ -1501,7 +1436,6 @@ CONTAINS
     ALLOCATE(rosmrowsros(nvp))
     ALLOCATE(stresscri0(nvp))
     ALLOCATE(tetacri0(nvp))
-    ALLOCATE(xnielsen(nvp))
     ALLOCATE (typart(-1:nv_adv))
     typart(-1:0)=0.0_rsh
     typart(1:nvpc)=1.0_rsh
@@ -1529,7 +1463,6 @@ CONTAINS
     ALLOCATE(tauskin_w(PROC_IN_ARRAY))
     ALLOCATE(ustarbot(PROC_IN_ARRAY))
     ALLOCATE(dzsmax(PROC_IN_ARRAY))
-    ALLOCATE(emissivity_s(PROC_IN_ARRAY))
     ALLOCATE(htot(PROC_IN_ARRAY_m2p2))
     ALLOCATE(alt_cw1(PROC_IN_ARRAY))
     ALLOCATE(epn_bottom_MUSTANG(PROC_IN_ARRAY_m1p2))  
@@ -1547,7 +1480,6 @@ CONTAINS
     tauskin_w(PROC_IN_ARRAY) = 0.0_rsh
     ustarbot(PROC_IN_ARRAY) = 0.0_rsh
     dzsmax(PROC_IN_ARRAY) = 0.0_rsh
-    emissivity_s(PROC_IN_ARRAY) = 0.0_rsh
     htot(PROC_IN_ARRAY_m2p2) = 0.0_rsh
     alt_cw1(PROC_IN_ARRAY) = 0.0_rsh
     epn_bottom_MUSTANG(PROC_IN_ARRAY_m1p2) = 0.0_rsh
@@ -1558,14 +1490,7 @@ CONTAINS
     roswat_bot(PROC_IN_ARRAY) = 0.0_rsh
 #if ! defined key_noTSdiss_insed
     ALLOCATE(phitemp_s(PROC_IN_ARRAY))
-    ALLOCATE(phitemp_sout(PROC_IN_ARRAY))
-    ALLOCATE(cp_s(PROC_IN_ARRAY))
-    ALLOCATE(poro_sedsurf(PROC_IN_ARRAY))
     phitemp_s(PROC_IN_ARRAY) = 0.0_rsh
-    phitemp_sout(PROC_IN_ARRAY) = 0.0_rsh
-    cp_s(PROC_IN_ARRAY) = cp_suni
-    emissivity_s(PROC_IN_ARRAY) = emissivity_sed
-    poro_sedsurf(PROC_IN_ARRAY) = 0.0_rsh
 #endif
 #ifdef key_MUSTANG_V2
     ALLOCATE(sigmapsg(ksdmin:ksdmax))
@@ -1714,10 +1639,8 @@ CONTAINS
 
     ALLOCATE( raphbx(PROC_IN_ARRAY_m1p1), raphby(PROC_IN_ARRAY_m1p1) )
     ALLOCATE( tauskin_x(PROC_IN_ARRAY), tauskin_y(PROC_IN_ARRAY) )
-    ALLOCATE( dry_cell(PROC_IN_ARRAY))
     raphbx(PROC_IN_ARRAY_m1p1)=0.0_rsh
     raphby(PROC_IN_ARRAY_m1p1)=0.0_rsh
-    dry_cell(PROC_IN_ARRAY)=0
 
     ALLOCATE(flx_s2w_corim1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
     ALLOCATE(flx_s2w_corip1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
@@ -1767,9 +1690,6 @@ CONTAINS
         ALLOCATE(h0_bedrock(ARRAY_h0_bedrock))
         ALLOCATE(hsed0(PROC_IN_ARRAY))
         ALLOCATE(hsed_previous(PROC_IN_ARRAY))
-#if defined MORPHODYN_MUSTANG_byHYDRO
-        ALLOCATE(dhsed_save(PROC_IN_ARRAY))
-#endif
         hsed0(PROC_IN_ARRAY) = 0.0_rsh
         hsed_previous(PROC_IN_ARRAY) = 0.0_rsh
 
@@ -1780,11 +1700,13 @@ CONTAINS
     ALLOCATE(EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w))
     ALLOCATE(SETTL_FLUX_w2s(ARRAY_SETTL_FLUX_w2s))
     ALLOCATE(SETTL_FLUXSUM_w2s(ARRAY_SETTL_FLUXSUM_w2s))
-    ALLOCATE(WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS))
     EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w) = 0.0_rsh
     SETTL_FLUX_w2s(ARRAY_SETTL_FLUX_w2s) = 0.0_rsh
     SETTL_FLUXSUM_w2s(ARRAY_SETTL_FLUXSUM_w2s) = 0.0_rsh
+#if ! defined key_nofluxwat_IWS && ! defined key_noTSdiss_insed
+    ALLOCATE(WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS)) ! not operationnal, stil to code **TODO**
     WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS) = 0.0_rsh
+#endif    
     
     ALLOCATE(fwet(PROC_IN_ARRAY))
     fwet(:,:) = 1.0_rsh
@@ -1799,10 +1721,6 @@ CONTAINS
     ALLOCATE(f_vol(1:nv_mud))      ! floc volume
     ALLOCATE(f_rho(1:nv_mud))      ! floc density
     ALLOCATE(f_mass(0:nv_mud+1))     ! floc mass
-
-    ! mass concentration 
-    !ALLOCATE(f_cv(1:nv_mud))       ! extracted from cv_wat(:,k,j,j) mass concentration for every mud variables
-    !f_cv(1:nv_mud)=0.0_rsh
 
     ! agregation kernels
     ALLOCATE(f_coll_prob_sh(1:nv_mud,1:nv_mud)) !  shear agregation collision probability

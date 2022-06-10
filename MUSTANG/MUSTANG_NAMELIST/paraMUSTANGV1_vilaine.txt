@@ -15,10 +15,6 @@
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 :                            (only if key_MUSTANG_lateralerosion)
-: namsedim_time_dyninsed   : relative to time step for 
-:                            the  calculation of consolidation/diffusion or 
-:                            bioturbation in sediment 
-:                            (only if key_MUSTANG_V2)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -40,10 +36,6 @@
    l_initsed_vardiss=.false.
    l_unised = .true.    
    fileinised =  './Init.nc' 
-   l_z0seduni=.true.  
-   z0seduni = 0.0001     
-   z0sedmud = 0.0001    
-   z0sedbedrock = 0.005  
    hseduni = 0.1       
    cseduni= 1508.0  
    l_init_hsed=.FALSE.   
@@ -59,6 +51,10 @@
    nlayer_surf_sed=5 
 /
 &namsedim_bottomstress
+   l_z0seduni=.true.  
+   z0seduni = 0.0001     
+   z0sedmud = 0.0001    
+   z0sedbedrock = 0.005  
    l_fricwave=.false.  
 /  
 &namsedim_deposition
@@ -82,11 +78,12 @@
    n_eros_mud=1.  
    ero_option = 1   
    xexp_ero = 2.0     
-   htncrit_eros=0.0  /  
+ /  
 &namsedim_lateral_erosion
    coef_erolat=0.000 
    coef_tauskin_lat=5.0  
-   l_erolat_wet_cell=.FALSE. / 
+   l_erolat_wet_cell=.FALSE. 
+   htncrit_eros=0.0 / 
 &namsedim_consolidation
 /
 &namsedim_diffusion
@@ -94,9 +91,7 @@
    dt_diffused=500.0 
    choice_flxdiss_diffsed=3 
    xdifs1 = 1.e-8  
-   xdifs2 = 0.0 
    xdifsi1 = 1.e-6 
-   xdifsi2 = 0.0  
    epdifi = 0.01 
    fexcs=0.5 /  
 &namsedim_bioturb
