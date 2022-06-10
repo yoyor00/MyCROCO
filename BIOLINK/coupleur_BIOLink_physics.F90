@@ -55,8 +55,7 @@
 #endif /*MUSTANG*/
 
 #if defined ECO3M   
-
-   USE COUPLEUR_PHY_BIO ! Internal functions of coupling of ECO3M
+   USE mod_eco3m, ONLY : THICKLAYERWC
 
 #endif /* ECO3M */
 

@@ -68,7 +68,9 @@
 
 #endif /*MUSTANG*/
 
-
+#if defined ECO3M
+   USE mod_eco3m, ONLY : THICKLAYERWC
+# endif
 
    IMPLICIT NONE
   
