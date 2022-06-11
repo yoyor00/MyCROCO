@@ -135,7 +135,7 @@
 
       implicit none
       integer max_length, max_filename
-      parameter(max_length=80, max_filename=32)
+      parameter(max_length=100, max_filename=32)
       character file_in*(max_filename), file_out*(max_filename),
      &          symbol(2*max_length),   buffr(max_length),
      &          scratch*(max_length),   quote,     double_quote,
@@ -185,7 +185,7 @@
         do i=1,max_length       ! out the string itself. Then read
           symbol(i)=' '         ! in a new string.
         enddo
-        read(iin,'(80A1)',iostat=iocheck,end=2)
+        read(iin,'(100A1)',iostat=iocheck,end=2)
      &                 (symbol(i), i=1,max_length)
         goto 3
    2    not_end_of_file=.false.
