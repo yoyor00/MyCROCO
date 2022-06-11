@@ -1542,7 +1542,6 @@
 !----------------------------------------------------------
 !
        ENDDOLOOP2D
-<<<<<<< HEAD
 
 #undef DC3D
 #undef CF3D
@@ -1559,33 +1558,12 @@
           enddo
         enddo
        enddo
-=======
-
-#undef DC3D
-#undef CF3D
-#define DC3D VFx_3D
-#define CF3D VFe_3D
->>>>>>> d4342b18... Mostly optimizations
 
 !$acc parallel loop if(compute_on_device) default(present) async(2)
 !$acc& collapse(3)
       do k=1,N
         do j=JstrV,Jend
           do i=Istr,Iend
-<<<<<<< HEAD
-=======
-            DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
-     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
-          enddo
-        enddo
-       enddo
-
-!$acc parallel loop if(compute_on_device) default(present) async(2)
-!$acc& collapse(3)
-      do k=1,N
-        do j=JstrV,Jend
-          do i=Istr,Iend
->>>>>>> d4342b18... Mostly optimizations
             CF3D(i,j,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
      &                                   We(i,j+1,k)+We(i,j-2,k) ))
           enddo
