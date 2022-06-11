@@ -22,19 +22,20 @@
       trd=omp_get_thread_num()
       call omega_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd)
      &                                    , A2d(1,2,trd)
+     &                                    , A2d(1,3,trd)
 # ifdef VADV_ADAPT_IMP
-     &                                     ,A2d(1,3,trd)
+     &                                     ,A2d(1,4,trd)
 # endif
-     &                                                  )
+     &                                     ,A3d(1,3,trd))
       return
       end
 !======================================================================
 !
-      subroutine omega_tile (Istr,Iend,Jstr,Jend, wrk, wrk2
+      subroutine omega_tile (Istr,Iend,Jstr,Jend, CF, DC,FC 
 # ifdef VADV_ADAPT_IMP
      &      ,Cu_adv
 # endif
-     &                      )      
+     &                    ,romega)      
 !======================================================================
 !
 ! Compute S-coordinate vertical velocity, w=[Hz/(m*n)]*omega [m^3/s],
@@ -72,13 +73,11 @@
       integer Istr,Iend,Jstr,Jend, i,j,k
 # include "param.h"
 
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h" 
-# endif
-      real wrk   (PRIVATE_1D_SCRATCH_ARRAY    )
-      real wrk2  (PRIVATE_1D_SCRATCH_ARRAY    )
+      real DC    (PRIVATE_1D_SCRATCH_ARRAY,0:N    )
+      real FC  (PRIVATE_1D_SCRATCH_ARRAY,0:N    )
+      real CF  (PRIVATE_2D_SCRATCH_ARRAY    )
+      real romega(PRIVATE_2D_SCRATCH_ARRAY,N  )
 # ifdef VADV_ADAPT_IMP      
       real cu_adv(PRIVATE_1D_SCRATCH_ARRAY,0:N)
       real gamma,Cdt,cff,my_cu_adv,c_min,c_max,cu_cut,fcu
@@ -94,6 +93,7 @@
 # include "grid.h"
 # include "ocean3d.h"
 # include "scalars.h"
+#include "openacc_work.h"
 !
 # ifdef MPI
 #  define LOCALLM Lmmpi
@@ -121,8 +121,25 @@
 !---------------------------------------------------------
 ! 
 !$acc kernels if(compute_on_device) default(present)
-!$acc loop private(wrk,wrk2)
+
       do j=Jstr,Jend
+        do i=Istr,Iend
+          CF(i,j)=om_r(i,j)*on_r(i,j)/dt
+        enddo
+      enddo
+
+      do k=1,N
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            romega(i,j,k) = -Huon(i+1,j,k)+Huon(i,j,k)
+     &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
+     &                 -(Hz(i,j,k)-Hz_bak(i,j,k))*CF(i,j)
+          enddo
+        enddo
+      enddo
+
+!      do j=Jstr,Jend
+       DOLOOP2D(Istr,Iend,Jstr,Jend)
 !
 !---------------------------------------------------------
 !  Integrate divergence of horizontal mass fluxes
@@ -134,15 +151,13 @@
           Wi(i,j,0)=0.
 # endif
           We(i,j,0)=0.
-          wrk(i)=0.
+          FC(i,0) = 0.
+          DC(i,0)=0.
         enddo
         do k=1,N,+1
           do i=Istr,Iend
-            We(i,j,k)=We(i,j,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
-     &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
-     &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
-     &                                  *om_r(i,j)*on_r(i,j)
-            wrk(i)=wrk(i)+Hz(i,j,k)
+            FC(i,k)=FC(i,k-1) + romega(i,j,k)
+            DC(i,k)=DC(i,k-1) + Hz(i,j,k)
 !
 !---------------------------------------------------------
 !  Compute the horizontal Courant number
@@ -161,13 +176,11 @@
 !---------------------------------------------------------
 !
         do i=Istr,Iend
-          wrk2(i)=0.
-          wrk(i)=We(i,j,N)/wrk(i)
+          DC(i,N)=FC(i,N)/DC(i,N)
         enddo
         do k=1,N-1,+1
           do i=Istr,Iend
-            wrk2(i)=wrk2(i)+Hz(i,j,k)
-            We(i,j,k)=We(i,j,k)-wrk(i)*wrk2(i)
+            We(i,j,k)=FC(i,k)-DC(i,N)*DC(i,k)
           enddo
         enddo
         do i=Istr,Iend
@@ -210,7 +223,8 @@
         enddo
 #endif
 
-      enddo  ! j loop
+      ! enddo  ! j loop
+        ENDDOLOOP2D
 !
 !---------------------------------------------------------      
 !  Set lateral boundary conditions.

@@ -569,14 +569,16 @@
 #undef DC
 #undef FC
 #undef CF
-!$acc loop private(DC)
+
       do j=Jstr,Jend
         do i=IstrU,Iend
-          DC(i,0)=pm_u(i,j)*pn_u(i,j)
+          DC(i,j)=pm_u(i,j)*pn_u(i,j)
         enddo
+      enddo
         
         if (FIRST_TIME_STEP) then
           do k=1,N
+           do j=Jstr,Jend
             do i=IstrU,Iend
 # ifdef VADV_ADAPT_IMP              
               cff = 1.
@@ -584,7 +586,7 @@
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
 # endif           
               u(i,j,k,nnew)=(u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-     &                                           +cdt*DC(i,0)*ru(i,j,k)
+     &                                           +cdt*DC(i,j)*ru(i,j,k)
      &                      )*cff
 # ifdef M3FAST
               ru_int_nbq(i,j,k) = 0.
@@ -594,6 +596,7 @@
      &                                         Hz(i-1,j,k))
             enddo
           enddo
+         enddo
 
 !# ifdef M3FAST
 !          do k=1,N
@@ -611,7 +614,8 @@
           cff1=0.5+gamma
           cff2=0.5-gamma
           do k=1,N
-            do i=IstrU,Iend
+            do j=Jstr,Jend
+             do i=IstrU,Iend
 
 # ifdef VADV_ADAPT_IMP              
               cff = 1.
@@ -626,10 +630,10 @@
      &                                      Hz_bak(i-1,j,k))
               u(i,j,k,nnew)=( cff1*qdm_nstp
      &                       +cff2*qdm_indx
-     &                       +cdt*DC(i,0)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
+     &                       +cdt*DC(i,j)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
      &                                                     )*cff
               ru_int_nbq(i,j,k) = (qdm_nstp-qdm_indx) /dt
-     &                                -DC(i,0)*ru_nbq_avg2(i,j,k)
+     &                                -DC(i,j)*ru_nbq_avg2(i,j,k)
        
               ru_int_nbq_2d(i,j)=ru_int_nbq_2d(i,j)+ru_int_nbq(i,j,k)
 # else
@@ -637,7 +641,7 @@
      &                                                Hz(i-1,j,k))
      &                       +cff2*u(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
      &                                                Hz_bak(i-1,j,k))
-     &                       +cdt*DC(i,0)*ru(i,j,k)
+     &                       +cdt*DC(i,j)*ru(i,j,k)
      &                                                     )*cff
 # endif
               u(i,j,k,indx)=u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
@@ -645,38 +649,34 @@
 
             enddo
           enddo  
+        enddo
 
 # ifdef M3FAST
           do k=1,N
-            do i=IstrU,Iend
+            do j=Jstr,Jend
+             do i=IstrU,Iend
                ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
      &            - ru_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
      &                               /( Zt_avg1(i  ,j)+h(i  ,j)
      &                                 +Zt_avg1(i-1,j)+h(i-1,j))
             enddo
           enddo
+        enddo
 # endif
          endif
+
 !
 !======================================================================
 !
-!  Compute implicit vertical advection/viscosity
-!
-# ifdef VADV_ADAPT_IMP
-#  undef  TRIDIAG_TRA
-#  define TRIDIAG_U
-#  undef  TRIDIAG_V
-#   include "tridiag_pred.h"
-# endif
-!
-!======================================================================
-!
-        if (j.ge.JstrV) then
+
+        do j=JstrV,Jend
           do i=Istr,Iend
-            DC(i,0)=pm_v(i,j)*pn_v(i,j)
+            DC(i,j)=pm_v(i,j)*pn_v(i,j)
           enddo
+        enddo
           if (FIRST_TIME_STEP) then
             do k=1,N
+             do j=JstrV,Jend
               do i=Istr,Iend
 # ifdef VADV_ADAPT_IMP              
                 cff = 1.
@@ -684,7 +684,7 @@
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
 # endif 
                 v(i,j,k,nnew)=(v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-     &                                           +cdt*DC(i,0)*rv(i,j,k)
+     &                                           +cdt*DC(i,j)*rv(i,j,k)
      &                           )*cff
 
 # ifdef M3FAST
@@ -695,6 +695,7 @@
      &                                           Hz(i,j-1,k))
               enddo
             enddo
+          enddo
 
 !# ifdef M3FAST
 !          do k=1,N
@@ -712,7 +713,8 @@
             cff1=0.5+gamma
             cff2=0.5-gamma
             do k=1,N
-              do i=Istr,Iend
+              do j=JstrV,Jend
+               do i=Istr,Iend
               
 # ifdef VADV_ADAPT_IMP              
                 cff = 1.
@@ -727,11 +729,11 @@
      &                                        Hz_bak(i,j-1,k))
                 v(i,j,k,nnew)=( cff1*qdm_nstp
      &                         +cff2*qdm_indx
-     &                     +cdt*DC(i,0)*(rv(i,j,k)+rv_nbq_avg1(i,j,k))
+     &                     +cdt*DC(i,j)*(rv(i,j,k)+rv_nbq_avg1(i,j,k))
      &                                                           )*cff
 
                 rv_int_nbq(i,j,k) = (qdm_nstp-qdm_indx)/dt
-     &                                 -DC(i,0)*rv_nbq_avg2(i,j,k)
+     &                                 -DC(i,j)*rv_nbq_avg2(i,j,k)
 
                 rv_int_nbq_2d(i,j)=rv_int_nbq_2d(i,j)+rv_int_nbq(i,j,k)
 # else
@@ -739,43 +741,73 @@
      &                                                  Hz(i,j-1,k))
      &                         +cff2*v(i,j,k,indx)*0.5*(Hz_bak(i,j  ,k)+
      &                                                  Hz_bak(i,j-1,k))
-     &                         +cdt*DC(i,0)*rv(i,j,k)
+     &                         +cdt*DC(i,j)*rv(i,j,k)
      &                                                           )*cff
 # endif
 
                 v(i,j,k,indx)=v(i,j,k,nstp)*0.5*(Hz(i,j,k)+
      &                                           Hz(i,j-1,k))
               enddo
-            enddo               !--> discard DC(:,0)
+            enddo               !--> discard DC(:,:)
+          enddo
 
 # ifdef M3FAST
-          do k=1,N
-            do i=Istr,Iend
+            do k=1,N
+             do j=JstrV,Jend
+              do i=Istr,Iend
                rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
      &            - rv_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
      &                               /( Zt_avg1(i,j  )+h(i,j  )
      &                                 +Zt_avg1(i,j-1)+h(i,j-1))
             enddo
           enddo
+        enddo
 # endif
 
           endif
-        endif
+!
+!======================================================================
+!
+
+# ifdef VADV_ADAPT_IMP
+!$acc loop private(DC)
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+          DC(i,0)=pm_u(i,j)*pn_u(i,j)
+        enddo
 !
 !======================================================================
 !
 !  Compute implicit vertical advection/viscosity
 !
-# ifdef VADV_ADAPT_IMP
+
+#  undef  TRIDIAG_TRA
+#  define TRIDIAG_U
+#  undef  TRIDIAG_V
+#   include "tridiag_pred.h"
+
+!
+!======================================================================
+!
+        if (j.ge.JstrV) then
+          do i=Istr,Iend
+            DC(i,0)=pm_v(i,j)*pn_v(i,j)
+          enddo
+!
+!======================================================================
+!
+!  Compute implicit vertical advection/viscosity
+!
+
 # undef  TRIDIAG_TRA
 # undef  TRIDIAG_U
 # define TRIDIAG_V
 #  include "tridiag_pred.h"
-# endif
 !
 !======================================================================
 !
       enddo     !<-- j
+# endif
       
 # if defined NBQ && ! defined NBQ2
 !----------------------------------------------------------

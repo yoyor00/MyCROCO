@@ -1279,6 +1279,34 @@
 
       enddo    ! <-- k
 
+!$acc end kernels
+
+
+#define DC3D UFx_3D
+#define CF3D UFe_3D
+!$acc parallel loop if(compute_on_device) default(present) async(1)
+!$acc& collapse(3)
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
+     &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+          enddo
+        enddo
+       enddo
+
+!$acc parallel loop if(compute_on_device) default(present) async(1)
+!$acc& collapse(3)
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            CF3D(i,j,k)=( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
+     &                                 We(i+1,j,k)+We(i-2,j,k) ))
+          enddo
+        enddo
+       enddo
+
+!$acc parallel loop if(compute_on_device) default(present) async(1)
       DOLOOP2D(IstrU,Iend,Jstr,Jend)
 
 # ifdef UV_ADV
@@ -1299,8 +1327,9 @@
 #  ifdef UV_VADV_SPLINES
         do k=1,N
           do i=IstrU,Iend
-            DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
-     &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+   !        DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
+   ! &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+            DC(i,k)=DC3D(i,j,k)
           enddo
         enddo
         do i=IstrU,Iend     ! Construct parabolic splines: here
@@ -1329,8 +1358,7 @@
 !
         do k=1,N-1
           do i=IstrU,Iend
-            FC(i,k)=( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
-     &                                 We(i+1,j,k)+We(i-2,j,k) ))
+            FC(i,k)=CF3D(i,j,k)
      &             *( u(i,j,k,nrhs)+DC(i,k)*(
      &                              0.33333333333333*CF(i,k  )
      &                             +0.16666666666667*CF(i,k-1)
@@ -1513,16 +1541,42 @@
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
-      ENDDOLOOP2D
+       ENDDOLOOP2D
 
+#undef DC3D
+#undef CF3D
+#define DC3D VFx_3D
+#define CF3D VFe_3D
 
+!$acc parallel loop if(compute_on_device) default(present) async(2)
+!$acc& collapse(3)
+      do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
+     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
+          enddo
+        enddo
+       enddo
+
+!$acc parallel loop if(compute_on_device) default(present) async(2)
+!$acc& collapse(3)
+      do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            CF3D(i,j,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
+     &                                   We(i,j+1,k)+We(i,j-2,k) ))
+          enddo
+        enddo
+       enddo
+
+!$acc parallel loop if(compute_on_device) default(present) async(2)
       DOLOOP2D(Istr,Iend,JstrV,Jend)
 !
 #  ifdef UV_VADV_SPLINES
           do k=1,N
             do i=Istr,Iend
-              DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
-     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
+              DC(i,k)=DC3D(i,j,k)
             enddo
           enddo
           do i=Istr,Iend    ! Construct parabolic splines: here
@@ -1551,8 +1605,7 @@
 !
           do k=1,N-1
             do i=Istr,Iend
-              FC(i,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
-     &                                   We(i,j+1,k)+We(i,j-2,k) ))
+              FC(i,k)=CF3D(i,j,k)
      &               *( v(i,j,k,nrhs)+DC(i,k)*(
      &                                0.33333333333333*CF(i,k  )
      &                               +0.16666666666667*CF(i,k-1)
@@ -1796,6 +1849,11 @@
       enddo
 # endif   /* MRL_WCI */
         ENDDOLOOP2D
+#undef DC3D
+#undef CF3D
+!$acc wait(1,2)
+!$acc kernels if(compute_on_device) default(present)
+
 !
 !======================================================================
 !
