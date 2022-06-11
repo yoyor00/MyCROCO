@@ -572,7 +572,7 @@
 
       do j=Jstr,Jend
         do i=IstrU,Iend
-          DC(i,j)=pm_u(i,j)*pn_u(i,j)
+          WORK(i,j)=pm_u(i,j)*pn_u(i,j)
         enddo
       enddo
         
@@ -586,7 +586,7 @@
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
 # endif           
               u(i,j,k,nnew)=(u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-     &                                           +cdt*DC(i,j)*ru(i,j,k)
+     &                                    +cdt*WORK(i,j)*ru(i,j,k)
      &                      )*cff
 # ifdef M3FAST
               ru_int_nbq(i,j,k) = 0.
@@ -630,10 +630,10 @@
      &                                      Hz_bak(i-1,j,k))
               u(i,j,k,nnew)=( cff1*qdm_nstp
      &                       +cff2*qdm_indx
-     &                       +cdt*DC(i,j)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
+     &                       +cdt*WORK(i,j)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
      &                                                     )*cff
               ru_int_nbq(i,j,k) = (qdm_nstp-qdm_indx) /dt
-     &                                -DC(i,j)*ru_nbq_avg2(i,j,k)
+     &                                -WORK(i,j)*ru_nbq_avg2(i,j,k)
        
               ru_int_nbq_2d(i,j)=ru_int_nbq_2d(i,j)+ru_int_nbq(i,j,k)
 # else
@@ -641,7 +641,7 @@
      &                                                Hz(i-1,j,k))
      &                       +cff2*u(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
      &                                                Hz_bak(i-1,j,k))
-     &                       +cdt*DC(i,j)*ru(i,j,k)
+     &                       +cdt*WORK(i,j)*ru(i,j,k)
      &                                                     )*cff
 # endif
               u(i,j,k,indx)=u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
@@ -671,7 +671,7 @@
 
         do j=JstrV,Jend
           do i=Istr,Iend
-            DC(i,j)=pm_v(i,j)*pn_v(i,j)
+            WORK(i,j)=pm_v(i,j)*pn_v(i,j)
           enddo
         enddo
           if (FIRST_TIME_STEP) then
@@ -684,7 +684,7 @@
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
 # endif 
                 v(i,j,k,nnew)=(v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-     &                                           +cdt*DC(i,j)*rv(i,j,k)
+     &                                    +cdt*WORK(i,j)*rv(i,j,k)
      &                           )*cff
 
 # ifdef M3FAST
@@ -729,11 +729,11 @@
      &                                        Hz_bak(i,j-1,k))
                 v(i,j,k,nnew)=( cff1*qdm_nstp
      &                         +cff2*qdm_indx
-     &                     +cdt*DC(i,j)*(rv(i,j,k)+rv_nbq_avg1(i,j,k))
+     &                     +cdt*WORK(i,j)*(rv(i,j,k)+rv_nbq_avg1(i,j,k))
      &                                                           )*cff
 
                 rv_int_nbq(i,j,k) = (qdm_nstp-qdm_indx)/dt
-     &                                 -DC(i,j)*rv_nbq_avg2(i,j,k)
+     &                                 -WORK(i,j)*rv_nbq_avg2(i,j,k)
 
                 rv_int_nbq_2d(i,j)=rv_int_nbq_2d(i,j)+rv_int_nbq(i,j,k)
 # else
@@ -741,7 +741,7 @@
      &                                                  Hz(i,j-1,k))
      &                         +cff2*v(i,j,k,indx)*0.5*(Hz_bak(i,j  ,k)+
      &                                                  Hz_bak(i,j-1,k))
-     &                         +cdt*DC(i,j)*rv(i,j,k)
+     &                         +cdt*WORK(i,j)*rv(i,j,k)
      &                                                           )*cff
 # endif
 
