@@ -210,7 +210,7 @@ c********************************************************************
         enddo
         do k=N-1,1,-1
           do i=IstrU-1,Iend
-            P(i,j,k)=P(i,j,k+1)+HalfGRho*( (rho(i,j,k+1)+rho(i,j,k))
+            P(i,j,k)=HalfGRho*( (rho(i,j,k+1)+rho(i,j,k))
      &                                    *(z_r(i,j,k+1)-z_r(i,j,k))
      &     -OneFifth*( (dR(i,k+1)-dR(i,k))*( z_r(i,j,k+1)-z_r(i,j,k)
      &                             -OneTwelfth*(dZ(i,k+1)+dZ(i,k)) )
@@ -219,7 +219,18 @@ c********************************************************************
      &                                                            ))
           enddo
         enddo
+
         ENDDOLOOP2D   !<-- j
+
+
+        do k=N-1,1,-1
+          do j=JstrV-1,Jend
+            do i=IstrU-1,Iend
+              P(i,j,k)=P(i,j,k)+P(i,j,k+1)
+            enddo
+          enddo
+        enddo
+
 
 !
 ! Compute XI-component of pressure gradient term:

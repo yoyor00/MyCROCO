@@ -43,7 +43,7 @@ def doloop2d_treat(result,lines,file_out_main):
 	if (bc1d>0):
 		accprivate=accprivate+comma+"BC1D"
 		comma=","		
-	accprivate=accprivate+")\n"
+	accprivate=accprivate+") vector\n"
 	if (cd1d+dc1d+cf1d+ffc1d+fc1d+dz1d+dr1d+bc1d>0):
 		file_out_main.write(accprivate)
 	file_out_main.write("        DO i=%s,%s\n" % (result.group(1),result.group(2)))
@@ -73,7 +73,8 @@ def doloop2d_treat(result,lines,file_out_main):
 				file_out_main.write("%s" % nextline.group(0))
 				ibegin=nextline.end()
 		lines=lines[ibegin:len(lines)]
-	file_out_main.write("      ENDDO; ENDDO\n")
+	file_out_main.write("      ENDDO\n")
+	file_out_main.write("      ENDDO\n")
 
 def doextend_treat(result,lines,file_out_main):
 	file_out_main.write("      DO %s=%s,%s\n" % (result.group(1),result.group(2),result.group(3)))
