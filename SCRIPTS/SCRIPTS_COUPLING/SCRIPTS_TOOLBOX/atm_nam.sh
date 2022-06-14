@@ -136,7 +136,7 @@ else
     max_cpldom=0
 fi
 #
-sed -e "s/<max_cpldom>/${max_cpldom},/g" \
+sed -e "s/<max_cpldom>/${max_cpldom}/g" \
     ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
