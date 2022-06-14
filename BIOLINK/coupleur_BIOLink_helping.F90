@@ -136,6 +136,7 @@ CONTAINS
      !====================================================================
      ! Routines from external models
      !====================================================================
+#if !defined ECO3M
 
 #if defined BLOOM
 
@@ -475,6 +476,7 @@ CONTAINS
 
    END IF
 
+   
 #if defined BLOOM && (defined key_N_tracer || defined key_P_tracer)
 
        call bloom_create_vardiagtracer
@@ -706,6 +708,7 @@ CONTAINS
      END DO
 
    ENDIF_MPI
+#endif /* ECO3M */
 
   END SUBROUTINE BIOLink_read_vardiag
 
