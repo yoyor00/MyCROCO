@@ -44,7 +44,10 @@
 CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j, isize,jsize,ksize,  iter,
      &        req(8), status(MPI_STATUS_SIZE,8), ierr, mdii,mdjj
-
+     
+#ifdef  BAND_DEBUG         
+      real,dimension(Npts)        :: checksum
+#endif
 #ifndef AGRIF      
 #else
       NEEDREPAIR
@@ -90,7 +93,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 ! Prepare to receive and send: sides....
         if (mdii.eq.0) then
           if (WEST_INTER2) then
-            write(*,*) 'MessPass2D: 1.1', mynode
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
             do j=jmin,jmax
@@ -109,7 +111,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
           endif
         else
           if (EAST_INTER2) then
-            write(*,*) 'MessPass2D: 1.2', mynode
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
             do j=jmin,jmax
@@ -128,7 +129,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 
         if (mdjj.eq.0) then
           if (SOUTH_INTER2) then
-            write(*,*) 'MessPass2D: 1.3', mynode
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
             do jpts=1,Npts
@@ -147,7 +147,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
           endif
         else
           if (NORTH_INTER2) then
-            write(*,*) 'MessPass2D: 1.4', mynode
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
             do jpts=1,Npts
@@ -171,7 +170,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 
         if (mdii.eq.0) then
           if (CORNER_SW) then
-            write(*,*) 'MessPass2D: 1.5', mynode
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
             do jpts=1,Npts
@@ -188,7 +186,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
           endif
         else
           if (CORNER_NE) then
-            write(*,*) 'MessPass2D: 1.6', mynode
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
             do jpts=1,Npts
@@ -207,7 +204,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
         endif
         if (mdii.eq.1) then
           if (CORNER_SE) then
-            write(*,*) 'MessPass2D: 1.7', mynode
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
             do jpts=1,Npts
@@ -225,7 +221,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
           endif
         else
           if (CORNER_NW) then
-            write(*,*) 'MessPass2D: 1.8', mynode
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
             do jpts=1,Npts
@@ -247,15 +242,39 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 ! Wait for completion of receive and fill ghost points: sides...
 !
       if (WEST_INTER2) then
-        write(*,*) 'MessPass2D: 2.1', mynode
         call MPI_Wait (req(1),status(1,1),ierr)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
+#ifdef  BAND_DEBUG         
+          checksum(:) = 0.
+#endif          
+c           print *,"chkbandname:",chkbandname,"---"
         do j=jmin,jmax
           do ipts=1,Npts
+#ifdef  BAND_DEBUG         
+c            if ( chkbandname .ne. 'none' ) then
+            if ( A(ipts-Npts,j)==jbuf_revW(j-jmin+(ipts-1)*jshft) ) 
+     &           checksum(ipts) = checksum(ipts)+1
+c            endif
+#endif
            A(ipts-Npts,j)=jbuf_revW(j-jmin+(ipts-1)*jshft)
           enddo
         enddo
+        ! 
+#ifdef  BAND_DEBUG         
+c         if ( chkbandname .ne. 'none') then
+          do ipts=1,Npts
+c             print *,"checksum(ipts)=",checksum(ipts)
+c             print *,"jnin,jmax=",jmin,jmax,":",ipts
+            if( nint(checksum(ipts)) == (jmax-jmin+1) ) then
+               print *,mynode,"ipts=",int(ipts,1),"WEST_INTER2 "//
+     &          trim(chkbandname)//': ghostcell '
+c                stop
+            endif
+          enddo
+          checksum(:) = 0.
+c          endif
+#endif        
       endif
       if ( WEST_INTER .and. .not. WEST_INTER2 ) then
         do j=jmin,jmax
@@ -266,15 +285,37 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
       endif
 
       if (EAST_INTER2) then
-        write(*,*) 'MessPass2D: 2.2', mynode
         call MPI_Wait (req(2),status(1,2),ierr)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
+#ifdef  BAND_DEBUG         
+        checksum(:) = 0.
+#endif        
         do j=jmin,jmax
           do ipts=1,Npts
+#ifdef  BAND_DEBUG         
+c            if ( chkbandname .ne. 'none' ) then
+            if (  A(Lmmpi+ipts,j)==jbuf_revE(j-jmin+(ipts-1)*jshft) ) 
+     &          checksum(ipts) = checksum(ipts)+1
+c            endif
+#endif
            A(Lmmpi+ipts,j)=jbuf_revE(j-jmin+(ipts-1)*jshft)
           enddo
         enddo
+#ifdef  BAND_DEBUG         
+c         if ( chkbandname .ne. 'none') then
+          do ipts=1,Npts
+c             print *,"checksum(ipts)=",checksum(ipts)
+c             print *,"jnin,jmax=",jmin,jmax,":",ipts
+            if( nint(checksum(ipts)) == (jmax-jmin+1) ) then
+               print *,mynode,"ipts=",int(ipts,1),"EAST_INTER2 "//
+     &          trim(chkbandname)//': ghostcell '
+c                stop
+            endif
+          enddo
+          checksum(:) = 0.
+c          endif
+#endif        
       endif
       if ( EAST_INTER .and. .not. EAST_INTER2 ) then
         do j=jmin,jmax
@@ -285,16 +326,38 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
       endif
 
       if (SOUTH_INTER2) then
-        write(*,*) 'MessPass2D: 2.3', mynode
         call MPI_Wait (req(3),status(1,3),ierr)
 !$acc update device(ibuf_revS) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
-        do jpts=1,Npts
+#ifdef  BAND_DEBUG         
+           checksum(:) = 0.
+#endif           
+       do jpts=1,Npts
           do i=imin,imax
+#ifdef  BAND_DEBUG         
+c            if ( chkbandname .ne. 'none' ) then
+            if ( A(i,jpts-Npts)==ibuf_revS(i-imin+(jpts-1)*ishft) ) 
+     &          checksum(jpts) = checksum(jpts)+1
+c            endif
+#endif
            A(i,jpts-Npts)=ibuf_revS(i-imin+(jpts-1)*ishft)
           enddo
         enddo
+#ifdef  BAND_DEBUG         
+c         if ( chkbandname .ne. 'none') then
+          do jpts=1,Npts
+c             print *,"checksum(ipts)=",checksum(ipts)
+c             print *,"jnin,jmax=",jmin,jmax,":",ipts
+            if( nint(checksum(jpts)) == (imax-imin+1) ) then
+               print *,mynode,"jpts=",int(jpts,1),"SOUTH_INTER2 "//
+     &          trim(chkbandname)//': ghostcell '
+c                stop
+            endif
+          enddo
+          checksum(:) = 0.
+c          endif
+#endif        
       endif
       if ( SOUTH_INTER .and. .not. SOUTH_INTER2 ) then
         do jpts=1,Npts
@@ -305,16 +368,38 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
       endif
 
       if (NORTH_INTER2) then
-        write(*,*) 'MessPass2D: 2.4', mynode
         call MPI_Wait (req(4),status(1,4),ierr)
 !$acc update device(ibuf_revN) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
+#ifdef  BAND_DEBUG         
+        checksum(:) = 0.
+#endif        
         do jpts=1,Npts
           do i=imin,imax
+#ifdef  BAND_DEBUG         
+c            if ( chkbandname .ne. 'none' ) then
+            if ( A(i,Mmmpi+jpts)==ibuf_revN(i-imin+(jpts-1)*ishft) ) 
+     &          checksum(jpts) = checksum(jpts)+1
+c            endif
+#endif
             A(i,Mmmpi+jpts)=ibuf_revN(i-imin+(jpts-1)*ishft)
           enddo
         enddo
+#ifdef  BAND_DEBUG         
+c         if ( chkbandname .ne. 'none') then
+          do jpts=1,Npts
+c             print *,"checksum(ipts)=",checksum(ipts)
+c             print *,"jnin,jmax=",jmin,jmax,":",ipts
+            if( nint(checksum(jpts)) == (imax-imin+1) ) then
+               print *,mynode,"jpts=",int(jpts,1),"NORTH_INTER2 "//
+     &          trim(chkbandname)//': ghostcell '
+c                stop
+            endif
+          enddo
+          checksum(:) = 0.
+c          endif
+#endif        
       endif
       if (NORTH_INTER .AND. .not. NORTH_INTER2) then
         do jpts=1,Npts
@@ -328,7 +413,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 ! ...corners:
 !
       if ( CORNER_SW) then
-        write(*,*) 'MessPass2D: 2.5', mynode
         call MPI_Wait (req(5),status(1,5),ierr)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -348,7 +432,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
        endif  
 
       if ( CORNER_NE) then
-        write(*,*) 'MessPass2D: 2.6', mynode
         call MPI_Wait (req(6),status(1,6),ierr)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -368,7 +451,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
        endif  
 
       if (CORNER_SE) then
-        write(*,*) 'MessPass2D: 2.7', mynode
         call MPI_Wait (req(7),status(1,7),ierr)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -389,7 +471,6 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 
 
       if (CORNER_NW) then
-        write(*,*) 'MessPass2D: 2.8', mynode
         call MPI_Wait (req(8),status(1,8),ierr)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)

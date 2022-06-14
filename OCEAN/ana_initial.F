@@ -1671,6 +1671,7 @@ C$OMP BARRIER
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 # ifdef ANA_INITIAL
+#  ifndef BASIN      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,1))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -1683,6 +1684,7 @@ C$OMP BARRIER
      &                        ubar(START_2D_ARRAY,2))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        vbar(START_2D_ARRAY,2))
+#  endif      
 #  ifdef SOLVE3D
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -1706,6 +1708,7 @@ C$OMP BARRIER
      &                             wz(START_2D_ARRAY,0,2))
 #    endif
 #   else
+#    ifndef BASIN      
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
@@ -1714,6 +1717,7 @@ C$OMP BARRIER
      &                        u(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,2))
+#     endif      
 #    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,3))

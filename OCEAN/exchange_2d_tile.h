@@ -31,6 +31,7 @@
 #include "compute_auxiliary_bounds.h"
 !
 
+
 !$acc kernels if(compute_on_device) default(present)  
 #ifdef EW_PERIODIC
 # ifdef NS_PERIODIC
@@ -137,6 +138,10 @@
 # else
       call MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend,  A)
 # endif
+#   ifdef  BAND_DEBUG          
+      chkbandname='none'
+#   endif     
+
 #endif
 #if defined OPENMP && defined OPENACC
       if (.not.SOUTHERN_EDGE) then
@@ -153,6 +158,7 @@ C$OMP BARRIER
 !$acc update device(A(:,Jend+1:Jend+Npts))
       endif
 #endif
+           
       return
       end
 
