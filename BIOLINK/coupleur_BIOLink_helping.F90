@@ -136,7 +136,7 @@ CONTAINS
      !====================================================================
      ! Routines from external models
      !====================================================================
-#if !defined ECO3M
+#if defined BLOOM 
 
 #if defined BLOOM
 
@@ -708,7 +708,7 @@ CONTAINS
      END DO
 
    ENDIF_MPI
-#endif /* ECO3M */
+#endif /* BLOOM */
 
   END SUBROUTINE BIOLink_read_vardiag
 
