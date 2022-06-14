@@ -305,6 +305,10 @@
       logical ldefsta
 #endif
 
+#ifdef  BAND_DEBUG         
+      character(len=50) :: chkbandname
+      character(len=50) :: fileline
+#endif
       common /scalars_main/
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
      &           , Zobt,       Cdb_min,   Cdb_max
@@ -432,6 +436,9 @@
 #endif
      &                      , ldefhis
 
+#ifdef  BAND_DEBUG         
+       common /scalchkbandname/ chkbandname
+#endif       
 # if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak
       common /scalars_akv/ Akv_bak

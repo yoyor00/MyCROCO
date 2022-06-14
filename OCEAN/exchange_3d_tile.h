@@ -146,6 +146,9 @@
 # else
       call MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend,  A,k)
 # endif
+#   ifdef  BAND_DEBUG          
+      chkbandname='none'
+#   endif     
 #endif
 #if defined OPENMP && defined OPENACC
       if (.not.SOUTHERN_EDGE) then

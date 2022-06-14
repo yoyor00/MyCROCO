@@ -38,6 +38,9 @@
       parameter (Npts=3)
 # endif
       integer nmax
+#ifdef  BAND_DEBUG         
+      real,dimension(Npts)        :: checksum
+#endif
       real A(GLOBAL_2D_ARRAY,nmax)
 CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j,k, isize,jsize,ksize,
@@ -265,10 +268,31 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
+#ifdef  BAND_DEBUG         
+c            if ( chkbandname .ne. 'none' ) then
+            if ( A(ipts-Npts,j,k) == 
+     &           jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)*jshft)) ) 
+     &           checksum(ipts) = checksum(ipts)+1
+c            endif
+#endif
              A(ipts-Npts,j,k)=jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
             enddo
           enddo
         enddo
+#ifdef  BAND_DEBUG         
+c         if ( chkbandname .ne. 'none') then
+          do ipts=1,Npts
+c             print *,"checksum(ipts)=",checksum(ipts)
+c             print *,"jnin,jmax,nmax=",jmin,jmax,nmax,":",ipts
+            if( nint(checksum(ipts)) == nmax*(jmax-jmin+1) ) then
+               print *,mynode,"ipts=",int(ipts,1),"WEST_INTER2 "//
+     &          trim(chkbandname)//':ghostcell  3d'
+c                stop
+            endif
+          enddo
+          checksum(:) = 0.
+c          endif
+#endif        
       endif
       if (WEST_INTER .and. .not. WEST_INTER2) then
 #ifdef OPENACC
@@ -287,14 +311,38 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       if (EAST_INTER2) then
         call MPI_Wait (req(2),status(1,2),ierr)
 !$acc parallel loop if(compute_on_device) collapse(3) 
+#ifdef  BAND_DEBUG         
+        checksum(:) = 0.
+#endif        
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
+#ifdef  BAND_DEBUG         
+c            if ( chkbandname .ne. 'none' ) then
+            if ( A(Lmmpi+ipts,j,k) ==
+     &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft)) ) 
+     &           checksum(ipts) = checksum(ipts)+1
+c            endif
+#endif
               A(Lmmpi+ipts,j,k)=
      &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
             enddo
           enddo
         enddo
+#ifdef  BAND_DEBUG         
+c         if ( chkbandname .ne. 'none') then
+          do ipts=1,Npts
+c             print *,"checksum(ipts)=",checksum(ipts)
+c             print *,"jnin,jmax=",jmin,jmax,":",ipts
+            if( nint(checksum(ipts)) == nmax*(jmax-jmin+1) ) then
+               print *,mynode,"ipts=",int(ipts,1),"EAST_INTER2 "//
+     &          trim(chkbandname)//':ghostcell  3d'
+c                stop
+            endif
+          enddo
+          checksum(:) = 0.
+c          endif
+#endif        
       endif
       if (EAST_INTER .and. .not. EAST_INTER2) then
         do k=1,nmax
@@ -311,9 +359,19 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
         call MPI_Wait (req(3),status(1,3),ierr)
 !$acc update device(ibuf_revS_3D(1:isize)) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) collapse(3) 
+#ifdef  BAND_DEBUG         
+        checksum(:) = 0.
+#endif        
         do k=1,nmax
           do jpts=1,Npts
             do i=imin,imax
+#ifdef  BAND_DEBUG         
+c            if ( chkbandname .ne. 'none' ) then
+            if (  A(i,jpts-Npts,k) == 
+     &            ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)*ishft)) )
+     &          checksum(jpts) = checksum(jpts)+1
+c            endif
+#endif
               A(i,jpts-Npts,k)=ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)*ishft))
             enddo
           enddo
@@ -327,20 +385,58 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef  BAND_DEBUG         
+c         if ( chkbandname .ne. 'none') then
+          do jpts=1,Npts
+c             print *,"checksum(ipts)=",checksum(ipts)
+c             print *,"jnin,jmax=",jmin,jmax,":",ipts
+            if( nint(checksum(jpts)) == nmax*(imax-imin+1) ) then
+               print *,mynode,"jpts=",int(jpts,1),"SOUTH_INTER2 "//
+     &          trim(chkbandname)//':ghostcell  3d'
+c                stop
+            endif
+          enddo
+          checksum(:) = 0.
+c          endif
+#endif        
       endif
 
       if (NORTH_INTER2) then
         call MPI_Wait (req(4),status(1,4),ierr)
 !$acc update device(ibuf_revN_3D(1:isize)) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) collapse(3)
+#ifdef  BAND_DEBUG         
+        checksum(:) = 0.
+#endif        
         do k=1,nmax
           do jpts=1,Npts
             do i=imin,imax
+#ifdef  BAND_DEBUG         
+c            if ( chkbandname .ne. 'none' ) then
+            if ( A(i,Mmmpi+jpts,k)==
+     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft)) ) 
+     &          checksum(jpts) = checksum(jpts)+1
+c            endif
+#endif
               A(i,Mmmpi+jpts,k)=
      &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft))
             enddo
           enddo
         enddo
+#ifdef  BAND_DEBUG         
+c         if ( chkbandname .ne. 'none') then
+          do jpts=1,Npts
+c             print *,"checksum(ipts)=",checksum(ipts)
+c             print *,"jnin,jmax=",jmin,jmax,":",ipts
+            if( nint(checksum(jpts)) == nmax*(imax-imin+1) ) then
+               print *,mynode,"jpts=",int(jpts,1),"NORTH_INTER2 "//
+     &          trim(chkbandname)//':ghostcell  3d'
+c                stop
+            endif
+          enddo
+          checksum(:) = 0.
+c          endif
+#endif        
       endif
       if (NORTH_INTER .and. .not. NORTH_INTER2) then
         do k=1,nmax
