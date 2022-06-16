@@ -287,9 +287,9 @@
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
 # elif defined VILAINE
-      parameter (Msrc=2)        ! ====== == ===== =======
+      parameter (Msrc=2)         ! ====== == ===== =======
 # else 
-      parameter (Msrc=0)        ! ====== == ===== =======
+      parameter (Msrc=10)        ! ====== == ===== =======
 # endif
 #endif
 #ifdef FLOATS
