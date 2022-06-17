@@ -84,8 +84,8 @@
    !&E  arguments IN : 
    !&E         WATER_CONCENTRATION = t : WATER_CONCENTRATION 
    !&E  arguments OUT:
-   !&E         WAT_SETTL: settling velocities for CROCO
-   !&E         ws3_bottom_MUSTANG: WAT_SETTL_MUSTANG in  bottom cell
+   !&E         ws_part : settling velocities for CROCO
+   !&E         ws3_bottom_MUSTANG: settling velocities in  bottom cell
    !&E
    !&E  need to be know by hydrodynamic code:
    !&E         GRAVITY
@@ -133,13 +133,13 @@
 
 ! first calculating sand settling velocity
               DO iv=isand1,isand2
-                WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_sand(iv)
+                ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_sand(iv)
               ENDDO
               
 ! next mud settling velocity 
 #ifdef key_MUSTANG_flocmod
               DO iv=imud1,nvp         
-                 WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=f_ws(iv)  
+                ws_part(i,j,k,itemp+ntrc_salt+iv)=f_ws(iv)  
               ENDDO
       
 #else
@@ -148,10 +148,10 @@
 ! free settling velocity - flocculation
     
                 IF(ws_free_opt(iv) == 0) THEN ! constant settling velocity
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_free_min(iv)
+                    ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_free_min(iv)
                 ELSEIF (ws_free_opt(iv) == 1) THEN ! Van Leussen 1994
 
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_free_para(1,iv)*cmes**ws_free_para(2,iv) &
+                    ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_free_para(1,iv)*cmes**ws_free_para(2,iv) &
                               *(1._rsh+ws_free_para(3,iv)*gradvit(k,i,j))/  &
                                (1._rsh+ws_free_para(4,iv)*gradvit(k,i,j)**2._rsh)
 
@@ -160,22 +160,22 @@
                   IF (De.GT.sqrt(nuw/gradvit(k,i,j))) THEN 
                     De=sqrt(nuw/gradvit(k,i,j)) ! in case of large C/low G limit floc size to kolmogorov microscale
                   ENDIF
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=(ros(iv)-RHOREF)*GRAVITY/(18._rsh*RHOREF*nuw)  &
+                  ws_part(i,j,k,itemp+ntrc_salt+iv)=(ros(iv)-RHOREF)*GRAVITY/(18._rsh*RHOREF*nuw)  &
                                 *ws_free_para(1,iv)**(3._rsh-ws_free_para(4,iv))  &
                                 *De**(ws_free_para(4,iv)-1._rsh)
                 
                 ELSEIF (ws_free_opt(iv) == 3) THEN ! Wolanski et al., 1989
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=ws_free_para(1,iv)*cmes**ws_free_para(2,iv)
+                    ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_free_para(1,iv)*cmes**ws_free_para(2,iv)
 
                 ENDIF
 
 
 ! Hindered settling
-! if ws_hind_opt.EQ.0 : no hindered settling...WAT_SETTL unchanged
+! if ws_hind_opt.EQ.0 : no hindered settling...ws_part unchanged
                 IF (ws_hind_opt(iv) == 1) THEN ! Scott, 1984
                   phi=MIN(1.0_rsh,cmes/ws_hind_para(1,iv))
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=  &
-                         WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)*(1._rsh-phi)**ws_hind_para(2,iv)
+                  ws_part(i,j,k,itemp+ntrc_salt+iv)=  &
+                    ws_part(i,j,k,itemp+ntrc_salt+iv)*(1._rsh-phi)**ws_hind_para(2,iv)
                 ELSEIF (ws_hind_opt(iv) == 2) THEN ! Winterwerp, 2002 - ATTENTION : ros(iv) must be the same for all MUDS variables
                   phi=cmes/ros(iv)
                   IF (ws_free_opt(iv) == 2) THEN
@@ -185,11 +185,11 @@
                     phiv=cmes/ws_hind_para(1,iv)
                   ENDIF
 
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)* &
+                  ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_part(i,j,k,itemp+ntrc_salt+iv)* &
                        (1._rsh-phiv)**ws_hind_para(2,iv)*(1._rsh-phi) /(1._rsh+2.5_rsh*phiv)
                 ELSEIF (ws_hind_opt(iv) == 3) THEN ! wolanski et al., 1989
                   IF (ws_free_opt(iv) == 3) THEN
-                    WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=WAT_SETTL(i,j,k,iv)/ &
+                    ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_part(i,j,k,iv)/ &
                        (cmes**2._rsh+ws_hind_para(1,iv)**2._rsh)**ws_hind_para(2,iv)
                   ELSE
                     
@@ -198,8 +198,8 @@
 
 ! limiting ws with min/max values...
 ! necessary if ndt_part not updated during the simulation, ndt_part calculated in subreaddat from a maximum settling velocity
-                WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=max(ws_free_min(iv), &
-                            min(ws_free_max(iv),WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)))
+                ws_part(i,j,k,itemp+ntrc_salt+iv)=max(ws_free_min(iv), &
+                            min(ws_free_max(iv),ws_part(i,j,k,itemp+ntrc_salt+iv)))
 
               ENDDO
               
@@ -209,17 +209,17 @@
 #endif
               DO iv=nvpc+1,nvp
                 IF(irkm_var_assoc(iv) < imud1 .AND. irkm_var_assoc(iv) > 0) THEN    ! sorbed substances on sands
-                   WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=WAT_SETTL(i,j,k,itemp+ntrc_salt+irkm_var_assoc(iv))
+                  ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_part(i,j,k,itemp+ntrc_salt+irkm_var_assoc(iv))
                 ENDIF
               ENDDO
               DO iv=nvp+1,nv_adv
-                WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=0.0_rsh
+                ws_part(i,j,k,itemp+ntrc_salt+iv)=0.0_rsh
               ENDDO
               
            ENDDO
-           ws3_bottom_MUSTANG(1:nvp,i,j)=WAT_SETTL(i,j,1,itemp+ntrc_salt+1:nvp+itemp+ntrc_salt)
+           ws3_bottom_MUSTANG(1:nvp,i,j)=ws_part(i,j,1,itemp+ntrc_salt+1:nvp+itemp+ntrc_salt)
          ELSE
-           WAT_SETTL(i,j,:,:)=0.0_rsh
+            ws_part(i,j,:,:)=0.0_rsh
            ws3_bottom_MUSTANG(:,i,j)=0.0_rsh
          ENDIF
 

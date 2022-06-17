@@ -16,15 +16,6 @@
 */
 # define sed_MUSTANG_HOST sed_MUSTANG_CROCO
 
-/* some specific commands used in MARS are to be commented out automatically 
-!   for another hydro model (we use  define)
-!   + There may be other definitions to add in order to replace compatible 
-!      terms with the hydro coupled model.
-!*/
-# define CALL_MPI !call_MPI
-# define IF_MPI !if
-# define ENDIF_MPI !endif
-# define PRINT_DBG !print
 /* CROCO */
 # define iscreenlog stdout
 # define ierrorlog stdout
@@ -64,7 +55,6 @@
 # define ARRAY_CELL_DX GLOBAL_2D_ARRAY
 # define ARRAY_CELL_DY GLOBAL_2D_ARRAY
 /* dimensions of variables in hydro modele !*/
-# define ARRAY_WAT_SETTL GLOBAL_2D_ARRAY,N,itsubs1:itsubs2
 # define ARRAY_WATER_CONC GLOBAL_2D_ARRAY,N,3,NT
 # define ARRAY_DHSED GLOBAL_2D_ARRAY 
 # define ARRAY_FROFON GLOBAL_2D_ARRAY 
@@ -102,7 +92,6 @@
 # define SALREF_LIN 35.0
 # define GRAVITY g
 # define BOTTOM_THICK_LAYER epn_bottom
-# define WAT_SETTL ws_part
 # define Z0HYDRO zob
 # define WATER_CONCENTRATION t  /* water concentration in hydro model (=cv_wat in MARS)*/
 # define DHSED dh  

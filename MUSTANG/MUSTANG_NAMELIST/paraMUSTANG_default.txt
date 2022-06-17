@@ -56,8 +56,8 @@
 :                  cseduni, cvolmax values, and csed_ini of each sediment)
 :    csed_mud_ini : real, mud concentration into initial sediment (kg/m3)
 :                   (if = 0. ==> csed_mud_ini = cfreshmud)
-:    ksmiuni : integer, lower grid cell indices in the sediment
-:    ksmauni : integer, upper grid cell indices in the sediment
+:    ksmiuni : integer, lower grid cell index in the sediment
+:    ksmauni : integer, upper grid cell index in the sediment
 :    sini_sed : real, initial interstitial water uniform salinity (in the 
 :               sediment) (PSU)
 :    tini_sed : real, initial interstitial water uniform temperature (in 
@@ -95,29 +95,23 @@
 :    dzsmin : real, minimum sediment layer thickness (m)
 :    dzsmax_bottom : real, maximum thickness of bottom layers which result 
 :                    from the fusion when ksdmax is exceeded (m)
-:    l_dzsmaxuni : boolean, set to .true. and dzsmaxuni , 
-:                  if set to .false. then it depends on l_repsed value (see 
-:                  &namsedim_init)
+:    l_dzsmaxuni : boolean, if set to .true. dzsmax = dzsmaxuni , 
+:                  if set to .false. then linearly computed in MUSTANG_sedinit
+:                  from dzsmaxuni to dzsmaxuni/100 depending on water depth
 :    dzsmaxuni : real, uniform maximum thickness for the superficial sediment 
-:                layer (m)
-:                must be >0 if l_dzsmaxuni=.TRUE.
-:                              or if l_dzsmaxuni=.FALSE. and l_repsed=.FALSE.
-:                              or if l_dzsmaxuni=.FALSE. and l_repsed=.TRUE. 
-:                                 but dzsmax(i,j) not present in filrepsed
-:                must be =0 if l_dzsmaxuni=.FALSE. and l_repsed=.TRUE. and 
-:                              dzsmax readed in filrepsed
+:                layer (m), must be >0 
 :    nlayer_surf_sed : integer, number of layers below the sediment surface 
 :                      that can not be melted (max thickness = dzsmax)
-:    k1HW97: real, ref value k1HW97 = 0.07, parameter to compute active ayer 
+:    k1HW97: real, ref value k1HW97 = 0.07, parameter to compute active layer 
 :            thickness (Harris and Wiberg, 1997) 
 :            (key_MUSTANG_V2 only)
-:    k2HW97 : real, ref value k2HW97 = 6.0, parameter to compute active ayer 
+:    k2HW97 : real, ref value k2HW97 = 6.0, parameter to compute active layer 
 :            thickness (Harris and Wiberg, 1997)
 :            (key_MUSTANG_V2 only)
 :    fusion_para_activlayer : real, criterion cohesiveness for fusion in 
 :                             active layer
 :                             0 : no fusion, 
-:                             = 1 : frmudcr1 (default), 
+:                             = 1 : frmudcr1, 
 :                             > 1 : between frmudcr1 & frmudcr2
 :                             (key_MUSTANG_V2 only)
 :------------------------------------------------------------------------------
@@ -205,7 +199,7 @@
 :  namsedim_erosion : Namelist relative to sediment erosion
 :------------------------------------------------------------------------------
 :    activlayer : real, active layer thickness (m)
-:    frmudcr : real, critical mud fraction under which the behaviour is purely 
+:    frmudcr2 : real, critical mud fraction under which the behaviour is purely 
 :              sandy
 :    coef_frmudcr1 : real, such that critical mud fraction under which sandy 
 :                    behaviour (frmudcr1=min(coef_frmudcr1*d50 sand,frmudcr2))
@@ -457,13 +451,13 @@
 :    subdt_bioturb : real, sub time step for bioturbation processes in sediment 
 :                 (< or = min(dt_bioturb, ..)) (will use in fact the min 
 :                 between subdt_bioturb, subdt_consolid if l_consolid)
-:    xbioturbmax_part : real, max particular bioturbation coeffient by 
+:    xbioturbmax_part : real, max particular bioturbation coefficient by 
 :                       bioturbation Db (in surface)
 :    xbioturbk_part: real, coef (slope) for part. bioturbation coefficient 
 :                    between max Db at sediment surface and 0 at bottom
 :    dbiotu0_part : real, max depth beneath the sediment surface below which 
 :                   there is no bioturbation
-:    dbiotum_part : real, sediment thickness wherein the part-bioturbation 
+:    dbiotum_part : real, sediment thickness where the part-bioturbation 
 :                   coefficient Db is constant (max)
 :    xbioturbmax_diss : real, max diffusion coeffient by biodiffusion Db 
 :                   (in surface)
@@ -471,7 +465,7 @@
 :                   max Db at sediment surface and 0 at bottom
 :    dbiotu0_diss : real, max depth beneath the sediment surface below which 
 :                   there is no bioturbation
-:    dbiotum_diss : real, sediment thickness wherein the  
+:    dbiotum_diss : real, sediment thickness where the  
 :                   diffsolved-bioturbation coefficient Db is constant (max)
 :    frmud_db_min : real, mud fraction limit (min) below which there is no 
 :                   Biodiffusion

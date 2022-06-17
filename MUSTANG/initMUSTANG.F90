@@ -1008,7 +1008,6 @@ CONTAINS
             MPI_master_only WRITE(ierrorlog,*)' See variable.dat to give fraction of total concentration '
             MPI_master_only WRITE(ierrorlog,*)' for each constitutive variable (GRAV, SAND, MUD) (but not MUDB) '
             MPI_master_only WRITE(ierrorlog,*)' : the sum of all must be =1 '
-            CALL_MPI MPI_FINALIZE(IERR_MPI)
             STOP         
         ENDIF
       
@@ -1023,9 +1022,7 @@ CONTAINS
             ENDDO
 
             CALL MUSTANG_init_hsed(cv_sedini)
-            IF_MPI (MASTER) THEN
             MPI_master_only WRITE(iscreenlog,*)'NEW TOTAL SEDIMENT THICKNESS AFTER ADJUSTEMENT = ',hsed_new
-            ENDIF_MPI
             cseduni=cseduni*hseduni/hsed_new         
             hseduni=hsed_new
             WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) hsed(PROC_IN_ARRAY)=hseduni
@@ -1093,7 +1090,7 @@ CONTAINS
         MPI_master_only write(ierrorlog,*) 'NON UNIFORM BED COVERAGE'
         MPI_master_only write(ierrorlog,*) 'you have to read a netcdf file describing for each grid cell (file_inised)'
         MPI_master_only write(ierrorlog,*) 'the values for hsed(i,j),z0sed(i,j),ksmi(i,j),ksma(i,j)'
-        MPI_master_only write(ierrorlog,*) 'c_sedtot(i,j),cini_sed(iv,iv=1:nvstate)'
+        MPI_master_only write(ierrorlog,*) 'c_sedtot(i,j),cini_sed(iv,iv=1:nv_state)'
         STOP
       
     ENDIF
@@ -1409,8 +1406,6 @@ CONTAINS
 #endif
 
     ENDIF        ! endif l_morphocoupl
-
-    PRINT_DBG*, 'END MUSTANG_MORPHOINIT'
 
     END SUBROUTINE MUSTANG_morphoinit
 !!===========================================================================

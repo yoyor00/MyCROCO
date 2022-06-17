@@ -604,8 +604,6 @@ MODULE sed_MUSTANG
    call sed_MUSTANG_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
 
     !**TODO** code sed_exchange_cvwat CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION,iexchge_MPI_cvwat)
-                     
-   PRINT_DBG*, 'FIN MUSTANG_deposition'   
 
   END SUBROUTINE MUSTANG_deposition
  
@@ -651,8 +649,6 @@ MODULE sed_MUSTANG
    
    !!--------------------------------------------------------------------------
    !! * Executable part
-
-      PRINT_DBG*, 'DANS SED_MORPHO'
 
 !   1- reactualisation des hsed
 !   ---------------------------
@@ -921,9 +917,6 @@ MODULE sed_MUSTANG
      ENDDO
 #endif
 
-   PRINT_DBG*, 'END sed_MUSTANG_outres'   
-
-
   END SUBROUTINE sed_MUSTANG_outres
   
 !=========================================================================== 
@@ -1067,9 +1060,6 @@ MODULE sed_MUSTANG
          END DO 
        END DO
    
-  PRINT_DBG*, 'END sed_MUSTANG_interpout_dzs'   
-
-
   END SUBROUTINE sed_MUSTANG_interpout_dzs
   
 !=========================================================================== 
@@ -1234,9 +1224,6 @@ MODULE sed_MUSTANG
            END DO 
          END DO
   
- PRINT_DBG*, 'END sed_MUSTANG_interpout_cvs'   
-
-
   END SUBROUTINE sed_MUSTANG_interpout_cvs
   
    !!==============================================================================
@@ -5041,9 +5028,6 @@ MODULE sed_MUSTANG
    !!----------------------------------------------------------------------
    !! * Executable part
 
-
-     PRINT_DBG*, 'BEGINNING OF  TEMPERATUR DIFFUSION in sediment '
-
      DO j=jfirst,jlast
       DO i=ifirst,ilast
 
@@ -5286,8 +5270,6 @@ MODULE sed_MUSTANG
      dt_sed_eff=dt_sed_cor+(CURRENT_TIME-t_dyninsed)
      dt_sed_inv=1.0_rsh/REAL(dt_sed_eff,rsh)
      phieau_s2w_consol(:,:)=0.0_rsh
-
-     PRINT_DBG*, 'DEBUT DE DIFFUSION et CONSOL et Bioturb '
 
      DO j=jfirst,jlast
       DO i=ifirst,ilast
@@ -9020,8 +9002,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
     ENDDO
   ENDDO
 
-  PRINT_DBG*, 'END flocmod_main'
-
   END SUBROUTINE flocmod_main
   
 
@@ -9126,10 +9106,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
     tmp_l3=0.0_rsh
     tmp_l4=0.0_rsh    
   ENDDO  
-
-
-
-  PRINT_DBG*, 'END flocmod_comp_fsd'
 
   END SUBROUTINE flocmod_comp_fsd
     
@@ -9328,10 +9304,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   
   f_g4(1:nv_mud,1:nv_mud,1:nv_mud)=f_g4(1:nv_mud,1:nv_mud,1:nv_mud)*f_collfragparam
   f_l4(1:nv_mud,1:nv_mud)=f_l4(1:nv_mud,1:nv_mud)*f_collfragparam
-  
-  
-  
-  PRINT_DBG*, 'END flocmod_collfrag'
 
   END SUBROUTINE flocmod_collfrag
 !!===========================================================================
@@ -9369,8 +9341,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
       mneg=mneg-NN(iv1)*f_mass(iv1)
     ENDIF
   ENDDO
-
-  PRINT_DBG*, 'END flocmod_mass_control'
 
   END SUBROUTINE flocmod_mass_control
 
@@ -9435,8 +9405,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
     
     ENDIF
   ENDIF  
-  
-  PRINT_DBG*, 'END flocmod_mass_redistribute'
 
   END SUBROUTINE flocmod_mass_redistribute
  
