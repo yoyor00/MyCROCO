@@ -1154,13 +1154,17 @@
 
         !! * Local declarations
         INTEGER :: i,j,iv, ivp
+        REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: tmpx
+        REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: tmpy
 
         !! * Executable part
-        DO j = jfirst, jlast+1
-            DO i = ifirst, ilast+1
-                DO iv = isand1, isand2
-                    corflux(iv, i, j) = 0.5_rsh * (corflux(iv, i-1, j) + corflux(iv, i, j))
-                    corfluy(iv, i, j) = 0.5_rsh * (corfluy(iv, i, j-1) + corfluy(iv, i, j))
+        DO iv = isand1, isand2           
+            tmpy(:, :) = corfluy(iv, :, :)
+            tmpx(:, :) = corflux(iv, :, :)
+            DO j = jfirst, jlast+1
+                DO i = ifirst, ilast+1
+                    corflux(iv, i, j) = 0.5_rsh * (tmpx(i-1, j) + tmpx(i, j))
+                    corfluy(iv, i, j) = 0.5_rsh * (tmpy(i, j-1) + tmpy(i, j))
                 ENDDO
             ENDDO
         ENDDO
