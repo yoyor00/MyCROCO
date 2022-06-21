@@ -19,7 +19,7 @@ C     number of steps between cost function computations
 #elif defined AD_ATLN
       parameter (ad_ns = 180)
 #elif defined INTERNAL
-      parameter (ad_ns = 32)
+      parameter (ad_ns = 1)
 #endif
 
 C     number of cost function computations
@@ -35,7 +35,7 @@ C     number of cost function computations
 C     number of obs in observation file
       integer ad_nobs
 #if defined INTERNAL
-      parameter(ad_nobs = 130)
+      parameter(ad_nobs = 130*32)
 #endif
 
 C     start of assimilation in the obs file
@@ -45,12 +45,12 @@ C     start of assimilation in the obs file
 #elif defined AD_ATLN
       parameter (ad_ast = 388)
 #elif defined INTERNAL
-      parameter (ad_ast = 120)
+      parameter (ad_ast = 120*32)
 #endif
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st
-      parameter (ad_main_st = 3809)
+      parameter (ad_main_st = 120*32)
 
 c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY,ad_nobs)
