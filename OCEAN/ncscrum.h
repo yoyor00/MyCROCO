@@ -229,7 +229,7 @@
       parameter (indxLGW=indxDIC+24)
 #     endif
 #    ifdef key_pisces_quota
-     integer  indxDON, indxDOP, indxPON, indxPOP, indxNPH,
+      integer indxDON, indxDOP, indxPON, indxPOP, indxNPH,
      &        indxPPH, indxNDI, indxPDI, indxPIC, indxNPI,
      &        indxPPI, indxPFE, indxPCH, indxGON, indxGOP
 #     ifdef key_ligand
