@@ -203,7 +203,7 @@
    wchldm     =  0.02     ! maximum quadratic mortality of diatoms
    mpratn     =  0.01     ! nanophytoplankton mortality rate
    mpratp     =  0.01     ! picophytoplankton mortality rate
-   mprat2     =  0.01     ! Diatoms mortality rate
+   mpratd     =  0.01     ! Diatoms mortality rate
 /
 !-----------------------------------------------------------------------
 &namp4zmes     !   parameters for mesozooplankton for PISCES std       - ln_p4z
@@ -237,7 +237,7 @@
    resrat2    =  0.005    ! exsudation rate of mesozooplankton
    mzrat2     =  0.02     ! mesozooplankton mortality rate
    xpref2d    =  1.       ! zoo preference for phyto
-   xpref2p    =  1.       ! zoo preference for POC
+   xpref2n    =  0.3      ! mesozoo preference for nanophyto.
    xpref2z    =  1.       ! zoo preference for zoo
    xpref2m    =  0.2      ! meso preference for zoo
    xpref2c    =  0.3      ! zoo preference for poc
