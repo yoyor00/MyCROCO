@@ -573,6 +573,7 @@
 # define ANA_BTFLUX
                       /* Point Sources - Rivers */
 # define PSOURCE
+# undef  PSOURCE_MASS
 # define PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE                    
 #   define PSOURCE_NCFILE_TS
@@ -907,6 +908,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define PSOURCE
+# undef PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
 # undef  FLOATS

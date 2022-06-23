@@ -66,8 +66,11 @@
 #  endif
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx, kmld
      &       ,imin,imax,jmin,jmax,iAkt,nadv
-#  ifdef PSOURCE
+#  if defined PSOURCE || defined PSOURCE_MASS
      &       ,is
+#  endif
+#  ifdef PSOURCE_MASS
+     &       ,iis,jjs
 #  endif
 #  ifdef SUBSTANCE
       integer isubstep,nbsubstep
@@ -246,7 +249,7 @@
                   endif
 #   endif
                 endif
-              else
+              elseif (Dsrc(is).eq.1) then
                 if (Lsrc(is,itrc)) then
                   FE(i,j)=Hvom(i,j,k)*Tsrc(is,k,itrc)
 #   ifdef MASKING
@@ -399,6 +402,36 @@
 #   undef wrk2
 #  endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */
 !
+!----------------------------------------------------------
+! Add tracer divergence due to cell-centered point sources
+!----------------------------------------------------------
+!
+#ifdef PSOURCE_MASS
+        do itrc=1,NT
+          do is=1,Nsrc
+#   ifdef MPI
+           iis=Isrc_mpi(is,mynode)
+           jjs=Jsrc_mpi(is,mynode)
+#   else
+           iis=Isrc(is)
+           jjs=Jsrc(is)
+#   endif
+           if (Istr.le.iis .and. iis.le.Iend+1
+     &        .and. Jstr.le.jjs .and. jjs.le.Jend+1) then
+              cff1=dt*pm(iis,jjs)*pn(iis,jjs)
+              do k=1,N 
+                if (Lsrc(is,itrc)) then
+                  cff2=Tsrc(is,k,itrc)
+                else
+                  cff2=t(iis,jjs,k,3,itrc)
+                endif
+                 t(iis,jjs,k,nnew,itrc)=t(iis,jjs,k,nnew,itrc)+
+     &           cff1*Qsrc(is,k)*cff2
+              enddo
+           endif
+          enddo ! source
+        enddo ! itrc
+#  endif /* PSOURCE_MASS */
 !
 !======================================================================
 !

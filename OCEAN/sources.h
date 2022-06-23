@@ -1,5 +1,5 @@
 ! $Id: sources.h 1225 2013-07-11 15:33:27Z gcambon $
-#if defined PSOURCE || defined PSOURCE_NCFILE
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
 !
 ! Nsrc       Number of point Sources/Sinks.
 ! Dsrc       Direction of point Sources/Sinks:  0 = along XI-;

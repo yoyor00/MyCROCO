@@ -284,7 +284,7 @@
 ! Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !
-#if defined PSOURCE || defined PSOURCE_NCFILE
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
       integer Msrc               ! Number of point sources
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
@@ -293,7 +293,7 @@
 # elif defined ESTUARY
       parameter (Msrc=1)        ! ====== == ===== =======
 # else 
-      parameter (Msrc=0)        ! ====== == ===== =======
+      parameter (Msrc=10)        ! ====== == ===== =======
 # endif
 #endif
 #ifdef FLOATS
