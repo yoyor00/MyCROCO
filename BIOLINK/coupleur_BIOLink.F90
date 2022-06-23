@@ -80,7 +80,6 @@
 
 #if defined ECO3M   
 
-   USE COUPLEUR_PHY_BIO ! Internal functions of coupling of ECO3M
    USE mod_eco3m_irrad, ONLY : irrad
    USE mod_eco3m, ONLY : nx_min, nx_max, ny_min, ny_max, nz_max, VAR
    USE mod_eco3m, ONLY : BIO_TIME_STEP, WATCONCPOS_tab, TEMP_BIOLink,&
@@ -122,7 +121,7 @@
 
   !!======================================================================
 
-  SUBROUTINE BIOLink_initialization(icall)
+  SUBROUTINE BIOLink_initialization(icall,ifirst,ilast,jfirst,jlast)
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_initialization  ***
   !&E
@@ -146,6 +145,7 @@
   !&E ** History :
   !&E       !  2019-08  (B.Thouvenin) :  creation 
   !&E       !  2022-02  (G. Koenig)   : Commenting 
+  !&E       !  2022-06  (M. Baklouti et C. Mazoyer) : Eco3M
   !&E---------------------------------------------------------------------
 
      !====================================================================
@@ -180,6 +180,9 @@
                                ! The first call reads the parameter files
                                ! and the second initialize the tracer/biological
                                ! model 
+  INTEGER, INTENT(IN) :: ifirst,ilast,jfirst,jlast
+
+
 
      !====================================================================
      ! Local declarations of variables
@@ -764,7 +767,6 @@ END SUBROUTINE  BIOLink_alloc
   !&E                     bloom_SPMtot_Chla and bloom_extinction_avg
   !&E                     from bloom 
   !&E                     bloom_wavefile_MANGAbio from bloom
-  !&E                     COUPLEUR_PHY_BIO from ECO3M
   !&E                     meteor_sksc_wat, meteor_reac_equi from METeOR
   !&E                     meteor_sksc_wat, meteor_reac_equi from comvars2d
   !&E
@@ -798,14 +800,12 @@ END SUBROUTINE  BIOLink_alloc
                                ! and average extinction of light
 
 
-#elif defined ECO3M
-  USE COUPLEUR_PHY_BIO   ! Internal coupleur of ECO3M
 
 #elif defined METeOR
   USE meteor,          ONLY : meteor_sksc_wat,meteor_reac_equi
                               ! Sources and sink terms and
                               ! Equilibrium reactions 
-#endif /* PEPTIC/BLOOM/ECO3M/METeOR */
+#endif /* PEPTIC/BLOOM/METeOR */
 
      !====================================================================
      ! External arguments

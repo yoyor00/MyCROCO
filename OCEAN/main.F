@@ -197,7 +197,7 @@
 #endif
 
 #ifdef BIOLink
-      CALL BIOLink_initialization(icall)
+CALL BIOLink_initialization(icall,Istr,Iend,Jstr,Jend)
 #endif
 #ifdef SUBSTANCE
 !
@@ -217,7 +217,7 @@
      &           RHOREF)
 #endif
 #ifdef BIOLink
-       CALL BIOLink_initialization(1)
+       CALL BIOLink_initialization(1,Istr,Iend,Jstr,Jend)
 #endif
 !
 ! Online spectral analysis module
