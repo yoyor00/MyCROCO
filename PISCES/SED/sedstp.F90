@@ -74,16 +74,20 @@ CONTAINS
          CALL sed_adv( kt )         ! advection
          CALL sed_co3( kt )         ! pH actualization for saving
          ! This routine is commented out since it does not work at all
-         CALL sed_mbc( kt )         ! cumulation for mass balance calculation
+!         CALL sed_mbc( kt )         ! cumulation for mass balance calculation
 
          IF (ln_sed_2way) CALL sed_sfc( kt )         ! Give back new bottom wat chem to tracer model
       ENDIF
+#if ! defined XIOS
       CALL set_avg_sed
       ilc = 1+iic-ntstart   ! number of time step since restart
       IF ( iic > ntstart .AND. mod(ilc-1,nwrtsedpis_avg) == 0 .AND. wrtavg(indxTime) ) THEN
          nrecsedpis_avg=nrecsedpis_avg+1
          CALL sed_wri
       ENDIF
+#else
+      CALL sed_wri
+#endif
       IF( kt == nitsed000 ) THEN
           CALL iom_close( numrsr )       ! close input tracer restart file
       ENDIF
