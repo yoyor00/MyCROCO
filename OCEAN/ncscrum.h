@@ -863,7 +863,7 @@
       integer indxBhflx
       parameter (indxBhflx=indxSUSTR+131)
 #endif
-#if defined BWFLUX  && defined SALINTY
+#if defined BWFLUX  && defined SALINITY
       integer indxBwflx
       parameter (indxBwflx=indxSUSTR+132)
 #endif
