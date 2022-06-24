@@ -49,7 +49,6 @@
 #  endif
 
 #  ifdef BIOLink
-       USE comBIOLink_helping, ONLY : PAR, PAR_top_layer
        USE coupleur_BIOLink, ONLY : BIOLink_update
 #  endif
       implicit none
