@@ -859,7 +859,7 @@
       integer indxShflx_rswbio
       parameter (indxShflx_rswbio=indxSUSTR+124)
 #endif
-#if defined BHFLUX
+#if defined BHFLUX && defined TEMPERATURE
       integer indxBhflx
       parameter (indxBhflx=indxSUSTR+131)
 #endif
