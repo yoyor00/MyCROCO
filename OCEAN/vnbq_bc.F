@@ -66,6 +66,9 @@
 # include "climat.h"
 # include "scalars.h"
 # include "boundary.h"
+# ifdef MRL_WCI
+#  include "forces.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    grad(PRIVATE_2D_SCRATCH_ARRAY), cff,eps,cff1,cff2,
      &        cx,cy, dft,dfx,dfy, tau,tau_in,tau_out
@@ -84,9 +87,8 @@
       tau_out=dtfast*tauM_out
 # endif
 !
-! !$acc update device( qdmv_nbq_west, qdmv_nbq_east, vnbqclm )
-! !$acc update device( vnbqclm )
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
+
 # ifndef NS_COM_PERIODIC
 !
 !====================================================================
@@ -188,7 +190,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST
+#   ifdef NBQ
 #    define vsum grad
         vsum=0.
         do k=1,N
@@ -220,7 +222,7 @@
           do i=Istr,Iend                             ! ======== ==== ======
 #   ifdef MRL_WCI
             qdmv_nbq(i,Jstr,k)=-vst(i,Jstr,k)        ! no Lagrangian flux
-                               *0.5*(Hz(i,Jstr  ,k)
+     &                          *0.5*(Hz(i,Jstr  ,k)
      &                              +Hz(i,Jstr-1,k))
 #    ifdef MASKING
      &                         *vmask(i,Jstr)
@@ -334,7 +336,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST
+#   ifdef NBQ
 #    define vsum grad
         vsum=0.
         do k=1,N
@@ -366,7 +368,7 @@
           do i=Istr,Iend                            ! ======== ==== ======
 #   ifdef MRL_WCI
             qdmv_nbq(i,Jend+1,k)=-vst(i,Jend+1,k)   ! no Lagrangian flux
-                                 *0.5*(Hz(i,Jend+1,k)
+     &                           *0.5*(Hz(i,Jend+1,k)
      &                                +Hz(i,Jend ,k))
 #    ifdef MASKING
      &                         *vmask(i,Jend+1)
