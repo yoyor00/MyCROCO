@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 
-#ifdef M3FAST
+#if defined M3FAST && ! defined NBQ2 
 
       subroutine step3d_fast (tile)
       implicit none
@@ -230,7 +230,11 @@ C$    trd=omp_get_thread_num()
 # ifdef WET_DRY
       real cff1_WD,cff2_WD
 # endif
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 !
 # ifdef MASKING
 #  define SWITCH *

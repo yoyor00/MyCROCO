@@ -53,7 +53,11 @@
       integer tile, subs, trd, ierr
 #include "param.h"
 #include "private_scratch.h"
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #include "nbq.h"
+# endif
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
@@ -824,7 +828,11 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
+#  ifdef NBQ2      
+        call initial_nbq_2(tile)
+#  else
         call initial_nbq(tile)
+#  endif
       enddo
 #endif
 !

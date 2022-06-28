@@ -981,6 +981,13 @@
 # else
       parameter (ntrc_surf=0)
 # endif
+!
+!----------------------------------------------------------------------
+! Number of layers in Sediment (SL)
+!----------------------------------------------------------------------
+!
+      integer N_sl
+      parameter (N_sl=0)
 #endif /*SOLVE3D */
 
 !

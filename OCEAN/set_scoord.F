@@ -26,7 +26,11 @@
       integer k
       real cff,cff1,cff2,cff3, ds, sc, csf
 # ifdef BSTRESS_FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
       real Hz0,r_D,umag
 # endif
 !

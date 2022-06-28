@@ -34,7 +34,11 @@
 #include "mpi_buffers.h"
 #endif
 #if defined NBQ
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #include "nbq.h"
+# endif
 #endif
 
 !$acc enter data if(compute_on_device) copyin(z_w,z_r,Hz_bak,Hz,
@@ -177,7 +181,11 @@
 #include "averages.h"
 #include "lmd_kpp.h"
 #if defined NBQ
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #include "nbq.h"
+# endif
 #endif
 
 

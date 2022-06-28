@@ -121,7 +121,11 @@ C$      trd=omp_get_thread_num()
 # include "ocean3d.h"
 # include "grid.h"
 #ifdef NBQ
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 #endif
 
 ! >> Put declaration bef. computations
@@ -408,7 +412,11 @@ C$OMP BARRIER
 # include "ocean3d.h"
 # include "grid.h"
 #ifdef NBQ
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 #endif
 ! >> Include with computation instructions
 # include "compute_auxiliary_bounds.h"

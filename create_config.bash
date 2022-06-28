@@ -24,7 +24,7 @@ TOOLS_DIR=$(cd $(dirname "$0")/../croco_tools; pwd)
 
 # Configuration name
 # ------------------
-MY_CONFIG_NAME=Run
+MY_CONFIG_NAME=RunBASIN
 
 # Home and Work configuration directories
 # ---------------------------------------

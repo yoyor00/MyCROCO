@@ -83,9 +83,9 @@
       tau_in =dtfast*tauM_in
       tau_out=dtfast*tauM_out
 # endif
-
-!$acc kernels if(compute_on_device) default(present)
-
+! !$acc update device( qdmu_nbq_west, qdmu_nbq_east, unbqclm )
+! !$acc update device( unbqclm )
+!$acc kernels default(present)
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -186,7 +186,7 @@
 !
 !  Replace external mode
 !
-#   ifdef NBQ
+#   ifdef M3FAST
 #    define usum grad
         usum=0.
         do k=1,N
@@ -218,7 +218,7 @@
           do j=jstr,jend                              ! ======= ==== ======
 #   ifdef MRL_WCI
             qdmu_nbq(Istr,j,k)=-ust(Istr,j,k)         ! no Lagrangian flux
-     &                          *0.5*(Hz(Istr  ,j,k)
+                               *0.5*(Hz(Istr  ,j,k)
      &                              +Hz(Istr-1,j,k))
 #    ifdef MASKING
      &                       *umask(Istr,j)
@@ -330,7 +330,7 @@
 !
 !  Replace external mode
 !
-#   ifdef NBQ
+#   ifdef M3FAST
 #    define usum grad
         usum=0.
         do k=1,N

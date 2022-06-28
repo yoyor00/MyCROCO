@@ -127,7 +127,11 @@ C$OMP END PARALLEL
 #include "scalars.h"
 #include "ncscrum.h"
 #ifdef M3FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 #endif
 #ifdef FLOATS
 # include "floats.h"
@@ -478,7 +482,11 @@ C$OMP BARRIER
         call rhs3d_w_nh (tile)
 #  endif
 # endif
+#  ifdef NBQ2      
+        call pre_step3d_2 (tile)
+#  else
         call pre_step3d (tile)
+#  endif
 # ifdef AGRIF
       if (.Not.Agrif_Root()) then
         call uv3dpremix (tile)
@@ -625,9 +633,17 @@ C$OMP BARRIER
 # include "sta.h"
 #endif
 #if defined BBL && defined BSTRESS_FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 #elif ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST ) && defined M3FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 #endif
 #if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
 # include "forces.h"
@@ -781,10 +797,18 @@ C$OMP BARRIER
             if (Agrif_Root()) then
               call   step2d (tile)
             else
+#  ifdef NBQ2      
+              call   step3d_fast_2 (tile)
+#  else
               call   step3d_fast (tile)
+#  endif              
             endif
 # else
-            call   step3d_fast (tile)
+#  ifdef NBQ2      
+              call   step3d_fast_2 (tile)
+#  else
+              call   step3d_fast (tile)
+#  endif              
 # endif
 #else
             call     step2d (tile)
@@ -797,10 +821,18 @@ C$OMP BARRIER
             if (Agrif_Root()) then
               call   step2d (tile)
             else
+#  ifdef NBQ2      
+              call   step3d_fast_2 (tile)
+#  else
               call   step3d_fast (tile)
+#  endif              
             endif
 # else
-            call   step3d_fast (tile)
+#  ifdef NBQ2      
+              call   step3d_fast_2 (tile)
+#  else
+              call   step3d_fast (tile)
+#  endif              
 # endif
 #else
             call     step2d (tile)
@@ -858,7 +890,11 @@ C$OMP END MASTER
 #include "scalars.h"
 #include "ncscrum.h"
 #ifdef M3FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 #endif
 #ifdef FLOATS
 # include "floats.h"
@@ -909,12 +945,20 @@ C$OMP BARRIER
 # if defined NBQ && defined AGRIF && defined NBQ_CHILD_ONLY
       if (Agrif_Root()) then
         do tile=my_first,my_last
+#  ifdef NBQ2      
+          call set_depth_2 (tile)
+#  else
           call set_depth (tile)
+#  endif
         enddo
       endif
 # elif !defined NBQ
       do tile=my_first,my_last
-        call set_depth (tile)
+#  ifdef NBQ2      
+          call set_depth_2 (tile)
+#  else
+          call set_depth (tile)
+#  endif
       enddo
 # endif
 C$OMP BARRIER

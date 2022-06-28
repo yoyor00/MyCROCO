@@ -41,7 +41,11 @@
       include 'mpif.h'
 #endif
 #ifdef NBQ
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 #endif
 #include "mpi_cpl.h"
       integer kwsize, testunit, input

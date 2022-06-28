@@ -58,7 +58,11 @@
 #  include "diagnostics.h"
 # endif
 # ifdef NBQ
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
 # endif
       INTEGER Istr,Iend,Jstr,Jend, i,j,k
 # ifdef PSOURCE

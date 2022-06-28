@@ -1,7 +1,8 @@
 ! $Id: module_MUSTANG  2018-08- bthouvenin 
 #include "cppdefs.h"
 
-!!! donner acces aux dimensions, variables, parametres dont a besoin MUSTANG
+!!! donner acces aux dimensions, variables, parametres 
+!!! dont a besoin MUSTANG
 !!! + 
 #if defined MUSTANG
 

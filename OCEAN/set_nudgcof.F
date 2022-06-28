@@ -38,7 +38,11 @@
 # include "ocean3d.h"
 # include "mpi_cpl.h"
 # ifdef NBQ_NUDGING
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
 # endif
       integer Istr,Iend,Jstr,Jend, i, j, k, isp, itrc, ibnd
       real    wrk(PRIVATE_2D_SCRATCH_ARRAY)

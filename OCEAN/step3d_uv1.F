@@ -37,7 +37,11 @@
 #   include "forces.h"
 # endif
 # ifdef M3FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
 # endif
 # ifdef DIAGNOSTICS_UV
 #  include "diagnostics.h"

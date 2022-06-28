@@ -48,7 +48,11 @@ C$    integer omp_get_thread_num
 #   include "forces.h"
 # endif
 # ifdef M3FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
 # endif
       real eps
       parameter (eps=1.e-14)
@@ -287,7 +291,11 @@ C$    integer omp_get_thread_num
 #    include "forces.h"
 #   endif
 #   ifdef M3FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #    include "nbq.h"
+# endif
 #   endif
       real eps
       parameter (eps=1.e-14)

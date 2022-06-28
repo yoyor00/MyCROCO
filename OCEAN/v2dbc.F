@@ -76,7 +76,11 @@ C$    integer omp_get_thread_num
 #include "forces.h"
 #include "zoom.h"
 #ifdef NBQ
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 #endif
 !
 #include "compute_auxiliary_bounds.h"

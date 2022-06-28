@@ -97,7 +97,11 @@
 # include "scalars.h"
 # include "weno_interfaces.h"
 # ifdef NBQ
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
 # endif
 # ifdef MRL_WCI
       real vstu,dudx,dvdx,ustv,dude,dvde

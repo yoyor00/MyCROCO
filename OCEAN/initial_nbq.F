@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#ifdef M3FAST
+#if defined M3FAST && ! defined NBQ2
 !
       subroutine initial_nbq (tile)
 !
@@ -60,7 +60,11 @@
 # include "param.h"
 # include "scalars.h"
 # include "private_scratch.h"
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 # include "work.h"
 # include "grid.h"
 # include "ocean2d.h"

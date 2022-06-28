@@ -75,7 +75,11 @@
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"  
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 # include "weno_interfaces.h"
 !
 !--------------------------------------------------------------------

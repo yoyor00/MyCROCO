@@ -144,7 +144,11 @@
 #  include "autotiling.h"
 # endif
 # ifdef M3FAST
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
 # endif
 
       integer size_XI,size_ETA,se,sse, sz,ssz
@@ -593,7 +597,11 @@ CR      write(*,*)  ' -5' MYID
 # ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call initial_nbq(tile,1)
+#  ifdef NBQ2        
+        call initial_nbq_2(tile)
+#  else
+        call initial_nbq(tile)
+#  endif        
       enddo
 # endif
 !
@@ -621,7 +629,11 @@ CR      write(*,*)  ' -3' MYID
 # ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call initial_nbq(tile,2)
+#  ifdef NBQ2      
+        call initial_nbq_2(tile)
+#  else
+        call initial_nbq(tile)
+#  endif
       enddo
 
 C$OMP PARALLEL DO PRIVATE(tile)
@@ -797,7 +809,11 @@ CR      write(*,*) ' -1' MYID
 # ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call initial_nbq(tile,3)
+#  ifdef NBQ2      
+        call initial_nbq_2(tile)
+#  else
+        call initial_nbq(tile)
+#  endif
       enddo     
 # endif
 !
@@ -1050,7 +1066,11 @@ CR      write(*,*) '  0' MYID
 # include "ncscrum.h"
 # include "scalars.h"
 # include "zoom.h"
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 !# include "nbq.h"
+# endif
       integer :: irhot
       
       i1t = 0
@@ -2800,7 +2820,11 @@ CR      write(*,*) '  0' MYID
 #  include "ocean3d.h"
 #  include "scalars.h"
 #  include "zoom.h"
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
 
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)
@@ -2824,7 +2848,11 @@ CR      write(*,*) '  0' MYID
 #  include "ocean3d.h"
 #  include "scalars.h"
 #  include "zoom.h"
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #  include "nbq.h"
+# endif
 
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)
@@ -2872,7 +2900,11 @@ CR      write(*,*) '  0' MYID
 #   include "ocean3d.h"
 #   include "scalars.h"
 #   include "zoom.h"
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #   include "nbq.h"
+# endif
 
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)

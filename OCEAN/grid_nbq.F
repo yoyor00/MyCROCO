@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ && ! defined NBQ2 
 !
       subroutine grid_nbq_tile(Istr,Iend,Jstr,Jend,
      &                         Hzw_half_nbq_inv,Hzr_half_nbq_inv,
@@ -32,7 +32,11 @@
 # include "private_scratch.h"
 # include "grid.h"
 # include "ocean3d.h"
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h"
+# endif
 
       real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
       real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)

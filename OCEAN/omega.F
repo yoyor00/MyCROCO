@@ -72,7 +72,11 @@
       integer Istr,Iend,Jstr,Jend, i,j,k
 # include "param.h"
 
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 # include "nbq.h" 
+# endif
       real wrk   (PRIVATE_1D_SCRATCH_ARRAY    )
       real wrk2  (PRIVATE_1D_SCRATCH_ARRAY    )
 # ifdef VADV_ADAPT_IMP      

@@ -51,7 +51,11 @@ C$    integer omp_get_thread_num
 #include "diagnostics.h"
 #include "boundary.h"
 #include "sources.h"
+# ifdef NBQ2
+# include "nbq_2.h"
+# else
 #include "nbq.h"
+# endif
 
 #ifdef DIAGNOSTICS_VRT
 # include "diags_vrt.h"

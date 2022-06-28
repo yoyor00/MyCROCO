@@ -193,9 +193,10 @@
    3    if (symbol(1).eq.'C' .or. symbol(1).eq.'c' .or.
      &                            symbol(1).eq.'!') then
           if (symbol(2).eq.'$' .or. symbol(3).eq.'$' .or.
-     &        symbol(4).eq.'$' .or. symbol(5).eq.'$') then
-            if ((symbol(2).eq.'$').and.
-     &        ((symbol(3).eq.'A').or.(symbol(3).eq.'a'))) then
+     &        symbol(4).eq.'$' .or. symbol(5).eq.'$' .or.
+     &	      symbol(3).eq.'!') then
+            if ((symbol(3).eq.'!').or.((symbol(2).eq.'$').and.
+     &        ((symbol(3).eq.'A').or.(symbol(3).eq.'a')))) then
            directive = .false.  ! this is the special !$AGRIF or C$AGRIF directive
            do i=1,max_length
             if (symbol(i).ne.' ') length = i
