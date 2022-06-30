@@ -10,9 +10,9 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined M3FAST && defined NBQ2
+#if defined M3FAST 
 !
-      subroutine grid_nbq_2_tile(Istr,Iend,Jstr,Jend,
+      subroutine grid_nbq_tile(Istr,Iend,Jstr,Jend,
      &                         Hzw_nbq_inv,Hzr_nbq_inv,
      &                         Hzw_nbq_inv_u, Hzw_nbq_inv_v )     
 !
@@ -32,7 +32,7 @@
 # include "private_scratch.h"
 # include "grid.h"
 # include "ocean3d.h"
-# include "nbq_2.h"
+# include "nbq.h"
 
       real 
      &   Hzw_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,-N_sl:N),
@@ -228,10 +228,10 @@
 ! !$acc update host( Hzw_nbq_inv_v, Hzw_nbq_inv_u, Hzw_nbq_inv
 ! !$acc&  , Hzr_nbq_inv, Hzw_nbq )
       return
-      end subroutine grid_nbq_2_tile
+      end subroutine grid_nbq_tile
 
 #else
-      subroutine grid_nbq_2_tile_empty
+      subroutine grid_nbq_tile_empty
       return
       end 
 #endif

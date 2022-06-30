@@ -10,19 +10,19 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if (defined SOLVE3D || defined WET_DRY) && defined NBQ2 
+#if defined SOLVE3D || defined WET_DRY
 
-      subroutine set_depth_2(tile)
+      subroutine set_depth (tile)
       implicit none
 # include "param.h"
       integer tile, trd
 C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
-      call set_depth_2_tile (Istr,Iend,Jstr,Jend)
+      call set_depth_tile (Istr,Iend,Jstr,Jend)
       return
       end
 
-      subroutine set_depth_2_tile (Istr,Iend,Jstr,Jend)
+      subroutine set_depth_tile (Istr,Iend,Jstr,Jend)
 !
 !----------------------------------------------------------------------
 ! Create S-coordinate system: based on model topography h(i,j),
@@ -48,7 +48,7 @@ C$    integer omp_get_thread_num
 #   include "forces.h"
 # endif
 # ifdef M3FAST
-#  include "nbq_2.h"
+#  include "nbq.h"
 # endif
       real eps
       parameter (eps=1.e-14)
@@ -65,6 +65,7 @@ C$    integer omp_get_thread_num
 # else
 #  define J_RANGE JstrR,JendR
 # endif
+
 !
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
@@ -297,17 +298,17 @@ C$    integer omp_get_thread_num
 !======================================================================
 !
 
-      subroutine set_depth_morphodyn_2 (tile)
+      subroutine set_depth_morphodyn (tile)
       implicit none
 #   include "param.h"
       integer tile, trd
 C$    integer omp_get_thread_num
 #   include "compute_tile_bounds.h"
-      call set_depth_morphodyn_2_tile (Istr,Iend,Jstr,Jend)
+      call set_depth_morphodyn_tile (Istr,Iend,Jstr,Jend)
       return
       end
 
-      subroutine set_depth_morphodyn_2_tile (Istr,Iend,Jstr,Jend)
+      subroutine set_depth_morphodyn_tile (Istr,Iend,Jstr,Jend)
 
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -325,7 +326,7 @@ C$    integer omp_get_thread_num
 #    include "forces.h"
 #   endif
 #   ifdef M3FAST_ZETAW
-#    include "nbq_2.h"
+#    include "nbq.h"
 #   endif
       real eps
       parameter (eps=1.e-14)
@@ -444,17 +445,17 @@ C$    integer omp_get_thread_num
 !
 !======================================================================
 !
-      subroutine set_HUV_2 (tile)
+      subroutine set_HUV (tile)
       implicit none
 #  include "param.h"
       integer tile, trd
 C$    integer omp_get_thread_num
 #  include "compute_tile_bounds.h"
-      call set_HUV_2_tile (Istr,Iend,Jstr,Jend)
+      call set_HUV_tile (Istr,Iend,Jstr,Jend)
       return
       end
 
-      subroutine set_HUV_2_tile (Istr,Iend,Jstr,Jend)
+      subroutine set_HUV_tile (Istr,Iend,Jstr,Jend)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
@@ -560,17 +561,17 @@ C$    integer omp_get_thread_num
 !
 !======================================================================
 !
-      subroutine set_HUV1_2 (tile)
+      subroutine set_HUV1 (tile)
       implicit none
 #  include "param.h"
       integer tile, trd
 C$    integer omp_get_thread_num
 #  include "compute_tile_bounds.h"
-      call set_HUV1_2_tile (Istr,Iend,Jstr,Jend)
+      call set_HUV1_tile (Istr,Iend,Jstr,Jend)
       return
       end
 
-      subroutine set_HUV1_2_tile (Istr,Iend,Jstr,Jend)
+      subroutine set_HUV1_tile (Istr,Iend,Jstr,Jend)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
@@ -659,19 +660,19 @@ C$    integer omp_get_thread_num
 !
 !======================================================================
 !
-      subroutine set_HUV2_2 (tile)
+      subroutine set_HUV2 (tile)
       implicit none
       integer tile, trd, omp_get_thread_num
 #  include "param.h"
 #  include "private_scratch.h"
 #  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      call set_HUV2_2_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd),
+      call set_HUV2_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd),
      &                                         A2d(1,2,trd))
       return
       end
 
-      subroutine set_HUV2_2_tile (Istr,Iend,Jstr,Jend,DC,FC)
+      subroutine set_HUV2_tile (Istr,Iend,Jstr,Jend,DC,FC)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
@@ -741,6 +742,8 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
+
+!$acc loop private(DC,FC(:,0))
       do j=JV_RANGE
         do i=IV_RANGE
           DC(i,0)=0.
@@ -811,7 +814,7 @@ C$    integer omp_get_thread_num
       return
       end
 #else
-      subroutine set_depth_2_empty
+      subroutine set_depth_empty
       return
       end
 #endif /* SOLVE3D || WET_DRY && NBQ2 */

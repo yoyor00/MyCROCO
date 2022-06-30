@@ -9,7 +9,7 @@
 # undef  NBQ_WFREESLIP
 #endif
 
-#if defined SOLVE3D && defined NBQ
+#if defined SOLVE3D && defined M3SLOW_W
 
       SUBROUTINE rhs3d_w_nh(tile)
 

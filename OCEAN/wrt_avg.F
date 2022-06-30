@@ -41,11 +41,7 @@
 #  include "sediment.h"
 # endif
 # ifdef NBQ
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 #  include "nbq.h"
-# endif
 # endif
 # ifdef MASKING
 #  define SWITCH *

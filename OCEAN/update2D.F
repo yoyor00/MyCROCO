@@ -311,11 +311,7 @@ C$OMP END MASTER
 #  include "coupling.h"
 #  include "scalars.h"
 #  include "zoom.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 #  include "nbq.h"
-# endif
       integer :: i1,i2,j1,j2,k1,k2
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
@@ -341,11 +337,7 @@ C$OMP END MASTER
 #  include "coupling.h"
 #  include "scalars.h"
 #  include "zoom.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 #  include "nbq.h"
-# endif
       integer :: i1,i2,j1,j2,k1,k2
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
@@ -372,11 +364,7 @@ C$OMP END MASTER
 #   include "coupling.h"
 #   include "scalars.h"
 #   include "zoom.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 #   include "nbq.h"
-# endif
 !$AGRIF_DO_NOT_TREAT
       logical global_update_2d
       common/globalupdate/global_update_2d
@@ -421,11 +409,7 @@ C$OMP END MASTER
 #   include "coupling.h"
 #   include "scalars.h"
 #   include "zoom.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 #   include "nbq.h"
-# endif
       integer :: i1,i2,j1,j2,k1,k2
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before

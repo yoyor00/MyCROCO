@@ -71,11 +71,7 @@
 # include "wkb_wwave.h"
 #endif
 #ifdef NBQ
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 #endif
 #include "work.h"
 #include "netcdf.inc"

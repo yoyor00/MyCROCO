@@ -37,11 +37,7 @@
 # if defined EXACT_RESTART
 # include "coupling.h"
 # if defined M3FAST
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 # endif
 # endif
 !======================================================

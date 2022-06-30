@@ -10,7 +10,6 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#ifndef NBQ2
 #ifdef SOLVE3D
 # ifndef VADV_ADAPT_PRED
 #  undef VADV_ADAPT_IMP
@@ -114,11 +113,7 @@
 #  include "sources.h"
 # endif
 # ifdef M3FAST
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 #  include "nbq.h"
-# endif
 # endif
 #include "openacc_work.h"
 # ifdef MASKING
@@ -809,7 +804,7 @@
       enddo     !<-- j
 # endif
       
-# if defined NBQ && ! defined NBQ2
+# ifdef NBQ
 !----------------------------------------------------------
 !<-- at this point 
 !<-- rw            contains internal 3D advection + Coriolis
@@ -932,7 +927,7 @@
 !==  
 
 !==
-# endif /* NBQ && !NBQ2*/   
+# endif /* NBQ */   
   
 # if defined M3FAST && defined M2FILTER_NONE 
 #  undef ru_nbq_avg1 
@@ -1105,7 +1100,6 @@
 # undef JU_RANGE
 # undef IV_RANGE
 # undef JV_RANGE
-# endif /* NBQ2 */
 #else
       subroutine pre_step3d_empty
 #endif

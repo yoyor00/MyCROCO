@@ -58,11 +58,7 @@
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 # include "climat.h"
 # include "scalars.h"
 # include "boundary.h"  

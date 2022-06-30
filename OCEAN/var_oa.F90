@@ -65,11 +65,7 @@
 # include "ocean3d.h"
 # include "grid.h"
 #ifdef NBQ
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 #endif
 
       integer, intent(in) ::                                          &

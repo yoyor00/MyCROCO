@@ -93,11 +93,7 @@
 # include "scalars.h"
 # include "sediment.h"
 # if defined M3FAST && defined BSTRESS_FAST
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 #  include "nbq.h"
-# endif
 # endif
 # include "mixing.h"
 # ifdef WKB_WWAVE

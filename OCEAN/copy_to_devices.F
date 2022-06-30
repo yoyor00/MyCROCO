@@ -34,15 +34,6 @@
 # if defined PSOURCE || defined PSOURCE_NCFILE
 #  include "sources.h"
 # endif
-#ifdef MPI
-#include "mpi_buffers.h"
-#endif
-#if defined NBQ
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
-#include "nbq.h"
-# endif
 # ifdef MPI
 #  include "mpi_buffers.h"
 # endif
@@ -234,7 +225,6 @@
 # if defined NBQ
 #  include "nbq.h"
 # endif
-#endif
 
 # include "copy_to_devices.h"
 

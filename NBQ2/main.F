@@ -53,7 +53,9 @@
       integer tile, subs, trd, ierr
 #include "param.h"
 #include "private_scratch.h"
+# ifdef M3FAST
 #include "nbq.h"
+# endif
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
@@ -1003,9 +1005,13 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 
 # if defined XIOS
                                 ! case XIOS + (OASIS / no OASIS)
-                                !      > MPI finalize done by XIOS
-      call xios_finalize()      !      > if OASIS, finalize is done by XIOS
-                                !      > if AGRIF : done using iom_context_finalize
+                                !   > MPI finalize done by XIOS
+      call xios_finalize()      !   > if OASIS, finalize is done by XIOS
+                                !   > if AGRIF : done using iom_context_finalize
+!!!#   if !defined AGRIF
+!!!      call MPI_Finalize (ierr)  ! if No AGRIF : MPI_Finalize is needed
+!!!#   endif
+
 #  if  !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
        call MPI_Finalize (ierr)      !  if No coupling + No AGRIF : MPI_Finalize is needed
 #  endif

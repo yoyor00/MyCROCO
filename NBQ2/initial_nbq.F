@@ -10,9 +10,9 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined M3FAST && defined NBQ2
+#ifdef M3FAST
 !
-      subroutine initial_nbq_2 (tile)
+      subroutine initial_nbq (tile)
 !
       implicit none
       integer tile, icall, trd
@@ -23,16 +23,16 @@
       trd=0
 !$    trd=omp_get_thread_num()
 
-      call initial_nbq_2_tile (Istr,Iend,Jstr,Jend
+      call initial_nbq_tile (Istr,Iend,Jstr,Jend
 # ifdef M3FAST
 #  ifdef NONLIN_EOS
      &                     ,A2d(1,1,trd), A2d(1,2,trd)
 #  endif
 # endif
      &                      )
-      end subroutine initial_nbq_2
+      end subroutine initial_nbq
 !
-      subroutine initial_nbq_2_tile (Istr,Iend,Jstr,Jend
+      subroutine initial_nbq_tile (Istr,Iend,Jstr,Jend
 # ifdef M3FAST
 #  ifdef NONLIN_EOS
      &                           ,K_up, K_dw
@@ -55,7 +55,7 @@
 # include "scalars.h"
 # include "private_scratch.h"
 # if defined M3FAST_UV || defined M3FAST_W || defined M3FAST_RHO
-#  include "nbq_2.h"
+#  include "nbq.h"
 # endif
 # include "work.h"
 # include "grid.h"
@@ -105,6 +105,7 @@
 !  Pseudoacoustic speed
 !   should be around 5 times external phase speed sqrt(g*h)
 !
+!$acc kernels if(compute_on_device) default(present)
         soundspeed_nbq  =csound_nbq
         soundspeed2_nbq =csound_nbq**2
 #  if defined M3FAST_SEDLAYERS && defined M3FAST_CSVISC2K
@@ -132,7 +133,9 @@
           enddo
         enddo
 #  endif
+!$acc end kernels
 
+!$acc kernels if(compute_on_device) default(present)
 !
 ! Density of sediments
 !
@@ -192,13 +195,14 @@
           enddo
         enddo
 #  endif
-
+!$acc end kernels
 # endif /* M3FAST_RHO */
 !
 !----------------------------------------------------------------------
 !  NBQ Momentum initialization
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=Jstr-1,Jend+1
             do i=Istr,Iend+1
@@ -265,6 +269,7 @@
           enddo
         enddo
 # endif
+!$acc end kernels
 !
 !----------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.
@@ -292,9 +297,9 @@
 # endif
 
       return
-      end subroutine initial_nbq_2_tile
+      end subroutine initial_nbq_tile
 #else
-      subroutine initial_nbq_2_empty
+      subroutine initial_nbq_empty
       return
       end
 #endif

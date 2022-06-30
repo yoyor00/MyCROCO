@@ -29,11 +29,7 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 
 #include "def_bounds.h"
 

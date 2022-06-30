@@ -30,11 +30,7 @@
 # include "scalars.h"
 # include "zoom.h"
 # include "ocean3d.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 
       integer  :: Istr,Iend,Jstr,Jend, i,j,k
       real     :: tinterp
@@ -162,11 +158,7 @@
 # include "boundary.h"
 # include "zoom.h"
 # include "coupling.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
       integer  :: Istr,Iend,Jstr,Jend, i,j,k
       real     :: tinterp
       real     :: ainterp(2)
@@ -292,11 +284,7 @@
 # include "boundary.h"
 # include "zoom.h"
 # include "coupling.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
       integer  :: Istr,Iend,Jstr,Jend, i,j,k
       real     :: tinterp
       real     :: ainterp(2)
@@ -432,11 +420,7 @@
 # include "param.h"
 # include "ocean3d.h"
 # include "scalars.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 # include "zoom.h"
 
       integer i1,i2,j1,j2,k1,k2
@@ -546,11 +530,7 @@
 # include "param.h"
 # include "ocean3d.h"
 # include "scalars.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 # include "zoom.h"
 
       integer :: i1,i2,j1,j2,k1,k2
@@ -660,11 +640,7 @@
 # include "param.h"
 # include "ocean3d.h"
 # include "scalars.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 # include "zoom.h"
 
        integer i1,i2,j1,j2,k1,k2
@@ -780,11 +756,7 @@
 # include "boundary.h"
 # include "zoom.h"
 # include "coupling.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 
       integer  :: Istr,Iend,Jstr,Jend, i,j,k
       real     :: tinterp
@@ -904,11 +876,7 @@
 # include "param.h"
 # include "ocean3d.h"
 # include "scalars.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 # include "zoom.h"
 
        integer :: i1,i2,j1,j2,k1,k2

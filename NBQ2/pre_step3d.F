@@ -15,7 +15,7 @@
 #  undef VADV_ADAPT_IMP
 # endif
 
-      subroutine pre_step3d_2 (tile)
+      subroutine pre_step3d (tile)
 !
       implicit none
       integer tile,  trd,omp_get_thread_num
@@ -115,7 +115,7 @@
 #  include "sources.h"
 # endif
 # if defined M3FAST /* M3FAST_C3D_UVSF || defined M3FAST_C3D_WSF */
-#  include "nbq_2.h"
+#  include "nbq.h"
 # endif
 #include "openacc_work.h"
 # ifdef MASKING
@@ -1268,7 +1268,7 @@ c # endif
 # undef IV_RANGE
 # undef JV_RANGE
 #else
-      subroutine pre_step3d_2_empty
+      subroutine pre_step3d_empty
 #endif
       return
       end

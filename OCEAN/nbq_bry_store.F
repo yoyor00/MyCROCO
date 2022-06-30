@@ -67,11 +67,7 @@
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # include "param.h"
 # include "scalars.h"
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 !
 # include "compute_auxiliary_bounds.h"
 !

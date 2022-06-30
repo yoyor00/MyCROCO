@@ -76,7 +76,7 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 # if coupling with OASIS3-MCT is activated :
 # => you need to use XIOS compiled with the "--use_oasis oasis3_mct" flag
 #-----------------------------------------------------------
-XIOS_ROOT_DIR=$HOME/xios
+#XIOS_ROOT_DIR=$HOME/xios
 
 #
 # END OF USER'S MODIFICATIONS
@@ -108,8 +108,8 @@ ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
 ls ${SOURCE}/*.py              > /dev/null  2>&1 && \cp ${SOURCE}/*.py   $SCRDIR
 ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
 ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
-ls ${ROOT_DIR}/NBQ2/*          > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/NBQ2 $SCRDIR
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
+ls ${ROOT_DIR}/NBQ2/*          > /dev/null  2>&1 && \cp ${ROOT_DIR}/NBQ2/* $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* $SCRDIR
@@ -160,14 +160,14 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 		CFT1=ifort
 		FFLAGS1="-O3 -fno-alias -i4 -r8 -fp-model precise"
 #                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
-#                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
+#                       -check uninit -CA -CB -CS -ftrapuv -fpe1 -mcmodel=large"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -std=legacy"
+      		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -std=legacy"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-#			-fbounds-check -finit-real=nan -finit-integer=8888 -std=legacy"
+#			-fbounds-check -finit-real=nan -finit-integer=8888 -std=legacy -mcmodel=large"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
     	CPP1="cpp  -traditional -DLinux -DXLF"
@@ -194,14 +194,6 @@ elif [[ $OS == AIX ]] ; then           # ===== IBM =====
 else
 	echo "Unknown Operating System"
 	exit
-fi
-#
-# determine if NBQ2 sources is needed
-#
-echo "Checking NBQ2..."
-if $($CPP1 testkeys.F | grep -i -q nbq2isdefined) ; then
-        echo " => NBQ2 activated"
-	cp NBQ2/*  .
 fi
 #
 # determine if AGRIF compilation is required

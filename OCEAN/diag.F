@@ -34,11 +34,7 @@
 #include "scalars.h"
 #include "mpi_cpl.h"
 #if defined NBQ && defined DIAG_CFL
-# ifdef NBQ2
-# include "nbq_2.h"
-# else
 # include "nbq.h"
-# endif
 #endif 
       integer Istr,Iend,Jstr,Jend,    i,j,k, NSUB,
      &                                trd, omp_get_thread_num

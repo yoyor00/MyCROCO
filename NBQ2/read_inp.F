@@ -40,7 +40,7 @@
 #ifdef MPI
       include 'mpif.h'
 #endif
-#ifdef NBQ
+#ifdef M3FAST
 # include "nbq.h"
 #endif
 #include "mpi_cpl.h"
@@ -409,7 +409,7 @@
           goto 95
         endif
 
-#ifdef NBQ
+#ifdef M3FAST
 !     
 ! NBQ Time-stepping parameters
 !
@@ -423,9 +423,22 @@
      &   csound_nbq,'csound_nbq  Sound wave celerity.',
      &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
      &                                      'compressible fluids.'
-        dtnbq=dtfast
-        ndtnbq=1
+        print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
+# ifndef NHINT_3M
+        ndtnbq =ndtfast
+        nsdtnbq=1
+        dtnbq  =dtfast
+# else
+        if (int(ndtfast/ndtnbq).ne.ndtfast/ndtnbq) then
+          MPI_master_only write(stdout,*) 
+     &         'CAUTION: bad choice for ndtnbq!' 
+          ndtnbq=ndtfast
+        endif
+        nsdtnbq=ndtfast/ndtnbq
+# endif
+        dtnbq=dt/float(ndtnbq)
 #endif
+        print *,"nsdtnbq=",nsdtnbq
 
 #ifdef SOLVE3D
 !

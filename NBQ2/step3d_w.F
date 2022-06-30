@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && defined NBQ
+#if defined SOLVE3D && defined M3SLOW_W
 
 # define NBQ_WDIF
 
@@ -57,10 +57,10 @@
 # ifdef DIAGNOSTICS_UV
 #  include "diagnostics.h"
 # endif
-# ifdef NBQ
+# ifdef M3FAST_W
 #  include "nbq.h"
 # endif
-      INTEGER Istr,Iend,Jstr,Jend, i,j,k
+      INTEGER Istr,Iend,Jstr,Jend, i,j,k,k1
 # ifdef PSOURCE
      &       ,is
 # endif
@@ -88,18 +88,70 @@
 !  Apply right-hand-side
 !---------------------------------------------------------------------- 
 !
+# ifdef M3FAST_BOTH2
+      DO j=Jstr,Jend
+        k=N
+         DO i=Istr,Iend
+             wz(i,j,k,nnew)=  qdmwh2_nbq(i,j)/nfast
+         enddo
+        DO k=1,N-1
+          DO i=Istr,Iend
+            wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &                +dt*pn(i,j)*pm(i,j)*(rw(i,j,k)
+# ifdef M3FAST_C3D_WFS
+     &                +rw_nbq_avg2(i,j,k)
+# endif   
+     &                                    )
+          ENDDO
+        ENDDO
+      ENDDO  
+      
+
+# else /* M3FAST_BOTH */
       DO j=Jstr,Jend
         DO k=1,N
           DO i=Istr,Iend
             wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &                +dt*pn(i,j)*pm(i,j)*(rw(i,j,k)+rw_nbq_avg2(i,j,k))
+     &                +dt*pn(i,j)*pm(i,j)*(rw(i,j,k)
+# ifdef M3FAST_C3D_WFS
+     &                +rw_nbq_avg2(i,j,k)
+# endif   
+     &                                    )
           ENDDO
         ENDDO
       ENDDO  
+# endif  /* M3FAST_BOTH */
 
+! ! Bottom boundary condition:
       DO j=Jstr,Jend
         DO i=Istr,Iend
-          wz(i,j,0,nnew)=qdmw_nbq(i,j,0)    ! = w * 2./Hz(i,j,1)
+# ifdef NBQ_FREESLIP 
+#  ifndef M3FAST_SEDLAYERS
+          wz(i,j,0,nnew)=qdmw0_nbq(i,j)  
+#  else
+! !  Another BC is possible based on Slow-Mode Kinematic relation
+           wz(i,j,0,nnew)= 0.25*(    
+     &                 u(i,j,1,nnew) * pm_u(i,j) ! Caution: u is in m/s
+     &                * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
+     &                +u(i+1,j,1,nnew) * pm_u(i+1,j) 
+     &                * ( z_w(i+1,j,0)-z_w(i,j,0) )
+     &                + v(i,j,1,nnew) * pm_v(i,j) 
+     &                * ( z_w(i,j  ,0)-z_w(i,j-1,0) )
+     &                + v(i,j+1,1,nnew) * pm_v(i,j+1) 
+     &                * ( z_w(i,j+1,0)-z_w(i,j,0) ))
+     &                    *Hz(i,j,1)
+! !
+! ! Association with fast mode
+! !
+! !        wz(i,j,0,nnew)=qdmw_nbq(i,j,0)
+#  endif
+# else
+           wz(i,j,0,nnew)=0.
+! !
+! ! Association with fast mode
+! !
+! !        wz(i,j,0,nnew)=qdmw_nbq(i,j,0)
+# endif          
         ENDDO
       ENDDO  
   
@@ -149,6 +201,22 @@
           CF(i,0) = 0.                      !<-- q(0) = c(0) / b(0)
           DC(i,0) = cff*DC(i,0)             !<-- f(0) = f(0) / b(0)
         ENDDO
+#ifdef M3FAST_BOTH
+        
+        DO k=1,N-1
+          DO i=Istr,Iend 
+            cff     = 1./(BC(i,k)-FC(i,k)*CF(i,k-1))
+            CF(i,k) = cff* FC(i,k+1) 
+            DC(i,k) = cff*(DC(i,k)-FC(i,k)*DC(i,k-1))
+          ENDDO
+        ENDDO
+        k=N
+        DO i=Istr,Iend 
+            cff     = 1./(BC(i,k)-FC(i,k)*CF(i,k-1))
+            CF(i,k) = cff* FC(i,k+1) 
+            DC(i,k) = DC(i,k)*2./Hz(i,j,k)
+          ENDDO
+#else
         DO k=1,N
           DO i=Istr,Iend 
             cff     = 1./(BC(i,k)-FC(i,k)*CF(i,k-1))
@@ -156,6 +224,7 @@
             DC(i,k) = cff*(DC(i,k)-FC(i,k)*DC(i,k-1))
           ENDDO
         ENDDO
+#endif
         DO k=N-1,1,-1
           DO i=Istr,Iend
             DC(i,k)=DC(i,k)-CF(i,k)*DC(i,k+1) 
@@ -185,7 +254,9 @@
         DO i=Istr,Iend
           wz(i,j,N,nnew)=2.*wz(i,j,N,nnew)/Hz(i,j,N)
 #  ifdef NBQ_FREESLIP
-          wz(i,j,0,nnew)=2.*wz(i,j,0,nnew)/Hz(i,j,1)
+         wz(i,j,0,nnew)=2.*wz(i,j,0,nnew)/Hz(i,j,1)
+#   else
+         wz(i,j,0,nnew)=0.
 #  endif
         ENDDO
       ENDDO
@@ -212,10 +283,12 @@
      &                        wz(START_2D_ARRAY,0,nnew))
 #  endif
 # endif
+
+      
       return
       end
 #else
       subroutine step3d_w_empty 
       return
       end
-#endif /* SOLVE3D && NBQ */
+#endif /* SOLVE3D && M3SLOW_W */

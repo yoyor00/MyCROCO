@@ -46,13 +46,13 @@ include Makedefs
 	pre_step3d.F	step3d_t.F	step3d_uv1.F	step3d_uv2.F\
 	prsgrd.F	rhs3d.F		set_depth.F	omega.F\
 	uv3dmix.F	uv3dmix_spg.F	t3dmix.F	t3dmix_spg.F\
-	hmix_coef.F	wetdry.F	set_depth_2.F\
-	u3dbc.F		v3dbc.F		t3dbc.F	pre_step3d_2.F\
+	hmix_coef.F	wetdry.F\
+	u3dbc.F		v3dbc.F		t3dbc.F\
 \
-	step3d_fast.F	step3d_fast_2.F\
+	step3d_fast.F\
 	step3d_w.F	rhs3d_w_nh.F	initial_nbq.F	grid_nbq.F\
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
-        w3dbc.F		nbq_bry_store.F	 grid_nbq_2.F	initial_nbq_2.F\
+        w3dbc.F		nbq_bry_store.F\
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \

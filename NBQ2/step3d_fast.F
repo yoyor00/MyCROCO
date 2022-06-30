@@ -11,9 +11,9 @@
 !
 #include "cppdefs.h"
 
-#if defined M3FAST && defined NBQ2
+#ifdef M3FAST
 
-      subroutine step3d_fast_2 (tile)
+      subroutine step3d_fast (tile)
       implicit none
       integer tile, trd
 # include "param.h"
@@ -25,7 +25,7 @@ C$    integer omp_get_thread_num
 
 C$    trd=omp_get_thread_num()
 !
-      call step3d_fast_2_tile ( Istr,Iend,Jstr,Jend
+      call step3d_fast_tile ( Istr,Iend,Jstr,Jend
      &                   , A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd)
      &                   , A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd)
      &                   , A2d(1, 7,trd), A2d(1, 8,trd)
@@ -52,7 +52,7 @@ C$    trd=omp_get_thread_num()
 ! !                      step3d_fast_tile
 ! !====================================================================
 ! !
-       subroutine step3d_fast_2_tile (Istr,Iend,Jstr,Jend
+       subroutine step3d_fast_tile (Istr,Iend,Jstr,Jend
      &                          ,Dnew,rubar,rvbar
      &                          ,Drhs, UFx,UFe
      &                          ,VFx,VFe
@@ -117,6 +117,7 @@ C$    trd=omp_get_thread_num()
 !
 !***********************************************************************
 !
+      use debug
       implicit none
 # include "param.h"
 
@@ -272,7 +273,7 @@ C$    trd=omp_get_thread_num()
       real cff1_WD,cff2_WD
 # endif
 
-# include "nbq_2.h"
+# include "nbq.h"
 # if defined MASS || defined MOVING_BATHY
       real*QUAD masstot
 #  ifdef MPI
@@ -596,7 +597,8 @@ C$    trd=omp_get_thread_num()
 # ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-      call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r')
+      call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r'
+     &  ,ondevice=.TRUE.)
 C$OMP END MASTER
 # endif 
 !
@@ -640,9 +642,12 @@ C$OMP END MASTER
       if (.not.agrif_Root()) then
 C$OMP BARRIER
 C$OMP MASTER
-        call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (0) step3d_fast','r')
-        call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (0) step3d_fast','u')
-        call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (0) step3d_fast','v')
+        call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (0) step3d_fast','r'
+      &    ,ondevice=.TRUE.)
+        call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (0) step3d_fast','u'
+      &    ,ondevice=.TRUE.)  
+        call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (0) step3d_fast','v'
+      &    ,ondevice=.TRUE.)  
 C$OMP END MASTER  
       endif
 #  endif  
@@ -681,7 +686,7 @@ C$OMP END MASTER
 ! !
 # if ! defined M3FAST_COUPLING2D || defined M3FAST_UV || defined M3FAST_W
        if ( FIRST_FAST_STEP) then
-        call grid_nbq_2_tile(Istr,Iend,Jstr,Jend,
+        call grid_nbq_tile(Istr,Iend,Jstr,Jend,
      &                     Hzw_nbq_inv,   Hzr_nbq_inv,
      &                     Hzw_nbq_inv_u  , Hzw_nbq_inv_v)
        endif
@@ -774,11 +779,11 @@ C$OMP END MASTER
 ! Update main grid parameters
 !
 ! ! z_w, z_r, Hz, Hz_bak <= h, zeta, hinv, Hz 
-        call set_depth_2_tile(Istr,Iend,Jstr,Jend)
+        call set_depth_tile(Istr,Iend,Jstr,Jend)
 !
 ! Update derived grid variables
 !
-        call grid_nbq_2_tile(Istr,Iend,Jstr,Jend,
+        call grid_nbq_tile(Istr,Iend,Jstr,Jend,
      &                     Hzw_nbq_inv,   Hzr_nbq_inv,
      &                     Hzw_nbq_inv_u, Hzw_nbq_inv_v)
      
@@ -845,6 +850,90 @@ C$OMP END MASTER
 #endif
 !#endif
 !$acc end kernels
+! !
+! !--------------------------------------------------------------------
+! ! Since coupling requires that pressure gradient term is computed
+! ! using zeta(:,:,kstp) instead of zeta_new(:,:) needed to achieve
+! ! numerical stability, apply compensation to shift pressure gradient
+! ! terms from "kstp" to "knew": in essense, convert the fist 2D step
+! ! from Forward Euler to Forward-Backward].
+! !--------------------------------------------------------------------
+! !   
+!# ifndef M3FAST_DDS0
+#  define zwrk UFx
+#  define rzeta  UFe
+#  define rzeta2  VFe
+#  define rzetaSA VFx
+
+! #ifdef RVTK_DEBUG_ADVANCED
+! C$OMP BARRIER
+! C$OMP MASTER
+! !      call check_tab2d(rubarh(:,:),'rubarh st_fast_g','uint')
+!        call check_tab2d(zeta(:,:,knew),'zetaN      _g','r')
+!        call check_tab2d(zeta(:,:,kstp),'zetaST     _g','r')
+!        call check_tab2d(rhoS(:,:),'rhoS st_fast_g','r')
+!        call check_tab2d(rhoA(:,:),'rhoA st_fast_g','r')
+! #endif
+
+!#ifdef M3FAST_DRAFT 
+!$acc kernels default(present)
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            zwrk(i,j)=zeta(i,j,knew)-zeta(i,j,kstp)
+# if defined VAR_RHO_2D && defined SOLVE3D
+            rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
+            rzeta2(i,j)=rzeta(i,j)*(zeta(i,j,knew)+zeta(i,j,kstp))
+            rzetaSA(i,j)=zwrk(i,j)*(rhoS(i,j)-rhoA(i,j))
+# else
+            rzeta(i,j)=zwrk(i,j)
+            rzeta2(i,j)=zwrk(i,j)*(zeta(i,j,knew)+zeta(i,j,kstp))
+# endif
+          enddo
+        enddo
+        cff=0.5*g
+        do j=Jstr,Jend
+          do i=Istr,Iend
+# ifdef M3FAST_BOTH          
+            rubarh(i,j)=rubarh(i,j) +cff*on_u(i,j)*( (h(i-1,j)+h(i,j))  
+# else            
+            rubar(i,j)=rubar(i,j) +cff*on_u(i,j)*( (h(i-1,j)+h(i,j))  
+# endif            
+     &          *(rzeta(i-1,j)-rzeta(i,j)) +rzeta2(i-1,j)-rzeta2(i,j)
+# if defined VAR_RHO_2D && defined SOLVE3D
+     &              +(h(i-1,j)-h(i,j))*( rzetaSA(i-1,j)+rzetaSA(i,j)
+     &                        +0.333333333333*(rhoA(i-1,j)-rhoA(i,j))
+     &                                     *(zwrk(i-1,j)-zwrk(i,j)) )
+# endif
+     &                                                              )
+!
+# ifdef M3FAST_BOTH          
+            rvbarh(i,j)=rvbarh(i,j) +cff*om_v(i,j)*( (h(i,j-1)+h(i,j))
+# else            
+            rvbar(i,j)=rvbar(i,j) +cff*om_v(i,j)*( (h(i,j-1)+h(i,j))
+# endif            
+     &          *(rzeta(i,j-1)-rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
+
+# if defined VAR_RHO_2D && defined SOLVE3D
+     &              +(h(i,j-1)-h(i,j))*( rzetaSA(i,j-1)+rzetaSA(i,j)
+     &                        +0.333333333333*(rhoA(i,j-1)-rhoA(i,j))
+     &                                     *(zwrk(i,j-1)-zwrk(i,j)) )
+# endif
+     &                                                              )
+          enddo
+        enddo            !--> discard  zwrk, rzeta, rzeta2, rzetaSA
+!$acc end kernels        
+!#endif
+#ifdef RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+!        call check_tab2d(rubarh(:,:),'rubarh st_fast_f','uint')
+#endif
+
+# undef rzetaSA
+# undef rzeta2
+# undef rzeta
+# undef zwrk
+!# endif
       endif   !<-- FIRST_FAST_STEP
 ! !
 ! !====================================================================
@@ -1033,8 +1122,10 @@ C$OMP END MASTER
 # if defined RVTK_DEBUG && defined NBQ
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab3d(ru_int_nbq(:,:,1),'ru_int_nbq (A2)','uint')
-       call check_tab3d(rv_int_nbq,'rv_int_nbq (A2)','vint')
+       call check_tab3d(ru_int_nbq(:,:,1),'ru_int_nbq (A2)','uint'
+     &    ,ondevice=.TRUE.)
+       call check_tab3d(rv_int_nbq,'rv_int_nbq (A2)','vint'
+     &    ,ondevice=.TRUE.)
 C$OMP END MASTER     
 #  endif  
 
@@ -1050,8 +1141,10 @@ C$OMP END MASTER
 # if defined RVTK_DEBUG && defined NBQ
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','uint')
-       call check_tab3d(rv_int_nbq,'rv_int_nbq (A)','vint')
+       call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','uint'
+     &    ,ondevice=.TRUE.)
+       call check_tab3d(rv_int_nbq,'rv_int_nbq (A)','vint'
+     &    ,ondevice=.TRUE.)
 C$OMP END MASTER     
 #  endif  
 ! !
@@ -1706,9 +1799,9 @@ C$OMP MASTER
 c       call check_tab3d(thetadiv_nbq,'step3d_fastthetadiv_nbq','rint')
 # ifdef M3FAST_SEDLAYERS
       call check_tab3d_sedlay(rho_nbq,'step3d_fastrho_nbq_1',
-     &  'r',N_sl+1,N)
+     &  'r',N_sl+1,N,ondevice=.TRUE.)
 # else
-      call check_tab3d(rho_nbq,'step3d_fastrho_nbq_1','r')
+      call check_tab3d(rho_nbq,'step3d_fastrho_nbq_1','r',ondevice=.TRUE.)
 # endif      
 C$OMP END MASTER
 # endif    
@@ -2279,8 +2372,10 @@ C$OMP END MASTER
 #ifdef RVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u')
-       call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v')
+       call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u'
+     &    ,ondevice=.TRUE.)
+       call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v'
+     &    ,ondevice=.TRUE.)
 #endif
          
 # ifdef OBC_VOLCONS
@@ -2483,6 +2578,7 @@ C$OMP MASTER
 ! ! KERNEL_33  Dnew <= ( zeta, h, pm, pn, Dnew, ubar, on_u, vbar, om_v )
 ! ! KERNEL_33  zeta <= ( zeta, rmask )
 
+!     if (LAST_FAST_STEP) then
 !$acc kernels default( present )
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
@@ -2563,8 +2659,9 @@ C$OMP MASTER
 ! !
 !#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #  ifndef OBC_NBQ
-      call zetabc_tile (Istr,Iend,Jstr,Jend)
+       call zetabc_tile (Istr,Iend,Jstr,Jend)
 #  endif
+!     endif
 !#  endif
 # endif /* NBQ_HZCORRECT_ZETA */
 ! !
@@ -2652,7 +2749,7 @@ C$OMP MASTER
 # endif
 !# ifdef M3FAST_COUPLING2D  
 !                          CAUTION: necessary also when !defined (TBT)
-        call set_depth_2_tile(Istr,Iend,Jstr,Jend)
+        call set_depth_tile(Istr,Iend,Jstr,Jend)
 !#   endif        
 #  endif  /* NBQ_HZ_PROGNOSTIC */
 !
@@ -2663,7 +2760,7 @@ C$OMP MASTER
 ! ATTENTION FRANCIS: this call should not be needed
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #  ifndef NBQ_GRID_SLOW
-        call grid_nbq_2_tile(Istr,Iend,Jstr,Jend,
+        call grid_nbq_tile(Istr,Iend,Jstr,Jend,
      &                     Hzw_nbq_inv,   Hzr_nbq_inv,
      &                     Hzw_nbq_inv_u  , Hzw_nbq_inv_v)
 #  endif
@@ -2768,9 +2865,12 @@ C$OMP MASTER
 #  ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-        call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step3d_fast','r')
-        call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step3d_fast','u')
-        call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step3d_fast','v')
+        call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step3d_fast','r'
+      &    ,ondevice=.TRUE.)
+        call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step3d_fast','u'
+      &    ,ondevice=.TRUE.)
+        call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step3d_fast','v'
+      &    ,ondevice=.TRUE.)
 C$OMP END MASTER
 #  endif   
       endif
@@ -3041,6 +3141,6 @@ C$OMP END MASTER
       return
       end
 #else
-      subroutine step3d_fast_2_empty
+      subroutine step3d_fast_empty
       end
 #endif /* M3FAST */
