@@ -58,6 +58,8 @@ c     observations
 
 c     state vector / process
       double precision ad_x(ad_array_size/nnodes)
+      double precision ad_x0(ad_array_size/nnodes)
+      double precision ad_tab0(GLOBAL_2D_ARRAY)
       double precision ad_dz(ad_array_size/nnodes)
 
 c     gradient vector / process
@@ -144,7 +146,7 @@ C     commons
      &     nbstep3d_bck,
      &     ad_u_bck, ad_v_bck, ad_t_bck
 
-      common /ad/ ad_dz, ad_array_node_size
+      common /ad/ ad_x0, ad_tab0, ad_dz, ad_array_node_size
 
       common /ad_timings/ ad_dir_time,ad_adj_time
 

@@ -111,33 +111,6 @@ c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
       integer Istr,Iend,Jstr,Jend,i,j,k
       double precision delta_z, delta_h, dpena, icost
 
-c      do j=Jstr,Jend
-c         do i=Istr,Iend
-c            if (ad_obs(i,j,1).ne.ad_spval) then
-c               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
-c               delta_h = (h(i,j) - h_bck(i,j))
-c               icost = icost + delta_z*delta_z + 1.0D-2*
-c     &              delta_h*delta_h/
-c     &              (h(i,j)*h(i,j))
-c               ad_cost_counter = ad_cost_counter + 1
-c            end if
-c         end do
-c      end do
-
-c      if (mode.eq.1) then
-c         do k=1,ncpoints
-c            i=ad_i(k)
-c            j=ad_j(k)
-c            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
-c         delta_h = (h(i,j) - h_bck(i,j))
-c     end do
-c      do j=Jstr,Jend
-c         do i=Istr,Iend
-c            write(*,*) ta,i,j,zeta(i,j,knew),ad_obs(i,j,ta+1),
-c     &           ad_obs(i,j,ta+2)
-c         end do
-c      end do
-
       write(*,*) '===cost_fun_step==='
       if (mode.eq.2) then
          do j=Jstr,Jend
@@ -153,7 +126,10 @@ c      end do
                if (rmask(i,j).ne.0) then
                   k=k+1
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta)
-                  dpena = (pena_h(i+1,j) + pena_h(i-1,j)-2*pena_h(i,j))/
+                  dpena =
+     &                 (pena_h(i+1,j)-ad_tab0(i+1,j) +
+     &                  pena_h(i-1,j)-ad_tab0(i-1,j)
+     &                  -2*(pena_h(i,j)-ad_tab0(i,j)))/
      &                 (om_u(i,j)*om_u(i,j))
                   icost = icost + delta_z*delta_z
      &                 + 1.D4*dpena*dpena
@@ -656,6 +632,15 @@ c     &        - 100;
       enddo
 
       ad_array_node_size=k
+
+      do j=JstrR,JendR
+         k = 1
+         do i=IstrR,IendR
+            ad_tab0(i,j)= ad_x(k)
+            k=k+1
+        enddo
+      enddo
+
 
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
      &     ad_array_node_size,
