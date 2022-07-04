@@ -319,6 +319,11 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
            -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
            ${MY_CROCO_DIR}/start.m > ${MY_CROCO_DIR}/start.m.tmp
        mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
+# Edit oct_start.m
+       sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
+           -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
+           ${MY_CROCO_DIR}/oct_start.m > ${MY_CROCO_DIR}/oct_start.m.tmp
+       mv ${MY_CROCO_DIR}/oct_start.m.tmp ${MY_CROCO_DIR}/oct_start.m
 # Edit crocotools_param.h
        sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
            -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
