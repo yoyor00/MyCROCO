@@ -196,6 +196,23 @@ else
 	exit
 fi
 #
+# determine if NBQ2 sources is needed
+#
+echo "Checking NBQ2..."
+if $($CPP1 testkeys.F | grep -i -q nbq2isdefined) ; then
+        echo " => NBQ2 activated"
+	cp NBQ2/*  .
+	#
+	# overwrite with local files
+	#
+	ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+	ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+	ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+	ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+	ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+	ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
+fi
+#
 # determine if AGRIF compilation is required
 #
 unset COMPILEAGRIF

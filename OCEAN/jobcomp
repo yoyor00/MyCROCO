@@ -108,7 +108,6 @@ ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
 ls ${SOURCE}/*.py              > /dev/null  2>&1 && \cp ${SOURCE}/*.py   $SCRDIR
 ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
 ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
-ls ${ROOT_DIR}/NBQ2/*          > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/NBQ2 $SCRDIR
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
@@ -194,14 +193,6 @@ elif [[ $OS == AIX ]] ; then           # ===== IBM =====
 else
 	echo "Unknown Operating System"
 	exit
-fi
-#
-# determine if NBQ2 sources is needed
-#
-echo "Checking NBQ2..."
-if $($CPP1 testkeys.F | grep -i -q nbq2isdefined) ; then
-        echo " => NBQ2 activated"
-	cp NBQ2/*  .
 fi
 #
 # determine if AGRIF compilation is required
