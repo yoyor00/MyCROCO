@@ -163,7 +163,6 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-     !! To Program in sed_MUSTANG_CROCO sed_exchange_s2w_HOST
     USE sed_MUSTANG_HOST,    ONLY :  sed_MUSTANG_settlveloc
     USE sed_MUSTANG_HOST,    ONLY :  sed_skinstress
     USE sed_MUSTANG_HOST,    ONLY :  sed_gradvit
@@ -173,9 +172,6 @@ MODULE sed_MUSTANG
     USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_flxbedload
     USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_maskbedload
 #endif
-#endif
-#if defined MPI  && defined key_MUSTANG_slipdeposit
-    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_w2s
 #endif
 #if defined MPI  && defined key_MUSTANG_lateralerosion
     USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_s2w
@@ -544,7 +540,9 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-
+#if defined MPI  && defined key_MUSTANG_slipdeposit
+    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_w2s
+#endif
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast 
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
