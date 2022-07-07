@@ -197,7 +197,7 @@
 #endif
 
 #ifdef BIOLink
-CALL BIOLink_initialization(icall,Istr,Iend,Jstr,Jend)
+      CALL BIOLink_initialization(icall,Istr,Iend,Jstr,Jend)
 #endif
 #ifdef SUBSTANCE
 !
