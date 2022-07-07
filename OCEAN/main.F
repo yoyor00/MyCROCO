@@ -454,23 +454,25 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !  MUSTANG : initialization sediment concentrations
 !----------------------------------------------------------------------
 !
-#ifdef MUSTANG
+#if defined MUSTANG || defined BIOLink
 !----------------------------------------------------------------------
 !  computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
-# ifdef SUBSTANCE
+# ifdef SUBSTANCE 
       call substance_surfcell
 # endif
+#endif /* MUSTANG || BIOLink */
 
 #ifdef BIOLink
       CALL BIOLink_init(Istr2,Iend2,Jstr2,Jend2)
 #endif 
+#if defined MUSTANG 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call MUSTANG_init_sediment_main (tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
-#endif
+#endif 
 !
 !----------------------------------------------------------------------
 !  Finalize grid setup
