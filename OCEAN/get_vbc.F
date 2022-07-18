@@ -726,10 +726,12 @@
 #   endif      
 #  endif
 #  ifdef SALINITY
+#   ifndef BASIN
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                     stflx(START_2D_ARRAY,isalt))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                     btflx(START_2D_ARRAY,isalt))
+#   endif      
 #  endif
 # endif
 #endif
