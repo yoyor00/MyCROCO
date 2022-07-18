@@ -563,6 +563,16 @@
           enddo
         enddo
 #    endif /* TEMPERATURE */
+#    ifdef SALINITY
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,isalt)=35.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+             enddo
+          enddo
+        enddo
+#    endif /* SALINITY */
 #   elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
 #    ifdef TEMPERATURE
         do k=1,N

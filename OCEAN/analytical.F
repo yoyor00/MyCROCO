@@ -137,6 +137,9 @@
             btflx(i,j,itemp)=-1.0e-5*0.01
 #   endif
 #  endif
+# if defined BASIN
+            btflx(i,j,itemp)=0.
+#endif
           enddo
         enddo
       endif

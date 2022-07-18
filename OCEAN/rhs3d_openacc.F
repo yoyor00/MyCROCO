@@ -9,9 +9,6 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-#if defined BASIN && defined OPENACC
-#include "rhs3d_openacc.F"
-#else
 #include "cppdefs.h"
 #ifdef SOLVE3D
 
@@ -413,9 +410,9 @@
 #define VFx(i,j) VFx_3D(i,j,k)
 #define VFe(i,j) VFe_3D(i,j,k)
 
-      do k=1,N
 
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)
+      do k=1,N
 !
 !====================================================================
 !
@@ -452,6 +449,7 @@
             VFe(i,j)=cff*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
 #  endif
           enddo
+        enddo
         enddo
 
 #  ifdef CROCO_QH
@@ -490,6 +488,7 @@
         enddo
 #  endif
 
+        do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru(i,j,k)=ru(i,j,k)+0.5*(UFx(i,j)+UFx(i-1,j))
@@ -544,7 +543,9 @@
 #  endif
           enddo
         enddo
+        enddo
 
+        do k=1,N
         do j=JstrV,Jend
           do i=Istr,Iend
             rv(i,j,k)=rv(i,j,k)-0.5*(VFe(i,j)+VFe(i,j-1))
@@ -597,6 +598,7 @@
             endif
 #  endif
           enddo
+        enddo
         enddo
 # endif /* UV_COR || (CURVGRID && UV_ADV) */
 
@@ -701,23 +703,24 @@
 #    define IU_EXT_RANGE IstrU-1,Iend+1
 #   else
 #    ifdef MPI
-        if (WEST_INTER) then
-          imin=IstrU-1
-        else
-          imin=max(IstrU-1,2)
-        endif
-        if (EAST_INTER) then
-          imax=Iend+1
-        else
-          imax=min(Iend+1,Lmmpi)
-        endif
-#     define IU_EXT_RANGE imin,imax
+!       if (WEST_INTER) then
+!         imin=IstrU-1
+!       else
+!         imin=max(IstrU-1,2)
+!       endif
+!       if (EAST_INTER) then
+!         imax=Iend+1
+!       else
+!         imax=min(Iend+1,Lmmpi)
+!       endif
+#     define IU_EXT_RANGE IstrUm1,Iendp1
 #    else
 #     define IU_EXT_RANGE max(IstrU-1,2),min(Iend+1,Lm)
 #    endif
 #   endif
 
-!$acc loop collapse(2)
+!!$acc loop collapse(2)
+        do k=1,N
         do j=Jstr,Jend
           do i=IU_EXT_RANGE
             uxx(i,j)=(u(i-1,j,k,nrhs)-2.*u(i,j,k,nrhs)
@@ -726,6 +729,8 @@
      &                +Huon(i+1,j,k))   SWITCH umask(i,j)
           enddo
         enddo
+        enddo
+        do k=1,N
 #   undef IU_EXT_RANGE
 #   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
@@ -748,7 +753,9 @@
 #    endif
         endif
 #   endif
+        enddo
 
+        do k=1,N
         do j=Jstr,Jend
           do i=IstrU-1,Iend
 #   if defined UV_HADV_C4
@@ -778,6 +785,7 @@
 #   endif
           enddo
         enddo
+        enddo
 #   undef Huxx
 #   undef uxx
 #   define vee wrk1
@@ -787,22 +795,23 @@
 #    define JV_EXT_RANGE JstrV-1,Jend+1
 #   else
 #    ifdef MPI
-        if (SOUTH_INTER) then
-          jmin=JstrV-1
-        else
-          jmin=max(JstrV-1,2)
-        endif
-        if (NORTH_INTER) then
-          jmax=Jend+1
-        else
-          jmax=min(Jend+1,Mmmpi)
-        endif
-#     define JV_EXT_RANGE jmin,jmax
+!       if (SOUTH_INTER) then
+!         jmin=JstrV-1
+!       else
+!         jmin=max(JstrV-1,2)
+!       endif
+!       if (NORTH_INTER) then
+!         jmax=Jend+1
+!       else
+!         jmax=min(Jend+1,Mmmpi)
+!       endif
+#     define JV_EXT_RANGE JstrVm1,Jendp1
 #    else
 #     define JV_EXT_RANGE max(JstrV-1,2),min(Jend+1,Mm)
 #    endif
 #   endif
 
+        do k=1,N
         do j=JV_EXT_RANGE
           do i=Istr,Iend
             vee(i,j)=(v(i,j-1,k,nrhs)-2.*v(i,j,k,nrhs)
@@ -811,7 +820,9 @@
      &                +Hvom(i,j+1,k))   SWITCH  vmask(i,j)
           enddo
         enddo
+        enddo
 #   undef JV_EXT_RANGE
+        do k=1,N
 #   ifndef NS_PERIODIC
         if (SOUTHERN_EDGE) then
           do i=Istr,Iend
@@ -833,6 +844,8 @@
 #    endif
         endif
 #   endif
+        enddo
+        do k=1,N
         do j=JstrV-1,Jend
           do i=Istr,Iend
 #   if defined UV_HADV_C4
@@ -862,6 +875,7 @@
 #   endif
           enddo
         enddo
+        enddo
 #   undef Hvee
 #   undef vee
 #   define uee wrk1
@@ -887,13 +901,16 @@
 #    endif
 #   endif
 
+        do k=1,N
         do j=JU_EXT_RANGE
           do i=IstrU,Iend
             uee(i,j)=(u(i,j-1,k,nrhs)-u(i,j,k,nrhs)) SWITCH pmask(i,j  )
      &              +(u(i,j+1,k,nrhs)-u(i,j,k,nrhs)) SWITCH pmask(i,j+1)
           enddo
         enddo
+        enddo
 #   undef JU_EXT_RANGE
+        do k=1,N
 #   ifndef NS_PERIODIC
         if (SOUTHERN_EDGE) then
           do i=IstrU,Iend
@@ -912,11 +929,15 @@
 #    endif
         endif
 #   endif
+        enddo
+        do k=1,N
         do j=Jstr,Jend+1
           do i=IstrU-1,Iend
            Hvxx(i,j)=Hvom(i-1,j,k)-2.*Hvom(i,j,k)+Hvom(i+1,j,k)
           enddo
         enddo
+        enddo
+        do k=1,N
         do j=Jstr,Jend+1
           do i=IstrU,Iend
 #   if defined UV_HADV_C4
@@ -946,6 +967,7 @@
 #   endif
           enddo
         enddo
+        enddo
 #   undef Hvxx
 #   undef uee
 #   define vxx wrk1
@@ -971,14 +993,17 @@
 #    endif
 #   endif
 
-!$acc loop collapse(2)
+!!$acc loop collapse(2)
+        do k=1,N
         do j=JstrV,Jend
           do i=IV_EXT_RANGE
             vxx(i,j)=(v(i-1,j,k,nrhs)-v(i,j,k,nrhs)) SWITCH pmask(i  ,j)
      &              +(v(i+1,j,k,nrhs)-v(i,j,k,nrhs)) SWITCH pmask(i+1,j)
           enddo
         enddo
+        enddo
 #   undef IV_EXT_RANGE
+        do k=1,N
 #   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
           do j=JstrV,Jend
@@ -998,11 +1023,15 @@
         endif
 
 #   endif
+        enddo
+        do k=1,N
         do j=JstrV-1,Jend
           do i=Istr,Iend+1
            Huee(i,j)=Huon(i,j-1,k)-2.*Huon(i,j,k)+Huon(i,j+1,k)
           enddo
         enddo
+        enddo
+        do k=1,N
         do j=JstrV,Jend
           do i=Istr,Iend+1
 #   if defined  UV_HADV_C4
@@ -1032,6 +1061,7 @@
      &                             Huee(i,j)+Huee(i,j-1) ))
 #   endif
           enddo
+        enddo
         enddo
 #   undef Huee
 #   undef vxx
@@ -1079,6 +1109,7 @@
 ! Finalize horizontal advection: compute flux divergences
 !----------------------------------------------------------
 !
+        do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru(i,j,k)=ru(i,j,k)-UFx(i,j  )+UFx(i-1,j)
@@ -1090,6 +1121,7 @@
             rv(i,j,k)=rv(i,j,k)-VFx(i+1,j)+VFx(i,j  )
      &                         -VFe(i  ,j)+VFe(i,j-1)
           enddo
+        enddo
         enddo
 !
 !----------------------------------------------------------
@@ -1276,7 +1308,7 @@
 
 # endif /* UV_ADV */
 
-      enddo    ! <-- k
+  !    enddo    ! <-- k
 
 !$acc end kernels
 
@@ -1961,4 +1993,3 @@
       subroutine rhs3d_empty
       end
 #endif /* SOLVE3D */
-#endif /* defined BASIN && defined OPENACC */
