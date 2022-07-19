@@ -681,7 +681,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 !      enddo
-        ENDDOLOOP2D_R
+        ENDDOLOOP2D
 
 
 !      do j=JV_RANGE
@@ -720,7 +720,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 !     enddo
-        ENDDOLOOP2D_R
+        ENDDOLOOP2D
 
 !$acc end kernels
 
