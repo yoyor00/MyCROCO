@@ -182,7 +182,6 @@
           Bo(i,j)= 0
 # ifdef TEMPERATURE
      &                 +g*( alpha(i,j)*(stflx(i,j,itemp)-srflx(i,j)))
-          Bo(i,j)=g*( alpha(i,j)*(stflx(i,j,itemp)-srflx(i,j))
 # ifdef SALINITY
      &                 -g*beta(i,j)*stflx(i,j,isalt)
 # endif
