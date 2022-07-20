@@ -1902,6 +1902,7 @@
 # undef  RVTK_DEBUG
 # define PSOURCE
 # define ANA_PSOURCE
+# define MASKING
 
 #endif /* END OF CONFIGURATION CHOICE */
 

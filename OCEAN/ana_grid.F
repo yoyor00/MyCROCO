@@ -1029,6 +1029,9 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           ! walls at limit East
           if (cff .ge. LLm) then
             h(i, j) = -7.0
+            if (cff2 .eq. jmiddle .and. cff .eq. LLm) then
+                h(i, j) = estHupstream
+            endif
           endif
 
         enddo  ! j
@@ -1063,6 +1066,20 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           rmask(i,j)=1.
         enddo
       enddo
+#  ifdef ESTUARY
+      do i = IstrR, IendR
+#  ifdef MPI
+        cff  = (float(i +ii*Lm) )
+#  else  
+        cff  = (float(i       ) )
+#  endif
+        ! limit East
+        if (cff .ge. LLm) then
+            rmask(i,:) = 0.
+        endif
+      end do
+
+#  endif /* ESTUARY */
 #  ifdef RIVER
 !
 ! Mask out 8-point wide strip of land on the west, and 
