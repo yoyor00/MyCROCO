@@ -25,8 +25,11 @@ MODULE substance
 #endif
 
 
-
+#if defined ECO3M
+# define REPFICNAMELIST 'BIOLINK_NAMELIST'
+#else
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
+#endif
 
    IMPLICIT NONE
    PRIVATE
