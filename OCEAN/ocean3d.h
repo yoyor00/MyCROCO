@@ -87,5 +87,12 @@
       common /gasexc_O2_O2satu/ O2satu
 # endif /* OXYGEN */
 
+# if defined MLD_RHO
+      integer kbl_rho(GLOBAL_2D_ARRAY)
+      common /mld_kbl_rho/ kbl_rho
+      real hbl_rho(GLOBAL_2D_ARRAY  )
+      common /mld_hbl_rho/ hbl_rho
+# endif /* MLD_RHO */
+
 #endif  /* SOLVE3D */
 

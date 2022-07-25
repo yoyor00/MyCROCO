@@ -1424,6 +1424,15 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 
+# if defined MLD_RHO
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            kbl_rho(i,j)=init
+            hbl_rho(i,j)=init
+          enddo
+        enddo
+# endif /* MLD_RHO */
+
 # ifdef M3FAST
       do j=JstrR,JendR
         do i=IstrR,IendR
