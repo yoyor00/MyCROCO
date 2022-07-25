@@ -98,10 +98,6 @@
       NSUB_X = 1
       NSUB_E = NPP
 #endif
-#if defined MUSTANG || defined BIOLink
-       integer :: Istr2, Jstr2, Iend2, Jend2
-       integer :: chunk_size_X,chunk_size_E,margin_X,margin_E
-#endif
 !
 #include "dynderivparam.h"
 !
