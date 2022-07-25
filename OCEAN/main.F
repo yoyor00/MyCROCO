@@ -197,7 +197,10 @@
 #endif
 
 #ifdef BIOLink
-      CALL BIOLink_initialization(icall,Istr,Iend,Jstr,Jend)
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+           CALL BIOLink_initialization(icall,tile)
+      enddo
 #endif
 #ifdef SUBSTANCE
 !
@@ -217,7 +220,10 @@
      &           RHOREF)
 #endif
 #ifdef BIOLink
-       CALL BIOLink_initialization(1,Istr,Iend,Jstr,Jend)
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+           CALL BIOLink_initialization(1,tile)
+      enddo
 #endif
 !
 ! Online spectral analysis module
@@ -464,7 +470,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif /* MUSTANG || BIOLink */
 
 #ifdef BIOLink
-      CALL BIOLink_init(Istr2,Iend2,Jstr2,Jend2)
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+      CALL BIOLink_init(tile)
+      enddo
 #endif 
 #if defined MUSTANG 
 C$OMP PARALLEL DO PRIVATE(tile)

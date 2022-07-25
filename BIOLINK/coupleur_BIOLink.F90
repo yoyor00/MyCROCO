@@ -121,7 +121,7 @@
 
   !!======================================================================
 
-  SUBROUTINE BIOLink_initialization(icall,ifirst,ilast,jfirst,jlast)
+  SUBROUTINE BIOLink_initialization(icall, tile)
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_initialization  ***
   !&E
@@ -180,7 +180,7 @@
                                ! The first call reads the parameter files
                                ! and the second initialize the tracer/biological
                                ! model 
-  INTEGER, INTENT(IN) :: ifirst,ilast,jfirst,jlast
+  INTEGER, INTENT(IN) :: tile
 
 
 
@@ -192,7 +192,8 @@
      !====================================================================
      ! Execution of the function
      !====================================================================
- 
+# include "compute_tile_bounds.h"
+
    IF (icall==0) THEN ! First call of the function, we read the parameter
                       ! files
 
@@ -257,10 +258,10 @@
                            ! are declared in the same function
 
 #elif defined ECO3M 
-     nx_min = ifirst
-     nx_max = ilast
-     ny_min = jfirst
-     ny_max = jlast
+     nx_min = Istr 
+     nx_max = Iend
+     ny_min = Jstr
+     ny_max = Jend
      nz_max = NB_LAYER_WAT
      CALL eco3m_init_config 
 
@@ -297,7 +298,7 @@
 
   END SUBROUTINE BIOLink_initialization
 
-  SUBROUTINE BIOLink_init(ifirst,ilast,jfirst,jlast)
+  SUBROUTINE BIOLink_init(tile)
 
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_init  ***
@@ -350,20 +351,20 @@
      !====================================================================
 
 
-  INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast ! Horizontal indexes for 
-                                                     ! the navigation in the 
-                                                     ! table.
+  INTEGER, INTENT(IN)  :: tile 
 
      !====================================================================
      ! Local declarations of variables
      !====================================================================
                                                               
   INTEGER               :: i,j,k,iv ! Counter variables
+  INTEGER               :: ifirst, ilast, jfirst, jlast
   CHARACTER(LEN=lchain) :: logfilename ! Name of the file to write the log
 
      !====================================================================
      ! Execution of the function
      !====================================================================
+# include "compute_tile_bounds.h"
 
      !************** Determination of the time steps *********************!
      
@@ -373,6 +374,10 @@
 
      !********************* Sinking velocity *****************************!
 
+     ifirst=Istr
+     ilast=Iend
+     jfirst=Jstr
+     jlast=Jend
 #if ! defined MUSTANG
 
      ! Initialization of the sinking rate for all the tracers at all depth and position
