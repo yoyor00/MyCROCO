@@ -1195,6 +1195,33 @@ END SUBROUTINE  BIOLink_alloc
      ! Execution of the function
      !====================================================================
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! modules BIO ECO3M : index ordre : (iv)%i,j,k
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#ifdef ECO3M 
+!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod,iv)
+! no fixed variables ocean model (i,j,k) to bio (i,j,k)
+     kmaxmod=NB_LAYER_WAT
+     DO k=1,kmaxmod
+       DO j=jfirst,jlast
+         DO i=ifirst,ilast
+            TEMP_BIOLink(i,j,k)=TEMPHYDRO_ijk
+            SAL_BIOLink(i,j,k)=SALHYDRO_ijk
+         END DO
+       END DO    
+     END DO
+     DO iv=1,nv_adv
+       DO k=1,kmaxmod
+         DO j=jfirst,jlast
+           DO i=ifirst,ilast
+              ! variables d etat transportees
+                WATCONCPOS_ivijk=WAT_CONCADV_ivkij
+           END DO
+         END DO
+       END DO    
+     END DO
+!$OMP END DO
+#endif
 
 #if defined PEPTIC || defined BLOOM 
 ! PEPTIC and BLOOM are in the order : iv (tracer), k (vertical),
@@ -1334,7 +1361,6 @@ END SUBROUTINE  BIOLink_alloc
       END DO ! j
 !$OMP END DO
 
-#elif defined ECO3M
 
 #endif /* BLOOM/PEPTIC/ECO3M */
 
