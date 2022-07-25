@@ -1660,7 +1660,7 @@ END SUBROUTINE  BIOLink2hydro
                                                          * TRANSPORT_TIME_STEP    
 #else
                  WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
-                                                         * BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) 
+                                                         + BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) 
 #endif
                  ! Computation of the flux from the advection terms 
                  ! with the transport time step
