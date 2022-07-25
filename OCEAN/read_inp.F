@@ -1475,7 +1475,7 @@ c        close(testunit)
 
 #endif /* SOLVE3D */
 
-#if defined BIOLink
+#if defined BIOLink && (defined BLOOM || defined BIOLink_PAR_eval)
       elseif (keyword(1:kwlen).eq.'auxiliary_history_BIOLink') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
@@ -1485,8 +1485,10 @@ c        close(testunit)
      &                    ,(wrthis(indxBLMdiag3D+i), i=1,30)
 # endif /* BLOOM */
 
-# if defined BIOLink_PAR_eval
-     &                                             ,wrthis(indxPAR)
+# if defined BIOLink_PAR_eval && !defined BLOOM
+     &                                             wrthis(indxPAR)
+# elif defined BIOLink_PAR_eval && defined BLOOM
+     &                                            ,wrthis(indxPAR)
 # endif /* BIOLink_PAR_EVAL */
 
 #endif /* BIOLink */
