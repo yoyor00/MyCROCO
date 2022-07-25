@@ -157,10 +157,10 @@
           THICKLAYERWW(k,i,j)=0._rsh
 #else
           DO k=1,NB_LAYER_WAT-1          
-                THICKLAYERWC(k,i,j)=z_w(i,j,k)-z_w(i,j,k-1) 
+                THICKLAYERWC(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1) 
           ENDDO
           k=NB_LAYER_WAT ! Last layer
-          THICKLAYERWC(k,i,j)=z_w(i,j,k)-z_w(i,j,k-1)
+          THICKLAYERWC(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
 #endif /* ECO3M */
 
       END DO
