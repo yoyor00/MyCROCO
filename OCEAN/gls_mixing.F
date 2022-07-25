@@ -237,6 +237,23 @@
      &                 *(rn**2-cff*rn/3.*(4.*rm+1.)
      &                    +cff**2*rm/9.*(2.+4.*rm))
 # endif
+
+!
+!--------------------------------------------------------------------
+! Initialization 
+!--------------------------------------------------------------------
+!
+      IF (FIRST_TIME_STEP) THEN
+        DO k=0,N
+          DO j=jmin,jmax
+            DO i=imin,imax    
+              trb( i, j, k, nstp, itke ) = trb_min(itke)
+              trb( i, j, k, nstp, igls ) = trb_min(igls)
+            ENDDO
+          ENDDO  
+        ENDDO
+      ENDIF 
+
 !
 !--------------------------------------------------------------------
 ! Horizontal advection (first-order upwind)
