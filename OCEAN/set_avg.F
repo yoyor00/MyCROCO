@@ -318,11 +318,14 @@ C$    integer omp_get_thread_num
           enddo
 # endif
         endif
-# if defined LMD_SKPP || defined GLS_MIXING
+# if defined LMD_SKPP || defined GLS_MIXING || defined MLD_RHO
         if (wrtavg(indxHbl)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
-#  ifdef LMD_SKPP2005
+#  ifdef MLD_RHO
+              hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
+     &                               +hbl_rho(i,j))
+#  elif defined LMD_SKPP2005
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbls(i,j,nstp))
 #  else

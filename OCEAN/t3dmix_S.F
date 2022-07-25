@@ -486,11 +486,15 @@
        enddo
        do j=Jstr,Jend
          do i=Istr,Iend
+#  if defined MLD_RHO
+           kmld=kbl_rho(i,j)
+#  else
 #   ifdef LMD_SKPP
            kmld=kbl(i,j)
 #   else
            kmld=N-5
 #   endif
+#  endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
@@ -503,12 +507,16 @@
 
        do j=Jstr,Jend
          do i=Istr,Iend
+#  if defined MLD_RHO
+           kmld=kbl_rho(i,j)
+#  else
 #   if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
            kmld=kbl_nstp(i,j)
 #   else
            kmld=N-5
 #   endif
+#  endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+

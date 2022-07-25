@@ -748,12 +748,14 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
       endif
 # endif
 
-# if defined LMD_SKPP || defined GLS_MIXING
+# if defined LMD_SKPP || defined GLS_MIXING || defined MLD_RHO
 !     
 !     Write out depth of planetary boundary layer (m).
 !     
       if (wrthis(indxHbl)) then
-#  ifdef LMD_SKPP2005
+#  ifdef MLD_RHO
+         work2d=hbl_rho
+#  elif defined LMD_SKPP2005
          work2d=hbls(:,:,nstp)
 #  else
          work2d=hbl

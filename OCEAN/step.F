@@ -912,6 +912,10 @@ C$OMP BARRIER
         call omega (tile)
 
         call rho_eos (tile)
+        
+#  if defined MLD_RHO
+        call mld_rho (tile)
+#  endif
 
       enddo
 

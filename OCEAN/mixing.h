@@ -154,6 +154,7 @@
       common /gls_hbl/ hbl 
 # endif /* GLS_MIXING */
 
+
 #else
 
 # define u(i,j,k,nrhs) ubar(i,j,kstp)

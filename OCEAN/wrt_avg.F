@@ -357,7 +357,7 @@ CR       write(*,*) 'wrt_avg:  wrtAks' MYID
 #    endif /* SALINITY */
 #  endif  /* AVERAGES_K */
 
-#  if defined LMD_SKPP || defined GLS_MIXING
+#  if defined LMD_SKPP || defined GLS_MIXING || defined MLD_RHO
 !     
 !     Write out depth of planetary boundary layer (m).
 !     
