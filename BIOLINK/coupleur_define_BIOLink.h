@@ -544,7 +544,7 @@
                                                                         some mixing variables I 
                                                                         guess */
 # if defined GLS_MIXING
-#   define ECT_kij  trb(i,j,k,1,1) /* Turbulent kinetic energy at index i,j,k  
+#   define ECT_kij  trb(i,j,k,nnew,1) /* Turbulent kinetic energy at index i,j,k  
                                       evaluated by the hydro model */
 # else
 #   define ECT_kij  0. /* Turbulent kinetic energy at index i,j,k evaluated 
@@ -563,8 +563,8 @@
 !  Variables related to the temperature and salinity
 !======================================================================*/
 
-# define SALHYDRO_ijk t(i,j,k,1,itemp+1) /* Salinity in the hydro model at the index i,j,k */
-# define TEMPHYDRO_ijk t(i,j,k,1,itemp) /* Temperature in the hydro model at the index i,j,k */
+# define SALHYDRO_ijk t(i,j,k,nnew,itemp+1) /* Salinity in the hydro model at the index i,j,k */
+# define TEMPHYDRO_ijk t(i,j,k,nnew,itemp) /* Temperature in the hydro model at the index i,j,k */
 
 # if defined ECO3M
 #   define TEMP_BIOLink temp_bio       /* Temperature computed by BIOLink at index i,j,k  */
