@@ -243,6 +243,7 @@
 ! Initialization 
 !--------------------------------------------------------------------
 !
+#if !defined EXACT_RESTART
       IF (FIRST_TIME_STEP) THEN
         DO k=0,N
           DO j=jmin,jmax
@@ -253,7 +254,7 @@
           ENDDO  
         ENDDO
       ENDIF 
-
+#endif
 !
 !--------------------------------------------------------------------
 ! Horizontal advection (first-order upwind)
