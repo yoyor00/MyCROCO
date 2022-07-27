@@ -217,7 +217,7 @@ public
 #endif
 
 
-#ifdef key_MUSTANG_V2 && key_MUSTANG_bedload
+#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
     ! namsedim_bedload 
     LOGICAL :: l_peph_bedload ! set to .true. if hindering / exposure processes
         ! in critical shear stress estimate for bedload
