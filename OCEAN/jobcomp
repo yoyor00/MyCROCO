@@ -109,7 +109,8 @@ ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* 
 ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/* $SCRDIR
-
+ls ${ROOT_DIR}/BLOOM/*         > /dev/null 2>1 && \cp -r ${ROOT_DIR}/BLOOM/* $SCRDIR
+ls ${ROOT_DIR}/BIOLINK/*         > /dev/null 2>1 && \cp -r ${ROOT_DIR}/BIOLINK/* $SCRDIR
 if [[ -e "namelist_pisces_ref" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
@@ -135,6 +136,13 @@ ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
 ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
 ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
 ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
+if [ "$useECO3M" = true ]; then                 
+/bin/cp -f ${ROOT_DIR}/ECO3M/SRC/src_eco3m/*.F90 $SCRDIR
+/bin/cp -rf ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/F_PROCESS $SCRDIR
+/bin/cp -rf ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/config.ini $SCRDIR
+/bin/cp -rf ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/modele.def $SCRDIR
+/bin/cp -rf ${ROOT_DIR}/ECO3M/MAKE/*.inc $SCRDIR
+fi
 
 # Change directory
 #
@@ -144,6 +152,10 @@ cd $SCRDIR
 #
 LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
 CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
+if [ "$useECO3M" = true ]; then                 
+   CPPFLAGS1="$CPPFLAGS1 -DECO3M_SUB -DCALC -DCOUPL -DRGB" 
+fi
+
 #
 # Set compilation options
 #
@@ -153,7 +165,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 		CFT1=ifort
 		FFLAGS1="-O3 -fno-alias -i4 -r8 -fp-model precise"
 #                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
-#                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
+#                       -check uninit -CA -CB -CS -ftrapuv -fpe0"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
