@@ -1,0 +1,21 @@
+ ===================== Eco3M configuration used: 
+ Name of the configuration of the biogeochemical model: Eco3M_Default       
+  
+ =================Eco3M: Initialisation of the RGB module================
+ Extinction coefficient file: CONFIG_ECO3M/INPUTS/kRGB61.txt
+ Number of wavelengths:            3
+ Number of lines in the file:           61
+
+ ================== Eco3M: Initialization of the light extinction module
+ Surface irradiance calculation mode: IRR_CODEPHYS
+ IRR provided by the physical model
+Irradiance to PAR conversion factor:    0.43000
+
+Albedo:    0.05000
+
+ Extinction calculation using RGB formulation
+
+ =============== Eco3M: Initialisation of the run configuration ===============
+ Run name: sim_eco3m_1DV  
+ Position of the pos_nzmax level: SURF
+

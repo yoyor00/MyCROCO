@@ -1,0 +1,200 @@
+# Default configuration for the Eco3M modelling platform 
+# Last modification: Juil 2019
+#
+#------------------------------------------------------------------------
+#         MODEL Plankton Functional Types and other compartments
+#------------------------------------------------------------------------
+#  - bacteria  (in C,N)
+#  - small phytoplankton (expressed in C, Chl, N), 
+#  - large  phytoplankton  (expressed in C, Chl, N)
+#  - one zooplankton (in C,N)
+#  - two nutrients (NO3,NH4), 
+#  - Dissolved Organic Matter DOM (in C,N), 
+#  - Detrital matter DET (C,N)
+#-------------------------------------------------------------------------
+#
+# IMPORTANT INSTRUCTIONS: 
+# --------------------------------
+# 1/ Always begin an empty line or a comment line by a "#"  on the first column 
+# 2/ Don't write anything after the required information on a given line
+# 3/ On a given line, variables must be separated by a ":" without any space left
+# 4/ Compartments name must be the following unless additional compartments are created :
+#    zoo / phy / bac / det / mod / mid / mip
+#    (zoo = zooplantkon; phy = phytoplankton; bac = bacteria; det = detritus; mod = dissolved organic matter
+#    mid = dissolved inorganic matter; mip = particulate inorganic matter)
+# 5/ If additional compartments are created, their name must not include space or special character
+#    and must not exceed 10 characters
+# 6/ All the variables name must be in lower case, except chemical elements such
+#    as: C,N,P,Si,Fe,Chl,NO3,NH4,O2,Zn...
+# 7/ if the number of characters in a line of the flux matrix exceeds the L_CHAIN value, the latter must be
+#    increased in the src_eco3m/eco3m_string.F90 file
+#
+#### NAME OF THE CONFIGURATION OF THE BIOGECHEMICAL MODEL HANDLED BY ECO3M
+# The configuration name will be: Eco3M_config. Just the config part is required here:
+Default
+######## COMPARTMENTS / SUB-COMPARTMENTS / STATE VARIABLES OF THE BIOGEOCHEMICAL MODEL
+#        
+# nb of compartments:nb of sub-compartments:nb of state variables
+6:8:16
+# name of the first compartment:number of sub-compartments in this compartment
+zoo:1
+# name of the first sub-compartment:firt chemical elmt:2nd chemical elemt 
+COP:C:N
+#
+# name of the second compartment:number of sub-compartments in this compartment
+phy:2
+# name of the first sub-compartment:firt chemical elmt:2nd chemical elemt 
+PHYS:C:N:Chl
+# name of the second sub-compartment:firt chemical elmt:2nd chemical elemt 
+PHYL:C:N:Chl
+#
+bac:1
+BAC:C:N
+#
+det:1
+DETS:C:N
+#
+mod:1
+MOD:C:N
+#
+mid:2
+NO3:N
+NH4:N
+#-----------------------------------------------------------------
+##########################
+# FLOW MATRIX:
+# This matrix contains all the fluxes between state variables
+#
+#-----------------------------------------------------------------
+# important instructions:
+# ---------------------
+# 1/ since this matrix is symmetric, only the upper half must be filled :
+#    line 1 : FLUX from var(1) to var(2) ... var(nbvar)
+#    line 2 : FLUX from var(2) to var(3) ... var(nbvar)
+#    etc...
+# 2/ a given flux between var(ili) and var (jcol) must be introduced as follows:
+#    ili;jcol:signe;proc(list of parameters separed by  ">")
+# 4/ if a given flux includes several processes or functions, they must be separated by  ":"
+# 5/ only the non-empty elements of the flux matrix must be reported
+# 6/ fluxes betweeen a model state variable and a variable not reprsented in the model 
+#    (e.g. photosynthesis if CO2 is not explicitly represented) must be introduced on the diagonal 
+#    of the flux matrix
+# 7/ The flux matrix must end by the line "finflux"
+#-----------------------------------------------------------------
+#
+# Total number of functions involved in the different element of the flow matrix:
+108
+# Beginning of the flow matrix:
+#---------------------------------------------------------------
+#--------------- ZOOPLANCTON Z ---------------
+#---------------------------------------------------------------
+# Grazing of MZOO on PHYS
+MZOO_C;PHYS_C:-;graz(MZOO_C>PHYS_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC)
+#
+MZOO_N;PHYS_N:-;grazC2X(MZOO_N>PHYS_N)
+# Grazing of MZOO on PHYL
+MZOO_C;PHYL_C:-;graz(MZOO_C>PHYL_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC)
+#
+MZOO_N;PHYL_N:-;grazC2X(MZOO_N>PHYL_N)
+# Grazing of MZOO on BAC
+MZOO_C;BAC_C:-;graz(MZOO_C>BAC_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC)
+#
+MZOO_N;BAC_N:-;grazC2X(MZOO_N>BAC_N)
+# Egestion of fecal pelots  + closure terms on MZOO 
+MZOO_C;DETS_C:+EFF_G_PHYS;graz(MZOO_C>PHYS_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):+EFF_G_DIAT;graz(MZOO_C>PHYL_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):+EFF_G_BAC;graz(MZOO_C>BAC_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):+;pred(K_PRED_Z)
+#
+MZOO_N;DETS_N:+EFF_G_PHYS;grazC2X(MZOO_N>PHYS_N):+EFF_G_DIAT;grazC2X(MZOO_N>PHYL_N):+EFF_G_BAC;grazC2X(MZOO_N>BAC_N):+;pred(K_PRED_Z)
+#  DOC excretion  (in param.txt, C_EFF_G_X = 1- EFF_G_X)
+MZOO_C;MOD_C:+C_EFF_G_PHYS;graz(MZOO_C>PHYS_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):-C_EFF_G_PHYS;graz(MZOO_C>PHYS_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):x;uGd(MZOO_N>Q_MIN_Z_NC):+C_EFF_G_DIAT;graz(MZOO_C>PHYL_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):-C_EFF_G_DIAT;graz(MZOO_C>PHYL_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):x;uGd(MZOO_N>Q_MIN_Z_NC):+C_EFF_G_BAC;graz(MZOO_C>BAC_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):-C_EFF_G_BAC;graz(MZOO_C>BAC_C>G_MAX_Z>K_GRAZ>C_MIN_PREY>N_PREYS>PHYS_C>PREF_Z_PHYS>PHYL_C>PREF_Z_DIAT>BAC_C>PREF_Z_BAC):x;uGd(MZOO_N>Q_MIN_Z_NC)
+# Ammonium excretion
+MZOO_N;AMMO:+C_EFF_G_PHYS;grazC2X(MZOO_N>PHYS_N):-C_EFF_G_PHYS;grazC2X(MZOO_N>PHYS_N):x;uQ(MZOO_N>Q_MIN_Z_NC>Q_MAX_Z_NC>N_GEIDER_MZOO):+C_EFF_G_DIAT;grazC2X(MZOO_N>PHYL_N):-C_EFF_G_DIAT;grazC2X(MZOO_N>PHYL_N):x;uQ(MZOO_N>Q_MIN_Z_NC>Q_MAX_Z_NC>N_GEIDER_MZOO):+C_EFF_G_BAC;grazC2X(MZOO_N>BAC_N):-C_EFF_G_BAC;grazC2X(MZOO_N>BAC_N):x;uQ(MZOO_N>Q_MIN_Z_NC>Q_MAX_Z_NC>N_GEIDER_MZOO)
+#
+#---------------------------------------------------------------
+#--------------- PHYS  --------------
+#---------------------------------------------------------------
+# PHYS-C --> DOC (DOC exsudation)
+PHYS_C;MOD_C:+EFF_R_PHYS;gpp(ASTAR_PHYS>PHI_MAX_PHYS>TAU_PHYS>SIG_PSII_PHYS>K_D_PHYS>K_R_PHYS):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):-EFF_R_PHYS;gpp(ASTAR_PHYS>PHI_MAX_PHYS>TAU_PHYS>SIG_PSII_PHYS>K_D_PHYS>K_R_PHYS):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;uGd(PHYS_N>Q_MIN_PHYS_NC)
+#
+#-----------------------------
+# PHYS-N --> DON (Exsudation de DON)
+#PHYS_N;MOD_N:+;upt(NIT>K_PHYS_NIT>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;inhib(K_INHIB_PHYS_AMMO>I_INHIB_PHYS_AMMO):-;upt(NIT>K_PHYS_NIT>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;inhib(K_INHIB_PHYS_AMMO>I_INHIB_PHYS_AMMO):x;uQ(PHYS_N>Q_MIN_PHYS_NC>Q_MAX_PHYS_NC>N_GEIDER_PHY):+;upt(AMMO>K_PHYS_AMMO>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):-;upt(AMMO>K_PHYS_AMMO>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;uQ(PHYS_N>Q_MIN_PHYS_NC>Q_MAX_PHYS_NC>N_GEIDER_PHY)
+#
+# uptake de nitrate
+PHYS_N;NIT:-;upt(NIT>K_PHYS_NIT>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;inhib(K_INHIB_PHYS_AMMO>I_INHIB_PHYS_AMMO):x;uQ(PHYS_N>Q_MIN_PHYS_NC>Q_MAX_PHYS_NC>N_GEIDER_PHY)
+#
+# uptake d'ammonium
+PHYS_N;AMMO:-;upt(AMMO>K_PHYS_AMMO>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;uQ(PHYS_N>Q_MIN_PHYS_NC>Q_MAX_PHYS_NC>N_GEIDER_PHY)
+#---------------------------------------------------------------
+#--------------- PHYL -----------
+#---------------------------------------------------------------
+# Mortalite de PHYL-C
+PHYL_C;DETS_C:+;mort(MORT_DIAT):-;mort(MORT_DIAT):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT)
+#
+PHYL_N;DETS_N:+;mort(MORT_DIAT):-;mort(MORT_DIAT):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT)
+# PHYL-C --> COD (Exsudation de DOC)
+PHYL_C;MOD_C:+EFF_R_DIAT;gpp(ASTAR_DIAT>PHI_MAX_DIAT>TAU_DIAT>SIG_PSII_DIAT>K_D_PHYS>K_R_PHYS):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):-EFF_R_DIAT;gpp(ASTAR_DIAT>PHI_MAX_DIAT>TAU_DIAT>SIG_PSII_DIAT>K_D_PHYS>K_R_PHYS):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):x;uGd(PHYL_N>Q_MIN_DIAT_NC)
+#
+#---------------------------------------------------------------
+#
+# microphyto-N --> NOD (Exsudation de DON)
+#PHYL_N;MOD_N:+;upt(NIT>K_DIAT_NIT>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):-;upt(NIT>K_DIAT_NIT>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):x;uQ(PHYL_N>Q_MIN_DIAT_NC>Q_MAX_DIAT_NC>N_GEIDER_PHY):+;upt(AMMO>K_DIAT_AMMO>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):-;upt(AMMO>K_DIAT_AMMO>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):x;uQ(PHYL_N>Q_MIN_DIAT_NC>Q_MAX_DIAT_NC>N_GEIDER_PHY)
+#
+# uptake de nitrate
+PHYL_N;NIT:-;upt(NIT>K_DIAT_NIT>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):x;uQ(PHYL_N>Q_MIN_DIAT_NC>Q_MAX_DIAT_NC>N_GEIDER_PHY)
+#
+# uptake d'ammonium
+PHYL_N;AMMO:-;upt(AMMO>K_DIAT_AMMO>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):x;uQ(PHYL_N>Q_MIN_DIAT_NC>Q_MAX_DIAT_NC>N_GEIDER_PHY)
+#---------------------------------------------------------------
+#--------------- BACTERIOPLANCTON ------------------------------
+#---------------------------------------------------------------
+# production bacterienne et mortalite
+BAC_C;MOD_C:-;gbp(MOD_C>K_BACT_DOC>GROWTH_MAX_BACT):x;tfuncB(Q_TEN_BACT):x;uGd(BAC_N>Q_MIN_BACT_NC>VAL_POS):+;mort(MORT_BACT):x;tfuncB(Q_TEN_BACT)
+# Respiration bacterienne
+#---------------------------------------------------------------
+# uptake de DON et mortalite
+BAC_N;MOD_N:-;upt(MOD_N>K_BACT_DON>Q_MAX_BACT_NC>GROWTH_MAX_BACT):+;mort(MORT_BACT):x;tfuncB(Q_TEN_BACT)
+#
+# uptake de NH4 et remineralisation
+BAC_N;AMMO:-;upt(AMMO>K_BACT_AMMO>Q_MAX_BACT_NC>GROWTH_MAX_BACT):x;tfuncB(Q_TEN_BACT):x;uQ(BAC_N>Q_MIN_BACT_NC>Q_MAX_BACT_NC>N_GEIDER_BACT>VAL_POS):+;upt(MOD_N>K_BACT_DON>Q_MAX_BACT_NC>GROWTH_MAX_BACT):-;upt(MOD_N>K_BACT_DON>Q_MAX_BACT_NC>GROWTH_MAX_BACT):x;uQ(BAC_N>Q_MIN_BACT_NC>Q_MAX_BACT_NC>N_GEIDER_BACT)
+#--------------------------------------------------------------
+#----------------Mineralisation de la MOP  -----------------------------
+#--------------------------------------------------------------
+DETS_C;MOD_C:+;rem(TX_REM_POC)
+#--------------------------------------------------------------
+DETS_N;MOD_N:+;rem(TX_REM_PON)
+#--------------------------------------------------------------
+#---------------- NITRIFICATION -------------------------------------
+NIT;AMMO:-;nit(TX_NIT>Q_TEN_NIT)
+#
+#------------------------------------------------------------------
+#--------------- PHYS -------------------------------------
+# Photosynthese et respiration
+PHYS_C:+EFF_R_PHYS;gpp(ASTAR_PHYS>PHI_MAX_PHYS>TAU_PHYS>SIG_PSII_PHYS>K_D_PHYS>K_R_PHYS):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):-R_U_AMMO;upt(AMMO>K_PHYS_AMMO>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):-R_U_NIT;upt(NIT>K_PHYS_NIT>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;inhib(K_INHIB_PHYS_AMMO>I_INHIB_PHYS_AMMO)
+# synthese de chl et destruction par grazing
+PHYS_Chl:+;pchl(THETA_N_MAX_PHYS>ASTAR_CHL_PHYS>NIT>Q_MAX_PHYS_NC>K_PHYS_NIT>VAL_POS>AMMO>Q_MAX_PHYS_NC>K_PHYS_AMMO>VAL_POS):x;uGd(PHYS_N>Q_MIN_PHYS_NC>VAL_POS):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):-;grazC2X(MZOO_C>PHYS_Chl)
+#---------------------------------------------------------------
+#--------------- PHYL --------------------------------
+# synthese de chl et destruction par grazing et mortalite naturelle
+# Photosynthese et respiration
+PHYL_C:+EFF_R_DIAT;gpp(ASTAR_DIAT>PHI_MAX_DIAT>TAU_DIAT>SIG_PSII_DIAT>K_D_DIAT>K_R_DIAT):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):-R_U_AMMO;upt(AMMO>K_DIAT_AMMO>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):-R_U_NIT;upt(NIT>K_DIAT_NIT>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT)
+#
+PHYL_Chl:-;mort(MORT_DIAT):+;mort(MORT_DIAT):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):+;pchl(THETA_N_MAX_DIAT>ASTAR_CHL_DIAT>NIT>Q_MAX_DIAT_NC>K_DIAT_NIT>VAL_POS>AMMO>Q_MAX_DIAT_NC>K_DIAT_AMMO>VAL_POS):x;uGd(PHYL_N>Q_MIN_DIAT_NC>VAL_POS):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):-;grazC2X(MZOO_C>PHYL_Chl)
+#---------------------------------------------------------------
+#-----------------BACTERIES-------------------------------------
+# respiration bacterienne
+#BAC_C:-;respPBB(R_BACT>EFF_GROWTH_BACT>Q_TEN_BACT):x;uGd(BAC_N>Q_MIN_BACT_NC>VAL_POS):x;tfuncB(Q_TEN_BACT)
+BAC_C:-;gbp(MOD_C>K_BACT_DOC>GROWTH_MAX_BACT):x;tfuncB(Q_TEN_BACT):x;uGd(BAC_N>Q_MIN_BACT_NC>VAL_POS):+EFF_GROWTH_BACT;gbp(MOD_C>K_BACT_DOC>GROWTH_MAX_BACT):x;tfuncB(Q_TEN_BACT):x;uGd(BAC_N>Q_MIN_BACT_NC>VAL_POS)
+#
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+#########################
+finflux
+# Rapport  Chlorophylle/Carbone  en (g chl)/(mol C) 
+#(0 = rapport constant et donne apres les ':'
+# et 1 = rapport variable. Si ce rapport est caclule par une fonction analytique (Chl n'est pas une
+#        variable d'etat), il faut ajouter la fonction et ses parametres et definir cette fonction dans 
+#        le fichier modele.def
+#0:0.25
+1
+#  fonction permettant de calculer le coefficient d'extinction lumineuse:
+f_extinc(0.0384>0.029)

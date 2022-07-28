@@ -1,0 +1,90 @@
+!----------------------------------------------------------------------------------------------------
+!----------------------------------------------------------------------------------------------------
+!
+!          Default namelist for OD simulations (keys NCOUPL && M0D_NCOUPL)
+!
+!=====================================================================================================
+!======= Files for the configuration of the biogeochemical model included in the Eco3M platform  =====
+!=====================================================================================================
+&nam_eco3m_config
+eco3m_root_dir   = "/home/mazoyer/CROCO/SRC/croco/croco_git_dev_2022_BIOLink_ok/ECO3M/" ! Name of the root directory for Eco3M
+filename_config  = "CONFIG_ECO3M/config.ini" ! Biogeochemical model's configuration (flux matrix). Must be placed in CONFIG_ECO3M
+filename_confmod = "CONFIG_ECO3M/modele.def" ! Process functions (from the F_PROCESS library) used by the model. Must be placed in CONFIG_ECO3M
+/
+
+!==================================================================================================================
+!================================    RUN parameters     ======================================================
+!
+!===================================================================================================================
+&nam_eco3m_run
+run_name = "sim_eco3m_0D"  ! simulation name
+
+run_duration = 100.0  ! Simulation duration in days 
+dt_bio = 1200.         ! Simulation time-step (in seconds) 
+dt_save_bio = 360.     ! Saving frequency (in minutes)
+
+! Spatial dimensions (in the M0D_NCOUPL mode, all these dimensions are set to 1)
+nx_min = 1  ! First x-dimension index 
+nx_max = 1  ! Last  x-dimension index
+ny_min = 1  ! First y-dimension index
+ny_max = 1  ! Last  y-dimension index
+nz_max = 1  ! Last  z-dimension index 
+
+/
+
+!========================================================================================================
+!================================ IRRADIANCE parameters =================================================
+!========================================================================================================
+&nam_eco3m_irrad
+fichirrad = "IRR_FONCTION" ! select between IRR_FONCTION or IRR_FILE
+
+!-- if fichirrad = "IRR_FILE", enter here the name of the file containing the irradiance data
+filename_irrad = "CONFIG_ECO3M/irradiance_file.dat" ! Irradiance data (only used with NCOUPL key if read from a file)
+
+dt_irrad = 240 ! Time step for irradiance update (in seconds). 
+               ! Also corresponds to the data frequency in filename_irrad
+irrad_max = 450  ! used only if fichirrad="IRR_FONCTION"
+irr2par = 0.43   ! Conversion factor from irradiance to PAR
+albedo = 0.05    ! Albedo (only used with NCOUPL key)
+irr_param = 1.0  ! Conversion factor (useful if irradiance data are in µEinstein m-2 since W m-2 are expected)
+/
+
+!=================================================================================================== 
+!=================      INITIAL CONDITIONS   =====================================
+!=================================================================================================== 
+&nam_eco3m_ic
+ic_input_directory = "CONFIG_ECO3M/C_INI/0D/" ! Input directory for concentrations (ended by a "/")
+default_conc = 1e-30  ! Default concentration used for the initialization of a state variable if no ini file exists
+default_temp = 18  ! Default temperature (C) if NCOUPL
+default_salt = 35  ! Default salinity if NCOUPL
+/
+!====================================================================================================
+!=======================================   OUTPUT PARAMETERS ========================================
+!====================================================================================================
+! Parameters (used for the dynamical allocation)
+&nam_eco3m_outpar
+output_dir = "OUTPUTS/"  ! Output directory
+num_outphy = 4  ! Number of variables other than state variables to save (dim of outphy array)
+/
+
+&nam_eco3m_outphy
+! the number of outputs is defined in the nam_eco3m_outpar field (variable num_outphy)
+! Must contain the following elements:
+! Variable | Filename 
+outphy(1) = "e_par"
+outphy(2) = "chl_tot"
+outphy(3) = "temp_bio"
+outphy(4) = "sal_bio"
+/
+
+&nam_eco3m_outflux_nb
+num_outflux =  1  ! Number of grid nodes where biogeochemical fluxes will be saved if the SAVE_FLUX key is used
+/
+
+&nam_eco3m_outflux_loc
+! Geographical location of the fluxes to be saved, given in the form  :
+!     | x index | y index | z index
+ outflux(1) = 1, 1, 1
+/
+
+

@@ -1,0 +1,98 @@
+# Fichier de configuration pour le modele Eco3M Enseignements 
+#  MODELE POUR MASTER OPB 308
+#  derniere modification: Nov 2018
+#
+#------------------------------------------------------------------------
+#  on considere: 1 "petit" phytoplancton (exprime en C, Chl, N), 
+#                1 "gros" phytoplancton (exprime en C, Chl, N)
+#                2 nuts (NO3,NH4), et de la MOD (en C,N), 
+#                1 MOP (C,N) et bacteries (C,N) et 1 zoop (C,N)
+#-------------------------------------------------------------------------
+#
+# Consignes Generales IMPORTANTES: 
+# --------------------------------
+# 1/commencer tjrs une ligne vide ou de commentaires
+#    par un # sur le premier caractere de la ligne
+# 2/ ne rien ecrire sur une ligne de donnees apres celles-ci
+# 3/ separer les differentes variables qui apparaissent sur une
+#    meme ligne par un : sans laisser d'espace
+# 4/ les noms des compartiments sont imposes et a choisir parmi:
+#    zoo / phy / bac / det / mod / mid / mip
+#    EN RESPECTANT CET ORDRE
+# 5/ les noms des sous compartiments ne doivent pas contenir
+#    d'espaces et ne pas exceder 10 caracteres
+# 6/ Toutes les variables en chaine de caractere doivent etre ecrites 
+#    en miniscule,sauf les elements et molecules chimiques qui doivent
+#    etre ecrits classiquement comme suit: C,N,P,Si,Fe,Chl,NO3,NH4,O2,Zn...
+# 7/ si une des lignes de donnees depasse la valeur de L_CHAIN dans
+#    le fichier mod_fchain.f90, il faut augmenter L_CHAIN dans ce fichier
+#
+######## DONNEES SPECIFIQUES AU MODELE BIOGEOCHIMIQUE:
+#
+# The configuration name will be: Eco3M_config. Just the config part is required here:
+Default_0D
+# nb de compart.(classes), de sous compart., et de var. etat au total
+3:3:6
+# nom du 1er compart. et nb de ss-compart. correspondts
+#
+phy:1
+PHYL:C:N:Chl
+#
+det:1
+DETS:C:N
+#
+mid:1
+NO3:N
+#-----------------------------------------------------------------
+##########################
+# MATRICE DE FLUX :
+# matrice diagonale representant les interactions entre variables d'etat
+#
+# Consignes importantes:
+# ---------------------
+# 1/ commencer par introduire le nb DE PROCESSUS CUMULES
+# 2/ ne remplir que la partie superieure droite de la matrice (sans diagonale):
+# ligne 1 : FLUX de var(1) vers var(2) a var(nbvar)
+# ligne 2 : FLUX de var(2) vers var(3) a var(nbvar)
+# etc...
+# a rentrer sous la forme ili;jcol:signe;proc(listeparam separes par des ">")
+# 3/ FINIR PAR l'instruction "finflux"
+# 4/ Si un FLUX comporte plusieurs processus, les separer par des ":"
+# 5/ Si aucun processus ne relie 2 variables, ne pas le citer
+#
+#-------------- Introduction des variables ------------------------
+# nb cumule de fonctions de processus utilises dans l'ensemble des  
+# cellules de la matrice :
+14
+# matrice FLUX:
+#---------------------------------------------------------------
+#--------------- PHYL  --------------
+#---------------------------------------------------------------
+# uptake de nitrate
+2;6:-;upt(6>2.50>0.170):x;tfuncP(0.80>14.>9.0)
+#
+# Mortalite de PHYL-C
+1;4:+;mort(1.0d-8)
+#
+2;5:+;mort(1.0d-8)
+#------------------------------------------------------------------
+#--------------- PHYL -------------------------------------
+#---------------------------------------------------------------
+# Photosynthese et respiration
+1:+0.8000;gpp(0.015>2.25d-4>2.0d-3>8.5>2.6d-8>2.d-4):x;tfuncP(0.80>14.>9.0):-0.397;upt(6>2.50>0.170):x;tfuncP(0.80>14.>9.0)
+#
+3:-;mort(1.0d-8):+;mort(1.0d-8):x;tfuncP(0.80>14.>9.0):+;pchl(3.0>3.37d-6>6>0.170>2.50>0.):x;uGd(2>0.05>0.):x;tfuncP(0.80>14.>9.0)
+#---------------------------------------------------------------
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+#########################
+finflux
+# Rapport  Chlorophylle/Carbone  en (g chl)/(mol C) 
+#(0 = rapport constant et donne apres les ':'
+# et 1 = rapport variable. Si ce rapport est caclule par une fonction analytique (Chl n'est pas une
+#        variable d'etat), il faut ajouter la fonction et ses parametres et definir cette fonction dans 
+#        le fichier modele.def
+#0:0.25
+1
+#  fonction permettant de calculer le coefficient d'extinction lumineuse:
+f_extinc(0.0384>0.029)

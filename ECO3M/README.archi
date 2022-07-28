@@ -1,0 +1,14 @@
+Description of the directories:
+------------------------------
+
+- BLD: directory containing the files allowing to build the model (Makefiles,...). Even if Eco3M is coupled with another code, the first compilation/execution step using the INI key (see CPP keys) has to be done in this directory using Makefile.ini in order to generate the different ".inc" files, and especially the "call.inc" file containing the model's equations. If Eco3M is used alone or coupled with the 1DV model proposed by default, the second compilation/execution step with the CALC cpp key has also to be done there using the Makfile.calc file (either the 0D or the 1D-3D version). 
+
+
+- SRC
+
+
+- CONFIG_ECO3M
+
+
+
+- CONFIG_PHY

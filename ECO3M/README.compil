@@ -1,0 +1,38 @@
+README by Camille Mazoyer, july 2020
+          Melika Baklouti, july 2022
+
+doxygen:
+========
+visualizes and executes a doxygen config: doxywizard doxygen.conf
+The config file is doxygen.conf
+
+
+compilation + execution:
+========================
+
+1/ initialisation step (implementation of a new model configuration):
+ make -f Makefile.ini clean && make -f Makefile.ini
+./eco3m_ini.exe
+
+
+At the end of this stage, a "call.inc" file containing the mathematical
+expressions for the calculation of the biogeochemical fluxes should have been created.
+3 other .inc files should have been created too.
+
+This step should be done only once but repeated each time the model configuration (namely the represented processes, variables, parameters) is modified.
+ 
+2/ calculation step:
+
+  2.1/ Case where the Eco3M model is not coupled with a physical model:
+
+     2.1.1/ check that in the Makefile.conf_NCOUPL file, the right cpp_key is selected among M0D_NCOUPL or M3D_NCOUPL (mesocosm configuration)
+
+     2.1.2/ compilation with the following command:
+           make -f Makefile.calc_NCOUPL clean && make -f Makefile.calc_NCOUPL
+
+  2.2/ Case where the Eco3M model is coupled with a physical model:
+
+     2.1.2/ check that in the Makefile.conf_COUPL file, the cpp_key ECO3M_SUB is activated when Eco3M is not the main program of the coupled model 
+
+     2.2.2/ compilation with the following command:
+           make -f Makefile.calc_COUPL clean && make -f Makefile.calc_COUPL

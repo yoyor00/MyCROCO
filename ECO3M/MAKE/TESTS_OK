@@ -1,0 +1,12 @@
+----------------------------------------------------------------------------------------------------------
+En 0D, non couple donc, TVB avec les cles suivantes:
+
+CPPFLAGS      = -P -CC -I../CONFIG_ECO3M -DRESBIO_A -DNCOUPL -DM0D_NCOUPL -nostdinc -DSAVE_FLUX #-DMODTEST 
+CPPFLAGS      = -P -CC -I../CONFIG_ECO3M -DRESBIO_A -DNCOUPL -DM0D_NCOUPL -nostdinc -DSAVE_FLUX -DMODTEST 
+----------------------------------------------------------------------------------------------------------
+En 1DV non couple (pas de physique mais couches soumises à des irradiances differents) TVB avec les cles suivantes:
+CPPFLAGS      = -P -CC -I../CONFIG_ECO3M -DRESBIO_A -DNCOUPL -DM3D_NCOUPL -nostdinc -DSAVE_FLUX -DMODTEST 
+
+Marche aussi avec la cle RGB
+----------------------------------------------------------------------------------------------------------
+En 1DV couple: pb à la compilation avec eco3m_fprocess => A VOIR

@@ -1,0 +1,98 @@
+!=====================================================================================================
+!======= Files for the configuration of the biogeochemical model included in the Eco3M platform  =====
+!=====================================================================================================
+&nam_eco3m_config
+filename_config = "./ECO3M/CONFIG_ECO3M/config.ini"  ! Eco3M configuration (flux matrix)
+filename_confmod = "./ECO3M/CONFIG_ECO3M/modele.def"   ! Definition of the process functions 
+/
+
+!==================================================================================================================
+!================================    RUN parameters     ===========================================================
+!
+!       (taken into account only for 0D or multidimensional configurations managed by the Eco3M tool, 
+!                  i.e. for CPP keys: (NCOUPL && M0D_NCOUPL) or (NCOUPL && M3D_NCOUPL) ) 
+!===================================================================================================================
+&nam_eco3m_run
+
+run_name = "Eco3M_run1"  ! simulation name
+/
+
+!========================================================================================================
+!================================ IRRADIANCE parameters =================================================
+!========================================================================================================
+&nam_eco3m_irrad
+fichirrad = "IRR_CODEPHYS" ! select between IRR_CODEPHYS (only in COUPL mode), IRR_FONCTION or IRR_FILE
+
+!-- if fichirrad = "IRR_FILE", enter here the name of the file containing the irradiance data
+filename_irrad = "irradiance_file.dat" ! Irradiance data (only used with if NCOUPL key if read from a file)
+
+dt_irrad = 240 ! Time step for irradiance update (in seconds). Also corresponds to the data frequency in fichirrad
+irrad_max = 450  ! Only if fichirrad="IRR_FONCTION"
+irr2par = 0.43 ! Conversion factor from irradiance to PAR
+albedo = 0.05  ! Albedo (only used with NCOUPL key)
+irr_param = 1.0  ! Conversion factor (useful if irradiance data are in µEinstein m-2 since W m-2 are expected)
+pos_nzmax = "SURF" ! Position of the nz_max point (ie BOTT for bottom or SURF for surface)
+/
+!====================================================================================================
+!=====================       RGB parameters (only with the RGB key)  ================================
+!====================================================================================================
+&nam_eco3m_rgb
+filename_krgb = "./ECO3M/CONFIG_ECO3M/INPUTS/kRGB61.txt"     ! Extinction coefficients (only used with  RGB key)
+rgb_nbands=3
+/
+
+!=================================================================================================== 
+!=================      INITIAL CONDITIONS   =====================================
+!
+!         only for CPP keys (NCOUPL && M0D_NCOUPL) or (NCOUPL && M3D_NCOUPL)  
+!=================================================================================================== 
+&nam_eco3m_ic
+ic_input_directory = "./ECO3M/CONFIG_ECO3M/C_INI/1DV/C_INI_DYFAMED/" ! Input directory for concentrations (ended by a "/")
+default_conc = 1e-30  ! Default concentration used for the initialization of a state variable if no ini file exists
+default_temp = 18  ! Temperature (C) if NCOUPL
+default_salt = 35  ! Salinity if NCOUPL
+/
+!====================================================================================================
+!=======================================   OUTPUT PARAMETERS ========================================
+!====================================================================================================
+! Parameters (used for the dynamical allocation)
+&nam_eco3m_outpar
+output_dir = "outputs/"  ! Output directory
+num_outphy = 13  ! Number of physical variables to save (dim of outphy array)
+/
+
+&nam_eco3m_outphy
+! the number of outputs is defined in the nam_eco3m_outpar field (variable num_outphy)
+! Must contain the following elements:
+! Variable | Filename 
+outphy(1) = "e_par"
+outphy(2) = "e_parz"
+outphy(3) = "wind"
+outphy(4) = "kextinc"
+outphy(5) = "temp"
+outphy(6) = "sal"
+outphy(7) = "Kz"
+outphy(8) = "vitx"
+outphy(9) = "vity"
+outphy(10) = "raut"
+outphy(11) = "mld"
+outphy(12) = "tke"
+outphy(13) = "irrad"
+/
+
+&nam_eco3m_outflux_nb
+num_outflux =  0  ! Number of fluxes to save (dim of outflux array)
+/
+
+&nam_eco3m_outflux_loc
+! Geographical location of the fluxes to be saved, given in the form  :
+!     | x index | y index | z index
+ outflux(1) = 1, 1, 19
+ outflux(2) = 1, 1, 20
+ outflux(3) = 1, 1, 1
+/
+
+&nam_eco3m_outflux_freq
+dt_outflux =  240  ! frequency in minutes 
+/
+
