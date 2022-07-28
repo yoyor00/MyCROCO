@@ -53,11 +53,12 @@
                                                 ! Relies on julian days
 
       REAL(KIND=rlg),PUBLIC                     :: t_bio,DT_CONSERV_BIOLINK
-#if !defined ECO3M                                       
-  REAL(KIND=rlg),PUBLIC                     :: BIO_TIME_STEP          ! effective time step for evaluation bio sources and sinkks
-#endif
+      REAL(KIND=rlg),PUBLIC                     :: BIO_TIME_STEP          ! effective time step for evaluation bio sources and sinkks
       !Time and time steps variables used in the biological models 
-      REAL(KIND=rlg)                             :: ECO_TIME_STEP,TIME_START_ECO 
+#if !defined ECO3M                                       
+      REAL(KIND=rlg)                             :: ECO_TIME_STEP
+#endif
+      REAL(KIND=rlg)                             :: TIME_START_ECO 
       ! Timestep of the hydrodynamical model
       REAL(KIND=rlg)                             :: TIME_BEGIN  
       ! Date of the start of the model run

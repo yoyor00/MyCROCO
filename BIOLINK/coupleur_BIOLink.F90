@@ -82,7 +82,7 @@
 
    USE mod_eco3m_irrad, ONLY : irrad
    USE mod_eco3m, ONLY : nx_min, nx_max, ny_min, ny_max, nz_max, VAR
-   USE mod_eco3m, ONLY : BIO_TIME_STEP, WATCONCPOS_tab, TEMP_BIOLink,&
+   USE mod_eco3m, ONLY : ECO_TIME_STEP, WATCONCPOS_tab, TEMP_BIOLink,&
                          SAL_BIOLink,BIO_SKSC_ADV, THICKLAYERWC 
 
 #endif /* ECO3M */

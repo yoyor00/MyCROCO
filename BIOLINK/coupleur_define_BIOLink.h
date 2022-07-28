@@ -119,7 +119,6 @@
 !======================================================================*/
 
 # define TRANSPORT_TIME_STEP dt /* Hydro model time step */
-# define ECO_TIME_STEP dt_bio_update /* Time step of the biological model */
 # define CURRENT_TIME time /* Current time/date for the biological model */
 # define TIME_BEGIN tdeb  /* Starting time/date for the biological model */
 
@@ -128,11 +127,13 @@
 !======================================================================*/
 
 # if defined ECO3M
-#   define BIO_TIME_STEP dt_bio /* Time step for the biological model */
+#   define ECO_TIME_STEP dt_bio /* Time step of the biological model */
+#   define BIO_TIME_STEP dtbio /* Time step for the biological model */
 #   define DT_CONSERV_BIOLINK dt_bio_conserv /* Time step for BIOLink conservativity routine */
 # endif /* ECO3M */
 
 # if defined PEPTIC || defined BLOOM || defined METeOR 
+#   define ECO_TIME_STEP dt_bio_update /* Time step of the biological model */
 #   define BIO_TIME_STEP dtbio /* Time step for the biological model */
 #   define DT_CONSERV_BIOLINK dt_conserv_BIO /* Time step for BIOLink conservatity routine */
 # endif /* PEPTIC/BLOOM/METeOR */
