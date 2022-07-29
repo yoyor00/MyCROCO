@@ -1507,17 +1507,13 @@ MODULE sed_MUSTANG
 
 #ifdef key_sand2D
               IF(l_subs2D(ivp)) THEN
-#ifdef key_CROCO
-! with SAN2D in CROCO, transport is done in the bottom layer (in MARS, we consider the full depth although advection is done using the bottom velocity)
-! i.e. in CROCO, C is representative of the bottom layer, in MARS C is representative of the depth averaged men concentration
+! with SAN2D in CROCO, transport is done in the bottom layer 
+! (in MARS, we consider the full depth although advection is done using the bottom velocity)
+! i.e. in CROCO, C is representative of the bottom layer, 
+! in MARS C is representative of the depth averaged concentration
                 extrap=(hzi(1)-aref_sand)/som
                 corflux(ivp,i,j)=einstein/alogaltc1sz0
                 corfluy(ivp,i,j)=einstein/alogaltc1sz0
-#else
-                extrap=(hzisdbot(1)-aref_sand)/som 
-                corflux(ivp,i,j)=einstein/LOG(htot(i,j)/(2.718_rsh*z0sed(i,j)))
-                corfluy(ivp,i,j)=einstein/LOG(htot(i,j)/(2.718_rsh*z0sed(i,j)))
-#endif
               ELSE
 #endif
                 extrap=(hzi(1)-aref_sand)/som

@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 
-#if defined MUSTANG && defined key_CROCO
+#if defined MUSTANG
 
       module plug_MUSTANG_CROCO
 
