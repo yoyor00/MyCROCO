@@ -5,9 +5,12 @@
       module plug_MUSTANG_CROCO
 
       USE module_MUSTANG
-      USE sed_MUSTANG, ONLY : MUSTANG_update, MUSTANG_deposition
-      USE sed_MUSTANG, ONLY : MUSTANG_morpho
       USE initMUSTANG, ONLY : MUSTANG_init
+      USE sed_MUSTANG, ONLY : MUSTANG_update
+      USE sed_MUSTANG, ONLY : MUSTANG_deposition
+# ifdef MORPHODYN
+      USE sed_MUSTANG, ONLY : MUSTANG_morpho
+# endif
 
 # include "coupler_define_MUSTANG.h"
 
@@ -18,7 +21,9 @@
       PUBLIC   mustang_update_main
       PUBLIC   mustang_deposition_main
       PUBLIC   mustang_init_main
+# ifdef MORPHODYN
       PUBLIC   mustang_morpho_main
+# endif
 
 CONTAINS
 !
@@ -73,21 +78,17 @@ CONTAINS
       end subroutine
 !
 !-----------------------------------------------------------------------
-!
+# ifdef MORPHODYN
       subroutine mustang_morpho_main (tile)
 
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-      CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, &
-                   WATER_ELEVATION                 &
-# if defined MORPHODYN
-                   , DHSED                         &
-# endif                                     
-                   )
+      CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, DHSED)
+
       end subroutine
-!
+# endif
 !-----------------------------------------------------------------------
 !
       end module plug_MUSTANG_CROCO

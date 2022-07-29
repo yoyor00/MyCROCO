@@ -526,7 +526,6 @@ public
     REAL(KIND=rlg) :: t_morpho        ! time of next morphodynamic step
     REAL(KIND=rsh) :: MF_dhsed
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: morpho0
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: h0_bedrock
 
 #ifdef key_MUSTANG_V2
     REAL(KIND=rsh) :: coeff_dzsmin
@@ -544,7 +543,7 @@ public
         REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdx
         REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdy
         REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: sedimask_h0plusxe
-#if defined MORPHODYN_MUSTANG_byHYDRO
+#if defined MORPHODYN
             INTEGER :: it_morphoYes
 #endif
 #endif

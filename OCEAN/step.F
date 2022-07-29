@@ -968,13 +968,17 @@ C$OMP END MASTER
 #ifdef MUSTANG
       use plug_MUSTANG_CROCO, only: mustang_update_main
       use plug_MUSTANG_CROCO, only: mustang_deposition_main
+# ifdef MORPHODYN
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
       use comMUSTANG, only : l_morphocoupl, t_morpho
+# endif
+# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs 
-#if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+# if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
       use comMUSTANG , only : flx_bx, flx_by 
       use comsubstance, only : ibedload1, ibedload2
+# endif
 #endif
 # include "coupler_define_MUSTANG.h"
 #endif
@@ -1104,8 +1108,9 @@ C$OMP BARRIER
         call ana_morphodyn (tile)
 #   endif
 #  elif defined MUSTANG
-        IF_MUSTANG_MORPHO_CPL
-     &  call mustang_morpho_main (tile)
+        if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) then
+            call mustang_morpho_main (tile)
+        endif
 #  endif
         call set_depth_morphodyn (tile)
       enddo

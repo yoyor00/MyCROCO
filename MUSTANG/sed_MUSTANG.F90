@@ -111,8 +111,11 @@ MODULE sed_MUSTANG
    
    !! * Accessibility
    ! functions & routines of this module, called outside :
-   PUBLIC MUSTANG_update, MUSTANG_deposition, MUSTANG_morpho, sed_MUSTANG_outres
+   PUBLIC MUSTANG_update, MUSTANG_deposition, sed_MUSTANG_outres
    PUBLIC sed_MUSTANG_comp_z0hydro, MUSTANG_E0sand
+#if defined MORPHODYN
+   PUBLIC MUSTANG_morpho
+#endif
 #if defined key_MUSTANG_V2
    PUBLIC MUSTANGV2_comp_poro_mixsed
 #endif
@@ -379,10 +382,7 @@ MODULE sed_MUSTANG
   varspecif3Dnv_save(5:6,:,:,:)=0.0_rsh
 #endif
 
-#if defined MORPHODYN_MUSTANG_byHYDRO   
-! Revaluation of slopes for bedload because H0 are updated in hydro model
-! if H0 are updated by MUSTANG, this is done in morpho after updating H0
-! done only if et time t_morpho if it_morphoYes=1
+#if defined MORPHODYN  
      IF (l_slope_effect_bedload .AND. it_morphoYes==1 ) THEN
         CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, BATHY_H0)
         it_morphoYes = 0
@@ -605,59 +605,25 @@ MODULE sed_MUSTANG
 
   END SUBROUTINE MUSTANG_deposition
  
-   !!===========================================================================
- 
-  SUBROUTINE MUSTANG_morpho(ifirst, ilast, jfirst, jlast, WATER_ELEVATION       &
-#if defined MORPHODYN_MUSTANG_byHYDRO
-                                      ,dhsed                            &
-#endif                                     
-                                      )
- 
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANG_morpho  ***
-   !&E
-   !&E ** Purpose : update bathymetry with sediment thickness (morphodynamic)
-   !&E
-   !&E ** Description :
-   !&E
-   !&E ** Called by :  step, at the end
-   !&E
-   !&E ** External calls : 
-   !&E
-   !&E--------------------------------------------------------------------------
-   !! * Modules used
+!!===========================================================================
+#if defined MORPHODYN
+    SUBROUTINE MUSTANG_morpho(ifirst, ilast, jfirst, jlast, dhsed )
+    !&E--------------------------------------------------------------------------
+    !&E                 ***  ROUTINE MUSTANG_morpho  ***
+    !&E
+    !&E ** Purpose : compute bathymetry variation dhsed (morphodynamic)
+    !&E
+    !&E ** Called by :  step, at the end
+    !&E
+    !&E--------------------------------------------------------------------------
 
-#ifdef key_MUSTANG_bedload
-   USE sed_MUSTANG_HOST,  ONLY : sed_bottom_slope
-#endif
-
-   !! * Arguments
-   INTEGER, INTENT(IN)                :: ifirst, ilast, jfirst, jlast
-#if defined MORPHODYN_MUSTANG_byHYDRO
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(IN) :: WATER_ELEVATION                    
-#else
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION  
-#endif                  
-#if defined MORPHODYN_MUSTANG_byHYDRO
-   REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)           :: dhsed                        
-#endif                                     
-
-   !! * Local declarations
-   INTEGER                  :: i,j,k
-   
-   !!--------------------------------------------------------------------------
-   !! * Executable part
-
-!   1- reactualisation des hsed
-!   ---------------------------
-     DO j=jfirst,jlast
-      DO i=ifirst,ilast
-          hsed(i,j)=0.0_rsh
-          DO k=ksmi(i,j),ksma(i,j)
-            hsed(i,j)=hsed(i,j)+dzs(k,i,j)
-          ENDDO
-      ENDDO
-     ENDDO
+    !! * Arguments
+    INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
+    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT) :: dhsed                        
+    !! * Local declarations
+    INTEGER                  :: i,j,k
+    !!--------------------------------------------------------------------------
+    !! * Executable part
 
 ! **TODO** keep these lines commented?? create a specific subroutine for zero gradient boundaries??
  ! if key_MUSTANG_bedload : choice of zero gradient at boundaries or no flux 
@@ -671,61 +637,30 @@ MODULE sed_MUSTANG
    ! East boundary
    !    IF (ilast == IMAX_GRID) hsed(ilast,:)=hsed(ilast-1,:)
 
-#if ! defined MORPHODYN_MUSTANG_byHYDRO
-
-!     3- reactualisation des cotes de fond de maille
-!        et de la surface libre
-!     ----------------------------------------------
-     DO j=jfirst,jlast
-     DO i=ifirst,ilast
-      IF(h0_bedrock(i,j) .NE. -valmanq) THEN
-        IF (l_MF_dhsed) THEN
-          BATHY_H0(i,j)=BATHY_H0(i,j)-(hsed(i,j)-hsed_previous(i,j))*MF_dhsed
-          hsed_previous(i,j)=hsed(i,j)
-        ELSE
-          BATHY_H0(i,j)=morpho0(i,j)*(h0_bedrock(i,j)-hsed(i,j))+(1.0_rsh-morpho0(i,j))*BATHY_H0(i,j)  
-        ENDIF
-        !**TODO** check if this precaution is needed in croco ?
-        ! SURF_ELEVATION_ij=MAX(SURF_ELEVATION_ij,-BATHY_H0(i,j))
-      ENDIF
-     ENDDO
-     ENDDO
-#endif
-
-
-!     4 - echange MPI of BATHY_H0 and WATER_ELEVATION
-!     ----------------------------------------------
-     ! **TODO** create sed_exchange_hxe in sed_MUSTANG_CROCO CALL sed_exchange_hxe_MARS(1,xh0=BATHY_H0,xssh=WATER_ELEVATION)             
-
-
-#if defined MORPHODYN_MUSTANG_byHYDRO
-        DO j=jfirst,jlast
-         DO i=ifirst,ilast
-           IF (l_MF_dhsed) THEN
-               dhsed(i,j)=(hsed_previous(i,j)-hsed(i,j))*MF_dhsed
-           ELSE
-               dhsed(i,j)=hsed_previous(i,j)-hsed(i,j)
-           ENDIF
-           hsed_previous(i,j)=hsed(i,j)
-         ENDDO
+    DO j=jfirst,jlast
+        DO i=ifirst,ilast
+            hsed(i,j)=0.0_rsh
+            DO k=ksmi(i,j),ksma(i,j)
+                hsed(i,j)=hsed(i,j)+dzs(k,i,j)
+            ENDDO
+            IF (l_MF_dhsed) THEN
+                dhsed(i,j)=(hsed_previous(i,j)-hsed(i,j))*MF_dhsed
+            ELSE
+                dhsed(i,j)=hsed_previous(i,j)-hsed(i,j)
+            ENDIF
+            hsed_previous(i,j)=hsed(i,j)
         ENDDO
-#endif
+    ENDDO
 
-!
-!     8. reevaluate bottom slope for bedload
-!     ---------------------------------------------------------------------
-!     only if bathy has been updated by MUSTANG, otherwise, this is done in MUSTANG_update
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && ! defined MORPHODYN_MUSTANG_byHYDRO
-      CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, BATHY_H0)
-#endif
+    t_morpho = t_morpho + dt_morpho
 
-        t_morpho=t_morpho+dt_morpho
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && defined MORPHODYN_MUSTANG_byHYDRO
-        it_morphoYes=1
+#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+!   bottom slope must be updated for bedload
+    it_morphoYes = 1
 #endif
 
   END SUBROUTINE MUSTANG_morpho      
-  
+#endif /* if defined MORPHODYN */
 !=========================================================================== 
   
   SUBROUTINE sed_MUSTANG_outres(ifirst,ilast,jfirst,jlast,nv_out,h0_out,mask_h0,  &       
@@ -3280,7 +3215,7 @@ MODULE sed_MUSTANG
               flx_w2s_sum(iv,i,j)=0.0_rsh
 
               ! MF /= 1 only if l_morphocoupl
-              flx_w2s_loc(iv)=MF*flx_w2s_loc(iv)
+              flx_w2s_loc(iv) = MF * flx_w2s_loc(iv)
               
 #if defined key_MUSTANG_debug
                IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. &
@@ -4100,7 +4035,7 @@ MODULE sed_MUSTANG
               flx_w2s_sum(iv,i,j)=0.0_rsh
 
               ! MF /= 1 only if l_morphocoupl
-              flx_w2s_loc(iv)=MF*flx_w2s_loc(iv)
+              flx_w2s_loc(iv) = MF * flx_w2s_loc(iv)
 #ifdef key_MUSTANG_specif_outputs
               !flx_w2s_save
              varspecif3Dnv_save(3,iv,i,j)=varspecif3Dnv_save(3,iv,i,j)+flx_w2s_loc(iv)

@@ -25,10 +25,6 @@
 /* Directory where are namelists files */
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
 
-# ifdef key_CROCO
-#  define IF_MUSTANG_MORPHO_CPL if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) 
-# endif
-
 /* Spatial Grid limits definition  of loops inside the domain - except meshes at open boundaries */
 # define IMIN_GRID 1
 # define IMAX_GRID Lm
@@ -65,7 +61,6 @@
 #endif
 
 #define  ARRAY_morpho GLOBAL_2D_ARRAY
-#define  ARRAY_h0_bedrock GLOBAL_2D_ARRAY
 
 /* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/

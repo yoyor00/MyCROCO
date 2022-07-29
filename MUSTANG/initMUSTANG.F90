@@ -1278,7 +1278,7 @@ CONTAINS
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE morphoinit  ***
     !&E
-    !&E ** Purpose : initialization of hsed, hsed0, h0_bedrock, hsed_previous,
+    !&E ** Purpose : initialization of hsed, hsed0, hsed_previous,
     !&E                 morpho0 
     !&E
     !&E ** Description :
@@ -1310,11 +1310,7 @@ CONTAINS
         !  **TODO** To Program
         !   morpho0(boundaries)=0.0_rsh
      
-        !!  *2*  deallocate unused array   !!!
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if !defined MORPHODYN_MUSTANG_byHYDRO
-        IF(.NOT. l_MF_dhsed )  DEALLOCATE (hsed_previous)
-#endif
+
     ENDIF
  
  
@@ -1333,18 +1329,12 @@ CONTAINS
     ENDDO       
 
     IF(l_morphocoupl)THEN
-#if !defined MORPHODYN_MUSTANG_byHYDRO
-        IF (l_MF_dhsed) THEN
-#endif
             DO j=jfirst,jlast
             DO i=ifirst,ilast
                 !  WARNING: not in first and last mesh on i and j axis (boundaries)
                 hsed_previous(i,j)=hsed(i,j)
             ENDDO
             ENDDO       
-#if !defined MORPHODYN_MUSTANG_byHYDRO
-        END IF
-#endif
         
         IF(.NOT.l_repsed)THEN   
             hsed0(:,:)=0.0_rsh
@@ -1356,19 +1346,7 @@ CONTAINS
             ENDDO
         ENDIF                       
         
-        !!  *4*  definition de la cote du socle (sous le sediment) total depth invariable
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        DO j=jfirst,jlast
-        DO i=ifirst,ilast
-            IF(BATHY_H0(i,j) .NE. -valmanq)  THEN
-                h0_bedrock(i,j)=BATHY_H0(i,j)+hsed(i,j)         ! here BATHY_H0 is the inital bathy if l_bathy_actu=F 
-                                                ! or a new bathy readinf from a previous morphodynamic run if l_bathy_actu=T
-            ELSE
-                h0_bedrock(i,j)=BATHY_H0(i,j)
-            ENDIF
-        ENDDO
-        ENDDO
     ENDIF   ! endif l_morphocoupl
 
     IF(l_morphocoupl)THEN    
@@ -1682,7 +1660,6 @@ CONTAINS
     IF(l_morphocoupl) THEN
     !! Warning : no hx, hy in other model than MARS 
         ALLOCATE(morpho0(ARRAY_morpho))
-        ALLOCATE(h0_bedrock(ARRAY_h0_bedrock))
         ALLOCATE(hsed0(PROC_IN_ARRAY))
         ALLOCATE(hsed_previous(PROC_IN_ARRAY))
         hsed0(PROC_IN_ARRAY) = 0.0_rsh

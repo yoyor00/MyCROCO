@@ -861,7 +861,7 @@ CONTAINS
 #endif
 
 #ifdef MUSTANG
-#ifdef MORPHODYN_MUSTANG_byHYDRO
+#ifdef MORPHODYN
    indx=5
    wrthis(indx)=.TRUE.
    vname(1,indx)='Hm'
