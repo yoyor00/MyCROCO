@@ -5,274 +5,264 @@
 #include "cppdefs.h"
 #if defined MUSTANG 
 
-   !&E=========================================================================
-   !&E                   ***  MODULE  sed_MUSTANG_CROCO  ***
-   !&E
-   !&E ** Purpose : concerns subroutines related to sediment dynamics link to 
-   !&E              hydrodynamic model to be used in CROCO system
-   !&E 
-   !&E ** Description :
-   !&E     subroutine sed_MUSTANG_settlveloc ! settling velocity in the water 
-   !&E                                         column
-   !&E     subroutine sed_gradvit            ! calcul gradient de vitesse, u*
-   !&E     subroutine sed_skinstress         ! computes the skin stress
-   !&E     subroutine sed_bottom_slope
-   !&E     subroutine sedinit_fromfile  ! reads filrepsed where all results of 
-   !&E                                    sediment dyn. are stored (depends on 
-   !&E                                    hydro model)
-   !&E     subroutine sed_exchange_w2s ! MPI treatment of slip deposit fluxes
-   !&E     subroutine sed_exchange_s2w ! MPI treatment of lateral erosion 
-   !&E     subroutine sed_exchange_flxbedload ! MPI treatment of bedload fluxes
-   !&E     subroutine sed_exchange_maskbedload ! MPI exchange of mask for 
-   !&E                                           bedload
-   !&E     subroutine sed_exchange_corflu ! MPI treatment of corflu fluxes
-   !&E     subroutine sed_obc_corflu ! corflu fluxes at boundaries
-   !&E     subroutine sed_meshedges_corflu ! corflu fluxes interpolation at 
-   !&E                                       mesh edges
-   !&E
-   !&E==========================================================================
+!&E=========================================================================
+!&E                   ***  MODULE  sed_MUSTANG_CROCO  ***
+!&E
+!&E ** Purpose : concerns subroutines related to sediment dynamics link to 
+!&E              hydrodynamic model to be used in CROCO system
+!&E 
+!&E ** Description :
+!&E     subroutine sed_MUSTANG_settlveloc ! settling velocity in the water 
+!&E                                         column
+!&E     subroutine sed_gradvit            ! calcul gradient de vitesse, u*
+!&E     subroutine sed_skinstress         ! computes the skin stress
+!&E     subroutine sed_bottom_slope
+!&E     subroutine sedinit_fromfile  ! reads filrepsed where all results of 
+!&E                                    sediment dyn. are stored (depends on 
+!&E                                    hydro model)
+!&E     subroutine sed_exchange_w2s ! MPI treatment of slip deposit fluxes
+!&E     subroutine sed_exchange_s2w ! MPI treatment of lateral erosion 
+!&E     subroutine sed_exchange_flxbedload ! MPI treatment of bedload fluxes
+!&E     subroutine sed_exchange_maskbedload ! MPI exchange of mask for 
+!&E                                           bedload
+!&E     subroutine sed_exchange_corflu ! MPI treatment of corflu fluxes
+!&E     subroutine sed_obc_corflu ! corflu fluxes at boundaries
+!&E     subroutine sed_meshedges_corflu ! corflu fluxes interpolation at 
+!&E                                       mesh edges
+!&E
+!&E==========================================================================
 
 #include "coupler_define_MUSTANG.h"
 
-   !! * Modules used
-   USE comMUSTANG
-   USE comsubstance
-   USE module_MUSTANG
-   USE module_substance
-   
-   IMPLICIT NONE
+    !! * Modules used
+    USE comMUSTANG
+    USE comsubstance
+    USE module_MUSTANG
+    USE module_substance
+    
+    IMPLICIT NONE
 
-   !! * Accessibility 
-   PUBLIC sedinit_fromfile
-   PUBLIC sed_skinstress
-   PUBLIC sed_gradvit
-   PUBLIC sed_MUSTANG_settlveloc
+    !! * Accessibility 
+    PUBLIC sedinit_fromfile
+    PUBLIC sed_skinstress
+    PUBLIC sed_gradvit
+    PUBLIC sed_MUSTANG_settlveloc
 #ifdef key_MUSTANG_bedload
-   PUBLIC sed_bottom_slope
+    PUBLIC sed_bottom_slope
 #if defined MPI 
-   PUBLIC sed_exchange_flxbedload
-   PUBLIC sed_exchange_maskbedload
+    PUBLIC sed_exchange_flxbedload
+    PUBLIC sed_exchange_maskbedload
 #endif
 #endif
 #if defined MPI  && defined key_MUSTANG_slipdeposit
-   PUBLIC sed_exchange_w2s
+    PUBLIC sed_exchange_w2s
 #endif
 #if defined MPI  && defined key_MUSTANG_lateralerosion
-   PUBLIC sed_exchange_s2w
+    PUBLIC sed_exchange_s2w
 #endif
 #if defined MUSTANG_CORFLUX
-   PUBLIC sed_obc_corflu
-   PUBLIC sed_meshedges_corflu
+    PUBLIC sed_obc_corflu
+    PUBLIC sed_meshedges_corflu
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-   PUBLIC sed_exchange_corflu
+    PUBLIC sed_exchange_corflu
 #endif
 #endif
 
-   PRIVATE
-   
- CONTAINS
+PRIVATE
+
+CONTAINS
  
- !!============================================================================
-  SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
+!!=============================================================================
+SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
                                     WATER_CONCENTRATION) 
-   !&E-------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_settlveloc  ***
-   !&E
-   !&E ** Purpose : settling velocity computation
-   !&E
-   !&E ** Description : use arguments and common variable 
-   !&E  arguments IN : 
-   !&E         WATER_CONCENTRATION = t : WATER_CONCENTRATION 
-   !&E  arguments OUT:
-   !&E         ws_part : settling velocities for CROCO
-   !&E         ws3_bottom_MUSTANG: settling velocities in  bottom cell
-   !&E
-   !&E  need to be know by hydrodynamic code:
-   !&E         GRAVITY
-   !&E         kmax=NB_LAYER_WAT  : connu via coupleur_dimhydro_MUSTANG.h
-   !&E          
-   !&E  need to be know by code treated substance 
-   !&E  (if not ==> coupler_MUSTANG.F90)
-   !&E         imud1, nvpc, nvp, nv_adv, isand1, isand2
-   !&E         f_ws(iv) (if key_MUSTANG_flocmod)
-   !&E         ws_free_opt, ws_free_para, ws_free_min, ws_free_max,
-   !&E         ws_hind_opt, ws_hind_para   
-   !&E     
-   !&E  use module MUSTANG variables  :
-   !&E         ros(iv)
-   !&E         ws_sand(iv)
-   !&E        
-   !&E ** Called by :  MUSTANG_update
-   !&E
-   !&E-------------------------------------------------------------------------
+!&E----------------------------------------------------------------------------
+!&E                 ***  ROUTINE sed_MUSTANG_settlveloc  ***
+!&E
+!&E ** Purpose : settling velocity computation
+!&E
+!&E ** Description : use arguments and common variable 
+!&E  arguments IN : 
+!&E         WATER_CONCENTRATION = t : WATER_CONCENTRATION 
+!&E  arguments OUT:
+!&E         ws_part : settling velocities for CROCO
+!&E         ws3_bottom_MUSTANG: settling velocities in  bottom cell
+!&E
+!&E  need to be know via coupler_define_MUSTANG.h:
+!&E         GRAVITY
+!&E         kmax=NB_LAYER_WAT
+!&E          
+!&E  need to be know by code treated substance 
+!&E  (if not ==> coupler_MUSTANG.F90)
+!&E         imud1, nvpc, nvp, nv_adv, isand1, isand2
+!&E         f_ws(iv) (if key_MUSTANG_flocmod)
+!&E         ws_free_opt, ws_free_para, ws_free_min, ws_free_max,
+!&E         ws_hind_opt, ws_hind_para   
+!&E     
+!&E  use module MUSTANG variables  :
+!&E         ros(iv)
+!&E         ws_sand(iv)
+!&E        
+!&E ** Called by :  MUSTANG_update
+!&E
+!&E----------------------------------------------------------------------------
 
-   !! * Arguments
-   INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
-   REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION  
-   !! CROCO : WATER_CONCENTRATION  is directly t 
+!! * Arguments
+INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
+REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION  
+!! CROCO : WATER_CONCENTRATION  is directly t 
    
-   !! * Local declarations
-   INTEGER                            :: iv, k, ivpc, i, j
-   REAL(KIND=rsh)                     :: cmes, phi, phiv, De
-   REAL(KIND=rsh), PARAMETER          :: nuw = 0.00000102_rsh
+!! * Local declarations
+INTEGER                    :: iv, k, ivpc, i, j
+REAL(KIND=rsh)             :: cmes, phi, phiv, De, WSfree, Hind
+REAL(KIND=rsh), PARAMETER  :: nuw = 0.00000102_rsh
 
-   !!--------------------------------------------------------------------------
-   !! * Executable part
-
-      DO j = jfirst, jlast
-      DO i = ifirst, ilast
+!! * Executable part
+DO j = jfirst, jlast
+DO i = ifirst, ilast
            
-         IF(htot(i,j) > h0fond)  THEN
-           DO k=1,NB_LAYER_WAT
-              cmes=0.0_rsh
-              DO ivpc=imud1,nvpc
-                !cmes=cmes+WATER_CONCENTRATION(ivpc,k,i,j)
-                cmes=cmes+t(i,j,k,1,itemp+ntrc_salt+ivpc)
-              ENDDO
-              cmes=MAX(0.0_rsh,cmes)
+    IF (htot(i, j) > h0fond) THEN
+        DO k = 1, NB_LAYER_WAT
+            cmes = 0.0_rsh
+            DO ivpc = imud1, nvpc
+                cmes = cmes + WATER_CONCENTRATION(i, j, k, 1, itemp + ntrc_salt + ivpc)
+            ENDDO
+            cmes = MAX(0.0_rsh, cmes)
 
-! first calculating sand settling velocity
-              DO iv=isand1,isand2
-                ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_sand(iv)
-              ENDDO
-              
-! next mud settling velocity 
+            ! first calculating sand settling velocity
+            DO iv = isand1, isand2
+                ws_part(i, j, k, itemp + ntrc_salt + iv) = ws_sand(iv)
+            ENDDO
+            
+            ! next mud settling velocity 
 #ifdef key_MUSTANG_flocmod
-              DO iv=imud1,nvp         
-                ws_part(i,j,k,itemp+ntrc_salt+iv)=f_ws(iv)  
-              ENDDO
-      
+            DO iv = imud1, nvp         
+                ws_part(i, j, k, itemp + ntrc_salt + iv) = f_ws(iv)  
+            ENDDO
 #else
-      
-              DO iv=imud1,nvp
-! free settling velocity - flocculation
-    
+            DO iv = imud1, nvp
+                ! Free settling velocity - flocculation
                 IF(ws_free_opt(iv) == 0) THEN ! constant settling velocity
-                    ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_free_min(iv)
+                    WSfree = ws_free_min(iv)
                 ELSEIF (ws_free_opt(iv) == 1) THEN ! Van Leussen 1994
-
-                    ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_free_para(1,iv)*cmes**ws_free_para(2,iv) &
-                              *(1._rsh+ws_free_para(3,iv)*gradvit(k,i,j))/  &
-                               (1._rsh+ws_free_para(4,iv)*gradvit(k,i,j)**2._rsh)
-
+                    WSfree = ws_free_para(1, iv) * cmes**ws_free_para(2, iv) &
+                        * (1._rsh + ws_free_para(3, iv) * gradvit(k, i, j)) / &
+                        (1._rsh + ws_free_para(4, iv) * gradvit(k, i, j)**2._rsh)
                 ELSEIF (ws_free_opt(iv) == 2) THEN ! Winterwerp 1999
-                  De=ws_free_para(1,iv)+ws_free_para(2,iv)*cmes/(ws_free_para(3,iv)*sqrt(gradvit(k,i,j)))
-                  IF (De.GT.sqrt(nuw/gradvit(k,i,j))) THEN 
-                    De=sqrt(nuw/gradvit(k,i,j)) ! in case of large C/low G limit floc size to kolmogorov microscale
-                  ENDIF
-                  ws_part(i,j,k,itemp+ntrc_salt+iv)=(ros(iv)-RHOREF)*GRAVITY/(18._rsh*RHOREF*nuw)  &
-                                *ws_free_para(1,iv)**(3._rsh-ws_free_para(4,iv))  &
-                                *De**(ws_free_para(4,iv)-1._rsh)
-                
+                    De = ws_free_para(1, iv) &
+                        + ws_free_para(2, iv) &
+                        * cmes / (ws_free_para(3, iv) * sqrt(gradvit(k, i, j)))
+                    IF (De .GT. sqrt(nuw / gradvit(k, i, j))) THEN 
+                        De = sqrt(nuw / gradvit(k, i, j)) 
+                        ! in case of large C/low G limit floc size to kolmogorov microscale
+                    ENDIF
+                    WSfree = (ros(iv) - RHOREF) * GRAVITY / (18._rsh * RHOREF * nuw)  &
+                        * ws_free_para(1, iv)**(3._rsh - ws_free_para(4, iv))  &
+                        * De**(ws_free_para(4, iv) - 1._rsh)
                 ELSEIF (ws_free_opt(iv) == 3) THEN ! Wolanski et al., 1989
-                    ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_free_para(1,iv)*cmes**ws_free_para(2,iv)
-
+                    WSfree = ws_free_para(1, iv) * cmes**ws_free_para(2, iv)
                 ENDIF
 
-
-! Hindered settling
-! if ws_hind_opt.EQ.0 : no hindered settling...ws_part unchanged
+                ! Hindered settling
+                ! if ws_hind_opt.EQ.0 : no hindered settling... Hind = 1
+                Hind = 1._rsh
                 IF (ws_hind_opt(iv) == 1) THEN ! Scott, 1984
-                  phi=MIN(1.0_rsh,cmes/ws_hind_para(1,iv))
-                  ws_part(i,j,k,itemp+ntrc_salt+iv)=  &
-                    ws_part(i,j,k,itemp+ntrc_salt+iv)*(1._rsh-phi)**ws_hind_para(2,iv)
-                ELSEIF (ws_hind_opt(iv) == 2) THEN ! Winterwerp, 2002 - ATTENTION : ros(iv) must be the same for all MUDS variables
-                  phi=cmes/ros(iv)
-                  IF (ws_free_opt(iv) == 2) THEN
-                    phi=cmes/ros(iv)
-                    phiv=phi*(De/ws_free_para(1,iv))**(3._rsh-ws_free_para(4,iv))
-                  ELSE
-                    phiv=cmes/ws_hind_para(1,iv)
-                  ENDIF
-
-                  ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_part(i,j,k,itemp+ntrc_salt+iv)* &
-                       (1._rsh-phiv)**ws_hind_para(2,iv)*(1._rsh-phi) /(1._rsh+2.5_rsh*phiv)
+                    phi = MIN(1.0_rsh, cmes / ws_hind_para(1, iv))
+                    Hind = (1._rsh - phi)**ws_hind_para(2, iv)
+                ELSEIF (ws_hind_opt(iv) == 2) THEN ! Winterwerp, 2002 
+                    ! WARNING : ros(iv) must be the same for all MUDS variables
+                    phi = cmes / ros(iv)
+                    IF (ws_free_opt(iv) == 2) THEN
+                        phiv = phi * (De / ws_free_para(1, iv))**(3._rsh - ws_free_para(4, iv))
+                    ELSE
+                        phiv = cmes / ws_hind_para(1, iv)
+                    ENDIF
+                    Hind = (1._rsh - phiv)**ws_hind_para(2, iv) * &
+                        (1._rsh - phi) / (1._rsh + 2.5_rsh * phiv)
                 ELSEIF (ws_hind_opt(iv) == 3) THEN ! wolanski et al., 1989
-                  IF (ws_free_opt(iv) == 3) THEN
-                    ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_part(i,j,k,iv)/ &
-                       (cmes**2._rsh+ws_hind_para(1,iv)**2._rsh)**ws_hind_para(2,iv)
-                  ELSE
-                    
-                  ENDIF
+                    IF (ws_free_opt(iv) == 3) THEN
+                        Hind = 1._rsh / (cmes**2._rsh + ws_hind_para(1, iv)**2._rsh)**ws_hind_para(2, iv)
+                    ENDIF  ! ws_hind_opt(iv) == 3 only if ws_free_opt(iv) == 3
                 ENDIF
 
-! limiting ws with min/max values...
-! necessary if ndt_part not updated during the simulation, ndt_part calculated in subreaddat from a maximum settling velocity
-                ws_part(i,j,k,itemp+ntrc_salt+iv)=max(ws_free_min(iv), &
-                            min(ws_free_max(iv),ws_part(i,j,k,itemp+ntrc_salt+iv)))
+                ! limiting ws with min/max values...
+                ! necessary if ndt_part not updated during the simulation, 
+                ! ndt_part calculated in t3dmix_tridiagonal_settling from max ws
+                ws_part(i, j, k, itemp + ntrc_salt + iv) = max(ws_free_min(iv), &
+                    min(ws_free_max(iv), WSfree * Hind))
+            ENDDO
 
-              ENDDO
-              
+#endif  /* key_MUSTANG_flocmod */
 
-            ! rverney : attention update parsub_newdt with flocculation! 
-
-#endif
-              DO iv=nvpc+1,nvp
-                IF(irkm_var_assoc(iv) < imud1 .AND. irkm_var_assoc(iv) > 0) THEN    ! sorbed substances on sands
-                  ws_part(i,j,k,itemp+ntrc_salt+iv)=ws_part(i,j,k,itemp+ntrc_salt+irkm_var_assoc(iv))
+            DO iv = nvpc+1, nvp
+                IF(irkm_var_assoc(iv) < imud1 .AND. irkm_var_assoc(iv) > 0) THEN    
+                    ! sorbed substances on sands
+                    ws_part(i, j, k, itemp + ntrc_salt + iv) = &
+                        ws_part(i, j, k, itemp + ntrc_salt + irkm_var_assoc(iv))
                 ENDIF
-              ENDDO
-              DO iv=nvp+1,nv_adv
-                ws_part(i,j,k,itemp+ntrc_salt+iv)=0.0_rsh
-              ENDDO
-              
-           ENDDO
-           ws3_bottom_MUSTANG(1:nvp,i,j)=ws_part(i,j,1,itemp+ntrc_salt+1:nvp+itemp+ntrc_salt)
-         ELSE
-            ws_part(i,j,:,:)=0.0_rsh
-           ws3_bottom_MUSTANG(:,i,j)=0.0_rsh
-         ENDIF
+            ENDDO
+            
+            DO iv = nvp+1, nv_adv
+                ws_part(i, j, k, itemp + ntrc_salt + iv) = 0.0_rsh
+            ENDDO
 
-       ENDDO
-       ENDDO
+        ENDDO ! do loop on k
+        ws3_bottom_MUSTANG(1:nvp, i, j) = ws_part(i, j, 1, itemp+ntrc_salt+1:itemp+ntrc_salt+nvp)
 
-  END SUBROUTINE sed_MUSTANG_settlveloc     
+    ELSE  ! htot(i,j) <= h0fond
+        ws_part(i, j, :, :) = 0.0_rsh
+        ws3_bottom_MUSTANG(:, i, j) = 0.0_rsh
+    ENDIF
+
+ENDDO
+ENDDO
+
+END SUBROUTINE sed_MUSTANG_settlveloc     
 
 !!=============================================================================
-  SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE sed_gradvit  ***
-  !&E
-  !&E ** Purpose : calculation of the turbulence energy G  
-  !&E
-  !&E ** Description : G= sqrt(turbulence dissipation/viscosity)
-  !&E                 to be programmed using hydrodynamic knowledge
-  !&E           using htot, RHOREF, sig, epn, nz ..
-  !&E
-  !&E     output : gradvit (in comMUSTANG)
-  !&E
-  !&E ** Called by :  MUSTANG_update
-  !&E
-  !&E--------------------------------------------------------------------------
-  !! * Modules used
+SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
+!&E--------------------------------------------------------------------------
+!&E                 ***  ROUTINE sed_gradvit  ***
+!&E
+!&E ** Purpose : calculation of the turbulence energy G  
+!&E
+!&E ** Description : G= sqrt(turbulence dissipation/viscosity)
+!&E                 to be programmed using hydrodynamic knowledge
+!&E           using htot, RHOREF, sig, epn, nz ..
+!&E
+!&E     output : gradvit (in comMUSTANG)
+!&E
+!&E ** Called by :  MUSTANG_update
+!&E
+!&E--------------------------------------------------------------------------
+!! * Modules used
 #  include "mixing.h"
 #  include "ocean3d.h"
 
-  !! * Arguments 
-  INTEGER, INTENT(IN)       :: ifirst, ilast, jfirst, jlast
+!! * Arguments 
+INTEGER, INTENT(IN)       :: ifirst, ilast, jfirst, jlast
 
-  !! * Local declarations
-  INTEGER        :: i, j, k
-  REAL(KIND=rsh) :: dist_surf_on_bottom, nuw
+!! * Local declarations
+INTEGER        :: i, j, k
+REAL(KIND=rsh) :: dist_surf_on_bottom, nuw
 
-  nuw = 1.0e-6
-  DO j = jfirst, jlast
-    DO i = ifirst, ilast
-      IF(htot(i, j) .GT. h0fond)  THEN
-        DO k = 1, N
-          dist_surf_on_bottom = ((z_w(i, j, N) - z_r(i, j, k)) / (z_r(i, j, k) - z_w(i, j, 0)))
-          gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
-                            (nuw + epsilon_MUSTANG) * dist_surf_on_bottom) 
-        END DO
-        ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
-        !  if  turbulence dissipation rate has not been already evaluated: 
-        ! use empirical formula from   Nezu and Nakawaga (1993)
-        !  turbulence dissipation_rate= ustarbot**3 /Karman/Htot * (distance from surface/distance from bottom)
-      ENDIF
-    ENDDO
-  ENDDO
+nuw = 1.0e-6
+DO j = jfirst, jlast
+DO i = ifirst, ilast
+    IF(htot(i, j) .GT. h0fond)  THEN
+    DO k = 1, N
+        dist_surf_on_bottom = ((z_w(i, j, N) - z_r(i, j, k)) / (z_r(i, j, k) - z_w(i, j, 0)))
+        gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
+                        (nuw + epsilon_MUSTANG) * dist_surf_on_bottom) 
+    END DO
+    ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
+    ! if  turbulence dissipation rate has not been already evaluated: 
+    ! use empirical formula from   Nezu and Nakawaga (1993)
+    ! turbulence dissipation_rate = ustarbot**3 /Karman/Htot * (distance from surface/distance from bottom)
+    ENDIF
+ENDDO
+ENDDO
 
-  END SUBROUTINE sed_gradvit
+END SUBROUTINE sed_gradvit
 
 !!==============================================================================
   SUBROUTINE sed_skinstress(ifirst, ilast, jfirst, jlast)
