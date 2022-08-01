@@ -658,40 +658,36 @@
    !&E              continuation of a previous run
    !&E
    !&E ** Description : open and read a netcdf file, written during a previous run 
-   !&E                          (save file created by sed_outsaverestart) 
    !&E
-   !&E ** Called by :  MUSTANG_init_sediment 
-   !&E
-   !&E ** External calls : ionc4_openr, ionc4_read_time,
-   !&E                     ionc4_read_subxyt, ionc4_read_subzxyt
+   !&E ** Called by :  MUSTANG_init 
    !&E
    !&E-------------------------------------------------------------------------
    !! * Modules used
-      implicit none
+    implicit none
 
-      !! * Arguments
-      REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN) :: BATHY_H0                         
+    !! * Arguments
+    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN) :: BATHY_H0                         
 
 # include "netcdf.inc"
-      real time_scale
-      integer iv,k,itrc,indWrk
-      integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,       &
-      start(2), count(2), ibuff(6),   nf_fread, checkdims
-      character units*180,nomcv*30
-      character inised_name*180
-      real tmp(GLOBAL_2D_ARRAY)
-      real tmp3d(GLOBAL_2D_ARRAY,ksdmin:ksdmax)
+    real time_scale
+    integer iv, k, itrc, indWrk
+    integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,       &
+    start(2), count(2), ibuff(6), nf_fread, checkdims
+    character units*180, nomcv*30
+    character inised_name*180
+    real tmp(GLOBAL_2D_ARRAY)
+    real tmp3d(GLOBAL_2D_ARRAY, ksdmin:ksdmax)
 
-     tmp(PROC_IN_ARRAY)=0
-     tmp3d(PROC_IN_ARRAY,ksdmin:ksdmax)=0
-     z0sed(PROC_IN_ARRAY)=z0seduni
-     dzsmax(PROC_IN_ARRAY)=dzsmaxuni
-     ksmi(PROC_IN_ARRAY)=ksmiuni
-     ksma(PROC_IN_ARRAY)=0
-     hsed(PROC_IN_ARRAY)=-valmanq
-     dzs(ksdmin:ksdmax,PROC_IN_ARRAY)=-valmanq
-     cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY)=-valmanq
-     c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY)=-valmanq
+    tmp(PROC_IN_ARRAY) = 0
+    tmp3d(PROC_IN_ARRAY,ksdmin:ksdmax) = 0
+    z0sed(PROC_IN_ARRAY) = z0seduni
+    dzsmax(PROC_IN_ARRAY) = dzsmaxuni
+    ksmi(PROC_IN_ARRAY) = ksmiuni
+    ksma(PROC_IN_ARRAY) = 0
+    hsed(PROC_IN_ARRAY) = -valmanq
+    dzs(ksdmin:ksdmax,PROC_IN_ARRAY) = -valmanq
+    cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY) = -valmanq
+    c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY) = -valmanq
 !
 ! Open initial conditions netCDF file for reading. Check that all
 ! spatial dimensions in that file are consistent with the model
@@ -707,18 +703,18 @@
 ! available record is used.
 
 !      if (may_day_flag.ne.0) return      !-->  EXIT
-      inised_name=filrepsed
-      lstr=lenstr(inised_name)
-      ierr=nf_open(inised_name(1:lstr), nf_nowrite, ncid)
+      inised_name = filrepsed
+      lstr = lenstr(inised_name)
+      ierr = nf_open(inised_name(1:lstr), nf_nowrite, ncid)
       if (ierr.eq.nf_noerr) then
-        ierr=checkdims (ncid, inised_name, lstr, indx)
+        ierr = checkdims(ncid, inised_name, lstr, indx)
 
         if (ierr.ne.nf_noerr) then
          goto 99
         elseif (indx.eq.0) then
-          indx=1
+          indx = 1
         elseif (indx.gt.0 .and. nrrec.gt.0 .and. nrrec.le.indx) then
-          indx=nrrec
+          indx = nrrec
         elseif (indx.gt.0 .and. nrrec.gt.indx) then
           write(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')   &
                  'SEDINIT_FROMFILE ERROR: requested restart time record', &
@@ -1174,7 +1170,7 @@
 #endif /* MUSTANG_CORFLUX */
 
  
-! **TODO** code for CROCO
+! **TODO** code for CROCO if needed
 ! SUBROUTINE bathy_actu_fromfile(h0)
 ! subroutine sed_exchange_hxe_MARS(iwhat,xh0,xssh) 
 ! SUBROUTINE sed_exchange_maskbedload_MARS

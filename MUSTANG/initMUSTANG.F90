@@ -1302,22 +1302,15 @@ CONTAINS
     IF(l_morphocoupl) THEN
         ! morpho = 1 if morphodynamic effective
         ! morpho = 0 if depth not vary
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
         morpho0(ARRAY_morpho)=1.0_rsh
-        ! morpho=0 aux limites du domaine
-
         !  **TODO** To Program
         !   morpho0(boundaries)=0.0_rsh
-     
-
     ENDIF
  
  
-    !!  *3*  initialisation of hsed  inside the domain  !!!
-    !!        eliminate the meshes at open boundaries
+    !!  initialisation of hsed  inside the domain  !!!
+    !!  eliminate the meshes at open boundaries
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     DO j=jfirst,jlast
     DO i=ifirst,ilast
         !  WARNING : not in first and last mesh on i and j axis (boundaries)
@@ -1329,12 +1322,12 @@ CONTAINS
     ENDDO       
 
     IF(l_morphocoupl)THEN
-            DO j=jfirst,jlast
-            DO i=ifirst,ilast
-                !  WARNING: not in first and last mesh on i and j axis (boundaries)
-                hsed_previous(i,j)=hsed(i,j)
-            ENDDO
-            ENDDO       
+        DO j=jfirst,jlast
+        DO i=ifirst,ilast
+            !  WARNING: not in first and last mesh on i and j axis (boundaries)
+            hsed_previous(i,j)=hsed(i,j)
+        ENDDO
+        ENDDO       
         
         IF(.NOT.l_repsed)THEN   
             hsed0(:,:)=0.0_rsh
@@ -1344,8 +1337,7 @@ CONTAINS
                 hsed0(i,j)=hsed(i,j)
             ENDDO
             ENDDO
-        ENDIF                       
-        
+        ENDIF                         
 
     ENDIF   ! endif l_morphocoupl
 
@@ -1353,7 +1345,7 @@ CONTAINS
 
         IF(l_repsed)THEN          
 
-        !!  *5*  update bathy and water elevation if initalisation from file !!!
+        !!  update bathy and water elevation if initalisation from file !!!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         DO j=jfirst,jlast
         DO i=ifirst,ilast
@@ -1362,7 +1354,7 @@ CONTAINS
         ENDDO
         ENDDO
          
-        !!  *6* echange MPI of BATHY_H0 and WATER_ELEVATION for neighboring cells
+        !!  echange MPI of BATHY_H0 and WATER_ELEVATION for neighboring cells
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
         !! To Program, has not been program for CROCO **TODO** CALL sed_exchange_hxe_MARS(1,xh0=BATHY_H0,xssh=WATER_ELEVATION)
 
@@ -1394,14 +1386,12 @@ CONTAINS
     !&E
     !&E ** Purpose : allocation of arrays relative to sediment
     !&E
-    !&E ** Description :
-    !&E
     !&E ** Called by : MUSTANG_init
     !&E
     !&E--------------------------------------------------------------------------
     
     !! * Local declarations
-    INTEGER               :: iv
+    INTEGER :: iv
 
     !! * Executable part
     ALLOCATE(ws_sand(nvp))        

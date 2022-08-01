@@ -144,11 +144,6 @@ MODULE sed_MUSTANG
    !&E               + remodelling (erosion, consolidation, diffusion, bioturbation
    !&E               (only inside the domain, not at boundaries)
    !&E
-   !&E         for MARS : ifirst=imin+2, ilast=imax-1, jfirst=jmin+2,  jlast=jmax-1
-   !&E                    for interior processors : ifirst=limin, ilast=limax, jfirst=ljmin,  jlast=ljmax
-   !&E         
-   !&E ** Description :
-   !&E
    !&E  arguments IN : 
    !&E         loops  :ifirst,ilast,jfirst,jlast
    !&E         parametres ref  :RHOREF, saliref_lin,temperef_lin
@@ -172,8 +167,8 @@ MODULE sed_MUSTANG
 #ifdef key_MUSTANG_bedload
     USE sed_MUSTANG_HOST,    ONLY :  sed_bottom_slope
 #if defined MPI 
-    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_flxbedload
-    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_maskbedload
+      USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_flxbedload
+      USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_maskbedload
 #endif
 #endif
 #if defined MPI  && defined key_MUSTANG_lateralerosion
@@ -183,10 +178,9 @@ MODULE sed_MUSTANG
     USE sed_MUSTANG_HOST,    ONLY :  sed_obc_corflu
     USE sed_MUSTANG_HOST,    ONLY :  sed_meshedges_corflu
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_corflu
+      USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_corflu
 #endif
 #endif
-
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
    USE reactionsinsed,  ONLY : reactions_in_sed
    USE bioloinit,     ONLY : p_txfiltbenthmax
@@ -1166,15 +1160,8 @@ MODULE sed_MUSTANG
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_comp_z0sed ***
    !&E
-   !&E ** Purpose : computes sediment roughness length depending on sediment diameter
-   !&E
-   !&E ** Description : use arguments and common variable 
-   !&E
-   !&E  arguments IN : 
-   !&E         loops  :ifirst,ilast,jfirst,jlast
-   !&E          
-   !&E  variables OUT:
-   !&E         z0sed : roughness length (mm)
+   !&E ** Purpose : computes sediment roughness length z0sed in meter
+   !&E               depending on sediment diameter
    !&E
    !&E ** Called by :  MUSTANG_update
    !&E
@@ -1233,7 +1220,7 @@ MODULE sed_MUSTANG
    !&E         loops  :ifirst,ilast,jfirst,jlast
    !&E          
    !&E  variables OUT:
-   !&E         z0hydro : roughness length (mm)
+   !&E         z0hydro : roughness length (m)
    !&E
    !&E
    !&E ** Called by :  initMUSTANG and MUSTANG_update
