@@ -10,8 +10,12 @@
 # BEGIN USER MODIFICATIONS
 
 # Machine you are working on
-# Known machines: Linux DATARMOR IRENE JEANZAY
+# Known machines: Linux DATARMOR IRENE JEANZAY  
 # ---------------------------------------------
+## Check in SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/*/ if one header look as you are used to
+## Else you need to create your own directory with your cluster name and edit the same files.
+## You also need to create a condition in SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95) for you cluster
+
 MACHINE="Linux"
 
 # croco source directory
