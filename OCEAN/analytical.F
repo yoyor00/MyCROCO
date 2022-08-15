@@ -120,13 +120,12 @@
 !
 #  include "compute_auxiliary_bounds.h"
 !
-#  ifdef TEMPERATURE       
-      if (itrc.eq.itemp) then
-!
 !----------------------------------------------------------------------
 ! Set kinematic bottom heat flux [degC m/s] at horizontal RHO-points.
 !----------------------------------------------------------------------
 !
+#  ifdef TEMPERATURE       
+      if (itrc.eq.itemp) then
         do j=JstrR,JendR
           do i=IstrR,IendR
 #  if defined SINGLE_COLUMN 
@@ -135,19 +134,21 @@
 #   elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
             btflx(i,j,itemp)=-1.0e-5*0.01
 #   endif
+#  else
+            btflx(i,j,itemp)=0.
 #  endif
           enddo
         enddo
       endif
 #  endif /* TEMPERATURE */        
-#  ifdef SALINITY
-      if (itrc.eq.isalt) then
 !
 !----------------------------------------------------------------------
 !  Set kinematic bottom salt flux (m/s) at horizontal RHO-points,
 !  scaling by bottom salinity is done in STEP3D.
 !----------------------------------------------------------------------
 !
+#  ifdef SALINITY
+      if (itrc.eq.isalt) then
         do j=JstrR,JendR
           do i=IstrR,IendR
             btflx(i,j,isalt)=0.
@@ -155,9 +156,14 @@
         enddo
       endif
 #  endif /* SALINITY */
-    
+!
+!----------------------------------------------------------------------
+!  Set kinematic surface flux of additional tracers, 
+! for example sediments, bio..., to zero
+!----------------------------------------------------------------------
+!
 #  if defined SALINITY && defined TEMPERATURE
-      if (itrc.ne.isalt.and.itrc.ne.itemp) then
+      if (itrc.ne.isalt .and. itrc.ne.itemp) then
 #  endif /* SALINITY && TEMPERATURE*/
 #  if !defined SALINITY && defined TEMPERATURE
       if (itrc.ne.itemp) then
@@ -165,12 +171,6 @@
 #  if defined SALINITY && !defined TEMPERATURE
       if (itrc.ne.isalt) then
 #  endif /* SALINITY && !TEMPERATURE*/
-!
-!----------------------------------------------------------------------
-!  Set kinematic surface flux of additional tracers, 
-! for example sediments, bio..., to zero
-!----------------------------------------------------------------------
-!
         do j=JstrR,JendR
           do i=IstrR,IendR
             btflx(i,j,itrc)=0.
