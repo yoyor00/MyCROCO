@@ -193,6 +193,8 @@
           enddo
         enddo
         k=N
-        wnbqbry_west(j,k)=0.5*Hz(0,j,k)*wbry_west(j,k)
+        do j=JstrR,JendR
+          wnbqbry_west(j,k)=0.5*Hz(0,j,k)*wbry_west(j,k)
+        enddo
 #   endif
 
