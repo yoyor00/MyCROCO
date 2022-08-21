@@ -187,7 +187,7 @@
           enddo
         enddo
         do k=1,N-1
-          do j=IstrR,IendR
+          do j=JstrR,JendR
             wnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j,k+1))
      &                                    *wbry_west(j,k)
           enddo
