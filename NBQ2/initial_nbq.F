@@ -248,6 +248,9 @@
 # elif defined M3FAST_W              
             qdmw_nbq(i,j,k)=0.
 # endif              
+# ifdef M3FAST_BOTH
+              qdmwh_nbq(i,j,k)=0.
+# endif
           enddo
         enddo
         k=N 
@@ -258,6 +261,9 @@
 # elif defined M3FAST_W               
             qdmw_nbq(i,j,k)=0.
 # endif              
+# ifdef M3FAST_BOTH
+              qdmwh_nbq(i,j,k)=0.
+# endif
           enddo
         enddo
 # if defined M3FAST_RHO

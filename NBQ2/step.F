@@ -471,7 +471,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef M3FAST 
+# ifdef M3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -937,7 +937,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# ifdef M3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -945,7 +945,7 @@ C$OMP BARRIER
 #  endif
 # endif
         call step3d_uv1 (tile)
-# if defined NBQ || defined M3SLOW_W
+# ifdef M3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call step3d_w (tile)
 #  else
