@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef M3FAST
+# ifdef M3FAST_W
       subroutine wnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -34,9 +34,9 @@
 ! Set lateral boundary conditions for W-component momentum
 ! qdmw_nbq for the parent grid.
 !
-# endif /* M3FAST */
+# endif /* M3FAST_W */
 #else
-# ifdef M3FAST
+# ifdef M3FAST_W
 !
 ! CHILD
 !
@@ -45,9 +45,9 @@
 ! Set lateral boundary conditions for W-component momentum
 ! qdmw_nbq for the child grid.
 !
-# endif /* M3FAST */
+# endif /* M3FAST_W*/
 #endif /* CHILD */
-# ifdef M3FAST
+# ifdef M3FAST_W
 !
 ! Common Code
 !
@@ -597,7 +597,7 @@
       subroutine wnbq_bc_child_empty
       end
 # endif
-#endif /* NBQ */
+#endif /* M3FAST_W */
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF
