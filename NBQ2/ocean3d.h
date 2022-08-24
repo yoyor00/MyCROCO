@@ -57,7 +57,6 @@
 #  else
 #     define Hzr Hz
 #  endif
-# endif
 
 # if defined UV_VIS4 && defined UV_MIX_GEO
       real z_u(GLOBAL_2D_ARRAY,N)
