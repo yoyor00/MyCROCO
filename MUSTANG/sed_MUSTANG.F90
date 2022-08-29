@@ -2394,6 +2394,7 @@ MODULE sed_MUSTANG
 
    !! * Local declarations
    INTEGER        ::  i,j,k,iv,ksmax,ksup,ksmaxa,isplit
+   LOGICAL        ::  fusion
    REAL(KIND=rsh) ::  dt1,toce,cvolgrv,csanmud,phieau_ero_ij,                  &
                       erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w,       &
                       cvolp,volerod,poroa,poroam1,dflusve,      &
@@ -2678,43 +2679,51 @@ MODULE sed_MUSTANG
           !        pas encore fait
           ! ----------------------------------------------------------
           IF(ero > 0.0_rsh) THEN
-            DO WHILE (ksmax.GT.ksmi(i,j) .AND. &
-              (dzs(ksmax,i,j).LE.dzsmin .AND. (dzs(ksmax-1,i,j)< dzsmax(i,j)  .OR. l_consolid)))
-                ksmaxa=ksmax
-                dzsa=dzs(ksmax,i,j)
-                dzsam1=dzs(ksmax-1,i,j)
-                poroa=poro(ksmax,i,j)
-                poroam1=poro(ksmax-1,i,j)
-                ksmax=ksmax-1
-                dzs(ksmax,i,j)=dzsa+dzsam1
-                dzsisu=1.0_rsh/dzs(ksmax,i,j)
-                c_sedtot(ksmax,i,j)=0.0_rsh
-                cvolp=0.0_rsh
-                DO iv=1,nv_use ! nv_use=nvp (or nvpc if key_Pconstitonly_insed)
-                  cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*dzsa             &
-                                     +cv_sed(iv,ksmax,i,j)*dzsam1)*dzsisu
-                  c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)                      &
-                                    +cv_sed(iv,ksmax,i,j)*typart(iv)
-                  cvolp=cvolp+cv_sed(iv,ksmax,i,j)*typart(iv)/ros(iv)
-                ENDDO
-                poro(ksmax,i,j)=1.0_rsh-cvolp
-                dzpoi=dzsisu/poro(ksmax,i,j)
+            fusion = .true.
+            DO WHILE (fusion)
+                IF (ksmax.GT.ksmi(i,j)) THEN
+                    IF (dzs(ksmax,i,j).LE.dzsmin .AND. (dzs(ksmax-1,i,j)< dzsmax(i,j)  .OR. l_consolid)) THEN
+                        ksmaxa=ksmax
+                        dzsa=dzs(ksmax,i,j)
+                        dzsam1=dzs(ksmax-1,i,j)
+                        poroa=poro(ksmax,i,j)
+                        poroam1=poro(ksmax-1,i,j)
+                        ksmax=ksmax-1
+                        dzs(ksmax,i,j)=dzsa+dzsam1
+                        dzsisu=1.0_rsh/dzs(ksmax,i,j)
+                        c_sedtot(ksmax,i,j)=0.0_rsh
+                        cvolp=0.0_rsh
+                        DO iv=1,nv_use ! nv_use=nvp (or nvpc if key_Pconstitonly_insed)
+                        cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*dzsa             &
+                                            +cv_sed(iv,ksmax,i,j)*dzsam1)*dzsisu
+                        c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)                      &
+                                            +cv_sed(iv,ksmax,i,j)*typart(iv)
+                        cvolp=cvolp+cv_sed(iv,ksmax,i,j)*typart(iv)/ros(iv)
+                        ENDDO
+                        poro(ksmax,i,j)=1.0_rsh-cvolp
+                        dzpoi=dzsisu/poro(ksmax,i,j)
 #if ! defined key_noTSdiss_insed
 #if ! defined key_Pconstitonly_insed
-                ! dissolved variable in pore waters
-                DO iv=nvp+1,nv_adv
-                    ! in .../m3 of interstial waters
-                   cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*poroa*dzsa+        &
-                                    cv_sed(iv,ksmax,i,j)*poroam1*dzsam1)*dzpoi
-                ENDDO
+                        ! dissolved variable in pore waters
+                        DO iv=nvp+1,nv_adv
+                            ! in .../m3 of interstial waters
+                        cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*poroa*dzsa+        &
+                                            cv_sed(iv,ksmax,i,j)*poroam1*dzsam1)*dzpoi
+                        ENDDO
 #endif
 
-                ! Temperature and salinity
-                DO iv=-1,0
-                  cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*poroa*dzsa+        &
-                                    cv_sed(iv,ksmax,i,j)*poroam1*dzsam1)*dzpoi
-                ENDDO
+                        ! Temperature and salinity
+                        DO iv=-1,0
+                        cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*poroa*dzsa+        &
+                                            cv_sed(iv,ksmax,i,j)*poroam1*dzsam1)*dzpoi
+                        ENDDO
 #endif
+                    ELSE
+                        fusion = .false.
+                    ENDIF ! dzs(ksmax,i,j).LE.dzsmin .AND. (dzs(ksmax-1,i,j)< dzsmax(i,j)  .OR. l_consolid)
+                ELSE
+                    fusion = .false.
+                ENDIF ! ksmax.GT.ksmi(i,j)
             ENDDO ! end of do while (ksmax.GT.ksmi(i,j))
 
            IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
