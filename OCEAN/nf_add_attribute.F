@@ -78,8 +78,16 @@
 #ifdef FILLVAL
       text=vname(i+3,indx)
       if (TRIM(text) /= '.NO.') then
-      ierr= nf_put_att_FTYPE (ncid, vid,'_FillValue', nf_type,
+       if (nf_type == NF_REAL) then
+        ierr= nf_put_att_real (ncid, vid,'_FillValue', nf_type,
      &     1, spval)
+       elseif(nf_type == NF_DOUBLE) then
+        ierr= nf_put_att_double (ncid, vid,'_FillValue', nf_type,
+     &     1, spval)
+       elseif(nf_type == NF_INT) then
+        ierr= nf_put_att_int (ncid, vid,'_FillValue', nf_type,
+     &     1, int(spval))
+       endif
       endif
 #endif      
       return
