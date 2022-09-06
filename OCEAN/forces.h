@@ -352,6 +352,10 @@
 # ifdef READ_PATM
       common /bulkdat_patmg/patmg
 # endif
+# ifdef ONLINE
+      common /bulk_uwndg_norot/uwndg_norot
+      common /bulk_radswg_down/radswg_down
+# endif
       common /bulk_uwndg/uwndg
       common /bulk_vwndg/vwndg
       common /bulkdat_wspdg/wspdg
