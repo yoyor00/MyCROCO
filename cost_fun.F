@@ -341,18 +341,22 @@ c     cf ana_initial
 # include "adinc.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend, i,j,k,cpoint
+      integer Istr,Iend,Jstr,Jend, i,j,k,ik,cpoint
       double precision cff1,cff,depth,ridge_width,ridge_height
       character*6 counter_str
 
 #include "compute_extended_bounds.h"
 
       do j=JstrR,JendR
-         k = 1
+         ik = 0
+         k = 0
          do i=IstrR,IendR
-            pena_h(i,j)= ad_x(k)
-            k=k+1
-        enddo
+            if (mod(ik,3).eq.0) then
+               k=k+1
+            end if
+            pena_h(i,j)= ad_x(k) + mod(ik,3)*(ad_x(k+1) - ad_x(k))/3.;
+            ik=ik+1
+         enddo
       enddo
 
       write(*, *) '**** set_state ****'
@@ -584,7 +588,7 @@ c      call grid_stiffness(tile)
 # include "adinc.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend,i,j,k
+      integer Istr,Iend,Jstr,Jend,i,j,k,ik
       double precision ridge_width, ridge_height,depth,cff1,cff,rnd
 
 # include "compute_extended_bounds.h"
@@ -596,7 +600,8 @@ c set a lower depth
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
-        k=1
+        ik=0
+        k=0
         do i=IstrR,IendR
           if ((xr(i,j).gt.ridge_width).or.
      &       (xr(i,j).lt.(-ridge_width))) then
@@ -618,7 +623,8 @@ c set a lower depth
 
       cff1=1./(ridge_width*ridge_width)
       j=JstrR
-      k=1
+      ik=0
+      k=0
       do i=IstrR,IendR
          if ((xr(i,j).gt.ridge_width).or.
      &        (xr(i,j).lt.(-ridge_width))) then
@@ -626,12 +632,15 @@ c set a lower depth
          else
             cff=1-(xr(i,j)*xr(i,j)*cff1);
          endif
-         ad_x(k) = depth-ridge_height*cff*cff
-c     &        - 100;
-         k=k+1
+         if (mod(ik,3).eq.0) then
+            k=k+1
+            ad_x(k) = depth-ridge_height*cff*cff
+         end if
+         ik=ik+1
       enddo
 
-      ad_array_node_size=k
+      ad_x(k+1) = ad_x(k)
+      ad_array_node_size=k+1
 
       do j=JstrR,JendR
          k = 1
