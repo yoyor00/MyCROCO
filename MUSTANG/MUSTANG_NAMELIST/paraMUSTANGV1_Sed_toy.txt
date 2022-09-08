@@ -1,144 +1,77 @@
-:=============================================================================
-:             MODULE MUSTANG   --- version V1 ----
+:==============================================================================
+:    MODULE MUSTANG  
 :    NAMELIST FOR SEDIMENT BEHAVIOUR AND MANAGEMENT PARAMETERS
-:=============================================================================
+:==============================================================================
 :
 : namsedim_init            : relative to sediment initialization
-: namsedim_layer           : relative to sediment layers characterization
+: namsedim_layer           : relative to sediment layers characterization and 
+:                            active layer
 : namsedim_bottomstress    : relative to bottom shear stress
 : namsedim_deposition      : relative to sediment deposition
 : namsedim_erosion         : relative to sediment erosion
+: namsedim_poro            : relative to porosity
+:                            (only if key_MUSTANG_V2)
+: namsedim_bedload         : relative to sediment bedload
+:                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
+:                            (only if key_MUSTANG_lateralerosion)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
 : namsedim_morpho          : relative to morphodynamic
-: namtempsed               : relative to temperature estimation in sediment (if ! defined key_noTSdiss_insed)
-: namsedoutput             : parameters using for output results in the file sediment
-: namflocmod               : parameters using for FLOCMOD module (only if key_MUSTANG_flocmod)
+: namtempsed               : relative to temperature estimation in sediment 
+:                            (only if !defined key_noTSdiss_insed)
+: namsedoutput             : parameters using for output results in the file 
+:                            sediment
+: namsedim_debug           : output for debug
+:                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
+: namflocmod               : parameters using for FLOCMOD module 
+:                            (only if key_MUSTANG_flocmod)
 
-
-:------------------------------------------------------------------------------
-:  namsedim_init : Namelist relative to sediment initialization
-:------------------------------------------------------------------------------
 &namsedim_init
-   l_unised = .true.       ! boolean set to true for a uniform bottom initialization
-   l_z0seduni=.true.       ! boolean set to false for z0sed computation from sediment diameter (if true, z0seduni is used)
-   z0seduni = 0.0001       ! uniforme bed roughness (m)
-   hseduni = 0.1           ! initial uniform sediment thickness(m)
-   cseduni= 1508.0         ! initial sediment concentration
-   csed_mud_ini = 300.0    ! mud concentration into initial sediment (if =0. ==> csed_mud_ini=cfreshmud)
-   ksmiuni = 1             ! lower grid cell indices in the sediment
-   ksmauni = 1             ! upper grid cell indices in the sediment
-             /
-:
-:
-:------------------------------------------------------------------------------
-:  namsedim_layer : Namelist relative to sediment layers characterization
-:------------------------------------------------------------------------------
+   l_unised = .true. 
+   hseduni = 0.1   
+   cseduni= 1508.0 
+   csed_mud_ini = 300.0 
+   ksmiuni = 1 
+   ksmauni = 1
+/
 &namsedim_layer
-   dzsmin=1.0e-5        ! minimum sediment layer thickness(m)
-   dzsmax_bottom=10.    ! maximum thickness of bottom layers which result from the fusion when ksdmax is exceeded (m)
-   l_dzsmaxuni=.TRUE.   ! boolean set to .true. if user define (in sed_init) dzsmax variable with space (depend on i,j)
-   dzsmaxuni=10.        ! uniform value of dzsmax : maximum thickness for the superficial sediment layer (m)
-                        !    must be >0    if l_dzsmaxuni=.TRUE.
-                        !               or if l_dzsmaxuni=.FALSE. and l_repsed=.FALSE.
-                        !               or if l_dzsmaxuni=.FALSE. and l_repsed=.TRUE. but dzsmax(i,j) not present in filrepsed
-                        !    must be =0 if l_dzsmaxuni=.FALSE. and l_repsed=.TRUE. and dzsmax readed in filrepsed
-   nlayer_surf_sed=1 /  ! number of layers below the sediment surface that can not be melted (max thickness=dzsmax)
-:
-:
-:------------------------------------------------------------------------------
-:  namsedim_bottomstress : Namelist relative to bottom shear stress
-:------------------------------------------------------------------------------
+   dzsmin=1.0e-5 
+   dzsmax_bottom=10. 
+   l_dzsmaxuni=.TRUE.  
+   dzsmaxuni=10.
+   nlayer_surf_sed=1 
+/  
 &namsedim_bottomstress
-               /
-:
-:
-:------------------------------------------------------------------------------
-:  namsedim_deposition : Namelist relative to sediment deposition
-:------------------------------------------------------------------------------
+   l_z0seduni=.true. 
+   z0seduni = 0.0001
+/
 &namsedim_deposition
-   cfreshmud=400.0  ! prescribed fresh deposit concentration (kg/m3) 
-                    ! (must be around 100 if consolidation or higher (300-500 if no consolidation)
-   csedmin=30.      ! concentration of the upper layer under which there is fusion with the underlying sediment cell
-                 /
-:
-:------------------------------------------------------------------------------
-:  namsedim_erosion : Namelist relative to sediment erosion
-:------------------------------------------------------------------------------
-: ero_option : choice of erosion formulation for mixing sand-mud
-:          ****these formulations are debatable and must be considered carefully by the user. ***
-:          **** Other laws are possible and have to be programmed. *****
-:          ****Ces formulations sont discutables et doivent etre considerees avec soin par l utlisateur. ***
-:          **** Bien d autres lois sont possibles et peuvent etre programmees *****
-:------------------------------------------------------------------------------
+   cfreshmud=400.0
+   csedmin=30. 
+/
 &namsedim_erosion
-   x1toce_mud=0.3        ! mud erosion parameter : toce = x1_toce_mud*(relative mud concentration)**x2_toce_mud
-   x2toce_mud=0.         ! mud erosion parameter 
-   E0_sand_option=0      ! choice of formulation for E0_sand evaluation :
-                         !     E0_sand_option= 0 E0_sand= E0_sand_Cst read in this namelist 
-                         !     E0_sand_option= 1 E0_sand evaluated with Van Rijn (1984) formulation 
-                         !     E0_sand_option= 2 E0_sand evaluated with erodimetry formulation (min(0.27,1000*d50-0.01)*toce**n_eros_sand)
-   E0_sand_Cst=0.        !0.0002 Constant erosion flux for sand (used if E0_sand_option= 0) 
-                         ! WARNING : choose parameters compatible with E0_sand_option (example : n_eros_sand=1.6 for E0_sand_option=1)
-   E0_mud=0.000          ! parameters for erosion flux for pure mud 
-                         !   ero_option= 0 : pure mud behavior (for all particles and whatever the mixture)
-                         !   ero_option= 1 : linear interpolation between sand and mud behavior, depend on proportions of the mixture
-                         !   ero_option= 2 : formulation derived from that of J. Vareilles (2013)
-                         !   ero_option= 3 : formulations proposed by B. Mengual (2015) with exponential coefficients depend on proportions of the mixture
-                     /
-:
-:
-:------------------------------------------------------------------------------
-:  namsedim_lateral_erosion : Namelist relative to lateral sediment erosion
-:------------------------------------------------------------------------------
+   x1toce_mud=0.3
+   x2toce_mud=0.
+   E0_sand_option=0 
+   E0_sand_Cst=0.     
+   E0_mud=0.000  
+/
 &namsedim_lateral_erosion
-              /
-:
-:
-:------------------------------------------------------------------------------
-:  namsedim_consolidation : Namelist relative to sediment consolidation 
-:------------------------------------------------------------------------------
+/
 &namsedim_consolidation
-   l_consolid=.false.    ! boolean set to .true. if sediment consolidation is accounted for
-              /
-:
-:
-:------------------------------------------------------------------------------
-:  namsedim_diffusion : Namelist relative to dissolved diffusion in sediment 
-:------------------------------------------------------------------------------
+/
 &namsedim_diffusion
-   l_diffused=.false.        ! boolean set to .true. si taking into account dissolved diffusion in sediment and at the water/sediment interface
-               /
-
-:------------------------------------------------------------------------------
-:  namsedim_bioturb : Namelist relative to bioturbation in sediment 
-:------------------------------------------------------------------------------
+/
 &namsedim_bioturb
-   l_bioturb=.false.      ! boolean set to .true. si taking into account particulate bioturbation (diffusive mixing) in sediment
-   l_biodiffs=.false.     ! boolean set to .true. si taking into account dissolved bioturbation diffusion in sediment
-                      /
-:------------------------------------------------------------------------------
-:  namsedim_morpho : Namelist relative to morphodynamic
-:------------------------------------------------------------------------------
+/
 &namsedim_morpho
-                    /
-:
-:
-:----------------------------------
-:  Namelist relative to temperature estimation in sediment (if ! defined key_noTSdiss_insed)
-: ------------------------------------
+/
 &namtempsed
-                       /
-:------------------------------------------------------------------------------
-:  Namelist relative to OUTPUT in sediment
-:------------------------------------------------------------------------------
+/
 &namsedoutput
-                  /
-:---------------------------------------------------------------------------------------
-:  Namelist relative to module FLOCMOD (key_flocmod)
-:--------------------------------------------------------------------------------------
+/
 &namflocmod
-              /  
- :------------------------------------------------------------------------------
+/  
+

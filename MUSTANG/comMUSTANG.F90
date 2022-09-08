@@ -1,881 +1,649 @@
-!***************************************************************************
-!***************************************************************************
-!Copyright or (c) or Copr. : IFREMER
-!contributor(s) : IFREMER/DYNECO/DHYSED
-!
-!contact Ifremer : mustang@ifremer.fr
-!
-!This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
-!computer program whose purpose is to perform sediment transport process 
-!modelling coupled to hydrodynamic models.
-!Full details can be obtained on https://wwz.ifremer.fr/dyneco/MUSTANG
-!
-!This software is governed by the CeCILL-C license under French law and
-!abiding by the rules of distribution of free software. You can use, 
-!modify and/ or redistribute the software under the terms of the CeCILL-C
-!license as circulated by CEA, CNRS and INRIA at the following URL
-!"http://www.cecill.info". 
-!
-!As a counterpart to the access to the source code and rights to copy,
-!modify and redistribute granted by the license, users are provided only
-!with a limited warranty  and the software''s author,  the holder of the
-!economic rights,  and the successive licensors  have only  limited
-!liability. 
-!
-!In this respect, the user''s attention is drawn to the risks associated
-!with loading,  using,  modifying and/or developing or reproducing the
-!software by the user in light of its specific status of free software,
-!that may mean  that it is complicated to manipulate,  and  that  also
-!therefore means  that it is reserved for developers  and  experienced
-!professionals having in-depth computer knowledge. Users are therefore
-!encouraged to load and test the software''s suitability as regards their
-!requirements in conditions enabling the security of their systems and/or 
-!data to be ensured and,  more generally, to use and operate it in the 
-!same conditions as regards security. 
-!
-!The fact that you are presently reading this means that you have had
-!knowledge of the CeCILL license and that you accept its terms.
-!***************************************************************************
-!***************************************************************************
-
 #include "cppdefs.h"
-!---------------------------------------------------------------------------
-!
-                     MODULE comMUSTANG
-!
-!---------------------------------------------------------------------------
-  
+
+MODULE comMUSTANG
 
 #ifdef MUSTANG
 
-   !&E==========================================================================
-   !&E                   ***  MODULE  comMUSTANG  ***
-   !&E
-   !&E
-   !&E ** Purpose : declare all common variables related to sediment dynamics
-   !&E              
-   !&E 
-   !&E ** Description :
-   !&E     subroutine MUSTANG_alloc          ! allocates variables in sediment 
-   !&E
-   !&E ** History :
-   !&E     ! 2015-12  (B.Thouvenin )    : creation from sedim.F90 -reorganization of module SEDIMARS
-   !&E     ! 2018-11  (B.Thouvenin )    : reorganization for module MUSTANG
-   !&E     ! 2019-06  (B.Thouvenin, P. Le Hir, B. Mengual ) :  MUSTANG V2 with bedload and new porosity evaluation
-   !&E
-   !&E==========================================================================
+!!============================================================================
+!! ***  MODULE  comMUSTANG  ***
+!! Purpose : declare all common variables related to sediment dynamics
+!!============================================================================
 
+!! * Modules used
+USE comsubstance ! for lchain, rsh, rlg, riosh
 
-   !! * Modules used
-   USE module_MUSTANG
+implicit none
 
-   IMPLICIT NONE
-   
-!!#include "coupleur_dimhydro_MUSTANG.h"
+! default
+public
+
 #include "coupler_define_MUSTANG.h"
+  
+    !! * Shared or public variables for MUSTANG 
 
-  !! * Accessibility
+    ! parameters
+    REAL(kind=rlg), PARAMETER :: epsi30_MUSTANG = 1.e-30
+    REAL(kind=rlg), PARAMETER :: epsilon_MUSTANG = 1.e-09 
+    REAL(kind=rsh), PARAMETER :: valmanq = 999.0
+    REAL(kind=riosh), PARAMETER :: rg_valmanq_io = 999.0
 
-   ! functions & routines of this module, called outside :
-   PUBLIC MUSTANG_alloc
-   
-   !! * Shared or public variables for MUSTANG (common at all threads) but spatialized 
+    ! namelists
 
-   REAL(kind=rlg)  ,PARAMETER :: epsi30_MUSTANG=1.e-30 , epsdep_MUSTANG = 1.e-14, epsilon_MUSTANG=1.e-09 
+    ! namsedim_init
+    CHARACTER(len=19) :: date_start_dyninsed ! starting date for dynamic 
+        ! processes in sediment; format '01/01/0000 00:00:00'
+    CHARACTER(len=19) :: date_start_morpho ! starting date for morphodynamic; 
+        ! format '01/01/0000 00:00:00'
+    LOGICAL  :: l_repsed ! set to .true. if sedimentary variables are 
+        ! initialized from a previous run
+    LOGICAL  :: l_initsed_vardiss !set to .true. if initialization of dissolved
+        ! variables, temperature and salinity in sediment (will be done with 
+        ! concentrations in water at bottom (k=1))
+    LOGICAL  :: l_unised !set to .true. for a uniform bottom initialization
+    LOGICAL  :: l_init_hsed ! set to .true. if we want to adjust the sediment 
+        ! thickness in order to be coherent with sediment 
+        ! parameters (calculation of a new hseduni based on 
+        ! cseduni, cvolmax values, and csed_ini of each sediment)
+    CHARACTER(len=lchain) :: filrepsed ! file path from which the model is 
+        ! initialized for the continuation of a previous run
+    CHARACTER(len=lchain) :: fileinised ! file path for initialization (if 
+        ! l_unised is False)
+    REAL(KIND=rsh) :: cseduni ! initial sediment concentration (kg/m3)
+    REAL(KIND=rsh) :: hseduni ! initial uniform sediment thickness (m) 
+    REAL(KIND=rsh) :: csed_mud_ini ! real, mud concentration into initial 
+        ! sediment (kg/m3) (if = 0. ==> csed_mud_ini = cfreshmud)
+    INTEGER        :: ksmiuni ! lower grid cell index in the sediment
+    INTEGER        :: ksmauni ! upper grid cell index in the sediment
+    REAL(KIND=rsh) :: sini_sed ! initial interstitial water uniform salinity
+    REAL(KIND=rsh) :: tini_sed ! initial interstitial water uniform temperature
+    REAL(KIND=rsh) :: poro_mud_ini !only if key_MUSTANG_V2, initial porosity of
+        ! mud fraction
 
-   REAL(KIND=rlg),PUBLIC   :: tstart_dyninsed,  &   ! time beginning consolidation/diffusion/bioturbation/morphodynamic
-                              tstart_morpho,    &   ! time beginning consolidation/diffusion/bioturbation/morphodynamic
-                              t_dyninsed,       &   ! time of next dynamic in sediment step
-                              subdt_consol,     &   ! sub time step for consolidation and particulate bioturbation  in sediment
-                              dt_dyninsed,      &   ! time step for dynamic in sediment
-                              t_morpho,         &   ! time of next morphodynamic  step
-                              dt_morpho             ! time step for morphodynamic
 
-   LOGICAL,PUBLIC            :: l_fricwave,l_diffused,l_consolid,l_bioturb,l_biodiffs,l_dyn_insed
-   LOGICAL,PUBLIC            :: l_morphocoupl,l_bathy_smoothing,l_erolat_wet_cell,l_morphomesh
-   LOGICAL,PUBLIC            :: l_transfer2hydro_dhsed,l_z0hydro_coupl_init,l_z0hydro_coupl
-   LOGICAL,PUBLIC            :: l_dredging,l_MF_dhsed,l_bathy_actu,l_out_subs_diag_sed
-   INTEGER,PUBLIC            :: choice_flxdiss_diffsed,ero_option,E0_sand_option,nv_use,nlayer_surf_sed
+    ! namsedim_layer
+    LOGICAL  :: l_dzsmaxuni ! set to .true. dzsmax = dzsmaxuni , 
+        ! if set to .false. then linearly computed in MUSTANG_sedinit
+        ! from dzsmaxuni to dzsmaxuni/100 depending on water depth
+    LOGICAL  :: l_dzsminuni !only if key_MUSTANG_V2, set to .false. if dzsmin 
+        ! vary with sediment bed composition, else dzsmin =  dzsminuni
+    REAL(KIND=rsh) :: dzsminuni !only if key_MUSTANG_V2, minimum sediment 
+        ! layer thickness (m)
+    REAL(KIND=rsh) :: dzsmin ! minimum sediment layer thickness (m)
+    REAL(KIND=rsh) :: dzsmaxuni ! uniform maximum thickness for the superficial
+        ! sediment layer (m), must be >0
+    REAL(KIND=rsh) :: dzsmax_bottom ! maximum thickness of bottom layers 
+        ! which result from the fusion when ksdmax is exceeded (m)
+    REAL(KIND=rsh) :: k1HW97 !only if key_MUSTANG_V2, 
+        ! ref value k1HW97 = 0.07, parameter to compute active layer 
+        ! thickness (Harris and Wiberg, 1997)
+    REAL(KIND=rsh) :: k2HW97 !only if key_MUSTANG_V2
+        ! rref value k2HW97 = 6.0,parameter to compute active layer 
+        ! thickness (Harris and Wiberg, 1997)
+    REAL(KIND=rsh) :: fusion_para_activlayer !only if key_MUSTANG_V2
+        ! criterion cohesiveness for fusion in active layer
+        ! 0 : no fusion, 
+        ! = 1 : frmudcr1, 
+        ! > 1 : between frmudcr1 & frmudcr2
+    INTEGER :: nlayer_surf_sed ! number of layers below the sediment surface 
+        ! that can not be melted (max thickness = dzsmax)
 
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   INTEGER,PUBLIC            :: tau_cri_option,tau_cri_mud_option_eroindep
+
+    ! namsedim_bottomstress
+    LOGICAL  :: l_z0seduni ! boolean, set to .false. for z0sed computation from
+        ! sediment diameter (if true, z0seduni is used)
+    REAL(KIND=rsh) :: z0seduni ! uniform bed roughness (m)
+    REAL(KIND=rsh) :: z0sedmud ! mud (i.e.minimum) bed roughness (m) 
+        ! (used only if l_unised is false)
+    REAL(KIND=rsh) :: z0sedbedrock ! bed roughness for bedrock (no sediment) (m) 
+        ! (used only if l_unised is false)
+    LOGICAL :: l_fricwave ! boolean, set to .true. if using wave related friction 
+        ! factor for bottom shear stress (from wave orbital velocity and period)
+        ! if .false. then fricwav namelist value is used
+    REAL(KIND=rsh) :: fricwav ! default value is 0.06, wave related friction 
+        !factor (used for bottom shear stress computation)
+    LOGICAL :: l_z0hydro_coupl_init ! boolean, set to .true. if evaluation of 
+        ! z0 hydro depends on sediment composition at the beginning 
+        ! of the simulation
+    LOGICAL :: l_z0hydro_coupl ! boolean, set to .true. if evaluation of 
+        ! z0 hydro depends on sediment composition along the run
+    REAL(KIND=rsh) :: coef_z0_coupl ! parameter to compute z0hydro in the 
+        ! first centimeter : z0hydro = coef_z0_coupl * sand diameter 
+    REAL(KIND=rsh) :: z0_hydro_mud ! z0hydro if pure mud (m)
+    REAL(KIND=rsh) :: z0_hydro_bed ! z0hydro if no sediment (m)
+
+
+    ! namsedim_deposition
+    REAL(KIND=rsh) :: cfreshmud ! fresh deposit concentration (kg/m3) 
+        ! (must be around 100 if consolidation 
+        ! or higher (300-500 if no consolidation)
+    REAL(KIND=rsh) :: csedmin ! concentration of the upper layer under 
+        ! which there is fusion with the underlying sediment cell (kg/m3)
+    REAL(KIND=rsh) :: cmudcr ! critical relative concentration of the surface 
+        ! layer above which no mixing is allowed with the underlying 
+        ! sediment (kg/m3)
+    REAL(KIND=rsh) :: aref_sand  ! parameter used in sandconcextrap,
+        ! reference height above sediment, used for computing of 
+        ! sand deposit. Parameter used for sand extrapolation on water 
+        ! column and correct sand transport, value by default = 0.02 
+        ! correspond to Van Rijn experiments 
+        ! DO NOT CHANGED IF NOT EXPERT
+    REAL(KIND=rsh) :: cvolmaxsort ! max volumic concentration of sorted sand
+    REAL(KIND=rsh) :: cvolmaxmel ! maxvolumic concentration of mixed sediments
+    REAL(KIND=rsh) :: slopefac !slope effect multiplicative on deposit 
+        ! (only if key_MUSTANG_slipdeposit)
+
+
+    ! namsedim_erosion
+    REAL(KIND=rsh) :: activlayer ! active layer thickness (m)
+    REAL(KIND=rsh) :: frmudcr2 ! critical mud fraction under which the 
+        ! behaviour is intermediate between sand and mud and above which the 
+        ! behavior is purely muddy
+    REAL(KIND=rsh) :: coef_frmudcr1 ! to compute critical mud fract. frmudcr1 
+        ! underwhich the behaviour is purely sandy 
+        ! (frmudcr1=min(coef_frmudcr1*d50 sand,frmudcr2))
+    REAL(KIND=rsh) :: x1toce_mud ! coef. for the formulation of the critical 
+        ! erosion stress in mud behavior toce=x1toce*csed**x2toce
+    REAL(KIND=rsh) :: x2toce_mud ! coef. for the formulation of the critical 
+    ! erosion stress in mud behavior toce=x1toce*csed**x2toce
+    REAL(KIND=rsh) :: E0_sand_para ! coefficient used to modulate erosion 
+        ! flux for sand (=1 if no correction )
+    REAL(KIND=rsh) :: n_eros_sand ! parameter for erosion flux for sand 
+        ! (E0_sand*(tenfo/toce-1.)**n_eros_sand )
+        ! WARNING : choose parameters compatible with E0_sand_option 
+        ! (example : n_eros_sand=1.6 for E0_sand_option=1)
+    REAL(KIND=rsh) :: E0_mud ! erosion flux for mud
+    REAL(KIND=rsh) :: n_eros_mud ! E0_mud*(tenfo/toce-1.)**n_eros_mud
+    INTEGER        :: ero_option ! choice of erosion formulation for mixing 
+        ! sand-mud
+        ! ero_option= 0 : pure mud behavior 
+        ! ero_option= 1 : linear interpolation between sand and mud behavior, 
+        !   depend on proportions of the mixture
+        ! ero_option= 2 : formulation derived from that of J.Vareilles (2013)
+        ! ero_option= 3 : formulations proposed by B. Mengual (2015) with 
+        !   exponential coefficients depend on proportions of the mixture
+    INTEGER        :: E0_sand_option ! integer, choice of formulation for 
+        ! E0_sand evaluation :
+        ! E0_sand_option = 0 E0_sand = E0_sand_Cst 
+        ! E0_sand_option = 1 E0_sand evaluated with Van Rijn (1984) 
+        ! E0_sand_option = 2 E0_sand evaluated with erodimetry 
+        !    (min(0.27,1000*d50-0.01)*toce**n_eros_sand)
+        ! E0_sand_option = 3 E0_sand evaluated with Wu and Lin (2014)
+    REAL(KIND=rsh) :: xexp_ero !used only if ero_option=3 : adjustment on 
+        ! exponential variation  (more brutal when xexp_ero high)
+    REAL(KIND=rsh) :: E0_sand_Cst ! constant erosion flux for sand 
+        ! (used if E0_sand_option= 0) 
+    REAL(KIND=rsh) :: E0_mud_para_indep !only if key_MUSTANG_V2,
+        ! parameter to correct E0_mud in case of erosion 
+        ! class by class in non cohesive regime
+    LOGICAL        :: l_peph_suspension !only if key_MUSTANG_V2,
+        ! set to .true. if hindering / exposure processes in critical 
+        ! shear stress estimate for suspension
+    LOGICAL        :: l_eroindep_noncoh !only if key_MUSTANG_V2,
+        ! set to .true. in order to activate independant erosion for 
+        ! the different sediment classes sands and muds  
+        ! set to .false. to have the mixture mud/sand eroded as in V1
+    LOGICAL        :: l_eroindep_mud !only if key_MUSTANG_V2,
+        ! set to .true. if mud erosion independant for sands erosion
+        ! set to .false. if mud erosion proportionnal to total sand erosion
+    LOGICAL        :: l_xexp_ero_cst !only if key_MUSTANG_V2, set to .true. 
+        ! if xexp_ero estimated from empirical formulation, depending on 
+        ! frmudcr1 
+    INTEGER        :: tau_cri_option !only if key_MUSTANG_V2, 
+        ! choice of critical stress formulation , 
+        ! 0: Shields 1: Wu and Lin (2014)
+    INTEGER        :: tau_cri_mud_option_eroindep !only if key_MUSTANG_V2
+        ! choice of mud critical stress formulation 
+        ! 0: x1toce_mud*cmudr**x2toce_mud
+        ! 1: toce_meansan if somsan>eps (else->case0)
+        ! 2: minval(toce_sand*cvsed/cvsed+eps) if >0 (else->case0)
+        ! 3: min( case 0; toce(isand2) )
+
+
 #ifdef key_MUSTANG_V2
-   INTEGER,PUBLIC            :: poro_option
+    ! namsedim_poro 
+    INTEGER :: poro_option ! choice of porosity formulation
+        ! 1: Wu and Li (2017) (incompatible with consolidation))
+        ! 2: mix ideal coarse/fine packing 
+    REAL(KIND=rsh) :: Awooster ! parameter of the formulation of 
+        ! Wooster et al. (2008) for estimating porosity associated to the 
+        ! non-cohesive sediment see Cui et al. (1996) ref value = 0.42
+    REAL(KIND=rsh) :: Bwooster ! parameter of the formulation of 
+    ! Wooster et al. (2008) for estimating porosity associated to the 
+    ! non-cohesive sediment see Cui et al. (1996) ref value = -0,458
+    REAL(KIND=rsh) :: Bmax_wu ! maximum portion of the coarse sediment class 
+        ! participating in filling , ref value = 0.65
+    REAL(KIND=rsh) :: poro_min ! minimum porosity below which consolidation 
+        ! is stopped
 #endif
-   CHARACTER(len=19),PUBLIC  :: date_start_dyninsed,date_start_morpho
-   
-#ifdef key_MARS
-   ! for a hydrodynamic model other than MARS
-   ! these 2 variables must be declared in comsubstance if module substance is installed
-   !    (diam_sed and ros initalized in substance.F90)
-   ! but in MARS, they are declared in comMUSTANG and allocate/initialized in subreaddat
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC    :: diam_sed,ros
+
+
+#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+    ! namsedim_bedload 
+    LOGICAL :: l_peph_bedload ! set to .true. if hindering / exposure processes
+        ! in critical shear stress estimate for bedload
+    LOGICAL :: l_slope_effect_bedload ! set to .true. if accounting for slope 
+        ! effects in bedload fluxes (Lesser formulation)
+    LOGICAL :: l_fsusp ! limitation erosion fluxes of non-coh sediment in case 
+        ! of simultaneous bedload transport, according to Wu & Lin formulations
+        ! set to .true. if erosion flux is fitted to total transport 
+        ! should be set to .false. if E0_sand_option=3 (Wu & Lin)
+    REAL(KIND=rsh) :: alphabs ! coefficient for slope effects (default 
+        ! coefficients Lesser et al. (2004), alphabs = 1.)
+    REAL(KIND=rsh) :: alphabn ! coefficient for slope effects (default 
+        ! coefficients Lesser et al. (2004), default alphabn is 1.5 but 
+        ! can be higher, until 5-10 (Gerald Herling experience))
+    REAL(KIND=rsh) :: hmin_bedload  ! no bedload in u/v directions if 
+        ! h0+ssh <= hmin_bedload in neighbouring cells
 #endif
-   REAL(KIND=rsh),PUBLIC                             :: aref_sand  ! parametre used in sandconcextrap
+
+
+!**TODO** put under cpp key #ifdef key_MUSTANG_lateralerosion
+    ! namsedim_lateral_erosion 
+    REAL(KIND=rsh) :: htncrit_eros ! critical water height so as to prevent 
+        ! erosion under a given threshold (the threshold value is different for
+        ! flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
+    REAL(KIND=rsh) :: coef_erolat ! slope effect multiplicative factor 
+    REAL(KIND=rsh) :: coef_tauskin_lat ! parameter to evaluate the lateral 
+        ! stress as a function of the average tangential velocity on the 
+        ! vertical
+    LOGICAL        :: l_erolat_wet_cell ! set to .true in order to take 
+        ! into account wet cells lateral erosion
+!**TODO** put under cpp key #key_MUSTANG_lateralerosion
+
+
+    ! namsedim_consolidation 
+    LOGICAL        :: l_consolid ! set to .true. if sediment consolidation is 
+        ! accounted for
+    REAL(KIND=rsh) :: dt_consolid ! time step for consolidation processes
+    REAL(KIND=rlg) :: subdt_consol ! sub time step for consolidation and 
+                                   ! particulate bioturbation  in sediment
+    REAL(KIND=rsh) :: csegreg ! NOT CHANGE VALUE if not expert, default 250.0
+    REAL(KIND=rsh) :: csandseg ! NOT CHANGE VALUE if not expert, default 1250.0
+    REAL(KIND=rsh) :: xperm1 ! permeability=xperm1*d50*d50*voidratio**xperm2
+    REAL(KIND=rsh) :: xperm2 ! permeability=xperm1*d50*d50*voidratio**xperm2
+    REAL(KIND=rsh) :: xsigma1 ! parameter used in Merckelback & Kranenburg s 
+        ! (2004) formulation NOT CHANGE VALUE if not expert, default 6.0e+05
+    REAL(KIND=rsh) :: xsigma2 ! parameter used in Merckelback & Kranenburg s 
+        ! (2004) formulation NOT CHANGE VALUE if not expert, default 6
+
+
+    ! namsedim_diffusion     
+    LOGICAL        :: l_diffused ! set to .true. if taking into account 
+        ! dissolved diffusion in sediment and at the water/sediment interface
+    REAL(KIND=rsh) :: dt_diffused ! time step for diffusion in sediment
+    INTEGER        :: choice_flxdiss_diffsed ! choice for expression of 
+        ! dissolved fluxes at sediment-water interface
+        ! 1 : Fick law : gradient between Cv_wat at dz(1)/2
+        ! 2 : Fick law : gradient between Cv_wat at distance epdifi
+    REAL(KIND=rsh) :: xdifs1 ! diffusion coefficients within the sediment
+    REAL(KIND=rsh) :: xdifsi1 ! diffusion coefficients at the water-sediment 
+        ! interface
+    REAL(KIND=rsh) :: epdifi ! diffusion thickness in the water at the 
+        ! sediment-water interface
+    REAL(KIND=rsh) :: fexcs ! factor of eccentricity of concentrations in 
+        ! vertical fluxes evaluation (.5 a 1) 
+
+
+    ! namsedim_bioturb  
+    LOGICAL        :: l_bioturb ! set to .true. if taking into account 
+        ! particulate bioturbation (diffusive mixing) in sediment
+    LOGICAL        :: l_biodiffs ! set to .true. if taking into account 
+        ! dissolved bioturbation diffusion in sediment
+    REAL(KIND=rsh) :: dt_bioturb ! time step for bioturbation in sediment
+    REAL(KIND=rsh) :: subdt_bioturb ! sub time step for bioturbation 
+    REAL(KIND=rsh) :: xbioturbmax_part ! max particular bioturbation 
+        ! coefficient by bioturbation Db (in surface)
+    REAL(KIND=rsh) :: xbioturbk_part ! for part. bioturbation coefficient 
+        ! between max Db at sediment surface and 0 at bottom
+    REAL(KIND=rsh) :: dbiotu0_part ! max depth beneath the sediment 
+        ! surface below which there is no bioturbation
+    REAL(KIND=rsh) :: dbiotum_part ! sediment thickness where the 
+        ! part-bioturbation coefficient Db is constant (max)
+    REAL(KIND=rsh) :: xbioturbmax_diss ! max diffusion coeffient by 
+        ! biodiffusion Db (in surface)
+    REAL(KIND=rsh) :: xbioturbk_diss ! coef (slope) for biodiffusion 
+        ! coefficient between max Db at sediment surface and 0 at bottom
+    REAL(KIND=rsh) :: dbiotu0_diss ! max depth beneath the sediment 
+        ! surface below which there is no bioturbation
+    REAL(KIND=rsh) :: dbiotum_diss ! sediment thickness where the  
+        ! diffsolved-bioturbation coefficient Db is constant (max)
+    REAL(KIND=rsh) :: frmud_db_min ! mud fraction limit (min) below which 
+        ! there is no Biodiffusion
+    REAL(KIND=rsh) :: frmud_db_max ! mud fraction limit (max)above which 
+        ! the biodiffusion coefficient Db is maximum (muddy sediment)
+
+
+    ! namsedim_morpho   
+    LOGICAL :: l_morphocoupl ! set to .true if coupling module morphodynamic  
+    LOGICAL :: l_MF_dhsed ! set to .true. if morphodynamic applied with 
+        ! sediment height variation amplification 
+        ! (MF_dhsed = MF; then MF will be = 0)
+        ! set to .false. if morphodynamic is applied with 
+        ! erosion/deposit fluxes amplification (MF_dhsed not used)
+    LOGICAL :: l_bathy_actu ! set to .true. if reading a new bathy issued a 
+        ! previous run and saved in filrepsed (given in namelist namsedim_init)  
+        !!! NOT IMPLEMENTED YET !!! **TODO**
+    REAL(KIND=rsh) :: MF ! morphological factor : multiplication factor for 
+        ! morphologicalevolutions, equivalent to a "time acceleration" 
+        ! (morphological evolutions over a MF*T duration are assumed to be 
+        ! equal to MF * the morphological evolutions over T). 
+    REAL(KIND=rlg) :: dt_morpho ! time step for morphodynamic (s)
+
+
+#if  ! defined key_noTSdiss_insed
+    ! namtempsed  
+    REAL(KIND=rsh) :: mu_tempsed1 ! parameters used to estimate thermic 
+        ! diffusitiyfunction of mud fraction 
+    REAL(KIND=rsh) :: mu_tempsed2 ! parameters used to estimate thermic
+        ! diffusitiyfunction of mud fraction 
+    REAL(KIND=rsh) :: mu_tempsed3 ! parameters used to estimate thermic
+        ! diffusitiyfunction of mud fraction 
+    REAL(KIND=rsh) :: epsedmin_tempsed ! sediment thickness limits for 
+         ! estimation heat loss at bottom, if hsed < epsedmin_tempsed : 
+        ! heat loss at sediment bottom = heat flux a sediment surface
+    REAL(KIND=rsh) :: epsedmax_tempsed ! sediment thickness limits for
+        ! estimation heat loss at bottom, if hsed > epsedmax_tempsed : 
+        ! heat loss at sediment bottom = 0.
+#endif
+
+
+    ! namsedoutput  
+    LOGICAL :: l_outsed_flx_WS_all ! set to .true. if output fluxes threw 
+        ! interface Water/sediment (2 2D variables per 
+        ! constitutive particulate variable)
+    LOGICAL :: l_outsed_flx_WS_int ! set to .true. if output fluxes threw 
+        ! interface Water/sediment (integration on all 
+        ! constitutive particulate variables)
+    LOGICAL :: l_outsed_saltemp ! set to .true. if output Salinity and 
+        ! Temperature in sediment
+    INTEGER :: nk_nivsed_out ! number of saved sediment layers 
+        ! unused if choice_nivsed_out = 1                     
+        ! <ksdmax if choice_nivsed_out = 2, 
+        ! unused if choice_nivsed_out = 3
+        !  <6 if choice_nivsed_out = 4, 
+    INTEGER :: choice_nivsed_out ! choice of saving output  (1 to 4)
+    REAL(KIND=rsh), DIMENSION(5) :: ep_nivsed_out ! 5 values of sediment 
+        ! layer thickness (mm), beginning with surface layer 
+        ! (used if choice_nivsed_out=4)
+    REAL(KIND=rsh) :: epmax_nivsed_out ! maximum thickness (mm) for 
+        ! output each layers of sediment (used if choice_nivsed_out=3). 
+        ! Below the layer which bottom level exceed this thickness, 
+        ! an addition layer is an integrative layer till bottom
+
+
+#if defined key_MUSTANG_debug && defined key_MUSTANG_V2
+    ! namsedim_debug 
+    LOGICAL        :: l_debug_effdep ! set to .true. if print some 
+        ! informations for debugging MUSTANG deposition
+    LOGICAL        :: l_debug_erosion ! set to .true. if  print 
+        ! informations for debugging  in erosion routines
+    REAL(kind=rlg)   :: lon_debug, lat_debug ! define mesh location 
+        ! where we print these informations
+    INTEGER          :: i_MUSTANG_debug, j_MUSTANG_debug ! indexes 
+        ! of the mesh where we print these informations 
+        ! (only if lon_debug and lat_debug = 0.)
+    CHARACTER(len=19):: date_start_debug ! starting date for write 
+        ! debugging informations 
+#endif
+
+
 
 #ifdef key_MUSTANG_flocmod
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC   :: f_ws
+    ! namflocmod  
+    LOGICAL :: l_ASH ! set to .true. if aggregation by shear
+    LOGICAL :: l_ADS ! set to .true. if aggregation by differential settling
+    LOGICAL :: l_COLLFRAG ! set to .true. if fragmentation by collision
+    INTEGER :: f_ero_iv ! fragment class (mud variable index corresponding to 
+        ! the eroded particle size - typically 1)
+    REAL(KIND=rsh) :: f_ater ! ternary fragmentation factor : proportion of 
+        ! flocs fragmented as half the size of the initial binary fragments 
+        ! (0.0 if full binary fragmentation, 0.5 if ternary fragmentation)
+    REAL(KIND=rsh) :: f_dmin_frag ! minimum diameter for fragmentation 
+        ! (default 10e-6 microns)
+    REAL(KIND=rsh) :: f_ero_frac ! floc erosion (% of floc mass eroded) 
+        ! (default 0.05)
+    REAL(KIND=rsh) :: f_ero_nbfrag ! nb of fragments produced by erosion 
+        ! (default 2.0)
+    REAL(KIND=rsh) :: f_mneg_param ! negative mass after 
+        ! flocculation/fragmentation allowed before redistribution 
+        ! (default 0.001 g/l)
+    REAL(KIND=rsh) :: f_collfragparam ! fraction of shear aggregation leading 
+        ! to fragmentation by collision (default 0.0, must be less than 1.0)
+    REAL(KIND=rsh) :: f_cfcst ! fraction of mass lost by flocs if fragmentation
+        ! by collision .. (default : =3._rsh/16._rsh)
+    REAL(KIND=rsh) :: f_fp ! relative depth of inter particle penetration  
+        ! (default =0.1) (McAnally, 1999)
+    REAL(KIND=rsh) :: f_fy ! floc yield strength  (default= 1.0e-10) 
+        ! (Winterwerp, 2002)
+    REAL(KIND=rsh) :: f_dp0 ! primary particle size (default 4.e-6 m)
+    REAL(KIND=rsh) :: f_alpha ! flocculation efficiency parameter 
+        ! (default 0.15)
+    REAL(KIND=rsh) :: f_beta ! floc break up parameter (default 0.1)
+    REAL(KIND=rsh) :: f_nb_frag ! nb of fragments of equal size by shear 
+        ! fragmentation (default 2.0 as binary fragmentation)
+    REAL(KIND=rsh) :: f_nf ! fractal dimension (default 2.0, usual range from 
+        ! 1.6 to 2.8)
 #endif
 
-   REAL(KIND=rsh),PUBLIC     :: fricwav,fws2,dzsmin,cfreshmud,csedmin,cmudcr,ros_sand_homogen, &
-                                cvolmaxsort,cvolmaxmel,xperm1,xperm2,xsigma1,xsigma1sg,        &
-                                xsigma2, xdifs1,xdifs2,xdifsi1,xdifsi2,                        &
-                                epdifi,fexcs,cexcs,activlayer,frmudcr2,coef_frmudcr1,          &
-                                x1toce_mud,x2toce_mud,E0_sand_para,n_eros_sand,E0_mud,         &
-                                n_eros_mud,corfluer1,corfluer2,MF,MF_dhsed,htncrit_eros,       &
-                                slopefac,csegreg,csandseg,xexp_ero,E0_sand_Cst,                &
-                                coef_z0_coupl,z0_hydro_mud,z0_hydro_bed,                       &
-                                xbioturbmax_part,xbioturbk_part,dbiotu0_part,dbiotum_part,     &
-                                xbioturbmax_diss,xbioturbk_diss,dbiotu0_diss,dbiotum_diss,     &
-                                xbioturbmax,xbioturbk,dbiotu0,dbiotum,frmud_db_max,frmud_db_min, &
-                                dt_consolid,dt_diffused,dt_bioturb,subdt_bioturb
-   REAL(KIND=rsh),PUBLIC                                :: hsed_new,coef_erolat,coef_tenfon_lat
-   REAL(KIND=rsh),PUBLIC                                :: sed_difint,sed_difsed 
-   
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC       :: alp1,alp2,alp3,alp4,alp5,typart
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC       :: diamstar,ws_sand,rosmrowsros,       &
-                                                           stresscri0,tetacri0,xnielsen
-   INTEGER       ,DIMENSION(:)      ,ALLOCATABLE        :: D0_funcT_opt
-   REAL(KIND=rsh),DIMENSION(:)      ,ALLOCATABLE        :: D0_m0,D0_m1
 
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   REAL(KIND=rsh),PUBLIC     :: k1HW97,k2HW97,E0_mud_para_indep,fusion_para_activlayer
-#ifdef key_MUSTANG_V2
-   REAL(KIND=rsh),PUBLIC     :: Awooster,Bwooster,Bmax_wu,     &
-                                poro_min,alphabs,alphabn
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC   :: sigmapsg,stateconsol,permeab,E0_sand
-#endif
-                                                      
-   INTEGER,DIMENSION(:,:),ALLOCATABLE              :: ksmi,ksma
-   INTEGER, DIMENSION(:,:), ALLOCATABLE            :: dry_cell
-#if  ! defined key_noTSdiss_insed
-   INTEGER,DIMENSION(:), ALLOCATABLE               :: ivdiss
-#endif
+! end namelist variables
 
-   REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE   :: cv_sed
 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: c_sedtot,poro,dzs       
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corflux,corfluy,gradvit       
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: fludif,fluconsol,fluconsol_drycell,flu_dyninsed
-   
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed,z0sed,hsed0,dzsmax,hsed_previous
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: dhsed_save
-#endif
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tenfon,tenfonc,tenfonw
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphbx,raphby,frofonx,frofony
-#if defined key_tenfon_upwind
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tenfonx,tenfony
-#endif
-   REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w,phieau_s2w_consol,phieau_s2w_drycell
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot,htot,alt_cw1
-#if defined key_MARS
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: morphox,morphoy,hxi,hyi,h0_bedrock
-#else
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: morpho0,h0_bedrock
-#endif
- 
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: sal_bottom_MUSTANG,temp_bottom_MUSTANG,epn_bottom_MUSTANG
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: cw_bottom_MUSTANG,ws3_bottom_MUSTANG
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: roswat_bot
+    REAL(KIND=rsh) :: h0fond  ! RESIDUAL_THICKNESS_WAT see coupler_define (m)
+
+    ! fwet =1 if not used  
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: fwet
+
+    ! Initialization 
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_sed
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cv_sedini
+    REAL(KIND=rsh) :: hsed_new
+
+    ! Fluxes at the interface water-sediment
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_sum
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: EROS_FLUX_s2w
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUX_w2s
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUXSUM_w2s
+
+    ! Sediment parameters
+    REAL(KIND=rsh)            :: ros_sand_homogen 
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: typart
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: diamstar
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: ws_sand
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: rosmrowsros
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: stresscri0
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: tetacri0
+
+
+    INTEGER :: nv_use
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: ksmi
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: ksma
+    REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE   :: cv_sed
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: c_sedtot
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: poro
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: dzs       
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: dzsmax
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: gradvit       
+
+    ! Sediment height
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed0
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed_previous
+
+    ! Bottom stress variables
+    REAL(KIND=rsh) :: fws2  ! fricwav/2   
+    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE     :: z0sed ! roughness (m)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin ! max bottom stress due to the combinaison current/wave (N.m-2)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin_c ! bottom stress due to current (N.m-2)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin_w ! bottom stress due to wave (N.m-2)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin_x ! bottom stress - component on x axis
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: tauskin_y ! bottom stress - component on y axis
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: ustarbot ! (m/s)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: raphbx ! adim.
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: raphby ! adim.
+
+    REAL(KIND=rlg), DIMENSION(:,:), ALLOCATABLE   :: phieau_s2w
+    REAL(KIND=rlg), DIMENSION(:,:), ALLOCATABLE   :: phieau_s2w_consol
+    REAL(KIND=rlg), DIMENSION(:,:), ALLOCATABLE   :: phieau_s2w_drycell
+
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: htot
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: alt_cw1
+
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: sal_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: temp_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: epn_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: cw_bottom_MUSTANG
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: ws3_bottom_MUSTANG ! settling velocities in  bottom cell (m/s)
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: roswat_bot
+
+!**TODO** put under cppkey MUSTANG_CORFLUX
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corflux
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corfluy
 
 #ifdef key_sand2D
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE    :: rouse2D,sum_tmp  ! definition nombre de Rouse2D et SUM(dzcche*((htot-hzed)/hzed)**rouse) 
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: rouse2D ! Rouse2D number
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: sum_tmp ! SUM(dzcche*((htot-hzed)/hzed)**rouse) 
 #endif
 
-!#ifdef key_dredging
-!   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE        :: dredgmassloc
-!   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE        :: dredgmassloc_cum
-!   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE          :: dredgmass
-!   INTEGER,DIMENSION(imin:imax,jmin:jmax)           :: dredgflag
-!   REAL(KIND=rsh),DIMENSION(9)                      :: dredglev
-!   CHARACTER(len=lchain),PUBLIC   :: filsauvdredg,filrepdredg,filoutdredg
-!#endif
-#ifdef key_MARS
-#if defined key_castest_2DVSN
-   REAL(KIND=rsh),PUBLIC     :: tenfoncshtx_jmin
-#ifdef key_wave_crossshore
-   REAL(KIND=rsh),PUBLIC     :: hwaveoff,phas_fracan_wave,break_factor_cas2DV,fact_fws2_cas2DV
-   CHARACTER(LEN=lchain),PUBLIC  :: name_wave_hs,name_out_wave_hs
-   REAL(KIND=riosh), PUBLIC      :: riog_valid_min_wave_hs,riog_valid_max_wave_hs
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC      :: hwave,uwave,htw,sqrthtw
-   REAL(KIND=rsh), PUBLIC, DIMENSION(:,:), ALLOCATABLE ::  wave_hs
-#endif
-#endif
-#endif
 
-   ! ---------------------------------------------------------------------------
-   ! VARIABLES FLUXES AT THE INTERFACE WATER-SEDIMENT
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_s2w,flx_w2s,flx_w2s_sum
+    ! Dynamic in sediment (consolidation/diffusion/bioturbation)
+    REAL(KIND=rlg)   :: tstart_dyninsed ! time beginning dynamic in sediment
+    REAL(KIND=rlg)   :: t_dyninsed      ! time of next dynamic in sediment step
+    REAL(KIND=rlg)   :: dt_dyninsed     ! time step for dynamic in sediment (min of dt for each process)
+    LOGICAL :: l_dyn_insed ! true if (l_consolid .OR. l_bioturb .OR. l_diffused .OR. l_biodiffs)
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: fludif
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: fluconsol
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: fluconsol_drycell
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flu_dyninsed
+   
+    ! Diffusion
+    REAL(KIND=rsh) :: cexcs
 
-   ! ---------------------------------------------------------------------------
-    ! relatif to initialization
-   ! ---------------------------------------------------------------------------
-   LOGICAL,PUBLIC          :: l_repsed,l_unised,l_z0seduni,l_initsed_vardiss,l_dzsmaxuni,l_init_hsed
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   LOGICAL,PUBLIC          :: l_peph_suspension,l_dzsminuni
-   LOGICAL,PUBLIC          :: l_eroindep_noncoh,l_eroindep_mud,l_xexp_ero_cst
+    ! Morphodynamic
+    REAL(KIND=rlg) :: tstart_morpho   ! time beginning morphodynamic
+    REAL(KIND=rlg) :: t_morpho        ! time of next morphodynamic step
+    REAL(KIND=rsh) :: MF_dhsed
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: morpho0
+
 #ifdef key_MUSTANG_V2
-   LOGICAL,PUBLIC          :: l_peph_bedload
-   LOGICAL,PUBLIC          :: l_slope_effect_bedload,l_fsusp
-   REAL(KIND=rsh),PUBLIC   :: coeff_dzsmin
+    REAL(KIND=rsh) :: coeff_dzsmin
+    LOGICAL,DIMENSION(:,:),ALLOCATABLE :: l_isitcohesive
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: psi_sed
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: poro_mud
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: crel_mud
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: sigmapsg
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: stateconsol
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: permeab
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: E0_sand
+#ifdef  key_MUSTANG_bedload
+        REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_bx
+        REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_by
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdx
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdy
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: sedimask_h0plusxe
+#if defined MORPHODYN
+            INTEGER :: it_morphoYes
+#endif
+#endif
 #ifdef key_MUSTANG_debug
-   LOGICAL, PUBLIC         :: l_debug_effdep,l_debug_erosion
-   REAL(kind=rlg),PUBLIC   :: lon_debug,lat_debug
-   INTEGER,PUBLIC          :: i_MUSTANG_debug,j_MUSTANG_debug
-   CHARACTER(len=19),PUBLIC:: date_start_debug
-   REAL(KIND=rlg),PUBLIC   :: t_start_debug
+        REAL(KIND=rlg)   :: t_start_debug
 #endif
 #endif
-   INTEGER,PUBLIC          :: ksmiuni,ksmauni
-   REAL(KIND=rsh),PUBLIC   :: cseduni,hseduni,sini_sed,tini_sed,dzsmaxuni,csed_mud_ini
-   REAL(KIND=rsh),PUBLIC   :: z0seduni,z0sedmud,z0sedbedrock
-   REAL(KIND=rsh),PUBLIC   :: dzsmax_bottom
-   REAL(KIND=rsh),PUBLIC,DIMENSION(:),ALLOCATABLE    :: cini_sed,cv_sedini
+   
 
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   REAL(KIND=rsh),PUBLIC                                    :: dzsminuni,poro_mud_ini
-#ifdef key_MUSTANG_V2
-   LOGICAL,DIMENSION(:,:),ALLOCATABLE,PUBLIC :: l_isitcohesive
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC           :: psi_sed
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,    PUBLIC   :: poro_mud
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,    PUBLIC   :: crel_mud
-   REAL(KIND=rsh),PUBLIC                                    :: hmin_bedload ! out of key_sedim_bedload because in paraMUSTANGV2.txt
-#endif
-
-
-   ! ---------------------------------------------------------------------------
-   ! relatif to sedim output
-   ! ---------------------------------------------------------------------------
-   LOGICAL,PUBLIC                               :: l_outsed_saltemp,l_outsed_poro
-   CHARACTER(len=lchain),PUBLIC   :: name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tenfon,&
-                                     name_out_tenfonc,name_out_tenfonw
-   REAL(kind=riosh),PUBLIC      :: riog_valid_min_hsed,riog_valid_max_hsed,riog_valid_min_nbniv, &
-                                   riog_valid_max_nbniv,riog_valid_min_dzs,riog_valid_max_dzs,     &
-                                   riog_valid_min_tenfon,riog_valid_max_tenfon
-   INTEGER,PUBLIC                                    :: nk_nivsed_out,choice_nivsed_out
-   INTEGER,PUBLIC                                    :: nv_out3Dk_specif,nv_out3Dnv_specif,nv_out2D_specif
-
-   REAL(KIND=rsh),DIMENSION(5),PUBLIC                :: ep_nivsed_out
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC    :: ep_nivsed_outp1,nivsed_out
-   REAL(KIND=rsh),PUBLIC                             :: epmax_nivsed_out ! Max thickness from the sediment surface  
-   REAL(KIND=riosh),  DIMENSION(:,:,:,:),ALLOCATABLE  :: var3D_cvsed
-   REAL(KIND=riosh),  DIMENSION(:,:,:),ALLOCATABLE    :: var3D_dzs,var3D_TEMP,var3D_SAL
+    ! Sedim output
+    INTEGER :: nv_out3Dk_specif
+    INTEGER :: nv_out3Dnv_specif
+    INTEGER :: nv_out2D_specif
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: ep_nivsed_outp1
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: nivsed_out
+    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_cvsed
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_dzs
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_TEMP
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_SAL
 #if defined key_BLOOM_insed
-   REAL(KIND=riosh),  DIMENSION(:,:,:,:),ALLOCATABLE  :: var3D_diagsed
-   REAL(KIND=riosh),  DIMENSION(:,:,:),ALLOCATABLE  :: var2D_diagsed
+    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_diagsed
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_diagsed
 #endif
 #ifdef key_MUSTANG_specif_outputs
-   REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE,    PUBLIC   :: varspecif3Dk_save,varspecif3Dnv_save
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,      PUBLIC   :: varspecif2D_save
-   REAL(KIND=riosh),DIMENSION(:,:,:),ALLOCATABLE,      PUBLIC   :: varspecif2D_out
-   REAL(KIND=riosh),DIMENSION(:,:,:,:),ALLOCATABLE,    PUBLIC :: var3D_specifout,varspecif3Dnv_out
+    REAL(KIND=rsh), DIMENSION(:,:,:,:), ALLOCATABLE    :: varspecif3Dk_save
+    REAL(KIND=rsh), DIMENSION(:,:,:,:), ALLOCATABLE    :: varspecif3Dnv_save
+    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: varspecif3Dnv_out
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE      :: varspecif2D_save
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE    :: varspecif2D_out
+    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_specifout
 #endif
 
-   CHARACTER(len=lchain),PUBLIC   :: filrepsed,filoutsed,fileinised
-#ifdef key_sand2D
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC                :: l_outsandrouse
-#endif
 
-   LOGICAL,PUBLIC          :: l_outsed_flx_WS_all,l_outsed_toce,l_outsed_frmudsup
-   LOGICAL,PUBLIC          :: l_outsed_dzs_ksmax
-! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
-   LOGICAL,PUBLIC          :: l_outsed_flx_Bload_all,l_outsed_bil_Bload_all,l_outsed_fsusp
-   LOGICAL,PUBLIC          :: l_outsed_activlayer,l_outsed_surf,l_outsed_peph,l_outsed_eroiter
-   LOGICAL,PUBLIC          :: l_outsed_z0sed,l_outsed_flx_WS_int,l_outsed_flx_Bload_int
-!
-   LOGICAL,PUBLIC          :: l_outsed_bil_Bload_int
-#ifdef key_MUSTANG_V2
-#ifdef key_MUSTANG_bedload
-!  bedload (charriage)
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC  :: flx_bx,flx_by
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC    :: slope_dhdx,slope_dhdy
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC    :: sedimask_h0plusxe
-#if defined MORPHODYN_MUSTANG_byHYDRO
-   INTEGER  :: it_morphoYes
-#endif
-#endif
-#endif
-   ! ---------------------------------------------------------------------------
-
+!**TODO** put under cpp key #if defined key_MUSTANG_lateralerosion
 !  used in erosion only but exchange and dimensions could depend on grid model 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_s2w_corim1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_s2w_corip1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_s2w_corjm1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_s2w_corjp1
-#if ! defined key_nofluxwat_IWS
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: phieau_s2w_corim1
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: phieau_s2w_corip1
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: phieau_s2w_corjm1
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: phieau_s2w_corjp1
-#endif
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corim1
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corip1
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjm1
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjp1
+!**TODO** put under cpp key #if ! defined key_nofluxwat_IWS
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corim1
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corip1
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
+        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
+!**TODO** put under cpp key #endif
+!**TODO** put under cpp key #endif
+
+! slipdeposit : **TODO** put under cpp key key_MUSTANG_slipdeposit
    !  used in accretion (settling) only bud exchange and dimensions could depend on grid model 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_w2s_corin
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_w2s_corim1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_w2s_corip1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_w2s_corjm1
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: flx_w2s_corjp1
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corin
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corim1
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corip1
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corjm1
+   REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corjp1
 
-#ifdef key_MUSTANG_flocmod
-  !--------------------------
-  !   explicit FLOCULATION 
-  !--------------------------
-  LOGICAL,PUBLIC                :: l_ASH,l_ADS,l_COLLFRAG,l_out_MUDtot,l_out_f_dtmin,l_out_G, &
-                                   l_out_f_d90,l_out_f_d10
-
-  INTEGER, PUBLIC               :: f_ero_iv
-  REAL(KIND=rsh),PUBLIC         :: f_nf, f_dp0,f_alpha,f_beta,f_nb_frag,f_fter,f_ater,f_dmin_frag, &
-                                   f_ero_frac,f_ero_nbfrag,f_mneg_param,f_collfragparam,f_cfcst,f_fp,f_fy
-  REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC     :: f_diam,f_vol,f_rho,f_mass,f_cv,f_l3
-
-  REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC   :: f_coll_prob_sh,f_coll_prob_ds,f_l1_sh,f_l1_ds,f_g3
-  
-  REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC   :: f_g1_sh,f_g1_ds
-  REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC   :: f_d50,f_d90,f_d10,f_davg,f_dtmin
-#endif
-
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: emissivity_s
-   REAL(KIND=rsh),PUBLIC                            :: alb,emissivity_sed
- 
-#if ! defined key_noTSdiss_insed
- ! relatif to Temperature in sediment 
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: phitemp_s,phitemp_sout
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: cp_s,mu_tempsedsurf,poro_sedsurf
-   REAL(KIND=rsh),PUBLIC                            :: mu_tempsed1,mu_tempsed2,mu_tempsed3,  &
-                                                        epsedmin_tempsed,epsedmax_tempsed,cp_suni   !!!FG(29/06/2018)
-#endif
-
-
-#if ! defined key_MARS
- !-------------------------------------------------------------------
- !  declaration of variables used both in MUSTANG and hydro modele
- !  and used only with module MUSTANG
- !  and which must have specific names and dimensions, different from those in MUSTANG
- !  not used in MARS because same variable (name and dimensions) in MUSTANG and  in hydro modele
- !  (ksdmin and ksdmax defined in parameters in MARS)
- !-------------------------------------------------------------------
-   ! a eliminer pour CROCO
-   ! INTEGER, PARAMETER,PUBLIC :: ksdmin=1,ksdmax=100
-   
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: EROS_FLUX_s2w , SETTL_FLUX_w2s ,SETTL_FLUXSUM_w2s
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: CORFLUX_SAND,CORFLUY_SAND 
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: WATER_FLUX_INPUTS 
-   ! if temperature and salinity not ranged in the same table as substances concentrations
-   !REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EROS_FLUX_s2w_TEMP,EROS_FLUX_s2w_SAL
-   
-  !   + fixed data used by MUSTANG but specific to MARS and therefore not necessarily known for another model
-   LOGICAL :: l_testcase=.FALSE.
-   REAL(kind=rsh)  ,PARAMETER :: valmanq=999.0
-   REAL(kind=riosh),PARAMETER :: rg_valmanq_io=999.0
-    ! fwet et fwetp =1 if not used  
-   REAL(KIND=rsh),PUBLIC,DIMENSION(:,:),ALLOCATABLE   :: fwet,fwetp
-
-#endif
-
-
- CONTAINS
- 
-   !!===========================================================================
- 
-  SUBROUTINE MUSTANG_alloc(l_filesubs)
- 
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANG_alloc  ***
-   !&E
-   !&E ** Purpose : allocation of arrays relative to sediment
-   !&E
-   !&E ** Description :
-   !&E
-   !&E ** Called by : MUSTANG_initialization 
-   !&E                (and in MARS by cas_init_subs_disspart for test cases
-   !&E                        and  by Agrif_User for Agrif runs)
-   !&E
-   !&E
-   !&E--------------------------------------------------------------------------
-   !! * Modules used
-#include "coupler_define_MUSTANG.h"
-
-#ifdef key_MARS
-   USE parameters,   ONLY : l_testcase
-   USE comvars2d,    ONLY : iscreenlog
-   USE comsubstance, ONLY : irk_fil,diam_r,nvpc,   &
-                            cini_sed_r, irkm_var_assoc,ros_r,unit_modif_mudbio_N2dw
-#ifdef key_MUSTANG_flocmod
-   USE comsubstance, ONLY : nv_mud
-   USE parameters,   ONLY : num_testcase
-
-#endif
-
-#else
-   ! if module substance is installed in hydro modele
-   !USE comsubstance, ONLY : nv_tot,nv_adv,nv_state,nvp,nv_mud,           &
-   !                              irk_fil,irkm_var_assoc,unit_modif_mudbio_N2dw
-   USE comsubstance
-#endif
-
-   !! * Arguments
-   LOGICAL, INTENT(IN), OPTIONAL   :: l_filesubs
-
-   !! * Local declarations
-   INTEGER               :: iv
-   CHARACTER(len=lchain) :: filepc
-   LOGICAL               :: l_filesubsr
-
-   !!--------------------------------------------------------------------------
-   !! * Executable part
-   IF(PRESENT(l_filesubs)) THEN
-     l_filesubsr=l_filesubs
-   ELSE
-     l_filesubsr=.FALSE.
-   ENDIF
-
-!  allocation of 1DV variables 
-   !ALLOCATE(ros(nvp))
-   !ALLOCATE(diam_sed(nvp))
-   
-   !ros(1:nvp)=0.0_rsh
-   !diam_sed(1:nvp)=0.0_rsh
-   
-   ALLOCATE(ws_sand(nvp))        
-   ALLOCATE(diamstar(nvp))
-   ALLOCATE(rosmrowsros(nvp))
-   ALLOCATE(stresscri0(nvp))
-   ALLOCATE(tetacri0(nvp))
-   ALLOCATE(xnielsen(nvp))
-#if ! defined key_MARS
-   ALLOCATE (typart(-1:nv_adv))
-   typart(-1:0)=0.0_rsh
-   typart(1:nvpc)=1.0_rsh
-   typart(nvpc+1:nv_adv)=0.0_rsh
-#endif
-#ifdef key_MUSTANG_V2
-   ALLOCATE(E0_sand(nvp))
-   E0_sand(1:nvp)=0.0_rsh
-#endif   
-#if  ! defined key_noTSdiss_insed
-   ALLOCATE(ivdiss(-1:nv_adv-nvp))
-#endif
-
-      
-#ifdef key_MUSTANG_flocmod
-   ALLOCATE(f_ws(1:nv_mud))
-   f_ws(1:nv_mud)=0.0_rsh
-#endif   
-
-#ifdef key_MUSTANG_V2
-   ALLOCATE(psi_sed(nvp))
-   psi_sed(1:nvp)=0.0_rsh
-#endif   
-
-!  allocation of spatial variables  
-!  dimensions defined dans coupler_define_MUSTANG.h
-!  dimensions in MARS :  PROC_IN_ARRAY       = limin:limax,ljmin:ljmax
-!                        PROC_IN_ARRAY_m1p2  = liminm1:limaxp2,ljminm1:ljmaxp2
-!                        PROC_IN_ARRAY_m1p1  = liminm1:limaxp1,ljminm1:ljmaxp1
-!                        PROC_IN_ARRAY_0p1   = limin:limaxp1,ljmin:ljmaxp1
-
-   ALLOCATE(ksmi(PROC_IN_ARRAY))
-   ALLOCATE(ksma(PROC_IN_ARRAY))
-   ALLOCATE(hsed(PROC_IN_ARRAY))  
-   ALLOCATE(z0sed(PROC_IN_ARRAY))
-   ALLOCATE(tenfon(PROC_IN_ARRAY))
-   ALLOCATE(tenfonc(PROC_IN_ARRAY))
-   ALLOCATE(tenfonw(PROC_IN_ARRAY))
-   ALLOCATE(ustarbot(PROC_IN_ARRAY))
-   ALLOCATE(dzsmax(PROC_IN_ARRAY))
-#if ! defined key_noTSdiss_insed
-   ALLOCATE(phitemp_s(PROC_IN_ARRAY))
-   ALLOCATE(phitemp_sout(PROC_IN_ARRAY))
-   ALLOCATE(cp_s(PROC_IN_ARRAY))
-   !ALLOCATE(mu_tempsedsurf(PROC_IN_ARRAY))
-   ALLOCATE(poro_sedsurf(PROC_IN_ARRAY))
-#endif
-   ALLOCATE(emissivity_s(PROC_IN_ARRAY))
-   ALLOCATE(htot(PROC_IN_ARRAY_m2p2))
-   ALLOCATE(alt_cw1(PROC_IN_ARRAY))
-   ALLOCATE(epn_bottom_MUSTANG(PROC_IN_ARRAY_m1p2))  
-   ALLOCATE(sal_bottom_MUSTANG(PROC_IN_ARRAY_m1p2))  
-   ALLOCATE(temp_bottom_MUSTANG(PROC_IN_ARRAY_m1p2))
-   ALLOCATE(cw_bottom_MUSTANG(nv_tot,PROC_IN_ARRAY_m1p2))
-   ALLOCATE(ws3_bottom_MUSTANG(nvp,PROC_IN_ARRAY_m1p2))  
-   ALLOCATE(roswat_bot(PROC_IN_ARRAY))  
-#ifdef key_MUSTANG_V2
-   ALLOCATE(sigmapsg(ksdmin:ksdmax))
-   ALLOCATE(stateconsol(ksdmin:ksdmax))
-   ALLOCATE(permeab(ksdmin:ksdmax))
-#endif
-#ifdef key_sand2D
-   ALLOCATE(rouse2D(nv_adv,PROC_IN_ARRAY))
-   ALLOCATE(sum_tmp(nv_adv,PROC_IN_ARRAY))
-   rouse2D(1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-   sum_tmp(1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-#endif
-
-   ksmi(PROC_IN_ARRAY)=0
-   ksma(PROC_IN_ARRAY)=0
-   hsed(PROC_IN_ARRAY)=0.0_rsh
-   z0sed(PROC_IN_ARRAY)=0.0_rsh
-   tenfon(PROC_IN_ARRAY)=0.0_rsh
-   tenfonc(PROC_IN_ARRAY)=0.0_rsh
-   tenfonw(PROC_IN_ARRAY)=0.0_rsh
-   ustarbot(PROC_IN_ARRAY)=0.0_rsh
-   
-#if defined key_MARS && defined key_castest_2DVSN
-    tenfoncshtx_jmin=0.0_rsh
-#ifdef key_wave_crossshore
-    ALLOCATE(hwave(jmin:jmax))
-     hwave(:)=0.0_rsh
-    ALLOCATE(uwave(jmin:jmax))
-    ALLOCATE(wave_hs(PROC_IN_ARRAY))
-    riog_valid_min_wave_hs=-0.1
-    riog_valid_max_wave_hs=20.0
-    name_out_wave_hs="hs"
-#endif
-#endif
-
-   dzsmax(PROC_IN_ARRAY)=0.0_rsh
-   htot(PROC_IN_ARRAY_m2p2)=0.0_rsh
-   alt_cw1(PROC_IN_ARRAY)=0.0_rsh
-   emissivity_s(PROC_IN_ARRAY)=0.0_rsh
-#if ! defined key_noTSdiss_insed
-   phitemp_s(PROC_IN_ARRAY)=0.0_rsh
-   phitemp_sout(PROC_IN_ARRAY)=0.0_rsh
-   cp_s(PROC_IN_ARRAY)=0.0_rsh
-   !mu_tempsedsurf(PROC_IN_ARRAY)=0.0_rsh
-   poro_sedsurf(PROC_IN_ARRAY)=0.0_rsh
-#endif
-   epn_bottom_MUSTANG(PROC_IN_ARRAY_m1p2)=0.0_rsh
-   sal_bottom_MUSTANG(PROC_IN_ARRAY_m1p2)=0.0_rsh
-   temp_bottom_MUSTANG(PROC_IN_ARRAY_m1p2)=0.0_rsh
-   cw_bottom_MUSTANG(nv_tot,PROC_IN_ARRAY_m1p2)=0.0_rsh
-   ws3_bottom_MUSTANG(nvp,PROC_IN_ARRAY_m1p2)=0.0_rsh
-   roswat_bot(PROC_IN_ARRAY)=0.0_rsh
-
-   ALLOCATE(cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY))
-   ALLOCATE(c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY))
-   ALLOCATE(poro(ksdmin:ksdmax,PROC_IN_ARRAY))
-   ALLOCATE(dzs(ksdmin:ksdmax,PROC_IN_ARRAY))
-   ALLOCATE(flx_s2w(-1:nv_adv,PROC_IN_ARRAY))
-   ALLOCATE(flx_w2s(-1:nv_adv,PROC_IN_ARRAY))
-   ALLOCATE(flx_w2s_sum(-1:nv_adv,PROC_IN_ARRAY))
-   ALLOCATE(corflux(nv_adv,PROC_IN_ARRAY_m1p1  ))
-   ALLOCATE(corfluy(nv_adv,PROC_IN_ARRAY_m1p1))
-   ALLOCATE(fludif(-1:nv_adv,PROC_IN_ARRAY))
-   ALLOCATE(fluconsol(-1:nv_adv,PROC_IN_ARRAY))
-   ALLOCATE(fluconsol_drycell(-1:nv_adv,PROC_IN_ARRAY))
-   ALLOCATE(flu_dyninsed(-1:nv_adv,PROC_IN_ARRAY))
-   ALLOCATE(gradvit(NB_LAYER_WAT,PROC_IN_ARRAY))
-
-   cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY)=0.0_rsh
-   c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY)=0.0_rsh
-   poro(ksdmin:ksdmax,PROC_IN_ARRAY)=0.0_rsh
-   dzs(ksdmin:ksdmax,PROC_IN_ARRAY)=0.0_rsh
-   flx_s2w(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-   flx_w2s(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-   flx_w2s_sum(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-   corflux(1:nv_adv,PROC_IN_ARRAY_m1p1  )=1.0_rsh
-   corfluy(1:nv_adv,PROC_IN_ARRAY_m1p1)=1.0_rsh
-   fludif(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-   fluconsol(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-   fluconsol_drycell(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-   flu_dyninsed(-1:nv_adv,PROC_IN_ARRAY)=0.0_rsh
-   gradvit(NB_LAYER_WAT,PROC_IN_ARRAY)=0.0_rsh
-
-#ifdef key_MUSTANG_specif_outputs
-  ! outputs
-  ! variables 3D /k
-   nv_out3Dk_specif=1
-      ! 1 : poro_save  
-#if defined key_MUSTANG_add_consol_outputs && defined key_MUSTANG_V2
-   nv_out3Dk_specif=nv_out3Dk_specif+8
-      ! 2 : loadograv_save
-      ! 3 : permeab_save
-      ! 4 : sigmapsg_save
-      ! 5 : dtsdzs_save
-      ! 6 : hinder_save
-      ! 7 : sed_rate_save
-      ! 8 : sigmadjge_save
-      ! 9 : stateconsol_save
-#endif
-   ALLOCATE(varspecif3Dk_save(nv_out3Dk_specif,ksdmin:ksdmax,PROC_IN_ARRAY))
-   varspecif3Dk_save(1:nv_out3Dk_specif,ksdmin:ksdmax,PROC_IN_ARRAY)= 0.0_rsh
-
-    nv_out3Dnv_specif=3
-      ! 1 : toce_save
-      ! 2 : flx_s2w_save
-      ! 3 : flx_w2s_save
-#ifdef key_MUSTANG_V2
-    nv_out3Dnv_specif=nv_out3Dnv_specif+1
-      ! 4 : pephm_fcor_save  
-#ifdef key_MUSTANG_bedload
-    nv_out3Dnv_specif=nv_out3Dnv_specif+4
-      ! 5 : flx_bx
-      ! 6 : flx_by
-      ! 7 : bil_bedload
-      ! 8 : fsusp
-#endif
-#endif
-   ALLOCATE(varspecif3Dnv_save(nv_out3Dnv_specif,nvpc,PROC_IN_ARRAY))
-   ALLOCATE(varspecif3Dnv_out(nv_out3Dnv_specif,nvpc,PROC_IN_ARRAY))
-   varspecif3Dnv_save(1:nv_out3Dnv_specif,1:nvpc,PROC_IN_ARRAY)= 0.0_rsh
-   
-    nv_out2D_specif=2
-      ! 1 : frmudsup 
-      ! 2 : dzs_ksmax 
-#ifdef key_MUSTANG_V2
-       nv_out2D_specif=nv_out2D_specif+13
-      ! 3 : dzs_aclay_comp_save
-      ! 4 : dzs_aclay_kept_save
-      ! 5 : tero_noncoh (cumulated time (in hours) elapsed in non cohesive regime)
-      ! 6 : tero_coh (cumulated time (in hours) elapsed in cohesive regime)
-      ! 7 : pct_iter_noncoh
-      ! 8 : pct_iter_coh
-      ! 9 : niter_ero
-      ! 10: z0sed
-      ! 11 : flx_s2w_noncoh
-      ! 12 : flx_w2s_noncoh
-      ! 13 : flx_s2w_coh
-      ! 14 : flx_w2s_coh
-      ! 15: z0hydro (if l_z0hydro_coupl)
-#ifdef key_MUSTANG_bedload
-    nv_out2D_specif=nv_out2D_specif+3
-      ! 16 : flx_bx_int
-      ! 17 : flx_by_int
-      ! 18 : bil_bedload_int
-#endif
-!   end version MUSTANG V2
-#endif
-
-    ALLOCATE(varspecif2D_save(nv_out2D_specif,PROC_IN_ARRAY))
-    ALLOCATE(varspecif2D_out(nv_out2D_specif,PROC_IN_ARRAY))
-    varspecif2D_save(1:nv_out2D_specif,PROC_IN_ARRAY)= 0.0_rsh
-    
-!   end specifs output
-#endif
-
-#ifdef key_MUSTANG_V2
-   ALLOCATE(poro_mud(ksdmin:ksdmax,PROC_IN_ARRAY))
-   ALLOCATE(crel_mud(ksdmin:ksdmax,PROC_IN_ARRAY))
-   ALLOCATE(l_isitcohesive(PROC_IN_ARRAY))
-   poro_mud(ksdmin:ksdmax,PROC_IN_ARRAY)=0.0_rsh
-   crel_mud(ksdmin:ksdmax,PROC_IN_ARRAY)=0.0_rsh
-   l_isitcohesive(PROC_IN_ARRAY)=.FALSE.
- 
-#ifdef key_MUSTANG_bedload
-   ALLOCATE( flx_bx(1:nvp,PROC_IN_ARRAY_m1p1)) ! attention /Baptiste : m1p1 sur les 2 indices au lieu d1
-   ALLOCATE( flx_by(1:nvp,PROC_IN_ARRAY_m1p1)) ! attention /Baptiste : m1p1 sur les 2 indices au lieu d1
-   ALLOCATE( slope_dhdx(PROC_IN_ARRAY))
-   ALLOCATE( slope_dhdy(PROC_IN_ARRAY))
-   ALLOCATE( sedimask_h0plusxe(PROC_IN_ARRAY_m1p1)) ! attention /Baptiste : m1p1 sur les 2 indices au lieu d1
-
-   flx_bx(1:nvp,PROC_IN_ARRAY_m1p1)=0.0_rsh 
-   flx_by(1:nvp,PROC_IN_ARRAY_m1p1)=0.0_rsh
-   slope_dhdx(PROC_IN_ARRAY)=0.0_rsh
-   slope_dhdy(PROC_IN_ARRAY)=0.0_rsh
-   sedimask_h0plusxe(PROC_IN_ARRAY_m1p1)=0.0_rsh
-#endif
-#endif
-
-   ALLOCATE(phieau_s2w(PROC_IN_ARRAY))
-   ALLOCATE(phieau_s2w_drycell(PROC_IN_ARRAY))
-   ALLOCATE(phieau_s2w_consol(PROC_IN_ARRAY))
-   phieau_s2w(PROC_IN_ARRAY)=0.0_rlg
-   phieau_s2w_drycell(PROC_IN_ARRAY)=0.0_rlg
-   phieau_s2w_consol(PROC_IN_ARRAY)=0.0_rlg
-
-   ALLOCATE( raphbx(PROC_IN_ARRAY_m1p1),raphby(PROC_IN_ARRAY_m1p1) )
-   ALLOCATE( frofonx(PROC_IN_ARRAY_m1p1),frofony(PROC_IN_ARRAY_m1p1) )
-#ifdef key_tenfon_upwind
-   ALLOCATE( tenfonx(PROC_IN_ARRAY),tenfony(PROC_IN_ARRAY) )
-#endif
-   ALLOCATE( dry_cell(PROC_IN_ARRAY))
-   raphbx(PROC_IN_ARRAY_m1p1)=0.0_rsh
-   raphby(PROC_IN_ARRAY_m1p1)=0.0_rsh
-   dry_cell(PROC_IN_ARRAY)=0
-
-   ALLOCATE(flx_s2w_corim1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
-   ALLOCATE(flx_s2w_corip1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
-   ALLOCATE(flx_s2w_corjm1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
-   ALLOCATE(flx_s2w_corjp1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
-   ALLOCATE(flx_w2s_corin(nvp,PROC_IN_ARRAY))
-   ALLOCATE(flx_w2s_corim1(nvp,PROC_IN_ARRAY_m1p1))
-   ALLOCATE(flx_w2s_corip1(nvp,PROC_IN_ARRAY_m1p1))
-   ALLOCATE(flx_w2s_corjm1(nvp,PROC_IN_ARRAY_m1p1))
-   ALLOCATE(flx_w2s_corjp1(nvp,PROC_IN_ARRAY_m1p1))
-#if ! defined key_nofluxwat_IWS
-   ALLOCATE(phieau_s2w_corim1(PROC_IN_ARRAY_m1p1))
-   ALLOCATE(phieau_s2w_corip1(PROC_IN_ARRAY_m1p1))
-   ALLOCATE(phieau_s2w_corjm1(PROC_IN_ARRAY_m1p1))
-   ALLOCATE(phieau_s2w_corjp1(PROC_IN_ARRAY_m1p1))
-#endif
-   
-! relatif to initialization
-   ALLOCATE(cini_sed(nv_state))
-   
-#ifdef key_MARS
-   IF ((.NOT.l_testcase) .OR. (l_testcase .AND. l_filesubsr)) THEN
-      DO iv=1,nvp
-        ros(iv)=ros_r(irk_fil(iv))
-        diam_sed(iv)=diam_r(irk_fil(iv))
-      ENDDO
-      ! def of inital concentrations in sediment and for particulate variable MUDB 
-      ! conversion of initial value in sediment expressed in mmole/kg (as NoCP variable)
-      ! in kg/kg of sediment
-      DO iv=1,nv_state
-        cini_sed(iv)=cini_sed_r(irk_fil(iv))*unit_modif_mudbio_N2dw(irk_fil(iv))
-      ENDDO
-   ENDIF
-#else
-      DO iv=1,nv_adv
-        cini_sed(iv)=cini_sed_r(irk_fil(iv))*unit_modif_mudbio_N2dw(irk_fil(iv))
-      ENDDO
-#endif    
-
-#ifdef key_Pconstitonly_insed 
-      nv_use=nvpc
-#else
-      nv_use=nvp
-#endif  
 
 #if ! defined key_noTSdiss_insed
-! counting of dissolved variables for diffusion in the sediment
-   ivdiss(:)=0
-   ivdiss(-1)=-1
-   ivdiss(0)=0
-#if ! defined key_Pconstitonly_insed
-   DO iv=1,nv_adv-nvp
-      ivdiss(iv)=iv+nvp
-   ENDDO  
-#endif
+    ! Temperature in sediment 
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phitemp_s
+    INTEGER, DIMENSION(:), ALLOCATABLE  :: ivdiss
+    INTEGER       , DIMENSION(:), ALLOCATABLE :: D0_funcT_opt
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: D0_m0
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: D0_m1
 #endif
 
-!  option morpho
-!!!!!!!!!!!!!!!!!!!!
-   IF(l_morphocoupl) THEN
-!! ATTENTION : no hx, hy in other model than MARS 
-#ifdef key_MARS
-       ALLOCATE(hsed0(PROC_IN_ARRAY))
-       ALLOCATE(hsed_previous(PROC_IN_ARRAY))
-#if defined key_oasis && defined key_oasis_mars_ww3  
-       ALLOCATE(dhsed_save(PROC_IN_ARRAY))  
+#if ! defined key_nofluxwat_IWS && ! defined key_noTSdiss_insed
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: WATER_FLUX_INPUTS ! not operationnal, stil to code **TODO**
 #endif
-       ALLOCATE(morphox(ARRAY_morphox))
-       ALLOCATE(morphoy(ARRAY_morphoy))
-       ALLOCATE(hxi(ARRAY_hxi))
-       ALLOCATE(hyi(ARRAY_hyi))
-       ALLOCATE(h0_bedrock(ARRAY_h0_bedrock))
-       hxi(ARRAY_hxi)=0.0_rsh
-       hyi(ARRAY_hyi)=0.0_rsh
-       hsed0(PROC_IN_ARRAY)=0.0_rsh
-       hsed_previous(PROC_IN_ARRAY)=0.0_rsh
-#if defined key_oasis && defined key_oasis_mars_ww3  
-       dhsed_save(PROC_IN_ARRAY)=0.0_rsh
-#endif
-#else
-       ALLOCATE(morpho0(ARRAY_morpho))
-       ALLOCATE(h0_bedrock(ARRAY_h0_bedrock))
-       ALLOCATE(hsed0(PROC_IN_ARRAY))
-       ALLOCATE(hsed_previous(PROC_IN_ARRAY))
-#if defined MORPHODYN_MUSTANG_byHYDRO
-       ALLOCATE(dhsed_save(PROC_IN_ARRAY))
-#endif
-       hsed0(PROC_IN_ARRAY)=0.0_rsh
-       hsed_previous(PROC_IN_ARRAY)=0.0_rsh
-#endif
-   ENDIF
 
-#if ! defined key_MARS
-  !! declaration of the MUSTANG variables needed in the hydro model 
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   ALLOCATE(EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w))
-   ALLOCATE(SETTL_FLUX_w2s(ARRAY_SETTL_FLUX_w2s))
-   ALLOCATE(SETTL_FLUXSUM_w2s(ARRAY_SETTL_FLUXSUM_w2s))
-   ALLOCATE(CORFLUX_SAND(ARRAY_CORFLUX_SAND))
-   ALLOCATE(CORFLUY_SAND(ARRAY_CORFLUY_SAND))
-   ALLOCATE(WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS))
-   EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w)=0.0_rsh
-   SETTL_FLUX_w2s(ARRAY_SETTL_FLUX_w2s)=0.0_rsh
-   SETTL_FLUXSUM_w2s(ARRAY_SETTL_FLUXSUM_w2s)=0.0_rsh
-   CORFLUX_SAND(ARRAY_CORFLUX_SAND )=1.0_rsh
-   CORFLUY_SAND(ARRAY_CORFLUY_SAND)=1.0_rsh
-   WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS)=0.0_rsh
-   
-   ALLOCATE(fwet(PROC_IN_ARRAY))
-   ALLOCATE(fwetp(PROC_IN_ARRAY))
-   fwet(:,:)=1.0_rsh
-   fwetp(:,:)=1.0_rsh
 
-   ! if temperature and salinity not ranged in the same table as substances concentrations
-   !ALLOCATE(EROS_FLUX_s2w_TEMP(ARRAY_EROS_FLUX_s2w_TEMPSAL))
-   !ALLOCATE(EROS_FLUX_s2w_SAL(ARRAY_EROS_FLUX_s2w_TEMPSAL))
-   !EROS_FLUX_s2w_TEMP(ARRAY_EROS_FLUX_s2w_TEMPSAL)=0.0_rsh
-   !EROS_FLUX_s2w_SAL(ARRAY_EROS_FLUX_s2w_TEMPSAL)=0.0_rsh
-
-#endif
-   
 #ifdef key_MUSTANG_flocmod
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   !!!!!!! module FLOCULATION  !!!!!!!!
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   
-  ! floc characteristics
-  ALLOCATE(f_diam(1:nv_mud))     ! floc diameter
-  ALLOCATE(f_vol(1:nv_mud))      ! floc volume
-  ALLOCATE(f_rho(1:nv_mud))      ! floc density
-  ALLOCATE(f_mass(0:nv_mud+1))     ! floc mass
-  
-  ! mass concentration 
-  !ALLOCATE(f_cv(1:nv_mud))       ! extracted from cv_wat(:,k,j,j) mass concentration for every mud variables
-
-  ! agregation kernels
-  ALLOCATE(f_coll_prob_sh(1:nv_mud,1:nv_mud)) !  shear agregation collision probability
-  ALLOCATE(f_coll_prob_ds(1:nv_mud,1:nv_mud)) ! differential settling collision probability
-  
-  ALLOCATE(f_g1_sh(1:nv_mud,1:nv_mud,1:nv_mud)) ! shear agregation gain term
-  ALLOCATE(f_g1_ds(1:nv_mud,1:nv_mud,1:nv_mud)) ! differential settling agregation gain term
-  ALLOCATE(f_l1_sh(1:nv_mud,1:nv_mud)) ! shear agregation loss term
-  ALLOCATE(f_l1_ds(1:nv_mud,1:nv_mud)) ! differential settling agregation loss term  
-  ALLOCATE(f_g3(1:nv_mud,1:nv_mud)) ! fragmentation gain term     
-  ALLOCATE(f_l3(1:nv_mud)) ! fragmentation loss term
-    
-  ALLOCATE(f_davg(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-  ALLOCATE(f_d50(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-  ALLOCATE(f_d90(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-  ALLOCATE(f_d10(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-  ALLOCATE(f_dtmin(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-  
-  f_diam(1:nv_mud)=0.0_rsh
-  f_vol(1:nv_mud)=0.0_rsh
-  f_rho(1:nv_mud)=0.0_rsh
-  f_mass(0:nv_mud+1)=0.0_rsh
-  
-  !f_cv(1:nv_mud)=0.0_rsh
-  
-  f_coll_prob_sh(1:nv_mud,1:nv_mud)=0.0_rsh
-  f_coll_prob_ds(1:nv_mud,1:nv_mud)=0.0_rsh
-  
-  f_g1_sh(1:nv_mud,1:nv_mud,1:nv_mud)=0.0_rsh
-  f_g1_ds(1:nv_mud,1:nv_mud,1:nv_mud)=0.0_rsh
-  f_l1_sh(1:nv_mud,1:nv_mud)=0.0_rsh
-  f_l1_ds(1:nv_mud,1:nv_mud)=0.0_rsh
-  f_g3(1:nv_mud,1:nv_mud)=0.0_rsh
-  f_l3(1:nv_mud)=0.0_rsh
-
-  f_davg(1:NB_LAYER_WAT,PROC_IN_ARRAY)=0.0_rsh
-  f_d50(1:NB_LAYER_WAT,PROC_IN_ARRAY)=0.0_rsh
-  f_d10(1:NB_LAYER_WAT,PROC_IN_ARRAY)=0.0_rsh
-  f_d90(1:NB_LAYER_WAT,PROC_IN_ARRAY)=0.0_rsh
-  f_dtmin(1:NB_LAYER_WAT,PROC_IN_ARRAY)=0.0_rsh  
-
+    ! Explicit FLOCULATION 
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_diam ! floc diameter (m)
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_ws ! floc settling velocity (m/s)
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_vol ! floc volume
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_rho ! floc density
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_mass ! floc mass
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_l3 ! fragmentation loss term
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_coll_prob_sh ! shear agregation collision probability
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_coll_prob_ds ! differential settling collision probability
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_l1_sh ! shear agregation loss term
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_l1_ds ! differential settling agregation loss term  
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_g3 ! fragmentation gain term 
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_sh ! shear agregation gain term
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_ds ! differential settling agregation gain term
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d50
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d90
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d10
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_davg
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_dtmin
 #endif
-   
-   PRINT_DBG*, 'END MUSTANG_ALLOC'
-   
-   END SUBROUTINE MUSTANG_alloc
 
-  !!===========================================================================
 
+#ifdef key_BLOOM_insed
+    LOGICAL :: l_out_subs_diag_sed
 #endif
+
+
+    CONTAINS
+ 
+#endif /* ifdef MUSTANG */
 
 END MODULE comMUSTANG
-

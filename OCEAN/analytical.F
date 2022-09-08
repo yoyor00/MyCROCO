@@ -650,7 +650,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
-# elif defined TIDAL_FLAT && defined ANA_TIDES
+# elif (defined TIDAL_FLAT  || defined ESTUARY ) && defined ANA_TIDES
       omega=2.*pi/(12.0*3600)
       ETA0=2.0
       do j=JstrR,JendR
@@ -658,6 +658,16 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j)=ETA0*sin(omega*time)
         enddo
       enddo
+# if defined ESTUARY_TIDE
+      ! adding another wave to modulate tide
+      omega=2.*pi/((24.0+50./60.)/2.*3600)
+      ETA0=2.0
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j) = ssh(i,j) + ETA0*sin(omega*time)
+        enddo
+      enddo
+#endif
 
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
@@ -1359,7 +1369,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT)
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT && !defined ESTUARY)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -2554,14 +2564,19 @@ C$    integer  trd, omp_get_thread_num
             zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    if defined TIDAL_FLAT
+#    if defined TIDAL_FLAT || defined ESTUARY 
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#      if defined ESTUARY_TIDE
+            ! adding another wave to modulate tide
+            zetabry_west(j) = zetabry_west(j) + 
+     &          2.*sin(2.*pi*time/((24.0+50./60.)/2.*3600.0))
+#      endif
 #    endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
-#    ifdef TIDAL_FLAT
+#    if defined TIDAL_FLAT || defined ESTUARY 
             ubarbry_west(j)=0.
 #    else
             ubarbry_west(j)=ubar(1,j,1)
@@ -2574,7 +2589,7 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
-#     ifdef TIDAL_FLAT
+#     if defined TIDAL_FLAT || defined ESTUARY 
               ubry_west(j,k)=0.
 #     else
               ubry_west(j,k)=u(1,j,k,1)
@@ -2590,7 +2605,7 @@ C$    integer  trd, omp_get_thread_num
               enddo
 #    endif
 #    ifdef SUBSTANCE
-#     if defined TIDAL_FLAT
+#     if defined TIDAL_FLAT || defined ESTUARY
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
 #     else
@@ -2602,12 +2617,18 @@ C$    integer  trd, omp_get_thread_num
               tbry_west(j,k,itrc)=cobc_wat(itrc)
             enddo
 #    else
-#     ifdef TIDAL_FLAT
+#     if defined TIDAL_FLAT
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
             tbry_west(j,k,3)=0.   ! tracer Coarse Sand
             tbry_west(j,k,4)=0.   ! tracer Fine Sand
             tbry_west(j,k,5)=0.02 ! tracer Mud
+#     endif
+#     if defined ESTUARY 
+            tbry_west(j,k,1)=10.
+            tbry_west(j,k,2)=35.5
+            tbry_west(j,k,3)=0.0   ! tracer Fine Sand
+            tbry_west(j,k,4)=0.0   ! tracer Mud
 #     endif
 #    endif
             enddo
@@ -2620,8 +2641,13 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    ifdef TIDAL_FLAT
+#    if defined TIDAL_FLAT || defined ESTUARY 
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#      if defined ESTUARY_TIDE
+            ! adding another wave to modulate tide
+            zetabry_west(j) = zetabry_west(j) + 
+     &          2.*sin(2.*pi*time/((24.0+50./60.)/2.*3600.0))
+#      endif
 #    endif
           enddo
 #   endif
@@ -2644,19 +2670,29 @@ C$    integer  trd, omp_get_thread_num
 #    endif
 #    ifdef T_FRC_BRY
 #     ifdef SUBSTANCE
+#      if defined TIDAL_FLAT || defined ESTUARY 
+             tbry_west(j,k,1)=10.
+             tbry_west(j,k,2)=35.5
+#      else
              do itrc=1,itsubs1-1
                tbry_west(j,k,itrc)=0.
              enddo
+#      endif
              do itrc=itsubs1,NT
                tbry_west(j,k,itrc)=cobc_wat(itrc)
              enddo
 #     else
-#      ifdef TIDAL_FLAT
+#      if defined TIDAL_FLAT
              tbry_west(j,k,1)=10.
              tbry_west(j,k,2)=35.
              tbry_west(j,k,3)=0. ! tracer Coarse Sand
              tbry_west(j,k,4)=0. ! tracer Fine Sand
-             tbry_west(j,k,5)=0. ! tracer Mud
+             tbry_west(j,k,5)=0.02 ! tracer Mud
+#     elif defined ESTUARY 
+             tbry_west(j,k,1)=10.
+             tbry_west(j,k,2)=35.5
+             tbry_west(j,k,3)=0.0   ! tracer Fine Sand
+             tbry_west(j,k,4)=0.0   ! tracer Mud
 #      else
              do itrc=1,NT
                tbry_west(j,k,itrc)=t(0,j,k,1,itrc)

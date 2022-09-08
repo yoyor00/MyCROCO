@@ -221,18 +221,7 @@
         wwv_time(1)=-1.E+20
         wwv_time(2)=-1.E+20
 
-# ifdef MANGAE2500
-! scale factors for MANGAE wave files 
-        wwa_scale=0.002
-        wwd_scale=0.1*deg2rad !converting to radian and imposing scale factor
-        wwp_scale=0.01
-        wweb_scale=1.
-        wwed_scale=1.
-        wwer_scale=1.
-#  ifdef MUSTANG
-        wwu_scale=0.01
-#  endif
-# else
+
         wwa_scale=1.
         wwd_scale=deg2rad
         wwp_scale=1.
@@ -242,7 +231,6 @@
 #  ifdef MUSTANG
         wwu_scale=1.
 #  endif
-# endif
      
       endif                   !<-- itww.eq.0 .or. iic.eq.0
 

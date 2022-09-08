@@ -1962,7 +1962,7 @@
           indx=indxT+ntrc_salt+ntrc_substot+itrc
           lvar=lenstr(vname(1,indx))
           ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
-     &             NF_FOUT, 3, r2dgrd, vidM(itrc))  ! 2D: ksmax,Eptot,Tenfon
+     &             NF_FOUT, 3, r2dgrd, vidM(itrc))  ! 2D: ksmax,Eptot,tauskin
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
 #  endif
@@ -3063,7 +3063,7 @@
       do itrc=1,3
         indx=indxT+ntrc_salt+ntrc_substot+itrc
         lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc)) ! 2D: ksmax,Eptot,Tenfon
+        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc)) ! 2D: ksmax,Eptot,tauskin
       enddo
       do itrc=1,3
         indx=indxT+ntrc_salt+ntrc_substot+itrc+3                 ! 3D: dzs,tempsed,salsed
