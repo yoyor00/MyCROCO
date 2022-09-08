@@ -88,15 +88,18 @@ do
     or_D=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 2) )
 
 # find vertical streching values
-if [[ ${RESTART_FLAG} == "FALSE" ]]; then
-    ts=$(ncdump -v theta_s croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-    tb=$(ncdump -v theta_b croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-    hc=$(ncdump -v hc croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-else
     ts=$(ncdump -h croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
     tb=$(ncdump -h croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
     hc=$(ncdump -h croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-fi
+	if [[ -z ${ts} ]]; then
+        ts=$(ncdump -v theta_s croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	fi
+	if [[ -z ${tb} ]]; then
+        tb=$(ncdump -v theta_b croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	fi
+	if [[ -z ${hc} ]]; then
+        hc=$(ncdump -v hc croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	fi
 # find recordperdays in online bulk
 if [[ ${interponline} -eq 1 ]]; then
     localmth=${cur_M}
