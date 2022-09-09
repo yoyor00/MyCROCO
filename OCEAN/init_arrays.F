@@ -52,7 +52,9 @@ C$    integer omp_get_thread_num
 #include "boundary.h"
 #include "sources.h"
 #include "nbq.h"
-
+#ifdef ABL1D
+# include "abl1d.h"
+#endif
 #ifdef DIAGNOSTICS_VRT
 # include "diags_vrt.h"
 #endif
@@ -341,6 +343,88 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif /* TRACERS */
+
+# ifdef ABL1D
+!
+!  Initialize 3-D primitive variables.
+!
+      do k=1,N_abl
+        zr_abl (k)=init
+        zw_abl (k)=init
+        Hzr_abl(k)=init
+        Hzw_abl(k)=init
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+             u_abl (i,j,k,1      )=init
+             u_abl (i,j,k,2      )=init
+             v_abl (i,j,k,1      )=init
+             v_abl (i,j,k,2      )=init
+             tq_abl(i,j,k,1,jp_ta)=init
+             tq_abl(i,j,k,2,jp_ta)=init
+             tq_abl(i,j,k,1,jp_qa)=init
+             tq_abl(i,j,k,2,jp_qa)=init
+             avm_abl(i,j,k       )=avm_bak
+             avt_abl(i,j,k       )=avt_bak
+             mxld_abl(i,j,k      )=mxl_min
+             mxlm_abl(i,j,k      )=mxl_min
+             tke_abl (i,j,k,1    )=tke_min
+             tke_abl (i,j,k,2    )=tke_min
+             pu_dta  (i,j,k      )=init
+             pv_dta  (i,j,k      )=init
+             pt_dta  (i,j,k      )=init
+             pq_dta  (i,j,k      )=init
+             pgu_dta (i,j,k      )=init
+             pgv_dta (i,j,k      )=init
+             pu_dtag  (i,j,k,1   )=init
+             pv_dtag  (i,j,k,1   )=init
+             pt_dtag  (i,j,k,1   )=init
+             pq_dtag  (i,j,k,1   )=init
+             pgu_dtag (i,j,k,1   )=init
+             pgv_dtag (i,j,k,1   )=init
+             pu_dtag  (i,j,k,2   )=init
+             pv_dtag  (i,j,k,2   )=init
+             pt_dtag  (i,j,k,2   )=init
+             pq_dtag  (i,j,k,2   )=init
+             pgu_dtag (i,j,k,2   )=init
+             pgv_dtag (i,j,k,2   )=init
+#  ifdef AVERAGES
+             u_abl_avg   (i,j,k  )=init
+             v_abl_avg   (i,j,k  )=init
+             t_abl_avg   (i,j,k  )=init
+             q_abl_avg   (i,j,k  )=init
+             avm_abl_avg (i,j,k  )=init
+             avt_abl_avg (i,j,k  )=init
+             mxld_abl_avg(i,j,k  )=init
+             mxlm_abl_avg(i,j,k  )=init
+             tke_abl_avg (i,j,k  )=init
+             pu_dta_avg  (i,j,k  )=init
+             pv_dta_avg  (i,j,k  )=init
+             pt_dta_avg  (i,j,k  )=init
+             pq_dta_avg  (i,j,k  )=init
+#  endif
+          enddo
+        enddo
+      enddo
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+           ablh    (i,j)=init
+#if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
+           rest_eq (i,j)=init
+#endif
+           ustar2  (i,j)=init
+           z0_abl  (i,j)=init
+           Cd_du   (i,j)=init
+           Ch_du   (i,j)=init
+           Ce_du   (i,j)=init
+           sst_abl (i,j)=init
+           ssq_abl (i,j)=init
+           rho_abl (i,j)=init
+#  ifdef AVERAGES
+           ablh_avg(i,j)=init
+#  endif
+        enddo
+      enddo
+# endif /* ABL1D */
 
 # if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
       do itrc=1,NT

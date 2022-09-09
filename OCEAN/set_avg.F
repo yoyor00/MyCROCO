@@ -61,7 +61,7 @@ C$    integer omp_get_thread_num
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, ilc, iout, indxWrk
-      real cff, cff1, eps, stf_cff
+      real cff, cff1, eps, stf_cff, u_str, v_str
       parameter (eps=1.D-20)
       parameter(stf_cff=86400/0.01)
 # ifdef SOLVE3D
@@ -215,13 +215,18 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxWstr)) then
           do j=Jstr,Jend
             do i=Istr,Iend
-              wstr_avg(i,j)=cff*( cff1*wstr_avg(i,j)+
 # ifdef OA_COUPLING
-     &                         smstr(i,j)*rho0)
+              wstr_avg(i,j)=cff*(cff1*wstr_avg(i,j)+smstr(i,j)*rho0)
 # else
-     &                         0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
-     &                                 +(svstr(i,j)+svstr(i,j+1))**2)
-     &                                                          *rho0)
+#   ifdef STRESS_AT_RHO_POINTS
+              u_str = sustr(i,j)
+              v_str = svstr(i,j)
+#   else
+              u_str = 0.5*(sustr(i,j)+sustr(i+1,j))
+              v_str = 0.5*(svstr(i,j)+svstr(i,j+1))
+#   endif
+              wstr_avg(i,j)=cff*( cff1*wstr_avg(i,j)
+     &                +sqrt(u_str**2+v_str**2)*rho0)
 # endif
             enddo
           enddo

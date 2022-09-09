@@ -33,6 +33,12 @@
 #ifdef FLOATS
       if (ncidflt.ne.-1) ierr=nf_close(ncidflt)
 #endif
+#if defined ABL1D && ! defined XIOS
+      if (ncidablhis.ne.-1) ierr=nf_close(ncidablhis)
+# ifdef AVERAGES
+      if (ncidablavg.ne.-1) ierr=nf_close(ncidablavg)
+# endif
+#endif 
 #if defined DIAGNOSTICS_TS
       if (nciddia.ne.-1) ierr=nf_close(nciddia)
 # ifdef AVERAGES
@@ -90,7 +96,7 @@
       if (ncidsta.ne.-1) ierr=nf_close(ncidsta)
 #endif
 
-      MPI_master_only write(stdout,'(/1x,2A,I5,3(/8x,A,I5)/)') 
+      MPI_master_only write(stdout,'(/1x,2A,I5,18(/8x,A,I5)/)') 
      &   'MAIN - '
      &  ,'number of records written into history  file(s):', nrechis
      &  ,'number of records written into restart  file(s):', nrecrst
@@ -103,6 +109,14 @@
 #ifdef FLOATS
      &  ,'number of records written into floats   file(s):', nrecflt
 #endif /* FLOATS */
+#if defined ABL1D && ! defined XIOS
+     &  ,'number of records written into abl history file(s):',
+     &                                                    nrecablhis
+# ifdef AVERAGES
+     &  ,'number of records written into abl averages file(s):',
+     &                                                    nrecablavg
+# endif
+#endif
 #if defined DIAGNOSTICS_TS
      &  ,'number of records written into diags_t  file(s):', nrecdia
 # ifdef AVERAGES

@@ -247,6 +247,9 @@ C$    integer omp_get_thread_num
                      depth_deep=16.
                      f0=0.
                      beta=0.
+# elif defined KILPATRICK
+                     f0=1.E-4
+                     beta=0.
 # else
                      depth=???
                      f0=???
@@ -369,6 +372,9 @@ C$    integer omp_get_thread_num
 # elif defined TIDAL_FLAT
                      Length_ETA= 1500.0
                      Length_XI = 100000.0
+# elif defined KILPATRICK
+                     Length_ETA= 18.E+3
+                     Length_XI = 3600.E+3
 # else
                      Length_XI =???
                      Length_ETA=??? 
@@ -413,6 +419,10 @@ C$    integer omp_get_thread_num
 # if defined INTERNAL || defined THACKER || defined MOVING_BATHY
       x0=x0-0.5*Length_XI
       y0=y0-0.5*Length_ETA  
+# endif
+# ifdef KILPATRICK
+      x0=-1800.E+3
+      y0=-9.E+3
 # endif
 
 CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
@@ -904,6 +914,12 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
+# elif defined KILPATRICK
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=500.0
+        enddo
+      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR

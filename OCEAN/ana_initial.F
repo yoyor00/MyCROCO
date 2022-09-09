@@ -1155,6 +1155,21 @@ C$OMP BARRIER
           enddo
         enddo
 
+#   elif defined KILPATRICK
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=(288.95-273.16)+1.5*TANH(xr(i,j)/100.E+3)
+              t(i,j,k,2,itemp)=(288.95-273.16)+1.5*TANH(xr(i,j)/100.E+3)
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=35.
+              t(i,j,k,2,isalt)=35.
+#    endif /* SALINITY */
+            enddo
+          enddo
+        enddo
 #   else
         do k=1,N
           do j=JR_RANGE

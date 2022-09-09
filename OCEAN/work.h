@@ -19,6 +19,11 @@
       common /work3d_r/ workr
 #endif
 
+#ifdef ABL1D
+      real work3dabl(GLOBAL_2D_ARRAY,N_abl)
+      common /work3d_abl/ work3dabl
+#endif
+
       real work2d(GLOBAL_2D_ARRAY)
       common /work2d/ work2d
 

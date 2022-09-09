@@ -50,7 +50,14 @@
 # include "netcdf.inc"
 # include "grid.h"
 # include "online.h"
+# ifdef ABL1D
+# include "abl1d.h"
+# include "ncscrum.h"
+# endif
       integer blkvar_id, imin, imax, jmin, jmax, strt3(3), cnt3(3)
+#ifdef ABL1D
+      integer strt4(4), cnt4(4), k
+#endif
       integer blk_dimlonid, blk_lonid, blk_dimlatid, blk_latid,blk_dimtimeid
       integer iblk, ierr, lvar, lenstr, i, j, NX, NY, tile, subs, trd
       logical firstiter
@@ -59,6 +66,9 @@
       real(kind=4), dimension(:), allocatable :: lon0, lat0
       real(kind=8), dimension(:), allocatable :: lon, lat    
       real(kind=8), dimension(:,:), allocatable :: var
+#ifdef ABL1D
+      real(kind=8), dimension(:,:,:), allocatable :: var3d
+#endif
       character*16 dimname
 !
 ! Time of the current model step
@@ -86,6 +96,10 @@
 !
         if (blkvar_id.eq.4) goto 10
 #  endif
+!
+# ifndef READ_PATM
+        if (blkvar_id.eq.10) goto 10
+# endif
 !
 ! -> End of loop on blkvar_id : goto 10
 !
@@ -380,10 +394,139 @@
           allocate(lat(1:NY))
           lon=lon0(imin:imax)
           lat=lat0(jmin:jmax)
+          
+! ---------------------------------------------------------------------
+! Read vertical grid for abl
+! ---------------------------------------------------------------------
+#if defined ABL1D && !defined ANA_ABL_VGRID
+
+          if (firstiter .and. blkvar_id .eq. 1) then
+            !
+            !  Read zr : height of t-level
+            !
+            lvar=lenstr(vname(1,indxZR))
+            ierr=nf_inq_varid (ncidbulkO(blkvar_id),
+     &                         vname(1,indxZR)(1:lvar),
+     &                         zr_id)
+            if (ierr .ne. nf_noerr) then
+              write(stdout,3) vname(1,indxZR)(1:lvar),
+     &                        bulkfilename(blkvar_id)
+              goto 99                                         !--> ERROR
+            endif
+            !
+            ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),zr_id,1,N_abl,
+     &                             zr_abl)
+            if (ierr .ne. nf_noerr) then
+              write(stdout,6) vname(1,indxZR)(1:lvar),
+     &                        bulkfilename(blkvar_id)
+              goto 99                                         !--> ERROR
+            endif
+            !
+            !  Read zw : height of w-level
+            !
+            lvar=lenstr(vname(1,indxZW))
+            ierr=nf_inq_varid (ncidbulkO(blkvar_id),
+     &                         vname(1,indxZW)(1:lvar),
+     &                         zw_id)
+            if (ierr .ne. nf_noerr) then
+              write(stdout,3) vname(1,indxZW)(1:lvar),
+     &                        bulkfilename(blkvar_id)
+              goto 99                                         !--> ERROR
+            endif
+            !
+            ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),zw_id,1,N_abl,
+     &                             zw_abl)
+            if (ierr .ne. nf_noerr) then
+              write(stdout,6) vname(1,indxZW)(1:lvar),
+     &                        bulkfilename(blkvar_id)
+              goto 99                                         !--> ERROR
+            endif
+            !
+            !  Read Hzr : thickness of t-level
+            !
+            lvar=lenstr(vname(1,indxHZR))
+            ierr=nf_inq_varid (ncidbulkO(blkvar_id),
+     &                         vname(1,indxHZR)(1:lvar),
+     &                         Hzr_id)
+            if (ierr .ne. nf_noerr) then
+              write(stdout,3) vname(1,indxHZR)(1:lvar),
+     &                        bulkfilename(blkvar_id)
+              goto 99                                         !--> ERROR
+            endif
+            !
+            ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),Hzr_id,1,N_abl,
+     &                             Hzr_abl)
+            if (ierr .ne. nf_noerr) then
+              write(stdout,6) vname(1,indxHZR)(1:lvar),
+     &                        bulkfilename(blkvar_id)
+              goto 99                                         !--> ERROR
+            endif
+            !
+            !  Read Hzw : height of w-level
+            !
+            lvar=lenstr(vname(1,indxHZW))
+            ierr=nf_inq_varid (ncidbulkO(blkvar_id),
+     &                         vname(1,indxHZW)(1:lvar),
+     &                         Hzw_id)
+            if (ierr .ne. nf_noerr) then
+              write(stdout,3) vname(1,indxHZW)(1:lvar),
+     &                        bulkfilename(blkvar_id)
+              goto 99                                         !--> ERROR
+            endif
+            !
+            ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),Hzw_id,1,N_abl,
+     &                             Hzw_abl)
+            if (ierr .ne. nf_noerr) then
+              write(stdout,6) vname(1,indxHZW)(1:lvar),
+     &                        bulkfilename(blkvar_id)
+              goto 99                                         !--> ERROR
+            endif
+            !
+          endif
+!
+#endif
 !
 ! ---------------------------------------------------------------------
 ! Extract CFSR data for the subgrid
 ! ---------------------------------------------------------------------
+#ifdef ABL1D
+
+          if (blkvar_id .eq.  1 .or. 
+     &        blkvar_id .eq.  2 .or.
+     &        blkvar_id .eq.  8 .or.
+     &        blkvar_id .eq.  9 .or.
+     &        blkvar_id .eq. 11 .or. 
+     &        blkvar_id .eq. 12     ) then
+! Limits specification 
+! start index (imin, jmin, record)
+!
+          strt4(1)=imin
+          strt4(2)=jmin
+          strt4(3)=1
+          strt4(4)=bulk_recO(blkvar_id)
+!
+! size index (Nx in lon, NY in lat, 1 record)
+!
+          cnt4(1)=NX
+          cnt4(2)=NY
+          cnt4(3)=N_abl
+          cnt4(4)=1
+!
+! Allocate table for the CFSR data
+!
+          allocate(var3d(1:NX,1:NY,1:N_abl))
+!
+! Extract CFSR data
+!
+          ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),
+     &                          bulk_varid(blkvar_id),strt4,cnt4,var3d)
+
+          call interpolate_3D_bulk_online(NX,NY,N_abl,lon,lat,var3d,
+     &                                    blkvar_id,iblk)
+
+
+          else
+#endif
 ! Limits specification 
 ! start index (imin, jmin, record)
 !
@@ -430,6 +573,9 @@
 
           call interpolate_bulk_online(NX,NY,lon,lat,var,
      &                                 blkvar_id,iblk)
+#ifdef ABL1D
+          endif
+#endif
 !
 !
 !-----
@@ -453,7 +599,20 @@
           deallocate(lat0)
           deallocate(lon)
           deallocate(lat)
+#ifdef ABL1D
+          if (blkvar_id .eq.  1 .or.
+     &        blkvar_id .eq.  2 .or.
+     &        blkvar_id .eq.  8 .or.
+     &        blkvar_id .eq.  9 .or.
+     &        blkvar_id .eq. 11 .or.
+     &        blkvar_id .eq. 12) then
+          deallocate(var3d)
+          else
+#endif
           deallocate(var)
+#ifdef ABL1D
+          endif
+#endif
 !
 ! === ==== ======= === ==== == ======= ======== 
 ! GET BULK message and loop to another blkvar_id:

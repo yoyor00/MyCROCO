@@ -48,7 +48,7 @@
      &          (nbprttime<nbmaxprttime)) then
          call cpl_prism_get (oasis_time)
 #endif
-       endif 
+       endif
 #endif /* OA_COUPLING */
 
        iif = iif+1
@@ -332,6 +332,7 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#   ifndef ABL1D
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_befbulk','u')
@@ -346,14 +347,20 @@ C$OMP MASTER
       call check_tab2d(uwnd(:,:),'uwnd prestep3d_befbulk','u')
       call check_tab2d(vwnd(:,:),'vwnd prestep3d_befbulk','v')
 C$OMP END MASTER
+#  endif
 # endif
 
 # ifdef BULK_FLUX
       do tile=my_first,my_last
-        call bulk_flux (tile)   
+        call bulk_flux (tile)
+# ifdef ABL1D
+        call abl_tke   (tile)
+        call abl_step  (tile)
+# endif
       enddo
 C$OMP BARRIER
 #  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#   ifndef ABL1D
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_aftbulk','u')
@@ -371,13 +378,19 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 #  endif
+#  endif
 # endif /* BULK_FLUX */
 
 C$OMP BARRIER
 # if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
-C$OMP MASTER      
+C$OMP MASTER
+#   if defined STRESS_AT_RHO_POINTS
+      call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','r')
+      call check_tab2d(svstr(:,:),'svstr prestep3d_aftbulk','r')
+#   else
       call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','u')
       call check_tab2d(svstr(:,:),'svstr prestep3d_aftbulk','v')
+#   endif
 C$OMP END MASTER
 C$OMP BARRIER
 # endif
@@ -505,6 +518,10 @@ C$OMP BARRIER
 
 # if defined AVERAGES && ! defined XIOS
         call set_avg (tile)
+#  if defined ABL1D
+        if (ldefablavg .and. wrtabl_avg(indxTime))
+     &      call set_abl_avg (tile)
+#  endif
 #  if defined DIAGNOSTICS_TS
         if (ldefdia_avg
      &      .and. (wrtdia3D_avg(NT+1) .or. wrtdia2D_avg(NT+1)))

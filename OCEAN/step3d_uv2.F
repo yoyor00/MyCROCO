@@ -90,7 +90,7 @@
       real BC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,
-     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
+     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), u_str,v_str
 # ifdef DIAGNOSTICS_PV
       real cff1 , cff2
 # endif
@@ -250,20 +250,25 @@
 !
 # ifndef BODYFORCE
         do i=IstrU,Iend
-          DC(i,N)=DC(i,N)+dt*sustr(i,j)
+#ifdef STRESS_AT_RHO_POINTS
+          u_str = 0.5*(sustr(i,j)+sustr(i-1,j))
+#else
+          u_str = sustr(i,j)
+#endif
+          DC(i,N)=DC(i,N)+dt*u_str
 #  ifndef BSTRESS_FAST
           DC(i,1)=DC(i,1)-dt*bustr(i,j)
 #  endif
 #  ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
-            wrkWind(i,j,1)= sustr(i,j)*om_u(i,j)
+            wrkWind(i,j,1)= u_str*om_u(i,j)
      &                    SWITCH umask(i,j)
 #  endif /* DIAGNOSTICS_VRT */
 #  ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
-          ekwrkWind(i,j,1)= sustr(i,j)*om_u(i,j)*on_u(i,j)
+          ekwrkWind(i,j,1)= u_str*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,N,nrhs) SWITCH umask(i,j)
 #  endif /* DIAGNOSTICS_EK */
         enddo
@@ -555,20 +560,25 @@
 !
 # ifndef BODYFORCE
           do i=Istr,Iend
-            DC(i,N)=DC(i,N)+dt*svstr(i,j)
+#ifdef STRESS_AT_RHO_POINTS
+            v_str = 0.5*(svstr(i,j)+svstr(i,j-1))
+#else
+            v_str = svstr(i,j)
+#endif
+            DC(i,N)=DC(i,N)+dt*v_str
 #  ifndef BSTRESS_FAST
             DC(i,1)=DC(i,1)-dt*bvstr(i,j)
 #  endif
 #  ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
-            wrkWind(i,j,2)= svstr(i,j)*on_v(i,j)
+            wrkWind(i,j,2)= v_str*on_v(i,j)
      &                    SWITCH vmask(i,j)
 #  endif /* DIAGNOSTICS_VRT */
 #  ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
-          ekwrkWind(i,j,2)= svstr(i,j)*om_v(i,j)*on_v(i,j)
+          ekwrkWind(i,j,2)= v_str*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
 #  endif /* DIAGNOSTICS_EK */
           enddo

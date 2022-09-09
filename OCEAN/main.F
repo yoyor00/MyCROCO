@@ -611,6 +611,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
 !
+#ifdef ABL1D
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call abl_ini (tile)
+      enddo
+#endif
+!
 !----------------------------------------------------------------------
 !  Initialization for Lagrangian floats
 !
@@ -815,6 +822,16 @@ C$OMP PARALLEL DO PRIVATE(tile)
 
 #ifdef MUSTANG
       call MUSTANG_compatibility(vname,indxT,ntrc_salt)
+#endif
+
+#ifdef ABL1D
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call abl_ini (tile)
+      enddo
+# ifndef XIOS
+      if (ldefablhis .and. wrtabl(indxTime)) call wrt_abl_his
+# endif
 #endif
 
 CR      write(*,*) '  0' MYID

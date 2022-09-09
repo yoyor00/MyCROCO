@@ -188,8 +188,13 @@
 # ifdef OA_COUPLING
           ustar(i,j)=sqrt(smstr(i,j))
 # else
+#   ifdef STRESS_AT_RHO_POINTS
+          su_r=sustr(i,j)
+          sv_r=svstr(i,j)
+#   else
           su_r=0.5*(sustr(i,j)+sustr(i+1,j))
           sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+#   endif
           ustar(i,j)=sqrt(sqrt(su_r**2+sv_r**2))
 # endif
 # ifdef LMD_LANGMUIR

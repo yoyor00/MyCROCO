@@ -22,6 +22,9 @@
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3),  auxil(2),  checkdims
      &      , b3dgrd(4)
+#ifdef ABL1D
+     &      , abl3dgrd(4)
+#endif
 #ifdef NC4PAR
      &      , csize,cmode
 #endif
@@ -158,6 +161,9 @@
 #ifdef MUSTANG
         ierr=nf_def_dim (ncid, 's_b',      ksdmax,     b3dgrd(3))
 #endif
+#ifdef ABL1D
+        ierr=nf_def_dim (ncid, 'N_abl',    N_abl,   abl3dgrd(3))
+#endif
 #ifdef SOLVE3D
         ierr=nf_def_dim (ncid, 's_rho',    N,        r3dgrd(3))
         ierr=nf_def_dim (ncid, 's_w',      N+1,      w3dgrd(3))
@@ -181,6 +187,12 @@
         b3dgrd(1)=r2dgrd(1)         !
         b3dgrd(2)=r2dgrd(2)         ! 3D BED-type
         b3dgrd(4)=timedim           !
+
+#ifdef ABL1D
+        abl3dgrd(1)=r2dgrd(1)       !
+        abl3dgrd(2)=r2dgrd(2)       ! 3D ABL-type
+        abl3dgrd(4)=timedim         !
+#endif
         
 #ifdef SOLVE3D
         r3dgrd(1)=r2dgrd(1)         !
@@ -355,6 +367,29 @@
         
        call nf_add_attribute(ncid, rstVb, indxVb, 5, NF_DOUBLE, ierr)
 
+#ifdef ABL1D
+!
+! 3D ABL TKE
+!
+        lvar=lenstr(vname(1,indxabl_tke_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_tke_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblTke)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblTke,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_tke_abl))
+        ierr=nf_put_att_text (ncid, rstAblTke, 'long_name', lvar,
+     &                                   vname(2,indxabl_tke_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_tke_abl))
+        ierr=nf_put_att_text (ncid, rstAblTke, 'units',     lvar,
+     &                                   vname(3,indxabl_tke_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_tke_abl))
+        ierr=nf_put_att_text (ncid, rstAblTke, 'field',     lvar,
+     &                                  vname(4,indxabl_tke_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblTke, indxabl_tke_abl, 5,
+     &                        NF_DOUBLE, ierr)
+#endif
 
 #ifdef SOLVE3D
 !
@@ -1236,6 +1271,19 @@
           write(stdout,1) vname(1,indxVb)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+
+#ifdef ABL1D
+!
+! 3D ABL TKE
+!
+        lvar=lenstr(vname(1,indxabl_tke_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_tke_abl)(1:lvar), rstAblTke)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_tke_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+!
+#endif
 
 #ifdef SOLVE3D
 !

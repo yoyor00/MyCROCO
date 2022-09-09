@@ -437,15 +437,20 @@
 !--------------------------------------------------------------------
 !
       DO j=jmin,jmax
-         DO i=imin,imax 
+         DO i=imin,imax
 # ifdef OA_COUPLING
             ustar_sfc_sq(i,j)=smstr(i,j)
 # else
+#  ifdef STRESS_AT_RHO_POINTS
+            su_r=sustr(i,j)
+            sv_r=svstr(i,j)
+#  else
             su_r=0.5*(sustr(i,j)+sustr(i+1,j))
             sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+#  endif
             ustar_sfc_sq( i, j ) = sqrt(su_r**2+sv_r**2)
 # endif
-            ustar_bot_sq( i, j ) = 
+            ustar_bot_sq( i, j ) =
      &                        sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                             +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2 )
          ENDDO
@@ -495,7 +500,7 @@
                   cff3m =  ig1+ig2*beta3m  * invk*gls
                   cff3p =  ig1+ig2*beta3p  * invk*gls
                   ! Shear and buoyancy production
-                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)    
+                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)
 # if defined TEMPERATURE || defined SALINITY
                   Bprod = -Akt_old(i,j,k)*( cff3m*MAX(bvf(i,j,k),0.)
      &                                   +  cff3p*MIN(bvf(i,j,k),0.) )

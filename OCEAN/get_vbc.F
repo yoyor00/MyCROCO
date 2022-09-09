@@ -78,7 +78,7 @@
 ! Kinematic surface temperature (heat) flux [degC m/s].
 !---------------------------------------------------------------
 !
-#  ifdef BULK_FLUX
+#  if defined BULK_FLUX && !defined ANA_ABL_LSDATA
 #   ifdef ONLINE
       ! Load data for ONLINE bulk forcing
       call get_bulk_online
@@ -249,10 +249,14 @@
 !
 #  ifdef TEMPERATURE
 #   ifdef BULK_FLUX
-#    ifdef ONLINE
-      call set_bulk_tile_online (Istr,Iend,Jstr,Jend)
+#    if defined ABL1D && defined ANA_ABL_LSDATA
+      call ana_abl_tile (Istr,Iend,Jstr,Jend)
 #    else
+#     ifdef ONLINE
+      call set_bulk_tile_online (Istr,Iend,Jstr,Jend)
+#     else
       call set_bulk_tile (Istr,Iend,Jstr,Jend)
+#     endif
 #    endif
 #   else
 !
@@ -699,8 +703,13 @@
 
 #ifdef SOLVE3D
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   if defined STRESS_AT_RHO_POINTS
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
+#   else
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
+#   endif
 #  ifdef TEMPERATURE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))

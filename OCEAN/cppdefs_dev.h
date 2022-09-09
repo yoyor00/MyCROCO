@@ -56,7 +56,11 @@
 /*
     Constant tracer option (for debugging)
 */
-#undef CONST_TRACERS
+#ifdef KILPATRICK
+# define CONST_TRACERS
+#else
+# undef CONST_TRACERS
+#endif
 
 /* 
 ======================================================================

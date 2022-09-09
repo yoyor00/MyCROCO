@@ -35,7 +35,7 @@
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
      &   , ibuff(6)
 #else
      &   , ibuff(4)
@@ -153,7 +153,7 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
       endif
 
 
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
       count(1)=6
       ibuff(5)=nrecsurf
 # ifdef AVERAGES
@@ -293,6 +293,9 @@ CR      write(*,*) 'wrt_his:  bvstr' MYID
           do i=1,Lm
 #ifdef OA_COUPLING
             work2d2(i,j)=smstr(i,j)*rho0
+#elif defined STRESS_AT_RHO_POINTS
+            work2d2(i,j)=sqrt(sustr(i,j)**2+svstr(i,j)**2)
+     &                                                       *rho0
 #else
             work2d2(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
      &                           +(svstr(i,j)+svstr(i,j+1))**2)
@@ -316,7 +319,11 @@ CR      write(*,*) 'wrt_his:  Wstr' MYID
 !
       if (wrthis(indxUWstr)) then
         work2d=sustr*rho0
+#ifdef STRESS_AT_RHO_POINTS
+        ierr=nf_fwrite(work2d, ncidhis, hisUWstr, record, r2dvar)
+#else
         ierr=nf_fwrite(work2d, ncidhis, hisUWstr, record, u2dvar)
+#endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxUWstr))
           MPI_master_only write(stdout,1)
@@ -331,8 +338,12 @@ CR      write(*,*) 'wrt_his:  UWstr' MYID
 !
       if (wrthis(indxVWstr)) then
         work2d=svstr*rho0
-        ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,v2dvar)
-        if (ierr .ne. nf_noerr) then
+#ifdef STRESS_AT_RHO_POINTS
+         ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,r2dvar)
+#else
+         ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,v2dvar)
+#endif
+         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxVWstr))
          MPI_master_only write(stdout,1)
      &        vname(1,indxVWstr)(1:lvar), record, ierr

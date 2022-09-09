@@ -119,7 +119,7 @@ C$    trd=omp_get_thread_num()
      &          UFx(PRIVATE_2D_SCRATCH_ARRAY),
      &          UFe(PRIVATE_2D_SCRATCH_ARRAY),  DUnew,
      &          VFx(PRIVATE_2D_SCRATCH_ARRAY),  DVnew,
-     &          VFe(PRIVATE_2D_SCRATCH_ARRAY)
+     &          VFe(PRIVATE_2D_SCRATCH_ARRAY),  u_str,v_str
 #ifdef M2_HADV_UP3
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY)
@@ -1370,12 +1370,19 @@ C$OMP BARRIER
 #endif
       do j=Jstr,Jend
         do i=IstrU,Iend
+#ifndef SOLVE3D
+# ifdef STRESS_AT_RHO_POINTS
+          u_str = 0.5*( sustr(i,j) + sustr(i-1,j) )
+# else
+          u_str = sustr(i,j)
+# endif
+#endif
           DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
      &        +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
 #ifdef SOLVE3D
      &                             *(rubar(i,j)+rufrc(i,j))
 #else
-     &                          *rubar(i,j)+cff2*sustr(i,j)
+     &                          *rubar(i,j)+cff2*u_str
 # ifdef MRL_WCI
      &                                    +cff2*brk2dx(i,j)
 #  ifdef WAVE_STREAMING
@@ -1413,12 +1420,19 @@ C$OMP BARRIER
 
       do j=JstrV,Jend
         do i=Istr,Iend
+#ifndef SOLVE3D
+# ifdef STRESS_AT_RHO_POINTS
+          v_str = 0.5*( svstr(i,j) + svstr(i,j-1) )
+# else
+          v_str = svstr(i,j)
+# endif
+#endif
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
      &        +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
 #ifdef SOLVE3D
      &                             *(rvbar(i,j)+rvfrc(i,j))
 #else
-     &                          *rvbar(i,j)+cff2*svstr(i,j)
+     &                          *rvbar(i,j)+cff2*v_str
 # ifdef MRL_WCI
      &                                    +cff2*brk2de(i,j)
 #  ifdef WAVE_STREAMING
