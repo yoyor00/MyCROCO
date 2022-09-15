@@ -28,7 +28,7 @@
 #ifdef STATIONS
 # include "nc_sta.h"
 #endif
-#if defined PSOURCE || defined PSOURCE_NCFILE
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
 # include "sources.h"
 #endif
 #ifdef WKB_WWAVE
@@ -169,6 +169,8 @@
 # endif
 #elif defined TIDAL_FLAT
       fname='TEST_CASES/croco.in.Tidal_flat'
+#elif defined ESTUARY
+      fname='TEST_CASES/croco.in.Estuary'
 #else
       fname='croco.in'
 #endif

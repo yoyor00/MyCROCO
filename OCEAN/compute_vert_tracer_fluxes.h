@@ -102,6 +102,7 @@
      &             t(i,j,k+2,nadv,itrc), t(i,j,k+3,nadv,itrc), We(i,j,k))
             enddo
           enddo
+
           do i=Istr,Iend
             FC(i,2)=We(i,j,2)*
 #  ifdef PREDICTOR
@@ -121,14 +122,23 @@
      &             t(i,j,N-3,nadv,itrc), t(i,j,N-2,nadv,itrc), 
      &             t(i,j,N-1,nadv,itrc), t(i,j,N  ,nadv,itrc), We(i,j,N-2))
 
-            FC(i,  1)=We(i,j,  1)*(        0.5*t(i,j,  1,nadv,itrc)
-     &                       +0.58333333333333*t(i,j,  2,nadv,itrc)
-     &                       -0.08333333333333*t(i,j,  3,nadv,itrc)
-     &                                                            )
-            FC(i,N-1)=We(i,j,N-1)*(        0.5*t(i,j,N  ,nadv,itrc)
-     &                       +0.58333333333333*t(i,j,N-1,nadv,itrc)
-     &                       -0.08333333333333*t(i,j,N-2,nadv,itrc)
-     &                                                            )
+            FC(i,1  )=We(i,j,1)*
+#  ifdef PREDICTOR
+     &              flux2(
+#  else
+     &              flux1(
+#  endif
+     &             t(i,j,1  ,nadv,itrc),
+     &             t(i,j,2  ,nadv,itrc), We(i,j,1  ), 1.)
+
+            FC(i,N-1)=We(i,j,N-1)*
+#  ifdef PREDICTOR
+     &              flux2(
+#  else
+     &              flux1(
+#  endif
+     &             t(i,j,N-1,nadv,itrc),
+     &             t(i,j,N  ,nadv,itrc), We(i,j,N-1), 1.)
 
             FC(i,0)=0.
             FC(i,N )=0.

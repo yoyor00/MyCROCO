@@ -46,6 +46,7 @@
 #undef  DUNE            /* Dune migration Example */
 #undef  SED_TOY         /* 1DV sediment toy Example */
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
+#undef  ESTUARY         /* 3D tidal estuary Example */
 /* 
         ... OR REALISTIC CONFIGURATIONS
 */
@@ -425,7 +426,7 @@
 #  undef  MORPHODYN
 #  define key_sand2D
 #  define MUSTANG_CORFLUX
-#  undef  key_tenfon_upwind
+#  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
 
@@ -572,6 +573,7 @@
 # define ANA_BTFLUX
                       /* Point Sources - Rivers */
 # define PSOURCE
+# undef  PSOURCE_MASS
 # define PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE                    
 #   define PSOURCE_NCFILE_TS
@@ -607,7 +609,7 @@
    for passive/biology/sediment tracers 
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
-                            || SUBSTANCE       || defined MUSTANG
+                            || defined SUBSTANCE || defined MUSTANG
 #  define BIO_HADV_WENO5
 # endif
                       /*     USGS Sediment model     */
@@ -623,7 +625,7 @@
 #  undef  MORPHODYN
 #  define key_sand2D
 #  define MUSTANG_CORFLUX
-#  undef  key_tenfon_upwind
+#  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
 #  undef  key_MUSTANG_specif_outputs
 # endif
@@ -906,6 +908,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define PSOURCE
+# undef PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
 # undef  FLOATS
@@ -1455,7 +1458,7 @@
 # undef  MPI
 # define NBQ
 # ifdef NBQ
-#  undef  NBQ_PRECISE
+#  define NBQ_PRECISE
 # endif
 # define M2FILTER_NONE
 # define SOLVE3D
@@ -1503,31 +1506,6 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
-
-*/
-# undef  MPI
-# define ANA_MORPHODYN
-# define NBQ
-# define NBQ_PRECISE
-# define M2FILTER_NONE
-# define SOLVE3D
-# define NEW_S_COORD
-# undef  PASSIVE_TRACER
-# define UV_ADV
-# define TS_HADV_WENO5
-# define TS_VADV_WENO5
-# define UV_HADV_WENO5
-# define UV_VADV_WENO5
-# define W_HADV_WENO5
-# define W_VADV_WENO5
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_VMIX
-# define ANA_BTFLUX
-# define ANA_SMFLUX
-# define ANA_SRFLUX
-# define ANA_STFLUX
-# define NO_FRCFILE
 # undef  RVTK_DEBUG
 
 #elif defined ACOUSTIC
@@ -1539,7 +1517,6 @@
 # define NBQ
 # ifdef NBQ
 #  undef  NBQ_PRECISE
-#  define NBQ_PERF
 # endif
 # undef  UV_VIS2
 # define SOLVE3D
@@ -1562,12 +1539,18 @@
 # undef  MPI
 # undef  NBQ
 # undef  XIOS
-# define UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# ifdef NBQ
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+# endif
+# undef  UV_VIS2
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -1588,16 +1571,20 @@
 !  J. Fluid Mech., 434:181-207.
 !
 */
-# undef  OPENMP
 # undef  MPI
 # define NBQ
 # undef  XIOS
-# define UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# undef  UV_VIS2
+# undef  TS_DIF2
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -1615,7 +1602,7 @@
 */
 # undef  KH_INSTY
 # undef  KH_INST3D
-# undef MPI
+# undef  MPI
 # define NBQ
 # undef  NBQ_PRECISE
 # undef  XIOS
@@ -1731,7 +1718,7 @@
 # ifdef MUSTANG
 #  define key_MUSTANG_V2
 #  define key_MUSTANG_bedload
-#  define key_tenfon_upwind
+#  define key_tauskin_c_upwind
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
@@ -1857,6 +1844,65 @@
 # define NO_FRCFILE
 # undef  ZETA_DRY_IO
 # undef  RVTK_DEBUG
+
+#elif defined ESTUARY
+/*
+!                       ESTUARY  Example
+!                       ==========  =======
+*/
+# undef  OPENMP
+# undef  MPI
+# undef  NONLIN_EOS
+# define NEW_S_COORD
+# define SALINITY
+# define UV_ADV
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define UV_COR
+# define SOLVE3D
+# define UV_VIS2
+# define GLS_MIXING
+# define ANA_INITIAL
+# define WET_DRY
+# define TS_DIF2
+# define SPONGE
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define ANA_SSFLUX
+# define ANA_BTFLUX
+# define ANA_BSFLUX
+# define OBC_WEST
+# define FRC_BRY
+# ifdef FRC_BRY
+#  define ANA_BRY
+#  define Z_FRC_BRY
+#  define OBC_M2CHARACT
+#  define OBC_REDUCED_PHYSICS
+#  define M2_FRC_BRY
+#  undef  M3_FRC_BRY
+#  define T_FRC_BRY
+# endif
+# undef  SEDIMENT
+# define MUSTANG
+# ifdef SEDIMENT
+#  define SUSPLOAD
+#  undef  BEDLOAD
+# endif
+# ifdef MUSTANG
+#  define key_sand2D
+#  undef  key_MUSTANG_V2
+# endif
+# define NO_FRCFILE
+# undef  ZETA_DRY_IO
+# undef  RVTK_DEBUG
+# define PSOURCE
+# define ANA_PSOURCE
+# define MASKING
 
 #endif /* END OF CONFIGURATION CHOICE */
 

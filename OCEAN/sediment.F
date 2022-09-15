@@ -489,7 +489,7 @@ C$OMP BARRIER
 ! Magnitude of stress for computing current velocity 
 ! at the wave boundary layer
 !
-#   ifdef BEDLOAD_VANDERA_ZEROCURR
+#   ifndef BEDLOAD_VANDERA_ZEROCURR
             mag_bstrc=tau_m(i,j)
 #    ifdef MASKING
      &                             *rmask(i,j)
@@ -1850,6 +1850,9 @@ C$OMP BARRIER
 #   ifdef MASKING
      &                                               *rmask(i,j)
 #   endif
+          enddo
+        enddo
+      enddo
 #  endif /* DIAGNOSTICS_TS */
 !
 !  Exchange for output purpose
@@ -6194,7 +6197,7 @@ C$OMP BARRIER
 !!--------------------------------------------------------------------------
 !! * Executable part
 !    nueau=1.06e-6
-!    ustar=sqrt(tenfon(i,j)/rhoref)
+!    ustar=sqrt(tauskin(i,j)/rhoref)
 !    htn=h0(i,j)+ssh(i,j)
 !    z=(1.0+sig(k))*htn
       

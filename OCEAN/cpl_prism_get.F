@@ -578,7 +578,8 @@
             smstr = sqrt(tab_u_tmp**2 + tab_v_tmp**2)
          endif
 #  else
-         case not coded...
+         write(*,*) 'OA_GRID_UV and grid rotation: case not coded...'
+         return  !-->  EXIT
 #  endif
       endif
 ! 
@@ -589,7 +590,12 @@
 #  if (!defined OA_GRID_UV) 
          smstr = sqrt(tab_u_tmp**2 + tab_v_tmp**2)  / rho0
 #  else
-         case not coded...
+         do jo=jmin_halo-1,jmax_halo+1
+         do io=imin_halo-1,imax_halo+1
+             smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
+     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) / rho0
+         enddo
+         enddo
 #  endif 
       ENDIF
 # endif
@@ -616,7 +622,8 @@
          enddo
          enddo
 #  else
-         case not coded...
+         write(*,*) 'OA_GRID_UV and grid rotation: case not coded...'
+         return  !-->  EXIT 
 #  endif
       endif
 !
@@ -641,7 +648,8 @@
          enddo
          enddo
 #  else
-         case not coded...
+         write(*,*) 'OA_GRID_UV and grid rotation: case not coded...'
+         return  !-->  EXIT
 #  endif
       endif
 !

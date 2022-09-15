@@ -1,6 +1,6 @@
 #!/bin/bash
 
-##set -x
+#set -x
 ##set -e
 set -u
 
@@ -34,19 +34,29 @@ do
 
   nb_sec=$( echo $mydt*6|bc )
 
-  line=$(($(grep -n 'run_start_date:' $file  |  awk -F ':' '{print $1}') +1))
-  [ ! -z $line ] && start_date=$(sed -n ${line}p   $file)
-
-  nb_sec2=$(echo $nb_sec | awk '{print ($0-int($0)>0)?int($0)+1:int($0)}') # arrondi a l'entier sup
-  nb_sec3=$(( nb_sec2 ))
-  nb_sec4=$(printf %02d $nb_sec3)
-  new_end_date=$( echo  $start_date |cut -c1-17 )$nb_sec4
-			       
-  line=$(($(grep -n 'run_end_date:' $file  |  awk -F ':' '{print $1}') +1))
-  [ ! -z $line ] && end_date=$(sed -n ${line}p   $file)
-  [ ! -z $toto ] && sed -e "${line} s%${end_date}%${new_end_date}%g" $file > tmp.txt && \mv tmp.txt $file
-    
-  
+  # initialisation
+  start_date=''
+  end_date=''
+  lineend=''
+  new_end_date=''
+  #
+  ffstart=$(grep -n 'run_start_date:' $file)
+  if [ ! -z $ffstart ]; then
+      linestr=$(($(grep -n 'run_start_date:' $file  |  awk -F ':' '{print $1}') +1))
+      start_date=$(sed -n ${linestr}p   $file)
+      nb_sec2=$(echo $nb_sec | awk '{print ($0-int($0)>0)?int($0)+1:int($0)}') # arrondi a l'entier sup
+      nb_sec3=$(( nb_sec2 ))
+      nb_sec4=$(printf %02d $nb_sec3)
+      new_end_date=$( echo  $start_date |cut -c1-17 )$nb_sec4
+  fi
+  #
+  ffend=$(grep -n 'run_end_date:' $file)
+  if [ ! -z $ffend ]; then
+      lineend=$(($(grep -n 'run_end_date:' $file  |  awk -F ':' '{print $1}') +1))
+      end_date=$(sed -n ${lineend}p   $file)
+      sed -e "${lineend} s%${end_date}%${new_end_date}%g" $file > tmp.txt && \mv tmp.txt $file
+  fi
+  #
 done
  
 # CI common scripts and programms
