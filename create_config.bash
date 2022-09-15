@@ -9,13 +9,12 @@
 #==========================================================================================
 # BEGIN USER MODIFICATIONS
 
-# Machine you are working on
-# Known machines: Linux DATARMOR IRENE JEANZAY  
+# Machine you are working on (used with oce-prod, all-prod only)
+# Known machines: Linux DATARMOR IRENE JEANZAY LEFTRARU
+# If your machine is not already known, you can add it by creating a few files (hearder, myenv, launch) 
+# in a dedicated directory under: SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/ and add a case in 
+# SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95)
 # ---------------------------------------------
-## Check in SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/*/ if one header look as you are used to
-## Else you need to create your own directory with your cluster name and edit the same files.
-## You also need to create a condition in SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95) for you cluster
-
 MACHINE="Linux"
 
 # croco source directory
