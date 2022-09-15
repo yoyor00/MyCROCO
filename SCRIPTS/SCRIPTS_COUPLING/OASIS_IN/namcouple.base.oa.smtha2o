@@ -10,11 +10,11 @@
 #
 # NFIELDS: total number of fields being exchanged
  $NFIELDS
- 3
+ 10
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
- 2  toyexe   wwatch
+ 2  wrfexe  crocox
 ###########################################################################
 # RUNTIME: total simulated time for the actual run in seconds (<I8)
  $RUNTIME
@@ -36,7 +36,7 @@
 #          		 2 as 1 + one file per proc
 #          		 3 as 2 + proc 0 writes all procs results in its file
  $NLOGPRT
- 1 1
+ 30 1
 ###########################################################################
 # Beginning of fields exchange definition
  $STRINGS
@@ -156,37 +156,108 @@
 # |--------------------------------------------------------------|
 #
 #                     ------------------------------------
-#                        WRF (wrfexe) ==> WW3 (wwatch)
+#                       WRF (wrfexe) ==> CROCO (crocox)
 #                     ------------------------------------
+#
 #~~~~~~~~~~~
-# U_01 : wind U component at first level (m/s)
+# TAUE : zonal stress (N.m-2)
 #~~~~~~~~~~~
-TOY_U_01 WW3__U10 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> toyt ww3t LAG=<atmdt>
-R 0 R 0
+WRF_d01_EXT_d01_TAUE CROCO_ETAU 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+LOCTRANS MAPPING
+AVERAGE
+<mozaic_a2o>
+#
+#~~~~~~~~~~~
+# TAUN : meridional stress (N.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_TAUN CROCO_NTAU 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+LOCTRANS MAPPING
+AVERAGE
+<mozaic_a2o>
+#
+#~~~~~~~~~~~
+# TAUMOD : stress module (N.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_TAUMOD CROCO_TAUM 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+LOCTRANS MAPPING
+AVERAGE
+<mozaic_a2o>
+#
+#~~~~~~~~~~~
+# EVAP-PRECIP : E-P flux (kg.m-2.s-1)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_EVAP-PRECIP CROCO_EVPR 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+LOCTRANS MAPPING
+AVERAGE
+<mozaic_a2o>
+#
+#~~~~~~~~~~~
+# NET SOLAR FLUX (W.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_SURF_NET_SOLAR CROCO_SRFL 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+LOCTRANS MAPPING
+AVERAGE
+<mozaic_a2o>
+#
+#~~~~~~~~~~~
+# NET NON-SOLAR FLUX (W.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_SURF_NET_NON-SOLAR CROCO_STFL 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+LOCTRANS MAPPING
+AVERAGE
+<mozaic_a2o>
+#
+#~~~~~~~~~~~
+# INTERFACE ATMOSPHERIC PRESSURE  (Pa)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_PSFC CROCO_PSFC 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+LOCTRANS MAPPING
+AVERAGE
+<mozaic_a2o>
+#
+#                     ------------------------------------
+#                       CROCO (crocox) ==> WRF (wrfexe)
+#                     ------------------------------------
+#
+#~~~~~~~~~~~
+# SST (K)
+#~~~~~~~~~~~
+CROCO_SST WRF_d01_EXT_d01_SST 1 <cpldt> 2 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
+R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
-# V_01 : wind V component at first level (m/s)
+# EOCE : zonal current (m.s-1)
 #~~~~~~~~~~~
-TOY_V_01 WW3__V10 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> toyt ww3t LAG=<atmdt>
-R 0 R 0
+CROCO_EOCE WRF_d01_EXT_d01_EOCE 1 <cpldt> 2 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
+R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
-#                     ------------------------------------
-#                        WW3 (wwatch) ==> WRF (wrfexe)
-#                     ------------------------------------
-#
 #~~~~~~~~~~~
-# CHA_COEF : Charnock coefficient
+# NOCE : meridonal current (m.s-1)
 #~~~~~~~~~~~
-WW3_ACHA TOY__CHA 1 <cpldt> 2 wav.nc  EXPORTED
-<wavnx> <wavny> <atmnx> <atmny> ww3t toyt LAG=<wavdt>
+CROCO_NOCE WRF_d01_EXT_d01_NOCE 1 <cpldt> 2 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE

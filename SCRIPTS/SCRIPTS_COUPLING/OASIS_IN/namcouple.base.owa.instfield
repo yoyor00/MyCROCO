@@ -10,11 +10,11 @@
 #
 # NFIELDS: total number of fields being exchanged
  $NFIELDS
- 3
+ 23
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
- 2  toyexe   wwatch
+ 3  wrfexe  wwatch  crocox
 ###########################################################################
 # RUNTIME: total simulated time for the actual run in seconds (<I8)
  $RUNTIME
@@ -161,21 +161,19 @@
 #~~~~~~~~~~~
 # U_01 : wind U component at first level (m/s)
 #~~~~~~~~~~~
-TOY_U_01 WW3__U10 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> toyt ww3t LAG=<atmdt>
+WRF_d01_EXT_d01_WND_E_01 WW3__U10 1 <cpldt>  1  atm.nc  EXPORTED
+<atmnx> <atmny> <wavnx> <wavny> atmt ww3t LAG=<atmdt>
 R 0 R 0
-LOCTRANS SCRIPR
-AVERAGE
+SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # V_01 : wind V component at first level (m/s)
 #~~~~~~~~~~~
-TOY_V_01 WW3__V10 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> toyt ww3t LAG=<atmdt>
+WRF_d01_EXT_d01_WND_N_01 WW3__V10 1 <cpldt>  1  atm.nc  EXPORTED
+<atmnx> <atmny> <wavnx> <wavny> atmt ww3t LAG=<atmdt>
 R 0 R 0
-LOCTRANS SCRIPR
-AVERAGE
+SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
 #                     ------------------------------------
@@ -185,11 +183,211 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # CHA_COEF : Charnock coefficient
 #~~~~~~~~~~~
-WW3_ACHA TOY__CHA 1 <cpldt> 2 wav.nc  EXPORTED
-<wavnx> <wavny> <atmnx> <atmny> ww3t toyt LAG=<wavdt>
+WW3_ACHA WRF_d01_EXT_d01_CHA_COEF 1 <cpldt>  1  wav.nc  EXPORTED
+<wavnx> <wavny> <atmnx> <atmny> ww3t atmt LAG=<wavdt>
 R  0  R  0
-LOCTRANS SCRIPR
-AVERAGE
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#                     ------------------------------------
+#                       CROCO (crocox) ==> WW3 (wwatch)
+#                     ------------------------------------
+#
+#~~~~~~~~~~~
+# SSH : sea surface height (m)
+#~~~~~~~~~~~
+CROCO_SSH WW3__SSH 1 <cpldt> 1 oce.nc EXPORTED
+<ocenx> <oceny> <wavnx> <wavny> ocnt ww3t LAG=<ocedt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# UOCE : sea surface zonal currents (m.s-1)
+#~~~~~~~~~~~
+CROCO_EOCE WW3_OSSU 1 <cpldt> 1 oce.nc EXPORTED
+<ocenx> <oceny> <wavnx> <wavny> ocnu ww3t LAG=<ocedt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# VOCE : sea surface meridional currents (m.s-1)
+#~~~~~~~~~~~
+#
+CROCO_NOCE WW3_OSSV 1 <cpldt> 1 oce.nc EXPORTED
+<ocenx> <oceny> <wavnx> <wavny> ocnv ww3t LAG=<ocedt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#                     ------------------------------------
+#                       WW3 (wwatch) ==> CROCO (crocox)
+#                     ------------------------------------
+#
+#~~~~~~~~~~~
+# T0M1 / ww_tmn : mean period (s)
+#~~~~~~~~~~~
+WW3_T0M1 CROCO_T0M1 1 <cpldt> 1 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# HS / ww_hs : HS significant wave height (m) 
+#~~~~~~~~~~~
+WW3__OHS CROCO_HS 1 <cpldt> 1 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# THM / ww_thm : mean direction  
+#~~~~~~~~~~~
+WW3__DIR CROCO_DIR 1 <cpldt> 1 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# Atm to waves zonal stress computed in WW3 (N.m-2)  
+#~~~~~~~~~~~
+#
+WW3_TAWX CROCO_ETAW 1 <cpldt> 1 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# Atm to waves meridional stress computed in WW3 (N.m-2)  
+#~~~~~~~~~~~
+#
+WW3_TAWY CROCO_NTAW 1 <cpldt> 1 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# Waves to ocean zonal stress computed in WW3 (N.m-2)  
+#~~~~~~~~~~~
+#
+WW3_TWOX CROCO_ETWO 1 <cpldt> 1 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# Waves to ocean meridional stress computed in WW3 (N.m-2) 
+#~~~~~~~~~~~
+#
+WW3_TWOY CROCO_NTWO 1 <cpldt> 1 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#                     ------------------------------------
+#                       WRF (wrfexe) ==> CROCO (crocox)
+#                     ------------------------------------
+#
+#~~~~~~~~~~~
+# TAUX : zonal stress (N.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_TAUE CROCO_ETAU 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# TAUY : meridional stress (N.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_TAUN CROCO_NTAU 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# TAUMOD : stress module (N.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_TAUMOD CROCO_TAUM 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# EVAP-PRECIP : E-P flux (kg.m-2.s-1)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_EVAP-PRECIP CROCO_EVPR 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# NET SOLAR FLUX (W.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_SURF_NET_SOLAR CROCO_SRFL 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# NET NON-SOLAR FLUX (W.m-2)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_SURF_NET_NON-SOLAR CROCO_STFL 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# INTERFACE ATMOSPHERIC PRESSURE  (Pa)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_PSFC CROCO_PSFC 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#                     ------------------------------------
+#                       CROCO (crocox) ==> WRF (wrfexe)
+#                     ------------------------------------
+#
+#~~~~~~~~~~~
+# SST (K)
+#~~~~~~~~~~~
+CROCO_SST WRF_d01_EXT_d01_SST 1 <cpldt> 1 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# UOCE : zonal current (m.s-1)
+#~~~~~~~~~~~
+CROCO_EOCE WRF_d01_EXT_d01_EOCE 1 <cpldt> 1 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# VOCE : meridonal current (m.s-1)
+#~~~~~~~~~~~
+CROCO_NOCE WRF_d01_EXT_d01_NOCE 1 <cpldt> 1 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
+R  0  R  0
+SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
 ###########################################################################
