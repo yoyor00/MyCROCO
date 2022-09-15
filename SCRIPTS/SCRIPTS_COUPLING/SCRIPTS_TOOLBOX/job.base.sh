@@ -236,6 +236,8 @@ if [ "${MODE_TEST}" == "" ] ; then      #  en production
         mvfile tata.sh ${SCRIPTDIR}/../myjob.sh
         chmod 755   ${SCRIPTDIR}/../myjob.sh
 
+        cpfile ${SCRIPTDIR}/../mynamelist.sh ${JOBDIR}
+
 	if [ ${DATE_END_JOB} -ne ${DATE_END_EXP} ]
 	then
         cd ${SCRIPTDIR}/..
