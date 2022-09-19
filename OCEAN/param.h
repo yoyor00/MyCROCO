@@ -281,6 +281,17 @@
 #endif
 !
 !----------------------------------------------------------------------
+! Minimum water depth above which wave forcing is applied 
+! (D_wavedry>D_wetdry if WET_DRY is activated)
+!----------------------------------------------------------------------
+#ifdef MRL_WCI
+# ifdef WAVE_DRY
+      real D_wavedry
+      parameter (D_wavedry=1.0)
+# endif
+#endif    
+!
+!----------------------------------------------------------------------
 ! Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !

@@ -209,6 +209,42 @@ C$    integer omp_get_thread_num
 # endif /* !NS_PERIODIC */
 #endif
 
+#ifdef WAVE_DRY
+!
+!  Compute critical depth term at RHO-points 
+!  as a function of topographic slope
+!
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          Dcrit_wave(i,j)=D_wavedry
+        enddo
+      enddo
+# ifndef EW_PERIODIC
+        if (WESTERN_EDGE) then
+          do j=Jstr,Jend
+            Dcrit_wave(Istr-1,j)=Dcrit_wave(Istr,j)
+          enddo
+        endif
+        if (EASTERN_EDGE) then
+          do j=Jstr,Jend
+            Dcrit_wave(Iend+1,j)=Dcrit_wave(Iend,j)
+          enddo
+        endif
+# endif /* !EW_PERIODIC */
+# ifndef NS_PERIODIC
+        if (SOUTHERN_EDGE) then
+          do i=Istr-1,Iend+1
+            Dcrit_wave(i,Jstr-1)=Dcrit_wave(i,Jstr)
+          enddo
+        endif
+        if (NORTHERN_EDGE) then
+          do i=Istr-1,Iend+1
+            Dcrit_wave(i,Jend+1)=Dcrit_wave(i,Jend)
+          enddo
+        endif
+# endif /* !NS_PERIODIC */
+#endif
+
 # ifdef WKB_WWAVE
       do j=JR_RANGE
         do i=IR_RANGE
