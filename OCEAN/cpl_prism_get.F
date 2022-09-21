@@ -9,6 +9,9 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+#include "cppdefs.h"
+#if defined OA_COUPLING || defined OW_COUPLING
+
       SUBROUTINE cpl_prism_get (rcvtime)
 !     !---------------------------------------------------------------------
 !     !              ***  ROUTINE cpl_prism_get  ***
@@ -17,22 +20,20 @@
 !     !           
 !     !
 !     !----------------------------------------------------------------------
-#include "cppdefs.h"
-#if defined OA_COUPLING || defined OW_COUPLING
       USE mod_prism             ! OASIS3 prism module
 # ifdef AGRIF
       use Agrif_Util
 # endif
       IMPLICIT NONE
 
-#include "cppdefs.h"
+# include "cppdefs.h"
 
-#include "param.h"
-#include "forces.h"
-#include "mpi_cpl.h"
-#include "ocean3d.h"
-#include "scalars.h"
-#include "grid.h"
+# include "param.h"
+# include "forces.h"
+# include "mpi_cpl.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "grid.h"
 
       INTEGER    :: rcvtime, i, j, io, jo
       INTEGER    :: iok_utau, iok_vtau, iok_etau, iok_ntau, iok_taum
@@ -663,7 +664,9 @@
          sustr = sustr - tawx + twox
          svstr = svstr - tawy + twoy
 #  endif
-# endif 
+# endif
+      return
+      end 
 !-------------------------------------------------
 !      
 !	
@@ -671,5 +674,6 @@
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
+      subroutine cpl_prism_get_empty
+      end
 #endif 
-      END SUBROUTINE cpl_prism_get
