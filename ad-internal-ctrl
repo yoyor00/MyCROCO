@@ -13,9 +13,9 @@ case $1 in
   *)
     set -x
     # guix environment setup
-    export PATH=/var/guix/profiles/per-user/root/current-guix/bin:$PATH
-    export GUIX_DAEMON_SOCKET=guix://luke.u-ga.fr
-    #[ -f /applis/site/guix-start.sh ] && . /applis/site/guix-start.sh
+    # export PATH=/var/guix/profiles/per-user/root/current-guix/bin:$PATH
+    # export GUIX_DAEMON_SOCKET=guix://luke.u-ga.fr
+    [ -f /applis/site/guix-start.sh ] && . /applis/site/guix-start.sh
     #export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
     #export PATH="$HOME/.config/guix/current/bin:${PATH}"
     pwd=`pwd`
