@@ -423,6 +423,8 @@ public
         ! fragmentation (default 2.0 as binary fragmentation)
     REAL(KIND=rsh) :: f_nf ! fractal dimension (default 2.0, usual range from 
         ! 1.6 to 2.8)
+    REAL(KIND=rsh) :: f_clim ! min concentration below which flocculation 
+        !processes are not calculated
 #endif
 
 
@@ -629,11 +631,6 @@ public
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_g3 ! fragmentation gain term 
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_sh ! shear agregation gain term
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_ds ! differential settling agregation gain term
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d50
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d90
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d10
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_davg
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_dtmin
 #endif
 
 

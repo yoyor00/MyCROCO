@@ -166,6 +166,8 @@
 #elif defined SED_TOY
 # ifdef SED_TOY_ROUSE
       parameter (LLm0=5,    MMm0=5,    N=100)  !  5 cm resolution
+# elif defined SED_TOY_FLOC
+      parameter (LLm0=5,    MMm0=5,    N=50)  !  10 cm resolution
 # else
       parameter (LLm0=4,    MMm0=3,    N=20)   !  1 m resolution
 # endif
@@ -455,7 +457,11 @@
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       integer  itsubs1, itsubs2, ntfix
 #  ifdef SED_TOY
+#  ifdef SED_TOY_FLOC
+      parameter (ntrc_subs=15 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+# else
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+# endif
 #  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined ESTUARY

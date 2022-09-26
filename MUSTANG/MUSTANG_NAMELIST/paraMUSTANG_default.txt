@@ -647,6 +647,9 @@
 :    f_collfragparam : real, fraction of shear aggregation leading to 
 :                      fragmentation by collision (default 0.0, must be less 
 :                      than 1.0)
+:    f_clim : real,  min concentration below which flocculation processes are 
+:             not calculated (default =0.001 kg/m3)
+: 
 :------------------------------------------------------------------------------
 &namflocmod
    l_ADS = .FALSE. 
@@ -666,7 +669,8 @@
    f_cfcst = 0.1875   
    f_fp = 0.1     
    f_fy = 1.0e-10   
-   f_collfragparam = 0.01   / 
+   f_collfragparam = 0.01
+   f_clim = 0.001   / 
 
 
 

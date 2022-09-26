@@ -145,8 +145,7 @@ MODULE initMUSTANG
                           f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    &
                           f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
                           f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
-                          l_out_MUDtot, l_out_f_dtmin,                        &
-                          l_out_G, l_out_f_d90, l_out_f_d10
+                          f_clim
 #endif
 #if !defined key_noTSdiss_insed
     namelist /namtempsed/ mu_tempsed1, mu_tempsed2, mu_tempsed3,              &
@@ -490,6 +489,7 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, *) 'Boolean for shear aggregation (L_ASH)                        : ', l_ASH
     MPI_master_only WRITE(iscreenlog, *) 'Boolean for collision fragmenation (L_COLLFRAG)              : ', l_COLLFRAG
     MPI_master_only WRITE(iscreenlog, *) 'Collision fragmentation parameter (f_collfragparam)          : ', f_collfragparam
+    MPI_master_only WRITE(iscreenlog, *) 'Min concentration below which flocculation is not calculated : ', f_clim
     MPI_master_only WRITE(iscreenlog, *) ' '
     MPI_master_only WRITE(iscreenlog, *) '*** END FLOCMOD INIT *** '    
 #endif
@@ -1001,14 +1001,23 @@ CONTAINS
             ! constitutive variables : cini_sed in fraction of cseduni
             tot_csed_init=tot_csed_init+cini_sed(iv)              
         ENDDO
-        IF(tot_csed_init .NE. 1.0_rsh) THEN
+
+        IF( abs(tot_csed_init - 1.0_rsh) > epsilon_MUSTANG ) THEN
             MPI_master_only WRITE(ierrorlog,*)' '
             MPI_master_only WRITE(ierrorlog,*)' inital concentrations of constitutive particulate matter'
             MPI_master_only WRITE(ierrorlog,*)' have not been well defined'
             MPI_master_only WRITE(ierrorlog,*)' See variable.dat to give fraction of total concentration '
             MPI_master_only WRITE(ierrorlog,*)' for each constitutive variable (GRAV, SAND, MUD) (but not MUDB) '
-            MPI_master_only WRITE(ierrorlog,*)' : the sum of all must be =1 '
-            STOP         
+            MPI_master_only WRITE(ierrorlog,*)' : the sum of all must be =1 and it is :'
+            MPI_master_only WRITE(ierrorlog,*)  tot_csed_init
+            MPI_master_only WRITE(ierrorlog,*)' difference with 1 is :'
+            MPI_master_only WRITE(ierrorlog,*)  abs(tot_csed_init - 1.0_rsh) 
+            STOP   
+        ELSE
+            DO iv=1,nvpc
+                ! force fraction sum to equal 1.
+                cini_sed(iv) = cini_sed(iv)/tot_csed_init            
+            ENDDO    
         ENDIF
       
         ! ajustement du hsed et cv_sed
@@ -1412,8 +1421,8 @@ CONTAINS
 #endif
  
 #ifdef key_MUSTANG_flocmod
-    ALLOCATE(f_ws(1:nv_mud))
-    f_ws(1:nv_mud)=0.0_rsh
+    ALLOCATE(f_ws(1:nv_mud)) ! flocs settling velocities
+    f_ws(1:nv_mud) = 0.0_rsh
 #endif   
     !  allocation of spatial variables  
     !  dimensions defined dans coupler_define_MUSTANG.h
@@ -1695,12 +1704,6 @@ CONTAINS
     ALLOCATE(f_g3(1:nv_mud,1:nv_mud)) ! fragmentation gain term     
     ALLOCATE(f_l3(1:nv_mud)) ! fragmentation loss term
     
-    ALLOCATE(f_davg(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-    ALLOCATE(f_d50(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-    ALLOCATE(f_d90(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-    ALLOCATE(f_d10(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-    ALLOCATE(f_dtmin(1:NB_LAYER_WAT,PROC_IN_ARRAY))
-    
     f_diam(1:nv_mud) = 0.0_rsh
     f_vol(1:nv_mud) = 0.0_rsh
     f_rho(1:nv_mud) = 0.0_rsh
@@ -1716,59 +1719,53 @@ CONTAINS
     f_g3(1:nv_mud,1:nv_mud) = 0.0_rsh
     f_l3(1:nv_mud) = 0.0_rsh
 
-    f_davg(1:NB_LAYER_WAT,PROC_IN_ARRAY) = 0.0_rsh
-    f_d50(1:NB_LAYER_WAT,PROC_IN_ARRAY) = 0.0_rsh
-    f_d10(1:NB_LAYER_WAT,PROC_IN_ARRAY) = 0.0_rsh
-    f_d90(1:NB_LAYER_WAT,PROC_IN_ARRAY) = 0.0_rsh
-    f_dtmin(1:NB_LAYER_WAT,PROC_IN_ARRAY) = 0.0_rsh  
 #endif
     END SUBROUTINE MUSTANG_alloc
 
 #ifdef key_MUSTANG_flocmod
-!!===========================================================================
-
+    !!===========================================================================
     SUBROUTINE flocmod_init(TRANSPORT_TIME_STEP)
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE flocmod_init  ***
     !&E
     !&E ** Purpose : initalization of flocs characteristics
     !&E
-    !&E ** Description : 
+    !&E ** Called by :  MUSTANG_init
     !&E 
-    !&E ** Called by :  MUSTANG_initialization
-    !&E 
-    !&E ** Note : NUMBER_PI and GRAVITY must be known as a parameters transmtted by coupleur 
-    !&E
+    !&E ** Note : NUMBER_PI and GRAVITY must be known as a parameters 
+    !&E           transmtted by coupleur 
     !&E--------------------------------------------------------------------------
     !! * Arguments
-    REAL(KIND=rlg),INTENT(IN)          :: TRANSPORT_TIME_STEP 
+    REAL(KIND=rlg), INTENT(IN) :: TRANSPORT_TIME_STEP 
 
-   !! * Executable part
-   !! floc characteristics
-    f_diam(1:nv_mud)=diam_sed(imud1:nvpc) ! floc size from variable.dat
-    f_vol(1:nv_mud)=NUMBER_PI/6._rsh*(f_diam(1:nv_mud))**3
-    f_rho(1:nv_mud)=RHOREF+(ros(1:nv_mud)-RHOREF)*(f_dp0/f_diam(1:nv_mud))**(3._rsh-f_nf)
-    f_mass(1:nv_mud)=f_vol(1:nv_mud)*(f_rho(1:nv_mud)-RHOREF)
-    f_mass(nv_mud+1)=f_mass(nv_mud)*2_rsh+1._rsh  
-    IF (f_diam(1).eq.f_dp0)  THEN
-      f_mass(1)=f_vol(1)*ros(1)
+    !! * Executable part
+    !! floc characteristics
+    f_diam(1:nv_mud) = diam_sed(imud1:nvpc) ! floc size from substance namelist
+    f_vol(1:nv_mud) = NUMBER_PI / 6._rsh * (f_diam(1:nv_mud))**3
+    f_rho(1:nv_mud) = RHOREF+(ros(imud1:nvpc) - RHOREF) * (f_dp0 / f_diam(1:nv_mud))**(3._rsh - f_nf)
+    f_mass(1:nv_mud) = f_vol(1:nv_mud) * (f_rho(1:nv_mud) - RHOREF) / (1 - RHOREF / ros(imud1:nvpc))
+    f_mass(nv_mud+1) = f_mass(nv_mud) * 2_rsh + 1._rsh  
+    IF (f_diam(1) .eq. f_dp0)  THEN
+      f_mass(1) = f_vol(1) * ros(imud1)
     ENDIF
-    f_ws(1:nv_mud)=GRAVITY*(f_rho(1:nv_mud)-RHOREF)*f_diam(1:nv_mud)**2._rsh/(18._rsh*0.001_rsh)
-    f_dtmin(1:NB_LAYER_WAT,PROC_IN_ARRAY)=REAL(TRANSPORT_TIME_STEP,rsh)
+#ifdef SED_TOY_FLOC_0D
+    ! for 0D test case, we need to suppress all settling process
+    f_ws(1:nv_mud) = 0.
+#else
+    f_ws(1:nv_mud) = GRAVITY * (f_rho(1:nv_mud) - RHOREF) * f_diam(1:nv_mud)**2._rsh / (18._rsh * 0.001_rsh)
+#endif
 
     ! kernels computation
     CALL flocmod_kernels()    
 
     END SUBROUTINE flocmod_init
-!!===========================================================================
-   
+
+    !!===========================================================================
     SUBROUTINE flocmod_kernels()
     !&E--------------------------------------------------------------------------
     !&E                 ***  flocmod_kernels  ***
     !&E
     !&E ** Purpose : computations of agregation/fragmentation kernels for FLOCMOD
-    !&E
-    !&E ** Description :
     !&E
     !&E ** Called by : flocmod_init
     !&E
@@ -1789,15 +1786,41 @@ CONTAINS
     DO iv1=1,nv_mud-1
         DO iv2=1,nv_mud
             DO iv3=iv2,nv_mud
-                IF((f_mass(iv2)+f_mass(iv3)) .GT. f_mass(iv1-1) &
+                IF(        (f_mass(iv2)+f_mass(iv3)) .GT. f_mass(iv1-1) &
+                    .AND. ((f_mass(iv2)+f_mass(iv3)) .LE. f_mass(iv1))) THEN
+
+                    f_weight=(f_mass(iv2)+f_mass(iv3)-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
+
+                ELSE IF (    (f_mass(iv2)+f_mass(iv3)) .GT. f_mass(iv1) &
+                    .AND.   ((f_mass(iv2)+f_mass(iv3)) .LT. f_mass(iv1+1))) THEN
+                
+                    f_weight=1._rsh-(f_mass(iv2)+f_mass(iv3)-f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1))
+
+                ELSE
+
+                    f_weight=0.0_rsh
+
+                ENDIF
+
+                f_g1_sh(iv2,iv3,iv1)=f_weight*f_alpha*f_coll_prob_sh(iv2,iv3)*(f_mass(iv2)+f_mass(iv3))/f_mass(iv1)
+                f_g1_ds(iv2,iv3,iv1)=f_weight*f_alpha*f_coll_prob_ds(iv2,iv3)*(f_mass(iv2)+f_mass(iv3))/f_mass(iv1)
+
+            ENDDO
+        ENDDO
+    ENDDO
+    ! difference for coarsest mud class >> no transfer towards coarser class because it is the last one
+    iv1=nv_mud
+    DO iv2=1,nv_mud
+        DO iv3=iv2,nv_mud
+            IF(        (f_mass(iv2)+f_mass(iv3)) .GT. f_mass(iv1-1) &
                 .AND. ((f_mass(iv2)+f_mass(iv3)) .LE. f_mass(iv1))) THEN
 
                 f_weight=(f_mass(iv2)+f_mass(iv3)-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
 
-                ELSE IF ((f_mass(iv2)+f_mass(iv3)) .GT. f_mass(iv1) &
+            ELSE IF (  (f_mass(iv2)+f_mass(iv3)) .GT. f_mass(iv1) &
                 .AND. ((f_mass(iv2)+f_mass(iv3)) .LT. f_mass(iv1+1))) THEN
-                
-                f_weight=1._rsh-(f_mass(iv2)+f_mass(iv3)-f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1))
+
+                f_weight=1._rsh
 
             ELSE
                 f_weight=0.0_rsh
@@ -1805,29 +1828,6 @@ CONTAINS
 
             f_g1_sh(iv2,iv3,iv1)=f_weight*f_alpha*f_coll_prob_sh(iv2,iv3)*(f_mass(iv2)+f_mass(iv3))/f_mass(iv1)
             f_g1_ds(iv2,iv3,iv1)=f_weight*f_alpha*f_coll_prob_ds(iv2,iv3)*(f_mass(iv2)+f_mass(iv3))/f_mass(iv1)
-
-            ENDDO
-        ENDDO
-    ENDDO
-    iv1=nv_mud
-    DO iv2=1,nv_mud
-        DO iv3=iv2,nv_mud
-            IF((f_mass(iv2)+f_mass(iv3)) .GT. f_mass(iv1-1) &
-            .AND. ((f_mass(iv2)+f_mass(iv3)) .LE. f_mass(iv1))) THEN
-
-            f_weight=(f_mass(iv2)+f_mass(iv3)-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
-
-            ELSE IF ((f_mass(iv2)+f_mass(iv3)) .GT. f_mass(iv1) &
-            .AND. ((f_mass(iv2)+f_mass(iv3)) .LT. f_mass(iv1+1))) THEN
-
-                f_weight=1._rsh
-
-        ELSE
-            f_weight=0.0_rsh
-        ENDIF
-
-        f_g1_sh(iv2,iv3,iv1)=f_weight*f_alpha*f_coll_prob_sh(iv2,iv3)*(f_mass(iv2)+f_mass(iv3))/f_mass(iv1)
-        f_g1_ds(iv2,iv3,iv1)=f_weight*f_alpha*f_coll_prob_ds(iv2,iv3)*(f_mass(iv2)+f_mass(iv3))/f_mass(iv1)
 
         ENDDO
     ENDDO
@@ -1894,9 +1894,9 @@ CONTAINS
                     .AND. (f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .LE. f_mass(iv1)) THEN
                 
                         IF (iv1 == 1) THEN
-                        f_weight=1._rsh
+                            f_weight=1._rsh
                         ELSE
-                        f_weight=(f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
+                            f_weight=(f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
                         ENDIF
             
                     ELSE IF ((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .GT. f_mass(iv1) &
@@ -1912,14 +1912,12 @@ CONTAINS
         
                     f_g3(iv2,iv1)=f_g3(iv2,iv1)+f_ero_frac*f_weight*f_beta                    &
                             *f_diam(iv2)*((f_diam(iv2)-f_dp0)/f_dp0)**(3._rsh-f_nf)           &
-            !		  *f_mass(iv2)/f_mass(iv1)                                          &
                             *(f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag)/f_mass(iv1)
         
                     IF (iv1 == f_ero_iv) THEN
                 
                         f_g3(iv2,iv1)=f_g3(iv2,iv1)+f_ero_frac*f_beta                           &
                             *f_diam(iv2)*((f_diam(iv2)-f_dp0)/f_dp0)**(3._rsh-f_nf)           &
-            !		  *f_mass(iv2)/f_mass(iv1)                                          &
                             *f_ero_nbfrag*f_mass(f_ero_iv)/f_mass(iv1)
                     ENDIF
                 ENDIF
@@ -1965,28 +1963,18 @@ CONTAINS
     !&E
     !&E ** Purpose : computation of shear / differential settling statistics
     !&E
-    !&E ** Description :
-    !&E
     !&E ** Note : NUMBER_PI must be known as a parameters transmtted by coupleur 
-    !&E           in MARS : coupleur_dimhydro.h (USE ..)
-    !&E           in CROCO : module_MUSTANG.F (include..)
     !&E
     !&E ** Called by : flocmod_kernels
-    !&E
     !&E--------------------------------------------------------------------------
-
     !! * Local declarations
-    INTEGER      :: iv1, iv2
-    !REAL(KIND=rsh), PARAMETER :: mu=0.001
+    INTEGER :: iv1, iv2
 
     !! * Executable part
     DO iv1=1,nv_mud
         DO iv2=1,nv_mud
             f_coll_prob_sh(iv1,iv2)=1._rsh/6._rsh*(f_diam(iv1)+f_diam(iv2))**3._rsh
             
-            !f_coll_prob_ds(iv1,iv2)=0.25_rsh*NUMBER_PI*(f_diam(iv1)+f_diam(iv2))**2._rsh &
-                            !*GRAVITY/mu*abs((f_rho(iv1)-RHOREF)*f_diam(iv1)**2._rsh &
-                            !-(f_rho(iv2)-RHOREF)*f_diam(iv2)**2._rsh)
             f_coll_prob_ds(iv1,iv2)=0.25_rsh*NUMBER_PI*(f_diam(iv1)+f_diam(iv2))**2._rsh &
                             * ABS(f_ws(iv1)-f_ws(iv2))
         ENDDO

@@ -95,7 +95,7 @@
 # define LONGITUDE lonr
 #endif
 #if defined key_MUSTANG_flocmod
-# define WAT_CONC_ALLMUD_ijk t(i,j,k,2+imud1:nvpc) /* water concentration in hydro model (for all mud) ATTENTION order of indices */
+# define WAT_CONC_ALLMUD_ijk t(i,j,k,1,itsubs1-1+imud1:itsubs1-1+nvpc) /* water concentration in hydro model (for all mud) ATTENTION order of indices */
 #endif
 
 /* surface elevation (i,j) and current could have different dimensions*/

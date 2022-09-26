@@ -8730,42 +8730,30 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E
   !&E ** Purpose : main routine used to compute aggregation /fragmentation processes at every i,j,k cell
   !&E
-  !&E ** Description :
-  !&E
-  !&E ** Called by : 
-  !&E
-  !&E ** External calls : 
-  !&E
   !&E--------------------------------------------------------------------------
   !! * Modules used
-   USE sed_MUSTANG_HOST,    ONLY :  flocmod_comp_g
+#ifdef SED_TOY_FLOC_0D
+    USE sed_MUSTANG_HOST,    ONLY :  flocmod_comp_g
+#endif
 
   !! * Arguments
    INTEGER, INTENT(IN)            :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rlg),INTENT(IN)      :: dt_true             ! !  (dt_true=halfdt in MARS)
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT) :: WATER_CONCENTRATION         
 
-   
   !! * Local declarations
-  LOGICAL                          :: f_ld50,f_ld10,f_ld90
   INTEGER                          :: iv1,iv2,i,j,k,ifois2,ifois3
-  REAL(KIND=rsh)                   :: cvtotmud,Gval,mneg,f_csum,sum_flocs
+  REAL(KIND=rsh)                   :: cvtotmud,cvtotmudref,Gval,mneg,sum_flocs
   REAL(KIND=rlg)                   :: dttemp,dtmin,dt1,f_dt
   REAL(KIND=rsh),DIMENSION(1:nv_mud)     :: cv_tmp,NNin,NNout
   REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud,1:nv_mud) :: f_g4   ! Collision fragmentation gain term
   REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud)  :: f_l4           ! Collision fragmentation loss term  
-  
-  REAL(KIND=rsh), PARAMETER  :: f_clim = 0.001 ! min concentration below which flocculation processes are not calculated
-  
+
   !!--------------------------------------------------------------------------
   !! * Executable part
-
-! **TODO** check if this is to keep for CROCO
-!  ! choose another CPP key  and test if you want to apply this testcase with this gradvit
-!    IF (l_testcase .AND. num_testcase == 32) THEN
-!              call flocmod_comp_g(Gval)
-!   ENDIF
-!#endif
+#ifdef SED_TOY_FLOC_0D
+    call flocmod_comp_g(Gval)
+#endif
 
      DO j=jfirst,jlast
       DO i=ifirst,ilast
@@ -8774,94 +8762,37 @@ END SUBROUTINE MUSTANGV2_eval_bedload
 
         DO k=1,NB_LAYER_WAT
       
-          dtmin=dt_true
+          dtmin = dt_true
         
-         ! autre possibilite A REVOIR (voir plus loin) :
-         ! option eliminee car tests d efficacite non concluants et probleme de non conservativite 
-          !f_dt=MIN(f_dtmin(k,i,j),dt_true)
-          f_dt=dt_true
-          dttemp=0.0_rlg
+          f_dt = dt_true
+          dttemp = 0.0_rlg
         
-          cv_tmp(1:nv_mud)=WAT_CONC_ALLMUD_ijk   ! MARS : cv_wat(imud1:nvpc,k,i,j) ! concentration of all mud classes in one grid cell
+          cv_tmp(1:nv_mud)=WAT_CONC_ALLMUD_ijk   ! concentration of all mud classes in one grid cell
+          cvtotmudref=sum(cv_tmp(1:nv_mud))
+          cv_tmp(1:nv_mud)=MAX(0.0_rsh,cv_tmp(1:nv_mud))
           cvtotmud=sum(cv_tmp(1:nv_mud))
         
-
-          !Gval= !shear rate value calculated or estimated from the hydrodynmic model
-          NNin(1:nv_mud)=MAX(0.0_rsh,cv_tmp(1:nv_mud)/f_mass(1:nv_mud))
-
-         ! Do iv1=1,nv_mud
-         !   IF (NNin(iv1).lt.0.0_rsh) THEN
-         !     write(ierrorlog,*) '***********************************************'
-         !     write(ierrorlog,*) 'CAUTION, negative mass at cell i,j,k : ',i,j,k
-         !     write(ierrorlog,*) '***********************************************' 
-         !   ENDIF
-         ! ENDDO
-
+          NNin(1:nv_mud)=cv_tmp(1:nv_mud)/f_mass(1:nv_mud)
+          
           IF (cvtotmud .gt. f_clim) THEN
           
-! **TODO** check if this is to keep for CROCO
-!  ! choose another CPP key  and test if you want to apply this testcase with this gradvit
- !           IF (l_testcase .AND. num_testcase == 32) THEN
- !              ! Gval estimated before loop i,j (testcase 1DV)
- !              gradvit(k,i,j)=Gval
- !           ELSE
-
+          !Gval : shear rate value calculated or estimated from the hydrodynmic model
+#ifdef SED_TOY_FLOC_0D
+    gradvit(k,i,j)=Gval
+#else
                Gval=gradvit(k,i,j)
-
+#endif
 
             DO WHILE (dttemp .LE. dt_true)
-!	                print*, 'f_dt:',f_dt
           
               call flocmod_comp_fsd(NNin,NNout,Gval,f_g4,f_l4,f_dt)
               call flocmod_mass_control(NNout,mneg)
-            
-!	                write(*,*) 'mneg',mneg
-            
               IF (mneg .GT. f_mneg_param) THEN
-                !ifois2=0
                 DO WHILE (mneg .GT. f_mneg_param)
-                 ! ifois2=ifois2+1
-                 ! if(ifois2 > 1) write(*,*)'ifois2>1',ifois2,t,i,j,k,cvtotmud,mneg
                   f_dt=MIN(f_dt/2._rlg,dt_true-dttemp)
                   call flocmod_comp_fsd(NNin,NNout,Gval,f_g4,f_l4,f_dt)
                   call flocmod_mass_control(NNout,mneg)  
                 ENDDO
-!	                  IF (f_dt.lt.1._rlg) THEN
-!	                   write(*,*) 'apres : Gval,f_dt',Gval, f_dt,dttemp
-!		             ENDIF
-
-         ! normalement pas utile si f_dt=dt_true au depart pour chaque maille
-         ! remettre tout ca si f_dt=f_dtmin(k,i,j)
-         ! option eliminee car tests d efficacite non concluants et probleme de non conservativite
-         ! A REVOIR
-              !ELSE
-              !  IF (f_dt < dt_true) THEN
-              !   ifois3=0
-              !    DO WHILE (mneg  .LE. f_mneg_param)
-              !       ifois3=ifois3+1
-              !       if(ifois3 > 2) write(*,*)'ifois3>2',ifois3,t,i,j,k,mneg,f_dt,dttemp
-              !       if(ifois3 > 10) THEN
-              !           write(*,*) 'AhAHAHAH,!! ifois3 > 10',ifois3,t,i,j,k,mneg,f_dt,dttemp
-              !       endif
-              !       IF(2._rlg*f_dt .GE. dt_true-dttemp ) THEN
-              !          f_dt=dt_true-dttemp
-              !          call flocmod_comp_fsd(NNin,NNout,Gval,RHOREF,f_g4,f_l4,f_dt)
-              !          call flocmod_mass_control(NNout,mneg)
-              !          exit
-              !       ELSE
-              !          dt1=f_dt
-              !          f_dt=2._rlg*f_dt
-              !          call flocmod_comp_fsd(NNin,NNout,Gval,RHOREF,f_g4,f_l4,f_dt)
-              !          call flocmod_mass_control(NNout,mneg)
-              !          IF (mneg > f_mneg_param) THEN 
-              !            f_dt=dt1
-              !            call flocmod_comp_fsd(NNin,NNout,Gval,RHOREF,f_g4,f_l4,f_dt)
-              !            exit
-              !          ENDIF
-              !        ENDIF
-              !    ENDDO
-              !  ENDIF
-                !!!!!!!!!!
               ENDIF
               dtmin=MIN(dtmin,f_dt)
               dttemp=dttemp+f_dt
@@ -8870,15 +8801,15 @@ END SUBROUTINE MUSTANGV2_eval_bedload
               CALL flocmod_mass_redistribute(NNin) ! redistribute negative masses if any on positive classes, 
                                              ! depends on f_mneg_param
 
-
               IF (dttemp == dt_true) exit
           
             ENDDO ! loop on full dt_true
     
            sum_flocs=sum(NNin(1:nv_mud)*f_mass(1:nv_mud))
-          
+           NNin(:)=NNin(:)*cvtotmudref/sum_flocs
+           
            IF (abs(sum_flocs-cvtotmud).le. 0.01_rsh*cvtotmud) THEN
-                NNin(:)=NNin(:)*cvtotmud/sum_flocs
+                NNin(:)=NNin(:)*cvtotmudref/sum_flocs
            ELSE
              write(ierrorlog,*) 'CAUTION flocculation routine not conservative!!!'
              write(ierrorlog,*) 'time,i,j,k= ',t,i,j,k
@@ -8892,36 +8823,9 @@ END SUBROUTINE MUSTANGV2_eval_bedload
           
           ENDIF ! only if cvtotmud > f_clim
 
-! update mass concentration for all mud classes
+          ! update mass concentration for all mud classes
           WAT_CONC_ALLMUD_ijk=NNin(1:nv_mud)*f_mass(1:nv_mud)
 
-! compute floc distribution statistics before output
-          f_csum=0.0_rsh
-          f_ld50=.true.
-          f_ld10=.true.
-          f_ld90=.true.
-
-          f_davg(k,i,j)=sum(NNin(1:nv_mud)*f_mass(1:nv_mud)*f_diam(1:nv_mud))/(sum(NNin(1:nv_mud)*f_mass(1:nv_mud))+epsilon_MUSTANG)
-          f_dtmin(k,i,j)= REAL(dtmin,rsh)
-        
-          DO iv1=1,nv_mud
-        
-           f_csum=f_csum+NNin(iv1)*f_mass(iv1)/((sum(NNin(1:nv_mud)*f_mass(1:nv_mud)))+epsilon_MUSTANG)
-           IF (f_csum.gt.0.1_rsh .and. f_ld10) THEN
-              f_d10(k,i,j)=f_diam(iv1)
-              f_ld10=.false.
-           ENDIF
-          
-           IF (f_csum.gt.0.5_rsh .and. f_ld50) THEN
-              f_d50(k,i,j)=f_diam(iv1)
-              f_ld50=.false.
-           ENDIF
-          
-           IF (f_csum.gt.0.9_rsh .and. f_ld90) THEN
-              f_d90(k,i,j)=f_diam(iv1)
-              f_ld90=.false.
-           ENDIF
-          ENDDO    
         ENDDO
       ENDIF
     ENDDO
@@ -8939,17 +8843,12 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E
   !&E ** Purpose : computation of floc size distribution
   !&E
-  !&E ** Description :
-  !&E
-  !&E
   !&E ** Called by : flocmod_main
   !&E
   !&E--------------------------------------------------------------------------
-  !! * Modules used
 
   !! * Arguments
-
-   REAL(KIND=rsh),INTENT(in) :: Gval,RHOREF
+   REAL(KIND=rsh),INTENT(in) :: Gval
    REAL(KIND=rlg),INTENT(in) :: f_dt
    REAL(KIND=rsh),DIMENSION(1:nv_mud),INTENT(in)  :: NNin
    REAL(KIND=rsh),DIMENSION(1:nv_mud),INTENT(out) :: NNout
@@ -9013,14 +8912,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
     tmp_l4=tmp_l4*NNin(iv1)
     
     tmp_l3=f_l3(iv1)*Gval**1.5_rsh*NNin(iv1)
-    
-!    write(*,*) 'iv1',(iv1)
-!    write(*,*) 'NNin',NNin(iv1)
-!    write(*,*) 'tmpg1',tmp_g1
-!    write(*,*) 'tmpg3',tmp_g3
-!    write(*,*) 'tmpl1',tmp_l1
-!    write(*,*) 'tmpl3',tmp_l3
-!    write(*,*) 'tmpl3',f_l3(iv1)*Gval**1.5_rsh
 
     NNout(iv1)=NNin(iv1)+f_dt*(tmp_g1+tmp_g3+tmp_g4-(tmp_l1+tmp_l3+tmp_l4))
 
@@ -9035,7 +8926,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   END SUBROUTINE flocmod_comp_fsd
     
   !!===========================================================================
-
   SUBROUTINE flocmod_collfrag(Gval,f_g4,f_l4) 
  
   !&E--------------------------------------------------------------------------
@@ -9043,19 +8933,11 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E
   !&E ** Purpose : computation of collision fragmentation term, based on McAnally and Mehta, 2001
   !&E
-  !&E ** Description :
-  !&E
   !&E ** Note : NUMBER_PI must be known as a parameters transmtted by coupleur 
-  !&E           in MARS : coupleur_dimhydro.h (USE ..)
-  !&E           in CROCO : module_MUSTANG.F (include..)
   !&E
   !&E ** Called by : flocmod_comp_fsd
   !&E
-  !&E ** External calls : 
-  !&E
   !&E--------------------------------------------------------------------------
-  !! * Modules used
-
    REAL(KIND=rsh),INTENT(in) :: Gval
    REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud,1:nv_mud),INTENT(out) :: f_g4   ! Collision fragmentation gain term
    REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud),INTENT(out)          :: f_l4   ! Collision fragmentation loss term  
@@ -9238,16 +9120,12 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E--------------------------------------------------------------------------
   !&E                 ***  ROUTINE flocmod_mass_control  ***
   !&E
-  !&E ** Purpose : Compute mass in every class after flocculation and returns negative mass if any
-  !&E
-  !&E ** Description :
+  !&E ** Purpose : Compute mass in every class after flocculation and 
+  !&E              returns negative mass if any
   !&E
   !&E ** Called by : flocmod_main
   !&E
-  !&E ** External calls : 
-  !&E
   !&E--------------------------------------------------------------------------
-  !! * Modules used
 
   !! * Arguments
   REAL(KIND=rsh),DIMENSION(1:nv_mud),intent(IN)     :: NN
@@ -9279,15 +9157,10 @@ END SUBROUTINE MUSTANGV2_eval_bedload
   !&E ** Purpose : based on a tolerated negative mass parameter, negative masses  
   !&E              are redistributed linearly towards remaining postive masses 
   !&E              and negative masses are set to 0
-  !&E                   
-  !&E ** Description :
   !&E
   !&E ** Called by : flocmod_main
   !&E
-  !&E ** External calls : 
-  !&E
   !&E--------------------------------------------------------------------------
-  !! * Modules used
 
   !! * Arguments
   REAL(KIND=rsh),DIMENSION(1:nv_mud),intent(INOUT)     :: NN

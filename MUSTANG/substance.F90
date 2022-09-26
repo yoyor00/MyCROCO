@@ -105,7 +105,8 @@ CONTAINS
                        tocd_n,ros_n,diam_n,l_sand2D_n,l_outsandrouse_n
    NAMELIST/nmlmuds/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n,tocd_n,ros_n, &
+                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       tocd_n,ros_n,diam_n, &
                        ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
                        ws_hind_opt_n,ws_hind_para_n
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
@@ -288,6 +289,7 @@ CONTAINS
    IF(nv_mud > 0) THEN
     CALL ALLOC_DEFVAR(nv_mud)   
     ALLOCATE(tocd_n(nv_mud))
+    ALLOCATE(diam_n(nv_mud))
     ALLOCATE(ros_n(nv_mud))
     ALLOCATE(ws_free_opt_n(nv_mud))
     ALLOCATE(ws_free_min_n(nv_mud))
@@ -307,12 +309,13 @@ CONTAINS
      ws_hind_opt_r(ivp)=ws_hind_opt_n(ivr)
      ws_hind_para_r(1:2,ivp)=ws_hind_para_n(1:2,ivr)
      tocd_r(ivp)=tocd_n(ivr)
+     diam_r(ivp)=diam_n(ivr)
      ros_r(ivp)=ros_n(ivr)
      itypv_r(iv0+ivr)=3
      
     ENDDO
     DEALLOCATE(ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
-                   ws_hind_opt_n,ws_hind_para_n,tocd_n,ros_n)
+                   ws_hind_opt_n,ws_hind_para_n,tocd_n,diam_n,ros_n)
    ENDIF
 
 #else  /* MUSTANG*/
@@ -1260,6 +1263,7 @@ ENDDO
      ws_hind_para(:,iv)=ws_hind_para_r(:,irk_fil(iv))
      tocd(iv)=tocd_r(irk_fil(iv))
      ros(iv)=ros_r(irk_fil(iv))
+     diam_sed(iv)=diam_r(irk_fil(iv))
    END DO
 #ifdef key_sand2D
    DO iv=igrav1,igrav2
