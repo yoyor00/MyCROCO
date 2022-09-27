@@ -256,9 +256,6 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL flocmod_main(ifirst, ilast, jfirst, jlast, dt_true,  &
                         WATER_CONCENTRATION)
-                        
-    ! MPI exchange of new water concentrations
-    ! ** TODO** in CROCO CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION)
 
 #endif
 

@@ -180,7 +180,7 @@
       init_cv_name_n(6)='SED6'
       obc_cv_name_n(6)='SED6'
       tocd_n(6)=0.
-      diam_n(7)=0.
+      diam_n(6)=0.
       ros_n(6)=2600.0
       ws_free_opt_n(6)=0
       ws_free_min_n(6)=0.1

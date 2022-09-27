@@ -1734,6 +1734,8 @@
 # undef  SED_TOY_CONSOLID     /*   Consolidation                      */
 # undef  SED_TOY_RESUSP       /*   Erosion and sediment resuspension  */
 # undef  SED_TOY_FLOC         /*   Flocculation                       */
+# undef  SED_TOY_FLOC_0D         /*   Flocculation                       */
+# undef  SED_TOY_FLOC_1D         /*   Flocculation                       */
 
 # undef  OPENMP
 # undef  MPI
@@ -1758,8 +1760,26 @@
 #  define BODYFORCE
 # endif
 
+# ifdef SED_TOY_FLOC_1D 
+#  define ANA_VMIX
+#  define BODYFORCE
+# endif
+
+# ifdef SED_TOY_FLOC_0D 
+#  define ANA_VMIX
+#  define BODYFORCE
+# endif
+
 # define SEDIMENT
 # undef  MUSTANG
+
+# ifdef MUSTANG
+#  if defined SED_TOY_FLOC || defined SED_TOY_FLOC_0D  || defined SED_TOY_FLOC_1D
+# define key_MUSTANG_flocmod
+# endif
+# endif
+
+
 # ifdef SEDIMENT
 #  define SUSPLOAD
 #  undef  BEDLOAD

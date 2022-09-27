@@ -137,10 +137,8 @@ DO i = ifirst, ilast
             ENDDO
             
             ! next mud settling velocity 
-#ifdef key_MUSTANG_flocmod
-            DO iv = imud1, nvp         
-                ws_part(i, j, k, itemp + ntrc_salt + iv) = f_ws(iv)  
-            ENDDO
+#ifdef key_MUSTANG_flocmod   
+            ws_part(i, j, k, itemp + ntrc_salt + imud1 : itemp + ntrc_salt + imud2 ) = f_ws(1:nv_mud)  
 #else
             DO iv = imud1, nvp
                 ! Free settling velocity - flocculation
