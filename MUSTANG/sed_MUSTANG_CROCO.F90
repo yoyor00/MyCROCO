@@ -39,7 +39,9 @@
     USE comsubstance
     USE module_MUSTANG
     USE module_substance
-    
+# if defined key_MUSTANG_flocmod
+    USE flocmod, ONLY : f_ws
+#endif
     IMPLICIT NONE
 
     !! * Accessibility 
@@ -67,9 +69,7 @@
     PUBLIC sed_exchange_corflu
 #endif
 #endif
-# if defined SED_TOY_FLOC_0D && defined key_MUSTANG_flocmod
-    PUBLIC flocmod_comp_g
-#endif
+
 
 PRIVATE
 
@@ -236,6 +236,9 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E--------------------------------------------------------------------------
 !! * Modules used
+#ifdef key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
+    USE flocmod, ONLY : flocmod_comp_g
+#endif
 #  include "mixing.h"
 #  include "ocean3d.h"
 
@@ -251,9 +254,13 @@ DO j = jfirst, jlast
 DO i = ifirst, ilast
     IF(htot(i, j) .GT. h0fond)  THEN
     DO k = 1, N
+#ifdef key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
+        call flocmod_comp_g(gradvit(k, i, j), time-time_start)
+#else
         dist_surf_on_bottom = ((z_w(i, j, N) - z_r(i, j, k)) / (z_r(i, j, k) - z_w(i, j, 0)))
         gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
                         (nuw + epsilon_MUSTANG) * dist_surf_on_bottom) 
+#endif
     END DO
     ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
     ! if  turbulence dissipation rate has not been already evaluated: 
@@ -565,93 +572,6 @@ END SUBROUTINE sed_gradvit
   enddo
 
   END SUBROUTINE sed_skinstress
-
-
-# if defined SED_TOY_FLOC_0D && defined key_MUSTANG_flocmod
-  SUBROUTINE flocmod_comp_g(Gval)
-!&E--------------------------------------------------------------------------
-!&E                 ***  ROUTINE flocmod_comp_g  ***
-!&E
-!&E ** Purpose : compute shear rate to estimate shear aggregation and erosion  
-!&E 
-!&E ** Description :
-!&E
-!&E ** Called by : flocmod_main
-!&E
-!&E ** External calls : 
-!&E
-!&E ** Reference :
-!&E
-!&E ** History :
-!&E     ! 2013-09 (Romaric Verney)
-!&E
-!&E--------------------------------------------------------------------------
-    implicit none 
-    
-    !! * Local declarations
-          real,intent(out)     :: Gval
-    ! l_testcase - if .TRUE. sets G(t) to values from lab experiment
-    !!--------------------------------------------------------------------------
-    !! * Executable part
-
-            ! reproducing flocculation experiment Verney et al., 2011
-           Gval=0.0
-           if (time-time_start .lt. 7201.0) then
-            Gval=1.0
-           elseif (time-time_start .lt. 8401.0) then
-            Gval=2.0
-           elseif (time-time_start .lt. 9601.0) then
-            Gval=3.0  
-           elseif (time-time_start .lt. 10801.0) then
-            Gval=4.0
-           elseif (time-time_start .lt. 12601.0) then
-            Gval=12.0
-           elseif (time-time_start .lt. 13801.0) then
-            Gval=4.0
-           elseif (time-time_start .lt. 15001.0) then
-            Gval=3.0
-           elseif (time-time_start .lt. 16201.0) then
-            Gval=2.0
-           elseif (time-time_start .lt. 21601.0) then
-            Gval=1.0
-           elseif (time-time_start .lt. 25201.0) then
-            Gval=0.0
-           elseif (time-time_start .lt. 30601.0) then
-            Gval=1.0
-           elseif (time-time_start .lt. 31801.0) then
-            Gval=2.0                     
-           elseif (time-time_start .lt. 33001.0) then
-            Gval=3.0       
-           elseif (time-time_start .lt. 34201.0) then
-            Gval=4.0
-           elseif (time-time_start .lt. 36001.0) then
-            Gval=12.0
-           elseif (time-time_start .lt. 37201.0) then
-            Gval=4.0
-           elseif (time-time_start .lt. 38401.0) then
-            Gval=3.0
-           elseif (time-time_start .lt. 39601.0) then
-            Gval=2.0
-           elseif (time-time_start .lt. 45001.0) then
-            Gval=1.0
-           elseif (time-time_start .lt. 48601.0) then
-            Gval=0.0
-           elseif (time-time_start .lt. 54001.0) then
-            Gval=1.0
-           elseif (time-time_start .lt. 55201.0) then
-            Gval=2.0                     
-           elseif (time-time_start .lt. 56401.0) then
-            Gval=3.0       
-           elseif (time-time_start .lt. 57601.0) then
-            Gval=4.0
-           else 
-            Gval=12.0
-           endif
-          return
-
-  END SUBROUTINE flocmod_comp_g
-#endif
-
 
 
 !!==============================================================================

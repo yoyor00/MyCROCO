@@ -615,25 +615,6 @@ public
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: WATER_FLUX_INPUTS ! not operationnal, stil to code **TODO**
 #endif
 
-
-#ifdef key_MUSTANG_flocmod
-    ! Explicit FLOCULATION 
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_diam ! floc diameter (m)
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_ws ! floc settling velocity (m/s)
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_vol ! floc volume
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_rho ! floc density
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_mass ! floc mass
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_l3 ! fragmentation loss term
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_coll_prob_sh ! shear agregation collision probability
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_coll_prob_ds ! differential settling collision probability
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_l1_sh ! shear agregation loss term
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_l1_ds ! differential settling agregation loss term  
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_g3 ! fragmentation gain term 
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_sh ! shear agregation gain term
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_ds ! differential settling agregation gain term
-#endif
-
-
 #ifdef key_BLOOM_insed
     LOGICAL :: l_out_subs_diag_sed
 #endif
