@@ -23,7 +23,7 @@ filename_confmod = "CONFIG_ECO3M/modele.def" ! Process functions (from the F_PRO
 &nam_eco3m_run
 run_name = "sim_eco3m_1DV"  ! simulation name
 dt_bio = 1200.         ! Simulation time-step (in seconds) 
-pos_nzmax = "BOTT" ! Position of the nz_max point (ie BOTT for bottom or SURF for surface)
+pos_nzmax = "SURF" ! Position of the nz_max point (ie BOTT for bottom or SURF for surface)
 /
 
 &nam_eco3m_run_main
