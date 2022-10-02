@@ -87,8 +87,8 @@ if [ $model == wrf ] ; then
     varlist=(${gridlevels}_TAUX \
             ${gridlevels}_TAUY \
             ${gridlevels}_TAUMOD \
-            ${gridlevels}_U_01 \
-            ${gridlevels}_V_01 \
+            ${gridlevels}_WND_U_01 \
+            ${gridlevels}_WND_V_01 \
             ${gridlevels}_SURF_NET_SOLAR \
             ${gridlevels}_SURF_NET_NON-SOLAR \
             ${gridlevels}_EVAP-PRECIP \

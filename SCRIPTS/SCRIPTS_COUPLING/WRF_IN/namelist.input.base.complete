@@ -36,7 +36,7 @@
  io_form_auxhist3                    = 2
  auxhist3_interval                   = <xtrm_int_m>,<xtrm_int_m>,<xtrm_int_m>,
  frames_per_auxhist3                 = <xtrm_nb_out>,<xtrm_nb_out>,<xtrm_nb_out>,
- debug_level                         = 10
+ debug_level                         = 0
  input_from_hires                    = .false., .false.,.false.,
  rsmas_data_path                     = "CONFIG/INPUTS/HIRES/SurfaceFiles/"
 

@@ -10,7 +10,7 @@
 #
 # NFIELDS: total number of fields being exchanged
  $NFIELDS
- 9
+ 10
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
@@ -212,6 +212,16 @@ DISTWGT LR SCALAR LATLON 1 4
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
 TOYSTFLX CROCO_STFL 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
+R  0  R  0
+LOCTRANS SCRIPR
+AVERAGE
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# INTERFACE ATMOSPHERIC PRESSURE  (Pa)
+#~~~~~~~~~~~
+TOY_PSFC CROCO_PSFC 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
