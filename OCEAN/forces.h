@@ -121,11 +121,9 @@
 !          horizontal RHO-points. Physical dimensions [degC m/s] -
 !          temperature; [PSU m/s] - salinity.
 !
-# if defined TRANSPORT
       real stflx(GLOBAL_2D_ARRAY,NT)
       common /forces_stflx/stflx
-# endif /* TRANSPORT */
-# if defined BULK_FLUX && defined TEMPERATURE
+# if defined BULK_FLUX
       real shflx_rsw(GLOBAL_2D_ARRAY)
       common /frc_shflx_rsw/shflx_rsw
       real shflx_rlw(GLOBAL_2D_ARRAY)
@@ -134,7 +132,7 @@
       common /frc_shflx_lat/shflx_lat
       real shflx_sen(GLOBAL_2D_ARRAY)
       common /frc_shflx_sen/shflx_sen
-# endif /* BULK_FLUX && TEMPERATURE */
+# endif /* BULK_FLUX */
 # if defined SST_SKIN && defined TEMPERATURE
       real sst_skin(GLOBAL_2D_ARRAY)
       common /frc_sst_skin/ sst_skin
@@ -286,7 +284,7 @@
 # endif /* SALINITY && SFLX_CORR */
 !
 !
-# if defined BULK_FLUX && defined TEMPERATURE
+# if defined BULK_FLUX 
 !
 !  HEAT FLUX BULK FORMULATION
 !--------------------------------------------------------------------
@@ -424,7 +422,7 @@
       common /bulkdat2_bio/ radswbiop
 # endif
       common /bulkdat2_wspd/ wspdp 
-# endif /* BULK_FLUX && TEMPERATURE */
+# endif /* BULK_FLUX  */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.
 !--------------------------------------------------------------------
