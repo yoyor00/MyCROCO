@@ -1275,7 +1275,9 @@
 # define SEDIMENT
 # ifdef SEDIMENT
 #  define SUSPLOAD
-#  define BEDLOAD
+#  ifndef NBQ
+#   define BEDLOAD
+#  endif
 #  define MORPHODYN
 #  define TCLIMATOLOGY
 #  define TNUDGING
@@ -1848,7 +1850,7 @@
 #elif defined ESTUARY
 /*
 !                       ESTUARY  Example
-!                       ==========  =======
+!                       =======  =======
 */
 # undef  OPENMP
 # undef  MPI
@@ -1897,12 +1899,12 @@
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
 # endif
-# define NO_FRCFILE
-# undef  ZETA_DRY_IO
-# undef  RVTK_DEBUG
 # define PSOURCE
 # define ANA_PSOURCE
 # define MASKING
+# define NO_FRCFILE
+# undef  ZETA_DRY_IO
+# undef  RVTK_DEBUG
 
 #endif /* END OF CONFIGURATION CHOICE */
 
