@@ -199,7 +199,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # SSH : sea surface height (m)
 #~~~~~~~~~~~
-CROCO_SSH TOY_WSSH 1 <cpldt> 2 oce.nc EXPORTED
+CROCO_SSH TOY__SSH 1 <cpldt> 2 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnt toywt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
@@ -386,7 +386,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # SST (K)
 #~~~~~~~~~~~
-CROCO_SST TOY_ASST 1 <cpldt> 2 oce.nc EXPORTED
+CROCO_SST TOY__SST 1 <cpldt> 2 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt toyat LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR

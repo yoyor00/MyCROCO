@@ -9,7 +9,7 @@
 &NAM_RECV_FIELDS NB_RECV_FIELDS=5,
                  CRCVFIELDS(1)='TOYWWU01',
                  CRCVFIELDS(2)='TOYWWV01', 
-                 CRCVFIELDS(3)='TOY__SSH',
+                 CRCVFIELDS(3)='TOY_WSSH',
                  CRCVFIELDS(4)='TOYWUOCE',
                  CRCVFIELDS(5)='TOYWVOCE' /
 
