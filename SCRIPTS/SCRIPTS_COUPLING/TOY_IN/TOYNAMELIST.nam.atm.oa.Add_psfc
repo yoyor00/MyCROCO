@@ -11,10 +11,11 @@
                  CRCVFIELDS(2)='TOY_UOCE',
                  CRCVFIELDS(3)='TOY_VOCE' /
 
-&NAM_SEND_FIELDS NB_SEND_FIELDS=6,
+&NAM_SEND_FIELDS NB_SEND_FIELDS=7,
                  CSNDFIELDS(1)='TOY_TAUX',
                  CSNDFIELDS(2)='TOY_TAUY',
                  CSNDFIELDS(3)='TOY_TAUM',
                  CSNDFIELDS(4)='TOYSTFLX',
                  CSNDFIELDS(5)='TOYSRFLX',
-                 CSNDFIELDS(6)='TOY__EMP' / 
+                 CSNDFIELDS(6)='TOY__EMP',
+		 CSNDFIELDS(7)='TOY_PSFC' / 

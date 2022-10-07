@@ -63,7 +63,7 @@ else
 fi
 [ ${USE_ATM}  -eq 1 ] && TOTATM=$NP_ATM  || TOTATM=0
 [ ${USE_WAV}  -eq 1 ] && TOTWAV=$NP_WAV  || TOTWAV=0
-[ ${USE_TOY}  -eq 1 ] && { for k in `seq 0 $(( ${nbtoy} - 1))`; do TOTTOY+=$NP_TOY ; done;}  || TOTTOY=0
+[ ${USE_TOY}  -ge 1 ] && { TOTTOY=0 ; for k in `seq 0 $(( ${nbtoy} - 1))`; do TOTTOY=$(( $TOTTOY + $NP_TOY)) ; done;}  || TOTTOY=0
 [ ${USE_XIOS_ATM} -eq 1 ] && TOTXIO=$NP_XIOS_ATM || TOTXIO=0
 [ ${USE_XIOS_OCE} -eq 1 ] && TOTXIO=$(( ${TOTXIO} + ${NP_XIOS_OCE} ))
 totalcore=$(( $TOTOCE + $TOTATM + $TOTWAV + $TOTTOY + $TOTXIO ))

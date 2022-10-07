@@ -5154,9 +5154,7 @@ C$OMP BARRIER
 !
 # ifdef SED_FLOCS
       subroutine sed_flocmod_tile (Istr,Iend,Jstr,Jend)
-
-!***********************************************************************
-      USE flocmod, ONLY : flocmod_main, flocmod_comp_g
+        USE flocmod, ONLY : flocmod_main, flocmod_comp_g
       implicit none 
 #  include "param.h"
 #  include "scalars.h"
@@ -5172,77 +5170,53 @@ C$OMP BARRIER
 !  Variable declarations for floc model
 
       real :: Gval, diss, nueau
-      real :: epsilon8
-      real :: tke_av, gls_av, exp1, exp2, exp3, ustr2, effecz
+      real :: epsilon8, ustr2, effecz
 
       if (l_testcase) then
         CALL flocmod_comp_g(Gval, time)
       else
-        exp1 = 3.0+rp/rn
-        exp2 = 1.5+rm/rn
-        exp3 = -1.0/rn
         epsilon8=epsilon(1.0)
       endif
 
-      do j=Jstr,Jend
         do i=Istr,Iend
           do k=1,N       
             if (.not. l_testcase) then
                
-# if defined FLOC_TURB_DISS && !defined FLOC_BBL_DISS
+# if defined FLOC_TURB_DISS && defined GLS_MIXING
 !
-!ALA dissipation from turbulence clossure
-
+! Dissipation from turbulence clossure
+!
               if (k.eq.1) then
-                tke_av = trb(i,j,k-1,nnew,itke)
-                gls_av = trb(i,j,k-1,nnew,igls)
+                diss = Eps_gls(i,j,k)
               elseif (k.eq.N) then
-                tke_av = trb(i,j,k,nnew,itke)
-                gls_av = trb(i,j,k,nnew,igls)
+                diss = Eps_gls(i,j,k-1)
               else 
-                tke_av = 0.5*(trb(i,j,k-1,nnew,itke)+trb(i,j,k,nnew,itke))
-                gls_av = 0.5*(trb(i,j,k-1,nnew,igls)+trb(i,j,k,nnew,igls))
+                diss = 0.5*(Eps_gls(i,j,k-1)+Eps_gls(i,j,k))
               endif
-
-              diss = cm0**exp1*tke_av**exp2*gls_av**exp3
-
-# elif defined FLOC_BBL_DISS && !defined FLOC_TURB_DISS
+#  ifdef FLOC_BBL_DISS
 !
-!ALA dissipation from wavecurrent bottom stress
-! NOT READY FOR PRIME TIME
-! NEEDS VERTICAL DISTRIBUTION
+! Dissipation from wavecurrent bottom stress
+! NOT READY FOR PRIME TIME: NEEDS VERTICAL DISTRIBUTION
 ! As first cut, use turbulence closure
 !
-              if (k.eq.1) then
-                tke_av = trb(i,j,k-1,nnew,itke)
-                gls_av = trb(i,j,k-1,nnew,igls)
-              elseif (k.eq.N) then
-                tke_av = trb(i,j,k,nnew,itke)
-                gls_av = trb(i,j,k,nnew,igls)
-              else 
-                tke_av = 0.5*trb(i,j,k-1,nnew,itke)+                  
-     &                       0.5*trb(i,j,k,nnew,itke)
-                gls_av = 0.5*trb(i,j,k-1,nnew,igls)+                  
-     &                       0.5*trb(i,j,k,nnew,igls)
-              endif
-              diss = cm0**exp1*tke_av**exp2*gls_av**exp3
-!
-!  MODifY THE BOTTOM LAYER TO INCLUDE WAVECURRENT STRESS
-!
               if (k.eq.1) then       
-#  ifdef BBL
+#   ifdef BBL
                 ustr2 =sqrt((bustrw(i,j)**2                
      &                      +bvstrw(i,j)**2))
                 effecz = (ustr2**0.5)*Pwave(i,j)*0.5/pi
                 diss = MAX((ustr2**(1.5))/(vonKar*effecz),diss)
-#  else
+#   else
                 ustr2 =sqrt((bustr(i,j)**2.0+bvstr(i,j)**2.0 ))
                 diss = MAX((ustr2**(1.5))/(vonKar*                  
      &                       (z_r(i,j,1)-z_w(i,j,0))),diss)
-#  endif
+#   endif
               endif
+#  endif
 # else 
-              diss = epsilon8          
+!
+! Constant tke dissipation
+!
+                diss = epsilon8         
 # endif              
                 nueau = 1.5E-6
                 Gval=sqrt(diss/nueau)
@@ -5251,13 +5225,12 @@ C$OMP BARRIER
             CALL flocmod_main( dt, 
      &            t(i,j,k,nnew,imud1:imud1+NMUD-1),  
      &            Gval )
-
+   
           enddo
-        enddo          
+        enddo
       enddo  !J_LOOP
 
       return
-
       end subroutine sed_flocmod_tile
       
 # endif /* SED_FLOCS */

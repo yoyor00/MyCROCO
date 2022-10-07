@@ -509,8 +509,8 @@
       parameter (NSAND=2, NMUD=0, NGRAV=0)
       parameter (NLAY=1)
 #  endif
-      parameter (NST=NSAND+NMUD+NGRAV)
-      parameter (ntrc_sed=NST)
+      parameter (ntrc_sed=NSAND+NMUD+NGRAV)
+      parameter (NST=ntrc_sed)
 # else
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
@@ -543,7 +543,7 @@
 #  endif
 # endif /* MUSTANG */
 
-# if defined BBL && defined AGRIF
+# if defined SEDIMENT && defined AGRIF
       integer Agrif_lev_sedim
       parameter (Agrif_lev_sedim=0)
 # endif

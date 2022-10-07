@@ -32,7 +32,7 @@ restart:          NRST, NRPFRST / filename
                  CROCO_FILES/croco_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
            T      150       0
-                 /home1/scratch/mcaillau/croco_out.nc
+                 croco_out.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     1000000     0
                   croco_avg.nc

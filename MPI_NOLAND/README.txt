@@ -8,12 +8,12 @@ Content:
 - Makefile : an example of makefile
 - mpp_optimiz.f90 : fortran code
 - namelist
-- mpp_plot.py : python script for diagnostic 
+- mpp_plot.py : python script for diagnostic
 
 Compilation
 ===========
 
-- Edit Makefile to put your own compiler, options and NetCDF location 
+- Edit Makefile to put your own compiler, options and NetCDF location
 - gmake
 
 An executable called mpp_optimiz is generated
@@ -24,7 +24,7 @@ Settings
 Edit the namelist. Note :
 - &NAMPARAM section is not used for now
 - Npts, the number of ghostcells used by CROCO depends on the numerical choices. Set to 2 in general, to 3 with advection schemes of order 5 or 6
-- jprocx is the maximum number of CPU you will be able to use 
+- jprocx is the maximum number of CPU you will be able to use
 Copy your grid file in MPP_PREP directory
 
 Execution
