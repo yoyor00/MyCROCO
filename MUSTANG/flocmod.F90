@@ -513,13 +513,12 @@ real,dimension(nv_mud), intent(inout) :: cwater
 
 ! Local declarations
 real                      :: cvtotmud, cvtotmudref, Gval, mneg, sum_flocs
-real(kind=rlg)            :: dttemp, dtmin, f_dt
+real(kind=rlg)            :: dttemp, f_dt
 real, dimension(1:nv_mud) :: cv_tmp, NNin, NNout
 
 !Gval : shear rate value calculated or estimated from the hydrodynmic model
 Gval = gradvit
 
-dtmin = dt
 f_dt = dt
 dttemp = 0.0_rlg
 
@@ -543,7 +542,6 @@ if (cvtotmud .gt. f_clim) then
                 call flocmod_mass_control(NNout,mneg)  
             enddo
         endif
-        dtmin=MIN(dtmin,f_dt)
         dttemp=dttemp+f_dt
         NNin(:)=NNout(:) ! update new Floc size distribution
 
