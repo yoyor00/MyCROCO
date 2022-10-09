@@ -4011,7 +4011,8 @@ C$OMP BARRIER
         ! some parameters are not read in sediment.in
         ! f_mneg_param, f_fp, f_fy, f_cfcst, f_dmin_frag
         ! values from paraMUSTANG_default.txt
-        f_mneg_param=0.000
+        ! && f_dmax not used but read in sediment.in
+        f_mneg_param=0.001
         f_cfcst = 0.1875
         f_fp = 0.1
         f_fy = 1.0e-10 
@@ -4024,7 +4025,7 @@ C$OMP BARRIER
      &      f_clim, Sd(imud1:imud1+NMUD-1) , 
      &      Srho(imud1:imud1+NMUD-1),      
      &      rho0, l_testcase, stdout)
-            Wsed(imud1:imud1+NMUD-1) = f_ws(1:NMUD)
+        Wsed(imud1:imud1+NMUD-1) = f_ws(1:NMUD)
 # endif
       return
       end
@@ -5165,12 +5166,12 @@ C$OMP BARRIER
 #  include "forces.h"
 
       integer Istr,Iend,Jstr,Jend
-      integer :: i, j, k
+      integer i, j, k
 !
 !  Variable declarations for floc model
 
-      real :: Gval, diss, nueau
-      real :: epsilon8, ustr2, effecz
+      real Gval, diss, nueau
+      real epsilon8, ustr2, effecz
 
       if (l_testcase) then
         CALL flocmod_comp_g(Gval, time)
@@ -5178,6 +5179,7 @@ C$OMP BARRIER
         epsilon8=epsilon(1.0)
       endif
 
+      do j=Jstr,Jend
         do i=Istr,Iend
           do k=1,N       
             if (.not. l_testcase) then
@@ -5221,9 +5223,9 @@ C$OMP BARRIER
                 nueau = 1.5E-6
                 Gval=sqrt(diss/nueau)
             endif ! not l_testcase
-
+            
             CALL flocmod_main( dt, 
-     &            t(i,j,k,nnew,imud1:imud1+NMUD-1),  
+     &            t(i,j,k,nnew,itrc_mud:itrc_mud+NMUD-1),  
      &            Gval )
    
           enddo

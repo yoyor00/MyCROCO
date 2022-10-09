@@ -250,6 +250,7 @@ INTEGER        :: i, j, k
 REAL(KIND=rsh) :: dist_surf_on_bottom, nuw
 
 nuw = 1.0e-6
+
 DO j = jfirst, jlast
 DO i = ifirst, ilast
     IF(htot(i, j) .GT. h0fond)  THEN
@@ -335,6 +336,7 @@ END SUBROUTINE sed_gradvit
 # endif  
 
   ! Executable part
+
 
 #  ifdef BBL /*warning, d50 is constant (160microns) in the bustrw/bvstrw computation see bbl.F */
   do j = jfirst, jlast
