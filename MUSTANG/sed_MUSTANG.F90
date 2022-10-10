@@ -1316,7 +1316,7 @@ MODULE sed_MUSTANG
    
    !! * Local declarations
    INTEGER                          :: ivp, i, j
-   REAL(KIND=rlg)                   :: tocdpe, depo
+   REAL(KIND=rlg)                   :: tocdpe
 
    !!---------------------------------------------------------------------------
    !! * Executable part
@@ -1336,7 +1336,6 @@ MODULE sed_MUSTANG
                           * MAX(0.0_rsh, 1.0_rsh - (tauskin(i, j) / tocdpe)) &  
                           * tocd(ivp) / tocdpe
          ENDIF
-         depo = flx_w2s(ivp, i, j) * cw_bottom_MUSTANG(ivp, i, j)
        ENDDO
 #ifdef key_Pconstitonly_insed
        DO ivp = nvpc+1, nvp
@@ -1353,7 +1352,6 @@ MODULE sed_MUSTANG
                           * MAX(0.0_rsh,1.0_rsh - (tauskin(i, j) / tocdpe)) &  
                           * tocd(ivp) / tocdpe
          ENDIF
-         depo = flx_w2s(ivp, i, j) * cw_bottom_MUSTANG(ivp, i, j)
          IF(irkm_var_assoc(ivp) > 0 ) THEN
           IF (flx_w2s(irkm_var_assoc(ivp),i,j) == 0.0_rsh) flx_w2s(ivp, i, j) = 0.0_rsh
          END IF

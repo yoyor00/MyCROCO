@@ -117,10 +117,11 @@
 
       implicit none
 # include "param.h"
+# include "ocean3d.h"
 # include "scalars.h"
 # include "sediment.h"
 # include "private_scratch.h"
-      integer tile, trd, omp_get_thread_num
+      integer tile, trd, omp_get_thread_num, itrc
 # include "compute_tile_bounds.h"
 !
       trd=omp_get_thread_num()
@@ -167,6 +168,20 @@ C$OMP BARRIER
 !
       call sed_surf_tile (Istr,Iend,Jstr,Jend)     
 C$OMP BARRIER
+# if defined TRACERS
+      do itrc=1,NT
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  ifdef THREE_GHOST_POINTS_TS
+        call  exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &          t(START_2D_ARRAY,1,nnew,itrc))
+#  else
+        call  exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &          t(START_2D_ARRAY,1,nnew,itrc))
+#  endif
+# endif
+      enddo
+# endif
+
 !
       return
       end
@@ -5227,7 +5242,7 @@ C$OMP BARRIER
             CALL flocmod_main( dt, 
      &            t(i,j,k,nnew,itrc_mud:itrc_mud+NMUD-1),  
      &            Gval )
-   
+
           enddo
         enddo
       enddo  !J_LOOP
