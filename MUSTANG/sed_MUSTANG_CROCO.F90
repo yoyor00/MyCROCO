@@ -236,7 +236,7 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E--------------------------------------------------------------------------
 !! * Modules used
-#ifdef key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
+#if defined key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
     USE flocmod, ONLY : flocmod_comp_g
 #endif
 #  include "mixing.h"
@@ -247,7 +247,7 @@ INTEGER, INTENT(IN)       :: ifirst, ilast, jfirst, jlast
 
 !! * Local declarations
 INTEGER        :: i, j, k
-REAL(KIND=rsh) :: dist_surf_on_bottom, nuw
+REAL(KIND=rsh) :: dist_surf_on_bottom, nuw, diss
 
 nuw = 1.0e-6
 
@@ -255,12 +255,26 @@ DO j = jfirst, jlast
 DO i = ifirst, ilast
     IF(htot(i, j) .GT. h0fond)  THEN
     DO k = 1, N
-#ifdef key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
+#if defined key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
         call flocmod_comp_g(gradvit(k, i, j), time-time_start)
+#else
+#if defined GLS_MIXING
+        !
+        ! Dissipation from turbulence clossure
+        !
+        if (k.eq.1) then
+            diss = Eps_gls(i,j,k)
+        elseif (k.eq.N) then
+            diss = Eps_gls(i,j,k-1)
+        else
+            diss = 0.5*(Eps_gls(i,j,k-1)+Eps_gls(i,j,k))
+        endif
+        gradvit(k, i, j) = sqrt(diss/nuw)
 #else
         dist_surf_on_bottom = ((z_w(i, j, N) - z_r(i, j, k)) / (z_r(i, j, k) - z_w(i, j, 0)))
         gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
                         (nuw + epsilon_MUSTANG) * dist_surf_on_bottom) 
+#endif
 #endif
     END DO
     ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
