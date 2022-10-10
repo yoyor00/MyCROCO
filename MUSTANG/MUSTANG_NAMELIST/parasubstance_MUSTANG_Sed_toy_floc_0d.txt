@@ -69,7 +69,7 @@
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='SED1'
       obc_cv_name_n(1)='SED1'
-      tocd_n(1)=100.
+      tocd_n(1)=0.
       diam_n(1)=0.000004
       ros_n(1)=2600.0
       ws_free_opt_n(1)=0
@@ -91,7 +91,7 @@
       l_out_subs_n(2)=.TRUE.
       init_cv_name_n(2)='SED2'
       obc_cv_name_n(2)='SED2'
-      tocd_n(2)=100.
+      tocd_n(2)=0.
       diam_n(2)=0.000006
       ros_n(2)=2600.0
       ws_free_opt_n(2)=0
@@ -113,7 +113,7 @@
       l_out_subs_n(3)=.TRUE.
       init_cv_name_n(3)='SED3'
       obc_cv_name_n(3)='SED3'
-      tocd_n(3)=100.
+      tocd_n(3)=0.
       diam_n(3)= 0.000009
       ros_n(3)=2600.0
       ws_free_opt_n(3)=0
@@ -135,7 +135,7 @@
       l_out_subs_n(4)=.TRUE.
       init_cv_name_n(4)='SED4'
       obc_cv_name_n(4)='SED4'
-      tocd_n(4)=100.
+      tocd_n(4)=0.
       diam_n(4)=0.000014
       ros_n(4)=2600.0
       ws_free_opt_n(4)=0
@@ -157,7 +157,7 @@
       l_out_subs_n(5)=.TRUE.
       init_cv_name_n(5)='SED5'
       obc_cv_name_n(5)='SED5'
-      tocd_n(5)=100.
+      tocd_n(5)=0.
       diam_n(5)= 0.000021
       ros_n(5)=2600.0
       ws_free_opt_n(5)=0
@@ -179,7 +179,7 @@
       l_out_subs_n(6)=.TRUE.
       init_cv_name_n(6)='SED6'
       obc_cv_name_n(6)='SED6'
-      tocd_n(6)=100.
+      tocd_n(6)=0.
       diam_n(6)=0.000033
       ros_n(6)=2600.0
       ws_free_opt_n(6)=0
@@ -201,7 +201,7 @@
       l_out_subs_n(7)=.TRUE.
       init_cv_name_n(7)='SED7'
       obc_cv_name_n(7)='SED7'
-      tocd_n(7)=100.
+      tocd_n(7)=0.
       diam_n(7)= 0.000050
       ros_n(7)=2600.0
       ws_free_opt_n(7)=0
@@ -223,7 +223,7 @@
       l_out_subs_n(8)=.TRUE.
       init_cv_name_n(8)='SED8'
       obc_cv_name_n(8)='SED8'
-      tocd_n(8)=100.
+      tocd_n(8)=0.
       diam_n(8)= 0.000077
       ros_n(8)=2600.0
       ws_free_opt_n(8)=0
@@ -245,7 +245,7 @@
       l_out_subs_n(9)=.TRUE.
       init_cv_name_n(9)='SED9'
       obc_cv_name_n(9)='SED9'
-      tocd_n(9)=100.
+      tocd_n(9)=0.
       diam_n(9)=0.000118
       ros_n(9)=2600.0
       ws_free_opt_n(9)=0
@@ -267,7 +267,7 @@
       l_out_subs_n(10)=.TRUE.
       init_cv_name_n(10)='SED10'
       obc_cv_name_n(10)='SED10'
-      tocd_n(10)=100.
+      tocd_n(10)=0.
       diam_n(10)=0.000180
       ros_n(10)=2600.0
       ws_free_opt_n(10)=0
@@ -289,7 +289,7 @@
       l_out_subs_n(11)=.TRUE.
       init_cv_name_n(11)='SED11'
       obc_cv_name_n(11)='SED11'
-      tocd_n(11)=100.
+      tocd_n(11)=0.
       diam_n(11)=0.000275
       ros_n(11)=2600.0
       ws_free_opt_n(11)=0
@@ -311,7 +311,7 @@
       l_out_subs_n(12)=.TRUE.
       init_cv_name_n(12)='SED12'
       obc_cv_name_n(12)='SED12'
-      tocd_n(12)=100.
+      tocd_n(12)=0.
       diam_n(12)=0.000421
       ros_n(12)=2600.0
       ws_free_opt_n(12)=0
@@ -333,7 +333,7 @@
       l_out_subs_n(13)=.TRUE.
       init_cv_name_n(13)='SED13'
       obc_cv_name_n(13)='SED13'
-      tocd_n(13)=100.
+      tocd_n(13)=0.
       diam_n(13)=0.000643
       ros_n(13)=2600.0
       ws_free_opt_n(13)=0
@@ -355,7 +355,7 @@
       l_out_subs_n(14)=.TRUE.
       init_cv_name_n(14)='SED14'
       obc_cv_name_n(14)='SED14'
-      tocd_n(14)=100.
+      tocd_n(14)=0.
       diam_n(14)=0.000982
       ros_n(14)=2600.0
       ws_free_opt_n(14)=0
@@ -377,7 +377,7 @@
       l_out_subs_n(15)=.TRUE.
       init_cv_name_n(15)='SED15'
       obc_cv_name_n(15)='SED15'
-      tocd_n(15)=100.
+      tocd_n(15)=0.
       diam_n(15)=0.001500
       ros_n(15)=2600.0
       ws_free_opt_n(15)=0
