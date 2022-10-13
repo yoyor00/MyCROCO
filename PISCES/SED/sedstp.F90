@@ -78,7 +78,7 @@ CONTAINS
 
          IF (ln_sed_2way) CALL sed_sfc( kt )         ! Give back new bottom wat chem to tracer model
       ENDIF
-#if ! defined XIOS
+#if ! defined XIOS  && defined AVERAGES
       CALL set_avg_sed
       ilc = 1+iic-ntstart   ! number of time step since restart
       IF ( iic > ntstart .AND. mod(ilc-1,nwrtsedpis_avg) == 0 .AND. wrtavg(indxTime) ) THEN
