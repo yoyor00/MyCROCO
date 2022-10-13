@@ -191,8 +191,8 @@ CONTAINS
                   &     + concnno3 * trb(ji,jj,K,jpnh4) ) 
                zlim2  = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + concnnh4 )
                zlim3  = trb(ji,jj,K,jpfer) / ( trb(ji,jj,K,jpfer) +  5.E-11   )
-               ztem1  = MAX( 0., tsn(ji,jj,jk,jp_tem) )
-               ztem2  = tsn(ji,jj,jk,jp_tem) - 10.
+               ztem1  = MAX( 0., tsn(ji,jj,K,jp_tem) )
+               ztem2  = tsn(ji,jj,K,jp_tem) - 10.
                zetot1 = MAX( 0., etot_ndcy(ji,jj,jk) - 1.) / ( 4. + etot_ndcy(ji,jj,jk) ) 
                zetot2 = 30. / ( 30. + etot_ndcy(ji,jj,jk) ) 
 

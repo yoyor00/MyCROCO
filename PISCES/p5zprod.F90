@@ -160,7 +160,7 @@ CONTAINS
             DO ji = IRANGE
                IF( etot_ndcy(ji,jj,jk) > 1.E-3 ) THEN
                   ! Computation of the P-I slope for nanos and diatoms
-                  ztn         = MAX( 0., tsn(ji,jj,jk,jp_tem) - 15. )
+                  ztn         = MAX( 0., tsn(ji,jj,K,jp_tem) - 15. )
                   zadap       = xadap * ztn / ( 2.+ ztn )
                   !
                   zpislopeadn(ji,jj,jk) = pislopen * trb(ji,jj,K,jpnch)    &
@@ -352,21 +352,21 @@ CONTAINS
                      !  production terms for nanophyto. ( chlorophyll )
                   znanotot = enanom(ji,jj,jk) / ( zmxl_chl(ji,jj,jk) + rtrn )
                   zprod = rday * (zpronewn(ji,jj,jk) + zproregn(ji,jj,jk)) * zprchln(ji,jj,jk) * xlimphy(ji,jj,jk)
-                  thetannm_n   = MIN ( thetannm, ( thetannm / (1. - 1.14 / 43.4 *tsn(ji,jj,jk,jp_tem)))   &
+                  thetannm_n   = MIN ( thetannm, ( thetannm / (1. - 1.14 / 43.4 *tsn(ji,jj,K,jp_tem)))   &
                   &               * (1. - 1.14 / 43.4 * 20.))
                   zprochln = thetannm_n * zprod / ( zpislopeadn(ji,jj,jk) * znanotot + rtrn )
                   zprochln = MAX(zprochln, chlcmin * 12. * zprorcan (ji,jj,jk) )
                      !  production terms for picophyto. ( chlorophyll )
                   zpicotot = epicom(ji,jj,jk) / ( zmxl_chl(ji,jj,jk) + rtrn )
                   zprod = rday * (zpronewp(ji,jj,jk) + zproregp(ji,jj,jk)) * zprchlp(ji,jj,jk) * xlimpic(ji,jj,jk)
-                  thetanpm_n   = MIN ( thetanpm, ( thetanpm / (1. - 1.14 / 43.4 *tsn(ji,jj,jk,jp_tem)))   &
+                  thetanpm_n   = MIN ( thetanpm, ( thetanpm / (1. - 1.14 / 43.4 *tsn(ji,jj,K,jp_tem)))   &
                   &               * (1. - 1.14 / 43.4 * 20.))
                   zprochlp = thetanpm_n * zprod / ( zpislopeadp(ji,jj,jk) * zpicotot + rtrn )
                   zprochlp = MAX(zprochlp, chlcmin * 12. * zprorcap(ji,jj,jk) )
                   !  production terms for diatomees ( chlorophyll )
                   zdiattot = ediatm(ji,jj,jk) / ( zmxl_chl(ji,jj,jk) + rtrn )
                   zprod = rday * (zpronewd(ji,jj,jk) + zproregd(ji,jj,jk)) * zprchld(ji,jj,jk) * xlimdia(ji,jj,jk)
-                  thetandm_n   = MIN ( thetandm, ( thetandm / (1. - 1.14 / 43.4 *tsn(ji,jj,jk,jp_tem)))   &
+                  thetandm_n   = MIN ( thetandm, ( thetandm / (1. - 1.14 / 43.4 *tsn(ji,jj,K,jp_tem)))   &
                   &               * (1. - 1.14 / 43.4 * 20.))
                   zprochld = thetandm_n * zprod / ( zpislopeadd(ji,jj,jk) * zdiattot + rtrn )
                   zprochld = MAX(zprochld, chlcmin * 12. * zprorcad(ji,jj,jk) )
