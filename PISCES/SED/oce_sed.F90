@@ -11,7 +11,6 @@ MODULE oce_sed
 #if defined key_pisces
    USE par_sed
 
-   USE sms_pisces, ONLY : r2dttrc   =>   rfact           !: Mask
    USE sms_pisces, ONLY : tmask     =>   tmask           !: Mask
    USE sms_pisces, ONLY : wsbio4    =>   wsbio4          !: sinking flux for POC
    USE sms_pisces, ONLY : wsbio3    =>   wsbio3          !: sinking flux for GOC

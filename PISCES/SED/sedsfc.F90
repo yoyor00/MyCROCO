@@ -8,6 +8,7 @@ MODULE sedsfc
 #if defined key_pisces
    !! * Modules used
    USE sed     ! sediment global variable
+   USE sedini
    USE sedarr
    USE seddta
 
@@ -54,11 +55,11 @@ CONTAINS
             IF ( tmask(ji,jj,ikt) == 1 ) THEN
                trb(ji,jj,KSED,jptal) = trc_data(ji,jj,1)
                trb(ji,jj,KSED,jpdic) = trc_data(ji,jj,2)
-               trb(ji,jj,KSED,jpno3) = trc_data(ji,jj,3) * 7.625
-               trb(ji,jj,KSED,jppo4) = trc_data(ji,jj,4) * 122.
+               trb(ji,jj,KSED,jpno3) = trc_data(ji,jj,3) * redC / redNo3
+               trb(ji,jj,KSED,jppo4) = trc_data(ji,jj,4) * redC
                trb(ji,jj,KSED,jpoxy) = trc_data(ji,jj,5)
                trb(ji,jj,KSED,jpsil) = trc_data(ji,jj,6)
-               trb(ji,jj,KSED,jpnh4) = trc_data(ji,jj,7) * 7.625
+               trb(ji,jj,KSED,jpnh4) = trc_data(ji,jj,7) * redC / redNo3
                trb(ji,jj,KSED,jpfer) = trc_data(ji,jj,8)
             ENDIF
          ENDDO

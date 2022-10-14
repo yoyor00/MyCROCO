@@ -385,6 +385,9 @@
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
 #   define key_pisces
+#   define key_ligand
+#   undef key_pisces_quota
+#   undef key_sediment
 #  endif
 #  ifdef BIO_NChlPZD
 #   define  OXYGEN

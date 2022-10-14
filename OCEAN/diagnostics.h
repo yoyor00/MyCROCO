@@ -61,49 +61,49 @@
 #  endif
 # endif	
       common /diag_TXadv/TXadv   
-     &       /diag_TYadv/TYadv
-     &       /diag_TVadv/TVadv  
-     &       /diag_THmix/THmix
-     &       /diag_TVmix/TVmix
+      common /diag_TYadv/TYadv
+      common /diag_TVadv/TVadv  
+      common /diag_THmix/THmix
+      common /diag_TVmix/TVmix
 #ifdef DIAGNOSTICS_TSVAR
-     &       /diag_TVmixt/TVmixt
+      common /diag_TVmixt/TVmixt
 # endif
-     &       /diag_TForc/TForc
-     &       /diag_Trate/Trate
+      common /diag_TForc/TForc
+      common /diag_Trate/Trate
 !
 # ifdef DIAGNOSTICS_TS_MLD
       common /diag_TXadv_mld/TXadv_mld
-     &       /diag_TYadv_mld/TYadv_mld
-     &       /diag_TVadv_mld/TVadv_mld
-     &       /diag_THmix_mld/THmix_mld
-     &       /diag_TVmix_mld/TVmix_mld
-     &       /diag_TForc_mld/TForc_mld
-     &       /diag_Trate_mld/Trate_mld
-     &       /diag_Tentr_mld/Tentr_mld	  
-     &       /diag_kbl_nstp/kbl_nstp
+      common /diag_TYadv_mld/TYadv_mld
+      common /diag_TVadv_mld/TVadv_mld
+      common /diag_THmix_mld/THmix_mld
+      common /diag_TVmix_mld/TVmix_mld
+      common /diag_TForc_mld/TForc_mld
+      common /diag_Trate_mld/Trate_mld
+      common /diag_Tentr_mld/Tentr_mld	  
+      common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES
       common /diag_timedia_avg/timedia_avg
       common /diag_TXadv_avg/TXadv_avg  
-     &       /diag_TYadv_avg/TYadv_avg
-     &       /diag_TVadv_avg/TVadv_avg   
-     &       /diag_THmix_avg/THmix_avg
-     &       /diag_TVmix_avg/TVmix_avg
+      common /diag_TYadv_avg/TYadv_avg
+      common /diag_TVadv_avg/TVadv_avg   
+      common /diag_THmix_avg/THmix_avg
+      common /diag_TVmix_avg/TVmix_avg
 #ifdef DIAGNOSTICS_TSVAR
-     &       /diag_TVmixt_avg/TVmixt_avg
+      common /diag_TVmixt_avg/TVmixt_avg
 # endif
-     &       /diag_TForc_avg/TForc_avg
-     &       /diag_Trate_avg/Trate_avg
+      common /diag_TForc_avg/TForc_avg
+      common /diag_Trate_avg/Trate_avg
 !
 #  ifdef DIAGNOSTICS_TS_MLD
       common /diag_TXadv_mld_avg/TXadv_mld_avg
-     &       /diag_TYadv_mld_avg/TYadv_mld_avg
-     &       /diag_TVadv_mld_avg/TVadv_mld_avg
-     &       /diag_THmix_mld_avg/THmix_mld_avg
-     &       /diag_TVmix_mld_avg/TVmix_mld_avg
-     &       /diag_TForc_mld_avg/TForc_mld_avg
-     &       /diag_Trate_mld_avg/Trate_mld_avg
-     &       /diag_Tentr_mld_avg/Tentr_mld_avg
+      common /diag_TYadv_mld_avg/TYadv_mld_avg
+      common /diag_TVadv_mld_avg/TVadv_mld_avg
+      common /diag_THmix_mld_avg/THmix_mld_avg
+      common /diag_TVmix_mld_avg/TVmix_mld_avg
+      common /diag_TForc_mld_avg/TForc_mld_avg
+      common /diag_Trate_mld_avg/Trate_mld_avg
+      common /diag_Tentr_mld_avg/Tentr_mld_avg
 #  endif       	
 # endif       	
 #endif /* DIAGNOSTICS_TS */
@@ -166,59 +166,59 @@
 #  endif      
 # endif	
       common /diag_MXadv/MXadv   
-     &       /diag_MYadv/MYadv
-     &       /diag_MHdiff/MHdiff
-     &       /diag_MVadv/MVadv  
-     &       /diag_MCor/MCor
-     &       /diag_MPrsgrd/MPrsgrd
-     &       /diag_MHmix/MHmix
-     &       /diag_MVmix/MVmix
-     &       /diag_MVmix2/MVmix2
-     &       /diag_Mrate/Mrate
-     &       /diag_Mbody/Mbody
+      common /diag_MYadv/MYadv
+      common /diag_MHdiff/MHdiff
+      common /diag_MVadv/MVadv  
+      common /diag_MCor/MCor
+      common /diag_MPrsgrd/MPrsgrd
+      common /diag_MHmix/MHmix
+      common /diag_MVmix/MVmix
+      common /diag_MVmix2/MVmix2
+      common /diag_Mrate/Mrate
+      common /diag_Mbody/Mbody
 # if defined DIAGNOSTICS_BARO
-     &       /diag_MBaro/MBaro
+      common /diag_MBaro/MBaro
 # endif
 # if defined M3FAST
-     &       /diag_Mfast/Mfast
+      common /diag_Mfast/Mfast
 # endif
 # ifdef MRL_WCI       
-     &       /diag_Mvf/Mvf
-     &       /diag_Mbrk/Mbrk
-     &       /diag_MStCo/MStCo
-     &       /diag_MVvf/MVvf
-     &       /diag_MPrscrt/MPrscrt
-     &       /diag_Msbk/Msbk
-     &       /diag_Mbwf/Mbwf
-     &       /diag_Mfrc/Mfrc
+      common /diag_Mvf/Mvf
+      common /diag_Mbrk/Mbrk
+      common /diag_MStCo/MStCo
+      common /diag_MVvf/MVvf
+      common /diag_MPrscrt/MPrscrt
+      common /diag_Msbk/Msbk
+      common /diag_Mbwf/Mbwf
+      common /diag_Mfrc/Mfrc
 # endif      
 # ifdef AVERAGES
       common /diag_timediaM_avg/timediaM_avg
       common /diag_MXadv_avg/MXadv_avg
-     &       /diag_MYadv_avg/MYadv_avg
-     &       /diag_MVadv_avg/MVadv_avg
-     &       /diag_MCor_avg/MCor_avg
-     &       /diag_MPrsgrd_avg/MPrsgrd_avg
-     &       /diag_MHmix_avg/MHmix_avg
-     &       /diag_MHdiff_avg/MHdiff_avg
-     &       /diag_MVmix_avg/MVmix_avg
-     &       /diag_MVmix2_avg/MVmix2_avg
-     &       /diag_Mrate_avg/Mrate_avg
+      common /diag_MYadv_avg/MYadv_avg
+      common /diag_MVadv_avg/MVadv_avg
+      common /diag_MCor_avg/MCor_avg
+      common /diag_MPrsgrd_avg/MPrsgrd_avg
+      common /diag_MHmix_avg/MHmix_avg
+      common /diag_MHdiff_avg/MHdiff_avg
+      common /diag_MVmix_avg/MVmix_avg
+      common /diag_MVmix2_avg/MVmix2_avg
+      common /diag_Mrate_avg/Mrate_avg
 # if defined DIAGNOSTICS_BARO
-     &       /diag_MBaro_avg/MBaro_avg
+      common /diag_MBaro_avg/MBaro_avg
 # endif
 # if defined M3FAST
-     &       /diag_Mfast_avg/Mfast_avg
+      common /diag_Mfast_avg/Mfast_avg
 # endif
 #  ifdef MRL_WCI       
-     &       /diag_Mvf_avg/Mvf_avg
-     &       /diag_Mbrk_avg/Mbrk_avg
-     &       /diag_MStCo_avg/MStCo_avg
-     &       /diag_MVvf_avg/MVvf_avg
-     &       /diag_MPrscrt_avg/MPrscrt_avg
-     &       /diag_Msbk_avg/Msbk_avg
-     &       /diag_Mbwf_avg/Mbwf_avg
-     &       /diag_Mfrc_avg/Mfrc_avg
+      common /diag_Mvf_avg/Mvf_avg
+      common /diag_Mbrk_avg/Mbrk_avg
+      common /diag_MStCo_avg/MStCo_avg
+      common /diag_MVvf_avg/MVvf_avg
+      common /diag_MPrscrt_avg/MPrscrt_avg
+      common /diag_Msbk_avg/Msbk_avg
+      common /diag_Mbwf_avg/Mbwf_avg
+      common /diag_Mfrc_avg/Mfrc_avg
 #  endif      
 # endif       	
 #endif /* DIAGNOSTICS_UV */
@@ -257,9 +257,9 @@
 #    endif
 # else
       common /diag_bioFlux/bioFlux
-     &       /diag_bioVSink/bioVSink
+      common /diag_bioVSink/bioVSink
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS 
-     &       /diag_GasFlux/GasExcFlux
+      common /diag_GasFlux/GasExcFlux
 #   endif
 # endif
 # ifdef AVERAGES
@@ -270,9 +270,9 @@
 #   endif
 #  else
       common /diag_bioFlux_avg/bioFlux_avg
-     &       /diag_bioVSink_avg/bioVSink_avg
+      common /diag_bioVSink_avg/bioVSink_avg
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-     &       /diag_GasFlux_avg/GasExcFlux_avg
+      common /diag_GasFlux_avg/GasExcFlux_avg
 #   endif 
 #  endif
       common /diag_timediabio_avg/timediabio_avg
