@@ -10,7 +10,7 @@ MODEL=croco
 SCRATCHDIR=`pwd`/SCRATCH
 
 # Input directory where the croco_inter.in input file is located
-INPUTDIR=`pwd`/CROCO_IN
+INPUTDIR=`pwd`
 
 # AGRIF input file which defines the position of child grids
 AGRIF_FILE=AGRIF_FixedGrids.in
@@ -19,7 +19,7 @@ AGRIF_FILE=AGRIF_FixedGrids.in
 MSSDIR=`pwd`/CROCO_FILES
 
 # Directory where the croco output and restart NetCDF files (croco_his.nc, ...) are stored
-MSSOUT=`pwd`/CROCO_FILES
+MSSOUT=$SCRATCHDIR
 
 # CROCO executable
 CODFILE=croco
@@ -30,7 +30,7 @@ NBPROCS=8
 # command for running the mode : ./ for sequential job, mpirun -np NBPROCS for mpi run
 RUNCMD='./'
 #RUNCMD="mpirun -np $NBPROCS "
-
+#RUNCMD="srun "
 #
 #  Define environment variables for OPENMP
 #
@@ -90,6 +90,7 @@ EXACT_RST=0
 #limit coredumpsize unlimited
 CP=/bin/cp
 MV=/bin/mv
+LN=/bin/ln
 #
 ########################################################
 #  END USER CHANGE
@@ -170,7 +171,7 @@ fi
 #
 LEVEL=0
 echo "Getting ${BRYFILE} from $MSSDIR"
-$CP -f $MSSDIR/${BRYFILE} $SCRATCHDIR
+$LN -sf $MSSDIR/${BRYFILE} $SCRATCHDIR
 while [[ $LEVEL != $NLEVEL ]]; do
     if [[ ${LEVEL} == 0 ]]; then
 	ENDF=
@@ -178,15 +179,15 @@ while [[ $LEVEL != $NLEVEL ]]; do
 	ENDF=.${LEVEL}
     fi
     echo "Getting ${GRDFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${GRDFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${GRDFILE}${ENDF} $SCRATCHDIR
     echo "Getting ${FORFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${FORFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${FORFILE}${ENDF} $SCRATCHDIR
     echo "Getting ${BLKFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${BLKFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${BLKFILE}${ENDF} $SCRATCHDIR
     echo "Getting ${CLMFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${CLMFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${CLMFILE}${ENDF} $SCRATCHDIR
     echo "Getting ${RNFFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${RNFFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${RNFFILE}${ENDF} $SCRATCHDIR
     if [[ $RSTFLAG == 0 ]]; then
 	echo "Getting ${INIFILE}${ENDF} from $MSSDIR"
 	$CP -f $MSSDIR/${INIFILE}${ENDF} $SCRATCHDIR
@@ -286,6 +287,13 @@ while [[ $NY != $NY_END ]]; do
 	fi
 	
 	#
+	LEVEL=0
+	while [[ $LEVEL != $NLEVEL ]]; do
+	    if [[ ${LEVEL} == 0 ]]; then
+		ENDF=''
+	    else
+		ENDF=.${LEVEL}
+	    fi
 	if [[ $EXACT_RST == 1 ]]; then
 	    echo "Exact restart defined"
 	    if [[ $NY == $NY_START && $NM == $NM_START ]]; then
@@ -303,6 +311,8 @@ while [[ $NY != $NY_END ]]; do
 	#
 	sed -e 's/NUMRECINI/'$NUMRECINI'/' < ${MODEL}_inter.in${ENDF}.tmp1 > ${MODEL}.in${ENDF}
 	#
+	    LEVEL=$((LEVEL + 1))
+	done
 	#
 	#  COMPUTE
 	#

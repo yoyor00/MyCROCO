@@ -1,5 +1,3 @@
-! $Id: t3dmix_tridiagonal.h 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)
@@ -123,7 +121,7 @@
           do i=istr,iend
 
             flx_w2s_sum_CROCO(i,j,itrc)=0.
-            nbsubstep=NINT(NBSUBSTEP(i,0))
+            nbsubstep=CEILING(NBSUBSTEP(i,0))
 
             do isubstep=1,nbsubstep  ! <== SUB TIMESTEP
 

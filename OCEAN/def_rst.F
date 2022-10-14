@@ -927,27 +927,26 @@
 #endif /* SEDIMENT */
 
 #ifdef MUSTANG
-
 ! ksmi, ksma
        do itrc=1,2
        indx=indxT+ntrc_salt+ntrc_substot+ntrc_subs+itrc+6
        lvar=lenstr(vname(1,indx))
        ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
-     &            NF_FOUT, 3, r2dgrd, rstMUS(itrc)) ! ksmi,ksma
+     &            NF_INT, 3, r2dgrd, rstMUS(itrc)) ! ksmi,ksma
 
 # ifdef NC4PAR
        ierr=nf_var_par_access(ncid,rstMUS(itrc),nf_collective)
 # endif
 
         call nf_add_attribute(ncid, rstMUS(itrc), indx, 5,
-     &         NF_DOUBLE, ierr)
+     &         NF_INT, ierr)
        enddo
 
 ! dzs, tempsed, salsed
       do itrc=1,3
        indx=indxT+ntrc_salt+ntrc_substot+itrc+3
        ierr=nf_def_var (ncid, vname(1,indx),
-     &            NF_FOUT, 4, b3dgrd, rstMUS(itrc+2)) ! 3D: dzs,tempsed,salsed
+     &            NF_DOUBLE, 4, b3dgrd, rstMUS(itrc+2)) ! 3D: dzs,tempsed,salsed
 
 #  ifdef NC4PAR
        ierr=nf_var_par_access(ncid,rstMUS(itrc+2),nf_collective)
@@ -962,7 +961,7 @@
        do itrc=1,ntrc_subs
         indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
         ierr=nf_def_var (ncid, vname(1,indx),
-     &            NF_FOUT, 4, b3dgrd, rstMUS(itrc+5)) ! 3D: traceurSed
+     &            NF_DOUBLE, 4, b3dgrd, rstMUS(itrc+5)) ! 3D: traceurSed
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstMUS(itrc+5),nf_collective)
 # endif

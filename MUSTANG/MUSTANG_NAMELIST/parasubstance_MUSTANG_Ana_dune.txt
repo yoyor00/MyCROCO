@@ -1,25 +1,17 @@
 :=============================================================================
-:         ENREGISTREMENT DES PARAMETRES ET DES SUBSTANCES SOUS FORME DE NAMELIST
-:         INPUT PARAMETERS AND SUBSTANCES LIST NAMELIST
-:=============================================================================
-:
-:      with  CPP key : SUBSTANCE (without CPP key MUSTANG)
-:      and with key_MUSTANG
+:         MODULE SUBSTANCE NAMELIST with  CPP key : SUBSTANCE 
 :=============================================================================
 :
 :-----------------------------------------------------------------------------
-:
-: nmlnbvar : nombres de substances de chaque type a definir (autre que T et S)
-:          : number of each type of substance to be defined (other than T & S)
-:    other variables can be created in addition with keys : contaminant, peptic, P_tracer, N_tracer
+: nmlnbvar : number of each type of substance to be defined (other than T & S)
 :-----------------------------------------------------------------------------
 :    nv_dis : number of dissolved susbtances
 :    nv_ncp : number of  Non Constitutive Particulate subtances
 :    nv_fix : number of  fixed susbtances (not advected)
 :    nv_bent : number of benthic susbtances
-:    nv_grav : number of susbtances type GRAVELS (only if key_sed_MUSTANG)
-:    nv_sand : number of susbtances type SAND (only if key_sed_MUSTANG)
-:    nv_mud : number of susbtances type MUD (only if key_sed_MUSTANG)
+:    nv_grav : number of susbtances type GRAVELS (only if cppkey MUSTANG)
+:    nv_sand : number of susbtances type SAND (only if cppkey MUSTANG)
+:    nv_mud : number of susbtances type MUD (only if cppkey MUSTANG)
 :    nv_sorb : number of particulate susbtances sorbed on an other particule
 :
  &nmlnbvar
@@ -32,16 +24,36 @@
     nv_mud=0
     nv_sorb=0 /
 :-----------------------------------------------------------------------------
-:nmlsands: Characterization of SAND substances (used only if defined key_sed_MUSTANG)
+: nmlsands : Characterization of SAND substances (used only if defined 
+:            MUSTANG)
+:            If nv_sand = 0 this namelist is not read
 :-----------------------------------------------------------------------------
-:    tocd_n() : critical stress of deposition
-:    ros_n()  : density of particle
+:    name_var_n() : string, name of variable
+:    long_name_var_n() : string, long name of variable
+:    standard_name_var_n() : string, standard name of variable
+:    unit_var_n() : string, unit of concentration of variable
+:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : real, initial concentration in water column (unit/m3)
+:    cini_air_n() : real, initial concentration in air
+:    l_out_subs_n() : boolean, saving in output file if TRUE
+:    init_cv_name_n() : string, name of substance read from initial condition 
+:                       file
+:    obc_cv_name_n() : string, name of substance read from obc file
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:                   dry sediment)  (only if cppkey MUSTANG)
+:    tocd_n() : real, critical stress of deposition (N/m2) 
+:    ros_n()  : real, density of particle (kg/m3)
+:    l_bedload_n() : boolean, allow bedload transport
 :    diam_n() : diameter of particles
-:    l_sand2D() : TRUE if this sand variable is treated as 2D variable (used only if key_sand2D)
-:    l_outsandrouse()  : TRUE if using reconstitution of a ROUSE profil for output in water column (used only if key_sand2D and l_sand2D is TRUE for this variable)
+:    l_sand2D() : boolean, to treat sand variable as 2D variable (used only if 
+:                 key_sand2D)
+:    l_outsandrouse()  : boolean, to use a reconstitution of a ROUSE profil 
+:                        for output in water column (used only if key_sand2D 
+:                        and l_sand2D is TRUE for this variable)
 :
-:  ATTENTION si plusieurs sables : commencer par les sables les plus grossiers et continuer de plus en plus fins
-:  WARNING if several sands: start with the coarser sands and continue more and more finely
+:  WARNING if several sands: start with the coarser sands and continue more 
+:  and more finely
 :
  &nmlsands
     name_var_n(1)='GRAV'

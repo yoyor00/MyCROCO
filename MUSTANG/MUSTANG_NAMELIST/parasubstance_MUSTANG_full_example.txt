@@ -1,26 +1,18 @@
 :=============================================================================
-:         ENREGISTREMENT DES PARAMETRES ET DES SUBSTANCES SOUS FORME DE NAMELIST
-:         INPUT PARAMETERS AND SUBSTANCES LIST NAMELIST
-:=============================================================================
-:
-:      with  CPP key : SUBSTANCE (without CPP key MUSTANG)
-:      and with key_MUSTANG
+:         MODULE SUBSTANCE NAMELIST with  CPP key : SUBSTANCE 
 :=============================================================================
 :
 :-----------------------------------------------------------------------------
-:
-: nmlnbvar : nombres de substances de chaque type a definir (autre que T et S)
-:          : number of each type of substance to be defined (other than T & S)
-:    other variables can be created in addition with keys : contaminant, peptic, P_tracer, N_tracer
+: nmlnbvar : number of each type of substance to be defined (other than T & S)
 :-----------------------------------------------------------------------------
-:    nv_dis : number of dissolved susbtances
-:    nv_ncp : number of  Non Constitutive Particulate subtances
-:    nv_fix : number of  fixed susbtances (not advected)
-:    nv_bent : number of benthic susbtances
-:    nv_grav : number of susbtances type GRAVELS (only if key_sed_MUSTANG)
-:    nv_sand : number of susbtances type SAND (only if key_sed_MUSTANG)
-:    nv_mud : number of susbtances type MUD (only if key_sed_MUSTANG)
-:    nv_sorb : number of particulate susbtances sorbed on an other particule
+:    nv_dis : number of dissolved substances
+:    nv_ncp : number of  Non Constitutive Particulate substances
+:    nv_fix : number of  fixed substances (not advected)
+:    nv_bent : number of benthic substances
+:    nv_grav : number of substances type GRAVELS (only if cppkey MUSTANG)
+:    nv_sand : number of substances type SAND (only if cppkey MUSTANG)
+:    nv_mud : number of substances type MUD (only if cppkey MUSTANG)
+:    nv_sorb : number of particulate substances sorbed on an other particule
 :
  &nmlnbvar
     nv_dis=0
@@ -33,38 +25,32 @@
     nv_sorb=0 /
 
 :-----------------------------------------------------------------------------
-: Namelist pour chaque type de substance  :
-: Namelist for each type of substance 
+: Namelists for each type of substance 
 :-----------------------------------------------------------------------------
-
 :-----------------------------------------------------------------------------
-:
-: nmlpartnc : NON constitutive substances with NOT defined key_sed_MUSTANG
+: nmlgravels : Characterization of GRAVEL substances (used only if defined 
+:              MUSTANG)
+:              If nv_grav = 0 this namelist is not read
 :-----------------------------------------------------------------------------
-:    name_var_n() : name of variable
-:    long_name_var_n() : long name of variable
-:    standard_name_var_n() : standard name of variable
-:    unit_var_n() : unit of concentration of variable
-:    flx_atm_n() : uniform atmospherical deposition (unit/m2/s) 
-:    cv_rain_n() : concentration in rainwater (unit/m3 of water)
-:    cini_wat_n() : initial concentration in water column (unit/m3)
-:    cobc_wat_n() : boundaries uniform and constant concentration  (unit/m3)
-:    cini_sed_n() : initial concentration in sediment (unity change with type of substance )
-:    cini_air_n() : initial concentration in air
-:    l_bedload_n() : .TRUE. if bedload transport (works only with key_MUSTANG_bedload)
-:    l_out_subs_n() : saving in output file if TRUE
-:    init_cv_name_n() : name of substance read from initial condition file
-:    obc_cv_name_n() : name of substance read from obc file
-:-----------------------------------------------------------------------------
-:
-: nmlgravels : Caracterisation des substances de type GRAVIERS (utilise seulement si  key_sed_MUSTANG)
-:            : Characterization of GRAVEL substances (used only if defined key_sed_MUSTANG)
-:    si nv_grav = 0 la namelist n est pas lue
-:    If nv_grav = 0 this namelist is not read
-:-----------------------------------------------------------------------------
-:    tocd_n() : critical stress of deposition
-:    ros_n()  : density of particle
-:    diam_n() : diameter of particles
+:    name_var_n() : string, name of variable
+:    long_name_var_n() : string, long name of variable
+:    standard_name_var_n() : string, standard name of variable
+:    unit_var_n() : string, unit of concentration of variable
+:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : real, initial concentration in water column (unit/m3)
+:    cini_air_n() : real, initial concentration in air
+:    l_out_subs_n() : boolean, saving in output file if TRUE
+:    init_cv_name_n() : string, name of substance read from initial condition 
+:                       file
+:    obc_cv_name_n() : string, name of substance read from obc file
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:                   dry sediment)  (only if cppkey MUSTANG)
+:    tocd_n() : real, critical stress of deposition (N/m2)
+:    ros_n()  : real, density of particle (kg/m3)
+:    l_bedload_n() : boolean, allow bedload transport (used only if 
+:                    key_MUSTANG_V2 and key_MUSTANG_bedload)
+:    diam_n() : real, diameter of particles (m)
 :   
  &nmlgravels
     name_var_n(1)=''
@@ -84,19 +70,37 @@
       ros_n(1)=0.0
       diam_n(1)=0.0 /
 :-----------------------------------------------------------------------------
-: nmlsands : Caracterisation des substances de type SABLE (utilise seulement si  key_sed_MUSTANG)
-:            : Characterization of SAND substances (used only if defined key_sed_MUSTANG)
-:    si nv_sand = 0 la namelist n est pas lue
-:    If nv_sand = 0 this namelist is not read
+: nmlsands : Characterization of SAND substances (used only if defined 
+:            MUSTANG)
+:            If nv_sand = 0 this namelist is not read
 :-----------------------------------------------------------------------------
-:    tocd_n() : critical stress of deposition
-:    ros_n()  : density of particle
+:    name_var_n() : string, name of variable
+:    long_name_var_n() : string, long name of variable
+:    standard_name_var_n() : string, standard name of variable
+:    unit_var_n() : string, unit of concentration of variable
+:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : real, initial concentration in water column (unit/m3)
+:    cini_air_n() : real, initial concentration in air
+:    l_out_subs_n() : boolean, saving in output file if TRUE
+:    init_cv_name_n() : string, name of substance read from initial condition 
+:                       file
+:    obc_cv_name_n() : string, name of substance read from obc file
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:                   dry sediment)  (only if cppkey MUSTANG)
+:    tocd_n() : real, critical stress of deposition (N/m2) 
+:    ros_n()  : real, density of particle (kg/m3)
+:    l_bedload_n() : boolean, allow bedload transport (used only if 
+:                    key_MUSTANG_V2 and key_MUSTANG_bedload)
 :    diam_n() : diameter of particles
-:    l_sand2D() : TRUE if this sand variable is treated as 2D variable (used only if key_sand2D)
-:    l_outsandrouse()  : TRUE if using reconstitution of a ROUSE profil for output in water column (used only if key_sand2D and l_sand2D is TRUE for this variable)
+:    l_sand2D() : boolean, to treat sand variable as 2D variable (used only if 
+:                 key_sand2D)
+:    l_outsandrouse()  : boolean, to use a reconstitution of a ROUSE profil 
+:                        for output in water column (used only if key_sand2D 
+:                        and l_sand2D is TRUE for this variable)
 :
-:  ATTENTION si plusieurs sables : commencer par les sables les plus grossiers et continuer de plus en plus fins
-:  WARNING if several sands: start with the coarser sands and continue more and more finely
+:  WARNING if several sands: start with the coarser sands and continue more 
+:  and more finely
 :
  &nmlsands
     name_var_n(1)='GRAV'
@@ -136,18 +140,35 @@
       l_sand2D_n(2)=.FALSE.
       l_outsandrouse_n(2)=.FALSE.  /
 :-----------------------------------------------------------------------------    
-: nmlmuds : Caracterisation des substances de type VASE (utilise seulement si  key_sed_MUSTANG)
-:            : Characterization of MUD substances (used only if defined key_sed_MUSTANG)
-:    si nv_mud = 0 la namelist n est pas lue
-:    If nv_mud = 0 this namelist is not read
+: nmlmuds : Characterization of MUD substances (used only if defined MUSTANG)
+:           If nv_mud = 0 this namelist is not read
 :-----------------------------------------------------------------------------
-:    tocd_n() : critical stress of deposition
-:    ros_n()  : density of particle
-:    ws_free_opt_n() : choice of free settling formulation : 0 constant, 1 Van Leussen, 2 Winterwerp, 3 Wolanski
-:    ws_free_min_n() : minimum setling velocity (m/s)
-:    ws_free_max_n() : maximum setling velocity (m/s)
+:    name_var_n() : string, name of variable
+:    long_name_var_n() : string, long name of variable
+:    standard_name_var_n() : string, standard name of variable
+:    unit_var_n() : string, unit of concentration of variable
+:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : real, initial concentration in water column (unit/m3)
+:    cini_air_n() : real, initial concentration in air
+:    l_out_subs_n() : boolean, saving in output file if TRUE
+:    init_cv_name_n() : string, name of substance read from initial condition 
+:                       file
+:    obc_cv_name_n() : string, name of substance read from obc file
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:                   dry sediment)  (only if cppkey MUSTANG)
+:    cobc_wat_n() : real, boundaries uniform and constant concentration 
+:                   (kg/m3)
+:    tocd_n() : real, critical stress of deposition (N/m2) 
+:    ros_n()  : real, density of particle (kg/m3)
+:    ws_free_opt_n() : integer, choice of free settling formulation : 
+:                      0 constant, 1 Van Leussen, 2 Winterwerp, 3 Wolanski
+:    ws_free_min_n() : real, minimum setling velocity (m/s)
+:    ws_free_max_n() : real, maximum setling velocity (m/s)
 :    ws_free_para_n(1:4,num substance) : 4 additional parameters
-:    ws_hind_opt_n() : choice of hindered settling formulation : 0 no hindered settling, 1 Scott, 2 Winterwerp, 3 Wolanski
+:    ws_hind_opt_n() : choice of hindered settling formulation : 
+:                      0 no hindered settling, 1 Scott, 2 Winterwerp, 
+:                      3 Wolanski
 :    ws_hind_para_n(1:2,num substance) : 2 additional parameters 
 :
  &nmlmuds
@@ -169,22 +190,50 @@
       ws_free_opt_n(1)=0
       ws_free_min_n(1)=0.0005
       ws_free_max_n(1)=0.0005
-      ws_free_para_n(1,1)=0.0,  ws_free_para_n(2,1)=0.0, ws_free_para_n(3,1)=0.0, ws_free_para_n(4,1)=0.0
+      ws_free_para_n(1,1)=0.0, 
+      ws_free_para_n(2,1)=0.0, 
+      ws_free_para_n(3,1)=0.0, 
+      ws_free_para_n(4,1)=0.0
       ws_hind_opt_n(1)=0
-      ws_hind_para_n(1,1)=0.0 ,  ws_hind_para_n(2,1)=0.0 /
- 
+      ws_hind_para_n(1,1)=0.0 ,  
+      ws_hind_para_n(2,1)=0.0 /
+
+
 :-----------------------------------------------------------------------------
-: nmlpartnc : NON constitutive substances with defined key_MUSTANG
+: nmlpartnc : NON constitutive substances
+:             If nv_ncp = 0 this namelist is not read
 :-----------------------------------------------------------------------------
-:    cini_sed_n() : initial concentration in sediment (quantity/kg of dry sediment )
-:    tocd_n() : critical stress of deposition
-:    ros_n()  : density of particle
-:    ws_free_opt_n() : choice of free settling formulation : 0 constant, 1 Van Leussen, 2 Winterwerp, 3 Wolanski
-:    ws_free_min_n() : minimum setling velocity (m/s)
-:    ws_free_max_n() : maximum setling velocity (m/s)
-:    ws_free_para_n(1:4,num substance) : 4 additional parameters
-:    ws_hind_opt_n() : choice of hindered settling formulation : 0 no hindered settling, 1 Scott, 2 Winterwerp, 3 Wolanski
-:    ws_hind_para_n(1:2,num substance) : 2 additional parameters 
+:    name_var_n() : string, name of variable
+:    long_name_var_n() : string, long name of variable
+:    standard_name_var_n() : string, standard name of variable
+:    unit_var_n() : string, unit of concentration of variable
+:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : real, initial concentration in water column (unit/m3)
+:    cini_air_n() : real, initial concentration in air
+:    l_out_subs_n() : boolean, saving in output file if TRUE
+:    init_cv_name_n() : string, name of substance read from initial condition 
+:                       file
+:    obc_cv_name_n() : string, name of substance read from obc file
+:    cobc_wat_n() : real, boundaries uniform and constant concentration 
+:                   (kg/m3)
+:    ws_free_min_n() : real, minimum setling velocity (m/s)
+:    ws_free_max_n() : real, maximum setling velocity (m/s)
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:                   dry sediment)  (only if cppkey MUSTANG)
+:    tocd_n() : real, critical stress of deposition (N/m2) (only if cppkey 
+:               MUSTANG)
+:    ros_n()  : real, density of particle (kg/m3)(only if cppkey MUSTANG)
+:    ws_free_opt_n() : choice of free settling formulation : 
+:                      0 constant, 1 Van Leussen, 2 Winterwerp, 3 Wolanski  
+:                      (only if cppkey MUSTANG)
+:    ws_free_para_n(1:4,num substance) : 4 additional parameters 
+:                                        (only if cppkey MUSTANG)
+:    ws_hind_opt_n() : choice of hindered settling formulation : 
+:                      0 no hindered settling, 1 Scott, 2 Winterwerp, 
+:                      3 Wolanski  (only if cppkey MUSTANG)
+:    ws_hind_para_n(1:2,num substance) : 2 additional parameters  
+:                                        (only if cppkey MUSTANG)
 :
  &nmlpartnc
     name_var_n(1)='MES'
@@ -205,49 +254,75 @@
       ws_free_opt_n(1)=0
       ws_free_min_n(1)=0.0001
       ws_free_max_n(1)=0.0015
-      ws_free_para_n(1,1)=0.003,  ws_free_para_n(2,1)=0.79,  ws_free_para_n(3,1)=0.3,  ws_free_para_n(4,1)=0.18
+      ws_free_para_n(1,1)=0.003,  
+      ws_free_para_n(2,1)=0.79,  
+      ws_free_para_n(3,1)=0.3,  
+      ws_free_para_n(4,1)=0.18
       ws_hind_opt_n(1)=0
-      ws_hind_para_n(1,1)=0.0 , ws_hind_para_n(2,1)=0.0 /
+      ws_hind_para_n(1,1)=0.0 , 
+      ws_hind_para_n(2,1)=0.0 /
+
 :-----------------------------------------------------------------------------
-: nmlpartsorb : SORBED SUBSTANCES  IF key_MUSTANG
+: nmlpartsorb : SORBED SUBSTANCES
+:               If nv_sorb = 0 this namelist is not read
 :-----------------------------------------------------------------------------
-:    tocd_n() : critical stress of deposition
-:    ros_n()  : density of particle
-:    name_varpc_assoc_n() : name of associated particulate substance on which this substance is sorbed
-:
+:    name_var_n() : string, name of variable
+:    long_name_var_n() : string, long name of variable
+:    standard_name_var_n() : string, standard name of variable
+:    unit_var_n() : string, unit of concentration of variable
+:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : real, initial concentration in water column (unit/m3)
+:    cini_air_n() : real, initial concentration in air
+:    l_out_subs_n() : boolean, saving in output file if TRUE
+:    init_cv_name_n() : string, name of substance read from initial condition 
+:                       file
+:    obc_cv_name_n() : string, name of substance read from obc file
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:                   dry sediment)  (only if cppkey MUSTANG)
+:    cobc_wat_n() : real, boundaries uniform and constant concentration 
+:                   (kg/m3)
+:    name_varpc_assoc_n() : string, name of associated particulate substance  
+:                            on which this substance is sorbed
 :
  &nmlpartsorb
     name_var_n(1)='testpartnc'
       long_name_var_n(1)='testpartnc'
       standard_name_var_n(1)='testpartnc'
-      name_varpc_assoc_n(1)='MES_mud'
       unit_var_n(1)='ng.l-1'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
       cini_wat_n(1)=1.0
-      cobc_wat_n(1)=1.
       cini_sed_n(1)=10.
       cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='none'
-      obc_cv_name_n(1)='none' /
+      obc_cv_name_n(1)='none' 
+      cobc_wat_n(1)=1.
+      name_varpc_assoc_n(1)='MES_mud'/
+
 :-----------------------------------------------------------------------------
 : nmlvardiss : DISSOLVED SUBSTANCES
-:    name_var_n() : name of variable
-:    long_name_var_n() : long name of variable
-:    standard_name_var_n() : standard name of variable
-:    unit_var_n() : unit of concentration of variable
-:    flx_atm_n() : uniform atmospherical deposition (unit/m2/s) 
-:    cv_rain_n() : concentration in rainwater (unit/m3 of water)
-:    cini_wat_n() : initial concentration in water column (unit/m3)
-:    cobc_wat_n() : boundaries uniform and constant concentration  (unit/m3)
-:    cini_air_n() : initial concentration in air
-:    l_out_subs_n() : saving in output file if TRUE
-:    init_cv_name_n() : name of substance read from initial condition file
-:    obc_cv_name_n() : name of substance read from obc file
+:              If nv_dis = 0 this namelist is not read
 :-----------------------------------------------------------------------------
+:    name_var_n() : string, name of variable
+:    long_name_var_n() : string, long name of variable
+:    standard_name_var_n() : string, standard name of variable
+:    unit_var_n() : string, unit of concentration of variable
+:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
+:    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    cini_wat_n() : real, initial concentration in water column (unit/m3)
+:    cini_air_n() : real, initial concentration in air
+:    l_out_subs_n() : boolean, saving in output file if TRUE
+:    init_cv_name_n() : string, name of substance read from initial condition 
+:                       file
+:    obc_cv_name_n() : string, name of substance read from obc file
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:                   dry sediment)  (only if cppkey MUSTANG)
+:    cobc_wat_n() : real, boundaries uniform and constant concentration 
+:                   (kg/m3)
 :
-&nmlvardiss
+ &nmlvardiss
     name_var_n(1)='DISS'
       long_name_var_n(1)='testdiss'
       standard_name_var_n(1)='testdiss'
@@ -261,10 +336,20 @@
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='testdiss'
       obc_cv_name_n(1)='testdiss' /
+
 :-----------------------------------------------------------------------------
 : nmlvarfix : FIXED SUBSTANCES (not advected)
+:             If nv_fix = 0 this namelist is not read
 :-----------------------------------------------------------------------------
-:     
+:    name_var_fix() : string, name of variable
+:    long_name_var_fix() : string, long name of variable
+:    standard_name_var_fix() : string, standard name of variable
+:    unit_var_fix() : string, unit of concentration of variable
+:    cini_wat_fix) : real, initial concentration in water column (unit/m3)
+:    l_out_subs_fix() : boolean, saving in output file if TRUE
+:    init_cv_name_fix() : string, name of substance read from initial  
+:                         condition file
+:    
  &nmlvarfix
     name_var_fix(1)=''
        long_name_var_fix(1)=''
@@ -276,5 +361,19 @@
 
 :-----------------------------------------------------------------------------
 : nmlbent : used only if defined key_benthic 
+:           If nv_bent = 0 this namelist is not read
 :-----------------------------------------------------------------------------
-: & nmlvarbent
+:    name_var_bent() : string, name of variable
+:    long_name_var_bent() : string, long name of variable
+:    standard_name_var_bent() : string, standard name of variable
+:    unit_var_bent() : string, unit of concentration of variable
+:    l_out_subs_bent() : boolean, saving in output file if TRUE
+:    cini_bent() : real, initial concentration 
+:
+ &nmlvarbent
+    name_var_bent(1)=''
+       long_name_var_bent(1)=''
+       standard_name_var_bent(1)=''
+       unit_var_bent(1)=''
+       cini_bent(1)=0.0
+       l_out_subs_bent(1)=.TRUE. /

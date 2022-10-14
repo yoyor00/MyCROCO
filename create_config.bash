@@ -9,8 +9,11 @@
 #==========================================================================================
 # BEGIN USER MODIFICATIONS
 
-# Machine you are working on
-# Known machines: Linux DATARMOR IRENE JEANZAY
+# Machine you are working on (used with oce-prod, all-prod only)
+# Known machines: Linux DATARMOR IRENE JEANZAY LEFTRARU
+# If your machine is not already known, you can add it by creating a few files (hearder, myenv, launch) 
+# in a dedicated directory under: SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/ and add a case in 
+# SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95)
 # ---------------------------------------------
 MACHINE="Linux"
 
@@ -270,64 +273,71 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
     # TEST_CASES
     if [[ ${options[@]} =~ "test_cases" ]] ; then
-      cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
+	cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
     fi
     # AGRIF
     if [[ ${options[@]} =~ "agrif" ]] ; then
-      cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
     # INTER
     if [[ ${options[@]} =~ "inter" ]] ; then
-      cp -f ${CROCO_DIR}/OCEAN/croco_inter.in $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/croco_inter.in* $MY_CROCO_DIR.
     fi
     # FORECAST
     if [[ ${options[@]} =~ "forc" ]] ; then
-      cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
-      cp -f ${CROCO_DIR}/OCEAN/croco_hindcast.in $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/croco_hindcast.in $MY_CROCO_DIR.
     fi
     # PISCES
     if [[ ${options[@]} =~ "pisces" ]] ; then
-      cp -f ${CROCO_DIR}/PISCES/*namelist* $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/PISCES/*namelist* $MY_CROCO_DIR.
     fi
     # SEDIMENT
     if [[ ${options[@]} =~ "sediment" ]] ; then
-      cp -f ${CROCO_DIR}/OCEAN/sediment.in $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/sediment.in $MY_CROCO_DIR.
     fi
     # MUSTANG
     if [[ ${options[@]} =~ "mustang" ]] ; then
-      mkdir -p $MY_CROCO_DIR/MUSTANG_NAMELIST
-      cp -f ${CROCO_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
+	mkdir -p $MY_CROCO_DIR/MUSTANG_NAMELIST
+	cp -f ${CROCO_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
     fi
     # OANALYSIS
     if [[ ${options[@]} =~ "oanalysis" ]] ; then
-       cp -Rf ${CROCO_DIR}/SCRIPTS/NAMELIST_OANALYSIS $MY_CROCO_DIR.
+	cp -Rf ${CROCO_DIR}/SCRIPTS/NAMELIST_OANALYSIS $MY_CROCO_DIR.
     fi
-   # XIOS
+    # XIOS
     if [[ ${options[@]} =~ "xios" ]] ; then
-     cp -Rf ${CROCO_DIR}/XIOS/process_xios_xml.sh $MY_CROCO_DIR.
-#     cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_CROCO_DIR.
-#     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CROCO_DIR.
+	cp -Rf ${CROCO_DIR}/XIOS/process_xios_xml.sh $MY_CROCO_DIR.
+	#     cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_CROCO_DIR.
+	#     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CROCO_DIR.
     fi
     # PREPROCESSING
     if [[ ${options[@]} =~ "prepro" ]] ; then
-       cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
-       cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
-       cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
-       cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
-# Edit start.m
-       sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
-           -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
-           ${MY_CROCO_DIR}/start.m > ${MY_CROCO_DIR}/start.m.tmp
-       mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
-# Edit crocotools_param.h
-       sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
-           -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
-           ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
-       mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
+	cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
+	cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
+	cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
+	cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
+	cp -Rf $TOOLS_DIR/Oforc_OGCM/download_glorys_data.sh $MY_CROCO_DIR.
+	# Edit start.m
+	sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
+            -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
+            ${MY_CROCO_DIR}/start.m > ${MY_CROCO_DIR}/start.m.tmp
+	mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
+	# Edit oct_start.m
+	sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
+            -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
+            ${MY_CROCO_DIR}/oct_start.m > ${MY_CROCO_DIR}/oct_start.m.tmp
+	mv ${MY_CROCO_DIR}/oct_start.m.tmp ${MY_CROCO_DIR}/oct_start.m
+	# Edit crocotools_param.h
+	sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
+            -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
+            ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
+	mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
     fi
     # SCRIPTS FOR RUNNING
     if [[ ${options[@]} =~ "inter" ]] ; then
-       cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/*.bash $MY_CONFIG_HOME/
+	cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/*.bash $MY_CONFIG_HOME/
     fi
 fi
 
@@ -348,6 +358,7 @@ if [[ ${options[@]} =~ "prepro" && ${options[@]} =~ "oce-prod" ]] ; then
     mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
     mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
     mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/.
 fi
 
 # WW3
@@ -390,7 +401,7 @@ if [[ ${options[@]} =~ "xios" ]] ; then
         if [[ ${options[@]} =~ "atm" ]]; then
             sed -e "s|set -e|\set -e \n\n###### USER DEFINITION ######\nOCE_XIOS=\"TRUE\"\nATM_XIOS=\"TRUE\"\nUSE_OASIS=\"TRUE\"\n##### END USER DEFINITION #####|" \
                 $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp > $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh
-             rm -f $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp
+            rm -f $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp
         fi
         [[ -f $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp ]] && mv $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh
         chmod 755 $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh
@@ -414,7 +425,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/*.sh $MY_CONFIG_HOME/
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/ $MY_CONFIG_HOME/SCRIPTS_TOOLBOX
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/README* $MY_CONFIG_HOME/
-
+    
     # Edit myjob.sh to add CPU lines for each model
     cd $MY_CONFIG_HOME/
     [ -f myjob.tmp ] && rm -Rf myjob.tmp
@@ -423,7 +434,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     [[ ${options[@]} =~ "atm" ]] && printf "export NP_ATM=12 \n" >> myjob.tmp
     [[ ${options[@]} =~ "toy" ]] && printf "export NP_TOY=2 \n" >> myjob.tmp
     [[ ${options[@]} =~ "xios" ]] && printf "export NP_XIOS_ATM=1\nexport NP_XIOS_OCE=1\n" >> myjob.tmp
-
+    
     if [[ ${options[@]} =~ "atm" ]] ; then
         printf "\n# additional MPI Settings for ATM (WRF)\n" >> myjob.tmp
         printf "export atm_nprocX=-1      # -1 for automatic settings\n" >> myjob.tmp
@@ -437,7 +448,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     mv myjob_tmp myjob.sh
     chmod 755 myjob.sh
     rm -Rf myjob.tmp
-
+    
     # Create the path file
     cd $MY_CONFIG_HOME/SCRIPTS_TOOLBOX/PATHS
     cat ./path_base.sh >> tmppath
@@ -485,7 +496,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     cd ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/NAMELISTS
     cp namelist_head.sh mynamelist.sh
 
-    message=" # Kind of run launched. Summaries which models are used oce=o/wav=w/atm=a. If only one model put frc"
+    message=" # Kind of run launched. Summaries which models are used oce=o/wav=w/atm=a. If only one model put frc. See in OASIS_IN dir for more o,w,a order details"
     if [[ ${options[@]} =~ "cpl" ]]; then
         if [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "wav" ]] && [[ ${options[@]} =~ "atm" ]] ; then
             printf "export RUNtype=owa${message}\n#\n" >> mynamelist.sh

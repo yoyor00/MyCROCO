@@ -11,6 +11,8 @@ export TIMEJOB=1800
 # Project Id (on which hours are taken, if needed)
 export projectid=""
 
+# Permissions given to output files
+export permission="755"
 #-------------------------------------------------------------------------------
 # Run date settings
 #-------------------------------------------------------------------------------

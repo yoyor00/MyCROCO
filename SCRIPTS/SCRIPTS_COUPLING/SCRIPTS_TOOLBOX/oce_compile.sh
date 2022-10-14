@@ -99,11 +99,11 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
                 sed -e "s/#  *define  *AROME/# undef  AROME/g" \
                     cppdefs.h > tmp$$
             fi
-            if [[ ${frc_ext} == *'ECMWF'* ]]; then
-                sed -e "s/#  *undef  *ECMWF/# define ECMWF/g" \
+            if [[ ${frc_ext} == *'ERA_ECMWF'* ]]; then
+                sed -e "s/#  *undef  *ERA_ECMWF/# define  ERA_ECMWF/g" \
                     cppdefs.h > tmp$$
             else
-                sed -e "s/#  *define  *ECMWF/# undef  ECMWF/g" \
+                sed -e "s/#  *define  *ERA_ECMWF/# undef  ERA_ECMWF/g" \
                     cppdefs.h > tmp$$
             fi
             printf "\n Online bulk activated with ${frc_ext}\n"

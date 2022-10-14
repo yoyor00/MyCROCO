@@ -1,13 +1,16 @@
 #include "cppdefs.h"
 
-#if defined MUSTANG && defined key_CROCO
+#if defined MUSTANG
 
       module plug_MUSTANG_CROCO
 
       USE module_MUSTANG
-      USE sed_MUSTANG, ONLY : MUSTANG_update, MUSTANG_deposition
+      USE initMUSTANG, ONLY : MUSTANG_init
+      USE sed_MUSTANG, ONLY : MUSTANG_update
+      USE sed_MUSTANG, ONLY : MUSTANG_deposition
+# ifdef MORPHODYN
       USE sed_MUSTANG, ONLY : MUSTANG_morpho
-      USE initMUSTANG, ONLY : MUSTANG_init_sediment
+# endif
 
 # include "coupler_define_MUSTANG.h"
 
@@ -17,11 +20,12 @@
 
       PUBLIC   mustang_update_main
       PUBLIC   mustang_deposition_main
-      PUBLIC   mustang_init_sediment_main
+      PUBLIC   mustang_init_main
+# ifdef MORPHODYN
       PUBLIC   mustang_morpho_main
+# endif
 
 CONTAINS
-
 !
 !-----------------------------------------------------------------------
 !
@@ -30,18 +34,16 @@ CONTAINS
       INTEGER :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
-      CALL MUSTANG_update (Istr,Iend,Jstr,Jend,  & 
-                   RESIDUAL_THICKNESS_WAT,       &
-                   WATER_CONCENTRATION,Z0HYDRO,  &
-                   WATER_ELEVATION,              &
+      CALL MUSTANG_update (Istr, Iend, Jstr, Jend,  & 
+                   WATER_CONCENTRATION, Z0HYDRO,    &
+                   WATER_ELEVATION,                 &
 # if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-                   BAROTROP_VELOCITY_U,          &
-                   BAROTROP_VELOCITY_V,          &
+                   BAROTROP_VELOCITY_U,             &
+                   BAROTROP_VELOCITY_V,             &
 # endif
-                   RHOREF,SALREF_LIN,TEMPREF_LIN,&
+                   SALREF_LIN, TEMPREF_LIN,         &
                    TRANSPORT_TIME_STEP)
       end subroutine
-
 !
 !-----------------------------------------------------------------------
 !
@@ -50,53 +52,43 @@ CONTAINS
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
-      CALL MUSTANG_deposition (Istr,Iend,Jstr,Jend, &
-                   WATER_ELEVATION,                 &
-                   RESIDUAL_THICKNESS_WAT,          &
+      CALL MUSTANG_deposition (Istr, Iend, Jstr, Jend, &
+                   WATER_ELEVATION,                    &
                    WATER_CONCENTRATION)
       end subroutine
-
 !
 !-----------------------------------------------------------------------
 !
-      subroutine mustang_init_sediment_main (tile)
+      subroutine mustang_init_main (tile)
 
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
-      CALL MUSTANG_init_sediment (Istr,Iend,Jstr,Jend,   &
-                   0,WATER_ELEVATION,                    &
-# if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN
-                   DHSED,                                &
-# endif
-!# if defined key_MUSTANG_debug && defined SPHERICAL
-!     &            LATITUDE,LONGITUDE,
-!# endif  
-!# if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-!     &            CELL_DX,CELL_DY,
-!# endif 
-                   vname,indxT,ntrc_salt,                &
-                   RESIDUAL_THICKNESS_WAT,Z0HYDRO,       &
-                   WATER_CONCENTRATION)
-      end subroutine
 
+      CALL MUSTANG_init (Istr, Iend, Jstr, Jend, &
+                    WATER_ELEVATION,                       &
+# if defined MORPHODYN
+                    DHSED,                                 &
+# endif
+# ifdef key_MUSTANG_flocmod
+                    TRANSPORT_TIME_STEP,                   &
+# endif
+                    RESIDUAL_THICKNESS_WAT, Z0HYDRO,       &
+                    WATER_CONCENTRATION)
+      end subroutine
 !
 !-----------------------------------------------------------------------
-!
+# ifdef MORPHODYN
       subroutine mustang_morpho_main (tile)
 
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-      CALL MUSTANG_morpho (Istr,Iend,Jstr,Jend,     &
-                   WATER_ELEVATION,                 &
-# if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN
-                   DHSED,                           &
-# endif                                     
-                   RESIDUAL_THICKNESS_WAT)
+      CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, DHSED)
+
       end subroutine
-!
+# endif
 !-----------------------------------------------------------------------
 !
       end module plug_MUSTANG_CROCO
@@ -107,4 +99,3 @@ CONTAINS
       end module plug_MUSTANG_CROCO_empty
       
 #endif /* MUSTANG */
-

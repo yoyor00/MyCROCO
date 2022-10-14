@@ -171,6 +171,8 @@
 # endif
 #elif defined TIDAL_FLAT
       parameter (LLm0=200,  MMm0=3,    N=10)   ! TIDAL_FLAT
+#elif defined ESTUARY
+      parameter (LLm0=200,  MMm0=90,    N=5)   ! ESTUARY
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -271,7 +273,7 @@
       parameter (D_wetdry=0.001)
 # elif defined THACKER
       parameter (D_wetdry=0.01)
-# elif defined SANDBAR || defined TIDAL_FLAT
+# elif defined SANDBAR || defined TIDAL_FLAT || defined ESTUARY
       parameter (D_wetdry=0.1)
 # else
       parameter (D_wetdry=0.2)
@@ -279,17 +281,30 @@
 #endif
 !
 !----------------------------------------------------------------------
+! Minimum water depth above which wave forcing is applied 
+! (D_wavedry>D_wetdry if WET_DRY is activated)
+!----------------------------------------------------------------------
+#ifdef MRL_WCI
+# ifdef WAVE_DRY
+      real D_wavedry
+      parameter (D_wavedry=1.0)
+# endif
+#endif    
+!
+!----------------------------------------------------------------------
 ! Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !
-#if defined PSOURCE || defined PSOURCE_NCFILE
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
       integer Msrc               ! Number of point sources
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
 # elif defined VILAINE
       parameter (Msrc=2)        ! ====== == ===== =======
+# elif defined ESTUARY
+      parameter (Msrc=1)        ! ====== == ===== =======
 # else 
-      parameter (Msrc=100)        ! ====== == ===== =======
+      parameter (Msrc=30)        ! ====== == ===== =======
 # endif
 #endif
 #ifdef FLOATS
@@ -438,13 +453,13 @@
 !
 # if defined SUBSTANCE
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
-      INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
-      INTEGER,PARAMETER :: lchain=200
-      integer  itsubs1,itsubs2,ntfix
+      integer  itsubs1, itsubs2, ntfix
 #  ifdef SED_TOY
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#  elif defined ESTUARY
+      parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined VILAINE 
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
@@ -488,8 +503,8 @@
       parameter (NSAND=2, NMUD=0, NGRAV=0)
       parameter (NLAY=1)
 #  endif
-      parameter (NST=NSAND+NMUD+NGRAV)
-      parameter (ntrc_sed=NST)
+      parameter (ntrc_sed=NSAND+NMUD+NGRAV)
+      parameter (NST=ntrc_sed)
 # else
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
@@ -515,14 +530,14 @@
       integer ksdmin,ksdmax
 #  if defined ANA_DUNE || defined key_ANA_bedload
       parameter (ksdmin=1,ksdmax=11)
-#  elif defined TIDAL_FLAT
+#  elif defined TIDAL_FLAT || defined ESTUARY
       parameter (ksdmin=1,ksdmax=3)
 #  else
       parameter (ksdmin=1,ksdmax=10)
 #  endif
 # endif /* MUSTANG */
 
-# if defined BBL && defined AGRIF
+# if defined SEDIMENT && defined AGRIF
       integer Agrif_lev_sedim
       parameter (Agrif_lev_sedim=0)
 # endif

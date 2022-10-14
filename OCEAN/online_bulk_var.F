@@ -223,6 +223,13 @@
       blk_vname(2,9)='V10M                                     '
       blk_vname(3,9)='m/s                                      '
       blk_vname(4,9)='??????                                   '
+# ifdef READ_PATM
+      ! Atm pressure 
+      blk_vname(1,10)='msl                                     '
+      blk_vname(2,10)='air_pressure_at_sea_level                '
+      blk_vname(3,10)='Pa                                       '
+      blk_vname(4,10)='??????                                   '
+# endif
 
 #  else
 
@@ -279,6 +286,13 @@
       blk_vname(2,9)='??????                                   '
       blk_vname(3,9)='m/s                                      '
       blk_vname(4,9)='??????                                   '
+# ifdef READ_PATM
+      ! Atm pressure 
+      blk_vname(1,10)='patm                                     '
+      blk_vname(2,10)='air_pressure_at_sea_level                '
+      blk_vname(3,10)='Pa                                       '
+      blk_vname(4,10)='??????                                   '
+# endif
 
 #  endif
 
