@@ -70,9 +70,6 @@ CONTAINS
 # if defined MORPHODYN
                     DHSED,                                 &
 # endif
-# ifdef key_MUSTANG_flocmod
-                    TRANSPORT_TIME_STEP,                   &
-# endif
                     RESIDUAL_THICKNESS_WAT, Z0HYDRO,       &
                     WATER_CONCENTRATION)
       end subroutine
