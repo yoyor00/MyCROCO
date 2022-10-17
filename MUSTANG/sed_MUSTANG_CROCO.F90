@@ -127,7 +127,7 @@ DO i = ifirst, ilast
         DO k = 1, NB_LAYER_WAT
             cmes = 0.0_rsh
             DO ivpc = imud1, nvpc
-                cmes = cmes + WATER_CONCENTRATION(i, j, k, 1, itemp + ntrc_salt + ivpc)
+                cmes = cmes + WATER_CONCENTRATION(i, j, k, nstp, itemp + ntrc_salt + ivpc)
             ENDDO
             cmes = MAX(0.0_rsh, cmes)
 
@@ -271,16 +271,16 @@ DO i = ifirst, ilast
         endif
         gradvit(k, i, j) = sqrt(diss/nuw)
 #else
+    ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
+    ! if  turbulence dissipation rate has not been already evaluated: 
+    ! use empirical formula from   Nezu and Nakawaga (1993)
+    ! turbulence dissipation_rate = ustarbot**3 /Karman/Htot * (distance from surface/distance from bottom)
         dist_surf_on_bottom = ((z_w(i, j, N) - z_r(i, j, k)) / (z_r(i, j, k) - z_w(i, j, 0)))
         gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
                         (nuw + epsilon_MUSTANG) * dist_surf_on_bottom) 
 #endif
 #endif
     END DO
-    ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
-    ! if  turbulence dissipation rate has not been already evaluated: 
-    ! use empirical formula from   Nezu and Nakawaga (1993)
-    ! turbulence dissipation_rate = ustarbot**3 /Karman/Htot * (distance from surface/distance from bottom)
     ENDIF
 ENDDO
 ENDDO

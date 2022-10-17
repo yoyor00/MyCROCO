@@ -255,7 +255,6 @@ MODULE sed_MUSTANG
         DO i=ifirst,ilast   
             IF(htot(i,j) > h0fond) THEN
                 DO k=1,NB_LAYER_WAT
-                    ! replace 1 by nstp to have same result as in USGS >> to check with RB
                     CALL flocmod_main( dt_true, &
                         t(i,j,k,nstp,itsubs1-1+imud1:itsubs1-1+nvpc),  &
                         gradvit(k,i,j) )
