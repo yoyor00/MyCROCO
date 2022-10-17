@@ -306,7 +306,7 @@
 # elif defined ESTUARY
       parameter (Msrc=1)        ! ====== == ===== =======
 # else 
-      parameter (Msrc=10)        ! ====== == ===== =======
+      parameter (Msrc=30)        ! ====== == ===== =======
 # endif
 #endif
 #ifdef FLOATS

@@ -392,7 +392,7 @@ CONTAINS
                DO ji = IRANGE
                   !                      ! Potential nitrogen fixation dependant on temperature and iron
                   ztemp = tsn(ji,jj,K,jp_tem)
-                  zmudia = MAX( 0.,-0.001096*ztemp**2 + 0.057*ztemp -0.637 ) * 7.625
+                  zmudia = MAX( 0.,-0.001096*ztemp**2 + 0.057*ztemp -0.637 ) / rno3
                   !       Potential nitrogen fixation dependant on temperature and iron
                   xdianh4 = trb(ji,jj,K,jpnh4) / ( concnnh4 + trb(ji,jj,K,jpnh4) )
                   xdiano3 = trb(ji,jj,K,jpno3) / ( concnno3   &
@@ -414,7 +414,7 @@ CONTAINS
                DO ji = IRANGE
                   !                      ! Potential nitrogen fixation dependant on temperature and iron
                   ztemp = tsn(ji,jj,K,jp_tem)
-                  zmudia = MAX( 0.,-0.001096*ztemp**2 + 0.057*ztemp -0.637 ) * 7.625
+                  zmudia = MAX( 0.,-0.001096*ztemp**2 + 0.057*ztemp -0.637 )  / rno3
                   !       Potential nitrogen fixation dependant on temperature and iron
                   xdianh4 = trb(ji,jj,K,jpnh4) / ( concnnh4 + trb(ji,jj,K,jpnh4) )
                   xdiano3 = trb(ji,jj,K,jpno3) / ( concnno3   &

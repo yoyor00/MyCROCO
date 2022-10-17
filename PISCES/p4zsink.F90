@@ -719,12 +719,12 @@ CONTAINS
       !
       ierr(:) = 0
       !
-      ALLOCATE( sinking (PRIV_3D_BIOARRAY), sinking2(PRIV_3D_BIOARRAY),     &                
-         &      sinkcal (PRIV_3D_BIOARRAY), sinksil (PRIV_3D_BIOARRAY),     &                
-         &      sinkfer2(PRIV_3D_BIOARRAY), sinkfer (PRIV_3D_BIOARRAY), STAT=ierr(1) )
+      ALLOCATE( sinking (PRIV_2D_BIOARRAY,1:jpk+1), sinking2(PRIV_2D_BIOARRAY,1:jpk+1),     &                
+         &      sinkcal (PRIV_2D_BIOARRAY,1:jpk+1), sinksil (PRIV_2D_BIOARRAY,1:jpk+1),     &                
+         &      sinkfer2(PRIV_2D_BIOARRAY,1:jpk+1), sinkfer (PRIV_2D_BIOARRAY,1:jpk+1), STAT=ierr(1) )
          !
-      IF( ln_p5z    ) ALLOCATE( sinkingn(PRIV_3D_BIOARRAY), sinking2n(PRIV_3D_BIOARRAY),     &
-         &                      sinkingp(PRIV_3D_BIOARRAY), sinking2p(PRIV_3D_BIOARRAY)   , STAT=ierr(2) )
+      IF( ln_p5z    ) ALLOCATE( sinkingn(PRIV_2D_BIOARRAY,1:jpk+1), sinking2n(PRIV_2D_BIOARRAY,1:jpk+1),     &
+         &                      sinkingp(PRIV_2D_BIOARRAY,1:jpk+1), sinking2p(PRIV_2D_BIOARRAY,1:jpk+1)   , STAT=ierr(2) )
       !
       p4z_sink_alloc = MAXVAL( ierr )
       IF( p4z_sink_alloc /= 0 ) CALL ctl_warn( 'p4z_sink_alloc : failed to allocate arrays.' )

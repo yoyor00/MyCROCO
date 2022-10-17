@@ -65,6 +65,11 @@ CONTAINS
       IF( kt == nittrc000 ) THEN
          !
          ALLOCATE( xnegtr(PRIV_3D_BIOARRAY) )
+         !
+         DO jn = jp_pcs0, jp_pcs1
+           tra(:,:,:,jn) = 0.e0
+         ENDDO
+         !
       ENDIF
 
       IF( ll_sbc ) CALL p4z_sbc( kt )   ! external sources of nutrients
