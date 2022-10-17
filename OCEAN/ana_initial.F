@@ -1282,17 +1282,7 @@ C$OMP BARRIER
                 t(i,j,k,1,iv)=cini_wat(iv)
 #  elif defined TIDAL_FLAT || defined ESTUARY
                 if (h(i,j).gt.0) then
-! ---------------- mud+diss case -----------------!
-                  if (iv<=itsubs1+1) then
-                    if( i>79.and.i<151) then
-                      t(i,j,k,1,iv)=cini_wat(iv)
-                    else
-                      t(i,j,k,1,iv)=0.
-                    endif
-                  else
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  endif
-! ------------------------------------------------!
+                  t(i,j,k,1,iv)=cini_wat(iv)
                 else
                   t(i,j,k,1,iv)=0.
                 endif

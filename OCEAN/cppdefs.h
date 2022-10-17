@@ -1737,8 +1737,9 @@
 */                            /* Choose an experiment :               */
 # define SED_TOY_ROUSE        /*   Rouse                              */
 # undef  SED_TOY_CONSOLID     /*   Consolidation                      */
-# undef  SED_TOY_RESUSP       /*   Erosion and sediment resuspension  */
-# undef  SED_TOY_FLOC         /*   Flocculation                       */
+# undef  SED_TOY_RESUSP       /*   Erosion and sediment resuspension  */                      */
+# undef  SED_TOY_FLOC_0D         /*   Flocculation                       */
+# undef  SED_TOY_FLOC_1D         /*   Flocculation                       */
 
 # undef  OPENMP
 # undef  MPI
@@ -1763,8 +1764,28 @@
 #  define BODYFORCE
 # endif
 
+# ifdef SED_TOY_FLOC_1D 
+#  define ANA_VMIX
+#  define BODYFORCE
+# endif
+
+# ifdef SED_TOY_FLOC_0D 
+#  define ANA_VMIX
+#  define BODYFORCE
+# endif
+
 # define SEDIMENT
 # undef  MUSTANG
+
+# ifdef MUSTANG
+#  if defined SED_TOY_FLOC_0D  || defined SED_TOY_FLOC_1D
+#    define key_MUSTANG_flocmod
+#    define GLS_MIXING
+#    define GLS_KOMEGA
+#  endif
+# endif
+
+
 # ifdef SEDIMENT
 #  define SUSPLOAD
 #  undef  BEDLOAD
@@ -1773,7 +1794,7 @@
 #   define SED_TAU_CD_CONST
 #  endif
 
-#  if defined SED_TOY_FLOC || defined SED_TOY_CONSOLID || \
+#  if defined SED_TOY_FLOC_1D || defined SED_TOY_CONSOLID || \
 	defined SED_TOY_RESUSP
 #   undef  BBL
 #   define GLS_MIXING
@@ -1782,11 +1803,11 @@
 #   undef  COHESIVE_BED
 #  endif
 
-#  ifdef SED_TOY_FLOC
-#   undef  FLOC_TURB_DISS
-#   define FLOC_BBL_DISS
+#  if defined SED_TOY_FLOC_0D  || defined SED_TOY_FLOC_1D
+#   define FLOC_TURB_DISS
+#   undef FLOC_BBL_DISS
 #   define SED_FLOCS
-#   define SED_DEFLOC
+#   undef SED_DEFLOC
 #  endif
 
 # endif

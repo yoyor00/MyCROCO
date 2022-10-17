@@ -160,6 +160,7 @@
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 
 :                   (kg/m3)
 :    tocd_n() : real, critical stress of deposition (N/m2) 
+:    diam_n() : real, diameter (m), used only if key_MUSTANG_flocmod
 :    ros_n()  : real, density of particle (kg/m3)
 :    ws_free_opt_n() : integer, choice of free settling formulation : 
 :                      0 constant, 1 Van Leussen, 2 Winterwerp, 3 Wolanski
@@ -186,6 +187,7 @@
       init_cv_name_n(1)='MUD'
       obc_cv_name_n(1)='MUD'
       tocd_n(1)=1.
+      diam_n(1)=0.00003
       ros_n(1)=2600.0
       ws_free_opt_n(1)=0
       ws_free_min_n(1)=0.0005

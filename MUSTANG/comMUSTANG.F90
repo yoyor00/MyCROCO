@@ -423,6 +423,8 @@ public
         ! fragmentation (default 2.0 as binary fragmentation)
     REAL(KIND=rsh) :: f_nf ! fractal dimension (default 2.0, usual range from 
         ! 1.6 to 2.8)
+    REAL(KIND=rsh) :: f_clim ! min concentration below which flocculation 
+        !processes are not calculated
 #endif
 
 
@@ -612,30 +614,6 @@ public
 #if ! defined key_nofluxwat_IWS && ! defined key_noTSdiss_insed
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: WATER_FLUX_INPUTS ! not operationnal, stil to code **TODO**
 #endif
-
-
-#ifdef key_MUSTANG_flocmod
-    ! Explicit FLOCULATION 
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_diam ! floc diameter (m)
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_ws ! floc settling velocity (m/s)
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_vol ! floc volume
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_rho ! floc density
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_mass ! floc mass
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: f_l3 ! fragmentation loss term
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_coll_prob_sh ! shear agregation collision probability
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_coll_prob_ds ! differential settling collision probability
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_l1_sh ! shear agregation loss term
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_l1_ds ! differential settling agregation loss term  
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: f_g3 ! fragmentation gain term 
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_sh ! shear agregation gain term
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_g1_ds ! differential settling agregation gain term
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d50
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d90
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_d10
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_davg
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: f_dtmin
-#endif
-
 
 #ifdef key_BLOOM_insed
     LOGICAL :: l_out_subs_diag_sed

@@ -247,7 +247,9 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined SED_TOY
-#  ifdef SED_TOY_ROUSE
+#  ifdef SED_TOY_ROUSE 
+                     depth=5.
+# elif defined SED_TOY_FLOC_1D 
                      depth=5.
 #  else
                      depth=20.
