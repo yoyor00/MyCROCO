@@ -117,10 +117,11 @@
 
       implicit none
 # include "param.h"
+# include "ocean3d.h"
 # include "scalars.h"
 # include "sediment.h"
 # include "private_scratch.h"
-      integer tile, trd, omp_get_thread_num
+      integer tile, trd, omp_get_thread_num, itrc
 # include "compute_tile_bounds.h"
 !
       trd=omp_get_thread_num()
@@ -140,8 +141,7 @@ C$OMP BARRIER
 # endif /* BEDLOAD */
 # ifdef SUSPLOAD
 #  ifdef SED_FLOCS
-      call sed_flocmod_tile (Istr,Iend,Jstr,Jend,             
-     &                             A2d(1,1,trd) )
+      call sed_flocmod_tile (Istr,Iend,Jstr,Jend)
 #  endif
 C$OMP BARRIER
       call sed_settling_tile (Istr,Iend,Jstr,Jend, 
@@ -168,6 +168,20 @@ C$OMP BARRIER
 !
       call sed_surf_tile (Istr,Iend,Jstr,Jend)     
 C$OMP BARRIER
+# if defined TRACERS
+      do itrc=1,NT
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  ifdef THREE_GHOST_POINTS_TS
+        call  exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &          t(START_2D_ARRAY,1,nnew,itrc))
+#  else
+        call  exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &          t(START_2D_ARRAY,1,nnew,itrc))
+#  endif
+# endif
+      enddo
+# endif
+
 !
       return
       end
@@ -3729,7 +3743,10 @@ C$OMP BARRIER
 !=====================================================================
 !
        subroutine init_sediment
-!
+# ifdef SED_FLOCS
+        USE flocmod, ONLY : flocmod_alloc, flocmod_init
+        USE flocmod, ONLY : f_ws
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -3743,6 +3760,9 @@ C$OMP BARRIER
       real rdum, cff1,cff2
       logical ldum
       parameter (iunit=50)
+# ifdef SED_FLOCS
+      real :: f_mneg_param, f_fp, f_fy, f_cfcst, f_dmin_frag
+# endif
 !
 !---------------------------------------------------------------------
 !  Read in initial float locations.
@@ -4003,7 +4023,24 @@ C$OMP BARRIER
          tau_ce_2d(:,:,i)=tau_ce(i)
        enddo
 # ifdef SED_FLOCS
-       call initialize_sedflocs
+        ! some parameters are not read in sediment.in
+        ! f_mneg_param, f_fp, f_fy, f_cfcst, f_dmin_frag
+        ! values from paraMUSTANG_default.txt
+        ! && f_dmax not used but read in sediment.in
+        f_mneg_param=0.001
+        f_cfcst = 0.1875
+        f_fp = 0.1
+        f_fy = 1.0e-10 
+        f_dmin_frag = 0.00001
+        CALL flocmod_alloc(NMUD)
+        CALL flocmod_init(l_ADS, l_ASH, l_COLLFRAG,             
+     &      f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    
+     &      f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   
+     &      f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  
+     &      f_clim, Sd(imud1:imud1+NMUD-1) , 
+     &      Srho(imud1:imud1+NMUD-1),      
+     &      rho0, l_testcase, stdout)
+        Wsed(imud1:imud1+NMUD-1) = f_ws(1:NMUD)
 # endif
       return
       end
@@ -5132,326 +5169,8 @@ C$OMP BARRIER
 !======================================================================
 !
 # ifdef SED_FLOCS
-
-
-      subroutine initialize_sedflocs 
-!
-!=======================================================================
-!                                                                      !
-!  This routine initialize structure variables in the module using     !
-!  first touch distribution policy. In shared-memory configuration,    !
-!  this operation actually performs the propagation of the "shared     !
-!  arrays" across the cluster,  unless another policy is specified     !
-!  to  override the default.                                           !
-!                                                                      !
-!=======================================================================
-!
-      implicit none
-
-#  include "param.h"
-#  include "scalars.h"
-#  include "sediment.h"
-
-      integer i, itrc, j, k
-      logical f_test
-      real f_weight,mult,dfragmax
-      integer  iv1,iv2,iv3,indx
-      real mu 
-      real myeps
-      mu = 0.001
-      myeps = epsilon(1.0)
-!
-! ALA the rest of the initialization
-!
-!      l_ADS=.false.
-!      l_ASH=.true.
-!      l_COLLFRAG=.false.
-!      f_dp0=0.000004
-!      f_nf=1.9
-!      f_dmax=0.001500
-!      f_nb_frag=2.0
-!      f_alpha=0.35
-!      f_beta=0.15
-!      f_ater=0.0
-!      f_ero_frac=0.0
-!      f_ero_nbfrag=2.0
-!      f_ero_iv=1
-!      f_collfragparam=0.01
-
-
-!!--------------------------------------------------
-!! floc characteristics
-      do itrc=1,NMUD
-         indx= imud1 +itrc-1
-         f_diam(itrc)=Sd(indx)
-         f_vol(itrc)=pi/6.0*(f_diam(itrc))**3.0
-         f_rho(itrc)=rhoref+(2650.0-rhoref)*                         
-     &     (f_dp0/f_diam(itrc))**(3.0-f_nf)
-         f_mass(itrc)=f_vol(itrc)*(f_rho(itrc)-rhoref)
-      enddo
-      f_mass(NMUD+1)=f_mass(NMUD)*2.0+1.0
-      if (f_diam(1).eq.f_dp0)  then
-          f_mass(1)=f_vol(1)*Srho(imud1)
-      endif
-!TODO - This wont parallelize
-      write(*,*) ' '
-      write(*,*) 'FLOCMOD INIT  '
-!     write(*,*) 'NAT, NPT, NMUD, NNS:', NAT,NPT,NMUD,NNS
-      write(*,*) "class diameter (um)  volume (m3)  density (kg/m3)
-     &    mass (kg)"
-      do itrc=1,NMUD
-         write(*,*) itrc,f_diam(itrc)*1e6,f_vol(itrc),
-     &     f_rho(itrc),f_mass(itrc)
-      enddo
-      write(*,*) 'f_mass(0) and f_mass(NMUD+1): ',
-     & f_mass(0),f_mass(NMUD+1)
-      write(*,*) ' '
-      write(*,*) ' PARAMETERS '
-      write(*,*) "Primary particle size (f_dp0)              
-     &                   : ",f_dp0
-      write(*,*) "Fractal dimension (f_nf)                  
-     &         : ",f_nf
-      write(*,*) "Flocculation efficiency (f_alpha)         
-     &         : ",f_alpha
-      write(*,*) "Floc break up parameter (f_beta)          
-     &         : ",f_beta
-      write(*,*) "Nb of fragments (f_nb_frag)                   
-     &         : ",f_nb_frag
-      write(*,*) "Ternary fragmentation (f_ater)                     
-     &         : ",f_ater
-      write(*,*) "Floc erosion (% of mass) (f_ero_frac)               
-     &         : ",f_ero_frac
-      write(*,*) "Nb of fragments by erosion (f_ero_nbfrag)           
-     &         : ",f_ero_nbfrag
-      write(*,*) "fragment class (f_ero_iv)                           
-     &         : ",f_ero_iv
-      write(*,*) "Boolean for differential settling aggregation (L_ADS)
-     &         : ",l_ADS
-      write(*,*) "Boolean for shear aggregation (L_ASH)                
-     &          :",l_ASH
-      write(*,*) "Boolean for collision fragmenation (L_COLLFRAG)      
-     &         : ",l_COLLFRAG
-      write(*,*) "Collision fragmentation parameter (f_collfragparam)  
-     &         : ",f_collfragparam
-      write(*,*) "Boolean for test case from Verney (L_TESTCASE)       
-     &         : ",l_testcase
-      write(*,*) ' '
-      write(*,*) 'Value of eps   : ',myeps
-      write(*,*) ' '
-
-! kernels computation former subroutine flocmod_kernels
-
-
-!!--------------------------------------------------------------------------
-!! * Executable part
-      f_test=.true.
-      dfragmax=0.00003
-! compute collision probability former subroutine flocmod_agregation_statistics
-
-      do iv1=1,NMUD
-        do iv2=1,NMUD
-          f_coll_prob_sh(iv1,iv2)=1.0/6.0*(f_diam(iv1)+           
-     &            f_diam(iv2))**3.0
-
-          f_coll_prob_ds(iv1,iv2)=0.25*pi*(f_diam(iv1)+              
-     &            f_diam(iv2))**2.0*g/mu*abs((f_rho(iv1)-         
-     &            rhoref)*f_diam(iv1)**2.0-(f_rho(iv2)-rhoref)*      
-     &            f_diam(iv2)**2.0)
-        enddo
-      enddo
-
-!********************************************************************************
-! agregation : GAIN : f_g1_sh and f_g1_ds
-!********************************************************************************
-      do iv1=1,NMUD
-        do iv2=1,NMUD
-          do iv3=iv2,NMUD
-            if((f_mass(iv2)+f_mass(iv3)) .gt. f_mass(iv1-1)    .and.
-     &            ((f_mass(iv2)+f_mass(iv3)) .le. f_mass(iv1))) then
-              f_weight=(f_mass(iv2)+f_mass(iv3)-f_mass(iv1-1))/         
-     &                   (f_mass(iv1)-f_mass(iv1-1))
-            elseif ((f_mass(iv2)+f_mass(iv3)) .gt. f_mass(iv1) .and.
-     &            ((f_mass(iv2)+f_mass(iv3)) .lt. f_mass(iv1+1))) then
-              if (iv1 .eq. NMUD) then
-                f_weight=1.0
-              else
-                f_weight=1.0-(f_mass(iv2)+f_mass(iv3)-              
-     &                 f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1))
-              endif
-            else
-              f_weight=0.0
-            endif
-            f_g1_sh(iv2,iv3,iv1)=f_weight*f_alpha*
-     &            f_coll_prob_sh(iv2,iv3)*(f_mass(iv2)+                 
-     &            f_mass(iv3))/f_mass(iv1)
-            f_g1_ds(iv2,iv3,iv1)=f_weight*f_alpha*
-     &            f_coll_prob_ds(iv2,iv3)*(f_mass(iv2)+                 
-     &            f_mass(iv3))/f_mass(iv1)
-          enddo
-        enddo
-      enddo
-
-!********************************************************************************
-! Shear fragmentation : GAIN : f_g3
-!********************************************************************************
-
-      do iv1=1,NMUD
-        do iv2=iv1,NMUD
-          if (f_diam(iv2).gt.dfragmax) then
-           ! binary fragmentation
-            if (f_mass(iv2)/f_nb_frag .gt. f_mass(iv1-1) 
-     &            .and. f_mass(iv2)/f_nb_frag .le. f_mass(iv1)) then
-              if (iv1 .eq. 1) then
-                 f_weight=1.0
-              else
-                 f_weight=(f_mass(iv2)/f_nb_frag-f_mass(iv1-1))/        
-     &                (f_mass(iv1)-f_mass(iv1-1))
-              endif
-            elseif (f_mass(iv2)/f_nb_frag .gt. f_mass(iv1)
-     &            .and. f_mass(iv2)/f_nb_frag .lt. f_mass(iv1+1)) then
-              f_weight=1.0-(f_mass(iv2)/f_nb_frag-f_mass(iv1))/      
-     &              (f_mass(iv1+1)-f_mass(iv1))
-
-            else
-              f_weight=0.0
-            endif
-          else
-            f_weight=0.0
-          endif
-
-          f_g3(iv2,iv1)=f_g3(iv2,iv1)+(1.0-f_ero_frac)*(1.0-        
-     &            f_ater)*f_weight*f_beta*f_diam(iv2)*((f_diam(iv2)-    
-     &            f_dp0)/f_dp0)**(3.0-f_nf)*f_mass(iv2)/             
-     &            f_mass(iv1)
-
-         ! ternary fragmentation
-          if (f_diam(iv2).gt.dfragmax) then
-            if (f_mass(iv2)/(2.0*f_nb_frag) .gt. f_mass(iv1-1) .and.  
-     &          f_mass(iv2)/(2.0*f_nb_frag) .le. f_mass(iv1)) then
-              if (iv1 .eq. 1) then
-                 f_weight=1.0
-              else
-                 f_weight=(f_mass(iv2)/(2.0*f_nb_frag)-              
-     &                f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
-              endif
-
-            elseif (f_mass(iv2)/(2.0*f_nb_frag) .gt. f_mass(iv1)      
-     &           .and. f_mass(iv2)/(2.0*f_nb_frag) .lt.              
-     &            f_mass(iv1+1)) then
-
-              f_weight=1.0-(f_mass(iv2)/(2.0*f_nb_frag)-          
-     &                 f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1))
-
-            else
-              f_weight=0.0
-
-            endif
-            ! update for ternary fragments
-            f_g3(iv2,iv1)=f_g3(iv2,iv1)+(1.0-f_ero_frac)*(f_ater)*    
-     &            f_weight*f_beta*f_diam(iv2)*((f_diam(iv2)-f_dp0)/     
-     &            f_dp0)**(3.0-f_nf)*f_mass(iv2)/f_mass(iv1)
-
-            ! Floc erosion
-
-            if ((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.
-     &            f_mass(f_ero_iv)) then
-
-              if (((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.     
-     &            f_mass(iv1-1)) .and. (f_mass(iv2)-f_mass(f_ero_iv)*   
-     &            f_ero_nbfrag) .le. f_mass(iv1)) then
-
-                 if (iv1 .eq. 1) then
-                    f_weight=1.0
-                 else
-                    f_weight=(f_mass(iv2)-f_mass(f_ero_iv)*             
-     &                      f_ero_nbfrag-f_mass(iv1-1))/(f_mass(iv1)-   
-     &                      f_mass(iv1-1))
-                 endif
-
-              elseif ((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.  
-     &            f_mass(iv1) .and. (f_mass(iv2)-f_mass(f_ero_iv)*      
-     &            f_ero_nbfrag) .lt. f_mass(iv1+1)) then
-
-                 f_weight=1.0-(f_mass(iv2)-f_mass(f_ero_iv)*         
-     &                    f_ero_nbfrag-f_mass(iv1))/(f_mass(iv1+1)-     
-     &                    f_mass(iv1))
-
-              else
-                 f_weight=0.0
-              endif
-              ! update for eroded floc masses
-              f_g3(iv2,iv1)=f_g3(iv2,iv1)+f_ero_frac*f_weight*f_beta*   
-     &            f_diam(iv2)*(max(myeps,(f_diam(iv2)-f_dp0))/f_dp0)**
-     &            (3.0-f_nf)*(f_mass(iv2)-f_mass(f_ero_iv)*          
-     &            f_ero_nbfrag)/f_mass(iv1)
-
-              if (iv1 .eq. f_ero_iv) then
-                 f_g3(iv2,iv1)=f_g3(iv2,iv1)+f_ero_frac*f_beta*         
-     &              f_diam(iv2)*(max(myeps,(f_diam(iv2)-f_dp0))/f_dp0)**
-     &              (3.0-f_nf)*f_ero_nbfrag*f_mass(f_ero_iv)/        
-     &              f_mass(iv1)
-              endif
-           endif
-        endif ! condition on dfragmax
-       enddo
-      enddo
-
-!********************************************************************************
-!  Shear agregation : LOSS : f_l1
-!********************************************************************************
-      do iv1=1,NMUD
-        do iv2=1,NMUD
-          if(iv2 .eq. iv1) then
-            mult=2.0
-          else
-            mult=1.0
-          endif
-          f_l1_sh(iv2,iv1)=mult*f_alpha*f_coll_prob_sh(iv2,iv1)
-          f_l1_ds(iv2,iv1)=mult*f_alpha*f_coll_prob_ds(iv2,iv1)
-        enddo
-      enddo
-
-!********************************************************************************
-!  Shear fragmentation : LOSS : f_l2
-!********************************************************************************
-      do iv1=1,NMUD
-        f_l3(iv1)=0.0
-        if (f_diam(iv1).gt.dfragmax) then
-        ! shear fragmentation
-           f_l3(iv1)=f_l3(iv1)+(1.0-f_ero_frac)*f_beta*f_diam(iv1)*  
-     &            ((f_diam(iv1)-f_dp0)/f_dp0)**(3.0-f_nf)
-          ! shear erosion
-          if ((f_mass(iv1)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.
-     &            f_mass(f_ero_iv)) then
-           f_l3(iv1)=f_l3(iv1)+f_ero_frac*f_beta*f_diam(iv1)*           
-     &            ((f_diam(iv1)-f_dp0)/f_dp0)**(3.0-f_nf)
-          endif
-        endif
-      end do
-
-      write(*,*) ' '
-      write(*,*) 'Sum of kernal coefficients:'
-      write(*,*) 'f_coll_prob_sh',sum(f_coll_prob_sh)
-      write(*,*) 'f_coll_prob_ds',sum(f_coll_prob_ds)
-      write(*,*) 'f_g1_sh',sum(f_g1_sh)
-      write(*,*) 'f_g1_ds',sum(f_g1_ds)
-      write(*,*) 'f_l1_sh',sum(f_l1_sh)
-      write(*,*) 'f_l1_ds',sum(f_l1_ds)
-      write(*,*) 'f_g3',sum(f_g3)
-      write(*,*) 'f_l3',sum(f_l3)
-      write(*,*) ' '
-      write(*,*) ' end FLOCMOD INIT  '
-
-      return
-      end subroutine initialize_sedflocs
-
-!
-!***********************************************************************
-      subroutine sed_flocmod_tile (Istr,Iend,Jstr,Jend,             
-     &                             Hz_inv)
-
-!***********************************************************************
-!
+      subroutine sed_flocmod_tile (Istr,Iend,Jstr,Jend)
+        USE flocmod, ONLY : flocmod_main, flocmod_comp_g
       implicit none 
 #  include "param.h"
 #  include "scalars.h"
@@ -5461,811 +5180,75 @@ C$OMP BARRIER
 #  include "sediment.h"
 #  include "forces.h"
 
-      integer Istr,Iend,Jstr,Jend! 
-      real, dimension(PRIVATE_1D_SCRATCH_ARRAY,N) :: Hz_inv
-
-
-
-      integer :: i, indx, ised, j, k, ks
+      integer Istr,Iend,Jstr,Jend
+      integer i, j, k
 !
 !  Variable declarations for floc model
-!
-      integer  :: iv1
-      real :: Gval,diss,mneg,dttemp,f_dt
-      real :: dt1,f_csum,epsilon8
-      real :: cvtotmud,tke_av, gls_av, exp1, exp2, exp3, ustr2,effecz
 
-      real, dimension(PRIVATE_1D_SCRATCH_ARRAY,N,NT) :: susmud    ! RB pb OPENNMP
+      real Gval, diss, nueau
+      real epsilon8, ustr2, effecz
 
-      real,dimension(1:NMUD)     :: cv_tmp,NNin,NNout
-!  f_mneg_param : negative mass tolerated to avoid small sub time step (g/l)
-      real, parameter :: f_mneg_param=0.000
+      if (l_testcase) then
+        CALL flocmod_comp_g(Gval, time)
+      else
+        epsilon8=epsilon(1.0)
+      endif
 
-      epsilon8=epsilon(1.0)
-!     epsilon8=1.e-8
-!
-!--------------------------------------------------------------------------
-! * Executable part
-!
       do j=Jstr,Jend
-!
-!  Extract mud variables from tracer arrays, place them into
-!  scratch arrays, and restrict their values to be positive definite.
-        do k=1,N
-          do i=Istr,Iend
-            Hz_inv(i,k)=1.0/Hz(i,j,k)
-          end do
-        end do
-        do ised=1,NMUD
-          indx =itrc_mud+ised-1
-          do k=1,N
-            do i=Istr,Iend
-!               susmud(i,k,ised)=MAX(t(i,j,k,nstp,indx),0.0)
-              susmud(i,k,ised)=t(i,j,k,nnew,indx)!*Hz_inv(i,k)
-      !        write(*,*) 'susmud : ', i, j,k,susmud(i,k,ised),t(i,j,k,nnew,indx)
-
-            enddo
-          enddo
-        enddo
-
-! min concentration below which flocculation processes are not calculated
-!      f_clim=0.001 
-        exp1 = 3.0+rp/rn
-        exp2 = 1.5+rm/rn
-        exp3 = -1.0/rn
-
         do i=Istr,Iend
-          do k=1,N
-            f_dt=dt
-            dttemp=0.0
-            ! concentration of all mud classes in one grid cell
-            cvtotmud=0.0
-            do ised=1,NMUD
-              cv_tmp(ised)=susmud(i,k,ised) 
-              cvtotmud=cvtotmud+cv_tmp(ised)
-              NNin(ised)=cv_tmp(ised)/f_mass(ised)
-            enddo
-
-            do iv1=1,NMUD
-              if (NNin(iv1).lt.0.0) then
-                WRITE(*,*) '***************************************'
-                WRITE(*,*) 'CAUTION, negative mass at cell i,j,k :',  
-     &                          i,j,k
-                WRITE(*,*) '***************************************'
-              endif
-            enddo
-
-           ! write(*,*) 'cvtotmud, f_clim : ', cvtotmud, f_clim
-            !stop
-            if (cvtotmud .gt. f_clim) then
-
-# if defined FLOC_TURB_DISS && !defined FLOC_BBL_DISS
+          do k=1,N       
+            if (.not. l_testcase) then
+               
+# if defined FLOC_TURB_DISS && defined GLS_MIXING
 !
-!ALA dissipation from turbulence clossure
+! Dissipation from turbulence clossure
 !
-!trb(:,:,:,nstp,itke)
-
               if (k.eq.1) then
-                tke_av = trb(i,j,k-1,nnew,itke)
-                gls_av = trb(i,j,k-1,nnew,igls)
+                diss = Eps_gls(i,j,k)
               elseif (k.eq.N) then
-                tke_av = trb(i,j,k,nnew,itke)
-                gls_av = trb(i,j,k,nnew,igls)
+                diss = Eps_gls(i,j,k-1)
               else 
-                tke_av = 0.5*(trb(i,j,k-1,nnew,itke)+trb(i,j,k,nnew,itke))
-                gls_av = 0.5*(trb(i,j,k-1,nnew,igls)+trb(i,j,k,nnew,igls))
+                diss = 0.5*(Eps_gls(i,j,k-1)+Eps_gls(i,j,k))
               endif
-!               exp1 = 3.0+gls_p/gls_n
-!               exp2 = 1.5+gls_m/gls_n
-!               exp3 = -1.0/gls_n
-              diss = cm0**exp1*tke_av**exp2*gls_av**exp3
-         !     write(*,*) cm0,exp1,tke_av,exp2,gls_av,exp3
-         !     stop
-# elif defined FLOC_BBL_DISS && !defined FLOC_TURB_DISS
+#  ifdef FLOC_BBL_DISS
 !
-!ALA dissipation from wavecurrent bottom stress
-! NOT READY FOR PRIME TIME
-! NEEDS VERTICAL DISTRIBUTION
+! Dissipation from wavecurrent bottom stress
+! NOT READY FOR PRIME TIME: NEEDS VERTICAL DISTRIBUTION
 ! As first cut, use turbulence closure
 !
-              if (k.eq.1) then
-                tke_av = trb(i,j,k-1,nnew,itke)
-                gls_av = trb(i,j,k-1,nnew,igls)
-              elseif (k.eq.N) then
-                tke_av = trb(i,j,k,nnew,itke)
-                gls_av = trb(i,j,k,nnew,igls)
-              else 
-                tke_av = 0.5*trb(i,j,k-1,nnew,itke)+                  
-     &                       0.5*trb(i,j,k,nnew,itke)
-                gls_av = 0.5*trb(i,j,k-1,nnew,igls)+                  
-     &                       0.5*trb(i,j,k,nnew,igls)
-              endif
-              diss = cm0**exp1*tke_av**exp2*gls_av**exp3
-!
-!  MODifY THE BOTTOM LAYER TO INCLUDE WAVECURRENT STRESS
-!
               if (k.eq.1) then       
-#  ifdef BBL
+#   ifdef BBL
                 ustr2 =sqrt((bustrw(i,j)**2                
      &                      +bvstrw(i,j)**2))
                 effecz = (ustr2**0.5)*Pwave(i,j)*0.5/pi
                 diss = MAX((ustr2**(1.5))/(vonKar*effecz),diss)
-#  else
+#   else
                 ustr2 =sqrt((bustr(i,j)**2.0+bvstr(i,j)**2.0 ))
                 diss = MAX((ustr2**(1.5))/(vonKar*                  
      &                       (z_r(i,j,1)-z_w(i,j,0))),diss)
+#   endif
+              endif
 #  endif
-              endif
 # else 
-              diss = epsilon8
-              if (l_testcase) then
-!                  if (j.eq.1.and.i.eq.1.and.k.eq.1) then
-!                     WRITE(*,*) 'VERNEY ET AL TESTCASE FOR FLOCS'
-!                  endif
-              else    
-                WRITE(*,*) 'CAUTION :'
-                WRITE(*,*) 'CHOOSE A DISSIPATION MODEL FOR FLOCS'
-                WRITE(*,*) 'SIMULATION STOPPED'
-                STOP
-              endif                 
+!
+! Constant tke dissipation
+!
+                diss = epsilon8         
 # endif              
-              call flocmod_comp_g(k,i,j,Gval,diss) 
-!             write(*,*) ' Gval, diss : ' , Gval, diss, l_testcase
-!             stop
-
-              do while (dttemp .le. dt)
-
-                call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
-                call flocmod_mass_control(NNout,mneg)
-                if (mneg .gt. f_mneg_param) then
-                  do while (mneg .gt. f_mneg_param)
-                    f_dt=MIN(f_dt/2.0,dt-dttemp)
-                    if (f_dt.lt.epsilon8) then
-                      call flocmod_mass_redistribute(NNin)
-                      dttemp=dt
-                      exit
-                    endif
-                    call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
-                    call flocmod_mass_control(NNout,mneg)   
-                  enddo
-                else
-                  if (f_dt.lt.dt) then
-                    do while (mneg .lt.f_mneg_param) 
-                      if (dttemp+f_dt .eq. dt) then
-                        call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
-                        exit
-                      else
-                        dt1=f_dt
-                        f_dt=MIN(2.0*f_dt,dt-dttemp)
-                        call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
-                        call flocmod_mass_control(NNout,mneg)
-                        if (mneg .gt. f_mneg_param) then 
-                          f_dt=dt1
-                          call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
-                          exit
-                        endif
-                      endif
-                    enddo
-                  endif
-                endif
-                dttemp=dttemp+f_dt
-                NNin(:)=NNout(:) ! update new Floc size distribution
-                    ! redistribute negative masses if any on positive classes, 
-                    ! depends on f_mneg_param
-                call flocmod_mass_redistribute(NNin)
-                if (dttemp.eq.dt) exit
-              enddo ! loop on full dt
-            endif ! only if cvtotmud > f_clim
-
-            ! update mass concentration for all mud classes
-            do ised=1,NMUD
-              susmud(i,k,ised)=NNin(ised)*f_mass(ised)
-            enddo
-          enddo
-        enddo
-!
-!-----------------------------------------------------------------------
-!  Update global tracer variables.
-!-----------------------------------------------------------------------
-!
-        do ised=1,NMUD
-          indx = itrc_mud+ised-1
-          do k=1,N
-            do i=Istr,Iend
-              t(i,j,k,nnew,indx)=susmud(i,k,ised)    !*Hz(i,j,k)
-       !   write(*,*) 'susmud : ', i, j,k,susmud(i,k,ised),t(i,j,k,nnew,indx)
-           enddo
-          enddo
-        enddo
+                nueau = 1.5E-6
+                Gval=sqrt(diss/nueau)
+            endif ! not l_testcase
             
-      end do  !J_LOOP
+            CALL flocmod_main( dt, 
+     &            t(i,j,k,nnew,itrc_mud:itrc_mud+NMUD-1),  
+     &            Gval )
+
+          enddo
+        enddo
+      enddo  !J_LOOP
 
       return
-
       end subroutine sed_flocmod_tile
-
-
-      subroutine flocmod_collfrag(Gval)
-
-!&E--------------------------------------------------------------------------
-!&E                 ***  ROUTINE flocmod_collfrag  ***
-!&E
-!&E ** Purpose : computation of collision fragmentation term, 
-!&E              based on McAnally and Mehta, 2001
-!&E
-!&E ** Description :
-!&E
-!&E ** Called by : flocmod_comp_fsd
-!&E
-!&E ** External calls : 
-!&E
-!&E ** Reference :
-!&E
-!&E ** History :
-!&E     ! 2013-09 (Romaric Verney)
-!&E
-!&E--------------------------------------------------------------------------
-      implicit none 
-#  include "param.h"
-#  include "scalars.h"
-#  include "sediment.h"
-      real,intent(in) :: Gval
-
-!! * Local declarations
-      integer       iv1,iv2,iv3
-      real f_fp,f_fy,f_cfcst,gcolfragmin,gcolfragmax
-      real gcolfragiv1,gcolfragiv2,f_weight,mult
-      real cff1, cff2
-      real, dimension(NMUD)::  fdiam,fmass  !RB check dim
-! shorten names
-!RB to change
-      fdiam=f_diam
-      fmass=f_mass(1:NMUD)
-!  !!--------------------------------------------------------------------------
-!! * Executable part
-
-      f_fp=0.1
-      f_fy=1e-10
-      f_cfcst=3.0/16.0
-      f_g4(1:NMUD,1:NMUD,1:NMUD)=0.0
-      f_l4(1:NMUD,1:NMUD)=0.0
-      cff1=2.0/(3.0-f_nf)
-      cff2=1.0/rhoref
-
-      do iv1=1,NMUD
-       do iv2=1,NMUD
-        do iv3=iv2,NMUD
-           ! fragmentation after collision probability based on 
-     ! Gval for particles iv2 and iv3
-           ! gcolfrag=(collision induced shear) / (floc strength)
-
-           gcolfragmin=2.0*(Gval*(fdiam(iv2)+fdiam(iv3)))            
-     &          **2.0*fmass(iv2)*fmass(iv3)/(pi*f_fy*f_fp*           
-     &          fdiam(iv3)**2.0*(fmass(iv2)+fmass(iv3))              
-     &          *((f_rho(iv3)-rhoref)*cff2)**cff1)
-
-           gcolfragmax=2.0*(Gval*(fdiam(iv2)+fdiam(iv3)))            
-     &          **2.0*fmass(iv2)*fmass(iv3)/(pi*f_fy*f_fp*           
-     &          fdiam(iv2)**2.0*(fmass(iv2)+fmass(iv3))              
-     &          *((f_rho(iv2)-rhoref)*cff2)**cff1)
-
-
-           ! first case : iv3 not eroded, iv2 eroded forming 2 particles
-     ! : iv3+f_cfcst*iv2 / iv2-f_cfcst*iv2
-           if (gcolfragmin.lt.1.0 .and. gcolfragmax.ge.1.0) then  
-
-              if (((fmass(iv3)+f_cfcst*fmass(iv2)).gt.fmass(iv1-1))     
-     &             .and. ((fmass(iv3)+f_cfcst*fmass(iv2)).le.           
-     &             fmass(iv1))) then
-
-                 f_weight=((fmass(iv3)+f_cfcst*fmass(iv2)-              
-     &                     fmass(iv1-1))/(fmass(iv1)-fmass(iv1-1)))
-
-              elseif (fmass(iv3)+f_cfcst*fmass(iv2).gt.fmass(iv1)       
-     &              .and. fmass(iv3)+f_cfcst*fmass(iv2).lt.             
-     &              fmass(iv1+1)) then
-
-                 if (iv1.eq.NMUD) then 
-                    f_weight=1.0
-                 else
-
-                    f_weight=1.0-((fmass(iv3)+f_cfcst*fmass(iv2)-    
-     &                      fmass(iv1))/(fmass(iv1+1)-fmass(iv1)))
-                 endif
-
-              else
-                 f_weight=0.0
-              endif
-
-              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
-     &            (f_coll_prob_sh(iv2,iv3))*(fmass(iv3)+   
-     &            f_cfcst*fmass(iv2))/fmass(iv1)
-
-              if (fmass(iv2)-f_cfcst*fmass(iv2).gt.fmass(iv1-1)         
-     &            .and. fmass(iv2)-f_cfcst*fmass(iv2).le.               
-     &            fmass(iv1)) then
-
-                 f_weight=((fmass(iv2)-f_cfcst*fmass(iv2)-              
-     &                     fmass(iv1-1))/(fmass(iv1)-fmass(iv1-1)))
-
-              elseif (fmass(iv2)-f_cfcst*fmass(iv2).gt.fmass(iv1)       
-     &            .and. fmass(iv2)-f_cfcst*fmass(iv2).lt.               
-     &            fmass(iv1+1)) then
-
-                 if (iv1.eq.NMUD) then 
-                    f_weight=1.0
-                 else
-
-                    f_weight=1.0-((fmass(iv2)-f_cfcst*fmass(iv2)-    
-     &                       fmass(iv1))/(fmass(iv1+1)-fmass(iv1)))
-                 endif
-
-              else
-                 f_weight=0.0
-              endif
-
-              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
-     &            (f_coll_prob_sh(iv2,iv3))*(fmass(iv2)-   
-     &            f_cfcst*fmass(iv2))/fmass(iv1)
-
-
-              ! second case : iv3 eroded and iv2 eroded forming 3 particles : 
-        !iv3-f_cfcst*iv3 / iv2-f_cfcst*iv2 / f_cfcst*iv3+f_cfcst*iv2
-           elseif (gcolfragmin.ge.1.0 .and. gcolfragmax.ge.          
-     &            1.0) then  
-
-              if (f_cfcst*fmass(iv2)+f_cfcst*fmass(iv3).gt.             
-     &            fmass(iv1-1) .and. f_cfcst*fmass(iv2)+f_cfcst*        
-     &            fmass(iv3).le.fmass(iv1)) then
-
-                 f_weight=((f_cfcst*fmass(iv2)+f_cfcst*fmass(iv3)-      
-     &                   fmass(iv1-1))/(fmass(iv1)-fmass(iv1-1)))
-
-              elseif (f_cfcst*fmass(iv2)+f_cfcst*fmass(iv3).gt.         
-     &            fmass(iv1) .and. f_cfcst*fmass(iv2)+f_cfcst*          
-     &            fmass(iv3).lt.fmass(iv1+1)) then
-
-                 if (iv1.eq.NMUD) then 
-                    f_weight=1.0
-                 else
-
-                    f_weight=1.0-((f_cfcst*fmass(iv2)+f_cfcst*       
-     &                 fmass(iv3)-fmass(iv1))/(fmass(iv1+1)-            
-     &                 fmass(iv1)))
-                 endif
-
-              else
-                 f_weight=0.0
-              endif
-
-              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
-     &            (f_coll_prob_sh(iv2,iv3))*(f_cfcst*      
-     &            fmass(iv2)+f_cfcst*fmass(iv3))/fmass(iv1)
-
-              if ((1.0-f_cfcst)*fmass(iv2).gt.fmass(iv1-1)           
-     &            .and. (1.0-f_cfcst)*fmass(iv2).le.                 
-     &            fmass(iv1)) then
-
-                 f_weight=((1.0-f_cfcst)*fmass(iv2)-                 
-     &                    fmass(iv1-1))/(fmass(iv1)-fmass(iv1-1))
-
-              elseif ((1.0-f_cfcst)*fmass(iv2).gt.fmass(iv1)         
-     &            .and. (1.0-f_cfcst)*fmass(iv2).lt.                 
-     &            fmass(iv1+1)) then
-
-                 if (iv1.eq.NMUD) then 
-                    f_weight=1.0
-                 else
-
-                    f_weight=1.0-(((1.0-f_cfcst)*fmass(iv2)-      
-     &                      fmass(iv1))/(fmass(iv1+1)-fmass(iv1)))
-                 endif
-
-              else
-                 f_weight=0.0
-              endif
-
-              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
-     &                  (f_coll_prob_sh(iv2,iv3))*         
-     &                  ((1.0-f_cfcst)*fmass(iv2))/fmass(iv1) 
-
-
-              if ((1.0-f_cfcst)*fmass(iv3).gt.fmass(iv1-1) .and.     
-     &            (1.0-f_cfcst)*fmass(iv3).le.fmass(iv1)) then
-
-                 f_weight=((1.0-f_cfcst)*fmass(iv3)-fmass(iv1-1))    
-     &                   /(fmass(iv1)-fmass(iv1-1))
-
-              elseif ((1.0-f_cfcst)*fmass(iv3).gt.fmass(iv1)         
-     &            .and. (1.0-f_cfcst)*fmass(iv3).lt.                 
-     &            fmass(iv1+1)) then
-
-                 if (iv1.eq.NMUD) then 
-                    f_weight=1.0
-                 else
-
-                    f_weight=1.0-(((1.0-f_cfcst)*fmass(iv3)-      
-     &                       fmass(iv1))/(fmass(iv1+1)-fmass(iv1)))
-                 endif
-
-              else
-                 f_weight=0.0
-              endif
-
-              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
-     &                  (f_coll_prob_sh(iv2,iv3))*         
-     &                  ((1.0-f_cfcst)*fmass(iv3))/fmass(iv1)
-
-
-           endif ! end collision test case
-        enddo
-       enddo
-      enddo
-
-      do iv1=1,NMUD
-       do iv2=1,NMUD
-
-        gcolfragiv1=2.0*(Gval*(fdiam(iv1)+fdiam(iv2)))**2.0*      
-     &            fmass(iv1)*fmass(iv2)/(pi*f_fy*f_fp*fdiam(iv1)        
-     &            **2.0*(fmass(iv1)+fmass(iv2))*                     
-     &            ((f_rho(iv1)-                            
-     &            rhoref)*cff2)**cff1)
-
-        gcolfragiv2=2.0*(Gval*(fdiam(iv1)+fdiam(iv2)))**2.0*      
-     &            fmass(iv1)*fmass(iv2)/(pi*f_fy*f_fp*fdiam(iv2)        
-     &            **2.0*(fmass(iv1)+fmass(iv2))*                     
-     &            ((f_rho(iv2)-                            
-     &            rhoref)*cff2)**cff1)    
-
-        mult=1.0
-        if (iv1.eq.iv2) mult=2.0
-
-        if (iv1.eq.MAX(iv1,iv2) .and. gcolfragiv1.ge.1.0) then
-           f_l4(iv2,iv1)=f_l4(iv2,iv1)+mult*                            
-     &            (f_coll_prob_sh(iv1,iv2))
-        elseif (iv1.eq.MIN(iv1,iv2) .and. gcolfragiv2.ge.1.0) then
-           f_l4(iv2,iv1)=f_l4(iv2,iv1)+mult*                            
-     &            (f_coll_prob_sh(iv1,iv2))
-        endif
-
-       enddo
-      enddo
-
-      f_g4(1:NMUD,1:NMUD,1:NMUD)=
-     &            f_g4(1:NMUD,1:NMUD,1:NMUD)*f_collfragparam
-      f_l4(1:NMUD,1:NMUD)=f_l4(1:NMUD,1:NMUD)*f_collfragparam
-
-      return
-      end subroutine flocmod_collfrag
-
-
-      subroutine flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
-
-!&E--------------------------------------------------------------------------
-!&E                 ***  ROUTINE flocmod_comp_fsd  ***
-!&E
-!&E ** Purpose : computation of floc size distribution
-!&E
-!&E ** Description :
-!&E
-!&E ** Called by : flocmod_main
-!&E
-!&E ** External calls : 
-!&E
-!&E ** Reference :
-!&E
-!&E ** History :
-!&E     ! 2013-09 (Romaric Verney)
-!&E
-!&E--------------------------------------------------------------------------
-      implicit none 
-#  include "param.h"
-#  include "scalars.h"
-#  include "sediment.h"
-
-!! * Arguments
-      real,intent(in) :: Gval
-      real,dimension(1:NMUD),intent(in)  :: NNin
-      real,dimension(1:NMUD),intent(out) :: NNout
-      real,intent(in) :: f_dt
-
-!! * Local declarations
-      integer  iv1,iv2,iv3
-      real tmp_g1,tmp_g3,tmp_l1,tmp_l3,tmp_l4,tmp_g4
-      real,dimension(1:NMUD,1:NMUD,1:NMUD)     :: f_g1_tmp
-      real,dimension(1:NMUD,1:NMUD)           :: f_l1_tmp
-      
-!!--------------------------------------------------------------------------
-!! * Executable part
-
-      tmp_g1=0.0
-      tmp_g3=0.0
-      tmp_g4=0.0
-      tmp_l1=0.0
-      tmp_l3=0.0
-      tmp_l4=0.0    
-      f_g1_tmp(1:NMUD,1:NMUD,1:NMUD)=0.0
-      f_l1_tmp(1:NMUD,1:NMUD)=0.0
-
-      if (l_COLLFRAG) call flocmod_collfrag(Gval)
-
-      do iv1=1,NMUD
-       do iv2=1,NMUD
-        do iv3=1,NMUD
-           if (l_ASH) then
-              f_g1_tmp(iv2,iv3,iv1)=f_g1_tmp(iv2,iv3,iv1)+              
-     &            f_g1_sh(iv2,iv3,iv1)*Gval   
-           endif
-           if (l_ADS) then
-              f_g1_tmp(iv2,iv3,iv1)=f_g1_tmp(iv2,iv3,iv1)+              
-     &            f_g1_ds(iv2,iv3,iv1)   
-           endif
-
-           tmp_g1=tmp_g1+(NNin(iv3)*(f_g1_tmp(iv2,iv3,iv1))*NNin(iv2))
-
-           if (l_COLLFRAG) then
-              tmp_g4=tmp_g4+(NNin(iv3)*                                 
-     &            (f_g4(iv2,iv3,iv1)*Gval)*NNin(iv2))
-           endif
-        enddo
-
-        tmp_g3=tmp_g3+f_g3(iv2,iv1)*NNin(iv2)*             
-     &            Gval**1.5
-
-        if (l_ASH) then
-           f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+                         
-     &           f_l1_sh(iv2,iv1)*Gval
-        endif
-        if (l_ADS) then
-           f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+                         
-     &            f_l1_ds(iv2,iv1)*Gval
-        endif
-
-        tmp_l1=tmp_l1+(f_l1_tmp(iv2,iv1))*NNin(iv2)
-
-        if (l_COLLFRAG) then
-           tmp_l4=tmp_l4+(f_l4(iv2,iv1)*Gval)*NNin(iv2)
-        endif
-       enddo
-
-       tmp_l1=tmp_l1*NNin(iv1)
-       tmp_l4=tmp_l4*NNin(iv1)
-       tmp_l3=f_l3(iv1)*Gval**1.5*NNin(iv1)
-
-       NNout(iv1)=NNin(iv1)+ f_dt*(tmp_g1+tmp_g3+tmp_g4-(tmp_l1+        
-     &            tmp_l3+tmp_l4))
-
-       tmp_g1=0.0
-       tmp_g3=0.0
-       tmp_g4=0.0
-       tmp_l1=0.0
-       tmp_l3=0.0
-       tmp_l4=0.0    
-      enddo
-
-      return
-      end subroutine flocmod_comp_fsd
-
-
-
-      subroutine flocmod_mass_control(NN,mneg)
-
-!&E--------------------------------------------------------------------------
-!&E                 ***  ROUTINE flocmod_mass_control  ***
-!&E
-!&E ** Purpose : Compute mass in every class after flocculation and 
-!&E              returns negative mass if any
-!&E
-!&E ** Description :
-!&E
-!&E ** Called by : flocmod_main
-!&E
-!&E ** External calls : 
-!&E
-!&E ** Reference :
-!&E
-!&E ** History :
-!&E     ! 2013-09 (Romaric Verney)
-!&E
-!&E--------------------------------------------------------------------------
-      implicit none 
-#  include "param.h"
-#  include "scalars.h"
-#  include "sediment.h"
-
-!! * Local declarations
-      integer      :: iv1
-      real,intent(out)     :: mneg
-      real,dimension(1:NMUD),intent(in)     :: NN
-      !real,DIMENSION(0:NMUD+1)      :: f_mass
-
-!!--------------------------------------------------------------------------
-!! * Executable part
-
-      mneg=0.0
-
-      do iv1=1,NMUD
-       if (NN(iv1).lt.0.0) then
-         mneg=mneg-NN(iv1)*f_mass(iv1)
-       endif
-      enddo
-
-      return
-      end subroutine flocmod_mass_control
-
-
-      subroutine flocmod_mass_redistribute(NN)
-
-!&E--------------------------------------------------------------------------
-!&E                 ***  ROUTINE flocmod_mass_redistribute  ***
-!&E
-!&E ** Purpose : based on a tolerated negative mass parameter, negative masses  
-!&E              are redistributed linearly towards remaining postive masses 
-!&E              and negative masses are set to 0
-!&E                   
-!&E ** Description :
-!&E
-!&E ** Called by : flocmod_main
-!&E
-!&E ** External calls : 
-!&E
-!&E ** Reference :
-!&E
-!&E ** History :
-!&E     ! 2013-09 (Romaric Verney)
-!&E
-!&E--------------------------------------------------------------------------
-!! * Modules used
-      implicit none 
-#  include "param.h"
-#  include "scalars.h"
-#  include "sediment.h"
-
-!! * Local declarations
-      integer      :: iv
-      real     :: npos
-      real     :: mneg
-      real, dimension(1:NMUD),intent(inout)     :: NN
-      real, dimension(1:NMUD)                   :: NNtmp
-      !real,DIMENSION(0:NMUD+1)      :: f_mass
-!!--------------------------------------------------------------------------
-!! * Executable part
-
-      mneg=0.0
-      npos=0.0
-      NNtmp(:)=NN(:)
-
-      do iv=1,NMUD
-       if (NN(iv).lt.0.0) then
-         mneg=mneg-NN(iv)*f_mass(iv)
-         NNtmp(iv)=0.0
-       else
-         npos=npos+1.0
-       endif
-      enddo
-
-      if (mneg.gt.0.0) then 
-       if (npos.eq.0.0) then
-         write(*,*) 'CAUTION : all floc sizes have negative mass!'
-         write(*,*) 'SIMULATION STOPPED'
-         STOP    
-       else
-         do iv=1,NMUD
-           if (NN(iv).gt.0.0) then
-              NN(iv)=NN(iv)-mneg/sum(NNtmp)*NN(iv)/                     
-     &            f_mass(iv)
-           else
-              NN(iv)=0.0
-           endif
-         enddo
-       endif
-      endif
-
-      return
-
-      end subroutine flocmod_mass_redistribute
-
-
-      subroutine flocmod_comp_g(k,i,j,Gval,diss)
-!&E--------------------------------------------------------------------------
-!&E                 ***  ROUTINE flocmod_comp_g  ***
-!&E
-!&E ** Purpose : compute shear rate to estimate shear aggregation and erosion  
-!&E 
-!&E ** Description :
-!&E
-!&E ** Called by : flocmod_main
-!&E
-!&E ** External calls : 
-!&E
-!&E ** Reference :
-!&E
-!&E ** History :
-!&E     ! 2013-09 (Romaric Verney)
-!&E
-!&E--------------------------------------------------------------------------
-      implicit none 
-#  include "param.h"
-#  include "scalars.h"
-#  include "sediment.h"
-
-!! * Local declarations
-      integer,  intent(in)      :: k,i,j
-      real,intent(out)     :: Gval
-      real     :: htn,ustar,z,diss,nueau
-! l_testcase - if .TRUE. sets G(t) to values from lab experiment
-!!--------------------------------------------------------------------------
-!! * Executable part
-!    nueau=1.06e-6
-!    ustar=sqrt(tauskin(i,j)/rhoref)
-!    htn=h0(i,j)+ssh(i,j)
-!    z=(1.0+sig(k))*htn
-      
-!
-! ALA from CRS
-!
-       nueau = 1.5E-6
-      if (l_testcase) then
-        ! reproducing flocculation experiment Verney et al., 2011
-       Gval=0.0
-       if (time .lt. 7201.0) then
-        Gval=1.0
-       elseif (time .lt. 8401.0) then
-        Gval=2.0
-       elseif (time .lt. 9601.0) then
-        Gval=3.0  
-       elseif (time .lt. 10801.0) then
-        Gval=4.0
-       elseif (time .lt. 12601.0) then
-        Gval=12.0
-       elseif (time .lt. 13801.0) then
-        Gval=4.0
-       elseif (time .lt. 15001.0) then
-        Gval=3.0
-       elseif (time .lt. 16201.0) then
-        Gval=2.0
-       elseif (time .lt. 21601.0) then
-        Gval=1.0
-       elseif (time .lt. 25201.0) then
-        Gval=0.0
-       elseif (time .lt. 30601.0) then
-        Gval=1.0
-       elseif (time .lt. 31801.0) then
-        Gval=2.0                     
-       elseif (time .lt. 33001.0) then
-        Gval=3.0       
-       elseif (time .lt. 34201.0) then
-        Gval=4.0
-       elseif (time .lt. 36001.0) then
-        Gval=12.0
-       elseif (time .lt. 37201.0) then
-        Gval=4.0
-       elseif (time .lt. 38401.0) then
-        Gval=3.0
-       elseif (time .lt. 39601.0) then
-        Gval=2.0
-       elseif (time .lt. 45001.0) then
-        Gval=1.0
-       elseif (time .lt. 48601.0) then
-        Gval=0.0
-       elseif (time .lt. 54001.0) then
-        Gval=1.0
-       elseif (time .lt. 55201.0) then
-        Gval=2.0                     
-       elseif (time .lt. 56401.0) then
-        Gval=3.0       
-       elseif (time .lt. 57601.0) then
-        Gval=4.0
-       else 
-        Gval=12.0
-       endif
-      else
-         Gval=sqrt(diss/nueau)
-      endif
-! NO KLUDGE
-!      Gval = 12.0
-      return
-      end subroutine flocmod_comp_g
       
 # endif /* SED_FLOCS */
 !

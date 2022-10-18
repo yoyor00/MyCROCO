@@ -10,7 +10,7 @@
 export ONLINE_COMP=0
 
 # Time steps
-export DT_OCE=600
+export DT_OCE=3600
 export NDTFAST=60
 
 # Parameter 
@@ -29,7 +29,7 @@ export ini_ext='ini_SODA' # ini extension file (ini_SODA,...)
 export bdy_ext='bry_SODA' # bry extension file (clm_SODA,bry_SODA,...)
 export surfrc_flag="TRUE" # Flag if surface forcing is needed (FALSE if coupling with the atmosphere, TRUE otherwise)
 export interponline=0 # switch (1=on, 0=off) for online surface interpolation. Only works with MONTHLY input files!
-export frc_ext='blk_CFSR' # surface forcing extension(blk_CFSR, frc_CFSR,...). If interponline=1 precise the type (ECMWF, CFSR,...). If AROME/ARPEGE, specifies the file name AROME_*.nc (Inthis case, by default we define 24 records per days)
+export frc_ext='blk_ERA5' # surface forcing extension(blk_ERA5, frc_ERA5,...). If interponline=1 precise the type (ERA_ECMWF or AROME,  [CFSR by default], names as cppkey name in croco)
 export tide_flag="FALSE" # the forcing extension must be blk_??? otherwise tide forcing overwrites it 
 export river_flag="FALSE"
 
@@ -38,7 +38,7 @@ export river_flag="FALSE"
 #                                          WARNING                                       ! 
 # When XIOS is activated the following values (for the model) are not taken into account !
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-export oce_his_sec=3600     # history output interval (in number of second) 
-export oce_avg_sec=3600     # average output interval (in number of second) 
+export oce_his_sec=86400     # history output interval (in number of second) 
+export oce_avg_sec=86400     # average output interval (in number of second) 
 
 

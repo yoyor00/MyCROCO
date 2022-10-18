@@ -39,7 +39,9 @@
     USE comsubstance
     USE module_MUSTANG
     USE module_substance
-    
+# if defined key_MUSTANG_flocmod
+    USE flocmod, ONLY : f_ws
+#endif
     IMPLICIT NONE
 
     !! * Accessibility 
@@ -67,6 +69,7 @@
     PUBLIC sed_exchange_corflu
 #endif
 #endif
+
 
 PRIVATE
 
@@ -124,7 +127,7 @@ DO i = ifirst, ilast
         DO k = 1, NB_LAYER_WAT
             cmes = 0.0_rsh
             DO ivpc = imud1, nvpc
-                cmes = cmes + WATER_CONCENTRATION(i, j, k, 1, itemp + ntrc_salt + ivpc)
+                cmes = cmes + WATER_CONCENTRATION(i, j, k, nstp, itemp + ntrc_salt + ivpc)
             ENDDO
             cmes = MAX(0.0_rsh, cmes)
 
@@ -134,10 +137,8 @@ DO i = ifirst, ilast
             ENDDO
             
             ! next mud settling velocity 
-#ifdef key_MUSTANG_flocmod
-            DO iv = imud1, nvp         
-                ws_part(i, j, k, itemp + ntrc_salt + iv) = f_ws(iv)  
-            ENDDO
+#ifdef key_MUSTANG_flocmod   
+            ws_part(i, j, k, itemp + ntrc_salt + imud1 : itemp + ntrc_salt + imud2 ) = f_ws(1:nv_mud)  
 #else
             DO iv = imud1, nvp
                 ! Free settling velocity - flocculation
@@ -235,6 +236,9 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E--------------------------------------------------------------------------
 !! * Modules used
+#if defined key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
+    USE flocmod, ONLY : flocmod_comp_g
+#endif
 #  include "mixing.h"
 #  include "ocean3d.h"
 
@@ -243,21 +247,40 @@ INTEGER, INTENT(IN)       :: ifirst, ilast, jfirst, jlast
 
 !! * Local declarations
 INTEGER        :: i, j, k
-REAL(KIND=rsh) :: dist_surf_on_bottom, nuw
+REAL(KIND=rsh) :: dist_surf_on_bottom, nuw, diss
 
 nuw = 1.0e-6
+
 DO j = jfirst, jlast
 DO i = ifirst, ilast
     IF(htot(i, j) .GT. h0fond)  THEN
     DO k = 1, N
-        dist_surf_on_bottom = ((z_w(i, j, N) - z_r(i, j, k)) / (z_r(i, j, k) - z_w(i, j, 0)))
-        gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
-                        (nuw + epsilon_MUSTANG) * dist_surf_on_bottom) 
-    END DO
+#if defined key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
+        call flocmod_comp_g(gradvit(k, i, j), time-time_start)
+#else
+#if defined GLS_MIXING
+        !
+        ! Dissipation from turbulence clossure
+        !
+        if (k.eq.1) then
+            diss = Eps_gls(i,j,k)
+        elseif (k.eq.N) then
+            diss = Eps_gls(i,j,k-1)
+        else
+            diss = 0.5*(Eps_gls(i,j,k-1)+Eps_gls(i,j,k))
+        endif
+        gradvit(k, i, j) = sqrt(diss/nuw)
+#else
     ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
     ! if  turbulence dissipation rate has not been already evaluated: 
     ! use empirical formula from   Nezu and Nakawaga (1993)
     ! turbulence dissipation_rate = ustarbot**3 /Karman/Htot * (distance from surface/distance from bottom)
+        dist_surf_on_bottom = ((z_w(i, j, N) - z_r(i, j, k)) / (z_r(i, j, k) - z_w(i, j, 0)))
+        gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
+                        (nuw + epsilon_MUSTANG) * dist_surf_on_bottom) 
+#endif
+#endif
+    END DO
     ENDIF
 ENDDO
 ENDDO
@@ -327,6 +350,7 @@ END SUBROUTINE sed_gradvit
 # endif  
 
   ! Executable part
+
 
 #  ifdef BBL /*warning, d50 is constant (160microns) in the bustrw/bvstrw computation see bbl.F */
   do j = jfirst, jlast
@@ -564,6 +588,7 @@ END SUBROUTINE sed_gradvit
   enddo
 
   END SUBROUTINE sed_skinstress
+
 
 !!==============================================================================
 #ifdef key_MUSTANG_bedload

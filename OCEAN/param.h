@@ -166,6 +166,8 @@
 #elif defined SED_TOY
 # ifdef SED_TOY_ROUSE
       parameter (LLm0=5,    MMm0=5,    N=100)  !  5 cm resolution
+# elif defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
+      parameter (LLm0=5,    MMm0=5,    N=50)  !  10 cm resolution
 # else
       parameter (LLm0=4,    MMm0=3,    N=20)   !  1 m resolution
 # endif
@@ -281,6 +283,17 @@
 #endif
 !
 !----------------------------------------------------------------------
+! Minimum water depth above which wave forcing is applied 
+! (D_wavedry>D_wetdry if WET_DRY is activated)
+!----------------------------------------------------------------------
+#ifdef MRL_WCI
+# ifdef WAVE_DRY
+      real D_wavedry
+      parameter (D_wavedry=1.0)
+# endif
+#endif    
+!
+!----------------------------------------------------------------------
 ! Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !
@@ -293,7 +306,7 @@
 # elif defined ESTUARY
       parameter (Msrc=1)        ! ====== == ===== =======
 # else 
-      parameter (Msrc=10)        ! ====== == ===== =======
+      parameter (Msrc=30)        ! ====== == ===== =======
 # endif
 #endif
 #ifdef FLOATS
@@ -444,7 +457,11 @@
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       integer  itsubs1, itsubs2, ntfix
 #  ifdef SED_TOY
+#  if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
+      parameter (ntrc_subs=15 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+# else
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+# endif
 #  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined ESTUARY
@@ -481,7 +498,7 @@
 #   if defined SED_TOY_RESUSP || defined SED_TOY_CONSOLID
       parameter (NSAND=2, NMUD=2, NGRAV=0)
       parameter (NLAY=41)
-#   elif defined SED_TOY_FLOC
+#   elif defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
       parameter (NSAND=4, NMUD=15, NGRAV=0)
       parameter (NLAY=20)
 #   elif defined SED_TOY_ROUSE 
@@ -492,8 +509,8 @@
       parameter (NSAND=2, NMUD=0, NGRAV=0)
       parameter (NLAY=1)
 #  endif
-      parameter (NST=NSAND+NMUD+NGRAV)
-      parameter (ntrc_sed=NST)
+      parameter (ntrc_sed=NSAND+NMUD+NGRAV)
+      parameter (NST=ntrc_sed)
 # else
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
@@ -526,7 +543,7 @@
 #  endif
 # endif /* MUSTANG */
 
-# if defined BBL && defined AGRIF
+# if defined SEDIMENT && defined AGRIF
       integer Agrif_lev_sedim
       parameter (Agrif_lev_sedim=0)
 # endif

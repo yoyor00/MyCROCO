@@ -48,12 +48,6 @@ MODULE sed_MUSTANG
    !&E     FUNCTION dzsminvar                   ! function which return dzsmin
    !&E     FUNCTION MUSTANG_E0sand              ! function to compute E0 sand
 
-   !&E
-   !&E  ---for module floculation ----
-   !&E     subroutine flocmod_main              ! main routine used to compute aggregation /fragmentation processes 
-   !&E     subroutine flocmod_comp_fsd          ! computation of floc size distribution
-   !&E     subroutine flocmod_collfrag          ! computation of collision fragmentation term, based on McAnally and Mehta, 2001
-   !&E
    !&E  **********************************************************************
    !&E  *** requires to have advected substances in a specific order       ***
    !&E  ***  in water : cw (iv,k) k=1,kmax=NB_LAYER_WAT bottom to surface  ***
@@ -102,7 +96,7 @@ MODULE sed_MUSTANG
 
    !! variables  SUBSTANCE and variable from croco known via 
    USE comsubstance
-   Use module_substance
+   USE module_substance
 
    USE comMUSTANG 
    USE coupler_MUSTANG 
@@ -185,6 +179,9 @@ MODULE sed_MUSTANG
    USE reactionsinsed,  ONLY : reactions_in_sed
    USE bioloinit,     ONLY : p_txfiltbenthmax
 #endif
+#if defined key_MUSTANG_flocmod
+   USE flocmod,  ONLY : flocmod_main
+#endif
 
    !! * Arguments
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
@@ -254,11 +251,17 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FLOCMOD :    compute aggregation /fragmentation processes  !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    CALL flocmod_main(ifirst, ilast, jfirst, jlast, dt_true,  &
-                        WATER_CONCENTRATION)
-                        
-    ! MPI exchange of new water concentrations
-    ! ** TODO** in CROCO CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION)
+    DO j=jfirst,jlast
+        DO i=ifirst,ilast   
+            IF(htot(i,j) > h0fond) THEN
+                DO k=1,NB_LAYER_WAT
+                    CALL flocmod_main( dt_true, &
+                        t(i,j,k,nstp,itsubs1-1+imud1:itsubs1-1+nvpc),  &
+                        gradvit(k,i,j) )
+                ENDDO
+            ENDIF
+        ENDDO
+    ENDDO
 
 #endif
 
@@ -1312,7 +1315,7 @@ MODULE sed_MUSTANG
    
    !! * Local declarations
    INTEGER                          :: ivp, i, j
-   REAL(KIND=rlg)                   :: tocdpe, depo
+   REAL(KIND=rlg)                   :: tocdpe
 
    !!---------------------------------------------------------------------------
    !! * Executable part
@@ -1332,7 +1335,6 @@ MODULE sed_MUSTANG
                           * MAX(0.0_rsh, 1.0_rsh - (tauskin(i, j) / tocdpe)) &  
                           * tocd(ivp) / tocdpe
          ENDIF
-         depo = flx_w2s(ivp, i, j) * cw_bottom_MUSTANG(ivp, i, j)
        ENDDO
 #ifdef key_Pconstitonly_insed
        DO ivp = nvpc+1, nvp
@@ -1349,7 +1351,6 @@ MODULE sed_MUSTANG
                           * MAX(0.0_rsh,1.0_rsh - (tauskin(i, j) / tocdpe)) &  
                           * tocd(ivp) / tocdpe
          ENDIF
-         depo = flx_w2s(ivp, i, j) * cw_bottom_MUSTANG(ivp, i, j)
          IF(irkm_var_assoc(ivp) > 0 ) THEN
           IF (flx_w2s(irkm_var_assoc(ivp),i,j) == 0.0_rsh) flx_w2s(ivp, i, j) = 0.0_rsh
          END IF
@@ -8717,624 +8718,9 @@ END SUBROUTINE MUSTANGV2_eval_bedload
 
 ! end key_MUSTANG_bedload
 #endif
-   !!==============================================================================
+!!==============================================================================
 
 
-#ifdef key_MUSTANG_flocmod
-  
-  SUBROUTINE flocmod_main(ifirst, ilast, jfirst, jlast, dt_true,  &
-                        WATER_CONCENTRATION)
- 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_main  ***
-  !&E
-  !&E ** Purpose : main routine used to compute aggregation /fragmentation processes at every i,j,k cell
-  !&E
-  !&E ** Description :
-  !&E
-  !&E ** Called by : 
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E--------------------------------------------------------------------------
-  !! * Modules used
-   USE sed_MUSTANG_HOST,    ONLY :  flocmod_comp_g
-
-  !! * Arguments
-   INTEGER, INTENT(IN)            :: ifirst, ilast, jfirst, jlast                           
-   REAL(KIND=rlg),INTENT(IN)      :: dt_true             ! !  (dt_true=halfdt in MARS)
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT) :: WATER_CONCENTRATION         
-
-   
-  !! * Local declarations
-  LOGICAL                          :: f_ld50,f_ld10,f_ld90
-  INTEGER                          :: iv1,iv2,i,j,k,ifois2,ifois3
-  REAL(KIND=rsh)                   :: cvtotmud,Gval,mneg,f_csum,sum_flocs
-  REAL(KIND=rlg)                   :: dttemp,dtmin,dt1,f_dt
-  REAL(KIND=rsh),DIMENSION(1:nv_mud)     :: cv_tmp,NNin,NNout
-  REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud,1:nv_mud) :: f_g4   ! Collision fragmentation gain term
-  REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud)  :: f_l4           ! Collision fragmentation loss term  
-  
-  REAL(KIND=rsh), PARAMETER  :: f_clim = 0.001 ! min concentration below which flocculation processes are not calculated
-  
-  !!--------------------------------------------------------------------------
-  !! * Executable part
-
-! **TODO** check if this is to keep for CROCO
-!  ! choose another CPP key  and test if you want to apply this testcase with this gradvit
-!    IF (l_testcase .AND. num_testcase == 32) THEN
-!              call flocmod_comp_g(Gval)
-!   ENDIF
-!#endif
-
-     DO j=jfirst,jlast
-      DO i=ifirst,ilast
-
-       IF(htot(i,j) > h0fond) THEN
-
-        DO k=1,NB_LAYER_WAT
-      
-          dtmin=dt_true
-        
-         ! autre possibilite A REVOIR (voir plus loin) :
-         ! option eliminee car tests d efficacite non concluants et probleme de non conservativite 
-          !f_dt=MIN(f_dtmin(k,i,j),dt_true)
-          f_dt=dt_true
-          dttemp=0.0_rlg
-        
-          cv_tmp(1:nv_mud)=WAT_CONC_ALLMUD_ijk   ! MARS : cv_wat(imud1:nvpc,k,i,j) ! concentration of all mud classes in one grid cell
-          cvtotmud=sum(cv_tmp(1:nv_mud))
-        
-
-          !Gval= !shear rate value calculated or estimated from the hydrodynmic model
-          NNin(1:nv_mud)=MAX(0.0_rsh,cv_tmp(1:nv_mud)/f_mass(1:nv_mud))
-
-         ! Do iv1=1,nv_mud
-         !   IF (NNin(iv1).lt.0.0_rsh) THEN
-         !     write(ierrorlog,*) '***********************************************'
-         !     write(ierrorlog,*) 'CAUTION, negative mass at cell i,j,k : ',i,j,k
-         !     write(ierrorlog,*) '***********************************************' 
-         !   ENDIF
-         ! ENDDO
-
-          IF (cvtotmud .gt. f_clim) THEN
-          
-! **TODO** check if this is to keep for CROCO
-!  ! choose another CPP key  and test if you want to apply this testcase with this gradvit
- !           IF (l_testcase .AND. num_testcase == 32) THEN
- !              ! Gval estimated before loop i,j (testcase 1DV)
- !              gradvit(k,i,j)=Gval
- !           ELSE
-
-               Gval=gradvit(k,i,j)
-
-
-            DO WHILE (dttemp .LE. dt_true)
-!	                print*, 'f_dt:',f_dt
-          
-              call flocmod_comp_fsd(NNin,NNout,Gval,f_g4,f_l4,f_dt)
-              call flocmod_mass_control(NNout,mneg)
-            
-!	                write(*,*) 'mneg',mneg
-            
-              IF (mneg .GT. f_mneg_param) THEN
-                !ifois2=0
-                DO WHILE (mneg .GT. f_mneg_param)
-                 ! ifois2=ifois2+1
-                 ! if(ifois2 > 1) write(*,*)'ifois2>1',ifois2,t,i,j,k,cvtotmud,mneg
-                  f_dt=MIN(f_dt/2._rlg,dt_true-dttemp)
-                  call flocmod_comp_fsd(NNin,NNout,Gval,f_g4,f_l4,f_dt)
-                  call flocmod_mass_control(NNout,mneg)  
-                ENDDO
-!	                  IF (f_dt.lt.1._rlg) THEN
-!	                   write(*,*) 'apres : Gval,f_dt',Gval, f_dt,dttemp
-!		             ENDIF
-
-         ! normalement pas utile si f_dt=dt_true au depart pour chaque maille
-         ! remettre tout ca si f_dt=f_dtmin(k,i,j)
-         ! option eliminee car tests d efficacite non concluants et probleme de non conservativite
-         ! A REVOIR
-              !ELSE
-              !  IF (f_dt < dt_true) THEN
-              !   ifois3=0
-              !    DO WHILE (mneg  .LE. f_mneg_param)
-              !       ifois3=ifois3+1
-              !       if(ifois3 > 2) write(*,*)'ifois3>2',ifois3,t,i,j,k,mneg,f_dt,dttemp
-              !       if(ifois3 > 10) THEN
-              !           write(*,*) 'AhAHAHAH,!! ifois3 > 10',ifois3,t,i,j,k,mneg,f_dt,dttemp
-              !       endif
-              !       IF(2._rlg*f_dt .GE. dt_true-dttemp ) THEN
-              !          f_dt=dt_true-dttemp
-              !          call flocmod_comp_fsd(NNin,NNout,Gval,RHOREF,f_g4,f_l4,f_dt)
-              !          call flocmod_mass_control(NNout,mneg)
-              !          exit
-              !       ELSE
-              !          dt1=f_dt
-              !          f_dt=2._rlg*f_dt
-              !          call flocmod_comp_fsd(NNin,NNout,Gval,RHOREF,f_g4,f_l4,f_dt)
-              !          call flocmod_mass_control(NNout,mneg)
-              !          IF (mneg > f_mneg_param) THEN 
-              !            f_dt=dt1
-              !            call flocmod_comp_fsd(NNin,NNout,Gval,RHOREF,f_g4,f_l4,f_dt)
-              !            exit
-              !          ENDIF
-              !        ENDIF
-              !    ENDDO
-              !  ENDIF
-                !!!!!!!!!!
-              ENDIF
-              dtmin=MIN(dtmin,f_dt)
-              dttemp=dttemp+f_dt
-              NNin(:)=NNout(:) ! update new Floc size distribution
-
-              CALL flocmod_mass_redistribute(NNin) ! redistribute negative masses if any on positive classes, 
-                                             ! depends on f_mneg_param
-
-
-              IF (dttemp == dt_true) exit
-          
-            ENDDO ! loop on full dt_true
-    
-           sum_flocs=sum(NNin(1:nv_mud)*f_mass(1:nv_mud))
-          
-           IF (abs(sum_flocs-cvtotmud).le. 0.01_rsh*cvtotmud) THEN
-                NNin(:)=NNin(:)*cvtotmud/sum_flocs
-           ELSE
-             write(ierrorlog,*) 'CAUTION flocculation routine not conservative!!!'
-             write(ierrorlog,*) 'time,i,j,k= ',t,i,j,k
-             write(ierrorlog,*) 'before : cvtotmud= ',cvtotmud
-             write(ierrorlog,*) 'after  : cvtotmud= ',sum_flocs
-             write(ierrorlog,*) 'absolute difference  : cvtotmud= ',abs(cvtotmud-sum_flocs)
-             write(ierrorlog,*) 'Simultation stopped'
-    
-             STOP
-           ENDIF
-          
-          ENDIF ! only if cvtotmud > f_clim
-
-! update mass concentration for all mud classes
-          WAT_CONC_ALLMUD_ijk=NNin(1:nv_mud)*f_mass(1:nv_mud)
-
-! compute floc distribution statistics before output
-          f_csum=0.0_rsh
-          f_ld50=.true.
-          f_ld10=.true.
-          f_ld90=.true.
-
-          f_davg(k,i,j)=sum(NNin(1:nv_mud)*f_mass(1:nv_mud)*f_diam(1:nv_mud))/(sum(NNin(1:nv_mud)*f_mass(1:nv_mud))+epsilon_MUSTANG)
-          f_dtmin(k,i,j)= REAL(dtmin,rsh)
-        
-          DO iv1=1,nv_mud
-        
-           f_csum=f_csum+NNin(iv1)*f_mass(iv1)/((sum(NNin(1:nv_mud)*f_mass(1:nv_mud)))+epsilon_MUSTANG)
-           IF (f_csum.gt.0.1_rsh .and. f_ld10) THEN
-              f_d10(k,i,j)=f_diam(iv1)
-              f_ld10=.false.
-           ENDIF
-          
-           IF (f_csum.gt.0.5_rsh .and. f_ld50) THEN
-              f_d50(k,i,j)=f_diam(iv1)
-              f_ld50=.false.
-           ENDIF
-          
-           IF (f_csum.gt.0.9_rsh .and. f_ld90) THEN
-              f_d90(k,i,j)=f_diam(iv1)
-              f_ld90=.false.
-           ENDIF
-          ENDDO    
-        ENDDO
-      ENDIF
-    ENDDO
-  ENDDO
-
-  END SUBROUTINE flocmod_main
-  
-
-  !!===========================================================================
-  
-  SUBROUTINE flocmod_comp_fsd(NNin,NNout,Gval,f_g4,f_l4,f_dt)
- 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_comp_fsd  ***
-  !&E
-  !&E ** Purpose : computation of floc size distribution
-  !&E
-  !&E ** Description :
-  !&E
-  !&E
-  !&E ** Called by : flocmod_main
-  !&E
-  !&E--------------------------------------------------------------------------
-  !! * Modules used
-
-  !! * Arguments
-
-   REAL(KIND=rsh),INTENT(in) :: Gval,RHOREF
-   REAL(KIND=rlg),INTENT(in) :: f_dt
-   REAL(KIND=rsh),DIMENSION(1:nv_mud),INTENT(in)  :: NNin
-   REAL(KIND=rsh),DIMENSION(1:nv_mud),INTENT(out) :: NNout
-   REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud,1:nv_mud),INTENT(inout) :: f_g4   ! Collision fragmentation gain term
-   REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud),INTENT(inout)          :: f_l4   ! Collision fragmentation loss term  
-   
-  !! * Local declarations
-  INTEGER      :: iv1,iv2,iv3
-  REAL(KIND=rsh) :: mu,tmp_g1,tmp_g3,tmp_l1,tmp_l3,tmp_l4,tmp_g4
-  REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud,1:nv_mud)     :: f_g1_tmp
-  REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud)              :: f_l1_tmp
-
-  !!--------------------------------------------------------------------------
-  !! * Executable part
-
-  tmp_g1=0.0_rsh
-  tmp_g3=0.0_rsh
-  tmp_g4=0.0_rsh
-  tmp_l1=0.0_rsh
-  tmp_l3=0.0_rsh
-  tmp_l4=0.0_rsh    
-  f_g1_tmp(1:nv_mud,1:nv_mud,1:nv_mud)=0.0_rsh
-  f_l1_tmp(1:nv_mud,1:nv_mud)=0.0_rsh
-    
-  IF (l_COLLFRAG) CALL flocmod_collfrag(Gval,f_g4,f_l4)
-  
-  DO iv1=1,nv_mud
-    DO iv2=1,nv_mud
-      DO iv3=1,nv_mud
-        IF (l_ASH) THEN
-          f_g1_tmp(iv2,iv3,iv1)=f_g1_tmp(iv2,iv3,iv1)+f_g1_sh(iv2,iv3,iv1)*Gval   
-        ENDIF
-        IF (l_ADS) THEN
-          f_g1_tmp(iv2,iv3,iv1)=f_g1_tmp(iv2,iv3,iv1)+f_g1_ds(iv2,iv3,iv1)   
-        ENDIF
-
-        tmp_g1=tmp_g1+(NNin(iv3)*(f_g1_tmp(iv2,iv3,iv1))*NNin(iv2))
-
-        IF (l_COLLFRAG) THEN
-            tmp_g4=tmp_g4+(NNin(iv3)*(f_g4(iv2,iv3,iv1)*Gval)*NNin(iv2))
-        ENDIF
-      ENDDO
-      
-      tmp_g3=tmp_g3+f_g3(iv2,iv1)*NNin(iv2)*Gval**1.5_rsh
-
-      IF (l_ASH) THEN
-        f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+f_l1_sh(iv2,iv1)*Gval
-      ENDIF
-      IF (l_ADS) THEN
-        f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+f_l1_ds(iv2,iv1)*Gval
-      ENDIF
-
-      tmp_l1=tmp_l1+(f_l1_tmp(iv2,iv1))*NNin(iv2)
-      
-      IF (l_COLLFRAG) THEN
-        tmp_l4=tmp_l4+(f_l4(iv2,iv1)*Gval)*NNin(iv2)
-      ENDIF
-    ENDDO
-    
-    tmp_l1=tmp_l1*NNin(iv1)
-    tmp_l4=tmp_l4*NNin(iv1)
-    
-    tmp_l3=f_l3(iv1)*Gval**1.5_rsh*NNin(iv1)
-    
-!    write(*,*) 'iv1',(iv1)
-!    write(*,*) 'NNin',NNin(iv1)
-!    write(*,*) 'tmpg1',tmp_g1
-!    write(*,*) 'tmpg3',tmp_g3
-!    write(*,*) 'tmpl1',tmp_l1
-!    write(*,*) 'tmpl3',tmp_l3
-!    write(*,*) 'tmpl3',f_l3(iv1)*Gval**1.5_rsh
-
-    NNout(iv1)=NNin(iv1)+f_dt*(tmp_g1+tmp_g3+tmp_g4-(tmp_l1+tmp_l3+tmp_l4))
-
-    tmp_g1=0.0_rsh
-    tmp_g3=0.0_rsh
-    tmp_g4=0.0_rsh
-    tmp_l1=0.0_rsh
-    tmp_l3=0.0_rsh
-    tmp_l4=0.0_rsh    
-  ENDDO  
-
-  END SUBROUTINE flocmod_comp_fsd
-    
-  !!===========================================================================
-
-  SUBROUTINE flocmod_collfrag(Gval,f_g4,f_l4) 
- 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_collfrag  ***
-  !&E
-  !&E ** Purpose : computation of collision fragmentation term, based on McAnally and Mehta, 2001
-  !&E
-  !&E ** Description :
-  !&E
-  !&E ** Note : NUMBER_PI must be known as a parameters transmtted by coupleur 
-  !&E           in MARS : coupleur_dimhydro.h (USE ..)
-  !&E           in CROCO : module_MUSTANG.F (include..)
-  !&E
-  !&E ** Called by : flocmod_comp_fsd
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E--------------------------------------------------------------------------
-  !! * Modules used
-
-   REAL(KIND=rsh),INTENT(in) :: Gval
-   REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud,1:nv_mud),INTENT(out) :: f_g4   ! Collision fragmentation gain term
-   REAL(KIND=rsh),DIMENSION(1:nv_mud,1:nv_mud),INTENT(out)          :: f_l4   ! Collision fragmentation loss term  
-
-  !! * Local declarations
-  INTEGER        :: iv1,iv2,iv3
-  REAL(KIND=rsh) :: gcolfragmin,gcolfragmax,gcolfragiv1,gcolfragiv2 &
-                    ,f_weight,mult
-
-  !!--------------------------------------------------------------------------
-  !! * Executable part
-  
-  f_g4(1:nv_mud,1:nv_mud,1:nv_mud)=0.0_rsh
-  f_l4(1:nv_mud,1:nv_mud)=0.0_rsh
-  
-  DO iv1=1,nv_mud
-    DO iv2=1,nv_mud
-      DO iv3=iv2,nv_mud
-! fragmentation after collision probability based on Gval for particles iv2 and iv3
-! gcolfrag=(collision induced shear) / (floc strength)
- 
-        gcolfragmin=2._rsh*(Gval*(f_diam(iv2)+f_diam(iv3)))**2._rsh*f_mass(iv2)*f_mass(iv3)  &
-                      /(NUMBER_PI*f_fy*f_fp*f_diam(iv3)**2._rsh*(f_mass(iv2)+f_mass(iv3))         &
-                     *((f_rho(iv3)-RHOREF)/RHOREF)**(2._rsh/(3._rsh-f_nf)))
-
-        gcolfragmax=2._rsh*(Gval*(f_diam(iv2)+f_diam(iv3)))**2._rsh*f_mass(iv2)*f_mass(iv3)  &
-                     /(NUMBER_PI*f_fy*f_fp*f_diam(iv2)**2._rsh*(f_mass(iv2)+f_mass(iv3))         &
-                    *((f_rho(iv2)-RHOREF)/RHOREF)**(2._rsh/(3._rsh-f_nf)))
-
-
-! first case : iv3 not eroded, iv2 eroded forming 2 particles : iv3+f_cfcst*iv2 / iv2-f_cfcst*iv2
-        IF (gcolfragmin.lt.1._rsh .AND. gcolfragmax.ge.1_rsh) THEN  
-
-            IF (((f_mass(iv3)+f_cfcst*f_mass(iv2)) .GT. f_mass(iv1-1)) .AND.  &
-                ((f_mass(iv3)+f_cfcst*f_mass(iv2)).le.f_mass(iv1))) THEN
-    
-                f_weight=((f_mass(iv3)+f_cfcst*f_mass(iv2)-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1)))
-
-            ELSEIF (f_mass(iv3)+f_cfcst*f_mass(iv2).gt.f_mass(iv1)  .AND. &
-                f_mass(iv3)+f_cfcst*f_mass(iv2).lt.f_mass(iv1+1)) THEN
-
-             IF (iv1 == nv_mud) THEN 
-               f_weight=1._rsh
-             ELSE
-               f_weight=1._rsh-((f_mass(iv3)+f_cfcst*f_mass(iv2)-f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1)))
-             ENDIF
-           
-           ELSE
-              f_weight=0.0_rsh
-           ENDIF 
- 
-          f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*(f_coll_prob_sh(iv2,iv3))   &
-                          *(f_mass(iv3)+f_cfcst*f_mass(iv2))/f_mass(iv1)
-
-          IF (f_mass(iv2)-f_cfcst*f_mass(iv2).gt.f_mass(iv1-1)   .AND. &
-              f_mass(iv2)-f_cfcst*f_mass(iv2).le.f_mass(iv1)) THEN
-      
-             f_weight=((f_mass(iv2)-f_cfcst*f_mass(iv2)-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1)))
-
-          ELSEIF (f_mass(iv2)-f_cfcst*f_mass(iv2).gt.f_mass(iv1)  .AND.  &
-                  f_mass(iv2)-f_cfcst*f_mass(iv2).lt.f_mass(iv1+1)) THEN
-
-            IF (iv1.eq.nv_mud) THEN 
-                f_weight=1._rsh
-            ELSE
-               f_weight=1._rsh-((f_mass(iv2)-f_cfcst*f_mass(iv2)-f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1)))
-            ENDIF
-           
-          ELSE
-            f_weight=0.0_rsh
-          ENDIF 
- 
-          f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*(f_coll_prob_sh(iv2,iv3))   &
-                           *(f_mass(iv2)-f_cfcst*f_mass(iv2))/f_mass(iv1)
-
-
-! second case : iv3 eroded and iv2 eroded forming 3 particles : iv3-f_cfcst*iv3 / iv2-f_cfcst*iv2 / f_cfcst*iv3+f_cfcst*iv2
-        ELSEIF (gcolfragmin.ge.1._rsh .and. gcolfragmax.ge.1_rsh) THEN  ! iv2 and iv3 eroded forming new (third) particle
-
-           IF (f_cfcst*f_mass(iv2)+f_cfcst*f_mass(iv3).gt.f_mass(iv1-1) .AND.  &
-               f_cfcst*f_mass(iv2)+f_cfcst*f_mass(iv3).le.f_mass(iv1)) THEN
-      
-              f_weight=((f_cfcst*f_mass(iv2)+f_cfcst*f_mass(iv3)-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1)))
-
-          ELSEIF (f_cfcst*f_mass(iv2)+f_cfcst*f_mass(iv3).gt.f_mass(iv1) .AND.  &
-              f_cfcst*f_mass(iv2)+f_cfcst*f_mass(iv3).lt.f_mass(iv1+1)) THEN
-
-           IF (iv1.eq.nv_mud) THEN 
-              f_weight=1._rsh
-           ELSE
-              f_weight=1._rsh-((f_cfcst*f_mass(iv2)+f_cfcst*f_mass(iv3)-f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1)))
-           ENDIF
-           
-          ELSE
-            f_weight=0.0_rsh
-          ENDIF 
- 
-          f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*(f_coll_prob_sh(iv2,iv3))   &
-                          *(f_cfcst*f_mass(iv2)+f_cfcst*f_mass(iv3))/f_mass(iv1)
-
-            IF ((1._rsh-f_cfcst)*f_mass(iv2).gt.f_mass(iv1-1) .AND.  &
-                (1._rsh-f_cfcst)*f_mass(iv2).le.f_mass(iv1)) THEN
-      
-              f_weight=((1._rsh-f_cfcst)*f_mass(iv2)-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
-
-          ELSEIF ((1._rsh-f_cfcst)*f_mass(iv2).gt.f_mass(iv1) .AND.  &
-                  (1._rsh-f_cfcst)*f_mass(iv2).lt.f_mass(iv1+1)) THEN
-
-           IF (iv1.eq.nv_mud) THEN 
-              f_weight=1._rsh
-           ELSE
-              f_weight=1._rsh-(((1._rsh-f_cfcst)*f_mass(iv2)-f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1)))
-           ENDIF
-           
-          ELSE
-             f_weight=0.0_rsh
-          ENDIF 
- 
-          f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*(f_coll_prob_sh(iv2,iv3))   &
-                          *((1._rsh-f_cfcst)*f_mass(iv2))/f_mass(iv1)
-
-             IF ((1._rsh-f_cfcst)*f_mass(iv3).gt.f_mass(iv1-1) .AND.  &
-                 (1._rsh-f_cfcst)*f_mass(iv3).le.f_mass(iv1)) THEN
-      
-               f_weight=((1._rsh-f_cfcst)*f_mass(iv3)-f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
-
-          ELSEIF ((1._rsh-f_cfcst)*f_mass(iv3).gt.f_mass(iv1) .AND.  &
-                  (1._rsh-f_cfcst)*f_mass(iv3).lt.f_mass(iv1+1)) THEN
-
-           IF (iv1.eq.nv_mud) THEN 
-               f_weight=1._rsh
-           ELSE
-               f_weight=1._rsh-(((1._rsh-f_cfcst)*f_mass(iv3)-f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1)))
-           ENDIF
-           
-         ELSE
-           f_weight=0.0_rsh
-         ENDIF 
- 
-          f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*(f_coll_prob_sh(iv2,iv3))   &
-                           *((1._rsh-f_cfcst)*f_mass(iv3))/f_mass(iv1)
-
-       ENDIF ! end collision test case
-      ENDDO   
-    ENDDO
-  ENDDO
-  
-  DO iv1=1,nv_mud
-    DO iv2=1,nv_mud
-    
-      gcolfragiv1=2._rsh*(Gval*(f_diam(iv1)+f_diam(iv2)))**2._rsh*f_mass(iv1)*f_mass(iv2)  &
-                      /(NUMBER_PI*f_fy*f_fp*f_diam(iv1)**2._rsh*(f_mass(iv1)+f_mass(iv2))         &
-                      *((f_rho(iv1)-RHOREF)/RHOREF)**(2._rsh/(3._rsh-f_nf)))
-
-      gcolfragiv2=2._rsh*(Gval*(f_diam(iv1)+f_diam(iv2)))**2._rsh*f_mass(iv1)*f_mass(iv2)  &
-                      /(NUMBER_PI*f_fy*f_fp*f_diam(iv2)**2._rsh*(f_mass(iv1)+f_mass(iv2))         &
-                     *((f_rho(iv2)-RHOREF)/RHOREF)**(2._rsh/(3._rsh-f_nf)))    
-    
-      mult=1._rsh
-      IF (iv1.eq.iv2) mult=2._rsh
-      
-      IF (iv1.eq.MAX(iv1,iv2) .and. gcolfragiv1.ge.1._rsh) THEN
-        f_l4(iv2,iv1)=f_l4(iv2,iv1)+mult*(f_coll_prob_sh(iv1,iv2))
-      ELSEIF (iv1.eq.MIN(iv1,iv2) .and. gcolfragiv2.ge.1._rsh) THEN
-        f_l4(iv2,iv1)=f_l4(iv2,iv1)+mult*(f_coll_prob_sh(iv1,iv2))
-      ENDIF
-      
-    ENDDO
-  ENDDO
-  
-  
-  f_g4(1:nv_mud,1:nv_mud,1:nv_mud)=f_g4(1:nv_mud,1:nv_mud,1:nv_mud)*f_collfragparam
-  f_l4(1:nv_mud,1:nv_mud)=f_l4(1:nv_mud,1:nv_mud)*f_collfragparam
-
-  END SUBROUTINE flocmod_collfrag
-!!===========================================================================
-  
-  SUBROUTINE flocmod_mass_control(NN,mneg)
- 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_mass_control  ***
-  !&E
-  !&E ** Purpose : Compute mass in every class after flocculation and returns negative mass if any
-  !&E
-  !&E ** Description :
-  !&E
-  !&E ** Called by : flocmod_main
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E--------------------------------------------------------------------------
-  !! * Modules used
-
-  !! * Arguments
-  REAL(KIND=rsh),DIMENSION(1:nv_mud),intent(IN)     :: NN
-  REAL(KIND=rsh),intent(OUT)     :: mneg
-
-   
-  !! * Local declarations
-  INTEGER      :: iv1
-  !!--------------------------------------------------------------------------
-  !! * Executable part
-
-  mneg=0.0_rsh
-  
-  DO iv1=1,nv_mud
-    IF (NN(iv1).lt.0.0_rsh) THEN
-      mneg=mneg-NN(iv1)*f_mass(iv1)
-    ENDIF
-  ENDDO
-
-  END SUBROUTINE flocmod_mass_control
-
-!!===========================================================================
-  
-  SUBROUTINE flocmod_mass_redistribute(NN)
- 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_mass_redistribute  ***
-  !&E
-  !&E ** Purpose : based on a tolerated negative mass parameter, negative masses  
-  !&E              are redistributed linearly towards remaining postive masses 
-  !&E              and negative masses are set to 0
-  !&E                   
-  !&E ** Description :
-  !&E
-  !&E ** Called by : flocmod_main
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E--------------------------------------------------------------------------
-  !! * Modules used
-
-  !! * Arguments
-  REAL(KIND=rsh),DIMENSION(1:nv_mud),intent(INOUT)     :: NN
-   
-  !! * Local declarations
-  INTEGER            :: iv
-  REAL(KIND=rsh)     :: npos
-  REAL(KIND=rsh)     :: mneg
-  REAL(KIND=rsh),DIMENSION(1:nv_mud)                   :: NNtmp
-  !!--------------------------------------------------------------------------
-  !! * Executable part
-
-  mneg=0.0_rsh
-  npos=0.0_rsh
-  NNtmp(:)=NN(:)
-  
-  DO iv=1,nv_mud
-    IF (NN(iv).lt.0.0_rsh) THEN
-      mneg=mneg-NN(iv)*f_mass(iv)
-      NNtmp(iv)=0.0_rsh
-    ELSE
-      npos=npos+1._rsh
-    ENDIF
-  ENDDO
-
-  IF (mneg.gt.0.0_rsh) THEN 
-    IF (npos.eq.0._rsh) THEN
-      write(ierrorlog,*) 'CAUTION : all floc sizes have negative mass!'
-      write(ierrorlog,*) 'SIMULATION STOPPED'
-      STOP    
-    ELSE
-      DO iv=1,nv_mud
-        IF (NN(iv).gt.0.0_rsh) THEN
-          NN(iv)=NN(iv)-mneg/sum(NNtmp)*NN(iv)/f_mass(iv)
-        ELSE
-          NN(iv)=0.0_rsh
-        ENDIF
-    
-      ENDDO
-    
-    ENDIF
-  ENDIF  
-
-  END SUBROUTINE flocmod_mass_redistribute
- 
-!!===========================================================================  
-#endif  /* key_MUSTANG_flocmod */
 
 !!===========================================================================
 real function MUSTANG_E0sand(diamsan, taucr, rossan, ws_sand)

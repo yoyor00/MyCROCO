@@ -402,8 +402,8 @@ CONTAINS
                &        / ( trb(ji,jj,K,jpnh4) + concnnh4 ) )
                zlim2  = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + concnpo4 )
                zlim3  = trb(ji,jj,K,jpfer) / ( trb(ji,jj,K,jpfer) +  5.E-11 ) 
-               ztem1  = MAX( 0., tsn(ji,jj,jk,jp_tem) )
-               ztem2  = tsn(ji,jj,jk,jp_tem) - 10.
+               ztem1  = MAX( 0., tsn(ji,jj,K,jp_tem) )
+               ztem2  = tsn(ji,jj,K,jp_tem) - 10.
                zetot1 = MAX( 0., etot(ji,jj,jk) - 1.) / ( 4. + etot(ji,jj,jk) ) * 20. / ( 20. + etot(ji,jj,jk) ) 
 
 !               xfracal(ji,jj,jk) = caco3r * MIN( zlim1, zlim2, zlim3 )                  &

@@ -46,7 +46,7 @@ include Makedefs
 	pre_step3d.F	step3d_t.F	step3d_uv1.F	step3d_uv2.F\
 	prsgrd.F	rhs3d.F		set_depth.F	omega.F\
 	uv3dmix.F	uv3dmix_spg.F	t3dmix.F	t3dmix_spg.F\
-	hmix_coef.F	wetdry.F\
+	hmix_coef.F	wetdry.F	wavedry.F\
 	u3dbc.F		v3dbc.F		t3dbc.F\
 \
 	step3d_fast.F\
@@ -153,7 +153,7 @@ include Makedefs
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
         module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
-        comsubstance.F90        substance.F90\
+        flocmod.F90   comsubstance.F90        substance.F90\
         comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
         sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 

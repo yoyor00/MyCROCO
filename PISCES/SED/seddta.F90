@@ -10,6 +10,7 @@ MODULE seddta
    USE sms_pisces, ONLY : rtrn, rfact
    USE sed
    USE sedarr
+   USE sedini
 
    IMPLICIT NONE
    PRIVATE
@@ -107,10 +108,10 @@ CONTAINS
                trc_data(ji,jj,1)   = trb(ji,jj,KSED,jpsil)
                trc_data(ji,jj,2)   = trb(ji,jj,KSED,jpoxy)
                trc_data(ji,jj,3)   = trb(ji,jj,KSED,jpdic)
-               trc_data(ji,jj,4)   = trb(ji,jj,KSED,jpno3) / 7.625
-               trc_data(ji,jj,5)   = trb(ji,jj,KSED,jppo4) / 122.
+               trc_data(ji,jj,4)   = trb(ji,jj,KSED,jpno3) * redNo3 / redC
+               trc_data(ji,jj,5)   = trb(ji,jj,KSED,jppo4) / redC
                trc_data(ji,jj,6)   = trb(ji,jj,KSED,jptal)
-               trc_data(ji,jj,7)   = trb(ji,jj,KSED,jpnh4) / 7.625
+               trc_data(ji,jj,7)   = trb(ji,jj,KSED,jpnh4) * redNo3 / redC
                trc_data(ji,jj,8)   = 0.0
                trc_data(ji,jj,9)   = 28.0E-3
                trc_data(ji,jj,10)  = trb(ji,jj,KSED,jpfer)

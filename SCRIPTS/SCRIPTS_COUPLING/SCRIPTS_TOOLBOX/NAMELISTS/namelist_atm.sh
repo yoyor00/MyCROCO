@@ -32,7 +32,7 @@ export nudge_end_h="144" # time (in hours) to stop nudging after start of foreca
 # Physics
 export isftcflx=0 # Cd formulation for tropical storm application (default 0, wave cpl =5)
 
-# Moving nest (not used if ATM_CASE=DEFUALT, only if ATM_CASE=MOVING_NEST)
+# Moving nest (not used if ATM_CASE=DEFAULT, only if ATM_CASE=MOVING_NEST)
 export num_mv_nest=1 # number of moving nests
 # Nest informations (if several nest, the following variables need to have the format "1st_nest 2nd_nest" ) 
 export ref_coef="3" # refinement coef for nest
@@ -52,8 +52,8 @@ export time_to_move=0 # The time (in minutes) until the nest is moved (at the be
 #                                          WARNING                                       ! 
 # When XIOS is activated the following values (for the model) are not taken into account !
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-export atm_his_h=6                        # output interval (h)
-export atm_his_frames=1000 # $((31*24))          # nb of outputs per file
+export atm_his_h=6                          # output interval (h)
+export atm_his_frames=1000 # $((31*24))     # nb of outputs per file
 export atm_diag_int_m=$((${atm_his_h}*60))  # diag output interval (m)
-export atm_diag_frames=1000     # nb of diag outputs per file
+export atm_diag_frames=1000                 # nb of diag outputs per file
 
