@@ -892,8 +892,8 @@
 
 # if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
       do k=1,N
-        do j=Jstr,Jend
         do j=JstrR,JendR
+          do i=IstrR,IendR
             u(i,j,k,nnew) = u(i,j,k,nstp)
           enddo
         enddo

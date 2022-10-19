@@ -1216,7 +1216,7 @@
 !
 # if defined TS_HADV_TEST
 #  if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
-     do k=1,N
+      do k=1,N
         do j=jstrR,jendR
           do i=IstrR,iendR
             u(i,j,k,nnew) = u(i,j,k,nstp)
