@@ -111,7 +111,8 @@ CHARACTER(LEN=80)                         :: para_file
    REAL(KIND=rsh), DIMENSION(2,ntrc_subs)     :: ws_hind_para_r 
    INTEGER, DIMENSION(ntrc_subs)              :: ws_hind_opt_r,ws_free_opt_r 
 # if ! defined key_noTSdiss_insed
-      INTEGER, DIMENSION(ntrc_subs)           :: D0_funcT_opt_r,D0_m0_r,D0_m1_r
+      INTEGER, DIMENSION(ntrc_subs)           :: D0_funcT_opt_r
+      REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: D0_m0_r,D0_m1_r
 # endif
    LOGICAL, DIMENSION(ntrc_subs)              :: l_bedload_r
    LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n,l_outsandrouse_n,l_bedload_n
