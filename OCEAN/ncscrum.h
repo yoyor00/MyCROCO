@@ -2072,7 +2072,7 @@
      &               ,   sedname_subst,   sedname_must
 #endif
 #if defined SUBSTANCE && !defined MUSTANG
-     &               ,    subsname
+     &               ,    subsfilename
 #endif
 
 #ifdef SOLVE3D
@@ -2166,7 +2166,7 @@
      &               ,   sedname_subst,   sedname_must
 #endif
 #if defined SUBSTANCE && !defined MUSTANG
-     &               ,    subsname
+     &               ,    subsfilename
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname

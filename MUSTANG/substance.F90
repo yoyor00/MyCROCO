@@ -25,9 +25,9 @@ MODULE substance
 #endif
 
 
-#if defined ECO3M
+#if defined ECO3M || defined BLOOM
 # define REPFICNAMELIST 'BIOLINK_NAMELIST'
-#else
+#elif defined MUSTANG && ! defined BLOOM
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
 #endif
 
@@ -197,9 +197,11 @@ CHARACTER(LEN=80)                         :: para_file
 
 #ifdef MUSTANG
 # ifdef BLOOM
-   para_file = REPFICNAMELIST//'/parasubstance_MUSTANGBLOOM.txt'
+   ! para_file = REPFICNAMELIST//'/parasubstance_MUSTANGBLOOM.txt'
+   lstr = lenstr(subsfilename)
+   para_file = subsfilename(1:lstr)
    OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
-   MPI_master_only   PRINT*,'Opening of parasubstance_MUSTANGBLOOM.txt in',REPFICNAMELIST
+   MPI_master_only   PRINT*,'Opening of ',para_file,' in ',REPFICNAMELIST
 # elif defined TIDAL_FLAT
    para_file = REPFICNAMELIST//'/parasubstance_MUSTANG_Tidal_flat.txt'
    OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
@@ -214,13 +216,15 @@ CHARACTER(LEN=80)                         :: para_file
 #else 
 
 # ifdef BLOOM
-   para_file = REPFICNAMELIST//'/parasubstance_BLOOM.txt'
+   ! para_file = REPFICNAMELIST//'/parasubstance_BLOOM.txt'
+   lstr = lenstr(subsfilename)
+   para_file = subsfilename(1:lstr)
    OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
-   MPI_master_only   PRINT*, 'OUVERTURE de parasubstance_BLOOM.txt dans',REPFICNAMELIST
+   MPI_master_only   PRINT*, 'Opening of ',para_file,' in ',REPFICNAMELIST
 # else
    para_file = REPFICNAMELIST//'/parasubstance.txt'
    OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
-   MPI_master_only  PRINT*,'OUVERTURE de parasubstance.txt dans',REPFICNAMELIST
+   MPI_master_only   PRINT*,'Opening of parasubstance.txt in ',REPFICNAMELIST
 
 # endif
    nv_grav=0
