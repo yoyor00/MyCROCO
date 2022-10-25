@@ -627,7 +627,7 @@ do iv1=1,nv_mud
             f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+f_l1_sh(iv2,iv1)*Gval
         endif
         if (l_ADS) then
-            f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+f_l1_ds(iv2,iv1)*Gval
+            f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+f_l1_ds(iv2,iv1)
         endif
 
         tmp_l1=tmp_l1+(f_l1_tmp(iv2,iv1))*NNin(iv2)
