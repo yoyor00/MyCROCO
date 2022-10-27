@@ -765,7 +765,7 @@
 #    else
             dRz = rho1(i,j,k+1)-rho1(i,j,k)
 #    endif
-            cff  = min( 1./dRz,-1.E-14 )   !  minimum stratification imposed
+            cff  = 1./min(dRz, -1.E-14)    !  minimum stratification imposed
             cff1 = 1./(z_r(i,j,k+1)-z_r(i,j,k))
 #    ifdef LMD_SKPP2005
             hbltmp=hbls(i,j,3-nstp)
