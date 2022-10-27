@@ -80,8 +80,8 @@ CONTAINS
       DO jnt = 1, nrdttrc          ! Potential time splitting if requested
          !
          CALL p4z_bio (kt, jnt )    ! Compute soft tissue production (POC)
-         CALL p4z_sed (kt, jnt )    ! compute soft tissue remineralisation
          CALL p4z_lys( kt, jnt )    ! Compute CaCO3 saturation
+         CALL p4z_sed (kt, jnt )    ! compute soft tissue remineralisation
          CALL p4z_flx( kt, jnt )    ! Compute surface fluxes
          !
          !                             ! test if tracers concentrations fall below 0.
