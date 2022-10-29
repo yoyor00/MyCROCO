@@ -20,12 +20,11 @@
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
-#include "param.h"
-#if defined MPI & !defined PARALLEL_FILES
-# include "mpi_cpl.h"
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
+#include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #include "forces.h"
@@ -33,12 +32,13 @@
 #include "ocean2d.h"
 #include "ocean3d.h"
 #include "mixing.h"
+#include "mpi_cpl.h"
 #ifdef SOLVE3D
       integer tile,itrc,i,j,k,ivar
 # include "work.h"
 #endif
 #include "netcdf.inc"
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
      &                 1, MPI_COMM_WORLD, status, ierr) 
@@ -173,7 +173,7 @@
 ! to access data immediately after it is written.
 !---------------------------------------------------------------
 !
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (ncidsurf)
       if (nrpfsurf.gt.0 .and. record.ge.nrpfsurf) ncidsurf=-1
 #else
@@ -198,7 +198,7 @@
         may_day_flag=3
       endif
 
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &                        1, MPI_COMM_WORLD,  ierr)
