@@ -1,3 +1,6 @@
+
+Changer remote url ti koda for developpment mode
+
 CROCO v1.2
 -----------
 Released date : 18 January 2022
