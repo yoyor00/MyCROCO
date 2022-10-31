@@ -319,6 +319,7 @@
 !----------------------------------------------------------
 !
 #  ifdef DIAGNOSTICS_TS
+
           do j=Jstr,Jend
             do i=Istr,Iend 
               TXadv(i,j,k,itrc)=-(FX(i+1,j)-FX(i,j)) SWITCH rmask(i,j)
@@ -371,9 +372,59 @@
           enddo
         enddo
 #   endif
+
 #  endif /* DIAGNOSTICS_TS */
 
         enddo    !<-- k
+        
+        
+        
+        
+        
+#  if defined DIAGNOSTICS_TS_MLD && defined MLD_RHO
+
+        do j=Jstr,Jend
+          do i=Istr,Iend
+
+           TXout_mld(i,j,itrc) = 0.
+           TYout_mld(i,j,itrc) = 0.
+
+           cff=pm(i,j)*pn(i,j)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+           
+            if (kbl_rho(i+1,j) .gt. kbl_rho(i,j)) then
+              do k=kbl_rho(i,j),kbl_rho(i+1,j)-1
+                TXout_mld(i,j,itrc)=TXout_mld(i,j,itrc)
+     &                              -cff*FX(i+1,j)
+              enddo
+            endif
+            
+            if (kbl_rho(i-1,j) .gt. kbl_rho(i,j)) then
+              do k=kbl_rho(i,j),kbl_rho(i-1,j)-1
+                TXout_mld(i,j,itrc)=TXout_mld(i,j,itrc)
+     &                              +cff*FX(i,j)
+              enddo
+            endif
+            
+            if (kbl_rho(i,j+1) .gt. kbl_rho(i,j)) then
+              do k=kbl_rho(i,j),kbl_rho(i,j+1)-1
+                TYout_mld(i,j,itrc)=TYout_mld(i,j,itrc)
+     &                              -cff*FE(i,j+1)
+              enddo
+            endif
+            
+            if (kbl_rho(i,j-1) .gt. kbl_rho(i,j)) then
+              do k=kbl_rho(i,j),kbl_rho(i,j-1)-1
+                TYout_mld(i,j,itrc)=TYout_mld(i,j,itrc)
+     &                              +cff*FE(i,j)
+              enddo
+            endif
+
+          enddo
+        enddo
+
+
+#   endif
+        
       enddo    !<-- itrc
 !
 !----------------------------------------------------------

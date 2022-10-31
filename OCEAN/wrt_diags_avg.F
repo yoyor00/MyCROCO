@@ -250,7 +250,20 @@
            call fillvalue2d(work2d,nciddia_avg,diaTentr_mld_avg(itrc),
      &                      indxTentr_mld+itrc-1,
      &                      record,r2dvar,type)
-
+!
+! indxTXout_mld
+!
+           work2d=TXout_mld_avg(:,:,itrc)
+           call fillvalue2d(work2d,nciddia_avg,diaTXout_mld_avg(itrc),
+     &                      indxTXout_mld+itrc-1,
+     &                      record,r2dvar,type)
+!
+! indxTYout_mld
+!
+           work2d=TYout_mld_avg(:,:,itrc)
+           call fillvalue2d(work2d,nciddia_avg,diaTYout_mld_avg(itrc),
+     &                      indxTYout_mld+itrc-1,
+     &                      record,r2dvar,type)
         endif
 !
 #endif /*DIAGNOSTICS_TS_MLD*/

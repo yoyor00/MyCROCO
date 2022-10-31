@@ -76,6 +76,8 @@
 #  define vidTForc_mld diaTForc_mld
 #  define vidTrate_mld diaTrate_mld
 #  define vidTentr_mld diaTentr_mld
+#  define vidTXout_mld diaTXout_mld
+#  define vidTYout_mld diaTYout_mld
 #endif
 !
 # else /* AVRH */
@@ -108,6 +110,8 @@
 #  define vidTForc_mld diaTForc_mld_avg
 #  define vidTrate_mld diaTrate_mld_avg
 #  define vidTentr_mld diaTentr_mld_avg
+#  define vidTXout_mld diaTXout_mld_avg
+#  define vidTYout_mld diaTYout_mld_avg
 #endif
 !
         character*60 text
@@ -769,6 +773,62 @@
      &                       indxTentr_mld+itrc-1,5, NF_FOUT, ierr)
          endif
 !
+! indxTXout on MLD
+!
+           lvar=lenstr(vname(1,indxTXout_mld+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxTXout_mld+itrc-1)(1:lvar),
+     &                       NF_FOUT, 3, r2dgrd, vidTXout_mld(itrc))
+#ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidTXout_mld(itrc),nf_collective)
+#endif
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxTXout_mld+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTXout_mld(itrc), 'long_name',
+     &                     lvar, vname(2,indxTXout_mld+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxTXout_mld+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, vidTXout_mld(itrc), 'long_name',
+     &       lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxTXout_mld+itrc-1))
+           ierr=nf_put_att_text (ncid,vidTXout_mld(itrc), 'units', lvar,
+     &                            vname(3,indxTXout_mld+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxTXout_mld+itrc-1))
+           ierr=nf_put_att_text (ncid,vidTXout_mld(itrc), 'field',
+     &                      lvar, vname(4,indxTXout_mld+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,vidTXout_mld(itrc),
+     &                       indxTXout_mld+itrc-1,5, NF_FOUT, ierr)
+!
+! indxTYout on MLD
+!
+           lvar=lenstr(vname(1,indxTYout_mld+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxTYout_mld+itrc-1)(1:lvar),
+     &                           NF_FOUT, 3, r2dgrd, vidTYout_mld(itrc))
+#ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidTYout_mld(itrc),nf_collective)
+#endif
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxTYout_mld+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTYout_mld(itrc), 'long_name',
+     &                     lvar, vname(2,indxTYout_mld+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxTYout_mld+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, vidTYout_mld(itrc), 'long_name',
+     &       lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxTYout_mld+itrc-1))
+           ierr=nf_put_att_text (ncid,vidTYout_mld(itrc), 'units', lvar,
+     &                            vname(3,indxTYout_mld+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxTYout_mld+itrc-1))
+           ierr=nf_put_att_text (ncid,vidTYout_mld(itrc), 'field',
+     &                      lvar, vname(4,indxTYout_mld+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,vidTYout_mld(itrc),
+     &                       indxTYout_mld+itrc-1,5, NF_FOUT, ierr)
+!
 #endif /* DIAGNOSTICS_TS_MLD */
        enddo
 !
@@ -1066,6 +1126,28 @@
      &                                        vidTentr_mld(itrc))
           if (ierr .ne. nf_noerr) then
             write(stdout,1) vname(1,indxTentr_mld+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+! indxTXout on MLD
+!
+        lvar=lenstr(vname(1,indxTXout_mld+itrc-1))
+        ierr=nf_inq_varid (ncid,vname(1,indxTXout_mld+itrc-1)(1:lvar),
+     &                                           vidTXout_mld(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxTXout_mld+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+! indxTYout on MLD
+!
+        lvar=lenstr(vname(1,indxTYout_mld+itrc-1))
+        ierr=nf_inq_varid (ncid,vname(1,indxTYout_mld+itrc-1)(1:lvar),
+     &                                           vidTYout_mld(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxTYout_mld+itrc-1)(1:lvar),
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif

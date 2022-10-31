@@ -251,6 +251,20 @@
            call fillvalue2d(work2d,nciddia,diaTentr_mld(itrc),
      &                      indxTentr_mld+itrc-1,
      &                      record,r2dvar,type)
+!
+! indxTXout_mld
+!
+           work2d=TXout_mld(:,:,itrc)
+           call fillvalue2d(work2d,nciddia,diaTXout_mld(itrc),
+     &                      indxTXout_mld+itrc-1,
+     &                      record,r2dvar,type)
+!
+! indxTYout_mld
+!
+           work2d=TYout_mld(:,:,itrc)
+           call fillvalue2d(work2d,nciddia,diaTYout_mld(itrc),
+     &                      indxTYout_mld+itrc-1,
+     &                      record,r2dvar,type)
         endif
 !
 #endif /*DIAGNOSTICS_TS_MLD*/

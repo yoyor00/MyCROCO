@@ -34,6 +34,8 @@
       real TForc_mld(GLOBAL_2D_ARRAY,NT)
       real Trate_mld(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld(GLOBAL_2D_ARRAY,NT)
+      real TXout_mld(GLOBAL_2D_ARRAY,NT)
+      real TYout_mld(GLOBAL_2D_ARRAY,NT)
       integer kbl_nstp(GLOBAL_2D_ARRAY)
 # endif
 # ifdef AVERAGES
@@ -58,6 +60,8 @@
       real TForc_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Trate_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld_avg(GLOBAL_2D_ARRAY,NT)
+      real TXout_mld_avg(GLOBAL_2D_ARRAY,NT)
+      real TYout_mld_avg(GLOBAL_2D_ARRAY,NT)
 #  endif
 # endif	
       common /diag_TXadv/TXadv   
@@ -79,7 +83,9 @@
       common /diag_TVmix_mld/TVmix_mld
       common /diag_TForc_mld/TForc_mld
       common /diag_Trate_mld/Trate_mld
-      common /diag_Tentr_mld/Tentr_mld	  
+      common /diag_Tentr_mld/Tentr_mld
+      common /diag_TXout_mld/TXout_mld
+      common /diag_TYout_mld/TYout_mld
       common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES
@@ -104,6 +110,8 @@
       common /diag_TForc_mld_avg/TForc_mld_avg
       common /diag_Trate_mld_avg/Trate_mld_avg
       common /diag_Tentr_mld_avg/Tentr_mld_avg
+      common /diag_TXout_mld_avg/TXout_mld_avg
+      common /diag_TYout_mld_avg/TYout_mld_avg
 #  endif       	
 # endif       	
 #endif /* DIAGNOSTICS_TS */

@@ -2682,6 +2682,37 @@ CR       write(stdout,'(20x,A)') vname(1,indxTentr_mld+itrc-1)
        vname(5,indxTentr_mld+itrc-1)='                            '
        vname(6,indxTentr_mld+itrc-1)='                            '
        vname(7,indxTentr_mld+itrc-1)='                            '
+       
+CR       write(stdout,'(1x,A,I3)') 'indxTXout_mld = ',indxTXout_mld+itrc-1
+       lvar=lenstr(vname(1,indxT+itrc-1))
+       nametrc=vname(1,indxT+itrc-1)(1:lvar)
+       lvar=lenstr(nametrc)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_xout_mld                   '
+       vname(1,indxTXout_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTXout_mld+itrc-1)
+       vname(2,indxTXout_mld+itrc-1)='MLD xi advection outside MLD'
+       write(vname3,*) trim(unitt),' second-1                     '
+       vname(3,indxTXout_mld+itrc-1)=vname3
+       vname(4,indxTXout_mld+itrc-1)='                            '
+       vname(5,indxTXout_mld+itrc-1)='                            '
+       vname(6,indxTXout_mld+itrc-1)='                            '
+       vname(7,indxTXout_mld+itrc-1)='                            '
+
+CR       write(stdout,'(1x,A,I3)') 'indxTYout_mld = ',indxTYout_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_yout_mld                   '
+       vname(1,indxTYout_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTYout_mld+itrc-1)
+       vname(2,indxTYout_mld+itrc-1)='MLD eta advection outside MLD'
+       write(vname3,*) trim(unitt),' second-1                     '
+       vname(3,indxTYout_mld+itrc-1)=vname3
+       vname(4,indxTYout_mld+itrc-1)='                            '
+       vname(5,indxTYout_mld+itrc-1)='                            '
+       vname(6,indxTYout_mld+itrc-1)='                            '
+       vname(7,indxTYout_mld+itrc-1)='                            '
+
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc

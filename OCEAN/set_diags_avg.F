@@ -156,6 +156,12 @@
               Tentr_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*Tentr_mld(i,j,itrc) +
      &                           Tentr_mld_avg(i,j,itrc) )
+              TXout_mld_avg(i,j,itrc) = cff *
+     &                    ( cff1*TXout_mld(i,j,itrc) +
+     &                           TXout_mld_avg(i,j,itrc) )
+              TYout_mld_avg(i,j,itrc) = cff *
+     &                    ( cff1*TYout_mld(i,j,itrc) +
+     &                           TYout_mld_avg(i,j,itrc) )
             enddo
           enddo
         enddo
