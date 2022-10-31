@@ -1,5 +1,6 @@
 
-Changer remote url ti koda for developpment mode
+Changer remote url ti gitrepo for developpment mode
+
 
 CROCO v1.2
 -----------
