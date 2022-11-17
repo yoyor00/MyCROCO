@@ -1257,6 +1257,8 @@ C$OMP BARRIER
               if (.not.got_tini(iv)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
                 t(i,j,k,1,iv)=cini_wat(iv)
+#  elif defined SINGLE_COLUMN 
+                t(i,j,k,1,iv)=cini_wat(iv)
 #  elif defined TIDAL_FLAT
                 if (h(i,j).gt.0) then
 ! ---------------- mud+diss case -----------------!
