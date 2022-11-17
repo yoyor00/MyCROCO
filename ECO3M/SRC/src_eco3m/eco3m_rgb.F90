@@ -107,8 +107,8 @@
                 do i = nx_min, nx_max
                     ! We look for the tab index that corresponds to the
                     ! Chltot concentration 
-                    !tab_index = NINT( 41 + 20.* LOG10(Chl_tot(i, j, k)*1e6))
-                    tab_index = NINT( 41 + 20.* LOG10(Chl_tot(i, j, k)))
+                    !cmzy tab_index = NINT( 41 + 20.* LOG10(Chl_tot(i, j, k)*1e6))
+                    tab_index = NINT( 41 + 20.* LOG10(max(Chl_tot(i, j, k),1d-10)))
                     ! Correction of the index so that it remains within the file
                     ! limits !!MB: il faudrait plutôt faire une correction sur la chl
                     !cf ci-dessus
