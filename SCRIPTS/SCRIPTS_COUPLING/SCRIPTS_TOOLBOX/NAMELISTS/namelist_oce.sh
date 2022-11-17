@@ -5,8 +5,8 @@
 
 # Online Compilation
 # Creates croco executable depending on this namelist. 
-#     In cppdef.h options that can be edit are OA_COUPLING/OW_COUPLING/BULK_FLUX/ONLINE/CLIMATOLOGY/FRC_BRY/TIDES/XIOS/AGRIF/AGRIF_2WAY
-#     In param.h modify the size grid, edit the number of proc in x and y direction with intel given in myjob.sh
+#     In cppdefs.h options that can be editted are OA_COUPLING/OW_COUPLING/BULK_FLUX/ONLINE/CLIMATOLOGY/FRC_BRY/TIDES/XIOS/AGRIF/AGRIF_2WAY
+#     In param.h it modifies the grid size, the number of procs in x and y direction with those given in myjob.sh
 export ONLINE_COMP=0
 
 # Time steps
@@ -14,7 +14,7 @@ export DT_OCE=3600
 export NDTFAST=60
 
 # Parameter 
-export hmin=75; # minimum water depth in CROCO, delimiting coastline in WW3 
+export hmin=75; # minimum water depth in CROCO (will be used to delimit coastline in WW3)
 
 # domains
 export AGRIFZ=0

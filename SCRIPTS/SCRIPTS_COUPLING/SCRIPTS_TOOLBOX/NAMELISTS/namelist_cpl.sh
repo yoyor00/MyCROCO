@@ -20,7 +20,7 @@ export wav_rst_file=""
 
 # Use pre-built weight file for grid interpolations
 # The weight file should be placed in OASIS_FILES
-# Note: for the moment only work with 1-atm and 1-oce domain
+# Note: for the moment only works with 1-atm and 1-oce domain
 export WEIGHT_FLAG=0 
 export weight_o2a=""
 export weight_a2o=""
