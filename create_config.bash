@@ -373,6 +373,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	# Edit crocotools_param.h
 	sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
             -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
+            -e "s|DATADIR=.*|DATADIR=\'${TOOLS_DIR}/DATASETS_CROCOTOOLS/\';|g" \
             ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
 	mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
     fi
