@@ -502,7 +502,7 @@
 !
 ! Sponge parameters
 !
-# ifdef SPONGE
+#if  (defined SPONGE && !defined SPONGE_GRID)
       ierr=nf_put_att_FTYPE(ncid,nf_global,'x_sponge',nf_ftype, 1,
      &                                                     x_sponge)
       ierr=nf_put_att_FTYPE(ncid,nf_global,'v_sponge',nf_ftype, 1,
