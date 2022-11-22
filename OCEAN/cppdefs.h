@@ -80,6 +80,9 @@
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
 # undef  OW_COUPLING
+# ifdef OW_COUPLING
+#  undef OW_COUPLING_FULL
+# endif
                       /* Wave-current interactions */
 # undef  MRL_WCI
                       /* Open Boundary Conditions */
@@ -135,6 +138,66 @@
                       /* Equation of State */
 # define SALINITY
 # define NONLIN_EOS
+                      /* Surface Forcing */
+/*
+! Bulk flux algorithms (options)
+! by default : COARE3p0 paramet with GUSTINESS effects
+!
+! To change bulk param, define one the following keys (exclusive) :
+! - define BULK_ECUMEV0 : ECUME_v0 param
+! - define BULK_ECUMEV6 : ECUME_v6 param
+! - define BULK_WASP    : WASP param
+! Note : gustiness effects can be added for all params
+!        by defining BULK_GUSTINESS
+*/
+# undef BULK_FLUX
+# ifdef BULK_FLUX
+#  undef  BULK_ECUMEV0
+#  undef  BULK_ECUMEV6
+#  undef  BULK_WASP
+#  define BULK_GUSTINESS
+#  define BULK_LW
+#  undef  SST_SKIN
+#  undef  ANA_DIURNAL_SW
+#  undef  ONLINE
+#  ifdef ONLINE
+#   undef  AROME
+#   undef  ERA_ECMWF
+#  endif
+#  undef  READ_PATM
+#  ifdef READ_PATM
+#   define OBC_PATM
+#  endif
+# else
+#  define QCORRECTION
+#  define SFLX_CORR
+#  undef  SFLX_CORR_COEF
+#  define ANA_DIURNAL_SW
+# endif
+# undef  SFLUX_CFB
+# undef  SEA_ICE_NOFLUX
+                      /* Lateral Forcing */
+# undef CLIMATOLOGY
+# ifdef CLIMATOLOGY
+#  define ZCLIMATOLOGY
+#  define M2CLIMATOLOGY
+#  define M3CLIMATOLOGY
+#  define TCLIMATOLOGY
+
+#  define ZNUDGING
+#  define M2NUDGING
+#  define M3NUDGING
+#  define TNUDGING
+#  undef  ROBUST_DIAG
+# endif
+
+# define  FRC_BRY
+# ifdef FRC_BRY
+#  define Z_FRC_BRY
+#  define M2_FRC_BRY
+#  define M3_FRC_BRY
+#  define T_FRC_BRY
+# endif
                       /* Lateral Momentum Advection (default UP3) */
 # define UV_HADV_UP3
 # undef  UV_HADV_UP5
@@ -183,44 +246,6 @@
 #  undef  LMD_DDMIX
 #  undef  LMD_LANGMUIR
 # endif
-                      /* Surface Forcing */
-/*
-! Bulk flux algorithms (options)
-! by default : COARE3p0 paramet with GUSTINESS effects
-!
-! To change bulk param, define one the following keys (exclusive) :
-! - define BULK_ECUMEV0 : ECUME_v0 param
-! - define BULK_ECUMEV6 : ECUME_v6 param
-! - define BULK_WASP    : WASP param
-! Note : gustiness effects can be added for all params
-!        by defining BULK_GUSTINESS
-*/
-# undef BULK_FLUX
-# ifdef BULK_FLUX
-#  undef  BULK_ECUMEV0
-#  undef  BULK_ECUMEV6
-#  undef  BULK_WASP
-#  define BULK_GUSTINESS
-#  define BULK_LW
-#  undef  SST_SKIN
-#  undef  ANA_DIURNAL_SW
-#  undef  ONLINE
-#  ifdef ONLINE
-#   undef  AROME
-#   undef  ERA_ECMWF
-#  endif
-#  undef  READ_PATM
-#  ifdef READ_PATM
-#   define OBC_PATM
-#  endif
-# else
-#  define QCORRECTION
-#  define SFLX_CORR
-#  undef  SFLX_CORR_COEF
-#  define ANA_DIURNAL_SW
-# endif
-# undef  SFLUX_CFB
-# undef  SEA_ICE_NOFLUX
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
 #  define MRL_WCI
@@ -242,28 +267,6 @@
 #   define WKB_OBC_WEST
 #   undef  WKB_OBC_EAST
 #  endif
-# endif
-                      /* Lateral Forcing */
-# define CLIMATOLOGY
-# ifdef CLIMATOLOGY
-#  define ZCLIMATOLOGY
-#  define M2CLIMATOLOGY
-#  define M3CLIMATOLOGY
-#  define TCLIMATOLOGY
-
-#  define ZNUDGING
-#  define M2NUDGING
-#  define M3NUDGING
-#  define TNUDGING
-#  undef  ROBUST_DIAG
-# endif
-
-# undef  FRC_BRY
-# ifdef FRC_BRY
-#  define Z_FRC_BRY
-#  define M2_FRC_BRY
-#  define M3_FRC_BRY
-#  define T_FRC_BRY
 # endif
                       /* Bottom Forcing */
 # define ANA_BSFLUX
