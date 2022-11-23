@@ -22,7 +22,7 @@
 #undef  INNERSHELF      /* Inner Shelf Example */
 #undef  SINGLE_COLUMN   /* 1DV vertical mixing Example */
 #undef  RIVER           /* River run-off Example */
-#undef  OVERFLOW        /* Graviational/Overflow Example */
+#undef  OVERFLOW        /* Gravitational/Overflow Example */
 #undef  SEAMOUNT        /* Seamount Example */
 #undef  SHELFRONT       /* Shelf Front Example */
 #undef  SOLITON         /* Equatorial Rossby Wave Example */
@@ -1740,9 +1740,9 @@
 */                            /* Choose an experiment :               */
 # define SED_TOY_ROUSE        /*   Rouse                              */
 # undef  SED_TOY_CONSOLID     /*   Consolidation                      */
-# undef  SED_TOY_RESUSP       /*   Erosion and sediment resuspension  */                      */
-# undef  SED_TOY_FLOC_0D         /*   Flocculation                       */
-# undef  SED_TOY_FLOC_1D         /*   Flocculation                       */
+# undef  SED_TOY_RESUSP       /*   Erosion and sediment resuspension  */
+# undef  SED_TOY_FLOC_0D      /*   Flocculation                       */
+# undef  SED_TOY_FLOC_1D      /*   Flocculation                       */
 
 # undef  OPENMP
 # undef  MPI
@@ -1781,7 +1781,7 @@
 # undef  MUSTANG
 
 # ifdef MUSTANG
-#  if defined SED_TOY_FLOC_0D  || defined SED_TOY_FLOC_1D
+#  if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
 #    define key_MUSTANG_flocmod
 #    define GLS_MIXING
 #    define GLS_KOMEGA
@@ -1806,7 +1806,7 @@
 #   undef  COHESIVE_BED
 #  endif
 
-#  if defined SED_TOY_FLOC_0D  || defined SED_TOY_FLOC_1D
+#  if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
 #   define FLOC_TURB_DISS
 #   undef FLOC_BBL_DISS
 #   define SED_FLOCS

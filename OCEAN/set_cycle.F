@@ -14,7 +14,7 @@
       subroutine set_cycle (ncid, varid, ntime, cycle_length,
      &                                        icycle, trecord)
 !
-! Determine whether there is time periodicuty (cycling) for a
+! Determine whether there is time periodicity (cycling) for a
 ! forcing variable in input NetCDF file and set initial time
 ! record index "trecord" and cycling index "icycle" depending
 ! on the current model.
@@ -171,7 +171,7 @@
       else
         write(stdout,3) varname(1:lvar), tdays, tend*sec2day  
   3     format(/1x, 'SET_CYCLE ERROR: non-cycling regime,',
-     &         ' but model time exeeds'  /18x,  'time of the',
+     &         ' but model time exceeds'  /18x,  'time of the',
      &         ' last available data record for variable: ',A/
      &         18x, 'TDAYS = ', G12.4, 2x, 'TLAST = ', G12.4/)
 
