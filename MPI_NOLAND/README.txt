@@ -25,7 +25,7 @@ Edit the namelist. Note :
 - &NAMPARAM section is not used for now
 - Npts, the number of ghostcells used by CROCO depends on the numerical choices. Set to 2 in general, to 3 with advection schemes of order 5 or 6
 - jprocx is the maximum number of CPU you will be able to use
-Copy your grid file in MPP_PREP directory
+Copy (or link) your grid file in MPI_NOLAND directory
 
 Execution
 =========
@@ -44,7 +44,9 @@ It will display the decomposition with sea processors. Note that the figure dipl
 How to use in CROCO
 ===================
 - edit param.h to change values of NP_XI, NP_ETA and NNODES to the one provided by mpp_optimiz
-- if your grid file is not called croco_grd.nc, edit MPI_Setup.F and change line 136 the name of the grid file
+- if your grid file is not called croco_grd.nc (for exampel located in CROCO_FILES/croco_grd.nc) 
+  - edit MPI_Setup.F and change line 136 the name of the grid file ( from croco_grd.nc to CROCO_FILES/croco_grd.nc for exemple) 
+  - or link your grid file in the launching directory as ln -sf CROCO_FILES/mycroco_frd.nc croco_grd.nc
 - activate  the cpp key MPI_NOLAND
 - compile as usual
 - launch on a number of CPU equal to NNODES
