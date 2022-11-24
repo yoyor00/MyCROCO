@@ -543,6 +543,10 @@
           write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif 
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTstep, nf_collective)
+# endif
+
 !
 ! Time.
 !
@@ -552,6 +556,10 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTime, nf_collective)
+# endif
+
 !
 ! Time2.
 !
@@ -561,7 +569,9 @@
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
-
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
+# endif
 
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
@@ -579,6 +589,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+# ifdef NC4PAR
+         ierr=nf_var_par_access(ncid, vidsurft(itrc), nf_collective)
+# endif
 
 !          
 ! indxsurfs
@@ -592,6 +605,10 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+# ifdef NC4PAR
+         ierr=nf_var_par_access(ncid, vidsurfs(itrc), nf_collective)
+# endif
+
 !          
 ! indxsurfz
 !
@@ -604,6 +621,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+# ifdef NC4PAR
+         ierr=nf_var_par_access(ncid, vidsurfz(itrc), nf_collective)
+# endif
 !          
 ! indxsurfu
 !
@@ -616,6 +636,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+# ifdef NC4PAR
+         ierr=nf_var_par_access(ncid, vidsurfu(itrc), nf_collective)
+# endif
 !          
 ! indxsurfv
 !
@@ -628,6 +651,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+# ifdef NC4PAR
+         ierr=nf_var_par_access(ncid, vidsurfv(itrc), nf_collective)
+# endif
 !
        endif
 
