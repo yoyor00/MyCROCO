@@ -22,11 +22,11 @@ case $1 in
     rm -f $pwd/.croco-guix-profile
     packages="gcc-toolchain gfortran-toolchain make \
         netcdf netcdf-fortran \
-        mpich openssh adjoinable-mpi \
+        mpich openssh \
         openblas lapack \
         openjdk coreutils binutils sed grep bash which time patch gdb"
-    guix_cmd="guix time-machine --commit=398ec3c1e265a3f89ed07987f33b264db82e4080 -- time-machine --url=https://github.com/bremond/guix --branch=check-master-mpich --"
-    exec $guix_cmd environment --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
+    guix_cmd="guix time-machine --commit=fa59a22140bcb98fa6e5cf895deaa5f2fbdb9bcf --"
+    exec $guix_cmd environment -m AD/adjoinable-mpi.scm --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac
 ################################################################################
@@ -38,7 +38,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=4
+  nbcores=1
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
