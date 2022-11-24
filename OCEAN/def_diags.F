@@ -860,6 +860,9 @@
           write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTstep,nf_collective)
+#endif
 !
 ! Time.
 !
@@ -869,6 +872,9 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime,nf_collective)
+#endif
 !
 ! Time2.
 !
@@ -878,6 +884,9 @@
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
+#endif
 !
 ! Tracer flux diagnostics variables :
 ! ------ ---- ----------- --------- 
@@ -896,6 +905,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTXadv(itrc),nf_collective)
+#endif
 !
 ! indxTYadv
 !
@@ -907,6 +919,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTYadv(itrc),nf_collective)
+#endif
 !
 ! indxTVadv
 !
@@ -918,6 +933,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTVadv(itrc),nf_collective)
+#endif
 !
 ! indxTHmix
 !
@@ -929,6 +947,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTHmix(itrc),nf_collective)
+#endif
 !
 ! indxTVmix
 !
@@ -940,6 +961,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTVmix(itrc),nf_collective)
+#  endif
 #  ifdef DIAGNOSTICS_TSVAR
 !
 ! indxTVmixt
@@ -952,6 +976,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#   ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTVmixt(itrc),nf_collective)
+#   endif
 #  endif
 !
 ! indxTForc
@@ -964,6 +991,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTForc(itrc),nf_collective)
+#endif
 !
 ! indxTrate
 !
@@ -975,6 +1005,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTrate(itrc),nf_collective)
+#endif
 !
         endif
 !
@@ -992,6 +1025,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTXadv_mld(itrc),nf_collective)
+# endif
 !
 ! indxTYadv on MLD
 !
@@ -1003,6 +1039,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTYadv_mld(itrc),nf_collective)
+# endif
 !
 ! indxTVadv on MLD
 !
@@ -1014,6 +1053,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTVadv_mld(itrc),nf_collective)
+# endif
 !
 ! indxTHmix on MLD
 !
@@ -1025,6 +1067,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTHmix_mld(itrc),nf_collective)
+# endif
 !
 ! indxTVmix on MLD
 !
@@ -1036,6 +1081,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTVmix_mld(itrc),nf_collective)
+# endif
 !
 ! indxTForc on MLD
 !
@@ -1047,6 +1095,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTForc_mld(itrc),nf_collective)
+# endif
 !
 ! indxTrate on MLD
 !
@@ -1058,6 +1109,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTrate_mld(itrc),nf_collective)
+# endif
 !
 ! indxTentr on MLD
 !
@@ -1069,6 +1123,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTentr_mld(itrc),nf_collective)
+# endif
 !
         endif
 !
