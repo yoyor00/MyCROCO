@@ -42,7 +42,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     dimz=$( ncdump -h  ${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc | grep "s_rho =" | cut -d ' ' -f 3)
     printf "\nGrid size is (in Lx X Ly X Nz ) : ${dimx}X${dimy}X${dimz}\n"
     #add new line for new conf in param.h
-    sed -e "s/(LLm0=xx, MMm0=xx, N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
+    sed -e "s/(\s*LLm0=xx,\s*MMm0=xx,\s*N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
         param.h.base > tmp$$
     mv tmp$$ param.h
     # update necessary things
