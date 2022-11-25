@@ -806,7 +806,7 @@
         ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
      &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 #endif
-        if (ierr. ne. nf_noerr) then
+        if (ierr.eq. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
             if (rec_per_file.eq.0) then
