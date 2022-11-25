@@ -2529,6 +2529,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'Input file for Substance:' ,
      &          subsfilename(1:lstr)
 #endif
+#if defined SUBSTANCE && defined BLOOM
+      elseif (keyword(1:kwlen).eq.'bloom') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) parafilename
+        lstr=lenstr(parafilename)
+        MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for BLOOM parameters :' ,
+     &          parafilename(1:lstr)
+#endif
 #ifdef BBL
       elseif (keyword(1:kwlen).eq.'bbl_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)

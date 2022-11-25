@@ -2074,7 +2074,9 @@
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsfilename
 #endif
-
+#if defined SUBSTANCE && defined BLOOM
+     &               ,    parafilename
+#endif
 #ifdef SOLVE3D
       character*75  vname(20, 500)
 #else
@@ -2167,6 +2169,9 @@
 #endif
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsfilename
+#endif
+#if defined SUBSTANCE && defined BLOOM
+     &               ,    parafilename
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname

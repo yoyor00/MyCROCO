@@ -89,7 +89,9 @@
 
 
   INTEGER            :: iso,IERR_MPI
-
+#ifdef key_CROCO
+   INTEGER           :: lstr,lenstr
+#endif
 #ifdef key_N_tracer
    CHARACTER(LEN=19) :: date_start_tracerN
    REAL(KIND=rlg)        :: tool_datosec
@@ -264,8 +266,11 @@ IF(rw == 'r')THEN
      filepc=REPFICNAMELIST//'/parabloom_opt2.txt'
      IF_AGRIF (.NOT. Agrif_Root()) filepc='./parabloom_opt2'//TRIM(Agrif_Cfixed())//'.txt'
 #else
-     filepc=REPFICNAMELIST//'/parabloom.txt'
-     IF_AGRIF (.NOT. Agrif_Root()) filepc='./parabloom'//TRIM(Agrif_Cfixed())//'.txt'
+     ! filepc=REPFICNAMELIST//'/para_BLOOM.txt'
+     lstr = lenstr(parafilename)
+     filepc = parafilename(1:lstr)
+     !IF_AGRIF (.NOT. Agrif_Root()) filepc='./para_BLOOM'//TRIM(Agrif_Cfixed())//'.txt'
+     IF_AGRIF (.NOT. Agrif_Root()) filepc=filepc//TRIM(Agrif_Cfixed())//'.txt'
 #endif
 
 
