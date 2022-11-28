@@ -1192,7 +1192,9 @@
           write(stdout,1) 'time_step', rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-!
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstTstep,nf_collective)
+#endif!
 ! Time.
 !
         lvar=lenstr(vname(1,indxTime))
@@ -1201,6 +1203,9 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstTime,nf_collective)
+#endif
 !
 ! Time2.
 !
@@ -1210,6 +1215,9 @@
           write(stdout,1) vname(1,indxTime2)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstTime2,nf_collective)
+#endif
 
 ! Free-surface.
 !
@@ -1219,6 +1227,9 @@
           write(stdout,1) vname(1,indxZ)(1:lvar),  rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstZ,nf_collective)
+#endif
 !
 ! 2D momenta in XI- and ETA-directions.
 !
@@ -1228,6 +1239,9 @@
           write(stdout,1) vname(1,indxUb)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstUb,nf_collective)
+#endif
 
         lvar=lenstr(vname(1,indxVb))
         ierr=nf_inq_varid (ncid, vname(1,indxVb)(1:lvar), rstVb)
@@ -1235,6 +1249,9 @@
           write(stdout,1) vname(1,indxVb)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstVb,nf_collective)
+#endif
 
 #ifdef SOLVE3D
 !
@@ -1246,6 +1263,9 @@
           write(stdout,1) vname(1,indxU)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstU,nf_collective)
+#endif
 
         lvar=lenstr(vname(1,indxV))
         ierr=nf_inq_varid (ncid, vname(1,indxV)(1:lvar), rstV)
@@ -1253,6 +1273,10 @@
           write(stdout,1) vname(1,indxV)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstV,nf_collective)
+#endif
+
 !
 ! Tracer variables.
 !
@@ -1266,6 +1290,9 @@
      &                                            rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
+#  endif
         enddo 
 # endif
 
@@ -1280,6 +1307,9 @@
           write(stdout,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#   ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstHbl,nf_collective)
+#   endif
 #  endif
           
 #  ifdef LMD_BKPP
@@ -1292,6 +1322,10 @@
           write(stdout,1) vname(1,indxHbbl)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#   ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstHbbl,nf_collective)
+#   endif
+
 #  endif /*  LMD_BKPP  */
 # endif /* LMD_MIXING */
 
@@ -1305,6 +1339,10 @@
           write(stdout,1) vname(1,indxTke)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstTke,nf_collective)
+#  endif
+
 !
 ! Generic length scale.
 !
@@ -1314,6 +1352,10 @@
           write(stdout,1) vname(1,indxGls)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstGls,nf_collective)
+#  endif
+
 !
 ! Vertical viscosity coefficient.
 !
@@ -1323,6 +1365,9 @@
           write(stdout,1) vname(1,indxAkv)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstAkv,nf_collective)
+#   endif
 
 #  ifdef TEMPERATURE
 
@@ -1335,6 +1380,10 @@
           write(stdout,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#   ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstAkt,nf_collective)
+#   endif
+
 #  endif
           
 #  ifdef SALINITY
@@ -1347,6 +1396,9 @@
           write(stdout,1) vname(1,indxAks)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAks,nf_collective)
+#   endif
 #  endif /* SALINITY  */
 # endif /* GLS_MIXING */
 
@@ -1362,6 +1414,10 @@
           write(stdout,1) vname(1,indxBustr)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#   ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstBustr,nf_collective)
+#   endif
+
 !
 ! Bottom stress v component
 !
@@ -1371,6 +1427,9 @@
           write(stdout,1) vname(1,indxBvstr)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#   ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstBvstr,nf_collective)
+#   endif
 #  endif
 # endif
                     
@@ -1384,6 +1443,10 @@
           write(stdout,1) vname(1,indxrufrc)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#  ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstrufrc,nf_collective)
+#  endif
+
 !
 ! Forcing for barotropic equations in XI-direction.
 !
@@ -1393,7 +1456,10 @@
           write(stdout,1) vname(1,indxrvfrc)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-        
+#  ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstrvfrc,nf_collective)
+#  endif
+
 #  ifdef M3FAST
         
 !
@@ -1408,6 +1474,9 @@
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstru_nbq,nf_collective)
+#   endif
 
         lvar=lenstr(vname(1,indxrv_nbq))
         ierr=nf_inq_varid (ncid, vname(1,indxrv_nbq)(1:lvar),
@@ -1417,6 +1486,9 @@
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstrv_nbq,nf_collective)
+#   endif
 
 !
 ! 3D rhs for M3FAST in XI- and ETA-directions.
@@ -1430,6 +1502,10 @@
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstru_nbq_avg2,nf_collective)
+#   endif
+
 
         lvar=lenstr(vname(1,indxrv_nbq_avg2))
         ierr=nf_inq_varid (ncid, vname(1,indxrv_nbq_avg2)(1:lvar),
@@ -1439,7 +1515,10 @@
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-        
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstrv_nbq_avg2,nf_collective)
+#   endif
+
 !
 ! 3D rhs for M3FAST in XI- and ETA-directions.
 !
@@ -1452,6 +1531,10 @@
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstqdmu_nbq,nf_collective)
+#   endif
+
 
         lvar=lenstr(vname(1,indxqdmv_nbq))
         ierr=nf_inq_varid (ncid, vname(1,indxqdmv_nbq)(1:lvar),
@@ -1461,7 +1544,9 @@
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-       
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstqdmv_nbq,nf_collective)
+#   endif
 #  endif  /* M3FAST */
 
 #  ifdef TRACERS
@@ -1478,6 +1563,10 @@
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#    ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstdRdx,nf_collective)
+#    endif
+
 
         lvar=lenstr(vname(1,indxdRde))
         ierr=nf_inq_varid (ncid, vname(1,indxdRde)(1:lvar),
@@ -1487,6 +1576,9 @@
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#    ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstdRde,nf_collective)
+#    endif
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
@@ -1502,7 +1594,11 @@
         if (ierr. ne. nf_noerr) then
           write(stdout,1) vname(1,indxBTHK)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
-        endif   
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstSed(1),nf_collective)
+# endif
+
 !
 ! Bed porosity
 !
@@ -1512,6 +1608,10 @@
           write(stdout,1) vname(1,indxBPOR)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstSed(2),nf_collective)
+# endif
+
 !
 ! Bed size class fractions.
 !
@@ -1525,6 +1625,9 @@
      &                                            rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstSed(itrc+2),nf_collective)
+# endif
         enddo
 #endif /* SEDIMENT */
 
@@ -1540,6 +1643,9 @@
      &                                            rstMUS(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstMUS(itrc),nf_collective)
+# endif
         enddo
 
 ! dzs, tempsed, salsed
@@ -1553,6 +1659,9 @@
      &                                            rstMUS(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstMUS(itrc+2),nf_collective)
+# endif
         enddo
 
 
@@ -1567,6 +1676,9 @@
      &                                            rstMUS(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstMUS(itrc+5),nf_collective)
+# endif
         enddo
 
 #endif
@@ -1582,6 +1694,9 @@
           write(stdout,1) vname(1,indxHm)(1:lvar), rstname(1:lstr)
           goto 99                                       !--> ERROR
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstHm,nf_collective)
+# endif
 #endif
 
 #ifdef BBL
@@ -1594,6 +1709,9 @@
           write(stdout,1) vname(1,indxHrip)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstBBL(1),nf_collective)
+# endif
 !
 ! Bed ripple lengths
 !
@@ -1603,6 +1721,9 @@
           write(stdout,1) vname(1,indxLrip)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstBBL(2),nf_collective)
+# endif
 #endif /* BBL */
 !
       MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 

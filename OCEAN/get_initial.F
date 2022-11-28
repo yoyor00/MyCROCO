@@ -57,6 +57,7 @@
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
       character units*180
       CHARACTER(len=19)          :: tool_sectodat
+      REAL(kind=8)               :: tool_datosec
 #include "netcdf.inc"
 #define time illegal
 #define tdays illegal
@@ -190,6 +191,9 @@
           ierr=nf_get_att_text(ncid, varid, 'units', units)
           if (ierr .eq. nf_noerr) then
             latt=lenstr(units)
+            ! If use_calendar or xios, read origin time in ini file
+            ! units need to hate the format 
+            ! seconds/days since YYYY/MM/DD hh:mm:ss
             if (units(1:6).eq.'second') then
               time_scale=1.
             elseif (units(1:3).eq.'day') then
@@ -203,6 +207,28 @@
               goto 99                                     !--> ERROR
             endif
             start_time=start_time*time_scale
+
+# if defined USE_CALENDAR || defined XIOS
+            call tool_origindate(ncid,varid,origin_date_in_sec)
+              MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &    'Origin date of time axis (YYYY/MM/DD hh:mm:ss) :',
+     &    tool_sectodat(origin_date_in_sec)
+      origin_date=tool_sectodat(origin_date_in_sec)
+      READ(origin_date(1:4),fmt='(i4)') origin_year
+      READ(origin_date(6:8),fmt='(i2)') origin_month
+      READ(origin_date(9:10),fmt='(i2)') origin_day
+      READ(origin_date(12:13),fmt='(i2)') origin_hour
+      READ(origin_date(15:16),fmt='(i2)') origin_minute
+      READ(origin_date(18:19),fmt='(i2)') origin_second
+      ! Modify units when using USE_CALENDAR
+      vname(3,indxTime)='seconds since '
+     &                     //tool_sectodat(origin_date_in_sec)
+              ! Modify units when using USE_CALENDAR
+      vname(3,indxTime2)='seconds since '
+     &                     //tool_sectodat(origin_date_in_sec)
+
+# endif 
+
 #ifdef EXACT_RESTART
             if (tindx.eq.2) then
               forw_start=0
@@ -265,11 +291,11 @@
         goto 99                                           !--> ERROR
       endif
       
-#if defined XIOS && defined START_DATE
+#ifdef XIOS 
       start_date_run = tool_sectodat(start_time+origin_date_in_sec)
-      READ(start_date_run(1:2),fmt='(i2)') start_day
-      READ(start_date_run(4:5),fmt='(i2)') start_month
-      READ(start_date_run(7:10),fmt='(i4)') start_year
+      READ(start_date_run(1:4),fmt='(i4)') start_year
+      READ(start_date_run(6:7),fmt='(i2)') start_month
+      READ(start_date_run(9:10),fmt='(i2)') start_day
       READ(start_date_run(12:13),fmt='(i2)') start_hour
       READ(start_date_run(15:16),fmt='(i2)') start_minute
       READ(start_date_run(18:19),fmt='(i2)') start_second
@@ -388,7 +414,7 @@
         count(2)=1
         ierr=nf_get_vara_int (ncid, varid, start, count, ibuff)
         if (ierr .eq. nf_noerr) then
-#if defined RESTART_DIAGS
+#ifdef RESTART_DIAGS
           nrecsurf=ibuff(5)
 #ifdef AVERAGES
           nrecsurf_avg=ibuff(6)

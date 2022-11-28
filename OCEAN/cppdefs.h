@@ -293,9 +293,9 @@
 # undef  OBC_M3SPECIFIED
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
-# define AVERAGES
-# define AVERAGES_K
-# undef  OUTPUTS_SURFACE
+# undef AVERAGES
+# undef AVERAGES_K
+# define  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
                      /* Exact restart */
 # undef EXACT_RESTART
@@ -327,6 +327,7 @@
 !
 */
 # undef DO_NOT_OVERWRITE
+# undef RETSART_DIAGS
 
 # undef DIAGNOSTICS_TS
 # undef DIAGNOSTICS_UV
@@ -469,8 +470,8 @@
 # define ZETA_DRY_IO
 # define FILLVAL
                       /* Calendar */
-# undef  START_DATE
-# define USE_CALENDAR
+
+# undef USE_CALENDAR
                       /* dedicated croco.log file */
 # undef  LOGFILE
 /*!

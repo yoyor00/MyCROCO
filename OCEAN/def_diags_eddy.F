@@ -721,7 +721,7 @@
         ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
      &                    MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 # endif
-        if (ierr. ne. nf_noerr) then
+        if (ierr.eq. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
             if (rec_per_file.eq.0) then
@@ -773,7 +773,11 @@
         if (ierr .ne. nf_noerr) then
           write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
-        endif 
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTstep, nf_collective)
+# endif
+ 
 !
 ! Time.
 !
@@ -783,6 +787,10 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTime, nf_collective)
+# endif
+
 !
 ! Time2.
 !
@@ -792,6 +800,9 @@
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
+# endif
 
 
 ! momentum flux diagnostics variables :
@@ -812,6 +823,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_zz(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyuu
@@ -824,6 +838,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_uu(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvv
@@ -836,6 +853,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vv(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyuv
@@ -848,6 +868,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_uv(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyuw
@@ -860,6 +883,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_zw(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvw
@@ -872,6 +898,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vw(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyub
@@ -884,6 +913,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_ub(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvb
@@ -896,6 +928,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vb(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddywb
@@ -908,6 +943,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_wb(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyubu
@@ -920,6 +958,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_ubu(itrc),nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvbv
@@ -932,6 +973,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vbv(itrc),nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyusu
@@ -944,6 +988,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_usu(itrc),nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvsv
@@ -956,6 +1003,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vsv(itrc),nf_collective)
+# endif
 !
         endif ! wrt(itrc)
 !

@@ -253,6 +253,11 @@
         write(stdout,6) 'wwv_time', ww_rec 
         goto 99                                         !--> ERROR
       endif
+#ifdef USE_CALENDAR
+        call tool_origindate(ncidwave,ww_tid,
+     &                       ww_origin_date_in_sec)
+        cff=cff+ww_origin_date_in_sec*sec2day
+# endif
       wwv_time(i)=cff*day2sec+ww_cycle*ww_ncycle
       if (wwv_time(itww).eq.-1.E+20) wwv_time(itww)=wwv_time(i)
 
@@ -366,6 +371,9 @@
       itww=i
       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
      &  'GET_WWAVE --','Read wind wave input data for time =', cff
+#ifdef USE_CALENDAR
+     &  -ww_origin_date_in_sec*sec2day
+#endif 
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -387,6 +395,9 @@
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) ww_rec, ntww, wave_file(1:lstr), tdays,
      &                                wwv_time(itww)*sec2day
+#ifdef USE_CALENDAR
+     &  -ww_origin_date_in_sec*sec2day
+#endif 
   8   format(/,' GET_WWAVE - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing NetCDF file: ',a, /,14x,'TDAYS = ',
@@ -701,6 +712,9 @@
       if ((ww_cycle.gt.0.) .and. (fac1.lt.0..or.fac2.lt.0.)) then
         if (ZEROTH_TILE) then
           write(stdout,1) 'wwv_time', tdays, wwv_time(it2)*sec2day  
+#ifdef USE_CALENDAR
+     &  -ww_origin_date_in_sec*sec2day
+#endif 
   1       format(/,' SET_WWAVE_TILE - current model time exceeds',
      &             ' ending value for variable: ',a,/,14x,'TDAYS = ',
      &                                      g12.4,2x,'TEND = ',g12.4)

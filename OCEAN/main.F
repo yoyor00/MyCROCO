@@ -82,6 +82,7 @@
 #endif
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
+!      real*8       :: tool_datosec
 #endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -337,14 +338,14 @@ C$OMP BARRIER
       time=start_time           ! moment "start_time" (global scalar)
       tdays=time*sec2day        ! is set by get_initial or analytically
                                 ! --> copy it into threadprivate "time"
-
 #ifdef USE_CALENDAR
       ! compute start time and ntimes
+      time=start_time +origin_date_in_sec
 # ifdef ANA_INITIAL
       ! if no initial file set start_date from croco.in
-      if (nrrec.eq.0) time=tool_datosec(run_start_date)
+      if (nrrec.eq.0) time=tool_datosec(start_date)
 # endif
-      time_end=tool_datosec(run_end_date)
+      time_end=tool_datosec(end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
@@ -823,7 +824,7 @@ CR      write(*,*) '  0' MYID
       time_start=time
 #ifdef USE_CALENDAR
       time_mars=time
-      time_end=tool_datosec(run_end_date)
+      time_end=tool_datosec(end_date)
 #endif
 
 ! XIOS (
@@ -857,9 +858,9 @@ CR      write(*,*) '  0' MYID
 #endif
 
 #ifdef USE_CALENDAR
-        if (mod(iicroot-1,ninfo) .eq. 0) then
-          MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
-        endif
+!        if (mod(iicroot-1,ninfo) .eq. 0) then
+!          MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+!        endif
         if (time .gt. time_end) goto 99
 #endif
 

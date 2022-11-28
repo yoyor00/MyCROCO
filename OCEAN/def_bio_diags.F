@@ -380,7 +380,7 @@
 
       elseif (ncid.eq.-1) then
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
-        if (ierr. ne. nf_noerr) then
+        if (ierr.eq. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
             if (rec_per_file.eq.0) then
