@@ -52,6 +52,9 @@
 #ifdef SOLVE3D
      &                                       , itrc
 #endif
+#ifdef DIAGNOSTICS_BIO
+     &                                       , iflux
+#endif
       logical dumboolean
 #ifdef USE_CALENDAR
       real  dt_his,dt_avg,dt_rst
