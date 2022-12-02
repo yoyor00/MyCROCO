@@ -761,7 +761,7 @@
             dpth=z_w(i,j,N)-0.5*(z_r(i,j,k+1)+z_r(i,j,k))
             dRz =rho1(i,j,k+1)-rho1(i,j,k)
      &          +(qp1(i,j,k+1)- qp1(i,j,k))
-     &               *dpth*(1.-2.*qp2*dpth)
+     &               *dpth*(1.- qp2*dpth)
 #    else
             dRz = rho1(i,j,k+1)-rho1(i,j,k)
 #    endif
