@@ -185,6 +185,7 @@ TGT_SRCS= $(ADJ_SRCS) ana_initial.F ana_grid.F wrt_his.F def_his.F setup_grid1.F
 TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
 TGT_PSRCS_DBG= main_cost.tap.f $(TGT_PSRCS)
 TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o tgt_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o
+ADJ_TGT_OBJS=$(TAP_TARGET)_b.o $(TAP_TARGET)_d.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o adj_tgt_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o 
 TGT_OBJS_DBG=$(TAP_TARGET)_context_d.o m1qn3.o adContext.o treeverse.o adBufferC.o adBuffer.o  adStack.o code_insertion.o  read_obs.o analytical.o t3dbc.o v3dbc.o exchange.o zetabc.o u2dbc.o v2dbc.o pre_step3d.o u3dbc.o get_vbc.o diag.o ana_vmix.o output.o  check_kwds.o  read_inp.o init_scalars.o timers_roms.o init_arrays.o ana_grid.o setup_grid1.o setup_grid2.o set_scoord.o set_weights.o set_depth.o grid_stiffness.o get_initial.o ana_initial.o set_depth.o rho_eos.o omega.o wrt_his.o step.o closecdf.o wrt_rst.o lenstr.o
 
 ADJ_OBJS_DBG1=$(TAP_TARGET)_context1_d.o m1qn3.o adDebug.o treeverse.o adBufferC.o adBuffer.o  adStack.o code_insertion.o  read_obs.o analytical.o t3dbc.o v3dbc.o exchange.o zetabc.o u2dbc.o v2dbc.o pre_step3d.o u3dbc.o get_vbc.o diag.o ana_vmix.o output.o  check_kwds.o  read_inp.o init_scalars.o timers_roms.o init_arrays.o ana_grid.o setup_grid1.o setup_grid2.o set_scoord.o set_weights.o set_depth.o grid_stiffness.o get_initial.o ana_initial.o set_depth.o rho_eos.o omega.o wrt_his.o step.o closecdf.o wrt_rst.o lenstr.o  cost_fun.o
@@ -218,6 +219,9 @@ $(SBIN)_adc:  $(ADJ_OBJS) $(TAP_TARGET)_d.o check_driver.o $(OBJS90) $(OBJS) mai
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_adj_tgt: $(ADJ_TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_tgt_dbg: $(TGT_OBJS_DBG) $(OBJS90) $(OBJS)

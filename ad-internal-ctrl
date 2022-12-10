@@ -74,8 +74,8 @@ sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdef
 sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
-make croco_adj && mv croco_adj .. || exit 1
+make croco_tgt && mv croco_tgt .. || exit 1
 cd ..
 
 #./croco_adc croco.internal-friction-obs.in
-./croco_adj croco.internal-friction-obs.in
+./croco_tgt croco.internal-friction-obs.in

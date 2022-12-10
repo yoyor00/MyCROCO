@@ -342,13 +342,17 @@ c     cf ana_initial
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend, i,j,k,ik,cpoint
-      double precision cff1,cff,depth,ridge_width,ridge_height
+      double precision cff1,cff,depth,ridge_width,ridge_height,d1,d2,d3
       character*6 counter_str
-
 #include "compute_extended_bounds.h"
-      depth = ad_x(1)
-      ridge_width = ad_x(2)
-      ridge_height = ad_x(3)
+
+      d1=200*200
+      d2=4D3*4D3
+      d3=200*200
+
+      depth = 2000         -  200*(1- exp(-d1*(ad_x(1)*ad_x(1))))
+      ridge_width = 30.0D3 +  4D3*(1- exp(-d2*(ad_x(2)*ad_x(2))))
+      ridge_height = 1600  +  200*(1- exp(-d3*(ad_x(3)*ad_x(3))))
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
@@ -377,8 +381,7 @@ c     cf ana_initial
 #endif
 
       write(*, *) 'k, ad_array_node_size', k, ad_array_node_size
-      write(*, *) 'min ad_x', minval(ad_x(1:k))
-      write(*, *) 'max ad_x', maxval(ad_x(1:k))
+      write(*, *) 'ad_x', ad_x(1), ad_x(2), ad_x(3)
       write(*, *) 'ad_counter=',ad_counter
       write(*, *) '*******************'
 
@@ -605,9 +608,9 @@ c      call grid_stiffness(tile)
 # include "compute_extended_bounds.h"
 
 c set a lower depth
-      depth=2100
+      depth=2100.
       ridge_width = 28.0D3
-      ridge_height = 1400
+      ridge_height = 1600
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
@@ -621,6 +624,7 @@ c set a lower depth
             cff=1-(xr(i,j)*xr(i,j)*cff1);
           endif
           h(i,j)=depth-ridge_height*cff*cff;
+          ad_tab0(i,j) = 0.
 #   ifdef INTERNALSHELF
           if (xr(i,j).ge.0.) then
             h(i,j)=depth-ridge_height
@@ -629,9 +633,9 @@ c set a lower depth
        enddo
       enddo
 
-      ad_x(1) = depth;
-      ad_x(2) = ridge_width;
-      ad_x(3) = ridge_height;
+      ad_x(1) =  2.9525087633157719E-007
+      ad_x(2) = -1.3858541365846966E-320
+      ad_x(3) = 5.1097759790190960E-008
 
       ad_array_node_size=3
 

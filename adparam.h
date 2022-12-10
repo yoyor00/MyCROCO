@@ -6,8 +6,8 @@ C     -*- fortran -*-
       
 C     size of the optimization problem
       integer ad_array_size
-      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
-c      parameter (ad_array_size=1)
+c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
+      parameter (ad_array_size=3)
 
 c     real size of the problem per node (<= ad_array_size/nnodes)
       integer ad_array_node_size
@@ -29,7 +29,7 @@ C     number of cost function computations
 #elif defined AD_ATLN
       parameter (ad_nt = 48)
 #elif defined INTERNAL
-      parameter (ad_nt = 1)
+      parameter (ad_nt = 2)
 #endif
 
 C     number of obs in observation file
@@ -45,12 +45,12 @@ C     start of assimilation in the obs file
 #elif defined AD_ATLN
       parameter (ad_ast = 388)
 #elif defined INTERNAL
-      parameter (ad_ast = 1)
+      parameter (ad_ast = 120*32)
 #endif
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st
-      parameter (ad_main_st = 1)
+      parameter (ad_main_st = 120*32)
 
 c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY,ad_nobs)
