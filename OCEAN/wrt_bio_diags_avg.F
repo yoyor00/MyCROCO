@@ -40,7 +40,7 @@
 
 #include "netcdf.inc"
 
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
      &                 1, MPI_COMM_WORLD, status, ierr) 
@@ -183,7 +183,7 @@ C      write(*,*) 'Write Time'
 !     to access data immediately after it is written.
 !     
       
-#if defined MPI &  !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (nciddiabio_avg)
       if (nrpfdiabio_avg.gt.0 .and. record.ge.nrpfdiabio_avg) 
      &     nciddiabio_avg=-1
@@ -201,12 +201,13 @@ C      write(*,*) 'Write Time'
      &       'diag_avg fields into time record =', record, '/',
      &       nrecdiabio_avg  MYID
       else
-        write(stdout,'(/1x,2A/)') 'WRT_BIO_DIAG_AVG ERROR: Cannot ',
+        MPI_master_only write(stdout,'(/1x,2A/)')
+     &       'WRT_BIO_DIAG_AVG ERROR: Cannot ',
      &       'synchronize/close diag_avg netCDF file.'
         may_day_flag=3
       endif
       
-#if defined MPI &               !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &       1, MPI_COMM_WORLD,  ierr)
