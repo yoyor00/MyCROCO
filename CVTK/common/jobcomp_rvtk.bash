@@ -160,19 +160,17 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	if [[ $FC == ifort || $FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-		FFLAGS1="-O3 -fno-alias -i4 -r8 -fp-model precise"
+		FFLAGS1="-O0 -mcmodel=medium -g -i4 -r8 -traceback -check all -check bounds \
+                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 #                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
 #                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-#		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
-#                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-#			-fbounds-check -finit-real=nan -finit-integer=8888"
-                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-			-fbounds-check"
-		LDFLAGS1="$LDFLAGS1"
+		FFLAGS1="-O0 -mcmodel=medium -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
+			-fbounds-check -finit-real=nan -finit-integer=8888"
+    LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
         CPP1="cpp -traditional -DLinux"
@@ -234,7 +232,7 @@ XIOS_ROOT_DIR=${CROCO_XIOS_ROOT_DIR-$XIOS_ROOT_DIR}
 if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         echo " => XIOS activated"
         COMPILEXIOS=TRUE
-        LDFLAGS1="$LDFLAGS1 $XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff"
+        LDFLAGS1="$LDFLAGS1 $XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff -lnetcdf"
         CPPFLAGS1="$CPPFLAGS1 -I$XIOS_ROOT_DIR/inc"
         FFLAGS1="$FFLAGS1 -I$XIOS_ROOT_DIR/inc"
 	
