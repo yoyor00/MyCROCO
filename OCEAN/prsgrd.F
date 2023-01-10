@@ -622,6 +622,7 @@ c********************************************************************
 ! rewritten in diagonal form (lile in Lin, 1997), which minimizes
 ! the number of operations relatively to any other form.
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           rsurf(i,j)=rho(i,j,N) + (rho(i,j,N)-rho(i,j,N-1))
@@ -869,6 +870,7 @@ c********************************************************************
 !  add in wave effect using POM-Jacobian
 !  =====================================
 !
+!RB to be optimized with OPENACC
 # ifdef MRL_WCI
 #  define DC rx
       do k=N,1,-1           !--> irreversible
