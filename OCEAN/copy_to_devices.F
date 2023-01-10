@@ -124,9 +124,8 @@
 !$acc& ,tzon,tclmzon
 #  endif
 # endif
-# if defined RIVER || defined PSOURCE || defined PSOURCE_NCFILE
-!$acc& ,Isrc,Jsrc,Tsrc, Tsrc0, qsrc, qbar, qbar0,qshape
-!$acc& ,dsrc, lsrc                   
+# if defined PSOURCE || defined PSOURCE_NCFILE
+!$acc& ,Isrc,Jsrc
 #  ifdef MPI
 !$acc& ,Isrc_mpi,Jsrc_mpi
 #  endif
@@ -221,7 +220,11 @@
 # include "averages.h"
 # include "lmd_kpp.h"
 # include "climat.h"
+# include "boundary.h"
 # include "sources.h"
+# if defined WKB_WWAVE
+#  include "wkb_wwave.h"
+# endif
 # if defined NBQ
 #  include "nbq.h"
 # endif
