@@ -26,7 +26,7 @@
       STOP
     endif
   else
-    write(*,'(\1x,A\6x,A\10x,A)') &
+    write(*,'(/1x,A/6x,A/10x,A)') &
             'TOOL_ORIGINDATE ERROR: ',&
             'Time variable should have a units attribute following Netcdf CF format: ',&
             '''seconds(days) since YYYY/MM/DD hh:mm:ss'''
