@@ -641,9 +641,6 @@
 */
 # undef  OPENMP
 # undef  MPI
-# define M2FILTER_NONE
-# define JEAN_ZAY
-# define OPENACC
 # define UV_ADV
 # define UV_COR
 # define UV_VIS2
@@ -657,28 +654,6 @@
 # define ANA_BTFLUX
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
-
-                      /* Equation of State */
-# define SALINITY
-# define ANA_BSFLUX
-# define ANA_SSFLUX
-# define NONLIN_EOS
-
-#define ANA_SRFLUX
-                      /* Vertical Mixing */
-# undef  BODYFORCE
-# undef  BVF_MIXING
-# define LMD_MIXING
-# undef  GLS_MIXING
-# ifdef LMD_MIXING
-#  define LMD_SKPP
-#  define LMD_BKPP
-#  define LMD_RIMIX
-#  define LMD_CONVEC
-#  define LMD_NONLOCAL
-#  undef  LMD_DDMIX
-#  undef  LMD_LANGMUIR
-# endif
 
 #elif defined CANYON
 /*

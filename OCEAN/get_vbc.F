@@ -712,26 +712,20 @@
 
 #ifdef SOLVE3D
 # if defined BD_EXCHANGE
-#   ifndef BASIN
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
-#   endif      
 #  ifdef TEMPERATURE
-#   ifndef BASIN
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,srflx(START_2D_ARRAY))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      btflx(START_2D_ARRAY,itemp))
-#   endif      
 #  endif
 #  ifdef SALINITY
-#   ifndef BASIN
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                     stflx(START_2D_ARRAY,isalt))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                     btflx(START_2D_ARRAY,isalt))
-#   endif      
 #  endif
 # endif
 #endif

@@ -130,16 +130,15 @@
 !
         do j=JstrR,JendR
           do i=IstrR,IendR
-#  if defined SINGLE_COLUMN 
-#   ifdef KATO_PHILIPS
+#   if defined SINGLE_COLUMN 
+#    ifdef KATO_PHILIPS
             btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
-#   elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
+#    elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
             btflx(i,j,itemp)=-1.0e-5*0.01
-#   endif
-#  endif
-# if defined BASIN
+#    endif
+#   else
             btflx(i,j,itemp)=0.
-#endif
+#   endif
           enddo
         enddo
       endif
