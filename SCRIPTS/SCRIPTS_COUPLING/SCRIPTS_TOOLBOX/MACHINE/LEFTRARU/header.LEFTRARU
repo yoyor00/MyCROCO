@@ -2,7 +2,7 @@
 #SBATCH --job-name=<exp>
 #SBATCH --partition=slims
 #SBATCH -n <nmpi>
-#SBATCH --ntasks-per-node=4
+#SBATCH --ntasks-per-node=20
 #SBATCH --hint=nomultithread
 #SBATCH --time=<timedur>
 #SBATCH --output=<exp>.out

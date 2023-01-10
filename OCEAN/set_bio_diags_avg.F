@@ -66,17 +66,28 @@
 !
       if (ilc.gt.ntsdiabio_avg) then
 
-        if (mod(ilc-1,nwrtdiabio_avg).eq.1) then
+        if (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).eq.1) then
           cff =1.0
           cff1=0.0
-        elseif (mod(ilc-1,nwrtdiabio_avg).gt.1) then
+          if (ZEROTH_TILE) then
+            timediabio_avg=time
+!            MPI_master_only write(*,*) 'start avg',iic,ntsdiabio_avg,
+!     &           nwrtdiabio_avg
+          endif
+        elseif (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).gt.1) then
           cff =1.0
           cff1=1.0
-        elseif (mod(ilc-1,nwrtdiabio_avg).eq.0) then
+          if (ZEROTH_TILE) then
+            timediabio_avg=timediabio_avg+time
+          endif          
+        elseif (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).eq.0) then
           cff =1.0/float(nwrtdiabio_avg)
           cff1=1.0
-          if (ZEROTH_TILE) timediabio_avg=timediabio_avg+
-     &                                    float(nwrtdiabio_avg)*dt
+          if (ZEROTH_TILE) then
+            timediabio_avg=cff*(timediabio_avg+time)
+!            MPI_master_only write(*,*) 'finish avg',iic,ntsdiabio_avg,
+!     &           nwrtdiabio_avg
+          endif
         endif
 
 #ifdef PISCES

@@ -11,7 +11,8 @@ MODEL=croco
 SCRATCHDIR=`pwd`/SCRATCH
 
 # Input directory where the croco_inter.in input file is located
-INPUTDIR=`pwd`/CROCO_IN
+INPUTDIR=`pwd`/CROCO_IN  # prod architecture
+#INPUTDIR=`pwd`          # dev architecture
 
 # AGRIF input file which defines the position of child grids
 AGRIF_FILE=AGRIF_FixedGrids.in
@@ -20,7 +21,7 @@ AGRIF_FILE=AGRIF_FixedGrids.in
 MSSDIR=`pwd`/CROCO_FILES
 
 # Directory where the croco output and restart NetCDF files (croco_his.nc, ...) are stored
-MSSOUT=`pwd`/CROCO_FILES
+MSSOUT=$SCRATCHDIR
 
 # CROCO executable
 CODFILE=croco
@@ -29,12 +30,13 @@ CODFILE=croco
 NBPROCS=8
 
 # command for running the mode : ./ for sequential job, mpirun -np NBPROCS for mpi run
+# WARNING: for mpi run command, it is needed to add a space at the end!
 RUNCMD='./'
 #RUNCMD="mpirun -np $NBPROCS "
 #RUNCMD="$MPI_LAUNCH "
+#RUNCMD='srun '
 
 #  Define environment variables for OPENMP
-#
 OMP_SCHEDULE=static
 OMP_NUM_THREADS=2
 OMP_DYNAMIC=false
@@ -43,35 +45,47 @@ KMP_LIBRARY=throughput
 KMP_STACKSIZE=2m
 KMP_DUPLICATE_LIB_OK=TRUE
 
-#
 # Define which type of inputs are used
-#
 BULK_FILES=1
 FORCING_FILES=0
 CLIMATOLOGY_FILES=0
 BOUNDARY_FILES=1
 RUNOFF_FILES=0
-#
+
 # Atmospheric surface forcing dataset used for the bulk formula (NCEP)
-#
-ATMOS_BULK=CFSR
-#
+ATMOS_BULK=ERA5
 # Atmospheric surface forcing dataset used for the wind stress (NCEP, QSCAT)
-#
 ATMOS_FRC=QSCAT
-#
 # Oceanic boundary and initial dataset (SODA, ECCO,...)
-#
 OGCM=SODA
-#
 # Runoff dataset (Daie and Trenberth,...)
-#
 RUNOFF_DAT=DAI
-#
+
 # Model time step [seconds]
-#
 DT=3600
-#
+# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
+NFAST=60
+
+# Number total of grid levels (1: No child grid)
+NLEVEL=1
+# AGRIF nesting refinement coefficient
+AGRIF_REF=3
+
+# Start and End year 
+NY_START=2005
+NY_END=2005
+# Start and End month
+NM_START=1
+NM_END=3
+# Set month format at 1 or 2 digits (for input and output files): "%01d" = 1 digit/ "%02d" = 2 digit  
+MTH_FORMAT="%02d"
+#  Time Schedule  -  TIME_SCHED=0 --> yearly files
+#                    TIME_SCHED=1 --> monthly files
+TIME_SCHED=1
+
+# Number of year that are considered to be part of the spin-up (i.e. 365 days per year)
+NY_SPIN=0
+
 # Output frequency [days]
 #   average
 ND_AVG=3
@@ -79,49 +93,20 @@ ND_AVG=3
 ND_HIS=-1
 #   restart (if = -1 set equal to NUMTIMES)
 ND_RST=-1
-#
-# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
-#
-NFAST=60
-#
-# Number total of grid levels (1: No child grid)
-#
-NLEVEL=1
-#
-# AGRIF nesting refinement coefficient
-#
-AGRIF_REF=3
-#
-NY_START=2000
-NY_END=2000
-NM_START=1
-NM_END=3
-#
-# Set month format at 1 or 2 digits (for input and output files): "%01d" = 1 digit/ "%02d" = 2 digit  
-MTH_FORMAT="%01d"
-#
-# Number of year that are considered to be part of the spin-up (i.e. 365 days per year)
-NY_SPIN=0
-#
+
 #  Restart file - RSTFLAG=0 --> No Restart
 #		  RSTFLAG=1 --> Restart
-#
 RSTFLAG=0     
-#
 #  Exact restart - EXACT_RST=0 --> Exact restart OFF
 #                - EXACT_RST=1 --> Exact restart ON
 EXACT_RST=0
-#
-#  Time Schedule  -  TIME_SCHED=0 --> yearly files
-#                    TIME_SCHED=1 --> monthly files
-#
-TIME_SCHED=1
-#
+
 #unalias cp
 #unalias mv
 #limit coredumpsize unlimited
 CP=/bin/cp
 MV=/bin/mv
+LN=/bin/ln
 #
 ########################################################
 #  END USER CHANGE
@@ -191,7 +176,7 @@ while [ $LEVEL != $NLEVEL ]; do
     ENDF=.${LEVEL}
   fi
   echo "Getting ${GRDFILE}.nc${ENDF} from $MSSDIR"
-  $CP -f $MSSDIR/${GRDFILE}.nc${ENDF} $SCRATCHDIR
+  $LN -sf $MSSDIR/${GRDFILE}.nc${ENDF} $SCRATCHDIR
   echo "Getting ${MODEL}_inter.in${ENDF} from $INPUTDIR"
   $CP -f $INPUTDIR/${MODEL}_inter.in${ENDF} $SCRATCHDIR
   if [[ $RSTFLAG == 0 ]]; then
@@ -248,15 +233,15 @@ while [ $NY != $NY_END ]; do
       fi
       if [[ ${FORCING_FILES} == 1 ]]; then
         echo "Getting ${FRCFILE}_${ATMOS_FRC}_${TIME}.nc${ENDF} from $MSSDIR"
-        $CP -f $MSSDIR/${FRCFILE}_${ATMOS_FRC}_${TIME}.nc${ENDF} ${FRCFILE}.nc${ENDF}
+        $LN -sf $MSSDIR/${FRCFILE}_${ATMOS_FRC}_${TIME}.nc${ENDF} ${FRCFILE}.nc${ENDF}
       fi
       if [[ ${BULK_FILES} == 1 ]]; then
         echo "Getting ${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} from $MSSDIR"
-        $CP -f $MSSDIR/${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} ${BLKFILE}.nc${ENDF}
+        $LN -sf $MSSDIR/${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} ${BLKFILE}.nc${ENDF}
       fi
      if [[ ${RNF_FILES} == 1 ]]; then
         echo "Getting ${RNFFILE}_${RUNOFF_DAT}_${TIME}.nc${ENDF} from $MSSDIR"
-        $CP -f $MSSDIR/${RNFFILE}_${RUNOFF_DAT}_${TIME}.nc${ENDF} ${RNFFILE}.nc${ENDF}
+        $LN -sf $MSSDIR/${RNFFILE}_${RUNOFF_DAT}_${TIME}.nc${ENDF} ${RNFFILE}.nc${ENDF}
       fi
       
       LEVEL=$((LEVEL + 1))
@@ -266,11 +251,11 @@ while [ $NY != $NY_END ]; do
 #
     if [[ ${CLIMATOLOGY_FILES} == 1 ]]; then
       echo "Getting ${CLMFILE}_${OGCM}_${TIME}.nc from $MSSDIR"
-      $CP -f $MSSDIR/${CLMFILE}_${OGCM}_${TIME}.nc ${CLMFILE}.nc
+      $LN -sf $MSSDIR/${CLMFILE}_${OGCM}_${TIME}.nc ${CLMFILE}.nc
     fi
     if [[ ${BOUNDARY_FILES} == 1 ]]; then
       echo "Getting ${BRYFILE}_${OGCM}_${TIME}.nc from $MSSDIR"
-      $CP -f $MSSDIR/${BRYFILE}_${OGCM}_${TIME}.nc ${BRYFILE}.nc
+      $LN -sf $MSSDIR/${BRYFILE}_${OGCM}_${TIME}.nc ${BRYFILE}.nc
     fi
 #
 # Set the number of time steps for each month 
@@ -320,7 +305,8 @@ while [ $NY != $NY_END ]; do
     echo "YEAR = $NY MONTH = $NM DAYS = $NDAYS DT = $DT NTIMES = $NUMTIMES"
     NUMTIMES=$((NDAYS * 24 * 3600))
     NUMTIMES=$((NUMTIMES / DT))
-    
+
+    DT0=$DT
     LEVEL=0
     while [[ $LEVEL != $NLEVEL ]]; do
 	if [[ ${LEVEL} == 0 ]]; then
@@ -380,6 +366,7 @@ while [ $NY != $NY_END ]; do
 	
 	LEVEL=$((LEVEL + 1))
     done
+    DT=$DT0
     #
     #  COMPUTE
     #

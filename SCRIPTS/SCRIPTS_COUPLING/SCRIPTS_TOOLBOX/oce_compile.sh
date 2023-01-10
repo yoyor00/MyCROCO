@@ -42,7 +42,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     dimz=$( ncdump -h  ${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc | grep "s_rho =" | cut -d ' ' -f 3)
     printf "\nGrid size is (in Lx X Ly X Nz ) : ${dimx}X${dimy}X${dimz}\n"
     #add new line for new conf in param.h
-    sed -e "s/(LLm0=xx, MMm0=xx, N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
+    sed -e "s/(\s*LLm0=xx,\s*MMm0=xx,\s*N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
         param.h.base > tmp$$
     mv tmp$$ param.h
     # update necessary things
@@ -93,17 +93,18 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
             sed -e "s/#  *undef  *ONLINE/# define ONLINE/g" cppdefs.h > tmp$$
             mv tmp$$ cppdefs.h
             if [[ ${frc_ext} == *'AROME'* || ${frc_ext} == *'ARPEGE'* ]]; then
-                sed -e "s/#  *undef  *AROME/# define AROME/g" \
+                sed -e "s/#  *undef  *AROME/#   define AROME/g" \
                     cppdefs.h > tmp$$
             else
-                sed -e "s/#  *define  *AROME/# undef  AROME/g" \
+                sed -e "s/#  *define  *AROME/#   undef  AROME/g" \
                     cppdefs.h > tmp$$
             fi
-            if [[ ${frc_ext} == *'ECMWF'* ]]; then
-                sed -e "s/#  *undef  *ECMWF/# define ECMWF/g" \
+            mv tmp$$ cppdefs.h
+            if [[ ${frc_ext} == *'ERA_ECMWF'* ]]; then
+                sed -e "s/#  *undef  *ERA_ECMWF/#   define  ERA_ECMWF/g" \
                     cppdefs.h > tmp$$
             else
-                sed -e "s/#  *define  *ECMWF/# undef  ECMWF/g" \
+                sed -e "s/#  *define  *ERA_ECMWF/#   undef  ERA_ECMWF/g" \
                     cppdefs.h > tmp$$
             fi
             printf "\n Online bulk activated with ${frc_ext}\n"

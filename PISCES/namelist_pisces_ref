@@ -18,30 +18,31 @@
 !              !    name   !           title of the field              !   units    
 !              !           !                                           !            
 !              !           !                                           !            
-   tracer(1)   = 'DIC     ' , 'Dissolved inorganic Concentration      ',  'mol-C/L' 
-   tracer(2)   = 'Alkalini' , 'Total Alkalinity Concentration         ',  'eq/L '   
-   tracer(3)   = 'O2      ' , 'Dissolved Oxygen Concentration         ',  'mol-C/L' 
-   tracer(4)   = 'CaCO3   ' , 'Calcite Concentration                  ',  'mol-C/L' 
-   tracer(5)   = 'PO4     ' , 'Phosphate Concentration                ',  'mol-C/L' 
-   tracer(6)   = 'POC     ' , 'Small organic carbon Concentration     ',  'mol-C/L' 
-   tracer(7)   = 'Si      ' , 'Silicate Concentration                 ',  'mol-C/L' 
-   tracer(8)   = 'PHY     ' , 'Nanophytoplankton Concentration        ',  'mol-C/L' 
-   tracer(9)   = 'ZOO     ' , 'Microzooplankton Concentration         ',  'mol-C/L' 
-   tracer(10)  = 'DOC     ' , 'Dissolved organic Concentration        ',  'mol-C/L' 
-   tracer(11)  = 'PHY2    ' , 'Diatoms Concentration                  ',  'mol-C/L' 
-   tracer(12)  = 'ZOO2    ' , 'Mesozooplankton Concentration          ',  'mol-C/L' 
-   tracer(13)  = 'BSi     ' , 'Diatoms Silicate Concentration         ',  'mol-C/L' 
-   tracer(14)  = 'Fer     ' , 'Dissolved Iron Concentration           ',  'mol-C/L' 
-   tracer(15)  = 'BFe     ' , 'Big iron particles Concentration       ',  'mol-C/L' 
-   tracer(16)  = 'GOC     ' , 'Big organic carbon Concentration       ',  'mol-C/L' 
-   tracer(17)  = 'SFe     ' , 'Small iron particles Concentration     ',  'mol-C/L' 
-   tracer(18)  = 'DFe     ' , 'Diatoms iron  Concentration            ',  'mol-C/L' 
-   tracer(19)  = 'DSi     ' , 'Sinking biogenic Silicate Concentration',  'mol-C/L' 
-   tracer(20)  = 'NFe     ' , 'Nano iron Concentration                ',  'mol-C/L' 
-   tracer(21)  = 'NCHL    ' , 'Nano chlorophyl Concentration          ',  'mol-C/L' 
-   tracer(22)  = 'DCHL    ' , 'Diatoms chlorophyl Concentration       ',  'mol-C/L' 
-   tracer(23)  = 'NO3     ' , 'Nitrates Concentration                 ',  'mol-C/L' 
-   tracer(24)  = 'NH4     ' , 'Ammonium Concentration                 ',  'mol-C/L' 
+   tracer(1)   = 'DIC     ' , 'Dissolved inorganic Concentration      ',  'mmol/m3'
+   tracer(2)   = 'Alkalini' , 'Total Alkalinity Concentration         ',  'meq/m3 '
+   tracer(3)   = 'O2      ' , 'Dissolved Oxygen Concentration         ',  'mmol/m3'
+   tracer(4)   = 'CaCO3   ' , 'Calcite Concentration                  ',  'mmol/m3'
+   tracer(5)   = 'PO4     ' , 'Phosphate Concentration                ',  'mmol/m3'
+   tracer(6)   = 'POC     ' , 'Small organic carbon Concentration     ',  'mmol/m3'
+   tracer(7)   = 'Si      ' , 'Silicate Concentration                 ',  'mmol/m3'
+   tracer(8)   = 'PHY     ' , 'Nanophytoplankton Concentration        ',  'mmol/m3'
+   tracer(9)   = 'ZOO     ' , 'Microzooplankton Concentration         ',  'mmol/m3'
+   tracer(10)  = 'DOC     ' , 'Dissolved organic Concentration        ',  'mmol/m3'
+   tracer(11)  = 'PHY2    ' , 'Diatoms Concentration                  ',  'mmol/m3'
+   tracer(12)  = 'ZOO2    ' , 'Mesozooplankton Concentration          ',  'mmol/m3'
+   tracer(13)  = 'BSi     ' , 'Diatoms Silicate Concentration         ',  'mmol/m3'
+   tracer(14)  = 'Fer     ' , 'Dissolved Iron Concentration           ',  'mmol/m3'
+   tracer(15)  = 'BFe     ' , 'Big iron particles Concentration       ',  'mmol/m3'
+   tracer(16)  = 'GOC     ' , 'Big organic carbon Concentration       ',  'mmol/m3'
+   tracer(17)  = 'SFe     ' , 'Small iron particles Concentration     ',  'mmol/m3'
+   tracer(18)  = 'DFe     ' , 'Diatoms iron  Concentration            ',  'mmol/m3'
+   tracer(19)  = 'DSi     ' , 'Sinking biogenic Silicate Concentration',  'mmol/m3'
+   tracer(20)  = 'NFe     ' , 'Nano iron Concentration                ',  'mmol/m3'
+   tracer(21)  = 'NCHL    ' , 'Nano chlorophyl Concentration          ',  'mg/m3'
+   tracer(22)  = 'DCHL    ' , 'Diatoms chlorophyl Concentration       ',  'mg/m3'
+   tracer(23)  = 'NO3     ' , 'Nitrates Concentration                 ',  'mmol/m3'
+   tracer(24)  = 'NH4     ' , 'Ammonium Concentration                 ',  'mmol/m3'
+   tracer(25)  = 'LGW     ' , 'Ligands Concentration                  ',  'mmol/m3'
 /
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 &nampisext     !   air-sea exchange
@@ -202,7 +203,7 @@
    wchldm     =  0.02     ! maximum quadratic mortality of diatoms
    mpratn     =  0.01     ! nanophytoplankton mortality rate
    mpratp     =  0.01     ! picophytoplankton mortality rate
-   mprat2     =  0.01     ! Diatoms mortality rate
+   mpratd     =  0.01     ! Diatoms mortality rate
 /
 !-----------------------------------------------------------------------
 &namp4zmes     !   parameters for mesozooplankton for PISCES std       - ln_p4z
@@ -236,7 +237,7 @@
    resrat2    =  0.005    ! exsudation rate of mesozooplankton
    mzrat2     =  0.02     ! mesozooplankton mortality rate
    xpref2d    =  1.       ! zoo preference for phyto
-   xpref2p    =  1.       ! zoo preference for POC
+   xpref2n    =  0.3      ! mesozoo preference for nanophyto.
    xpref2z    =  1.       ! zoo preference for zoo
    xpref2m    =  0.2      ! meso preference for zoo
    xpref2c    =  0.3      ! zoo preference for poc

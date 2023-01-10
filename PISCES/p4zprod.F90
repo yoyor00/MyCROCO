@@ -142,7 +142,7 @@ CONTAINS
          DO jj = JRANGE
             DO ji = IRANGE
                IF( etot_ndcy(ji,jj,jk) > 1.E-3 ) THEN
-                  ztn         = MAX( 0., tsn(ji,jj,jk,jp_tem) - 15. )
+                  ztn         = MAX( 0., tsn(ji,jj,K,jp_tem) - 15. )
                   zadap       = xadap * ztn / ( 2.+ ztn )
                   zconctemp   = MAX( 0.e0 , trb(ji,jj,K,jpdia) - xsizedia )
                   zconctemp2  = trb(ji,jj,K,jpdia) - zconctemp
@@ -275,14 +275,14 @@ CONTAINS
                   znanotot = enanom(ji,jj,jk) / ( zmxl_chl(ji,jj,jk) + rtrn )
                   zprod    = rday * zprorcan(ji,jj,jk) * zprnch(ji,jj,jk) * xlimphy(ji,jj,jk)
                   zprochln = chlcmin * 12. * zprorcan (ji,jj,jk)
-                  chlcnm_n   = MIN ( chlcnm, ( chlcnm / (1. - 1.14 / 43.4 *tsn(ji,jj,jk,jp_tem))) * (1. - 1.14 / 43.4 * 20.))
+                  chlcnm_n   = MIN ( chlcnm, ( chlcnm / (1. - 1.14 / 43.4 *tsn(ji,jj,K,jp_tem))) * (1. - 1.14 / 43.4 * 20.))
                   zprochln = zprochln + (chlcnm_n-chlcmin) * 12. * zprod / &
                                         & (  zpislopeadn(ji,jj,jk) * znanotot +rtrn)
                   !  production terms for diatoms ( chlorophyll )
                   zdiattot = ediatm(ji,jj,jk) / ( zmxl_chl(ji,jj,jk) + rtrn )
                   zprod    = rday * zprorcad(ji,jj,jk) * zprdch(ji,jj,jk) * xlimdia(ji,jj,jk)
                   zprochld = chlcmin * 12. * zprorcad(ji,jj,jk)
-                  chlcdm_n   = MIN ( chlcdm, ( chlcdm / (1. - 1.14 / 43.4 * tsn(ji,jj,jk,jp_tem))) * (1. - 1.14 / 43.4 * 20.))
+                  chlcdm_n   = MIN ( chlcdm, ( chlcdm / (1. - 1.14 / 43.4 * tsn(ji,jj,K,jp_tem))) * (1. - 1.14 / 43.4 * 20.))
                   zprochld = zprochld + (chlcdm_n-chlcmin) * 12. * zprod / &
                                         & ( zpislopeadd(ji,jj,jk) * zdiattot +rtrn )
                   !   Update the arrays TRA which contain the Chla sources and sinks

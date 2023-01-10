@@ -381,7 +381,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
        itbulk=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,F10.4,1x,I4)')
      &              'GET_BULK   --',
      &              'Read fields for bulk formula   for time =', cff
 # ifdef MPI
@@ -404,7 +404,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
   7   write(stdout,8) bulk_rec, ntbulk, bulkname(1:lstr), tdays,
      &                                     bulk_time(itbulk)*sec2day
   8   format(/,' GET_BULK - ERROR: requested time record ',I4,
-     &       1x,'exeeds the last available',  /,  11x,'record ',I4,
+     &       1x,'exceeds the last available',  /,  11x,'record ',I4,
      &       1x,'in forcing NetCDF file: ', a, /,   11x,'TDAYS = ',
      &               g12.4,2x,'last available BULK_TIME = ',g12.4)
   99  may_day_flag=2
@@ -632,7 +632,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # endif
                 uwnd(i,j)=val6
                 vwnd(i,j)=val7
-                wspd(i,j) = SQRT(uwnd(i,j)**2.0+vwnd(i,j)**2.0)
+                wspd(i,j) = SQRT(val6**2.0+val7**2.0)
               enddo
             enddo
           endif

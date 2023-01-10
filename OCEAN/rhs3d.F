@@ -629,64 +629,40 @@
 #    define FLUX3 flux3_weno
 #    define FLUX2 flux1
 #    define UP5_MASKING
-          cdif=1.
-#    include "u_hadv_order5.h"
-#    include "v_hadv_order5.h"
-#    undef FLUX5
-#    undef FLUX3
-#    undef FLUX2
-#    undef UP5_MASKING
-
-#   else  /* C6 or UP5 */
-
-        if (nnew.eq.3) then  ! predictor
+          cdif=1.0
+#   elif defined UV_HADV_UP5
+#    define FLUX5 flux5
+#    define FLUX3 flux3
+#    define FLUX2 flux2
+#    define UP5_MASKING
+          cdif=0.5
+#   else /* C6 */
 #    define FLUX5 flux6
 #    define FLUX3 flux4
 #    define FLUX2 flux2
-#    undef  UP5_MASKING
-          cdif=0.
-#    include "u_hadv_order5.h"
-#    include "v_hadv_order5.h"
-#    undef FLUX5
-#    undef FLUX3
-#    undef FLUX2
-        else                 ! corrector
-#    if UV_HADV_C6
+          cdif=0.0
+#   endif
+#   include "u_hadv_order5.h"
+#   include "v_hadv_order5.h"
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+#   undef UP5_MASKING
+!
+#   ifdef UV_HADV_UP5
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
 #     define FLUX5 flux6
 #     define FLUX3 flux4
 #     define FLUX2 flux2
-#     undef  UP5_MASKING
-          cdif=0.
-#    else
-#     define FLUX5 flux5
-#     define FLUX3 flux3
-#     define FLUX2 flux1
-#     define UP5_MASKING
-          cdif=0.5
-#    endif
-#    include "u_hadv_order5.h"
-#    include "v_hadv_order5.h"
-#    undef FLUX5
-#    undef FLUX3
-#    undef FLUX2
-#    undef UP5_MASKING
-!
-#    ifdef UV_HADV_UP5
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
-         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
-#      define FLUX5 flux6
-#      define FLUX3 flux4
-#      define FLUX2 flux2
            cdif=0.
-#      include "uhdiff_order5.h"
-#      include "vhdiff_order5.h"
-#      undef FLUX5
-#      undef FLUX3
-#      undef FLUX2
-#     endif
+#     include "uhdiff_order5.h"
+#     include "vhdiff_order5.h"
+#     undef FLUX5
+#     undef FLUX3
+#     undef FLUX2
 #    endif
-        endif
-#   endif /* WENO5 */
+#   endif
 
 #  elif defined UV_HADV_UP3 || defined UV_HADV_C4
 !
@@ -753,18 +729,18 @@
           do i=IstrU-1,Iend
 #   if defined UV_HADV_C4
             UFx(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
-     &                         -0.125*(uxx(i,j)+uxx(i+1,j))
-     &                  )*( Huon(i,j,k)+Huon(i+1,j,k)
-     &                      -0.125*(Huxx(i,j)+Huxx(i+1,j)))
+     &                      -0.125*(uxx(i,j)+uxx(i+1,j)))
+     &                        *(Huon(i,j,k)+Huon(i+1,j,k)
+     &                    -0.125*(Huxx(i,j)+Huxx(i+1,j)))
 
 #   else
 #     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFx4(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
-     &                         -0.125*(uxx(i,j)+uxx(i+1,j))
-     &                  )*( Huon(i,j,k)+Huon(i+1,j,k)
-     &                      -0.125*(Huxx(i,j)+Huxx(i+1,j)))
+     &                       -0.125*(uxx(i,j)+uxx(i+1,j)))
+     &                         *(Huon(i,j,k)+Huon(i+1,j,k)
+     &                     -0.125*(Huxx(i,j)+Huxx(i+1,j)))
             endif
 #     endif
             cffX=u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
@@ -773,8 +749,9 @@
             else
               curvX=uxx(i+1,j)
             endif
-            UFx(i,j)=0.25*(cffX+gamma*curvX)*( Huon(i,j,k)+
-     &            Huon(i+1,j,k)-0.125*(Huxx(i,j)+Huxx(i+1,j)))
+            UFx(i,j)=0.25*(cffX+gamma*curvX)
+     &                         *(Huon(i,j,k)+Huon(i+1,j,k)
+     &                     -0.125*(Huxx(i,j)+Huxx(i+1,j)))
 #   endif
           enddo
         enddo
@@ -837,18 +814,18 @@
           do i=Istr,Iend
 #   if defined UV_HADV_C4
             VFe(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
-     &                        -0.125*(vee(i,j)+vee(i,j+1))
-     &                  )*( Hvom(i,j,k)+Hvom(i,j+1,k)
-     &                      -0.125*(Hvee(i,j)+Hvee(i,j+1)))
+     &                      -0.125*(vee(i,j)+vee(i,j+1)))
+     &                        *(Hvom(i,j,k)+Hvom(i,j+1,k)
+     &                    -0.125*(Hvee(i,j)+Hvee(i,j+1)))
 
 #   else
 #     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFe4(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
-     &                        -0.125*(vee(i,j)+vee(i,j+1))
-     &                  )*( Hvom(i,j,k)+Hvom(i,j+1,k)
-     &                      -0.125*(Hvee(i,j)+Hvee(i,j+1)))
+     &                       -0.125*(vee(i,j)+vee(i,j+1)))
+     &                         *(Hvom(i,j,k)+Hvom(i,j+1,k)
+     &                     -0.125*(Hvee(i,j)+Hvee(i,j+1)))
             endif
 #     endif
             cffE=v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
@@ -857,8 +834,9 @@
             else
               curvE=vee(i,j+1)
             endif
-            VFe(i,j)=0.25*(cffE+gamma*curvE)*( Hvom(i,j,k)+
-     &             Hvom(i,j+1,k)-0.125*(Hvee(i,j)+Hvee(i,j+1)))
+            VFe(i,j)=0.25*(cffE+gamma*curvE)
+     &                        *(Hvom(i,j,k)+Hvom(i,j+1,k)
+     &                    -0.125*(Hvee(i,j)+Hvee(i,j+1)))
 #   endif
           enddo
         enddo
@@ -914,23 +892,23 @@
 #   endif
         do j=Jstr,Jend+1
           do i=IstrU-1,Iend
-           Hvxx(i,j)=Hvom(i-1,j,k)-2.*Hvom(i,j,k)+Hvom(i+1,j,k)
+            Hvxx(i,j)=Hvom(i-1,j,k)-2.*Hvom(i,j,k)+Hvom(i+1,j,k)
           enddo
         enddo
         do j=Jstr,Jend+1
           do i=IstrU,Iend
 #   if defined UV_HADV_C4
             UFe(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
-     &                        -0.125*(uee(i,j)+uee(i,j-1))
-     &                  )*( Hvom(i,j,k)+Hvom(i-1,j,k)
-     &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
+     &                      -0.125*(uee(i,j)+uee(i,j-1)))
+     &                        *(Hvom(i,j,k)+Hvom(i-1,j,k)
+     &                    -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
 #   else
 #     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFe4(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
-     &                        -0.125*(uee(i,j)+uee(i,j-1))
-     &                  )*( Hvom(i,j,k)+Hvom(i-1,j,k)
+     &                       -0.125*(uee(i,j)+uee(i,j-1)))
+     &                         *(Hvom(i,j,k)+Hvom(i-1,j,k)
      &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
             endif
 #     endif
@@ -941,8 +919,8 @@
             else
               curvX=uee(i,j)
             endif
-            UFe(i,j)=0.25*(cffX+gamma*curvX)*(cffE-0.125*(
-     &                             Hvxx(i,j)+Hvxx(i-1,j) ))
+            UFe(i,j)=0.25*(cffX+gamma*curvX)
+     &                   *(cffE-0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
 #   endif
           enddo
         enddo
@@ -1000,24 +978,24 @@
 #   endif
         do j=JstrV-1,Jend
           do i=Istr,Iend+1
-           Huee(i,j)=Huon(i,j-1,k)-2.*Huon(i,j,k)+Huon(i,j+1,k)
+            Huee(i,j)=Huon(i,j-1,k)-2.*Huon(i,j,k)+Huon(i,j+1,k)
           enddo
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend+1
 #   if defined  UV_HADV_C4
             VFx(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
-     &                        -0.125*(vxx(i,j)+vxx(i-1,j))
-     &                  )*( Huon(i,j,k)+Huon(i,j-1,k)
-     &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
+     &                      -0.125*(vxx(i,j)+vxx(i-1,j)))
+     &                        *(Huon(i,j,k)+Huon(i,j-1,k)
+     &                    -0.125*(Huee(i,j)+Huee(i,j-1)))
 
 #   else
 #     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFx4(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
-     &                        -0.125*(vxx(i,j)+vxx(i-1,j))
-     &                  )*( Huon(i,j,k)+Huon(i,j-1,k)
+     &                       -0.125*(vxx(i,j)+vxx(i-1,j)))
+     &                         *(Huon(i,j,k)+Huon(i,j-1,k)
      &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
             endif
 #     endif
@@ -1028,8 +1006,8 @@
             else
               curvE=vxx(i,j)
             endif
-            VFx(i,j)=0.25*(cffE+gamma*curvE)*(cffX-0.125*(
-     &                             Huee(i,j)+Huee(i,j-1) ))
+            VFx(i,j)=0.25*(cffE+gamma*curvE)
+     &                   *(cffX-0.125*(Huee(i,j)+Huee(i,j-1)))
 #   endif
           enddo
         enddo

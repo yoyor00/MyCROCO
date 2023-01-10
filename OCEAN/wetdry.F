@@ -62,7 +62,7 @@
             IF ((zeta(i,j,knew)+h(i,j)).le.Dcrit(i,j)+eps) THEN
               wetdry(i,j)=0.
             END IF
-# ifdef AGRIF_2WAY
+# if defined AGRIF && defined AGRIF_2WAY
             IF ((wetdry(i,j)==1) .AND. (rmask_childs(i,j)==0.)) THEN
               wetdry(i,j) = 0.
             END IF

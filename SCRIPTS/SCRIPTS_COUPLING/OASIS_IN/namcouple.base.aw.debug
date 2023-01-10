@@ -161,19 +161,21 @@
 #~~~~~~~~~~~
 # U_01 : wind U component at first level (m/s)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_WND_E_01 WW3__U10 1 <cpldt>  1  atm.nc  EXPOUT
+WRF_d01_EXT_d01_WND_E_01 WW3__U10 1 <cpldt> 2 atm.nc  EXPOUT
 <atmnx> <atmny> <wavnx> <wavny> atmt ww3t LAG=<atmdt>
 R 0 R 0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # V_01 : wind V component at first level (m/s)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_WND_N_01 WW3__V10 1 <cpldt>  1  atm.nc  EXPOUT
+WRF_d01_EXT_d01_WND_N_01 WW3__V10 1 <cpldt> 2 atm.nc  EXPOUT
 <atmnx> <atmny> <wavnx> <wavny> atmt ww3t LAG=<atmdt>
 R 0 R 0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #                     ------------------------------------
@@ -183,10 +185,11 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # CHA_COEF : Charnock coefficient
 #~~~~~~~~~~~
-WW3_ACHA WRF_d01_EXT_d01_CHA_COEF 1 <cpldt>  1  wav.nc  EXPOUT
+WW3_ACHA WRF_d01_EXT_d01_CHA_COEF 1 <cpldt> 2 wav.nc  EXPOUT
 <wavnx> <wavny> <atmnx> <atmny> ww3t atmt LAG=<wavdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 ###########################################################################

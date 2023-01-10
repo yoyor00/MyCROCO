@@ -119,11 +119,9 @@
 !          horizontal RHO-points. Physical dimensions [degC m/s] -
 !          temperature; [PSU m/s] - salinity.
 !
-# ifdef TRACERS
       real stflx(GLOBAL_2D_ARRAY,NT)
       common /forces_stflx/stflx
-# endif /* TRACERS */
-# if defined BULK_FLUX && defined TEMPERATURE
+# if defined BULK_FLUX
       real shflx_rsw(GLOBAL_2D_ARRAY)
       common /frc_shflx_rsw/shflx_rsw
       real shflx_rlw(GLOBAL_2D_ARRAY)
@@ -132,7 +130,7 @@
       common /frc_shflx_lat/shflx_lat
       real shflx_sen(GLOBAL_2D_ARRAY)
       common /frc_shflx_sen/shflx_sen
-# endif /* BULK_FLUX && TEMPERATURE */
+# endif /* BULK_FLUX */
 # if defined SST_SKIN && defined TEMPERATURE
       real sst_skin(GLOBAL_2D_ARRAY)
       common /frc_sst_skin/ sst_skin
@@ -277,12 +275,12 @@
 # endif /* SALINITY && SFLX_CORR */
 !
 !
-# if defined BULK_FLUX && defined TEMPERATURE
+# if defined BULK_FLUX 
 !
 !  HEAT FLUX BULK FORMULATION
 !--------------------------------------------------------------------
 !  tair     surface air temperature at 2m [degree Celsius].
-!  wsp      wind speed at 10m [degree Celsius].
+!  wspd     wind speed at 10m [m s-1].
 !  rhum     surface air relative humidity 2m [fraction]
 !  prate    surface precipitation rate [cm day-1]
 !  radlw    net terrestrial longwave radiation [Watts meter-2]
@@ -339,6 +337,7 @@
 # endif
       real uwndg(GLOBAL_2D_ARRAY,2)
       real vwndg(GLOBAL_2D_ARRAY,2)
+      real wspdg(GLOBAL_2D_ARRAY,2)
 # ifdef DIURNAL_INPUT_SRFLX
       real radswbiog(GLOBAL_2D_ARRAY,2)
 # endif
@@ -351,8 +350,13 @@
 # ifdef READ_PATM
       common /bulkdat_patmg/patmg
 # endif
+# ifdef ONLINE
+      common /bulk_uwndg_norot/uwndg_norot
+      common /bulk_radswg_down/radswg_down
+# endif
       common /bulk_uwndg/uwndg
       common /bulk_vwndg/vwndg
+      common /bulkdat_wspdg/wspdg
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat_radswbiog/radswbiog
 # endif
@@ -399,7 +403,7 @@
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat2_bio/ radswbiop
 # endif
-# endif /* BULK_FLUX && TEMPERATURE */
+# endif /* BULK_FLUX */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.
 !--------------------------------------------------------------------

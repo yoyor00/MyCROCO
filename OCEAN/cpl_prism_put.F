@@ -9,7 +9,9 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+#include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
+
       SUBROUTINE cpl_prism_put (sndtime)
 !     !---------------------------------------------------------------------
 !     !              ***  ROUTINE cpl_prism_put  ***
@@ -18,8 +20,6 @@
 !     !           
 !     !
 !     !----------------------------------------------------------------------
-#include "cppdefs.h"
-
       USE mod_prism             ! OASIS3 prism module
 # ifdef AGRIF
       use Agrif_Util
@@ -195,13 +195,13 @@
          endif
 !
       END DO
+      return
+      end
 #else 
       SUBROUTINE cpl_prism_put
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
+      subroutine cpl_prism_put_empty
+      end
 #endif 
-      END SUBROUTINE cpl_prism_put
-      
-
-      

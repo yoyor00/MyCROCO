@@ -710,8 +710,13 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          if (wrtavg(indxWrk)) then
 !$acc update if(compute_on_device) host(bedldu_avg(:,:,itrc))
             work2d=bedldu_avg(:,:,itrc)
+#   ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+3*NST),
      &           indxWrk,record,r2dvar,type)
+#   else
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3*NST),
+     &           indxWrk,record,r2dvar,type)
+#   endif
          endif
       enddo
       do itrc=1,NST
@@ -719,8 +724,13 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          if (wrtavg(indxWrk)) then
 !$acc update if(compute_on_device) host(bedldv_avg(:,:,itrc))
             work2d=bedldv_avg(:,:,itrc)
+#   ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+4*NST),
      &           indxWrk,record,r2dvar,type)
+#   else
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+2*NST),
+     &           indxWrk,record,r2dvar,type)
+#   endif
          endif
       enddo
 #   endif

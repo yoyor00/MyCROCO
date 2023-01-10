@@ -41,14 +41,29 @@ if [ ${USE_ATM} == 1 ]; then
         sed -e "s/${searchf[0]}/${dimx}/g"   -e "s/${searchf[1]}/${dimy}/g" \
         ./namcouple>tmp$$
         mv tmp$$ namcouple
-        
-        if [[ ${dom} == $(echo ${wrfcpldom} | awk '{print $NF}' )  ]]; then 
+       
+        if   [[ ${ATM_CASE} == "MOVING_NEST" ]]; then
+            coef=1
+            for nest_nb in `seq 1 ${num_mv_nest}`; do
+                coef=$(( ${coef}*$( echo "${ref_coef}" | cut -d " " -f $(( ${nest_nb})) ) ))
+            done
+            sed -e "s|<atmdt>|$(( ${DT_ATM} / ${coef} ))|g" \
+                ./namcouple>tmp$$
+            mv tmp$$ namcouple
+        elif [[ ${dom} == $(echo ${wrfcpldom} | awk '{print $NF}' )  ]]; then 
             coef=$( ncdump -h  $file  | grep "PARENT_GRID_RATIO =" | cut -d ' ' -f 3)
             sed -e "s|<atmdt>|$(( ${DT_ATM} / ${coef} ))|g" \
-            ./namcouple>tmp$$
+                ./namcouple>tmp$$
             mv tmp$$ namcouple
         fi
     done
+    if [[ ${WEIGHT_FLAG} == 1 ]]; then
+        for file in ${weight_a2o}; do
+            sed -e "s|<mozaic_atm>|${file}|g" \
+                ./namcouple>tmp$$
+            mv tmp$$ namcouple
+        done
+    fi   
 fi
 
 ### For WAV ###
@@ -79,6 +94,13 @@ if [ ${USE_OCE} == 1 ]; then
         ./namcouple>tmp$$
         mv tmp$$ namcouple    
     done
+    if [[ ${WEIGHT_FLAG} == 1 ]]; then
+        for file in ${weight_o2a}; do 
+            sed -e "s|<mozaic_oce>|${file}|g" \
+                ./namcouple>tmp$$
+            mv tmp$$ namcouple
+        done
+    fi
 fi
 
 ### For TOY ###

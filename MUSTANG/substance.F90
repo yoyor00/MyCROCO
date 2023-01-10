@@ -4,48 +4,39 @@
 #endif
 
 MODULE substance
-   !!======================================================================
-   !!                      ***  MODULE  substance  ***
-   !! Substances conservative or not, dissolved or particulate   :  
-   !!                    module for tracers/substances defined
-   !!======================================================================
-   !! History :    !  2018-08  (B.Thouvenin)  
-   !!----------------------------------------------------------------------
+
+!!======================================================================
+!! ***  MODULE  substance  ***
+!! Substances conservative or not, dissolved or particulate   :  
+!! module for tracers/substances defined
+!!======================================================================
 
 #if defined SUBSTANCE
 
    USE module_substance
    USE comsubstance
 
-
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
 
    IMPLICIT NONE
    PRIVATE
     
-     
    PUBLIC   substance_read_alloc   ! called by main.F
    PUBLIC   substance_surfcell     ! called by main.F
    
-   !CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: name_var,long_name_var,standard_name_var,unit_var_r, &
-   !                                                    init_cv_name_r,obc_cv_name_r
-   CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: long_name_var,unit_var_r,init_cv_name_r,obc_cv_name_r
-   CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE  :: name_var_n,long_name_var_n,standard_name_var_n, &
-                                                      unit_var_n,init_cv_name_n,obc_cv_name_n
-   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r,cv_rain_r,cini_wat_r,cini_air_r,cobc_wat_r
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n,cv_rain_n,cini_wat_n,cini_air_n,cobc_wat_n  
+   ! variables for all ntrc_subs
+   CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: long_name_var, unit_var_r, init_cv_name_r, obc_cv_name_r
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r, cv_rain_r, cini_wat_r, cini_air_r, cobc_wat_r
    LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r 
-   LOGICAL, DIMENSION(:),ALLOCATABLE               :: l_out_subs_n 
-   
+
+   ! local variable to read each namelist with different length (variables by group of substances)
+   CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE  :: name_var_n, long_name_var_n, standard_name_var_n, &
+                                                      unit_var_n, init_cv_name_n, obc_cv_name_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n, cv_rain_n, cini_wat_n, cini_air_n, cobc_wat_n  
+   LOGICAL, DIMENSION(:),ALLOCATABLE               :: l_out_subs_n    
 #ifdef MUSTANG
-   !REAL, DIMENSION(ntrc_subs)       :: cini_sed_r
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: cini_sed_n
 #endif
-
-#if defined MUSTANG && defined key_sand2D
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC                :: l_outsandrouse
-#endif
-
 
    !!----------------------------------------------------------------------
    
@@ -53,7 +44,7 @@ CONTAINS
 
    !!======================================================================
 
-  SUBROUTINE substance_read_alloc(may_day_flag,indxT,indxTsrc)
+  SUBROUTINE substance_read_alloc(may_day_flag, indxT, indxTsrc)
       !!-------------------------------------------------------------------
       !!                    *** ROUTINE substance_read_alloc ***
       !!-------------------------------------------------------------------
@@ -61,26 +52,22 @@ CONTAINS
    
    !! Argument
    INTEGER,INTENT(INOUT)                     ::  may_day_flag
-   INTEGER,INTENT(IN)                        ::  indxT,indxTsrc
+   INTEGER,INTENT(IN)                        ::  indxT, indxTsrc
    
-   !! * Local declarations
+   !! Local declarations
    LOGICAL                                   :: l_varassoc
-   INTEGER                                   :: ivpc,ivp,iv,iv0,indx,ivTS
-   INTEGER                                   :: isubs,nballoc,ivr,it,ntypvar
+   INTEGER                                   :: ivpc, ivp, iv, iv0, indx, ivTS
+   INTEGER                                   :: isubs, nballoc, ivr, it, ntypvar
 #ifdef key_CROCO
-   INTEGER                                   :: lstr,lenstr
+   INTEGER                                   :: lstr, lenstr
 #endif
 
-!! tableaux (_n) lues pdimensionnes par namelist (par nombre de substance de tel ou tel type) 
-!! tableaux (_r) intermediaires dimensionnes au nombre de substances, sera recopie ensuite dans tableau final dimensionne a NT
-!!                apres avoir rajoute des variables supplementaires et reordonnes au besoin (pour biolo et contaminant)  
-#if defined MUSTANG && defined key_sand2D
-   LOGICAL, DIMENSION(ntrc_subs)                :: l_outsandrouse_r,l_sand2D_r
-#endif
-
+!! tables (_n) sized to read in namelist by number of substances of such and such a type
+!! tables (_r) intermediates sized to the number of substances, will then be copied into the final 
+!!             table sized to NT after adding additional variables and reordering as needed 
    INTEGER,DIMENSION(ntrc_subs)            :: itypv_r
-   REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: ws_free_min_r,ws_free_max_r
-   CHARACTER(LEN=lchain),DIMENSION(ntfix)  :: long_name_var_fix,unit_var_fix
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: ws_free_min_r, ws_free_max_r
+   CHARACTER(LEN=lchain),DIMENSION(ntfix)  :: long_name_var_fix, unit_var_fix, standard_name_var_fix, name_var_fix
    LOGICAL,DIMENSION(ntfix)                :: l_out_subs_fix
 
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE       :: ws_free_min_n,ws_free_max_n
@@ -88,25 +75,26 @@ CONTAINS
    CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE :: name_varpc_assoc_n
    CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE :: name_var_mod,standard_name_var_mod
 #if defined MUSTANG
-   REAL(KIND=rsh),DIMENSION(ntrc_subs)        :: diam_r,ros_r,tocd_r ! attention a modifier dans initMUSTANG qui se sert de diam_r (compatibility)
+   REAL(KIND=rsh),DIMENSION(ntrc_subs)        :: diam_r, ros_r, tocd_r 
    REAL(KIND=rsh), DIMENSION(4,ntrc_subs)     :: ws_free_para_r
    REAL(KIND=rsh), DIMENSION(2,ntrc_subs)     :: ws_hind_para_r 
-   INTEGER, DIMENSION(ntrc_subs)              :: ws_hind_opt_r,ws_free_opt_r 
+   INTEGER, DIMENSION(ntrc_subs)              :: ws_hind_opt_r, ws_free_opt_r 
    LOGICAL, DIMENSION(ntrc_subs)              :: l_bedload_r
-   LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n,l_outsandrouse_n,l_bedload_n
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n,ws_hind_opt_n
-   REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n,ws_hind_para_n
+   LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n, l_outsandrouse_n, l_bedload_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n, ros_n, diam_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n, ws_hind_opt_n
+   REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n, ws_hind_para_n
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
 #endif
+#if defined key_sand2D
+   LOGICAL, DIMENSION(ntrc_subs)              :: l_outsandrouse_r, l_sand2D_r
 #endif
-   
-                                              
+#endif
+                                    
    !! *  define namelists reading in parasubstance.txt
-   
 #ifdef MUSTANG
-   NAMELIST/nmlnbvar/ nv_dis,nv_ncp,nv_bent,nv_fix,nv_grav,nv_sand,nv_mud,nv_sorb
+   NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_grav, nv_sand, nv_mud, nv_sorb
    NAMELIST/nmlgravels/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,l_bedload_n, &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
@@ -117,7 +105,8 @@ CONTAINS
                        tocd_n,ros_n,diam_n,l_sand2D_n,l_outsandrouse_n
    NAMELIST/nmlmuds/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n,tocd_n,ros_n, &
+                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       tocd_n,ros_n,diam_n, &
                        ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
                        ws_hind_opt_n,ws_hind_para_n
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
@@ -133,7 +122,7 @@ CONTAINS
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n
 #else     
-   NAMELIST/nmlnbvar/ nv_dis,nv_ncp,nv_bent,nv_fix,nv_sorb                 
+   NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_sorb                 
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n, &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
@@ -149,15 +138,12 @@ CONTAINS
    NAMELIST/nmlvarfix/name_var_fix,long_name_var_fix,standard_name_var_fix,unit_var_fix, &
                        cini_wat_fix,l_out_subs_fix,init_cv_name_fix  
 #ifdef key_benthic 
-   NAMELIST/nmlvarbent/name_var_bent,long_name_var_bent,standard_name_var_bent,unit_var_bent, &
-                       cini_bent,l_out_subs_bent
+   NAMELIST/nmlvarbent/name_var_bent, long_name_var_bent, standard_name_var_bent, unit_var_bent, &
+                       cini_bent, l_out_subs_bent
 #endif 
 
    !!----------------------------------------------------------------------
    !! * Executable part
-
-   ! save into simu.log
-   !-------------------
    MPI_master_only   WRITE(stdout,*) ' '
    MPI_master_only   WRITE(stdout,*) ' '
    MPI_master_only   WRITE(stdout,*) ' '
@@ -166,8 +152,8 @@ CONTAINS
    MPI_master_only   WRITE(stdout,*) '**************** substance_read_alloc ************'
    MPI_master_only   WRITE(stdout,*) '**************************************************'
    MPI_master_only   WRITE(stdout,*) ' '
-   !   WRITE(stdout,*) 'namelist file defining simulated substances (other than temperature and salinity) :'
-   !   WRITE(stdout,*) TRIM(name_filesubs)
+
+
 #ifdef MUSTANG
 # ifdef key_CROCO
    lstr=lenstr(sedname_subst)
@@ -190,6 +176,7 @@ CONTAINS
 #endif
    READ(500,nmlnbvar)
 
+! check coherence between parasubstance and param.h dimensions
 #ifdef MUSTANG
    IF(nv_dis+nv_ncp+nv_grav+nv_sand+nv_mud+nv_sorb .NE. ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
@@ -242,13 +229,9 @@ CONTAINS
     !    reading NAMELISTS of parasubstance.txt
     !******************************************
  
-    ! il faut que les tableaux globaux soient deja alloues
-     ! et on les range automatiquement dans l ordre grace aux namelists successives
+    ! the global arrays must already be allocated
+    ! and we automatically put them in order thanks to the successive namelists
 #ifdef MUSTANG
-
-   !!!!!!!!!!!!!!!!!!!!!
-   !! module MUSTANG  !!
-   !!!!!!!!!!!!!!!!!!!!!
    ALLOCATE(cini_sed_r(ntrc_subs))
 
    ! reading gravels variables 
@@ -272,7 +255,6 @@ CONTAINS
     ENDDO
     DEALLOCATE(tocd_n,diam_n,ros_n,l_bedload_n)
    ENDIF
-   !MPI_master_only write(*,*)'number substance after gravels',iv
    
   ! reading sand variables
   !------------------------------ 
@@ -301,13 +283,13 @@ CONTAINS
     ENDDO
     DEALLOCATE(tocd_n,diam_n,ros_n,l_sand2D_n,l_outsandrouse_n,l_bedload_n)
    ENDIF
-   !MPI_master_only write(*,*)'number substance after gravels+sand',iv
 
   ! reading mud variables
   !------------------------------ 
    IF(nv_mud > 0) THEN
     CALL ALLOC_DEFVAR(nv_mud)   
     ALLOCATE(tocd_n(nv_mud))
+    ALLOCATE(diam_n(nv_mud))
     ALLOCATE(ros_n(nv_mud))
     ALLOCATE(ws_free_opt_n(nv_mud))
     ALLOCATE(ws_free_min_n(nv_mud))
@@ -315,8 +297,6 @@ CONTAINS
     ALLOCATE(ws_free_para_n(4,nv_mud))
     ALLOCATE(ws_hind_opt_n(nv_mud))
     ALLOCATE(ws_hind_para_n(2,nv_mud))
-    !ALLOCATE(l_varbio_constitutiv_n(nv_mud))
-    !ALLOCATE(unit_modif_mudbio_N2dw_n(nv_mud))
     READ(500,nmlmuds)
     iv0=iv   
     CALL DEFVAR_DEALLOC(nv_mud,iv)   
@@ -329,18 +309,16 @@ CONTAINS
      ws_hind_opt_r(ivp)=ws_hind_opt_n(ivr)
      ws_hind_para_r(1:2,ivp)=ws_hind_para_n(1:2,ivr)
      tocd_r(ivp)=tocd_n(ivr)
+     diam_r(ivp)=diam_n(ivr)
      ros_r(ivp)=ros_n(ivr)
      itypv_r(iv0+ivr)=3
      
     ENDDO
     DEALLOCATE(ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
-                   ws_hind_opt_n,ws_hind_para_n,tocd_n,ros_n)
+                   ws_hind_opt_n,ws_hind_para_n,tocd_n,diam_n,ros_n)
    ENDIF
-   !MPI_master_only write(*,*)'number substance after gravels+sand+muds',iv
 
-    ! END MUSTANG
-    !!!!!!!!!!!!!!!!!
-#else
+#else  /* MUSTANG*/
     nv_grav=0
     nv_sand=0
     nv_mud=0
@@ -386,8 +364,6 @@ CONTAINS
 #endif
    ENDIF
 
-   !MPI_master_only write(*,*)'number substance after gravels+sand+muds+partnc',iv
-
   ! reading non constitutive SORBED particulate variables 
   !--------------------------------------------------------
    IF(nv_sorb > 0) THEN
@@ -402,7 +378,6 @@ CONTAINS
       itypv_r(iv0+ivr)=5
     ENDDO
    ENDIF
-   !MPI_master_only write(*,*)'number substance after gravels+sand+muds+partnc+sorb',iv
 
    ! reading dissolved variables characteristics
    !-------------------------------------------
@@ -413,7 +388,6 @@ CONTAINS
     CALL DEFVAR_DEALLOC(nv_dis,iv)   
     itypv_r(iv0+1:iv)=6
    ENDIF
-   !MPI_master_only write(*,*)'number substance after part+sorb+diss',iv
 
    ! reading Fixed variables characteristics
    !-----------------------------------------
@@ -433,8 +407,6 @@ CONTAINS
     ALLOCATE(long_name_var_bent(nballoc))
     ALLOCATE(standard_name_var_bent(nballoc))
     ALLOCATE(unit_var_bent(nballoc))
-    !ALLOCATE(valid_min_bent(nballoc))
-    !ALLOCATE(valid_max_bent(nballoc))
     ALLOCATE(cini_bent(nballoc))
     ALLOCATE(l_out_subs_bent(nballoc))
     READ(500,nmlvarbent)
@@ -501,47 +473,56 @@ CONTAINS
     !******************************************
 
 #ifdef MUSTANG
-   ! identification of igrav1,igrav2,isand1,isand2,imud1,imud2
+   ! identification of igrav1, igrav2, isand1, isand2, imud1, imud2
    ! ---------------------------------------------------------
-   igrav1=1
-   igrav2=nv_grav
-   isand1=igrav2+1
-   isand2=igrav2+nv_sand
-   imud1=isand2+1
-   imud2=isand2+nv_mud
+   igrav1 = 1
+   igrav2 = nv_grav
+   isand1 = igrav2 + 1
+   isand2 = igrav2 + nv_sand
+   imud1 = isand2 + 1
+   imud2 = isand2 + nv_mud
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-   l_ibedload1=.FALSE.
-   DO iv=igrav1,isand2
-     IF (l_bedload_r(iv) .AND. (.NOT. l_ibedload1)) THEN
-       l_ibedload1=.TRUE.
-       ibedload1=iv
-     END IF
-   END DO
+   ! initialize without any sediment activating bedload
+   ibedload1 = isand2 + 1
+   ibedload2 = isand2
+   l_ibedload1 = .FALSE.
+   l_ibedload2 = .FALSE.
 
-   l_ibedload2=.FALSE.
-   DO iv=ibedload1+1,isand2
-     IF ((.NOT. l_bedload_r(iv)) .AND. (.NOT. l_ibedload2)) THEN
-       l_ibedload2=.TRUE.
-       ibedload2=iv-1
-     END IF
-   END DO
+   do iv = igrav1,isand2
+     if (l_bedload_r(iv) .AND. (.NOT. l_ibedload1)) then
+       l_ibedload1 = .TRUE.
+       ibedload1 = iv
+     endif
+   enddo
 
-   IF (.NOT. l_ibedload2) ibedload2=isand2
+   do iv = ibedload1+1, isand2
+      if ((l_ibedload2) .AND. l_bedload_r(iv)) then
+         MPI_master_only  write(stdout,*)'ERROR - for iv = ', iv
+         MPI_master_only  write(stdout,*)'ibedload1 = ', ibedload1
+         MPI_master_only  write(stdout,*)'ibedload2 = ', ibedload2
+         MPI_master_only  write(stdout,*)'iv is greater than ibedload2 and l_bedload is True'
+         MPI_master_only  write(stdout,*)'l_bedload should be true for all sediment between ibedload1 and iv'
+         MPI_master_only  write(stdout,*)'The simulation is stopped, you should review parasubstance.txt'
+         may_day_flag=77
+         goto 99
+      endif
+
+      if ((.NOT. l_bedload_r(iv)) .AND. (.NOT. l_ibedload2)) then
+         l_ibedload2 = .TRUE.
+         ibedload2 = iv - 1
+      endif 
+
+   enddo
 
 #endif
-
 #endif
-
-
 
    ! initialize the number of variables according to their type
-   nvpc=nv_mud+nv_sand+nv_grav
-   nvp=nvpc+nv_ncp+nv_sorb
-   nv_adv=nvp+nv_dis
-   ! pas besoin dans CROCO mais utilise dans MUSTANG (issu de MARS)
-   nv_state=nv_adv+nv_fix
-   nv_tot=nv_state
-      !nv_tot=nv_state+nv_dri+nv_int
+   nvpc = nv_mud + nv_sand + nv_grav
+   nvp = nvpc + nv_ncp + nv_sorb
+   nv_adv = nvp + nv_dis
+   nv_state = nv_adv+nv_fix
+   nv_tot = nv_state
 
    ALLOCATE(irk_mod(nv_tot))
    ALLOCATE(irk_fil(nv_tot))
@@ -578,8 +559,6 @@ CONTAINS
      irk_mod(isubs)=isubs
    ENDDO
 
-
-
    IF (nv_adv /= ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
      MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
@@ -610,7 +589,7 @@ CONTAINS
    IF(nv_bent > 0)ALLOCATE(cv_bent(GLOBAL_2D_ARRAY,N,nv_bent))
 #endif
 
-   ! tableaux dimensionnes pour substances - sans temperature, ni salinite                              
+   ! tables for substances - without temperature and salinity                              
     ALLOCATE(obc_cv_name(itsubs1:itsubs2))
     ALLOCATE(init_cv_name(itsubs1:itsubs2))
     ALLOCATE(unit_var(itsubs1:itsubs2))
@@ -621,7 +600,6 @@ CONTAINS
     ALLOCATE(cini_air(itsubs1:itsubs2))
     ALLOCATE(ws_part(GLOBAL_2D_ARRAY,N,itsubs1:itsubs2))
     ALLOCATE(typdiss(itsubs1:itsubs2))
-    !ALLOCATE(itypv(itsubs1:itsubs2))
     ALLOCATE(name_var_mod(ntrc_subs))      
     ALLOCATE(standard_name_var_mod(ntrc_subs))      
     ws_part(:,:,:,:)=0.0
@@ -812,11 +790,9 @@ CONTAINS
     MPI_master_only WRITE(stdout,*)'number of FIXE                        : ',nv_fix
     MPI_master_only WRITE(stdout,*)'number of BENTHIC                     : ',nv_bent
     MPI_master_only WRITE(stdout,*)
-   ! MPI_master_only WRITE(stdout,*) 'number of state variables            : ',nv_state, '+ salinite et temperature'
-   ! MPI_master_only WRITE(stdout,*) 'total number of variables (+fix +driving +inter) : ',nv_tot
 
    ! -------------------------------------------------------------------
-   ! transfert des tableaux finaux 
+   ! final tables
    ! -------------------------------------------------------------------
 
   ! memorisation des noms des variables
@@ -850,7 +826,6 @@ CONTAINS
      
    DO iv=1,ntrc_subs
      ivr=iv+ivTS
-     !itypv(ivr)=itypv_r(iv)
      name_var_mod(iv)=name_var(irk_fil(iv))
      standard_name_var_mod(iv)=standard_name_var(irk_fil(iv))
      unit_var(ivr)=unit_var_r(irk_fil(iv))
@@ -889,7 +864,7 @@ CONTAINS
 #endif
 
 #ifdef MUSTANG
-#ifdef MORPHODYN_MUSTANG_byHYDRO
+#ifdef MORPHODYN
    indx=5
    wrthis(indx)=.TRUE.
    vname(1,indx)='Hm'
@@ -902,7 +877,7 @@ CONTAINS
 #endif
    indx=indxT+ntrc_salt+ntrc_substot+1
    wrthis(indx)=.TRUE.
-   vname(1,indx)='NBNIV'
+   vname(1,indx)='NB_LAY_SED'
    vname(2,indx)='number of sediment layers'
    vname(3,indx)='no units'
    vname(4,indx)=' '
@@ -920,7 +895,7 @@ CONTAINS
    vname(7,indx)=' '
    indx=indxT+ntrc_salt+ntrc_substot+3
    wrthis(indx)=.TRUE.
-   vname(1,indx)='TENFON'
+   vname(1,indx)='TAUSKIN'
    vname(2,indx)='total bottom shear stress for erosion'
    vname(3,indx)='N/m2'
    vname(4,indx)=' '
@@ -1288,6 +1263,7 @@ ENDDO
      ws_hind_para(:,iv)=ws_hind_para_r(:,irk_fil(iv))
      tocd(iv)=tocd_r(irk_fil(iv))
      ros(iv)=ros_r(irk_fil(iv))
+     diam_sed(iv)=diam_r(irk_fil(iv))
    END DO
 #ifdef key_sand2D
    DO iv=igrav1,igrav2
@@ -1335,7 +1311,7 @@ ENDDO
  99 CONTINUE
 
   END SUBROUTINE substance_read_alloc
-    !!======================================================================
+!!======================================================================
 
  SUBROUTINE ALLOC_DEFVAR(nballoc)
    INTEGER, INTENT(IN)   :: nballoc
@@ -1345,8 +1321,6 @@ ENDDO
    ALLOCATE(long_name_var_n(nballoc))
    ALLOCATE(standard_name_var_n(nballoc))
    ALLOCATE(unit_var_n(nballoc))
-   !ALLOCATE(valid_min_var_n(nballoc))
-   !ALLOCATE(valid_max_var_n(nballoc))
    ALLOCATE(flx_atm_n(nballoc))
    ALLOCATE(cv_rain_n(nballoc))
    ALLOCATE(cini_wat_n(nballoc))
@@ -1355,7 +1329,7 @@ ENDDO
    ALLOCATE(l_out_subs_n(nballoc))
    ALLOCATE(init_cv_name_n(nballoc))
    ALLOCATE(obc_cv_name_n(nballoc))
-   !initialisation
+   !initialization
    flx_atm_n(:)=0.
    cv_rain_n(:)=0.
    cini_wat_n(:)=0.
@@ -1374,7 +1348,7 @@ ENDDO
    l_out_subs_n(:)=.TRUE.
 
   END SUBROUTINE ALLOC_DEFVAR
-    !!======================================================================
+!!======================================================================
 
   SUBROUTINE DEFVAR_DEALLOC(nballoc,iv)
 
@@ -1418,7 +1392,6 @@ ENDDO
    DEALLOCATE(cini_sed_n)
 #endif
 
-   
   END SUBROUTINE DEFVAR_DEALLOC
 
 !!======================================================================
@@ -1429,9 +1402,7 @@ ENDDO
      !!-------------------------------------------------------------------
      !
 #if defined MUSTANG || defined BIOLink
- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- !!!!!! evaluation of cell surface if not known in hydro model
- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! evaluation of cell surface if not known in hydro model
     ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
     surf_cell(:,:)=om_r(:,:)*on_r(:,:)
 #endif
@@ -1439,14 +1410,7 @@ ENDDO
 
  END SUBROUTINE substance_surfcell
 
-  !!======================================================================
-
-#else
-  !!----------------------------------------------------------------------
-  !!  Empty module :                                     No substance
-  !!----------------------------------------------------------------------
-#endif
-
-  !!======================================================================
+#endif /* ifdef SUBSTANCE */
+!!======================================================================
 
 END MODULE substance
