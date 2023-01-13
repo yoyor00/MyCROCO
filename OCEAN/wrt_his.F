@@ -163,7 +163,6 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
          goto 99                !--> ERROR
       endif
 
-
 # if defined OUTPUTS_SURFACE && ! defined XIOS
       count(1)=6
       ibuff(5)=nrecsurf
@@ -1392,19 +1391,16 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
      &        record,r3dvar,type)
 CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
       endif
-
 # endif /* BIOLink_PAR_eval */
 
-
-# if defined BLOOM
+# if defined BLOOM && !defined DIAGNOSTICS_BIO
 !
 !  BLOOM 1D diagnostics
 !
-
       do i=1,ndiag_1D
         if (wrthis(indxBLMdiag1D+i)) then
 
-          ierr=nf_put_var1_FTYPE (ncidhis, hisBLMdiag1D(i), 
+          ierr=nf_put_var1_FTYPE (ncidhis, hisBLMdiag1D(i),
      &                            record, diag_1D(i))
           if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxBLMdiag1D+i))
@@ -1437,21 +1433,20 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
         if (wrthis(indxBLMdiag3D+i)) then
          workr = diag_3D_CROCO(i,:,:,:)
           do k=1,N
-            workr(:,:,k)=workr(:,:,k) 
+            workr(:,:,k)=workr(:,:,k)
 #  ifdef WET_DRY
      &                SWITCH rmask_wet(:,:)
 #  else
      &                SWITCH rmask(:,:)
 #  endif
           enddo
- 
+
           call fillvalue3d(workr,ncidhis,
      &         hisBLMdiag3D(i),indxBLMdiag3D+i,record,r3dvar,type)
         endif
       end do
 
-
-# endif /* BLOOM */
+# endif /* BLOOM && ! DIAGNOSTICS_BIO*/
 
  1    format(/1x,'WRT_HIS ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',

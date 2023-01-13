@@ -15,8 +15,8 @@
                                         ! script file using keywords
                                         ! to recognize variables.
 !     implicit none
-# if defined BLOOM
-      USE comBIOLINK, ONLY :ndiag_2d    
+# if defined BLOOM && defined DIAGNOSTICS_BIO
+      USE comBIOLINK, ONLY :filevardiag
 # endif
 #include "param.h"
 #include "scalars.h"
@@ -1025,6 +1025,9 @@ c        close(testunit)
       elseif (keyword(1:kwlen).eq.'diagnostics_bio') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ldefdiabio, nwrtdiabio, nrpfdiabio
+#ifdef BLOOM
+        read(input,'(A)',err=95) filevardiag
+#endif
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
@@ -1476,6 +1479,7 @@ c        close(testunit)
 #endif /* SOLVE3D */
 
 #if defined BIOLink && (defined BLOOM || defined BIOLink_PAR_eval)
+#if !defined DIAGNOSTICS_BIO
       elseif (keyword(1:kwlen).eq.'auxiliary_history_BIOLink') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
@@ -1490,7 +1494,7 @@ c        close(testunit)
 # elif defined BIOLink_PAR_eval && defined BLOOM
      &                                            ,wrthis(indxPAR)
 # endif /* BIOLink_PAR_EVAL */
-
+#endif /* ! DIAGNOSTICS BIO */
 #endif /* BIOLink */
 
 #ifdef AVERAGES

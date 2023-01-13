@@ -101,7 +101,7 @@
 #endif
 
    NAMELIST/namBIOLink/l_bioretro_extinct,dt_bio_update,l_waterdensity_known,  &
-                     i_BIOLink_verif,j_BIOLink_verif,DT_CONSERV_BIOLINK,filevardiag
+                     i_BIOLink_verif,j_BIOLink_verif,DT_CONSERV_BIOLINK
    NAMELIST/namoptions/ l_filtbenthsinus,l_filtbenthmes,l_SNeffect_settle,l_phyzoodeteffect_settle,  &
                         l_ChlNratio_var,p_sali_thhold_bio,l_bioretro_extinct
 #ifdef key_BLOOM_opt2

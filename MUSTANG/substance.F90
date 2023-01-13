@@ -24,11 +24,12 @@ MODULE substance
       USE comMUSTANG , ONLY : D0_funcT_opt,D0_m0,D0_m1
 #endif
 
-
 #if defined ECO3M || defined BLOOM
 # define REPFICNAMELIST 'BIOLINK_NAMELIST'
 #elif defined MUSTANG && ! defined BLOOM
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
+#else
+# define REPFICNAMELIST 'SUBSTANCE_NAMELIST'
 #endif
 
    IMPLICIT NONE

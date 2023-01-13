@@ -521,6 +521,17 @@
 #  endif
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
+# if defined BLOOM && defined DIAGNOSTICS_BIO
+      integer indxbioFlux, indxbioVSink, indxGasExcFlux
+      parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt
+     &                       +ntrc_pas+ntrc_bio+ntrc_sed
+     &                       +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &                       +ntrc_diaek+ntrc_diapv+ntrc_diaeddy
+     &                       +ntrc_surf+400)
+      parameter (indxbioVSink=indxbioFlux+NumFluxTerms)
+      parameter (indxGasExcFlux=indxbioFlux+NumFluxTerms+NumVSinkTerms)
+# endif
+
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv
       parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot

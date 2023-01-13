@@ -103,7 +103,7 @@
     PUBLIC BIOLink_initialization ! initialization of BIOLink  
                                   ! - called by main
  
-    PUBLIC BIOLink_init           ! Initialization of some of BIOLink tables 
+    PUBLIC BIOLink_init_main      ! Initialization of some of BIOLink tables
                                   ! - called by main
                                                                            
     PUBLIC BIOLink_alloc          ! Allocation of different tables
@@ -285,11 +285,11 @@
 
   ! Allocation of diagnostic variables for BLOOM
 
-#if defined BLOOM
+#if defined BLOOM && defined DIAGNOSTICS_BIO
 
      CALL BIOLink_read_vardiag
 
-#endif /* BLOOM */
+#endif /* BLOOM && DIAGNOSTICS_BIO*/
 
    ENDIF ! /* icall parameter */
 
@@ -298,7 +298,36 @@
 
   END SUBROUTINE BIOLink_initialization
 
-  SUBROUTINE BIOLink_init(tile)
+!!======================================================================
+
+  SUBROUTINE BIOLink_init_main (tile)
+  !&E---------------------------------------------------------------------
+  !&E                 ***  ROUTINE BIOLink_init_main  ***
+  !&E
+  !&E ** Purpose : passage de tile à Istr,Iend,Jstr,Jend
+  !&E
+  !&E ** Description :
+  !&E
+  !&E ** Called by : main
+  !&E
+  !&E ** External calls :
+  !&E
+  !&E ** Reference :
+  !&E
+  !&E ** History :
+  !&E       !  2022-09 Solène
+  !&E
+  !&E---------------------------------------------------------------------
+
+    integer :: tile
+# include "ocean2d.h"
+# include "compute_tile_bounds.h"
+    CALL BIOLink_init(Istr,Iend,Jstr,Jend)
+  END SUBROUTINE BIOLink_init_main
+
+!!========================================================================
+
+  SUBROUTINE BIOLink_init(ifirst,ilast,jfirst,jlast)
 
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_init  ***
@@ -351,8 +380,7 @@
      !====================================================================
 
 
-  INTEGER, INTENT(IN)  :: tile 
-
+!  INTEGER, INTENT(IN)  :: tile
      !====================================================================
      ! Local declarations of variables
      !====================================================================
@@ -364,7 +392,7 @@
      !====================================================================
      ! Execution of the function
      !====================================================================
-# include "compute_tile_bounds.h"
+!# include "compute_tile_bounds.h"
 
      !************** Determination of the time steps *********************!
      
@@ -374,10 +402,10 @@
 
      !********************* Sinking velocity *****************************!
 
-     ifirst=Istr
-     ilast=Iend
-     jfirst=Jstr
-     jlast=Jend
+!     ifirst=Istr
+!     ilast=Iend
+!     jfirst=Jstr
+!     jlast=Jend
 #if ! defined MUSTANG
 
      ! Initialization of the sinking rate for all the tracers at all depth and position
@@ -975,12 +1003,12 @@ END SUBROUTINE  BIOLink_alloc
                                                          ! for diagnostic
                                                          ! evaluations
       ! Here I convert the shape of the 3D diagnostics so that CROCO can use them
-      do i=1,ndiag_3d
+!      do i=1,ndiag_3d
 
-       diag_3D_CROCO(i,:,:,:) = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
-                                diag_3D_wat(i,:,:,:),1,NB_LAYER_WAT)
+!        diag_3D_CROCO(i,:,:,:) = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
+!                                diag_3D_wat(i,:,:,:),1,NB_LAYER_WAT)
   
-      end do
+!      end do
 
 
 
@@ -1582,6 +1610,7 @@ END SUBROUTINE  BIOLink2hydro
 
     INTEGER                  :: i,j,k,iv ! Spatial and tracer counters
     INTEGER                  :: i1,i2,i3,i4 ! Internal BIOLink counters
+    INTEGER                  :: isubs,ind_diag2d,ind_diag3d
     REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0) :: xnegtr ! Variable to 
                                                            ! limit the 
                                                            ! flux out
@@ -1595,6 +1624,7 @@ END SUBROUTINE  BIOLink2hydro
      !====================================================================
      ! Execution of the function
      !====================================================================
+# include "diagnostics.h"
 
       !***************** We test if the tracer concentration ***************!
       !************************* becomes negative **************************!
@@ -1673,8 +1703,44 @@ END SUBROUTINE  BIOLink2hydro
          END DO
 
 !$OMP END DO
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Ajout variables Diagnostiques Bio 3D dans bioFlux et 2D dans bioVSink
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (mplus oct 2022)
+#ifdef DIAGNOSTICS_BIO
+
+!$OMP DO SCHEDULE(RUNTIME)
+         DO i2=IRANGE2
+           DO i3=IRANGE3
+             DO i4=IRANGE4
+               ind_diag2d=0
+               ind_diag3d=0
+               DO isubs=1,ndiag_tot
+!               IF(idimv_r(isubs) == 1) bioFlux(i4,i3,i2,isubs) = diag_1d(irk_diag(isubs),i2)
+                 IF(idimv_r(isubs) == 2) THEN
+                   ind_diag2d=ind_diag2d+1
+                   bioVSink(i4,i3,ind_diag2d) = diag_2d(irk_diag(isubs),i4,i3)
+                 END IF
+                 IF(idimv_r(isubs) == 3) THEN
+                   ind_diag3d=ind_diag3d+1
+                   bioFlux(i4,i3,i2,ind_diag3d) = diag_3d_wat(irk_diag(isubs),i2,i4,i3)
+                 END IF
+#if defined key_BLOOM_insed
+                 IF(idimv_r(isubs) == 4) THEN
+!                   WRITE(iscreenlog,*) 'var diag 3D',isubs,TRIM(name_vardiag(isubs)),irk_diag(isubs)
+                   ind_diag3d=ind_diag3d+1
+                   bioFlux(i4,i3,i2,ind_diag3d) = diag_3d_wat(irk_diag(isubs),i2,i4,i3)
+                 END IF
+!                 IF(idimv_r(isubs) == 5) bioFlux(i4,i3,i2,isubs) = diag_3d_sed(irk_diag(isubs),i2,i4,i3)
+!                 IF(idimv_r(isubs) == 6) bioFlux(i4,i3,i2,isubs) = diag_2d_sed(irk_diag(isubs),i4,i3)
+#endif
+               END DO
+             END DO
+           END DO
+         END DO
+!$OMP END DO
+
+#endif
      
-   
 END SUBROUTINE  BIOLink_updateconc_BIO
 #endif /* BIOLink_update_CONCBIO */
 

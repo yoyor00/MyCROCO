@@ -45,6 +45,9 @@
 # define vidTime diaTimebio
 # define vidTime2 diaTime2bio
 # define vidTstep diaTstepbio
+# ifdef BIOLink_PAR_eval
+#   define vidPAR hisPAR
+# endif
 # define vidFlux diabioFlux
 # define vidGasExc diabioGasExc
 # define vidVSink diabioVSink
@@ -58,6 +61,9 @@
 # define vidTime diaTimebio_avg
 # define vidTime2 diaTime2bio_avg
 # define vidTstep diaTstepbio_avg
+# ifdef BIOLink_PAR_eval
+#   define vidPAR hisPAR
+# endif
 # define vidFlux diabioFlux_avg
 # define vidGasExc diabioGasExc_avg
 # define vidVSink diabioVSink_avg
@@ -193,8 +199,10 @@
 ! Time.
 !
         lvar=lenstr(vname(1,indxTime))
+!        ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
+!     &                            NF_OUT, 1, timedim, vidTime)
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
-     &                            NF_FOUT, 1, timedim, vidTime)
+     &                            NF_DOUBLE, 1, timedim, vidTime)
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
         ierr=nf_put_att_text (ncid, vidTime, 'long_name', 
@@ -222,8 +230,10 @@
 ! Time2.
 !
         lvar=lenstr(vname(1,indxTime2))
+!        ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
+!     &                            NF_FOUT, 1, timedim, vidTime2)
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_FOUT, 1, timedim, vidTime2)
+     &                            NF_DOUBLE, 1, timedim, vidTime2)
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
         ierr=nf_put_att_text (ncid, vidTime2, 'long_name', 
@@ -247,6 +257,32 @@
 
         call nf_add_attribute(ncid, vidTime2, indxTime2, 5, 
      &       NF_FOUT, ierr)
+
+#if defined BIOLink_PAR_eval && defined BLOOM
+!
+! PAR_top_layer : PAR reaching the top layer from the BIOLink functions
+!
+          lvar=lenstr(vname(1,indxPAR))
+          ierr=nf_def_var (ncid, vname(1,indxPAR)(1:lvar), NF_FOUT,
+     &                                           4, r3dgrd, vidPAR)
+!          MPI_master_only PRINT*,'ierr of PAR is',ierr
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidPAR,nf_collective)
+#endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxPAR))
+          ierr=nf_put_att_text (ncid, vidPAR, 'long_name', lvar,
+     &                                  vname(2,indxPAR)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxPAR)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidPAR, 'long_name', lvar,
+     &                                              text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxPAR))
+          ierr=nf_put_att_text (ncid, vidPAR, 'units',     lvar,
+     &                                 vname(3,indxPAR)(1:lvar))
+#endif /* BIOLink_PAR_EVAL */
 !
 ! Tracer diagnostics variables.
 !
@@ -276,8 +312,8 @@
            
            call nf_add_attribute(ncid, vidFlux(iflux), 
      &          indxbioFlux+iflux-1, 5, NF_FOUT, ierr)
-         endif
-       end do
+          endif
+        end do
 ! vertical sinking fluxes
         do iflux = 1, NumVSinkTerms
           if (wrtVSink(iflux)) then
@@ -288,6 +324,11 @@
      &           vname(1,indxbioVSink+iflux-1)(1:lvar),
      &          NF_FOUT, 3, r2dgrd, vidVSink(iflux))
 # endif
+#elif defined BLOOM
+            ierr=nf_def_var (ncid,
+     &           vname(1,indxbioVSink+iflux-1)(1:lvar),
+     &          NF_FOUT, 3, r2dgrd, vidVSink(iflux))
+
 #else
             ierr=nf_def_var (ncid,
      &           vname(1,indxbioVSink+iflux-1)(1:lvar),
@@ -301,21 +342,21 @@
 #  else
             text='averaged '/ /vname(2,indxbioVSink+iflux-1)
             lvar=lenstr(text)
-           ierr=nf_put_att_text (ncid, vidVSink(iflux),
+            ierr=nf_put_att_text (ncid, vidVSink(iflux),
      &           'long_name',
      &           lvar, text(1:lvar))
 #  endif
-           lvar=lenstr(vname(3,indxbioVSink+iflux-1))
-           ierr=nf_put_att_text (ncid, vidVSink(iflux), 'units',
-     &          lvar, vname(3,indxbioVSink+iflux-1)(1:lvar))
-           lvar=lenstr(vname(4,indxbioVSink+iflux-1))
-           ierr=nf_put_att_text (ncid, vidVSink(iflux), 'field',
+            lvar=lenstr(vname(3,indxbioVSink+iflux-1))
+            ierr=nf_put_att_text (ncid, vidVSink(iflux), 'units',
+     &           lvar, vname(3,indxbioVSink+iflux-1)(1:lvar))
+            lvar=lenstr(vname(4,indxbioVSink+iflux-1))
+            ierr=nf_put_att_text (ncid, vidVSink(iflux), 'field',
      &          lvar, vname(4,indxbioVSink+iflux-1)(1:lvar))
            
-          call nf_add_attribute(ncid, vidVSink(iflux), 
-     &          indxbioVSink+iflux-1, 5, NF_FOUT, ierr)
-        endif
-      end do
+            call nf_add_attribute(ncid, vidVSink(iflux),
+     &           indxbioVSink+iflux-1, 5, NF_FOUT, ierr)
+          endif
+        end do
 !-------------------------------------------------------------------------------- 
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
 ! gas exchange fluxes
@@ -346,11 +387,10 @@
            
            call nf_add_attribute(ncid, vidGasExc(iflux), 
      &          indxGasExcFlux+iflux-1, 5, NF_FOUT, ierr)
-         endif
-       end do
+          endif
+        end do
 #  endif
 !--------------------------------------------------------------------------------
-         
 !
 ! Leave definition mode.
 ! ----- ---------- -----
@@ -453,6 +493,15 @@
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
+        endif
+!
+! PAR
+!
+        lvar=lenstr(vname(1,indxPAR))
+        ierr=nf_inq_varid (ncid, vname(1,indxPAR)(1:lvar), vidPAR)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxPAR)(1:lvar), ncname(1:lstr)
+          goto 99                                       !--> ERROR
         endif
 !
 ! Tracer flux diagnostics variables.

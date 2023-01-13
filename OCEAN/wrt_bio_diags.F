@@ -14,6 +14,11 @@
                                    ! Writes requested model
       subroutine wrt_bio_diags     ! fields at requested levels 
                                    ! into diagnostics netCDF file.
+
+#if defined DIAGNOSTICS_BIO && defined BIOLink && defined BLOOM && defined BIOLink_PAR_eval
+      USE comBIOLink_helping, ONLY : PAR
+#endif
+
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite
@@ -137,6 +142,27 @@ CDEBUG      write(*,*) 'Write Time'
   
 #  endif
       
+# elif defined BLOOM
+!     vars diag 3D are put into bioFlux
+      do iflux = 1, NumFluxTerms
+        if (wrtdiabioFlux(iflux)) then
+          workr=bioFlux(:,:,:,iflux)
+          call fillvalue3d(workr, nciddiabio, diabioFlux(iflux),
+     &         indxbioFlux+iflux-1,record,r3dvar,type)
+        endif
+      end do
+!     vars diag 2D are put into bioVSink
+      do iflux = 1, NumVSinkTerms
+        if (wrtdiabioVSink(iflux)) then
+          work2d=bioVsink(:,:,iflux)
+          call fillvalue2d(work2d, nciddiabio, diabioVsink(iflux),
+     &         indxbioVSink+iflux-1,record,r2dvar,type)
+        endif
+      end do
+# if defined BIOLink_PAR_eval
+        call fillvalue3d(PAR,nciddiabio,hisPAR,indxPAR,
+     &        record,r3dvar,type)
+#endif
 #else
       
 !     Flux terms

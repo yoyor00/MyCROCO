@@ -628,6 +628,13 @@ C$    integer omp_get_thread_num
               bioVSink(i,j,iflux)= init
             enddo
 #   endif
+# elif defined BLOOM
+            do iflux=1,NumFluxTerms
+              bioFlux(i,j,k,iflux) = init
+            enddo
+            do iflux=1,NumVSinkTerms
+              bioVSink(i,j,iflux)= init
+            enddo
 #  else
             do iflux=1,NumFluxTerms
               bioFlux(i,j,k,iflux) = init

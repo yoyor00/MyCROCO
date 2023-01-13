@@ -228,6 +228,9 @@
       real bioFlux(GLOBAL_2D_ARRAY,N,NumFluxTerms)
       real bioVSink(GLOBAL_2D_ARRAY,NumVSinkTerms)
 #  endif
+# elif defined BLOOM
+      real bioFlux(GLOBAL_2D_ARRAY,N,NumFluxTerms)
+      real bioVSink(GLOBAL_2D_ARRAY,NumVSinkTerms)
 # else
       real bioFlux(GLOBAL_2D_ARRAY,N,NumFluxTerms)
       real bioVSink(GLOBAL_2D_ARRAY,0:N,NumVSinkTerms)
@@ -257,7 +260,7 @@
 #    endif
 # else
       common /diag_bioFlux/bioFlux
-     &       /diag_bioVSink/bioVSink
+      common /diag_bioVSink/bioVSink
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS 
      &       /diag_GasFlux/GasExcFlux
 #   endif

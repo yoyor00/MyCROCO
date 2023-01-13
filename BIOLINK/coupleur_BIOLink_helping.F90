@@ -353,32 +353,32 @@ CONTAINS
 
            idimv_r(isubs)=1
            ndiag_1d=ndiag_1d+1
-
-           vname(1,indxBLMdiag1D+ndiag_1d) = namvar_r
-           vname(2,indxBLMdiag1D+ndiag_1d) = long_name_var_r
-           vname(3,indxBLMdiag1d+ndiag_1d) = standard_name_var_r
-           vname(4,indxBLMdiag1D+ndiag_1d) = unitvar_r
+!           vname(1,indxBLMdiag1D+ndiag_1d-1) = namvar_r
+!           vname(2,indxBLMdiag1D+ndiag_1d-1) = long_name_var_r
+!           vname(3,indxBLMdiag1D+ndiag_1d-1) = standard_name_var_r
+!           vname(4,indxBLMdiag1D+ndiag_1d-1) = unitvar_r
 
          ELSE IF (dimvar==2) THEN
 
            idimv_r(isubs)=2
            ndiag_2d=ndiag_2d+1
-
-           vname(1,indxBLMdiag2D+ndiag_2d) = namvar_r
-           vname(2,indxBLMdiag2D+ndiag_2d) = long_name_var_r
-           vname(3,indxBLMdiag2d+ndiag_2d) = standard_name_var_r
-           vname(4,indxBLMdiag2D+ndiag_2d) = unitvar_r
+           vname(1,indxbioVSink+ndiag_2d-1) = namvar_r
+           vname(2,indxbioVSink+ndiag_2d-1) = long_name_var_r
+           vname(3,indxbioVSink+ndiag_2d-1) = standard_name_var_r
+           vname(4,indxbioVSink+ndiag_2d-1) = unitvar_r
+           MPI_master_only WRITE(iscreenlog,*)'---------------'
+           MPI_master_only WRITE(iscreenlog,*) 'vname = ',TRIM(ADJUSTL(ADJUSTR(vname(2,indxbioVSink+ndiag_2d-1))))
 
          ELSE IF (dimvar==3) THEN
 
            idimv_r(isubs)=3
            ndiag_3d=ndiag_3d+1
-
-           vname(1,indxBLMdiag3D+ndiag_3d) = namvar_r
-           vname(2,indxBLMdiag3D+ndiag_3d) = long_name_var_r
-           vname(3,indxBLMdiag3d+ndiag_3d) = standard_name_var_r
-           vname(4,indxBLMdiag3D+ndiag_3d) = unitvar_r
-
+           vname(1,indxbioFlux+ndiag_3d-1) = namvar_r
+           vname(2,indxbioFlux+ndiag_3d-1) = long_name_var_r
+           vname(3,indxbioFlux+ndiag_3d-1) = standard_name_var_r
+           vname(4,indxbioFlux+ndiag_3d-1) = unitvar_r
+           MPI_master_only WRITE(iscreenlog,*)'---------------'
+           MPI_master_only WRITE(iscreenlog,*) 'vname = ',TRIM(ADJUSTL(ADJUSTR(vname(2,indxbioFlux+ndiag_3d-1))))
 
          END IF
 
@@ -412,6 +412,11 @@ CONTAINS
          END IF
 
          READ(49,*,iostat=eof) l_diagBIOLink_out(isubs)
+         IF (dimvar==3) THEN
+           wrtdiabioFlux(ndiag_3d)=l_diagBIOLink_out(isubs)
+         ELSEIF (dimvar==2) THEN
+           wrtdiabioVSink(ndiag_2d)=l_diagBIOLink_out(isubs)
+         ENDIF
          READ(49,*,iostat=eof)
 
          IF (l_diag_sed) THEN

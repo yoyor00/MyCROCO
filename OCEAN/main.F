@@ -41,7 +41,7 @@
 #endif
 #ifdef BIOLink
           USE coupleur_BIOLink , ONLY : BIOLink_initialization
-          USE coupleur_BIOLink , ONLY : BIOLink_init
+          USE coupleur_BIOLink , ONLY : BIOLink_init_main
           integer :: icall = 0
 #endif
 #ifdef ONLINE_ANALYSIS
@@ -468,7 +468,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #ifdef BIOLink
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-      CALL BIOLink_init(tile)
+      CALL BIOLink_init_main(tile)
       enddo
 #endif 
 #if defined MUSTANG 
@@ -837,6 +837,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
+#ifdef DIAGNOSTICS_BIO
+      if (ldefdiabio) call wrt_bio_diags
+#endif
 #endif
 
 #ifdef MUSTANG
