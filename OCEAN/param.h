@@ -78,7 +78,11 @@
       parameter (LLm0=100,  MMm0=100,  N=5)
 #elif defined SINGLE_COLUMN
 # ifdef KATO_PHILIPS
+# ifdef DYFAMED
+      parameter (LLm0=5 ,   MMm0=5,    N=41)
+# else
       parameter (LLm0=5 ,   MMm0=5,    N=100)
+# endif
 # elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \
     || defined FORCED_OSCNONROTBBL
       parameter (LLm0=5 ,   MMm0=5,    N=50)
