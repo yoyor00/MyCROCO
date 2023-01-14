@@ -1,0 +1,69 @@
+#!/bin/sh
+######################################################
+#  PROJECT  : IO Catcher                             #
+#  LICENSE  : Apache 2.0                             #
+#  COPYRIGHT: 2020-2022 Bull SAS All rights reserved #
+######################################################
+
+######################################################
+#set project name
+cfg_set_projet "CROCO"
+
+######################################################
+#this is an MPI app, we directly use the mpi wrappers
+CFG_EXTRA_CC='mpicc'
+CFG_EXTRA_FORT='mpifort'
+
+######################################################
+#test
+cfg_add_enable_option --name='test' \
+                      --on='-DENABLE_TESTS=${ON}' \
+                      --doc='Disable unit tests' \
+                      --invert-help
+#junit xml out
+cfg_add_enable_option --name='junit-output'  \
+                      --on='-DENABLE_JUNIT_OUTPUT=${ON}' \
+                      --doc='Save test output in JUnit format (only in self-test mode)' 
+#valgrind
+cfg_add_enable_option --name='valgrind' \
+                      --on='-DENABLE_VALGRIND=${ON}' \
+                      --doc='Enable running unit tests into valgrind to generate reports'
+#jenkins full features
+cfg_add_enable_option --name='jenkins' \
+                      --on-enable-inherit='--enable-junit-output --enable-debug "CXXFLAGS=-Wall -fprofile-arcs -ftest-coverage"' \
+                      --doc='Enable all checking modes (unit, valgrind, coverage...)' \
+                      --only='enable'
+#coverage
+cfg_add_enable_option --name='coverage' \
+                      --on='-DENABLE_COVERAGE=${ON}' \
+                      --doc='Enable coverage report'
+
+######################################################
+#libfabric
+#cfg_add_with_option --name='libfabric' \
+#                    --doc='Define prefix to find libfabric [/usr]' \
+#                    --var='LIBFABRIC_PREFIX'
+
+
+######################################################
+#If we want to document extra options
+#CFG_CUSTOM_HELP="My custom options:"
+
+######################################################
+# here we can parse our own options if we want
+# Vars available are :
+#  - $arg : full argument (eg. --with-gcc=gcc)
+#  - $val : value after first '=', egg 'gcc'
+#  - $ON $OFF, $ENABLE, $DISABLE, $WIDTH, $WITHOUT
+#cfg_parse_custom_opts()
+#{
+#	return 1
+#}
+
+######################################################
+#pre check to ease error messages
+#All cmake vars are loaded in memory as OPT_* (OPT_CMAKE_C_FLAGS)
+#cfg_custom_pre_check()
+#{
+#	return 1
+#}
