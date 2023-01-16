@@ -31,7 +31,7 @@
           parameter (start_debug=start_debug0)
           parameter (start_debug_read=start_debug)
 # endif        
-          logical, parameter :: non_strict = .TRUE.
+          logical, parameter :: non_strict = .false.
           real, parameter :: max_tolerance = 1.D-10
           real :: tolerance
           contains

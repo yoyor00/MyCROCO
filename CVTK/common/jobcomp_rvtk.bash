@@ -311,6 +311,18 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 fi
 
 #
+# determine if OPENACC compilation is needed
+#
+unset COMPILEOPENACC
+echo "Checking COMPILEOPENACC..."
+if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
+        COMPILEOPENACC=TRUE
+        if [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+                  FFLAGS1="$FFLAGS1 -acc -Minfo=accel"
+        fi
+fi
+
+#
 # rewrite Makedefs according to previous flags
 # with openmp flags if needed
 #

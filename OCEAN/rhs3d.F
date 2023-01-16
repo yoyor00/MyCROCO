@@ -9,9 +9,6 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-#if defined BASIN && defined OPENACC
-#include "rhs3d_openacc.F"
-#else
 #include "cppdefs.h"
 #ifdef SOLVE3D
 
@@ -26,18 +23,13 @@
       call rhs3d_tile (Istr,Iend,Jstr,Jend,
      &                                    A3d(1,1,trd), A3d(1,2,trd),
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
-     &                      A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
-     &                      A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd),
-     &                      A3d(1,6,trd), A3d(1,7,trd), A3d(1,8,trd))
+     &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
+     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
       return
       end
 
       subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
-     &                                 wrk1,wrk2, UFx,UFe,
-     &                                 VFx,VFe,
-     &                                 wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
-     &                                 VFx_3D,VFe_3D)
+     &                                 wrk1,wrk2, UFx,UFe, VFx,VFe)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
@@ -78,34 +70,24 @@
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,cff1,cff2,
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffX,
      &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,
-     &   wrk1_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),     curvX,
-     &   wrk2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),     curvE,
-     &    UFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &    UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &    VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
-     &    VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),    gamma
-      real wrk1(PRIVATE_2D_SCRATCH_ARRAY),
-     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),
+     &   wrk1(PRIVATE_2D_SCRATCH_ARRAY),     curvX,
+     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),     curvE,
      &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
      &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
-     &    VFe(PRIVATE_2D_SCRATCH_ARRAY)
-
-
+     &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"
-# include "weno_interfaces.h"
 # ifdef NBQ
 #  include "nbq.h"
 # endif
 # ifdef MRL_WCI
       real vstu,dudx,dvdx,ustv,dude,dvde
 # endif
-#include "openacc_work.h"
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -121,7 +103,6 @@
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
       REAL    :: ua, vel, cdiff, cdif
-!$acc declare create(vel)
       REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
       REAL    :: flx2, flx3, flx4, flx5
       REAL    :: mask0, mask1, mask2, mask3
@@ -148,7 +129,9 @@
      &      -sign(1.,ua)*(
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
-
+# if  defined UV_HADV_WENO5 || defined UV_VADV_WENO5
+      REAL    :: flux3_weno, flux5_weno
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -175,8 +158,6 @@
         cdt = (1.-1./6.)*dt        !<-- Predictor
       endif
 # endif
-
-!$acc kernels if(compute_on_device) default(present)
 
 # ifdef BODYFORCE
 !====================================================================
@@ -404,14 +385,6 @@
 #  undef Vwrk
 #  undef Uwrk
 # endif /* BODYFORCE */
-
-! TO BE CHANGED, hugly
-#define wrk1(i,j) wrk1_3D(i,j,k)
-#define wrk2(i,j) wrk2_3D(i,j,k)
-#define UFx(i,j) UFx_3D(i,j,k)
-#define UFe(i,j) UFe_3D(i,j,k)
-#define VFx(i,j) VFx_3D(i,j,k)
-#define VFe(i,j) VFe_3D(i,j,k)
 
       do k=1,N
 
@@ -693,7 +666,6 @@
 #    endif
 #   endif
 
-!$acc loop collapse(2)
         do j=Jstr,Jend
           do i=IU_EXT_RANGE
             uxx(i,j)=(u(i-1,j,k,nrhs)-2.*u(i,j,k,nrhs)
@@ -949,7 +921,6 @@
 #    endif
 #   endif
 
-!$acc loop collapse(2)
         do j=JstrV,Jend
           do i=IV_EXT_RANGE
             vxx(i,j)=(v(i-1,j,k,nrhs)-v(i,j,k,nrhs)) SWITCH pmask(i  ,j)
@@ -1256,35 +1227,7 @@
 
       enddo    ! <-- k
 
-!$acc end kernels
-
-
-#define DC3D UFx_3D
-#define CF3D UFe_3D
-!$acc parallel loop if(compute_on_device) default(present) async(1)
-!$acc& collapse(3)
-      do k=1,N
-        do j=Jstr,Jend
-          do i=IstrU,Iend
-            DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
-     &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
-          enddo
-        enddo
-       enddo
-
-!$acc parallel loop if(compute_on_device) default(present) async(1)
-!$acc& collapse(3)
-      do k=1,N
-        do j=Jstr,Jend
-          do i=IstrU,Iend
-            CF3D(i,j,k)=( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
-     &                                 We(i+1,j,k)+We(i-2,j,k) ))
-          enddo
-        enddo
-       enddo
-
-!$acc parallel loop if(compute_on_device) default(present) async(1)
-      DOLOOP2D(IstrU,Iend,Jstr,Jend)
+      do j=Jstr,Jend
 
 # ifdef UV_ADV
 !
@@ -1304,9 +1247,8 @@
 #  ifdef UV_VADV_SPLINES
         do k=1,N
           do i=IstrU,Iend
-   !        DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
-   ! &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
-            DC(i,k)=DC3D(i,j,k)
+            DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
+     &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
           enddo
         enddo
         do i=IstrU,Iend     ! Construct parabolic splines: here
@@ -1335,7 +1277,8 @@
 !
         do k=1,N-1
           do i=IstrU,Iend
-            FC(i,k)=CF3D(i,j,k)
+            FC(i,k)=( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
+     &                                 We(i+1,j,k)+We(i-2,j,k) ))
      &             *( u(i,j,k,nrhs)+DC(i,k)*(
      &                              0.33333333333333*CF(i,k  )
      &                             +0.16666666666667*CF(i,k-1)
@@ -1518,42 +1461,13 @@
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
-       ENDDOLOOP2D
-
-#undef DC3D
-#undef CF3D
-#define DC3D VFx_3D
-#define CF3D VFe_3D
-
-!$acc parallel loop if(compute_on_device) default(present) async(2)
-!$acc& collapse(3)
-      do k=1,N
-        do j=JstrV,Jend
-          do i=Istr,Iend
-            DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
-     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
-          enddo
-        enddo
-       enddo
-
-!$acc parallel loop if(compute_on_device) default(present) async(2)
-!$acc& collapse(3)
-      do k=1,N
-        do j=JstrV,Jend
-          do i=Istr,Iend
-            CF3D(i,j,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
-     &                                   We(i,j+1,k)+We(i,j-2,k) ))
-          enddo
-        enddo
-       enddo
-
-!$acc parallel loop if(compute_on_device) default(present) async(2)
-      DOLOOP2D(Istr,Iend,JstrV,Jend)
+        if (j.ge.JstrV) then
 !
 #  ifdef UV_VADV_SPLINES
           do k=1,N
             do i=Istr,Iend
-              DC(i,k)=DC3D(i,j,k)
+              DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
+     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
             enddo
           enddo
           do i=Istr,Iend    ! Construct parabolic splines: here
@@ -1582,7 +1496,8 @@
 !
           do k=1,N-1
             do i=Istr,Iend
-              FC(i,k)=CF3D(i,j,k)
+              FC(i,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
+     &                                   We(i,j+1,k)+We(i,j-2,k) ))
      &               *( v(i,j,k,nrhs)+DC(i,k)*(
      &                                0.33333333333333*CF(i,k  )
      &                               +0.16666666666667*CF(i,k-1)
@@ -1758,6 +1673,8 @@
           endif
 #  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
 
+        endif !<- j.ge.JstrV
+
 # endif /* UV_ADV */
 !
 !======================================================================
@@ -1825,12 +1742,6 @@
          enddo
       enddo
 # endif   /* MRL_WCI */
-        ENDDOLOOP2D
-#undef DC3D
-#undef CF3D
-!$acc wait(1,2)
-!$acc kernels if(compute_on_device) default(present)
-
 !
 !======================================================================
 !
@@ -1846,7 +1757,6 @@
 !
 !======================================================================
 !
-       do j=Jstr,Jend
         do i=IstrU,Iend
           rufrc(i,j)=ru(i,j,1)
 # ifndef BODYFORCE
@@ -1887,8 +1797,6 @@
         endif
 
       enddo      !<-- j loop
-
-!$acc end kernels
 
       return
       end
@@ -1939,4 +1847,3 @@
       subroutine rhs3d_empty
       end
 #endif /* SOLVE3D */
-#endif /* defined BASIN && defined OPENACC */
