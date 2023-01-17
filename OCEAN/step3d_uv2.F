@@ -85,6 +85,7 @@
 #  include "diags_pv.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j,k
+      integer imin, imax, jmin, jmax
 # ifdef PSOURCE
      &       ,is
 # endif
@@ -1288,6 +1289,21 @@
 ! variables not containing mass point sources info during the
 ! coupling process (P. Marchesiello, 17 Jun 2004).
 !
+#if defined EW_PERIODIC || defined MPI || !defined M2_HADV_UP3
+      imin=IstrU-2
+      imax=Iend+1
+#else
+      imin=max(IstrU-3,0)
+      imax=min(Iend+2,Lm+1)
+#endif
+#if defined NS_PERIODIC || defined MPI || !defined M2_HADV_UP3
+      jmin=JstrV-2
+      jmax=Jend+1
+#else
+      jmin=max(JstrV-3,0)
+      jmax=min(Jend+2,Mm+1)
+#endif
+
 # ifdef PSOURCE
       do is=1,Nsrc
 #  ifdef MPI
@@ -1297,8 +1313,10 @@
             i=Isrc(is)
             j=Jsrc(is)
 #  endif
-        if (IstrR.le.i .and. i.le.IendR .and.
-     &      JstrR.le.j .and. j.le.JendR) then
+!        if (IstrR.le.i .and. i.le.IendR .and.
+!     &      JstrR.le.j .and. j.le.JendR) then
+        if ( (imin+1) .le.i .and. i.le.imax .and.
+     &       (jmin+1) .le.j .and. j.le.jmax) then
           if (Dsrc(is).eq.0) then
             do k=1,N
               u(i,j,k,nnew)=2.*Qsrc(is,k)/( on_u(i,j)*(
