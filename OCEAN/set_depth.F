@@ -235,17 +235,17 @@ C$    integer omp_get_thread_num
 #  undef J_RANGE
 
 #  if defined BD_EXCHANGE
-!     call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
-!    &                        z_w(START_2D_ARRAY,0))
-!     call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
-!    &                        z_r(START_2D_ARRAY,1))
-!     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-!    &                        Hz(START_2D_ARRAY,1))
-!     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-!    &                        Hz_bak(START_2D_ARRAY,1))
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
+     &                        z_w(START_2D_ARRAY,0))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
+     &                        z_r(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz_bak(START_2D_ARRAY,1))
 #   ifdef NBQ_MASS
-!     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-!    &                        Hzr(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hzr(START_2D_ARRAY,1))
 #   endif
 #  endif 
       return
