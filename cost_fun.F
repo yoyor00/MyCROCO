@@ -136,7 +136,7 @@ c     &                 (om_u(i,j)*om_u(i,j))
 c     &                 + 1.D4*dpena*dpena
 
                   ad_irms = ad_irms + delta_z*delta_z
-                  write(*,*) '=====>',i,j,ta, ad_step_counter,
+                  write(*,*) '=====>',mynode,i,j,ta, ad_step_counter,
      &                 zeta(i,j,knew),
      &                 ad_obs(i,j,ta),ad_obs(i,j,ta+1),ad_obs(i,j,ta+2),
      &                 ad_obs(i,j,ta+3)

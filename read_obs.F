@@ -9,7 +9,8 @@ c     this file is not differentiated
 # include "adparam.h"
 
       integer ntrds,trd,my_first,my_last,tile,range
-
+      character*3 mynode_str
+      
 #ifdef OPENMP
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
@@ -21,14 +22,16 @@ c     this file is not differentiated
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
-      open(unit=333, file='obs.dat', form='unformatted', access='stream')
+      write(mynode_str, 910) mynode
+      open(unit=333, file='obs.'//mynode_str//'.dat', form='unformatted',
+     &     access='stream')
 
       do tile=my_first,my_last
          call read_obs_2d(tile,333)
       end do
 
       close (333)
-
+ 910  format(I3.3)
       end subroutine read_obs
 
       subroutine read_obs_2d(tile,fid)
