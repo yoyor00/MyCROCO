@@ -11,7 +11,8 @@ C$AD BINOMIAL-CKP nstep+1 72 1
          do iifroot = 0,nfast+2
             call step()
          end do
-c         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
+c     write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
+         ad_step_counter = ad_step_counter + 1
       end do
       write(*,*) 'end ad_step'
 
@@ -51,7 +52,7 @@ c         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
 c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
       end do
 
-      cost = icost
+      cost = icost / ad_nt
 
       ad_cost = cost
       ad_ta = ad_nt*ad_ns
@@ -126,18 +127,19 @@ c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
                if (rmask(i,j).ne.0) then
                   k=k+1
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta)
-                  dpena =
-     &                 (pena_h(i+1,j)-ad_tab0(i+1,j) +
-     &                  pena_h(i-1,j)-ad_tab0(i-1,j)
-     &                  -2*(pena_h(i,j)-ad_tab0(i,j)))/
-     &                 (om_u(i,j)*om_u(i,j))
+c                  dpena =
+c     &                 (pena_h(i+1,j)-ad_tab0(i+1,j) +
+c     &                  pena_h(i-1,j)-ad_tab0(i-1,j)
+c     &                  -2*(pena_h(i,j)-ad_tab0(i,j)))/
+c     &                 (om_u(i,j)*om_u(i,j))
                   icost = icost + delta_z*delta_z
-     &                 + 1.D4*dpena*dpena
+c     &                 + 1.D4*dpena*dpena
 
                   ad_irms = ad_irms + delta_z*delta_z
-c                  write(*,*) '=====>',zeta(i,j,knew)
-c     &                 ,ad_obs(i,j,ta-1),ad_obs(i,j,ta),ad_obs(i,j,ta+1)
-c     &                 ,ad_obs(i,j,ta+2),ad_obs(i,j,ta+3)
+                  write(*,*) '=====>',i,j,ta, ad_step_counter,
+     &                 zeta(i,j,knew),
+     &                 ad_obs(i,j,ta),ad_obs(i,j,ta+1),ad_obs(i,j,ta+2),
+     &                 ad_obs(i,j,ta+3)
 
 
 c$$$                  write(*,*) 'AAAAA',ad_cost_counter,time,
@@ -346,14 +348,17 @@ c     cf ana_initial
       character*6 counter_str
 #include "compute_extended_bounds.h"
 
-      d1=200*200
-      d2=4D3*4D3
-      d3=200*200
+      d1=1D8/(200*200)
+      d2=1D8/(4D3*4D3)
+      d3=1D8/(200*200)
 
-      depth = 2000         -  200*(1- exp(-d1*(ad_x(1)*ad_x(1))))
-      ridge_width = 30.0D3 +  4D3*(1- exp(-d2*(ad_x(2)*ad_x(2))))
-      ridge_height = 1600  +  200*(1- exp(-d3*(ad_x(3)*ad_x(3))))
+      depth = 2000         -  ad_x(1)
+      ridge_width  = 30.0D3
+      ridge_height = 1600
+c      ridge_width = 28.0D3 +  4D3*(1- exp(-d2*(ad_x(2)*ad_x(2))))
+c      ridge_height = 1600  +  200*(1- exp(-d3*(ad_x(3)*ad_x(3))))
 
+      
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
         ik=0
@@ -383,6 +388,9 @@ c     cf ana_initial
       write(*, *) 'k, ad_array_node_size', k, ad_array_node_size
       write(*, *) 'ad_x', ad_x(1), ad_x(2), ad_x(3)
       write(*, *) 'ad_counter=',ad_counter
+      write(*, *) 'depth =', depth
+      write(*, *) 'width =', ridge_width
+      write(*, *) 'height=', ridge_height
       write(*, *) '*******************'
 
 
@@ -608,8 +616,8 @@ c      call grid_stiffness(tile)
 # include "compute_extended_bounds.h"
 
 c set a lower depth
-      depth=2100.
-      ridge_width = 28.0D3
+      depth=2000.
+      ridge_width = 30.0D3
       ridge_height = 1600
 
       cff1=1./(ridge_width*ridge_width)
@@ -633,11 +641,13 @@ c set a lower depth
        enddo
       enddo
 
-      ad_x(1) =  2.9525087633157719E-007
-      ad_x(2) = -1.3858541365846966E-320
-      ad_x(3) = 5.1097759790190960E-008
-
-      ad_array_node_size=3
+c      ad_x(1) =  2.9525087633157719E-007
+c      ad_x(2) = -1.3858541365846966E-320
+c      ad_x(3) = 5.1097759790190960E-008
+      ad_x(1) = 0
+c      ad_x(2) = 1D-10 * ridge_width
+c      ad_x(3) = 1D-10 * ridge_height
+      ad_array_node_size=1
 
 
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,

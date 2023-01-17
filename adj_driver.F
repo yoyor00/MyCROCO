@@ -8,7 +8,7 @@ c     this file is not differentiated
 # include "adparam.h"
       real t1, t2, xtime
 
-      integer indic, Sn, k
+      integer indic, Sn, k, i
       real izs(1)
       real rzs(1)
       real dzs(1)
@@ -73,6 +73,11 @@ c         write(*,*) '-||->', (cost-f)/eps
          write (*,*) '--------------------------------------'
 
          call restore_croco_state()
+
+         do i=1,Sn
+            write(*,*) 'ad_x(',i,'),grad(',i,')=',
+     &           ad_x(i),ad_g(i)
+         end do
 
       end if
       return

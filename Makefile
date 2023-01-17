@@ -176,7 +176,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # =========
 #
 
-ADJ_SRCS=cost_fun.F get_vbc.F step.F step2d.F pre_step3d.F set_depth.F grid_stiffness.F rho_eos.F ana_vmix.F omega.F prsgrd.F rhs3d.F step3d_uv1.F step3d_uv2.F step3d_t.F t3dbc.F u3dbc.F v3dbc.F v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F
+ADJ_SRCS=cost_fun.F get_vbc.F step.F step2d.F pre_step3d.F set_depth.F grid_stiffness.F rho_eos.F ana_vmix.F omega.F prsgrd.F rhs3d.F step3d_uv1.F step3d_uv2.F step3d_t.F t3dbc.F u3dbc.F v3dbc.F v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F MessPass3D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
 ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o
@@ -198,6 +198,9 @@ DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs
 
 TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 
+LAMPI_PLAINC= -lampiPlainC
+LAMPI= -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
+
 #======================================================================
 
 #
@@ -210,31 +213,31 @@ all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_adc
 # =========== =====
 #
 $(SBIN): $(OBJS90) $(OBJS) main.o read_obs.o $(MPI_DIR_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) #-lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) $(LAMPI_PLAINC)
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas $(LAMPI)
 
 $(SBIN)_adc:  $(ADJ_OBJS) $(TAP_TARGET)_d.o check_driver.o $(OBJS90) $(OBJS) main_adc.o $(MPI_ADJ_OBJS) 
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas $(LAMPI)
 
 $(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas $(LAMPI)
 
 $(SBIN)_adj_tgt: $(ADJ_TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas $(LAMPI)
 
 $(SBIN)_tgt_dbg: $(TGT_OBJS_DBG) $(OBJS90) $(OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas $(LAMPI)
 
 $(SBIN)_adj_dbg1: $(ADJ_OBJS_DBG1) $(OBJS90) $(OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas $(LAMPI)
 
 $(SBIN)_adj_dbg2: $(ADJ_OBJS_DBG2) $(OBJS90) $(OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas $(LAMPI)
 
 $(SBIN)_div: $(DIV_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas $(LAMPI)
 
 # $Id: Makefile 3922 2011-05-19 08:54:39Z llh $
 
@@ -425,7 +428,7 @@ cmaker.f: cmaker.F
 	$(CPP) -P $(CPPFLAGS) $^ | ./mpc > $@
 
 cmaker: cmaker.o
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) $(LAMPI_PLAINC)
 
 main.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DGENERATE_OBS $^ | ./mpc > $@

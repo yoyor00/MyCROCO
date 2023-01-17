@@ -7,7 +7,7 @@ C     -*- fortran -*-
 C     size of the optimization problem
       integer ad_array_size
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
-      parameter (ad_array_size=3)
+      parameter (ad_array_size=1*nnodes)
 
 c     real size of the problem per node (<= ad_array_size/nnodes)
       integer ad_array_node_size
@@ -45,12 +45,12 @@ C     start of assimilation in the obs file
 #elif defined AD_ATLN
       parameter (ad_ast = 388)
 #elif defined INTERNAL
-      parameter (ad_ast = 120*32)
+      parameter (ad_ast = 1)
 #endif
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st
-      parameter (ad_main_st = 120*32)
+      parameter (ad_main_st = 1)
 
 c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY,ad_nobs)
@@ -85,6 +85,9 @@ C     general iteration counter
 
 C     cost function counter
       integer ad_cost_counter
+
+c     step call counter
+      integer ad_step_counter
 
 c     timings
       double precision ad_dir_time
@@ -153,4 +156,4 @@ C     commons
       common /ad_obs_data/ ad_obs, ad_obs_time
       common /ad_state_info/ ad_sim_iicroot,ad_counter,ad_cost_counter,
      &     ad_ta,
-     &     ad_rms,ad_irms,ad_irms_f,ad_cost
+     &     ad_rms,ad_irms,ad_irms_f,ad_cost, ad_step_counter

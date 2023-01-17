@@ -20,7 +20,8 @@ c     perturbated ad_x
       double precision ad_x_pe(ad_array_size/nnodes)
 
       double precision control_to_param,rand
-      
+
+      ad_step_counter = 0
       ad_sim_iicroot = iicroot
 
       open(unit=789, file="ad_check.dat", action="write",

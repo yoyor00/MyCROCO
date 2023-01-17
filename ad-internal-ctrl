@@ -38,7 +38,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=1
+  nbcores=2
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
@@ -58,24 +58,32 @@ sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
 #sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/' cppdefs.h
 sed -i 's/undef[\t ]*INTERNAL/define INTERNAL/' cppdefs.h
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
-sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
+#sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
 sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
+sed -i 's/undef[\t ]*MPI/define MPI/' cppdefs.h
 #sed -i 's/undef[\t ]*TAPENADE/define TAPENADE\n# define AUTOTILING/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
 make croco && mv croco .. || exit 1
 cd ..
 rm -f obs.dat
-./croco croco.internal-friction-obs.in
+$mpirun_cmd ./croco croco.internal-friction-obs.in
+#./croco croco.internal-friction-obs.in
 cp internal_his.nc obs.nc
 
 # 2. second run with obs.dat file
-sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
-sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
+sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
+
+#sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
+#sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
+#sed -i 's/undef[\t ]*MPI/define MPI/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
 make croco_tgt && mv croco_tgt .. || exit 1
 cd ..
 
 #./croco_adc croco.internal-friction-obs.in
-./croco_tgt croco.internal-friction-obs.in
+echo "in directory `pwd`"
+#./croco_tgt croco.internal-friction-obs.in
+mpirun -np 1 ./croco_tgt croco.internal-friction-obs.in :\
+       -np 1 ./croco_tgt croco.internal-friction-obs.in

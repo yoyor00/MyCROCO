@@ -5,7 +5,7 @@ c     this file is not differentiated
       implicit none
 #include "adinc.h"
 #include "adparam.h"
-
+      
       integer iicroot
       integer ierr
 
@@ -40,6 +40,8 @@ c         call ad_step(ad_main_st)
 c         write(*,*) 'spinup: end ad_step:', iicroot
 c      end if
 
+      ad_step_counter = 0
+
       ad_sim_iicroot = iicroot
       ad_cost_counter = 1
       ad_cost = 1
@@ -69,7 +71,8 @@ c      MPI_master_only write(*,*) 'A1##>',ad_x_f
 c      MPI_master_only write(*,*) 'B1##>',ad_g_f
 
       indic = 4
-      call simul (indic,ad_array_size,ad_x,cost,ad_g,izs,rzs,dzs)
+      call simul (indic,ad_array_size/nnodes,
+     &     ad_x,cost,ad_g,izs,rzs,dzs)
 
       ad_x_f(:) = 0.
       ad_g_f(:) = 0.
@@ -146,7 +149,7 @@ c         MPI_master_only write(*,*) '2##>',ad_sg_f
 
 C        get ad_x_f, the new ad state on mpi master
          MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
-     &        ad_array_size,ad_x_f,
+     &        ad_array_size/nnodes,ad_x_f,
      &        cost,ad_g_f,dx,df1,epsrel,
      &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &        reverse,indic,izs,rzs,dzs)
@@ -180,7 +183,8 @@ c     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
 
 C        get cost & ad_g, the gradient on each proc (& ad_rms)
-         call simul(indic,ad_array_size,ad_x,cost,ad_g,izs,rzs,dzs)
+         call simul(indic,ad_array_size/nnodes,
+     &        ad_x,cost,ad_g,izs,rzs,dzs)
 
          ad_g_f(:) = 0
 #ifdef MPI

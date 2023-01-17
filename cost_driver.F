@@ -9,6 +9,7 @@ c     direct call to cost function
 
       double precision icost
 
+      ad_step_counter = 0
       do k=1,ad_array_size/nnodes
          ad_g(k)=0.
          ad_x(k)=0.
