@@ -136,10 +136,10 @@ c     &                 (om_u(i,j)*om_u(i,j))
 c     &                 + 1.D4*dpena*dpena
 
                   ad_irms = ad_irms + delta_z*delta_z
-                  write(*,*) '=====>',mynode,i,j,ta, ad_step_counter,
-     &                 zeta(i,j,knew),
-     &                 ad_obs(i,j,ta),ad_obs(i,j,ta+1),ad_obs(i,j,ta+2),
-     &                 ad_obs(i,j,ta+3)
+c                  write(*,*) '=====>',mynode,i,j,ta, ad_step_counter,
+c     &                 zeta(i,j,knew),
+c     &                 ad_obs(i,j,ta),ad_obs(i,j,ta+1),ad_obs(i,j,ta+2),
+c     &                 ad_obs(i,j,ta+3)
 
 
 c$$$                  write(*,*) 'AAAAA',ad_cost_counter,time,
@@ -385,8 +385,8 @@ c      ridge_height = 1600  +  200*(1- exp(-d3*(ad_x(3)*ad_x(3))))
       write(*, *) 'mynode=',mynode
 #endif
 
-      write(*, *) 'k, ad_array_node_size', k, ad_array_node_size
-      write(*, *) 'ad_x', ad_x(1), ad_x(2), ad_x(3)
+      write(*, *) 'k, ad_array_real_node_size', k, ad_array_real_node_size
+      write(*, *) 'ad_x', ad_x(:)
       write(*, *) 'ad_counter=',ad_counter
       write(*, *) 'depth =', depth
       write(*, *) 'width =', ridge_width
@@ -647,11 +647,11 @@ c      ad_x(3) = 5.1097759790190960E-008
       ad_x(1) = 0
 c      ad_x(2) = 1D-10 * ridge_width
 c      ad_x(3) = 1D-10 * ridge_height
-      ad_array_node_size=1
+      ad_array_real_node_size=1
 
 
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
-     &     ad_array_node_size,
+     &     ad_array_real_node_size,
      &     ad_array_size/nnodes
 
       write(*,*) 'minad_x,maxad_x',minval(ad_x),maxval(ad_x)

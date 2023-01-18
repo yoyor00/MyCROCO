@@ -78,7 +78,7 @@ c     2. compute tangent
       
 c     n_ad_g = < ad_g . ad_g >
       n_ad_g = 0.
-      do k=1,ad_array_node_size
+      do k=1,ad_array_real_node_size
          n_ad_g = n_ad_g + ad_g(k)*ad_g(k)
       end do
 
@@ -120,7 +120,7 @@ c     3. finite difference estimation
       ad_eps = 1/sqrt(n_ad_g)
       do while (ad_eps.gt.1D-10)   
          
-         do k=1,ad_array_node_size
+         do k=1,ad_array_real_node_size
             ad_x_pe(k) = ad_x(k)+ad_eps*ad_g(k)
          end do
 

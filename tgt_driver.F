@@ -51,7 +51,7 @@ c     call save_croco_state()
          end do
          write (*,*) '######################################'
          do i=1,Sn
-            write(*,*) 'ad_x(',i,'),ad_xd(',i,'),grad(',i,')=',
+            write(*,*) 'node:',mynode,'ad_x(',i,'),ad_xd(',i,'),grad(',i,')=',
      &           ad_x(i),ad_xd(i),grad(i)
          end do
          write (*,*) '######################################'

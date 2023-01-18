@@ -5,12 +5,18 @@ C     -*- fortran -*-
 #endif      
       
 C     size of the optimization problem
-      integer ad_array_size
-c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
-      parameter (ad_array_size=1*nnodes)
+      integer ad_array_size, ad_array_node_size
+c     parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
+      parameter (ad_array_node_size=1)
+#ifdef DISTRIBUTED_CONTROL_VECTOR
+      parameter (ad_array_size=ad_array_node_size*nnodes)
+
+#else
+      parameter (ad_array_size=ad_array_node_size)
+#endif      
 
 c     real size of the problem per node (<= ad_array_size/nnodes)
-      integer ad_array_node_size
+      integer ad_array_real_node_size
 
 C     number of steps between cost function computations
       integer ad_ns
@@ -57,13 +63,13 @@ c     observations
       double precision ad_obs_time(ad_nobs)
 
 c     state vector / process
-      double precision ad_x(ad_array_size/nnodes)
-      double precision ad_x0(ad_array_size/nnodes)
+      double precision ad_x(ad_array_node_size)
+      double precision ad_x0(ad_array_node_size)
       double precision ad_tab0(GLOBAL_2D_ARRAY)
-      double precision ad_dz(ad_array_size/nnodes)
+      double precision ad_dz(ad_array_node_size)
 
 c     gradient vector / process
-      double precision ad_g(ad_array_size/nnodes)
+      double precision ad_g(ad_array_node_size)
 
 c     full control vector
       double precision ad_x_f(ad_array_size)
@@ -116,7 +122,7 @@ c     backup
 
 c     rms
       real ad_rms,ad_irms,ad_irms_f
-      integer ad_array_node_size_f
+      integer ad_array_real_node_size_f
       integer ad_ta
 
       real ad_spval
@@ -149,7 +155,7 @@ C     commons
      &     nbstep3d_bck,
      &     ad_u_bck, ad_v_bck, ad_t_bck
 
-      common /ad/ ad_x0, ad_tab0, ad_dz, ad_array_node_size
+      common /ad/ ad_x0, ad_tab0, ad_dz, ad_array_real_node_size
 
       common /ad_timings/ ad_dir_time,ad_adj_time
 
