@@ -40,7 +40,9 @@ C     number of cost function computations
 
 C     number of obs in observation file
       integer ad_nobs
-#if defined INTERNAL
+#if defined AD_DL_Z0B_CTRL
+      parameter (ad_nobs = ad_nt*ad_ns+3)
+#elif defined INTERNAL
       parameter(ad_nobs = 130*32)
 #endif
 

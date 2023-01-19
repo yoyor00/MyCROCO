@@ -94,6 +94,7 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       call AMPI_Reduce(ad_g, ad_g_f, ad_array_node_size,
      &     AMPI_ADOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 #endif
+#endif
 #else
       ad_x_f=ad_x
       ad_g_f=ad_g

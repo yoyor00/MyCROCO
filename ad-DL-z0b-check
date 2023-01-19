@@ -1,39 +1,56 @@
 #!/bin/bash
-#OAR --project moise-modeling
-#OAR -l /nodes=1/cpu=1/core=4,walltime=5:00:00
-
+#OAR --project airsea-modeling
+#OAR -l /nodes=1/cpu=1/core=1,walltime=48:00:00
 ################################################################################
 case $1 in
   --env-ok)
     shift;;
+  --fast)
+    shift
+    pwd=`pwd`
+    . $pwd/.croco-guix-profile/etc/profile && $0 --env-ok $@
+    ;;
   *)
     set -x
+    MYDIR=`dirname $0`
     # guix environment setup
-    [ -f /applis/site/guix.sh ] && . /applis/site/guix.sh
-    export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
-    export PATH="$HOME/.config/guix/current/bin:${PATH}"
+    # export PATH=/var/guix/profiles/per-user/root/current-guix/bin:$PATH
+    # export GUIX_DAEMON_SOCKET=guix://luke.u-ga.fr
+    [ -f /applis/site/guix-start.sh ] && . /applis/site/guix-start.sh
+    #export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
+    #export PATH="$HOME/.config/guix/current/bin:${PATH}"
     pwd=`pwd`
     rm -f $pwd/.croco-guix-profile
     packages="gcc-toolchain gfortran-toolchain make \
         netcdf netcdf-fortran \
-        mpich openssh adjoinable-mpi \
+        mpich openssh \
         openblas lapack \
-        openjdk coreutils binutils sed grep bash which time"
-    guix_cmd="guix time-machine --commit=398ec3c1e265a3f89ed07987f33b264db82e4080 -- time-machine --url=https://gitlab.inria.fr/bremond/guix.git --branch=check-master-mpich --"
-    exec $guix_cmd environment --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
+        openjdk coreutils binutils sed grep bash which time patch gdb"
+    guix_cmd="guix time-machine --commit=fa59a22140bcb98fa6e5cf895deaa5f2fbdb9bcf --"
+    exec $guix_cmd environment -m $MYDIR/adjoinable-mpi.scm --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac
 ################################################################################
-
 set -x
 set -e
+
+case $1 in
+  --exec)
+    echo $@
+    shift; exec $@;;
+esac
 
 if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=4
+  nbcores=2
   mpirun_cmd="mpirun -n $nbcores"
+fi
+
+if [ -f AD/tapenade_3.16/bin/tapenade ]; then
+    echo found tapenade in `pwd`/AD/tapenade_3.16/bin/tapenade
+    export TAPENADE=`pwd`/AD/tapenade_3.16/bin/tapenade
 fi
 
 mkdir -p RunC
@@ -45,6 +62,10 @@ cp -f ../OCEAN/cppdefs.h .
 sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
 sed -i 's/undef[\t ]*AD_DL_Z0B_CTRL/define AD_DL_Z0B_CTRL/' cppdefs.h
 ../OCEAN/jobcomp
+cd Compile
+make croco && mv croco .. || exit 1
+cd ..
+rm -f obs.*.dat
 $mpirun_cmd time -v ./croco croco.in.AD-DL-Z0B-CTRL-OBS.in
 cp ftides_his.nc obs.nc
 
@@ -55,5 +76,8 @@ sed -i 's/define REGIONAL/undef REGIONAL/' cppdefs.h
 sed -i 's/undef[\t ]*AD_DL_Z0B_CTRL/define AD_DL_Z0B_CTRL/' cppdefs.h
 sed -i 's/define[\t ]*ANA_INITIAL/undef ANA_INITIAL/' cppdefs.h
 ../OCEAN/jobcomp
+cd Compile
+make croco_adc && mv croco_adc .. || exit 1
+make croco_adj && mv croco_adj .. || exit 1
 $mpirun_cmd time -v ./croco_adc croco.in.AD-DL-Z0B-CTRL.in
 $mpirun_cmd time -v ./croco_adj croco.in.AD-DL-Z0B-CTRL.in

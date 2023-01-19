@@ -219,14 +219,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
       call set_scoord
       call set_weights
 
-c      iif_bak = iif
-c      iif = -1
+      iif_bak = iif
+      iif = -1
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
 
-c      iif = iif_bak
+      iif = iif_bak
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -352,7 +352,7 @@ c     cf ana_initial
       d2=1D8/(4D3*4D3)
       d3=1D8/(200*200)
 
-      depth = 2000         -  ad_x(1)
+      depth = 2100         -  ad_x(1)
       ridge_width  = 30.0D3
       ridge_height = 1600
 c      ridge_width = 28.0D3 +  4D3*(1- exp(-d2*(ad_x(2)*ad_x(2))))
@@ -616,7 +616,7 @@ c      call grid_stiffness(tile)
 # include "compute_extended_bounds.h"
 
 c set a lower depth
-      depth=2000.
+      depth=2100.
       ridge_width = 30.0D3
       ridge_height = 1600
 
