@@ -10,7 +10,7 @@
 !======================================================================
 !
 #ifdef SGI
-      real A2d(N2d,NSA,0:NPP-1), A3d(N3d,4,0:NPP-1)
+      real A2d(N2d,NSA,0:NPP-1), A3d(N3d,8,0:NPP-1)
 # ifdef SEDIMENT
       integer B2d(N2d,0:NPP-1)
 # endif
@@ -22,7 +22,7 @@
 
 #else
 
-      real A2d(N2d,NSA,0:NPP-1), A3d(N3d,4,0:NPP-1)
+      real A2d(N2d,NSA,0:NPP-1), A3d(N3d,8,0:NPP-1)
 #  ifdef SEDIMENT
       integer B2d(N2d,0:NPP-1)
 #  endif    

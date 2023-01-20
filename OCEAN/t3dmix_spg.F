@@ -39,22 +39,22 @@
           call t3dmix_spg_tile (istr,iend,jstr,jend, itrc, 
      &                                   A2d(1, 1,trd), A2d(1, 2,trd)
 #   ifndef TS_MIX_S
-     &                   ,A2d(1, 3,trd), A2d(1, 5,trd), A2d(1, 7,trd), 
-     &                    A2d(1, 9,trd), A2d(1,10,trd), A2d(1,11,trd),
+     &                   ,A3d(1, 3,trd), A3d(1, 4,trd), A3d(1, 5,trd), 
+     &                    A3d(1, 6,trd), A2d(1,10,trd), A2d(1,11,trd),
      &                    A2d(1,12,trd), A2d(1,13,trd), A2d(1,14,trd),
      &                                   A2d(1,15,trd), A2d(1,16,trd),
-     &                                                  A3d(1, 1,trd)
+     &                                                  A3d(1, 7,trd)
 #   endif
      &                                                              )
         else
           call t3dmix_spg_child_tile (istr,iend,jstr,jend, itrc, 
      &                                   A2d(1, 1,trd), A2d(1, 2,trd)
 #   ifndef TS_MIX_S
-     &                   ,A2d(1, 3,trd), A2d(1, 5,trd), A2d(1, 7,trd), 
-     &                    A2d(1, 9,trd), A2d(1,10,trd), A2d(1,11,trd),
+     &                   ,A3d(1, 3,trd), A3d(1, 4,trd), A3d(1, 5,trd), 
+     &                    A3d(1, 6,trd), A2d(1,10,trd), A2d(1,11,trd),
      &                    A2d(1,12,trd), A2d(1,13,trd), A2d(1,14,trd),
      &                                   A2d(1,15,trd), A2d(1,16,trd),
-     &                                                  A3d(1, 1,trd)
+     &                                                  A3d(1, 7,trd)
 #   endif
      &                                                              )
         endif

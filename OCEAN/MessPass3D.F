@@ -46,36 +46,26 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j,k, isize,jsize,ksize,
      &        req(8), status(MPI_STATUS_SIZE,8), ierr
       integer iter, mdii, mdjj
-
-# ifndef AGRIF
-# else
-      NEEDREPAIR
-      real, dimension(:), allocatable ::
-     &     buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
-     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
-     &    jbuf_sndW_3D,             jbuf_sndE_3D,
-     &    jbuf_revW_3D,             jbuf_revE_3D,
-     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
-     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D
-# endif
 !
 # include "compute_message_bounds.h"
 
 # ifdef AGRIF
-      size_Z=Npts*Npts*(N+1)
       sub_X=(Lm+NSUB_X-1)/NSUB_X
       size_X=(N+1)*Npts*(sub_X+2*Npts)
       sub_E=(Mm+NSUB_E-1)/NSUB_E
       size_E=(N+1)*Npts*(sub_E+2*Npts)
+      size_Z=MAXNPTS*MAXNPTS*(N+1)
 
+      if(.not. allocated(buf_snd4_3D)) then
       Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  buf_snd2_3D(size_Z),
      &         buf_rev4_3D(size_Z),  ibuf_revN_3D(size_X),  buf_rev2_3D(size_Z),
      &        jbuf_sndW_3D(size_E),                     jbuf_sndE_3D(size_E),
      &        jbuf_revW_3D(size_E),                     jbuf_revE_3D(size_E),
      &         buf_snd1_3D(size_Z),  ibuf_sndS_3D(size_X),  buf_snd3_3D(size_Z),
      &         buf_rev1_3D(size_Z),  ibuf_revS_3D(size_X),  buf_rev3_3D(size_Z))
+      endif
 # endif
-!
+
       ksize=Npts*Npts*nmax               ! message sizes for
       isize=Npts*ishft*nmax              ! corner messages and sides
       jsize=Npts*jshft*nmax              ! in XI and ETA directions 
@@ -275,7 +265,8 @@ c            if ( chkbandname .ne. 'none' ) then
      &           checksum(ipts) = checksum(ipts)+1
 c            endif
 #endif
-             A(ipts-Npts,j,k)=jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
+             A(ipts-Npts,j,k)=jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)
+     &         *jshft))
             enddo
           enddo
         enddo
@@ -325,7 +316,8 @@ c            if ( chkbandname .ne. 'none' ) then
 c            endif
 #endif
               A(Lmmpi+ipts,j,k)=
-     &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
+     &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)
+     &                         *jshft))
             enddo
           enddo
         enddo
@@ -372,7 +364,8 @@ c            if ( chkbandname .ne. 'none' ) then
      &          checksum(jpts) = checksum(jpts)+1
 c            endif
 #endif
-              A(i,jpts-Npts,k)=ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)*ishft))
+              A(i,jpts-Npts,k)=ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)
+     &                        *ishft))
             enddo
           enddo
         enddo
@@ -419,7 +412,8 @@ c            if ( chkbandname .ne. 'none' ) then
 c            endif
 #endif
               A(i,Mmmpi+jpts,k)=
-     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft))
+     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)
+     &                         *ishft))
             enddo
           enddo
         enddo
@@ -551,14 +545,14 @@ c          endif
         enddo
        endif 
 
-# if defined AGRIF
-        DeAllocate(buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
-     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
-     &    jbuf_sndW_3D,                      jbuf_sndE_3D,
-     &    jbuf_revW_3D,                      jbuf_revE_3D,
-     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
-     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D)
-# endif
+!# if defined AGRIF
+!        DeAllocate(buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
+!     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
+!     &    jbuf_sndW_3D,                      jbuf_sndE_3D,
+!     &    jbuf_revW_3D,                      jbuf_revE_3D,
+!     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
+!     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D)
+!# endif
 
       return
       end

@@ -39,7 +39,7 @@
 !
 ! Nb of boundary points involved in communication
 !
-      integer ipts,jpts
+      integer ipts,jpts 
       real A(GLOBAL_2D_ARRAY)
 CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j, isize,jsize,ksize,  iter,
@@ -47,15 +47,6 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      
 #ifdef  BAND_DEBUG         
       real,dimension(Npts)        :: checksum
-#endif
-#ifndef AGRIF      
-#else
-      NEEDREPAIR
-      real, dimension(:), allocatable :: 
-     &     ibuf_sndN, ibuf_revN, 
-     &     ibuf_sndS, ibuf_revS,
-     &     jbuf_sndW, jbuf_sndE,
-     &     jbuf_revW, jbuf_revE
 #endif
 !
 # include "compute_message_bounds.h"
@@ -65,10 +56,13 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
          size_X=Npts*(sub_X+2*Npts)-1  !7+Npts*sub_X
          sub_E=Mm
          size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
+         if (.not. allocated(ibuf_sndN)) then
          Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
      &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
      &     jbuf_revW(0:size_E), jbuf_revE(0:size_E))
+
+         endif
 # endif
 !
       ksize=Npts*Npts
@@ -492,12 +486,12 @@ c          endif
 
 c      write(*,*) 'MessPass2D:    ', mynode,' exit'
 
-#if defined AGRIF
-         DeAllocate(ibuf_sndN, ibuf_revN, 
-     &     ibuf_sndS, ibuf_revS,
-     &     jbuf_sndW, jbuf_sndE,
-     &     jbuf_revW, jbuf_revE)
-#endif
+!#if defined AGRIF
+!         DeAllocate(ibuf_sndN, ibuf_revN, 
+!     &     ibuf_sndS, ibuf_revS,
+!     &     jbuf_sndW, jbuf_sndE,
+!     &     jbuf_revW, jbuf_revE)
+!#endif
 
       return
       end

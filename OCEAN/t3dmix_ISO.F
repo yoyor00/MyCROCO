@@ -38,12 +38,12 @@
      &                                                 A3d(1,2,trd),
 #  endif
      &                                    A3d(1,3,trd),A3d(1,4,trd),
-     &                    A2d(1, 1,trd), A2d(1, 2,trd),A2d(1,3,trd), 
-     &                    A2d(1, 5,trd), A2d(1, 7,trd),A2d(1,9,trd)
+     &                                    A2d(1,1,trd), A2d(1,2,trd)
 #  ifdef TS_MIX_IMP
      &                   ,A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
      &                                  A2d(1,13,trd),A2d(1,14,trd)
 #  endif
+     &          ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
      &                    )
         else
           call t3dmix_child_tile (istr,iend,jstr,jend, itrc, 
@@ -52,12 +52,12 @@
      &                                                 A3d(1,2,trd),
 #  endif
      &                                    A3d(1,3,trd),A3d(1,4,trd),
-     &                       A2d(1,1,trd),A2d(1,2,trd),A2d(1,3,trd),
-     &                       A2d(1,5,trd),A2d(1,7,trd),A2d(1,9,trd)
+     &                                    A2d(1,1,trd), A2d(1,2,trd)
 #  ifdef TS_MIX_IMP
      &                   ,A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
      &                                  A2d(1,13,trd),A2d(1,14,trd)
 #  endif
+     &          ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
      &                    )
         endif
 # else 
@@ -68,7 +68,7 @@
      &                                    A3d(1,3,trd),A3d(1,4,trd),
      &                                    A2d(1,1,trd), A2d(1,2,trd)
 #  ifdef TS_MIX_IMP
-     &                   ,A2d(1,10,trd),A2d(1,11,trd), A2d(1,12,trd),
+     &                   ,A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
      &                                   A2d(1,13,trd),A2d(1,14,trd)
 #  endif
      &          ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
@@ -107,11 +107,11 @@
      &                                                          Akz,
 # endif
      &                                                diff3u,diff3v,
-     &                                      FX,FE,FC,dTdr, dTdx,dTde
+     &                                      FX,FE
 # ifdef TS_MIX_IMP
      &                                              ,FFC,CF,BC,CD,DC
 # endif
-     &                        )
+     &    ,dTdr, dTdx, dTde, FC                    )
 !
 #endif /* CHILD_SPG */
 !
