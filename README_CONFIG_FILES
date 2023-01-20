@@ -1,5 +1,0 @@
-Comme je ne partage pas le dossier VILAINE qui contient la configuration de test de BIOLink, certains fichiers importants comme le cppdefs, le param.h, le jobcomp et le croco.in adapté à CROCO avec BIOLink ne sont pas partagés. 
-
-Du coup j'ai créé un dossier CONFIG_FILES où je les ai mis.
-
-G. Koenig, 10/01/2022
