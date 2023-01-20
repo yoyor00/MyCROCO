@@ -434,6 +434,8 @@ CONTAINS
     nballoc=ntfix
     ALLOCATE(cini_wat_fix(nballoc))
     ALLOCATE(init_cv_name_fix(nballoc))
+    ALLOCATE(standard_name_var_fix(nballoc))
+    ALLOCATE(name_var_fix(nballoc))
     READ(500,nmlvarfix)
    ENDIF
  

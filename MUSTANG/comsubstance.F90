@@ -85,7 +85,7 @@ MODULE comsubstance
     LOGICAL,DIMENSION(:), ALLOCATABLE               :: l_out_subs_fix
     CHARACTER(LEN=lchain),DIMENSION(:), ALLOCATABLE :: init_cv_name_fix ! - NOT USED
     REAL(KIND=rsh),DIMENSION(:,:,:,:), ALLOCATABLE  :: cvfix_wat 
-    CHARACTER(LEN=lchain),DIMENSION(ntfix)  :: standard_name_var_fix, name_var_fix
+    CHARACTER(LEN=lchain),DIMENSION(:), ALLOCATABLE :: standard_name_var_fix, name_var_fix
 
 #ifdef key_benthic
     ! -------------------------------------------------------------------------
