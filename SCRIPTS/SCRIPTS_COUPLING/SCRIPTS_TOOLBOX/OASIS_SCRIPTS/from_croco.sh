@@ -75,13 +75,13 @@ mytmp=$mydir/from_croco_tmp.nc
     fi
 
     # Model variables
-    if [ $var == CROCO_UOCE$gridlevels ] ; then
+    if [ $var == CROCO_UOCE$gridlevels ] || [ $var == CROCO_EOCE$gridlevels ] ; then
       varin=u
-    elif [ $var == CROCO_VOCE$gridlevels ] ; then
+    elif [ $var == CROCO_VOCE$gridlevels ] || [ $var == CROCO_NOCE$gridlevels ] ; then
       varin=v
-    elif [ $var == CROCO_SSHV$gridlevels ] ; then
+    elif [ $var == CROCO_SSH$gridlevels ] ; then
       varin=zeta
-    elif [ $var == CROCO_SSTV$gridlevels ] ; then
+    elif [ $var == CROCO_SST$gridlevels ] ; then
       varin=temp
     else
       echo 'ERROR: '$var' variable not implemented yet'
@@ -108,12 +108,39 @@ mytmp=$mydir/from_croco_tmp.nc
     eta_v=`ncdump -h $filein | grep "eta_v = " | cut -d '=' -f2 | cut -d ';' -f1`
     eta_v=${eta_v// /}
 
-    # Extract var at surface level
-    echo '----> Extract '$varin' at surface level...'
-    ncks -O -F -d s_rho,$Ns_rho -d time,$timerange \
-               -d xi_rho,2,$((${xi_rho}-1)) -d eta_rho,2,$((${eta_rho}-1)) \
-               -d xi_u,1,$((${xi_u}-1))     -d eta_v,1,$((${eta_v}-1)) \
-               -v $varin $filein $mytmp
+
+    if [[ $var == "CROCO_EOCE${gridlevels}" ]] || [[ $var == "CROCO_NOCE${gridlevels}" ]]; then
+        ll="u v angle"
+        for vartmp in ${ll};do
+            [[ ${vartmp} == "u" ]] && { dim1="xi_u,xi" ;dim2="eta_rho,eta" ;}
+            [[ ${vartmp} == "v" ]] && { dim1="xi_rho,xi" ;dim2="eta_v,eta" ;}
+            [[ ${vartmp} == "angle" ]] && { dim1="xi_rho,xi" ;dim2="eta_rho,eta" ;}
+
+            ncks -O -F -d s_rho,$Ns_rho -d time,$timerange \
+                   -d xi_rho,2,$((${xi_rho}-1)) -d eta_rho,2,$((${eta_rho}-1)) \
+                   -d xi_u,1,$((${xi_u}-1))     -d eta_v,1,$((${eta_v}-1)) \
+                   -v $vartmp $filein ${mytmp}.$vartmp
+            [[ $vartmp == "angle" ]] && cp ${mytmp}.$vartmp angle.nc
+            ncrename -O -d ${dim1} -d ${dim2} ${mytmp}.$vartmp ${mytmp}.$vartmp 
+            ncap2 -O -v -s "${vartmp}=${vartmp}" ${mytmp}.$vartmp ${mytmp}.$vartmp
+            [[ $vartmp == "angle" ]] && cp ${mytmp}.$vartmp angle.nc.2
+            ncks -A ${mytmp}.${vartmp} ${mytmp}
+            rm -f ${mytmp}.${vartmp}
+        done
+     
+        if [[ $var == "CROCO_EOCE${gridlevels}" ]]; then
+            ncap2 -O -s "u=u*cos(angle)-v*sin(angle)" ${mytmp} ${mytmp} 
+            ncrename -O -d eta,eta_rho -d xi,xi_u ${mytmp} ${mytmp} 
+        elif [[ $var == "CROCO_NOCE${gridlevels}" ]]; then
+            ncap2 -O -s "v=u*sin(angle)+v*cos(angle)" ${mytmp} ${mytmp}
+            ncrename -O -d xi,xi_rho -d eta,eta_v ${mytmp} ${mytmp}
+        fi
+    else
+        ncks -O -F -d s_rho,$Ns_rho -d time,$timerange \
+             -d xi_rho,2,$((${xi_rho}-1)) -d eta_rho,2,$((${eta_rho}-1)) \
+             -d xi_u,1,$((${xi_u}-1))     -d eta_v,1,$((${eta_v}-1)) \
+             -v $varin $filein $mytmp
+    fi
 
     # remove vertical dimension
     if [ $varin != zeta ]; then

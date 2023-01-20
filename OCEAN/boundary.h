@@ -144,8 +144,15 @@
 #  endif
 #  ifdef T_FRC_BRY
       real tbry_west(GLOBAL_1D_ARRAYETA,N,NT),
-     &    tbry_west_dt(GLOBAL_1D_ARRAYETA,N,2,NT)
+     &     tbry_west_dt(GLOBAL_1D_ARRAYETA,N,2,NT)
       common /bry_t_west/ tbry_west, tbry_west_dt
+#    ifdef WAVE_MAKER_INTERNAL
+      real t0bry_west(GLOBAL_1D_ARRAYETA,N),
+     &     bvf0bry_west(GLOBAL_1D_ARRAYETA,0:N)
+      common /bry_t0_west/ t0bry_west,
+     &                     bvf0bry_west
+#    endif
+
 #  endif
 # endif
 #endif

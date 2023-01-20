@@ -133,6 +133,12 @@ C$    integer omp_get_thread_num
           vmask_wet(i,j)=1
           pmask_wet(i,j)=1
 #endif
+#ifdef WAVE_DRY
+          rmask_wavewet(i,j)=1
+          umask_wavewet(i,j)=1
+          vmask_wavewet(i,j)=1
+          pmask_wavewet(i,j)=1
+#endif          
 #ifdef SOLVE3D
           rufrc(i,j)=init
           rufrc(i,j)=init

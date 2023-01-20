@@ -10,7 +10,7 @@
                  CRCVFIELDS(1)='TOY_ACHA',
                  CRCVFIELDS(2)='TOY_UOCE',
                  CRCVFIELDS(3)='TOY_VOCE',
-                 CRCVFIELDS(4)='TOY__SST' /
+                 CRCVFIELDS(4)='TOY_ASST' /
 
 &NAM_SEND_FIELDS NB_SEND_FIELDS=9,
                  CSNDFIELDS(1)='TOY_TAUX',

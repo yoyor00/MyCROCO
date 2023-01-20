@@ -37,9 +37,8 @@
      &                        ,varspecif3Dnv_save,varspecif2D_save
 # endif
 # ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D,nv_grav,nv_sand
-      USE substance,    ONLY : l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp,rouse2d
+      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
+      USE comMUSTANG,   ONLY : sum_tmp, rouse2d
 # endif
 #     include "coupler_define_MUSTANG.h"
 #endif
@@ -92,7 +91,7 @@
       logical  maskout_sed(GLOBAL_2D_ARRAY)
       real     var2D_ksma(GLOBAL_2D_ARRAY),
      &         var2D_eptot(GLOBAL_2D_ARRAY),
-     &         var2D_tenfon(GLOBAL_2D_ARRAY)
+     &         var2D_tauskin(GLOBAL_2D_ARRAY)
       real     workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
      &         workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
 # ifdef key_MUSTANG_specif_outputs
@@ -1287,7 +1286,7 @@ CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
 # ifdef MUSTANG
       nv_out=ntrc_subs
       CALL sed_MUSTANG_outres(0,Lm+1,0,Mm+1, nv_out,h,maskout_sed,
-     &                        var2D_ksma,var2D_tenfon,var2D_eptot
+     &                        var2D_ksma,var2D_tauskin,var2D_eptot
 !#ifdef key_MUSTANG_specif_outputs
 !     &                      ,varspecif3Dnv_out
 !#endif
@@ -1308,10 +1307,10 @@ CR      write(*,*) 'wrt_his var2D_eptot'  MYID
       endif
       indx=indxT+ntrc_salt+ntrc_substot+3
       if (wrthis(indx)) then
-        work2d=var2D_tenfon(:,:)
+        work2d=var2D_tauskin(:,:)
         call fillvalue2d(work2d,ncidhis,hisMust(3),indx,
      &                   record,r2dvar,type)
-CR      write(*,*) 'wrt_his var2D_tenfon'  MYID
+CR      write(*,*) 'wrt_his var2D_tauskin'  MYID
       endif
       indx=indxT+ntrc_salt+ntrc_substot+4
       if (wrthis(indx)) then

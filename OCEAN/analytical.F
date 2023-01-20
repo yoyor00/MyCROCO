@@ -120,13 +120,12 @@
 !
 #  include "compute_auxiliary_bounds.h"
 !
-#  ifdef TEMPERATURE       
-      if (itrc.eq.itemp) then
-!
 !----------------------------------------------------------------------
 ! Set kinematic bottom heat flux [degC m/s] at horizontal RHO-points.
 !----------------------------------------------------------------------
 !
+#  ifdef TEMPERATURE       
+      if (itrc.eq.itemp) then
         do j=JstrR,JendR
           do i=IstrR,IendR
 #  if defined SINGLE_COLUMN 
@@ -135,19 +134,21 @@
 #   elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
             btflx(i,j,itemp)=-1.0e-5*0.01
 #   endif
+#  else
+            btflx(i,j,itemp)=0.
 #  endif
           enddo
         enddo
       endif
 #  endif /* TEMPERATURE */        
-#  ifdef SALINITY
-      if (itrc.eq.isalt) then
 !
 !----------------------------------------------------------------------
 !  Set kinematic bottom salt flux (m/s) at horizontal RHO-points,
 !  scaling by bottom salinity is done in STEP3D.
 !----------------------------------------------------------------------
 !
+#  ifdef SALINITY
+      if (itrc.eq.isalt) then
         do j=JstrR,JendR
           do i=IstrR,IendR
             btflx(i,j,isalt)=0.
@@ -155,9 +156,14 @@
         enddo
       endif
 #  endif /* SALINITY */
-    
+!
+!----------------------------------------------------------------------
+!  Set kinematic surface flux of additional tracers, 
+! for example sediments, bio..., to zero
+!----------------------------------------------------------------------
+!
 #  if defined SALINITY && defined TEMPERATURE
-      if (itrc.ne.isalt.and.itrc.ne.itemp) then
+      if (itrc.ne.isalt .and. itrc.ne.itemp) then
 #  endif /* SALINITY && TEMPERATURE*/
 #  if !defined SALINITY && defined TEMPERATURE
       if (itrc.ne.itemp) then
@@ -165,12 +171,6 @@
 #  if defined SALINITY && !defined TEMPERATURE
       if (itrc.ne.isalt) then
 #  endif /* SALINITY && !TEMPERATURE*/
-!
-!----------------------------------------------------------------------
-!  Set kinematic surface flux of additional tracers, 
-! for example sediments, bio..., to zero
-!----------------------------------------------------------------------
-!
         do j=JstrR,JendR
           do i=IstrR,IendR
             btflx(i,j,itrc)=0.
@@ -429,6 +429,10 @@ C$    integer  trd, omp_get_thread_num
 # elif defined SED_TOY
 #  ifdef SED_TOY_ROUSE
       cff1=0.001875
+#  elif defined SED_TOY_FLOC_0D
+      cff1=0.0
+#  elif defined SED_TOY_FLOC_1D
+      cff1=0.001875 * sin(2. * pi / (12.0*3600) * time) 
 #  else
 #   if defined SED_TOY_RESUSP || defined SED_TOY_FLOC
       if (tdays.lt.1.8) then
@@ -650,7 +654,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
-# elif defined TIDAL_FLAT && defined ANA_TIDES
+# elif (defined TIDAL_FLAT  || defined ESTUARY ) && defined ANA_TIDES
       omega=2.*pi/(12.0*3600)
       ETA0=2.0
       do j=JstrR,JendR
@@ -658,6 +662,16 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j)=ETA0*sin(omega*time)
         enddo
       enddo
+# if defined ESTUARY_TIDE
+      ! adding another wave to modulate tide
+      omega=2.*pi/((24.0+50./60.)/2.*3600)
+      ETA0=2.0
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j) = ssh(i,j) + ETA0*sin(omega*time)
+        enddo
+      enddo
+#endif
 
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
@@ -1359,7 +1373,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT)
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT && !defined ESTUARY)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -1945,7 +1959,7 @@ C$    integer  trd, omp_get_thread_num
 !                   subroutine ana_psource
 !======================================================================
 !
-#if defined PSOURCE && defined ANA_PSOURCE
+#if (defined PSOURCE || defined PSOURCE_MASS) && defined ANA_PSOURCE
 !
 !----------------------------------------------------------------------
 !  Set analytical tracer and mass point sources and sinks
@@ -1969,12 +1983,32 @@ C$    integer  trd, omp_get_thread_num
 ! Set-up nondimensional shape Qshape, must add to unity
 !
 # ifdef RIVER
-#  define EXP_SHAPE
+
+#  ifdef PSOURCE_MASS
+     !if the source is applied as volume vertical influx 
+     !the distribution must be either uniform or located at the bottom
+     !if you want a bottom influx you should use GLS_MIXING instead of LMD
+#    define CST_SHAPE
+!#    define BOTTOM_SHAPE
+#  else
+#   define EXP_SHAPE
+!#   define CST_SHAPE
+#  endif
+
 #  ifdef CST_SHAPE
         cff=1./float(N)
         do k=1,N                       ! Uniform vertical
           do is=1,Nsrc                 ! distribution
             Qshape(is,k)=cff
+          enddo
+        enddo
+#  elif defined BOTTOM_SHAPE
+        do is=1,Nsrc
+         Qshape(is,1)=1
+        enddo
+        do k=2,N                       ! All flux at bottom
+          do is=1,Nsrc                 
+            Qshape(is,k)=0.
           enddo
         enddo
 #  elif defined EXP_SHAPE
@@ -2510,9 +2544,12 @@ C$    integer  trd, omp_get_thread_num
 # include "compute_auxiliary_bounds.h"
 
 # ifdef OBC_WEST
+!
+!================== WESTERN BOUNDARY ======================
+!
       if (WESTERN_EDGE) then
 
-#  ifdef WAVE_MAKER
+#  if defined WAVE_MAKER && !defined WAVE_MAKER_EAST
 !
 !  --- Surface wave maker on western boundary ---
 !
@@ -2534,14 +2571,19 @@ C$    integer  trd, omp_get_thread_num
             zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    if defined TIDAL_FLAT
+#    if defined TIDAL_FLAT || defined ESTUARY 
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#      if defined ESTUARY_TIDE
+            ! adding another wave to modulate tide
+            zetabry_west(j) = zetabry_west(j) + 
+     &          2.*sin(2.*pi*time/((24.0+50./60.)/2.*3600.0))
+#      endif
 #    endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
-#    ifdef TIDAL_FLAT
+#    if defined TIDAL_FLAT || defined ESTUARY 
             ubarbry_west(j)=0.
 #    else
             ubarbry_west(j)=ubar(1,j,1)
@@ -2554,7 +2596,7 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
-#     ifdef TIDAL_FLAT
+#     if defined TIDAL_FLAT || defined ESTUARY 
               ubry_west(j,k)=0.
 #     else
               ubry_west(j,k)=u(1,j,k,1)
@@ -2570,7 +2612,7 @@ C$    integer  trd, omp_get_thread_num
               enddo
 #    endif
 #    ifdef SUBSTANCE
-#     if defined TIDAL_FLAT
+#     if defined TIDAL_FLAT || defined ESTUARY
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
 #     else
@@ -2582,12 +2624,18 @@ C$    integer  trd, omp_get_thread_num
               tbry_west(j,k,itrc)=cobc_wat(itrc)
             enddo
 #    else
-#     ifdef TIDAL_FLAT
+#     if defined TIDAL_FLAT
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
             tbry_west(j,k,3)=0.   ! tracer Coarse Sand
             tbry_west(j,k,4)=0.   ! tracer Fine Sand
             tbry_west(j,k,5)=0.02 ! tracer Mud
+#     endif
+#     if defined ESTUARY 
+            tbry_west(j,k,1)=10.
+            tbry_west(j,k,2)=35.5
+            tbry_west(j,k,3)=0.0   ! tracer Fine Sand
+            tbry_west(j,k,4)=0.0   ! tracer Mud
 #     endif
 #    endif
             enddo
@@ -2600,8 +2648,13 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    ifdef TIDAL_FLAT
+#    if defined TIDAL_FLAT || defined ESTUARY 
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#      if defined ESTUARY_TIDE
+            ! adding another wave to modulate tide
+            zetabry_west(j) = zetabry_west(j) + 
+     &          2.*sin(2.*pi*time/((24.0+50./60.)/2.*3600.0))
+#      endif
 #    endif
           enddo
 #   endif
@@ -2624,19 +2677,29 @@ C$    integer  trd, omp_get_thread_num
 #    endif
 #    ifdef T_FRC_BRY
 #     ifdef SUBSTANCE
+#      if defined TIDAL_FLAT || defined ESTUARY 
+             tbry_west(j,k,1)=10.
+             tbry_west(j,k,2)=35.5
+#      else
              do itrc=1,itsubs1-1
                tbry_west(j,k,itrc)=0.
              enddo
+#      endif
              do itrc=itsubs1,NT
                tbry_west(j,k,itrc)=cobc_wat(itrc)
              enddo
 #     else
-#      ifdef TIDAL_FLAT
+#      if defined TIDAL_FLAT
              tbry_west(j,k,1)=10.
              tbry_west(j,k,2)=35.
              tbry_west(j,k,3)=0. ! tracer Coarse Sand
              tbry_west(j,k,4)=0. ! tracer Fine Sand
-             tbry_west(j,k,5)=0. ! tracer Mud
+             tbry_west(j,k,5)=0.02 ! tracer Mud
+#     elif defined ESTUARY 
+             tbry_west(j,k,1)=10.
+             tbry_west(j,k,2)=35.5
+             tbry_west(j,k,3)=0.0   ! tracer Fine Sand
+             tbry_west(j,k,4)=0.0   ! tracer Mud
 #      else
              do itrc=1,NT
                tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
@@ -2653,98 +2716,118 @@ C$    integer  trd, omp_get_thread_num
       endif
 # endif /* OBC_WEST */
 !
+!================== EASTERN BOUNDARY ======================
+!
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
+
+#  if defined WAVE_MAKER && defined WAVE_MAKER_EAST
+!
+!  --- Surface wave maker on eastern boundary ---
+!
+#   include "wave_maker.h"
+
+!#  elif defined WAVE_MAKER_INTERNAL_EAST
+!
+!  --- Internal wave maker on eastern boundary ---
+!
+!#   include "wave_maker_internal.h"
+
+#  else
+
         if (FIRST_RST_TIME_STEP) then
-#  ifdef Z_FRC_BRY
+#   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
-#   ifdef OBC_PATM
+#    ifdef OBC_PATM
             zetabry_east(j)=zetabry_east(j)
      &                    -(patm2d(IendR,j)-paref)/(g*rho0)
-#   endif
+#    endif
           enddo
-#  endif
-#  ifdef M2_FRC_BRY
+#   endif
+#   ifdef M2_FRC_BRY
           do j=JstrR,JendR
             ubarbry_east(j)=ubar(Iend+1,j,1)
             vbarbry_east(j)=vbar(Iend+1,j,1)
           enddo
-#  endif
-#  if defined SOLVE3D && \
+#   endif
+#   if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
           do k=1,N
             do j=JstrR,JendR
-#   ifdef M3_FRC_BRY
+#    ifdef M3_FRC_BRY
               ubry_east(j,k)=u(Iend+1,j,k,1)
               vbry_east(j,k)=v(Iend+1,j,k,1)
-#   endif
-#   ifdef W_FRC_BRY
+#    endif
+#    ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
-#   endif
-#   if defined T_FRC_BRY && defined TRACERS
-#    ifdef SUBSTANCE
+#    endif
+#    if defined T_FRC_BRY && defined TRACERS
+#     ifdef SUBSTANCE
               do itrc=1,itsubs1-1
                 tbry_east(j,k,itrc)=0.
               enddo
               do itrc=itsubs1,NT
                 tbry_east(j,k,itrc)=cobc_wat(itrc)
               enddo
-#    else
+#     else
               do itrc=1,NT
                 tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
               enddo
+#     endif
 #    endif
-#   endif
             enddo
           enddo
-#  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+#   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         else 
-#  ifdef Z_FRC_BRY
+#   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=0.0
-#   ifdef OBC_PATM
+#    ifdef OBC_PATM
             zetabry_east(j)=-(patm2d(IendR,j)-paref)/(g*rho0)
-#   endif
+#    endif
           enddo
-#  endif
-#  ifdef M2_FRC_BRY
+#   endif
+#   ifdef M2_FRC_BRY
           do j=JstrR,JendR
             ubarbry_east(j)=0.
             vbarbry_east(j)=0.
           enddo
-#  endif
-#  if defined SOLVE3D && \
+#   endif
+#   if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
           do k=1,N
             do j=JstrR,JendR
-#   ifdef M3_FRC_BRY
+#    ifdef M3_FRC_BRY
               ubry_east(j,k)=0.0
               vbry_east(j,k)=0.0
-#   endif
-#   ifdef W_FRC_BRY
+#    endif
+#    ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
-#   endif
-#   ifdef T_FRC_BRY
-#    ifdef SUBSTANCE
+#    endif
+#    ifdef T_FRC_BRY
+#     ifdef SUBSTANCE
               do itrc=1,itsubs1-1
                 tbry_east(j,k,itrc)=0.
               enddo
               do itrc=itsubs1,NT
                 tbry_east(j,k,itrc)=cobc_wat(itrc)
               enddo
-#    else
+#     else
               do itrc=1,NT
                 tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
               enddo
+#     endif
 #    endif
-#   endif
             enddo
           enddo
-#  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+#   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         endif
+#  endif /* WAVE_MAKER */
       endif
 # endif /* OBC_EAST */
+!
+!================== SOUTHERN BOUNDARY ======================
 !
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
@@ -2810,6 +2893,8 @@ C$    integer  trd, omp_get_thread_num
         endif
       endif
 # endif /* OBC_SOUTH */
+!
+!================== NORTHERN BOUNDARY ======================
 !
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then

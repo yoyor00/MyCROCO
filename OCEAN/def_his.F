@@ -1985,7 +1985,7 @@
           indx=indxT+ntrc_salt+ntrc_substot+itrc
           lvar=lenstr(vname(1,indx))
           ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
-     &             NF_FOUT, 3, r2dgrd, vidM(itrc))  ! 2D: ksmax,Eptot,Tenfon
+     &             NF_FOUT, 3, r2dgrd, vidM(itrc))  ! 2D: ksmax,Eptot,tauskin
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
 #  endif
@@ -2542,7 +2542,7 @@
         ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
      &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 #endif
-        if (ierr. eq. nf_noerr) then
+        if (ierr .eq. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec)
           if (ierr .eq. nf_noerr) then
             if (rec_per_file.eq.0) then
@@ -2568,7 +2568,7 @@
           endif
         endif
 !
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
           if (mynode.eq.0) then
             create_new_file=.true.
@@ -2596,6 +2596,9 @@
           write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTstep,nf_collective)
+#endif
 !
 ! Time.
 !
@@ -2605,6 +2608,10 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime,nf_collective)
+#endif
+
 !
 ! Time2.
 !
@@ -2614,6 +2621,10 @@
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
+#endif
+
 !
 ! Free-surface.
 !
@@ -2624,6 +2635,9 @@
             write(stdout,1) vname(1,indxZ)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidZ,nf_collective)
+#endif
         endif
 !
 ! 2D momenta in XI- and ETA-directions.
@@ -2635,6 +2649,9 @@
             write(stdout,1) vname(1,indxUb)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidUb,nf_collective)
+#endif
         endif
 
         if (wrt(indxVb)) then
@@ -2644,6 +2661,9 @@
             write(stdout,1) vname(1,indxVb)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidVb,nf_collective)
+#endif
         endif
 !
 ! time evolving bathymetry
@@ -2656,6 +2676,9 @@
             write(stdout,1) vname(1,indxHm)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidHm,nf_collective)
+#endif
         endif
 # endif
 !
@@ -2669,6 +2692,9 @@
             write(stdout,1) vname(1,indxBostr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBostr,nf_collective)
+#endif
         endif
 
 
@@ -2683,6 +2709,9 @@
           write(stdout,1) vname(1,indxBustr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBustr,nf_collective)
+#endif
         endif
 
 
@@ -2697,6 +2726,9 @@
           write(stdout,1) vname(1,indxBvstr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBvstr,nf_collective)
+#endif
         endif
 !
 ! wstr     Kinematic surface wind stress (N/m2)
@@ -2709,6 +2741,9 @@
             write(stdout,1) vname(1,indxWstr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidWstr,nf_collective)
+#endif
         endif
 !
 ! uwstr     Kinematic surface u wind stress component (N/m2)
@@ -2721,6 +2756,9 @@
             write(stdout,1) vname(1,indxUWstr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidUWstr,nf_collective)
+#endif
         endif
 !
 ! vwstr     Kinematic surface v wind stress component (N/m2)
@@ -2733,6 +2771,9 @@
             write(stdout,1) vname(1,indxVWstr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidVWstr,nf_collective)
+#endif
         endif
 #ifdef SOLVE3D
 !
@@ -2745,6 +2786,9 @@
             write(stdout,1) vname(1,indxU)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidU,nf_collective)
+#endif
         endif
 !
         if (wrt(indxV)) then
@@ -2754,6 +2798,9 @@
             write(stdout,1) vname(1,indxV)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidV,nf_collective)
+#endif
         endif
 !
 ! Tracer variables.
@@ -2769,6 +2816,9 @@
      &                                       ncname(1:lstr)
               goto 99                                     !--> ERROR
             endif
+#ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidT(itrc),nf_collective)
+#endif
           endif
         enddo
 # endif
@@ -2854,6 +2904,9 @@
             write(stdout,1) vname(1,indxR)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidR,nf_collective)
+#endif
         endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
@@ -2869,6 +2922,9 @@
             write(stdout,1) vname(1,indxbvf)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidbvf,nf_collective)
+#endif
         endif
 # endif
 !-----------------------------------------------------------------------------
@@ -2883,6 +2939,9 @@
             write(stdout,1) vname(1,indxAOU)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidAOU,nf_collective)
+#endif
         endif
         if (wrt(indxWIND10)) then
           lvar=lenstr(vname(1,indxWIND10))
@@ -2892,6 +2951,9 @@
             write(stdout,1) vname(1,indxWIND10)(1:lvar),ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidwind10,nf_collective)
+#endif
         endif
 #  endif
 !
@@ -2904,6 +2966,9 @@
             write(stdout,1) vname(1,indxO)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidO,nf_collective)
+#endif
         endif
 !
 ! True vertical velocity.
@@ -2915,6 +2980,9 @@
             write(stdout,1) vname(1,indxW)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidW,nf_collective)
+#endif
         endif
 # ifdef VIS_COEF_3D
 !
@@ -2927,6 +2995,9 @@
             write(stdout,1) vname(1,indxVisc)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidVisc,nf_collective)
+#endif
         endif
 # endif
 # ifdef DIF_COEF_3D
@@ -2940,6 +3011,9 @@
             write(stdout,1) vname(1,indxDiff)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidDiff,nf_collective)
+#endif
         endif
 # endif
 !
@@ -2952,6 +3026,9 @@
             write(stdout,1) vname(1,indxAkv)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidAkv,nf_collective)
+#endif
         endif
 !
 ! Vertical diffusion coefficient for potential temperature.
@@ -2964,6 +3041,9 @@
             write(stdout,1) vname(1,indxAkt)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidAkt,nf_collective)
+#endif
         endif
 # endif
 
@@ -2978,6 +3058,9 @@
             write(stdout,1) vname(1,indxAks)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidAks,nf_collective)
+#endif
         endif
 # endif
 
@@ -2993,6 +3076,9 @@
             write(stdout,1) vname(1,indxHbl)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidHbl,nf_collective)
+#endif
         endif
 # endif
 # ifdef LMD_BKPP
@@ -3006,6 +3092,9 @@
             write(stdout,1) vname(1,indxHbbl)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidHbbl,nf_collective)
+#endif
         endif
 # endif
 
@@ -3020,6 +3109,9 @@
             write(stdout,1) vname(1,indxTke)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTke,nf_collective)
+#endif
         endif
 !
 ! Generic Length Scale.
@@ -3031,6 +3123,9 @@
             write(stdout,1) vname(1,indxGls)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidGls,nf_collective)
+#endif
         endif
 !
 ! Turbulent Length Scale.
@@ -3042,6 +3137,9 @@
             write(stdout,1) vname(1,indxLsc)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidLsc,nf_collective)
+#endif
         endif
 # endif
 
@@ -3057,6 +3155,9 @@
             write(stdout,1) vname(1,indxShflx)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidShflx,nf_collective)
+#endif
         endif
 #  ifdef BHFLUX
 !
@@ -3070,6 +3171,9 @@
           write(stdout,1) vname(1,indxBhflx)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBhflx,nf_collective)
+#endif
         endif
 #  endif
 # endif
@@ -3086,6 +3190,9 @@
             write(stdout,1) vname(1,indxSwflx)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidSwflx,nf_collective)
+#endif
         endif
 # ifdef BWFLUX
 !
@@ -3099,6 +3206,9 @@
           write(stdout,1) vname(1,indxBwflx)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBwflx,nf_collective)
+#endif
         endif
 # endif
 #endif
@@ -3114,6 +3224,9 @@
             write(stdout,1) vname(1,indxShflx_rsw)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidShflx_rsw,nf_collective)
+#endif
         endif
 #endif
 # if defined BULK_FLUX && defined TEMPERATURE
@@ -3126,6 +3239,9 @@
             write(stdout,1) vname(1,indxShflx_rlw)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidShflx_rlw,nf_collective)
+#endif
         endif
 !
         if (wrt(indxShflx_lat)) then
@@ -3136,6 +3252,9 @@
             write(stdout,1) vname(1,indxShflx_lat)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidShflx_lat,nf_collective)
+#endif
         endif
 !
         if (wrt(indxShflx_sen)) then
@@ -3146,6 +3265,9 @@
             write(stdout,1) vname(1,indxShflx_sen)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidShflx_sen,nf_collective)
+#endif
         endif
 !
 # endif
@@ -3161,6 +3283,9 @@
             write(stdout,1) vname(1,indxHel)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidHel,nf_collective)
+#endif
         endif
 !
 ! Chlorophyll/Carbon ratio.
@@ -3173,6 +3298,9 @@
             write(stdout,1) vname(1,indxChC)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidChC,nf_collective)
+#endif
         endif
 #   ifdef OXYGEN
 !
@@ -3184,6 +3312,9 @@
             write(stdout,1) vname(1,indxU10)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidU10,nf_collective)
+#endif
         endif
 !
 ! Gas exchange coefficient of O2
@@ -3194,6 +3325,9 @@
             write(stdout,1) vname(1,indxKvO2)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidKvO2,nf_collective)
+#endif
         endif
 !
 ! Saturation concentration of O2
@@ -3204,6 +3338,9 @@
             write(stdout,1) vname(1,indxO2sat)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidO2sat,nf_collective)
+#endif
         endif
 #   endif /* OXYGEN */
 #  endif
@@ -3238,6 +3375,9 @@
               goto 99                                       !--> ERROR
             endif
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidSed(itrc),nf_collective)
+#endif
         enddo
 # endif /* SEDIMENT */
 # ifdef BBL
@@ -3259,6 +3399,9 @@
               write(stdout,1) vname(1,indxWrk)(1:lvar), ncname(1:lstr)
               goto 99                                       !--> ERROR
             endif
+#ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidBBL(itrc),nf_collective)
+#endif
           endif
         enddo
 # endif /* BBL */
@@ -3274,6 +3417,9 @@
            write(stdout,1) vname(1,indxSST_skin)(1:lvar), ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidSST_skin,nf_collective)
+#endif
        endif
 # endif /* SST_SKIN */
 !
@@ -3281,17 +3427,26 @@
       do itrc=1,3
         indx=indxT+ntrc_salt+ntrc_substot+itrc
         lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc)) ! 2D: ksmax,Eptot,Tenfon
+        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc)) ! 2D: ksmax,Eptot,tauskin
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
+#endif
       enddo
       do itrc=1,3
         indx=indxT+ntrc_salt+ntrc_substot+itrc+3                 ! 3D: dzs,tempsed,salsed
         lvar=lenstr(vname(1,indx))
         ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc+3))
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidM(itrc+3),nf_collective)
+#endif
       enddo
       do itrc=1,ntrc_subs
         indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
         lvar=lenstr(vname(1,indx))
         ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc+6))
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidM(itrc+6),nf_collective)
+#endif
       enddo
 #  ifdef key_MUSTANG_specif_outputs
       ik=0
@@ -3302,6 +3457,9 @@
           lvar=lenstr(vname(1,indx))
           ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
      &                             vidM(ik+6+ntrc_subs))   ! 3D: traceurSe
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
+#endif
         enddo
       enddo
       do itrv=1,nv_out2D_specif
@@ -3310,6 +3468,9 @@
         lvar=lenstr(vname(1,indx))
         ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
      &                           vidM(ik+6+ntrc_subs))   ! 3D: traceurSe
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
+#endif
       enddo
 #  endif
 # endif /* MUSTANG */
@@ -3334,6 +3495,9 @@
      &                                                 ncname(1:lstr)
               goto 99                                     !--> ERROR
             endif
+#ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidWAVE(iwkb),nf_collective)
+#endif
           endif
         enddo
 #endif /* WAVE_IO */
@@ -3349,6 +3513,9 @@
             write(stdout,1) vname(1,indxSUP)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidSUP,nf_collective)
+#endif
         endif
 !
 ! ust2d & vst2d: 2D, depth-averaged Stokes drift velocities.
@@ -3360,6 +3527,9 @@
             write(stdout,1) vname(1,indxUST2D)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidUST2D,nf_collective)
+#endif
         endif
         if (wrt(indxVST2D)) then
           lvar=lenstr(vname(1,indxVST2D))
@@ -3368,6 +3538,9 @@
             write(stdout,1) vname(1,indxVST2D)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidVST2D,nf_collective)
+#endif
         endif
 # ifdef SOLVE3D
 !
@@ -3380,6 +3553,9 @@
             write(stdout,1) vname(1,indxUST)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidUST,nf_collective)
+#endif
         endif
 
         if (wrt(indxVST)) then
@@ -3389,6 +3565,9 @@
             write(stdout,1) vname(1,indxVST)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidVST,nf_collective)
+#endif
         endif
 !
 ! wst: vertical Stokes drift velocity (m/s) at rho-point
@@ -3400,6 +3579,9 @@
             write(stdout,1) vname(1,indxWST)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidWST,nf_collective)
+#endif
         endif
 !
 ! Akb: Vertical eddy viscosity coefficient due to depth-induced wave breaking.
@@ -3411,6 +3593,9 @@
             write(stdout,1) vname(1,indxAkb)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidAkb,nf_collective)
+#endif
         endif
 !
 ! Akw: Vertical eddy diffusivity coefficient due to primary waves.
@@ -3422,6 +3607,9 @@
             write(stdout,1) vname(1,indxAkw)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidAkw,nf_collective)
+#endif
         endif
 !
 ! kvf: vertical vortex force term (u^St du/dz)
@@ -3433,6 +3621,9 @@
             write(stdout,1) vname(1,indxKVF)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidKVF,nf_collective)
+#endif
         endif
 !
 ! calP: surface pressure correction term appeared in prsgrd term
@@ -3444,6 +3635,9 @@
             write(stdout,1) vname(1,indxCALP)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidCALP,nf_collective)
+#endif
         endif
 !
 ! Kapsrf: surface Bernoulli head term appeared in prsgrd term
@@ -3455,6 +3649,9 @@
             write(stdout,1) vname(1,indxKAPS)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidKAPS,nf_collective)
+#endif
         endif
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */

@@ -20,6 +20,7 @@
 
 # ifdef GLS_MIXING_3D
 #  define GLS_SHEAR_3D
+#  define GLS_STRAIN_LIM
 # endif
 !
 !=======================================================================
@@ -40,16 +41,16 @@
 
       call gls_mixing_tile ( Istr, Iend, Jstr, Jend,
      &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
-     &                    A2d(1, 2,trd), A2d(1, 3,trd), A2d(1, 4,trd),
-     &                    A2d(1, 5,trd), A2d(1, 6,trd), A2d(1, 7,trd),
-     &                                                  A2d(1, 8,trd))
+     &                    A3d(1, 4,trd), A3d(1, 5,trd), A2d(1, 2,trd), 
+     &                    A2d(1, 3,trd), A2d(1, 4,trd), A2d(1, 5,trd),
+     &                    A2d(1, 6,trd), A2d(1, 7,trd), A2d(1, 8,trd))
 
       RETURN
       END
       SUBROUTINE gls_mixing_tile ( Istr, Iend, Jstr, Jend,
-     &                                         tke_new, gls_new,
-     &                               shear2, diss, ustar_sfc_sq,
-     &                             ustar_bot_sq, DC, FC, CF, RH)
+     &                          tke_new, gls_new, shear2, vort2, work,
+     &                                diss, ustar_sfc_sq,ustar_bot_sq,
+     &                                                 DC, FC, CF, RH)
 
 !
 !======================================================================
@@ -95,7 +96,9 @@
       ! Local arrays
       REAL            ::  tke_new     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL            ::  gls_new     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL            ::  work        (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL            ::  shear2      (PRIVATE_2D_SCRATCH_ARRAY,0:N-1)
+      REAL            ::  vort2       (PRIVATE_2D_SCRATCH_ARRAY,0:N-1)
       REAL            ::  diss        (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
       REAL            ::  ustar_sfc_sq(PRIVATE_2D_SCRATCH_ARRAY      )
       REAL            ::  ustar_bot_sq(PRIVATE_2D_SCRATCH_ARRAY      )
@@ -119,7 +122,7 @@
       REAL, PARAMETER ::  eps_min =  1.0E-12 ! min value for dissipation rate
       REAL, PARAMETER ::  tke_min =  1.0E-10 ! min value for TKE
 # ifdef GLS_MIXING_3D
-      REAL, PARAMETER ::  eps     =  1.0E-10 ! min stable stratification
+      REAL, PARAMETER ::  eps     =  1.0E-12 ! min stable stratification
       REAL, PARAMETER ::  nuws    =  0.1E-06 ! background diffusivity
       REAL, PARAMETER ::  nuwm    =  1.0E-06 ! background viscosity
 # else
@@ -130,7 +133,7 @@
       REAL, PARAMETER ::  galp    =  0.53    ! parameter for Galperin
                                              ! mixing length limitation
       REAL, PARAMETER ::  chk     =  1400./g ! charnock coefficient
-# ifdef SANDBAR
+# if defined SANDBAR || defined SHOREFACE
       REAL, PARAMETER ::  Zosmin  =  1.e-2   ! min surface roughness length
       REAL, PARAMETER ::  Zobmin  =  5.e-2   ! min bottom  roughness length
 # else
@@ -141,6 +144,23 @@
       REAL, PARAMETER ::  zalp    =  0.05    ! fraction of wave energy
 # endif
 
+      ! Choice of GLS model
+      real            :: rp,    rm,    rn              !<-- n,m and p exponents
+      real            :: beta1, beta2, beta3m, beta3p  !<-- beta terms for psi equation
+      real            :: OneOverSig(2)   !<-- inverse of Schmidt number for tke and psi
+#  if defined GLS_KOMEGA                            /* K-omega model */
+      parameter( rp    = -1.0 , rm    = 0.5  , rn     = -1.0           )
+      parameter( beta1 = 0.555, beta2 = 0.833, beta3m = -0.6, beta3p = 1.0)
+      parameter( OneOverSig = (/ 0.5, 0.5 /) )       
+#  elif defined GLS_KEPSILON                      /* K-epsilon model */
+      parameter( rp    = 3.0 , rm    = 1.5 , rn     = -1.0             )
+      parameter( beta1 = 1.44, beta2 = 1.92, beta3m = -0.4, beta3p = 1.0)
+      parameter( OneOverSig = (/ 1.0, 0.7692 /) )  
+#  else                                                 /* GEN model */
+      parameter( rp    = 0.0, rm    = 1.0 , rn     = -0.67             )
+      parameter( beta1 = 1.0, beta2 = 1.22, beta3m =  0.05, beta3p = 1.0)
+      parameter( OneOverSig = (/ 1.25, 0.9345 /) ) 
+#  endif
       REAL, PARAMETER :: e1 =  3.0 + 1.*rp / rn
       REAL, PARAMETER :: e2 =  1.5 + 1.*rm / rn
       REAL, PARAMETER :: e3 = -1.0 / rn
@@ -148,6 +168,16 @@
       ! 9-point isotropic laplacian filter
       REAL, PARAMETER :: smth_a = 1./12.
       REAL, PARAMETER :: smth_b = 3./16.
+# endif
+# ifdef GLS_STRAIN_LIM
+      REAL, PARAMETER :: lars = 5.e-3*beta2/beta1  ! parameter for Larsen
+                                                   ! dissipation limitation
+# endif
+
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
 # endif
 !
 !--------------------------------------------------------------------
@@ -267,10 +297,7 @@
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
-            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
-#  ifdef MASKING
-     &                                   *umask(i,j)
-#  endif
+            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1)) SWITCH umask(i,j)
             FX(i,j)=
      &            trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
      &           +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)
@@ -278,10 +305,7 @@
         ENDDO
         DO j=jmin,jmax+1
           DO i=imin,imax
-            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
-#  ifdef MASKING
-     &                                   *vmask(i,j)
-#  endif
+            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1)) SWITCH vmask(i,j)
             FE(i,j)=
      &            trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
      &           +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
@@ -302,10 +326,7 @@
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
-            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
-#  ifdef MASKING
-     &                                   *umask(i,j)
-#  endif
+            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1)) SWITCH umask(i,j)
             FX(i,j)=
      &            trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
      &           +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)
@@ -313,10 +334,7 @@
         ENDDO
         DO j=jmin,jmax+1
           DO i=imin,imax
-            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
-#  ifdef MASKING
-     &                                   *vmask(i,j)
-#  endif
+            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1)) SWITCH vmask(i,j)
             FE(i,j)=
      &            trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
      &           +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
@@ -394,9 +412,13 @@
 !--------------------------------------------------------------------
 !
 !    D^2 = 2 DijDij      -- Dij = 0.5*(dui/dxj + duj/dxi) --
-!        = (dudz+dwdx)^2 + (dvdz+dwdy)^2
+!        = (dudz + dwdx)^2 + (dvdz + dwdy)^2 + (dvdx + dudy)^2
 !          + 2 dudx^2 + 2 dvdy^2 + 2 dwdz^2
-!          + (dvdx+dudy)^2
+!
+!  Also compute enstrophy to identify nearly potential flow regions 
+!  (Larsen & Fuhrman, 2018) : 
+!    V^2 = 2 VijVij      -- Vij = 0.5*(dui/dxj - duj/dxi) --
+!        = (dudz - dwdx)^2 + (dvdz - dwdy)^2 + (dvdx - dudy)^2
 !--------------------------------------------------------------------
 !
       tind  = nrhs
@@ -408,16 +430,26 @@
      &                    -u(i, j, k  ,tind)-u(i+1, j, k  ,tind))
                dv  = cff*( v(i, j, k+1,tind)+v(i, j+1, k+1,tind)     ! dvdz
      &                    -v(i, j, k  ,tind)-v(i, j+1, k  ,tind))
+
 # ifdef GLS_SHEAR_3D
 #  ifdef NBQ
                dw  = 0.5*pm(i,j)
      &                  *( wz(i+1,j,k,tind)-wz(i-1,j,k,tind))        ! dwdx
-               shear2(i,j,k) = (du+dw)**2
+               shear2(i,j,k) = (du+dw)*(du+dw)
+#   ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = (du-dw)*(du-dw)
+#   endif
                dw  = 0.5*pn(i,j)
      &                  *( wz(i,j+1,k,tind)-wz(i,j-1,k,tind))        ! dwdy
-               shear2(i,j,k) = shear2(i,j,k) + (dv+dw)**2
+               shear2(i,j,k) = shear2(i,j,k) + (dv+dw)*(dv+dw)
+#   ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = vort2(i,j,k)  + (dv-dw)*(dv-dw)
+#   endif
 #  else
                shear2(i,j,k) = du*du + dv*dv
+#   ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = shear2(i,j,k)
+#   endif
 #  endif
                du  = 0.5*pm(i,j)
      &                  *( u(i+1, j, k+1,tind)-u(i, j, k+1,tind)     ! dudx
@@ -443,8 +475,14 @@
      &                        +v(i+1,j,k+1,tind)+v(i+1,j+1,k+1,tind)
      &                        -v(i-1,j,k+1,tind)-v(i-1,j+1,k+1,tind))
                shear2(i,j,k) = (du+dv)*(du+dv) + shear2(i,j,k)
+#  ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = vort2(i,j,k)  + (dv-du)*(dv-du)
+#  endif
 # else
                shear2(i,j,k) = du*du + dv*dv
+#  ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = shear2(i,j,k)
+#  endif
 # endif
            ENDDO
          ENDDO
@@ -503,7 +541,8 @@
             ! Production/Dissipation terms and diagonal term
             DO k=1,N-1
                DO i=imin,imax
-                  ig1   = (igls-ig); ig2 = (ig-itke)
+                  ig1   = (igls-ig)
+                  ig2   = (ig-itke)
                   invk  =     1. / trb( i,j,k,nstp,itke )
                   gls   =          trb( i,j,k,nstp,igls )
                   ! invG = 1 for tke invg=1/psi for gls
@@ -657,7 +696,7 @@
 #  define TRB_NEW gls_new
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
-#  define FE1 shear2
+#  define FE1 work
       DO k=0,N
 #        include "gls_smooth.h"
       ENDDO
@@ -672,7 +711,7 @@
 #  define TRB_NEW tke_new
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
-#  define FE1 shear2
+#  define FE1 work
       DO k=0,N
 #        include "gls_smooth.h"
       ENDDO
@@ -704,10 +743,17 @@
                cff = (cm0**rp)*(L_lim**rn)*(trb(i,j,k,nnew,itke)**rm)
                trb( i,j,k,nnew,igls ) = MAX( trb( i,j,k,nnew,igls ),cff)
                !
-               ! Dissipation rate
+               ! Dissipation rate epsilon
                epsilon = (cm0**e1) * ( trb( i,j,k,nnew,itke )**e2 )
      &                             * ( trb( i,j,k,nnew,igls )**e3 )
-               epsilon = MAX(epsilon,eps_min)
+               !
+               ! Limitation of epsilon
+# ifdef GLS_STRAIN_LIM
+               ! increase diss in potential flow (Larsen & Fuhrman, 2018)
+               cff = lars * (shear2(i,j,k)/MAX(vort2(i,j,k),1.e-10))**2
+               epsilon = MAX(epsilon, cff*epsilon)
+# endif
+               epsilon = MAX(epsilon, eps_min)
                !
                ! Compute alpha_n and alpha_m
                cff     = ( trb(i,j,k,nnew,itke)/epsilon )**2
@@ -734,27 +780,21 @@
                !
                ! Finalize the computation of Akv and Akt
                cff = trb( i,j,k,nnew,itke )**2 / epsilon
-               Akv(i,j,k) = MAX( cff*c_mu , nuwm )
-# ifdef MASKING
-     &                                                 *rmask(i,j)
-# endif
+               Akv(i,j,k) = MAX( cff*c_mu , nuwm ) SWITCH rmask(i,j)
 # ifdef TEMPERATURE
-               Akt(i,j,k,itemp)= MAX( cff*c_mu_prim,nuws )
-#  ifdef MASKING
-     &                                                 *rmask(i,j)
-#  endif
+               Akt(i,j,k,itemp)= MAX( cff*c_mu_prim , nuws )
+     &                                             SWITCH rmask(i,j)
 # endif
 # ifdef SALINITY
-               Akt(i,j,k,isalt)= MAX( cff*c_mu_prim,nuws )
-#  ifdef MASKING
-     &                                                 *rmask(i,j)
-#  endif
+               Akt(i,j,k,isalt)= MAX( cff*c_mu_prim , nuws )
+     &                                             SWITCH rmask(i,j)
 # endif
+               !
+               ! Computate and store Lscale and epsilon
                Lscale( i, j , k ) =  cm0 * cm0 * cm0 * cff
-     &                            / sqrt( trb( i,j,k,nnew,itke ) )
-# ifdef MASKING
-               Lscale( i, j , k ) = Lscale( i, j , k ) * rmask(i,j)
-# endif
+     &                              / sqrt( trb( i,j,k,nnew,itke ) )
+     &                                             SWITCH rmask(i,j)
+               Eps_gls(i,j,k) = epsilon SWITCH rmask(i,j)
             ENDDO
          ENDDO
 
@@ -949,6 +989,8 @@
 #  endif
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        Lscale(START_2D_ARRAY,0))
+!      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+!     &                        Eps_gls(START_2D_ARRAY,0))
 # endif
 !======================================================================
       return

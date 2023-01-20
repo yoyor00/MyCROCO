@@ -660,16 +660,26 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxBDLU(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=bedldu_avg(:,:,itrc)
+#   ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+3*NST),
      &           indxWrk,record,r2dvar,type)
+#   else
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3*NST),
+     &           indxWrk,record,r2dvar,type)
+#   endif
          endif
       enddo
       do itrc=1,NST
          indxWrk=indxBDLV(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=bedldv_avg(:,:,itrc)
+#   ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+4*NST),
      &           indxWrk,record,r2dvar,type)
+#   else
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+2*NST),
+     &           indxWrk,record,r2dvar,type)
+#   endif
          endif
       enddo
 #   endif

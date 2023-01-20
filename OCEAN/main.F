@@ -32,12 +32,11 @@
           USE trcini_pisces
 #endif
 #ifdef SUBSTANCE
-          USE substance , ONLY : substance_read_alloc
-          USE substance , ONLY : substance_surfcell
+          USE substance, ONLY : substance_read_alloc
+          USE substance, ONLY : substance_surfcell
 #endif
 #ifdef MUSTANG
-          USE initMUSTANG
-          USE plug_MUSTANG_CROCO
+          USE plug_MUSTANG_CROCO, ONLY : mustang_init_main
 #endif
 #ifdef BIOLink
           USE coupleur_BIOLink , ONLY : BIOLink_initialization
@@ -88,10 +87,6 @@
 #endif
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
-#endif
-#ifdef MUSTANG
-# include "coupler_define_MUSTANG.h"
-# include "ocean3d.h"
 #endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -200,21 +195,11 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #ifdef SUBSTANCE
 !
-!  Computing cell surfaces need for MUSTANG and BIOLink
+!  Substance var need for MUSTANG and BIOLink
 !
       call substance_read_alloc(may_day_flag,indxT,indxTsrc)
 #endif
 
-#ifdef MUSTANG
-!
-!  General initialization for MUSTANG ( parameters ..)
-!
-      call MUSTANG_initialization(
-# ifdef key_MUSTANG_flocmod
-     &           TRANSPORT_TIME_STEP,
-# endif
-     &           RHOREF)
-#endif
 #ifdef BIOLink
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -451,19 +436,12 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
 #endif
 
-!
 !----------------------------------------------------------------------
-!  MUSTANG : initialization sediment concentrations
-!----------------------------------------------------------------------
-!
-#if defined MUSTANG || defined BIOLink
-!----------------------------------------------------------------------
-!  computing cell surfaces need for MUSTANG and BIOLink
+!  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
 # ifdef SUBSTANCE 
       call substance_surfcell
 # endif
-#endif /* MUSTANG || BIOLink */
 
 #ifdef BIOLink
 C$OMP PARALLEL DO PRIVATE(tile)
@@ -471,10 +449,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
       CALL BIOLink_init_main(tile)
       enddo
 #endif 
-#if defined MUSTANG 
+#ifdef MUSTANG 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call MUSTANG_init_sediment_main (tile)
+        call MUSTANG_init_main (tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
 #endif 
@@ -840,10 +818,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #ifdef DIAGNOSTICS_BIO
       if (ldefdiabio) call wrt_bio_diags
 #endif
-#endif
-
-#ifdef MUSTANG
-      call MUSTANG_compatibility(vname,indxT,ntrc_salt)
 #endif
 
 CR      write(*,*) '  0' MYID

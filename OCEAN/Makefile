@@ -46,7 +46,7 @@ include Makedefs
 	pre_step3d.F	step3d_t.F	step3d_uv1.F	step3d_uv2.F\
 	prsgrd.F	rhs3d.F		set_depth.F	omega.F\
 	uv3dmix.F	uv3dmix_spg.F	t3dmix.F	t3dmix_spg.F\
-	hmix_coef.F	wetdry.F\
+	hmix_coef.F	wetdry.F	wavedry.F\
 	u3dbc.F		v3dbc.F		t3dbc.F\
 \
 	step3d_fast.F\
@@ -123,7 +123,7 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-        module_substance.F  module_BIOLink.F module_MUSTANG.F\
+        module_substance.F module_BIOLink.F module_MUSTANG.F\
 \
         online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
         scal0d_oa_out_loc.F scal0d_oa_out_full.F\
@@ -153,7 +153,7 @@ include Makedefs
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
         module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
-        comsubstance.F90        substance.F90\
+        flocmod.F90 comsubstance.F90 substance.F90\
         bloom_initdefine.F90 bloom.F90\
         tooljulien.F90 comBIOLink.F90 comBIOLink_physics.F90 comBIOLink_helping.F90\
         coupleur_BIOLink_physics.F90 coupleur_BIOLink_helping.F90 coupleur_BIOLink.F90 \

@@ -28,13 +28,21 @@
 # include "ncscrum.h"
 # include "scalars.h"
 # include "strings.h"
+# include "diagnostics.h"      
 # include "netcdf.inc"
+#ifdef NC4PAR
+# include "mpi_cpl.h"
+      include 'mpif.h'
+#endif
 !
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3), u2dgrd(3), v2dgrd(3),auxil(2),checkdims 
 #ifdef SOLVE3D
      &      , r3dgrd(4), u3dgrd(4), v3dgrd(4), w3dgrd(4), iflux
+#endif
+#ifdef NC4PAR
+     &      , csize,cmode
 #endif
 #ifndef AVRH
 # define ncname dianamebio
@@ -90,17 +98,28 @@
       create_new_file = ldefdiabio_avg
 #endif
       if (ncid.ne.-1) create_new_file=.false.
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
 #endif
 
- 10   if (create_new_file) then
+ 10   if (create_new_file) then   
         lstr=lenstr(ncname)
-        ierr=nf_create(ncname(1:lstr),NF_CLOBBER,ncid)
+#ifndef NC4PAR
+        ierr=nf_create(ncname(1:lstr),NF_CLOBBER, ncid)
+#else
+        cmode = ior(nf_netcdf4,nf_classic_model)
+        cmode = ior(cmode, nf_mpiio)
+        csize=xi_rho*eta_rho/NNODES
+        MPI_master_only write(stdout,*)
+     &       'CREATE BIO_DIAG/BIO_DIAG_AVG NC4 PARALLEL FILE'
+        ierr=nf_create_par(ncname(1:lstr),cmode,
+     &       MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
+#endif
         if (ierr.ne.nf_noerr) then
-          write(stdout,11) ncname(1:lstr)
-          may_day_flag=3
-          return                         !-->  EXIT
+           MPI_master_only write(stdout,'(/3(1x,A)/)')
+     &           'ERROR in def_bio_diags:',
+     &           'Cannot create netCDF file:', ncname(1:lstr)
+          goto 99                                         !--> ERROR
         endif
 !
 ! Put global attributes.
@@ -192,6 +211,9 @@
 !
         ierr=nf_def_var (ncid, 'time_step', nf_int, 2, auxil,
      &                                                 vidTstep)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTstep,nf_collective)
+#endif
         ierr=nf_put_att_text (ncid, diaTstepbio, 'long_name', 48,
      &       'time step and record numbers from initialization')
 
@@ -203,6 +225,9 @@
 !     &                            NF_OUT, 1, timedim, vidTime)
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
      &                            NF_DOUBLE, 1, timedim, vidTime)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime,nf_collective)
+#endif
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
         ierr=nf_put_att_text (ncid, vidTime, 'long_name', 
@@ -234,6 +259,9 @@
 !     &                            NF_FOUT, 1, timedim, vidTime2)
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
      &                            NF_DOUBLE, 1, timedim, vidTime2)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
+#endif
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
         ierr=nf_put_att_text (ncid, vidTime2, 'long_name', 
@@ -293,6 +321,9 @@
             lvar=lenstr(vname(1,indxbioFlux+iflux-1))
             ierr=nf_def_var (ncid, vname(1,indxbioFlux+iflux-1)(1:lvar),
      &           NF_FOUT, 4, r3dgrd, vidFlux(iflux))
+#ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidFlux(iflux),nf_collective)
+#endif
 #  ifndef AVRH
             lvar=lenstr(vname(2,indxbioFlux+iflux-1))
             ierr=nf_put_att_text (ncid, vidFlux(iflux), 'long_name',
@@ -323,6 +354,10 @@
             ierr=nf_def_var (ncid,
      &           vname(1,indxbioVSink+iflux-1)(1:lvar),
      &          NF_FOUT, 3, r2dgrd, vidVSink(iflux))
+#ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
+#endif
+
 # endif
 #elif defined BLOOM
             ierr=nf_def_var (ncid,
@@ -333,6 +368,9 @@
             ierr=nf_def_var (ncid,
      &           vname(1,indxbioVSink+iflux-1)(1:lvar),
      &           NF_FOUT, 4, w3dgrd, vidVSink(iflux))
+#ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
+#endif
 #endif
 #  ifndef AVRH
             lvar=lenstr(vname(2,indxbioVSink+iflux-1))
@@ -366,6 +404,9 @@
             ierr=nf_def_var (ncid,
      &           vname(1,indxGasExcFlux+iflux-1)(1:lvar),
      &           NF_FOUT, 3, r2dgrd, vidGasExc(iflux))
+#ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidGasExc(iflux),nf_collective)
+#endif
 #  ifndef AVRH
             lvar=lenstr(vname(2,indxGasExcFlux+iflux-1))
            ierr=nf_put_att_text (ncid, vidGasExc(iflux),
@@ -396,7 +437,7 @@
 ! ----- ---------- -----
 !
         ierr=nf_enddef(ncid)
-        write(stdout,'(6x,4A,1x,A,i4)') 
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)') 
 #ifdef AVRH
      &        'DEF_BIO_DIAG_AVG - Created ',
 #else      
@@ -419,7 +460,13 @@
 !
 
       elseif (ncid.eq.-1) then
+#ifndef NC4PAR
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
+#else
+        MPI_master_only write(stdout,*) "Open file in parallel"
+        ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
+     &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
+#endif
         if (ierr. ne. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
@@ -447,7 +494,7 @@
         endif
 
         if (ierr. ne. nf_noerr) then
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
           if (mynode.eq.0) then
             create_new_file=.true.
             goto 10
@@ -476,6 +523,9 @@
           write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTstep,nf_collective)
+#endif
 !
 ! Time.
 !
@@ -485,6 +535,9 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime,nf_collective)
+#endif
 !
 ! Time2.
 !
@@ -494,6 +547,9 @@
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
+#endif
 !
 ! PAR
 !
@@ -517,6 +573,9 @@
      &             ncname(1:lstr)
               goto 99           !--> ERROR
             endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidFlux(iflux),nf_collective)
+#endif            
           endif
         enddo
 !     
@@ -532,6 +591,9 @@
      &             ncname(1:lstr) 
               goto 99           !--> ERROR
             endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
+#endif   
           endif                                 
         enddo
 !--------------------------------------------------------------------------------
@@ -549,6 +611,9 @@
      &             ncname(1:lstr)
               goto 99           !--> ERROR
             endif
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidGasExc(iflux),nf_collective)
+#endif  
           endif
         enddo
 #endif  
@@ -558,7 +623,7 @@
 !     &                     'existing file  from record =', rec
 !     &                      MYID
 
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       else
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then

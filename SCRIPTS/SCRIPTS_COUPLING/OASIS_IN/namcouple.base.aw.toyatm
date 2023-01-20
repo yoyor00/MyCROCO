@@ -161,19 +161,21 @@
 #~~~~~~~~~~~
 # U_01 : wind U component at first level (m/s)
 #~~~~~~~~~~~
-TOY_U_01 WW3__U10 1 <cpldt>  1  atm.nc  EXPORTED
+TOY_U_01 WW3__U10 1 <cpldt> 2 atm.nc  EXPORTED
 <atmnx> <atmny> <wavnx> <wavny> toyt ww3t LAG=<atmdt>
 R 0 R 0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # V_01 : wind V component at first level (m/s)
 #~~~~~~~~~~~
-TOY_V_01 WW3__V10 1 <cpldt>  1  atm.nc  EXPORTED
+TOY_V_01 WW3__V10 1 <cpldt> 2 atm.nc  EXPORTED
 <atmnx> <atmny> <wavnx> <wavny> toyt ww3t LAG=<atmdt>
 R 0 R 0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #                     ------------------------------------
@@ -183,10 +185,11 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # CHA_COEF : Charnock coefficient
 #~~~~~~~~~~~
-WW3_ACHA TOY__CHA 1 <cpldt>  1  wav.nc  EXPORTED
+WW3_ACHA TOY__CHA 1 <cpldt> 2 wav.nc  EXPORTED
 <wavnx> <wavny> <atmnx> <atmny> ww3t toyt LAG=<wavdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 ###########################################################################

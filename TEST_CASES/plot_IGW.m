@@ -45,7 +45,7 @@ valid = 0;        % 1: valid against forcing data
 %  Process CROCO solutions
 %
 
-nc=netcdf(hname);
+nc=netcdf(hname,'r');
 tndx=length(nc{'scrum_time'}(:));
 h=nc{'h'}(:);
 hsec=squeeze(nc{'h'}(2,:));

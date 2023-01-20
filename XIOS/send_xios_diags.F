@@ -2219,16 +2219,15 @@ C 				  endif
       USE comMUSTANG, only: nk_nivsed_out,var3D_cvsed,var3D_dzs,
      &   var3D_TEMP,var3D_SAL
 # ifdef WAVE_OFFLINE
-     &  ,tenfonc, tenfonw   
+     &  ,tauskin_c, tauskin_w   
 # endif
 #if defined key_MUSTANG_specif_outputs
      &   ,nv_out3Dnv_specif, nv_out2D_specif
      &   ,varspecif3Dnv_save,varspecif2D_save
 #endif
 #ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D,nv_grav,nv_sand
-      USE substance,    ONLY : l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp,rouse2d
+      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
+      USE comMUSTANG,   ONLY : sum_tmp, rouse2d
 #endif
 # if defined ECO3M
       USE mod_eco3m, only : E_PARZ, VAR, nbvar
@@ -2321,7 +2320,7 @@ C 				  endif
       logical  maskout_sed(GLOBAL_2D_ARRAY)
       real var2D_ksma(GLOBAL_2D_ARRAY),
      &     var2D_eptot(GLOBAL_2D_ARRAY),
-     &     var2D_tenfon(GLOBAL_2D_ARRAY)
+     &     var2D_tauskin(GLOBAL_2D_ARRAY)
       real workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
      &     workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
 #if defined key_MUSTANG_specif_outputs
@@ -3068,12 +3067,12 @@ C 				  endif
       nv_out=ntrc_subs
       CALL sed_MUSTANG_outres(Istr,Iend,Jstr,Jend,
      &       nv_out,h,
-     &       maskout_sed,var2D_ksma,var2D_tenfon,var2D_eptot
+     &       maskout_sed,var2D_ksma,var2D_tauskin,var2D_eptot
      &      )
-        call xios_send_field("tenfon",var2D_tenfon)
+        call xios_send_field("tauskin",var2D_tauskin)
 # ifdef WAVE_OFFLINE
-        call xios_send_field("tenfonc",tenfonc)
-        call xios_send_field("tenfonw",tenfonw)
+        call xios_send_field("tauskin_c",tauskin_c)
+        call xios_send_field("tauskin_w",tauskin_w)
 # endif
 
         call xios_send_field("ksma",var2D_ksma)

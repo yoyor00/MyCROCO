@@ -11,6 +11,8 @@ export TIMEJOB=1800
 # Project Id (on which hours are taken, if needed)
 export projectid=""
 
+# Permissions given to output files
+export permission="755"
 #-------------------------------------------------------------------------------
 # Run date settings
 #-------------------------------------------------------------------------------
@@ -92,6 +94,11 @@ export io_putfile="mvfile"
 #-------------------------------------------------------------------------------
 #  Which Computer?
 #-------------------------------------------------------------------------------
+# Machine you are working on 
+# Known machines: Linux DATARMOR IRENE JEANZAY LEFTRARU
+# If your machine is not already known, you can add it by creating a few files (hearder, myenv, launch) 
+# in a dedicated directory under: SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/ and add a case in 
+# SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95)
 if [ ${MACHINE} == "Linux" ]; then
    export QSUB="./"
    export COMPUTER="Linux"

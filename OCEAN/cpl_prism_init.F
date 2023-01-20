@@ -9,15 +9,17 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-       SUBROUTINE cpl_prism_init
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
+
+       SUBROUTINE cpl_prism_init
+
           USE mod_prism             ! OASIS3 prism module
           IMPLICIT NONE
 
-#include "cppdefs.h"
-#include "param.h" 
-#include "mpi_cpl.h"
+# include "cppdefs.h"
+# include "param.h" 
+# include "mpi_cpl.h"
 
       !!-------------------------------------------------------------------
       !!             ***  ROUTINE cpl_prism_init  ***
@@ -47,10 +49,13 @@
         CALL prism_abort_proto(comp_id, 'cpl_prism_ini', 
      &                         'get_localcomm_proto')
       END IF
+      return
+      end
 #else 
 !---------------------------------------------------------------------------------------
 ! Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
+      subroutine cpl_prism_init_empty
+      end
 #endif 
-      END SUBROUTINE cpl_prism_init
 
