@@ -1,8 +1,6 @@
 #
-#include $(oasisdir)/../oasis3-mct/util/make_dir/make.inc
-#
-LIBPSMILE = $(oasisdir)/lib/libpsmile.MPI1.a $(oasisdir)/lib/libmct.a $(oasisdir)/lib/libmpeu.a $(oasisdir)/lib/libscrip.a
-INCPSMILE = -I$(oasisdir)/build/lib/psmile.MPI1 -I$(oasisdir)/build/lib/mct -I$(oasisdir)/build/lib/scrip
+LIBPSMILE = $(CPL)/lib/libpsmile.MPI1.a $(CPL)/lib/libmct.a $(CPL)/lib/libmpeu.a $(CPL)/lib/libscrip.a
+INCPSMILE = -I$(CPL)/build/lib/psmile.MPI1 -I$(CPL)/build/lib/mct -I$(CPL)/build/lib/scrip
 #
 #MPI    = $(shell which $(F90))
 #MPIDIR = $(shell dirname $(shell dirname $(MPI)))
@@ -13,6 +11,8 @@ CPPDEF = -Duse_libMPI -Duse_comm_MPI1
 F90 = mpiifort
 #
 NETCDF_INCLUDE  = $(shell $(NETCDF_CONFIG) --fflags)
+NETCDF_LIBRARY  = $(shell $(NETCDF_CONFIG) --flibs)
+FLIBS  = $(NETCDF_LIBRARY) $(LCPP) $(LIBXML)
 #
 ##### User configurable options #####
 #

@@ -167,14 +167,14 @@
 # ifdef SED_TOY_ROUSE
       parameter (LLm0=5,    MMm0=5,    N=100)  !  5 cm resolution
 # elif defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
-      parameter (LLm0=5,    MMm0=5,    N=50)  !  10 cm resolution
+      parameter (LLm0=5,    MMm0=5,    N=50)   !  10 cm resolution
 # else
       parameter (LLm0=4,    MMm0=3,    N=20)   !  1 m resolution
 # endif
 #elif defined TIDAL_FLAT
       parameter (LLm0=200,  MMm0=3,    N=10)   ! TIDAL_FLAT
 #elif defined ESTUARY
-      parameter (LLm0=200,  MMm0=90,    N=5)   ! ESTUARY
+      parameter (LLm0=200,  MMm0=90,   N=5)    ! ESTUARY
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -183,7 +183,7 @@
 # elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
 # else
-      parameter (LLm0=xx, MMm0=xx, N=xx)  ! YOUR REGIONAL CONFIG
+      parameter (LLm0=xx,   MMm0=xx,   N=xx)   ! YOUR REGIONAL CONFIG
 # endif
 #elif defined COASTAL 
 # if defined VILAINE

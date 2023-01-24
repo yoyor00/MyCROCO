@@ -52,6 +52,9 @@
 #ifdef SOLVE3D
      &                                       , itrc
 #endif
+#ifdef DIAGNOSTICS_BIO
+     &                                       , iflux
+#endif
       logical dumboolean
 #ifdef USE_CALENDAR
       real  dt_his,dt_avg,dt_rst
@@ -2205,7 +2208,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         MPI_master_only write(stdout,'(F10.4,2x,A,1x,A)')
      &        rho0, 'rho0     Boussinesq approximation',
      &                           'mean density, kg/m3.'
-#if defined UV_VIS2 || defined UV_VIS4
+#if defined UV_VIS2 || defined UV_VIS4 || defined SPONGE_VIS2
 !
 ! Horizontal viscosity coefficients.
 !

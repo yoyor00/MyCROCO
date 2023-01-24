@@ -1991,8 +1991,8 @@ C$    integer  trd, omp_get_thread_num
 #    define CST_SHAPE
 !#    define BOTTOM_SHAPE
 #  else
-!#   define EXP_SHAPE
-#   define CST_SHAPE
+#   define EXP_SHAPE
+!#   define CST_SHAPE
 #  endif
 
 #  ifdef CST_SHAPE
@@ -2544,9 +2544,12 @@ C$    integer  trd, omp_get_thread_num
 # include "compute_auxiliary_bounds.h"
 
 # ifdef OBC_WEST
+!
+!================== WESTERN BOUNDARY ======================
+!
       if (WESTERN_EDGE) then
 
-#  ifdef WAVE_MAKER
+#  if defined WAVE_MAKER && !defined WAVE_MAKER_EAST
 !
 !  --- Surface wave maker on western boundary ---
 !
@@ -2713,98 +2716,118 @@ C$    integer  trd, omp_get_thread_num
       endif
 # endif /* OBC_WEST */
 !
+!================== EASTERN BOUNDARY ======================
+!
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
+
+#  if defined WAVE_MAKER && defined WAVE_MAKER_EAST
+!
+!  --- Surface wave maker on eastern boundary ---
+!
+#   include "wave_maker.h"
+
+!#  elif defined WAVE_MAKER_INTERNAL_EAST
+!
+!  --- Internal wave maker on eastern boundary ---
+!
+!#   include "wave_maker_internal.h"
+
+#  else
+
         if (FIRST_RST_TIME_STEP) then
-#  ifdef Z_FRC_BRY
+#   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
-#   ifdef OBC_PATM
+#    ifdef OBC_PATM
             zetabry_east(j)=zetabry_east(j)
      &                    -(patm2d(IendR,j)-paref)/(g*rho0)
-#   endif
+#    endif
           enddo
-#  endif
-#  ifdef M2_FRC_BRY
+#   endif
+#   ifdef M2_FRC_BRY
           do j=JstrR,JendR
             ubarbry_east(j)=ubar(Iend+1,j,1)
             vbarbry_east(j)=vbar(Iend+1,j,1)
           enddo
-#  endif
-#  if defined SOLVE3D && \
+#   endif
+#   if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
           do k=1,N
             do j=JstrR,JendR
-#   ifdef M3_FRC_BRY
+#    ifdef M3_FRC_BRY
               ubry_east(j,k)=u(Iend+1,j,k,1)
               vbry_east(j,k)=v(Iend+1,j,k,1)
-#   endif
-#   ifdef W_FRC_BRY
+#    endif
+#    ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
-#   endif
-#   if defined T_FRC_BRY && defined TRACERS
-#    ifdef SUBSTANCE
+#    endif
+#    if defined T_FRC_BRY && defined TRACERS
+#     ifdef SUBSTANCE
               do itrc=1,itsubs1-1
                 tbry_east(j,k,itrc)=0.
               enddo
               do itrc=itsubs1,NT
                 tbry_east(j,k,itrc)=cobc_wat(itrc)
               enddo
-#    else
+#     else
               do itrc=1,NT
                 tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
               enddo
+#     endif
 #    endif
-#   endif
             enddo
           enddo
-#  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+#   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         else 
-#  ifdef Z_FRC_BRY
+#   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=0.0
-#   ifdef OBC_PATM
+#    ifdef OBC_PATM
             zetabry_east(j)=-(patm2d(IendR,j)-paref)/(g*rho0)
-#   endif
+#    endif
           enddo
-#  endif
-#  ifdef M2_FRC_BRY
+#   endif
+#   ifdef M2_FRC_BRY
           do j=JstrR,JendR
             ubarbry_east(j)=0.
             vbarbry_east(j)=0.
           enddo
-#  endif
-#  if defined SOLVE3D && \
+#   endif
+#   if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
           do k=1,N
             do j=JstrR,JendR
-#   ifdef M3_FRC_BRY
+#    ifdef M3_FRC_BRY
               ubry_east(j,k)=0.0
               vbry_east(j,k)=0.0
-#   endif
-#   ifdef W_FRC_BRY
+#    endif
+#    ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
-#   endif
-#   ifdef T_FRC_BRY
-#    ifdef SUBSTANCE
+#    endif
+#    ifdef T_FRC_BRY
+#     ifdef SUBSTANCE
               do itrc=1,itsubs1-1
                 tbry_east(j,k,itrc)=0.
               enddo
               do itrc=itsubs1,NT
                 tbry_east(j,k,itrc)=cobc_wat(itrc)
               enddo
-#    else
+#     else
               do itrc=1,NT
                 tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
               enddo
+#     endif
 #    endif
-#   endif
             enddo
           enddo
-#  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+#   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         endif
+#  endif /* WAVE_MAKER */
       endif
 # endif /* OBC_EAST */
+!
+!================== SOUTHERN BOUNDARY ======================
 !
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
@@ -2870,6 +2893,8 @@ C$    integer  trd, omp_get_thread_num
         endif
       endif
 # endif /* OBC_SOUTH */
+!
+!================== NORTHERN BOUNDARY ======================
 !
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then

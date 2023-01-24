@@ -389,7 +389,7 @@
 # endif
             ierr=ierr_all
             if (ierr.eq.0) then
-              MPI_master_only write(stdout,'(6x,A,9x,A,1x,G12.4,1x,I4)')
+              MPI_master_only write(stdout,'(6x,A,9x,A,1x,F10.4,1x,I4)')
      &       'GET_BRY    -- Read all boundary data',
      &                                 'for time =', cff 
 #ifdef MPI
@@ -407,7 +407,7 @@
          MPI_master_only write(stdout,
      &    '(/1x,A,I4,1x,A,I4/7x,4A/7x,2(A,G12.4)/)')
      &    'ERROR in get_bry_all: requested time record ',  bry_rec,
-     &    'exeeds the last record', ntbry,  'available in netCDF ',
+     &    'exceeds the last record', ntbry,  'available in netCDF ',
      &    'file ''',   bry_file(1:lstr),  '''',  'tdays = ', tdays,
      &    '  but the last available  bry_time =',
      &                                   bry_time(itbry)*sec2day

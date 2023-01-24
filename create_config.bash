@@ -17,13 +17,51 @@
 # ---------------------------------------------
 MACHINE="Linux"
 
+# General architecture when using CROCO can be one of these: 
+#
+#  - dev architecture: 
+#    -----------------
+#       - croco
+#           - OCEAN
+#           - AGRIF
+#           - ...
+#           - Run
+#               - *.in
+#               - *.h
+#               - *.bash
+#               - CROCO_FILES 
+#               - ...
+#       - croco_tools
+#
+#  - prod architecture:
+#    ------------------
+#       - croco
+#           - OCEAN
+#           - AGRIF
+#           - ...
+#       - croco_tools
+#       - CONFIGS
+#           - BENGUELA
+#               - PREPRO
+#               - CROCO_IN
+#                   - *.in
+#                   - *.h
+#                   - ...
+#               - CROCO_FILES
+#               - SCRATCH
+#               - *.bash
+#               - ...
+#
+# Define the paths for your architecture and your dev or prod choice
+# ------------------------------------------------------------------
+
 # croco source directory
 # ---------------------
-CROCO_DIR=$(cd $(dirname "$0"); pwd)
+CROCO_DIR=$PWD
 
 # croco_tools directory 
 # ---------------------
-TOOLS_DIR=$(cd $(dirname "$0")/../croco_tools; pwd)
+TOOLS_DIR=${PWD}/../croco_tools
 
 # Configuration name
 # ------------------
@@ -42,8 +80,11 @@ options=( all-dev )
 ## example for production run architecture
 #options=( all-prod )
 
-## example for production run architecture and coupling with external models :
+## example for production run architecture and coupling with external models:
 #options=( all-prod-cpl )
+
+## example for specified options:
+#options=( oce-prod prepro inter )
 
 # List of known options: 
 LIST_OPTIONS=$(cat << EOF
@@ -332,16 +373,27 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	# Edit crocotools_param.h
 	sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
             -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
+            -e "s|DATADIR=.*|DATADIR=\'${TOOLS_DIR}/DATASETS_CROCOTOOLS/\';|g" \
             ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
 	mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
     fi
     # SCRIPTS FOR RUNNING
     if [[ ${options[@]} =~ "inter" ]] ; then
 	cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/*.bash $MY_CONFIG_HOME/
+        cp -Rf ${CROCO_DIR}/SCRIPTS/example_job* $MY_CONFIG_HOME/
     fi
 fi
 
-### Coupling and other models to be coupled with ###
+### Preprocessing scripts
+if [[ ${options[@]} =~ "prepro" && ${options[@]} =~ "oce-prod" ]] ; then
+    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
+    cp -r $TOOLS_DIR/Coupling_tools/CROCO/* $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/.
+fi
 
 # OASIS
 if [[ ${options[@]} =~ "cpl" ]] ; then
@@ -351,16 +403,6 @@ if [[ ${options[@]} =~ "cpl" ]] ; then
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/OASIS_IN/* $MY_CONFIG_HOME/OASIS_IN/.
 fi
 
-if [[ ${options[@]} =~ "prepro" && ${options[@]} =~ "oce-prod" ]] ; then
-    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
-    cp -r $TOOLS_DIR/Coupling_tools/* $MY_CONFIG_HOME/PREPRO/.
-    mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/.
-fi
-
 # WW3
 if [[ ${options[@]} =~ "wav" ]] ; then
     echo 'Copy WW3 useful scripts and input files'
@@ -368,6 +410,9 @@ if [[ ${options[@]} =~ "wav" ]] ; then
     mkdir -p $MY_CONFIG_HOME/WW3_IN
     mkdir -p $MY_CONFIG_WORK/WW3_FILES
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/WW3_IN/* $MY_CONFIG_HOME/WW3_IN/.
+    if [[ ${options[@]} =~ "prepro" ]] ; then
+        cp -r $TOOLS_DIR/Coupling_tools/WW3 $MY_CONFIG_HOME/PREPRO/.
+    fi
 fi
 
 # WRF
@@ -377,6 +422,9 @@ if [[ ${options[@]} =~ "atm" ]] ; then
     mkdir -p $MY_CONFIG_HOME/WRF_IN
     mkdir -p $MY_CONFIG_WORK/WRF_FILES
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/WRF_IN/* $MY_CONFIG_HOME/WRF_IN/.
+    if [[ ${options[@]} =~ "prepro" ]] ; then
+        cp -r $TOOLS_DIR/Coupling_tools/WRF_WPS $MY_CONFIG_HOME/PREPRO/.
+    fi
 fi
 
 # TOY
@@ -388,7 +436,7 @@ if [[ ${options[@]} =~ "toy" ]] ; then
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/TOY_IN/* $MY_CONFIG_HOME/TOY_IN/.
 fi
 
-
+# XIOS
 if [[ ${options[@]} =~ "xios" ]] ; then
     if [[ ${options[@]} =~ "oce-prod" ]]; then
         mkdir -p  $MY_CONFIG_HOME/PREPRO/XIOS
@@ -415,8 +463,8 @@ if [[ ${options[@]} =~ "xios" ]] ; then
     fi
 fi
 
-
-# Coupling scripts
+# Using the SCRIPT_TOOLBOX scripts (cpl-like architecture)
+# Copy and edit the relevant scripts
 #if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
 if [[ ${options[@]} =~ "oce-prod" ]] ; then
     echo 'Copy scripts production runs'

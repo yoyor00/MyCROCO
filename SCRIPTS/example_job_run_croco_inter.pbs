@@ -32,6 +32,9 @@ echo "working in $PBS_O_WORKDIR"
 # add your environment variables, modules, etc
 source /usr/share/Modules/3.2.10/init/bash
 
+# source your environment file
+source myenv_mypath.sh
+
 # submit your job
 date
 
