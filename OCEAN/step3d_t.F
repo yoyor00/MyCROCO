@@ -389,7 +389,8 @@
            TXout_mld(i,j,itrc) = 0.
            TYout_mld(i,j,itrc) = 0.
 
-           cff=pm(i,j)*pn(i,j)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+            cff=pm(i,j)*pn(i,j)
+     &          /(z_w(i,j,N)-z_w(i,j,kbl_rho(i,j)-1))
            
             if (kbl_rho(i+1,j) .gt. kbl_rho(i,j)) then
               do k=kbl_rho(i,j),kbl_rho(i+1,j)-1
