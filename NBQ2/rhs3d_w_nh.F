@@ -60,8 +60,10 @@
       REAL     :: We_r   (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)        
       REAL     :: lap    (PRIVATE_2D_SCRATCH_ARRAY      )
       REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
-      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY,0:N  ) 
-      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+!      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY,0:N  ) 
+!      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY )
+      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY )
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       !!    
@@ -598,15 +600,13 @@
 ! Finalize horizontal advection: compute flux divergence
 !-------------------------------------------------------
 !
-      DO k=0,N
         DO j=Jstr,Jend
           DO i=Istr,Iend
-            rw(i,j,k)= rw(i,j,k) - WFx(i+1,j,k) + WFx(i,j,k)
-     &                           - WFe(i,j+1,k) + WFe(i,j,k)  
+            rw(i,j,k)= rw(i,j,k) - WFx(i+1,j) + WFx(i,j)
+     &                           - WFe(i,j+1) + WFe(i,j)    
           ENDDO
         ENDDO
 
-      ENDDO          !<-- outer loop k
 
 # endif /* W_HADV */
 
