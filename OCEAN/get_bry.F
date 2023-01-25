@@ -471,6 +471,13 @@
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
           enddo
 #   endif
+#   ifdef WET_DRY
+          do j=JstrR,JendR
+            if (zetabry_west(j) .le. (Dcrit(IstrR,j)-h(IstrR,j))) then
+              zetabry_west(j)=Dcrit(IstrR,j)-h(IstrR,j)
+            endif
+          enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
@@ -516,6 +523,13 @@
           do j=JstrR,JendR
            zetabry_east(j)=zetabry_east(j)
      &                     -(patm2d(IendR,j)-paref)/(g*rho0)
+          enddo
+#   endif
+#   ifdef WET_DRY
+          do j=JstrR,JendR
+            if (zetabry_east(j) .le. (Dcrit(IendR,j)-h(IendR,j))) then
+              zetabry_east(j)=Dcrit(IendR,j)-h(IendR,j)
+            endif
           enddo
 #   endif
 #  endif
@@ -565,6 +579,13 @@
      &                      -(patm2d(i,JstrR)-paref)/(g*rho0)
           enddo
 #   endif
+#   ifdef WET_DRY
+          do i=IstrR,IendR
+            if (zetabry_south(i) .le. (Dcrit(i,JstrR)-h(i,JstrR))) then
+              zetabry_south(i)=Dcrit(i,JstrR)-h(i,JstrR)
+            endif
+          enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
           do i=IstrR,IendR
@@ -612,6 +633,14 @@
      &                      -(patm2d(i,JendR)-paref)/(g*rho0)
           enddo
 #   endif
+#   ifdef WET_DRY
+          do i=IstrR,IendR
+            if (zetabry_north(i) .le.(Dcrit(i,JendR)-h(i,JendR))) then
+              zetabry_north(i)=Dcrit(i,JendR)-h(i,JendR)
+            endif
+          enddo
+#   endif
+
 #  endif
 #  ifdef M2_FRC_BRY
           do i=IstrR,IendR
