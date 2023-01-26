@@ -1441,4 +1441,264 @@
 # endif
 #endif
 
+!wkb_wwave.h
+#ifdef WKB_WWAVE
+!$acc&, wkx
+!$acc&, wke
+!$acc&, wac
+!$acc&, hrm
+!$acc&, frq
+!$acc&, wcg
+!$acc&, wsb
+!$acc&, wvn
+!$acc&, wfc
+# ifdef WAVE_ROLLER
+!$acc&, war
+!$acc&, wcr
+!$acc&, wsr
+# endif
+# if defined MRL_CEW || !defined WKB_STEADY
+#  ifdef WKB_TIME_FILTER
+!$acc&, uwave
+!$acc&, vwave
+!$acc&, zwave
+#  else
+!$acc&, uwave
+!$acc&, vwave
+!$acc&, zwave
+#  endif
+# endif
+#endif /* WKB_WWAVE */
+
+!boundary.h
+#ifdef T_FRC_BRY
+!$acc&, got_tbry
+# endif
+#ifndef ANA_BRY
+!$acc&, bry_time
+# if defined BIOLOGY || defined PISCES
+!$acc&, bry_time1
+!$acc&, bry_cycle1
+!$acc&, bry_tid, bry_ncycle1
+!$acc&, bry_rec1, itbry1, ntbry1
+# endif
+# if defined OBC_WEST || defined AGRIF_OBC_WEST
+#  ifdef SOLVE3D
+#   ifdef T_FRC_BRY
+!$acc&, tbry_west_id
+#   endif
+#  endif
+# endif
+# if defined OBC_EAST || defined AGRIF_OBC_EAST
+#  ifdef SOLVE3D
+#   ifdef T_FRC_BRY
+!$acc&, tbry_east_id
+#   endif
+#  endif
+# endif
+# if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
+#  ifdef SOLVE3D
+#   ifdef T_FRC_BRY
+!$acc&, tbry_south_id
+#   endif
+#  endif
+# endif
+# if defined OBC_NORTH || defined AGRIF_OBC_NORTH
+#  ifdef SOLVE3D
+#   ifdef T_FRC_BRY
+!$acc&, tbry_north_id
+#   endif
+#  endif
+# endif
+#endif  /* ANA_BRY */
+#if defined OBC_WEST || defined AGRIF_OBC_WEST
+# ifdef Z_FRC_BRY
+!$acc&, zetabry_west
+!$acc&, zetabry_west_dt
+# endif
+# ifdef M2_FRC_BRY
+!$acc&, ubarbry_west
+!$acc&, ubarbry_west_dt
+!$acc&, vbarbry_west
+!$acc&, vbarbry_west_dt
+# endif
+# ifdef SOLVE3D
+#  ifdef M3_FRC_BRY
+!$acc&, ubry_west
+!$acc&, ubry_west_dt
+!$acc&, vbry_west
+!$acc&, vbry_west_dt
+#  endif
+#  ifdef T_FRC_BRY
+!$acc&, tbry_west
+!$acc&, tbry_west_dt
+#  endif
+# endif
+#endif
+#if defined OBC_EAST || defined AGRIF_OBC_EAST
+# ifdef Z_FRC_BRY
+!$acc&, zetabry_east
+!$acc&, zetabry_east_dt
+# endif
+# ifdef M2_FRC_BRY
+!$acc&, ubarbry_east
+!$acc&, ubarbry_east_dt
+!$acc&, vbarbry_east
+!$acc&, vbarbry_east_dt
+# endif
+# ifdef SOLVE3D 
+#  ifdef M3_FRC_BRY
+!$acc&, ubry_east
+!$acc&, ubry_east_dt
+!$acc&, vbry_east
+!$acc&, vbry_east_dt
+#  endif
+#  ifdef T_FRC_BRY
+!$acc&, tbry_east
+!$acc&, tbry_east_dt
+#  endif
+# endif
+#endif
+#if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
+# ifdef Z_FRC_BRY 
+!$acc&, zetabry_south
+!$acc&, zetabry_south_dt
+# endif
+# ifdef M2_FRC_BRY
+!$acc&, ubarbry_south
+!$acc&, ubarbry_south_dt
+!$acc&, vbarbry_south
+!$acc&, vbarbry_south_dt
+# endif
+# ifdef SOLVE3D
+#  ifdef M3_FRC_BRY
+!$acc&, ubry_south
+!$acc&, ubry_south_dt
+!$acc&, vbry_south
+!$acc&, vbry_south_dt
+#  endif
+#  ifdef T_FRC_BRY
+!$acc&, tbry_south
+!$acc&, tbry_south_dt
+#  endif
+# endif
+#endif
+#if defined OBC_NORTH || defined AGRIF_OBC_NORTH
+# ifdef Z_FRC_BRY
+!$acc&, zetabry_north
+!$acc&, zetabry_north_dt
+# endif
+# ifdef M2_FRC_BRY
+!$acc&, ubarbry_north
+!$acc&, ubarbry_north_dt
+!$acc&, vbarbry_north
+!$acc&, vbarbry_north_dt
+# endif
+# ifdef SOLVE3D
+#  ifdef M3_FRC_BRY
+!$acc&, ubry_north
+!$acc&, ubry_north_dt
+!$acc&, vbry_north
+!$acc&, vbry_north_dt
+#  endif
+#  ifdef T_FRC_BRY
+!$acc&, tbry_north
+!$acc&, tbry_north_dt
+#  endif
+# endif
+#endif
+#ifdef WKB_WWAVE
+# ifndef ANA_BRY_WKB
+!$acc&, brywkb_time
+# endif  /* ANA_BRY_WKB */
+# if defined WKB_OBC_WEST || defined AGRIF_OBC_WEST
+!$acc&, wacbry_west
+!$acc&, wacbry_west_dt
+!$acc&, wkxbry_west
+!$acc&, wkxbry_west_dt
+!$acc&, wkebry_west
+!$acc&, wkebry_west_dt
+!$acc&, warbry_west
+!$acc&, warbry_west_dt
+# endif
+# if defined WKB_OBC_EAST || defined AGRIF_OBC_EAST
+!$acc&, wacbry_east
+!$acc&, wacbry_east_dt
+!$acc&, wkxbry_east
+!$acc&, wkxbry_east_dt
+!$acc&, wkebry_east
+!$acc&, wkebry_east_dt
+!$acc&, warbry_east
+!$acc&, warbry_east_dt
+# endif
+# if defined WKB_OBC_SOUTH || defined AGRIF_OBC_SOUTH
+!$acc&, wacbry_south
+!$acc&, wacbry_south_dt
+!$acc&, wkxbry_south
+!$acc&, wkxbry_south_dt
+!$acc&, wkebry_south
+!$acc&, wkebry_south_dt
+!$acc&, warbry_south
+!$acc&, warbry_south_dt
+# endif
+# if defined WKB_OBC_NORTH || defined AGRIF_OBC_NORTH
+!$acc&, wacbry_north
+!$acc&, wacbry_north_dt
+!$acc&, wkxbry_north
+!$acc&, wkxbry_north_dt
+!$acc&, wkebry_north
+!$acc&, wkebry_north_dt
+!$acc&, warbry_north
+!$acc&, warbry_north_dt
+# endif
+#endif  /* WKB_WWAVE */ 
+#if defined M3FAST && defined NBQ_FRC_BRY
+# if defined OBC_WEST || defined AGRIF_OBC_WEST
+!$acc&, unbqbry_west
+!$acc&, vnbqbry_west
+#  ifdef NBQ
+!$acc&, wnbqbry_west
+!$acc&, rnbqbry_west
+#  endif
+# endif
+# if defined OBC_EAST || defined AGRIF_OBC_EAST
+!$acc&, unbqbry_east
+!$acc&, vnbqbry_east
+#  ifdef NBQ
+!$acc&, wnbqbry_east
+!$acc&, rnbqbry_east
+#  endif
+# endif
+# if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
+!$acc&, unbqbry_south
+!$acc&, vnbqbry_south
+#  ifdef NBQ
+!$acc&, wnbqbry_south
+!$acc&, rnbqbry_south
+#  endif
+# endif
+# if defined OBC_NORTH || defined AGRIF_OBC_NORTH
+!$acc&, unbqbry_north
+!$acc&, vnbqbry_north
+#  ifdef NBQ
+!$acc&, wnbqbry_north
+!$acc&, rnbqbry_north
+#  endif
+# endif
+#endif /* M3FAST */
+#if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
+# if defined OBC_WEST || defined AGRIF_OBC_WEST
+!$acc&, wbry_west
+# endif
+# if defined OBC_EAST || defined AGRIF_OBC_EAST
+!$acc&, wbry_east
+# endif
+# if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
+!$acc&, wbry_south
+# endif
+# if defined OBC_NORTH || defined AGRIF_OBC_NORTH
+!$acc&, wbry_north
+# endif
+#endif /* NBQ */
+
 !$acc& )
