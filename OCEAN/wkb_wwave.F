@@ -173,6 +173,7 @@
         endif
       endif
 # endif
+!$acc kernels if(compute_on_device) default(present)
 !
 ! Initializing parameters for breaking and roller models
 !
@@ -208,13 +209,15 @@
 #  define Zob Zob_my
 # endif
       peg=8.0/g
+!$acc end kernels
 !
 !----------------------------------------------------------------------
 !  Initialisation of WKB model variables
 !----------------------------------------------------------------------
 !
       if (iwave.eq.1) then
-!
+!$acc kernels if(compute_on_device) default(present)
+        !
 # define ANA_INI_WKB
 
 # ifdef ANA_INI_WKB
@@ -466,7 +469,8 @@
         endif
 #  endif        
       endif 
-!
+!$acc end kernels
+      !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         do k=1,2
           call exchange_r2d_tile (istr,iend,jstr,jend,
@@ -503,6 +507,7 @@ C$OMP BARRIER
 !
 ! Prepair for multiple-time step algorithms
 !
+!$acc kernels if(compute_on_device) default(present)      
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
 # ifdef WKB_AB3
@@ -722,6 +727,7 @@ C$OMP BARRIER
         enddo
       enddo           ! <--- discard acx,ace
 # endif    /* WAVE_ROLLER */
+!$acc end kernels
 !
 !---------------------------------------------------------------------
 ! Set boundary conditions for the WKB wave quantities
@@ -734,6 +740,7 @@ C$OMP BARRIER
 ! Estimate wave-associated variables for MRL_WCI/BBL routines
 !---------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
           wvn(i,j,wnew)=max(sqrt(wkx(i,j,wnew)**2+wke(i,j,wnew)**2),eps)
@@ -807,6 +814,7 @@ C$OMP BARRIER
 # endif
         enddo
       enddo
+!$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (istr,iend,jstr,jend,
@@ -903,6 +911,8 @@ C$OMP BARRIER
         cff1=1.0
       endif
 # endif
+
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=Istr,Iend
 # ifdef SOLVE3D
@@ -946,6 +956,7 @@ C$OMP BARRIER
 # endif
         enddo
       enddo
+!$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #  ifdef WKB_TIME_FILTER
@@ -1045,6 +1056,7 @@ C$OMP BARRIER
 c        cff=1.D0/12.D0
 c        cff1=3.D0/16.D0
 
+!$acc kernels if(compute_on_device) default(present)
         if (linterp.eq.1) then
           do j=jmin,jmax
             do i=imin,imax
@@ -1249,9 +1261,9 @@ c        cff1=3.D0/16.D0
         endif
 #   endif
 #  endif
-
+!$acc end kernels
 # else    /* WKB_KZ_FILTER */
-
+!$acc kernels if(compute_on_device) default(present)
         do j=jstrR,jendR
           do i=istrR,iendR
             uwave(i,j,wint)=uwave(i,j,wavg)
@@ -1264,7 +1276,7 @@ c        cff1=3.D0/16.D0
 #  endif
           enddo
         enddo
-
+!$acc end kernels
 # endif /* WKB_KZ_FILTER */
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
@@ -1385,6 +1397,7 @@ c        cff1=3.D0/16.D0
       integer istr,iend,jstr,jend, i,j,k, nsubs,ie
 #include "param.h"
       real, dimension(2) :: my_ww, buff
+!$acc declare create(my_ww,buff)      
       integer max_check_line
       parameter (max_check_line=128)
       character check_line*(max_check_line), tstring*18
@@ -1403,6 +1416,7 @@ c        cff1=3.D0/16.D0
 ! First, compute thread-integrated deviations, my_wac and my_wkn.
 !
       if (mod(iwave-1,winfo) .eq. 0) then
+!$acc kernels if(compute_on_device) default(present)
         my_ww(1) = maxval(abs(wac(:,:,wnew)-wac(:,:,wstp)))
         my_ww(2) = maxval(abs(wvn(:,:,wnew)-wvn(:,:,wstp)))
         if (SINGLE_TILE_MODE) then
@@ -1421,7 +1435,7 @@ C$OMP CRITICAL (diag_cr_rgn)
 !          av_wac=av_wac+my_ww(1)        ! among the threads within
 !          av_wkn=av_wkn+my_ww(2)        ! each MPI process.
 !        endif
-
+!$acc end kernels
         tile_count=tile_count+1         ! This counter identifies
                                         ! the last thread, whoever
         if (tile_count.eq.nsubs) then   ! it is, not always master.
@@ -1480,7 +1494,6 @@ C$OMP CRITICAL (diag_cr_rgn)
           call MPI_Bcast(may_day_flag, 1, MPI_INTEGER,
      &                       0, MPI_COMM_WORLD, ierr)
 #endif
-
           if (winfo.eq. 1   .and.  iwave.gt.   8) winfo=2
           if (winfo.eq. 2   .and.  iwave.gt.  16) winfo=4
           if (winfo.eq. 4   .and.  iwave.gt.  64) winfo=8

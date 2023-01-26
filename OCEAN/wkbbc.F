@@ -74,6 +74,7 @@
       ENDIF
 # endif
 !
+!$acc kernels if(compute_on_device) default(present)      
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
 #  ifdef WKB_OBC_WEST
@@ -242,6 +243,7 @@
       endif
 #  endif
 # endif
+!$acc end kernels
       return
       end
 #endif /* WKB_WWAVE */
