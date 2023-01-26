@@ -1219,7 +1219,7 @@
 !
 # if defined TS_HADV_TEST
 #  if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
-     do k=1,N
+      do k=1,N
         do j=jstrR,jendR
           do i=IstrR,iendR
             u(i,j,k,nnew) = u(i,j,k,nstp)
@@ -1308,7 +1308,7 @@
               Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)*
      &                                            u(i,j,k,nnew)
             enddo
-          else
+          elseif (Dsrc(is).eq.1) then
             do k=1,N
               v(i,j,k,nnew)=2.*Qsrc(is,k)/( om_v(i,j)*(
      &                       z_w(i,j-1,k)-z_w(i,j-1,k-1)

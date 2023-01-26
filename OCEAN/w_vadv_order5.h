@@ -23,11 +23,11 @@
      &           wz(i,j,N-3,nrhs), wz(i,j,N-2,nrhs), 
      &           wz(i,j,N-1,nrhs), wz(i,j,N  ,nrhs), We_r(i,N-1))
 
-            FC(i,1)=We_r(i,1)*FLUX2( wz(i,j,1  ,nrhs),
-     &                               wz(i,j,0  ,nrhs), We_r(i,1), 1.)
+            FC(i,1)=We_r(i,1)*FLUX2( wz(i,j,0  ,nrhs),
+     &                               wz(i,j,1  ,nrhs), We_r(i,1), 1.)
 
-            FC(i,N)=We_r(i,N)*FLUX2( wz(i,j,N  ,nrhs),
-     &                               wz(i,j,N-1,nrhs), We_r(i,N), 1.)
+            FC(i,N)=We_r(i,N)*FLUX2( wz(i,j,N-1,nrhs),
+     &                               wz(i,j,N  ,nrhs), We_r(i,N), 1.)
 
             FC(i,0)=0.
             FC(i,N+1)=0.

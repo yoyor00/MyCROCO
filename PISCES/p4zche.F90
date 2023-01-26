@@ -167,9 +167,9 @@ CONTAINS
          DO jj = JRANGE
             DO ji = IRANGE
                IF (neos == -1) THEN
-                  salinprac(ji,jj,jk) = tsn(ji,jj,jk,jp_sal) * 35.0 / 35.16504
+                  salinprac(ji,jj,jk) = tsn(ji,jj,K,jp_sal) * 35.0 / 35.16504
                ELSE
-                  salinprac(ji,jj,jk) = tsn(ji,jj,jk,jp_sal)
+                  salinprac(ji,jj,jk) = tsn(ji,jj,K,jp_sal)
                ENDIF
             END DO
          END DO

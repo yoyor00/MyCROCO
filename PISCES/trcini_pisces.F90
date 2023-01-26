@@ -92,8 +92,12 @@ CONTAINS
 #else
       ln_ligand = .false.
 #endif
+#if defined key_sediment
+      ln_sediment = .true.
+#else
       ln_sediment = .false.
       ln_sed_2way = .false.
+#endif
 
       IF(lwp) THEN
          WRITE(numout,*)

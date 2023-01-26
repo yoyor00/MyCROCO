@@ -634,9 +634,12 @@
     PSOURCE / PSOURCE_NCFILE option
 ======================================================================
 */
-#if defined PSOURCE
+#if defined PSOURCE || defined PSOURCE_MASS
 #  define ANA_PSOURCE  /* ON: set vertical profil for qbar */
 #  undef RIVER_RAMP
+#endif
+#ifdef PSOURCE_MASS
+#  undef PSOURCE
 #endif
 #if defined PSOURCE_NCFILE
 # define PSOURCE
@@ -1045,6 +1048,16 @@
 # define NF_CLOBBER nf_mpiio 
 #else
 # define NF_CLOBBER nf_64bit_offset
+#endif
+      
+/* 
+      Define double precision for NetCDF outputs (NF_DOUBLE)
+      in case of #define PARALLEL_FILE in cppdefs.h
+      Actual ncjoin does not handle NetCDF files with
+      single precision (NF_REAL) (see set_global_definitions.h) 
+*/     
+#ifdef PARALLEL_FILES
+#  define OUT_DOUBLE
 #endif
 /*
 ======================================================================

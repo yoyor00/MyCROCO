@@ -34,7 +34,7 @@
 # include "netcdf.inc"
 #ifdef NC4PAR
 # include "mpi_cpl.h"
-      include "mpif.h"
+      include 'mpif.h'
 #endif
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -931,7 +931,7 @@
         ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
      &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 #endif
-        if (ierr. ne. nf_noerr) then
+        if (ierr.eq. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
             if (rec_per_file.eq.0) then
@@ -985,6 +985,9 @@
           write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif 
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTstep,nf_collective)
+#endif
 !
 ! Time.
 !
@@ -994,6 +997,9 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime,nf_collective)
+#endif
 !
 ! Time2.
 !
@@ -1003,6 +1009,9 @@
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
+#endif
 
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
@@ -1021,6 +1030,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMXadv(itrc),nf_collective)
+#endif
 !
 ! indxMYadv
 !
@@ -1032,6 +1044,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif                               
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMYadv(itrc),nf_collective)
+#endif
 !
 ! indxMVadv
 !
@@ -1043,6 +1058,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMVadv(itrc),nf_collective)
+#endif
 !
 ! indxMCor
 !
@@ -1054,6 +1072,9 @@
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMCor(itrc),nf_collective)
+#endif
 !
 ! indxMPrsgrd
 !
@@ -1065,6 +1086,9 @@
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMPrsgrd(itrc),nf_collective)
+#endif
 !
 ! indxMHmix
 !
@@ -1076,6 +1100,9 @@
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMHmix(itrc),nf_collective)
+#endif
 !
 ! indxMHdiff
 !
@@ -1087,6 +1114,9 @@
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMHdiff(itrc),nf_collective)
+#endif
 !
 ! indxMVmix
 !
@@ -1098,6 +1128,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMVmix(itrc),nf_collective)
+#endif
 !
 ! indxMVmix2
 !
@@ -1109,6 +1142,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMVmix2(itrc),nf_collective)
+#endif
 # if defined DIAGNOSTICS_BARO
 !
 ! indxMBaro
@@ -1121,6 +1157,10 @@
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMBaro(itrc),nf_collective)
+#endif
+
 # endif
 # if defined M3FAST
 !
@@ -1134,6 +1174,9 @@
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
+#  ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMfast(itrc),nf_collective)
+#  endif
 # endif
 #if defined MRL_WCI
 !
@@ -1147,6 +1190,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+# ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMvf(itrc),nf_collective)
+# endif
 !
 ! indxMbrk
 !
@@ -1158,6 +1204,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+# ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMbrk(itrc),nf_collective)
+# endif
 !
 ! indxMStCo
 !
@@ -1169,6 +1218,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMStCo(itrc),nf_collective)
+#endif
 !
 ! indxMVvf
 !
@@ -1180,6 +1232,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMVvf(itrc),nf_collective)
+#endif
 !
 ! indxMPrscrt
 !
@@ -1191,6 +1246,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMPrscrt(itrc),nf_collective)
+#endif
 !
 ! indxMsbk
 !
@@ -1202,6 +1260,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMsbk(itrc),nf_collective)
+#endif
 !
 ! indxMbwf
 !
@@ -1213,6 +1274,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMbwf(itrc),nf_collective)
+#endif
 !
 ! indxMfrc
 !
@@ -1224,6 +1288,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMfrc(itrc),nf_collective)
+#endif
 #endif
 !
 ! indxMrate
@@ -1236,6 +1303,9 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+#ifdef NC4PAR
+         ierr=nf_var_par_access(ncid,vidMrate(itrc),nf_collective)
+#endif
 !
        endif
       enddo

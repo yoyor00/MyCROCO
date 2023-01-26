@@ -931,8 +931,8 @@ C$OMP END MASTER
 # ifdef NOT_NBQ_AM4
           zwrk(i,j)=zeta(i,j,kstp)
 # else
-          zwrk(i,j)=cff0*zeta(i,j,knew)+cff1*zeta(i,j,kstp)
-     &             +cff2*zeta(i,j,kbak)+cff3*zeta(i,j,kold)
+          zwrk(i,j)=(cff0*zeta(i,j,knew)+cff1*zeta(i,j,kstp)
+     &              +cff2*zeta(i,j,kbak)+cff3*zeta(i,j,kold))
 # endif
 # ifdef NBQ_MASS
      &                                *rhobar_nbq(i,j,kstp) 
@@ -2185,7 +2185,11 @@ C$OMP END MASTER
           if (Dsrc(is).eq.0) then
             DU_nbq(i,j)=0.
 #  ifdef WET_DRY
-            umask_wet(i,j)=1
+            if (Qbar(is).gt.0) then
+              umask_wet(i,j)= + 1
+            else
+              umask_wet(i,j)= - 1
+            endif
 #  endif
             do k=1,N
               qdmu_nbq(i,j,k)=Qsrc(is,k)*pn_u(i,j)
@@ -2194,7 +2198,11 @@ C$OMP END MASTER
           else
             DV_nbq(i,j)=0.
 #  ifdef WET_DRY
-            vmask_wet(i,j)=1
+            if (Qbar(is).gt.0) then
+              vmask_wet(i,j)= + 1
+            else
+              vmask_wet(i,j)= - 1
+            endif
 #  endif
             do k=1,N
               qdmv_nbq(i,j,k)=Qsrc(is,k)*pm_v(i,j)

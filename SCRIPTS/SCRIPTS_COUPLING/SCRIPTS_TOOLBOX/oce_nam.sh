@@ -59,7 +59,10 @@ do
 # change some namelist values
 #-------
 # Change in endding date for online interpolation
-    cur_M=$( printf "%01d" $( echo $DATE_BEGIN_JOB | cut -c 5-6 ))
+    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+    while [[ `echo ${cur_M} | cut -b 1` -eq 0 ]]; do
+        cur_M=`echo ${cur_M} | cut -b 2-`
+    done    
     mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} + 1 )) ${YEAR_END_JOB} )
     LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
     if [[ ${LOCAL_MTH_END} -ne ${cur_M} ]]; then
@@ -85,15 +88,18 @@ do
     or_D=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 2) )
 
 # find vertical streching values
-if [[ ${RESTART_FLAG} == "FALSE" ]]; then
-    ts=$(ncdump -v theta_s croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-    tb=$(ncdump -v theta_b croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-    hc=$(ncdump -v hc croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-else
     ts=$(ncdump -h croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
     tb=$(ncdump -h croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
     hc=$(ncdump -h croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-fi
+	if [[ -z ${ts} ]]; then
+        ts=$(ncdump -v theta_s croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	fi
+	if [[ -z ${tb} ]]; then
+        tb=$(ncdump -v theta_b croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	fi
+	if [[ -z ${hc} ]]; then
+        hc=$(ncdump -v hc croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	fi
 # find recordperdays in online bulk
 if [[ ${interponline} -eq 1 ]]; then
     localmth=${cur_M}
@@ -112,7 +118,7 @@ if [[ ${interponline} -eq 1 ]]; then
         echo "Online bulk is ${frc_ext}; default value for records per day is 24. (Change in the croco.in if not)"
         rpd=24
     else 
-        if [[ ${frc_ext} == "ECMWF" ]]; then
+        if [[ ${frc_ext} == "ERA_ECMWF" ]]; then
             fieldname='T2M'
             online_frc="./"
         else

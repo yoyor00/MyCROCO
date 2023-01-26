@@ -1,6 +1,4 @@
 #
-#include $(oasisdir)/../oasis3-mct/util/make_dir/make.inc
-#
 LIBPSMILE = $(CPL)/lib/libpsmile.MPI1.a $(CPL)/lib/libmct.a $(CPL)/lib/libmpeu.a $(CPL)/lib/libscrip.a
 INCPSMILE = -I$(CPL)/build/lib/psmile.MPI1 -I$(CPL)/build/lib/mct -I$(CPL)/build/lib/scrip
 #

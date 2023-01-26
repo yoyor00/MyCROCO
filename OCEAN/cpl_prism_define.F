@@ -9,17 +9,19 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-      SUBROUTINE cpl_prism_define
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
+
+      SUBROUTINE cpl_prism_define
+
       USE mod_prism             ! OASIS3 prism module
       IMPLICIT NONE
 
-#include "param.h"
-#include "grid.h"
-#include "scalars.h"
-#include "mpi_cpl.h"
-#include "ncscrum.h"
+# include "param.h"
+# include "grid.h"
+# include "scalars.h"
+# include "mpi_cpl.h"
+# include "ncscrum.h"
       integer i, j, ji, i0, j0, ja
       integer nproc, myproc, error_flg, ierr
       integer start_x, start_y
@@ -30,7 +32,7 @@
       CHARACTER*9 rclevel
       CHARACTER*5 catm
       character fname*64
-#include "netcdf.inc"
+# include "netcdf.inc"
 
 !     !-------------------------------------------------------------------
 !     !             ***  ROUTINE cpl_prism_define  ***
@@ -88,15 +90,15 @@
 ! default definiton
       ssnd_clname(:) = 'not defined' 
       srcv_clname(:) = 'not defined' 
-#ifdef AGRIF
+# ifdef AGRIF
       level=Agrif_Fixed()
       write(clevel,'(a,i1.1)') "_", level
       write(rclevel,'(a,i1.1)') "_CPLMASK", level
-#else
+# else
       level=0
       write(clevel,'(a)') '  '
       write(rclevel,'(a)') '         '
-#endif
+# endif
 
 !------------------------------------------------------------------
 !     Sent
@@ -223,10 +225,10 @@
 !     End of definition phase
 !------------------------------------------------------------------
       CALL MPI_Barrier( MPI_COMM_WORLD, comp_ierror ) 
-#ifdef AGRIF
+# ifdef AGRIF
       if (.not.Agrif_Root()) then
          if (Agrif_fixed() == Agrif_Nb_Fine_Grids()) then
-#endif
+# endif
             CALL prism_enddef_proto( comp_ierror )
             IF ( comp_ierror /= PRISM_Ok ) THEN
                CALL prism_abort_proto ( comp_id, 'cpl_prism_enddef', 
@@ -235,18 +237,18 @@
                MPI_master_only write(*,*) 
      &              'CPL-CROCO: ENDDEF OK'
             ENDIF
-#ifdef AGRIF
+# ifdef AGRIF
          endif
       endif
-#endif
+# endif
 
       cplmsk(:,:,0) = 1.            ! default use, no coupling mask
       cplmsk(:,:,1:nmaxatm) = 0.    ! default definition when using coupling mask
       fname = 'coupling_masks'//trim(clevel)//'.nc'
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
       ierr=0
       call insert_node (fname, len_trim(fname), mynode, NNODES, ierr)
-# endif
+#  endif
       ierr=nf_open(trim(fname), nf_nowrite, ncid)
       if (ierr == NF_NOERR) then
           MPI_master_only write(*,*) 
@@ -263,18 +265,16 @@
              endif
           enddo
           ierr=nf_close(ncid)
-       else
+      else
           MPI_master_only write(*,*) 
      &        'CPL-CROCO: coupling_masks'//trim(clevel)//'.nc not found'
-       endif
-
-
-#else 
+      endif
+      return
+      end
+#else
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
+      subroutine cpl_prism_define_empty
+      end
 #endif 
-
-      END SUBROUTINE cpl_prism_define
-
-

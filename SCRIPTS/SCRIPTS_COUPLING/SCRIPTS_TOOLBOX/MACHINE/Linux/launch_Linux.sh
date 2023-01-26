@@ -12,6 +12,8 @@ if [ ${USE_OCE} -eq 1 ]; then
         echo "-n ${MY_NODES} ./crocox croco.in" >> app.conf
     else
         echo "-n $(( ${NP_OCEX} * ${NP_OCEY} )) ./crocox croco.in" >> app.conf
+    fi
+
     if [ ${USE_XIOS_OCE} -eq 1 ]; then
         echo "-n ${NP_XIOS_OCE} ./xios_server.exe" >> app.conf
     fi

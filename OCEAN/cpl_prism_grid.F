@@ -9,9 +9,10 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-#if defined OA_COUPLING || defined OW_COUPLING
-      SUBROUTINE cpl_prism_grid(id_partition)
 #include "cppdefs.h"
+#if defined OA_COUPLING || defined OW_COUPLING
+
+      SUBROUTINE cpl_prism_grid(id_partition)
 
       USE mod_prism             ! OASIS3 prism module
 # ifdef AGRIF
@@ -20,11 +21,11 @@
       IMPLICIT NONE
       include 'mpif.h'
       
-#include "param.h"
-#include "grid.h"
-#include "scalars.h"
-#include "mpi_cpl.h"
-#include "set_global_definitions.h"
+# include "param.h"
+# include "grid.h"
+# include "scalars.h"
+# include "mpi_cpl.h"
+# include "set_global_definitions.h"
 !
       integer, intent(in) :: id_partition
 !
@@ -210,18 +211,16 @@
 ! Terminate grid writing
 !------------------------------------------------------------------
       CALL prism_terminate_grids_writing()
-
       CALL MPI_Barrier(ocean_grid_comm, error_flg)
-
 !------------------------------------------------------------------
 !     End of grid definition
 !------------------------------------------------------------------
-
+      return
+      end
 #else 
-      SUBROUTINE cpl_prism_grid
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
+      subroutine cpl_prism_grid_empty
+      end
 #endif 
-
-      END SUBROUTINE cpl_prism_grid

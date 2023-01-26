@@ -13,13 +13,13 @@
 # include "cppdefs.h"
 #endif
 
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 
-#ifndef AVRH
+# ifndef AVRH
       subroutine def_diags_eddy (ncid, total_rec, ierr)
-#else
+# else
       subroutine def_diags_eddy_avg(ncid, total_rec, ierr)
-#endif
+# endif
 !
 !---------------------------------------------------------------
 ! Create diag data NetCDF file:
@@ -37,59 +37,62 @@
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),u2dgrd(3),v2dgrd(3),auxil(2),checkdims 
-#ifdef SOLVE3D
+# ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
      &      , p2dgrd(3), p3dgrd(4), pw3dgrd(4)
-#endif
-
+# endif
+# ifdef NC4PAR
+     &      , csize,cmode
+#  include "mpi_cpl.h"
+      include 'mpif.h'
+# endif
       character*60 text
-
 !
-#ifndef AVRH
+# ifndef AVRH
 
-# define ncname diags_eddyname
-# define rec_per_file nrpfdiags_eddy
-# define wrt wrtdiags_eddy
-# define vidTime diags_eddyTime
-# define vidTime2 diags_eddyTime2
-# define vidTstep diags_eddyTstep
-# define viddiags_zz diags_eddyzz
-# define viddiags_uu diags_eddyuu
-# define viddiags_vv diags_eddyvv
-# define viddiags_uv diags_eddyuv
-# define viddiags_ub diags_eddyub
-# define viddiags_vb diags_eddyvb
-# define viddiags_uw diags_eddyuw
-# define viddiags_vw diags_eddyvw
-# define viddiags_wb diags_eddywb
-# define viddiags_ubu diags_eddyubu
-# define viddiags_vbv diags_eddyvbv
-# define viddiags_usu diags_eddyusu
-# define viddiags_vsv diags_eddyvsv
+#  define ncname diags_eddyname
+#  define rec_per_file nrpfdiags_eddy
+#  define wrt wrtdiags_eddy
+#  define vidTime diags_eddyTime
+#  define vidTime2 diags_eddyTime2
+#  define vidTstep diags_eddyTstep
+#  define viddiags_zz diags_eddyzz
+#  define viddiags_uu diags_eddyuu
+#  define viddiags_vv diags_eddyvv
+#  define viddiags_uv diags_eddyuv
+#  define viddiags_ub diags_eddyub
+#  define viddiags_vb diags_eddyvb
+#  define viddiags_uw diags_eddyuw
+#  define viddiags_vw diags_eddyvw
+#  define viddiags_wb diags_eddywb
+#  define viddiags_ubu diags_eddyubu
+#  define viddiags_vbv diags_eddyvbv
+#  define viddiags_usu diags_eddyusu
+#  define viddiags_vsv diags_eddyvsv
 
-#else
+# else
 
-# define ncname diags_eddyname_avg
-# define rec_per_file nrpfdiags_eddy_avg
-# define wrt wrtdiags_eddy_avg
-# define vidTime diags_eddyTime_avg
-# define vidTime2 diags_eddyTime2_avg
-# define vidTstep diags_eddyTstep_avg
-# define viddiags_zz diags_eddyzz_avg
-# define viddiags_uu diags_eddyuu_avg
-# define viddiags_vv diags_eddyvv_avg
-# define viddiags_uv diags_eddyuv_avg
-# define viddiags_ub diags_eddyub_avg
-# define viddiags_vb diags_eddyvb_avg
-# define viddiags_uw diags_eddyuw_avg
-# define viddiags_vw diags_eddyvw_avg
-# define viddiags_wb diags_eddywb_avg
-# define viddiags_ubu diags_eddyubu_avg
-# define viddiags_vbv diags_eddyvbv_avg
-# define viddiags_usu diags_eddyusu_avg
-# define viddiags_vsv diags_eddyvsv_avg
-
-#endif
+#  define ncname diags_eddyname_avg
+#  define rec_per_file nrpfdiags_eddy_avg
+#  define wrt wrtdiags_eddy_avg
+#  define vidTime diags_eddyTime_avg
+#  define vidTime2 diags_eddyTime2_avg
+#  define vidTstep diags_eddyTstep_avg
+#  define viddiags_zz diags_eddyzz_avg
+#  define viddiags_uu diags_eddyuu_avg
+#  define viddiags_vv diags_eddyvv_avg
+#  define viddiags_uv diags_eddyuv_avg
+#  define viddiags_ub diags_eddyub_avg
+#  define viddiags_vb diags_eddyvb_avg
+#  define viddiags_uw diags_eddyuw_avg
+#  define viddiags_vw diags_eddyvw_avg
+#  define viddiags_wb diags_eddywb_avg
+#  define viddiags_ubu diags_eddyubu_avg
+#  define viddiags_vbv diags_eddyvbv_avg
+#  define viddiags_usu diags_eddyusu_avg
+#  define viddiags_vsv diags_eddyvsv_avg
+ 
+# endif
 !
       if (may_day_flag.ne.0) return      !-->  EXIT
 !
@@ -104,37 +107,42 @@
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-#ifdef DO_NOT_OVERWRITE
-       if (lvar.eq.total_rec-1) then
-# ifndef AVRH
+# ifdef DO_NOT_OVERWRITE
+      if (lvar.eq.total_rec-1) then
+#  ifndef AVRH
+        create_new_file=ldefdiags_eddy
+#  else
+        create_new_file=ldefdiags_eddy_avg
+#  endif
+      else
+        create_new_file=.false.
+      endif
+# else
+#  ifndef AVRH
       create_new_file=ldefdiags_eddy
-# else
+#  else
       create_new_file=ldefdiags_eddy_avg
+#  endif
 # endif
-       else
-# ifndef AVRH
-      create_new_file=.false.
-# else
-      create_new_file=.false.
-# endif
-       endif
-#else
-# ifndef AVRH
-      create_new_file=ldefdiags_eddy
-# else
-      create_new_file=ldefdiags_eddy_avg
-# endif
-#endif
-
 !
       if (ncid.ne.-1) create_new_file=.false.
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
-#endif
+# endif
 !
  10   if (create_new_file) then
         lstr=lenstr(ncname)
-        ierr=nf_create(ncname(1:lstr),NF_CLOBBER,ncid)
+# ifndef NC4PAR
+        ierr=nf_create(ncname(1:lstr), NF_CLOBBER, ncid)
+# else
+        cmode = ior(nf_netcdf4, nf_classic_model)
+        cmode = ior(cmode, nf_mpiio)
+        csize=xi_rho*eta_rho/NNODES
+        MPI_master_only write(stdout,*)
+     &       'CREATE DIAGS_EDDY HIS/AVG NC4 PARALLEL FILE'
+        ierr=nf_create_par(ncname(1:lstr), cmode,
+     &                     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
+# endif
         if (ierr.ne.nf_noerr) then
           write(stdout,11) ncname(1:lstr)
           may_day_flag=3
@@ -159,10 +167,10 @@
         ierr=nf_def_dim (ncid, 'xi_u',     xi_u,     u2dgrd(1))
         ierr=nf_def_dim (ncid, 'eta_rho',  eta_rho,  r2dgrd(2))
         ierr=nf_def_dim (ncid, 'eta_v',    eta_v,    v2dgrd(2))
-#ifdef SOLVE3D
+# ifdef SOLVE3D
         ierr=nf_def_dim (ncid, 's_rho',    N,        r3dgrd(3))
         ierr=nf_def_dim (ncid, 's_w',      N+1,      w3dgrd(3))
-#endif
+# endif
         ierr=nf_def_dim (ncid, 'time', nf_unlimited, timedim)
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
 !
@@ -180,7 +188,7 @@
         p2dgrd(2)=v2dgrd(2)         ! 2D vort-type
         p2dgrd(3)=timedim
 
-#ifdef SOLVE3D
+# ifdef SOLVE3D
 
         r3dgrd(1)=r2dgrd(1)         !
         r3dgrd(2)=r2dgrd(2)         ! 3D RHO-type
@@ -210,7 +218,7 @@
         pw3dgrd(3)=w3dgrd(3)         ! 
         pw3dgrd(4)=timedim         
 
-#endif
+# endif
 !
 !
 ! Define running parameters :
@@ -221,6 +229,9 @@
 !
         ierr=nf_def_var (ncid, 'time_step', nf_int, 2, auxil,
      &                                                 vidTstep)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTstep, nf_collective)
+# endif
         ierr=nf_put_att_text (ncid, vidTstep, 'long_name', 48,
      &       'time step and record numbers from initialization')
 !
@@ -229,17 +240,19 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
      &                            NF_DOUBLE, 1, timedim, vidTime)
-!
-#ifndef AVRH
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTime, nf_collective)
+# endif
+# ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
         ierr=nf_put_att_text (ncid, vidTime, 'long_name', 
      &       lvar, vname(2,indxTime)(1:lvar))
-#else
+# else
         text='avg'/ /vname(2,indxTime)
         lvar=lenstr(text)
         ierr=nf_put_att_text (ncid, vidTime, 'long_name', 
      &       lvar, text(1:lvar))
-#endif
+# endif
 !
         lvar=lenstr(vname(2,indxTime))
         ierr=nf_put_att_text (ncid, vidTime, 'long_name', lvar,
@@ -261,17 +274,19 @@
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
      &                            NF_DOUBLE, 1, timedim, vidTime2)
-!
-#ifndef AVRH
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
+# endif
+# ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
         ierr=nf_put_att_text (ncid, vidTime2, 'long_name', 
      &       lvar, vname(2,indxTime)(1:lvar))
-#else
+# else
         text='avg'/ /vname(2,indxTime2)
         lvar=lenstr(text)
         ierr=nf_put_att_text (ncid, vidTime2, 'long_name', 
      &       lvar, text(1:lvar))
-#endif
+# endif
 !
         lvar=lenstr(vname(2,indxTime2))
         ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
@@ -301,6 +316,9 @@
            lvar=lenstr(vname(1,indxeddyzz+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyzz+itrc-1)(1:lvar),
      &                      NF_FOUT, 3, r2dgrd, viddiags_zz(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_zz(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyzz+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_zz(itrc), 'long_name',
@@ -327,6 +345,9 @@
            lvar=lenstr(vname(1,indxeddyuu+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyuu+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_uu(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_uu(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyuu+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_uu(itrc), 'long_name',
@@ -353,6 +374,9 @@
            lvar=lenstr(vname(1,indxeddyvv+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyvv+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_vv(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_vv(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyvv+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_vv(itrc), 'long_name',
@@ -379,6 +403,9 @@
            lvar=lenstr(vname(1,indxeddyuv+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyuv+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_uv(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_uv(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyuv+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_uv(itrc), 'long_name',
@@ -405,6 +432,9 @@
            lvar=lenstr(vname(1,indxeddyuw+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyuw+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_uw(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_uw(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyuw+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_uw(itrc), 'long_name',
@@ -431,6 +461,9 @@
            lvar=lenstr(vname(1,indxeddyvw+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyvw+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_vw(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_vw(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyvw+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_vw(itrc), 'long_name',
@@ -457,6 +490,9 @@
            lvar=lenstr(vname(1,indxeddyub+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyub+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_ub(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_ub(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyub+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_ub(itrc), 'long_name',
@@ -483,6 +519,9 @@
            lvar=lenstr(vname(1,indxeddyvb+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyvb+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_vb(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_vb(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyvb+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_vb(itrc), 'long_name',
@@ -509,6 +548,9 @@
            lvar=lenstr(vname(1,indxeddywb+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddywb+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_wb(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_wb(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddywb+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_wb(itrc), 'long_name',
@@ -535,6 +577,9 @@
            lvar=lenstr(vname(1,indxeddyubu+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyubu+itrc-1)(1:lvar),
      &                      NF_FOUT, 3, u2dgrd, viddiags_ubu(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_ubu(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyubu+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_ubu(itrc), 'long_name',
@@ -561,6 +606,9 @@
            lvar=lenstr(vname(1,indxeddyvbv+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyvbv+itrc-1)(1:lvar),
      &                      NF_FOUT, 3, v2dgrd, viddiags_vbv(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_vbv(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyvbv+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_vbv(itrc), 'long_name',
@@ -587,6 +635,9 @@
            lvar=lenstr(vname(1,indxeddyusu+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyusu+itrc-1)(1:lvar),
      &                      NF_FOUT, 3, u2dgrd, viddiags_usu(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_usu(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyusu+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_usu(itrc), 'long_name',
@@ -613,6 +664,9 @@
            lvar=lenstr(vname(1,indxeddyvsv+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxeddyvsv+itrc-1)(1:lvar),
      &                      NF_FOUT, 3, v2dgrd, viddiags_vsv(itrc))
+# ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_vsv(itrc),nf_collective)
+# endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxeddyvsv+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_vsv(itrc), 'long_name',
@@ -641,11 +695,11 @@
 !
         ierr=nf_enddef(ncid)
         MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
-#ifdef AVRH
+# ifdef AVRH
      &        'DEF_DIAGS_EDDY_AVG - Created ',
-#else      
+# else      
      &        'DEF_DIAGS_EDDY - Created ',
-#endif /*AVRH*/
+# endif /*AVRH*/
      &                'new netCDF file ''', 
      &                 ncname(1:lstr), '''.'
      &                 MYID
@@ -661,8 +715,13 @@
 ! defined there and find their netCDF IDs.
 !
       elseif (ncid.eq.-1) then
+# ifndef NC4PAR
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
-        if (ierr. ne. nf_noerr) then
+# else
+        ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
+     &                    MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
+# endif
+        if (ierr .eq. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
             if (rec_per_file.eq.0) then
@@ -680,16 +739,16 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES
               if (mynode.gt.0) total_rec=total_rec-1
-#endif
+# endif
             endif
             ierr=nf_noerr
           endif
         endif
 !
         if (ierr. ne. nf_noerr) then
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
           if (mynode.eq.0) then
             create_new_file=.true.
             goto 10
@@ -699,10 +758,10 @@
      &                   MYID
             goto 99                                       !--> ERROR
           endif
-#else
+# else
           create_new_file=.true.
           goto 10
-#endif
+# endif
         endif
 !
 ! Find netCDF IDs of evolving model variables:
@@ -714,7 +773,11 @@
         if (ierr .ne. nf_noerr) then
           write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
-        endif 
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTstep, nf_collective)
+# endif
+ 
 !
 ! Time.
 !
@@ -724,6 +787,10 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTime, nf_collective)
+# endif
+
 !
 ! Time2.
 !
@@ -733,6 +800,9 @@
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR 
         endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
+# endif
 
 
 ! momentum flux diagnostics variables :
@@ -753,6 +823,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_zz(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyuu
@@ -765,6 +838,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_uu(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvv
@@ -777,6 +853,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vv(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyuv
@@ -789,6 +868,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_uv(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyuw
@@ -801,6 +883,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_zw(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvw
@@ -813,6 +898,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vw(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyub
@@ -825,6 +913,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_ub(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvb
@@ -837,6 +928,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vb(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddywb
@@ -849,6 +943,9 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_wb(itrc), nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyubu
@@ -861,6 +958,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_ubu(itrc),nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvbv
@@ -873,6 +973,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vbv(itrc),nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyusu
@@ -885,6 +988,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_usu(itrc),nf_collective)
+# endif
 !
 ! ---------------------------------
 ! indxeddyvsv
@@ -897,6 +1003,9 @@
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vsv(itrc),nf_collective)
+# endif
 !
         endif ! wrt(itrc)
 !
@@ -912,7 +1021,7 @@
      &                     'existing file  from record =', rec
      &                      MYID
 !
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       else
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
@@ -922,7 +1031,7 @@
      &                 MYID
           goto 99                                         !--> ERROR
         endif
-#endif
+# endif
 !
       endif             !<--  create_new_file  
 !
@@ -943,33 +1052,33 @@
   99  return
       end
 !
-#undef ncname
-#undef rec_per_file
-#undef wrt
-#undef vidTime
-#undef vidTime2
-#undef vidTstep
+# undef ncname
+# undef rec_per_file
+# undef wrt
+# undef vidTime
+# undef vidTime2
+# undef vidTstep
 !
-#undef viddiags_zz
-#undef viddiags_uu
-#undef viddiags_vv
-#undef viddiags_uv
-#undef viddiags_ub
-#undef viddiags_vb
-#undef viddiags_wb
-#undef viddiags_uw
-#undef viddiags_vw
-#undef viddiags_ubu
-#undef viddiags_vbv
-#undef viddiags_usu
-#undef viddiags_vsv
+# undef viddiags_zz
+# undef viddiags_uu
+# undef viddiags_vv
+# undef viddiags_uv
+# undef viddiags_ub
+# undef viddiags_vb
+# undef viddiags_wb
+# undef viddiags_uw
+# undef viddiags_vw
+# undef viddiags_ubu
+# undef viddiags_vbv
+# undef viddiags_usu
+# undef viddiags_vsv
 !
 # ifdef AVERAGES
 #  ifndef AVRH
 #   define AVRH
 #   include "def_diags_eddy.F"
-#   endif
-#  endif /* AVERAGES */
+#  endif
+# endif /* AVERAGES */
 !
 #else /*DIAGNOSTICS_EDDY */
       subroutine def_diags_eddy_empty()

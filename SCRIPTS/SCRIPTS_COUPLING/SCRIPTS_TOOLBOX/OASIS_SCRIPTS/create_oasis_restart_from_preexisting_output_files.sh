@@ -76,14 +76,15 @@ if [ $model == wrf ] ; then
       gridlevels='WRF_d01_EXT_d01'
     fi
 
-    varlist=(${gridlevels}_TAUX \
-            ${gridlevels}_TAUY \
+    varlist=(${gridlevels}_TAUE \
+            ${gridlevels}_TAUN \
             ${gridlevels}_TAUMOD \
-            ${gridlevels}_WND_U_01 \
-            ${gridlevels}_WND_V_01 \
+            ${gridlevels}_WND_E_01 \
+            ${gridlevels}_WND_N_01 \
             ${gridlevels}_SURF_NET_SOLAR \
             ${gridlevels}_SURF_NET_NON-SOLAR \
-            ${gridlevels}_EVAP-PRECIP)
+            ${gridlevels}_EVAP-PRECIP\
+            ${gridlevels}_PSFC)
 
     dimtime=Time
     timerange=2
@@ -92,13 +93,13 @@ elif  [ $model == croco ] ; then
 
     if [ -z $gridlevels ] ; then
       echo 'Default grid level is assumed: 0 for parent...'
-      gridlevels='0'
+      gridlevels=''
     fi
 
-    varlist=(SRMUOCE${gridlevels} \
-            SRMVOCE${gridlevels} \
-            SRMSSTV${gridlevels} \
-            SRMSSHV${gridlevels})
+    varlist=(CROCO_EOCE${gridlevels} \
+            CROCO_NOCE${gridlevels} \
+            CROCO_SST${gridlevels} \
+            CROCO_SSH${gridlevels})
 
     dimtime=time
     timerange=1
@@ -147,7 +148,7 @@ for k in `seq 0 $(( ${lengthvar} - 1))` ; do
 
     # Extract or compute var
     echo '---> Extract or compute '$var
-    ${SCRIPTDIR}/OASIS_SCRIPTS/from_${model}.sh $filein $filetmp $timerange $gridlevels
+    ${SCRIPTDIR}/OASIS_SCRIPTS/from_${model}.sh $filein $filetmp $var $timerange $gridlevels
 
     if [ $model == wrf ] ; then
         # Put them on the stag grid

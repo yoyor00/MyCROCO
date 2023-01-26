@@ -36,7 +36,10 @@
  io_form_auxhist3                    = 2
  auxhist3_interval                   = <xtrm_int_m>,<xtrm_int_m>,<xtrm_int_m>,
  frames_per_auxhist3                 = <xtrm_nb_out>,<xtrm_nb_out>,<xtrm_nb_out>,
- debug_level                         = 10
+ debug_level                         = 0
+ input_from_hires                    = .false., .false.,.false.,
+ rsmas_data_path                     = "CONFIG/INPUTS/HIRES/SurfaceFiles/"
+
  /
 
  &domains
@@ -44,6 +47,7 @@
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
  max_dom                             = <max_domains>,
+ max_cpldom                          = <max_cpldom>,
  e_we                                = <xdim_d01>,<xdim_d02>,<xdim_d03>,
  e_sn                                = <ydim_d01>,<ydim_d02>,<ydim_d03>,
  e_vert                              = <nbvertlev>,<nbvertlev>,<nbvertlev>,
@@ -102,6 +106,7 @@
  sst_skin                            = 0,
  isftcflx                            = <isftcflx>,
  prec_acc_dt                         = 360.,360.,
+ num_land_cat                        = 21,
  /
 
  &dynamics
@@ -163,10 +168,10 @@
  /
 
  &fdda
- grid_fdda                           = <nudge_d01>,0,0,
+ grid_fdda                           = <nudge_d01>,<nudge_d02>,<nudge_d03>,
  gfdda_inname                        = "wrffdda_d<domain>",
- gfdda_end_h                         = <nudge_end_h>, <nudge_end_h>, <nudge_end_h>,
- gfdda_interval_m                    = <nudge_int_m>,<nudge_int_m>,<nudge_int_m>,
+ gfdda_end_h                         = <nudge_end_h_d01>, <nudge_end_h_d02>, <nudge_end_h_d03>,
+ gfdda_interval_m                    = <nudge_int_m_d01>,<nudge_int_m_d02>,<nudge_int_m_d03>,
  fgdt                                = 0,     0,     0,
  fgdtzero                            = 0,     0,     0,
  if_no_pbl_nudging_uv                = 1,     1,     1,
@@ -184,9 +189,9 @@
  dk_zfac_uv                          = 1,     1,     1,
  dk_zfac_t                           = 1,     1,     1,
  dk_zfac_ph                          = 1,     1,     1,
- guv                                 = <nudge_coef>,     0,     0,
- gt                                  = <nudge_coef>,     0,     0,
- gph                                 = <nudge_coef>,     0,     0,
+ guv                                 = <nudge_coef_d01>,<nudge_coef_d02>,<nudge_coef_d03>,
+ gt                                  = <nudge_coef_d01>,<nudge_coef_d02>,<nudge_coef_d03>,
+ gph                                 = <nudge_coef_d01>,<nudge_coef_d02>,<nudge_coef_d03>,
  gq                                  = 0,     0,     0,
  xwavenum                            = 3,0,0
  ywavenum                            = 3,0,0

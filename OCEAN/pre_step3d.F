@@ -72,7 +72,7 @@
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
      &       ,imin,imax,jmin,jmax,nadv,iAkt
-# ifdef PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS
      &       ,is
 # endif
       real   ru(PRIVATE_2D_SCRATCH_ARRAY,N),    cff,
@@ -109,7 +109,7 @@
 # include "mixing.h"
 # include "scalars.h"
 # include "weno_interfaces.h"
-# ifdef PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS
 #  include "sources.h"
 # endif
 # ifdef M3FAST
@@ -348,7 +348,7 @@
                   endif
 #  endif
                 endif
-              else
+              elseif(Dsrc(is).eq.1) then
                 if (Lsrc(is,itrc)) then
                   FE(i,j)=Hvom(i,j,k)*Tsrc(is,k,itrc)
 #  ifdef MASKING
@@ -413,7 +413,39 @@
         enddo   ! <-- k
 #endif
       enddo       ! <-- itrc
+!
+!----------------------------------------------------------
+! Add tracer divergence due to cell-centered point sources
+!----------------------------------------------------------
+!
+#  if defined PSOURCE_MASS
+        do itrc=1,NT
+          do is=1,Nsrc
+#   ifdef MPI
+           i=Isrc_mpi(is,mynode)
+           j=Jsrc_mpi(is,mynode)
+#   else
+           i=Isrc(is)
+           j=Jsrc(is)
+#   endif
+           if (Istr.le.i .and. i.le.Iend+1
+     &        .and. Jstr.le.j .and. j.le.Jend+1) then
+             cff1=dt*pm(i,j)*pn(i,j)
+             do k=1,N 
+               if (Lsrc(is,itrc)) then
+                 cff2=Tsrc(is,k,itrc)
+               else
+                 cff2=t(i,j,k,nstp,itrc)
+               endif
+                t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+
+     &          cff1*Qsrc(is,k)*cff2
+             enddo
+           endif
+          enddo ! source
+        enddo ! itrc
+#  endif /* PSOURCE_MASS */
 # endif /* TRACERS */
+
 !$acc kernels if(compute_on_device) default(present)
 !
 ! Continue computation of the auxiliary tracer field: auxiliary
@@ -942,8 +974,8 @@
 
 # if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
       do k=1,N
-        do j=Jstr,Jend
         do j=JstrR,JendR
+          do i=IstrR,IendR
             u(i,j,k,nnew) = u(i,j,k,nstp)
           enddo
         enddo

@@ -996,8 +996,18 @@ C$OMP END MASTER
 #ifdef MUSTANG
       use plug_MUSTANG_CROCO, only: mustang_update_main
       use plug_MUSTANG_CROCO, only: mustang_deposition_main
+# ifdef MORPHODYN
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
-      use comMUSTANG , only : l_morphocoupl,t_morpho
+      use comMUSTANG, only : l_morphocoupl, t_morpho
+# endif
+# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
+      use comMUSTANG, only : c_sedtot
+      use comMUSTANG, only : dzs 
+# if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+      use comMUSTANG , only : flx_bx, flx_by 
+      use comsubstance, only : ibedload1, ibedload2
+# endif
+#endif
 # include "coupler_define_MUSTANG.h"
 #endif
       implicit none
@@ -1035,7 +1045,7 @@ C$OMP END MASTER
       common /sta_step/ sta_str
 #endif
       integer omp_get_num_threads, omp_get_thread_num
-      integer itrc
+      integer itrc, ilay
 
       real t1,t2,t3
 
@@ -1084,13 +1094,25 @@ C$OMP BARRIER
 
 # if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
 C$OMP MASTER
-      do itrc=1,NT
+      do itrc = 1, NT
         call check_tab3d(Akt(:,:,1:N,itrc),'Akt step3d_t','r')
       enddo
 #  if defined GLS_MIXING
         call check_tab3d(trb(:,:,1:N,nstp,igls),'gls step3d_t','r')
         call check_tab3d(trb(:,:,1:N,nstp,itke),'tke step3d_t','r')
 #  endif
+# if defined MUSTANG 
+        do ilay = ksdmin, ksdmax
+            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtotx step3d_t','r')
+            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','r')
+        enddo
+# if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+        do itrc = ibedload1, ibedload2
+            call check_tab2d(flx_bx(itrc, :, :),'flx_bx step3d_t','r')
+            call check_tab2d(flx_by(itrc, :, :),'flx_by step3d_t','r')
+        enddo
+# endif
+# endif
 C$OMP END MASTER
 # endif
 
@@ -1114,8 +1136,9 @@ C$OMP BARRIER
         call ana_morphodyn (tile)
 #   endif
 #  elif defined MUSTANG
-        IF_MUSTANG_MORPHO_CPL
-     &  call mustang_morpho_main (tile)
+        if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) then
+            call mustang_morpho_main (tile)
+        endif
 #  endif
         call set_depth_morphodyn (tile)
       enddo
