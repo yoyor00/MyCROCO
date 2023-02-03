@@ -16,6 +16,7 @@ MODULE p5zprod
    !!   p5z_prod_alloc :   Allocate variables for growth
    !!----------------------------------------------------------------------
    USE sms_pisces      !  PISCES Source Minus Sink variables
+   USE p2zlim
    USE p4zlim
    USE p5zlim          !  Co-limitations of differents nutrients
 

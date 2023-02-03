@@ -212,8 +212,14 @@
      &        indxGOC, indxSFE, indxDFE, indxDSI, indxNFE,
      &        indxNCH, indxDCH, indxNO3, indxNH4
       parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
-     &           indxTAL =indxDIC+1, indxOXY=indxDIC+2,
-     &           indxCAL=indxDIC+3, indxPO4=indxDIC+4,
+     &           indxTAL =indxDIC+1, indxOXY=indxDIC+2)
+#   ifdef key_pisces_reduced
+      parameter (indxPOC=indxDIC+3, indxPHY =indxDIC+4,
+     &           indxZOO=indxDIC+5, indxDOC =indxDIC+6,
+     &           indxNO3=indxDIC+7, indxFER =indxDIC+8)
+#   endif
+#   if ! defined key_pisces_reduced
+      parameter (indxCAL=indxDIC+3, indxPO4=indxDIC+4,
      &           indxPOC=indxDIC+5, indxSIL=indxDIC+6,
      &           indxPHY =indxDIC+7, indxZOO=indxDIC+8,
      &           indxDOC =indxDIC+9, indxDIA=indxDIC+10,
@@ -224,6 +230,7 @@
      &           indxNFE =indxDIC+19, indxNCH=indxDIC+20,
      &           indxDCH =indxDIC+21, indxNO3=indxDIC+22,
      &           indxNH4 =indxDIC+23)
+#     endif
 #    ifdef key_ligand
       integer indxLGW
       parameter (indxLGW=indxDIC+24)

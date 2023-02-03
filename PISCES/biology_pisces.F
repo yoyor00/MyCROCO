@@ -51,10 +51,12 @@ C       implicit none
             DO i = IRANGE          ! masked grid volume
                 trb(i,j,K,jpno3) 
      &        = trb(i,j,K,jpno3) / rno3
+# if ! defined key_pisces_reduced
                 trb(i,j,K,jpnh4) 
      &        = trb(i,j,K,jpnh4) / rno3
                 trb(i,j,K,jppo4) 
      &        = trb(i,j,K,jppo4) / po4r
+#endif
             ENDDO
          ENDDO
        ENDDO
@@ -76,10 +78,12 @@ C       implicit none
             DO i = IRANGE          ! masked grid volume
                trb(i,j,K,jpno3)
      &       = trb(i,j,K,jpno3) * rno3
+# if ! defined key_pisces_reduced
                trb(i,j,K,jpnh4) 
      &       = trb(i,j,K,jpnh4) * rno3
                trb(i,j,K,jppo4) 
      &       = trb(i,j,K,jppo4) * po4r
+# endif
             ENDDO
          ENDDO
       ENDDO
