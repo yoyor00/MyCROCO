@@ -794,7 +794,7 @@ C$    trd=omp_get_thread_num()
       if (WESTERN_EDGE) then
         DO j=Jstr,Jend
           cff1=ABS(ABS(umask_wet(Istr,j))-1.)
-          cff2=0.5+SIGN(0.5,ubar(Istr,j,kstp))*umask_wet(Istr,j)
+          cff2=0.5+SIGN(0.5,ubar(Istr,j,knew))*umask_wet(Istr,j)
           umask_wet(Istr,j)=0.5*umask_wet(Istr,j)*cff1
      &                                           +cff2*(1.-cff1)
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask_wet(Istr,j)
@@ -803,7 +803,7 @@ C$    trd=omp_get_thread_num()
       if (EASTERN_EDGE) then
         DO j=Jstr,Jend
           cff1=ABS(ABS(umask_wet(Iend+1,j))-1.)
-          cff2=0.5+SIGN(0.5,ubar(Iend+1,j,kstp))*umask_wet(Iend+1,j)
+          cff2=0.5+SIGN(0.5,ubar(Iend+1,j,knew))*umask_wet(Iend+1,j)
           umask_wet(Iend+1,j)=0.5*umask_wet(Iend+1,j)*cff1
      &                                               +cff2*(1.-cff1)
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask_wet(Iend+1,j)
@@ -814,7 +814,7 @@ C$    trd=omp_get_thread_num()
       if (SOUTHERN_EDGE) then
         DO i=IstrU,Iend
           cff1=ABS(ABS(umask_wet(i,Jstr-1))-1.)
-          cff2=0.5+SIGN(0.5,ubar(i,Jstr-1,kstp))*umask_wet(i,Jstr-1)
+          cff2=0.5+SIGN(0.5,ubar(i,Jstr-1,knew))*umask_wet(i,Jstr-1)
           umask_wet(i,Jstr-1)=0.5*umask_wet(i,Jstr-1)*cff1
      &                                               +cff2*(1.-cff1)
           ubar(i,Jstr-1,knew)=ubar(i,Jstr-1,knew)*umask_wet(i,Jstr-1)
@@ -823,7 +823,7 @@ C$    trd=omp_get_thread_num()
       if (NORTHERN_EDGE) then
         DO i=Istr,Iend
           cff1=ABS(ABS(umask_wet(i,Jend+1))-1.)
-          cff2=0.5+SIGN(0.5,ubar(i,Jend+1,kstp))*umask_wet(i,Jend+1)
+          cff2=0.5+SIGN(0.5,ubar(i,Jend+1,knew))*umask_wet(i,Jend+1)
           umask_wet(i,Jend+1)=0.5*umask_wet(i,Jend+1)*cff1
      &                                               +cff2*(1.-cff1)
           ubar(i,Jend+1,knew)=ubar(i,Jend+1,knew)*umask_wet(i,Jend+1)
@@ -833,7 +833,7 @@ C$    trd=omp_get_thread_num()
 # if !defined EW_COM_PERIODIC && !defined NS_COM_PERIODIC
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
         cff1=ABS(ABS(umask_wet(Istr,Jstr-1))-1.)
-        cff2=0.5+SIGN(0.5,ubar(Istr,Jstr-1,kstp))*umask_wet(Istr,Jstr-1)
+        cff2=0.5+SIGN(0.5,ubar(Istr,Jstr-1,knew))*umask_wet(Istr,Jstr-1)
         umask_wet(Istr,Jstr-1)=0.5*umask_wet(Istr,Jstr-1)*cff1
      &                                                   +cff2*(1.-cff1)
         ubar(Istr,Jstr-1,knew)=ubar(Istr,Jstr-1,knew)
@@ -841,7 +841,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (SOUTHERN_EDGE .and. EASTERN_EDGE) then
         cff1=ABS(ABS(umask_wet(Iend+1,Jstr-1))-1.)
-        cff2=0.5+SIGN(0.5,ubar(Iend+1,Jstr-1,kstp))
+        cff2=0.5+SIGN(0.5,ubar(Iend+1,Jstr-1,knew))
      &                                         *umask_wet(Iend+1,Jstr-1)
         umask_wet(Iend+1,Jstr-1)=0.5*umask_wet(Iend+1,Jstr-1)*cff1
      &                                                   +cff2*(1.-cff1)
@@ -850,7 +850,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (NORTHERN_EDGE .and. WESTERN_EDGE) then
         cff1=ABS(ABS(umask_wet(Istr,Jend+1))-1.)
-        cff2=0.5+SIGN(0.5,ubar(Istr,Jend+1,kstp))
+        cff2=0.5+SIGN(0.5,ubar(Istr,Jend+1,knew))
      &                                       *umask_wet(Istr,Jend+1)
         umask_wet(Istr,Jend+1)=0.5*umask_wet(Istr,Jend+1)*cff1
      &                                                   +cff2*(1.-cff1)
@@ -859,7 +859,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (NORTHERN_EDGE .and. EASTERN_EDGE) then
         cff1=ABS(ABS(umask_wet(Iend+1,Jend+1))-1.)
-        cff2=0.5+SIGN(0.5,ubar(Iend+1,Jend+1,kstp))
+        cff2=0.5+SIGN(0.5,ubar(Iend+1,Jend+1,knew))
      &                                       *umask_wet(Iend+1,Jend+1)
         umask_wet(Iend+1,Jend+1)=0.5*umask_wet(Iend+1,Jend+1)*cff1
      &                                              +cff2*(1.-cff1)
