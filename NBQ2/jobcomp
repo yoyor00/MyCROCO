@@ -27,6 +27,17 @@ SOURCE=/nhoms/nguc/Devel2022/croco_dev_2022_GPU_NBQ2/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
+# 
+# get source inforamation, commit number
+#
+ENVFILE=env_infos.txt
+export CURCOMMIT=`cd $ROOT_DIR; git log | head -1 | grep commit | awk '{print $2;}'`
+echo "Commit :" 		> $ENVFILE
+echo $CURCOMMIT 		>> $ENVFILE
+echo "Hostname : "$HOSTNAME	>> $ENVFILE
+module list 			2>> $ENVFILE
+echo "Link :"			>> $ENVFILE
+ldd croco xios_server.exe sdfqsdf >> $ENVFILE 2>/dev/null
 #
 # determine operating system
 #
@@ -36,7 +47,7 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 # compiler options
 #
-FC=gfortran
+FC=ifort
 
 # if the name of the compiler is specified in the default environment
 if [ -v CROCO_FC ]; then
@@ -366,7 +377,7 @@ rm -f flags.tmp
 # compile croco
 #
 $MAKE depend
-$MAKE
+$MAKE -j 8
   
 [[ -f croco  ]] && mv croco $RUNDIR
 [[ -f partit ]] && mv partit $RUNDIR
