@@ -145,8 +145,12 @@ CONTAINS
                ! precipitation of Fe3+, creation of nanoparticles
                precip(ji,jj,jk) = MAX( 0., ( zFe3(ji,jj,jk) * 1E-9 - fe3sol ) ) * kfep * xstep
                !
-               ztrc   = ( trb(ji,jj,K,jppoc) + trb(ji,jj,K,jpgoc)   &
-                  &   + trb(ji,jj,K,jpcal) + trb(ji,jj,K,jpgsi) ) * 1.e6 
+               IF( ln_p2z ) THEN
+                  ztrc = trb(ji,jj,K,jppoc) * 1e6
+               ELSE
+                  ztrc   = ( trb(ji,jj,K,jppoc) + trb(ji,jj,K,jpgoc)   &
+                       &   + trb(ji,jj,K,jpcal) + trb(ji,jj,K,jpgsi) ) * 1.e6 
+               ENDIF
                IF( ln_dust )  zdust  = dust(ji,jj) / ( wdust / rday ) * tmask(ji,jj,jk) &
                &  * EXP( -gdept_n(ji,jj,K) / 540. )
                IF (ln_ligand) THEN
@@ -161,9 +165,10 @@ CONTAINS
                ! Compute the different ratios for scavenging of iron
                ! to later allocate scavenged iron to the different organic pools
                ! ---------------------------------------------------------
-               zdenom1 = zxlam * trb(ji,jj,K,jppoc) / zlam1b
-               zdenom2 = zxlam * trb(ji,jj,K,jpgoc) / zlam1b
-
+               IF( .NOT. ln_p2z ) THEN
+                  zdenom1 = zxlam * trb(ji,jj,K,jppoc) / zlam1b
+                  zdenom2 = zxlam * trb(ji,jj,K,jpgoc) / zlam1b
+               ENDIF
                !  Increased scavenging for very high iron concentrations found near the coasts 
                !  due to increased lithogenic particles and let say it is unknown processes (precipitation, ...)
                !  -----------------------------------------------------------
@@ -180,14 +185,19 @@ CONTAINS
                    &      + 102.4  * trb(ji,jj,K,jppoc) ) * xdiss(ji,jj,jk)   &
                    &      + ( 114.   * 0.3 * trb(ji,jj,K,jpdoc) )
                zaggdfea = zlam1a * xstep * zfecoll
+               zaggdfeb = 0.
                !
-               zlam1b   = 3.53E3 * trb(ji,jj,K,jpgoc) * xdiss(ji,jj,jk)
-               zaggdfeb = zlam1b * xstep * zfecoll
+               IF( .NOT. ln_p2z ) THEN
+                  zlam1b   = 3.53E3 * trb(ji,jj,K,jpgoc) * xdiss(ji,jj,jk)
+                  zaggdfeb = zlam1b * xstep * zfecoll
+                  !
+                  tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) + zscave * zdenom1 + zaggdfea
+                  tra(ji,jj,jk,jpbfe) = tra(ji,jj,jk,jpbfe) + zscave * zdenom2 + zaggdfeb
+               ENDIF
                !
                tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) - zscave - zaggdfea - zaggdfeb &
                &                     - zcoag - precip(ji,jj,jk)
-               tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) + zscave * zdenom1 + zaggdfea
-               tra(ji,jj,jk,jpbfe) = tra(ji,jj,jk,jpbfe) + zscave * zdenom2 + zaggdfeb
+               !
                zscav3d(ji,jj,jk)   = zscave
                zcoll3d(ji,jj,jk)   = zaggdfea + zaggdfeb
                !

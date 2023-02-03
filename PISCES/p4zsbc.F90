@@ -122,7 +122,9 @@ CONTAINS
             DO ji = IRANGE
                no3dep(ji,jj) = ( 1. - zxy ) * no3depmo(ji,jj,irec1) + zxy   * no3depmo(ji,jj,irec2)
                !
+#if ! defined key_pisces_reduced
                nh4dep(ji,jj) = ( 1. - zxy ) * nh4depmo(ji,jj,irec1) + zxy  * nh4depmo(ji,jj,irec2)
+#endif
             END DO
           END DO
       ENDIF
@@ -362,6 +364,7 @@ CONTAINS
          !
          DEALLOCATE( no3deptmp )
          !
+#if ! defined key_pisces_reduced
          lstr = lenstr(bioname)
          ierr = nf_open (bioname(1:lstr), nf_nowrite, ncid)
          IF (ierr .NE. nf_noerr .AND. lwp) THEN
@@ -401,6 +404,7 @@ CONTAINS
          END DO
          !
          DEALLOCATE( nh4deptmp )
+#endif
 
       ENDIF
 

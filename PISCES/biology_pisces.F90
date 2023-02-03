@@ -47,10 +47,12 @@ CONTAINS
               DO i = IRANGE          ! masked grid volume
                 trn(i,j,K,jpno3) = &
             &   trn(i,j,K,jpno3) / rno3
+# if ! defined key_pisces_reduced
                 trn(i,j,K,jpnh4) = &
             &   trn(i,j,K,jpnh4) / rno3
                 trn(i,j,K,jppo4) = &
             &   trn(i,j,K,jpno3) / po4r
+# endif
               ENDDO
            ENDDO
         ENDDO
@@ -74,10 +76,12 @@ CONTAINS
               DO i = IRANGE          ! masked grid volume
                 trn(i,j,K,jpno3) = &
             &   trn(i,j,K,jpno3) * rno3
+# if ! defined key_pisces_reduced
                 trn(i,j,K,jpnh4) = &
             &   trn(i,j,K,jpnh4) * rno3
                 trn(i,j,K,jppo4) = &
             &   trn(i,j,K,jpno3) * po4r
+# endif
               ENDDO
            ENDDO
         ENDDO

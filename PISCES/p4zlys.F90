@@ -25,6 +25,7 @@ MODULE p4zlys
    IMPLICIT NONE
    PRIVATE
 
+   PUBLIC   p2z_lys         ! called in trcsms_pisces.F90
    PUBLIC   p4z_lys         ! called in trcsms_pisces.F90
    PUBLIC   p4z_lys_init    ! called in trcsms_pisces.F90
 
@@ -42,6 +43,144 @@ MODULE p4zlys
    !!----------------------------------------------------------------------
 
 CONTAINS
+
+   SUBROUTINE p2z_lys( kt, knt )
+      !!---------------------------------------------------------------------
+      !!                     ***  ROUTINE p4z_lys  ***
+      !!
+      !! ** Purpose :   CALCULATES DEGREE OF CACO3 SATURATION IN THE WATER
+      !!                COLUMN, DISSOLUTION/PRECIPITATION OF CACO3 AND LOSS
+      !!                OF CACO3 TO THE CACO3 SEDIMENT POOL.
+      !!
+      !! ** Method  : - ???
+      !!---------------------------------------------------------------------
+      INTEGER, INTENT(in) ::   kt, knt   ! ocean time step and ???
+      !
+      INTEGER  ::   ji, jj, jk, jn
+      REAL(wp) ::   zdispot, zfact, zcalcon, zdepexp, zdissol
+      REAL(wp) ::   zomegaca, zexcess, zexcess0, zkd, zwsbio
+      CHARACTER (len=25) ::   charout
+      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zco3, zhinit, zhi, zcaco3, ztra
+      !!---------------------------------------------------------------------
+      !
+      zco3(:,:,:) = 0.
+      !
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zhinit(ji,jj,jk) = hi(ji,jj,jk) * 1000. / ( rhop(ji,jj,K) + rtrn )
+            END DO
+         END DO
+      END DO
+      !
+      !     -------------------------------------------
+      !     COMPUTE [CO3--] and [H+] CONCENTRATIONS
+      !     -------------------------------------------
+
+      CALL solve_at_general( zhinit, zhi )
+
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zco3(ji,jj,jk) = trb(ji,jj,K,jpdic) * ak13(ji,jj,jk) * ak23(ji,jj,jk) / (zhi(ji,jj,jk)**2   &
+                  &             + ak13(ji,jj,jk) * zhi(ji,jj,jk) + ak13(ji,jj,jk) * ak23(ji,jj,jk) + rtrn )
+               hi  (ji,jj,jk) = zhi(ji,jj,jk) * rhop(ji,jj,K) / 1000.
+            END DO
+         END DO
+      END DO
+
+      !     ---------------------------------------------------------
+      !        CALCULATE DEGREE OF CACO3 SATURATION AND CORRESPONDING
+      !        DISSOLOUTION AND PRECIPITATION OF CACO3 (BE AWARE OF
+      !        MGCO3)
+      !     ---------------------------------------------------------
+
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+
+               ! DEVIATION OF [CO3--] FROM SATURATION VALUE
+               ! Salinity dependance in zomegaca and divide by rhop/1000 to have good units
+               zcalcon  = calcon * ( salinprac(ji,jj,jk) / 35.0 )
+               zfact    = rhop(ji,jj,K) / 1000.0
+               zomegaca = ( zcalcon * zco3(ji,jj,jk) ) / ( aksp(ji,jj,jk) * zfact + rtrn )
+
+               ! SET DEGREE OF UNDER-/SUPERSATURATION
+               excess(ji,jj,jk) = 1. - zomegaca
+               zexcess0 = MAX( 0., excess(ji,jj,jk) )
+
+              IF( zomegaca < 0.8 ) THEN
+                zexcess = zexcess0**nca
+               ! AMOUNT CACO3 THAT RE-ENTERS SOLUTION
+                zdispot = kdca * zexcess
+             ELSE
+                zkd = kdca * 0.2**(nca - 0.2)
+                zexcess = zexcess0**0.2
+                zdispot = zkd * zexcess
+             ENDIF
+        
+             !  CHANGE OF [CO3--] , [ALK], PARTICULATE [CACO3],
+             !       AND [SUM(CO2)] DUE TO CACO3 DISSOLUTION/PRECIPITATION
+             ztra(ji,jj,jk)  = zdispot / rmtss ! calcite dissolution
+            END DO
+         END DO
+      END DO
+      !
+      DO jj = JRANGE
+         DO ji = IRANGE
+            zcaco3(ji,jj,1) = prodcal(ji,jj,1) * rfact2r / ( wsbio4(ji,jj,1) / e3t_n(ji,jj,KSURF) / rday + ztra(ji,jj,1) )
+         END DO
+      END DO
+      DO jk = KRANGEL
+         DO jj = JRANGE
+            DO ji = IRANGE
+                zdissol = 0.0
+                zwsbio = wsbio4(ji,jj,jk) / rday
+                IF( tmask(ji,jj,1) == 1. ) THEN
+                   IF( ztra(ji,jj,jk) == 0.0 ) THEN
+                      zcaco3(ji,jj,jk) = zcaco3(ji,jj,jk-1) + prodcal(ji,jj,jk) * rfact2r / zwsbio * e3t_n(ji,jj,K)
+                   ELSE
+                      zdepexp = exp( - ztra(ji,jj,jk) * e3t_n(ji,jj,K) / zwsbio )
+                      zcaco3(ji,jj,jk) = prodcal(ji,jj,jk) * rfact2r / ztra(ji,jj,jk)  &
+                               & * (1.0 - zdepexp ) + zcaco3(ji,jj,jk-1) * zdepexp
+                      zdissol = prodcal(ji,jj,jk) * e3t_n(ji,jj,K) + prodcal(ji,jj,jk)   &
+                         &      * zwsbio / ztra(ji,jj,jk) * ( zdepexp - 1.0 )   &
+                         &      + zwsbio * zcaco3(ji,jj,jk-1) * ( 1.0 - zdepexp ) * rfact2
+                      zdissol = zdissol / e3t_n(ji,jj,K)
+                   ENDIF
+                   tra(ji,jj,jk,jptal) = tra(ji,jj,jk,jptal) + 2. * zdissol
+                   tra(ji,jj,jk,jpdic) = tra(ji,jj,jk,jpdic) +      zdissol
+                ENDIF
+            END DO
+         END DO
+      END DO
+      !
+      DO jj = JRANGE
+         DO ji = IRANGE
+            sinkcalb(ji,jj) = wsbio4(ji,jj,ikt) * zcaco3(ji,jj,ikt) * rfact2 / rday
+         ENDDO
+      ENDDO
+      !
+# if defined key_trc_diaadd
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               trc3d(ji,jj,K,jp_hi    )  = -1. * LOG10( MAX( hi(ji,jj,jk), rtrn) ) * tmask(ji,jj,jk)  ! PH
+               trc3d(ji,jj,K,jp_co3   )  = zco3(ji,jj,jk)     * 1.e+3 * tmask(ji,jj,jk)  ! Ion carbonate
+               trc3d(ji,jj,K,jp_co3sat)  = aksp(ji,jj,jk) / calcon * 1.e+3 * tmask(ji,jj,jk)
+            ENDDO
+         ENDDO
+      ENDDO
+# endif
+
+      IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+        WRITE(charout, FMT="('lys ')")
+        CALL prt_ctl_trc_info(charout)
+        CALL prt_ctl_trc( charout, ltra='tra')
+!       CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
+      ENDIF
+      !
+   END SUBROUTINE p2z_lys
 
    SUBROUTINE p4z_lys( kt, knt )
       !!---------------------------------------------------------------------
@@ -138,9 +277,9 @@ CONTAINS
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-               trc3d(ji,jj,K,jp_hi    )  = hi  (ji,jj,jk) * tmask(ji,jj,jk)  ! PH
-               trc3d(ji,jj,K,jp_co3   )  = zco3(ji,jj,jk) * tmask(ji,jj,jk)  ! Ion carbonate
-               trc3d(ji,jj,K,jp_co3sat)  = aksp(ji,jj,jk) / calcon * tmask(ji,jj,jk)
+               trc3d(ji,jj,K,jp_hi    )  = -1. * LOG10( MAX( hi(ji,jj,jk), rtrn) ) * tmask(ji,jj,jk)  ! PH
+               trc3d(ji,jj,K,jp_co3   )  = zco3(ji,jj,jk)     * 1.e+3 * tmask(ji,jj,jk)  ! Ion carbonate
+               trc3d(ji,jj,K,jp_co3sat)  = zco3sat(ji,jj,jk)  * 1.e+3* tmask(ji,jj,jk)
             ENDDO
          ENDDO
       ENDDO

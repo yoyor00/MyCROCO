@@ -93,36 +93,12 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'o2_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
-          elseif (itrc.eq.iCAL_) then
-            got_tclm(itrc)=.true.
-            ierr=nf_inq_varid (ncidclm, 'cal_time', tclm_tid(itrc))
-            if (ierr .ne. nf_noerr) then
-              got_tclm(itrc)=.false.
-              write(stdout,3) 'cal_time', clmname(1:lstr)
-c              goto 99                                     !--> ERROR
-            endif
-          elseif (itrc.eq.iPO4_) then
-            got_tclm(itrc)=.true.
-            ierr=nf_inq_varid (ncidclm, 'po4_time', tclm_tid(itrc))
-            if (ierr .ne. nf_noerr) then
-              got_tclm(itrc)=.false.
-              write(stdout,3) 'po4_time', clmname(1:lstr)
-c              goto 99                                     !--> ERROR
-            endif
           elseif (itrc.eq.iPOC_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'poc_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
               got_tclm(itrc)=.false.
               write(stdout,3) 'poc_time', clmname(1:lstr)
-c              goto 99                                     !--> ERROR
-            endif
-          elseif (itrc.eq.iSIL_) then
-            got_tclm(itrc)=.true.
-            ierr=nf_inq_varid (ncidclm, 'si_time', tclm_tid(itrc))
-            if (ierr .ne. nf_noerr) then
-              got_tclm(itrc)=.false.
-              write(stdout,3) 'si_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
           elseif (itrc.eq.iPHY_) then
@@ -149,6 +125,47 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'doc_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+          elseif (itrc.eq.iFER_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'fer_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'fer_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iNO3_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'no3_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'no3_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+#     if ! defined key_pisces_reduced
+          elseif (itrc.eq.iCAL_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'cal_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'cal_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPO4_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'po4_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'po4_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iSIL_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'si_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'si_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
           elseif (itrc.eq.iDIA_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'dia_time', tclm_tid(itrc))
@@ -171,14 +188,6 @@ c              goto 99                                     !--> ERROR
             if (ierr .ne. nf_noerr) then
               got_tclm(itrc)=.false.
               write(stdout,3) 'bsi_time', clmname(1:lstr)
-c              goto 99                                     !--> ERROR
-            endif
-          elseif (itrc.eq.iFER_) then
-            got_tclm(itrc)=.true.
-            ierr=nf_inq_varid (ncidclm, 'fer_time', tclm_tid(itrc))
-            if (ierr .ne. nf_noerr) then
-              got_tclm(itrc)=.false.
-              write(stdout,3) 'fer_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
           elseif (itrc.eq.iBFE_) then
@@ -245,14 +254,6 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'dch_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
-          elseif (itrc.eq.iNO3_) then
-            got_tclm(itrc)=.true.
-            ierr=nf_inq_varid (ncidclm, 'no3_time', tclm_tid(itrc))
-            if (ierr .ne. nf_noerr) then
-              got_tclm(itrc)=.false.
-              write(stdout,3) 'no3_time', clmname(1:lstr)
-c              goto 99                                     !--> ERROR
-            endif
           elseif (itrc.eq.iNH4_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'nh4_time', tclm_tid(itrc))
@@ -262,6 +263,7 @@ c              goto 99                                     !--> ERROR
 c              goto 99                                     !--> ERROR
             endif
           endif
+#     endif
 #     if defined key_ligand
           if (itrc.eq.iLGW_) then
             got_tclm(itrc)=.true.
