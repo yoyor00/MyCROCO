@@ -54,14 +54,12 @@ CONTAINS
 
       ! Computation of the silicon dependant half saturation  constant for silica uptake
       ! ---------------------------------------------------
-      IF( ln_p4z .OR. ln_p5z ) THEN
-         DO jj = JRANGE
-            DO ji = IRANGE
-               zvar = trb(ji,jj,KSURF,jpsil) * trb(ji,jj,KSURF,jpsil)
-               xksimax(ji,jj) = MAX( xksimax(ji,jj), ( 1.+ 7.* zvar / ( xksilim * xksilim + zvar ) ) * 1e-6 )
-            END DO
+      DO jj = JRANGE
+         DO ji = IRANGE
+            zvar = trb(ji,jj,KSURF,jpsil) * trb(ji,jj,KSURF,jpsil)
+            xksimax(ji,jj) = MAX( xksimax(ji,jj), ( 1.+ 7.* zvar / ( xksilim * xksilim + zvar ) ) * 1e-6 )
          END DO
-      ENDIF
+      END DO
       !
       IF( nday_year == 365 ) THEN
          xksi   (:,:) = xksimax(:,:)

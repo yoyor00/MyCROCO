@@ -1399,27 +1399,6 @@ C$OMP BARRIER
               t(i,j,k,1,iOXY_)=200.
               t(i,j,k,2,iOXY_)=t(i,j,k,1,iOXY_)
             endif
-            if (.not.got_tini(iPOC_))  then
-              t(i,j,k,1,iPOC_)=1.e-2
-              t(i,j,k,2,iPOC_)=t(i,j,k,1,iPOC_)
-            endif
-            if (.not.got_tini(iPHY_))  then
-              t(i,j,k,1,iPHY_)=0.01
-              t(i,j,k,2,iPHY_)=t(i,j,k,1,iPHY_)
-            endif
-            if (.not.got_tini(iZOO_))  then
-              t(i,j,k,1,iZOO_)=0.01
-              t(i,j,k,2,iZOO_)=t(i,j,k,1,iZOO_)
-            endif
-            if (.not.got_tini(iDOC_))  then
-              t(i,j,k,1,iDOC_)=5.
-              t(i,j,k,2,iDOC_)=t(i,j,k,1,iDOC_)
-            endif
-            if (.not.got_tini(iFER_))  then
-              t(i,j,k,1,iFER_)=6.e-4
-              t(i,j,k,2,iFER_)=t(i,j,k,1,iFER_)
-            endif
-#     if ! defined key_pisces_reduced
             if (.not.got_tini(iCAL_))  then
               t(i,j,k,1,iCAL_)=0.01
               t(i,j,k,2,iCAL_)=t(i,j,k,1,iCAL_)
@@ -1445,9 +1424,25 @@ C$OMP BARRIER
      &                               +0.0003099*SiO4**3)/16.
               t(i,j,k,2,iPO4_)=t(i,j,k,1,iPO4_)
             endif
+            if (.not.got_tini(iPOC_))  then
+              t(i,j,k,1,iPOC_)=1.e-2
+              t(i,j,k,2,iPOC_)=t(i,j,k,1,iPOC_)
+            endif
             if (.not.got_tini(iSIL_))  then
               t(i,j,k,1,iSIL_)=91.51
               t(i,j,k,2,iSIL_)=t(i,j,k,1,iSIL_)
+            endif
+            if (.not.got_tini(iPHY_))  then
+              t(i,j,k,1,iPHY_)=0.01
+              t(i,j,k,2,iPHY_)=t(i,j,k,1,iPHY_)
+            endif
+            if (.not.got_tini(iZOO_))  then
+              t(i,j,k,1,iZOO_)=0.01
+              t(i,j,k,2,iZOO_)=t(i,j,k,1,iZOO_)
+            endif
+            if (.not.got_tini(iDOC_))  then
+              t(i,j,k,1,iDOC_)=5.
+              t(i,j,k,2,iDOC_)=t(i,j,k,1,iDOC_)
             endif
             if (.not.got_tini(iDIA_))  then
               t(i,j,k,1,iDIA_)=0.01
@@ -1460,6 +1455,10 @@ C$OMP BARRIER
             if (.not.got_tini(iBSI_))  then
               t(i,j,k,1,iBSI_)=1.5e-3
               t(i,j,k,2,iBSI_)=t(i,j,k,1,iBSI_)
+            endif
+            if (.not.got_tini(iFER_))  then
+              t(i,j,k,1,iFER_)=6.e-4
+              t(i,j,k,2,iFER_)=t(i,j,k,1,iFER_)
             endif
             if (.not.got_tini(iBFE_))  then
               t(i,j,k,1,iBFE_)=1.E-2*5E-6
@@ -1497,7 +1496,6 @@ C$OMP BARRIER
               t(i,j,k,1,iNH4_)=1.e-2
               t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
             endif
-#     endif
 #     ifdef key_ligand
             if (.not.got_tini(iLGW_))  then
               t(i,j,k,1,iLGW_)=1.e-3

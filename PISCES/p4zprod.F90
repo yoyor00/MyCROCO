@@ -15,7 +15,6 @@ MODULE p4zprod
    !!   p4z_prod_alloc : Allocate variables for growth
    !!----------------------------------------------------------------------
    USE sms_pisces      ! PISCES Source Minus Sink variables
-   USE p2zlim          ! Co-limitations of differents nutrients
    USE p4zlim          ! Co-limitations of differents nutrients
 !  USE prtctl_trc      ! print control for debugging
 !  USE iom             ! I/O manager

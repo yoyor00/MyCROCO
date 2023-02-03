@@ -18,6 +18,31 @@
 !              !    name   !           title of the field              !   units    
 !              !           !                                           !            
 !              !           !                                           !            
+   tracer(1)   = 'DIC     ' , 'Dissolved inorganic Concentration      ',  'mmol/m3'
+   tracer(2)   = 'Alkalini' , 'Total Alkalinity Concentration         ',  'meq/m3 '
+   tracer(3)   = 'O2      ' , 'Dissolved Oxygen Concentration         ',  'mmol/m3'
+   tracer(4)   = 'CaCO3   ' , 'Calcite Concentration                  ',  'mmol/m3'
+   tracer(5)   = 'PO4     ' , 'Phosphate Concentration                ',  'mmol/m3'
+   tracer(6)   = 'POC     ' , 'Small organic carbon Concentration     ',  'mmol/m3'
+   tracer(7)   = 'Si      ' , 'Silicate Concentration                 ',  'mmol/m3'
+   tracer(8)   = 'PHY     ' , 'Nanophytoplankton Concentration        ',  'mmol/m3'
+   tracer(9)   = 'ZOO     ' , 'Microzooplankton Concentration         ',  'mmol/m3'
+   tracer(10)  = 'DOC     ' , 'Dissolved organic Concentration        ',  'mmol/m3'
+   tracer(11)  = 'PHY2    ' , 'Diatoms Concentration                  ',  'mmol/m3'
+   tracer(12)  = 'ZOO2    ' , 'Mesozooplankton Concentration          ',  'mmol/m3'
+   tracer(13)  = 'BSi     ' , 'Diatoms Silicate Concentration         ',  'mmol/m3'
+   tracer(14)  = 'Fer     ' , 'Dissolved Iron Concentration           ',  'mmol/m3'
+   tracer(15)  = 'BFe     ' , 'Big iron particles Concentration       ',  'mmol/m3'
+   tracer(16)  = 'GOC     ' , 'Big organic carbon Concentration       ',  'mmol/m3'
+   tracer(17)  = 'SFe     ' , 'Small iron particles Concentration     ',  'mmol/m3'
+   tracer(18)  = 'DFe     ' , 'Diatoms iron  Concentration            ',  'mmol/m3'
+   tracer(19)  = 'DSi     ' , 'Sinking biogenic Silicate Concentration',  'mmol/m3'
+   tracer(20)  = 'NFe     ' , 'Nano iron Concentration                ',  'mmol/m3'
+   tracer(21)  = 'NCHL    ' , 'Nano chlorophyl Concentration          ',  'mg/m3'
+   tracer(22)  = 'DCHL    ' , 'Diatoms chlorophyl Concentration       ',  'mg/m3'
+   tracer(23)  = 'NO3     ' , 'Nitrates Concentration                 ',  'mmol/m3'
+   tracer(24)  = 'NH4     ' , 'Ammonium Concentration                 ',  'mmol/m3'
+   tracer(25)  = 'LGW     ' , 'Ligands Concentration                  ',  'mmol/m3'
 /
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 &nampisext     !   air-sea exchange
@@ -44,19 +69,6 @@
 !                         !  ln_p5z enabled
    no3rat3    =  0.182    ! N/C ratio in zooplankton
    po4rat3    =  0.0094   ! P/C ratio in zooplankton
-/
-!-----------------------------------------------------------------------
-&namp2zlim     !   parameters for nutrient limitations for PISCES reduced  - ln_p2z
-!-----------------------------------------------------------------------
-   concnno3   =  1.e-6    ! Nitrate half saturation of nanophytoplankton
-   concbno3   =  3.E-7    ! Nitrate half saturation for DOC remin.
-   concnfer   =  1E-10    ! Iron half saturation for phyto
-   xsizephy   =  2.E-6    ! Minimum size criteria for phyto
-   xsizern    =  3.0      ! Size ratio for nanophytoplankton
-   concbfe    =  3.E-11   ! Iron half-saturation for DOC remin.
-   xkdoc      =  417.E-6  ! half-saturation constant of DOC remineralization
-   caco3r     =  0.07     ! mean rain ratio
-   oxymin     =  1.E-6    ! Half-saturation constant for anoxia
 /
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 &namp4zlim     !   parameters for nutrient limitations
@@ -141,15 +153,6 @@
    parlux      =  0.43      ! Fraction of shortwave as PAR
 /
 !-----------------------------------------------------------------------
-&namp2zprod    !   parameters for phytoplankton growth for PISCES reduced  - ln_p2z
-!-----------------------------------------------------------------------
-   pislopen   =  2.       ! P-I slope
-   excretn    =  0.05     ! excretion ratio of phytoplankton
-   bresp      =  0.03     ! Basal respiration rate
-   chlcnm     =  0.033    ! Maximum Chl/C in nanophytoplankton
-   chlcmin    =  0.0025   ! Minimum Chl/c in phytoplankton
-/
-!-----------------------------------------------------------------------
 &namp4zprod    !   parameters for phytoplankton growth for PISCES std  - ln_p4z
 !-----------------------------------------------------------------------
    pislopen   =  2.       ! P-I slope
@@ -181,12 +184,6 @@
    thetandm   =  0.3      ! Maximum Chl/N in diatoms
    chlcmin    =  0.004    ! Minimum Chl/c in phytoplankton
    grosip     =  0.131    ! mean Si/C ratio
-/
------------------------------------------------------------------------
-&namp2zmort    !   parameters for phytoplankton sinks for PISCES std   - ln_p2z
-!-----------------------------------------------------------------------
-   wchl        =  0.01     ! quadratic mortality of phytoplankton
-   mprat       =  0.01     ! phytoplankton mortality rate
 /
 !-----------------------------------------------------------------------
 &namp4zmort    !   parameters for phytoplankton sinks for PISCES std   - ln_p4z
@@ -259,24 +256,6 @@
    unass2n     =  0.3     ! non assimilated fraction of N by mesozoo
    unass2p     =  0.3     ! non assimilated fraction of P by mesozoo
    grazflux   =  3.e3     ! flux-feeding rate
-/
-!-----------------------------------------------------------------------
-&namp2zzoo     !   parameters for microzooplankton for PISCES reduced  - ln_p2z
-!-----------------------------------------------------------------------
-   part       =  0.75     ! part of calcite not dissolved in microzoo guts
-   grazrat    =  2.0      ! maximal zoo grazing rate
-   resrat     =  0.02     ! Linear mortality rate of zooplankton
-   mzrat      =  0.02     ! zooplankton mortality rate
-   xprefc     =  0.1      ! Microzoo preference for POM
-   xprefn     =  1.       ! Microzoo preference for Nanophyto
-   xthreshphy =  1.E-8    ! Nanophyto feeding threshold for microzooplankton
-   xthreshpoc =  1.E-8    ! POC feeding threshold for microzooplankton
-   xthresh    =  3.E-7    ! Food threshold for feeding
-   xkgraz     =  20.E-6   ! half sturation constant for grazing
-   epsher     =  0.4     ! Efficiency of microzoo growth
-   epshermin  =  0.4     ! Minimum efficiency of microzoo growth
-   sigma1     =  0.6      ! Fraction of microzoo excretion as DOM
-   unass      =  0.3      ! non assimilated fraction of phyto by zoo
 /
 !-----------------------------------------------------------------------
 &namp4zzoo     !   parameters for microzooplankton for PISCES std      - ln_p4z

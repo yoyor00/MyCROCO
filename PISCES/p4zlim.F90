@@ -14,7 +14,6 @@ MODULE p4zlim
    !!   p4z_lim_init   :   Read the namelist 
    !!----------------------------------------------------------------------
    USE sms_pisces      ! PISCES variables
-   USE p2zlim  
 !  USE iom             !  I/O manager
 
    IMPLICIT NONE
@@ -29,27 +28,41 @@ MODULE p4zlim
 #  include "top_substitute.h90"
 
    !! * Shared module variables
+   REAL(wp), PUBLIC ::  concnno3    !:  NO3, PO4 half saturation   
    REAL(wp), PUBLIC ::  concdno3    !:  Phosphate half saturation for diatoms  
    REAL(wp), PUBLIC ::  concnnh4    !:  NH4 half saturation for phyto  
    REAL(wp), PUBLIC ::  concdnh4    !:  NH4 half saturation for diatoms
+   REAL(wp), PUBLIC ::  concnfer    !:  Iron half saturation for nanophyto 
    REAL(wp), PUBLIC ::  concdfer    !:  Iron half saturation for diatoms  
+   REAL(wp), PUBLIC ::  concbno3    !:  NO3 half saturation  for bacteria 
    REAL(wp), PUBLIC ::  concbnh4    !:  NH4 half saturation for bacteria
    REAL(wp), PUBLIC ::  xsizedia    !:  Minimum size criteria for diatoms
+   REAL(wp), PUBLIC ::  xsizephy    !:  Minimum size criteria for nanophyto
+   REAL(wp), PUBLIC ::  xsizern     !:  Size ratio for nanophytoplankton
    REAL(wp), PUBLIC ::  xsizerd     !:  Size ratio for diatoms
    REAL(wp), PUBLIC ::  xksi1       !:  half saturation constant for Si uptake 
    REAL(wp), PUBLIC ::  xksi2       !:  half saturation constant for Si/C 
+   REAL(wp), PUBLIC ::  xkdoc       !:  2nd half-sat. of DOC remineralization  
+   REAL(wp), PUBLIC ::  concbfe     !:  Fe half saturation for bacteria 
+   REAL(wp), PUBLIC ::  oxymin      !:  half saturation constant for anoxia
    REAL(wp), PUBLIC ::  qnfelim     !:  optimal Fe quota for nanophyto
    REAL(wp), PUBLIC ::  qdfelim     !:  optimal Fe quota for diatoms
+   REAL(wp), PUBLIC ::  caco3r      !:  mean rainratio 
 
    !!* Phytoplankton limitation terms
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanono3   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatno3   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanonh4   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatnh4   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanopo4   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatpo4   !: ???
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimphy    !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimdia    !: ???
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimnfe    !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimdfe    !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimsi     !: ???
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimbac    !: ??
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimbacl   !: ??
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   concdfe    !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   concnfe    !: ???
 
@@ -292,11 +305,12 @@ CONTAINS
       !!----------------------------------------------------------------------
 
       !*  Biological arrays for phytoplankton growth
-      ALLOCATE( xdiatno3(jpi,jpj,jpk),       &
+      ALLOCATE( xnanono3(jpi,jpj,jpk), xdiatno3(jpi,jpj,jpk),       &
          &      xnanonh4(jpi,jpj,jpk), xdiatnh4(jpi,jpj,jpk),       &
          &      xnanopo4(jpi,jpj,jpk), xdiatpo4(jpi,jpj,jpk),       &
-         &      xlimdia (jpi,jpj,jpk),       &
-         &      xlimdfe (jpi,jpj,jpk),       &
+         &      xlimphy (jpi,jpj,jpk), xlimdia (jpi,jpj,jpk),       &
+         &      xlimnfe (jpi,jpj,jpk), xlimdfe (jpi,jpj,jpk),       &
+         &      xlimbac (jpi,jpj,jpk), xlimbacl(jpi,jpj,jpk),       &
          &      concnfe (jpi,jpj,jpk), concdfe (jpi,jpj,jpk),       &
          &      xlimsi  (jpi,jpj,jpk), STAT=p4z_lim_alloc )
       !

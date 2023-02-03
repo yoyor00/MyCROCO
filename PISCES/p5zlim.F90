@@ -14,9 +14,8 @@ MODULE p5zlim
    !!   p5z_lim        :   Compute the nutrients limitation terms 
    !!   p5z_lim_init   :   Read the namelist 
    !!----------------------------------------------------------------------
-   USE sms_pisces      ! PISCES variables
-   USE p2zlim
    USE p4zlim
+   USE sms_pisces      ! PISCES variables
 
    IMPLICIT NONE
    PRIVATE

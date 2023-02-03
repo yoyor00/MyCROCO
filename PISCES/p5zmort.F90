@@ -14,7 +14,6 @@ MODULE p5zmort
    !!   p5z_mort_init  :   Initialize the mortality params for phytoplankton
    !!----------------------------------------------------------------------
    USE sms_pisces      !  PISCES Source Minus Sink variables
-   USE p2zlim
    USE p4zlim
    USE p5zlim          !  Phytoplankton limitation terms
 

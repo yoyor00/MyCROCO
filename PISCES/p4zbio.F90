@@ -16,27 +16,23 @@ MODULE p4zbio
    !!                      compartments of PISCES
    !!----------------------------------------------------------------------
    USE sms_pisces      !  PISCES Source Minus Sink variables
-   USE p2zlim          !  Co-limitations by nutrient (REDUCED)
-   USE p2zprod         !  Growth rate of phytoplankton (REDUCED)
-   USE p2zmicro        !  Sources and sinks of microzooplankton (REDUCED)
-   USE p2zmort         !  Mortality terms for phytoplankton (REDUCED)
    USE p4zsink         !  vertical flux of particulate matter due to sinking
    USE p4zopt          !  optical model
    USE p4zlim          !  Co-limitations of differents nutrients
    USE p4zprod         !  Growth rate of the 2 phyto groups
+   USE p5zprod
    USE p4zmort         !  Mortality terms for phytoplankton
    USE p4zmicro        !  Sources and sinks of microzooplankton
    USE p4zmeso         !  Sources and sinks of mesozooplankton
+   USE p5zlim          !  Co-limitations of differents nutrients
+   USE p5zmort         !  Mortality terms for phytoplankton
+   USE p5zmicro        !  Sources and sinks of microzooplankton
+   USE p5zmeso         !  Sources and sinks of mesozooplankton
    USE p4zrem          !  Remineralisation of organic matter
    USE p4zpoc          !  Remineralization of organic particles
    USE p4zagg          !  Aggregation of particles
    USE p4zfechem
    USE p4zligand       !  Prognostic ligand model
-   USE p5zlim          !  Co-limitations of differents nutrients
-   USE p5zmort         !  Mortality terms for phytoplankton
-   USE p5zmicro        !  Sources and sinks of microzooplankton
-   USE p5zmeso         !  Sources and sinks of mesozooplankton
-   USE p5zprod
   
    IMPLICIT NONE
    PRIVATE
@@ -83,12 +79,7 @@ CONTAINS
       CALL p4z_opt     ( kt, knt )     ! Optic: PAR in the water column
       CALL p4z_sink    ( kt, knt )     ! vertical flux of particulate organic matter
       CALL p4z_fechem  ( kt, knt )     ! Iron chemistry/scavenging
-      IF( ln_p2z ) THEN  ! PISCES reduced
-         CALL p2z_lim  ( kt, knt )     ! co-limitations by the various nutrients
-         CALL p2z_prod ( kt, knt )     ! phytoplankton growth rate over the global ocean.
-         CALL p2z_mort ( kt      )     ! phytoplankton mortality
-         CALL p2z_micro( kt, knt )     ! microzooplankton
-      ELSE IF( ln_p4z ) THEN  ! PISCES standard
+      IF ( ln_p4z ) THEN
          CALL p4z_lim     ( kt, knt )     ! co-limitations by the various nutrients
          CALL p4z_prod    ( kt, knt )     ! phytoplankton growth rate over the global ocean. 
          CALL p4z_mort    ( kt      )     ! phytoplankton mortality
@@ -104,12 +95,8 @@ CONTAINS
          CALL p5z_meso ( kt, knt )           ! mesozooplankton
       ENDIF
       !                             ! (for each element : C, Si, Fe, Chl )
-      IF( ln_p2z ) THEN
-         CALL p2z_rem     ( kt, knt )     ! remineralization terms of organic matter+scavenging of Fe
-      ELSE
-         CALL p4z_agg     ( kt, knt )     ! Aggregation of particles
-         CALL p4z_rem     ( kt, knt )     ! remineralization terms of organic matter+scavenging of Fe
-      ENDIF
+      CALL p4z_agg     ( kt, knt )     ! Aggregation of particles
+      CALL p4z_rem     ( kt, knt )     ! remineralization terms of organic matter+scavenging of Fe
       CALL p4z_poc     ( kt, knt )     ! Remineralization of organic particles
       !
       IF( ln_ligand )  &

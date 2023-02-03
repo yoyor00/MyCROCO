@@ -82,9 +82,7 @@ CONTAINS
       solgoc = 0.04/ 2.56 * 1./ ( 1.-50**(-0.04) )
 
       ! Initialisation of temprary arrys
-      IF( ln_p2z ) THEN
-         zremipoc(:,:,:) = xremip
-      ELSE IF( ln_p4z ) THEN
+      IF( ln_p4z ) THEN
          zremipoc(:,:,:) = xremip
          zremigoc(:,:,:) = xremip
       ELSE    ! ln_p5z
@@ -101,16 +99,16 @@ CONTAINS
         alphap(:,:,:,jn) = alphan(jn)
       END DO
 
-     IF( .NOT. ln_p2z) THEN
-        DO jk = KRANGE
-           DO jj = JRANGE
-              DO ji = IRANGE
-                 ze3t_n(ji,jj,jk)    = e3t_n(ji,jj,K)
-                 zgdept_n(ji,jj,jk)  = gdept_n(ji,jj,K)
-                 ztrn (ji,jj,jk)     = trb(ji,jj,K,jpgoc)
-             END DO
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               ze3t_n(ji,jj,jk)    = e3t_n(ji,jj,K)
+               zgdept_n(ji,jj,jk)  = gdept_n(ji,jj,K)
+               ztrn (ji,jj,jk)     = trb(ji,jj,K,jpgoc)
            END DO
-        ENDDO
+         END DO
+      ENDDO
+
 
      ! -----------------------------------------------------------------------
      ! Lability parameterization. This is the big particles part (GOC)
@@ -263,13 +261,11 @@ CONTAINS
          END DO
       ENDIF
 
-      IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
-         WRITE(charout, FMT="('poc1')")
-         CALL prt_ctl_trc_info(charout)
-         CALL prt_ctl_trc( charout, ltra='tra')
-      ENDIF
-
-     ENDIF  ! .NOT. ln_p2z
+     IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+        WRITE(charout, FMT="('poc1')")
+        CALL prt_ctl_trc_info(charout)
+        CALL prt_ctl_trc( charout, ltra='tra')
+     ENDIF
 
      ! ------------------------------------------------------------------
      ! Lability parameterization for the small OM particles. This param 
@@ -331,8 +327,8 @@ CONTAINS
         END DO
      END DO
      !
-     IF( ln_p2z .OR. ln_p4z ) THEN   ;  zremipoc(:,:,:) = MIN( xremip , ztremint(:,:,:) )
-     ELSE                            ;  zremipoc(:,:,:) = MIN( xremipc, ztremint(:,:,:) )
+     IF( ln_p4z ) THEN   ;  zremipoc(:,:,:) = MIN( xremip , ztremint(:,:,:) )
+     ELSE                ;  zremipoc(:,:,:) = MIN( xremipc, ztremint(:,:,:) )
      ENDIF
 
      ! -----------------------------------------------------------------------
@@ -424,28 +420,11 @@ CONTAINS
          END DO
       END DO
 
-     IF( ln_p2z .OR. ln_p4z ) THEN   ;   zremipoc(:,:,:) = MIN( xremip , ztremint(:,:,:) )
-     ELSE                            ;   zremipoc(:,:,:) = MIN( xremipc, ztremint(:,:,:) )
+     IF( ln_p4z ) THEN   ;   zremipoc(:,:,:) = MIN( xremip , ztremint(:,:,:) )
+     ELSE                ;   zremipoc(:,:,:) = MIN( xremipc, ztremint(:,:,:) )
      ENDIF
 
-     IF( ln_p2z ) THEN
-         DO jk = KRANGE
-            DO jj = JRANGE
-               DO ji = IRANGE
-                  IF (tmask(ji,jj,jk) == 1.) THEN
-                    ! POC disaggregation by turbulence and bacterial activity. 
-                    ! --------------------------------------------------------
-                    zremip          = zremipoc(ji,jj,jk) * xstep * tgfunc(ji,jj,jk)
-                    zorem           = zremip * trb(ji,jj,K,jppoc)
-                    tra(ji,jj,jk,jpdoc) = tra(ji,jj,jk,jpdoc) + zorem
-                    orem(ji,jj,jk)      = orem(ji,jj,jk) + zorem
-                    tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) + zofer
-                    tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) - zorem
-                  ENDIF
-               END DO
-            END DO
-         END DO
-     ELSE IF( ln_p4z ) THEN
+     IF( ln_p4z ) THEN
          DO jk = KRANGE
             DO jj = JRANGE
                DO ji = IRANGE
@@ -455,6 +434,7 @@ CONTAINS
                     zremip          = zremipoc(ji,jj,jk) * xstep * tgfunc(ji,jj,jk)
                     zorem           = zremip * trb(ji,jj,K,jppoc)
                     zofer           = zremip * trb(ji,jj,K,jpsfe)
+
                     tra(ji,jj,jk,jpdoc) = tra(ji,jj,jk,jpdoc) + zorem
                     orem(ji,jj,jk)      = orem(ji,jj,jk) + zorem
                     tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) + zofer
@@ -547,7 +527,7 @@ CONTAINS
 
       IF(lwp) THEN                         ! control print
          WRITE(numout,*) '   Namelist : nampispoc'
-         IF( ln_p2z .OR. ln_p4z ) THEN
+         IF( ln_p4z ) THEN
             WRITE(numout,*) '      remineralisation rate of POC              xremip    =', xremip
          ELSE
             WRITE(numout,*) '      remineralisation rate of POC              xremipc   =', xremipc
