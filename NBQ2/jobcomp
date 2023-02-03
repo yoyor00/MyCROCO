@@ -23,7 +23,7 @@
 #
 # set source, compilation and run directories
 #
-SOURCE=../croco/OCEAN
+SOURCE=/nhoms/nguc/Devel2022/croco_dev_2022_GPU_NBQ2/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
@@ -109,7 +109,7 @@ ls ${SOURCE}/*.py              > /dev/null  2>&1 && \cp ${SOURCE}/*.py   $SCRDIR
 ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
 ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
-ls ${ROOT_DIR}/NBQ2/*          > /dev/null  2>&1 && \cp ${ROOT_DIR}/NBQ2/* $SCRDIR
+ls ${ROOT_DIR}/NBQ2            > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/NBQ2 $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* $SCRDIR

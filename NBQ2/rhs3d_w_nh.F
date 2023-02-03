@@ -60,10 +60,10 @@
       REAL     :: We_r   (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)        
       REAL     :: lap    (PRIVATE_2D_SCRATCH_ARRAY      )
       REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
-!      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY,0:N  ) 
-!      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
-      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY )
-      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY )
+      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY,0:N  ) 
+      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+!      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY )
+!      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY )
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       !!    
@@ -273,13 +273,13 @@
 !
         DO j=Jstr,Jend
           DO i=Istr,Iend+1
-            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
+            WFx(i,j,k)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
      &                                     )*Huon_w(i,j,k)
           ENDDO    
         ENDDO
         DO j=jstr,jend+1
           DO i=istr,iend
-            WFe(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
+            WFe(i,j,k)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
      &                                     )*Hvom_w(i,j,k)
           ENDDO
         ENDDO
@@ -290,7 +290,7 @@
 !
         DO j=Jstr,Jend
           DO i=Istr,Iend+1
-            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
+            WFx(i,j,k)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
      &                                     )*Huon_w(i,j,k)
           ENDDO    
         ENDDO
@@ -324,8 +324,8 @@
 #   endif
             cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
      &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
-            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
+            Cr=limiter2(cu,WFx(i,j,k),cff1,rrm,rr,rrp)
+            WFx(i,j,k) = (1-Cr)*cff1 + Cr* WFx(i,j,k)
 
           DO i=Istr+1,Iend
             if (k==0) then
@@ -354,8 +354,8 @@
 #   endif
             cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
      &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
-            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
+            Cr=limiter2(cu,WFx(i,j,k),cff1,rrm,rr,rrp)
+            WFx(i,j,k) = (1-Cr)*cff1 + Cr* WFx(i,j,k)
           ENDDO
           ! wz(i+1,.) out of bounds
           i=Iend+1
@@ -385,14 +385,14 @@
 #   endif
             cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
      &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
-            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
+            Cr=limiter2(cu,WFx(i,j,k),cff1,rrm,rr,rrp)
+            WFx(i,j,k) = (1-Cr)*cff1 + Cr* WFx(i,j,k)
 
         ENDDO
 !---
         DO j=jstr,jend+1
           DO i=istr,iend
-            WFe(i,j)=0.5*( Wz(i,j,k,nrhs)+Wz(i,j-1,k,nrhs)
+            WFe(i,j,k)=0.5*( Wz(i,j,k,nrhs)+Wz(i,j-1,k,nrhs)
      &                                     )*Hvom_w(i,j,k)
           ENDDO
         ENDDO 
@@ -426,8 +426,8 @@
 #   endif
             cff1=0.5*(cff*(wz(i,j,k,nstp)+wz(i,j-1,k,nstp))
      &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFe(i,j),cff1,rrm,rr,rrp)
-            WFe(i,j) = (1-Cr)*cff1  + Cr* WFe(i,j)
+            Cr=limiter2(cu,WFe(i,j,k),cff1,rrm,rr,rrp)
+            WFe(i,j,k) = (1-Cr)*cff1  + Cr* WFe(i,j,k)
           ENDDO
 
         DO j=JstrV,Jend+1
@@ -458,8 +458,8 @@
 #   endif
             cff1=0.5*(cff*(wz(i,j,k,nstp)+wz(i,j-1,k,nstp))
      &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFe(i,j),cff1,rrm,rr,rrp)
-            WFe(i,j) = (1-Cr)*cff1  + Cr* WFe(i,j)
+            Cr=limiter2(cu,WFe(i,j,k),cff1,rrm,rr,rrp)
+            WFe(i,j,k) = (1-Cr)*cff1  + Cr* WFe(i,j,k)
           ENDDO
         ENDDO
 
@@ -519,7 +519,7 @@
 !
         DO j=jstr,jend
           DO i=imin,imax+1
-            WFx(i,j) = ( wz(i,j,k,nrhs) - wz(i-1,j,k,nrhs) )
+            WFx(i,j,k) = ( wz(i,j,k,nrhs) - wz(i-1,j,k,nrhs) )
 #   ifdef MASKING
      &                                           *umask(i,j)
 #   endif
@@ -541,7 +541,7 @@
 
         DO j=Jstr,Jend
           DO i=Istr-1,Iend+1          
-            lap(i,j) = WFx(i+1,j) - WFx(i,j)
+            lap(i,j) = WFx(i+1,j) - WFx(i,j,k)
           ENDDO
         ENDDO  
         DO j=Jstr,Jend
@@ -551,13 +551,13 @@
             ELSE
               cff = lap( i  , j )
             ENDIF            
-            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
+            WFx(i,j,k)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
      &                           -0.25*cff )*Huon_w(i,j,k)
           ENDDO    
         ENDDO
         DO j=jmin,jmax+1
           DO i=istr,iend
-            WFe(i,j) = ( wz(i,j,k,nrhs)-wz(i,j-1,k,nrhs) ) 
+            WFe(i,j,k) = ( wz(i,j,k,nrhs)-wz(i,j-1,k,nrhs) ) 
 #   ifdef MASKING
      &                                         *vmask(i,j)
 #   endif
@@ -588,7 +588,7 @@
             ELSE
                cff = lap( i , j   )
             ENDIF 
-            WFe(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
+            WFe(i,j,k)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
      &                           -0.25*cff )*Hvom_w(i,j,k)
           ENDDO
         ENDDO 
@@ -600,13 +600,15 @@
 ! Finalize horizontal advection: compute flux divergence
 !-------------------------------------------------------
 !
+      DO k=0,N
         DO j=Jstr,Jend
           DO i=Istr,Iend
-            rw(i,j,k)= rw(i,j,k) - WFx(i+1,j) + WFx(i,j)
-     &                           - WFe(i,j+1) + WFe(i,j)    
+            rw(i,j,k)= rw(i,j,k) - WFx(i+1,j,k) + WFx(i,j,k)
+     &                           - WFe(i,j+1,k) + WFe(i,j,k)  
           ENDDO
         ENDDO
 
+      ENDDO          !<-- outer loop k
 
 # endif /* W_HADV */
 
