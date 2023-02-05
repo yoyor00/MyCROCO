@@ -2889,21 +2889,37 @@ C$OMP END MASTER
         do j=Jstr,Jend
           do i=Istr,Iend
             dum_s=0.
-            dum2_s=0.
+         !   dum2_s=0.
             do k=1,N
               dum_s=dum_s+Hz(i,j,k)-Hz_bak(i,j,k)
-              dum2_s=dum2_s+Hz(i,j,k)
+        !      dum2_s=dum2_s+Hz(i,j,k)
             enddo
             do k=1,N
-              Hz(i,j,k)=Hz(i,j,k)*(1.
+!              Hz(i,j,k)=Hz(i,j,k)*(1.
+!     &                -(dum_s
+!     &             + (DU_avg2(i+1,j)-DU_avg2(i,j)
+!     &               +DV_avg2(i,j+1)-DV_avg2(i,j)
+!     &               )*pm(i,j)*pn(i,j)
+!     &               *dt)
+!     &               /dum2_s )
+!!     &               /(z_w(i,j,N)-z_w(i,j,0))
+!!     &               *(z_w(i,j,k)-z_w(i,j,k-1))
+!#  ifdef MASKING
+!     &               *rmask(i,j)
+!#  endif
+
+!#  ifdef NBQ_HZCORR_DEBUG
+!              Hz_corr(i,j,k)=Hz(i,j,k)-Hz_correct(i,j,k)
+!#  endif
+
+              Hz(i,j,k)=Hz(i,j,k)
      &                -(dum_s
      &             + (DU_avg2(i+1,j)-DU_avg2(i,j)
      &               +DV_avg2(i,j+1)-DV_avg2(i,j)
      &               )*pm(i,j)*pn(i,j)
      &               *dt)
-     &               /dum2_s )
-!     &               /(z_w(i,j,N)-z_w(i,j,0))
-!     &               *(z_w(i,j,k)-z_w(i,j,k-1))
+     &               /(z_w(i,j,N)-z_w(i,j,0))
+     &               *(z_w(i,j,k)-z_w(i,j,k-1))
 #  ifdef MASKING
      &               *rmask(i,j)
 #  endif
@@ -2911,6 +2927,7 @@ C$OMP END MASTER
 #  ifdef NBQ_HZCORR_DEBUG
               Hz_corr(i,j,k)=Hz(i,j,k)-Hz_correct(i,j,k)
 #  endif
+
 
 !# ifdef NBQ_MASS
 !              Hzr(i,j,k)=(Hz(i,j,k)-rho_nbq(i,j,k)) ! adjust Zw,Zr?

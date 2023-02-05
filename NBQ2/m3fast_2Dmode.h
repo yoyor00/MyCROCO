@@ -355,16 +355,7 @@ C$OMP MASTER
       enddo
 # endif
 !$acc end kernels
-#ifdef NBQ_TBT 
-! !
-! !--------------------------------------------------------------------
-! ! Since coupling requires that pressure gradient term is computed
-! ! using zeta(:,:,kstp) instead of zeta_new(:,:) needed to achieve
-! ! numerical stability, apply compensation to shift pressure gradient
-! ! terms from "kstp" to "knew": in essense, convert the fist 2D step
-! ! from Forward Euler to Forward-Backward].
-! !--------------------------------------------------------------------
-! !  
+!#ifdef NBQ_TBT 
       if (FIRST_FAST_STEP) then 
 ! !
 ! !--------------------------------------------------------------------
@@ -437,4 +428,4 @@ C$OMP MASTER
 # undef rzeta
 # undef zwrk
       endif   !<-- FIRST_FAST_STEP
-#endif  /* NBQ_TBT */
+!#endif  /* NBQ_TBT */
