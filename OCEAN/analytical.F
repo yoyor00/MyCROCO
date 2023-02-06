@@ -1991,8 +1991,8 @@ C$    integer  trd, omp_get_thread_num
 #    define CST_SHAPE
 !#    define BOTTOM_SHAPE
 #  else
-!#   define EXP_SHAPE
-#   define CST_SHAPE
+#   define EXP_SHAPE
+!#   define CST_SHAPE
 #  endif
 
 #  ifdef CST_SHAPE

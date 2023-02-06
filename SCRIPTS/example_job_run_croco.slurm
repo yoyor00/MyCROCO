@@ -14,5 +14,9 @@ cd ${SLURM_SUBMIT_DIR}
 umask 022
 set -u
 
+# source your environment file
+source myenv_mypath.sh
+
+# launch the run script
 ./run_croco.bash >& run_croco.out
 

@@ -122,7 +122,7 @@ C$    trd=omp_get_thread_num()
 !                                           Western edge Chapman BC
 !                                           ======= ==== ======= ==
         do j=JstrV-1,Jend
-          cx=dtfast*pm(1,j)*sqrt(g*(h(1,j)+zeta(1,j,kstp)))
+          cx=dtfast*pm(1,j)*sqrt(g*max(0.,h(1,j)+zeta(1,j,kstp)))
           zeta(0,j,knew)=(zeta(0,j,kstp)+cx*zeta(1,j,knew))/(1.+cx)
 #  ifdef MASKING
      &                      *rmask(0,j)
@@ -175,7 +175,8 @@ C$    trd=omp_get_thread_num()
 !                                           Eastern edge Chapman BC
 !                                           ======= ==== ======= ==
         do j=JstrV-1,Jend
-          cx=dtfast*pm(Iend,j)*sqrt(g*(h(Iend,j)+zeta(Iend,j,kstp)))
+          cx=dtfast*pm(Iend,j)*
+     &                      sqrt(g*max(0.,h(Iend,j)+zeta(Iend,j,kstp)))
           zeta(Iend+1,j,knew)=(zeta(Iend+1,j,kstp)
      &                              +cx*zeta(Iend,j,knew))/(1.+cx)
 #  ifdef MASKING
@@ -232,7 +233,7 @@ C$    trd=omp_get_thread_num()
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU-1,Iend
-          cx=dtfast*pn(i,1)*sqrt(g*(h(i,1)+zeta(i,1,kstp)))
+          cx=dtfast*pn(i,1)*sqrt(g*max(0.,h(i,1)+zeta(i,1,kstp)))
           zeta(i,0,knew)=(zeta(i,0,kstp)
      &                              +cx*zeta(i,1,knew))/(1.+cx)
 #  ifdef MASKING
@@ -286,7 +287,8 @@ C$    trd=omp_get_thread_num()
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU-1,Iend
-          cx=dtfast*pn(i,Jend)*sqrt(g*(h(i,Jend)+zeta(i,Jend,kstp)))
+          cx=dtfast*pn(i,Jend)*
+     &                      sqrt(g*max(0.,h(i,Jend)+zeta(i,Jend,kstp)))
           zeta(i,Jend+1,knew)=(zeta(i,Jend+1,kstp)
      &                              +cx*zeta(i,Jend,knew))/(1.+cx)
 #  ifdef MASKING

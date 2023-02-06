@@ -12,7 +12,7 @@ export DT_ATM=150
 
 # Domains
 export NB_dom=1 # Number of coupled domains
-export wrfcpldom='d01'
+export wrfcpldom='d01' # which WRF domain to couple
 export nestfeedback="TRUE" # 1 way (FALSE) or 2 Way (TRUE) nesting
 export onlinecplmask="TRUE" # Erase existing CPLMASK and build default mask (depending on the nb of atm and oce domains)
 

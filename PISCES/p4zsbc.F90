@@ -213,8 +213,8 @@ CONTAINS
          ENDDO
 
          DO jk = 1, N
-            DO jj = Jstrp, Jendp
-               DO ji = Istrp, Iendp
+            DO jj = JRANGE
+               DO ji = IRANGE
                   IF( tmask_i(ji,jj) /= 0. ) THEN
                      zmaskt = tmask_i(ji+1,jj) * tmask_i(ji-1,jj  ) * tmask_i(ji,jj+1)    &
                         &                      * tmask_i(ji  ,jj-1) * tmask_i(ji,jj  )

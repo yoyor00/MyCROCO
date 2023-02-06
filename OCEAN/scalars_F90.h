@@ -33,34 +33,35 @@
 ! dt          Time step for 3D primitive equations [seconds];
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
-      real dt, dtfast, time, time2, time_start, tdays
+      real dt, dtfast, time, time2, time_start, tdays, start_time
 #ifdef USE_CALENDAR
       real time_mars, time_end
       character*19 date, end_date, start_date
 #endif
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
-     integer iif, nstp, nrhs, nnew, nbstep3d
+      integer iif, nstp, nrhs, nnew, nbstep3d
 #endif
 #ifdef FLOATS
-     integer nfp1, nf, nfm1, nfm2, nfm3
+      integer nfp1, nf, nfm1, nfm2, nfm3
 #endif
 #ifdef WKB_WWAVE
-     integer wstp, wnew
+      integer wstp, wnew
 #endif
       logical PREDICTOR_2D_STEP
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays, &
                             ndtfast, iic, kstp, krhs, knew, next_kstp, &
+                             start_time, &
 #ifdef SOLVE3D
-                            iif, nstp, nrhs, nnew, nbstep3d,           &
+                             iif, nstp, nrhs, nnew, nbstep3d,          &
 #endif
 #ifdef FLOATS
-                            nfp1, nf, nfm1, nfm2, nfm3,                &   
+                             nfp1, nf, nfm1, nfm2, nfm3,               &
 #endif
 #ifdef WKB_WWAVE
-                            wstp, wnew,                                &
+                             wstp, wnew,                               &
 #endif
-                            PREDICTOR_2D_STEP 
+                             PREDICTOR_2D_STEP
 #ifdef USE_CALENDAR
       common /time_indices2/ time_mars, time_end,                      &
                             date, end_date, start_date
@@ -151,7 +152,9 @@
       real  theta_s,   theta_b,   Tcline,  hc 
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
       real  rx0, rx1
+# ifdef TRACERS
       real  tnu2(NT),tnu4(NT)
+# endif
 # if !defined NONLIN_EOS || defined MUSTANG
       real R0,T0,S0, Tcoef, Scoef
 # endif
@@ -172,6 +175,9 @@
 #endif
       integer numthreads, ntstart, ntimes, ninfo  &
      &                 , nfast, nrrec, nrst,nwrt
+#ifdef EXACT_RESTART
+      integer forw_start
+#endif
 #ifdef AVERAGES
       integer                      ntsavg,  navg
 #endif
@@ -212,13 +218,13 @@
       integer ntsdiags_pv_avg, nwrtdiags_pv_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
       integer nwrtdiags_eddy
 # ifdef AVERAGES
       integer ntsdiags_eddy_avg, nwrtdiags_eddy_avg
 # endif
 #endif
-#ifdef OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
       integer nwrtsurf
 # ifdef AVERAGES
       integer ntssurf_avg, nwrtsurf_avg
@@ -235,7 +241,7 @@
 #endif
 
       logical ldefhis
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRACERS
       logical got_tini(NT)
 #endif
 #ifdef SEDIMENT
@@ -277,13 +283,13 @@
       logical ldefdiags_pv_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
       logical ldefdiags_eddy
 # ifdef AVERAGES
       logical ldefdiags_eddy_avg
 # endif
 #endif
-#ifdef OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
       logical ldefsurf
 # ifdef AVERAGES
       logical ldefsurf_avg
@@ -306,7 +312,10 @@
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc               &
      &           , sc_w,      Cs_w,      sc_r,    Cs_r             &
-     &           , rx0,       rx1,       tnu2,    tnu4             & 
+     &           , rx0,       rx1                                  &
+# ifdef TRACERS
+     &           ,       tnu2,    tnu4                             &
+# endif
 # ifndef NONLIN_EOS
      &                      , R0,T0,S0,  Tcoef,   Scoef            & 
 # endif
@@ -327,6 +336,9 @@
 #endif
      &      , numthreads,     ntstart,   ntimes,  ninfo            & 
      &      , nfast,  nrrec,     nrst,    nwrt                     & 
+#ifdef EXACT_RESTART
+     &       , forw_start &
+#endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg             & 
 #endif
@@ -339,7 +351,7 @@
 #ifdef STATIONS
      &                      , nsta, nrpfsta         &
 #endif
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRACERS
      &                      , got_tini              &
 #endif
 #ifdef SEDIMENT
@@ -391,7 +403,7 @@
      &                      , ntsdiags_pv_avg          &
 # endif
 #endif
-#ifdef DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                      , ldefdiags_eddy, nwrtdiags_eddy  &
 # ifdef AVERAGES
      &                      , ldefdiags_eddy_avg       &
@@ -399,7 +411,7 @@
      &                      , ntsdiags_eddy_avg        &
 # endif
 #endif
-#ifdef OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
      &                      , ldefsurf, nwrtsurf       &
 # ifdef AVERAGES
      &                      , ldefsurf_avg             &
@@ -420,11 +432,14 @@
 #endif
      &                      , ldefhis         
 
-#if defined SOLVE3D && !defined LMD_MIXING
+# if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak
+      common /scalars_akv/ Akv_bak
+#  ifdef TRACERS
       real Akt_bak(NT)
-      common /scalars_akt/ Akv_bak, Akt_bak 
-#endif
+      common /scalars_akt/ Akt_bak
+#  endif
+# endif
 !
 !-----------------------------------------------------------------------
 ! This following common block contains a set of globally accessable
@@ -492,31 +507,30 @@
       integer i_cx_max, j_cx_max, k_cx_max
       common /diag_vars/ Cu_Adv3d,  Cu_W,    &
              i_cx_max, j_cx_max, k_cx_max
+      real*QUAD volume, avgke, avgpe, avgkp, bc_crss
 
-      real*QUAD volume                &
 #ifdef OBC_VOLCONS
-             , bc_flux, ubar_xs       &
-#endif         
-#ifdef BIOLOGY
-             , global_sum(0:2*NT+1)   &
+      real*QUAD      bc_flux, ubar_xs
+#endif
+#if defined BIOLOGY && defined TRACERS
+      real*QUAD    global_sum(0:2*NT+1)
 #endif
 #ifdef RESET_RHO0
-             , avg_vol, avg_rho       &    
+       real*QUAD   avg_vol, avg_rho
 #endif
-            , avgke, avgpe, avgkp, bc_crss
 
-      common /communicators_rq/       &
-               volume                 &
+      common /communicators_rq/            &
+               volume, avgke, avgpe, avgkp &
 #ifdef OBC_VOLCONS
-             , bc_flux,  ubar_xs      &
+             , bc_flux,  ubar_xs           &
 #endif
 #ifdef BIOLOGY
-             , global_sum             &
+             , global_sum                  &
 #endif
 #ifdef RESET_RHO0
-             , avg_vol, avg_rho       &      
+             , avg_vol, avg_rho            &
 #endif
-             , avgke, avgpe, avgkp, bc_crss
+             , bc_crss
 
 !
 !  The following common block contains process counters and model
@@ -532,7 +546,7 @@
 
 #ifdef MPI
 !
-! MPI rlated variables
+! MPI related variables
 ! === ====== =========
 !
       logical EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2
@@ -561,9 +575,9 @@
       real Eradius, Erotation, g, day2sec,sec2day, jul_off,         &
      &     year2day,day2year
       parameter (Eradius=6371315.0,  Erotation=7.292115090e-5,      &
-                day2sec=86400., sec2day=1./86400.,                  &
-                year2day=365.25, day2year=1./365.25,                &
-                jul_off=2440000.)
+                 day2sec=86400., sec2day=1./86400.,                 &
+                 year2day=365.25, day2year=1./365.25,               &
+                 jul_off=2440000.)
 
 ! Acceleration of gravity (nondimensional for Soliton problem)
 !
@@ -585,6 +599,6 @@
 !   FillValue (Needed if the FILLVAL key is defined)
 !   (See fillvalue.F subroutine)
       real spval
-      parameter (spval=-999.)
+      parameter (spval=-999.0)
       logical mask_val
       parameter (mask_val = .true.)

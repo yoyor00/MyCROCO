@@ -1194,7 +1194,8 @@
         endif
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstTstep,nf_collective)
-#endif!
+#endif
+!
 ! Time.
 !
         lvar=lenstr(vname(1,indxTime))
@@ -1566,7 +1567,6 @@
 #    ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstdRdx,nf_collective)
 #    endif
-
 
         lvar=lenstr(vname(1,indxdRde))
         ierr=nf_inq_varid (ncid, vname(1,indxdRde)(1:lvar),

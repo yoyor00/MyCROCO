@@ -10,7 +10,8 @@ MODEL=croco
 SCRATCHDIR=`pwd`/SCRATCH
 
 # Input directory where the croco_inter.in input file is located
-INPUTDIR=`pwd`
+INPUTDIR=`pwd`/CROCO_IN  # prod architecture
+#INPUTDIR=`pwd`          # dev architecture
 
 # AGRIF input file which defines the position of child grids
 AGRIF_FILE=AGRIF_FixedGrids.in
@@ -28,12 +29,13 @@ CODFILE=croco
 NBPROCS=8
 
 # command for running the mode : ./ for sequential job, mpirun -np NBPROCS for mpi run
+# WARNING: for mpi run command, it is needed to add a space at the end!
 RUNCMD='./'
 #RUNCMD="mpirun -np $NBPROCS "
+#RUNCMD="$MPI_LAUNCH "
 #RUNCMD="srun "
-#
+
 #  Define environment variables for OPENMP
-#
 OMP_SCHEDULE=static
 OMP_NUM_THREADS=2
 OMP_DYNAMIC=false
@@ -43,9 +45,29 @@ KMP_STACKSIZE=2m
 KMP_DUPLICATE_LIB_OK=TRUE
 
 # Model time step [seconds]
-#
 DT=3600
-#
+# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
+NFAST=60
+
+# number total of grid levels
+NLEVEL=1
+# AGRIF nesting refinement coefficient
+AGRIF_REF=3
+
+# Start and End year 
+NY_START=1
+NY_END=10
+# Start and End month
+NM_START=1
+NM_END=12
+# Set month format at 1 or 2 digits (for output files): "%01d" = 1 digit/ "%02d" = 2 digit  
+MTH_FORMAT="%01d"
+# Number of days per month
+NDAYS=30
+#  Time Schedule  -  TIME_SCHED=0 --> yearly files
+#                    TIME_SCHED=1 --> monthly files
+TIME_SCHED=1
+
 # Output frequency [days]
 #   average
 ND_AVG=3
@@ -53,38 +75,10 @@ ND_AVG=3
 ND_HIS=-1
 #   restart (if = -1 set equal to NUMTIMES)
 ND_RST=-1
-#
-# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
-#
-NFAST=60
-#
-# Number of days per month
-#
-NDAYS=30
-#
-# number total of grid levels
-#
-NLEVEL=1
-#
-# AGRIF nesting refinement coefficient
-#
-AGRIF_REF=3
-#
-#  Time Schedule  -  TIME_SCHED=0 --> yearly files
-#                    TIME_SCHED=1 --> monthly files
-#
-TIME_SCHED=1
-#
-NY_START=1
-NY_END=10
-NM_START=1
-NM_END=12
-#
-# Set month format at 1 or 2 digits (for output files): "%01d" = 1 digit/ "%02d" = 2 digit  
-MTH_FORMAT="%01d"
-#                - EXACT_RST=1 --> Exact restart ON
+
+# Flag for using exact restart - EXACT_RST=1 --> Exact restart ON
 EXACT_RST=0
-#
+
 #unalias cp
 #unalias mv
 #limit coredumpsize unlimited

@@ -369,7 +369,7 @@
 
   
       itww=i
-      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
+      MPI_master_only write(stdout,'(6x,A,1x,A,1x,F10.4,1x,I4)')
      &  'GET_WWAVE --','Read wind wave input data for time =', cff
 #ifdef USE_CALENDAR
      &  -ww_origin_date_in_sec*sec2day
@@ -399,7 +399,7 @@
      &  -ww_origin_date_in_sec*sec2day
 #endif 
   8   format(/,' GET_WWAVE - ERROR: requested time record ',I4,
-     &       1x,'exeeds the last available', /,14x,'record ',I4,
+     &       1x,'exceeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing NetCDF file: ',a, /,14x,'TDAYS = ',
      &       g12.4,2x,'last available wwv_time = ',g12.4)
 

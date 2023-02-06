@@ -467,6 +467,18 @@
      &                                            'kilogram meter-3')
 !
 # ifndef NONLIN_EOS
+      ierr=nf_put_att_FTYPE(ncid,nf_global,'T0',  nf_ftype, 1, T0)
+      ierr=nf_put_att_text (ncid,nf_global,'T0_expl', 55,
+     &     'Background temperature used in linear equation of state')
+      ierr=nf_put_att_text (ncid,nf_global,'T0_units', 7,
+     &                                            'Celsius')
+!
+      ierr=nf_put_att_FTYPE(ncid,nf_global,'S0',  nf_ftype, 1, S0)
+      ierr=nf_put_att_text (ncid,nf_global,'S0_expl', 52,
+     &        'Background salinity used in linear equation of state')
+      ierr=nf_put_att_text (ncid,nf_global,'S0_units', 3,
+     &                                            'PSU')
+!
       ierr=nf_put_att_FTYPE(ncid,nf_global,'R0',  nf_ftype, 1, R0)
       ierr=nf_put_att_text (ncid,nf_global,'R0_expl', 51,
      &         'Background density used in linear equation of state')
@@ -507,7 +519,7 @@
 !
 ! Sponge parameters
 !
-# ifdef SPONGE
+#if  (defined SPONGE && !defined SPONGE_GRID)
       ierr=nf_put_att_FTYPE(ncid,nf_global,'x_sponge',nf_ftype, 1,
      &                                                     x_sponge)
       ierr=nf_put_att_FTYPE(ncid,nf_global,'v_sponge',nf_ftype, 1,
