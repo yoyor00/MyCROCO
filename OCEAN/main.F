@@ -32,12 +32,11 @@
           USE trcini_pisces
 #endif
 #ifdef SUBSTANCE
-          USE substance , ONLY : substance_read_alloc
-          USE substance , ONLY : substance_surfcell
+          USE substance, ONLY : substance_read_alloc
+          USE substance, ONLY : substance_surfcell
 #endif
 #ifdef MUSTANG
-          USE initMUSTANG
-          USE plug_MUSTANG_CROCO
+          USE plug_MUSTANG_CROCO, ONLY : mustang_init_main
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
@@ -83,10 +82,6 @@
 #endif
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
-#endif
-#ifdef MUSTANG
-# include "coupler_define_MUSTANG.h"
-# include "ocean3d.h"
 #endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -189,21 +184,11 @@
 
 #ifdef SUBSTANCE
 !
-!  Computing cell surfaces need for MUSTANG and BIOLink
+!  Substance var need for MUSTANG and BIOLink
 !
       call substance_read_alloc(may_day_flag,indxT,indxTsrc)
 #endif
 
-#ifdef MUSTANG
-!
-!  General initialization for MUSTANG ( parameters ..)
-!
-      call MUSTANG_initialization(
-# ifdef key_MUSTANG_flocmod
-     &           TRANSPORT_TIME_STEP,
-# endif
-     &           RHOREF)
-#endif
 !
 ! Online spectral analysis module
 !
@@ -434,21 +419,22 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
 #endif
 
-!
+
 !----------------------------------------------------------------------
-!  MUSTANG : initialization sediment concentrations
-!----------------------------------------------------------------------
-!
-#ifdef MUSTANG
-!----------------------------------------------------------------------
-!  computing cell surfaces need for MUSTANG and BIOLink
+!  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
 # ifdef SUBSTANCE
       call substance_surfcell
 # endif
+!
+!----------------------------------------------------------------------
+!  MUSTANG : initialization
+!----------------------------------------------------------------------
+!
+#ifdef MUSTANG
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call MUSTANG_init_sediment_main (tile)
+        call MUSTANG_init_main (tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
 #endif
@@ -818,10 +804,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
-#endif
-
-#ifdef MUSTANG
-      call MUSTANG_compatibility(vname,indxT,ntrc_salt)
 #endif
 
 #ifdef ABL1D

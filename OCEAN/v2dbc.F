@@ -798,7 +798,7 @@ C$    trd=omp_get_thread_num()
       if (WESTERN_EDGE) then
         DO j=JstrV,Jend
           cff1=ABS(ABS(vmask_wet(Istr-1,j))-1.)
-          cff2=0.5+SIGN(0.5,vbar(Istr-1,j,kstp))*vmask_wet(Istr-1,j)
+          cff2=0.5+SIGN(0.5,vbar(Istr-1,j,knew))*vmask_wet(Istr-1,j)
           vmask_wet(Istr-1,j)=0.5*vmask_wet(Istr-1,j)*cff1
      &                                               +cff2*(1.-cff1)
           vbar(Istr-1,j,knew)=vbar(Istr-1,j,knew)*vmask_wet(Istr-1,j)
@@ -807,7 +807,7 @@ C$    trd=omp_get_thread_num()
       if (EASTERN_EDGE) then
         DO j=JstrV,Jend
           cff1=ABS(ABS(vmask_wet(Iend+1,j))-1.)
-          cff2=0.5+SIGN(0.5,vbar(Iend+1,j,kstp))*vmask_wet(Iend+1,j)
+          cff2=0.5+SIGN(0.5,vbar(Iend+1,j,knew))*vmask_wet(Iend+1,j)
           vmask_wet(Iend+1,j)=0.5*vmask_wet(Iend+1,j)*cff1
      &                                               +cff2*(1.-cff1)
           vbar(Iend+1,j,knew)=vbar(Iend+1,j,knew)*vmask_wet(Iend+1,j)
@@ -818,7 +818,7 @@ C$    trd=omp_get_thread_num()
       if (SOUTHERN_EDGE) then
         DO i=Istr,Iend
           cff1=ABS(ABS(vmask_wet(i,Jstr))-1.)
-          cff2=0.5+SIGN(0.5,vbar(i,Jstr,kstp))*vmask_wet(i,Jstr)
+          cff2=0.5+SIGN(0.5,vbar(i,Jstr,knew))*vmask_wet(i,Jstr)
           vmask_wet(i,Jstr)=0.5*vmask_wet(i,Jstr)*cff1
      &                                           +cff2*(1.-cff1)
           vbar(i,Jstr,knew)=vbar(i,Jstr,knew)*vmask_wet(i,Jstr)
@@ -827,7 +827,7 @@ C$    trd=omp_get_thread_num()
       if (NORTHERN_EDGE) then
         DO i=Istr,Iend
           cff1=ABS(ABS(vmask_wet(i,Jend+1))-1.)
-          cff2=0.5+SIGN(0.5,vbar(i,Jend+1,kstp))*vmask_wet(i,Jend+1)
+          cff2=0.5+SIGN(0.5,vbar(i,Jend+1,knew))*vmask_wet(i,Jend+1)
           vmask_wet(i,Jend+1)=0.5*vmask_wet(i,Jend+1)*cff1
      &                                               +cff2*(1.-cff1)
           vbar(i,Jend+1,knew)=vbar(i,Jend+1,knew)*vmask_wet(i,Jend+1)
@@ -837,7 +837,7 @@ C$    trd=omp_get_thread_num()
 # if !defined EW_COM_PERIODIC && !defined NS_COM_PERIODIC
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
         cff1=ABS(ABS(vmask_wet(Istr-1,Jstr))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jstr,kstp))*vmask_wet(Istr-1,Jstr)
+        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jstr,knew))*vmask_wet(Istr-1,Jstr)
         vmask_wet(Istr-1,Jstr)=0.5*vmask_wet(Istr-1,Jstr)*cff1
      &                                                   +cff2*(1.-cff1)
         vbar(Istr-1,Jstr,knew)=vbar(Istr-1,Jstr,knew)
@@ -845,7 +845,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (SOUTHERN_EDGE .and. EASTERN_EDGE) then
         cff1=ABS(ABS(vmask_wet(Iend+1,Jstr))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jstr,kstp))*vmask_wet(Iend+1,Jstr)
+        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jstr,knew))*vmask_wet(Iend+1,Jstr)
         vmask_wet(Iend+1,Jstr)=0.5*vmask_wet(Iend+1,Jstr)*cff1
      &                                                   +cff2*(1.-cff1)
         vbar(Iend+1,Jstr,knew)=vbar(Iend+1,Jstr,knew)
@@ -853,7 +853,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (NORTHERN_EDGE .and. WESTERN_EDGE) then
         cff1=ABS(ABS(vmask_wet(Istr-1,Jend+1))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jend+1,kstp))
+        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jend+1,knew))
      &                                       *vmask_wet(Istr-1,Jend+1)
         vmask_wet(Istr-1,Jend+1)=0.5*vmask_wet(Istr-1,Jend+1)*cff1
      &                                              +cff2*(1.-cff1)
@@ -862,7 +862,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (NORTHERN_EDGE .and. EASTERN_EDGE) then
         cff1=ABS(ABS(vmask_wet(Iend+1,Jend+1))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jend+1,kstp))
+        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jend+1,knew))
      &                                       *vmask_wet(Iend+1,Jend+1)
         vmask_wet(Iend+1,Jend+1)=0.5*vmask_wet(Iend+1,Jend+1)*cff1
      &                                              +cff2*(1.-cff1)

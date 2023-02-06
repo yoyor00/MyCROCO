@@ -16,6 +16,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
  # WW3 prnc
 
     for  k in `seq 0 $(( ${lengthforc} - 1))` ; do
+	rm -Rf ww3_prnc.inp
         echo "ln -sf ww3_prnc.inp.${forcww3[$k]} ww3_prnc.inp"
         ${io_getfile} ${WAV_NAM_DIR}/ww3_prnc.inp.${forcww3[$k]}                          ww3_prnc.inp
 
@@ -57,6 +58,7 @@ else
     # WW3 prnc
 
     for  k in `seq 0 $(( ${lengthforc} - 1))` ; do
+	rm -Rf ww3_prnc.inp
         echo "ln -sf ww3_prnc.inp.${forcww3[$k]} ww3_prnc.inp"
         ${io_getfile} ${WAV_NAM_DIR}/ww3_prnc.inp.${forcww3[$k]}                          ww3_prnc.inp
 

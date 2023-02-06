@@ -670,7 +670,8 @@ CONTAINS         ! Write model prognostic
       CHARACTER(len = 20)  ::  cltra 
       REAL(wp)  :: zrate
       REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zdta, zflx
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: trcsedi, flxsedi3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: ztrcsedi, flxsedi3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: trcsedi
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:)   :: flxsedi2d
 
       !!-------------------------------------------------------------------
@@ -679,25 +680,28 @@ CONTAINS         ! Write model prognostic
       ! Initialisation
       ! ----------------- 
       ALLOCATE( zdta(jpoce,jpksed) )    ;   ALLOCATE( zflx(jpoce,jpwatp1) )
-      ALLOCATE( trcsedi(PRIV_2D_BIOARRAY,jpksed,jptrased) )
+      ALLOCATE( ztrcsedi(PRIV_2D_BIOARRAY,jpksed,jptrased) )
       ALLOCATE( flxsedi2d(PRIV_2D_BIOARRAY,jpdia2dsed) )
+      ALLOCATE( flxsedi3d(PRIV_2D_BIOARRAY,jpksed,jpdia3dsed) )
+      ALLOCATE( trcsedi(GLOBAL_2D_ARRAY,jpksed,jptrased) )
 
       ! Initialize variables
       ! --------------------
 
       trcsedi(:,:,:,:)   = 0.0
+      ztrcsedi(:,:,:,:)  = 0.0
       flxsedi3d(:,:,:,:) = 0.0
       flxsedi2d(:,:,:)   = 0.0
 
       ! 2.  Back to 2D geometry
       ! -----------------------------------------------------------------
       DO jn = 1, jpsol
-         CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,jn) , iarroce(1:jpoce), &
+         CALL unpack_arr( jpoce, ztrcsedi(PRIV_2D_BIOARRAY,1:jpksed,jn) , iarroce(1:jpoce), &
          &                       solcp(1:jpoce,1:jpksed,jn ) )
       END DO
       
       DO jn = 1, jpwat
-         CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,jpsol + jn) , iarroce(1:jpoce), &
+         CALL unpack_arr( jpoce, ztrcsedi(PRIV_2D_BIOARRAY,1:jpksed,jpsol + jn) , iarroce(1:jpoce), &
          &                       pwcp(1:jpoce,1:jpksed,jn  )  )
       END DO      
 
@@ -721,13 +725,13 @@ CONTAINS         ! Write model prognostic
       DO jw = 1, jpwat
          DO ji = 1, jpoce
             zflx(ji,jw) = ( pwcp(ji,1,jw) - pwcp_dta(ji,jw) ) &
-               &         * 1.e3 / 1.e2 * dzkbot(ji) / r2dttrc
+               &         * 1.e3 / 1.e2 * dzkbot(ji) / rfact
          ENDDO
       ENDDO
 
       ! Calculation of accumulation rate per dt
       DO js = 1, jpsol
-         zrate =  1.0 / ( denssol * por1(jpksed) ) / r2dttrc
+         zrate =  1.0 / ( denssol * por1(jpksed) ) / rfact
          DO ji = 1, jpoce
             zflx(ji,jpwatp1) = zflx(ji,jpwatp1) + ( tosed(ji,js) - fromsed(ji,js) ) * zrate
          ENDDO
@@ -742,21 +746,49 @@ CONTAINS         ! Write model prognostic
        ! Start writing data
        ! ---------------------
        DO jn = 1, jptrased
+          DO jk = 1, jpksed
+             DO jj = JRANGE
+                DO ji = IRANGE
+                   trcsedi(ji,jj,jk,jn) = ztrcsedi(ji,jj,jk,jn)
+                END DO
+             END DO
+          END DO
+       END DO
+
+       DO jn = 1, jptrased
           cltra = sedtrcd(jn) ! short title for 3D diagnostic
           CALL iom_put( cltra, trcsedi(:,:,:,jn) )
        END DO
 
        DO jn = 1, jpdia3dsed
+          DO jk = 1, jpksed
+             DO jj = JRANGE
+                DO ji = IRANGE
+                   trcsedi(ji,jj,jk,jn) = flxsedi3d(ji,jj,jk,jn)
+                END DO
+             END DO
+          END DO
+       END DO
+
+       DO jn = 1, jpdia3dsed
           cltra = seddia3d(jn) ! short title for 3D diagnostic
-          CALL iom_put( cltra, flxsedi3d(:,:,:,jn) )
+          CALL iom_put( cltra, trcsedi(:,:,:,jn) )
        END DO
 
        DO jn = 1, jpdia2dsed
+          DO jj = JRANGE
+             DO ji = IRANGE
+                trcsedi(ji,jj,1,jn) = flxsedi2d(ji,jj,jn)
+             END DO
+          END DO
+       END DO
+ 
+       DO jn = 1, jpdia2dsed
           cltra = seddia2d(jn) ! short title for 2D diagnostic
-          CALL iom_put( cltra, flxsedi2d(:,:,jn) )
+          CALL iom_put( cltra, trcsedi(:,:,1,jn) )
        END DO
 
-      DEALLOCATE( zdta, zflx, flxsedi2d, flxsedi3d, trcsedi ) 
+      DEALLOCATE( zdta, zflx, flxsedi2d, flxsedi3d, trcsedi, ztrcsedi ) 
 
    END SUBROUTINE sed_wri
 

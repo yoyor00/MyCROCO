@@ -65,6 +65,11 @@ CONTAINS
       IF( kt == nittrc000 ) THEN
          !
          ALLOCATE( xnegtr(PRIV_3D_BIOARRAY) )
+         !
+         DO jn = jp_pcs0, jp_pcs1
+           tra(:,:,:,jn) = 0.e0
+         ENDDO
+         !
       ENDIF
 
       IF( ll_sbc ) CALL p4z_sbc( kt )   ! external sources of nutrients
@@ -75,8 +80,8 @@ CONTAINS
       DO jnt = 1, nrdttrc          ! Potential time splitting if requested
          !
          CALL p4z_bio (kt, jnt )    ! Compute soft tissue production (POC)
-         CALL p4z_sed (kt, jnt )    ! compute soft tissue remineralisation
          CALL p4z_lys( kt, jnt )    ! Compute CaCO3 saturation
+         CALL p4z_sed (kt, jnt )    ! compute soft tissue remineralisation
          CALL p4z_flx( kt, jnt )    ! Compute surface fluxes
          !
          !                             ! test if tracers concentrations fall below 0.

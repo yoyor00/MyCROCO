@@ -47,7 +47,7 @@ tndx=tindex(it);
 % -------------------------------------
 %  --- Read model data ---
 % -------------------------------------
-nc=netcdf(fname);
+nc=netcdf(fname,'r');
 tndx=min(tndx,length(nc{'scrum_time'}(:)));
 disp(['tndx = ',num2str(tndx)'']);
 h=nc{'h'}(:);

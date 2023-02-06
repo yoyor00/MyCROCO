@@ -93,7 +93,7 @@ sponge:          X_SPONGE [m],    V_SPONGE [m^2/sec]
                    XXX               XXX
 
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
-              0.1       0.1       0.1       0.1
+              1.e-5    1.e-3     1.e-5    1.e-3 
 
 lateral_visc:   VISC2,    VISC4    [m^2/sec for all]
                  0.        0.

@@ -10,7 +10,8 @@ MODEL=croco
 SCRATCHDIR=`pwd`/SCRATCH
 
 # Input directory where the croco_inter.in input file is located
-INPUTDIR=`pwd`/CROCO_IN
+INPUTDIR=`pwd`/CROCO_IN  # prod architecture
+#INPUTDIR=`pwd`          # dev architecture
 
 # AGRIF input file which defines the position of child grids
 AGRIF_FILE=AGRIF_FixedGrids.in
@@ -19,7 +20,7 @@ AGRIF_FILE=AGRIF_FixedGrids.in
 MSSDIR=`pwd`/CROCO_FILES
 
 # Directory where the croco output and restart NetCDF files (croco_his.nc, ...) are stored
-MSSOUT=`pwd`/CROCO_FILES
+MSSOUT=$SCRATCHDIR
 
 # CROCO executable
 CODFILE=croco
@@ -28,12 +29,13 @@ CODFILE=croco
 NBPROCS=8
 
 # command for running the mode : ./ for sequential job, mpirun -np NBPROCS for mpi run
+# WARNING: for mpi run command, it is needed to add a space at the end!
 RUNCMD='./'
 #RUNCMD="mpirun -np $NBPROCS "
+#RUNCMD="$MPI_LAUNCH "
+#RUNCMD="srun "
 
-#
 #  Define environment variables for OPENMP
-#
 OMP_SCHEDULE=static
 OMP_NUM_THREADS=2
 OMP_DYNAMIC=false
@@ -43,9 +45,29 @@ KMP_STACKSIZE=2m
 KMP_DUPLICATE_LIB_OK=TRUE
 
 # Model time step [seconds]
-#
 DT=3600
-#
+# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
+NFAST=60
+
+# number total of grid levels
+NLEVEL=1
+# AGRIF nesting refinement coefficient
+AGRIF_REF=3
+
+# Start and End year 
+NY_START=1
+NY_END=10
+# Start and End month
+NM_START=1
+NM_END=12
+# Set month format at 1 or 2 digits (for output files): "%01d" = 1 digit/ "%02d" = 2 digit  
+MTH_FORMAT="%01d"
+# Number of days per month
+NDAYS=30
+#  Time Schedule  -  TIME_SCHED=0 --> yearly files
+#                    TIME_SCHED=1 --> monthly files
+TIME_SCHED=1
+
 # Output frequency [days]
 #   average
 ND_AVG=3
@@ -53,43 +75,16 @@ ND_AVG=3
 ND_HIS=-1
 #   restart (if = -1 set equal to NUMTIMES)
 ND_RST=-1
-#
-# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
-#
-NFAST=60
-#
-# Number of days per month
-#
-NDAYS=30
-#
-# number total of grid levels
-#
-NLEVEL=1
-#
-# AGRIF nesting refinement coefficient
-#
-AGRIF_REF=3
-#
-#  Time Schedule  -  TIME_SCHED=0 --> yearly files
-#                    TIME_SCHED=1 --> monthly files
-#
-TIME_SCHED=1
-#
-NY_START=1
-NY_END=10
-NM_START=1
-NM_END=12
-#
-# Set month format at 1 or 2 digits (for output files): "%01d" = 1 digit/ "%02d" = 2 digit  
-MTH_FORMAT="%01d"
-#                - EXACT_RST=1 --> Exact restart ON
+
+# Flag for using exact restart - EXACT_RST=1 --> Exact restart ON
 EXACT_RST=0
-#
+
 #unalias cp
 #unalias mv
 #limit coredumpsize unlimited
 CP=/bin/cp
 MV=/bin/mv
+LN=/bin/ln
 #
 ########################################################
 #  END USER CHANGE
@@ -170,7 +165,7 @@ fi
 #
 LEVEL=0
 echo "Getting ${BRYFILE} from $MSSDIR"
-$CP -f $MSSDIR/${BRYFILE} $SCRATCHDIR
+$LN -sf $MSSDIR/${BRYFILE} $SCRATCHDIR
 while [[ $LEVEL != $NLEVEL ]]; do
     if [[ ${LEVEL} == 0 ]]; then
 	ENDF=
@@ -178,15 +173,15 @@ while [[ $LEVEL != $NLEVEL ]]; do
 	ENDF=.${LEVEL}
     fi
     echo "Getting ${GRDFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${GRDFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${GRDFILE}${ENDF} $SCRATCHDIR
     echo "Getting ${FORFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${FORFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${FORFILE}${ENDF} $SCRATCHDIR
     echo "Getting ${BLKFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${BLKFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${BLKFILE}${ENDF} $SCRATCHDIR
     echo "Getting ${CLMFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${CLMFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${CLMFILE}${ENDF} $SCRATCHDIR
     echo "Getting ${RNFFILE}${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${RNFFILE}${ENDF} $SCRATCHDIR
+    $LN -sf $MSSDIR/${RNFFILE}${ENDF} $SCRATCHDIR
     if [[ $RSTFLAG == 0 ]]; then
 	echo "Getting ${INIFILE}${ENDF} from $MSSDIR"
 	$CP -f $MSSDIR/${INIFILE}${ENDF} $SCRATCHDIR
@@ -286,6 +281,13 @@ while [[ $NY != $NY_END ]]; do
 	fi
 	
 	#
+	LEVEL=0
+	while [[ $LEVEL != $NLEVEL ]]; do
+	    if [[ ${LEVEL} == 0 ]]; then
+		ENDF=''
+	    else
+		ENDF=.${LEVEL}
+	    fi
 	if [[ $EXACT_RST == 1 ]]; then
 	    echo "Exact restart defined"
 	    if [[ $NY == $NY_START && $NM == $NM_START ]]; then
@@ -303,6 +305,8 @@ while [[ $NY != $NY_END ]]; do
 	#
 	sed -e 's/NUMRECINI/'$NUMRECINI'/' < ${MODEL}_inter.in${ENDF}.tmp1 > ${MODEL}.in${ENDF}
 	#
+	    LEVEL=$((LEVEL + 1))
+	done
 	#
 	#  COMPUTE
 	#

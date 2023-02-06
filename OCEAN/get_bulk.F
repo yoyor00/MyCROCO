@@ -617,7 +617,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         endif
 # endif
        itbulk=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,F10.4,1x,I4)')
      &              'GET_BULK   --',
      &              'Read fields for bulk formula   for time =', cff
 # ifdef MPI
@@ -640,7 +640,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
   7   write(stdout,8) bulk_rec, ntbulk, bulkname(1:lstr), tdays,
      &                                     bulk_time(itbulk)*sec2day
   8   format(/,' GET_BULK - ERROR: requested time record ',I4,
-     &       1x,'exeeds the last available',  /,  11x,'record ',I4,
+     &       1x,'exceeds the last available',  /,  11x,'record ',I4,
      &       1x,'in forcing NetCDF file: ', a, /,   11x,'TDAYS = ',
      &               g12.4,2x,'last available BULK_TIME = ',g12.4)
   99  may_day_flag=2
@@ -828,7 +828,6 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             endif
 #  endif
 # endif
-
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                             wspd(START_2D_ARRAY))

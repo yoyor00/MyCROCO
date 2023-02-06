@@ -231,7 +231,7 @@
       parameter (indxLGW=indxDIC+24)
 #     endif
 #    ifdef key_pisces_quota
-     integer  indxDON, indxDOP, indxPON, indxPOP, indxNPH,
+      integer indxDON, indxDOP, indxPON, indxPOP, indxNPH,
      &        indxPPH, indxNDI, indxPDI, indxPIC, indxNPI,
      &        indxPPI, indxPFE, indxPCH, indxGON, indxGOP
 #     ifdef key_ligand
@@ -543,7 +543,7 @@
      &        indxabl_mxld_abl, indxabl_avm_abl, indxabl_avt_abl ,
      &        indxabl_ablh_abl, indxabl_zr_abl , indxabl_zw_abl  ,
      &        indxabl_Hzr_abl , indxabl_Hzw_abl
-      parameter (indxabl_pu_dta   = 400,
+      parameter (indxabl_pu_dta   = 900,
      &           indxabl_pv_dta   = indxabl_pu_dta+ 1,
      &           indxabl_pt_dta   = indxabl_pu_dta+ 2,
      &           indxabl_pq_dta   = indxabl_pu_dta+ 3,
@@ -735,9 +735,9 @@
       integer indxUHPG, indxVHPG,
      &        indxZR  , indxZW  ,
      &        indxHZR , indxHZW
-      parameter (indxUHPG = indxSST+42, indxVHPG = indxSST+43,
-     &           indxZR   = indxSST+44, indxZW   = indxSST+45,
-     &           indxHZR  = indxSST+46, indxHZW  = indxSST+47)
+      parameter (indxUHPG = indxabl_pu_dta+20, indxVHPG = indxabl_pu_dta+21,
+     &           indxZR   = indxabl_pu_dta+22, indxZW   = indxabl_pu_dta+23,
+     &           indxHZR  = indxabl_pu_dta+24, indxHZW  = indxabl_pu_dta+25)
 #  endif
 # endif
 #endif /* SOLVE3D */
@@ -1500,7 +1500,7 @@
 #endif /* AVERAGES */
 
 #ifdef SOLVE3D
-# define NWRTHIS 500+NT
+# define NWRTHIS 1000+NT
 #else
 # define NWRTHIS 500
 #endif
@@ -2148,7 +2148,7 @@
 #endif
 
 #ifdef SOLVE3D
-      character*75  vname(20, 500)
+      character*75  vname(20, 1000)
 #else
       character*75  vname(20, 90)
 #endif

@@ -38,10 +38,12 @@
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
 #  ifdef SUBSTANCE
-      USE comsubstance, ONLY : nv_grav,nvp,ws_part,nv_sand
+      USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand
 #   ifdef MUSTANG
-      USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
-      USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO,corflux_CROCO
+      USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
+      USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
+      USE comMUSTANG,  ONLY : corflux, corfluy
+      USE comsubstance, ONLY : irkm_var_assoc, nvpc, nvp
 #    ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D
 #    endif
@@ -196,16 +198,22 @@
 !
 #  if defined MUSTANG && defined MUSTANG_CORFLUX
           if (k.eq.1 .and. 
-     &        itrc.ge.itsubs1+nv_grav .and.
-     &        itrc.le.itsubs1+nv_grav+nv_sand-1) then ! isand1,isand2
-            do j=Jstr,Jend
-              do i=Istr,Iend+1
-                FX(i,j)=FX(i,j)*corflux_CROCO(i,j,itrc)
+     &        (itrc.ge.itsubs1+nv_grav .and.
+     &        itrc.le.itsubs1+nv_grav+nv_sand-1) ! isand1, isand2
+     &        .or. 
+     &        (itrc.ge.itsubs1+nvpc .and.
+     &        itrc.le.itsubs1+nvp-1) ! nvpc+1, nvp      
+     &        ) then 
+            do j = Jstr, Jend
+              do i = Istr, Iend+1
+                FX(i, j) = FX(i, j) * 
+     &                     corflux(itrc-itsubs1+1, i, j)
               enddo
             enddo
-            do j=Jstr,Jend+1
-              do i=Istr,Iend
-                FE(i,j)=FE(i,j)*corfluy_CROCO(i,j,itrc)
+            do j = Jstr, Jend+1
+              do i = Istr, Iend
+                FE(i, j) = FE(i, j) * 
+     &                     corfluy(itrc-itsubs1+1, i, j)
               enddo
             enddo
           endif
@@ -753,11 +761,11 @@
             dpth=z_w(i,j,N)-0.5*(z_r(i,j,k+1)+z_r(i,j,k))
             dRz =rho1(i,j,k+1)-rho1(i,j,k)
      &          +(qp1(i,j,k+1)- qp1(i,j,k))
-     &               *dpth*(1.-2.*qp2*dpth)
+     &               *dpth*(1.- qp2*dpth)
 #    else
             dRz = rho1(i,j,k+1)-rho1(i,j,k)
 #    endif
-            cff  = min( 1./dRz,-1.E-14 )   !  minimum stratification imposed
+            cff  = 1./min(dRz, -1.E-14)    !  minimum stratification imposed
             cff1 = 1./(z_r(i,j,k+1)-z_r(i,j,k))
 #    ifdef LMD_SKPP2005
             hbltmp=hbls(i,j,3-nstp)

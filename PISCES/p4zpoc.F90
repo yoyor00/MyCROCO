@@ -285,11 +285,11 @@ CONTAINS
         DO jj = JRANGE
            DO ji = IRANGE
               zdep = hmld(ji,jj)
-              IF (tmask(ji,jj,jk) == 1. .AND. gdept_n(ji,jj,K) <= zdep ) THEN
-                totprod(ji,jj) = totprod(ji,jj) + prodpoc(ji,jj,jk) * e3t_n(ji,jj,jk) * rday/ rfact2
+              IF (tmask(ji,jj,jk) == 1. .AND. zgdept_n(ji,jj,jk) <= zdep ) THEN
+                totprod(ji,jj) = totprod(ji,jj) + prodpoc(ji,jj,jk) * ze3t_n(ji,jj,jk) * rday/ rfact2
                 ! The temperature effect is included here
-                totthick(ji,jj) = totthick(ji,jj) + e3t_n(ji,jj,jk)* tgfunc(ji,jj,jk)
-                totcons(ji,jj) = totcons(ji,jj) - conspoc(ji,jj,jk) * e3t_n(ji,jj,jk) * rday/ rfact2    &
+                totthick(ji,jj) = totthick(ji,jj) + ze3t_n(ji,jj,jk)* tgfunc(ji,jj,jk)
+                totcons(ji,jj) = totcons(ji,jj) - conspoc(ji,jj,jk) * ze3t_n(ji,jj,jk) * rday/ rfact2    &
                 &                / ( trb(ji,jj,K,jppoc) + rtrn )
               ENDIF
            END DO

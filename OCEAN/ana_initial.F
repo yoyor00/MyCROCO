@@ -95,6 +95,9 @@
 #  include "work.h"
 # endif      
 #endif
+#ifdef ESTUARY
+      real cff
+#endif
 #ifdef DUNE
       real cff, cff2
 # ifdef DUNE3D
@@ -1122,6 +1125,26 @@ C$OMP BARRIER
             enddo
           enddo
         enddo
+#   elif defined ESTUARY
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif
+#    ifdef SALINITY
+#  ifdef MPI
+        cff  = (float(i +ii*Lm) )
+#  else  
+        cff  = (float(i       ) )
+#  endif
+              t(i,j,k,1,isalt)= max(0., 35.5 * (1. - cff / LLm))  ! linear gradient from offshore to river
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
+            enddo
+          enddo
+        enddo
 
 #   elif defined DUNE
         do k=1,N
@@ -1132,7 +1155,7 @@ C$OMP BARRIER
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #    endif  
 #    ifdef SALINITY
-              t(i,j,k,1,isalt)=0.
+              t(i,j,k,1,isalt)=35.5
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
             enddo
@@ -1148,12 +1171,9 @@ C$OMP BARRIER
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #    endif
 #    ifdef SALINITY
-              t(i,j,k,1,isalt)=0.
+              t(i,j,k,1,isalt)=35.5
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
-            enddo
-          enddo
-        enddo
 
 #   elif defined KILPATRICK
         do k=1,N
@@ -1170,6 +1190,7 @@ C$OMP BARRIER
             enddo
           enddo
         enddo
+
 #   else
         do k=1,N
           do j=JR_RANGE
@@ -1240,7 +1261,7 @@ C$OMP BARRIER
             else
               t(i,j,k,1,itpas)=0
             endif
-#  elif defined TIDAL_FLAT
+#  elif defined TIDAL_FLAT || defined ESTUARY
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
             else
@@ -1272,19 +1293,9 @@ C$OMP BARRIER
               if (.not.got_tini(iv)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
                 t(i,j,k,1,iv)=cini_wat(iv)
-#  elif defined TIDAL_FLAT
+#  elif defined TIDAL_FLAT || defined ESTUARY
                 if (h(i,j).gt.0) then
-! ---------------- mud+diss case -----------------!
-                  if (iv<=itsubs1+1) then
-                    if( i>79.and.i<151) then
-                      t(i,j,k,1,iv)=cini_wat(iv)
-                    else
-                      t(i,j,k,1,iv)=0.
-                    endif
-                  else
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  endif
-! ------------------------------------------------!
+                  t(i,j,k,1,iv)=cini_wat(iv)
                 else
                   t(i,j,k,1,iv)=0.
                 endif

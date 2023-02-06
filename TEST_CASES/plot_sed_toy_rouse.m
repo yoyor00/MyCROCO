@@ -51,10 +51,10 @@ zeta=squeeze(nc{'zeta'}(nt1,idy,idx));
 L=length(zeta);
 if usgs == 1
   model='Usgs';
-  tenfon=squeeze(nc{'bostr'}(nt1,idy,idx));
+  tauskin=squeeze(nc{'bostr'}(nt1,idy,idx));
 else
   model='Mustang';
-  tenfon=squeeze(nc{'TENFON'}(nt1,idy,idx));
+  tauskin=squeeze(nc{'TAUSKIN'}(nt1,idy,idx));
 end
 u=squeeze(nc{'u'}(nt1,:,idy,idx));
 N=size(u,1);
@@ -90,7 +90,7 @@ a=z(1);
 %----------------------------------------------------------
 % Compute rouse value
 %----------------------------------------------------------
-uet=sqrt(tenfon/rho);
+uet=sqrt(tauskin/rho);
 rouse=ws/(vk*uet);
 
 %----------------------------------------------------------
