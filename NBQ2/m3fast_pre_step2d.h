@@ -94,3 +94,77 @@ C$OMP MASTER
          call check_tab2d(rufrc(:,:),'rufrc st_fast_d','u')
          call check_tab2d(rvfrc(:,:),'rvfrc st_fast_d','v')
 #endif
+!#ifdef NBQ_TBT 
+      if (FIRST_FAST_STEP) then 
+! !
+! !--------------------------------------------------------------------
+! ! Since coupling requires that pressure gradient term is computed
+! ! using zeta(:,:,kstp) instead of zeta_new(:,:) needed to achieve
+! ! numerical stability, apply compensation to shift pressure gradient
+! ! terms from "kstp" to "knew": in essense, convert the fist 2D step
+! ! from Forward Euler to Forward-Backward].
+! !--------------------------------------------------------------------
+! !   
+#  define zwrk UFx
+#  define rzeta  UFe
+#  define rzeta2  VFe
+#  define rzetaSA VFx
+!$acc kernels default(present)
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            zwrk(i,j)=zeta(i,j,knew)-zeta(i,j,kstp)
+# if defined VAR_RHO_2D && defined SOLVE3D
+            rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
+            rzeta2(i,j)=rzeta(i,j)*(zeta(i,j,knew)+zeta(i,j,kstp))
+            rzetaSA(i,j)=zwrk(i,j)*(rhoS(i,j)-rhoA(i,j))
+# else
+            rzeta(i,j)=zwrk(i,j)
+            rzeta2(i,j)=zwrk(i,j)*(zeta(i,j,knew)+zeta(i,j,kstp))
+# endif
+          enddo
+        enddo
+        cff=0.5*g
+        do j=Jstr,Jend
+          do i=Istr,Iend
+# ifdef M3FAST_BOTH          
+            rubarh(i,j)=rubarh(i,j) +cff*on_u(i,j)*( (h(i-1,j)+h(i,j))  
+# else            
+            rubar(i,j)=rubar(i,j) +cff*on_u(i,j)*( (h(i-1,j)+h(i,j))  
+# endif            
+     &          *(rzeta(i-1,j)-rzeta(i,j)) +rzeta2(i-1,j)-rzeta2(i,j)
+# if defined VAR_RHO_2D && defined SOLVE3D
+     &              +(h(i-1,j)-h(i,j))*( rzetaSA(i-1,j)+rzetaSA(i,j)
+     &                        +0.333333333333*(rhoA(i-1,j)-rhoA(i,j))
+     &                                     *(zwrk(i-1,j)-zwrk(i,j)) )
+# endif
+     &                                                              )
+!
+# ifdef M3FAST_BOTH          
+            rvbarh(i,j)=rvbarh(i,j) +cff*om_v(i,j)*( (h(i,j-1)+h(i,j))
+# else            
+            rvbar(i,j)=rvbar(i,j) +cff*om_v(i,j)*( (h(i,j-1)+h(i,j))
+# endif            
+     &          *(rzeta(i,j-1)-rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
+
+# if defined VAR_RHO_2D && defined SOLVE3D
+     &              +(h(i,j-1)-h(i,j))*( rzetaSA(i,j-1)+rzetaSA(i,j)
+     &                        +0.333333333333*(rhoA(i,j-1)-rhoA(i,j))
+     &                                     *(zwrk(i,j-1)-zwrk(i,j)) )
+# endif
+     &                                                              )
+          enddo
+        enddo            !--> discard  zwrk, rzeta, rzeta2, rzetaSA
+!$acc end kernels        
+
+#ifdef RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+!        call check_tab2d(rubarh(:,:),'rubarh st_fast_f','uint')
+#endif
+
+# undef rzetaSA
+# undef rzeta2
+# undef rzeta
+# undef zwrk
+      endif   !<-- FIRST_FAST_STEP
+!#endif  /* NBQ_TBT */

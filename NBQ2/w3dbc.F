@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef M3FAST
+# if defined M3FAST  && defined M3SLOW_W
       subroutine w3dbc_tile(Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use Agrif_Util
@@ -36,7 +36,8 @@
 !
 # endif /* M3FAST */
 #else
-# ifdef M3FAST
+#if defined SOLVE3D && defined M3SLOW_W
+
 !
 ! CHILD
 !
@@ -47,7 +48,9 @@
 !
 # endif /* NBQ */
 #endif /* CHILD */
-#ifdef M3FAST
+
+#if defined SOLVE3D && defined M3SLOW_W
+
 !
 ! Common Code
 !
