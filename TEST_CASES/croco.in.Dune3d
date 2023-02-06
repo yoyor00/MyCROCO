@@ -51,7 +51,7 @@ bottom_drag:     RDRG [m/s],  RDRG2,  Zob [m],  Cdb_min, Cdb_max
 
 gamma2:
                  1.d0
-lin_EOS_cff:  R0 [kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PSU]
+lin_EOS_cff:  R0 [kg/m3], T0 [Celsius], S0 [PSU], TCOEF [Kg/m3/Celsius], SCOEF [Kg/m3/PSU]
               26.65         10.           0.        0.28                0.
 
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
