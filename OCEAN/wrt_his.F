@@ -146,6 +146,7 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
       count(2)=1
       ierr=nf_put_vara_int (ncidhis, hisTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
+         write(*,*) nf_strerror(ierr)
          MPI_master_only write(stdout,1) 'time_step', record, ierr
      &        MYID
          goto 99                !--> ERROR
@@ -175,7 +176,11 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Time
 !
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time)
+      ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)
@@ -187,7 +192,11 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Time2
 !
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time)
+      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
         MPI_master_only write(stdout,1)

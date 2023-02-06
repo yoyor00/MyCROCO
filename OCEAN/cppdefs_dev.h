@@ -117,7 +117,6 @@
 #ifdef XIOS
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
-# define START_DATE
 #endif
   
 /*

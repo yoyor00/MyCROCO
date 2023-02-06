@@ -129,6 +129,11 @@ c**        call opencdf (frcname,N)
           write(stdout,6) 'stf_time', stf_rec(i)
           goto 99                                         !--> ERROR
         endif
+#ifdef USE_CALENDAR
+        call tool_origindate(ncidfrc,stf_tid(itrc),
+     &                       stf_origin_date_in_sec)
+        cff=cff+stf_origin_date_in_sec*sec2day
+# endif
         stf_time(i,itrc)=cff*day2sec+stf_cycle(itrc)*stf_ncycle(itrc)
         if (stf_time(itstf(itrc),itrc).eq.-1.E+20)
      &      stf_time(itstf(itrc),itrc)=stf_time(i,itrc)
@@ -148,6 +153,9 @@ c**        call opencdf (frcname,N)
        MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
      &            'GET_STFLUX -- Read surface flux of tracer', itrc,
      &                                             'for time =', cff
+#ifdef USE_CALENDAR
+     &  -stf_origin_date_in_sec*sec2day
+#endif 
 #ifdef MPI
      &                                                      , mynode
 #endif
@@ -167,6 +175,9 @@ c**        call opencdf (frcname,N)
      &                                a,' at TIME index = ',i4)
   7   write(stdout,8) stf_rec(itrc),ntstf(itrc),frcname(1:lstr),
      &                tdays, stf_time(itstf(itrc),itrc)*sec2day
+#ifdef USE_CALENDAR
+     &  -stf_origin_date_in_sec*sec2day
+#endif 
   8   format(/,' GET_STFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing file: ', a,/,14x,'TDAYS = ',
@@ -252,6 +263,9 @@ c**        call opencdf (frcname,N)
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'stf_time',tdays,stf_time(it2,itrc)*sec2day
+#ifdef USE_CALENDAR
+     &  -stf_origin_date_in_sec*sec2day
+#endif 
   1       format(/,' SET_STFLUX_TILE - current model time exceeds',
      &          1x,'ending value for variable: ',A8,/,14x,'TDAYS = ',
      &                                    g12.4, 2x, 'TSTF = ',g12.4)

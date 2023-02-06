@@ -31,14 +31,17 @@
 !         i n p u t     o u t p u t      i n t e r n a l
 !
       implicit none
-      real              cycle_length,    tstart,  tend,     cff
+      real              cycle_length,      tend,     cff
       integer ncid,     icycle,          tshift,  vartype,  lvar,
      &        varid,    trecord,         irec,    nvatts,   latt, 
      &                  ntime,           i,ierr,ierr0,nvdims,ldim,
-     &                                   size,    vdims(5), lenstr 
+     &                                   size,    vdims(5), lenstr
+      real*8  tstart
+      real*8  cycle_origin_date_in_sec
       character*16 varname, dimname, attname
 
 #include "param.h"
+#include "ncscrum.h"
 #include "scalars.h"
 #include "netcdf.inc"
 !
@@ -116,7 +119,13 @@
 !  Search for starting time record field and time-index.
 !
       ierr=nf_get_var1_FTYPE(ncid, varid, 1, tstart)
+
       if (ierr .ne. nf_noerr) goto 10                     !--> ERROR
+#ifdef USE_CALENDAR
+            call tool_origindate(ncid, varid,
+     &                           cycle_origin_date_in_sec)
+              tstart=tstart+cycle_origin_date_in_sec*sec2day
+# endif
       tstart=tstart*day2sec
 
       if (cycle_length.gt.0.) then
@@ -139,6 +148,11 @@
         if (irec.le.ntime) then 
           ierr=nf_get_var1_FTYPE(ncid, varid, irec, tend)
           if (ierr .ne. nf_noerr) goto 10                 !--> ERROR
+
+#ifdef USE_CALENDAR
+          tend=tend+cycle_origin_date_in_sec*sec2day
+# endif
+
           tend=tend*day2sec+tshift*cycle_length
           if (tstart.le.time .and. time.lt.tend) then
             trecord=i

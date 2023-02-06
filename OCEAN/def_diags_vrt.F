@@ -139,7 +139,6 @@
       create_new_file=ldefdiags_vrt_avg
 # endif
 #endif
-
 !
       if (ncid.ne.-1) create_new_file=.false.
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR

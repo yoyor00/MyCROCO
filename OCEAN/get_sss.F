@@ -122,6 +122,11 @@
           write(stdout,6) 'sss_time', sss_rec
           goto 99                                         !--> ERROR
         endif
+#ifdef USE_CALENDAR
+            call tool_origindate(ncidfrc,ssist_tid,
+     &                           sss_origin_date_in_sec)
+              cff=cff+sss_origin_date_in_sec*sec2day
+# endif
         sss_time(i)=cff*day2sec+sss_cycle*sss_ncycle
         if (sss_time(itsss).eq.-1.E+20) sss_time(itsss)=sss_time(i)
 
@@ -158,6 +163,10 @@
      &                  'GET_SSS    -- Read SSS fields',
      &                                     'for time =', cff
 # endif
+#ifdef USE_CALENDAR
+     &  -sss_origin_date_in_sec*sec2day
+#endif 
+
 #ifdef MPI
      &                                                 , mynode
 #endif

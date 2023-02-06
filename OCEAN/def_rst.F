@@ -1548,7 +1548,6 @@
 #   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstqdmv_nbq,nf_collective)
 #   endif
-
 #  endif  /* M3FAST */
 
 #  ifdef TRACERS

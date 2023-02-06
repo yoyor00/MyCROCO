@@ -116,6 +116,11 @@ c**        call opencdf (frcname,N)
           write(stdout,6) 'sms_time', sms_rec
           goto 99                                         !--> ERROR
         endif
+#ifdef USE_CALENDAR
+        call tool_origindate(ncidfrc,sms_tid,
+     &                       sms_origin_date_in_sec)
+        cff=cff+sms_origin_date_in_sec*sec2day
+# endif
         sms_time(i)=cff*day2sec+sms_cycle*sms_ncycle
         if (sms_time(itsms).eq.-1.E+20) sms_time(itsms)=sms_time(i)
 
@@ -145,6 +150,9 @@ c**        call opencdf (frcname,N)
        MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &              'GET_SMFLUX --',
      &              'Read surface momentum stresses for time =', cff
+#ifdef USE_CALENDAR
+     &  -sms_origin_date_in_sec*sec2day
+#endif
 #ifdef MPI
      &                                                      , mynode
 #endif
@@ -164,6 +172,9 @@ c**        call opencdf (frcname,N)
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) sms_rec, ntsms, frcname(1:lstr), tdays,
      &                                sms_time(itsms)*sec2day
+#ifdef USE_CALENDAR
+     &  -sms_origin_date_in_sec*sec2day
+#endif
   8   format(/,' GET_SMFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing netCDF file: ',a, /,14x,'TDAYS = ',
@@ -313,8 +324,14 @@ c**        call opencdf (frcname,N)
 !
       else
         if (ZEROTH_TILE) then
-          write(stdout,1) 'sms_time', tdays, sms_time(it1)*sec2day,
-     &                                       sms_time(it2)*sec2day
+          write(stdout,1) 'sms_time', tdays, sms_time(it1)*sec2day
+#ifdef USE_CALENDAR
+     &  -sms_origin_date_in_sec*sec2day
+#endif
+     &                                       ,sms_time(it2)*sec2day
+#ifdef USE_CALENDAR
+     &  -sms_origin_date_in_sec*sec2day
+#endif
   1       format(/,' SET_SMFLUX_TILE - current model time',
      &           1x,'exceeds ending value for variable: ',a,/,
      &           14x,'TDAYS = ',g12.4,2x,'SMS_TSTART = ',g12.4,2x,

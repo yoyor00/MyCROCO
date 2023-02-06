@@ -36,7 +36,7 @@
       real dt, dtfast, time, time2, time_start, tdays, start_time
 #ifdef USE_CALENDAR
       real time_mars, time_end
-      character*19 date, run_end_date, run_start_date
+      character*19 date, end_date, start_date
 #endif
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
@@ -64,7 +64,7 @@
                              PREDICTOR_2D_STEP
 #ifdef USE_CALENDAR
       common /time_indices2/ time_mars, time_end,                      &
-                             date, run_end_date, run_start_date
+                            date, end_date, start_date
 #endif
 
 !

@@ -640,7 +640,6 @@
 # ifdef NC4PAR
          ierr=nf_var_par_access(ncid,viddiags_Mrhs(itrc),nf_collective)
 # endif
-
         enddo
       endif
 

@@ -8,14 +8,12 @@ time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
 S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0      2.0d0      200.0d0
 
-run_start_date:
-XXXXXXX
-run_end_date: 
-XXXXXXX
 start_date:
-xx/xx/xxxx xx:xx:xx
-origin_date:
-xx/xx/xxxx xx:xx:xx
+xxxx/xx/xx xx:xx:xx
+
+end_date: 
+xxxx/xx/xx xx:xx:xx
+
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    XX       XX       XX
 

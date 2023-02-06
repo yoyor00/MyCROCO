@@ -3,7 +3,7 @@
    !&E                 ***  ROUTINE tool_decompdate  ***
    !&E
    !&E ** Purpose : decompose a date entered as a 19-character string
-   !&E              with format "dd/mm/yyyy hh:mm:ss"
+   !&E              with format "yyyy/mm/dd hh:mm:ss"
    !&E              into integers corresponding to the day (dd), month (mm),
    !&E              year (yyyy), hour (hh), minute (minu) and second (sec)
    !&E
@@ -41,7 +41,7 @@
    !!----------------------------------------------------------------------
    !! * Executable part
 
-   READ(date,800)jj,mois,aaaa,hh,minu,sec
+   READ(date,800)aaaa,mois,jj,hh,minu,sec
    cont = .TRUE.
    i = 1
 
@@ -60,6 +60,6 @@
      STOP
    ENDIF
 
-800 FORMAT(i2,1x,a2,1x,i4,1x,2(i2,1x),i2)
+800 FORMAT(i4,1x,a2,1x,i2,1x,2(i2,1x),i2)
 
   END SUBROUTINE tool_decompdate

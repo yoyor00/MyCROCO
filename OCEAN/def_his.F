@@ -60,6 +60,7 @@
      &      , indx,ik
 #endif
 
+
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
@@ -278,12 +279,11 @@
 #else
       create_new_file=ldefhis
 #endif
-
       if (ncid.ne.-1) create_new_file=.false.
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
 #endif
-!
+
 !=================================================================
 !
 ! Create new history/averages file:    Put global attributes

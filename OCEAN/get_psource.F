@@ -32,7 +32,6 @@
       integer is,i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle,
      &        itrc
       integer s(2),c(2)
-      
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:
 !================  variables and dimensions. Check for consistency.
@@ -107,6 +106,11 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         write(stdout,6) 'qbar_time', qbar_rec
         goto 99                 !--> ERROR
       endif
+#ifdef USE_CALENDAR
+        call tool_origindate(ncidqbar,qbar_tid,
+     &                       qbar_origin_date_in_sec)
+        cff=cff+qbar_origin_date_in_sec*sec2day
+# endif
       qbar_time(i)=cff*day2sec+qbar_cycle*qbar_ncycle
       if (qbar_time(itqbar).eq.-1.E+20) qbar_time(itqbar)=qbar_time(i)
 
@@ -125,7 +129,9 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
      &     'GET_PSOURCE --',
      &     'Read Run-off flow fields      for time =', cff 
-
+#ifdef USE_CALENDAR
+     &  -qbar_origin_date_in_sec*sec2day
+#endif 
 !      OPEN(UNIT=114,file='roms_runoff.out',FORM='FORMATTED',
 !     &      access='append',status='OLD')
 !      WRITE(114,FMT=110)cff,qbar_rec,(qbarg(is,i),is=1,Nsrc)
@@ -151,7 +157,10 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) qbar_rec, ntqbar, qbarname(1:lstr), tdays,
      &                                      qbar_time(itqbar)*sec2day
-  8   format(/,' GET_PSOURCE - ERROR: requested time record ',I4,
+#ifdef USE_CALENDAR
+     &  -qbar_origin_date_in_sec*sec2day
+#endif
+   8   format(/,' GET_PSOURCE - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available',  /,  11x,'record ',I4,
      &       1x,'in runoff NetCDF file: ', a, /,   11x,'TDAYS = ',
      &                g12.4,2x,'last available QBAR_TIME = ',g12.4)
@@ -212,6 +221,9 @@ CR          write(*,*)'i=',i,' -- Qbar(i)=',Qbar(i)
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'qbar_time', tdays, qbar_time(it2)*sec2day
+#ifdef USE_CALENDAR
+     &  -qbar_origin_date_in_sec*sec2day
+#endif 
   1       format(/,' SET_PSOURCE - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &           2x,'TEND = ',g12.4)
