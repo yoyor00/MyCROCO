@@ -209,7 +209,11 @@
 !#ifdef M3FAST_W
 !# define NBQ_HZCORRECT
 !#endif
-#if defined NBQ || defined HCOMP  || defined NHINT     
+#if defined H3D
+# define M2FILTER_NONE  /* no filter with NBQ */
+# undef  M2FILTER_POWER
+#endif
+#if defined NBQ || defined HCOMP  || defined NHINT   
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER

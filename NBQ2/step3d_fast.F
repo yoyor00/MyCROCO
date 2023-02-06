@@ -1632,7 +1632,7 @@ C$OMP END MASTER
        else  !HEREFA
 ! !
 ! !--------------------------------------------------------------------
-! ! Update ubar
+! ! Update ubar     TBT   06/02/2023
 ! !--------------------------------------------------------------------
 ! !
 
@@ -1641,6 +1641,7 @@ C$OMP END MASTER
 ! ! KERNEL_17  ubar <= ( urhs )
 ! ! KERNEL_17  vbar <= ( vrhs )
 
+#ifdef NBQ
 !$acc kernels default( present )
       do j=Jstr,Jend
         do i=IstrU,Iend
@@ -1653,6 +1654,7 @@ C$OMP END MASTER
         enddo 
       enddo
 !$acc end kernels
+#endif
 
 # if defined M2_FRC_BRY || defined Z_FRC_BRY
       if (FIRST_FAST_STEP) then
@@ -2997,6 +2999,8 @@ C$OMP END MASTER
 !     endif
 # endif
 
+     !if (mynode==0) write(6,*) 'avg1',DU_avg1(istr+10,jstr+10,nnew)
+     !if (mynode==0) write(6,*) 'avg2',DU_avg2(istr+10,jstr+10)
 ! !
 ! !--------------------------------------------------------------------
 ! !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP

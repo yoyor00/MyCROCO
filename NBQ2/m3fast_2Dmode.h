@@ -27,10 +27,14 @@
         cff2= 0.0833333333333    ! maximum stability, while maintaining
         cff3= 0.                 ! third-accuracy; alpha_max=1.73
       else
-        cff0=0.5+2.*myepsilon+mygamma+2.*myalpha  ! AM4 backward scheme
-        cff1=1.-cff0-mygamma-myepsilon            ! with implicit diffusion
-        cff2=mygamma                              ! given by myalpha
-        cff3=myepsilon
+      ! cff0=0.5+2.*myepsilon+mygamma+2.*myalpha  ! AM4 backward scheme
+      ! cff1=1.-cff0-mygamma-myepsilon            ! with implicit diffusion
+      ! cff2=mygamma                              ! given by myalpha
+      ! cff3=myepsilon
+        cff0=0.614      ! step2d values    TBT   06/02/2023
+	cff1=0.285
+	cff2=0.088
+	cff3=0.013
       endif
 # endif  /* M3FAST_AM4 */
 !

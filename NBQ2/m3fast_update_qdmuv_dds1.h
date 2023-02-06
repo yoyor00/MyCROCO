@@ -606,7 +606,7 @@ c C$OMP END MASTER
 # endif
 ! !
 ! !--------------------------------------------------------------------
-! ! Update ubar
+! ! Update ubar    TBT 02/06/2023
 ! !--------------------------------------------------------------------
 ! !
 !# ifndef M3FAST_COUPLING2D
@@ -614,6 +614,7 @@ c C$OMP END MASTER
 ! ! KERNEL_17  ubar <= ( urhs )
 ! ! KERNEL_17  vbar <= ( vrhs )
 
+#ifdef NBQ
 !$acc kernels default( present )
       do j=Jstr,Jend
         do i=IstrU,Iend
@@ -625,6 +626,7 @@ c C$OMP END MASTER
           vbar(i,j,knew)=vrhs(i,j)
         enddo 
       enddo
+#endif
 !$acc end kernels
 
 # if defined M2_FRC_BRY || defined Z_FRC_BRY
