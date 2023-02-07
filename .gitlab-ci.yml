@@ -118,3 +118,32 @@ reg_perfrst:
     paths:
       - $PERFRSTWORK/ftp
     when: always
+
+ana_run_docker:
+  stage: run
+  before_script:
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - cd $DATADIR
+    - mkdir -p TESTROOT/KTEST
+    - cd -
+  tags:
+    - ci.inria.fr
+  image : gregistry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
+  script:
+    - cd $CVTKHOME/Scripts_ana
+    - ./create_link_master_ana.sh
+    - cd -
+    - cd $CVTKWORK/KTEST
+   
+    - ./mk_TESTALL.bash CONFIGURE_ANA ana
+    - ./gather_recap.bash KTEST > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1  
+  artifacts:
+    paths:
+      - $CVTKWORK
+    when: always
+    expire_in: 1 hour
+
