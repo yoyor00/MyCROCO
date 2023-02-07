@@ -128,7 +128,7 @@ ana_run_docker:
     - cd -
   tags:
     - ci.inria.fr
-  image : gregistry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
