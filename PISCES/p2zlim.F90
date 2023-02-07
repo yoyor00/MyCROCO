@@ -45,6 +45,7 @@ MODULE p2zlim
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimbacl   !: Bacterial limitation term
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimnfe    !: Nanophyto limitation by Iron
 
+   LOGICAL  :: l_dia
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p2zlim.F90 10069 2018-08-28 14:12:24Z nicolasmartin $ 
@@ -67,9 +68,13 @@ CONTAINS
       REAL(wp) ::   zconcn, zconcn2, z1_trbphy, zconc0n, zconcnf, zlim1, zlim2, zlim3
       REAL(wp) ::   ztem1, ztem2, zetot1, zetot2
       REAL(wp) ::   zferlim, zno3
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !
       !!---------------------------------------------------------------------
       !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "LNnut" ) .OR. iom_use( "LNFe" ) .OR. iom_use( "xfracal" )
+
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
@@ -147,6 +152,39 @@ CONTAINS
             END DO
          END DO
       END DO
+      !
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNnut", zw3d )  ! Nutrient limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimnfe(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNFe", zw3d )  ! Iron limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xfracal(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "xfracal", zw3d )  ! Calcifiers
+            DEALLOCATE( zw3d )
+         ENDIF
+      ENDIF
       !
    END SUBROUTINE p2z_lim
 

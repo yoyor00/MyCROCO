@@ -414,6 +414,9 @@
                    <field field_ref="pdust"    name="pdust"/>
                    <field field_ref="Sdenit"    name="Sdenit"/>
                    <field field_ref="SedC"    name="SedC"/>
+                   <field field_ref="LNnut"    name="LNnut"/>
+                   <field field_ref="LNFe"    name="LNFe"/>
+                   <field field_ref="xfracal"    name="xfracal"/>
 #if defined key_pisces_light
                    <field field_ref="Thetanano"  name="Thetanano"/>
 #else
@@ -430,6 +433,8 @@
                    <field field_ref="PPNEWo2"  name="NPo2" />
                    <field field_ref="PPRego2"  name="RPo2" />
                    <field field_ref="MesoZo2"  name="Mso2" />
+                   <field field_ref="LDnut"    name="LDnut"/>
+                   <field field_ref="LDFe"    name="LDFe"/>
 #endif
                  </field_group>
             </file>

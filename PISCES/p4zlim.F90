@@ -58,6 +58,7 @@ MODULE p4zlim
    REAL(wp) ::  xcoef2   = 1.21E-5 * 14. / 55.85 / 7.625 * 0.5 * 1.5
    REAL(wp) ::  xcoef3   = 1.15E-4 * 14. / 55.85 / 7.625 * 0.5 
 
+   LOGICAL  :: l_dia
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zlim.F90 10069 2018-08-28 14:12:24Z nicolasmartin $ 
@@ -82,7 +83,13 @@ CONTAINS
       REAL(wp) ::   z1_trbdia, z1_trbphy, ztem1, ztem2, zetot1, zetot2
       REAL(wp) ::   zdenom, zratio, zironmin
       REAL(wp) ::   zconc1d, zconc1dnh4, zconc0n, zconc0nnh4   
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
+      !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "LNnut" ) .OR. iom_use( "LNFe" )  &
+           &    .OR. iom_use( "LDnut" ) .OR. iom_use( "LDFe" )  &
+           &    .OR. iom_use( "xfracal" )
       !
       DO jk = KRANGE
          DO jj = JRANGE
@@ -211,15 +218,56 @@ CONTAINS
          END DO
       END DO
       !
-#if defined key_iomput
-      IF( lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
-        IF( iom_use( "xfracal" ) )   CALL iom_put( "xfracal", xfracal(:,:,:) * tmask(:,:,:) )  ! euphotic layer deptht
-        IF( iom_use( "LNnut"   ) )   CALL iom_put( "LNnut"  , xlimphy(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
-        IF( iom_use( "LDnut"   ) )   CALL iom_put( "LDnut"  , xlimdia(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
-        IF( iom_use( "LNFe"    ) )   CALL iom_put( "LNFe"   , xlimnfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
-        IF( iom_use( "LDFe"    ) )   CALL iom_put( "LDFe"   , xlimdfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNnut", zw3d )  ! Nutrient limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimdia(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LDnut", zw3d )  ! Nutrient limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimnfe(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNFe", zw3d )  ! Iron limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimdfe(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LDFe", zw3d )  ! Iron limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xfracal(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "xfracal", zw3d )  ! Calcifiers
+            DEALLOCATE( zw3d )
+         ENDIF
       ENDIF
-#endif
       !
    END SUBROUTINE p4z_lim
 

@@ -216,7 +216,7 @@
     <field id="DCAL"     long_name="Calcite dissolution"                      unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PAR"      long_name="Photosynthetically Available Radiation"   unit="W/m2"        grid_ref="rho_3D" />
     <field id="PPPHY"    long_name="Primary production of nanophyto"          unit="molC/m3/s"   grid_ref="rho_3D" />
-    <field id="GRAZ1" long_name="Grazing by microzooplankton"               unit="molC/m3/s"   grid_ref="rho_3D" />
+    <field id="GRAZ1"    long_name="Grazing by microzooplankton"               unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="MicroZo2" long_name="O2 consumption by microzooplankton"       unit="molC/m2/s"   grid_ref="rho_3D" />
     <field id="FEZOO"    long_name="microzooplankton iron recycling rate"     unit="nmol-Fe//m3/s" grid_ref="rho_3D" />
     <field id="Remino2"  long_name="O2 consumption by remineralisation"       unit="molC/m2/s"   grid_ref="rho_3D" />
@@ -224,6 +224,9 @@
     <field id="Nfix"     long_name="Nitrogen fixation at surface"             unit="molN/m2/s"  grid_ref="rho_3D"    />
     <field id="Irondep"  long_name="Iron flux from dust"                      unit="molFe/m2/s"  grid_ref="rho_3D"   />
     <field id="Ironsed"  long_name="Iron from sediments"                      unit="molFe/m2/s"  grid_ref="rho_3D" />
+    <field id="xfracal"  long_name="Calcifying fraction"                     unit="1"          grid_ref="rho_3D" />
+    <field id="LNnut"    long_name="Nutrient limitation term in Nanophyto"   unit=""           grid_ref="rho_3D" />
+    <field id="LNFe"     long_name="Iron limitation term in Nanophyto"       unit=""           grid_ref="rho_3D" />
 #if defined key_pisces_light
     <field id="Thetanano"  long_name="Diagnostic Chl:C ratio"                 unit="mgChl/mgC"  grid_ref="rho_3D" />
 #else
@@ -235,13 +238,15 @@
     <field id="PFeD"     long_name="Primary production of diatoms iron"       unit="molFe/m3/s"  grid_ref="rho_3D" />
     <field id="PPNEWo2"  long_name="Oxygen production by the New Produc."     unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PPRego2"  long_name="Oxygen production by the Regen Produc."   unit="molC/m3/s"   grid_ref="rho_3D" />
-    <field id="GRAZ2" long_name="Grazing by mesozooplankton"               unit="molC/m3/s"   grid_ref="rho_3D" />
+    <field id="GRAZ2"    long_name="Grazing by mesozooplankton"               unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="MesoZo2"  long_name="O2 consumption by mesozooplankton"        unit="molC/m2/s"   grid_ref="rho_3D" />
     <field id="Nitrifo2" long_name="O2 consumption by nitrification"          unit="molC/m2/s"   grid_ref="rho_3D" />
     <field id="LPRODZ"   long_name="(micro)zooplankton ligand production rate" unit="nmol-L/m3/s"  grid_ref="rho_3D" />
     <field id="LPRODZ2"  long_name="mesozooplankton ligand production rate"  unit="nmol-L/m3/s"    grid_ref="rho_3D" />
     <field id="FEZOO2"   long_name="mesozooplankton iron recycling rate"     unit="nmol-FeL/m3/s"  grid_ref="rho_3D" />
     <field id="PCAL"     long_name="Calcite production"                      unit="mol/m3/s"   grid_ref="rho_3D" />
+    <field id="LDnut"    long_name="Nutrient limitation term in Diatoms"     unit=""           grid_ref="rho_3D" />
+    <field id="LDFe"     long_name="Iron limitation term in Diatoms"         unit=""           grid_ref="rho_3D" />
 #endif
     <field id="Cflx"     long_name="DIC flux"                                 unit="molC/m2/s"      />
     <field id="Oflx"     long_name="Oxygen flux"                              unit="molC/m2/s"      />
