@@ -405,6 +405,23 @@ CONTAINS
 #endif
    END FUNCTION iom_use
 
+!      SUBROUTINE iom_setkt( kt, cdname )
+      SUBROUTINE iom_setkt( kt )
+      !!----------------------------------------------------------------------
+      !!----------------------------------------------------------------------
+      INTEGER         , INTENT(in) ::   kt
+!      CHARACTER(LEN=*), INTENT(in) ::   cdname
+      !!----------------------------------------------------------------------
+#ifdef XIOS
+!      CALL iom_swap( cdname )   ! swap to cdname context
+      CALL xios_update_calendar(kt)
+!      IF( cdname /= "crocox" ) CALL iom_swap( "crocox" )   ! return back to croco context
+#else
+      iom_ setkt = .FALSE.
+#endif
+   END SUBROUTINE iom_setkt
+
+
 END MODULE ocean2pisces
 
 #else

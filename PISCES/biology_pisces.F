@@ -29,8 +29,7 @@
 
 C       implicit none
        INTEGER Istr,Iend,Jstr,Jend
-       INTEGER i, j, jk, k, jn
-       REAL  zdiag(GLOBAL_2D_ARRAY,0:N)
+       INTEGER i, j, jk, k, jn, ilc
 
 #include "ocean2pisces.h90"
 
@@ -51,7 +50,7 @@ C       implicit none
             DO i = IRANGE          ! masked grid volume
                 trb(i,j,K,jpno3) 
      &        = trb(i,j,K,jpno3) / rno3
-# if ! defined key_pisces_reduced
+# if ! defined key_pisces_light
                 trb(i,j,K,jpnh4) 
      &        = trb(i,j,K,jpnh4) / rno3
                 trb(i,j,K,jppo4) 
@@ -61,6 +60,11 @@ C       implicit none
          ENDDO
        ENDDO
 
+!       ilc=1+iic-ntstart   ! number of time step since restart
+!       ! To be conform with clasic (no xios) croco file first
+!       ! time step must be writen
+!       if (ilc == 0) ilc=1
+!       CALL iom_setkt( ilc )
        CALL trc_sms_pisces( iic )
 
       DO jn = 1, jptra
@@ -78,7 +82,7 @@ C       implicit none
             DO i = IRANGE          ! masked grid volume
                trb(i,j,K,jpno3)
      &       = trb(i,j,K,jpno3) * rno3
-# if ! defined key_pisces_reduced
+# if ! defined key_pisces_light
                trb(i,j,K,jpnh4) 
      &       = trb(i,j,K,jpnh4) * rno3
                trb(i,j,K,jppo4) 

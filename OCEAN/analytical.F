@@ -1040,7 +1040,7 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iZOO_)=0.01
             tclm(i,j,k,iDOC_)=5.
             tclm(i,j,k,iFER_)=6.e-4
-#    if ! defined key_pisces_reduced
+#    if ! defined key_pisces_light
             tclm(i,j,k,iCAL_)=0.01
             tclm(i,j,k,iPO4_)=tclm(i,j,k,iNO3_)/16.
             tclm(i,j,k,iSIL_)=91.51
@@ -1132,7 +1132,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iZOO_)) tclm(i,j,k,iZOO_)=0.01
             if (.not.got_tclm(iDOC_)) tclm(i,j,k,iDOC_)=5.
             if (.not.got_tclm(iFER_)) tclm(i,j,k,iFER_)=6.e-4
-#    if ! defined key_pisces_reduced
+#    if ! defined key_pisces_light
             if (.not.got_tclm(iCAL_)) tclm(i,j,k,iCAL_)=0.01
             if (.not.got_tclm(iPO4_)) then
 #    ifdef TEMPERATURE                    
@@ -2261,7 +2261,7 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iZOO_)) then
             Tsrc0(is,iZOO_)=0.01
           endif
-#     if ! defined key_pisces_reduced
+#     if ! defined key_pisces_light
           if (.not.got_tsrc(iCAL_)) then 
             Tsrc0(is,iCAL_)=0.01   
           endif
@@ -2355,7 +2355,7 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iPOC_)=Tsrc0(is,iPOC_)
           Tsrc(is,k,iPHY_)=Tsrc0(is,iPHY_)
           Tsrc(is,k,iZOO_)=Tsrc0(is,iZOO_)
-#    if ! defined key_pisces_reduced
+#    if ! defined key_pisces_light
           Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iDIA_)=Tsrc0(is,iDIA_)
           Tsrc(is,k,iBSI_)=Tsrc0(is,iBSI_)
@@ -3171,7 +3171,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iPOC_)) tbry_west(j,k,iPOC_)=0.01
             if (.not.got_tbry(iPHY_)) tbry_west(j,k,iPHY_)=0.01
             if (.not.got_tbry(iZOO_)) tbry_west(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_reduced
+#   if ! defined key_pisces_light
             if (.not.got_tbry(iCAL_)) tbry_west(j,k,iCAL_)=0.01   
             if (.not.got_tbry(iDIA_)) tbry_west(j,k,iDIA_)=0.01
             if (.not.got_tbry(iBSI_)) tbry_west(j,k,iBSI_)=1.5e-3
@@ -3273,7 +3273,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iPOC_)) tbry_east(j,k,iPOC_)=0.01
             if (.not.got_tbry(iPHY_)) tbry_east(j,k,iPHY_)=0.01
             if (.not.got_tbry(iZOO_)) tbry_east(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_reduced
+#   if ! defined key_pisces_light
             if (.not.got_tbry(iCAL_)) tbry_east(j,k,iCAL_)=0.01   
             if (.not.got_tbry(iDIA_)) tbry_east(j,k,iDIA_)=0.01
             if (.not.got_tbry(iBSI_)) tbry_east(j,k,iBSI_)=1.5e-3
@@ -3375,7 +3375,7 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iPOC_)) tbry_north(j,k,iPOC_)=0.01
              if (.not.got_tbry(iPHY_)) tbry_north(j,k,iPHY_)=0.01
              if (.not.got_tbry(iZOO_)) tbry_north(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_reduced
+#   if ! defined key_pisces_light
              if (.not.got_tbry(iCAL_)) tbry_north(j,k,iCAL_)=0.01   
              if (.not.got_tbry(iDIA_)) tbry_north(j,k,iDIA_)=0.01
              if (.not.got_tbry(iBSI_)) tbry_north(j,k,iBSI_)=1.5e-3
@@ -3477,7 +3477,7 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iPOC_)) tbry_south(j,k,iPOC_)=0.01
              if (.not.got_tbry(iPHY_)) tbry_south(j,k,iPHY_)=0.01
              if (.not.got_tbry(iZOO_)) tbry_south(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_reduced
+#   if ! defined key_pisces_light
              if (.not.got_tbry(iCAL_)) tbry_south(j,k,iCAL_)=0.01   
              if (.not.got_tbry(iDIA_)) tbry_south(j,k,iDIA_)=0.01
              if (.not.got_tbry(iBSI_)) tbry_south(j,k,iBSI_)=1.5e-3

@@ -213,12 +213,12 @@
      &        indxNCH, indxDCH, indxNO3, indxNH4
       parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
      &           indxTAL =indxDIC+1, indxOXY=indxDIC+2)
-#   ifdef key_pisces_reduced
+#   ifdef key_pisces_light
       parameter (indxPOC=indxDIC+3, indxPHY =indxDIC+4,
      &           indxZOO=indxDIC+5, indxDOC =indxDIC+6,
      &           indxNO3=indxDIC+7, indxFER =indxDIC+8)
 #   endif
-#   if ! defined key_pisces_reduced
+#   if ! defined key_pisces_light
       parameter (indxCAL=indxDIC+3, indxPO4=indxDIC+4,
      &           indxPOC=indxDIC+5, indxSIL=indxDIC+6,
      &           indxPHY =indxDIC+7, indxZOO=indxDIC+8,

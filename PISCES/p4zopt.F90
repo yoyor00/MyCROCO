@@ -34,10 +34,11 @@ MODULE p4zopt
    REAL(wp) ::   xsi0r       ! 1. /rn_si0
 
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   ekb, ekg, ekr  ! wavelength (Red-Green-Blue)
-
    INTEGER  ::   nksrp   ! levels below which the light cannot penetrate ( depth larger than 391 m)
-
    REAL(wp), DIMENSION(3,61) ::   xkrgb   ! tabulated attenuation coefficients for RGB absorption
+
+   LOGICAL  :: l_dia_heup, l_dia_par
+
    
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
@@ -65,8 +66,16 @@ CONTAINS
       REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zdepmoy, zetmp1, zetmp2, zetmp3
       REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zqsr100, zqsr_corr
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zpar, ze0, ze1, ze2, ze3, zchl3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       !!---------------------------------------------------------------------
       !
+
+      IF( kt == nittrc000 )  THEN
+         l_dia_heup = iom_use( "Heup")
+         l_dia_par  = iom_use( "PAR" )
+      ENDIF
+
       IF( .NOT. ln_p2z )   ALLOCATE( zetmp4(PRIV_2D_BIOARRAY) )
       IF( ln_p5z       )   ALLOCATE( zetmp5(PRIV_2D_BIOARRAY) )
 
@@ -324,15 +333,30 @@ CONTAINS
          ENDIF
       ENDIF
 
-#if defined key_iomput
-      IF( lk_iomput ) THEN
-        IF( knt == nrdttrc ) THEN
-           IF( iom_use( "Heup"  ) ) CALL iom_put( "Heup" , heup(:,:  ) * tmask(:,:,1) )  ! euphotic layer deptht
-           IF( iom_use( "PARDM" ) ) CALL iom_put( "PARDM", zpar(:,:,:) * tmask(:,:,:) )  ! Photosynthetically Available Radiation
-           IF( iom_use( "PAR"   ) ) CALL iom_put( "PAR"  , emoy(:,:,:) * tmask(:,:,:) )  ! Photosynthetically Available Radiation
-        ENDIF
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia_heup ) THEN   ! euphotic layer
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;   zw2d(:,:) = 0.
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zw2d(ji,jj) = heup(ji,jj) * tmask(ji,jj,KSURF) 
+               ENDDO
+            ENDDO
+            CALL iom_put( "Heup", zw2d(:,:) )
+            DEALLOCATE( zw2d )
+         ENDIF
+         IF( l_dia_par ) THEN  ! Photosynthetically Available Radiation
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = etot(ji,jj,jk) * tmask(ji,jj,jk)
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "PAR", zw3d(:,:,:) )
+            DEALLOCATE( zw3d )
+          ENDIF
       ENDIF
-#endif
       !
 #if defined key_trc_diaadd
       DO jk = KRANGE

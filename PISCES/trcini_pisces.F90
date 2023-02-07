@@ -88,7 +88,7 @@ CONTAINS
       ln_p5z = .true.
       ln_p2z = .false.
       ln_p4z = .false.
-#elif defined key_pisces_reduced
+#elif defined key_pisces_light
       ln_p4z = .false.
       ln_p2z = .true.
       ln_p5z = .false.
@@ -340,7 +340,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER ::   ios   ! Local integer
       INTEGER  :: jn, ierr
-#ifdef key_ligand && ! defined key_pisces_reduced
+#if defined key_ligand && ! defined key_pisces_light
       TYPE(PTRACER), DIMENSION(jptra) :: tracer
 #else
       TYPE(PTRACER), DIMENSION(jptra+1) :: tracer

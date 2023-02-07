@@ -155,11 +155,6 @@ CONTAINS
                zw3d(:,:,:) = zdepbac(:,:,:) * 1.E6 * tmask(:,:,:)  ! Bacterial biomass
                CALL iom_put( "BACT", zw3d )
           ENDIF
-          IF( iom_use( "FEBACT" ) )  THEN
-               zw3d(:,:,:) = zfebact(:,:,:) * 1E9 * tmask(:,:,:) * zrfact2   ! Bacterial iron consumption
-               CALL iom_put( "FEBACT" , zw3d )
-          ENDIF
-          !
           DEALLOCATE( zw3d )
        ENDIF
       ENDIF

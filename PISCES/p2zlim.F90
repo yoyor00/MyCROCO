@@ -199,6 +199,9 @@ CONTAINS
          WRITE(numout,*) '      halk saturation constant for anoxia      oxymin    =' , oxymin
       ENDIF
       !
+      nitrfac (:,:,:) = 0.0
+      nitrfac2(:,:,:) = 0.0
+      !
    END SUBROUTINE p2z_lim_init
 
 

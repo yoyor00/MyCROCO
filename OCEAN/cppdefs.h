@@ -391,7 +391,7 @@
 #   define key_pisces
 #   define key_ligand
 #   undef key_pisces_quota
-#   undef key_pisces_reduced
+#   undef key_pisces_light
 #   undef key_sediment
 #  endif
 #  ifdef BIO_NChlPZD

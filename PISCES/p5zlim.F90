@@ -549,7 +549,8 @@ CONTAINS
       zpsinh4 = 1.8 * rno3
       zpsiuptk = 2.3 * rno3
       !
-      nitrfac (:,:,:) = 0.
+      nitrfac (:,:,:) = 0.0
+      nitrfac2(:,:,:) = 0.0
       !
    END SUBROUTINE p5z_lim_init
 

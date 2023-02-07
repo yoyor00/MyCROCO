@@ -640,7 +640,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxNO3)='lat_rho lon_rho                           '
       vname(7,indxNO3)='                                          '
 
-#   if ! defined key_pisces_reduced
+#   if ! defined key_pisces_light
       vname(1,indxCAL)='CACO3                                     '
       vname(2,indxCAL)='Calcite                                   '
       vname(3,indxCAL)='umol C L-1                                '
@@ -4474,7 +4474,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molC/m3/s                                  '
         vname(4,indxbioFlux+Nironsed-1)=
      &     'Nironsed         , scalar, series          '
-#if defined key_pisces_reduced
+#if defined key_pisces_light
         vname(1,indxbioFlux+Npronewo2-1)=
      &     'Thetanano                         '
         vname(2,indxbioFlux+Npronewo2-1)=
@@ -4655,7 +4655,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molN/m2/s                         '
       vname(4,indxbioVSink+Nnitrpot-1)=
      &     'Nfix            , scalar, series  '
-#if ! defined key_pisces_reduced
+#if ! defined key_pisces_light
       vname(1,indxbioVSink+Nsinkfer-1)=
      &     'EPFE100                          '
       vname(2,indxbioVSink+Nsinkfer-1)=
@@ -4711,7 +4711,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
       vname(4,indxbioVSink+Nnh4dep-1)=
      &     'Nh4dep           , scalar, series '
 
-#endif  /* pisces reduced*/
+#endif  /* pisces light*/
 #  endif /* trc_diaadd */
 # endif /* PISCES */
 #endif /* DIAGNOSTICS_BIO */

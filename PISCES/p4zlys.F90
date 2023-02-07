@@ -35,6 +35,8 @@ MODULE p4zlys
    REAL(wp), PUBLIC ::   nca    !: order of reaction for calcite dissolution
 
    REAL(wp) ::   calcon = 1.03E-2   ! mean calcite concentration [Ca2+] in sea water [mole/kg solution]
+   LOGICAL  :: l_dia
+
  
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
@@ -61,8 +63,12 @@ CONTAINS
       REAL(wp) ::   zomegaca, zexcess, zexcess0, zkd, zwsbio
       CHARACTER (len=25) ::   charout
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zco3, zhinit, zhi, zcaco3, ztra
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "PH" ) .OR. iom_use( "CO3" ) .OR. iom_use( "CO3sat" )
+
       zco3(:,:,:) = 0.
       !
       DO jk = KRANGE
@@ -173,6 +179,39 @@ CONTAINS
       ENDDO
 # endif
 
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = -1. * LOG10( MAX( hi(ji,jj,jk), rtrn) ) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PH", zw3d(:,:,:) )
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zco3(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "CO3", zw3d(:,:,:) )
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = aksp(ji,jj,jk) / calcon * 1.e+3 * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "CO3sat", zw3d(:,:,:) )
+            DEALLOCATE( zw3d ) 
+         ENDIF
+      ENDIF
+      !
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
         WRITE(charout, FMT="('lys ')")
         CALL prt_ctl_trc_info(charout)
@@ -198,8 +237,13 @@ CONTAINS
       REAL(wp) ::   zdispot, zfact, zcalcon
       REAL(wp) ::   zomegaca, zexcess, zexcess0
       CHARACTER (len=25) ::   charout
-      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) ::   zco3, zcaldiss, zhinit, zhi, zco3sat
+      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zco3, zcaldiss, zhinit, zhi, zco3sat
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
+      !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "PH" )     .OR. iom_use( "CO3" ) .OR.  &
+           &         iom_use( "CO3sat" ) .OR. iom_use( "DCAL" )
       !
       zco3    (:,:,:) = 0.
       zcaldiss(:,:,:) = 0.
@@ -264,14 +308,47 @@ CONTAINS
          END DO
       END DO
       !
-#if defined key_iomput
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
-         IF( iom_use( "PH"     ) ) CALL iom_put( "PH"    , -1. * LOG10( MAX( hi(:,:,:), rtrn ) ) * tmask(:,:,:) )
-         IF( iom_use( "CO3"    ) ) CALL iom_put( "CO3"   , zco3(:,:,:)     * 1.e+3               * tmask(:,:,:) )
-         IF( iom_use( "CO3sat" ) ) CALL iom_put( "CO3sat", zco3sat(:,:,:)  * 1.e+3               * tmask(:,:,:) )
-         IF( iom_use( "DCAL"   ) ) CALL iom_put( "DCAL"  , zcaldiss(:,:,:) * 1.e+3 * rfact2r     * tmask(:,:,:) )
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = -1. * LOG10( MAX( hi(ji,jj,jk), rtrn) ) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PH", zw3d(:,:,:) )
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zco3(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "CO3", zw3d(:,:,:) )
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = aksp(ji,jj,jk) / calcon * 1.e+3 * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "CO3sat", zw3d(:,:,:) )
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zcaldiss(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "DCAL", zw3d(:,:,:) )
+            DEALLOCATE( zw3d ) 
+         ENDIF
       ENDIF
-#endif
       !
 # if defined key_trc_diaadd
       DO jk = KRANGE

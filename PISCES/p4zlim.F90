@@ -282,6 +282,7 @@ CONTAINS
       ENDIF
       !
       nitrfac (:,:,:) = 0.0
+      nitrfac2(:,:,:) = 0.0
       !
    END SUBROUTINE p4z_lim_init
 

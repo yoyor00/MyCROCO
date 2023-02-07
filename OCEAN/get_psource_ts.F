@@ -377,7 +377,7 @@ c     goto 99                                     !--> ERROR
      &                                                  qbarname(1:lstr)
 c     goto 99           !--> ERROR
             endif
-#   if ! defined key_pisces_reduced
+#   if ! defined key_pisces_light
           elseif (itrc.eq.iCAL_) then
             got_tsrc(itrc)=.true.
             ierr=nf_inq_varid (ncidqbar, 'cal_src_time', 

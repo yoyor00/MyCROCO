@@ -1419,7 +1419,7 @@ C$OMP BARRIER
               t(i,j,k,1,iFER_)=6.e-4
               t(i,j,k,2,iFER_)=t(i,j,k,1,iFER_)
             endif
-#     if ! defined key_pisces_reduced
+#     if ! defined key_pisces_light
             if (.not.got_tini(iCAL_))  then
               t(i,j,k,1,iCAL_)=0.01
               t(i,j,k,2,iCAL_)=t(i,j,k,1,iCAL_)
