@@ -370,6 +370,23 @@
 #if defined key_ligand
                    <field field_ref="LGW"       name="LGW" />
 #endif
+#if defined key_pisces_quota
+                   <field field_ref="DON"       name="DON" />
+                   <field field_ref="DOP"       name="DOP" />
+                   <field field_ref="PON"       name="PON" />
+                   <field field_ref="POP"       name="POP" />
+                   <field field_ref="GON"       name="GON" />
+                   <field field_ref="GOP"       name="GOP" />
+                   <field field_ref="PHYN"      name="NANN" />
+                   <field field_ref="PHYP"      name="NANP" />
+                   <field field_ref="DIAN"      name="DIAN" />
+                   <field field_ref="DIAP"      name="DIAP" />
+                   <field field_ref="PIC"       name="PIC" />
+                   <field field_ref="PICN"      name="PICN" />
+                   <field field_ref="PICP"      name="PICP" />
+                   <field field_ref="PFe"       name="PFe" />
+                   <field field_ref="PCHL"      name="PCHL" />
+#endif
             </field_group>
       </file>
       <file id="file31" name_suffix="_pisces_diag" enabled=".true." >
