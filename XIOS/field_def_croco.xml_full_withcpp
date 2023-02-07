@@ -246,6 +246,7 @@
     <field id="Oflx"     long_name="Oxygen flux"                              unit="molC/m2/s"      />
     <field id="Kg"       long_name="Gas transfer"                             unit="molC/m2/s/uatm" />
     <field id="Dpco2"    long_name="Delta CO2"                                unit="uatm"            />
+    <field id="Dpo2"     long_name="Delta O2"                                unit="uatm"        />
     <field id="EPC100"   long_name="Export of carbon particles at 100 m"      unit="molC/m2/s"      />
     <field id="Heup"     long_name="Euphotic layer depth"                     unit="m"               />
     <field id="Nfix"     long_name="Nitrogen fixation at surface"             unit="molN/m2/s"      />

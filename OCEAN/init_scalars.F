@@ -4475,13 +4475,13 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
         vname(4,indxbioFlux+Nironsed-1)=
      &     'Nironsed         , scalar, series          '
 #if defined key_pisces_light
-        vname(1,indxbioFlux+Npronewo2-1)=
+        vname(1,indxbioFlux+Npronew-1)=
      &     'Thetanano                         '
-        vname(2,indxbioFlux+Npronewo2-1)=
+        vname(2,indxbioFlux+Npronew-1)=
      &     'Diagnostic Chl:C ratio                     '
-        vname(3,indxbioFlux+Npronewo2-1)=
+        vname(3,indxbioFlux+Npronew-1)=
      &     'mgChl/mgC                                  '
-        vname(4,indxbioFlux+Npronewo2-1)=
+        vname(4,indxbioFlux+Npronew-1)=
      &     'Thetanano       , scalar, series           '
 #else
       vname(1,indxbioFlux+Nprorcad-1)=
