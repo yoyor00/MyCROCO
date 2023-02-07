@@ -120,7 +120,6 @@ reg_perfrst:
     when: always
 
 ana_run_docker:
-  stage: run
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
