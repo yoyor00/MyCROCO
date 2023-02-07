@@ -188,6 +188,14 @@
 #ifdef FLOATS
       integer nflt, nrpfflt
 #endif
+#ifdef ABL1D
+      logical ldefablhis
+      integer nwrtablhis, nrpfablhis
+# ifdef AVERAGES
+      logical ldefablavg
+      integer ntsablavg, nrpfablavg, nwrtablavg
+# endif
+#endif
 #if defined DIAGNOSTICS_TS
       integer nwrtdia
 # ifdef AVERAGES
@@ -431,6 +439,17 @@
      &                      , ldefsta
 #endif
      &                      , ldefhis
+#ifdef ABL1D
+     &                      , ldefablhis
+     &                      , nwrtablhis
+     &                      , nrpfablhis
+# ifdef AVERAGES
+     &                      , ldefablavg
+     &                      , ntsablavg
+     &                      , nrpfablavg
+     &                      , nwrtablavg
+# endif
+#endif
 
 # if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak

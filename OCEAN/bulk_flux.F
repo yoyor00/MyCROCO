@@ -38,6 +38,9 @@
 #include "forces.h"
 #include "scalars.h"
 #include "params_bulk.h"
+#ifdef ABL1D
+#include "abl1d.h"
+#endif
 !++ Local integers
       INTEGER              :: i, j, m, iter
       INTEGER              :: Istr, Iend, Jstr, Jend
@@ -72,19 +75,31 @@
       INTEGER         :: idx
       REAL            :: chi,aa,bb
 # endif
+# ifdef ABL1D
+      REAL            :: chosqrcd
+      REAL            :: uwnd_r,vwnd_r
+# endif
 !++ Parameter values (blk_ZW and blk_ZT should not be parameters with ABL)
-      REAL, PARAMETER ::  blk_ZW =  10.0
-      REAL, PARAMETER ::  blk_ZT =  10.0
-      REAL, PARAMETER ::  blk_ZToZW = blk_ZT/blk_ZW
+      REAL            :: blk_ZW, blk_ZT, blk_ZToZW
+#  ifndef ABL1D      
+      PARAMETER ( blk_ZW    =  10.0 )
+      PARAMETER ( blk_ZT    =  10.0 )
+      PARAMETER ( blk_ZToZW = blk_ZT/blk_ZW )
+#  endif      
       REAL            ::  logus10,logts10
 # if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
+#  ifndef ABL1D
       PARAMETER ( logus10   = LOG(blk_ZW/10.0) )
       PARAMETER ( logts10   = LOG(blk_ZT/10.0) )
+#  endif
       REAL           :: bulk_psiu_ecume, bulk_psit_ecume
       REAL           :: deltau10n(2), deltat10n, deltaq10n
-# else
-      REAL,PARAMETER :: Log10oLogZw = LOG(  10.0*10000.)/
-     &                                LOG(blk_ZW*10000.)
+# else 
+      REAL           :: Log10oLogZw
+#  ifndef ABL1D
+      PARAMETER ( Log10oLogZw = LOG(  10.0*10000.)/
+     &                          LOG(blk_ZW*10000.) )
+#  endif
       REAL           :: bulk_psiu_coare, bulk_psit_coare, air_visc
       REAL           :: iZoW , iZoT  , CC, Ch10, Ribcu , charn
       REAL           :: iZo10, iZoT10, Ri, Rr  , VisAir
@@ -131,6 +146,17 @@
 !======================================================================
 ! Initialization of various constants
 !======================================================================
+# ifdef ABL1D
+      blk_ZW    = zr_abl(2)
+      blk_ZT    = zr_abl(2)
+      blk_ZToZW = blk_ZT/blk_ZW
+#   if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
+      logus10   = LOG(blk_ZW/10.0)
+      logts10   = LOG(blk_ZT/10.0)
+#   else
+      Log10oLogZw = LOG(10.0*10000.)/LOG(blk_ZW*10000.)
+#   endif
+# endif
 !++  Inverse seawater density
       rho0i=1.0/rho0
 !++  Inverse of specific heat for seawater (kg-degC/Joule) [cp is defined in scalars.h]
@@ -147,14 +173,36 @@
 !======================================================================
 ! Initialization of bulk quantities (common to all bulk algorithms)
 !======================================================================
+
+# ifdef READ_PATM
+!++  Get pressure from ATM file in Pa
+          psurf  = patm2d(i,j)
+!++  Inverse of exner function at the surface
+          iexns  = (psurf*ip00)**(-rdocpd)
+# endif
+
+#ifndef ABL1D
           wspd0     = wspd(i,j)
-          wspd0     = MAX ( wspd0 , 0.1 * MIN(10., blk_ZW) )
-#ifdef CFB_WIND_TRA
+#  ifdef CFB_WIND_TRA
           wspd0_cfb = wspd_cfb(i,j)
           wspd0_cfb = MAX ( wspd0_cfb , 0.1 * MIN(10., blk_ZW) )
+#  endif
+          TairC    = tair(i,j)
+          TairK    = TairC + CtoK
+          RH       = rhum(i,j)
+          Q        = spec_hum (RH,psurf,TairC)
+#else
+          uwnd_r   = u_abl(i,j,2,nt_n)
+!     &                  - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
+          vwnd_r   = v_abl(i,j,2,nt_n)
+!     &                  - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
+          wspd0    = SQRT ( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+          TairK    = tq_abl ( i,j,2,nt_n,jp_ta )
+          TairC    = TairK - CtoK
+          Q        = tq_abl ( i,j,2,nt_n,jp_qa ) 
 #endif
-          TairC = tair(i,j)
-          TairK = TairC + CtoK
+          wspd0     = MAX ( wspd0 , 0.1 * MIN(10., blk_ZW) )
+
 # ifdef SST_SKIN
           TseaC = sst_skin(i,j)
 # else
@@ -162,20 +210,20 @@
 # endif
           TseaK = TseaC + CtoK
 !
-# ifdef READ_PATM
-!++  Get pressure from ATM file in Pa
-          psurf  = patm2d(i,j)
-!++  Inverse of exner function at the surface
-          iexns  = (psurf*ip00)**(-rdocpd)
-# endif
-!
-          RH     = rhum(i,j)
-          Q      = spec_hum (RH,psurf,TairC)
           CALL exner_patm_from_tairabs(iexna,patm,Q,TairK,blk_ZT,psurf)
 !++  Air density
           rhoAir = patm*(1.+Q) / ( blk_Rgas*TairK*(1.+MvoMa*Q) )
 !++  Specific humidity at saturation
           Qsea   = qsat(TseaK,psurf,0.98)
+# ifdef ABL1D
+          sst_abl(i,j) = TseaK*iexns
+#  ifdef KILPATRICK
+          ssq_abl(i,j) = 0.0
+#  else
+          ssq_abl(i,j) = Qsea
+#  endif
+          rho_abl(i,j) = rhoAir
+# endif
 !++  Air-sea gradients delW, delT, delQ through the interface
 #ifdef BULK_GUSTINESS
           delW(1) = SQRT(wspd0*wspd0+0.25)
@@ -188,7 +236,11 @@
           delW(2) = wspd0_cfb
 #  endif
 #endif
+#ifdef KILPATRICK
+          delQ = 0.0
+#else
           delQ = Q-Qsea
+#endif
           cff  = CtoK*(iexna-iexns)
           delT = TairC*iexna - TseaC*iexns + cff
 
@@ -325,6 +377,9 @@
 !----------------------
       ENDDO  !<-- terminate iterations-loop
 !----------------------
+# ifdef ABL1D
+            chosqrcd  = vonKar/(logts10-psi_t)
+# endif
 #else
 !
 !======================================================================
@@ -475,10 +530,13 @@
             delW(2)  = wspd0_cfb
 #  endif
 # endif
-            ddelW = delW
+            ddelW(1:mb) = delW(1:mb)
 !----------------------
           ENDDO !<-- terminate iterations-loop
 ! ---------------------
+# ifdef ABL1D
+          chosqrcd  = vonKar/(logts10-psi_t)
+# endif
 #endif
 
 !===============================================================================
@@ -488,7 +546,18 @@
 !  @@      @@  @@      @@      @@         @@          @@        @@    @@  @@
 !   @@@@@@@@   @@      @@      @@         @@@@@@@@@@   @@@@@@@@@@   @@      @@
 !===============================================================================
-
+#ifdef ABL1D
+          Cd          = (Wstar(1)/ddelW(1))**2
+          Cd_du(i,j)  =                  Cd  * delW(1)
+          Ch_du(i,j)  =  chosqrcd * SQRT(Cd) * delW(1)
+          Ce_du(i,j)  =  chosqrcd * SQRT(Cd) * delW(1)
+          ustar2(i,j) =  Wstar(1)*Wstar(1)
+#  if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
+          z0_abl(i,j) = zr_abl(2) * EXP(-vonKar/SQRT(Cdn(1)))
+#  else
+          z0_abl(i,j) =  1./iZoW
+#  endif
+#else
 !++  Compute turbulent sensible heat flux (W/m2).
           hfsen = - blk_Cpa*rhoAir*Wstar(mb)*Tstar
 !++ Latent heat of vaporisation (J/kg)
@@ -505,8 +574,7 @@
      &           - emiss_lw*rho0i*cpi*SigmaSB*TseaK*TseaK*TseaK*TseaK
 # endif
 !++  Compute Webb correction (Webb effect) to latent heat flux, Hlw.
-          upvel=-1.61*Wstar(mb)*Qstar-(1.0+1.61*Q)*Wstar(mb)
-     &                                           *     Tstar/TairK
+          upvel=-1.61*Wstar(mb)*Qstar-(1.0+1.61*Q)*Wstar(mb)*Tstar/TairK
 !++  Compute turbulent latent heat flux (W/m2).
           hflat=hflat+rhoAir*Hlv*upvel*Q
 !
@@ -545,18 +613,19 @@
           shflx_sen(i,j)=hfsen
           shflx_rlw(i,j)=hflw
 !----------------------
+#endif    /* ABL1D */
+!----------------------
         ENDDO !<-- terminate i-loop
       ENDDO   !<-- terminate j-loop
 !----------------------
 
 
-
-
+#ifndef ABL1D
 !
 !======================================================================
 !  SWITCH OFF shortwave radiation over "sea-ice"
 !======================================================================
-#ifdef SEA_ICE_NOFLUX
+# ifdef SEA_ICE_NOFLUX
       do j=jmin,jmax
         do i=imin,imax
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
@@ -567,7 +636,7 @@
               endif
         enddo
       enddo
-#endif
+# endif
 !
 !======================================================================
 !  Compute kinematic, surface wind stress (m2/s2).
@@ -578,9 +647,9 @@
           cff =0.5*(cer(i-1,j)+cer(i,j))
           cff2=0.5*(aer(i-1,j)+aer(i,j))
           sustr(i,j)= ( cff*cff2*uwnd(i,j)
-#ifdef CFB_STRESS
+# ifdef CFB_STRESS
      &     + 0.5*(stau(i,j)+stau(i-1,j))*u(i,j,N,nrhs)
-#endif
+# endif
      &                             )*rho0i
 #  ifdef MASKING
           sustr(i,j)=sustr(i,j)*umask(i,j)
@@ -596,9 +665,9 @@
           cff =0.5*(cer(i,j-1)+cer(i,j))
           cff2=0.5*(aer(i,j-1)+aer(i,j))
           svstr(i,j)=( cff*cff2*vwnd(i,j)
-#ifdef CFB_STRESS
+# ifdef CFB_STRESS
      &   + 0.5*(stau(i,j)+stau(i,j-1))*v(i,j,N,nrhs)
-#endif
+# endif
      &                                        )*rho0i
 #  ifdef MASKING
           svstr(i,j)=svstr(i,j)*vmask(i,j)
@@ -608,7 +677,7 @@
 #  endif
         enddo
       enddo
-
+#endif /* !ABL1D */
       return
       end
 

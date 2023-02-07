@@ -167,6 +167,7 @@
      &       ,filetype_diags_eddy_avg
      &       ,filetype_surf, filetype_surf_avg
      &       ,filetype_diabio, filetype_diabio_avg
+     &       ,filetype_abl, filetype_abl_avg
       parameter (filetype_his=1, filetype_avg=2,
      &           filetype_dia=3, filetype_dia_avg=4,
      &           filetype_diaM=5, filetype_diaM_avg=6,
@@ -175,7 +176,8 @@
      &           filetype_diags_pv=11, filetype_diags_pv_avg=12,
      &           filetype_diags_eddy_avg=17,
      &           filetype_surf=13, filetype_surf_avg=14,
-     &           filetype_diabio=15,filetype_diabio_avg=16)
+     &           filetype_diabio=15,filetype_diabio_avg=16,
+     &           filetype_abl=18, filetype_abl_avg=19)
 !
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
@@ -533,6 +535,36 @@
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
 
+# ifdef ABL1D
+      integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
+     &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
+     &        indxabl_u_abl   , indxabl_v_abl  , indxabl_t_abl   ,
+     &        indxabl_q_abl   , indxabl_tke_abl, indxabl_mxlm_abl,
+     &        indxabl_mxld_abl, indxabl_avm_abl, indxabl_avt_abl ,
+     &        indxabl_ablh_abl, indxabl_zr_abl , indxabl_zw_abl  ,
+     &        indxabl_Hzr_abl , indxabl_Hzw_abl
+      parameter (indxabl_pu_dta   = 900,
+     &           indxabl_pv_dta   = indxabl_pu_dta+ 1,
+     &           indxabl_pt_dta   = indxabl_pu_dta+ 2,
+     &           indxabl_pq_dta   = indxabl_pu_dta+ 3,
+     &           indxabl_pgu_dta  = indxabl_pu_dta+ 4,
+     &           indxabl_pgv_dta  = indxabl_pu_dta+ 5,
+     &           indxabl_u_abl    = indxabl_pu_dta+ 6,
+     &           indxabl_v_abl    = indxabl_pu_dta+ 7,
+     &           indxabl_t_abl    = indxabl_pu_dta+ 8,
+     &           indxabl_q_abl    = indxabl_pu_dta+ 9,
+     &           indxabl_tke_abl  = indxabl_pu_dta+10,
+     &           indxabl_mxlm_abl = indxabl_pu_dta+11,
+     &           indxabl_mxld_abl = indxabl_pu_dta+12,
+     &           indxabl_avm_abl  = indxabl_pu_dta+13,
+     &           indxabl_avt_abl  = indxabl_pu_dta+14,
+     &           indxabl_ablh_abl = indxabl_pu_dta+15,
+     &           indxabl_zr_abl   = indxabl_pu_dta+16,
+     &           indxabl_zw_abl   = indxabl_pu_dta+17,
+     &           indxabl_Hzr_abl  = indxabl_pu_dta+18,
+     &           indxabl_Hzw_abl  = indxabl_pu_dta+19)
+# endif
+
 # ifdef BIOLOGY
 #  ifdef BIO_BioEBUS
       integer indxAOU, indxWIND10
@@ -699,6 +731,14 @@
       integer indxShflx_rlw,indxShflx_lat,indxShflx_sen
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
+#  ifdef ABL1D
+      integer indxUHPG, indxVHPG,
+     &        indxZR  , indxZW  ,
+     &        indxHZR , indxHZW
+      parameter (indxUHPG = indxabl_pu_dta+20, indxVHPG = indxabl_pu_dta+21,
+     &           indxZR   = indxabl_pu_dta+22, indxZW   = indxabl_pu_dta+23,
+     &           indxHZR  = indxabl_pu_dta+24, indxHZW  = indxabl_pu_dta+25)
+#  endif
 # endif
 #endif /* SOLVE3D */
 
@@ -884,7 +924,10 @@
       parameter (r2dvar=0, u2dvar=1, v2dvar=2, p2dvar=3,
      & r3dvar=4, u3dvar=5, v3dvar=6, p3dvar=7, w3dvar=8,
      & pw3dvar=11, b3dvar=12)
-
+#ifdef ABL1D
+       integer abl3dvar
+       parameter ( abl3dvar = 16 )  ! vert_grid_type = 4; horiz_grid_type=0
+#endif
 !            Horizontal array dimensions in netCDF files.
 ! xi_rho     WARNING!!! In MPI code in the case of PARALLEL_FILES
 ! xi_u       _and_ NON-Periodicity in either XI- or ETA-direction,
@@ -992,6 +1035,9 @@
 #endif
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
+#ifdef ABL1D
+     &      , rstAblTke
+#endif
 #ifdef SOLVE3D
      &                         , rstU,    rstV
 # if defined TRACERS
@@ -1059,6 +1105,20 @@
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
+# ifdef ABL1D
+     &      , ncidablhis     , nrecablhis
+     &      , ablhisTime     , ablhisTime2    , ablhisTstep
+     &      , ablhis_pu_dta  , ablhis_pv_dta
+     &      , ablhis_pt_dta  , ablhis_pq_dta
+     &      , ablhis_pgu_dta , ablhis_pgv_dta
+     &      , ablhis_u_abl   , ablhis_v_abl
+     &      , ablhis_t_abl   , ablhis_q_abl
+     &      , ablhis_tke_abl , ablhis_mxlm_abl
+     &      , ablhis_mxld_abl, ablhis_avm_abl
+     &      , ablhis_avt_abl , ablhis_ablh_abl
+     &      , ablhis_zr_abl  , ablhis_zw_abl
+     &      , ablhis_Hzr_abl , ablhis_Hzw_abl
+# endif
 # ifdef MORPHODYN
      &      , hisHm
 #endif
@@ -1242,6 +1302,20 @@
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
      &      , avgBustr, avgBvstr
      &      , avgShflx, avgSwflx, avgShflx_rsw, avgBhflx, avgBwflx
+# ifdef ABL1D
+     &      , ncidablavg, nrecablavg 
+     &      , ablavgTime, ablavgTime2, ablavgTstep
+     &      , ablavg_pu_dta  , ablavg_pv_dta
+     &      , ablavg_pt_dta  , ablavg_pq_dta
+     &      , ablavg_pgu_dta , ablavg_pgv_dta
+     &      , ablavg_u_abl   , ablavg_v_abl
+     &      , ablavg_t_abl   , ablavg_q_abl
+     &      , ablavg_tke_abl , ablavg_mxlm_abl
+     &      , ablavg_mxld_abl, ablavg_avm_abl
+     &      , ablavg_avt_abl , ablavg_ablh_abl
+     &      , ablavg_zr_abl  , ablavg_zw_abl
+     &      , ablavg_Hzr_abl , ablavg_Hzw_abl
+# endif
 # ifdef MORPHODYN
      &      , avgHm
 # endif
@@ -1426,13 +1500,19 @@
 #endif /* AVERAGES */
 
 #ifdef SOLVE3D
-# define NWRTHIS 800+NT
+# define NWRTHIS 1000+NT
 #else
 # define NWRTHIS 500
 #endif
       logical wrthis(NWRTHIS)
 #ifdef AVERAGES
      &      , wrtavg(NWRTHIS)
+#endif
+#ifdef ABL1D
+     &      , wrtabl(NWRTHIS)
+# ifdef AVERAGES
+     &      , wrtabl_avg(NWRTHIS)
+# endif
 #endif
 #ifdef DIAGNOSTICS_TS
      &      , wrtdia3D(NT+1)
@@ -1511,6 +1591,9 @@
 #endif
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
+#ifdef ABL1D
+     &      , rstAblTke
+#endif
 #ifdef SOLVE3D
      &                         , rstU,    rstV
 # ifdef TRACERS
@@ -1565,6 +1648,20 @@
      &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
      &      , hisBhflx, hisBwflx
+# ifdef ABL1D
+     &      , ncidablhis     , nrecablhis
+     &      , ablhisTime     , ablhisTime2    , ablhisTstep
+     &      , ablhis_pu_dta  , ablhis_pv_dta
+     &      , ablhis_pt_dta  , ablhis_pq_dta
+     &      , ablhis_pgu_dta , ablhis_pgv_dta
+     &      , ablhis_u_abl   , ablhis_v_abl
+     &      , ablhis_t_abl   , ablhis_q_abl
+     &      , ablhis_tke_abl , ablhis_mxlm_abl
+     &      , ablhis_mxld_abl, ablhis_avm_abl
+     &      , ablhis_avt_abl , ablhis_ablh_abl
+     &      , ablhis_zr_abl  , ablhis_zw_abl
+     &      , ablhis_Hzr_abl , ablhis_Hzw_abl
+# endif
 # ifdef MORPHODYN
      &      , hisHm
 #endif
@@ -1816,6 +1913,20 @@
      &      , avgBustr, avgBvstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
      &      , avgBhflx, avgBwflx
+# ifdef ABL1D
+     &      , ncidablavg, nrecablavg 
+     &      , ablavgTime, ablavgTime2, ablavgTstep
+     &      , ablavg_pu_dta  , ablavg_pv_dta
+     &      , ablavg_pt_dta  , ablavg_pq_dta
+     &      , ablavg_pgu_dta , ablavg_pgv_dta
+     &      , ablavg_u_abl   , ablavg_v_abl
+     &      , ablavg_t_abl   , ablavg_q_abl
+     &      , ablavg_tke_abl , ablavg_mxlm_abl
+     &      , ablavg_mxld_abl, ablavg_avm_abl
+     &      , ablavg_avt_abl , ablavg_ablh_abl
+     &      , ablavg_zr_abl  , ablavg_zw_abl
+     &      , ablavg_Hzr_abl , ablavg_Hzw_abl
+# endif
 # ifdef MORPHODYN
      &      , avgHm
 # endif
@@ -1877,6 +1988,10 @@
      &      , wrthis
 #ifdef AVERAGES
      &      , wrtavg
+#endif
+#ifdef ABL1D
+     &      , wrtabl
+     &      , wrtabl_avg
 #endif
 #ifdef DIAGNOSTICS_TS
      &      , wrtdia3D
@@ -1947,6 +2062,12 @@
      &         ,   btfname
 #ifdef AVERAGES
      &                                ,  avgname
+#endif
+#ifdef ABL1D
+     &                                 , ablname
+# ifdef AVERAGES
+     &                                 , ablname_avg
+# endif
 #endif
 #ifdef DIAGNOSTICS_TS
      &                                ,  dianame
@@ -2027,7 +2148,7 @@
 #endif
 
 #ifdef SOLVE3D
-      character*75  vname(20, 800)
+      character*75  vname(20, 1000)
 #else
       character*75  vname(20, 90)
 #endif
@@ -2044,6 +2165,12 @@
      &         ,   origin_hour, origin_minute, origin_second
 #ifdef AVERAGES
      &                                ,  avgname
+#endif
+#ifdef ABL1D
+     &                                ,  ablname
+# ifdef AVERAGES
+     &                                ,  ablname_avg
+# endif
 #endif
 #ifdef DIAGNOSTICS_TS
      &                                ,  dianame

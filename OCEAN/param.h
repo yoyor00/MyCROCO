@@ -28,7 +28,9 @@
 #if defined AGRIF
       integer LLmm2, MMmm2
 #endif
-
+#if defined ABL1D
+      integer N_abl
+#endif
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
 #elif defined CANYON
@@ -175,6 +177,11 @@
       parameter (LLm0=200,  MMm0=3,    N=10)   ! TIDAL_FLAT
 #elif defined ESTUARY
       parameter (LLm0=200,  MMm0=90,   N=5)    ! ESTUARY
+#elif defined KILPATRICK
+      parameter (LLm0=600,  MMm0=3,    N=2)    !  KILPATRICK
+# if defined ABL1D
+      parameter (N_abl=50)
+# endif
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -185,7 +192,10 @@
 # else
       parameter (LLm0=xx,   MMm0=xx,   N=xx)   ! YOUR REGIONAL CONFIG
 # endif
-#elif defined COASTAL 
+# if defined ABL1D
+      parameter (N_abl=50)
+# endif
+#elif defined COASTAL
 # if defined VILAINE
       parameter (LLm0=180,  MMm0=130,  N=10)   ! VILAINE
 # else
@@ -356,6 +366,10 @@
 #else
       integer NSA, N2d,N3d, size_XI,size_ETA
       integer se,sse, sz,ssz
+# ifdef ABL1D
+      integer N2dabl,N3dabl
+      integer se_abl,sse_abl, sz_abl,ssz_abl
+# endif
 #if !defined NBQ
       parameter (NSA=28)
 #else
@@ -371,6 +385,12 @@
       parameter (se=sse/(sse+ssz), sz=1-se)
       parameter (N2d=size_XI*(se*size_ETA+sz*Np))
       parameter (N3d=size_XI*size_ETA*Np)
+# ifdef ABL1D
+      parameter (sse_abl=size_ETA/(N_abl+1), ssz_abl=(N_abl+1)/size_ETA)
+      parameter (se_abl=sse_abl/(sse_abl+ssz_abl), sz_abl=1-se_abl)
+      parameter (N2dabl=size_XI*(se_abl*size_ETA+sz_abl*(N_abl+1)))
+      parameter (N3dabl=size_XI*size_ETA*(N_abl+1))
+# endif
 #endif
 
 !

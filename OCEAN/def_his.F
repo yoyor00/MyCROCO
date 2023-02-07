@@ -60,7 +60,6 @@
      &      , indx,ik
 #endif
 
-
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
@@ -283,7 +282,7 @@
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
 #endif
-
+!
 !=================================================================
 !
 ! Create new history/averages file:    Put global attributes
@@ -998,8 +997,13 @@
 !
         if (wrt(indxUWstr)) then
           lvar=lenstr(vname(1,indxUWstr))
+#ifdef STRESS_AT_RHO_POINTS
+          ierr=nf_def_var (ncid, vname(1,indxUWstr)(1:lvar),
+     &                             NF_FOUT, 3, r2dgrd, vidUWstr)
+#else
           ierr=nf_def_var (ncid, vname(1,indxUWstr)(1:lvar),
      &                             NF_FOUT, 3, u2dgrd, vidUWstr)
+#endif
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidUWstr,nf_collective)
 #endif
@@ -1023,8 +1027,13 @@
 !
         if (wrt(indxVWstr)) then
           lvar=lenstr(vname(1,indxVWstr))
+#ifdef STRESS_AT_RHO_POINTS
+          ierr=nf_def_var (ncid, vname(1,indxVWstr)(1:lvar),
+     &                             NF_FOUT, 3, r2dgrd, vidVWstr)
+#else
           ierr=nf_def_var (ncid, vname(1,indxVWstr)(1:lvar),
      &                             NF_FOUT, 3, v2dgrd, vidVWstr)
+#endif
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVWstr,nf_collective)
 #endif

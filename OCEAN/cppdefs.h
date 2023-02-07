@@ -13,8 +13,8 @@
    This is "cppdefs.h": MODEL CONFIGURATION FILE
    ==== == ============ ===== ============= ====
 */
-/* 
-        SELECT ACADEMIC TEST CASES 
+/*
+        SELECT ACADEMIC TEST CASES
 */
 #undef  BASIN           /* Basin Example */
 #undef  CANYON          /* Canyon Example */
@@ -47,6 +47,7 @@
 #undef  SED_TOY         /* 1DV sediment toy Example */
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
 #undef  ESTUARY         /* 3D tidal estuary Example */
+#undef  KILPATRICK      /* 2D sst front*/
 /* 
         ... OR REALISTIC CONFIGURATIONS
 */
@@ -150,7 +151,20 @@
 ! Note : gustiness effects can be added for all params
 !        by defining BULK_GUSTINESS
 */
-# undef BULK_FLUX
+# undef  ABL1D
+# ifdef  ABL1D
+#  define BULK_FLUX
+#  undef  ANA_ABL_LSDATA
+#  undef  ANA_ABL_VGRID
+#  define STRESS_AT_RHO_POINTS
+#  define ABL_NUDGING
+#  define ABL_NUDGING_DYN
+#  define ABL_NUDGING_TRA
+#  undef  ABL_DYN_RESTORE_EQ
+#  undef  SFLUX_CFB
+# else
+#  undef BULK_FLUX
+# endif
 # ifdef BULK_FLUX
 #  undef  BULK_ECUMEV0
 #  undef  BULK_ECUMEV6
@@ -164,7 +178,7 @@
 #   undef  AROME
 #   undef  ERA_ECMWF
 #  endif
-#  undef  READ_PATM
+#  undef READ_PATM
 #  ifdef READ_PATM
 #   define OBC_PATM
 #  endif
@@ -441,7 +455,7 @@
 /*
 !====================================================================
 !               COASTAL (realistic) Configurations
-!==================================================================== 
+!====================================================================
 !
 !----------------------
 ! BASIC OPTIONS
@@ -550,12 +564,12 @@
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
 #  define ONLINE
-#  ifdef ONLINE 
+#  ifdef ONLINE
 #   define AROME
 #   undef  ERA_ECMWF
 #  endif
 #  define READ_PATM
-#  ifdef READ_PATM 
+#  ifdef READ_PATM
 #   define OBC_PATM
 #  endif
 # else
@@ -582,7 +596,7 @@
 # define PSOURCE
 # undef  PSOURCE_MASS
 # define PSOURCE_NCFILE
-# ifdef PSOURCE_NCFILE                    
+# ifdef PSOURCE_NCFILE
 #   define PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
@@ -608,12 +622,12 @@
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations, 
+! Biology, floats, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
    Quasi-monotone lateral advection scheme (WENO5)
-   for passive/biology/sediment tracers 
+   for passive/biology/sediment tracers
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
                             || defined SUBSTANCE || defined MUSTANG
@@ -915,7 +929,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define PSOURCE
-# undef PSOURCE_MASS
+# undef  PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
 # undef  FLOATS
@@ -1818,6 +1832,39 @@
 # undef  MORPHODYN
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
+
+#elif defined KILPATRICK
+/*
+!                       KILPATRICK  Example
+!                       ==========  =======
+*/
+# define MPI
+# define AVERAGES
+# define NONLIN_EOS
+# define SOLVE3D
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# define NO_FRCFILE
+# define ABL1D
+# ifdef  ABL1D
+#  define BULK_FLUX
+#  undef  BULK_ECUMEV0
+#  undef  BULK_ECUMEV6
+#  define BULK_GUSTINESS
+#  define ANA_ABL_LSDATA
+#  define ANA_ABL_VGRID
+#  define STRESS_AT_RHO_POINTS
+#  undef  ABL_NUDGING
+#  undef  ABL_NUDGING_DYN
+#  undef  ABL_NUDGING_TRA
+#  undef  ABL_DYN_RESTORE_EQ
+#  undef  SFLUX_CFB
+# else
+#  undef BULK_FLUX
+# endif
 
 #elif defined TIDAL_FLAT
 /*

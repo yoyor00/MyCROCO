@@ -73,8 +73,8 @@
      &   wrk1(PRIVATE_2D_SCRATCH_ARRAY),     curvX,
      &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),     curvE,
      &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
-     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
-     &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
+     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),    u_str,
+     &    VFx(PRIVATE_2D_SCRATCH_ARRAY),    v_str,
      &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma
       parameter (gamma = -0.25)
 # include "grid.h"
@@ -187,23 +187,33 @@
       enddo
       do j=Jstr,Jend
         do i=IstrU,Iend
-          Uwrk(i,j)=sustr(i,j)*4./((wrk(i-1,j)+wrk(i,j))
+#ifdef STRESS_AT_RHO_POINTS
+          u_str = 0.5*( sustr(i,j)+sustr(i-1,j) )
+#else
+          u_str = sustr(i,j)
+#endif
+          Uwrk(i,j)=u_str*4./((wrk(i-1,j)+wrk(i,j))
      &                             *(pm (i-1,j)+pm (i,j))
      &                             *(pn (i-1,j)+pn (i,j)))
 #  ifdef DIAGNOSTICS_VRT
-          wrkWind(i,j,1)= sustr(i,j)*om_u(i,j)
+          wrkWind(i,j,1)= u_str*om_u(i,j)
      &                    SWITCH umask(i,j)
 #  endif
         enddo
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
-          Vwrk(i,j)=svstr(i,j)*4./((wrk(i,j-1)+wrk(i,j))
+#ifdef STRESS_AT_RHO_POINTS
+          v_str = 0.5*( svstr(i,j)+svstr(i,j-1) )
+#else
+          v_str = svstr(i,j)
+#endif
+          Vwrk(i,j)=v_str*4./((wrk(i,j-1)+wrk(i,j))
      &                             *(pm (i,j-1)+pm (i,j))
      &                             *(pn (i,j-1)+pn (i,j)))
 #  ifdef DIAGNOSTICS_VRT
-            wrkWind(i,j,2)= svstr(i,j)*on_v(i,j)
-     &                      SWITCH vmask(i,j)
+            wrkWind(i,j,2)= v_str*on_v(i,j)
+     &                    SWITCH vmask(i,j)
 #  endif
         enddo
       enddo             !--> discard wrk
@@ -1758,12 +1768,17 @@
 !======================================================================
 !
         do i=IstrU,Iend
+# ifdef STRESS_AT_RHO_POINTS
+          u_str = 0.5*( sustr(i,j)+sustr(i-1,j) )
+# else
+          u_str = sustr(i,j)
+# endif
           rufrc(i,j)=ru(i,j,1)
 # ifndef BODYFORCE
 #  ifdef BSTRESS_FAST
-     &        + sustr(i,j)*om_u(i,j)*on_u(i,j)
+     &        + u_str*om_u(i,j)*on_u(i,j)
 #  else
-     &        +(sustr(i,j)-bustr(i,j))*om_u(i,j)*on_u(i,j)
+     &        +(u_str-bustr(i,j))*om_u(i,j)*on_u(i,j)
 #  endif
 # endif
 # if defined MRL_WCI && defined WAVE_SFC_BREAK
@@ -1777,12 +1792,17 @@
         enddo
         if (j.ge.JstrV) then
           do i=Istr,Iend
+# ifdef STRESS_AT_RHO_POINTS
+            v_str = 0.5*( svstr(i,j)+svstr(i,j-1) )
+# else
+            v_str = svstr(i,j)
+# endif
             rvfrc(i,j)=rv(i,j,1)
 # ifndef BODYFORCE
 #  ifdef BSTRESS_FAST
-     &       + svstr(i,j)*om_v(i,j)*on_v(i,j)
+     &       + v_str*om_v(i,j)*on_v(i,j)
 #  else
-     &       +(svstr(i,j)-bvstr(i,j))*om_v(i,j)*on_v(i,j)
+     &       +(v_str-bvstr(i,j))*om_v(i,j)*on_v(i,j)
 #  endif
 # endif
 # if defined MRL_WCI && defined WAVE_SFC_BREAK

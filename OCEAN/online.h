@@ -18,11 +18,19 @@
       ! Bulk number of variables !
       ! ------------------------ !
       integer nblkvrs
-#ifdef READ_PATM
+# ifdef ABL1D
+#  ifdef READ_PATM
+      parameter(nblkvrs=12)
+#  else
+      parameter(nblkvrs=12)
+#  endif
+# else
+#  ifdef READ_PATM
       parameter(nblkvrs=10)
-#else
+#  else
       parameter(nblkvrs=9)
-#endif
+#  endif
+# endif
       ! --------------------- !
       ! Bulk variable''s names !
       ! --------------------- !

@@ -53,6 +53,9 @@
 # include "ncscrum_floats.h"
 # include "floats.h"
 #endif
+#ifdef ABL1D
+# include "abl1d.h"
+#endif
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), nf_fwrite
 #if defined OUTPUTS_SURFACE && ! defined XIOS
@@ -218,7 +221,21 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
-      
+
+#ifdef ABL1D
+!
+! 3D TKE ABL
+!
+      ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nstp), ncidrst, rstAblTke,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxabl_tke_abl))
+        write(stdout,1) vname(1,indxabl_tke_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+#endif
+ 
 #ifdef SOLVE3D
 !
 ! 3D momentum component in XI-direction.

@@ -59,7 +59,7 @@
       integer trd
 C$    integer omp_get_thread_num
 #endif
-      real    eps,cff, cx,cy,
+      real    eps,cff, cx,cy,v_str,
      &        dft,dfx,dfy, tau,tau_in,tau_out,hx,zx
 #ifdef OBC_REDUCED_PHYSICS
      &        ,bry_val,bry_pgr,bry_str,bry_cor
@@ -221,7 +221,12 @@ C$    trd=omp_get_thread_num()
 #   ifdef OBC_REDUCED_PHYSICS
           cff1=1.0/(0.5*(h(i,Jstr-1)+zeta(i,Jstr-1,kstp)+
      &                   h(i,Jstr  )+zeta(i,Jstr  ,kstp)))
-          bry_str=cff1*(svstr(i,Jstr)-bvstr(i,Jstr))
+#ifdef STRESS_AT_RHO_POINTS
+          v_str=0.5*(svstr(i,Jstr-1)+svstr(i,Jstr  ))
+#else
+          v_str=svstr(i,Jstr)
+#endif
+          bry_str=cff1*(v_str-bvstr(i,Jstr))
 #    ifdef UV_COR
           bry_cor=-0.125*(ubar(i  ,Jstr-1,kstp)+
      &                    ubar(i+1,Jstr-1,kstp)+
@@ -385,7 +390,12 @@ C$    trd=omp_get_thread_num()
 #   ifdef OBC_REDUCED_PHYSICS
           cff1=1.0/(0.5*(h(i,Jend  )+zeta(i,Jend  ,kstp)+
      &                   h(i,Jend+1)+zeta(i,Jend+1,kstp)))
-          bry_str=cff1*(svstr(i,Jend+1)-bvstr(i,Jend+1))
+#ifdef STRESS_AT_RHO_POINTS
+          v_str=0.5*(svstr(i,Jend)+svstr(i,Jend+1))
+#else
+          v_str=svstr(i,Jend+1)
+#endif
+          bry_str=cff1*(v_str-bvstr(i,Jend+1))
 #    ifdef UV_COR
           bry_cor=-0.125*(ubar(i  ,Jend,  kstp)+
      &                    ubar(i+1,Jend,  kstp)+

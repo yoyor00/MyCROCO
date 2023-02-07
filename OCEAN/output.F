@@ -36,7 +36,7 @@
 # include "nc_sta.h"
 #endif
 !
-                integer ntrds,trd,range,
+      integer ntrds,trd,range,
      &        my_first,my_last, tile, my_iif
 
       integer omp_get_num_threads, omp_get_thread_num
@@ -68,6 +68,15 @@
      &     .or. (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime))
 #ifdef AVERAGES
      &    .or. (mod(ilc-ntsavg,navg).eq.0 .and. wrtavg(indxTime))
+#endif
+#ifndef XIOS
+# ifdef ABL1D
+     &    .or. (mod(ilc-1,nwrtablhis).eq.0 .and. wrtabl(indxTime))
+#  ifdef AVERAGES
+     &    .or. (mod(ilc-ntsablavg,nwrtablavg).eq.0 .and.
+     &          wrtabl_avg(indxTime))
+#  endif
+# endif
 #endif
 #if defined DIAGNOSTICS_TS
      &    .or. (mod(ilc-1,nwrtdia).eq.0 .and. wrtdia3D(NT+1))
@@ -167,6 +176,15 @@
 #ifdef AVERAGES
         if (mod(ilc-1,navg).eq.0) nrecavg=nrecavg+1
 #endif
+#ifndef XIOS
+# ifdef ABL1D
+        if (mod(ilc-1,nwrtablhis).eq.0) nrecablhis=nrecablhis+1
+#  ifdef AVERAGES
+        if (mod(ilc-ntsablavg,nwrtablavg).eq.0 .and. ldefablavg)
+     &      nrecablavg=nrecablavg+1
+#  endif
+# endif
+#endif
 #if defined DIAGNOSTICS_TS
         if (mod(ilc-1,nwrtdia).eq.0) nrecdia=nrecdia+1
 # ifdef AVERAGES
@@ -258,9 +276,18 @@
      &       ) call wrt_rst
 #ifndef XIOS
         if (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime)) call wrt_his
-#  ifdef AVERAGES
+# ifdef AVERAGES
         if (mod(ilc-ntsavg,navg).eq.0 .and. wrtavg(indxTime)) call wrt_avg
+# endif
+
+# ifdef ABL1D
+        if (mod(ilc-1,nwrtablhis).eq.0 .and. ldefablhis
+     &      .and. wrtabl(indxTime)) call wrt_abl_his
+#  ifdef AVERAGES
+        if (mod(ilc-ntsablavg,nwrtablavg).eq.0 .and. ldefablavg
+     &      .and. wrtabl_avg(indxTime)) call wrt_abl_avg
 #  endif
+# endif
 
 #if defined DIAGNOSTICS_TS
         if (mod(ilc-1,nwrtdia).eq.0

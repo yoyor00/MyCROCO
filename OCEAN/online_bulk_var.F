@@ -170,6 +170,19 @@
 
 #  elif defined ERA_ECMWF
 
+#   ifdef ABL1D
+      ! Air temperature in K
+      blk_vname(1,1)='T                                        '
+      blk_vname(2,1)='Air temperature                          '
+      blk_vname(3,1)='Kelvin                                   '
+      blk_vname(4,1)='??????                                   '
+
+      ! Specific_humidity in kg/kg
+      blk_vname(1,2)='Q                                        '
+      blk_vname(2,2)='Specific humidity                        '
+      blk_vname(3,2)='Kg/Kg                                    '
+      blk_vname(4,2)='??????                                   '
+#   else
       ! Temperature_height_above_ground
       blk_vname(1,1)='T2M                                      '
       blk_vname(2,1)='Temperature                              '
@@ -181,6 +194,7 @@
       blk_vname(2,2)='Specific Humidity at surface             '
       blk_vname(3,2)='Kg/Kg                                    '
       blk_vname(4,2)='??????                                   '
+#   endif
 
       ! Precipitation_rate
       blk_vname(1,3)='TP                                       '
@@ -212,7 +226,20 @@
       blk_vname(3,7)='W/m^2                                    '
       blk_vname(4,7)='??????                                   '
 
+#   ifdef ABL1D
       ! U-component_of_wind 
+      blk_vname(1,8)='U                                        '
+      blk_vname(2,8)='U                                        '
+      blk_vname(3,8)='m/s                                      '
+      blk_vname(4,8)='??????                                   '
+
+      ! V-component_of_wind
+      blk_vname(1,9)='V                                        '
+      blk_vname(2,9)='V                                        '
+      blk_vname(3,9)='m/s                                      '
+      blk_vname(4,9)='??????                                   '
+#   else
+      ! U-component_of_wind
       blk_vname(1,8)='U10M                                     '
       blk_vname(2,8)='U10M                                     '
       blk_vname(3,8)='m/s                                      '
@@ -223,13 +250,29 @@
       blk_vname(2,9)='V10M                                     '
       blk_vname(3,9)='m/s                                      '
       blk_vname(4,9)='??????                                   '
-# ifdef READ_PATM
+#   endif
+
+#   ifdef READ_PATM
       ! Atm pressure 
       blk_vname(1,10)='msl                                     '
-      blk_vname(2,10)='air_pressure_at_sea_level                '
-      blk_vname(3,10)='Pa                                       '
-      blk_vname(4,10)='??????                                   '
-# endif
+      blk_vname(2,10)='air_pressure_at_sea_level               '
+      blk_vname(3,10)='Pa                                      '
+      blk_vname(4,10)='??????                                  '
+#   endif
+
+#   ifdef ABL1D
+      ! U-geostrophic wind
+      blk_vname(1,11)='UHPG                                     '
+      blk_vname(2,11)='UHPG                                     '
+      blk_vname(3,11)='m/s                                      '
+      blk_vname(4,11)='??????                                   '
+
+      ! V-component_of_wind
+      blk_vname(1,12)='VHPG                                     '
+      blk_vname(2,12)='VHPG                                     '
+      blk_vname(3,12)='m/s                                      '
+      blk_vname(4,12)='??????                                   '
+#   endif
 
 #  else
 

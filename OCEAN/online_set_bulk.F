@@ -49,7 +49,13 @@
 #  include "ocean3d.h"
 #  include "params_bulk.h"
 # endif
+# ifdef ABL1D
+#   include "abl1d.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2, blkvar_id
+# ifdef ABL1D
+      integer k
+# endif
       real cff,cff1,cff2, cff3,cff4
 # ifdef SALINITY
       real cff5,cff6
@@ -70,15 +76,18 @@
 !
 ! Do not process #7 :  upward longwave is obsolete
 !
-        if (blkvar_id.eq.7) goto 10
-#  if defined ERA_ECMWF || defined AROME
+      if (blkvar_id.eq.7) goto 10
+# if defined ERA_ECMWF || defined AROME
 !
 ! In the case of ERA the net short wave is used
 ! Net Short wave - 5 downward short wave not used
 !
-        if (blkvar_id.eq.4) goto 10
-#  endif
+      if (blkvar_id.eq.4) goto 10
+# endif
 
+# ifndef READ_PATM
+      if (blkvar_id.eq.10) goto 10
+# endif
       if(blkvar_id.gt.nblkvrs) return
 
       it1=3-itbulkO(blkvar_id)
@@ -113,13 +122,28 @@
         if (blkvar_id.eq.1) then
           do j=JstrR,JendR
             do i=IstrR,IendR
+# ifdef ABL1D
+              do k=1,N_abl
+                pt_dta(i,j,k)=cff1*pt_dtag(i,j,k,it1)+
+     &                        cff2*pt_dtag(i,j,k,it2)
+              enddo
+# else
               tair(i,j)=cff1*tairg(i,j,it1)+cff2*tairg(i,j,it2)
+# endif
             enddo
           enddo
         elseif (blkvar_id.eq.2) then
           do j=JstrR,JendR
             do i=IstrR,IendR
+# ifdef ABL1D
+              do k=1,N_abl
+                pq_dta(i,j,k)=cff1*pq_dtag(i,j,k,it1)+
+     &                        cff2*pq_dtag(i,j,k,it2)
+              enddo
+# else
               rhum(i,j)=cff1*rhumg(i,j,it1)+cff2*rhumg(i,j,it2)
+# endif
+
             enddo
           enddo
 # ifdef SALINITY
@@ -146,12 +170,22 @@
         elseif (blkvar_id.eq.9) then
           do j=JstrR,JendR
             do i=IstrR,IendR
+# ifdef ABL1D
+              do k=1,N_abl
+                pu_dta(i,j,k)=cff1*pu_dtag(i,j,k,it1)+
+     &                        cff2*pu_dtag(i,j,k,it2)
+                pv_dta(i,j,k)=cff1*pv_dtag(i,j,k,it1)+
+     &                        cff2*pv_dtag(i,j,k,it2)
+              enddo
+            enddo
+          enddo
+# else
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
               wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
             enddo
           enddo
-# ifdef CFB_WIND_TRA
+#  ifdef CFB_WIND_TRA
           cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
           
           do j=JstrR,min(JendR,Mm)
@@ -171,7 +205,7 @@
               wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
             enddo
           enddo
-#  ifndef EW_PERIODIC
+#   ifndef EW_PERIODIC
             if (WESTERN_EDGE) then
               do j=Jstr,Jend
                 wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
@@ -182,8 +216,8 @@
                 wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)
               enddo
             endif
-#  endif
-#  ifndef NS_PERIODIC
+#   endif
+#   ifndef NS_PERIODIC
             if (SOUTHERN_EDGE) then
               do i=Istr,Iend
                 wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
@@ -194,7 +228,7 @@
                 wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
               enddo
             endif
-#   ifndef EW_PERIODIC
+#    ifndef EW_PERIODIC
             if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
               wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
             endif
@@ -207,11 +241,12 @@
             if (EASTERN_EDGE .and. NORTHERN_EDGE) then
               wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
             endif
+#    endif
 #   endif
-#  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                             wspd_cfb(START_2D_ARRAY))
+#   endif
 #  endif
 # endif
 # ifdef READ_PATM
@@ -219,6 +254,26 @@
           do j=JstrR,JendR
             do i=IstrR,IendR
               patm2d(i,j)=cff1*patmg(i,j,it1)+cff2*patmg(i,j,it2)
+            enddo
+          enddo
+# endif
+# ifdef ABL1D
+        elseif (blkvar_id.eq.11) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              do k=1,N_abl
+                pgu_dta(i,j,k)=cff1*pgu_dtag(i,j,k,it1)+
+     &                         cff2*pgu_dtag(i,j,k,it2)
+              enddo
+            enddo
+          enddo
+        elseif (blkvar_id.eq.12) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              do k=1,N_abl
+                pgv_dta(i,j,k)=cff1*pgv_dtag(i,j,k,it1)+
+     &                         cff2*pgv_dtag(i,j,k,it2)
+              enddo
             enddo
           enddo
 # endif

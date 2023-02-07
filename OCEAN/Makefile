@@ -99,7 +99,7 @@ include Makedefs
 \
 	online_bulk_var.F		online_get_bulk.F\
 	online_interp.F			online_interpolate_bulk.F\
-	online_set_bulk.F\
+	online_set_bulk.F               online_interpolate_3d_bulk.F\
 \
 	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
 	interp_rho.F	def_floats.F	init_arrays_floats.F\
@@ -124,6 +124,9 @@ include Makedefs
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
         module_substance.F  module_MUSTANG.F\
+        abl_step.F  abl_ini.F  abl_tke.F\
+	wrt_abl_his.F  def_abl_his.F\
+	wrt_abl_avg.F set_abl_avg.F\
 \
         online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
         scal0d_oa_out_loc.F scal0d_oa_out_full.F\

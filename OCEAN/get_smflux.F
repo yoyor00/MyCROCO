@@ -126,7 +126,11 @@ c**        call opencdf (frcname,N)
 
         if (lsusgrd.eq.1) then
           ierr=nf_fread(sustrg(START_2D_ARRAY,i), ncidfrc, susid,
+# ifdef STRESS_AT_RHO_POINTS
+     &                                              sms_rec, r2dvar)
+# else
      &                                              sms_rec, u2dvar)
+# endif
         else
           ierr=nf_get_var1_FTYPE(ncidfrc,susid,sms_rec,sustrp(i))
         endif
@@ -137,7 +141,11 @@ c**        call opencdf (frcname,N)
 
         if (lsvsgrd.eq.1) then
           ierr=nf_fread(svstrg(START_2D_ARRAY,i), ncidfrc, svsid,
+# ifdef STRESS_AT_RHO_POINTS
+     &                                              sms_rec, r2dvar)
+# else
      &                                              sms_rec, v2dvar)
+# endif
         else
           ierr=nf_get_var1_FTYPE(ncidfrc,svsid,sms_rec,svstrp(i))
         endif

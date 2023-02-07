@@ -383,8 +383,12 @@
       REAL(kind=8) :: blk_origin_date_in_sec
 # ifdef READ_PATM
       integer patm_id,lpatmgrd
-#endif
+# endif
       integer uwnd_id,vwnd_id,luwndgrd,lvwndgrd
+# ifdef ABL1D
+      integer zr_id, zw_id, Hzr_id, Hzw_id
+      integer uhpg_id,vhpg_id
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
       integer radswbio_id,lradswbiogrd
 # endif
@@ -397,8 +401,11 @@
       common /bulkdat1_uns/ bulkunused
 # ifdef READ_PATM
       common /bulkdat1_patm/ patm_id,lpatmgrd
-#endif
+# endif
       common /bulkdat1_wnd/ uwnd_id,vwnd_id,luwndgrd,lvwndgrd
+# ifdef ABL1D
+      common /bulkdat1_hpg/ zr_id, zw_id, Hzr_id, Hzw_id, uhpg_id,vhpg_id
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat1_bio/ radswbio_id,lradswbiogrd
 # endif

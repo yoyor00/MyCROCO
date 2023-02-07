@@ -22,13 +22,18 @@
    U-          u2dvar   ubar-type   (1:Lm+1,0:Mm+1)
    V-          v2dvar   vbar-type   (0:Lm+1,1:Mm+1)
  
-   RHO-,RHO-   r3dvar   RHO-type    (0:Lm+1,0:Mm+1,  N)
-   VORT-,RHO-  p3dvar               (1:Lm+1,1:Mm+1,  N)
-   U-,RHO-     u3dvar   U-type      (1:Lm+1,0:Mm+1,  N)
-   V-,RHO-     v3dvar   V-type      (0:Lm+1,1:Mm+1,  N)
-   RHO-,W-     w3dvar   W-type      (0:Lm+1,0:Mm+1,0:N) 
-   RHO-,BED-   b3dvar   BED-type    (0:Lm+1,0:Mm+1,NLAY) 
+   RHO-,RHO-   r3dvar   RHO-type    (0:Lm+1,0:Mm+1,    N)
+   VORT-,RHO-  p3dvar               (1:Lm+1,1:Mm+1,    N)
+   U-,RHO-     u3dvar   U-type      (1:Lm+1,0:Mm+1,    N)
+   V-,RHO-     v3dvar   V-type      (0:Lm+1,1:Mm+1,    N)
+   RHO-,W-     w3dvar   W-type      (0:Lm+1,0:Mm+1,  0:N) 
+   RHO-,BED-   b3dvar   BED-type    (0:Lm+1,0:Mm+1, NLAY) 
+   ABL-        abl3dvar ABL-type    (0:Lm+1,0:Mm+1,N_abl) 
 */
       real buff((Lm+5)*(Mm+5)*(N+1))
       common /zzz/ buff
 
+#ifdef ABL1D
+      real buff_abl((Lm+5)*(Mm+5)*(N_abl+1))
+      common /zzz_abl/ buff_abl
+#endif

@@ -213,7 +213,11 @@ CR      write(*,*) 'wrt_avg:  Wstr' MYID
 !     Write out kinematic U surface stress component (N/m2).
 !
       if (wrtavg(indxUWstr)) then
+#ifdef STRESS_AT_RHO_POINTS
+         ierr=nf_fwrite(sustr_avg, ncidavg, avgUWstr, record, r2dvar)
+#else
          ierr=nf_fwrite(sustr_avg, ncidavg, avgUWstr, record, u2dvar)
+#endif
         if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxUWstr))
             write(stdout,1) vname(1,indxUWstr)(1:lvar), record, ierr
@@ -226,7 +230,11 @@ CR      write(*,*) 'wrt_avg: UWstr' MYID
 !     Write out kinematic V surface stress component (N/m2).
 !
       if (wrtavg(indxVWstr)) then
+#ifdef STRESS_AT_RHO_POINTS
+         ierr=nf_fwrite(svstr_avg, ncidavg, avgVWstr, record, r2dvar)
+#else
          ierr=nf_fwrite(svstr_avg, ncidavg, avgVWstr, record, v2dvar)
+#endif
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxVWstr))
             write(stdout,1) vname(1,indxVWstr)(1:lvar), record, ierr
