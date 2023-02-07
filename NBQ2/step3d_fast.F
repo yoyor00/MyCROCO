@@ -593,6 +593,44 @@ C$    trd=omp_get_thread_num()
 # ifdef OBC_VOLCONS
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
+!
+!----------------------------------------------------------------------
+! Compute time averaged fields over all short timesteps.
+!
+! Reset/initialise arrays for averaged fields during the first
+! barotropic time step; Accumulate averages after that. Include
+! physical boundary points, but not periodic ghost points or
+! computation  MPI computational margins.
+!----------------------------------------------------------------------
+!
+#ifdef M3FAST_AVG_CLASSIC
+# ifdef SOLVE3D
+      cff1=weight(1,iif)
+      cff2=weight(2,iif)
+!$acc kernels if(compute_on_device) default(present) async(1)
+      if (FIRST_2D_STEP) then
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            Zt_avg1(i,j)=cff1*zeta(i,j,knew)
+            DU_avg1(i,j,nnew)=0.
+            DV_avg1(i,j,nnew)=0.
+            DU_avg2(i,j)=cff2*DUon(i,j)
+            DV_avg2(i,j)=cff2*DVom(i,j)
+          enddo
+        enddo
+      else
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            Zt_avg1(i,j)=Zt_avg1(i,j)+cff1*zeta(i,j,knew)
+            DU_avg2(i,j)=DU_avg2(i,j)+cff2*DUon(i,j)
+            DV_avg2(i,j)=DV_avg2(i,j)+cff2*DVom(i,j)
+          enddo
+        enddo
+      endif
+# else      
+!$acc kernels if(compute_on_device) default(present) async(1)
+# endif
+# endif /* M3FAST_AVG_CLASSIC */
 
 # ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
@@ -1993,7 +2031,7 @@ C$OMP END MASTER
 ! #endif
          
 !$acc kernels default( present )
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
       if (iif.eq.1) then
 ! ! KERNEL_30  DU_avg1 <= 0    
 ! ! KERNEL_30  DU_avg2 <= 0   
@@ -2004,7 +2042,7 @@ C$OMP END MASTER
          DV_avg2=0.
 
       endif
-!# endif
+# endif
 
 
 ! ! KERNEL_31  DUnew <= ( DU_nbq )
@@ -2047,7 +2085,7 @@ C$OMP END MASTER
 #  endif
 # endif
      &                                                   )
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DU_avg2(i,j)=DU_avg2(i,j)+cff2*on_u(i,j)*( DUnew 
 #  ifdef MRL_WCI
      &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
@@ -2056,7 +2094,7 @@ C$OMP END MASTER
 #   endif
 #  endif
      &                                                   )
-!# endif  
+# endif /*   M3FAST_AVG_CLASSIC */
         enddo
       enddo 
       do j=JstrV,Jend
@@ -2090,7 +2128,7 @@ C$OMP END MASTER
 #  endif
 # endif
      &                                                   )
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DV_avg2(i,j)=DV_avg2(i,j)+cff2*om_v(i,j)*( DVnew
 #  ifdef MRL_WCI
      &                +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
@@ -2099,7 +2137,7 @@ C$OMP END MASTER
 #   endif
 #  endif
      &                                                   )
-!# endif     
+# endif /*   M3FAST_AVG_CLASSIC */
         enddo
       enddo
 
@@ -2175,10 +2213,10 @@ C$OMP END MASTER
           ubar(i,j,knew)=ubar(i,j,knew) + DUnew
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*DUnew*
      &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
-# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DU_avg2(i,j)     =DU_avg2(i,j)      +cff2*DUnew*
      &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
-# endif     
+# endif /*   M3FAST_AVG_CLASSIC */    
         enddo
       enddo
       do j=JstrV,Jend
@@ -2197,10 +2235,10 @@ C$OMP END MASTER
           vbar(i,j,knew)=vbar(i,j,knew) + DVnew
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*DVnew*
      &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
-# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DV_avg2(i,j)     =DV_avg2(i,j)      +cff2*DVnew*
      &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
-# endif
+# endif /*   M3FAST_AVG_CLASSIC */
         enddo
       enddo
 # endif /* M2NUDGING */
@@ -2374,9 +2412,9 @@ C$OMP MASTER
 # endif
      &                                              )*on_u(IstrU-1,j)
           DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)+cff1*cff
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)+cff2*cff
-!# endif          
+# endif /*   M3FAST_AVG_CLASSIC */      
         enddo
         do j=JstrV,Jend
           cff=(Dnew(Istr-1,j)+Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
@@ -2385,9 +2423,9 @@ C$OMP MASTER
 # endif
      &                                               )*om_v(Istr-1,j)
           DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)+cff1*cff
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DV_avg2(Istr-1,j)=DV_avg2(Istr-1,j)+cff2*cff
-!# endif          
+# endif /*   M3FAST_AVG_CLASSIC */      
         enddo
       endif
       if (EASTERN_EDGE) then
@@ -2398,9 +2436,9 @@ C$OMP MASTER
 # endif
      &                                          )*on_u(Iend+1,j)
           DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)+cff1*cff
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)+cff2*cff
-!# endif          
+# endif /*   M3FAST_AVG_CLASSIC */
         enddo
         do j=JstrV,Jend
           cff=(Dnew(Iend+1,j)+Dnew(Iend+1,j-1))*(vbar(Iend+1,j,knew)
@@ -2409,9 +2447,9 @@ C$OMP MASTER
 # endif
      &                                              )*om_v(Iend+1,j)
           DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)+cff1*cff
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DV_avg2(Iend+1,j)=DV_avg2(Iend+1,j)+cff2*cff
-!# endif          
+# endif /*   M3FAST_AVG_CLASSIC */     
         enddo
       endif
 # endif /* !EW_PERIODIC */
@@ -2424,9 +2462,9 @@ C$OMP MASTER
 #  endif
      &                                              )*on_u(i,Jstr-1)
           DU_avg1(i,Jstr-1,nnew)=DU_avg1(i,Jstr-1,nnew)+cff1*cff
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DU_avg2(i,Jstr-1)=DU_avg2(i,Jstr-1)+cff2*cff
-!# endif          
+# endif /*   M3FAST_AVG_CLASSIC */       
         enddo
         do i=IstrR,IendR
           cff=(Dnew(i,JstrV-1)+Dnew(i,JstrV-2))*(vbar(i,JstrV-1,knew)
@@ -2435,9 +2473,9 @@ C$OMP MASTER
 #  endif
      &                                              )*om_v(i,JstrV-1)
           DV_avg1(i,JstrV-1,nnew)=DV_avg1(i,JstrV-1,nnew)+cff1*cff
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DV_avg2(i,JstrV-1)=DV_avg2(i,JstrV-1)+cff2*cff
-!# endif          
+# endif /*   M3FAST_AVG_CLASSIC */     
         enddo
       endif
       if (NORTHERN_EDGE) then
@@ -2448,9 +2486,9 @@ C$OMP MASTER
 #  endif
      &                                              )*on_u(i,Jend+1)
           DU_avg1(i,Jend+1,nnew)=DU_avg1(i,Jend+1,nnew)+cff1*cff
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DU_avg2(i,Jend+1)=DU_avg2(i,Jend+1)+cff2*cff
-!# endif          
+# endif /*   M3FAST_AVG_CLASSIC */       
         enddo
         do i=IstrR,IendR
           cff=(Dnew(i,Jend+1)+Dnew(i,Jend))*(vbar(i,Jend+1,knew)
@@ -2459,9 +2497,9 @@ C$OMP MASTER
 #  endif
      &                                          )*om_v(i,Jend+1)
           DV_avg1(i,Jend+1,nnew)=DV_avg1(i,Jend+1,nnew)+cff1*cff
-!# ifdef M3FAST_COUPLING2D
+# ifndef M3FAST_AVG_CLASSIC
           DV_avg2(i,Jend+1)=DV_avg2(i,Jend+1)+cff2*cff
-!# endif          
+# endif /*   M3FAST_AVG_CLASSIC */     
         enddo
       endif
 # endif /* !NS_PERIODIC */
@@ -2999,8 +3037,18 @@ C$OMP END MASTER
 !     endif
 # endif
 
-     !if (mynode==0) write(6,*) 'avg1',DU_avg1(istr+10,jstr+10,nnew)
-     !if (mynode==0) write(6,*) 'avg2',DU_avg2(istr+10,jstr+10)
+# ifdef M3FAST_TEST
+!  OUTPUT  FRANCIS ICI
+      if (mynode==0) then
+       i=istr+10
+       j=jstr+10
+       write(6,*) '==>',iic,iif
+       write(6,*) '   zeta',zeta(i,j,knew),ubar(i,j,knew),vbar(i,j,knew)
+       write(6,*) '   avg1',DU_avg1(i,j,nnew),DV_avg1(i,j,nnew)
+       write(6,*) '   avg2',DU_avg2(i,j),DV_avg2(i,j)
+      endif
+# endif
+     
 ! !
 ! !--------------------------------------------------------------------
 ! !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP
