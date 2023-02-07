@@ -209,6 +209,9 @@
 #endif
 #if defined key_ligand
     <field id="LGW"      long_name="Weak ligands concentration"               unit="mmol/m3" grid_ref="rho_3D" /> 
+    <field id="LPRODR"   long_name="OM remineralisation ligand production rate" unit="nmol-L/m3/s"      grid_ref="rho_3D" />
+    <field id="LIGREM"   long_name="Remineralisation loss of ligands"        unit="nmol-L/m3/s"         grid_ref="rho_3D" />
+    <field id="LIGPR"    long_name="Photochemical loss of ligands"           unit="nmol-L/m3/s"         grid_ref="rho_3D" />
 #endif
     <field id="PH"       long_name="PH"                                       unit="-"           grid_ref="rho_3D" />
     <field id="CO3"      long_name="Bicarbonates"                             unit="mol/L"       grid_ref="rho_3D" />

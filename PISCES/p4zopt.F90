@@ -341,7 +341,7 @@ CONTAINS
                   zw2d(ji,jj) = heup(ji,jj) * tmask(ji,jj,KSURF) 
                ENDDO
             ENDDO
-            CALL iom_put( "Heup", zw2d(:,:) )
+            CALL iom_put( "Heup", zw2d )
             DEALLOCATE( zw2d )
          ENDIF
          IF( l_dia_par ) THEN  ! Photosynthetically Available Radiation
@@ -353,7 +353,7 @@ CONTAINS
                  ENDDO
               ENDDO
             ENDDO
-            CALL iom_put( "PAR", zw3d(:,:,:) )
+            CALL iom_put( "PAR", zw3d )
             DEALLOCATE( zw3d )
           ENDIF
       ENDIF
