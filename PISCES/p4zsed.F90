@@ -37,6 +37,9 @@ MODULE p4zsed
    REAL(wp) :: r1_rday                  !: inverse of rday
    LOGICAL, SAVE :: lk_sed
 
+   LOGICAL  :: l_dia_sdenit, l_dia_nfix, l_dia_sed
+   LOGICAL  :: l_dia_iron, l_dia_dust
+
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zsed.F90 10780 2019-03-20 17:53:44Z aumont $ 
@@ -71,9 +74,18 @@ CONTAINS
       REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zsedcal, zsedsi, zsedc
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zno3dep, znh4dep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zirondep
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       !!---------------------------------------------------------------------
       !
-      IF( kt == nittrc000 .AND. knt == 1 )    r1_rday  = 1. / rday
+      IF( kt == nittrc000 .AND. knt == 1 )  THEN 
+         r1_rday  = 1. / rday
+         l_dia_nfix   = iom_use( "Nfix" ) .OR. iom_use( "INTNFIX" ) .OR. iom_use( "Nfixo2" )
+         l_dia_sdenit = iom_use( "Sdenit" )
+         l_dia_sed    = iom_use( "SedC" ) 
+         l_dia_iron   = iom_use( "Ironsed" )
+         l_dia_dust   = iom_use( "Irondep" ) .OR. iom_use( "pdust" ) .OR. iom_use( "No3dep" )
+      ENDIF
       !
       zdenit2d(:,:) = 0.e0
       zbureff (:,:) = 0.e0
@@ -108,16 +120,29 @@ CONTAINS
             tra(:,:,jk,jpfer) = tra(:,:,jk,jpfer) + zirondep(:,:,jk) 
          ENDDO
          ! 
-#if defined key_iomput
-         IF( lk_iomput ) THEN
-            IF( knt == nrdttrc ) THEN
-                IF( iom_use( "Irondep" ) )   &
-                &  CALL iom_put( "Irondep", zirondep(:,:,1) * 1.e+3 * rfact2r * e3t_n(:,:,1) * tmask(:,:,1) ) ! surface downward dust depo of iron
-                IF( iom_use( "pdust" ) )   &
-                &  CALL iom_put( "pdust"  , dust(:,:) / ( wdust * rday )  * tmask(:,:,1) ) ! dust concentration at surface
+         IF( lk_iomput .AND. knt == nrdttrc ) THEN
+            IF( l_dia_dust ) THEN
+               ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                       zw3d(ji,jj,jk) = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t_n(ji,jj,jk) * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "Irondep", zw3d )  ! surface downward dust depo of iron
+               DEALLOCATE( zw3d )
+               !
+               ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw2d(ji,jj) = dust(ji,jj) / ( wdust * rday ) * tmask(ji,jj,1) ! dust concentration at surface
+                  ENDDO
+               ENDDO
+               CALL iom_put( "pdust", zw2d ) ! dust concentration at surface
+               DEALLOCATE( zw2d )
             ENDIF
          ENDIF
-#endif
          !
 #if defined key_trc_diaadd
          zrfact2 = 1.e+3 * rfact2r
@@ -125,12 +150,12 @@ CONTAINS
             DO jj = JRANGE
                DO ji = IRANGE
                   zmsk = zrfact2 * tmask(ji,jj,jk)
-                  trc3d(ji,jj,K,jp_irondep)  = zirondep(ji,jj,jk) * zmsk                ! iron flux from dust
+                  trc3d(ji,jj,K,jp_irondep)  = zirondep(ji,jj,jk) * e3t_n(ji,jj,jk) * zmsk ! iron flux from dust
                END DO
             END DO
          ENDDO
-         DEALLOCATE( zirondep )
 # endif
+         DEALLOCATE( zirondep )
          !                                              
       ENDIF
      
@@ -162,6 +187,18 @@ CONTAINS
                tra(ji,jj,1,jptal) = tra(ji,jj,1,jptal) - rno3 - zno3dep(ji,jj)
             END DO
          END DO
+         IF( lk_iomput .AND. knt == nrdttrc ) THEN
+            IF( l_dia_dust ) THEN
+               ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw2d(ji,jj) = zno3dep(ji,jj) * rno3 * rfact2r * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "No3dep", zw2d ) 
+               DEALLOCATE( zw2d )
+            ENDIF
+         ENDIF
 #if defined key_trc_diaadd
          zrfact2 = 1.e+3 * rfact2r
          DO jj = JRANGE
@@ -189,10 +226,20 @@ CONTAINS
       ! ------------------------------------------------------
       IF( ln_ironsed ) THEN
           tra(:,:,:,jpfer) = tra(:,:,:,jpfer) + ironsed(:,:,:) * rfact2
-#if defined key_iomput
-         IF( lk_iomput .AND. knt == nrdttrc .AND. iom_use( "Ironsed" ) )   &
-              &   CALL iom_put( "Ironsed", ironsed(:,:,:) * 1.e+3 * tmask(:,:,:) ) ! iron inputs from sediments
-#endif
+          IF( lk_iomput .AND. knt == nrdttrc ) THEN
+             IF( l_dia_iron ) THEN
+                ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+                DO jk = KRANGE
+                   DO jj = JRANGE
+                      DO ji = IRANGE
+                         zw3d(ji,jj,jk) = ironsed(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
+                      ENDDO
+                   ENDDO
+               ENDDO
+               CALL iom_put( "Ironsed", zw3d )  ! iron inputs from sediments
+               DEALLOCATE( zw3d )
+            ENDIF
+         ENDIF
 #if defined key_trc_diaadd
          DO jk = KRANGE
             DO jj = JRANGE
@@ -301,28 +348,57 @@ CONTAINS
             END DO
          END DO
       END DO
-#if defined key_iomput
-      IF( lk_iomput ) THEN
-         IF( knt == nrdttrc ) THEN
+      !
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia_nfix ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
             zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
-            IF( iom_use("Nfix"   ) ) CALL iom_put( "Nfix", nitrpot(:,:,:) * nitrfix * rno3 * zfact * tmask(:,:,:) )  ! nitrogen fixation 
-            IF( iom_use("INTNFIX") ) THEN   ! nitrogen fixation rate in ocean ( vertically integrated )
-               zwork(:,:) = 0.
-               DO jk = KRANGE
-                  DO jj = JRANGE
-                     DO ji = IRANGE
-                        zwork(ji,jj) = zwork(ji,jj) + nitrpot(ji,jj,jk) * nitrfix * rno3    &
-                        &              * zfact * e3t_n(ji,jj,K) * tmask(ji,jj,jk)
-                     END DO
-                  END DO
-               END DO
-               CALL iom_put( "INTNFIX" , zwork ) 
-            ENDIF
-            IF( iom_use("SedC" ) )   CALL iom_put( "SedC",   zsedc  (:,:) * zfact )
-            IF( iom_use("Sdenit" ) ) CALL iom_put( "Sdenit", sdenit (:,:) * zfact * rno3 )
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                     zw3d(ji,jj,jk) = nitrpot(ji,jj,jk) * nitrfix * rno3 *  zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "Nfix", zw3d )  ! nitrogen fixation
+            CALL iom_put( "Nfixo2", zw3d * o2nit )  ! ! O2 production by Nfix
+            DEALLOCATE( zw3d )
+            !
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                     zw2d(ji,jj) = zw2d(ji,jj) + nitrpot(ji,jj,jk) * nitrfix * rno3    &
+                       &          * zfact * e3t_n(ji,jj,K) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "INTNFIX", zw2d )  ! nitrogen fixation rate in ocean ( vertically integrated )
+            DEALLOCATE( zw2d )
+         ENDIF
+         IF( l_dia_sed ) THEN
+            zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zw2d(ji,jj) = zsedc(ji,jj) * zfact
+               ENDDO
+            ENDDO
+            CALL iom_put( "SedC", zw2d ) 
+            DEALLOCATE( zw2d )
+         ENDIF
+         IF( l_dia_sdenit ) THEN
+            zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zw2d(ji,jj) = sdenit(ji,jj) * zfact * rno3
+               ENDDO
+            ENDDO
+            CALL iom_put( "Sdenit", zw2d ) 
+            DEALLOCATE( zw2d )
          ENDIF
       ENDIF
-#endif
       !
 #if defined key_trc_diaadd
         zfact = 1.e+3 * rfact2r
@@ -389,6 +465,8 @@ CONTAINS
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zno3dep, znh4dep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: ztrpo4, ztrdop, zirondep, zpdep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zsidep
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       !!---------------------------------------------------------------------
       !
       IF( kt == nittrc000 .AND. knt == 1 )   THEN
@@ -398,6 +476,13 @@ CONTAINS
           ELSE
              lk_sed = .FALSE.
           ENDIF
+         r1_rday  = 1. / rday
+         l_dia_nfix   = iom_use( "Nfix" ) .OR. iom_use( "INTNFIX" ) .OR. iom_use( "Nfixo2" )
+         l_dia_sdenit = iom_use( "Sdenit" )
+         l_dia_sed    = iom_use( "SedC" ) .AND. iom_use( "SedCal" ) .AND. iom_use( "SedSi" )
+         l_dia_iron   = iom_use( "Ironsed" )
+         l_dia_dust   = iom_use( "Irondep" ) .OR. iom_use( "pdust" ) .OR. iom_use( "No3dep" ) &
+            &        .OR. iom_use( "Nh4dep" ) .OR. iom_use( "Po4dep" ) .OR. iom_use( "Sildep" )
       ENDIF
       !
       ! Allocate temporary workspace
@@ -443,22 +528,51 @@ CONTAINS
             tra(:,:,jk,jpfer) = tra(:,:,jk,jpfer) + zirondep(:,:,jk) 
          ENDDO
          ! 
-#if defined key_iomput
-         IF( lk_iomput ) THEN
-            IF( knt == nrdttrc ) THEN
-                IF( iom_use( "Irondep" ) )   &
-                &  CALL iom_put( "Irondep", zirondep(:,:,1) * 1.e+3 * rfact2r * e3t_n(:,:,1) * tmask(:,:,1) ) ! surface downward dust depo of iron
-                IF( iom_use( "pdust" ) )   &
-                &  CALL iom_put( "pdust"  , dust(:,:) / ( wdust * rday )  * tmask(:,:,1) ) ! dust concentration at surface
+         IF( lk_iomput .AND. knt == nrdttrc ) THEN
+            IF( l_dia_dust ) THEN
+               zrfact2 = 1.e+3 * rfact2r
+               ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                       zw3d(ji,jj,jk) = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t_n(ji,jj,jk) * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "Irondep", zw3d )  ! surface downward dust depo of iron
+               DEALLOCATE( zw3d )
+               !
+               ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw2d(ji,jj) = zpdep(ji,jj,1) * zrfact2 * e3t_n(ji,jj,1) *  po4r * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               !
+               CALL iom_put( "Po4dep", zw2d ) ! po4 concentration at surface
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw2d(ji,jj) = zsidep(ji,jj) * zrfact2 * e3t_n(ji,jj,1) * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "Sildep", zw2d ) ! silicate concentration at surface
+               !
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw2d(ji,jj) = dust(ji,jj) / ( wdust * rday ) * tmask(ji,jj,1) 
+                  ENDDO
+               ENDDO
+               CALL iom_put( "pdust", zw2d ) ! dust concentration at surface
+               !
+               DEALLOCATE( zw2d )
             ENDIF
          ENDIF
-#endif
          !
 #if defined key_trc_diaadd
          zrfact2 = 1.e+3 * rfact2r
          DO jj = JRANGE
             DO ji = IRANGE
-               zmsk = zrfact2 * tmask(ji,jj,1)
+               zmsk = zrfact2 * e3t_n(ji,jj,1) * tmask(ji,jj,1)
                trc2d(ji,jj,jp_sildep)   = zsidep(ji,jj)  * zmsk                ! iron deposition
                trc2d(ji,jj,jp_po4dep)   = zpdep(ji,jj,1) * po4r * zmsk                ! iron deposition
             END DO
@@ -524,6 +638,25 @@ CONTAINS
                tra(ji,jj,1,jptal) = tra(ji,jj,1,jptal) + rno3 * ( znh4dep(ji,jj) - zno3dep(ji,jj) )
             END DO
          END DO
+         IF( lk_iomput .AND. knt == nrdttrc ) THEN
+            IF( l_dia_dust ) THEN
+               ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw2d(ji,jj) = zno3dep(ji,jj) * rno3 * rfact2r * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "No3dep", zw2d )
+               !
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw2d(ji,jj) = znh4dep(ji,jj) * rno3 * rfact2r * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "Nh4dep", zw2d )
+               DEALLOCATE( zw2d )
+            ENDIF
+         ENDIF
 #if defined key_trc_diaadd
          zrfact2 = 1.e+3 * rfact2r
          DO jj = JRANGE
@@ -556,10 +689,20 @@ CONTAINS
          IF( ln_ironsed ) THEN
             tra(:,:,:,jpfer) = tra(:,:,:,jpfer) + ironsed(:,:,:) * rfact2
             !
-#if defined key_iomput
-            IF( lk_iomput .AND. knt == nrdttrc .AND. iom_use( "Ironsed" ) )   &
-               &   CALL iom_put( "Ironsed", ironsed(:,:,:) * 1.e+3 * tmask(:,:,:) ) ! iron inputs from sediments
-#endif
+         IF( lk_iomput .AND. knt == nrdttrc ) THEN
+             IF( l_dia_iron ) THEN
+                ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+                DO jk = KRANGE
+                   DO jj = JRANGE
+                      DO ji = IRANGE
+                         zw3d(ji,jj,jk) = ironsed(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
+                      ENDDO
+                   ENDDO
+               ENDDO
+               CALL iom_put( "Ironsed", zw3d )  ! iron inputs from sediments
+               DEALLOCATE( zw3d )
+            ENDIF
+         ENDIF
 #if defined key_trc_diaadd
         DO jk = KRANGE
            DO jj = JRANGE
@@ -805,31 +948,69 @@ CONTAINS
          END DO
          !
       ENDIF
-
-#if defined key_iomput
-      IF( lk_iomput ) THEN
-         IF( knt == nrdttrc ) THEN
+      !
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia_nfix ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
             zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
-            IF( iom_use("Nfix"   ) ) CALL iom_put( "Nfix", nitrpot(:,:,:) * nitrfix * rno3 * zfact * tmask(:,:,:) )  ! nitrogen fixation 
-            IF( iom_use("INTNFIX") ) THEN   ! nitrogen fixation rate in ocean ( vertically integrated )
-               zwork(:,:) = 0.
-               DO jk = KRANGE
-                  DO jj = JRANGE
-                     DO ji = IRANGE
-                        zwork(ji,jj) = zwork(ji,jj) + nitrpot(ji,jj,jk) * nitrfix * rno3    &
-                        &              * zfact * e3t_n(ji,jj,K) * tmask(ji,jj,jk)
-                     END DO
-                  END DO
-               END DO
-               CALL iom_put( "INTNFIX" , zwork ) 
-            ENDIF
-            IF( iom_use("SedCal" ) ) CALL iom_put( "SedCal", zsedcal(:,:) * zfact )
-            IF( iom_use("SedSi" ) )  CALL iom_put( "SedSi",  zsedsi (:,:) * zfact )
-            IF( iom_use("SedC" ) )   CALL iom_put( "SedC",   zsedc  (:,:) * zfact )
-            IF( iom_use("Sdenit" ) ) CALL iom_put( "Sdenit", sdenit (:,:) * zfact * rno3 )
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                     zw3d(ji,jj,jk) = nitrpot(ji,jj,jk) * nitrfix * rno3 *  zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "Nfix"  , zw3d )  ! nitrogen fixation
+            CALL iom_put( "Nfixo2", zw3d * o2nit )  ! ! O2 production by Nfix
+            DEALLOCATE( zw3d )
+            !
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                     zw2d(ji,jj) = zw2d(ji,jj) + nitrpot(ji,jj,jk) * nitrfix * rno3    &
+                       &          * zfact * e3t_n(ji,jj,K) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "INTNFIX", zw2d )  ! nitrogen fixation rate in ocean ( vertically integrated )
+            DEALLOCATE( zw2d )
+         ENDIF
+         IF( l_dia_sed ) THEN
+            zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zw2d(ji,jj) = zsedc(ji,jj) * zfact
+               ENDDO
+            ENDDO
+            CALL iom_put( "SedC", zw2d ) 
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zw2d(ji,jj) = zsedcal(ji,jj) * zfact
+               ENDDO
+            ENDDO
+            CALL iom_put( "SedCal", zw2d ) 
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zw2d(ji,jj) = zsedsi(ji,jj) * zfact
+               ENDDO
+            ENDDO
+            CALL iom_put( "SedSi", zw2d ) 
+            DEALLOCATE( zw2d )
+         ENDIF
+         IF( l_dia_sdenit ) THEN
+            zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zw2d(ji,jj) = sdenit(ji,jj) * zfact * rno3
+               ENDDO
+            ENDDO
+            CALL iom_put( "Sdenit", zw2d ) 
+            DEALLOCATE( zw2d )
          ENDIF
       ENDIF
-#endif
       !
 #if defined key_trc_diaadd
         zfact = 1.e+3 * rfact2r
@@ -842,15 +1023,12 @@ CONTAINS
               END DO
            END DO
         END DO
-
         DO jj = JRANGE
            DO ji = IRANGE
               trc2d(ji,jj,jp_nfix   )  = zwork(ji,jj)       ! nitrogen fixation at surface
            END DO
         END DO
-
         zrfact2 = 1.e+3 * rfact2r
-
         DO jk = KRANGE
            DO jj = JRANGE
               DO ji = IRANGE

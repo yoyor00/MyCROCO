@@ -50,7 +50,7 @@ CONTAINS
       CALL iom_put( "Dpco2"   , trc2d(:,:,jp_dpco2)    )
       CALL iom_put( "EPC100"  , trc2d(:,:,jp_sinkco2)  )
       CALL iom_put( "Heup"    , trc2d(:,:,jp_heup)     )
-      CALL iom_put( "Nfix"    , trc2d(:,:,jp_nfix)     )
+      CALL iom_put( "INTNFIX" , trc2d(:,:,jp_nfix)     )
       CALL iom_put( "No3dep"  , trc2d(:,:,jp_no3dep)   ) 
 #if ! defined key_pisces_light
       CALL iom_put( "EPFE100" , trc2d(:,:,jp_sinkfer)  )

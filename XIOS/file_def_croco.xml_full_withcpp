@@ -408,11 +408,17 @@
                    <field field_ref="Kg"       name="Kg" />
                    <field field_ref="Heup"     name="Zmeu" />
                    <field field_ref="Irondep"  name="Fedep" />
+                   <field field_ref="INTNFIX"  name="INTNFIX"/>
                    <field field_ref="Nfix"     name="Nfix"/>
                    <field field_ref="Ironsed"  name="Fesed"/>
+                   <field field_ref="pdust"    name="pdust"/>
+                   <field field_ref="Sdenit"    name="Sdenit"/>
+                   <field field_ref="SedC"    name="SedC"/>
 #if defined key_pisces_light
                    <field field_ref="Thetanano"  name="Thetanano"/>
 #else
+                   <field field_ref="SedCal"    name="SedCal"/>
+                   <field field_ref="SedSi"    name="SedSi"/>
                    <field field_ref="PPPHY2"   name="PPD" />
                    <field field_ref="PPNEWN"   name="PN" />
                    <field field_ref="PPNEWD"   name="PD" />

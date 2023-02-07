@@ -4648,9 +4648,9 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'No3dep           , scalar, series '
 
       vname(1,indxbioVSink+Nnitrpot-1)=
-     &     'Nfix                              '
+     &     'INTNFIX                           '
       vname(2,indxbioVSink+Nnitrpot-1)=
-     &     'Nitrogen Fixation                 '
+     &     'Nitrogen Fixation vertically int  '
       vname(3,indxbioVSink+Nnitrpot-1)=
      &     'molN/m2/s                         '
       vname(4,indxbioVSink+Nnitrpot-1)=
