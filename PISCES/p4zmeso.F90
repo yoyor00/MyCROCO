@@ -86,7 +86,7 @@ CONTAINS
          l_fezoo2  = iom_use( "FEZOO2" )
          l_lprodz2 = ln_ligand .AND. iom_use( "LPRODZ2" )
          l_pcal = iom_use( "PCAL" )
-         l_o2csp2  = iom_use( "MicroZo2" )
+         l_o2csp2  = iom_use( "MesoZo2" )
       ENDIF
       !
       zgrazing(:,:,:) = 0.
@@ -280,7 +280,7 @@ CONTAINS
                  ENDDO
               ENDDO
             ENDDO
-            CALL iom_put( "MicroZo2", zw3d )
+            CALL iom_put( "MesoZo2", zw3d )
             DEALLOCATE( zw3d )
          ENDIF
          IF( l_fezoo2 ) THEN  ! zooplankton iron recycling rate
@@ -306,6 +306,18 @@ CONTAINS
               ENDDO
             ENDDO
             CALL iom_put( "LPRODZ2", zw3d )
+            DEALLOCATE( zw3d )
+         ENDIF
+         IF( l_pcal ) THEN   !  Calcite production
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk) = prodcal(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "PCAL", zw3d )
             DEALLOCATE( zw3d )
          ENDIF
       ENDIF
