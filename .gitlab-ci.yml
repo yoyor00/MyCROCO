@@ -127,7 +127,7 @@ ana_run_docker:
     - mkdir -p TESTROOT/KTEST
     - cd -
   tags:
-    - ci.inria.fr
+    - ci.inria.fr large
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
   script:
     - cd $CVTKHOME/Scripts_ana
