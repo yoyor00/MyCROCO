@@ -175,6 +175,8 @@
 # endif
 #elif defined TIDAL_FLAT
       fname='TEST_CASES/croco.in.Tidal_flat'
+#elif defined KILPATRICK
+      fname='TEST_CASES/croco.in.Kilpatrick'
 #elif defined ESTUARY
       fname='TEST_CASES/croco.in.Estuary'
 #else
@@ -336,56 +338,26 @@
         read(input,'(A)',err=95) title
         lstr=lenstr(title)
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
+
+
+#ifdef USE_CALENDAR 
 !
-#ifdef XIOS
-!
-! origin_date is the origin date of time axis.
-! It must the same used in croco_tool for input files preprocessing
-!
-      elseif (keyword(1:kwlen).eq.'origin_date') then
-          call cancel_kwd (keyword(1:kwlen), ierr)
-          read(input,'(A)',err=95) origin_date
-          lstr=lenstr(origin_date)
-          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &    'Origin date of time axis (dd/mm/yy hh:mm:ss) :',
-     &    origin_date(1:lstr)
-          origin_date_in_sec=tool_datosec(origin_date(1:lstr))
-      READ(origin_date(1:2),fmt='(i2)') origin_day
-      READ(origin_date(4:5),fmt='(i2)') origin_month
-      READ(origin_date(7:10),fmt='(i4)') origin_year
-      READ(origin_date(12:13),fmt='(i2)') origin_hour
-      READ(origin_date(15:16),fmt='(i2)') origin_minute
-      READ(origin_date(18:19),fmt='(i2)') origin_second
-#endif
-#ifdef START_DATE
-!
-! Start date
+! start date
 !
       elseif (keyword(1:kwlen).eq.'start_date') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) start_date
         lstr=lenstr(start_date)
         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &   'Start date:', start_date(1:lstr)
-#endif
-#ifdef USE_CALENDAR
+     &   'Run start date:', start_date(1:lstr)
+! END date
 !
-! Run start date
-!
-      elseif (keyword(1:kwlen).eq.'run_start_date') then
+      elseif (keyword(1:kwlen).eq.'end_date') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) run_start_date
-        lstr=lenstr(run_end_date)
+        read(input,'(A)',err=95) end_date
+        lstr=lenstr(end_date)
         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &   'Run start date:', run_start_date(1:lstr)
-! Run END date
-!
-      elseif (keyword(1:kwlen).eq.'run_end_date') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) run_end_date
-        lstr=lenstr(run_end_date)
-        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &   'Run end date:', run_end_date(1:lstr)
+     &   'Run end date:', end_date(1:lstr)
 ! output time steps
       elseif (keyword(1:kwlen).eq.'output_time_steps') then
         call cancel_kwd (keyword(1:kwlen), ierr)
