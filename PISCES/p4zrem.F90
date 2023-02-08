@@ -47,6 +47,7 @@ MODULE p4zrem
 
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   denitr   !: denitrification array
 
+   LOGICAL  :: l_dia
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zrem.F90 10425 2018-12-19 21:54:16Z smasson $ 
@@ -74,6 +75,10 @@ CONTAINS
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "REMIN" ) .OR. iom_use( "DENIT" )  &
+           &    .OR. iom_use( "BACT" ) .OR. iom_use( "Remino2" ) 
+
       ! Initialisation of arrys
       ztempbac(:,:)   = 0.
 
@@ -135,30 +140,41 @@ CONTAINS
          CALL prt_ctl_trc_info(charout)
          CALL prt_ctl_trc( charout, ltra='tra')
        ENDIF
-
-#if defined key_iomput
-     IF( lk_iomput ) THEN
-      IF( knt == nrdttrc ) THEN
-          zrfact2 = 1.e3 * rfact2r
-          ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
-          zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
-          !
-          IF( iom_use( "REMIN" ) )  THEN
-              zw3d(:,:,:) = zolimi(:,:,:) * tmask(:,:,:) * zfact !  Remineralisation rate
-              CALL iom_put( "REMIN"  , zw3d )
-          ENDIF
-          IF( iom_use( "DENIT" ) )  THEN
-              zw3d(:,:,:) = denitr(:,:,:) * rdenit * rno3 * tmask(:,:,:) * zfact ! Denitrification
-              CALL iom_put( "DENIT"  , zw3d )
-          ENDIF
-          IF( iom_use( "BACT" ) )  THEN
-               zw3d(:,:,:) = zdepbac(:,:,:) * 1.E6 * tmask(:,:,:)  ! Bacterial biomass
-               CALL iom_put( "BACT", zw3d )
-          ENDIF
-          DEALLOCATE( zw3d )
-       ENDIF
+       !
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            zrfact2 = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zolimi(ji,jj,jk) * tmask(ji,jj,jk) * zrfact2
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "REMIN", zw3d )  ! Remineralisation rate
+            CALL iom_put( "Remino2", (-o2ut) * zw3d )  ! O2 consumption by nitrification 
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = denitr(ji,jj,jk) * rdenit * rno3 * tmask(ji,jj,jk) * zrfact2
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "DENIT", zw3d )  ! Denitrification
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zdepbac(ji,jj,jk) * 1.E6 * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "BACT", zw3d )  ! Calcifiers
+            DEALLOCATE( zw3d )
+         ENDIF
       ENDIF
-#endif
       !
 # if defined key_trc_diaadd
      zrfact2 = 1.e3 * rfact2r
@@ -185,7 +201,7 @@ CONTAINS
       INTEGER, INTENT(in) ::   kt, knt ! ocean time step
       !
       INTEGER  ::   ji, jj, jk
-      REAL(wp) ::   zremik, zremikc, zremikn, zremikp, zsiremin, zfact 
+      REAL(wp) ::   zremik, zremikc, zremikn, zremikp, zsiremin
       REAL(wp) ::   zsatur, zsatur2, znusil, znusil2, zdep, zdepmin, zfactdep
       REAL(wp) ::   zbactfer, zolimit, zrfact2, zmsk
       REAL(wp) ::   zammonic, zoxyremc, zoxyremn, zoxyremp
@@ -197,6 +213,11 @@ CONTAINS
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "REMIN" )   .OR. iom_use( "DENIT" )  &
+           &    .OR. iom_use( "BACT" )    .OR. iom_use( "FEBACT" )  &
+           &    .OR. iom_use( "Remino2" ) .OR. iom_use( "Nitrifo2" )
+
       ! Initialisation of arrys
       zdepprod(:,:,:) = 1.
       zdepeff (:,:,:) = 0.3
@@ -408,34 +429,58 @@ CONTAINS
          CALL prt_ctl_trc( charout, ltra='tra')
        ENDIF
 
-#if defined key_iomput
-     IF( lk_iomput ) THEN
-      IF( knt == nrdttrc ) THEN
-          zrfact2 = 1.e3 * rfact2r
-          ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
-          zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
-          !
-          IF( iom_use( "REMIN" ) )  THEN
-              zw3d(:,:,:) = zolimi(:,:,:) * tmask(:,:,:) * zfact !  Remineralisation rate
-              CALL iom_put( "REMIN"  , zw3d )
-          ENDIF
-          IF( iom_use( "DENIT" ) )  THEN
-              zw3d(:,:,:) = denitr(:,:,:) * rdenit * rno3 * tmask(:,:,:) * zfact ! Denitrification
-              CALL iom_put( "DENIT"  , zw3d )
-          ENDIF
-          IF( iom_use( "BACT" ) )  THEN
-               zw3d(:,:,:) = zdepbac(:,:,:) * 1.E6 * tmask(:,:,:)  ! Bacterial biomass
-               CALL iom_put( "BACT", zw3d )
-          ENDIF
-          IF( iom_use( "FEBACT" ) )  THEN
-               zw3d(:,:,:) = zfebact(:,:,:) * 1E9 * tmask(:,:,:) * zrfact2   ! Bacterial iron consumption
-               CALL iom_put( "FEBACT" , zw3d )
-          ENDIF
-          !
-          DEALLOCATE( zw3d )
-       ENDIF
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            zrfact2 = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zolimi(ji,jj,jk) * tmask(ji,jj,jk) * zrfact2
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "REMIN", zw3d )  ! Remineralisation rate
+            CALL iom_put( "Remino2", (-o2ut) * zw3d )  ! O2 consumption by nitrification 
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = denitr(ji,jj,jk) * rdenit * rno3 * tmask(ji,jj,jk) * zrfact2
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "DENIT", zw3d )  ! Denitrification
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = (-o2nit) * zonitr(ji,jj,jk) * tmask(ji,jj,jk) * zrfact2
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "Nitrifo2", zw3d )  ! O2 consumption by remin
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zdepbac(ji,jj,jk) * 1.E6 * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "BACT", zw3d )  ! Bacterial biomass
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zfebact(ji,jj,jk) * 1.E9 * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "FEBACT", zw3d )  ! Bacterial iron consumption
+            DEALLOCATE( zw3d )
+         ENDIF
       ENDIF
-#endif
       !
 # if defined key_trc_diaadd
      zrfact2 = 1.e3 * rfact2r

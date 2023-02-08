@@ -39,6 +39,7 @@ MODULE p4zpoc
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:)       ::   alphan, reminp   !:
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) ::   alphap           !:
 
+   LOGICAL  :: l_dia
 
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
@@ -68,11 +69,15 @@ CONTAINS
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY)   :: zremipoc, zremigoc, zorem3, ztremint, zfolimi
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) ::  ztrn, zgdept_n, ze3t_n
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY,jcpoc) :: alphag
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
       ! Initialization of local variables
       ! ---------------------------------
-
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "REMINP" ) .OR. iom_use( "REMING" )  &
+           &    .OR. iom_use( "REMINF" )
+      !
       ! Here we compute the GOC -> POC rate due to the shrinking
       ! of the fecal pellets/aggregates as a result of bacterial
       ! solubilization
@@ -491,18 +496,42 @@ CONTAINS
            END DO
         END DO
      ENDIF
-
-#if defined key_iomput
-     IF( lk_iomput ) THEN
-        IF( knt == nrdttrc ) THEN
-          zrfact2 = 1.e3 * rfact2r
-          CALL iom_put( "REMINP" , zremipoc(:,:,:) * tmask(:,:,:) )  ! Remineralisation rate
-          CALL iom_put( "REMING" , zremigoc(:,:,:) * tmask(:,:,:) )  ! Remineralisation rate
-          CALL iom_put( "REMINF" , zfolimi(:,:,:)  * tmask(:,:,:)  * 1.e+9 * zrfact2 )  ! Remineralisation rate
-        ENDIF
-     ENDIF
-#endif
-
+     !
+     IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zremipoc(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "REMINP", zw3d )  ! Remineralisation rate of POC
+            !
+            IF( .NOT. ln_p2z ) THEN
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                       zw3d(ji,jj,jk ) = zremigoc(ji,jj,jk) * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "REMING", zw3d ) ! Remineralisation rate of GOC 
+               !
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                       zw3d(ji,jj,jk ) = zfolimi(ji,jj,jk) * 1.e3 * rfact2r * 1e+9 * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "REMINF", zw3d )  ! Remineralisation rate of Fe
+            ENDIF
+            DEALLOCATE( zw3d )
+         ENDIF
+      ENDIF
+      !
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('poc2')")
          CALL prt_ctl_trc_info(charout)

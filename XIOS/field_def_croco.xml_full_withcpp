@@ -209,9 +209,6 @@
 #endif
 #if defined key_ligand
     <field id="LGW"      long_name="Weak ligands concentration"               unit="mmol/m3" grid_ref="rho_3D" /> 
-    <field id="LPRODR"   long_name="OM remineralisation ligand production rate" unit="nmol-L/m3/s"      grid_ref="rho_3D" />
-    <field id="LIGREM"   long_name="Remineralisation loss of ligands"        unit="nmol-L/m3/s"         grid_ref="rho_3D" />
-    <field id="LIGPR"    long_name="Photochemical loss of ligands"           unit="nmol-L/m3/s"         grid_ref="rho_3D" />
 #endif
     <field id="PH"       long_name="PH"                                       unit="-"           grid_ref="rho_3D" />
     <field id="CO3"      long_name="Bicarbonates"                             unit="mol/L"       grid_ref="rho_3D" />
@@ -230,9 +227,11 @@
     <field id="xfracal"  long_name="Calcifying fraction"                     unit="1"          grid_ref="rho_3D" />
     <field id="LNnut"    long_name="Nutrient limitation term in Nanophyto"   unit=""           grid_ref="rho_3D" />
     <field id="LNFe"     long_name="Iron limitation term in Nanophyto"       unit=""           grid_ref="rho_3D" />
-#if defined key_pisces_light
+    <field id="REMINP"   long_name="Oxic remineralization rate of POC"      unit="d-1"        grid_ref="rho_3D" />
+    <field id="REMIN"    long_name="Oxic remineralization of OM"             unit="mol/m3/s"   grid_ref="rho_3D" />
+    <field id="DENIT"    long_name="Anoxic remineralization of OM"           unit="mol/m3/s"   grid_ref="rho_3D" />
+    <field id="BACT"     long_name="Bacterial Biomass"                       unit="mmol/m3"             grid_ref="rho_3D" />
     <field id="Thetanano"  long_name="Diagnostic Chl:C ratio"                 unit="mgChl/mgC"  grid_ref="rho_3D" />
-#else
     <field id="PPPHY2"   long_name="Primary production of diatoms"            unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PPNEWN"   long_name="New Primary production of nanophyto"      unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PPNEWD"   long_name="New Primary production of diatoms"        unit="molC/m3/s"   grid_ref="rho_3D" />
@@ -250,20 +249,36 @@
     <field id="PCAL"     long_name="Calcite production"                      unit="mol/m3/s"   grid_ref="rho_3D" />
     <field id="LDnut"    long_name="Nutrient limitation term in Diatoms"     unit=""           grid_ref="rho_3D" />
     <field id="LDFe"     long_name="Iron limitation term in Diatoms"         unit=""           grid_ref="rho_3D" />
-#endif
+    <field id="REMING"   long_name="Oxic remineralization rate of GOC"      unit="d-1"        grid_ref="rho_3D" />
+    <field id="REMINF"   long_name="Oxic remineralization suppy of Fe"       unit="mmol-Fe/m3/s"        grid_ref="rho_3D" />
+    <field id="FEBACT"   long_name="Bacterial uptake of Fe"                  unit="molFe/m3/s"          grid_ref="rho_3D" />
+    <field id="LPRODR"   long_name="OM remineralisation ligand production rate" unit="nmol-L/m3/s"      grid_ref="rho_3D" />
+    <field id="LIGREM"   long_name="Remineralisation loss of ligands"        unit="nmol-L/m3/s"         grid_ref="rho_3D" />
+    <field id="LIGPR"    long_name="Photochemical loss of ligands"           unit="nmol-L/m3/s"         grid_ref="rho_3D" />
+    <field id="FESCAV"   long_name="Scavenging of Iron"                      unit="mmol-Fe/m3/s"        grid_ref="rho_3D" />
+    <field id="FECOLL"   long_name="Colloidal Pumping of FeL"                unit="mmol-FeL/m3/s"       grid_ref="rho_3D" />
+    <field id="LGWCOLL"  long_name="Coagulation loss of ligands"             unit="mmol-L/m3/s"         grid_ref="rho_3D" />
+    <field id="Fe3"      long_name="Iron III concentration"                  unit="nmol/m3"    grid_ref="rho_3D" />
+    <field id="FeL1"     long_name="Complexed Iron concentration with L1"    unit="nmol/m3"    grid_ref="rho_3D" />
+    <field id="TL1"      long_name="Total L1 concentration"                  unit="nmol/m3"    grid_ref="rho_3D" />
+    <field id="Totlig"   long_name="Total ligand concentation"               unit="nmol/m3"    grid_ref="rho_3D" />
+    <field id="Biron"    long_name="Bioavailable iron"                       unit="nmol/m3"    grid_ref="rho_3D" />
+    <field id="EXPC"     long_name="Export of carbon"                        unit="mol/m2/s"   grid_ref="rho_3D" />
+    <field id="EXPFE"    long_name="Export of biogenic iron"                 unit="mol/m2/s"   grid_ref="rho_3D" />
+    <field id="EXPSI"    long_name="Export of Silicate"                      unit="mol/m2/s"   grid_ref="rho_3D" />
+    <field id="EXPCAL"   long_name="Export of Calcite"                       unit="mol/m2/s"   grid_ref="rho_3D" />
     <field id="Cflx"     long_name="DIC flux"                                 unit="molC/m2/s"      />
     <field id="Oflx"     long_name="Oxygen flux"                              unit="molC/m2/s"      />
     <field id="Kg"       long_name="Gas transfer"                             unit="molC/m2/s/uatm" />
     <field id="Dpco2"    long_name="Delta CO2"                                unit="uatm"            />
     <field id="Dpo2"     long_name="Delta O2"                                unit="uatm"        />
-    <field id="EPC100"   long_name="Export of carbon particles at 100 m"      unit="molC/m2/s"      />
     <field id="Heup"     long_name="Euphotic layer depth"                     unit="m"               />
     <field id="INTNFIX"  long_name="Nitrogen fixation at surface"             unit="molN/m2/s"      />
     <field id="No3dep"   long_name="Nitrate deposition at surface"            unit="molN/m2/s"     />
     <field id="Sdenit"   long_name="Nitrate reduction in the sediments"      unit="mol/m2/s"    />
     <field id="SedC"     long_name="Organic C burial in the sediments"       unit="molC/m2/s"   />
     <field id="pdust"       long_name="dust concentration"                      unit="g/m3"         />
-#if ! defined key_pisces_light
+    <field id="EPC100"   long_name="Export of carbon particles at 100 m"      unit="molC/m2/s"      />
     <field id="EPFE100"  long_name="Export of biogenic iron at 100 m"         unit="molFe/m2/s"     />
     <field id="EPSI100"  long_name="Export of Silicate at 100 m"              unit="molSi/m2/s"     />
     <field id="EPCAL100" long_name="Export of Calcite at 100 m"               unit="molC/m2/s"      />
@@ -272,7 +287,6 @@
     <field id="Nh4dep"   long_name="Ammonium deposition at surface"           unit="molN/m2/s"     />
     <field id="SedCal"   long_name="Calcite burial in the sediments"         unit="molC/m2/s"   />
     <field id="SedSi"    long_name="Silicon burial in the sediments"         unit="molSi/m2/s"  />
-# endif
 # if defined key_sediment
 <!-- sediment model in PISCES : available with ln_sediment enabled -->
        <field id="SedDIC"          long_name="Dissolved inorganic Concentration"   unit="mmol/m3"   grid_ref="rho_3DS" />

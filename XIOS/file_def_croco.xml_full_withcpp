@@ -369,6 +369,10 @@
 #endif
 #if defined key_ligand
                    <field field_ref="LGW"       name="LGW" />
+                   <field field_ref="LPRODR"    name="LPRODR" />
+                   <field field_ref="LIGREM"    name="LIGREM" />
+                   <field field_ref="LIGPR"     name="LIGPR" />
+                   <field field_ref="LGWCOLL"    name="LGWCOLL"/>
 #endif
 #if defined key_pisces_quota
                    <field field_ref="DON"       name="DON" />
@@ -403,6 +407,7 @@
                    <field field_ref="Nfixo2"   name="Fixo2" />
                    <field field_ref="Cflx"     name="Cflx" />
                    <field field_ref="EPC100"   name="EPC100" />
+                   <field field_ref="EXPC"   name="EXPC" />
                    <field field_ref="Dpco2"    name="Dpco2" />
                    <field field_ref="Oflx"     name="Oflx" />
                    <field field_ref="Kg"       name="Kg" />
@@ -417,6 +422,17 @@
                    <field field_ref="LNnut"    name="LNnut"/>
                    <field field_ref="LNFe"    name="LNFe"/>
                    <field field_ref="xfracal"    name="xfracal"/>
+                   <field field_ref="REMIN"    name="REMIN"/>
+                   <field field_ref="REMINP"    name="REMINP"/>
+                   <field field_ref="DENIT"    name="DENIT"/>
+                   <field field_ref="BACT"    name="BACT"/>
+                   <field field_ref="Fe3"    name="Fe3"/>
+                   <field field_ref="FeL1"    name="FeL1"/>
+                   <field field_ref="TL1"    name="TL1"/>
+                   <field field_ref="Totlig"    name="Totlig"/>
+                   <field field_ref="Biron"    name="Biron"/>
+                   <field field_ref="FESCAV"    name="FESCAV"/>
+                   <field field_ref="FECOLL"    name="FECOLL"/>
 #if defined key_pisces_light
                    <field field_ref="Thetanano"  name="Thetanano"/>
 #else
@@ -435,6 +451,15 @@
                    <field field_ref="MesoZo2"  name="Mso2" />
                    <field field_ref="LDnut"    name="LDnut"/>
                    <field field_ref="LDFe"    name="LDFe"/>
+                   <field field_ref="REMING"    name="REMING"/>
+                   <field field_ref="REMINF"    name="REMINF"/>
+                   <field field_ref="FEBACT"    name="FEBACT"/>
+                   <field field_ref="EPFE100"   name="EPFE100" />
+                   <field field_ref="EPCAL100"   name="EPCAL100" />
+                   <field field_ref="EPSI100"   name="EPSI100" />
+                   <field field_ref="EXPCAL"   name="EXPCAL" />
+                   <field field_ref="EXPSI"   name="EXPSI" />
+                   <field field_ref="EXPFE"   name="EXPFE" />
 #endif
                  </field_group>
             </file>
