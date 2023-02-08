@@ -53,6 +53,8 @@ MODULE p5zprod
    REAL(wp) :: texcretp               !: 1 - excretp 
    REAL(wp) :: texcretd               !: 1 - excret2        
 
+   LOGICAL  :: l_mu, l_light, l_pp
+
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p5zprod.F90 10872 2019-04-15 12:32:09Z cetlod $ 
@@ -100,6 +102,20 @@ CONTAINS
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zw2d
       !!---------------------------------------------------------------------
+      !
+      IF( kt == nittrc000 )  THEN
+            l_pp = iom_use( "PPPHYN" )  .OR. iom_use( "PPPHYD" )  .OR. iom_use( "PPPHYP" )   &
+           &    .OR. iom_use( "PPNEWN" )  .OR. iom_use( "PPNEWD" )  .OR. iom_use( "PPNEWP" ) &
+           &    .OR. iom_use( "PFeN" )    .OR. iom_use( "PFeD" )    .OR. iom_use( "PFeP" )   &
+           &    .OR. iom_use( "PPNEWo2" ) .OR. iom_use( "PPRego2" )                          &  
+           &    .OR. iom_use( "PBSi" )    .OR. iom_use( "LPRODP" )  .OR. iom_use( "LDETP" ) 
+
+            l_mu =  iom_use( "MuN" )     .OR. iom_use( "MuD" )     .OR. iom_use( "MuP" )     &
+           &    .OR. iom_use( "MunetN" )  .OR. iom_use( "MunetD" )  .OR. iom_use( "MunetP" ) &
+           &    .OR. iom_use( "Mumax" ) 
+
+            l_light = iom_use( "LNlight" ) .OR. iom_use( "LDlight" ) .OR. iom_use( "LPlight" ) 
+      ENDIF
       !
       zprorcan(:,:,:) = 0. ; zprorcap(:,:,:) = 0. ; zprorcad(:,:,:) = 0.
       zprofed (:,:,:) = 0. ; zprofep (:,:,:) = 0. ; zprofen (:,:,:) = 0.
@@ -464,94 +480,248 @@ CONTAINS
 
 
      ! Total primary production per year
-#if defined key_iomput
-    IF( lk_iomput ) THEN
-       IF( knt == nrdttrc ) THEN
-          ALLOCATE( zw2d(PRIV_2D_BIOARRAY), zw3d(PRIV_3D_BIOARRAY) )
-          zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
-          !
-          IF( iom_use( "PPPHYN" ) .OR. iom_use( "PPPHYD" ) .OR. iom_use( "PPPHYP" ) )  THEN
-              zw3d(:,:,:) = zprorcan(:,:,:) * zfact * tmask(:,:,:)  ! primary production by nanophyto
-              CALL iom_put( "PPPHYN"  , zw3d )
-              !
-              zw3d(:,:,:) = zprorcap(:,:,:) * zfact * tmask(:,:,:)  ! primary production by picophyto
-              CALL iom_put( "PPPHYP"  , zw3d )
-              !
-              zw3d(:,:,:) = zprorcad(:,:,:) * zfact * tmask(:,:,:)  ! primary production by diatomes
-              CALL iom_put( "PPPHYD"  , zw3d )
-          ENDIF
-          IF( iom_use( "PPNEWN" ) .OR. iom_use( "PPNEWD" ) .OR. iom_use( "PPNEWP" ) )  THEN
-              zw3d(:,:,:) = zpronewn(:,:,:) * zfact * tmask(:,:,:)  ! new primary production by nanophyto
-              CALL iom_put( "PPNEWN"  , zw3d )
-              !
-              zw3d(:,:,:) = zpronewp(:,:,:) * zfact * tmask(:,:,:)  ! new primary production by picophyto
-              CALL iom_put( "PPNEWP"  , zw3d )
-              !
-              zw3d(:,:,:) = zpronewd(:,:,:) * zfact * tmask(:,:,:)  ! new primary production by diatomes
-              CALL iom_put( "PPNEWD"  , zw3d )
-          ENDIF
-          IF( iom_use( "PBSi" ) )  THEN
-              zw3d(:,:,:) = zprorcad(:,:,:) * zfact * tmask(:,:,:) * zysopt(:,:,:) ! biogenic silica production
-              CALL iom_put( "PBSi"  , zw3d )
-          ENDIF
-          IF( iom_use( "PFeN" ) .OR. iom_use( "PFeD" ) .OR. iom_use( "PFeP" ) )  THEN
-              zw3d(:,:,:) = zprofen(:,:,:) * zfact * tmask(:,:,:)  ! biogenic iron production by nanophyto
-              CALL iom_put( "PFeN"  , zw3d )
-              !
-              zw3d(:,:,:) = zprofep(:,:,:) * zfact * tmask(:,:,:)  ! biogenic iron production by picophyto
-              CALL iom_put( "PFeP"  , zw3d )
-              !
-              zw3d(:,:,:) = zprofed(:,:,:) * zfact * tmask(:,:,:)  ! biogenic iron production by  diatomes
-              CALL iom_put( "PFeD"  , zw3d )
-          ENDIF
-          IF( iom_use( "LPRODP" ) )  THEN
-              zw3d(:,:,:) = zpligprod1(:,:,:) * 1e9 * zfact * tmask(:,:,:)
-              CALL iom_put( "LPRODP"  , zw3d )
-          ENDIF
-          IF( iom_use( "LDETP" ) )  THEN
-              zw3d(:,:,:) = zpligprod2(:,:,:) * 1e9 * zfact * tmask(:,:,:)
-              CALL iom_put( "LDETP"  , zw3d )
-          ENDIF
-          IF( iom_use( "Mumax" ) )  THEN
-              zw3d(:,:,:) = zprmaxn(:,:,:) * tmask(:,:,:)   ! Maximum growth rate
-              CALL iom_put( "Mumax"  , zw3d )
-          ENDIF
-          IF( iom_use( "MuN" ) .OR. iom_use( "MuD" ) .OR. iom_use( "MuP" ) )  THEN
-              zw3d(:,:,:) = zprbio(:,:,:) * xlimphy(:,:,:) * tmask(:,:,:)  ! Realized growth rate for nanophyto
-              CALL iom_put( "MuN"  , zw3d )
-              !
-              zw3d(:,:,:) = zprpic(:,:,:) * xlimpic(:,:,:) * tmask(:,:,:)  ! Realized growth rate for picophyto
-              CALL iom_put( "MuP"  , zw3d )
-              !
-              zw3d(:,:,:) =  zprdia(:,:,:) * xlimdia(:,:,:) * tmask(:,:,:)  ! Realized growth rate for diatoms
-              CALL iom_put( "MuD"  , zw3d )
-          ENDIF
-          IF( iom_use( "LNlight" ) .OR. iom_use( "LDlight" ) .OR. iom_use( "LPlight" ) )  THEN
-              zw3d(:,:,:) = zprbio (:,:,:) / (zprmaxn(:,:,:) + rtrn) * tmask(:,:,:) ! light limitation term
-              CALL iom_put( "LNlight"  , zw3d )
-              !
-              zw3d(:,:,:) = zprpic (:,:,:) / (zprmaxp(:,:,:) + rtrn) * tmask(:,:,:) ! light limitation term
-              CALL iom_put( "LPlight"  , zw3d )
-              !
-              zw3d(:,:,:) =  zprdia (:,:,:) / (zprmaxd(:,:,:) + rtrn) * tmask(:,:,:)  ! light limitation term
-              CALL iom_put( "LDlight"  , zw3d )
-          ENDIF
-          IF( iom_use( "MunetN" ) .OR. iom_use( "MunetD" ) .OR. iom_use( "MunetP" ) )  THEN
-              zw3d(:,:,:) = zcroissn(:,:,:) * tmask(:,:,:) ! ! Realized growth rate for nanophyto
-              CALL iom_put( "MunetN"  , zw3d )
-              !
-              zw3d(:,:,:) = zcroissp(:,:,:) * tmask(:,:,:) ! ! Realized growth rate for picophyto
-              CALL iom_put( "MunetP"  , zw3d )
-              !
-              zw3d(:,:,:) = zcroissd(:,:,:) * tmask(:,:,:) ! ! Realized growth rate for diatomes
-              CALL iom_put( "MunetD"  , zw3d )
-              !
-          ENDIF
-          !
-          DEALLOCATE( zw2d, zw3d )
-       ENDIF
+     IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_pp ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprorcan(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PPPHYN", zw3d )  ! primary production by nanophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprorcap(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PPPHYP", zw3d )  ! primary production by picophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprorcad(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PPPHYD", zw3d )  ! primary production by diatoms
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zpronewn(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PPNEWN", zw3d )  ! new primary production by nanophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zpronewd(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PPNEWD", zw3d )  ! new primary production by diatoms
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zpronewp(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PPNEWP", zw3d )  ! new primary production by picophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprofen(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PFeN", zw3d )  ! biogenic iron production by nanophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprofed(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PFeD", zw3d )  ! biogenic iron production by diatoms
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprofep(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PFeP", zw3d )  ! biogenic iron production by picophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprorcad(ji,jj,jk) * zfact * tmask(ji,jj,jk) * zysopt(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PBSi", zw3d )  ! biogenic silica production
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zpligprod1(ji,jj,jk) * 1e9 * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LPRODP", zw3d )  !
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zpligprod2(ji,jj,jk) * 1e9 * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LDETP", zw3d ) 
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = ( o2ut + o2nit ) * zfact * tmask(ji,jj,jk) &
+                       &              * ( zpronewn(ji,jj,jk) + zpronewd(ji,jj,jk) + zpronewp(ji,jj,jk) )
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PPNEWo2", zw3d ) ! Oxygen production by New Produc
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = o2ut * (   zprorcan(ji,jj,jk) - zpronewn(ji,jj,jk)  &
+                       &              + zprorcad(ji,jj,jk) - zpronewd(ji,jj,jk)   &
+                       &              + zprorcap(ji,jj,jk) - zpronewp(ji,jj,jk) ) &
+                       &              * zfact * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "PPRego2", zw3d ) ! Oxygen production by Regen Produc.
+            DEALLOCATE( zw3d )
+         ENDIF
+            !
+         IF( l_mu ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprmaxn(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+         !
+            CALL iom_put( "Mumax", zw3d ) ! Maximum growth rate
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprbio(ji,jj,jk) * xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "MuN", zw3d ) ! Realized growth rate for nanophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprpic(ji,jj,jk) * xlimpic(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "MuP", zw3d ) ! Realized growth rate for picophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprdia(ji,jj,jk) * xlimdia(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "MuD", zw3d ) ! Realized growth rate for diatoms
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zcroissn(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "MunetN", zw3d ) ! Realized growth rate for nanophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zcroissp(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "MunetP", zw3d ) ! Realized growth rate for picophyto
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zcroissd(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "MunetD", zw3d ) ! Realized growth rate for diatoms
+            !
+            DEALLOCATE( zw3d )
+         ENDIF
+            !
+         IF( l_light ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprbio(ji,jj,jk) / (zprmaxn(ji,jj,jk) + rtrn) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNlight", zw3d ) ! light limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprpic(ji,jj,jk) / (zprmaxp(ji,jj,jk) + rtrn) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LPlight", zw3d ) ! light limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprdia(ji,jj,jk) / (zprmaxd(ji,jj,jk) + rtrn) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LDlight", zw3d ) ! light limitation term
+            !
+            DEALLOCATE( zw3d )
+         ENDIF
      ENDIF
-#endif
      !
 #if defined key_trc_diaadd
       !   Supplementary diagnostics

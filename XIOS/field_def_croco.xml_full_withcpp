@@ -206,12 +206,6 @@
     <field id="PICP"     long_name="Picophytoplankton P biomass"              unit="mmol/m3" grid_ref="rho_3D" />
     <field id="PFe"      long_name="Picophytoplankton Fe biomass"             unit="mmol/m3" grid_ref="rho_3D" />
     <field id="PCHL"     long_name="Picophytoplankton Chl biomass"            unit="mg/m3"   grid_ref="rho_3D" />
-    <field id="LPnut"    long_name="Nutrient limitation term in Picophyto"    unit="-"       grid_ref="rho_3D" />
-    <field id="LPFe"     long_name="Iron limitation term in Picophyto"        unit="-"       grid_ref="rho_3D" />
-    <field id="SIZEN"    long_name="Mean relative size of nanophyto."         unit="-"       grid_ref="rho_3D" />
-    <field id="SIZEP"    long_name="Mean relative size of picophyto."         unit="-"       grid_ref="rho_3D" />
-    <field id="SIZED"    long_name="Mean relative size of diatoms"            unit="-"       grid_ref="rho_3D" />
-
 #endif
 #if defined key_ligand
     <field id="LGW"      long_name="Weak ligands concentration"               unit="mmol/m3" grid_ref="rho_3D" /> 
@@ -221,7 +215,6 @@
     <field id="CO3sat"   long_name="CO3 saturation"                           unit="mol/L"       grid_ref="rho_3D" />
     <field id="DCAL"     long_name="Calcite dissolution"                      unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PAR"      long_name="Photosynthetically Available Radiation"   unit="W/m2"        grid_ref="rho_3D" />
-    <field id="PPPHY"    long_name="Primary production of nanophyto"          unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="GRAZ1"    long_name="Grazing by microzooplankton"               unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="MicroZo2" long_name="O2 consumption by microzooplankton"       unit="molC/m2/s"   grid_ref="rho_3D" />
     <field id="FEZOO"    long_name="microzooplankton iron recycling rate"     unit="nmol-Fe//m3/s" grid_ref="rho_3D" />
@@ -238,12 +231,16 @@
     <field id="DENIT"    long_name="Anoxic remineralization of OM"           unit="mol/m3/s"   grid_ref="rho_3D" />
     <field id="BACT"     long_name="Bacterial Biomass"                       unit="mmol/m3"             grid_ref="rho_3D" />
     <field id="Thetanano"  long_name="Diagnostic Chl:C ratio"                 unit="mgChl/mgC"  grid_ref="rho_3D" />
-    <field id="PPPHY2"   long_name="Primary production of diatoms"            unit="molC/m3/s"   grid_ref="rho_3D" />
+    <field id="PPPHYN"   long_name="Primary production of nanophyto"          unit="molC/m3/s"   grid_ref="rho_3D" />
+    <field id="PPPHYD"   long_name="Primary production of diatoms"            unit="molC/m3/s"   grid_ref="rho_3D" />
+    <field id="PPPHYP"   long_name="Primary production of picophyto"          unit="molC/m3/s"  grid_ref="rho_3D" />
     <field id="PPNEWN"   long_name="New Primary production of nanophyto"      unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PPNEWD"   long_name="New Primary production of diatoms"        unit="molC/m3/s"   grid_ref="rho_3D" />
+    <field id="PPNEWP"   long_name="New Primary production of picophyto"      unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PBSi"     long_name="Primary production of Si diatoms"         unit="molSi/m3/s"  grid_ref="rho_3D" />
     <field id="PFeN"     long_name="Primary production of nano iron"          unit="molFe/m3/s"  grid_ref="rho_3D" />
     <field id="PFeD"     long_name="Primary production of diatoms iron"       unit="molFe/m3/s"  grid_ref="rho_3D" />
+    <field id="PFeP"     long_name="Primary production of pico iron"          unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PPNEWo2"  long_name="Oxygen production by the New Produc."     unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="PPRego2"  long_name="Oxygen production by the Regen Produc."   unit="molC/m3/s"   grid_ref="rho_3D" />
     <field id="GRAZ2"    long_name="Grazing by mesozooplankton"               unit="molC/m3/s"   grid_ref="rho_3D" />
@@ -275,7 +272,11 @@
     <field id="EXPCAL"   long_name="Export of Calcite"                       unit="mol/m2/s"   grid_ref="rho_3D" />
     <field id="Mumax"    long_name="Maximum growth rate"                     unit="s-1"        grid_ref="rho_3D" />
     <field id="MuN"      long_name="Realized growth rate for nanophyto"      unit="s-1"        grid_ref="rho_3D" />
+    <field id="MuP"      long_name="Realized growth rate for picophyto"      unit="s-1"        grid_ref="rho_3D" />
+    <field id="MuD"      long_name="Realized growth rate for diatomes"       unit="s-1"        grid_ref="rho_3D" />
     <field id="LNlight"  long_name="Light limitation term in Nanophyto"      unit=""           grid_ref="rho_3D" />
+    <field id="LPlight"  long_name="Light limitation term in Picophyto"      unit="-"          grid_ref="rho_3D" />
+    <field id="LDlight"  long_name="Light limitation term in Diatoms"        unit=""           grid_ref="rho_3D" />
     <field id="TPP"      long_name="Total Primary production of phyto"                   unit="mol/m3/s"  grid_ref="rho_3D" />
     <field id="INTPP"    long_name="Vertically integrated primary production by phyto"   unit="mol/m2/s"  grid_ref="rho_3D" />
     <field id="Cflx"     long_name="DIC flux"                                 unit="molC/m2/s"      />
@@ -298,6 +299,16 @@
     <field id="Nh4dep"   long_name="Ammonium deposition at surface"           unit="molN/m2/s"     />
     <field id="SedCal"   long_name="Calcite burial in the sediments"         unit="molC/m2/s"   />
     <field id="SedSi"    long_name="Silicon burial in the sediments"         unit="molSi/m2/s"  />
+    <field id="LPnut"    long_name="Nutrient limitation term in Picophyto"    unit="-"       grid_ref="rho_3D" />
+    <field id="LPFe"     long_name="Iron limitation term in Picophyto"        unit="-"       grid_ref="rho_3D" />
+    <field id="SIZEN"    long_name="Mean relative size of nanophyto."         unit="-"       grid_ref="rho_3D" />
+    <field id="SIZEP"    long_name="Mean relative size of picophyto."         unit="-"       grid_ref="rho_3D" />
+    <field id="SIZED"    long_name="Mean relative size of diatoms"            unit="-"       grid_ref="rho_3D" />
+    <field id="LPRODP"   long_name="phytoplankton ligand production rate"     unit="nmol-L/m3/s"  grid_ref="rho_3D" />
+    <field id="LDETP"    long_name="Ligand destruction during phytoplankton uptake" unit="nmol-L/m3/s"  grid_ref="rho_3D" />
+    <field id="MunetN"   long_name="Net growth rate for nanophyto"           unit="s-1"      grid_ref="rho_3D" />
+    <field id="MunetP"   long_name="Net growth rate for picophyto"           unit="s-1"      grid_ref="rho_3D" />
+    <field id="MunetD"   long_name="Net growth rate for diatomes"            unit="s-1"      grid_ref="rho_3D" />
 # if defined key_sediment
 <!-- sediment model in PISCES : available with ln_sediment enabled -->
        <field id="SedDIC"          long_name="Dissolved inorganic Concentration"   unit="mmol/m3"   grid_ref="rho_3DS" />

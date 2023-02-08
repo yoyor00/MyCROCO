@@ -400,7 +400,7 @@
                    <field field_ref="CO3"      name="CO3" />
                    <field field_ref="CO3sat"   name="CO3sat" />
                    <field field_ref="PAR"      name="PAR" />
-                   <field field_ref="PPPHY"    name="PPN" />
+                   <field field_ref="PPPHYN"    name="PPN" />
                    <field field_ref="GRAZ1"  name="grapoc" />
                    <field field_ref="MicroZo2" name="Mico2" />
                    <field field_ref="Remino2"  name="Remo2" />
@@ -434,8 +434,12 @@
                    <field field_ref="FESCAV"    name="FESCAV"/>
                    <field field_ref="FECOLL"    name="FECOLL"/>
                    <field field_ref="LNlight"    name="LNlight"/>
+                   <field field_ref="LDlight"    name="LDlight"/>
                    <field field_ref="MuN"    name="MuN"/>
+                   <field field_ref="MuD"    name="MuD"/>
                    <field field_ref="Mumax"    name="Mumax"/>
+                   <field field_ref="MunetN"    name="MunetN"/>
+                   <field field_ref="MunetD"    name="MunetD"/>
                    <field field_ref="TPP"    name="TPP"/>
                    <field field_ref="INTPP"    name="INTPP"/>
                    <field field_ref="PPNEWo2"    name="PPNEWo2"/>
@@ -444,9 +448,9 @@
 #else
                    <field field_ref="SedCal"    name="SedCal"/>
                    <field field_ref="SedSi"    name="SedSi"/>
-                   <field field_ref="PPPHY2"   name="PPD" />
-                   <field field_ref="PPNEWN"   name="PN" />
-                   <field field_ref="PPNEWD"   name="PD" />
+                   <field field_ref="PPPHYD"   name="PPD" />
+                   <field field_ref="PPNEWN"   name="PNN" />
+                   <field field_ref="PPNEWD"   name="PND" />
                    <field field_ref="PBSi"     name="PBSi" />
                    <field field_ref="PFeN"     name="PFeN" />
                    <field field_ref="PFeD"     name="PFeD" />
@@ -465,6 +469,14 @@
                    <field field_ref="EXPCAL"   name="EXPCAL" />
                    <field field_ref="EXPSI"   name="EXPSI" />
                    <field field_ref="EXPFE"   name="EXPFE" />
+#endif
+#if defined key_pisces_quota
+                   <field field_ref="PFeP"     name="PFeP" />
+                   <field field_ref="PPNEWP"   name="PNP" />
+                   <field field_ref="PPPHYP"    name="PPP" />
+                   <field field_ref="MuP"    name="MuP"/>
+                   <field field_ref="MunetP"    name="MunetP"/>
+                   <field field_ref="LPlight"    name="LPlight"/>
 #endif
                  </field_group>
             </file>
