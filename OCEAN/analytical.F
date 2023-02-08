@@ -2051,7 +2051,7 @@ C$    integer  trd, omp_get_thread_num
 #  endif
 
 # elif defined REGIONAL
-#  define CST_SHAPE
+#  define EXP_SHAPE
 #  ifdef CST_SHAPE
         cff=1./float(N)
         do k=1,N                       ! Uniform vertical
@@ -2086,7 +2086,7 @@ C$    integer  trd, omp_get_thread_num
 #  endif
 
 # else
-#  define CST_SHAPE
+#  define EXP_SHAPE
 #  ifdef CST_SHAPE
         cff=1./float(N)
         do k=1,N                       ! Uniform vertical
