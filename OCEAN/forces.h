@@ -62,11 +62,11 @@
       integer itsms, sms_ncycle, sms_rec, lsusgrd
       integer lsvsgrd,sms_tid, susid, svsid
       real    sms_origin_date_in_sec
-      common /smsdat1/ sustrp, svstrp, sms_time,
-     &        sms_origin_date_in_sec
-      common /smsdat2/ sms_cycle, sms_scale
-      common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd
-      common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
+      common /smsdat1/ sustrp, svstrp, sms_time
+      common /smsdat2/ sms_origin_date_in_sec
+      common /smsdat3/ sms_cycle, sms_scale
+      common /smsdat4/ itsms, sms_ncycle, sms_rec, lsusgrd
+      common /smsdat5/ lsvsgrd,sms_tid, susid, svsid
 
 # if defined SFLUX_CFB && !defined BULK_FLUX
       real wspd(GLOBAL_2D_ARRAY)
@@ -154,10 +154,10 @@
       integer itstf(NT), stf_ncycle(NT), stf_rec(NT)
       integer lstfgrd(NT), stf_tid(NT), stf_id(NT)
       REAL(kind=8) :: stf_origin_date_in_sec
-      common /stfdat1/ stflxp,  stf_time, stf_cycle, stf_scale,
-     &                 stf_origin_date_in_sec
-      common /stfdat2/ itstf, stf_ncycle, stf_rec, lstfgrd
-      common /stfdat3/  stf_tid, stf_id
+      common /stfdat1/ stflxp,  stf_time, stf_cycle, stf_scale
+      common /stfdat2/ stf_origin_date_in_sec
+      common /stfdat3/ itstf, stf_ncycle, stf_rec, lstfgrd
+      common /stfdat4/  stf_tid, stf_id
 #   undef STFLUX_DATA
 #  endif /* !ANA_STFLUX || !ANA_SSFLUX */
 !
@@ -453,9 +453,9 @@
       integer itsrf, srf_ncycle, srf_rec
       integer lsrfgrd, srf_tid, srf_id
       REAL(kind=8) :: srf_origin_date_in_sec
-      common /srfdat1/ srflxp, srf_time, srf_cycle, srf_scale,
-     &                 srf_origin_date_in_sec
-      common /srfdat2/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
+      common /srfdat1/ srflxp, srf_time, srf_cycle, srf_scale
+      common /srfdat2/ srf_origin_date_in_sec
+      common /srfdat3/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
 
 # ifdef DIURNAL_INPUT_SRFLX
       real srflxbiog(GLOBAL_2D_ARRAY,2)

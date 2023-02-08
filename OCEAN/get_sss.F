@@ -123,7 +123,7 @@
           goto 99                                         !--> ERROR
         endif
 #ifdef USE_CALENDAR
-            call tool_origindate(ncidfrc,ssist_tid,
+            call tool_origindate(ncidfrc,sss_tid,
      &                           sss_origin_date_in_sec)
               cff=cff+sss_origin_date_in_sec*sec2day
 # endif

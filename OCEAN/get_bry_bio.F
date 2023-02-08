@@ -817,7 +817,8 @@ c                goto 99         !--> ERROR
      $          ,bry_time(itbry1(itrc))*sec2day
 #ifdef USE_CALENDAR
      &  -bry_origin_date_in_sec*sec2day
-#endif             endif
+#endif  
+             endif
 
           enddo                 !do while
         endif                   !got_tbry(itrc)
