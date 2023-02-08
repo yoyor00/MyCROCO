@@ -273,6 +273,11 @@
     <field id="EXPFE"    long_name="Export of biogenic iron"                 unit="mol/m2/s"   grid_ref="rho_3D" />
     <field id="EXPSI"    long_name="Export of Silicate"                      unit="mol/m2/s"   grid_ref="rho_3D" />
     <field id="EXPCAL"   long_name="Export of Calcite"                       unit="mol/m2/s"   grid_ref="rho_3D" />
+    <field id="Mumax"    long_name="Maximum growth rate"                     unit="s-1"        grid_ref="rho_3D" />
+    <field id="MuN"      long_name="Realized growth rate for nanophyto"      unit="s-1"        grid_ref="rho_3D" />
+    <field id="LNlight"  long_name="Light limitation term in Nanophyto"      unit=""           grid_ref="rho_3D" />
+    <field id="TPP"      long_name="Total Primary production of phyto"                   unit="mol/m3/s"  grid_ref="rho_3D" />
+    <field id="INTPP"    long_name="Vertically integrated primary production by phyto"   unit="mol/m2/s"  grid_ref="rho_3D" />
     <field id="Cflx"     long_name="DIC flux"                                 unit="molC/m2/s"      />
     <field id="Oflx"     long_name="Oxygen flux"                              unit="molC/m2/s"      />
     <field id="Kg"       long_name="Gas transfer"                             unit="molC/m2/s/uatm" />

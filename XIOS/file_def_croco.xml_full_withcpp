@@ -433,6 +433,12 @@
                    <field field_ref="Biron"    name="Biron"/>
                    <field field_ref="FESCAV"    name="FESCAV"/>
                    <field field_ref="FECOLL"    name="FECOLL"/>
+                   <field field_ref="LNlight"    name="LNlight"/>
+                   <field field_ref="MuN"    name="MuN"/>
+                   <field field_ref="Mumax"    name="Mumax"/>
+                   <field field_ref="TPP"    name="TPP"/>
+                   <field field_ref="INTPP"    name="INTPP"/>
+                   <field field_ref="PPNEWo2"    name="PPNEWo2"/>
 #if defined key_pisces_light
                    <field field_ref="Thetanano"  name="Thetanano"/>
 #else
@@ -446,7 +452,6 @@
                    <field field_ref="PFeD"     name="PFeD" />
                    <field field_ref="GRAZ2"    name="grapoc2" />
                    <field field_ref="Nitrifo2" name="Nito2" />
-                   <field field_ref="PPNEWo2"  name="NPo2" />
                    <field field_ref="PPRego2"  name="RPo2" />
                    <field field_ref="MesoZo2"  name="Mso2" />
                    <field field_ref="LDnut"    name="LDnut"/>

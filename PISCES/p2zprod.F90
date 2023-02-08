@@ -42,6 +42,8 @@ MODULE p2zprod
    REAL(wp) ::   r1_rday    ! 1 / rday
    REAL(wp) ::   texcretn   ! 1 - excretn 
 
+   LOGICAL  :: l_mu, l_light, l_pp, l_chl
+
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p2zprod.F90 11117 2019-06-17 08:50:02Z cetlod $ 
@@ -66,13 +68,20 @@ CONTAINS
       REAL(wp) ::   zrum, zcodel, zargu, zval, chlcnm_n
       REAL(wp) ::   zfact, zmsk
       CHARACTER (len=25) :: charout
-      REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zw2d, zstrn
-      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zw3d
+      REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zstrn
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zprmax, zprbio, zprorcan
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zmxl_fac, zmxl_chl
       !
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       !!---------------------------------------------------------------------
       !
+      IF( kt == nittrc000 ) THEN
+         l_pp    = iom_use( "INTPP" ) .OR. iom_use( "TPP"  )
+         l_mu    = iom_use( "Mumax"  ) .OR. iom_use( "MuN"    ) 
+         l_light = iom_use( "LNlight") 
+         l_chl   = iom_use( "Thetanano") 
+      ENDIF
       !  Allocate temporary workspace
       !
       zprorcan(:,:,:) = 0. ;  zprbio  (:,:,:) = 0. 
@@ -190,50 +199,81 @@ CONTAINS
         END DO
      END DO
      !
-#if defined key_iomput
-     IF( lk_iomput ) THEN
-       IF( knt == nrdttrc ) THEN
-          zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
-          !
-          IF( iom_use( "TPP" )  )  THEN
-              DO jk = KRANGE
-                 zw3d(:,:,jk) = zprorcan(:,:,jk) * zfact * tmask(:,:,jk)  ! primary production by nanophyto
-              END DO
-              CALL iom_put( "TPP"  , zw3d )
-              !
-          ENDIF
-          IF( iom_use( "Mumax" ) )  THEN
-              DO jk = KRANGE
-                 zw3d(:,:,jk) = zprmax(:,:,jk) * tmask(:,:,jk)   ! Maximum growth rate
-              END DO
-              CALL iom_put( "Mumax"  , zw3d )
-          ENDIF
-          IF( iom_use( "MuN" ) )  THEN
-              DO jk = KRANGE
-                 zw3d(:,:,jk) = zprbio(:,:,jk) * xlimphy(:,:,jk) * tmask(:,:,jk)  ! Realized growth rate for nanophyto
-              END DO
-              CALL iom_put( "MuN"  , zw3d )
-              !
-          ENDIF
-          IF( iom_use( "LNlight" ) )  THEN
-              DO jk = KRANGE
-                 zw3d(:,:,jk) = zprbio (:,:,jk) / (zprmax(:,:,jk) + rtrn) * tmask(:,:,jk) ! light limitation term
-              END DO
-              CALL iom_put( "LNlight"  , zw3d )
-              !
-          ENDIF
-          IF( iom_use( "INTPP" ) ) THEN   
-             zw2d(:,:) = 0.
-             DO jk = KRANGE
-                zw2d(:,:) = zw2d(:,:) + zprorcan(:,:,jk) * e3t_n(:,:,K) * zfact * tmask(:,:,jk) ! vert. integrated pp
-             ENDDO
-             CALL iom_put( "INTPP" , zw2d )
-          ENDIF
-          !
-       ENDIF
+     IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+         IF( l_pp ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprorcan(ji,jj,jk) * tmask(ji,jj,jk) * zfact
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "TPP", zw3d ) !  total pp
+            CALL iom_put( "PPNEWo2", zw3d * ( o2ut + o2nit ) ) ! Oxygen production by the New Produc.
+            DEALLOCATE( zw3d )
+            !
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;    zw2d(:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                     zw2d(ji,jj) = zw2d(ji,jj) + zprorcan(ji,jj,jk) * e3t_n(ji,jj,K) * zfact * tmask(ji,jj,jk) 
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "INTPP", zw2d ) !  vert. integrated pp
+            DEALLOCATE( zw2d )
+         ENDIF
+         !
+         IF( l_mu ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprmax(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "Mumax", zw3d )  ! Maximum growth rate
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprbio(ji,jj,jk) * xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "MuN", zw3d )  ! Realized growth rate for nanophyto
+            DEALLOCATE( zw3d )
+         ENDIF
+         !
+         IF( l_chl ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = thetanano(ji,jj,jk) * tmask(ji,jj,jk) * zfact
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "Thetanano", zw3d )  ! Proxi of Chl/C ratio
+            DEALLOCATE( zw3d )
+         ENDIF
+         !
+         IF( l_light ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zprbio(ji,jj,jk) / ( zprmax(ji,jj,jk) + rtrn ) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNlight", zw3d )  ! light limitation term
+            DEALLOCATE( zw3d )
+         ENDIF
      ENDIF
-#endif
-
 #if defined key_trc_diaadd 
       !   Supplementary diagnostics
      zfact = 1.e3 * rfact2r
