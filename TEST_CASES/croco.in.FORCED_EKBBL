@@ -43,7 +43,7 @@ gls_averages:   Akk Akp  TKE  GLS  Lscale
 rho0:
       1.22d0
 
-lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [Kg/m3/Celsius], SCOEF [Kg/m3/PSU]
+lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PSU]
               24            16.            0.        0.2                0.
 
 lateral_visc:   VISC2,    VISC4    [m^2/sec for all]

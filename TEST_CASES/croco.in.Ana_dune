@@ -56,7 +56,7 @@ vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
 gamma2:
                  1.
 
-lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [Kg/m3/Celsius], SCOEF [Kg/m3/PSU]
+lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PSU]
                26.65           10.            0.        0.28                0.
 
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
