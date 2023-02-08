@@ -3897,6 +3897,28 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvsv)
        vname(4,indxeddyvsv)='                               '
        vname(5,indxeddyvsv)='                               '
        vname(7,indxeddyvsv)='                               '
+
+CR       write(stdout,'(1x,A,I3)') 'indxeddyugsu = ',indxeddyugsu
+       write(vname1,*) 'ugsustr                              '
+       vname(1,indxeddyugsu)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyugsu)
+       vname(2,indxeddyugsu)='ugsustr                        '
+       write(vname3,*) 'meter3 second-3                      '
+       vname(3,indxeddyugsu)=vname3
+       vname(4,indxeddyugsu)='                               '
+       vname(5,indxeddyugsu)='                               '
+       vname(7,indxeddyugsu)='                               '
+
+CR       write(stdout,'(1x,A,I3)') 'indxeddyvgsv = ',indxeddyvgsv
+       write(vname1,*) 'vgsvstr                              '
+       vname(1,indxeddyvgsv)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyvgsv)
+       vname(2,indxeddyvgsv)='vgsvstr                        '
+       write(vname3,*) 'meter3 second-3                      '
+       vname(3,indxeddyvgsv)=vname3
+       vname(4,indxeddyvgsv)='                               '
+       vname(5,indxeddyvgsv)='                               '
+       vname(7,indxeddyvgsv)='                               '
 #endif  /* DIAGNOSTICS_EDDY */
 
 # if defined OUTPUTS_SURFACE && ! defined XIOS

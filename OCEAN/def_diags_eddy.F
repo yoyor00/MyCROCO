@@ -69,6 +69,8 @@
 #  define viddiags_vbv diags_eddyvbv
 #  define viddiags_usu diags_eddyusu
 #  define viddiags_vsv diags_eddyvsv
+#  define viddiags_ugsu diags_eddyugsu
+#  define viddiags_vgsv diags_eddyvgsv
 
 # else
 
@@ -91,6 +93,8 @@
 #  define viddiags_vbv diags_eddyvbv_avg
 #  define viddiags_usu diags_eddyusu_avg
 #  define viddiags_vsv diags_eddyvsv_avg
+#  define viddiags_ugsu diags_eddyugsu_avg
+#  define viddiags_vgsv diags_eddyvgsv_avg
  
 # endif
 !
@@ -687,6 +691,68 @@
            call nf_add_attribute(ncid,viddiags_vsv(itrc)
      &                       ,indxeddyvsv+itrc-1,5,NF_FOUT, ierr)
      
+
+!------------------------------
+!
+! indxeddyugsu
+!
+           lvar=lenstr(vname(1,indxeddyugsu+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxeddyugsu+itrc-1)(1:lvar),
+     &                      NF_FOUT, 3, u2dgrd, viddiags_ugsu(itrc))
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,viddiags_ugsu(itrc),nf_collective)
+# endif
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxeddyugsu+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_ugsu(itrc), 'long_name',
+     &                       lvar, vname(2,indxeddyugsu+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxeddyugsu+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, viddiags_ugsu(itrc), 'long_name',
+     &                                            lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxeddyugsu+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_ugsu(itrc), 'units',
+     &            lvar,vname(3,indxeddyugsu+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxeddyugsu+itrc-1))
+           ierr=nf_put_att_text (ncid,viddiags_ugsu(itrc), 'field',
+     &                       lvar, vname(4,indxeddyugsu+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,viddiags_ugsu(itrc)
+     &                       ,indxeddyugsu+itrc-1,5,NF_FOUT, ierr)
+
+!
+! indxeddyvgsv
+!
+
+           lvar=lenstr(vname(1,indxeddyvgsv+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxeddyvgsv+itrc-1)(1:lvar),
+     &                      NF_FOUT, 3, v2dgrd, viddiags_vgsv(itrc))
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,viddiags_vgsv(itrc),nf_collective)
+# endif
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxeddyvgsv+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_vgsv(itrc), 'long_name',
+     &                       lvar, vname(2,indxeddyvgsv+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxeddyvgsv+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, viddiags_vgsv(itrc), 'long_name',
+     &                                            lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxeddyvgsv+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_vgsv(itrc), 'units',
+     &               lvar,vname(3,indxeddyvgsv+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxeddyvgsv+itrc-1))
+           ierr=nf_put_att_text (ncid,viddiags_vgsv(itrc), 'field',
+     &                       lvar, vname(4,indxeddyvgsv+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,viddiags_vgsv(itrc)
+     &                       ,indxeddyvgsv+itrc-1,5,NF_FOUT, ierr)
+
+
 !
         endif
 !
