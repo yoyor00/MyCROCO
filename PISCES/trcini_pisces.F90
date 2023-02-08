@@ -277,7 +277,7 @@ CONTAINS
       IF (ln_p5z) THEN
          sized(:,:,:) = 1.0
          sizen(:,:,:) = 1.0
-         sized(:,:,:) = 1.0
+         sizep(:,:,:) = 1.0
       ENDIF
 
       ! Initialization of chemical variables of the carbon cycle
