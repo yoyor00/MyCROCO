@@ -175,6 +175,8 @@
 # endif
 #elif defined TIDAL_FLAT
       fname='TEST_CASES/croco.in.Tidal_flat'
+#elif defined KILPATRICK
+      fname='TEST_CASES/croco.in.Kilpatrick'
 #elif defined ESTUARY
       fname='TEST_CASES/croco.in.Estuary'
 #else
