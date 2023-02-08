@@ -109,12 +109,12 @@ CONTAINS
            &    .OR. iom_use( "PFeN" )    .OR. iom_use( "PFeD" )    .OR. iom_use( "PFeP" )   &
            &    .OR. iom_use( "PPNEWo2" ) .OR. iom_use( "PPRego2" )                          &  
            &    .OR. iom_use( "PBSi" )    .OR. iom_use( "LPRODP" )  .OR. iom_use( "LDETP" ) 
-
-            l_mu =  iom_use( "MuN" )     .OR. iom_use( "MuD" )     .OR. iom_use( "MuP" )     &
+           !
+           l_mu =  iom_use( "MuN" )     .OR. iom_use( "MuD" )     .OR. iom_use( "MuP" )     &
            &    .OR. iom_use( "MunetN" )  .OR. iom_use( "MunetD" )  .OR. iom_use( "MunetP" ) &
            &    .OR. iom_use( "Mumax" ) 
-
-            l_light = iom_use( "LNlight" ) .OR. iom_use( "LDlight" ) .OR. iom_use( "LPlight" ) 
+           !
+           l_light = iom_use( "LNlight" ) .OR. iom_use( "LDlight" ) .OR. iom_use( "LPlight" ) 
       ENDIF
       !
       zprorcan(:,:,:) = 0. ; zprorcap(:,:,:) = 0. ; zprorcad(:,:,:) = 0.
