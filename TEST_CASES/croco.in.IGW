@@ -37,7 +37,7 @@ auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Visc3d Diff3d HBL HBBL Bostr Bu
 rho0:
       1027.d0
 
-lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [Kg/m3/Celsius], SCOEF [Kg/m3/PSU]
+lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PSU]
               30.            0.            0.        0.28                0.
 
 lateral_visc:   VISC2,    VISC4    [m^2/sec for all]

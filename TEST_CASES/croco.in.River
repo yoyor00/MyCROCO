@@ -54,7 +54,7 @@ tracer_diff2: TNU2(1:NT)           [m^2/sec for all]
               0.d0  0.d0
 gamma2:
                  -1.
-lin_EOS_cff:  R0 [kg/m3], T0 [Celsius], S0 [PSU], TCOEF [Kg/m3/Celsius], SCOEF [Kg/m3/PSU]
+lin_EOS_cff:  R0 [kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PSU]
               30.         0.            0.        -1.                0.
 
 psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
