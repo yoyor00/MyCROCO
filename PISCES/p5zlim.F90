@@ -95,6 +95,8 @@ MODULE p5zlim
    REAL(wp) ::  xcoef1   = 0.00167  / 55.85
    REAL(wp) ::  xcoef2   = 1.21E-5 * 14. / 55.85 / 7.625 * 0.5 * 1.5
    REAL(wp) ::  xcoef3   = 1.15E-4 * 14. / 55.85 / 7.625 * 0.5 
+
+   LOGICAL  :: l_dia
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p5zlim.F90 10070 2018-08-28 14:30:54Z nicolasmartin $ 
@@ -126,7 +128,14 @@ CONTAINS
       REAL(wp) ::   zrpho, zrass, zcoef, zfuptk, zratchl
       REAL(wp) ::   zfvn, zfvp, zfvf, zsizen, zsizep, zsized, znanochl, zpicochl, zdiatchl
       REAL(wp) ::   zqfemn, zqfemp, zqfemd, zbactno3, zbactnh4
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
+      !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "LNnut" ) .OR. iom_use( "LDnut" ) .OR. iom_use( "LPnut" ) &
+           &    .OR. iom_use( "LNFe" )  .OR. iom_use( "LDFe" )  .OR. iom_use( "LPFe" )  &
+           &    .OR. iom_use( "SIZEN" ) .OR. iom_use( "SIZED" ) .OR. iom_use( "SIZEP" ) &
+           &    .OR. iom_use( "xfracal" )
       !
       zratchl = 6.0
       !
@@ -428,20 +437,101 @@ CONTAINS
          END DO
       END DO
       !
-#if defined key_iomput
-      IF( lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
-        IF( iom_use( "xfracal" ) ) CALL iom_put( "xfracal", xfracal(:,:,:) * tmask(:,:,:) )  ! euphotic layer deptht
-        IF( iom_use( "LNnut"   ) ) CALL iom_put( "LNnut"  , xlimphy(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
-        IF( iom_use( "LPnut"   ) ) CALL iom_put( "LPnut"  , xlimpic(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
-        IF( iom_use( "LDnut"   ) ) CALL iom_put( "LDnut"  , xlimdia(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
-        IF( iom_use( "LNFe"    ) ) CALL iom_put( "LNFe"   , xlimnfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
-        IF( iom_use( "LPFe"    ) ) CALL iom_put( "LPFe"   , xlimpfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
-        IF( iom_use( "LDFe"    ) ) CALL iom_put( "LDFe"   , xlimdfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
-        IF( iom_use( "SIZEN"   ) ) CALL iom_put( "SIZEN"  , sizen(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
-        IF( iom_use( "SIZEP"   ) ) CALL iom_put( "SIZEP"  , sizep(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
-        IF( iom_use( "SIZED"   ) ) CALL iom_put( "SIZED"  , sized(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNnut", zw3d )  ! Nutrient limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimdia(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LDnut", zw3d )  ! Nutrient limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimpic(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LPnut", zw3d )  ! Nutrient limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimnfe(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNFe", zw3d )  ! Iron limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimdfe(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LDFe", zw3d )  ! Iron limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimpfe(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LPFe", zw3d )  ! Iron limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = sizen(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "SIZEN", zw3d )  ! Mean relative size of nano
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = sized(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "SIZED", zw3d )  ! Mean relative size of diatom
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = sizep(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "SIZEP", zw3d )  ! Mean relative size of pico
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xfracal(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "xfracal", zw3d )  ! Calcifiers
+            DEALLOCATE( zw3d )
+         ENDIF
       ENDIF
-#endif
       !
    END SUBROUTINE p5z_lim
 

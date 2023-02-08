@@ -206,6 +206,12 @@
     <field id="PICP"     long_name="Picophytoplankton P biomass"              unit="mmol/m3" grid_ref="rho_3D" />
     <field id="PFe"      long_name="Picophytoplankton Fe biomass"             unit="mmol/m3" grid_ref="rho_3D" />
     <field id="PCHL"     long_name="Picophytoplankton Chl biomass"            unit="mg/m3"   grid_ref="rho_3D" />
+    <field id="LPnut"    long_name="Nutrient limitation term in Picophyto"    unit="-"       grid_ref="rho_3D" />
+    <field id="LPFe"     long_name="Iron limitation term in Picophyto"        unit="-"       grid_ref="rho_3D" />
+    <field id="SIZEN"    long_name="Mean relative size of nanophyto."         unit="-"       grid_ref="rho_3D" />
+    <field id="SIZEP"    long_name="Mean relative size of picophyto."         unit="-"       grid_ref="rho_3D" />
+    <field id="SIZED"    long_name="Mean relative size of diatoms"            unit="-"       grid_ref="rho_3D" />
+
 #endif
 #if defined key_ligand
     <field id="LGW"      long_name="Weak ligands concentration"               unit="mmol/m3" grid_ref="rho_3D" /> 
