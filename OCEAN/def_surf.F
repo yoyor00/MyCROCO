@@ -122,6 +122,7 @@
 # endif
 !
  10   if (create_new_file) then
+        lstr=lenstr(ncname)
 # ifndef NC4PAR
         ierr=nf_create(ncname(1:lstr), NF_CLOBBER, ncid)
 # else

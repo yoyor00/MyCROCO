@@ -184,14 +184,14 @@
       blk_vname(4,2)='??????                                   '
 #   else
       ! Temperature_height_above_ground
-      blk_vname(1,1)='T10M                                     '
-      blk_vname(2,1)='Temperature at 10 m                      '
+      blk_vname(1,1)='T2M                                      '
+      blk_vname(2,1)='Temperature                              '
       blk_vname(3,1)='Kelvin                                   '
       blk_vname(4,1)='??????                                   '
 
       ! Specific_humidity 
-      blk_vname(1,2)='Q10M                                     '
-      blk_vname(2,2)='Specific Humidity at 10 m                '
+      blk_vname(1,2)='Q                                        '
+      blk_vname(2,2)='Specific Humidity at surface             '
       blk_vname(3,2)='Kg/Kg                                    '
       blk_vname(4,2)='??????                                   '
 #   endif

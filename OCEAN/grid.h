@@ -164,6 +164,21 @@
       common /wetdry_wet/wetdry
 #endif
 
+#ifdef WAVE_DRY
+      real rmask_wavewet(GLOBAL_2D_ARRAY)
+      real pmask_wavewet(GLOBAL_2D_ARRAY)
+      real umask_wavewet(GLOBAL_2D_ARRAY)
+      real vmask_wavewet(GLOBAL_2D_ARRAY)
+      real Dcrit_wave(GLOBAL_2D_ARRAY)
+      real wave_wetdry(GLOBAL_2D_ARRAY)
+      common /mask_r_wavewet/rmask_wavewet 
+      common /mask_p_wavewet/pmask_wavewet
+      common /mask_u_wavewet/umask_wavewet 
+      common /mask_v_wavewet/vmask_wavewet
+      common /Dcrit_wavewet/Dcrit_wave
+      common /wave_wetdry_wet/wave_wetdry
+#endif 
+
 #ifdef REDUC_SECTION
       real ureduc(GLOBAL_2D_ARRAY)
       real vreduc(GLOBAL_2D_ARRAY)

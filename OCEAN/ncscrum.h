@@ -2047,14 +2047,14 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-      character*80 date_str, title, start_date
+      character*80 date_str, title
       character*80 origin_date, start_date_run
       integer      start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year
      &         ,   origin_hour, origin_minute, origin_second
 
-      REAL(kind=8)             :: origin_date_in_sec
+      REAL(kind=8) :: origin_date_in_sec
 
       character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
@@ -2153,12 +2153,12 @@
       character*75  vname(20, 90)
 #endif
 
-      common /cncscrum/   date_str,   title,  start_date
+      common /cncscrum/   date_str,   title
      &         ,   origin_date, start_date_run
      &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
-     &         ,   btfname, origin_date_in_sec
+     &         ,   btfname, origin_date_in_sec 
      &         ,   start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year

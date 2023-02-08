@@ -41,6 +41,7 @@
 
       integer omp_get_num_threads, omp_get_thread_num
       ilc=1+iic-ntstart   ! number of time step since restart
+
 !
 ! XIOS Case
 !
@@ -56,8 +57,10 @@
       end do
 #endif
 !
+!
 ! Conditions for writing output
 !
+      
       if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0
 #ifdef EXACT_RESTART
      &                    .or.      mod(ilc,nrst).eq.0

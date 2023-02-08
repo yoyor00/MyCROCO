@@ -671,6 +671,11 @@ c              goto 99                                     !--> ERROR
            write(stdout,6) 'Xclm_time', tclm_rec(itrc)
            goto 99                                        !--> ERROR
          endif
+#ifdef USE_CALENDAR
+        call tool_origindate(ncidclm,tclm_tid(itrc),
+     &                       tclm_origin_date_in_sec)
+        cff=cff+tclm_origin_date_in_sec*sec2day
+# endif
          tclm_time(i,itrc)=cff*day2sec+tclm_cycle(itrc)
      &                                *tclm_ncycle(itrc)
          if (tclm_time(ittclm(itrc),itrc).eq.-1.E+20)
@@ -689,6 +694,9 @@ c              goto 99                                     !--> ERROR
         MPI_master_only write(stdout,'(6x,A,2x,I2,1x,A,1x,g12.4,1x,I4)')
      &             'GET_TCLIMA -- Read climatology of tracer', itrc,
      &                                             'for time =', cff
+#ifdef USE_CALENDAR
+     &  -tclm_origin_date_in_sec*sec2day
+#endif 
 #ifdef MPI
      &                                                      , mynode
 #endif
@@ -793,6 +801,9 @@ C$    integer  trd, omp_get_thread_num
      &            'bounds of ''tclm_time''.', 'TCLM_TSTART=',
      &             tclm_time(it1,itrc)*sec2day,     'TDAYS=',  tdays,
      &            'TCLM_TEND=',   tclm_time(it2,itrc)*sec2day
+#ifdef USE_CALENDAR
+     &  -tclm_origin_date_in_sec*sec2day
+#endif 
           may_day_flag=2
         endif
        endif  !got_tclm
