@@ -19,6 +19,10 @@ MODULE trcini_pisces
    !!----------------------------------------------------------------------
    USE sms_pisces      ! Source Minus Sink variables
    USE trcsms_pisces   !
+   USE p2zlim          !  Co-limitations by nutrient (REDUCED)
+   USE p2zprod         !  Growth rate of phytoplankton (REDUCED)
+   USE p2zmicro        !  Sources and sinks of microzooplankton (REDUCED)
+   USE p2zmort         !  Mortality terms for phytoplankton (REDUCED)
    USE p4zsms          ! Main P4Z routine
    USE p4zche          !  Chemical model
    USE p4zsink         !  vertical flux of particulate matter due to sinking
@@ -82,8 +86,14 @@ CONTAINS
 
 #if defined key_pisces_quota
       ln_p5z = .true.
+      ln_p2z = .false.
       ln_p4z = .false.
+#elif defined key_pisces_light
+      ln_p4z = .false.
+      ln_p2z = .true.
+      ln_p5z = .false.
 #else
+      ln_p2z = .false.
       ln_p4z = .true.
       ln_p5z = .false.
 #endif
@@ -99,11 +109,15 @@ CONTAINS
       ln_sed_2way = .false.
 #endif
 
+      !
       IF(lwp) THEN
          WRITE(numout,*)
-         IF( ln_p4z ) THEN
+         IF( ln_p2z ) THEN
+            WRITE(numout,*) 'p2z_ini :   PISCES biochemical model initialisation'
+            WRITE(numout,*) '~~~~~~~     Reduced version'
+         ELSE IF( ln_p4z ) THEN
             WRITE(numout,*) 'p4z_ini :   PISCES biochemical model initialisation'
-            WRITE(numout,*) '~~~~~~~'
+            WRITE(numout,*) '~~~~~~~     Operationnal version'
          ELSE
             WRITE(numout,*) 'p5z_ini :   PISCES biochemical model initialisation'
             WRITE(numout,*) '~~~~~~~     With variable stoichiometry'
@@ -118,10 +132,16 @@ CONTAINS
       ierr = ierr +  p4z_opt_alloc()
       ierr = ierr +  p4z_flx_alloc()
       ierr = ierr +  p4z_sed_alloc()
-      ierr = ierr +  p4z_lim_alloc()
+      ierr = ierr +  p2z_lim_alloc()
+      IF( ln_p2z ) THEN
+         ierr = ierr +  p2z_prod_alloc()
+      ENDIF
       IF ( ln_p4z ) THEN
+         ierr = ierr +  p4z_lim_alloc()
          ierr = ierr +  p4z_prod_alloc()
-      ELSE
+      ENDIF
+      IF ( ln_p5z ) THEN
+         ierr = ierr +  p4z_lim_alloc()
          ierr = ierr +  p5z_lim_alloc()
          ierr = ierr +  p5z_prod_alloc()
       ENDIF
@@ -233,16 +253,31 @@ CONTAINS
       ! ----------------------------------------------------
       DO jj = JRANGE
          DO ji = IRANGE
-            xksi(ji,jj)    = 2.e-6
-            xksimax(ji,jj) = xksi(ji,jj)
             fr_i(ji,jj) = 0.0
          ENDDO
       ENDDO
+      !
+      IF( ln_p2z ) THEN
+         DO jk = KRANGE
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  thetanano(ji,jj,jk) = 1.0 / 55.0
+               ENDDO
+            ENDDO
+         ENDDO
+      ELSE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               xksi(ji,jj)    = 2.e-6
+               xksimax(ji,jj) = xksi(ji,jj)
+            ENDDO
+         ENDDO
+      ENDIF
 
       IF (ln_p5z) THEN
          sized(:,:,:) = 1.0
          sizen(:,:,:) = 1.0
-         sized(:,:,:) = 1.0
+         sizep(:,:,:) = 1.0
       ENDIF
 
       ! Initialization of chemical variables of the carbon cycle
@@ -258,8 +293,10 @@ CONTAINS
       CALL tracer_stat( nit000 )
 
       CALL p4z_opt_init       !  Optic: PAR in the water column
-      CALL p4z_lim_init       !  Nutrient limitation
-      IF ( ln_p4z ) THEN
+      IF( ln_p2z ) THEN
+         CALL p2z_lim_init
+         CALL p2z_prod_init      !  Production initialization
+      ELSE IF( ln_p4z ) THEN
          CALL p4z_lim_init
          CALL p4z_prod_init      !  Production initialization
       ELSE
@@ -273,7 +310,10 @@ CONTAINS
       IF( ln_ligand ) &
          & CALL p4z_ligand_init  !  remineralisation of organic ligands
 
-      IF ( ln_p4z ) THEN
+      IF( ln_p2z ) THEN
+         CALL p2z_mort_init      !  Phytoplankton mortality
+         CALL p2z_micro_init     !  Microzooplankton
+      ELSE IF ( ln_p4z ) THEN
          CALL p4z_mort_init      !  Phytoplankton mortality
          CALL p4z_micro_init     !  Microzooplankton
          CALL p4z_meso_init      !  Mesozooplankton
@@ -300,7 +340,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER ::   ios   ! Local integer
       INTEGER  :: jn, ierr
-#ifdef key_ligand
+#if defined key_ligand && ! defined key_pisces_light
       TYPE(PTRACER), DIMENSION(jptra) :: tracer
 #else
       TYPE(PTRACER), DIMENSION(jptra+1) :: tracer

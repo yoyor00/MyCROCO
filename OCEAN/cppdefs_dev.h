@@ -766,6 +766,10 @@
 #ifdef BIOLOGY
 # ifdef PISCES
 #  undef DIURNAL_INPUT_SFLX    /* Under Development */
+#  ifdef XIOS
+#    undef DIAGNOSTICS_BIO
+#    undef key_trc_diaadd
+#  endif
 #  ifdef DIAGNOSTICS_BIO
 #   define key_trc_diaadd
 #  endif

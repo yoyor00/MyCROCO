@@ -92,24 +92,6 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'o2_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
-            elseif (itrc.eq.iCAL_) then
-              got_tbry(itrc)=.true.
-              ierr=nf_inq_varid (bry_id, 'cal_time', bry_tid(itrc))
-             ! ierr_all=ierr_all+ierr
-              if (ierr .ne. nf_noerr) then
-                got_tbry(itrc)=.false.
-                MPI_master_only write(stdout,3) 'cal_time', bry_file(1:lstr)
-c     goto 99                                     !--> ERROR
-              endif
-            elseif (itrc.eq.iPO4_) then
-              got_tbry(itrc)=.true.
-              ierr=nf_inq_varid (bry_id, 'po4_time', bry_tid(itrc))
-             ! ierr_all=ierr_all+ierr
-              if (ierr .ne. nf_noerr) then
-                got_tbry(itrc)=.false.
-                MPI_master_only write(stdout,3) 'po4_time', bry_file(1:lstr)
-c     goto 99                                     !--> ERROR
-              endif
             elseif (itrc.eq.iPOC_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'poc_time', bry_tid(itrc))
@@ -117,15 +99,6 @@ c     goto 99                                     !--> ERROR
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
                 MPI_master_only write(stdout,3) 'poc_time', bry_file(1:lstr)
-c     goto 99                                     !--> ERROR
-              endif
-            elseif (itrc.eq.iSIL_) then
-              got_tbry(itrc)=.true.
-              ierr=nf_inq_varid (bry_id, 'si_time', bry_tid(itrc))
-             ! ierr_all=ierr_all+ierr
-              if (ierr .ne. nf_noerr) then
-                got_tbry(itrc)=.false.
-                MPI_master_only write(stdout,3) 'si_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iPHY_) then
@@ -155,6 +128,52 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'doc_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
+            elseif (itrc.eq.iFER_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'fer_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'fer_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+            elseif (itrc.eq.iNO3_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'no3_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'no3_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+#    if ! defined key_pisces_light
+            elseif (itrc.eq.iCAL_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'cal_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'cal_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+            elseif (itrc.eq.iPO4_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'po4_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'po4_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+            elseif (itrc.eq.iSIL_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'si_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'si_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
             elseif (itrc.eq.iDIA_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'dia_time', bry_tid(itrc))
@@ -180,15 +199,6 @@ c     goto 99                                     !--> ERROR
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
                 MPI_master_only write(stdout,3) 'bsi_time', bry_file(1:lstr)
-c     goto 99                                     !--> ERROR
-              endif
-            elseif (itrc.eq.iFER_) then
-              got_tbry(itrc)=.true.
-              ierr=nf_inq_varid (bry_id, 'fer_time', bry_tid(itrc))
-             ! ierr_all=ierr_all+ierr
-              if (ierr .ne. nf_noerr) then
-                got_tbry(itrc)=.false.
-                MPI_master_only write(stdout,3) 'fer_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iBFE_) then
@@ -263,15 +273,6 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'dch_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
-            elseif (itrc.eq.iNO3_) then
-              got_tbry(itrc)=.true.
-              ierr=nf_inq_varid (bry_id, 'no3_time', bry_tid(itrc))
-             ! ierr_all=ierr_all+ierr
-              if (ierr .ne. nf_noerr) then
-                got_tbry(itrc)=.false.
-                MPI_master_only write(stdout,3) 'no3_time', bry_file(1:lstr)
-c     goto 99                                     !--> ERROR
-              endif
             elseif (itrc.eq.iNH4_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'nh4_time', bry_tid(itrc))
@@ -281,6 +282,7 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'nh4_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
+#    endif
 #    if defined key_ligand
               elseif (itrc.eq.iLGW_) then
               got_tbry(itrc)=.true.

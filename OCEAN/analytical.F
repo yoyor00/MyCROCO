@@ -1035,17 +1035,18 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iDIC_)=2150.
             tclm(i,j,k,iTAL_)=2350.
             tclm(i,j,k,iOXY_)=200.
-            tclm(i,j,k,iCAL_)=0.01
-            tclm(i,j,k,iPO4_)=tclm(i,j,k,iNO3_)/16.
             tclm(i,j,k,iPOC_)=0.01
-            tclm(i,j,k,iSIL_)=91.51
             tclm(i,j,k,iPHY_)=0.01
             tclm(i,j,k,iZOO_)=0.01
             tclm(i,j,k,iDOC_)=5.
+            tclm(i,j,k,iFER_)=6.e-4
+#    if ! defined key_pisces_light
+            tclm(i,j,k,iCAL_)=0.01
+            tclm(i,j,k,iPO4_)=tclm(i,j,k,iNO3_)/16.
+            tclm(i,j,k,iSIL_)=91.51
             tclm(i,j,k,iDIA_)=0.01
             tclm(i,j,k,iMES_)=0.01
             tclm(i,j,k,iBSI_)=1.5e-3
-            tclm(i,j,k,iFER_)=6.e-4
             tclm(i,j,k,iBFE_)=1.e-2*5.e-6
             tclm(i,j,k,iGOC_)=0.01
             tclm(i,j,k,iSFE_)=1.e-2*5.e-6
@@ -1055,6 +1056,7 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iNCH_)=1.e-2*12./55.
             tclm(i,j,k,iDCH_)=1.e-2*12./55.
             tclm(i,j,k,iNH4_)=1.e-2
+#    endif
 #    ifdef key_ligand
             tclm(i,j,k,iLGW_)=1.e-3
 #    endif
@@ -1125,6 +1127,12 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iDIC_)) tclm(i,j,k,iDIC_)=2150.
             if (.not.got_tclm(iTAL_)) tclm(i,j,k,iTAL_)=2350.
             if (.not.got_tclm(iOXY_)) tclm(i,j,k,iOXY_)=200.
+            if (.not.got_tclm(iPOC_)) tclm(i,j,k,iPOC_)=0.01
+            if (.not.got_tclm(iPHY_)) tclm(i,j,k,iPHY_)=0.01
+            if (.not.got_tclm(iZOO_)) tclm(i,j,k,iZOO_)=0.01
+            if (.not.got_tclm(iDOC_)) tclm(i,j,k,iDOC_)=5.
+            if (.not.got_tclm(iFER_)) tclm(i,j,k,iFER_)=6.e-4
+#    if ! defined key_pisces_light
             if (.not.got_tclm(iCAL_)) tclm(i,j,k,iCAL_)=0.01
             if (.not.got_tclm(iPO4_)) then
 #    ifdef TEMPERATURE                    
@@ -1146,15 +1154,10 @@ C$    integer  trd, omp_get_thread_num
               tclm(i,j,k,iPO4_)=(1.67+0.5873*SiO4+0.0144*SiO4**2
      &                               +0.0003099*SiO4**3)/16.
             endif
-            if (.not.got_tclm(iPOC_)) tclm(i,j,k,iPOC_)=0.01
             if (.not.got_tclm(iSIL_)) tclm(i,j,k,iSIL_)=91.51
-            if (.not.got_tclm(iPHY_)) tclm(i,j,k,iPHY_)=0.01
-            if (.not.got_tclm(iZOO_)) tclm(i,j,k,iZOO_)=0.01
-            if (.not.got_tclm(iDOC_)) tclm(i,j,k,iDOC_)=5.
             if (.not.got_tclm(iDIA_)) tclm(i,j,k,iDIA_)=0.01
             if (.not.got_tclm(iMES_)) tclm(i,j,k,iMES_)=0.01
             if (.not.got_tclm(iBSI_)) tclm(i,j,k,iBSI_)=0.0015
-            if (.not.got_tclm(iFER_)) tclm(i,j,k,iFER_)=6.e-4
             if (.not.got_tclm(iBFE_)) tclm(i,j,k,iBFE_)=5.e-8
             if (.not.got_tclm(iGOC_)) tclm(i,j,k,iGOC_)=0.01
             if (.not.got_tclm(iSFE_)) tclm(i,j,k,iSFE_)=5.e-8
@@ -1164,6 +1167,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iNCH_)) tclm(i,j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tclm(iDCH_)) tclm(i,j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tclm(iNH4_)) tclm(i,j,k,iNH4_)=0.01
+#    endif              
 #    ifdef key_ligand
             if (.not.got_tclm(iLGW_)) tclm(i,j,k,iLGW_)=1.e-3
 #    endif
@@ -2248,9 +2252,6 @@ C$    integer  trd, omp_get_thread_num
 
 #   ifdef PISCES
 #    ifdef PSOURCE_NCFILE_TS
-          if (.not.got_tsrc(iCAL_)) then 
-            Tsrc0(is,iCAL_)=0.01   
-          endif
           if (.not.got_tsrc(iPOC_)) then 
             Tsrc0(is,iPOC_)=0.01
           endif
@@ -2259,6 +2260,10 @@ C$    integer  trd, omp_get_thread_num
           endif
           if (.not.got_tsrc(iZOO_)) then
             Tsrc0(is,iZOO_)=0.01
+          endif
+#     if ! defined key_pisces_light
+          if (.not.got_tsrc(iCAL_)) then 
+            Tsrc0(is,iCAL_)=0.01   
           endif
           if (.not.got_tsrc(iDIA_)) then
             Tsrc0(is,iDIA_)=0.01
@@ -2293,6 +2298,7 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iNH4_)) then
             Tsrc0(is,iNH4_)=1.e-2
           endif
+#     endif
 #     ifdef key_ligand
           if (.not.got_tsrc(iLGW_)) then
             Tsrc0(is,iLGW_)=1.e-3
@@ -2346,13 +2352,14 @@ C$    integer  trd, omp_get_thread_num
           endif
 #     endif
 #    endif   /* PSOURCE_NCFILE_TS */  
-          Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iPOC_)=Tsrc0(is,iPOC_)
           Tsrc(is,k,iPHY_)=Tsrc0(is,iPHY_)
           Tsrc(is,k,iZOO_)=Tsrc0(is,iZOO_)
+#    if ! defined key_pisces_light
+          Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iDIA_)=Tsrc0(is,iDIA_)
           Tsrc(is,k,iBSI_)=Tsrc0(is,iBSI_)
-          Tsrc0(is,iBFE_)= Tsrc(is,k,iBFE_)
+          Tsrc(is,k,iBFE_)=Tsrc0(is,iBFE_)
           Tsrc(is,k,iGOC_)=Tsrc0(is,iGOC_)
           Tsrc(is,k,iSFE_)=Tsrc0(is,iSFE_)
           Tsrc(is,k,iDFE_)=Tsrc0(is,iDFE_)
@@ -2361,6 +2368,7 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iNCH_)=Tsrc0(is,iNCH_)
           Tsrc(is,k,iDCH_)=Tsrc0(is,iDCH_)
           Tsrc(is,k,iNH4_)=Tsrc0(is,iNH4_)
+#    endif
 #    ifdef key_ligand
           Tsrc(is,k,iLGW_)=Tsrc0(is,iLGW_)
 #    endif
@@ -3160,10 +3168,11 @@ C$    integer  trd, omp_get_thread_num
      &           +0.0003099*SiO4**3
             if (.not.got_tbry(iNO3_)) tbry_west(j,k,iNO3_)=xno3
 #  ifdef PISCES
-            if (.not.got_tbry(iCAL_)) tbry_west(j,k,iCAL_)=0.01   
             if (.not.got_tbry(iPOC_)) tbry_west(j,k,iPOC_)=0.01
             if (.not.got_tbry(iPHY_)) tbry_west(j,k,iPHY_)=0.01
             if (.not.got_tbry(iZOO_)) tbry_west(j,k,iZOO_)=0.01
+#   if ! defined key_pisces_light
+            if (.not.got_tbry(iCAL_)) tbry_west(j,k,iCAL_)=0.01   
             if (.not.got_tbry(iDIA_)) tbry_west(j,k,iDIA_)=0.01
             if (.not.got_tbry(iBSI_)) tbry_west(j,k,iBSI_)=1.5e-3
             if (.not.got_tbry(iBFE_)) tbry_west(j,k,iBFE_)=1.e-2*5.e-6
@@ -3175,6 +3184,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iNCH_)) tbry_west(j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tbry(iDCH_)) tbry_west(j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tbry(iNH4_)) tbry_west(j,k,iNH4_)=1.e-2
+#   endif
 #   ifdef key_ligand
             if (.not.got_tbry(iLGW_)) tbry_west(j,k,iLGW_)=1.e-3
 #   endif
@@ -3260,10 +3270,11 @@ C$    integer  trd, omp_get_thread_num
      &           +0.0003099*SiO4**3
             if (.not.got_tbry(iNO3_)) tbry_east(j,k,iNO3_)=xno3
 #  ifdef PISCES
-            if (.not.got_tbry(iCAL_)) tbry_east(j,k,iCAL_)=0.01   
             if (.not.got_tbry(iPOC_)) tbry_east(j,k,iPOC_)=0.01
             if (.not.got_tbry(iPHY_)) tbry_east(j,k,iPHY_)=0.01
             if (.not.got_tbry(iZOO_)) tbry_east(j,k,iZOO_)=0.01
+#   if ! defined key_pisces_light
+            if (.not.got_tbry(iCAL_)) tbry_east(j,k,iCAL_)=0.01   
             if (.not.got_tbry(iDIA_)) tbry_east(j,k,iDIA_)=0.01
             if (.not.got_tbry(iBSI_)) tbry_east(j,k,iBSI_)=1.5e-3
             if (.not.got_tbry(iBFE_)) tbry_east(j,k,iBFE_)=1.e-2*5.e-6
@@ -3275,6 +3286,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iNCH_)) tbry_east(j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tbry(iDCH_)) tbry_east(j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tbry(iNH4_)) tbry_east(j,k,iNH4_)=1.e-2
+#   endif
 #   ifdef key_ligand
             if (.not.got_tbry(iLGW_)) tbry_east(j,k,iLGW_)=1.e-3
 #   endif
@@ -3360,10 +3372,11 @@ C$    integer  trd, omp_get_thread_num
      &            +0.0003099*SiO4**3
              if (.not.got_tbry(iNO3_)) tbry_north(j,k,iNO3_)=xno3
 #  ifdef PISCES
-             if (.not.got_tbry(iCAL_)) tbry_north(j,k,iCAL_)=0.01   
              if (.not.got_tbry(iPOC_)) tbry_north(j,k,iPOC_)=0.01
              if (.not.got_tbry(iPHY_)) tbry_north(j,k,iPHY_)=0.01
              if (.not.got_tbry(iZOO_)) tbry_north(j,k,iZOO_)=0.01
+#   if ! defined key_pisces_light
+             if (.not.got_tbry(iCAL_)) tbry_north(j,k,iCAL_)=0.01   
              if (.not.got_tbry(iDIA_)) tbry_north(j,k,iDIA_)=0.01
              if (.not.got_tbry(iBSI_)) tbry_north(j,k,iBSI_)=1.5e-3
              if (.not.got_tbry(iBFE_)) tbry_north(j,k,iBFE_)=1.e-2*5.e-6
@@ -3375,6 +3388,7 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iNCH_)) tbry_north(j,k,iNCH_)=1.e-2*12./55.
              if (.not.got_tbry(iDCH_)) tbry_north(j,k,iDCH_)=1.e-2*12./55.
              if (.not.got_tbry(iNH4_)) tbry_north(j,k,iNH4_)=1.e-2
+#   endif
 #   ifdef key_ligand
              if (.not.got_tbry(iLGW_)) tbry_north(j,k,iLGW_)=1.e-3
 #   endif
@@ -3460,10 +3474,11 @@ C$    integer  trd, omp_get_thread_num
      &            +0.0003099*SiO4**3 
              if (.not.got_tbry(iNO3_)) tbry_south(j,k,iNO3_)=xno3
 #  ifdef PISCES
-             if (.not.got_tbry(iCAL_)) tbry_south(j,k,iCAL_)=0.01   
              if (.not.got_tbry(iPOC_)) tbry_south(j,k,iPOC_)=0.01
              if (.not.got_tbry(iPHY_)) tbry_south(j,k,iPHY_)=0.01
              if (.not.got_tbry(iZOO_)) tbry_south(j,k,iZOO_)=0.01
+#   if ! defined key_pisces_light
+             if (.not.got_tbry(iCAL_)) tbry_south(j,k,iCAL_)=0.01   
              if (.not.got_tbry(iDIA_)) tbry_south(j,k,iDIA_)=0.01
              if (.not.got_tbry(iBSI_)) tbry_south(j,k,iBSI_)=1.5e-3
              if (.not.got_tbry(iBFE_)) tbry_south(j,k,iBFE_)=1.e-2*5.e-6
@@ -3477,6 +3492,7 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iDCH_)) tbry_south(j,k,iDCH_)=
      &                                                    1.e-2*12./55.
              if (.not.got_tbry(iNH4_)) tbry_south(j,k,iNH4_)=1.e-2
+#   endif
 #   ifdef key_ligand
              if (.not.got_tbry(iLGW_)) tbry_south(j,k,iLGW_)=1.e-3
 #   endif
