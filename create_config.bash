@@ -400,6 +400,7 @@ if [[ ${options[@]} =~ "cpl" ]] ; then
     echo 'Copy OASIS useful scripts and input files'
     echo '-----------------------------------------'
     mkdir -p $MY_CONFIG_HOME/OASIS_IN
+    mkdir -p $MY_CONFIG_WORK/OASIS_FILES
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/OASIS_IN/* $MY_CONFIG_HOME/OASIS_IN/.
 fi
 
