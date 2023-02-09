@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,7 +13,7 @@
 #if defined SOLVE3D && (!defined ANA_STFLUX || !defined ANA_SSFLUX) \
   && (defined TEMPERATURE || defined SALINITY)
 
-                                    ! Read point or grided surface 
+                                    ! Read point or grided surface
       subroutine get_stflux (itrc)  ! flux for tracer variables itrc
                                     ! from forcing NetCDF file.
 # define STFLUX_DATA
@@ -129,7 +129,7 @@ c**        call opencdf (frcname,N)
           write(stdout,6) 'stf_time', stf_rec(i)
           goto 99                                         !--> ERROR
         endif
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
         call tool_origindate(ncidfrc,stf_tid(itrc),
      &                       stf_origin_date_in_sec)
         cff=cff+stf_origin_date_in_sec*sec2day
@@ -146,19 +146,19 @@ c**        call opencdf (frcname,N)
      &                     stf_rec(itrc), stflxp(i,itrc))
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'stflux', stf_rec 
+          write(stdout,6) 'stflux', stf_rec
           goto 99                                         !--> ERROR
         endif
        itstf(itrc)=i
        MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
      &            'GET_STFLUX -- Read surface flux of tracer', itrc,
      &                                             'for time =', cff
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -stf_origin_date_in_sec*sec2day
-#endif 
-#ifdef MPI
+# endif
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
 
       if (ntstf(itrc).gt.1) goto 1
       if (ntstf(itrc).eq.1) return
@@ -175,9 +175,9 @@ c**        call opencdf (frcname,N)
      &                                a,' at TIME index = ',i4)
   7   write(stdout,8) stf_rec(itrc),ntstf(itrc),frcname(1:lstr),
      &                tdays, stf_time(itstf(itrc),itrc)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -stf_origin_date_in_sec*sec2day
-#endif 
+# endif
   8   format(/,' GET_STFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing file: ', a,/,14x,'TDAYS = ',
@@ -263,9 +263,9 @@ c**        call opencdf (frcname,N)
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'stf_time',tdays,stf_time(it2,itrc)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -stf_origin_date_in_sec*sec2day
-#endif 
+# endif
   1       format(/,' SET_STFLUX_TILE - current model time exceeds',
      &          1x,'ending value for variable: ',A8,/,14x,'TDAYS = ',
      &                                    g12.4, 2x, 'TSTF = ',g12.4)

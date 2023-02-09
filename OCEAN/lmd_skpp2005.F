@@ -45,16 +45,16 @@
 !
 !==================================================================================
 !
-# define  HBL_SMOOTH
-# define  LIMIT_UNSTABLE_ONLY
+#define HBL_SMOOTH
+#define LIMIT_UNSTABLE_ONLY
 
       implicit none
-# include "param.h"
-# include "grid.h"
-# include "ocean3d.h"
-# include "forces.h"
-# include "mixing.h"
-# include "scalars.h"
+#include "param.h"
+#include "grid.h"
+#include "ocean3d.h"
+#include "forces.h"
+#include "mixing.h"
+#include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, khbl
       integer imin,imax,jmin,jmax
       integer my_kbl(PRIVATE_1D_SCRATCH_ARRAY     )
@@ -84,7 +84,7 @@
       real ustar3,Bfsfc,zscale,zetahat, ws,wm,z_bl
       real Av_bl,dAv_bl, f1,At_bl,dAt_bl,As_bl,dAs_bl
       real Kern, Vtc, Vtsq,  sigma, cff,cff1, cff_up,cff_dn
-# define tind nstp
+#define tind nstp
       real zeta_m, a_m, c_m, zeta_s, a_s,c_s,r2,r3,r4
       real a1,a2,a3
       real nu0c, Cv, Ric, Ri_inv,
@@ -123,9 +123,9 @@
      &   r2=0.5, r3=1./3., r4=0.25
      &                                                           )
 !======================================================================
-# ifdef EW_PERIODIC
-#  define I_EXT_RANGE Istr-1,Iend+1
-# else
+#ifdef EW_PERIODIC
+# define I_EXT_RANGE Istr-1,Iend+1
+#else
       if (WESTERN_EDGE) then
         imin=Istr
       else
@@ -136,11 +136,11 @@
       else
         imax=Iend+1
       endif
-#  define I_EXT_RANGE imin,imax
-# endif
-# ifdef NS_PERIODIC
-#  define J_EXT_RANGE Jstr-1,Jend+1
-# else
+# define I_EXT_RANGE imin,imax
+#endif
+#ifdef NS_PERIODIC
+# define J_EXT_RANGE Jstr-1,Jend+1
+#else
       if (SOUTHERN_EDGE) then
         jmin=Jstr
       else
@@ -151,8 +151,8 @@
       else
         jmax=Jend+1
       endif
-#  define J_EXT_RANGE jmin,jmax
-# endif
+# define J_EXT_RANGE jmin,jmax
+#endif
 !======================================================================
 !  Initialize parameters
 !
@@ -162,8 +162,8 @@
 !  Compute thermal expansion coefficient "alpha" [kg/m^3/decC] and
 !  saline contraction coefficient "beta" [kg/m^3/PSU] at the surface.
 
-# define alpha Bosol
-# define  beta Bo
+#define alpha Bosol
+#define beta Bo
       call alfabeta_tile (Istr,Iend,Jstr,Jend, alpha,beta)
 
 !  Compute surface turbulent buoyancy forcing "Bo" [m^2/s^3].
@@ -174,48 +174,48 @@
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
           Bo(i,j)= 0
-# ifdef TEMPERATURE
+#ifdef TEMPERATURE
      &                 +g*( alpha(i,j)*(stflx(i,j,itemp)-srflx(i,j)))
-# endif
-# ifdef SALINITY
+#endif
+#ifdef SALINITY
      &                 -g*beta(i,j)*stflx(i,j,isalt)
-# endif
-# ifdef TEMPERATURE
+#endif
+#ifdef TEMPERATURE
           Bosol(i,j)=g*alpha(i,j)*srflx(i,j)
-# else
+#else
           Bosol(i,j)=0.
-# endif
-# ifdef OA_COUPLING
+#endif
+#ifdef OA_COUPLING
           ustar(i,j)=sqrt(smstr(i,j))
-# else
-#   ifdef STRESS_AT_RHO_POINTS
+#else
+# ifdef STRESS_AT_RHO_POINTS
           su_r=sustr(i,j)
           sv_r=svstr(i,j)
-#   else
+# else
           su_r=0.5*(sustr(i,j)+sustr(i+1,j))
           sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
-#   endif
-          ustar(i,j)=sqrt(sqrt(su_r**2+sv_r**2))
 # endif
-# ifdef LMD_LANGMUIR
+          ustar(i,j)=sqrt(sqrt(su_r**2+sv_r**2))
+#endif
+#ifdef LMD_LANGMUIR
 !
 !  Turbulent Langmuir number (McWilliams et al 1997)
 !
-#  ifdef MRL_WCI
+# ifdef MRL_WCI
           cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned
           ustokes=(wfrq(i,j)**3)*(Awave(i,j)**2)/g *cff
           Langmuir(i,j)=sqrt(ustar(i,j)/max(eps,ustokes))
-#  else
+# else
           Langmuir(i,j)=0.35  ! Liu et al (2014)
-#  endif
 # endif
+#endif
 
         enddo
       enddo
 
 
-# undef beta
-# undef alpha
+#undef beta
+#undef alpha
 !========================================================================
 ! Compute fraction of the solar shortwave flux "swr_frac"
 ! penetrating to grid level depth (at vertical w-points).
@@ -225,8 +225,8 @@
 !
 !== BEGIN ugly piece of code
 
-#  define wrk1 wrk3
-#  define wrk2 my_hbl
+#define wrk1 wrk3
+#define wrk2 my_hbl
       do k=0,N-1
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
@@ -240,8 +240,8 @@
           enddo
         enddo
       enddo
-#  undef wrk1
-#  undef wrk2
+#undef wrk1
+#undef wrk2
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
           swr_frac(i,j,N)=1.
@@ -264,8 +264,8 @@
           Cr(i,N)      = 0.
           Cr(i,0)      = 0.
         enddo
-#  define du wrk1
-#  define dv wrk2
+#define du wrk1
+#define dv wrk2
         do k=1,N-1
          do i=I_EXT_RANGE
           cff=1./(Hz(i,j,k)+Hz(i,j,k+1))
@@ -317,8 +317,8 @@
      &                          my_kbl(i)=k
           enddo
         enddo
-#  undef dv
-#  undef du
+#undef dv
+#undef du
 !===================================
 !++ Linear interpolation to find hbl
 !===================================
@@ -341,15 +341,15 @@
 !    HBL Smoothing
 !================================
 
-#  ifdef HBL_SMOOTH
-#   define hwrk my_hbl
-#   define wrk wrk3
-#   include "kpp_smooth.h"
-#   undef hwrk
-#   undef wrk
-#  endif
-#  undef I_EXT_RANGE
-#  undef J_EXT_RANGE
+#ifdef HBL_SMOOTH
+# define hwrk my_hbl
+# define wrk wrk3
+# include "kpp_smooth.h"
+# undef hwrk
+# undef wrk
+#endif
+#undef I_EXT_RANGE
+#undef J_EXT_RANGE
 
 
 !======================================================================
@@ -361,9 +361,9 @@
         do k=N-1,1,-1       ! find new boundary layer index "kbl".
           do i=istr,iend
             my_hbl(i,j)=min(my_hbl(i,j),z_w(i,j,N)-z_w(i,j,0))
-#  ifdef MASKING
+#ifdef MASKING
      &                                             *rmask(i,j)
-#  endif
+#endif
             if (z_w(i,j,k) .gt. z_w(i,j,N)-my_hbl(i,j)) kbl(i,j)=k
           enddo
         enddo
@@ -385,11 +385,11 @@
 
 #include "lmd_wscale_wm_and_ws.h"
 
-# ifdef LIMIT_UNSTABLE_ONLY
+#ifdef LIMIT_UNSTABLE_ONLY
           f1=5.0 * max(0., Bfsfc) * vonKar/(ustar(i,j)**4+eps)
-# else
+#else
           f1=0.
-# endif
+#endif
           cff=1./(z_w(i,j,k)-z_w(i,j,k-1))
           cff_up=cff*(z_bl -z_w(i,j,k-1))
           cff_dn=cff*(z_w(i,j,k)   -z_bl)
@@ -407,30 +407,30 @@
             Av_bl=dAv_bl*(z_bl-z_w(i,j,0))
             dAt_bl=vonKar*ustarb
             At_bl=dAt_bl*(z_bl-z_w(i,j,0))
-# ifdef SALINITY
+#ifdef SALINITY
             dAs_bl=vonKar*ustarb
             As_bl=dAs_bl*(z_bl-z_w(i,j,0))
-# endif /* SALINITY */
+#endif /* SALINITY */
           else
             Av_bl=cff_up*Kv(i,j,k)+cff_dn*Kv(i,j,k-1)
             dAv_bl=cff * (Kv(i,j,k)  -   Kv(i,j,k-1))
-# ifdef TEMPERATURE
+#ifdef TEMPERATURE
             At_bl=cff_up*Kt(i,j,k)+cff_dn*Kt(i,j,k-1)
             dAt_bl=cff * (Kt(i,j,k)  -   Kt(i,j,k-1))
-# endif
-# ifdef SALINITY
+#endif
+#ifdef SALINITY
             As_bl=cff_up*Ks(i,j,k)+cff_dn*Ks(i,j,k-1)
             dAs_bl=cff * (Ks(i,j,k)  -   Ks(i,j,k-1))
-# endif
+#endif
           endif
           Gm1(i)=Av_bl/(my_hbl(i,j)*wm+eps)
           dGm1dS(i)=min(0., Av_bl*f1-dAv_bl/(wm+eps))
           Gt1(i)=At_bl/(my_hbl(i,j)*ws+eps)
           dGt1dS(i)=min(0., At_bl*f1-dAt_bl/(ws+eps))
-# ifdef SALINITY
+#ifdef SALINITY
           Gs1(i)=As_bl/(my_hbl(i,j)*ws+eps)
           dGs1dS(i)=min(0., As_bl*f1-dAs_bl/(ws+eps))
-# endif
+#endif
           Bfsfc_bl(i)=Bfsfc
         enddo !<== i-loop
 
@@ -466,57 +466,57 @@
             Kv(i,j,k)=wm*my_hbl(i,j)*( cff + sigma*( 1.+sigma*(
      &               a1+a2*Gm1(i)+a3*dGm1dS(i) )))
 
-#  ifdef TEMPERATURE
+#ifdef TEMPERATURE
             Kt(i,j,k)=ws*my_hbl(i,j)*( cff + sigma*( 1.+sigma*(
      &               a1+a2*Gt1(i)+a3*dGt1dS(i) )))
-# endif
-# ifdef SALINITY
+#endif
+#ifdef SALINITY
             Ks(i,j,k)=ws*my_hbl(i,j)*( cff + sigma*( 1.+sigma*(
      &               a1+a2*Gs1(i)+a3*dGs1dS(i) )))
-# endif
-# ifdef LMD_NONLOCAL
+#endif
+#ifdef LMD_NONLOCAL
             if (Bfsfc .lt. 0.) then
               ghats(i,j,k)=Cg * sigma*(1.-sigma)**2
             else
               ghats(i,j,k)=0.
             endif
-# endif
-# if defined MLCONVEC
+#endif
+#if defined MLCONVEC
 !
 !  Add convective adjustment in the ML for unresolved convective cells
 !
             if (bvf(i,j,k).lt.0.) then
               Kv(i,j,k)=Kv(i,j,k) + nu0c
-#  ifdef TEMPERATURE
+# ifdef TEMPERATURE
               Kt(i,j,k)=Kt(i,j,k) + nu0c
-#  endif
-#  ifdef SALINITY
-              Ks(i,j,k)=Ks(i,j,k) + nu0c
-#  endif
-            endif
 # endif
+# ifdef SALINITY
+              Ks(i,j,k)=Ks(i,j,k) + nu0c
+# endif
+            endif
+#endif
           enddo
 
           do k=khbl-1,1,-1                    !-- below mixed layer
-# ifdef LMD_NONLOCAL
+#ifdef LMD_NONLOCAL
             ghats(i,j,k)=0.
-# endif
+#endif
 
-# if  defined LMD_CONVEC && !defined LMD_BKPP
+#if defined LMD_CONVEC && !defined LMD_BKPP
 !
 !  Add convective adjustment (done in LMD_BKPP if defined)
 !
 
             if (bvf(i,j,k).lt.0.) then
               Kv(i,j,k)=Kv(i,j,k) + nu0c
-#  ifdef TEMPERATURE
+# ifdef TEMPERATURE
               Kt(i,j,k)=Kt(i,j,k) + nu0c
-#  endif
-#  ifdef SALINITY
-              Ks(i,j,k)=Ks(i,j,k) + nu0c
-#  endif
-            endif
 # endif
+# ifdef SALINITY
+              Ks(i,j,k)=Ks(i,j,k) + nu0c
+# endif
+            endif
+#endif
           enddo
 
         enddo
@@ -534,7 +534,7 @@
         enddo
       enddo
 
-# ifndef EW_PERIODIC
+#ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=jstr,jend
           hbls(istr-1,j,3-nstp)=hbls(istr,j,3-nstp)
@@ -547,8 +547,8 @@
           kbl(iend+1,j)=kbl(iend,j)
         enddo
       endif
-# endif
-# ifndef NS_PERIODIC
+#endif
+#ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=istr,iend
           hbls(i,jstr-1,3-nstp)=hbls(i,jstr,3-nstp)
@@ -561,7 +561,7 @@
           kbl(i,jend+1)=kbl(i,jend)
         enddo
       endif
-#  ifndef EW_PERIODIC
+# ifndef EW_PERIODIC
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         hbls(istr-1,jstr-1,3-nstp)=hbls(istr,jstr,3-nstp)
         kbl(istr-1,jstr-1)=kbl(istr,jstr)
@@ -578,12 +578,12 @@
         hbls(iend+1,jend+1,3-nstp)=hbls(iend,jend,3-nstp)
         kbl(iend+1,jend+1)=kbl(iend,jend)
       endif
-#  endif
 # endif
+#endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_r2d_tile (istr,iend,jstr,jend,
      &                     hbls(START_2D_ARRAY,3-nstp))
-# endif
+#endif
       return
       end

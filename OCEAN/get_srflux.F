@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -23,7 +23,7 @@
 # include "ncscrum.h"
       real cff
       integer i,ierr, lstr,lvar, lenstr, nf_fread, advance_cycle
-#include "netcdf.inc"
+# include "netcdf.inc"
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:
 !================  variables and dimensions. Check for consistency.
@@ -35,11 +35,11 @@
 !
 ! If not opened yet, open forcing NetCDF file for reading.
 ! Find and save IDs for relevant variables, determine whether
-! surface radiation flux is a field or scalar value. 
+! surface radiation flux is a field or scalar value.
 !
         if (ncidfrc.eq.-1) then
           ierr=nf_open(frcname(1:lstr), nf_nowrite, ncidfrc)
-          if (ierr .ne. nf_noerr) goto 4                !--> ERROR 
+          if (ierr .ne. nf_noerr) goto 4                !--> ERROR
         endif
 
         ierr=nf_inq_varid (ncidfrc, 'srf_time', srf_tid)
@@ -125,10 +125,10 @@
 
         ierr=nf_get_var1_FTYPE(ncidfrc, srf_tid, srf_rec, cff)
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'srf_time', srf_rec 
+          write(stdout,6) 'srf_time', srf_rec
           goto 99                                         !--> ERROR
         endif
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
         call tool_origindate(ncidfrc,srf_tid,
      &                       srf_origin_date_in_sec)
         cff=cff+srf_origin_date_in_sec*sec2day
@@ -148,12 +148,12 @@
         if (ierr .ne. nf_noerr) then
           write(stdout,6) 'srflux', srf_rec
           goto 99                                         !--> ERROR
-        endif 
+        endif
 
 # ifdef DIURNAL_INPUT_SRFLX
 !
 ! srflxbio (=radswbio with bulk) for PISCES daily averaged short-wave (solar) radiation)
-!     
+!
         if (lsrfbiogrd.eq.1) then
           ierr=nf_fread (srflxbiog(START_2D_ARRAY,i), ncidfrc,
      &                        srfbio_id, srf_rec,  r2dvar)
@@ -168,17 +168,17 @@
 # endif /* DIURNAL_INPUT_SRFLX */
 
        itsrf=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &           'GET_SRFLUX --',
      &           'Read solar shortwave radiation for time =', cff
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -srf_origin_date_in_sec*sec2day
-#endif 
-#ifdef MPI
+# endif
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
       if (ntsrf.gt.1) goto 1
-      if (ntsrf.eq.1) return 
+      if (ntsrf.eq.1) return
 !
 ! Sort out error messages: The following portion of the code is
 !===== === ===== ========= not accessed unless something goes wrong.
@@ -194,9 +194,9 @@
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) srf_rec, ntsrf, frcname(1:lstr), tdays,
      &                                srf_time(itsrf)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -srf_origin_date_in_sec*sec2day
-#endif 
+# endif
   8   format(/,' GET_SRFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing NetCDF file: ',a, /,14x,'TDAYS = ',
@@ -220,9 +220,9 @@
 # include "grid.h"
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       real cff, cff1, cff2, srf
-#ifdef DIURNAL_INPUT_SRFLX
+# ifdef DIURNAL_INPUT_SRFLX
       real srfbio
-#endif
+# endif
 !
 # include "compute_extended_bounds.h"
 !
@@ -313,10 +313,10 @@
 !
       else
         if (ZEROTH_TILE) then
-          write(stdout,1) 'srf_time', tdays, srf_time(it2)*sec2day  
-#ifdef USE_CALENDAR
+          write(stdout,1) 'srf_time', tdays, srf_time(it2)*sec2day
+# ifdef USE_CALENDAR
      &  -srf_origin_date_in_sec*sec2day
-#endif 
+# endif
   1       format(/,' SET_SRFLUX_TILE - current model time exceeds',
      &             ' ending value for variable: ',a,/,14x,'TDAYS = ',
      &                                      g12.4,2x,'TEND = ',g12.4)
@@ -354,7 +354,7 @@
 # include "scalars.h"
 # include "grid.h"
       integer Istr,Iend,Jstr,Jend, i,j
-      real cff,cff1,cff2, 
+      real cff,cff1,cff2,
      &     hour,cos_h,phi,h0,dec,cos_dec,sin_dec,tan_dec
 !
 # include "compute_extended_bounds.h"
@@ -386,7 +386,7 @@
 !
 ! Compute daily insolation coefficient
 ! Modulate srflx and update stflx
-!  --> use Greenwich hour angle: 
+!  --> use Greenwich hour angle:
 !      cos_h=1 at solar noon in Greenwich
 !
       do j=JstrR,JendR
@@ -396,7 +396,7 @@
           cff1=cos_dec*cos_phi(i,j)
           cff2=sin_dec*sin_phi(i,j)
           cff=pi*(cos_h*cff1+cff2)/(sin(h0)*cff1+h0*cff2)
-            
+
           stflx(i,j,itemp)=stflx(i,j,itemp)-srflx(i,j)
           srflx(i,j)=max(0.,cff*srflx(i,j))
           stflx(i,j,itemp)=stflx(i,j,itemp)+srflx(i,j)

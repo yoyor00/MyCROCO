@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,7 +14,7 @@
 # include "cppdefs.h"
 # ifdef NBQ
       subroutine rnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
@@ -47,7 +47,7 @@
 !
 # endif /* NBQ */
 #endif /* CHILD */
-# ifdef NBQ
+#ifdef NBQ
 !
 ! Common Code
 !
@@ -61,7 +61,7 @@
 # include "nbq.h"
 # include "climat.h"
 # include "scalars.h"
-# include "boundary.h"  
+# include "boundary.h"
 # ifdef AGRIF
 #  include "zoom.h"
 # endif
@@ -119,7 +119,7 @@
               tau=tau_out
 #    endif
             endif
- 
+
             if (dft*(grad(Istr,j)+grad(Istr,j+1)) .gt. 0.) then
               dfy=grad(Istr,j)
             else
@@ -128,18 +128,18 @@
             cff=max(dfx*dfx+dfy*dfy, eps)
             cx=dft*dfx
             cy=min(cff,max(dft*dfy,-cff))
- 
+
             rho_nbq(Istr-1,j,k)=(    cff*rho_nbq_west(j,k,1)
      &                               +cx*rho_nbq(Istr  ,j,k)
      &                          -max(cy,0.)*grad(Istr-1,j  )
      &                          -min(cy,0.)*grad(Istr-1,j+1)
      &                                            )/(cff+cx)
 
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             rho_nbq(Istr-1,j,k)=(1.-tau)*rho_nbq(Istr-1,j,k)
 #     ifdef NBQ_FRC_BRY
      &                                +tau*rnbqbry_west(j,k)
-#     else     
+#     else
      &                              +tau*rnbqclm(Istr-1,j,k)
 #     endif
 #    endif
@@ -192,7 +192,7 @@
         do k=1,N                                     ! Western edge closed
           do j=jstr,jend                             ! ======= ==== ======
                                                      !  (no-slip: default)
-            rho_nbq(Istr-1,j,k)=0.           
+            rho_nbq(Istr-1,j,k)=0.
           enddo
         enddo
 
@@ -222,7 +222,7 @@
           do j=Jstr,Jend
             dft=rho_nbq_east(j,k,2)-rho_nbq(Iend  ,j,k)
             dfx=rho_nbq(Iend  ,j,k)-rho_nbq(Iend-1,j,k)
- 
+
             if (dfx*dft .lt. 0.) then
               dft=0.                      ! <-- cancel cx, if inflow
 #    if defined NBQ_FRC_BRY || defined NBQ_NUDGING
@@ -231,7 +231,7 @@
               tau=tau_out
 #    endif
             endif
- 
+
             if (dft*(grad(Iend,j)+grad(Iend,j+1)) .gt. 0.) then
               dfy=grad(Iend,j)
             else
@@ -240,17 +240,17 @@
             cff=max(dfx*dfx+dfy*dfy, eps)
             cx=dft*dfx
             cy=min(cff,max(dft*dfy,-cff))
- 
+
             rho_nbq(Iend+1,j,k)=(    cff*rho_nbq_east(j,k,1)
      &                               +cx*rho_nbq(Iend  ,j,k)
      &                          -max(cy,0.)*grad(Iend+1,j  )
      &                          -min(cy,0.)*grad(Iend+1,j+1)
      &                                            )/(cff+cx)
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             rho_nbq(Iend+1,j,k)=(1.-tau)*rho_nbq(Iend+1,j,k)
 #     ifdef NBQ_FRC_BRY
      &                                +tau*rnbqbry_east(j,k)
-#     else     
+#     else
      &                              +tau*rnbqclm(Iend+1,j,k)
 #     endif
 #    endif
@@ -269,7 +269,7 @@
         do k=1,N
           do j=Jstr,Jend
 #    ifdef NBQ_FRC_BRY
-             rho_nbq(Iend+1,j,k)=0.5*(rnbqbry_east(j,k) 
+             rho_nbq(Iend+1,j,k)=0.5*(rnbqbry_east(j,k)
      &                               +rho_nbq(Iend,j,k)) ! specified
 #    else
              rho_nbq(Iend+1,j,k)=rnbqclm(Iend+1,j,k)
@@ -312,7 +312,7 @@
       endif         !<-- EASTERN_EDGE
 
 # endif             /* !EW_COM_PERIODIC */
- 
+
 # ifndef NS_COM_PERIODIC
 !
 !====================================================================
@@ -346,7 +346,7 @@
               tau=tau_out
 #    endif
             endif
- 
+
             if (dft*(grad(i,Jstr)+grad(i+1,Jstr)) .gt. 0.) then
               dfy=grad(i,Jstr)
             else
@@ -355,18 +355,18 @@
             cff=max(dfx*dfx+dfy*dfy, eps)
             cx=dft*dfx
             cy=min(cff,max(dft*dfy,-cff))
- 
+
             rho_nbq(i,Jstr-1,k)=(  cff*rho_nbq_south(i,k,1)
      &                                +cx*rho_nbq(i,Jstr,k)
      &                         -max(cy,0.)*grad(i  ,Jstr-1)
      &                         -min(cy,0.)*grad(i+1,Jstr-1)
      &                                           )/(cff+cx)
 
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             rho_nbq(i,Jstr-1,k)=(1.-tau)*rho_nbq(i,Jstr-1,k)
 #     ifdef NBQ_FRC_BRY
      &                               +tau*rnbqbry_south(i,k)
-#     else     
+#     else
      &                              +tau*rnbqclm(i,Jstr-1,k)
 #     endif
 #    endif
@@ -457,7 +457,7 @@
               tau=tau_out
 #    endif
             endif
- 
+
             if (dft*(grad(i,Jend)+grad(i+1,Jend)) .gt. 0.) then
               dfy=grad(i,Jend)
             else
@@ -466,18 +466,18 @@
             cff=max(dfx*dfx+dfy*dfy, eps)
             cx=dft*dfx
             cy=min(cff,max(dft*dfy,-cff))
- 
+
             rho_nbq(i,Jend+1,k)=(   cff*rho_nbq_north(i,k,1)
      &                                  +cx*rho_nbq(i,Jend,k)
      &                            -max(cy,0.)*grad(i  ,Jend+1)
      &                            -min(cy,0.)*grad(i+1,Jend+1)
      &                                              )/(cff+cx)
 
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             rho_nbq(i,Jend+1,k)=(1.-tau)*rho_nbq(i,Jend+1,k)
 #     ifdef NBQ_FRC_BRY
      &                                 +tau*rnbqbry_north(i,k)
-#     else     
+#     else
      &                                +tau*rnbqclm(i,Jend+1,k)
 #     endif
 #    endif
@@ -542,7 +542,7 @@
 !====================================================================
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
- 
+
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
@@ -558,7 +558,7 @@
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
           rho_nbq(Iend+1,Jstr-1,k)=0.5*(rho_nbq(Iend,Jstr-1,k)
-     &                                 +rho_nbq(Iend+1,Jstr,k))     
+     &                                 +rho_nbq(Iend+1,Jstr,k))
 #  ifdef MASKING
      &                                    *rmask(Iend+1,Jstr-1)
 #  endif
@@ -569,7 +569,7 @@
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
           rho_nbq(Istr-1,Jend+1,k)=0.5*(rho_nbq(Istr  ,Jend+1,k)
-     &                                 +rho_nbq(Istr-1,Jend,k)) 
+     &                                 +rho_nbq(Istr-1,Jend,k))
 #  ifdef MASKING
      &                                     *rmask(Istr-1,Jend+1)
 #  endif
@@ -580,7 +580,7 @@
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
           rho_nbq(Iend+1,Jend+1,k)=0.5*(rho_nbq(Iend  ,Jend+1,k)
-     &                                 +rho_nbq(Iend+1,Jend,k))     
+     &                                 +rho_nbq(Iend+1,Jend,k))
 #  ifdef MASKING
      &                                     *rmask(Iend+1,Jend+1)
 #  endif

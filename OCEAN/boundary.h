@@ -2,17 +2,17 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #ifdef T_FRC_BRY
       logical got_tbry(NT)
       common /bry_logical/ got_tbry
-# endif
+#endif
 
 #ifndef ANA_BRY
       real bry_time(2)
@@ -148,12 +148,12 @@
       real tbry_west(GLOBAL_1D_ARRAYETA,N,NT),
      &     tbry_west_dt(GLOBAL_1D_ARRAYETA,N,2,NT)
       common /bry_t_west/ tbry_west, tbry_west_dt
-#    ifdef WAVE_MAKER_INTERNAL
+#   ifdef WAVE_MAKER_INTERNAL
       real t0bry_west(GLOBAL_1D_ARRAYETA,N),
      &     bvf0bry_west(GLOBAL_1D_ARRAYETA,0:N)
       common /bry_t0_west/ t0bry_west,
      &                     bvf0bry_west
-#    endif
+#   endif
 
 #  endif
 # endif
@@ -173,7 +173,7 @@
       common /bry_ubar_east/ ubarbry_east, ubarbry_east_dt,
      &                       vbarbry_east, vbarbry_east_dt
 # endif
-# ifdef SOLVE3D 
+# ifdef SOLVE3D
 #  ifdef M3_FRC_BRY
       real ubry_east(GLOBAL_1D_ARRAYETA,N),
      &    ubry_east_dt(GLOBAL_1D_ARRAYETA,N,2)
@@ -191,7 +191,7 @@
 #endif
 
 #if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
-# ifdef Z_FRC_BRY 
+# ifdef Z_FRC_BRY
       real zetabry_south(GLOBAL_1D_ARRAYXI),
      &    zetabry_south_dt(GLOBAL_1D_ARRAYXI,2)
       common /bry_zeta_south/ zetabry_south, zetabry_south_dt
@@ -260,28 +260,28 @@
      &        brywkb_origin_date_in_sec
       real    brywkb_cycle
       common /brywkb_indices_real/ brywkb_cycle
-      integer brywkb_id, brywkb_time_id, 
+      integer brywkb_id, brywkb_time_id,
      &        brywkb_ncycle, brywkb_rec, itbrywkb, ntbrywkb
       common /brywkb_indices_integer/ brywkb_id, brywkb_time_id,
      &        brywkb_ncycle, brywkb_rec, itbrywkb, ntbrywkb
 #  if defined WKB_OBC_WEST || defined AGRIF_OBC_WEST
       integer wacbry_west_id, wkxbry_west_id, wkebry_west_id
-      common /wkbbry_west_id/ wacbry_west_id, wkxbry_west_id, 
+      common /wkbbry_west_id/ wacbry_west_id, wkxbry_west_id,
      &        wkebry_west_id
 #  endif
 #  if defined WKB_OBC_EAST || defined AGRIF_OBC_EAST
       integer wacbry_east_id, wkxbry_east_id, wkebry_east_id
-      common /wkbbry_east_id/ wacbry_east_id, wkxbry_east_id, 
+      common /wkbbry_east_id/ wacbry_east_id, wkxbry_east_id,
      &        wkebry_east_id
 #  endif
 #  if defined WKB_OBC_SOUTH || defined AGRIF_OBC_SOUTH
       integer wacbry_south_id, wkxbry_south_id, wkebry_south_id
-      common /wkbbry_south_id/ wacbry_south_id, wkxbry_south_id, 
+      common /wkbbry_south_id/ wacbry_south_id, wkxbry_south_id,
      &        wkebry_south_id
 #  endif
 #  if defined WKB_OBC_NORTH || defined AGRIF_OBC_NORTH
       integer wacbry_north_id, wkxbry_north_id, wkebry_north_id
-      common /wkbbry_north_id/ wacbry_north_id, wkxbry_north_id, 
+      common /wkbbry_north_id/ wacbry_north_id, wkxbry_north_id,
      &        wkebry_north_id
 #  endif
 # endif  /* ANA_BRY_WKB */
@@ -291,9 +291,9 @@
      &     wkxbry_west(GLOBAL_1D_ARRAYETA),
      &     wkxbry_west_dt(GLOBAL_1D_ARRAYETA,2),
      &     wkebry_west(GLOBAL_1D_ARRAYETA),
-     &     wkebry_west_dt(GLOBAL_1D_ARRAYETA,2),     
+     &     wkebry_west_dt(GLOBAL_1D_ARRAYETA,2),
      &     warbry_west(GLOBAL_1D_ARRAYETA),
-     &     warbry_west_dt(GLOBAL_1D_ARRAYETA,2)     
+     &     warbry_west_dt(GLOBAL_1D_ARRAYETA,2)
        common /bry_wkb_west/ wacbry_west, wacbry_west_dt,
      &                       wkxbry_west, wkxbry_west_dt,
      &                       wkebry_west, wkebry_west_dt,
@@ -305,7 +305,7 @@
      &     wkxbry_east(GLOBAL_1D_ARRAYETA),
      &     wkxbry_east_dt(GLOBAL_1D_ARRAYETA,2),
      &     wkebry_east(GLOBAL_1D_ARRAYETA),
-     &     wkebry_east_dt(GLOBAL_1D_ARRAYETA,2)     
+     &     wkebry_east_dt(GLOBAL_1D_ARRAYETA,2)
       real warbry_east(GLOBAL_1D_ARRAYETA),
      &     warbry_east_dt(GLOBAL_1D_ARRAYETA,2)
        common /bry_wkb_east/ wacbry_east, wacbry_east_dt,
@@ -319,9 +319,9 @@
      &     wkxbry_south(GLOBAL_1D_ARRAYXI),
      &     wkxbry_south_dt(GLOBAL_1D_ARRAYXI,2),
      &     wkebry_south(GLOBAL_1D_ARRAYXI),
-     &     wkebry_south_dt(GLOBAL_1D_ARRAYXI,2),     
+     &     wkebry_south_dt(GLOBAL_1D_ARRAYXI,2),
      &     warbry_south(GLOBAL_1D_ARRAYXI),
-     &     warbry_south_dt(GLOBAL_1D_ARRAYXI,2)     
+     &     warbry_south_dt(GLOBAL_1D_ARRAYXI,2)
        common /bry_wkb_south/ wacbry_south, wacbry_south_dt,
      &                        wkxbry_south, wkxbry_south_dt,
      &                        wkebry_south, wkebry_south_dt,
@@ -341,7 +341,7 @@
      &                        wkebry_north, wkebry_north_dt,
      &                        warbry_north, warbry_north_dt
 # endif
-#endif  /* WKB_WWAVE */ 
+#endif  /* WKB_WWAVE */
 
 
 #if defined M3FAST && defined NBQ_FRC_BRY

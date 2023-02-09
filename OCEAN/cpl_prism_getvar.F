@@ -2,57 +2,57 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
 
-      SUBROUTINE cpl_prism_getvar(prcv_id, msk, nmaxa, tab_t_tmp, 
-     &                                                 rcvtime, iok)    
-      
+      SUBROUTINE cpl_prism_getvar(prcv_id, msk, nmaxa, tab_t_tmp,
+     &                                                 rcvtime, iok)
+
 !     !---------------------------------------------------------------------
 !     !              ***  ROUTINE cpl_prism_getvar  ***
 !     !
-!     ! ** Purpose : - 
-!     !           
+!     ! ** Purpose : -
+!     !
 !     !
 !     !----------------------------------------------------------------------
-      
+
       USE mod_prism             ! OASIS3 prism module
 # ifdef AGRIF
       use Agrif_Util
 # endif
-      
+
       IMPLICIT NONE
-      
+
 # include "param.h"
 # include "scalars.h"
-      
+
       INTEGER,dimension(0:nmaxa):: prcv_id
       INTEGER :: nmaxa
       INTEGER :: rcvtime, comp_ierror, iok, ja
-      real,dimension(Lmmpi,Mmmpi)  :: rcv_field 
+      real,dimension(Lmmpi,Mmmpi)  :: rcv_field
       real,dimension(GLOBAL_2D_ARRAY) :: tab_t_tmp
       real,dimension(GLOBAL_2D_ARRAY,0:nmaxa) :: msk
-!     
+!
 !     1.0. Get rcv_field from OASIS
       iok = 0
       DO ja = 0, nmaxa
         if ( prcv_id(ja) /= -1 ) then
-          
+
           call prism_get_proto(prcv_id(ja), rcvtime,
      &         rcv_field(1:Lmmpi,1:Mmmpi), comp_ierror)
-          
-          if ( (comp_ierror == OASIS_Recvd      ) .or. 
-     &         (comp_ierror == OASIS_FromRest   ) .or.  
-     &         (comp_ierror == OASIS_RecvOut    ) .or.  
+
+          if ( (comp_ierror == OASIS_Recvd      ) .or.
+     &         (comp_ierror == OASIS_FromRest   ) .or.
+     &         (comp_ierror == OASIS_RecvOut    ) .or.
      &         (comp_ierror == OASIS_FromRestOut) ) then
-            
+
 !     1.a. Get the fields on the RHO grid
             rcv_field(1:Lmmpi,1:Mmmpi) = rcv_field(1:Lmmpi,1:Mmmpi)
      &           * msk(1:Lmmpi,1:Mmmpi,ja)
@@ -67,14 +67,14 @@
               tab_t_tmp(1:Lmmpi,1:Mmmpi) = tab_t_tmp(1:Lmmpi,1:Mmmpi)
      &             + rcv_field(1:Lmmpi,1:Mmmpi)
             endif
-            
+
           endif
         endif
       enddo
-        
+
       if ( iok /= 0 ) then
-        
-!     
+
+!
 !     1.b. Blend the borders of the fields
         if (WESTERN_EDGE) then
            tab_t_tmp(0,:)=2.*tab_t_tmp(1,:)-tab_t_tmp(2,:)
@@ -90,7 +90,7 @@
           tab_t_tmp(:,Mmmpi+1)=2.*tab_t_tmp(:,Mmmpi)
      &                          - tab_t_tmp(:,Mmmpi-1)
         endif
-        
+
 !     !$
 !     !$         WRITE(333,*) '****************'
 !     !$         WRITE(333,*) 'prism_get_proto: ivarid '  , prcv_id
@@ -102,9 +102,9 @@
 !     !$         WRITE(333,*) '****************'
 
       endif
-!     
+!
       return
-      end 
+      end
 #else
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling

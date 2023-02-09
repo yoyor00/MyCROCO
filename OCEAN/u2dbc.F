@@ -49,13 +49,13 @@
 !
 ! Common Code
 !
-# include "set_obc_definitions.h"
+#include "set_obc_definitions.h"
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
       real    grad(PRIVATE_2D_SCRATCH_ARRAY)
 #ifdef AGRIF
-#include "private_scratch.h"
+# include "private_scratch.h"
       integer trd
 C$    integer omp_get_thread_num
 #endif
@@ -86,10 +86,10 @@ C$    integer omp_get_thread_num
 !  AGRIF does not work yet with #undef SOLVE3D
 !
 #ifdef CHILD
-#  ifdef SOLVE3D
-#   ifdef NBQ
+# ifdef SOLVE3D
+#  ifdef NBQ
       if (M2bc_nbq_flag) then
-#   endif
+#  endif
       trd=0
 C$    trd=omp_get_thread_num()
       call u2dbc_interp_tile(Istr,Iend,Jstr,Jend
@@ -101,12 +101,12 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,6+4*NWEIGHT)
      &                    ,A1dXI(1,7+5*NWEIGHT)
      &                    ,A1dXI(1,8+5*NWEIGHT))
-#   ifdef NBQ
+#  ifdef NBQ
        endif
-#   endif
-#  else
-      Some coding is needed to have AGRIF without SOLVE3D.....
 #  endif
+# else
+      Some coding is needed to have AGRIF without SOLVE3D.....
+# endif
 #endif
 !
 #if defined M2_FRC_BRY || defined M2CLIMATOLOGY
@@ -222,11 +222,11 @@ C$    trd=omp_get_thread_num()
 #   ifdef OBC_REDUCED_PHYSICS
           cff1=1.0/(0.5*(h(Istr-1,j)+zeta(Istr-1,j,kstp)+
      &                   h(Istr  ,j)+zeta(Istr  ,j,kstp)))
-#ifdef STRESS_AT_RHO_POINTS
+#    ifdef STRESS_AT_RHO_POINTS
           u_str=0.5*(sustr(Istr,j)+sustr(Istr-1,j))
-#else
+#    else
           u_str=sustr(Istr,j)
-#endif
+#    endif
 
           bry_str=cff1*(u_str-bustr(Istr,j))
 #    ifdef UV_COR
@@ -259,7 +259,7 @@ C$    trd=omp_get_thread_num()
 #    endif
 #   elif defined M2CLIMATOLOGY
      &                                     +ubclm(Istr,j)
-#    endif
+#   endif
      &                                     -hx*( zx
 #   ifdef Z_FRC_BRY
      &                                        -zetabry_west(j)
@@ -395,11 +395,11 @@ C$    trd=omp_get_thread_num()
 #   ifdef OBC_REDUCED_PHYSICS
           cff1=1.0/(0.5*(h(Iend  ,j)+zeta(Iend  ,j,kstp)+
      &                   h(Iend+1,j)+zeta(Iend+1,j,kstp)))
-#ifdef STRESS_AT_RHO_POINTS
+#    ifdef STRESS_AT_RHO_POINTS
           u_str=0.5*(sustr(Iend,j)+sustr(Iend+1,j))
-#else
+#    else
           u_str=sustr(Iend+1,j)
-#endif
+#    endif
           bry_str=cff1*(u_str-bustr(Iend+1,j))
 #    ifdef UV_COR
           bry_cor=0.125*(vbar(Iend  ,j  ,kstp)+
@@ -433,7 +433,7 @@ C$    trd=omp_get_thread_num()
 #    endif
 #   elif defined M2CLIMATOLOGY
      &                                       +ubclm(Iend+1,j)
-#    endif
+#   endif
      &                                       +hx*( zx
 #   ifdef Z_FRC_BRY
      &                                         -zetabry_east(j)
@@ -757,36 +757,36 @@ C$    trd=omp_get_thread_num()
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         ubar(Istr,Jstr-1,knew)=0.5*( ubar(Istr+1,Jstr-1,knew)
      &                                  +ubar(Istr,Jstr,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                        *umask(Istr,Jstr-1)
-#  endif
+# endif
       endif
 #endif
 #if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         ubar(Iend+1,Jstr-1,knew)=0.5*( ubar(Iend,Jstr-1,knew)
      &                                +ubar(Iend+1,Jstr,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                        *umask(Iend+1,Jstr-1)
-#  endif
+# endif
       endif
 #endif
 #if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         ubar(Istr,Jend+1,knew)=0.5*( ubar(Istr+1,Jend+1,knew)
      &                                  +ubar(Istr,Jend,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                        *umask(Istr,Jend+1)
-#  endif
+# endif
       endif
 #endif
 #if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         ubar(Iend+1,Jend+1,knew)=0.5*( ubar(Iend,Jend+1,knew)
      &                                +ubar(Iend+1,Jend,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                        *umask(Iend+1,Jend+1)
-#  endif
+# endif
       endif
 #endif
 

@@ -13,22 +13,22 @@
 !======================================================================
       subroutine abl_ini (tile)
       implicit none
-#include "param.h"
-#include "scalars.h"
-#include "private_scratch.h"
+# include "param.h"
+# include "scalars.h"
+# include "private_scratch.h"
       integer tile, trd, omp_get_thread_num
-#include "abl1d.h"
-#include "compute_tile_bounds.h"
+# include "abl1d.h"
+# include "compute_tile_bounds.h"
 ! COLD INITIALIZATION FROM LARGE-SCALE DATA
-#ifdef ANA_ABL_LSDATA
+# ifdef ANA_ABL_LSDATA
       call ana_abl_tile (Istr,Iend,Jstr,Jend)
-#else
-#    ifdef ONLINE
+# else
+#  ifdef ONLINE
       call set_bulk_tile_online (Istr,Iend,Jstr,Jend)
-#    else
+#  else
       call set_bulk_tile (Istr,Iend,Jstr,Jend)
-#    endif
-#endif
+#  endif
+# endif
       call abl_ini_tile(Istr,Iend,Jstr,Jend)
       return
       end
@@ -38,14 +38,14 @@
 # include "param.h"
 # include "scalars.h"
 # include "abl1d.h"
-#if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
-# include "grid.h"
-#endif
+# if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
+#  include "grid.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i,j, k,ierr
       integer imin,imax,jmin,jmax
       real    cff,cff1,cff2, eps
       parameter(eps = 1.e-12)
-#ifdef ANA_ABL_VGRID
+# ifdef ANA_ABL_VGRID
       integer jiter, Ntmp,maxiter
       real    theta_s_abl,z1,ds,tol
       real    x,fxp,fx,alpha
@@ -53,14 +53,14 @@
       real    hmax_abl, hc_abl
       logical impose_z1
       parameter( tol = 1.e-12 )
-#endif
-#if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
+# endif
+# if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
       real    fmax
       parameter( fmax = 2.*7.292116e-05*SIN(0.5*pi) )
-#endif
-#ifdef MPI
+# endif
+# ifdef MPI
       integer err
-#endif
+# endif
 !
 # include "compute_extended_bounds.h"
       ierr = 0
@@ -68,7 +68,7 @@
 !======================================================================
 !++ Generate the vertical grid online
 !======================================================================
-#ifdef ANA_ABL_VGRID
+# ifdef ANA_ABL_VGRID
       hmax_abl     =   2000.
       theta_s_abl  =      2.
       hc_abl       =    400.
@@ -134,7 +134,7 @@
         MPI_master_only write(stdout,'(I6,2x,2F12.3,4x,2F7.3)')
      &                   k, zr_abl(k),zw_abl(k), Hzr_abl(k),Hzw_abl(k)
       enddo
-#endif
+# endif
 !
 !======================================================================
 !++ Generate initial conditions
@@ -195,14 +195,14 @@
       do j=jstrR,JendR
         do i=istrR,IendR
           ablh(i,j)=zw_abl(3)
-#if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
+# if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
 !  ABL_DYN_RESTORE_EQ :: nudging for velocities is function of the Coriolis parmeter
           rest_eq(i,j) = SIN( 0.5*pi*( (f(i,j) - fmax)/fmax ) )**8
-#endif
+# endif
         enddo
       enddo
 
-#ifdef ABL_NUDGING
+# ifdef ABL_NUDGING
 !!-------------------------------------------------------------------------------------------
 !! Compute parameters to build the vertical profile for the nudging term (used in abl_stp())
 !!-------------------------------------------------------------------------------------------
@@ -286,7 +286,7 @@
 !#  endif
 !      ENDIF
 !======================================================================
-#endif
+# endif
       return
       end
 !======================================================================

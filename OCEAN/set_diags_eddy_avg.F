@@ -1,9 +1,9 @@
 !======================================================================
 ! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
@@ -107,7 +107,7 @@
         endif
 
 !###############################################
-          
+
         do j=JstrR,JendR
           do i=IstrR,IendR
             eddyzz_avg(i,j)= cff *
@@ -125,12 +125,12 @@
               cffu = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
               cffv = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
 
-#  ifdef SPLIT_EOS
+# ifdef SPLIT_EOS
               cffb =rho1(i,j,k)+qp1(i,j,k)
      &                          *(z_w(i,j,N)-z_r(i,j,k))
-#  else
+# else
               cffb =rho(i,j,k)
-#  endif
+# endif
 
               if (k.eq.1) then
                 eddyubu_avg(i,j)= cff *

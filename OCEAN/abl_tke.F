@@ -13,12 +13,12 @@
 !======================================================================
       subroutine abl_tke (tile)
       implicit none
-#include "param.h"
-#include "scalars.h"
-#include "private_scratch.h"
+# include "param.h"
+# include "scalars.h"
+# include "private_scratch.h"
       integer tile, trd, omp_get_thread_num
-#include "abl1d.h"
-#include "compute_tile_bounds.h"
+# include "abl1d.h"
+# include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call abl_tke_tile(Istr,Iend,Jstr,Jend,T3d(1,1,trd),T2d(1,1,trd),
      &                         T2d(1,2,trd),T2d(1,3,trd),T2d(1,4,trd),
@@ -211,8 +211,8 @@
 !! Diagnostic mixing length computation
 !! ----------------------------------------------------------
       zxx = -(LOG(Ceps)-3.*LOG(Cm)+4.*LOG(vkarmn))/LOG(16.)
-#   define lup elem_a
-#   define ldw elem_b
+# define lup elem_a
+# define ldw elem_b
       do j=jmin,jmax  ! outer loop
         !
         do i=imin,imax
@@ -262,8 +262,8 @@
         enddo
        !
       enddo  !<- outer loop
-#   undef lup
-#   undef ldw
+# undef lup
+# undef ldw
 !======================================================================
 !! Finalize the computation of turbulent visc./diff.
 !! ----------------------------------------------------------

@@ -2,17 +2,17 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #if !defined ANA_BRY_WKB && defined WKB_WWAVE
 
-      subroutine get_bry_wkb        ! Read side boundary forcing 
+      subroutine get_bry_wkb        ! Read side boundary forcing
       implicit none                 ! fields from boundary file
 
 # define wac_west 'cdir_west'
@@ -23,11 +23,11 @@
 # include "boundary.h"
       real cff
       integer  lstr,lvar,lenstr, ierr, ierr_all
-      integer  nf_read_bry_EW, nf_read_bry_NS 
+      integer  nf_read_bry_EW, nf_read_bry_NS
 !
 ! Initialization: Check, whether boundary forcing filefor WKB model is
-!================ already opened, and if not, open it.  Find and save 
-! netCDF IDs for relevant variables.  Determine whether there is cycling 
+!================ already opened, and if not, open it.  Find and save
+! netCDF IDs for relevant variables.  Determine whether there is cycling
 ! to reuse the input data and find cycling period "brywkb_cycle", set
 ! initial cycling index "brywkb_ncycle" and record index "brywkb_rec",
 ! time index "itbrywkb" and both time record bounds to large negative
@@ -45,7 +45,7 @@
      &                                   brywkb_file(1:lstr),   '''.'
         endif
         if (ierr.eq.nf_noerr) then
-          ierr_all=0 
+          ierr_all=0
           ierr=nf_inq_varid (brywkb_id, 'brywkb_time',  brywkb_time_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'brywkb_time'
           ierr_all=ierr_all+ierr
@@ -119,7 +119,7 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (brywkb_id, brywkb_time_id, brywkb_rec, cff)
           if (ierr.eq.nf_noerr) then
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
             call tool_origindate(brywkb_id,brywkb_time_id,
      &                         brywkb_origin_date_in_sec)
             cff=cff+brywkb_origin_date_in_sec*sec2day
@@ -187,18 +187,18 @@
             if (ierr.eq.0) then
               write(stdout,'(6x,A,9x,A,1x,G12.4,1x,I4)')
      &       'GET_BRY_WKB - Read wave boundary data',
-     &                                  'for time =', cff 
-#ifdef USE_CALENDAR
+     &                                  'for time =', cff
+# ifdef USE_CALENDAR
      &  -brywkb_origin_date_in_sec*sec2day
-#endif 
-#ifdef MPI
+# endif
+# ifdef MPI
      &                                              , mynode
-#endif
+# endif
             else
               write(stdout,'(1x,2A,I4/8x,3A)')
      &           'ERROR(s) occur while trying to read record ',
      &            brywkb_rec,  'in file ''',brywkb_file(1:lstr),'''.'
-            endif 
+            endif
           else
             write(stdout,2) 'brywkb_time'
           endif
@@ -209,15 +209,15 @@
      &    'file ''',   brywkb_file(1:lstr),  '''',  'tdays = ',tdays,
      &    '  but the last available  brywkb_time =',
      &                                   brywkb_time(itbrywkb)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -brywkb_origin_date_in_sec*sec2day
-#endif 
+# endif
         endif
       enddo
   2   format(' ERROR in get_bry: cannot read variable ''',A,'''')
       if (ierr.ne.nf_noerr) may_day_flag=2
       return
-      end 
+      end
 
       subroutine set_bry_wkb (tile)
       implicit none
@@ -253,8 +253,8 @@
 
       if (cff1.ge.0. .and. cff2.ge.0.) then
         cff=1./(cff1+cff2)                        ! interpolate
-        cff1=cff1*cff                             ! boundary values 
-        cff2=cff2*cff                             ! in time 
+        cff1=cff1*cff                             ! boundary values
+        cff2=cff2*cff                             ! in time
 # ifdef WKB_OBC_WEST
         if (WESTERN_EDGE) then
           do j=JstrR,JendR
@@ -265,7 +265,7 @@
             wkebry_west(j)=cff1*wkebry_west_dt(j,it1)
      &                    +cff2*wkebry_west_dt(j,it2)
           enddo
-        endif  
+        endif
 # endif
 # ifdef WKB_OBC_EAST
         if (EASTERN_EDGE) then
@@ -307,13 +307,13 @@
         write(stdout,'(/2(1x,A)/3(1x,A,F16.10)/)')
      &   'SET_BRY_WKB_TILE - current model time is out of bounds of',
      &   '''brywkb_time''.',     'BRY_WKB_TSTART=', brywkb_time(it1)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -brywkb_origin_date_in_sec*sec2day
-#endif 
+# endif
      &   ,'TDAYS=',  tdays,    'BRY_WKB_TEND=', brywkb_time(it2)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -brywkb_origin_date_in_sec*sec2day
-#endif 
+# endif
         may_day_flag=2
       endif
       return

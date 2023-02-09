@@ -2,12 +2,12 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! This routine belongs to the specific CROCO package.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -24,7 +24,7 @@
       use AGRIF_Util
       implicit none
 # include "param.h"
-# include "boundary.h"  
+# include "boundary.h"
 # include "climat.h"
 # include "grid.h"
 # include "scalars.h"
@@ -65,7 +65,7 @@ C$OMP MASTER
         tinterp=1.
 # ifdef MASKING
         Agrif_UseSpecialvalue=.true.
-# endif        
+# endif
         Agrif_Specialvalue=0.
         Call Agrif_Set_bc(uid,(/0,0/),InterpolationShouldbemade=.TRUE.)
         Call Agrif_Bc_variable(uid,calledweight=tinterp,
@@ -76,27 +76,27 @@ C$OMP MASTER
       endif
 C$OMP END MASTER
 C$OMP BARRIER
-      
+
        nbstep3dparent=Agrif_Parent(nbstep3d)
-                    
+
        tinterp = real(nbcoarse)/rrhot
        IF (nnew == 3) tinterp = tinterp - 1./(2.*rrhot)
 
        ainterp = 0.
-       
-       IF (nnew == 3) then  
+
+       IF (nnew == 3) then
          ainterp(1) = 0.5-tinterp
          ainterp(2) = 0.5+tinterp
-       else 
+       else
          ainterp(3) = -tinterp
          ainterp(4) = 1.+tinterp
        endif
-       
+
        IF (nbstep3dparent .LE. 1) THEN
        ainterp = 0.
        ainterp(2) = 1.
        ENDIF
-       
+
        if (nbstep3d .LE. (Agrif_irhot()-1)) then
         ainterp = 0.
         ainterp(2) = 1.
@@ -106,12 +106,12 @@ C$OMP BARRIER
          ainterp    = 0.
          ainterp(4) = 1.
        ENDIF
-              
+
 # ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        do k=1,N      
+        do k=1,N
           do i=Istr,IendR
-#  if defined M3_FRC_BRY     
+#  if defined M3_FRC_BRY
             ubry_south(i,k)=
 #  else
             uclm(i,Jstr-1,k)=
@@ -122,7 +122,7 @@ C$OMP BARRIER
      &   ainterp(4)*U_south(i,Jstr-1,k,4)+
      &   ainterp(5)*u(i,Jstr-1,k,3-nstp)+
      &   ainterp(6)*u(i,Jstr-1,k,nstp))
-#  ifdef MASKING     
+#  ifdef MASKING
      &    *umask(i,Jstr-1)
 #  endif
           enddo
@@ -131,12 +131,12 @@ C$OMP BARRIER
 # endif
 
 # ifdef AGRIF_OBC_NORTH
-      if (NORTHERN_EDGE) then      
-        do k=1,N      
+      if (NORTHERN_EDGE) then
+        do k=1,N
           do i=Istr,IendR
-#  if defined M3_FRC_BRY     
+#  if defined M3_FRC_BRY
             ubry_north(i,k)=
-#  else   
+#  else
             uclm(i,Jend+1,k)=
 #  endif
      &  (ainterp(1)*U_north(i,Jend+1,k,1)+
@@ -144,22 +144,22 @@ C$OMP BARRIER
      &   ainterp(3)*U_north(i,Jend+1,k,3)+
      &   ainterp(4)*U_north(i,Jend+1,k,4)+
      &   ainterp(5)*u(i,Jend+1,k,3-nstp)+
-     &   ainterp(6)*u(i,Jend+1,k,nstp))     
-#  ifdef MASKING     
+     &   ainterp(6)*u(i,Jend+1,k,nstp))
+#  ifdef MASKING
      &    *umask(i,Jend+1)
 #  endif
           enddo
         enddo
-      endif      
+      endif
 # endif
- 
+
 # ifdef AGRIF_OBC_WEST
-      if (WESTERN_EDGE) then      
-        do k=1,N      
+      if (WESTERN_EDGE) then
+        do k=1,N
           do j=JstrR,JendR
-#  if defined M3_FRC_BRY     
+#  if defined M3_FRC_BRY
             ubry_west(j,k)=
-#  else     
+#  else
             uclm(Istr,j,k)=
 #  endif
      &  (ainterp(1)*U_west(Istr,j,k,1)+
@@ -168,19 +168,19 @@ C$OMP BARRIER
      &   ainterp(4)*U_west(Istr,j,k,4)+
      &   ainterp(5)*u(Istr,j,k,3-nstp)+
      &   ainterp(6)*u(Istr,j,k,nstp))
-#  ifdef MASKING     
+#  ifdef MASKING
      &    *umask(Istr,j)
 #  endif
           enddo
         enddo
-      endif      
+      endif
 # endif
-      
+
 # ifdef AGRIF_OBC_EAST
-      if (EASTERN_EDGE) then      
-        do k=1,N      
+      if (EASTERN_EDGE) then
+        do k=1,N
           do j=JstrR,JendR
-#  if defined M3_FRC_BRY  
+#  if defined M3_FRC_BRY
             ubry_east(j,k)=
 #  else
             uclm(Iend+1,j,k)=
@@ -190,15 +190,15 @@ C$OMP BARRIER
      &   ainterp(3)*U_east(Iend+1,j,k,3)+
      &   ainterp(4)*U_east(Iend+1,j,k,4)+
      &   ainterp(5)*u(Iend+1,j,k,3-nstp)+
-     &   ainterp(6)*u(Iend+1,j,k,nstp))         
-#  ifdef MASKING     
+     &   ainterp(6)*u(Iend+1,j,k,nstp))
+#  ifdef MASKING
      &    *umask(Iend+1,j)
 #  endif
           enddo
         enddo
       endif
 # endif
-    
+
       return
       end
 !
@@ -309,7 +309,7 @@ C$OMP BARRIER
 
       return
       end
-      
+
 !====================================================================
 !                   subroutine Agrif_v3dbc_interp_tile
 !====================================================================
@@ -319,7 +319,7 @@ C$OMP BARRIER
       use AGRIF_Util
       implicit none
 # include "param.h"
-# include "boundary.h"  
+# include "boundary.h"
 # include "climat.h"
 # include "grid.h"
 # include "scalars.h"
@@ -343,24 +343,24 @@ C$OMP BARRIER
 # else
 #  define LOCALLM Lm
 #  define LOCALMM Mm
-# endif 
+# endif
 
       irhot=Agrif_Irhot()
-      rrhot=real(irhot) 
+      rrhot=real(irhot)
 
 C$OMP BARRIER
 C$OMP MASTER
-      
+
       parentnbstep=Agrif_Parent_Nb_Step()
-      
+
        IF ((((nbcoarse == 1)    .AND.(nnew == 3)).OR.
      &      ((nbcoarse == irhot).AND.(nnew /= 3))).AND.
-     &      (VTimeindex.NE.parentnbstep)) THEN 
+     &      (VTimeindex.NE.parentnbstep)) THEN
 
         tinterp=1.
 # ifdef MASKING
         AGRIF_UseSpecialvalue=.true.
-# endif        
+# endif
         AGRIF_Specialvalue=0.
         Call Agrif_Set_bc(vid,(/0,0/),InterpolationShouldbemade=.TRUE.)
         Call Agrif_Bc_variable(vid,calledweight=tinterp,
@@ -373,16 +373,16 @@ C$OMP END MASTER
 C$OMP BARRIER
 
        nbstep3dparent=Agrif_Parent(nbstep3d)
-               
+
        tinterp = real(nbcoarse)/rrhot
        IF (nnew == 3) tinterp = tinterp - 1./(2.*rrhot)
 
        ainterp = 0.
-       
-       IF (nnew == 3) then  
+
+       IF (nnew == 3) then
          ainterp(1) = 0.5-tinterp
          ainterp(2) = 0.5+tinterp
-       else 
+       else
          ainterp(3) = -tinterp
          ainterp(4) = 1.+tinterp
        endif
@@ -396,17 +396,17 @@ C$OMP BARRIER
         ainterp = 0.
         ainterp(2) = 1.
        endif
-       
+
        IF ((nnew /= 3).AND.(nbcoarse == irhot)) THEN
          ainterp    = 0.
          ainterp(4) = 1.
        ENDIF
-       
+
 # ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        do k=1,N      
+        do k=1,N
           do i=IstrR,IendR
-#  if defined M3_FRC_BRY   
+#  if defined M3_FRC_BRY
             vbry_south(i,k)=
 #  else
             vclm(i,Jstr,k)=
@@ -417,7 +417,7 @@ C$OMP BARRIER
      &     ainterp(4)*V_south(i,Jstr,k,4)+
      &     ainterp(5)*v(i,Jstr,k,3-nstp)+
      &     ainterp(6)*v(i,Jstr,k,nstp))
-#  ifdef MASKING     
+#  ifdef MASKING
      &    *vmask(i,Jstr)
 #  endif
           enddo
@@ -425,8 +425,8 @@ C$OMP BARRIER
       endif
 # endif
 # ifdef AGRIF_OBC_NORTH
-      if (NORTHERN_EDGE) then      
-        do k=1,N      
+      if (NORTHERN_EDGE) then
+        do k=1,N
           do i=IstrR,IendR
 #  if defined M3_FRC_BRY
             vbry_north(i,k)=
@@ -438,17 +438,17 @@ C$OMP BARRIER
      &     ainterp(3)*V_north(i,Jend+1,k,3)+
      &     ainterp(4)*V_north(i,Jend+1,k,4)+
      &     ainterp(5)*v(i,Jend+1,k,3-nstp)+
-     &     ainterp(6)*v(i,Jend+1,k,nstp))     
-#  ifdef MASKING     
+     &     ainterp(6)*v(i,Jend+1,k,nstp))
+#  ifdef MASKING
      &    *vmask(i,Jend+1)
-#  endif 
+#  endif
           enddo
         enddo
-      endif      
+      endif
 # endif
 # ifdef AGRIF_OBC_WEST
-      if (WESTERN_EDGE) then      
-        do k=1,N      
+      if (WESTERN_EDGE) then
+        do k=1,N
           do j=Jstr,JendR
 #  if defined M3_FRC_BRY
             vbry_west(j,k)=
@@ -460,19 +460,19 @@ C$OMP BARRIER
      &     ainterp(3)*V_west(Istr-1,j,k,3)+
      &     ainterp(4)*V_west(Istr-1,j,k,4)+
      &     ainterp(5)*v(Istr-1,j,k,3-nstp)+
-     &     ainterp(6)*v(Istr-1,j,k,nstp))     
-#  ifdef MASKING     
+     &     ainterp(6)*v(Istr-1,j,k,nstp))
+#  ifdef MASKING
      &    *vmask(Istr-1,j)
 #  endif
           enddo
         enddo
-      endif      
+      endif
 # endif
 # ifdef AGRIF_OBC_EAST
-      if (EASTERN_EDGE) then      
-        do k=1,N      
+      if (EASTERN_EDGE) then
+        do k=1,N
           do j=Jstr,JendR
-#  if defined M3_FRC_BRY  
+#  if defined M3_FRC_BRY
             vbry_east(j,k)=
 #  else
             vclm(Iend+1,j,k)=
@@ -482,14 +482,14 @@ C$OMP BARRIER
      &     ainterp(3)*V_east(Iend+1,j,k,3)+
      &     ainterp(4)*V_east(Iend+1,j,k,4)+
      &     ainterp(5)*v(Iend+1,j,k,3-nstp)+
-     &     ainterp(6)*v(Iend+1,j,k,nstp))      
-#  ifdef MASKING     
+     &     ainterp(6)*v(Iend+1,j,k,nstp))
+#  ifdef MASKING
      &    *vmask(Iend+1,j)
 #  endif
           enddo
         enddo
       endif
-# endif    
+# endif
 
       return
       end
@@ -611,7 +611,7 @@ C$OMP BARRIER
       use AGRIF_Util
       implicit none
 # include "param.h"
-# include "boundary.h"  
+# include "boundary.h"
 # include "climat.h"
 # include "grid.h"
 # include "scalars.h"
@@ -635,10 +635,10 @@ C$OMP BARRIER
 # else
 #  define LOCALLM Lm
 #  define LOCALMM Mm
-# endif   
+# endif
 
       irhot = Agrif_Irhot()
-      rrhot = real(irhot) 
+      rrhot = real(irhot)
 
        nbstep3dparent=Agrif_Parent(nbstep3d)
 
@@ -649,37 +649,37 @@ C$OMP MASTER
 
        IF ((((nbcoarse == 1)    .AND.(nnew == 3)).OR.
      &      ((nbcoarse == irhot).AND.(nnew /= 3))).AND.
-     &      (TTimeindex.NE.parentnbstep)) THEN 
+     &      (TTimeindex.NE.parentnbstep)) THEN
 
         tinterp=1.
-# ifdef MASKING        
+# ifdef MASKING
         Agrif_UseSpecialvalue=.true.
-# endif        
+# endif
         Agrif_Specialvalue=0.
         Call Agrif_Set_bc(tid,(/-1,0/),
      &     InterpolationShouldbemade=.TRUE.)
         Call Agrif_Bc_variable(tid,calledweight=tinterp,
      &                         procname = t3dinterp)
-      
+
         Agrif_UseSpecialValue=.false.
 
       endif
 C$OMP END MASTER
 C$OMP BARRIER
-                    
+
        tinterp = real(nbcoarse)/rrhot
        IF (nnew == 3) tinterp = tinterp - 1./(2.*rrhot)
 
        ainterp = 0.
-       
-       IF (nnew == 3) then  
+
+       IF (nnew == 3) then
          ainterp(1) = 0.5-tinterp
          ainterp(2) = 0.5+tinterp
-       else 
+       else
          ainterp(3) = -tinterp
          ainterp(4) = 1.+tinterp
        endif
-       
+
        IF (nbstep3dparent .LE. 1) THEN
        ainterp = 0.
        ainterp(2) = 1.
@@ -689,15 +689,15 @@ C$OMP BARRIER
         ainterp = 0.
         ainterp(2) = 1.
        endif
-                           
+
        IF ((nnew /= 3).AND.(nbcoarse == irhot)) THEN
          ainterp    = 0.
          ainterp(4) = 1.
        ENDIF
-!      
+!
 # ifdef AGRIF_OBC_SOUTH
        if (SOUTHERN_EDGE) then
-         do k=1,N      
+         do k=1,N
            do i=IstrR,IendR
 #  ifdef T_FRC_BRY
             tbry_south(i,k,itrc)=
@@ -708,7 +708,7 @@ C$OMP BARRIER
      &      ainterp(2)*T_south(i,Jstr-1,k,2,itrc)+
      &      ainterp(3)*T_south(i,Jstr-1,k,3,itrc)+
      &      ainterp(4)*T_south(i,Jstr-1,k,4,itrc))
-#  ifdef MASKING     
+#  ifdef MASKING
      &        *rmask(i,Jstr-1)
 #  endif
           enddo
@@ -716,8 +716,8 @@ C$OMP BARRIER
       endif
 # endif
 # ifdef AGRIF_OBC_NORTH
-      if (NORTHERN_EDGE) then      
-        do k=1,N      
+      if (NORTHERN_EDGE) then
+        do k=1,N
           do i=IstrR,IendR
 #  ifdef T_FRC_BRY
             tbry_north(i,k,itrc)=
@@ -727,17 +727,17 @@ C$OMP BARRIER
      &     (ainterp(1)*T_north(i,Jend+1,k,1,itrc)+
      &      ainterp(2)*T_north(i,Jend+1,k,2,itrc)+
      &      ainterp(3)*T_north(i,Jend+1,k,3,itrc)+
-     &      ainterp(4)*T_north(i,Jend+1,k,4,itrc))     
-#  ifdef MASKING     
+     &      ainterp(4)*T_north(i,Jend+1,k,4,itrc))
+#  ifdef MASKING
      &          *rmask(i,Jend+1)
 #  endif
           enddo
         enddo
-      endif      
+      endif
 # endif
 # ifdef AGRIF_OBC_WEST
-      if (WESTERN_EDGE) then      
-        do k=1,N      
+      if (WESTERN_EDGE) then
+        do k=1,N
           do j=JstrR,JendR
 #  ifdef T_FRC_BRY
             tbry_west(j,k,itrc)=
@@ -747,34 +747,34 @@ C$OMP BARRIER
      &     (ainterp(1)*T_west(Istr-1,j,k,1,itrc)+
      &      ainterp(2)*T_west(Istr-1,j,k,2,itrc)+
      &      ainterp(3)*T_west(Istr-1,j,k,3,itrc)+
-     &      ainterp(4)*T_west(Istr-1,j,k,4,itrc))      
-#  ifdef MASKING     
+     &      ainterp(4)*T_west(Istr-1,j,k,4,itrc))
+#  ifdef MASKING
      &         *rmask(Istr-1,j)
 #  endif
           enddo
         enddo
-      endif      
+      endif
 # endif
 # ifdef AGRIF_OBC_EAST
-      if (EASTERN_EDGE) then      
-        do k=1,N      
+      if (EASTERN_EDGE) then
+        do k=1,N
           do j=JstrR,JendR
 #  ifdef T_FRC_BRY
-            tbry_east(j,k,itrc)= 
+            tbry_east(j,k,itrc)=
 #  else
             tclm(Iend+1,j,k,itrc)=
 #  endif
      &     (ainterp(1)*T_east(Iend+1,j,k,1,itrc)+
      &      ainterp(2)*T_east(Iend+1,j,k,2,itrc)+
      &      ainterp(3)*T_east(Iend+1,j,k,3,itrc)+
-     &      ainterp(4)*T_east(Iend+1,j,k,4,itrc))       
-#  ifdef MASKING     
+     &      ainterp(4)*T_east(Iend+1,j,k,4,itrc))
+#  ifdef MASKING
      &        *rmask(Iend+1,j)
 #  endif
            enddo
         enddo
       endif
-# endif     
+# endif
       return
       end
 
@@ -896,7 +896,7 @@ C$OMP BARRIER
       use AGRIF_Util
       implicit none
 #  include "param.h"
-#  include "boundary.h"  
+#  include "boundary.h"
 #  include "climat.h"
 #  include "grid.h"
 #  include "scalars.h"
@@ -911,7 +911,7 @@ C$OMP BARRIER
       real     :: rrhot,cffx,cffy
       integer  :: nsource, ndest
       integer  :: parentnbstep
-      
+
 #  include "compute_auxiliary_bounds.h"
 !
 #  ifdef MPI
@@ -941,7 +941,7 @@ C$OMP MASTER
         tinterp=1.
 #  ifdef MASKING
         Agrif_UseSpecialvalue=.true.
-#  endif        
+#  endif
         Agrif_Specialvalue=0.
         Call Agrif_Set_bc(wzid,(/0,0/),InterpolationShouldbemade=.TRUE.)
         Call Agrif_Bc_variable(wzid,calledweight=tinterp,
@@ -952,42 +952,42 @@ C$OMP MASTER
       endif
 C$OMP END MASTER
 C$OMP BARRIER
-      
+
        nbstep3dparent=Agrif_Parent(nbstep3d)
-                    
+
        tinterp = real(nbcoarse)/rrhot
        IF (nnew == 3) tinterp = tinterp - 1./(2.*rrhot)
 
        ainterp = 0.
- 
-       IF (nnew == 3) then  
+
+       IF (nnew == 3) then
          ainterp(1) = 0.5-tinterp
          ainterp(2) = 0.5+tinterp
-       else 
+       else
          ainterp(3) = -tinterp
          ainterp(4) = 1.+tinterp
        endif
- 
+
        IF (nbstep3dparent .LE. 1) THEN
          ainterp = 0.
          ainterp(2) = 1.
        ENDIF
- 
+
        if (nbstep3d .LE. (Agrif_irhot()-1)) then
          ainterp = 0.
          ainterp(2) = 1.
        endif
- 
+
        IF ((nnew /= 3).AND.(nbcoarse == irhot)) THEN
          ainterp    = 0.
          ainterp(4) = 1.
        ENDIF
- 
+
 #  ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        do k=0,N      
+        do k=0,N
           do i=IstrR,IendR
-#   ifdef W_FRC_BRY     
+#   ifdef W_FRC_BRY
             wbry_south(i,k)=
 #   else
             wclm(i,Jstr-1,k)=
@@ -1000,7 +1000,7 @@ C$OMP BARRIER
      &   ainterp(5)*wz(i,Jstr-1,k,3-nstp)+
      &   ainterp(6)*wz(i,Jstr-1,k,nstp))
      &   +(1.-cffy)*wz(i,Jstr  ,k,nnew))
-#   ifdef MASKING     
+#   ifdef MASKING
      &    *rmask(i,Jstr-1)
 #   endif
           enddo
@@ -1009,12 +1009,12 @@ C$OMP BARRIER
 #  endif
 
 #  ifdef AGRIF_OBC_NORTH
-      if (NORTHERN_EDGE) then      
-        do k=0,N      
+      if (NORTHERN_EDGE) then
+        do k=0,N
           do i=IstrR,IendR
-#   ifdef W_FRC_BRY     
+#   ifdef W_FRC_BRY
             wbry_north(i,k)=
-#   else   
+#   else
             wclm(i,Jend+1,k)=
 #   endif
      &  (cffy*
@@ -1025,21 +1025,21 @@ C$OMP BARRIER
      &   ainterp(5)*wz(i,Jend+1,k,3-nstp)+
      &   ainterp(6)*wz(i,Jend+1,k,nstp))
      &   +(1.-cffy)*wz(i,Jend  ,k,nnew))
-#   ifdef MASKING     
+#   ifdef MASKING
      &    *rmask(i,Jend+1)
 #   endif
           enddo
         enddo
-      endif      
+      endif
 #  endif
- 
+
 #  ifdef AGRIF_OBC_WEST
-      if (WESTERN_EDGE) then      
-        do k=0,N      
+      if (WESTERN_EDGE) then
+        do k=0,N
           do j=JstrR,JendR
-#   ifdef W_FRC_BRY     
+#   ifdef W_FRC_BRY
             wbry_west(j,k)=
-#   else     
+#   else
             wclm(Istr-1,j,k)=
 #   endif
      &  (cffx*
@@ -1050,19 +1050,19 @@ C$OMP BARRIER
      &   ainterp(5)*wz(Istr-1,j,k,3-nstp)+
      &   ainterp(6)*wz(Istr-1,j,k,nstp))
      &   +(1.-cffx)*wz(Istr  ,j,k,nnew))
-#   ifdef MASKING     
+#   ifdef MASKING
      &    *rmask(Istr-1,j)
 #   endif
           enddo
         enddo
-      endif      
+      endif
 #  endif
-      
+
 #  ifdef AGRIF_OBC_EAST
-      if (EASTERN_EDGE) then      
-        do k=0,N      
+      if (EASTERN_EDGE) then
+        do k=0,N
           do j=JstrR,JendR
-#   ifdef W_FRC_BRY  
+#   ifdef W_FRC_BRY
             wbry_east(j,k)=
 #   else
             wclm(Iend+1,j,k)=
@@ -1074,15 +1074,15 @@ C$OMP BARRIER
      &   ainterp(4)*W_east(Iend+1,j,k,4)+
      &   ainterp(5)*wz(Iend+1,j,k,3-nstp)+
      &   ainterp(6)*wz(Iend+1,j,k,nstp))
-     &   +(1.-cffx)*wz(Iend  ,j,k,nnew))        
-#   ifdef MASKING     
+     &   +(1.-cffx)*wz(Iend  ,j,k,nnew))
+#   ifdef MASKING
      &    *rmask(Iend+1,j)
 #   endif
           enddo
         enddo
       endif
 #  endif
-    
+
       return
       end
 
@@ -1091,17 +1091,17 @@ C$OMP BARRIER
       subroutine w3Dinterp(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
       implicit none
-# include "param.h"
-# include "ocean3d.h"
-# include "scalars.h"
-# include "zoom.h"
-# ifdef MPI
-#  define LOCALLM Lmmpi
-#  define LOCALMM Mmmpi
-# else
-#  define LOCALLM Lm
-#  define LOCALMM Mm
-# endif
+#  include "param.h"
+#  include "ocean3d.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+#  else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+#  endif
        integer i1,i2,j1,j2,k1,k2
        real tabres(i1:i2,j1:j2,k1:k2)
        logical before
@@ -1194,7 +1194,7 @@ C$OMP BARRIER
        endif
       return
       end
-# endif 
+# endif
 
 #else
       subroutine zoombc_3D_empty()

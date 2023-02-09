@@ -71,30 +71,30 @@
       common /abl_sflux_us/ustar2
       common /abl_sflux_zo/z0_abl
 
-#if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
+# if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
       real rest_eq    (GLOBAL_2D_ARRAY        )
       common /ablrest_eq/rest_eq
-#endif
-#if defined ABL_NUDGING
+# endif
+# if defined ABL_NUDGING
       real bmin, bmax
       parameter( bmin = 0.5, bmax = 1.5 )
       real pblh_min, pblh_max
       common /abl_nudging/pblh_min,pblh_max
-# ifdef ABL_NUDGING_DYN
+#  ifdef ABL_NUDGING_DYN
       real alp0_dyn, alp1_dyn
       real alp2_dyn, alp3_dyn
       real ldyn_min,ldyn_max
       common /abl_nudging_dyn/alp0_dyn, alp1_dyn,
      &                        alp2_dyn, alp3_dyn, ldyn_min,ldyn_max
-# endif
-# ifdef ABL_NUDGING_TRA
+#  endif
+#  ifdef ABL_NUDGING_TRA
       real alp0_tra, alp1_tra
       real alp2_tra, alp3_tra
       real ltra_min,ltra_max
       common /abl_nudging_tra/alp0_tra, alp1_tra,
      &                        alp2_tra, alp3_tra, ltra_min,ltra_max
+#  endif
 # endif
-#endif
 
       real mxl_min,Cm,Ct,Ceps,Sch,lsfc,esfc,rctv0,Ric_abl
       real tke_min,avm_bak,avt_bak,itvref,phimax,Cek,epssfc,grav

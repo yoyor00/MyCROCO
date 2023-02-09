@@ -7,7 +7,7 @@
       real(kind=rsh),parameter    :: valmanq=999.
 
 
-      end module parameters 
+      end module parameters
 
 !******************************************************
 !
@@ -22,9 +22,9 @@
      !
       logical :: flag
       integer                      :: idk,l,k
-      real               :: d1,haut,fk,d,hh,d2 
+      real               :: d1,haut,fk,d,hh,d2
       real,dimension(130):: hn
-      real               :: seci 
+      real               :: seci
 !
       fk=seci/60.0/11.25+2.0
       k=fk+0.5
@@ -72,9 +72,9 @@
       real,dimension(31)      :: g,r
       real,dimension(130)     :: hn
       real,dimension(362)     :: c
-      real,dimension(91)      :: cs=(/ 
+      real,dimension(91)      :: cs=(/
      &
-     &  1.000000,0.999848,0.999391,0.998630,0.997564,0.996195,0.994522, 
+     &  1.000000,0.999848,0.999391,0.998630,0.997564,0.996195,0.994522,
      &  0.992546,0.990268,0.987688,0.984808,0.981627,0.978148,0.974370,
      &  0.970296,0.965926,0.961262,0.956305,0.951057,0.945519,0.939693,
      &  0.933580,0.927184,0.920505,0.913545,0.906308,0.898794,0.891007,
@@ -136,7 +136,7 @@
 
 
         call ma3(f,v0,q,n,r,g,fnjd,ng,t0,r1,r2,noa)
-        
+
 !
         do i=1,n
          r(i)=r(i)*f(i)
@@ -258,7 +258,7 @@
       subroutine fft(a)
 !
 !********************************************
-! 
+!
       use parameters
       implicit none
       integer                :: m,nv2,nm1,n,i,j,ip,l,k,le,le1
@@ -389,7 +389,7 @@
       double precision       :: asfo
 !
       asfo =(DBLE(360.)-DBLE(12.19074939))*(nd(1))
-     &     +DBLE(13.17639673)*(nd(2)-5)+DBLE(0.98564734)*(nd(3)-5) 
+     &     +DBLE(13.17639673)*(nd(2)-5)+DBLE(0.98564734)*(nd(3)-5)
      &     +DBLE(0.11140408)*(nd(4)-5)+DBLE(0.05295392)*(nd(5)-5)+
      &      DBLE(0.00004707)*(nd(6)-5)
 !
@@ -424,7 +424,7 @@
 !*********************************************************
 !
       use parameters
-      implicit none 
+      implicit none
       integer                 :: i,julien2,ia,jou,moi,ibs,jour,mois,iy,m
       integer,dimension(12,2),PARAMETER :: jo=
      &     reshape((/0,31,59,90,120,151,181,212,243,273,304,334,

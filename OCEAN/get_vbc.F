@@ -288,18 +288,18 @@
 ! Simplest sea ice correction to T,S fluxes
 !---------------------------------------------------------------
 !
-#ifdef SEA_ICE_NOFLUX
+#  ifdef SEA_ICE_NOFLUX
       do j=JstrR,JendR
         do i=IstrR,IendR
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
 #   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
                    srflx(i,j)=0.
-#    endif
+#   endif
               endif
         enddo
       enddo
-#endif
+#  endif
 !
 !---------------------------------------------------------------
 ! Flux correction to surface net heat flux.
@@ -361,11 +361,11 @@
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,isalt)=stflx(i,j,isalt)
-# ifdef SFLX_CORR_COEF
+#    ifdef SFLX_CORR_COEF
      &  -Hz(i,j,N)/(dSdt*day2sec)*(t(i,j,N,nrhs,isalt)-sss(i,j))
-# else
+#    else
      &                 +dqdt(i,j)*(t(i,j,N,nrhs,isalt)-sss(i,j))
-# endif
+#    endif
         enddo
       enddo
 #   endif
@@ -703,13 +703,13 @@
 
 #ifdef SOLVE3D
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   if defined STRESS_AT_RHO_POINTS
+#  if defined STRESS_AT_RHO_POINTS
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
-#   else
+#  else
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
-#   endif
+#  endif
 #  ifdef TEMPERATURE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))

@@ -34,15 +34,15 @@
       !=======================================================================
       !
       implicit none
-#include "param.h"
-#include "grid.h"
-#include "ocean3d.h"
-#include "forces.h"
-#include "scalars.h"
-#include "params_bulk.h"
-#ifdef ABL1D
-#include "abl1d.h"
-#endif
+# include "param.h"
+# include "grid.h"
+# include "ocean3d.h"
+# include "forces.h"
+# include "scalars.h"
+# include "params_bulk.h"
+# ifdef ABL1D
+#  include "abl1d.h"
+# endif
       REAL           :: elem_a(PRIVATE_1D_SCRATCH_ARRAY,N_ABL)
       REAL           :: elem_b(PRIVATE_1D_SCRATCH_ARRAY,N_ABL)
       REAL           :: elem_c(PRIVATE_1D_SCRATCH_ARRAY,N_ABL)
@@ -92,7 +92,7 @@
       else
         jmax=Jend+2
       endif
-#endif
+# endif
 !======================================================================
 ! 1 - Advance tracers to time n+1
 !======================================================================
@@ -314,7 +314,7 @@
 !======================================================================
 ! 5 - Apply nudging on the dynamics and the tracers
 !======================================================================
-#ifdef ABL_NUDGING
+# ifdef ABL_NUDGING
 !-------------------------
         do j=jmin,jmax   ! outer loop
           do i=imin,imax
@@ -333,9 +333,9 @@
               cff1 = alp3_dyn*sig**3 + alp2_dyn*sig**2
      &             + alp1_dyn*sig    + alp0_dyn
               cff2 = (1.-msk) + msk*dt*cff1   ! cff2 = 1 for masked points
-#    ifdef ABL_DYN_RESTORE_EQ
+#   ifdef ABL_DYN_RESTORE_EQ
               cff2 = cff2 * rest_eq(i,j)
-#    endif
+#   endif
               u_abl(i,j,k,nt_a)=(1.-cff2)* u_abl(i,j,k,nt_a)
      &                              + cff2 *pu_dta(i,j,k     )
               v_abl(i,j,k,nt_a)=(1.-cff2)* v_abl(i,j,k,nt_a)
@@ -355,7 +355,7 @@
 !-------------
         enddo             ! end outer loop
 !-------------
-#endif
+# endif
 
 
 
@@ -420,10 +420,10 @@
           vwnd_r     = v_abl(i,j,2,nt_a)
           sustr(i,j) = cff*Cd_du(i,j) * uwnd_r
           svstr(i,j) = cff*Cd_du(i,j) * vwnd_r
-#  ifdef MASKING
+# ifdef MASKING
           sustr(i,j)=sustr(i,j)*rmask(i,j)
           svstr(i,j)=svstr(i,j)*rmask(i,j)
-#  endif
+# endif
 !++  Total surface heat flux
           stflx(i,j,itemp)=srflx(i,j)+hflw+hflat+hfsen
 # ifdef SALINITY

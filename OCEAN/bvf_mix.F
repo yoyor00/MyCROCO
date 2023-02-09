@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -29,10 +29,10 @@
       integer Istr,Iend,Jstr,Jend, i,j,k
       real bvf_numin, bvf_numax, bvf_nu0c, bvf_nu0, cff
       parameter (
-     &    bvf_numin=3.e-5,  ! Upper and lower bounds for 
+     &    bvf_numin=3.e-5,  ! Upper and lower bounds for
      &    bvf_numax=4.e-4,  !   vertical diffusion, [m2/s];
      &    bvf_nu0c=1.,      ! Proportionality constant, [m2/s2];
-     &    bvf_nu0=1.0e-7)   ! Convective diffusion [m2/s] in 
+     &    bvf_nu0=1.0e-7)   ! Convective diffusion [m2/s] in
                             !                unstable regime.
 !
 !  Compute diffusivities using Brunt-Vaisala frequency based vertical

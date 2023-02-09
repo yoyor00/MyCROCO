@@ -293,7 +293,7 @@
 #endif
 !
 !----------------------------------------------------------------------
-! Minimum water depth above which wave forcing is applied 
+! Minimum water depth above which wave forcing is applied
 ! (D_wavedry>D_wetdry if WET_DRY is activated)
 !----------------------------------------------------------------------
 #ifdef MRL_WCI
@@ -301,7 +301,7 @@
       real D_wavedry
       parameter (D_wavedry=1.0)
 # endif
-#endif    
+#endif
 !
 !----------------------------------------------------------------------
 ! Point sources, Floast, Stations
@@ -315,7 +315,7 @@
       parameter (Msrc=2)        ! ====== == ===== =======
 # elif defined ESTUARY
       parameter (Msrc=1)        ! ====== == ===== =======
-# else 
+# else
       parameter (Msrc=30)        ! ====== == ===== =======
 # endif
 #endif
@@ -357,11 +357,11 @@
 
 #if defined AGRIF || defined AUTOTILING
       integer NSA, N2d,N3d,N1dXI,N1dETA
-#if !defined NBQ
+# if !defined NBQ
       parameter (NSA=28)
-#else
+# else
       parameter (NSA=35)
-#endif
+# endif
       common /scrum_private_param/ N2d,N3d,N1dXI,N1dETA
 #else
       integer NSA, N2d,N3d, size_XI,size_ETA
@@ -370,11 +370,11 @@
       integer N2dabl,N3dabl
       integer se_abl,sse_abl, sz_abl,ssz_abl
 # endif
-#if !defined NBQ
+# if !defined NBQ
       parameter (NSA=28)
-#else
+# else
       parameter (NSA=35)
-#endif
+# endif
 # ifdef ALLOW_SINGLE_BLOCK_MODE
       parameter (size_XI=6+Lm, size_ETA=6+Mm)
 # else
@@ -439,21 +439,21 @@
 # endif
 # ifdef BIOLOGY
 #  ifdef PISCES
-#     ifdef key_pisces_light
+#   ifdef key_pisces_light
          parameter (ntrc_bio=9)
-#     elif defined key_pisces_quota
-#        ifdef key_ligand
+#   elif defined key_pisces_quota
+#    ifdef key_ligand
          parameter (ntrc_bio=40)
-#        else
+#    else
          parameter (ntrc_bio=39)
-#        endif
-#     else
-#        ifdef key_ligand
+#    endif
+#   else
+#    ifdef key_ligand
          parameter (ntrc_bio=25)
-#        else
+#    else
          parameter (ntrc_bio=24)
-#        endif
-#     endif
+#    endif
+#   endif
 #  elif defined BIO_NChlPZD
 #   ifdef OXYGEN
       parameter (ntrc_bio=6)
@@ -479,16 +479,16 @@
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       integer  itsubs1, itsubs2, ntfix
 #  ifdef SED_TOY
-#  if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
+#   if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
       parameter (ntrc_subs=15 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-# else
+#   else
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-# endif
+#   endif
 #  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined ESTUARY
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  elif defined VILAINE 
+#  elif defined VILAINE
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
@@ -523,7 +523,7 @@
 #   elif defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
       parameter (NSAND=4, NMUD=15, NGRAV=0)
       parameter (NLAY=20)
-#   elif defined SED_TOY_ROUSE 
+#   elif defined SED_TOY_ROUSE
       parameter (NSAND=0, NMUD=6, NGRAV=0)
       parameter (NLAY=1)
 #   endif
@@ -671,9 +671,9 @@
 #  elif defined BIO_BioEBUS
      &          , iNO3_, iNO2_, iNH4_, iPhy1, iPhy2, iZoo1, iZoo2
      &          , iDet1, iDet2, iDON, iO2
-#    ifdef NITROUS_OXIDE
+#   ifdef NITROUS_OXIDE
      &          , iN2O
-#    endif
+#   endif
      &          , NFlux_lightlimitP1, NFlux_lightlimitP2
      &          , NFlux_templimitP1, NFlux_templimitP2
      &          , NFlux_NO3limitP1, NFlux_NO2limitP1
@@ -695,9 +695,9 @@
      &          , NFlux_Denitr1DON, NFlux_Denitr2DON
      &          , NFlux_NO2anammox
      &          , NFlux_NH4anammox, O2Flux_GasExc, NumFluxTermsN
-#    ifdef NITROUS_OXIDE
+#   ifdef NITROUS_OXIDE
      &          , NFlux_paramN2O, N2OFlux_GasExc
-#    endif
+#   endif
      &          , NumFluxTerms, NumGasExcTerms
      &          , NFlux_VSinkP2, NFlux_VSinkD1
      &          , NFlux_VSinkD2, NumVSinkTerms
@@ -727,7 +727,7 @@
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iDIC_=itrc_bio, iTAL_=iDIC_+1, iOXY_=iDIC_+2)
 #   ifdef key_pisces_light
-      parameter ( iPOC_=iDIC_+3,  iPHY_=iDIC_+4, iZOO_=iDIC_+5, 
+      parameter ( iPOC_=iDIC_+3,  iPHY_=iDIC_+4, iZOO_=iDIC_+5,
      &            iDOC_=iDIC_+6,  iNO3_=iDIC_+7, iFER_=iDIC_+8)
 #   endif
 #   if ! defined key_pisces_light
@@ -739,9 +739,9 @@
      &            iDFE_=iDIC_+17, iDSI_=iDIC_+18, iNFE_=iDIC_+19,
      &            iNCH_=iDIC_+20, iDCH_=iDIC_+21, iNO3_=iDIC_+22,
      &            iNH4_=iDIC_+23)
-#   ifdef key_ligand
+#    ifdef key_ligand
       parameter (iLGW_=iDIC_+24)
-#   endif
+#    endif
 #   endif
 #   ifdef key_pisces_quota
 #    ifdef key_ligand
@@ -771,9 +771,9 @@
      &            Nirondep  = 10,
      &            Nironsed  = 11,
      &            Npronew   = 12,
-#   if  defined key_pisces_light
+#    if defined key_pisces_light
      &            NumFluxTerms = Npronew)
-#  else 
+#    else
      &            Npronewd  = 13,
      &            Nprorcad  = 14,
      &            Nprobsi   = 15,
@@ -785,7 +785,7 @@
      &            Nmeso2    = 21,
      &            Nnitrifo2 = 22,
      &            NumFluxTerms = Nnitrifo2)
-#endif
+#    endif
 
        parameter (Nfld      = 1,
      &            Nflu16    = 2,
@@ -795,10 +795,10 @@
      &            Nheup     = 6,
      &            Nno3dep   = 7,
      &            Nnitrpot  = 8,
-#   if  defined key_pisces_light
+#    if defined key_pisces_light
      &            NumGasExcTerms = 0,
      &            NumVSinkTerms = Nnitrpot)
-#else
+#    else
      &            Nsinkfer  = 9,
      &            Nsinksil  = 10,
      &            Nsinkcal  = 11,
@@ -807,7 +807,7 @@
      &            Nnh4dep   = 14,
      &            NumGasExcTerms = 0,
      &            NumVSinkTerms = Nnh4dep)
-#endif 
+#    endif
 #   else
        parameter (NumFluxTerms = 0)
        parameter (NumGasExcTerms = 0, NumVSinkTerms = 0)
@@ -1007,11 +1007,11 @@
       parameter (ntrc_diavrt=0)
 # endif
 # ifdef DIAGNOSTICS_EK
-# ifdef DIAGNOSTICS_EK_MLD
+#  ifdef DIAGNOSTICS_EK_MLD
       parameter (ntrc_diaek=28)
-# else
+#  else
       parameter (ntrc_diaek=16)
-# endif
+#  endif
 # else
       parameter (ntrc_diaek=0)
 # endif

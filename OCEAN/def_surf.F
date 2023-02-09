@@ -2,23 +2,23 @@
 !
 !======================================================================
 ! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
 #ifndef AVRH
 # include "cppdefs.h"
 #endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
 
-#ifndef AVRH
+# ifndef AVRH
       subroutine def_surf (ncid, total_rec, ierr)
-#else
+# else
       subroutine def_surf_avg(ncid, total_rec, ierr)
-#endif
+# endif
 !
 !---------------------------------------------------------------
 ! Create diag data NetCDF file:
@@ -35,7 +35,7 @@
 # include "netcdf.inc"
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
-     &      , r2dgrd(3),u2dgrd(3),v2dgrd(3),auxil(2),checkdims 
+     &      , r2dgrd(3),u2dgrd(3),v2dgrd(3),auxil(2),checkdims
 # ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
      &      , p2dgrd(3), p3dgrd(4), pw3dgrd(4)
@@ -48,38 +48,38 @@
       character*60 text
 
 !
-#ifndef AVRH
+# ifndef AVRH
 
-# define ncname surfname
-# define rec_per_file nrpfsurf
-# define wrt wrtsurf
-# define vidTime surfTime
-# define vidTime2 surfTime2
-# define vidTstep surfTstep
+#  define ncname surfname
+#  define rec_per_file nrpfsurf
+#  define wrt wrtsurf
+#  define vidTime surfTime
+#  define vidTime2 surfTime2
+#  define vidTstep surfTstep
 
-# define vidsurft surf_surft
-# define vidsurfs surf_surfs
-# define vidsurfz surf_surfz
-# define vidsurfu surf_surfu
-# define vidsurfv surf_surfv
+#  define vidsurft surf_surft
+#  define vidsurfs surf_surfs
+#  define vidsurfz surf_surfz
+#  define vidsurfu surf_surfu
+#  define vidsurfv surf_surfv
 
 
-#else
+# else
 
-# define ncname surfname_avg
-# define rec_per_file nrpfsurf_avg
-# define wrt wrtsurf_avg
-# define vidTime surfTime_avg
-# define vidTime2 surfTime2_avg
-# define vidTstep surfTstep_avg
+#  define ncname surfname_avg
+#  define rec_per_file nrpfsurf_avg
+#  define wrt wrtsurf_avg
+#  define vidTime surfTime_avg
+#  define vidTime2 surfTime2_avg
+#  define vidTstep surfTstep_avg
 
-# define vidsurft surf_surft_avg
-# define vidsurfs surf_surfs_avg
-# define vidsurfz surf_surfz_avg
-# define vidsurfu surf_surfu_avg
-# define vidsurfv surf_surfv_avg
+#  define vidsurft surf_surft_avg
+#  define vidsurfs surf_surfs_avg
+#  define vidsurfz surf_surfz_avg
+#  define vidsurfu surf_surfu_avg
+#  define vidsurfv surf_surfv_avg
 
-#endif
+# endif
 !
       if (may_day_flag.ne.0) return      !-->  EXIT
 !
@@ -165,16 +165,16 @@
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
 !
         auxil(2)=timedim
- 
+
         r2dgrd(3)=timedim           ! Free surface
- 
+
         u2dgrd(2)=r2dgrd(2)         ! 2D UBAR-type
         u2dgrd(3)=timedim
- 
+
         v2dgrd(1)=r2dgrd(1)         ! 2D VBAR-type
         v2dgrd(3)=timedim
 
-        p2dgrd(1)=u2dgrd(1)         ! 
+        p2dgrd(1)=u2dgrd(1)         !
         p2dgrd(2)=v2dgrd(2)         ! 2D vort-type
         p2dgrd(3)=timedim
 
@@ -183,30 +183,30 @@
         r3dgrd(1)=r2dgrd(1)         !
         r3dgrd(2)=r2dgrd(2)         ! 3D RHO-type
         r3dgrd(4)=timedim           !
- 
+
         u3dgrd(1)=u2dgrd(1)         !
         u3dgrd(2)=r2dgrd(2)         ! 3D U-type
         u3dgrd(3)=r3dgrd(3)         !
         u3dgrd(4)=timedim
- 
+
         v3dgrd(1)=r2dgrd(1)         !
         v3dgrd(2)=v2dgrd(2)         ! 3D V-type
         v3dgrd(3)=r3dgrd(3)         !
         v3dgrd(4)=timedim
- 
+
         w3dgrd(1)=r2dgrd(1)         !
         w3dgrd(2)=r2dgrd(2)         ! 3D W-type
         w3dgrd(4)=timedim           !
 
         p3dgrd(1)=u2dgrd(1)         !
         p3dgrd(2)=v2dgrd(2)         ! 3D vort-type
-        p3dgrd(3)=r2dgrd(3)         ! 
+        p3dgrd(3)=r2dgrd(3)         !
         p3dgrd(4)=timedim           !
 
         pw3dgrd(1)=u2dgrd(1)         !
         pw3dgrd(2)=v2dgrd(2)         ! 3D vortW-type
-        pw3dgrd(3)=w3dgrd(3)         ! 
-        pw3dgrd(4)=timedim         
+        pw3dgrd(3)=w3dgrd(3)         !
+        pw3dgrd(4)=timedim
 
 # endif
 !
@@ -235,12 +235,12 @@
 # endif
 # ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
-        ierr=nf_put_att_text (ncid, vidTime, 'long_name', 
+        ierr=nf_put_att_text (ncid, vidTime, 'long_name',
      &                        lvar, vname(2,indxTime)(1:lvar))
 # else
         text='avg'/ /vname(2,indxTime)
         lvar=lenstr(text)
-        ierr=nf_put_att_text (ncid,  vidTime, 'long_name', 
+        ierr=nf_put_att_text (ncid,  vidTime, 'long_name',
      &                        lvar, text(1:lvar))
 # endif
 !
@@ -256,7 +256,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5, 
+        call nf_add_attribute(ncid, vidTime, indxTime, 5,
      &                        NF_FOUT, ierr)
 !
 ! Time2.
@@ -269,12 +269,12 @@
 # endif
 # ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', 
+        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
      &                        lvar, vname(2,indxTime)(1:lvar))
 # else
         text='avg'/ /vname(2,indxTime2)
         lvar=lenstr(text)
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', 
+        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
      &                        lvar, text(1:lvar))
 # endif
         lvar=lenstr(vname(2,indxTime2))
@@ -287,7 +287,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5, 
+        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
      &                        NF_FOUT, ierr)
 
 ! surface variables.
@@ -301,7 +301,7 @@
 !------------------------------
 !
 ! indxsurft
-!          
+!
           lvar=lenstr(vname(1,indxsurft+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurft+itrc-1)(1:lvar),
      &                     NF_FOUT, 3, r2dgrd, vidsurft(itrc))
@@ -333,7 +333,7 @@
 !------------------------------
 !
 ! indxsurfs
-!          
+!
           lvar=lenstr(vname(1,indxsurfs+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurfs+itrc-1)(1:lvar),
      &                     NF_FOUT, 3, r2dgrd, vidsurfs(itrc))
@@ -364,7 +364,7 @@
 !------------------------------
 !
 ! indxsurfz
-!          
+!
           lvar=lenstr(vname(1,indxsurfz+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurfz+itrc-1)(1:lvar),
      &                     NF_FOUT, 3, r2dgrd, vidsurfz(itrc))
@@ -395,7 +395,7 @@
 !------------------------------
 !          !
 ! indxsurfu
-!          
+!
           lvar=lenstr(vname(1,indxsurfu+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurfu+itrc-1)(1:lvar),
      &                     NF_FOUT, 3, u2dgrd, vidsurfu(itrc))
@@ -426,7 +426,7 @@
 !------------------------------
 !          !
 ! indxsurfv
-!          
+!
           lvar=lenstr(vname(1,indxsurfv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurfv+itrc-1)(1:lvar),
      &                     NF_FOUT, 3, v2dgrd, vidsurfv(itrc))
@@ -464,20 +464,20 @@
 ! ----- ---------- -----
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)') 
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
 # ifdef AVRH
      &        'DEF_SURF_AVG - Created ',
-# else      
+# else
      &        'DEF_SURF - Created ',
 # endif /*AVRH*/
-     &                'new netCDF file ''', 
+     &                'new netCDF file ''',
      &                 ncname(1:lstr), '''.'
      &                 MYID
 !
 ! Open an existing file and prepare for appending data.
 ! ==== == ======== ==== === ======= === ========= =====
 ! Inquire about the dimensions and variables. Check for
-! consistency with model dimensions. In the case when file 
+! consistency with model dimensions. In the case when file
 ! is rejected (whether it cannot be opened, or something
 ! is wrong with its dimensions) create a new file.2
 !
@@ -538,12 +538,12 @@
 ! ---- ------ --- -- -------- ----- ----------
 !
 ! Time step indices:
-!         
+!
         ierr=nf_inq_varid (ncid, 'time_step', vidTstep)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
-        endif 
+        endif
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid, vidTstep, nf_collective)
 # endif
@@ -555,7 +555,7 @@
         ierr=nf_inq_varid (ncid,vname(1,indxTime)(1:lvar),vidTime)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
@@ -568,7 +568,7 @@
         ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
@@ -578,54 +578,54 @@
 ! -------- ---- ----------- ----------
           itrc=1
           if (wrt(itrc)) then
-!          
+!
 ! indxsurft
 !
-         
+
          lvar=lenstr(vname(1,indxsurft+itrc-1))
          ierr=nf_inq_varid (ncid, vname(1,indxsurft+itrc-1)(1:lvar),
      &                      vidsurft(itrc))
          if (ierr .ne. nf_noerr) then
            write(stdout,1) vname(1,indxsurft+itrc-1)(1:lvar),
-     &                     ncname(1:lstr) 
+     &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
 # ifdef NC4PAR
          ierr=nf_var_par_access(ncid, vidsurft(itrc), nf_collective)
 # endif
 
-!          
+!
 ! indxsurfs
 !
-         
+
          lvar=lenstr(vname(1,indxsurfs+itrc-1))
          ierr=nf_inq_varid (ncid, vname(1,indxsurfs+itrc-1)(1:lvar),
      &                      vidsurfs(itrc))
          if (ierr .ne. nf_noerr) then
            write(stdout,1) vname(1,indxsurfs+itrc-1)(1:lvar),
-     &                     ncname(1:lstr) 
+     &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
 # ifdef NC4PAR
          ierr=nf_var_par_access(ncid, vidsurfs(itrc), nf_collective)
 # endif
 
-!          
+!
 ! indxsurfz
 !
-         
+
          lvar=lenstr(vname(1,indxsurfz+itrc-1))
          ierr=nf_inq_varid (ncid, vname(1,indxsurfz+itrc-1)(1:lvar),
      &                      vidsurfz(itrc))
          if (ierr .ne. nf_noerr) then
            write(stdout,1) vname(1,indxsurfz+itrc-1)(1:lvar),
-     &                     ncname(1:lstr) 
+     &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
 # ifdef NC4PAR
          ierr=nf_var_par_access(ncid, vidsurfz(itrc), nf_collective)
 # endif
-!          
+!
 ! indxsurfu
 !
 
@@ -634,22 +634,22 @@
      &                      vidsurfu(itrc))
          if (ierr .ne. nf_noerr) then
            write(stdout,1) vname(1,indxsurfu+itrc-1)(1:lvar),
-     &                     ncname(1:lstr) 
+     &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
 # ifdef NC4PAR
          ierr=nf_var_par_access(ncid, vidsurfu(itrc), nf_collective)
 # endif
-!          
+!
 ! indxsurfv
 !
-         
+
          lvar=lenstr(vname(1,indxsurfv+itrc-1))
          ierr=nf_inq_varid (ncid, vname(1,indxsurfv+itrc-1)(1:lvar),
      &                      vidsurfv(itrc))
          if (ierr .ne. nf_noerr) then
            write(stdout,1) vname(1,indxsurfv+itrc-1)(1:lvar),
-     &                     ncname(1:lstr) 
+     &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
 # ifdef NC4PAR
@@ -661,12 +661,12 @@
 !
 
 !
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
+        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'def_surf: -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
 !
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
+        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'def_surf: -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
@@ -683,13 +683,13 @@
         endif
 # endif
 !
-      endif             !<--  create_new_file  
+      endif             !<--  create_new_file
 !
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &     'def_surf ERROR: Cannot ',
-     &    'switch to ''nf_nofill'' more; netCDF error code =', ierr 
+     &    'switch to ''nf_nofill'' more; netCDF error code =', ierr
       endif
    1  format(/1x,'def_surf ERROR: Cannot find variable ''',
      &                   A, ''' in netCDF file ''', A, '''.'/)
@@ -702,12 +702,12 @@
   99  return
       end
 !
-#undef ncname
-#undef rec_per_file
-#undef wrt
-#undef vidTime
-#undef vidTime2
-#undef vidTstep
+# undef ncname
+# undef rec_per_file
+# undef wrt
+# undef vidTime
+# undef vidTime2
+# undef vidTstep
 !
 
 # undef vidsurft
@@ -722,8 +722,8 @@
 #  ifndef AVRH
 #   define AVRH
 #   include "def_surf.F"
-#   endif
-#  endif /* AVERAGES */
+#  endif
+# endif /* AVERAGES */
 !
 #else /* OUTPUTS_SURFACE */
       subroutine def_surf_empty()

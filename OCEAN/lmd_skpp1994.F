@@ -146,13 +146,13 @@
 # ifdef OA_COUPLING
           ustar(i,j)=sqrt(smstr(i,j))
 # else
-#   ifdef STRESS_AT_RHO_POINTS
+#  ifdef STRESS_AT_RHO_POINTS
           su_r=sustr(i,j)
           sv_r=svstr(i,j)
-#   else
+#  else
           su_r=0.5*(sustr(i,j)+sustr(i+1,j))
           sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
-#   endif
+#  endif
           ustar(i,j)=sqrt(sqrt(su_r**2+sv_r**2))
 # endif
 # ifdef LMD_LANGMUIR
@@ -174,7 +174,7 @@
 !  saline contraction coefficient "beta" [kg/m^3/PSU] at the surface.
 !
 # define alpha wrk1
-# define  beta wrk2
+# define beta wrk2
       call alfabeta_tile (Istr,Iend,Jstr,Jend, alpha,beta)
 !
 !  Compute surface turbulent buoyancy forcing "Bo" [m^2/s^3].
@@ -356,11 +356,11 @@
         enddo
       enddo
 
-#  ifdef HBL_SMOOTH
+# ifdef HBL_SMOOTH
 !
 !    Smooth HBL horizontally
 !
-#   ifndef EW_PERIODIC
+#  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=J_EXT_RANGE
           my_hbl(Istr-1,j)=my_hbl(Istr,j)
@@ -371,8 +371,8 @@
           my_hbl(Iend+1,j)=my_hbl(Iend,j)
         enddo
       endif
-#   endif
-#   ifndef NS_PERIODIC
+#  endif
+#  ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=I_EXT_RANGE
           my_hbl(i,Jstr-1)=my_hbl(i,Jstr)
@@ -383,7 +383,7 @@
           my_hbl(i,Jend+1)=my_hbl(i,Jend)
         enddo
       endif
-#    ifndef EW_PERIODIC
+#   ifndef EW_PERIODIC
       if (WESTERN_EDGE.and.SOUTHERN_EDGE) then
         my_hbl(Istr-1,Jstr-1)=my_hbl(Istr,Jstr)
       endif
@@ -396,47 +396,47 @@
       if (EASTERN_EDGE.and.NORTHERN_EDGE) then
         my_hbl(Iend+1,Jend+1)=my_hbl(Iend,Jend)
       endif
-#    endif
 #   endif
-#   undef I_EXT_RANGE
-#   undef J_EXT_RANGE
+#  endif
+#  undef I_EXT_RANGE
+#  undef J_EXT_RANGE
       do j=Jstr,Jend+1
         do i=Istr,Iend+1
           wrk1(i,j)=0.25*(my_hbl(i,j)  +my_hbl(i-1,j)
      &                   +my_hbl(i,j-1)+my_hbl(i-1,j-1))
-#   ifdef MASKING
+#  ifdef MASKING
      &                   *pmask2(i,j)
-#   endif
+#  endif
         enddo
       enddo
       do j=Jstr,Jend
         do i=Istr,Iend
-#   ifdef MASKING
+#  ifdef MASKING
           cff=0.25*(pmask2(i,j)   +pmask2(i+1,j)
      &             +pmask2(i,j+1) +pmask2(i+1,j+1))
-#   else
+#  else
           cff=1.
-#   endif
+#  endif
           hbl(i,j)=(1-cff)*my_hbl(i,j)+
      &              0.25*(wrk1(i,j)  +wrk1(i+1,j)
      &                   +wrk1(i,j+1)+wrk1(i+1,j+1))
           hbl(i,j)=min(hbl(i,j),z_w(i,j,N)-z_w(i,j,0))
-#   ifdef MASKING
+#  ifdef MASKING
           hbl(i,j)=hbl(i,j)*rmask(i,j)
-#   endif
+#  endif
         enddo
       enddo
 
-#  else
+# else
       do j=Jstr,Jend
         do i=Istr,Iend
            hbl(i,j)=my_hbl(i,j)
-#   ifdef MASKING
+#  ifdef MASKING
      &                         *rmask(i,j)
-#   endif
+#  endif
         enddo
       enddo
-#  endif /* HBL_SMOOTH */
+# endif /* HBL_SMOOTH */
 
 !
 !  Find new boundary layer index "kbl".
@@ -490,7 +490,7 @@
       enddo
       call lmd_wscale_tile (Istr,Iend,Jstr,Jend,
      &                          Bflux,sigma,wm,ws)
-#undef sigma
+# undef sigma
 !
 !-----------------------------------------------------------------
 !  Compute nondimensional shape function Gx(sigma) at "hbl"
@@ -555,8 +555,8 @@
 # endif /* SALINITY */
         enddo
       enddo
-#undef wm
-#undef ws
+# undef wm
+# undef ws
 !
 !-----------------------------------------------------------------
 !  Compute boundary layer mixing coefficients.
@@ -564,9 +564,9 @@
 !
 !  Compute turbulent velocity scales at vertical W-points.
 !
-#define sigma wrk1
-#define wm wrk3
-#define ws wrk2
+# define sigma wrk1
+# define wm wrk3
+# define ws wrk2
       do k=1,N-1
        do j=Jstr,Jend
          do i=Istr,Iend
@@ -631,20 +631,20 @@
 !
              if (bvf(i,j,k).lt.0.) then
                Kv(i,j,k)=Kv(i,j,k)+lmd_nu0c
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
                Kt(i,j,k)=Kt(i,j,k)+lmd_nu0c
-# endif
-# ifdef SALINITY
+#  endif
+#  ifdef SALINITY
                Ks(i,j,k)=Ks(i,j,k)+lmd_nu0c
-# endif
+#  endif
              endif
 # endif
            endif                !<-- k < kbl(i,j)
           enddo
         enddo
-#undef ws
-#undef wm
-#undef sigma
+# undef ws
+# undef wm
+# undef sigma
       enddo                     !<-- k loop
 
       do j=Jstr,Jend

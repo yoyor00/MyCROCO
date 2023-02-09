@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,8 +14,8 @@
                                  ! Create float data NetCDF file:
                                  ! Define its variables, dimensions,
                                  ! and attributes
-      subroutine def_floats(ncid, total_rec, ierr,res) 
-      
+      subroutine def_floats(ncid, total_rec, ierr,res)
+
           implicit none
 # include "param.h"
 # include "mixing.h"
@@ -28,7 +28,7 @@
 !
       logical create_new_file, res
       integer ncid, total_rec, ierr
-      integer lstr, lvar, fltdim, ftimedim, twodim 
+      integer lstr, lvar, fltdim, ftimedim, twodim
       integer pgrd(2), temp(2)
       integer lenstr
 # ifdef SOLVE3D
@@ -52,9 +52,9 @@
       create_new_file=ldefflt
       if (ncid.ne.-1) create_new_file=.false.
 
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) create_new_file=.false.
-#endif
+# endif
  10   if (create_new_file) then
 
         lstr=lenstr(fltname)
@@ -182,10 +182,10 @@
         lvar=lenstr(vinfo(4))
         ierr=nf_put_att_text(ncid,fltLat,'field',lvar,
      &                         vinfo(4)(1:lvar))
- 
 
-# else 
- 
+
+# else
+
         vinfo(1)='x'
         vinfo(2)='x-location of floats trajectories'
         vinfo(3)='meter'
@@ -225,7 +225,7 @@
 
 # endif  /* SPHERICAL */
 
-        if (wrtflt(indxfltGrd)) then 
+        if (wrtflt(indxfltGrd)) then
 !  Define grid level
 
         vinfo(1)='grid_level'
@@ -285,7 +285,7 @@
         ierr=nf_put_att_text(ncid,fltYgrd,'field',lvar,
      &                         vinfo(4)(1:lvar))
 
-#  ifdef SOLVE3D
+# ifdef SOLVE3D
 !
 ! Define float Z-position in the grid
 !
@@ -307,7 +307,7 @@
         lvar=lenstr(vinfo(4))
         ierr=nf_put_att_text(ncid,fltZgrd,'field',lvar,
      &                         vinfo(4)(1:lvar))
-#  endif /* SOLVE3D */
+# endif /* SOLVE3D */
 
       endif  ! wrtflt(indxfltGrd)
 !!
@@ -329,7 +329,7 @@
         ierr=nf_put_att_text(ncid,fltDepth,'units',lvar,
      &                         vinfo(3)(1:lvar))
 
-       if (wrtflt(indxfltTemp)) then 
+       if (wrtflt(indxfltTemp)) then
 !  Define temperature
 
         vinfo(1)='temp'
@@ -368,9 +368,9 @@
         ierr=nf_put_att_text(ncid,fltSal,'units',lvar,
      &                         vinfo(3)(1:lvar))
        endif
-#  endif 
+#  endif
 
-       if (wrtflt(indxfltRho)) then 
+       if (wrtflt(indxfltRho)) then
 !  Define density anomaly.
 !
         vinfo(1)='rho'
@@ -394,11 +394,11 @@
        if (wrtflt(indxfltVel)) then
 
 !  Define mean velocity (module)
- 
+
          vinfo(1)='vel'
          vinfo(2)='mean module velocity'
          vinfo(3)='meter/s'
- 
+
          lvar=lenstr(vinfo(1))
          ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_FTYPE,
      &                    2,pgrd,fltVel)
@@ -440,7 +440,7 @@
         ierr=nf_put_att_text(ncid,fltZoe,'units',lvar,
      &                         vinfo(3)(1:lvar))
 # endif
- 
+
 !  Leave definition mode.
 !---------------------------
 !
@@ -463,11 +463,11 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
 
         ierr=nf_open (fltname(1:lstr), nf_write, ncid)
 
-! for history file, there is a call to checkdims at this point 
+! for history file, there is a call to checkdims at this point
 ! think to add one for floats. xa
 
-        if (ierr. ne. nf_noerr) then 
-#if defined MPI & !defined PARALLEL_FILES
+        if (ierr. ne. nf_noerr) then
+# if defined MPI & !defined PARALLEL_FILES
           if (mynode.eq.0) then
             create_new_file=.true.
             goto 10
@@ -477,10 +477,10 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
      &                   MYID
             goto 99                                       !--> ERROR
           endif
-#else
+# else
           create_new_file=.true.
           goto 10
-#endif
+# endif
         endif
 
 
@@ -527,7 +527,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
           goto 99                                         !--> ERROR
         endif
 
-# else 
+# else
 
 
         vinfo(1)='x'
@@ -583,7 +583,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         endif
 
 
-#  ifdef SOLVE3D
+# ifdef SOLVE3D
 !
 ! float Z-position in the grid
 !
@@ -594,7 +594,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
           write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-#  endif /* SOLVE3D */
+# endif /* SOLVE3D */
 
         endif  !wrtflt(indxfltGrd)
 
@@ -611,7 +611,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
           goto 99                                         !--> ERROR
         endif
 
-       if (wrtflt(indxfltTemp)) then 
+       if (wrtflt(indxfltTemp)) then
 !  Define temperature
 
         vinfo(1)='temp'
@@ -668,7 +668,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
       ierr=nf_inq_dimlen(ncid,ftimedim,nrecflt)
       nrecflt=nrecflt+1
 c     write(*,*)'nrecflt = ',nrecflt
-      if (ierr .ne. nf_noerr) then 
+      if (ierr .ne. nf_noerr) then
       write(*,*)' DEF_FLOATS ERROR: cannot determine nrecflt '
       endif
 
@@ -676,7 +676,7 @@ c     write(*,*)'nrecflt = ',nrecflt
 !     &                     'existing file  from record =', rec
 !     &                      MYID
          write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_FLOATS -- Opened ',
-     &                     'existing file  from record = ',nrecflt 
+     &                     'existing file  from record = ',nrecflt
 
       endif  ! create or open
 

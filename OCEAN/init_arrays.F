@@ -140,7 +140,7 @@ C$    integer omp_get_thread_num
           umask_wavewet(i,j)=1
           vmask_wavewet(i,j)=1
           pmask_wavewet(i,j)=1
-#endif          
+#endif
 #ifdef SOLVE3D
           rufrc(i,j)=init
           rufrc(i,j)=init
@@ -208,14 +208,14 @@ C$    integer omp_get_thread_num
             MCor(i,j,k,2)=init
             MPrsgrd(i,j,k,1)=init
             MPrsgrd(i,j,k,2)=init
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
             MBaro(i,j,k,1)=init
             MBaro(i,j,k,2)=init
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
             Mfast(i,j,k,1)=init
             Mfast(i,j,k,2)=init
-# endif
+#  endif
 # endif
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             MXadv(i,j,k,1)=init ! indice 1 for u_momentum
@@ -414,9 +414,9 @@ C$    integer omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
            ablh    (i,j)=init
-#if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
+#  if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
            rest_eq (i,j)=init
-#endif
+#  endif
            ustar2  (i,j)=init
            z0_abl  (i,j)=init
            Cd_du   (i,j)=init
@@ -664,9 +664,9 @@ C$    integer omp_get_thread_num
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
             pv(i,j,k)=init
-#  ifdef AVERAGES
+#   ifdef AVERAGES
             pv_avg(i,j,k)=init
-#  endif /* AVERAGES */
+#   endif /* AVERAGES */
           enddo
         enddo
       enddo
@@ -674,13 +674,13 @@ C$    integer omp_get_thread_num
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
             pvd(i,j,k)=init
-#  ifdef AVERAGES
+#   ifdef AVERAGES
             pvd_avg(i,j,k)=init
 #   endif /* AVERAGES */
           enddo
         enddo
       enddo
-# endif
+#  endif
       do itrc=1,NTA
         do k=1,N
           do j=JstrR,JendR
@@ -746,9 +746,9 @@ C$    integer omp_get_thread_num
           do j=JstrR,JendR
             do i=IstrR,IendR
                wind10(i,j) =init
-#   ifdef AVERAGES
+#  ifdef AVERAGES
                wind10_avg(i,j) =init
-#   endif
+#  endif
             enddo
           enddo
 
@@ -756,9 +756,9 @@ C$    integer omp_get_thread_num
           do j=JstrR,JendR
             do i=IstrR,IendR
                AOU(i,j,k) =init
-#   ifdef AVERAGES
+#  ifdef AVERAGES
                AOU_avg(i,j,k) =init
-#   endif
+#  endif
             enddo
           enddo
         enddo
@@ -826,10 +826,10 @@ C$    integer omp_get_thread_num
             Akb(i,j,k)=init
             Akw(i,j,k)=init
             E_pre(i,j,k)=init
-# ifdef AVERAGES
+#  ifdef AVERAGES
             Akb_avg(i,j,k)=init
             Akw_avg(i,j,k)=init
-# endif
+#  endif
           enddo
         enddo
       enddo
@@ -837,9 +837,9 @@ C$    integer omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
             kvf(i,j,k)=init
-# ifdef AVERAGES
+#  ifdef AVERAGES
             kvf_avg(i,j,k)=init
-# endif
+#  endif
           enddo
         enddo
       enddo
@@ -847,10 +847,10 @@ C$    integer omp_get_thread_num
         do i=IstrR,IendR
           calP(i,j)=init
           Kapsrf(i,j)=init
-# ifdef AVERAGES
+#  ifdef AVERAGES
           calP_avg(i,j)=init
           Kaps_avg(i,j)=init
-# endif
+#  endif
           enddo
         enddo
 # endif
@@ -862,18 +862,18 @@ C$    integer omp_get_thread_num
         do i=IstrR,IendR
           sustr(i,j)=init
           svstr(i,j)=init
-# ifdef OA_COUPLING
+#ifdef OA_COUPLING
           smstr(i,j)=init
-#  if defined READ_PATM && defined OBC_PATM
+# if defined READ_PATM && defined OBC_PATM
           patm2d(i,j)=paref
 # endif
-# endif
-# ifdef OW_COUPLING
+#endif
+#ifdef OW_COUPLING
           twox(i,j)=init
           twoy(i,j)=init
           tawx(i,j)=init
           tawy(i,j)=init
-# endif
+#endif
 #ifndef ANA_SMFLUX
           sustrg(i,j,1)=init
           svstrg(i,j,1)=init
@@ -902,23 +902,23 @@ C$    integer omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
             stflx(i,j,itrc)=init
-# ifdef AVERAGES
+#  ifdef AVERAGES
             stflx_avg(i,j,itrc)=init
-# endif
-# if !defined ANA_STFLUX || !defined ANA_SSFLUX
+#  endif
+#  if !defined ANA_STFLUX || !defined ANA_SSFLUX
             stflxg(i,j,1,itrc)=init
             stflxg(i,j,2,itrc)=init
-# endif
+#  endif
             btflx(i,j,itrc)=init
 
-# if BHFLUX || defined BWFLUX
+#  if BHFLUX || defined BWFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
-# endif
+#  endif
           enddo
         enddo
       enddo
-#endif /* TRACERS */
+# endif /* TRACERS */
       do j=JstrR,JendR
         do i=IstrR,IendR
 # if defined TEMPERATURE && defined QCORRECTION
@@ -932,17 +932,17 @@ C$    integer omp_get_thread_num
 #  endif /* TEMPERATURE QCORRECTION */
 #  if defined SALINITY && defined SFLX_CORR
           sss (i,j)=init
-#    ifndef ANA_SSS
+#   ifndef ANA_SSS
           sssg (i,j,1)=init
           sssg (i,j,2)=init
-#    endif
+#   endif
 #  endif
 # endif
 !
 # if defined BULK_FLUX && defined TEMPERATURE
 #  if defined READ_PATM && defined OBC_PATM
           patm2d(i,j)=paref
-# endif
+#  endif
           tair (i,j)=init
           rhum (i,j)=init
           prate (i,j)=init
@@ -951,9 +951,9 @@ C$    integer omp_get_thread_num
           wspd(i,j)=init
           uwnd(i,j)=init
           vwnd(i,j)=init
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
           radswbio (i,j)=init
-# endif
+#  endif
 
           tairg(i,j,1)=init
           rhumg (i,j,1)=init
@@ -975,10 +975,10 @@ C$    integer omp_get_thread_num
           radswg_down(i,j,1)=init
           radswg_down(i,j,2)=init
 #  endif
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
           radswbiog (i,j,1)=init
           radswbiog (i,j,2)=init
-# endif
+#  endif
           shflx_rsw(i,j)=init
           shflx_rlw(i,j)=init
           shflx_lat(i,j)=init
@@ -1018,10 +1018,10 @@ C$    integer omp_get_thread_num
           wwag(i,j,2)=init
           wwdg(i,j,2)=init
           wwpg(i,j,2)=init
-# ifdef MUSTANG
+#  ifdef MUSTANG
           wwug(i,j,1)=init
           wwug(i,j,2)=init
-#endif
+#  endif
 #  ifdef WAVE_OFFLINE_BREAKING
           wweb(i,j,1)=init
           wweb(i,j,2)=init
@@ -1360,16 +1360,16 @@ C$    integer omp_get_thread_num
               diff4_sponge(i,j)=init
             enddo
           enddo
-#endif
-#ifdef DIF_COEF_3D
+# endif
+# ifdef DIF_COEF_3D
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
               diff3d_u(i,j,k)=init
               diff3d_v(i,j,k)=init
-#   ifdef TS_DIF_SMAGO
+#  ifdef TS_DIF_SMAGO
               diff3d_r(i,j,k)=init
-#   endif
+#  endif
             enddo
           enddo
         enddo
@@ -1466,9 +1466,9 @@ C$    integer omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           hbbl(i,j)=init
-#ifdef AVERAGES
+#  ifdef AVERAGES
           hbbl_avg(i,j)=init
-#endif
+#  endif
         enddo
       enddo
 # endif /* LMD_BKPP */
@@ -1480,19 +1480,19 @@ C$    integer omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           hel(i,j)=init
-#  if (defined BIO_NChlPZD && defined OXYGEN)
+#   if (defined BIO_NChlPZD && defined OXYGEN)
           u10(i,j)=init
           Kv_O2(i,j)=init
           O2satu(i,j)=init
-#  endif
-# ifdef AVERAGES
+#   endif
+#   ifdef AVERAGES
           hel_avg(i,j)=init
-#  if (defined BIO_NChlPZD && defined OXYGEN)
+#    if (defined BIO_NChlPZD && defined OXYGEN)
           u10_avg(i,j)=init
           Kv_O2_avg(i,j)=init
           O2satu_avg(i,j)=init
-#  endif
-# endif
+#    endif
+#   endif
         enddo
       enddo
 #  endif /* BIOLOGY */
@@ -1547,9 +1547,9 @@ C$    integer omp_get_thread_num
             wz(i,j,k,1)  =init
             wz(i,j,k,2)  =init
             rw_nbq(i,j,k)=init
-#  if !defined M2FILTER_NONE
+#   if !defined M2FILTER_NONE
             rw_nbq_avg1(i,j,k)=init
-#  endif
+#   endif
             rw_nbq_avg2(i,j,k)=init
             rw_int_nbq(i,j,k) =init
           enddo

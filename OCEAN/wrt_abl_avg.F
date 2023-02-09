@@ -126,7 +126,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       endif
 !
 ! ============================================================
-!     Large scale ABL1D variables 
+!     Large scale ABL1D variables
 ! ============================================================
 
 !-----------------------------------------------------------------------
@@ -181,11 +181,11 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
         work3dabl=pgv_dta_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_pgv_dta,
      &                   indxabl_pgv_dta,
-     &                   record,abl3dvar,type)                         
+     &                   record,abl3dvar,type)
       endif
 !
 ! ============================================================
-!     ABL1D variables 
+!     ABL1D variables
 ! ============================================================
 
 !-----------------------------------------------------------------------
@@ -231,7 +231,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
         work3dabl=tke_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_tke_abl,
      &                   indxabl_tke_abl,
-     &                   record,abl3dvar,type)               
+     &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
 !    mxlm_abl
@@ -240,7 +240,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
         work3dabl=mxlm_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_mxlm_abl,
      &                   indxabl_mxlm_abl,
-     &                   record,abl3dvar,type)     
+     &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
 !    mxld_abl
@@ -249,7 +249,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
         work3dabl=mxld_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_mxld_abl,
      &                   indxabl_mxld_abl,
-     &                   record,abl3dvar,type)     
+     &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
 !    avm_abl
@@ -258,7 +258,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
         work3dabl=avm_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_avm_abl,
      &                   indxabl_avm_abl,
-     &                   record,abl3dvar,type)     
+     &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
 !    avt_abl
@@ -267,7 +267,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
         work3dabl=avt_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_avt_abl,
      &                   indxabl_avt_abl,
-     &                   record,abl3dvar,type)     
+     &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
 !    ablh
@@ -279,7 +279,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
      &                   record,r2dvar,type)
       endif
 ! ============================================================
-!     ABL1D vertical grid 
+!     ABL1D vertical grid
 ! ============================================================
       if (iic.eq.0 .or. nrpfablavg.gt.0) then
 !-----------------------------------------------------------------------
@@ -319,7 +319,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
           ierr=nf_put_vara_FTYPE(ncidablavg,varid,1,N_abl,Hzw_abl)
         endif
 !
-      endif      
+      endif
 !
 ! ============================================================
 

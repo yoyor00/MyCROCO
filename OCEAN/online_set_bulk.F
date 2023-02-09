@@ -2,42 +2,42 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 !
 !  This is the "online_set_bulk.F" script
 !------------------------------------------------------------------------------
-!  This file contains the subfunctions enabling the online extraction of the 
-!  forcing from a NCEP/CFSR dataset. A spatial and time interpolation are applied 
-!  to the extracted data in order to adapt these to the considered simulation 
+!  This file contains the subfunctions enabling the online extraction of the
+!  forcing from a NCEP/CFSR dataset. A spatial and time interpolation are applied
+!  to the extracted data in order to adapt these to the considered simulation
 !  domain as well as the associated MPI/OPENMP discretisation (if defined MPI/
 !  OPENMP).
 !------------------------------------------------------------------------------
 #include "cppdefs.h"
 
-#if defined BULK_FLUX && defined ONLINE 
+#if defined BULK_FLUX && defined ONLINE
 
 !*******************************************************************************
       subroutine set_bulk_tile_online (Istr,Iend,Jstr,Jend)
 !------------------------------------------------------------------------------
-!  This subfunction enables the time interpolation of the roms bulk forcings 
+!  This subfunction enables the time interpolation of the roms bulk forcings
 !  (tair, rhum, prate, radlw, radsw, uwnd, vwnd) on the simulation domain
 !  for the ongoing tile.
 !------------------------------------------------------------------------------
 !  The steps in this interpolation is:
-!  - Determination of forcings (tair, rhum, prate, radlw, radsw, uwnd, 
-!  vwnd) at the first time step of the simulation from the known (tairg, rhumg, 
+!  - Determination of forcings (tair, rhum, prate, radlw, radsw, uwnd,
+!  vwnd) at the first time step of the simulation from the known (tairg, rhumg,
 !  prateg, radlwg, radswg, uwndg, vwndg) fields.
-!  - Time interpolation of the forcings (tair, rhum, prate, radlw, radsw,  
+!  - Time interpolation of the forcings (tair, rhum, prate, radlw, radsw,
 !  uwnd, vwnd) at cff from two known spatially interpolated fields (tairg,rhumg,
 !  prateg, radlwg, radswg, uwndg, vwndg) at cff1 and cff2.
 !
-!  In this subroutine the aformentioned steps are completed for every bulk 
+!  In this subroutine the aformentioned steps are completed for every bulk
 !  forcing iterating on the various blkvar_id.
       implicit none
 # include "param.h"
@@ -50,7 +50,7 @@
 #  include "params_bulk.h"
 # endif
 # ifdef ABL1D
-#   include "abl1d.h"
+#  include "abl1d.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2, blkvar_id
 # ifdef ABL1D
@@ -59,18 +59,18 @@
       real cff,cff1,cff2, cff3,cff4
 # ifdef SALINITY
       real cff5,cff6
-# endif      
+# endif
 # ifdef CFB_WIND_TRA
       real cffu1,cffu2,cffv1,cffv2
       real uwnd_r, vwnd_r
 # endif
-!     
+!
 # include "compute_extended_bounds.h"
 !
-       
-      !===== == === === ======= ========= 
+
+      !===== == === === ======= =========
       ! Loop on all the forcing datasets:
-      !===== == === === ======= =========  
+      !===== == === === ======= =========
       blkvar_id=0
   10  blkvar_id = blkvar_id+1
 !
@@ -100,10 +100,10 @@
       cff2=cff-bulk_timeO(it1,blkvar_id)
 
 
-      !===== ============= ======= === ==== ====== 
+      !===== ============= ======= === ==== ======
       ! Time interpolation between two time steps:
-      !===== ============= ======= === ==== ====== 
-      ! The roms bulk forcings at cff are interpolated between two time steps 
+      !===== ============= ======= === ==== ======
+      ! The roms bulk forcings at cff are interpolated between two time steps
       ! cff1 and cff2
       if (cff1.ge.0. .and. cff2.ge.0.) then
         if (ZEROTH_TILE .and. cff1.lt.dt) synchro_flag=.TRUE.
@@ -187,12 +187,12 @@
           enddo
 #  ifdef CFB_WIND_TRA
           cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
-          
+
           do j=JstrR,min(JendR,Mm)
             do i=IstrR,min(IendR,Lm)
               cffu1=cff1*uwndg(i  ,j,it1)+cff2*uwndg(i  ,j,it2)
               cffu2=cff1*uwndg(i+1,j,it1)+cff2*uwndg(i+1,j,it2)
-              uwnd_r   = 0.5*( cffu1 + cffu2 
+              uwnd_r   = 0.5*( cffu1 + cffu2
      &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
      &                   )
 
@@ -279,9 +279,9 @@
 # endif
         endif
 
-      !====== == ==== ============== 
+      !====== == ==== ==============
       ! Error in time interpolation:
-      !====== == ==== ============== 
+      !====== == ==== ==============
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'bulk_timeO',tdays,bulk_timeO(it2,blkvar_id)*sec2day

@@ -8,19 +8,19 @@
 ! field A of ZETA-, U-, V- or PSI-type. This file is designed to
 ! generate four different subroutines, by redefining (via CPP) the
 ! name of the subroutine exchange_2d_tile above and the starting
-! indices ISTART = [Istr for U-,PSI-type; IstrR for V-,ZETA-type] 
+! indices ISTART = [Istr for U-,PSI-type; IstrR for V-,ZETA-type]
 ! and JSTART = [Jstr for V-,PSI-type; JstrR for U-,ZETA-type]
-! below. See also mounting file exchange.F  
+! below. See also mounting file exchange.F
 !
       implicit none
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-# ifndef MP_3PTS
+#ifndef MP_3PTS
       parameter (Npts=2)
-# else
+#else
       parameter (Npts=3)
-# endif
+#endif
       real A(GLOBAL_2D_ARRAY)
       integer Istr,Iend,Jstr,Jend, i,j
 !
@@ -130,8 +130,8 @@
       return
       end
 
-# ifndef MP_3PTS
-#  define MP_3PTS
-#  include "exchange_2d_tile.h"
-#  undef MP_3PTS
-# endif
+#ifndef MP_3PTS
+# define MP_3PTS
+# include "exchange_2d_tile.h"
+# undef MP_3PTS
+#endif

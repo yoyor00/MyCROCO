@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -33,7 +33,7 @@
       implicit none
       real              cycle_length,      tend,     cff
       integer ncid,     icycle,          tshift,  vartype,  lvar,
-     &        varid,    trecord,         irec,    nvatts,   latt, 
+     &        varid,    trecord,         irec,    nvatts,   latt,
      &                  ntime,           i,ierr,ierr0,nvdims,ldim,
      &                                   size,    vdims(5), lenstr
       real*8  tstart
@@ -125,7 +125,7 @@
             call tool_origindate(ncid, varid,
      &                           cycle_origin_date_in_sec)
               tstart=tstart+cycle_origin_date_in_sec*sec2day
-# endif
+#endif
       tstart=tstart*day2sec
 
       if (cycle_length.gt.0.) then
@@ -137,7 +137,7 @@
         icycle=0
       endif
 
-      tshift=icycle 
+      tshift=icycle
       trecord=0
       i=1
   1    irec=i+1
@@ -145,13 +145,13 @@
           irec=1
           tshift=tshift+1
         endif
-        if (irec.le.ntime) then 
+        if (irec.le.ntime) then
           ierr=nf_get_var1_FTYPE(ncid, varid, irec, tend)
           if (ierr .ne. nf_noerr) goto 10                 !--> ERROR
 
 #ifdef USE_CALENDAR
           tend=tend+cycle_origin_date_in_sec*sec2day
-# endif
+#endif
 
           tend=tend*day2sec+tshift*cycle_length
           if (tstart.le.time .and. time.lt.tend) then
@@ -171,19 +171,19 @@
         trecord=trecord-1
         if (trecord.lt.1 .and. cycle_length.gt.0.) then
           trecord=trecord+ntime
-          icycle=icycle-1 
+          icycle=icycle-1
         endif
         return                                    !--> NORMAL RETURN
       endif
 !
-! Sort out reasons for error, if any. 
+! Sort out reasons for error, if any.
 !
       if (cycle_length.gt.0.) then
         write(stdout,2) varname(1:lvar)
   2     format(/1x, 'SET_CYCLE ERROR: Algorithm failure',
      &                ' while processing variable: ',A,'.'/)
       else
-        write(stdout,3) varname(1:lvar), tdays, tend*sec2day  
+        write(stdout,3) varname(1:lvar), tdays, tend*sec2day
   3     format(/1x, 'SET_CYCLE ERROR: non-cycling regime,',
      &         ' but model time exceeds'  /18x,  'time of the',
      &         ' last available data record for variable: ',A/
@@ -202,7 +202,7 @@
      &                                      icycle, trecord)
       implicit none
       real cycle_length
-      integer ntime, icycle, trecord, ierr 
+      integer ntime, icycle, trecord, ierr
 
       ierr=0
       trecord=trecord+1

@@ -48,7 +48,7 @@
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
 #undef  ESTUARY         /* 3D tidal estuary Example */
 #undef  KILPATRICK      /* 2D sst front*/
-/* 
+/*
         ... OR REALISTIC CONFIGURATIONS
 */
 #undef  COASTAL         /* COASTAL Applications */
@@ -103,10 +103,10 @@
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
-# undef  USE_CALENDAR  
+# undef  USE_CALENDAR
                       /* dedicated croco.log file */
 # undef  LOGFILE
-/*    
+/*
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
 !
@@ -205,7 +205,7 @@
 #  undef  ROBUST_DIAG
 # endif
 
-# define  FRC_BRY
+# define FRC_BRY
 # ifdef FRC_BRY
 #  define Z_FRC_BRY
 #  define M2_FRC_BRY
@@ -312,7 +312,7 @@
                       /* Input/Output */
 # undef AVERAGES
 # undef AVERAGES_K
-# define  OUTPUTS_SURFACE
+# define OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
                      /* Exact restart */
 # undef EXACT_RESTART
@@ -329,7 +329,7 @@
 #  undef RVTK_DEBUG_ADVANCED
 #  define XXXRVTK_DEBUG_READ
 # endif
-!    RVTK test (Restartability or Parallel reproducibility)                
+!    RVTK test (Restartability or Parallel reproducibility)
 # if defined RVTK_DEBUG && defined BULK_FLUX && defined ONLINE
 #  define BULK_MONTH_1DIGIT
 # endif
@@ -355,8 +355,8 @@
 
 # undef DIAGNOSTICS_TSVAR
 # ifdef DIAGNOSTICS_TSVAR
-#  define  DIAGNOSTICS_TS
-#  define  DIAGNOSTICS_TS_ADV
+#  define DIAGNOSTICS_TS
+#  define DIAGNOSTICS_TS_ADV
 # endif
 
 # undef  DIAGNOSTICS_VRT
@@ -409,7 +409,7 @@
 #   undef key_sediment
 #  endif
 #  ifdef BIO_NChlPZD
-#   define  OXYGEN
+#   define OXYGEN
 #  endif
 #  ifdef BIO_BioEBUS
 #   define NITROUS_OXIDE
@@ -598,7 +598,7 @@
 # undef  PSOURCE_MASS
 # define PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE
-#   define PSOURCE_NCFILE_TS
+#  define PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
@@ -834,20 +834,20 @@
 # define NS_PERIODIC
 # ifdef INTERNALSHELF
 #  undef   EW_PERIODIC
-#  define  OBC_EAST
-#  define  OBC_WEST
-#  define  SPONGE
-#  define  ANA_SSH
-#  define  ANA_M2CLIMA
-#  define  ANA_M3CLIMA
-#  define  ANA_TCLIMA
-#  define  ZCLIMATOLOGY
-#  define  M2CLIMATOLOGY
-#  define  M3CLIMATOLOGY
-#  define  TCLIMATOLOGY
-#  define  M2NUDGING
-#  define  M3NUDGING
-#  define  TNUDGING
+#  define OBC_EAST
+#  define OBC_WEST
+#  define SPONGE
+#  define ANA_SSH
+#  define ANA_M2CLIMA
+#  define ANA_M3CLIMA
+#  define ANA_TCLIMA
+#  define ZCLIMATOLOGY
+#  define M2CLIMATOLOGY
+#  define M3CLIMATOLOGY
+#  define TCLIMATOLOGY
+#  define M2NUDGING
+#  define M3NUDGING
+#  define TNUDGING
 # endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
@@ -1783,12 +1783,12 @@
 #  define BODYFORCE
 # endif
 
-# ifdef SED_TOY_FLOC_1D 
+# ifdef SED_TOY_FLOC_1D
 #  define ANA_VMIX
 #  define BODYFORCE
 # endif
 
-# ifdef SED_TOY_FLOC_0D 
+# ifdef SED_TOY_FLOC_0D
 #  define ANA_VMIX
 #  define BODYFORCE
 # endif
@@ -1798,9 +1798,9 @@
 
 # ifdef MUSTANG
 #  if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
-#    define key_MUSTANG_flocmod
-#    define GLS_MIXING
-#    define GLS_KOMEGA
+#   define key_MUSTANG_flocmod
+#   define GLS_MIXING
+#   define GLS_KOMEGA
 #  endif
 # endif
 

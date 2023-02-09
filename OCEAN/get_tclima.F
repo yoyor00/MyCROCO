@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -17,13 +17,13 @@
                              ! at appropriate time.
 # define TCLIMA_DATA
       implicit none
-#include "param.h"
-#include "scalars.h"
-#include "ncscrum.h"
-#include "climat.h"
+# include "param.h"
+# include "scalars.h"
+# include "ncscrum.h"
+# include "climat.h"
       real cff
       integer i,itrc, lstr,lvar,lenstr, ierr, nf_fread, advance_cycle
-#include "netcdf.inc"
+# include "netcdf.inc"
 !
 ! Initialization: Inquire about the contents of climatological file:
 !================ variables and dimensions. Check for consistency.
@@ -141,7 +141,7 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'no3_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
-#     if ! defined key_pisces_light
+#   if ! defined key_pisces_light
           elseif (itrc.eq.iCAL_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'cal_time', tclm_tid(itrc))
@@ -263,8 +263,8 @@ c              goto 99                                     !--> ERROR
 c              goto 99                                     !--> ERROR
             endif
           endif
-#     endif
-#     if defined key_ligand
+#   endif
+#   if defined key_ligand
           if (itrc.eq.iLGW_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'lgw_time', tclm_tid(itrc))
@@ -274,8 +274,8 @@ c              goto 99                                     !--> ERROR
 c              goto 99                                     !--> ERROR
             endif
           endif
-#     endif
-#     if defined key_pisces_quota
+#   endif
+#   if defined key_pisces_quota
           if (itrc.eq.iDON_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'don_time', tclm_tid(itrc))
@@ -397,7 +397,7 @@ c              goto 99                                     !--> ERROR
 c              goto 99                                     !--> ERROR
             endif
           endif
-#     endif
+#   endif
 
 #  elif defined BIO_NChlPZD
 
@@ -511,7 +511,7 @@ c              goto 99                                     !--> ERROR
 c              goto 99                                     !--> ERROR
             endif
           endif
-#  elif defined BIO_BioEBUS 
+#  elif defined BIO_BioEBUS
 
           if (itrc.eq.iNO3_) then
             got_tclm(itrc)=.true.
@@ -528,7 +528,7 @@ c              goto 99                                     !--> ERROR
               got_tclm(itrc)=.false.
               write(stdout,3) 'no2_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
-            endif	    
+            endif
           elseif (itrc.eq.iNH4_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'nh4_time', tclm_tid(itrc))
@@ -600,9 +600,9 @@ c              goto 99                                     !--> ERROR
               got_tclm(itrc)=.false.
               write(stdout,3) 'o2_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
-            endif	    
-          endif	    
-#    ifdef NITROUS_OXIDE
+            endif
+          endif
+#   ifdef NITROUS_OXIDE
          if (itrc.eq.iN2O) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'n2o_time', tclm_tid(itrc))
@@ -612,7 +612,7 @@ c              goto 99                                     !--> ERROR
 c              goto 99                                     !--> ERROR
             endif
           endif
-#     endif
+#   endif
 
 #  endif
 # endif /* BIOLOGY */
@@ -645,7 +645,7 @@ c              goto 99                                     !--> ERROR
         enddo   ! itrc
       endif   ! iic.eq.0
 !
-! Read in tracer climatology: Check, if if model time is within the 
+! Read in tracer climatology: Check, if if model time is within the
 !===== == ====== ============ bounds set by the past and future data
 ! times. If not, flip the time index, increment record and cycling
 ! indices and read a new portion of data: climatology time
@@ -673,7 +673,7 @@ c              goto 99                                     !--> ERROR
            write(stdout,6) 'Xclm_time', tclm_rec(itrc)
            goto 99                                        !--> ERROR
          endif
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
         call tool_origindate(ncidclm,tclm_tid(itrc),
      &                       tclm_origin_date_in_sec)
         cff=cff+tclm_origin_date_in_sec*sec2day
@@ -696,14 +696,14 @@ c              goto 99                                     !--> ERROR
         MPI_master_only write(stdout,'(6x,A,2x,I2,1x,A,1x,g12.4,1x,I4)')
      &             'GET_TCLIMA -- Read climatology of tracer', itrc,
      &                                             'for time =', cff
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -tclm_origin_date_in_sec*sec2day
-#endif 
-#ifdef MPI
+# endif
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
         if (nttclm(itrc).gt.1) goto 10
-  1     continue    
+  1     continue
        endif ! got_tclm(itrc)
       enddo !itrc
       return
@@ -733,9 +733,9 @@ c              goto 99                                     !--> ERROR
       implicit none
       integer tile
 # include "param.h"
-#ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef  ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
-#endif
+# endif
 # include "compute_tile_bounds.h"
       call set_tclima_tile (Istr,Iend,Jstr,Jend)
       return
@@ -787,8 +787,8 @@ C$    integer  trd, omp_get_thread_num
           endif
         elseif (cff1.ge.0. .and. cff2.ge.0.) then
           cff=1./(cff1+cff2)                        ! Interpolate
-          cff1=cff1*cff                             ! tracer 
-          cff2=cff2*cff                             ! climatology 
+          cff1=cff1*cff                             ! tracer
+          cff2=cff2*cff                             ! climatology
           do k=1,N                                  ! climatology
             do j=JstrR,JendR                        ! in time.
               do i=IstrR,IendR
@@ -803,9 +803,9 @@ C$    integer  trd, omp_get_thread_num
      &            'bounds of ''tclm_time''.', 'TCLM_TSTART=',
      &             tclm_time(it1,itrc)*sec2day,     'TDAYS=',  tdays,
      &            'TCLM_TEND=',   tclm_time(it2,itrc)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -tclm_origin_date_in_sec*sec2day
-#endif 
+# endif
           may_day_flag=2
         endif
        endif  !got_tclm
@@ -814,7 +814,7 @@ C$    integer  trd, omp_get_thread_num
       return
       end
 #else
-      subroutine get_tclima_empty 
+      subroutine get_tclima_empty
       return
       end
 #endif /* TCLIMATOLOGY && !ANA_TCLIMA */

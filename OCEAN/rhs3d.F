@@ -129,7 +129,7 @@
      &      -sign(1.,ua)*(
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
-# if  defined UV_HADV_WENO5 || defined UV_VADV_WENO5
+# if defined UV_HADV_WENO5 || defined UV_VADV_WENO5
       REAL    :: flux3_weno, flux5_weno
 # endif
 !
@@ -187,11 +187,11 @@
       enddo
       do j=Jstr,Jend
         do i=IstrU,Iend
-#ifdef STRESS_AT_RHO_POINTS
+#  ifdef STRESS_AT_RHO_POINTS
           u_str = 0.5*( sustr(i,j)+sustr(i-1,j) )
-#else
+#  else
           u_str = sustr(i,j)
-#endif
+#  endif
           Uwrk(i,j)=u_str*4./((wrk(i-1,j)+wrk(i,j))
      &                             *(pm (i-1,j)+pm (i,j))
      &                             *(pn (i-1,j)+pn (i,j)))
@@ -203,11 +203,11 @@
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
-#ifdef STRESS_AT_RHO_POINTS
+#  ifdef STRESS_AT_RHO_POINTS
           v_str = 0.5*( svstr(i,j)+svstr(i,j-1) )
-#else
+#  else
           v_str = svstr(i,j)
-#endif
+#  endif
           Vwrk(i,j)=v_str*4./((wrk(i,j-1)+wrk(i,j))
      &                             *(pm (i,j-1)+pm (i,j))
      &                             *(pn (i,j-1)+pn (i,j)))
@@ -426,7 +426,7 @@
 #   else
             cff1 = 0.0
 #   endif
-            UFx(i,j)=(cff+cff1)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))  
+            UFx(i,j)=(cff+cff1)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=(cff+cff1)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
             UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFx(i,j)=cff*(ust(i,j,k)+ust(i+1,j,k))
@@ -716,7 +716,7 @@
      &                    -0.125*(Huxx(i,j)+Huxx(i+1,j)))
 
 #   else
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFx4(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
@@ -724,7 +724,7 @@
      &                         *(Huon(i,j,k)+Huon(i+1,j,k)
      &                     -0.125*(Huxx(i,j)+Huxx(i+1,j)))
             endif
-#     endif
+#    endif
             cffX=u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
             if (cffX.gt.0.) then
               curvX=uxx(i,j)
@@ -801,7 +801,7 @@
      &                    -0.125*(Hvee(i,j)+Hvee(i,j+1)))
 
 #   else
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFe4(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
@@ -809,7 +809,7 @@
      &                         *(Hvom(i,j,k)+Hvom(i,j+1,k)
      &                     -0.125*(Hvee(i,j)+Hvee(i,j+1)))
             endif
-#     endif
+#    endif
             cffE=v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
             if (cffE.gt.0.) then
               curvE=vee(i,j)
@@ -885,7 +885,7 @@
      &                        *(Hvom(i,j,k)+Hvom(i-1,j,k)
      &                    -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
 #   else
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFe4(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
@@ -893,7 +893,7 @@
      &                         *(Hvom(i,j,k)+Hvom(i-1,j,k)
      &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
             endif
-#     endif
+#    endif
             cffX=u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
             cffE=Hvom(i,j,k)+Hvom(i-1,j,k)
             if (cffE.gt.0.) then
@@ -971,7 +971,7 @@
      &                    -0.125*(Huee(i,j)+Huee(i,j-1)))
 
 #   else
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFx4(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
@@ -979,7 +979,7 @@
      &                         *(Huon(i,j,k)+Huon(i,j-1,k)
      &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
             endif
-#     endif
+#    endif
             cffE=v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
             cffX=Huon(i,j,k)+Huon(i,j-1,k)
             if (cffX.gt.0.) then
@@ -1028,9 +1028,9 @@
 !
 ! Correction with Total Variance Diminishing method
 !
-#  ifdef UV_HADV_TVD
-#   include "uvhadv_tvd.h"
-#  endif
+#   ifdef UV_HADV_TVD
+#    include "uvhadv_tvd.h"
+#   endif
 
 #  endif /* UV_HADV_UP3 */
 !
@@ -1439,7 +1439,7 @@
 #    ifdef DIAGNOSTICS_EK_MLD
             ekwrkVadv_mld(i,j,1) = 0
 #    endif
-          enddo         
+          enddo
 #   endif
           do k=1,N
             do i=IstrU,Iend
@@ -1656,7 +1656,7 @@
 #    ifdef DIAGNOSTICS_EK_MLD
               ekwrkVadv_mld(i,j,2) = 0
 #    endif
-            enddo         
+            enddo
 #   endif
             do k=1,N
               do i=Istr,Iend

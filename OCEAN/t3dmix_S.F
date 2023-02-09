@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -22,7 +22,7 @@
 
 # ifdef AGRIF
         if (AGRIF_Root()) then
-            call t3dmix_tile (istr,iend,jstr,jend, itrc, 
+            call t3dmix_tile (istr,iend,jstr,jend, itrc,
      &               A2d(1,1,trd),A2d(1,2,trd), A2d(1,3,trd),
      &                            A2d(1,4,trd), A2d(1,5,trd))
 
@@ -32,7 +32,7 @@
      &                             A2d(1,4,trd), A2d(1,5,trd))
 
         endif
-# else 
+# else
        call t3dmix_tile(istr,iend,jstr,jend, itrc, A2d(1,1,trd),
      &                               A2d(1,2,trd), A2d(1,3,trd),
      &                               A2d(1,4,trd), A2d(1,5,trd))
@@ -47,7 +47,7 @@
 !---------------------------------------------------------------------
 !
 !PARENT
-! 
+!
       subroutine t3dmix_tile (istr,iend,jstr,jend, itrc,
      &                    FX,FE, LapT, diff3u,diff3v)
 !
@@ -63,7 +63,7 @@
 !---------------------------------------------------------------------
 ! ******************************Common Code***************************
 !---------------------------------------------------------------------
-!!   
+!!
       implicit none
 #include "param.h"
       integer itrc, istr,iend,jstr,jend, i,j,k, kmld,
@@ -77,27 +77,27 @@
 #include "grid.h"
 #include "ocean3d.h"
 #include "mixing.h"
-# ifdef CLIMAT_TS_MIXH
-#include "climat.h"
+#ifdef CLIMAT_TS_MIXH
+# include "climat.h"
 #endif
 #include "scalars.h"
 #ifdef DIAGNOSTICS_TS
 # include "diagnostics.h"
 #endif
-# ifdef DIAGNOSTICS_PV
-#  include "diags_pv.h"
-# endif
+#ifdef DIAGNOSTICS_PV
+# include "diags_pv.h"
+#endif
 !
 #ifdef AGRIF
-#include "zoom.h"
+# include "zoom.h"
 #endif
 !
 #include "compute_auxiliary_bounds.h"
 !
 #ifdef CHILD_SPG
-#define TCLM tsponge
+# define TCLM tsponge
 #else
-#define TCLM tclm
+# define TCLM tclm
 #endif
 !
 #ifdef MASKING
@@ -115,7 +115,7 @@
       if (EASTERN_EDGE) then
         imax=iend
       else
-        imax=iend+1 
+        imax=iend+1
       endif
 #else
       imin=istr-1
@@ -143,7 +143,7 @@
 !++=============================================================
         do j=jmin,jmax
           do i=imin,imax+1
-            diff3u(i,j)= 
+            diff3u(i,j)=
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i-1,j,itrc))
 # if defined DIF_COEF_3D && defined TS_DIF_SMAGO
@@ -167,7 +167,7 @@
         enddo
         do j=jmin,jmax+1
           do i=imin,imax
-            diff3v(i,j)= 
+            diff3v(i,j)=
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i,j-1,itrc))
 # if defined DIF_COEF_3D && defined TS_DIF_SMAGO
@@ -189,7 +189,7 @@
 #endif
           enddo
         enddo
- 
+
 #ifdef TS_DIF2
 !
 !--------------------------------------------------------------------
@@ -232,7 +232,7 @@
           enddo
         enddo
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -248,9 +248,9 @@
             Trate(i,j,k,itrc)=(Hz(i,j,k)*t(i,j,k,nnew,itrc)
      &                    -Hz_bak(i,j,k)*t(i,j,k,nstp,itrc))
      &                                            /(dt*cff1)
-#   ifdef MASKING
+#  ifdef MASKING
      &                                        * rmask(i,j)
-#   endif
+#  endif
 !
 ! Divide all diagnostic terms by the cell volume
 ! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
@@ -397,10 +397,10 @@
           do i=istr,iend+1
               FX(i,j)=-0.5*diff3u(i,j)
      &                    *pmon_u(i,j)*(Hz(i,j,k)+Hz(i-1,j,k))
-     &                                *(LapT(i,j)-LapT(i-1,j)) 
-#    ifdef MASKING
+     &                                *(LapT(i,j)-LapT(i-1,j))
+# ifdef MASKING
      &                                        * umask(i,j)
-#    endif
+# endif
           enddo
         enddo
         do j=jstr,jend+1
@@ -408,9 +408,9 @@
               FE(i,j)=-0.5*diff3v(i,j)
      &                    *pnom_v(i,j)*(Hz(i,j,k)+Hz(i,j-1,k))
      &                                *(LapT(i,j)-LapT(i,j-1))
-#    ifdef MASKING
+# ifdef MASKING
      &                                         * vmask(i,j)
-#    endif
+# endif
           enddo
         enddo
 !
@@ -425,7 +425,7 @@
           enddo
         enddo
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -442,9 +442,9 @@
             Trate(i,j,k,itrc)=(Hz(i,j,k)*t(i,j,k,nnew,itrc)
      &                    -Hz_bak(i,j,k)*t(i,j,k,nstp,itrc))
      &                                            /(dt*cff1)
-#   ifdef MASKING
+#  ifdef MASKING
      &                                        * rmask(i,j)
-#   endif
+#  endif
 !
 ! Divide all diagnostic terms by the cell volume
 ! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
@@ -455,12 +455,12 @@
 
             THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
             Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-            
-# if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
 
-# include "finalize_diagnostics_tsadv.h"
+#  if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
 
-# endif
+#   include "finalize_diagnostics_tsadv.h"
+
+#  endif
           enddo
         enddo
 # endif /* DIAGNOSTICS_TS */
@@ -469,14 +469,14 @@
       enddo   ! --> k
 !---------------------------------------------------------------------
 !
-# ifdef DIAGNOSTICS_TS
-#  if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
+#ifdef DIAGNOSTICS_TS
+# if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
 !==========================================================
 ! Tracer diagnostics averaged over the MLD
 !==========================================================
 !
-#   define T_mld_nnew FX
-#   define T_mld_nstp FE
+#  define T_mld_nnew FX
+#  define T_mld_nstp FE
        do j=Jstr,Jend
          do i=Istr,Iend
             THmix_mld(i,j,itrc)=0.
@@ -486,11 +486,11 @@
        enddo
        do j=Jstr,Jend
          do i=Istr,Iend
-#   ifdef LMD_SKPP
+#  ifdef LMD_SKPP
            kmld=kbl(i,j)
-#   else
+#  else
            kmld=N-5
-#   endif
+#  endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
@@ -503,12 +503,12 @@
 
        do j=Jstr,Jend
          do i=Istr,Iend
-#   if defined LMD_SKPP || defined GLS_MIXING
+#  if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
            kmld=kbl_nstp(i,j)
-#   else
+#  else
            kmld=N-5
-#   endif
+#  endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
@@ -529,15 +529,15 @@
      &                          TForc_mld(i,j,itrc)
          enddo
        enddo
-#   undef T_mld_nnew 
-#   undef T_mld_nstp
-#  endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
+#  undef T_mld_nnew
+#  undef T_mld_nstp
+# endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
-#  ifdef DIAGNOSTICS_DEBUG
+# ifdef DIAGNOSTICS_DEBUG
        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
          i=5
          j=5
-#   if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
+#  if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
          cff=Trate_mld(i,j,itrc)-
      &       TXadv_mld(i,j,itrc)-
      &       TYadv_mld(i,j,itrc)-
@@ -547,7 +547,7 @@
      &       Tentr_mld(i,j,itrc)-
      &       TForc_mld(i,j,itrc)
        print *,'T3DMIX_S  : T budget closure MLD   : ',cff
-#   endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
+#  endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
           cff=Trate(i,j,N-5,itrc)-
      &        TXadv(i,j,N-5,itrc)-
      &        TYadv(i,j,N-5,itrc)-
@@ -557,18 +557,18 @@
      &        TForc(i,j,N-5,itrc)
        print *,'T3DMIX_S  : T budget closure k=N-5 : ',cff
       endif
-#  endif /* DIAGNOSTICS_DEBUG */
-# endif /* DIAGNOSTICS_TS */
+# endif /* DIAGNOSTICS_DEBUG */
+#endif /* DIAGNOSTICS_TS */
 !------------------------------------------------------------------
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#  ifdef THREE_GHOST_POINTS_TS
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))
-#  else
+# else
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
-#  endif
 # endif
+#endif
 !
       return
       end

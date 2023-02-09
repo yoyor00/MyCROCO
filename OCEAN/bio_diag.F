@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -30,22 +30,22 @@
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc, iocheck,
      &                             trd,omp_get_thread_num
       integer nbtrc
-#if defined PISCES
+# if defined PISCES
       parameter(nbtrc = 9)
-#else
+# else
       parameter(nbtrc = 4)
-#endif
+# endif
       integer my_itrc(1:nbtrc)
 !
 !
       real cff1, NSUB
       real*QUAD cff, my_sum(0:nbtrc)
-#ifdef MPI
+# ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
       real*QUAD buff(0:nbtrc)
       common /xyz_bio/ buff
-#endif
+# endif
 
 # ifdef BIO_NChlPZD
       my_itrc(1)=iNO3_
@@ -87,7 +87,7 @@
            cff1=1./(pm(i,j)*pn(i,j))
 # endif
            do k=1,N
-            cff=cff1*Hz(i,j,k)       ! <-- volume of grid box(i,j,k) 
+            cff=cff1*Hz(i,j,k)       ! <-- volume of grid box(i,j,k)
             my_sum(0)=my_sum(0)+cff  ! <-- accumulate volume
              do itrc=1,nbtrc
               my_sum(itrc)=my_sum(itrc)+cff*t(i,j,k,nstp,my_itrc(itrc))
@@ -101,7 +101,7 @@
 ! resets global sums before global summation starts; after the global
 ! summation is completed, thread, which is the last one to enter the
 ! critical region, finalizes the computation of diagnostics and
-! prints them out. 
+! prints them out.
 !
         if (SINGLE_TILE_MODE) then
           NSUB=1
@@ -114,7 +114,7 @@ C$OMP CRITICAL (bio_cr_rgn)
             do itrc=0,nbtrc
               global_sum(itrc)=QuadZero   ! <-- Reset global sums
             enddo
-          endif 
+          endif
                                        !-->  Perform global summation
           do itrc=0,nbtrc
             global_sum(itrc)=global_sum(itrc)+my_sum(itrc)
@@ -124,7 +124,7 @@ C$OMP CRITICAL (bio_cr_rgn)
           if (bio_count.eq.NSUB) then      ! the last thread, whoever
             bio_count=0                    ! it is, not always master.
 # ifdef MPI
-            if (NNODES.gt.1) then         ! Perform global summation 
+            if (NNODES.gt.1) then         ! Perform global summation
               size=NNODES                 ! among MPI processes
    10          step=(size+1)/2
                 if (mynode.ge.step .and. mynode.lt.size) then
@@ -177,28 +177,28 @@ C$OMP CRITICAL (bio_cr_rgn)
      &               A10,4x,A10,4x,A10,4x,A10,4x,A10,4x,3x,A30)
 # endif
             endif
-#if ! defined PISCES
-            write(stdout,2) iic-1,tdays, 
-     &                      global_sum(1),  
-     &                      global_sum(2), 
-     &                      global_sum(3),  
-     &                      global_sum(4) 
+# if ! defined PISCES
+            write(stdout,2) iic-1,tdays,
+     &                      global_sum(1),
+     &                      global_sum(2),
+     &                      global_sum(3),
+     &                      global_sum(4)
      &                    , trd
    2        format(I6, F12.5, 4(1PE14.7), I3)
-#else
-            write(stdout,2) iic-1,tdays, 
-     &                      global_sum(1),  
-     &                      global_sum(2), 
-     &                      global_sum(3),  
-     &                      global_sum(4), 
-     &                      global_sum(5), 
-     &                      global_sum(6), 
-     &                      global_sum(7), 
+# else
+            write(stdout,2) iic-1,tdays,
+     &                      global_sum(1),
+     &                      global_sum(2),
+     &                      global_sum(3),
+     &                      global_sum(4),
+     &                      global_sum(5),
+     &                      global_sum(6),
+     &                      global_sum(7),
      &                      global_sum(8),
-     &                      global_sum(9), 
+     &                      global_sum(9),
      &                      trd
    2        format(I6, F12.5, 9(1PE14.7), I3)
-#endif
+# endif
 # ifdef MPI
             endif    ! <-- mynode.eq.0
 # endif

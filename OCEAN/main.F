@@ -193,26 +193,26 @@
 !
 ! Online spectral analysis module
 !
-# ifdef ONLINE_ANALYSIS
+#ifdef ONLINE_ANALYSIS
       CALL init_parameter_oa(
      &  io_unit_oa=stdout
-#ifdef MPI
+# ifdef MPI
      & ,if_print_node_oa=(mynode==0)
-#else
+# else
      & ,if_print_node_oa=.true.
-#endif
-#ifdef MPI
+# endif
+# ifdef MPI
      & ,mynode_oa=mynode
      & ,comm_oa=MPI_COMM_WORLD
-#else
+# else
      & ,mynode_oa=0
      & ,comm_oa=0
-#endif
+# endif
      & ,dti_oa=dt
      & ,kount0_oa=ntstart-1
      & ,nt_max_oa=ntimes
      & ,ntiles=NSUB_X*NSUB_E)
-# endif
+#endif
 !
 !
 !----------------------------------------------------------------------
@@ -408,9 +408,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
 # ifdef AGRIF
       if (Agrif_lev_sedim.EQ.0) call get_bsedim
-#  else
+# else
       call get_bsedim
-#  endif
+# endif
 #endif
 !
 #if defined SEDIMENT && !defined ANA_SEDIMENT
@@ -425,9 +425,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
-# ifdef SUBSTANCE
+#ifdef SUBSTANCE
       call substance_surfcell
-# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  MUSTANG : initialization
@@ -495,14 +495,14 @@ CR      write(*,*)  ' -2' MYID
 !  for sea surface height, momentum and tracers
 !----------------------------------------------------------------------
 !
-# if defined TNUDGING  || defined ZNUDGING  \
+#if defined TNUDGING  || defined ZNUDGING  \
   || defined M2NUDGING || defined M3NUDGING \
                        || defined SPONGE
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_nudgcof (tile)
       enddo
-# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Read initial climatology fields from NetCDF file
@@ -528,7 +528,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #if !defined ANA_BRY_WKB && defined WKB_WWAVE
       call get_bry_wkb
-# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Set analytical initial climatology fields
@@ -960,7 +960,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 !!!      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
 !!!#   endif
 
-#  if  !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
+#  if !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
        call MPI_Finalize (ierr)      !  if No coupling + No AGRIF : MPI_Finalize is needed
 #  endif
 

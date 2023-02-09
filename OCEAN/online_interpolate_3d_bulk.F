@@ -2,19 +2,19 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 !
 !  This is the "online_interpolate_3d_bulk.F" script
 !------------------------------------------------------------------------------
-!  This file contains the subfunctions enabling the online extraction of the 
-!  forcing from a NCEP/CFSR dataset. A spatial and time interpolation are applied 
-!  to the extracted data in order to adapt these to the considered simulation 
+!  This file contains the subfunctions enabling the online extraction of the
+!  forcing from a NCEP/CFSR dataset. A spatial and time interpolation are applied
+!  to the extracted data in order to adapt these to the considered simulation
 !  domain as well as the associated MPI/OPENMP discretisation (if defined MPI/
 !  OPENMP).
 !------------------------------------------------------------------------------
@@ -28,14 +28,14 @@
      &                                      lonref,latref,varref,
      &                                      blkvar_id,iblkrec)
 !------------------------------------------------------------------------------
-!  This subfunction complete the call to the interpolation and the recalculation 
+!  This subfunction complete the call to the interpolation and the recalculation
 !  of the forcing fields to generate the roms bulk forcing (tairg, rhumg, prateg,
-!  radlwg, radswg, uwndg, vwndg) on the current tile. 
+!  radlwg, radswg, uwndg, vwndg) on the current tile.
 !------------------------------------------------------------------------------
 !  The main steps of this interpolation and recalculation are:
-!  - Interpolation from the varref matrix of the dum_array matrix on the 
+!  - Interpolation from the varref matrix of the dum_array matrix on the
 !  simulation domain for the blkvar_id variable.
-!  - Recalculation of the roms bulk forcings (tairg, rhumg, prateg, radlwg, 
+!  - Recalculation of the roms bulk forcings (tairg, rhumg, prateg, radlwg,
 !  radswg, uwndg, vwndg) from the interpolated dum_array fields.
 
 !  INPUTS
@@ -50,7 +50,7 @@
 !
 !  OUTPUTS
 !  dum_array (interpolated forcing fields)
-!  tairg, rhumg, prateg, radlwg, radswg, uwndg, vwndg (recalculated roms 
+!  tairg, rhumg, prateg, radlwg, radswg, uwndg, vwndg (recalculated roms
 !                                                             bulk forcings)
       implicit none
 # include "param.h"
@@ -61,7 +61,7 @@
 # include "online.h"
 # include "abl1d.h"
       integer, intent(in) :: NXref, NYref, NZref, blkvar_id, iblkrec
-      real(kind=8), intent(in) :: lonref(1:NXref), latref(1:NYref)    
+      real(kind=8), intent(in) :: lonref(1:NXref), latref(1:NYref)
       real(kind=8), intent(in) :: varref(1:NXref,1:NYref,1:NZref)
       real blk_dum1(GLOBAL_2D_ARRAY)
       real blk_dum2(GLOBAL_2D_ARRAY)
@@ -74,7 +74,7 @@
       !--------
       ! Limits:
       !--------
-      ! Local loop ranges 
+      ! Local loop ranges
       ! This is not parallel with openMP
 
 # ifdef MPI
@@ -89,12 +89,12 @@
       ! Interpolation:
       !===============
 
-# ifdef CUBIC_INTERP 
+# ifdef CUBIC_INTERP
 #  define MYINTERP cinterp2d
 # else
 #  define MYINTERP linterp2d
 # endif
-  
+
       if (blkvar_id.eq.1) then
 !
 ! 1 process Tair
@@ -104,7 +104,7 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref(:,:,k),
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                pt_dtag(GLOBAL_2D_ARRAY,k,iblkrec))
         enddo
@@ -135,7 +135,7 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref(:,:,k),
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                pq_dtag(GLOBAL_2D_ARRAY,k,iblkrec))
         enddo
@@ -146,7 +146,7 @@
           enddo
         enddo
 
-# ifndef AROME        
+# ifndef AROME
         do j=J_RANGE
           do i=I_RANGE
             ew=6.1121*(1.0007+3.46e-6*Pref)*
@@ -156,7 +156,7 @@
             rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
           enddo
         enddo
-# endif        
+# endif
 
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,
@@ -176,7 +176,7 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref(:,:,k),
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                pu_dtag(GLOBAL_2D_ARRAY,k,iblkrec))
         enddo
@@ -196,7 +196,7 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref(:,:,k),
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                pv_dtag(GLOBAL_2D_ARRAY,k,iblkrec))
         enddo
@@ -206,7 +206,7 @@
             vwndg(i,j,iblkrec)=pv_dtag(i,j,1,iblkrec)
           enddo
         enddo
-     
+
         do j=J_RANGE
           do i=I_RANGE
             wspdg(i,j,iblkrec)= sqrt(uwndg(i,j,iblkrec)
@@ -230,7 +230,7 @@
           call exchange_r2d_tile(1,Lm,1,Mm,
      &                         pv_dtag(START_2D_ARRAY,k,iblkrec))
         enddo
-#  endif
+# endif
 
       elseif (blkvar_id.eq.11) then
 
@@ -252,7 +252,7 @@
           call exchange_r2d_tile(1,Lm,1,Mm,
      &                         pgu_dtag(START_2D_ARRAY,k,iblkrec))
         enddo
-#  endif
+# endif
 
       elseif (blkvar_id.eq.12) then
 
@@ -274,11 +274,11 @@
           call exchange_r2d_tile(1,Lm,1,Mm,
      &                         pgv_dtag(START_2D_ARRAY,k,iblkrec))
         enddo
-#  endif
+# endif
 
 
       endif
- 
+
       return
       end
 

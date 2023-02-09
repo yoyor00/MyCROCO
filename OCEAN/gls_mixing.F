@@ -41,7 +41,7 @@
 
       call gls_mixing_tile ( Istr, Iend, Jstr, Jend,
      &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
-     &                    A3d(1, 4,trd), A3d(1, 5,trd), A2d(1, 2,trd), 
+     &                    A3d(1, 4,trd), A3d(1, 5,trd), A2d(1, 2,trd),
      &                    A2d(1, 3,trd), A2d(1, 4,trd), A2d(1, 5,trd),
      &                    A2d(1, 6,trd), A2d(1, 7,trd), A2d(1, 8,trd))
 
@@ -148,19 +148,19 @@
       real            :: rp,    rm,    rn              !<-- n,m and p exponents
       real            :: beta1, beta2, beta3m, beta3p  !<-- beta terms for psi equation
       real            :: OneOverSig(2)   !<-- inverse of Schmidt number for tke and psi
-#  if defined GLS_KOMEGA                            /* K-omega model */
+# if defined GLS_KOMEGA                            /* K-omega model */
       parameter( rp    = -1.0 , rm    = 0.5  , rn     = -1.0           )
       parameter( beta1 = 0.555, beta2 = 0.833, beta3m = -0.6, beta3p = 1.0)
-      parameter( OneOverSig = (/ 0.5, 0.5 /) )       
-#  elif defined GLS_KEPSILON                      /* K-epsilon model */
+      parameter( OneOverSig = (/ 0.5, 0.5 /) )
+# elif defined GLS_KEPSILON                      /* K-epsilon model */
       parameter( rp    = 3.0 , rm    = 1.5 , rn     = -1.0             )
       parameter( beta1 = 1.44, beta2 = 1.92, beta3m = -0.4, beta3p = 1.0)
-      parameter( OneOverSig = (/ 1.0, 0.7692 /) )  
-#  else                                                 /* GEN model */
+      parameter( OneOverSig = (/ 1.0, 0.7692 /) )
+# else                                                 /* GEN model */
       parameter( rp    = 0.0, rm    = 1.0 , rn     = -0.67             )
       parameter( beta1 = 1.0, beta2 = 1.22, beta3m =  0.05, beta3p = 1.0)
-      parameter( OneOverSig = (/ 1.25, 0.9345 /) ) 
-#  endif
+      parameter( OneOverSig = (/ 1.25, 0.9345 /) )
+# endif
       REAL, PARAMETER :: e1 =  3.0 + 1.*rp / rn
       REAL, PARAMETER :: e2 =  1.5 + 1.*rm / rn
       REAL, PARAMETER :: e3 = -1.0 / rn
@@ -397,8 +397,8 @@
 !        = (dudz + dwdx)^2 + (dvdz + dwdy)^2 + (dvdx + dudy)^2
 !          + 2 dudx^2 + 2 dvdy^2 + 2 dwdz^2
 !
-!  Also compute enstrophy to identify nearly potential flow regions 
-!  (Larsen & Fuhrman, 2018) : 
+!  Also compute enstrophy to identify nearly potential flow regions
+!  (Larsen & Fuhrman, 2018) :
 !    V^2 = 2 VijVij      -- Vij = 0.5*(dui/dxj - duj/dxi) --
 !        = (dudz - dwdx)^2 + (dvdz - dwdy)^2 + (dvdx - dudy)^2
 !--------------------------------------------------------------------
@@ -475,7 +475,7 @@
 !--------------------------------------------------------------------
 !
       DO j=jmin,jmax
-         DO i=imin,imax 
+         DO i=imin,imax
 # ifdef OA_COUPLING
             ustar_sfc_sq(i,j)=smstr(i,j)
 # else
@@ -488,7 +488,7 @@
 #  endif
             ustar_sfc_sq( i, j ) = sqrt(su_r**2+sv_r**2)
 # endif
-            ustar_bot_sq( i, j ) = 
+            ustar_bot_sq( i, j ) =
      &                        sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                             +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2 )
          ENDDO
@@ -539,7 +539,7 @@
                   cff3m =  ig1+ig2*beta3m  * invk*gls
                   cff3p =  ig1+ig2*beta3p  * invk*gls
                   ! Shear and buoyancy production
-                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)    
+                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)
 # if defined TEMPERATURE || defined SALINITY
                   Bprod = -Akt_old(i,j,k)*( cff3m*MAX(bvf(i,j,k),0.)
      &                                   +  cff3p*MIN(bvf(i,j,k),0.) )
@@ -610,11 +610,11 @@
      &                                  *   zalp*   wepb(i,j)
 # endif
                   ! bottom
-#  ifdef BBL
+# ifdef BBL
                   z0_b = MAX( Zbapp(i,j) , Zobmin )
-#  else
+# else
                   z0_b = MAX( Zob(i,j) , Zobmin )
-#  endif
+# endif
                   cff = 0.5*(tke_new(i,j,1)+tke_new(i,j,0))
                   lgthsc = vonKar*(0.5*Hz(i,j,1)+z0_b)
                   trb_bot = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
@@ -685,7 +685,7 @@
 #  define FE ustar_bot_sq
 #  define FE1 work
       DO k=0,N
-#        include "gls_smooth.h"
+#  include "gls_smooth.h"
       ENDDO
 #  undef FX
 #  undef FE
@@ -700,7 +700,7 @@
 #  define FE ustar_bot_sq
 #  define FE1 work
       DO k=0,N
-#        include "gls_smooth.h"
+#  include "gls_smooth.h"
       ENDDO
 #  undef FX
 #  undef FE
@@ -879,12 +879,12 @@
           trb(istr-1,jstr-1,k,nnew,itke)=trb(istr,jstr,k,nnew,itke)
           trb(istr-1,jstr-1,k,nnew,igls)=trb(istr,jstr,k,nnew,igls)
           Akv(istr-1,jstr-1,k      )=Akv(istr,jstr,k      )
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(istr-1,jstr-1,k,itemp)=Akt(istr,jstr,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(istr-1,jstr-1,k,isalt)=Akt(istr,jstr,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
@@ -892,12 +892,12 @@
           trb(istr-1,jend+1,k,nnew,itke)=trb(istr,jend,k,nnew,itke)
           trb(istr-1,jend+1,k,nnew,igls)=trb(istr,jend,k,nnew,igls)
           Akv(istr-1,jend+1,k      )=Akv(istr,jend,k      )
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(istr-1,jend+1,k,itemp)=Akt(istr,jend,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(istr-1,jend+1,k,isalt)=Akt(istr,jend,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
@@ -905,12 +905,12 @@
           trb(iend+1,jstr-1,k,nnew,itke)=trb(iend,jstr,k,nnew,itke)
           trb(iend+1,jstr-1,k,nnew,igls)=trb(iend,jstr,k,nnew,igls)
           Akv(iend+1,jstr-1,k      )=Akv(iend,jstr,k      )
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(iend+1,jstr-1,k,itemp)=Akt(iend,jstr,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(iend+1,jstr-1,k,isalt)=Akt(iend,jstr,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
@@ -918,12 +918,12 @@
           trb(iend+1,jend+1,k,nnew,itke)=trb(iend,jend,k,nnew,itke)
           trb(iend+1,jend+1,k,nnew,igls)=trb(iend,jend,k,nnew,igls)
           Akv(iend+1,jend+1,k)=Akv(iend,jend,k)
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(iend+1,jend+1,k,itemp)=Akt(iend,jend,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(iend+1,jend+1,k,isalt)=Akt(iend,jend,k,isalt)
-#  endif
+#   endif
         enddo
       endif
 #  endif

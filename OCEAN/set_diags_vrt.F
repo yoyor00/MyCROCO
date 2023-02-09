@@ -11,7 +11,7 @@
       call set_diags_vrt_tile (istr,iend,jstr,jend,tile)
       return
       end
- 
+
       subroutine set_diags_vrt_tile (istr,iend,jstr,jend,tile)
 !
       implicit none
@@ -22,7 +22,7 @@
      &                       , itrc, k
 # endif
       real cff,cff1,cff2,
-#ifdef DIAGNOSTICS_UV
+# ifdef DIAGNOSTICS_UV
      &     wrkXadv(PRIVATE_2D_SCRATCH_ARRAY,2),
      &     wrkYadv(PRIVATE_2D_SCRATCH_ARRAY,2),
      &     wrkHdiff(PRIVATE_2D_SCRATCH_ARRAY,2),
@@ -32,12 +32,12 @@
      &     wrkVmix(PRIVATE_2D_SCRATCH_ARRAY,2),
      &     wrkVmix2(PRIVATE_2D_SCRATCH_ARRAY,2),
      &     wrkrate(PRIVATE_2D_SCRATCH_ARRAY,2),
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
      &     wrkBaro(PRIVATE_2D_SCRATCH_ARRAY,2),
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
      &     wrkfast(PRIVATE_2D_SCRATCH_ARRAY,2),
-# endif
+#  endif
 # endif
      &     dH(N), jstri(2), istri(2),
      &     jendi(2), iendi(2)
@@ -47,13 +47,13 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 
-#if defined DIAGNOSTICS_UV
-# include "diagnostics.h"
+# if defined DIAGNOSTICS_UV
+#  include "diagnostics.h"
 # endif
 
-#include "diags_vrt.h"
+# include "diags_vrt.h"
 
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 
 
 ! ------- ------------- ------ ------ - -----
@@ -83,7 +83,7 @@
         !iendi(2) = iendR
 
 
-#ifdef DIAGNOSTICS_UV
+# ifdef DIAGNOSTICS_UV
 
         do itrc=1,2
          do j=jstri(itrc),jendi(itrc)
@@ -95,7 +95,7 @@
                dH(k) = (Hz(i,j,k)+Hz(i-1,j,k))
      &                 /(pm(i,j)+pm(i-1,j))
               enddo
-            else          
+            else
               do k=1,N
                dH(k) = (Hz(i,j,k)+Hz(i,j-1,k))
      &                 /(pn(i,j)+pn(i,j-1))
@@ -167,30 +167,30 @@
      &         +Mrate(i,j,k,itrc)*dH(k)
            enddo
            ! ------- ------------- ------ ------ - -----
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
            wrkBaro(i,j,itrc)= MBaro(i,j,1,itrc)*dH(1)
 
            do k=2,N
              wrkBaro(i,j,itrc)= wrkBaro(i,j,itrc)
      &         + MBaro(i,j,k,itrc)*dH(k)
            enddo
-# endif
+#  endif
            ! ------- ------------- ------ ------ - -----
-# if defined M3FAST
+#  if defined M3FAST
            wrkfast(i,j,itrc)= Mfast(i,j,1,itrc)*dH(1)
 
            do k=2,N
              wrkfast(i,j,itrc)= wrkfast(i,j,itrc)
      &         + Mfast(i,j,k,itrc)*dH(k)
            enddo
-# endif
+#  endif
           enddo
          enddo
         enddo
 
 
 
-#endif
+# endif
 
 
       if (WESTERN_EDGE) then     ! Restrict extended ranges one
@@ -215,7 +215,7 @@
 
 
          do j=jmin,jend
-          do i=imin,iend      
+          do i=imin,iend
 
 
           cff = 0.25*(pm(i,j) + pm(i-1,j) + pm(i,j-1) + pm(i-1,j-1))
@@ -248,15 +248,15 @@
           vrtPrsgrd(i,j)=(wrkPrsgrd(i,j,2)-wrkPrsgrd(i-1,j,2))*cff1
      &           - (wrkPrsgrd(i,j,1) - wrkPrsgrd(i,j-1,1)) * cff2
 
-#ifdef DIAGNOSTICS_UV
+# ifdef DIAGNOSTICS_UV
           vrtHmix(i,j) =
      &           (wrkHmix(i,j,2) - wrkHmix(i-1,j,2)) * cff1
      &         - (wrkHmix(i,j,1) - wrkHmix(i,j-1,1)) * cff2
-#else
+# else
           vrtHmix(i,j) =
      &           (wrkHmix(i,j,2,nstp) - wrkHmix(i-1,j,2,nstp)) * cff1
      &         - (wrkHmix(i,j,1,nstp) - wrkHmix(i,j-1,1,nstp)) * cff2
-#endif
+# endif
 
           vrtVmix(i,j) = (wrkVmix(i,j,2) - wrkVmix(i-1,j,2)) * cff1
      &           - (wrkVmix(i,j,1) - wrkVmix(i,j-1,1)) * cff2

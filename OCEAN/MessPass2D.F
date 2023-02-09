@@ -37,25 +37,25 @@
 CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j, isize,jsize,ksize,  iter,
      &        req(8), status(MPI_STATUS_SIZE,8), ierr, mdii,mdjj
-      real buf_snd4(Npts*Npts),     buf_snd2(Npts*Npts), 
+      real buf_snd4(Npts*Npts),     buf_snd2(Npts*Npts),
      &     buf_rev4(Npts*Npts),     buf_rev2(Npts*Npts),
-     &     buf_snd1(Npts*Npts),     buf_snd3(Npts*Npts), 
+     &     buf_snd1(Npts*Npts),     buf_snd3(Npts*Npts),
      &     buf_rev1(Npts*Npts),     buf_rev3(Npts*Npts)
       integer sub_X,size_X, sub_E,size_E
-#ifndef AGRIF      
-      parameter (sub_X=Lm,  size_X=Npts*(sub_X+2*Npts)-1, 
+# ifndef AGRIF
+      parameter (sub_X=Lm,  size_X=Npts*(sub_X+2*Npts)-1,
      &           sub_E=Mm,  size_E=Npts*(sub_E+2*Npts)-1)
-      real ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
+      real ibuf_sndN(0:size_X), ibuf_revN(0:size_X),
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
      &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
      &     jbuf_revW(0:size_E), jbuf_revE(0:size_E)
-#else
-      real, dimension(:), allocatable :: 
-     &     ibuf_sndN, ibuf_revN, 
+# else
+      real, dimension(:), allocatable ::
+     &     ibuf_sndN, ibuf_revN,
      &     ibuf_sndS, ibuf_revS,
      &     jbuf_sndW, jbuf_sndE,
      &     jbuf_revW, jbuf_revE
-#endif
+# endif
 !
 # include "compute_message_bounds.h"
 
@@ -64,7 +64,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
          size_X=Npts*(sub_X+2*Npts)-1  !7+Npts*sub_X
          sub_E=Mm
          size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
-         Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
+         Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X),
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
      &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
      &     jbuf_revW(0:size_E), jbuf_revE(0:size_E))
@@ -74,7 +74,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       isize=Npts*ishft                  ! sizes for side messages
       jsize=Npts*jshft                  ! in XI and ETA directions
 
-#define write !
+# define write !
 c*      write(*,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
 c*     &        'ii=',ii,'imin=',imin,'imax=',imax,
 c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
@@ -297,7 +297,7 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
            A(ipts-Npts,jpts-Npts)=A(ipts,jpts)
           enddo
         enddo
-       endif  
+       endif
 
       if ( CORNER_NE) then
         write(*,*) 'MessPass2D: 2.6', mynode
@@ -315,7 +315,7 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
             A(Lmmpi+ipts,Mmmpi+jpts)=A(Lmmpi+ipts-NPts,Mmmpi+jpts-Npts)
           enddo
         enddo
-       endif  
+       endif
 
       if (CORNER_SE) then
         write(*,*) 'MessPass2D: 2.7', mynode
@@ -326,14 +326,14 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
           enddo
         enddo
       endif
-      if (.not. CORNER_SE .and. 
+      if (.not. CORNER_SE .and.
      &  SOUTH_INTER .and. EAST_INTER ) then
         do jpts=1,Npts
           do ipts=1,Npts
             A(Lmmpi+ipts,jpts-Npts)=A(Lmmpi+ipts-Npts,jpts)
           enddo
-        enddo      
-      endif  
+        enddo
+      endif
 
 
       if (CORNER_NW) then
@@ -352,17 +352,17 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
             A(ipts-Npts,Mmmpi+jpts)=A(ipts,Mmmpi+jpts-NPts)
           enddo
         enddo
-       endif 
+       endif
 
 
 c      write(*,*) 'MessPass2D:    ', mynode,' exit'
 
-#if defined AGRIF
-         DeAllocate(ibuf_sndN, ibuf_revN, 
+# if defined AGRIF
+         DeAllocate(ibuf_sndN, ibuf_revN,
      &     ibuf_sndS, ibuf_revS,
      &     jbuf_sndW, jbuf_sndE,
      &     jbuf_revW, jbuf_revE)
-#endif
+# endif
 
       return
       end

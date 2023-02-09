@@ -2,22 +2,22 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 ! This is include file "grid.h": Environmental two-dimensional
 ! arrays associated with curvilinear horizontal coordinate system.
-! 
+!
 ! h       Model topography (bottom depth [m] at RHO-points.)
-! dh      Topograhy increment in case of moving bathymetry 
+! dh      Topograhy increment in case of moving bathymetry
 ! f       Coriolis parameter [1/s].
 ! fomn    Compound term, f/[pm*pn] at RHO points.
 !
-! angler  Angle [radians] between XI-axis and the direction 
+! angler  Angle [radians] between XI-axis and the direction
 !             to the EAST at RHO-points.
 !
 ! latr    Latitude (degrees_north) at RHO-, U-, and V-points.
@@ -56,26 +56,26 @@
 ! vmask
 ! pmask    pmask=(0=Land, 1=Sea, 1-gamma2 =boundary).
 !
-! reducu  reduction coefficient along x-axis for rivers sections  
-! reducv  reduction coefficient along y-axis for rivers sections  
+! reducu  reduction coefficient along x-axis for rivers sections
+! reducv  reduction coefficient along y-axis for rivers sections
 
       real h(GLOBAL_2D_ARRAY)
       real hinv(GLOBAL_2D_ARRAY)
       real f(GLOBAL_2D_ARRAY)
       real fomn(GLOBAL_2D_ARRAY)
-# ifdef MORPHODYN
+#ifdef MORPHODYN
       real dh(GLOBAL_2D_ARRAY)
-# endif      
+#endif
       common /grid_h/h /grid_hinv/hinv /grid_f/f /grid_fomn/fomn
-# ifdef MORPHODYN
+#ifdef MORPHODYN
       common /grid_dh/dh
-# endif      
-      
+#endif
 
-# ifdef CURVGRID
+
+#ifdef CURVGRID
       real angler(GLOBAL_2D_ARRAY)
       common /grid_angler/angler
-# endif
+#endif
 
 #ifdef SPHERICAL
       real latr(GLOBAL_2D_ARRAY)
@@ -142,7 +142,7 @@
       real umask(GLOBAL_2D_ARRAY)
       real vmask(GLOBAL_2D_ARRAY)
       real pmask2(GLOBAL_2D_ARRAY)
-      common /mask_r/rmask 
+      common /mask_r/rmask
       common /mask_p/pmask
       common /mask_u/umask
       common /mask_v/vmask
@@ -171,13 +171,13 @@
       real vmask_wavewet(GLOBAL_2D_ARRAY)
       real Dcrit_wave(GLOBAL_2D_ARRAY)
       real wave_wetdry(GLOBAL_2D_ARRAY)
-      common /mask_r_wavewet/rmask_wavewet 
+      common /mask_r_wavewet/rmask_wavewet
       common /mask_p_wavewet/pmask_wavewet
-      common /mask_u_wavewet/umask_wavewet 
+      common /mask_u_wavewet/umask_wavewet
       common /mask_v_wavewet/vmask_wavewet
       common /Dcrit_wavewet/Dcrit_wave
       common /wave_wetdry_wet/wave_wetdry
-#endif 
+#endif
 
 #ifdef REDUC_SECTION
       real ureduc(GLOBAL_2D_ARRAY)

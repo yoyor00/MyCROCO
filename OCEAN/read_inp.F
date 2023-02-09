@@ -197,11 +197,11 @@
 #ifdef AGRIF
       if (.Not.Agrif_Root()) then
         lstr=lenstr(fname)
-#ifdef AGRIF_ADAPTIVE
+# ifdef AGRIF_ADAPTIVE
         fname=fname(1:lstr) / / '.1'
-#else
+# else
         fname=fname(1:lstr) / / '.' / / Agrif_Cfixed()
-#endif
+# endif
         lstr=lenstr(fname)
       endif
 #endif
@@ -258,27 +258,27 @@
 #endif
 #ifdef DIAGNOSTICS_UV
       wrtdiaM(3)=.false.
-#ifdef AVERAGES
+# ifdef AVERAGES
       wrtdiaM_avg(3)=.false.
-#endif
+# endif
 #endif
 #ifdef DIAGNOSTICS_VRT
       wrtdiags_vrt(3)=.false.
-#ifdef AVERAGES
+# ifdef AVERAGES
       wrtdiags_vrt_avg(3)=.false.
-#endif
+# endif
 #endif
 #ifdef DIAGNOSTICS_EK
       wrtdiags_ek(3)=.false.
-#ifdef AVERAGES
+# ifdef AVERAGES
       wrtdiags_ek_avg(3)=.false.
-#endif
+# endif
 #endif
 #if defined DIAGNOSTICS_PV && defined TRACERS
       wrtdiags_pv(NT+1)=.false.
-#ifdef AVERAGES
+# ifdef AVERAGES
       wrtdiags_pv_avg(NT+1)=.false.
-#endif
+# endif
 #endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
       wrtdiags_eddy(3)=.false.
@@ -296,11 +296,11 @@
       wrtdiabioFlux(NumFluxTerms+1)=.false.
       wrtdiabioVSink(NumVSinkTerms+1)=.false.
       wrtdiabioGasExc(NumGasExcTerms+1)=.false.
-#ifdef AVERAGES
+# ifdef AVERAGES
       wrtdiabioFlux_avg(NumFluxTerms+1)=.false.
       wrtdiabioVSink_avg(NumVSinkTerms+1)=.false.
       wrtdiabioGasExc_avg(NumGasExcTerms+1)=.false.
-#endif
+# endif
 #endif
 !
 ! Read in keyword: keep trying, until keyword is found.
@@ -343,7 +343,7 @@ h! Read input parameters according to the keyword:
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 
 
-#ifdef USE_CALENDAR 
+#ifdef USE_CALENDAR
 !
 ! start date
 !
@@ -372,7 +372,7 @@ h! Read input parameters according to the keyword:
         MPI_master_only write(stdout,*)
 #endif
 
-#ifdef XIOS 
+#ifdef XIOS
 !
 ! XIOS origin date
 !
@@ -532,7 +532,7 @@ h! Read input parameters according to the keyword:
 
 !
 
-# if defined WAVE_OFFLINE && defined MUSTANG
+#if defined WAVE_OFFLINE && defined MUSTANG
 ! Forcing file name. Check its availability.
 !
       elseif (keyword(1:kwlen).eq.'wave_offline') then
@@ -617,22 +617,22 @@ c        close(testunit)
 !
         elseif (keyword(1:kwlen).eq.'boundary') then
           call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef AGRIF
+# ifdef AGRIF
        if (Agrif_Root()) then
-#  endif
+# endif
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
-#  if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#  endif
+# endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           bry_file=fname(1:lstr)
           MPI_master_only write(stdout,'(6x,A,2x,A)')
      &          'Boundary File:', bry_file(1:lstr)
-#  ifdef AGRIF
+# ifdef AGRIF
        endif
-#  endif
+# endif
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
 !
@@ -640,22 +640,22 @@ c        close(testunit)
 !
         elseif (keyword(1:kwlen).eq.'wkb_boundary') then
           call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef AGRIF
+# ifdef AGRIF
        if (Agrif_Root()) then
-#  endif
+# endif
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
-#  if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#  endif
+# endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           brywkb_file=fname(1:lstr)
           MPI_master_only write(stdout,'(6x,A,2x,A)')
      &          'WKB Boundary File:', brywkb_file(1:lstr)
-#  ifdef AGRIF
+# ifdef AGRIF
        endif
-#  endif
+# endif
 #endif
 !
 ! Restart file name.
@@ -665,9 +665,9 @@ c        close(testunit)
         read(input,*,err=95) nrst, nrpfrst
         read(input,'(A)',err=95)  fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#endif
 #ifdef USE_CALENDAR
         nrst=ceiling((dt_rst*3600.)/dt)
 #endif
@@ -684,9 +684,9 @@ c        close(testunit)
         read(input,*,err=95) ldefhis, nwrt, nrpfhis
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#endif
 #ifdef USE_CALENDAR
         nwrt=ceiling((dt_his*3600.)/dt)
 #endif
@@ -707,9 +707,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
         navg=ceiling((dt_avg*3600.)/dt)
-#endif
+# endif
         avgname=fname(1:lstr)
         MPI_master_only write(stdout,
      &         '(2(I10,2x,A,1x,A/32x,A/),6x,A,2x,A,1x,A,I3)')
@@ -746,9 +746,9 @@ c        close(testunit)
         if (nwrtablavg.eq.0) nwrtablavg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         ablname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -785,9 +785,9 @@ c        close(testunit)
         if (nwrtdia_avg.eq.0) nwrtdia_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         dianame_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -823,9 +823,9 @@ c        close(testunit)
         if (nwrtdiaM_avg.eq.0) nwrtdiaM_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         dianameM_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -865,9 +865,9 @@ c        close(testunit)
         if (nwrtdiags_vrt_avg.eq.0) nwrtdiags_vrt_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         diags_vrtname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -908,9 +908,9 @@ c        close(testunit)
         if (nwrtdiags_ek_avg.eq.0) nwrtdiags_ek_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         diags_ekname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -950,9 +950,9 @@ c        close(testunit)
         if (nwrtdiags_pv_avg.eq.0) nwrtdiags_pv_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         diags_pvname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -964,7 +964,7 @@ c        close(testunit)
 # endif
 #endif /*DIAGNOSTICS_PV */
 
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 !
 ! Diagnostics eddy file name.
 !
@@ -992,9 +992,9 @@ c        close(testunit)
         if (nwrtdiags_eddy_avg.eq.0) nwrtdiags_eddy_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         diags_eddyname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -1034,9 +1034,9 @@ c        close(testunit)
         if (nwrtsurf_avg.eq.0) nwrtsurf_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         surfname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -1074,9 +1074,9 @@ c        close(testunit)
      &                       nwrtdiabio_avg, nrpfdiabio_avg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+#  if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
+#  endif
         dianamebio_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(4x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -1092,9 +1092,9 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'floats') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#ifdef AGRIF
+# ifdef AGRIF
         if (Agrif_Root()) then
-#endif
+# endif
           read(input,*,err=95) ldefflt, nflt, nrpfflt
           read(input,'(A)',err=95) fposnam
           read(input,'(A)',err=95) fname
@@ -1107,13 +1107,13 @@ c        close(testunit)
      &              '(9x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &        'Float File:',fltname(1:lstr),  'Create new:',
      &        ldefflt, 'nflt =', nflt, 'rec/file =', nrpfflt
-#ifdef AGRIF
+# ifdef AGRIF
         else
           ldefflt=Agrif_Parent(ldefflt)
           nflt=Agrif_Parent(nflt)
           nrpfflt=Agrif_Parent(nrpfflt)
         endif
-#endif
+# endif
 #endif /* FLOATS */
 
 #ifdef STATIONS
@@ -1289,16 +1289,16 @@ c        close(testunit)
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
-#ifdef BHFLUX
+# ifdef BHFLUX
      &                                          ,  wrthis(indxBhflx)
-#else
+# else
      &                                          ,  dumboolean
-#endif
-#if defined BWFLUX && defined SALINITY
+# endif
+# if defined BWFLUX && defined SALINITY
      &                                          ,  wrthis(indxBwflx)
-#else
+# else
      &                                          ,  dumboolean
-#endif
+# endif
 # ifdef MORPHODYN
      &                                          ,  wrthis(indxHm)
 # else
@@ -1407,7 +1407,7 @@ c        close(testunit)
   || defined GLS_MIXING
      &  , wrthis(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
-#  endif
+# endif
 # ifdef VIS_COEF_3D
      &  , wrthis(indxVisc),  'write Visc3d', 'Horizontal viscosity.'
 # endif
@@ -1543,102 +1543,102 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrtavg(indxR), wrtavg(indxO)
      &        ,  wrtavg(indxW),  wrtavg(indxAkv)
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
      &                                          ,  wrtavg(indxAkt)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# ifdef SALINITY
+#  endif
+#  ifdef SALINITY
      &                                          ,  wrtavg(indxAks)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  endif
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                          ,  wrtavg(indxbvf)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# ifdef VIS_COEF_3D
+#  endif
+#  ifdef VIS_COEF_3D
      &                                          ,  wrtavg(indxVisc)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# ifdef DIF_COEF_3D
+#  endif
+#  ifdef DIF_COEF_3D
      &                                          ,  wrtavg(indxDiff)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# if defined LMD_SKPP || defined GLS_MIXING
+#  endif
+#  if defined LMD_SKPP || defined GLS_MIXING
      &                                          ,  wrtavg(indxHbl)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# ifdef LMD_BKPP
+#  endif
+#  ifdef LMD_BKPP
      &                                          ,  wrtavg(indxHbbl)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
+#  endif
      &                                          ,  wrtavg(indxBostr)
      &                                          ,  wrtavg(indxBustr)
      &                                          ,  wrtavg(indxBvstr)
      &                                          ,  wrtavg(indxWstr)
      &                                          ,  wrtavg(indxUWstr)
      &                                          ,  wrtavg(indxVWstr)
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
      &                                          ,  wrtavg(indxShflx)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# ifdef SALINITY
+#  endif
+#  ifdef SALINITY
      &                                          ,  wrtavg(indxSwflx)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# ifdef TEMPERATURE
+#  endif
+#  ifdef TEMPERATURE
      &                                          ,  wrtavg(indxShflx_rsw)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# ifdef BULK_FLUX
+#  endif
+#  ifdef BULK_FLUX
      &                                          ,  wrtavg(indxShflx_rlw)
      &                                          ,  wrtavg(indxShflx_lat)
      &                                          ,  wrtavg(indxShflx_sen)
-# else
+#  else
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
-# endif
-#ifdef BHFLUX
+#  endif
+#  ifdef BHFLUX
      &                                          , wrtavg(indxBhflx)
-#else
+#  else
      &                                          , dumboolean
-#endif
-#if defined BWFLUX && defined SALINITY
+#  endif
+#  if defined BWFLUX && defined SALINITY
      &                                          , wrtavg(indxBwflx)
-#else
+#  else
      &                                          , dumboolean
-#endif
-# ifdef MORPHODYN
+#  endif
+#  ifdef MORPHODYN
      &                                          ,  wrtavg(indxHm)
-# else
+#  else
      &                                          ,  dumboolean
-# endif
-# if defined BIOLOGY && !defined PISCES
+#  endif
+#  if defined BIOLOGY && !defined PISCES
      &                                          ,  wrtavg(indxHel)
-#  ifdef BIO_NChlPZD
+#   ifdef BIO_NChlPZD
      &                                          ,  wrtavg(indxChC)
-#   ifdef OXYGEN
+#    ifdef OXYGEN
      &                                          ,  wrtavg(indxU10)
      &                                          ,  wrtavg(indxKvO2)
      &                                          ,  wrtavg(indxO2sat)
-#   endif
-#  elif defined BIO_BioEBUS
+#    endif
+#   elif defined BIO_BioEBUS
      &                                          ,  wrtavg(indxAOU)
      &                                          ,  wrtavg(indxWIND10)
+#   endif
 #  endif
-# endif
 
         if ( wrtavg(indxR) .or. wrtavg(indxO) .or. wrtavg(indxW)
      &                   .or. wrtavg(indxAkv)
@@ -1648,17 +1648,17 @@ c        close(testunit)
 #  ifdef SALINITY
      &                                        .or. wrtavg(indxAks)
 #  endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                        .or. wrtavg(indxbvf)
-# endif
-# ifdef VIS_COEF_3D
+#  endif
+#  ifdef VIS_COEF_3D
      &                                        .or. wrtavg(indxVisc)
-# endif
-# ifdef DIF_COEF_3D
+#  endif
+#  ifdef DIF_COEF_3D
      &                                        .or. wrtavg(indxDiff)
-# endif
+#  endif
 #  if defined LMD_SKPP || defined GLS_MIXING
      &                                        .or. wrtavg(indxHbl)
 #  endif
@@ -1686,12 +1686,12 @@ c        close(testunit)
      &                                        .or. wrtavg(indxShflx_lat)
      &                                        .or. wrtavg(indxShflx_sen)
 #  endif
-# if defined BHFLUX
+#  if defined BHFLUX
      &                                        .or. wrtavg(indxBhflx)
-#endif
-# if defined BWFLUX && defined SALINITY
+#  endif
+#  if defined BWFLUX && defined SALINITY
      &                                        .or. wrtavg(indxBwflx)
-#endif
+#  endif
 #  if defined BIOLOGY && !defined PISCES
      &                                        .or. wrtavg(indxHel)
 #   ifdef BIO_NChlPZD
@@ -1723,7 +1723,7 @@ c        close(testunit)
      &  , wrtavg(indxAks),  'write Aks  ',
      &                         'Vertical diffusivity for salinity.'
 #  endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &  , wrtavg(indxbvf),  'write bvf  ',
@@ -1751,10 +1751,10 @@ c        close(testunit)
      &  , wrtavg(indxShflx_sen), 'write shflx_sen [W/m2]',
      &                                 'Sensible heat flux.'
 #  endif
-# ifdef MORPHODYN
+#  ifdef MORPHODYN
      &  , wrtavg(indxHm), 'write Hm [m]',
      &                                 'Time evolving bathymetry.'
-# endif
+#  endif
 #  if defined BIOLOGY && !defined PISCES
      &  , wrtavg(indxHel),'write Hel  ',
      &                          'Depth of the euphotic layer'
@@ -1793,15 +1793,15 @@ c        close(testunit)
 #  ifdef TEMPERATURE
      &  , wrtavg(indxShflx_rsw),'write Shflx_rsw [W/m2]',
      &                      'Short-wave surface radiation.'
-# endif
-# ifdef BHFLUX
+#  endif
+#  ifdef BHFLUX
      &  , wrtavg(indxBhflx), 'write Bhflx [W/m2]',
      &       'Bottom net heat flux'
-# endif
-# if defined BWFLUX && defined SALINITY
+#  endif
+#  if defined BWFLUX && defined SALINITY
      &  , wrtavg(indxBwflx), 'write Bwflx [cm/day]',
      &                       'Surface freshwater flux (E-P)'
-# endif
+#  endif
 !
 ! Switches for GLS fields to be saved into history file.
 !
@@ -1934,9 +1934,9 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'float_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#ifdef AGRIF
+# ifdef AGRIF
         if (Agrif_Root()) then
-#endif
+# endif
           read(input,*,err=95) wrtflt(indxfltGrd),
      &       wrtflt(indxfltTemp), wrtflt(indxfltSalt),
      &       wrtflt(indxfltRho), wrtflt(indxfltVel)
@@ -1947,9 +1947,9 @@ c        close(testunit)
      &     , wrtflt(indxfltSalt),  'write salinity.'
      &     , wrtflt(indxfltRho),   'write density.'
      &     , wrtflt(indxfltVel),   'write mean float velocity'
-#ifdef AGRIF
+# ifdef AGRIF
         endif
-#endif
+# endif
 #endif /* FLOATS */
 
 #if defined DIAGNOSTICS_TS
@@ -2247,7 +2247,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'VSink term of index (his)', iflux
         enddo
 !     ==
-#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       elseif (keyword(1:kwlen).eq.'diagbioGasExc_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) (wrtdiabioGasExc(iflux),
@@ -2260,7 +2260,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'write equation terms ',
      &         'GasExc term of index (his)', iflux
         enddo
-#  endif
+# endif
 ! === === ===
 # ifdef AVERAGES
 !         wrtdiabio_avg=.true.
@@ -2458,7 +2458,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &           'bodyforce.')
 # endif
 #endif
-#if  (defined SPONGE && !defined SPONGE_GRID)
+#if (defined SPONGE && !defined SPONGE_GRID)
 !
 ! Parameters for sponge layers
 !
@@ -2472,7 +2472,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &     x_sponge,'x_sponge Thickness of sponge',
      &     'and/or nudging layer (m)'
 !
-#elif  (defined SPONGE && defined SPONGE_GRID)
+#elif (defined SPONGE && defined SPONGE_GRID)
 !
 !  if SPONGE_GRID is defined, they are set generically
 !  in set_nudgcof routine
@@ -2509,7 +2509,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         ldyn_max = 1./ldyn_max
 #endif
 
-#if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
      defined M3CLIMATOLOGY || defined ZCLIMATOLOGY
@@ -2519,7 +2519,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'nudg_cof') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-# if  defined AGRIF && !defined AGRIF_OBC_M2ORLANSKI && \
+# if defined AGRIF && !defined AGRIF_OBC_M2ORLANSKI && \
      !defined AGRIF_OBC_M3ORLANSKI && !defined AGRIF_OBC_TORLANSKI
         if (Agrif_Root()) then
 # endif
@@ -2575,17 +2575,17 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
      &                   (wrthis(itrc), itrc=indxSed-1,indxSed+NST+1
-#   ifdef SUSPLOAD
+#  ifdef SUSPLOAD
      &                                       +2*NST
-#   endif
-#   ifdef BEDLOAD
+#  endif
+#  ifdef BEDLOAD
      &                                       +2*NST
-#   endif
-#   if defined MIXED_BED || defined COHESIVE_BED
+#  endif
+#  if defined MIXED_BED || defined COHESIVE_BED
      &                                       + 1
-#   endif
+#  endif
      &  )
-#   ifdef AVERAGES
+#  ifdef AVERAGES
         do itrc=indxSed,indxSed+NST+1
 #   ifdef SUSPLOAD
      &                                       +2*NST
@@ -2595,7 +2595,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #   endif
          wrtavg(itrc)=wrthis(itrc)
         enddo
-#   endif
+#  endif
         MPI_master_only write(stdout,'(3(/6x,L1,2x,A,1x,A))')
      &    wrthis(indxATHK), 'write act_thick ',
      &                            'thickness of active bed layer.'
@@ -2608,7 +2608,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          wrthis(indxBFRA(itrc)), 'write bed_frac(',itrc,
      &                   ') Sediment fraction of index ',itrc,'.'
         enddo
-#   ifdef SUSPLOAD
+#  ifdef SUSPLOAD
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxDFLX(itrc)), 'write deposition flux(',itrc,
@@ -2619,8 +2619,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          wrthis(indxEFLX(itrc)), 'write erosion flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
-#   endif
-#   ifdef BEDLOAD
+#  endif
+#  ifdef BEDLOAD
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxBDLU(itrc)), 'write xi-bedload flux(',itrc,
@@ -2631,12 +2631,12 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          wrthis(indxBDLU(itrc)), 'write eta-bedload flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
-#   endif
-#   if defined MIXED_BED || defined COHESIVE_BED
+#  endif
+#  if defined MIXED_BED || defined COHESIVE_BED
         MPI_master_only write(stdout,'(6x,L1,2x,A,1x,A)')
      &      wrthis(indxBTCR), 'write bed_tau_crit ',
      &                            'critical stress of bed layer.'
-#   endif
+#  endif
 # elif defined MUSTANG
 !
 ! Sediments input file name for Mustang.

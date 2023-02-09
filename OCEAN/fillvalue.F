@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,32 +13,32 @@
       subroutine fillvalue2d(work2d_tmp,ncid,vid,indx,
      &                       record,typevar2d,typefile)
       implicit none
-      
+
 #include "param.h"
 !     Declaration
       real work2d_tmp(GLOBAL_2D_ARRAY)
-      logical mask(GLOBAL_2D_ARRAY) 
+      logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
       integer ierr, record, lstr, lvar, lenstr,
      &     nf_fwrite, typevar2d, vid, ncid, indx, typefile
       character*20 text
-      
-!     Include the common      
+
+!     Include the common
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
 #include "netcdf.inc"
 
-#ifdef MASKING 
-#ifdef WET_DRY
+#ifdef MASKING
+# ifdef WET_DRY
       if (typevar2d.eq.r2dvar) then
          mask2=rmask_wet
       elseif (typevar2d.eq.u2dvar) then
          mask2=umask_wet
       elseif (typevar2d.eq.v2dvar)then
          mask2=vmask_wet
-      endif    
-#else
+      endif
+# else
       if (typevar2d.eq.r2dvar) then
          mask2=rmask
       elseif (typevar2d.eq.p2dvar) then
@@ -47,9 +47,9 @@
          mask2=umask
       elseif (typevar2d.eq.v2dvar)then
          mask2=vmask
-      endif    
+      endif
 
-#endif
+# endif
 !
       if (typefile ==filetype_his) then
          text='WRT_HIS'
@@ -95,21 +95,21 @@
 
  1    format(/1x, A,' ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',
-     &     I6,3x,'netCDF error code',i4,3x,a,i4)   
+     &     I6,3x,'netCDF error code',i4,3x,a,i4)
 
-      goto 100 
+      goto 100
   99  may_day_flag=3
- 100  continue      
-      
+ 100  continue
+
       return
       end
 
 !====================================================================
-      
+
       subroutine fillvalue3d(work3d_tmp,ncid,vid,indx,
      &                       record,typevar3d,typefile)
       implicit none
-      
+
 #include "param.h"
 !     Declaration
       real work3d_tmp(GLOBAL_2D_ARRAY,N)
@@ -119,14 +119,14 @@
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
       character*20 text
-!     Include the common      
+!     Include the common
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
 #include "netcdf.inc"
-!   
+!
 #ifdef MASKING
-#ifdef WET_DRY
+# ifdef WET_DRY
       if (typevar3d.eq.r3dvar) then
          mask2=rmask_wet
       elseif (typevar3d.eq.w3dvar) then
@@ -135,8 +135,8 @@
          mask2=umask_wet
       elseif (typevar3d.eq.v3dvar) then
          mask2=vmask_wet
-      endif   
-#else
+      endif
+# else
       if (typevar3d.eq.r3dvar) then
          mask2=rmask
       elseif (typevar3d.eq.w3dvar) then
@@ -145,9 +145,9 @@
          mask2=umask
       elseif (typevar3d.eq.v3dvar) then
          mask2=vmask
-      endif   
+      endif
 
-#endif
+# endif
 !
       if (typefile ==filetype_his) then
          text='WRT_HIS'
@@ -174,7 +174,7 @@
       elseif (typefile ==filetype_surf_avg) then
          text='WRT_SURF_AVG'
       endif
-!     
+!
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)
       mask = (work2d_tmp.eq.mask2)
@@ -195,22 +195,22 @@
 
   1    format(/1x, A,' ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',
-     &     I6,3x,'netCDF error code',i4,3x,a,i4)   
+     &     I6,3x,'netCDF error code',i4,3x,a,i4)
 
-      goto 100 
+      goto 100
  99   may_day_flag=3
- 100  continue      
-      
+ 100  continue
+
       return
       end
 !====================================================================
-#ifdef MUSTANG      
+#ifdef MUSTANG
       subroutine fillvalue3d_must(work3d_tmp,ncid,vid,indx,
      &                       record,typevar3d,typefile)
-      USE comMUSTANG,   ONLY : nk_nivsed_out 
+      USE comMUSTANG,   ONLY : nk_nivsed_out
       implicit none
 
-#include "param.h"
+# include "param.h"
 !     Declaration
       real work3d_tmp(GLOBAL_2D_ARRAY,nk_nivsed_out)
       real work2d_tmp(GLOBAL_2D_ARRAY)
@@ -219,14 +219,14 @@
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
       character*20 text
-!     Include the common      
-#include "scalars.h"
-#include "ncscrum.h"
-#include "grid.h"
-#include "netcdf.inc"
-!   
-#ifdef MASKING
-#ifdef WET_DRY
+!     Include the common
+# include "scalars.h"
+# include "ncscrum.h"
+# include "grid.h"
+# include "netcdf.inc"
+!
+# ifdef MASKING
+#  ifdef WET_DRY
       if (typevar3d.eq.r3dvar) then
          mask2=rmask_wet
       elseif (typevar3d.eq.w3dvar) then
@@ -235,8 +235,8 @@
          mask2=umask_wet
       elseif (typevar3d.eq.v3dvar) then
          mask2=vmask_wet
-      endif   
-#else
+      endif
+#  else
       if (typevar3d.eq.r3dvar) then
          mask2=rmask
       elseif (typevar3d.eq.w3dvar) then
@@ -245,9 +245,9 @@
          mask2=umask
       elseif (typevar3d.eq.v3dvar) then
          mask2=vmask
-      endif   
+      endif
 
-#endif
+#  endif
 !
       if (typefile ==filetype_his) then
          text='WRT_HIS'
@@ -274,8 +274,8 @@
       elseif (typefile ==filetype_surf_avg) then
          text='WRT_SURF_AVG'
       endif
-!     
-# ifdef FILLVAL
+!
+#  ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)
       mask = (work2d_tmp.eq.mask2)
         do k=1,nk_nivsed_out
@@ -283,8 +283,8 @@
             work3d_tmp(:,:,k) = spval
           END WHERE
       enddo
+#  endif
 # endif
-#endif
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indx))
@@ -295,12 +295,12 @@
 
   1    format(/1x, A,' ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',
-     &     I6,3x,'netCDF error code',i4,3x,a,i4)   
+     &     I6,3x,'netCDF error code',i4,3x,a,i4)
 
-      goto 100 
+      goto 100
  99   may_day_flag=3
- 100  continue      
-      
+ 100  continue
+
       return
       end
 #endif
@@ -310,7 +310,7 @@
       subroutine fillvalue3d_w(work3d_tmp,ncid,vid,indx,
      &                       record,typevar3d,typefile)
       implicit none
-      
+
 #include "param.h"
 !     Declaration
       real work3d_tmp(GLOBAL_2D_ARRAY,0:N)
@@ -320,13 +320,13 @@
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
       character*20 text
-!     Include the common      
+!     Include the common
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
 #include "netcdf.inc"
 !
-#ifdef MASKING     
+#ifdef MASKING
       if (typevar3d.eq.r3dvar) then
          mask2=rmask
       elseif (typevar3d.eq.w3dvar) then
@@ -335,7 +335,7 @@
          mask2=umask
       elseif (typevar3d.eq.v3dvar) then
          mask2=vmask
-      endif  
+      endif
 !
       if (typefile ==filetype_his) then
          text='WRT_HIS'
@@ -345,7 +345,7 @@
          text='WRT_DIA'
       elseif (typefile ==filetype_dia_avg) then
          text='WRT_DIA_AVG'
-      elseif (typefile ==filetype_diaM) then 
+      elseif (typefile ==filetype_diaM) then
          text='WRT_DIAM'
       elseif (typefile ==filetype_diaM_avg) then
          text='WRT_DIAM_AVG'
@@ -366,7 +366,7 @@
       elseif (typefile ==filetype_surf_avg) then
          text='WRT_SURF_AVG'
       endif
-!     
+!
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)
       mask = (work2d_tmp.eq.mask2)
@@ -376,7 +376,7 @@
         END WHERE
       enddo
 # endif
-#endif      
+#endif
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indx))
@@ -384,15 +384,15 @@
      &        MYID
          goto 99                !--> ERROR
       endif
-      
+
  1    format(/1x, A,' ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',
      &     I6,3x,'netCDF error code',i4,3x,a,i4)
-      
-      goto 100 
+
+      goto 100
  99   may_day_flag=3
- 100  continue      
-      
+ 100  continue
+
       return
       end
-      
+

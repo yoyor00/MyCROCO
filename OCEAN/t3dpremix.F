@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -18,9 +18,9 @@
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      
+
         call t3dpremix_tile (Istr,Iend,Jstr,Jend)
-      
+
       return
       end
 
@@ -78,82 +78,82 @@ C$OMP MASTER
         tinterp = 1.
         Call Agrif_Bc_Variable(tspongeid,calledweight=tinterp,
      &                              procname=interpsponget)
-      
+
         Agrif_UseSpecialvalue=.false.
 
         TTimesponge = 3 - TTimesponge
-       
+
         TspongeTimeindex = parentnbstep
         TspongeTimeindex2 = agrif_nb_step()
       ENDIF
 
 C$OMP END MASTER
 C$OMP BARRIER
-       
+
       if (agrif_nb_step() .EQ. TspongeTimeindex2) then
 
-        if (SOUTHERN_EDGE) then  
+        if (SOUTHERN_EDGE) then
           do itrc=1,NT
             do k=1,N
               do j=JstrR,JstrR+decal
                 do i=IstrR,IendR
                   T_sponge_south(i,j,k,TTimesponge,itrc)=
-     &                                tsponge(i,j,k,itrc)          
+     &                                tsponge(i,j,k,itrc)
                 enddo
               enddo
             enddo
           enddo
         endif
-                     
+
         if (NORTHERN_EDGE) then
           do itrc=1,NT
             do k=1,N
               do j=JendR-decal,JendR
                 do i=IstrR,IendR
                   T_sponge_north(i,j,k,TTimesponge,itrc)=
-     &                                tsponge(i,j,k,itrc)          
+     &                                tsponge(i,j,k,itrc)
                 enddo
               enddo
             enddo
           enddo
-        endif               
+        endif
 
 
         if (WESTERN_EDGE) then
           do itrc=1,NT
             do k=1,N
               do j=JstrR,JendR
-                do i=IstrR,IstrR+decal      
+                do i=IstrR,IstrR+decal
                   T_sponge_west(i,j,k,TTimesponge,itrc)=
-     &                               tsponge(i,j,k,itrc)              
+     &                               tsponge(i,j,k,itrc)
                 enddo
               enddo
             enddo
           enddo
         endif
-                    
-        if (EASTERN_EDGE) then      
+
+        if (EASTERN_EDGE) then
           do itrc=1,NT
             do k=1,N
               do j=JstrR,JendR
                 do i=IendR-decal,IendR
                   T_sponge_east(i,j,k,TTimesponge,itrc)=
-     &                               tsponge(i,j,k,itrc)          
+     &                               tsponge(i,j,k,itrc)
                 enddo
               enddo
             enddo
-          enddo  
+          enddo
         endif
-    
+
       ENDIF
-      
-      
+
+
       tinterp = 0.5+(real(nbcoarse)-0.5)/rrhot
 
       IF (nbstep3d .LT. irhot) tinterp = 1.
 
       onemtinterp = 1.-tinterp
-       
+
       nold = 3 - TTimesponge
 
       if (SOUTHERN_EDGE) then
@@ -169,7 +169,7 @@ C$OMP BARRIER
           enddo
         enddo
       endif
-       
+
       if (NORTHERN_EDGE) then
         do itrc=1,NT
           do k=1,N
@@ -181,9 +181,9 @@ C$OMP BARRIER
               enddo
             enddo
           enddo
-        enddo             
+        enddo
       endif
-       
+
       if (WESTERN_EDGE) then
         do itrc=1,NT
           do k=1,N
@@ -196,20 +196,20 @@ C$OMP BARRIER
             enddo
           enddo
         enddo
-      endif      
-       
-      if (EASTERN_EDGE) then      
+      endif
+
+      if (EASTERN_EDGE) then
         do itrc=1,NT
           do k=1,N
             do j=JstrR,JendR
               do i=IendR-decal,IendR
                 tsponge(i,j,k,itrc)=
      &                    onemtinterp*T_sponge_east(i,j,k,nold,itrc)
-     &               + tinterp*T_sponge_east(i,j,k,TTimesponge,itrc)  
+     &               + tinterp*T_sponge_east(i,j,k,TTimesponge,itrc)
               enddo
             enddo
           enddo
-        enddo  
+        enddo
       endif
 
       do itrc=1,NT
@@ -223,7 +223,7 @@ C$OMP BARRIER
 #  endif
 # endif
       enddo
-     
+
       return
       end
 
@@ -245,8 +245,8 @@ C$OMP BARRIER
           tsponge(i1:i2,j1:j2,k1:k2,m1:m2) = tabres(i1:i2,j1:j2,k1:k2,m1:m2)
       endif
       return
-      end  
+      end
 #else
       subroutine t3dpremix_empty
       end
-# endif /* SOLVE3D && AGRIF */
+#endif /* SOLVE3D && AGRIF */

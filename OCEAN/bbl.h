@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -38,7 +38,7 @@
 */
 
       real Abed(GLOBAL_2D_ARRAY)
-      common /bbl_Abed/ Abed      
+      common /bbl_Abed/ Abed
 
       real Hripple(GLOBAL_2D_ARRAY)
       common /bbl_Hripple/ Hripple
@@ -57,7 +57,7 @@
 
       real taucb(GLOBAL_2D_ARRAY)
       common /bbl_taucb/ taucb
-      
+
       real Zbnot(GLOBAL_2D_ARRAY)
       common /bbl_Zbnot/ Zbnot
 

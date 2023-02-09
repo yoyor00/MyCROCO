@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -16,7 +16,7 @@
    ssh        sea surface height climatology at current time-step.
    Znudgcof   inverse relaxation time [1/sec] for nudging toward
                                free surface climatological fields.
-   sshg       two-time-level array to hold climatological data for 
+   sshg       two-time-level array to hold climatological data for
                                                      free surface.
    tssh       time of read in sea surface height climatology.
 */
@@ -36,13 +36,13 @@
       real    ssh_time(2)
       real    ssh_cycle
       integer itssh, ssh_ncycle, ssh_rec, ssh_tid, ssh_id
-      REAL(kind=8) :: ssh_origin_date_in_sec 
+      REAL(kind=8) :: ssh_origin_date_in_sec
       common /climat_zdat1/ ssh_time, ssh_origin_date_in_sec
       common /climat_zdat2/ ssh_cycle
-      common /climat_zdat3/ 
+      common /climat_zdat3/
      &        itssh, ssh_ncycle, ssh_rec, ssh_tid, ssh_id
 
-#   undef SSH_DATA
+#  undef SSH_DATA
 # endif /* !ANA_SSH */
 #endif
 
@@ -72,7 +72,7 @@
 
       real tclm_time(2,NT)
       real tclm_cycle(NT)
-      integer ittclm(NT), tclm_ncycle(NT), tclm_rec(NT), 
+      integer ittclm(NT), tclm_ncycle(NT), tclm_rec(NT),
      &        tclm_tid(NT), tclm_id(NT)
       logical got_tclm(NT)
       REAL(kind=8) :: tclm_origin_date_in_sec
@@ -102,7 +102,7 @@
 #if defined M2CLIMATOLOGY || (defined AGRIF && !defined M2_FRC_BRY)
       real ubclm(GLOBAL_2D_ARRAY)
       real vbclm(GLOBAL_2D_ARRAY)
-      common /climat_ubclm/ubclm /climat_vbclm/vbclm 
+      common /climat_ubclm/ubclm /climat_vbclm/vbclm
 #endif
 #if defined SOLVE3D && (defined M3CLIMATOLOGY || \
                         (defined AGRIF && !defined M3_FRC_BRY))
@@ -123,15 +123,15 @@
 #endif
 !
 #if defined SOLVE3D && defined M3CLIMATOLOGY
-#   ifdef M3NUDGING
+# ifdef M3NUDGING
       real M3nudgcof(GLOBAL_2D_ARRAY)
       common /climat_M3nudgcof/M3nudgcof
-#   endif
-#   ifndef ANA_M3CLIMA
+# endif
+# ifndef ANA_M3CLIMA
       real uclima(GLOBAL_2D_ARRAY,N,2)
       real vclima(GLOBAL_2D_ARRAY,N,2)
       common /climat_uclima/uclima /climat_vclima/vclima
-#   endif
+# endif
 #endif
 !
 #if defined M2CLIMATOLOGY || defined M3CLIMATOLOGY
@@ -151,20 +151,20 @@
 
 #ifdef ZONAL_NUDGING
 # define GLOBAL_1D_ETA 0:Mm+1
-      real zetazon(GLOBAL_1D_ETA), 
-     &     ubzon(GLOBAL_1D_ETA), 
+      real zetazon(GLOBAL_1D_ETA),
+     &     ubzon(GLOBAL_1D_ETA),
      &     vbzon(GLOBAL_1D_ETA),
-     &     uzon(GLOBAL_1D_ETA,N), 
+     &     uzon(GLOBAL_1D_ETA,N),
      &     vzon(GLOBAL_1D_ETA,N)
       common /climat_zetazon/zetazon
       common /climat_ubzon/ubzon
       common /climat_vbzon/vbzon
       common /climat_uzon/uzon
       common /climat_vzon/vzon
-      real sshzon(GLOBAL_1D_ETA), 
-     &     ubclmzon(GLOBAL_1D_ETA), 
+      real sshzon(GLOBAL_1D_ETA),
+     &     ubclmzon(GLOBAL_1D_ETA),
      &     vbclmzon(GLOBAL_1D_ETA),
-     &     uclmzon(GLOBAL_1D_ETA,N), 
+     &     uclmzon(GLOBAL_1D_ETA,N),
      &     vclmzon(GLOBAL_1D_ETA,N)
       common /climat_sshzon/sshzon
       common /climat_ubclmzon/ubclmzon
@@ -184,12 +184,12 @@
                    (defined AGRIF && !defined NBQ_FRC_BRY))
       real unbqclm(GLOBAL_2D_ARRAY,N)
       real vnbqclm(GLOBAL_2D_ARRAY,N)
-      common /climat_unbqclm/unbqclm 
+      common /climat_unbqclm/unbqclm
       common /climat_vnbqclm/vnbqclm
 # ifdef NBQ
       real wnbqclm(GLOBAL_2D_ARRAY,0:N)
       real rnbqclm(GLOBAL_2D_ARRAY,N)
-      common /climat_wnbqclm/wnbqclm 
+      common /climat_wnbqclm/wnbqclm
       common /climat_rnbqclm/rnbqclm
 # endif
 #endif

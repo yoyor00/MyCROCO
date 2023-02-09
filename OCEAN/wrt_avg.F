@@ -99,9 +99,9 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     Averaged time
 !
       ierr=nf_put_var1_FTYPE (ncidavg, avgTime, record, time_avg
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  - origin_date_in_sec
-#endif
+# endif
      &  )
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime))
@@ -113,9 +113,9 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     Averaged time2
 !
       ierr=nf_put_var1_FTYPE (ncidavg, avgTime2, record, time_avg
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  - origin_date_in_sec
-#endif
+# endif
      &  )
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime2))
@@ -213,11 +213,11 @@ CR      write(*,*) 'wrt_avg:  Wstr' MYID
 !     Write out kinematic U surface stress component (N/m2).
 !
       if (wrtavg(indxUWstr)) then
-#ifdef STRESS_AT_RHO_POINTS
+# ifdef STRESS_AT_RHO_POINTS
          ierr=nf_fwrite(sustr_avg, ncidavg, avgUWstr, record, r2dvar)
-#else
+# else
          ierr=nf_fwrite(sustr_avg, ncidavg, avgUWstr, record, u2dvar)
-#endif
+# endif
         if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxUWstr))
             write(stdout,1) vname(1,indxUWstr)(1:lvar), record, ierr
@@ -230,11 +230,11 @@ CR      write(*,*) 'wrt_avg: UWstr' MYID
 !     Write out kinematic V surface stress component (N/m2).
 !
       if (wrtavg(indxVWstr)) then
-#ifdef STRESS_AT_RHO_POINTS
+# ifdef STRESS_AT_RHO_POINTS
          ierr=nf_fwrite(svstr_avg, ncidavg, avgVWstr, record, r2dvar)
-#else
+# else
          ierr=nf_fwrite(svstr_avg, ncidavg, avgVWstr, record, v2dvar)
-#endif
+# endif
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxVWstr))
             write(stdout,1) vname(1,indxVWstr)(1:lvar), record, ierr
@@ -273,7 +273,7 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
 CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          endif
       enddo
-# endif
+#  endif
 !
 !     Density anomaly.
 !
@@ -282,7 +282,7 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          call fillvalue3d(workr,ncidavg,avgR,indxR,record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 !
@@ -294,7 +294,7 @@ CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
      &           record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtbvf' MYID
       endif
-# endif
+#  endif
 !
 !     Write out S-coordinate omega vertical velocity (m/s).
 !
@@ -307,13 +307,13 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrtavg(indxW)) then
-# ifdef NBQ
+#  ifdef NBQ
          work=w_avg
          call fillvalue3d(work ,ncidavg,avgW,indxW,record,w3dvar,type)
-# else
+#  else
          workr=w_avg
          call fillvalue3d(workr,ncidavg,avgW,indxW,record,r3dvar,type)
-# endif
+#  endif
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
       endif
 !
@@ -364,15 +364,15 @@ CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
 !
 !     Write out vertical diffusion coefficient for potential temperature.
 !
-#    ifdef TEMPERATURE
+#   ifdef TEMPERATURE
       if (wrtavg(indxAkt)) then
          work=Akt_avg(:,:,:,itemp)
          call fillvalue3d_w(work,ncidavg,avgAkt,indxAkt,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
       endif
-#    endif /* TEMPERATURE */
-#    ifdef SALINITY
+#   endif /* TEMPERATURE */
+#   ifdef SALINITY
 !
 !     Write out vertical diffusion coefficient for salinity.
 !
@@ -382,7 +382,7 @@ CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
      &        record,w3dvar,type)
 CR       write(*,*) 'wrt_avg:  wrtAks' MYID
       endif
-#    endif /* SALINITY */
+#   endif /* SALINITY */
 #  endif  /* AVERAGES_K */
 
 #  if defined LMD_SKPP || defined GLS_MIXING
@@ -406,9 +406,9 @@ CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
      &        record,r2dvar,type)
       endif
 CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
-# endif
+#  endif
 
-# ifdef GLS_MIXING
+#  ifdef GLS_MIXING
 !
 !     Write out turbulent kinetic energy.
 !
@@ -438,7 +438,7 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
       endif
 #  endif
 
-#    ifdef TEMPERATURE
+#  ifdef TEMPERATURE
 !
 !     Write out total heat flux [W/m2]
 !
@@ -458,7 +458,7 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
        endif
-# endif
+#  endif
 #  ifdef BHFLUX
 !
 !     Write out bottom heat flux
@@ -595,7 +595,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          call fillvalue3d(workr,ncidavg,avgChC,indxChC,
      &        record,r3dvar,type)
       endif
-#     ifdef OXYGEN
+#    ifdef OXYGEN
       if (wrtavg(indxU10)) then
          work2d=u10_avg
          call fillvalue2d(work2d,ncidavg,avgU10,indxU10,
@@ -611,7 +611,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          call fillvalue2d(work2d,ncidavg,avgO2sat,indxO2sat,
      &        record,r2dvar,type)
       endif
-#     endif /* OXYGEN */
+#    endif /* OXYGEN */
 !
 #   elif defined BIO_BioEBUS
       if (wrtavg(indxAOU)) then
@@ -676,26 +676,26 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxBDLU(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=bedldu_avg(:,:,itrc)
-#   ifdef SUSPLOAD
+#    ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+3*NST),
      &           indxWrk,record,r2dvar,type)
-#   else
+#    else
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3*NST),
      &           indxWrk,record,r2dvar,type)
-#   endif
+#    endif
          endif
       enddo
       do itrc=1,NST
          indxWrk=indxBDLV(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=bedldv_avg(:,:,itrc)
-#   ifdef SUSPLOAD
+#    ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+4*NST),
      &           indxWrk,record,r2dvar,type)
-#   else
+#    else
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+2*NST),
      &           indxWrk,record,r2dvar,type)
-#   endif
+#    endif
          endif
       enddo
 #   endif

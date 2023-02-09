@@ -1,8 +1,8 @@
       if (typevar == 'uint') then
       i1=2
-#  ifdef MPI
+#ifdef MPI
       if (WEST_INTER) i1=1
-#  endif
+#endif
       i2=Lmmpi
       j1=1
       j2=Mmmpi
@@ -16,16 +16,16 @@
       i1=1
       i2=Lmmpi
       j1=2
-#  ifdef MPI
+#ifdef MPI
       if (SOUTH_INTER) j1=1
-#  endif
+#endif
       j2=Mmmpi
       elseif (typevar == 'v') then
       i1=0
-      i2=Lmmpi+1      
+      i2=Lmmpi+1
       j1=1
       j2=Mmmpi+1
-      endif    
+      endif
       if (typevar == 'rint') then
       i1=1
       i2=Lmmpi
@@ -36,4 +36,4 @@
       i2=Lmmpi+1
       j1=0
       j2=Mmmpi+1
-      endif          
+      endif

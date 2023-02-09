@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -16,7 +16,7 @@
 
       subroutine get_psource
 !
-!  Read in point or grided sea river runoff discharge 
+!  Read in point or grided sea river runoff discharge
 !  the appropriate time from runoff NetCDF file.
 !
 # define PSOURCE_DATA
@@ -58,17 +58,17 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         endif
 !
 ! River flow
-! 
+!
         lvar=lenstr(vname(1,indxQBAR))
         ierr=nf_inq_varid (ncidqbar, vname(1,indxQBAR)(1:lvar), qbar_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidqbar, qbar_id, i) 
+          ierr=nf_inq_varndims (ncidqbar, qbar_id, i)
         endif
         if (ierr .ne. nf_noerr) then
           write(stdout,3) vname(1,indxQBAR)(1:lvar), qbarname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-!     
+!
 ! Determine whether there is cycling to reuse the input data and
 ! find cycling period "qbar_cycle", set initial cycling index
 ! "qbar_ncycle" and record index "qbar_rec".
@@ -84,7 +84,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         itqbar=2
         qbar_time(1)=-1.E+20
         qbar_time(2)=-1.E+20
-        
+
       endif                     ! iic.eq.0
 !
 ! Reading data from the runoff file:  Get out, if model time is
@@ -106,7 +106,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         write(stdout,6) 'qbar_time', qbar_rec
         goto 99                 !--> ERROR
       endif
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
         call tool_origindate(ncidqbar,qbar_tid,
      &                       qbar_origin_date_in_sec)
         cff=cff+qbar_origin_date_in_sec*sec2day
@@ -123,26 +123,26 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'QBAR', qbar_rec
         goto 99                 !--> ERROR
-      endif     
+      endif
 
       itqbar=i
-      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
+      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &     'GET_PSOURCE --',
-     &     'Read Run-off flow fields      for time =', cff 
-#ifdef USE_CALENDAR
+     &     'Read Run-off flow fields      for time =', cff
+# ifdef USE_CALENDAR
      &  -qbar_origin_date_in_sec*sec2day
-#endif 
+# endif
 !      OPEN(UNIT=114,file='roms_runoff.out',FORM='FORMATTED',
 !     &      access='append',status='OLD')
 !      WRITE(114,FMT=110)cff,qbar_rec,(qbarg(is,i),is=1,Nsrc)
 !110	FORMAT(g12.4,' ',I4,5(' ',F10.3)/)
 !      CLOSE(114)
 
-#ifdef MPI
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
       if (ntqbar.gt.1) goto 1
-      if (ntqbar.eq.1) return     
+      if (ntqbar.eq.1) return
 !
 ! Sort out error messages: The following portion of the code is
 !===== === ===== ========= not accessed unless something goes wrong.
@@ -157,15 +157,15 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) qbar_rec, ntqbar, qbarname(1:lstr), tdays,
      &                                      qbar_time(itqbar)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -qbar_origin_date_in_sec*sec2day
-#endif
+# endif
    8   format(/,' GET_PSOURCE - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available',  /,  11x,'record ',I4,
      &       1x,'in runoff NetCDF file: ', a, /,   11x,'TDAYS = ',
      &                g12.4,2x,'last available QBAR_TIME = ',g12.4)
   99  may_day_flag=2
-  
+
       return
       end
 
@@ -200,7 +200,7 @@ CR      write(*,*)'Enter set_psource_tile...'
         endif
 !
 !  Time-interpolate QBAR from point data.
-!  Check that for the next time step [when time=time+dt] time+dt 
+!  Check that for the next time step [when time=time+dt] time+dt
 !  is still between qbar_time(it1) and qbar_time(it2); and if not,
 !  set synchro_flag top signal that the new forcing data should be
 !  read from the netCDF input file (master thread only).
@@ -214,16 +214,16 @@ CR      write(*,*)'Enter set_psource_tile...'
           Qbar(i)=cff1*qbarg(i,it1)+cff2*qbarg(i,it2)
 CR          write(*,*)'i=',i,' -- Qbar(i)=',Qbar(i)
         enddo
-!     
+!
 !  Unable to set-up QBAR:
-!     Complain about the error and signal to quit.      
-!     
+!     Complain about the error and signal to quit.
+!
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'qbar_time', tdays, qbar_time(it2)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -qbar_origin_date_in_sec*sec2day
-#endif 
+# endif
   1       format(/,' SET_PSOURCE - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &           2x,'TEND = ',g12.4)

@@ -817,7 +817,7 @@
 !
           call nf_add_attribute(ncid,vidabl_ablh_abl,indxabl_ablh_abl,5,
      &                          NF_FOUT, ierr)
-        endif                 
+        endif
 !
 !-----------------------------------------------------------------------
 ! zr_abl
@@ -1213,7 +1213,7 @@
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
-        endif                                     
+        endif
 !
 !-----------------------------------------------------------------------
 ! zr_abl
@@ -1243,7 +1243,7 @@
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
-        endif   
+        endif
 !
 !-----------------------------------------------------------------------
 ! Hzr_abl
@@ -1334,12 +1334,12 @@
 # undef vidabl_Hzw_abl
 
 !======================================================================
-#ifdef AVERAGES
-# ifndef AVRH
-#  define AVRH
-#  include "def_abl_his.F"
+# ifdef AVERAGES
+#  ifndef AVRH
+#   define AVRH
+#   include "def_abl_his.F"
+#  endif
 # endif
-#endif
 !======================================================================
 #else
 # ifndef AVRH

@@ -1,7 +1,7 @@
 #include "cppdefs.h"
 #if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
 
- 
+
       subroutine set_surf_avg (tile)
       implicit none
       integer tile
@@ -10,7 +10,7 @@
       call set_surf_avg_tile (istr,iend,jstr,jend)
       return
       end
- 
+
       subroutine set_surf_avg_tile (istr,iend,jstr,jend)
 !
 ! Compute time-averaged fields within a tile.
@@ -51,7 +51,7 @@
 # include "surf.h"
 
 !
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 !
       ilc=1+iic-ntstart  ! number of time step since restart
 !
@@ -72,27 +72,27 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   surft_avg(i,j)=t(i,j,N,nstp,1)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   surfs_avg(i,j)=t(i,j,N,nstp,2)
            enddo
-          enddo           
-             do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  surfz_avg(i,j)=zeta(i,j,fast_indx_out)
-           enddo         
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
+                  surfz_avg(i,j)=zeta(i,j,fast_indx_out)
+           enddo
+          enddo
+             do j=JstrR,JendR
+                do i=IstrR,IendR
                   surfu_avg(i,j)=u(i,j,N,nstp)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   surfv_avg(i,j)=v(i,j,N,nstp)
            enddo
           enddo
@@ -103,35 +103,35 @@
           if (ZEROTH_TILE) timesurf_avg=timesurf_avg+time
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  surft_avg(i,j) = 
+                do i=IstrR,IendR
+                  surft_avg(i,j) =
      &                       surft_avg(i,j) +
      &                       t(i,j,N,nstp,1)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  surfs_avg(i,j) = 
+                do i=IstrR,IendR
+                  surfs_avg(i,j) =
      &                       surfs_avg(i,j) +
      &                       t(i,j,N,nstp,2)
            enddo
-          enddo           
-             do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  surfz_avg(i,j) = 
-     &                       surfz_avg(i,j) +
-     &                       zeta(i,j,fast_indx_out)
-           enddo       
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
+                  surfz_avg(i,j) =
+     &                       surfz_avg(i,j) +
+     &                       zeta(i,j,fast_indx_out)
+           enddo
+          enddo
+             do j=JstrR,JendR
+                do i=IstrR,IendR
                   surfu_avg(i,j) =
      &                       surfu_avg(i,j) +
      &                       u(i,j,N,nstp)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   surfv_avg(i,j) =
      &                       surfv_avg(i,j) +
      &                       v(i,j,N,nstp)
@@ -148,25 +148,25 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   surft_avg(i,j) = cff *
      &                       ( surft_avg(i,j) +
      &                         t(i,j,N,nstp,1) )
              enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   surfs_avg(i,j) = cff *
      &                       ( surfs_avg(i,j) +
      &                         t(i,j,N,nstp,2) )
            enddo
-            enddo         
+            enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   surfz_avg(i,j) = cff *
      &                       ( surfz_avg(i,j) +
      &                         zeta(i,j,fast_indx_out) )
-           enddo           
+           enddo
           enddo
               do j=JstrR,JendR
                 do i=IstrR,IendR

@@ -83,7 +83,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 !
       ksize=Npts*Npts*nmax               ! message sizes for
       isize=Npts*ishft*nmax              ! corner messages and sides
-      jsize=Npts*jshft*nmax              ! in XI and ETA directions 
+      jsize=Npts*jshft*nmax              ! in XI and ETA directions
 !
 ! Prepare to receive and send: sides....
 !
@@ -339,7 +339,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
-       endif 
+       endif
 
       if (CORNER_NE) then
         call MPI_Wait (req(6),status(1,6),ierr)
@@ -358,13 +358,13 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           do jpts=1,Npts
             do ipts=1,Npts
               A(Lmmpi+ipts,Mmmpi+jpts,k)=
-     &              A(Lmmpi+ipts-Npts,Mmmpi+jpts-Npts,k)                
+     &              A(Lmmpi+ipts-Npts,Mmmpi+jpts-Npts,k)
             enddo
           enddo
         enddo
-       endif 
-    
-     
+       endif
+
+
       if (CORNER_SE) then
         call MPI_Wait (req(7),status(1,7),ierr)
         do k=1,nmax
@@ -386,8 +386,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
-       endif 
- 
+       endif
+
 
       if (CORNER_NW) then
         call MPI_Wait (req(8),status(1,8),ierr)
@@ -409,7 +409,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
-       endif 
+       endif
 
 # if defined AGRIF
         DeAllocate(buf_snd4,  ibuf_sndN,  buf_snd2,

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -93,7 +93,7 @@
           uclm_time(2)=-1.E+20
       endif
 !
-! Read in momentum climatology: Check, if if model time is within the 
+! Read in momentum climatology: Check, if if model time is within the
 ! ==== == ======== ============ bounds set by the past and future data
 ! times. If not, flip the time index, increment record and cycling
 ! indices and read a new portion of data: climatology time
@@ -119,7 +119,7 @@
         write(stdout,6) 'Xclm_time', uclm_rec
         goto 99                                        !--> ERROR
       endif
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
         call tool_origindate(ncidclm,uclm_tid,
      &                       uclm_origin_date_in_sec)
         cff=cff+uclm_origin_date_in_sec*sec2day
@@ -171,14 +171,14 @@
       ituclm=i
       MPI_master_only write(stdout,'(6x,A,1x,g12.4,1x,I4)')
      &'GET_UCLIMA -- Read momentum climatology      for time =', cff
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -uclm_origin_date_in_sec*sec2day
-#endif 
-#ifdef MPI
+# endif
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
         if (ntuclm.gt.1) goto 10
-  1    continue    
+  1    continue
       return
 !
 ! Sort out error messages: The following portion of the code is
@@ -206,9 +206,9 @@
       implicit none
       integer tile
 # include "param.h"
-#ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef  ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
-#endif
+# endif
 # include "compute_tile_bounds.h"
       call set_uclima_tile (Istr,Iend,Jstr,Jend)
       return
@@ -245,7 +245,7 @@ C$    integer  trd, omp_get_thread_num
       if (ZEROTH_TILE .and. cff1.lt.dt) synchro_flag=.TRUE.
 
       if (uclm_cycle.lt.0.) then      ! Load time-invariant
-        if (iic.eq.0) then            ! momentum climatology. 
+        if (iic.eq.0) then            ! momentum climatology.
 # ifdef M2CLIMATOLOGY
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -255,7 +255,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
 # endif
 # if defined M3CLIMATOLOGY && defined SOLVE3D
-          do k=1,N  
+          do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
                 uclm(i,j,k)=uclima(i,j,k,ituclm)
@@ -267,7 +267,7 @@ C$    integer  trd, omp_get_thread_num
         endif
       elseif (cff1.ge.0. .and. cff2.ge.0.) then
         cff=1./(cff1+cff2)                     ! Interpolate tracer
-        cff1=cff1*cff                          ! climatology in time. 
+        cff1=cff1*cff                          ! climatology in time.
         cff2=cff2*cff
 # ifdef M2CLIMATOLOGY
         do j=JstrR,JendR
@@ -297,15 +297,15 @@ C$    integer  trd, omp_get_thread_num
      &            'bounds of ''uclm_time''.', 'UCLM_TSTART=',
      &             uclm_time(it1)*sec2day,     'TDAYS=',  tdays,
      &            'UCLM_TEND=',   uclm_time(it2)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -uclm_origin_date_in_sec*sec2day
-#endif 
+# endif
           may_day_flag=2
       endif
       return
       end
 #else
-      subroutine get_uclima_empty 
+      subroutine get_uclima_empty
       return
       end
 #endif /* M2CLIMATOLOGY && !ANA_M2CLIMA || (M3CLIMATOLOGY && !ANA_M3CLIMA) */

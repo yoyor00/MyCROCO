@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,7 +20,7 @@
 # include "scalars.h"
 # include "ncscrum.h"
 # include "climat.h"
-#include "netcdf.inc"
+# include "netcdf.inc"
       real cff
       integer i, lstr,lvar, lenstr,
      &      ierr, nf_fread, advance_cycle
@@ -38,7 +38,7 @@
 !
         if (ncidclm.eq.-1) then
           ierr=nf_open(clmname(1:lstr), nf_nowrite, ncidclm)
-          if (ierr .ne. NF_NOERR)  goto 4                  !--> ERROR 
+          if (ierr .ne. NF_NOERR)  goto 4                  !--> ERROR
         endif
 
         ierr=nf_inq_varid (ncidclm, 'ssh_time', ssh_tid)
@@ -87,7 +87,7 @@
           write(stdout,6) 'ssh_time', ssh_rec
           goto 99                                         !--> ERROR
         endif
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
         call tool_origindate(ncidclm,ssh_tid,
      &                       ssh_origin_date_in_sec)
         cff=cff+ssh_origin_date_in_sec*sec2day
@@ -124,9 +124,9 @@
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) ssh_rec, ntssh, frcname(1:lstr), tdays,
      &                                      ssh_time(itssh)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -ssh_origin_date_in_sec*sec2day
-#endif 
+# endif
   8   format(/,' GET_SSH - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available',  /,  11x,'record ',I4,
      &       1x,'in forcing NetCDF file: ', a, /,   11x,'TDAYS = ',
@@ -139,9 +139,9 @@
       implicit none
       integer tile
 # include "param.h"
-#ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef  ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
-#endif
+# endif
 # include "compute_tile_bounds.h"
       call set_ssh_tile (Istr,Iend,Jstr,Jend)
       return
@@ -180,7 +180,7 @@ C$    integer  trd, omp_get_thread_num
         endif
 !
 ! Time-interpolate sea surface height.
-! Check that for the next time step [when time=time+dt] time+dt 
+! Check that for the next time step [when time=time+dt] time+dt
 ! is still between srf_tintrp(it1) and srf_tintrp(it2); and if not,
 ! set synchro_flag top signal that the new forcing data should be
 ! read from the netCDF input file (master thread only).
@@ -202,9 +202,9 @@ C$    integer  trd, omp_get_thread_num
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'ssh_time', tdays, ssh_time(it2)*sec2day
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
      &  -ssh_origin_date_in_sec*sec2day
-#endif 
+# endif
   1       format(/,' SET_SSH - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &           2x,'TEND = ',g12.4)

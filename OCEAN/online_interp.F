@@ -2,26 +2,26 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 !
-!  This is the "interp.F" script (based on the interpolation implemented in the 
-!  Roms Rutgers version) 
+!  This is the "interp.F" script (based on the interpolation implemented in the
+!  Roms Rutgers version)
 !------------------------------------------------------------------------------
-!  This file contains the subfunctions enabling the online interpolation of 
-!  forcing datasets on the simulation domain using linear or cubic approach. 
-!  These functions applied for all discretisations of the domain, MPI or OPENMP.  
+!  This file contains the subfunctions enabling the online interpolation of
+!  forcing datasets on the simulation domain using linear or cubic approach.
+!  These functions applied for all discretisations of the domain, MPI or OPENMP.
 !------------------------------------------------------------------------------
 #include "cppdefs.h"
 
       SUBROUTINE linterp2d (LBx, UBx, LBy, UBy,
      &                      Xinp, Yinp, Finp,
-     &                      Istr, Iend, Jstr, Jend, 
+     &                      Istr, Iend, Jstr, Jend,
      &                      Xout, Yout, Fout)
 !
 !=======================================================================
@@ -56,7 +56,7 @@
 !
 !
       implicit none
-# include "param.h"
+#include "param.h"
 !
 !  Imported variable declarations.
 !
@@ -91,26 +91,26 @@
              if ((Xinp(ii).le.Xout(i,j)).and.
      &           (Xinp(ii+1).gt.Xout(i,j))) then
                i1=ii
-               i2=ii+1      
-               goto 10 
-             endif    
-           enddo 
+               i2=ii+1
+               goto 10
+             endif
+           enddo
            print*, 'Did not find i1 and i2'
-           goto 100 
- 10        continue 
+           goto 100
+ 10        continue
            DO jj=LBy,(UBy-1)
              if ((Yinp(jj).le.Yout(i,j)).and.
      &           (Yinp(jj+1).gt.Yout(i,j))) then
                j1=jj
-               j2=jj+1     
-               goto 20 
+               j2=jj+1
+               goto 20
              endif
-           enddo 
+           enddo
            print*, 'Did not find j1 and j2'
-           goto 100 
- 20        continue 
+           goto 100
+ 20        continue
 
-          IF (((LBx.le.i1).and.(i1.le.UBx)).and. 
+          IF (((LBx.le.i1).and.(i1.le.UBx)).and.
      &        ((LBy.le.j1).and.(j1.le.UBy))) THEN
             x1=Xinp(i1)
             x2=Xinp(i2)
@@ -118,11 +118,11 @@
             y2=Yinp(j2)
             x=Xout(i,j)
             y=Yout(i,j)
-           
-            cff= Finp(i1,j1)*(x2-x )*(y2-y ) 
-     &          +Finp(i2,j1)*(x -x1)*(y2-y ) 
-     &          +Finp(i1,j2)*(x2-x )*(y -y1) 
-     &          +Finp(i2,j2)*(x -x1)*(y -y1) 
+
+            cff= Finp(i1,j1)*(x2-x )*(y2-y )
+     &          +Finp(i2,j1)*(x -x1)*(y2-y )
+     &          +Finp(i1,j2)*(x2-x )*(y -y1)
+     &          +Finp(i2,j2)*(x -x1)*(y -y1)
 
             Fout(i,j)=cff/((x2-x1)*(y2-y1))
           END IF
@@ -171,8 +171,8 @@
 !=======================================================================
 !
       implicit none
-# include "param.h"
-# include "grid.h"
+#include "param.h"
+#include "grid.h"
 !
 !  Imported variable declarations.
 !
@@ -227,27 +227,27 @@
              if ((Xinp(ii).le.Xout(i,j)).and.
      &           (Xinp(ii+1).gt.Xout(i,j))) then
                i1=ii
-               i2=ii+1       
-               goto 10 
-             endif  
-           enddo 
+               i2=ii+1
+               goto 10
+             endif
+           enddo
            print*, 'Did not find i1 and i2',
      &           Istr,Iend,Jstr,Jend,i,j,Xout(i,j),Xout(i-1,j)
-           goto 100 
- 10        continue 
+           goto 100
+ 10        continue
            DO jj=LBy,UBy-1
              if ((Yinp(jj).le.Yout(i,j)).and.
      &           (Yinp(jj+1).gt.Yout(i,j))) then
                j1=jj
-               j2=jj+1      
-               goto 20 
-             endif  
-           enddo 
+               j2=jj+1
+               goto 20
+             endif
+           enddo
            print*, 'Did not find j1 and j2'
-           goto 100 
- 20        continue 
+           goto 100
+ 20        continue
 
-          IF (((LBx.le.i1).and.(i1.le.UBx)).and. 
+          IF (((LBx.le.i1).and.(i1.le.UBx)).and.
      &        ((LBy.le.j1).and.(j1.le.UBy))) THEN
 !
 !  Determine local fractional coordinates (xi,eta) corresponding to
@@ -264,9 +264,9 @@
 !
             xy=Xinp(i2)-Xinp(i1)-Xinp(i2)+Xinp(i1)
             yx=Yinp(j2)-Yinp(j2)-Yinp(j1)+Yinp(j1)
-            dx=Xout(i,j)-0.25*(Xinp(i2)+Xinp(i1)+ 
+            dx=Xout(i,j)-0.25*(Xinp(i2)+Xinp(i1)+
      &                         Xinp(i2)+Xinp(i1))
-            dy=Yout(i,j)-0.25*(Yinp(j2)+Yinp(j2)+ 
+            dy=Yout(i,j)-0.25*(Yinp(j2)+Yinp(j2)+
      &                         Yinp(j1)+Yinp(j1))
 !
 !  The coordinate transformation matrix:
@@ -337,24 +337,24 @@
               END DO
             END DO
 
-            f0=C07*(ff(1,1)+ff(1,0)+ff(0,1)+ff(0,0))- 
-     &         C02*(ff(2,0)+ff(2,1)+ff(1,2)+ff(0,2)+ 
+            f0=C07*(ff(1,1)+ff(1,0)+ff(0,1)+ff(0,0))-
+     &         C02*(ff(2,0)+ff(2,1)+ff(1,2)+ff(0,2)+
      &              ff(-1,1)+ff(-1,0)+ff(0,-1)+ff(1,-1))
 
             fx=C08*(ff(1,1)+ff(1,0)-ff(0,1)-ff(0,0))-
-     &         C01*(ff(2,1)+ff(2,0)-ff(-1,1)-ff(-1,0))- 
+     &         C01*(ff(2,1)+ff(2,0)-ff(-1,1)-ff(-1,0))-
      &         C03*(ff(1,2)-ff(0,2)+ff(1,-1)-ff(0,-1))
 
-            fy=C08*(ff(1,1)-ff(1,0)+ff(0,1)-ff(0,0))- 
+            fy=C08*(ff(1,1)-ff(1,0)+ff(0,1)-ff(0,0))-
      &         C01*(ff(1,2)+ff(0,2)-ff(1,-1)-ff(0,-1))-
      &         C03*(ff(2,1)-ff(2,0)+ff(-1,1)-ff(-1,0))
 
             fxy=ff(1,1)-ff(1,0)-ff(0,1)+ff(0,0)
 
-            fxx=C05*(ff(2,1)-ff(1,1)-ff(0,1)+ff(-1,1)+ 
+            fxx=C05*(ff(2,1)-ff(1,1)-ff(0,1)+ff(-1,1)+
      &               ff(2,0)-ff(1,0)-ff(0,0)+ff(-1,0))
 
-            fyy=C05*(ff(1,2)-ff(1,1)-ff(1,0)+ff(1,-1)+  
+            fyy=C05*(ff(1,2)-ff(1,1)-ff(1,0)+ff(1,-1)+
      &               ff(0,2)-ff(0,1)-ff(0,0)+ff(0,-1))
 
             fxxx=C06*(ff(2,1)+ff(2,0)-ff(-1,1)-ff(-1,0))-
@@ -363,10 +363,10 @@
             fyyy=C06*(ff(1,2)+ff(0,2)-ff(1,-1)-ff(0,-1))-
      &           C09*(ff(1,1)-ff(1,0)+ff(0,1)-ff(0,0))
 
-            fxxy=C06*(ff(2,1)-ff(1,1)-ff(0,1)+ff(-1,1)- 
+            fxxy=C06*(ff(2,1)-ff(1,1)-ff(0,1)+ff(-1,1)-
      &                ff(2,0)+ff(1,0)+ff(0,0)-ff(-1,0))
 
-            fxyy=C06*(ff(1,2)-ff(1,1)-ff(1,0)+ff(1,-1)- 
+            fxyy=C06*(ff(1,2)-ff(1,1)-ff(1,0)+ff(1,-1)-
      &                ff(0,2)+ff(0,1)+ff(0,0)-ff(0,-1))
 #else
 !
@@ -554,10 +554,10 @@
             fxyy=C06*(dfy(1,1)-dfy(1,0)-dfy(0,1)+dfy(0,0))
 #endif
             Fout(i,j)=f0+
-     &                fx*xi+ 
+     &                fx*xi+
      &                fy*eta+
-     &                C06*fxx*xi*xi+ 
-     &                fxy*xi*eta+  
+     &                C06*fxx*xi*xi+
+     &                fxy*xi*eta+
      &                C06*fyy*eta*eta+
      &                C04*fxxx*xi*xi*xi+
      &                C06*fxxy*xi*xi*eta+
