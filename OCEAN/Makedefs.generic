@@ -13,7 +13,13 @@
 	$(CPP) -P $(CPPFLAGS) $*.F > $*_.f1
 	python3 ./change_loops.py $*_.f1 $*_.tmp
 	cat $*_.tmp | ./mpc > $*_.f && \rm $*_.tmp
-	$(CFT) -c $(FFLAGS) $*_.f -o $*.o
+	if egrep "^$*_.f" psyclone.rules.lst; then \
+		mv $*_.f $*_.mpc.f; \
+		psyclone -api nemo -l output -s $$(egrep "^$*_.f" psyclone.rules.lst | cut -f 2) -opsy $*_.f $*_.mpc.f; \
+		$(CFT) -Mfree -c $(FFLAGS) -acc=gpu -I${HOME}/workspace/stfc/PSyclone/lib/profiling/nvidia $*_.f -o $*.o; \
+	else \
+		$(CFT) -c $(FFLAGS) $*_.f -o $*.o; \
+	fi
 
 .f90.o:
 	$(CFT) -c $(FFLAGS90) $*.f90 -o $*.o
