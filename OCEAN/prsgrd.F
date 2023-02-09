@@ -627,7 +627,7 @@ c********************************************************************
      &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
 #  endif
 #  ifdef READ_PATM 
-     &                         - (patm2d(i,j)-patm2d(i-1,j))/rho0
+     &  - (rmask(i,j)*rmask(i-1,j)*(patm2d(i,j)-patm2d(i-1,j)))/rho0
 #  endif
  
             ru(i,j,N)=0.5*(HZR(i,j,N)+HZR(i-1,j,N))*on_u(i,j)*pgrd(i)
@@ -742,7 +742,7 @@ c********************************************************************
      &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
 #  endif
 #  ifdef READ_PATM 
-     &                               - (patm2d(i,j)-patm2d(i,j-1))/rho0
+     & -( rmask(i,j)*rmask(i,j-1)* (patm2d(i,j)-patm2d(i,j-1)))/rho0
 #  endif
  
             rv(i,j,N)=0.5*(HZR(i,j,N)+HZR(i,j-1,N))*om_v(i,j)*pgrd(i)

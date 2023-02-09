@@ -522,7 +522,9 @@ C$    integer omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           eddyzz_avg(i,j)=init
+          eddyugsu_avg(i,j)=init
           eddyusu_avg(i,j)=init
+          eddyvgsv_avg(i,j)=init
           eddyvsv_avg(i,j)=init
           eddyubu_avg(i,j)=init
           eddyvbv_avg(i,j)=init
