@@ -13,6 +13,9 @@ start_date:
 end_date: 
 2016/01/01 00:00:00
 
+xios_origin_date:
+2014/01/04 00:00:00
+
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    1       6       12
 

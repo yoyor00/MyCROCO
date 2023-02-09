@@ -208,9 +208,19 @@
             endif
             start_time=start_time*time_scale
 
-# if defined USE_CALENDAR || defined XIOS
-            call tool_origindate(ncid,varid,origin_date_in_sec)
-              MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+# if defined XIOS && !defined USE_CALENDAR
+      start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
+      READ(start_date_run(1:2),fmt='(i2)') start_day
+      READ(start_date_run(4:5),fmt='(i2)') start_month
+      READ(start_date_run(7:10),fmt='(i4)') start_year
+      READ(start_date_run(12:13),fmt='(i2)') start_hour
+      READ(start_date_run(15:16),fmt='(i2)') start_minute
+      READ(start_date_run(18:19),fmt='(i2)') start_second
+# endif
+
+# if defined USE_CALENDAR
+      call tool_origindate(ncid,varid,origin_date_in_sec)
+      MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &    'Origin date of time axis (YYYY/MM/DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)
       origin_date=tool_sectodat(origin_date_in_sec)
@@ -226,7 +236,20 @@
               ! Modify units when using USE_CALENDAR
       vname(3,indxTime2)='seconds since '
      &                     //tool_sectodat(origin_date_in_sec)
+#  if defined XIOS
+      MPI_master_only write(stdout,'(/3x,A,/)')
+     &    '!!! WARNING: Using XIOS with USE_CALENDAR.',
+     &    ' USING USE_CALENDAR origin date for XIOS ',
+     &    ' (instead of xios_origin_date)'
 
+      READ(origin_date(1:4),fmt='(i4)') start_year
+      READ(origin_date(6:8),fmt='(i2)') start_month
+      READ(origin_date(9:10),fmt='(i2)') start_day
+      READ(origin_date(12:13),fmt='(i2)') start_hour
+      READ(origin_date(15:16),fmt='(i2)') start_minute
+      READ(origin_date(18:19),fmt='(i2)') start_second
+
+#  endif
 # endif 
 
 #ifdef EXACT_RESTART

@@ -62,6 +62,9 @@
 #ifdef USE_CALENDAR
       real  dt_his,dt_avg,dt_rst
 #endif
+#ifdef XIOS
+      REAL*8        :: tool_datosec
+#endif
 !
 ! Use pre-set default startup filename for known applications,
 ! or get it as an argument from command line via iargc-getarg
@@ -328,7 +331,7 @@
    4  kwlen=ie-is
       if (is.gt.1) keyword(1:kwlen)=keyword(is:is+kwlen-1)
 !
-! Read input parameters according to the keyword:
+h! Read input parameters according to the keyword:
 ! ==== ===== ========== ========= == === ========
 !
 ! Title
@@ -367,6 +370,16 @@
      &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
      &  'DT RST=',dt_rst,'H'
         MPI_master_only write(stdout,*)
+#endif
+
+#ifdef XIOS 
+!
+! XIOS origin date
+!
+      elseif (keyword(1:kwlen).eq.'xios_origin_date') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) xios_origin_date
+        xios_origin_date_in_sec=tool_datosec(xios_origin_date)
 #endif
 !
 ! Time-stepping parameters
