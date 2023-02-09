@@ -91,7 +91,7 @@
       real zdye10,zdye20
       real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
-#ifdef I_SOLITON
+#ifdef ISOLITON
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
@@ -760,7 +760,7 @@
            enddo
         enddo
 
-#  elif defined I_SOLITON
+#  elif defined ISOLITON
 #   define HORN_PROFILE
 #   ifdef HORN_PROFILE
 !
