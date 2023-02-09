@@ -124,7 +124,7 @@ CONTAINS
       zpropo4n(:,:,:) = 0. ; zpropo4p(:,:,:) = 0. ; zpropo4d(:,:,:) = 0.
       zprdia  (:,:,:) = 0. ; zprpic  (:,:,:) = 0. ; zprbio  (:,:,:) = 0.
       zprodopn(:,:,:) = 0. ; zprodopp(:,:,:) = 0. ; zprodopd(:,:,:) = 0.
-      zysopt  (:,:,:) = 0.
+      zysopt  (:,:,:) = 0. ; zmxl_fac(:,:,:) = 0. ; zmxl_chl(:,:,:) = 0.
       zrespn  (:,:,:) = 0. ; zrespp  (:,:,:) = 0. ; zrespd  (:,:,:) = 0. 
 
       ! Computation of the optimal production
