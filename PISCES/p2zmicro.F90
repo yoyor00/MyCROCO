@@ -1,8 +1,8 @@
 #include "cppdefs.h"
 
-MODULE p4zmicro
+MODULE p2zmicro
    !!======================================================================
-   !!                         ***  MODULE p4zmicro  ***
+   !!                         ***  MODULE p2zmicro  ***
    !! TOP :   PISCES Compute the sources/sinks for microzooplankton
    !!======================================================================
 #if defined key_pisces
@@ -10,19 +10,19 @@ MODULE p4zmicro
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Quota model for iron
    !!----------------------------------------------------------------------
-   !!   p4z_micro      : Compute the sources/sinks for microzooplankton
-   !!   p4z_micro_init : Initialize and read the appropriate namelist
+   !!   p2z_micro      : Compute the sources/sinks for microzooplankton
+   !!   p2z_micro_init : Initialize and read the appropriate namelist
    !!----------------------------------------------------------------------
    USE sms_pisces      ! PISCES Source Minus Sink variables
-   USE p4zlim          ! Co-limitations
-   USE p4zprod         ! production
+   USE p2zlim          ! Co-limitations
+   USE p2zprod         ! production
 !   USE iom             ! I/O manager
 
    IMPLICIT NONE
    PRIVATE
 
-   PUBLIC   p4z_micro         ! called in p4zbio.F90
-   PUBLIC   p4z_micro_init    ! called in trcsms_pisces.F90
+   PUBLIC   p2z_micro         ! called in p2zbio.F90
+   PUBLIC   p2z_micro_init    ! called in trcsms_pisces.F90
 
    !!* Substitution
 #  include "top_substitute.h90"
@@ -31,8 +31,6 @@ MODULE p4zmicro
    REAL(wp), PUBLIC ::   part        !: part of calcite not dissolved in microzoo guts
    REAL(wp), PUBLIC ::   xprefc      !: microzoo preference for POC 
    REAL(wp), PUBLIC ::   xprefn      !: microzoo preference for nanophyto
-   REAL(wp), PUBLIC ::   xprefd      !: microzoo preference for diatoms
-   REAL(wp), PUBLIC ::   xthreshdia  !: diatoms feeding threshold for microzooplankton 
    REAL(wp), PUBLIC ::   xthreshphy  !: nanophyto threshold for microzooplankton 
    REAL(wp), PUBLIC ::   xthreshpoc  !: poc threshold for microzooplankton 
    REAL(wp), PUBLIC ::   xthresh     !: feeding threshold for microzooplankton 
@@ -49,14 +47,14 @@ MODULE p4zmicro
 
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
-   !! $Id: p4zmicro.F90 10374 2018-12-06 09:49:35Z cetlod $ 
+   !! $Id: p2zmicro.F90 10374 2018-12-06 09:49:35Z cetlod $ 
    !! Software governed by the CeCILL license (see ./LICENSE)
    !!----------------------------------------------------------------------
 CONTAINS
 
-   SUBROUTINE p4z_micro( kt, knt )
+   SUBROUTINE p2z_micro( kt, knt )
       !!---------------------------------------------------------------------
-      !!                     ***  ROUTINE p4z_micro  ***
+      !!                     ***  ROUTINE p2z_micro  ***
       !!
       !! ** Purpose :   Compute the sources/sinks for microzooplankton
       !!
@@ -75,21 +73,16 @@ CONTAINS
       REAL(wp) :: zgrazp, zgrazm, zgrazsd
       REAL(wp) :: zgrazmf, zgrazsf, zgrazpf
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zgrazing, zfezoo
-      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zw3d, zzligprod
+      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zw3d
       CHARACTER (len=25) :: charout
       !!---------------------------------------------------------------------
+      !
       IF( kt == nittrc000 )  THEN
          l_graz1  = iom_use( "GRAZ1" )
          l_fezoo  = iom_use( "FEZOO" )
          l_o2csp  = iom_use( "MicroZo2" )
-         l_lprodz = ln_ligand .AND. iom_use( "LPRODZ" )
       ENDIF
 
-      IF (ln_ligand) THEN
-         ALLOCATE( zzligprod(PRIV_3D_BIOARRAY) )
-         zzligprod(:,:,:) = 0.
-      ENDIF
-      !
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
@@ -107,13 +100,12 @@ CONTAINS
                !  ---------------------------------------------------------------
                ztortz = mzrat * 1.e6 * zfact * trb(ji,jj,K,jpzoo) * (1. - nitrfac(ji,jj,jk))
 
-               zcompadi  = MIN( MAX( ( trb(ji,jj,K,jpdia) - xthreshdia ), 0.e0 ), xsizedia )
                zcompaph  = MAX( ( trb(ji,jj,K,jpphy) - xthreshphy ), 0.e0 )
                zcompapoc = MAX( ( trb(ji,jj,K,jppoc) - xthreshpoc ), 0.e0 )
                
                !     Microzooplankton grazing
                !     ------------------------
-               zfood     = xprefn * zcompaph + xprefc * zcompapoc + xprefd * zcompadi
+               zfood     = xprefn * zcompaph + xprefc * zcompapoc
                zfoodlim  = MAX( 0. , zfood - min(xthresh,0.5*zfood) )
                zdenom    = zfoodlim / ( xkgraz + zfoodlim )
                zdenom2   = zdenom / ( zfood + rtrn )
@@ -122,53 +114,35 @@ CONTAINS
 
                zgrazp    = zgraze  * xprefn * zcompaph  * zdenom2 
                zgrazm    = zgraze  * xprefc * zcompapoc * zdenom2 
-               zgrazsd   = zgraze  * xprefd * zcompadi  * zdenom2 
 
-               zgrazpf   = zgrazp  * trb(ji,jj,K,jpnfe)   &
-               &          / (trb(ji,jj,K,jpphy) + rtrn)
-               zgrazmf   = zgrazm  * trb(ji,jj,K,jpsfe)   &
-               &          / (trb(ji,jj,K,jppoc) + rtrn)
-               zgrazsf   = zgrazsd * trb(ji,jj,K,jpdfe)   &
-               &          / (trb(ji,jj,K,jpdia) + rtrn)
                !
-               zgraztotc = zgrazp  + zgrazm  + zgrazsd 
-               zgraztotf = zgrazpf + zgrazsf + zgrazmf 
-               zgraztotn = zgrazp * quotan(ji,jj,jk) + zgrazm + zgrazsd * quotad(ji,jj,jk)
+               zgraztotc = zgrazp  + zgrazm 
+               zgraztotn = zgrazp * quotan(ji,jj,jk) + zgrazm 
 
                ! Grazing by microzooplankton
                zgrazing(ji,jj,jk) = zgraztotc
 
                !    Various remineralization and excretion terms
                !    --------------------------------------------
-               zgrasrat  = ( zgraztotf + rtrn ) / ( zgraztotc + rtrn )
                zgrasratn = ( zgraztotn + rtrn ) / ( zgraztotc + rtrn )
-               zepshert  =  MIN( 1., zgrasratn, zgrasrat / ferat3)
+               zepshert  =  MIN( 1., zgrasratn)
                zbeta     = MAX(0., (epsher - epshermin) )
                zepsherf  = epshermin + zbeta / ( 1.0 + 0.04E6 * 12. * zfood * zbeta )
                zepsherv  = zepsherf * zepshert 
 
-               zgrafer   = zgraztotc * MAX( 0. , ( 1. - unass ) * zgrasrat - ferat3 * zepsherv ) 
                zgrarem   = zgraztotc * ( 1. - zepsherv - unass )
                zgrapoc   = zgraztotc * unass
 
                !  Update of the TRA arrays
                !  ------------------------
                zgrarsig  = zgrarem * sigma1
-               tra(ji,jj,jk,jppo4) = tra(ji,jj,jk,jppo4) + zgrarsig
-               tra(ji,jj,jk,jpnh4) = tra(ji,jj,jk,jpnh4) + zgrarsig
                tra(ji,jj,jk,jpdoc) = tra(ji,jj,jk,jpdoc) + zgrarem - zgrarsig
-               !
-               IF( ln_ligand ) THEN
-                  tra(ji,jj,jk,jplgw) = tra(ji,jj,jk,jplgw) + (zgrarem - zgrarsig) * ldocz
-                  zzligprod(ji,jj,jk) = (zgrarem - zgrarsig) * ldocz
-               ENDIF
                !
                tra(ji,jj,jk,jpoxy) = tra(ji,jj,jk,jpoxy) - o2ut * zgrarsig
                tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) + zgrafer
                zfezoo(ji,jj,jk)    = zgrafer
                tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) + zgrapoc
                prodpoc(ji,jj,jk)   = prodpoc(ji,jj,jk) + zgrapoc
-               tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) + zgraztotf * unass
                tra(ji,jj,jk,jpdic) = tra(ji,jj,jk,jpdic) + zgrarsig
                tra(ji,jj,jk,jptal) = tra(ji,jj,jk,jptal) + rno3 * zgrarsig
                !   Update the arrays TRA which contain the biological sources and sinks
@@ -176,21 +150,9 @@ CONTAINS
                zmortz = ztortz + zrespz
                tra(ji,jj,jk,jpzoo) = tra(ji,jj,jk,jpzoo) - zmortz + zepsherv * zgraztotc 
                tra(ji,jj,jk,jpphy) = tra(ji,jj,jk,jpphy) - zgrazp
-               tra(ji,jj,jk,jpdia) = tra(ji,jj,jk,jpdia) - zgrazsd
-               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch)   &
-               &       - zgrazp  * trb(ji,jj,K,jpnch)/(trb(ji,jj,K,jpphy)+rtrn)
-               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch)   &
-               &       - zgrazsd * trb(ji,jj,K,jpdch)/(trb(ji,jj,K,jpdia)+rtrn)
-               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi)   &
-               &       - zgrazsd * trb(ji,jj,K,jpdsi)/(trb(ji,jj,K,jpdia)+rtrn)
-               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazsd   &
-               &       * trb(ji,jj,K,jpdsi)/(trb(ji,jj,K,jpdia)+rtrn)
-               tra(ji,jj,jk,jpnfe) = tra(ji,jj,jk,jpnfe) - zgrazpf
-               tra(ji,jj,jk,jpdfe) = tra(ji,jj,jk,jpdfe) - zgrazsf
                tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) + zmortz - zgrazm
                prodpoc(ji,jj,jk) = prodpoc(ji,jj,jk) + zmortz
                conspoc(ji,jj,jk) = conspoc(ji,jj,jk) - zgrazm
-               tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) + ferat3 * zmortz - zgrazmf
                !
                ! calcite production
                zprcaca = xfracal(ji,jj,jk) * zgrazp
@@ -199,12 +161,10 @@ CONTAINS
                zprcaca = part * zprcaca
                tra(ji,jj,jk,jpdic) = tra(ji,jj,jk,jpdic) - zprcaca
                tra(ji,jj,jk,jptal) = tra(ji,jj,jk,jptal) - 2. * zprcaca
-               tra(ji,jj,jk,jpcal) = tra(ji,jj,jk,jpcal) + zprcaca
             END DO
          END DO
       END DO
       !
-
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
          IF( l_graz1 ) THEN  !  Total grazing of phyto by zooplankton
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
@@ -240,24 +200,11 @@ CONTAINS
                  ENDDO
               ENDDO
             ENDDO
-            CALL iom_put( "FEZOO", zw3d )
-            DEALLOCATE( zw3d )
-         ENDIF
-         IF( l_lprodz ) THEN  !  microzooplankton ligand production rate 
-            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
-            DO jk = KRANGE
-               DO jj = JRANGE
-                  DO ji = IRANGE
-                    zw3d(ji,jj,jk) = zzligprod(ji,jj,jk) &
-                   &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
-                 ENDDO
-              ENDDO
-            ENDDO
-            CALL iom_put( "LPRODZ", zw3d )
+            CALL iom_put( "GRAZ1", zw3d )
             DEALLOCATE( zw3d )
          ENDIF
       ENDIF
-
+      !
 #if defined key_trc_diaadd
       DO jk = KRANGE
          DO jj = JRANGE
@@ -276,8 +223,6 @@ CONTAINS
          END DO
       END DO
 #endif
-
-      IF (ln_ligand)  DEALLOCATE( zzligprod )
       !
       IF(ln_ctl) THEN      ! print mean trends (used for debugging)
          WRITE(charout, FMT="('micro')")
@@ -286,12 +231,12 @@ CONTAINS
 !        CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
       ENDIF
       !
-   END SUBROUTINE p4z_micro
+   END SUBROUTINE p2z_micro
 
 
-   SUBROUTINE p4z_micro_init
+   SUBROUTINE p2z_micro_init
       !!----------------------------------------------------------------------
-      !!                  ***  ROUTINE p4z_micro_init  ***
+      !!                  ***  ROUTINE p2z_micro_init  ***
       !!
       !! ** Purpose :   Initialization of microzooplankton parameters
       !!
@@ -303,32 +248,30 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER ::   ios   ! Local integer
       !
-      NAMELIST/namp4zzoo/ part, grazrat, resrat, mzrat, xprefn, xprefc, &
-         &                xprefd,  xthreshdia,  xthreshphy,  xthreshpoc, &
+      NAMELIST/namp2zzoo/ part, grazrat, resrat, mzrat, xprefn, xprefc, &
+         &                xthreshphy,  xthreshpoc, &
          &                xthresh, xkgraz, epsher, epshermin, sigma1, unass
       !!----------------------------------------------------------------------
       !
       IF(lwp) THEN
          WRITE(numout,*) 
-         WRITE(numout,*) 'p4z_micro_init : Initialization of microzooplankton parameters'
+         WRITE(numout,*) 'p2z_micro_init : Initialization of microzooplankton parameters'
          WRITE(numout,*) '~~~~~~~~~~~~~~'
       ENDIF
       !
       REWIND( numnatp_ref )              ! Namelist nampiszoo in reference namelist : Pisces microzooplankton
-      READ  ( numnatp_ref, namp4zzoo, IOSTAT = ios, ERR = 901)
-901   IF( ios /= 0 )   CALL ctl_nam ( ios , 'namp4zzoo in reference namelist', lwp )
+      READ  ( numnatp_ref, namp2zzoo, IOSTAT = ios, ERR = 901)
+901   IF( ios /= 0 )   CALL ctl_nam ( ios , 'namp2zzoo in reference namelist', lwp )
       REWIND( numnatp_cfg )              ! Namelist nampiszoo in configuration namelist : Pisces microzooplankton
-      READ  ( numnatp_cfg, namp4zzoo, IOSTAT = ios, ERR = 902 )
-902   IF( ios >  0 )   CALL ctl_nam ( ios , 'namp4zzoo in configuration namelist', lwp )
-      IF(lwm) WRITE( numonp, namp4zzoo )
+      READ  ( numnatp_cfg, namp2zzoo, IOSTAT = ios, ERR = 902 )
+902   IF( ios >  0 )   CALL ctl_nam ( ios , 'namp2zzoo in configuration namelist', lwp )
+      IF(lwm) WRITE( numonp, namp2zzoo )
       !
       IF(lwp) THEN                         ! control print
-         WRITE(numout,*) '   Namelist : namp4zzoo'
+         WRITE(numout,*) '   Namelist : namp2zzoo'
          WRITE(numout,*) '      part of calcite not dissolved in microzoo guts  part        =', part
          WRITE(numout,*) '      microzoo preference for POC                     xprefc      =', xprefc
          WRITE(numout,*) '      microzoo preference for nano                    xprefn      =', xprefn
-         WRITE(numout,*) '      microzoo preference for diatoms                 xprefd      =', xprefd
-         WRITE(numout,*) '      diatoms feeding threshold  for microzoo         xthreshdia  =', xthreshdia
          WRITE(numout,*) '      nanophyto feeding threshold for microzoo        xthreshphy  =', xthreshphy
          WRITE(numout,*) '      poc feeding threshold for microzoo              xthreshpoc  =', xthreshpoc
          WRITE(numout,*) '      feeding threshold for microzooplankton          xthresh     =', xthresh
@@ -342,16 +285,16 @@ CONTAINS
          WRITE(numout,*) '      half sturation constant for grazing 1           xkgraz      =', xkgraz
       ENDIF
       !
-   END SUBROUTINE p4z_micro_init
+   END SUBROUTINE p2z_micro_init
 
 #else
    !!======================================================================
    !!  Dummy module :                                   No PISCES bio-model
    !!======================================================================
 CONTAINS
-   SUBROUTINE p4z_micro                    ! Empty routine
-   END SUBROUTINE p4z_micro
+   SUBROUTINE p2z_micro                    ! Empty routine
+   END SUBROUTINE p2z_micro
 #endif 
 
    !!======================================================================
-END MODULE p4zmicro
+END MODULE p2zmicro

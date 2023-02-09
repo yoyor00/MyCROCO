@@ -28,7 +28,7 @@ MODULE sms_pisces
    INTEGER  ::   numonp      = -1           !! Logical unit for namelist pisces output
 
    !!* Model used
-   LOGICAL  ::  ln_p2z            !: Flag to use LOBSTER model
+   LOGICAL  ::  ln_p2z            !: Flag to use PISCES  reduced model
    LOGICAL  ::  ln_p4z            !: Flag to use PISCES  model
    LOGICAL  ::  ln_p5z            !: Flag to use PISCES  quota model
    LOGICAL  ::  ln_ligand         !: Flag to enable organic ligands
@@ -121,6 +121,8 @@ MODULE sms_pisces
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tgfunc    !: Temp.  dependancy of various biological rates
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tgfunc2   !: Temp.  dependancy of mesozooplankton rates
 
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   thetanano   !: Proxy of Chl/C ratio ( ln_p2z )
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:) ::     sinkcalb    !: Calcite sinking flux at the bottom ( ln_p2z )
    !! * Shared module variables
 
   REAL(wp), PARAMETER     ::  rtrn = 1.e-20
@@ -144,7 +146,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!        *** ROUTINE sms_pisces_alloc ***
       !!----------------------------------------------------------------------
-      INTEGER ::   ierr(11)        ! Local variables
+      INTEGER ::   ierr(14)        ! Local variables
       !!----------------------------------------------------------------------
       ierr(:) = 0
       !*  Biological fluxes for light
@@ -153,9 +155,13 @@ CONTAINS
       !
       ALLOCATE( fr_i  (PRIV_2D_BIOARRAY),                                &
                 tmask (PRIV_3D_BIOARRAY), etot3 (PRIV_3D_BIOARRAY) ,     &
-                enano (PRIV_3D_BIOARRAY), ediat (PRIV_3D_BIOARRAY) ,     &
-                enanom(PRIV_3D_BIOARRAY), ediatm(PRIV_3D_BIOARRAY) ,     &
+                enano (PRIV_3D_BIOARRAY),                                &
+                enanom(PRIV_3D_BIOARRAY),                                &
                 etot_ndcy(PRIV_3D_BIOARRAY), emoy(PRIV_3D_BIOARRAY),  STAT=ierr(2) )
+      
+     IF( .NOT. ln_p2z )  &
+       &   ALLOCATE( ediat (PRIV_3D_BIOARRAY) ,     &
+       &             ediatm(PRIV_3D_BIOARRAY),  STAT=ierr(12) )
       !
       !*  Biological fluxes for primary production
       ALLOCATE( xksimax(PRIV_2D_BIOARRAY), biron(PRIV_3D_BIOARRAY),  STAT=ierr(3) )
@@ -178,12 +184,14 @@ CONTAINS
       ALLOCATE( tgfunc(PRIV_3D_BIOARRAY)  , tgfunc2(PRIV_3D_BIOARRAY),   STAT=ierr(6) )
       !
       !* Sinking speed
-      ALLOCATE( wsbio3 (PRIV_3D_BIOARRAY) , wsbio4 (PRIV_3D_BIOARRAY),     &
-      &                             STAT=ierr(7) )
+      ALLOCATE( wsbio3 (PRIV_3D_BIOARRAY) , wsbio4 (PRIV_3D_BIOARRAY),   STAT=ierr(7) )
       !
-      IF( ln_ligand ) THEN
-         ALLOCATE( plig(PRIV_3D_BIOARRAY) ,                          STAT=ierr(9) )
-      ENDIF
+
+      IF( ln_p2z )  &
+       &  ALLOCATE( thetanano(PRIV_3D_BIOARRAY), sinkcalb(PRIV_2D_BIOARRAY),         STAT=ierr(8) )
+
+      IF( ln_ligand ) ALLOCATE( plig(PRIV_3D_BIOARRAY) ,              STAT=ierr(9) )
+
       IF( ln_p5z ) THEN
          !
          ALLOCATE( epico(PRIV_3D_BIOARRAY), epicom(PRIV_3D_BIOARRAY) ,   STAT=ierr(10) )
@@ -232,6 +240,7 @@ CONTAINS
             DO jj = JRANGE
                DO ji = IRANGE
                   ptra(ji,jj,jk,jn) = trb(ji,jj,K,jn) * zcoef
+        !          ptra(ji,jj,jk,jn) = tra(ji,jj,jk,jn) * zcoef
                ENDDO
             ENDDO
          ENDDO
@@ -271,6 +280,25 @@ CONTAINS
 9000  FORMAT(' tracer nb :',i2,'    name :',a10,'    mean :',e18.10,'    min :',e18.10, '    max :',e18.10 )
       !
    END SUBROUTINE tracer_stat
+
+   SUBROUTINE prt_trc( charout, ptab, ndim, lchar)
+
+      INTEGER, INTENT(in)  :: ndim
+      CHARACTER (len=*),  INTENT(in)           :: charout   ! information about the tab3d array
+      CHARACTER (len=*),  DIMENSION(ndim), INTENT(in)  :: lchar   ! information about the tab3d array
+      REAL(wp), INTENT(in), DIMENSION(PRIV_3D_BIOARRAY,ndim)  :: ptab
+      INTEGER :: ji, jj, jk, jn
+      REAL(wp)  :: zsum
+
+      WRITE(numout,*) charout
+
+      DO jn = 1, ndim
+         zsum   = SUM( ptab(:,:,:,jn) * tmask(:,:,:) )
+         IF( lk_mpp ) CALL mpp_sum( zsum )      ! min over the global domain
+         IF( lwp ) WRITE(numout,FMT="(3x,a10,' : ',D23.16)") TRIM(lchar(jn)), zsum
+      END DO
+
+   END SUBROUTINE prt_trc      
 
    SUBROUTINE prt_ctl_trc( charout, ltra )
 

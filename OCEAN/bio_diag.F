@@ -29,15 +29,21 @@
 # include "mpi_cpl.h"
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc, iocheck,
      &                             trd,omp_get_thread_num
-      integer my_itrc(1:4)
+      integer nbtrc
+#if defined PISCES
+      parameter(nbtrc = 9)
+#else
+      parameter(nbtrc = 4)
+#endif
+      integer my_itrc(1:nbtrc)
 !
 !
       real cff1, NSUB
-      real*QUAD cff, my_sum(0:4)
+      real*QUAD cff, my_sum(0:nbtrc)
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
-      real*QUAD buff(0:4)
+      real*QUAD buff(0:nbtrc)
       common /xyz_bio/ buff
 #endif
 
@@ -57,14 +63,19 @@
       my_itrc(3)=iZoo2
       my_itrc(4)=iDet2
 # elif defined PISCES
-      my_itrc(1)=iNO3_
-      my_itrc(2)=iDIA_
-      my_itrc(3)=iZOO_
-      my_itrc(4)=iDOC_
+      my_itrc(1)=iDIC_
+      my_itrc(2)=iTAL_
+      my_itrc(3)=iOXY_
+      my_itrc(4)=iPOC_
+      my_itrc(5)=iPHY_
+      my_itrc(6)=iZOO_
+      my_itrc(7)=iDOC_
+      my_itrc(8)=iNO3_
+      my_itrc(9)=iFer_
 # endif
 
       if (mod(iic-1,ninfo).eq.0) then
-        do itrc=0,4
+        do itrc=0,nbtrc
           my_sum(itrc)=QuadZero          ! <-- Reset local sums
         enddo
 
@@ -78,7 +89,7 @@
            do k=1,N
             cff=cff1*Hz(i,j,k)       ! <-- volume of grid box(i,j,k) 
             my_sum(0)=my_sum(0)+cff  ! <-- accumulate volume
-             do itrc=1,4
+             do itrc=1,nbtrc
               my_sum(itrc)=my_sum(itrc)+cff*t(i,j,k,nstp,my_itrc(itrc))
              enddo
            enddo
@@ -100,12 +111,12 @@
 
 C$OMP CRITICAL (bio_cr_rgn)
           if (bio_count.eq.0) then
-            do itrc=0,4
+            do itrc=0,nbtrc
               global_sum(itrc)=QuadZero   ! <-- Reset global sums
             enddo
           endif 
                                        !-->  Perform global summation
-          do itrc=0,4
+          do itrc=0,nbtrc
             global_sum(itrc)=global_sum(itrc)+my_sum(itrc)
           enddo
 
@@ -117,7 +128,7 @@ C$OMP CRITICAL (bio_cr_rgn)
               size=NNODES                 ! among MPI processes
    10          step=(size+1)/2
                 if (mynode.ge.step .and. mynode.lt.size) then
-                  do itrc=0,4
+                  do itrc=0,nbtrc
                     buff(itrc)=global_sum(itrc)  ! This is MPI_Reduce
                   enddo
                   call MPI_Send (buff, 5, MPI_DOUBLE_PRECISION,
@@ -125,7 +136,7 @@ C$OMP CRITICAL (bio_cr_rgn)
                 elseif (mynode .lt. size-step) then
                   call MPI_Recv (buff, 5, MPI_DOUBLE_PRECISION,
      &                 mynode+step, 17, MPI_COMM_WORLD, status, ierr)
-                  do itrc=0,4
+                  do itrc=0,nbtrc
                     global_sum(itrc)=global_sum(itrc)+buff(itrc)
                   enddo
                 endif
@@ -137,7 +148,7 @@ C$OMP CRITICAL (bio_cr_rgn)
             trd=omp_get_thread_num()
 
             cff=1./global_sum(0)
-            do itrc=1,4
+            do itrc=1,nbtrc
               global_sum(itrc)=cff*global_sum(itrc)
             enddo
             if (first_time.eq.0) then
@@ -146,24 +157,27 @@ C$OMP CRITICAL (bio_cr_rgn)
               write(stdout,1) 'STEP','time[DAYS]','       NO3',
      &                   '     PHYTO','       ZOO','    DETRIT',
      &                   'trd'
+   1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,3x,A3)
 # elif defined BIO_N2ChlPZD2
               write(stdout,1) 'STEP','time[DAYS]','       NO3',
      &                   '    PHY2 ','    ZOO2 ', '  DET2',
      &                   'trd'
+   1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,3x,A3)
 # elif defined BIO_BioEBUS
               write(stdout,1) 'STEP','time[DAYS]','       NO3',
      &                   '    PHY2 ','    ZOO2 ', '  DET2',
      &                   'trd'
-# elif defined PISCES
-              write(stdout,1) 'STEP','time[DAYS]','       NO3',
-     &                   '      DIA','     ZOO ', '   DOC',
-     &                   'trd'
-# endif
    1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,3x,A3)
-
+# elif defined PISCES
+              write(stdout,1) 'STEP','time[DAYS]','       DIC',
+     &                   '      ALK','     OXY ', '   POC',
+     &                   '      PHY','     ZOO ', '   DOC',
+     &                   '      NO3','     FER ', 'trd'
+   1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,4x,
+     &               A10,4x,A10,4x,A10,4x,A10,4x,A10,4x,3x,A30)
+# endif
             endif
-
-
+#if ! defined PISCES
             write(stdout,2) iic-1,tdays, 
      &                      global_sum(1),  
      &                      global_sum(2), 
@@ -171,6 +185,20 @@ C$OMP CRITICAL (bio_cr_rgn)
      &                      global_sum(4) 
      &                    , trd
    2        format(I6, F12.5, 4(1PE14.7), I3)
+#else
+            write(stdout,2) iic-1,tdays, 
+     &                      global_sum(1),  
+     &                      global_sum(2), 
+     &                      global_sum(3),  
+     &                      global_sum(4), 
+     &                      global_sum(5), 
+     &                      global_sum(6), 
+     &                      global_sum(7), 
+     &                      global_sum(8),
+     &                      global_sum(9), 
+     &                      trd
+   2        format(I6, F12.5, 9(1PE14.7), I3)
+#endif
 # ifdef MPI
             endif    ! <-- mynode.eq.0
 # endif

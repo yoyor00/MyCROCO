@@ -2882,9 +2882,7 @@ C 				  endif
 #  if defined BIOLOGY
 #   if defined PISCES
       CALL trc_wri_pisces
-#   else
-      call xios_send_field("hel",hel)     
-#   if (defined BIO_NChlPZD ||  defined BIO_N2ChlPZD2)
+#   elif (defined BIO_NChlPZD ||  defined BIO_N2ChlPZD2)
       call xios_send_field("theta",theta)
 #    ifdef OXYGEN
       call xios_send_field("U10",u10)
@@ -2894,7 +2892,8 @@ C 				  endif
 #   elif defined BIO_BioEBUS 
       call xios_send_field("AOU",AOU)
       call xios_send_field("wind10",wind10)
-#   endif
+#   else
+      call xios_send_field("hel",hel)     
 #   endif
 #  endif /* BIOLOGY */
 
