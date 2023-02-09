@@ -49,7 +49,7 @@ C$    integer omp_get_thread_num
 #include "diagnostics.h"
 #include "boundary.h"
 #include "sources.h"
-#if defined NBQ_MASS || defined M3FAST_UV || defined M3FAST_C3D_UVFS || defined M3FAST_C3D_UVSF
+#if defined M3FAST_MASS || defined M3FAST_UV || defined M3FAST_C3D_UVFS || defined M3FAST_C3D_UVSF
 #  include "nbq.h"
 #endif
 
@@ -180,7 +180,7 @@ C$    integer omp_get_thread_num
             rho_avg(i,j,k)=init
             u_avg(i,j,k)=init
             v_avg(i,j,k)=init
-#  ifndef NBQ
+#  ifndef M3FAST
             w_avg(i,j,k)=init
 #  endif
 # endif
@@ -314,7 +314,7 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef AVERAGES
             omega_avg(i,j,k)=init
-#  ifdef NBQ
+#  ifdef M3FAST
             w_avg(i,j,k)=init
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \

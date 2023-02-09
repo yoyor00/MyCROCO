@@ -1925,7 +1925,7 @@ C$OMP END MASTER
       rv_nbq      =0.
       ru_nbq_avg2 =0.
       rv_nbq_avg2 =0.
-#  ifdef NBQ
+#  ifdef M3FAST 
       rw_nbq      =0.
       rw_nbq_avg2 =0.
 #  endif
@@ -2148,7 +2148,7 @@ C$OMP END MASTER
 ! ! Apply point sources for hydrostatic case
 ! !--------------------------------------------------------------------
 ! !
-# if defined PSOURCE && !defined NBQ
+# if defined PSOURCE && !defined M3FAST 
       do is=1,Nsrc 
 #  ifdef MPI
         i=Isrc_mpi(is,mynode)
