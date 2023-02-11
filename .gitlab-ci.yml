@@ -88,10 +88,10 @@ vort_run:
 reg_run:
   only:
     - schedules  
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
+      #  tags:
+      #- ci.inria.fr
+      #- large
+      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
   before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
@@ -118,10 +118,10 @@ reg_run:
 reg_perfrst:
   only:
     - schedules
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0  
+      #tags:
+      #- ci.inria.fr
+      #- large
+      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0  
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
