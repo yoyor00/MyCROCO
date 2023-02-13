@@ -1757,14 +1757,20 @@ CR      write(stdout,'(1x,A,I3)') 'indxAks =',indxAks
       vname(6,indxAks)='lat_rho lon_rho                           '
       vname(7,indxAks)='                                          '
 # endif
-# if defined LMD_SKPP || defined GLS_MIXING
+# if defined LMD_SKPP || defined GLS_MIXING || defined MLD_RHO
 CR      write(stdout,'(1x,A,I3)') 'indxHbl =',indxHbl
       vname(1,indxHbl)='hbl                                       '
       vname(2,indxHbl)='depth of planetary boundary layer         '
       vname(3,indxHbl)='meter                                     '
       vname(4,indxHbl)='hbl, scalar, series                       '
+
+# if defined defined MLD_RHO
+      vname(5,indxHbl)='ocean_mixed_layer_thickness_defined_'
+     &                                       // 'using_density '
+# else
       vname(5,indxHbl)='ocean_mixed_layer_thickness_defined_'
      &                                       // 'by_mixing_scheme '
+# endif
       vname(6,indxHbl)='lat_rho lon_rho                           '
       vname(7,indxHbl)='                                          '
 # endif
