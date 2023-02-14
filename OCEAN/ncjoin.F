@@ -65,7 +65,7 @@ c--#define AUTORENICE
 #undef VERBOSE
  
  
-      implicit none
+c      implicit none
 #include "netcdf.inc"
       integer, parameter :: maxdims=32, maxvars=96
       integer, parameter :: part_XI=1,  part_ETA=2, part_2D=3
