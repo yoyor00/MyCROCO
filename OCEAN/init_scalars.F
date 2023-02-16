@@ -326,14 +326,18 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(1,indxTime)='scrum_time'
 #endif
       vname(2,indxTime)='time since initialization'
+#if defined USE_CALENDAR && defined ANA_INITIAL
+      vname(3,indxTime)='second since '//start_date
+#else
       vname(3,indxTime)='second'
+#endif
       vname(4,indxTime)='time, scalar, series'
       vname(5,indxTime)='time'
       vname(6,indxTime)='    '
       vname(7,indxTime)='T'
       vname(8,indxTime)='.NO.'
       vname(9,indxTime)=' '
-#ifdef START_DATE
+#ifdef USE_CALENDAR 
       vname(10,indxTime)=start_date
 !     vname(11,indxTime)='Gregorian'
 #endif
@@ -341,7 +345,11 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
 CR      write(stdout,'(1x,A,I3)') 'indxTime2 =',indxTime2
       vname(1,indxTime2)='time'
       vname(2,indxTime2)='time since initialization'
+#if defined USE_CALENDAR && defined ANA_INITIAL
+      vname(3,indxTime2)='second since '//start_date
+#else
       vname(3,indxTime2)='second'
+#endif
       vname(4,indxTime2)='time, scalar, series'
       vname(5,indxTime2)='time'
       vname(6,indxTime2)='  '

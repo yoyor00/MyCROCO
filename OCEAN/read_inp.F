@@ -353,6 +353,18 @@ h! Read input parameters according to the keyword:
         lstr=lenstr(start_date)
         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &   'Run start date:', start_date(1:lstr)
+# ifdef ANA_INITIAL
+        if (nrrec.eq.0) then
+          origin_date=start_date
+          origin_date_in_sec=tool_datosec(origin_date)
+          READ(origin_date(1:4),fmt='(i4)') origin_year
+          READ(origin_date(6:7),fmt='(i2)') origin_month
+          READ(origin_date(9:10),fmt='(i2)') origin_day
+          READ(origin_date(12:13),fmt='(i2)') origin_hour
+          READ(origin_date(15:16),fmt='(i2)') origin_minute
+          READ(origin_date(18:19),fmt='(i2)') origin_second
+        endif
+# endif
 ! END date
 !
       elseif (keyword(1:kwlen).eq.'end_date') then
