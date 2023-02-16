@@ -107,8 +107,10 @@ CONTAINS
                ! Michaelis-Menten Limitation term for nutrients Small flagellates
                ! -----------------------------------------------
                ! Limitation of nanophytoplankton growth
-               xnanono3(ji,jj,jk) = trb(ji,jj,K,jpno3) / ( zconc0n + trb(ji,jj,K,jpno3) )
-               xlimnfe (ji,jj,jk) = trb(ji,jj,K,jpfer) / ( zconcnf + trb(ji,jj,K,jpfer) ) 
+               xnanono3(ji,jj,jk) = trb(ji,jj,K,jpno3)                  &
+                  &                 / ( zconc0n + trb(ji,jj,K,jpno3) )
+               xlimnfe (ji,jj,jk) = trb(ji,jj,K,jpfer)                  &
+                  &                 / ( zconcnf + trb(ji,jj,K,jpfer) ) 
                xlimphy (ji,jj,jk) = MIN( xlimnfe(ji,jj,jk), xnanono3(ji,jj,jk) )
                !
            END DO
