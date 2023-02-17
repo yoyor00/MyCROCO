@@ -26,6 +26,7 @@ variables:
   # Here define the direcory with the input files
   # => for BENGUELA_VHR
   DATAREG: "$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
+  DATAREGDOCKER: "$CI_PROJECT_DIR/CVTK/VHR"
   nest_position_reg: "79 137 37 117 3 3 3 3"
   # => for VORTEX if needed
   DATAVOR: ""
