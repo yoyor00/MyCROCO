@@ -121,6 +121,10 @@ C$    trd=omp_get_thread_num()
       implicit none
 # include "param.h"
 
+      double precision alpha_w,alphaz_w
+      integer alphaN_w
+
+
       integer Istr,Iend,Jstr,Jend, i,j,k, kbak,kold,
      &        imin,imax,jmin,jmax,
      &        kp1
@@ -1768,6 +1772,42 @@ C$OMP END MASTER
 ! !====================================================================
 ! !
 # ifdef M3FAST_W
+
+
+#  ifdef NHINT
+      ! NHINT numerical mode control, v1:
+   !        k=N
+   !        do j=Jstr,Jend
+   !         do i=Istr,Iend
+   !           qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*0.25
+   !         enddo
+   !       enddo
+      
+      ! NHINT numerical mode control, v2:
+         alpha_w  = 0.9 
+         alphaN_w = 5 
+         do k=N-2*alphaN_w,N-1
+            do j=Jstr,Jend
+             do i=Istr,Iend
+               cff=(1.-alpha_w)
+     &               *exp(-(z_w(i,j,k)         -z_w(i,j,N))**2
+     &                    /(z_w(i,j,N-alphaN_w)-z_w(i,j,N))**2)
+               qdmw_nbq(i,j,k)=
+     &       (1.-cff)*qdmw_nbq(i,j,k)
+     &    -      cff *(qdmw_nbq(i,j,k)-qdmw_nbq(i,j,N)
+     &         *(z_w(i,j,k)+H(i,j))/(z_w(i,j,N)+H(i,j))
+     &         *0.5*(Hz(i,j,k)+Hz(i,j,k+1))/Hz(i,j,N))
+             enddo
+           enddo
+         enddo
+
+          k=N
+           do j=Jstr,Jend
+            do i=Istr,Iend
+              qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*alpha_w
+            enddo
+          enddo
+#   endif /* NHINT  */
       if (LAST_FAST_STEP) then
       
 ! ! KERNEL_28  rw_nbq <= ( qdmw_nbq, rw_nbq, rw_int_nbq, pm, pn )
