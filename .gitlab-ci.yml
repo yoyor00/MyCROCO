@@ -138,25 +138,6 @@ reg_run:
       - $CVTKWORK/ftp
     when: always 
 
-
-download_VHR:
-  stage: download
-  tags:
-  - ci.inria.fr
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
-  variables:
-    DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
-  script:
-    - mkdir -p $DATAREG
-    - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-  artifacts:
-    paths:
-      - $DATAREG
-    when: always
-    expire_in: 6 hour
-
-
 reg_run_docker:
   stage: run
   tags:
@@ -166,7 +147,9 @@ reg_run_docker:
   variables:
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
+  - mkdir -p $DATAREG
   - cd $DATAREG
+  - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
   - tar -xf ForCI-INRIA.tar.gz
   - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
   - mkdir -p $DATADIR
