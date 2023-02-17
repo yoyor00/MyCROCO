@@ -152,7 +152,7 @@ reg_run_docker:
   - cd -
   script:
     - cd $CVTKHOME/Scripts_reg
-    - ./create_link_master_reg.sh
+    - ./create_link_master_regdocker.sh
     - cd -
     - cd $CVTKWORK/REG
     
