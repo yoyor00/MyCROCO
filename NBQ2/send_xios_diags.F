@@ -1925,9 +1925,11 @@ C 				  endif
 # endif
  
       ! vertical grid definition
-      CALL iom_set_axis_attr( "s_rho", sc_r )
-      CALL iom_set_axis_attr( "s_w"  , sc_w )
-# if defined SEDIMENT
+      CALL iom_set_axis_attr( "s_rho", sc_r(1:N) )
+      CALL iom_set_axis_attr( "s_rho_full", sc_r )
+      CALL iom_set_axis_attr( "s_w"  , sc_w(0:N) )
+      CALL iom_set_axis_attr( "s_w_full"  , sc_w )
+# ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
 # elif defined MUSTANG
        CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,nk_nivsed_out) /))
