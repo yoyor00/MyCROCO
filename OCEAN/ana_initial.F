@@ -1174,6 +1174,9 @@ C$OMP BARRIER
               t(i,j,k,1,isalt)=35.5
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
+            enddo
+          enddo
+        enddo
 
 #   elif defined KILPATRICK
         do k=1,N
