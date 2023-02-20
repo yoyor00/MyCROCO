@@ -173,6 +173,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
     	CFT1=$FC
     	FFLAGS1="-g -fast -r8 -i4 -mcmodel=medium"
 	#FFLAGS1="-g -O0 -C -Kieee -r8 -i4 -traceback"
+	LDFLAGS1="$LDFLAGS1 -g -acc"
 	if [[ $HOSTNAME == "jean-zay"* ]]; then
 		CPP1=$CPP1" -DJEANZAY"
 	fi
