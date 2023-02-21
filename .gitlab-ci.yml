@@ -23,7 +23,7 @@ variables:
   SOURCE_CROCO: "$CI_PROJECT_DIR/OCEAN"
   TESTROOTDIR: ${CVTKWORK}
   #
-  API_TOKEN: "glpat-ReShVenKnXS9X5k3Dyzn"
+  API_TOKEN: "glpat-M1kw5cycVQinQnhMKbPh"
   #
   # Here define the direcory with the input files
   # => for BENGUELA_VHR
