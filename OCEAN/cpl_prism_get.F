@@ -660,9 +660,21 @@
 #  if defined WAVE_SMFLUX
          sustr = twox
          svstr = twoy
+         do jo=jmin_halo-1,jmax_halo+1
+         do io=imin_halo-1,imax_halo+1
+             smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
+     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) 
+         enddo
+         enddo
 #  else
          sustr = sustr - tawx + twox
          svstr = svstr - tawy + twoy
+         do jo=jmin_halo-1,jmax_halo+1
+         do io=imin_halo-1,imax_halo+1
+             smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
+     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) 
+         enddo
+         enddo
 #  endif
 # endif
       return
