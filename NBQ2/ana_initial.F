@@ -1080,7 +1080,7 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-              t(i,j,k,1,itemp)=13.-drho*(0.-z_r(i,j,k))/Tcoef
+               t(i,j,k,1,itemp)=13.-drho*(0.-z_r(i,j,k))/Tcoef
 !              t(i,j,k,1,itemp)=13.-drho*(0.
 !     &           -(z_r(i,j,k)-2.*exp(-(xr(i,j)-32.)**2/4.**2
 !     &              -(-z_r(i,j,k)-16.)**2/4.**2))
@@ -1088,11 +1088,12 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
 #   ifdef NBQ_GRAV
               rhoi_nh(i,j,k)=13.-drho*(0.-z_r(i,j,k))/Tcoef
 #   endif
-               rd=sqrt( (xr(i,j)-16.)**2/1.**2
-     &                +(-z_r(i,j,k)-8.)**2)
-               if (rd<2.) then
-                  t(i,j,k,1,itemp)=t(i,j,k,1,itemp)
-     &                -(16.-8.)*drho/Tcoef
+!               rd=sqrt( (xr(i,j)-16.)**2/1.**2
+!     &                +(-z_r(i,j,k)-8.)**2)
+!               if (rd<2.) then
+               if (z_r(i,j,k).ge.-10.) then
+                  t(i,j,k,1,itemp)= t(i,j,k,1,itemp)
+     &                -(16.-8.)*drho/Tcoef*10.
     !&              13.-drho*(0.+16.)/Tcoef
                endif
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
