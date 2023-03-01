@@ -415,13 +415,13 @@
 !
       elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ndtnbq, csound_nbq, visc2_nbq
+        read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
         MPI_master_only write(stdout,
-     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
-     &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
-     &                                                 '2D step.',
+     &    '(I10,2x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
+     &   ndtnbq,    
+     &   'ndtnbq      Total number of acoustic timesteps for 3D step.',
      &   csound_nbq,'csound_nbq  Sound wave celerity.',
-     &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
+     &   visc2read_nbq, 'visc2_nbq   Second viscosity coefficient for',
      &                                      'compressible fluids.'
         print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
 # ifndef NHINT_3M
