@@ -140,7 +140,7 @@
 ! Density of sediments
 !
 #  ifdef M3FAST_SEDLAYERS
-!     rho_sdl = 0. / rho0 
+!     rho_sdl = 1. / rho0 
       rho_sdl = 800. / rho0 
 #  endif
 !
