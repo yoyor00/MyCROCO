@@ -44,6 +44,9 @@
       real drho,rd
 # include "nbq.h"
 #endif
+#ifdef MOVING_BATHY 
+# include "nbq.h"
+#endif
 #ifdef SST_SKIN
 # include "forces.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
@@ -696,8 +699,11 @@
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-              t(i,j,k,1,itemp)=rho0*(1-cff*z_r(i,j,k)) - 1000.
+              t(i,j,k,1,itemp)=rho0*(1.-cff*z_r(i,j,k)) - 1000.
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#     ifdef ANA_MVB
+              rhoi_nbq(i,j,k)=rho0*(0.-cff*z_r(i,j,k)) 
+#     endif
             enddo
           enddo
         enddo 

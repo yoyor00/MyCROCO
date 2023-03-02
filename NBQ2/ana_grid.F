@@ -137,7 +137,7 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined GRAV_ADJ
-#  ifdef M3FAST
+#  ifdef NBQ
                      depth=0.3
 #  else
                      depth=20.
@@ -282,7 +282,7 @@ C$    integer omp_get_thread_num
                      Length_XI =128.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined GRAV_ADJ
-#  ifdef M3FAST
+#  ifdef NBQ
                      Length_XI =3.0
 #  else
                      Length_XI =64.0e+3
@@ -345,7 +345,7 @@ C$    integer omp_get_thread_num
                      Length_XI =Length_XI_ISO_GRID
 #  endif
 # elif defined MOVING_BATHY
-                     Length_XI =4.0
+                     Length_XI =0.4
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined DUNE
 #  ifdef ANA_DUNE

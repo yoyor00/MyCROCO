@@ -375,4 +375,10 @@
       real CF3D(GLOBAL_2D_ARRAY,-N_sl:N)
       common /dum_CF3D/CF3D
 !$acc declare create( FC3D, DC3D, CF3D )
+
+# ifdef ANA_MVB
+      real rhoi_nbq(GLOBAL_2D_ARRAY,N)
+      common/nbq_rhoi/rhoi_nbq
+# endif
+
 #endif /* M3FAST */
