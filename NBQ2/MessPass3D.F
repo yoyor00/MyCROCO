@@ -47,6 +47,7 @@
 # else
       parameter (Npts=3)
 # endif
+# undef  NP1      
 # define NP1 N+1
 #ifdef MP_M3FAST_SEDLAYERS
 # undef  NP1
@@ -594,6 +595,7 @@ c          endif
 # endif      
 # endif
 
+# undef  NP1
 
 #else
       subroutine MessPass3D_empty

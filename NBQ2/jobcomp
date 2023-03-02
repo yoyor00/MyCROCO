@@ -23,12 +23,12 @@
 #
 # set source, compilation and run directories
 #
-SOURCE=/nhoms/nguc/Devel2022/croco_dev_2022_GPU_NBQ2/OCEAN
+SOURCE=../OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
 # 
-# get source inforamation, commit number
+# get source information, commit number
 #
 ENVFILE=env_infos.txt
 export CURCOMMIT=`cd $ROOT_DIR; git log | head -1 | grep commit | awk '{print $2;}'`
@@ -37,7 +37,7 @@ echo $CURCOMMIT 		>> $ENVFILE
 echo "Hostname : "$HOSTNAME	>> $ENVFILE
 module list 			2>> $ENVFILE
 echo "Link :"			>> $ENVFILE
-ldd croco xios_server.exe sdfqsdf >> $ENVFILE 2>/dev/null
+ldd croco xios_server.exe 	>> $ENVFILE 2>/dev/null
 #
 # determine operating system
 #
