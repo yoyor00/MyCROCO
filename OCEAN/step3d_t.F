@@ -48,6 +48,11 @@
       USE comsubstance, ONLY : l_subs2D
 #    endif
 #   endif
+#   ifdef SUBSTANCE_SUBMASSBALANCE
+      USE submassbalance, ONLY :  submassbalance_flxcum_kiv
+      USE submassbalance, ONLY :  submassbalance_psource
+      USE submassbalance, ONLY :  submassbalance_flxcum_ws
+#   endif
 #  endif
       implicit none
 #  include "param.h"
@@ -313,6 +318,14 @@
      &      +dt*FE(IstrR:IendR,JstrR:JendR)
           endif
 #  endif
+
+!add submassbalance !! in loop k
+#  if defined SUBSTANCE_SUBMASSBALANCE
+        if (itrc .ge. itsubs1) then
+            call submassbalance_flxcum_kiv(Istr, Iend, Jstr, Jend, 
+     &        FX, FE, itrc-itsubs1+1)
+        endif
+#  endif
 !
 !----------------------------------------------------------
 ! Store diagnostic transport term
@@ -432,6 +445,7 @@
           enddo ! source
         enddo ! itrc
 #  endif /* PSOURCE_MASS */
+
 !
 !======================================================================
 !
@@ -691,7 +705,9 @@
 #   endif /* DIAGNOSTICS_TS */
 #  endif /* CONST_TRACERS */
 
+
         enddo      ! <-- itrc
+
 !
 !----------------------------------------------------------
 ! Compute vertical gradient in vertical T-diffusion
@@ -707,6 +723,14 @@
 #  endif
 
       enddo      ! <-- j
+
+!add submassbalance for river!! 
+# if defined SUBSTANCE_SUBMASSBALANCE
+      call submassbalance_psource(Istr, Iend, Jstr, Jend)
+#  ifdef MUSTANG
+      call submassbalance_flxcum_ws(Istr, Iend, Jstr, Jend)
+#  endif
+# endif
 !
 !======================================================================
 !  Set lateral boundary conditions; nudge toward tracer climatology;

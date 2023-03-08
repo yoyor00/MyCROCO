@@ -379,3 +379,23 @@
        unit_var_bent(1)=''
        cini_bent(1)=0.0
        l_out_subs_bent(1)=.TRUE. /
+
+:-----------------------------------------------------------------------------
+: nmlsubmassbalance : used only if defined SUBSTANCE_SUBMASSBALANCE 
+:                     else this namelist is not read
+:-----------------------------------------------------------------------------
+:    l_bilan : boolean, activate submassbalance computation
+:    nb_border : integer, nomber of polygons and lines
+:    name_bilfil : string, path of the input file (if '' or 'all_domain', 
+:                  only one budget zone is taking into account 
+:                  (all the domain) and any fluxes threw open borders
+:    dtout_budget : real, output frequency in hours (h)
+:    date_start_budget : string, starting date for budget/fluxes computing
+:
+ &nmlsubmassbalance
+    l_bilan = .FALSE.
+    nb_border = 1
+    name_bilfil = ''
+    dtout_budget = 1.
+    date_start_budget ='01/01/0000 00:00:00' /
+
