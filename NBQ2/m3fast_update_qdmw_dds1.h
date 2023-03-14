@@ -224,6 +224,15 @@
 #   ifdef MASKING
           qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
 #   endif  
+#  if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+           qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+     &                        +wz(i,j,k,nrhs)
+     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,k+1))*pm(i,j)
+     &                         *NBQnudgcof(i,j)
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif  
+#  endif
           enddo  ! i loop           
         enddo    ! k loop
 !
@@ -405,8 +414,18 @@
 ! !  Masking
 ! !
 #   ifdef MASKING
-          qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
+          qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N) * rmask(i,j)
 #   endif
+#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+           qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-NBQnudgcof(i,j))
+     &                        +wz(i,j,N,nrhs)
+     &                         *Hzr(i,j,N)*pm(i,j)
+     &                         *NBQnudgcof(i,j)
+#    ifdef MASKING
+     &                         *rmask(i,j)
+#    endif
+#   endif  
+     
         enddo
 ! !
 ! !  End of Large j loop

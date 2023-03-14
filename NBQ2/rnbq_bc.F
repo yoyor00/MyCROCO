@@ -84,7 +84,7 @@
       tau_out=dtfast*tauM_out
 # endif
 
-# undef OBC_COM_NBQORLANSKI
+!# undef OBC_COM_NBQORLANSKI
 
 !$acc kernels if(compute_on_device) default(present)
 

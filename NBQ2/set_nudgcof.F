@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 #if defined ZNUDGING || defined M2NUDGING || defined M3NUDGING\
-    || defined TNUDGING || defined NBQ_NUDGING || defined SPONGE
+ || defined TNUDGING || defined NBQ_NUDGING || defined SPONGE
 
       subroutine set_nudgcof (tile)
       implicit none
@@ -37,7 +37,7 @@
 # include "scalars.h"
 # include "ocean3d.h"
 # include "mpi_cpl.h"
-# ifdef NBQ_NUDGING
+# if defined NBQ_NUDGING || defined NBQ_SPONGE
 #  include "nbq.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i, j, k, isp, itrc, ibnd
@@ -252,7 +252,20 @@
        enddo
       enddo
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
-# endif /* SPONGE */          
+# endif /* SPONGE */   
+
+# ifdef NBQ_SPONGE
+!
+!-------------------------------------------------------------------
+!  Add second Viscosity in SPONGE layers
+!-------------------------------------------------------------------
+!
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          visc2_nbq_sponge(i,j)=10.*wrk(i,j)
+        enddo
+      enddo
+# endif /* NBQ_SPONGE */
 !
 !-------------------------------------------------------------------
 !  add configuration specific stuff

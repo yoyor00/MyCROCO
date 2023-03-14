@@ -147,7 +147,8 @@ C$    trd=omp_get_thread_num()
       real,parameter :: thetaimp_nbq = 1.
 # endif
 
-# if defined SWASH || defined MOVING_BATHY || defined MILES || defined KH_INST
+# if defined SWASH || defined MOVING_BATHY || defined MILES\
+  || defined KH_INST || defined REGIONAL
       real,parameter :: gammau=0.45   ! NBQ pressure gradient scheme
 # else
       real,parameter :: gammau=1.  ! --> second-order

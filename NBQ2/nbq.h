@@ -68,6 +68,10 @@
       real visc2v_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
       common /test_visc2v/ visc2v_nbq
 #   endif
+#   ifdef NBQ_SPONGE
+      real visc2_nbq_sponge (GLOBAL_2D_ARRAY)
+      common /nbq_visc2_sponge/ visc2_nbq_sponge
+#   endif
 !$acc declare create( visc2_nbq , visc2v_nbq )      
       real visc2read_nbq
       common /nbq_visc2read/ visc2read_nbq
@@ -277,7 +281,8 @@
       common /nbq_vsurf/ vsurf_nbq
 # endif
 !**********************************************************************
-# if defined OBC_NBQ && defined OBC_NBQORLANSKI
+!# if defined OBC_NBQ && defined OBC_NBQORLANSKI
+# if defined OBC_NBQ 
 #  ifdef OBC_COM_WEST
       real qdmu_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_unbq_west/ qdmu_nbq_west

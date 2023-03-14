@@ -946,6 +946,45 @@ C$    trd=omp_get_thread_num()
       endif
 # endif /* EW_COM_PERIODIC */
 !
+                           ! Corners between adjacent open boundaries
+                           ! ======= ======= ======== ==== ==========
+
+#if defined OBC_COM_SOUTH && defined OBC_COM_WEST
+      if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+        DV_nbq(Istr-1,Jstr)=0.5*( DV_nbq(Istr-1,Jstr+1)
+     &                           +DV_nbq(Istr  ,Jstr  ))
+#  ifdef MASKING
+     &                         *vmask(Istr-1,Jstr)
+#  endif
+      endif
+#endif
+#if defined OBC_COM_SOUTH && defined OBC_COM_EAST
+      if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+        DV_nbq(Iend+1,Jstr)=0.5*( DV_nbq(Iend+1,Jstr+1)
+     &                           +DV_nbq(Iend  ,Jstr  ))
+#  ifdef MASKING
+     &                         *vmask(Iend+1,Jstr)
+#  endif
+      endif
+#endif
+#if defined OBC_COM_NORTH && defined OBC_COM_WEST
+      if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+        DV_nbq(Istr-1,Jend+1)=0.5*( DV_nbq(Istr-1,Jend)
+     &                             +DV_nbq(Istr,Jend+1))
+#  ifdef MASKING
+     &                         *vmask(Istr-1,Jend+1)
+#  endif
+      endif
+#endif
+#if defined OBC_COM_NORTH && defined OBC_COM_EAST
+      if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+        DV_nbq(Iend+1,Jend+1)=0.5*( DV_nbq(Iend+1,Jend)
+     &                             +DV_nbq(Iend,Jend+1))
+#  ifdef MASKING
+     &                         *vmask(Iend+1,Jend+1)
+#  endif
+      endif
+#endif
       endif ! M2bc_nbq_flag
 !
 #endif /* M3FAST */

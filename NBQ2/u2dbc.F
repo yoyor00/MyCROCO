@@ -952,6 +952,46 @@ C$    trd=omp_get_thread_num()
       endif
 # endif /* NS_COM_PERIODIC */
 !
+                           ! Corners between adjacent open boundaries
+                           ! ======= ======= ======== ==== ==========
+
+#if defined OBC_COM_SOUTH && defined OBC_COM_WEST
+      if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+        DU_nbq(Istr,Jstr-1)=0.5*( DU_nbq(Istr+1,Jstr-1)
+     &                           +DU_nbq(Istr,Jstr))
+#  ifdef MASKING
+     &                        *umask(Istr,Jstr-1)
+#  endif
+      endif
+#endif
+#if defined OBC_COM_SOUTH && defined OBC_COM_EAST
+      if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+        DU_nbq(Iend+1,Jstr-1)=0.5*( DU_nbq(Iend,Jstr-1)
+     &                             +DU_nbq(Iend+1,Jstr))
+#  ifdef MASKING
+     &                        *umask(Iend+1,Jstr-1)
+#  endif
+      endif
+#endif
+#if defined OBC_COM_NORTH && defined OBC_COM_WEST
+      if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+        DU_nbq(Istr,Jend+1)=0.5*( DU_nbq(Istr+1,Jend+1)
+     &                           +DU_nbq(Istr,Jend))
+#  ifdef MASKING
+     &                        *umask(Istr,Jend+1)
+#  endif
+      endif
+#endif
+#if defined OBC_COM_NORTH && defined OBC_COM_EAST
+      if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+        DU_nbq(Iend+1,Jend+1)=0.5*( DU_nbq(Iend,Jend+1)
+     &                             +DU_nbq(Iend+1,Jend))
+#  ifdef MASKING
+     &                        *umask(Iend+1,Jend+1)
+#  endif
+      endif
+#endif
+
       endif ! M2bc_nbq_flag
 !
 #endif /* M3FAST */
