@@ -1774,9 +1774,84 @@ C$OMP END MASTER
 ! !
 # ifdef M3FAST_W
 
+            do j=Jstr,Jend
+             do i=Istr,Iend
+          wsurf_nbq(i,j)=(qdmw_nbq(i,j,N)
+#   ifdef NBQ_MASS     
+     &                       /(1.+rho_grd(i,j,N))
+#   endif
+     &                       *Hzw_nbq_inv(i,j,N)
+!         wsurf_nbq(i,j)=(We(i,j,N)*pm(i,j)*pn(i,j)   ! CAUTION
+#  ifdef MRL_WCI
+     &                     +wst(i,j,N)*rmask_wet(i,j)
+#  endif
+     &                    )
+#  ifdef MASKING
+     &                       *rmask(i,j)
+#  endif
 
-#  ifdef NHINT
-      ! NHINT numerical mode control, v1:
+             enddo
+            enddo
+
+!------------------------------------------------
+!   ATTENTION replaced by zeta 3pts  FRANCIS
+!------------------------------------------------
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+      if (IstrU.le.Iend) then
+        call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                          usurf_nbq(START_2D_ARRAY))
+      endif
+      if (JstrV.le.Jend) then
+        call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                          vsurf_nbq(START_2D_ARRAY))
+      endif
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        wsurf_nbq(START_2D_ARRAY))
+#  endif
+            do j=Jstr,Jend
+             do i=Istr,Iend
+              zeta(i,j,knew)=zeta(i,j,knew)* 0.99
+     &       +(zeta(i,j,kstp)+dtfast*wsurf_nbq(i,j))*0.01
+             enddo
+            enddo
+
+# ifdef NHINT2
+! !
+! !--------------------------------------------------------------------
+! !  Set boundary conditions for the free-surface
+! !--------------------------------------------------------------------
+! !
+      call zetabc_tile (Istr,Iend,Jstr,Jend)
+#  if !defined NBQ_HZCORRECT
+      if (LAST_FAST_STEP) then
+!$acc update host( zeta )        
+      endif
+#  endif      
+! !
+! !--------------------------------------------------------------------
+! !  Perform exchanges
+! !   CAUTION: over 1 point only!
+! !--------------------------------------------------------------------
+! !
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!#  ifdef M3FAST_ZETAW
+!       call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+!      &                        zeta(START_2D_ARRAY,knew))
+!#  else     
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        zeta(START_2D_ARRAY,knew))
+!#  endif     
+#  endif
+#  if !defined NBQ_HZCORRECT
+      if (LAST_FAST_STEP) then
+!$acc update host( zeta )        
+      endif
+#  endif     
+# endif
+
+
+#  ifdef NHINT 
+   ! NHINT numerical mode control, v1:
    !        k=N
    !        do j=Jstr,Jend
    !         do i=Istr,Iend
@@ -1784,7 +1859,7 @@ C$OMP END MASTER
    !         enddo
    !       enddo
       
-      ! NHINT numerical mode control, v2:
+   ! NHINT numerical mode control, v2:
          alpha_w  = 0.9 
          alphaN_w = 5 
          do k=N-2*alphaN_w,N-1
