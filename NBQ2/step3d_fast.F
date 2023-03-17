@@ -1774,6 +1774,7 @@ C$OMP END MASTER
 ! !
 # ifdef M3FAST_W
 
+# ifdef NHINT2
             do j=Jstr,Jend
              do i=Istr,Iend
           wsurf_nbq(i,j)=(qdmw_nbq(i,j,N)
@@ -1815,7 +1816,6 @@ C$OMP END MASTER
              enddo
             enddo
 
-# ifdef NHINT2
 ! !
 ! !--------------------------------------------------------------------
 ! !  Set boundary conditions for the free-surface
