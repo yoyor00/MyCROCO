@@ -805,7 +805,11 @@ C$OMP PARALLEL DO PRIVATE(tile)
         enddo
       endif
 #else
+# ifdef DO_NOT_OVERWRITE
+      if (ldefhis .and. wrthis(indxTime) .and. ntstart.eq.1) call wrt_his
+# else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
+# endif 
 #endif
 
 #ifdef ABL1D
