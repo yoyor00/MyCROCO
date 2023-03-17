@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -93,7 +93,7 @@
         do itrc=1,NT
           do k=1,N
             do j=JstrR,JendR
-              do i=IstrR,IendR 
+              do i=IstrR,IendR
                 TXadv_avg(i,j,k,itrc) = cff *
      &                     ( cff1*TXadv_avg(i,j,k,itrc) +
      &                            TXadv(i,j,k,itrc) )
@@ -115,27 +115,27 @@
      &                            TVmixt(i,j,k,itrc) )
 # endif
                 TForc_avg(i,j,k,itrc) = cff *
-     &                    ( cff1*TForc_avg(i,j,k,itrc) + 
+     &                    ( cff1*TForc_avg(i,j,k,itrc) +
      &                           TForc(i,j,k,itrc) )
                 Trate_avg(i,j,k,itrc) = cff *
-     &                    ( cff1*Trate_avg(i,j,k,itrc) + 
+     &                    ( cff1*Trate_avg(i,j,k,itrc) +
      &                           Trate(i,j,k,itrc) )
               enddo
             enddo
           enddo
         enddo
 
-#ifdef DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD
 !
 ! Diagnostics averaged over MLD
 !
         do itrc=1,NT
           do j=JstrR,JendR
-            do i=IstrR,IendR 
+            do i=IstrR,IendR
               TXadv_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*TXadv_mld(i,j,itrc) +
      &                           TXadv_mld_avg(i,j,itrc) )
-              TYadv_mld_avg(i,j,itrc) = cff * 
+              TYadv_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*TYadv_mld(i,j,itrc) +
      &                           TYadv_mld_avg(i,j,itrc) )
               TVadv_mld_avg(i,j,itrc) = cff *
@@ -165,12 +165,12 @@
             enddo
           enddo
         enddo
-#endif /* DIAGNOSTICS_TS_MLD  */
+# endif /* DIAGNOSTICS_TS_MLD  */
 
       endif
       return
       end
-#else 
+#else
       subroutine set_diags_avg_empty
       end
 #endif /*DIAGNOSTICS_TS && defined AVERAGES*/

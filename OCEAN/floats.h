@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -57,21 +57,21 @@
      &        ixgrd,             iygrd,             izgrd,
      &        iflon,             iflat,             ifdpt,
      &        ixrhs,             iyrhs,             izrhs,
-     &        iftem,             ifsal,             ifden, 
+     &        iftem,             ifsal,             ifden,
      &        ifvel
       parameter (NFT=3,          NFV=6  ,           NDIAGS=10,
-     &        igrd=-1,           itstr=0,  
-     &        ixgrd=1,           iygrd=2,           izgrd=3, ! for track 
+     &        igrd=-1,           itstr=0,
+     &        ixgrd=1,           iygrd=2,           izgrd=3, ! for track
                                                              ! & trackaux
      &        ixrhs=4,           iyrhs=5,           izrhs=6, ! for track
      &        iflon=4,           iflat=5,           ifdpt=6, ! for trackaux
-     &        iftem=7,           ifsal=8,           ifden=9, 
-     &        ifvel=10                                       ) 
+     &        iftem=7,           ifsal=8,           ifden=9,
+     &        ifvel=10                                       )
 
       logical bounded(Mfloats), diagfloats
       common /lfloats/ bounded
 
-      integer nfloats, fltgrd(Mfloats), nrecvel(Mfloats) 
+      integer nfloats, fltgrd(Mfloats), nrecvel(Mfloats)
       common /floatsn/ nfloats, diagfloats, nrecvel
 
       real Tinfo(igrd:izgrd,Mfloats)

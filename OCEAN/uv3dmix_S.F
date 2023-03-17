@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -19,39 +19,39 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
 !
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
+# endif
 !
 # ifdef AGRIF
        if (AGRIF_Root()) then
-        call uv3dmix_tile (Istr,Iend,Jstr,Jend, 
+        call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd))
        else
-        call uv3dmix_child_tile (Istr,Iend,Jstr,Jend, 
+        call uv3dmix_child_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd))
-       endif 
+       endif
       return
       end
-# else 
-      call uv3dmix_tile (Istr,Iend,Jstr,Jend, 
+# else
+      call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd))
       return
       end
-# endif   /* AGRIF */ 
+# endif   /* AGRIF */
 !
 !---------------------------------------------------------------------
 !*********************************************************************
 !---------------------------------------------------------------------
-! 
+!
 !PARENT
-! 
-      subroutine uv3dmix_tile (Istr,Iend,Jstr,Jend, 
+!
+      subroutine uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                                       UFx,UFe,VFx,VFe)
 # undef CLIMAT_UV_MIXH_FINE
 !
@@ -59,7 +59,7 @@
 !
 ! CHILD
 !
-      subroutine uv3dmix_child_tile (Istr,Iend,Jstr,Jend, 
+      subroutine uv3dmix_child_tile (Istr,Iend,Jstr,Jend,
      &                                         UFx,UFe,VFx,VFe)
 !
 ! Diffusion always applied on U-UCLM in fine grid
@@ -70,7 +70,7 @@
 #endif /* CHILD_SPG */
 !
 !--------------------------------------------------------------------
-! Computes harmonic mixing of momentum, along constant S-surfaces 
+! Computes harmonic mixing of momentum, along constant S-surfaces
 ! as horizontal divergence of the stress tensor. Components of the
 ! stress tensor are:
 !                         du     dv
@@ -118,30 +118,30 @@
 # include "diagnostics.h"
 #else
 # if defined DIAGNOSTICS_VRT
-#   include "diags_vrt.h"
+#  include "diags_vrt.h"
 # endif
 # if defined DIAGNOSTICS_EK
-#   include "diags_ek.h"
+#  include "diags_ek.h"
 # endif
 # if defined DIAGNOSTICS_PV
-#   include "diags_pv.h"
+#  include "diags_pv.h"
 # endif
 #endif
 #ifdef AGRIF
-#include "zoom.h"
+# include "zoom.h"
 #endif
 #ifdef NBQ
       integer kp
 #endif
 !
-# include "compute_auxiliary_bounds.h"
+#include "compute_auxiliary_bounds.h"
 !
 #ifdef CHILD_SPG
-#define UCLM usponge
-#define VCLM vsponge
+# define UCLM usponge
+# define VCLM vsponge
 #else
-#define UCLM uclm
-#define VCLM vclm
+# define UCLM uclm
+# define VCLM vclm
 #endif
 !
       indx=3-nstp    !--> time index for target arrays;
@@ -226,12 +226,12 @@
             cff1=pm_u(i,j)*pn_u(i,j)*cff
             rufrc(i,j)=rufrc(i,j) + cff
             u(i,j,k,indx)=u(i,j,k,indx) + dt*cff1
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
 !            if (nnew.ne.3) then
             MHmix(i,j,k,1,indx) = cff1 * om_u(i,j)*on_u(i,j)
      &                       SWITCH umask(i,j)
 !            endif
-# elif defined DIAGNOSTICS_EK
+#elif defined DIAGNOSTICS_EK
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkHmix(i,j,1,indx) = cff1 * om_u(i,j)*on_u(i,j)
@@ -242,8 +242,8 @@
      &                           * u(i,j,1,nrhs) SWITCH umask(i,j)
               endif
 !            endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#endif
+#if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkHmix(i,j,1,indx) = cff1 * om_u(i,j)*on_u(i,j)
@@ -254,22 +254,22 @@
      &                                    SWITCH umask(i,j)
               endif
 !            endif
-# endif
+#endif
           enddo
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend
             cff=pn_v(i,j)*(VFx(i+1,j)-VFx(i,j))
      &         -pm_v(i,j)*(VFe(i,j)-VFe(i,j-1))
-            cff1=pm_v(i,j)*pn_v(i,j)*cff 
+            cff1=pm_v(i,j)*pn_v(i,j)*cff
             rvfrc(i,j)=rvfrc(i,j) + cff
             v(i,j,k,indx)=v(i,j,k,indx) + dt*cff1
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
 !            if (nnew.ne.3) then
             MHmix(i,j,k,2,indx) =  cff1 * om_v(i,j)*on_v(i,j)
      &                       SWITCH vmask(i,j)
 !            endif
-# elif defined DIAGNOSTICS_EK
+#elif defined DIAGNOSTICS_EK
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkHmix(i,j,2,indx) = cff1 * om_v(i,j)*on_v(i,j)
@@ -280,8 +280,8 @@
      &                          * v(i,j,1,nrhs) SWITCH vmask(i,j)
               endif
 !            endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#endif
+#if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkHmix(i,j,2,indx) = cff1 * om_v(i,j)*on_v(i,j)
@@ -292,7 +292,7 @@
      &                                    SWITCH vmask(i,j)
               endif
 !            endif
-# endif
+#endif
 
           enddo
         enddo
@@ -310,13 +310,13 @@
           do i=istr,iend+1
               FX(i,j)=0.125*
      &                max(0.,visc2_r(i,j)+visc2_r(i-1,j)
-#ifdef SPONGE_VIS2
+# ifdef SPONGE_VIS2
      &                      ,visc2_sponge_r(i,j)+visc2_sponge_r(i-1,j)
-#endif
-#ifdef UV_VIS_SMAGO
+# endif
+# ifdef UV_VIS_SMAGO
      &                      ,0.5*(visc3d_r(i,j,k )+visc3d_r(i-1,j,k )
      &                           +visc3d_r(i,j,kp)+visc3d_r(i-1,j,kp))
-#endif
+# endif
      &                       )
      &                   *pmon_u(i,j)*(Hz(i,j,k )+Hz(i-1,j,k )+
      &                                 Hz(i,j,kp)+Hz(i-1,j,kp))
@@ -328,13 +328,13 @@
           do i=istr,iend
               FE(i,j)=0.125*
      &                max(0.,visc2_r(i,j)+visc2_r(i,j-1)
-#ifdef SPONGE_VIS2
+# ifdef SPONGE_VIS2
      &                      ,visc2_sponge_r(i,j)+visc2_sponge_r(i,j-1)
-#endif
-#ifdef UV_VIS_SMAGO
+# endif
+# ifdef UV_VIS_SMAGO
      &                      ,0.5*(visc3d_r(i,j,k )+visc3d_r(i,j-1,k )
      &                           +visc3d_r(i,j,kp)+visc3d_r(i,j-1,kp))
-#endif
+# endif
      &                       )
      &                   *pnom_v(i,j)*(Hz(i,j,k )+Hz(i,j-1,k )+
      &                                 Hz(i,j,kp)+Hz(i,j-1,kp))
@@ -361,7 +361,7 @@
       end
 !
 #ifndef CHILD_SPG
-# undef UCLM 
+# undef UCLM
 # undef VCLM
 # define CHILD_SPG
 # ifdef AGRIF

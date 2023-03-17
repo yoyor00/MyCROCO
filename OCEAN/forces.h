@@ -23,14 +23,14 @@
 #ifdef OA_COUPLING
       real smstr(GLOBAL_2D_ARRAY)
       common /forces_smstr/smstr
-#  ifdef READ_PATM
+# ifdef READ_PATM
       real patm2d(GLOBAL_2D_ARRAY)
       common /forces_patm/ patm2d
-#    ifdef OBC_PATM
+#  ifdef OBC_PATM
       real paref
       parameter(paref=101325)
-#    endif
 #  endif
+# endif
 #endif
 
 #ifdef OW_COUPLING
@@ -61,10 +61,12 @@
       real    sms_cycle, sms_scale
       integer itsms, sms_ncycle, sms_rec, lsusgrd
       integer lsvsgrd,sms_tid, susid, svsid
+      real    sms_origin_date_in_sec
       common /smsdat1/ sustrp, svstrp, sms_time
-      common /smsdat2/ sms_cycle, sms_scale
-      common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd
-      common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
+      common /smsdat2/ sms_origin_date_in_sec
+      common /smsdat3/ sms_cycle, sms_scale
+      common /smsdat4/ itsms, sms_ncycle, sms_rec, lsusgrd
+      common /smsdat5/ lsvsgrd,sms_tid, susid, svsid
 
 # if defined SFLUX_CFB && !defined BULK_FLUX
       real wspd(GLOBAL_2D_ARRAY)
@@ -109,7 +111,7 @@
       common /bmsdat3/itbms,      bmstid,busid, bvsid,     tbmsindx
       common /bmsdat4/bmscycle,   bms_onerec,   lbusgrd,   lbvsgrd
 
-#  undef BMFLUX_DATA
+# undef BMFLUX_DATA
 #endif /* !ANA_BMFLUX */
 #ifdef SOLVE3D
 !
@@ -151,9 +153,11 @@
       real stf_cycle(NT), stf_scale(NT)
       integer itstf(NT), stf_ncycle(NT), stf_rec(NT)
       integer lstfgrd(NT), stf_tid(NT), stf_id(NT)
+      REAL(kind=8) :: stf_origin_date_in_sec
       common /stfdat1/ stflxp,  stf_time, stf_cycle, stf_scale
-      common /stfdat2/ itstf, stf_ncycle, stf_rec, lstfgrd
-      common /stfdat3/  stf_tid, stf_id
+      common /stfdat2/ stf_origin_date_in_sec
+      common /stfdat3/ itstf, stf_ncycle, stf_rec, lstfgrd
+      common /stfdat4/  stf_tid, stf_id
 #   undef STFLUX_DATA
 #  endif /* !ANA_STFLUX || !ANA_SSFLUX */
 !
@@ -178,7 +182,9 @@
       real btf_cycle(NT), btf_scale(NT)
       integer itbtf(NT), btf_ncycle(NT), btf_rec(NT)
       integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
-      common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale
+      REAL(kind=8) :: btf_origin_date_in_sec
+      common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale,
+     &                 btf_origin_date_in_sec
       common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd
       common /btfdat3/  btf_tid, btf_id
 #   undef BTFLUX_DATA
@@ -214,12 +220,13 @@
       real    sst_cycle, scldqdt
       integer itsst, sst_ncycle, sst_rec,  sst_tid,  sst_id
       integer dqdt_id,     lsstgrd,   sstunused
-      common /sstdat1/ sstp, dqdtp, sst_time
+      REAL(kind=8) :: sst_origin_date_in_sec
+      common /sstdat1/ sstp, dqdtp, sst_time,sst_origin_date_in_sec
       common /sstdat2/ sst_cycle, scldqdt
       common /sstdat3/ itsst, sst_ncycle, sst_rec, sst_tid, sst_id
       common /sstdat4/ dqdt_id, lsstgrd, sstunused
 
-#    undef SST_DATA
+#   undef SST_DATA
 #  endif /* !ANA_SST */
 # endif /* QCORRECTION && TEMPERATURE */
 
@@ -235,11 +242,11 @@
       real dqdt(GLOBAL_2D_ARRAY)
       common /forces_dqdt/dqdt
 #  endif
-# ifdef SFLX_CORR_COEF
+#  ifdef SFLX_CORR_COEF
 ! value of nudging for surface salinity correction (in days)
       real dSdt
       parameter (dSdt=30.0)
-# endif
+#  endif
 #  ifndef ANA_SSS
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
@@ -257,7 +264,8 @@
       real sss_cycle
       integer itsss, sss_ncycle, sss_rec,  sss_tid,  sss_id
       integer lsssgrd,   sssunused
-      common /sssdat1/sssp,  sss_time, sss_cycle
+      REAL(kind=8) :: sss_origin_date_in_sec
+      common /sssdat1/sssp,  sss_time, sss_cycle,sss_origin_date_in_sec
       common /sssdat2/itsss, sss_ncycle, sss_rec,  sss_tid, sss_id
       common /sssdat3/lsssgrd,   sssunused
 #   if !defined QCORRECTION
@@ -275,7 +283,7 @@
 # endif /* SALINITY && SFLX_CORR */
 !
 !
-# if defined BULK_FLUX 
+# if defined BULK_FLUX
 !
 !  HEAT FLUX BULK FORMULATION
 !--------------------------------------------------------------------
@@ -293,18 +301,18 @@
       real radlw(GLOBAL_2D_ARRAY)
       real radsw(GLOBAL_2D_ARRAY)
       real wspd(GLOBAL_2D_ARRAY)
-# ifdef READ_PATM
+#  ifdef READ_PATM
       real patm2d(GLOBAL_2D_ARRAY)
-#  ifdef OBC_PATM
+#   ifdef OBC_PATM
       real paref
       parameter(paref=101325)
+#   endif
 #  endif
-# endif
       real uwnd(GLOBAL_2D_ARRAY)
       real vwnd(GLOBAL_2D_ARRAY)
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
       real radswbio(GLOBAL_2D_ARRAY)
-# endif
+#  endif
 
       common /bulk_tair/ tair
       common /bulk_rhum/ rhum
@@ -312,73 +320,78 @@
       common /bulk_radlw/ radlw
       common /bulk_radsw/ radsw
       common /bulk_wspd/ wspd
-# ifdef READ_PATM
+#  ifdef READ_PATM
       common /bulk_patm/ patm2d
-# endif
+#  endif
       common /bulk_uwnd/ uwnd
       common /bulk_vwnd/ vwnd
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
       common /bulk_radswbio/ radswbio
-# endif
+#  endif
 
       real tairg(GLOBAL_2D_ARRAY,2)
       real rhumg(GLOBAL_2D_ARRAY,2)
       real prateg(GLOBAL_2D_ARRAY,2)
       real radlwg(GLOBAL_2D_ARRAY,2)
       real radswg(GLOBAL_2D_ARRAY,2)
-# ifdef READ_PATM
+#  ifdef READ_PATM
       real patmg(GLOBAL_2D_ARRAY,2)
-# endif
-# ifdef ONLINE
+#  endif
+#  ifdef ONLINE
       ! these 2 variables are used only in the initialisation stage
       ! with the ONLINE interpolation to correct a bug [to be improved]
       real uwndg_norot(GLOBAL_2D_ARRAY,2)
       real radswg_down(GLOBAL_2D_ARRAY,2)
-# endif
+#  endif
       real uwndg(GLOBAL_2D_ARRAY,2)
       real vwndg(GLOBAL_2D_ARRAY,2)
       real wspdg(GLOBAL_2D_ARRAY,2)
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
       real radswbiog(GLOBAL_2D_ARRAY,2)
-# endif
+#  endif
 
       common /bulkdat_tairg/tairg
       common /bulkdat_rhumg/rhumg
       common /bulkdat_prateg/prateg
       common /bulkdat_radlwg/radlwg
       common /bulkdat_radswg/radswg
-# ifdef READ_PATM
+#  ifdef READ_PATM
       common /bulkdat_patmg/patmg
-# endif
-# ifdef ONLINE
+#  endif
+#  ifdef ONLINE
       common /bulk_uwndg_norot/uwndg_norot
       common /bulk_radswg_down/radswg_down
-# endif
+#  endif
       common /bulk_uwndg/uwndg
       common /bulk_vwndg/vwndg
       common /bulkdat_wspdg/wspdg
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat_radswbiog/radswbiog
-# endif
+#  endif
 
       real    tairp(2),rhump(2),pratep(2),radlwp(2),radswp(2)
-# ifdef READ_PATM
+#  ifdef READ_PATM
       real patmp(2)
-# endif
+#  endif
       real    uwndp(2),vwndp(2)
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
       real    radswbiop(2)
-# endif
+#  endif
       real    bulk_time(2), bulk_cycle
       integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
       integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
-# ifdef READ_PATM
+      REAL(kind=8) :: blk_origin_date_in_sec
+#  ifdef READ_PATM
       integer patm_id,lpatmgrd
-#endif
+#  endif
       integer uwnd_id,vwnd_id,luwndgrd,lvwndgrd
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef ABL1D
+      integer zr_id, zw_id, Hzr_id, Hzw_id
+      integer uhpg_id,vhpg_id
+#  endif
+#  ifdef DIURNAL_INPUT_SRFLX
       integer radswbio_id,lradswbiogrd
-# endif
+#  endif
       integer itbulk,bulk_ncycle,bulk_rec,bulk_tid
       integer bulkunused
 
@@ -386,23 +399,27 @@
       common /bulkdat1_grd/ ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
       common /bulkdat1_tim/ itbulk, bulk_ncycle, bulk_rec, bulk_tid
       common /bulkdat1_uns/ bulkunused
-# ifdef READ_PATM
+#  ifdef READ_PATM
       common /bulkdat1_patm/ patm_id,lpatmgrd
-#endif
+#  endif
       common /bulkdat1_wnd/ uwnd_id,vwnd_id,luwndgrd,lvwndgrd
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef ABL1D
+      common /bulkdat1_hpg/ zr_id, zw_id, Hzr_id, Hzw_id, uhpg_id,vhpg_id
+#  endif
+#  ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat1_bio/ radswbio_id,lradswbiogrd
-# endif
+#  endif
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
-      common /bulkdat2_tim/ bulk_time, bulk_cycle
-# ifdef READ_PATM
+      common /bulkdat2_tim/ bulk_time, bulk_cycle,
+     &        blk_origin_date_in_sec
+#  ifdef READ_PATM
       common /bulkdat2_patm/ patmp
-# endif
+#  endif
       common /bulkdat2_wnd/ uwndp,vwndp
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat2_bio/ radswbiop
-# endif
+#  endif
 # endif /* BULK_FLUX */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.
@@ -435,19 +452,21 @@
       real srf_cycle, srf_scale
       integer itsrf, srf_ncycle, srf_rec
       integer lsrfgrd, srf_tid, srf_id
+      REAL(kind=8) :: srf_origin_date_in_sec
       common /srfdat1/ srflxp, srf_time, srf_cycle, srf_scale
-      common /srfdat2/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
+      common /srfdat2/ srf_origin_date_in_sec
+      common /srfdat3/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
 
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
       real srflxbiog(GLOBAL_2D_ARRAY,2)
       common /srfdat_srflxbiog/srflxbiog
 
       real srflxbiop(2)
       integer srfbio_rec, lsrfbiogrd, srfbio_tid, srfbio_id
       common /srfbiodat/srflxbiop, lsrfbiogrd, srfbio_tid, srfbio_id
-# endif /*  DIURNAL_INPUT_SRFLX   */
+#  endif /*  DIURNAL_INPUT_SRFLX   */
 
-#   undef SRFLUX_DATA
+#  undef SRFLUX_DATA
 # endif /* !ANA_SRFLUX */
 
 #endif /* SOLVE3D */
@@ -474,7 +493,7 @@
       real wwkx(GLOBAL_2D_ARRAY)
       common /forces_wkx/wwkx
       real wwke(GLOBAL_2D_ARRAY)
-      common /forces_wke/wwke     
+      common /forces_wke/wwke
       real ubr(GLOBAL_2D_ARRAY)
       common /forces_ubr/ubr
 #endif
@@ -548,7 +567,7 @@
       real Kapsrf(GLOBAL_2D_ARRAY)
       common /forces_calP/calP /forces_Kapsrf/Kapsrf
       real bhd(GLOBAL_2D_ARRAY)
-      common /forces_bhd/bhd 
+      common /forces_bhd/bhd
 #  ifndef WAVE_SFC_BREAK
       real brk3dx(GLOBAL_2D_ARRAY,N)
       real brk3de(GLOBAL_2D_ARRAY,N)
@@ -649,6 +668,7 @@
       real    wweb_scale,wwed_scale,wwer_scale
       real    wwagrd,wwdgrd,wwpgrd
       real    wwebgrd,wwedgrd,wwergrd
+      REAL(kind=8) :: ww_origin_date_in_sec
 #  ifdef MUSTANG
       real    wwup(2),wwugrd,wwu_scale
 #  endif
@@ -664,7 +684,7 @@
 #  ifdef BBL
       integer wwu_id
 #  endif
-      common /wwdat/ ww_cycle, wwv_time
+      common /wwdat/ ww_cycle, wwv_time,ww_origin_date_in_sec
       common /wwdat/ wwap,wwdp,wwpp
       common /wwdat/ wwebp,wwedp,wwerp
       common /wwdat/ wwa_scale,wwd_scale,wwp_scale

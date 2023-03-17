@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -32,7 +32,7 @@
 **                                                                  **
 **  settling_flux   depostion flux (kg/m2)                          **
 **  ero_flux        erosion flux   (kg/m2)                          **
-**  bedldu          bedload flux in xsi direction (kg/m2)           **                                                 
+**  bedldu          bedload flux in xsi direction (kg/m2)           **
 **  bedldv          bedload flux in eta direction (kg/m2)           **
 **                                                                  **
 **  morph_fac  Morphodynamic factor (non dimensionnal)              **
@@ -56,7 +56,7 @@
 **                                                                  **
 **  Stitle   Name of sediment.in inputfile                          **
 **********************************************************************
-*/  
+*/
       real Csed(NST), Erate(NST), Sd(NST), Srho(NST),
      &     Wsed(NST), tau_ce(NST), tau_cd(NST)
       common /ssediment/
@@ -65,13 +65,13 @@
 
       real Bthk(NLAY), Bpor(NLAY)
       common /sediment_bedthk/ Bthk, Bpor
-             
+
       real Bfr(NLAY,NST)
-      common /sediment_bedfrc/ Bfr      
-      
+      common /sediment_bedfrc/ Bfr
+
       real Hrip, Lrip
       common /sediment_bedrip/ Hrip, Lrip
-      
+
       real bed_thick(GLOBAL_2D_ARRAY,NLAY),
      &     bed_poros(GLOBAL_2D_ARRAY,NLAY),
      &     bed_age  (GLOBAL_2D_ARRAY,NLAY),
@@ -85,30 +85,30 @@
 
       real bed_frac(GLOBAL_2D_ARRAY,NLAY,NST),
      &     worksed_frac(GLOBAL_2D_ARRAY,NLAY)
-      common /sediment_frac/ bed_frac, worksed_frac     
+      common /sediment_frac/ bed_frac, worksed_frac
 
       real bot_thick(GLOBAL_2D_ARRAY)
-      common /bot_thick/ bot_thick 
+      common /bot_thick/ bot_thick
 
       real bot_dnet(GLOBAL_2D_ARRAY)
-      common /bot_dnet/ bot_dnet 
+      common /bot_dnet/ bot_dnet
 
       real bot_dprp(GLOBAL_2D_ARRAY)
-      common /bot_dprp/ bot_dprp 
+      common /bot_dprp/ bot_dprp
 
       real bedload_coeff, morph_fac
-      common /bed_coeff/ bedload_coeff, morph_fac 
+      common /bed_coeff/ bedload_coeff, morph_fac
 
       real tau_ce_2d(GLOBAL_2D_ARRAY,NST)
       common /hidexp/ tau_ce_2d
 
       real minlayer_thick
       common /layer_thick/ minlayer_thick
-  
+
 # ifdef SUSPLOAD
       real settling_flux(GLOBAL_2D_ARRAY,NST)
       real ero_flux(GLOBAL_2D_ARRAY,NST)
-      common /sed_settling/ settling_flux,ero_flux  
+      common /sed_settling/ settling_flux,ero_flux
 # endif
 # ifdef BEDLOAD
       real bedldu(GLOBAL_2D_ARRAY,NST)
@@ -124,7 +124,7 @@
       real bed_thick_tot(GLOBAL_2D_ARRAY,2)
       common /sed_morph/ bed_thick_tot
 # endif
-  
+
 # ifdef AVERAGES
       real bed_frac_avg(GLOBAL_2D_ARRAY,NLAY,NST)
       common /sediment_frac_avg/ bed_frac_avg
@@ -144,15 +144,15 @@
 #  endif
 # endif
 
-#if defined COHESIVE_BED || defined MIXED_BED
+# if defined COHESIVE_BED || defined MIXED_BED
       real tcr_min, tcr_max, tcr_slp, tcr_off, tcr_tim
       common /sed_tcr/ tcr_min, tcr_max, tcr_slp, tcr_off, tcr_tim
-#endif
+# endif
 
-#if defined MIXED_BED
+# if defined MIXED_BED
       real transC, transN
       common /sed_trans/ transC, transN
-#endif
+# endif
 
 # if defined SED_FLOCS
       real mud_frac_eq(NMUD)
@@ -193,10 +193,10 @@
       real f_l4(NMUD,NMUD)
       real f_g1_sh(NMUD,NMUD,NMUD)
       real f_g1_ds(NMUD,NMUD,NMUD)
-      real f_g4(NMUD,NMUD,NMUD)    
+      real f_g4(NMUD,NMUD,NMUD)
       common /sedflocs2/ f_diam,f_vol,f_rho,f_cv,f_l3,
      &   f_mass,f_coll_prob_sh,f_coll_prob_ds,
-     &   f_l1_sh,f_l1_ds,f_g3,f_l4,f_g1_sh,f_g1_ds,f_g4 
+     &   f_l1_sh,f_l1_ds,f_g3,f_l4,f_g1_sh,f_g1_ds,f_g4
 # endif
 
       character*80 Stitle

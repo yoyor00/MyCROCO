@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -17,11 +17,14 @@
 #if defined FLOATS && defined AGRIF
         USE Agrif_Util
 #endif
-      implicit none  
+      implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3),  auxil(2),  checkdims
      &      , b3dgrd(4)
+#ifdef ABL1D
+     &      , abl3dgrd(4)
+#endif
 #ifdef NC4PAR
      &      , csize,cmode
 #endif
@@ -29,7 +32,7 @@
      &      ,  indxWrk
 #endif
 #ifdef MUSTANG
-     &      ,  indx 
+     &      ,  indx
 #endif
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
@@ -79,7 +82,7 @@
           rstname=TRIM(rstname)//cdate(1:2)//cdate(12:13)//cdate(15:16)
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
-        end if 
+        end if
 #endif
         if (ierr .ne. 0) goto 99
       endif
@@ -138,7 +141,7 @@
      &             'create restart NetCDF file:', rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-        if (nrpfrst.eq.0) total_rec=0           
+        if (nrpfrst.eq.0) total_rec=0
 !
 ! Put global attributes.
 ! --- ------ -----------
@@ -157,6 +160,9 @@
 #endif
 #ifdef MUSTANG
         ierr=nf_def_dim (ncid, 's_b',      ksdmax,     b3dgrd(3))
+#endif
+#ifdef ABL1D
+        ierr=nf_def_dim (ncid, 'N_abl',    N_abl,   abl3dgrd(3))
 #endif
 #ifdef SOLVE3D
         ierr=nf_def_dim (ncid, 's_rho',    N,        r3dgrd(3))
@@ -177,11 +183,17 @@
 
         v2dgrd(1)=r2dgrd(1)         ! 2D VBAR-type
         v2dgrd(3)=timedim
-        
+
         b3dgrd(1)=r2dgrd(1)         !
         b3dgrd(2)=r2dgrd(2)         ! 3D BED-type
         b3dgrd(4)=timedim           !
-        
+
+#ifdef ABL1D
+        abl3dgrd(1)=r2dgrd(1)       !
+        abl3dgrd(2)=r2dgrd(2)       ! 3D ABL-type
+        abl3dgrd(4)=timedim         !
+#endif
+
 #ifdef SOLVE3D
         r3dgrd(1)=r2dgrd(1)         !
         r3dgrd(2)=r2dgrd(2)         ! 3D RHO-type
@@ -231,10 +243,10 @@
 !
 ! Define grid variables.
 ! ------ ---- ----------
-!        
+!
         if (total_rec.le.1) then
 # ifdef SOLVE3D
-         call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd 
+         call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
      &                   ,r3dgrd, w3dgrd)
 # else
          call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
@@ -294,9 +306,9 @@
         ierr=nf_put_att_text(ncid, rstTime2, 'field',     lvar,
      &                                  vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, rstTime2, indxTime2, 5,  
+        call nf_add_attribute(ncid, rstTime2, indxTime2, 5,
      &       NF_DOUBLE, ierr)
-!     
+!
 !     Free-surface.
 !
         lvar=lenstr(vname(1,indxZ))
@@ -317,7 +329,7 @@
 
       call nf_add_attribute(ncid, rstZ, indxZ, 5, NF_DOUBLE, ierr)
 
-!     
+!
 !   2D momenta in XI- and ETA-directions.
 !
         lvar=lenstr(vname(1,indxUb))
@@ -334,7 +346,7 @@
      &                                   vname(3,indxUb)(1:lvar))
         lvar=lenstr(vname(4,indxUb))
         ierr=nf_put_att_text (ncid, rstUb, 'field', lvar,
-     &                                   vname(4,indxUb)(1:lvar))  
+     &                                   vname(4,indxUb)(1:lvar))
       call nf_add_attribute(ncid, rstUb, indxUb, 5, NF_DOUBLE, ierr)
 
         lvar=lenstr(vname(1,indxVb))
@@ -352,9 +364,32 @@
         lvar=lenstr(vname(4,indxVb))
         ierr=nf_put_att_text (ncid, rstVb, 'field',     lvar,
      &                                  vname(4,indxVb)(1:lvar))
-        
+
        call nf_add_attribute(ncid, rstVb, indxVb, 5, NF_DOUBLE, ierr)
 
+#ifdef ABL1D
+!
+! 3D ABL TKE
+!
+        lvar=lenstr(vname(1,indxabl_tke_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_tke_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblTke)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblTke,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_tke_abl))
+        ierr=nf_put_att_text (ncid, rstAblTke, 'long_name', lvar,
+     &                                   vname(2,indxabl_tke_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_tke_abl))
+        ierr=nf_put_att_text (ncid, rstAblTke, 'units',     lvar,
+     &                                   vname(3,indxabl_tke_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_tke_abl))
+        ierr=nf_put_att_text (ncid, rstAblTke, 'field',     lvar,
+     &                                  vname(4,indxabl_tke_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblTke, indxabl_tke_abl, 5,
+     &                        NF_DOUBLE, ierr)
+#endif
 
 #ifdef SOLVE3D
 !
@@ -417,15 +452,15 @@
           ierr=nf_put_att_text (ncid, rstT(itrc), 'field', lvar,
      &         vname(4,indxV+itrc)(1:lvar))
 
-          call nf_add_attribute(ncid, rstT(itrc), indxV+itrc, 5, 
-     &         NF_DOUBLE,ierr)          
+          call nf_add_attribute(ncid, rstT(itrc), indxV+itrc, 5,
+     &         NF_DOUBLE,ierr)
         enddo
 # endif
-        
-# if defined LMD_MIXING 
+
+# if defined LMD_MIXING
 !
 ! Depth of planetary boundary layer.
-!     
+!
 #  if defined LMD_SKPP
         lvar=lenstr(vname(1,indxHbl))
         ierr=nf_def_var (ncid, vname(1,indxHbl)(1:lvar),
@@ -442,15 +477,15 @@
         lvar=lenstr(vname(4,indxHbl))
         ierr=nf_put_att_text (ncid, rstHbl, 'field', lvar,
      &       vname(4,indxHbl)(1:lvar))
-        
+
         call nf_add_attribute(ncid, rstHbl, indxHbl, 5,
      &       NF_DOUBLE,ierr)
-#  endif        
+#  endif
 
 #  ifdef LMD_BKPP
 !
 ! Depth of bottom planetary boundary layer.
-!        
+!
         lvar=lenstr(vname(1,indxHbbl))
         ierr=nf_def_var (ncid, vname(1,indxHbbl)(1:lvar),
      &       NF_DOUBLE, 3, r2dgrd, rstHbbl)
@@ -466,11 +501,11 @@
         lvar=lenstr(vname(4,indxHbbl))
         ierr=nf_put_att_text (ncid, rstHbbl, 'field', lvar,
      &       vname(4,indxHbbl)(1:lvar))
-        
+
         call nf_add_attribute(ncid, rstHbbl, indxHbbl, 5,
      &       NF_DOUBLE,ierr)
-        
-#  endif /*  LMD_BKPP  */ 
+
+#  endif /*  LMD_BKPP  */
 # endif /* LMD_MIXING */
 
 # if defined GLS_MIXING
@@ -537,15 +572,15 @@
         lvar=lenstr(vname(4,indxAkv))
         ierr=nf_put_att_text (ncid, rstAkv, 'field', lvar,
      &       vname(4,indxAkv)(1:lvar))
-        
+
         call nf_add_attribute(ncid, rstAkv, indxAkv, 5,
      &       NF_DOUBLE,ierr)
 
-#  ifdef TEMPERATURE        
-!     
+#  ifdef TEMPERATURE
+!
 ! Vertical diffusion coefficient for potential temperature.
-!     
-        
+!
+
         lvar=lenstr(vname(1,indxAkt))
         ierr=nf_def_var (ncid, vname(1,indxAkt)(1:lvar),
      &       NF_DOUBLE, 4, w3dgrd, rstAkt)
@@ -561,10 +596,10 @@
         lvar=lenstr(vname(4,indxAkt))
         ierr=nf_put_att_text (ncid, rstAkt, 'field', lvar,
      &       vname(4,indxAkt)(1:lvar))
-        
+
         call nf_add_attribute(ncid, rstAkt, indxAkt, 5,
      &       NF_DOUBLE,ierr)
-#  endif /* TEMPERATURE  */       
+#  endif /* TEMPERATURE  */
 
 #  ifdef SALINITY
 !
@@ -591,12 +626,12 @@
      &         NF_DOUBLE,ierr)
 #  endif /* SALINITY  */
 # endif /* GLS_MIXING */
-          
+
 # if defined LMD_MIXING
 #  ifdef M3FAST
 !
-!  Bottom stress u component 
-!        
+!  Bottom stress u component
+!
         lvar=lenstr(vname(1,indxBustr))
         ierr=nf_def_var (ncid, vname(1,indxBustr)(1:lvar),
      &       NF_DOUBLE, 3, u2dgrd, rstBustr)
@@ -612,12 +647,12 @@
         lvar=lenstr(vname(4,indxBustr))
         ierr=nf_put_att_text (ncid, rstBustr, 'field', lvar,
      &       vname(4,indxBustr)(1:lvar))
-        
+
         call nf_add_attribute(ncid, rstBustr, indxBustr, 5,
      &       NF_DOUBLE,ierr)
 !
-!  Bottom stress v component 
-!        
+!  Bottom stress v component
+!
         lvar=lenstr(vname(1,indxBvstr))
         ierr=nf_def_var (ncid, vname(1,indxBvstr)(1:lvar),
      &       NF_DOUBLE, 3, v2dgrd, rstBvstr)
@@ -633,7 +668,7 @@
         lvar=lenstr(vname(4,indxBvstr))
         ierr=nf_put_att_text (ncid, rstBvstr, 'field', lvar,
      &       vname(4,indxBvstr)(1:lvar))
-        
+
         call nf_add_attribute(ncid, rstBvstr, indxBvstr, 5,
      &       NF_DOUBLE,ierr)
 #  endif /* M3FAST */
@@ -874,7 +909,7 @@
         ierr=nf_put_att_text (ncid, rstSed(1), 'field',     lvar,
      &                                  vname(4,indxBTHK)(1:lvar))
 
-      call nf_add_attribute(ncid, rstSed(1), indxBTHK, 5, 
+      call nf_add_attribute(ncid, rstSed(1), indxBTHK, 5,
      &       NF_DOUBLE,ierr)
 
 !
@@ -895,10 +930,10 @@
         lvar=lenstr(vname(4,indxBPOR))
         ierr=nf_put_att_text (ncid, rstSed(2), 'field',     lvar,
      &                                  vname(4,indxBPOR)(1:lvar))
-        
-      call nf_add_attribute(ncid, rstSed(2), indxBPOR, 5, 
+
+      call nf_add_attribute(ncid, rstSed(2), indxBPOR, 5,
      &       NF_DOUBLE, ierr)
-   
+
 !
 ! Bed size class fractions.
 !
@@ -920,7 +955,7 @@
           ierr=nf_put_att_text (ncid, rstSed(itrc+2), 'field', lvar,
      &                             vname(4,indxWrk)(1:lvar))
 
-      call nf_add_attribute(ncid, rstSed(itrc+2), indxWrk, 5, 
+      call nf_add_attribute(ncid, rstSed(itrc+2), indxWrk, 5,
      &         NF_DOUBLE, ierr)
 
         enddo
@@ -948,9 +983,9 @@
        ierr=nf_def_var (ncid, vname(1,indx),
      &            NF_DOUBLE, 4, b3dgrd, rstMUS(itrc+2)) ! 3D: dzs,tempsed,salsed
 
-#  ifdef NC4PAR
+# ifdef NC4PAR
        ierr=nf_var_par_access(ncid,rstMUS(itrc+2),nf_collective)
-#  endif
+# endif
 
         call nf_add_attribute(ncid, rstMUS(itrc+2), indx, 5,
      &         NF_DOUBLE, ierr)
@@ -973,7 +1008,7 @@
 #endif
 
 
-#ifdef MORPHODYN 
+#ifdef MORPHODYN
         lvar=lenstr(vname(1,indxHm))
         ierr=nf_def_var (ncid, vname(1,indxHm)(1:lvar),
      &                            NF_DOUBLE, 3, r2dgrd, rstHm)
@@ -1014,10 +1049,10 @@
         ierr=nf_put_att_text (ncid, rstBBL(1), 'field',     lvar,
      &                                  vname(4,indxHrip)(1:lvar))
 
-        call nf_add_attribute(ncid, rstBBL(1), indxHrip, 5, 
-     &    NF_DOUBLE, ierr) 
+        call nf_add_attribute(ncid, rstBBL(1), indxHrip, 5,
+     &    NF_DOUBLE, ierr)
 
- 
+
 !
 ! Bed ripple length
 !
@@ -1037,7 +1072,7 @@
         ierr=nf_put_att_text (ncid, rstBBL(2), 'field',     lvar,
      &                                  vname(4,indxLrip)(1:lvar))
 
-        call nf_add_attribute(ncid, rstBBL, indxLrip, 5, 
+        call nf_add_attribute(ncid, rstBBL, indxLrip, 5,
      &       NF_DOUBLE, ierr)
 #endif /* BBL */
 
@@ -1129,8 +1164,8 @@
 ! one (except MPI-master, who initializes the record).
 !
 ! In the case when file is rejected (whether it cannot
-! be opened, or something is wrong with its dimensions, 
-! create new file. 
+! be opened, or something is wrong with its dimensions,
+! create new file.
 !
       elseif (ncid.eq.-1) then
 #ifndef NC4PAR
@@ -1174,7 +1209,7 @@
             write(stdout,'(/1x,4A, 1x,A,I4/)')     'DEF_RST ERROR: ',
      &     'Cannot open restart netCDF file ''',rstname(1:lstr),'''.'
      &               MYID
-            goto 99                                     !--> ERROR 
+            goto 99                                     !--> ERROR
           endif
 #else
           create_new_file=.true.
@@ -1254,6 +1289,22 @@
         ierr=nf_var_par_access(ncid,rstVb,nf_collective)
 #endif
 
+#ifdef ABL1D
+!
+! 3D ABL TKE
+!
+        lvar=lenstr(vname(1,indxabl_tke_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_tke_abl)(1:lvar), rstAblTke)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_tke_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstVb,nf_collective)
+# endif
+!
+#endif
+
 #ifdef SOLVE3D
 !
 ! 3D momenta n XI- and ETA-directions.
@@ -1264,9 +1315,9 @@
           write(stdout,1) vname(1,indxU)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstU,nf_collective)
-#endif
+# endif
 
         lvar=lenstr(vname(1,indxV))
         ierr=nf_inq_varid (ncid, vname(1,indxV)(1:lvar), rstV)
@@ -1274,9 +1325,9 @@
           write(stdout,1) vname(1,indxV)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstV,nf_collective)
-#endif
+# endif
 
 !
 ! Tracer variables.
@@ -1294,10 +1345,10 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
-        enddo 
+        enddo
 # endif
 
-# if defined LMD_MIXING 
+# if defined LMD_MIXING
 !
 ! Depth of planetary boundary layer.
 !
@@ -1312,7 +1363,7 @@
           ierr=nf_var_par_access(ncid,rstHbl,nf_collective)
 #   endif
 #  endif
-          
+
 #  ifdef LMD_BKPP
 !
 ! Depth of bottom planetary boundary layer.
@@ -1368,7 +1419,7 @@
           endif
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,rstAkv,nf_collective)
-#   endif
+#  endif
 
 #  ifdef TEMPERATURE
 
@@ -1386,7 +1437,7 @@
 #   endif
 
 #  endif
-          
+
 #  ifdef SALINITY
 !
 ! Vertical diffusion coefficient for salinity.
@@ -1433,7 +1484,7 @@
 #   endif
 #  endif
 # endif
-                    
+
 # ifdef EXACT_RESTART
 !
 ! Forcing for barotropic equations in XI-direction.
@@ -1462,7 +1513,7 @@
 #  endif
 
 #  ifdef M3FAST
-        
+
 !
 ! 3D rhs for M3FAST in XI- and ETA-directions.
 !
@@ -1548,7 +1599,6 @@
 #   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstqdmv_nbq,nf_collective)
 #   endif
-
 #  endif  /* M3FAST */
 
 #  ifdef TRACERS
@@ -1727,16 +1777,16 @@
 # endif
 #endif /* BBL */
 !
-      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
+      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &             'DEF_RST -- Opened ',
-     &             'existing restart file,  record =', rec 
+     &             'existing restart file,  record =', rec
      &              MYID
 
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       else
         ierr=nf_open (rstname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
-         MPI_master_only write(stdout,'(/1x,4A, 1x,A,I4/)') 
+         MPI_master_only write(stdout,'(/1x,4A, 1x,A,I4/)')
      &          'DEF_RST ERROR: Cannot',
      &          'open restart netCDF file ''', rstname(1:lstr), '''.'
      &           MYID

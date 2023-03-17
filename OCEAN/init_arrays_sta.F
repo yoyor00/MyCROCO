@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,9 +14,9 @@
       subroutine init_arrays_sta
 
       implicit none
-#include "param.h"
-#include "sta.h" 
-#include "scalars.h"
+# include "param.h"
+# include "sta.h"
+# include "scalars.h"
 
       integer iflt, j, i, k
 !
@@ -24,8 +24,8 @@
 !  Initialize model control points
 !
       do iflt=1,Msta
-c       stagrd(iflt)=-1 ! -1 is the dead float value. 
-        do j=istagrd,istazgrd  
+c       stagrd(iflt)=-1 ! -1 is the dead float value.
+        do j=istagrd,istazgrd
            stainfo(j,iflt)=staspval
         enddo
         do j=1,NSTAVARS

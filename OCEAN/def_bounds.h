@@ -7,4 +7,4 @@
 #else
 # define LOCALLM Lm
 # define LOCALMM Mm
-#endif    
+#endif

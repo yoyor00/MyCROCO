@@ -29,12 +29,12 @@
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
       USE comMUSTANG,   ONLY : sum_tmp, rouse2d
 # endif
-#     include "coupler_define_MUSTANG.h"
+# include "coupler_define_MUSTANG.h"
 #endif
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
      &   , ibuff(6)
 #else
      &   , ibuff(4)
@@ -146,13 +146,14 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
       count(2)=1
       ierr=nf_put_vara_int (ncidhis, hisTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
+         write(*,*) nf_strerror(ierr)
          MPI_master_only write(stdout,1) 'time_step', record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
 
 
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
       count(1)=6
       ibuff(5)=nrecsurf
 # ifdef AVERAGES
@@ -175,7 +176,11 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Time
 !
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time)
+      ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)
@@ -187,7 +192,11 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Time2
 !
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time)
+      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
         MPI_master_only write(stdout,1)
@@ -202,7 +211,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !
       if (wrthis(indxZ)) then
         work2d=zeta(:,:,fast_indx_out)
-#if defined WET_DRY && ! defined ZETA_DRY_IO 
+#if defined WET_DRY && ! defined ZETA_DRY_IO
         do j=0,Mm
           do i=0,Lm
             if (h(i,j) .le. Dcrit(i,j)) then
@@ -278,7 +287,7 @@ CR      write(*,*) 'wrt_his:  bustr' MYID
      &        record,v2dvar,type)
 CR      write(*,*) 'wrt_his:  bvstr' MYID
       endif
-      
+
 
 
 !
@@ -292,6 +301,9 @@ CR      write(*,*) 'wrt_his:  bvstr' MYID
           do i=1,Lm
 #ifdef OA_COUPLING
             work2d2(i,j)=smstr(i,j)*rho0
+#elif defined STRESS_AT_RHO_POINTS
+            work2d2(i,j)=sqrt(sustr(i,j)**2+svstr(i,j)**2)
+     &                                                       *rho0
 #else
             work2d2(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
      &                           +(svstr(i,j)+svstr(i,j+1))**2)
@@ -315,7 +327,11 @@ CR      write(*,*) 'wrt_his:  Wstr' MYID
 !
       if (wrthis(indxUWstr)) then
         work2d=sustr*rho0
+#ifdef STRESS_AT_RHO_POINTS
+        ierr=nf_fwrite(work2d, ncidhis, hisUWstr, record, r2dvar)
+#else
         ierr=nf_fwrite(work2d, ncidhis, hisUWstr, record, u2dvar)
+#endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxUWstr))
           MPI_master_only write(stdout,1)
@@ -330,8 +346,12 @@ CR      write(*,*) 'wrt_his:  UWstr' MYID
 !
       if (wrthis(indxVWstr)) then
         work2d=svstr*rho0
-        ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,v2dvar)
-        if (ierr .ne. nf_noerr) then
+#ifdef STRESS_AT_RHO_POINTS
+         ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,r2dvar)
+#else
+         ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,v2dvar)
+#endif
+         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxVWstr))
          MPI_master_only write(stdout,1)
      &        vname(1,indxVWstr)(1:lvar), record, ierr
@@ -618,30 +638,30 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !
 !     Tracer variables.
 !
-#ifdef TRACERS
+# ifdef TRACERS
       do itrc=1,NT
          if (wrthis(indxV+itrc)) then
             workr=t(:,:,:,nstp,itrc)
-#ifdef MASKING
+#  ifdef MASKING
             if (iic.eq.0) then
 !     We do that because the mask has been applied if iic ==0 !
                do k=1,N
                   workr(:,:,k)=workr(:,:,k)
-#ifdef WET_DRY
+#   ifdef WET_DRY
      &                         SWITCH rmask_wet(:,:)
-#else
+#   else
      &                         SWITCH rmask(:,:)
-#endif
+#   endif
                enddo
             endif
-#endif
+#  endif
             call fillvalue3d(workr,ncidhis,hisT(itrc),
      &           indxV+itrc,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
       enddo
-#endif /* TRACERS */
+# endif /* TRACERS */
 !
 !     Density anomaly.
 !
@@ -673,9 +693,9 @@ CR      write(*,*) 'wrt_his:  wrtbvf' MYID
           do j=0,Mm+1
             do i=0,Lm+1
               work(i,j,k)= ( We(i,j,k)
-#ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
      &                   +   Wi(i,j,k)
-#endif
+# endif
      &                              ) *pm(i,j)*pn(i,j)
 !#ifdef NBQ_MASS
 !     &                            /rho_nbq_avg1(i,j,k)
@@ -691,7 +711,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrthis(indxW)) then
-#ifdef NBQ
+# ifdef NBQ
         do k=0,N
           do j=0,Mm+1
             do i=0,Lm+1
@@ -700,17 +720,17 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
           enddo
         enddo
         call fillvalue3d(work,ncidhis,hisW,indxW,record,w3dvar,type)
-#else
+# else
         do tile=0,NSUB_X*NSUB_E-1
           call Wvlcty (tile, workr)
         enddo
         call fillvalue3d(workr,ncidhis,hisW,indxW,record,r3dvar,type)
-#endif
+# endif
 
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
       endif
 !
-#  ifdef VIS_COEF_3D
+# ifdef VIS_COEF_3D
 !
 !     Write out Horizontal viscosity coefficient.
 !
@@ -720,9 +740,9 @@ CR      write(*,*) 'wrt_his:  wrtW  ' MYID
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtVisc' MYID
       endif
-#  endif
+# endif
 !
-#  ifdef DIF_COEF_3D
+# ifdef DIF_COEF_3D
 !
 !     Write out Horizontal Diffusivity coefficient.
 !
@@ -731,21 +751,21 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
           do j=1,Mm
             do i=1,Lm
               workr(i,j,k)=
-#   ifdef TS_DIF2
-#    ifdef TEMPERATURE
+#  ifdef TS_DIF2
+#   ifdef TEMPERATURE
      &                 diff2(i,j,itemp)
-#     endif
-#    ifdef TS_DIF_SMAGO
+#   endif
+#   ifdef TS_DIF_SMAGO
      &              +diff3d_r(i,j,k)
-#    endif
-#   elif defined TS_DIF4
+#   endif
+#  elif defined TS_DIF4
      &               diff4(i,j,itemp)
-#    ifdef TS_DIF_SMAGO
+#   ifdef TS_DIF_SMAGO
      &              +diff3d_r(i,j,k)*om_r(i,j)*on_r(i,j)
-#    endif
+#   endif
      &          +0.25*(diff3d_u(i,j,k)+diff3d_u(i+1,j,k)
      &                +diff3d_v(i,j,k)+diff3d_v(i,j+1,k))
-#   endif
+#  endif
             enddo
           enddo
         enddo
@@ -753,7 +773,7 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
      &        record,r3dvar,type)
       endif
 CR      write(*,*) 'wrt_his:  wrtDiff' MYID
-#  endif
+# endif
 !
 !     Write out vertical viscosity coefficient.
 !
@@ -847,7 +867,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
 !
 !     Write out total surface heat flux
 !
-#if defined TEMPERATURE
+# if defined TEMPERATURE
       if (wrthis(indxShflx)) then
         work2d=stflx(:,:,itemp)*rho0*Cp
      &          SWITCH rmask
@@ -861,9 +881,9 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
         endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
-#endif
+# endif
 
-#ifdef BHFLUX
+# ifdef BHFLUX
 !
 !     Write out bottom heat flux
 !
@@ -880,9 +900,9 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
           endif
 CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
         endif
-#endif
+# endif
 
-#ifdef SALINITY
+# ifdef SALINITY
 !     Write out surface salt flux
 !
 !       --> convert [psu.m.s-1] => [cm/days] :
@@ -909,7 +929,7 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
          endif
 CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
        endif
-# ifdef BWFLUX
+#  ifdef BWFLUX
 !
 !     Write out bottom salt flux
 !
@@ -937,8 +957,8 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          endif
       write(*,*) 'wrt_his:  btflx(:,:,isalt)' MYID
       endif
+#  endif
 # endif
-#endif
 !
 !     Write out surface heat flux component (W/m2)
 !

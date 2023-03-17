@@ -17,12 +17,12 @@
 
 # ifdef AVERAGES
       real timediags_pv_avg
-# if defined DIAGNOSTICS_PV_FULL
+#  if defined DIAGNOSTICS_PV_FULL
       real pv_avg(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE pv_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real pvd_avg(GLOBAL_2D_ARRAY,0:N)
 !CSDISTRIBUTE_RESHAPE pvd_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
+#  endif
       real Mrhs_avg(GLOBAL_2D_ARRAY,N,2)
 !CSDISTRIBUTE_RESHAPE Mrhs_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real Trhs_avg(GLOBAL_2D_ARRAY,N,NTA)
@@ -39,13 +39,13 @@
 
 # ifdef AVERAGES
       common /diag_timediags_pv_avg/timediags_pv_avg
-# if defined DIAGNOSTICS_PV_FULL
+#  if defined DIAGNOSTICS_PV_FULL
       common /diag_pv_avg/pv_avg
      &       /diag_pvd_avg/pvd_avg
-# endif
+#  endif
       common /diag_Mrhs_avg/Mrhs_avg
      &       /diag_Trhs_avg/Trhs_avg
-# endif      
+# endif
 
 
 # if defined DIAGNOSTICS_PV && ! defined DIAGNOSTICS_UV && ! defined DIAGNOSTICS_EK_FULL
@@ -60,7 +60,7 @@
      &       /diag_MHdiff/MHdiff
      &       /diag_MHmix/MHmix
      &       /diag_MVmix/MVmix
-     
+
 # endif
 
 # if defined DIAGNOSTICS_PV && ! defined DIAGNOSTICS_UV
@@ -84,8 +84,8 @@
 
 # endif
 
-# endif /* DIAGNOSTICS_PV */
+#endif /* DIAGNOSTICS_PV */
 
 
 
- 
+

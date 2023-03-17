@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -29,17 +29,17 @@
 !
 ! References to cite for any publication and communication using BioEBUS model:
 !
-! Gutknecht, E., Dadou, I., Le Vu, B., Cambon, G., Sudre, J., Garçon, V., 
-! Machu, E., Rixen, T., Kock, A., Flohr, A., Paulmier, A., and Lavik, G.: 
-! Coupled physical/biogeochemical modeling including O2-dependent processes 
-! in the Eastern Boundary Upwelling Systems: application in the Benguela, 
+! Gutknecht, E., Dadou, I., Le Vu, B., Cambon, G., Sudre, J., Garçon, V.,
+! Machu, E., Rixen, T., Kock, A., Flohr, A., Paulmier, A., and Lavik, G.:
+! Coupled physical/biogeochemical modeling including O2-dependent processes
+! in the Eastern Boundary Upwelling Systems: application in the Benguela,
 ! Biogeosciences, 10, 3559-3591, doi:10.5194/bg-10-3559-2013, 2013.
 !
 !
-! Gutknecht, E., Dadou, I., Marchesiello, P., Cambon, G., Le Vu, B., Sudre, J., 
-! Garçon, V., Machu, E., Rixen, T., Kock, A., Flohr, A., Paulmier, A., and Lavik, G.: 
-! Nitrogen transfers off Walvis Bay: a 3-D coupled physical/biogeochemical 
-! modeling approach in the Namibian upwelling system, 
+! Gutknecht, E., Dadou, I., Marchesiello, P., Cambon, G., Le Vu, B., Sudre, J.,
+! Garçon, V., Machu, E., Rixen, T., Kock, A., Flohr, A., Paulmier, A., and Lavik, G.:
+! Nitrogen transfers off Walvis Bay: a 3-D coupled physical/biogeochemical
+! modeling approach in the Namibian upwelling system,
 ! Biogeosciences, 10, 4117-4135, doi:10.5194/bg-10-4117-2013, 2013.
 !
 !
@@ -116,21 +116,21 @@
 
 # ifdef DIAGNOSTICS_BIO
       real       ThisVSinkFlux(N, NumVSinkTerms)  ! Upward flux is positive
-     &         , ThisFlux(N, NumFluxTerms)    
-     &         , ThisGasExcFlux(NumGasExcTerms)   
+     &         , ThisFlux(N, NumFluxTerms)
+     &         , ThisGasExcFlux(NumGasExcTerms)
       real       budget_NO3 ,budget_NO2 ,budget_NH4 ,budget_SPhy,budget_LPhy
      &         , budget_SZoo,budget_LZoo,budget_SDet,budget_LDet,budget_DON
      &         , budget_O2  ,budget_N
 #  ifdef NITROUS_OXIDE
      &         , budget_nitrous_oxide, trend_N2O
-#  endif 
+#  endif
       real       trend_NO3 ,trend_NO2 ,trend_NH4 ,trend_SPhy,trend_LPhy
      &         , trend_SZoo,trend_LZoo,trend_SDet,trend_LDet,trend_DON
      &         , trend_O2  ,trend_N
       real       N_loss,sinking
       integer    iflux, l
-      real       dtsec    
-     &         , LastVSinkFlux, ColumnMassOld(0:NumVSinkTerms) 
+      real       dtsec
+     &         , LastVSinkFlux, ColumnMassOld(0:NumVSinkTerms)
      &         , ColumnMassNew(0:NumVSinkTerms)
 # endif
 
@@ -159,8 +159,8 @@
 ! the new time step. During the iterative procedure a series of
 ! fractional time steps is performed in a chained mode (splitting
 ! by different biological conversion processes) in sequence NO3 -- NO2 --
-! NH4 -- SPhy -- LPhy -- SZoo -- LZoo -- SDet -- LDet -- DON, 
-! that is the main food chain. In all stages the concentration of the component 
+! NH4 -- SPhy -- LPhy -- SZoo -- LZoo -- SDet -- LDet -- DON,
+! that is the main food chain. In all stages the concentration of the component
 ! being consumed is treated in fully implicit manner, so that the algorithm guarantees
 ! non-negative values, no matter how strong is the concentration of
 ! active consuming component (Phyto or Zoo).
@@ -187,14 +187,14 @@
 # define J_RANGE Jstr,Jend
 
 
-! COEFFICIENT USED FOR GAZ TRANSFERT VELOVITY 
+! COEFFICIENT USED FOR GAZ TRANSFERT VELOVITY
 !-------------------------------------------------------------------------------------
 # undef LISS_MERLIVAT  		/*Liss and Merlivat (1986)*/
 # define WANNINKHOF    		/*Wanninkhof (1992)*/
 
 
 # ifdef NITROUS_OXIDE
-! PARAMETERIZATION USED FOR N2O PRODUCTION 
+! PARAMETERIZATION USED FOR N2O PRODUCTION
 !-------------------------------------------------------------------------------------
 #  undef NEVISON  		/*Nevison et al. (2003)*/
 #  define SUNTHARALINGAM    	/*Suntharalingam et al. (2000,2012)*/
@@ -226,7 +226,7 @@
 
 
 # ifdef DIAGNOSTICS_BIO
-! Reset the biogeochemical fluxes. This is necessary because the 
+! Reset the biogeochemical fluxes. This is necessary because the
 ! biological routine uses multiple time steps for each physical time step.
           do k=1,N
             do l=1,NumFluxTerms
@@ -327,13 +327,13 @@
 
 ! Light and temperature Limitations
 
-            cff1=PAR*palpha1                                            ![d-1] 
-            cff2=PAR*palpha2                                            ![d-1] 
+            cff1=PAR*palpha1                                            ![d-1]
+            cff2=PAR*palpha2                                            ![d-1]
 
             Epp1=Vp1/sqrt(Vp1*Vp1+cff1*cff1)                            ![ ]
-            Epp2=Vp2/sqrt(Vp2*Vp2+cff2*cff2)                            ![ ] 
+            Epp2=Vp2/sqrt(Vp2*Vp2+cff2*cff2)                            ![ ]
 
-            aJ_1(k)=Epp1*cff1                                           ![d-1] 
+            aJ_1(k)=Epp1*cff1                                           ![d-1]
             aJ_2(k)=Epp2*cff2                                           ![d-1]
 
 # ifdef DIAGNOSTICS_BIO
@@ -346,8 +346,8 @@
 
 
 ! ====================================================================
-! 1. NO3, NO2 and NH4 uptake by SPhy and LPhy 
-!    Nutrient limitation terms:--> Yakushev et al (2007) 
+! 1. NO3, NO2 and NH4 uptake by SPhy and LPhy
+!    Nutrient limitation terms:--> Yakushev et al (2007)
 !    Exudation of SPhy and LPhy to DON
 ! ====================================================================
 
@@ -370,10 +370,10 @@
 ! ====================================================================
 
              cff=exp(-K_psi*NH4(k))/(K2_NO32+NO3(k)+NO2(k))             !(mmolN/m3)-1
-             cff2=dtdays*aJ_2(k)*LPhy(k)*cff                            ![ ] 
+             cff2=dtdays*aJ_2(k)*LPhy(k)*cff                            ![ ]
              NO3(k)=NO3(k)/(1.+cff2)                                    !mmolN/m3
 # ifdef DIAGNOSTICS_BIO
-             ThisFlux(k,NFlux_ProdNO3P2)= cff2*NO3(k)                   !mmolN/m3  
+             ThisFlux(k,NFlux_ProdNO3P2)= cff2*NO3(k)                   !mmolN/m3
              ThisFlux(k,NFlux_NO3limitP2)=NO3(k)*cff                    ![ ]
 # endif
              LPhy(k)=LPhy(k)+cff2*NO3(k)*(1.-epsilon2)                  !mmolN/m3
@@ -388,7 +388,7 @@
              cff1=dtdays*aJ_1(k)*SPhy(k)*cff                            ![ ]
              NO2(k)=NO2(k)/(1.+cff1)                                    !mmolN/m3
 # ifdef DIAGNOSTICS_BIO
-             ThisFlux(k,NFlux_ProdNO2P1)= cff1*NO2(k)                   !mmolN/m3   
+             ThisFlux(k,NFlux_ProdNO2P1)= cff1*NO2(k)                   !mmolN/m3
              ThisFlux(k,NFlux_NO2limitP1)=NO2(k)*cff                    ![ ]
 # endif
              SPhy(k)=SPhy(k)+cff1*NO2(k)*(1.-epsilon1)                  !mmolN/m3
@@ -402,8 +402,8 @@
              cff=exp(-K_psi*NH4(k))/(K2_NO32+NO3(k)+NO2(k))             !(mmolN/m3)-1
              cff2=dtdays*aJ_2(k)*LPhy(k)*cff                            ![ ]
              NO2(k)=NO2(k)/(1.+cff2)                                    !mmolN/m3
-# ifdef DIAGNOSTICS_BIO 
-             ThisFlux(k,NFlux_ProdNO2P2)= cff2*NO2(k)                   !mmolN/m3 
+# ifdef DIAGNOSTICS_BIO
+             ThisFlux(k,NFlux_ProdNO2P2)= cff2*NO2(k)                   !mmolN/m3
              ThisFlux(k,NFlux_NO2limitP2)=NO2(k)*cff                    ![ ]
 # endif
              LPhy(k)=LPhy(k)+cff2*NO2(k)*(1.-epsilon2)                  !mmolN/m3
@@ -451,9 +451,9 @@
              O2(k)=O2(k)+ro2n*cff2*NH4(k)                               !mmolO2/m3
 
 
-            PAR=PAR*attn                                                ![W/m2]	
+            PAR=PAR*attn                                                ![W/m2]
 
-! Calculation of the euphotic depth 
+! Calculation of the euphotic depth
 ! (z_w is negative and hel is positive)
 
             if (PARsup.ge.opc) then
@@ -528,7 +528,7 @@
 
 ! ====================================================================
 ! 3. Grazing by SZoo and LZoo and fecal pellets (non assimilated)
-!    SPhy and LPhy mortality to SDet 
+!    SPhy and LPhy mortality to SDet
 ! ====================================================================
 
 
@@ -584,7 +584,7 @@
 
 
 ! ====================================================================
-! 4. SZoo and LZoo excretion to NH4 and DON 
+! 4. SZoo and LZoo excretion to NH4 and DON
 !    SZoo mortality to SDet
 !    LZoo mortality to LDet
 ! ====================================================================
@@ -624,7 +624,7 @@
 
 
 ! ====================================================================
-! 5. Remineralization of SDet, LDet and DON to NH4 
+! 5. Remineralization of SDet, LDet and DON to NH4
 !    Oxic and Suboxic Remimeralization (Yakushev et al, 2007)
 !    Hydrolysis of SDet and LDet to DON
 ! ====================================================================
@@ -633,9 +633,9 @@
 
           IF (O2(k).LE.O2ox) THEN
              Fox = 0.                                                   ![ ]
-          ELSE 
+          ELSE
              Fox = (O2(k)-O2ox)/(O2(k)-O2ox+Kox)                        ![ ]
-          END IF	  
+          END IF
           RemD1_O2 = exp(Ktox*t(i,j,k,nnew,itemp))*K_Sd_NH4*Fox         !d-1
           RemD2_O2 = exp(Ktox*t(i,j,k,nnew,itemp))*K_Ld_NH4*Fox         !d-1
           RemDON_O2 = exp(Ktox*t(i,j,k,nnew,itemp))*K_DON_NH4*Fox       !d-1
@@ -672,7 +672,7 @@
 
 
 
-          SDet(k)=SDet(k)/(1.+cff1+cff2+cff3*0.5+cff4*0.75)             !mmolN/m3   
+          SDet(k)=SDet(k)/(1.+cff1+cff2+cff3*0.5+cff4*0.75)             !mmolN/m3
 
 # ifdef DIAGNOSTICS_BIO
           ThisFlux(k,NFlux_HydrolD1) = cff1*Sdet(k)                     !mmolN/m3
@@ -681,7 +681,7 @@
           ThisFlux(k,NFlux_Denitr2D1) = cff4*0.75*Sdet(k)               !mmolN/m3
 # endif
 
-          LDet(k)=LDet(k)/(1.+cff6+cff7+cff3*0.5+cff4*0.75)             !mmolN/m3   
+          LDet(k)=LDet(k)/(1.+cff6+cff7+cff3*0.5+cff4*0.75)             !mmolN/m3
 
 # ifdef DIAGNOSTICS_BIO
           ThisFlux(k,NFlux_HydrolD2) = cff6*Ldet(k)                     !mmolN/m3
@@ -691,23 +691,23 @@
 # endif
 
           DON(k)=(DON(k)+cff1*SDet(k)+cff6*LDet(k))/
-     &                   (1.+cff9+cff3*0.5+cff4*0.75)                   !mmolN/m3   
+     &                   (1.+cff9+cff3*0.5+cff4*0.75)                   !mmolN/m3
 
 # ifdef DIAGNOSTICS_BIO
           ThisFlux(k,NFlux_ReminOxyDON) = cff9*DON(k)                   !mmolN/m3
           ThisFlux(k,NFlux_Denitr1DON) = cff3*0.5*DON(k)                !mmolN/m3
           ThisFlux(k,NFlux_Denitr2DON) = cff4*0.75*DON(k)               !mmolN/m3
 # endif
- 
+
           NH4(k)=NH4(k)+cff2*SDet(k)+cff7*LDet(k)+cff9*DON(k)
      &                 +(cff3*0.5)*(Sdet(k)+Ldet(k)+DON(k))
      &                 +(cff4*0.75)*(Sdet(k)+Ldet(k)+DON(k))
-     
+
           NO3(k)=NO3(k)-cff3*(SDet(k)+LDet(k)+DON(k))                   !mmolN/m3
           NO2(k)=NO2(k)+(cff3-cff4)*(SDet(k)+LDet(k)+DON(k))            !mmolN/m3
 
           O2(k)=O2(k)-ro2n*(cff2*SDet(k)+cff7*LDet(k)+cff9*DON(k))      !mmolO2/m3
- 
+
 
 
 
@@ -719,7 +719,7 @@
           IF ((O2(k).GT.O2anam).OR.(O2(k).LT.0.)) THEN
              cff1 = 0.
              cff2 = 0.
-          ELSE 
+          ELSE
              cff1 = NH4(k)*K_anam*dtdays*K_convert                      ![ ]
              cff2 = NO2(k)*K_anam*dtdays*K_convert                      ![ ]
           END IF
@@ -738,7 +738,7 @@
        do k=1,N
 
 ! ====================================================================
-! 7. O2 Flux at ocean-atmosphere interface 
+! 7. O2 Flux at ocean-atmosphere interface
 ! ====================================================================
 
         o2sat(k)=o2sato(t(i,j,k,nnew,itemp),t(i,j,k,nnew,isalt))
@@ -773,7 +773,7 @@
 # elif defined WANNINKHOF /*Wanninkhof (1992)*/
           aKwo2=(0.31*wind_loc**2)*((Sco2/660.)**(-0.5))                !cm/h
 # endif
-        
+
 !  conversion ( aKwo2 : cm/h ----> m/d )
           aKwo2=aKwo2*0.24                                              !m/d
 
@@ -792,7 +792,7 @@
 
 
 ! ====================================================================
-! 8. N2O 
+! 8. N2O
 ! ====================================================================
 
 # ifdef NITROUS_OXIDE
@@ -802,7 +802,7 @@
         if((O2(k).gt.4.).and.(z_w(i,j,k).lt.(-hel(i,j))))then
           cff=(16./170.)*((0.26/O2(k))-0.0004)*exp(z_w(i,j,k)/3000.)    !mmolN2O/mmolO2
         else
-          cff=0.                                                        !mmolN2O/mmolO2	
+          cff=0.                                                        !mmolN2O/mmolO2
         endif
         N2O(k)=N2O(k)+nitrif(k)*cff					!mmolN2O/m3
 
@@ -815,13 +815,13 @@
         if(z_w(i,j,k).lt.(-hel(i,j)))then
 !  normalized representation of the functional dependance on oxygen distribution
           if (O2(k).lt.O2max) then
-             function_O2=O2(k)/O2max					![ ] 	
+             function_O2=O2(k)/O2max					![ ]
           else
              function_O2=exp(-k_O2*(O2(k)-O2max)/O2max)			![ ]
           endif
           cff=alpha_N2O*nitrif(k)+beta_N2O*nitrif(k)*function_O2    	!mmolN2O/m3
         else
-          cff=0.                                                        !mmolN2O/m3	
+          cff=0.                                                        !mmolN2O/m3
         endif
 
           N2O(k)=N2O(k)+cff                                   		!mmolN2O/m3
@@ -837,14 +837,14 @@
 
 
 ! ====================================================================
-! 9. N2O Flux at ocean-atmosphere interface 
+! 9. N2O Flux at ocean-atmosphere interface
 ! ====================================================================
 
 # ifdef NITROUS_OXIDE
 
         IF (k.EQ.N) THEN
 
-! Schmidt number 
+! Schmidt number
 !---------------------------------------
 ! Wanninkhof (1992) >> Wilke and Chang (1955)
 
@@ -908,7 +908,7 @@
         wSB(2)=wLPhy
         wSB(3)=wSDet
         wSB(4)=wLDet
- 
+
         do iB=1,nsink
 
 
@@ -975,7 +975,7 @@
      &                                   -SB(k,iB) )*(1.-2.*cu))
           enddo
           dSB(N,iB)=0.   ! Set no-flux boundary conditions at top.
- 
+
 
 ! Apply fluxes:
 !
@@ -1015,7 +1015,7 @@
 # ifdef DIAGNOSTICS_BIO
           ColumnMassNew(2) = ColumnMassNew(2)+SDet(k)                   !mmolN/m3
 # endif /* DIAGNOSTICS_BIO */
-          
+
             ! Large detritus
 # ifdef DIAGNOSTICS_BIO
           ColumnMassOld(3) = ColumnMassOld(3)+LDet(k)                   !mmolN/m3
@@ -1035,7 +1035,7 @@
 ! for computational efficiency, divide now by dtsec to get the correct units
         do iflux = 1, 10
            do k = 1, N
-              bioFlux(i,j,k,iflux) = bioFlux(i,j,k,iflux) 
+              bioFlux(i,j,k,iflux) = bioFlux(i,j,k,iflux)
      &             + ThisFlux(k,iflux) / float(ITERMAX)
 #  ifdef MASKING
      &             * rmask(i,j)
@@ -1044,7 +1044,7 @@
         end do
         do iflux = 11, NumFluxTerms
            do k = 1, N
-              bioFlux(i,j,k,iflux) = bioFlux(i,j,k,iflux) 
+              bioFlux(i,j,k,iflux) = bioFlux(i,j,k,iflux)
      &             + ThisFlux(k,iflux) / dt                             !mmol/m3/s
 #  ifdef MASKING
      &             * rmask(i,j)
@@ -1066,30 +1066,30 @@
 #  endif /* MASKING */
            do k = 1, N
               LastVSinkFlux = LastVSinkFlux +
-     &                        ThisVSinkFlux(k,iflux)                    !mmolN/m3/s 
+     &                        ThisVSinkFlux(k,iflux)                    !mmolN/m3/s
 
               bioVSink(i,j,k,iflux) =  bioVSink(i,j,k,iflux)
-     &                                + LastVSinkFlux / dt              !mmolN/m3/s  
+     &                                + LastVSinkFlux / dt              !mmolN/m3/s
 #  ifdef MASKING
      &             * rmask(i,j)
 #  endif /* MASKING */
            end do
          enddo
-! -------------------------------------------------------------------------------- 
-! ThisGasExcFlux mmol(O2, N2O)/m3 
+! --------------------------------------------------------------------------------
+! ThisGasExcFlux mmol(O2, N2O)/m3
         do iflux = 1, NumGasExcTerms
            GasExcFlux(i,j,iflux) =  GasExcFlux(i,j,iflux) +
-     &                             ThisGasExcFlux(iflux) / dt           ! mmol(O2, N2O)/m3/s 
+     &                             ThisGasExcFlux(iflux) / dt           ! mmol(O2, N2O)/m3/s
 #  ifdef MASKING
      &          * rmask(i,j)
 #  endif /* MASKING */
         end do
 
-# endif /* DIAGNOSTICS_BIO */  
+# endif /* DIAGNOSTICS_BIO */
 
 
       ENDDO  ! <-- ITER
-           
+
 
 ! Write back
 !
@@ -1099,57 +1099,57 @@
 
         if ((i.eq.50) .and. (j.eq.50)) then
 
-          do k=1,N 
-        
+          do k=1,N
+
 ! sources - sinks  (SMS: mmol/m3/s)
 !-----------------------------------------------------------------
           call budget_N_O2(i,j,k,budget_NO3,budget_NO2,budget_NH4
      &                    ,budget_SPhy,budget_LPhy,budget_SZoo,budget_LZoo
      &                    ,budget_SDet,budget_LDet,budget_DON
      &                    ,budget_O2)
-   
+
           budget_N=budget_NO3+budget_NO2+budget_NH4+
      &             budget_SPhy+budget_LPhy+budget_SZoo+budget_LZoo+
      &             budget_SDet+budget_LDet+budget_DON
 
 ! trend  (mmol/m3/s)
 !-----------------------------------------------------------------
-         trend_NO3  = (( min(t(i,j,k,nnew,iNO3_),0.) + NO3(k) ) 
-     &                     - t(i,j,k,nnew,iNO3_)) / dt 
-         trend_NO2  = (( min(t(i,j,k,nnew,iNO2_),0.) + NO2(k) ) 
-     &                     - t(i,j,k,nnew,iNO2_)) / dt 
-         trend_NH4  = (( min(t(i,j,k,nnew,iNH4_),0.) + NH4(k) ) 
-     &                     - t(i,j,k,nnew,iNH4_)) / dt 
-         trend_SPhy = (( min(t(i,j,k,nnew,iPhy1),0.) + SPhy(k) ) 
-     &                     - t(i,j,k,nnew,iPhy1)) / dt 
-         trend_LPhy = (( min(t(i,j,k,nnew,iPhy2),0.) + LPhy(k) ) 
-     &                     - t(i,j,k,nnew,iPhy2)) / dt 
-         trend_SZoo = (( min(t(i,j,k,nnew,iZoo1),0.) + SZoo(k) ) 
-     &                     - t(i,j,k,nnew,iZoo1)) / dt 
-         trend_LZoo = (( min(t(i,j,k,nnew,iZoo2),0.) + LZoo(k) ) 
-     &                     - t(i,j,k,nnew,iZoo2)) / dt 
-         trend_SDet = (( min(t(i,j,k,nnew,iDet1),0.) + SDet(k) ) 
-     &                     - t(i,j,k,nnew,iDet1)) / dt 
-         trend_LDet = (( min(t(i,j,k,nnew,iDet2),0.) + LDet(k) ) 
-     &                     - t(i,j,k,nnew,iDet2)) / dt 
-         trend_DON  = (( min(t(i,j,k,nnew,iDON),0.)  + DON(k) ) 
-     &                     - t(i,j,k,nnew,iDON)) / dt 
+         trend_NO3  = (( min(t(i,j,k,nnew,iNO3_),0.) + NO3(k) )
+     &                     - t(i,j,k,nnew,iNO3_)) / dt
+         trend_NO2  = (( min(t(i,j,k,nnew,iNO2_),0.) + NO2(k) )
+     &                     - t(i,j,k,nnew,iNO2_)) / dt
+         trend_NH4  = (( min(t(i,j,k,nnew,iNH4_),0.) + NH4(k) )
+     &                     - t(i,j,k,nnew,iNH4_)) / dt
+         trend_SPhy = (( min(t(i,j,k,nnew,iPhy1),0.) + SPhy(k) )
+     &                     - t(i,j,k,nnew,iPhy1)) / dt
+         trend_LPhy = (( min(t(i,j,k,nnew,iPhy2),0.) + LPhy(k) )
+     &                     - t(i,j,k,nnew,iPhy2)) / dt
+         trend_SZoo = (( min(t(i,j,k,nnew,iZoo1),0.) + SZoo(k) )
+     &                     - t(i,j,k,nnew,iZoo1)) / dt
+         trend_LZoo = (( min(t(i,j,k,nnew,iZoo2),0.) + LZoo(k) )
+     &                     - t(i,j,k,nnew,iZoo2)) / dt
+         trend_SDet = (( min(t(i,j,k,nnew,iDet1),0.) + SDet(k) )
+     &                     - t(i,j,k,nnew,iDet1)) / dt
+         trend_LDet = (( min(t(i,j,k,nnew,iDet2),0.) + LDet(k) )
+     &                     - t(i,j,k,nnew,iDet2)) / dt
+         trend_DON  = (( min(t(i,j,k,nnew,iDON),0.)  + DON(k) )
+     &                     - t(i,j,k,nnew,iDON)) / dt
 
          trend_N    = trend_NO3+trend_NO2+trend_NH4+
      &                trend_SPhy+trend_LPhy+trend_SZoo+trend_LZoo+
      &                trend_SDet+trend_LDet+trend_DON
-     
-         trend_O2   = (( min(t(i,j,k,nnew,iO2),0.) + O2(k) ) 
-     &                     - t(i,j,k,nnew,iO2)) / dt 
+
+         trend_O2   = (( min(t(i,j,k,nnew,iO2),0.) + O2(k) )
+     &                     - t(i,j,k,nnew,iO2)) / dt
 
 ! N loss (mmol/m3/s)
 !-----------------------------------------------------------------
           N_loss   = - ( bioFlux(i,j,k,NFlux_Denitr2D1)/0.75+
-     &                   bioFlux(i,j,k,NFlux_Denitr2D2)/0.75+ 
+     &                   bioFlux(i,j,k,NFlux_Denitr2D2)/0.75+
      &                   bioFlux(i,j,k,NFlux_Denitr2DON)/0.75+
-     &                   bioFlux(i,j,k,NFlux_NO2anammox) + 
+     &                   bioFlux(i,j,k,NFlux_NO2anammox) +
      &                   bioFlux(i,j,k,NFlux_NH4anammox) )
-     
+
 ! vertical sinking (mmol/m3/s)
 !-----------------------------------------------------------------
           sinking   =  ( bioVSink(i,j,k-1,NFlux_VSinkP2)
@@ -1178,7 +1178,7 @@
         write(*,*)'N loss + vertical sinking      :',k,N_loss+sinking
         write(*,*)'The three have to be the same !!'
         write(*,*)'-------------------------------------'
-        write(*,*)'error (N total) = trend - SMS :', 
+        write(*,*)'error (N total) = trend - SMS :',
      &                                               k,trend_N- budget_N
         write(*,*)'-------------------------------------'
         write(*,*)'-------------------------------------'
@@ -1187,33 +1187,33 @@
 
 
 #  if defined NITROUS_OXIDE
- 
+
 !  sources - sinks  (SMS: mmol/m3/s)
 !-----------------------------------------------------------------
           call budget_N2O(i,j,k,budget_Nitrous_oxide)
 
 !  trend  (mmol/m3/s)
 !-----------------------------------------------------------------
-         trend_N2O  = (( min(t(i,j,k,nnew,iN2O),0.) + N2O(k) ) 
-     &                     - t(i,j,k,nnew,iN2O)) / dt 
+         trend_N2O  = (( min(t(i,j,k,nnew,iN2O),0.) + N2O(k) )
+     &                     - t(i,j,k,nnew,iN2O)) / dt
 
         write(*,*)'-------------------------------------'
         write(*,*)'-------------------------------------'
         write(*,*)'error (N2O)      = trend - SMS :',
      &                                k,trend_N2O-budget_Nitrous_oxide
         write(*,*)'====================================='
-	 
-#  endif 
+
+#  endif
 
 
        enddo
 
        endif
-       
+
 
 # endif /* DIAGNOSTICS_BIO */
 
- 
+
           do k=1,N
            t(i,j,k,nnew,iNO3_)=min(t(i,j,k,nnew,iNO3_),0.) + NO3(k)
            t(i,j,k,nnew,iNO2_)=min(t(i,j,k,nnew,iNO2_),0.) + NO2(k)
@@ -1265,7 +1265,7 @@
 ! ====================================================================
 
 ! N2O_eq [mmol/m^3] is the N2O concentration in equilibrium with moist
-! air at one atmosphere total pressure 
+! air at one atmosphere total pressure
 
        implicit none
 !
@@ -1283,20 +1283,20 @@
 ! P is the ambient pressure
 
 ! N2O_eq IS DEFINED BETWEEN O(deg C) <= T <= 40(deg C) AND
-! 0 <= S <= 40 
+! 0 <= S <= 40
 !
 ! CHECK VALUE:  T = 25. deg C
-!               S = 35. 
-!               N2O_atm = 318 ppb 
+!               S = 35.
+!               N2O_atm = 318 ppb
 ! N2O_eq = 6.38 nmol L-1
 !
 ! CHECK VALUE:  T = 5. deg C
-!               S = 35. 
-!               N2O_atm = 318 ppb 
+!               S = 35.
+!               N2O_atm = 318 ppb
 ! N2O_eq = 12.42 nmol L-1
 
        real N2O_eq, N2O_atm, T, S, P
-       real A1, A2, A3, A4 
+       real A1, A2, A3, A4
        real B1, B2, B3
        real TK, TK1, TK2, TK3, lnF, F
 
@@ -1314,7 +1314,7 @@
      $     +  S*(B1 + B2*(TK2) + B3*TK3)
 
        F = exp(lnF)                                                     !mol/L/atm
-       
+
        N2O_eq = F * N2O_atm * P                                         !nmol/L = 10-3 mmol/m^3
        N2O_eq = N2O_eq *0.001                                           !mmol/m^3
 
@@ -1335,11 +1335,11 @@
 
 ! ====================================================================
 ! BUDGET FOR EACH VARIABLE
-! ====================================================================	
+! ====================================================================
 
-# include "param.h"
-# include "diagnostics.h"
-# include "cste_bio_coastal.h"
+#  include "param.h"
+#  include "diagnostics.h"
+#  include "cste_bio_coastal.h"
 
        budget_NO3=-bioFlux(i,j,k,NFlux_ProdNO3P1)
      &           -bioFlux(i,j,k,NFlux_ProdNO3P2)
@@ -1374,73 +1374,73 @@
      &           +bioFlux(i,j,k,NFlux_Denitr2D1)
      &           +bioFlux(i,j,k,NFlux_Denitr2D2)
      &           +bioFlux(i,j,k,NFlux_Denitr2DON)
-     &           -bioFlux(i,j,k,NFlux_NH4anammox) 
-             
+     &           -bioFlux(i,j,k,NFlux_NH4anammox)
+
        budget_SPhy=+(1.-epsilon1)*(bioFlux(i,j,k,NFlux_ProdNO3P1)
      &           +bioFlux(i,j,k,NFlux_ProdNO2P1)
      &           +bioFlux(i,j,k,NFlux_ProdNH4P1))
      &           -bioFlux(i,j,k,NFlux_P1Z1Grazing)
      &           -bioFlux(i,j,k,NFlux_P1mort)
      &           -bioFlux(i,j,k,NFlux_P1Z2Grazing)
-     
+
        budget_LPhy=+(1.-epsilon2)*(bioFlux(i,j,k,NFlux_ProdNO3P2)
      &           +bioFlux(i,j,k,NFlux_ProdNO2P2)
-     &           +bioFlux(i,j,k,NFlux_ProdNH4P2))	
+     &           +bioFlux(i,j,k,NFlux_ProdNH4P2))
      &           -bioFlux(i,j,k,NFlux_P2Z1Grazing)
-     &           -bioFlux(i,j,k,NFlux_P2mort)   
+     &           -bioFlux(i,j,k,NFlux_P2mort)
      &           -bioFlux(i,j,k,NFlux_P2Z2Grazing)
      &           + ( bioVSink(i,j,k-1,NFlux_VSinkP2)
      &              -bioVSink(i,j,k,NFlux_VSinkP2) ) !(bioVSink<0 if downward)
-          
+
        budget_SZoo=+beta1*(bioFlux(i,j,k,NFlux_P1Z1Grazing)
      &            +bioFlux(i,j,k,NFlux_P2Z1Grazing))
      &            -bioFlux(i,j,k,NFlux_Z1Z2Grazing)
      &            -bioFlux(i,j,k,NFlux_Z1metab)
      &            -bioFlux(i,j,k,NFlux_Z1mort)
-     
+
        budget_LZoo=+beta2*(bioFlux(i,j,k,NFlux_P1Z2Grazing)
      &            +bioFlux(i,j,k,NFlux_P2Z2Grazing)
      &            +bioFlux(i,j,k,NFlux_Z1Z2Grazing))
      &            -bioFlux(i,j,k,NFlux_Z2metab)
      &            -bioFlux(i,j,k,NFlux_Z2mort)
-            
+
        budget_SDet=+(1.-beta1)*(bioFlux(i,j,k,NFlux_P1Z1Grazing)
      &            +bioFlux(i,j,k,NFlux_P2Z1Grazing))
      &            +bioFlux(i,j,k,NFlux_P1mort)
      &            +bioFlux(i,j,k,NFlux_P2mort)
      &            +bioFlux(i,j,k,NFlux_Z1mort)
-     &            -bioFlux(i,j,k,NFlux_HydrolD1) 
-     &            -bioFlux(i,j,k,NFlux_ReminOxyD1) 
-     &            -bioFlux(i,j,k,NFlux_Denitr1D1) 
+     &            -bioFlux(i,j,k,NFlux_HydrolD1)
+     &            -bioFlux(i,j,k,NFlux_ReminOxyD1)
+     &            -bioFlux(i,j,k,NFlux_Denitr1D1)
      &            -bioFlux(i,j,k,NFlux_Denitr2D1)
-     &            + ( bioVSink(i,j,k-1,NFlux_VSinkD1)   
-     &               -bioVSink(i,j,k,NFlux_VSinkD1) )    
-    
+     &            + ( bioVSink(i,j,k-1,NFlux_VSinkD1)
+     &               -bioVSink(i,j,k,NFlux_VSinkD1) )
+
        budget_LDet=+(1.-beta2)*(bioFlux(i,j,k,NFlux_P1Z2Grazing)
      &            +bioFlux(i,j,k,NFlux_P2Z2Grazing)
      &            +bioFlux(i,j,k,NFlux_Z1Z2Grazing))
      &            +bioFlux(i,j,k,NFlux_Z2mort)
-     &            -bioFlux(i,j,k,NFlux_HydrolD2) 
+     &            -bioFlux(i,j,k,NFlux_HydrolD2)
      &            -bioFlux(i,j,k,NFlux_ReminOxyD2)
-     &            -bioFlux(i,j,k,NFlux_Denitr1D2) 
+     &            -bioFlux(i,j,k,NFlux_Denitr1D2)
      &            -bioFlux(i,j,k,NFlux_Denitr2D2)
-     &            + ( bioVSink(i,j,k-1,NFlux_VSinkD2)  
-     &               -bioVSink(i,j,k,NFlux_VSinkD2) )   
-     
+     &            + ( bioVSink(i,j,k-1,NFlux_VSinkD2)
+     &               -bioVSink(i,j,k,NFlux_VSinkD2) )
+
        budget_DON=+epsilon1*(bioFlux(i,j,k,NFlux_ProdNO3P1)
      &            +bioFlux(i,j,k,NFlux_ProdNO2P1)
      &            +bioFlux(i,j,k,NFlux_ProdNH4P1))
      &            +epsilon2*(bioFlux(i,j,k,NFlux_ProdNO3P2)
      &            +bioFlux(i,j,k,NFlux_ProdNO2P2)
-     &            +bioFlux(i,j,k,NFlux_ProdNH4P2))	
+     &            +bioFlux(i,j,k,NFlux_ProdNH4P2))
      &            +(1.-f2_Z1_NH4)*bioFlux(i,j,k,NFlux_Z1metab)
      &            +(1.-f2_Z2_NH4)*bioFlux(i,j,k,NFlux_Z2metab)
      &            +bioFlux(i,j,k,NFlux_HydrolD1)
-     &            +bioFlux(i,j,k,NFlux_HydrolD2)     
+     &            +bioFlux(i,j,k,NFlux_HydrolD2)
      &            -bioFlux(i,j,k,NFlux_ReminOxyDON)
-     &            -bioFlux(i,j,k,NFlux_Denitr1DON) 
-     &            -bioFlux(i,j,k,NFlux_Denitr2DON) 
-     
+     &            -bioFlux(i,j,k,NFlux_Denitr1DON)
+     &            -bioFlux(i,j,k,NFlux_Denitr2DON)
+
        budget_O2=+ro2n*(bioFlux(i,j,k,NFlux_ProdNO3P1)
      &            +bioFlux(i,j,k,NFlux_ProdNO3P2)
      &            +bioFlux(i,j,k,NFlux_ProdNO2P1)
@@ -1461,7 +1461,7 @@
       return
       end
 
-# endif 
+# endif
 
 
 
@@ -1472,22 +1472,22 @@
 
 ! ====================================================================
 ! BUDGET FOR N2O
-! ====================================================================	
+! ====================================================================
 
-# include "param.h"
-# include "diagnostics.h"
-# include "cste_bio_coastal.h"
+#  include "param.h"
+#  include "diagnostics.h"
+#  include "cste_bio_coastal.h"
 
           budget_nitrous_oxide=+bioFlux(i,j,k,NFlux_paramN2O)
-          if (k.eq.N) then	  
+          if (k.eq.N) then
            budget_nitrous_oxide=budget_nitrous_oxide
      &                        +GasExcFlux(i,j,N2OFlux_GasExc)
-          endif 
+          endif
 
       return
       end
 
-# endif 
+# endif
 
 
 

@@ -62,19 +62,19 @@
 !CSDISTRIBUTE_RESHAPE vrtWind_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real vrtDrag_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtDrag_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
       real vrtBaro_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtBaro_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
       real vrtfast_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtfast_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
+#  endif
 # endif
-# endif
 
 
 
-      common /diag_vrtXadv/vrtXadv   
+      common /diag_vrtXadv/vrtXadv
      &       /diag_vrtYadv/vrtYadv
      &       /diag_vrtHdiff/vrtHdiff
      &       /diag_vrtCor/vrtCor
@@ -107,16 +107,16 @@
      &       /diag_vrtVmix2_avg/vrtVmix2_avg
      &       /diag_vrtWind_avg/vrtWind_avg
      &       /diag_vrtDrag_avg/vrtDrag_avg
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
      &       /diag_vrtBaro_avg/vrtBaro_avg
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
      &       /diag_vrtfast_avg/vrtfast_avg
+#  endif
 # endif
-# endif      
 
 
-#ifndef DIAGNOSTICS_UV
+# ifndef DIAGNOSTICS_UV
       real wrkXadv(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE wrkXadv(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real wrkYadv(GLOBAL_2D_ARRAY,2)
@@ -135,15 +135,15 @@
 !CSDISTRIBUTE_RESHAPE wrkrate(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real wrkVmix2(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE wrkVmix2(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
       real wrkBaro(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE wrkBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
       real wrkfast(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE wrkfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
-      common /diag_wrkXadv/wrkXadv   
+#  endif
+      common /diag_wrkXadv/wrkXadv
      &       /diag_wrkYadv/wrkYadv
      &       /diag_wrkHdiff/wrkHdiff
      &       /diag_wrkCor/wrkCor
@@ -152,16 +152,16 @@
      &       /diag_wrkVmix/wrkVmix
      &       /diag_wrkrate/wrkrate
      &       /diag_wrkVmix2/wrkVmix2
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
      &       /diag_wrkBaro/wrkBaro
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
      &       /diag_wrkfast/wrkfast
-# endif
-#endif /*ifndef DIAGNOSTICS_UV */
+#  endif
+# endif /*ifndef DIAGNOSTICS_UV */
 
 #endif /* DIAGNOSTICS_VRT */
 
 
 
- 
+

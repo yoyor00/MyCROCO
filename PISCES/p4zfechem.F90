@@ -34,6 +34,7 @@ MODULE p4zfechem
    REAL(wp), PUBLIC ::   ligand       !: ligand concentration in the ocean 
    REAL(wp), PUBLIC ::   kfep         !: rate constant for nanoparticle formation
 
+   LOGICAL  :: l_dia
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zfechem.F90 10416 2018-12-19 11:45:43Z aumont $ 
@@ -70,8 +71,15 @@ CONTAINS
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) ::   zTL1, zFe3, ztotlig, precip, zFeL1
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) ::   zcoll3d, zscav3d, zlcoll3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "Fe3" )   .OR. iom_use( "FeL1" )  &
+           &    .OR. iom_use( "TL1" )    .OR. iom_use( "Totlig" )  &
+           &    .OR. iom_use( "Biron" ) .OR. iom_use( "FESCAV" ) &
+           &    .OR. iom_use( "FECOLL" ) .OR. iom_use( "LGWCOLL" )
+
       zFe3 (:,:,:) = 0.
       zFeL1(:,:,:) = 0.
       zTL1 (:,:,:) = 0.
@@ -145,8 +153,12 @@ CONTAINS
                ! precipitation of Fe3+, creation of nanoparticles
                precip(ji,jj,jk) = MAX( 0., ( zFe3(ji,jj,jk) * 1E-9 - fe3sol ) ) * kfep * xstep
                !
-               ztrc   = ( trb(ji,jj,K,jppoc) + trb(ji,jj,K,jpgoc)   &
-                  &   + trb(ji,jj,K,jpcal) + trb(ji,jj,K,jpgsi) ) * 1.e6 
+               IF( ln_p2z ) THEN
+                  ztrc = trb(ji,jj,K,jppoc) * 1e6
+               ELSE
+                  ztrc   = ( trb(ji,jj,K,jppoc) + trb(ji,jj,K,jpgoc)   &
+                       &   + trb(ji,jj,K,jpcal) + trb(ji,jj,K,jpgsi) ) * 1.e6 
+               ENDIF
                IF( ln_dust )  zdust  = dust(ji,jj) / ( wdust / rday ) * tmask(ji,jj,jk) &
                &  * EXP( -gdept_n(ji,jj,K) / 540. )
                IF (ln_ligand) THEN
@@ -161,9 +173,10 @@ CONTAINS
                ! Compute the different ratios for scavenging of iron
                ! to later allocate scavenged iron to the different organic pools
                ! ---------------------------------------------------------
-               zdenom1 = zxlam * trb(ji,jj,K,jppoc) / zlam1b
-               zdenom2 = zxlam * trb(ji,jj,K,jpgoc) / zlam1b
-
+               IF( .NOT. ln_p2z ) THEN
+                  zdenom1 = zxlam * trb(ji,jj,K,jppoc) / zlam1b
+                  zdenom2 = zxlam * trb(ji,jj,K,jpgoc) / zlam1b
+               ENDIF
                !  Increased scavenging for very high iron concentrations found near the coasts 
                !  due to increased lithogenic particles and let say it is unknown processes (precipitation, ...)
                !  -----------------------------------------------------------
@@ -180,14 +193,19 @@ CONTAINS
                    &      + 102.4  * trb(ji,jj,K,jppoc) ) * xdiss(ji,jj,jk)   &
                    &      + ( 114.   * 0.3 * trb(ji,jj,K,jpdoc) )
                zaggdfea = zlam1a * xstep * zfecoll
+               zaggdfeb = 0.
                !
-               zlam1b   = 3.53E3 * trb(ji,jj,K,jpgoc) * xdiss(ji,jj,jk)
-               zaggdfeb = zlam1b * xstep * zfecoll
+               IF( .NOT. ln_p2z ) THEN
+                  zlam1b   = 3.53E3 * trb(ji,jj,K,jpgoc) * xdiss(ji,jj,jk)
+                  zaggdfeb = zlam1b * xstep * zfecoll
+                  !
+                  tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) + zscave * zdenom1 + zaggdfea
+                  tra(ji,jj,jk,jpbfe) = tra(ji,jj,jk,jpbfe) + zscave * zdenom2 + zaggdfeb
+               ENDIF
                !
                tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) - zscave - zaggdfea - zaggdfeb &
                &                     - zcoag - precip(ji,jj,jk)
-               tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) + zscave * zdenom1 + zaggdfea
-               tra(ji,jj,jk,jpbfe) = tra(ji,jj,jk,jpbfe) + zscave * zdenom2 + zaggdfeb
+               !
                zscav3d(ji,jj,jk)   = zscave
                zcoll3d(ji,jj,jk)   = zaggdfea + zaggdfeb
                !
@@ -235,22 +253,87 @@ CONTAINS
       ENDIF
       !  Output of some diagnostics variables
       !     ---------------------------------
-#if defined key_iomput
-      IF( lk_iomput ) THEN
-         IF( knt == nrdttrc ) THEN
-            zrfact2 = 1.e3 * rfact2r  ! conversion from mol/L/timestep into mol/m3/s
-            IF( iom_use("Fe3")    )  CALL iom_put("Fe3"    , zFe3   (:,:,:)       * tmask(:,:,:) )   ! Fe3+
-            IF( iom_use("FeL1")   )  CALL iom_put("FeL1"   , zFeL1  (:,:,:)       * tmask(:,:,:) )   ! FeL1
-            IF( iom_use("TL1")    )  CALL iom_put("TL1"    , zTL1   (:,:,:)       * tmask(:,:,:) )   ! TL1
-            IF( iom_use("Totlig") )  CALL iom_put("Totlig" , ztotlig(:,:,:)       * tmask(:,:,:) )   ! TL
-            IF( iom_use("Biron")  )  CALL iom_put("Biron"  , biron  (:,:,:)  * 1e9 * tmask(:,:,:) )   ! biron
-            IF( iom_use("FESCAV") )  CALL iom_put("FESCAV" , zscav3d(:,:,:)  * 1e9 * tmask(:,:,:) * zrfact2 )
-            IF( iom_use("FECOLL") )  CALL iom_put("FECOLL" , zcoll3d(:,:,:)  * 1e9 * tmask(:,:,:) * zrfact2 )
-            IF( iom_use("LGWCOLL"))  CALL iom_put("LGWCOLL", zlcoll3d(:,:,:) * 1e9 * tmask(:,:,:) * zrfact2 )
+     IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            zrfact2 = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zFe3(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "Fe3", zw3d )  ! Fe3+
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zFeL1(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "FeL1", zw3d )  ! FeL1
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zTL1(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "TL1", zw3d )  ! TL1
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = ztotlig(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "Totlig", zw3d )  ! Total ligand
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = biron(ji,jj,jk) * 1e+9 * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "Biron", zw3d )  ! biron
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zscav3d(ji,jj,jk) * 1e+9 * tmask(ji,jj,jk) * zrfact2
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "FESCAV", zw3d )  ! 
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zcoll3d(ji,jj,jk) * 1e+9 * tmask(ji,jj,jk) * zrfact2
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "FECOLL", zw3d ) 
+            !
+            IF( ln_ligand ) THEN
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                       zw3d(ji,jj,jk ) = zlcoll3d(ji,jj,jk) * 1e+9 * tmask(ji,jj,jk) * zrfact2
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "LGWCOLL", zw3d )  
+            ENDIF
+            DEALLOCATE( zw3d )
          ENDIF
       ENDIF
-#endif
-
+      !
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('fechem')")
          CALL prt_ctl_trc_info(charout)

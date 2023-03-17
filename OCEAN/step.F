@@ -37,19 +37,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef SOLVE3D
 
-#if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3
        if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
 !         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
-#ifdef AGRIF
+#  ifdef AGRIF
        else if ((.not.agrif_root()).and.(iif==-1).and.
      &          (oasis_time>=0).and.(nbtimes<=Agrif_MaxLevel()+1).and.
      &          (nbprttime<nbmaxprttime)) then
          call cpl_prism_get (oasis_time)
-#endif
-       endif 
-#endif /* OA_COUPLING */
+#  endif
+       endif
+# endif /* OA_COUPLING */
 
        iif = iif+1
       IF (iif .EQ. 0) then
@@ -82,21 +82,21 @@ C$OMP END PARALLEL
         iif = -1
         nbstep3d = nbstep3d + 1
       endif
-#if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3
        if (iif==-1) then
          if (oasis_time>=0.and.(nbstep3d<=ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
-#ifdef AGRIF
+#  ifdef AGRIF
          else if (oasis_time>=0.and.(.not.agrif_root()).and.
      &           ((nbtimes>nbmaxtimes+1-Agrif_MaxLevel())).and.
      &           (nbprttime<nbmaxprttime) ) then
            call cpl_prism_put (oasis_time)
-#endif
+#  endif
          endif
          oasis_time = oasis_time + dt
        endif
-#endif /* OA_COUPLING */
+# endif /* OA_COUPLING */
 #endif
 !#ifdef ONLINE_ANALYSIS
 !     if (mynode.eq.0) write(6,*) 'appel',iic,iif
@@ -113,7 +113,7 @@ C$OMP END PARALLEL
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
-# include "zoom.h"
+#  include "zoom.h"
 # endif
 #endif
 #ifdef ONLINE_ANALYSIS
@@ -313,9 +313,9 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call set_vbc (tile)
 # if defined  BBL && !defined M3FAST
-#   ifdef AGRIF
+#  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
-#   endif
+#  endif
         call bblm (tile)
 #  ifdef AGRIF
         ENDIF
@@ -331,7 +331,8 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+# if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#  ifndef ABL1D
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_befbulk','u')
@@ -346,14 +347,20 @@ C$OMP MASTER
       call check_tab2d(uwnd(:,:),'uwnd prestep3d_befbulk','u')
       call check_tab2d(vwnd(:,:),'vwnd prestep3d_befbulk','v')
 C$OMP END MASTER
+#  endif
 # endif
 
 # ifdef BULK_FLUX
       do tile=my_first,my_last
-        call bulk_flux (tile)   
+        call bulk_flux (tile)
+#  ifdef ABL1D
+        call abl_tke   (tile)
+        call abl_step  (tile)
+#  endif
       enddo
 C$OMP BARRIER
 #  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#   ifndef ABL1D
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_aftbulk','u')
@@ -370,14 +377,20 @@ C$OMP MASTER
       call check_tab2d(vwnd(:,:),'vwnd prestep3d_aftbulk','v')
 C$OMP END MASTER
 C$OMP BARRIER
+#   endif
 #  endif
 # endif /* BULK_FLUX */
 
 C$OMP BARRIER
 # if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
-C$OMP MASTER      
+C$OMP MASTER
+#  if defined STRESS_AT_RHO_POINTS
+      call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','r')
+      call check_tab2d(svstr(:,:),'svstr prestep3d_aftbulk','r')
+#  else
       call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','u')
       call check_tab2d(svstr(:,:),'svstr prestep3d_aftbulk','v')
+#  endif
 C$OMP END MASTER
 C$OMP BARRIER
 # endif
@@ -505,6 +518,10 @@ C$OMP BARRIER
 
 # if defined AVERAGES && ! defined XIOS
         call set_avg (tile)
+#  if defined ABL1D
+        if (ldefablavg .and. wrtabl_avg(indxTime))
+     &      call set_abl_avg (tile)
+#  endif
 #  if defined DIAGNOSTICS_TS
         if (ldefdia_avg
      &      .and. (wrtdia3D_avg(NT+1) .or. wrtdia2D_avg(NT+1)))
@@ -543,18 +560,18 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
+# if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
        call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
       enddo
       call check_tab3d(u(:,:,:,nnew),'u prestep3d','u')
       call check_tab3d(v(:,:,:,nnew),'v prestep3d','v')
-#endif
+# endif
 
       nrhs=3
       nnew=3-nstp
 
-#ifdef ONLINE_ANALYSIS
+# ifdef ONLINE_ANALYSIS
 ! BLXD TODO moving OA calls just after the end of diags
       if ( if_oa.eqv..true. ) then
 C$OMP END MASTER
@@ -566,7 +583,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
          call output_oa
 C$OMP MASTER
       endif
-#endif
+# endif
 
 !
 ! Output block: write restart/history files.
@@ -721,11 +738,11 @@ C$OMP BARRIER
           call bblm (tile)
 # endif
 # if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
-#   ifdef AGRIF
+#  ifdef AGRIF
           IF (Agrif_Root()) call clm_tides (tile)
-#   else
+#  else
           call clm_tides (tile)
-#   endif
+#  endif
 # endif
 # ifdef AVERAGES
           call set_avg (tile)
@@ -978,12 +995,12 @@ C$OMP END MASTER
 # endif
 # if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
-      use comMUSTANG, only : dzs 
-# if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
-      use comMUSTANG , only : flx_bx, flx_by 
+      use comMUSTANG, only : dzs
+#  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+      use comMUSTANG , only : flx_bx, flx_by
       use comsubstance, only : ibedload1, ibedload2
+#  endif
 # endif
-#endif
 # include "coupler_define_MUSTANG.h"
 #endif
       implicit none
@@ -1077,18 +1094,18 @@ C$OMP MASTER
         call check_tab3d(trb(:,:,1:N,nstp,igls),'gls step3d_t','r')
         call check_tab3d(trb(:,:,1:N,nstp,itke),'tke step3d_t','r')
 #  endif
-# if defined MUSTANG 
+#  if defined MUSTANG
         do ilay = ksdmin, ksdmax
             call check_tab2d(c_sedtot(ilay, :, :),'c_sedtotx step3d_t','r')
             call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','r')
         enddo
-# if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+#   if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
         do itrc = ibedload1, ibedload2
             call check_tab2d(flx_bx(itrc, :, :),'flx_bx step3d_t','r')
             call check_tab2d(flx_by(itrc, :, :),'flx_by step3d_t','r')
         enddo
-# endif
-# endif
+#   endif
+#  endif
 C$OMP END MASTER
 # endif
 

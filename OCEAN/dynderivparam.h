@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -26,17 +26,17 @@
       padd_X=(Lm+2)/2-(Lm+1)/2; padd_E=(Mm+2)/2-(Mm+1)/2
 !********************************************************************
 !            Horizontal array dimensions in netCDF files.
-! xi_rho     WARNING!!! In MPI code in the case of PARALLEL_FILES 
+! xi_rho     WARNING!!! In MPI code in the case of PARALLEL_FILES
 ! xi_u       _and_ NON-Periodicity in either XI- or ETA-direction,
 ! eta_rho    these depend on corresonding MPI-node indices ii,jj
 ! eta_v      and therefore become live variables, which are placed
 !            into common block below rather than defined here as
-!            parameters. 
+!            parameters.
 !
-! Note (P. Marchesiello): 
-!   the remark above is now extended to periodic conditions, i.e., 
-!   if PARALLEL_FILES is defined, netCDF files array dimensions are 
-!   always set in MPI-Setup and depend on MPI-nodes. After rejoining 
+! Note (P. Marchesiello):
+!   the remark above is now extended to periodic conditions, i.e.,
+!   if PARALLEL_FILES is defined, netCDF files array dimensions are
+!   always set in MPI-Setup and depend on MPI-nodes. After rejoining
 !   the parallel files (ncjoin), the resulting global netCDF file has
 !   the same dimension as it would have if PARALLEL_FILES was undefined.
 !
@@ -52,7 +52,7 @@
       eta_rho=MMm+2; eta_v=eta_rho-1
 # endif
 
-#endif  
+#endif
 ! <- key AGRIF
 
 !********************************************************************

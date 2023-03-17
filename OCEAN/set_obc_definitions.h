@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,9 +15,9 @@
 ! C-preprocessor. They allow separate open boundaries definitions for
 ! the parent and the child grids in case of nesting.
 */
-#undef OBC_COM_EAST 
-#undef OBC_COM_WEST 
-#undef OBC_COM_NORTH 
+#undef OBC_COM_EAST
+#undef OBC_COM_WEST
+#undef OBC_COM_NORTH
 #undef OBC_COM_SOUTH
 #undef OBC_COM_TSPECIFIED
 #undef OBC_COM_TORLANSKI
@@ -203,55 +203,55 @@
 #else
 /* CHILD OBC DEFINITIONS */
 
-#  ifdef AGRIF_OBC_EAST
-#   define OBC_COM_EAST
-#  endif
-#  ifdef AGRIF_OBC_WEST
-#   define OBC_COM_WEST
-#  endif
-#  ifdef AGRIF_OBC_NORTH
-#   define OBC_COM_NORTH
-#  endif
-#  ifdef AGRIF_OBC_SOUTH
-#   define OBC_COM_SOUTH
-#  endif
-#  ifdef AGRIF_OBC_TSPECIFIED
-#   define OBC_COM_TSPECIFIED
-#  endif
-#  ifdef AGRIF_OBC_TORLANSKI
-#   define OBC_COM_TORLANSKI
-#  endif
-#  ifdef AGRIF_OBC_TUPWIND
-#   define OBC_COM_TUPWIND
-#  endif
-#  ifdef AGRIF_OBC_M3SPECIFIED
-#   define OBC_COM_M3SPECIFIED
-#  endif
-#  ifdef AGRIF_OBC_M3ORLANSKI
-#   define OBC_COM_M3ORLANSKI
-#  endif
-#  ifdef AGRIF_OBC_M2SPECIFIED
-#   define OBC_COM_M2SPECIFIED
-#   define OBC_COM_ZSPECIFIED
-#  endif
-#  ifdef AGRIF_OBC_M2ORLANSKI
-#   define OBC_COM_M2ORLANSKI
-#   define OBC_COM_ZORLANSKI
-#  endif
-#  ifdef AGRIF_OBC_M2CHARACT
-#   define OBC_COM_M2CHARACT
-#   define OBC_COM_ZSPECIFIED
-#  endif
-#  ifdef AGRIF_OBC_WSPECIFIED
-#   define OBC_COM_WSPECIFIED
-#  endif
-#  ifdef AGRIF_OBC_WORLANSKI
-#   define OBC_COM_WORLANSKI
-#  endif
-#  ifdef AGRIF_OBC_NBQSPECIFIED
-#   define OBC_COM_NBQSPECIFIED
-#  endif
-#  ifdef AGRIF_OBC_NBQORLANSKI
-#   define OBC_COM_NBQORLANSKI
-#  endif
+# ifdef AGRIF_OBC_EAST
+#  define OBC_COM_EAST
+# endif
+# ifdef AGRIF_OBC_WEST
+#  define OBC_COM_WEST
+# endif
+# ifdef AGRIF_OBC_NORTH
+#  define OBC_COM_NORTH
+# endif
+# ifdef AGRIF_OBC_SOUTH
+#  define OBC_COM_SOUTH
+# endif
+# ifdef AGRIF_OBC_TSPECIFIED
+#  define OBC_COM_TSPECIFIED
+# endif
+# ifdef AGRIF_OBC_TORLANSKI
+#  define OBC_COM_TORLANSKI
+# endif
+# ifdef AGRIF_OBC_TUPWIND
+#  define OBC_COM_TUPWIND
+# endif
+# ifdef AGRIF_OBC_M3SPECIFIED
+#  define OBC_COM_M3SPECIFIED
+# endif
+# ifdef AGRIF_OBC_M3ORLANSKI
+#  define OBC_COM_M3ORLANSKI
+# endif
+# ifdef AGRIF_OBC_M2SPECIFIED
+#  define OBC_COM_M2SPECIFIED
+#  define OBC_COM_ZSPECIFIED
+# endif
+# ifdef AGRIF_OBC_M2ORLANSKI
+#  define OBC_COM_M2ORLANSKI
+#  define OBC_COM_ZORLANSKI
+# endif
+# ifdef AGRIF_OBC_M2CHARACT
+#  define OBC_COM_M2CHARACT
+#  define OBC_COM_ZSPECIFIED
+# endif
+# ifdef AGRIF_OBC_WSPECIFIED
+#  define OBC_COM_WSPECIFIED
+# endif
+# ifdef AGRIF_OBC_WORLANSKI
+#  define OBC_COM_WORLANSKI
+# endif
+# ifdef AGRIF_OBC_NBQSPECIFIED
+#  define OBC_COM_NBQSPECIFIED
+# endif
+# ifdef AGRIF_OBC_NBQORLANSKI
+#  define OBC_COM_NBQORLANSKI
+# endif
 #endif /* CHILD */

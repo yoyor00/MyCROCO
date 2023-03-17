@@ -23,9 +23,9 @@
       integer tile, trd
 C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
-#  ifdef MRL_WCI
+# ifdef MRL_WCI
       call wstokes (tile)
-#  endif
+# endif
 # if defined SOLVE3D && !defined NBQ
       if (wrtavg(indxW)) then
         call Wvlcty (tile, workr)
@@ -61,7 +61,7 @@ C$    integer omp_get_thread_num
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, ilc, iout, indxWrk
-      real cff, cff1, eps, stf_cff
+      real cff, cff1, eps, stf_cff, u_str, v_str
       parameter (eps=1.D-20)
       parameter(stf_cff=86400/0.01)
 # ifdef SOLVE3D
@@ -176,7 +176,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#ifdef MORPHODYN
+# ifdef MORPHODYN
         if (wrtavg(indxHm)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -185,7 +185,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#endif
+# endif
         if (wrtavg(indxBostr)) then
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -215,13 +215,18 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxWstr)) then
           do j=Jstr,Jend
             do i=Istr,Iend
-              wstr_avg(i,j)=cff*( cff1*wstr_avg(i,j)+
 # ifdef OA_COUPLING
-     &                         smstr(i,j)*rho0)
+              wstr_avg(i,j)=cff*(cff1*wstr_avg(i,j)+smstr(i,j)*rho0)
 # else
-     &                         0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
-     &                                 +(svstr(i,j)+svstr(i,j+1))**2)
-     &                                                          *rho0)
+#  ifdef STRESS_AT_RHO_POINTS
+              u_str = sustr(i,j)
+              v_str = svstr(i,j)
+#  else
+              u_str = 0.5*(sustr(i,j)+sustr(i+1,j))
+              v_str = 0.5*(svstr(i,j)+svstr(i,j+1))
+#  endif
+              wstr_avg(i,j)=cff*( cff1*wstr_avg(i,j)
+     &                +sqrt(u_str**2+v_str**2)*rho0)
 # endif
             enddo
           enddo
@@ -261,7 +266,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-# ifdef TRACERS
+#  ifdef TRACERS
         do itrc=1,NT
           if (wrtavg(indxV+itrc)) then
             do k=1,N
@@ -274,7 +279,7 @@ C$    integer omp_get_thread_num
             enddo
           endif
         enddo
-# endif
+#  endif
         if (wrtavg(indxR)) then
           do k=1,N
             do j=JstrR,JendR
@@ -284,7 +289,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
         if (wrtavg(indxbvf)) then
@@ -296,23 +301,23 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-# endif
+#  endif
         if (wrtavg(indxO)) then
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
                 omega_avg(i,j,k)=cff*( cff1*omega_avg(i,j,k)
      &                                 +We(i,j,k)*pm(i,j)*pn(i,j)
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
      &                                 +Wi(i,j,k)*pm(i,j)*pn(i,j)
-# endif
+#  endif
      &                                                          )
               enddo
             enddo
           enddo
         endif
         if (wrtavg(indxW)) then
-# ifdef NBQ
+#  ifdef NBQ
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -320,7 +325,7 @@ C$    integer omp_get_thread_num
               enddo
             enddo
           enddo
-# else
+#  else
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -328,7 +333,7 @@ C$    integer omp_get_thread_num
               enddo
             enddo
           enddo
-# endif
+#  endif
         endif
 # if defined LMD_SKPP || defined GLS_MIXING || defined MLD_RHO
         if (wrtavg(indxHbl)) then
@@ -340,10 +345,10 @@ C$    integer omp_get_thread_num
 #  elif defined LMD_SKPP2005
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbls(i,j,nstp))
-#  else
+#   else
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbl(i,j))
-# endif
+#   endif
             enddo
           enddo
         endif
@@ -390,7 +395,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
         if (wrtavg(indxShflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -399,7 +404,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  ifdef BHFLX
+#   ifdef BHFLX
         if (wrtavg(indxBhflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -408,11 +413,11 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-# endif
+#   endif
 #  endif
 
 
-# ifdef SALINITY
+#  ifdef SALINITY
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -422,7 +427,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  ifdef BWFLUX
+#   ifdef BWFLUX
         if (wrtavg(indxBwflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -432,12 +437,12 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#   endif
 #  endif
-#endif
         if (wrtavg(indxShflx_rsw)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
-#   ifdef BULK_FLUX
+#  ifdef BULK_FLUX
               shflx_rsw_avg(i,j)=cff*( cff1*shflx_rsw_avg(i,j)+
      &                                 shflx_rsw(i,j)*rho0*Cp)
 #  else
@@ -534,7 +539,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#    ifdef TEMPERATURE
+#   ifdef TEMPERATURE
         if (wrtavg(indxAkt)) then
           do k=0,N
             do j=JstrR,JendR

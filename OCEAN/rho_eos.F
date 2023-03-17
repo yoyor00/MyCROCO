@@ -2,17 +2,17 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #ifdef SOLVE3D
 # ifdef NONLIN_EOS
-# define DUKO_2001
+#  define DUKO_2001
 !
       subroutine rho_eos (tile)
 !
@@ -22,7 +22,7 @@
 #  include "private_scratch.h"
 #  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      call rho_eos_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd), 
+      call rho_eos_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd),
      &                                        A2d(1,2,trd))
       return
       end
@@ -32,7 +32,7 @@
 !======================================================================
 ! Compute density anomaly via Equation Of State (EOS) for seawater.
 ! Following Jackett and McDougall, 1995, physical EOS is assumed to
-! have form 
+! have form
 !
 !                           rho0 + rho1(T,S)
 !           rho(T,S,z) = ------------------------                 (1)
@@ -56,19 +56,19 @@
 ! is removed from (1). [Since (3) is purely a function of z,
 ! it does not contribute to pressure gradient.]  This results in
 !
-!                   rho1 - rho0*[K01+K1*|z|+K2*|z|^2]/[K00-0.1|z|] 
+!                   rho1 - rho0*[K01+K1*|z|+K2*|z|^2]/[K00-0.1|z|]
 !    rho1 + 0.1|z| -----------------------------------------------
 !                        K00 + K01 + (K1-0.1)*|z| + K2*|z|^2
 !                                                                 (4)
-! which is suitable for pressure-gradient calculation. 
+! which is suitable for pressure-gradient calculation.
 !
-! Optionally, if CPP-switch SPLIT_EOS is defined, term proportional 
+! Optionally, if CPP-switch SPLIT_EOS is defined, term proportional
 ! to |z| is linearized using smallness 0.1|z|/[K00 + K01] << 1 and
 ! the resultant EOS has form
-! 
+!
 !              rho(T,S.z) = rho1(T,S) + qp1(T,S)*|z|               (5)
 !
-! where 
+! where
 !                            rho1 - rho0*K01(T,S)/K00
 !              qp1(T,S)= 0.1 --------------------------            (6)
 !                                K00 + K01(T,S)
@@ -78,7 +78,7 @@
 !
 ! This splitting allows representation of spatial derivatives (and
 ! also differences) of density as sum of adiabatic derivatives and
-! compressible part according to 
+! compressible part according to
 !
 !         d rho     d rho1           d qp1             d |z|
 !        ------- = -------- + |z| * -------  +  qp1 * -------      (7)
@@ -89,7 +89,7 @@
 ! so that constraining of adiabatic derivative for monotonicity is
 ! equivalent to enforcement of physically stable stratification.
 ! [This separation and constraining algorithm is subsequently used
-! in computation of pressure gradient in the prsgrd routine] 
+! in computation of pressure gradient in the prsgrd routine]
 !
 ! If so prescribed compute the Brunt-Väisäla frequency [1/s^2] at
 ! horizontal RHO-points and vertical W-points,
@@ -106,23 +106,23 @@
 !
 ! References:
 ! ----------
-!  Shchepetkin, A.F., McWilliams, J.C., 2003: A method for computing 
-!  horizontal pressure-gradient force in an oceanic model with a 
+!  Shchepetkin, A.F., McWilliams, J.C., 2003: A method for computing
+!  horizontal pressure-gradient force in an oceanic model with a
 !  non-aligned vertical coordinate. J. Geophys. Res. 108 (C3), 3090.
 !
-!====================================================================== 
+!======================================================================
 !
       implicit none
 #  include "param.h"
-      integer Istr,Iend,Jstr,Jend, i,j,k 
+      integer Istr,Iend,Jstr,Jend, i,j,k
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N), K0,
      &     K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N), K1,K2,
 
-     &     r00,r01,r02,r03,r04,r05,    K00,K01,K02,K03,K04,  dr00, 
+     &     r00,r01,r02,r03,r04,r05,    K00,K01,K02,K03,K04,  dr00,
      &     r10,r11,r12,r13,r14,        K10,K11,K12,K13,      Ts, Tt,
      &     rS0,rS1,rS2,                KS0,KS1,KS2,          sqrtTs,
      &     r20,                                              dpth,
-     &             B00,B01,B02,B03,    E00,E01,E02,           
+     &             B00,B01,B02,B03,    E00,E01,E02,
      &             B10,B11,B12,        E10,E11,E12,          cff,
      &                 BS1,                            cff1,cff2
 
@@ -178,10 +178,10 @@
 !
 
 
-#ifdef RVTK_DEBUG_PERFRST
+#  ifdef RVTK_DEBUG_PERFRST
       call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
-#endif
+#  endif
 
       do j=JstrR,JendR
 
@@ -207,7 +207,7 @@
      &                                    rS1+Tt*rS2 ))+Ts*r20 ))
 #  ifdef MASKING
      &                                                *rmask(i,j)
-#  endif     
+#  endif
             K0= Tt*( K01+Tt*( K02+Tt*( K03+Tt*K04 )))
      &         +Ts*( K10+Tt*( K11+Tt*( K12+Tt*K13 ))
      &              +sqrtTs*( KS0+Tt*( KS1+Tt*KS2 )))
@@ -219,7 +219,7 @@
 #   else
             qp1(i,j,k)=0.1*(K00*rho1(i,j,k)-rho0*K0)/(K00*(K00+K0))
 #   endif
-#   ifdef MASKING 
+#   ifdef MASKING
      &                                                  *rmask(i,j)
 #   endif
             dpth=z_w(i,j,N)-z_r(i,j,k)
@@ -245,7 +245,7 @@
 !
 !-----------------------------------------------------------------------
 !  Compute Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
-!  and vertical W-points!                  
+!  and vertical W-points!
 !-----------------------------------------------------------------------
 !
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
@@ -265,7 +265,7 @@
 #   ifdef SPLIT_EOS
             dpth=z_w(i,j,N)-0.5*(z_r(i,j,k+1)+z_r(i,j,k))
             cff2=( rho1(i,j,k+1)-rho1(i,j,k)             ! Elementary
-     &                        +(qp1(i,j,k+1)-qp1(i,j,k)) ! adiabatic 
+     &                        +(qp1(i,j,k+1)-qp1(i,j,k)) ! adiabatic
      &                            *dpth*(1.-qp2*dpth)    ! difference
      &                       )
 
@@ -307,7 +307,7 @@
 !
       subroutine rho_eos (tile)
 
-      implicit none 
+      implicit none
       integer tile
 #  include "param.h"
 #  include "compute_tile_bounds.h"
@@ -330,14 +330,14 @@
 !
 !-----------------------------------------------------------------------
 !  Compute density anomaly sigma-t (kg/m3 - 1000) using the linear
-!  equation of state. Then Convert sigma-t into density anomaly 
+!  equation of state. Then Convert sigma-t into density anomaly
 !  refered to rho0
 !-----------------------------------------------------------------------
 !
       do j=JstrR,JendR
         do k=1,N
           do i=IstrR,IendR
-            rho1(i,j,k)=R0 
+            rho1(i,j,k)=R0
 #  ifdef TEMPERATURE
      &                      -Tcoef*(t(i,j,k,nrhs,itemp)-T0)
 #  endif
@@ -369,7 +369,7 @@
 #   endif
           enddo
         enddo
-#  endif 
+#  endif
 # endif /* NONLIN_EOS */
 
 # ifdef CROCO_QH
@@ -451,8 +451,8 @@
 ! uniform density rho0. Hence both "rhoA" and "rhoS" are
 ! nondimensional quantities of comparable value.
 !----------------------------------------------------------------------
-! 
-        do i=IstrR,IendR 
+!
+        do i=IstrR,IendR
 #  ifdef SPLIT_EOS
           dpth=z_w(i,j,N)-z_r(i,j,N)
           cff=HZR(i,j,N)*(rho1(i,j,N)+qp1(i,j,N)*dpth*(1.-qp2*dpth))
@@ -499,8 +499,8 @@
 !
 ! Reference:
 ! ---------
-! Shchepetkin A.F., J.C. McWilliams, 2011: Accurate Boussinesq oceanic 
-! modeling with a practical, Stiffened Equation of State. 
+! Shchepetkin A.F., J.C. McWilliams, 2011: Accurate Boussinesq oceanic
+! modeling with a practical, Stiffened Equation of State.
 ! Ocean Modelling, 38, 41-70.
 !
 ! Patrick Marchesiello Sep. 2015
@@ -540,7 +540,7 @@
       real*QUAD mrho,vol
 #  ifdef MPI
       include 'mpif.h'
-#  include "mpi_cpl.h"
+#   include "mpi_cpl.h"
       integer ierr
       real*QUAD allrho(1,NNODES),allvol(1,NNODES)
 #  endif
@@ -562,11 +562,11 @@
 !
 !  Compute density anomaly sigma-t(T,S) from nonlinear EOS
 !
-#  ifdef TEMPERATURE
-            Tt=t(i,j,k,1,itemp)                    
-#  else
+#   ifdef TEMPERATURE
+            Tt=t(i,j,k,1,itemp)
+#   else
             Tt=25
-#  endif
+#   endif
 #   ifdef SALINITY
             Ts=max(t(i,j,k,1,isalt), 0.)
             sqrtTs=sqrt(Ts)
@@ -584,10 +584,10 @@
 !
 !  Compute density anomaly sigma-t from linear EOS
 !
-            rho1(i,j,k)=R0 
-#  ifdef TEMPERATURE
+            rho1(i,j,k)=R0
+#   ifdef TEMPERATURE
      &                     -Tcoef*(t(i,j,k,nrhs,itemp)-T0)
-#  endif
+#   endif
 #   ifdef SALINITY
      &                     +Scoef*(t(i,j,k,nrhs,isalt)-S0)
 #   endif
@@ -601,7 +601,7 @@
           enddo
         enddo
       enddo
-      
+
       mrho=mrho/vol
 !
 !  Make global volume average of sigma-t(T,S) ~ sigma-t(T0,S0)
@@ -615,7 +615,7 @@ C$OMP CRITICAL (rho_cr_rgn)
       if (tile_count.eq.0) then
         avg_rho=QuadZero               ! Reset global summations
         avg_vol=QuadZero
-      endif 
+      endif
       avg_rho=avg_rho+mrho*vol         ! Make global summations
       avg_vol=avg_vol+vol              ! among threads
       tile_count=tile_count+1          ! This counter identifies

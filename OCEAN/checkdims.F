@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,7 +15,7 @@
 !
 ! Verify that all spatial dimensions in file with netCDF ID=ncid and
 ! name=ncname are consistent with the corresponding model dimensions
-! and find the current size of unlimited dimension. 
+! and find the current size of unlimited dimension.
 !
 ! input:  ncid       netCDF ID, name and length of name of
 !         ncname     input netCDF file (all three arguments
@@ -29,8 +29,8 @@
       implicit none
       character     ncname*80
       character     dimname*16
-      integer ncid,    lstr,     ndims,  nvars, ngatts, recdim, 
-     &        recsize, ierr,     dimsize,    i,   ldim,  lenstr 
+      integer ncid,    lstr,     ndims,  nvars, ngatts, recdim,
+     &        recsize, ierr,     dimsize,    i,   ldim,  lenstr
 #include "param.h"
 #include "ncscrum.h"
 #include "netcdf.inc"
@@ -41,17 +41,17 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,'(/1x,4A/)') 'CHECKDIMS ERROR while inquiring ',
      &                  'about netCDF file ''', ncname(1:lstr), '''.'
-      else 
+      else
         do i=1,ndims
           ierr=nf_inq_dim (ncid, i, dimname, dimsize)
           if (ierr .ne. nf_noerr) then
             write(stdout,'(/1x,2A,I3/8x,3A/)') 'CHECKDIMS ERROR ',
      &                  'while inquiring about dimension ID =', i,
-     &                  'in netCDF file ''', ncname(1:lstr), '''.' 
+     &                  'in netCDF file ''', ncname(1:lstr), '''.'
             goto 99                                       !--> ERROR
           endif
           ldim=lenstr(dimname)
-          if ((ldim.eq.6 .and. dimname(1:ldim).eq.'xi_rho') .or. 
+          if ((ldim.eq.6 .and. dimname(1:ldim).eq.'xi_rho') .or.
      &        (ldim.eq.4 .and. dimname(1:ldim).eq.'xi_v'  )) then
             if (dimsize.ne.xi_rho) then
               write(stdout,1) dimname(1:ldim), dimsize, xi_rho
@@ -63,7 +63,7 @@
               write(stdout,1) dimname(1:ldim), dimsize, xi_u
               goto 99                                     !--> ERROR
             endif
-          elseif ((ldim.eq.7 .and. dimname(1:ldim).eq.'eta_rho') .or. 
+          elseif ((ldim.eq.7 .and. dimname(1:ldim).eq.'eta_rho') .or.
      &            (ldim.eq.5 .and. dimname(1:ldim).eq.'eta_u' )) then
             if (dimsize.ne.eta_rho) then
               write(stdout,1) dimname(1:ldim), dimsize, eta_rho
@@ -91,11 +91,11 @@
             recsize=dimsize
           endif
         enddo
-        checkdims=nf_noerr 
+        checkdims=nf_noerr
         return
       endif
   1   format(/' CHECKDIMS ERROR: inconsistent size of dimension ''',
      &                      A, ''':', i5, 1x, '(must be', i5, ').'/)
-  99  checkdims=nf_noerr+1 
+  99  checkdims=nf_noerr+1
       return
       end

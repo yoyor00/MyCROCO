@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -16,8 +16,8 @@
 !     !---------------------------------------------------------------------
 !     !              ***  ROUTINE cpl_prism_put  ***
 !     !
-!     ! ** Purpose : - 
-!     !           
+!     ! ** Purpose : -
+!     !
 !     !
 !     !----------------------------------------------------------------------
       USE mod_prism             ! OASIS3 prism module
@@ -32,11 +32,11 @@
 # include "ocean2d.h"
 # include "mpi_cpl.h"
 # include "grid.h"
-      
+
       INTEGER    :: sndtime, i, level, ja
-      DOUBLE PRECISION, DIMENSION(Lmmpi,Mmmpi)  :: snd_field 
+      DOUBLE PRECISION, DIMENSION(Lmmpi,Mmmpi)  :: snd_field
       CHARACTER*2 clevel
-      
+
 # ifdef AGRIF
       level=Agrif_Fixed()
       write(clevel,'(a,i1.1)') "_", level
@@ -46,23 +46,23 @@
 # endif
 !
 !!$      if (level==0) then
-!!$         MPI_master_only 
+!!$         MPI_master_only
 !!$     & write(*,*) 'CPL-CROCO : put for parent at time', sndtime
-!!$      else		
-!!$         MPI_master_only 
+!!$      else
+!!$         MPI_master_only
 !!$     & write(*,*) 'CPL-CROCO : put for child:', level,
 !!$     &  'at time', sndtime
 !!$      endif
-!      
+!
       DO i = 1, nmaxfld
 !-------------------------------------------------
-!        SST       
+!        SST
          if (trim(ssnd_clname(i))=='CROCO_SST'//trim(clevel)) then
-            snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15    
+            snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15
 
             DO ja = 0, nmaxatm
                if ( ssnd_nid(ja,i) /= -1 ) then
-                  call prism_put_proto(ssnd_nid(ja,i), sndtime, 
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
      &                  snd_field, comp_ierror)
                   if ( (comp_ierror == OASIS_Sent   ) .or.
      &                 (comp_ierror == OASIS_ToRest ) .or.
@@ -71,12 +71,12 @@
                      MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
      &                trim(ssnd_clname(i)),' sent at time ',sndtime
                   endif
-               endif  
+               endif
             enddo
-         
+
          endif
 !-------------------------------------------------
-!        SSH       
+!        SSH
          if (trim(ssnd_clname(i))=='CROCO_SSH'//trim(clevel)) then
             snd_field = zeta(1:Lmmpi,1:Mmmpi,nnew)
 
@@ -137,7 +137,7 @@
                   endif
                endif
             enddo
-         
+
          endif
 !-------------------------------------------------
 !        Eastward component of ocean surface current
@@ -197,10 +197,10 @@
       END DO
       return
       end
-#else 
+#else
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
       subroutine cpl_prism_put_empty
       end
-#endif 
+#endif

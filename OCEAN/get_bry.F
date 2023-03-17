@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,7 +13,7 @@
 #if !defined ANA_BRY && (defined T_FRC_BRY || defined M2_FRC_BRY || \
                          defined M3_FRC_BRY || defined Z_FRC_BRY )
 
-      subroutine get_bry            ! Read side boundary forcing 
+      subroutine get_bry            ! Read side boundary forcing
       implicit none                 ! fields from boundary file
 # include "param.h"
 # include "scalars.h"
@@ -21,8 +21,9 @@
 # include "netcdf.inc"
 # include "boundary.h"
       real cff
-      integer  lstr,lvar,lenstr, ierr, ierr_all, itrc
-      integer  nf_read_bry_EW, nf_read_bry_NS 
+      character*180 units
+      integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc
+      integer  nf_read_bry_EW, nf_read_bry_NS
 !
 ! Initialization: Check, whether boundary forcing file is already
 !================ opened, and if not, open it.  Find and save netCDF
@@ -43,7 +44,7 @@
      &                                   bry_file(1:lstr),   '''.'
         endif
         if (ierr.eq.nf_noerr) then
-          ierr_all=0 
+          ierr_all=0
           ierr=nf_inq_varid (bry_id, 'bry_time',  bry_time_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'bry_time'
           ierr_all=ierr_all+ierr
@@ -72,12 +73,12 @@
           ierr_all=ierr_all+ierr
 #   endif
 #   ifdef T_FRC_BRY
-          ierr=nf_inq_varid (bry_id, 'temp_west', 
+          ierr=nf_inq_varid (bry_id, 'temp_west',
      &         tbry_west_id(itemp))
           if (ierr.ne.nf_noerr) write(stdout,1) 'temp_west'
           ierr_all=ierr_all+ierr
 #    ifdef SALINITY
-          ierr=nf_inq_varid (bry_id, 'salt_west', 
+          ierr=nf_inq_varid (bry_id, 'salt_west',
      &         tbry_west_id(isalt))
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_west'
           ierr_all=ierr_all+ierr
@@ -110,12 +111,12 @@
           ierr_all=ierr_all+ierr
 #   endif
 #   ifdef T_FRC_BRY
-          ierr=nf_inq_varid (bry_id, 'temp_east', 
+          ierr=nf_inq_varid (bry_id, 'temp_east',
      &         tbry_east_id(itemp))
           if (ierr.ne.nf_noerr) write(stdout,1) 'temp_east'
           ierr_all=ierr_all+ierr
 #    ifdef SALINITY
-          ierr=nf_inq_varid (bry_id, 'salt_east', 
+          ierr=nf_inq_varid (bry_id, 'salt_east',
      &         tbry_east_id(isalt))
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_east'
           ierr_all=ierr_all+ierr
@@ -148,12 +149,12 @@
           ierr_all=ierr_all+ierr
 #   endif
 #   ifdef T_FRC_BRY
-          ierr=nf_inq_varid (bry_id, 'temp_south', 
+          ierr=nf_inq_varid (bry_id, 'temp_south',
      &         tbry_south_id(itemp))
           if (ierr.ne.nf_noerr) write(stdout,1) 'temp_south'
           ierr_all=ierr_all+ierr
 #    ifdef SALINITY
-          ierr=nf_inq_varid (bry_id, 'salt_south', 
+          ierr=nf_inq_varid (bry_id, 'salt_south',
      &         tbry_south_id(isalt))
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_south'
           ierr_all=ierr_all+ierr
@@ -186,12 +187,12 @@
           ierr_all=ierr_all+ierr
 #   endif
 #   ifdef T_FRC_BRY
-          ierr=nf_inq_varid (bry_id, 'temp_north', 
+          ierr=nf_inq_varid (bry_id, 'temp_north',
      &         tbry_north_id(itemp))
           if (ierr.ne.nf_noerr) write(stdout,1) 'temp_north'
           ierr_all=ierr_all+ierr
 #    ifdef SALINITY
-          ierr=nf_inq_varid (bry_id, 'salt_north', 
+          ierr=nf_inq_varid (bry_id, 'salt_north',
      &         tbry_north_id(isalt))
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_north'
           ierr_all=ierr_all+ierr
@@ -224,10 +225,15 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (bry_id, bry_time_id, bry_rec, cff)
           if (ierr.eq.nf_noerr) then
+# ifdef USE_CALENDAR
+            call tool_origindate(bry_id,bry_time_id,
+     &                           bry_origin_date_in_sec)
+              cff=cff+bry_origin_date_in_sec*sec2day
+# endif
             itbry=min(3-itbry,ntbry)
             bry_time(itbry)=cff*day2sec + bry_cycle*bry_ncycle
             ierr_all=0
-#ifdef OBC_WEST
+# ifdef OBC_WEST
 #  ifdef Z_FRC_BRY
             ierr=nf_read_bry_EW (zetabry_west_dt(START_1D_ARRAYETA,itbry
      &          ), bry_id,zetabry_west_id, bry_rec, r2dvar)
@@ -391,15 +397,18 @@
             if (ierr.eq.0) then
               MPI_master_only write(stdout,'(6x,A,9x,A,1x,F10.4,1x,I4)')
      &       'GET_BRY    -- Read all boundary data',
-     &                                 'for time =', cff 
-#ifdef MPI
+     &                                 'for time =', cff
+# ifdef USE_CALENDAR
+     &  -bry_origin_date_in_sec*sec2day
+# endif
+# ifdef MPI
      &                                             , mynode
-#endif
+# endif
             else
               MPI_master_only write(stdout,'(1x,2A,I4/8x,3A)')
      &           'ERROR(s) occur while trying to read record ',
      &            bry_rec,  'in file ''',bry_file(1:lstr),'''.'
-            endif 
+            endif
           else
             MPI_master_only write(stdout,2) 'bry_time'
           endif
@@ -411,12 +420,15 @@
      &    'file ''',   bry_file(1:lstr),  '''',  'tdays = ', tdays,
      &    '  but the last available  bry_time =',
      &                                   bry_time(itbry)*sec2day
+# ifdef USE_CALENDAR
+     &  -bry_origin_date_in_sec*sec2day
+# endif
         endif
       enddo
   2   format(' ERROR in get_bry: cannot read variable ''',A,'''')
       if (ierr.ne.nf_noerr) may_day_flag=2
       return
-      end 
+      end
 
       subroutine set_bry (tile)
       implicit none
@@ -441,9 +453,9 @@
 # include "grid.h"
 # include "scalars.h"
 # include "boundary.h"
-#  ifdef OBC_PATM
-#   include "forces.h"
-#  endif
+# ifdef OBC_PATM
+#  include "forces.h"
+# endif
 # include "compute_extended_bounds.h"
 
       it1=3-itbry
@@ -455,8 +467,8 @@
 
       if (cff1.ge.0. .and. cff2.ge.0.) then
         cff=1./(cff1+cff2)                        ! interpolate
-        cff1=cff1*cff                             ! boundary values 
-        cff2=cff2*cff                             ! in time 
+        cff1=cff1*cff                             ! boundary values
+        cff2=cff2*cff                             ! in time
 
 # ifdef OBC_WEST
         if (WESTERN_EDGE) then
@@ -469,6 +481,13 @@
           do j=JstrR,JendR
            zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
+          enddo
+#   endif
+#   ifdef WET_DRY
+          do j=JstrR,JendR
+            if (zetabry_west(j) .le. (Dcrit(IstrR,j)-h(IstrR,j))) then
+              zetabry_west(j)=Dcrit(IstrR,j)-h(IstrR,j)
+            endif
           enddo
 #   endif
 #  endif
@@ -518,6 +537,13 @@
      &                     -(patm2d(IendR,j)-paref)/(g*rho0)
           enddo
 #   endif
+#   ifdef WET_DRY
+          do j=JstrR,JendR
+            if (zetabry_east(j) .le. (Dcrit(IendR,j)-h(IendR,j))) then
+              zetabry_east(j)=Dcrit(IendR,j)-h(IendR,j)
+            endif
+          enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
@@ -560,9 +586,16 @@
      &                      +cff2*zetabry_south_dt(i,it2)
           enddo
 #   ifdef OBC_PATM
-          do i=IstrR,IendR 
+          do i=IstrR,IendR
            zetabry_south(i)=zetabry_south(i)
      &                      -(patm2d(i,JstrR)-paref)/(g*rho0)
+          enddo
+#   endif
+#   ifdef WET_DRY
+          do i=IstrR,IendR
+            if (zetabry_south(i) .le. (Dcrit(i,JstrR)-h(i,JstrR))) then
+              zetabry_south(i)=Dcrit(i,JstrR)-h(i,JstrR)
+            endif
           enddo
 #   endif
 #  endif
@@ -607,11 +640,19 @@
      &                      +cff2*zetabry_north_dt(i,it2)
           enddo
 #   ifdef OBC_PATM
-          do i=IstrR,IendR 
+          do i=IstrR,IendR
            zetabry_north(i)=zetabry_north(i)
      &                      -(patm2d(i,JendR)-paref)/(g*rho0)
           enddo
 #   endif
+#   ifdef WET_DRY
+          do i=IstrR,IendR
+            if (zetabry_north(i) .le.(Dcrit(i,JendR)-h(i,JendR))) then
+              zetabry_north(i)=Dcrit(i,JendR)-h(i,JendR)
+            endif
+          enddo
+#   endif
+
 #  endif
 #  ifdef M2_FRC_BRY
           do i=IstrR,IendR

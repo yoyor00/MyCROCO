@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -41,7 +41,7 @@
         q2=track(iygrd,nfp1,iflt)-float(j1)
         q1=1.0-q2
 
-#ifdef MASKING
+# ifdef MASKING
         cff1=p1*q1*rmask(i1,j1)*(r1*A(i1,j1,k1)+r2*A(i1,j1,k2))
      &      +p2*q1*rmask(i2,j1)*(r1*A(i2,j1,k1)+r2*A(i2,j1,k2))
      &      +p1*q2*rmask(i1,j2)*(r1*A(i1,j2,k1)+r2*A(i1,j2,k2))
@@ -55,12 +55,12 @@
         else
           trackaux(ifld,iflt)=0.0
         endif
-#else
+# else
         trackaux(ifld,iflt)=p1*q1*(r1*A(i1,j1,k1)+r2*A(i1,j1,k2))
      &                       +p2*q1*(r1*A(i2,j1,k1)+r2*A(i2,j1,k2))
      &                       +p1*q2*(r1*A(i1,j2,k1)+r2*A(i1,j2,k2))
      &                       +p2*q2*(r1*A(i2,j2,k1)+r2*A(i2,j2,k2))
-#endif
+# endif
       enddo
       return
       end
@@ -141,12 +141,12 @@
 # include "ncscrum_floats.h"
       integer iflt
       do iflt=1,nfloats
-         trackaux(ifdpt,iflt)=Tinfo(izgrd,iflt) ! Either the depth or the 
+         trackaux(ifdpt,iflt)=Tinfo(izgrd,iflt) ! Either the depth or the
 
          if (wrtflt(indxfltGrd)) then
-           trackaux(izgrd,iflt)=Tinfo(izgrd,iflt)! sigma level position is 
+           trackaux(izgrd,iflt)=Tinfo(izgrd,iflt)! sigma level position is
                                                  ! unavailaible
-           trackaux(ixgrd,iflt)=Tinfo(ixgrd,iflt)! for initial storage 
+           trackaux(ixgrd,iflt)=Tinfo(ixgrd,iflt)! for initial storage
            trackaux(iygrd,iflt)=Tinfo(iygrd,iflt)! for initial storage
          endif
       enddo

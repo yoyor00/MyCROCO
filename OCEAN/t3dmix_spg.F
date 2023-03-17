@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -21,7 +21,7 @@
 
 #  if defined MUSTANG && defined key_sand2D
       USE comsubstance, ONLY : l_subs2D
-# endif
+#  endif
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
 #  include "param.h"
@@ -36,10 +36,10 @@
 
 #  ifdef AGRIF
         if (AGRIF_Root()) then
-          call t3dmix_spg_tile (istr,iend,jstr,jend, itrc, 
+          call t3dmix_spg_tile (istr,iend,jstr,jend, itrc,
      &                                   A2d(1, 1,trd), A2d(1, 2,trd)
 #   ifndef TS_MIX_S
-     &                   ,A2d(1, 3,trd), A2d(1, 5,trd), A2d(1, 7,trd), 
+     &                   ,A2d(1, 3,trd), A2d(1, 5,trd), A2d(1, 7,trd),
      &                    A2d(1, 9,trd), A2d(1,10,trd), A2d(1,11,trd),
      &                    A2d(1,12,trd), A2d(1,13,trd), A2d(1,14,trd),
      &                                   A2d(1,15,trd), A2d(1,16,trd),
@@ -47,10 +47,10 @@
 #   endif
      &                                                              )
         else
-          call t3dmix_spg_child_tile (istr,iend,jstr,jend, itrc, 
+          call t3dmix_spg_child_tile (istr,iend,jstr,jend, itrc,
      &                                   A2d(1, 1,trd), A2d(1, 2,trd)
 #   ifndef TS_MIX_S
-     &                   ,A2d(1, 3,trd), A2d(1, 5,trd), A2d(1, 7,trd), 
+     &                   ,A2d(1, 3,trd), A2d(1, 5,trd), A2d(1, 7,trd),
      &                    A2d(1, 9,trd), A2d(1,10,trd), A2d(1,11,trd),
      &                    A2d(1,12,trd), A2d(1,13,trd), A2d(1,14,trd),
      &                                   A2d(1,15,trd), A2d(1,16,trd),
@@ -58,11 +58,11 @@
 #   endif
      &                                                              )
         endif
-#  else 
-          call t3dmix_spg_tile (istr,iend,jstr,jend, itrc,   
+#  else
+          call t3dmix_spg_tile (istr,iend,jstr,jend, itrc,
      &                                   A2d(1, 1,trd), A2d(1, 2,trd)
 #   ifndef TS_MIX_S
-     &                   ,A2d(1, 3,trd), A2d(1, 5,trd), A2d(1, 7,trd), 
+     &                   ,A2d(1, 3,trd), A2d(1, 5,trd), A2d(1, 7,trd),
      &                    A2d(1, 9,trd), A2d(1,10,trd), A2d(1,11,trd),
      &                    A2d(1,12,trd), A2d(1,13,trd), A2d(1,14,trd),
      &                                   A2d(1,15,trd), A2d(1,16,trd),
@@ -101,7 +101,7 @@
 !
 ! CHILD
 !
-! Compute laplacien diffusion in the child sponge using 
+! Compute laplacien diffusion in the child sponge using
 ! t3dmix_fine.F. Diffusion always applied applied on T-TCLM in fine grids
 ! (cpp keys :CLIMAT_TS_SPONGE_FINE)
 !
@@ -125,13 +125,13 @@
 !
 !========================================================================
 !
-!  This subroutine computes rotated isopycnic or geopotential horizontal 
-!  mixing terms for tracer equations. The Method of Stabilizing Correction 
-!  is applied to prevent a time-step constraint associated with the 
+!  This subroutine computes rotated isopycnic or geopotential horizontal
+!  mixing terms for tracer equations. The Method of Stabilizing Correction
+!  is applied to prevent a time-step constraint associated with the
 !  vertical fluxes of the rotated diffusion.
 !
 !  References:
-!  
+!
 !  Lemarie F. et al., 2012: On the Stability and accuracy of the hamonic
 !  and biharmonic isoneutral mixing operators in ocean models. Ocean
 !  Modelling, in press.
@@ -216,7 +216,7 @@
       if (EASTERN_EDGE) then
         imax=iend
       else
-        imax=iend+1 
+        imax=iend+1
       endif
 # else
       imin=istr-1
@@ -238,9 +238,9 @@
       jmax=jend+1
 # endif
 
-   
-   
-   
+
+
+
 # ifdef TS_MIX_S
 !==================================================================
 !
@@ -256,7 +256,7 @@
           FX(i,j)=0.25*(diff2_sponge(i,j)+diff2_sponge(i-1,j))
      &                   *pmon_u(i,j)*(Hz(i,j,k)+Hz(i-1,j,k))*(
      &                t(i,j,k,nrhs,itrc)-t(i-1,j,k,nrhs,itrc)
-#  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE 
+#  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE
      &                   -TCLM(i,j,k,itrc)+TCLM(i-1,j,k,itrc)
 #  endif
      &                                      ) SWITCH umask(i,j)
@@ -267,7 +267,7 @@
           FE(i,j)=0.25*(diff2_sponge(i,j)+diff2_sponge(i,j-1))
      &                     *pnom_v(i,j)*(Hz(i,j,k)+Hz(i,j-1,k))*(
      &                 t(i,j,k,nrhs,itrc)-t(i,j-1,k,nrhs,itrc)
-#  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE 
+#  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE
      &                    -TCLM(i,j,k,itrc)+TCLM(i,j-1,k,itrc)
 #  endif
      &                                      ) SWITCH vmask(i,j)
@@ -314,21 +314,21 @@
 !              /                    /
 !        dTdx(i,j,k2)         dTdx(i+1,j,k2)        <---- k + 1
 !            /                    /
-!           /                    / 
+!           /                    /
 !          ---- dTdr(i,j,k2) ----                   <---- k + 1/2
 !         /                    /
 !        /                    /
-!  dTdx(i,j,k1)        dTdx(i+1,j,k1)               <---- k 
+!  dTdx(i,j,k1)        dTdx(i+1,j,k1)               <---- k
 !      /                    /
 !     /                    /
 !     ---- dTdr(i,j,k1) ---                        <---- k - 1/2
 !
-!==================================================================  
+!==================================================================
 !
 #  define TS_SPONGE_IMP
 !
 !=============================================================
-! First compute diffusivity coefficient at u and v points 
+! First compute diffusivity coefficient at u and v points
 !=============================================================
       do j=jmin,jmax
         do i=imin,imax+1
@@ -340,9 +340,9 @@
           diff3v(i,j)=0.5*(diff2_sponge(i,j)+diff2_sponge(i,j-1))
         enddo
       enddo
-      
 
-     
+
+
 !==========================================================
 ! Start computation of fluxes with lateral tracer gradients
 !==========================================================
@@ -376,7 +376,7 @@
             enddo
           enddo
         endif
- 
+
 
         if (k.eq.0 .or. k.eq.N) then
 !========================================================
@@ -386,7 +386,7 @@
             do i=imin-1,imax+1
                FC  (i,j,k2) = 0.0
 #  ifdef TS_SPONGE_IMP
-               Akz (i,j,k )= 0.0   
+               Akz (i,j,k )= 0.0
 #  endif
              enddo
           enddo
@@ -410,8 +410,8 @@
           do j=jmin-1,jmax+1
             do i=imin-1,imax+1
               FC(i,j,k2)  = idRz(i,j,k)*( z_r (i,j,k+1)-z_r (i,j,k) )
-              dTdr(i,j,k2)= idRz(i,j,k)*( t(i,j,k+1,nstp,itrc)  
-     &                                  - t(i,j,k  ,nstp,itrc) 
+              dTdr(i,j,k2)= idRz(i,j,k)*( t(i,j,k+1,nstp,itrc)
+     &                                  - t(i,j,k  ,nstp,itrc)
 #  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE
      &                                -TCLM(i,j,k+1,itrc)
      &                                +TCLM(i,j,k  ,itrc)
@@ -425,7 +425,7 @@
 !========================================================
 ! Compute the horizontal components of the tensor
 !========================================================
-          cff=0.5 
+          cff=0.5
           do j=jmin,jmax
             do i=imin,imax+1
               FX(i,j)=cff*diff3u(i,j)*(Hz(i,j,k)+Hz(i-1,j,k))
@@ -435,18 +435,18 @@
      &                                                              )
             enddo
           enddo
- 
+
           do j=jmin,jmax+1
             do i=imin,imax
               FE(i,j)=cff*diff3v(i,j)*(Hz(i,j,k)+Hz(i,j-1,k))
-     &               *om_v(i,j)*(   dTde(i,j,k1) - 
+     &               *om_v(i,j)*(   dTde(i,j,k1) -
      &              0.25*dRde(i,j,k)*(   dTdr(i,j-1,k1)+dTdr(i,j,k2)
      &                              +    dTdr(i,j-1,k2)+dTdr(i,j,k1))
      &                                                              )
             enddo
           enddo
 
-          
+
           if (k.lt.N) then
 !========================================================
 ! Compute the vertical component
@@ -460,7 +460,7 @@
                 sumX = diff3u(i  ,j)*dRdx(i  ,j,k  )*TRIADS1
      &               + diff3u(i  ,j)*dRdx(i  ,j,k+1)*TRIADS2
      &               + diff3u(i+1,j)*dRdx(i+1,j,k+1)*TRIADS3
-     &               + diff3u(i+1,j)*dRdx(i+1,j,k  )*TRIADS4  
+     &               + diff3u(i+1,j)*dRdx(i+1,j,k  )*TRIADS4
                 idx = 4
 
                 TRIADS1=dRde(i,j  ,k  )*dTdr(i,j,k2)-dTde(i,j  ,k1)
@@ -470,7 +470,7 @@
                 sumE = diff3v(i,j  )*dRde(i,j  ,k  )*TRIADS1
      &               + diff3v(i,j  )*dRde(i,j  ,k+1)*TRIADS2
      &               + diff3v(i,j+1)*dRde(i,j+1,k+1)*TRIADS3
-     &               + diff3v(i,j+1)*dRde(i,j+1,k  )*TRIADS4   
+     &               + diff3v(i,j+1)*dRde(i,j+1,k  )*TRIADS4
                 ide = 4
 
 #  ifdef TS_SPONGE_IMP
@@ -512,11 +512,11 @@
 !++ Perform time stepping
 !++========================================================
 
-        
+
           do j=jstr,jend
             do i=istr,iend
 #  ifdef TS_SPONGE_IMP
-              t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nnew,itrc) 
+              t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nnew,itrc)
      &         + dt*(
      &                   pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                    +FE(i,j+1)-FE(i,j))
@@ -529,7 +529,7 @@
 #  endif
             enddo
           enddo
-          
+
 
 
 #  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
@@ -557,7 +557,7 @@
 !========================================================
 !
 #   define FC FFC
-      do j=jstr,jend 
+      do j=jstr,jend
 #   ifdef SALINITY
         indx=min(itrc,isalt)
 #   else
@@ -566,7 +566,7 @@
 #    endif
 #   endif
 !
-!  Initialize TVmix diag computation: 
+!  Initialize TVmix diag computation:
 !  --> use Trate which needs recomputing anyway
 !
 #   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
@@ -584,17 +584,17 @@
             CD(i,k) = Akz(i,j,k)*
      &         (t(i,j,k+1,nstp,itrc)-t(i,j,k,nstp,itrc))
      &                     / ( z_r(i,j,k+1)-z_r(i,j,k) )
-          enddo 
+          enddo
           CD(i,0) = 0.
           CD(i,N) = 0.
-        enddo 
+        enddo
 !++
 !++ Implicit Part
 !++
 !
-! First pass: 
-! Compute the modified tridiagonal matrix coefficients for 
-! the implicit vertical diffusion terms at future time step, 
+! First pass:
+! Compute the modified tridiagonal matrix coefficients for
+! the implicit vertical diffusion terms at future time step,
 ! located at horizontal RHO-points and vertical W-points.
 !
         do i=istr,iend
@@ -605,7 +605,7 @@
         enddo
         do k=2,N-1,+1
           do i=istr,iend
-            FC(i,k)=dt*(Akz(i,j,k))/( z_r(i,j,k+1)-z_r(i,j,k) ) 
+            FC(i,k)=dt*(Akz(i,j,k))/( z_r(i,j,k+1)-z_r(i,j,k) )
             cff=1./(Hz(i,j,k)+FC(i,k)+FC(i,k-1)*(1.-CF(i,k-1)))
             CF(i,k)=cff*FC(i,k)
             DC(i,k)=cff*(t(i,j,k,nnew,itrc)+FC(i,k-1)*DC(i,k-1)
@@ -617,7 +617,7 @@
 !
         do i=istr,iend
            t(i,j,N,nnew,itrc)=( t(i,j,N,nnew,itrc)
-     &                         -dt*(CD(i,N)-CD(i,N-1))   
+     &                         -dt*(CD(i,N)-CD(i,N-1))
      &                         +FC(i,N-1)*DC(i,N-1) )
      &                      /(Hz(i,j,N)+FC(i,N-1)*(1.-CF(i,N-1)))
         enddo
@@ -626,7 +626,7 @@
             t(i,j,k,nnew,itrc)=DC(i,k)+CF(i,k)*t(i,j,k+1,nnew,itrc)
           enddo
         enddo           !--> discard FC,CF,DC
-#   undef FC 
+#   undef FC
 
 
 #   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
@@ -673,7 +673,7 @@
         enddo
 # endif
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -695,16 +695,16 @@
               cff=cff1/Hz(i,j,k)
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-# ifdef TS_SPONGE_IMP
+#  ifdef TS_SPONGE_IMP
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
-# endif
+#  endif
 
 
-# ifdef DIAGNOSTICS_TSVAR
+#  ifdef DIAGNOSTICS_TSVAR
 
-# include "finalize_diagnostics_tsadv.h"
+#   include "finalize_diagnostics_tsadv.h"
 
-# endif
+#  endif
 
             enddo
           enddo
@@ -777,14 +777,14 @@
      &                          TForc_mld(i,j,itrc)
          enddo
        enddo
-#   undef T_mld_nnew 
+#   undef T_mld_nnew
 #   undef T_mld_nstp
 #  endif /* DIAGNOSTICS_TS_MLD */
 !
 !  DEBUG DIAGS
 !
 #  ifdef DIAGNOSTICS_DEBUG
-#   ifdef TEMPERATURE 
+#   ifdef TEMPERATURE
        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
 #   else
        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.1) then
@@ -860,7 +860,7 @@
 # endif
       return
       end
- 
+
 # ifndef CHILD_SPG
 #  undef TCLM
 #  define CHILD_SPG

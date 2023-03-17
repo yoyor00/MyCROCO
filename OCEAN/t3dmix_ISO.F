@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -26,10 +26,10 @@
       trd=omp_get_thread_num()
       do itrc=1,NTRA_T3DMIX
 
-#  ifdef MUSTANG
+# ifdef MUSTANG
 !  With MUSTANG, mixing of sediments is done in step3d_t
        if (itrc.lt.itsubs1+nv_grav .or. itrc.gt.itsubs1+nvp) then
-#  endif
+# endif
 
 # ifdef AGRIF
         if (AGRIF_Root()) then
@@ -38,7 +38,7 @@
      &                                                 A3d(1,2,trd),
 #  endif
      &                                    A3d(1,3,trd),A3d(1,4,trd),
-     &                    A2d(1, 1,trd), A2d(1, 2,trd),A2d(1,3,trd), 
+     &                    A2d(1, 1,trd), A2d(1, 2,trd),A2d(1,3,trd),
      &                    A2d(1, 5,trd), A2d(1, 7,trd),A2d(1,9,trd)
 #  ifdef TS_MIX_IMP
      &                   ,A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
@@ -46,7 +46,7 @@
 #  endif
      &                    )
         else
-          call t3dmix_child_tile (istr,iend,jstr,jend, itrc, 
+          call t3dmix_child_tile (istr,iend,jstr,jend, itrc,
      &                                                 A3d(1,1,trd),
 #  ifdef TS_MIX_IMP
      &                                                 A3d(1,2,trd),
@@ -60,7 +60,7 @@
 #  endif
      &                    )
         endif
-# else 
+# else
         call t3dmix_tile (istr,iend,jstr,jend, itrc,   A3d(1,1,trd),
 #  ifdef TS_MIX_IMP
      &                                                 A3d(1,2,trd),
@@ -75,9 +75,9 @@
      &                    )
 # endif   /* AGRIF */
 
-#  ifdef MUSTANG
+# ifdef MUSTANG
        endif
-#  endif
+# endif
 
       enddo
       return
@@ -86,7 +86,7 @@
 !---------------------------------------------------------------------
 !
 !PARENT
-! 
+!
       subroutine t3dmix_tile (istr,iend,jstr,jend, itrc, LapT,
 # ifdef TS_MIX_IMP
      &                                                          Akz,
@@ -122,13 +122,13 @@
 !
 !========================================================================
 !
-!  This subroutine computes rotated isopycnic or geopotential horizontal 
-!  mixing terms for tracer equations. The Method of Stabilizing Correction 
-!  is applied to prevent a time-step constraint associated with the 
+!  This subroutine computes rotated isopycnic or geopotential horizontal
+!  mixing terms for tracer equations. The Method of Stabilizing Correction
+!  is applied to prevent a time-step constraint associated with the
 !  vertical fluxes of the rotated diffusion.
 !
 !  References:
-!  
+!
 !  Lemarie F. et al., 2012: On the Stability and accuracy of the hamonic
 !  and biharmonic isoneutral mixing operators in ocean models. Ocean
 !  Modelling, in press.
@@ -138,10 +138,10 @@
 !  and a solution. Ocean Modelling, 26, 156-169.
 !
 !  * 1998,     A. Shchepetkin: first implementation of explicit operators
-!  * Mar 2012, F. Lemarié: refines TRIADS/SWTRIADS operators and implements 
+!  * Mar 2012, F. Lemarié: refines TRIADS/SWTRIADS operators and implements
 !              MSC techniques in CROCO
-!  * Mai 2012, P. Marchesiello: corrections and adjustment to CROCO 
-!              CPP choices 
+!  * Mai 2012, P. Marchesiello: corrections and adjustment to CROCO
+!              CPP choices
 !
 !========================================================================
 !
@@ -181,9 +181,9 @@
 #ifdef DIAGNOSTICS_TS
 # include "diagnostics.h"
 #endif
-# ifdef DIAGNOSTICS_PV
-#  include "diags_pv.h"
-# endif
+#ifdef DIAGNOSTICS_PV
+# include "diags_pv.h"
+#endif
 #ifdef AGRIF
 # include "zoom.h"
 #endif
@@ -220,7 +220,7 @@
       if (EASTERN_EDGE) then
         imax=iend
       else
-        imax=iend+1 
+        imax=iend+1
       endif
 #else
       imin=istr-1
@@ -249,7 +249,7 @@
       do k=1,N
         do j=jmin,jmax
           do i=imin,imax+1
-            diff3u(i,j,k)= 
+            diff3u(i,j,k)=
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i-1,j,itrc))
 # if defined DIF_COEF_3D && defined TS_DIF_SMAGO
@@ -272,7 +272,7 @@
         enddo
         do j=jmin,jmax+1
           do i=imin,imax
-            diff3v(i,j,k)= 
+            diff3v(i,j,k)=
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i,j-1,itrc))
 # if defined DIF_COEF_3D && defined TS_DIF_SMAGO
@@ -301,18 +301,18 @@
 !              /                    /
 !        dTdx(i,j,k2)         dTdx(i+1,j,k2)        <---- k + 1
 !            /                    /
-!           /                    / 
+!           /                    /
 !          ---- dTdr(i,j,k2) ----                   <---- k + 1/2
 !         /                    /
 !        /                    /
-!  dTdx(i,j,k1)        dTdx(i+1,j,k1)               <---- k 
+!  dTdx(i,j,k1)        dTdx(i+1,j,k1)               <---- k
 !      /                    /
 !     /                    /
 !     ---- dTdr(i,j,k1) ---                        <---- k - 1/2
 !
 !==================================================================
 !
-!  Add in horizontal harmonic or biharmonic diffusion along 
+!  Add in horizontal harmonic or biharmonic diffusion along
 !  rotated surfaces.
 !
 !  The biharmonic operator is computed by applying the rotated
@@ -321,7 +321,7 @@
 !                                            !!! WARNING: RECURSIVE
 !    FIRST rotated Laplacian operator:           BLOCKING SEQUENCE
 !
-!==================================================================  
+!==================================================================
 
 !==========================================================
 ! Start computation of fluxes with lateral tracer gradients
@@ -356,7 +356,7 @@
             enddo
           enddo
         endif
- 
+
         if (k.eq.0 .or. k.eq.N) then
 !========================================================
 ! Set bottom and top boundary condition  (FC = 0).
@@ -365,7 +365,7 @@
             do i=imin-1,imax+1
                FC  (i,j,k2) = 0.0
 #ifdef TS_MIX_IMP
-               Akz (i,j,k )= 0.0   
+               Akz (i,j,k )= 0.0
 #endif
              enddo
           enddo
@@ -374,10 +374,10 @@
               do i=imin-1,imax+1
                 dTdr(i,j,k2)= idRz(i,j,1)*( t(i,j,2,nstp,itrc)
      &                                    - t(i,j,1,nstp,itrc)
-# if defined CLIMAT_TS_MIXH || defined CLIMAT_TS_MIXH_FINE
+#if defined CLIMAT_TS_MIXH || defined CLIMAT_TS_MIXH_FINE
      &                                 - TCLM(i,j,2,itrc)
      &                                 + TCLM(i,j,1,itrc)
-# endif
+#endif
      &                                     )
               enddo
             enddo
@@ -389,8 +389,8 @@
           do j=jmin-1,jmax+1
             do i=imin-1,imax+1
               FC(i,j,k2)  = idRz(i,j,k)*( z_r (i,j,k+1)-z_r (i,j,k) )
-              dTdr(i,j,k2)= idRz(i,j,k)*( t(i,j,k+1,nstp,itrc)  
-     &                                  - t(i,j,k  ,nstp,itrc) 
+              dTdr(i,j,k2)= idRz(i,j,k)*( t(i,j,k+1,nstp,itrc)
+     &                                  - t(i,j,k  ,nstp,itrc)
 #if defined CLIMAT_TS_MIXH || defined CLIMAT_TS_MIXH_FINE
      &                                -TCLM(i,j,k+1,itrc)
      &                                +TCLM(i,j,k  ,itrc)
@@ -404,7 +404,7 @@
 !========================================================
 ! Compute the horizontal components of the tensor
 !========================================================
-          cff=0.5 
+          cff=0.5
           do j=jmin,jmax
             do i=imin,imax+1
               FX(i,j)=cff*diff3u(i,j,k)*(Hz(i,j,k)+Hz(i-1,j,k))
@@ -419,11 +419,11 @@
      &                                                              )
             enddo
           enddo
- 
+
           do j=jmin,jmax+1
             do i=imin,imax
               FE(i,j)=cff*diff3v(i,j,k)*(Hz(i,j,k)+Hz(i,j-1,k))
-     &               *om_v(i,j)*(   dTde(i,j,k1) - 
+     &               *om_v(i,j)*(   dTde(i,j,k1) -
 #ifdef SWTRIADS
      &       0.5*( MAX(dRde(i,j,k),0.)*(dTdr(i,j-1,k1)+dTdr(i,j,k2))
      &            +MIN(dRde(i,j,k),0.)*(dTdr(i,j-1,k2)+dTdr(i,j,k1)))
@@ -435,14 +435,14 @@
             enddo
           enddo
 
-# if defined AGRIF && defined AGRIF_CONSERV_TRA
+#if defined AGRIF && defined AGRIF_CONSERV_TRA
           MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
      &          MYFX(IstrR:IendR,JstrR:JendR,k,itrc)+
      &          dt*FX(IstrR:IendR,JstrR:JendR)
           MYFY(IstrR:IendR,JstrR:JendR,k,itrc)=
      &          MYFY(IstrR:IendR,JstrR:JendR,k,itrc)+
      &          dt*FE(IstrR:IendR,JstrR:JendR)
-# endif
+#endif
 
 
           if (k.lt.N) then
@@ -482,7 +482,7 @@
                 sumX = diff3u(i  ,j,k  )*dRdx(i  ,j,k  )*TRIADS1
      &               + diff3u(i  ,j,k+1)*dRdx(i  ,j,k+1)*TRIADS2
      &               + diff3u(i+1,j,k+1)*dRdx(i+1,j,k+1)*TRIADS3
-     &               + diff3u(i+1,j,k  )*dRdx(i+1,j,k  )*TRIADS4  
+     &               + diff3u(i+1,j,k  )*dRdx(i+1,j,k  )*TRIADS4
                 idx = 4
 #endif
 
@@ -517,7 +517,7 @@
                 sumE = diff3v(i,j  ,k  )*dRde(i,j  ,k  )*TRIADS1
      &               + diff3v(i,j  ,k+1)*dRde(i,j  ,k+1)*TRIADS2
      &               + diff3v(i,j+1,k+1)*dRde(i,j+1,k+1)*TRIADS3
-     &               + diff3v(i,j+1,k  )*dRde(i,j+1,k  )*TRIADS4   
+     &               + diff3v(i,j+1,k  )*dRde(i,j+1,k  )*TRIADS4
                 ide = 4
 #endif
 
@@ -584,7 +584,7 @@
         if (WESTERN_EDGE) then
           do k=1,N
             do j=jmin,jmax
-#  ifndef OBC_WEST 
+#  ifndef OBC_WEST
               LapT(istr-1,j,k)=0.
 #  else
               LapT(istr-1,j,k)=LapT(istr,j,k)
@@ -595,7 +595,7 @@
         if (EASTERN_EDGE) then
           do k=1,N
             do j=jmin,jmax
-#  ifndef OBC_EAST 
+#  ifndef OBC_EAST
               LapT(iend+1,j,k)=0.
 #  else
               LapT(iend+1,j,k)=LapT(iend,j,k)
@@ -637,7 +637,7 @@
       do k=0,N,+1
        k1=k2
        k2=3-k1
- 
+
         if (k.lt.N) then
           do j=jstr,jend
             do i=istr,iend+1
@@ -652,14 +652,14 @@
             enddo
           enddo
         endif
- 
+
         if (k.eq.0 .or. k.eq.N) then
           do j=jstr-1,jend+1
             do i=istr-1,iend+1
               FC(i,j,k2)=0.0
               dTdr(i,j,k2)=0.0
 # ifdef TS_MIX_IMP
-              Akz (i,j,k )= 0.0   
+              Akz (i,j,k )= 0.0
 # endif
             enddo
           enddo
@@ -683,11 +683,11 @@
             enddo
           enddo
         endif
- 
+
         if (k.gt.0) then
 !========================================================
 ! Compute the horizontal components of the tensor
-!========================================================            
+!========================================================
           cff=0.5
           do j=jstr,jend
             do i=istr,iend+1
@@ -707,7 +707,7 @@
           do j=jstr,jend+1
             do i=istr,iend
               FE(i,j)=-cff*diff3v(i,j,k)*(Hz(i,j,k)+Hz(i,j-1,k))
-     &        *om_v(i,j)*(  dTde(i,j  ,k1) - 
+     &        *om_v(i,j)*(  dTde(i,j  ,k1) -
 # ifdef SWTRIADS
      &       0.5*( MAX(dRde(i,j,k),0.)*(dTdr(i,j-1,k1)+dTdr(i,j,k2))
      &            +MIN(dRde(i,j,k),0.)*(dTdr(i,j-1,k2)+dTdr(i,j,k1)))
@@ -715,7 +715,7 @@
      &              0.25*dRde(i,j,k)*(   dTdr(i,j-1,k1)+dTdr(i,j,k2)
      &                              +    dTdr(i,j-1,k2)+dTdr(i,j,k1))
 # endif
-     &                                                              ) 
+     &                                                              )
             enddo
           enddo
 
@@ -860,7 +860,7 @@
           do j=jstr,jend
             do i=istr,iend
 #ifdef TS_MIX_IMP
-              t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nnew,itrc) 
+              t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nnew,itrc)
      &         + dt*(
      &                   pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                    +FE(i,j+1)-FE(i,j))
@@ -877,7 +877,7 @@
 
 
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -897,27 +897,27 @@
         endif  ! <-- k.gt.0
       enddo   ! --> k
 
-# ifdef TS_MIX_IMP
-      do j=jstr,jend 
-#  ifdef VADV_ADAPT_IMP
+#ifdef TS_MIX_IMP
+      do j=jstr,jend
+# ifdef VADV_ADAPT_IMP
        do i=Istr,Iend
             DC(i,0)=dt*pn(i,j)*pm(i,j)
        enddo
-#  endif
+# endif
 # define FC FFC
 # include "t3dmix_tridiagonal.h"
-# undef FC   
+# undef FC
       enddo
-# endif
+#endif
 
-# undef MIN
-# undef MAX
-# undef LT
-# undef GT
-# undef diff3u 
-# undef diff3v 
+#undef MIN
+#undef MAX
+#undef LT
+#undef GT
+#undef diff3u
+#undef diff3v
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -944,7 +944,7 @@
 
 # if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
 
-# include "finalize_diagnostics_tsadv.h"
+#  include "finalize_diagnostics_tsadv.h"
 
 # endif
 
@@ -1026,7 +1026,7 @@
      &                          TForc_mld(i,j,itrc)
          enddo
        enddo
-#  undef T_mld_nnew 
+#  undef T_mld_nnew
 #  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
@@ -1034,7 +1034,7 @@
        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
          i=5
          j=5
-#   if defined DIAGNOSTICS_TS_MLD
+#  if defined DIAGNOSTICS_TS_MLD
         cff=Trate_mld(i,j,itrc)-
      &      TXadv_mld(i,j,itrc)-
      &      TYadv_mld(i,j,itrc)-
@@ -1046,7 +1046,7 @@
            MPI_master_only write(stdout,'(A,2x,1pe10.3)')
      &     ' T3DMIX: T budget closure MLD     :', cff
 
-#   endif /* DIAGNOSTICS_TS_MLD */
+#  endif /* DIAGNOSTICS_TS_MLD */
         cff=Trate(i,j,N-5,itrc)-
      &       TXadv(i,j,N-5,itrc)-
      &       TYadv(i,j,N-5,itrc)-
@@ -1076,7 +1076,7 @@
 #endif
       return
       end
- 
+
 #ifndef CHILD_SPG
 # undef TCLM
 # define CHILD_SPG

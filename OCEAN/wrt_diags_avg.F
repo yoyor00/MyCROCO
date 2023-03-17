@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -17,45 +17,45 @@
 ! diagnostics netCDF file.
 !---------------------------------------------------------------
 !
-      subroutine wrt_diags_avg 
+      subroutine wrt_diags_avg
 
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
-#endif
-#include "param.h"
-#include "scalars.h"
-#include "ncscrum.h"
-#include "forces.h"
-#include "grid.h"
-#include "ocean2d.h"
-#include "ocean3d.h"
-#include "mixing.h"
-#include "diagnostics.h"
-#include "mpi_cpl.h"
-#ifdef SEDIMENT
-# include "sediment.h"
-#endif
-#ifdef BBL
-# include "bbl.h"
-#endif
-#ifdef SOLVE3D
-      integer tile, itrc,i,j,k,ivar
-# ifdef SEDIMENT
-     &      , indxWrk
 # endif
-# include "work.h"
-#endif
-#include "netcdf.inc"
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+# include "param.h"
+# include "scalars.h"
+# include "ncscrum.h"
+# include "forces.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
+# include "mixing.h"
+# include "diagnostics.h"
+# include "mpi_cpl.h"
+# ifdef SEDIMENT
+#  include "sediment.h"
+# endif
+# ifdef BBL
+#  include "bbl.h"
+# endif
+# ifdef SOLVE3D
+      integer tile, itrc,i,j,k,ivar
+#  ifdef SEDIMENT
+     &      , indxWrk
+#  endif
+#  include "work.h"
+# endif
+# include "netcdf.inc"
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
-        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
-     &                 1, MPI_COMM_WORLD, status, ierr) 
+        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
+     &                 1, MPI_COMM_WORLD, status, ierr)
       endif
-#endif
+# endif
 !
 # undef DEBUG
 !
@@ -65,12 +65,12 @@
       call def_diags_avg (nciddia_avg, nrecdia_avg, ierr)
       if (ierr .ne. nf_noerr) goto 99
       lstr=lenstr(dianame_avg)
-!                                          !!! WARNING: Once time  
-! Set record within the file.              !!! stepping has been 
+!                                          !!! WARNING: Once time
+! Set record within the file.              !!! stepping has been
 !                                          !!! started, it is assumed
       nrecdia_avg=max(nrecdia_avg,1)       !!! that global history
       if (nrpfdia_avg.eq.0) then           !!! record index is
-        record=nrecdia_avg                 !!! advanced by main.  
+        record=nrecdia_avg                 !!! advanced by main.
       else
         record=1+mod(nrecdia_avg-1, nrpfdia_avg)
       endif
@@ -91,7 +91,7 @@
       start(2)=record
       count(1)=4
       count(2)=1
-      ierr=nf_put_vara_int (nciddia_avg, diaTstep_avg, 
+      ierr=nf_put_vara_int (nciddia_avg, diaTstep_avg,
      &                                             start, count, ibuff)
       if (ierr .ne. nf_noerr) then
         write(stdout,1) 'time_step_avg', record, ierr
@@ -133,14 +133,14 @@
            workr=TXadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTXadv_avg(itrc),
      &                      indxTXadv+itrc-1,
-     &                      record,r3dvar,type)  
-!     
+     &                      record,r3dvar,type)
+!
 ! indxTYadv
 !
            workr=TYadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTYadv_avg(itrc),
      &                      indxTYadv+itrc-1,
-     &                      record,r3dvar,type)  
+     &                      record,r3dvar,type)
 !
 ! indxTVadv
 !
@@ -162,7 +162,7 @@
            call fillvalue3d(workr,nciddia_avg,diaTVmix_avg(itrc),
      &                      indxTVmix+itrc-1,
      &                      record,r3dvar,type)
-#ifdef DIAGNOSTICS_TSVAR
+# ifdef DIAGNOSTICS_TSVAR
 !
 ! indxTVmixt
 !
@@ -170,9 +170,9 @@
            call fillvalue3d(workr,nciddia_avg,diaTVmixt_avg(itrc),
      &                      indxTVmixt+itrc-1,
      &                      record,r3dvar,type)
-#endif
+# endif
 !
-! indxTForc  
+! indxTForc
 !
            workr=TForc_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTForc_avg(itrc),
@@ -188,7 +188,7 @@
 
         endif
 !
-#ifdef DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD
 !
         if (wrtdia2D_avg(itrc)) then
 !---------------------------------------------------------------
@@ -266,12 +266,12 @@
      &                      record,r2dvar,type)
         endif
 !
-#endif /*DIAGNOSTICS_TS_MLD*/
+# endif /*DIAGNOSTICS_TS_MLD*/
 !
       enddo
 !
 !--# define DEBUG
-#  ifdef DEBUG
+# ifdef DEBUG
       i=20
       j=20
       k=10
@@ -314,14 +314,14 @@
      &                                  +  Tentr_mld_avg(i,j,itrc)
      &                                  -  Trate_mld_avg(i,j,itrc)
               write(*,*) '----------------------------------'
-#  endif /* DEBUG */
+# endif /* DEBUG */
 !--#undef DEBUG
 
 
   1   format(/1x,'WRT_DIAG_AVG ERROR while writing variable ''', A,
      &          ''' into diag_avg file.', /11x, 'Time record:',
      &                   I6,3x,'netCDF error code',i4,3x,a,i4)
-      goto 100 
+      goto 100
   99  may_day_flag=3
  100  continue
 
@@ -332,38 +332,38 @@
 !---------------------------------------------------------------
 !
 
-#if defined MPI & !defined PARALLEL_FILES& !defined NC4PAR
+# if defined MPI & !defined PARALLEL_FILES& !defined NC4PAR
       ierr=nf_close (nciddia_avg)
       if (nrpfdia_avg.gt.0 .and. record.ge.nrpfdia_avg) nciddia_avg=-1
-#else
+# else
       if (nrpfdia_avg.gt.0 .and. record.ge.nrpfdia_avg) then
         ierr=nf_close (nciddia_avg)
         nciddia_avg=-1
       else
         ierr=nf_sync(nciddia_avg)
       endif
-#endif
+# endif
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 
+        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAG_AVG -- wrote',
      &            ' diag_avg fields into time record =', record, '/',
      &             nrecdia_avg  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)') 
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &             'WRT_DIAG_AVG ERROR: Cannot ',
      &             'synchronize/close diag_avg netCDF file.'
         may_day_flag=3
       endif
 
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &                        1, MPI_COMM_WORLD,  ierr)
       endif
-#endif
-#undef DEBUG
+# endif
+# undef DEBUG
       return
       end
 

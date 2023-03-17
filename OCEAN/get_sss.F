@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -22,7 +22,7 @@
 !
 !    SSSFLX_model ~ SSS*(E-P) + CST * (SSS_model - SSS)
 !
-!  we use DQDSST for CST.... 
+!  we use DQDSST for CST....
 !
 
 # define SSS_DATA
@@ -60,7 +60,7 @@
         lvar=lenstr(vname(1,indxSSS))
         ierr=nf_inq_varid (ncidfrc, vname(1,indxSSS)(1:lvar), sss_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidfrc, sss_id, i) 
+          ierr=nf_inq_varndims (ncidfrc, sss_id, i)
           if (ierr. eq. nf_noerr) then
             if (i.gt.1) then
               lsssgrd=1
@@ -122,6 +122,11 @@
           write(stdout,6) 'sss_time', sss_rec
           goto 99                                         !--> ERROR
         endif
+# ifdef USE_CALENDAR
+            call tool_origindate(ncidfrc,sss_tid,
+     &                           sss_origin_date_in_sec)
+              cff=cff+sss_origin_date_in_sec*sec2day
+# endif
         sss_time(i)=cff*day2sec+sss_cycle*sss_ncycle
         if (sss_time(itsss).eq.-1.E+20) sss_time(itsss)=sss_time(i)
 
@@ -150,17 +155,21 @@
 # endif
        itsss=i
 # if defined SFLX_CORR && !defined SFLX_CORR_COEF && !defined QCORRECTION
-      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
+      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &              'GET_SSS    --',
      &              'Read SSS and dQdSST fields     for time =', cff
 # else
-      MPI_master_only write(stdout,'(6x,A,16x,A,1x,g12.4,1x,I4)') 
+      MPI_master_only write(stdout,'(6x,A,16x,A,1x,g12.4,1x,I4)')
      &                  'GET_SSS    -- Read SSS fields',
      &                                     'for time =', cff
 # endif
-#ifdef MPI
+# ifdef USE_CALENDAR
+     &  -sss_origin_date_in_sec*sec2day
+# endif
+
+# ifdef MPI
      &                                                 , mynode
-#endif
+# endif
       if (ntsss.gt.1) goto 1
       if (ntsss.eq.1) return
 !
@@ -238,7 +247,7 @@
         endif
 !
 !  Time-interpolate SSS from grided or point data.
-!  Check that for the next time step [when time=time+dt] time+dt 
+!  Check that for the next time step [when time=time+dt] time+dt
 !  is still between sss_time(it1) and sss_time(it2); and if not,
 !  set synchro_flag top signal that the new forcing data should be
 !  read from the netCDF input file (master thread only).
@@ -278,7 +287,7 @@
         endif
 !
 !  Unable to set-up SSS:
-!  Complain about the error and signal to quit.      
+!  Complain about the error and signal to quit.
 !
       else
         if (ZEROTH_TILE) then
