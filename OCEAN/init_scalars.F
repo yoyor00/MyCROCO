@@ -1948,7 +1948,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxHbl =',indxHbl
       vname(3,indxHbl)='meter                                     '
       vname(4,indxHbl)='hbl, scalar, series                       '
 
-# if defined defined MLD_RHO
+# if defined MLD_RHO
       vname(5,indxHbl)='ocean_mixed_layer_thickness_defined_'
      &                                       // 'using_density '
 # else
