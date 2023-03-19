@@ -123,12 +123,21 @@
 !
         visc2_nbq=visc2read_nbq
         visc2v_nbq=visc2read_nbq
-#  ifdef NBQ_SPONGE
+#  if defined NBQ_SPONGE || defined NHINT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
                visc2_nbq(i,j,k) =visc2_nbq(i,j,k)
-     &          *(1.+visc2_nbq_sponge(i,j))
+     &          *(1.
+#   ifdef NBQ_SPONGE
+     &              +visc2_nbq_sponge(i,j) 
+#   endif
+#   ifdef NHINT
+     &           +exp(-(z_w(i,j,k   )-z_w(i,j,N))**2
+     &                    /(z_w(i,j,int(N*3/4))-z_w(i,j,N))**2)
+#   endif
+     &           )
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
             enddo
           enddo
         enddo
