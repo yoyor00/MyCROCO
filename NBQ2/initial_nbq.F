@@ -124,6 +124,7 @@
         visc2_nbq=visc2read_nbq
         visc2v_nbq=visc2read_nbq
 #  if defined NBQ_SPONGE || defined NHINT
+#   ifdef M3FAST_CSVISC2K
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -141,6 +142,7 @@
             enddo
           enddo
         enddo
+#   endif
 #  endif
 #  if defined M3FAST_SEDLAYERS && defined M3FAST_CSVISC2K
         do k=-N_sl+1,0
