@@ -72,9 +72,12 @@
      &           *thetadiv_nbq(i,j,k)   
 #  endif 
 #  ifdef NBQ_THETAIMP 
+#  ifdef NBQ_MASS
+	stop "CAUTION when THETAIMP and NBQ_MASS."
+#  endif
             FC3D(i,j,k)=FC3D(i,j,k)
      &       -thetaimp_nbq*(1.-thetaimp_nbq)*dtfast
-     &                    *( Hzw_nbq_inv(i,j,k  )*qdmw_nbq(i,j,k)
+     &                    *( Hzw_nbq_inv(i,j,k  )*qdmw_nbq(i,j,k)      ! CAUTION when used with NBQ_MASS
      &                      -Hzw_nbq_inv(i,j,k-1)*qdmw_nbq(i,j,k-1) )
 #  ifndef M3FAST_CSVISC2K
      &                    *soundspeed2_nbq
@@ -149,20 +152,36 @@
       do j=Jstr,Jend   ! Large j loop starting here
         do k=1,N-1
           do i=Istr,Iend  
+#  ifdef M3FAST_BOTH_W
 ! !
 ! ! Compute (if necessary) hydrostatic component of w
 ! !
 #   ifdef M3FAST_BOTH
-           qdmwh_nbq(i,j,k)=((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast 
+           qdmwh_nbq(i,j,k)=((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
+#    ifdef NHINT_3M
+     &                         *nsdtnbq
+#    endif
 #    ifndef M3FAST_SPDUP
-     &                     +2.*( usurf_nbq(i  ,j)*ubeta_nbq(i  ,j,N)
-     &                          +usurf_nbq(i+1,j)*ubeta_nbq(i+1,j,N)
-     &                          +vsurf_nbq(i,j  )*vbeta_nbq(i,j  ,N)
-     &                          +vsurf_nbq(i,j+1)*vbeta_nbq(i,j+1,N))
+     &                     +0.5*(usurf_nbq(i  ,j)
+     &                         *(zeta(i,j,knew)-zeta(i-1,j,knew))
+     &                         *pm_u(i,j)
+     &                         +usurf_nbq(i+1,j)
+     &                         *(zeta(i+1,j,knew)-zeta(i,j,knew))
+     &                         *pm_u(i+1,j) 
+     &                          )
+     &                     +0.5*(vsurf_nbq(i  ,j)
+     &                         *(zeta(i,j,knew)-zeta(i,j-1,knew))
+     &                         *pn_v(i,j)
+     &                         +vsurf_nbq(i,j+1)
+     &                         *(zeta(i,j+1,knew)-zeta(i,j,knew))
+     &                         *pn_v(i,j+1) 
+     &                          )
 #    endif    /* ! M3FAST_SPDUP */
-     &                   )* Hzw_nbq(i,j,k)
+     &                   ) !* Hzw_nbq(i,j,k) 
+     &            *0.5*(Hz(i,j,k)+Hz(i,j,k+1)) 
      &            *(H(i,j)+z_w(i,j,k))/(H(i,j)+z_w(i,j,N))   ! Linear evolution
 #   endif /* M3FAST_BOTH */
+#  endif  /* M3FAST_BOTH_W */
 ! !
 ! ! Compute vertical gradient
 ! !
@@ -186,7 +205,7 @@
      &            -0.5*g*Hzw_nbq(i,j,k)*(
      &      ((cff+abs(cff))*rho_nh(i,j,k  )
      &      -(cff-abs(cff))*rho_nh(i,j,k+1))/rho0
-     &       (cff+abs(cff))*rho_nbq(i,j,k  )*Hzr_nbq_inv(i,j,k)
+     &      +(cff+abs(cff))*rho_nbq(i,j,k  )*Hzr_nbq_inv(i,j,k)
      &      -(cff-abs(cff))*rho_nbq(i,j,k+1)*Hzr_nbq_inv(i,j,k+1)
      &                                  )
 #   endif
@@ -205,6 +224,15 @@
 #   ifdef MASKING
           qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
 #   endif  
+#  if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+           qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+     &                        +wz(i,j,k,nrhs)
+     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,k+1))*pm(i,j)
+     &                         *NBQnudgcof(i,j)
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif  
+#  endif
           enddo  ! i loop           
         enddo    ! k loop
 !
@@ -229,22 +257,14 @@
         enddo
 ! !
 ! !--------------------------------------------------------------------
-! ! Interface layer
+! ! Interface layer:
+! !     1/2 ocean and 1/2 SdL
 ! !--------------------------------------------------------------------
 ! !
         k = 0
         do i=Istr,Iend           
 #   ifdef M3FAST_BOTH
             qdmwh_nbq(i,j,k)=0.
-!           qdmwh_nbq(i,j,k)=((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast 
-!#    ifndef M3FAST_SPDUP
-!     &                     +2.*( usurf_nbq(i  ,j)*ubeta_nbq(i  ,j,N)
-!     &                          +usurf_nbq(i+1,j)*ubeta_nbq(i+1,j,N)
-!     &                          +vsurf_nbq(i,j  )*vbeta_nbq(i,j  ,N)
-!     &                          +vsurf_nbq(i,j+1)*vbeta_nbq(i,j+1,N))
-!#    endif    /* ! M3FAST_SPDUP */
-!     &                   )*0.5*(Hz(i,j,k+1)+Hz(i,j,k))
-!     &            *(h(i,j)+z_w(i,j,k))/(h(i,j)+z_w(i,j,N))   ! Linear evolution, 0 at the
 #   endif /* M3FAST_BOTH */
 !
 #   ifndef NBQ_IMP
@@ -253,9 +273,9 @@
             dum_s = FC3D(i,j,k) - FC3D(i,j,k+1)
 #   endif
 !
-#   ifdef UV_COR_NT
-            dum_s = dum_s + ntcorw(i,j,k)
-#   endif
+!#   ifdef UV_COR_NT
+!            dum_s = dum_s + ntcorw(i,j,k)
+!#   endif
 !#   ifdef NBQ_THETAIMP
 !            rw_nbq(i,j,k)=qdmw_nbq(i,j,k)
 !#   endif 
@@ -272,7 +292,7 @@
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
      &                      + dtfast * ( dum_s 
 #   ifdef M3FAST_C3D_WSF
-     &                      + 0.*rw_int_nbq(i,j,k)  ! Should be /2. ! TBF CAUTION
+!     &                      + rw_int_nbq(i,j,k)  ! Slow mode is not integrated here!
 #   endif     
      &                                )
 #   ifdef MASKING
@@ -288,22 +308,33 @@
        k = -N_sl
 #  ifdef NBQ_FREESLIP
           do i=Istr,Iend    
+#    ifdef M3FAST_BOTH
+          qdmwh_nbq(i,j,k) = 0.
+#    endif 
                 qdmw_nbq(i,j,k)=
 #    if defined MVB && ! defined M3FAST_SEDLAYERS
      &       -0.5*(dh_mvb(i,j,kbak2)-dh_mvb(i,j,kstp2))/dtfast
 #    endif
-     &       +0.5*( qdmu_nbq(i  ,j,k+1)*Hzu_nbq_inv(i  ,j,k+1)
-     &             +qdmu_nbq(i+1,j,k+1)*Hzu_nbq_inv(i+1,j,k+1))
-     &           *(z_r(i+1,j,k+1)-z_r(i,j,k+1))*pm_u(i,j)
+     &       +(0.5*( qdmu_nbq(i  ,j,k+1)*Hzu_nbq_inv(i  ,j,k+1)
+     &             *(z_w(i,j,k)-z_w(i-1,j,k))
+     &             +qdmu_nbq(i+1,j,k+1)*Hzu_nbq_inv(i+1,j,k+1)
+     &             *(z_w(i+1,j,k)-z_w(i,j,k))
+     &           )*pm_u(i,j)
      &       +0.5*( qdmv_nbq(i,j  ,k+1)*Hzv_nbq_inv(i,j  ,k+1)
-     &             +qdmv_nbq(i,j+1,k+1)*Hzv_nbq_inv(i,j+1,k+1))
-     &           *(z_r(i,j+1,k+1)-z_r(i,j,k+1))*pm_v(i,j)
+     &             *(z_w(i,j,k)-z_w(i,j-1,k))
+     &             +qdmv_nbq(i,j+1,k+1)*Hzv_nbq_inv(i,j+1,k+1)
+     &             *(z_w(i,j+1,k)-z_w(i,j,k))
+     &           )*pm_v(i,j))
+     &           *Hzw_nbq(i,j,k)
 #    ifdef MASKING
            qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*rmask(i,j)
 #    endif 
         enddo
 #  else
           do i=Istr,Iend   
+#    ifdef M3FAST_BOTH
+          qdmwh_nbq(i,j,k) = 0.
+#    endif 
 #    ifdef MVB
           qdmw_nbq(i,j,k) = 0.5*w_mvb(i,j,knew2)*Hz(i,j,k+1)   ! CAUTION HERE
 #    else
@@ -318,25 +349,39 @@
 ! !
         k=N
         do i=Istr,Iend
+#  ifdef M3FAST_BOTH_W
 #   ifdef M3FAST_BOTH
 ! ! 
 ! !  Hydrostatic component of w
 ! !
          qdmwh_nbq(i,j,N)=((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
+#    ifdef NHINT_3M
+     &                         *nsdtnbq
+#    endif
 #    ifndef M3FAST_SPDUP
-     &                     +2.*( usurf_nbq(i  ,j)*ubeta_nbq(i  ,j,N)
-     &                          +usurf_nbq(i+1,j)*ubeta_nbq(i+1,j,N)
-     &                          +vsurf_nbq(i,j  )*vbeta_nbq(i,j  ,N)
-     &                          +vsurf_nbq(i,j+1)*vbeta_nbq(i,j+1,N))
+     &                     +0.5*(usurf_nbq(i  ,j)
+     &                         *(zeta(i,j,knew)-zeta(i-1,j,knew))
+     &                         *pm_u(i,j)
+     &                         +usurf_nbq(i+1,j)
+     &                         *(zeta(i+1,j,knew)-zeta(i,j,knew))
+     &                         *pm_u(i+1,j) 
+     &                          )
+     &                     +0.5*(vsurf_nbq(i  ,j)
+     &                         *(zeta(i,j,knew)-zeta(i,j-1,knew))
+     &                         *pn_v(i,j)
+     &                         +vsurf_nbq(i,j+1)
+     &                         *(zeta(i,j+1,knew)-zeta(i,j,knew))
+     &                         *pn_v(i,j+1) 
+     &                          )
 #    endif    /* ! M3FAST_SPDUP */
-     &                )*hzw_nbq(i,j,k)
-          qdmw_nbq(i,j,N)=0.
-#   else           /*    ! M3FAST_BOTH    */
+     &                )*0.5*Hz(i,j,N)
+#   endif          /*    M3FAST_BOTH    */
+#  endif           /*    M3FAST_BOTH_W        */
 ! ! 
-! !  Vertical gravient
+! !  Vertical gradient
 ! !
 #    ifndef NBQ_IMP
-          dum_s =   thetadiv_nbq(i,j,k)
+          dum_s =   thetadiv_nbq(i,j,N)
 #    else
           dum_s =   FC3D(i,j,k) 
 #    endif
@@ -365,13 +410,22 @@
      &                   + rw_int_nbq(i,j,N)
 #    endif
      &                              )
-#    endif   /* M3FAST_BOTH */
 ! !
 ! !  Masking
 ! !
 #   ifdef MASKING
-          qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
+          qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N) * rmask(i,j)
 #   endif
+#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+           qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-NBQnudgcof(i,j))
+     &                        +wz(i,j,N,nrhs)
+     &                         *Hzr(i,j,N)*pm(i,j)
+     &                         *NBQnudgcof(i,j)
+#    ifdef MASKING
+     &                         *rmask(i,j)
+#    endif
+#   endif  
+     
         enddo
 ! !
 ! !  End of Large j loop

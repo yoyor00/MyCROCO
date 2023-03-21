@@ -111,13 +111,9 @@
 # ifdef M3FAST
       real thetadiv_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
       common /nbq_thetadiv_nbq/ thetadiv_nbq
-#  if defined NBQ_HZ_PROGNOSTIC || defined M3FAST_DDS0
+#  if defined NBQ_HZ_PROGNOSTIC 
       real thetadiv2_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
       common /nbq_thetadiv2_nbq/ thetadiv2_nbq
-#  endif      
-#  ifdef M3FAST_DDS0
-      real thetadiv3_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
-      common /nbq_thetadiv3_nbq/ thetadiv3_nbq
 #  endif      
 # endif
 # if defined M3FAST_C3D_UVSF &&  defined M3FAST_COUPLING3D
@@ -229,17 +225,8 @@
 
 !**********************************************************************
 # ifdef M3FAST
-#  ifndef M3FAST_DDS0
       real zw_nbq(GLOBAL_2D_ARRAY,-N_sl:N)
       common /nbq_zw/ zw_nbq
-#  else
-      real zw_nbq(GLOBAL_2D_ARRAY,0:N,4)
-      common /nbq_zw/ zw_nbq
-      real Hzu_qdmu(GLOBAL_2D_ARRAY,0:N)
-      common /nbq_hzu/Hzu_qdmu
-      real Hzv_qdmv(GLOBAL_2D_ARRAY,0:N)
-      common /nbq_hzv/Hzv_qdmv
-#  endif
 # endif
 
 !# if defined M3FAST_ZETAW || defined M3FAST_UV || defined M3FAST_W

@@ -124,9 +124,6 @@ C$    trd=omp_get_thread_num()
       integer Istr,Iend,Jstr,Jend, i,j,k, kbak,kold,
      &        imin,imax,jmin,jmax,
      &        kp1
-# ifdef M3FAST_DDS0
-       integer k1, k2
-# endif
 # ifdef MPI
      &       ,err
 # endif
@@ -211,9 +208,6 @@ C$    trd=omp_get_thread_num()
      &                   FC(PRIVATE_1D_SCRATCH_ARRAY,-N_sl:N),
      &                   DC(PRIVATE_1D_SCRATCH_ARRAY,-N_sl:N),
      &                   CF(PRIVATE_1D_SCRATCH_ARRAY,-N_sl:N)
-#  ifdef M3FAST_DDS0
-     &         ,qdmw_nbq_old(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-#  endif
 !$acc declare create( FX, FY )     
 !$acc declare create( FC, CF )     
 !$acc declare create( dZdxq_u, dZdyq_v )
@@ -1175,11 +1169,7 @@ C$OMP END MASTER
         do k=-N_sl,N
           do j=JstrR,JendR
             do i=IstrR,IendR
-#  ifndef M3FAST_DDS0
               zw_nbq(i,j,k)=z_w(i,j,k)
-#  else
-              zw_nbq(i,j,k,:)=z_w(i,j,k)
-#  endif
             enddo
           enddo
         enddo
@@ -1356,24 +1346,15 @@ C$OMP END MASTER
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
 #  ifndef M3FAST_CSVISC2K
-             thetadiv_nbq(i,j,k)=( -visc2_nbq*( thetadiv_nbq(i,j,k)
-#   ifdef M3FAST_DDS0
-     &                                         +thetadiv3_nbq(i,j,k)
-#   endif
-     &                                        )
-     &                     +rho_nbq(i,j,k) 
+             thetadiv_nbq(i,j,k)=( -visc2_nbq* thetadiv_nbq(i,j,k)
+     &                             +rho_nbq(i,j,k) 
      &                           *soundspeed2_nbq
-     &                          )*Hzr_nbq_inv(i,j,k) 
+     &                           )*Hzr_nbq_inv(i,j,k) 
 #  else
-             thetadiv_nbq(i,j,k)=( -visc2_nbq(i,j,k)
-     &                                *( thetadiv_nbq(i,j,k)
-#   ifdef M3FAST_DDS0
-     &                                  +thetadiv3_nbq(i,j,k)
-#   endif
-     &                                        )
-     &                     +rho_nbq(i,j,k) 
+             thetadiv_nbq(i,j,k)=( -visc2_nbq(i,j,k) * thetadiv_nbq(i,j,k)
+     &                            +rho_nbq(i,j,k) 
      &                           *soundspeed2_nbq(i,j,k)
-     &                          )*Hzr_nbq_inv(i,j,k)
+     &                           )*Hzr_nbq_inv(i,j,k)
 #  endif 
            enddo
          enddo
@@ -1398,11 +1379,7 @@ C$OMP END MASTER
 ! ! U and V fast-momentum
 ! !====================================================================
 ! !
-#  ifdef M3FAST_DDS0
-#   include "m3fast_update_qdmuv_dds0.h"
-#  else
-#   include "m3fast_update_qdmuv_dds1.h"
-#  endif
+# include "m3fast_update_qdmuv.h"
 ! !
 ! !====================================================================
 ! !      Compute horizontal part of divergence operator
@@ -1412,11 +1389,7 @@ C$OMP END MASTER
 ! !====================================================================
 ! !
 # ifdef NBQ_IMP
-#  ifdef M3FAST_DDS0
-#   include "m3fast_divh_dds0.h"
-#  else
-#   include "m3fast_divh_dds1.h"
-#  endif
+#   include "m3fast_divh.h"
 # endif
 ! !
 # ifdef M3FAST_W
@@ -1427,11 +1400,7 @@ C$OMP END MASTER
 ! !        - Implicit integration: compute RHS of tri-diag system 
 ! !====================================================================
 ! !
-#  ifdef M3FAST_DDS0
-#   include "m3fast_update_qdmw_dds0.h"
-#  else
-#   include "m3fast_update_qdmw_dds1.h"
-#  endif
+#  include "m3fast_update_qdmw.h"
 ! !
 ! !====================================================================
 ! !   Implicit integration of W-momentum
@@ -1449,11 +1418,7 @@ C$OMP END MASTER
 ! ! Compute and solve tridiag (implicit) system for W
 ! !
 #  ifdef NBQ_IMP
-#   ifdef M3FAST_DDS0
-#    include "m3fast_qdmw_implicit_dds0.h"
-#   else
-#    include "m3fast_qdmw_implicit_dds1.h"
-#   endif                                  
+#   include "m3fast_qdmw_implicit.h"
 #  endif                                  
 ! !
 ! !====================================================================
@@ -1495,11 +1460,7 @@ C$OMP END MASTER
 ! !====================================================================
 ! !
 #  ifndef NBQ_IMP
-#  ifdef M3FAST_DDS0
-#   include "m3fast_divh_dds0.h"
-#  else
-#   include "m3fast_divh_dds1.h"
-#  endif
+#   include "m3fast_divhh"
 #  endif
 ! !
 ! !====================================================================
@@ -1529,18 +1490,14 @@ C$OMP END MASTER
 #   ifndef M3FAST_SEDLAYERS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv_nbq(START_2D_ARRAY,1))
-#     if defined NBQ_HZ_PROGNOSTIC  || defined M3FAST_DDS0 
+#     if defined NBQ_HZ_PROGNOSTIC  
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv2_nbq(START_2D_ARRAY,1))
-#     endif
-#     ifdef M3FAST_DDS0 
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        thetadiv3_nbq(START_2D_ARRAY,1))
 #     endif
 #   else
       call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv_nbq(START_2D_ARRAY,-N_sl+1))
-#     if defined NBQ_HZ_PROGNOSTIC  || defined M3FAST_DDS0 
+#     if defined NBQ_HZ_PROGNOSTIC  
        call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv2_nbq(START_2D_ARRAY,-N_sl+1))
 #     endif
@@ -1567,37 +1524,7 @@ C$OMP END MASTER
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
             rho_nbq(i,j,k) = rho_nbq(i,j,k)  
-#   ifndef M3FAST_DDS0
      &                       - dtfast*thetadiv_nbq(i,j,k)
-#   else
-     &                       - dtfast*(thetadiv_nbq(i,j,k)+
-     &                                 thetadiv3_nbq(i,j,k))
-#   endif
-
-!#   ifndef M3FAST_CSVISC2K
-!#    ifndef M3FAST_DDS0
-!             thetadiv_nbq(i,j,k)=(-visc2_nbq*thetadiv_nbq(i,j,k)
-!     &                            +soundspeed2_nbq*rho_nbq(i,j,k)) 
-!     &                           *Hzr_nbq_inv(i,j,k)  
-!#    else
-! !           thetadiv_nbq(i,j,k)=( -visc2_nbq*( thetadiv_nbq(i,j,k)
-! !    &                                       +thetadiv3_nbq(i,j,k))
-! !    &                         +soundspeed2_nbq*rho_nbq(i,j,k) )
-! !    &                                     *Hzr_nbq_inv(i,j,k) 
-!#    endif
-!#   else
-!#    ifndef M3FAST_DDS0
-!             thetadiv_nbq(i,j,k)=(-visc2_nbq(i,j,k)*thetadiv_nbq(i,j,k)
-!     &                            +soundspeed2_nbq(i,j,k)
-!     &                             *rho_nbq(i,j,k))
-!     &                           *Hzr_nbq_inv(i,j,k)  
-!#    else
-!  !          thetadiv_nbq(i,j,k)=( -visc2_nbq(i,j,k)*( thetadiv_nbq(i,j,k)
-!  !   &                                       +thetadiv3_nbq(i,j,k))
-!  !   &                         +soundspeed2_nbq(i,j,k)*rho_nbq(i,j,k) )
-!  !   &                                     *Hzr_nbq_inv(i,j,k) 
-!#    endif
-!#   endif
           enddo
         enddo
       enddo
@@ -1607,9 +1534,7 @@ C$OMP END MASTER
 ! !  BC on rho_nbq
 ! !-------------------------------------------------------------------
 ! !
-#   ifdef M3FAST_DDS0
-        call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) !! leave commented
-#   endif
+!       call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) !! leave commented
 ! !
 ! !-------------------------------------------------------------------
 ! !  Acoustic wave emission

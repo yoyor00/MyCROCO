@@ -150,7 +150,6 @@
 # undef  M3FAST_COUPLING1
 # undef  M3FAST_COUPLING1W
 # undef  NHINT_3M
-# undef  M3FAST_DDS1
 # undef  M3FAST_AVG_CLASSIC
 #ifdef NBQ    
 #   define M3FAST        
@@ -168,7 +167,6 @@
 #   define M3FAST_AM4 
 #   define M3FAST_COUPLING2D
 #   define M3FAST_COUPLING1
-#   define M3FAST_DDS1
 #elif defined H3D
 #   define M3FAST   
 #   define M3FAST_AM4
@@ -176,7 +174,6 @@
 #   define NBQ_GRID_SLOW
 #   define M3FAST_COUPLING2D
 #   define M3FAST_COUPLING1
-#   define M3FAST_DDS1
 #   define M3FAST_AVG_CLASSIC
 #elif defined HCOMP
 #   define M3FAST        
@@ -187,7 +184,6 @@
 #   define M3FAST_AM4
 #   define M3FAST_COUPLING2D
 #   define M3FAST_COUPLING1
-#   define M3FAST_DDS1
 #   define M3FAST_AVG_CLASSIC
 #elif defined NHINT
 #   define M3FAST        
@@ -204,7 +200,6 @@
 #   define M3FAST_COUPLING2D
 #   define M3FAST_COUPLING1
 #   define NHINT_3M
-#   define M3FAST_DDS1
 #   define M3FAST_AVG_CLASSIC
 #endif
 /*

@@ -199,31 +199,6 @@
           enddo
         enddo
       enddo         
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-! Old version (DDS0) only:
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-# ifdef M3FAST_DDS0
-      do k=1,N
-        do j=Jstr,Jend
-          do i=IstrU,Iend+1
-            Hzu_qdmu(i,j,k)=0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
-# ifdef MASKING
-     &                                                       *umask(i,j)
-# endif  
-          enddo
-        enddo
-      enddo 
-      do k=1,N
-        do j=JstrV,Jend+1
-          do i=Istr,Iend
-            Hzv_qdmv(i,j,k)=0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
-# ifdef MASKING
-     &                                                       *vmask(i,j)
-# endif  
-          enddo
-        enddo
-      enddo 
-# endif
 !$acc end kernels        
 ! !$acc update host( Hzw_nbq_inv_v, Hzw_nbq_inv_u, Hzw_nbq_inv
 ! !$acc&  , Hzr_nbq_inv, Hzw_nbq )
