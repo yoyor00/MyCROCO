@@ -385,5 +385,11 @@
       real rhoi_nbq(GLOBAL_2D_ARRAY,N)
       common/nbq_rhoi/rhoi_nbq
 # endif
+# ifdef NHINT
+      real alphaw_nbq 
+      common/nhint_1/alphaw_nbq
+      integer alphaNw_nbq  
+      common/nhint_2/alphaNw_nbq
+# endif
 
 #endif /* M3FAST */

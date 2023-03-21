@@ -94,16 +94,16 @@
         MPI_master_only write(6,*) '---------------------------'
         MPI_master_only write(6,*)
 #  endif
-!
-!----------------------------------------------------------------------
-!  Initialize parameters
-!----------------------------------------------------------------------
-!
+! !
+! !--------------------------------------------------------------------
+! !  Initialize parameters
+! !--------------------------------------------------------------------
+! !
         ifl_nbq  = 1
         slip_nbq = 0
-!
-!  Pseudoacoustic speed
-!   should be around 5 times external phase speed sqrt(g*h)
+! !
+! !  Pseudoacoustic speed
+! !   should be around 5 times external phase speed sqrt(g*h)
 !
 !$acc kernels if(compute_on_device) default(present)
         soundspeed_nbq  =csound_nbq
@@ -118,6 +118,11 @@
           enddo
         enddo
 #  endif
+! !
+! ! Depth NHINT
+! !
+        alphaw_nbq  = 0.9
+        alphaNw_nbq = 5
 !
 ! Bulk viscosity (horizontal & vertical components)
 !
@@ -131,14 +136,19 @@
                visc2_nbq(i,j,k) =visc2_nbq(i,j,k)
      &          *(1.
 #   ifdef NBQ_SPONGE
+     &              +visc2_nbq_sponge(i,j)
+#   endif
+     &           )
+               visc2v_nbq(i,j,k) =visc2v_nbq(i,j,k)
+     &          *(1.
+#   ifdef NBQ_SPONGE
      &              +visc2_nbq_sponge(i,j) 
 #   endif
 #   ifdef NHINT
-     &           +exp(-(z_w(i,j,k   )-z_w(i,j,N))**2
-     &                    /(z_w(i,j,int(N*3/4))-z_w(i,j,N))**2)
+     &           +exp(-(z_w(i,j,k   )-         z_w(i,j,N))**2
+     &                /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
 #   endif
      &           )
-               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
             enddo
           enddo
         enddo
