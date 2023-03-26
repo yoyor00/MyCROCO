@@ -423,7 +423,7 @@
      &   csound_nbq,'csound_nbq  Sound wave celerity.',
      &   visc2read_nbq, 'visc2_nbq   Second viscosity coefficient for',
      &                                      'compressible fluids.'
-        print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
+        if (mynode==0) print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
 # ifndef NHINT_3M
         ndtnbq =ndtfast
         nsdtnbq=1
@@ -438,7 +438,7 @@
 # endif
         dtnbq=dt/float(ndtnbq)
 #endif
-        print *,"nsdtnbq=",nsdtnbq
+        if (mynode==0) print *,"nsdtnbq=",nsdtnbq
 
 #ifdef SOLVE3D
 !

@@ -88,26 +88,6 @@
 !  Apply right-hand-side
 !---------------------------------------------------------------------- 
 !
-# ifdef M3FAST_BOTH2
-      DO j=Jstr,Jend
-        k=N
-         DO i=Istr,Iend
-             wz(i,j,k,nnew)=  qdmwh2_nbq(i,j)/nfast
-         enddo
-        DO k=1,N-1
-          DO i=Istr,Iend
-            wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &                +dt*pn(i,j)*pm(i,j)*(rw(i,j,k)
-# ifdef M3FAST_C3D_WFS
-     &                +rw_nbq_avg2(i,j,k)
-# endif   
-     &                                    )
-          ENDDO
-        ENDDO
-      ENDDO  
-      
-
-# else /* M3FAST_BOTH */
       DO j=Jstr,Jend
         DO k=1,N
           DO i=Istr,Iend
@@ -120,7 +100,6 @@
           ENDDO
         ENDDO
       ENDDO  
-# endif  /* M3FAST_BOTH */
 
 ! ! Bottom boundary condition:
       DO j=Jstr,Jend

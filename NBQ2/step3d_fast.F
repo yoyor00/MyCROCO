@@ -151,10 +151,6 @@ C$    trd=omp_get_thread_num()
      &                Dnew(PRIVATE_2D_SCRATCH_ARRAY),
      &               rubar(PRIVATE_2D_SCRATCH_ARRAY),
      &               rvbar(PRIVATE_2D_SCRATCH_ARRAY),
-# ifdef M3FAST_BOTH
-     &               rubarh(PRIVATE_2D_SCRATCH_ARRAY),
-     &               rvbarh(PRIVATE_2D_SCRATCH_ARRAY),
-# endif     
      &                Drhs(PRIVATE_2D_SCRATCH_ARRAY),
      &                 UFx(PRIVATE_2D_SCRATCH_ARRAY),
      &                 UFe(PRIVATE_2D_SCRATCH_ARRAY),
@@ -164,11 +160,6 @@ C$    trd=omp_get_thread_num()
      &                vrhs(PRIVATE_2D_SCRATCH_ARRAY),
      &                DUon(PRIVATE_2D_SCRATCH_ARRAY),
      &                DVom(PRIVATE_2D_SCRATCH_ARRAY)
-# ifdef M3FAST_BOTH
-#  ifdef OPENACC
-!$acc declare create( rubarh, rvbarh)
-#  endif
-# endif     
       real
      &                 work(PRIVATE_2D_SCRATCH_ARRAY)
 # ifdef M3FAST_C3D_UVSF
@@ -1142,13 +1133,7 @@ C$OMP END MASTER
            do j=Jstr,Jend
             do i=Istr,Iend
               rw_nbq_avg2(i,j,k)=qdmw_nbq(i,j,k)
-#  ifdef M3FAST_BOTH              
-     &                          +qdmwh_nbq(i,j,k)
-#  endif     
             enddo
-#  ifdef M3FAST_BOTH               
-         !    qdmwh2_nbq(i,j)=0.  ! DANGER change k
-#  endif              
           enddo 
         enddo
 !$acc end kernels
@@ -1221,7 +1206,7 @@ C$OMP END MASTER
         do k=0,N 
           do j=Jstr,Jend             
             do i=Istr,Iend
-               rw_nbq(i,j,k)=qdmw_nbq(i,j,k) ! CAUTION qdmwh_nbq
+               rw_nbq(i,j,k)=qdmw_nbq(i,j,k) 
             enddo
           enddo
         enddo
@@ -1443,12 +1428,6 @@ C$OMP END MASTER
 !     &                        qdmw_nbq(START_2D_ARRAY,-N_sl))   
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        qdmw_nbq(START_2D_ARRAY,0))   
-#   endif
-#  endif
-#  ifdef M3FAST_BOTH
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                        qdmwh_nbq(START_2D_ARRAY,0))     ! CAUTION needed ?
 #   endif
 #  endif
 ! !
@@ -1695,7 +1674,7 @@ C$OMP END MASTER
 ! !
 # ifdef M3FAST_W
 
-#  ifdef NHINT 
+#  ifdef NHINT2 
 ! !
 ! !--------------------------------------------------------------------
 ! ! NHINT numerical mode control, v2:
@@ -1744,9 +1723,6 @@ C$OMP END MASTER
           do j=Jstr,Jend              
             do i=Istr,Iend
               rw_nbq(i,j,k)=((qdmw_nbq(i,j,k)
-#  ifdef M3FAST_BOTH               
-     &                       +qdmwh_nbq(i,j,k)
-#  endif              
      &                    -rw_nbq(i,j,k))
      &                       /dtfast
 #  ifdef NHINT_3M
@@ -1868,9 +1844,6 @@ C$OMP END MASTER
 !             rw_nbq_avg1(i,j,k)= rw_nbq(i,j,k)
               rw_nbq_avg2(i,j,k)=
      &                          ((qdmw_nbq(i,j,k)
-#   ifdef M3FAST_BOTH
-     &        +qdmwh_nbq(i,j,k)
-#   endif
      &        -rw_nbq_avg2(i,j,k))/dt
 #   ifdef M3FAST_C3D_WSF
      &                           -rw_int_nbq(i,j,k)
@@ -1990,7 +1963,6 @@ C$OMP END MASTER
 !        call check_tab2d(rubar(:,:),'rubar st_fast_a','uint')
 !        call check_tab2d(rvbar(:,:),'rvbar st_fast_a','vint')
 ! !       call check_tab2d(rufrc(:,:),'rufrc st_fast_a','u')
-! !       call check_tab2d(rubarh(:,:),'rubarh st_fast_a','uint')
 !        call check_tab2d(DUon(:,:),'DUon st_fast_a','r')
 !        call check_tab2d(pn(:,:),'pn st_fast_a','r')
 !        call check_tab2d(pm(:,:),'pm st_fast_a','r')
@@ -2031,9 +2003,6 @@ C$OMP END MASTER
      &                                *( rubar(i,j)
      &                                  +rufrc(i,j)
      &                          !   +ru_int2d_nbq(i,j)
-#  ifdef M3FAST_BOTH
-     &                                  +rubarh(i,j)
-#  endif     
      &                                 ))
 #  ifdef MASKING
      &                                     *umask(i,j)
@@ -2074,9 +2043,6 @@ C$OMP END MASTER
      &                                *( rvbar(i,j)
      &                                  +rvfrc(i,j)
      &                          !   +rv_int2d_nbq(i,j)
-#  ifdef M3FAST_BOTH
-     &                                  +rvbarh(i,j)
-#  endif     
      &                                 ))
 #  ifdef MASKING
      &                                     *vmask(i,j)

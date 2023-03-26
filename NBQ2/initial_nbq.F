@@ -121,8 +121,8 @@
 ! !
 ! ! Depth NHINT
 ! !
-        alphaw_nbq  = 0.9
-        alphaNw_nbq = 5
+        alphaw_nbq  = 0.  
+        alphaNw_nbq = 4
 !
 ! Bulk viscosity (horizontal & vertical components)
 !
@@ -135,16 +135,20 @@
             do i=IR_RANGE
                visc2_nbq(i,j,k) =visc2_nbq(i,j,k)
      &          *(1.
-#   ifdef NBQ_SPONGE
+#   ifdef NBQ_SPONGE1
      &              +visc2_nbq_sponge(i,j)
+#   endif
+#   ifdef NHINT1
+     &           +exp(-(z_w(i,j,k   )-         z_w(i,j,N))**2
+     &                /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
 #   endif
      &           )
                visc2v_nbq(i,j,k) =visc2v_nbq(i,j,k)
      &          *(1.
-#   ifdef NBQ_SPONGE
+#   ifdef NBQ_SPONGE1
      &              +visc2_nbq_sponge(i,j) 
 #   endif
-#   ifdef NHINT
+#   ifdef NHINT1
      &           +exp(-(z_w(i,j,k   )-         z_w(i,j,N))**2
      &                /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
 #   endif
@@ -265,9 +269,6 @@
 # elif defined M3FAST_W          
               qdmw_nbq(i,j,k)=0.
 # endif              
-# ifdef M3FAST_BOTH
-              qdmwh_nbq(i,j,k)=0.
-# endif
             enddo
           enddo
         enddo
@@ -279,9 +280,6 @@
 # elif defined M3FAST_W              
             qdmw_nbq(i,j,k)=0.
 # endif              
-# ifdef M3FAST_BOTH
-              qdmwh_nbq(i,j,k)=0.
-# endif
           enddo
         enddo
         k=N 
@@ -292,9 +290,6 @@
 # elif defined M3FAST_W               
             qdmw_nbq(i,j,k)=0.
 # endif              
-# ifdef M3FAST_BOTH
-              qdmwh_nbq(i,j,k)=0.
-# endif
           enddo
         enddo
 # if defined M3FAST_RHO

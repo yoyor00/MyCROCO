@@ -84,14 +84,8 @@
       cff=0.5*g
       do j=Jstr,Jend
         do i=Istr,Iend
-# ifdef M3FAST_BOTH
-          rubar(i,j)=0.
-          rubarh(i,j)=cff*on_u(i,j)*( (h(i-1,j)+h(i,j))*(rzeta(i-1,j)    ! ATTENTION: h here
-     &                        -rzeta(i,j)) +rzeta2(i-1,j)-rzeta2(i,j)
-#  else
           rubar(i,j)=cff*on_u(i,j)*( (h(i-1,j)+h(i,j))*(rzeta(i-1,j)    ! ATTENTION: h here
      &                        -rzeta(i,j)) +rzeta2(i-1,j)-rzeta2(i,j)   
-#  endif     
 # ifdef VAR_RHO_2D
      &              +(h(i-1,j)-h(i,j))*( rzetaSA(i-1,j)+rzetaSA(i,j)
      &                        +0.333333333333*(rhoA(i-1,j)-rhoA(i,j))
@@ -102,15 +96,8 @@
      &                                       *( sup(i,j)-sup(i-1,j) )
 # endif
      &                                                              )
- 
-# ifdef M3FAST_BOTH
-          rvbar(i,j)=0.
-          rvbarh(i,j)=cff*om_v(i,j)*( (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
-     &                        -rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
-# else
           rvbar(i,j)=cff*om_v(i,j)*( (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
      &                        -rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
-# endif     
 # ifdef VAR_RHO_2D
      &              +(h(i,j-1)-h(i,j))*( rzetaSA(i,j-1)+rzetaSA(i,j)
      &                        +0.333333333333*(rhoA(i,j-1)-rhoA(i,j))
@@ -139,8 +126,6 @@ C$OMP MASTER
        call check_tab2d(h,'h st_fast_b','r')
        call check_tab2d(rhoS,'rhoS st_fast_b','r')
        call check_tab2d(rhoA,'rhoA st_fast_b','r')
-!        call check_tab2d(rubarh,'rubarh st_fast_b','uint')
-!        call check_tab2d(rvbarh,'rvbarh st_fast_b','vint')
 #endif
 
 ! ! KERNEL_6  UFx <= ( DUon, urhs )

@@ -2727,7 +2727,36 @@ C 				  endif
 
 #  ifdef M3FAST
       if (xios_field_is_active("w_nbq")) then
-      call xios_send_field("w_nbq",wz(:,:,:,nstp))
+      !call xios_send_field("w_nbq",wz(:,:,:,nstp))
+      
+        work=0.
+          do k=1,N-1
+          do j=0,Mm
+            do i=0,Lm
+            work(i,j,k)=2.*qdmw_nbq(i,j,k)
+     &                /(Hz(i,j,k)+Hz(i,j,k+1))
+            enddo
+          enddo
+          enddo
+          k=0
+          do j=0,Mm
+            do i=0,Lm
+#   ifndef M3FAST_SEDLAYERS
+            work(i,j,k)=2.*qdmw_nbq(i,j,k)/Hz(i,j,k+1)
+#   else
+            work(i,j,k)=2.*qdmw_nbq(i,j,k)
+     &                /(Hz(i,j,k)+Hz(i,j,k+1))
+#   endif
+            enddo
+          enddo
+          k=N
+          do j=0,Mm
+            do i=0,Lm
+            work(i,j,k)=2.*qdmw_nbq(i,j,k)/Hz(i,j,k)
+            enddo
+          enddo
+     
+      call xios_send_field("w_nbq",work)
       endif
       if (xios_field_is_active("rho_nbq")) then
       call xios_send_field("rho_nbq",rho_nbq)
@@ -2735,8 +2764,8 @@ C 				  endif
 #  endif
 
       if (xios_field_is_active("w")) then
-      call Wvlcty (tile, workr) 
-      call xios_send_field("w",workr)
+!      call Wvlcty (tile, workr) 
+      call xios_send_field("w",wz(:,:,:,nstp))
       endif
 
 #  ifdef DIAGNOSTICS_EDDY

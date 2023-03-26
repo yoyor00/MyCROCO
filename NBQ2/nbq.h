@@ -176,11 +176,6 @@
       common /nbq_rw/ rw_nbq
 !$acc declare create( rw_int_nbq )      
       
-#  ifdef M3FAST_BOTH
-      real qdmwh_nbq(GLOBAL_2D_ARRAY,-N_sl:N)
-      common /nbq_wh/ qdmwh_nbq
-!$acc declare create( qdmwh_nbq )      
-#  endif
       real rw_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
       common /avg2_rwnbq/ rw_nbq_avg2
       real rho_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)

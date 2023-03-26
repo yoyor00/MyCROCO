@@ -13,9 +13,6 @@
           do j=Jstr,Jend             
             do i=Istr,Iend
                rw_nbq(i,j,k)=qdmw_nbq(i,j,k)
-#   ifdef M3FAST_BOTH
-     &                      +qdmwh_nbq(i,j,k)
-#   endif                            
             enddo
           enddo
         enddo
@@ -152,36 +149,6 @@
       do j=Jstr,Jend   ! Large j loop starting here
         do k=1,N-1
           do i=Istr,Iend  
-#  ifdef M3FAST_BOTH_W
-! !
-! ! Compute (if necessary) hydrostatic component of w
-! !
-#   ifdef M3FAST_BOTH
-           qdmwh_nbq(i,j,k)=((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
-#    ifdef NHINT_3M
-     &                         *nsdtnbq
-#    endif
-#    ifndef M3FAST_SPDUP
-     &                     +0.5*(usurf_nbq(i  ,j)
-     &                         *(zeta(i,j,knew)-zeta(i-1,j,knew))
-     &                         *pm_u(i,j)
-     &                         +usurf_nbq(i+1,j)
-     &                         *(zeta(i+1,j,knew)-zeta(i,j,knew))
-     &                         *pm_u(i+1,j) 
-     &                          )
-     &                     +0.5*(vsurf_nbq(i  ,j)
-     &                         *(zeta(i,j,knew)-zeta(i,j-1,knew))
-     &                         *pn_v(i,j)
-     &                         +vsurf_nbq(i,j+1)
-     &                         *(zeta(i,j+1,knew)-zeta(i,j,knew))
-     &                         *pn_v(i,j+1) 
-     &                          )
-#    endif    /* ! M3FAST_SPDUP */
-     &                   ) !* Hzw_nbq(i,j,k) 
-     &            *0.5*(Hz(i,j,k)+Hz(i,j,k+1)) 
-     &            *(H(i,j)+z_w(i,j,k))/(H(i,j)+z_w(i,j,N))   ! Linear evolution
-#   endif /* M3FAST_BOTH */
-#  endif  /* M3FAST_BOTH_W */
 ! !
 ! ! Compute vertical gradient
 ! !
@@ -263,9 +230,6 @@
 ! !
         k = 0
         do i=Istr,Iend           
-#   ifdef M3FAST_BOTH
-            qdmwh_nbq(i,j,k)=0.
-#   endif /* M3FAST_BOTH */
 !
 #   ifndef NBQ_IMP
             dum_s = thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1) 
@@ -308,9 +272,6 @@
        k = -N_sl
 #  ifdef NBQ_FREESLIP
           do i=Istr,Iend    
-#    ifdef M3FAST_BOTH
-          qdmwh_nbq(i,j,k) = 0.
-#    endif 
                 qdmw_nbq(i,j,k)=
 #    if defined MVB && ! defined M3FAST_SEDLAYERS
      &       -0.5*(dh_mvb(i,j,kbak2)-dh_mvb(i,j,kstp2))/dtfast
@@ -332,9 +293,6 @@
         enddo
 #  else
           do i=Istr,Iend   
-#    ifdef M3FAST_BOTH
-          qdmwh_nbq(i,j,k) = 0.
-#    endif 
 #    ifdef MVB
           qdmw_nbq(i,j,k) = 0.5*w_mvb(i,j,knew2)*Hz(i,j,k+1)   ! CAUTION HERE
 #    else
@@ -349,34 +307,6 @@
 ! !
         k=N
         do i=Istr,Iend
-#  ifdef M3FAST_BOTH_W
-#   ifdef M3FAST_BOTH
-! ! 
-! !  Hydrostatic component of w
-! !
-         qdmwh_nbq(i,j,N)=((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
-#    ifdef NHINT_3M
-     &                         *nsdtnbq
-#    endif
-#    ifndef M3FAST_SPDUP
-     &                     +0.5*(usurf_nbq(i  ,j)
-     &                         *(zeta(i,j,knew)-zeta(i-1,j,knew))
-     &                         *pm_u(i,j)
-     &                         +usurf_nbq(i+1,j)
-     &                         *(zeta(i+1,j,knew)-zeta(i,j,knew))
-     &                         *pm_u(i+1,j) 
-     &                          )
-     &                     +0.5*(vsurf_nbq(i  ,j)
-     &                         *(zeta(i,j,knew)-zeta(i,j-1,knew))
-     &                         *pn_v(i,j)
-     &                         +vsurf_nbq(i,j+1)
-     &                         *(zeta(i,j+1,knew)-zeta(i,j,knew))
-     &                         *pn_v(i,j+1) 
-     &                          )
-#    endif    /* ! M3FAST_SPDUP */
-     &                )*0.5*Hz(i,j,N)
-#   endif          /*    M3FAST_BOTH    */
-#  endif           /*    M3FAST_BOTH_W        */
 ! ! 
 ! !  Vertical gradient
 ! !
@@ -448,12 +378,6 @@
 !      call exchange_w3d_sedlayb_tile (Istr,Iend,Jstr,Jend,
 !     &                        qdmw_nbq(START_2D_ARRAY,-N_sl))   
 !#      endif
-!#    endif
-!#   endif
-!#   ifdef M3FAST_BOTH
-!#    if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-!      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-!     &                        qdmwh_nbq(START_2D_ARRAY,0))     
 !#    endif
 !#   endif
 #   ifdef RVTK_DEBUG
