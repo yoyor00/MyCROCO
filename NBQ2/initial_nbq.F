@@ -135,7 +135,7 @@
             do i=IR_RANGE
                visc2_nbq(i,j,k) =visc2_nbq(i,j,k)
      &          *(1.
-#   ifdef NBQ_SPONGE1
+#   ifdef NBQ_SPONGE 
      &              +visc2_nbq_sponge(i,j)
 #   endif
 #   ifdef NHINT1
@@ -145,7 +145,7 @@
      &           )
                visc2v_nbq(i,j,k) =visc2v_nbq(i,j,k)
      &          *(1.
-#   ifdef NBQ_SPONGE1
+#   ifdef NBQ_SPONGE 
      &              +visc2_nbq_sponge(i,j) 
 #   endif
 #   ifdef NHINT1
