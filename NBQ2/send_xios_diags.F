@@ -2764,8 +2764,8 @@ C 				  endif
 #  endif
 
       if (xios_field_is_active("w")) then
-!      call Wvlcty (tile, workr) 
-      call xios_send_field("w",wz(:,:,:,nstp))
+      call Wvlcty (tile, workr) 
+!     call xios_send_field("w",wz(:,:,:,nstp))
       endif
 
 #  ifdef DIAGNOSTICS_EDDY
