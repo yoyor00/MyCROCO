@@ -121,8 +121,10 @@
 ! !
 ! ! Depth NHINT
 ! !
+#  ifdef NHINT
         alphaw_nbq  = 0.  
         alphaNw_nbq = 4
+#  endif
 !
 ! Bulk viscosity (horizontal & vertical components)
 !
