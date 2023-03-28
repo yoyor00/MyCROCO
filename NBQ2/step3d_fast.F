@@ -1674,7 +1674,7 @@ C$OMP END MASTER
 ! !
 # ifdef M3FAST_W
 
-#  ifdef NHINT  
+#  ifdef NHINT_CORR
 ! !
 ! !--------------------------------------------------------------------
 ! ! NHINT numerical mode control, v2:

@@ -121,7 +121,7 @@
 ! !
 ! ! Depth NHINT
 ! !
-#  ifdef NHINT
+#  ifdef NHINT_CORR
         alphaw_nbq  = 0.  
         alphaNw_nbq = 4
 #  endif
@@ -140,7 +140,7 @@
 #   ifdef NBQ_SPONGE 
      &              +visc2_nbq_sponge(i,j)
 #   endif
-#   ifdef NHINT1
+#   ifdef NHINT_CORR
      &           +exp(-(z_w(i,j,k   )-         z_w(i,j,N))**2
      &                /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
 #   endif
@@ -150,7 +150,7 @@
 #   ifdef NBQ_SPONGE 
      &              +visc2_nbq_sponge(i,j) 
 #   endif
-#   ifdef NHINT1
+#   ifdef NHINT_CORR
      &           +exp(-(z_w(i,j,k   )-         z_w(i,j,N))**2
      &                /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
 #   endif
