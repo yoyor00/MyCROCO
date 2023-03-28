@@ -1756,9 +1756,13 @@ C 				  endif
       END MODULE xios_module
 
 #include "cppdefs.h"
-       SUBROUTINE init_xios(tile)
+      SUBROUTINE init_xios(tile,cdnamin)
 
       IMPLICIT NONE
+
+      INTEGER, INTENT(IN) ::  tile
+      CHARACTER(len=*),OPTIONAL,INTENT(IN) :: cdnamin
+
 # include "param.h"
       INTEGER tile
 # include "compute_tile_bounds.h"
@@ -1791,9 +1795,10 @@ C 				  endif
 #if defined ONLINE_ANALYSIS
       use module_oa_variables, only : nzv_oa
       use module_interface_oa, only : nzupd0d_oa, nsclg_loc, isclg_beg
-     &                               ,index_s_cr, per0d_cr
+     &                               ,nper_sclg_max
+     &                               ,model_mode_glo, mdg
 #ifdef MPI
-     &                               ,index_s_oa, per0d_oa
+     &                               ,model_mode_loc, mdl
 #endif
      &                               ,if_mpi_oa
      &                               ,scalogram_analysis
@@ -1813,7 +1818,7 @@ C 				  endif
 # include "mpi_cpl.h"
 
       !
-      INTEGER Istr,Iend,Jstr,Jend
+      INTEGER :: Istr,Iend,Jstr,Jend
       !
       INTEGER tile,ji
       INTEGER ilocal_comm
@@ -1830,6 +1835,7 @@ C 				  endif
       CHARACTER(len=19) :: cldate
       CHARACTER(len=10) :: clname
       CHARACTER(len=10) :: cdname
+      INTEGER           :: imd
       INTEGER iday,imonth,iyear,ihour,iminute,isec
 #ifdef USE_CALENDAR
       CHARACTER (len=19)    :: tool_sectodat
@@ -1959,14 +1965,15 @@ C 				  endif
 
 #ifdef MPI
           distributed_sclg_axis : if ( .not. if_mpi_oa ) then
+            ! BLXD remove nzv_oa unused var
 
             CALL set_scalogram_dom( "oa_sclg_dom"
      &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nsclg_loc
-     &                           ,nper_sclg_max
-     &                           ,index_s_oa, isclg_beg
-     &                           ,per0d_oa
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nsclg_loc(imd)
+     &                           ,nper_sclg_max(imd)
+     &                           ,mdl(imd)%index_s_oa, isclg_beg(imd)
+     &                           ,mdl(imd)%per0d_oa
      &                           ,mynode  )
 
             CALL xios_solve_inheritance()
@@ -1975,9 +1982,9 @@ C 				  endif
 
                 CALL set_scalogram_axis( "oa_sclg_axis"
      &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nsclg_loc
-     &                           ,index_s_oa, isclg_beg
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nsclg_loc(imd)
+     &                           ,mdl(imd)%index_s_oa, isclg_beg(imd)
      &                           ,mynode  )
             else ijkscal
 
@@ -1997,11 +2004,11 @@ C 				  endif
 
             CALL set_scalogram_dom( "oa_sclg_dom"
      &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nzupd0d_oa
-     &                           ,nper_sclg_max
-     &                           ,index_s_cr, 0
-     &                           ,per0d_cr
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nper_sclg_max(imd)
+     &                           ,mdg(imd)%index_s_cr, 0
+     &                           ,mdg(imd)%per0d_cr
      &                           ,mynode  )
 
             CALL xios_solve_inheritance()
@@ -2010,9 +2017,9 @@ C 				  endif
 
                 CALL set_scalogram_axis( "oa_sclg_axis"
      &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nzupd0d_oa
-     &                           ,index_s_cr, 0
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,mdg(imd)%index_s_cr, 0
      &                           ,mynode  )
 
             else ijkscal2
@@ -2042,11 +2049,11 @@ C 				  endif
 
           CALL set_scalogram_dom( "oa_sclg_dom"
      &                         ,nzv_oa
-     &                         ,nzupd0d_oa
-     &                         ,nzupd0d_oa
-     &                         ,nper_sclg_max
-     &                         ,index_s_cr, 0
-     &                         ,per0d_cr
+     &                         ,nzupd0d_oa(imd)
+     &                         ,nzupd0d_oa(imd)
+     &                         ,nper_sclg_max(imd)
+     &                         ,mdg(imd)%index_s_cr, 0
+     &                         ,mdg(imd)%per0d_cr
      &                         ,mynode  )
 
           CALL xios_solve_inheritance()
@@ -2055,9 +2062,9 @@ C 				  endif
 
             CALL set_scalogram_axis( "oa_sclg_axis"
      &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nzupd0d_oa
-     &                           ,index_s_cr, 0
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,mdg(imd)%index_s_cr, 0
      &                           ,mynode  )
 
 

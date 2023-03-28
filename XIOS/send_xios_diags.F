@@ -2723,7 +2723,7 @@ C 				  endif
       call xios_send_field("omega",work)
       endif
 
-#  ifdef NBQ
+#  if definded NBQ || defined NBQ2
       if (xios_field_is_active("w_nbq")) then
       call xios_send_field("w_nbq",wz(:,:,:,nstp))
       endif
