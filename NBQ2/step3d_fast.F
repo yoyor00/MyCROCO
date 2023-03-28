@@ -1674,7 +1674,7 @@ C$OMP END MASTER
 ! !
 # ifdef M3FAST_W
 
-#  ifdef NHINT2 
+#  ifdef NHINT  
 ! !
 ! !--------------------------------------------------------------------
 ! ! NHINT numerical mode control, v2:
@@ -1693,11 +1693,9 @@ C$OMP END MASTER
      &               *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
      &                    /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
 
-               cff2=
-     &    -      cff*qdmw_nbq(i,j,k)
-     &    -      cff *(qdmw_nbq(i,j,k)-qdmw_nbq(i,j,N)
-     &         *(z_w(i,j,k)+H(i,j))/(z_w(i,j,N)+H(i,j))
-     &         *0.5*(Hz(i,j,k)+Hz(i,j,k+1))/Hz(i,j,N))
+               cff2= - cff * qdmw_nbq(i,j,N)
+     &                     * (z_w(i,j,k)+H(i,j))/(z_w(i,j,N)+H(i,j))
+     &                     * 0.5*(Hz(i,j,k)+Hz(i,j,k+1))/Hz(i,j,N)
 
                qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)+cff2
 
