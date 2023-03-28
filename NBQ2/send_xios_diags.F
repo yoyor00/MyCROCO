@@ -1764,7 +1764,6 @@ C 				  endif
       CHARACTER(len=*),OPTIONAL,INTENT(IN) :: cdnamin
 
 # include "param.h"
-      INTEGER tile
 # include "compute_tile_bounds.h"
       
       CALL init_xios_tile (Istr,Iend,Jstr,Jend)
