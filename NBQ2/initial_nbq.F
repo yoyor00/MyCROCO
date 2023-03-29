@@ -140,7 +140,7 @@
 #   ifdef NBQ_SPONGE 
      &              +visc2_nbq_sponge(i,j)
 #   endif
-#   ifdef NHINT_CORR
+#   ifdef NHINT_CORR_visc2
      &           +exp(-(z_w(i,j,k   )-         z_w(i,j,N))**2
      &                /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
 #   endif
@@ -150,7 +150,7 @@
 #   ifdef NBQ_SPONGE 
      &              +visc2_nbq_sponge(i,j) 
 #   endif
-#   ifdef NHINT_CORR
+#   ifdef NHINT_CORR_visc2
      &           +exp(-(z_w(i,j,k   )-         z_w(i,j,N))**2
      &                /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
 #   endif
