@@ -123,7 +123,7 @@
 ! !
 #  ifdef NHINT_CORR
         alphaw_nbq  = 0.  
-        alphaNw_nbq = 4
+        alphaNw_nbq = 5
 #  endif
 !
 ! Bulk viscosity (horizontal & vertical components)

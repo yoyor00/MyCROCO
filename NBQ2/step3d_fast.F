@@ -1507,6 +1507,44 @@ C$OMP END MASTER
           enddo
         enddo
       enddo
+#  ifdef NHINT_CORR
+! !
+! !--------------------------------------------------------------------
+! ! NHINT numerical mode control: remove potential surface component
+! !--------------------------------------------------------------------
+! !
+        do j=JstrV-2,Jend+1
+          do i=IstrU-2,Iend+1
+             
+              k=N
+              cff2=qdmw_nbq(i,j,N)*(alphaw_nbq-1.)
+              qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)+cff2
+              
+              do k=N-1,N-2*alphaNw_nbq,-1
+               cff3=cff2
+               cff=(1.-alphaw_nbq)
+     &               *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+     &                    /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+               cff2= cff*(
+     &    -      2.*qdmw_nbq(i,j,k)
+     &    +         qdmw_nbq(i,j,N)
+     &         *(z_w(i,j,k)+H(i,j))/(z_w(i,j,N)+H(i,j))
+     &         *(Hz(i,j,k)+Hz(i,j,k+1))/Hz(i,j,N))
+
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)+cff2
+
+                rho_nbq(i,j,k+1)=rho_nbq(i,j,k+1)
+     &           -dtfast*( cff3*Hzw_nbq_inv(i,j,k+1)
+     &                    -cff2*Hzw_nbq_inv(i,j,k  ))
+             enddo
+           enddo
+         enddo
+
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI 
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        rho_nbq(START_2D_ARRAY,1))   
+#   endif
+#   endif /* NHINT_CORR  */
 !$acc end kernels
 ! !
 ! !-------------------------------------------------------------------
@@ -1673,45 +1711,6 @@ C$OMP END MASTER
 ! !====================================================================
 ! !
 # ifdef M3FAST_W
-
-#  ifdef NHINT_CORR
-! !
-! !--------------------------------------------------------------------
-! ! NHINT numerical mode control, v2:
-! !--------------------------------------------------------------------
-! !
-            do j=Jstr,Jend
-             do i=Istr,Iend
-             
-              k=N
-              cff2=qdmw_nbq(i,j,k)*alphaw_nbq-qdmw_nbq(i,j,N)
-              qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)+cff2
-              
-              do k=N-1,N-2*alphaNw_nbq,-1
-               cff3=cff2
-               cff=(1.-alphaw_nbq)
-     &               *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
-     &                    /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
-
-               cff2= - cff * qdmw_nbq(i,j,N)
-     &                     * (z_w(i,j,k)+H(i,j))/(z_w(i,j,N)+H(i,j))
-     &                     * 0.5*(Hz(i,j,k)+Hz(i,j,k+1))/Hz(i,j,N)
-
-               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)+cff2
-
-                rho_nbq(i,j,k+1)=rho_nbq(i,j,k+1)
-     &           -dtfast*( cff3*Hzw_nbq_inv(i,j,k+1)
-     &                    -cff2*Hzw_nbq_inv(i,j,k  ))
-             enddo
-           enddo
-         enddo
-     
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI 
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        rho_nbq(START_2D_ARRAY,1))   
-#   endif
-
-#   endif /* NHINT  */
       if (LAST_FAST_STEP) then
       
 ! ! KERNEL_28  rw_nbq <= ( qdmw_nbq, rw_nbq, rw_int_nbq, pm, pn )
