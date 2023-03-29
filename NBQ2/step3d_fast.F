@@ -1533,9 +1533,9 @@ C$OMP END MASTER
 
                qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)+cff2
 
-                rho_nbq(i,j,k+1)=rho_nbq(i,j,k+1)
-     &           -dtfast*( cff3*Hzw_nbq_inv(i,j,k+1)
-     &                    -cff2*Hzw_nbq_inv(i,j,k  ))
+!               rho_nbq(i,j,k+1)=rho_nbq(i,j,k+1)
+!    &           -dtfast*( cff3*Hzw_nbq_inv(i,j,k+1)
+!    &                    -cff2*Hzw_nbq_inv(i,j,k  ))
              enddo
            enddo
          enddo
