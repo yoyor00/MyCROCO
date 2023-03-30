@@ -1088,9 +1088,17 @@
 #endif /* SOLVE3D */
 
 #if defined OA_COUPLING || defined OW_COUPLING
-      call cpl_prism_define
-      oasis_time = 0
-      MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+#  if defined EXACT_RESTART
+!     Do cpl_prism_define just on time. 
+!     In case of EXACT_RESTART add a condition on tindx value
+      if (tindx.eq.1) then
+#  endif
+        call cpl_prism_define
+        oasis_time = 0
+        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+#  if defined EXACT_RESTART   
+      endif
+#  endif
 #endif
 
   1   format(/1x,'GET_INITIAL - unable to find variable:',    1x,A,
