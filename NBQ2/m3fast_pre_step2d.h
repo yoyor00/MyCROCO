@@ -1,4 +1,22 @@
-!
+! !
+! !=====================================!==============================
+! ! Compute rufrc & rvfrc: internal mode forcing for barotropic fast 
+! ! mode
+! !
+! ! During the first fast time step convert rufrc & fvfrc into forcing
+! ! terms by subtracting the fast-time "rubar" and "rvbar" from them;
+! ! These forcing terms are then extrapolated forward in time using
+! ! optimized Adams-Bashforth weights, so that the resultant rufrc
+! ! and rvfrc are centered effectively at time n+1/2. From now on,
+! ! these newly computed forcing terms will remain constant during
+! ! the fast time stepping and will be added to "rubar" and "rvbar"
+! ! during all subsequent fast time steps.
+! !====================================================================
+! !
+      if (FIRST_FAST_STEP) then
+! !    
+! !  Pre-step2D: extrapolate rufrc
+! !    
         if (FIRST_TIME_STEP) then
           cff3=0.                        ! This version is designed
           cff2=0.                        ! for coupling during 3D
@@ -86,7 +104,6 @@ C$OMP MASTER
          call check_tab2d(rufrc(:,:),'rufrc st_fast_d','u')
          call check_tab2d(rvfrc(:,:),'rvfrc st_fast_d','v')
 #endif
-!#ifdef NBQ_TBT 
       if (FIRST_FAST_STEP) then 
 ! !
 ! !--------------------------------------------------------------------
@@ -145,4 +162,220 @@ C$OMP MASTER
 # undef rzeta
 # undef zwrk
       endif   !<-- FIRST_FAST_STEP
-!#endif  /* NBQ_TBT */
+      
+
+      endif   !<-- FIRST_FAST_STEP
+
+      
+! !
+! !====================================================================
+! !   Update internal and external forcing terms for NBQ mode
+! !
+! !   Compute external forcing terms ru_ext_nbq and updated internal 
+! !   forcing terms ru_int_nbq for NBQ equations
+! !
+! !   ru_int_nbq     : RHS (3D) ( *mask & 2D correction)
+! !   ru_ext_nbq     : RHS (2D)
+! !   ru_ext_nbq_old : RHS (2D) at previous time-step
+! !   ru_ext_nbq_sum : time-integrated RHS (2D)
+! !====================================================================
+! !
+! !--------------------------------------------------------------------
+! !  First fast time step only
+! !--------------------------------------------------------------------
+! !
+# ifdef M3FAST_C3D_UVSF
+       if (FIRST_FAST_STEP) then
+      
+! ! KERNEL_8  ru_ext_nbq_sum <= O
+! ! KERNEL_8  ru_ext_nbq_old <= 0
+      
+!$acc kernels default(present)
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ru_ext_nbq_sum(i,j)=0.
+            ru_ext_nbq_old(i,j)=0.
+          enddo
+        enddo
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv_ext_nbq_sum(i,j)=0.
+            rv_ext_nbq_old(i,j)=0.
+          enddo
+        enddo 
+# if defined MASKING && defined M3FAST_2D
+        do k=1,N
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)*umask(i,j)
+            enddo
+          enddo
+        enddo
+        do k=1,N
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)*vmask(i,j)
+            enddo
+          enddo
+        enddo
+# endif
+!$acc end kernels
+       endif ! FIRST_FAST_STEP
+# endif
+! !
+! !--------------------------------------------------------------------
+! !  All fast time steps
+! !--------------------------------------------------------------------
+! !
+
+# ifndef M3FAST_COUPLING2D
+#  define ru_ext_nbq UFx
+# endif
+
+! ! KERNEL_9  UFx <= ( rubar, ru_int2d_nbq, pm_u, Drhs, umask )
+! ! KERNEL_9  ru_ext_nbq_old <= ( UFx, ru_ext_nbq_old )
+! ! KERNEL_9  ru_ext_nbq_sum <= (ru_ext_nbq_sum, UFx ) 
+! ! KERNEL_9  ru_int_nbq <= ( ru_int_nbq, ru_ext_nbq_old, Hz )
+! ! KERNEL_9  ru_ext_nbq_old <= ( UFx )
+! ! KERNEL_9  UFx <= ( rvbar, rv_int2d_nbq, pm_v, pn_v, Drhs, vmask )
+! ! KERNEL_9  rv_ext_nbq_old <= ( UFx, rv_ext_nbq_old )
+! ! KERNEL_9  rv_ext_nbq_sum <= ( rv_ext_nbq_sum, UFx )
+! ! KERNEL_9  rv_int_nbq <= (rv_int_nbq, rv_ext_nbq_old,  Hz )
+! ! KERNEL_9  rv_ext_nbq_old <= ( UFx )
+! !       if ( FIRST_FAST_STEP) then
+! ! !$acc update device( ru_int_nbq, rv_int_nbq )
+! !       endif
+#  if defined RVTK_DEBUG 
+C$OMP BARRIER
+C$OMP MASTER
+!        call Check_tab3d(ru_int_nbq,'ru_int_nbq (A0)','uint')
+!        call Check_tab3d(rv_int_nbq,'rv_int_nbq (A0)','vint')
+       call check_tab3d(ru_int_nbq,'ru_int_nbq (A1)','uint')
+       call check_tab3d(rv_int_nbq,'rv_int_nbq (A1)','vint')
+C$OMP END MASTER     
+#  endif  
+# if defined RVTK_DEBUG && defined NBQ
+C$OMP BARRIER
+C$OMP MASTER
+!       call check_tab3d_sedlay(Hz,'Hz','r',N_sl+1,N)
+!       call check_tab2d(ru_ext_nbq_old,'ru_ext_nbq_old (A1)','u')
+!       call check_tab2d(rubar,'rubar (A1)','uint')
+C$OMP END MASTER     
+#  endif  
+  
+!$acc kernels default(present)
+#ifdef M3FAST_C3D_UVSF
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+          ru_ext_nbq(i,j)=
+# ifndef M3FAST_COUPLING3D
+     &                     (rufrc(i,j)+rubar(i,j))     
+# else
+     &              (rubar(i,j)-ru_int2d_nbq(i,j)) ! 2* delta with slow 
+# endif     
+     &                                *pm_u(i,j)*pn_u(i,j)
+     &                                /(Drhs(i,j)+Drhs(i-1,j))
+#  ifdef MASKING
+     &                                *umask(i,j)
+#  endif
+   !  &                    (rubar(i,j)+rufrc(i,j))
+          ru_ext_nbq_old(i,j)=ru_ext_nbq(i,j)-ru_ext_nbq_old(i,j)  ! 2* delta (m+1 - m)
+          ru_ext_nbq_sum(i,j)=ru_ext_nbq_sum(i,j)+ru_ext_nbq(i,j)
+        enddo
+      enddo
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
+     &                        +ru_ext_nbq_old(i,j)       ! 2* delta (m+1 - m)
+     &                        *(Hz(i-1,j,k)+Hz(i,j,k))
+          enddo
+        enddo
+      enddo
+       do j=Jstr,Jend
+         do i=IstrU,Iend
+           ru_ext_nbq_old(i,j)=ru_ext_nbq(i,j)   ! delta with slow
+         enddo
+       enddo
+# endif /* M3FAST_C3D_UVSF */
+!
+# ifndef M3FAST_COUPLING2D
+#  undef  ru_ext_nbq      
+#  define rv_ext_nbq UFx
+# endif
+!
+# ifdef M3FAST_C3D_UVSF
+      do j=JstrV,Jend
+        do i=Istr,Iend
+          rv_ext_nbq(i,j)=
+# ifndef M3FAST_COUPLING3D
+     &                     (rvfrc(i,j)+rvbar(i,j))
+# else
+     &                    (rvbar(i,j)-rv_int2d_nbq(i,j))
+# endif     
+     &                                *pm_v(i,j)*pn_v(i,j)
+     &                                /(Drhs(i,j)+Drhs(i,j-1))
+#  ifdef MASKING
+     &                                *vmask(i,j)
+#  endif
+          rv_ext_nbq_old(i,j)=rv_ext_nbq(i,j)-rv_ext_nbq_old(i,j)
+          rv_ext_nbq_sum(i,j)=rv_ext_nbq_sum(i,j)+rv_ext_nbq(i,j)
+        enddo
+      enddo    
+      do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
+     &                       +rv_ext_nbq_old(i,j)
+     &                         *(Hz(i,j,k)+Hz(i,j-1,k))
+          enddo
+        enddo
+      enddo
+!#  if defined RVTK_DEBUG 
+!C$OMP BARRIER
+!C$OMP MASTER
+!       call check_tab2d(ru_ext_nbq_old,'ru_ext_nbq_old (A3)','uint')
+!       call check_tab3d(ru_int_nbq(:,:,1),'ru_int_nbq (A3)','uint')
+!       call check_tab3d(rv_int_nbq,'rv_int_nbq (A3)','vint')
+!C$OMP END MASTER     
+!#  endif  
+      do j=JstrV,Jend
+        do i=Istr,Iend
+          rv_ext_nbq_old(i,j)=rv_ext_nbq(i,j)
+        enddo
+      enddo
+# endif /* M3FAST_C3D_UVSF */
+!
+# ifndef M3FAST_COUPLING2D
+#  undef rv_ext_nbq  
+# endif
+!
+!$acc end kernels
+# if defined RVTK_DEBUG && defined NBQ
+C$OMP BARRIER
+C$OMP MASTER
+       call check_tab3d(ru_int_nbq(:,:,1),'ru_int_nbq (A2)','uint'
+     &    ,ondevice=.TRUE.)
+       call check_tab3d(rv_int_nbq,'rv_int_nbq (A2)','vint'
+     &    ,ondevice=.TRUE.)
+C$OMP END MASTER     
+#  endif  
+
+#  ifdef M3FAST_C3D_UVSF
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI 
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
+     &                        ru_int_nbq(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
+     &                        rv_int_nbq(START_2D_ARRAY,1))
+#   endif 
+#  endif 
+
+# if defined RVTK_DEBUG && defined NBQ
+C$OMP BARRIER
+C$OMP MASTER
+       call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','uint'
+     &    ,ondevice=.TRUE.)
+       call check_tab3d(rv_int_nbq,'rv_int_nbq (A)','vint'
+     &    ,ondevice=.TRUE.)
+C$OMP END MASTER     
+#  endif  

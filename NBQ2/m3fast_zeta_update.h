@@ -1,5 +1,8 @@
 #  ifdef M3FAST_ZETAW
-
+! !
+! !--------------------------------------------------------------------
+! ! Computes surface velocities
+! !--------------------------------------------------------------------
 ! ! KERNEL_3  usurf_nbq <= ( qdmu_nbq, Hz, umask )
 ! ! KERNEL_3  vsurf_nbq <= ( qdmv_nbq, Hz, vmask )
 ! ! KERNEL_3  wsurf_nbq <= ( qdmw_nbq, Hzw_nbq_inv, rmask )
@@ -169,11 +172,6 @@
 #    ifdef MASKING
      &                                                  *rmask(i,j)
 #    endif
-
-#   ifdef M3FAST_ZETADISS
-     &              + diss_zta*( zeta(i+1,j,kstp)-2.*zeta(i,j,kstp)
-     &                       +zeta(i-1,j,kstp)) /2.
-#   endif
         enddo
       enddo
 !$acc end kernels
