@@ -12,7 +12,11 @@
 #include "cppdefs.h"
 
 #ifdef M3FAST
-
+! ! 
+! !*********************************************************************
+! !                      step3d_fast
+! !*********************************************************************
+! !
       subroutine step3d_fast (tile)
       implicit none
       integer tile, trd
@@ -23,7 +27,6 @@ C$    integer omp_get_thread_num
 
       trd=0
 C$    trd=omp_get_thread_num()
-!
       call step3d_fast_tile ( Istr,Iend,Jstr,Jend
      &                   , A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd)
      &                   , A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd)
@@ -47,9 +50,9 @@ C$    trd=omp_get_thread_num()
       return
       end
 ! ! 
-! !--------------------------------------------------------------------
+! !*********************************************************************
 ! !                      step3d_fast_tile
-! !--------------------------------------------------------------------
+! !*********************************************************************
 ! !
        subroutine step3d_fast_tile (Istr,Iend,Jstr,Jend
      &                          ,Dnew,rubar,rvbar
@@ -72,13 +75,13 @@ C$    trd=omp_get_thread_num()
      
 ! !
 ! !
-! !*********************************************************************
-! !*********************************************************************
+! !***********************************************************************
+! !***********************************************************************
 ! !
 ! !                    SOLVE FAST MODE 3D EQUATIONS
 ! !
-! !*********************************************************************
-! !*********************************************************************
+! !***********************************************************************
+! !***********************************************************************
 ! !
 !  This routines:
 !  1- Computes non-NBQ RHS forcing terms of momentum equations. First
@@ -92,10 +95,12 @@ C$    trd=omp_get_thread_num()
 !  3- Solves mass conservation equation, i.e., computes compressible 
 !     density rho_nbq by time integration of continuity.
 !
+!  Treatment of the free-surface:
 !  A first guest of zeta is derived from the surface kinematic relation
 !  After solving the 3D momentum equations, zeta is updated to conserve
 !  mass for each water column.
 !
+!  Forward-backward time-stepping:
 !  W-momentum equation is solved with explicit or implicit methods:
 !  - Explicit scheme: w-momentum is updated right after (and the same 
 !                     way as) u- and v-momentum. Only rho_nbq is
@@ -108,11 +113,8 @@ C$    trd=omp_get_thread_num()
 !                     Backward:       rho_nbq.
 !  - Implicit scheme: Forward:  zeta, qdmu_nbq. 
 !                     Backward:       qdmw_nbq, rho_nbq.
-!
-!  In the NBQ_PERF option, the vertical grid is not evolving at fast
-!  time step to gain computational time.
 !***********************************************************************
-!
+!  Overview:
 !  PART A: Declare variables, parameters...
 !  PART B: 2D-mode processing.
 !          B.0: Prepare integration
@@ -137,17 +139,17 @@ C$    trd=omp_get_thread_num()
 !          D.5: Update Free-slip.
 !          D.6: Adjust Hz(m+1) for internal mode.
 !  PART E: Test for CFL violation.
-!
 !***********************************************************************
 !
-      use debug
-      implicit none
 ! !      
 ! !*********************************************************************
 ! !*********************************************************************
 ! ! PART A: declare variables, parameters...
 ! !*********************************************************************
 ! !*********************************************************************
+! !
+      use debug
+      implicit none
 ! ! 
 ! !*********************************************************************
 ! ! PART A.1: Parameters
@@ -284,10 +286,9 @@ C$    trd=omp_get_thread_num()
 # include "mixing.h"
 # include "climat.h"
 # include "scalars.h"
-#ifdef OPENACC
-# include "openacc.h" 
-!!!! OpenACC boundary a enlever
-# include "boundary.h"
+# ifdef OPENACC
+#  include "openacc.h" 
+#  include "boundary.h"
 #endif
 # include "sources.h"
 ! !      
@@ -606,7 +607,6 @@ C$    trd=omp_get_thread_num()
 ! !
 # ifdef NHINT_3M
       if (mod(iif,nsdtnbq).eq.0) then  ! HEREFA
-
        dtfast=dtfast*float(nsdtnbq)
        dtgrid_nbq=dtgrid_nbq*float(nsdtnbq)
        ndtfast=ndtfast/nsdtnbq
@@ -643,17 +643,14 @@ C$    trd=omp_get_thread_num()
        do k=-N_sl+1,N
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
+             thetadiv_nbq(i,j,k)=(
+     &                     +rho_nbq(i,j,k) 
 #  ifndef M3FAST_CSVISC2K
-             thetadiv_nbq(i,j,k)=(
-     &                     +rho_nbq(i,j,k) 
      &                           *soundspeed2_nbq
-     &                          )*Hzr_nbq_inv(i,j,k) 
 #  else
-             thetadiv_nbq(i,j,k)=(
-     &                     +rho_nbq(i,j,k) 
      &                           *soundspeed2_nbq(i,j,k)
-     &                          )*Hzr_nbq_inv(i,j,k)
 #  endif 
+     &                          )*Hzr_nbq_inv(i,j,k) 
            enddo
          enddo
        enddo   
@@ -661,17 +658,14 @@ C$    trd=omp_get_thread_num()
        do k=-N_sl+1,N
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
-#  ifndef M3FAST_CSVISC2K
              thetadiv_nbq(i,j,k)=( -visc2_nbq* thetadiv_nbq(i,j,k)
      &                             +rho_nbq(i,j,k) 
+#  ifndef M3FAST_CSVISC2K
      &                           *soundspeed2_nbq
-     &                           )*Hzr_nbq_inv(i,j,k) 
 #  else
-             thetadiv_nbq(i,j,k)=( -visc2_nbq(i,j,k) * thetadiv_nbq(i,j,k)
-     &                            +rho_nbq(i,j,k) 
      &                           *soundspeed2_nbq(i,j,k)
-     &                           )*Hzr_nbq_inv(i,j,k)
 #  endif 
+     &                           )*Hzr_nbq_inv(i,j,k) 
            enddo
          enddo
        enddo     
@@ -862,20 +856,7 @@ C$    trd=omp_get_thread_num()
 ! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! !
       endif
-#  endif  /* NHINT_3M */    
-! !
-! !-------------------------------------------
-! !  U & V momentum open boundary conditions
-! !-------------------------------------------
-! !
-!# ifdef NBQ 
-!     M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
-                           ! and compute DU_nbq
-!     call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
-!     call v2dbc_tile   (Istr,Iend,Jstr,Jend, work)
-     ! call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-     ! call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-!# endif /* ! M3FAST_COUPLING2D */
+#  endif  /* NHINT_3M */   
        endif 
 # endif
 ! !

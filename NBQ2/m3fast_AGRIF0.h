@@ -1,3 +1,8 @@
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_AGRIF0.h
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
       irhox = Agrif_Irhox()
       irhoy = Agrif_Irhoy()
       irhot = Agrif_Irhot()

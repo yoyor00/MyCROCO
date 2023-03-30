@@ -1,3 +1,8 @@
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_AGRIF1.h
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
       if (.NOT.Agrif_Root()) THEN
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1

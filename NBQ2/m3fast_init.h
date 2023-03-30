@@ -1,4 +1,8 @@
- 
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_init.h
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! 
 # ifdef M3FAST_C3D_UVFS
       if (FIRST_FAST_STEP) then
 ! ! KERNEL_10  ru_nbq_avg2 <= ( qdmu_nbq )
