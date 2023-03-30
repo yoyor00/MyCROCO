@@ -228,7 +228,7 @@
 #if defined USE_CALENDAR
             call tool_origindate(ncid,varid,origin_date_in_sec)
       MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &    'Origin date of time axis (YYYY/MM/DD hh:mm:ss) :',
+     &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)
       origin_date=tool_sectodat(origin_date_in_sec)
       READ(origin_date(1:4),fmt='(i4)') origin_year
@@ -321,7 +321,7 @@
       endif
 
 #ifdef XIOS
-      start_date_run = tool_sectodat(start_time+origin_date_in_sec)
+      start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
       READ(start_date_run(6:7),fmt='(i2)') start_month
       READ(start_date_run(9:10),fmt='(i2)') start_day

@@ -327,7 +327,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
 #endif
       vname(2,indxTime)='time since initialization'
 #if defined USE_CALENDAR && defined ANA_INITIAL
-      vname(3,indxTime)='second since '//start_date
+      vname(3,indxTime)='seconds since '//start_date
 #else
       vname(3,indxTime)='second'
 #endif
@@ -346,7 +346,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime2 =',indxTime2
       vname(1,indxTime2)='time'
       vname(2,indxTime2)='time since initialization'
 #if defined USE_CALENDAR && defined ANA_INITIAL
-      vname(3,indxTime2)='second since '//start_date
+      vname(3,indxTime2)='seconds since '//start_date
 #else
       vname(3,indxTime2)='second'
 #endif
