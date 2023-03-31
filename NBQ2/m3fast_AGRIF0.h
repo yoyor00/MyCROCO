@@ -1,6 +1,6 @@
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! ! m3fast_AGRIF0.h
+! ! m3fast_AGRIF0.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
       irhox = Agrif_Irhox()
@@ -47,3 +47,8 @@ C$OMP MASTER
 C$OMP END MASTER  
       endif
 #  endif  
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_AGRIF0.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

@@ -1,17 +1,14 @@
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! ! m3fast_zeta_update.h
+! ! m3fast_zeta_update.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
 #  ifdef M3FAST_ZETAW
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! ! Computes surface velocities
-! !--------------------------------------------------------------------
-! ! KERNEL_3  usurf_nbq <= ( qdmu_nbq, Hz, umask )
-! ! KERNEL_3  vsurf_nbq <= ( qdmv_nbq, Hz, vmask )
-! ! KERNEL_3  wsurf_nbq <= ( qdmw_nbq, Hzw_nbq_inv, rmask )
-
+! !********************************
+! ! 
 !$acc kernels default(present)
 #   ifndef M3FAST_SPDUP
       if (IstrU.le.Iend) then
@@ -72,10 +69,12 @@
         enddo
       enddo 
 !$acc end kernels   
-
-!------------------------------------------------
-!   ATTENTION replaced by zeta 3pts  FRANCIS
-!------------------------------------------------
+! !
+! !********************************
+! ! ATTENTION replaced by zeta 3pts  
+! !        FRANCIS
+! !********************************
+! !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
       if (IstrU.le.Iend) then
         call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -89,10 +88,11 @@
      &                        wsurf_nbq(START_2D_ARRAY))
 #  endif
 ! !
-! !-------------------------------------------------------------------
-! ! Apply point sources for river runoff simulations
-! !-------------------------------------------------------------------
-!
+! !********************************
+! ! Apply point sources for 
+! !   river runoff simulations
+! !********************************
+! !
 #  ifdef PSOURCE
       do is=1,Nsrc 
 #   ifdef MPI
@@ -121,14 +121,11 @@
       enddo
 #  endif  /* PSOURCE */
 ! !
-! !-------------------------------------------------------------------
-! ! Advance zeta at m+1 with kinematic condition
-! !-------------------------------------------------------------------
-! !
-! ! KERNEL_4  zab3 <= ( zeta )
-! ! KERNEL_4  zeta <= ( zeta, wsurf_nbq, usurf_nbq, vsurf_nbq, zab3, 
-! ! KERNEL_4  - - -     pm_u, pn_v,  rmask ) 
-
+! !********************************
+! ! Advance zeta at m+1 with 
+! !  kinematic condition
+! !********************************
+! ! 
 !$acc kernels default(present)
 #   ifndef M3FAST_SPDUP
 #    define zab3 UFx
@@ -154,7 +151,6 @@
         enddo
       enddo
 #   endif /* !M3FAST_SPDUP */
-
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
 	  zeta(i,j,knew)=(zeta(i,j,kstp) + dtfast*( wsurf_nbq(i,j)
@@ -182,11 +178,10 @@
 !$acc end kernels
 # else /* ! M3FAST_ZETAW */
 ! !
-! !******************************************************************
-! !
-! !  Advance zeta at m+1 from continuity for the hydrostatic case ***
-! !
-! !******************************************************************
+! !********************************
+! !  Advance zeta at m+1 from continuity 
+! !   for the hydrostatic case 
+! !********************************
 ! !
 ! !  First, apply point sources
 ! !
@@ -235,11 +230,11 @@
       enddo
 !$acc end kernels      
 # endif /* M3FAST_ZETAW */
-!
-!-----------------------------------------------------------------------
-!  Add nudging terms
-!-----------------------------------------------------------------------
-!
+! !
+! !********************************
+! !  Add nudging terms
+! !********************************
+! !
 # ifdef ZNUDGING
 #  ifdef ZONAL_NUDGING
       if (FIRST_TIME_STEP .or. mod(iic,10).eq.0) then
@@ -269,11 +264,11 @@
         enddo
       enddo
 # endif /* ZNUDGING */
-!
-!-----------------------------------------------------------------------
-!  Compute wet/dry masks
-!-----------------------------------------------------------------------
-!
+! !
+! !********************************
+! ! Compute wet/dry masks
+! !********************************
+! !
 ! First: modify new free-surface to ensure that depth 
 !        is > Dcrit in masked cells.
 !
@@ -293,9 +288,10 @@
       call wetdry_tile (Istr,Iend,Jstr,Jend)
 # endif
 ! !
-! !--------------------------------------------------------------------
-! !  Set boundary conditions for the free-surface
-! !--------------------------------------------------------------------
+! !********************************
+! !  Set boundary conditions 
+! !   for the free-surface
+! !********************************
 ! !
       call zetabc_tile (Istr,Iend,Jstr,Jend)
 # if !defined NBQ_HZCORRECT
@@ -304,24 +300,23 @@
       endif
 # endif      
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! !  Perform exchanges
-! !   CAUTION: over 1 point only!
-! !--------------------------------------------------------------------
+! !   CAUTION: over 1 point only
+! !********************************
 ! !
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-!#  ifdef M3FAST_ZETAW
-!       call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-!      &                        zeta(START_2D_ARRAY,knew))
-!#  else     
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,knew))
-!#  endif     
 # endif
 # if !defined NBQ_HZCORRECT
       if (LAST_FAST_STEP) then
 !$acc update host( zeta )        
       endif
 # endif      
-
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_zeta_update.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
 

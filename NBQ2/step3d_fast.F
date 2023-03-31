@@ -75,13 +75,11 @@ C$    trd=omp_get_thread_num()
      
 ! !
 ! !
-! !***********************************************************************
-! !***********************************************************************
-! !
+! !*********************************************************************
+! !*********************************************************************
 ! !                    SOLVE FAST MODE 3D EQUATIONS
-! !
-! !***********************************************************************
-! !***********************************************************************
+! !*********************************************************************
+! !*********************************************************************
 ! !
 !  This routines:
 !  1- Computes non-NBQ RHS forcing terms of momentum equations. First
@@ -634,9 +632,6 @@ C$    trd=omp_get_thread_num()
 ! ! 
 # ifdef M3FAST_RHO 
 !      if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) then
-! !     
-! ! KERNEL_13b  thetadiv_nbq <= ( soundspeed2_nbq, rho_nbq, 
-! ! KERNEL_13b  ------------ -- - Hzr_nbq_inv )     
 ! !
 !$acc kernels default( present )    
       if (FIRST_TIME_STEP.and.FIRST_FAST_STEP_3M) then 
@@ -712,13 +707,6 @@ C$    trd=omp_get_thread_num()
 ! !
 ! !   Initialisation FX and FYX out here
 ! !
-! ! KERNEL_20  dZdxq_u <= ( z_r, qdmu_nbq ) 
-! ! KERNEL_20  dZdxq_w <= ( z_w, qdmu_nbq, Hz )
-! ! KERNEL_20  dZdxq_w <= ( Hzw_nbq_inv_u, dZdxq_u, umask )
-! ! KERNEL_20  FX <= (pm_u, dZdxq_w, umask )
-! ! KERNEL_20  thetadiv_nbq <= ( FX )
-! !
-! !
 ! ! Compute and solve tridiag (implicit) system for W
 ! !
 #  ifdef NBQ_IMP
@@ -772,9 +760,6 @@ C$    trd=omp_get_thread_num()
 ! !		
 ! !.......Computes fluxes:  
 ! !
-! ! KERNEL_25  FC <= ( Hzw_nbq_inv, qdmw_nbq )
-! ! KERNEL_25  thetadiv_nbq <= ( thetadiv_nbq, FC )
-! !
 #  include "m3fast_divv.h"
 ! !
 ! !--------------------------------------------------------------------
@@ -824,8 +809,6 @@ C$    trd=omp_get_thread_num()
 ! ! NHINT: Update ubar   
 ! !--------------------------------------------------------------------
 ! !
-! ! KERNEL_17  ubar <= ( urhs )
-! ! KERNEL_17  vbar <= ( vrhs )
 #  ifdef NBQ
 !$acc kernels default( present )
       do j=Jstr,Jend

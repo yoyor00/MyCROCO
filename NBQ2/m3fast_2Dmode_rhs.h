@@ -1,16 +1,18 @@
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! ! m3fast_2Dmode_rhs.h
+! ! m3fast_2Dmode_rhs.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
 # ifdef M3FAST_AM4
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! ! Surface pressure gradient
-! !--------------------------------------------------------------------
+! !********************************
 ! !
-! ! Interpolate zeta fields half-step backward (AM4) for the subsequent 
-! ! computation of barotropic pressure-gradient
+! ! Interpolate zeta fields half-step 
+! ! backward (AM4) for the subsequent 
+! ! computation of barotropic 
+! ! pressure-gradient
 ! !
 # ifdef TANK
          myalpha   = 0.01
@@ -75,12 +77,6 @@
         enddo
       enddo
 !$acc end kernels
-
-! #ifdef RVTK_DEBUG_ADVANCED
-! C$OMP BARRIER
-! C$OMP MASTER
-!        call check_tab2d(rubar,'rubar st_fast_h','uint')
-! #endif
 
 !$acc kernels default(present)
 !
@@ -153,9 +149,11 @@ C$OMP MASTER
 
 !$acc kernels default(present)
 # ifdef UV_ADV
-! !--------------------------------------------------------------------
-! ! Compute horizontal advection terms for momentum equations (2D only)
-! !-------- ---------- --------- ----- --- -------- --------- --- -----
+! !********************************
+! ! Compute horizontal advection 
+! !  terms for momentum equations 
+! !  (2D only)
+! !********************************
 ! !
 ! ! Centered second order advection scheme
 ! !
@@ -174,7 +172,7 @@ C$OMP MASTER
 ! ! consecutive loops. This leads to slight increase of the redundant
 ! ! computations near western and southern boundaries in non-periodic
 ! ! directions.
-! !--------------------------------------------------------------------
+! !********************************
 ! !
 
       do j=Jstr,Jend
@@ -212,10 +210,12 @@ C$OMP MASTER
       enddo    !--> discard UFx,VFe,UFe,VFx, DUon,DVom
 # endif /* UV_ADV */
 ! !
-! !--------------------------------------------------------------------
-! ! Compute Coriolis (2D and 3D) term and advective curvilinear metric
+! !********************************
+! ! Compute Coriolis (2D and 3D) 
+! ! term and advective curvilinear 
+! ! metric
 ! ! terms (2D only).
-! !--------------------------------------------------------------------
+! !********************************
 ! !
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)
       do j=JstrV-1,Jend
@@ -259,9 +259,10 @@ C$OMP MASTER
       enddo
 # endif /* UV_COR */
 ! !
-! !--------------------------------------------------------------------
-! ! Linear and/or quadratic bottom stress.
-! !--------------------------------------------------------------------
+! !********************************
+! ! Linear and/or quadratic bottom 
+! ! stress.
+! !********************************
 ! !
 # ifndef BSTRESS_FAST
 #  ifdef BBL
@@ -316,9 +317,10 @@ C$OMP MASTER
 #  endif
 # endif /* ! BSTRESS_FAST */
 ! !
-! !--------------------------------------------------------------------
-! ! Add 2D vortex-force terms combined with advection terms
-! !--------------------------------------------------------------------
+! !********************************
+! ! Add 2D vortex-force terms 
+! ! combined with advection terms
+! !********************************
 ! !
 # ifdef MRL_WCI
       do j=Jstr,Jend
@@ -348,3 +350,8 @@ C$OMP MASTER
       enddo
 # endif
 !$acc end kernels
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_2Dmode_rhs.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

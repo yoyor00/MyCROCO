@@ -1,14 +1,14 @@
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! ! m3fast_divv.h
+! ! m3fast_divv.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
 !$acc kernels default( present )    
 ! ! 
       do j=Jstr,Jend  !<-- j loop
-! ! *********************************************
+! ! *******************************
 ! ! Vertical flux in bottom layer
-! ! *********************************************
+! ! *******************************
       k = -N_sl
 #  ifdef NBQ_FREESLIP
         do i=Istr,Iend
@@ -25,10 +25,10 @@
           FC3D(i,j,k)=0.   ! Bottom BC
         enddo
 #  endif /* NBQ_FREESLIP */
-! ! *********************************************
+! ! *******************************
 ! ! Vertical flux in the water column
 ! ! Sum divergence
-! ! *********************************************
+! ! *******************************
         do k=-N_sl+1,N
           do i=Istr,Iend
 #  ifdef NBQ_THETAIMP
@@ -48,4 +48,8 @@
         enddo
       enddo  !<-- j loop
 !$acc end kernels
-             
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_divv.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !           

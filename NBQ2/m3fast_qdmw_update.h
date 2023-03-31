@@ -1,18 +1,15 @@
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! ! m3fast_qdmw_update.h
+! ! m3fast_qdmw_update.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
 #  ifndef NBQ_THETAIMP
 ! !
-! !*********************************************************************
+! !********************************
 ! !  Store qdmw_nbq into working array
-! !*********************************************************************
+! !********************************
 ! !
       if (LAST_FAST_STEP) then
-      
-! ! KERNEL_18  rw_nbq <=  ( qdmw_nbq )
-
 !$acc kernels default( present )     
         do k=0,N 
           do j=Jstr,Jend             
@@ -34,14 +31,12 @@
 !$acc update host( rw_nbq )     !!iif=last
       endif
 #  endif  /* NBQ_THETAIMP */
+! !
+! !********************************
+! ! Vertical fluxes
+! !********************************
+! !
 #  ifdef NBQ_IMP
-
-! ! KERNEL_23  FC <= ( soundspeed2_nbq, rho_nbq, thetadiv_nbq )
-! ! KERNEL_23  FC <= ( FC, Hzr_nbq_inv )
-! ! KERNEL_23  dum_s <= ( FC )
-! ! KERNEL_23  qdmw_nbq <= ( qdmw_nbq, dm_s,rw_int_nbq )
-! ! KERNEL_23  qdmw_nbq <= ( qdmw_nbq, rmask)
-
 !$acc kernels default( present )
       do j=Jstr,Jend
         do i=Istr,Iend
@@ -53,14 +48,7 @@
 #  else   
       do k=-N_sl+1,N
 #  endif
-      !do j=Jstr,Jend ! <-- j loop
-! !
-! !....................................................................
-! ! Vertical fluxes
-! !....................................................................
-! !
-!         do k=1,N
-          do j=Jstr,Jend ! <-- j loop
+        do j=Jstr,Jend ! <-- j loop
           do i=Istr,Iend
 #  ifndef M3FAST_CSVISC2K
             FC3D(i,j,k)= soundspeed2_nbq*rho_nbq(i,j,k)
@@ -91,71 +79,26 @@
           enddo
         enddo
       enddo 
-      
 !$acc end kernels
-
 #  endif /* NBQ_IMP */
-! !
-! !--------------------------------------------------------------------
-! ! Inner layers (ocean)
-! !--------------------------------------------------------------------
-! !
 !$acc kernels default( present )      
-!#  ifndef NBQ_IMP
-#  if !defined  M3FAST_SPDUP && defined M3FAST_BOTH 
-      if (IstrU.le.Iend) then
-        do j=Jstr,Jend
-          do i=IstrU-1,Iend+1     
-            usurf_nbq(i,j)=(qdmu_nbq(i,j,N)*Hzu_nbq_inv(i,j,N)
-#   ifdef MRL_WCI
-     &                     +ust(i,j,N)
-#    ifdef WET_DRY
-     &                      *umask_wet(i,j)
-#    endif
-#   endif
-     &                     )
-#   ifdef MASKING
-     &                     *umask(i,j) 
-#   endif
-          enddo 
-        enddo 
-      endif
-
-      if (JstrV.le.Jend) then
-        do j=JstrV-1,Jend+1
-          do i=Istr,Iend     
-            vsurf_nbq(i,j)=(qdmv_nbq(i,j,N)*Hzv_nbq_inv(i,j,N)
-#   ifdef MRL_WCI
-     &                     +vst(i,j,N)
-#    ifdef WET_DRY
-     &                      *vmask_wet(i,j)
-#    endif
-#   endif
-     &                      )
-#   ifdef MASKING
-     &                     *vmask(i,j) 
-#   endif
-          enddo
-        enddo 
-      endif
-
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
-      if (IstrU.le.Iend) then
-        call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                          usurf_nbq(START_2D_ARRAY))
-      endif
-      if (JstrV.le.Jend) then
-        call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                          vsurf_nbq(START_2D_ARRAY))
-      endif
-#   endif
-#  endif  /* M3FAST_SPDUP && M3FAST_BOTH */
-!
+! !
+! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! ! j-loop starts here!
+! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! !
       do j=Jstr,Jend   ! Large j loop starting here
+! !
+! !********************************
+! ! Inner layers (ocean)
+! !********************************
+! !
         do k=1,N-1
           do i=Istr,Iend  
 ! !
+! !--------------------------------
 ! ! Compute vertical gradient
+! !--------------------------------
 ! !
 #   ifndef NBQ_IMP
             dum_s = thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1) 
@@ -163,13 +106,18 @@
             dum_s = FC3D(i,j,k) - FC3D(i,j,k+1)
 #   endif
 ! !
-! ! Compute Non-traditionnal component of Coriolis
+! !--------------------------------
+! ! Compute Non-traditionnal 
+! !  component of Coriolis
+! !--------------------------------
 ! !
 #   ifdef UV_COR_NT
             dum_s = dum_s + ntcorw(i,j,k)
 #   endif
 ! !
+! !--------------------------------
 ! ! Compute weight
+! !--------------------------------
 ! !
 #   ifdef NBQ_GRAV
             cff=sign(1.,qdmw_nbq(i,j,k))
@@ -182,7 +130,10 @@
      &                                  )
 #   endif
 ! ! 
-! !  Update qdmw_nh (fast and slow components)
+! !--------------------------------
+! !  Update qdmw_nh 
+! ! (fast and slow components)
+! !--------------------------------
 ! !
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
      &                      + dtfast * ( dum_s 
@@ -210,9 +161,9 @@
 !
 #   ifdef M3FAST_SEDLAYERS
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! ! Sediment Layers 
-! !--------------------------------------------------------------------
+! !********************************
 ! !
         do k=-N_sl+1,-1
           do i=Istr,Iend  
@@ -228,10 +179,10 @@
           enddo
         enddo
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! ! Interface layer:
 ! !     1/2 ocean and 1/2 SdL
-! !--------------------------------------------------------------------
+! !********************************
 ! !
         k = 0
         do i=Istr,Iend           
@@ -270,9 +221,9 @@
         enddo ! i loop
 #   endif
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! ! Bottom BC on w
-! !--------------------------------------------------------------------
+! !********************************
 ! !
        k = -N_sl
 #  ifdef NBQ_FREESLIP
@@ -306,9 +257,9 @@
          enddo 
 #  endif
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! ! Surface boundary condition
-! !--------------------------------------------------------------------
+! !********************************
 ! !
         k=N
         do i=Istr,Iend
@@ -363,14 +314,17 @@
      
         enddo
 ! !
-! !  End of Large j loop
+! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! !  j-loop ends here
+! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! !
       enddo !<-- j loop
 !$acc end kernels
 ! !
-! !--------------------------------------------------------------------
-! ! Vertical momentum open boundary conditions
-! !--------------------------------------------------------------------
+! !********************************
+! ! Vertical momentum open boundary 
+! !     conditions
+! !********************************
 ! !
 !      call wnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 
@@ -394,4 +348,8 @@ C$OMP MASTER
 #    endif      
 C$OMP END MASTER
 #   endif
-!#  endif  /* ! NBQ_IMP */
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_qdmw_update.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

@@ -1,13 +1,17 @@
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! ! m3fast_qdmuv_update.h
+! ! m3fast_qdmuv_update.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! !
 ! !
 ! !********************************
 ! !********************************
 ! ! U and V fast-momentum
 ! !********************************
+! !********************************
+! !
+! !
+! !********************************
+! ! Define local variables:
 ! !********************************
 ! !
 #define dthetadiv_nbqdz_u FC3D
@@ -21,15 +25,8 @@
 # define dthetadiv_nbqdz_im1j dthetadiv_nbqdz(i-1,j)
 # define dthetadiv_nbqdz_ijm1 dthetadiv_nbqdz(i,j-1)
 #endif 
+! !
 # ifdef M3FAST_UV
-
-! ! KERNEL_14  FC3D <= 0
-! ! KERNEL_14  DC3D <= 0
-! ! KERNEL_14  dthetadiv_nbqdz <= ( thetadiv_nbq )
-! ! KERNEL_14  dthetadiv_nbqdz <= ( thetadiv_nbq )
-! ! KERNEL_14  FC3D <= ( Hzw_nbq_inv_u, dthetadiv_nbqdz )
-! ! KERNEL_14  DC3D <= ( Hzw_nbq_inv_v, dthetadiv_nbqdz )
-
 !$acc kernels default(present)
        do k=-N_sl,N    ! Loop is on w-levels
 #  ifdef M3FAST_RHO
@@ -113,24 +110,6 @@
 #  endif /* M3FAST_RHO */
       enddo   !<-- k=0,   
 !$acc end kernels
-! ! KERNEL_15  dthetadiv_nbqdz <= ( z_r, FC3D )
-! ! KERNEL_15  dthetadiv_nbqdz <= ( z_r, FC3D, z_w )
-! ! KERNEL_15  dum_s <= ( dthetadiv_nbqdz )
-! ! KERNEL_15  dum_s <= ( dum_s, thetadiv_nbq )
-! ! KERNEL_15  dum_s <= ( dum_s, Hz, pm_u, umask )
-! ! KERNEL_15  qdmu_nbq <= ( qdmu_nbq, dum_s, ru_int_nbq )
-! ! KERNEL_15  qdmu_nbq <= ( qdmu_nbq, umask )
-! ! KERNEL_15  ru_nbq <= ( dum_s, work )
-! ! KERNEL_15  qdmu_nbq <= ( qdmu_nbq, NBQnudgcof, u, Hz, pm_u, umask )
-! ! KERNEL_15  dthetadiv_nbqdz <= ( z_r, DC3D )
-! ! KERNEL_15  dthetadiv_nbqdz <= ( z_r, DC3D, z_w )
-! ! KERNEL_15  dum_s <= ( dthetadiv_nbqdz )
-! ! KERNEL_15  dum_s <= ( dum_s, thetadiv_nbq )
-! ! KERNEL_15  dum_s <= ( dum_s, Hz, pn_v, vmask )
-! ! KERNEL_15  qdmv_nbq <= ( qdmv_nbq, dum_s, rv_int_nbq )
-! ! KERNEL_15  qdmv_nbq <= ( qdmv_nbq, vmask )
-! ! KERNEL_15  rv_nbq <= (dum_s, work )
-! ! KERNEL_15  qdmv_nbq <= ( qdmv_nbq, NBQnudgcof, v, Hz, pn_v, vmask)  
 !$acc kernels default(present)
 ! !
       do k=-N_sl+1,N    ! Loop is on w-levels
@@ -616,9 +595,6 @@ c C$OMP END MASTER
 ! ! Update ubar    
 ! !********************************
 ! !
-! ! KERNEL_17  ubar <= ( urhs )
-! ! KERNEL_17  vbar <= ( vrhs )
-
 #ifdef NBQ
 !$acc kernels default( present )
       do j=Jstr,Jend
@@ -697,7 +673,9 @@ C$OMP MASTER
 # endif
 C$OMP END MASTER
 # endif
-
-  
 # endif /* M3FAST_UV */
-
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_qdmuv_update.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
