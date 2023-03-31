@@ -3,7 +3,7 @@
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
-! ! and Rutgers University (Arango et al) are under MIT/X style license
+!  and Rutgers University (Arango et al) are under MIT/X style license
 ! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
 ! CROCO website : http://www.croco-ocean.org
@@ -14,17 +14,23 @@
 #ifdef M3FAST
 ! ! 
 ! !*********************************************************************
-! !                      step3d_fast
+! !*********************************************************************
+! !                      step3d_fast (interface)
+! !*********************************************************************
 ! !*********************************************************************
 ! !
       subroutine step3d_fast (tile)
+! !
+! !*********************************************************************
+! ! Variables & parameters (interface)
+! !*********************************************************************
+! !
       implicit none
       integer tile, trd
 # include "param.h"
 # include "private_scratch.h"
 C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
-
       trd=0
 C$    trd=omp_get_thread_num()
       call step3d_fast_tile ( Istr,Iend,Jstr,Jend
@@ -51,7 +57,9 @@ C$    trd=omp_get_thread_num()
       end
 ! ! 
 ! !*********************************************************************
-! !                      step3d_fast_tile
+! !*********************************************************************
+! !           Step3d_fast: tile routine
+! !*********************************************************************
 ! !*********************************************************************
 ! !
        subroutine step3d_fast_tile (Istr,Iend,Jstr,Jend
@@ -112,33 +120,32 @@ C$    trd=omp_get_thread_num()
 !  - Implicit scheme: Forward:  zeta, qdmu_nbq. 
 !                     Backward:       qdmw_nbq, rho_nbq.
 !***********************************************************************
-!  Overview:
-!  PART A: Declare variables, parameters...
-!  PART B: 2D-mode processing.
-!          B.0: Prepare integration
-!          B.1: Share array for AGRIF nesting.
-!          B.2: Compute zeta(m+1) first guess.
-!          B.3: Update vertical grid.
-!          B.4: AM4 Backward step.
-!          B.5: Pre-step 2D.
-!  PART C: Solve fast-mode 3D compressible equations.
-!          C.0: Initialization & backups for 3D eq.
-!          C.1: Compute NT Coriolis pseudo-force.
-!          C.2: Compute "Pressure - Viscosity" component (theta).
-!          C.3: Compute fast-mode U & V momentum equations.
-!          C.4: Compute fast-mode W-momentum equation.
-!          C.5: Compute divergence operator.
-!          C.6: Fast-mode conservation of mass.
-!  PART D: Fast-mode post-processing.
-!          D.1: Compute time average & adjust depth-averaged variables
-!          D.2: Adjust zeta.
-!          D.3: Apply conservation requirements for AGRIF nesting
-!          D.4: Copy density for extrapolation.
-!          D.5: Update Free-slip.
-!          D.6: Adjust Hz(m+1) for internal mode.
-!  PART E: Test for CFL violation.
-!***********************************************************************
-!
+! !  Overview:
+! !  PART A: Declare variables, parameters...
+! !  PART B: 2D-mode processing.
+! !          B.0: Prepare integration
+! !          B.1: Share array for AGRIF nesting.
+! !          B.2: Compute zeta(m+1) first guess.
+! !          B.3: Update vertical grid.
+! !          B.4: AM4 Backward step.
+! !          B.5: Pre-step 2D.
+! !  PART C: Solve fast-mode 3D compressible equations.
+! !          C.0: Initialization & backups for 3D eq.
+! !          C.1: Compute NT Coriolis pseudo-force.
+! !          C.2: Compute "Pressure - Viscosity" component (theta).
+! !          C.3: Compute fast-mode U & V momentum equations.
+! !          C.4: Compute fast-mode W-momentum equation.
+! !          C.5: Compute divergence operator.
+! !          C.6: Fast-mode conservation of mass.
+! !  PART D: Fast-mode post-processing.
+! !          D.1: Compute time average & adjust depth-averaged variables
+! !          D.2: Adjust zeta.
+! !          D.3: Apply conservation requirements for AGRIF nesting
+! !          D.4: Copy density for extrapolation.
+! !          D.5: Update Free-slip.
+! !          D.6: Adjust Hz(m+1) for internal mode.
+! !  PART E: Test for CFL violation.
+! !*********************************************************************
 ! !      
 ! !*********************************************************************
 ! !*********************************************************************
