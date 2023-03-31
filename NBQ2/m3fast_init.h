@@ -1,8 +1,15 @@
- 
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_init.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! 
+! !
+! !********************************
+! !  Store qdm(u,v,w).nbq
+! !********************************
+! !
 # ifdef M3FAST_C3D_UVFS
       if (FIRST_FAST_STEP) then
-! ! KERNEL_10  ru_nbq_avg2 <= ( qdmu_nbq )
-! ! KERNEL_10  rv_nbq_avg2 <= ( qdmv_nbq )
 !$acc kernels default(present)
         do k=1,N
           do j=Jstr,Jend
@@ -23,8 +30,7 @@
 # endif      
 # ifdef M3FAST_C3D_WFS
       if (FIRST_FAST_STEP) then
-!$acc update device( qdmw_nbq )   !! iif=1   
-! ! KERNEL_11  rw_nbq_avg2 <= ( qdmw_nbq )
+!$acc update device( qdmw_nbq )   !! iif=1  
 !$acc kernels default(present)
           do k=0,N
            do j=Jstr,Jend
@@ -37,14 +43,13 @@
       endif    ! FIRST_FAST_STEP
 # endif
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! !  zw_nbq backups
-! !--------------------------------------------------------------------
+! !********************************
 ! !
 # ifdef M3SLOW_W
       if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
 !$acc update device( z_w )   !! iif=1 ic=1
-! ! KERNEL_12  zw_nbq <= ( z_w )
 !$acc kernels default(present)
         do k=-N_sl,N
           do j=JstrR,JendR
@@ -56,16 +61,12 @@
 !$acc end kernels
       endif
 # endif  /* M3SLOW_W */
-
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! !  Implicit part: system setup
-! !--------------------------------------------------------------------
+! !********************************
 ! !    
 # ifdef M3SLOW_W
-! ! KERNEL_13  work <= ( pm, pn )
-! ! KERNEL_13  DU_nbq <= 0
-! ! KERNEL_13  DV_nbq <= 0
 !$acc kernels default( present )
       do j=Jstr,Jend
         do i=Istr,Iend
@@ -76,3 +77,8 @@
       enddo
 !$acc end kernels
 # endif /* M3SLOW_W */
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_init.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! 

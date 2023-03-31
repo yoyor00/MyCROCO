@@ -1,3 +1,8 @@
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_fbf.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
 #  define UBOT UFx
 #  define VBOT VFe
       if (mod(iif-1,inc_faststep).eq.0) then
@@ -90,3 +95,8 @@
       endif
 #  undef UBOT
 #  undef VBOT
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_fbf.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

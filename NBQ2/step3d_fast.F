@@ -3,7 +3,7 @@
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
-! ! and Rutgers University (Arango et al) are under MIT/X style license
+!  and Rutgers University (Arango et al) are under MIT/X style license
 ! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
 ! CROCO website : http://www.croco-ocean.org
@@ -12,18 +12,27 @@
 #include "cppdefs.h"
 
 #ifdef M3FAST
-
+! ! 
+! !*********************************************************************
+! !*********************************************************************
+! !                      step3d_fast (interface)
+! !*********************************************************************
+! !*********************************************************************
+! !
       subroutine step3d_fast (tile)
+! !
+! !*********************************************************************
+! ! Variables & parameters (interface)
+! !*********************************************************************
+! !
       implicit none
       integer tile, trd
 # include "param.h"
 # include "private_scratch.h"
 C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
-
       trd=0
 C$    trd=omp_get_thread_num()
-!
       call step3d_fast_tile ( Istr,Iend,Jstr,Jend
      &                   , A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd)
      &                   , A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd)
@@ -47,9 +56,11 @@ C$    trd=omp_get_thread_num()
       return
       end
 ! ! 
-! !--------------------------------------------------------------------
-! !                      step3d_fast_tile
-! !--------------------------------------------------------------------
+! !*********************************************************************
+! !*********************************************************************
+! !           Step3d_fast: tile routine
+! !*********************************************************************
+! !*********************************************************************
 ! !
        subroutine step3d_fast_tile (Istr,Iend,Jstr,Jend
      &                          ,Dnew,rubar,rvbar
@@ -74,9 +85,7 @@ C$    trd=omp_get_thread_num()
 ! !
 ! !*********************************************************************
 ! !*********************************************************************
-! !
 ! !                    SOLVE FAST MODE 3D EQUATIONS
-! !
 ! !*********************************************************************
 ! !*********************************************************************
 ! !
@@ -92,10 +101,12 @@ C$    trd=omp_get_thread_num()
 !  3- Solves mass conservation equation, i.e., computes compressible 
 !     density rho_nbq by time integration of continuity.
 !
+!  Treatment of the free-surface:
 !  A first guest of zeta is derived from the surface kinematic relation
 !  After solving the 3D momentum equations, zeta is updated to conserve
 !  mass for each water column.
 !
+!  Forward-backward time-stepping:
 !  W-momentum equation is solved with explicit or implicit methods:
 !  - Explicit scheme: w-momentum is updated right after (and the same 
 !                     way as) u- and v-momentum. Only rho_nbq is
@@ -108,46 +119,42 @@ C$    trd=omp_get_thread_num()
 !                     Backward:       rho_nbq.
 !  - Implicit scheme: Forward:  zeta, qdmu_nbq. 
 !                     Backward:       qdmw_nbq, rho_nbq.
-!
-!  In the NBQ_PERF option, the vertical grid is not evolving at fast
-!  time step to gain computational time.
 !***********************************************************************
-!
-!  PART A: Declare variables, parameters...
-!  PART B: 2D-mode processing.
-!          B.0: Prepare integration
-!          B.1: Share array for AGRIF nesting.
-!          B.2: Compute zeta(m+1) first guess.
-!          B.3: Update vertical grid.
-!          B.4: AM4 Backward step.
-!          B.5: Pre-step 2D.
-!  PART C: Solve fast-mode 3D compressible equations.
-!          C.0: Initialization & backups for 3D eq.
-!          C.1: Compute NT Coriolis pseudo-force.
-!          C.2: Compute "Pressure - Viscosity" component (theta).
-!          C.3: Compute fast-mode U & V momentum equations.
-!          C.4: Compute fast-mode W-momentum equation.
-!          C.5: Compute divergence operator.
-!          C.6: Fast-mode conservation of mass.
-!  PART D: Fast-mode post-processing.
-!          D.1: Compute time average & adjust depth-averaged variables
-!          D.2: Adjust zeta.
-!          D.3: Apply conservation requirements for AGRIF nesting
-!          D.4: Copy density for extrapolation.
-!          D.5: Update Free-slip.
-!          D.6: Adjust Hz(m+1) for internal mode.
-!  PART E: Test for CFL violation.
-!
-!***********************************************************************
-!
-      use debug
-      implicit none
+! !  Overview:
+! !  PART A: Declare variables, parameters...
+! !  PART B: 2D-mode processing.
+! !          B.0: Prepare integration
+! !          B.1: Share array for AGRIF nesting.
+! !          B.2: Compute zeta(m+1) first guess.
+! !          B.3: Update vertical grid.
+! !          B.4: AM4 Backward step.
+! !          B.5: Pre-step 2D.
+! !  PART C: Solve fast-mode 3D compressible equations.
+! !          C.0: Initialization & backups for 3D eq.
+! !          C.1: Compute NT Coriolis pseudo-force.
+! !          C.2: Compute "Pressure - Viscosity" component (theta).
+! !          C.3: Compute fast-mode U & V momentum equations.
+! !          C.4: Compute fast-mode W-momentum equation.
+! !          C.5: Compute divergence operator.
+! !          C.6: Fast-mode conservation of mass.
+! !  PART D: Fast-mode post-processing.
+! !          D.1: Compute time average & adjust depth-averaged variables
+! !          D.2: Adjust zeta.
+! !          D.3: Apply conservation requirements for AGRIF nesting
+! !          D.4: Copy density for extrapolation.
+! !          D.5: Update Free-slip.
+! !          D.6: Adjust Hz(m+1) for internal mode.
+! !  PART E: Test for CFL violation.
+! !*********************************************************************
 ! !      
 ! !*********************************************************************
 ! !*********************************************************************
 ! ! PART A: declare variables, parameters...
 ! !*********************************************************************
 ! !*********************************************************************
+! !
+      use debug
+      implicit none
 ! ! 
 ! !*********************************************************************
 ! ! PART A.1: Parameters
@@ -284,10 +291,9 @@ C$    trd=omp_get_thread_num()
 # include "mixing.h"
 # include "climat.h"
 # include "scalars.h"
-#ifdef OPENACC
-# include "openacc.h" 
-!!!! OpenACC boundary a enlever
-# include "boundary.h"
+# ifdef OPENACC
+#  include "openacc.h" 
+#  include "boundary.h"
 #endif
 # include "sources.h"
 ! !      
@@ -606,7 +612,6 @@ C$    trd=omp_get_thread_num()
 ! !
 # ifdef NHINT_3M
       if (mod(iif,nsdtnbq).eq.0) then  ! HEREFA
-
        dtfast=dtfast*float(nsdtnbq)
        dtgrid_nbq=dtgrid_nbq*float(nsdtnbq)
        ndtfast=ndtfast/nsdtnbq
@@ -634,26 +639,20 @@ C$    trd=omp_get_thread_num()
 ! ! 
 # ifdef M3FAST_RHO 
 !      if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) then
-! !     
-! ! KERNEL_13b  thetadiv_nbq <= ( soundspeed2_nbq, rho_nbq, 
-! ! KERNEL_13b  ------------ -- - Hzr_nbq_inv )     
 ! !
 !$acc kernels default( present )    
       if (FIRST_TIME_STEP.and.FIRST_FAST_STEP_3M) then 
        do k=-N_sl+1,N
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
+             thetadiv_nbq(i,j,k)=(
+     &                     +rho_nbq(i,j,k) 
 #  ifndef M3FAST_CSVISC2K
-             thetadiv_nbq(i,j,k)=(
-     &                     +rho_nbq(i,j,k) 
      &                           *soundspeed2_nbq
-     &                          )*Hzr_nbq_inv(i,j,k) 
 #  else
-             thetadiv_nbq(i,j,k)=(
-     &                     +rho_nbq(i,j,k) 
      &                           *soundspeed2_nbq(i,j,k)
-     &                          )*Hzr_nbq_inv(i,j,k)
 #  endif 
+     &                          )*Hzr_nbq_inv(i,j,k) 
            enddo
          enddo
        enddo   
@@ -661,17 +660,14 @@ C$    trd=omp_get_thread_num()
        do k=-N_sl+1,N
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
-#  ifndef M3FAST_CSVISC2K
              thetadiv_nbq(i,j,k)=( -visc2_nbq* thetadiv_nbq(i,j,k)
      &                             +rho_nbq(i,j,k) 
+#  ifndef M3FAST_CSVISC2K
      &                           *soundspeed2_nbq
-     &                           )*Hzr_nbq_inv(i,j,k) 
 #  else
-             thetadiv_nbq(i,j,k)=( -visc2_nbq(i,j,k) * thetadiv_nbq(i,j,k)
-     &                            +rho_nbq(i,j,k) 
      &                           *soundspeed2_nbq(i,j,k)
-     &                           )*Hzr_nbq_inv(i,j,k)
 #  endif 
+     &                           )*Hzr_nbq_inv(i,j,k) 
            enddo
          enddo
        enddo     
@@ -717,13 +713,6 @@ C$    trd=omp_get_thread_num()
 ! !--------------------------------------------------------------------
 ! !
 ! !   Initialisation FX and FYX out here
-! !
-! ! KERNEL_20  dZdxq_u <= ( z_r, qdmu_nbq ) 
-! ! KERNEL_20  dZdxq_w <= ( z_w, qdmu_nbq, Hz )
-! ! KERNEL_20  dZdxq_w <= ( Hzw_nbq_inv_u, dZdxq_u, umask )
-! ! KERNEL_20  FX <= (pm_u, dZdxq_w, umask )
-! ! KERNEL_20  thetadiv_nbq <= ( FX )
-! !
 ! !
 ! ! Compute and solve tridiag (implicit) system for W
 ! !
@@ -778,9 +767,6 @@ C$    trd=omp_get_thread_num()
 ! !		
 ! !.......Computes fluxes:  
 ! !
-! ! KERNEL_25  FC <= ( Hzw_nbq_inv, qdmw_nbq )
-! ! KERNEL_25  thetadiv_nbq <= ( thetadiv_nbq, FC )
-! !
 #  include "m3fast_divv.h"
 ! !
 ! !--------------------------------------------------------------------
@@ -830,8 +816,6 @@ C$    trd=omp_get_thread_num()
 ! ! NHINT: Update ubar   
 ! !--------------------------------------------------------------------
 ! !
-! ! KERNEL_17  ubar <= ( urhs )
-! ! KERNEL_17  vbar <= ( vrhs )
 #  ifdef NBQ
 !$acc kernels default( present )
       do j=Jstr,Jend
@@ -862,20 +846,7 @@ C$    trd=omp_get_thread_num()
 ! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! !
       endif
-#  endif  /* NHINT_3M */    
-! !
-! !-------------------------------------------
-! !  U & V momentum open boundary conditions
-! !-------------------------------------------
-! !
-!# ifdef NBQ 
-!     M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
-                           ! and compute DU_nbq
-!     call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
-!     call v2dbc_tile   (Istr,Iend,Jstr,Jend, work)
-     ! call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-     ! call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-!# endif /* ! M3FAST_COUPLING2D */
+#  endif  /* NHINT_3M */   
        endif 
 # endif
 ! !

@@ -1,23 +1,23 @@
-!
-!=====================================================================
-! Store rho.h at first slow and fast time-step
-!=====================================================================
-!
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_2Dmode_prep.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
+! !********************************
+! ! Store rho (from slow mode) 
+! !  at first slow 
+! !  and fast time-step
+! !********************************
+! !
 #ifdef OPENACC
        if (FIRST_FAST_STEP) then
 !$acc wait( sync_rho_rufrc_z_w )
 ! !$acc wait( sync_ruv_int_nbq )
 !$acc update device(ru_int_nbq,rv_int_nbq,rw_int_nbq) !!iff=1
-        endif
+       endif
 #endif
 # if defined M3FAST_UV || defined M3FAST_W || defined M3FAST_RHO
-
-! ! KERNEL_1  rho_grd <= ( rho )
-
 !$acc kernels default(present)
-!---------------------------------------------------------------------
-! Initialisations
-!---------------------------------------------------------------------
       if (FIRST_FAST_STEP) then
        if (FIRST_TIME_STEP) then
          do k=1,N
@@ -37,10 +37,11 @@
           enddo
 #  endif
        endif
-       
-!---------------------------------------------------------------------
-! Extrapolation in time:
-!---------------------------------------------------------------------
+! !      
+! !********************************
+! ! Extrapolation in time:
+! !********************************
+! !
          do j=JstrR,JendR
            do k=1,N
              do i=IstrR,IendR
@@ -52,16 +53,17 @@
 !$acc end kernels
 # endif
 ! !
-! !====================================================================
+! !********************************
 ! ! AB3 Forward Step: compute total depth of water column and 
 ! !                   vertically integrated mass fluxes which
 ! ! --- ------- ----   are needed to compute 
 ! ! rhs terms of the barotropic momentum equations (rubar,rvbar).
-! !====================================================================
+! !********************************
 ! !
-! !--------------------------------------------------------------------
-! !  Set indices to extrapolate (D,ubar,vbar) at m+1/2 (AB3)
-! !--------------------------------------------------------------------
+! !--------------------------------
+! !  Set indices to extrapolate 
+! !  (D,ubar,vbar) at m+1/2 (AB3)
+! !--------------------------------
 ! !
       mybeta=0.281105 ! parameter for AB3 extrapolation
 
@@ -93,26 +95,22 @@
         cff2=-2.0*mybeta-0.5
         cff3= mybeta
       endif
-! 
 ! !
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! ! Extrapolate (D,ubar,vbar) at m+1/2
-! !--------------------------------------------------------------------
-! 
+! !--------------------------------
+! !
+! !--------------------------------
 ! ! Total depth/mass at m+1/2
-!
-! ! KERNEL_2  Drhs <= ( zeta, ubar, h  )
-! ! KERNEL_2  urhs <= ( ubar   )
-! ! KERNEL_2  DUon <= ( Drhs, on_u, urhs  )
-! ! KERNEL_2  vrhs <= ( vbar   )
-! ! KERNEL_2  DVom <= ( Drhs, om_v, vrhs  )
-
-       if (FIRST_FAST_STEP) then
+! !--------------------------------
+! !
+      if (FIRST_FAST_STEP) then
 !$acc update device( h, zeta, ubar, vbar ) !iif=1
-       endif
+      endif
+! !
 !$acc kernels default(present)
       do j=JstrV-2,Jend+1
-        do i=IstrU-2,Iend+1
+       do i=IstrU-2,Iend+1
 # ifdef NBQ_MASS
 #  ifndef MVB
           Drhs(i,j)=cff1*(zeta(i,j,kstp)+h(i,j))*rhobar_nbq(i,j,kstp)
@@ -137,13 +135,15 @@
      &             +cff3*(zeta(i,j,kold)+dh_mvb(i,j,kbak2))
 #  endif     
 # endif /* NBQ_MASS */
-        enddo
+       enddo
       enddo
-!
-! Depth-average ubar velocity at m+1/2
-!
-       do j=Jstr-1,Jend+1
-        do i=IstrU-1,Iend+1
+! !
+! !--------------------------------
+! ! Depth-average ubar velocity at m+1/2
+! !--------------------------------
+! !
+      do j=Jstr-1,Jend+1
+       do i=IstrU-1,Iend+1
           urhs(i,j)=cff1*ubar(i,j,kstp) 
      &             +cff2*ubar(i,j,kbak)
      &             +cff3*ubar(i,j,kold)
@@ -157,9 +157,11 @@
      &                                                              )
         enddo
       enddo
-!
-! Depth-average vbar velocity at m+1/2
-!
+! !
+! !--------------------------------
+! ! Depth-average vbar velocity at m+1/2
+! !--------------------------------
+! !
       do j=JstrV-1,Jend+1
         do i=Istr-1,Iend+1
           vrhs(i,j)=cff1*vbar(i,j,kstp)
@@ -179,16 +181,17 @@
 # ifdef OBC_VOLCONS
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
-!
-!----------------------------------------------------------------------
-! Compute time averaged fields over all short timesteps.
-!
-! Reset/initialise arrays for averaged fields during the first
-! barotropic time step; Accumulate averages after that. Include
-! physical boundary points, but not periodic ghost points or
-! computation  MPI computational margins.
-!----------------------------------------------------------------------
-!
+! !
+! !********************************
+! !  Compute time averaged fields 
+! !   over all short timesteps.
+! !
+! ! Reset/initialise arrays for averaged fields during the first
+! ! barotropic time step; Accumulate averages after that. Include
+! ! physical boundary points, but not periodic ghost points or
+! ! computation  MPI computational margins.
+! !********************************
+! !
 #ifdef M3FAST_AVG_CLASSIC
 # ifdef SOLVE3D
       cff1=weight(1,iif)
@@ -225,3 +228,8 @@ C$OMP MASTER
      &  ,ondevice=.TRUE.)
 C$OMP END MASTER
 # endif 
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_2Dmode_prep.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

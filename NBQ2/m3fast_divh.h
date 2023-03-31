@@ -1,16 +1,21 @@
 ! !
-! !====================================================================
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_divh.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
+! !
+! !********************************
+! !********************************
 ! !        Divergence 
-! ! Precompute dZdx*qdmu terms & Bottom BC
-! !====================================================================
+! ! Precompute dZdx*qdmu terms 
+! !       & Bottom BC
+! !********************************
+! !********************************
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! ! Initializations
-! ! -------------------------------------------------------------------
+! !********************************
 ! !
-! ! KERNEL_19  FX <= 0
-! ! KERNEL_19  FY <= 0
-
 !$acc kernels default( present )
       if (IstrU.gt.Iend) then
         do j=Jstr,Jend
@@ -28,29 +33,29 @@
       endif
 !$acc end kernels
 ! !
-! !--------------------------------------------------------------------
-! !  X-component dZdxq_u*qdmu for horizontal divergence
+! !********************************
+! !  X-component dZdxq_u*qdmu for 
+! !    horizontal divergence
 ! !    Algo: 
-! !    - if grid-fast or grid-slow at update time: d/dstermes are 
+! !    - if grid-fast or grid-slow 
+! !      at update time: d/dstermes are 
 ! !      computed
-! !    - if grid-slow with no update: only BBC
+! !    - if grid-slow with no update:
+! !      only BBC
 ! !    - if grid-fast: BBC
-! !    - d/ds terms are added to horizontal divergence at m+1
-! !--------------------------------------------------------------------
+! !    - d/ds terms are added to
+! !      horizontal divergence at m+1
+! !********************************
 ! !
-! ! KERNEL_20  dZdxq_u <= ( z_r, qdmu_nbq ) 
-! ! KERNEL_20  dZdxq_w <= ( z_w, qdmu_nbq, Hz )
-! ! KERNEL_20  dZdxq_w <= ( Hzw_nbq_inv_u, dZdxq_u, umask )
-! ! KERNEL_20  FX <= (pm_u, dZdxq_w, umask )
-! ! KERNEL_20  thetadiv_nbq <= ( FX )
 !$acc kernels default( present )
 #   ifdef NBQ_GRID_SLOW
       if (NSTEP_DS) then
 #   endif
 ! !
-! !....................................................................
-! ! Pre-commpute dZdxq_u = \Delta z * qdmu
-! !....................................................................
+! !--------------------------------
+! ! Pre-commpute 
+! !     dZdxq_u = \Delta z * qdmu
+! !--------------------------------
 ! !
       do k=-N_sl,N-1
         kp1 = k + 1
@@ -63,9 +68,10 @@
         enddo
       enddo
 ! !
-! !....................................................................
-! ! Inner layers (-Nsl<k<N )  :   \Sigma k
-! !....................................................................
+! !--------------------------------
+! ! Inner layers (-Nsl<k<N )  :  
+! !         \Sigma k
+! !--------------------------------
 ! !
       do k=-N_sl+1,N-1
         do j=Jstr,Jend
@@ -79,10 +85,12 @@
          enddo
        enddo
 ! !
-! !....................................................................
+! !--------------------------------
 ! ! k = N   :   \Sigma k
-! !             special scheme to obtain Surface Kinematic Relation
-! ! ...................................................................
+! !             special scheme 
+! !             to obtain Surface 
+! !             Kinematic Relation
+! !--------------------------------
 ! ! 
         do j=Jstr,Jend
             do i=Istr,Iend+1
@@ -98,9 +106,9 @@
       endif
 #   endif
 ! !
-! !....................................................................
+! !--------------------------------
 ! ! k = -N_sl  : \Sigma k
-! !....................................................................
+! !--------------------------------
 ! !
       k = -N_sl
 !
@@ -143,9 +151,9 @@
             ! Bottom BC for w in the following.
 #   endif /* NBQ_FREESLIP */
 ! !
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! !       \Sigma i
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! ! FX ou FC3D ou private( FX )  à regarder
 ! !
 ! !
@@ -253,32 +261,28 @@
 #   endif /* NBQ_FREESLIP */
 #  endif   /* M3FAST_SEDLAYERS */
 !$acc end kernels
-      
-      
 ! !
-! !--------------------------------------------------------------------
-! !  Y-component dZdyq_v*qdmv for horizontal divergence
+! !********************************
+! !  Y-component dZdyq_v*qdmv 
+! !    for horizontal divergence
 ! !    Algo:
-! !    - if grid-fast or grid-slow at update time: d/dstermes are 
+! !    - if grid-fast or grid-slow 
+! !       at update time: d/dstermes are 
 ! !      computed
 ! !    - if grid-slow with no update: only BBC
 ! !    - if grid-fast: BBC
-! !    - d/ds terms are added to horizontal divergence at m+1
-! !--------------------------------------------------------------------
+! !    - d/ds terms are added to horizontal 
+! !      divergence at m+1
+! !********************************
 ! !
-! ! KERNEL_21  dZdyq_v <= ( z_r, qdmv_nbq )
-! ! KERNEL_21  dZdyq_w <= ( z_w, qdmv_nbq, Hz )
-! ! KERNEL_21  dZdyq_w <= ( Hzw_nbq_inv_v, dZdyq_v, vmask )
-! ! KERNEL_21  FY <= ( pn_v, dZdyq_w, vmask )
-! ! KERNEL_21  thetadiv_nbq <= ( thetadiv_nbq, FY )
 !$acc kernels default( present )
 #   ifdef NBQ_GRID_SLOW
       if (NSTEP_DS) then
 #   endif
 ! !
-! !....................................................................
+! !--------------------------------
 ! ! Pre-commpute dZdxq_v
-! !....................................................................
+! !--------------------------------
 ! !
       do k=-N_sl,N-1
         kp1 = k + 1
@@ -290,9 +294,9 @@
             enddo
       enddo
 ! !
-! !....................................................................
+! !--------------------------------
 ! ! Inner layers (-Nsl<k<N )
-! !....................................................................
+! !--------------------------------
 ! !
       do k=-N_sl+1,N-1  
         do j=Jstr,Jend+1
@@ -306,10 +310,11 @@
          enddo
        enddo
 ! !
-! !....................................................................
+! !--------------------------------
 ! ! k = N   :   \Sigma k
-! !             special scheme to obtain Surface Kinematic Relation
-! ! ...................................................................
+! !             special scheme to obtain 
+! !             Surface Kinematic Relation
+! !--------------------------------
 ! ! 
             do j=Jstr,Jend+1
               do i=Istr,Iend
@@ -325,9 +330,9 @@
       endif
 #   endif 
 ! !
-! !....................................................................
+! !--------------------------------
 ! ! k = -N_sl  : \Sigma k
-! !....................................................................
+! !--------------------------------
 ! !
             k=-N_sl
 !
@@ -367,9 +372,9 @@
 #   endif /* NBQ_FREESLIP */
 !! <-- k=0
 ! !
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! !       \Sigma i
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! !
 ! !
 ! ! Ocean layer (inner domain)
@@ -484,20 +489,11 @@
 #  endif   /* M3FAST_SEDLAYERS */
 !$acc end kernels
 ! !
-! !--------------------------------------------------------------------
-! !  Horizontal Divergence (qdmH(m+1)): add d/dx and D/dy terms
-! !--------------------------------------------------------------------
+! !********************************
+! !  Horizontal Divergence (qdmH(m+1)): 
+! !      add d/dx and D/dy terms
+! !********************************
 ! !
-! ! KERNEL_22  FX <= ( on_u, qdmu_nbq )
-! ! KERNEL_22  FY <= ( om_v, qdmv_nbq )
-! ! KERNEL_22  thetadiv_nbq <= ( thetadiv_nbq, pm, pn, FX, FY, rmask )
-! ! KERNEL_22  CF <= ( z_w, zw_nbq, rho_grd, Hzr_nbq_inv, rho_nbq )
-! ! KERNEL_22  thetadiv_nbq <= ( thetadiv_nbq, CF )
-! ! KERNEL_22  zw_nbq <= ( z_w )
-! ! KERNEL_22  CF <= ( z_w, zw_nbq, rho_grd)
-! ! KERNEL_22  thetadiv_nbq <= ( thetadiv_nbq, CF )
-! ! KERNEL_22  zw_nbq <= ( z_w )
-
 !$acc kernels default( present )
 #  ifndef M3FAST_SEDLAYERS
         do k=1,N!<-- k loop
@@ -557,44 +553,44 @@
       enddo ! <-- k=1,N
 !$acc end kernels
 ! ! 
-! !--------------------------------------------------------------------
+! !********************************
 ! !  thetadiv2_nbq: complet time-corrective term  (dh/dt included) 
 ! !  thetadiv_nbq: reduced time-corrective term  (no dh/dt)
-! !--------------------------------------------------------------------
+! !********************************
 ! !
 !$acc kernels default( present )
-#   ifndef HCOMP 
-#  ifdef NBQ_GRID_SLOW
+#  ifndef HCOMP 
+#   ifdef NBQ_GRID_SLOW
        if (FIRST_FAST_STEP_3M) then
-#  endif
+#   endif
 !$acc loop independent private ( FC, CF )
         do j=Jstr,Jend !<-- j loop
           do i=Istr,Iend
 
-#  ifndef M3FAST_SEDLAYERS          
-#   ifdef NBQ_HZ_PROGNOSTIC
+#   ifndef M3FAST_SEDLAYERS          
+#    ifdef NBQ_HZ_PROGNOSTIC
             FC3D(i,j,0)=0.    ! Bottom boundary condition
-#   endif
+#    endif
             CF3D(i,j,0)=0.
-#  else
-#   ifdef NBQ_HZ_PROGNOSTIC
+#   else
+#    ifdef NBQ_HZ_PROGNOSTIC
             FC3D(i,j,-N_sl)=0.    ! Bottom boundary condition
-#   endif
+#    endif
             CF3D(i,j,-N_sl)=0.
-#  endif
+#   endif  /* M3FAST_SEDLAYERS */
           enddo
         enddo    
         do k=-N_sl+1,N-1
           do j=Jstr,Jend !<-- j loop
             do i=Istr,Iend
-#  ifdef NBQ_HZ_PROGNOSTIC
+#   ifdef NBQ_HZ_PROGNOSTIC
               FC3D(i,k)=   
      &          -(z_w(i,j,k)-zw_nbq(i,j,k))/dtgrid_nbq
      &           *0.5*( (1.+rho_grd(i,j,k  ))
      &                  +rho_nbq(i,j,k  )*Hzr_nbq_inv(i,j,k  )  
      &                  +(1.+rho_grd(i,j,k+1))
      &                  +rho_nbq(i,j,k+1)*Hzr_nbq_inv(i,j,k+1))
-#  endif
+#   endif
               CF3D(i,j,k)=   
      &          -(z_w(i,j,k)-zw_nbq(i,j,k))/dtgrid_nbq     ! ATTENTION (Francis): these terms are under M3FAST_W
      &          *0.5*(    rho_grd(i,j,k  ) 
@@ -606,36 +602,37 @@
           enddo
         enddo
         
-#  ifndef M3FAST_SEDLAYERS        
+#   ifndef M3FAST_SEDLAYERS        
         do k=1,N-1
-#  else   
+#   else   
         do k=2,N-1
-#  endif
+#   endif
           do j=Jstr,Jend !<-- j loop
             do i=Istr,Iend
               thetadiv_nbq(i,j,k) =thetadiv_nbq(i,j,k)+CF3D(i,j,k)-CF3D(i,j,k-1)
-#  ifdef NBQ_HZ_PROGNOSTIC
+#   ifdef NBQ_HZ_PROGNOSTIC
               thetadiv2_nbq(i,j,k)=thetadiv_nbq(i,j,k)+FC3D(i,j,k)-FC3D(i,j,k-1) 
-#  endif
+#   endif
               zw_nbq(i,j,k)=z_w(i,j,k)
             enddo
           enddo
         enddo
         
-#  ifdef M3FAST_SEDLAYERS
+#   ifdef M3FAST_SEDLAYERS
         do k=-N_sl+1,-1
           do j=Jstr,Jend !<-- j loop
             do i=Istr,Iend
 !             thetadiv_nbq(i,j,k) =thetadiv_nbq(i,j,k)+CF3D(i,j,k)-CF3D(i,j,k-1)
-#  ifdef NBQ_HZ_PROGNOSTIC
+#    ifdef NBQ_HZ_PROGNOSTIC
 !             thetadiv2_nbq(i,j,k)=thetadiv_nbq(i,j,k)+FC3D(i,j,k)-FC3D(i,j,k-1) 
-#  endif
+#    endif
               zw_nbq(i,j,k)=z_w(i,j,k)
             enddo
           enddo
         enddo
-#  endif
-#  ifdef M3FAST_SEDLAYERS
+#   endif /* M3FAST_SEDLAYERS */  
+
+#   ifdef M3FAST_SEDLAYERS
           do j=Jstr,Jend !<-- j loop
             do i=Istr,Iend
               k=0
@@ -644,55 +641,55 @@
      &          -(z_w(i,j,k)-zw_nbq(i,j,k))/dtgrid_nbq    
      &          *(  rho_grd(i,j,k  ) 
      &                 +rho_nbq(i,j,k  )*Hzr_nbq_inv(i,j,k  )  )
-#  ifdef NBQ_HZ_PROGNOSTIC
+#    ifdef NBQ_HZ_PROGNOSTIC
               thetadiv2_nbq(i,j,k)=thetadiv_nbq(i,j,k)+FC3D(i,j,k)-FC3D(i,j,k-1) 
-#  endif
+#    endif
               zw_nbq(i,j,k)=z_w(i,j,k)
               k=1
               thetadiv_nbq(i,j,k) =thetadiv_nbq(i,j,k)+CF3D(i,j,k) 
      &          +(z_w(i,j,k-1)-zw_nbq(i,j,k-1))/dtgrid_nbq  
      &          *(    rho_grd(i,j,k  ) 
      &                   +rho_nbq(i,j,k  )*Hzr_nbq_inv(i,j,k  ) )
-#  ifdef NBQ_HZ_PROGNOSTIC
+#    ifdef NBQ_HZ_PROGNOSTIC
               thetadiv2_nbq(i,j,k)=thetadiv_nbq(i,j,k)+FC3D(i,j,k)-FC3D(i,j,k-1) 
               stop 'To be done'
-#  endif
+#    endif
               zw_nbq(i,j,k)=z_w(i,j,k)
             enddo
           enddo
-#endif /* M3FAST_SEDLAYERS */       
+#   endif /* M3FAST_SEDLAYERS */       
          
           do j=Jstr,Jend !<-- j loop
             do i=Istr,Iend
-#  ifdef NBQ_HZ_PROGNOSTIC
+#   ifdef NBQ_HZ_PROGNOSTIC
              FC3D(i,j,N)=   
      &        -(z_w(i,j,N)-zw_nbq(i,j,N))/dtgrid_nbq
      &         *( 1.+rho_grd(i,j,N)
      &          )
-#  endif
+#   endif
             CF3D(i,j,N)=  
      &        -(z_w(i,j,N)-zw_nbq(i,j,N))/dtgrid_nbq
      &         *( rho_grd(i,j,N)
      &          )
             thetadiv_nbq(i,j,N)=thetadiv_nbq(i,j,N)+CF3D(i,j,N)-CF3D(i,j,N-1) 
-#  ifdef NBQ_HZ_PROGNOSTIC
+#   ifdef NBQ_HZ_PROGNOSTIC
             thetadiv2_nbq(i,j,N)=thetadiv_nbq(i,j,N)+FC3D(i,j,N)-FC3D(i,j,N-1) 
-#  endif
+#   endif
               zw_nbq(i,j,N)=z_w(i,j,N)
             enddo
           enddo 
           
-#  ifdef NBQ_GRID_SLOW
+#   ifdef NBQ_GRID_SLOW
        endif !<-- FIRST_FAST_STEP
-#  endif
-# endif /* HCOMP */
+#   endif
+#  endif /* HCOMP */
 !$acc end kernels
-!
-! !====================================================================
-! !        Bottom BC (and interface BC in SdL) on w 
-! !         both with explicit and implicit schemes
-! !====================================================================
-!
+! !
+! !********************************
+! ! Bottom BC (and interface BC in SdL) on w 
+! ! both with explicit and implicit schemes
+! !********************************
+! !
 #  ifdef NBQ_FREESLIP
 #   ifndef M3FAST_SEDLAYERS
        k = 0
@@ -714,5 +711,9 @@
               enddo
             enddo 
 #  endif
-
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_divh.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
      

@@ -1,15 +1,16 @@
 ! !
-! !--------------------------------------------------------------------=
-! !      Solve rho_nbq from mass conservation 
-! !      using a Forward-Backward scheme:
-! !          rho_nbq(m+1) = rho_nbq(m) - dtfast*DIV(m+1)
-! !--------------------------------------------------------------------
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_mass_update.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
+! !********************************
+! ! Solve rho_nbq from mass conservation 
+! ! using a Forward-Backward scheme:
+! ! rho_nbq(m+1) = rho_nbq(m) - dtfast*DIV(m+1)
+! !********************************
 ! !
 # ifdef M3FAST_RHO
 !$acc kernels default( present )
-! ! KERNEL_26 rho_nbq <= ( rho_nbq, thetadiv_nbq ) 
-! ! KERNEL_26 thetadiv_nbq <= (  thetadiv_nbq, 
-! ! KERNEL_26 ------------ -- - soundspeed2_nbq, rho_nbq, Hzr_nbq_inv )
       do k=-N_sl+1,N
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
@@ -20,9 +21,10 @@
       enddo
 #  ifdef NHINT_CORR
 ! !
-! !--------------------------------------------------------------------=
-! ! NHINT numerical mode control: remove potential surface component
-! !--------------------------------------------------------------------=
+! !********************************
+! ! NHINT numerical mode control: 
+! ! remove potential surface component
+! !********************************
 ! !
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
@@ -50,30 +52,31 @@
              enddo
            enddo
          enddo
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI 
+#    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI 
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        rho_nbq(START_2D_ARRAY,1))   
-#   endif
+#    endif
 #   endif /* NHINT_CORR  */
 !$acc end kernels
 ! !
-! !--------------------------------------------------------------------=
+! !********************************
 ! !  BC on rho_nbq
-! !--------------------------------------------------------------------=
+! !********************************
 ! !
 !       call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) !! leave commented
 ! !
-! !--------------------------------------------------------------------=
+! !********************************
 ! !  Acoustic wave emission
-! !--------------------------------------------------------------------=
+! !********************************
 ! !
 #  ifdef M3FAST_SACOUS
 #   include "m3fast_sacous.h"
 #  endif
 ! !
-! !--------------------------------------------------------------------=
-! !  rhobar_nbq: depth-mean density (/rho0)
-! !--------------------------------------------------------------------=
+! !********************************
+! !  rhobar_nbq: depth-mean density 
+! !              (/rho0)
+! !********************************
 ! !
 #  ifdef NBQ_MASS
 !
@@ -101,9 +104,9 @@
         enddo
       enddo
 ! !
-! !--------------------------------------------------------------------=
-!    ATTENTION exchange !!!!!!! FRANCIS
-! !--------------------------------------------------------------------=
+! !********************************
+! !   ATTENTION exchange !!!!!!! FRANCIS
+! !********************************
 ! !
 #   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
@@ -116,3 +119,8 @@
 #  endif /* NBQ_MASS */
 
 # endif  /* M3FAST_RHO */
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_mass_update.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

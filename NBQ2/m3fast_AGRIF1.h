@@ -1,3 +1,8 @@
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_AGRIF1.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
       if (.NOT.Agrif_Root()) THEN
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
@@ -59,3 +64,8 @@ C$OMP END MASTER
         endif
       endif
 #  endif
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_AGRIF1.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

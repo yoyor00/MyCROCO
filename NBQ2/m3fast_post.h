@@ -1,10 +1,14 @@
 ! !
-! !====================================================================
-! !  Update total mass of water volume Dnew 
-! !====================================================================
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_post.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
-! ! KERNEL_27  Dnew <= ( zeta, h ) 
-
+! !
+! !********************************
+! !  Update total mass of water 
+! !    volume Dnew 
+! !********************************
+! !
 !$acc kernels default( present )
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -27,17 +31,15 @@ c       call check_tab3d(thetadiv_nbq,'step3d_fastthetadiv_nbq','rint')
 # endif      
 C$OMP END MASTER
 # endif    
-
-! !====================================================================
-! !  Update W NBQ forcing for internal mode (rw_nbq ~ rw_nbq_avg1)
+! !
+! !********************************
+! !  Update W NBQ forcing for 
+! !  internal mode (rw_nbq ~ rw_nbq_avg1)
 ! !  Note: here rw_nbq contains qdmw_nbq(m)
-! !====================================================================
+! !********************************
 ! !
 # ifdef M3FAST_W
       if (LAST_FAST_STEP) then
-      
-! ! KERNEL_28  rw_nbq <= ( qdmw_nbq, rw_nbq, rw_int_nbq, pm, pn )
-
 !$acc kernels default( present )
         do k=0,N 
           do j=Jstr,Jend              
@@ -58,21 +60,20 @@ C$OMP END MASTER
 !$acc end kernels 
 !$acc update host( rw_nbq )         !! iif=last
       endif
-!# if defined RVTK_DEBUG && defined NBQ
-!      call check_tab3d(rw_nbq,'rw_nbq','rint')
-!#  endif  
 # endif
 ! !
-! !====================================================================
+! !********************************
 ! ! Get filtered RHS terms
-! ! and multiply by dx*dy to get units of rho*Hz*dx*dy*ru
-! !====================================================================
+! ! and multiply by dx*dy to get 
+! ! units of rho*Hz*dx*dy*ru
+! !********************************
 ! !
       if (LAST_FAST_STEP) then
 ! !
-! !--------------------------------------------------------------------
-! ! Store average fields AVG1 of rho and rhobar
-! !--------------------------------------------------------------------
+! !********************************
+! ! Store average fields AVG1 of rho 
+! !    and rhobar
+! !********************************
 ! !     
 # ifdef NBQ_MASS
         do j=Jstr,Jend
@@ -91,23 +92,13 @@ C$OMP END MASTER
         enddo
 # endif /* NBQ_MASS */
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! !  Compute average fields AVG2 of RHS NBQ forcing
 ! !  Note: here ru_nbq_avg2, ru_nbq_2d_old ... are working arrays
-! !--------------------------------------------------------------------
+! !********************************
 ! !
 !$acc kernels default( present )
 # ifdef M3FAST_UV 
-
-! ! KERNEL_29  ru_int_nbq <= ( ru_int_nbq, ru_ext_nbq_old, Hz )
-! ! KERNEL_29  ru_nbq_avg2 <= ( qdmu_nbq, ru_nbq_avg2, ru_int_nbq,
-! ! KERNEL_29  ----------- -- - ru_ext_nbq_sum, Hz, on_u, om_u )
-! ! KERNEL_29  rv_int_nbq <= ( rv_int_nbq, rv_ext_nbq_old, Hz )
-! ! KERNEL_29  rv_nbq_avg2 <= ( qdmv_nbq, rv_nbq_avg2, rv_int_nbq,
-! ! KERNEL_29  ----------- -- - rv_ext_nbq_sum, Hz, on_v, om_v )
-! ! KERNEL_29  rw_nbq_avg2 <= ( qdmw_nbq, rw_nbq_avg2, 
-! ! KERNEL_29  ----------- -- - rw_int_nbq, on_r, om_r)
-
        do k=1,N
           do j=Jstr,Jend
             do i=IstrU,Iend 
@@ -176,9 +167,10 @@ C$OMP END MASTER
 !$acc end kernels
       endif ! LAST_FAST_STEP
 ! !
-! !--------------------------------------------------------------------
-! ! Dismiss coupling of NBQ, NBQ2EXT & NBQ2INT to debug
-! !--------------------------------------------------------------------
+! !********************************
+! ! Dismiss coupling of NBQ, NBQ2EXT
+! ! & NBQ2INT to debug
+! !********************************
 ! !
 # ifdef NBQ_NOCOUPLING 
       ru_nbq      =0.   ! 3D
@@ -196,9 +188,9 @@ C$OMP END MASTER
 #  endif
 # endif /* NBQ_NOCOUPLING */
 ! !
-! !--------------------------------------------------------------------
+! !********************************
 ! ! Exchange NBQ coupling
-! !--------------------------------------------------------------------
+! !********************************
 ! !
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #  ifdef NBQ_MASS
@@ -207,9 +199,11 @@ C$OMP END MASTER
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        rho_nbq_avg1(START_2D_ARRAY,1))
 #  endif
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    ATTENTION exchange !!!!!!! FRANCIS
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
+! !********************************
+! ! ATTENTION exchange !!!!!!! FRANCIS
+! !********************************
+! !
 #  ifdef M3FAST_C3D_UVFS
       if (LAST_FAST_STEP) then
        call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
@@ -222,10 +216,11 @@ C$OMP END MASTER
      &                         rv_nbq_avg2(START_2D_ARRAY,1))
       endif
 #  endif
-!#  ifdef NBQ
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    ATTENTION exchange !!!!!!! FRANCIS
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
+! !********************************
+! ! ATTENTION exchange !!!!!!! FRANCIS
+! !********************************
+! !
 #  ifdef M3FAST_C3D_WFS
       if (LAST_FAST_STEP) then
        call exchange_w3d_tile (Istr,Iend,Jstr,Jend,  
@@ -234,7 +229,6 @@ C$OMP END MASTER
      &                         rw_nbq_avg2(START_2D_ARRAY,0))
       endif
 #  endif 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # endif
 
 # ifdef M3FAST_UV 
@@ -247,16 +241,12 @@ C$OMP END MASTER
 ! ! ru_nbq_avg2 => step3d_uv1
       endif
 #endif
-
 ! !
-! !====================================================================
-! !  Depth-averaged velocity & forcing from fast mode
-! !====================================================================
+! !********************************
+! !  Depth-averaged velocity & 
+! !  forcing from fast mode
+! !********************************
 ! !
-! ! Output: (ubar,vbar), (DU_avg1,DV_avg1)
-! !
-! ! Cytil Attention sert a rien dans le cas NBQ
-!# ifdef M3FAST_ZETAW
 !$acc kernels default( present )
 #  define Dstp DUon
       do j=JstrV-1,Jend
@@ -269,44 +259,27 @@ C$OMP END MASTER
         enddo
       enddo
 !$acc end kernels
-!# endif /* M3FAST_ZETAW */
       cff=0.5*dtfast
     !  cff=2.*dtfast
       cff1=0.5*weight(1,iif)
       cff2=0.5*weight(2,iif)
-      
-! #ifdef RVTK_DEBUG
-! C$OMP BARRIER
-! C$OMP MASTER
-!        call check_tab2d(ubar(:,:,knew),'ubar st_fast_a','u')
-!        call check_tab2d(ubar(:,:,kstp),'ubarkstp    _a','u')
-!        call check_tab2d(rubar(:,:),'rubar st_fast_a','uint')
-!        call check_tab2d(rvbar(:,:),'rvbar st_fast_a','vint')
-! !       call check_tab2d(rufrc(:,:),'rufrc st_fast_a','u')
-!        call check_tab2d(DUon(:,:),'DUon st_fast_a','r')
-!        call check_tab2d(pn(:,:),'pn st_fast_a','r')
-!        call check_tab2d(pm(:,:),'pm st_fast_a','r')
-!        call check_tab2d(rvfrc(:,:),'rvfrc st_fast_a','v')
-! #endif
 ! !
-! !--------------------------------------------------------------------
-! ! Compute time averaged fields over all short timesteps.
+! !********************************
+! ! Compute time averaged fields over 
+! !  all short timesteps.
 ! !
 ! ! Reset/initialise arrays for averaged fields during the first
 ! ! barotropic time step; Accumulate averages after that. Include
 ! ! physical boundary points, but not periodic ghost points or
 ! ! computation  MPI computational margins.
-! !--------------------------------------------------------------------
+! !********************************
 ! !
-!#if defined SOLVE3D  && defined HCOMP 
 !$acc kernels default( present )
 
 ! ! FA: TBT
 
 # ifndef M3FAST_AVG_CLASSIC
-      if (FIRST_2D_STEP) then
-! ! KERNEL_30  DU_avg1 <= 0    
-! ! KERNEL_30  DU_avg2 <= 0   
+      if (FIRST_2D_STEP) then  
         do j=JstrR,JendR
           do i=IstrR,IendR
             DU_avg1(i,j,nnew)=0.
@@ -317,15 +290,6 @@ C$OMP END MASTER
         enddo
       endif
 # endif
-! ! KERNEL_31  DUnew <= ( DU_nbq )
-! ! KERNEL_31  ubar <= ( DUnew, Dnew )
-! ! KERNEL_31  DU_avg1 <= ( DU_avg1, on_u, DUnew )
-! ! KERNEL_31  DU_avg2 <= ( DU_avg2, on_u, DUnew )
-! ! KERNEL_31  DVnew <= ( DV_nbq )
-! ! KERNEL_31  vbar <= ( DVnew, Dnew )
-! ! KERNEL_31  DV_avg1 <= ( DV_avg1, om_v, DVnew )
-! ! KERNEL_31  DV_avg2 <= ( DV_avg2, om_v, DVnew )
-! 
       do j=Jstr,Jend
         do i=IstrU,Iend
 # ifdef M3FAST_ZETAW
@@ -406,12 +370,12 @@ C$OMP END MASTER
 # endif /*   M3FAST_AVG_CLASSIC */
         enddo
       enddo
-
 !$acc end kernels
 ! !
-! !--------------------------------------------------------------------
-! ! Apply point sources for hydrostatic case
-! !--------------------------------------------------------------------
+! !********************************
+! ! Apply point sources 
+! !  for hydrostatic case
+! !********************************
 ! !
 # if defined PSOURCE && !defined M3FAST 
       do is=1,Nsrc 
@@ -437,9 +401,9 @@ C$OMP END MASTER
       enddo
 # endif
 ! !
-! !---------------------------------------------------------------------
+! !********************************
 ! !  Set 2D Momemtum nudging
-! !---------------------------------------------------------------------
+! !********************************
 ! !
 # if defined M2NUDGING && defined M2CLIMATOLOGY
 
@@ -508,15 +472,14 @@ C$OMP END MASTER
       enddo
 # endif /* M2NUDGING */
 ! !
-! !-------------------------------------------------------------------- 
-! ! Set boundary conditions and compute integral mass flux accross
+! !********************************
+! ! Set boundary conditions and 
+! ! compute integral mass flux accross
 ! ! all open boundaries, if any.
-! !--------------------------------------------------------------------
+! !********************************
 ! !
-!# ifdef NBQ
       M2bc_nbq_flag=.false.  ! skip wet/dry conditions
   !                           ! and DU_nbq computation
-!# endif
       call u2dbc_tile (Istr,Iend,Jstr,Jend, work) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
 # ifdef WET_DRY
@@ -605,25 +568,17 @@ C$OMP MASTER
 
 !      call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 !      call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
 !      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
 !     &                        qdmu_nbq(START_2D_ARRAY,1))
 !      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
 !     &                        qdmv_nbq(START_2D_ARRAY,1))
-!#  endif
 ! !
-! !--------------------------------------------------------------------
-! ! Compute fast-time averaged barotropic mass fluxes along physical
+! !********************************
+! ! Compute fast-time averaged barotropic 
+! ! mass fluxes along physical
 ! ! boundaries.
-! !--------------------------------------------------------------------
+! !********************************
 ! !
-! ! KERNEL_32  Dnew <= ( h, zeta )
-! ! KERNEL_32  cff <= ( Dnew, ubar, on_u, vbar, om_v )
-! ! KERNEL_32  DU_avg1 <= ( DU_avg1, cff, cff1 )
-! ! KERNEL_32  DU_avg2 <= ( DU_avg2, cff, cff2 )
-! ! KERNEL_32  DV_avg1 <= ( DV_avg1, cff, cff1 )
-! ! KERNEL_32  DV_avg2 <= ( DV_avg2, cff, cff2 )
-
 !$acc kernels default( present )
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
@@ -772,4 +727,8 @@ C$OMP MASTER
       if (iif.eq.nfast) then
 !$acc update host( DU_avg1, DU_avg2, DV_avg1, DV_avg2 )   !! iif=last
       endif
-      
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_post.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !     

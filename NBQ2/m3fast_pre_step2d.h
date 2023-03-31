@@ -1,7 +1,12 @@
 ! !
-! !=====================================!==============================
-! ! Compute rufrc & rvfrc: internal mode forcing for barotropic fast 
-! ! mode
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_pre_step2d.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
+! !********************************
+! ! Compute rufrc & rvfrc: 
+! ! internal mode forcing for
+! ! barotropic fast mode
 ! !
 ! ! During the first fast time step convert rufrc & fvfrc into forcing
 ! ! terms by subtracting the fast-time "rubar" and "rvbar" from them;
@@ -11,7 +16,7 @@
 ! ! these newly computed forcing terms will remain constant during
 ! ! the fast time stepping and will be added to "rubar" and "rvbar"
 ! ! during all subsequent fast time steps.
-! !====================================================================
+! !********************************
 ! !
       if (FIRST_FAST_STEP) then
 ! !    
@@ -30,17 +35,7 @@
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1= 1.5+cff3                 ! maximum stability (with
         endif                            ! special care for startup)
-        
-
-! ! KERNEL_7  cff <= ( rubar )
-! ! KERNEL_7  ru_int2d_nbq <= ( cff , ru_int2d_nbq_bak )
-! ! KERNEL_7  ru_int2d_nbq_bak <= ( cff )
-! ! KERNEL_7  cff <= ( rvbar )
-! ! KERNEL_7  rv_int2d_nbq <= ( cff , rv_int2d_nbq_bak )
-! ! KERNEL_7  rv_int2d_nbq_bak <= ( cff )
-
 !$acc kernels default(present)
-!# ifndef M3FAST_ZETAW
 # if defined M3FAST_COUPLING2D  || defined NHINT
         do j=Jstr,Jend
          do i=IstrU,Iend
@@ -68,7 +63,6 @@
          enddo
         enddo
 # endif      
-!# ifndef M3FAST_ZETAW
 # if defined M3FAST_COUPLING2D  || defined NHINT
         do j=JstrV,Jend
          do i=Istr,Iend
@@ -104,15 +98,16 @@ C$OMP MASTER
          call check_tab2d(rufrc(:,:),'rufrc st_fast_d','u')
          call check_tab2d(rvfrc(:,:),'rvfrc st_fast_d','v')
 #endif
-      if (FIRST_FAST_STEP) then 
 ! !
-! !--------------------------------------------------------------------
+! !********************************
+! ! Adjust barotropic pressure force:
+! ! 
 ! ! Since coupling requires that pressure gradient term is computed
 ! ! using zeta(:,:,kstp) instead of zeta_new(:,:) needed to achieve
 ! ! numerical stability, apply compensation to shift pressure gradient
 ! ! terms from "kstp" to "knew": in essense, convert the fist 2D step
 ! ! from Forward Euler to Forward-Backward].
-! !--------------------------------------------------------------------
+! !********************************
 ! !   
 #  define zwrk UFx
 #  define rzeta  UFe
@@ -156,20 +151,15 @@ C$OMP MASTER
           enddo
         enddo            !--> discard  zwrk, rzeta, rzeta2, rzetaSA
 !$acc end kernels        
-
 # undef rzetaSA
 # undef rzeta2
 # undef rzeta
 # undef zwrk
-      endif   !<-- FIRST_FAST_STEP
-      
-
-      endif   !<-- FIRST_FAST_STEP
-
-      
+      endif   !<-- FIRST_FAST_STEP    
 ! !
-! !====================================================================
-! !   Update internal and external forcing terms for NBQ mode
+! !********************************
+! !   Update internal and external forcing 
+! !      terms for NBQ mode
 ! !
 ! !   Compute external forcing terms ru_ext_nbq and updated internal 
 ! !   forcing terms ru_int_nbq for NBQ equations
@@ -178,11 +168,11 @@ C$OMP MASTER
 ! !   ru_ext_nbq     : RHS (2D)
 ! !   ru_ext_nbq_old : RHS (2D) at previous time-step
 ! !   ru_ext_nbq_sum : time-integrated RHS (2D)
-! !====================================================================
+! !********************************
 ! !
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! !  First fast time step only
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! !
 # ifdef M3FAST_C3D_UVSF
        if (FIRST_FAST_STEP) then
@@ -223,25 +213,13 @@ C$OMP MASTER
        endif ! FIRST_FAST_STEP
 # endif
 ! !
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! !  All fast time steps
-! !--------------------------------------------------------------------
+! !--------------------------------
 ! !
-
 # ifndef M3FAST_COUPLING2D
 #  define ru_ext_nbq UFx
 # endif
-
-! ! KERNEL_9  UFx <= ( rubar, ru_int2d_nbq, pm_u, Drhs, umask )
-! ! KERNEL_9  ru_ext_nbq_old <= ( UFx, ru_ext_nbq_old )
-! ! KERNEL_9  ru_ext_nbq_sum <= (ru_ext_nbq_sum, UFx ) 
-! ! KERNEL_9  ru_int_nbq <= ( ru_int_nbq, ru_ext_nbq_old, Hz )
-! ! KERNEL_9  ru_ext_nbq_old <= ( UFx )
-! ! KERNEL_9  UFx <= ( rvbar, rv_int2d_nbq, pm_v, pn_v, Drhs, vmask )
-! ! KERNEL_9  rv_ext_nbq_old <= ( UFx, rv_ext_nbq_old )
-! ! KERNEL_9  rv_ext_nbq_sum <= ( rv_ext_nbq_sum, UFx )
-! ! KERNEL_9  rv_int_nbq <= (rv_int_nbq, rv_ext_nbq_old,  Hz )
-! ! KERNEL_9  rv_ext_nbq_old <= ( UFx )
 ! !       if ( FIRST_FAST_STEP) then
 ! ! !$acc update device( ru_int_nbq, rv_int_nbq )
 ! !       endif
@@ -331,14 +309,6 @@ C$OMP END MASTER
           enddo
         enddo
       enddo
-!#  if defined RVTK_DEBUG 
-!C$OMP BARRIER
-!C$OMP MASTER
-!       call check_tab2d(ru_ext_nbq_old,'ru_ext_nbq_old (A3)','uint')
-!       call check_tab3d(ru_int_nbq(:,:,1),'ru_int_nbq (A3)','uint')
-!       call check_tab3d(rv_int_nbq,'rv_int_nbq (A3)','vint')
-!C$OMP END MASTER     
-!#  endif  
       do j=JstrV,Jend
         do i=Istr,Iend
           rv_ext_nbq_old(i,j)=rv_ext_nbq(i,j)
@@ -379,3 +349,8 @@ C$OMP MASTER
      &    ,ondevice=.TRUE.)
 C$OMP END MASTER     
 #  endif  
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_pre_step2d.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

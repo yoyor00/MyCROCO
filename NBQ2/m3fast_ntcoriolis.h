@@ -1,4 +1,8 @@
-
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_ntcoriolis.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
 #  define Huw ntcoru
 #  define Hvw ntcorv
 #ifdef OPENACC
@@ -63,3 +67,8 @@
           enddo
         enddo
       enddo
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_ntcoriolis.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !

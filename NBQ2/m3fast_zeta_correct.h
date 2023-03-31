@@ -1,10 +1,14 @@
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_zeta_correct.h (begin)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
 # ifdef NBQ_HZCORRECT_ZETA
-!-----------------------------------------------------------------------
-!  Update zeta(m+1)
-!-----------------------------------------------------------------------
-!
-! ! KERNEL_33  Dnew <= ( zeta, h, pm, pn, Dnew, ubar, on_u, vbar, om_v )
-! ! KERNEL_33  zeta <= ( zeta, rmask )
+! !
+! !********************************
+! !  Update zeta(m+1)
+! !********************************
+! !
 !$acc kernels default( present )
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
@@ -56,9 +60,10 @@
 !$acc end kernels
 !$acc kernels default( present )
 ! !
-! !--------------------------------------------------------------------
-! !  Set masking for zeta, including wet/dry conditions
-! !--------------------------------------------------------------------
+! !********************************
+! !  Set masking for zeta, 
+! !  including wet/dry conditions
+! !********************************
 ! !
 #  ifdef MASKING
 ! ! KERNEL_34  zeta <= ( zeta, rmask )
@@ -77,10 +82,11 @@
 #  endif /* MASKING */
 !$acc end kernels
 ! !
-! !--------------------------------------------------------------------
-! !  Set boundary conditions for the free-surface
+! !********************************
+! !  Set boundary conditions 
+! !   for the free-surface
 ! !  --> ensure closed boundaries
-! !--------------------------------------------------------------------
+! !********************************
 ! !
 !#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #  ifndef OBC_NBQ
@@ -88,9 +94,9 @@
 #  endif
 # endif /* NBQ_HZCORRECT_ZETA */
 ! !
-! !--------------------------------------------------------------------
-! !  Update Zt_avg1 at last fast step
-! !--------------------------------------------------------------------
+! !********************************
+! ! Update Zt_avg1 at last fast step
+! !********************************
 ! !
       if (LAST_FAST_STEP) then
 !$acc kernels default(present)
@@ -99,19 +105,16 @@
             Zt_avg1(i,j)=zeta(i,j,knew)
           enddo
         enddo
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-!        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-!     &                          Zt_avg1(START_2D_ARRAY))
-!#  endif
 !$acc end kernels
 ! !$acc update host( Zt_avg1,zeta(:,:,knew)  )  !! iif=last
 !$acc update host( Zt_avg1,zeta  )  !! iif=last
       endif
 ! !
-! !--------------------------------------------------------------------
-! ! Update grid parameters at m+1: Hz, z_r, z_w
+! !********************************
+! ! Update grid parameters at m+1: 
+! !     Hz, z_r, z_w
 ! ! in prognostic or diagnostic way
-! !--------------------------------------------------------------------
+! !********************************
 ! !
 #  ifdef NBQ_GRID_SLOW
       if (LAST_FAST_STEP) then
@@ -132,9 +135,11 @@
             enddo
           enddo
         enddo
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! ATTENTION FRANCIS
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! 
+! !********************************
+! !  Exchange:  ATTENTION FRANCIS
+! !********************************
+! !
 #   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #     ifndef M3FAST_SEDLAYERS
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -158,9 +163,9 @@
 #   endif
 #  else   /* ! NBQ_HZ_PROGNOSTIC */
 ! !
-! !--------------------------------------------------------------------
-! !  Diagnostic evaluation from zeta(m+1)
-! !--------------------------------------------------------------------
+! !********************************
+! ! Diagnostic evaluation from zeta(m+1)
+! !********************************
 ! !
 # ifdef OPENACC
 #  undef exchange_r2d_tile 
@@ -174,13 +179,13 @@
         call set_depth_tile(Istr,Iend,Jstr,Jend)
 #  endif  /* NBQ_HZ_PROGNOSTIC */ 
 ! !
-! !--------------------------------------------------------------------
-! ! Compute derived grid parameters if fast update
-! !--------------------------------------------------------------------
-! !
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! ! ATTENTION FRANCIS: this call should not be needed
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !********************************
+! ! Compute derived grid parameters 
+! !     if fast update
+! !********************************
+! ! ATTENTION FRANCIS: this call 
+! !   should not be needed
+! !********************************
 ! !
 #  ifndef NBQ_GRID_SLOW
         call grid_nbq_tile(Istr,Iend,Jstr,Jend,
@@ -191,10 +196,10 @@
       endif !<-- LAST_FAST_STEP
 #  endif
 ! !
-! !--------------------------------------------------------------------
-! !  Exchange boundary information.
-! !   FRANCIS EXCHANGE OUT to be tested
-! !--------------------------------------------------------------------
+! !********************************
+! ! Exchange boundary information.
+! !  FRANCIS EXCHANGE OUT to be tested
+! !********************************
 ! !
 # ifdef NBQ_HZCORRECT 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
@@ -212,10 +217,11 @@
       endif
 #  endif
 # endif
-!
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
+! !********************************
 ! ! FRANCIS EXCHANGE OUT to be tested
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !********************************
+! !
       if (LAST_FAST_STEP) then  
 !     call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
 !    &                        DU_avg1(START_2D_ARRAY,nnew))
@@ -232,3 +238,8 @@
      &                        vst2d(START_2D_ARRAY))
 #  endif
       endif
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! m3fast_zeta_correct.h (end)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
