@@ -898,8 +898,6 @@ C$    trd=omp_get_thread_num()
 # ifdef NBQ_HZCORRECT  
 #  include "m3fast_hz_correct.h"
 # endif  /* NBQ_HZCORRECT */
-!
-# undef Hz_correct
 ! !
 ! !
 ! !********************************************************************
