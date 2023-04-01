@@ -728,6 +728,63 @@ C$OMP MASTER
 !$acc update host( DU_avg1, DU_avg2, DV_avg1, DV_avg2 )   !! iif=last
       endif
 ! !
+! !********************************
+! ! Update Free-slip
+! !********************************
+! !
+# ifdef NBQ_FREESLIP
+       if (FIRST_FAST_STEP) then
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
+              qdmw0_nbq(i,j)=qdmw_nbq(i,j,0)
+            enddo
+           enddo
+        elseif (LAST_FAST_STEP) then
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
+              qdmw0_nbq(i,j)=qdmw0_nbq(i,j)+qdmw_nbq(i,j,0)
+            enddo
+           enddo
+        else
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
+              qdmw0_nbq(i,j)=(qdmw0_nbq(i,j)+qdmw_nbq(i,j,0))
+     &               /float(ndtfast)
+            enddo
+           enddo
+           
+        endif
+# endif
+! !
+! !********************************
+! ! Copy density for extrapolation
+! !********************************
+! !
+# ifdef NBQ_MASS
+      if (LAST_FAST_STEP) then
+        do k=1,N
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
+              rho_grd(i,j,k)=rho(i,j,k)
+            enddo
+           enddo
+         enddo
+      endif
+# endif
+! !
+! !********************************
+! ! FRANCIS: EXCHANG to be tested
+! !********************************
+! !
+#  if defined MRL_WCI && defined WET_DRY
+      if (LAST_FAST_STEP) then  
+       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                         ust2d(START_2D_ARRAY))
+       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                         vst2d(START_2D_ARRAY))
+      endif
+#  endif
+! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_post.h (end)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

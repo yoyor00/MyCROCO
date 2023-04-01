@@ -136,6 +136,35 @@
 #  endif /* M3FAST_DIAGACOUS */
 # endif  /* M3FAST_RHO */
 ! !
+! !********************************
+! ! Mass/volume conservation (diag)
+! !********************************
+! !
+# if defined NBQ_MASS && defined NBQ_DIAGMASS
+      masstot=0.
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          do k=1,N
+          masstot=masstot+Hz(i,j,k)
+          enddo
+        enddo
+      enddo
+#  ifdef MPI
+      call MPI_ALLGATHER(masstot,1,MPI_DOUBLE_PRECISION,
+     &                allmasstot,1,MPI_DOUBLE_PRECISION,
+     &                          MPI_COMM_WORLD,ierr)
+      masstot=QuadZero
+      do i=1,NNODES
+        masstot=masstot+allmasstot(1,i)
+      enddo
+#  endif
+      if (mynode==0) then
+       open(unit=10,file='diag_mass.dat',access='append')
+       write(10,*) masstot
+       close(10)
+      endif
+# endif
+! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_mass_update.h (end)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

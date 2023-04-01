@@ -3,8 +3,6 @@
 ! ! m3fast_zeta_correct.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
-# ifdef NBQ_HZCORRECT_ZETA
-! !
 ! !********************************
 ! !  Update zeta(m+1)
 ! !********************************
@@ -200,43 +198,19 @@
 ! !  FRANCIS EXCHANGE OUT to be tested
 ! !********************************
 ! !
-# ifdef NBQ_HZCORRECT 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      if (LAST_FAST_STEP) then  
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                        zeta(START_2D_ARRAY,knew))    
-      else
-#   ifdef OPENACC      
-      call exchange_r2d_tile_device (Istr,Iend,Jstr,Jend,
-     &                        zeta(START_2D_ARRAY,knew))
-#   else
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                        zeta(START_2D_ARRAY,knew))
-#   endif
-      endif
-#  endif
-# endif
-! !
-! !********************************
-! ! FRANCIS EXCHANGE OUT to be tested
-! !********************************
-! !
-      if (LAST_FAST_STEP) then  
-!     call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-!    &                        DU_avg1(START_2D_ARRAY,nnew))
-!     call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-!    &                        DV_avg1(START_2D_ARRAY,nnew))
-!     call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-!    &                        DU_avg2(START_2D_ARRAY))
-!     call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-!    &                        DV_avg2(START_2D_ARRAY))
-#  if defined MRL_WCI && defined WET_DRY
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                        ust2d(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                        vst2d(START_2D_ARRAY))
-#  endif
-      endif
+!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!      if (LAST_FAST_STEP) then  
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+!     &                        zeta(START_2D_ARRAY,knew))    
+!      else
+!#   ifdef OPENACC      
+!      call exchange_r2d_tile_device (Istr,Iend,Jstr,Jend,
+!     &                        zeta(START_2D_ARRAY,knew))
+!#   else
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+!     &                        zeta(START_2D_ARRAY,knew))
+!      endif
+!#   endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_zeta_correct.h (end)
