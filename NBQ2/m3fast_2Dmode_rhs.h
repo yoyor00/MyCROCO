@@ -48,12 +48,6 @@
 # define rzeta   UFe
 # define rzeta2  VFe
 # define rzetaSA VFx
-
-! ! KERNEL_5  zwrk <= ( zeta )
-! ! KERNEL_5  rzeta <= ( rhoS, zwrk )
-! ! KERNEL_5  rzeta2 <= ( rzeta, zwrk )
-! ! KERNEL_5  rzetaSA <= ( zwrk, rhoS, rhoA )
-
 !$acc kernels default(present)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -128,25 +122,6 @@ C$OMP MASTER
        call check_tab2d(rhoS,'rhoS st_fast_b','r')
        call check_tab2d(rhoA,'rhoA st_fast_b','r')
 #endif
-
-! ! KERNEL_6  UFx <= ( DUon, urhs )
-! ! KERNEL_6  VFx <= ( DUon, vrhs, pmask )
-! ! KERNEL_6  VFe <= ( DVom, vrhs )
-! ! KERNEL_6  UFe <= ( DVom, urhs, pmask )
-! ! KERNEL_6  rubar <= ( rubar, UFx, UFe )
-! ! KERNEL_6  rvbar <= ( rvbar, VFx, VFe )
-! ! KERNEL_6  cff <= ( Drhs, fomn, dndx, vrhs, dmde, urhs)
-! ! KERNEL_6  UFx <= ( cff, vrhs )
-! ! KERNEL_6  VFe <= ( cff, urhs )
-! ! KERNEL_6  rubar <= ( rubar, UFx )
-! ! KERNEL_6  rvbar <= ( rvbar, VFe )
-! ! KERNEL_6  cff <= ( vbar )
-! ! KERNEL_6  rubar <= ( rubar, ubar, cff, om_u, on_u )
-! ! KERNEL_6  cff <= ( ubar )
-! ! KERNEL_6  rvbar <= ( rvbar, vabr, cff, om_v, on_v )
-! ! KERNEL_6  rubar <= ( rubar, om_u, on_u )
-! ! KERNEL_6  rvbar <= ( rvbar, om_v, on_v )
-
 !$acc kernels default(present)
 # ifdef UV_ADV
 ! !********************************

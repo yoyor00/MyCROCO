@@ -176,10 +176,6 @@ C$OMP MASTER
 ! !
 # ifdef M3FAST_C3D_UVSF
        if (FIRST_FAST_STEP) then
-      
-! ! KERNEL_8  ru_ext_nbq_sum <= O
-! ! KERNEL_8  ru_ext_nbq_old <= 0
-      
 !$acc kernels default(present)
         do j=Jstr,Jend
           do i=IstrU,Iend

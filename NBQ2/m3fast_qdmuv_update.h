@@ -496,8 +496,6 @@
 ! ! TBT
 ! !********************************
 # ifdef MODIF_FA
-! ! KERNEL_16  sum_nbq <= ( qdmu_nbq,qdmv_nbq ) 
-
 !$acc kernels default(present) 
           do j=Jstr,Jend
             do i=IstrU,Iend

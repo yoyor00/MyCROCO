@@ -66,7 +66,6 @@
 ! !********************************
 ! !
 #  ifdef MASKING
-! ! KERNEL_34  zeta <= ( zeta, rmask )
       do j=Jstr,Jend
         do i=Istr,Iend
           zeta(i,j,knew)=zeta(i,j,knew)*rmask(i,j)
