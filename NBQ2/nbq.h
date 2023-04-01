@@ -379,5 +379,8 @@
       integer alphaNw_nbq  
       common/nhint_2/alphaNw_nbq
 # endif
-
+# ifdef NHINT_WH
+      real wzh_nbq(GLOBAL_2D_ARRAY,-N_sl:N)
+      common /nbq_wh/ wzh_nbq
+# endif
 #endif /* M3FAST */

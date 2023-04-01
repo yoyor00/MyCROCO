@@ -97,6 +97,38 @@
           do i=Istr,Iend  
 ! !
 ! !--------------------------------
+! ! Compute (if necessary) hydrostatic 
+! !  component of w
+! !--------------------------------
+! !
+#  ifdef NHINT_WH
+           wzh_nbq(i,j,k)=  !wzh_nbq(i,j,k)
+     &                      +((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
+#    ifdef NHINT_3M
+     &                         *nsdtnbq
+#    endif
+#    ifdef NHINT_NOSPDUP
+     &                     +0.5*(usurf_nbq(i  ,j)
+     &                         *(zeta(i,j,knew)-zeta(i-1,j,knew))
+     &                         *pm_u(i,j)
+     &                         +usurf_nbq(i+1,j)
+     &                         *(zeta(i+1,j,knew)-zeta(i,j,knew))
+     &                         *pm_u(i+1,j) 
+     &                          )
+     &                     +0.5*(vsurf_nbq(i  ,j)
+     &                         *(zeta(i,j,knew)-zeta(i,j-1,knew))
+     &                         *pn_v(i,j)
+     &                         +vsurf_nbq(i,j+1)
+     &                         *(zeta(i,j+1,knew)-zeta(i,j,knew))
+     &                         *pn_v(i,j+1) 
+     &                          )
+#    endif    /*  NHINT_NOSPDUP */
+     &                   ) 
+     &            *(H(i,j)+z_w(i,j,k))/(H(i,j)+z_w(i,j,N))   ! Linear evolution
+   ! &    /ndtfast
+#  endif  /* NHINT_WH */
+! !
+! !--------------------------------
 ! ! Compute vertical gradient
 ! !--------------------------------
 ! !
@@ -263,8 +295,40 @@
 ! !
         k=N
         do i=Istr,Iend
+#  ifdef NHINT_WH
 ! ! 
+! !--------------------------------
+! !  Hydrostatic component of w
+! !--------------------------------
+! !
+         wzh_nbq(i,j,N)= !wzh_nbq(i,j,N)
+     &                    +((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
+#    ifdef NHINT_3M
+     &                         *nsdtnbq
+#    endif
+#    ifdef NHINT_NOSPDUP
+     &                     +0.5*(usurf_nbq(i  ,j)
+     &                         *(zeta(i,j,knew)-zeta(i-1,j,knew))
+     &                         *pm_u(i,j)
+     &                         +usurf_nbq(i+1,j)
+     &                         *(zeta(i+1,j,knew)-zeta(i,j,knew))
+     &                         *pm_u(i+1,j) 
+     &                          )
+     &                     +0.5*(vsurf_nbq(i  ,j)
+     &                         *(zeta(i,j,knew)-zeta(i,j-1,knew))
+     &                         *pn_v(i,j)
+     &                         +vsurf_nbq(i,j+1)
+     &                         *(zeta(i,j+1,knew)-zeta(i,j,knew))
+     &                         *pn_v(i,j+1) 
+     &                          )
+#    endif    /* NHINT_NOSPDUP */
+     &                )
+ !   &    /ndtfast
+#  endif           /*   NHINT_WH    */
+! ! 
+! !--------------------------------
 ! !  Vertical gradient
+! !--------------------------------
 ! !
 #    ifndef NBQ_IMP
           dum_s =   thetadiv_nbq(i,j,N)
@@ -278,7 +342,9 @@
           dum_s = dum_s + ntcorw(i,j,k)
 #    endif
 ! !
+! !--------------------------------
 ! !  Compute weight
+! !--------------------------------
 ! !
 #    ifdef NBQ_GRAV
           dum_s = dum_s 
@@ -288,7 +354,9 @@
      &                           )
 #    endif    
 ! ! 
+! !--------------------------------
 ! !  Update qdmw(N): fast and slow components
+! !--------------------------------
 ! !
           qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)   
      &                   + dtfast * ( dum_s 
