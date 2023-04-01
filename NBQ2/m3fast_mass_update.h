@@ -19,13 +19,13 @@
           enddo
         enddo
       enddo
-#  ifdef NHINT_CORR
 ! !
 ! !********************************
 ! ! NHINT numerical mode control: 
 ! ! remove potential surface component
 ! !********************************
 ! !
+#  ifdef NHINT_CORR
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
              
