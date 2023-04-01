@@ -880,9 +880,7 @@ C$    trd=omp_get_thread_num()
 ! !
 ! !********************************************************************
 ! !
-# ifdef NBQ_HZCORRECT_ZETA
-#  include "m3fast_zeta_correct.h"
-# endif
+# include "m3fast_zeta_correct.h"
 ! !
 ! !********************************************************************
 ! ! PART D.3: AGRIF: Apply conservation requirements for nesting

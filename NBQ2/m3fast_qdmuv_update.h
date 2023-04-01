@@ -653,8 +653,8 @@ c C$OMP END MASTER
 ! !
 !     M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
 !                          ! and compute DU_nbq
-!     call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-!     call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
+      call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
+      call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 ! !
 ! !********************************
 ! ! Exchange periodic boundaries 
