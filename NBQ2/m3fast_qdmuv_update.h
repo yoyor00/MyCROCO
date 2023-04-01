@@ -247,7 +247,16 @@
 #   ifdef MASKING
      &                          *umask(i,j)
 #   endif
-#  else   /* ! M3FAST_SEDLAYERS */          
+#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+     &                        +u(i,j,k,nrhs)
+     &                         *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
+     &                         *NBQnudgcof(i,j)
+#    ifdef MASKING
+     &                         *umask(i,j)
+#    endif  
+#   endif
+#  else   /* M3FAST_SEDLAYERS */          
               if (k.gt.0) then   
                qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k) + dtfast * (
      &                         dum_s
@@ -266,16 +275,20 @@
      &                          *umask(i,j)
 #   endif
               endif
-#  endif  /* M3FAST_SEDLAYERS */
-#  if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
-              qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+              if (k.gt.0) then   
+               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
      &                        +u(i,j,k,nrhs)
      &                         *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
      &                         *NBQnudgcof(i,j)
-#   ifdef MASKING
+#    ifdef MASKING
      &                         *umask(i,j)
-#   endif  
-#  endif
+#    endif  
+	      else
+               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+	      endif
+#   endif
+#  endif  /* M3FAST_SEDLAYERS */
 #  ifdef M3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
@@ -423,6 +436,14 @@
 #   ifdef MASKING
      &                          *vmask(i,j)
 #   endif
+#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+     &                        +v(i,j,k,nrhs)*NBQnudgcof(i,j)
+     &                         *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
+#     ifdef MASKING
+     &                         *vmask(i,j)
+#     endif  
+#    endif  
 #  else   /* ! M3FAST_SEDLAYERS */          
               if (k.gt.0) then   
                qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k) + dtfast * (
@@ -442,15 +463,19 @@
      &                          *vmask(i,j)
 #   endif
               endif
-#  endif  /* M3FAST_SEDLAYERS */
-#  if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
-              qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+              if (k.gt.0) then   
+               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
      &                        +v(i,j,k,nrhs)*NBQnudgcof(i,j)
      &                         *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
-#   ifdef MASKING
+#    ifdef MASKING
      &                         *vmask(i,j)
-#   endif  
-#  endif
+#    endif  
+	      else
+               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+	      endif
+#   endif
+#  endif  /* M3FAST_SEDLAYERS */
      
 #  ifdef M3FAST_SEDLAYERS 
               if (k.gt.0) then
@@ -630,8 +655,8 @@ c C$OMP END MASTER
 ! !
 !     M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
 !                          ! and compute DU_nbq
-      call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-      call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
+!     call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
+!     call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 ! !
 ! !********************************
 ! ! Exchange periodic boundaries 

@@ -19,13 +19,13 @@
           enddo
         enddo
       enddo
+#  ifdef NHINT_CORR
 ! !
 ! !********************************
 ! ! NHINT numerical mode control: 
 ! ! remove potential surface component
 ! !********************************
 ! !
-#  ifdef NHINT_CORR
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
              
@@ -118,6 +118,22 @@
 #   endif    
 #  endif /* NBQ_MASS */
 
+#  ifdef M3FAST_DIAGACOUS
+! !
+! !********************************
+! ! Diag. Acoustic: pressure field
+! !********************************
+! !
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            do k=-N_sl+1,N
+              p_nbq(i,j,k)=soundspeed2_nbq(i,j,k)*rho_nbq(i,j,k)
+              p_nbq_max(i,j,k)=max(p_nbq_max(i,j,k),
+     &                      abs(soundspeed2_nbq(i,j,k)*rho_nbq(i,j,k)))
+            enddo
+          enddo
+        enddo
+#  endif /* M3FAST_DIAGACOUS */
 # endif  /* M3FAST_RHO */
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

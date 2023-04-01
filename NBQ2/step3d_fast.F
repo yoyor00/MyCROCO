@@ -660,12 +660,13 @@ C$    trd=omp_get_thread_num()
        do k=-N_sl+1,N
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
-             thetadiv_nbq(i,j,k)=( -visc2_nbq* thetadiv_nbq(i,j,k)
-     &                             +rho_nbq(i,j,k) 
-#  ifndef M3FAST_CSVISC2K
-     &                           *soundspeed2_nbq
+             thetadiv_nbq(i,j,k)=(
+#  ifndef M3FAST_CSVISC2K 
+     &                  -visc2_nbq       *thetadiv_nbq   (i,j,k)
+     &                  +rho_nbq  (i,j,k)*soundspeed2_nbq
 #  else
-     &                           *soundspeed2_nbq(i,j,k)
+     &                  -visc2_nbq(i,j,k)*thetadiv_nbq   (i,j,k)
+     &                  +rho_nbq  (i,j,k)*soundspeed2_nbq(i,j,k)
 #  endif 
      &                           )*Hzr_nbq_inv(i,j,k) 
            enddo
@@ -757,7 +758,7 @@ C$    trd=omp_get_thread_num()
 ! !--------------------------------------------------------------------
 ! !
 #  ifndef NBQ_IMP
-#   include "m3fast_divhh"
+#   include "m3fast_divh.h"
 #  endif
 ! !
 ! !--------------------------------------------------------------------
