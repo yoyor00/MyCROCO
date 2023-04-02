@@ -194,23 +194,23 @@
 # endif
 ! !
 ! !********************************
-! ! Exchange boundary information.
-! !  FRANCIS EXCHANGE OUT to be tested
+! ! Exchange ZETA
 ! !********************************
 ! !
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-!      if (LAST_FAST_STEP) then  
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-!     &                        zeta(START_2D_ARRAY,knew))    
-!      else
-!#   ifdef OPENACC      
-!      call exchange_r2d_tile_device (Istr,Iend,Jstr,Jend,
-!     &                        zeta(START_2D_ARRAY,knew))
-!#   else
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-!     &                        zeta(START_2D_ARRAY,knew))
-!      endif
-!#   endif
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      if (LAST_FAST_STEP) then  
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        zeta(START_2D_ARRAY,knew))    
+      else
+#  ifdef OPENACC      
+      call exchange_r2d_tile_device (Istr,Iend,Jstr,Jend,
+     &                        zeta(START_2D_ARRAY,knew))
+#  else
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        zeta(START_2D_ARRAY,knew))
+      endif
+#  endif
+# endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_zeta_correct.h (end)
