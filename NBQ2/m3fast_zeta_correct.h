@@ -212,6 +212,22 @@
 #  endif
 # endif
 ! !
+! !********************************
+! ! Copy density for extrapolation
+! !********************************
+! !
+# ifdef NBQ_MASS
+      if (LAST_FAST_STEP) then
+        do k=1,N
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
+              rho_grd(i,j,k)=rho(i,j,k)
+            enddo
+           enddo
+         enddo
+      endif
+# endif
+! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_zeta_correct.h (end)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
