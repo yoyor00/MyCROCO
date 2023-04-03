@@ -1,9 +1,8 @@
+# ifdef NBQ_HZCORRECT_ZETA
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_zeta_correct.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! !
-# ifdef NBQ_HZCORRECT_ZETA
 ! !
 ! !********************************
 ! !  Update zeta(m+1)
@@ -66,7 +65,6 @@
 ! !********************************
 ! !
 #  ifdef MASKING
-! ! KERNEL_34  zeta <= ( zeta, rmask )
       do j=Jstr,Jend
         do i=Istr,Iend
           zeta(i,j,knew)=zeta(i,j,knew)*rmask(i,j)
@@ -88,7 +86,6 @@
 ! !  --> ensure closed boundaries
 ! !********************************
 ! !
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #  ifndef OBC_NBQ
        call zetabc_tile (Istr,Iend,Jstr,Jend)
 #  endif
@@ -116,12 +113,12 @@
 ! ! in prognostic or diagnostic way
 ! !********************************
 ! !
-#  ifdef NBQ_GRID_SLOW
+# ifdef NBQ_GRID_SLOW
       if (LAST_FAST_STEP) then
 !$acc update host( Hz )      
-#  endif
+# endif
 
-#  ifdef NBQ_HZ_PROGNOSTIC
+# ifdef NBQ_HZ_PROGNOSTIC
 !
 !  Prognostic evaluation using momentum divergence
 !
@@ -140,8 +137,8 @@
 ! !  Exchange:  ATTENTION FRANCIS
 ! !********************************
 ! !
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-#     ifndef M3FAST_SEDLAYERS
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#    ifndef M3FAST_SEDLAYERS
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                          Hz(START_2D_ARRAY,1))
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -150,7 +147,7 @@
      &                          z_w(START_2D_ARRAY,0))
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                          z_r(START_2D_ARRAY,1))
-#      else
+#    else
         call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
      &                          Hz(START_2D_ARRAY,-N_sl+1))
         call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
@@ -159,7 +156,7 @@
      &                          z_w(START_2D_ARRAY,-N_sl))
         call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
      &                          z_r(START_2D_ARRAY,-N_sl+1))
-#      endif
+#    endif
 #   endif
 #  else   /* ! NBQ_HZ_PROGNOSTIC */
 ! !
@@ -167,17 +164,17 @@
 ! ! Diagnostic evaluation from zeta(m+1)
 ! !********************************
 ! !
-# ifdef OPENACC
-#  undef exchange_r2d_tile 
-#  undef exchange_u2d_tile 
-#  undef exchange_v2d_tile 
-#  undef exchange_r3d_tile 
-#  undef exchange_u3d_tile 
-#  undef exchange_v3d_tile 
-#  undef exchange_w3d_tile 
-# endif
+#  ifdef OPENACC
+#   undef exchange_r2d_tile 
+#   undef exchange_u2d_tile 
+#   undef exchange_v2d_tile 
+#   undef exchange_r3d_tile 
+#   undef exchange_u3d_tile 
+#   undef exchange_v3d_tile 
+#   undef exchange_w3d_tile 
+#  endif
         call set_depth_tile(Istr,Iend,Jstr,Jend)
-#  endif  /* NBQ_HZ_PROGNOSTIC */ 
+# endif  /* NBQ_HZ_PROGNOSTIC */ 
 ! !
 ! !********************************
 ! ! Compute derived grid parameters 
@@ -187,57 +184,49 @@
 ! !   should not be needed
 ! !********************************
 ! !
-#  ifndef NBQ_GRID_SLOW
+# ifndef NBQ_GRID_SLOW
         call grid_nbq_tile(Istr,Iend,Jstr,Jend,
      &                     Hzw_nbq_inv,   Hzr_nbq_inv,
      &                     Hzw_nbq_inv_u  , Hzw_nbq_inv_v)
-#  endif
-#  ifdef NBQ_GRID_SLOW
+# endif
+# ifdef NBQ_GRID_SLOW
       endif !<-- LAST_FAST_STEP
-#  endif
+# endif
 ! !
 ! !********************************
-! ! Exchange boundary information.
-! !  FRANCIS EXCHANGE OUT to be tested
+! ! Exchange ZETA
 ! !********************************
 ! !
-# ifdef NBQ_HZCORRECT 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       if (LAST_FAST_STEP) then  
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,knew))    
       else
-#   ifdef OPENACC      
+#  ifdef OPENACC      
       call exchange_r2d_tile_device (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,knew))
-#   else
+#  else
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,knew))
-#   endif
       endif
 #  endif
 # endif
 ! !
 ! !********************************
-! ! FRANCIS EXCHANGE OUT to be tested
+! ! Copy density for extrapolation
 ! !********************************
 ! !
-      if (LAST_FAST_STEP) then  
-!     call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-!    &                        DU_avg1(START_2D_ARRAY,nnew))
-!     call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-!    &                        DV_avg1(START_2D_ARRAY,nnew))
-!     call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-!    &                        DU_avg2(START_2D_ARRAY))
-!     call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-!    &                        DV_avg2(START_2D_ARRAY))
-#  if defined MRL_WCI && defined WET_DRY
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                        ust2d(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                        vst2d(START_2D_ARRAY))
-#  endif
+# ifdef NBQ_MASS
+      if (LAST_FAST_STEP) then
+        do k=1,N
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
+              rho_grd(i,j,k)=rho(i,j,k)
+            enddo
+           enddo
+         enddo
       endif
+# endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_zeta_correct.h (end)

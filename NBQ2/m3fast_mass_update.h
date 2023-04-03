@@ -19,13 +19,13 @@
           enddo
         enddo
       enddo
-#  ifdef NHINT_CORR
 ! !
 ! !********************************
 ! ! NHINT numerical mode control: 
 ! ! remove potential surface component
 ! !********************************
 ! !
+#  ifdef NHINT_CORR
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
              
@@ -118,7 +118,52 @@
 #   endif    
 #  endif /* NBQ_MASS */
 
+#  ifdef M3FAST_DIAGACOUS
+! !
+! !********************************
+! ! Diag. Acoustic: pressure field
+! !********************************
+! !
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            do k=-N_sl+1,N
+              p_nbq(i,j,k)=soundspeed2_nbq(i,j,k)*rho_nbq(i,j,k)
+              p_nbq_max(i,j,k)=max(p_nbq_max(i,j,k),
+     &                      abs(soundspeed2_nbq(i,j,k)*rho_nbq(i,j,k)))
+            enddo
+          enddo
+        enddo
+#  endif /* M3FAST_DIAGACOUS */
 # endif  /* M3FAST_RHO */
+! !
+! !********************************
+! ! Mass/volume conservation (diag)
+! !********************************
+! !
+# if defined NBQ_MASS && defined NBQ_DIAGMASS
+      masstot=0.
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          do k=1,N
+          masstot=masstot+Hz(i,j,k)
+          enddo
+        enddo
+      enddo
+#  ifdef MPI
+      call MPI_ALLGATHER(masstot,1,MPI_DOUBLE_PRECISION,
+     &                allmasstot,1,MPI_DOUBLE_PRECISION,
+     &                          MPI_COMM_WORLD,ierr)
+      masstot=QuadZero
+      do i=1,NNODES
+        masstot=masstot+allmasstot(1,i)
+      enddo
+#  endif
+      if (mynode==0) then
+       open(unit=10,file='diag_mass.dat',access='append')
+       write(10,*) masstot
+       close(10)
+      endif
+# endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_mass_update.h (end)

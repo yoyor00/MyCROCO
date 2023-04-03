@@ -141,9 +141,7 @@ C$    trd=omp_get_thread_num()
 ! !          D.1: Compute time average & adjust depth-averaged variables
 ! !          D.2: Adjust zeta.
 ! !          D.3: Apply conservation requirements for AGRIF nesting
-! !          D.4: Copy density for extrapolation.
-! !          D.5: Update Free-slip.
-! !          D.6: Adjust Hz(m+1) for internal mode.
+! !          D.4: Adjust Hz(m+1) for internal mode.
 ! !  PART E: Test for CFL violation.
 ! !*********************************************************************
 ! !      
@@ -266,7 +264,7 @@ C$    trd=omp_get_thread_num()
 # ifdef WET_DRY
       real cff1_WD,cff2_WD
 # endif
-# if defined MASS || defined MOVING_BATHY
+# if defined MASS && defined NBQ_DIAGMASS
       real*QUAD masstot
 #  ifdef MPI
       real*QUAD allmasstot(1,NNODES)
@@ -660,12 +658,13 @@ C$    trd=omp_get_thread_num()
        do k=-N_sl+1,N
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
-             thetadiv_nbq(i,j,k)=( -visc2_nbq* thetadiv_nbq(i,j,k)
-     &                             +rho_nbq(i,j,k) 
-#  ifndef M3FAST_CSVISC2K
-     &                           *soundspeed2_nbq
+             thetadiv_nbq(i,j,k)=(
+#  ifndef M3FAST_CSVISC2K 
+     &                  -visc2_nbq       *thetadiv_nbq   (i,j,k)
+     &                  +rho_nbq  (i,j,k)*soundspeed2_nbq
 #  else
-     &                           *soundspeed2_nbq(i,j,k)
+     &                  -visc2_nbq(i,j,k)*thetadiv_nbq   (i,j,k)
+     &                  +rho_nbq  (i,j,k)*soundspeed2_nbq(i,j,k)
 #  endif 
      &                           )*Hzr_nbq_inv(i,j,k) 
            enddo
@@ -757,7 +756,7 @@ C$    trd=omp_get_thread_num()
 ! !--------------------------------------------------------------------
 ! !
 #  ifndef NBQ_IMP
-#   include "m3fast_divhh"
+#   include "m3fast_divh.h"
 #  endif
 ! !
 ! !--------------------------------------------------------------------
@@ -881,7 +880,7 @@ C$    trd=omp_get_thread_num()
 ! !
 ! !********************************************************************
 ! !
-#include "m3fast_zeta_correct.h"
+# include "m3fast_zeta_correct.h"
 ! !
 ! !********************************************************************
 ! ! PART D.3: AGRIF: Apply conservation requirements for nesting
@@ -892,160 +891,13 @@ C$    trd=omp_get_thread_num()
 # endif /* AGRIF */
 ! !
 ! !********************************************************************
-! ! PART D.4: Copy density for extrapolation: 
-! !********************************************************************
-! !
-# ifdef NBQ_MASS
-      if (LAST_FAST_STEP) then
-        do k=1,N
-          do j=JstrV-2,Jend+1
-            do i=IstrU-2,Iend+1
-              rho_grd(i,j,k)=rho(i,j,k)
-            enddo
-           enddo
-         enddo
-      endif
-# endif
-! !
-! !********************************************************************
-! ! PART D.5:  Update Free-slip
-! !********************************************************************
-! !
-# ifdef NBQ_FREESLIP
-       if (FIRST_FAST_STEP) then
-          do j=JstrV-2,Jend+1
-            do i=IstrU-2,Iend+1
-              qdmw0_nbq(i,j)=qdmw_nbq(i,j,0)
-            enddo
-           enddo
-        elseif (LAST_FAST_STEP) then
-          do j=JstrV-2,Jend+1
-            do i=IstrU-2,Iend+1
-              qdmw0_nbq(i,j)=qdmw0_nbq(i,j)+qdmw_nbq(i,j,0)
-            enddo
-           enddo
-        else
-          do j=JstrV-2,Jend+1
-            do i=IstrU-2,Iend+1
-              qdmw0_nbq(i,j)=(qdmw0_nbq(i,j)+qdmw_nbq(i,j,0))
-     &               /float(ndtfast)
-            enddo
-           enddo
-           
-        endif
-# endif
-! !
-! !********************************************************************
-! ! PART D.6: Adjust Hz(m+1) for internal mode
+! ! PART D.4: Adjust Hz(m+1) for internal mode
 ! !           by inverting internal continuity equation
 ! !********************************************************************
 ! !
 # ifdef NBQ_HZCORRECT  
-      if (LAST_FAST_STEP) then
-! !
-! !--------------------------------------------------------------------
-! ! Store HZ before correction
-! !--------------------------------------------------------------------
-! !
-       do k=-N_sl+1,N
-        do j=JstrV-2,Jend+1
-         do i=IstrU-2,Iend+1
-              Hz_correct(i,j,k)=Hz(i,j,k)
-          enddo
-        enddo
-       enddo
-!$acc update device( Hz_correct )      
-! !
-! !--------------------------------------------------------------------
-! ! Exchanges (1)
-! !--------------------------------------------------------------------
-! !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-        call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                          DU_avg2(START_2D_ARRAY))
-        call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                          DV_avg2(START_2D_ARRAY))
-#  endif
-! ! 
-! !--------------------------------------------------------------------
-! ! Adjust depth average
-! !--------------------------------------------------------------------
-! ! 
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            dum_s=0.
-            do k=1,N
-              dum_s=dum_s+Hz(i,j,k)-Hz_bak(i,j,k)
-            enddo
-            do k=1,N
-              Hz(i,j,k)=Hz(i,j,k)
-     &                -(dum_s
-     &             + (DU_avg2(i+1,j)-DU_avg2(i,j)
-     &               +DV_avg2(i,j+1)-DV_avg2(i,j)
-     &               )*pm(i,j)*pn(i,j)
-     &               *dt)
-     &               /(z_w(i,j,N)-z_w(i,j,0))
-     &               *(z_w(i,j,k)-z_w(i,j,k-1))
-#  ifdef MASKING
-     &               *rmask(i,j)
-#  endif
-#  ifdef NBQ_HZCORR_DEBUG
-              Hz_corr(i,j,k)=Hz(i,j,k)-Hz_correct(i,j,k)
-#  endif
-            enddo
-          enddo
-        enddo
-!# undef Hz_correct  
-! !
-! !--------------------------------------------------------------------
-! ! Exchanges (2)
-! !--------------------------------------------------------------------
-! !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-#   ifndef M3FAST_SEDLAYERS
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                          Hz(START_2D_ARRAY,1))
-#   else
-        call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
-     &                          Hz(START_2D_ARRAY,-N_sl+1))
-#   endif
-#  endif
-!$acc update device( Hz )      
-! !
-      endif ! iif.eq.nfast
-
+#  include "m3fast_hz_correct.h"
 # endif  /* NBQ_HZCORRECT */
-!
-# undef Hz_correct
-! !
-! !--------------------------------------------------------------------
-! !  Mass/volume conservation
-! !--------------------------------------------------------------------
-! !
-# if defined NBQ_MASS && defined MOVING_BATHY
-      masstot=0.
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          do k=1,N
-          masstot=masstot+Hz(i,j,k)
-          enddo
-        enddo
-      enddo
-#  ifdef MPI
-      call MPI_ALLGATHER(masstot,1,MPI_DOUBLE_PRECISION,
-     &                allmasstot,1,MPI_DOUBLE_PRECISION,
-     &                          MPI_COMM_WORLD,ierr)
-      masstot=QuadZero
-      do i=1,NNODES
-        masstot=masstot+allmasstot(1,i)
-      enddo
-#  endif
-      if (mynode==0) then
-       open(unit=10,file='diag_mass.dat',access='append')
-       write(10,*) masstot
-       close(10)
-      endif
-# endif
 ! !
 ! !
 ! !********************************************************************

@@ -209,14 +209,6 @@ C$    integer omp_get_thread_num
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
-          enddo
-        enddo
-      enddo
-
-      do k=1,N
-        do j=J_RANGE
-          do i=I_RANGE
-
 !#  ifdef M3FAST_ZETAW
 !#  if !defined M3FAST_COUPLING2D && defined M3FAST
 #  ifdef  M3FAST
