@@ -140,7 +140,7 @@
 ! ! Mass/volume conservation (diag)
 ! !********************************
 ! !
-# if defined NBQ_MASS && defined NBQ_DIAGMASS
+# ifdef  NBQ_DIAGMASS
       masstot=0.
       do j=Jstr,Jend
         do i=Istr,Iend
