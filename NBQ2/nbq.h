@@ -120,8 +120,6 @@
       common /nbq_DV_nbq/ DV_nbq
       real wsurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_wsurf/ wsurf_nbq
-      real wsurfab3(GLOBAL_2D_ARRAY)
-      common /nbq_wsurfab3/ wsurfab3
       real usurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_usurf/ usurf_nbq
       real vsurf_nbq(GLOBAL_2D_ARRAY)
