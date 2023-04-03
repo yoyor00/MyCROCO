@@ -264,10 +264,11 @@ C$    trd=omp_get_thread_num()
 # ifdef WET_DRY
       real cff1_WD,cff2_WD
 # endif
-# if defined MASS && defined NBQ_DIAGMASS
+# if defined NBQ_MASS && defined NBQ_DIAGMASS
       real*QUAD masstot
 #  ifdef MPI
       real*QUAD allmasstot(1,NNODES)
+      integer ierr
 #  endif
 # endif      
 ! !      
