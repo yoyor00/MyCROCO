@@ -54,8 +54,8 @@
 # ifndef M3FAST_AM4
           zwrk(i,j)=zeta(i,j,kstp)
 # else
-          zwrk(i,j)=cff0*zeta(i,j,knew)+cff1*zeta(i,j,kstp)
-     &             +cff2*zeta(i,j,kbak)+cff3*zeta(i,j,kold)
+          zwrk(i,j)=(cff0*zeta(i,j,knew)+cff1*zeta(i,j,kstp)
+     &              +cff2*zeta(i,j,kbak)+cff3*zeta(i,j,kold))
 # endif 
 # ifdef NBQ_MASS
      &                                *rhobar_nbq(i,j,kstp) 

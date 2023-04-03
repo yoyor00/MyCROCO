@@ -140,12 +140,21 @@
 ! ! Mass/volume conservation (diag)
 ! !********************************
 ! !
-# if defined NBQ_MASS && defined NBQ_DIAGMASS
-      masstot=0.
+# ifdef  NBQ_DIAGMASS
+      masstot =0.
+      masstot2=0.
       do j=Jstr,Jend
         do i=Istr,Iend
           do k=1,N
-          masstot=masstot+Hz(i,j,k)
+#  ifdef NBQ_MASS
+          masstot =masstot +Hz (i,j,k)
+          masstot2=masstot2+Hzr(i,j,k)
+#  else
+          masstot =masstot 
+     &                             +rho_nbq(i,j,k)
+     &                             +(1.+rho_grd(i,j,k))*Hzr(i,j,k)
+          masstot2=masstot2+Hz (i,j,k)
+#  endif
           enddo
         enddo
       enddo
@@ -153,14 +162,23 @@
       call MPI_ALLGATHER(masstot,1,MPI_DOUBLE_PRECISION,
      &                allmasstot,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
+      call MPI_ALLGATHER(masstot2,1,MPI_DOUBLE_PRECISION,
+     &                allmasstot2,1,MPI_DOUBLE_PRECISION,
+     &                          MPI_COMM_WORLD,ierr)
       masstot=QuadZero
+      masstot2=QuadZero
       do i=1,NNODES
-        masstot=masstot+allmasstot(1,i)
+        masstot =masstot +allmasstot (1,i)
+        masstot2=masstot2+allmasstot2(1,i)
       enddo
 #  endif
       if (mynode==0) then
+       if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) then
+        masstot0=masstot
+        masstot02=masstot2
+       endif
        open(unit=10,file='diag_mass.dat',access='append')
-       write(10,*) masstot
+       write(10,*) 1.d0-masstot/masstot0,1.d0-masstot2/masstot02
        close(10)
       endif
 # endif
