@@ -355,6 +355,9 @@ C$    integer  trd, omp_get_thread_num
       integer Istr,Iend,Jstr,Jend, i,j
       real Ewind, Nwind, dircoef, windamp, wcos,wsin
       real cff1, cff2, cff3
+#if defined DYFAMED 
+      real windspd, u_spd, v_spd
+#endif
 !     data windamp /0./ 
       data Ewind, Nwind, dircoef /0., 0., 0./
 !     save windamp
@@ -376,11 +379,26 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+#if defined IN_REAL_WIND
+      kount=max(kount,1)
+      u_spd=u10_in(kount) 
+      v_spd=v10_in(kount)  
+      windspd=sqrt( u_spd**2 + v_spd**2)
+#if defined DYFAMED
       do j=JstrR,JendR
         do i=IstrR,IendR
-          sustr(i,j)=(0.01)**2
+          sustr(i,j)=rho_air/1025.d0*drag*(u_spd)**2
+          svstr(i,j)=rho_air/1025.d0*drag*(v_spd)**2
         enddo
       enddo
+#endif /* DYFAMED */
+#else /* IN_REAL_WIND */ 
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=(0.01)**2  
+        enddo
+      enddo
+#endif
 # elif defined SINGLE_COLUMN && defined FORCED_DBLEEK
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -544,7 +562,9 @@ C$    integer  trd, omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           srflx(i,j)=0.   ! default is 0.
-#  ifdef DIURNAL_INPUT_SRFLX
+#  ifdef IN_REAL_SRFLUX
+          srflx(i,j)=shw_in(kount)/(rho0*Cp)
+#  elif defined DIURNAL_INPUT_SRFLX
           srflxbio(i,j)=srflx(i,j)
 #  endif
 #  ifdef DIURNAL_CYCLE
@@ -851,6 +871,16 @@ C$    integer  trd, omp_get_thread_num
 # include "forces.h"
 # include "scalars.h"
       integer itrc, Istr,Iend,Jstr,Jend, i,j 
+#if defined IN_REAL_STFLUX || defined IN_REAL_WIND
+      character(len=1000):: chain
+      character(len=19):: datte
+      !real(kind=4),dimension(9) :: read_chain
+      real(kind=4),dimension(12) :: read_chain
+      real(kind=8):: tool_datosec,tmet
+      integer :: eof=0,k=0,eof2=0
+      integer,save :: ifois=0
+      integer,save :: kk
+#endif
 c
 # include "compute_auxiliary_bounds.h"
 c
@@ -862,10 +892,82 @@ c
 !  Set kinematic surface heat flux [degC m/s] at horizontal
 !  RHO-points.
 !
+#if defined IN_REAL_STFLUX || defined IN_REAL_WIND
+      if(ifois==0) then
+      open(10,file="../AnalyticalProfiles/forcage_atmo_1DV_dyfamed.dat")
+      read(10,*)
+      kk=0
+      do while (eof==0)
+       read(10,'(a)',iostat=eof) chain
+       if (eof==0 .and. len(trim(chain)) > 10) then
+        read(chain,*,iostat=eof2)  read_chain(:)
+        if(eof2==0) then  ! Warning column number excludes date column
+         kk=kk+1
+         write(datte,'(i2.2,1x,i2.2,1x,i4.4,1x,i2.2,1x,i2.2,1x,i2.2)')
+     &   int(read_chain(3)),int(read_chain(2)),int(read_chain(1)),
+     &   int(read_chain(4)),0,0  
+         time_in(kk)=tool_datosec(datte)
+         !write(*,*) 'cmzy time_in:', time_in(kk), ', datte:', datte
+         !wind_in(kk) = read_chain(8)
+#if defined DYFAMED          
+         tauy_in(kk) = read_chain(12)
+         taux_in(kk) = read_chain(11)
+         !write(*,*) 'cmzy taux,tauy:', taux_in(kk),tauy_in(kk)
+         !windspd_in = sqrt(50.d0) !cmzy SQRT(SQRT(taux_in(kk)*taux_in(kk)+
+         windspd_in = SQRT(SQRT(taux_in(kk)*taux_in(kk)+
+     &                              tauy_in(kk)*tauy_in(kk))/
+     &                              (drag*rho_air))  
+         u10_in(kk) = taux_in(kk)/(rho_air*drag*windspd_in+1E-50)   
+         v10_in(kk) = tauy_in(kk)/(rho_air*drag*windspd_in+1E-50)
+         write(20,'(*(F12.3))') time_in(kk)/3600.d0, taux_in(kk),
+     &               tauy_in(kk), 
+     &               u10_in(kk),
+     &               v10_in(kk),
+     &               windspd_in,
+     &               windspd_in*3.6d0
+         
+         windspd_in = sqrt(50.d0) !cmzy SQRT(SQRT(taux_in(kk)*taux_in(kk)+
+         u10_in(kk) = 5.d0 ! cmzy taux_in(kk)/(rho_air*drag*windspd_in+1E-50)   
+         v10_in(kk) = 5.d0 ! cmzy  tauy_in(kk)/(rho_air*drag*windspd_in+1E-50)
+         flux_in(kk) = read_chain(5)+read_chain(6)+read_chain(7)+
+     &                 read_chain(8)
+# ifdef IN_REAL_SRFLUX
+         shw_in(kk) = read_chain(7)  
+         !flux_in(kk) =  flux_in(kk)- shw_in(kk) ! Substracting Shw
+# endif
+#else
+        ! cmzy : cf franck 
+#endif 
+        endif
+       end if
+      end do
+      time_in(1)=0.0
+      close(10)
+!
+      ifois=1
+      endif
+      kount=0
+      tmet = time !# Add offset for t0
+      if (tmet >= time_in(kk)+ time_in(2)) then
+       do while (tmet >  time_in(kk)+ time_in(2)) 
+        tmet = tmet - (time_in(kk)+ time_in(2))
+       end do
+      end if
+      do k=1,kk-1
+       if((tmet-time_in(k))*(tmet-time_in(k+1)) <=0.0) kount=k
+      enddo 
+      if(tmet>time_in(kk)) kount=kk
+
+#endif
         do j=JstrR,JendR
           do i=IstrR,IendR
 #if defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
             stflx(i,j,itemp)= - 100./(rho0*Cp)
+#elif defined SINGLE_COLUMN && defined IN_REAL_STFLUX
+
+            stflx(i,j,itemp)= flux_in(kount)/(rho0*Cp)
+
+
 #elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
             stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
 #else

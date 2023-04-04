@@ -700,3 +700,18 @@
 # endif
       common /wave_maker_pha/ wpha_bry
 #endif
+
+#if defined IN_REAL_WIND || defined IN_REAL_STFLUX
+      integer , parameter :: nmax = 100000
+      real,dimension(nmax) :: time_in,wind_in,u10_in, v10_in, flux_in, 
+     &                        shw_in
+#if defined DYFAMED
+      real,dimension(nmax) :: taux_in, tauy_in
+      real , parameter :: rho_air=1.2d0 
+      real , parameter :: drag=0.0016d0 
+      real :: windspd_in
+#endif
+      integer :: kount
+      common /flux_arp/time_in,wind_in,u10_in, v10_in,flux_in, shw_in,
+     &                   kount
+#endif
