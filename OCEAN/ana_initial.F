@@ -584,7 +584,7 @@
           enddo
         enddo
 #    endif /* TEMPERATURE */
-#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS && !defined DYFAMED
 #    ifdef TEMPERATURE        
         do k=1,N
           do j=JR_RANGE
@@ -592,6 +592,19 @@
               t(i,j,k,1,itemp)=16.0+(0.01)**2/(g*Tcoef/rho0) 
      &             * (z_r(i,j,k)) 
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+             enddo
+          enddo
+        enddo
+#    endif /* TEMPERATURE */
+#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS && defined DYFAMED
+#    ifdef TEMPERATURE        
+        open(18,file='../AnalyticalProfiles/dyfamed_ts_init.dat')
+        do k=1,N
+          Read(18,*) t(1,1,N-k+1,1,itemp)
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,N-k+1,1,itemp)= t(1,1,N-k+1,1,itemp)  
+              t(i,j,N-k+1,2,itemp)=t(i,j,N-k+1,1,itemp)
              enddo
           enddo
         enddo
