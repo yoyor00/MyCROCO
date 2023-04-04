@@ -324,6 +324,9 @@
        END DO    
      END DO
 #endif /* DYFAMED */
+#endif /* ECO3M */
+
+
    ENDIF ! /* icall parameter */
 
    MPI_master_only PRINT*, 'END of BIOLink_initialization'
