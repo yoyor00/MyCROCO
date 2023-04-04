@@ -389,7 +389,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
            CALL BIOLink_initialization(2,tile)
       enddo
 #endif
-#endif
 !
 !----------------------------------------------------------------------
 !  Initialize specific PISCES variables
