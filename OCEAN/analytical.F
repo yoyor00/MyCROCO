@@ -130,7 +130,11 @@
           do i=IstrR,IendR
 #  if defined SINGLE_COLUMN 
 #   ifdef KATO_PHILIPS
+#       if defined DYFAMED
+            btflx(i,j,itemp)=0
+#  else
             btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
+#   endif
 #   elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
             btflx(i,j,itemp)=-1.0e-5*0.01
 #   endif
