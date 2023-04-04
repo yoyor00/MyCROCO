@@ -1068,6 +1068,14 @@ END SUBROUTINE  BIOLink_alloc
           enddo
       enddo
 #endif
+      !!=================================================================================
+
+#if defined ECO3M
+      irrad(ifirst:ilast,jfirst:jlast)=SOLAR_RAD(ifirst:ilast,jfirst:jlast)/(RAD_SRFSCALE) ! net short wave solar flux (W/m2)
+#endif
+
+
+
       !********************* Diagnostic variables **************************!
 
 #if defined BLOOM
