@@ -900,6 +900,11 @@ END SUBROUTINE  BIOLink_alloc
    CHARACTER(LEN=19)      :: tool_sectodat,cdate ! Function to change the second to date
    REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY)   :: forcSPM ! Something related to 
                                                          ! suspended particulate matter
+
+#if defined PHYBIO_2ways
+   integer                :: irgb
+#endif                                                         
+
      !====================================================================
      ! Execution of the function
      !====================================================================
@@ -1043,6 +1048,26 @@ END SUBROUTINE  BIOLink_alloc
 
 #endif /* BIOLink_PAR_eval */
 
+
+      !!=================================================================================
+      ! to compute the fraction of the solar shortwave flux "swdk" 
+      ! penetrating to grid level depth (at vertical w-points)
+      ! for the physical model (2 ways coupling)
+      !!=================================================================================
+#if defined PHYBIO_2ways 
+      ALLOCATE(swdk_bio(ifirst:ilast,jfirst:jlast,NB_LAYER_WAT) )
+      swdk_bio=0.0
+      do k=1,NB_LAYER_WAT
+          do j=jfirst, jlast
+              do i=ifirst, ilast
+                  do irgb=1,3
+                      swdk_bio(i,j,k)=swdk_bio(i,j,k)+ &
+    &                          (1.d0/3.d0)*E_PARZ_RGB(irgb,i,j,k)/E_PAR(i,j)
+                  enddo
+              enddo
+          enddo
+      enddo
+#endif
       !********************* Diagnostic variables **************************!
 
 #if defined BLOOM
