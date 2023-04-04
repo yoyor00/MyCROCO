@@ -84,6 +84,7 @@
    USE mod_eco3m, ONLY : nx_min, nx_max, ny_min, ny_max, nz_max, VAR
    USE mod_eco3m, ONLY : ECO_TIME_STEP, WATCONCPOS_tab, TEMP_BIOLink,&
                          SAL_BIOLink,BIO_SKSC_ADV, THICKLAYERWC 
+   USE mod_eco3m, ONLY : TBIO 
 
 #endif /* ECO3M */
 
@@ -189,6 +190,10 @@
      !====================================================================
   
   INTEGER               :: isubs
+#if defined ECO3M
+  INTEGER               :: i,j,k, kmaxmod, iv
+  INTEGER               :: ifirst, ilast, jfirst, jlast
+#endif
      !====================================================================
      ! Execution of the function
      !====================================================================
@@ -211,9 +216,12 @@
 
 #endif /* PEPTIC/BLOOM/METeOR */
 
+#if defined ECO3M
+   ELSE IF (icall==1) THEN 
+#else
    ELSE ! Second call of the function, now we initialize the variable of the 
         ! Biology/Tracer models
-
+#endif
 
      TIME_BEGIN=CURRENT_TIME ! Time begin is the beginning time for BIOLink and 
                              ! biological/tracer models, while current time
@@ -291,6 +299,31 @@
 
 #endif /* BLOOM && DIAGNOSTICS_BIO*/
 
+#if defined ECO3M 
+   ELSE IF (icall==2) THEN 
+        ! Third call of the function, now we initialize the variable of the 
+        ! Biology/Tracer models with 1DV text files
+        ! only for DYFAMED testcase
+
+#if defined DYFAMED
+     ! .dat containing values of DYFAMED is read through eco3m_init_config 
+     ifirst=Istr
+     ilast=Iend
+     jfirst=Jstr
+     jlast=Jend
+     kmaxmod=NB_LAYER_WAT 
+     DO iv=1,nv_adv
+       DO k=1,kmaxmod
+         DO j=jfirst,jlast
+           DO i=ifirst,ilast
+              ! variables d etat transportees
+                ! duplication of water column (i=1, j=1) for all i,j
+                WAT_CONCADV_ivkij_tini=WATCONCPOS_ivi1j1k
+           END DO
+         END DO
+       END DO    
+     END DO
+#endif /* DYFAMED */
    ENDIF ! /* icall parameter */
 
    MPI_master_only PRINT*, 'END of BIOLink_initialization'
@@ -399,6 +432,12 @@
   t_bio=CURRENT_TIME+TRANSPORT_TIME_STEP ! The biology time steps is updated 
                                           ! From the hydrodynamical model 
                                           ! With a transport time step
+
+# ifdef ECO3M
+     ! transfer of current time to the biologial code
+     TBIO=t_bio
+# endif
+
 
      !********************* Sinking velocity *****************************!
 
@@ -876,6 +915,12 @@ END SUBROUTINE  BIOLink_alloc
         
         jjulien_BIOLINK=tool_julien(ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK)&
                                    - tool_julien(1,1,ian_BIOLINK)+1
+
+# ifdef ECO3M
+        ! transfer of current time to the biologial code
+        TBIO=t_bio+BIO_TIME_STEP
+# endif
+
 
         !*********** Computation of physical variables ********************!
 
