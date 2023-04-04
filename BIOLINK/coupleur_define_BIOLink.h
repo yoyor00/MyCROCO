@@ -127,6 +127,7 @@
 !======================================================================*/
 
 # if defined ECO3M
+#   define TBIO tps /* Current time of the biological model (inside ECO3M) */
 #   define ECO_TIME_STEP dt_bio /* Time step of the biological model */
 #   define BIO_TIME_STEP dtbio /* Time step for the biological model */
 #   define DT_CONSERV_BIOLINK dt_bio_conserv /* Time step for BIOLink conservativity routine */
@@ -220,6 +221,9 @@
 # define WAT_CONCADV_ivkij t(i,j,k,nnew,itemp+ntrc_salt+iv)  /* Concentration for the index 
                                                                 i,j,k,nnew and the variable
                                                                 itemp+ntrc_salt+iv */
+# define WAT_CONCADV_ivkij_tini t(i,j,k,1,itemp+ntrc_salt+iv)  /* Concentration for the index 
+                                                                i,j,k,t=1 and the variable
+                                                                itemp+ntrc_salt+iv, used for initialization */
 # define ADV_VAR_INDEXkij i,j,k,1:nv_adv /* Index of tracer variables */
 
 /*=====================================================================
@@ -253,6 +257,10 @@
                                                    indexes and the depth */
 #   define WATCONCPOS_ivijk  VAR(iv)%conc(i,j,k) /* Positive concentration of the tracer 
                                                    iv at index i,j,k*/
+#   define WATCONCPOS_ivi1j1k  VAR(iv)%conc(1,1,k)    /* Table of positive tracer 
+                                                   concentrations, the dimension 
+                                                   are (iv,k), or the tracer
+                                                   indexes and the depth */
 #   define WATCONCPOS_iv  VAR(iv)%conc(:,:,:)
 #   define WATCONCPOS_ij  VAR(:)%conc(i,j,:)
 #   define WATCONCPOS_all  VAR(:)%conc(:,:,:)
