@@ -37,7 +37,7 @@
 # include "mpi_cpl.h"
       include 'mpif.h'
       logical, parameter :: use_host_device = .TRUE.
-#include "mpi_buffers.h"
+c #include "mpi_buffers.h"
 !
 ! Nb of boundary points involved in communication
 !
@@ -62,10 +62,20 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j,k, isize,jsize,ksize,
      &        req(8), status(MPI_STATUS_SIZE,8), ierr
       integer iter, mdii, mdjj
+      integer sub_X,size_X, sub_E,size_E, size_Z
 
 # ifndef AGRIF
+      parameter (size_Z=Npts*Npts*(N+1),
+     &     sub_X=(Lm+NSUB_X-1)/NSUB_X, size_X=(N+1)*Npts*(sub_X+2*Npts),
+     &     sub_E=(Mm+NSUB_E-1)/NSUB_E, size_E=(N+1)*Npts*(sub_E+2*Npts))
+
+      real buf_snd4_3D(size_Z),ibuf_sndN_3D(size_X),buf_snd2_3D(size_Z),
+     &     buf_rev4_3D(size_Z),ibuf_revN_3D(size_X),buf_rev2_3D(size_Z),
+     &     jbuf_sndW_3D(size_E),                   jbuf_sndE_3D(size_E),
+     &     jbuf_revW_3D(size_E),                   jbuf_revE_3D(size_E),
+     &     buf_snd1_3D(size_Z),buf_sndS_3D(size_X), buf_snd3_3D(size_Z),
+     &     buf_rev1_3D(size_Z),ibuf_revS_3D(size_X), buf_rev3_3D(size_Z)
 # else
-      NEEDREPAIR
       real, dimension(:), allocatable ::
      &     buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
      &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
@@ -84,12 +94,13 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       sub_E=(Mm+NSUB_E-1)/NSUB_E
       size_E=(NP1)*Npts*(sub_E+2*Npts)
 
-      Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  buf_snd2_3D(size_Z),
-     &         buf_rev4_3D(size_Z),  ibuf_revN_3D(size_X),  buf_rev2_3D(size_Z),
-     &        jbuf_sndW_3D(size_E),                     jbuf_sndE_3D(size_E),
-     &        jbuf_revW_3D(size_E),                     jbuf_revE_3D(size_E),
-     &         buf_snd1_3D(size_Z),  ibuf_sndS_3D(size_X),  buf_snd3_3D(size_Z),
-     &         buf_rev1_3D(size_Z),  ibuf_revS_3D(size_X),  buf_rev3_3D(size_Z))
+      Allocate(
+     &  buf_snd4_3D(size_Z), ibuf_sndN_3D(size_X),  buf_snd2_3D(size_Z),
+     &  buf_rev4_3D(size_Z), ibuf_revN_3D(size_X),  buf_rev2_3D(size_Z),
+     &  jbuf_sndW_3D(size_E),                      jbuf_sndE_3D(size_E),
+     &  jbuf_revW_3D(size_E),                      jbuf_revE_3D(size_E),
+     &  buf_snd1_3D(size_Z), ibuf_sndS_3D(size_X),  buf_snd3_3D(size_Z),
+     &  buf_rev1_3D(size_Z), ibuf_revS_3D(size_X),  buf_rev3_3D(size_Z))
 # endif
 !
       ksize=Npts*Npts*nmax               ! message sizes for
@@ -117,7 +128,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             do k=1,nmax
               do j=jmin,jmax
                 do ipts=1,Npts
-                  jbuf_sndW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))=A(ipts,j,k)
+                  jbuf_sndW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))=
+     &                      A(ipts,j,k)
                 enddo
               enddo
             enddo
@@ -157,7 +169,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             do k=1,nmax
               do jpts=1,Npts
                 do i=imin,imax
-                  ibuf_sndS_3D(k+nmax*(i-imin+(jpts-1)*ishft))=A(i,jpts,k)
+                  ibuf_sndS_3D(k+nmax*(i-imin+(jpts-1)*ishft))=
+     &                  A(i,jpts,k)
                 enddo
               enddo
             enddo
@@ -201,16 +214,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
-                  buf_snd1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=A(ipts,jpts,k)
+                  buf_snd1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=
+     &                  A(ipts,jpts,k)
                 enddo
               enddo
             enddo
 !$acc host_data if(compute_on_device)
 !$acc&   use_device(buf_rev1_3D,buf_snd1_3D)
-            call MPI_Irecv (buf_rev1_3D, ksize, MPI_DOUBLE_PRECISION, p_SW,
-     &                                6, MPI_COMM_WORLD, req(5),ierr)
-            call MPI_Send  (buf_snd1_3D, ksize, MPI_DOUBLE_PRECISION, p_SW,
-     &                                5, MPI_COMM_WORLD,        ierr)
+            call MPI_Irecv (buf_rev1_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                            p_SW, 6, MPI_COMM_WORLD, req(5),ierr)
+            call MPI_Send  (buf_snd1_3D, ksize, MPI_DOUBLE_PRECISION,
+     &                            p_SW, 5, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         else
@@ -226,10 +240,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
 !$acc host_data if(compute_on_device)
 !$acc&   use_device(buf_rev2_3D,buf_snd2_3D)
-            call MPI_Irecv (buf_rev2_3D, ksize, MPI_DOUBLE_PRECISION, p_NE,
-     &                                  5, MPI_COMM_WORLD, req(6),ierr)
-            call MPI_Send  (buf_snd2_3D, ksize, MPI_DOUBLE_PRECISION, p_NE,
-     &                                  6, MPI_COMM_WORLD,        ierr)
+            call MPI_Irecv (buf_rev2_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                            p_NE, 5, MPI_COMM_WORLD, req(6),ierr)
+            call MPI_Send  (buf_snd2_3D, ksize, MPI_DOUBLE_PRECISION,
+     &                            p_NE,6, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         endif
@@ -247,10 +261,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
 !$acc host_data if(compute_on_device)
 !$acc&   use_device(buf_rev3_3D,buf_snd3_3D)
-            call MPI_Irecv (buf_rev3_3D, ksize, MPI_DOUBLE_PRECISION, p_SE,
-     &                                8, MPI_COMM_WORLD, req(7),ierr)
-            call MPI_Send  (buf_snd3_3D, ksize, MPI_DOUBLE_PRECISION, p_SE,
-     &                                7, MPI_COMM_WORLD,        ierr)
+            call MPI_Irecv (buf_rev3_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                             p_SE,8, MPI_COMM_WORLD, req(7),ierr)
+            call MPI_Send  (buf_snd3_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                             p_SE, 7, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         else
@@ -266,10 +280,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
 !$acc host_data if(compute_on_device)
 !$acc&   use_device(buf_rev4_3D,buf_snd4_3D)
-            call MPI_Irecv (buf_rev4_3D, ksize, MPI_DOUBLE_PRECISION, p_NW,
-     &                                7, MPI_COMM_WORLD, req(8),ierr)
-            call MPI_Send  (buf_snd4_3D, ksize, MPI_DOUBLE_PRECISION, p_NW,
-     &                                8, MPI_COMM_WORLD,        ierr)
+            call MPI_Irecv (buf_rev4_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                          p_NW, 7, MPI_COMM_WORLD, req(8),ierr)
+            call MPI_Send  (buf_snd4_3D, ksize, MPI_DOUBLE_PRECISION,
+     &                          p_NW, 8, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         endif
@@ -291,7 +305,8 @@ c            if ( chkbandname .ne. 'none' ) then
      &           checksum(ipts) = checksum(ipts)+1
 c            endif
 #endif
-             A(ipts-Npts,j,k)=jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
+             A(ipts-Npts,j,k)=
+     &          jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
             enddo
           enddo
         enddo
@@ -336,12 +351,12 @@ c          endif
 #ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
             if ( A(Lmmpi+ipts,j,k) ==
-     &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft)) ) 
+     &            jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft)) ) 
      &           checksum(ipts) = checksum(ipts)+1
 c            endif
 #endif
               A(Lmmpi+ipts,j,k)=
-     &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
+     &         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
             enddo
           enddo
         enddo
@@ -388,7 +403,8 @@ c            if ( chkbandname .ne. 'none' ) then
      &          checksum(jpts) = checksum(jpts)+1
 c            endif
 #endif
-              A(i,jpts-Npts,k)=ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)*ishft))
+              A(i,jpts-Npts,k)=
+     &          ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)*ishft))
             enddo
           enddo
         enddo
@@ -430,12 +446,12 @@ c          endif
 #ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
             if ( A(i,Mmmpi+jpts,k)==
-     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft)) ) 
+     &           ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft)) ) 
      &          checksum(jpts) = checksum(jpts)+1
 c            endif
 #endif
               A(i,Mmmpi+jpts,k)=
-     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft))
+     &          ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft))
             enddo
           enddo
         enddo
@@ -473,7 +489,7 @@ c          endif
           do jpts=1,Npts
             do ipts=1,Npts
               A(ipts-Npts,jpts-Npts,k)=
-     &                           buf_rev1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
+     &           buf_rev1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
             enddo
           enddo
         enddo
@@ -501,7 +517,7 @@ c          endif
           do jpts=1,Npts
             do ipts=1,Npts
               A(Lmmpi+ipts,Mmmpi+jpts,k)=
-     &                           buf_rev2_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
+     &           buf_rev2_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
             enddo
           enddo
         enddo
@@ -526,7 +542,7 @@ c          endif
           do jpts=1,Npts
             do ipts=1,Npts
               A(Lmmpi+ipts,jpts-Npts,k)=
-     &                           buf_rev3_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
+     &          buf_rev3_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
             enddo
           enddo
         enddo
@@ -551,7 +567,7 @@ c          endif
           do jpts=1,Npts
             do ipts=1,Npts
               A(ipts-Npts,Mmmpi+jpts,k)=
-     &                           buf_rev4_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
+     &          buf_rev4_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
             enddo
           enddo
         enddo
