@@ -473,13 +473,30 @@ C$OMP END MASTER
 # endif /* M2NUDGING */
 ! !
 ! !********************************
+! ! Update BRY if necessary
+! !********************************
+! !
+# if defined M2_FRC_BRY || defined Z_FRC_BRY
+      if (FIRST_FAST_STEP) then
+!$acc update device(                    
+#   ifdef M2_FRC_BRY
+!$acc&        ubarbry_west, ubarbry_east
+#   endif
+#  ifdef Z_FRC_BRY
+!$acc&       ,zetabry_west, zetabry_east
+#  endif
+!$acc&              ) !! iif=1
+      endif
+# endif      
+! !
+! !********************************
 ! ! Set boundary conditions and 
 ! ! compute integral mass flux accross
 ! ! all open boundaries, if any.
 ! !********************************
 ! !
-      M2bc_nbq_flag=.false.  ! skip wet/dry conditions
-  !                           ! and DU_nbq computation
+      M2bc_nbq_flag=.true.  ! skip wet/dry conditions
+! !                           & AGRIF
       call u2dbc_tile (Istr,Iend,Jstr,Jend, work) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
 # ifdef WET_DRY

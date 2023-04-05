@@ -613,49 +613,14 @@ C$OMP MASTER
 # endif       
 c C$OMP END MASTER
 # endif
-! !
-! !********************************
-! ! Update ubar    
-! !********************************
-! !
-#ifdef NBQ
-!$acc kernels default( present )
-      do j=Jstr,Jend
-        do i=IstrU,Iend
-          ubar(i,j,knew)=urhs(i,j)
-        enddo 
-      enddo
-      do j=JstrV,Jend
-        do i=Istr,Iend
-          vbar(i,j,knew)=vrhs(i,j)
-        enddo 
-      enddo
-#endif
-!$acc end kernels
+!!$acc end kernels
 
-# if defined M2_FRC_BRY || defined Z_FRC_BRY
-      if (FIRST_FAST_STEP) then
-!$acc update device(                    
-#   ifdef M2_FRC_BRY
-!$acc&        ubarbry_west, ubarbry_east
-#   endif
-#  ifdef Z_FRC_BRY
-!$acc&       ,zetabry_west, zetabry_east
-#  endif
-!$acc&              ) !! iif=1
-      endif
-# endif      
 ! !
 ! !********************************
 ! !  U & V momentum open 
 ! !   boundary conditions
 ! !********************************
 ! !
-      M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
-!                          ! and compute DU_nbq
-
-      call u2dbc_tile (Istr,Iend,Jstr,Jend, work)
-      call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
       call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
       call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 ! !

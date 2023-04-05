@@ -809,49 +809,8 @@ C$    trd=omp_get_thread_num()
         dtfast=dtfast/float(nsdtnbq)
         dtgrid_nbq=dtgrid_nbq/float(nsdtnbq)
         ndtfast=ndtfast*nsdtnbq
-       else  
-! !
-! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-! ! NHINT: 2D-Mode unconditional integration (BEGIN)
-! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-! !
-! !--------------------------------------------------------------------
-! ! NHINT: Update ubar   
-! !--------------------------------------------------------------------
-! !
-#  ifdef NBQ
-!$acc kernels default( present )
-      do j=Jstr,Jend
-        do i=IstrU,Iend
-          ubar(i,j,knew)=urhs(i,j)
-        enddo 
-      enddo
-      do j=JstrV,Jend
-        do i=Istr,Iend
-          vbar(i,j,knew)=vrhs(i,j)
-        enddo 
-      enddo
-!$acc end kernels
-#  endif
-#  if defined M2_FRC_BRY || defined Z_FRC_BRY
-      if (FIRST_FAST_STEP) then
-!$acc update device(                    
-#   ifdef M2_FRC_BRY
-!$acc&        ubarbry_west, ubarbry_east
-#   endif
-#   ifdef Z_FRC_BRY
-!$acc&       ,zetabry_west, zetabry_east
-#   endif
-!$acc&              ) !! iif=1
-! !
-! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-! ! NHINT: 2D-Mode unconditional integration (END)
-! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-! !
-      endif
-#  endif  /* NHINT_3M */   
        endif 
-# endif
+# endif  /* NHINT_3M */
 ! !
 ! !
 ! !********************************************************************
