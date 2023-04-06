@@ -170,7 +170,6 @@
 #elif defined H3D
 #   define M3FAST   
 #   define M3FAST_AM4
-#   define M3FAST_C3D_UVFS
 #   define NBQ_GRID_SLOW
 #   define M3FAST_COUPLING2D
 #   define M3FAST_COUPLING1
