@@ -73,7 +73,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &     buf_rev4_3D(size_Z),ibuf_revN_3D(size_X),buf_rev2_3D(size_Z),
      &     jbuf_sndW_3D(size_E),                   jbuf_sndE_3D(size_E),
      &     jbuf_revW_3D(size_E),                   jbuf_revE_3D(size_E),
-     &     buf_snd1_3D(size_Z),buf_sndS_3D(size_X), buf_snd3_3D(size_Z),
+     &     buf_snd1_3D(size_Z),ibuf_sndS_3D(size_X), buf_snd3_3D(size_Z),
      &     buf_rev1_3D(size_Z),ibuf_revS_3D(size_X), buf_rev3_3D(size_Z)
 # else
       real, dimension(:), allocatable ::
