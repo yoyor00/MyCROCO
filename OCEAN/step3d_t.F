@@ -89,7 +89,7 @@
 #  endif
       real FX(PRIVATE_2D_SCRATCH_ARRAY),
      &     FE(PRIVATE_2D_SCRATCH_ARRAY),   cff,
-     &     WORK(PRIVATE_2D_SCRATCH_ARRAY), epsil,
+     &     WORK(PRIVATE_2D_SCRATCH_ARRAY),
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     BC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
@@ -97,6 +97,7 @@
      &     EC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     GC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     swdk(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+      real epsil
 #ifdef OPENACC
       real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
