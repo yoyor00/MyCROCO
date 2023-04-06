@@ -124,8 +124,8 @@ C$    trd=omp_get_thread_num()
 ! !  PART A: Declare variables, parameters...
 ! !  PART B: 2D-mode processing.
 ! !          B.0: Prepare integration
-! !          B.1: Share array for AGRIF nesting.
-! !          B.2: Compute zeta(m+1) first guess.
+! !          B.1: Compute zeta(m+1) first guess.
+! !          B.2: Share array for AGRIF nesting.
 ! !          B.3: Update vertical grid.
 ! !          B.4: AM4 Backward step.
 ! !          B.5: Pre-step 2D.
@@ -434,18 +434,9 @@ C$    trd=omp_get_thread_num()
 ! !*********************************************************************
 ! !
 #include "m3fast_2Dmode_prep.h"
-!
-! !*********************************************************************
-! ! Part B1: (AGRIF) : Load RHS values into additional 
-! !                    AGRIF shared array for nesting
-! !*********************************************************************
-! 
-# ifdef AGRIF
-#  include "m3fast_AGRIF0.h"
-# endif /* AGRIF */
 ! !
 ! !*********************************************************************
-! ! PART B.2: Compute zeta(m+1) -- first guest -- and update grid
+! ! PART B.1: Compute zeta(m+1) -- first guest -- and update grid
 ! !*********************************************************************
 ! !
 ! !--------------------------------------------------------------------
@@ -492,6 +483,15 @@ C$    trd=omp_get_thread_num()
 ! !--------------------------------------------------------------------
 ! !
 #include "m3fast_zeta_update.h"
+! !
+! !*********************************************************************
+! ! Part B2: (AGRIF) : Load RHS values into additional 
+! !                    AGRIF shared array for nesting
+! !*********************************************************************
+! !
+# ifdef AGRIF
+#  include "m3fast_AGRIF0.h"
+# endif /* AGRIF */
 ! !
 ! !*********************************************************************
 ! !  PART B.3: Update vertical grid

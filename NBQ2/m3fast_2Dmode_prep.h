@@ -182,53 +182,6 @@
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
 ! !
-! !********************************
-! !  Compute time averaged fields 
-! !   over all short timesteps.
-! !
-! ! Reset/initialise arrays for averaged fields during the first
-! ! barotropic time step; Accumulate averages after that. Include
-! ! physical boundary points, but not periodic ghost points or
-! ! computation  MPI computational margins.
-! !********************************
-! !
-#ifdef M3FAST_AVG_CLASSIC
-# ifdef SOLVE3D
-      cff1=weight(1,iif)
-      cff2=weight(2,iif)
-!$acc kernels if(compute_on_device) default(present) async(1)
-      if (FIRST_2D_STEP) then
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            Zt_avg1(i,j)=cff1*zeta(i,j,knew)
-            DU_avg1(i,j,nnew)=0.
-            DV_avg1(i,j,nnew)=0.
-            DU_avg2(i,j)=cff2*DUon(i,j)
-            DV_avg2(i,j)=cff2*DVom(i,j)
-          enddo
-        enddo
-      else
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            Zt_avg1(i,j)=Zt_avg1(i,j)+cff1*zeta(i,j,knew)
-            DU_avg2(i,j)=DU_avg2(i,j)+cff2*DUon(i,j)
-            DV_avg2(i,j)=DV_avg2(i,j)+cff2*DVom(i,j)
-          enddo
-        enddo
-      endif
-# else      
-!$acc kernels if(compute_on_device) default(present) async(1)
-# endif
-# endif /* M3FAST_AVG_CLASSIC */
-
-# ifdef RVTK_DEBUG_ADVANCED
-C$OMP BARRIER
-C$OMP MASTER
-      call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r'
-     &  ,ondevice=.TRUE.)
-C$OMP END MASTER
-# endif 
-! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! m3fast_2Dmode_prep.h (end)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

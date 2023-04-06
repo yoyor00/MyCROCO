@@ -831,7 +831,7 @@
       enddo
 # endif /* UV_MIX_S_SPONGE */
 
-# ifdef M3FAST
+# ifdef M3SLOW_W
 !==================================================================
 !
 ! WZ horizontal Laplacian diffusion along constant S-surfaces.
@@ -903,7 +903,7 @@
       enddo
 #  undef FX 
 #  undef FE
-# endif /* M3FAST */
+# endif /* M3SLOW_W */
 
 
       return

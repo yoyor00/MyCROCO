@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef M3FAST
+# ifdef M3FAST_RHO
       subroutine rnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -34,9 +34,9 @@
 ! Set lateral boundary conditions for nbq density rho_nbq
 ! for the parent grid.
 !
-# endif /* M3FAST */
+# endif /* M3FAST_RHO */
 #else
-# ifdef M3FAST
+# ifdef M3FAST_RHO
 !
 ! CHILD
 !
@@ -45,9 +45,9 @@
 ! Set lateral boundary conditions for nbq density
 ! rho_nbq for the child grid.
 !
-# endif /* M3FAST */
+# endif /* M3FAST_RHO */
 #endif /* CHILD */
-# ifdef M3FAST
+# ifdef M3FAST_RHO
 !
 ! Common Code
 !
@@ -600,7 +600,7 @@
       subroutine rnbq_bc_child_empty
       end
 # endif
-#endif /* M3FAST */
+#endif /* M3FAST_RHO */
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF
