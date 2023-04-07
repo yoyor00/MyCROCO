@@ -13,7 +13,7 @@
 !
 # include "cppdefs.h"
 
-# ifdef M3FAST
+# ifdef M3FAST_UV
       subroutine vnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -36,9 +36,9 @@
 ! Set lateral boundary conditions for V-component momentum
 ! qdmv_nbq for the parent grid.
 !
-# endif /* M3FAST */
+# endif /* M3FAST_UV */
 #else
-# ifdef M3FAST
+# ifdef M3FAST_UV
 !
 ! CHILD
 !
@@ -47,9 +47,9 @@
 ! Set lateral boundary conditions for V-component momentum
 ! qdmv_nbq for the child grid.
 !
-# endif /* M3FAST */
+# endif /* M3FAST_UV */
 #endif /* CHILD */
-# ifdef M3FAST
+# ifdef M3FAST_UV
 !
 ! Common Code
 !
@@ -190,7 +190,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST
+#   ifdef M3FAST_UV
 #    define vsum grad
         vsum=0.
         do k=1,N
@@ -215,7 +215,7 @@
           enddo
         enddo
 #    undef vsum
-#   endif /* M3FAST */
+#   endif /* M3FAST_UV */
 
 #  else
         do k=1,N                                     ! Southern edge closed
@@ -336,7 +336,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST
+#   ifdef M3FAST_UV
 #    define vsum grad
         vsum=0.
         do k=1,N
@@ -361,7 +361,7 @@
           enddo
         enddo
 #    undef vsum
-#   endif /* M3FAST */
+#   endif /* M3FAST_UV */
 !
 #  else
         do k=1,N                                    ! Northern edge closed
@@ -478,7 +478,7 @@
 !
 !  Replace external mode
 !
-#  if defined M3FAST && defined QDM_OBC_TANG_CORRECT
+#  if defined M3FAST_UV && defined QDM_OBC_TANG_CORRECT
 #   define vsum grad
         vsum=0.
         do k=1,N
@@ -617,7 +617,7 @@
 !
 !  Replace external mode
 !
-#   if defined M3FAST && defined QDM_OBC_TANG_CORRECT
+#   if defined M3FAST_UV && defined QDM_OBC_TANG_CORRECT
 #    define vsum grad
         vsum=0.
         do k=1,N
@@ -725,7 +725,7 @@
       subroutine vnbq_bc_child_empty
       end
 # endif
-#endif /* M3FAST */
+#endif /* M3FAST_UV */
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF

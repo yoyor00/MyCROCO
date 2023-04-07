@@ -614,7 +614,7 @@ C$OMP MASTER
 c C$OMP END MASTER
 # endif
 !!$acc end kernels
-
+# ifdef M3FAST_UV
 ! !
 ! !********************************
 ! !  U & V momentum open 
@@ -629,7 +629,6 @@ c C$OMP END MASTER
 ! !   and computational margins
 ! !********************************
 ! !
-# ifdef M3FAST_UV
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
 
 !      if ((mod(iif-1,inc_faststep) .eq. inc_faststep-1) .OR.

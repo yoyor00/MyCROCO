@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef M3FAST
+# ifdef M3FAST_UV
       subroutine unbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -34,9 +34,9 @@
 ! Set lateral boundary conditions for U-component momentum
 ! qdmu_nbq for the parent grid.
 !
-# endif /* M3FAST */
+# endif /* M3FAST_UV */
 #else
-# ifdef M3FAST
+# ifdef M3FAST_UV
 !
 ! CHILD
 !
@@ -45,9 +45,9 @@
 ! Set lateral boundary conditions for U-component momentum
 ! qdmu_nbq for the child grid.
 !
-# endif /* M3FAST */
+# endif /* M3FAST_UV */
 #endif /* CHILD */
-#ifdef M3FAST
+#ifdef M3FAST_UV
 !
 ! Common Code
 !
@@ -186,7 +186,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST
+#   ifdef M3FAST_UV
 #    define usum grad
         usum=0.
         do k=1,N
@@ -211,7 +211,7 @@
           enddo
         enddo
 #    undef usum
-#   endif /* M3FAST */
+#   endif /* M3FAST_UV */
 !
 #  else           /* alternative to open */
         do k=1,N                                      ! Western edge closed
@@ -330,7 +330,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST
+#   ifdef M3FAST_UV
 #    define usum grad
         usum=0.
         do k=1,N
@@ -474,7 +474,7 @@
 !
 !  Replace external mode
 !
-#   if defined M3FAST && defined QDM_OBC_TANG_CORRECT
+#   if defined M3FAST_UV && defined QDM_OBC_TANG_CORRECT
 #    define usum grad
         usum=0.
         do k=1,N
@@ -614,7 +614,7 @@
 !
 !  Replace external mode
 !
-#  if defined M3FAST && defined QDM_OBC_TANG_CORRECT
+#  if defined M3FAST_UV && defined QDM_OBC_TANG_CORRECT
 #   define usum grad
         usum=0.
         do k=1,N
@@ -722,7 +722,7 @@
       subroutine unbq_bc_child_empty
       end
 # endif
-#endif /* M3FAST */
+#endif /* M3FAST_UV */
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF

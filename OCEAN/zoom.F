@@ -1473,7 +1473,7 @@ CR      write(*,*) '  0' MYID
 ! ----------------------      rhonbq      ---------------------
 
        call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
-     &    (/'x','y','N'/),(/i1t,j1t,0/),
+     &    (/'x','y','N'/),(/i1t,j1t,1/),
      &    (/i2t,j2t,N/),updaterhonbqid)
 
 #   if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX

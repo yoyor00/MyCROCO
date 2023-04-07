@@ -174,12 +174,18 @@
       external hinterp, updateh, updatermask
       external initzeta,initubar,initvbar,inith
       external initu,initv,initt
-# ifdef M3FAST
+# ifdef M3FAST_UV
        external initunbq, initvnbq
-#  ifdef NBQ
-       external initwz, initwnbq, initrhonbq
-#  endif
-# endif      
+# endif
+# ifdef M3SLOW_W
+       external initwz
+# endif
+# ifdef M3FAST_W
+       external initwnbq
+# endif
+# ifdef M3FAST_RHO
+       external initrhonbq
+# endif
 # ifdef WKB_WWAVE
       external initwac,initwkx,initwke
       external inithrm,initfrq,initwcg,initwsb,initwvn
@@ -348,17 +354,17 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !! GC change for EXACT_RESTART
 !!        call get_initial
 !==================== FOR EXACT_RESTART as in main.F ====================
-#ifdef EXACT_RESTART
+# ifdef EXACT_RESTART
         call get_initial (nrrec-1, 2) ! Set initial conditions
                                     ! in the case of restart run.
 C$OMP BARRIER
-# ifdef SOLVE3D
+#  ifdef SOLVE3D
         do tile=0,NSUB_X*NSUB_E-1
           call set_depth (tile) !<-- needed to initialize Hz_bak
         enddo
 C$OMP BARRIER
+#  endif
 # endif
-#endif
       call get_initial (nrrec, 1)   ! Set initial conditions       
       time=start_time
       tdays=time*sec2day
@@ -424,7 +430,7 @@ C$OMP BARRIER
         call Agrif_Init_Variable(uid,procname=initu)
         call Agrif_Init_Variable(vid,procname=initv)
 
-#  ifdef M3FAST
+#  ifdef M3FAST_UV
         call Agrif_Set_bc(qdmunbqid,(/0,0/))
         call Agrif_Set_bc(qdmvnbqid,(/0,0/))
         call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_linear,
@@ -437,21 +443,25 @@ C$OMP BARRIER
      &                                  interp2=Agrif_linear)
         call Agrif_Init_Variable(qdmunbqid,procname=initunbq)
         call Agrif_Init_Variable(qdmvnbqid,procname=initvnbq)
-#   ifdef NBQ
+#  endif
+#  ifdef M3SLOW_W
         call Agrif_Set_bc(wzid,(/0,0/))
-        call Agrif_Set_bc(qdmwnbqid,(/0,0/))
-        call Agrif_Set_bc(rhonbqid,(/0,0/))
         call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
-        call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
-        call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
         call Agrif_Set_interp(wzid,interp=Agrif_constant)
-        call Agrif_Set_interp(qdmwnbqid,interp=Agrif_constant)
-        call Agrif_Set_interp(rhonbqid,interp=Agrif_constant)
         call Agrif_Init_Variable(wzid,procname=initwz)
+#  endif
+#  ifdef M3FAST_W
+        call Agrif_Set_bc(qdmwnbqid,(/0,0/))
+        call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
+        call Agrif_Set_interp(qdmwnbqid,interp=Agrif_constant)
         call Agrif_Init_Variable(qdmwnbqid,procname=initwnbq)
+#  endif
+#  ifdef M3FAST_RHO
+        call Agrif_Set_bc(rhonbqid,(/0,0/))
+        call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
+        call Agrif_Set_interp(rhonbqid,interp=Agrif_constant)
         call Agrif_Init_Variable(rhonbqid,procname=initwnbq)
-#   endif
-#  endif        
+#  endif
 
         if (Agrif_Parent_Nb_Step() == 0) then
 !!     call get_initial 
@@ -836,7 +846,7 @@ CR      write(*,*) '  0' MYID
       Ttimeindex = -1
       Utimeindex = -1
       Vtimeindex = -1
-#  ifdef NBQ
+#  ifdef M3FAST
       Wtimeindex = -1
 #  endif       
 #  ifdef AGRIF_OBC_SOUTH
@@ -851,20 +861,21 @@ CR      write(*,*) '  0' MYID
      
                 T_south(0:LOCALLM+1,0:1,1:N,4,1:NT)=
      &                t(0:LOCALLM+1,0:1,1:N,1,1:NT)     
-#   ifdef M3FAST
+#   ifdef M3FAST_UV
                 Unbq_south(0:LOCALLM+1,0:0,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
      
                 Vnbq_south(0:LOCALLM+1,1:1,1:N,2)=
      &            qdmv_nbq(0:LOCALLM+1,1:1,1:N)
-#    ifdef NBQ
+#   endif
+#   ifdef M3SLOW_W
                 W_south(0:LOCALLM+1,0:0,0:N,4)=
      &               wz(0:LOCALLM+1,0:0,0:N,1)
-
+#   endif
+#   ifdef M3FAST_W
                 Wnbq_south(0:LOCALLM+1,0:0,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
-#    endif 
-#   endif
+#   endif 
 #   ifdef MPI           
             endif          
 #   endif            
@@ -883,19 +894,20 @@ CR      write(*,*) '  0' MYID
                 T_north(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,4,1:NT)=
      &                t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,1:NT)
 
-#   ifdef M3FAST
+#   ifdef M3FAST_UV
                 Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
      
                 Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
-#    ifdef NBQ
+#   endif
+#   ifdef M3SLOW_W
                 W_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,4)=
      &               wz(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)
-
+#   endif
+#   ifdef M3FAST_W
                 Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
-#    endif
 #   endif
 #   ifdef MPI                    
             endif  
@@ -914,19 +926,20 @@ CR      write(*,*) '  0' MYID
      
                 T_west(0:1,0:LOCALMM+1,1:N,4,1:NT)=
      &               t(0:1,0:LOCALMM+1,1:N,1,1:NT)     
-#   ifdef M3FAST
+#   ifdef M3FAST_UV
                 Unbq_west(1:1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
      
                 Vnbq_west(0:0,0:LOCALMM+1,1:N,2)=
      &           qdmv_nbq(0:0,0:LOCALMM+1,1:N)
-#    ifdef NBQ
+#   endif
+#   ifdef M3SLOW_W
                 W_west(0:0,0:LOCALMM+1,0:N,4)=
      &              wz(0:0,0:LOCALMM+1,0:N,1)
-
+#   endif
+#   ifdef M3FAST_W
                 Wnbq_west(0:0,0:LOCALMM+1,0:N,2)=
      &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
-#    endif
 #   endif
 #   ifdef MPI            
             endif
@@ -945,19 +958,20 @@ CR      write(*,*) '  0' MYID
      
                 T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,4,1:NT)=
      &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)     
-#   ifdef M3FAST
+#   ifdef M3FAST_UV
                 Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
      
                 Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
-#    ifdef NBQ
+#   endif
+#   ifdef M3SLOW_W
                 W_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,4)=
      &              wz(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)
-
+#   endif 
+#   ifdef M3FAST_W
                 Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,2)=
      &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
-#    endif
 #   endif
 #   ifdef MPI               
             endif  
@@ -1398,7 +1412,7 @@ CR      write(*,*) '  0' MYID
      &update=Agrif_Update_Average)     
 # endif
 
-# ifdef M3FAST
+# ifdef M3FAST_UV
 ! ----------------------  unbq / vnbq  ---------------------
 
       call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
@@ -1445,8 +1459,9 @@ CR      write(*,*) '  0' MYID
       call Agrif_Set_UpdateType(updatevnbqid,
      &update=Agrif_Update_Average)
 #  endif
+# endif /* M3FAST_UV */
 
-#  ifdef NBQ
+# ifdef M3FAST_W
 ! ----------------------      wnbq      ---------------------
 
        call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
@@ -1469,9 +1484,10 @@ CR      write(*,*) '  0' MYID
       call Agrif_Set_UpdateType(updatewnbqid,
      &update=Agrif_Update_Average)     
 #   endif
+#  endif /* M3FAST_W */
 
 ! ----------------------      rhonbq      ---------------------
-
+#  ifdef M3FAST_RHO
        call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
      &    (/'x','y','N'/),(/i1t,j1t,1/),
      &    (/i2t,j2t,N/),updaterhonbqid)
@@ -1492,10 +1508,10 @@ CR      write(*,*) '  0' MYID
       call Agrif_Set_UpdateType(updaterhonbqid,
      &update=Agrif_Update_Average)     
 #   endif
-
+#  endif /* M3FAST_RHO */
 
 ! ----------------------      wz      ---------------------
-
+#  ifdef M3SLOW_W
       call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
      &    (/'x','y','N'/),(/i1t,j1t,0/),
      &    (/i2t,j2t,N/),updatewid)
@@ -1517,8 +1533,7 @@ CR      write(*,*) '  0' MYID
      &update=Agrif_Update_Average)     
 #   endif
 
-#  endif /* NBQ */
-# endif /* M3FAST */
+#  endif /* M3SLOW_W */
 
 ! ====================   DECLARE VARIABLES   =====================
 
@@ -1612,7 +1627,7 @@ CR      write(*,*) '  0' MYID
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),vspongeid)
 
-# ifdef M3FAST      
+# ifdef M3FAST_UV
         call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1u,j1t,1/),
      &   (/i2u,j2t,N/),qdmunbqid)
@@ -1620,24 +1635,25 @@ CR      write(*,*) '  0' MYID
         call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),qdmvnbqid)
-#  ifdef NBQ                  
+# endif /* M3FAST_UV */
+# ifdef M3FAST_RHO                 
         call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
      &    (/i2t,j2t,N,NT/),rhonbqid)
-
+# endif /* M3FAST_RHO */
+# ifdef M3FAST_W
         call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
      &    (/'x','y','N'/),(/i1t,j1t,0/),
      &    (/i2t,j2t,N/),qdmwnbqid)
-
+# endif /* M3FAST_W */
+# ifdef M3SLOW_W
         call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1t,j1t,0/),
      &   (/i2t,j2t,N/),wzid)
-
         call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1t,j1t,0/),
      &   (/i2t,j2t,N/),wspongeid)
-#  endif
-# endif /* M3FAST */
+# endif /* M3SLOW_W */
 
 ! ====================   SET BC / INTERP  =====================
 
@@ -1712,14 +1728,18 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bc(umask_wetid,(/0,0/))
         call Agrif_Set_bc(vmask_wetid,(/0,0/))
 # endif
-# ifdef M3FAST
+# ifdef M3FAST_UV
         call Agrif_Set_bc(qdmunbqid,(/0,0/))
         call Agrif_Set_bc(qdmvnbqid,(/0,0/))
-#  ifdef NBQ
+# endif
+# ifdef M3SLOW_W
         call Agrif_Set_bc(wzid,(/0,0/))
+# endif
+# ifdef M3FAST_W
         call Agrif_Set_bc(qdmwnbqid,(/0,0/))
+# endif
+# ifdef M3FAST_RHO
 !        call Agrif_Set_bc(rhonbqid,(/0,0/))
-#  endif
 # endif
 
 # ifdef ANA_GRID
@@ -1751,20 +1771,24 @@ CR      write(*,*) '  0' MYID
      &                                    interp2=Agrif_ppm)
         call Agrif_Set_bcinterp(vspongeid,interp1=Agrif_ppm,
      &                                    interp2=Agrif_lagrange)
-# ifdef M3FAST
+# ifdef M3FAST_UV
         call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_lagrange,
      &                                    interp2=Agrif_ppm)
         call Agrif_Set_bcinterp(qdmvnbqid,interp1=Agrif_ppm,
      &                                    interp2=Agrif_lagrange)
-#  ifdef NBQ
+# endif
+# ifdef M3SLOW_W
         call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
         call Agrif_Set_bcinterp(wspongeid,interp=Agrif_constant) 
+# endif
+# ifdef M3FAST_W
         call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
+# endif
+# ifdef M3FAST_RHO
         !call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
         call Agrif_Set_bcinterp(rhonbqid,interp11=Agrif_constant,
      &           interp12=Agrif_lagrange,interp21=Agrif_lagrange,
      &                                   interp22=Agrif_constant)
-#  endif
 # endif
 
 ! ----------------------     rmask     ---------------------
@@ -2792,7 +2816,7 @@ CR      write(*,*) '  0' MYID
 
 !======================================================================
 
-# ifdef M3FAST
+# ifdef M3FAST_UV
       subroutine initunbq(tabres,i1,i2,j1,j2,k1,k2,before)
 
       implicit none
@@ -2838,10 +2862,9 @@ CR      write(*,*) '  0' MYID
 
       return
       end 
-
+# endif /* M3FAST_UV */
+# ifdef M3SLOW_W
 !======================================================================
-
-#  ifdef NBQ
       subroutine initwz(tabres,i1,i2,j1,j2,k1,k2,before)
 
       implicit none
@@ -2862,7 +2885,8 @@ CR      write(*,*) '  0' MYID
 
       return
       end
-
+# endif /* M3SLOW_W */
+# ifdef M3FAST_W
 !======================================================================
 
       subroutine initwnbq(tabres,i1,i2,j1,j2,k1,k2,before)
@@ -2886,9 +2910,7 @@ CR      write(*,*) '  0' MYID
 
       return
       end
-
-#  endif /* NBQ */
-# endif /* M3FAST */   
+# endif /* M3FAST_W */   
 
 !======================================================================
 

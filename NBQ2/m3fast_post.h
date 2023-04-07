@@ -582,13 +582,6 @@ C$OMP MASTER
 # ifdef OBC_VOLCONS
       call obc_flux_tile (Istr,Iend,Jstr,Jend)
 # endif
-
-!      call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-!      call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-!      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-!     &                        qdmu_nbq(START_2D_ARRAY,1))
-!      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-!     &                        qdmv_nbq(START_2D_ARRAY,1))
 ! !
 ! !********************************
 ! ! Compute fast-time averaged barotropic 
