@@ -15,7 +15,8 @@
 	cat $*_.tmp | ./mpc > $*_.f && \rm $*_.tmp
 	if egrep "^$*_.f" psyclone.rules.lst; then \
 		mv $*_.f $*_.mpc.f; \
-		psyclone -api nemo -l output -s $$(egrep "^$*_.f" psyclone.rules.lst | cut -f 2) -opsy $*_.f $*_.mpc.f; \
+		egrep -v "^ +& *$$" $*_.mpc.f > $*_.mpc.fixed.f; \
+		psyclone -api nemo -l output -s $$(egrep "^$*_.f" psyclone.rules.lst | cut -f 2) -opsy $*_.f $*_.mpc.fixed.f; \
 		$(CFT) -Mfree -c $(FFLAGS) -acc=gpu -I${HOME}/workspace/stfc/PSyclone/lib/profiling/nvidia $*_.f -o $*.o; \
 	else \
 		$(CFT) -c $(FFLAGS) $*_.f -o $*.o; \
