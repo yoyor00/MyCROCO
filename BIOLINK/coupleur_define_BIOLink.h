@@ -38,7 +38,7 @@
 /*!====================================================================
   ! Variables related to the namelists and other external files
   !====================================================================*/
-# define REPFICNAMELIST 'FIC_NAMELIST' /* Directory containing the namelists */
+# define REPFICNAMELIST 'BIOLINK_NAMELIST' /* Directory containing the namelists */
 # define SUFFIX_RUNFILE 1 /* I do not really know */
 # define TEST_NOT_RESTART_SUBS .NOT.l_restart_subs /* Boolean to check 
                                                       if a restart was used */
