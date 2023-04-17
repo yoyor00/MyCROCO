@@ -12,7 +12,9 @@
    !&E ** History :
    !&E       ! 2018-04-18 (F. Ganthy) Original code
    !&E==========================================================================
-#ifdef key_OBSTRUCTIONS
+
+#include "cppdefs.h"
+#ifdef OBSTRUCTIONS
 
    function obsttools_abdeluz(i,j,k,hwat,uv,z,z0)
    !!**********************************************************************
@@ -21,7 +23,6 @@
    !! F. Ganthy (2018-04-18)
    !!----------------------------------------------------------------------
    !! * Modules used
-   USE parameters,      ONLY: rsh
    USE comvars2d,       ONLY: h0fond
    USE comobstructions
    IMPLICIT NONE
@@ -138,20 +139,17 @@
 
    !!======================================================================
 
-   function obsttools_z0sedim(i,j,z0sedim,hwat)
+   function obsttools_z0sedim(i,j,z0sedim)
    !!**********************************************************************
    !! Computes z0sedim in presence of obstructions
    !! F. Ganthy (2019-06-12)
    !!----------------------------------------------------------------------
    !! * Modules used
-   USE parameters, ONLY  : rsh
-   USE comvars2d,  ONLY  : h0,h0fond,hm
-   USE comvarp2d,  ONLY  : ssh
    USE comobstructions
    IMPLICIT NONE
    !! * Arguments
    INTEGER                  :: i,j
-   REAL(KIND=rsh)           :: z0sedim,hwat
+   REAL(KIND=rsh)           :: z0sedim
    REAL(KIND=rsh)           :: obsttools_z0sedim
    !! * Local declaration
    INTEGER :: iv
@@ -176,13 +174,6 @@
            !-------------------------
            oah = obst_dens_inst(iv,i,j)*obst_width_inst(iv,i,j)*obst_height(iv,i,j)
            z00 = obst_c_z0bstress_x0(iv)* oah**obst_c_z0bstress_x1(iv)
-           IF(hwat.LE.hm)THEN
-             !---------------------------------------
-             ! Applying correction for 2D small-depth
-             !---------------------------------------
-             oal = 1.0_rsh/(obst_dens_inst(iv,i,j)*obst_width_inst(iv,i,j)*obst_height_inst(iv,i,j))
-             z00 = z00 * obst_c_z0bstress_x2(iv)*oal
-           ENDIF ! END test on 3D or 2Dsmall depth
            z00 = MAX(MIN(z00,0.01_rsh),epsi)
          ENDIF ! END test on parameterization
          z0tmp = (obst_position(iv,i,j)*z00) + ((1.0_rsh-obst_position(iv,i,j))*z0sedim)
@@ -201,22 +192,7 @@
    !----------
    obsttools_z0sedim = z0tmp/stmp
    obsttools_z0sedim = MAX(epsi,obsttools_z0sedim)
-   ! Specific value for testcase
-#if defined key_casobstflume_ganthy2015_hydro
-   IF((i.GE.14) .AND. (i.LE.31))THEN
-     IF(obst_position(1,i,j).EQ.0.0_rsh)THEN
-       ! Bare sediment
-       obsttools_z0sedim = 1.0E-5
-     ENDIF
-   ENDIF
-#elif defined key_casobstflume_ganthy2015_sedim
-   IF((i.GE.5) .AND. (i.LE.11))THEN
-     IF(obst_position(1,i,j).EQ.0.0_rsh)THEN
-       ! Bare sediment
-       obsttools_z0sedim = 1.0E-5
-     ENDIF
-   ENDIF
-#endif
+
    !!**********************************************************************
    end function obsttools_z0sedim
 

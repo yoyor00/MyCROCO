@@ -1,6 +1,8 @@
 MODULE OBSTRUCTIONS
 
-#ifdef key_OBSTRUCTIONS
+#include "cppdefs.h"
+
+#ifdef OBSTRUCTIONS
    !&E==========================================================================
    !&E                   ***  MODULE  OBSTRUCTIONS  ***
    !&E
@@ -45,10 +47,6 @@ MODULE OBSTRUCTIONS
    !&E     subroutine OBSTRUCTIONS_comp_hydroparam    ! Computes source terms used within 
    !&E                                                ! momentum equation and tubulence closure
    !&E
-   !&E     subroutine OBSTRUCTIONS_comp_bedroughness  ! Computes the effective roughness length for
-   !&E                                                ! the computation of bottom shear stress
-   !&E
-   !&E     subroutine OBSTRUCTIONS_comp_botstress     ! Computes the bottom shear stress
    !&E
    !&E ** History :
    !&E     ! 2011-03 (F. Ganthy) Original code
@@ -107,13 +105,9 @@ MODULE OBSTRUCTIONS
    !&E     ! 2021-10 (F. Ganthy) Initialization routines extracted to initOBSTRUCTIONS.F90
    !&E==========================================================================
 
-#include "toolcpp.h"
-
    !! * Modules used
    USE comOBSTRUCTIONS
-   USE parameters,    ONLY : lchain,rsh,rlg,imin,imax,jmin,jmax,kmax,       &
-                             limin,limax,ljmin,ljmax,riosh,liminm1,ljminm1, &
-                             liminp1,limaxm1,ljminp1,ljmaxm1
+
 
    IMPLICIT NONE
 
@@ -134,7 +128,6 @@ MODULE OBSTRUCTIONS
    PUBLIC OBSTRUCTIONS_comp_obstroughness
    PUBLIC OBSTRUCTIONS_comp_hydroparam
    PUBLIC OBSTRUCTIONS_comp_bedroughness
-   PUBLIC OBSTRUCTIONS_comp_botstress
 
    PRIVATE
 
@@ -147,23 +140,12 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
  
-   SUBROUTINE OBSTRUCTIONS_update
+   SUBROUTINE OBSTRUCTIONS_update(limin, limax, ljmin, ljmax, cm0, h, &
+                        z0b, ssh, ubar, vbar, u, v)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_update  ***
    !&E
    !&E ** Purpose : Update of obstruction parameters at each time step
-   !&E
-   !&E ** Description : 
-   !&E
-   !&E ** Called by : step.F90
-   !&E
-   !&E ** External calls :
-   !&E
-   !&E ** Used ij-arrays :
-   !&E
-   !&E ** Modified variables : 
-   !&E
-   !&E ** Reference :
    !&E
    !&E ** History :
    !&E       ! 2012-04-20 (F. Ganthy) Original code
@@ -180,62 +162,70 @@ MODULE OBSTRUCTIONS
    !&E---------------------------------------------------------------------
    !! * Modules used
    USE initOBSTRUCTIONS, ONLY : OBSTRUCTIONS_readfile_char
-
    IMPLICIT NONE
+   
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   INTEGER(KIND=rsh), INTENT(IN) :: cm0
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: z0b 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ubar
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: vbar 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax, kmax),INTENT(IN) :: u
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax, kmax),INTENT(IN) :: v
 
    !! * Local declaration
 
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_UPDATE'
    ! ******************************
    ! * READING CHARACTERISTICS FILE
    ! ******************************
-   CALL OBSTRUCTIONS_readfile_char
+   CALL OBSTRUCTIONS_readfile_char(limin,limax,ljmin,ljmax)
    ! ************************
    ! * COMPUTES 3D VELOCITIES
    ! ************************
-   CALL OBSTRUCTIONS_comp_uzvz
+   CALL OBSTRUCTIONS_comp_uzvz(limin,limax,ljmin,ljmax)
    ! *********************************
    ! * UPDATING OBSTRUCTION PARAMETERS
    ! *********************************
    !---------------------
    ! * Obstruction height
    !---------------------
-   CALL OBSTRUCTIONS_comp_abdelposture
-   CALL OBSTRUCTIONS_comp_height
+   CALL OBSTRUCTIONS_comp_abdelposture(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_height(limin,limax,ljmin,ljmax)
    !----------------------------
    ! * Obstruction bending angle
    !----------------------------
-   CALL OBSTRUCTIONS_comp_theta
+   CALL OBSTRUCTIONS_comp_theta(limin,limax,ljmin,ljmax)
    !--------------------------------------
    ! * Obstruction fraction of sigma layer
    !--------------------------------------
-   CALL OBSTRUCTIONS_comp_fracz
+   CALL OBSTRUCTIONS_comp_fracz(limin,limax,ljmin,ljmax)
    !----------------------
    ! * Obstruction density
    !----------------------
-   CALL OBSTRUCTIONS_comp_distrib
+   CALL OBSTRUCTIONS_comp_distrib(limin,limax,ljmin,ljmax)
    !------------------------------
    ! * Obstruction width/thickness
    !------------------------------
-   CALL OBSTRUCTIONS_comp_diam
+   CALL OBSTRUCTIONS_comp_diam(limin,limax,ljmin,ljmax)
    !---------------------------------------------------
    ! * Obstruction density correction for fragmentation
    !---------------------------------------------------
-   CALL OBSTRUCTIONS_comp_fracxy
+   CALL OBSTRUCTIONS_comp_fracxy(limin,limax,ljmin,ljmax)
    !---------------------------------------------
    ! * Obstruction projected area (obst_a,obst_s)
    !---------------------------------------------
-   CALL OBSTRUCTIONS_comp_projarea
+   CALL OBSTRUCTIONS_comp_projarea(limin,limax,ljmin,ljmax)
    !---------------------------------------
    ! * Obstruction induced roughness length
    !---------------------------------------
-   CALL OBSTRUCTIONS_comp_obstroughness
+   CALL OBSTRUCTIONS_comp_obstroughness(limin,limax,ljmin,ljmax)
    ! ***********************************
    ! * UPDATING OBSTRUCTION SOURCE TERMS
    ! ***********************************
-   CALL OBSTRUCTIONS_comp_hydroparam
+   CALL OBSTRUCTIONS_comp_hydroparam(limin,limax,ljmin,ljmax)
    ! **********************************
    ! * UPDATING OBSTRUCTION OTHER TERMS
    ! **********************************
@@ -243,21 +233,20 @@ MODULE OBSTRUCTIONS
    ! * ROUGHNESS LENGTH FOR BOTTOM SHEAR STRESS
    !-------------------------------------------
 ! * FG-OBST : Improve coupling with sediment
-#ifndef key_sedim_MUSTANG
+#ifndef MUSTANG
    ! Only used for running the model without sediment
    ! For sediment run, this the function is within tools_obstructions
    ! and median grain size is used, the call to the function is performed
    ! within sed_MUSTANG_MARS.F90/sed_skinstress
-   IF(l_obst_z0bstress_tot) CALL OBSTRUCTIONS_comp_bedroughness
+   IF(l_obst_z0bstress_tot) CALL OBSTRUCTIONS_comp_bedroughness(limin,limax,ljmin,ljmax)
 #endif
 ! * FG-OBST-END
    ! *********************************
-   PRINT_DBG*, 'END OBSTRUCTIONS_UPDATE'
    END SUBROUTINE OBSTRUCTIONS_update 
  
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_uzvz
+   SUBROUTINE OBSTRUCTIONS_comp_uzvz(limin,limax,ljmin,ljmax,h0,ssh,uz,vz)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_uzvz  ***
    !&E
@@ -280,25 +269,18 @@ MODULE OBSTRUCTIONS
    !&E                                 (2003, MEPS) method
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters,  ONLY : rsh,limin,limax,ljmin,ljmax,kmax
-   USE comvarp2d,   ONLY : ssh,u,v
-   USE comvars2d,   ONLY : h0,h0fond,z0b,l_modele2d,hm,nbouc
-   USE comvarp3d,   ONLY : uz,vz
-   USE comvars3d,   ONLY : dsigu
-
    IMPLICIT NONE
-
    !! * Arguments
-
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax, kmax),INTENT(IN) :: uz
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax, kmax),INTENT(IN) :: vz
    !! * Local declaration
-   INTEGER                   :: iv,i,j,k
-   REAL(KIND=rsh)            :: hwat,z0o
-   REAL(KIND=rsh)            :: obsttools_abdeluz,obsttools_fobst,umoy,vmoy
-   REAL(KIND=rsh),PARAMETER  :: e = EXP(1.0_rsh)
+   INTEGER                   :: i,j,k
+   REAL(KIND=rsh)            :: hwat
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_COMP_UZVZ'
    !---------------------------------
    obst_zc(:,:,:) = 0.0_rsh
    obst_dz(:,:,:) = 0.0_rsh
@@ -306,60 +288,26 @@ MODULE OBSTRUCTIONS
    obst_vz(:,:,:) = 0.0_rsh
    DO j=ljmin,ljmax
      DO i=limin,limax
-       hwat = h0(i,j) + ssh(i,j)
+       hwat = h0(i,j) + ssh(i,j)  ! z_w(i,j,N)+h(i,j)
        IF(hwat.GT.h0fond) THEN
-         z0o = obst_z0bed(i,j)
          !--------------------------
-         ! * Height above bed and dz
+         ! * Height above bed, dz, uz, vz
          !--------------------------
          DO k=1,obst_kmax
-           obst_zc(k,i,j) = (1.0_rsh+obst_sig(k))*hwat
-           obst_dz(k,i,j) = obst_dsig(k)*hwat
+            obst_zc(k,i,j) = (1.0_rsh+obst_sig(k))*hwat !TODO : compute sig and dsig with generalized sigmas of croco
+            obst_dz(k,i,j) = obst_dsig(k)*hwat
+            obst_uz(k,i,j) = (uz(k,i,j) + uz(k,i+1,j)) / 2.
+            obst_vz(k,i,j) = (vz(k,i,j) + uz(k,i,j+1)) / 2.
          ENDDO
-         IF((l_modele2d).OR.(kmax.EQ.1))THEN
-           !***********************************************************
-           !************************** 2D MODEL ***********************
-           !***********************************************************
-           DO k=1,obst_kmax
-             IF(obst_zc(k,i,j).LE.z0o)THEN
-               obst_uz(k,i,j) = 0.0_rsh
-               obst_vz(k,i,j) = 0.0_rsh
-             ELSE
-               obst_uz(k,i,j) = u(i,j) * LOG(obst_zc(k,i,j)/z0o) / LOG(hwat/(EXP(1.0_rsh)*z0o))
-               obst_vz(k,i,j) = v(i,j) * LOG(obst_zc(k,i,j)/z0o) / LOG(hwat/(EXP(1.0_rsh)*z0o))
-             ENDIF
-           ENDDO
-         ELSEIF ((.NOT.l_modele2d).AND.(hwat.LE.hm))THEN
-           !***********************************************************
-           !*********************** 3D SMALL DEPTH ********************
-           !***********************************************************
-           DO k=1,obst_kmax
-             obst_uz(k,i,j) = obsttools_abdeluz(i,j,k,hwat,u(i,j),obst_zc(k,i,j),z0o)
-             obst_vz(k,i,j) = obsttools_abdeluz(i,j,k,hwat,v(i,j),obst_zc(k,i,j),z0o)
-           ENDDO
-           umoy           = SUM(obst_uz(:,i,j)*dsigu(:))
-           obst_uz(:,i,j) = obst_uz(:,i,j)-umoy+u(i,j)
-           vmoy           = SUM(obst_vz(:,i,j)*dsigu(:))
-           obst_vz(:,i,j) = obst_vz(:,i,j)-vmoy+v(i,j)
-         ELSE
-           !***********************************************************
-           !************************** 3D MODEL ***********************
-           !***********************************************************
-           DO k=1,obst_kmax
-             obst_uz(k,i,j) = uz(k,i,j)
-             obst_vz(k,i,j) = vz(k,i,j)
-           ENDDO
-         ENDIF ! * END TEST ON 2DMODEL
        ENDIF ! * END TEST ON HWAT
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !---------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_UZVZ'
    END SUBROUTINE OBSTRUCTIONS_comp_uzvz
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_abdelposture
+   SUBROUTINE OBSTRUCTIONS_comp_abdelposture(limin,limax,ljmin,ljmax,ssh,h0,h0fond)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_abdelposture  ***
    !&E
@@ -395,13 +343,9 @@ MODULE OBSTRUCTIONS
    !&E       ! 2019-03-21 (F. Ganthy remove error on theta research (remplaced by warning) + small bug correction
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters,  ONLY  : rsh,limin,limax,ljmin,ljmax,pi
-   USE comvarp2d,   ONLY  : ssh
-   USE comvars2d,   ONLY  : h0,h0fond,ierrorlog,iwarnlog
    IMPLICIT NONE
-
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
 
    !! * Local declaration
    LOGICAL                                     :: IERR_MPI,l_theta
@@ -423,7 +367,6 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh),PARAMETER                    :: phi_max     = 10.0_rsh*pi/180.0_rsh ! Max angle for lift
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBST_COMP_ABDELPOSTURE'
    !-----------------------------------------
    ! FG_TO_DO : will see if possible to use this procedure also for downward-flexible obstructions
    DO j=ljmin,ljmax
@@ -811,12 +754,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! END LOOP ON i
    ENDDO ! END LOOP ON j
    !--------------------------------------- 
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_ABDELPOSTURE'
    END SUBROUTINE OBSTRUCTIONS_comp_abdelposture
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_height
+   SUBROUTINE OBSTRUCTIONS_comp_height(limin, limax, ljmin, ljmax, ssh, h0, h0fond)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_height  ***
    !&E
@@ -857,12 +799,10 @@ MODULE OBSTRUCTIONS
    !&E       ! 2017-10-10 (F. GAnthy) Optimization for full 3D obstructions
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : rsh,limin,limax,ljmin,ljmax
-   USE comvarp2d,  ONLY  : ssh
-   USE comvars2d,  ONLY  : h0,h0fond
    IMPLICIT NONE
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+
    !! * Local declaration
    INTEGER                               :: i,j,k,iv
    REAL(KIND=rsh)                        :: htmp,dz,udz,us
@@ -955,12 +895,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-----------------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_HEIGHT'
    END SUBROUTINE OBSTRUCTIONS_comp_height
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_theta
+   SUBROUTINE OBSTRUCTIONS_comp_theta(limin, limax, ljmin, ljmax, ssh, h0, h0fond)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_theta  ***
    !&E
@@ -1000,12 +939,10 @@ MODULE OBSTRUCTIONS
    !&E       ! 2020-04-23 (F. Ganthy) Small bug correstion
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : rsh,limin,limax,ljmin,ljmax
-   USE comvarp2d,  ONLY  : ssh
-   USE comvars2d,  ONLY  : h0,h0fond
    IMPLICIT NONE
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+
    !! * Local declaration
    LOGICAL                          :: IERR_MPI
    INTEGER                          :: i,j,k,iv
@@ -1048,12 +985,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-----------------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_THETA'
    END SUBROUTINE OBSTRUCTIONS_comp_theta
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_fracz
+   SUBROUTINE OBSTRUCTIONS_comp_fracz(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_fracz ***
    !&E
@@ -1092,19 +1028,16 @@ MODULE OBSTRUCTIONS
    !&E       ! 2017-10-10 (F. Ganthy) Optimization for full 3D obstructions
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : rsh,limin,limax,ljmin,ljmax
-   USE comvarp2d,  ONLY  : ssh
-   USE comvars2d,  ONLY  : h0,h0fond
    IMPLICIT NONE
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+
    !! * Local declaration
    LOGICAL                          :: IERR_MPI
    INTEGER                          :: i,j,k,iv
    REAL(KIND=rsh)                   :: hwat,z0,z1
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBST_COMP_FRACZ'
    !-----------------------------------------
    obst_fracz3d(:,:,:,:) = 0.0_rsh
    DO j=ljmin,ljmax
@@ -1154,12 +1087,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-----------------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_FRACZ'
    END SUBROUTINE OBSTRUCTIONS_comp_fracz
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_diam
+   SUBROUTINE OBSTRUCTIONS_comp_diam(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_diam  ***
    !&E
@@ -1196,11 +1128,6 @@ MODULE OBSTRUCTIONS
    !&E       ! 2020-04-23 (F. Ganthy) More modification of thickness computation to be more realistic
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : rsh,limin,limax,ljmin,ljmax,pi
-   USE comvarp2d,  ONLY  : ssh
-   USE comvars2d,  ONLY  : h0,h0fond
-   USE comvars3d,  ONLY  : dsigu
 
    IMPLICIT NONE
 
@@ -1212,7 +1139,6 @@ MODULE OBSTRUCTIONS
  
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_COMP_DIAM'
    !-----------------------------------------
    obst_width3d(:,:,:,:) = 0.0_rsh
    obst_thick3d(:,:,:,:) = 0.0_rsh
@@ -1280,12 +1206,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-----------------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_DIAM'
    END SUBROUTINE OBSTRUCTIONS_comp_diam
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_distrib
+   SUBROUTINE OBSTRUCTIONS_comp_distrib(limin,limax,ljmin,ljmax,h0,ssh)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_distrib  ***
    !&E
@@ -1322,10 +1247,6 @@ MODULE OBSTRUCTIONS
    !&E       !                        compared with layer thickness
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : rsh,limin,limax,ljmin,ljmax
-   USE comvars2d,  ONLY  : h0,h0fond
-   USE comvarp2d,  ONLY  : ssh
 
    IMPLICIT NONE
 
@@ -1337,7 +1258,6 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh)                           :: z0,z1,zc,zn0,zn1,dn0,dn1
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_COMP_DISTRIB'
    !-----------------------------------------
    obst_dens3d(:,:,:,:) = 0.0_rsh
    DO j=ljmin,ljmax
@@ -1423,12 +1343,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !----------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_DISTRIB'
    END SUBROUTINE OBSTRUCTIONS_comp_distrib
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_fracxy
+   SUBROUTINE OBSTRUCTIONS_comp_fracxy(limin,limax,ljmin,ljmax,h0,ssh)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_fracxy  ***
    !&E
@@ -1453,10 +1372,6 @@ MODULE OBSTRUCTIONS
    !&E       ! 2017-10-10 (F. GAnthy) Optimization for full 3D obstructions
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : rsh
-   USE comvars2d,  ONLY  : h0,h0fond
-   USE comvarp2d,  ONLY  : ssh
 
    IMPLICIT NONE
 
@@ -1467,7 +1382,6 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh)     :: hwat,kv
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_COMP_FRACXY'
    !-----------------------------------------
    obst_fracxy(:,:,:) = 0.0_rsh
    DO j=ljmin,ljmax
@@ -1514,12 +1428,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !----------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_FRACXY'
    END SUBROUTINE OBSTRUCTIONS_comp_fracxy
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_projarea
+   SUBROUTINE OBSTRUCTIONS_comp_projarea(limin,limax,ljmin,ljmax,h0,ssh)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_projarea  ***
    !&E
@@ -1549,10 +1462,6 @@ MODULE OBSTRUCTIONS
    !&E                                average over the water depth : more meaningfull for further application)
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : limin,limax,ljmin,ljmax,pi
-   USE comvars2d,  ONLY  : h0,h0fond,l_modele2d
-   USE comvarp2d,  ONLY  : ssh
 
    IMPLICIT NONE
 
@@ -1563,7 +1472,6 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh),PARAMETER :: gamma=1.0_rsh-1.0e-6_rsh
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_COMP_PROJAREA'
    ! ********************************
    ! * RE-INITIALIZATION OF VARIABLES
    ! ********************************
@@ -1724,12 +1632,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-------------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_PROJAREA'
    END SUBROUTINE OBSTRUCTIONS_comp_projarea
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_obstroughness
+   SUBROUTINE OBSTRUCTIONS_comp_obstroughness(limin,limax,ljmin,ljmax,h0,ssh)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_obstroughness  ***
    !&E
@@ -1755,10 +1662,6 @@ MODULE OBSTRUCTIONS
    !&E       ! 2018-10-24 (F. Ganthy) Bug correction on averaging method for multiples obstructions
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : limin,limax,ljmin,ljmax
-   USE comvars2d,  ONLY  : h0,h0fond
-   USE comvarp2d,  ONLY  : ssh
    IMPLICIT NONE
 
    !! * Arguments
@@ -1767,7 +1670,6 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh)  :: hwat,a,d,z0a,coef,z0tot,ctot
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_OBSTROUGHNESS'
    !-----------------------------------------
    DO j=ljmin,ljmax
      DO i=limin,limax
@@ -1860,12 +1762,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-----------------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_OBSTROUGHNESS'
    END SUBROUTINE OBSTRUCTIONS_comp_obstroughness
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_hydroparam
+   SUBROUTINE OBSTRUCTIONS_comp_hydroparam(limin,limax,ljmin,ljmax)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_hydroparam  ***
    !&E
@@ -1917,12 +1818,10 @@ MODULE OBSTRUCTIONS
    !&E
    !&E---------------------------------------------------------------------
    !! * Modules used
-   USE parameters, ONLY  : limin,limax,ljmin,ljmax,pi,kmax
-   USE comvars2d,  ONLY  : h0,h0fond,hm,l_modele2d,z0b,ierrorlog,l_z0b_hom
-   USE comvarp2d,  ONLY  : ssh,u,v
-   USE comvarp3d,  ONLY  : uz,vz
-   USE comvars3d,  ONLY  : sig,dsigu
-   USE comturb,    ONLY  : cmu,c2turb
+!    USE comvars2d,  ONLY  : h0,h0fond,z0b
+!    USE comvarp2d,  ONLY  : ssh
+
+!    USE comturb,    ONLY  : cmu,c2turb
 
    IMPLICIT NONE
 
@@ -1934,7 +1833,6 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh),PARAMETER          :: gamma  = 1.0E-5
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_HYDROPARAM'
    !-----------------------------------------
    ! **********************
    ! * RE-INITIALIZATION OF VARIABLES
@@ -2104,12 +2002,11 @@ MODULE OBSTRUCTIONS
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-------------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_HYDROPARAM'
    END SUBROUTINE OBSTRUCTIONS_comp_hydroparam
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_bedroughness
+   SUBROUTINE OBSTRUCTIONS_comp_bedroughness(limin,limax,ljmin,ljmax,h0,ssh)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_bedroughness  ***
    !&E
@@ -2134,11 +2031,6 @@ MODULE OBSTRUCTIONS
    !&E       ! 2018-10-24 (F. Ganthy) Bug correction on averaging method for multiples obstructions
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters, ONLY  : rsh,limin,limax,ljmin,ljmax
-   USE comvars2d,  ONLY  : h0,h0fond,hm
-   USE comvarp2d,  ONLY  : ssh
-
    IMPLICIT NONE
 
    !! * Local declaration
@@ -2147,7 +2039,6 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh),PARAMETER :: epsi=1E-6
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_BEDROUGHNESS'
    !-------------------------------------
    obst_z0bstress(:,:) = obst_i_z0bstress
    DO j=ljmin,ljmax
@@ -2170,13 +2061,6 @@ MODULE OBSTRUCTIONS
                  !-------------------------
                  oah = obst_dens_inst(iv,i,j)*obst_width_inst(iv,i,j)*obst_height(iv,i,j)
                  z00 = obst_c_z0bstress_x0(iv)* oah**obst_c_z0bstress_x1(iv)
-                 IF(hwat.LE.hm)THEN
-                   !---------------------------------------
-                   ! Applying correction for 2D small-depth
-                   !---------------------------------------
-                   oal = 1.0_rsh/(obst_dens_inst(iv,i,j)*obst_width_inst(iv,i,j)*obst_height_inst(iv,i,j))
-                   z00 = z00 * obst_c_z0bstress_x2(iv)*oal
-                 ENDIF ! END test on 3D or 2Dsmall depth
                  z00 = MAX(MIN(z00,0.01_rsh),epsi)
                ENDIF ! END test on parameterization
                z0tmp = (obst_position(iv,i,j)*z00) + ((1.0_rsh-obst_position(iv,i,j))*obst_i_z0bstress)
@@ -2195,324 +2079,12 @@ MODULE OBSTRUCTIONS
          !----------
          obst_z0bstress(i,j) = z0tmp/stmp
          obst_z0bstress(i,j) = MAX(epsi,obst_z0bstress(i,j))
-         ! Specific value for testcase
-#if defined key_casobstflume_ganthy2015_hydro
-         IF((i.GE.14) .AND. (i.LE.31))THEN
-           IF(obst_position(1,i,j).EQ.0.0_rsh)THEN
-             ! Bare sediment
-             obst_z0bstress(i,j) = 1.0E-5
-           ENDIF
-         ENDIF
-#elif defined key_casobstflume_ganthy2015_sedim
-         IF((i.GE.5) .AND. (i.LE.11))THEN
-           IF(obst_position(1,i,j).EQ.0.0_rsh)THEN
-             ! Bare sediment
-             obst_z0bstress(i,j) = 1.0E-5
-           ENDIF
-         ENDIF
-#endif
+
        ENDIF ! * END TEST ON HWAT
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-------------------------------------
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_BEDROUGHNESS'
    END SUBROUTINE OBSTRUCTIONS_comp_bedroughness
-
-   !!==========================================================================================================
-
-   SUBROUTINE OBSTRUCTIONS_comp_botstress
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE OBSTRUCTIONS_comp_botstress  ***
-   !&E
-   !&E ** Purpose : Computes bottom shear stress
-   !&E
-   !&E ** Description : 
-   !&E
-   !&E ** Called by : step.F90 (if not key_sedim)
-   !&E
-   !&E ** External calls :
-   !&E
-   !&E ** Used ij-arrays :
-   !&E
-   !&E ** Modified variables : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       ! 2014-02 (F. Ganthy) Extracted from sedim.F90 (sed_skinstress)
-   !&E       ! 2016-03 (F. Ganthy) Correction for 3D : search k if z0>z(sig(0))
-   !&E       ! 2018-03 (F. Ganthy) Update according to changes within module sedimento
-   !&E       ! 2018-04 (F. Ganthy) Modification for use of theoretical velocity profiles
-   !&E                             within obstructions in 3D small-depth
-   !&E       ! 2022-01 (A. Le Pevedic) Bug correction on wave bottom shear stress 
-   !&E
-   !&E---------------------------------------------------------------------
-   !! * Modules used
-   USE parameters,     ONLY : kmax,epsilon,grav,pi,valmanq,exp1,liminp2,ljminp2
-   USE comvarp2d,      ONLY : ssh,u,v
-   USE comvars2d,      ONLY : hx,hy,l_obc_cycl_x,l_obc_cycl_y
-   USE comvarp3d,      ONLY : uz,vz,boz
-   USE comvars2d,      ONLY : ig,id,jb,jh,h0,hex,hey,htx,hty,hm,hminfrot,hmaxfrot,nbouc,h0fond
-   USE comvars3d,      ONLY : sig,rhoref,dsigu
-#ifdef key_wave
-   USE wave,        ONLY : wave_ubot, wave_tp,l_wave_rdir,wave_dir,wave_uubot, wave_vubot
-#endif
-#if defined key_siggen || defined key_gencoord
-   USE toolgeom,       ONLY : f_hzu_x,f_hzu_y
-   USE comsiggen,      ONLY : hzutx,hzuty
-#endif
-
-   USE_MPI toolmpi,    ONLY : ex_i_rsh,ex_j_rsh
-
-   !! * Local declarations
-   INTEGER i,j,k
-   REAL(KIND=rsh)                                   :: sigfrot,vit,z,thoule,hhoule,fws2ij
-   REAL(KIND=rsh)                                   :: alofwscd,tentot,xwa,coef_a,coef_b,       &
-                                                       coef_m,coef_n,coef_p,coef_q,htn
-
-   REAL(KIND=rsh),PARAMETER                         :: htncrit= 0.01_rsh
-
-   REAL(KIND=rsh),PARAMETER                         :: a1=-0.07_rsh, a2=1.87_rsh, a3=-0.34_rsh, a4=-0.12_rsh,   &
-                                                       b1=0.27_rsh, b2=0.51_rsh, b3=-0.1_rsh, b4=-0.24_rsh,     &
-                                                       cm1=0.72_rsh, cm2=-0.33_rsh, cm3=0.08_rsh, cm4=0.34_rsh, &
-                                                       cn1=0.78_rsh, cn2=-0.23_rsh, cn3=0.12_rsh, cn4=-0.12_rsh,&
-                                                       p1=-0.75_rsh, p2=0.13_rsh, p3=0.12_rsh, p4=0.02_rsh,     &
-                                                       q1=0.89_rsh, q2=0.4_rsh, q3=0.5_rsh, q4=-0.28_rsh,       &
-                                                       hminwave=0.05_rsh
-
-   REAL(KIND=rsh),PARAMETER                         :: a1pa2=a1+a2,a3pa4=a3+a4,                 &
-                                                       b1pb2=b1+b2,b3pb4=b3+b4,                 &
-                                                       cm1pm2=cm1+cm2,cm3pm4=cm3+cm4,           &
-                                                       cn1pn2=cn1+cn2,cn3pn4=cn3+cn4,           &
-                                                       p1pp2=p1+p2,p3pp4=p3+p4,                 &
-                                                       q1pq2=q1+q2,q3pq4=q3+q4
-#ifdef key_wave
-   REAL(KIND=rsh)                                   :: courant,alpha,beta,cosamb,sinamb
-#endif
-
-
-   !!--------------------------------------------------------------------------
-   !! * Executable part
-   PRINT_DBG*, 'ENTER OBSTRUCTIONS_COMP_BOTSTRESS'
-
-   obst_raphbx(limin:limax,ljmin:ljmax)=0.0_rsh
-   obst_raphby(limin:limax,ljmin:ljmax)=0.0_rsh
-   obst_frofonx(limin:limax,ljmin:ljmax)=0.0_rsh
-   obst_frofony(limin:limax,ljmin:ljmax)=0.0_rsh
-
-   DO j=ljmin,ljmaxm1
-     DO i=limin,limaxm1
-       htx(i,j)=hx(i,j)+0.5_rsh*(ssh(i,j)+ssh(i+1,j))
-       hty(i,j)=hy(i,j)+0.5_rsh*(ssh(i,j)+ssh(i,j+1))
-#if defined key_siggen || defined key_gencoord
-       hzutx(1,i,j)=f_hzu_x(hx(i,j),0.5_rsh*(ssh(i,j)+ssh(i+1,j)),1,i,j)
-       hzuty(1,i,j)=f_hzu_y(hy(i,j),0.5_rsh*(ssh(i,j)+ssh(i,j+1)),1,i,j)
-#endif
-       IF ( htx(i,j)<=0.0_rsh .AND. ( hx(i,j)+ssh(i,j) > 0.0_rsh .OR. hx(i,j)+ssh(i+1,j) > 0.0_rsh) ) THEN
-         htx(i,j)=hx(i,j)+MAX(ssh(i,j),ssh(i+1,j))
-#if defined key_siggen || defined key_gencoord
-         hzutx(1,i,j)=f_hzu_x(hx(i,j),MAX(ssh(i,j),ssh(i+1,j)),1,i,j)
-#endif
-       END IF
-       IF ( hty(i,j)<=0.0_rsh .AND. ( hy(i,j)+ssh(i,j) > 0.0_rsh .OR. hy(i,j)+ssh(i,j+1) > 0.0_rsh )) THEN
-         hty(i,j)=hy(i,j)+MAX(ssh(i,j),ssh(i,j+1))
-#if defined key_siggen || defined key_gencoord
-         hzuty(1,i,j)=f_hzu_y(hy(i,j),MAX(ssh(i,j),ssh(i,j+1)),1,i,j)
-#endif
-       ENDIF
-     END DO
-     IF_MPI (limax==imax) THEN
-     IF (hy(imax,j) /= -valmanq-h0fond) THEN
-       hty(imax,j)=hy(imax,j)+0.5_rsh*(ssh(imax,j)+ssh(imax,j+1))
-#if defined key_siggen || defined key_gencoord
-       hzuty(1,imax,j)=f_hzu_y(hy(imax,j),0.5_rsh*(ssh(imax,j)+ssh(imax,j+1)),1,imax,j)
-#endif
-       IF ( hty(imax,j)<=0.0_rsh .AND. ( hy(imax,j)+ssh(imax,j) > 0.0_rsh .OR. hy(imax,j)+ssh(imax,j+1) > 0.0_rsh )) THEN
-           hty(imax,j)=hy(imax,j)+MAX(ssh(imax,j),ssh(imax,j+1))
-#if defined key_siggen || defined key_gencoord
-           hzuty(1,imax,j)=f_hzu_y(hy(imax,j),MAX(ssh(imax,j),ssh(imax,j+1)),1,imax,j)
-#endif
-       ENDIF
-     END IF
-     ENDIF_MPI
-   END DO ! end do for j loop
-
-   IF_MPI (ljmax==jmax) THEN
-     DO i=limin,limaxm1
-       IF (hx(i,jmax) /= -valmanq-h0fond) THEN
-         htx(i,jmax)=hx(i,jmax)+0.5_rsh*(ssh(i,jmax)+ssh(i+1,jmax))
-#if defined key_siggen || defined key_gencoord
-         hzutx(1,i,jmax)=f_hzu_x(hx(i,jmax),0.5_rsh*(ssh(i,jmax)+ssh(i+1,jmax)),1,i,jmax)
-#endif
-         IF ( htx(i,jmax)<=0.0_rsh .AND. ( hx(i,jmax)+ssh(i,jmax) > 0.0_rsh .OR. hx(i,jmax)+ssh(i+1,jmax) > 0.0_rsh) ) THEN
-             htx(i,jmax)=hx(i,jmax)+MAX(ssh(i,jmax),ssh(i+1,jmax))
-#if defined key_siggen || defined key_gencoord
-             hzutx(1,i,jmax)=f_hzu_x(hx(i,jmax),MAX(ssh(i,jmax),ssh(i+1,jmax)),1,i,jmax)
-#endif
-         END IF
-       END IF
-     ENDDO
-   ENDIF_MPI
-
-   DO j=ljmin,ljmax
-   DO i=MAX0(limin,ig(j)+1),MIN0(limax,id(j)-1)
-     IF(j.GE.jb(i)+1 .AND. j .LE. jh(i)-1) THEN
-       obst_raphbx(i,j) = ABS(uz(1,i,j))/(ABS(uz(1,i,j))+epsilon)
-       obst_raphby(i,j) = ABS(vz(1,i,j))/(ABS(vz(1,i,j))+epsilon)
-      ENDIF
-     ENDDO
-   ENDDO
-   DO j=ljminp2,ljmaxm1
-     DO i=MAX0(limin,ig(j)+1),MIN0(limax,id(j)-1)
-       vit = SQRT(uz(1,i,j)**2.0_rsh + &
-                  0.0625_rsh*(vz(1,i,j)+vz(1,i+1,j)+vz(1,i,j-1)+vz(1,i+1,j-1))**2.0_rsh) * uz(1,i,j)
-#if defined key_siggen || defined key_gencoord
-       z=0.5_rsh*hzutx(1,i,j)*dsigu(1)
-#else
-       z=(1.0_rsh+sig(1))*htx(i,j)
-#endif
-       IF(z.LE.obst_z0bstress(i,j)) z=obst_z0bstress(i,j)
-       obst_frofonx(i,j)=0.16_rsh*(LOG(z/obst_z0bstress(i,j)+1.0_rsh))**(-2)*vit
-
-       vit = SQRT(vz(1,i,j)**2.0_rsh + &
-                  0.0625_rsh*(uz(1,i,j)+uz(1,i,j+1)+uz(1,i-1,j)+uz(1,i-1,j+1))**2.0_rsh) * vz(1,i,j)
-#if defined key_siggen || defined key_gencoord
-            z=0.5_rsh*hzuty(1,i,j)*dsigu(1)
-#else
-            z=(1.0_rsh+sig(1))*hty(i,j)
-#endif
-        IF(z.LE.obst_z0bstress(i,j)) z=obst_z0bstress(i,j)
-        obst_frofony(i,j)=0.16_rsh*(LOG(z/obst_z0bstress(i,j)+1.0_rsh))**(-2)*vit
-     ENDDO
-   ENDDO
-
-   CALL_MPI ex_i_rsh(-1,0,1,liminm1,limax,ljmin  ,ljmax,obst_raphbx (liminm1:limax,ljmin  :ljmax))
-   CALL_MPI ex_i_rsh(-1,0,1,liminm1,limax,ljmin  ,ljmax,obst_frofonx(liminm1:limax,ljmin  :ljmax))
-   CALL_MPI ex_j_rsh(-1,0,1,limin  ,limax,ljminm1,ljmax,obst_raphby (limin  :limax,ljminm1:ljmax))
-   CALL_MPI ex_j_rsh(-1,0,1,limin  ,limax,ljminm1,ljmax,obst_frofony(limin  :limax,ljminm1:ljmax))
-
-   ! calcul de la tension (en N/m2)
-   ! ------------------------------
-   obst_bstressc(limin:limax,ljmin:ljmax)=0.0_rsh
-   obst_bstressw(limin:limax,ljmin:ljmax)=0.0_rsh
-   obst_bstress(limin:limax,ljmin:ljmax)=0.0_rsh
-
-   DO j=ljminp2,ljmax
-     DO i=MAX0(limin,ig(j)+1),MIN0(limax,id(j))
-       IF (h0(i,j) /= -valmanq) THEN
-         htn=h0(i,j)+ssh(i,j)
-         IF(htn.GT.h0fond+htncrit)THEN
-           obst_bstressc(i,j)=SQRT(((obst_frofonx(i,j)*obst_raphbx(i,j)+obst_frofonx(i-1,j)           &
-                              *obst_raphbx(i-1,j))/(obst_raphbx(i,j)                                  &
-                              +obst_raphbx(i-1,j)+epsilon))**2+((obst_frofony(i,j)*obst_raphby(i,j)   &
-                              +obst_frofony(i,j-1)*obst_raphby(i,j-1))/(obst_raphby(i,j)              &
-                              +obst_raphby(i,j-1)+epsilon))**2)*obst_roswat_bot(i,j)
-#ifdef key_wave
-#ifdef key_oasis_mars_ww3
-            wave_ubot(i,j)=SQRT(wave_uubot(i,j)**2+wave_vubot(i,j)**2)
-#endif
-            fws2ij=fws2
-            !IF (l_fricwave .AND. wave_ubot(i,j)*wave_tp(i,j) > 0.0_rsh .AND.  &
-            IF (wave_ubot(i,j)*wave_tp(i,j) > 0.0_rsh .AND.  &
-                     wave_tp(i,j) > 0.001_rsh.AND.wave_ubot(i,j)>0.001_rsh) THEN
-              fws2ij=0.5_rsh*1.39_rsh*(wave_ubot(i,j)*wave_tp(i,j)/REAL(2.0_rlg*pi*obst_z0bstress(i,j),rsh))**(-0.52_rsh)
-            ENDIF
-            ! calcul de tenfonw (vagues)
-            ! --------------------------
-!FLO 11jan2011           tenfonw(i,j)=(rho_bott(i,j)*fws2*wave_ubot(i,j)**2)
-            obst_bstressw(i,j)=(1025._rsh*fws2ij*wave_ubot(i,j)**2)
-            !tenfon(i,j)=SQRT(tenfonw(i,j)**2+tenfonc(i,j)**2)
-            obst_bstressw(i,j)=min(15.0_rsh,obst_bstressw(i,j))  !limitation sur tenfonw, FG(21/07/2015)
-
-            IF (l_wave_rdir ) THEN
-               courant=SQRT(u(i,j)**2+v(i,j)**2)
-               IF(obst_bstressc(i,j) > 0.0_rsh .AND. obst_bstressw(i,j) > 0.0_rsh .AND. courant> 0.0_rsh) THEN
-
-                ! calcul de tenfon avec la formulation de Soulsby (1995)
-                ! ======================================================
-                ! calcul de tenfonc (courant) influence par les vagues
-                ! ----------------------------------------------------
-                  obst_bstressc(i,j)=obst_bstressc(i,j)*(1+(1.2*(obst_bstressw(i,j)/(obst_bstressw(i,j)+obst_bstressc(i,j)))**3.2))
-                  obst_bstressc(i,j)=min(10.0_rsh,obst_bstressc(i,j))  !limitation sur tenfonc, FG(21/07/2015)
-
-                ! calcul de la difference d angle entre la direction des vagues et du courant
-                ! ---------------------------------------------------------------------------
-                ! calcul de l orientation du courant par rapport au nord
-                  alpha=ACOS(v(i,j)/courant)   ! en radians
-                ! calcul de l orientation des vagues par rapport au nord
-                  beta=wave_dir(i,j)*pi/180   ! en radians
-                ! calcul de cos(alpha-beta) et sin(alpha-beta)
-                  cosamb=ABS(COS(alpha-beta))
-                  sinamb=ABS(SIN(alpha-beta))
-
-                ! calcul de tenfon (vagues + courant)
-                ! -----------------------------------
-                  obst_bstress(i,j)=SQRT((obst_bstressc(i,j)+obst_bstressw(i,j)*cosamb)**2 +(obst_bstressw(i,j)*sinamb)**2)
-
-              ELSE
-                 obst_bstress(i,j)=obst_bstressw(i,j)+obst_bstressc(i,j)
-              ENDIF
-            ELSE
-            ! calcul de tenfon avec la moyenne arithmetique de tw,tc (maximise tenfon, max=25N/m2)
-            ! =======================================================================
-               obst_bstress(i,j)=obst_bstressw(i,j)+obst_bstressc(i,j)
-
-            ! calcul de tenfon avec la moyenne quadratique de tw,tc (minimise tenfon, max=18N/m2)
-            ! =======================================================================
-            !   tenfon(i,j)=SQRT(tenfonw(i,j)**2+tenfonc(i,j)**2)
-            ENDIF
-#else
-            obst_bstress(i,j)=obst_bstressc(i,j)
-#endif
-         ENDIF
-       ELSE
-         obst_bstressc(i,j)=-valmanq
-         obst_bstressw(i,j)=-valmanq
-         obst_bstress(i,j)=-valmanq
-       ENDIF
-     ENDDO
-   ENDDO
-  ! modification des conditions aux frontieres (28 fevrier 2012)
-     ! hypothese gradient nul aux frontieres 
-     IF_MPI (ljmax == jmax) THEN
-        DO i=MAX0(limin,ig(jmax)+1),MIN0(limax,id(jmax)-1)
-          obst_bstress(i,jmax)=obst_bstress(i,jmax-1)
-        ENDDO
-     ENDIF_MPI
-     IF_MPI (ljmin == jmin) THEN
-        DO i=MAX0(limin,ig(jmin)+1),MIN0(limax,id(jmin)-1)
-          obst_bstress(i,jmin+1)=obst_bstress(i,jmin+2)
-        ENDDO
-     ENDIF_MPI
-     IF_MPI (limax==imax) THEN
-        DO j=MAX0(ljmin,jb(imax)+1),MIN0(ljmax,jh(imax)-1)
-           obst_bstress(imax,j)=obst_bstress(imax-1,j)
-        ENDDO
-     ENDIF_MPI
-     IF_MPI (limin == imin) THEN
-        DO j=MAX0(ljmin,jb(imin)+1),MIN0(ljmax,jh(imin)-1)
-          obst_bstress(imin+1,j)=obst_bstress(imin+2,j)
-        ENDDO
-     ENDIF_MPI
-
-     ! les quatre coins (28 fevrier 2012)
-     IF_MPI (limax == imax .AND. ljmax == jmax) THEN
-        obst_bstress(imax,jmax)=obst_bstress(imax-1,jmax-1)
-     ENDIF_MPI
-     IF_MPI (limax==imax .AND. ljmin==jmin) THEN
-        obst_bstress(imax,jmin+1)=obst_bstress(imax-1,jmin+2)
-     ENDIF_MPI
-     IF_MPI (limin==imin .AND. ljmin==jmin) THEN
-        obst_bstress(imin+1,jmin+1)=obst_bstress(imin+2,jmin+2)
-     ENDIF_MPI
-     IF_MPI (limin==imin .AND. ljmax==jmax) THEN
-        obst_bstress(imin+1,jmax)=obst_bstress(imin+2,jmax-1)
-     ENDIF_MPI
-
-
-
-   PRINT_DBG*, 'END OBSTRUCTIONS_COMP_BOTSTRESS'
-   END SUBROUTINE OBSTRUCTIONS_comp_botstress
 
    !!==========================================================================================================
 
