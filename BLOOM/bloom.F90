@@ -1809,13 +1809,13 @@
        DO ivp=nvpc+1,nvp
             tocdpe=tocd(ivp)+0.00001_rsh
             flx_w2s(ivp,i,j)=ws3(1,ivp,i,j)                   &
-                          *MAX(0.0_rsh,1.0_rsh-(tenfon(i,j)/tocdpe)) &
+                          *MAX(0.0_rsh,1.0_rsh-(tauskin(i,j)/tocdpe)) &
                           *tocd(ivp)/tocdpe
             depo=flx_w2s(ivp,i,j)*cw_bottom_MUSTANG(ivp,i,j)
             IF(irkm_var_assoc(ivp) > 0 ) THEN
               IF (flx_w2s(irkm_var_assoc(ivp),i,j)==0.0_rsh) flx_w2s(ivp,i,j)=0.0_rsh
-            ELSE
-              IF(depo .LE. epsdep_MUSTANG)flx_w2s(ivp,i,j)=0.0_rsh
+!            ELSE
+!              IF(depo .LE. epsdep_MUSTANG)flx_w2s(ivp,i,j)=0.0_rsh
             END IF
        ENDDO
 #endif

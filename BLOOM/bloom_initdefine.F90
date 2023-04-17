@@ -23,8 +23,8 @@
   USE comBIOLink
   USE comBIOLink_physics
   USE comBIOLink_helping
+  USE comsubstance, ONLY : lchain,rsh,rlg
   USE module_BIOLink
-
 
   IMPLICIT NONE
 
@@ -263,10 +263,9 @@ IF(rw == 'r')THEN
 !==========================
 
 #ifdef key_BLOOM_opt2
-     filepc=REPFICNAMELIST//'/parabloom_opt2.txt'
+     filepc=REPFICNAMELIST2//'/parabloom_opt2.txt'
      IF_AGRIF (.NOT. Agrif_Root()) filepc='./parabloom_opt2'//TRIM(Agrif_Cfixed())//'.txt'
 #else
-     ! filepc=REPFICNAMELIST//'/para_BLOOM.txt'
      lstr = lenstr(parafilename)
      filepc = parafilename(1:lstr)
      !IF_AGRIF (.NOT. Agrif_Root()) filepc='./para_BLOOM'//TRIM(Agrif_Cfixed())//'.txt'
