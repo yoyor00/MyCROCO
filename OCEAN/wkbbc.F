@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://roms.mpl.ird.fr
 !======================================================================
 !
@@ -14,7 +14,7 @@
 # include "cppdefs.h"
 # ifdef WKB_WWAVE
       subroutine wkbbc_tile(Istr,Iend,Jstr,Jend)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use Agrif_Util
       integer Istr,Iend,Jstr,Jend
       if (Agrif_Root()) then
@@ -33,7 +33,7 @@
 ! Set lateral boundary conditions for wkb fields
 ! for the parent grid.
 !
-#else
+# else
       subroutine wkbbc_empty
       end
 # endif /* WKB_WWAVE */
@@ -101,7 +101,7 @@
 #   endif
         enddo
 #  endif  /* WKB_OBC_WEST */
-      endif      
+      endif
       if (EASTERN_EDGE) then
 #  ifdef WKB_OBC_EAST
         do j=Jstr,Jend                           ! Eastern edge
@@ -248,10 +248,10 @@
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF
-# define WKB_OBC_WEST
-# define WKB_OBC_EAST
-# define WKB_OBC_NORTH
-# define WKB_OBC_SOUTH
+#  define WKB_OBC_WEST
+#  define WKB_OBC_EAST
+#  define WKB_OBC_NORTH
+#  define WKB_OBC_SOUTH
 #  include "wkbbc.F"
 # endif
 # undef WKB_OBC_WEST

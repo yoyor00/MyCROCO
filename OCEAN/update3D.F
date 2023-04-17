@@ -2,12 +2,12 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! This routine belongs to the specific CROCO package.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -17,7 +17,7 @@
 !====================================================================
 !
 #if defined AGRIF && defined SOLVE3D && defined AGRIF_2WAY
-      
+
 !====================================================================
       subroutine ResetAlready()
 
@@ -44,7 +44,7 @@
       integer NNO,NNOX,NNOY,ich,jch,k,itrc,ipr,jpr,nnewpr
       integer irmin,irmax,jrmin,jrmax,iumin,iumax,jvmin,jvmax
       integer ii,jj,iint,jint
-      real eps,cff,fxc,surfc 
+      real eps,cff,fxc,surfc
       parameter (eps=1.E-20)
       real tabtemp(GLOBAL_2D_ARRAY,N,NT)
       External UpdateTranp1, Updateunp1, Updatevnp1
@@ -70,7 +70,7 @@
       Agrif_UseSpecialValueInUpdate = .TRUE.
 # endif
       Agrif_SpecialValueFineGrid = 0.
-      
+
       irhot=Agrif_Irhot()
 
       !IF (mod(nbstep3d,5) == (irhot-1)) THEN
@@ -91,7 +91,7 @@
 # else
       Call Agrif_Update_Variable(updatetid,
      &         locupdate=(/0,1/),procname = updateTranp1)
-# endif    
+# endif
       ENDIF
 
       Agrif_UseSpecialValueInUpdate = .FALSE.
@@ -107,12 +107,12 @@
       Call Agrif_Update_Variable(updatemyfxid,
      &     locupdate1=(/0,0/),locupdate2=(/1,1/),
      &     procname = updatemyfx)
-    
+
       Call Agrif_Update_Variable(updatemyfyid,
      &     locupdate1=(/1,1/),locupdate2=(/0,0/),
-     &     procname = updatemyfy) 
+     &     procname = updatemyfy)
 #  endif
-               
+
 #  if defined AGRIF_UPDATE_DECAL && !defined AGRIF_OLD_DECAL
       idecal = Agrif_irhox()
 #  else
@@ -156,7 +156,7 @@
       Call ExchangeParentValuesTracers()
       Call Agrif_ParentGrid_To_ChildGrid()
 #  endif
-      
+
 # endif /* AGRIF_CONSERV_TRA */
 
       return
@@ -167,7 +167,7 @@
 # include "param.h"
 # include "scalars.h"
 # include "ocean3d.h"
-      integer itrc      
+      integer itrc
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       do itrc = 1,NT
         call exchange_r3d_tile (1,Lm,1,Mm,
@@ -175,8 +175,8 @@
       enddo
 # endif
 
-      end subroutine ExchangeParentValuesTracers      
-      
+      end subroutine ExchangeParentValuesTracers
+
 !====================================================================
 
       subroutine Agrif_update_uv_np1
@@ -195,7 +195,7 @@
       integer NNO,NNOX,NNOY,ich,jch,k,itrc,ipr,jpr,nnewpr
       integer irmin,irmax,jrmin,jrmax,iumin,iumax,jvmin,jvmax
       integer ii,jj,iint,jint
-      real eps,cff,fxc,surfc 
+      real eps,cff,fxc,surfc
       parameter (eps=1.E-20)
       real tabtemp(GLOBAL_2D_ARRAY,N,NT)
       External UpdateTranp1, Updateunp1, Updatevnp1
@@ -220,10 +220,10 @@
       external :: updatevnp1pre
 # ifdef NBQ
       external :: Updatewnp1
-# endif     
+# endif
 !$AGRIF_DO_NOT_TREAT
       integer :: nbcoarsechild
-      common/updateprestepint/nbcoarsechild      
+      common/updateprestepint/nbcoarsechild
 !$AGRIF_END_DO_NOT_TREAT
 !
       nbcoarsechild = nbcoarse
@@ -231,7 +231,7 @@
       Call Agrif_ChildGrid_To_ParentGrid()
       Call ResetAlready()
       Call Agrif_ParentGrid_To_ChildGrid()
-     
+
       Agrif_UseSpecialValueInUpdate = .FALSE.
       Agrif_SpecialValueFineGrid = 0.
 
@@ -245,13 +245,13 @@
      &     procname = updatevnp1pre)
 #  endif
 # endif /* AGRIF_CONSERV_TRA */
-     
+
       IF (nbcoarse .NE. Agrif_Irhot()) return
 
       Agrif_SpecialValueFineGrid = 0.
       Agrif_UseSpecialValueInUpdate = .FALSE.
       irhot=Agrif_Irhot()
-      
+
       !IF (mod(nbstep3d,1) == (irhot-1)) THEN
       IF (.TRUE.) THEN
 
@@ -259,7 +259,7 @@
       Call Agrif_Update_Variable(updateuid,
      &     locupdate1=(/0,-1/),locupdate2=(/1,-2/),
      &     procname = updateunp1)
-     
+
       Call Agrif_Update_Variable(updatevid,
      &     locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &     procname = updatevnp1)
@@ -272,7 +272,7 @@
      &     locupdate1=(/1,-2/),locupdate2=(/1,-2/),
      &     procname = updatewnp1)
       Agrif_UseSpecialValueInUpdate = .FALSE.
-#  endif     
+#  endif
 # else
       Call Agrif_Update_Variable(updateuid,
      &     procname = updateunp1)
@@ -286,7 +286,7 @@
       Call Agrif_Update_Variable(updatewid,
      &     procname = updatewnp1)
       Agrif_UseSpecialValueInUpdate = .FALSE.
-#  endif      
+#  endif
 # endif /* AGRIF_UPDATE_DECAL */
 
       ELSE
@@ -297,7 +297,7 @@
      &     procname = updateunp1)
       Call Agrif_Update_Variable(updatevid,
      &     locupdate1=(/1,3/),locupdate2=(/0,2/),
-     &     procname = updatevnp1) 
+     &     procname = updatevnp1)
 #  ifdef NBQ
 #   ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
@@ -314,7 +314,7 @@
      &     procname = updateunp1)
       Call Agrif_Update_Variable(updatevid,
      &     locupdate1=(/0,2/),locupdate2=(/0,2/),
-     &     procname = updatevnp1) 
+     &     procname = updatevnp1)
 #  ifdef NBQ
 #   ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
@@ -323,13 +323,13 @@
      &     locupdate1=(/0,2/),locupdate2=(/0,2/),
      &     procname = updatewnp1)
       Agrif_UseSpecialValueInUpdate = .FALSE.
-#  endif      
+#  endif
 # endif /* AGRIF_UPDATE_DECAL */
       ENDIF
 
       return
       end
-      
+
 !====================================================================
 
       Subroutine UpdateTranp1pre(tabres,i1,i2,j1,j2,k1,k2,l1,l2,before)
@@ -347,12 +347,12 @@
       integer i1,i2,j1,j2,k1,k2,l1,l2
       real tabres(i1:i2,j1:j2,k1:k2,l1:l2)
       logical before
-      
+
       integer i,j,k,l
       real :: invrrhot
-      
+
       IF (before) THEN
-      
+
         invrrhot = 1./real(Agrif_Irhot())
         DO l=l1,l2
           DO k=k1,k2
@@ -361,50 +361,50 @@
                 tabres(i,j,k,l) = invrrhot * t(i,j,k,nrhs,l)
 # ifdef MASKING
      &                                     * rmask(i,j)
-# endif          
+# endif
               ENDDO
             ENDDO
           ENDDO
         ENDDO
-       
+
       ELSE
-       
+
         IF (nbcoarsechild == 1) THEN
           DO l=l1,l2
             DO k=k1,k2
               DO j=j1,j2
                 DO i=i1,i2
                   t(i,j,k,nrhs,l) = tabres(i,j,k,l)
-# ifdef MASKING             
+# ifdef MASKING
      &                              * rmask(i,j)
 # endif
                 ENDDO
               ENDDO
-            ENDDO 
+            ENDDO
           ENDDO
         ELSE
           DO j=j1,j2
             DO i=i1,i2
               IF (.Not.Alreadyupdated(i,j,1)) THEN
                 DO l=l1,l2
-                  DO k=k1,k2             
+                  DO k=k1,k2
                     t(i,j,k,nrhs,l) = (t(i,j,k,nrhs,l)+tabres(i,j,k,l))
-# ifdef MASKING             
+# ifdef MASKING
      &                                * rmask(i,j)
-# endif    
+# endif
                   ENDDO
-                ENDDO 
+                ENDDO
                 Alreadyupdated(i,j,1) = .TRUE.
               ENDIF
-            ENDDO 
-          ENDDO 
-        ENDIF        
+            ENDDO
+          ENDDO
+        ENDIF
 
       ENDIF
 
       return
-      end 
-    
+      end
+
 !====================================================================
 
       Subroutine Updateunp1pre(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
@@ -423,27 +423,27 @@
 !$AGRIF_DO_NOT_TREAT
       integer :: nbcoarsechild
       common/updateprestepint/nbcoarsechild
-!$AGRIF_END_DO_NOT_TREAT      
-      
+!$AGRIF_END_DO_NOT_TREAT
+
       integer i,j,k
       real :: invrrhot
       real t1,t2,t3
 
       IF (before) THEN
-      
+
         invrrhot = 1./real(Agrif_Irhot())
-        
+
         DO k=k1,k2
         DO j=j1,j2
         DO i=i1,i2
           tabres(i,j,k) = invrrhot * Huon(i,j,k)
 # ifdef MASKING
      &                       *umask(i,j)
-# endif          
+# endif
         ENDDO
         ENDDO
         ENDDO
-       
+
        ELSE
 
          IF (nbcoarsechild == 1) THEN
@@ -451,33 +451,33 @@
            DO j=j1,j2
            DO i=i1,i2
              Huonagrif(i,j,k) = 3.*tabres(i,j,k)
-# ifdef MASKING             
+# ifdef MASKING
      &                         * umask(i,j)
 # endif
            ENDDO
            ENDDO
-           ENDDO 
-        
+           ENDDO
+
          ELSE
-         
+
            DO j=j1,j2
            DO i=i1,i2
              IF (.Not.Alreadyupdated(i,j,2)) THEN
-               DO k=k1,k2             
+               DO k=k1,k2
          Huonagrif(i,j,k) = (Huonagrif(i,j,k)+3.*tabres(i,j,k))
-# ifdef MASKING             
+# ifdef MASKING
      &                              * umask(i,j)
 # endif
           Huon(i,j,k) = Huonagrif(i,j,k)
                ENDDO
                Alreadyupdated(i,j,2) = .TRUE.
              ENDIF
-           ENDDO 
+           ENDDO
            ENDDO
 
-          ENDIF        
+          ENDIF
         ENDIF
-              
+
       return
       end
 
@@ -498,14 +498,14 @@
 !$AGRIF_DO_NOT_TREAT
       integer :: nbcoarsechild
       common/updateprestepint/nbcoarsechild
-!$AGRIF_END_DO_NOT_TREAT      
-      
+!$AGRIF_END_DO_NOT_TREAT
+
       integer i,j,k
-      
+
       real :: invrrhot
 
       IF (before) THEN
-      
+
         invrrhot = 1./real(Agrif_Irhot())
         DO k=k1,k2
           DO j=j1,j2
@@ -513,11 +513,11 @@
               tabres(i,j,k) = invrrhot * Hvom(i,j,k)
 # ifdef MASKING
      &                               * vmask(i,j)
-# endif          
+# endif
             ENDDO
           ENDDO
         ENDDO
-       
+
       ELSE
 
         IF (nbcoarsechild == 1) THEN
@@ -525,31 +525,31 @@
             DO j=j1,j2
               DO i=i1,i2
                 Hvomagrif(i,j,k) = 3. * tabres(i,j,k)
-# ifdef MASKING             
+# ifdef MASKING
      &                                * vmask(i,j)
 # endif
               ENDDO
             ENDDO
-          ENDDO 
+          ENDDO
         ELSE
           DO j=j1,j2
             DO i=i1,i2
               IF (.Not.Alreadyupdated(i,j,3)) THEN
-                DO k=k1,k2             
+                DO k=k1,k2
                   Hvomagrif(i,j,k)= (Hvomagrif(i,j,k)+3.*tabres(i,j,k))
 # ifdef MASKING
      &                              * vmask(i,j)
-# endif    
+# endif
                   Hvom(i,j,k) = Hvomagrif(i,j,k)
                 ENDDO
                 Alreadyupdated(i,j,3) = .TRUE.
               ENDIF
-            ENDDO 
+            ENDDO
           ENDDO
-        ENDIF        
+        ENDIF
 
       ENDIF
-      
+
       return
       end
 
@@ -565,11 +565,11 @@
       integer i1,i2,j1,j2,k1,k2,l1,l2
       real tabres(i1:i2,j1:j2,k1:k2,l1:l2)
       logical before
-      
+
       integer i,j,k,l
 
 !      print *,'getting in ',before
-            
+
       IF (before) THEN
 
         DO l=l1,l2
@@ -595,17 +595,17 @@
                 t(i,j,k,nnew,l) = tabres(i,j,k,l)
 # ifdef MASKING
      &                           * rmask(i,j)
-# endif          
+# endif
               ENDDO
             ENDDO
-          ENDDO 
+          ENDDO
         ENDDO
 
       ENDIF
 
       return
       end
- 
+
 !====================================================================
 
       Subroutine Updatemyfx(tabres,i1,i2,j1,j2,k1,k2,l1,l2,before,
@@ -620,16 +620,16 @@
       integer i1,i2,j1,j2,k1,k2,l1,l2
       real tabres(i1:i2,j1:j2,k1:k2,l1:l2)
       logical before
-      
+
       integer i,j,k,l
       integer nb,ndir
       real :: t1, rrhoy
       logical :: western_side, eastern_side
-            
+
       IF (before) THEN
-      
+
         rrhoy = real(Agrif_Irhoy())
-         
+
         DO l=l1,l2
           DO k=k1,k2
             DO j=j1,j2
@@ -639,9 +639,9 @@
             ENDDO
           ENDDO
         ENDDO
-       
+
       ELSE
-       
+
         western_side  = (nb == 1).AND.(ndir == 1)
         eastern_side  = (nb == 1).AND.(ndir == 2)
         if (western_side) then
@@ -653,7 +653,7 @@
      &                            pm(i-1,j)*pn(i-1,j)/Hz(i-1,j,k)
      &                            *(tabres(i,j,k,l)-myfx(i,j,k,l))
               ENDDO
-            ENDDO 
+            ENDDO
           ENDDO
         endif
         if (eastern_side) then
@@ -665,7 +665,7 @@
      &                          pm(i,j)*pn(i,j)/Hz(i,j,k)
      &                          *(tabres(i,j,k,l)-myfx(i,j,k,l))
               ENDDO
-            ENDDO 
+            ENDDO
           ENDDO
         endif
 
@@ -673,7 +673,7 @@
 
       return
       end
-      
+
 !====================================================================
 
       Subroutine Updatemyfy(tabres,i1,i2,j1,j2,k1,k2,l1,l2,before,
@@ -688,16 +688,16 @@
       integer i1,i2,j1,j2,k1,k2,l1,l2
       real tabres(i1:i2,j1:j2,k1:k2,l1:l2)
       logical before
-      
+
       integer i,j,k,l
       integer nb,ndir
       real :: t1, rrhox
       logical :: northern_side,southern_side
-            
+
       IF (before) THEN
-      
+
         rrhox = real(Agrif_Irhox())
-         
+
         DO l=l1,l2
           DO k=k1,k2
             DO j=j1,j2
@@ -707,9 +707,9 @@
             ENDDO
           ENDDO
         ENDDO
-       
+
       ELSE
-       
+
         southern_side = (nb == 2).AND.(ndir == 1)
         northern_side = (nb == 2).AND.(ndir == 2)
         if (southern_side) then
@@ -721,7 +721,7 @@
      &                            pm(i,j-1)*pn(i,j-1)/Hz(i,j-1,k)
      &                            *(tabres(i,j,k,l)-myfy(i,j,k,l))
               ENDDO
-            ENDDO 
+            ENDDO
           ENDDO
         endif
         if (northern_side) then
@@ -733,14 +733,14 @@
      &                          pm(i,j)*pn(i,j)/Hz(i,j,k)
      &                          *(tabres(i,j,k,l)-myfy(i,j,k,l))
               ENDDO
-            ENDDO 
+            ENDDO
           ENDDO
         endif
 
       ENDIF
 
       return
-      end      
+      end
 
 !====================================================================
 
@@ -755,9 +755,9 @@
       real tabres(i1:i2,j1:j2,k1:k2)
       logical before
       real :: hzu
-      
+
       integer i,j,k
-      
+
       IF (before) THEN
 
         DO k=k1,k2
@@ -776,16 +776,16 @@
               u(i,j,k,nnew) = tabres(i,j,k)
 # ifdef MASKING
      &                        * umask(i,j)
-# endif     
+# endif
             ENDDO
           ENDDO
         ENDDO
-      
+
       ENDIF
-      
+
       return
       end
-               
+
 !====================================================================
 
       Subroutine Updatevnp1(tabres,i1,i2,j1,j2,k1,k2,before)
@@ -799,9 +799,9 @@
       real tabres(i1:i2,j1:j2,k1:k2)
       logical before
       real hzv
-      
+
       integer i,j,k
-      
+
       IF (before) THEN
 
         DO k=k1,k2
@@ -820,13 +820,13 @@
               v(i,j,k,nnew) = tabres(i,j,k)
 # ifdef MASKING
      &                        * vmask(i,j)
-# endif     
+# endif
             ENDDO
           ENDDO
         ENDDO
-    
+
       ENDIF
-      
+
       return
       end
 
@@ -843,9 +843,9 @@
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)
       logical before
-      
+
       integer i,j,k
-      
+
       IF (before) THEN
         DO k=k1,k2
          DO j=j1,j2
@@ -861,12 +861,12 @@
           wz(i,j,k,nnew) = tabres(i,j,k)
 #  ifdef MASKING
      &                      * rmask(i,j)
-#  endif     
+#  endif
           ENDDO
          ENDDO
-       ENDDO        
+       ENDDO
        ENDIF
-      
+
       return
       end
 # endif /* NBQ */

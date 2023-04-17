@@ -2,14 +2,14 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-/* 
+/*
 ======================================================================
  This is "global_definitions.h": It contains a set of predetermined
  macro definitions which are inserted into the individual files by
@@ -27,7 +27,7 @@
  message passing, when array dimensions correspond to a portion of
  the physical domain (as opposite to the whole domain), so two ghost
  zones are always provided on the each side. These data for these
- two ghost zones is then exchanged by message passing. 
+ two ghost zones is then exchanged by message passing.
 */
 #if defined TS_HADV_UP5   || defined TS_HADV_C6 || \
     defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
@@ -271,7 +271,7 @@
 # define CAND C$&
 # define ENTER_CRITICAL_REGION SPACE call mp_setlock()
 # define EXIT_CRITICAL_REGION  SPACE call mp_unsetlock()
-# define CSDISTRIBUTE_RESHAPE !! c$distribute 
+# define CSDISTRIBUTE_RESHAPE !! c$distribute
 /* # define CSDISTRIBUTE_RESHAPE !! c$distribute_reshape */
 # define BLOCK_PATTERN block,block
 # define BLOCK_CLAUSE !! onto(2,*)
@@ -289,7 +289,7 @@
 #endif
 
 /*
-   Put grid variables in output files     
+   Put grid variables in output files
 */
 #define PUT_GRID_INTO_RESTART
 #define PUT_GRID_INTO_HISTORY
@@ -342,7 +342,7 @@
 /*
  Decide which time step of fast variables zeta, ubar, vbar goes
  to output.
-*/ 
+*/
 #ifdef SOLVE3D
 # define fast_indx_out knew
 #else
@@ -352,7 +352,7 @@
 
 /*
  Define MPI variables for non MPI runs
-*/ 
+*/
 
 #ifndef MPI
 # define MPI_COMM_WORLD 0

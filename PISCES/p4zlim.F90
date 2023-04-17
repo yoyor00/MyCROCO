@@ -14,6 +14,7 @@ MODULE p4zlim
    !!   p4z_lim_init   :   Read the namelist 
    !!----------------------------------------------------------------------
    USE sms_pisces      ! PISCES variables
+   USE p2zlim  
 !  USE iom             !  I/O manager
 
    IMPLICIT NONE
@@ -28,41 +29,27 @@ MODULE p4zlim
 #  include "top_substitute.h90"
 
    !! * Shared module variables
-   REAL(wp), PUBLIC ::  concnno3    !:  NO3, PO4 half saturation   
    REAL(wp), PUBLIC ::  concdno3    !:  Phosphate half saturation for diatoms  
    REAL(wp), PUBLIC ::  concnnh4    !:  NH4 half saturation for phyto  
    REAL(wp), PUBLIC ::  concdnh4    !:  NH4 half saturation for diatoms
-   REAL(wp), PUBLIC ::  concnfer    !:  Iron half saturation for nanophyto 
    REAL(wp), PUBLIC ::  concdfer    !:  Iron half saturation for diatoms  
-   REAL(wp), PUBLIC ::  concbno3    !:  NO3 half saturation  for bacteria 
    REAL(wp), PUBLIC ::  concbnh4    !:  NH4 half saturation for bacteria
    REAL(wp), PUBLIC ::  xsizedia    !:  Minimum size criteria for diatoms
-   REAL(wp), PUBLIC ::  xsizephy    !:  Minimum size criteria for nanophyto
-   REAL(wp), PUBLIC ::  xsizern     !:  Size ratio for nanophytoplankton
    REAL(wp), PUBLIC ::  xsizerd     !:  Size ratio for diatoms
    REAL(wp), PUBLIC ::  xksi1       !:  half saturation constant for Si uptake 
    REAL(wp), PUBLIC ::  xksi2       !:  half saturation constant for Si/C 
-   REAL(wp), PUBLIC ::  xkdoc       !:  2nd half-sat. of DOC remineralization  
-   REAL(wp), PUBLIC ::  concbfe     !:  Fe half saturation for bacteria 
-   REAL(wp), PUBLIC ::  oxymin      !:  half saturation constant for anoxia
    REAL(wp), PUBLIC ::  qnfelim     !:  optimal Fe quota for nanophyto
    REAL(wp), PUBLIC ::  qdfelim     !:  optimal Fe quota for diatoms
-   REAL(wp), PUBLIC ::  caco3r      !:  mean rainratio 
 
    !!* Phytoplankton limitation terms
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanono3   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatno3   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanonh4   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatnh4   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanopo4   !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatpo4   !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimphy    !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimdia    !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimnfe    !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimdfe    !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimsi     !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimbac    !: ??
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimbacl   !: ??
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   concdfe    !: ???
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   concnfe    !: ???
 
@@ -71,6 +58,7 @@ MODULE p4zlim
    REAL(wp) ::  xcoef2   = 1.21E-5 * 14. / 55.85 / 7.625 * 0.5 * 1.5
    REAL(wp) ::  xcoef3   = 1.15E-4 * 14. / 55.85 / 7.625 * 0.5 
 
+   LOGICAL  :: l_dia
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zlim.F90 10069 2018-08-28 14:12:24Z nicolasmartin $ 
@@ -95,7 +83,13 @@ CONTAINS
       REAL(wp) ::   z1_trbdia, z1_trbphy, ztem1, ztem2, zetot1, zetot2
       REAL(wp) ::   zdenom, zratio, zironmin
       REAL(wp) ::   zconc1d, zconc1dnh4, zconc0n, zconc0nnh4   
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
+      !
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "LNnut" ) .OR. iom_use( "LNFe" )  &
+           &    .OR. iom_use( "LDnut" ) .OR. iom_use( "LDFe" )  &
+           &    .OR. iom_use( "xfracal" )
       !
       DO jk = KRANGE
          DO jj = JRANGE
@@ -224,15 +218,56 @@ CONTAINS
          END DO
       END DO
       !
-#if defined key_iomput
-      IF( lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
-        IF( iom_use( "xfracal" ) )   CALL iom_put( "xfracal", xfracal(:,:,:) * tmask(:,:,:) )  ! euphotic layer deptht
-        IF( iom_use( "LNnut"   ) )   CALL iom_put( "LNnut"  , xlimphy(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
-        IF( iom_use( "LDnut"   ) )   CALL iom_put( "LDnut"  , xlimdia(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
-        IF( iom_use( "LNFe"    ) )   CALL iom_put( "LNFe"   , xlimnfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
-        IF( iom_use( "LDFe"    ) )   CALL iom_put( "LDFe"   , xlimdfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNnut", zw3d )  ! Nutrient limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimdia(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LDnut", zw3d )  ! Nutrient limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimnfe(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LNFe", zw3d )  ! Iron limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xlimdfe(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "LDFe", zw3d )  ! Iron limitation term
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = xfracal(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "xfracal", zw3d )  ! Calcifiers
+            DEALLOCATE( zw3d )
+         ENDIF
       ENDIF
-#endif
       !
    END SUBROUTINE p4z_lim
 
@@ -295,6 +330,7 @@ CONTAINS
       ENDIF
       !
       nitrfac (:,:,:) = 0.0
+      nitrfac2(:,:,:) = 0.0
       !
    END SUBROUTINE p4z_lim_init
 
@@ -305,12 +341,11 @@ CONTAINS
       !!----------------------------------------------------------------------
 
       !*  Biological arrays for phytoplankton growth
-      ALLOCATE( xnanono3(jpi,jpj,jpk), xdiatno3(jpi,jpj,jpk),       &
+      ALLOCATE( xdiatno3(jpi,jpj,jpk),       &
          &      xnanonh4(jpi,jpj,jpk), xdiatnh4(jpi,jpj,jpk),       &
          &      xnanopo4(jpi,jpj,jpk), xdiatpo4(jpi,jpj,jpk),       &
-         &      xlimphy (jpi,jpj,jpk), xlimdia (jpi,jpj,jpk),       &
-         &      xlimnfe (jpi,jpj,jpk), xlimdfe (jpi,jpj,jpk),       &
-         &      xlimbac (jpi,jpj,jpk), xlimbacl(jpi,jpj,jpk),       &
+         &      xlimdia (jpi,jpj,jpk),       &
+         &      xlimdfe (jpi,jpj,jpk),       &
          &      concnfe (jpi,jpj,jpk), concdfe (jpi,jpj,jpk),       &
          &      xlimsi  (jpi,jpj,jpk), STAT=p4z_lim_alloc )
       !

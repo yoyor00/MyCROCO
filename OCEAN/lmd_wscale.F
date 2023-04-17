@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,7 +20,7 @@
 !  and tracer using a 2D-lookup table as a function of "ustar" and
 !  "zetahat".
 !
-!  Input:  Bfsfc   
+!  Input:  Bfsfc
 !          sigma   boundary layer depth [m].
 !
 !  Output: wm   turbulent velocity scale [m/s] at sigma for momentum
@@ -45,13 +45,13 @@
       real lmd_zetam,lmd_zetas, lmd_am,lmd_cm, lmd_as,lmd_cs
       parameter (
      &    lmd_zetam=-0.2, ! Maximum stability parameters "zeta"
-     &    lmd_zetas=-1.0, ! value of the 1/3 power law regime of 
+     &    lmd_zetas=-1.0, ! value of the 1/3 power law regime of
                           ! flux profile for momentum and tracers
      &    lmd_am=1.257,
-     &    lmd_as=-28.86,  ! Coefficients of flux profile  
-     &    lmd_cm=8.360,   ! for momentum and tracers in their 
+     &    lmd_as=-28.86,  ! Coefficients of flux profile
+     &    lmd_cm=8.360,   ! for momentum and tracers in their
      &    lmd_cs=98.96)   ! 1/3 power law regime;
-  
+
       do j=Jstr,Jend
         do i=Istr,Iend
           ustar3=ustar(i,j)*ustar(i,j)*ustar(i,j)
@@ -101,14 +101,14 @@
      &                                                          wm,ws)
 !
 !-------------------------------------------------------------------
-!  Same routine as lmd_wscale (above), but computations are on an 
+!  Same routine as lmd_wscale (above), but computations are on an
 !  extended range of the domain.
 !
 !  This routine computes the turbulent velocity scale for momentum
 !  and tracer using a 2D-lookup table as a function of "ustar" and
-!  "zetahat". 
+!  "zetahat".
 !
-!  Input:  Bfsfc   
+!  Input:  Bfsfc
 !          sigma   boundary layer depth [m].
 !
 !  Output: wm   turbulent velocity scale [m/s] at sigma for momentum
@@ -134,11 +134,11 @@
       real lmd_zetam,lmd_zetas, lmd_am,lmd_cm, lmd_as,lmd_cs
       parameter (
      &    lmd_zetam=-0.2, ! Maximum stability parameters "zeta"
-     &    lmd_zetas=-1.0, ! value of the 1/3 power law regime of 
+     &    lmd_zetas=-1.0, ! value of the 1/3 power law regime of
                           ! flux profile for momentum and tracers
      &    lmd_am=1.257,
-     &    lmd_as=-28.86,  ! Coefficients of flux profile  
-     &    lmd_cm=8.360,   ! for momentum and tracers in their 
+     &    lmd_as=-28.86,  ! Coefficients of flux profile
+     &    lmd_cm=8.360,   ! for momentum and tracers in their
      &    lmd_cs=98.96)   ! 1/3 power law regime;
 
 

@@ -2,13 +2,13 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
-! 
+!
 #ifdef TIME_INDEX
 # ifdef EXTRACT_INDEX
       subroutine extract_time_index (name, lstr, indx, ierr)
@@ -17,7 +17,7 @@
 # endif
 #else
 # include "cppdefs.h"
- 
+
       subroutine insert_node (name, lstr, node, nnodes, ierr)
 #endif
 !
@@ -100,7 +100,7 @@
           goto 1                         ! to the name later.
         endif
       endif
- 
+
       do j=1,ndots-1                     ! Inspect segments between
         i=idot(j)+1                      ! the dots. These segments
    2    k=ichar(name(i:i))-48            ! may contain only digits
@@ -117,18 +117,18 @@
         endif                            ! Set error signal, if
       enddo                              ! an illegal symbol found
       if (ierr.ne.0) return              ! in this area.
- 
- 
+
+
 #ifdef EXTRACT_INDEX
       if (ndots.eq.1 .and. lsffx.eq.0) then
         i=idot(1)+1
         j=lstr                           ! Read digital segment in
       elseif (ndots.gt.1) then           ! the file name which
-        i=idot(1)+1                      ! contains time index (that 
+        i=idot(1)+1                      ! contains time index (that
         j=idot(2)-1                      ! is the leftmost segment
       else                               ! which has length of at
         i=0                              ! least equal to the setting
-        j=0                              ! of parameter "digit". 
+        j=0                              ! of parameter "digit".
       endif
       indx=0
       if (j-i+1.ge.digits) then
@@ -211,14 +211,14 @@
       endif
       lsffx=lstr+1-j
       if (lsffx.gt.0) sffx(1:lsffx)=name(j:lstr)
- 
+
 !
 ! Load Time Index or MPI-node (rank) into temporal variable "k".
 ! This variable will be written into digital segment. Also specify
 ! maximum allowed number, which sets the number of digits in the
 ! segment.
 !
- 
+
 # ifdef TIME_INDEX
       k=indx
       power=10**digits
@@ -249,9 +249,9 @@
 #endif  /* EXTRACT_INDEX */
       return
       end
- 
+
 c--#define TEST_INSERT
- 
+
 #ifndef TIME_INDEX
 # define TIME_INDEX
 # include "insert_node.F"
@@ -264,22 +264,22 @@ c--#define TEST_INSERT
       implicit none                      ! Testing program
       character*64 hisname               ! for insert_node
       integer lstr, i, nnodes, ierr
- 
+
       hisname='his_00_*/.*'
       hisname='../dir/root_name.000.nc'
       hisname='../dir/root_name.*.*.nc'
       hisname='../dir/root_name.0'
- 
+
       hisname='../dir/root_name.123.3459'
- 
+
       nnodes=10
- 
+
       lstr=1
       do while (lstr.lt.64 .and. hisname(lstr:lstr).ne.' ')
         lstr=lstr+1
       enddo
-      if (hisname(lstr:lstr).eq.' ') lstr=lstr-1 
- 
+      if (hisname(lstr:lstr).eq.' ') lstr=lstr-1
+
 #   ifndef EXTRACT_INDEX
       do i=0,nnodes-1
         call insert_node (hisname, lstr, i, nnodes, ierr)
@@ -295,6 +295,6 @@ c        call insert_time_index (hisname, lstr, i, ierr)
 #  endif
 # endif
 #endif
- 
- 
- 
+
+
+

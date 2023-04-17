@@ -38,7 +38,7 @@
 # define lk_mpp .false.
 #endif 
 
-#if defined key_iomput
+#if defined XIOS || defined key_iomput
 #define lk_iomput .true.
 #else
 #define lk_iomput .false.

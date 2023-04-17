@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,7 +14,7 @@
 # include "cppdefs.h"
 # ifdef M3FAST
       subroutine unbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
@@ -60,11 +60,11 @@
 # include "ocean3d.h"
 # include "climat.h"
 # include "scalars.h"
-# include "boundary.h"  
+# include "boundary.h"
 # ifdef MRL_WCI
 #  include "forces.h"
 # endif
-#include "nbq.h"
+# include "nbq.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    grad(PRIVATE_2D_SCRATCH_ARRAY)
       real    cff,eps,cff1,cff2,
@@ -149,11 +149,11 @@
      &                          -max(cy,0.)*grad(Istr,j  )
      &                          -min(cy,0.)*grad(Istr,j+1)
      &                                          )/(cff+cx)
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmu_nbq(Istr,j,k)=(1.-tau)*qdmu_nbq(Istr,j,k)
 #     ifdef NBQ_FRC_BRY
      &                              +tau*unbqbry_west(j,k)
-#     else     
+#     else
      &                              +tau*unbqclm(Istr,j,k)
 #     endif
 #    endif
@@ -177,7 +177,7 @@
 #    endif
 #    ifdef WET_DRY
      &                             *umask_wet(Istr,j)
-#    endif 
+#    endif
           enddo
         enddo
 #   endif /* OBC_NBQORLANSKI */
@@ -293,11 +293,11 @@
      &                            -max(cy,0.)*grad(Iend+1,j  )
      &                            -min(cy,0.)*grad(Iend+1,j+1)
      &                                              )/(cff+cx)
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmu_nbq(Iend+1,j,k)=(1.-tau)*qdmu_nbq(Iend+1,j,k)
 #     ifdef NBQ_FRC_BRY
      &                                  +tau*unbqbry_east(j,k)
-#     else     
+#     else
      &                                +tau*unbqclm(Iend+1,j,k)
 #     endif
 #    endif
@@ -435,11 +435,11 @@
      &                            -max(cy,0.)*grad(i-1,Jstr-1)
      &                            -min(cy,0.)*grad(i  ,Jstr-1)
      &                                              )/(cff+cx)
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmu_nbq(i,Jstr-1,k)=(1.-tau)*qdmu_nbq(i,Jstr-1,k)
 #     ifdef NBQ_FRC_BRY
      &                                 +tau*unbqbry_south(i,k)
-#     else     
+#     else
      &                                +tau*unbqclm(i,Jstr-1,k)
 #     endif
 #    endif
@@ -575,11 +575,11 @@
      &                            -max(cy,0.)*grad(i-1,Jend+1)
      &                            -min(cy,0.)*grad(i  ,Jend+1)
      &                                              )/(cff+cx)
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmu_nbq(i,Jend+1,k)=(1.-tau)*qdmu_nbq(i,Jend+1,k)
 #     ifdef NBQ_FRC_BRY
      &                                 +tau*unbqbry_north(i,k)
-#     else     
+#     else
      &                                +tau*unbqclm(i,Jend+1,k)
 #     endif
 #    endif
@@ -612,8 +612,8 @@
 !
 !  Replace external mode
 !
-#  if defined NBQ && defined QDM_OBC_TANG_CORRECT
-#   define usum grad
+#   if defined NBQ && defined QDM_OBC_TANG_CORRECT
+#    define usum grad
         usum=0.
         do k=1,N
           do i=IstrU,Iend
@@ -636,8 +636,8 @@
 #    endif
           enddo
         enddo
-#   undef usum
-#  endif
+#    undef usum
+#   endif
 
 #  else
 #   ifdef EW_COM_PERIODIC
@@ -664,7 +664,7 @@
 !====================================================================
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
- 
+
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
@@ -702,7 +702,7 @@
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
           qdmu_nbq(Iend+1,Jend+1,k)=0.5*(qdmu_nbq(Iend,Jend+1,k)
-     &                                  +qdmu_nbq(Iend+1,Jend,k)) 
+     &                                  +qdmu_nbq(Iend+1,Jend,k))
 #  ifdef MASKING
      &                                  *umask(Iend+1,Jend+1)
 #  endif

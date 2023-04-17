@@ -28,15 +28,15 @@
 ! output: ws (scalar)
 !
 !
-# ifdef LIMIT_UNSTABLE_ONLY
-          if (Bfsfc .lt. 0.) zscale=min(zscale, 
+#ifdef LIMIT_UNSTABLE_ONLY
+          if (Bfsfc .lt. 0.) zscale=min(zscale,
      &                                  my_hbl(i,j)*epssfc)
-# else
+#else
           zscale=min(zscale, my_hbl(i,j)*epssfc)
-# endif
-# ifdef MASKING
+#endif
+#ifdef MASKING
           zscale=zscale*rmask(i,j)
-# endif
+#endif
           zetahat=vonKar*zscale*Bfsfc
           ustar3=ustar(i,j)**3
 !
@@ -47,22 +47,22 @@
      &                                                 1.E-20)
 !
 ! Unstable regime: note that zetahat is always negative here, also
-! negative is the constant "zeta_s", hence "ustar" must be positive 
+! negative is the constant "zeta_s", hence "ustar" must be positive
 ! and bounded away from zero for this condition to be held.
 !
           elseif (zetahat .gt. zeta_s*ustar3) then
             ws=vonKar*( (ustar3-16.*zetahat)/ustar(i,j) )**r2
 !
 ! Convective regime: note that unlike the two cases above, this
-! results in non-zero "ws" even in the case when ustar==0. 
+! results in non-zero "ws" even in the case when ustar==0.
 !
           else
             ws=vonKar*(a_s*ustar3-c_s*zetahat)**r3
           endif
                      !--> discard zetahat, ustar3
-# ifdef LMD_LANGMUIR
+#ifdef LMD_LANGMUIR
           cff1=max(eps,Langmuir(i,j))
           cff=sqrt(1+0.104/cff1**2+0.034/cff1**4)   ! Van Roekel et al. (2012)
           ws=ws*cff
-# endif
+#endif
 

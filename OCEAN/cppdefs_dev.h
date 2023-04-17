@@ -2,26 +2,26 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-/* 
+/*
  This is "cppdefs_dev.h": It contains a set of predetermined
  macro definitions which are inserted into the individual files by
  C-preprocessor. General user is discouraged from attempts
- to modify anything below this line. But developers are 
- encouraged to do so if needed 
+ to modify anything below this line. But developers are
+ encouraged to do so if needed
 */
 
-/* 
+/*
 ======================================================================
    Set debugging options
 ======================================================================
-*/ 
+*/
 
 /*  Switch to mixed [tiled + single-block] execution. Activation of
  this switch enables special logical branch in "compute_tile_bounds"
@@ -35,18 +35,18 @@
 # define SINGLE NSUB_X*NSUB_E,NSUB_X*NSUB_E !!!
 #endif
 
-/*  
-   Activate the RVTK_DEBUG procedure that will test the reproducibility 
-   of parallel computation by comparing binary files produced by serial 
+/*
+   Activate the RVTK_DEBUG procedure that will test the reproducibility
+   of parallel computation by comparing binary files produced by serial
    and parallel runs. For the umpteenth time, RVTK_DEBUG itself should
-   be defined from cppdefs.h, so not undefined here !!!!! 
+   be defined from cppdefs.h, so not undefined here !!!!!
 */
 #if defined RVTK_DEBUG && !defined MPI && !defined OPENMP && !defined RVTK_DEBUG_READ
 # define RVTK_DEBUG_WRITE
 #endif
 
-/* 
-   Take care need to use a debug.F specific 
+/*
+   Take care need to use a debug.F specific
 */
 
 #if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
@@ -56,16 +56,20 @@
 /*
     Constant tracer option (for debugging)
 */
-#undef CONST_TRACERS
+#ifdef KILPATRICK
+# define CONST_TRACERS
+#else
+# undef CONST_TRACERS
+#endif
 
-/* 
+/*
 ======================================================================
    Set OA COUPLING options:
-   Define MPI  
+   Define MPI
    Change the generic name of MPI communicator MPI_COMM_WORLD
    to OASIS-MCT local communicator
 ======================================================================
-*/ 
+*/
 #ifdef OA_COUPLING
 # undef  OPENMP
 # define MPI
@@ -80,7 +84,7 @@
 # undef  SFLUX_CFB
 #endif
 
-/* 
+/*
 ======================================================================
    Set OW COUPLING options:
    Define MPI
@@ -106,20 +110,19 @@
 # endif
 #endif
 
-/* 
+/*
 ======================================================================
-   Set XIOS options:    
+   Set XIOS options:
    Activate MPI
    Change the generic name of MPI communicator MPI_COMM_WORLD
    to XIOS local communicator
 ======================================================================
-*/ 
+*/
 #ifdef XIOS
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
-# define START_DATE
 #endif
-  
+
 /*
 ======================================================================
    Set default time-averaging filter for barotropic fields.
@@ -131,7 +134,7 @@
 #elif defined M2FILTER_FLAT
 #else
 # undef  M2FILTER_NONE
-# define  M2FILTER_POWER
+# define M2FILTER_POWER
 # undef  M2FILTER_COSINE
 # undef  M2FILTER_FLAT
 #endif
@@ -141,7 +144,7 @@
    Set default flags for computing temperature
 ======================================================================
 */
-#if !defined NO_TRACER 
+#if !defined NO_TRACER
 # define TRACERS            /* Compute at least one tracer */
 #endif
 #if !defined NO_TEMPERATURE /* Compute temperature */
@@ -174,7 +177,7 @@
 # undef  DIAG_CFL
 # define HZR Hzr
 /*
-   NBQ Precise or Performance options (default: NBQ_PERF) 
+   NBQ Precise or Performance options (default: NBQ_PERF)
 */
 # ifndef NBQ_PRECISE
 #  define NBQ_PERF
@@ -288,16 +291,16 @@
 /*
 ======================================================================
    Activate choice of Pressure Gradient formulation
-   (default is the Density Jacobian formulation with Cubic 
+   (default is the Density Jacobian formulation with Cubic
    Polynomial fit from Shchepetkin et al. (2003). But:
    1- This code can be run cheaper for flat bottom cases if
       terms involving z-grid x/y gradients are removed
       (PGF_FLAT_BOTTOM)
-   2- a cheaper standard Jacobian formulation can also be used 
-   (PGF_BASIC_JACOBIAN) for smooth topography. 
+   2- a cheaper standard Jacobian formulation can also be used
+   (PGF_BASIC_JACOBIAN) for smooth topography.
    3- The Weighted Jacobian formulation of Song & Haidvogel (1994)
-   can be used in this case by defining WJ_GRADP key, which then serves 
-   as the weight value. 
+   can be used in this case by defining WJ_GRADP key, which then serves
+   as the weight value.
 ======================================================================
 */
 #if defined BASIN || defined EQUATOR  || defined GRAV_ADJ \
@@ -315,7 +318,7 @@
 
 /*
 ======================================================================
-    Activate EOS splitting of seawater compressibility effect in case 
+    Activate EOS splitting of seawater compressibility effect in case
     of non-linear formulation, as part of the pressure gradient
     algorithm with polynomial fit (Shchepetkin & McWilliams 2003)
 ======================================================================
@@ -346,7 +349,7 @@
 # undef  UV_HADV_WENO5	   /* 5th-order WENOZ    lateral advection */
 # undef  UV_HADV_TVD	   /*           TVD      lateral advection */
 #endif
-/* 
+/*
    UV DIFFUSION: set default orientation
 */
 #ifdef UV_MIX_S        /* Check if options are defined */
@@ -354,16 +357,16 @@
 #else
 # define UV_MIX_S      /* Default: diffusion along sigma surfaces */
 #endif
-/* 
-   Set keys related to Smagorinsky viscosity or 3D GLS 
+/*
+   Set keys related to Smagorinsky viscosity or 3D GLS
 */
 #ifdef UV_VIS_SMAGO_3D
 # define UV_VIS2
 # define TS_DIF2
-# define UV_VIS_SMAGO  
+# define UV_VIS_SMAGO
 # define TS_DIF_SMAGO
 #endif
-#ifdef UV_VIS_SMAGO 
+#ifdef UV_VIS_SMAGO
 # define VIS_COEF_3D
 #endif
 #ifdef GLS_MIXING_3D
@@ -432,7 +435,7 @@
 # undef  TS_HADV_RSUP5  /* Pseudo R-Split UP5 lateral advection */
 #endif
 
-/* 
+/*
   Options for split-rotated advection-diffusion schemes
 */
 #ifdef TS_HADV_RSUP3   /*  Rotated-Split 3rd-order scheme is:  */
@@ -449,15 +452,15 @@
 # define TS_MIX_GEO    /*        Geopotential rotation         */
 # undef  TS_MIX_ISO    /*     or Isopycnal    rotation         */
 #endif
-#if defined TS_HADV_C4 && !defined TS_HADV_RSUP3     
+#if defined TS_HADV_C4 && !defined TS_HADV_RSUP3
                        /* 4th-order centered advection with:   */
 # define TS_DIF2       /*   + Laplacian Diffusion              */
 # undef  TS_DIF4       /*                                      */
 # define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity          */
-# define TS_MIX_ISO    /*   + Isopycnal rotation               */ 
-#endif 
+# define TS_MIX_ISO    /*   + Isopycnal rotation               */
+#endif
 
-/* 
+/*
    TS DIFFUSION: set default orientation
 */
 #ifdef TS_MIX_S        /* Check if options are defined  */
@@ -466,7 +469,7 @@
 #else
 # define TS_MIX_S      /* Set iso-sigma diffusion as default */
 #endif
-/* 
+/*
    Apply implicit treatment and filters
 */
 #if defined TS_MIX_ISO || (defined TS_DIF4 && defined TS_MIX_GEO)
@@ -479,29 +482,29 @@
    Apply interior diffusion (if defined) over tracer anomalies
    with respect to a reference frame (climatology)
 */
-# ifdef TCLIMATOLOGY
-#  undef CLIMAT_TS_MIXH
-#  undef CLIMAT_TS_MIXH_FINE
-# endif
+#ifdef TCLIMATOLOGY
+# undef CLIMAT_TS_MIXH
+# undef CLIMAT_TS_MIXH_FINE
+#endif
 /*
-   Use 3D diffusivity arrays if needed       
+   Use 3D diffusivity arrays if needed
 */
 #if defined TS_HADV_RSUP3 \
  || defined TS_HADV_RSUP5 || defined TS_DIF_SMAGO
 # define DIF_COEF_3D
 #endif
-/* 
+/*
    If BIO_HADV_WENO5 is chosen, the advection scheme for passive tracers is
    independent from that selected for the two active tracers (TS_HADV)
 */
 #ifdef BIO_HADV_WENO5
-#  if defined TEMPERATURE && defined SALINITY       
-#    define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
-#  elif defined TEMPERATURE || defined SALINITY
-#    define NTRA_T3DMIX 1    /* TS_HADV applied over the 2 active tracers */
-#  else
-#    define NTRA_T3DMIX 0    /* TS_HADV applied over the 2 active tracers */
-#  endif
+# if defined TEMPERATURE && defined SALINITY
+#  define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
+# elif defined TEMPERATURE || defined SALINITY
+#  define NTRA_T3DMIX 1    /* TS_HADV applied over the 2 active tracers */
+# else
+#  define NTRA_T3DMIX 0    /* TS_HADV applied over the 2 active tracers */
+# endif
 #else
 # define NTRA_T3DMIX NT   /* TS_HADV applied over all NT tracers       */
 #endif
@@ -526,7 +529,7 @@
 #undef  TS_VADV_FCT        /* Flux correction of vertical advection */
 
 #ifdef VADV_ADAPT_IMP
-# define  TS_VADV_SPLINES
+# define TS_VADV_SPLINES
 # undef   TS_VADV_AKIMA
 # undef   TS_VADV_WENO5
 # undef   TS_VADV_C2
@@ -534,12 +537,12 @@
 
 /*
 ======================================================================
-   SPONGE:  
-   define SPONGE_GRID, SPONGE_DIF2 and SPONGE_VIS2 
+   SPONGE:
+   define SPONGE_GRID, SPONGE_DIF2 and SPONGE_VIS2
 ======================================================================
 */
 #ifdef SPONGE
-# ifndef INNERSHELF 
+# ifndef INNERSHELF
 #  define SPONGE_GRID
 # endif
 # define SPONGE_DIF2
@@ -556,19 +559,19 @@
 */
 #ifdef GLS_MIXING
 
-# if   defined GLS_KOMEGA  
+# if defined GLS_KOMEGA
 # elif defined GLS_KEPSILON
 # elif defined GLS_GEN
 # else
 #  define GLS_KEPSILON
 # endif
 
-# if   defined CANUTO_A  
+# if defined CANUTO_A
 # elif defined GibLau_78
 # elif defined MelYam_82
 # elif defined KanCla_94
 # elif defined Luyten_96
-# elif defined CANUTO_B 
+# elif defined CANUTO_B
 # elif defined Cheng_02
 # else
 #  define CANUTO_A
@@ -578,7 +581,7 @@
 
 /*
 ======================================================================
-   TIDES:  
+   TIDES:
    select dependable keys if not done yet
 ======================================================================
 */
@@ -631,11 +634,11 @@
 ======================================================================
 */
 #if defined PSOURCE || defined PSOURCE_MASS
-#  define ANA_PSOURCE  /* ON: set vertical profil for qbar */
-#  undef RIVER_RAMP
+# define ANA_PSOURCE  /* ON: set vertical profil for qbar */
+# undef RIVER_RAMP
 #endif
 #ifdef PSOURCE_MASS
-#  undef PSOURCE
+# undef PSOURCE
 #endif
 #if defined PSOURCE_NCFILE
 # define PSOURCE
@@ -660,7 +663,7 @@
 */
 #ifdef BULK_FLUX
 # ifdef ONLINE
-#  define CUBIC_INTERP  
+#  define CUBIC_INTERP
 #  ifdef BULK_MONTH_1DIGIT   /* Check if options are defined in cppdefs.h */
 #  else
 #   undef BULK_MONTH_1DIGIT
@@ -736,10 +739,10 @@
 # endif
 #endif
 
-# if defined WKB_WWAVE || defined OW_COUPLING \
+#if defined WKB_WWAVE || defined OW_COUPLING \
 		       || (defined WAVE_OFFLINE && defined MRL_WCI)
-#  define WAVE_IO
-# endif
+# define WAVE_IO
+#endif
 
 /*
 ======================================================================
@@ -751,7 +754,7 @@
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP
-# undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth 
+# undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth
                            default: lmd_bkpp1994 */
 #endif
 
@@ -763,6 +766,10 @@
 #ifdef BIOLOGY
 # ifdef PISCES
 #  undef DIURNAL_INPUT_SFLX    /* Under Development */
+#  ifdef XIOS
+#   undef DIAGNOSTICS_BIO
+#   undef key_trc_diaadd
+#  endif
 #  ifdef DIAGNOSTICS_BIO
 #   define key_trc_diaadd
 #  endif
@@ -776,7 +783,7 @@
 /*
 ======================================================================
       Bottom forcing:
-      
+
       By default:
          define ANA_BTFLUX : set to zero in analytical.F
          define ANA_BSFLUX
@@ -789,16 +796,16 @@
 ======================================================================
 */
 #if !defined ANA_BTFLUX
-#  define BHFLUX
+# define BHFLUX
 #endif
 #if !defined ANA_BSFLUX && defined SALINITY
-#  define BWFLUX
+# define BWFLUX
 #endif
 /*
 ======================================================================
     Bottom stress option:
 
-    LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid 
+    LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid
     numerical instability associated with reversing bottom flow
     NOW replaced by BSTRESS_FAST option
 ======================================================================
@@ -840,8 +847,8 @@
 ======================================================================
 */
 
-/*              
-         ===== CROCO-USGS SEDIMENT model =====  
+/*
+         ===== CROCO-USGS SEDIMENT model =====
 */
 #ifdef SEDIMENT
 # undef  MUSTANG
@@ -881,33 +888,33 @@
 # endif /* DUNE */
 #endif /* SEDIMENT */
 
-/*              
-         ===== MUSTANG SEDIMENT model =====  
+/*
+         ===== MUSTANG SEDIMENT model =====
 */
 
-# ifdef MUSTANG
-#  undef  SEDIMENT
-#  define SUBSTANCE
-#  define USE_CALENDAR
-#  define TEMPERATURE
-#  define SALINITY
-#  define key_noTSdiss_insed
-#  define key_nofluxwat_IWS
-# endif /* MUSTANG */
-# ifdef SUBSTANCE
-#  define key_CROCO
-# endif
+#ifdef MUSTANG
+# undef  SEDIMENT
+# define SUBSTANCE
+# define USE_CALENDAR
+# define TEMPERATURE
+# define SALINITY
+# define key_noTSdiss_insed
+# define key_nofluxwat_IWS
+#endif /* MUSTANG */
+#ifdef SUBSTANCE
+# define key_CROCO
+#endif
 
-/* 
+/*
 ======================================================================
           Hydro-morphodynamic coupling (Moving Bathymetry)
-     
+
  -> MORPHODYN: Morphodynamics (bed evolution & feedback on circulation)
                ... must be defined for coupling with SEDIMENT model
- -> ANA_MORPHODYN: Analytical function of oscillating bathymetry 
+ -> ANA_MORPHODYN: Analytical function of oscillating bathymetry
                   (ifndef SEDIMENT)
 
-    MORPHODYN or ANA_MORPHODYN must be defined in cppdefs.h 
+    MORPHODYN or ANA_MORPHODYN must be defined in cppdefs.h
     ANA_MORPHODYN triggers MORPHODYN below
     ANA_MORPHODYN and SEDIMENT are incompatible for now
     MORPHODYN && NBQ needs NBQ_FREESLIP
@@ -975,7 +982,7 @@
 ======================================================================
 */
 #ifdef AGRIF
-#define key_agrif
+# define key_agrif
 /*                    Update schemes */
 # undef  AGRIF_UPDATE_MIX_LOW
 # define AGRIF_UPDATE_MIX
@@ -993,7 +1000,7 @@
 # define AGRIF_OBC_NORTH
 # define AGRIF_OBC_SOUTH
 
-# define AGRIF_FLUX_BC 
+# define AGRIF_FLUX_BC
 
 # define AGRIF_OBC_M2SPECIFIED
 # ifdef AGRIF_2WAY
@@ -1011,13 +1018,13 @@
 #endif /* AGRIF */
 
 #if defined AGRIF && defined EXACT_RESTART
-#error "AGRIF with EXACT_RESTART is not yet implemented"
+# error "AGRIF with EXACT_RESTART is not yet implemented"
 #endif
 
 #if defined AGRIF && defined XIOS && \
       ( defined OA_COUPLING || defined OW_COUPLING )
-#error "AGRIF + XIOS + OASIS coupling is not yet implemented"
-#endif     
+# error "AGRIF + XIOS + OASIS coupling is not yet implemented"
+#endif
 
 /*
 ======================================================================
@@ -1025,36 +1032,27 @@
 ======================================================================
 
    Set land mask value to _FillValue
-*/ 
+*/
 #ifndef FILLVAL
 # undef  FILLVAL
 #endif
-/* 
+/*
   Write start_date information in netCDF output
   (in roms.in, add the keyword start_date:
   For example, if the simulation starts 1 January of 2000, at 00:00:00
-  start_date: 01-JAN-2000 00:00:00) 
-*/ 
+  start_date: 01-JAN-2000 00:00:00)
+*/
 
-/* 
+/*
   Define the NetCDF creation mode flag:
   nf_clobber (classic), nf_64bit_offset (large files) or nf_netcdf4
-*/ 
+*/
 #ifdef NC4PAR
-# define NF_CLOBBER nf_mpiio 
+# define NF_CLOBBER nf_mpiio
 #else
 # define NF_CLOBBER nf_64bit_offset
 #endif
-      
-/* 
-      Define double precision for NetCDF outputs (NF_DOUBLE)
-      in case of #define PARALLEL_FILE in cppdefs.h
-      Actual ncjoin does not handle NetCDF files with
-      single precision (NF_REAL) (see set_global_definitions.h) 
-*/     
-#ifdef PARALLEL_FILES
-#  define OUT_DOUBLE
-#endif
+
 /*
 ======================================================================
 
@@ -1062,7 +1060,7 @@
 
 ======================================================================
 */
-#ifndef SOLVE3D                    
+#ifndef SOLVE3D
 # undef AVERAGES_K
 # undef TRACERS
 # undef TEMPERATURE
@@ -1076,7 +1074,7 @@
 # undef ANA_SSFLUX
 # undef ANA_SRFLUX
 # undef BULK_FLUX
-# undef SFLUX_CFB                     
+# undef SFLUX_CFB
 # undef TS_DIF2
 # undef TS_DIF4
 # undef CLIMAT_TS_MIXH

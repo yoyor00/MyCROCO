@@ -29,7 +29,7 @@
 :                            (only if key_MUSTANG_flocmod)
 
 &namsedim_init
-   date_start_morpho='01/01/2019 00:00:00'
+   date_start_morpho='2019/01/01 00:00:00'
    l_unised = .true. 
    hseduni = 3. 
    cseduni= 702.0    

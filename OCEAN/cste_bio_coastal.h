@@ -1,23 +1,23 @@
 ! $Id: cste_bio_coastal.h 1353 2013-10-11 16:15:58Z gcambon $
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
       real    kwater, kChla, palpha1, palpha2,
      &        abio1, abio2, bbio, cbio,
-     &        K_psi, K1_NO32, K2_NO32, K1_NH4, K2_NH4, 
-     &        epsilon1, epsilon2, K_NH4_NO2, K_NO2_NO3, 
-     &        O2nf, mu_P1_Sd, mu_P2_Sd, gmax1, gmax2, 
+     &        K_psi, K1_NO32, K2_NO32, K1_NH4, K2_NH4,
+     &        epsilon1, epsilon2, K_NH4_NO2, K_NO2_NO3,
+     &        O2nf, mu_P1_Sd, mu_P2_Sd, gmax1, gmax2,
      &        K_Zoo1, K_Zoo2, beta1, beta2,
-     &        e_11, e_12, e_21, e_22, e_ZZ,                
-     &        gamma_Z1_ADON, gamma_Z2_ADON, mu_Z1_Sd, mu_Z2_Ld,  
-     &        f2_Z1_NH4, f2_Z2_NH4, O2ox, Kox, Ktox, 
-     &        K_Sd_NH4, K_Ld_NH4, K_DON_NH4, 
+     &        e_11, e_12, e_21, e_22, e_ZZ,
+     &        gamma_Z1_ADON, gamma_Z2_ADON, mu_Z1_Sd, mu_Z2_Ld,
+     &        f2_Z1_NH4, f2_Z2_NH4, O2ox, Kox, Ktox,
+     &        K_Sd_NH4, K_Ld_NH4, K_DON_NH4,
      &        O2denitr, O2anam, aNO3mi, aNO2mi, K_NO3_NO2, K_NO2_N2O,
      &        mu_Sd_DON, mu_Ld_DON, K_anam, K_convert,
      &        CN_Phyt, wLPhy, wSDet, wLDet,
@@ -26,19 +26,19 @@
 #ifdef NITROUS_OXIDE
      &    ,   N2O_atm, alpha_N2O, beta_N2O, k_O2, O2max
 #endif
-            
+
       integer ITERMAX
-     
+
 
       parameter (
      &  ITERMAX    = 3      ! number of small implicit time steps
 !
 !
-! Parameters as in Table 2 of Gutknecht et al. (2013) 
+! Parameters as in Table 2 of Gutknecht et al. (2013)
 !
-! Gutknecht, E., I. Dadou, B. Le Vu, G. Cambon, J. Sudre, V. Garçon, E. Machu, T. Rixen, 
-! A. Kock, A. Flohr, A. Paulmier, and G. Lavik, Coupled physical/biogeochemical modeling 
-! including O2-dependent processes in the Eastern Boundary Upwelling Systems: application 
+! Gutknecht, E., I. Dadou, B. Le Vu, G. Cambon, J. Sudre, V. Garçon, E. Machu, T. Rixen,
+! A. Kock, A. Flohr, A. Paulmier, and G. Lavik, Coupled physical/biogeochemical modeling
+! including O2-dependent processes in the Eastern Boundary Upwelling Systems: application
 ! in the Benguela, Biogeosciences, 10, 3559-3591, doi:10.5194/bg-10-3559-2013, 2013.
 !
 !-------------------------------------------------------------------------------------------------------
@@ -54,7 +54,7 @@
      &  , bbio       = 1.066  !                                                        [ ]
      &  , cbio       = 1.     !                                                        [°C-1]
      &  , mu_P1_Sd   = 0.027  ! Mortality rate of SPhy                                 [d-1]
-     &  , mu_P2_Sd   = 0.030  ! Mortality rate of LPhy                                 [d-1]  
+     &  , mu_P2_Sd   = 0.030  ! Mortality rate of LPhy                                 [d-1]
      &  , epsilon1   = 0.05  ! Exudation fraction of primary production (by SPhy)     [d-1]
      &  , epsilon2   = 0.05  ! Exudation fraction of primary production (by LPhy)     [d-1]
      &  , K_psi      = 1.46   ! Strength of NH4 inhibition of NO3 uptake constant      [(mmolN m-3)-1]
@@ -69,7 +69,7 @@
 ! Zooplankton
 !-------------------------------------------------------------------------------------------------------
      &  , beta1      = 0.75   ! Assimilation efficiency of SZoo                        [ ]
-     &  , beta2      = 0.70   ! Assimilation efficiency of LZoo                        [ ] 
+     &  , beta2      = 0.70   ! Assimilation efficiency of LZoo                        [ ]
      &  , gmax1      = 0.9    ! Maximum grazing rate of SZoo                           [d-1]
      &  , gmax2      = 1.2    ! Maximum grazing rate of LZoo                           [d-1]
      &  , e_11       = 0.7    ! Preference of SZoo for SPhy                            [ ]
@@ -80,7 +80,7 @@
      &  , K_Zoo1     = 1.5    ! Half-saturation constant for ingestion by SZoo         [mmolN m-3]
      &  , K_Zoo2     = 4.0    ! Half-saturation constant for ingestion by LZoo         [mmolN m-3]
      &  , mu_Z1_Sd   = 0.025  ! Mortality rate of SZoo                                 [(mmolN m-3)-1 d-1]
-     &  , mu_Z2_Ld   = 0.05   ! Mortality rate of LZoo                                 [(mmolN m-3)-1 d-1] 
+     &  , mu_Z2_Ld   = 0.05   ! Mortality rate of LZoo                                 [(mmolN m-3)-1 d-1]
      &  , gamma_Z1_ADON = 0.05! Excretion rate of SZoo                                 [d-1]
      &  , gamma_Z2_ADON = 0.05! Excretion rate of LZoo                                 [d-1]
      &  , f2_Z1_NH4  = 0.75   ! Non Organic fraction of SZoo excretion                 [ ]
@@ -99,26 +99,26 @@
      &  , K_Sd_NH4   = 0.014  ! Decomposition rate of SDet                             [d-1]
      &  , K_Ld_NH4   = 0.014  ! Decomposition rate of LDet                             [d-1]
      &  , Ktox       = 0.15   ! Temperature parameter                                  [°C-1]
-     &  , O2ox       = 0.     ! Oxygen parameter                                       [mmolO2 m-3] 
+     &  , O2ox       = 0.     ! Oxygen parameter                                       [mmolO2 m-3]
      &  , Kox        = 15.    ! Half-saturation constant                               [mmolO2 m-3]
 !-------------------------------------------------------------------------------------------------------
 ! Denitrification
 !-------------------------------------------------------------------------------------------------------
      &  , K_NO3_NO2  = 1.2    ! Rate of 1st stage of denitrification                   [d-1]
      &  , K_NO2_N2O  = 2.     ! Rate of 2nd stage of denitrification                   [d-1]
-     &  , O2denitr       = 25.! Oxygen parameter                                       [mmolO2 m-3] 
-     &  , aNO3mi     = 0.001  ! NO3 parameter                                          [mmolN m-3] 
-     &  , aNO2mi     = 0.0001 ! NO2 parameter                                          [mmolN m-3] 
+     &  , O2denitr       = 25.! Oxygen parameter                                       [mmolO2 m-3]
+     &  , aNO3mi     = 0.001  ! NO3 parameter                                          [mmolN m-3]
+     &  , aNO2mi     = 0.0001 ! NO2 parameter                                          [mmolN m-3]
 !-------------------------------------------------------------------------------------------------------
 ! Nitrification
 !-------------------------------------------------------------------------------------------------------
-     &  , K_NH4_NO2  = 0.9    ! Rate of 1st stage of nitrification                     [d-1]     
+     &  , K_NH4_NO2  = 0.9    ! Rate of 1st stage of nitrification                     [d-1]
      &  , K_NO2_NO3  = 2.5    ! Rate of 2nd stage of nitrification                     [d-1]
-     &  , O2nf       = 1.     ! Oxygen parameter                                       [mmolO2 m-3] 
+     &  , O2nf       = 1.     ! Oxygen parameter                                       [mmolO2 m-3]
 !-------------------------------------------------------------------------------------------------------
 ! Anammox
 !-------------------------------------------------------------------------------------------------------
-     &  , O2anam       = 25.  ! Oxygen parameter                                       [mmolO2 m-3] 
+     &  , O2anam       = 25.  ! Oxygen parameter                                       [mmolO2 m-3]
      &  , K_anam     = 0.3    ! Anammox constant                                       [d-1]
      &  , K_convert  = 1.     ! Constant for conversion                                [(mmolN m-3)-1]
 !-------------------------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@
      &  , k_O2       = 0.1    !                                                        [ ]
      &  , O2max      = 1.     !                                                        [mmolO2 m-3]
      &  , N2O_atm    = 318.0  ! Dry mole fraction of atmospheric N2O                   [ppb]
-#endif     
+#endif
      &  )
 
 

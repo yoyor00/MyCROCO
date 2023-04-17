@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -54,11 +54,11 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
 !
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
+# endif
 !
 # ifdef AGRIF
       if (AGRIF_Root()) then
@@ -74,13 +74,13 @@
        endif
       return
       end
-# else 
+# else
       call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                      A2d(1, 1,trd),A2d(1, 3,trd),A2d(1, 5,trd),
      &                      A2d(1, 7,trd),A2d(1, 9,trd),A2d(1,11,trd))
       return
       end
-# endif   /* AGRIF */ 
+# endif   /* AGRIF */
 !
 !---------------------------------------------------------------------
 !*********************************************************************
@@ -120,19 +120,19 @@
 #ifdef CLIMAT_UV_MIXH
 # include "climat.h"
 #endif
-# ifdef DIAGNOSTICS_UV
+#ifdef DIAGNOSTICS_UV
 # include "diagnostics.h"
-# else
+#else
 # if defined DIAGNOSTICS_VRT
-# include "diags_vrt.h"
+#  include "diags_vrt.h"
 # endif
 # if defined DIAGNOSTICS_EK
-# include "diags_ek.h"
+#  include "diags_ek.h"
 # endif
 # if defined DIAGNOSTICS_PV
-# include "diags_pv.h"
+#  include "diags_pv.h"
 # endif
-# endif
+#endif
 !
       integer  Iend, Istr, Jend, Jstr, i, j, k, indx,
      &         imin,imax,jmin,jmax, IminU,JminV
@@ -145,19 +145,19 @@
      &          VFx(PRIVATE_2D_SCRATCH_ARRAY)
 !
 #ifdef AGRIF
-#include "zoom.h"
+# include "zoom.h"
 #endif
 !
 #include "compute_auxiliary_bounds.h"
 !
 #ifdef CHILD_SPG
-#define UCLM usponge
-#define VCLM vsponge
+# define UCLM usponge
+# define VCLM vsponge
 #else
-#define UCLM uclm
-#define VCLM vclm
+# define UCLM uclm
+# define VCLM vclm
 #endif
-! 
+!
 #ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         imin=istr
@@ -207,7 +207,7 @@
 !
 !  Compute flux-components of the horizontal divergence of the stress
 !  tensor (m4 s^-3/2) in XI- and ETA-directions. For momentum balance
-!  purposes, the thickness "Hz" appears only when computing the second 
+!  purposes, the thickness "Hz" appears only when computing the second
 !  harmonic operator.
 !                         du     dv
 !         s_xx = -s_yy = ---- - -----
@@ -218,7 +218,7 @@
             cff=pmon_r(i,j)*
 #if defined CLIMAT_UV_MIXH || defined CLIMAT_UV_MIXH_FINE
      &           (pn_u(i+1,j)*(u(i+1,j,k,nstp)-UCLM(i+1,j,k))-
-     &            pn_u(i  ,j)*(u(i  ,j,k,nstp)-UCLM(i  ,j,k)) ) - 
+     &            pn_u(i  ,j)*(u(i  ,j,k,nstp)-UCLM(i  ,j,k)) ) -
 #else
      &           (pn_u(i+1,j)*u(i+1,j,k,nstp)-
      &            pn_u(i  ,j)*u(i  ,j,k,nstp) ) -
@@ -453,7 +453,7 @@
 !
 ! Time-step biharmonic, S-surfaces viscosity term.  Notice that
 ! momentum at this stage is HzU and HzV and has units m2/s.
-! Also compute vertical integral of viscous terms and add it 
+! Also compute vertical integral of viscous terms and add it
 ! into coupling terms for the barotropic mode
 !
         do j=Jstr,Jend
@@ -463,12 +463,12 @@
             cff1=pm_u(i,j)*pn_u(i,j)*cff
             rufrc(i,j)=rufrc(i,j) - cff
             u(i,j,k,indx)=u(i,j,k,indx) - dt*cff1
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
 !            if (nnew.ne.3) then
             MHmix(i,j,k,1,indx) = -cff1 * om_u(i,j)*on_u(i,j)
      &                       SWITCH umask(i,j)
 !            endif
-# elif defined DIAGNOSTICS_EK
+#elif defined DIAGNOSTICS_EK
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkHmix(i,j,1,indx) = -cff1 * om_u(i,j)*on_u(i,j)
@@ -479,8 +479,8 @@
      &                           * u(i,j,1,nrhs) SWITCH umask(i,j)
               endif
 !            endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#endif
+#if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkHmix(i,j,1,indx) = -cff1 * om_u(i,j)*on_u(i,j)
@@ -491,22 +491,22 @@
      &                                    SWITCH umask(i,j)
               endif
 !            endif
-# endif
+#endif
           enddo
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend
             cff=pn_v(i,j)*(VFx(i+1,j)-VFx(i,j))
      &         -pm_v(i,j)*(VFe(i,j)-VFe(i,j-1))
-            cff1=pm_v(i,j)*pn_v(i,j)*cff 
+            cff1=pm_v(i,j)*pn_v(i,j)*cff
             rvfrc(i,j)=rvfrc(i,j) - cff
             v(i,j,k,indx)=v(i,j,k,indx) - dt*cff1
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
 !            if (nnew.ne.3) then
             MHmix(i,j,k,2,indx) =  -cff1 * om_v(i,j)*on_v(i,j)
      &                       SWITCH vmask(i,j)
 !            endif
-# elif defined DIAGNOSTICS_EK
+#elif defined DIAGNOSTICS_EK
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkHmix(i,j,2,indx) = -cff1 * om_v(i,j)*on_v(i,j)
@@ -517,8 +517,8 @@
      &                          * v(i,j,1,nrhs) SWITCH vmask(i,j)
               endif
 !            endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#endif
+#if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkHmix(i,j,2,indx) = -cff1 * om_v(i,j)*on_v(i,j)
@@ -529,7 +529,7 @@
      &                                    SWITCH vmask(i,j)
               endif
 !            endif
-# endif
+#endif
           enddo
         enddo
       enddo
@@ -544,7 +544,7 @@
 #  include "uv3dmix4_S.F"
 # endif
 # undef CHILD_SPG
-#endif  /* !CHILD_SPG */ 
+#endif  /* !CHILD_SPG */
 
 
 

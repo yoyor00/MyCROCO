@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -52,9 +52,9 @@
 # include "compute_auxiliary_bounds.h"
 !
 
-#ifdef AGRIF
+# ifdef AGRIF
       IF (.NOT.Agrif_Root()) RETURN
-#endif
+# endif
       my_crss=QuadZero  ! Reset partial sums within the segments of open
       my_flux=QuadZero  ! boundaries, then compute partial cross-sections
                     ! and mass fluxes over the subdomains
@@ -113,7 +113,7 @@
 
       if (SINGLE_TILE_MODE) then    ! Global summation is performed
         NSUB=1                      ! in two stages, first within
-      else                          ! each shared memory (MPI-nodes), 
+      else                          ! each shared memory (MPI-nodes),
         NSUB=NSUB_X*NSUB_E          ! then across  MPI nodes (Reduce
       endif                         ! -- Broadcast sequence).
 
@@ -139,7 +139,7 @@ C$OMP CRITICAL (obc_flx_cr_rgn)     ! Counter tile_count identifies
             elseif (mynode .lt. size-step) then
               call MPI_Recv (buff,  4, MPI_DOUBLE_PRECISION,
      &             mynode+step, 17, MPI_COMM_WORLD, status, ierr)
-     
+
               bc_crss=bc_crss+buff(1)
               bc_flux=bc_flux+buff(2)
             endif
@@ -167,7 +167,7 @@ C$OMP END CRITICAL (obc_flx_cr_rgn)
 ! Set vertically integrated mass fluxes DUon and DVom along the open
 ! boundaries in such a way that the integral volume is conserved.
 ! This is done by applying ubar_xs correction to the velocities.
-!  
+!
 # ifdef AGRIF
       USE Agrif_Util
 # endif

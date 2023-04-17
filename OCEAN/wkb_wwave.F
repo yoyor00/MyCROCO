@@ -17,49 +17,49 @@
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      call wkb_wwave_tile (istr,iend,jstr,jend, 
-     &                     A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd), 
-     &                     A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd), 
+      call wkb_wwave_tile (istr,iend,jstr,jend,
+     &                     A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
+     &                     A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                     A2d(1,7,trd), A2d(1,8,trd)
 # ifdef WAVE_FRICTION
      &      ,A2d(1,9,trd)
-#endif
+# endif
 # ifdef WAVE_ROLLER
      &      ,A2d(1,10,trd)
-#endif
+# endif
      &   )
       return
       end
- 
-      subroutine wkb_wwave_tile (istr,iend,jstr,jend, 
+
+      subroutine wkb_wwave_tile (istr,iend,jstr,jend,
      &                     cgx,cge, acx,ace, Dstp, rkx,rke,rwac
 # ifdef WAVE_FRICTION
      &      ,zob_my
-#endif
+# endif
 # ifdef WAVE_ROLLER
      &      ,rwar
-#endif
+# endif
      &  )
 !
 !======================================================================
 !  WKB ray equation + action-density conservation equations for
 !  primary waves and rollers are solved with 2nd-order Adams-Bashforth
 !  time stepping algorithm.  Also AB3 and AB2-Crank-Nicolson predictor-
-!  corrector steppings may be chosen.  For AB2-CN2 you need to modify 
+!  corrector steppings may be chosen.  For AB2-CN2 you need to modify
 !  main.F to execute this subroutine twice during one barotropic time
 !  step.  The breaking dissipation term is modeled according to Thornton
 !  and Guza (1983, JGR), or Church and Thornton (1993, Coastal Eng.).
-!  Wave-friction is also modeled based on Rayleigh wave-height PDF as 
-!  appeared in TG83. 
+!  Wave-friction is also modeled based on Rayleigh wave-height PDF as
+!  appeared in TG83.
 !
 !  Ref: Uchiyama, McWilliams and Shchepetkin (2010, Ocean Modelling).
-!  
+!
 !  Adapted to CROCO by R. Benshila & P. Marchesiello, 2013
 !======================================================================
 !
       implicit none
 # include "param.h"
-      integer istr,iend,jstr,jend, i, j, k, wprv, wbak, wold, 
+      integer istr,iend,jstr,jend, i, j, k, wprv, wbak, wold,
      &        imin,imax,jmin,jmax, prc
       real, dimension(PRIVATE_2D_SCRATCH_ARRAY) :: cgx,cge,acx,ace,
      &                                             Dstp,rkx,rke,rwac
@@ -76,10 +76,10 @@
      &     dtwave, cfrc, inv_f, urms, abot, fw, c_roller
       real wamp, wh, cfrq, cdir, Btg, gamw, khd, kw, kr, ks,
      &     ho, dd, co, cgo, dsup
-      real, parameter :: eps=1.e-10, 
+      real, parameter :: eps=1.e-10,
      &                   khmax=20.     ! deep-water limit for k*h
       logical :: ana_ini_wkb
-# if defined MPI 
+# if defined MPI
       include 'mpif.h'
 #  include "mpi_cpl.h"
       integer ierr
@@ -112,7 +112,7 @@
 !
 ! Sort out time-stepping parameters: For now, there are 3 choices,
 ! =================================  1) AB2, 2) AB3, and 3) AB2-CN2.
-! The option AB3 requires shorter a time step (nominally CFL<0.5) 
+! The option AB3 requires shorter a time step (nominally CFL<0.5)
 ! and modifying WKB_TIME = 4 in wkb_wwave.h (see below). For 3),
 ! you need to double wave steps in main.F (not implemented).
 !
@@ -194,14 +194,14 @@
       cfrc = 0.5/sqrt(pi)
       if (Zobt.gt.0.) then          ! roughness used for wave
         do j=jstr-1,jend+1          ! dissipation or streaming
-          do i=istr-1,iend+1      
+          do i=istr-1,iend+1
 #  ifdef BBL
             Zob_my(i,j)=Zbapp(i,j)
 #  else
             Zob_my(i,j)=Zob(i,j)
 #  endif
           enddo
-        enddo                         
+        enddo
       else
         Zob_my=1.e-3
       endif
@@ -218,10 +218,10 @@
 # define ANA_INI_WKB
 
 # ifdef ANA_INI_WKB
-#  ifndef AGRIF 
-#  define ana_ini_wkb .true.
+#  ifndef AGRIF
+#   define ana_ini_wkb .true.
 #  else
-#  define ana_ini_wkb Agrif_Root()
+#   define ana_ini_wkb Agrif_Root()
 #  endif
 # else
 #  define ana_ini_wkb .false.
@@ -257,24 +257,24 @@
      &                     0, MPI_COMM_WORLD, ierr)!faux
 #  endif
 # endif
-# ifdef ANA_BRY_WKB 
+# ifdef ANA_BRY_WKB
         wamp = wkb_amp               ! wave amplitude (m)
         cfrq = 2.0*pi/wkb_prd        ! peak wave frequency (rad/s)
         cdir = wkb_ang*deg2rad       ! wave direction rad
 # else
 #  ifdef WKB_OBC_WEST
-         wkb_bry(1)=wacbry_west(1) 
+         wkb_bry(1)=wacbry_west(1)
          wkb_bry(2)=wkxbry_west(1)
          wkb_bry(3)=wkebry_west(1)
-#   ifdef MPI 
+#   ifdef MPI
          prc = 0
-#   endif         
+#   endif
 #  endif
 #  ifdef WKB_OBC_EAST
-         wkb_bry(1)=wacbry_east(1) 
+         wkb_bry(1)=wacbry_east(1)
          wkb_bry(2)=wkxbry_east(1)
          wkb_bry(3)=wkebry_east(1)
-#   ifdef MPI 
+#   ifdef MPI
          prc = NP_XI-1
 #   endif
 #  endif
@@ -286,8 +286,8 @@
         inv_k =1.0/cff1
         khn =cff1*ho
         cfrq =sqrt(g*cff1*tanh(khn))
-        cosw = inv_k*wkb_bry(2)          
-        sinw = inv_k*wkb_bry(3)           
+        cosw = inv_k*wkb_bry(2)
+        sinw = inv_k*wkb_bry(3)
         cdir=ATAN2(sinw,cosw)
         wamp=sqrt(2*wkb_bry(1)/g*cfrq)
 # endif /* ANA_BRY_WKB */
@@ -329,7 +329,7 @@
               hrm(i,j,k)=wamp*2.0 SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
               wkx(i,j,k)=kw*cosw
-              wke(i,j,k)=kw*sinw 
+              wke(i,j,k)=kw*sinw
               frq(i,j,k)=cfrq
               wcg(i,j,k)=nw*cw/kw
               wac(i,j,k)=0.125*g*(hrm(i,j,k)**2)/frq(i,j,k)
@@ -344,15 +344,15 @@
             wdrx(i,j)=cosw      ! cosine wave direction (xi)
             wdre(i,j)=sinw      ! sine wave direction (eta)
             sup(i,j)=dsup       ! wave setup
-            wepb(i,j)=0.0       ! sbc/(h(i,j)**5)*(hrm(i,j,k)**7)/cfrq 
+            wepb(i,j)=0.0       ! sbc/(h(i,j)**5)*(hrm(i,j,k)**7)/cfrq
                                 ! S (\ep_b/rho, wave dissipation)
           enddo
         enddo
 !
 !  Boundary fields
 !
-#  ifdef ANA_BRY_WKB 
-#   ifdef WKB_OBC_EAST
+# ifdef ANA_BRY_WKB
+#  ifdef WKB_OBC_EAST
         if (EASTERN_EDGE) then
           do j=jstr-1,jend+1
             wacbry_east(j)=wac(iendR,j,1)
@@ -360,8 +360,8 @@
             wkebry_east(j)=wke(iendR,j,1)
           enddo
         endif
-#   endif  /* WKB_OBC_EAST */
-#   ifdef WKB_OBC_WEST
+#  endif  /* WKB_OBC_EAST */
+#  ifdef WKB_OBC_WEST
         if (WESTERN_EDGE) then
           do j=jstr-1,jend+1
             wacbry_west(j)=wac(istr-1,j,1)
@@ -369,8 +369,8 @@
             wkebry_west(j)=wke(istr-1,j,1)
           enddo
         endif
-#   endif  /* WKB_OBC_WEST */
-#   ifdef WKB_OBC_SOUTH
+#  endif  /* WKB_OBC_WEST */
+#  ifdef WKB_OBC_SOUTH
         if (SOUTHERN_EDGE) then
           do i=istr-1,iend+1
             wacbry_south(i)=wac(i,jstr-1,1)
@@ -378,8 +378,8 @@
             wkebry_south(i)=wke(i,jstr-1,1)
           enddo
         endif
-#   endif  /* WKB_OBC_SOUTH */
-#   ifdef WKB_OBC_NORTH
+#  endif  /* WKB_OBC_SOUTH */
+#  ifdef WKB_OBC_NORTH
         if (NORTHERN_EDGE) then
           do i=istr-1,iend+1
             wacbry_north(i)=wac(i,jendR,1)
@@ -387,14 +387,14 @@
             wkebry_north(i)=wke(i,jendR,1)
           enddo
         endif
-#   endif  /* WKB_OBC_NORTH */
-#  endif /* ANA_BRY_WKB */
+#  endif  /* WKB_OBC_NORTH */
+# endif /* ANA_BRY_WKB */
 
       else  ! ana_ini_wkb
-         
+
         do j=jstrR,jendR
           do i=istrR,iendR
-#  ifdef WAVE_OFFLINE
+# ifdef WAVE_OFFLINE
             Dstp(i,j)=h(i,j)+zeta(i,j,knew)
             khd = Dstp(i,j)*wfrq(i,j)*wfrq(i,j)/g
             kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
@@ -413,22 +413,22 @@
               wcg(i,j,k)=frq(i,j,k)/max(kw**2,eps)*nw  ! cg/k
               hrm(i,j,k)=whrm(i,j) SWITCH rmask(i,j)
               wac(i,j,k)=0.125*g*(hrm(i,j,k)**2)/frq(i,j,k)
-#   ifdef WAVE_ROLLER
+#  ifdef WAVE_ROLLER
               war(i,j,k)=0.0
               wsr(i,j,k)=0.0
               wcr(i,j,k)=cw/kw
-#   endif
-            enddo
 #  endif
+            enddo
+# endif
           enddo
         enddo
-#  ifdef AGRIF
+# ifdef AGRIF
         if (EASTERN_EDGE) then
           do j=jstr-1,jend+1
             wacbry_east(j)=wac(iendR,j,1)
-#   ifdef WAVE_ROLLER
+#  ifdef WAVE_ROLLER
             warbry_east(j)=war(iendR,j,1)
-#   endif    
+#  endif
             wkxbry_east(j)=wkx(iendR,j,1)
             wkebry_east(j)=wke(iendR,j,1)
             wkebry_east(j)=wke(iendR,j,1)
@@ -437,9 +437,9 @@
         if (WESTERN_EDGE) then
           do j=jstr-1,jend+1
             wacbry_west(j)=wac(istr-1,j,1)
-#   ifdef WAVE_ROLLER
+#  ifdef WAVE_ROLLER
             warbry_west(j)=war(istr-1,j,1)
-#   endif            
+#  endif
             wkxbry_west(j)=wkx(istr-1,j,1)
             wkebry_west(j)=wke(istr-1,j,1)
           enddo
@@ -447,9 +447,9 @@
         if (SOUTHERN_EDGE) then
           do i=istr-1,iend+1
             wacbry_south(i)=wac(i,jstr-1,1)
-#   ifdef WAVE_ROLLER
+#  ifdef WAVE_ROLLER
             warbry_south(i)=war(i,jstr-1,1)
-#   endif            
+#  endif
             wkxbry_south(i)=wkx(i,jstr-1,1)
             wkebry_south(i)=wke(i,jstr-1,1)
           enddo
@@ -457,17 +457,17 @@
         if (NORTHERN_EDGE) then
           do i=istr-1,iend+1
             wacbry_north(i)=wac(i,jendR,1)
-#   ifdef WAVE_ROLLER
+#  ifdef WAVE_ROLLER
             warbry_north(i)=war(i,jendR,1)
-#   endif            
+#  endif
             wkxbry_north(i)=wkx(i,jendR,1)
             wkebry_north(i)=wke(i,jendR,1)
           enddo
         endif
-#  endif        
-      endif 
+# endif
+      endif
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         do k=1,2
           call exchange_r2d_tile (istr,iend,jstr,jend,
      &                            wkx(START_2D_ARRAY,k))
@@ -485,16 +485,16 @@
      &                            wsb(START_2D_ARRAY,k))
           call exchange_r2d_tile (istr,iend,jstr,jend,
      &                            wvn(START_2D_ARRAY,k))
-#   ifdef WAVE_ROLLER
+#  ifdef WAVE_ROLLER
           call exchange_r2d_tile (istr,iend,jstr,jend,
      &                            war(START_2D_ARRAY,k))
           call exchange_r2d_tile (istr,iend,jstr,jend,
      &                            wcr(START_2D_ARRAY,k))
           call exchange_r2d_tile (istr,iend,jstr,jend,
      &                            wsr(START_2D_ARRAY,k))
-#   endif
-        end do
 #  endif
+        end do
+# endif
 C$OMP BARRIER
       endif  ! <-- iwave=1
 !
@@ -511,14 +511,14 @@ C$OMP BARRIER
           rwac(i,j)=w1*wac(i,j,wstp)+w2*wac(i,j,wbak)+w3*wac(i,j,wold)
 #  ifdef WAVE_ROLLER
           rwar(i,j)=w1*war(i,j,wstp)+w2*war(i,j,wbak)+w3*war(i,j,wold)
-#  endif          
+#  endif
 # else
           rkx(i,j) =w1*wkx(i,j,wstp)+w2*wkx(i,j,wbak)
           rke(i,j) =w1*wke(i,j,wstp)+w2*wke(i,j,wbak)
           rwac(i,j)=w1*wac(i,j,wstp)+w2*wac(i,j,wbak)
 #  ifdef WAVE_ROLLER
           rwar(i,j)=w1*war(i,j,wstp)+w2*war(i,j,wbak)
-#  endif   
+#  endif
 # endif
         enddo
       enddo
@@ -586,7 +586,7 @@ C$OMP BARRIER
      &               +0.5*( ax1*on_u(i  ,j)*(rkx(i  ,j)-rkx(i-1,j))
      &                     +ax2*on_u(i+1,j)*(rkx(i+1,j)-rkx(i  ,j))
      &                     +ay1*om_v(i,j  )*(rkx(i,j  )-rkx(i,j-1))
-     &                     +ay2*om_v(i,j+1)*(rkx(i,j+1)-rkx(i,j  )) ) 
+     &                     +ay2*om_v(i,j+1)*(rkx(i,j+1)-rkx(i,j  )) )
 # ifdef MRL_CEW
      &                                          +rkx(i,j)*on_r(i,j)
      &                         *(uwave(i+1,j,wmod)-uwave(i,j,wmod))
@@ -867,9 +867,9 @@ C$OMP BARRIER
       subroutine wkb_cew_prep (tile)
       implicit none
       integer tile, trd, omp_get_thread_num
-# include "param.h"
-# include "private_scratch.h"
-# include "compute_tile_bounds.h"
+#  include "param.h"
+#  include "private_scratch.h"
+#  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call wkb_cew_prep_tile (istr,iend,jstr,jend,
      &                        A2d(1,1,trd),A2d(1,2,trd),A2d(1,3,trd))
@@ -878,20 +878,20 @@ C$OMP BARRIER
 
       subroutine wkb_cew_prep_tile (istr,iend,jstr,jend,wrk1,wrk2,wrk3)
       implicit none
-#include "param.h"
+#  include "param.h"
       integer istr,iend,jstr,jend, i,j,k
       real cff,cff1,cff3, cff4, wlen, dep,uave, vave, udep, vdep
       real, dimension(PRIVATE_2D_SCRATCH_ARRAY) :: wrk1,wrk2,wrk3
-# include "grid.h"
-# include "ocean2d.h"
-# include "wkb_wwave.h"
-# include "scalars.h"
-# ifdef SOLVE3D
-#  include "ocean3d.h"
-# endif
-# include "compute_auxiliary_bounds.h"
+#  include "grid.h"
+#  include "ocean2d.h"
+#  include "wkb_wwave.h"
+#  include "scalars.h"
+#  ifdef SOLVE3D
+#   include "ocean3d.h"
+#  endif
+#  include "compute_auxiliary_bounds.h"
 
-# ifdef WKB_TIME_FILTER
+#  ifdef WKB_TIME_FILTER
       if (iic.eq.0.or.iic.eq.ntstart.or.mod(iic-ntstart,cewavg).eq.1) then
         cff =1.0
         cff1=0.0
@@ -902,10 +902,10 @@ C$OMP BARRIER
         cff=1./float(cewavg)
         cff1=1.0
       endif
-# endif
+#  endif
       do j=Jstr,Jend
         do i=Istr,Iend
-# ifdef SOLVE3D
+#  ifdef SOLVE3D
           wlen=pi/wvn(i,j,wnew)  ! L/2 = (2*pi/k)/2
           if (h(i,j)+zeta(i,j,knew).le.wlen) then
             wrk1(i,j)=0.5*(ubar(i,j,knew)+ubar(i+1,j,knew))
@@ -930,37 +930,37 @@ C$OMP BARRIER
             wrk2(i,j)=vave/vdep
           endif
           wrk3(i,j)=zeta(i,j,knew)
-# else
+#  else
           wrk1(i,j)=0.5*(ubar(i,j,knew)+ubar(i+1,j,knew))
           wrk2(i,j)=0.5*(vbar(i,j,knew)+vbar(i,j+1,knew))
           wrk3(i,j)=zeta(i,j,knew)
-# endif
-# ifdef WKB_TIME_FILTER
+#  endif
+#  ifdef WKB_TIME_FILTER
           uwave(i,j,wavg)=cff*(cff1*uwave(i,j,wavg)+wrk1(i,j))
           vwave(i,j,wavg)=cff*(cff1*vwave(i,j,wavg)+wrk2(i,j))
           zwave(i,j,wavg)=cff*(cff1*zwave(i,j,wavg)+wrk3(i,j))
-# else
+#  else
           uwave(i,j,wavg)=wrk1(i,j)
           vwave(i,j,wavg)=wrk2(i,j)
           zwave(i,j,wavg)=wrk3(i,j)
-# endif
+#  endif
         enddo
       enddo
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-#  ifdef WKB_TIME_FILTER
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#   ifdef WKB_TIME_FILTER
       if (iic.eq.0.or.mod(iic-ntstart,cewavg).eq.0) then
-#  endif
+#   endif
       call exchange_r2d_tile(istr,iend,jstr,jend,
      &                       uwave(START_2D_ARRAY,wavg))
       call exchange_r2d_tile(istr,iend,jstr,jend,
      &                       vwave(START_2D_ARRAY,wavg))
       call exchange_r2d_tile(istr,iend,jstr,jend,
      &                       zwave(START_2D_ARRAY,wavg))
-#  ifdef WKB_TIME_FILTER
+#   ifdef WKB_TIME_FILTER
       endif
+#   endif
 #  endif
-# endif
 
       return
       end
@@ -974,14 +974,14 @@ C$OMP BARRIER
       subroutine wkb_uvfield (tile,linterp)
       implicit none
       integer tile, linterp, trd, omp_get_thread_num
-#include "param.h"
-#include "private_scratch.h"
-#include "compute_tile_bounds.h"
+#  include "param.h"
+#  include "private_scratch.h"
+#  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      call wkb_uvfield_tile (istr,iend,jstr,jend, linterp, 
-     &            A2d(1, 1, trd), A2d(1, 2, trd), A2d(1, 3, trd), 
-     &            A2d(1, 4, trd), A2d(1, 5, trd), A2d(1, 6, trd), 
-     &            A2d(1, 7, trd), A2d(1, 8, trd), A2d(1, 9, trd), 
+      call wkb_uvfield_tile (istr,iend,jstr,jend, linterp,
+     &            A2d(1, 1, trd), A2d(1, 2, trd), A2d(1, 3, trd),
+     &            A2d(1, 4, trd), A2d(1, 5, trd), A2d(1, 6, trd),
+     &            A2d(1, 7, trd), A2d(1, 8, trd), A2d(1, 9, trd),
      &            A2d(1,10, trd),  A2d(1,11, trd), A2d(1,12,trd))
       return
       end
@@ -989,20 +989,20 @@ C$OMP BARRIER
       subroutine wkb_uvfield_tile (istr,iend,jstr,jend, linterp,
      &           wrk1, wrk2, wrk3, FX,FE,FE1, GX,GE,GE1, ZX,ZE,ZE1)
       implicit none
-#include "param.h"
-      integer istr,iend,jstr,jend, i,j,k, imin,imax,jmin,jmax, 
+#  include "param.h"
+      integer istr,iend,jstr,jend, i,j,k, imin,imax,jmin,jmax,
      &        wold,linterp
       real cff, cff1, cff2
       real, dimension(PRIVATE_2D_SCRATCH_ARRAY) :: wrk1,wrk2,wrk3,
      &                              FX,FE,FE1,GX,GE,GE1,ZX,ZE,ZE1
-#include "wkb_wwave.h"
-#include "grid.h"
-#include "scalars.h"
-#include "compute_auxiliary_bounds.h"
+#  include "wkb_wwave.h"
+#  include "grid.h"
+#  include "scalars.h"
+#  include "compute_auxiliary_bounds.h"
 
-# ifdef WKB_TIME_FILTER
+#  ifdef WKB_TIME_FILTER
       if (iic.eq.0.or.mod(iic-ntstart,cewavg).eq.0) then
-# endif
+#  endif
 
         wold=wint-1
         if (wold.lt.1) wold=2
@@ -1011,23 +1011,23 @@ C$OMP BARRIER
         imax=iend+1
         jmin=jstr-1
         jmax=jend+1
-# ifndef EW_PERIODIC
+#  ifndef EW_PERIODIC
         if (WESTERN_EDGE) imin=istr
         if (EASTERN_EDGE) imax=iend
-# endif
-# ifndef NS_PERIODIC
+#  endif
+#  ifndef NS_PERIODIC
         if (SOUTHERN_EDGE) jmin=jstr
         if (NORTHERN_EDGE) jmax=jend
-# endif
+#  endif
 
-# ifdef WKB_KZ_FILTER
+#  ifdef WKB_KZ_FILTER
 !
 ! Kolmogorov-Zurbenko filter with Gaussian/Laplacian kernel
 ! ===============================================================
 ! This code provides smoothing filter on current velocity and zeta
 ! for WKB model with CEW as current field should evolve slowly on
 ! waves in the MRL asymptotic regime.  Sometimes it is recommended
-! to iterate the following sequence interp_max (times) defined in 
+! to iterate the following sequence interp_max (times) defined in
 ! wkb_wwave.h (Kolmogorov-Zurbenko filter).
 !
 ! 1) cff = 1/8, 1/4      2) cff = 1/12, 3/16    3) cff = 0, 1/8
@@ -1063,7 +1063,7 @@ c        cff1=3.D0/16.D0
           enddo
         endif
 
-#  ifndef EW_PERIODIC
+#   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
           do j=jmin,jmax
             wrk1(istr-1,j)=wrk1(istr,j)
@@ -1078,8 +1078,8 @@ c        cff1=3.D0/16.D0
             wrk3(iend+1,j)=wrk3(iend,j)
           enddo
         endif
-#  endif
-#  ifndef NS_PERIODIC
+#   endif
+#   ifndef NS_PERIODIC
         if (SOUTHERN_EDGE) then
           do i=imin,imax
             wrk1(i,jstr-1)=wrk1(i,jstr)
@@ -1094,7 +1094,7 @@ c        cff1=3.D0/16.D0
             wrk3(i,jend+1)=wrk3(i,jend)
           enddo
         endif
-#   ifndef EW_PERIODIC
+#    ifndef EW_PERIODIC
         if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
           wrk1(istr-1,jstr-1)=wrk1(istr,jstr)
           wrk2(istr-1,jstr-1)=wrk2(istr,jstr)
@@ -1115,38 +1115,38 @@ c        cff1=3.D0/16.D0
           wrk2(iend+1,jend+1)=wrk2(iend,jend)
           wrk3(iend+1,jend+1)=wrk3(iend,jend)
         endif
+#    endif
 #   endif
-#  endif
         do j=jstr-1,jend+1
           do i=istr,iend+1
             FX(i,j)=(wrk1(i,j)-wrk1(i-1,j))
-#  ifdef MASKING
+#   ifdef MASKING
      &                        *rmask(i-1,j)
-#  endif
+#   endif
             GX(i,j)=(wrk2(i,j)-wrk2(i-1,j))
-#  ifdef MASKING
+#   ifdef MASKING
      &                        *pmask(i-1,j)
-#  endif
+#   endif
             ZX(i,j)=(wrk3(i,j)-wrk3(i-1,j))
-#  ifdef MASKING
+#   ifdef MASKING
      &                          *umask(i,j)
-#  endif
+#   endif
           enddo
         enddo
         do j=jstr,jend+1
           do i=istr-1,iend+1
             FE(i,j)=(wrk1(i,j)-wrk1(i,j-1))
-#  ifdef MASKING
+#   ifdef MASKING
      &                          *pmask(i,j)
-#  endif
+#   endif
             GE(i,j)=(wrk2(i,j)-wrk2(i,j-1))
-#  ifdef MASKING
+#   ifdef MASKING
      &                        *rmask(i,j-1)
-#  endif
+#   endif
             ZE(i,j)=(wrk3(i,j)-wrk3(i,j-1))
-#  ifdef MASKING
+#   ifdef MASKING
      &                          *vmask(i,j)
-#  endif
+#   endif
           enddo
         enddo
         do j=jstr,jend+1
@@ -1173,19 +1173,19 @@ c        cff1=3.D0/16.D0
           do i=istr,iend
             wrk1(i,j)=wrk1(i,j)+cff1*( FX(i+1,j)-FX(i,j)
      &                             +FE1(i,j+1)-FE1(i,j))
-#  ifdef MASKING
+#   ifdef MASKING
             wrk1(i,j)=wrk1(i,j)*umask(i,j)
-#  endif
+#   endif
             wrk2(i,j)=wrk2(i,j)+cff1*( GX(i+1,j)-GX(i,j)
      &                            +GE1(i,j+1)-GE1(i,j))
-#  ifdef MASKING
+#   ifdef MASKING
             wrk2(i,j)=wrk2(i,j)*vmask(i,j)
-#  endif
+#   endif
             wrk3(i,j)=wrk3(i,j)+cff1*( ZX(i+1,j)-ZX(i,j)
      &                            +ZE1(i,j+1)-ZE1(i,j))
-#  ifdef MASKING
+#   ifdef MASKING
             wrk3(i,j)=wrk3(i,j)*rmask(i,j)
-#  endif
+#   endif
           enddo
         enddo
         do j=jstr,jend            ! copy into shared arrays
@@ -1195,7 +1195,7 @@ c        cff1=3.D0/16.D0
             zwave(i,j,wint)=wrk3(i,j)
           enddo
         enddo
-#  ifndef EW_PERIODIC
+#   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
           do j=jstr,jend
             uwave(istr-1,j,wint)=uwave(istr,j,wint)
@@ -1210,8 +1210,8 @@ c        cff1=3.D0/16.D0
             zwave(iend+1,j,wint)=zwave(iend,j,wint)
           enddo
         endif
-#  endif
-#  ifndef NS_PERIODIC
+#   endif
+#   ifndef NS_PERIODIC
         if (SOUTHERN_EDGE) then
           do i=istr,iend
             uwave(i,jstr-1,wint)=uwave(i,jstr,wint)
@@ -1226,7 +1226,7 @@ c        cff1=3.D0/16.D0
             zwave(i,jend+1,wint)=zwave(i,jend,wint)
           enddo
         endif
-#   ifndef EW_PERIODIC
+#    ifndef EW_PERIODIC
         if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
           uwave(istr-1,jstr-1,wint)=uwave(istr,jstr,wint)
           vwave(istr-1,jstr-1,wint)=vwave(istr,jstr,wint)
@@ -1247,38 +1247,38 @@ c        cff1=3.D0/16.D0
           vwave(iend+1,jend+1,wint)=vwave(iend,jend,wint)
           zwave(iend+1,jend+1,wint)=zwave(iend,jend,wint)
         endif
+#    endif
 #   endif
-#  endif
 
-# else    /* WKB_KZ_FILTER */
+#  else    /* WKB_KZ_FILTER */
 
         do j=jstrR,jendR
           do i=istrR,iendR
             uwave(i,j,wint)=uwave(i,j,wavg)
             vwave(i,j,wint)=vwave(i,j,wavg)
             zwave(i,j,wint)=zwave(i,j,wavg)
-#  ifdef MASKING
+#   ifdef MASKING
             uwave(i,j,wint)=uwave(i,j,wint)*umask(i,j)
             vwave(i,j,wint)=vwave(i,j,wint)*vmask(i,j)
             zwave(i,j,wint)=zwave(i,j,wint)*rmask(i,j)
-#  endif
+#   endif
           enddo
         enddo
 
-# endif /* WKB_KZ_FILTER */
+#  endif /* WKB_KZ_FILTER */
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_r2d_tile(istr,iend,jstr,jend,
      &                         uwave(START_2D_ARRAY,wint))
         call exchange_r2d_tile(istr,iend,jstr,jend,
      &                         vwave(START_2D_ARRAY,wint))
         call exchange_r2d_tile(istr,iend,jstr,jend,
      &                         zwave(START_2D_ARRAY,wint))
-# endif
+#  endif
 
-# ifdef WKB_TIME_FILTER
+#  ifdef WKB_TIME_FILTER
       endif
-# endif
+#  endif
 
       return
       end
@@ -1292,23 +1292,23 @@ c        cff1=3.D0/16.D0
       subroutine wkb_cew_finalize (tile)
       implicit none
       integer tile
-# include "param.h"
-# include "private_scratch.h"
-# include "compute_tile_bounds.h"
+#  include "param.h"
+#  include "private_scratch.h"
+#  include "compute_tile_bounds.h"
       call wkb_cew_finalize_tile (istr,iend,jstr,jend)
       return
       end
 
       subroutine wkb_cew_finalize_tile (istr,iend,jstr,jend)
       implicit none
-# include "param.h"
+#  include "param.h"
       integer istr,iend,jstr,jend, i,j
-# ifdef WKB_TIME_FILTER
+#  ifdef WKB_TIME_FILTER
       integer wstp1, wstp2
       real cff,cff1,cff2
-#  include "wkb_wwave.h"
-#  include "scalars.h"
-#  include "compute_auxiliary_bounds.h"
+#   include "wkb_wwave.h"
+#   include "scalars.h"
+#   include "compute_auxiliary_bounds.h"
       wstp1=4
       wstp2=5
       if (iic.eq.0.or.iic.eq.ntstart) then
@@ -1335,11 +1335,11 @@ c        cff1=3.D0/16.D0
         enddo
       endif
       cff =1.D0/dble(cewavg)
-#  ifdef SOLVE3D
+#   ifdef SOLVE3D
       cff2=cff*(dble(mod(iic-ntstart,cewavg))+dble(iwave-1)/ndtfast)
-#  else
+#   else
       cff2=cff*dble(mod(iic-ntstart,cewavg))
-#  endif
+#   endif
       if (iic.eq.0) cff2=0.D0
       cff1=1.D0-cff2
       do j=jstrR,jendR
@@ -1350,16 +1350,16 @@ c        cff1=3.D0/16.D0
         enddo
       enddo
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_r2d_tile(istr,iend,jstr,jend,
      &                         uwave(START_2D_ARRAY,wcew))
         call exchange_r2d_tile(istr,iend,jstr,jend,
      &                         vwave(START_2D_ARRAY,wcew))
         call exchange_r2d_tile(istr,iend,jstr,jend,
      &                         zwave(START_2D_ARRAY,wcew))
-# endif
+#   endif
 
-# endif  /* WKB_TIME_FILTER */
+#  endif  /* WKB_TIME_FILTER */
       return
       end
 # endif  /* MRL_CEW */
@@ -1373,9 +1373,9 @@ c        cff1=3.D0/16.D0
       subroutine wkb_diag (tile)
       implicit none
       integer tile
-#include "param.h"
-#include "private_scratch.h"
-#include "compute_tile_bounds.h"
+# include "param.h"
+# include "private_scratch.h"
+# include "compute_tile_bounds.h"
       call wkb_diag_tile (istr,iend,jstr,jend)
       return
       end
@@ -1383,20 +1383,20 @@ c        cff1=3.D0/16.D0
       subroutine wkb_diag_tile (istr,iend,jstr,jend)
       implicit none
       integer istr,iend,jstr,jend, i,j,k, nsubs,ie
-#include "param.h"
+# include "param.h"
       real, dimension(2) :: my_ww, buff
       integer max_check_line
       parameter (max_check_line=128)
       character check_line*(max_check_line), tstring*18
-#ifdef MPI
+# ifdef MPI
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), ierr
-#     include "mpi_cpl.h"
-#endif
-#include "grid.h"
-#include "wkb_wwave.h"
-#include "scalars.h"
-#include "compute_auxiliary_bounds.h"
+#  include "mpi_cpl.h"
+# endif
+# include "grid.h"
+# include "wkb_wwave.h"
+# include "scalars.h"
+# include "compute_auxiliary_bounds.h"
 !
 ! Diagnose difference of wave action density and modulus wavenumber
 ! between two neighboring time steps to ensure the steady state.
@@ -1426,15 +1426,15 @@ C$OMP CRITICAL (diag_cr_rgn)
                                         ! the last thread, whoever
         if (tile_count.eq.nsubs) then   ! it is, not always master.
           tile_count=0
-#ifdef MPI
+# ifdef MPI
           if (NNODES.gt.1) then         ! Perform global max
             call MPI_allreduce(my_ww,buff,2,
      &              MPI_DOUBLE_PRECISION, MPI_MAX,MPI_COMM_WORLD,ierr)
           av_wac = buff(1)
           av_wkn = buff(2)
           endif
-          if (mynode.eq.0) then               ! Compute diagnostics 
-#endif
+          if (mynode.eq.0) then               ! Compute diagnostics
+# endif
             if (first_time.eq.0) then
               first_time=1
               write(*,'(5x,A,1x,A,3x,A,3x,A,2x,A)')
@@ -1474,12 +1474,12 @@ C$OMP CRITICAL (diag_cr_rgn)
             write(*,'(I9,1x,A,1x,A)') iwave-1, tstring(i:i+9),
      &                                       check_line(1:ie)
 
-#ifdef MPI
+# ifdef MPI
           endif    ! <-- mynode.eq.0
 
           call MPI_Bcast(may_day_flag, 1, MPI_INTEGER,
      &                       0, MPI_COMM_WORLD, ierr)
-#endif
+# endif
 
           if (winfo.eq. 1   .and.  iwave.gt.   8) winfo=2
           if (winfo.eq. 2   .and.  iwave.gt.  16) winfo=4
@@ -1497,4 +1497,4 @@ C$OMP END CRITICAL (diag_cr_rgn)
       return
       end
 #endif
- 
+

@@ -436,7 +436,6 @@ CONTAINS
                fluorid(ji,jj,jk) = zft 
 
                ! Iron and SIO3 saturation concentration from ...
-               sio3eq(ji,jj,jk) = EXP(  LOG( 10.) * ( 6.44 - 968. / ztkel )  ) * 1.e-6
                fekeq (ji,jj,jk) = 10**( 17.27 - 1565.7 / ztkel )
 
                ! Liu and Millero (1999) only valid 5 - 50 degC
@@ -450,6 +449,22 @@ CONTAINS
          END DO
       END DO
       !
+      ! Iron and SIO3 saturation concentration from ...
+      IF( .NOT. ln_p2z) THEN
+!CDIR NOVERRCHK
+         DO jk = KRANGE
+!CDIR NOVERRCHK
+            DO jj = JRANGE
+!CDIR NOVERRCHK
+               DO ji = IRANGE
+                  ! SET ABSOLUTE TEMPERATURE
+                  ztkel   = tempis(ji,jj,jk) + 273.15
+                  sio3eq(ji,jj,jk) = EXP(  LOG( 10.) * ( 6.44 - 968. / ztkel )  ) * 1.e-6
+                  !
+               END DO
+            END DO
+         END DO
+      ENDIF
    END SUBROUTINE p4z_che
 
    SUBROUTINE ahini_for_at(p_hini)
@@ -533,19 +548,35 @@ CONTAINS
    ! Local variables
    INTEGER :: ji, jj, jk
 
-   DO jk = KRANGE
-      DO jj = JRANGE
-         DO ji = IRANGE
-            p_alknw_inf(ji,jj,jk) =  -trb(ji,jj,K,jppo4) * 1000. / (rhop(ji,jj,K) + rtrn) &
-            &              - sulfat(ji,jj,jk)  &
-            &              - fluorid(ji,jj,jk)
-            p_alknw_sup(ji,jj,jk) =   (2. * trb(ji,jj,K,jpdic)   &
-            &                        + 2. * trb(ji,jj,K,jppo4)   &
-            &                          + trb(ji,jj,K,jpsil) )    &
-            &               * 1000. / (rhop(ji,jj,K) + rtrn) + borat(ji,jj,jk) 
+   IF( ln_p2z ) THEN
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               p_alknw_inf(ji,jj,jk) =  -2.174E-6 * 1000. / (rhop(ji,jj,K) + rtrn) &
+               &              - sulfat(ji,jj,jk)  &
+               &              - fluorid(ji,jj,jk)
+               p_alknw_sup(ji,jj,jk) =   (2. * trb(ji,jj,K,jpdic)   &
+               &                        + 2. * 2.174E-6   &
+               &                          + 90.33E-6 )    &
+               &               * 1000. / (rhop(ji,jj,K) + rtrn) + borat(ji,jj,jk)
+            END DO
          END DO
       END DO
-   END DO
+   ELSE
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               p_alknw_inf(ji,jj,jk) =  -trb(ji,jj,K,jppo4) * 1000. / (rhop(ji,jj,K) + rtrn) &
+               &              - sulfat(ji,jj,jk)  &
+               &              - fluorid(ji,jj,jk)
+               p_alknw_sup(ji,jj,jk) =   (2. * trb(ji,jj,K,jpdic)   &
+               &                        + 2. * trb(ji,jj,K,jppo4)   &
+               &                          + trb(ji,jj,K,jpsil) )    &
+               &               * 1000. / (rhop(ji,jj,K) + rtrn) + borat(ji,jj,jk) 
+            END DO
+         END DO
+      END DO
+    ENDIF
 
    END SUBROUTINE anw_infsup
 
@@ -627,8 +658,13 @@ CONTAINS
                p_alktot = trb(ji,jj,K,jptal) / zfact
                zdic  = trb(ji,jj,K,jpdic) / zfact
                zbot  = borat(ji,jj,jk)
-               zpt = trb(ji,jj,K,jppo4) / zfact * po4r
-               zsit = trb(ji,jj,K,jpsil) / zfact
+               IF( ln_p2z ) THEN
+                  zsit = 90.33E-6 / zfact
+                  zpt  = 2.174E-6 / zfact
+               ELSE
+                  zpt = trb(ji,jj,K,jppo4) / zfact * po4r
+                  zsit = trb(ji,jj,K,jpsil) / zfact
+               ENDIF
                zst = sulfat (ji,jj,jk)
                zft = fluorid(ji,jj,jk)
                aphscale = 1. + sulfat(ji,jj,jk)/aks3(ji,jj,jk)
@@ -821,7 +857,7 @@ CONTAINS
 
       ierr(:) = 0
 
-      ALLOCATE( sio3eq(PRIV_3D_BIOARRAY), fekeq(PRIV_3D_BIOARRAY),        &
+      ALLOCATE( fekeq(PRIV_3D_BIOARRAY),        &
          &      chemc(PRIV_2D_BIOARRAY,3), chemo2(PRIV_3D_BIOARRAY), STAT=ierr(1) )
 
       ALLOCATE( akb3(PRIV_3D_BIOARRAY)   , tempis(PRIV_3D_BIOARRAY),       &
@@ -833,6 +869,7 @@ CONTAINS
          &      salinprac(PRIV_3D_BIOARRAY),                 STAT=ierr(2) )
 
       ALLOCATE( fesol(PRIV_3D_BIOARRAY,5), STAT=ierr(3) )
+      IF( .NOT. ln_p2z ) ALLOCATE( sio3eq(PRIV_3D_BIOARRAY), STAT=ierr(3) )
 
       !* Variable for chemistry of the CO2 cycle
       p4z_che_alloc = MAXVAL( ierr )

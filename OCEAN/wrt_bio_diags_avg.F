@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,39 +13,39 @@
 #if defined DIAGNOSTICS_BIO &&  defined AVERAGES
 ! Write time-averaged diags flux fields into averages netCDF file
                                   ! Writes requested model
-      subroutine wrt_bio_diags_avg    ! fields at requested levels 
+      subroutine wrt_bio_diags_avg    ! fields at requested levels
                                   ! into diagnostics netCDF file.
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
-#endif
-#include "param.h"
-#include "scalars.h"
-#include "ncscrum.h"
-#include "forces.h"
-#include "grid.h"
-#include "ocean2d.h"
-#include "ocean3d.h"
-#include "mixing.h"
-#include "diagnostics.h"
-#include "mpi_cpl.h"
+# endif
+# include "param.h"
+# include "scalars.h"
+# include "ncscrum.h"
+# include "forces.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
+# include "mixing.h"
+# include "diagnostics.h"
+# include "mpi_cpl.h"
 
-#ifdef SOLVE3D
+# ifdef SOLVE3D
       integer iflux
-# include "work.h"
-#endif
+#  include "work.h"
+# endif
 
-#include "netcdf.inc"
+# include "netcdf.inc"
 
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
-        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
-     &                 1, MPI_COMM_WORLD, status, ierr) 
+        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
+     &                 1, MPI_COMM_WORLD, status, ierr)
       endif
-#endif
+# endif
 
 !
 ! Create/open diagnostic file; write grid arrays, if so needed.
@@ -54,12 +54,12 @@
       if (ierr .ne. nf_noerr) goto 99
       lstr=lenstr(dianamebio_avg)
 
-!                                            !!! WARNING: Once time  
-! Set record within the file.                !!! stepping has been 
+!                                            !!! WARNING: Once time
+! Set record within the file.                !!! stepping has been
 !                                            !!! started, it is assumed
       nrecdiabio_avg=max(nrecdiabio_avg,1)   !!! that global history
       if (nrpfdiabio_avg.eq.0) then          !!! record index is
-        record=nrecdiabio_avg                !!! advanced by main.  
+        record=nrecdiabio_avg                !!! advanced by main.
       else
         record=1+mod(nrecdiabio_avg-1, nrpfdiabio_avg)
       endif
@@ -84,7 +84,7 @@
       start(2)=record
       count(1)=4
       count(2)=1
-      ierr=nf_put_vara_int (nciddiabio_avg, diaTstepbio_avg, 
+      ierr=nf_put_vara_int (nciddiabio_avg, diaTstepbio_avg,
      &                                             start, count, ibuff)
       if (ierr .ne. nf_noerr) then
         write(stdout,1) 'time_step_avg', record, ierr
@@ -115,12 +115,12 @@ C      write(*,*) 'Write Time'
      &                  MYID
         goto 99                                           !--> ERROR
       endif
-      
+
 !
 ! Tracer diag variables.
 !
 !
-#ifdef PISCES
+# ifdef PISCES
 #  if defined key_trc_diaadd
 !     3-D terms (it is called Flux but it means nothing)
       do iflux=1,NumFluxTerms
@@ -140,9 +140,9 @@ C      write(*,*) 'Write Time'
         endif
       end do
 #  endif
-      
-#else
-      
+
+# else
+
 !     Flux terms
       do iflux=1,NumFluxTerms
         if (wrtdiabioFlux_avg(iflux)) then
@@ -159,7 +159,7 @@ C      write(*,*) 'Write Time'
      &         indxbioVSink+iflux-1,record,w3dvar,type)
         endif
       end do
-#   if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
 !     gas exchange fluxes
       do iflux = 1, NumGasExcTerms
         if (wrtdiabioGasExc_avg(iflux)) then
@@ -168,55 +168,56 @@ C      write(*,*) 'Write Time'
      &         indxGasExcFlux+iflux-1,record,r2dvar,type)
         endif
       end do
-#   endif
-      
-#endif
+#  endif
+
+# endif
  1    format(/1x,'WRT_BIO_DIAG_AVG ERROR while writing variable ''', A,
      &     ''' into diag_avg file.', /11x, 'Time record:',
      &     I6,3x,'netCDF error code',i4,3x,a,i4)
-      goto 100 
+      goto 100
  99   may_day_flag=3
  100  continue
-      
-!     
+
+!
 !     Synchronize netCDF file to disk to allow other processes
 !     to access data immediately after it is written.
-!     
-      
-#if defined MPI &  !defined PARALLEL_FILES
+!
+
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (nciddiabio_avg)
-      if (nrpfdiabio_avg.gt.0 .and. record.ge.nrpfdiabio_avg) 
+      if (nrpfdiabio_avg.gt.0 .and. record.ge.nrpfdiabio_avg)
      &     nciddiabio_avg=-1
-#else
+# else
       if (nrpfdiabio_avg.gt.0 .and. record.ge.nrpfdiabio_avg) then
         ierr=nf_close (nciddiabio_avg)
         nciddiabio_avg=-1
       else
         ierr=nf_sync(nciddiabio_avg)
       endif
-#endif
+# endif
       if (ierr .eq. nf_noerr) then
-      MPI_master_only   write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 
+      MPI_master_only   write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &       'WRT_BIO_DIAG_AVG -- wrote ',
      &       'diag_avg fields into time record =', record, '/',
      &       nrecdiabio_avg  MYID
       else
-        write(stdout,'(/1x,2A/)') 'WRT_BIO_DIAG_AVG ERROR: Cannot ',
+        MPI_master_only write(stdout,'(/1x,2A/)')
+     &       'WRT_BIO_DIAG_AVG ERROR: Cannot ',
      &       'synchronize/close diag_avg netCDF file.'
         may_day_flag=3
       endif
-      
-#if defined MPI &               !defined PARALLEL_FILES
+
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &       1, MPI_COMM_WORLD,  ierr)
       endif
-#endif
+# endif
       return
       end
-      
+
 #else
       subroutine wrt_bio_diag_avg_empty
       end
 #endif /* DIAGNOSTICS_BIO && AVERAGES*/
-      
+

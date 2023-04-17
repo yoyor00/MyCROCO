@@ -2,15 +2,15 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined LMD_BKPP 
+#if defined LMD_BKPP
 # define HBBL_SMOOTH
       subroutine lmd_bkpp_tile (Istr,Iend,Jstr,Jend, Kv,Kt,Ks,
      &                     Gm1,dGm1dS, Gt1,dGt1dS, Gs1,dGs1dS,
@@ -60,7 +60,7 @@
                            !
      &   Ric=0.3,          ! Critical bulk Richardson number.
                            !
-     &   lmd_betaT=-0.2,   ! Ratio of entrainment flux to 
+     &   lmd_betaT=-0.2,   ! Ratio of entrainment flux to
                            ! to surface buoyancy flux.
                            !
      &   lmd_epsilon=0.1,  ! Nondimensional extent of the
@@ -133,7 +133,7 @@
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
           wm(i,j)=vonKar*ustar(i,j)
-          ws(i,j)=wm(i,j)          
+          ws(i,j)=wm(i,j)
         enddo
       enddo
 !
@@ -144,7 +144,7 @@
 !
 !  Set indices for array "Rib", the bulk Richardson number.
 !
-      ka=1 
+      ka=1
       ku=2
 !
 !  Intialize boundary layer depth "hbbl" and index "kbbl" of first grid
@@ -328,7 +328,7 @@
 
 # ifdef LMD_SKPP
 !
-! If BBL reaches into SBL, take the sum (or max) of surface and bottom values 
+! If BBL reaches into SBL, take the sum (or max) of surface and bottom values
 !
 #  ifdef LMD_SKPP2005
               zsbl=z_w(i,j,N)-hbls(i,j,3-nstp)
@@ -346,9 +346,9 @@
 
               Kv(i,j,k)=Kv0
               Kt(i,j,k)=Kt0
-#  ifdef SALINITY
+# ifdef SALINITY
               Ks(i,j,k)=Ks0
-#  endif
+# endif
 
             else  !<-- k > kbbl(i,j)
 
@@ -359,12 +359,12 @@
               if (bvf(i,j,k).lt.0.) then
 #  ifdef LMD_SKPP
 
-#   ifdef LMD_SKPP2005                
+#   ifdef LMD_SKPP2005
              zsbl=z_w(i,j,N)-hbls(i,j,3-nstp)
 #   else
              zsbl=z_w(i,j,N)-hbl(i,j)
-#   endif                
-                
+#   endif
+
                 if (z_w(i,j,k).lt.zsbl) then
 #  endif
                   Kv(i,j,k)=Kv(i,j,k)+lmd_nu0c

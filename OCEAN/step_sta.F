@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -21,17 +21,17 @@
       use Agrif_Util
 # endif
       implicit none
-#include "param.h"
-#include "sta.h"
-#include "grid.h"
-#include "nc_sta.h"
-#include "ocean2d.h"
-#include "ocean3d.h"
-#include "scalars.h"
-#include "coupling.h"
-      integer Lstr, Lend, mon_thread, tmpnfp1, tmpnf, 
+# include "param.h"
+# include "sta.h"
+# include "grid.h"
+# include "nc_sta.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "coupling.h"
+      integer Lstr, Lend, mon_thread, tmpnfp1, tmpnf,
      &        tmpnfm1, tmpnfm2, entier
-      integer i, itrc, iflt, level, rcoeft,rcoefx,rcoefy, 
+      integer i, itrc, iflt, level, rcoeft,rcoefx,rcoefy,
      &        k, xfloat, yfloat, index1, index2, i1, j1
       real    cff1, cff2, cff3, cff4, xrhs, yrhs, zrhs,
      &        invrcoeft, tmptrack , zfloat, d1, d2, temp, summ,
@@ -39,7 +39,7 @@
       integer nfltmax, indx(Lend-Lstr+1), nfltmax_bak,id
 # ifdef AGRIF
       logical test
-# endif      
+# endif
       itrc=0
       zrhs=0.0
 
@@ -60,10 +60,10 @@
 ! check if the station can be transfered to a finer
 ! grid
 !
-# ifdef AGRIF 
-      if (Agrif_nb_step() .eq. 0) then 
+# ifdef AGRIF
+      if (Agrif_nb_step() .eq. 0) then
          do iflt=Lstr,Lend
-            if (NINT(stainfo(istagrd,iflt)) .eq. level) then 
+            if (NINT(stainfo(istagrd,iflt)) .eq. level) then
               entier=nint(stainfo(istagrd,iflt))
               call Agrif_transfer_floatsp2c(entier,
      &                              stainfo(istaxgrd,iflt),
@@ -78,17 +78,17 @@
 !
       nfltmax=0
       do iflt=Lstr,Lend
-# ifdef AGRIF 
+# ifdef AGRIF
         if (stainfo(istagrd,iflt).eq.level) then
 # endif /* AGRIF */
           nfltmax=nfltmax+1
           indx(nfltmax)=iflt
-# ifdef AGRIF 
+# ifdef AGRIF
         endif
 # endif /* AGRIF */
 !
-! Determine of  sigma level depth 
-! using the child grid bathymetry and the four surrounding points 
+! Determine of  sigma level depth
+! using the child grid bathymetry and the four surrounding points
 !
 # ifndef ALL_SIGMA
 #  ifdef SOLVE3D
@@ -128,14 +128,14 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
 #  endif
 # endif /* ALL_SIGMA */
       enddo
- 
+
 !---------------------------------------------------------------------
 !  Interpolate various output variables at the corrected locations,
-!  if writing occurs at next time step. Not optimal yet since 
-!  diags routines are called three times for level 3 (instead of one). 
-!  Build an AMR function to optimize this. 
+!  if writing occurs at next time step. Not optimal yet since
+!  diags routines are called three times for level 3 (instead of one).
+!  Build an AMR function to optimize this.
 !---------------------------------------------------------------------
-       
+
       if (diagsta) then
 
 # ifdef AGRIF
@@ -161,7 +161,7 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
 # else
           call interp_r2d_sta (zeta(START_2D_ARRAY,knew), istaz,
      &                                      nfltmax, indx)
-          if (wrtsta(indxstaVel)) then 
+          if (wrtsta(indxstaVel)) then
             call interp_r2d_sta (ubar(START_2D_ARRAY,knew), istau,
      &                                       nfltmax, indx)
             call interp_r2d_sta (vbar(START_2D_ARRAY,knew), istav,
@@ -179,19 +179,19 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
 #  endif
            call interp_w3d_sta (z_w(START_2D_ARRAY,0), istadpt,
      &                                       nfltmax, indx)
- 
-           if (wrtsta(indxstaRho)) then 
+
+           if (wrtsta(indxstaRho)) then
              call interp_r3d_sta (rho(START_2D_ARRAY,1), istaden,
      &                                      nfltmax, indx)
            endif
 
-           if (wrtsta(indxstaVel)) then 
+           if (wrtsta(indxstaVel)) then
              call interp_r3d_sta (u(START_2D_ARRAY,1,nnew), istau,
      &                                       nfltmax, indx)
              call interp_r3d_sta (v(START_2D_ARRAY,1,nnew), istav,
      &                                      nfltmax, indx)
            endif
- 
+
            if (wrtsta(indxstaTemp)) then
              itrc=1
              call interp_r3d_sta (t(START_2D_ARRAY,1,nnew,itrc),
@@ -207,21 +207,21 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
            endif
 #  endif
 
-# ifdef MUSTANG
+#  ifdef MUSTANG
             do itrc=3,NT
              call interp_r3d_sta (t(START_2D_ARRAY,1,nnew,itrc),
      &                             12+itrc-2, nfltmax, indx)
             enddo
-# endif
+#  endif
 
 
 #  ifdef ALL_SIGMA
            do iflt=Lstr,Lend
             staSigm(istadpt,iflt,k)=stadata(istadpt,iflt)
-            if (wrtsta(indxstaRho)) then 
+            if (wrtsta(indxstaRho)) then
               staSigm(istaden,iflt,k)=stadata(istaden,iflt)
             endif
-            if (wrtsta(indxstaVel)) then 
+            if (wrtsta(indxstaVel)) then
               staSigm(istau,iflt,k)=stadata(istau,iflt)
               staSigm(istav,iflt,k)=stadata(istav,iflt)
             endif
@@ -234,13 +234,13 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
             endif
 #   endif
 
-# ifdef MUSTANG
+#   ifdef MUSTANG
               do itrc=3,NT
               staSigm(12+itrc-2,iflt,k)=stadata(12+itrc-2,iflt)
               enddo
-# endif 
+#   endif
            enddo
-c           write(*,*), 'sigma ', stainfo(istazgrd,1), 
+c           write(*,*), 'sigma ', stainfo(istazgrd,1),
 c     &      'depth', staSigm(istadpt,1,k), ' temp ',
 c     &       staSigm(istatem,1,k)
           enddo ! all_sigma k cycle
@@ -257,14 +257,14 @@ c     &       staSigm(istatem,1,k)
 
 # ifdef AGRIF
         endif  !Agrif_laststep
-# endif 
+# endif
       endif  !diagsta
       return
       end
 
-#else 
+#else
 
-      subroutine step_sta_empty 
+      subroutine step_sta_empty
       return
       end
 

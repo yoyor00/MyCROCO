@@ -2,7 +2,7 @@
 !  ==== == ======= ==== ==========
 !
 
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 
 # ifdef AVERAGES
       real timediags_eddy_avg

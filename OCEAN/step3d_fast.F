@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -22,7 +22,7 @@ C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
       trd=0
 C$    trd=omp_get_thread_num()
-!      
+!
 !======================================================================
 !                       step3d_fast
 !======================================================================
@@ -44,7 +44,7 @@ C$    trd=omp_get_thread_num()
 
       return
       end
-! 
+!
 !======================================================================
 !                      step3d_fast_tile
 !======================================================================
@@ -53,12 +53,12 @@ C$    trd=omp_get_thread_num()
      &                          ,Dnew,rubar,rvbar
      &                          ,Drhs, UFx,UFe
      &                          ,VFx,VFe
-     &                          ,urhs,vrhs 
+     &                          ,urhs,vrhs
      &                          ,DUon,DVom
      &                          ,ru_ext_nbq_sum, rv_ext_nbq_sum
      &                          ,ru_ext_nbq_old, rv_ext_nbq_old,work
 # ifdef NBQ
-     &                          ,Hzw_half_nbq_inv,  Hzr_half_nbq_inv 
+     &                          ,Hzw_half_nbq_inv,  Hzr_half_nbq_inv
      &                          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
      &                          ,Hzu_half_qdmu,     Hzv_half_qdmv
 # endif
@@ -74,34 +74,34 @@ C$    trd=omp_get_thread_num()
 !  This routines:
 !  1- Computes non-NBQ RHS forcing terms of momentum equations. First
 !     computes the barotropic (external) RHS forcing term (rubar,rvbar)
-!     then adds it to the internal RHS forcing (computed in pre_step3d). 
-!  2- Solves the 3D momentum conservation equations for fast-mode 
-!     components (qdmu_nbq, qdmv_nbq, qdmw_nbq) by time integration of 
+!     then adds it to the internal RHS forcing (computed in pre_step3d).
+!  2- Solves the 3D momentum conservation equations for fast-mode
+!     components (qdmu_nbq, qdmv_nbq, qdmw_nbq) by time integration of
 !     all forces:
 !       Compressible pressure force + second viscosity + gravity
 !       + NT Coriolis force + restoring force + non-NBQ RHS forces
-!  3- Solves mass conservation equation, i.e., computes compressible 
+!  3- Solves mass conservation equation, i.e., computes compressible
 !     density rho_nbq by time integration of momentum divergence
 !
-!  In this version, a first guest of zeta is derived from the surface 
-!  vertical velocity (surface characteristic relation) instead of the 
-!  depth-averaged conservation of mass. This satisfies dynamical coupling 
-!  with the surface layer. After solving the 3D momentum equations, a 
+!  In this version, a first guest of zeta is derived from the surface
+!  vertical velocity (surface characteristic relation) instead of the
+!  depth-averaged conservation of mass. This satisfies dynamical coupling
+!  with the surface layer. After solving the 3D momentum equations, a
 !  final zeta field is diagnozed from mass conservation (then Hz is also
 !  corrected for the internal time step).
 !
 !  W-momentum equation is solved with explicit or implicit methods:
-!  - Explicit scheme: w-momentum is updated right after (and the same 
+!  - Explicit scheme: w-momentum is updated right after (and the same
 !                     way as) u- and v-momentum.
-!  - Implicit scheme: horizontal component of divergence is first 
-!                     precomputed (as required by fast-mode mass 
-!                     conservation) before tridiagonal Gauss Elimination 
+!  - Implicit scheme: horizontal component of divergence is first
+!                     precomputed (as required by fast-mode mass
+!                     conservation) before tridiagonal Gauss Elimination
 !                     is carried out for qdmw_nbq(m).
 !
 !  For all components, a Forward-Backward scheme is implemented:
-!  - Explicit scheme: Forward:  zeta, qdmu_nbq, qdmw_nbq. 
+!  - Explicit scheme: Forward:  zeta, qdmu_nbq, qdmw_nbq.
 !                     Backward:       rho_nbq.
-!  - Implicit scheme: Forward:  zeta, qdmu_nbq. 
+!  - Implicit scheme: Forward:  zeta, qdmu_nbq.
 !                     Backward:       qdmw_nbq, rho_nbq.
 !
 !  In the NBQ_PERF option, the vertical grid is not evolving at fast
@@ -121,11 +121,11 @@ C$    trd=omp_get_thread_num()
      &       ,is
 # endif
       real    mybeta,myalpha,myepsilon,mygamma,
-     &        VMAX,VMAXL, cff,cff0,cff1,cff2,cff3, 
+     &        VMAX,VMAXL, cff,cff0,cff1,cff2,cff3,
      &        DUnew,DVnew, dum_s
 
 # ifdef NBQ_THETAIMP
-      real,parameter :: thetaimp_nbq = 0.5 
+      real,parameter :: thetaimp_nbq = 0.5
 # else
       real,parameter :: thetaimp_nbq = 1.
 # endif
@@ -145,7 +145,7 @@ C$    trd=omp_get_thread_num()
      &                 UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &                 VFx(PRIVATE_2D_SCRATCH_ARRAY),
      &                 VFe(PRIVATE_2D_SCRATCH_ARRAY),
-     &                urhs(PRIVATE_2D_SCRATCH_ARRAY),  
+     &                urhs(PRIVATE_2D_SCRATCH_ARRAY),
      &                vrhs(PRIVATE_2D_SCRATCH_ARRAY),
      &                DUon(PRIVATE_2D_SCRATCH_ARRAY),
      &                DVom(PRIVATE_2D_SCRATCH_ARRAY)
@@ -156,13 +156,13 @@ C$    trd=omp_get_thread_num()
      &       rv_ext_nbq_old(PRIVATE_2D_SCRATCH_ARRAY),
      &                 work(PRIVATE_2D_SCRATCH_ARRAY)
 # ifdef NBQ
-      real    Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
+      real    Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &        Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,  N),
      &   Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &   Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-      real 
+      real
      &    dthetadiv_nbqdz_u(PRIVATE_2D_SCRATCH_ARRAY,2),
      &    dthetadiv_nbqdz_v(PRIVATE_2D_SCRATCH_ARRAY,2),
      &    dthetadiv_nbqdz_w(PRIVATE_2D_SCRATCH_ARRAY,2),
@@ -203,7 +203,7 @@ C$    trd=omp_get_thread_num()
       real,parameter :: omega = 2.*pi/(12.4*3600.)
 # endif
 # ifdef ACOUSTIC
-      real dist_d  
+      real dist_d
 # endif
 # ifdef WET_DRY
       real cff1_WD,cff2_WD
@@ -224,7 +224,7 @@ C$    trd=omp_get_thread_num()
 # else
 #  define LOCALLM Lm
 #  define LOCALMM Mm
-# endif   
+# endif
 
 # include "compute_auxiliary_bounds.h"
 
@@ -256,7 +256,7 @@ C$    trd=omp_get_thread_num()
 #  ifdef NBQ_GRID_SLOW
 #   define NSTEP_DS mod(iic,1).eq.1 .and. iif.eq.1
 #  else
-#   define NSTEP_DS .true. 
+#   define NSTEP_DS .true.
 #  endif
 !
 !----------------------------------------------------------------------
@@ -276,23 +276,23 @@ C$    trd=omp_get_thread_num()
 !                 EXTERNAL (2D) FAST MODE PROCESSING
 !
 !  Compute external (2D) rhs terms rubar,rvbar of 2D fast-mode equations
-!  using Generalized Forward-Backward AB3-AM4 algorithm, and update 
-!  internal and external forcing terms for 3D fast mode equations: 
+!  using Generalized Forward-Backward AB3-AM4 algorithm, and update
+!  internal and external forcing terms for 3D fast mode equations:
 !  ru_int, ru_ext~(rufrc+rubar).
 !
 !  1- AB3 forward step for D,ubar,vbar
 !  2- Advance zeta(m+1)
-!  3- AM4 backward step for rubar,rvbar 
+!  3- AM4 backward step for rubar,rvbar
 !  4- update rufrc,rvfrc
 !  5- update ru_int,rv_int
 !  6- make some backups
 !
 ! Reference for Generalized FB scheme:
 ! ------------------------------------
-! Shchepetkin, A.F., and J.C. McWilliams, 2009: Computational kernel 
-! algorithms for fine-scale, multiprocess, longtime oceanic simulations. 
-! Pp. 119–182 in Handbook of Numerical Analysis: Computational Methods 
-! for the Atmosphere and Oceans. R.M. Teman and J.J. Tribbia, eds, 
+! Shchepetkin, A.F., and J.C. McWilliams, 2009: Computational kernel
+! algorithms for fine-scale, multiprocess, longtime oceanic simulations.
+! Pp. 119–182 in Handbook of Numerical Analysis: Computational Methods
+! for the Atmosphere and Oceans. R.M. Teman and J.J. Tribbia, eds,
 ! Elsevier Science.
 !
 !*********************************************************************
@@ -307,7 +307,7 @@ C$    trd=omp_get_thread_num()
          do k=1,N
            do j=JstrV-2,Jend+1
              do i=IstrU-2,Iend+1
-               rho_bak(i,j,k)=rho(i,j,k) 
+               rho_bak(i,j,k)=rho(i,j,k)
              enddo
             enddo
           enddo
@@ -323,7 +323,7 @@ C$    trd=omp_get_thread_num()
           enddo
       enddo
 # endif
- 
+
 # ifdef M3FAST_REINIT
 !
 !  Reinitialise fast mode at each first fast step
@@ -334,14 +334,14 @@ C$    trd=omp_get_thread_num()
             do i=IstrU-1,Iend+1
               qdmu_nbq(i,j,k)=0.5*u(i,j,k,nstp)*(Hz(i,j,k)+Hz(i-1,j,k))
             enddo
-          enddo 
+          enddo
         enddo
         do k=1,N
           do j=JstrV-1,Jend+1
             do i=Istr-1,Iend+1
               qdmv_nbq(i,j,k)=0.5*v(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j-1,k))
             enddo
-          enddo 
+          enddo
         enddo
 #  ifdef NBQ
         do j=JstrV-1,Jend
@@ -365,7 +365,7 @@ C$    trd=omp_get_thread_num()
 !
 !=====================================================================
 ! AB3 Forward Step: compute total depth of water column and vertically
-! --- ------- ----  integrated mass fluxes which are needed to compute 
+! --- ------- ----  integrated mass fluxes which are needed to compute
 ! rhs terms of the barotropic momentum equations (rubar,rvbar).
 !=====================================================================
 !
@@ -375,14 +375,14 @@ C$    trd=omp_get_thread_num()
 !
       mybeta=0.281105 ! parameter for AB3 extrapolation
 
-       if (FIRST_FAST_STEP) then     
+       if (FIRST_FAST_STEP) then
                                       ! Meaning of temporal indices
         kbak=kstp                     ! ------- -- -------- -------
         kold=kstp                     ! m-2     m-1      m      m+1
         cff1= 1.0                     ! kold    kbak     kstp   knew
         cff2= 0.0
         cff3= 0.0
-       elseif (FIRST_FAST_STEP+1) then  
+       elseif (FIRST_FAST_STEP+1) then
         kbak=kstp-1                   ! AB2 forward scheme
         if (kbak.lt.1) kbak=4
         kold=kbak
@@ -390,7 +390,7 @@ C$    trd=omp_get_thread_num()
         cff2=-0.5
         cff3= 0.0
       else                             ! AB3 forward scheme
-        kbak=kstp-1 
+        kbak=kstp-1
         if (kbak.lt.1) kbak=4
         kold=kbak-1
         if (kold.lt.1) kold=4
@@ -404,7 +404,7 @@ C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r')
 C$OMP END MASTER
-# endif  
+# endif
 !
 !----------------------------------------------------------------------
 !  Extrapolate (D,ubar,vbar) at m+1/2
@@ -425,13 +425,13 @@ C$OMP END MASTER
 # endif /* NBQ_MASS */
         enddo
       enddo
-      
+
 !
 ! Depth-average ubar velocity at m+1/2
 !
       do j=Jstr-1,Jend+1
         do i=IstrU-1,Iend+1
-          urhs(i,j)=cff1*ubar(i,j,kstp) 
+          urhs(i,j)=cff1*ubar(i,j,kstp)
      &             +cff2*ubar(i,j,kbak)
      &             +cff3*ubar(i,j,kold)
 # if defined MRL_WCI && defined MASKING
@@ -472,12 +472,12 @@ C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r')
 C$OMP END MASTER
-# endif 
+# endif
 !
 !-----------------------------------------------------------------------
 ! Load RHS values into additional AGRIF shared array for nesting
 !-----------------------------------------------------------------------
-! 
+!
 # ifdef AGRIF
       irhox = Agrif_Irhox()
       irhoy = Agrif_Irhoy()
@@ -486,19 +486,19 @@ C$OMP END MASTER
       if (FIRST_FAST_STEP) then
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
-            Zt_avg3(i,j,0)=zeta(i,j,kstp)       
+            Zt_avg3(i,j,0)=zeta(i,j,kstp)
           enddo
-        enddo 
+        enddo
         do j=JstrR,JendR
           do i=Istr,IendR
             DU_avg3(i,j,0)=DUon(i,j)
           enddo
-        enddo 
+        enddo
         do j=Jstr,JendR
           do i=IstrR,IendR
             DV_avg3(i,j,0)=DVom(i,j)
           enddo
-        enddo 
+        enddo
       endif
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
@@ -517,15 +517,15 @@ C$OMP MASTER
         call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (0) step3d_fast','r')
         call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (0) step3d_fast','u')
         call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (0) step3d_fast','v')
-C$OMP END MASTER  
+C$OMP END MASTER
       endif
-#  endif  
+#  endif
 # endif /* AGRIF */
 !
 !=====================================================================
 !
 !  Compute zeta(m+1) -- first guest -- and update grid
-!  
+!
 !=====================================================================
 !
 !----------------------------------------------------------------------
@@ -541,9 +541,9 @@ C$OMP END MASTER
       endif
 !
 !-------------------------------------------------------------------
-!  zeta(m+1) is derived here from the surface vertical velocity 
-!  (surface characteristic relation) instead of depth-averaged 
-!  conservation of mass. This satisfies dynamical coupling with 
+!  zeta(m+1) is derived here from the surface vertical velocity
+!  (surface characteristic relation) instead of depth-averaged
+!  conservation of mass. This satisfies dynamical coupling with
 !  the surface layer.
 !
 !  The surface kinematic relation is:
@@ -560,27 +560,27 @@ C$OMP END MASTER
 !
       if (IstrU.le.Iend) then
         do j=Jstr,Jend
-          do i=IstrU-1,Iend+1     
-            usurf_nbq(i,j)=(qdmu_nbq(i,j,N)  
+          do i=IstrU-1,Iend+1
+            usurf_nbq(i,j)=(qdmu_nbq(i,j,N)
      &                     *2./(Hz(i,j,N)+Hz(i-1,j,N))
 #  ifdef MRL_WCI
      &                     +ust(i,j,N)
 #   ifdef WET_DRY
      &                      *umask_wet(i,j)
+#   endif
 #  endif
-# endif
      &                     )
 #  ifdef MASKING
-     &                     *umask(i,j) 
+     &                     *umask(i,j)
 #  endif
-          enddo 
-        enddo 
+          enddo
+        enddo
       endif
 
       if (JstrV.le.Jend) then
         do j=JstrV-1,Jend+1
-          do i=Istr,Iend     
-            vsurf_nbq(i,j)=(qdmv_nbq(i,j,N)              
+          do i=Istr,Iend
+            vsurf_nbq(i,j)=(qdmv_nbq(i,j,N)
      &                     *2./(Hz(i,j,N)+Hz(i,j-1,N))
 #  ifdef MRL_WCI
      &                     +vst(i,j,N)
@@ -590,17 +590,17 @@ C$OMP END MASTER
 #  endif
      &                      )
 #  ifdef MASKING
-     &                     *vmask(i,j) 
+     &                     *vmask(i,j)
 #  endif
           enddo
-        enddo 
+        enddo
       endif
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
 #  ifdef NBQ
-          wsurf_nbq(i,j)=(qdmw_nbq(i,j,N)         
-#   ifdef NBQ_MASS     
+          wsurf_nbq(i,j)=(qdmw_nbq(i,j,N)
+#   ifdef NBQ_MASS
      &                       /(1.+rho_grd(i,j,N))
 #   endif
      &                       *Hzw_half_nbq_inv(i,j,N)
@@ -612,12 +612,12 @@ C$OMP END MASTER
 #  endif
      &                    )
 #  ifdef MASKING
-     &                       *rmask(i,j) 
+     &                       *rmask(i,j)
 #  endif
         enddo
-      enddo 
+      enddo
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       if (IstrU.le.Iend) then
         call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                          usurf_nbq(START_2D_ARRAY))
@@ -635,7 +635,7 @@ C$OMP END MASTER
 !-------------------------------------------------------------------
 !
 #  ifdef PSOURCE
-      do is=1,Nsrc 
+      do is=1,Nsrc
 #   ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
@@ -691,20 +691,20 @@ C$OMP END MASTER
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta(i,j,knew)=(zeta(i,j,kstp) + dtfast*( wsurf_nbq(i,j) 
+          zeta(i,j,knew)=(zeta(i,j,kstp) + dtfast*( wsurf_nbq(i,j)
      &                     -0.5*(usurf_nbq(i  ,j)
      &                                     *(zab3(i  ,j)
      &                                      -zab3(i-1,j))*pm_u(i,j)
      &                          +usurf_nbq(i+1,j)
      &                                     *(zab3(i+1,j)
-     &                                      -zab3(i  ,j))*pm_u(i+1,j) 
+     &                                      -zab3(i  ,j))*pm_u(i+1,j)
      &                          )
      &                     -0.5*(vsurf_nbq(i  ,j)
-     &                                     *(zab3(i,j  ) 
+     &                                     *(zab3(i,j  )
      &                                      -zab3(i,j-1))*pn_v(i,j)
      &                          +vsurf_nbq(i,j+1)
      &                                     *(zab3(i,j+1)
-     &                                      -zab3(i,j  ))*pn_v(i,j+1) 
+     &                                      -zab3(i,j  ))*pn_v(i,j+1)
      &                          )
      &                                                ) )
 #  ifdef MASKING
@@ -727,7 +727,7 @@ C$OMP END MASTER
 !  First, apply point sources
 !
 #  ifdef PSOURCE
-      do is=1,Nsrc 
+      do is=1,Nsrc
 #   ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
@@ -759,7 +759,7 @@ C$OMP END MASTER
 #  endif
         enddo
       enddo
-      
+
 
 # endif /* NBQ */
 !
@@ -801,17 +801,17 @@ C$OMP END MASTER
 !  Compute wet/dry masks
 !-----------------------------------------------------------------------
 !
-! First: modify new free-surface to ensure that depth 
+! First: modify new free-surface to ensure that depth
 !        is > Dcrit in masked cells.
 !
 # if defined WET_DRY && defined MASKING
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
+          zeta(i,j,knew)=zeta(i,j,knew)+
      &                   cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
         enddo
-      enddo 
+      enddo
 # endif
 !
 ! Then compute wet/dry masks
@@ -839,7 +839,7 @@ C$OMP END MASTER
 !  Update vertical grid
 !
 !  As soon as zeta(m+1) is known, the grid can be updated at fast
-!  step m+1. In PERF option, the grid is updated at lower frequency 
+!  step m+1. In PERF option, the grid is updated at lower frequency
 !  and only during re-evaluation of zeta(m+1).
 !
 !  Caution: Hz_bak must be assigned only once in set_depth. The
@@ -863,9 +863,9 @@ C$OMP END MASTER
 # endif /* NBQ_GRID_SLOW */
 
 # ifndef NOT_NBQ_AM4
-! 
+!
 !=====================================================================
-! AM4 backward step: compute depth-averaged RHS of 2D fast-mode 
+! AM4 backward step: compute depth-averaged RHS of 2D fast-mode
 ! --- -------- ----  momentum equations
 !=====================================================================
 !
@@ -873,7 +873,7 @@ C$OMP END MASTER
 ! Surface pressure gradient
 !----------------------------------------------------------------------
 !
-! Interpolate zeta fields half-step backward (AM4) for the subsequent 
+! Interpolate zeta fields half-step backward (AM4) for the subsequent
 ! computation of barotropic pressure-gradient
 !
       myalpha   = 0.25
@@ -912,7 +912,7 @@ C$OMP END MASTER
      &              +cff2*zeta(i,j,kbak)+cff3*zeta(i,j,kold))
 # endif
 # ifdef NBQ_MASS
-     &                                *rhobar_nbq(i,j,kstp) 
+     &                                *rhobar_nbq(i,j,kstp)
 # endif
 # ifdef VAR_RHO_2D
           rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
@@ -942,7 +942,7 @@ C$OMP END MASTER
      &                                       *( sup(i,j)-sup(i-1,j) )
 # endif
      &                                                              )
- 
+
           rvbar(i,j)=cff*om_v(i,j)*( (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
      &                        -rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
 # ifdef VAR_RHO_2D
@@ -975,7 +975,7 @@ C$OMP END MASTER
 ! at slow time scale)
 !
 ! NOTE: mathematically necessary (minimal) index ranges for momentum-
-! flux components are 
+! flux components are
 !
 !      UFx(IstrU-1:Iend,Jstr:Jend)   VFx(Istr:Iend+1,JstrV:Jend)
 !      UFe(IstrU:Iend,Jstr:Jend+1)   VFe(Istr,Iend,JstrV-1,Jend)
@@ -1054,7 +1054,7 @@ C$OMP END MASTER
 #  else
           UFx(i,j)=cff*(vrhs(i,j)+vrhs(i,j+1))
           VFe(i,j)=cff*(urhs(i,j)+urhs(i+1,j))
-#  endif 
+#  endif
         enddo
       enddo
       do j=Jstr,Jend
@@ -1065,7 +1065,7 @@ C$OMP END MASTER
       do j=JstrV,Jend
         do i=Istr,Iend
           rvbar(i,j)=rvbar(i,j)-0.25*(VFe(i,j)+VFe(i,j-1))
-        enddo 
+        enddo
       enddo
 # endif /* UV_COR */
 !
@@ -1093,7 +1093,7 @@ C$OMP END MASTER
           do i=IstrU,Iend
             cff=0.25*( vbar(i  ,j,kstp)+vbar(i  ,j+1,kstp)
      &                +vbar(i-1,j,kstp)+vbar(i-1,j+1,kstp))
- 
+
             rubar(i,j)=rubar(i,j) - ubar(i,j,kstp)*( rdrg+rdrg2
      &              *sqrt(ubar(i,j,kstp)*ubar(i,j,kstp)+cff*cff)
      &                               )*om_u(i,j)*on_u(i,j)
@@ -1103,7 +1103,7 @@ C$OMP END MASTER
           do i=Istr,Iend
             cff=0.25*( ubar(i,j  ,kstp)+ubar(i+1,j  ,kstp)
      &                +ubar(i,j-1,kstp)+ubar(i+1,j-1,kstp))
- 
+
             rvbar(i,j)=rvbar(i,j) - vbar(i,j,kstp)*( rdrg+rdrg2
      &              *sqrt(cff*cff+vbar(i,j,kstp)*vbar(i,j,kstp))
      &                               )*om_v(i,j)*on_v(i,j)
@@ -1207,7 +1207,7 @@ C$OMP END MASTER
 !=====================================================================
 !   Update internal and external forcing terms for NBQ mode
 !
-!   Compute external forcing terms ru_ext_nbq and updated internal 
+!   Compute external forcing terms ru_ext_nbq and updated internal
 !   forcing terms ru_int_nbq for NBQ equations
 !
 !   ru_int_nbq     : RHS (3D) ( *mask & 2D correction)
@@ -1233,7 +1233,7 @@ C$OMP END MASTER
             rv_ext_nbq_sum(i,j)=0.
             rv_ext_nbq_old(i,j)=0.
           enddo
-        enddo 
+        enddo
 # ifdef MASKING
         do k=1,N
           do j=Jstr,Jend
@@ -1295,7 +1295,7 @@ C$OMP END MASTER
           ru_ext_nbq_sum(i,j)=ru_ext_nbq_sum(i,j)+ru_ext_nbq(i,j)
         enddo
       enddo
-# ifdef NBQ     
+# ifdef NBQ
       do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -1335,7 +1335,7 @@ C$OMP END MASTER
           rv_ext_nbq_sum(i,j)=rv_ext_nbq_sum(i,j)+rv_ext_nbq(i,j)
         enddo
       enddo
-# ifdef NBQ        
+# ifdef NBQ
       do k=1,N
         do j=JstrV,Jend
           do i=Istr,Iend
@@ -1351,15 +1351,15 @@ C$OMP END MASTER
         enddo
       enddo
 # endif
-# undef rv_ext_nbq 
+# undef rv_ext_nbq
 
 # ifdef NBQ
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        ru_int_nbq(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        rv_int_nbq(START_2D_ARRAY,1))
-#  endif 
+#  endif
 # endif
 
 # if defined RVTK_DEBUG_ADVANCED && defined NBQ
@@ -1367,8 +1367,8 @@ C$OMP BARRIER
 C$OMP MASTER
        call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','u')
        call check_tab3d(rv_int_nbq,'rv_int_nbq (A)','v')
-C$OMP END MASTER     
-# endif  
+C$OMP END MASTER
+# endif
 !
 !=====================================================================
 !  Initializations and backups for 3D NBQ equations
@@ -1385,14 +1385,14 @@ C$OMP END MASTER
             do i=IstrU,Iend
               ru_nbq_avg2(i,j,k)=qdmu_nbq(i,j,k)
             enddo
-          enddo 
+          enddo
         enddo
         do k=1,N
           do j=JstrV,Jend
             do i=Istr,Iend
               rv_nbq_avg2(i,j,k)=qdmv_nbq(i,j,k)
             enddo
-          enddo 
+          enddo
         enddo
 # ifdef NBQ
         do k=0,N
@@ -1400,7 +1400,7 @@ C$OMP END MASTER
             do i=Istr,Iend
               rw_nbq_avg2(i,j,k)=qdmw_nbq(i,j,k)
             enddo
-          enddo 
+          enddo
         enddo
 # endif
       endif    ! FIRST_FAST_STEP
@@ -1425,22 +1425,22 @@ C$OMP END MASTER
 !  Acoustic wave emission
 !-------------------------------------------------------------------
 !
-# ifdef ACOUSTIC 
+# ifdef ACOUSTIC
       if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
         period_exp = 0.025/2.
         for_a_exp  = 2.5
         amp_exp    = 1.e-2
         hmax_exp   = 128.
         dg_exp     = 2.
-        time_nbq   = 0. 
+        time_nbq   = 0.
       endif
 # endif
 !
 !------------------------------------------------------------------
 !  Fast bottom friction
 !
-!  Set bottom stress using logarithmic or linear 
-!  and/or quadratic formulation. 
+!  Set bottom stress using logarithmic or linear
+!  and/or quadratic formulation.
 !-------------------------------------------------------------------
 !
 # if defined BSTRESS_FAST && !defined BBL
@@ -1480,7 +1480,7 @@ C$OMP END MASTER
      &                   SQRT(VBOT(i,j)*VBOT(i,j)+cff*cff)
             enddo
           enddo
-          
+
         elseif (rdrg2.gt.0.) then
           do j=JstrV-1,Jend+1
             do i=IstrU-1,Iend+1
@@ -1588,7 +1588,7 @@ C$OMP END MASTER
 !------------------------------------------------------------------
 !  Implicit part: system setup
 !-------------------------------------------------------------------
-!    
+!
       do j=Jstr,Jend
         do i=Istr,Iend
 # ifdef NBQ
@@ -1600,23 +1600,23 @@ C$OMP END MASTER
           DV_nbq(i,j)=0.
         enddo
       enddo
-!	
+!
 !------------------------------------------------------------------
 !  Store qdmw_nbq into working array
 !------------------------------------------------------------------
 !
 # ifdef NBQ
       if (LAST_FAST_STEP) then
-        do k=0,N 
-          do j=Jstr,Jend             
+        do k=0,N
+          do j=Jstr,Jend
             do i=Istr,Iend
-               rw_nbq(i,j,k)=qdmw_nbq(i,j,k) 
+               rw_nbq(i,j,k)=qdmw_nbq(i,j,k)
             enddo
           enddo
         enddo
       endif
 # endif
-!	
+!
 !------------------------------------------------------------------
 !  Recover Hz at first fast step (if final Hz correction needed)
 !------------------------------------------------------------------
@@ -1634,7 +1634,7 @@ C$OMP END MASTER
 # endif
 !
 !----------------------------------------------------------------------
-!  Store boundary values of nbq variables at previous 
+!  Store boundary values of nbq variables at previous
 !  time-step for use in radiation boundary conditions
 !----------------------------------------------------------------------
 !
@@ -1652,21 +1652,21 @@ C$OMP END MASTER
 !  Fast mode 3D momentum and mass-conservation equations can now be solved.
 !
 !  W-momentum equation is solved with explicit or implicit methods:
-!  - Explicit scheme: w-momentum is updated right after (and the same 
+!  - Explicit scheme: w-momentum is updated right after (and the same
 !                     way as) u- and v-momentum.
-!  - Implicit scheme: horizontal component of divergence is first 
-!                     precomputed (as required by fast-mode mass 
-!                     conservation) before tridiagonal Gauss Elimination 
+!  - Implicit scheme: horizontal component of divergence is first
+!                     precomputed (as required by fast-mode mass
+!                     conservation) before tridiagonal Gauss Elimination
 !                     is carried out for qdmw_nbq(m).
 !
-!  Compressible pressure-force and second viscosity are calculated 
-!  in thetadiv_nbq. Caution: this variable contains theta in the 
+!  Compressible pressure-force and second viscosity are calculated
+!  in thetadiv_nbq. Caution: this variable contains theta in the
 !  first part of the algorithm and momentum divergence in the remaining.
 !
 !  A Forward-backward scheme is implemented:
-!  - Explicit scheme: Forward:  zeta, qdmu_nbq, qdmw_nbq. 
+!  - Explicit scheme: Forward:  zeta, qdmu_nbq, qdmw_nbq.
 !                     Backward:       rho_nbq.
-!  - Implicit scheme: Forward:  zeta, qdmu_nbq. 
+!  - Implicit scheme: Forward:  zeta, qdmu_nbq.
 !                     Backward:       qdmw_nbq, rho_nbq.
 !
 !***********************************************************************
@@ -1678,7 +1678,7 @@ C$OMP END MASTER
 !    ntcoru = -e W cos(a) * Hz      [m2/s2]
 !    ntcorv = +e W sin(a) * Hz
 !    ntcorw = +e (U cos(a) - V sin(a) ) * Hz
-!  
+!
 !  with e = 2 Omega cos(Phi)
 !       a = angle between North and meridional grid axis
 !
@@ -1728,7 +1728,7 @@ C$OMP END MASTER
           do i=IstrU-1,Iend
             UFx(i,j)=-0.5*e(i,j)*cosa(i,j)
      &                            *( qdmw_nbq(i,j,k-1)
-     &                              +qdmw_nbq(i,j,k  )) 
+     &                              +qdmw_nbq(i,j,k  ))
             VFe(i,j)=+0.5*e(i,j)*sina(i,j)
      &                            *( qdmw_nbq(i,j,k-1)
      &                              +qdmw_nbq(i,j,k)  )
@@ -1758,7 +1758,7 @@ C$OMP END MASTER
             thetadiv_nbq(i,j,k)=( -visc2_nbq*( thetadiv_nbq(i,j,k)
      &                                       +thetadiv3_nbq(i,j,k))
      &                         +soundspeed2_nbq(i,j)*rho_nbq(i,j,k) )
-     &                                     *Hzr_half_nbq_inv(i,j,k)  
+     &                                     *Hzr_half_nbq_inv(i,j,k)
           enddo
         enddo
       enddo
@@ -1790,7 +1790,7 @@ C$OMP END MASTER
 
             do j=Jstr,Jend
               do i=Istr-1,Iend
-                dthetadiv_nbqdz_u(i,j,k2)=0. 
+                dthetadiv_nbqdz_u(i,j,k2)=0.
               enddo
             enddo
 
@@ -1798,7 +1798,7 @@ C$OMP END MASTER
               do i=Istr,Iend
                 dthetadiv_nbqdz_v(i,j,k2)=0.
               enddo
-            enddo 
+            enddo
 
           else
 
@@ -1822,14 +1822,14 @@ C$OMP END MASTER
                   dthetadiv_nbqdz(i,j,k,1)=thetadiv_nbq(i,j,k+1)
      &                                   - thetadiv_nbq(i,j,k)
 #  else
-                  dthetadiv_nbqdz(i,j)    =thetadiv_nbq(i,j,k+1) 
+                  dthetadiv_nbqdz(i,j)    =thetadiv_nbq(i,j,k+1)
      &                                   - thetadiv_nbq(i  ,j,k)
 #  endif
                 enddo
               enddo
 
             endif
-  
+
             do j=Jstr,Jend
               do i=Istr,Iend
 #  ifdef NBQ_GRID_SLOW
@@ -1840,7 +1840,7 @@ C$OMP END MASTER
                 dthetadiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(
      &                                    dthetadiv_nbqdz(i,j)
      &                                   +dthetadiv_nbqdz(i-1,j))
-#  endif          
+#  endif
               enddo
             enddo
             do j=Jstr,Jend
@@ -1855,9 +1855,9 @@ C$OMP END MASTER
      &                                    +dthetadiv_nbqdz(i,j-1))
 #  endif
               enddo
-            enddo    
-  
-          endif    
+            enddo
+
+          endif
 
 #  ifdef NBQ_GRID_SLOW
         endif ! NSTEP_DS
@@ -1871,17 +1871,17 @@ C$OMP END MASTER
 !
           do j=Jstr,Jend
             do i=IstrU,Iend
-              if (k.gt.1.and.k.lt.N) then 
+              if (k.gt.1.and.k.lt.N) then
 #  ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,1)=(z_r(i  ,j,k)
-     &                                     -z_r(i-1,j,k))  
+     &                                     -z_r(i-1,j,k))
      &              *(dthetadiv_nbqdz_u(i,j,k2)+
      &                dthetadiv_nbqdz_u(i,j,k1)) ! dZdx * (d(delta p)dz)_u
-                endif 
+                endif
                 dum_s=dthetadiv_nbqdz(i,j,k,1)
 #  else
-                dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                   
+                dum_s=(z_r(i,j,k)-z_r(i-1,j,k))
      &              *(dthetadiv_nbqdz_u(i,j,k2)+
      &                dthetadiv_nbqdz_u(i,j,k1)) ! dZdx * (d(delta p)dz)_u
 #  endif
@@ -1889,28 +1889,28 @@ C$OMP END MASTER
 #  ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,1)=(z_r(i ,j,k)
-     &                                     -z_r(i-1,j,k))       
+     &                                     -z_r(i-1,j,k))
      &                 *dthetadiv_nbqdz_u(i,j,k1) ! dZdx * (d(delta p)dz)_u
      &                 +(z_w(i,j,N)-z_w(i-1,j,N))
      &                 *dthetadiv_nbqdz_u(i,j,k2)
                 endif
                 dum_s=dthetadiv_nbqdz(i,j,k,1)
 #  else
-                dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
+                dum_s=(z_r(i,j,k)-z_r(i-1,j,k))
      &                *dthetadiv_nbqdz_u(i,j,k1) ! dZdx * (d(delta p)dz)_u
-     &                +(z_w(i,j,N)-z_w(i-1,j,N))   
+     &                +(z_w(i,j,N)-z_w(i-1,j,N))
      &                *dthetadiv_nbqdz_u(i,j,k2)
 #  endif
               else
 #  ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,1)=(z_r(i ,j,k)
-     &                                     -z_r(i-1,j,k))       
+     &                                     -z_r(i-1,j,k))
      &             *2.*dthetadiv_nbqdz_u(i,j,k2) ! dZdx * (d(delta p)dz)_u
                 endif
                 dum_s=dthetadiv_nbqdz(i,j,k,1)
 #  else
-                dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
+                dum_s=(z_r(i,j,k)-z_r(i-1,j,k))
      &              *2.*dthetadiv_nbqdz_u(i,j,k2) ! dZdx * (d(delta p)dz)_u
 #  endif
               endif
@@ -1940,19 +1940,19 @@ C$OMP END MASTER
               if (k.eq.1) dum_s=dum_s-bustr(i,j)
 #  endif
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k) + dtnbq * (
-     &                        dum_s + ru_int_nbq(i,j,k) )  
+     &                        dum_s + ru_int_nbq(i,j,k) )
 #  ifdef MASKING
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask(i,j)
 #  endif
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
-              ru_nbq(i,j,k)=dum_s/work(i,j) 
+              ru_nbq(i,j,k)=dum_s/work(i,j)
 
 #  if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
      &                        +u(i,j,k,nrhs)*Hzu_half_qdmu(i,j,k)
      &                                           *NBQnudgcof(i,j)
 #  endif
-            enddo 
+            enddo
           enddo
 !
 !-----------------------------------------------------------------------
@@ -1961,17 +1961,17 @@ C$OMP END MASTER
 !
           do j=JstrV,Jend
             do i=Istr,Iend
-              if (k.gt.1.and.k.lt.N) then 
+              if (k.gt.1.and.k.lt.N) then
 #  ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j  ,k)
-     &                                     -z_r(i,j-1,k)) 
+     &                                     -z_r(i,j-1,k))
      &                *(dthetadiv_nbqdz_v(i,j,k2)+
      &                  dthetadiv_nbqdz_v(i,j,k1)) ! dZdy * (d(delta p)dz)_v
                 endif
                 dum_s=dthetadiv_nbqdz(i,j,k,2)
 #  else
-                dum_s=(z_r(i,j,k)-z_r(i,j-1,k)) 
+                dum_s=(z_r(i,j,k)-z_r(i,j-1,k))
      &                *(dthetadiv_nbqdz_v(i,j,k2)+
      &                  dthetadiv_nbqdz_v(i,j,k1)) ! dZdy * (d(delta p)dz)_v
 #  endif
@@ -1979,32 +1979,32 @@ C$OMP END MASTER
 #  ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j  ,k)
-     &                                     -z_r(i,j-1,k)) 
+     &                                     -z_r(i,j-1,k))
      &                *dthetadiv_nbqdz_v(i,j,k1) ! dZdy * (d(delta p)dz)_v
-     &                +(z_w(i,j,N)-z_w(i,j-1,N))        
+     &                +(z_w(i,j,N)-z_w(i,j-1,N))
      &                *dthetadiv_nbqdz_v(i,j,k2)
                 endif
                 dum_s=dthetadiv_nbqdz(i,j,k,2)
 #  else
-                dum_s=(z_r(i,j,k)-z_r(i,j-1,k))            
+                dum_s=(z_r(i,j,k)-z_r(i,j-1,k))
      &                *dthetadiv_nbqdz_v(i,j,k1) ! dZdy * (d(delta p)dz)_v
-     &                +(z_w(i,j,N)-z_w(i,j-1,N))      
+     &                +(z_w(i,j,N)-z_w(i,j-1,N))
      &                *dthetadiv_nbqdz_v(i,j,k2)
 #  endif
               else
 #  ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j  ,k)
-     &                                     -z_r(i,j-1,k)) 
+     &                                     -z_r(i,j-1,k))
      &                *2.*dthetadiv_nbqdz_v(i,j,k2) ! dZdy * (d(delta p)dz)_v
                 endif
-                dum_s=dthetadiv_nbqdz(i,j,k,2) 
+                dum_s=dthetadiv_nbqdz(i,j,k,2)
 #  else
-                dum_s=(z_r(i,j,k)-z_r(i,j-1,k)) 
+                dum_s=(z_r(i,j,k)-z_r(i,j-1,k))
      &                *2.*dthetadiv_nbqdz_v(i,j,k2) ! dZdy * (d(delta p)dz)_v
 #  endif
               endif
-                
+
 #  ifdef MASKING
               if (vmask(i,j-1)*vmask(i,j+1) .eq. 0.) then
               dum_s=dum_s
@@ -2038,7 +2038,7 @@ C$OMP END MASTER
               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask(i,j)
 #  endif
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
-              rv_nbq(i,j,k)=dum_s/work(i,j)  
+              rv_nbq(i,j,k)=dum_s/work(i,j)
 
 #  if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
@@ -2048,7 +2048,7 @@ C$OMP END MASTER
             enddo
           enddo
         endif  !<-- k>0
-      enddo   !<-- k=0,N   
+      enddo   !<-- k=0,N
 
 # else /* NBQ */
 
@@ -2066,7 +2066,7 @@ C$OMP END MASTER
         enddo
       enddo
       do j=JstrV,Jend
-        do i=Istr,Iend      
+        do i=Istr,Iend
           rvbar_nbq(i,j)=rvbar_nbq(i,j)-bvstr(i,j)
         enddo
       enddo
@@ -2082,13 +2082,13 @@ C$OMP END MASTER
 #  endif
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)+dtfast * (
      &                      nb_faststep*(dum_s + ru_int_nbq(i,j,k))
-     &                     +rubar_sum(i,j)*(Hz(i-1,j,k)+Hz(i,j,k)))    
+     &                     +rubar_sum(i,j)*(Hz(i-1,j,k)+Hz(i,j,k)))
 #  ifdef MASKING
      &                                        *umask(i,j)
 #  endif
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
-              if (LAST_FAST_STEP) ru_nbq(i,j,k)=dum_s/work(i,j) 
-            enddo 
+              if (LAST_FAST_STEP) ru_nbq(i,j,k)=dum_s/work(i,j)
+            enddo
           enddo
           do j=JstrV,Jend
             do i=Istr,Iend
@@ -2117,7 +2117,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # ifdef PSOURCE
-      do is=1,Nsrc 
+      do is=1,Nsrc
 #  ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
@@ -2176,7 +2176,7 @@ C$OMP END MASTER
           do k=1,N
             qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask_wet(i,j)
           enddo
-        enddo 
+        enddo
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
@@ -2191,7 +2191,7 @@ C$OMP END MASTER
           do k=1,N
             qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask_wet(i,j)
           enddo
-        enddo 
+        enddo
       enddo
 # endif
 
@@ -2210,12 +2210,12 @@ C$OMP END MASTER
       do j=Jstr,Jend
         do i=IstrU,Iend
           ubar(i,j,knew)=urhs(i,j)
-        enddo 
+        enddo
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
           vbar(i,j,knew)=vrhs(i,j)
-        enddo 
+        enddo
       enddo
 # ifdef NBQ
       M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
@@ -2230,7 +2230,7 @@ C$OMP END MASTER
 ! Exchange periodic boundaries and computational margins
 !-----------------------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #  ifndef NBQ
       if ((mod(iif-1,inc_faststep) .eq. inc_faststep-1) .OR.
      &     (LAST_FAST_STEP)) then
@@ -2253,7 +2253,7 @@ C$OMP END MASTER
 !$$$      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
 !$$$      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
 !$$$C$OMP END MASTER
-!$$$# endif  
+!$$$# endif
 
 
 # ifdef NBQ
@@ -2266,12 +2266,12 @@ C$OMP END MASTER
 #  ifndef NBQ_IMP
       do j=Jstr,Jend
         do k=1,N-1
-          do i=Istr,Iend   
-            dum_s = thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1)   
+          do i=Istr,Iend
+            dum_s = thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1)
 #   ifdef UV_COR_NT
             dum_s = dum_s + ntcorw(i,j,k)
 #   endif
-            qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
+            qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)
      &                      + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #   ifdef NBQ_GRAV
      &               -0.25*(rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  )
@@ -2282,7 +2282,7 @@ C$OMP END MASTER
 #   ifdef MASKING
           qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
 #   endif
-          enddo             
+          enddo
         enddo
 
         k=N
@@ -2291,7 +2291,7 @@ C$OMP END MASTER
 #   ifdef UV_COR_NT
           dum_s = dum_s + ntcorw(i,j,k)
 #   endif
-          qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)   
+          qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)
      &                   + dtnbq * ( dum_s + rw_int_nbq(i,j,N) )
 #   ifdef NBQ_GRAV
      &                   -rho_nbq(i,j,N)*0.5
@@ -2321,7 +2321,7 @@ C$OMP END MASTER
 !
 !=====================================================================
 !      Fast-mode conservation of mass
-!  
+!
 !  ... and integration of W-momentum with IMPLICIT scheme
 !
 !  From now on, thetadiv_nbq array is used for divergence (not theta):
@@ -2337,7 +2337,7 @@ C$OMP END MASTER
       endif
       if (JstrV.gt.Jend) then
         do j=Jstr,Jend+1
-          do i=Istr,Iend 
+          do i=Istr,Iend
             FY(i,j)=0.
           enddo
         enddo
@@ -2359,7 +2359,7 @@ C$OMP END MASTER
             kp1 = k + 1
             do j=Jstr,Jend
               do i=Istr,Iend+1
-                dZdxq_u(i,j,k2)=(z_r(i,j,kp1)-z_r(i-1,j,kp1)) 
+                dZdxq_u(i,j,k2)=(z_r(i,j,kp1)-z_r(i-1,j,kp1))
      &                           *qdmu_nbq(i,j,kp1)  ! (dZdx * (rho u))_u
               enddo
             enddo
@@ -2369,21 +2369,21 @@ C$OMP END MASTER
 
 #  ifdef NBQ_FREESLIP
             do j=Jstr,Jend
-              do i=Istr,Iend+1 
+              do i=Istr,Iend+1
 #   ifdef NBQ_GRID_SLOW
                 dZdxq_w(i,j,k ) = (z_w(i,j,0)-z_w(i-1,j,0))
-     &                             *qdmu_nbq(i,j,1)  
+     &                             *qdmu_nbq(i,j,1)
      &                             /(Hzr(i,j,1)+Hzr(i-1,j,1))
 #   else
                 dZdxq_w(i,j,k2)= (z_w(i,j,0)-z_w(i-1,j,0))
-     &                            *qdmu_nbq(i,j,1)  
+     &                            *qdmu_nbq(i,j,1)
      &                            /(Hzr(i,j,1)+Hzr(i-1,j,1))
 #   endif
               enddo
             enddo
 
             do j=Jstr,Jend
-              do i=Istr,Iend    
+              do i=Istr,Iend
 #   ifdef NBQ_GRID_SLOW
                 qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i  ,j,k)*pm_u(i  ,j)
      &                              +dZdxq_w(i+1,j,k)*pm_u(i+1,j) )
@@ -2395,25 +2395,25 @@ C$OMP END MASTER
 #   endif
 #   ifdef MASKING
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
-#   endif 
+#   endif
               enddo
-            enddo 
+            enddo
 
 #  else /* NBQ_FREESLIP */
 
 #   ifndef NBQ_GRID_SLOW
             do j=Jstr,Jend
               do i=Istr,Iend+1
-                dZdxq_w(i,j,k2)=0.  
-                qdmw_nbq(i,j,0)=0.     
+                dZdxq_w(i,j,k2)=0.
+                qdmw_nbq(i,j,0)=0.
               enddo
-            enddo 
+            enddo
 #   endif
- 
+
 #  endif /* NBQ_FREESLIP */
 
           elseif (k .eq. N) then ! Top boundary conditions
-           
+
             do j=Jstr,Jend
               do i=Istr,Iend+1
 #  ifdef NBQ_GRID_SLOW
@@ -2426,9 +2426,9 @@ C$OMP END MASTER
      &                            /(Hzr(i,j,N)+Hzr(i-1,j,N))
 #  endif
               enddo
-            enddo  
- 
-          else ! k<>0 & k<>N   ! Inner domain   
+            enddo
+
+          else ! k<>0 & k<>N   ! Inner domain
 
             do j=Jstr,Jend
               do i=Istr,Iend+1
@@ -2441,10 +2441,10 @@ C$OMP END MASTER
      &                                 *(dZdxq_u(i,j,k1)+
      &                                   dZdxq_u(i,j,k2))
 #  endif
-              enddo 
+              enddo
             enddo
 
-          endif ! k<>0 , k<>N ,  Inner domain 
+          endif ! k<>0 , k<>N ,  Inner domain
 
 #  ifdef NBQ_GRID_SLOW
 
@@ -2454,23 +2454,23 @@ C$OMP END MASTER
 
 #   ifdef NBQ_FREESLIP
             do j=Jstr,Jend
-              do i=Istr,Iend+1 
+              do i=Istr,Iend+1
                 dZdxq_w(i,j,k)=(z_w(i,j,0)-z_w(i-1,j,0))
-     &                          *qdmu_nbq(i,j,1)  
+     &                          *qdmu_nbq(i,j,1)
      &                          /(Hzr(i,j,1)+Hzr(i-1,j,1))
               enddo
             enddo
 
             do j=Jstr,Jend
-              do i=Istr,Iend    
-                qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i  ,j,k)*pm_u(i  ,j) 
-     &                              +dZdxq_w(i+1,j,k)*pm_u(i+1,j) ) 
-     &                                                  *Hzr(i,j,1)    
+              do i=Istr,Iend
+                qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i  ,j,k)*pm_u(i  ,j)
+     &                              +dZdxq_w(i+1,j,k)*pm_u(i+1,j) )
+     &                                                  *Hzr(i,j,1)
 #    ifdef MASKING
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
-#    endif 
+#    endif
               enddo
-            enddo 
+            enddo
 
 #   endif /* NBQ_FREESLIP */
 
@@ -2483,25 +2483,25 @@ C$OMP END MASTER
 
 #   ifdef NBQ_FREESLIP
           do j=Jstr,Jend
-            do i=Istr,Iend+1 
+            do i=Istr,Iend+1
               dZdxq_w(i,j,k2)=(z_w(i,j,0)-z_w(i-1,j,0))
-     &                         *qdmu_nbq(i,j,1)  
+     &                         *qdmu_nbq(i,j,1)
      &                         /(Hzr(i,j,1)+Hzr(i-1,j,1))
             enddo
           enddo
 
           do j=Jstr,Jend
-            do i=Istr,Iend    
-              qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i  ,j,k2)*pm_u(i  ,j) 
-     &                            +dZdxq_w(i+1,j,k2)*pm_u(i+1,j) ) 
-     &                                                 *Hzr(i,j,1)    
+            do i=Istr,Iend
+              qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i  ,j,k2)*pm_u(i  ,j)
+     &                            +dZdxq_w(i+1,j,k2)*pm_u(i+1,j) )
+     &                                                 *Hzr(i,j,1)
 #    ifdef MASKING
               qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
-#    endif 
+#    endif
             enddo
-          enddo 
+          enddo
 
-#   endif /* NBQ_FREESLIP */ 
+#   endif /* NBQ_FREESLIP */
 
         endif ! k.eq.0
 
@@ -2518,7 +2518,7 @@ C$OMP END MASTER
 #  endif
 #  ifdef MASKING
                 FX(i,j)=FX(i,j)*umask(i,j)
-#  endif                
+#  endif
               enddo
             enddo
 
@@ -2536,7 +2536,7 @@ C$OMP END MASTER
               enddo
             enddo
 
-          endif 
+          endif
         endif
       enddo ! k=0,N
 !
@@ -2556,7 +2556,7 @@ C$OMP END MASTER
             kp1 = k + 1
             do j=Jstr,Jend+1
               do i=Istr,Iend
-                dZdyq_v(i,j,k2)=(z_r(i,j,kp1)-z_r(i,j-1,kp1)) 
+                dZdyq_v(i,j,k2)=(z_r(i,j,kp1)-z_r(i,j-1,kp1))
      &                           *qdmv_nbq(i,j,kp1)  ! (dZdy * (rho v))_v
               enddo
             enddo
@@ -2569,43 +2569,43 @@ C$OMP END MASTER
               do i=Istr,Iend
 #   ifdef NBQ_GRID_SLOW
                  dZdyq_w(i,j,k )= (z_w(i,j,0)-z_w(i,j-1,0))
-     &                             *qdmv_nbq(i,j,1) 
+     &                             *qdmv_nbq(i,j,1)
      &                             /(Hzr(i,j,1)+Hzr(i,j-1,1))
 #   else
                  dZdyq_w(i,j,k2)= (z_w(i,j,0)-z_w(i,j-1,0))
-     &                             *qdmv_nbq(i,j,1) 
+     &                             *qdmv_nbq(i,j,1)
      &                             /(Hzr(i,j,1)+Hzr(i,j-1,1))
-#   endif 
+#   endif
               enddo
             enddo
             do j=Jstr,Jend
-              do i=Istr,Iend   
+              do i=Istr,Iend
 #   ifdef NBQ_GRID_SLOW
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)
-     &                          +0.5*(dZdyq_w(i,j  ,k)*pn_v(i,j  )  
+     &                          +0.5*(dZdyq_w(i,j  ,k)*pn_v(i,j  )
      &                               +dZdyq_w(i,j+1,k)*pn_v(i,j+1) )
      &                                                  * Hzr(i,j,1)
 #   else
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)
-     &                          +0.5*(dZdyq_w(i,j  ,k2)*pn_v(i,j  )  
+     &                          +0.5*(dZdyq_w(i,j  ,k2)*pn_v(i,j  )
      &                               +dZdyq_w(i,j+1,k2)*pn_v(i,j+1) )
      &                                                   * Hzr(i,j,1)
-#   endif 
+#   endif
 #   ifdef MASKING
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
-#   endif 
+#   endif
               enddo
             enddo
 
 #  else  /* NBQ_FREESLIP */
 
-#   ifndef NBQ_GRID_SLOW   
+#   ifndef NBQ_GRID_SLOW
             do j=Jstr,Jend +1
-              do i=Istr,Iend  
-                dZdyq_w(i,j,k2)=0.  
+              do i=Istr,Iend
+                dZdyq_w(i,j,k2)=0.
                 qdmw_nbq(i,j,0)=0.
               enddo
-            enddo 
+            enddo
 #   endif
 #  endif /* NBQ_FREESLIP */
 
@@ -2621,7 +2621,7 @@ C$OMP END MASTER
                 dZdyq_w(i,j,k2)= (z_w(i,j,N)-z_w(i,j-1,N))
      &                            *qdmv_nbq(i,j,N)
      &                            /(Hzr(i,j,N)+Hzr(i,j-1,N))
-#  endif 
+#  endif
               enddo
             enddo
 
@@ -2637,8 +2637,8 @@ C$OMP END MASTER
                 dZdyq_w(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)
      &                           *(dZdyq_v(i,j,k1)+
      &                             dZdyq_v(i,j,k2)) ! (dZdy * (rho v))_uw/Hzw_v
-#  endif 
-              enddo 
+#  endif
+              enddo
             enddo
 
           endif
@@ -2653,19 +2653,19 @@ C$OMP END MASTER
             do j=Jstr,Jend+1
               do i=Istr,Iend
                 dZdyq_w(i,j,k)= (z_w(i,j,0)-z_w(i,j-1,0))
-     &                           *qdmv_nbq(i,j,1) 
+     &                           *qdmv_nbq(i,j,1)
      &                           /(Hzr(i,j,1)+Hzr(i,j-1,1))
               enddo
             enddo
             do j=Jstr,Jend
-              do i=Istr,Iend   
+              do i=Istr,Iend
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)
-     &                         +0.5*(dZdyq_w(i,j  ,k)*pn_v(i,j  )  
+     &                         +0.5*(dZdyq_w(i,j  ,k)*pn_v(i,j  )
      &                              +dZdyq_w(i,j+1,k)*pn_v(i,j+1) )
-     &                                                 * Hzr(i,j,1) 
+     &                                                 * Hzr(i,j,1)
 #    ifdef MASKING
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
-#    endif 
+#    endif
               enddo
             enddo
 #   endif
@@ -2680,19 +2680,19 @@ C$OMP END MASTER
           do j=Jstr,Jend+1
             do i=Istr,Iend
               dZdyq_w(i,j,k2)= (z_w(i,j,0)-z_w(i,j-1,0))
-     &                          *qdmv_nbq(i,j,1) 
+     &                          *qdmv_nbq(i,j,1)
      &                          /(Hzr(i,j,1)+Hzr(i,j-1,1))
             enddo
           enddo
           do j=Jstr,Jend
-            do i=Istr,Iend   
+            do i=Istr,Iend
                qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)
-     &                         +0.5*(dZdyq_w(i,j  ,k2)*pn_v(i,j  )  
+     &                         +0.5*(dZdyq_w(i,j  ,k2)*pn_v(i,j  )
      &                              +dZdyq_w(i,j+1,k2)*pn_v(i,j+1) )
-     &                                                  * Hzr(i,j,1) 
+     &                                                  * Hzr(i,j,1)
 #    ifdef MASKING
                qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
-#    endif 
+#    endif
             enddo
           enddo
 #   endif  /* NBQ_FREESLIP */
@@ -2703,15 +2703,15 @@ C$OMP END MASTER
         if (k.gt.0) then
           if (JstrV.le.Jend) then
             do j=Jstr,Jend+1
-              do i=Istr,Iend 
+              do i=Istr,Iend
 #  ifdef NBQ_GRID_SLOW
                 FY(i,j)=-pn_v(i,j)*(dZdyq_w(i,j,k)-dZdyq_w(i,j,k-1))
 #  else
                 FY(i,j)=-pn_v(i,j)*(dZdyq_w(i,j,k2)-dZdyq_w(i,j,k1))
-#  endif 
+#  endif
 #  ifdef MASKING
                 FY(i,j)=FY(i,j)*vmask(i,j)
-#  endif                 
+#  endif
               enddo
             enddo
             do j=Jstr,Jend
@@ -2739,7 +2739,7 @@ C$OMP END MASTER
           enddo
         endif
         if (JstrV.le.Jend) then
-          do j=Jstr,Jend+1  
+          do j=Jstr,Jend+1
             do i=Istr,Iend
               FY(i,j)=om_v(i,j)*qdmv_nbq(i,j,k)
             enddo
@@ -2747,22 +2747,22 @@ C$OMP END MASTER
         endif
         if (IstrU.gt.Iend) then
           do j=Jstr,Jend
-            do i=Istr,Iend  
+            do i=Istr,Iend
               thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)
-     &                           +pm(i,j)*pn(i,j)*(FY(i,j+1)-FY(i,j))  
+     &                           +pm(i,j)*pn(i,j)*(FY(i,j+1)-FY(i,j))
 #  ifdef MASKING
               thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)*rmask(i,j)
-#  endif                              
+#  endif
             enddo
           enddo
         elseif (JstrV.gt.Jend) then
-          do j=Jstr,Jend  
-            do i=Istr,Iend   
+          do j=Jstr,Jend
+            do i=Istr,Iend
               thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)
-     &                            +pm(i,j)*pn(i,j)*(FX(i+1,j)-FX(i,j))  
+     &                            +pm(i,j)*pn(i,j)*(FX(i+1,j)-FX(i,j))
 #  ifdef MASKING
               thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)*rmask(i,j)
-#  endif                              
+#  endif
             enddo
           enddo
         else
@@ -2770,18 +2770,18 @@ C$OMP END MASTER
             do i=Istr,Iend
               thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)
      &                            +pm(i,j)*pn(i,j)*(FX(i+1,j)-FX(i,j)+
-     &                                              FY(i,j+1)-FY(i,j))  
+     &                                              FY(i,j+1)-FY(i,j))
 #  ifdef MASKING
               thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)*rmask(i,j)
-#  endif                              
+#  endif
             enddo
           enddo
-        endif  
+        endif
 
       enddo ! <-- k=1,N
 !
 !-----------------------------------------------------------------------
-!  thetadiv2_nbq: complet time-corrective term  (dh/dt included) 
+!  thetadiv2_nbq: complet time-corrective term  (dh/dt included)
 !  thetadiv3_nbq: reduced time-corrective term  (no dh/dt)
 !-----------------------------------------------------------------------
 !
@@ -2805,36 +2805,36 @@ C$OMP END MASTER
 
           do k=1,N-1
             do i=Istr,Iend
-              FC(i,k)=   
+              FC(i,k)=
      &          -(zw_nbq(i,j,k,knew)-zw_nbq(i,j,k,kstp))/dtgrid_nbq
      &           *0.5*( (1.+rho_grd(i,j,k  ))
-     &                  +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  )  
+     &                  +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  )
      &                  +(1.+rho_grd(i,j,k+1))
      &                  +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1))
-              CF(i,k)=   
-     &          -(zw_nbq(i,j,k,knew)-zw_nbq(i,j,k,kstp))/dtgrid_nbq 
-     &          *0.5*(    rho_grd(i,j,k  ) 
-     &                   +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  ) 
+              CF(i,k)=
+     &          -(zw_nbq(i,j,k,knew)-zw_nbq(i,j,k,kstp))/dtgrid_nbq
+     &          *0.5*(    rho_grd(i,j,k  )
+     &                   +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  )
      &                   +rho_grd(i,j,k+1)
      &                   +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1) )
 
-              thetadiv3_nbq(i,j,k)=CF(i,k)-CF(i,k-1) 
-              thetadiv2_nbq(i,j,k)=FC(i,k)-FC(i,k-1) 
+              thetadiv3_nbq(i,j,k)=CF(i,k)-CF(i,k-1)
+              thetadiv2_nbq(i,j,k)=FC(i,k)-FC(i,k-1)
             enddo
           enddo
-    
+
            do i=Istr,Iend
-             FC(i,N)=   
+             FC(i,N)=
      &        -(zw_nbq(i,j,N,knew)-zw_nbq(i,j,N,kstp))/dtgrid_nbq
      &         *( 1.+rho_grd(i,j,N)
      &          )
 
-            CF(i,N)=  
+            CF(i,N)=
      &        -(zw_nbq(i,j,N,knew)-zw_nbq(i,j,N,kstp))/dtgrid_nbq
      &         *( rho_grd(i,j,N)
      &          )
-            thetadiv3_nbq(i,j,N)=CF(i,N)-CF(i,N-1) 
-            thetadiv2_nbq(i,j,N)=FC(i,N)-FC(i,N-1) 
+            thetadiv3_nbq(i,j,N)=CF(i,N)-CF(i,N-1)
+            thetadiv2_nbq(i,j,N)=FC(i,N)-FC(i,N-1)
           enddo
         enddo !<-- j loop
 
@@ -2854,7 +2854,7 @@ C$OMP END MASTER
           enddo
         enddo
       enddo
-  
+
       do j=Jstr,Jend ! <-- j loop
 
         do k=1,N
@@ -2862,32 +2862,32 @@ C$OMP END MASTER
             FC(i,k)= soundspeed2_nbq(i,j)*rho_nbq(i,j,k)
      &              -(thetaimp_nbq*soundspeed2_nbq(i,j)*dtnbq+visc2_nbq)
      &                       *(thetadiv_nbq(i,j,k)+thetadiv3_nbq(i,j,k))
-    
-#   ifdef NBQ_THETAIMP 
+
+#   ifdef NBQ_THETAIMP
             FC(i,k)=FC(i,k)
      &       -thetaimp_nbq*(1.-thetaimp_nbq)*soundspeed2_nbq(i,j)*dtnbq*
      &                   ( Hzw_half_nbq_inv(i,j,k  )*qdmw_nbq(i,j,k)
      &                    -Hzw_half_nbq_inv(i,j,k-1)*qdmw_nbq(i,j,k-1) )
 #   endif
 
-            FC(i,k)=FC(i,k)*Hzr_half_nbq_inv(i,j,k) 
+            FC(i,k)=FC(i,k)*Hzr_half_nbq_inv(i,j,k)
           enddo
         enddo
-     
+
 !.........Inner layers
 
         do k=1,N-1
-          do i=Istr,Iend   
+          do i=Istr,Iend
             dum_s = FC(i,k) - FC(i,k+1)
 #   ifdef UV_COR_NT
             dum_s = dum_s + ntcorw(i,j,k)
 #   endif
-            qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   
+            qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)
      &                        + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #   ifdef MASKING
             qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
-#   endif               
-          enddo             
+#   endif
+          enddo
         enddo
 
 !.........Surface BC
@@ -2898,12 +2898,12 @@ C$OMP END MASTER
 #   ifdef UV_COR_NT
           dum_s = dum_s + ntcorw(i,j,k)
 #   endif
-          qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   
+          qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)
      &                      + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #   ifdef MASKING
           qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
-#   endif              
-        enddo   
+#   endif
+        enddo
 
       enddo !<-- j loop
 
@@ -2920,12 +2920,12 @@ C$OMP END MASTER
         k=1
         do i=Istr,Iend
           cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
-     &            *dtnbq+visc2_nbq)) 
+     &            *dtnbq+visc2_nbq))
           cff=(cff1+Hzw_half_nbq_inv(i,j,1)*(Hzr_half_nbq_inv(i,j,1)
      &             +Hzr_half_nbq_inv(i,j,2)))
           CF(i,1)=(-Hzw_half_nbq_inv(i,j,2)*Hzr_half_nbq_inv(i,j,2))
      &                                                          /cff
-          DC(i,1)=qdmw_nbq(i,j,1)*cff1/cff   
+          DC(i,1)=qdmw_nbq(i,j,1)*cff1/cff
      &           +qdmw_nbq(i,j,0)/cff*Hzw_half_nbq_inv(i,j,0)
      &                               *Hzr_half_nbq_inv(i,j,1)
         enddo
@@ -2934,38 +2934,38 @@ C$OMP END MASTER
         do k=2,N-1
           do i=Istr,Iend
             cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
-     &              *dtnbq+visc2_nbq)) 
+     &              *dtnbq+visc2_nbq))
             cff=(cff1+
      &               Hzw_half_nbq_inv(i,j,k)*(Hzr_half_nbq_inv(i,j,k)
-     &              +Hzr_half_nbq_inv(i,j,k+1))   
+     &              +Hzr_half_nbq_inv(i,j,k+1))
      &              +Hzw_half_nbq_inv(i,j,k-1)*Hzr_half_nbq_inv(i,j,k)
      &              *CF(i,k-1))
             CF(i,k)=(-Hzw_half_nbq_inv(i,j,k+1)
      &               *Hzr_half_nbq_inv(i,j,k+1))/cff
             DC(i,k)=(qdmw_nbq(i,j,k)*cff1+Hzw_half_nbq_inv(i,j,k-1)
-     &               *Hzr_half_nbq_inv(i,j,k)*DC(i,k-1)) /cff           
-          enddo            
+     &               *Hzr_half_nbq_inv(i,j,k)*DC(i,k-1)) /cff
+          enddo
         enddo
 
 !..........Surface BC
         k=N
         do i=Istr,Iend
           cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
-     &            *dtnbq+visc2_nbq)) 
-          cff=(cff1+Hzw_half_nbq_inv(i,j,N)*Hzr_half_nbq_inv(i,j,N) 
+     &            *dtnbq+visc2_nbq))
+          cff=(cff1+Hzw_half_nbq_inv(i,j,N)*Hzr_half_nbq_inv(i,j,N)
      &             +Hzw_half_nbq_inv(i,j,N-1)
-     &             *Hzr_half_nbq_inv(i,j,N)*CF(i,N-1))  
-          CF(i,N)=0. 
+     &             *Hzr_half_nbq_inv(i,j,N)*CF(i,N-1))
+          CF(i,N)=0.
           DC(i,k)=(qdmw_nbq(i,j,N)*cff1+Hzw_half_nbq_inv(i,j,N-1)
      &             *Hzr_half_nbq_inv(i,j,N)*DC(i,N-1))/cff
-        enddo 
+        enddo
 
 !..........Solves tri-diag system
         do i=Istr,Iend
-          qdmw_nbq(i,j,N)=DC(i,k)   
+          qdmw_nbq(i,j,N)=DC(i,k)
 #   ifdef NBQ_GRAV
      &                    -rho_nbq(i,j,N)*0.5*g*dtnbq
-#   endif     
+#   endif
         enddo
 
         do k=N-1,1,-1
@@ -2977,10 +2977,10 @@ C$OMP END MASTER
      &                *(Hzr(i,j,k)+Hzr(i,j,k+1))
      &                 *g*dtnbq
 #   endif
-          enddo            
-        enddo                        
+          enddo
+        enddo
 
-      enddo   !<-- j loop 
+      enddo   !<-- j loop
 !
 !-------------------------------------------------------------------
 !  W-momentum open boundary conditions
@@ -3004,11 +3004,11 @@ C$OMP END MASTER
 !
 !      div(m+1) = div(m+1) + divZ(qdmw_nbq(m+1))
 !-------------------------------------------------------------------
-!		
-!.......Computes fluxes:  
+!
+!.......Computes fluxes:
 !
       do j=Jstr,Jend  !<-- j loop
-            
+
 #  ifdef NBQ_FREESLIP
         do i=Istr,Iend
           FC(i,0)=Hzw_half_nbq_inv(i,j,0) *
@@ -3026,7 +3026,7 @@ C$OMP END MASTER
      &              (thetaimp_nbq*qdmw_nbq(i,j,k)
      &              +(1.-thetaimp_nbq)*qdmw_nbq_old(i,j,k))
             thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)
-     &                         +FC(i,k)-FC(i,k-1)  
+     &                         +FC(i,k)-FC(i,k-1)
           enddo
         enddo
         do i=Istr,Iend
@@ -3034,11 +3034,11 @@ C$OMP END MASTER
      &            (thetaimp_nbq*qdmw_nbq(i,j,N)
      &           +(1.-thetaimp_nbq)*qdmw_nbq_old(i,j,N))
           thetadiv_nbq(i,j,N)=thetadiv_nbq(i,j,N)
-     &                        +FC(i,N)-FC(i,N-1)    
+     &                        +FC(i,N)-FC(i,N-1)
         enddo
 
       enddo  !<-- j loop
-!                 
+!
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv_nbq(START_2D_ARRAY,1))
@@ -3050,7 +3050,7 @@ C$OMP END MASTER
 !
 !=====================================================================
 !
-!      Solve rho_nbq from mass conservation 
+!      Solve rho_nbq from mass conservation
 !
 !      using a Forward-Backward scheme:
 !          rho_nbq(m+1) = rho_nbq(m) - dtfast*DIV(m+1)
@@ -3060,7 +3060,7 @@ C$OMP END MASTER
       do k=1,N
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
-            rho_nbq(i,j,k) = rho_nbq(i,j,k)  
+            rho_nbq(i,j,k) = rho_nbq(i,j,k)
      &                       - dtfast*(thetadiv_nbq(i,j,k)+
      &                                 thetadiv3_nbq(i,j,k))
           enddo
@@ -3098,16 +3098,16 @@ C$OMP END MASTER
 !-------------------------------------------------------------------
 !  rhobar_nbq: depth-mean density (/rho0)
 !-------------------------------------------------------------------
-!		
+!
 #  ifdef NBQ_MASS
 !
-! Compute rhobar_nbq(m+1) used in zeta diagnostic from 
+! Compute rhobar_nbq(m+1) used in zeta diagnostic from
 ! depth-integrated continuity equation
 !
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
           rhobar_nbq(i,j,knew)=0.
-        enddo  
+        enddo
       enddo
       do k=1,N
         do j=Jstr-1,Jend+1
@@ -3115,25 +3115,25 @@ C$OMP END MASTER
             rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)
      &                             +rho_nbq(i,j,k)
      &                             +rho_grd(i,j,k)*Hzr(i,j,k)
-          enddo  
-        enddo  
+          enddo
+        enddo
       enddo
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
-          rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq(i,j,knew)) 
+          rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq(i,j,knew))
      &                            / (z_w(i,j,N)-z_w(i,j,0))
         enddo
       enddo
-!      
+!
 ! LAURENT: the next exchange should not be needed
 !
 #   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                           rhobar_nbq(START_2D_ARRAY,knew))
 #   endif
 #   ifdef RVTK_DEBUG_ADVANCED
 !      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
-#   endif    
+#   endif
 #  endif /* NBQ_MASS */
 
 # endif /* NBQ */
@@ -3148,7 +3148,7 @@ C$OMP END MASTER
 !***********************************************************************
 !
 !=====================================================================
-!  Update total mass of water volume Dnew 
+!  Update total mass of water volume Dnew
 !=====================================================================
 !
       do j=JstrV-1,Jend
@@ -3159,13 +3159,13 @@ C$OMP END MASTER
 # endif
         enddo
       enddo
-            
+
 # if defined RVTK_DEBUG_ADVANCED && defined NBQ
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(rho_nbq,'rho_nbq','r')
 C$OMP END MASTER
-# endif    
+# endif
 
 !=====================================================================
 !  Update W NBQ forcing for internal mode (rw_nbq ~ rw_nbq_avg1)
@@ -3174,8 +3174,8 @@ C$OMP END MASTER
 !
 # ifdef NBQ
       if (LAST_FAST_STEP) then
-        do k=0,N 
-          do j=Jstr,Jend              
+        do k=0,N
+          do j=Jstr,Jend
             do i=Istr,Iend
               rw_nbq(i,j,k)=((qdmw_nbq(i,j,k)-rw_nbq(i,j,k))
      &                              /dtnbq-ndtnbq*rw_int_nbq(i,j,k))
@@ -3187,7 +3187,7 @@ C$OMP END MASTER
 
 !# if defined RVTK_DEBUG && defined NBQ
 !      call check_tab3d(rw_nbq,'rw_nbq','rint')
-!#  endif  
+!#  endif
 # endif
 !
 !=====================================================================
@@ -3200,21 +3200,21 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 ! Store average fields AVG1 of rho and rhobar
 !-----------------------------------------------------------------------
-!     
+!
 # ifdef NBQ_MASS
         do j=Jstr,Jend
           do i=Istr,Iend
             rhobar_nbq_avg1(i,j)=rhobar_nbq(i,j,knew)
           enddo
-        enddo 
+        enddo
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
               rho_nbq_avg1(i,j,k)=1.d0
      &                            + ( rho_nbq(i,j,k)/Hzr(i,j,k)
-     &                               +rho_grd(i,j,k) )  
+     &                               +rho_grd(i,j,k) )
             enddo
-          enddo 
+          enddo
         enddo
 # endif /* NBQ_MASS */
 !
@@ -3236,13 +3236,13 @@ C$OMP END MASTER
      &                   -ru_int_nbq(i,j,k)-(ru_ext_nbq_sum(i,j)/nfast)*
      &                      (Hz(i,j,k)+Hz(i-1,j,k)))*on_u(i,j)*om_u(i,j)
             enddo
-          enddo 
-        enddo          
+          enddo
+        enddo
 
         do k=1,N
           do j=JstrV,Jend
-            do i=Istr,Iend             
-!             rv_nbq_avg1(i,j,k)= rv_nbq(i,j,k) 
+            do i=Istr,Iend
+!             rv_nbq_avg1(i,j,k)= rv_nbq(i,j,k)
 # ifdef NBQ
               rv_int_nbq(i,j,k) = rv_int_nbq(i,j,k)
      &                      -rv_ext_nbq_old(i,j)*(Hz(i,j-1,k)+Hz(i,j,k))
@@ -3252,7 +3252,7 @@ C$OMP END MASTER
      &                   -rv_int_nbq(i,j,k)-(rv_ext_nbq_sum(i,j)/nfast)*
      &                      (Hz(i,j,k)+Hz(i,j-1,k)))*on_v(i,j)*om_v(i,j)
             enddo
-          enddo 
+          enddo
         enddo
 
 # ifdef NBQ
@@ -3264,7 +3264,7 @@ C$OMP END MASTER
      &                          ((qdmw_nbq(i,j,k)-rw_nbq_avg2(i,j,k))/dt
      &                           -rw_int_nbq(i,j,k))*on_r(i,j)*om_r(i,j)
             enddo
-          enddo 
+          enddo
         enddo
 # endif
 
@@ -3274,7 +3274,7 @@ C$OMP END MASTER
 ! Dismiss coupling of NBQ, NBQ2EXT & NBQ2INT for testing
 !-----------------------------------------------------------------------
 !
-# ifdef NBQ_NOCOUPLING 
+# ifdef NBQ_NOCOUPLING
       ru_nbq      =0.   ! 3D
       rv_nbq      =0.
       ru_nbq_avg2 =0.
@@ -3304,17 +3304,17 @@ C$OMP END MASTER
 #  ifndef NBQ
       IF (LAST_FAST_STEP) then
 #  endif
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        ru_nbq_avg2(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        rv_nbq_avg2(START_2D_ARRAY,1))
 #  ifndef NBQ
       endif
 #  endif
 #  ifdef NBQ
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,  
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        rw_nbq_avg2(START_2D_ARRAY,0))
-#  endif 
+#  endif
 # endif
 !
 !=====================================================================
@@ -3330,7 +3330,7 @@ C$OMP END MASTER
           Dstp(i,j)=zeta(i,j,kstp)+h(i,j)
         enddo
       enddo
-      
+
       cff=2*dtfast
       cff1=0.5*weight(1,iif)
       cff2=0.5*weight(2,iif)
@@ -3349,15 +3349,15 @@ C$OMP END MASTER
 # else
           DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
      &                             + cff * rubar_nbq(i,j) )
-#ifdef MASKING
+#  ifdef MASKING
      &                                     *umask(i,j)
-#endif
+#  endif
 # endif
 # ifdef WET_DRY
      &                                     *umask_wet(i,j)
 # endif
           ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
-          DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) 
+          DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew)
      &                             +cff1*on_u(i,j)*( DUnew
 # ifdef MRL_WCI
      &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
@@ -3366,7 +3366,7 @@ C$OMP END MASTER
 #  endif
 # endif
      &                                                   )
-          DU_avg2(i,j)=DU_avg2(i,j)+cff2*on_u(i,j)*( DUnew 
+          DU_avg2(i,j)=DU_avg2(i,j)+cff2*on_u(i,j)*( DUnew
 # ifdef MRL_WCI
      &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
 #  ifdef WET_DRY
@@ -3375,8 +3375,8 @@ C$OMP END MASTER
 # endif
      &                                                   )
         enddo
-      enddo 
-  
+      enddo
+
       do j=JstrV,Jend
         do i=Istr,Iend
 # ifdef NBQ
@@ -3384,15 +3384,15 @@ C$OMP END MASTER
 # else
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
      &                             + cff * rvbar_nbq(i,j) )
-#ifdef MASKING
+#  ifdef MASKING
      &                                     *vmask(i,j)
-#endif
+#  endif
 # endif
 # ifdef WET_DRY
      &                                     *vmask_wet(i,j)
 # endif
           vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
-          DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) 
+          DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew)
      &                              +cff1*om_v(i,j)*(DVnew
 # ifdef MRL_WCI
      &                +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
@@ -3417,7 +3417,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # if defined PSOURCE && !defined NBQ
-      do is=1,Nsrc 
+      do is=1,Nsrc
 #  ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
@@ -3456,7 +3456,7 @@ C$OMP END MASTER
         endif
       endif
       if (FIRST_TIME_STEP) then
-        if (FIRST_FAST_STEP) then 
+        if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ubclm(START_2D_ARRAY),ubclmzon)
           call zonavg_2d(Istr,Iend,Jstr,Jend,
@@ -3467,14 +3467,14 @@ C$OMP END MASTER
 
       do j=Jstr,Jend
         do i=IstrU,Iend
-#  ifdef ZONAL_NUDGING        
+#  ifdef ZONAL_NUDGING
           DUnew = dtfast*M2nudgcof(i,j)*(ubclmzon(j)-ubzon(j))
-#  else          
+#  else
           DUnew = dtfast*M2nudgcof(i,j)*(ubclm(i,j)-ubar(i,j,knew))
 #  endif
 #  ifdef MASKING
      &                 * umask(i,j)
-#  endif 
+#  endif
 #  ifdef WET_DRY
      &                 * umask_wet(i,j)
 #  endif
@@ -3485,17 +3485,17 @@ C$OMP END MASTER
      &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
         enddo
       enddo
-      
+
       do j=JstrV,Jend
         do i=Istr,Iend
-#  if defined ZONAL_NUDGING  
-          DVnew = dtfast*M2nudgcof(i,j)*(vbclmzon(j)-vbzon(j)) 
+#  if defined ZONAL_NUDGING
+          DVnew = dtfast*M2nudgcof(i,j)*(vbclmzon(j)-vbzon(j))
 #  else
-          DVnew = dtfast*M2nudgcof(i,j)*(vbclm(i,j)-vbar(i,j,knew))    
-#  endif      
+          DVnew = dtfast*M2nudgcof(i,j)*(vbclm(i,j)-vbar(i,j,knew))
+#  endif
 #  ifdef MASKING
      &                 * vmask(i,j)
-#  endif 
+#  endif
 #  ifdef WET_DRY
      &                 * vmask_wet(i,j)
 #  endif
@@ -3508,7 +3508,7 @@ C$OMP END MASTER
       enddo
 # endif /* M2NUDGING */
 !
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
 ! Set boundary conditions and compute integral mass flux accross
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
@@ -3517,7 +3517,7 @@ C$OMP END MASTER
       M2bc_nbq_flag=.false.  ! skip wet/dry conditions
                              ! and DU_nbq computation
 # endif
-      call u2dbc_tile (Istr,Iend,Jstr,Jend, work) 
+      call u2dbc_tile (Istr,Iend,Jstr,Jend, work)
       call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
 
 # ifdef WET_DRY
@@ -3591,14 +3591,14 @@ C$OMP END MASTER
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        vbar(START_2D_ARRAY,knew))
 # endif
-          
+
 # ifdef OBC_VOLCONS
       call obc_flux_tile (Istr,Iend,Jstr,Jend)
 # endif
 
 !      call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 !      call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
 !     &                        qdmu_nbq(START_2D_ARRAY,1))
 !      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
@@ -3654,18 +3654,18 @@ C$OMP END MASTER
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           cff=(Dnew(IstrU-1,j)+Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                              +ust2d(IstrU-1,j)
-# endif
+#  endif
      &                                              )*on_u(IstrU-1,j)
           DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)+cff1*cff
           DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)+cff2*cff
         enddo
         do j=JstrV,Jend
           cff=(Dnew(Istr-1,j)+Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                               +vst2d(Istr-1,j)
-# endif
+#  endif
      &                                               )*om_v(Istr-1,j)
           DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)+cff1*cff
           DV_avg2(Istr-1,j)=DV_avg2(Istr-1,j)+cff2*cff
@@ -3674,18 +3674,18 @@ C$OMP END MASTER
       if (EASTERN_EDGE) then
         do j=JstrR,JendR
           cff=(Dnew(Iend+1,j)+Dnew(Iend,j))*(ubar(Iend+1,j,knew)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                          +ust2d(Iend+1,j)
-# endif
+#  endif
      &                                          )*on_u(Iend+1,j)
           DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)+cff1*cff
           DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)+cff2*cff
         enddo
         do j=JstrV,Jend
           cff=(Dnew(Iend+1,j)+Dnew(Iend+1,j-1))*(vbar(Iend+1,j,knew)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                              +vst2d(Iend+1,j)
-# endif
+#  endif
      &                                              )*om_v(Iend+1,j)
           DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)+cff1*cff
           DV_avg2(Iend+1,j)=DV_avg2(Iend+1,j)+cff2*cff
@@ -3737,17 +3737,17 @@ C$OMP END MASTER
 !
 !=====================================================================
 !
-!  Adjust ZETA using depth-integrated continuity equation 
+!  Adjust ZETA using depth-integrated continuity equation
 !  and update grid
 !
 !  Once rhobar_nbq and depth-averaged momentum is updated, surface anomalies
-!  can be adjusted to satisfy the low-frequency mass conservation 
-!  equation. However, this adjustment do not satisfy conservation at machine 
+!  can be adjusted to satisfy the low-frequency mass conservation
+!  equation. However, this adjustment do not satisfy conservation at machine
 !  precision and a final correction is needed.
 !
 !  This recomputation of zeta(m+1) using div(ubar) is only done for PRECISE
-!  option. In PERF option, zeta(m+1) is computed only once based on the 
-!  surface characteristic relation. But the final numerical correction 
+!  option. In PERF option, zeta(m+1) is computed only once based on the
+!  surface characteristic relation. But the final numerical correction
 !  is applied in all cases.
 !
 !=====================================================================
@@ -3776,12 +3776,12 @@ C$OMP END MASTER
      &      (Dnew(i  ,j)+Dnew(i-1,j))*(ubar(i  ,j,knew)
 #  ifdef MRL_WCI
      &                               +ust2d(i  ,j)
-#  endif  
+#  endif
      &                                                 )*on_u(i  ,j)
      &     -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar(i+1,j,knew)
 #  ifdef MRL_WCI
      &                               +ust2d(i+1,j)
-#  endif 
+#  endif
      &                                                 )*on_u(i+1,j)
      &     +(Dnew(i,j  )+Dnew(i,j-1))*(vbar(i,j  ,knew)
 #  ifdef MRL_WCI
@@ -3799,7 +3799,7 @@ C$OMP END MASTER
      &                                                          - h(i,j)
           enddo
         enddo
-        
+
 
 !
 !-----------------------------------------------------------------------
@@ -3811,14 +3811,14 @@ C$OMP END MASTER
         do i=Istr,Iend
           zeta(i,j,knew)=zeta(i,j,knew)*rmask(i,j)
 #   ifdef WET_DRY
-!    modify new free-surface to ensure that depth 
+!    modify new free-surface to ensure that depth
 !    is > Dcrit in masked cells.
           cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
+          zeta(i,j,knew)=zeta(i,j,knew)+
      &                   cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
 #   endif
         enddo
-      enddo 
+      enddo
 #  endif /* MASKING */
 !
 !-----------------------------------------------------------------------
@@ -3873,7 +3873,7 @@ C$OMP END MASTER
             enddo
           enddo
         enddo
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI      
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                          z_w(START_2D_ARRAY,0))
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -3937,22 +3937,22 @@ C$OMP END MASTER
           do i=Istr-1,Iend+1
             Zt_avg3(i,j,iif)=zeta(i,j,knew)
           enddo
-        enddo 
+        enddo
         do j=JstrR,JendR
           do i=Istr,IendR
             DU_avg3(i,j,iif) = 0.5*(h(i  ,j)+zeta(i  ,j,knew)+
-     &                              h(i-1,j)+zeta(i-1,j,knew)) 
+     &                              h(i-1,j)+zeta(i-1,j,knew))
      &                               *on_u(i,j)*ubar(i,j,knew)
           enddo
-        enddo 
+        enddo
         do j=Jstr,JendR
           do i=IstrR,IendR
             DV_avg3(i,j,iif) = 0.5*(h(i,j  )+zeta(i,j  ,knew)+
-     &                              h(i,j-1)+zeta(i,j-1,knew)) 
+     &                              h(i,j-1)+zeta(i,j-1,knew))
      &                               *om_v(i,j)*vbar(i,j,knew)
           enddo
         enddo
- 
+
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          Zt_avg3(START_2D_ARRAY,iif))
@@ -3969,7 +3969,7 @@ C$OMP MASTER
         call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step3d_fast','u')
         call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step3d_fast','v')
 C$OMP END MASTER
-#  endif   
+#  endif
       endif
 
 #  ifdef AGRIF_CONSERV_VOL
@@ -3989,14 +3989,14 @@ C$OMP END MASTER
               DU_avg1(i,j,4) = DU_avg1(i,j,4) + DU_avg1(i,j,5)
               DV_avg1(i,j,4) = DV_avg1(i,j,4) + DV_avg1(i,j,5)
             enddo
-          enddo       
+          enddo
         endif
       endif
 #  endif
 # endif /* AGRIF */
 !
 !-----------------------------------------------------------------------
-!  Copy density for extrapolation: 
+!  Copy density for extrapolation:
 !-----------------------------------------------------------------------
 !
 # ifdef NBQ_MASS
@@ -4017,7 +4017,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # ifdef NBQ_HZCORRECT
-     
+
       if (LAST_FAST_STEP) then
 
         do k=1,N
@@ -4080,7 +4080,7 @@ C$OMP END MASTER
 !     &                          z_w(START_2D_ARRAY,0))
 !        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
 !     &                          z_r(START_2D_ARRAY,1))
-#  endif 
+#  endif
 
       endif ! iif.eq.nfast
 
@@ -4098,7 +4098,7 @@ C$OMP END MASTER
           cff2=vbar(i,j,knew)
           cff=max(abs(cff1),abs(cff2))
           IF (cff.GE.VMAX .or. cff1.ne.cff1 .or. cff2.ne.cff2) THEN
-            IF (cff.GE.VMAX .and. cff1.eq.cff1 .and. cff2.eq.cff2) THEN 
+            IF (cff.GE.VMAX .and. cff1.eq.cff1 .and. cff2.eq.cff2) THEN
               VMAX=cff
             ELSE
               VMAX=666.
@@ -4133,16 +4133,16 @@ C$OMP END MASTER
           write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =   NaN'
         else
-          write(stdout,'(A,F10.2)') 
+          write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =',VMAX
         endif
-        write(stdout,'(A,2I6)')  
+        write(stdout,'(A,2I6)')
      &                                       '  IMAX JMAX   =',imax,jmax
         write(stdout,'(A,2I6/)')
      &                                       '  IINT IFAST  =',iic,iif
 
 !     GC quik fix Comment this because it blocks the correct mpi_abort
-!     croco do not hang out  
+!     croco do not hang out
 !!      call wrt_his            ! get output during blow-up
 
         may_day_flag=1
@@ -4153,10 +4153,10 @@ C$OMP END MASTER
 # endif
       ENDIF
 
-# undef zwrk 
-# undef rzeta  
-# undef rzeta2  
-# undef rzetaSA 
+# undef zwrk
+# undef rzeta
+# undef rzeta2
+# undef rzetaSA
 
       return
       end

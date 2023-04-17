@@ -7,7 +7,7 @@
 !********************************************************************
 !
 !     objet    :  saisir les caracteristiques de toutes les ondes de
-!                 maree du spectre de Simon (143 ondes jusqu au dixieme 
+!                 maree du spectre de Simon (143 ondes jusqu au dixieme
 !                 diurne).
 !
 !
@@ -21,9 +21,9 @@
 !                      :
 !     cle cpp          :
 !                      :
-!     variables in     : 
+!     variables in     :
 !                      :
-!     variables out    : numero, nom, equitide, frequence doodson de 
+!     variables out    : numero, nom, equitide, frequence doodson de
 !                      : toutes les ondes de maree
 !                      :
 !     variables inout  :
@@ -1385,4 +1385,4 @@
 !
 #endif
       return
-      end 
+      end
