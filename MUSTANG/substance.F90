@@ -181,19 +181,17 @@ CONTAINS
    MPI_master_only   WRITE(stdout,*) ' '
 
 
-#ifdef MUSTANG
-    lstr=lenstr(sedname_subst)
-    OPEN(500,file=sedname_subst(1:lstr),status='old',form='formatted',access='sequential')
-! only substance
-#else 
-    lstr=lenstr(subsfilename)
-    MPI_master_only  WRITE(stdout,*),'SUBS:',subsfilename(1:lstr)
-    OPEN(500,file=subsfilename(1:lstr),status='old',form='formatted',access='sequential')
-    nv_grav=0
-    nv_sand=0
-    nv_mud=0
-#endif
+ 
+   lstr=lenstr(subsfilename)
+   MPI_master_only  WRITE(stdout,*),'SUBS:',subsfilename(1:lstr)
+   OPEN(500,file=subsfilename(1:lstr),status='old',form='formatted',access='sequential')
    READ(500,nmlnbvar)
+#if !defined MUSTANG
+   nv_grav=0
+   nv_sand=0
+   nv_mud=0
+#endif
+   
 #if !defined PEPTIC && ! defined key_N_tracer && ! defined key_P_tracer
 #if defined MUSTANG
    IF(nv_dis+nv_ncp+nv_grav+nv_sand+nv_mud+nv_sorb .NE. ntrc_subs) THEN
@@ -340,11 +338,7 @@ CONTAINS
                    ws_hind_opt_n,ws_hind_para_n,tocd_n,diam_n,ros_n)
    ENDIF
 
-#else  /* MUSTANG*/
-    nv_grav=0
-    nv_sand=0
-    nv_mud=0
-#endif
+#endif /* MUSTANG*/
 
    ! reading non constitutive particulate variables
    !----------------------------------------------- 

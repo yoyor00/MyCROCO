@@ -2080,9 +2080,9 @@
 #ifdef SEDIMENT
      &                                ,   sedname
 #elif defined MUSTANG
-     &               ,   sedname_subst,   sedname_must
+     &               ,   sedname_must
 #endif
-#if defined SUBSTANCE && !defined MUSTANG
+#if defined SUBSTANCE 
      &               ,    subsfilename
 #endif
 #if defined SUBSTANCE && defined BLOOM
@@ -2176,9 +2176,9 @@
 #ifdef SEDIMENT
      &                                ,   sedname
 #elif defined MUSTANG
-     &               ,   sedname_subst,   sedname_must
+     &               ,    sedname_must
 #endif
-#if defined SUBSTANCE && !defined MUSTANG
+#if defined SUBSTANCE
      &               ,    subsfilename
 #endif
 #if defined SUBSTANCE && defined BLOOM
