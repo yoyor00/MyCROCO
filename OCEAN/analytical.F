@@ -388,7 +388,6 @@ C$    integer  trd, omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=rho_air/1025.d0*drag*(u_spd)**2
-          svstr(i,j)=rho_air/1025.d0*drag*(v_spd)**2
         enddo
       enddo
 #endif /* DYFAMED */
@@ -511,6 +510,20 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
+# elif defined SINGLE_COLUMN && defined KATO_PHILIPS && defined DYFAMED
+#if defined IN_REAL_WIND
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          svstr(i,j)=rho_air/1025.d0*drag*(v_spd)**2
+        enddo
+      enddo
+#else /* IN_REAL_WIND */ 
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          svstr(i,j)=(0.01)**2  
+        enddo
+      enddo
+#endif
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -907,13 +920,9 @@ c
      &   int(read_chain(3)),int(read_chain(2)),int(read_chain(1)),
      &   int(read_chain(4)),0,0  
          time_in(kk)=tool_datosec(datte)
-         !write(*,*) 'cmzy time_in:', time_in(kk), ', datte:', datte
-         !wind_in(kk) = read_chain(8)
 #if defined DYFAMED          
          tauy_in(kk) = read_chain(12)
          taux_in(kk) = read_chain(11)
-         !write(*,*) 'cmzy taux,tauy:', taux_in(kk),tauy_in(kk)
-         !windspd_in = sqrt(50.d0) !cmzy SQRT(SQRT(taux_in(kk)*taux_in(kk)+
          windspd_in = SQRT(SQRT(taux_in(kk)*taux_in(kk)+
      &                              tauy_in(kk)*tauy_in(kk))/
      &                              (drag*rho_air))  
@@ -926,14 +935,10 @@ c
      &               windspd_in,
      &               windspd_in*3.6d0
          
-         windspd_in = sqrt(50.d0) !cmzy SQRT(SQRT(taux_in(kk)*taux_in(kk)+
-         u10_in(kk) = 5.d0 ! cmzy taux_in(kk)/(rho_air*drag*windspd_in+1E-50)   
-         v10_in(kk) = 5.d0 ! cmzy  tauy_in(kk)/(rho_air*drag*windspd_in+1E-50)
          flux_in(kk) = read_chain(5)+read_chain(6)+read_chain(7)+
      &                 read_chain(8)
 # ifdef IN_REAL_SRFLUX
          shw_in(kk) = read_chain(7)  
-         !flux_in(kk) =  flux_in(kk)- shw_in(kk) ! Substracting Shw
 # endif
 #else
         ! cmzy : cf franck 
