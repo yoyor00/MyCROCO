@@ -87,6 +87,7 @@ type Agrif_Grid
     integer                             :: level    !< level of the grid in the hierarchy
     logical                             :: allocation_is_done = .false.
     logical                             :: grand_mother_grid = .false.
+    real                                :: NHINT_tcoef 
 !---------------------------------------------------------------------------------------------------
 end type Agrif_Grid
 !===================================================================================================

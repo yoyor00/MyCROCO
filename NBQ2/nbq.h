@@ -217,6 +217,12 @@
       common /avg2_rwnbq/ rw_nbq_avg2
       real rho_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
       common/nbq_rho_nbq/rho_nbq
+#  ifdef M3FAST_DIAGACOUS
+      real p_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      common/p_TL_nbq/p_nbq
+      real p_nbq_max(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      common/p_TL_nbq/p_nbq_max
+#  endif
 #  ifdef NBQ_GRAV
       real rho_nh(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_nh/rho_nh

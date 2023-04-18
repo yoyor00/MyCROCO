@@ -186,6 +186,12 @@
 # ifdef ANA_GRID
       integer ha_id
       common/ha_id/ha_id 
+#  ifndef SPHERICAL
+      integer xra_id
+      common/xra_id/xra_id 
+      integer yra_id
+      common/yra_id/yra_id 
+#  endif
 # endif 
 
 # ifdef M3FAST 

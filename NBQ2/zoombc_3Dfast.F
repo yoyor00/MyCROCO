@@ -48,8 +48,11 @@
 #  define LOCALLM Lm
 #  define LOCALMM Mm
 # endif
-
+# ifdef NHINT
+      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(real(Ndtnbq)/real(Ndtfast))
+# endif
       if(Agrif_NbStepint() == 0) then
+
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
 # endif
@@ -62,7 +65,8 @@
         Agrif_UseSpecialValue=.false.
       endif
 
-      ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      !ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      ainterp(1)= (REAL(Agrif_Nbstepint3d()) + 1.) / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 # ifdef AGRIF_OBC_SOUTH
@@ -176,6 +180,9 @@
 !          
 # include "compute_auxiliary_bounds.h"
 !
+# ifdef NHINT
+      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(real(Ndtnbq)/real(Ndtfast))
+# endif
       if(Agrif_NbStepint() == 0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -189,7 +196,8 @@
         Agrif_UseSpecialValue=.false.
       endif
 
-      ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      !ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      ainterp(1)= (REAL(Agrif_Nbstepint3d()) + 1.) / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -305,7 +313,6 @@
 !          
 # include "compute_auxiliary_bounds.h"
 !
-
       irhot=Agrif_Irhot()
       irhox=Agrif_Irhox()
       irhoy=Agrif_Irhoy()
@@ -314,6 +321,9 @@
       cffx=2./(real(irhox)+1)
       cffy=2./(real(irhoy)+1)
 
+# ifdef NHINT
+      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(real(Ndtnbq)/real(Ndtfast))
+# endif
       if(Agrif_NbStepint() == 0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -327,7 +337,8 @@
         Agrif_UseSpecialValue=.false.
       endif
 
-      ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      !ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      ainterp(1)= (REAL(Agrif_Nbstepint3d()) + 1.) / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -778,6 +789,7 @@
 !          
 # include "compute_auxiliary_bounds.h"
 !
+
       if(Agrif_NbStepint() == 0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .TRUE.
