@@ -145,23 +145,27 @@ C$OMP MASTER
      &     locupdate1=(/1,4/),locupdate2=(/0,3/),
      &     procname = updatevbar) 
      
-#  ifdef M3FAST
+#  ifdef M3FAST_UV
       Call Agrif_Update_Variable(updateunbqid,
      &     locupdate1=(/0,3/),locupdate2=(/1,4/),
      &     procname = updateunbq)
-     
       Call Agrif_Update_Variable(updatevnbqid,
      &     locupdate1=(/1,4/),locupdate2=(/0,3/),
      &     procname = updatevnbq) 
+#  endif
 
-#    ifdef MASKING
+#  ifdef M3FAST_W   
+#   ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
 #    endif
       Call Agrif_Update_Variable(updatewnbqid,
      &     locupdate1=(/1,4/),locupdate2=(/1,4/),
      &     procname = updatewnbq)
       Agrif_UseSpecialValueInUpdate = .FALSE.
-
+#  endif
+#  ifdef M3FAST_RHO
+      Call Agrif_Update_Variable(updaterhonbqid,
+     &     procname = updaterhonbq)
 #  endif
 ! !
 ! !--------------------------------------------------------------------
@@ -187,17 +191,18 @@ C$OMP MASTER
      &     locupdate1=(/0,1/),locupdate2=(/0,1/),
      &     procname = updatevbar)          
 
-#  ifdef M3FAST
+#  ifdef M3FAST_UV
       Call Agrif_Update_Variable(updateunbqid,
      &     locupdate1=(/0,3/),locupdate2=(/0,3/),
      &     procname = updateunbq)
-     
       Call Agrif_Update_Variable(updatevnbqid,
      &     locupdate1=(/0,3/),locupdate2=(/0,3/),
      &     procname = updatevnbq) 
+#  endif
 ! !
 ! !  wnbq as a special case ??????????? Should not!
 ! !
+#  ifdef M3FAST_W
       if ((iif /= nfast) .OR. (nbcoarse /= irhot)) then
 #    ifdef MASKING
         Agrif_UseSpecialValueInUpdate = .TRUE.
@@ -207,11 +212,12 @@ C$OMP MASTER
      &       procname = updatewnbq)
         Agrif_UseSpecialValueInUpdate = .FALSE.
       endif
+#  endif
 
+#  ifdef M3FAST_RHO
       Call Agrif_Update_Variable(updaterhonbqid,
      &     procname = updaterhonbq)
-
-#  endif 
+#  endif
 # endif /* AGRIF_UPDATE_DECAL */
 ! ! 
 ! !*********************************************************************
@@ -247,15 +253,15 @@ C$OMP MASTER
      &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &         procname = updatevbar)
 
-#  ifdef M3FAST
+#  ifdef M3FAST_UV
           Call Agrif_Update_Variable(updateunbqid,
      &         locupdate1=(/0,-1/),locupdate2=(/1,-2/),
      &         procname = updateunbq)
-     
           Call Agrif_Update_Variable(updatevnbqid,
      &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &         procname = updatevnbq) 
-#   ifdef M3FAST
+#  endif
+#  ifdef M3FAST_W
 #    ifdef MASKING
           Agrif_UseSpecialValueInUpdate = .TRUE.
 #    endif
@@ -263,11 +269,11 @@ C$OMP MASTER
      &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
      &         procname = updatewnbq)
           Agrif_UseSpecialValueInUpdate = .FALSE.
-
+#  endif
+#  ifdef M3FAST_RHO
           Call Agrif_Update_Variable(updaterhonbqid,
      &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
      &         procname = updaterhonbq)
-#   endif
 #  endif
 ! !
 ! !--------------------------------------------------------------------
@@ -286,13 +292,13 @@ C$OMP MASTER
           Call Agrif_Update_Variable(updatevbarid,
      &         procname = updatevbar)
 
-#  ifdef M3FAST
+#  ifdef M3FAST_UV
           Call Agrif_Update_Variable(updateunbqid,
      &         procname = updateunbq)
-     
           Call Agrif_Update_Variable(updatevnbqid,
      &         procname = updatevnbq) 
-#   ifdef M3FAST
+#  endif
+#  ifdef M3FAST_W
 #    ifdef MASKING
           Agrif_UseSpecialValueInUpdate = .TRUE.
 #    endif
@@ -302,8 +308,13 @@ C$OMP MASTER
 
           Call Agrif_Update_Variable(updaterhonbqid,
      &         procname = updaterhonbq)
-#   endif
-#  endif 
+#  endif
+#  ifdef M3FAST_RHO
+          Call Agrif_Update_Variable(updaterhonbqid,
+     &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
+     &         procname = updaterhonbq)
+#  endif
+
 # endif /* AGRIF_UPDATE_DECAL */
 ! !
 ! !--------------------------------------------------------------------

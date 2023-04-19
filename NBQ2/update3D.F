@@ -264,7 +264,7 @@
      &     locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &     procname = updatevnp1)
 
-#  ifdef M3FAST
+#  ifdef M3SLOW_W
 #   ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
 #   endif
@@ -279,7 +279,7 @@
 
       Call Agrif_Update_Variable(updatevid,
      &     procname = updatevnp1)
-#  ifdef M3FAST
+#  ifdef M3SLOW_W 
 #   ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
 #   endif
@@ -298,7 +298,7 @@
       Call Agrif_Update_Variable(updatevid,
      &     locupdate1=(/1,3/),locupdate2=(/0,2/),
      &     procname = updatevnp1) 
-#  ifdef M3FAST
+#  ifdef M3SLOW_W
 #   ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
 #   endif
@@ -315,7 +315,7 @@
       Call Agrif_Update_Variable(updatevid,
      &     locupdate1=(/0,2/),locupdate2=(/0,2/),
      &     procname = updatevnp1) 
-#  ifdef M3FAST
+#  ifdef M3SLOW_W
 #   ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
 #   endif
@@ -832,7 +832,7 @@
 
 !====================================================================
 
-# ifdef M3FAST
+# ifdef M3SLOW_W 
       Subroutine Updatewnp1(tabres,i1,i2,j1,j2,k1,k2,before)
 
       implicit none
