@@ -75,6 +75,8 @@
          text='WRT_SURF'
       elseif (typefile ==filetype_surf_avg) then
          text='WRT_SURF_AVG'
+      elseif (typefile ==filetype_diags_eddy_avg) then
+         text='WRT_DIAGS_EDDY_AVG'
       endif
  !
 # ifdef FILLVAL
@@ -173,6 +175,8 @@
          text='WRT_SURF'
       elseif (typefile ==filetype_surf_avg) then
          text='WRT_SURF_AVG'
+      elseif (typefile ==filetype_diags_eddy_avg) then
+         text='WRT_DIAGS_EDDY_AVG'
       endif
 !
 # ifdef FILLVAL
@@ -273,6 +277,8 @@
          text='WRT_SURF'
       elseif (typefile ==filetype_surf_avg) then
          text='WRT_SURF_AVG'
+      elseif (typefile ==filetype_diags_eddy_avg) then
+         text='WRT_DIAGS_EDDY_AVG'
       endif
 !
 #  ifdef FILLVAL
@@ -365,6 +371,8 @@
          text='WRT_SURF'
       elseif (typefile ==filetype_surf_avg) then
          text='WRT_SURF_AVG'
+      elseif (typefile ==filetype_diags_eddy_avg) then
+         text='WRT_DIAGS_EDDY_AVG'
       endif
 !
 # ifdef FILLVAL
