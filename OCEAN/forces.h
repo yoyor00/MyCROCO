@@ -411,8 +411,7 @@
 #  endif
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
-      common /bulkdat2_tim/ bulk_time, bulk_cycle,
-     &        blk_origin_date_in_sec
+      common /bulkdat2_tim/ bulk_time, bulk_cycle, blk_origin_date_in_sec
 #  ifdef READ_PATM
       common /bulkdat2_patm/ patmp
 #  endif
