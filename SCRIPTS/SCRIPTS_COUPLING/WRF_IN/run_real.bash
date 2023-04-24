@@ -266,7 +266,7 @@ sed -e "s/<interval_s>/${interval_s}/g"         \
     namelist.input.base.complete > namelist.input.prep.${domain_name}
 
 # Handle fdda for different domains
-if [[ ${switch_fdda} == 1 ]]; then
+if [[ ${switch_fdda} != 0 ]]; then
     nbdom=$( echo "${nudgedom}" | wc -w)
     [[ ${nbdom} >  $( echo "${nudge_coef}" | wc -w) ]] && { echo "Missing values in nudge_coef for nest, we stop..."; exit ;}
     [[ ${nbdom} >  $( echo "${nudge_interval_m}" | wc -w) ]] && { echo "Missing values in nudge_interval_m for nest, we stop..."; exit ;}
