@@ -1,77 +1,78 @@
 !
-! $Id: MessPass3D.F 1143 2013-05-17 08:17:23Z serena $
+! $Id: MessPass2D.F 1143 2013-05-17 08:17:23Z serena $
 !
 #include "cppdefs.h"
-#if defined MPI && defined SOLVE3D
+#ifdef MPI
 
-# ifndef MP_3PTS
-      subroutine MessPass3D_tile (Istr,Iend,Jstr,Jend, A, nmax)
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
+      subroutine MessPass3D_tile (Istr,Iend,Jstr,Jend, A)
+#elif defined MP_1PTS
+      subroutine MessPass3D_1pts_tile (Istr,Iend,Jstr,Jend, A)
 # else
-      subroutine MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
+      subroutine MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend, A)
 # endif
 !
 !======================================================================
 !
 ! This subroutine is designed for ROMS-MPI code. It exchanges domain
-! boundary information, including 2 (or 3) ghost-cells in each
-! direction.
+! boundary information, including 2 (or 3) ghost-cells in each direction.
 !
 ! Ping Wang 9/15/99.
 ! Patrick Marchesiello 2012: generic number of ghost-cells Npts
 !
 !======================================================================
-!
 !     implicit none
 # include "param.h"
 # include "scalars.h"
 # include "mpi_cpl.h"
       include 'mpif.h'
+      integer Npts
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
+      parameter (Npts=2)
+#elif defined MP_1PTS
+      parameter (Npts=1)
+#else
+      parameter (Npts=3)
+#endif
       logical, parameter :: use_host_device = .TRUE.
 #include "mpi_buffers.h"
 !
 ! Nb of boundary points involved in communication
 !
-      integer Npts,ipts,jpts
-# ifndef MP_3PTS
-      parameter (Npts=2)
-# else
-      parameter (Npts=3)
-# endif
-      integer nmax
+      integer ipts,jpts 
+      real A(GLOBAL_2D_ARRAY)
+CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
+      integer Istr,Iend,Jstr,Jend, i,j, isize,jsize,ksize,  iter,
+     &        req(8), status(MPI_STATUS_SIZE,8), ierr, mdii,mdjj
+     
 #ifdef  BAND_DEBUG         
       real,dimension(Npts)        :: checksum
 #endif
-      real A(GLOBAL_2D_ARRAY,nmax)
-CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
-      integer Istr,Iend,Jstr,Jend, i,j,k, isize,jsize,ksize,
-     &        req(8), status(MPI_STATUS_SIZE,8), ierr
-      integer iter, mdii, mdjj
 !
 # include "compute_message_bounds.h"
 
 # ifdef AGRIF
-      sub_X=(Lm+NSUB_X-1)/NSUB_X
-      size_X=(N+1)*Npts*(sub_X+2*Npts)
-      sub_E=(Mm+NSUB_E-1)/NSUB_E
-      size_E=(N+1)*Npts*(sub_E+2*Npts)
-      size_Z=MAXNPTS*MAXNPTS*(N+1)
+         sub_X=Lm
+         size_X=Npts*(sub_X+2*Npts)-1  !7+Npts*sub_X
+         sub_E=Mm
+         size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
+         if (.not. allocated(ibuf_sndN)) then
+         Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
+     &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
+     &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
+     &     jbuf_revW(0:size_E), jbuf_revE(0:size_E))
 
-      if(.not. allocated(buf_snd4_3D)) then
-      Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  buf_snd2_3D(size_Z),
-     &         buf_rev4_3D(size_Z),  ibuf_revN_3D(size_X),  buf_rev2_3D(size_Z),
-     &        jbuf_sndW_3D(size_E),                     jbuf_sndE_3D(size_E),
-     &        jbuf_revW_3D(size_E),                     jbuf_revE_3D(size_E),
-     &         buf_snd1_3D(size_Z),  ibuf_sndS_3D(size_X),  buf_snd3_3D(size_Z),
-     &         buf_rev1_3D(size_Z),  ibuf_revS_3D(size_X),  buf_rev3_3D(size_Z))
-      endif
+         endif
 # endif
+!
+      ksize=Npts*Npts
+      isize=Npts*ishft                  ! sizes for side messages
+      jsize=Npts*jshft                  ! in XI and ETA directions
 
-      ksize=Npts*Npts*nmax               ! message sizes for
-      isize=Npts*ishft*nmax              ! corner messages and sides
-      jsize=Npts*jshft*nmax              ! in XI and ETA directions 
-!
-! Prepare to receive and send: sides....
-!
+#define write !
+c*      write(*,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
+c*     &        'ii=',ii,'imin=',imin,'imax=',imax,
+c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
                             !  Message passing split into two stages
                             !  in order to optimize Send-Recv pairing
                             !  in such a way that if one subdomain
@@ -82,86 +83,77 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                             !  rather than send his WEST
                             !  bound message, similarly to the first
                             !  subdomain.
-
 !
 ! Prepare to receive and send: sides....
         if (mdii.eq.0) then
-          if ((WEST_INTER2)) then
-!$acc parallel loop if(compute_on_device) collapse(3)
-            do k=1,nmax
-              do j=jmin,jmax
-                do ipts=1,Npts
-                  jbuf_sndW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))=A(ipts,j,k)
-                enddo
+          if (WEST_INTER2) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+            do j=jmin,jmax
+              do ipts=1,Npts
+                jbuf_sndW(j-jmin+(ipts-1)*jshft)=A(ipts,j)
               enddo
             enddo
-!$acc host_data if(compute_on_device)
-!$acc&   use_device(jbuf_revW_3D,jbuf_sndW_3D)
-            call MPI_Irecv (jbuf_revW_3D, jsize, MPI_DOUBLE_PRECISION,
+!$acc update host(jbuf_sndW) if(.not.use_host_device)
+!$acc host_data if(compute_on_device.and.use_host_device) 
+!$&acc& use_device(jbuf_revW, jbuf_sndW)
+            call MPI_Irecv (jbuf_revW, jsize, MPI_DOUBLE_PRECISION,
      &                         p_W, 2, MPI_COMM_WORLD, req(1), ierr)
-            call MPI_Send  (jbuf_sndW_3D, jsize, MPI_DOUBLE_PRECISION,
+            call MPI_Send  (jbuf_sndW, jsize, MPI_DOUBLE_PRECISION,
      &                         p_W, 1, MPI_COMM_WORLD,         ierr)
 !$acc end host_data
           endif
         else
           if (EAST_INTER2) then
-!$acc parallel loop if(compute_on_device) collapse(3)
-            do k=1,nmax
-              do j=jmin,jmax
-                do ipts=1,Npts
-                  jbuf_sndE_3D(k+nmax*(j-jmin+(ipts-1)*jshft))=
-     &                                       A(Lmmpi-Npts+ipts,j,k)
-                enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+            do j=jmin,jmax
+              do ipts=1,Npts
+                jbuf_sndE(j-jmin+(ipts-1)*jshft)=A(Lmmpi-Npts+ipts,j)
               enddo
             enddo
-!$acc host_data if(compute_on_device)
-!$acc&   use_device(jbuf_revE_3D,jbuf_sndE_3D)
-            call MPI_Irecv (jbuf_revE_3D, jsize, MPI_DOUBLE_PRECISION,
-     &                        p_E, 1, MPI_COMM_WORLD, req(2), ierr)
-            call MPI_Send  (jbuf_sndE_3D, jsize, MPI_DOUBLE_PRECISION,
-     &                        p_E, 2, MPI_COMM_WORLD,         ierr)
+!$acc host_data if(compute_on_device) use_device(jbuf_revE, jbuf_sndE)
+            call MPI_Irecv (jbuf_revE, jsize, MPI_DOUBLE_PRECISION,
+     &                         p_E, 1, MPI_COMM_WORLD, req(2), ierr)
+            call MPI_Send  (jbuf_sndE, jsize, MPI_DOUBLE_PRECISION,
+     &                         p_E, 2, MPI_COMM_WORLD,         ierr)
 !$acc end host_data
           endif
         endif
 
         if (mdjj.eq.0) then
           if (SOUTH_INTER2) then
-!$acc parallel loop if(compute_on_device) 
-!$acc& default(present) collapse(3)
-            do k=1,nmax
-              do jpts=1,Npts
-                do i=imin,imax
-                  ibuf_sndS_3D(k+nmax*(i-imin+(jpts-1)*ishft))=A(i,jpts,k)
-                enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+            do jpts=1,Npts
+              do i=imin,imax
+                ibuf_sndS(i-imin+(jpts-1)*ishft)=A(i,jpts)
               enddo
             enddo
-!$acc update host(ibuf_sndS_3D(1:isize)) if(.not.use_host_device)
+!$acc update host(ibuf_sndS) if(.not.use_host_device)
 !$acc host_data if(compute_on_device.and.use_host_device)
-!$acc&   use_device(ibuf_revS_3D,ibuf_sndS_3D)
-            call MPI_Irecv (ibuf_revS_3D, isize, MPI_DOUBLE_PRECISION,
+!$acc&  use_device(ibuf_revS, ibuf_sndS)
+            call MPI_Irecv (ibuf_revS, isize, MPI_DOUBLE_PRECISION,
      &                         p_S, 4, MPI_COMM_WORLD, req(3), ierr)
-            call MPI_Send  (ibuf_sndS_3D, isize, MPI_DOUBLE_PRECISION,
+            call MPI_Send  (ibuf_sndS, isize, MPI_DOUBLE_PRECISION,
      &                         p_S, 3, MPI_COMM_WORLD,         ierr)
 !$acc end host_data
           endif
         else
           if (NORTH_INTER2) then
-!$acc parallel loop if(compute_on_device)
-!$acc& default(present) collapse(3)
-            do k=1,nmax
-              do jpts=1,Npts
-                do i=imin,imax
-                  ibuf_sndN_3D(k+nmax*(i-imin+(jpts-1)*ishft))=
-     &                                         A(i,Mmmpi-Npts+jpts,k)
-                enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+            do jpts=1,Npts
+              do i=imin,imax
+                ibuf_sndN(i-imin+(jpts-1)*ishft)=A(i,Mmmpi-Npts+jpts)
               enddo
             enddo
-!$acc update host(ibuf_sndN_3D(1:isize)) if(.not.use_host_device)
+!$acc update host(ibuf_sndN) if(.not.use_host_device)
 !$acc host_data if(compute_on_device.and.use_host_device)
-!$acc&   use_device(ibuf_revN_3D,ibuf_sndN_3D)
-            call MPI_Irecv (ibuf_revN_3D, isize, MPI_DOUBLE_PRECISION,
+!$acc&  use_device(ibuf_revN, ibuf_sndN)
+            call MPI_Irecv (ibuf_revN, isize, MPI_DOUBLE_PRECISION,
      &                         p_N, 3, MPI_COMM_WORLD, req(4), ierr)
-            call MPI_Send  (ibuf_sndN_3D, isize, MPI_DOUBLE_PRECISION,
+            call MPI_Send  (ibuf_sndN, isize, MPI_DOUBLE_PRECISION,
      &                         p_N, 4, MPI_COMM_WORLD,         ierr)
 !$acc end host_data
           endif
@@ -169,115 +161,108 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 !
 ! ...corners:
 !
+
         if (mdii.eq.0) then
           if (CORNER_SW) then
-!$acc parallel loop if(compute_on_device) collapse(3)
-            do k=1,nmax
-              do jpts=1,Npts
-                do ipts=1,Npts
-                  buf_snd1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=A(ipts,jpts,k)
-                enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+            do jpts=1,Npts
+              do ipts=1,Npts
+                buf_snd1(ipts+Npts*(jpts-1))=A(ipts,jpts)
               enddo
             enddo
-!$acc host_data if(compute_on_device)
-!$acc&   use_device(buf_rev1_3D,buf_snd1_3D)
-            call MPI_Irecv (buf_rev1_3D, ksize, MPI_DOUBLE_PRECISION, p_SW,
-     &                                6, MPI_COMM_WORLD, req(5),ierr)
-            call MPI_Send  (buf_snd1_3D, ksize, MPI_DOUBLE_PRECISION, p_SW,
-     &                                5, MPI_COMM_WORLD,        ierr)
+!$acc host_data if(compute_on_device) use_device(buf_rev1,buf_snd1)
+            call MPI_Irecv (buf_rev1,ksize, MPI_DOUBLE_PRECISION,  p_SW,
+     &                               6, MPI_COMM_WORLD, req(5),ierr)
+            call MPI_Send  (buf_snd1,ksize, MPI_DOUBLE_PRECISION,  p_SW,
+     &                               5, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         else
           if (CORNER_NE) then
-!$acc parallel loop if(compute_on_device) collapse(3)
-            do k=1,nmax
-              do jpts=1,Npts
-                do ipts=1,Npts
-                  buf_snd2_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=
-     &                            A(Lmmpi+ipts-Npts,Mmmpi+jpts-Npts,k)
-                enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+            do jpts=1,Npts
+              do ipts=1,Npts
+                buf_snd2(ipts+Npts*(jpts-1))=
+     &                                A(Lmmpi-Npts+ipts,Mmmpi-Npts+jpts)
               enddo
             enddo
-!$acc host_data if(compute_on_device)
-!$acc&   use_device(buf_rev2_3D,buf_snd2_3D)
-            call MPI_Irecv (buf_rev2_3D, ksize, MPI_DOUBLE_PRECISION, p_NE,
-     &                                  5, MPI_COMM_WORLD, req(6),ierr)
-            call MPI_Send  (buf_snd2_3D, ksize, MPI_DOUBLE_PRECISION, p_NE,
-     &                                  6, MPI_COMM_WORLD,        ierr)
+!$acc host_data if(compute_on_device) use_device(buf_rev2,buf_snd2)
+            call MPI_Irecv (buf_rev2,ksize, MPI_DOUBLE_PRECISION,  p_NE,
+     &                               5, MPI_COMM_WORLD, req(6),ierr)
+            call MPI_Send  (buf_snd2,ksize, MPI_DOUBLE_PRECISION,  p_NE,
+     &                               6, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         endif
-
         if (mdii.eq.1) then
           if (CORNER_SE) then
-!$acc parallel loop if(compute_on_device) collapse(3)
-            do k=1,nmax
-              do jpts=1,Npts
-                do ipts=1,Npts
-                  buf_snd3_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=
-     &                                A(Lmmpi+ipts-Npts,jpts,k)
-                enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+            do jpts=1,Npts
+              do ipts=1,Npts
+                buf_snd3(ipts+Npts*(jpts-1))=
+     &                                A(Lmmpi-Npts+ipts,jpts)
               enddo
             enddo
-!$acc host_data if(compute_on_device)
-!$acc&   use_device(buf_rev3_3D,buf_snd3_3D)
-            call MPI_Irecv (buf_rev3_3D, ksize, MPI_DOUBLE_PRECISION, p_SE,
-     &                                8, MPI_COMM_WORLD, req(7),ierr)
-            call MPI_Send  (buf_snd3_3D, ksize, MPI_DOUBLE_PRECISION, p_SE,
-     &                                7, MPI_COMM_WORLD,        ierr)
+!$acc host_data if(compute_on_device) use_device(buf_rev3,buf_snd3)
+            call MPI_Irecv (buf_rev3,ksize, MPI_DOUBLE_PRECISION,  p_SE,
+     &                               8, MPI_COMM_WORLD, req(7), ierr)
+            call MPI_Send  (buf_snd3,ksize, MPI_DOUBLE_PRECISION,  p_SE,
+     &                               7, MPI_COMM_WORLD,         ierr)
 !$acc end host_data
           endif
         else
           if (CORNER_NW) then
-!$acc parallel loop if(compute_on_device) collapse(3)
-            do k=1,nmax
-              do jpts=1,Npts
-                do ipts=1,Npts
-                  buf_snd4_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=
-     &                                A(ipts,Mmmpi+jpts-Npts,k)
-                enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+            do jpts=1,Npts
+              do ipts=1,Npts
+                buf_snd4(ipts+Npts*(jpts-1))=
+     &                                A(ipts,Mmmpi-Npts+jpts)
               enddo
             enddo
-!$acc host_data if(compute_on_device)
-!$acc&   use_device(buf_rev4_3D,buf_snd4_3D)
-            call MPI_Irecv (buf_rev4_3D, ksize, MPI_DOUBLE_PRECISION, p_NW,
-     &                                7, MPI_COMM_WORLD, req(8),ierr)
-            call MPI_Send  (buf_snd4_3D, ksize, MPI_DOUBLE_PRECISION, p_NW,
-     &                                8, MPI_COMM_WORLD,        ierr)
+!$acc host_data if(compute_on_device) use_device(buf_rev4,buf_snd4)
+            call MPI_Irecv (buf_rev4, ksize, MPI_DOUBLE_PRECISION, p_NW,
+     &                               7, MPI_COMM_WORLD, req(8), ierr)
+            call MPI_Send  (buf_snd4, ksize, MPI_DOUBLE_PRECISION, p_NW,
+     &                               8, MPI_COMM_WORLD,         ierr)
 !$acc end host_data
           endif
         endif
       enddo   !<-- iter
-
 !
 ! Wait for completion of receive and fill ghost points: sides...
 !
       if (WEST_INTER2) then
         call MPI_Wait (req(1),status(1,1),ierr)
-!$acc parallel loop if(compute_on_device) collapse(3) 
-        do k=1,nmax
-          do j=jmin,jmax
-            do ipts=1,Npts
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+#ifdef  BAND_DEBUG         
+          checksum(:) = 0.
+#endif          
+c           print *,"chkbandname:",chkbandname,"---"
+        do j=jmin,jmax
+          do ipts=1,Npts
 #ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
-            if ( A(ipts-Npts,j,k) == 
-     &           jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)*jshft)) ) 
+            if ( A(ipts-Npts,j)==jbuf_revW(j-jmin+(ipts-1)*jshft) ) 
      &           checksum(ipts) = checksum(ipts)+1
 c            endif
 #endif
-             A(ipts-Npts,j,k)=jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)
-     &         *jshft))
-            enddo
+           A(ipts-Npts,j)=jbuf_revW(j-jmin+(ipts-1)*jshft)
           enddo
         enddo
+        ! 
 #ifdef  BAND_DEBUG         
 c         if ( chkbandname .ne. 'none') then
           do ipts=1,Npts
 c             print *,"checksum(ipts)=",checksum(ipts)
-c             print *,"jnin,jmax,nmax=",jmin,jmax,nmax,":",ipts
-            if( nint(checksum(ipts)) == nmax*(jmax-jmin+1) ) then
+c             print *,"jnin,jmax=",jmin,jmax,":",ipts
+            if( nint(checksum(ipts)) == (jmax-jmin+1) ) then
                print *,mynode,"ipts=",int(ipts,1),"WEST_INTER2 "//
-     &          trim(chkbandname)//':ghostcell  3d'
+     &          trim(chkbandname)//': ghostcell '
 c                stop
             endif
           enddo
@@ -285,40 +270,30 @@ c                stop
 c          endif
 #endif        
       endif
-      if (WEST_INTER .and. .not. WEST_INTER2) then
-#ifdef OPENACC
-        print *,'NOT READY FOR OPENACC'
-        stop
-#endif
-        do k=1,nmax
-          do j=jmin,jmax
-            do ipts=1,Npts
-              A(ipts-Npts,j,k)=A(ipts,j,k)
-            enddo
+      if ( WEST_INTER .and. .not. WEST_INTER2 ) then
+        do j=jmin,jmax
+          do ipts=1,Npts
+           A(ipts-Npts,j)=A(ipts,j)
           enddo
         enddo
       endif
 
       if (EAST_INTER2) then
         call MPI_Wait (req(2),status(1,2),ierr)
-!$acc parallel loop if(compute_on_device) collapse(3) 
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
 #ifdef  BAND_DEBUG         
         checksum(:) = 0.
 #endif        
-        do k=1,nmax
-          do j=jmin,jmax
-            do ipts=1,Npts
+        do j=jmin,jmax
+          do ipts=1,Npts
 #ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
-            if ( A(Lmmpi+ipts,j,k) ==
-     &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)*jshft)) ) 
-     &           checksum(ipts) = checksum(ipts)+1
+            if (  A(Lmmpi+ipts,j)==jbuf_revE(j-jmin+(ipts-1)*jshft) ) 
+     &          checksum(ipts) = checksum(ipts)+1
 c            endif
 #endif
-              A(Lmmpi+ipts,j,k)=
-     &                         jbuf_revE_3D(k+nmax*(j-jmin+(ipts-1)
-     &                         *jshft))
-            enddo
+           A(Lmmpi+ipts,j)=jbuf_revE(j-jmin+(ipts-1)*jshft)
           enddo
         enddo
 #ifdef  BAND_DEBUG         
@@ -326,9 +301,9 @@ c         if ( chkbandname .ne. 'none') then
           do ipts=1,Npts
 c             print *,"checksum(ipts)=",checksum(ipts)
 c             print *,"jnin,jmax=",jmin,jmax,":",ipts
-            if( nint(checksum(ipts)) == nmax*(jmax-jmin+1) ) then
+            if( nint(checksum(ipts)) == (jmax-jmin+1) ) then
                print *,mynode,"ipts=",int(ipts,1),"EAST_INTER2 "//
-     &          trim(chkbandname)//':ghostcell  3d'
+     &          trim(chkbandname)//': ghostcell '
 c                stop
             endif
           enddo
@@ -336,46 +311,31 @@ c                stop
 c          endif
 #endif        
       endif
-      if (EAST_INTER .and. .not. EAST_INTER2) then
-        do k=1,nmax
-          do j=jmin,jmax
-            do ipts=1,Npts
-              A(Lmmpi+ipts,j,k)=A(Lmmpi+ipts-Npts,j,k)
-            enddo
+      if ( EAST_INTER .and. .not. EAST_INTER2 ) then
+        do j=jmin,jmax
+          do ipts=1,Npts
+           A(Lmmpi+ipts,j)=A(Lmmpi-Npts+ipts,j)
           enddo
         enddo
       endif
-
 
       if (SOUTH_INTER2) then
         call MPI_Wait (req(3),status(1,3),ierr)
-!$acc update device(ibuf_revS_3D(1:isize)) if(.not.use_host_device)
-!$acc parallel loop if(compute_on_device) collapse(3) 
+!$acc update device(ibuf_revS) if(.not.use_host_device)
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
 #ifdef  BAND_DEBUG         
-        checksum(:) = 0.
-#endif        
-        do k=1,nmax
-          do jpts=1,Npts
-            do i=imin,imax
+           checksum(:) = 0.
+#endif           
+       do jpts=1,Npts
+          do i=imin,imax
 #ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
-            if (  A(i,jpts-Npts,k) == 
-     &            ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)*ishft)) )
+            if ( A(i,jpts-Npts)==ibuf_revS(i-imin+(jpts-1)*ishft) ) 
      &          checksum(jpts) = checksum(jpts)+1
 c            endif
 #endif
-              A(i,jpts-Npts,k)=ibuf_revS_3D(k+nmax*(i-imin+(jpts-1)
-     &                        *ishft))
-            enddo
-          enddo
-        enddo
-      endif
-      if (SOUTH_INTER .and. .not. SOUTH_INTER2) then
-       do k=1,nmax
-          do i=imin,imax
-            do jpts=1,Npts
-              A(i,jpts-Npts,k)=A(i,jpts,k)
-            enddo
+           A(i,jpts-Npts)=ibuf_revS(i-imin+(jpts-1)*ishft)
           enddo
         enddo
 #ifdef  BAND_DEBUG         
@@ -383,38 +343,41 @@ c         if ( chkbandname .ne. 'none') then
           do jpts=1,Npts
 c             print *,"checksum(ipts)=",checksum(ipts)
 c             print *,"jnin,jmax=",jmin,jmax,":",ipts
-            if( nint(checksum(jpts)) == nmax*(imax-imin+1) ) then
+            if( nint(checksum(jpts)) == (imax-imin+1) ) then
                print *,mynode,"jpts=",int(jpts,1),"SOUTH_INTER2 "//
-     &          trim(chkbandname)//':ghostcell  3d'
+     &          trim(chkbandname)//': ghostcell '
 c                stop
             endif
           enddo
           checksum(:) = 0.
 c          endif
 #endif        
+      endif
+      if ( SOUTH_INTER .and. .not. SOUTH_INTER2 ) then
+        do jpts=1,Npts
+          do i=imin,imax
+           A(i,jpts-Npts)=A(i,jpts)
+          enddo
+        enddo
       endif
 
       if (NORTH_INTER2) then
         call MPI_Wait (req(4),status(1,4),ierr)
-!$acc update device(ibuf_revN_3D(1:isize)) if(.not.use_host_device)
-!$acc parallel loop if(compute_on_device) collapse(3)
+!$acc update device(ibuf_revN) if(.not.use_host_device)
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
 #ifdef  BAND_DEBUG         
         checksum(:) = 0.
 #endif        
-        do k=1,nmax
-          do jpts=1,Npts
-            do i=imin,imax
+        do jpts=1,Npts
+          do i=imin,imax
 #ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
-            if ( A(i,Mmmpi+jpts,k)==
-     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft)) ) 
+            if ( A(i,Mmmpi+jpts)==ibuf_revN(i-imin+(jpts-1)*ishft) ) 
      &          checksum(jpts) = checksum(jpts)+1
 c            endif
 #endif
-              A(i,Mmmpi+jpts,k)=
-     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)
-     &                         *ishft))
-            enddo
+            A(i,Mmmpi+jpts)=ibuf_revN(i-imin+(jpts-1)*ishft)
           enddo
         enddo
 #ifdef  BAND_DEBUG         
@@ -422,9 +385,9 @@ c         if ( chkbandname .ne. 'none') then
           do jpts=1,Npts
 c             print *,"checksum(ipts)=",checksum(ipts)
 c             print *,"jnin,jmax=",jmin,jmax,":",ipts
-            if( nint(checksum(jpts)) == nmax*(imax-imin+1) ) then
+            if( nint(checksum(jpts)) == (imax-imin+1) ) then
                print *,mynode,"jpts=",int(jpts,1),"NORTH_INTER2 "//
-     &          trim(chkbandname)//':ghostcell  3d'
+     &          trim(chkbandname)//': ghostcell '
 c                stop
             endif
           enddo
@@ -432,140 +395,121 @@ c                stop
 c          endif
 #endif        
       endif
-      if (NORTH_INTER .and. .not. NORTH_INTER2) then
-        do k=1,nmax
+      if (NORTH_INTER .AND. .not. NORTH_INTER2) then
+        do jpts=1,Npts
           do i=imin,imax
-            do jpts=1,Npts
-              A(i,Mmmpi+jpts,k)=A(i,Mmmpi+jpts-Npts,k)
-            enddo
+            A(i,Mmmpi+jpts)=A(i,Mmmpi-Npts+jpts)
           enddo
         enddo
       endif
+
 !
 ! ...corners:
 !
-      if (CORNER_SW) then
+      if ( CORNER_SW) then
         call MPI_Wait (req(5),status(1,5),ierr)
-!$acc parallel loop if(compute_on_device) collapse(3) 
-        do k=1,nmax
-          do jpts=1,Npts
-            do ipts=1,Npts
-              A(ipts-Npts,jpts-Npts,k)=
-     &                           buf_rev1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
-            enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+        do jpts=1,Npts
+          do ipts=1,Npts
+          A(ipts-Npts,jpts-Npts)=buf_rev1(ipts+Npts*(jpts-1))
           enddo
         enddo
       endif
-      if (.not. CORNER_SW  .and.
-     &   SOUTH_INTER .and.  WEST_INTER ) then
-#ifdef OPENACC
-        print *,'NOT READY FOR OPENACC'
-        stop
-#endif
-       do k=1,nmax
-          do jpts=1,Npts
-            do ipts=1,Npts
-              A(ipts-Npts,jpts-Npts,k)=
-     &                           A(ipts,jpts,k)
-            enddo
+      if (.not.CORNER_SW .and.
+     &  SOUTH_INTER .and.WEST_INTER ) then
+        do jpts=1,Npts
+          do ipts=1,Npts
+           A(ipts-Npts,jpts-Npts)=A(ipts,jpts)
           enddo
         enddo
-       endif 
+       endif  
 
-      if (CORNER_NE) then
+      if ( CORNER_NE) then
         call MPI_Wait (req(6),status(1,6),ierr)
-!$acc parallel loop if(compute_on_device) collapse(3) 
-        do k=1,nmax
-          do jpts=1,Npts
-            do ipts=1,Npts
-              A(Lmmpi+ipts,Mmmpi+jpts,k)=
-     &                           buf_rev2_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
-            enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+        do jpts=1,Npts
+          do ipts=1,Npts
+            A(Lmmpi+ipts,Mmmpi+jpts)=buf_rev2(ipts+Npts*(jpts-1))
           enddo
         enddo
       endif
-      if (.not. CORNER_NE  .and.
-     &   NORTH_INTER .and.  EAST_INTER ) then
-       do k=1,nmax
-          do jpts=1,Npts
-            do ipts=1,Npts
-              A(Lmmpi+ipts,Mmmpi+jpts,k)=
-     &              A(Lmmpi+ipts-Npts,Mmmpi+jpts-Npts,k)                
-            enddo
+      if (.not.CORNER_NE .and.
+     &  NORTH_INTER .and.EAST_INTER ) then
+        do jpts=1,Npts
+          do ipts=1,Npts
+            A(Lmmpi+ipts,Mmmpi+jpts)=A(Lmmpi+ipts-NPts,Mmmpi+jpts-Npts)
           enddo
         enddo
-       endif 
-    
-     
+       endif  
+
       if (CORNER_SE) then
         call MPI_Wait (req(7),status(1,7),ierr)
-!$acc parallel loop if(compute_on_device) collapse(3) 
-        do k=1,nmax
-          do jpts=1,Npts
-            do ipts=1,Npts
-              A(Lmmpi+ipts,jpts-Npts,k)=
-     &                           buf_rev3_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
-            enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+        do jpts=1,Npts
+          do ipts=1,Npts
+            A(Lmmpi+ipts,jpts-Npts)=buf_rev3(ipts+Npts*(jpts-1))
           enddo
         enddo
       endif
-      if (.not. CORNER_SE .and.
-     &   SOUTH_INTER .and.  EAST_INTER ) then
-       do k=1,nmax
-          do jpts=1,Npts
-            do ipts=1,Npts
-               A(Lmmpi+ipts,jpts-Npts,k)=
-     &                           A(Lmmpi+ipts-Npts,jpts,k)
-            enddo
+      if (.not. CORNER_SE .and. 
+     &  SOUTH_INTER .and. EAST_INTER ) then
+        do jpts=1,Npts
+          do ipts=1,Npts
+            A(Lmmpi+ipts,jpts-Npts)=A(Lmmpi+ipts-Npts,jpts)
           enddo
-        enddo
-       endif 
- 
+        enddo      
+      endif  
+
 
       if (CORNER_NW) then
         call MPI_Wait (req(8),status(1,8),ierr)
-!$acc parallel loop if(compute_on_device) collapse(3) 
-        do k=1,nmax
-          do jpts=1,Npts
-            do ipts=1,Npts
-              A(ipts-Npts,Mmmpi+jpts,k)=
-     &                           buf_rev4_3D(k+nmax*(ipts-1+Npts*(jpts-1)))
-            enddo
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
+        do jpts=1,Npts
+          do ipts=1,Npts
+            A(ipts-Npts,Mmmpi+jpts)=buf_rev4(ipts+Npts*(jpts-1))
           enddo
         enddo
       endif
-      if (.not. CORNER_NW  .and.
+      if (.not. CORNER_NW .and.
      &   NORTH_INTER .and.  WEST_INTER ) then
-       do k=1,nmax
-          do jpts=1,Npts
-            do ipts=1,Npts
-              A(ipts-Npts,Mmmpi+jpts,k)=A(ipts,Mmmpi+jpts-Npts,k)
-            enddo
+       do jpts=1,Npts
+          do ipts=1,Npts
+            A(ipts-Npts,Mmmpi+jpts)=A(ipts,Mmmpi+jpts-NPts)
           enddo
         enddo
        endif 
 
-!# if defined AGRIF
-!        DeAllocate(buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
-!     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
-!     &    jbuf_sndW_3D,                      jbuf_sndE_3D,
-!     &    jbuf_revW_3D,                      jbuf_revE_3D,
-!     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
-!     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D)
-!# endif
+
+c      write(*,*) 'MessPass2D:    ', mynode,' exit'
+
+!#if defined AGRIF
+!         DeAllocate(ibuf_sndN, ibuf_revN, 
+!     &     ibuf_sndS, ibuf_revS,
+!     &     jbuf_sndW, jbuf_sndE,
+!     &     jbuf_revW, jbuf_revE)
+!#endif
 
       return
       end
 
-# ifndef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
 #  define MP_3PTS
 #  include "MessPass3D.F"
 #  undef MP_3PTS
+#ifndef MP_1PTS
+#define MP_1PTS
+#  include "MessPass3D.F"
+#undef MP_1PTS
+#endif
 # endif
+
 
 #else
       subroutine MessPass3D_empty
       return
       end
 #endif
-

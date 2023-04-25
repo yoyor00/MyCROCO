@@ -10,9 +10,9 @@ variables:
   #
   CVTKWORK: "$CI_PROJECT_DIR/.datawork"
   PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork"
-  CROCO_CI_MPIRUN: "mpirun.openmpi"
+  CROCO_CI_MPIRUN: "mpirun"
   #
-  CI_FC: "gfortran"
+  CI_FC: "ifort"
   CI_MPIF90: "mpif90"
   CI_CROCO_PWD: $(pwd)
   SOURCE_CROCO: "$CI_PROJECT_DIR/OCEAN"
