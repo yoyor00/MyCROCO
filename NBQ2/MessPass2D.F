@@ -111,7 +111,7 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
             enddo
 !$acc update host(jbuf_sndW) if(.not.use_host_device)
 !$acc host_data if(compute_on_device.and.use_host_device) 
-!$&acc& use_device(jbuf_revW, jbuf_sndW)
+!$acc& use_device(jbuf_revW, jbuf_sndW)
             call MPI_Irecv (jbuf_revW, jsize, MPI_DOUBLE_PRECISION,
      &                         p_W, 2, MPI_COMM_WORLD, req(1), ierr)
             call MPI_Send  (jbuf_sndW, jsize, MPI_DOUBLE_PRECISION,
