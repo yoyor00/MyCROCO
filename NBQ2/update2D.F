@@ -265,9 +265,8 @@ C$OMP END MASTER
 ! ! 3Dfast Needs update ?
 ! !--------------------------------------------------------------------
 ! !    
-      IF ((mod(iif+(nbcoarse-1)
-     &     *mod(nfast,min(nfast,irhot*Ndtfast/Ndtnbq))
-     &     ,min(nfast,irhot*Ndtfast/Ndtnbq)).EQ.0)) THEN
+      IF (mod( iif+(nbcoarse-1)*mod(nfast,irhot)
+     &        ,Ndtnbq*irhot).EQ.0) THEN
 ! !
 ! !--------------------------------------------------------------------
 ! ! Needs update ! ( @mod(iif,irhot)==0 + case mod(nfast,irhot)<>0 )
@@ -308,7 +307,7 @@ C$OMP MASTER
      &     procname = updatevnbq) 
 #  endif
 
-#  ifdef M3FAST_W2   
+#  ifdef M3FAST_W    
 #   ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
 #   endif
@@ -317,7 +316,7 @@ C$OMP MASTER
      &     procname = updatewnbq)
       Agrif_UseSpecialValueInUpdate = .FALSE.
 #  endif
-#  ifdef M3FAST_RHO2
+#  ifdef M3FAST_RHO 
       Call Agrif_Update_Variable(updaterhonbqid,
      &     procname = updaterhonbq)
 #  endif
@@ -339,7 +338,7 @@ C$OMP MASTER
 ! !
 ! !  wnbq as a special case ??????????? Should not!
 ! !
-#  ifdef M3FAST_W2
+#  ifdef M3FAST_W 
       if ((iif /= nfast) .OR. (nbcoarse /= irhot)) then
 #    ifdef MASKING
         Agrif_UseSpecialValueInUpdate = .TRUE.
@@ -351,7 +350,7 @@ C$OMP MASTER
       endif
 #  endif
 
-#  ifdef M3FAST_RHO2
+#  ifdef M3FAST_RHO 
       Call Agrif_Update_Variable(updaterhonbqid,
      &     procname = updaterhonbq)
 #  endif
@@ -386,16 +385,16 @@ C$OMP MASTER
      &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &         procname = updatevnbq) 
 #  endif
-#  ifdef M3FAST_W2
+#  ifdef M3FAST_W 
 #    ifdef MASKING
           Agrif_UseSpecialValueInUpdate = .TRUE.
 #    endif
- !         Call Agrif_Update_Variable(updatewnbqid,
- !    &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
- !    &         procname = updatewnbq)
+           Call Agrif_Update_Variable(updatewnbqid,
+     &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
+     &         procname = updatewnbq)
           Agrif_UseSpecialValueInUpdate = .FALSE.
 #  endif
-#  ifdef M3FAST_RHO2
+#  ifdef M3FAST_RHO 
           Call Agrif_Update_Variable(updaterhonbqid,
      &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
      &         procname = updaterhonbq)
@@ -412,7 +411,7 @@ C$OMP MASTER
           Call Agrif_Update_Variable(updatevnbqid,
      &         procname = updatevnbq) 
 #  endif
-#  ifdef M3FAST_W2
+#  ifdef M3FAST_W 
 #    ifdef MASKING
           Agrif_UseSpecialValueInUpdate = .TRUE.
 #    endif
@@ -423,7 +422,7 @@ C$OMP MASTER
           Call Agrif_Update_Variable(updaterhonbqid,
      &         procname = updaterhonbq)
 #  endif
-#  ifdef M3FAST_RHO2
+#  ifdef M3FAST_RHO 
           Call Agrif_Update_Variable(updaterhonbqid,
    !  &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
      &         procname = updaterhonbq)
@@ -469,6 +468,7 @@ C$OMP MASTER
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
       integer :: nb, ndir
+! Caution: ru_nbq*
     
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmu_nbq(i1:i2,j1:j2,k1:k2)
@@ -499,7 +499,7 @@ C$OMP MASTER
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
       integer :: nb, ndir
-      
+! Caution: rv_nbq*
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmv_nbq(i1:i2,j1:j2,k1:k2)
       else
