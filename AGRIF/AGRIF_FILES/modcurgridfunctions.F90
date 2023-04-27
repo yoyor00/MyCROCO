@@ -162,7 +162,7 @@ function Agrif_Nbstepint3d ( )
 !---------------------------------------------------------------------------------------------------
     integer :: Agrif_nbstepint3d ! result
 !
-    Agrif_nbstepint3d = mod(Agrif_Curgrid % ngridstep * int(Agrif_Curgrid % NHINT_tcoef), Agrif_iRhot())
+    Agrif_nbstepint3d = mod(int(Agrif_Curgrid % ngridstep * Agrif_Curgrid % NHINT_tcoef), Agrif_iRhot())
 !---------------------------------------------------------------------------------------------------
 end function Agrif_Nbstepint3d
 !===================================================================================================

@@ -3,6 +3,27 @@
 ! ! m3fast_post.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
+! !********************************
+! ! Update ubar and vbar 
+! !     and their BC (AGRIF)
+! ! BC for DU(V)_nbq treated here
+! !********************************
+! !
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+          ubar(i,j,knew)=urhs(i,j)
+        enddo
+      enddo
+      do j=JstrV,Jend
+        do i=Istr,Iend
+          vbar(i,j,knew)=vrhs(i,j)
+        enddo
+      enddo
+
+      M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
+                           ! and boundaries for DU(V)_nbq
+      call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
+      call v2dbc_tile   (Istr,Iend,Jstr,Jend, work)
 ! !
 ! !********************************
 ! !  Update total mass of water 
@@ -495,8 +516,9 @@ C$OMP END MASTER
 ! ! all open boundaries, if any.
 ! !********************************
 ! !
-      M2bc_nbq_flag=.true.  ! skip wet/dry conditions
-! !                           & AGRIF
+      M2bc_nbq_flag=.false.  
+! !           skip wet/dry conditions
+! !         & AGRIF
       call u2dbc_tile (Istr,Iend,Jstr,Jend, work) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
 # ifdef WET_DRY

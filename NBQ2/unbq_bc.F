@@ -92,7 +92,6 @@
 !                            WESTERN BC
 !====================================================================
       if (WESTERN_EDGE) then
-!         write(6,*) 'WEST'
 #  ifdef OBC_COM_WEST
 #   if defined OBC_COM_NBQSPECIFIED || defined OBC_COM_NBQSPECIFIED_WEST
 !                                            Western edge Specified BC
@@ -186,7 +185,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST_UV
+#   ifdef M3FAST_ZETAW 
 #    define usum grad
         usum=0.
         do k=1,N
@@ -211,7 +210,7 @@
           enddo
         enddo
 #    undef usum
-#   endif /* M3FAST_UV */
+#   endif /* M3FAST_ZETAW */
 !
 #  else           /* alternative to open */
         do k=1,N                                      ! Western edge closed
@@ -330,7 +329,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST_UV
+#   ifdef M3FAST_ZETAW 
 #    define usum grad
         usum=0.
         do k=1,N
@@ -355,7 +354,7 @@
           enddo
         enddo
 #    undef vsum
-#   endif /* NBQ */
+#   endif /* M3FAST_ZETAW */
 !
 #  else
         do k=1,N                                     ! Eastern edge closed
@@ -474,7 +473,7 @@
 !
 !  Replace external mode
 !
-#   if defined M3FAST_UV && defined QDM_OBC_TANG_CORRECT
+#   if defined M3FAST_ZETAW && defined QDM_OBC_TANG_CORRECT
 #    define usum grad
         usum=0.
         do k=1,N
@@ -499,7 +498,7 @@
           enddo
         enddo
 #    undef usum
-#   endif
+#   endif /* M3FAST_ZETAW */
 
 #  else
 #   ifdef EW_COM_PERIODIC
@@ -614,7 +613,7 @@
 !
 !  Replace external mode
 !
-#  if defined M3FAST_UV && defined QDM_OBC_TANG_CORRECT
+#  if defined M3FAST_ZETAW && defined QDM_OBC_TANG_CORRECT
 #   define usum grad
         usum=0.
         do k=1,N
@@ -639,7 +638,7 @@
           enddo
         enddo
 #   undef usum
-#  endif
+#  endif /* M3FAST_ZETAW */
 
 #  else
 #   ifdef EW_COM_PERIODIC

@@ -871,7 +871,7 @@ C$    trd=omp_get_thread_num()
 # endif
 #endif  /* WET_DRY */
 
-#ifdef M3FAST
+#ifdef M3FAST_ZETAW
 !=======================================================================
 !  Computes normal boundary values of DU_nbq for NBQ OBCs
 !=======================================================================
@@ -955,7 +955,7 @@ C$    trd=omp_get_thread_num()
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
 
-#if defined OBC_COM_SOUTH && defined OBC_COM_WEST
+# if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         DU_nbq(Istr,Jstr-1)=0.5*( DU_nbq(Istr+1,Jstr-1)
      &                           +DU_nbq(Istr,Jstr))
@@ -963,8 +963,8 @@ C$    trd=omp_get_thread_num()
      &                        *umask(Istr,Jstr-1)
 #  endif
       endif
-#endif
-#if defined OBC_COM_SOUTH && defined OBC_COM_EAST
+# endif
+# if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         DU_nbq(Iend+1,Jstr-1)=0.5*( DU_nbq(Iend,Jstr-1)
      &                             +DU_nbq(Iend+1,Jstr))
@@ -972,8 +972,8 @@ C$    trd=omp_get_thread_num()
      &                        *umask(Iend+1,Jstr-1)
 #  endif
       endif
-#endif
-#if defined OBC_COM_NORTH && defined OBC_COM_WEST
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         DU_nbq(Istr,Jend+1)=0.5*( DU_nbq(Istr+1,Jend+1)
      &                           +DU_nbq(Istr,Jend))
@@ -981,8 +981,8 @@ C$    trd=omp_get_thread_num()
      &                        *umask(Istr,Jend+1)
 #  endif
       endif
-#endif
-#if defined OBC_COM_NORTH && defined OBC_COM_EAST
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         DU_nbq(Iend+1,Jend+1)=0.5*( DU_nbq(Iend,Jend+1)
      &                             +DU_nbq(Iend+1,Jend))
@@ -990,11 +990,13 @@ C$    trd=omp_get_thread_num()
      &                        *umask(Iend+1,Jend+1)
 #  endif
       endif
-#endif
+# endif
+#endif /* M3FAST_ZETAW */
 
+# ifdef M3FAST
       endif ! M2bc_nbq_flag
+# endif
 !
-#endif /* M3FAST */
 !$acc end kernels
       return
       end

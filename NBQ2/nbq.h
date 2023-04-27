@@ -16,7 +16,7 @@
       logical M2bc_nbq_flag
       common /nbq_M2bc/ M2bc_nbq_flag
 ! !------------------------------------------------------------------
-! ! nbq.h: Integer
+! ! nbq.h: Integer scalars
 ! !------------------------------------------------------------------
       integer iteration_nbq      
       common /nbq_var2/ iteration_nbq      
@@ -114,6 +114,7 @@
       real qdmw0_nbq(GLOBAL_2D_ARRAY)
       common /nbq_qdmw0_nbq/ qdmw0_nbq
 #  endif
+#  ifdef M3FAST_ZETAW
       real DU_nbq(GLOBAL_2D_ARRAY)
       common /nbq_DU_nbq/ DU_nbq
       real DV_nbq(GLOBAL_2D_ARRAY)
@@ -124,6 +125,7 @@
       common /nbq_usurf/ usurf_nbq
       real vsurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_vsurf/ vsurf_nbq 
+#  endif
 #  ifdef NBQ_NUDGING
       real NBQnudgcof(GLOBAL_2D_ARRAY)
       common /nbq_nudg/ NBQnudgcof

@@ -41,13 +41,12 @@
 # include "scalars.h"
 # include "zoom.h"
 # include "coupling.h"
+# include "nbq.h"
       external updateubar,updatevbar,updatezeta
       external updateduavg2, updatedvavg2
 # ifdef M3FAST
       external updateunbq, updatevnbq
-#  ifdef M3FAST
       external updatewnbq, updaterhonbq
-#  endif
 # endif
       external updatermask_child
 
@@ -92,10 +91,10 @@
       irhot = Agrif_Irhot()
 ! !
 ! !--------------------------------------------------------------------
-! ! Needs update ?
+! ! 2D Needs update ?
 ! !--------------------------------------------------------------------
 ! !
-      IF ((mod(iif+(nbcoarse-1)*mod(nfast,irhot),irhot).NE.0)) RETURN
+      IF ((mod(iif+(nbcoarse-1)*mod(nfast,irhot),irhot).EQ.0)) THEN
 ! !
 ! !--------------------------------------------------------------------
 ! ! Needs update ! ( @mod(iif,irhot)==0 + case mod(nfast,irhot)<>0 )
@@ -145,28 +144,6 @@ C$OMP MASTER
      &     locupdate1=(/1,4/),locupdate2=(/0,3/),
      &     procname = updatevbar) 
      
-#  ifdef M3FAST_UV
-      Call Agrif_Update_Variable(updateunbqid,
-     &     locupdate1=(/0,3/),locupdate2=(/1,4/),
-     &     procname = updateunbq)
-      Call Agrif_Update_Variable(updatevnbqid,
-     &     locupdate1=(/1,4/),locupdate2=(/0,3/),
-     &     procname = updatevnbq) 
-#  endif
-
-#  ifdef M3FAST_W   
-#   ifdef MASKING
-      Agrif_UseSpecialValueInUpdate = .TRUE.
-#    endif
-      Call Agrif_Update_Variable(updatewnbqid,
-     &     locupdate1=(/1,4/),locupdate2=(/1,4/),
-     &     procname = updatewnbq)
-      Agrif_UseSpecialValueInUpdate = .FALSE.
-#  endif
-#  ifdef M3FAST_RHO
-      Call Agrif_Update_Variable(updaterhonbqid,
-     &     procname = updaterhonbq)
-#  endif
 ! !
 ! !--------------------------------------------------------------------
 ! ! Main case !
@@ -191,33 +168,6 @@ C$OMP MASTER
      &     locupdate1=(/0,1/),locupdate2=(/0,1/),
      &     procname = updatevbar)          
 
-#  ifdef M3FAST_UV
-      Call Agrif_Update_Variable(updateunbqid,
-     &     locupdate1=(/0,3/),locupdate2=(/0,3/),
-     &     procname = updateunbq)
-      Call Agrif_Update_Variable(updatevnbqid,
-     &     locupdate1=(/0,3/),locupdate2=(/0,3/),
-     &     procname = updatevnbq) 
-#  endif
-! !
-! !  wnbq as a special case ??????????? Should not!
-! !
-#  ifdef M3FAST_W
-      if ((iif /= nfast) .OR. (nbcoarse /= irhot)) then
-#    ifdef MASKING
-        Agrif_UseSpecialValueInUpdate = .TRUE.
-#    endif
-        Call Agrif_Update_Variable(updatewnbqid,
-     &       locupdate1=(/0,3/),locupdate2=(/0,3/),
-     &       procname = updatewnbq)
-        Agrif_UseSpecialValueInUpdate = .FALSE.
-      endif
-#  endif
-
-#  ifdef M3FAST_RHO
-      Call Agrif_Update_Variable(updaterhonbqid,
-     &     procname = updaterhonbq)
-#  endif
 # endif /* AGRIF_UPDATE_DECAL */
 ! ! 
 ! !*********************************************************************
@@ -253,28 +203,6 @@ C$OMP MASTER
      &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &         procname = updatevbar)
 
-#  ifdef M3FAST_UV
-          Call Agrif_Update_Variable(updateunbqid,
-     &         locupdate1=(/0,-1/),locupdate2=(/1,-2/),
-     &         procname = updateunbq)
-          Call Agrif_Update_Variable(updatevnbqid,
-     &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
-     &         procname = updatevnbq) 
-#  endif
-#  ifdef M3FAST_W
-#    ifdef MASKING
-          Agrif_UseSpecialValueInUpdate = .TRUE.
-#    endif
-          Call Agrif_Update_Variable(updatewnbqid,
-     &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
-     &         procname = updatewnbq)
-          Agrif_UseSpecialValueInUpdate = .FALSE.
-#  endif
-#  ifdef M3FAST_RHO
-          Call Agrif_Update_Variable(updaterhonbqid,
-     &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
-     &         procname = updaterhonbq)
-#  endif
 ! !
 ! !--------------------------------------------------------------------
 ! ! iif ==  nfast
@@ -291,29 +219,6 @@ C$OMP MASTER
      
           Call Agrif_Update_Variable(updatevbarid,
      &         procname = updatevbar)
-
-#  ifdef M3FAST_UV
-          Call Agrif_Update_Variable(updateunbqid,
-     &         procname = updateunbq)
-          Call Agrif_Update_Variable(updatevnbqid,
-     &         procname = updatevnbq) 
-#  endif
-#  ifdef M3FAST_W
-#    ifdef MASKING
-          Agrif_UseSpecialValueInUpdate = .TRUE.
-#    endif
-          Call Agrif_Update_Variable(updatewnbqid,
-     &         procname = updatewnbq)
-          Agrif_UseSpecialValueInUpdate = .FALSE.
-
-          Call Agrif_Update_Variable(updaterhonbqid,
-     &         procname = updaterhonbq)
-#  endif
-#  ifdef M3FAST_RHO
-          Call Agrif_Update_Variable(updaterhonbqid,
-     &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
-     &         procname = updaterhonbq)
-#  endif
 
 # endif /* AGRIF_UPDATE_DECAL */
 ! !
@@ -354,6 +259,191 @@ C$OMP MASTER
         ENDIF
       ENDIF
 C$OMP END MASTER
+      ENDIF
+! !
+! !--------------------------------------------------------------------
+! ! 3Dfast Needs update ?
+! !--------------------------------------------------------------------
+! !    
+      IF ((mod(iif+(nbcoarse-1)
+     &     *mod(nfast,min(nfast,irhot*Ndtfast/Ndtnbq))
+     &     ,min(nfast,irhot*Ndtfast/Ndtnbq)).EQ.0)) THEN
+! !
+! !--------------------------------------------------------------------
+! ! Needs update ! ( @mod(iif,irhot)==0 + case mod(nfast,irhot)<>0 )
+! !--------------------------------------------------------------------
+! !
+      iiffine = iif
+      irhotfine = Agrif_Irhot()
+      nbgrid = Agrif_Fixed()
+         
+C$OMP BARRIER
+C$OMP MASTER
+      irhox = Agrif_Irhox()
+      irhoy = Agrif_Irhoy()
+     
+      pngrid = Agrif_Parent_Fixed()
+      if (nbgrid == grids_at_level(pngrid,0)) then
+         Call Agrif_Set_Parent(indupdate,0) 
+      endif
+        
+# ifdef MASKING
+      Agrif_UseSpecialValueInUpdate = .TRUE.
+# endif
+      Agrif_SpecialValueFineGrid = 0.
+      indupdate = 0
+      global_update_2d = .FALSE.
+! !
+! !--------------------------------------------------------------------
+! ! Main case but "DECAL"
+! !--------------------------------------------------------------------
+! !
+# ifdef AGRIF_UPDATE_DECAL
+#  ifdef M3FAST_UV
+      Call Agrif_Update_Variable(updateunbqid,
+     &     locupdate1=(/0,3/),locupdate2=(/1,4/),
+     &     procname = updateunbq)
+      Call Agrif_Update_Variable(updatevnbqid,
+     &     locupdate1=(/1,4/),locupdate2=(/0,3/),
+     &     procname = updatevnbq) 
+#  endif
+
+#  ifdef M3FAST_W2   
+#   ifdef MASKING
+      Agrif_UseSpecialValueInUpdate = .TRUE.
+#   endif
+      Call Agrif_Update_Variable(updatewnbqid,
+     &     locupdate1=(/1,4/),locupdate2=(/1,4/),
+     &     procname = updatewnbq)
+      Agrif_UseSpecialValueInUpdate = .FALSE.
+#  endif
+#  ifdef M3FAST_RHO2
+      Call Agrif_Update_Variable(updaterhonbqid,
+     &     procname = updaterhonbq)
+#  endif
+# else
+! !
+! !--------------------------------------------------------------------
+! ! Main case !
+! !--------------------------------------------------------------------
+! !
+
+#  ifdef M3FAST_UV
+      Call Agrif_Update_Variable(updateunbqid,
+     &     locupdate1=(/0,3/),locupdate2=(/0,3/),
+     &     procname = updateunbq)
+      Call Agrif_Update_Variable(updatevnbqid,
+     &     locupdate1=(/0,3/),locupdate2=(/0,3/),
+     &     procname = updatevnbq) 
+#  endif
+! !
+! !  wnbq as a special case ??????????? Should not!
+! !
+#  ifdef M3FAST_W2
+      if ((iif /= nfast) .OR. (nbcoarse /= irhot)) then
+#    ifdef MASKING
+        Agrif_UseSpecialValueInUpdate = .TRUE.
+#    endif
+        Call Agrif_Update_Variable(updatewnbqid,
+     &       locupdate1=(/0,3/),locupdate2=(/0,3/),
+     &       procname = updatewnbq)
+        Agrif_UseSpecialValueInUpdate = .FALSE.
+      endif
+#  endif
+
+#  ifdef M3FAST_RHO2
+      Call Agrif_Update_Variable(updaterhonbqid,
+     &     procname = updaterhonbq)
+#  endif
+# endif /* AGRIF_UPDATE_DECAL */
+! ! 
+! !*********************************************************************
+! ! Update particular variables iif == nfast && nbcoarse == irhot
+! !   (still when "needs update!" )
+! !*********************************************************************
+! !
+      IF (iif == nfast) THEN
+        !IF (nbcoarse == irhot) THEN
+
+          global_update_2d = .TRUE.
+
+# ifdef MASKING
+          Agrif_UseSpecialValueInUpdate = .TRUE.
+# endif
+          Agrif_SpecialValueFineGrid = 0.
+! !
+! !--------------------------------------------------------------------
+! ! iif == nfast (DECAL)
+! !--------------------------------------------------------------------
+! !
+# ifdef AGRIF_UPDATE_DECAL
+
+#  ifdef M3FAST_UV
+          Call Agrif_Update_Variable(updateunbqid,
+     &         locupdate1=(/0,-1/),locupdate2=(/1,-2/),
+     &         procname = updateunbq)
+          Call Agrif_Update_Variable(updatevnbqid,
+     &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
+     &         procname = updatevnbq) 
+#  endif
+#  ifdef M3FAST_W2
+#    ifdef MASKING
+          Agrif_UseSpecialValueInUpdate = .TRUE.
+#    endif
+ !         Call Agrif_Update_Variable(updatewnbqid,
+ !    &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
+ !    &         procname = updatewnbq)
+          Agrif_UseSpecialValueInUpdate = .FALSE.
+#  endif
+#  ifdef M3FAST_RHO2
+          Call Agrif_Update_Variable(updaterhonbqid,
+     &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
+     &         procname = updaterhonbq)
+#  endif
+# else
+! !
+! !--------------------------------------------------------------------
+! ! iif ==  nfast
+! !--------------------------------------------------------------------
+! !
+#  ifdef M3FAST_UV
+          Call Agrif_Update_Variable(updateunbqid,
+     &         procname = updateunbq)
+          Call Agrif_Update_Variable(updatevnbqid,
+     &         procname = updatevnbq) 
+#  endif
+#  ifdef M3FAST_W2
+#    ifdef MASKING
+          Agrif_UseSpecialValueInUpdate = .TRUE.
+#    endif
+          Call Agrif_Update_Variable(updatewnbqid,
+     &         procname = updatewnbq)
+          Agrif_UseSpecialValueInUpdate = .FALSE.
+
+          Call Agrif_Update_Variable(updaterhonbqid,
+     &         procname = updaterhonbq)
+#  endif
+#  ifdef M3FAST_RHO2
+          Call Agrif_Update_Variable(updaterhonbqid,
+   !  &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
+     &         procname = updaterhonbq)
+#  endif
+
+# endif /* AGRIF_UPDATE_DECAL */
+! !
+! !--------------------------------------------------------------------
+! ! Volume conservation
+! !--------------------------------------------------------------------
+! !
+! !
+! !--------------------------------------------------------------------
+! ! Post-treatment
+! !--------------------------------------------------------------------
+! !
+
+        !ENDIF
+      ENDIF
+      ENDIF
 
       return
       end

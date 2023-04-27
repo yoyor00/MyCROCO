@@ -13,7 +13,7 @@
 !
 # include "cppdefs.h"
 
-# ifdef M3FAST_UV
+# ifdef M3FAST_UV 
       subroutine vnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -38,7 +38,7 @@
 !
 # endif /* M3FAST_UV */
 #else
-# ifdef M3FAST_UV
+# ifdef M3FAST_UV 
 !
 ! CHILD
 !
@@ -190,7 +190,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST_UV
+#   ifdef M3FAST_ZETAW
 #    define vsum grad
         vsum=0.
         do k=1,N
@@ -215,7 +215,7 @@
           enddo
         enddo
 #    undef vsum
-#   endif /* M3FAST_UV */
+#   endif /* M3FAST_ZETAW */
 
 #  else
         do k=1,N                                     ! Southern edge closed
@@ -336,7 +336,7 @@
 !
 !  Replace external mode
 !
-#   ifdef M3FAST_UV
+#   ifdef M3FAST_ZETAW 
 #    define vsum grad
         vsum=0.
         do k=1,N
@@ -361,7 +361,7 @@
           enddo
         enddo
 #    undef vsum
-#   endif /* M3FAST_UV */
+#   endif /* M3FAST_ZETAW */
 !
 #  else
         do k=1,N                                    ! Northern edge closed
@@ -478,7 +478,7 @@
 !
 !  Replace external mode
 !
-#  if defined M3FAST_UV && defined QDM_OBC_TANG_CORRECT
+#  if defined M3FAST_ZETAW && defined QDM_OBC_TANG_CORRECT
 #   define vsum grad
         vsum=0.
         do k=1,N
@@ -503,7 +503,7 @@
           enddo
         enddo
 #   undef vsum
-#  endif
+#  endif  /* M3FAST_ZETAW */
 
 #  else
 #   ifdef NS_COM_PERIODIC
@@ -617,7 +617,7 @@
 !
 !  Replace external mode
 !
-#   if defined M3FAST_UV && defined QDM_OBC_TANG_CORRECT
+#   if defined M3FAST_ZETAW && defined QDM_OBC_TANG_CORRECT
 #    define vsum grad
         vsum=0.
         do k=1,N
@@ -642,7 +642,7 @@
           enddo
         enddo
 #   undef vsum
-#  endif
+#  endif  /* M3FAST_ZETAW */
 
 #  else
 #   ifdef NS_COM_PERIODIC

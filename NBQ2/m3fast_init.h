@@ -74,8 +74,10 @@
       do j=Jstr,Jend
         do i=Istr,Iend
           work(i,j)=pm(i,j)*pn(i,j)
+#  ifdef M3FAST_ZETAW
           DU_nbq(i,j)=0.
           DV_nbq(i,j)=0.
+#  endif
         enddo
       enddo
 !$acc end kernels

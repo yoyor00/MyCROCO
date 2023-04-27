@@ -60,10 +60,12 @@
 !$acc end kernels
 ! !
 ! !********************************
-! !  BC on rho_nbq
+! !  BC on rho_nbq (AGRIF only)
 ! !********************************
 ! !
-!       call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) !! leave commented
+#   ifdef AGRIF
+        call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) 
+#   endif
 ! !
 ! !********************************
 ! !  Acoustic wave emission

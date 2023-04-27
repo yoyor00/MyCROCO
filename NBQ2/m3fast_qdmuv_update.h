@@ -292,7 +292,9 @@
 #  ifdef M3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
+#  ifdef M3FAST_ZETAW                  
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
+#  endif
               
               if (LAST_FAST_STEP) ru_nbq(i,j,k)=dum_s/work(i,j)               
 #  ifdef M3FAST_SEDLAYERS 
@@ -480,7 +482,9 @@
 #  ifdef M3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
+#  ifdef M3FAST_ZETAW  
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
+#  endif              
               if (LAST_FAST_STEP) rv_nbq(i,j,k)=dum_s/work(i,j) 
 #  ifdef M3FAST_SEDLAYERS 
               endif
@@ -492,35 +496,6 @@
   
 !$acc end kernels
 ! !
-! !********************************
-! ! TBT
-! !********************************
-# ifdef MODIF_FA
-!$acc kernels default(present) 
-          do j=Jstr,Jend
-            do i=IstrU,Iend
-              sum_nbq=0.
-!$acc loop reduction(+:sum_nbq)
-              do k=1,N
-                 sum_nbq=sum_nbq+qdmu_nbq(i,j,k)
-              enddo
-              DU_nbq(i,j)=sum_nbq
-              enddo
-            enddo
-
-           do j=JstrV,Jend
-            do i=Istr,Iend
-              sum_nbq=0.
-!$acc loop reduction(+:sum_nbq)
-              do k=1,N
-                 sum_nbq=sum_nbq+qdmv_nbq(i,j,k)
-              enddo
-              DV_nbq(i,j)=sum_nbq
-            enddo
-          enddo
-!$acc end kernels
-# endif
-
       if (LAST_FAST_STEP) then
 !$acc update host( ru_nbq,rv_nbq )   ! iif=last
       endif
