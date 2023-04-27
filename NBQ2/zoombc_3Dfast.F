@@ -456,7 +456,6 @@
       if (before) then
 
         tabres(i1:i2,j1:j2,k1:k2) = qdmu_nbq(i1:i2,j1:j2,k1:k2)
-
       else
 
         western_side  = (nb == 1).AND.(ndir == 1)
@@ -790,6 +789,9 @@
 # include "compute_auxiliary_bounds.h"
 !
 
+# ifdef NHINT
+      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(real(Ndtnbq)/real(Ndtfast))
+# endif
       if(Agrif_NbStepint() == 0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .TRUE.
@@ -803,7 +805,8 @@
         Agrif_UseSpecialValue=.FALSE.
       endif
 
-      ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      !ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      ainterp(1)= (REAL(Agrif_Nbstepint3d()) + 1.) / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 # ifdef AGRIF_OBC_SOUTH

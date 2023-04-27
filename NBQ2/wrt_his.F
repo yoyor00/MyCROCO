@@ -1320,7 +1320,14 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
       ksl=0
 #     endif
       if (wrthis(indxRnbq)) then
-         workr=rho_nbq(:,:,1-ksl:N-ksl)
+        workr=0.
+        do k=1,N
+          do j=0,Mm+1
+            do i=0,Lm+1
+            workr(i,j,k)=rho_nbq(i,j,k-ksl)
+          enddo
+         enddo
+        enddo
          call fillvalue3d(workr,ncidhis,hisRnbq,indxRnbq,
      &        record,r3dvar,type)           
 CR      write(*,*) 'wrt_his:  wrtRnbq' MYID
@@ -1332,8 +1339,8 @@ CR      write(*,*) 'wrt_his:  wrtRnbq' MYID
 !       workr=qdmu_nbq
         workr=0.
         do k=1,N
-          do j=0,Mm
-            do i=1,Lm 
+          do j=0,Mm+1
+            do i=1,Lm+1
             workr(i,j,k)=2.*qdmu_nbq(i,j,k-ksl)
      &               /(Hz(i,j,k-ksl)+Hz(i-1,j,k-ksl))
           enddo
@@ -1350,8 +1357,8 @@ CR      write(*,*) 'wrt_his:  wrtUnbq  ' MYID
 !       workr=qdmv_nbq
         workr=0.
         do k=1,N
-          do j=1,Mm
-            do i=0,Lm
+          do j=1,Mm+1
+            do i=0,Lm+1
             workr(i,j,k)=2.*qdmv_nbq(i,j,k)/(Hz(i,j,k)+Hz(i,j-1,k))
           enddo
          enddo
@@ -1367,16 +1374,16 @@ CR      write(*,*) 'wrt_his:  wrtVnbq  ' MYID
         work=0.
         if (ksl.eq.0) then
           do k=1,N-1
-          do j=0,Mm
-            do i=0,Lm
+          do j=0,Mm+1
+            do i=0,Lm+1
             work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
      &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
             enddo
           enddo
           enddo
           k=0
-          do j=0,Mm
-            do i=0,Lm
+          do j=0,Mm+1
+            do i=0,Lm+1
 #   ifndef M3FAST_SEDLAYERS
             work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/Hz(i,j,k+1-ksl)
 #   else
@@ -1386,15 +1393,15 @@ CR      write(*,*) 'wrt_his:  wrtVnbq  ' MYID
             enddo
           enddo
           k=N
-          do j=0,Mm
-            do i=0,Lm
+          do j=0,Mm+1
+            do i=0,Lm+1
             work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/Hz(i,j,k-ksl)
             enddo
           enddo
          else
           do k=0,N
-          do j=0,Mm
-            do i=0,Lm
+          do j=0,Mm+1
+            do i=0,Lm+1
             work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
      &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
             enddo

@@ -474,7 +474,7 @@ C$OMP BARRIER
         call Agrif_Set_bc(rhonbqid,(/0,0/))
         call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
         call Agrif_Set_interp(rhonbqid,interp=Agrif_constant)
-        call Agrif_Init_Variable(rhonbqid,procname=initwnbq)
+        call Agrif_Init_Variable(rhonbqid,procname=initrhonbq)
 #  endif
 
         if (Agrif_Parent_Nb_Step() == 0) then
@@ -889,6 +889,10 @@ CR      write(*,*) '  0' MYID
                 Wnbq_south(0:LOCALLM+1,0:0,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
 #   endif 
+#   ifdef M3FAST_RHO
+                Rnbq_south(0:LOCALLM+1,0:0,1:N,2)=
+     &            rho_nbq(0:LOCALLM+1,0:0,1:N)
+#   endif 
 #   ifdef MPI           
             endif          
 #   endif            
@@ -922,6 +926,10 @@ CR      write(*,*) '  0' MYID
                 Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
 #   endif
+#   ifdef M3FAST_RHO
+                Rnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
+     &             rho_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
+#   endif 
 #   ifdef MPI                    
             endif  
 #   endif            
@@ -954,6 +962,10 @@ CR      write(*,*) '  0' MYID
                 Wnbq_west(0:0,0:LOCALMM+1,0:N,2)=
      &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
 #   endif
+#   ifdef M3FAST_RHO
+                Rnbq_west(0:0,0:LOCALMM+1,1:N,2)=
+     &           rho_nbq(0:0,0:LOCALMM+1,1:N)
+#   endif
 #   ifdef MPI            
             endif
 #   endif            
@@ -985,6 +997,10 @@ CR      write(*,*) '  0' MYID
 #   ifdef M3FAST_W
                 Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,2)=
      &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
+#   endif
+#   ifdef M3FAST_RHO
+                Rnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
+     &            rho_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
 #   endif
 #   ifdef MPI               
             endif  
@@ -1678,9 +1694,9 @@ CR      write(*,*) '  0' MYID
      &   (/i2t,j2v,N/),qdmvnbqid)
 # endif /* M3FAST_UV */
 # ifdef M3FAST_RHO                 
-        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
-     &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
-     &    (/i2t,j2t,N,NT/),rhonbqid)
+        call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
+     &    (/'x','y','N'/),(/i1t,j1t,1/),
+     &    (/i2t,j2t,N/),rhonbqid)
 # endif /* M3FAST_RHO */
 # ifdef M3FAST_W
         call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
@@ -1782,7 +1798,7 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bc(qdmwnbqid,(/0,0/))
 # endif
 # ifdef M3FAST_RHO
-!        call Agrif_Set_bc(rhonbqid,(/0,0/))
+        call Agrif_Set_bc(rhonbqid,(/0,0/))
 # endif
 
 # ifdef ANA_GRID
@@ -1834,10 +1850,10 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
 # endif
 # ifdef M3FAST_RHO
-        !call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
-        call Agrif_Set_bcinterp(rhonbqid,interp11=Agrif_constant,
-     &           interp12=Agrif_lagrange,interp21=Agrif_lagrange,
-     &                                   interp22=Agrif_constant)
+        call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
+ !       call Agrif_Set_bcinterp(rhonbqid,interp11=Agrif_constant,
+ !    &           interp12=Agrif_lagrange,interp21=Agrif_lagrange,
+ !    &                                   interp22=Agrif_constant)
 # endif
 ! ! 
 ! !*********************************************************************
@@ -3139,8 +3155,35 @@ CR      write(*,*) '  0' MYID
 
       return
       end
-# endif /* M3FAST_W */   
+# endif /* M3FAST_W */  
+# ifdef M3FAST_RHO 
+! ! 
+! !*********************************************************************
+! !            
+! !*********************************************************************
+! ! 
+      subroutine initrhonbq(tabres,i1,i2,j1,j2,k1,k2,before)
 
+      implicit none
+#   include "param.h"
+#   include "ocean3d.h"
+#   include "scalars.h"
+#   include "zoom.h"
+#   include "nbq.h"
+
+      integer i1,i2,j1,j2,k1,k2
+      real tabres(i1:i2,j1:j2,k1:k2)
+      logical before
+ 
+      if (before) then
+        tabres = rho_nbq(i1:i2,j1:j2,k1:k2)
+      else
+        rho_nbq(i1:i2,j1:j2,k1:k2) = tabres
+      endif      
+
+      return
+      end
+# endif /* M3FAST_RHO */   
 ! ! 
 ! !*********************************************************************
 ! !            
