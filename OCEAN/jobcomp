@@ -228,7 +228,7 @@ fi
 #
 # Take environment variables for compiler and options
 #
-FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
+FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1} ${CROCO_TUNING_FLAGS-}
 CFT1=${CROCO_CFT1-$CFT1}
 
 #
