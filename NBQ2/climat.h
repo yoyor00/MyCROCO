@@ -107,6 +107,10 @@
       real uclm(GLOBAL_2D_ARRAY,N)
       real vclm(GLOBAL_2D_ARRAY,N)
       common /climat_uclm/uclm /climat_vclm/vclm
+# ifdef M3SLOW_W
+      real wclm(GLOBAL_2D_ARRAY,0:N)
+      common /climat_wclm/wclm
+# endif
 #endif
 #ifdef M2CLIMATOLOGY
 # ifdef M2NUDGING
