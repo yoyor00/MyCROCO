@@ -31,6 +31,11 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 
+# if defined DIAPYCNAL_W
+#  include "mixing.h"
+
+# endif
+
 # ifdef DIAGNOSTICS_UV
 #  include "diagnostics.h"
 # endif
@@ -40,12 +45,13 @@
 
 # include "diags_pv.h"
 ! diagnostic dissipation NJAL August 2017
-# if defined DIAGNOSTICS_DISS
+# if defined DIAGNOSTICS_DISS || defined DIAPYCNAL_W
       real alfa(PRIVATE_2D_SCRATCH_ARRAY),
      &     beta(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
 # include "compute_auxiliary_bounds.h"
 
+# if ! defined DIAPYCNAL_W
         do itrc=1,NTA
           do k=1,N
             do j=JstrR,JendR
@@ -69,8 +75,32 @@
           enddo
       enddo
 # endif /* DIAGNOSTICS_DISS */
-
-
+# elif defined DIAPYCNAL_W
+      do k=1,N
+          call alfabeta_k_tile(Istr,Iend,Jstr,Jend,k,alfa,beta)
+          do j=JstrR,JendR
+              do i=IstrR,IendR
+                  ! divide by the density gradient amplitude to compute diapycnal velocity
+#  ifdef  TS_MIX_ISO
+                  cff = 2./sqrt( (g/rho0*(dRdx(i,j,k)+dRdx(i+1,j,k)))**2
+     &                          +(g/rho0*(dRde(i,j,k)+dRde(i,j+1,k)))**2
+     &                          +( bvf(i,j,k)+ bvf(i,j,k-1))**2   )
+#  else 
+                  ! needs to recompute density gradients - not implemented yet
+                  cff = 0.
+#  endif
+                  Trhs(i,j,k,1)= (- alfa(i,j)*TVmix(i,j,k,1)
+     &                            + beta(i,j)*TVmix(i,j,k,2)
+     &                            - alfa(i,j)*TForc(i,j,k,1)
+     &                            + beta(i,j)*TForc(i,j,k,2) ) 
+     &                            * cff 
+                  Trhs(i,j,k,2)= (- alfa(i,j)*THmix(i,j,k,1)
+     &                            + beta(i,j)*THmix(i,j,k,2) )
+     &                            * cff
+              enddo
+          enddo
+      enddo
+# endif /* DIAGNOSTICS_DISS */
 
 
       return

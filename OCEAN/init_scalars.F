@@ -3766,7 +3766,15 @@ CR       write(stdout,'(1x,A,I3)') 'indxpvTrhs = ',indxpvTrhs+itrc-1
        nametrc=vname(1,indxT+itrc-1)(1:lvar)
        lvar=lenstr(nametrc)
        unitt=vname(3,indxT+itrc-1)
+#if defined  DIAPYCNAL_W
+       if (itrc.eq.1) then
+         write(vname1,*) 'wdia_vmix                                 '
+       else
+         write(vname1,*) 'wdia_hmix                                 '
+       endif
+#else
        write(vname1,*) trim(nametrc),'_rhs                        '
+#endif
        vname(1,indxpvTrhs+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxpvTrhs+itrc-1)
        vname(2,indxpvTrhs+itrc-1)='right hand side                '
