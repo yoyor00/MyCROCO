@@ -121,3 +121,12 @@
    cn_sedrst_out = "restart_sed"   !  suffix of pass. [sediment] restart name (output)
    cn_sedrst_outdir = "."          !  directory to which to write output sediment restarts
 /
+!-----------------------------------------------------------------------
+&nam_output     !   parameters for outputing the sediment module
+!-----------------------------------------------------------------------
+   ldefsedpis_avg = .true.            !  write averaged output variables
+   cn_sedwri_out  = "output_sed.nc"   !  name of the input restart file name of the sediment module
+   nrpfsedpis_avg = 0                 ! Frequency of the averaged outputs
+   nwrtsedpis_avg = 24                ! Frequency of the averaged outputs
+   ntssedpis_avg  =  1                ! ???
+/
