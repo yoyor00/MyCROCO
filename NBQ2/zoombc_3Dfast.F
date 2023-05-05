@@ -48,9 +48,6 @@
 #  define LOCALLM Lm
 #  define LOCALMM Mm
 # endif
-# ifdef NHINT
-      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(real(Ndtnbq)/real(Ndtfast))
-# endif
       if(Agrif_NbStepint() == 0) then
 
 # ifdef MASKING
@@ -64,9 +61,8 @@
      &                         procname=qdmuinterp)
         Agrif_UseSpecialValue=.false.
       endif
-
-      !ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
-      ainterp(1)= (REAL(Agrif_Nbstepint3d()) + 1.) / Agrif_Rhot()
+      ainterp(1)=  Real(Agrif_Mod3d(iif+(iic-1)*nfast-1))
+     &           * Agrif_NHINT_tcoef() / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 # ifdef AGRIF_OBC_SOUTH
@@ -180,9 +176,6 @@
 !          
 # include "compute_auxiliary_bounds.h"
 !
-# ifdef NHINT
-      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(real(Ndtnbq)/real(Ndtfast))
-# endif
       if(Agrif_NbStepint() == 0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -195,9 +188,8 @@
      &                         procname=qdmvinterp)
         Agrif_UseSpecialValue=.false.
       endif
-
-      !ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
-      ainterp(1)= (REAL(Agrif_Nbstepint3d()) + 1.) / Agrif_Rhot()
+      ainterp(1)=  Real(Agrif_Mod3d(iif+(iic-1)*nfast-1))
+     &           * Agrif_NHINT_tcoef() / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -301,7 +293,8 @@
       real     :: ainterp(2)
       integer  :: irhot,irhox,irhoy
       real     :: rrhot,cffx,cffy
-      external :: qdmwinterp   
+      external :: qdmwinterp  
+# include "compute_auxiliary_bounds.h" 
 # ifdef MPI
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
@@ -309,21 +302,6 @@
 #  define LOCALLM Lm
 #  define LOCALMM Mm
 # endif   
-!          
-!          
-# include "compute_auxiliary_bounds.h"
-!
-      irhot=Agrif_Irhot()
-      irhox=Agrif_Irhox()
-      irhoy=Agrif_Irhoy()
-
-      rrhot=real(irhot)
-      cffx=2./(real(irhox)+1)
-      cffy=2./(real(irhoy)+1)
-
-# ifdef NHINT
-      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(real(Ndtnbq)/real(Ndtfast))
-# endif
       if(Agrif_NbStepint() == 0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -336,9 +314,8 @@
      &                         procname=qdmwinterp)
         Agrif_UseSpecialValue=.false.
       endif
-
-      !ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
-      ainterp(1)= (REAL(Agrif_Nbstepint3d()) + 1.) / Agrif_Rhot()
+      ainterp(1)=  Real(Agrif_Mod3d(iif+(iic-1)*nfast-1))
+     &           * Agrif_NHINT_tcoef() / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -350,10 +327,8 @@
 #   else
             wnbqclm(i,Jstr-1,k)=
 #   endif
-     &    (cffy*
      &    (ainterp(1)*Wnbq_south(i,Jstr-1,k,1)+
      &     ainterp(2)*Wnbq_south(i,Jstr-1,k,2))
-     &       +(1.-cffy)*qdmw_nbq(i,Jstr  ,k))
 #   ifdef MASKING     
      &    *rmask(i,Jstr-1)
 #   endif
@@ -371,10 +346,8 @@
 #   else
             wnbqclm(i,Jend+1,k)=
 #   endif
-     &    (cffy*
      &    (ainterp(1)*Wnbq_north(i,Jend+1,k,1)+
      &     ainterp(2)*Wnbq_north(i,Jend+1,k,2))
-     &       +(1.-cffy)*qdmw_nbq(i,Jend  ,k))   
 #   ifdef MASKING     
      &    *rmask(i,Jend+1)
 #   endif 
@@ -391,10 +364,8 @@
 #   else
             wnbqclm(Istr-1,j,k)=
 #   endif
-     &    (cffx*
      &    (ainterp(1)*Wnbq_west(Istr-1,j,k,1)+
      &     ainterp(2)*Wnbq_west(Istr-1,j,k,2))
-     &      +(1.-cffx)*qdmw_nbq(Istr  ,j,k))
 #   ifdef MASKING     
      &    *rmask(Istr-1,j)
 #   endif
@@ -412,10 +383,8 @@
 #   else
             wnbqclm(Iend+1,j,k)=
 #   endif
-     &    (cffx*
      &    (ainterp(1)*Wnbq_east(Iend+1,j,k,1)+
      &     ainterp(2)*Wnbq_east(Iend+1,j,k,2))
-     &      +(1.-cffx)*qdmw_nbq(Iend  ,j,k))
 #   ifdef MASKING     
      &    *rmask(Iend+1,j)
 #   endif
@@ -664,10 +633,6 @@
        logical :: western_side, eastern_side
        logical :: northern_side,southern_side
 
-       if (before) then
-         tabres(i1:i2,j1:j2,k1:k2) = qdmw_nbq(i1:i2,j1:j2,k1:k2)
-       else
-
 #  ifdef MPI
 #   define LOCALLM Lmmpi
 #   define LOCALMM Mmmpi
@@ -676,6 +641,9 @@
 #   define LOCALMM Mm
 #  endif
 
+       if (before) then
+         tabres(i1:i2,j1:j2,k1:k2) = qdmw_nbq(i1:i2,j1:j2,k1:k2)
+       else
          western_side  = (nb == 1).AND.(ndir == 1)
          eastern_side  = (nb == 1).AND.(ndir == 2)
          southern_side = (nb == 2).AND.(ndir == 1)
@@ -788,10 +756,6 @@
 !          
 # include "compute_auxiliary_bounds.h"
 !
-
-# ifdef NHINT
-      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(real(Ndtnbq)/real(Ndtfast))
-# endif
       if(Agrif_NbStepint() == 0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .TRUE.
@@ -804,11 +768,10 @@
      &       procname=rhointerp)
         Agrif_UseSpecialValue=.FALSE.
       endif
-
-      !ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
-      ainterp(1)= (REAL(Agrif_Nbstepint3d()) + 1.) / Agrif_Rhot()
+      ainterp(1)=  Real(Agrif_Mod3d(iif+(iic-1)*nfast-1))
+     &           * Agrif_NHINT_tcoef() / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
-
+      
 # ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
         do k=1,N      

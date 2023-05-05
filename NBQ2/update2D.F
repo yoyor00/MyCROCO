@@ -14,18 +14,11 @@
 #include "cppdefs.h"
 
 #if defined AGRIF && defined SOLVE3D && defined AGRIF_2WAY
-!
-!======================================================================
-!
-!
-!           Update parent solution in case of 2-way nesting
-!
-!
-!======================================================================
-!
 ! ! 
 ! !*********************************************************************
 ! !*********************************************************************
+! ! 
+! !          Update parent solution in case of 2-way nesting
 ! ! 
 ! !*********************************************************************
 ! !*********************************************************************
@@ -265,8 +258,7 @@ C$OMP END MASTER
 ! ! 3Dfast Needs update ?
 ! !--------------------------------------------------------------------
 ! !    
-      IF (mod( iif+(nbcoarse-1)*mod(nfast,irhot)
-     &        ,Ndtnbq*irhot).EQ.0) THEN
+      IF (Agrif_Mod3d(iif+(iic-1)*Nfast).EQ.0) THEN
 ! !
 ! !--------------------------------------------------------------------
 ! ! Needs update ! ( @mod(iif,irhot)==0 + case mod(nfast,irhot)<>0 )
@@ -291,7 +283,8 @@ C$OMP MASTER
 # endif
       Agrif_SpecialValueFineGrid = 0.
       indupdate = 0
-      global_update_2d = .FALSE.
+      global_update_2d = .TRUE.
+
 ! !
 ! !--------------------------------------------------------------------
 ! ! Main case but "DECAL"
@@ -300,7 +293,7 @@ C$OMP MASTER
 # ifdef AGRIF_UPDATE_DECAL
 #  ifdef M3FAST_UV
       Call Agrif_Update_Variable(updateunbqid,
-     &     locupdate1=(/0,3/),locupdate2=(/1,4/),
+  !   &     locupdate1=(/0,3/),locupdate2=(/1,4/),
      &     procname = updateunbq)
       Call Agrif_Update_Variable(updatevnbqid,
      &     locupdate1=(/1,4/),locupdate2=(/0,3/),
@@ -312,7 +305,7 @@ C$OMP MASTER
       Agrif_UseSpecialValueInUpdate = .TRUE.
 #   endif
       Call Agrif_Update_Variable(updatewnbqid,
-     &     locupdate1=(/1,4/),locupdate2=(/1,4/),
+  !   &     locupdate1=(/1,4/),locupdate2=(/1,4/),
      &     procname = updatewnbq)
       Agrif_UseSpecialValueInUpdate = .FALSE.
 #  endif
@@ -328,30 +321,30 @@ C$OMP MASTER
 ! !
 
 #  ifdef M3FAST_UV
-      Call Agrif_Update_Variable(updateunbqid,
-     &     locupdate1=(/0,3/),locupdate2=(/0,3/),
+   !   if ((iif /= nfast) .OR. (nbcoarse /= irhot)) then
+       Call Agrif_Update_Variable(updateunbqid,
+   !  &     locupdate1=(/0,3/),locupdate2=(/0,3/),
      &     procname = updateunbq)
       Call Agrif_Update_Variable(updatevnbqid,
-     &     locupdate1=(/0,3/),locupdate2=(/0,3/),
+   !  &     locupdate1=(/0,3/),locupdate2=(/0,3/),
      &     procname = updatevnbq) 
+   !   endif
 #  endif
-! !
-! !  wnbq as a special case ??????????? Should not!
-! !
 #  ifdef M3FAST_W 
-      if ((iif /= nfast) .OR. (nbcoarse /= irhot)) then
+  !    if ((iif /= nfast) .OR. (nbcoarse /= irhot)) then
 #    ifdef MASKING
         Agrif_UseSpecialValueInUpdate = .TRUE.
 #    endif
         Call Agrif_Update_Variable(updatewnbqid,
-     &       locupdate1=(/0,3/),locupdate2=(/0,3/),
+   !  &       locupdate1=(/0,3/),locupdate2=(/0,3/),
      &       procname = updatewnbq)
         Agrif_UseSpecialValueInUpdate = .FALSE.
-      endif
+  !    endif
 #  endif
 
 #  ifdef M3FAST_RHO 
       Call Agrif_Update_Variable(updaterhonbqid,
+   !  &       locupdate1=(/0,3/),locupdate2=(/0,3/),
      &     procname = updaterhonbq)
 #  endif
 # endif /* AGRIF_UPDATE_DECAL */
@@ -361,9 +354,8 @@ C$OMP MASTER
 ! !   (still when "needs update!" )
 ! !*********************************************************************
 ! !
-      IF (iif == nfast) THEN
+     ! IF (iif == nfast) THEN
         !IF (nbcoarse == irhot) THEN
-
           global_update_2d = .TRUE.
 
 # ifdef MASKING
@@ -418,13 +410,9 @@ C$OMP MASTER
           Call Agrif_Update_Variable(updatewnbqid,
      &         procname = updatewnbq)
           Agrif_UseSpecialValueInUpdate = .FALSE.
-
-          Call Agrif_Update_Variable(updaterhonbqid,
-     &         procname = updaterhonbq)
 #  endif
 #  ifdef M3FAST_RHO 
           Call Agrif_Update_Variable(updaterhonbqid,
-   !  &         locupdate1=(/1,-2/),locupdate2=(/1,-2/),
      &         procname = updaterhonbq)
 #  endif
 
@@ -441,7 +429,7 @@ C$OMP MASTER
 ! !
 
         !ENDIF
-      ENDIF
+    !  ENDIF
       ENDIF
 
       return
@@ -464,15 +452,36 @@ C$OMP MASTER
 #  include "scalars.h"
 #  include "zoom.h"
 #  include "nbq.h"
+!$AGRIF_DO_NOT_TREAT
+      logical global_update_2d
+      common/globalupdate/global_update_2d
+!$AGRIF_END_DO_NOT_TREAT
       integer :: i1,i2,j1,j2,k1,k2
+      integer :: i,j,k
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
       integer :: nb, ndir
+      
 ! Caution: ru_nbq*
     
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmu_nbq(i1:i2,j1:j2,k1:k2)
       else
+        !if (global_update_2d) then
+          do k=1,N
+            do j=j1,j2
+              do i=i1,i2
+                ru_nbq(i,j,k)=ru_nbq(i,j,k)+
+     &                    ((tabres(i,j,k)-qdmu_nbq(i,j,k))/dtnbq
+     &                    )
+     &                                       *on_u(i,j)*om_u(i,j)
+                ru_nbq_avg2(i,j,k)=ru_nbq_avg2(i,j,k)+
+     &                       ((tabres(i,j,k)-qdmu_nbq(i,j,k))/dt)!
+     &                                       *on_u(i,j)*om_u(i,j)
+              enddo
+            enddo
+          enddo
+        !endif
         qdmu_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
       endif
 
@@ -495,14 +504,35 @@ C$OMP MASTER
 #  include "scalars.h"
 #  include "zoom.h"
 #  include "nbq.h"
+!$AGRIF_DO_NOT_TREAT
+      logical global_update_2d
+      common/globalupdate/global_update_2d
+!$AGRIF_END_DO_NOT_TREAT
       integer :: i1,i2,j1,j2,k1,k2
+      integer :: i,j,k
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
       integer :: nb, ndir
+      
 ! Caution: rv_nbq*
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmv_nbq(i1:i2,j1:j2,k1:k2)
       else
+        !if (global_update_2d) then
+          do k=1,N
+            do j=j1,j2
+              do i=i1,i2
+                rv_nbq(i,j,k)=rv_nbq(i,j,k)+
+     &                    ((tabres(i,j,k)-qdmv_nbq(i,j,k))/dtnbq
+     &                    )
+     &                                       *on_v(i,j)*om_v(i,j)
+                rv_nbq_avg2(i,j,k)=rv_nbq_avg2(i,j,k)+
+     &                       ((tabres(i,j,k)-qdmv_nbq(i,j,k))/dt)!
+     &                                       *on_v(i,j)*om_v(i,j)
+              enddo
+            enddo
+          enddo
+        !endif
         qdmv_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
       endif
       
@@ -536,23 +566,24 @@ C$OMP MASTER
       integer :: nb, ndir
       integer :: i,j,k
       
-      if (before) then
+      if (before) then     
         tabres (i1:i2,j1:j2,k1:k2)=qdmw_nbq(i1:i2,j1:j2,k1:k2)
       else
-        if (global_update_2d) then
+        !if (global_update_2d) then
           do k=0,N
             do j=j1,j2
               do i=i1,i2
                 rw_nbq(i,j,k)=rw_nbq(i,j,k)+
-     &                    ((tabres(i,j,k)-qdmw_nbq(i,j,k))/dtnbq)
+     &                    ((tabres(i,j,k)-qdmw_nbq(i,j,k))/dtnbq
+     &                    )
      &                                       *on_r(i,j)*om_r(i,j)
                 rw_nbq_avg2(i,j,k)=rw_nbq_avg2(i,j,k)+
-     &                       ((tabres(i,j,k)-qdmw_nbq(i,j,k))/dt)
+     &                       ((tabres(i,j,k)-qdmw_nbq(i,j,k))/dt)!
      &                                       *on_r(i,j)*om_r(i,j)
               enddo
             enddo
           enddo
-        endif
+        !endif
         qdmw_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
       endif
 

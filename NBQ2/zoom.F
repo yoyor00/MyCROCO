@@ -460,20 +460,32 @@ C$OMP BARRIER
 #  endif
 #  ifdef M3SLOW_W
         call Agrif_Set_bc(wzid,(/0,0/))
-        call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
-        call Agrif_Set_interp(wzid,interp=Agrif_constant)
+        !call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
+        call Agrif_Set_bcinterp(wzid,interp1=Agrif_linear,
+     &                              interp2=Agrif_ppm)
+        !call Agrif_Set_interp(wzid,interp=Agrif_constant)
+        call Agrif_Set_interp(wzid,interp1=Agrif_linear,
+     &                            interp2=Agrif_ppm)
         call Agrif_Init_Variable(wzid,procname=initwz)
 #  endif
 #  ifdef M3FAST_W
         call Agrif_Set_bc(qdmwnbqid,(/0,0/))
-        call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
-        call Agrif_Set_interp(qdmwnbqid,interp=Agrif_constant)
+        !call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
+        call Agrif_Set_bcinterp(qdmwnbqid,interp1=Agrif_linear,
+     &                                    interp2=Agrif_ppm)
+        !call Agrif_Set_interp(qdmwnbqid,interp=Agrif_constant)
+        call Agrif_Set_interp(qdmwnbqid,interp1=Agrif_linear,
+     &                                  interp2=Agrif_ppm)
         call Agrif_Init_Variable(qdmwnbqid,procname=initwnbq)
 #  endif
 #  ifdef M3FAST_RHO
         call Agrif_Set_bc(rhonbqid,(/0,0/))
-        call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
-        call Agrif_Set_interp(rhonbqid,interp=Agrif_constant)
+        !call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
+        call Agrif_Set_bcinterp(rhonbqid,interp1=Agrif_linear,
+     &                                    interp2=Agrif_ppm)
+        !call Agrif_Set_interp(rhonbqid,interp=Agrif_constant)
+        call Agrif_Set_interp(rhonbqid,interp1=Agrif_linear,
+     &                                  interp2=Agrif_ppm)
         call Agrif_Init_Variable(rhonbqid,procname=initrhonbq)
 #  endif
 
@@ -1499,21 +1511,29 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1t,j1t,0/),
      &    (/i2t,j2t,N/),updatewnbqid)
 
-#   if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX
+#   ifdef AGRIF_UPDATE_FULLWEIGHTING 
       call Agrif_Set_UpdateType(updatewnbqid,
      &update=Agrif_Update_full_weighting)
 #   endif
+#   ifdef AGRIF_UPDATE_MIX
+      call Agrif_Set_UpdateType(updatewnbqid,
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Full_Weighting)
+#   endif
 #   ifdef AGRIF_UPDATE_MIX_HIGH
       call Agrif_Set_UpdateType(updatewnbqid,
-     &update=Agrif_Update_4rdorder)
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_4rdorder)
 #   endif
 #   ifdef AGRIF_UPDATE_MIX_LOW
       call Agrif_Set_UpdateType(updatewnbqid,
-     &update=Agrif_Update_Average)      
+     &update1=Agrif_Update_Copy,
+     &update2=Agrif_Update_Average)
 #   endif
 #   ifdef AGRIF_UPDATE_AVERAGE     
       call Agrif_Set_UpdateType(updatewnbqid,
-     &update=Agrif_Update_Average)     
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Copy)
 #   endif
 #  endif /* M3FAST_W */
 
@@ -1523,21 +1543,29 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1t,j1t,1/),
      &    (/i2t,j2t,N/),updaterhonbqid)
 
-#   if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX
+#   ifdef AGRIF_UPDATE_FULLWEIGHTING 
       call Agrif_Set_UpdateType(updaterhonbqid,
      &update=Agrif_Update_full_weighting)
 #   endif
+#   ifdef AGRIF_UPDATE_MIX
+      call Agrif_Set_UpdateType(updaterhonbqid,
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Full_Weighting)
+#   endif
 #   ifdef AGRIF_UPDATE_MIX_HIGH
       call Agrif_Set_UpdateType(updaterhonbqid,
-     &update=Agrif_Update_4rdorder)
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_4rdorder)
 #   endif
 #   ifdef AGRIF_UPDATE_MIX_LOW
       call Agrif_Set_UpdateType(updaterhonbqid,
-     &update=Agrif_Update_Average)      
+     &update1=Agrif_Update_Copy,
+     &update2=Agrif_Update_Average)
 #   endif
 #   ifdef AGRIF_UPDATE_AVERAGE     
       call Agrif_Set_UpdateType(updaterhonbqid,
-     &update=Agrif_Update_Average)     
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Copy)
 #   endif
 #  endif /* M3FAST_RHO */
 
@@ -1547,22 +1575,30 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1t,j1t,0/),
      &    (/i2t,j2t,N/),updatewid)
 
-#   if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX
+# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+      call Agrif_Set_UpdateType(updatewid,update=
+     &Agrif_Update_full_weighting)
+# endif
+# ifdef AGRIF_UPDATE_MIX     
       call Agrif_Set_UpdateType(updatewid,
-     &update=Agrif_Update_full_weighting)
-#   endif
-#   ifdef AGRIF_UPDATE_MIX_HIGH  
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_Average)
+# endif
+# ifdef AGRIF_UPDATE_MIX_HIGH  
       call Agrif_Set_UpdateType(updatewid,
-     &update=Agrif_Update_4rdorder)
-#   endif
-#   ifdef AGRIF_UPDATE_MIX_LOW
+     &update1=Agrif_Update_4rdorder,
+     &update2=Agrif_Update_Full_Weighting)
+# endif
+# ifdef AGRIF_UPDATE_MIX_LOW
       call Agrif_Set_UpdateType(updatewid,
-     &update=Agrif_Update_Average)
-#   endif
-#   ifdef AGRIF_UPDATE_AVERAGE     
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Copy)
+# endif
+# ifdef AGRIF_UPDATE_AVERAGE     
       call Agrif_Set_UpdateType(updatewid,
      &update=Agrif_Update_Average)     
-#   endif
+# endif
+
 
 #  endif /* M3SLOW_W */
 ! ! 
@@ -1843,17 +1879,22 @@ CR      write(*,*) '  0' MYID
      &                                    interp2=Agrif_lagrange)
 # endif
 # ifdef M3SLOW_W
-        call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
-        call Agrif_Set_bcinterp(wspongeid,interp=Agrif_constant) 
+        !call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
+        call Agrif_Set_bcinterp(wzid,interp1=Agrif_lagrange,
+     &                              interp2=Agrif_ppm)
+        !call Agrif_Set_bcinterp(wspongeid,interp=Agrif_constant) 
+        call Agrif_Set_bcinterp(wspongeid,interp1=Agrif_lagrange,
+     &                              interp2=Agrif_ppm)
 # endif
 # ifdef M3FAST_W
-        call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
+        !call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
+        call Agrif_Set_bcinterp(qdmwnbqid,interp1=Agrif_lagrange,
+     &                              interp2=Agrif_ppm)
 # endif
 # ifdef M3FAST_RHO
-        call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
- !       call Agrif_Set_bcinterp(rhonbqid,interp11=Agrif_constant,
- !    &           interp12=Agrif_lagrange,interp21=Agrif_lagrange,
- !    &                                   interp22=Agrif_constant)
+  !      call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
+        call Agrif_Set_bcinterp(rhonbqid,interp1=Agrif_lagrange,
+     &           interp2=Agrif_ppm)
 # endif
 ! ! 
 ! !*********************************************************************
