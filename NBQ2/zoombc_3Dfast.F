@@ -61,8 +61,10 @@
      &                         procname=qdmuinterp)
         Agrif_UseSpecialValue=.false.
       endif
-      ainterp(1)=  Real(Agrif_Mod3d(iif+(iic-1)*nfast-1))
-     &           * Agrif_NHINT_tcoef() / Agrif_Rhot()
+
+      ainterp(1)= real(mod(int(iif+(iic-1)*nfast-1
+     &          * Agrif_NHINT_tcoef()), Agrif_iRhot()))
+     &          / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 # ifdef AGRIF_OBC_SOUTH
@@ -188,8 +190,9 @@
      &                         procname=qdmvinterp)
         Agrif_UseSpecialValue=.false.
       endif
-      ainterp(1)=  Real(Agrif_Mod3d(iif+(iic-1)*nfast-1))
-     &           * Agrif_NHINT_tcoef() / Agrif_Rhot()
+      ainterp(1)= real(mod(int(iif+(iic-1)*nfast-1
+     &          * Agrif_NHINT_tcoef()), Agrif_iRhot()))
+     &          / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -314,8 +317,9 @@
      &                         procname=qdmwinterp)
         Agrif_UseSpecialValue=.false.
       endif
-      ainterp(1)=  Real(Agrif_Mod3d(iif+(iic-1)*nfast-1))
-     &           * Agrif_NHINT_tcoef() / Agrif_Rhot()
+      ainterp(1)= real(mod(int(iif+(iic-1)*nfast-1
+     &          * Agrif_NHINT_tcoef()), Agrif_iRhot()))
+     &          / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -768,8 +772,9 @@
      &       procname=rhointerp)
         Agrif_UseSpecialValue=.FALSE.
       endif
-      ainterp(1)=  Real(Agrif_Mod3d(iif+(iic-1)*nfast-1))
-     &           * Agrif_NHINT_tcoef() / Agrif_Rhot()
+      ainterp(1)= real(mod(int(iif+(iic-1)*nfast-1
+     &          * Agrif_NHINT_tcoef()), Agrif_iRhot()))
+     &          / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
       
 # ifdef AGRIF_OBC_SOUTH

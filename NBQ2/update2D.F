@@ -257,8 +257,9 @@ C$OMP END MASTER
 ! !--------------------------------------------------------------------
 ! ! 3Dfast Needs update ?
 ! !--------------------------------------------------------------------
-! !    
-      IF (Agrif_Mod3d(iif+(iic-1)*Nfast).EQ.0) THEN
+! !   
+      IF (mod( iif+(iic-1)*Nfast
+     &        ,Agrif_iRhot()*Agrif_NHINT_tcoef()).EQ.0) THEN
 ! !
 ! !--------------------------------------------------------------------
 ! ! Needs update ! ( @mod(iif,irhot)==0 + case mod(nfast,irhot)<>0 )

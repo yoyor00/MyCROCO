@@ -1036,20 +1036,5 @@ function Agrif_NHINT_tcoef ( )
 !---------------------------------------------------------------------------------------------------
 end function Agrif_NHINT_tcoef
 !===================================================================================================
-!
-!===================================================================================================
-!  function Agrif_Mod3d 
-!
-!> function for the calculation of the coefficients used for the time interpolation
-!! (module #Agrif_Boundary).
-!---------------------------------------------------------------------------------------------------
-function Agrif_Mod3d (iif_l )
-!---------------------------------------------------------------------------------------------------
-    integer :: Agrif_Mod3d ! result
-    integer :: iif_l
-!
-    Agrif_Mod3d = mod(iif_l,Agrif_iRhot()*Agrif_Curgrid % NHINT_tcoef)
-!---------------------------------------------------------------------------------------------------
-end function Agrif_Mod3d
 
 end module Agrif_CurgridFunctions
