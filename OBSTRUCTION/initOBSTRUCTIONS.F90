@@ -119,15 +119,15 @@ MODULE initobstructions
    NAMELIST/obst_main/obst_nbvar,obst_fn_position,             & 
                       obst_fn_var1,obst_fn_var2,obst_fn_var3,  &
                       obst_fn_var4,obst_fn_var5,obst_fn_var6
-   NAMELIST/obst_numerics/obst_i_z0bstress,obst_c_paramhuv,obst_c_imp3d,obst_c_imp2d,obst_fricwav
-   NAMELIST/obst_output/obst_l_out_pos,obst_l_out_height_f,obst_l_out_height_e,obst_l_out_dens_f,     &
-                        obst_l_out_dens_e,obst_l_out_width_f,obst_l_out_width_e,                      &
-                        obst_l_out_thick_f,obst_l_out_thick_e,obst_l_out_oai,                         &
-                        obst_l_out_theta,obst_l_out_cover,obst_l_out_frac_z,                          &
-                        obst_l_out_fuv,obst_l_out_fuzvz,obst_l_out_a2d,obst_l_out_a3d,obst_l_out_s2d, &
-                        obst_l_out_s3d,obst_l_out_drag,obst_l_out_tau,                                &
-                        obst_l_out_z0bed,obst_l_out_z0obst,obst_l_out_z0bstress,obst_l_out_bstress,   &
-                        obst_l_out_bstressc,obst_l_out_bstressw
+   NAMELIST/obst_numerics/obst_i_z0bstress,obst_c_paramhuv,obst_c_imp3d,obst_c_imp2d
+   NAMELIST/obst_output/l_obstout_pos,l_obstout_height_f,l_obstout_height_e,l_obstout_dens_f,    &
+                        l_obstout_dens_e,l_obstout_width_f,l_obstout_width_e,                    &
+                        l_obstout_thick_f,l_obstout_thick_e,l_obstout_oai,                       &
+                        l_obstout_theta,l_obstout_cover,l_obstout_frac_z,                        &
+                        l_obstout_fuv,l_obstout_fuzvz,l_obstout_a2d,l_obstout_a3d,l_obstout_s2d, &
+                        l_obstout_s3d,l_obstout_drag,l_obstout_tau,                              &
+                        l_obstout_z0bed,l_obstout_z0obst,l_obstout_z0bstress,l_obstout_bstress,  &
+                        l_obstout_bstressc,l_obstout_bstressw
    !!----------------------------------------------------------------------
    !! * Executable part
     obst_h0fond = h0fond_in
@@ -187,9 +187,9 @@ MODULE initobstructions
    ! * OUTPUTS VARIABLES
    ! ***********************
 #ifdef MUSTANG
-   obst_l_out_bstress      = .FALSE.
-   obst_l_out_bstressc     = .FALSE.
-   obst_l_out_bstressw     = .FALSE.
+   l_obstout_bstress      = .FALSE.
+   l_obstout_bstressc     = .FALSE.
+   l_obstout_bstressw     = .FALSE.
 #endif
    obst_nout_pos           = 'pos'       ! Name obstruction position
    obst_nout_height_f      = 'height_f'  ! Name 2D obstruction height (forcing) (iv,i,j)
@@ -300,7 +300,6 @@ MODULE initobstructions
    IF(.NOT.obst_l_z0bstress_tot) THEN
      obst_z0bstress(:,:) = obst_i_z0bstress
    ENDIF
-   obst_fws2=obst_fricwav*0.5_rsh
    ! **********************
    ! * OTHER INITIALIZATIONS
    ! ***********************
@@ -359,42 +358,42 @@ MODULE initobstructions
    INTEGER               :: r_obst_varnum
    CHARACTER(len=lchain) :: r_obst_varname
    ! For obst_var_option
-   LOGICAL               :: r_obst_l_cylindre,r_obst_l_flexible,r_obst_l_downward, &
-                            r_obst_l_3dobst,r_obst_l_noturb
+   LOGICAL               :: r_l_obst_cylindre,r_l_obst_flexible,r_l_obst_downward, &
+                            r_l_obst_3dobst,r_l_obst_noturb
    ! For obst_var_init
-   LOGICAL               :: r_obst_l_filechar,r_obst_l_init_spatial,r_obst_l_filedistri
+   LOGICAL               :: r_l_obst_filechar,r_l_obst_init_spatial,r_l_obst_filedistri
    CHARACTER(len=lchain) :: r_obst_fn_char,r_obst_fn_distrib
    REAL(KIND=rsh)        :: r_obst_i_height,r_obst_i_width,r_obst_i_thick,r_obst_i_dens
    ! For obst_var_flexibility
-   LOGICAL               :: r_obst_l_abdelposture,r_obst_l_param_height
+   LOGICAL               :: r_l_obst_abdelposture,r_l_obst_param_height
    INTEGER               :: r_obst_c_abdel_nmax
    REAL(KIND=rsh)        :: r_obst_c_rho,r_obst_c_lift,r_obst_c_shelter,r_obst_c_height_x0,r_obst_c_height_x1
    ! For obst_var_roughdrag
-   LOGICAL               :: r_obst_l_drag_cste,r_obst_l_abdelrough_cste
+   LOGICAL               :: r_l_obst_drag_cste,r_l_obst_abdelrough_cste
    REAL(KIND=rsh)        :: r_obst_c_crough_x0,r_obst_c_crough_x1,r_obst_c_drag,r_obst_c_lz
    ! For obst_var_fracxy
-   LOGICAL               :: r_obst_l_fracxy
+   LOGICAL               :: r_l_obst_fracxy
    INTEGER               :: r_obst_fracxy_type
    REAL(KIND=rsh)        :: r_obst_c_fracxy_k0,r_obst_c_fracxy_k1,r_obst_c_fracxy_l
    ! For obst_var_bstress
-   LOGICAL               :: r_obst_l_z0bstress
+   LOGICAL               :: r_l_obst_z0bstress
    INTEGER               :: r_obst_z0bstress_option
    REAL(KIND=rsh)        :: r_obst_c_z0bstress,r_obst_c_z0bstress_x0,r_obst_c_z0bstress_x1,r_obst_c_z0bstress_x2
    !! * Namelists
    NAMELIST/obst_var_main/r_obst_varnum,r_obst_varname
-   NAMELIST/obst_var_option/r_obst_l_cylindre,r_obst_l_flexible,r_obst_l_downward,          &
-                            r_obst_l_3dobst,r_obst_l_noturb
-   NAMELIST/obst_var_init/r_obst_l_filechar,r_obst_l_init_spatial,r_obst_l_filedistri,      &
+   NAMELIST/obst_var_option/r_l_obst_cylindre,r_l_obst_flexible,r_l_obst_downward,          &
+                            r_l_obst_3dobst,r_l_obst_noturb
+   NAMELIST/obst_var_init/r_l_obst_filechar,r_l_obst_init_spatial,r_l_obst_filedistri,      &
                           r_obst_fn_char,r_obst_fn_distrib,                                 &
                           r_obst_i_height,r_obst_i_width,r_obst_i_thick,r_obst_i_dens
-   NAMELIST/obst_var_flexibility/r_obst_l_abdelposture,r_obst_l_param_height,               &
+   NAMELIST/obst_var_flexibility/r_l_obst_abdelposture,r_l_obst_param_height,               &
                                  r_obst_c_abdel_nmax,r_obst_c_rho,r_obst_c_lift,            &
                                  r_obst_c_shelter,r_obst_c_height_x0,r_obst_c_height_x1
-   NAMELIST/obst_var_roughdrag/r_obst_l_drag_cste,r_obst_l_abdelrough_cste,                 &
+   NAMELIST/obst_var_roughdrag/r_l_obst_drag_cste,r_l_obst_abdelrough_cste,                 &
                                r_obst_c_crough_x0,r_obst_c_crough_x1,r_obst_c_drag,r_obst_c_lz
-   NAMELIST/obst_var_fracxy/r_obst_l_fracxy,r_obst_fracxy_type,r_obst_c_fracxy_k0,          &
+   NAMELIST/obst_var_fracxy/r_l_obst_fracxy,r_obst_fracxy_type,r_obst_c_fracxy_k0,          &
                             r_obst_c_fracxy_k1,r_obst_c_fracxy_l
-   NAMELIST/obst_var_bstress/r_obst_l_z0bstress,r_obst_z0bstress_option,r_obst_c_z0bstress, &
+   NAMELIST/obst_var_bstress/r_l_obst_z0bstress,r_obst_z0bstress_option,r_obst_c_z0bstress, &
                              r_obst_c_z0bstress_x0,r_obst_c_z0bstress_x1,r_obst_c_z0bstress_x2
    !!----------------------------------------------------------------------
    !! * Executable part
@@ -429,15 +428,15 @@ MODULE initobstructions
    obst_varnum(iv)            = r_obst_varnum
    obst_varname(iv)           = r_obst_varname
    ! * For namelist obst_var_option
-   obst_l_cylindre(iv)        = r_obst_l_cylindre
-   obst_l_flexible(iv)        = r_obst_l_flexible
-   obst_l_downward(iv)        = r_obst_l_downward
-   obst_l_3dobst(iv)          = r_obst_l_3dobst
-   obst_l_noturb(iv)          = r_obst_l_noturb
+   obst_l_cylindre(iv)        = r_l_obst_cylindre
+   obst_l_flexible(iv)        = r_l_obst_flexible
+   obst_l_downward(iv)        = r_l_obst_downward
+   obst_l_3dobst(iv)          = r_l_obst_3dobst
+   obst_l_noturb(iv)          = r_l_obst_noturb
    ! * For namelist obst_var_init
-   obst_l_filechar(iv)        = r_obst_l_filechar
-   obst_l_init_spatial(iv)    = r_obst_l_init_spatial
-   obst_l_filedistri(iv)      = r_obst_l_filedistri
+   obst_l_filechar(iv)        = r_l_obst_filechar
+   obst_l_init_spatial(iv)    = r_l_obst_init_spatial
+   obst_l_filedistri(iv)      = r_l_obst_filedistri
    obst_fn_char(iv)           = r_obst_fn_char
    obst_fn_distrib(iv)        = r_obst_fn_distrib
    obst_i_height(iv)          = r_obst_i_height
@@ -445,8 +444,8 @@ MODULE initobstructions
    obst_i_thick(iv)           = r_obst_i_thick
    obst_i_dens(iv)            = r_obst_i_dens
    ! * For namelist obst_var_flexibility
-   obst_l_abdelposture(iv)    = r_obst_l_abdelposture
-   obst_l_param_height(iv)    = r_obst_l_param_height
+   obst_l_abdelposture(iv)    = r_l_obst_abdelposture
+   obst_l_param_height(iv)    = r_l_obst_param_height
    obst_c_abdel_nmax(iv)      = r_obst_c_abdel_nmax
    obst_c_rho(iv)             = r_obst_c_rho
    obst_c_lift(iv)            = r_obst_c_lift
@@ -454,20 +453,20 @@ MODULE initobstructions
    obst_c_height_x0(iv)       = r_obst_c_height_x0
    obst_c_height_x1(iv)       = r_obst_c_height_x1
    ! * For namelist obst_var_roughdrag
-   obst_l_drag_cste(iv)       = r_obst_l_drag_cste
-   obst_l_abdelrough_cste(iv) = r_obst_l_abdelrough_cste
+   obst_l_drag_cste(iv)       = r_l_obst_drag_cste
+   obst_l_abdelrough_cste(iv) = r_l_obst_abdelrough_cste
    obst_c_crough_x0(iv)       = r_obst_c_crough_x0
    obst_c_crough_x1(iv)       = r_obst_c_crough_x1
    obst_c_drag(iv)            = r_obst_c_drag
    obst_c_lz(iv)              = r_obst_c_lz
    ! * For namelist obst_var_fracxy
-   obst_l_fracxy(iv)          = r_obst_l_fracxy
+   obst_l_fracxy(iv)          = r_l_obst_fracxy
    obst_fracxy_type(iv)       = r_obst_fracxy_type
    obst_c_fracxy_k0(iv)       = r_obst_c_fracxy_k0
    obst_c_fracxy_k1(iv)       = r_obst_c_fracxy_k1
    obst_c_fracxy_l(iv)        = r_obst_c_fracxy_l
    ! * For namelist obst_var_bstress
-   obst_l_z0bstress(iv)       = r_obst_l_z0bstress
+   obst_l_z0bstress(iv)       = r_l_obst_z0bstress
    obst_z0bstress_option(iv)  = r_obst_z0bstress_option
    obst_c_z0bstress(iv)       = r_obst_c_z0bstress
    obst_c_z0bstress_x0(iv)    = r_obst_c_z0bstress_x0
