@@ -165,7 +165,7 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
    
    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
-   INTEGER(KIND=rsh), INTENT(IN) :: cmu
+   REAL(KIND=rsh), INTENT(IN) :: cmu
    REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(INOUT) :: z0b 
    REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
    REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
