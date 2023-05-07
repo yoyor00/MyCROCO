@@ -1,8 +1,8 @@
 #include "cppdefs.h"
  
-MODULE comOBSTRUCTIONS
+MODULE comobstructions
 
-#ifdef OBSTRUCTIONS
+#ifdef OBSTRUCTION
    !&E======================================================================
    !&E                   ***  MODULE comOBSTRUCTIONS  ***
    !&E
@@ -12,6 +12,7 @@ MODULE comOBSTRUCTIONS
    !&E     ! 2018-04-13 (F. Ganthy) Original code : moved from obstructions.F90
    !&E     ! 2022-01-11 (A. Le Pevedic) Introduction of averaged parameters to send to WW3 
    !&E     ! 2022-12 (S. Le Gac) Adaptation for CROCO, move alloc/dealloc to initOBSTRUCTIONS.F90
+   !&E     ! 2023-04 (S. Le Gac) Adaptation for CROCO, rename ALL variables with obst_ at the begining
    !&E
    !&E======================================================================
 
@@ -29,11 +30,12 @@ MODULE comOBSTRUCTIONS
    INTEGER,PARAMETER :: riosh = 8, riolg = 8, rlg = 8, rsh = 8
    INTEGER,PARAMETER :: lchain = 200
    INTEGER,PARAMETER :: pi = 3.14159265358979323846
-   REAL,PARAMETER :: c2turb = 1.92  ! beta2 in gls kepsilon TODO : add test in compatibility to be sure GLS_KEPSILON is used
+   REAL,PARAMETER :: obst_c2turb = 1.92  ! beta2 in gls kepsilon TODO : add compatibility test to be sure GLS_KEPSILON is used and take beta2 value at initialisation
 
    INTEGER,PUBLIC :: imin, imax, jmin, jmax, kmax 
    INTEGER,PUBLIC :: ierrorlog, iwarnlog, iscreenlog 
-   REAL,PUBLIC :: h0fond
+   REAL,PUBLIC :: obst_h0fond
+   REAL,PUBLIC :: obst_cmu
 
 
    !! * Shared or public module variables
@@ -43,7 +45,7 @@ MODULE comOBSTRUCTIONS
    ! obst_i_*  : variables used for initialization
    ! obst_c_*  : constant parameters
    ! obst_fn_* : filename variables
-   ! l_obst_*  : logical variables
+   ! obst_l_*  : logical variables
 
    !--------------------------------------------------------------------------
    ! * VARIABLES WITHOUT DEPENDANCE ON THE NUMBER OF OBSTRUCTIONS VARIABLES  :
@@ -55,85 +57,85 @@ MODULE comOBSTRUCTIONS
    ! * Variables for outputs purpose
    CHARACTER(LEN=lchain),PUBLIC :: obst_fn_out                              ! Name of the output file for obstructions
 
-   LOGICAL,PUBLIC :: l_obstout_pos                                          ! Write obstruction position (iv,i,j)
-   LOGICAL,PUBLIC :: l_obstout_height_f                                     ! Write 2D obstruction height (forcing) (iv,i,j)
-   LOGICAL,PUBLIC :: l_obstout_height_e                                     ! Write 2D obstruction height (effective) (iv,i,j)
-   LOGICAL,PUBLIC :: l_obstout_height_mean                                  ! Write mean obstruction height (over all obstructions) (i,j)
-   LOGICAL,PUBLIC :: l_obstout_dens_f                                       ! Write 2D obstruction density (forcing) (iv,i,j)
-   LOGICAL,PUBLIC :: l_obstout_dens_e                                       ! Write 3D obstruction density (3D effective) (iv,k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_dens_2d                                      ! Write 2D obstruction density (2D effective) (i,j)
-   LOGICAL,PUBLIC :: l_obstout_width_f                                      ! Write 2D obstruction width (forcing) (iv,i,j)
-   LOGICAL,PUBLIC :: l_obstout_width_e                                      ! Write 3D obstruction width (3D effective) (iv,k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_width_2d                                     ! Write 2D obstruction width (2D effective) (i,j)
-   LOGICAL,PUBLIC :: l_obstout_thick_f                                      ! Write 2D obstruction thick (forcing )(iv,i,j)
-   LOGICAL,PUBLIC :: l_obstout_thick_e                                      ! Write 3D obstruction thick (3D effective) (iv,k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_oai                                          ! Write 2D obstruction area index, (iv,i,j)
-   LOGICAL,PUBLIC :: l_obstout_theta                                        ! Write 3D obstruction bending angle, (iv,k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_cover                                        ! Write 2D obstruction coverage, (iv,i,j)
-   LOGICAL,PUBLIC :: l_obstout_frac_z                                       ! Write 3D obstruction fraction of sigma layer, (iv,k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_pos                                          ! Write obstruction position (iv,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_height_f                                     ! Write 2D obstruction height (forcing) (iv,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_height_e                                     ! Write 2D obstruction height (effective) (iv,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_height_mean                                  ! Write mean obstruction height (over all obstructions) (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_dens_f                                       ! Write 2D obstruction density (forcing) (iv,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_dens_e                                       ! Write 3D obstruction density (3D effective) (iv,k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_dens_2d                                      ! Write 2D obstruction density (2D effective) (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_width_f                                      ! Write 2D obstruction width (forcing) (iv,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_width_e                                      ! Write 3D obstruction width (3D effective) (iv,k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_width_2d                                     ! Write 2D obstruction width (2D effective) (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_thick_f                                      ! Write 2D obstruction thick (forcing )(iv,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_thick_e                                      ! Write 3D obstruction thick (3D effective) (iv,k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_oai                                          ! Write 2D obstruction area index, (iv,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_theta                                        ! Write 3D obstruction bending angle, (iv,k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_cover                                        ! Write 2D obstruction coverage, (iv,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_frac_z                                       ! Write 3D obstruction fraction of sigma layer, (iv,k,i,j)
 
-   LOGICAL,PUBLIC :: l_obstout_fuv                                          ! Write 2D obstruction friction force (i,j)
-   LOGICAL,PUBLIC :: l_obstout_fuzvz                                        ! Write 3D obstruction friction force (k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_a2d                                          ! Write 2D obstruction horizontal area (iv+3,i,j)
-   LOGICAL,PUBLIC :: l_obstout_a3d                                          ! Write 3D obstruction horizontal area (iv+3,k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_s2d                                          ! Write 2D obstruction vertical area (iv+3,i,j)
-   LOGICAL,PUBLIC :: l_obstout_s3d                                          ! Write 3D obstruction vertical area (iv+3,k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_drag                                         ! Write 3D obstruction drag coefficient (iv,k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_tau                                          ! Write 3D obstruction turbulence dissipation scale (k,i,j)
-   LOGICAL,PUBLIC :: l_obstout_z0bed                                        ! Write 2D bottom roughness length for bed (i,j)
-   LOGICAL,PUBLIC :: l_obstout_z0obst                                       ! Write 2D bottom roughness length for obstructions (iv+3,i,j)
-   LOGICAL,PUBLIC :: l_obstout_z0bstress                                    ! Write 2D bottom roughness length used for bottom shear stress computation (i,j)
-   LOGICAL,PUBLIC :: l_obstout_bstress                                      ! Write 2D total bottom shear stress (i,j)
-   LOGICAL,PUBLIC :: l_obstout_bstressc                                     ! Write 2D current bottom shear stress (i,j)
-   LOGICAL,PUBLIC :: l_obstout_bstressw                                     ! Write 2D wave bottom shear stress (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_fuv                                          ! Write 2D obstruction friction force (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_fuzvz                                        ! Write 3D obstruction friction force (k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_a2d                                          ! Write 2D obstruction horizontal area (iv+3,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_a3d                                          ! Write 3D obstruction horizontal area (iv+3,k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_s2d                                          ! Write 2D obstruction vertical area (iv+3,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_s3d                                          ! Write 3D obstruction vertical area (iv+3,k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_drag                                         ! Write 3D obstruction drag coefficient (iv,k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_tau                                          ! Write 3D obstruction turbulence dissipation scale (k,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_z0bed                                        ! Write 2D bottom roughness length for bed (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_z0obst                                       ! Write 2D bottom roughness length for obstructions (iv+3,i,j)
+   LOGICAL,PUBLIC :: obst_l_out_z0bstress                                    ! Write 2D bottom roughness length used for bottom shear stress computation (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_bstress                                      ! Write 2D total bottom shear stress (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_bstressc                                     ! Write 2D current bottom shear stress (i,j)
+   LOGICAL,PUBLIC :: obst_l_out_bstressw                                     ! Write 2D wave bottom shear stress (i,j)
 
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_pos                             ! Name obstruction position (iv,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_height_f                        ! Name 2D obstruction height (forcing) (iv,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_height_e                        ! Name 2D obstruction height (effective) (iv,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_dens_f                          ! Name 2D obstruction density (forcing) (iv,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_dens_e                          ! Name 3D obstruction density (3D effective) (iv,k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_width_f                         ! Name 2D obstruction width (forcing) (iv,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_width_e                         ! Name 3D obstruction width (3D effective) (iv,k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_thick_f                         ! Name 2D obstruction thick (forcing) (iv,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_thick_e                         ! Name 3D obstruction thick (3D effective) (iv,k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_oai                             ! Name 2D obstruction area index, (iv,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_theta                           ! Name 3D obstruction bending angle (iv,k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_cover                           ! Name 2D obstruction coverage, (iv,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_frac_z                          ! Name 3D obstruction fraction of sigma layer, (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_pos                             ! Name obstruction position (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_height_f                        ! Name 2D obstruction height (forcing) (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_height_e                        ! Name 2D obstruction height (effective) (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_dens_f                          ! Name 2D obstruction density (forcing) (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_dens_e                          ! Name 3D obstruction density (3D effective) (iv,k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_width_f                         ! Name 2D obstruction width (forcing) (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_width_e                         ! Name 3D obstruction width (3D effective) (iv,k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_thick_f                         ! Name 2D obstruction thick (forcing) (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_thick_e                         ! Name 3D obstruction thick (3D effective) (iv,k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_oai                             ! Name 2D obstruction area index, (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_theta                           ! Name 3D obstruction bending angle (iv,k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_cover                           ! Name 2D obstruction coverage, (iv,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_frac_z                          ! Name 3D obstruction fraction of sigma layer, (iv,i,j)
 
 
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_fuv                             ! Name 2D obstruction friction force (i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_fuzvz                           ! Name 3D obstruction friction force (k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_a2d                             ! Name 2D obstruction horizontal area (iv+3,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_a3d                             ! Name 3D obstruction horizontal area (iv+3,k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_s2d                             ! Name 2D obstruction vertical area (iv+3,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_s3d                             ! Name 3D obstruction vertical area (iv+3,k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_drag                            ! Name 3D obstruction drag coefficient (k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_tau                             ! Name 3D obstruction turbulence dissipation scale (k,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_z0bed                           ! Name 2D bottom roughness length for bed (i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_z0obst                          ! Name 2D bottom roughness length for obstruction (iv+3,i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_z0bstress                       ! Name 2D bottom roughness length used for bottom shear stress computation (i,j)
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_bstress                         ! Name 2D total bottom shear stress within output file
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_bstressc                        ! Name 2D current bottom shear stress within output file
-   CHARACTER(LEN=lchain),PUBLIC :: name_out_bstressw                        ! Name 2D wave bottom shear stress within output file
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_fuv                             ! Name 2D obstruction friction force (i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_fuzvz                           ! Name 3D obstruction friction force (k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_a2d                             ! Name 2D obstruction horizontal area (iv+3,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_a3d                             ! Name 3D obstruction horizontal area (iv+3,k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_s2d                             ! Name 2D obstruction vertical area (iv+3,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_s3d                             ! Name 3D obstruction vertical area (iv+3,k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_drag                            ! Name 3D obstruction drag coefficient (k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_tau                             ! Name 3D obstruction turbulence dissipation scale (k,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_z0bed                           ! Name 2D bottom roughness length for bed (i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_z0obst                          ! Name 2D bottom roughness length for obstruction (iv+3,i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_z0bstress                       ! Name 2D bottom roughness length used for bottom shear stress computation (i,j)
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_bstress                         ! Name 2D total bottom shear stress within output file
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_bstressc                        ! Name 2D current bottom shear stress within output file
+   CHARACTER(LEN=lchain),PUBLIC :: obst_nout_bstressw                        ! Name 2D wave bottom shear stress within output file
 
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_pos,riog_valid_max_pos         ! Valid minimum and maximum for output obstruction position
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_height,riog_valid_max_height   ! Valid minimum and maximum for output obstruction height
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_dens,riog_valid_max_dens       ! Valid minimum and maximum for output obstruction density
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_width,riog_valid_max_width     ! Valid minimum and maximum for output obstruction width
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_thick,riog_valid_max_thick     ! Valid minimum and maximum for output obstruction tickness
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_oai,riog_valid_max_oai         ! Valid minimum and maximum for output obstruction area index
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_theta,riog_valid_max_theta     ! Valid minimum and maximum for output obstruction bending angle
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_cover,riog_valid_max_cover     ! Valid minimum and maximum for output obstruction coverage
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_fracz,riog_valid_max_fracz     ! Valid minimum and maximum for output obstruction fraction in z
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_fuv,riog_valid_max_fuv         ! Valid minimum and maximum for output obstructin friction force
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_a,riog_valid_max_a             ! Valid minimum and maximum for output obstruction horizontal area
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_s,riog_valid_max_s             ! Valid minimum and maximum for output obstruction vertical area
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_drag,riog_valid_max_drag       ! Valid minimum and maximum for output obstruction drag
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_tau,riog_valid_max_tau         ! Valid minimum and maximum for output obstruction tau
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_z0,riog_valid_max_z0           ! Valid minimum and maximum for output obstruction roughness length
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_bstress,riog_valid_max_bstress ! Valid minimum and maximum for output bottom shear stress
-   REAL(KIND=riosh),PUBLIC :: riog_valid_min_zroot,riog_valid_max_zroot     ! Valid minimum and maximum for output obstruction root depth
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_pos,obst_riog_max_pos         ! Valid minimum and maximum for output obstruction position
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_height,obst_riog_max_height   ! Valid minimum and maximum for output obstruction height
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_dens,obst_riog_max_dens       ! Valid minimum and maximum for output obstruction density
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_width,obst_riog_max_width     ! Valid minimum and maximum for output obstruction width
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_thick,obst_riog_max_thick     ! Valid minimum and maximum for output obstruction tickness
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_oai,obst_riog_max_oai         ! Valid minimum and maximum for output obstruction area index
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_theta,obst_riog_max_theta     ! Valid minimum and maximum for output obstruction bending angle
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_cover,obst_riog_max_cover     ! Valid minimum and maximum for output obstruction coverage
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_fracz,obst_riog_max_fracz     ! Valid minimum and maximum for output obstruction fraction in z
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_fuv,obst_riog_max_fuv         ! Valid minimum and maximum for output obstructin friction force
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_a,obst_riog_max_a             ! Valid minimum and maximum for output obstruction horizontal area
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_s,obst_riog_max_s             ! Valid minimum and maximum for output obstruction vertical area
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_drag,obst_riog_max_drag       ! Valid minimum and maximum for output obstruction drag
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_tau,obst_riog_max_tau         ! Valid minimum and maximum for output obstruction tau
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_z0,obst_riog_max_z0           ! Valid minimum and maximum for output obstruction roughness length
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_bstress,obst_riog_max_bstress ! Valid minimum and maximum for output bottom shear stress
+   REAL(KIND=riosh),PUBLIC :: obst_riog_min_zroot,obst_riog_max_zroot     ! Valid minimum and maximum for output obstruction root depth
 
    ! Other variables/parameters
    INTEGER,PUBLIC  :: obst_iv
@@ -149,7 +151,7 @@ MODULE comOBSTRUCTIONS
    INTEGER,PUBLIC  :: obst_nv_flexi_do                 ! Number of variable for flexible and downward (from sea-surface) obstructions
    INTEGER,PUBLIC  :: obst_kmax                        ! Number of sigma layer effectively used (=kmax for 3D modele, =obst_kmax2d for 2dmodele)
 
-   LOGICAL,PUBLIC :: l_obst_z0bstress_tot              ! IF ONLY ONE obstruction VARIABLE USED Z0SED
+   LOGICAL,PUBLIC :: obst_l_z0bstress_tot              ! IF ONLY ONE obstruction VARIABLE USED Z0SED
 
    REAL(KIND=rsh),PUBLIC  :: obst_c_paramhuv           ! The coefficient of obstruction height for computation of velocity
    REAL(KIND=rsh),PUBLIC  :: obst_c_imp3d              ! Implicitation coefficient for obstructions formulations in 3D
@@ -165,7 +167,7 @@ MODULE comOBSTRUCTIONS
 !END FG
 
    REAL(KIND=rsh),PUBLIC  :: obst_i_z0bstress          ! Roughness length for bottom shear stress without obstruction (= z0seduni if key_sedim)
-   REAL(KIND=rsh),PUBLIC  :: fricwav,fws2              ! Wave related friction factor for bottom shear stress 
+   REAL(KIND=rsh),PUBLIC  :: obst_fricwav,obst_fws2              ! Wave related friction factor for bottom shear stress 
 
    INTEGER,PARAMETER,PUBLIC         :: obst_kmax2d = 20       ! Number of sigma layer used for modele2D
    REAL(KIND=rsh),PARAMETER,PUBLIC  :: obst_p_hmin = 0.05_rsh ! Minimum coefficient value for obstruction height under bending  
@@ -179,20 +181,20 @@ MODULE comOBSTRUCTIONS
    INTEGER,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_nbhnorm                  ! Number of vertical steps from the distribution file (iv)
    INTEGER,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_c_abdel_nmax             ! Number of segments for Abdlerhman method (bending) (iv) 
 
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_filechar               ! For reading time-series of obstructions characteristics from a file (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_filedistri             ! For reading the vertical distribution of obstructions from a file (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_init_spatial           ! For reading spatial file for density, height, width and thickness (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_flexible               ! For obstructions flexibility (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_cylindre               ! For obstruction shape (cylinder, ellispe / parallelepipeds), (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_downward               ! For downward obstructions (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_3dobst                 ! For fully 3D obstructions (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_noturb                 ! For use of simplified formulation (roughness length) instead of full turbulent formulation (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_abdelrough_cste        ! For use constant Abdelrhman 2003 coefficient (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_fracxy                 ! For horizontal coverage correction (grid cell not completely fill with obstructions) (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_abdelposture           ! For computation of obstructions posture following abdelrhman 2007 (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_param_height           ! For use a parameterization (from velocity) for obstruction height (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_drag_cste              ! For constant/variable drag coefficient (or corrected from bending angle) (iv)
-   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: l_obst_z0bstress              ! For using a roughness length for obstructions (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_filechar               ! For reading time-series of obstructions characteristics from a file (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_filedistri             ! For reading the vertical distribution of obstructions from a file (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_init_spatial           ! For reading spatial file for density, height, width and thickness (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_flexible               ! For obstructions flexibility (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_cylindre               ! For obstruction shape (cylinder, ellispe / parallelepipeds), (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_downward               ! For downward obstructions (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_3dobst                 ! For fully 3D obstructions (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_noturb                 ! For use of simplified formulation (roughness length) instead of full turbulent formulation (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_abdelrough_cste        ! For use constant Abdelrhman 2003 coefficient (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_fracxy                 ! For horizontal coverage correction (grid cell not completely fill with obstructions) (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_abdelposture           ! For computation of obstructions posture following abdelrhman 2007 (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_param_height           ! For use a parameterization (from velocity) for obstruction height (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_drag_cste              ! For constant/variable drag coefficient (or corrected from bending angle) (iv)
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_l_z0bstress              ! For using a roughness length for obstructions (iv)
 
    INTEGER,DIMENSION(:),ALLOCATABLE,PUBLIC :: obst_z0bstress_option         ! For using various parameterizations of bottom roughness
 
