@@ -14,7 +14,7 @@
    !&E==========================================================================
 
 #include "cppdefs.h"
-#ifdef OBSTRUCTIONS
+#ifdef OBSTRUCTION
 
    function obsttools_abdeluz(i,j,k,hwat,uv,z,z0)
    !!**********************************************************************
@@ -23,7 +23,6 @@
    !! F. Ganthy (2018-04-18)
    !!----------------------------------------------------------------------
    !! * Modules used
-   USE comvars2d,       ONLY: h0fond
    USE comobstructions
    IMPLICIT NONE
    !! * Arguments
@@ -38,7 +37,7 @@
    !!----------------------------------------------------------------------
    !! * Executable part
    !!------------------
-   IF(hwat.GT.h0fond)THEN
+   IF(hwat.GT.obst_h0fond)THEN
      utot   = 0.0_rsh
      divtot = 0.0_rsh
      DO iv=1,obst_nbvar

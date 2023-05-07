@@ -24,18 +24,19 @@ CONTAINS
       integer :: tile
 
       ! for zeta,ubar,vbar include ocean2d.h
-# include "ocean2d.h"
       ! for u,v, z_r, z_w include ocean3d.h
-# include "ocean3d.h"
       ! for cm0 include mixing.h
-# include "mixing.h"
       ! for D_wetdry include param.h
-# include "param.h"
       ! for h, zob, rmask, rmask_wet include grid.h
-# include "grid.h"
       ! for nstp,nnew,nrhs include scalars.h
-# include "scalars.h"
       ! for Istr, Iend, Jstr, Jend include compute_tile_bounds.h
+# include "param.h"
+# include "ncscrum.h"
+# include "scalars.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
+# include "mixing.h"
 # include "compute_tile_bounds.h"
 
 real :: obst_mask(GLOBAL_2D_ARRAY)
@@ -52,8 +53,6 @@ real :: obst_mask(GLOBAL_2D_ARRAY)
       CALL OBSTRUCTIONS_update(Istr, Iend, Jstr, Jend, & 
                  cm0, h, zob,     &
                  zeta(:,:,knew),  &
-                 ubar(:,:,knew),  &
-                 vbar(:,:,knew),  &
                  u(:,:,:,nstp),   &
                  v(:,:,:,nstp)
                  )
@@ -64,9 +63,11 @@ real :: obst_mask(GLOBAL_2D_ARRAY)
       subroutine OBSTRUCTIONS_init_main (tile)
 
       integer :: tile
-# include "ocean2d.h"
 # include "param.h"
+# include "ncscrum.h"
+# include "scalars.h"
 # include "grid.h"
+# include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
       INTEGER :: imin, imax, jmin, jmax ! compute from GLOBAL_2DARRAY definition

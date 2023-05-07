@@ -1,8 +1,8 @@
-MODULE initOBSTRUCTIONS
+MODULE initobstructions
 
 #include "cppdefs.h"
 
-#ifdef OBSTRUCTIONS
+#ifdef OBSTRUCTION
    !&E==========================================================================
    !&E                   ***  MODULE  initOBSTRUCTIONS  ***
    !&E
@@ -119,18 +119,18 @@ MODULE initOBSTRUCTIONS
    NAMELIST/obst_main/obst_nbvar,obst_fn_position,             & 
                       obst_fn_var1,obst_fn_var2,obst_fn_var3,  &
                       obst_fn_var4,obst_fn_var5,obst_fn_var6
-   NAMELIST/obst_numerics/obst_i_z0bstress,obst_c_paramhuv,obst_c_imp3d,obst_c_imp2d,fricwav
-   NAMELIST/obst_output/l_obstout_pos,l_obstout_height_f,l_obstout_height_e,l_obstout_dens_f,     &
-                        l_obstout_dens_e,l_obstout_width_f,l_obstout_width_e,                     &
-                        l_obstout_thick_f,l_obstout_thick_e,l_obstout_oai,                        &
-                        l_obstout_theta,l_obstout_cover,l_obstout_frac_z,                         &
-                        l_obstout_fuv,l_obstout_fuzvz,l_obstout_a2d,l_obstout_a3d,l_obstout_s2d,  &
-                        l_obstout_s3d,l_obstout_drag,l_obstout_tau,                               &
-                        l_obstout_z0bed,l_obstout_z0obst,l_obstout_z0bstress,l_obstout_bstress,   &
-                        l_obstout_bstressc,l_obstout_bstressw
+   NAMELIST/obst_numerics/obst_i_z0bstress,obst_c_paramhuv,obst_c_imp3d,obst_c_imp2d,obst_fricwav
+   NAMELIST/obst_output/obst_l_out_pos,obst_l_out_height_f,obst_l_out_height_e,obst_l_out_dens_f,     &
+                        obst_l_out_dens_e,obst_l_out_width_f,obst_l_out_width_e,                      &
+                        obst_l_out_thick_f,obst_l_out_thick_e,obst_l_out_oai,                         &
+                        obst_l_out_theta,obst_l_out_cover,obst_l_out_frac_z,                          &
+                        obst_l_out_fuv,obst_l_out_fuzvz,obst_l_out_a2d,obst_l_out_a3d,obst_l_out_s2d, &
+                        obst_l_out_s3d,obst_l_out_drag,obst_l_out_tau,                                &
+                        obst_l_out_z0bed,obst_l_out_z0obst,obst_l_out_z0bstress,obst_l_out_bstress,   &
+                        obst_l_out_bstressc,obst_l_out_bstressw
    !!----------------------------------------------------------------------
    !! * Executable part
-    h0fond = h0fond_in
+    obst_h0fond = h0fond_in
 
    ! ************************
    ! * READING NAMELIST
@@ -187,73 +187,73 @@ MODULE initOBSTRUCTIONS
    ! * OUTPUTS VARIABLES
    ! ***********************
 #ifdef MUSTANG
-   l_obstout_bstress      = .FALSE.
-   l_obstout_bstressc     = .FALSE.
-   l_obstout_bstressw     = .FALSE.
+   obst_l_out_bstress      = .FALSE.
+   obst_l_out_bstressc     = .FALSE.
+   obst_l_out_bstressw     = .FALSE.
 #endif
-   name_out_pos           = 'pos'       ! Name obstruction position
-   name_out_height_f      = 'height_f'  ! Name 2D obstruction height (forcing) (iv,i,j)
-   name_out_height_e      = 'height_e'  ! Name 2D obstruction height (effective) (iv,i,j)
-   name_out_dens_f        = 'dens_f'    ! Name 2D obstruction density (forcing) (iv,i,j)
-   name_out_dens_e        = 'dens_e'    ! Name 3D obstruction density (3D effective) (iv,k,i,j)
-   name_out_width_f       = 'width_f'   ! Name 2D obstruction width (forcing) (iv,i,j)
-   name_out_width_e       = 'width_e'   ! Name 3D obstruction width (3D effective) (iv,k,i,j)
-   name_out_thick_f       = 'thick_f'   ! Name 2D obstruction thick (forcing) (iv,i,j)
-   name_out_thick_e       = 'thick_e'   ! Name 3D obstruction thick (3D effective) (iv,k,i,j)
-   name_out_oai           = 'oai'       ! Name 2D obstruction area index (iv,i,j)
-   name_out_theta         = 'theta'     ! Name 3D obstruction bending angle (iv,k,i,j)
-   name_out_cover         = 'frac_xy'   ! Name 2D obstruction coverage (iv,i,j)
-   name_out_frac_z        = 'frac_z'    ! Name 2D obstruction fraction of sigma layer (iv,i,j)
+   obst_nout_pos           = 'pos'       ! Name obstruction position
+   obst_nout_height_f      = 'height_f'  ! Name 2D obstruction height (forcing) (iv,i,j)
+   obst_nout_height_e      = 'height_e'  ! Name 2D obstruction height (effective) (iv,i,j)
+   obst_nout_dens_f        = 'dens_f'    ! Name 2D obstruction density (forcing) (iv,i,j)
+   obst_nout_dens_e        = 'dens_e'    ! Name 3D obstruction density (3D effective) (iv,k,i,j)
+   obst_nout_width_f       = 'width_f'   ! Name 2D obstruction width (forcing) (iv,i,j)
+   obst_nout_width_e       = 'width_e'   ! Name 3D obstruction width (3D effective) (iv,k,i,j)
+   obst_nout_thick_f       = 'thick_f'   ! Name 2D obstruction thick (forcing) (iv,i,j)
+   obst_nout_thick_e       = 'thick_e'   ! Name 3D obstruction thick (3D effective) (iv,k,i,j)
+   obst_nout_oai           = 'oai'       ! Name 2D obstruction area index (iv,i,j)
+   obst_nout_theta         = 'theta'     ! Name 3D obstruction bending angle (iv,k,i,j)
+   obst_nout_cover         = 'frac_xy'   ! Name 2D obstruction coverage (iv,i,j)
+   obst_nout_frac_z        = 'frac_z'    ! Name 2D obstruction fraction of sigma layer (iv,i,j)
 
-   name_out_fuv           = 'fuv'       ! Name 2D obstruction friction force (i,j)
-   name_out_fuzvz         = 'fuzvz'     ! Name 3D obstruction friction force (k,i,j)
-   name_out_a3d           = 'a2d'       ! Name 2D obstruction horizontal area (iv+3,i,j)
-   name_out_a3d           = 'a3d'       ! Name 3D obstruction horizontal area (iv+3,k,i,j)
-   name_out_s3d           = 's2d'       ! Name 2D obstruction vertical area (iv+3,i,j)
-   name_out_s3d           = 's3d'       ! Name 3D obstruction vertical area (iv+3,k,i,j)
-   name_out_drag          = 'cd3d'      ! Name 3D obstruction drag coefficient (iv,k,i,j)
-   name_out_tau           = 'tau3d'     ! Name 3D obstruction turbulence dissipation scale (k,i,j)
-   name_out_z0bed         = 'z0bed'     ! Name 2D bottom roughness length of bed (i,j)
-   name_out_z0obst        = 'z0obst'    ! Name 2D bottom roughness length of obstructions (i,j)
-   name_out_z0bstress     = 'z0bstress' ! Name 2D bottom roughness length used for bottom shear stress computation (i,j)
-   name_out_bstress       = 'taub'      ! Name 2D total bottom shear stress
-   name_out_bstressc      = 'taubc'     ! Name 2D current bottom shear stress
-   name_out_bstressw      = 'taubw'     ! Name 2D wave bottom shear stress
+   obst_nout_fuv           = 'fuv'       ! Name 2D obstruction friction force (i,j)
+   obst_nout_fuzvz         = 'fuzvz'     ! Name 3D obstruction friction force (k,i,j)
+   obst_nout_a3d           = 'a2d'       ! Name 2D obstruction horizontal area (iv+3,i,j)
+   obst_nout_a3d           = 'a3d'       ! Name 3D obstruction horizontal area (iv+3,k,i,j)
+   obst_nout_s3d           = 's2d'       ! Name 2D obstruction vertical area (iv+3,i,j)
+   obst_nout_s3d           = 's3d'       ! Name 3D obstruction vertical area (iv+3,k,i,j)
+   obst_nout_drag          = 'cd3d'      ! Name 3D obstruction drag coefficient (iv,k,i,j)
+   obst_nout_tau           = 'tau3d'     ! Name 3D obstruction turbulence dissipation scale (k,i,j)
+   obst_nout_z0bed         = 'z0bed'     ! Name 2D bottom roughness length of bed (i,j)
+   obst_nout_z0obst        = 'z0obst'    ! Name 2D bottom roughness length of obstructions (i,j)
+   obst_nout_z0bstress     = 'z0bstress' ! Name 2D bottom roughness length used for bottom shear stress computation (i,j)
+   obst_nout_bstress       = 'taub'      ! Name 2D total bottom shear stress
+   obst_nout_bstressc      = 'taubc'     ! Name 2D current bottom shear stress
+   obst_nout_bstressw      = 'taubw'     ! Name 2D wave bottom shear stress
 
-   riog_valid_min_pos     =  0.0_riosh
-   riog_valid_max_pos     =  1.0_riosh
-   riog_valid_min_height  =  0.0_riosh
-   riog_valid_max_height  =  10000.0_riosh
-   riog_valid_min_dens    =  0.0_riosh
-   riog_valid_max_dens    =  1000000.0_riosh
-   riog_valid_min_width   =  0.0_riosh
-   riog_valid_max_width   =  1000.0_riosh
-   riog_valid_min_thick   =  0.0_riosh
-   riog_valid_max_thick   =  1000.0_riosh
-   riog_valid_min_oai     =  0.0_riosh
-   riog_valid_max_oai     =  1000.0_riosh
-   riog_valid_min_theta   =  0.0_riosh
-   riog_valid_max_theta   =  180._riosh
-   riog_valid_min_cover   =  0.0_riosh
-   riog_valid_max_cover   =  1.0_riosh
-   riog_valid_min_fracz   =  0.0_riosh
-   riog_valid_max_fracz   =  1.0_riosh
-   riog_valid_min_fuv     = -10000.0_riosh
-   riog_valid_max_fuv     =  10000.0_riosh
-   riog_valid_min_a       =  0.0_riosh
-   riog_valid_max_a       =  1.0_riosh
-   riog_valid_min_s       =  0.0_riosh
-   riog_valid_max_s       =  10000.0_riosh
-   riog_valid_min_drag    =  0.0_riosh
-   riog_valid_max_drag    =  10.0_riosh
-   riog_valid_min_tau     = -10000.0_riosh
-   riog_valid_max_tau     =  10000.0_riosh
-   riog_valid_min_z0      =  0.0_riosh
-   riog_valid_max_z0      =  1.0_riosh
-   riog_valid_min_bstress =  0.0_riosh
-   riog_valid_max_bstress =  100.0_riosh
-   riog_valid_min_zroot   =  0.0_riosh
-   riog_valid_max_zroot   =  10.0_riosh
+   obst_riog_min_pos     =  0.0_riosh
+   obst_riog_max_pos     =  1.0_riosh
+   obst_riog_min_height  =  0.0_riosh
+   obst_riog_max_height  =  10000.0_riosh
+   obst_riog_min_dens    =  0.0_riosh
+   obst_riog_max_dens    =  1000000.0_riosh
+   obst_riog_min_width   =  0.0_riosh
+   obst_riog_max_width   =  1000.0_riosh
+   obst_riog_min_thick   =  0.0_riosh
+   obst_riog_max_thick   =  1000.0_riosh
+   obst_riog_min_oai     =  0.0_riosh
+   obst_riog_max_oai     =  1000.0_riosh
+   obst_riog_min_theta   =  0.0_riosh
+   obst_riog_max_theta   =  180._riosh
+   obst_riog_min_cover   =  0.0_riosh
+   obst_riog_max_cover   =  1.0_riosh
+   obst_riog_min_fracz   =  0.0_riosh
+   obst_riog_max_fracz   =  1.0_riosh
+   obst_riog_min_fuv     = -10000.0_riosh
+   obst_riog_max_fuv     =  10000.0_riosh
+   obst_riog_min_a       =  0.0_riosh
+   obst_riog_max_a       =  1.0_riosh
+   obst_riog_min_s       =  0.0_riosh
+   obst_riog_max_s       =  10000.0_riosh
+   obst_riog_min_drag    =  0.0_riosh
+   obst_riog_max_drag    =  10.0_riosh
+   obst_riog_min_tau     = -10000.0_riosh
+   obst_riog_max_tau     =  10000.0_riosh
+   obst_riog_min_z0      =  0.0_riosh
+   obst_riog_max_z0      =  1.0_riosh
+   obst_riog_min_bstress =  0.0_riosh
+   obst_riog_max_bstress =  100.0_riosh
+   obst_riog_min_zroot   =  0.0_riosh
+   obst_riog_max_zroot   =  10.0_riosh
    ! ***********************
    ! * READING VARIABLES
    ! ***********************
@@ -291,16 +291,16 @@ MODULE initOBSTRUCTIONS
    ! ***********************************
    ! * INITIALIZATION OF ROUGHNESS SEDIM
    ! ***********************************
-   l_obst_z0bstress_tot = .FALSE.
+   obst_l_z0bstress_tot = .FALSE.
    DO iv=1,obst_nbvar
-     IF(l_obst_z0bstress(iv)) THEN
-       l_obst_z0bstress_tot = .TRUE. ! Only one variable used z0sed
+     IF(obst_l_z0bstress(iv)) THEN
+       obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
      ENDIF
    ENDDO
-   IF(.NOT.l_obst_z0bstress_tot) THEN
+   IF(.NOT.obst_l_z0bstress_tot) THEN
      obst_z0bstress(:,:) = obst_i_z0bstress
    ENDIF
-   fws2=fricwav*0.5_rsh
+   obst_fws2=obst_fricwav*0.5_rsh
    ! **********************
    ! * OTHER INITIALIZATIONS
    ! ***********************
@@ -359,42 +359,42 @@ MODULE initOBSTRUCTIONS
    INTEGER               :: r_obst_varnum
    CHARACTER(len=lchain) :: r_obst_varname
    ! For obst_var_option
-   LOGICAL               :: r_l_obst_cylindre,r_l_obst_flexible,r_l_obst_downward, &
-                            r_l_obst_3dobst,r_l_obst_noturb
+   LOGICAL               :: r_obst_l_cylindre,r_obst_l_flexible,r_obst_l_downward, &
+                            r_obst_l_3dobst,r_obst_l_noturb
    ! For obst_var_init
-   LOGICAL               :: r_l_obst_filechar,r_l_obst_init_spatial,r_l_obst_filedistri
+   LOGICAL               :: r_obst_l_filechar,r_obst_l_init_spatial,r_obst_l_filedistri
    CHARACTER(len=lchain) :: r_obst_fn_char,r_obst_fn_distrib
    REAL(KIND=rsh)        :: r_obst_i_height,r_obst_i_width,r_obst_i_thick,r_obst_i_dens
    ! For obst_var_flexibility
-   LOGICAL               :: r_l_obst_abdelposture,r_l_obst_param_height
+   LOGICAL               :: r_obst_l_abdelposture,r_obst_l_param_height
    INTEGER               :: r_obst_c_abdel_nmax
    REAL(KIND=rsh)        :: r_obst_c_rho,r_obst_c_lift,r_obst_c_shelter,r_obst_c_height_x0,r_obst_c_height_x1
    ! For obst_var_roughdrag
-   LOGICAL               :: r_l_obst_drag_cste,r_l_obst_abdelrough_cste
+   LOGICAL               :: r_obst_l_drag_cste,r_obst_l_abdelrough_cste
    REAL(KIND=rsh)        :: r_obst_c_crough_x0,r_obst_c_crough_x1,r_obst_c_drag,r_obst_c_lz
    ! For obst_var_fracxy
-   LOGICAL               :: r_l_obst_fracxy
+   LOGICAL               :: r_obst_l_fracxy
    INTEGER               :: r_obst_fracxy_type
    REAL(KIND=rsh)        :: r_obst_c_fracxy_k0,r_obst_c_fracxy_k1,r_obst_c_fracxy_l
    ! For obst_var_bstress
-   LOGICAL               :: r_l_obst_z0bstress
+   LOGICAL               :: r_obst_l_z0bstress
    INTEGER               :: r_obst_z0bstress_option
    REAL(KIND=rsh)        :: r_obst_c_z0bstress,r_obst_c_z0bstress_x0,r_obst_c_z0bstress_x1,r_obst_c_z0bstress_x2
    !! * Namelists
    NAMELIST/obst_var_main/r_obst_varnum,r_obst_varname
-   NAMELIST/obst_var_option/r_l_obst_cylindre,r_l_obst_flexible,r_l_obst_downward,          &
-                            r_l_obst_3dobst,r_l_obst_noturb
-   NAMELIST/obst_var_init/r_l_obst_filechar,r_l_obst_init_spatial,r_l_obst_filedistri,      &
+   NAMELIST/obst_var_option/r_obst_l_cylindre,r_obst_l_flexible,r_obst_l_downward,          &
+                            r_obst_l_3dobst,r_obst_l_noturb
+   NAMELIST/obst_var_init/r_obst_l_filechar,r_obst_l_init_spatial,r_obst_l_filedistri,      &
                           r_obst_fn_char,r_obst_fn_distrib,                                 &
                           r_obst_i_height,r_obst_i_width,r_obst_i_thick,r_obst_i_dens
-   NAMELIST/obst_var_flexibility/r_l_obst_abdelposture,r_l_obst_param_height,               &
+   NAMELIST/obst_var_flexibility/r_obst_l_abdelposture,r_obst_l_param_height,               &
                                  r_obst_c_abdel_nmax,r_obst_c_rho,r_obst_c_lift,            &
                                  r_obst_c_shelter,r_obst_c_height_x0,r_obst_c_height_x1
-   NAMELIST/obst_var_roughdrag/r_l_obst_drag_cste,r_l_obst_abdelrough_cste,                 &
+   NAMELIST/obst_var_roughdrag/r_obst_l_drag_cste,r_obst_l_abdelrough_cste,                 &
                                r_obst_c_crough_x0,r_obst_c_crough_x1,r_obst_c_drag,r_obst_c_lz
-   NAMELIST/obst_var_fracxy/r_l_obst_fracxy,r_obst_fracxy_type,r_obst_c_fracxy_k0,          &
+   NAMELIST/obst_var_fracxy/r_obst_l_fracxy,r_obst_fracxy_type,r_obst_c_fracxy_k0,          &
                             r_obst_c_fracxy_k1,r_obst_c_fracxy_l
-   NAMELIST/obst_var_bstress/r_l_obst_z0bstress,r_obst_z0bstress_option,r_obst_c_z0bstress, &
+   NAMELIST/obst_var_bstress/r_obst_l_z0bstress,r_obst_z0bstress_option,r_obst_c_z0bstress, &
                              r_obst_c_z0bstress_x0,r_obst_c_z0bstress_x1,r_obst_c_z0bstress_x2
    !!----------------------------------------------------------------------
    !! * Executable part
@@ -429,15 +429,15 @@ MODULE initOBSTRUCTIONS
    obst_varnum(iv)            = r_obst_varnum
    obst_varname(iv)           = r_obst_varname
    ! * For namelist obst_var_option
-   l_obst_cylindre(iv)        = r_l_obst_cylindre
-   l_obst_flexible(iv)        = r_l_obst_flexible
-   l_obst_downward(iv)        = r_l_obst_downward
-   l_obst_3dobst(iv)          = r_l_obst_3dobst
-   l_obst_noturb(iv)          = r_l_obst_noturb
+   obst_l_cylindre(iv)        = r_obst_l_cylindre
+   obst_l_flexible(iv)        = r_obst_l_flexible
+   obst_l_downward(iv)        = r_obst_l_downward
+   obst_l_3dobst(iv)          = r_obst_l_3dobst
+   obst_l_noturb(iv)          = r_obst_l_noturb
    ! * For namelist obst_var_init
-   l_obst_filechar(iv)        = r_l_obst_filechar
-   l_obst_init_spatial(iv)    = r_l_obst_init_spatial
-   l_obst_filedistri(iv)      = r_l_obst_filedistri
+   obst_l_filechar(iv)        = r_obst_l_filechar
+   obst_l_init_spatial(iv)    = r_obst_l_init_spatial
+   obst_l_filedistri(iv)      = r_obst_l_filedistri
    obst_fn_char(iv)           = r_obst_fn_char
    obst_fn_distrib(iv)        = r_obst_fn_distrib
    obst_i_height(iv)          = r_obst_i_height
@@ -445,8 +445,8 @@ MODULE initOBSTRUCTIONS
    obst_i_thick(iv)           = r_obst_i_thick
    obst_i_dens(iv)            = r_obst_i_dens
    ! * For namelist obst_var_flexibility
-   l_obst_abdelposture(iv)    = r_l_obst_abdelposture
-   l_obst_param_height(iv)    = r_l_obst_param_height
+   obst_l_abdelposture(iv)    = r_obst_l_abdelposture
+   obst_l_param_height(iv)    = r_obst_l_param_height
    obst_c_abdel_nmax(iv)      = r_obst_c_abdel_nmax
    obst_c_rho(iv)             = r_obst_c_rho
    obst_c_lift(iv)            = r_obst_c_lift
@@ -454,20 +454,20 @@ MODULE initOBSTRUCTIONS
    obst_c_height_x0(iv)       = r_obst_c_height_x0
    obst_c_height_x1(iv)       = r_obst_c_height_x1
    ! * For namelist obst_var_roughdrag
-   l_obst_drag_cste(iv)       = r_l_obst_drag_cste
-   l_obst_abdelrough_cste(iv) = r_l_obst_abdelrough_cste
+   obst_l_drag_cste(iv)       = r_obst_l_drag_cste
+   obst_l_abdelrough_cste(iv) = r_obst_l_abdelrough_cste
    obst_c_crough_x0(iv)       = r_obst_c_crough_x0
    obst_c_crough_x1(iv)       = r_obst_c_crough_x1
    obst_c_drag(iv)            = r_obst_c_drag
    obst_c_lz(iv)              = r_obst_c_lz
    ! * For namelist obst_var_fracxy
-   l_obst_fracxy(iv)          = r_l_obst_fracxy
+   obst_l_fracxy(iv)          = r_obst_l_fracxy
    obst_fracxy_type(iv)       = r_obst_fracxy_type
    obst_c_fracxy_k0(iv)       = r_obst_c_fracxy_k0
    obst_c_fracxy_k1(iv)       = r_obst_c_fracxy_k1
    obst_c_fracxy_l(iv)        = r_obst_c_fracxy_l
    ! * For namelist obst_var_bstress
-   l_obst_z0bstress(iv)       = r_l_obst_z0bstress
+   obst_l_z0bstress(iv)       = r_obst_l_z0bstress
    obst_z0bstress_option(iv)  = r_obst_z0bstress_option
    obst_c_z0bstress(iv)       = r_obst_c_z0bstress
    obst_c_z0bstress_x0(iv)    = r_obst_c_z0bstress_x0
@@ -541,28 +541,28 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Name (identifier) of the variable    :
 MPI_master_only  WRITE(iscreenlog,*) '!=============================!'
 MPI_master_only  WRITE(iscreenlog,*) '! NAMELIST : obst_var_option  !'
 MPI_master_only  WRITE(iscreenlog,*) '!=============================!'
-MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is cylinder-like                : ',l_obst_cylindre(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is flexible                     : ',l_obst_flexible(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is downvard                     : ',l_obst_downward(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is full 3D                      : ',l_obst_3dobst(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is considered a macro-roughness : ',l_obst_noturb(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is cylinder-like                : ',obst_l_cylindre(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is flexible                     : ',obst_l_flexible(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is downvard                     : ',obst_l_downward(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is full 3D                      : ',obst_l_3dobst(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is considered a macro-roughness : ',obst_l_noturb(iv)
 MPI_master_only  WRITE(iscreenlog,*) '!===========================!'
 MPI_master_only  WRITE(iscreenlog,*) '! NAMELIST : obst_var_init  !'
 MPI_master_only  WRITE(iscreenlog,*) '!===========================!'
-MPI_master_only  WRITE(iscreenlog,*) '  - Use a time-series file for obstructions characteristics                : ',l_obst_filechar(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - Use a spatially variable file obstructions charcateristics             : ',l_obst_init_spatial(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - Use a file describing the vertical distribution of obstruction density : ',l_obst_filedistri(iv)
-       IF(l_obst_filechar(iv).OR.l_obst_init_spatial(iv))THEN
+MPI_master_only  WRITE(iscreenlog,*) '  - Use a time-series file for obstructions characteristics                : ',obst_l_filechar(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - Use a spatially variable file obstructions charcateristics             : ',obst_l_init_spatial(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - Use a file describing the vertical distribution of obstruction density : ',obst_l_filedistri(iv)
+       IF(obst_l_filechar(iv).OR.obst_l_init_spatial(iv))THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - Name of temporal or spatial file for obstructions charcateristics      : ',obst_fn_char(iv)
        ELSE
 MPI_master_only  WRITE(iscreenlog,*) '  - Name of temporal or spatial file for obstructions charcateristics      : NOT USED'
        ENDIF
-       IF(l_obst_filedistri(iv))THEN
+       IF(obst_l_filedistri(iv))THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - Name of file for the vertical distribution of obstruction density      : ',obst_fn_distrib(iv)
        ELSE
 MPI_master_only  WRITE(iscreenlog,*) '  - Name of file for the vertical distribution of obstruction density      : NOT USED'
        ENDIF
-       IF(l_obst_filechar(iv).OR.l_obst_init_spatial(iv))THEN
+       IF(obst_l_filechar(iv).OR.obst_l_init_spatial(iv))THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - Initial height (unbent, eg. leaf-length for segrasses) of obstructions : NOT USED'
 MPI_master_only  WRITE(iscreenlog,*) '  - Initial width (or diameter for cylindric obstructions) of obstructions : NOT USED'
 MPI_master_only  WRITE(iscreenlog,*) '  - Initial thick of obstructions (along the flow)                         : NOT USED'
@@ -576,17 +576,17 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Initial density of obstructions (or ma
 MPI_master_only  WRITE(iscreenlog,*) '!==================================!'
 MPI_master_only  WRITE(iscreenlog,*) '! NAMELIST : obst_var_flexibility  !'
 MPI_master_only  WRITE(iscreenlog,*) '!==================================!'
-       IF(l_obst_flexible(iv))THEN
-MPI_master_only  WRITE(iscreenlog,*) '  - Use Abdhelhrmans (2007) procedure to compute bending                   : ',l_obst_abdelposture(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - Use empirical (exponential desrease) formulation to compute bending    : ',l_obst_param_height(iv)
-         IF(l_obst_abdelposture(iv))THEN
+       IF(obst_l_flexible(iv))THEN
+MPI_master_only  WRITE(iscreenlog,*) '  - Use Abdhelhrmans (2007) procedure to compute bending                   : ',obst_l_abdelposture(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - Use empirical (exponential desrease) formulation to compute bending    : ',obst_l_param_height(iv)
+         IF(obst_l_abdelposture(iv))THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - Number of segments for Abdhelhrmans (2007) procedure                   : ',obst_c_abdel_nmax(iv)
 MPI_master_only  WRITE(iscreenlog,*) '  - Volumic mass of obstructions for Abdhelhrmans (2007) procedure         : ',obst_c_rho(iv)
 MPI_master_only  WRITE(iscreenlog,*) '  - Lift coefficient for Abdhelhrmans (2007) procedure                     : ',obst_c_lift(iv)
 MPI_master_only  WRITE(iscreenlog,*) '  - Sheltering coefficient Afor bdhelhrmans (2007) procedure               : ',obst_c_shelter(iv)
 MPI_master_only  WRITE(iscreenlog,*) '  - First parameter for empirical formulation                              : NOT USED'
 MPI_master_only  WRITE(iscreenlog,*) '  - Second parameter for empirical formulation                             : NOT USED'
-         ELSEIF(l_obst_param_height(iv))THEN
+         ELSEIF(obst_l_param_height(iv))THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - Number of segments for Abdhelhrmans (2007) procedure                   : NOT USED'
 MPI_master_only  WRITE(iscreenlog,*) '  - Volumic mass of obstructions for Abdhelhrmans (2007) procedure         : NOT USED'
 MPI_master_only  WRITE(iscreenlog,*) '  - Lift coefficient for Abdhelhrmans (2007) procedure                     : NOT USED'
@@ -614,9 +614,9 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Second parameter for empirical formula
 MPI_master_only  WRITE(iscreenlog,*) '!================================!'
 MPI_master_only  WRITE(iscreenlog,*) '! NAMELIST : obst_var_roughdrag  !'
 MPI_master_only  WRITE(iscreenlog,*) '!================================!'
-MPI_master_only  WRITE(iscreenlog,*) '  - Use a constant drag coefficient for obstructions in hydrodynamics      : ',l_obst_drag_cste(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - Use a constant drag during reconstruction of velocity profiles         : ',l_obst_abdelrough_cste(iv)
-       IF(l_obst_abdelrough_cste(iv))THEN
+MPI_master_only  WRITE(iscreenlog,*) '  - Use a constant drag coefficient for obstructions in hydrodynamics      : ',obst_l_drag_cste(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - Use a constant drag during reconstruction of velocity profiles         : ',obst_l_abdelrough_cste(iv)
+       IF(obst_l_abdelrough_cste(iv))THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - First coefficient for CD during velocity profiles reconstruction       : NOT USED'
 MPI_master_only  WRITE(iscreenlog,*) '  - Second coefficient for CD during velocity profiles reconstruction      : NOT USED'
        ELSE
@@ -624,7 +624,7 @@ MPI_master_only  WRITE(iscreenlog,*) '  - First coefficient for CD during veloci
 MPI_master_only  WRITE(iscreenlog,*) '  - Second coefficient for CD during velocity profiles reconstruction      : ',obst_c_crough_x1(iv)
        ENDIF
 MPI_master_only  WRITE(iscreenlog,*) '  - Drag coefficient (max value if not constant) for obstructions elements : ',obst_c_drag(iv)
-       IF(l_obst_noturb(iv))THEN
+       IF(obst_l_noturb(iv))THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - Coef. turbulent dissipation time-scale between obstructions elements   : NOT USED'
        ELSE
 MPI_master_only  WRITE(iscreenlog,*) '  - Coef. turbulent dissipation time-scale between obstructions elements   : ',obst_c_lz(iv)
@@ -632,8 +632,8 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Coef. turbulent dissipation time-scale
 MPI_master_only  WRITE(iscreenlog,*) '!=============================!'
 MPI_master_only  WRITE(iscreenlog,*) '! NAMELIST : obst_var_fracxy  !'
 MPI_master_only  WRITE(iscreenlog,*) '!=============================!'
-MPI_master_only  WRITE(iscreenlog,*) '  - Take account for non-linear patchiness correction                      : ',l_obst_fracxy(iv)
-       IF(.NOT.l_obst_fracxy(iv))THEN
+MPI_master_only  WRITE(iscreenlog,*) '  - Take account for non-linear patchiness correction                      : ',obst_l_fracxy(iv)
+       IF(.NOT.obst_l_fracxy(iv))THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - Kind of non-linear correction method                                   : NOT USED'
 MPI_master_only  WRITE(iscreenlog,*) '  - Coefficient for the exponential correction                             : NOT USED'
 MPI_master_only  WRITE(iscreenlog,*) '  - First parameter for correction of the exponential coefficient          : NOT USED'
@@ -654,8 +654,8 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Second parameter for correction of the
 MPI_master_only  WRITE(iscreenlog,*) '!==============================!'
 MPI_master_only  WRITE(iscreenlog,*) '! NAMELIST : obst_var_bstress  !'
 MPI_master_only  WRITE(iscreenlog,*) '!==============================!'
-MPI_master_only  WRITE(iscreenlog,*) '  - To activate the impact of obstruction on Z0 (BSS computation)          : ',l_obst_z0bstress(iv)
-       IF(l_obst_z0bstress(iv))THEN
+MPI_master_only  WRITE(iscreenlog,*) '  - To activate the impact of obstruction on Z0 (BSS computation)          : ',obst_l_z0bstress(iv)
+       IF(obst_l_z0bstress(iv))THEN
          IF(obst_z0bstress_option(iv).EQ.0)THEN
 MPI_master_only  WRITE(iscreenlog,*) '  - Option to compute the obstruction induced roughness length             : Constant'
 MPI_master_only  WRITE(iscreenlog,*) '  - Constant (corrected value of roughness length)                         : ',obst_c_z0bstress(iv)
@@ -716,24 +716,24 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Coefficient to correct 3D roughness le
    obst_nv_turb     = 0
    obst_nv_noturb   = 0
    DO iv=1,obst_nbvar
-     IF (l_obst_noturb(iv)) THEN
+     IF (obst_l_noturb(iv)) THEN
          obst_nv_noturb     = obst_nv_noturb+1
      ELSE
          obst_nv_turb       = obst_nv_turb+1
      ENDIF
-     IF (l_obst_3dobst(iv)) THEN
+     IF (obst_l_3dobst(iv)) THEN
        obst_nv_3d           = obst_nv_3d+1
      ELSE
-       IF(l_obst_downward(iv))THEN
+       IF(obst_l_downward(iv))THEN
          obst_nv_do         = obst_nv_do+1
-         IF(l_obst_flexible(iv))THEN
+         IF(obst_l_flexible(iv))THEN
            obst_nv_flexi_do = obst_nv_flexi_do+1
          ELSE
            obst_nv_rigid_do = obst_nv_rigid_do+1
          ENDIF
        ELSE
          obst_nv_up         = obst_nv_up+1
-         IF(l_obst_flexible(iv))THEN
+         IF(obst_l_flexible(iv))THEN
            obst_nv_flexi_up = obst_nv_flexi_up+1
          ELSE
            obst_nv_rigid_up = obst_nv_rigid_up+1
@@ -814,7 +814,7 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
    ! TEST CONSISTENCY FOR SCHEME AND DESCRIPTION FOR EACH VARIALBE
    !--------------------------------------------------------------
    DO iv=1,obst_nbvar
-     IF((l_obst_downward(iv)).AND.(l_obst_noturb(iv)))THEN
+     IF((obst_l_downward(iv)).AND.(obst_l_noturb(iv)))THEN
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
@@ -822,12 +822,12 @@ MPI_master_only  WRITE(ierrorlog,*) '********************** module OBSTRUCTIONS 
 MPI_master_only  WRITE(ierrorlog,*) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
 MPI_master_only  WRITE(ierrorlog,*) ' ERROR : Inconsistency for variable :',obst_varname(iv)
 MPI_master_only  WRITE(ierrorlog,*) '         This variable is defined as a downward one, while'
-MPI_master_only  WRITE(ierrorlog,*) '         it uses simplified (l_obst_noturb) procedure'
+MPI_master_only  WRITE(ierrorlog,*) '         it uses simplified (obst_l_noturb) procedure'
 MPI_master_only  WRITE(ierrorlog,*) ' --> THE SIMULATION IS STOPPED !!!'
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
         STOP
      ENDIF
-     IF((l_obst_3dobst(iv)).AND.(l_obst_noturb(iv)))THEN
+     IF((obst_l_3dobst(iv)).AND.(obst_l_noturb(iv)))THEN
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
@@ -835,12 +835,12 @@ MPI_master_only  WRITE(ierrorlog,*) '************************* module OBSTRUCTIO
 MPI_master_only  WRITE(ierrorlog,*) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
 MPI_master_only  WRITE(ierrorlog,*) ' ERROR : Inconsistency for variable :',obst_varname(iv)
 MPI_master_only  WRITE(ierrorlog,*) '         This variable is defined as a full 3d one, while'
-MPI_master_only  WRITE(ierrorlog,*) '         it uses simplified (l_obst_noturb) procedure'
+MPI_master_only  WRITE(ierrorlog,*) '         it uses simplified (obst_l_noturb) procedure'
 MPI_master_only  WRITE(ierrorlog,*) ' --> THE SIMULATION IS STOPPED !!!'
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
         STOP
      ENDIF
-     IF((l_obst_3dobst(iv)).AND.(l_obst_flexible(iv)))THEN
+     IF((obst_l_3dobst(iv)).AND.(obst_l_flexible(iv)))THEN
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
@@ -854,7 +854,7 @@ MPI_master_only  WRITE(ierrorlog,*) ' --> THE SIMULATION IS STOPPED !!!'
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
         STOP
      ENDIF
-     IF((l_obst_3dobst(iv)).AND.(l_obst_downward(iv)))THEN
+     IF((obst_l_3dobst(iv)).AND.(obst_l_downward(iv)))THEN
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
@@ -868,7 +868,7 @@ MPI_master_only  WRITE(ierrorlog,*) ' --> THE SIMULATION IS STOPPED !!!'
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
         STOP
      ENDIF
-     IF((l_obst_downward(iv)).AND.(l_obst_flexible(iv)).AND.(l_obst_abdelposture(iv)))THEN
+     IF((obst_l_downward(iv)).AND.(obst_l_flexible(iv)).AND.(obst_l_abdelposture(iv)))THEN
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
@@ -882,7 +882,7 @@ MPI_master_only  WRITE(ierrorlog,*) ' --> THE SIMULATION IS STOPPED !!!'
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
         STOP
      ENDIF
-     IF(l_obst_init_spatial(iv).AND.l_obst_filechar(iv))THEN
+     IF(obst_l_init_spatial(iv).AND.obst_l_filechar(iv))THEN
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) '**********************************************************************'
@@ -948,13 +948,13 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
    DO j=ljmin,ljmax
      DO i=limin,limax
        DO iv = 1,obst_nbvar
-         IF(.NOT.l_obst_init_spatial(iv))THEN
+         IF(.NOT.obst_l_init_spatial(iv))THEN
            IF(obst_position(iv,i,j).GT.0.0_rsh) THEN
              obst_height_inst(iv,i,j)      = obst_i_height(iv) !TODO : add reading of temporal file (careful, no tchrono in croco)
              obst_width_inst(iv,i,j)       = obst_i_width(iv)  !TODO : add reading of temporal file (careful, no tchrono in croco)
              obst_thick_inst(iv,i,j)       = obst_i_thick(iv)  !TODO : add reading of temporal file (careful, no tchrono in croco)
              obst_dens_inst(iv,i,j)        = obst_i_dens(iv)   !TODO : add reading of temporal file (careful, no tchrono in croco)
-             IF(l_obst_cylindre(iv))THEN ! Cylindric/Ellipse obstruction
+             IF(obst_l_cylindre(iv))THEN ! Cylindric/Ellipse obstruction
                obst_area_index_inst(iv,i,j)  = obst_dens_inst(iv,i,j) * obst_height_inst(iv,i,j) * &
                                                 (2.0_rsh*pi*SQRT(0.5_rsh*(obst_width_inst(iv,i,j)**2.0_rsh + & 
                                                 obst_thick_inst(iv,i,j)**2.0_rsh)))
@@ -971,7 +971,7 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
            ENDIF
          ELSE
            IF(obst_position(iv,i,j).GT.0.0_rsh) THEN
-             IF(l_obst_cylindre(iv))THEN ! Cylindric/Ellipse obstruction
+             IF(obst_l_cylindre(iv))THEN ! Cylindric/Ellipse obstruction
                obst_area_index_inst(iv,i,j)  = obst_dens_inst(iv,i,j) * obst_height_inst(iv,i,j) * &
                                                 (2.0_rsh*pi*SQRT(0.5_rsh*(obst_width_inst(iv,i,j)**2.0_rsh + &
                                                 obst_thick_inst(iv,i,j)**2.0_rsh)))
@@ -1009,7 +1009,7 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
 
    IMPLICIT NONE
 
-   ! to doce for croco with appropriate netcdf reading
+   ! to do for croco with appropriate netcdf reading
 
   
    END SUBROUTINE OBSTRUCTIONS_readfile_pos
@@ -1041,7 +1041,7 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
    MPI_master_only  WRITE(iscreenlog,*) '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_READFILE_DISTRI *****'
    MPI_master_only  WRITE(iscreenlog,*) '************************************************************************'
    DO iv = 1,obst_nbvar
-     IF(l_obst_filedistri(iv)) THEN
+     IF(obst_l_filedistri(iv)) THEN
         MPI_master_only  WRITE(iscreenlog,*) ' '
         MPI_master_only  WRITE(iscreenlog,*) 'Obstruction variable : ',obst_varname(iv)
         MPI_master_only  WRITE(iscreenlog,*) 'file defining vertical distribution of obstuctions :'
@@ -1088,7 +1088,7 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
    ALLOCATE(obst_height_norm (1:obst_nbvar,1:nb_max_hnorm))
 
    DO iv = 1,obst_nbvar
-     IF(l_obst_filedistri(iv)) THEN
+     IF(obst_l_filedistri(iv)) THEN
        OPEN(53,file=obst_fn_distrib(iv),form='formatted')
        READ(53,*) ! Filename
        READ(53,*) ! Title
@@ -1164,34 +1164,34 @@ SUBROUTINE OBSTRUCTIONS_alloc_nbvar
     ALLOCATE(obst_c_abdel_nmax         (1:obst_nbvar))
     obst_c_abdel_nmax(:)               = 1
  
-    ALLOCATE(l_obst_filechar           (1:obst_nbvar))
-    l_obst_filechar(:)                 = .FALSE.
-    ALLOCATE(l_obst_filedistri         (1:obst_nbvar))
-    l_obst_filedistri(:)               = .FALSE.
-    ALLOCATE(l_obst_init_spatial       (1:obst_nbvar))
-    l_obst_init_spatial(:)             = .FALSE.
-    ALLOCATE(l_obst_flexible           (1:obst_nbvar))
-    l_obst_flexible(:)                 = .FALSE.
-    ALLOCATE(l_obst_cylindre           (1:obst_nbvar))
-    l_obst_cylindre(:)                 = .FALSE.
-    ALLOCATE(l_obst_downward           (1:obst_nbvar))
-    l_obst_downward(:)                 = .FALSE.
-    ALLOCATE(l_obst_3dobst             (1:obst_nbvar))
-    l_obst_3dobst(:)                   = .FALSE.
-    ALLOCATE(l_obst_noturb             (1:obst_nbvar))
-    l_obst_noturb(:)                   = .FALSE.
-    ALLOCATE(l_obst_abdelrough_cste    (1:obst_nbvar))
-    l_obst_abdelrough_cste             = .FALSE.
-    ALLOCATE(l_obst_fracxy             (1:obst_nbvar))
-    l_obst_fracxy(:)                    = .FALSE.
-    ALLOCATE(l_obst_abdelposture       (1:obst_nbvar))
-    l_obst_abdelposture(:)             = .FALSE.
-    ALLOCATE(l_obst_param_height       (1:obst_nbvar))
-    l_obst_param_height(:)             = .FALSE.
-    ALLOCATE(l_obst_drag_cste          (1:obst_nbvar))
-    l_obst_drag_cste(:)                = .TRUE.
-    ALLOCATE(l_obst_z0bstress          (1:obst_nbvar))
-    l_obst_z0bstress(:)                = .FALSE.
+    ALLOCATE(obst_l_filechar           (1:obst_nbvar))
+    obst_l_filechar(:)                 = .FALSE.
+    ALLOCATE(obst_l_filedistri         (1:obst_nbvar))
+    obst_l_filedistri(:)               = .FALSE.
+    ALLOCATE(obst_l_init_spatial       (1:obst_nbvar))
+    obst_l_init_spatial(:)             = .FALSE.
+    ALLOCATE(obst_l_flexible           (1:obst_nbvar))
+    obst_l_flexible(:)                 = .FALSE.
+    ALLOCATE(obst_l_cylindre           (1:obst_nbvar))
+    obst_l_cylindre(:)                 = .FALSE.
+    ALLOCATE(obst_l_downward           (1:obst_nbvar))
+    obst_l_downward(:)                 = .FALSE.
+    ALLOCATE(obst_l_3dobst             (1:obst_nbvar))
+    obst_l_3dobst(:)                   = .FALSE.
+    ALLOCATE(obst_l_noturb             (1:obst_nbvar))
+    obst_l_noturb(:)                   = .FALSE.
+    ALLOCATE(obst_l_abdelrough_cste    (1:obst_nbvar))
+    obst_l_abdelrough_cste             = .FALSE.
+    ALLOCATE(obst_l_fracxy             (1:obst_nbvar))
+    obst_l_fracxy(:)                    = .FALSE.
+    ALLOCATE(obst_l_abdelposture       (1:obst_nbvar))
+    obst_l_abdelposture(:)             = .FALSE.
+    ALLOCATE(obst_l_param_height       (1:obst_nbvar))
+    obst_l_param_height(:)             = .FALSE.
+    ALLOCATE(obst_l_drag_cste          (1:obst_nbvar))
+    obst_l_drag_cste(:)                = .TRUE.
+    ALLOCATE(obst_l_z0bstress          (1:obst_nbvar))
+    obst_l_z0bstress(:)                = .FALSE.
  
     ALLOCATE(obst_z0bstress_option     (1:obst_nbvar))
     obst_z0bstress_option(:)           = 0
@@ -1503,20 +1503,20 @@ SUBROUTINE OBSTRUCTIONS_alloc_nbvar
     DEALLOCATE(obst_fracxy_type)
     DEALLOCATE(obst_c_abdel_nmax)
  
-    DEALLOCATE(l_obst_filechar)
-    DEALLOCATE(l_obst_filedistri)
-    DEALLOCATE(l_obst_init_spatial)
-    DEALLOCATE(l_obst_flexible)
-    DEALLOCATE(l_obst_cylindre)
-    DEALLOCATE(l_obst_downward)
-    DEALLOCATE(l_obst_3dobst)
-    DEALLOCATE(l_obst_noturb)
-    DEALLOCATE(l_obst_abdelrough_cste)
-    DEALLOCATE(l_obst_fracxy)
-    DEALLOCATE(l_obst_abdelposture)
-    DEALLOCATE(l_obst_param_height)
-    DEALLOCATE(l_obst_drag_cste)
-    DEALLOCATE(l_obst_z0bstress)
+    DEALLOCATE(obst_l_filechar)
+    DEALLOCATE(obst_l_filedistri)
+    DEALLOCATE(obst_l_init_spatial)
+    DEALLOCATE(obst_l_flexible)
+    DEALLOCATE(obst_l_cylindre)
+    DEALLOCATE(obst_l_downward)
+    DEALLOCATE(obst_l_3dobst)
+    DEALLOCATE(obst_l_noturb)
+    DEALLOCATE(obst_l_abdelrough_cste)
+    DEALLOCATE(obst_l_fracxy)
+    DEALLOCATE(obst_l_abdelposture)
+    DEALLOCATE(obst_l_param_height)
+    DEALLOCATE(obst_l_drag_cste)
+    DEALLOCATE(obst_l_z0bstress)
  
     DEALLOCATE(obst_z0bstress_option)
  

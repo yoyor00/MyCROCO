@@ -2,7 +2,7 @@ MODULE OBSTRUCTIONS
 
 #include "cppdefs.h"
 
-#ifdef OBSTRUCTIONS
+#ifdef OBSTRUCTION
    !&E==========================================================================
    !&E                   ***  MODULE  OBSTRUCTIONS  ***
    !&E
@@ -70,7 +70,7 @@ MODULE OBSTRUCTIONS
    !&E                             - Add logical to choose turbulence coefficient values (default or user-defined)
    !&E                             - Modification to better taken into account for obstructions parameters in 3D when
    !&E                               a sigma layer is not completely filled (in z direction) by obstructions
-   !&E     ! 2016-03 (F. Ganthy) Remove useless option l_obst_2donly
+   !&E     ! 2016-03 (F. Ganthy) Remove useless option obst_l_2donly
    !&E     ! 2016-09 (F. Ganthy) Some formatting in subroutines history, PRINT_DEBUG, error and warning message,
    !&E                           as well as messages in simulog.
    !&E     ! 2016-09 (F. Ganthy) New and optimized computation of flexible obstruction height using Abdelrhman's 2007
@@ -85,7 +85,7 @@ MODULE OBSTRUCTIONS
    !&E                             - Differenciation of cylindric / parallelepipedic structures
    !&E                             - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell)
    !&E                             - Cleaning (removing useless parameters and tests)
-   !&E     ! 2017-04 (F. Ganthy) Change initialization of turbulence coefficients cmu and c2turb
+   !&E     ! 2017-04 (F. Ganthy) Change initialization of turbulence coefficients obst_cmu and obst_c2turb
    !&E     ! 2017-04 (F. Ganthy) Add subroutine obst_comp_obstroughness
    !&E     ! 2017-04 (F. Ganthy) Add subroutine obst_comp_projarea
    !&E     ! 2017-04 (F. Ganthy) Remove previous allocation related to vertical growth of zostera root system (not purpose of obstruction module)
@@ -140,8 +140,8 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
  
-   SUBROUTINE OBSTRUCTIONS_update(limin, limax, ljmin, ljmax, cm0, h, &
-                        z0b, ssh, ubar, vbar, u, v)
+   SUBROUTINE OBSTRUCTIONS_update(limin, limax, ljmin, ljmax, cmu, h0, &
+                        z0b, ssh, uz, vz)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_update  ***
    !&E
@@ -152,7 +152,7 @@ MODULE OBSTRUCTIONS
    !&E       ! 2014-08    (F. Ganthy) Simplification and re-organization
    !&E       ! 2014-10    (F. Ganthy) Some modifications + computation of obstructions
    !&E                                posture following Abdelrhman 2007
-   !&E       ! 2015-09    (F. Ganthy) Minor correction (obst_cmu)
+   !&E       ! 2015-09    (F. Ganthy) Minor correction (cmu)
    !&E       ! 2016-03    (F. Ganthy) Add fraction of sigma layers occupied by obstructions
    !&E       ! 2017-02    (F. Ganthy) Modification for multispecific obstructions within single grid cell
    !&E       ! 2017-04    (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
@@ -165,67 +165,66 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
    
    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
-   INTEGER(KIND=rsh), INTENT(IN) :: cm0
-   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h 
-   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: z0b 
-   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh 
-   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ubar
-   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: vbar 
-   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax, kmax),INTENT(IN) :: u
-   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax, kmax),INTENT(IN) :: v
+   INTEGER(KIND=rsh), INTENT(IN) :: cmu
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(INOUT) :: z0b 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax, kmax),INTENT(IN) :: uz
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax, kmax),INTENT(IN) :: vz
 
    !! * Local declaration
 
    !!----------------------------------------------------------------------
    !! * Executable part
+   obst_cmu = cmu
    ! ******************************
    ! * READING CHARACTERISTICS FILE
    ! ******************************
-   CALL OBSTRUCTIONS_readfile_char(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_readfile_char(limin, limax, ljmin, ljmax)
    ! ************************
    ! * COMPUTES 3D VELOCITIES
    ! ************************
-   CALL OBSTRUCTIONS_comp_uzvz(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_uzvz(limin, limax, ljmin, ljmax, h0, ssh, uz, vz)
    ! *********************************
    ! * UPDATING OBSTRUCTION PARAMETERS
    ! *********************************
    !---------------------
    ! * Obstruction height
    !---------------------
-   CALL OBSTRUCTIONS_comp_abdelposture(limin,limax,ljmin,ljmax)
-   CALL OBSTRUCTIONS_comp_height(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_abdelposture(limin, limax, ljmin, ljmax, ssh, h0)
+   CALL OBSTRUCTIONS_comp_height(limin, limax, ljmin, ljmax, ssh, h0)
    !----------------------------
    ! * Obstruction bending angle
    !----------------------------
-   CALL OBSTRUCTIONS_comp_theta(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_theta(limin, limax, ljmin, ljmax, ssh, h0)
    !--------------------------------------
    ! * Obstruction fraction of sigma layer
    !--------------------------------------
-   CALL OBSTRUCTIONS_comp_fracz(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_fracz(limin, limax, ljmin, ljmax, ssh, h0)
    !----------------------
    ! * Obstruction density
    !----------------------
-   CALL OBSTRUCTIONS_comp_distrib(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_distrib(limin, limax, ljmin, ljmax, ssh, h0)
    !------------------------------
    ! * Obstruction width/thickness
    !------------------------------
-   CALL OBSTRUCTIONS_comp_diam(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_diam(limin, limax, ljmin, ljmax, ssh, h0)
    !---------------------------------------------------
    ! * Obstruction density correction for fragmentation
    !---------------------------------------------------
-   CALL OBSTRUCTIONS_comp_fracxy(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_fracxy(limin, limax, ljmin, ljmax, ssh, h0)
    !---------------------------------------------
    ! * Obstruction projected area (obst_a,obst_s)
    !---------------------------------------------
-   CALL OBSTRUCTIONS_comp_projarea(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_projarea(limin, limax, ljmin, ljmax, ssh, h0)
    !---------------------------------------
    ! * Obstruction induced roughness length
    !---------------------------------------
-   CALL OBSTRUCTIONS_comp_obstroughness(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_obstroughness(limin, limax, ljmin, ljmax, ssh, h0)
    ! ***********************************
    ! * UPDATING OBSTRUCTION SOURCE TERMS
    ! ***********************************
-   CALL OBSTRUCTIONS_comp_hydroparam(limin,limax,ljmin,ljmax)
+   CALL OBSTRUCTIONS_comp_hydroparam(limin, limax, ljmin, ljmax, ssh, h0, z0b)
    ! **********************************
    ! * UPDATING OBSTRUCTION OTHER TERMS
    ! **********************************
@@ -238,7 +237,7 @@ MODULE OBSTRUCTIONS
    ! For sediment run, this the function is within tools_obstructions
    ! and median grain size is used, the call to the function is performed
    ! within sed_MUSTANG_MARS.F90/sed_skinstress
-   IF(l_obst_z0bstress_tot) CALL OBSTRUCTIONS_comp_bedroughness(limin,limax,ljmin,ljmax)
+   IF(obst_l_z0bstress_tot) CALL OBSTRUCTIONS_comp_bedroughness(limin, limax, ljmin, ljmax, ssh, h0)
 #endif
 ! * FG-OBST-END
    ! *********************************
@@ -246,7 +245,7 @@ MODULE OBSTRUCTIONS
  
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_uzvz(limin,limax,ljmin,ljmax,h0,ssh,uz,vz)
+   SUBROUTINE OBSTRUCTIONS_comp_uzvz(limin, limax, ljmin, ljmax, h0, ssh, uz, vz)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_uzvz  ***
    !&E
@@ -289,7 +288,7 @@ MODULE OBSTRUCTIONS
    DO j=ljmin,ljmax
      DO i=limin,limax
        hwat = h0(i,j) + ssh(i,j)  ! z_w(i,j,N)+h(i,j)
-       IF(hwat.GT.h0fond) THEN
+       IF(hwat.GT.obst_h0fond) THEN
          !--------------------------
          ! * Height above bed, dz, uz, vz
          !--------------------------
@@ -307,7 +306,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_abdelposture(limin,limax,ljmin,ljmax,ssh,h0,h0fond)
+   SUBROUTINE OBSTRUCTIONS_comp_abdelposture(limin,limax,ljmin,ljmax,ssh,h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_abdelposture  ***
    !&E
@@ -346,6 +345,8 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
    !! * Arguments
    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh 
 
    !! * Local declaration
    LOGICAL                                     :: IERR_MPI,l_theta
@@ -372,10 +373,10 @@ MODULE OBSTRUCTIONS
    DO j=ljmin,ljmax
      DO i=limin,limax
        DO iv=1,obst_nbvar
-         IF((l_obst_flexible(iv)).AND.(l_obst_abdelposture(iv)))THEN
+         IF((obst_l_flexible(iv)).AND.(obst_l_abdelposture(iv)))THEN
            IF(obst_position(iv,i,j).GT.0.0_rsh)THEN
              hwat = h0(i,j) + ssh(i,j)
-             IF(hwat.GT.h0fond)THEN
+             IF(hwat.GT.obst_h0fond)THEN
                IF(hwat.LE.obst_height_inst(iv,i,j))THEN
                  obst_height(iv,i,j)    = hwat
                  obst_theta3d(iv,:,i,j) = ACOS(obst_height(iv,i,j)/obst_height_inst(iv,i,j))
@@ -456,7 +457,9 @@ MODULE OBSTRUCTIONS
                      ! Computing xz contributions and summing all moments for th0 !
                      !------------------------------------------------------------!
                      phi = ABS((pi/2.0_rsh) - th0)
-                     cshelt = MIN(MAX(1.0_rsh,obst_c_shelter(iv)*obst_dens_inst(iv,i,j)*obst_width_inst(iv,i,j)*obst_thick_inst(iv,i,j)*lseg/(lseg*COS(th0)) - 1.0_rsh),4.0_rsh)
+                     cshelt = MIN(MAX(1.0_rsh,obst_c_shelter(iv)*obst_dens_inst(iv,i,j)* &
+                                        obst_width_inst(iv,i,j)*obst_thick_inst(iv,i,j)* &
+                                        lseg/(lseg*COS(th0)) - 1.0_rsh),4.0_rsh)
                      ! For drag
                      cd        = (phi*obst_c_drag(iv)/(pi/2.0_rsh)) / cshelt
                      drag_xz_0 = 0.5_rsh * cd * rw * (obst_abdel_uvcent(iv,s)**2.0_rsh) * &
@@ -502,7 +505,9 @@ MODULE OBSTRUCTIONS
                          ! Computing xz contributions and summing all moments for th1m !
                          !-------------------------------------------------------------!
                          phi = ABS((pi/2.0_rsh) - th1m)
-                         cshelt = MIN(MAX(1.0_rsh,obst_c_shelter(iv)*obst_dens_inst(iv,i,j)*obst_width_inst(iv,i,j)*obst_thick_inst(iv,i,j)*lseg/(lseg*COS(th1m)) - 1.0_rsh),4.0_rsh)
+                         cshelt = MIN(MAX(1.0_rsh,obst_c_shelter(iv)*obst_dens_inst(iv,i,j)* &
+                                            obst_width_inst(iv,i,j)*obst_thick_inst(iv,i,j)* &
+                                            lseg/(lseg*COS(th1m)) - 1.0_rsh),4.0_rsh)
                          ! For drag
                          cd         = (phi*obst_c_drag(iv)/(pi/2.0_rsh)) / cshelt
                          drag_xz_1m = 0.5_rsh * cd * rw * (obst_abdel_uvcent(iv,s)**2.0_rsh) * &
@@ -530,7 +535,9 @@ MODULE OBSTRUCTIONS
                          ! Computing xz contributions and summing all moments for th1p !
                          !-------------------------------------------------------------!
                          phi = ABS((pi/2.0_rsh) - th1p)
-                         cshelt = MIN(MAX(1.0_rsh,obst_c_shelter(iv)*obst_dens_inst(iv,i,j)*obst_width_inst(iv,i,j)*obst_thick_inst(iv,i,j)*lseg/(lseg*COS(th1p)) - 1.0_rsh),4.0_rsh)
+                         cshelt = MIN(MAX(1.0_rsh,obst_c_shelter(iv)*obst_dens_inst(iv,i,j)* &
+                                            obst_width_inst(iv,i,j)*obst_thick_inst(iv,i,j)* &
+                                            lseg/(lseg*COS(th1p)) - 1.0_rsh),4.0_rsh)
                          ! For drag
                          cd         = (phi*obst_c_drag(iv)/(pi/2.0_rsh)) / cshelt
                          drag_xz_1p = 0.5_rsh * cd * rw * (obst_abdel_uvcent(iv,s)**2.0_rsh) * &
@@ -610,7 +617,9 @@ MODULE OBSTRUCTIONS
                        !-----------------------------------------------------!
                        IF (obst_c_abdel_nmax(iv).GT.1) THEN
                          phi = ABS((pi/2.0_rsh) - obst_abdel_t1cent(iv,s))
-                         cshelt = MIN(MAX(1.0_rsh,obst_c_shelter(iv)*obst_dens_inst(iv,i,j)*obst_width_inst(iv,i,j)*obst_thick_inst(iv,i,j)*lseg/(lseg*COS(obst_abdel_t1cent(iv,s))) - 1.0_rsh),4.0_rsh)
+                         cshelt = MIN(MAX(1.0_rsh,obst_c_shelter(iv)*obst_dens_inst(iv,i,j)* &
+                                            obst_width_inst(iv,i,j)*obst_thick_inst(iv,i,j)* &
+                                            lseg/(lseg*COS(obst_abdel_t1cent(iv,s))) - 1.0_rsh),4.0_rsh)
                          ! Computing drag
                          cd     = (phi*obst_c_drag(iv)/(pi/2.0_rsh)) / cshelt
                          drag_x = 0.5_rsh * cd * rw * (obst_abdel_uvcent(iv,s)**2.0_rsh) * &
@@ -700,7 +709,8 @@ MODULE OBSTRUCTIONS
                  DO s=1,obst_c_abdel_nmax(iv)
                    obst_height(iv,i,j) = obst_height(iv,i,j) + lseg*COS(obst_abdel_t0cent(iv,s))
                  ENDDO
-                 obst_height(iv,i,j) = MIN(MAX(obst_height(iv,i,j),obst_p_hmin*obst_height_inst(iv,i,j)),0.99_rsh*obst_height_inst(iv,i,j))
+                 obst_height(iv,i,j) = MIN(MAX(obst_height(iv,i,j),obst_p_hmin*obst_height_inst(iv,i,j)), &
+                                                0.99_rsh*obst_height_inst(iv,i,j))
                  !--------------------------------------------------------------!
                  ! **** INTERPOLATION OF REAL BENDING ANGLES ON SIGMA GRID **** !
                  !--------------------------------------------------------------!
@@ -744,7 +754,7 @@ MODULE OBSTRUCTIONS
              ELSE ! * Not enough water
                obst_height(iv,i,j)    = 0.99_rsh*obst_height_inst(iv,i,j)
                obst_theta3d(iv,:,i,j) = 0.0_rsh
-             ENDIF ! * END TEST ON Hwat>H0fond
+             ENDIF ! * END TEST ON Hwat>obst_h0fond
            ELSE ! * No obstruction within this cell
              obst_height(iv,i,j)    = 0.0_rsh
              obst_theta3d(iv,:,i,j) = 0.0_rsh
@@ -758,7 +768,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_height(limin, limax, ljmin, ljmax, ssh, h0, h0fond)
+   SUBROUTINE OBSTRUCTIONS_comp_height(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_height  ***
    !&E
@@ -802,6 +812,8 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
    !! * Arguments
    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
 
    !! * Local declaration
    INTEGER                               :: i,j,k,iv
@@ -809,7 +821,6 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh)                        :: uv,hwat
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBST_COMP_HEIGHT'
    !-----------------------------------------
    DO j=ljmin,ljmax
      DO i=limin,limax
@@ -818,11 +829,11 @@ MODULE OBSTRUCTIONS
          !***************************
          ! * TEST ON OBSTRUCTION KIND
          !***************************
-         IF(l_obst_flexible(iv)) THEN ! * FLEXIBLE OBSTRUCTIONS
-           IF(.NOT.l_obst_abdelposture(iv)) THEN
-             IF(l_obst_param_height(iv)) THEN ! * USE EXPONENTIAL PARAMETERIZATION
+         IF(obst_l_flexible(iv)) THEN ! * FLEXIBLE OBSTRUCTIONS
+           IF(.NOT.obst_l_abdelposture(iv)) THEN
+             IF(obst_l_param_height(iv)) THEN ! * USE EXPONENTIAL PARAMETERIZATION
                IF(obst_position(iv,i,j).GT.0.0_rsh)THEN
-                 IF(hwat.GT.h0fond)THEN
+                 IF(hwat.GT.obst_h0fond)THEN
                    !-------------------------------------------------
                    ! * COMPUTATION OF PARTIAL DEPTH-AVERAGED VELOCITY
                    !-------------------------------------------------
@@ -833,7 +844,7 @@ MODULE OBSTRUCTIONS
                    ENDIF
                    dz  = 0.0_rsh
                    udz = 0.0_rsh
-                   IF(l_obst_downward(iv))THEN ! * DOWNWARD
+                   IF(obst_l_downward(iv))THEN ! * DOWNWARD
                      k=obst_kmax
                      DO WHILE((k.GE.1).AND.(hwat-(obst_zc(k,i,j)-obst_dz(k,i,j)/2.0_rsh).LT.htmp))
                        dz  =  dz + obst_dz(k,i,j)
@@ -855,7 +866,8 @@ MODULE OBSTRUCTIONS
                    ! * COMPUTATION OF BENT OBSTRUCTION HEIGHT
                    !-----------------------------------------
                    htmp = obst_c_height_x0(iv) * obst_height_inst(iv,i,j)* EXP(obst_c_height_x1(iv)*uv)
-                   obst_height(iv,i,j) = MIN(MAX(htmp,obst_p_hmin*obst_height_inst(iv,i,j)),0.99_rsh*obst_height_inst(iv,i,j))
+                   obst_height(iv,i,j) = MIN(MAX(htmp,obst_p_hmin*obst_height_inst(iv,i,j)), &
+                                                0.99_rsh*obst_height_inst(iv,i,j))
                  ELSE ! * Not enough water depth
                    obst_height(iv,i,j) = 0.99_rsh*obst_height_inst(iv,i,j)
                  ENDIF! * END TEST ON WATER DEPTH
@@ -864,7 +876,7 @@ MODULE OBSTRUCTIONS
                ENDIF ! * END TEST ON OBSTRUCTION POSITION
              ELSE ! * USE ONLY FIRST COEFFICIENT
                IF(obst_position(iv,i,j).GT.0.0_rsh)THEN
-                 IF(hwat.GT.h0fond)THEN
+                 IF(hwat.GT.obst_h0fond)THEN
                    !-------------------------------------------
                    ! * COMPUTATION OF UNBENT OBSTRUCTION HEIGHT
                    !-------------------------------------------
@@ -882,7 +894,7 @@ MODULE OBSTRUCTIONS
            ! * COMPUTATION OF RIGID OBSTRUCTION HEIGHT
            !------------------------------------------
            IF(obst_position(iv,i,j).GT.0.0_rsh)THEN
-             IF(hwat.GT.h0fond)THEN
+             IF(hwat.GT.obst_h0fond)THEN
                obst_height(iv,i,j) = obst_height_inst(iv,i,j)*obst_c_height_x0(iv)
              ELSE ! * Not enough water depth
                obst_height(iv,i,j) = 0.99_rsh*obst_height_inst(iv,i,j)
@@ -899,7 +911,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_theta(limin, limax, ljmin, ljmax, ssh, h0, h0fond)
+   SUBROUTINE OBSTRUCTIONS_comp_theta(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_theta  ***
    !&E
@@ -942,6 +954,8 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
    !! * Arguments
    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
 
    !! * Local declaration
    LOGICAL                          :: IERR_MPI
@@ -949,18 +963,17 @@ MODULE OBSTRUCTIONS
    REAL(KIND=rsh)                   :: hwat,z0,z1
    !!----------------------------------------------------------------------
    !! * Executable part
-   PRINT_DBG*, 'ENTER OBST_COMP_THETA'
    !-----------------------------------------
    DO j=ljmin,ljmax
      DO i=limin,limax
        DO iv=1,obst_nbvar
-         IF(l_obst_flexible(iv))THEN
-           IF(.NOT.l_obst_abdelposture(iv))THEN
+         IF(obst_l_flexible(iv))THEN
+           IF(.NOT.obst_l_abdelposture(iv))THEN
              IF(obst_position(iv,i,j).GT.0.0_rsh)THEN
                !*********************************
                ! *** COMPUTATION OF BENDING ANGLE
                !*********************************
-               IF(l_obst_downward(iv))THEN ! * DOWNWARD
+               IF(obst_l_downward(iv))THEN ! * DOWNWARD
                  k=obst_kmax
                  DO WHILE ((k.GE.1).AND.(hwat-(obst_zc(k,i,j)+obst_dz(k,i,j)/2.0_rsh).LT.obst_height(iv,i,j)))
                    obst_theta3d(iv,k,i,j) = ACOS(obst_height(iv,i,j)/obst_height_inst(iv,i,j))
@@ -1031,6 +1044,8 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
    !! * Arguments
    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
 
    !! * Local declaration
    LOGICAL                          :: IERR_MPI
@@ -1044,8 +1059,8 @@ MODULE OBSTRUCTIONS
      DO i=limin,limax
        DO iv=1,obst_nbvar
          hwat = h0(i,j) + ssh(i,j)
-         IF((hwat.GT.h0fond).AND.(obst_position(iv,i,j).GT.0.0_rsh))THEN
-           IF(l_obst_downward(iv))THEN ! * DOWNWARD
+         IF((hwat.GT.obst_h0fond).AND.(obst_position(iv,i,j).GT.0.0_rsh))THEN
+           IF(obst_l_downward(iv))THEN ! * DOWNWARD
              DO k=obst_kmax,1,-1
                z0  = hwat - (obst_zc(k,i,j) - obst_dz(k,i,j)/2.0_rsh)
                z1  = hwat - (obst_zc(k,i,j) + obst_dz(k,i,j)/2.0_rsh)
@@ -1056,7 +1071,7 @@ MODULE OBSTRUCTIONS
                ENDIF
              ENDDO
            ELSE ! * UPWARD
-             IF(l_obst_3dobst(iv))THEN
+             IF(obst_l_3dobst(iv))THEN
                DO k=1,obst_kmax
                  z0   = obst_zc(k,i,j) - obst_dz(k,i,j)/2.0_rsh
                  z1   = obst_zc(k,i,j) + obst_dz(k,i,j)/2.0_rsh
@@ -1132,6 +1147,9 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
 
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
    !! * Local declaration
    LOGICAL                          :: IERR_MPI
    INTEGER                          :: i,j,k,iv
@@ -1146,22 +1164,23 @@ MODULE OBSTRUCTIONS
      DO i=limin,limax
        DO iv=1,obst_nbvar
          hwat = h0(i,j) + ssh(i,j)
-         IF((hwat.GT.h0fond).AND.(obst_position(iv,i,j).GT.0.0_rsh))THEN
+         IF((hwat.GT.obst_h0fond).AND.(obst_position(iv,i,j).GT.0.0_rsh))THEN
            !***************************************
            ! *** COMPUTATION OF WIDTH AND THICKNESS
            !***************************************
            obst_width3d(iv,:,i,j) = 0.0_rsh
            obst_thick3d(iv,:,i,j) = 0.0_rsh
-           IF(l_obst_downward(iv))THEN ! * DOWNWARD
+           IF(obst_l_downward(iv))THEN ! * DOWNWARD
              ltotl = 0.0_rsh
              DO k=obst_kmax,1,-1
                IF(obst_dens3d(iv,k,i,j).GT.0.0_rsh)THEN
                  obst_width3d(iv,k,i,j) = obst_width_inst(iv,i,j)
-                 IF(l_obst_cylindre(iv))THEN ! * CYLINDER
+                 IF(obst_l_cylindre(iv))THEN ! * CYLINDER
                      IF(obst_theta3d(iv,k,i,j).EQ.0.0_rsh)THEN
                        obst_thick3d(iv,k,i,j) = obst_width_inst(iv,i,j)
                      ELSE
-                       lsegl = MIN(MAX(obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)/COS(obst_theta3d(iv,k,i,j)),obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)),obst_height_inst(iv,i,j)-ltotl)
+                       lsegl = MIN(MAX(obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)/COS(obst_theta3d(iv,k,i,j)), &
+                                    obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)),obst_height_inst(iv,i,j)-ltotl)
                        obst_thick3d(iv,k,i,j) = MIN(lsegl,MAX(obst_width_inst(iv,i,j),lsegl*SIN(obst_theta3d(iv,k,i,j))))
                        ltotl = ltotl+lsegl
                      ENDIF
@@ -1169,7 +1188,8 @@ MODULE OBSTRUCTIONS
                      IF(obst_theta3d(iv,k,i,j).EQ.0.0_rsh)THEN
                        obst_thick3d(iv,k,i,j) = obst_thick_inst(iv,i,j)
                      ELSE
-                       lsegl = MIN(MAX(obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)/COS(obst_theta3d(iv,k,i,j)),obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)),obst_height_inst(iv,i,j)-ltotl)
+                       lsegl = MIN(MAX(obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)/COS(obst_theta3d(iv,k,i,j)), &
+                                    obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)),obst_height_inst(iv,i,j)-ltotl)
                        obst_thick3d(iv,k,i,j) = MIN(lsegl,MAX(obst_thick_inst(iv,i,j),lsegl*SIN(obst_theta3d(iv,k,i,j))))
                        ltotl = ltotl+lsegl
                      ENDIF
@@ -1181,11 +1201,12 @@ MODULE OBSTRUCTIONS
              DO k=1,obst_kmax
                IF(obst_dens3d(iv,k,i,j).GT.0.0_rsh)THEN
                  obst_width3d(iv,k,i,j) = obst_width_inst(iv,i,j)
-                 IF(l_obst_cylindre(iv))THEN ! * CYLINDER
+                 IF(obst_l_cylindre(iv))THEN ! * CYLINDER
                    IF(obst_theta3d(iv,k,i,j).EQ.0.0_rsh)THEN
                      obst_thick3d(iv,k,i,j) = obst_width_inst(iv,i,j)
                    ELSE
-                     lsegl = MIN(MAX(obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)/COS(obst_theta3d(iv,k,i,j)),obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)),obst_height_inst(iv,i,j)-ltotl)
+                     lsegl = MIN(MAX(obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)/COS(obst_theta3d(iv,k,i,j)), &
+                                    obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)),obst_height_inst(iv,i,j)-ltotl)
                      obst_thick3d(iv,k,i,j) = MIN(lsegl,MAX(obst_width_inst(iv,i,j),lsegl*SIN(obst_theta3d(iv,k,i,j))))
                      ltotl = ltotl+lsegl
                    ENDIF
@@ -1193,7 +1214,8 @@ MODULE OBSTRUCTIONS
                    IF(obst_theta3d(iv,k,i,j).EQ.0.0_rsh)THEN
                      obst_thick3d(iv,k,i,j) = obst_thick_inst(iv,i,j)
                    ELSE
-                     lsegl = MIN(MAX(obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)/COS(obst_theta3d(iv,k,i,j)),obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)),obst_height_inst(iv,i,j)-ltotl)
+                     lsegl = MIN(MAX(obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)/COS(obst_theta3d(iv,k,i,j)), &
+                                    obst_fracz3d(iv,k,i,j)*obst_dz(k,i,j)),obst_height_inst(iv,i,j)-ltotl)
                      obst_thick3d(iv,k,i,j) = MIN(lsegl,MAX(obst_thick_inst(iv,i,j),lsegl*SIN(obst_theta3d(iv,k,i,j))))
                      ltotl = ltotl+lsegl
                    ENDIF
@@ -1210,7 +1232,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_distrib(limin,limax,ljmin,ljmax,h0,ssh)
+   SUBROUTINE OBSTRUCTIONS_comp_distrib(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_distrib  ***
    !&E
@@ -1251,6 +1273,9 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
 
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
    !! * Local declaration
    LOGICAL                                  :: IERR_MPI
    INTEGER                                  :: iv,i,j,k,kk
@@ -1264,16 +1289,16 @@ MODULE OBSTRUCTIONS
      DO i=limin,limax
        DO iv=1,obst_nbvar
          hwat = h0(i,j) + ssh(i,j)
-         IF((hwat.GT.h0fond).AND.(obst_position(iv,i,j).GT.0.0_rsh))THEN
+         IF((hwat.GT.obst_h0fond).AND.(obst_position(iv,i,j).GT.0.0_rsh))THEN
            !****************************************
            ! *** COMPUTATION OF DENSITY DISTRIBUTION
            !****************************************
-           IF(l_obst_filedistri(iv)) THEN ! * VARIABLE DISTRIBUTION
+           IF(obst_l_filedistri(iv)) THEN ! * VARIABLE DISTRIBUTION
              !----------------------------------------
              ! *** COMPUTATION OF DENSITY DISTRIBUTION
              !----------------------------------------
              obst_dens3d(iv,:,i,j) = 0.0_rsh
-             IF(l_obst_downward(iv))THEN ! * DOWNWARD
+             IF(obst_l_downward(iv))THEN ! * DOWNWARD
                DO k=obst_kmax,1,-1
                  z0  = MAX(hwat - (obst_zc(k,i,j) - obst_dz(k,i,j)/2.0_rsh) , 0.0_rsh)
                  z1  = MIN(hwat - (obst_zc(k,i,j) + obst_dz(k,i,j)/2.0_rsh) , hwat)
@@ -1320,7 +1345,7 @@ MODULE OBSTRUCTIONS
                ENDDO
              ENDIF ! * END TEST ON UPWARD/DOWNWARD
            ELSE ! * CONSTANT DISTRIBUTION
-             IF(l_obst_downward(iv))THEN ! * DOWNWARD
+             IF(obst_l_downward(iv))THEN ! * DOWNWARD
                DO k=obst_kmax,1,-1
                  z0  = MAX(hwat - (obst_zc(k,i,j) - obst_dz(k,i,j)/2.0_rsh) , 0.0_rsh)
                  z1  = MIN(hwat - (obst_zc(k,i,j) + obst_dz(k,i,j)/2.0_rsh) , hwat)
@@ -1347,7 +1372,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_fracxy(limin,limax,ljmin,ljmax,h0,ssh)
+   SUBROUTINE OBSTRUCTIONS_comp_fracxy(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_fracxy  ***
    !&E
@@ -1376,6 +1401,9 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
 
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
 
    !! * Local declaration
    INTEGER            :: i,j,iv
@@ -1388,11 +1416,11 @@ MODULE OBSTRUCTIONS
      DO i=limin,limax
        DO iv=1,obst_nbvar
          hwat = h0(i,j) + ssh(i,j)
-         IF((hwat.GT.h0fond).AND.(obst_position(iv,i,j).GT.0.0_rsh))THEN
+         IF((hwat.GT.obst_h0fond).AND.(obst_position(iv,i,j).GT.0.0_rsh))THEN
            !--------------------------------------------------
            ! *** COMPUTATION OF CORRECTION FACTOR FOR COVERAGE
            !--------------------------------------------------
-           IF (l_obst_fracxy(iv))THEN
+           IF (obst_l_fracxy(iv))THEN
              IF (obst_fracxy_type(iv).EQ.0)THEN
                !------------------
                ! Linear correction
@@ -1432,7 +1460,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_projarea(limin,limax,ljmin,ljmax,h0,ssh)
+   SUBROUTINE OBSTRUCTIONS_comp_projarea(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_projarea  ***
    !&E
@@ -1466,6 +1494,9 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
 
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
    !! * Local declaration
    INTEGER                  :: iv,i,j,k
    REAL(KIND=rsh)           :: hwat,dzas,spos,wtmp,dtmp,sfz
@@ -1486,7 +1517,7 @@ MODULE OBSTRUCTIONS
    DO j=ljmin,ljmax
      DO i=limin,limax
        hwat = h0(i,j) + ssh(i,j)
-       IF(hwat.GT.h0fond) THEN
+       IF(hwat.GT.obst_h0fond) THEN
          ! ******************** !
          ! *** 3D VARIABLES *** !
          ! ******************** !
@@ -1499,7 +1530,7 @@ MODULE OBSTRUCTIONS
                !------------------------------------------
                ! * Horizontal surface area of obstructions
                !------------------------------------------
-               IF(l_obst_cylindre(iv))THEN ! Cylindric/Ellipse obstruction
+               IF(obst_l_cylindre(iv))THEN ! Cylindric/Ellipse obstruction
                  obst_a3d(iv,k,i,j) = MIN(pi*(0.5_rsh*obst_width3d(iv,k,i,j)*0.5_rsh*obst_thick3d(iv,k,i,j))* &
                                           obst_dens3d(iv,k,i,j)*obst_fracxy(iv,i,j),gamma)
                ELSE
@@ -1517,7 +1548,7 @@ MODULE OBSTRUCTIONS
            ! * Computes obst_a3d and obst_s3d for NoTurb/Turb and Total obstructions
            !------------------------------------------------------------------------
            DO iv=1,obst_nbvar
-             IF(l_obst_noturb(iv)) THEN
+             IF(obst_l_noturb(iv)) THEN
                !-------------------------------------------
                ! First for NoTurb (simplified obstructions)
                !-------------------------------------------
@@ -1566,7 +1597,7 @@ MODULE OBSTRUCTIONS
          !------------------------------
          DO iv=1,obst_nbvar
            IF(obst_position(iv,i,j).GT.0.0_rsh)THEN
-             IF(l_obst_noturb(iv)) THEN
+             IF(obst_l_noturb(iv)) THEN
                !-----------
                ! For NoTurb
                !-----------
@@ -1597,7 +1628,7 @@ MODULE OBSTRUCTIONS
        ! * Averaged characteristics
        !---------------------------
        spos = 0.0_rsh
-       IF(hwat.GT.h0fond) THEN
+       IF(hwat.GT.obst_h0fond) THEN
          DO iv=1,obst_nbvar
            obst_height_mean(i,j) = obst_height_mean(i,j) + obst_position(iv,i,j)*obst_height(iv,i,j)
            wtmp = 0.0_rsh
@@ -1636,7 +1667,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_obstroughness(limin,limax,ljmin,ljmax,h0,ssh)
+   SUBROUTINE OBSTRUCTIONS_comp_obstroughness(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_obstroughness  ***
    !&E
@@ -1665,6 +1696,9 @@ MODULE OBSTRUCTIONS
    IMPLICIT NONE
 
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
    !! * Local declaration
    INTEGER         :: iv,i,j
    REAL(KIND=rsh)  :: hwat,a,d,z0a,coef,z0tot,ctot
@@ -1675,7 +1709,7 @@ MODULE OBSTRUCTIONS
      DO i=limin,limax
        obst_z0obst(:,i,j) = obst_z0bed(i,j)
        hwat = h0(i,j) + ssh(i,j)
-       IF(hwat.GT.h0fond) THEN
+       IF(hwat.GT.obst_h0fond) THEN
          ! ******************************************************* !
          ! *** Computation for all upward and not 3d variables *** !
          ! ******************************************************* !
@@ -1683,9 +1717,9 @@ MODULE OBSTRUCTIONS
            !--------------------------------
            ! *** Abdelhrman parameterization
            !--------------------------------
-           IF((.NOT.l_obst_downward(iv)).AND.(.NOT.l_obst_3dobst(iv)))THEN
+           IF((.NOT.obst_l_downward(iv)).AND.(.NOT.obst_l_3dobst(iv)))THEN
              IF(obst_position(iv,i,j).GT.0.0_rsh)THEN
-               IF(l_obst_abdelrough_cste(iv))THEN
+               IF(obst_l_abdelrough_cste(iv))THEN
                  coef = obst_c_crough_x0(iv)
                ELSE
                  coef = obst_c_crough_x1(iv) + obst_c_crough_x0(iv) * (obst_height_inst(iv,i,j)**2.0_rsh)/ &
@@ -1714,7 +1748,7 @@ MODULE OBSTRUCTIONS
          z0tot = 0.0_rsh
          ctot  = 0.0_rsh
          DO iv=1,obst_nbvar
-           IF(l_obst_noturb(iv))THEN
+           IF(obst_l_noturb(iv))THEN
              z0tot = z0tot + obst_z0obst(iv,i,j)
              ctot  = ctot  + 1.0_rsh
            ENDIF
@@ -1732,7 +1766,7 @@ MODULE OBSTRUCTIONS
          z0tot = 0.0_rsh
          ctot  = 0.0_rsh
          DO iv=1,obst_nbvar
-           IF(.NOT.l_obst_noturb(iv))THEN
+           IF(.NOT.obst_l_noturb(iv))THEN
              z0tot = z0tot + obst_z0obst(iv,i,j)
              ctot  = ctot  + 1.0_rsh
            ENDIF
@@ -1758,7 +1792,7 @@ MODULE OBSTRUCTIONS
          ELSE
            obst_z0obst(obst_nbvar+3,i,j) = MAX(z0tot/ctot,obst_z0bed(i,j))
          ENDIF
-       ENDIF ! * End Test on Hwat>H0fond
+       ENDIF ! * End Test on Hwat>obst_h0fond
      ENDDO ! * END LOOP ON i
    ENDDO ! * END LOOP ON j
    !-----------------------------------------
@@ -1766,7 +1800,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_hydroparam(limin,limax,ljmin,ljmax)
+   SUBROUTINE OBSTRUCTIONS_comp_hydroparam(limin, limax, ljmin, ljmax, ssh, h0, z0b)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_hydroparam  ***
    !&E
@@ -1808,7 +1842,7 @@ MODULE OBSTRUCTIONS
    !&E                                - Differenciation of cylindric / parallelepipedic structures
    !&E                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell)
    !&E       ! 2017-04-05 (F. Ganthy) Modification for case of 2D model
-   !&E       ! 2017-04-06 (F. Ganthy) Change initialization of turbulence coefficients cmu and c2turb
+   !&E       ! 2017-04-06 (F. Ganthy) Change initialization of turbulence coefficients cmu and obst_c2turb
    !&E       ! 2017-04-13 (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
    !&E       ! 2017-04-13 (F. Ganthy) Add simplified formulation (not using turbulence, but using roughness)
    !&E       ! 2017-10-17 (F. Ganthy) Re-organization related to simplified formulations, 3D obstructions and
@@ -1818,14 +1852,16 @@ MODULE OBSTRUCTIONS
    !&E
    !&E---------------------------------------------------------------------
    !! * Modules used
-!    USE comvars2d,  ONLY  : h0,h0fond,z0b
+!    USE comvars2d,  ONLY  : h0,z0b
 !    USE comvarp2d,  ONLY  : ssh
-
-!    USE comturb,    ONLY  : cmu,c2turb
 
    IMPLICIT NONE
 
    !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(INOUT) :: z0b
    !! * Local declaration
    INTEGER                           :: iv,i,j,k
    REAL(KIND=rsh)                    :: hwat,phi,ntot,clz,nclz,lz
@@ -1861,7 +1897,7 @@ MODULE OBSTRUCTIONS
    DO j=ljmin,ljmax
      DO i=limin,limax
        hwat = h0(i,j) + ssh(i,j)
-       IF(hwat.GT.h0fond)THEN
+       IF(hwat.GT.obst_h0fond)THEN
          ! *************************************************** !
          ! ********** SIMPLIFIED (NoTurb) VARIABLES ********** !
          ! *************************************************** !
@@ -1883,7 +1919,7 @@ MODULE OBSTRUCTIONS
              clz  = 0.0_rsh
              nclz = 0.0_rsh
              DO iv=1,obst_nbvar
-               IF((obst_position(iv,i,j).GT.0.0_rsh) .AND. (.NOT.l_obst_noturb(iv)))THEN
+               IF((obst_position(iv,i,j).GT.0.0_rsh) .AND. (.NOT.obst_l_noturb(iv)))THEN
                  IF(obst_dens3d(iv,k,i,j).GT.0.0_rsh)THEN
                    !----------------------------
                    ! * Total obstruction density
@@ -1892,7 +1928,7 @@ MODULE OBSTRUCTIONS
                    !-------------------
                    ! * Drag coefficient         
                    !-------------------
-                   IF(l_obst_drag_cste(iv)) THEN
+                   IF(obst_l_drag_cste(iv)) THEN
                      obst_drag3d(iv,k,i,j) = obst_c_drag(iv)
                    ELSE
                      phi =  (pi/2.0_rsh) - obst_theta3d(iv,k,i,j)
@@ -1954,8 +1990,9 @@ MODULE OBSTRUCTIONS
                !-----------------------------------------------------
                ! * Dissipation timescale of eddies between structures
                ! ----------------------------------------------------
-               IF((obst_t(k,i,j)/=0.0_rsh).AND.(c2turb/=0.0_rsh).AND.(cmu/=0.0_rsh))THEN
-                 obst_tau(k,i,j) = 1.0_rsh / (1.0_rsh / (c2turb * sqrt(cmu)) * ((lz*lz) / (obst_t(k,i,j)))**(1.0_rsh/3.0_rsh))
+               IF((obst_t(k,i,j)/=0.0_rsh).AND.(obst_c2turb/=0.0_rsh).AND.(obst_cmu/=0.0_rsh))THEN
+                 obst_tau(k,i,j) = 1.0_rsh / (1.0_rsh / (obst_c2turb * sqrt(obst_cmu)) * &
+                     ((lz*lz) / (obst_t(k,i,j)))**(1.0_rsh/3.0_rsh))
                ENDIF
              ENDIF ! * END TEST ON OBSTRUCTION DENSITY
            ENDIF ! * END TEST ON ENOUGH VELOCITY
@@ -2006,7 +2043,7 @@ MODULE OBSTRUCTIONS
 
    !!==========================================================================================================
 
-   SUBROUTINE OBSTRUCTIONS_comp_bedroughness(limin,limax,ljmin,ljmax,h0,ssh)
+   SUBROUTINE OBSTRUCTIONS_comp_bedroughness(limin, limax, ljmin, ljmax, ssh, h0)
    !&E---------------------------------------------------------------------
    !&E                 ***  ROUTINE OBSTRUCTIONS_comp_bedroughness  ***
    !&E
@@ -2033,6 +2070,10 @@ MODULE OBSTRUCTIONS
    !&E---------------------------------------------------------------------
    IMPLICIT NONE
 
+   !! * Arguments
+   INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
+   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
    !! * Local declaration
    INTEGER :: iv,i,j
    REAL(KIND=rsh) :: hwat,z0tmp,stmp,z00,oal,oah
@@ -2044,11 +2085,11 @@ MODULE OBSTRUCTIONS
    DO j=ljmin,ljmax
      DO i=limin,limax
        hwat = h0(i,j) + ssh(i,j)
-       IF(hwat.GT.h0fond)THEN
+       IF(hwat.GT.obst_h0fond)THEN
          z0tmp = 0.0_rsh
          stmp  = 0.0_rsh
          DO iv=1,obst_nbvar
-           IF((.NOT.l_obst_downward(iv)).AND.(.NOT.l_obst_3dobst(iv)).AND.(l_obst_z0bstress(iv)))THEN
+           IF((.NOT.obst_l_downward(iv)).AND.(.NOT.obst_l_3dobst(iv)).AND.(obst_l_z0bstress(iv)))THEN
              IF(obst_position(iv,i,j).GT.0.0_rsh)THEN
                IF(obst_z0bstress_option(iv).EQ.0)THEN
                  !-----------------------
