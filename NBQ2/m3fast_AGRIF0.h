@@ -3,8 +3,11 @@
 ! ! m3fast_AGRIF0.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
-
+# ifdef NHINT
       if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(nsdtnbq)
+# else
+      if (Agrif_NHINT_tcoef ( ) == 0.) call Agrif_NHINT(1)
+# endif
         
       irhox = Agrif_Irhox()
       irhoy = Agrif_Irhoy()
