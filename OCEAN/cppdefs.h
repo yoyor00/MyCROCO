@@ -9,6 +9,10 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+
+#ifndef CPPDEFS_HEADER
+#define CPPDEFS_HEADER
+
 /*
    This is "cppdefs.h": MODEL CONFIGURATION FILE
    ==== == ============ ===== ============= ====
@@ -1938,3 +1942,5 @@
 
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"
+
+#endif
