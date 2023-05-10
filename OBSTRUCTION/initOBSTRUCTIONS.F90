@@ -1010,6 +1010,8 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
 
    ! to do for croco with appropriate netcdf reading
 
+   obst_position(1,14:31,:) = 1.0_rsh
+
   
    END SUBROUTINE OBSTRUCTIONS_readfile_pos
 

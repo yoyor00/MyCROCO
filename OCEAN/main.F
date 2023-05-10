@@ -40,6 +40,7 @@
 #endif
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : OBSTRUCTIONS_init_main
+          USE plug_OBSTRUCTIONS, ONLY : OBSTRUCTIONS_update_main
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
@@ -451,6 +452,7 @@ CR      write(*,*)  ' -5' MYID0
 #ifdef OBSTRUCTION
       do tile=0,NSUB_X*NSUB_E-1
         call OBSTRUCTIONS_init_main (tile)
+        call OBSTRUCTIONS_update_main (tile)
       enddo
 #endif
 

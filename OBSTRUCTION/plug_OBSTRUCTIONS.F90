@@ -45,13 +45,13 @@ CONTAINS
         obst_mask(:,:) =  obst_mask(:,:) * mask_wet(:,:)
 #   endif
 
-
       CALL OBSTRUCTIONS_update(Istr, Iend, Jstr, Jend, & 
                  cm0, h, zob,     &
                  zeta(:,:,knew),  &
-                 u(:,:,:,nstp),   &
-                 v(:,:,:,nstp)    &
+                 u(:,:,:,3),   &
+                 v(:,:,:,3)    &
                  )
+
       end subroutine
 !
 !-----------------------------------------------------------------------

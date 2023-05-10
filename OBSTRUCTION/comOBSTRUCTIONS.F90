@@ -234,7 +234,7 @@ MODULE comobstructions
    ! Variables on (k)
    !-----------------
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC   :: obst_sig             ! Sigma levels (same as sig (comvars3d) for 3D modele, or allocated on obst_kmax2d for 2D modele)
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC   :: obst_dsig            ! Sigme layer thickness (same as sig (comvars3d) for 3D modele, or allocated on obst_kmax2d for 2D modele)
+   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC   :: obst_dsig            ! Sigma layer thickness (same as sig (comvars3d) for 3D modele, or allocated on obst_kmax2d for 2D modele)
    ! Variables on (i,j)
    !----------------------
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: obst_roswat_bot      ! Water density at the bottom (i,j)

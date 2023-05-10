@@ -24,6 +24,10 @@
       end
 
       subroutine step3d_uv1_tile (Istr,Iend,Jstr,Jend, ru,rv,DC)
+#ifdef OBSTRUCTION
+        USE comOBSTRUCTIONS, ONLY : obst_fuz_e, obst_fvz_e
+#endif
+
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 # include "param.h"
@@ -101,6 +105,11 @@
      &                    +0.5*ust(i,j,k)*(Hz(i-1,j,k)+Hz(i,j,k))
      &                                          *(umask(i,j)-1.0)
 # endif
+
+# ifdef OBSTRUCTION
+            u(i,j,k,nnew) = u(i,j,k,nnew) - obst_fuz_e(k,i,j)*dt ! [obst_fuz_e]     = m.s-2
+# endif
+
           enddo
         enddo
         if (j.ge.JstrV) then
@@ -146,6 +155,11 @@
      &                      +0.5*vst(i,j,k)*(Hz(i,j-1,k)+Hz(i,j,k))
      &                                            *(vmask(i,j)-1.0)
 # endif
+
+# ifdef OBSTRUCTION
+            v(i,j,k,nnew) = v(i,j,k,nnew) - obst_fvz_e(k,i,j)*dt
+# endif
+
             enddo
           enddo
         endif

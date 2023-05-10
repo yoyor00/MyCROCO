@@ -185,6 +185,7 @@ MODULE OBSTRUCTIONS
    ! * COMPUTES 3D VELOCITIES
    ! ************************
    CALL OBSTRUCTIONS_comp_uzvz(limin, limax, ljmin, ljmax, h0, ssh, uz, vz)
+
    ! *********************************
    ! * UPDATING OBSTRUCTION PARAMETERS
    ! *********************************
@@ -241,6 +242,14 @@ MODULE OBSTRUCTIONS
 #endif
 ! * FG-OBST-END
    ! *********************************
+
+    write(*,*) "OBSTupdate : ", obst_uz(1,23,3),obst_uz(40,23,3),h0(23,3) + ssh(23,3)
+    write(*,*) "OBSTupdate : ", obst_dens_inst(1,23,3)
+    write(*,*) "OBSTupdate : ", obst_zc(1,23,3),obst_zc(2,23,3),obst_zc(10,23,3),obst_zc(40,23,3)
+    write(*,*) "OBSTupdate : ", obst_dens3d(1,1,23,3), obst_dens3d(1,20,23,3)
+    write(*,*) "OBSTupdate : ", obst_fuz_e(1,23,3),obst_fvz_e(1,23,3)
+    write(*,*) "OBSTupdate : ", obst_fuz_e(2,23,3),obst_fvz_e(2,23,3)
+    write(*,*) "OBSTupdate : ", obst_position(1,20,3),obst_height(1,20,3), obst_height_inst(1,20,3)
    END SUBROUTINE OBSTRUCTIONS_update 
  
    !!==========================================================================================================
@@ -285,9 +294,18 @@ MODULE OBSTRUCTIONS
    obst_dz(:,:,:) = 0.0_rsh
    obst_uz(:,:,:) = 0.0_rsh
    obst_vz(:,:,:) = 0.0_rsh
+   write(*,*) "compuzvz",obst_kmax,limin, limax, ljmin, ljmax, obst_h0fond
+   DO k=1,obst_kmax
+    obst_sig(k) =  -1. + (float(k) - 0.5)/float(obst_kmax) 
+    obst_dsig(k) = 1./obst_kmax
+   ENDDO
    DO j=ljmin,ljmax
      DO i=limin,limax
        hwat = h0(i,j) + ssh(i,j)  ! z_w(i,j,N)+h(i,j)
+       if (i.eq.23 .and. j.eq.3)then
+        write(*,*) "compuzvz"
+        write(*,*) hwat, obst_h0fond, uz(i,j,1),uz(i,j,40),uz(i+1,j,1),uz(i+1,j,40)
+       endif
        IF(hwat.GT.obst_h0fond) THEN
          !--------------------------
          ! * Height above bed, dz, uz, vz
@@ -295,8 +313,8 @@ MODULE OBSTRUCTIONS
          DO k=1,obst_kmax
             obst_zc(k,i,j) = (1.0_rsh+obst_sig(k))*hwat !TODO : compute sig and dsig with generalized sigmas of croco
             obst_dz(k,i,j) = obst_dsig(k)*hwat
-            obst_uz(k,i,j) = (uz(k,i,j) + uz(k,i+1,j)) / 2.
-            obst_vz(k,i,j) = (vz(k,i,j) + uz(k,i,j+1)) / 2.
+            obst_uz(k,i,j) = (uz(i,j,k) + uz(i+1,j,k)) / 2.
+            obst_vz(k,i,j) = (vz(i,j,k) + vz(i,j+1,k)) / 2.
          ENDDO
        ENDIF ! * END TEST ON HWAT
      ENDDO ! * END LOOP ON i
@@ -402,7 +420,7 @@ MODULE OBSTRUCTIONS
                  ! For k=1,obst_kmax
                  DO k=1,obst_kmax
                    uvz(:) = SQRT(obst_uz(k,i,j)**2.0_rsh + obst_vz(k,i,j)**2.0_rsh)
-                   zz(k)  = (1.0_rsh+obst_sig(k))*hwat + obst_dz(k,i,j)*0.5_rsh
+                   zz(k)  = (1.0_rsh+obst_sig(k))*hwat + obst_dz(k,i,j)*0.5_rsh !! TODO obst_sig
                  ENDDO
                  ! For k=kmax+1
                  k=kmax+1
