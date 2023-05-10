@@ -10,7 +10,13 @@
 	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > $*.f
 
 .F.o:
-	$(CPP) -P $(CPPFLAGS) $*.F > $*_.f1
+	if egrep "^$*_.f$$" skip.openacc.rules.lst; then \
+		cat cppdefs.h | sed -e "s/# define OPENACC/# undef OPENACC/g" > cppdefs-no-acc.$*.h; \
+		cat $*.F | sed -e "s/cppdefs.h/cppdefs-no-acc.$*.h/g" > $*.include.ready.F; \
+	else \
+		cp $*.F $*.include.ready.F; \
+	fi
+	$(CPP) -P $(CPPFLAGS) $*.include.ready.F > $*_.f1
 	python3 ./change_loops.py $*_.f1 $*_.tmp
 	cat $*_.tmp | ./mpc > $*_.f && \rm $*_.tmp
 	if egrep "^$*_.f" psyclone.rules.lst; then \
