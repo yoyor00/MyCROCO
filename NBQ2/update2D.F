@@ -469,6 +469,7 @@ C$OMP MASTER
         tabres (i1:i2,j1:j2,k1:k2)=qdmu_nbq(i1:i2,j1:j2,k1:k2)
       else
         !if (global_update_2d) then
+        if (iif==nfast) then
           do k=1,N
             do j=j1,j2
               do i=i1,i2
@@ -482,6 +483,7 @@ C$OMP MASTER
               enddo
             enddo
           enddo
+        endif
         !endif
         qdmu_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
       endif
@@ -520,6 +522,7 @@ C$OMP MASTER
         tabres (i1:i2,j1:j2,k1:k2)=qdmv_nbq(i1:i2,j1:j2,k1:k2)
       else
         !if (global_update_2d) then
+        if (iif==nfast) then
           do k=1,N
             do j=j1,j2
               do i=i1,i2
@@ -533,6 +536,7 @@ C$OMP MASTER
               enddo
             enddo
           enddo
+        endif
         !endif
         qdmv_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
       endif
@@ -571,6 +575,7 @@ C$OMP MASTER
         tabres (i1:i2,j1:j2,k1:k2)=qdmw_nbq(i1:i2,j1:j2,k1:k2)
       else
         !if (global_update_2d) then
+        if (iif==nfast) then
           do k=0,N
             do j=j1,j2
               do i=i1,i2
@@ -579,12 +584,12 @@ C$OMP MASTER
      &                    )
      &                                       *on_r(i,j)*om_r(i,j)
                 rw_nbq_avg2(i,j,k)=rw_nbq_avg2(i,j,k)+
-     &                       ((tabres(i,j,k)-qdmw_nbq(i,j,k))/dt)!
+     &                       ((tabres(i,j,k)-qdmw_nbq(i,j,k))/dt)
      &                                       *on_r(i,j)*om_r(i,j)
               enddo
             enddo
           enddo
-        !endif
+        endif
         qdmw_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
       endif
 

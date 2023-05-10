@@ -48,8 +48,9 @@
 #  define LOCALLM Lm
 #  define LOCALMM Mm
 # endif
-      if(Agrif_NbStepint() == 0) then
-
+    !  if(Agrif_NbStepint() == 0) then
+        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
 # endif
@@ -61,9 +62,8 @@
      &                         procname=qdmuinterp)
         Agrif_UseSpecialValue=.false.
       endif
-
       ainterp(1)= real(mod((iif+(iic-1)*nfast)
-     &          * Agrif_NHINT_tcoef(), Agrif_iRhot()))
+     &          / Agrif_NHINT_tcoef() ,  Agrif_iRhot()))
      &          / Agrif_Rhot()
       if (ainterp(1)==0.) ainterp(1)=1.
       ainterp(2)=1.- ainterp(1)
@@ -178,7 +178,9 @@
 !          
 # include "compute_auxiliary_bounds.h"
 !
-      if(Agrif_NbStepint() == 0) then
+    !  if(Agrif_NbStepint() == 0) then
+        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
 # endif
@@ -306,7 +308,9 @@
 #  define LOCALLM Lm
 #  define LOCALMM Mm
 # endif   
-      if(Agrif_NbStepint() == 0) then
+    !  if(Agrif_NbStepint() == 0) then
+        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
 # endif
@@ -427,7 +431,6 @@
 #  define LOCALLM Lm
 #  define LOCALMM Mm
 # endif
-
       if (before) then
 
         tabres(i1:i2,j1:j2,k1:k2) = qdmu_nbq(i1:i2,j1:j2,k1:k2)
@@ -483,6 +486,10 @@
      &        Unbq_west(i1:i2,j1:j2,1:N,nsource)
             endif
             Unbq_west(i1:i2,j1:j2,1:N,nsource) = tabres
+!           if (iic==ntstart.and.iif==nfast) then
+!            Unbq_west(i1:i2,j1:j2,1:N,ndest)=
+!    &         Unbq_west(i1:i2,j1:j2,1:N,nsource)
+!           endif
 #  ifdef MPI
           endif
 #  endif
@@ -762,7 +769,9 @@
 !          
 # include "compute_auxiliary_bounds.h"
 !
-      if(Agrif_NbStepint() == 0) then
+    !  if(Agrif_NbStepint() == 0) then
+        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .TRUE.
 # endif
