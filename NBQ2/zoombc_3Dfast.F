@@ -49,7 +49,7 @@
 #  define LOCALMM Mm
 # endif
     !  if(Agrif_NbStepint() == 0) then
-       if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+       if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -183,7 +183,7 @@
 # include "compute_auxiliary_bounds.h"
 !
     !  if(Agrif_NbStepint() == 0) then
-       if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+       if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -317,7 +317,7 @@
 #  define LOCALMM Mm
 # endif   
     !  if(Agrif_NbStepint() == 0) then
-       if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+       if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -442,9 +442,9 @@
 # else
 #  define LOCALLM Lm
 #  define LOCALMM Mm
-# endif
+# endif  
       if (before) then
-
+      
         tabres(i1:i2,j1:j2,k1:k2) = qdmu_nbq(i1:i2,j1:j2,k1:k2)
       else
 
@@ -462,7 +462,7 @@
           if (.not.SOUTH_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Unbq_south(i1:i2,j1:j2,1:N,ndest)=
      &        Unbq_south(i1:i2,j1:j2,1:N,nsource)
@@ -485,7 +485,7 @@
           if (.not.NORTH_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Unbq_north(i1:i2,j1:j2,1:N,ndest)=
      &        Unbq_north(i1:i2,j1:j2,1:N,nsource)
@@ -507,7 +507,7 @@
           if (.not.WEST_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Unbq_west(i1:i2,j1:j2,1:N,ndest)=
      &        Unbq_west(i1:i2,j1:j2,1:N,nsource)
@@ -533,7 +533,7 @@
           if (.not.EAST_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Unbq_east(i1:i2,j1:j2,1:N,ndest)=
      &        Unbq_east(i1:i2,j1:j2,1:N,nsource)
@@ -601,7 +601,7 @@
           if (.not.SOUTH_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Vnbq_south(i1:i2,j1:j2,1:N,ndest)=
      &        Vnbq_south(i1:i2,j1:j2,1:N,nsource)
@@ -623,7 +623,7 @@
           if (.not.NORTH_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Vnbq_north(i1:i2,j1:j2,1:N,ndest)=
      &        Vnbq_north(i1:i2,j1:j2,1:N,nsource)
@@ -645,7 +645,7 @@
           if (.not.WEST_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+        if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Vnbq_west(i1:i2,j1:j2,1:N,ndest)=
      &        Vnbq_west(i1:i2,j1:j2,1:N,nsource)
@@ -667,7 +667,7 @@
           if (.not.EAST_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Vnbq_east(i1:i2,j1:j2,1:N,ndest)=
      &        Vnbq_east(i1:i2,j1:j2,1:N,nsource)
@@ -732,7 +732,7 @@
             if (.not.SOUTH_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
                 Wnbq_south(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_south(i1:i2,j1:j2,0:N,nsource)
@@ -754,7 +754,7 @@
             if (.not.NORTH_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
                 Wnbq_north(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_north(i1:i2,j1:j2,0:N,nsource)
@@ -776,7 +776,7 @@
             if (.not.WEST_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
                 Wnbq_west(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_west(i1:i2,j1:j2,0:N,nsource)
@@ -798,7 +798,7 @@
             if (.not.EAST_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 
                 Wnbq_east(i1:i2,j1:j2,0:N,ndest)=
@@ -855,7 +855,7 @@
 # include "compute_auxiliary_bounds.h"
 !
     !  if(Agrif_NbStepint() == 0) then
-       if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+       if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .TRUE.
@@ -1006,7 +1006,7 @@
           if (.not.SOUTH_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Rnbq_south(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_south(i1:i2,j1:j2,1:N,nsource)
@@ -1028,7 +1028,7 @@
           if (.not.NORTH_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Rnbq_north(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_north(i1:i2,j1:j2,1:N,nsource)
@@ -1050,7 +1050,7 @@
           if (.not.WEST_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Rnbq_west(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_west(i1:i2,j1:j2,1:N,nsource)
@@ -1072,7 +1072,7 @@
           if (.not.EAST_INTER) then
 #  endif
         !   if(Agrif_NbStepint() == 0) then
-            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+            if (mod((iif+(iic-1)*nfast)
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Rnbq_east(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_east(i1:i2,j1:j2,1:N,nsource)

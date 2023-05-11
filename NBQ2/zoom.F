@@ -887,9 +887,13 @@ CR      write(*,*) '  0' MYID
                 T_south(0:LOCALLM+1,0:1,1:N,4,1:NT)=
      &                t(0:LOCALLM+1,0:1,1:N,1,1:NT)     
 #   ifdef M3FAST_UV
+                Unbq_south(0:LOCALLM+1,0:0,1:N,1)=
+     &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
                 Unbq_south(0:LOCALLM+1,0:0,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
      
+                Vnbq_south(0:LOCALLM+1,1:1,1:N,1)=
+     &            qdmv_nbq(0:LOCALLM+1,1:1,1:N)
                 Vnbq_south(0:LOCALLM+1,1:1,1:N,2)=
      &            qdmv_nbq(0:LOCALLM+1,1:1,1:N)
 #   endif
@@ -898,10 +902,14 @@ CR      write(*,*) '  0' MYID
      &               wz(0:LOCALLM+1,0:0,0:N,1)
 #   endif
 #   ifdef M3FAST_W
+                Wnbq_south(0:LOCALLM+1,0:0,0:N,1)=
+     &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
                 Wnbq_south(0:LOCALLM+1,0:0,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
 #   endif 
 #   ifdef M3FAST_RHO
+                Rnbq_south(0:LOCALLM+1,0:0,1:N,1)=
+     &            rho_nbq(0:LOCALLM+1,0:0,1:N)
                 Rnbq_south(0:LOCALLM+1,0:0,1:N,2)=
      &            rho_nbq(0:LOCALLM+1,0:0,1:N)
 #   endif 
@@ -924,9 +932,13 @@ CR      write(*,*) '  0' MYID
      &                t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,1:NT)
 
 #   ifdef M3FAST_UV
+                Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)=
+     &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
                 Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
      
+                Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)=
+     &            qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
                 Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
 #   endif
@@ -935,10 +947,14 @@ CR      write(*,*) '  0' MYID
      &               wz(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)
 #   endif
 #   ifdef M3FAST_W
+                Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)=
+     &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
                 Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
 #   endif
 #   ifdef M3FAST_RHO
+                Rnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)=
+     &             rho_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
                 Rnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &             rho_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
 #   endif 
@@ -960,9 +976,13 @@ CR      write(*,*) '  0' MYID
                 T_west(0:1,0:LOCALMM+1,1:N,4,1:NT)=
      &               t(0:1,0:LOCALMM+1,1:N,1,1:NT)     
 #   ifdef M3FAST_UV
+                Unbq_west(1:1,0:LOCALMM+1,1:N,1)=
+     &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
                 Unbq_west(1:1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
      
+                Vnbq_west(0:0,0:LOCALMM+1,1:N,1)=
+     &           qdmv_nbq(0:0,0:LOCALMM+1,1:N)
                 Vnbq_west(0:0,0:LOCALMM+1,1:N,2)=
      &           qdmv_nbq(0:0,0:LOCALMM+1,1:N)
 #   endif
@@ -971,10 +991,14 @@ CR      write(*,*) '  0' MYID
      &              wz(0:0,0:LOCALMM+1,0:N,1)
 #   endif
 #   ifdef M3FAST_W
+                Wnbq_west(0:0,0:LOCALMM+1,0:N,1)=
+     &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
                 Wnbq_west(0:0,0:LOCALMM+1,0:N,2)=
      &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
 #   endif
 #   ifdef M3FAST_RHO
+                Rnbq_west(0:0,0:LOCALMM+1,1:N,1)=
+     &           rho_nbq(0:0,0:LOCALMM+1,1:N)
                 Rnbq_west(0:0,0:LOCALMM+1,1:N,2)=
      &           rho_nbq(0:0,0:LOCALMM+1,1:N)
 #   endif
@@ -996,9 +1020,13 @@ CR      write(*,*) '  0' MYID
                 T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,4,1:NT)=
      &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)     
 #   ifdef M3FAST_UV
+                Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)=
+     &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
                 Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
      
+                Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)=
+     &           qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
                 Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
 #   endif
@@ -1007,10 +1035,14 @@ CR      write(*,*) '  0' MYID
      &              wz(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)
 #   endif 
 #   ifdef M3FAST_W
+                Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)=
+     &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
                 Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,2)=
      &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
 #   endif
 #   ifdef M3FAST_RHO
+                Rnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)=
+     &            rho_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
                 Rnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &            rho_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
 #   endif
