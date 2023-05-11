@@ -62,9 +62,14 @@
      &                         procname=qdmuinterp)
         Agrif_UseSpecialValue=.false.
       endif
-      ainterp(1)= 1.+real(mod((iif+(iic-1)*nfast)
+      ainterp(1)= real(mod((iif+(iic-1)*nfast)
      &          / Agrif_NHINT_tcoef() ,  Agrif_iRhot()))
      &          / Agrif_Rhot()
+#  ifdef NHINT
+      ainterp(1)=ainterp(1)+1.
+#  else
+      if (ainterp(1)==0.) ainterp(1)=1.
+#  endif
       ainterp(2)=1.- ainterp(1)
 # ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
@@ -194,6 +199,11 @@
       ainterp(1)= 1.+real(mod((iif+(iic-1)*nfast)
      &          * Agrif_NHINT_tcoef(), Agrif_iRhot()))
      &          / Agrif_Rhot()
+#  ifdef NHINT
+      ainterp(1)=ainterp(1)+1.
+#  else
+      if (ainterp(1)==0) ainterp(1)=1.
+#  endif
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -323,6 +333,11 @@
       ainterp(1)= 1.+real(mod((iif+(iic-1)*nfast)
      &          * Agrif_NHINT_tcoef(), Agrif_iRhot()))
      &          / Agrif_Rhot()
+#  ifdef NHINT
+      ainterp(1)=ainterp(1)+1.
+#  else
+      if (ainterp(1)==0) ainterp(1)=1.
+#  endif
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -856,6 +871,11 @@
       ainterp(1)= 1.+real(mod((iif+(iic-1)*nfast)
      &          * Agrif_NHINT_tcoef(), Agrif_iRhot()))
      &          / Agrif_Rhot()
+#  ifdef NHINT
+      ainterp(1)=ainterp(1)+1.
+#  else
+      if (ainterp(1)==0) ainterp(1)=1.
+#  endif
       ainterp(2)=1.- ainterp(1)
       
 # ifdef AGRIF_OBC_SOUTH
