@@ -49,7 +49,7 @@
 #  define LOCALMM Mm
 # endif
     !  if(Agrif_NbStepint() == 0) then
-        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+       if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -62,10 +62,9 @@
      &                         procname=qdmuinterp)
         Agrif_UseSpecialValue=.false.
       endif
-      ainterp(1)= real(mod((iif+(iic-1)*nfast)
+      ainterp(1)= 1.+real(mod((iif+(iic-1)*nfast)
      &          / Agrif_NHINT_tcoef() ,  Agrif_iRhot()))
      &          / Agrif_Rhot()
-      if (ainterp(1)==0.) ainterp(1)=1.
       ainterp(2)=1.- ainterp(1)
 # ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
@@ -179,7 +178,7 @@
 # include "compute_auxiliary_bounds.h"
 !
     !  if(Agrif_NbStepint() == 0) then
-        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+       if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -192,10 +191,9 @@
      &                         procname=qdmvinterp)
         Agrif_UseSpecialValue=.false.
       endif
-      ainterp(1)= real(mod((iif+(iic-1)*nfast)
+      ainterp(1)= 1.+real(mod((iif+(iic-1)*nfast)
      &          * Agrif_NHINT_tcoef(), Agrif_iRhot()))
      &          / Agrif_Rhot()
-      if (ainterp(1)==0.) ainterp(1)=1.
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -309,7 +307,7 @@
 #  define LOCALMM Mm
 # endif   
     !  if(Agrif_NbStepint() == 0) then
-        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+       if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
@@ -322,10 +320,9 @@
      &                         procname=qdmwinterp)
         Agrif_UseSpecialValue=.false.
       endif
-      ainterp(1)= real(mod((iif+(iic-1)*nfast)
+      ainterp(1)= 1.+real(mod((iif+(iic-1)*nfast)
      &          * Agrif_NHINT_tcoef(), Agrif_iRhot()))
      &          / Agrif_Rhot()
-      if (ainterp(1)==0.) ainterp(1)=1.
       ainterp(2)=1.- ainterp(1)
 
 #  ifdef AGRIF_OBC_SOUTH
@@ -449,11 +446,18 @@
 #  ifdef MPI
           if (.not.SOUTH_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Unbq_south(i1:i2,j1:j2,1:N,ndest)=
      &        Unbq_south(i1:i2,j1:j2,1:N,nsource)
             endif
             Unbq_south(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Unbq_south(i1:i2,j1:j2,1:N,ndest)=
+     &        Unbq_south(i1:i2,j1:j2,1:N,nsource)
+            endif
+
 #  ifdef MPI
           endif
 #  endif
@@ -465,11 +469,17 @@
 #  ifdef MPI
           if (.not.NORTH_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Unbq_north(i1:i2,j1:j2,1:N,ndest)=
      &        Unbq_north(i1:i2,j1:j2,1:N,nsource)
             endif
             Unbq_north(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Unbq_north(i1:i2,j1:j2,1:N,ndest)=
+     &        Unbq_north(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -481,11 +491,17 @@
 #  ifdef MPI
           if (.not.WEST_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Unbq_west(i1:i2,j1:j2,1:N,ndest)=
      &        Unbq_west(i1:i2,j1:j2,1:N,nsource)
             endif
             Unbq_west(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Unbq_west(i1:i2,j1:j2,1:N,ndest)=
+     &        Unbq_west(i1:i2,j1:j2,1:N,nsource)
+            endif
 !           if (iic==ntstart.and.iif==nfast) then
 !            Unbq_west(i1:i2,j1:j2,1:N,ndest)=
 !    &         Unbq_west(i1:i2,j1:j2,1:N,nsource)
@@ -501,11 +517,17 @@
 #  ifdef MPI
           if (.not.EAST_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Unbq_east(i1:i2,j1:j2,1:N,ndest)=
      &        Unbq_east(i1:i2,j1:j2,1:N,nsource)
             endif
             Unbq_east(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Unbq_east(i1:i2,j1:j2,1:N,ndest)=
+     &        Unbq_east(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -563,11 +585,17 @@
 #  ifdef MPI
           if (.not.SOUTH_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Vnbq_south(i1:i2,j1:j2,1:N,ndest)=
      &        Vnbq_south(i1:i2,j1:j2,1:N,nsource)
             endif
             Vnbq_south(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Vnbq_south(i1:i2,j1:j2,1:N,ndest)=
+     &        Vnbq_south(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -579,11 +607,17 @@
 #  ifdef MPI
           if (.not.NORTH_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Vnbq_north(i1:i2,j1:j2,1:N,ndest)=
      &        Vnbq_north(i1:i2,j1:j2,1:N,nsource)
             endif
             Vnbq_north(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Vnbq_north(i1:i2,j1:j2,1:N,ndest)=
+     &        Vnbq_north(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -595,11 +629,17 @@
 #  ifdef MPI
           if (.not.WEST_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Vnbq_west(i1:i2,j1:j2,1:N,ndest)=
      &        Vnbq_west(i1:i2,j1:j2,1:N,nsource)
              endif
              Vnbq_west(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Vnbq_west(i1:i2,j1:j2,1:N,ndest)=
+     &        Vnbq_west(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -611,11 +651,17 @@
 #  ifdef MPI
           if (.not.EAST_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Vnbq_east(i1:i2,j1:j2,1:N,ndest)=
      &        Vnbq_east(i1:i2,j1:j2,1:N,nsource)
             endif
             Vnbq_east(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Vnbq_east(i1:i2,j1:j2,1:N,ndest)=
+     &        Vnbq_east(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -670,11 +716,17 @@
 #  ifdef MPI
             if (.not.SOUTH_INTER) then
 #  endif
-                   if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
                 Wnbq_south(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_south(i1:i2,j1:j2,0:N,nsource)
-                endif
-                Wnbq_south(i1:i2,j1:j2,0:N,nsource) = tabres
+            endif
+            Wnbq_south(i1:i2,j1:j2,0:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Wnbq_south(i1:i2,j1:j2,1:N,ndest)=
+     &        Wnbq_south(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
             endif
 #  endif
@@ -686,11 +738,17 @@
 #  ifdef MPI
             if (.not.NORTH_INTER) then
 #  endif
-                   if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
                 Wnbq_north(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_north(i1:i2,j1:j2,0:N,nsource)
                endif
                 Wnbq_north(i1:i2,j1:j2,0:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Wnbq_north(i1:i2,j1:j2,1:N,ndest)=
+     &        Wnbq_north(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
             endif
 #  endif
@@ -702,11 +760,17 @@
 #  ifdef MPI
             if (.not.WEST_INTER) then
 #  endif
-                   if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
                 Wnbq_west(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_west(i1:i2,j1:j2,0:N,nsource)
-                 endif
-                Wnbq_west(i1:i2,j1:j2,0:N,nsource) = tabres
+            endif
+            Wnbq_west(i1:i2,j1:j2,0:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Wnbq_west(i1:i2,j1:j2,1:N,ndest)=
+     &        Wnbq_west(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
             endif
 #  endif
@@ -718,12 +782,18 @@
 #  ifdef MPI
             if (.not.EAST_INTER) then
 #  endif
-                   if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 
                 Wnbq_east(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_east(i1:i2,j1:j2,0:N,nsource)
-             endif
-                Wnbq_east(i1:i2,j1:j2,0:N,nsource) = tabres
+            endif
+            Wnbq_east(i1:i2,j1:j2,0:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Wnbq_east(i1:i2,j1:j2,1:N,ndest)=
+     &        Wnbq_east(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
             endif
 #  endif
@@ -770,7 +840,7 @@
 # include "compute_auxiliary_bounds.h"
 !
     !  if(Agrif_NbStepint() == 0) then
-        if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+       if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
      &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
 # ifdef MASKING
         Agrif_UseSpecialValue = .TRUE.
@@ -783,10 +853,9 @@
      &       procname=rhointerp)
         Agrif_UseSpecialValue=.FALSE.
       endif
-      ainterp(1)= real(mod((iif+(iic-1)*nfast)
+      ainterp(1)= 1.+real(mod((iif+(iic-1)*nfast)
      &          * Agrif_NHINT_tcoef(), Agrif_iRhot()))
      &          / Agrif_Rhot()
-      if (ainterp(1)==0.) ainterp(1)=1.
       ainterp(2)=1.- ainterp(1)
       
 # ifdef AGRIF_OBC_SOUTH
@@ -916,11 +985,17 @@
 #  ifdef MPI
           if (.not.SOUTH_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Rnbq_south(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_south(i1:i2,j1:j2,1:N,nsource)
             endif
             Rnbq_south(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Rnbq_south(i1:i2,j1:j2,1:N,ndest)=
+     &        Rnbq_south(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -932,11 +1007,17 @@
 #  ifdef MPI
           if (.not.NORTH_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Rnbq_north(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_north(i1:i2,j1:j2,1:N,nsource)
             endif
             Rnbq_north(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Rnbq_north(i1:i2,j1:j2,1:N,ndest)=
+     &        Rnbq_north(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -948,11 +1029,17 @@
 #  ifdef MPI
           if (.not.WEST_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Rnbq_west(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_west(i1:i2,j1:j2,1:N,nsource)
             endif
             Rnbq_west(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Rnbq_west(i1:i2,j1:j2,1:N,ndest)=
+     &        Rnbq_west(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
@@ -964,12 +1051,17 @@
 #  ifdef MPI
           if (.not.EAST_INTER) then
 #  endif
-            if (Agrif_NbStepint() == 0) then
-
+        !   if(Agrif_NbStepint() == 0) then
+            if (mod((iif+(iic-1)*nfast-Agrif_NHINT_tcoef())
+     &          , Agrif_NHINT_tcoef() *  Agrif_iRhot())==0) then
               Rnbq_east(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_east(i1:i2,j1:j2,1:N,nsource)
             endif
             Rnbq_east(i1:i2,j1:j2,1:N,nsource) = tabres
+            if (iic==ntstart.and.iif==Agrif_NHINT_tcoef()) then
+              Rnbq_east(i1:i2,j1:j2,1:N,ndest)=
+     &        Rnbq_east(i1:i2,j1:j2,1:N,nsource)
+            endif
 #  ifdef MPI
           endif
 #  endif
