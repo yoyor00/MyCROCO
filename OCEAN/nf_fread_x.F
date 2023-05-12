@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,7 +13,7 @@
       integer function nf_fwrite_x (ncid, varid, type)
 #else
       integer function nf_fread_x  (ncid, varid, type)
-#include "cppdefs.h"
+# include "cppdefs.h"
 #endif
 !
 ! Read/Write a floating point array from/into an input/output
@@ -28,23 +28,23 @@
 ! Because significant portion of the code calculates starting and
 ! stopping indices for the subarray (which are exactly the same for
 ! both read and write operations) the code ha      real xi_rho_vec(1:Lm+2),
-! guarantee that both functions are exactly adjoint. 
-!            
+! guarantee that both functions are exactly adjoint.
+!
       implicit none
 #include "param.h"
       real A(Lm+2)
       integer ncid,  type,   vert_type, imin, imax,  start,
      &        varid, ierr,  horiz_type, jmin, jmax,  count,
-     &        i 
+     &        i
 #if defined MPI
 # include "scalars.h"
 #endif
 #include "netcdf.inc"
                                       ! Decode grid type into
-      vert_type=type/4                ! vertical and horizontal 
-      horiz_type=type-4*vert_type     ! grid types, then calculate 
+      vert_type=type/4                ! vertical and horizontal
+      horiz_type=type-4*vert_type     ! grid types, then calculate
       jmin=horiz_type/2               ! starting indices indices
-      imin=horiz_type-2*jmin          ! in horizontal directions. 
+      imin=horiz_type-2*jmin          ! in horizontal directions.
 
       start=1
 #if defined AGRIF && defined AGRIF_ADAPTIVE && !defined WRITER
@@ -52,11 +52,11 @@
         start=1+(Agrif_ix()-1)*Agrif_irhox()
       endif
 #endif
-     
+
 #ifdef MPI
 # ifdef PARALLEL_FILES
 #  ifdef EW_PERIODIC
-      imin=1 
+      imin=1
       imax=Lm
 #  else
       if (ii.gt.0) imin=1

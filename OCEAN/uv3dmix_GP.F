@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -17,13 +17,13 @@
 # include "param.h"
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
-      trd=omp_get_thread_num() 
+      trd=omp_get_thread_num()
 !
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
+# endif
 !
 # ifdef AGRIF
       if (AGRIF_Root()) then
@@ -41,7 +41,7 @@
       endif
       return
       end
-# else 
+# else
       call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &    A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd), A2d(1,4,trd),
      &    A2d(1, 5,trd), A2d(1, 7,trd), A2d(1, 9,trd), A2d(1,11,trd),
@@ -49,14 +49,14 @@
      &    A2d(1,21,trd), A2d(1,23,trd), A2d(1,25,trd), A2d(1,27,trd))
       return
       end
-# endif   /* AGRIF */ 
+# endif   /* AGRIF */
 !
 !---------------------------------------------------------------------
 !*********************************************************************
 !---------------------------------------------------------------------
 !
 !PARENT
-! 
+!
       subroutine uv3dmix_tile (Istr,Iend,Jstr,Jend, UFx, UFe,
      &                             VFx,VFe, UFs,VFs, dnUdx,  dmUde,
      &                             dUdz,    dnVdx,   dmVde,  dVdz,
@@ -137,7 +137,7 @@
      &  dZde_r(PRIVATE_2D_SCRATCH_ARRAY,2),   dmVdz,
      &  dZdx_p(PRIVATE_2D_SCRATCH_ARRAY,2),   dnVdz,
      &  dZdx_r(PRIVATE_2D_SCRATCH_ARRAY,2)
- 
+
 #include "param.h"
 #include "scalars.h"
 #include "grid.h"
@@ -149,29 +149,29 @@
 #endif
 #ifdef DIAGNOSTICS_UV
 # include "diagnostics.h"
-# else
+#else
 # if defined DIAGNOSTICS_VRT
-# include "diags_vrt.h"
+#  include "diags_vrt.h"
 # endif
 # if defined DIAGNOSTICS_EK
-# include "diags_ek.h"
+#  include "diags_ek.h"
 # endif
 # if defined DIAGNOSTICS_PV
-# include "diags_pv.h"
+#  include "diags_pv.h"
 # endif
 #endif
 #ifdef AGRIF
-#include "zoom.h"
+# include "zoom.h"
 #endif
 !
-# include "compute_auxiliary_bounds.h"
+#include "compute_auxiliary_bounds.h"
 !
 #ifdef CHILD_SPG
-#define UCLM usponge
-#define VCLM vsponge
+# define UCLM usponge
+# define VCLM vsponge
 #else
-#define UCLM uclm
-#define VCLM vclm
+# define UCLM uclm
+# define VCLM vclm
 #endif
 !
       indx=3-nstp    !--> time index for target arrays;
@@ -274,7 +274,7 @@
             enddo
           enddo          !--> discard UFx,VFe, keep all others
         endif
- 
+
         if (k.eq.0 .or. k.eq.N) then
           do j=Jstr-1,Jend+1
             do i=IstrU-1,Iend+1
@@ -359,7 +359,7 @@
      &                                        +pn(i,j-1)+pn(i-1,j-1))
      &        *( min(dZdx_p(i,j,k1),0.)*(dVdz(i-1,j,k1)+dVdz(i,j,k2))
      &          +max(dZdx_p(i,j,k1),0.)*(dVdz(i-1,j,k2)+dVdz(i,j,k1))
-     &                                                             )) 
+     &                                                             ))
      &        + om_p(i,j)*( dmUde(i,j,k1)-0.125*( pm(i,j)+pm(i-1,j)
      &                                        +pm(i,j-1)+pm(i-1,j-1))
      &        *( min(dZde_p(i,j,k1),0.)*(dUdz(i,j-1,k1)+dUdz(i,j,k2))
@@ -387,7 +387,7 @@
                 dmUdz=cff2*dUdz(i,j,k2)
                 dnVdz=cff1*cff
                 dmVdz=cff2*cff
- 
+
                 cff1=min(dZdx_r(i-1,j,k1),0.)
                 cff2=min(dZdx_r(i  ,j,k2),0.)
                 cff3=max(dZdx_r(i-1,j,k2),0.)
@@ -396,7 +396,7 @@
                 cff6=min(dZde_r(i  ,j,k2),0.)
                 cff7=max(dZde_r(i-1,j,k2),0.)
                 cff8=max(dZde_r(i  ,j,k1),0.)
- 
+
                 cff=om_u(i,j)*( cff1*(cff1*dnUdz-dnUdx(i-1,j,k1))
      &                         +cff2*(cff2*dnUdz-dnUdx(i  ,j,k2))
      &                         +cff3*(cff3*dnUdz-dnUdx(i-1,j,k2))
@@ -415,7 +415,7 @@
                 cff6=min(dZdx_p(i,j+1,k2),0.)
                 cff7=max(dZdx_p(i,j  ,k2),0.)
                 cff8=max(dZdx_p(i,j+1,k1),0.)
- 
+
                 cff=cff + om_u(i,j)*(
      &                          cff1*(cff1*dmUdz-dmUde(i,j  ,k1))
      &                         +cff2*(cff2*dmUdz-dmUde(i,j+1,k2))
@@ -438,7 +438,7 @@
      &                                  )
               enddo
             enddo
- 
+
             do j=JstrV,Jend
               do i=Istr,Iend
                 cff1=pn_v(i,j)
@@ -449,7 +449,7 @@
                 dmUdz=cff2*cff
                 dnVdz=cff1*dVdz(i,j,k2)
                 dmVdz=cff2*dVdz(i,j,k2)
- 
+
                 cff1=min(dZdx_p(i  ,j,k1),0.)
                 cff2=min(dZdx_p(i+1,j,k2),0.)
                 cff3=max(dZdx_p(i  ,j,k2),0.)
@@ -458,7 +458,7 @@
                 cff6=min(dZde_p(i+1,j,k2),0.)
                 cff7=max(dZde_p(i  ,j,k2),0.)
                 cff8=max(dZde_p(i+1,j,k1),0.)
- 
+
                 cff=om_v(i,j)*( cff1*(cff1*dnVdz-dnVdx(i  ,j,k1))
      &                         +cff2*(cff2*dnVdz-dnVdx(i+1,j,k2))
      &                         +cff3*(cff3*dnVdz-dnVdx(i  ,j,k2))
@@ -477,7 +477,7 @@
                 cff6=min(dZdx_r(i,j  ,k2),0.)
                 cff7=max(dZdx_r(i,j-1,k2),0.)
                 cff8=max(dZdx_r(i,j  ,k1),0.)
- 
+
                 cff=cff+om_v(i,j)*(
      &                          cff1*(cff1*dmVdz-dmVde(i,j-1,k1))
      &                         +cff2*(cff2*dmVdz-dmVde(i,j  ,k2))
@@ -489,7 +489,7 @@
      &                         +cff3*(cff7*dnUdz-dnUdx(i,j-1,k2))
      &                         +cff4*(cff8*dnUdz-dnUdx(i,j  ,k1))
      &                                                          )
- 
+
                 VFs(i,j,k2)=0.25*cff*max(0.,visc2_r(i,j)+visc2_r(i,j-1)
 #ifdef SPONGE_VIS2
      &                       ,visc2_sponge_r(i,j)+visc2_sponge_r(i,j-1)
@@ -502,9 +502,9 @@
             enddo
           endif
 !
-! Apply viscous terms. Note that at this stage arrays u,v(...,3-nstp) 
+! Apply viscous terms. Note that at this stage arrays u,v(...,3-nstp)
 ! contain Hz*U and Hz*V with units of [m2/s].   Also compute vertical
-! integral of viscous terms and add it into coupling terms for the 
+! integral of viscous terms and add it into coupling terms for the
 ! barotropic mode
 !
           do j=Jstr,Jend
@@ -515,13 +515,13 @@
               rufrc(i,j)=rufrc(i,j) + cff
               u(i,j,k,indx)=u(i,j,k,indx) + dt*(cff1+UFs(i,j,k2)
      &                                              -UFs(i,j,k1))
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
 !            if (nnew.ne.3) then
               MHmix(i,j,k,1,indx) = (cff1+UFs(i,j,k2)-UFs(i,j,k1))
      &                            * om_u(i,j)*on_u(i,j)
      &                          SWITCH umask(i,j)
 !            endif
-# elif defined DIAGNOSTICS_EK
+#elif defined DIAGNOSTICS_EK
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkHmix(i,j,1,indx) = (cff1+UFs(i,j,k2)-UFs(i,j,k1))
@@ -534,8 +534,8 @@
      &                           * u(i,j,1,nrhs) SWITCH umask(i,j)
               endif
 !            endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#endif
+#if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkHmix(i,j,1,indx) = (cff1+UFs(i,j,k2)-UFs(i,j,k1))
@@ -548,24 +548,24 @@
      &                                    SWITCH umask(i,j)
               endif
 !            endif
-# endif
+#endif
             enddo
           enddo
           do j=JstrV,Jend
             do i=Istr,Iend
               cff=pn_v(i,j)*(VFx(i+1,j)-VFx(i,j))
      &           -pm_v(i,j)*(VFe(i,j)-VFe(i,j-1))
-              cff1=pm_v(i,j)*pn_v(i,j)*cff 
+              cff1=pm_v(i,j)*pn_v(i,j)*cff
               rvfrc(i,j)=rvfrc(i,j) + cff
               v(i,j,k,indx)=v(i,j,k,indx) + dt*(cff1+VFs(i,j,k2)
      &                                              -VFs(i,j,k1))
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
 !            if (nnew.ne.3) then
               MHmix(i,j,k,2,indx) = (cff1+VFs(i,j,k2)-VFs(i,j,k1))
      &                                  * om_v(i,j)*on_v(i,j)
      &                          SWITCH vmask(i,j)
 !            endif
-# elif defined DIAGNOSTICS_EK
+#elif defined DIAGNOSTICS_EK
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkHmix(i,j,2,indx) = (cff1+VFs(i,j,k2)-VFs(i,j,k1))
@@ -578,8 +578,8 @@
      &                          * v(i,j,1,nrhs) SWITCH vmask(i,j)
               endif
 !            endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#endif
+#if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
 !            if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkHmix(i,j,2,indx) = (cff1+VFs(i,j,k2)-VFs(i,j,k1))
@@ -592,7 +592,7 @@
      &                                    SWITCH vmask(i,j)
               endif
 !            endif
-# endif
+#endif
             enddo
           enddo
         endif
@@ -608,5 +608,5 @@
 #  include "uv3dmix_GP.F"
 # endif
 # undef CHILD_SPG
-#endif  /* !CHILD_SPG */ 
+#endif  /* !CHILD_SPG */
 

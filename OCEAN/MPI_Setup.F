@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -35,7 +35,7 @@
       parameter (Npts=3)
 # endif
 
-             
+
 # include "scalars.h"
 # include "ncscrum.h"
 # include "mpi_cpl.h"
@@ -50,7 +50,7 @@
         ierr=99
         return
       endif
-      
+
 !       write(200+mynode,*) mynode,nsize,NNODES
 !       stop'toto'
 !       write(200+mynode,*) "passe la 1"
@@ -101,7 +101,7 @@
         endif
 #  endif
       endif
-      
+
       ii_W=mod(ii-1+NP_XI,NP_XI)
       ii_E=mod(ii+1       ,NP_XI)
       jj_S=mod(jj-1+NP_ETA,NP_ETA)
@@ -117,15 +117,15 @@
       p_NE=ii_E+NP_XI*jj_N
       p_SE=ii_E+NP_XI*jj_S
 
-      
-      j_E=mynode/NP_XI 
+
+      j_E=mynode/NP_XI
       i_X=mynode-j_E*NP_XI
 
 
       WEST_INTER2=WEST_INTER
       EAST_INTER2=EAST_INTER
       SOUTH_INTER2=SOUTH_INTER
-      NORTH_INTER2=NORTH_INTER   
+      NORTH_INTER2=NORTH_INTER
 
       CORNER_SW=SOUTH_INTER .and.  WEST_INTER
       CORNER_NW=NORTH_INTER .and.  WEST_INTER
@@ -139,100 +139,100 @@
       nerr= nf_open('croco_grd.nc',
      &   NF_NOWRITE, ncid)
       nerr= nf_inq_varid(ncid, 'mask_rho', varid)
-      nerr= nf_get_var_double(ncid, varid, zmask)   
+      nerr= nf_get_var_double(ncid, varid, zmask)
       if(nerr /= nf_noerr ) then
         write(*,*) 'Reading mask file failed'
         call mpi_abort(MPI_COMM_WORLD, ierr)
       endif
-      nerr= nf_close(ncid)           
-          
+      nerr= nf_close(ncid)
+
       WEST_INTER=.true.
       EAST_INTER=.true.
       SOUTH_INTER=.true.
-      NORTH_INTER=.true.      
+      NORTH_INTER=.true.
       WEST_INTER2=.true.
       EAST_INTER2=.true.
       SOUTH_INTER2=.true.
-      NORTH_INTER2=.true.      
-      CORNER_SW= .true. 
-      CORNER_NW= .true. 
-      CORNER_SE=  .true. 
-      CORNER_NE= .true. 
+      NORTH_INTER2=.true.
+      CORNER_SW= .true.
+      CORNER_NW= .true.
+      CORNER_SE=  .true.
+      CORNER_NE= .true.
 
       inu=0 ; inu2=0
-      myproc(:,:)=mpi_proc_null 
+      myproc(:,:)=mpi_proc_null
       mymynode(:)=0
       mymynode2(:)=0
       ! loop on all sub-domain
       do j=0,NP_ETA-1
-        do i=0,NP_XI-1  
-          j_E=inu2/NP_XI 
-          i_X=inu2-j_E*NP_XI           
-          ! 
-          chunk_size_X=(LLm+NP_XI-1)/NP_XI        
-          margin_X=(NP_XI*chunk_size_X-LLm)/2    
-          chunk_size_E=(MMm+NP_ETA-1)/NP_ETA     
+        do i=0,NP_XI-1
+          j_E=inu2/NP_XI
+          i_X=inu2-j_E*NP_XI
+          !
+          chunk_size_X=(LLm+NP_XI-1)/NP_XI
+          margin_X=(NP_XI*chunk_size_X-LLm)/2
+          chunk_size_E=(MMm+NP_ETA-1)/NP_ETA
           margin_E=(NP_ETA*chunk_size_E-MMm)/2
           !
-          istrmpi=1+i_X*chunk_size_X-margin_X !-Npts   
+          istrmpi=1+i_X*chunk_size_X-margin_X !-Npts
           iendmpi=istrmpi+chunk_size_X-1  ! +Npts
-          istrmpi=max(istrmpi,1)    
-          iendmpi=min(iendmpi,LLm)   
+          istrmpi=max(istrmpi,1)
+          iendmpi=min(iendmpi,LLm)
           !
           jstrmpi=1+j_E*chunk_size_E-margin_E !-NPTS
           jendmpi=jstrmpi+chunk_size_E-1 !  +Npts
-          jstrmpi=max(jstrmpi,1)    
-          jendmpi=min(jendmpi,Mmm)   
-           
-          lbx=max(istrmpi-Npts,1) 
-          ubx=min(iendmpi+Npts,LLm) 
-          lby=max(jstrmpi-Npts,1) 
-          uby=min(jendmpi+Npts,Mmm) 
+          jstrmpi=max(jstrmpi,1)
+          jendmpi=min(jendmpi,Mmm)
+
+          lbx=max(istrmpi-Npts,1)
+          ubx=min(iendmpi+Npts,LLm)
+          lby=max(jstrmpi-Npts,1)
+          uby=min(jendmpi+Npts,Mmm)
 
           if(sum(zmask(lbx:ubx,lby:uby))>0.)then
             myproc(i,j)=inu
             mymynode(inu)=inu
             mymynode2(inu)=inu2
-            inu=inu+1 
+            inu=inu+1
           endif
-          inu2=inu2+1                           
+          inu2=inu2+1
         enddo
-      enddo 
-            
+      enddo
+
       mynode2=mymynode2(mynode)
       mynode=mymynode(mynode)
       NNODES2=NP_XI*NP_ETA
 
       !
       do j=0,NP_ETA -1
-        do i=0,NP_XI  -1      
-          if (myproc(i,j)==mynode)   then   
+        do i=0,NP_XI  -1
+          if (myproc(i,j)==mynode)   then
             im1=mod(i-1+NP_XI,NP_XI)
             jm1=mod(j-1+NP_ETA,NP_ETA)
             ip1=mod(i+1,NP_XI)
             jp1=mod(j+1,NP_ETA)
-            
+
             i_X=i
             ii=i_X
-            j_E=j  
+            j_E=j
             jj=j_e
-                         
+
             if(i==0 ) WEST_INTER2=.false.
             if(myproc(im1,j)==mpi_proc_null )WEST_INTER2=.false.
-            p_W=myproc(im1,j) 
-              
-            if(i==NP_XI-1) EAST_INTER2=.false. 
-            if(myproc(ip1,j)==mpi_proc_null ) EAST_INTER2=.false. 
+            p_W=myproc(im1,j)
+
+            if(i==NP_XI-1) EAST_INTER2=.false.
+            if(myproc(ip1,j)==mpi_proc_null ) EAST_INTER2=.false.
             p_E=myproc(ip1,j)
-             
+
             if(j==0.) SOUTH_INTER2=.false.
             if(myproc(i,jm1) ==mpi_proc_null ) SOUTH_INTER2=.false.
             p_S=myproc(i,jm1)
-             
-            if(j==NP_ETA-1) NORTH_INTER2=.false. 
-            if(myproc(i,jp1)==mpi_proc_null ) NORTH_INTER2=.false. 
-            p_N=myproc(i,jp1)  
-            
+
+            if(j==NP_ETA-1) NORTH_INTER2=.false.
+            if(myproc(i,jp1)==mpi_proc_null ) NORTH_INTER2=.false.
+            p_N=myproc(i,jp1)
+
             p_SW=myproc(im1,jm1)
             p_NW=myproc(im1,jp1)
             p_SE=myproc(ip1,jm1)
@@ -243,10 +243,10 @@
             if(p_SE== mpi_proc_null) CORNER_SE=.false.
             if(p_NE== mpi_proc_null) CORNER_NE=.false.
 
-          endif                                
+          endif
         enddo
       enddo
- 
+
       if (NP_XI.eq.1) then
         WEST_INTER=.false.
         EAST_INTER=.false.
@@ -290,15 +290,15 @@
       endif
 
 # endif /* MPI_NOLAND */
-       
+
        IF( .not. north_inter .or. .not.east_inter) CORNER_NE=.false.
        IF( .not. north_inter .or. .not.west_inter) CORNER_NW=.false.
        IF( .not. south_inter .or. .not.east_inter) CORNER_SE=.false.
        IF( .not. south_inter .or. .not.west_inter) CORNER_SW=.false.
 
-      chunk_size_X=(LLm+NP_XI-1)/NP_XI        
-      margin_X=(NP_XI*chunk_size_X-LLm)/2    
-      chunk_size_E=(MMm+NP_ETA-1)/NP_ETA     
+      chunk_size_X=(LLm+NP_XI-1)/NP_XI
+      margin_X=(NP_XI*chunk_size_X-LLm)/2
+      chunk_size_E=(MMm+NP_ETA-1)/NP_ETA
       margin_E=(NP_ETA*chunk_size_E-MMm)/2
 
       istrmpi=1+i_X*chunk_size_X-margin_X
@@ -309,11 +309,11 @@
       jstrmpi=1+j_E*chunk_size_E-margin_E
       jendmpi=jstrmpi+chunk_size_E-1
       jstrmpi=max(jstrmpi,1)
-      jendmpi=min(jendmpi,MMm)     
- 
+      jendmpi=min(jendmpi,MMm)
+
       Lmmpi=iendmpi-istrmpi+1
       Mmmpi=jendmpi-jstrmpi+1
-        
+
       iminmpi=istrmpi
       imaxmpi=iendmpi
 
@@ -322,29 +322,29 @@
 
      ! write(*,*) mynode,istrmpi,iendmpi,jstrmpi,jendmpi
 
-       
+
 !       if(mynode == 0) then
 !       open (unit=100,file="results.txt",action="write",
 !     &  status="replace")!
 
  !       write(100,*) 'DECOUPAGE : '
- !       write(100,*) 
+ !       write(100,*)
  !       do j=NP_ETA-1,0,-1
  !          write(100,*) (myproc(i,j),i=0,NP_XI-1)
- !       enddo 
- !      endif 
- !      call MPI_Barrier (MPI_COMM_WORLD, ierr)       
+ !       enddo
+ !      endif
+ !      call MPI_Barrier (MPI_COMM_WORLD, ierr)
  !      if(mynode == 0) close(100)
-   
+
  !       if(jj==4)then
  !      write(*,*) 'diags : ', mynode, CORNER_NE,CORNER_NW,
  !    & CORNER_SE,CORNER_SW
  !      write(*,*) 'bounds : ',mynode,istrmpi,iendmpi,jstrmpi,jendmpi
-        
- !      endif
- !      call MPI_Barrier (MPI_COMM_WORLD, ierr)       
 
-#ifdef PARALLEL_FILES
+ !      endif
+ !      call MPI_Barrier (MPI_COMM_WORLD, ierr)
+
+# ifdef PARALLEL_FILES
 !# ifndef EW_PERIODIC
       xi_rho=Lmmpi
       xi_u=xi_rho
@@ -363,13 +363,13 @@
         eta_v=eta_v+1
       endif
 !# endif
-#endif
+# endif
 
       return
       end
 
 
-#undef CHECK_MPI
+# undef CHECK_MPI
 # ifdef CHECK_MPI
 
       subroutine MPI_Test
@@ -398,7 +398,7 @@ c#  include "param.h"
       integer Istr,Iend,Jstr,Jend
 #  include "param.h"
 #  include "scalars.h"
-# include "mpi_cpl.h"
+#  include "mpi_cpl.h"
       include 'mpif.h'
 
       integer i,j,k,ierr
@@ -494,7 +494,7 @@ c      return
       enddo
       return
       end
-# endif        /* CHECK_MPI */ 
+# endif        /* CHECK_MPI */
 #else
       subroutine MPI_Setup_empty
       end

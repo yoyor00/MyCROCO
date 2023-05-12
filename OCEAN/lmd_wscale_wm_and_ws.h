@@ -11,15 +11,15 @@
 !
 ! PART OF KPP2005 (Shchepetkin et al. 2005)
 !
-# ifdef LIMIT_UNSTABLE_ONLY
-            if (Bfsfc.lt.0.) zscale=min(zscale, 
+#ifdef LIMIT_UNSTABLE_ONLY
+            if (Bfsfc.lt.0.) zscale=min(zscale,
      &                       my_hbl(i,j)*epssfc)
-# else
+#else
             zscale=min(zscale, my_hbl(i,j)*epssfc)
-# endif
-# ifdef MASKING
+#endif
+#ifdef MASKING
             zscale=zscale*rmask(i,j)
-# endif
+#endif
             zetahat=vonKar*zscale*Bfsfc
             ustar3=ustar(i,j)**3
 !
@@ -46,7 +46,7 @@
               endif
             endif
 
-# ifdef LMD_LANGMUIR
+#ifdef LMD_LANGMUIR
 !
 ! Enhanced turbulent velocity scale due to Langmuir turbulence
 !
@@ -54,5 +54,5 @@
             cff=sqrt(1+0.104/cff1**2+0.034/cff1**4)   ! Van Roekel et al. (2012)
             wm=wm*cff
             ws=ws*cff
-# endif
+#endif
 

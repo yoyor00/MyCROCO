@@ -13,7 +13,7 @@
       integer function nf_fwrite (A, ncid, varid, record, type)
 #else
       integer function nf_fread  (A, ncid, varid, record, type)
-#include "cppdefs.h"
+# include "cppdefs.h"
 #endif
 !
 ! Read/Write a floating point array from/into an input/output
@@ -39,7 +39,11 @@
 #if defined MUSTANG
       real A(GLOBAL_2D_ARRAY,max(N+1,nk_nivsed_out))
 #else
+# if defined ABL1D
+      real A(GLOBAL_2D_ARRAY,max(N+1,N_abl+1))
+# else
       real A(GLOBAL_2D_ARRAY,N+1)
+# endif
 #endif
       integer ncid,  type,   vert_type,  imin, imax,  start(4)
      &      , varid, record, horiz_type, jmin, jmax,  count(4)
@@ -154,6 +158,13 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         start(3)=1
         start(4)=record
 #endif
+#ifdef ABL1D
+      elseif (vert_type.eq.4) then
+        count(3)=N_abl
+        count(4)=1                !--> 3D ABL-grid
+        start(3)=1
+        start(4)=record
+#endif
       else
 #ifndef WRITER
         write(*,'(/1x,2A,I3/)') 'NF_FREAD ERROR: ',
@@ -172,7 +183,15 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 !===== ===== ===== ==== === =====
 !
 #ifndef WRITER
+# ifdef ABL1D
+      if (vert_type.eq.4) then
+        ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff_abl(1))
+      else
+        ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff(1))
+      endif
+# else
       ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff(1))
+# endif
       nf_fread=ierr
       if (ierr .ne. nf_noerr) then
         write(*,'(/1x,2A,I5,1x,A,I4/)') 'NF_FREAD ERROR: ',
@@ -186,15 +205,39 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
           shift=1-imin+count(1)*(j-jmin+(k-1)*count(2))
           do i=imin,imax
 #ifdef WRITER
+# ifdef ABL1D
+            if (vert_type.eq.4) then
+              buff_abl(i+shift)=A(i,j,k)
+            else
+              buff(i+shift)=A(i,j,k)
+            endif
+# else
             buff(i+shift)=A(i,j,k)
+# endif
 #else
+# ifdef ABL1D
+            if (vert_type.eq.4) then
+              A(i,j,k)=buff_abl(i+shift)
+            else
+              A(i,j,k)=buff(i+shift)
+            endif
+# else
             A(i,j,k)=buff(i+shift)
+# endif
 #endif
           enddo
         enddo
       enddo
 #ifdef WRITER
+# ifdef ABL1D
+      if (vert_type.eq.4) then
+        ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff_abl(1))
+      else
+        ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff(1))
+      endif
+# else
       ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff(1))
+# endif
       nf_fwrite=ierr
       if (ierr.ne.nf_noerr) then
         write(*,'(/1x,2A,I5,1x,A,I4/)') 'NF_FWRITE ERROR: ',
@@ -207,11 +250,11 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 ! Exchange periodic and computational margins (reader only).
 !
 #ifdef MPI
-#define LOCALLM Lmmpi
-#define LOCALMM Mmmpi
+# define LOCALLM Lmmpi
+# define LOCALMM Mmmpi
 #else
-#define LOCALLM Lm
-#define LOCALMM Mm
+# define LOCALLM Lm
+# define LOCALMM Mm
 #endif
 #ifndef WRITER
 # if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
@@ -231,23 +274,28 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         call exchange_r3d_tile (1,LOCALLM,1,LOCALMM, A)
 #   endif
       elseif (horiz_type.eq.1 .and. vert_type.eq.1) then
-#  ifdef THREE_GHOST_POINTS_UV
+#   ifdef THREE_GHOST_POINTS_UV
         call exchange_u3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
-#  else
+#   else
         call exchange_u3d_tile (1,LOCALLM,1,LOCALMM, A)
-#  endif
+#   endif
       elseif (horiz_type.eq.2 .and. vert_type.eq.1) then
-#  ifdef THREE_GHOST_3pts_POINTS_UV
+#   ifdef THREE_GHOST_3pts_POINTS_UV
         call exchange_v3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
-#  else
+#   else
         call exchange_v3d_tile (1,LOCALLM,1,LOCALMM, A)
-#  endif
+#   endif
       elseif (horiz_type.eq.3 .and. vert_type.eq.1) then
         call exchange_p3d_tile (1,LOCALLM,1,LOCALMM, A)
 
       elseif (horiz_type.eq.0 .and. vert_type.eq.2) then
         call exchange_w3d_tile (1,LOCALLM,1,LOCALMM, A)
-
+#   ifdef ABL1D
+      elseif (horiz_type.eq.0 .and. vert_type.eq.4) then
+      do k=1, N_abl
+        call exchange_r2d_tile (1,LOCALLM,1,LOCALMM, A(:,:,k))
+      enddo
+#   endif
 CC      elseif (horiz_type.eq.0 .and. vert_type.eq.3) then
 CC        call exchange_b3d_tile (1,LOCALLM,1,LOCALMM, A)
 #  endif

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -57,7 +57,7 @@
 # include "averages.h"
 # include "diagnostics.h"
 !
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 !
       ilc=1+iic-ntstart   ! number of time step since restart
 !
@@ -66,21 +66,32 @@
 !
       if (ilc.gt.ntsdiabio_avg) then
 
-        if (mod(ilc-1,nwrtdiabio_avg).eq.1) then
+        if (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).eq.1) then
           cff =1.0
           cff1=0.0
-        elseif (mod(ilc-1,nwrtdiabio_avg).gt.1) then
+          if (ZEROTH_TILE) then
+            timediabio_avg=time
+!            MPI_master_only write(*,*) 'start avg',iic,ntsdiabio_avg,
+!     &           nwrtdiabio_avg
+          endif
+        elseif (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).gt.1) then
           cff =1.0
           cff1=1.0
-        elseif (mod(ilc-1,nwrtdiabio_avg).eq.0) then
+          if (ZEROTH_TILE) then
+            timediabio_avg=timediabio_avg+time
+          endif
+        elseif (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).eq.0) then
           cff =1.0/float(nwrtdiabio_avg)
           cff1=1.0
-          if (ZEROTH_TILE) timediabio_avg=timediabio_avg+
-     &                                    float(nwrtdiabio_avg)*dt
+          if (ZEROTH_TILE) then
+            timediabio_avg=cff*(timediabio_avg+time)
+!            MPI_master_only write(*,*) 'finish avg',iic,ntsdiabio_avg,
+!     &           nwrtdiabio_avg
+          endif
         endif
 
-#ifdef PISCES
-# ifdef key_trc_diaadd
+# ifdef PISCES
+#  ifdef key_trc_diaadd
             do iflux = 1, NumFluxTerms
               do k = 1, N
                 do j = JstrR, JendR
@@ -98,12 +109,12 @@
                      bioVSink_avg(i,j,iflux)=cff*
      &                    ( cff1*bioVSink_avg(i,j,iflux) +
      &                           bioVSink(i,j,iflux) )
-                     
+
                   enddo
                enddo
             enddo
-# endif
-#else
+#  endif
+# else
             do iflux=1,NumFluxTerms
               do k=1,N
                 do j=JstrR,JendR
@@ -136,11 +147,11 @@
                 enddo
               enddo
             enddo
-#  endif 
-#endif
+#  endif
+# endif
       endif
       return
-      end 
+      end
 #else /* DIAGNOSTICS_BIO && AVERAGES */
       subroutine set_bio_diags_avg_empty
       end

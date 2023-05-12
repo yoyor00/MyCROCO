@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -28,7 +28,7 @@
 
       if (lenkw.eq.ie-is .and. Coptions(is:ie-1).eq.keyword) then
 c**     write(*,'(1x,A,1x,A)') 'Recognized: ', Coptions(is:ie-1)
-        do i=is,ie-1 
+        do i=is,ie-1
           Coptions(i:i)=' '
         enddo
         return
@@ -40,13 +40,13 @@ c**     write(*,'(1x,A,1x,A)') 'Recognized: ', Coptions(is:ie-1)
      &        'Can not cancel keyword:',  keyword(1:lenkw),
      &        'Check SCRUM/ROMS input script for possible',
      &        'duplicated keyword.'
-      ierr=ierr+1 
+      ierr=ierr+1
       return
-      end 
+      end
 
                                       ! Check that keyword string is
-      subroutine check_kwds (ierr)    ! empty, and if it is not print 
-      implicit none                   ! out remaining keyword(s) as 
+      subroutine check_kwds (ierr)    ! empty, and if it is not print
+      implicit none                   ! out remaining keyword(s) as
 #include "strings.h"
       integer ierr, is,ie             ! an error message and increase
                                       ! error counter ierr.
@@ -61,7 +61,7 @@ c**     write(*,'(1x,A,1x,A)') 'Recognized: ', Coptions(is:ie-1)
 
       ierr=ierr+1
       write(*,'(/2(1x,A)/)') 'ERROR: keyword not found:',
-     &                                  Coptions(is:ie-1)  
+     &                                  Coptions(is:ie-1)
       is=ie
       goto 1
       end

@@ -2,14 +2,14 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-#ifndef EAST_WEST 
+#ifndef EAST_WEST
 # include "cppdefs.h"
       integer function nf_read_bry_NS (A, ncid, varid, record, type)
 #else
@@ -32,10 +32,10 @@
 !
       implicit none
 #include "param.h"
-#ifdef EAST_WEST 
+#ifdef EAST_WEST
       real A(GLOBAL_1D_ARRAYETA,N)
 #else
-      real A(GLOBAL_1D_ARRAYXI,N) 
+      real A(GLOBAL_1D_ARRAYXI,N)
 #endif
       integer ncid, varid, record, type,  i,j,k, shft, ierr
       integer xtype, ndims, dimid(8), natts
@@ -53,7 +53,7 @@
 ! Collapse one of the two horizontal dimensions
 !---------------------------------------------------------------
 !
-#ifdef EAST_WEST 
+#ifdef EAST_WEST
         start(1)=start(2)     ! Collapse one of the two horizontal
         count(1)=count(2)     ! dimensions: after this step updated
 #endif
@@ -101,15 +101,15 @@
 #endif
      &                          'illegal grid type', type
       endif
-#ifdef EAST_WEST 
+#ifdef EAST_WEST
       nf_read_bry_EW=ierr
 #else
       nf_read_bry_NS=ierr
 #endif
       return
       end
- 
-#ifndef EAST_WEST 
-# define EAST_WEST 
+
+#ifndef EAST_WEST
+# define EAST_WEST
 # include "nf_read_bry.F"
 #endif

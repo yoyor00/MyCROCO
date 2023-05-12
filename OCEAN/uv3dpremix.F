@@ -2,16 +2,16 @@
 
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
-# if defined SOLVE3D && defined AGRIF
- 
+#if defined SOLVE3D && defined AGRIF
+
       subroutine uv3dpremix (tile)
       implicit none
       integer tile, trd, omp_get_thread_num
@@ -24,14 +24,14 @@
      &        A3d(1,1,trd),A3d(1,2,trd))
       return
       end
- 
+
       subroutine uv3dpremix_tile (Istr,Iend,Jstr,Jend,CF,DC)
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, indx
       real CF(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     DC(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-     
+
 # include "param.h"
 # include "scalars.h"
 # include "grid.h"
@@ -66,7 +66,7 @@
       decal = 2*max(Agrif_Irhox(),Agrif_Irhoy())
 
       parentnbstep=Agrif_Parent_Nb_Step()
-                       
+
 C$OMP BARRIER
 C$OMP MASTER
 
@@ -95,92 +95,92 @@ C$OMP BARRIER
 
       if (agrif_nb_step() .EQ. UVspongeTimeindex2) then
 
-       if (SOUTHERN_EDGE) then  
+       if (SOUTHERN_EDGE) then
          do k=1,N
 
          do j=JstrR,JstrR+decal
          do i=Istr,IendR
           U_sponge_south(i,j,k,UVTimesponge)=
-     &              usponge(i,j,k)       
-#ifdef MASKING
+     &              usponge(i,j,k)
+# ifdef MASKING
      &    *umask(i,j)
-#endif
+# endif
          enddo
          enddo
 
          do j=Jstr,Jstr+decal-1
          do i=IstrR,IendR
           V_sponge_south(i,j,k,UVTimesponge)=
-     &              vsponge(i,j,k)         
-#ifdef MASKING
+     &              vsponge(i,j,k)
+# ifdef MASKING
      &    *vmask(i,j)
-#endif
+# endif
          enddo
          enddo
 
          enddo
        endif
-                     
+
        if (NORTHERN_EDGE) then
          do k=1,N
          do j=JendR-decal,JendR
          do i=Istr,IendR
           U_sponge_north(i,j,k,UVTimesponge)=
-     &              usponge(i,j,k)          
-#ifdef MASKING
+     &              usponge(i,j,k)
+# ifdef MASKING
      &    *umask(i,j)
-#endif
+# endif
          enddo
          enddo
 
          do j=JendR-decal+1,JendR
          do i=IstrR,IendR
           V_sponge_north(i,j,k,UVTimesponge)=
-     &              vsponge(i,j,k)     
-#ifdef MASKING
-     &    *vmask(i,j)
-#endif
-         enddo
-         enddo
-
-         enddo
-       endif               
-
-
-       if (WESTERN_EDGE) then
-         do k=1,N
-         do j=JstrR,JendR
-         do i=Istr,Istr+decal-1 
-          U_sponge_west(i,j,k,UVTimesponge)=
-     &              usponge(i,j,k)
-#ifdef MASKING
-     &    *umask(i,j)
-#endif     
-         enddo
-         enddo
-
-         do j=Jstr,JendR
-         do i=IstrR,IstrR+decal      
-          V_sponge_west(i,j,k,UVTimesponge)=
      &              vsponge(i,j,k)
-#ifdef MASKING
+# ifdef MASKING
      &    *vmask(i,j)
-#endif     
+# endif
          enddo
          enddo
 
          enddo
        endif
-                    
-       if (EASTERN_EDGE) then  
+
+
+       if (WESTERN_EDGE) then
+         do k=1,N
+         do j=JstrR,JendR
+         do i=Istr,Istr+decal-1
+          U_sponge_west(i,j,k,UVTimesponge)=
+     &              usponge(i,j,k)
+# ifdef MASKING
+     &    *umask(i,j)
+# endif
+         enddo
+         enddo
+
+         do j=Jstr,JendR
+         do i=IstrR,IstrR+decal
+          V_sponge_west(i,j,k,UVTimesponge)=
+     &              vsponge(i,j,k)
+# ifdef MASKING
+     &    *vmask(i,j)
+# endif
+         enddo
+         enddo
+
+         enddo
+       endif
+
+       if (EASTERN_EDGE) then
          do k=1,N
          do j=JstrR,JendR
          do i=IendR-decal+1,IendR
           U_sponge_east(i,j,k,UVTimesponge)=
      &              usponge(i,j,k)
-#ifdef MASKING
+# ifdef MASKING
      &    *umask(i,j)
-#endif 
+# endif
          enddo
          enddo
 
@@ -188,23 +188,23 @@ C$OMP BARRIER
          do i=IendR-decal,IendR
           V_sponge_east(i,j,k,UVTimesponge)=
      &              vsponge(i,j,k)
-#ifdef MASKING
+# ifdef MASKING
      &    *vmask(i,j)
-#endif         
+# endif
          enddo
          enddo
 
-         enddo  
+         enddo
        endif
-      
-      ENDIF    
+
+      ENDIF
 
 
       tinterp = real(nbcoarse-1)/rrhot
       IF (nbstep3d .LT. irhot) tinterp = 0.
       onemtinterp = -tinterp
       tinterp = 1.+tinterp
-       
+
       nold = 3 - UVTimesponge
 
       if (SOUTHERN_EDGE) then
@@ -221,13 +221,13 @@ C$OMP BARRIER
        do i=IstrR,IendR
           vsponge(i,j,k) =
      &   onemtinterp*V_sponge_south(i,j,k,nold)
-     &       +tinterp*V_sponge_south(i,j,k,UVTimesponge)  
+     &       +tinterp*V_sponge_south(i,j,k,UVTimesponge)
        enddo
        enddo
 
        enddo
       endif
-       
+
       if (NORTHERN_EDGE) then
        do k=1,N
        do j=JendR-decal,JendR
@@ -242,13 +242,13 @@ C$OMP BARRIER
        do i=IstrR,IendR
           vsponge(i,j,k) =
      &       onemtinterp*V_sponge_north(i,j,k,nold)
-     &       +tinterp*V_sponge_north(i,j,k,UVTimesponge)       
+     &       +tinterp*V_sponge_north(i,j,k,UVTimesponge)
        enddo
        enddo
 
-       enddo           
+       enddo
       endif
-       
+
       if (WESTERN_EDGE) then
        do k=1,N
        do j=JstrR,JendR
@@ -270,9 +270,9 @@ C$OMP BARRIER
        enddo
 
        enddo
-      endif      
-       
-      if (EASTERN_EDGE) then    
+      endif
+
+      if (EASTERN_EDGE) then
        do k=1,N
        do j=JstrR,JendR
        do i=IendR-decal+1,IendR
@@ -286,11 +286,11 @@ C$OMP BARRIER
        do i=IendR-decal,IendR
         vsponge(i,j,k) =
      &       onemtinterp*V_sponge_east(i,j,k,nold)
-     &       +tinterp*V_sponge_east(i,j,k,UVTimesponge)       
+     &       +tinterp*V_sponge_east(i,j,k,UVTimesponge)
        enddo
        enddo
 
-       enddo 
+       enddo
       endif
 
       do j=JstrR,JendR
@@ -299,7 +299,7 @@ C$OMP BARRIER
        CF(i,j,0) = 0.
       enddo
       enddo
-                          
+
       do k=1,N
       do j=JstrR,JendR
       do i=Istr,IendR
@@ -322,9 +322,9 @@ C$OMP BARRIER
       do j=JstrR,JendR
       do i=Istr,IendR
        usponge(i,j,k) = (usponge(i,j,k)-CF(i,j,0))
-#ifdef MASKING
+# ifdef MASKING
      &             * umask(i,j)
-#endif
+# endif
       enddo
       enddo
       enddo
@@ -358,9 +358,9 @@ C$OMP BARRIER
       do j=Jstr,JendR
       do i=IstrR,IendR
        vsponge(i,j,k) = (vsponge(i,j,k)-CF(i,j,0))
-#ifdef MASKING
+# ifdef MASKING
      &       * vmask(i,j)
-#endif
+# endif
       enddo
       enddo
       enddo
@@ -410,10 +410,10 @@ C$OMP BARRIER
            vsponge(i1:i2,j1:j2,k1:k2) = tabres(i1:i2,j1:j2,k1:k2)
        endif
       return
-      end    
-            
+      end
+
 #else
       subroutine uv3dpremix_empty
       end
 #endif
- 
+

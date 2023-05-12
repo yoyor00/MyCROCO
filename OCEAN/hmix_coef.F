@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -65,7 +65,7 @@
       if (EASTERN_EDGE) then
         imax=iend
       else
-        imax=iend+1 
+        imax=iend+1
       endif
 # else
       imin=istr-1
@@ -90,7 +90,7 @@
 # if defined UV_VIS2 && defined GLS_MIXING_3D
 !---------------------------------------------------------------
 !  GLS horizontal viscosity at RHO points
-! 
+!
       do j=jmin,jmax
         do i=imin,imax
           cff0=om_r(i,j)*on_r(i,j)
@@ -118,7 +118,7 @@
 !                  vertical   Lv = Hz          --> Akv
 !
 !  For LES problems, Lilly's buoyancy correction is applied based
-!  on the ratio of gradient and critical Ri (mixing goes to 0 for 
+!  on the ratio of gradient and critical Ri (mixing goes to 0 for
 !  Rig > Ric)
 !---------------------------------------------------------------
 !
@@ -129,7 +129,7 @@
       do k=1,N
         do j=jmin,jmax
           do i=imin,imax
-            defrate(i,j,k)= 
+            defrate(i,j,k)=
      &                    ((u(i+1,j,k,nrhs)-u(i,j,k,nrhs))*pm(i,j))**2
      &                   +((v(i,j+1,k,nrhs)-v(i,j,k,nrhs))*pn(i,j))**2
      &               +0.125*( pn(i,j)*
@@ -161,7 +161,7 @@
 #   ifdef NBQ
      &                        +pm(i,j)*
      &                        (wz(i+1,j,k,nrhs)+wz(i+1,j,k+1,nrhs)
-     &                        -wz(i-1,j,k,nrhs)-wz(i-1,j,k+1,nrhs)) 
+     &                        -wz(i-1,j,k,nrhs)-wz(i-1,j,k+1,nrhs))
 #   endif
      &                      )**2
      &               +0.125*( (v(i,j,k+1,nrhs)+v(i,j+1,k+1,nrhs)
@@ -170,7 +170,7 @@
 #   ifdef NBQ
      &                        +pn(i,j)*
      &                        (wz(i,j+1,k,nrhs)+wz(i,j+1,k+1,nrhs)
-     &                        -wz(i,j-1,k,nrhs)-wz(i,j-1,k+1,nrhs)) 
+     &                        -wz(i,j-1,k,nrhs)-wz(i,j-1,k+1,nrhs))
 #   endif
      &                      )**2
           enddo
@@ -225,7 +225,7 @@
 !  Apply SGS Prandtl number for tracers
 !
             Akt(i,j,k,itemp)=Pr*Akv(i,j,k)
-#   ifdef SALINITY                               
+#   ifdef SALINITY
             Akt(i,j,k,isalt)=Akt(i,j,k,itemp)
 #   endif
           enddo
@@ -268,7 +268,7 @@
           enddo
         enddo
       endif
-# endif /* !NS_PERIODIC */
+#  endif /* !NS_PERIODIC */
 !
 ! Corners
 !
@@ -302,7 +302,7 @@
      &                           +visc3d_r(Iend+1,Jend,k))
         enddo
       endif
-# endif /* !EW_PERIODIC && !NS_PERIODIC */
+#  endif /* !EW_PERIODIC && !NS_PERIODIC */
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,visc3d_r)
@@ -330,16 +330,16 @@
 !  in case of 3D Smagorinsky SGS model
 !------------------------------------------------------
 !
-#  define k0 1 
-#  ifndef EW_PERIODIC
+#   define k0 1
+#   ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=jstr,jend
           do k=k0,N
             Akv(istr-1,j,k)=Akv(istr,j,k)
             Akt(istr-1,j,k,itemp)=Akt(istr,j,k,itemp)
-#   ifdef SALINITY
+#    ifdef SALINITY
             Akt(istr-1,j,k,isalt)=Akt(istr,j,k,isalt)
-#   endif
+#    endif
           enddo
         enddo
       endif
@@ -348,22 +348,22 @@
           do k=k0,N
             Akv(iend+1,j,k)=Akv(iend,j,k)
             Akt(iend+1,j,k,itemp)=Akt(iend,j,k,itemp)
-#   ifdef SALINITY
+#    ifdef SALINITY
             Akt(iend+1,j,k,isalt)=Akt(iend,j,k,isalt)
-#   endif
+#    endif
           enddo
         enddo
       endif
-#  endif
-#  ifndef NS_PERIODIC
+#   endif
+#   ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=istr,iend
           do k=k0,N
             Akv(i,jstr-1,k)=Akv(i,jstr,k)
             Akt(i,jstr-1,k,itemp)=Akt(i,jstr,k,itemp)
-#   ifdef SALINITY
+#    ifdef SALINITY
             Akt(i,jstr-1,k,isalt)=Akt(i,jstr,k,isalt)
-#   endif
+#    endif
           enddo
         enddo
       endif
@@ -372,51 +372,51 @@
           do k=k0,N
             Akv(i,jend+1,k)=Akv(i,jend,k)
             Akt(i,jend+1,k,itemp)=Akt(i,jend,k,itemp)
-#   ifdef SALINITY
+#    ifdef SALINITY
             Akt(i,jend+1,k,isalt)=Akt(i,jend,k,isalt)
-#   endif
+#    endif
           enddo
         enddo
       endif
-#   ifndef EW_PERIODIC
+#    ifndef EW_PERIODIC
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=k0,N
           Akv(istr-1,jstr-1,k)=Akv(istr,jstr,k)
           Akt(istr-1,jstr-1,k,itemp)=Akt(istr,jstr,k,itemp)
-#    ifdef SALINITY
+#     ifdef SALINITY
           Akt(istr-1,jstr-1,k,isalt)=Akt(istr,jstr,k,isalt)
-#    endif
+#     endif
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=k0,N
           Akv(istr-1,jend+1,k)=Akv(istr,jend,k)
           Akt(istr-1,jend+1,k,itemp)=Akt(istr,jend,k,itemp)
-#    ifdef SALINITY
+#     ifdef SALINITY
           Akt(istr-1,jend+1,k,isalt)=Akt(istr,jend,k,isalt)
-#    endif
+#     endif
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=k0,N
           Akv(iend+1,jstr-1,k)=Akv(iend,jstr,k)
           Akt(iend+1,jstr-1,k,itemp)=Akt(iend,jstr,k,itemp)
-#    ifdef SALINITY
+#     ifdef SALINITY
           Akt(iend+1,jstr-1,k,isalt)=Akt(iend,jstr,k,isalt)
-#    endif
+#     endif
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=k0,N
           Akv(iend+1,jend+1,k)=Akv(iend,jend,k)
           Akt(iend+1,jend+1,k,itemp)=Akt(iend,jend,k,itemp)
-#    ifdef SALINITY
+#     ifdef SALINITY
           Akt(iend+1,jend+1,k,isalt)=Akt(iend,jend,k,isalt)
-#    endif
+#     endif
         enddo
       endif
+#    endif
 #   endif
-#  endif
 !#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !      call exchange_w3d_tile (istr,iend,jstr,jend, Akv)
 !      call exchange_w3d_tile (istr,iend,jstr,jend,
@@ -426,7 +426,7 @@
 !     &                        Akt(START_2D_ARRAY,0,isalt))
 !#   endif
 !#  endif
-# endif /* UV_VIS_SMAGO_3D */
+#  endif /* UV_VIS_SMAGO_3D */
 
 # endif /* UV_VIS_SMAGO  */
 #else
@@ -490,7 +490,7 @@
 # if defined GLS_MIXING_3D
 !---------------------------------------------------------------
 !  GLS horizontal viscosity at RHO points
-! 
+!
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -574,7 +574,7 @@
 # if defined TS_HADV_RSUP3 || defined TS_HADV_RSUP5
 
 !--------------------------------------------------------------------
-! Tracer mixing coefficient for use in rotated split 3rd order upstream 
+! Tracer mixing coefficient for use in rotated split 3rd order upstream
 ! biased advection scheme: B = 1/12 * abs(u) * grd_scale**3
 !
 ! Marchesiello et al. (Ocean Modelling, 2009)

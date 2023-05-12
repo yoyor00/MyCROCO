@@ -46,7 +46,7 @@
 
       integer Nsrc
       common /source_Nsrc/ Nsrc
-      
+
       integer Dsrc(Msrc)
       common /source_Dsrc/ Dsrc
 
@@ -61,7 +61,7 @@
       common /source_Lsrc/ Lsrc
 # endif
 
-#ifdef PSOURCE_NCFILE
+# ifdef PSOURCE_NCFILE
 !
 !  qbarg  |  Two-time-level grided data for river runoff [m3/s].
 !  tqbar     Time of river runoff data.
@@ -71,29 +71,31 @@
       real    qbar_time(2)
       real    qbar_cycle
       integer itqbar, qbar_ncycle, qbar_rec,  qbar_tid,  qbar_id
-      common /qbardat1/ qbar_time
+      REAL(kind=8) :: qbar_origin_date_in_sec
+      common /qbardat1/ qbar_time, qbar_origin_date_in_sec
       common /qbardat2/ qbar_cycle
       common /qbardat3/ itqbar, qbar_ncycle, qbar_rec, qbar_tid, qbar_id
 
       real qbardir(Msrc)
       common /source_qbardir/ qbardir
 
-# if defined PSOURCE_NCFILE_TS && defined TRACERS
+#  if defined PSOURCE_NCFILE_TS && defined TRACERS
       real tsrcg(Msrc,2,NT)
       common /tsrcdat_tsrcg/tsrcg
       real    tsrc_time(2,NT)
       real    tsrc_cycle(NT)
-      integer ittsrc(NT), tsrc_ncycle(NT), tsrc_rec(NT),  tsrc_tid(NT),  
+      integer ittsrc(NT), tsrc_ncycle(NT), tsrc_rec(NT),  tsrc_tid(NT),
      &        tsrc_id(NT)
-      common /tsrcdat1/ tsrc_time
+      REAL(kind=8) :: tsrc_origin_date_in_sec
+      common /tsrcdat1/ tsrc_time, tsrc_origin_date_in_sec
       common /tsrcdat2/ tsrc_cycle
       common /tsrcdat3/ ittsrc, tsrc_ncycle, tsrc_rec, tsrc_tid, tsrc_id
 
       logical got_tsrc(NT)
       common /tsrc_logical/ got_tsrc
 
-# endif
-#endif /* PSOURCE_NCFILE */
+#  endif
+# endif /* PSOURCE_NCFILE */
 
 # ifdef MPI
       integer Isrc_mpi(Msrc,0:NNODES-1)

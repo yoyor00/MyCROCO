@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,19 +15,19 @@
 # define OLD_BKPP
 
       subroutine lmd_bkpp_tile (istr,iend,jstr,jend, Kv,Kt,Ks,
-     &                                 ws,wm, my_hbbl,wrk, Cr, 
+     &                                 ws,wm, my_hbbl,wrk, Cr,
      &             Gm1,dGm1dS, Gt1,dGt1dS, Gs1,dGs1dS, my_kbbl)
 !
 !=================================================================================
 !  This subroutine computes vertical mixing coefficients for momentum
-!  and tracers at the bottom using a K-Profile Parameterization and 
+!  and tracers at the bottom using a K-Profile Parameterization and
 !  following the IF-less KPP scheme of A. Shchepetkin.
 !
 !  hbbl is defined as the first non-zero depth at which Cr(z) = 0, with
 !
-!          |zeta           du^2      N^2(z')                    
-!  Cr(z) = |       Kern* ( ------ - -------- - C_Ek f^2 ) dz' 
-!          |-z              dz'^2      Ric                      
+!          |zeta           du^2      N^2(z')
+!  Cr(z) = |       Kern* ( ------ - -------- - C_Ek f^2 ) dz'
+!          |-z              dz'^2      Ric
 !
 !  References:
 !
@@ -56,7 +56,7 @@
       integer istr,iend,jstr,jend, i,j,k
 # ifdef HBBL_SMOOTH
      &      , imin,imax,jmin,jmax
-# endif 
+# endif
       real Kv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     Kt(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     Ks(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -67,13 +67,13 @@
      &     Cr(PRIVATE_1D_SCRATCH_ARRAY,0:N), z_bl, zsbl,
      &    Gm1(PRIVATE_1D_SCRATCH_ARRAY),   Av_bl,
      & dGm1dS(PRIVATE_1D_SCRATCH_ARRAY),  dAv_bl,
-     &    Gt1(PRIVATE_1D_SCRATCH_ARRAY),   At_bl, a1, 
+     &    Gt1(PRIVATE_1D_SCRATCH_ARRAY),   At_bl, a1,
      & dGt1dS(PRIVATE_1D_SCRATCH_ARRAY),  dAt_bl, a2,
      &    Gs1(PRIVATE_1D_SCRATCH_ARRAY),   As_bl, a3,
      & dGs1dS(PRIVATE_1D_SCRATCH_ARRAY),  dAs_bl
 
       integer my_kbbl(PRIVATE_1D_SCRATCH_ARRAY)
-      real Kern, sigma, cff,cff1, cff_up,cff_dn, lmd_nu0c, Ricr, 
+      real Kern, sigma, cff,cff1, cff_up,cff_dn, lmd_nu0c, Ricr,
      &     Ri_inv, C_Ek, eps, invrho, Kv0, Kt0, Ks0
 !======================================================================
       parameter (
@@ -84,7 +84,7 @@
                           !
      &   Ri_inv=1./Ricr,  !
                           !
-     &   C_Ek=258.,       ! constant for computating stabilization term 
+     &   C_Ek=258.,       ! constant for computating stabilization term
                           ! due to Coriolis force (Ekman depth limit).
      &   eps=1.E-20 )
 !======================================================================
@@ -142,7 +142,7 @@
 !
 !=============================
       do j=J_EXT_RANGE                        !<-- start j-loop
-!============================= 
+!=============================
 !
 !  Compute turbulent velocity scales (wm,ws) for zero bottom flux
 !  and initialize boundary layer depth index "kbl" to the maximum values.
@@ -206,27 +206,27 @@
 
 !=============================
       enddo                        !<-- terminate j-loop
-!=============================  
+!=============================
 !
 !-----------------------------------------------------------------
 !    HBBL Smoothing
 !-----------------------------------------------------------------
 !
-#  ifdef HBBL_SMOOTH
-#   define hwrk my_hbbl
-#   include "kpp_smooth.h"
-#   undef hwrk
-#  endif
-#  undef I_EXT_RANGE
-#  undef J_EXT_RANGE
+# ifdef HBBL_SMOOTH
+#  define hwrk my_hbbl
+#  include "kpp_smooth.h"
+#  undef hwrk
+# endif
+# undef I_EXT_RANGE
+# undef J_EXT_RANGE
 
       do j=Jstr,Jend
         do i=Istr,Iend
           hbbl(i,j)=min(my_hbbl(i,j),z_w(i,j,N)-z_w(i,j,0))
-#  ifdef MASKING
+# ifdef MASKING
      &                                          *rmask(i,j)
-#  endif
-          kbbl(i,j)=N               
+# endif
+          kbbl(i,j)=N
         enddo
         do k=N-1,1,-1     ! find new boundary layer index "kbbl".
           do i=Istr,Iend
@@ -286,7 +286,7 @@
      &                            a1+a2*Gt1(i)+a3*dGt1dS(i) )))
 #  ifdef SALINITY
               Ks0 =ws(i,j)*hbbl(i,j)*( sigma*( 1.+sigma*(
-     &                            a1+a2*Gs1(i)+a3*dGs1dS(i) ))) 
+     &                            a1+a2*Gs1(i)+a3*dGs1dS(i) )))
 #  endif
 # else
               sigma=(z_w(i,j,k)-z_w(i,j,0))/(hbbl(i,j)+eps)
@@ -303,8 +303,8 @@
 # endif
 !
 !-----------------------------------------------------------------
-! If BBL reaches into SBL, take max of surface and bottom values. 
-! If wave breaking exists, its contribution will be further added 
+! If BBL reaches into SBL, take max of surface and bottom values.
+! If wave breaking exists, its contribution will be further added
 ! in lmd_vmix.F.
 !-----------------------------------------------------------------
 !
@@ -338,12 +338,12 @@
                if (bvf(i,j,k).lt.0.) then
 #  ifdef LMD_SKPP
 
-#   ifdef LMD_SKPP2005                
+#   ifdef LMD_SKPP2005
                 zsbl=z_w(i,j,N)-hbls(i,j,3-nstp)
 #   else
                 zsbl=z_w(i,j,N)-hbl(i,j)
-#   endif                
-                
+#   endif
+
                 if (z_w(i,j,k).lt.zsbl) then
 #  endif
                   Kv(i,j,k)=Kv(i,j,k)+lmd_nu0c

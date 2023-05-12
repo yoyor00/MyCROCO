@@ -9,8 +9,8 @@
 # define JSTART JstrR
 # define ISTART IstrR
 # include "exchange_2d_tile.h"
-# undef ISTART 
-# undef JSTART 
+# undef ISTART
+# undef JSTART
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 
@@ -19,8 +19,8 @@
 # define JSTART JstrR
 # define ISTART Istr
 # include "exchange_2d_tile.h"
-# undef ISTART 
-# undef JSTART 
+# undef ISTART
+# undef JSTART
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 
@@ -29,8 +29,8 @@
 # define JSTART Jstr
 # define ISTART IstrR
 # include "exchange_2d_tile.h"
-# undef ISTART 
-# undef JSTART 
+# undef ISTART
+# undef JSTART
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 
@@ -39,8 +39,8 @@
 # define JSTART Jstr
 # define ISTART Istr
 # include "exchange_2d_tile.h"
-# undef ISTART 
-# undef JSTART 
+# undef ISTART
+# undef JSTART
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 

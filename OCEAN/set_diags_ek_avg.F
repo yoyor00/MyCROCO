@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 #if (defined DIAGNOSTICS_EK && defined AVERAGES)
- 
+
       subroutine set_diags_ek_avg (tile)
       implicit none
       integer tile
@@ -9,7 +9,7 @@
       call set_diags_ek_avg_tile (istr,iend,jstr,jend)
       return
       end
- 
+
       subroutine set_diags_ek_avg_tile (istr,iend,jstr,jend)
 !
 ! Compute time-averaged fields within a tile.
@@ -47,10 +47,10 @@
 # include "ocean3d.h"
 
 # include "averages.h"
-#include "diags_ek.h"
+# include "diags_ek.h"
 
 !
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 !
       ilc=1+iic-ntstart  ! number of time step since restart
 !
@@ -58,7 +58,7 @@
 ! is a positive number
 !
 
-      
+
       if (ilc.gt.ntsdiags_ek_avg) then
         if (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.1) then
 
@@ -70,54 +70,54 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekHadv_avg(i,j)=ekHadv(i,j)  
+                do i=IstrR,IendR
+                  ekHadv_avg(i,j)=ekHadv(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHdiff_avg(i,j)=ekHdiff(i,j)
            enddo
-          enddo           
-             do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekVadv_avg(i,j)=ekVadv(i,j)
-           enddo         
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
+                  ekVadv_avg(i,j)=ekVadv(i,j)
+           enddo
+          enddo
+             do j=JstrR,JendR
+                do i=IstrR,IendR
                   ekCor_avg(i,j)=ekCor(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekPrsgrd_avg(i,j)=ekPrsgrd(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHmix_avg(i,j)=ekHmix(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVmix_avg(i,j)=ekVmix(i,j)
             enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVmix2_avg(i,j)=ekVmix2(i,j)
             enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekWind_avg(i,j)=ekWind(i,j)
             enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekDrag_avg(i,j)=ekDrag(i,j)
             enddo
           enddo
@@ -138,13 +138,13 @@
 # endif
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekrate_avg(i,j)=ekrate(i,j)
            enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekvol_avg(i,j)=ekvol(i,j)
            enddo
           enddo
@@ -154,73 +154,73 @@
           if (ZEROTH_TILE) timediags_ek_avg=timediags_ek_avg+time
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekHadv_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekHadv_avg(i,j) =
      &                       ekHadv_avg(i,j) +
      &                       ekHadv(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekHdiff_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekHdiff_avg(i,j) =
      &                       ekHdiff_avg(i,j) +
      &                       ekHdiff(i,j)
            enddo
-          enddo           
-             do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekVadv_avg(i,j) = 
-     &                       ekVadv_avg(i,j) +
-     &                       ekVadv(i,j)
-           enddo       
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
+                  ekVadv_avg(i,j) =
+     &                       ekVadv_avg(i,j) +
+     &                       ekVadv(i,j)
+           enddo
+          enddo
+             do j=JstrR,JendR
+                do i=IstrR,IendR
                   ekCor_avg(i,j) =
      &                       ekCor_avg(i,j) +
      &                       ekCor(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekPrsgrd_avg(i,j) =
      &                       ekPrsgrd_avg(i,j) +
      &                       ekPrsgrd(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHmix_avg(i,j) =
      &                       ekHmix_avg(i,j) +
      &                       ekHmix(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekVmix_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekVmix_avg(i,j) =
      &                       ekVmix_avg(i,j) +
      &                       ekVmix(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekVmix2_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekVmix2_avg(i,j) =
      &                       ekVmix2_avg(i,j) +
      &                       ekVmix2(i,j)
            enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekWind_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekWind_avg(i,j) =
      &                       ekWind_avg(i,j) +
      &                       ekWind(i,j)
            enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekDrag_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekDrag_avg(i,j) =
      &                       ekDrag_avg(i,j) +
      &                       ekDrag(i,j)
            enddo
@@ -247,16 +247,16 @@
 # endif
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekrate_avg(i,j) = 
-     &                    ekrate_avg(i,j) + 
-     &                    ekrate(i,j)  
+                do i=IstrR,IendR
+                  ekrate_avg(i,j) =
+     &                    ekrate_avg(i,j) +
+     &                    ekrate(i,j)
            enddo
           enddo
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekvol_avg(i,j) =
      &                    ekvol_avg(i,j) +
      &                    ekvol(i,j)
@@ -274,25 +274,25 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHadv_avg(i,j) = cff *
      &                       ( ekHadv_avg(i,j) +
      &                         ekHadv(i,j) )
              enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHdiff_avg(i,j) = cff *
      &                       ( ekHdiff_avg(i,j) +
      &                         ekHdiff(i,j) )
            enddo
-            enddo         
+            enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVadv_avg(i,j) = cff *
      &                       ( ekVadv_avg(i,j) +
      &                         ekVadv(i,j) )
-           enddo           
+           enddo
           enddo
               do j=JstrR,JendR
                 do i=IstrR,IendR
@@ -316,14 +316,14 @@
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVmix_avg(i,j) = cff *
      &                       ( ekVmix_avg(i,j) +
      &                         ekVmix(i,j) )
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVmix2_avg(i,j) = cff *
      &                       ( ekVmix2_avg(i,j) +
      &                         ekVmix2(i,j) )
@@ -331,7 +331,7 @@
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekWind_avg(i,j) = cff *
      &                       ( ekWind_avg(i,j) +
      &                         ekWind(i,j) )
@@ -339,7 +339,7 @@
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekDrag_avg(i,j) = cff *
      &                       ( ekDrag_avg(i,j) +
      &                         ekDrag(i,j) )
@@ -347,15 +347,15 @@
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekrate_avg(i,j) = cff *
-     &                    ( ekrate_avg(i,j) + 
+     &                    ( ekrate_avg(i,j) +
      &                      ekrate(i,j) )
            enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekvol_avg(i,j) = cff *
      &                    ( ekvol_avg(i,j) +
      &                      ekvol(i,j) )
@@ -394,119 +394,119 @@
         if (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.1) then
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekHadv_mld_avg(i,j)=ekHadv_mld(i,j)  
+                do i=IstrR,IendR
+                  ekHadv_mld_avg(i,j)=ekHadv_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHdiff_mld_avg(i,j)=ekHdiff_mld(i,j)
            enddo
-          enddo           
-             do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekVadv_mld_avg(i,j)=ekVadv_mld(i,j)
-           enddo         
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
+                  ekVadv_mld_avg(i,j)=ekVadv_mld(i,j)
+           enddo
+          enddo
+             do j=JstrR,JendR
+                do i=IstrR,IendR
                   ekCor_mld_avg(i,j)=ekCor_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekPrsgrd_mld_avg(i,j)=ekPrsgrd_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHmix_mld_avg(i,j)=ekHmix_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVmix_mld_avg(i,j)=ekVmix_mld(i,j)
             enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVmix2_mld_avg(i,j)=ekVmix2_mld(i,j)
             enddo
           enddo
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekrate_mld_avg(i,j)=ekrate_mld(i,j)
            enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekvol_mld_avg(i,j)=ekvol_mld(i,j)
            enddo
           enddo
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
              do j=JstrR,JendR
                 do i=IstrR,IendR
                   ekBaro_mld_avg(i,j)=ekBaro_mld(i,j)
            enddo
           enddo
-# endif
+#  endif
         elseif (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).gt.1) then
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekHadv_mld_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekHadv_mld_avg(i,j) =
      &                       ekHadv_mld_avg(i,j) +
      &                       ekHadv_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekHdiff_mld_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekHdiff_mld_avg(i,j) =
      &                       ekHdiff_mld_avg(i,j) +
      &                       ekHdiff_mld(i,j)
            enddo
-          enddo           
-             do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekVadv_mld_avg(i,j) = 
-     &                       ekVadv_mld_avg(i,j) +
-     &                       ekVadv_mld(i,j)
-           enddo       
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
+                  ekVadv_mld_avg(i,j) =
+     &                       ekVadv_mld_avg(i,j) +
+     &                       ekVadv_mld(i,j)
+           enddo
+          enddo
+             do j=JstrR,JendR
+                do i=IstrR,IendR
                   ekCor_mld_avg(i,j) =
      &                       ekCor_mld_avg(i,j) +
      &                       ekCor_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekPrsgrd_mld_avg(i,j) =
      &                       ekPrsgrd_mld_avg(i,j) +
      &                       ekPrsgrd_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHmix_mld_avg(i,j) =
      &                       ekHmix_mld_avg(i,j) +
      &                       ekHmix_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekVmix_mld_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekVmix_mld_avg(i,j) =
      &                       ekVmix_mld_avg(i,j) +
      &                       ekVmix_mld(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekVmix2_mld_avg(i,j) = 
+                do i=IstrR,IendR
+                  ekVmix2_mld_avg(i,j) =
      &                       ekVmix2_mld_avg(i,j) +
      &                       ekVmix2_mld(i,j)
            enddo
@@ -514,22 +514,22 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  ekrate_mld_avg(i,j) = 
-     &                    ekrate_mld_avg(i,j) + 
-     &                    ekrate_mld(i,j)  
+                do i=IstrR,IendR
+                  ekrate_mld_avg(i,j) =
+     &                    ekrate_mld_avg(i,j) +
+     &                    ekrate_mld(i,j)
            enddo
           enddo
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekvol_mld_avg(i,j) =
      &                    ekvol_mld_avg(i,j) +
      &                    ekvol_mld(i,j)
            enddo
           enddo
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
              do j=JstrR,JendR
                 do i=IstrR,IendR
                   ekBaro_mld_avg(i,j) =
@@ -537,31 +537,31 @@
      &                       ekBaro_mld(i,j)
            enddo
           enddo
-# endif
+#  endif
         elseif (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.0) then
 
           cff=1./float(nwrtdiags_ek_avg)
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHadv_mld_avg(i,j) = cff *
      &                       ( ekHadv_mld_avg(i,j) +
      &                         ekHadv_mld(i,j) )
              enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekHdiff_mld_avg(i,j) = cff *
      &                       ( ekHdiff_mld_avg(i,j) +
      &                         ekHdiff_mld(i,j) )
            enddo
-            enddo         
+            enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVadv_mld_avg(i,j) = cff *
      &                       ( ekVadv_mld_avg(i,j) +
      &                         ekVadv_mld(i,j) )
-           enddo           
+           enddo
           enddo
               do j=JstrR,JendR
                 do i=IstrR,IendR
@@ -585,14 +585,14 @@
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVmix_mld_avg(i,j) = cff *
      &                       ( ekVmix_mld_avg(i,j) +
      &                         ekVmix_mld(i,j) )
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekVmix2_mld_avg(i,j) = cff *
      &                       ( ekVmix2_mld_avg(i,j) +
      &                         ekVmix2_mld(i,j) )
@@ -601,21 +601,21 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekrate_mld_avg(i,j) = cff *
-     &                    ( ekrate_mld_avg(i,j) + 
+     &                    ( ekrate_mld_avg(i,j) +
      &                      ekrate_mld(i,j) )
            enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   ekvol_mld_avg(i,j) = cff *
      &                    ( ekvol_mld_avg(i,j) +
      &                      ekvol_mld(i,j) )
            enddo
           enddo
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
               do j=JstrR,JendR
                 do i=IstrR,IendR
                   ekBaro_mld_avg(i,j) = cff *
@@ -623,7 +623,7 @@
      &                         ekBaro_mld(i,j) )
            enddo
           enddo
-# endif
+#  endif
         endif
       endif       !<-- ilc.gt.ntsavg
 
