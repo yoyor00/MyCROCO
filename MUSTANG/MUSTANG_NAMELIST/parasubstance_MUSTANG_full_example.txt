@@ -382,20 +382,23 @@
 
 :-----------------------------------------------------------------------------
 : nmlsubmassbalance : used only if defined SUBSTANCE_SUBMASSBALANCE 
-:                     else this namelist is not read
+:           else this namelist is not read
 :-----------------------------------------------------------------------------
-:    l_bilan : boolean, activate submassbalance computation
-:    nb_border : integer, nomber of polygons and lines
-:    name_bilfil : string, path of the input file (if '' or 'all_domain', 
+:    submassbalance_l : boolean, activate submassbalance computation
+:    submassbalance_nb_border  : integer, nomber of polygons and lines
+:    submassbalance_input_file : string, path of the input file (if '' or 'all_domain', 
 :                  only one budget zone is taking into account 
 :                  (all the domain) and any fluxes threw open borders
-:    dtout_budget : real, output frequency in hours (h)
-:    date_start_budget : string, starting date for budget/fluxes computing
+:    submassbalance_dtout : real, output frequency in hours (h)
+:    submassbalance_date_start : string, starting date for budget/fluxes computing
 :
- &nmlsubmassbalance
-    l_bilan = .FALSE.
-    nb_border = 1
-    name_bilfil = ''
-    dtout_budget = 1.
-    date_start_budget ='01/01/0000 00:00:00' /
+&nmlsubmassbalance
+    submassbalance_l = .TRUE.
+    submassbalance_nb_border = 1
+    submassbalance_input_file = ''
+    submassbalance_output_file = 'outsubmassbalance.nc'
+    submassbalance_dtout = 1.
+    submassbalance_date_start ='1999/01/01 00:00:00' /
+
+
 
