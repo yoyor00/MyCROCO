@@ -2385,19 +2385,27 @@ C 				  endif
 !
       if (xios_field_is_active("Cs_r")) then
       call xios_send_field("Cs_r",Cs_r(1:N))
+# ifdef M3FAST_SEDLAYERS   
       call xios_send_field("Cs_r_total",Cs_r(-N_sl+1:N))
+# endif      
       endif
       if (xios_field_is_active("Cs_w")) then
       call xios_send_field("Cs_w",Cs_w(0:N))
+# ifdef M3FAST_SEDLAYERS   
       call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
+# endif      
       endif
       if (xios_field_is_active("sc_r")) then
       call xios_send_field("sc_r",sc_r(1:N))
+# ifdef M3FAST_SEDLAYERS   
       call xios_send_field("sc_r_total",sc_r(-N_sl+1:N))
+# endif      
       endif
       if (xios_field_is_active("sc_w")) then
       call xios_send_field("sc_w",sc_w(0:N))
+# ifdef M3FAST_SEDLAYERS   
       call xios_send_field("sc_w_total",sc_w(-N_sl:N))
+# endif      
       endif
       if (xios_field_is_active("hc")) then
       call xios_send_field("hc",hc)
