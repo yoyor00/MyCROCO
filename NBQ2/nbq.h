@@ -9,6 +9,10 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+!! Needed for common2device.py
+# define NSLP1N -N_sl+1:N
+# define NSLN -N_sl:N
+
 # ifdef M3FAST
 ! !------------------------------------------------------------------
 ! ! nbq.h: Logical
@@ -43,9 +47,9 @@
       real soundspeed2_nbq
       common /nbq_param2/ soundspeed2_nbq
 #  else
-      real soundspeed_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N) 
+      real soundspeed_nbq(GLOBAL_2D_ARRAY,NSLP1N) 
       common /nbq_param1/ soundspeed_nbq         
-      real soundspeed2_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N) 
+      real soundspeed2_nbq(GLOBAL_2D_ARRAY,NSLP1N) 
       common /nbq_param2/ soundspeed2_nbq
 #  endif
       double precision time_nbq               
@@ -87,9 +91,9 @@
       real visc2v_nbq
       common /test_visc2v/ visc2v_nbq
 #  else
-      real visc2_nbq (GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real visc2_nbq (GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_visc2/ visc2_nbq
-      real visc2v_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real visc2v_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /test_visc2v/ visc2v_nbq
 #  endif
 #  ifdef NBQ_SPONGE
@@ -135,7 +139,7 @@
 ! !-------------------------------------------------------------------
 #  ifdef M3FAST_UV
 #   ifdef NBQ_GRID_SLOW
-      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,-N_sl:N,2)
+      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,NSLN,2)
       common /nbq_nods3/ dthetadiv_nbqdz
 #   else
       real dthetadiv_nbqdz(GLOBAL_2D_ARRAY)
@@ -145,24 +149,24 @@
 ! !-------------------------------------------------------------------
 ! ! nbq.h: Real arrays 3D+
 ! !-------------------------------------------------------------------
-      real qdmu_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real qdmu_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_qdmu_nbq/ qdmu_nbq
-      real qdmv_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real qdmv_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_qdmv_nbq/ qdmv_nbq
-      real qdmw_nbq(GLOBAL_2D_ARRAY,-N_sl:N)
+      real qdmw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /nbq_qdmw_nbq/ qdmw_nbq
 #  ifdef M3FAST_UV
 !$acc declare create( dthetadiv_nbqdz )      
-      real dZdxq_w(GLOBAL_2D_ARRAY,-N_sl:N+1)
+      real dZdxq_w(GLOBAL_2D_ARRAY,NSLN+1)
       common /nbq_nods5/ dZdxq_w
-      real dZdyq_w(GLOBAL_2D_ARRAY,-N_sl:N+1)
+      real dZdyq_w(GLOBAL_2D_ARRAY,NSLN+1)
       common /nbq_nods7/ dZdyq_w
 !$acc declare create( dZdxq_w, dZdyq_w )
 #  endif 
-      real thetadiv_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real thetadiv_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_thetadiv_nbq/ thetadiv_nbq
 #  if defined NBQ_HZ_PROGNOSTIC 
-      real thetadiv2_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real thetadiv2_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_thetadiv2_nbq/ thetadiv2_nbq
 #  endif  
 #  if defined M3FAST_C3D_UVSF &&  defined M3FAST_COUPLING3D
@@ -196,11 +200,11 @@
       common /avg2_runbq/ ru_nbq_avg2
       real rv_nbq_avg2(GLOBAL_2D_ARRAY,N)
       common /avg2_rvnbq/ rv_nbq_avg2
-      real Hzw_nbq(GLOBAL_2D_ARRAY,-N_sl:N)
+      real Hzw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /grid_Hzw_nbq/ Hzw_nbq
-      real Hzu_nbq_inv(GLOBAL_2D_ARRAY,-N_sl:N)
+      real Hzu_nbq_inv(GLOBAL_2D_ARRAY,NSLN)
       common /grid_Hzu_nbq/ Hzu_nbq_inv
-      real Hzv_nbq_inv(GLOBAL_2D_ARRAY,-N_sl:N)
+      real Hzv_nbq_inv(GLOBAL_2D_ARRAY,NSLN)
       common /grid_Hzv_nbq/ Hzv_nbq_inv
 !$acc declare create(  Hzw_nbq, Hzu_nbq_inv, Hzv_nbq_inv )      
       real rw_int_nbq(GLOBAL_2D_ARRAY,0:N)
@@ -212,17 +216,17 @@
       real rw_intt_nbq(GLOBAL_2D_ARRAY,0:N,2)
       common /nbq_rwintt/ rw_intt_nbq   
 #  endif
-      real rw_nbq(GLOBAL_2D_ARRAY,-N_sl:N)
+      real rw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /nbq_rw/ rw_nbq
 !$acc declare create( rw_int_nbq )      
       real rw_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
       common /avg2_rwnbq/ rw_nbq_avg2
-      real rho_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real rho_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common/nbq_rho_nbq/rho_nbq
 #  ifdef M3FAST_DIAGACOUS
-      real p_nbq(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real p_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common/p_TL_nbq/p_nbq
-      real p_nbq_max(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real p_nbq_max(GLOBAL_2D_ARRAY,NSLP1N)
       common/p_TL_nbq/p_nbq_max
 #  endif
 #  ifdef NBQ_GRAV
@@ -235,7 +239,7 @@
 !$acc declare create( rhoi_nh )      
 #   endif
 #  endif
-      real rho_grd(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real rho_grd(GLOBAL_2D_ARRAY,NSLP1N)
       common/nbq_rho_grd/rho_grd
 #  ifdef NBQ_MASS
       real rho_nbq_avg1(GLOBAL_2D_ARRAY,0:N)
@@ -245,10 +249,10 @@
       real rhobar_nbq_avg1(GLOBAL_2D_ARRAY)
       common /nbq_rhobar_AVG1/ rhobar_nbq_avg1
 #  endif
-      real zw_nbq(GLOBAL_2D_ARRAY,-N_sl:N)
+      real zw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /nbq_zw/ zw_nbq
 # ifdef NBQ_HZCORRECT
-       real Hz_correct(GLOBAL_2D_ARRAY,-N_sl+1:N)
+       real Hz_correct(GLOBAL_2D_ARRAY,NSLP1N)
        common /grid_Hz_correct/ Hz_correct
 !$acc declare create( Hz_correct )       
 #  ifdef NBQ_HZCORR_DEBUG
@@ -260,15 +264,15 @@
 #   ifndef M3FAST_SEDLAYERS
       real Hz_bak2(GLOBAL_2D_ARRAY,1:N)
 #   else
-      real Hz_bak2(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real Hz_bak2(GLOBAL_2D_ARRAY,NSLP1N)
 #   endif
       common /nbq_H_bak2/ Hz_bak2
 #  endif
-      real FC3D(GLOBAL_2D_ARRAY,-N_sl:N+1)
+      real FC3D(GLOBAL_2D_ARRAY,NSLN+1)
       common /dum_FC3D/FC3D
-      real DC3D(GLOBAL_2D_ARRAY,-N_sl:N)
+      real DC3D(GLOBAL_2D_ARRAY,NSLN)
       common /dum_DC3D/DC3D
-      real CF3D(GLOBAL_2D_ARRAY,-N_sl:N)
+      real CF3D(GLOBAL_2D_ARRAY,NSLN)
       common /dum_CF3D/CF3D
 !$acc declare create( FC3D, DC3D, CF3D )
 #  ifdef ANA_MVB
@@ -276,7 +280,7 @@
       common/nbq_rhoi/rhoi_nbq
 #  endif
 #  ifdef NHINT_WH
-      real wzh_nbq(GLOBAL_2D_ARRAY,-N_sl:N)
+      real wzh_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /nbq_wh/ wzh_nbq
 #  endif
 ! !-------------------------------------------------------------------

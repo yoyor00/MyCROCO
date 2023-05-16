@@ -1320,10 +1320,11 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
       ksl=0
 #     endif
       if (wrthis(indxRnbq)) then
+!$acc update if(compute_on_device) host(rho_nbq)
         workr=0.
         do k=1,N
-          do j=1,Mm  
-            do i=1,Lm  
+          do j=0,Mm+1
+            do i=0,Lm+1
             workr(i,j,k)=rho_nbq(i,j,k-ksl)
           enddo
          enddo
@@ -1337,6 +1338,7 @@ CR      write(*,*) 'wrt_his:  wrtRnbq' MYID
 !     
       if (wrthis(indxUnbq)) then
 !       workr=qdmu_nbq
+!$acc update if(compute_on_device) host(qdmu_nbq)
         workr=0.
         do k=1,N
           do j=0,Mm+1
@@ -1355,6 +1357,7 @@ CR      write(*,*) 'wrt_his:  wrtUnbq  ' MYID
 !     
       if (wrthis(indxVnbq)) then
 !       workr=qdmv_nbq
+!$acc update if(compute_on_device) host(qdmv_nbq)
         workr=0.
         do k=1,N
           do j=1,Mm+1
@@ -1371,6 +1374,7 @@ CR      write(*,*) 'wrt_his:  wrtVnbq  ' MYID
 !     Wnbq
 !     
       if (wrthis(indxWnbq)) then
+!$acc update if(compute_on_device) host(qdmw_nbq)
         work=0.
         if (ksl.eq.0) then
           do k=1,N-1
@@ -1400,8 +1404,8 @@ CR      write(*,*) 'wrt_his:  wrtVnbq  ' MYID
           enddo
          else
           do k=0,N
-          do j=0,Mm+1
-            do i=0,Lm+1
+          do j=0,Mm
+            do i=0,Lm
             work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
      &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
             enddo
@@ -1417,7 +1421,8 @@ CR      write(*,*) 'wrt_his:  wrtWnbq  ' MYID
 !     Cnbq
 !     
       if (wrthis(indxCnbq)) then
-       ! workr=soundspeed_nbq(:,:,1-ksl:N-ksl)
+!!$acc update if(compute_on_device) host(soundspeed_nbq)
+!         workr=soundspeed_nbq(:,:,1-ksl:N-ksl)
          call fillvalue3d(workr,ncidhis,hisCnbq,indxCnbq,
      &        record,r3dvar,type)           
 CR      write(*,*) 'wrt_his:  wrtCnbq' MYID

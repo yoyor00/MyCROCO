@@ -81,6 +81,7 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=Istr,IendR
           bustr(i,j)=0.
@@ -91,6 +92,7 @@
           bvstr(i,j)=0.
         enddo
       enddo
+!$acc end kernels      
       return
       end
 #endif /* ANA_BMFLUX */ 
@@ -130,6 +132,7 @@
 ! Set kinematic bottom heat flux [degC m/s] at horizontal RHO-points.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             btflx(i,j,itemp)=0.
@@ -147,6 +150,8 @@
 # endif
           enddo
         enddo
+!$acc end kernels
+
       end if
 #  endif /* TEMPERATURE */        
 #  ifdef SALINITY
@@ -157,11 +162,13 @@
 !  scaling by bottom salinity is done in STEP3D.
 !----------------------------------------------------------------------
 !
-        do j=JstrR,JendR
+!$acc kernels if(compute_on_device) default(present)
+       do j=JstrR,JendR
           do i=IstrR,IendR
             btflx(i,j,isalt)=0.
           enddo
         enddo
+!$acc end kernels      
       end if
 #  endif /* SALINITY */
     
@@ -180,11 +187,13 @@
 ! for example sediments, bio..., to zero
 !----------------------------------------------------------------------
 !
-        do j=JstrR,JendR
+!$acc kernels if(compute_on_device) default(present)
+       do j=JstrR,JendR
           do i=IstrR,IendR
             btflx(i,j,itrc)=0.
           enddo
         enddo
+!$acc end kernels      
 #  if defined SALINITY || defined TEMPERATURE
       endif
 #  endif /* SALINITY || TEMPERATURE*/      
@@ -248,11 +257,13 @@ C$    integer  trd, omp_get_thread_num
       time_mvb=time + dtfast*float(iif)
 #  ifdef MOVING_BATHY
 #     include "mvb.h"      
+!$acc kernels if(compute_on_device) default(present)
        do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=h0_mvb(i,j)+dh_mvb(i,j,knew2)
         enddo
         enddo
+!$acc end kernels      
 #  endif    
       return
       end
@@ -301,22 +312,26 @@ C$    integer  trd, omp_get_thread_num
       ! for example purpoe
       ! has to be coherent with initial bathymetry
       ! definition in ana_grid.F  
-      do j=JstrR,JendR
+!$acc kernels if(compute_on_device) default(present)
+     do j=JstrR,JendR
         do i=IstrR,IendR
           dh(i,j)=4500*(1-0.6*exp(-cff*((xr(i,j)-cff1  )**2+
      &                                  (yr(i,j)-0.5*el)**2)))
      &                                                 -h(i,j)
         enddo
       enddo
+!$acc end kernels      
 # elif defined MOVING_BATHY
        cff=1./(0.03686)**2
        cff1=1.e-3*sin(2.*pi/10.05*time)
+!$acc kernels if(compute_on_device) default(present)
        do j=JstrR,JendR
          do i=IstrR,IendR
            dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2) 
      &                   - h(i,j)
          enddo
        enddo
+!$acc end kernels      
 # else
         dh(:,:) =??? 
 # endif
@@ -376,6 +391,7 @@ C$    integer  trd, omp_get_thread_num
 !   w_set = visk*(sqrt(10.36^2+1.049*D^3)-10.36)/d50 [m/s]
 ! with D as above 
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           Ssize(i,j)=1.5e-4  ! d50 [m]
@@ -386,7 +402,9 @@ C$    integer  trd, omp_get_thread_num
           Lripple(i,j)=0.10   ! analytical initial ripple length [m]
         enddo
       enddo
+!$acc end kernels      
 # else
+!$acc kernels if(compute_on_device) default(present)
       !ANA_BSEDIM: no values provided for SSIZE and SDENS.
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -398,6 +416,7 @@ C$    integer  trd, omp_get_thread_num
           Lripple(i,j)=0.10   ! analytical initial ripple length [m]
         enddo
       enddo
+!$acc end kernels      
 # endif
       return
       end
@@ -438,6 +457,7 @@ C$    integer  trd, omp_get_thread_num
       windamp = 0.
 
 # ifdef BASIN
+!$acc kernels if(compute_on_device) default(present)
       cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
       cff2=2.*pi/el
       do j=JstrR,JendR
@@ -445,33 +465,43 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
        enddo
       enddo
+!$acc end kernels      
 # elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=(0.01)**2
         enddo
       enddo
+!$acc end kernels      
 # elif defined SINGLE_COLUMN && defined FORCED_DBLEEK
 
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=-(0.0025)**2
         enddo
       enddo
+!$acc end kernels      
 # elif defined CANYON
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=0.0001*0.5*sin(2.*pi*tdays/10.)*
      &               (1.-tanh((yr(i,j)-0.5*el)/10000.))
         enddo
       enddo
+!$acc end kernels      
 # elif defined EQUATOR
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=-0.05/rho0
         enddo
       enddo
+!$acc end kernels      
 # elif defined SED_TEST2
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           windamp=0.5+
@@ -479,21 +509,25 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=windamp*user(1)
         enddo
       enddo
+!$acc end kernels      
 # elif defined UPWELLING
       if (tdays.le.2.) then
         windamp=-0.1*sin(pi*tdays/4.)/rho0
       else
         windamp=-0.1/rho0
       endif
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=windamp
         enddo
       enddo
+!$acc end kernels      
 # elif defined SHOREFACE
 #  if !defined MRL_WCI
       windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
       wcos = cos(10.0/180.0*pi)
+!$acc kernels if(compute_on_device) default(present)
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           cff2  = h(i,j)+zeta(i,j,kstp)
@@ -501,25 +535,31 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=cff1*wcos*windamp
         enddo
       enddo
+!$acc end kernels      
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=0.
         enddo
       enddo
+!$acc end kernels            
 #  endif
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=0.
         enddo
       enddo
+!$acc end kernels            
 # endif
 !
 !  Set kinematic surface momentum flux (wind stress) component in the
 !  ETA-direction (m^2/s^2) at horizontal V-points.
 !
 # if defined SED_TEST2
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           windamp=0.5+
@@ -527,16 +567,20 @@ C$    integer  trd, omp_get_thread_num
           svstr(i,j)= windamp*user(2)
         enddo
       enddo
+!$acc end kernels      
 # elif defined INNERSHELF
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           svstr(i,j)=0.07/rho0
         enddo
       enddo
+!$acc end kernels      
 # elif defined SHOREFACE 
 #  if !defined MRL_WCI
       windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
       wsin = sin(10.0/180.0*pi)
+!$acc kernels if(compute_on_device) default(present)
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           cff2  = h(i,j)+zeta(i,j,kstp)
@@ -544,19 +588,24 @@ C$    integer  trd, omp_get_thread_num
           svstr(i,j)=cff1*wsin*windamp
         enddo
       enddo
+!$acc end kernels      
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           svstr(i,j)=0.
         enddo
       enddo
+!$acc end kernels            
 #  endif
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           svstr(i,j)=0.
         enddo
       enddo
+!$acc end kernels      
 # endif
       return
       end
@@ -587,6 +636,7 @@ C$    integer  trd, omp_get_thread_num
 !  horizontal RHO-points.
 !
 # if defined INNERSHELF && !defined INNERSHELF_EKMAN
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           srflx(i,j)=264.91/(rho0*Cp)
@@ -598,7 +648,9 @@ C$    integer  trd, omp_get_thread_num
 # endif
         enddo
       enddo
+!$acc end kernels      
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           srflx(i,j)=0.   ! default is 0.
@@ -611,6 +663,7 @@ C$    integer  trd, omp_get_thread_num
 #  endif
         enddo
       enddo
+!$acc end kernels      
 # endif /* INNERSHELF */
       return
       end
@@ -677,6 +730,7 @@ C$    integer  trd, omp_get_thread_num
 !
       mssh=QuadZero
       area=QuadZero
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=Istr,Iend
           cff1=1./(pm(i,j)*pn(i,j))
@@ -684,6 +738,7 @@ C$    integer  trd, omp_get_thread_num
           area=area+cff1
         enddo
       enddo
+!$acc end kernels      
       mssh=mssh/area
 #  ifdef MPI
       call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
@@ -706,6 +761,7 @@ C$    integer  trd, omp_get_thread_num
       tide_ampli_moy=1.
       tide_ampli_var=30./70.
       surelev=1.
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=zeta(i,j,knew)-mssh
@@ -715,30 +771,36 @@ C$    integer  trd, omp_get_thread_num
      &                    +time*surelev/31536000.
         enddo
       enddo
+!$acc end kernels      
 
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
       ETA0=kwave*h(1,1)*U0/omega
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
         enddo
       enddo
+!$acc end kernels      
 
 # else
-      do j=JstrR,JendR
+!$acc kernels if(compute_on_device) default(present)
+     do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=0.
         enddo
       enddo
+!$acc end kernels      
 # endif
 
 # ifdef WET_DRY
 !
 !  Check that min depth > Dcrit
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           if (ssh(i,j) .lt. Dcrit(i,j)-h(i,j)) then
@@ -746,6 +808,7 @@ C$    integer  trd, omp_get_thread_num
           endif
         enddo
       enddo
+!$acc end kernels      
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
@@ -791,6 +854,7 @@ C$    integer  trd, omp_get_thread_num
       y2=1500.E+3
       sst1=10.
       sst2=25.
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=sst1
@@ -807,20 +871,25 @@ C$    integer  trd, omp_get_thread_num
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
+!$acc end kernels      
 # elif defined INNERSHELF
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=24.
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
+!$acc end kernels      
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=25
           dqdt(i,j)=0.
         enddo
       enddo
+!$acc end kernels      
 # endif
       return
       end
@@ -854,11 +923,13 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sss(i,j)=???
         enddo
       enddo
+!$acc end kernels      
       return
       end
 #endif /* SALINITY && SFLX_CORR && ANA_SSS */
@@ -895,6 +966,7 @@ c
 !  Set kinematic surface heat flux [degC m/s] at horizontal
 !  RHO-points.
 !
+!$acc kernels if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
 #if defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
@@ -906,6 +978,7 @@ c
 #endif
           enddo
         enddo
+!$acc end kernels      
       endif
 !
 # endif /* TEMPERATURE */        
@@ -915,11 +988,13 @@ c
 !  Set kinematic surface freshwater flux (m/s) at horizontal
 !  RHO-points, scaling by surface salinity is done in STEP3D.
 !
+!$acc kernels if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             stflx(i,j,isalt)=0.
           enddo
         enddo
+!$acc end kernels      
       endif
 #endif /* SALINITY */
 # if defined SALINITY && defined TEMPERATURE
@@ -935,11 +1010,13 @@ c
 !
 !  Set kinematic surface flux of additional tracers, if any.
 !
+!$acc kernels if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             stflx(i,j,itrc)=0.
           enddo
         enddo
+!$acc end kernels      
 # if defined SALINITY || defined TEMPERATURE
       endif
 # endif /* SALINITY || TEMPERATURE*/
@@ -993,7 +1070,8 @@ C$    integer  trd, omp_get_thread_num
 #  elif defined IGW
       cff=((2.e-3)**2)/g
       rhom=1027.037885
-      do k=1,N
+!$acc kernels if(compute_on_device) default(present)
+     do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
             depth = -z_r(i,j,k)         
@@ -1021,7 +1099,9 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1034,12 +1114,14 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 #  endif /* JET */
 # endif
 
 # ifdef BIOLOGY
 #  define temp cff
 #  define SiO4 cff1
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1269,11 +1351,13 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 #  undef SiO4
 #  undef temp
 # endif /* BIOLOGY */
 
 # ifdef SEDIMENT
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1291,9 +1375,11 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 # endif /* SEDIMENT */
 
 # ifdef PASSIVE_TRACER
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1307,9 +1393,11 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc kernels if(compute_on_device) default(present)
       do itrc=1,NT
 #  ifndef ANA_TCLIMA
         if (.not.got_tclm(itrc)) then
@@ -1325,6 +1413,7 @@ C$    integer  trd, omp_get_thread_num
         endif
 #  endif
       enddo
+!$acc end kernels      
 # endif
 
       return
@@ -1392,6 +1481,7 @@ C$    integer  trd, omp_get_thread_num
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
       V0=f(1,1)*U0/omega
+!$acc kernels if(compute_on_device) default(present)
       do j=JU_RANGE
         do i=IU_RANGE
           ubclm(i,j)=U0*sin(omega*time-kwave*0.5*(xr(i,j)+xr(i-1,j)))
@@ -1402,17 +1492,20 @@ C$    integer  trd, omp_get_thread_num
           vbclm(i,j)=V0*cos(omega*time-kwave*0.5*(xr(i,j)+xr(i,j-1)))
         enddo
       enddo
+!$acc end kernels      
 #  elif defined JET
 !
 !       --> climatology computed in ana_initial
 !
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ubclm(i,j)=0.
           vbclm(i,j)=0.
         enddo
       enddo
+!$acc end kernels      
 #  endif
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  ubclm)
@@ -1426,6 +1519,7 @@ C$    integer  trd, omp_get_thread_num
 !       --> climatology computed in ana_initial
 !
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1434,6 +1528,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 #  endif
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  uclm)
@@ -1502,6 +1597,7 @@ C$    integer  trd, omp_get_thread_num
                     (defined AGRIF && !defined NBQ_FRC_BRY)) \
                  && (defined M3CLIMATOLOGY || \
                     (defined AGRIF && !defined M3_FRC_BRY))
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -1522,7 +1618,9 @@ C$    integer  trd, omp_get_thread_num
         enddo
 #  endif
       enddo
+!$acc end kernels      
 # else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -1543,9 +1641,8 @@ C$    integer  trd, omp_get_thread_num
         enddo
 #  endif
       enddo
+!$acc end kernels      
 # endif
-!$acc update device( unbqclm )
-!$acc update device( vnbqclm )
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
@@ -1609,6 +1706,7 @@ C$    integer  trd, omp_get_thread_num
 !  period (s) at RHO-points.
 !
 # if defined SED_TEST2
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           Awave(i,j)=1.0
@@ -1616,8 +1714,10 @@ C$    integer  trd, omp_get_thread_num
           Pwave(i,j)=10.
         enddo
       enddo
+!$acc end kernels      
 
 # elif defined SHOREFACE
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           Awave(i,j)=0.707           ! wave amplitude (m)
@@ -1625,6 +1725,7 @@ C$    integer  trd, omp_get_thread_num
           Pwave(i,j)=10.             ! wave period (s)
         enddo
       enddo
+!$acc end kernels      
       wamp=Awave(1,1)
       wdir=Dwave(1,1)
       wprd=Pwave(1,1)
@@ -1640,6 +1741,7 @@ C$    integer  trd, omp_get_thread_num
      &                               +khd*0.0065407983)))))) )
       co=sqrt(g/kh*ho*tanh(kh))
       cgo=co*0.5*(1.+2.*kh/sinh(2.*kh))
+!$acc kernels if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
           dsup=0.
@@ -1680,8 +1782,10 @@ C$    integer  trd, omp_get_thread_num
 #  endif
         enddo
       enddo
+!$acc end kernels      
 
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           Awave(i,j)=0.707            ! wave amplitude (m)
@@ -1689,6 +1793,7 @@ C$    integer  trd, omp_get_thread_num
           Pwave(i,j)=10.              ! wave period (s)
         enddo
       enddo
+!$acc end kernels      
 #  ifdef MRL_WCI
       Hrms=2.*Awave(1,1)         ! offshore RMS wave height (m)
       cfrq=2.*pi/Pwave(1,1)      ! peak wave frequency (rad/s)
@@ -1696,6 +1801,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Fill global arrays
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           whrm(i,j)=Hrms
@@ -1704,6 +1810,7 @@ C$    integer  trd, omp_get_thread_num
           wdre(i,j)=sin(wdir)
         enddo
       enddo
+!$acc end kernels      
 #   ifdef WET_DRY
           if (h(i,j)+z_w(i,j,N).le.Dcrit(i,j)+eps) then
             whrm(i,j)=0.
@@ -1766,6 +1873,7 @@ C$    integer  trd, omp_get_thread_num
 
 # include "compute_extended_bounds.h"
 
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
 # ifdef BBL
@@ -1834,8 +1942,10 @@ C$    integer  trd, omp_get_thread_num
 # endif
         enddo
       enddo
+!$acc end kernels      
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc kernels if(compute_on_device) default(present)
       do ised=1,NST
         do ilay=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -1846,6 +1956,7 @@ C$    integer  trd, omp_get_thread_num
      &                 bed_mass(START_2D_ARRAY,ilay,2,ised))
          enddo
       enddo
+!$acc end kernels      
       do ilay=1,NLAY
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_poros(START_2D_ARRAY,ilay))
@@ -1907,11 +2018,13 @@ C$    integer  trd, omp_get_thread_num
 #  define EXP_SHAPE
 #  ifdef CST_SHAPE
         cff=1./float(N)
-        do k=1,N                       ! Uniform vertical
+!$acc kernels if(compute_on_device) default(present)
+       do k=1,N                       ! Uniform vertical
           do is=1,Nsrc                 ! distribution
             Qshape(is,k)=cff
           enddo
         enddo
+!$acc end kernels      
 #  elif defined EXP_SHAPE
         do is=1,Nsrc
 #  ifdef MPI
@@ -1925,6 +2038,7 @@ C$    integer  trd, omp_get_thread_num
           cff=5.                       ! Hs/z0  (z0 surface layer depth)
           cff1=cff/(1-exp(-cff))
           cff2=0.
+!$acc kernels if(compute_on_device) default(present)
           do k=1,N
             Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
@@ -1933,9 +2047,11 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             Qshape(is,k)=Qshape(is,k)/cff2
           enddo
+!$acc end kernels      
         enddo
 #  elif defined AL_SHAPE
         do is=1,Nsrc                   ! Set-up nondimensional shape
+!$acc kernels if(compute_on_device) default(present)
           do k=1,10
             Qshape(is,k)=0.0
           enddo
@@ -1948,19 +2064,23 @@ C$    integer  trd, omp_get_thread_num
           Qshape(is,18)=0.1           ! These most add to unity!
           Qshape(is,19)=0.2
           Qshape(is,20)=0.2
-        enddo
+!$acc end kernels      
+       enddo
 #  endif
 
 # elif defined REGIONAL
 #  define CST_SHAPE
 #  ifdef CST_SHAPE
         cff=1./float(N)
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N                       ! Uniform vertical
           do is=1,Nsrc                 ! distribution
             Qshape(is,k)=cff
           enddo
         enddo
+!$acc end kernels      
 #  elif defined EXP_SHAPE
+!$acc kernels if(compute_on_device) default(present)
         do is=1,Nsrc
 #   ifdef MPI
           i=Isrc_mpi(is,mynode)
@@ -1984,17 +2104,20 @@ C$    integer  trd, omp_get_thread_num
             endif
           enddo
         enddo
+!$acc end kernels      
 # endif
 
 # else
 #  define CST_SHAPE
 #  ifdef CST_SHAPE
         cff=1./float(N)
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N                       ! Uniform vertical
           do is=1,Nsrc                 ! distribution
             Qshape(is,k)=cff
           enddo
         enddo
+!$acc end kernels      
 #  elif defined EXP_SHAPE
         do is=1,Nsrc
 #   ifdef MPI
@@ -2008,6 +2131,7 @@ C$    integer  trd, omp_get_thread_num
           cff=5.                       ! Hs/z0  (z0 surface layer depth)
           cff1=cff/(1-exp(-cff))
           cff2=0.
+!$acc kernels if(compute_on_device) default(present)
           do k=1,N
             Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
@@ -2017,6 +2141,7 @@ C$    integer  trd, omp_get_thread_num
             Qshape(is,k)=Qshape(is,k)/cff2
           enddo
         enddo
+!$acc end kernels      
 #  endif
 # endif /* RIVER || REGIONAL */
 
@@ -2052,15 +2177,18 @@ C$    integer  trd, omp_get_thread_num
 ! according to mass transport profile chosen above.
 !
       do is=1,Nsrc
-        do k=1,N
+!$acc kernels if(compute_on_device) default(present)
+       do k=1,N
           Qsrc(is,k)=Qbar(is)*Qshape(is,k)
         enddo
       enddo
+!$acc end kernels      
 !
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
 # ifdef SOLVE3D
 # ifdef RIVER
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do is=1,Nsrc
 #  if defined TEMPERATURE        
@@ -2075,7 +2203,9 @@ C$    integer  trd, omp_get_thread_num
 #  endif
         enddo
       enddo
+!$acc end kernels      
 # elif defined REGIONAL
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do is=1,Nsrc
 #  ifdef PSOURCE_NCFILE_TS
@@ -2106,7 +2236,9 @@ C$    integer  trd, omp_get_thread_num
 #  endif
         enddo
       enddo
+!$acc end kernels      
 # else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do is=1,Nsrc
           do itrc=1,NT
@@ -2114,12 +2246,14 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 # endif /* RIVER */
 !
 !  Set-up biology tracer (tracer units) point Sources/Sinks.
 !
 # ifdef BIOLOGY
-      do k=1,N
+!$acc kernels if(compute_on_device) default(present)
+     do k=1,N
         do is=1,Nsrc
 !     Fill with analytical value  if not find in netcdf file
 #   ifdef TEMPERATURE        
@@ -2384,6 +2518,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
         enddo
       enddo
+!$acc end kernels      
 # endif /* BIOLOGY */
 # endif /* SOLVE3D */
       return
@@ -2460,22 +2595,27 @@ C$    integer  trd, omp_get_thread_num
 
         if (FIRST_TIME_STEP) then
 #   ifdef Z_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do j=JstrR,JendR
             zetabry_west(j)=zeta(0,j,1)
 #    ifdef OBC_PATM
             zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
+!$acc end kernels      
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do j=JstrR,JendR
             ubarbry_west(j)=ubar(1,j,1)
             vbarbry_west(j)=vbar(0,j,1)
           enddo
+!$acc end kernels      
 #   endif
 #   if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+!$acc kernels if(compute_on_device) default(present)
           do k=1,N
             do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
@@ -2492,21 +2632,26 @@ C$    integer  trd, omp_get_thread_num
 #    endif
             enddo
           enddo
+!$acc end kernels      
 #   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         else 
 #   ifdef Z_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do j=JstrR,JendR
             zetabry_west(j)=0.0
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
           enddo
+!$acc end kernels      
 #   endif
 #   ifdef M2_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do j=JstrR,JendR
             ubarbry_west(j)=0.0
             vbarbry_west(j)=0.0
           enddo
+!$acc end kernels      
 #   endif
         endif
 #  endif /* WAVE_MAKER */
@@ -2517,6 +2662,7 @@ C$    integer  trd, omp_get_thread_num
       if (EASTERN_EDGE) then
         if (FIRST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
 #   ifdef OBC_PATM
@@ -2524,15 +2670,19 @@ C$    integer  trd, omp_get_thread_num
      &                    -(patm2d(IendR,j)-paref)/(g*rho0)
 #   endif
           enddo
+!$acc end kernels      
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do j=JstrR,JendR
             ubarbry_east(j)=ubar(Iend+1,j,1)
             vbarbry_east(j)=vbar(Iend+1,j,1)
           enddo
+!$acc end kernels      
 #  endif
 #  if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+!$acc kernels if(compute_on_device) default(present)
           do k=1,N
             do j=JstrR,JendR
 #   ifdef M3_FRC_BRY
@@ -2549,21 +2699,26 @@ C$    integer  trd, omp_get_thread_num
 #   endif
             enddo
           enddo
+!$acc end kernels      
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         else 
 #  ifdef Z_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do j=JstrR,JendR
             zetabry_east(j)=0.0
 #   ifdef OBC_PATM
             zetabry_east(j)=-(patm2d(IendR,j)-paref)/(g*rho0)
 #   endif
           enddo
+!$acc end kernels      
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do j=JstrR,JendR
             ubarbry_east(j)=0.0
             vbarbry_east(j)=0.0
           enddo
+!$acc end kernels      
 #  endif
         endif
       endif
@@ -2573,6 +2728,7 @@ C$    integer  trd, omp_get_thread_num
       if (SOUTHERN_EDGE) then
         if (FIRST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do i=IstrR,IendR
             zetabry_south(i)=zeta(i,0,1)
 #   ifdef OBC_PATM
@@ -2580,15 +2736,19 @@ C$    integer  trd, omp_get_thread_num
      &                    -(patm2d(i,JstrR)-paref)/(g*rho0)
 #   endif
           enddo
+!$acc end kernels      
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do i=IstrR,IendR
             ubarbry_south(i)=ubar(i,0,1)
             vbarbry_south(i)=vbar(i,1,1)
           enddo
+!$acc end kernels      
 #  endif
 #  if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+!$acc kernels if(compute_on_device) default(present)
           do k=1,N
             do i=IstrR,IendR
 #   ifdef M3_FRC_BRY
@@ -2605,21 +2765,26 @@ C$    integer  trd, omp_get_thread_num
 #   endif
             enddo
           enddo
+!$acc end kernels      
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         else
 #  ifdef Z_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do i=IstrR,IendR
             zetabry_south(i)=0.0
 #   ifdef OBC_PATM
             zetabry_south(i)=-(patm2d(i,JstrR)-paref)/(g*rho0)
 #   endif
           enddo
+!$acc end kernels      
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do i=IstrR,IendR
             ubarbry_south(i)=0.0
             vbarbry_south(i)=0.0
           enddo
+!$acc end kernels      
 #  endif
         endif
       endif
@@ -2629,6 +2794,7 @@ C$    integer  trd, omp_get_thread_num
       if (NORTHERN_EDGE) then
         if (FIRST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do i=IstrR,IendR
             zetabry_north(i)=zeta(i,Jend+1,1)
 #   ifdef OBC_PATM
@@ -2636,15 +2802,19 @@ C$    integer  trd, omp_get_thread_num
      &                     -(patm2d(i,JendR)-paref)/(g*rho0)
 #   endif
           enddo
+!$acc end kernels      
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do i=IstrR,IendR
             ubarbry_north(i)=ubar(i,Jend+1,1)
             vbarbry_north(i)=vbar(i,Jend+1,1)
           enddo
+!$acc end kernels      
 #  endif
 #  if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+!$acc kernels if(compute_on_device) default(present)
           do k=1,N
             do i=IstrR,IendR
 #   ifdef M3_FRC_BRY
@@ -2661,21 +2831,26 @@ C$    integer  trd, omp_get_thread_num
 #   endif
             enddo
           enddo
+!$acc end kernels      
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         else
 #  ifdef Z_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do i=IstrR,IendR
             zetabry_north(i)=0.0
 #   ifdef OBC_PATM
             zetabry_north(i)=-(patm2d(i,JendR)-paref)/(g*rho0)
 #   endif
           enddo
+!$acc end kernels      
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc kernels if(compute_on_device) default(present)
           do i=IstrR,IendR
             ubarbry_north(i)=0.0
             vbarbry_north(i)=0.0
           enddo
+!$acc end kernels      
 #  endif
         endif
       endif
@@ -2737,6 +2912,7 @@ C$    integer  trd, omp_get_thread_num
 
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JU_RANGE 
             unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
@@ -2754,10 +2930,8 @@ C$    integer  trd, omp_get_thread_num
             rnbqbry_west(j,k)=0.
           enddo
 #   endif
-!$acc update device( unbqbry_west, vnbqbry_west
-!$acc&          ,wnbqbry_west,rnbqbry_west 
-!$acc&          )          
         enddo
+!$acc end kernels      
       endif
 # endif /* OBC_WEST */
 !

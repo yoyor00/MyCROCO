@@ -8,7 +8,7 @@
 ! !    volume Dnew 
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           Dnew(i,j)=(zeta(i,j,knew)+h(i,j))
@@ -39,7 +39,7 @@ C$OMP END MASTER
 ! !
 # ifdef M3FAST_W
       if (LAST_FAST_STEP) then
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
         do k=0,N 
           do j=Jstr,Jend              
             do i=Istr,Iend
@@ -96,7 +96,7 @@ C$OMP END MASTER
 ! !  Note: here ru_nbq_avg2, ru_nbq_2d_old ... are working arrays
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
 # ifdef M3FAST_UV 
        do k=1,N
           do j=Jstr,Jend
@@ -246,7 +246,7 @@ C$OMP END MASTER
 ! !  forcing from fast mode
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
 #  define Dstp DUon
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -273,7 +273,7 @@ C$OMP END MASTER
 ! ! computation  MPI computational margins.
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
 
 ! ! FA: TBT
 
@@ -589,7 +589,8 @@ C$OMP MASTER
 ! ! boundaries.
 ! !********************************
 ! !
-!$acc kernels default( present )
+
+!$acc kernels if(compute_on_device) default(present)
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=Jstr-1,JendR
@@ -632,7 +633,7 @@ C$OMP MASTER
       cff1=0.5*weight(1,iif)
       cff2=0.5*weight(2,iif)
 
-!$acc kernels default( present )      
+!$acc kernels if(compute_on_device) default(present)
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
@@ -640,7 +641,7 @@ C$OMP MASTER
 # ifdef MRL_WCI
      &                                              +ust2d(IstrU-1,j)
 # endif
-     &                                              )*on_u(IstrU-1,j)
+     &                                               )*on_u(IstrU-1,j)
           DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)+cff1*cff
 # ifndef M3FAST_AVG_CLASSIC
           DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)+cff2*cff
@@ -734,9 +735,6 @@ C$OMP MASTER
       endif
 # endif /* !NS_PERIODIC */
 !$acc end kernels
-      if (iif.eq.nfast) then
-!$acc update host( DU_avg1, DU_avg2, DV_avg1, DV_avg2 )   !! iif=last
-      endif
 ! !
 ! !********************************
 ! ! Update Free-slip

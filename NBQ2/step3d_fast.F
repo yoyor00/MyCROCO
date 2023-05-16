@@ -47,9 +47,9 @@ C$    trd=omp_get_thread_num()
      &                   , A2d(1,18,trd), A2d(1,19,trd)
 #  endif
 # endif
-# if defined M3FAST_UV && ! defined M3FAST_SEDLAYERS
-     &                   , A3d(1, 1,trd), A3d(1, 2,trd)
-     &                   , A3d(1, 3,trd), A3d(1, 4,trd)   
+# if defined M3FAST_UV
+     &                   , A3dHz(1, 1,trd), A3dHZ(1, 2,trd)
+     &                   , A3dHz(1, 3,trd), A3dHZ(1, 4,trd)   
 # endif
      &                   )
 
@@ -75,7 +75,7 @@ C$    trd=omp_get_thread_num()
      &                          ,ru_int2d_nbq, rv_int2d_nbq
 #  endif
 # endif
-# if defined M3FAST_UV && ! defined M3FAST_SEDLAYERS
+# if defined M3FAST_UV 
      &                          ,Hzw_nbq_inv,  Hzr_nbq_inv 
      &                          ,Hzw_nbq_inv_u,  Hzw_nbq_inv_v  
 # endif
@@ -224,13 +224,11 @@ C$    trd=omp_get_thread_num()
      &       rv_int2d_nbq  (PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
 # endif
-        real 
+        real
      &   Hzw_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,-N_sl  :N),
      &   Hzr_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,-N_sl+1:N),
      &   Hzw_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,-N_sl:N),
      &   Hzw_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,-N_sl:N)
-!$acc declare create( Hzw_nbq_inv, Hzr_nbq_inv )
-!$acc declare create( Hzw_nbq_inv_u, Hzw_nbq_inv_v )        
       real
      &    dthetadiv_nbqdz_u(PRIVATE_2D_SCRATCH_ARRAY,2),
      &    dthetadiv_nbqdz_v(PRIVATE_2D_SCRATCH_ARRAY,2),
@@ -294,7 +292,6 @@ C$    trd=omp_get_thread_num()
 # include "climat.h"
 # include "scalars.h"
 # ifdef OPENACC
-#  include "openacc.h" 
 #  include "boundary.h"
 #endif
 # include "sources.h"
@@ -344,27 +341,6 @@ C$    trd=omp_get_thread_num()
 ! ! PART A.6: OpenACC
 ! !*********************************************************************
 ! ! 
-# ifdef OPENACC
-#  define exchange_r2d_tile exchange_r2d_tile_device
-#  define exchange_u2d_tile exchange_u2d_tile_device
-#  define exchange_v2d_tile exchange_v2d_tile_device
-#  define exchange_r3d_tile exchange_r3d_tile_device
-#  define exchange_u3d_tile exchange_u3d_tile_device
-#  define exchange_v3d_tile exchange_v3d_tile_device
-#  define exchange_w3d_tile exchange_w3d_tile_device
-#  ifdef M3FAST_SEDLAYERS
-#   define exchange_r3d_sedlay_tile exchange_r3d_sedlay_tile_device
-#   define exchange_u3d_sedlay_tile exchange_u3d_sedlay_tile_device
-#   define exchange_v3d_sedlay_tile exchange_v3d_sedlay_tile_device
-#   define exchange_w3d_sedlay_tile exchange_w3d_sedlay_tile_device7
-#   define exchange_r3d_sedlayb_tile exchange_r3d_sedlayb_tile_device
-#   define exchange_u3d_sedlayb_tile exchange_u3d_sedlayb_tile_device
-#   define exchange_v3d_sedlayb_tile exchange_v3d_sedlayb_tile_device
-#   define exchange_w3d_sedlayb_tile exchange_w3d_sedlayb_tile_device
-#  endif
-#  define check_tab3d check_tab3d_device
-#  define check_tab2d check_tab2d_device
-# endif
 ! !      
 ! !*********************************************************************
 ! ! PART A.7: NHINT: 3 time-steps

@@ -11,13 +11,13 @@
 ! !
 #ifdef OPENACC
        if (FIRST_FAST_STEP) then
-!$acc wait( sync_rho_rufrc_z_w )
-! !$acc wait( sync_ruv_int_nbq )
-!$acc update device(ru_int_nbq,rv_int_nbq,rw_int_nbq) !!iff=1
+!!!!$acc wait( sync_rho_rufrc_z_w )
+!!! !$acc wait( sync_ruv_int_nbq )
+!!!!$acc update device(ru_int_nbq,rv_int_nbq,rw_int_nbq) !!iff=1
        endif
 #endif
 # if defined M3FAST_UV || defined M3FAST_W || defined M3FAST_RHO
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       if (FIRST_FAST_STEP) then
        if (FIRST_TIME_STEP) then
          do k=1,N
@@ -104,11 +104,11 @@
 ! ! Total depth/mass at m+1/2
 ! !--------------------------------
 ! !
-      if (FIRST_FAST_STEP) then
-!$acc update device( h, zeta, ubar, vbar ) !iif=1
-      endif
+!      if (FIRST_FAST_STEP) then
+!!$acc update device( h, zeta, ubar, vbar ) !iif=1
+!      endif
 ! !
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrV-2,Jend+1
        do i=IstrU-2,Iend+1
 # ifdef NBQ_MASS

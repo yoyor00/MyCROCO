@@ -9,6 +9,7 @@
 ! ! Store HZ before correction
 ! !--------------------------------
 ! !
+!$acc kernels if(compute_on_device) default(present)
        do k=-N_sl+1,N
         do j=JstrV-2,Jend+1
          do i=IstrU-2,Iend+1
@@ -16,7 +17,8 @@
           enddo
         enddo
        enddo
-!$acc update device( Hz_correct )      
+!$acc end kernels       
+
 ! !
 ! !--------------------------------
 ! ! Exchanges (1)
@@ -33,6 +35,7 @@
 ! ! Adjust depth average
 ! !--------------------------------
 ! ! 
+!$acc kernels if(compute_on_device) default(present)
         do j=Jstr,Jend
           do i=Istr,Iend
             dum_s=0.
@@ -57,6 +60,7 @@
             enddo
           enddo
         enddo
+!$acc end kernels       
 ! !
 ! !--------------------------------
 ! ! Exchanges (2)
@@ -71,7 +75,7 @@
      &                          Hz(START_2D_ARRAY,-N_sl+1))
 #   endif
 #  endif
-!$acc update device( Hz )      
+
 ! !
       endif ! iif.eq.nfast
 ! !

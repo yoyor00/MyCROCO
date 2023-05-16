@@ -177,7 +177,6 @@
 # endif
 
 !$acc kernels if(compute_on_device) default(present)
-
 # ifdef BODYFORCE
 !====================================================================
 !
@@ -1279,7 +1278,6 @@
       enddo    ! <-- k
 
 !$acc end kernels
-
 
 #define DC3D UFx_3D
 #define CF3D UFe_3D

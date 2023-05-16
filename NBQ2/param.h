@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -145,7 +145,7 @@
 # endif
 #elif defined TANK
 # ifndef TANKY
-      parameter (LLm0=50,   MMm0=1,    N=50)   ! 20 cm resolution
+      parameter (LLm0=80,   MMm0=80,    N=80)   ! 20 cm resolution
 # else
       parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
 # endif
@@ -199,6 +199,15 @@
 #else
       parameter (LLm=LLm0,  MMm=MMm0)
 #endif
+      
+!
+!----------------------------------------------------------------------
+! Number of layers in Sediment (SL)
+!----------------------------------------------------------------------
+!
+      integer N_sl
+      parameter (N_sl=40)
+      !parameter (N_sl=0)
 
 !
 !----------------------------------------------------------------------
@@ -221,7 +230,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
-      parameter (NP_XI=1,  NP_ETA=16,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=1,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #ifdef OPENACC
@@ -320,7 +329,7 @@
 ! Derived dimension parameters
 !----------------------------------------------------------------------
 !
-      integer stdout, Np, padd_X,padd_E
+      integer stdout, Np, NpHz, padd_X,padd_E
 #ifdef AGRIF
       common/scrum_deriv_param/padd_X,padd_E
 #endif
@@ -330,6 +339,7 @@
       parameter (stdout=6)
 #endif
       parameter (Np=N+1)
+      parameter (NpHz=(N+1+N_sl))
 #ifndef AGRIF
 # ifdef MPI
       parameter (Lm=(LLm+NP_XI-1)/NP_XI, Mm=(MMm+NP_ETA-1)/NP_ETA)
@@ -341,15 +351,15 @@
 #endif
 
 #if defined AGRIF || defined AUTOTILING
-      integer NSA, N2d,N3d,N1dXI,N1dETA
+      integer NSA, N2d,N3d,N3dHz,N1dXI,N1dETA
 #if !defined NBQ
       parameter (NSA=28)
 #else
       parameter (NSA=35)
 #endif
-      common /scrum_private_param/ N2d,N3d,N1dXI,N1dETA
+      common /scrum_private_param/ N2d,N3d,N3dHz,N1dXI,N1dETA
 #else
-      integer NSA, N2d,N3d, size_XI,size_ETA
+      integer NSA, N2d,N3d,N3dHz, size_XI,size_ETA
       integer se,sse, sz,ssz
 #if !defined NBQ
       parameter (NSA=28)
@@ -366,6 +376,7 @@
       parameter (se=sse/(sse+ssz), sz=1-se)
       parameter (N2d=size_XI*(se*size_ETA+sz*Np))
       parameter (N3d=size_XI*size_ETA*Np)
+      parameter (N3dHz=size_XI*size_ETA*NpHz)
 #endif
 
 !
@@ -984,13 +995,6 @@
 # else
       parameter (ntrc_surf=0)
 # endif
-!
-!----------------------------------------------------------------------
-! Number of layers in Sediment (SL)
-!----------------------------------------------------------------------
-!
-      integer N_sl
-      parameter (N_sl=0)
 #endif /*SOLVE3D */
 
 !

@@ -3,7 +3,7 @@
 ! ! m3fast_divv.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
-!$acc kernels default( present )    
+!$acc kernels if(compute_on_device) default(present)    
 ! ! 
       do j=Jstr,Jend  !<-- j loop
 ! ! *******************************

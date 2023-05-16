@@ -91,16 +91,17 @@
 !----------------------------------------------------------------------
 !	
       if (FIRST_FAST_STEP) then
-! ! Cyril ifdef NBQ_HZCORRECT est-elle la bonne cle pour copie
-! ! ou non de Hzr ????
-! !  GRAVADJ,TANK,KHINST => pas besoin, ISOLITION il la faut
-!$acc update device(z_r, z_w
-# ifndef NBQ_HZCORRECT
-!$acc&  ,Hzr
-# endif
-!$acc&  )
+c ! ! Cyril ifdef NBQ_HZCORRECT est-elle la bonne cle pour copie
+c ! ! ou non de Hzr ????
+c ! !  GRAVADJ,TANK,KHINST => pas besoin, ISOLITION il la faut
+c !$acc update device(z_r, z_w
+c # ifndef NBQ_HZCORRECT
+c !$acc&  ,Hzr
+c # endif
+c !$acc&  )
       endif
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
+
       do k=-N_sl+1,N-1
         do j=jmin,jmax
           do i=imin,imax

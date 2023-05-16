@@ -7,7 +7,7 @@
 #if (!defined MP_3PTS) && (!defined MP_1PTS)
       subroutine MessPass2D_tile (Istr,Iend,Jstr,Jend, A)
 #elif defined MP_1PTS
-       subroutine MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend, A)
+      subroutine MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend, A)
 # else
       subroutine MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend, A)
 # endif
@@ -26,42 +26,24 @@
 # include "scalars.h"
 # include "mpi_cpl.h"
       include 'mpif.h'
-!
-! Nb of boundary points involved in communication
-!
-      integer Npts,ipts,jpts
+      integer Npts
 #if (!defined MP_3PTS) && (!defined MP_1PTS)
       parameter (Npts=2)
 #elif defined MP_1PTS
-       parameter (Npts=1)
+      parameter (Npts=1)
 #else
       parameter (Npts=3)
 #endif
       logical, parameter :: use_host_device = .TRUE.
-c #include "mpi_buffers.h"
+#include "mpi_buffers.h"
+!
+! Nb of boundary points involved in communication
+!
+      integer ipts,jpts
       real A(GLOBAL_2D_ARRAY)
 CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j, isize,jsize,ksize,  iter,
      &        req(8), status(MPI_STATUS_SIZE,8), ierr, mdii,mdjj
-      real buf_snd4(Npts*Npts),     buf_snd2(Npts*Npts),
-     &     buf_rev4(Npts*Npts),     buf_rev2(Npts*Npts),
-     &     buf_snd1(Npts*Npts),     buf_snd3(Npts*Npts),
-     &     buf_rev1(Npts*Npts),     buf_rev3(Npts*Npts)
-      integer sub_X,size_X, sub_E,size_E
-# ifndef AGRIF
-      parameter (sub_X=Lm,  size_X=Npts*(sub_X+2*Npts)-1,
-     &           sub_E=Mm,  size_E=Npts*(sub_E+2*Npts)-1)
-      real ibuf_sndN(0:size_X), ibuf_revN(0:size_X),
-     &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
-     &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
-     &     jbuf_revW(0:size_E), jbuf_revE(0:size_E)
-# else
-      real, dimension(:), allocatable ::
-     &     ibuf_sndN, ibuf_revN,
-     &     ibuf_sndS, ibuf_revS,
-     &     jbuf_sndW, jbuf_sndE,
-     &     jbuf_revW, jbuf_revE
-# endif
      
 #ifdef  BAND_DEBUG         
       real,dimension(Npts)        :: checksum
@@ -74,10 +56,13 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
          size_X=Npts*(sub_X+2*Npts)-1  !7+Npts*sub_X
          sub_E=Mm
          size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
+!         if (.not. allocated(ibuf_sndN)) then
          Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
      &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
      &     jbuf_revW(0:size_E), jbuf_revE(0:size_E))
+
+!         endif
 # endif
 !
       ksize=Npts*Npts

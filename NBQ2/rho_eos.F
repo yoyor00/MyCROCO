@@ -331,9 +331,6 @@
 #  endif
 #  include "coupling.h"
 #  include "scalars.h"
-# ifdef OPENACC
-#  include "openacc.h"
-# endif
 #  include "mixing.h"
 !
 #  include "compute_extended_bounds.h"
@@ -378,7 +375,8 @@
         enddo
       enddo
       endif
-#  endif     
+#  endif   
+!$acc end kernels      
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #   ifdef THREE_GHOST_POINTS_TS
       call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -388,6 +386,7 @@
      &                        rho1(START_2D_ARRAY,1))
 #   endif
 #  endif
+!$acc kernels if(compute_on_device) default(present)      
       do j=JstrR,JendR
 #  ifdef NBQ_GRAV
         do i=IstrR,IendR
@@ -551,13 +550,6 @@ c      &                        rho_nh(START_2D_ARRAY,1))
 c #   endif
 c #  endif
 
-#if defined OPENACC
-!$acc update device(rho
-#ifdef VAR_RHO_2D
-!$acc& ,rhoA,rhoS
-#endif
-!$acc& ) async(sync_rho_rufrc_z_w)
-#endif
 !$acc end kernels
       return
       end

@@ -70,6 +70,7 @@
       REAL  ::  DC   (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL  ::  rw   (PRIVATE_2D_SCRATCH_ARRAY,0:N  )       
       REAL  ::  grad (PRIVATE_2D_SCRATCH_ARRAY      )
+!$acc declare create( grad )      
       REAL  ::  dpth,cff,cff1,cff2
       REAL  ::  my_cadv_max   
       INTEGER :: jzi,jzj,jzk 

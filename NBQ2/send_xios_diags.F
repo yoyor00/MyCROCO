@@ -2318,6 +2318,7 @@ C 				  endif
       real eps
       parameter (eps=1.D-20)
       real stf_cff
+      real zz(GLOBAL_2D_ARRAY,0:N)
       parameter(stf_cff=86400/0.01)
 !
 #if defined MUSTANG
@@ -2358,6 +2359,9 @@ C 				  endif
 #   define JV_RANGE Jstr,JendR
 #  endif
 
+#ifdef OPENACC
+# include "copy_to_host_xios_diag.h"
+#endif
 
        ilc=1+iic-ntstart   ! number of time step since restart
        ! To be conform with clasic (no xios) croco file first 
@@ -2381,15 +2385,19 @@ C 				  endif
 !
       if (xios_field_is_active("Cs_r")) then
       call xios_send_field("Cs_r",Cs_r(1:N))
+      call xios_send_field("Cs_r_total",Cs_r(-N_sl+1:N))
       endif
       if (xios_field_is_active("Cs_w")) then
       call xios_send_field("Cs_w",Cs_w(0:N))
+      call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
       endif
       if (xios_field_is_active("sc_r")) then
       call xios_send_field("sc_r",sc_r(1:N))
+      call xios_send_field("sc_r_total",sc_r(-N_sl+1:N))
       endif
       if (xios_field_is_active("sc_w")) then
       call xios_send_field("sc_w",sc_w(0:N))
+      call xios_send_field("sc_w_total",sc_w(-N_sl:N))
       endif
       if (xios_field_is_active("hc")) then
       call xios_send_field("hc",hc)
@@ -2406,6 +2414,7 @@ C 				  endif
       if (xios_field_is_active("Vtransform")) then
       call xios_send_field("Vtransform",REAL(Vtransform))
       endif
+c !$acc wait
 
       if (xios_field_is_active("levels_rho")) then
       call xios_send_field("levels_rho",z_r(:,:,:))
@@ -2506,6 +2515,7 @@ C 				  endif
       endif
 # endif
       if (xios_field_is_active("zeta")) then
+!$acc update host ( zeta )      
       call xios_send_field("zeta",zeta(:,:,fast_indx_out))
       endif
       if (xios_field_is_active("ubar")) then
@@ -2605,6 +2615,7 @@ C 				  endif
       if (xios_field_is_active("epr")) then
       call xios_send_field("epr",rdsp)
       endif
+
 #  endif
 # endif
 
@@ -2735,16 +2746,16 @@ C 				  endif
       if (xios_field_is_active("w_nbq")) then
       !call xios_send_field("w_nbq",wz(:,:,:,nstp))
       
-        work=0.
-          do k=1,N-1
+        worknbq=0.
+          do k=-N_sl+1,N-1
           do j=0,Mm
             do i=0,Lm
-            work(i,j,k)=2.*qdmw_nbq(i,j,k)
+            worknbq(i,j,k+N_sl)=2.*qdmw_nbq(i,j,k)
      &                /(Hz(i,j,k)+Hz(i,j,k+1))
             enddo
           enddo
           enddo
-          k=0
+          k=-N_sl
           do j=0,Mm
             do i=0,Lm
 #   ifndef M3FAST_SEDLAYERS
@@ -2757,15 +2768,24 @@ C 				  endif
           enddo
           k=N
           do j=0,Mm
-            do i=0,Lm
+            do i=0,Lm 
             work(i,j,k)=2.*qdmw_nbq(i,j,k)/Hz(i,j,k)
             enddo
           enddo
      
-      call xios_send_field("w_nbq",work)
+      call xios_send_field(" w_nbq",worknbq)
       endif
       if (xios_field_is_active("rho_nbq")) then
+!$acc update host ( rho_nbq
+# ifdef M3FAST_DIAGACOUS              
+!$acc&  , p_nbq,p_nbq_max 
+# endif              
+!$acc&                  )  
       call xios_send_field("rho_nbq",rho_nbq)
+# ifdef M3FAST_DIAGACOUS              
+      call xios_send_field("p_nbq",p_nbq)
+      call xios_send_field("p_nbq_max",p_nbq_max)
+# endif       
       endif
 #  endif
 

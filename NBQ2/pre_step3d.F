@@ -31,7 +31,10 @@
      &                                            A2d(1,4,trd), 
 # endif           
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
-     &                                          , A3d(1,4,trd)         
+#ifdef OPENACC
+     &   ,A3d(1,4,trd),A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd)
+#endif
+     &                                          , A3d(1,8,trd)         
      &                                                        )
       return
       end
@@ -39,9 +42,12 @@
       subroutine pre_step3d_tile (Istr,Iend,Jstr,Jend, ru,rv,rw,
      &                                                 FC,CF,DC, 
 # ifdef VADV_ADAPT_IMP     
-     &                                                       WC, !CAUTION!!!!
+     &                                                       WC, 
 # endif     
      &                                               FX,FE,WORK
+#ifdef OPENACC
+     &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
+#endif
      &                                                 ,Hz_half
      &                                                         )  
 !
@@ -78,6 +84,12 @@
      &       FX(PRIVATE_2D_SCRATCH_ARRAY),      epsil,
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
      &       WORK(PRIVATE_2D_SCRATCH_ARRAY)
+#ifdef OPENACC
+      real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     WORK_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#endif
 # if !defined M3FAST_COUPLING1 || !defined M3FAST_COUPLING1W
       real   cff6,cff7
 # endif
@@ -89,6 +101,7 @@
 # if defined M3FAST_COUPLING2D && defined M3FAST_C3D_UVSF
       real   ru_int_nbq_2d(PRIVATE_2D_SCRATCH_ARRAY),
      &       rv_int_nbq_2d(PRIVATE_2D_SCRATCH_ARRAY)
+!$acc declare create( ru_int_nbq_2d, rv_int_nbq_2d )     
 # endif
 # ifdef M3FAST_DISSCOUPLING
       real alpha_uv,alpha_w
@@ -108,10 +121,8 @@
 # include "forces.h"
 # include "mixing.h"
 # include "scalars.h"
-#ifdef OPENACC
-# include "openacc.h"
-#endif
-# ifdef PSOURCE
+# include "weno_interfaces.h"
+# if defined PSOURCE || defined PSOURCE_MASS
 #  include "sources.h"
 # endif
 # if defined M3FAST /* M3FAST_C3D_UVSF || defined M3FAST_C3D_WSF */
@@ -142,8 +153,8 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-# if defined TS_HADV_UP5 ||  defined TS_HADV_C6 \
-      || defined TS_HADV_WENO5 ||  defined BIO_HADV_WENO5 \
+# if defined TS_HADV_UP5 || defined TS_HADV_C6 \
+      || defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 \
       || defined TS_VADV_WENO5
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
@@ -154,31 +165,26 @@
 
       flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
 
-      flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff) -
-     &      0.5*cdiff*sign(1.,ua)*(q_i-q_im1)
+      flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff)
+     &                          - 0.5*cdiff*sign(1.,ua)*(q_i - q_im1)
 
       flux4(q_im2, q_im1, q_i, q_ip1, ua) = 
-     &      ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
+     &                     ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.
 
       flux3(q_im2, q_im1, q_i, q_ip1, ua) =
-     &      flux4(q_im2, q_im1, q_i, q_ip1, ua) +
-     &      sign(1.,ua)*((q_ip1 -
-     &      q_im2)-3.*(q_i-q_im1))/12.0
+     &                            flux4(q_im2, q_im1, q_i, q_ip1, ua)
+     &           + sign(1.,ua)*((q_ip1 - q_im2)-3.*(q_i - q_im1))/12.
 
       flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
-     &      ( 37.*(q_i+q_im1) - 8.*(q_ip1+q_im2)
-     &      +(q_ip2+q_im3) )/60.0
+     &                       ( 37.*(q_i + q_im1) - 8.*(q_ip1 + q_im2)
+     &                                        + (q_ip2 + q_im3) )/60.
 
       flux5(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
-     &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
-     &      -sign(1.,ua)*( 
-     &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
-     
-# endif
-#  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
-        REAL    :: flux3_weno, flux5_weno
-# endif
+     &              flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+     &             - sign(1.,ua)*( (q_ip2 - q_im3)-5.*(q_ip1 - q_im2)
+     &                                      + 10.*(q_i - q_im1) )/60.
 
+# endif
 !
 !--------------------------------------------------------------------
 !
@@ -209,8 +215,7 @@
 # endif
       indx=3-nstp
       nadv=  nstp   !<-- do not remove: used in compute_tracer_fluxes.h
-      
-      
+
       if (FIRST_TIME_STEP) then
         cff=0.5*dt
         cff1=1.
@@ -300,11 +305,19 @@
 !
 !======================================================================
 !
-      do itrc=1,NT
-        do k=1,N
+!
 
+# ifdef TRACERS
+      do itrc=1,NT
+#if !defined OPENACC
+      do k=1,N
+#endif
 # ifdef BIO_HADV_WENO5
+#  if defined TEMPERATURE && defined SALINITY
           if (itrc .le. 2) then
+#  elif defined TEMPERATURE || defined SALINITY
+          if (itrc .le. 1) then
+#  endif
 # endif
 !
 !----------------------------------------------------------
@@ -312,22 +325,26 @@
 !----------------------------------------------------------
 !
 #  define PREDICTOR
+#if !defined OPENACC
 #  include "compute_horiz_tracer_fluxes.h"
+#else
+#  include "compute_horiz_tracer_fluxes_3D.h"
+#endif
 #  undef PREDICTOR
 
 !
 !----------------------------------------------------------
-! C6 advection for passive tracers (biology ...)
+! WENO5 advection for passive tracers (biology ...)
 !----------------------------------------------------------
 !
 # ifdef BIO_HADV_WENO5
           else  ! if (itrc .gt. 2)
-#  define FLUX5 flux6
-#  define FLUX3 flux4
-#  define FLUX2 flux2
-#  undef  UP5_MASKING
+#  define FLUX5 flux5_weno
+#  define FLUX3 flux3_weno
+#  define FLUX2 flux1
+#  define UP5_MASKING
 !
-            cdif=0.
+            cdif=1.
 #  include "t3dadv_order5.h"
 !
 #  undef FLUX5
@@ -342,7 +359,12 @@
 !----------------------------------------------------------
 !
 # ifdef PSOURCE
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(2)
           do is=1,Nsrc
+#  if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#  endif
 #  ifdef MPI
            i=Isrc_mpi(is,mynode)
            j=Jsrc_mpi(is,mynode)
@@ -364,7 +386,7 @@
                   endif
 #  endif
                 endif
-              else
+              elseif(Dsrc(is).eq.1) then
                 if (Lsrc(is,itrc)) then
                   FE(i,j)=Hvom(i,j,k)*Tsrc(is,k,itrc)
 #  ifdef MASKING
@@ -378,6 +400,9 @@
                 endif
               endif
             endif
+#   if defined OPENACC
+            ENDDOEXTEND
+#   endif
           enddo
 # endif /* PSOURCE */
 !
@@ -387,30 +412,81 @@
 !
           if (FIRST_TIME_STEP) then
             cff=0.5*dt
+!$acc parallel loop if(compute_on_device) default(present)
+#if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#endif
             do j=Jstr,Jend
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nstp,itrc)
-     &                      -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                            +FE(i,j+1)-FE(i,j))
+     &                 -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
+     &                                      +FE(i,j+1)-FE(i,j))
               enddo
             enddo
+#if defined OPENACC
+            ENDDOEXTEND
+#endif
           else
             cff=(1.-gamma)*dt
             cff1=0.5+gamma
             cff2=0.5-gamma
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3)
+#if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#endif
             do j=Jstr,Jend
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=cff1*Hz(i,j,k)*t(i,j,k,nstp,itrc)
      &                            +cff2*Hz_bak(i,j,k)*t(i,j,k,indx,itrc)
-     &                         -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                               +FE(i,j+1)-FE(i,j))
+     &                -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
+     &                                     +FE(i,j+1)-FE(i,j))
               enddo
             enddo
+#if defined OPENACC
+            ENDDOEXTEND
+#endif
           endif
-
+#if !defined OPENACC
         enddo   ! <-- k
+#endif
       enddo       ! <-- itrc
+# endif /* TRACERS */
 
+!RBACC
+! part below (PSOURCE_MASS° not done for GPU)
+!
+!----------------------------------------------------------
+! Add tracer divergence due to cell-centered point sources
+!----------------------------------------------------------
+!
+#if defined TRACERS && defined PSOURCE_MASS
+        do itrc=1,NT
+          do is=1,Nsrc
+#   ifdef MPI
+           i=Isrc_mpi(is,mynode)
+           j=Jsrc_mpi(is,mynode)
+#   else
+           i=Isrc(is)
+           j=Jsrc(is)
+#   endif
+           if (Istr.le.i .and. i.le.Iend+1
+     &        .and. Jstr.le.j .and. j.le.Jend+1) then
+             cff1=dt*pm(i,j)*pn(i,j)
+             do k=1,N
+               if (Lsrc(is,itrc)) then
+                 cff2=Tsrc(is,k,itrc)
+               else
+                 cff2=t(i,j,k,nstp,itrc)
+               endif
+               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+
+     &          cff1*Qsrc(is,k)*cff2
+             enddo
+           endif
+          enddo ! source
+        enddo ! itrc
+# endif /* TRACERS && PSOURCE_MASS */
+!$acc kernels if(compute_on_device) default(present)
 !
 ! Continue computation of the auxiliary tracer field: auxiliary
 ! continuity equation (the same for all tracers): DC=1/Hz_half_new,
@@ -447,9 +523,11 @@
            rv_int_nbq_2d(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 # endif
 
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstR,JendR
           do i=IstrR,IendR
@@ -462,6 +540,7 @@
           enddo
         enddo
       enddo
+!$acc end kernels
 
 !#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !#   ifdef THREE_GHOST_POINTS_UV
@@ -517,22 +596,14 @@
                       ! special care for startup)
 # endif
  
-!# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-!#  ifdef THREE_GHOST_POINTS_TS
-!      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
-!     &            rw(START_2D_ARRAY,0))   
-!#  else
-!      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-!     &            rw(START_2D_ARRAY,0))   
-!#  endif
-!# endif
 !!
 !-----------------------------------------------------------------------
 ! Main j-loop 
 !-----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop private( DC, FC, CF)
       do j=Jstr,Jend
-
         do i=Istr,Iend
 # ifndef VADV_ADAPT_IMP 
            do k=1,N
@@ -889,6 +960,7 @@ c # endif
 !=====================================================================       =
 !
       enddo     !<-- j
+!$acc end kernels
 !        if (.NOT. (FIRST_TIME_STEP) ) then
 !# if defined M3FAST
 !#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI 
@@ -911,6 +983,7 @@ c # endif
 !<-- rw_nbq_avg1   contains NBQ pressure gradient (+ gravity) 
 !                                        + second viscosity 
 !----------------------------------------------------------
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
        do i=Istr,Iend
         DC(i,0)=pm(i,j)*pn(i,j)
@@ -1100,6 +1173,7 @@ c # endif
       endif
   
       enddo  
+!$acc end kernels
 !==  
 # endif /* M3FAST_C3D_WSF */   
   
@@ -1115,6 +1189,7 @@ c # endif
 !
 
 # if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=Jstr,Jend
           do i=IstrR,IendR
@@ -1127,9 +1202,11 @@ c # endif
           enddo
         enddo
       enddo
+!$acc end kernels
 # endif
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
       cff = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1142,6 +1219,7 @@ c # endif
           enddo
         enddo
       enddo
+!$acc end kernels
 # endif
 !
 !--------------------------------------------------------------------
@@ -1251,19 +1329,23 @@ c # endif
 !
 # ifndef M2FILTER_NONE 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc kernels if(compute_on_device) default(present)
       do j=JU_RANGE
         do i=IV_RANGE
           zeta(i,j,knew)=Zt_avg1(i,j)
         enddo
       enddo
+!$acc end kernels
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          zeta(START_2D_ARRAY,knew))
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           zeta(i,j,knew)=Zt_avg1(i,j)
         enddo
       enddo     
+!$acc end kernels
 #  endif
 # endif
 !

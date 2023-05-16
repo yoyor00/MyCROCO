@@ -77,6 +77,9 @@ C$    integer omp_get_thread_num
 # ifdef RIP
       real h0,per,xx,yy,xs,db,alpha,lambda,eps
 # endif
+# ifdef TANK
+      real rloc,thetaloc
+# endif
 # ifdef SANDBAR
       real p1,p2,p3,p4,p5,p6,p7,xx
 # endif

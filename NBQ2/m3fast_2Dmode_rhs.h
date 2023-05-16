@@ -48,7 +48,7 @@
 # define rzeta   UFe
 # define rzeta2  VFe
 # define rzetaSA VFx
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
 # ifndef M3FAST_AM4
@@ -72,7 +72,9 @@
       enddo
 !$acc end kernels
 
-!$acc kernels default(present)
+
+!$acc kernels if(compute_on_device) default(present)
+
 !
 ! Compute surface pressure gradient
 !
@@ -122,7 +124,8 @@ C$OMP MASTER
        call check_tab2d(rhoS,'rhoS st_fast_b','r')
        call check_tab2d(rhoA,'rhoA st_fast_b','r')
 #endif
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
+
 # ifdef UV_ADV
 ! !********************************
 ! ! Compute horizontal advection 

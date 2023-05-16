@@ -9,7 +9,8 @@
 ! ! Gaussian Elimination
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
+
 ! !
 ! !********************************
 ! !..........Bottom BC

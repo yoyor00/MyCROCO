@@ -12,7 +12,7 @@ C$OMP MASTER
       call check_tab2d(yr,'yr (a)','r')
 C$OMP END MASTER
 #    endif   
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
         if (JstrV.le.Jend) then
           jvar1=JstrV-2
           jvar2=Jend+1

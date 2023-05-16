@@ -35,7 +35,7 @@
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1= 1.5+cff3                 ! maximum stability (with
         endif                            ! special care for startup)
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 # if defined M3FAST_COUPLING2D  || defined NHINT
         do j=Jstr,Jend
          do i=IstrU,Iend
@@ -90,6 +90,7 @@
          enddo
         enddo
 # endif        
+!$acc end kernels
 #ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
@@ -113,7 +114,7 @@ C$OMP MASTER
 #  define rzeta  UFe
 #  define rzeta2  VFe
 #  define rzetaSA VFx
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             zwrk(i,j)=zeta(i,j,knew)-zeta(i,j,kstp)
@@ -176,7 +177,7 @@ C$OMP MASTER
 ! !
 # ifdef M3FAST_C3D_UVSF
        if (FIRST_FAST_STEP) then
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru_ext_nbq_sum(i,j)=0.
@@ -237,7 +238,7 @@ C$OMP MASTER
 C$OMP END MASTER     
 #  endif  
   
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 #ifdef M3FAST_C3D_UVSF
       do j=Jstr,Jend
         do i=IstrU,Iend

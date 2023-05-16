@@ -8,7 +8,7 @@
 ! !  Update zeta(m+1)
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
             Dnew(i,j)=(zeta(i,j,knew)+h(i,j))
@@ -57,7 +57,7 @@
           enddo
         enddo
 !$acc end kernels
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
 ! !
 ! !********************************
 ! !  Set masking for zeta, 
@@ -96,7 +96,7 @@
 ! !********************************
 ! !
       if (LAST_FAST_STEP) then
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             Zt_avg1(i,j)=zeta(i,j,knew)
@@ -202,14 +202,9 @@
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,knew))    
       else
-#  ifdef OPENACC      
-      call exchange_r2d_tile_device (Istr,Iend,Jstr,Jend,
-     &                        zeta(START_2D_ARRAY,knew))
-#  else
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,knew))
       endif
-#  endif
 # endif
 ! !
 ! !********************************

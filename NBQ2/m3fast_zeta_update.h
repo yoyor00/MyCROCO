@@ -9,7 +9,7 @@
 ! ! Computes surface velocities
 ! !********************************
 ! ! 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 #   ifndef M3FAST_SPDUP
       if (IstrU.le.Iend) then
         do j=Jstr,Jend
@@ -126,7 +126,7 @@
 ! !  kinematic condition
 ! !********************************
 ! ! 
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
 #   ifndef M3FAST_SPDUP
 #    define zab3 UFx
       if (FIRST_FAST_STEP) then
@@ -208,7 +208,7 @@
         endif
       enddo
 #  endif
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           zeta(i,j,knew)=(zeta(i,j,kstp)

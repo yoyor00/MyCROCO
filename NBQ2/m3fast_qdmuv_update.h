@@ -27,7 +27,8 @@
 #endif 
 ! !
 # ifdef M3FAST_UV
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
+
        do k=-N_sl,N    ! Loop is on w-levels
 #  ifdef M3FAST_RHO
 ! !
@@ -110,7 +111,8 @@
 #  endif /* M3FAST_RHO */
       enddo   !<-- k=0,   
 !$acc end kernels
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
+
 ! !
       do k=-N_sl+1,N    ! Loop is on w-levels
 ! !
@@ -580,15 +582,18 @@
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef M3FAST_SEDLAYER      
-      call check_tab3d_sedlay(qdmu_nbq,'qdmu_nbqint','uint',N_sl+1,N)
-      call check_tab3d_sedlay(qdmv_nbq,'qdmv_nbqint','vint',N_sl+1,N)
+      call check_tab3d_sedlay(qdmu_nbq,'qdmu_nbqint_a','uint',N_sl+1,N,
+     &  ondevice=.TRUE.)
+      call check_tab3d_sedlay(qdmv_nbq,'qdmv_nbqint_a','vint',N_sl+1,N,
+     &  ondevice=.TRUE.)
 # else      
-       call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
-       call check_tab3d(qdmv_nbq,'qdmv_nbqint','vint')
+       call check_tab3d(qdmu_nbq,'qdmu_nbqint_a','uint',
+     &  ondevice=.TRUE.)
+       call check_tab3d(qdmv_nbq,'qdmv_nbqint_a','vint',
+     &  ondevice=.TRUE.)
 # endif       
 c C$OMP END MASTER
 # endif
-!!$acc end kernels
 # ifdef M3FAST_UV
 ! !
 ! !********************************
@@ -630,11 +635,15 @@ c C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef M3FAST_SEDLAYER      
-      call check_tab3d_sedlay(qdmu_nbq,'qdmu_nbq','u',-N_sl+1,N)
-      call check_tab3d_sedlay(qdmv_nbq,'qdmv_nbq','v',-N_sl+1,N)
+      call check_tab3d_sedlay(qdmu_nbq,'qdmu_nbq','uint',-N_sl+1,N,
+     &  ondevice=.TRUE.)
+      call check_tab3d_sedlay(qdmv_nbq,'qdmv_nbq','vint',-N_sl+1,N,
+     &  ondevice=.TRUE.)
 # else      
-      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
-      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
+      call check_tab3d(qdmu_nbq,'qdmu_nbq','uint',
+     &  ondevice=.TRUE.)
+      call check_tab3d(qdmv_nbq,'qdmv_nbq','vint',
+     &  ondevice=.TRUE.)
 # endif
 C$OMP END MASTER
 # endif

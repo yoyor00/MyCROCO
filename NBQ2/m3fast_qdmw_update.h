@@ -10,7 +10,7 @@
 ! !********************************
 ! !
       if (LAST_FAST_STEP) then
-!$acc kernels default( present )     
+!$acc kernels if(compute_on_device) default(present)     
         do k=0,N 
           do j=Jstr,Jend             
             do i=Istr,Iend
@@ -37,7 +37,7 @@
 ! !********************************
 ! !
 #  ifdef NBQ_IMP
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=Istr,Iend
             FC3D(i,j,N+1)=0
@@ -81,7 +81,7 @@
       enddo 
 !$acc end kernels
 #  endif /* NBQ_IMP */
-!$acc kernels default( present )      
+!$acc kernels if(compute_on_device) default(present)      
 ! !
 ! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! ! j-loop starts here!

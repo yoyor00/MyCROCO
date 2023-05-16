@@ -16,7 +16,8 @@
 ! ! Initializations
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
+
       if (IstrU.gt.Iend) then
         do j=Jstr,Jend
           do i=Istr,Iend+1
@@ -47,7 +48,8 @@
 ! !      horizontal divergence at m+1
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
+
 #   ifdef NBQ_GRID_SLOW
       if (NSTEP_DS) then
 #   endif
@@ -275,7 +277,8 @@
 ! !      divergence at m+1
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
+
 #   ifdef NBQ_GRID_SLOW
       if (NSTEP_DS) then
 #   endif
@@ -494,7 +497,8 @@
 ! !      add d/dx and D/dy terms
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
+
 #  ifndef M3FAST_SEDLAYERS
         do k=1,N!<-- k loop
 #  else
@@ -558,7 +562,8 @@
 ! !  thetadiv_nbq: reduced time-corrective term  (no dh/dt)
 ! !********************************
 ! !
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
+
 #  ifndef HCOMP 
 #   ifdef NBQ_GRID_SLOW
        if (FIRST_FAST_STEP_3M) then

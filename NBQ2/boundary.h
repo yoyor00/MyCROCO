@@ -132,6 +132,7 @@
      &    vbarbry_west_dt(GLOBAL_1D_ARRAYETA,2)
       common /bry_ubar_west/ ubarbry_west, ubarbry_west_dt,
      &                       vbarbry_west, vbarbry_west_dt
+!$acc declare create( ubarbry_west,  vbarbry_west )    
 # endif
 # ifdef SOLVE3D
 #  ifdef M3_FRC_BRY
@@ -163,6 +164,7 @@
      &    vbarbry_east_dt(GLOBAL_1D_ARRAYETA,2)
       common /bry_ubar_east/ ubarbry_east, ubarbry_east_dt,
      &                       vbarbry_east, vbarbry_east_dt
+!$acc declare create( ubarbry_east,  vbarbry_east )    
 # endif
 # ifdef SOLVE3D 
 #  ifdef M3_FRC_BRY
@@ -194,6 +196,7 @@
      &    vbarbry_south_dt(GLOBAL_1D_ARRAYXI,2)
       common /bry_ubar_south/ ubarbry_south, ubarbry_south_dt,
      &                        vbarbry_south, vbarbry_south_dt
+!$acc declare create( ubarbry_south,  vbarbry_south )    
 # endif
 # ifdef SOLVE3D
 #  ifdef M3_FRC_BRY
@@ -339,11 +342,13 @@
      &     vnbqbry_west(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_west1/ unbqbry_west,
      &                       vnbqbry_west
+!$acc declare create( unbqbry_west, vnbqbry_west )     
 #  ifdef M3FAST
       real wnbqbry_west(GLOBAL_1D_ARRAYETA,0:N),
      &     rnbqbry_west(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_west2/ wnbqbry_west,
      &                       rnbqbry_west
+!$acc declare create( wnbqbry_west, rnbqbry_west )     
 #  endif
 # endif
 # if defined OBC_EAST || defined AGRIF_OBC_EAST
@@ -351,11 +356,13 @@
      &     vnbqbry_east(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_east1/ unbqbry_east,
      &                       vnbqbry_east
+!$acc declare create(unbqbry_east, vnbqbry_east )     
 #  ifdef M3FAST
       real wnbqbry_east(GLOBAL_1D_ARRAYETA,0:N),
      &     rnbqbry_east(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_east2/ wnbqbry_east,
      &                       rnbqbry_east
+!$acc declare create( wnbqbry_east, rnbqbry_east )     
 #  endif
 # endif
 # if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
@@ -363,11 +370,13 @@
      &     vnbqbry_south(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_south1/ unbqbry_south,
      &                        vnbqbry_south
+!$acc declare create( unbqbry_south, vnbqbry_south )     
 #  ifdef M3FAST
       real wnbqbry_south(GLOBAL_1D_ARRAYXI,0:N),
      &     rnbqbry_south(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_sout2h/ wnbqbry_south,
      &                        rnbqbry_south
+!$acc declare create( wnbqbry_south, rnbqbry_south )     
 #  endif
 # endif
 # if defined OBC_NORTH || defined AGRIF_OBC_NORTH
@@ -375,11 +384,13 @@
      &     vnbqbry_north(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_north1/ unbqbry_north,
      &                        vnbqbry_north
+!$acc declare create( unbqbry_north, vnbqbry_north )     
 #  ifdef M3FAST
       real wnbqbry_north(GLOBAL_1D_ARRAYXI,0:N),
      &     rnbqbry_north(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_north2/ wnbqbry_north,
      &                        rnbqbry_north
+!$acc declare create( wnbqbry_north, rnbqbry_north )     
 #  endif
 # endif
 #endif /* M3FAST */
@@ -388,18 +399,22 @@
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
       real wbry_west(GLOBAL_1D_ARRAYETA,0:N)
       common /bry_w_west/ wbry_west
+!$acc declare create( wbry_west )      
 # endif
 # if defined OBC_EAST || defined AGRIF_OBC_EAST
       real wbry_east(GLOBAL_1D_ARRAYETA,0:N)
       common /bry_w_east/ wbry_east
+!$acc declare create( wbry_east )      
 # endif
 # if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
       real wbry_south(GLOBAL_1D_ARRAYXI,0:N)
       common /bry_w_south/ wbry_south
+!$acc declare create( wbry_south)       
 # endif
 # if defined OBC_NORTH || defined AGRIF_OBC_NORTH
       real wbry_north(GLOBAL_1D_ARRAYXI,0:N)
       common /bry_w_west/ wbry_north
+!$acc declare create( wbry_north )      
 # endif
 #endif /* M3FAST */
 

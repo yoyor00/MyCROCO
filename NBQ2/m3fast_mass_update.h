@@ -10,7 +10,7 @@
 ! !********************************
 ! !
 # ifdef M3FAST_RHO
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
       do k=-N_sl+1,N
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
@@ -126,6 +126,7 @@
 ! ! Diag. Acoustic: pressure field
 ! !********************************
 ! !
+!$acc kernels if(compute_on_device) default(present)
         do j=Jstr,Jend
           do i=Istr,Iend
             do k=-N_sl+1,N
@@ -135,6 +136,7 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #  endif /* M3FAST_DIAGACOUS */
 # endif  /* M3FAST_RHO */
 ! !

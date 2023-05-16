@@ -10,7 +10,8 @@
 ! !
 # ifdef M3FAST_C3D_UVFS
       if (FIRST_FAST_STEP) then
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
+
         do k=1,N
           do j=Jstr,Jend
             do i=IstrU,Iend
@@ -30,8 +31,9 @@
 # endif      
 # ifdef M3FAST_C3D_WFS
       if (FIRST_FAST_STEP) then
-!$acc update device( qdmw_nbq )   !! iif=1  
-!$acc kernels default(present)
+
+!$acc kernels if(compute_on_device) default(present)
+
           do k=0,N
            do j=Jstr,Jend
             do i=Istr,Iend
@@ -52,8 +54,8 @@
 ! !
 # ifdef M3SLOW_W
       if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
-!$acc update device( z_w )   !! iif=1 ic=1
-!$acc kernels default(present)
+
+!$acc kernels if(compute_on_device) default(present)
         do k=-N_sl,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -70,7 +72,7 @@
 ! !********************************
 ! !    
 # ifdef M3SLOW_W
-!$acc kernels default( present )
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=Istr,Iend
           work(i,j)=pm(i,j)*pn(i,j)
@@ -89,6 +91,7 @@
 ! ! BC for DU(V)_nbq treated here
 ! !********************************
 ! !
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=IstrU,Iend
           ubar(i,j,knew)=urhs(i,j)
@@ -99,7 +102,7 @@
           vbar(i,j,knew)=vrhs(i,j)
         enddo
       enddo
-
+!$acc end kernels
       M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
                            ! and boundaries for DU(V)_nbq
       call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
