@@ -180,11 +180,16 @@
       endif
 # endif
 
-! Check the presence of u_abl in croco_ini.nc file
+! Check the presence of u_abl in croco_ini.nc file in case of
+! EXACT_RESTART
+# ifdef EXACT_RESTART
       lstr=lenstr(ininame)
       ierr=nf_open(ininame(1:lstr), nf_nowrite, ncid)
       lvar=lenstr(vname(1,indxabl_u_abl))
       ierr=nf_inq_varid (ncid, vname(1,indxabl_u_abl)(1:lvar), varid)
+# else
+      ierr=nf_noerr+1
+# endif
       if (ierr .ne. nf_noerr) then
         do k=1,N_abl
           do j=jmin,jmax
