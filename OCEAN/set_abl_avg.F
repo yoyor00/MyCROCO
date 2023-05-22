@@ -102,13 +102,13 @@
      &                                 +tq_abl(i,j,k,nt_n,jp_qa) )
 !
               avm_abl_avg(i,j,k) = cff*( cff1*avm_abl_avg(i,j,k)
-     &                                 +avm_abl(i,j,k) )
+     &                                 +avm_abl(i,j,k,nt_n) )
               avt_abl_avg(i,j,k) = cff*( cff1*avt_abl_avg(i,j,k)
-     &                                 +avt_abl(i,j,k) )
+     &                                 +avt_abl(i,j,k,nt_n) )
               mxld_abl_avg(i,j,k) = cff*( cff1*mxld_abl_avg(i,j,k)
-     &                                 +mxld_abl(i,j,k) )
+     &                                 +mxld_abl(i,j,k,nt_n) )
               mxlm_abl_avg(i,j,k) = cff*( cff1*mxlm_abl_avg(i,j,k)
-     &                                 +mxlm_abl(i,j,k) )
+     &                                 +mxlm_abl(i,j,k,nt_n) )
               tke_abl_avg(i,j,k) = cff*( cff1*tke_abl_avg(i,j,k)
      &                                 +tke_abl(i,j,k,nt_n) )
 !
@@ -132,7 +132,7 @@
         do j=JstrR,JendR
           do i=IstrR,IendR
             ablh_avg(i,j) = cff*( cff1*ablh_avg(i,j)
-     &                               +ablh(i,j) )
+     &                               +ablh(i,j,nt_n) )
           enddo
         enddo
 !

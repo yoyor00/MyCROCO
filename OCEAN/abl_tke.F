@@ -85,8 +85,10 @@
         do k=2,N_abl-1
           do i=imin,imax
             cff      = 1.0 / Hzw_abl(k)**2
-            dU = cff* Avm_abl(i,j,k)*(u_abl(i,j,k+1,nt_n)-u_abl(i,j,k,nt_n) )**2
-            dV = cff* Avm_abl(i,j,k)*(v_abl(i,j,k+1,nt_n)-v_abl(i,j,k,nt_n) )**2
+            dU = cff* Avm_abl(i,j,k,nt_n)*(u_abl(i,j,k+1,nt_n)
+     &                                    -u_abl(i,j,k,nt_n) )**2
+            dV = cff* Avm_abl(i,j,k,nt_n)*(v_abl(i,j,k+1,nt_n)
+     &                                    -v_abl(i,j,k,nt_n) )**2
             sh2(i,k) = dU+dV   !<-- sh2 = Km ( ( du/dz )^2 + ( dv/dz )^2 )
           enddo
         enddo
@@ -104,22 +106,22 @@
         do k=2,N_abl-1
           do i=imin,imax
             shear    = sh2(i,k)                    ! zsh2 is already multiplied by Avm_abl at this point
-            sh2(i,k) = sh2(i,k) / Avm_abl(i,j,k)   ! reformulate zsh2 as a 'true' vertical shear for PBLH computation
-            buoy     = - avt_abl(i,j,k)*bn2(i,j,k)
+            sh2(i,k) = sh2(i,k) / Avm_abl(i,j,k,nt_n)   ! reformulate zsh2 as a 'true' vertical shear for PBLH computation
+            buoy     = - avt_abl(i,j,k,nt_n)*bn2(i,j,k)
             !
-            elem_a(i,k) = -0.5*dt*Sch* ( Avm_abl(i,j,k)
-     &                      +Avm_abl(i,j,k-1) ) / Hzr_abl(k  ) ! lower-diagonal
-            elem_c(i,k) = -0.5*dt*Sch* ( Avm_abl(i,j,k)
-     &                      +Avm_abl(i,j,k+1) ) / Hzr_abl(k+1) ! upper-diagonal
+            elem_a(i,k) = -0.5*dt*Sch* ( Avm_abl(i,j,k,nt_n)
+     &                      +Avm_abl(i,j,k-1,nt_n) ) / Hzr_abl(k  ) ! lower-diagonal
+            elem_c(i,k) = -0.5*dt*Sch* ( Avm_abl(i,j,k,nt_n)
+     &                      +Avm_abl(i,j,k+1,nt_n) ) / Hzr_abl(k+1) ! upper-diagonal
             !
             if( (buoy + shear) .gt. 0.) then    ! Patankar trick to avoid negative values of TKE
               elem_b(i,k) = Hzw_abl(k)-elem_a(i,k)-elem_c(i,k)+Hzw_abl(k)*dt
-     &             * Ceps * SQRT(tke_abl(i,j,k,nt_n)) / mxld_abl(i,j,k)     ! diagonal
+     &             * Ceps * SQRT(tke_abl(i,j,k,nt_n)) / mxld_abl(i,j,k,nt_n)     ! diagonal
               tke_abl(i,j,k,nt_a) = Hzw_abl(k)*(tke_abl(i,j,k,nt_n)
      &                                             +dt*(buoy+shear))             ! right-hand-side
             else
               elem_b(i,k) = Hzw_abl(k)-elem_a(i,k)-elem_c(i,k )+Hzw_abl(k)*dt
-     &             * Ceps * SQRT(tke_abl(i,j,k,nt_n)) / mxld_abl(i,j,k)     ! diagonal
+     &             * Ceps * SQRT(tke_abl(i,j,k,nt_n)) / mxld_abl(i,j,k,nt_n)     ! diagonal
      &                     - Hzw_abl(k) * dt * buoy
               tke_abl(i,j,k,nt_a)  = Hzw_abl(k)*(tke_abl(i,j,k,nt_n)
      &                                                    +dt*shear)             ! right-hand-side
@@ -184,9 +186,9 @@
         do k=2,N_abl
           do i=imin,imax
             cff  = Hzw_abl( k-1 )
-            cff1 = cff / ( cff + epssfc * ablh (i,j) )
+            cff1 = cff / ( cff + epssfc * ablh (i,j,nt_n) )
             cff  = Hzw_abl( k )
-            cff2 = cff / ( cff + epssfc * ablh (i,j) )
+            cff2 = cff / ( cff + epssfc * ablh (i,j,nt_n) )
             cff  = f(i,j)*f(i,j)
             CF(i,k) = CF(i,k-1) + 0.5 * Hzr_abl(k)*(
      &           cff2 * (sh2(i,k  )-iRic*bn2(i,j,k  )-Cek*cff )
@@ -198,12 +200,12 @@
         do i=imin,imax
           k=ikbl(i)
           if(k>2) then ! linear interpolation to get subgrid value of pblh
-            ablh(i,j) =  ( zw_abl(k-1)*CF(i,k)-zw_abl(k)*CF(i,k-1)
+            ablh(i,j,nt_a) =  ( zw_abl(k-1)*CF(i,k)-zw_abl(k)*CF(i,k-1)
      &                          ) / (  CF(i,k)-          CF(i,k-1) )
           elseif(k==2) then
-            ablh(i,j) = zw_abl(2   )
+            ablh(i,j,nt_a) = zw_abl(2   )
           else
-            ablh(i,j) = zw_abl(N_abl)
+            ablh(i,j,nt_a) = zw_abl(N_abl)
           endif
         enddo
       enddo !<-- Outer loop
@@ -216,10 +218,10 @@
       do j=jmin,jmax  ! outer loop
         !
         do i=imin,imax
-          mxld_abl (i,j,    1) = 0.
-          mxld_abl (i,j,N_abl) = mxl_min
-          mxlm_abl (i,j,    1) = 0.
-          mxlm_abl (i,j,N_abl)  = mxl_min
+          mxld_abl (i,j,    1,nt_a) = 0.
+          mxld_abl (i,j,N_abl,nt_a) = mxl_min
+          mxlm_abl (i,j,    1,nt_a) = 0.
+          mxlm_abl (i,j,N_abl,nt_a)  = mxl_min
           ldw(i,    1) = z0_abl(i,j) * Lsfc
           lup(i,N_abl) = mxl_min
         enddo
@@ -227,28 +229,29 @@
         do k=2,N_abl-1
           do i=imin,imax
             buoy     = MAX( bn2(i,j,k), 1.E-12 )
-            mxlm_abl(i,j,k) = MAX( mxl_min,SQRT( 2.*tke_abl(i,j,k,nt_a)/buoy))
+            mxlm_abl(i,j,k,nt_a) = MAX( mxl_min,
+     &                             SQRT( 2.*tke_abl(i,j,k,nt_a)/buoy))
           enddo
         enddo
         ! Limit mxl
         do k=N_abl-1,1,-1
           do i=imin,imax
             lup(i,k) = MIN(lup(i,k+1)+(zw_abl(k+1)-zw_abl(k)),
-     &                                                  mxlm_abl(i,j,k))
+     &                                                  mxlm_abl(i,j,k,nt_a))
           enddo
         enddo
                   !
         do k=2,N_abl
           do i=imin,imax
             ldw(i,k) = MIN(ldw(i,k-1)+(zw_abl(k)-zw_abl(k-1)),
-     &                                                  mxlm_abl(i,j,k))
+     &                                                  mxlm_abl(i,j,k,nt_a))
           enddo
         enddo
                   !
       !            DO jk = 1, jpka
       !               DO ji = 1, jpi
-      !                  mxlm_abl( ji, jj, jk ) = SQRT( zldw( ji, jk ) * zlup( ji, jk ) )
-      !                  mxld_abl( ji, jj, jk ) = MIN ( zldw( ji, jk ),  zlup( ji, jk ) )
+      !                  mxlm_abl( ji, jj, jk,nt_a ) = SQRT( zldw( ji, jk ) * zlup( ji, jk ) )
+      !                  mxld_abl( ji, jj, jk,nt_a ) = MIN ( zldw( ji, jk ),  zlup( ji, jk ) )
       !               END DO
       !            END DO
       !
@@ -256,8 +259,8 @@
           do i=imin,imax
             cff = SQRT( ldw(i,k)*lup(i,k) )
             !cff = ( 0.5*( ldw(i,k)**(1./zxx) + lup(i,k)**(1./zxx) ) )**zxx
-            mxlm_abl(i,j,k) = MAX ( cff, mxl_min )
-            mxld_abl(i,j,k) = MIN ( ldw(i,k),lup(i,k) )
+            mxlm_abl(i,j,k,nt_a) = MAX ( cff, mxl_min )
+            mxld_abl(i,j,k,nt_a) = MIN ( ldw(i,k),lup(i,k) )
           enddo
         enddo
        !
@@ -270,12 +273,12 @@
       do j=jmin,jmax  ! outer loop
         do k=1,N_abl
           do i=imin,imax
-            cff = MAX(phimax,Ric_abl*mxlm_abl(i,j,k)*mxld_abl(i,j,k)
+            cff = MAX(phimax,Ric_abl*mxlm_abl(i,j,k,nt_a)*mxld_abl(i,j,k,nt_a)
      &          * MAX(bn2(i,j,k),1.E-12) / tke_abl(i,j,k,nt_a) )
             cff2 =  1. / ( 1. + cff )   !<-- phi_z(z)
-            cff  = mxlm_abl(i,j,k)*SQRT(tke_abl(i,j,k,nt_a))
-            avm_abl(i,j,k) = MAX( Cm * cff        , avm_bak   )
-            avt_abl(i,j,k) = MAX( Ct * cff * cff2 , avt_bak   )
+            cff  = mxlm_abl(i,j,k,nt_a)*SQRT(tke_abl(i,j,k,nt_a))
+            avm_abl(i,j,k,nt_a) = MAX( Cm * cff        , avm_bak   )
+            avt_abl(i,j,k,nt_a) = MAX( Ct * cff * cff2 , avt_bak   )
           enddo
         enddo
       enddo

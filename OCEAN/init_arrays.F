@@ -369,10 +369,14 @@ C$    integer omp_get_thread_num
              tq_abl(i,j,k,2,jp_ta)=init
              tq_abl(i,j,k,1,jp_qa)=init
              tq_abl(i,j,k,2,jp_qa)=init
-             avm_abl(i,j,k       )=avm_bak
-             avt_abl(i,j,k       )=avt_bak
-             mxld_abl(i,j,k      )=mxl_min
-             mxlm_abl(i,j,k      )=mxl_min
+             avm_abl(i,j,k,1     )=avm_bak
+             avm_abl(i,j,k,2     )=avm_bak
+             avt_abl(i,j,k,1     )=avt_bak
+             avt_abl(i,j,k,2     )=avt_bak
+             mxld_abl(i,j,k,1    )=mxl_min
+             mxld_abl(i,j,k,2    )=mxl_min
+             mxlm_abl(i,j,k,1    )=mxl_min
+             mxlm_abl(i,j,k,2    )=mxl_min   
              tke_abl (i,j,k,1    )=tke_min
              tke_abl (i,j,k,2    )=tke_min
              pu_dta  (i,j,k      )=init
@@ -413,7 +417,8 @@ C$    integer omp_get_thread_num
       enddo
       do j=JstrR,JendR
         do i=IstrR,IendR
-           ablh    (i,j)=init
+           ablh    (i,j,1)=init
+           ablh    (i,j,2)=init
 #  if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
            rest_eq (i,j)=init
 #  endif

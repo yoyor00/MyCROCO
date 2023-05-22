@@ -100,16 +100,16 @@
 
          do k=3,N_abl-1
            do i=imin,imax
-             elem_a(i,k) = - dt * avt_abl(i,j,k-1) / Hzw_abl(k-1)
-             elem_c(i,k) = - dt * avt_abl(i,j,k  ) / Hzw_abl(k  )
+             elem_a(i,k) = - dt * avt_abl(i,j,k-1,nt_a) / Hzw_abl(k-1)
+             elem_c(i,k) = - dt * avt_abl(i,j,k  ,nt_a) / Hzw_abl(k  )
              elem_b(i,k) = Hzr_abl(k) - elem_a(i,k) - elem_c(i,k)
            enddo
          enddo
          ! boundary conditions
          do i=imin,imax
            elem_a(i,2    ) = 0.
-           elem_c(i,2    ) = -dt*avt_abl(i,j,    2)/Hzw_abl(2    )
-           elem_a(i,N_abl) = -dt*avt_abl(i,j,N_abl)/Hzw_abl(N_abl)
+           elem_c(i,2    ) = -dt*avt_abl(i,j,    2,nt_a)/Hzw_abl(2    )
+           elem_a(i,N_abl) = -dt*avt_abl(i,j,N_abl,nt_a)/Hzw_abl(N_abl)
            elem_b(i,N_abl) = Hzr_abl(N_abl) - elem_a(i,N_abl)
            elem_c(i,N_abl) = 0.
          enddo
@@ -206,15 +206,15 @@
         !
         do k=3,N_abl
           do i=imin,imax
-            elem_a(i,k) = -dt * Avm_abl(i,j,k-1) / Hzw_abl(k-1)  ! lower-diagonal
-            elem_c(i,k) = -dt * Avm_abl(i,j,k  ) / Hzw_abl(k  )  ! upper-diagonal
+            elem_a(i,k) = -dt * Avm_abl(i,j,k-1,nt_a) / Hzw_abl(k-1)  ! lower-diagonal
+            elem_c(i,k) = -dt * Avm_abl(i,j,k  ,nt_a) / Hzw_abl(k  )  ! upper-diagonal
             elem_b(i,k) = Hzr_abl(k) - elem_a(i,k) - elem_c(i,k) !       diagonal
           enddo
         enddo
         !
         do i=imin,imax    ! boundary conditions
           elem_a(i,2) = 0.
-          elem_c(i,2) = - dt * Avm_abl(i,j,2) / Hzw_abl(2)
+          elem_c(i,2) = - dt * Avm_abl(i,j,2,nt_a) / Hzw_abl(2)
            !
           cff1  = cd_du(i,j)
           cff2  = 0. !cd_du(i,j) * ( ssu(ji-1, jj) + ssu(ji,jj) )
@@ -262,8 +262,8 @@
         !
         do k=3,N_abl-1
           do i=imin,imax
-            elem_a(i,k) = -dt * Avm_abl(i,j,k-1) / Hzw_abl(k-1)   ! lower-diagonal
-            elem_c(i,k) = -dt * Avm_abl(i,j,k  ) / Hzw_abl(k  )   ! upper-diagonal
+            elem_a(i,k) = -dt * Avm_abl(i,j,k-1,nt_a) / Hzw_abl(k-1)   ! lower-diagonal
+            elem_c(i,k) = -dt * Avm_abl(i,j,k  ,nt_a) / Hzw_abl(k  )   ! upper-diagonal
             elem_b(i,k) = Hzr_abl(k) - elem_a(i,k) - elem_c(i,k)  !       diagonal
           enddo
         enddo
@@ -271,7 +271,7 @@
         do i=imin,imax
           !++ Surface boundary condition
           elem_a(i,2) = 0.
-          elem_c(i,2) = - dt * Avm_abl(i,j,2) / Hzw_abl(2)
+          elem_c(i,2) = - dt * Avm_abl(i,j,2,nt_a) / Hzw_abl(2)
           cff1        = cd_du(i,j)
           cff2        = 0. !0.5_wp * pcd_du(ji, jj) * ( pssv(ji, jj) + pssv(ji, jj-1) ) * rn_vfac
           elem_b(i,2) = Hzr_abl(2) - elem_c(i,2) + dt * cff1
@@ -319,7 +319,7 @@
         do j=jmin,jmax   ! outer loop
           do i=imin,imax
 !-------------------------
-            cff = 1./MAX( pblh_min,  MIN(  pblh_max, ablh(i,j)  ) )
+            cff = 1./MAX( pblh_min,  MIN(  pblh_max, ablh(i,j,nt_a)  ) )
 #  ifdef MASKING
             msk = rmask(i,j)
 #  else

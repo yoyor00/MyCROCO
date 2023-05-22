@@ -37,14 +37,17 @@
       implicit none
 # include "param.h"
 # include "scalars.h"
+# include "ncscrum.h"
 # include "abl1d.h"
 # if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
 #  include "grid.h"
 # endif
+# include "netcdf.inc"
       integer Istr,Iend,Jstr,Jend, i,j, k,ierr
       integer imin,imax,jmin,jmax
       real    cff,cff1,cff2, eps
       parameter(eps = 1.e-12)
+      integer ncid, varid, lvar, lenstr, lstr
 # ifdef ANA_ABL_VGRID
       integer jiter, Ntmp,maxiter
       real    theta_s_abl,z1,ds,tol
@@ -177,30 +180,38 @@
       endif
 # endif
 
-      do k=1,N_abl
-        do j=jmin,jmax
-          do i=imin,imax
-            u_abl (i,j,k,nt_n      ) = pu_dta(i,j,k)
-            v_abl (i,j,k,nt_n      ) = pv_dta(i,j,k)
-            tq_abl(i,j,k,nt_n,jp_ta) = pt_dta(i,j,k) + 273.16
-            tq_abl(i,j,k,nt_n,jp_qa) = pq_dta(i,j,k)
-            u_abl (i,j,k,nt_a      ) = pu_dta(i,j,k)
-            v_abl (i,j,k,nt_a      ) = pv_dta(i,j,k)
-            tq_abl(i,j,k,nt_a,jp_ta) = pt_dta(i,j,k) + 273.16
-            tq_abl(i,j,k,nt_a,jp_qa) = pq_dta(i,j,k)
+! Check the presence of u_abl in croco_ini.nc file
+      lstr=lenstr(ininame)
+      ierr=nf_open(ininame(1:lstr), nf_nowrite, ncid)
+      lvar=lenstr(vname(1,indxabl_u_abl))
+      ierr=nf_inq_varid (ncid, vname(1,indxabl_u_abl)(1:lvar), varid)
+      if (ierr .ne. nf_noerr) then
+        do k=1,N_abl
+          do j=jmin,jmax
+            do i=imin,imax
+              u_abl (i,j,k,nt_n      ) = pu_dta(i,j,k)
+              v_abl (i,j,k,nt_n      ) = pv_dta(i,j,k)
+              tq_abl(i,j,k,nt_n,jp_ta) = pt_dta(i,j,k) + 273.16
+              tq_abl(i,j,k,nt_n,jp_qa) = pq_dta(i,j,k)
+              u_abl (i,j,k,nt_a      ) = pu_dta(i,j,k)
+              v_abl (i,j,k,nt_a      ) = pv_dta(i,j,k)
+              tq_abl(i,j,k,nt_a,jp_ta) = pt_dta(i,j,k) + 273.16
+              tq_abl(i,j,k,nt_a,jp_qa) = pq_dta(i,j,k)
+            enddo
           enddo
         enddo
-      enddo
 !
-      do j=jstrR,JendR
-        do i=istrR,IendR
-          ablh(i,j)=zw_abl(3)
+        do j=jstrR,JendR
+          do i=istrR,IendR
+            ablh(i,j,nt_n)=zw_abl(3)
+            ablh(i,j,nt_a)=zw_abl(3)
 # if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
 !  ABL_DYN_RESTORE_EQ :: nudging for velocities is function of the Coriolis parmeter
-          rest_eq(i,j) = SIN( 0.5*pi*( (f(i,j) - fmax)/fmax ) )**8
+            rest_eq(i,j) = SIN( 0.5*pi*( (f(i,j) - fmax)/fmax ) )**8
 # endif
+          enddo
         enddo
-      enddo
+      endif        
 
 # ifdef ABL_NUDGING
 !!-------------------------------------------------------------------------------------------

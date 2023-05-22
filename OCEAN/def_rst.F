@@ -369,6 +369,90 @@
 
 #ifdef ABL1D
 !
+! 3D ABL U
+!
+        lvar=lenstr(vname(1,indxabl_u_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_u_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblU)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblU,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_u_abl))
+        ierr=nf_put_att_text (ncid, rstAblU, 'long_name', lvar,
+     &                                   vname(2,indxabl_u_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_u_abl))
+        ierr=nf_put_att_text (ncid, rstAblU, 'units',     lvar,
+     &                                   vname(3,indxabl_u_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_u_abl))
+        ierr=nf_put_att_text (ncid, rstAblU, 'field',     lvar,
+     &                                  vname(4,indxabl_u_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblU, indxabl_u_abl, 5,
+     &                        NF_DOUBLE, ierr)
+!
+! 3D ABL V
+!
+        lvar=lenstr(vname(1,indxabl_v_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_v_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblV)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblV,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_v_abl))
+        ierr=nf_put_att_text (ncid, rstAblV, 'long_name', lvar,
+     &                                   vname(2,indxabl_v_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_v_abl))
+        ierr=nf_put_att_text (ncid, rstAblV, 'units',     lvar,
+     &                                   vname(3,indxabl_v_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_v_abl))
+        ierr=nf_put_att_text (ncid, rstAblV, 'field',     lvar,
+     &                                  vname(4,indxabl_v_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblV, indxabl_v_abl, 5,
+     &                        NF_DOUBLE, ierr)
+!
+! 3D ABL T
+!
+        lvar=lenstr(vname(1,indxabl_t_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_t_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblT)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblT,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_t_abl))
+        ierr=nf_put_att_text (ncid, rstAblT, 'long_name', lvar,
+     &                                   vname(2,indxabl_t_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_t_abl))
+        ierr=nf_put_att_text (ncid, rstAblT, 'units',     lvar,
+     &                                   vname(3,indxabl_t_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_t_abl))
+        ierr=nf_put_att_text (ncid, rstAblT, 'field',     lvar,
+     &                                  vname(4,indxabl_t_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblT, indxabl_t_abl, 5,
+     &                        NF_DOUBLE, ierr)
+!
+! 3D ABL Q
+!
+        lvar=lenstr(vname(1,indxabl_q_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_q_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblQ)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblQ,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_q_abl))
+        ierr=nf_put_att_text (ncid, rstAblQ, 'long_name', lvar,
+     &                                   vname(2,indxabl_q_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_q_abl))
+        ierr=nf_put_att_text (ncid, rstAblQ, 'units',     lvar,
+     &                                   vname(3,indxabl_q_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_q_abl))
+        ierr=nf_put_att_text (ncid, rstAblQ, 'field',     lvar,
+     &                                  vname(4,indxabl_q_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblQ, indxabl_q_abl, 5,
+     &                        NF_DOUBLE, ierr)
+!
 ! 3D ABL TKE
 !
         lvar=lenstr(vname(1,indxabl_tke_abl))
@@ -389,6 +473,111 @@
 
         call nf_add_attribute(ncid, rstAblTke, indxabl_tke_abl, 5,
      &                        NF_DOUBLE, ierr)
+!
+! 3D ABL AVM
+!
+        lvar=lenstr(vname(1,indxabl_avm_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_avm_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblAvm)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAvm,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_avm_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvm, 'long_name', lvar,
+     &                                   vname(2,indxabl_avm_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_avm_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvm, 'units',     lvar,
+     &                                   vname(3,indxabl_avm_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_avm_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvm, 'field',     lvar,
+     &                                  vname(4,indxabl_avm_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblAvm, indxabl_avm_abl, 5,
+     &                        NF_DOUBLE, ierr)   
+!
+! 3D ABL AVT
+!
+        lvar=lenstr(vname(1,indxabl_avt_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_avt_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblAvt)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAvt,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_avt_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvt, 'long_name', lvar,
+     &                                   vname(2,indxabl_avt_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_avt_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvt, 'units',     lvar,
+     &                                   vname(3,indxabl_avt_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_avt_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvt, 'field',     lvar,
+     &                                  vname(4,indxabl_avt_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblAvt, indxabl_avt_abl, 5,
+     &                        NF_DOUBLE, ierr)            
+!
+! 3D ABL MXLD
+!
+        lvar=lenstr(vname(1,indxabl_mxld_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_mxld_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblMxld)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblMxld,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_mxld_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxld, 'long_name', lvar,
+     &                                   vname(2,indxabl_mxld_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_mxld_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxld, 'units',     lvar,
+     &                                   vname(3,indxabl_mxld_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_mxld_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxld, 'field',     lvar,
+     &                                  vname(4,indxabl_mxld_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblMxld, indxabl_mxld_abl, 5,
+     &                        NF_DOUBLE, ierr)   
+!
+! 3D ABL MXLM
+!
+        lvar=lenstr(vname(1,indxabl_mxlm_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_mxlm_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblMxlm)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblMxlm,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_mxlm_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxlm, 'long_name', lvar,
+     &                                   vname(2,indxabl_mxlm_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_mxlm_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxlm, 'units',     lvar,
+     &                                   vname(3,indxabl_mxlm_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_mxlm_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxlm, 'field',     lvar,
+     &                                  vname(4,indxabl_mxlm_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblMxlm, indxabl_mxlm_abl, 5,
+     &                        NF_DOUBLE, ierr)           
+!
+! 2D ABL ABLH
+!
+        lvar=lenstr(vname(1,indxabl_ablh_abl))
+        ierr=nf_def_var (ncid, vname(1,indxabl_ablh_abl)(1:lvar),
+     &                              NF_DOUBLE, 3, r2dgrd, rstAblAblh)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAblh,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxabl_ablh_abl))
+        ierr=nf_put_att_text (ncid, rstAblAblh, 'long_name', lvar,
+     &                                   vname(2,indxabl_ablh_abl)(1:lvar))
+        lvar=lenstr(vname(3,indxabl_ablh_abl))
+        ierr=nf_put_att_text (ncid, rstAblAblh, 'units',     lvar,
+     &                                   vname(3,indxabl_ablh_abl)(1:lvar))
+        lvar=lenstr(vname(4,indxabl_ablh_abl))
+        ierr=nf_put_att_text (ncid, rstAblAblh, 'field',     lvar,
+     &                                  vname(4,indxabl_ablh_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblAblh, indxabl_ablh_abl, 5,
+     &                        NF_DOUBLE, ierr)        
 #endif
 
 #ifdef SOLVE3D
@@ -1291,6 +1480,54 @@
 
 #ifdef ABL1D
 !
+! 3D ABL U
+!
+        lvar=lenstr(vname(1,indxabl_u_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_u_abl)(1:lvar), rstAblU)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_u_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblU,nf_collective)
+# endif
+!
+! 3D ABL V
+!
+        lvar=lenstr(vname(1,indxabl_v_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_v_abl)(1:lvar), rstAblV)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_v_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblV,nf_collective)
+# endif
+!
+! 3D ABL T
+!
+        lvar=lenstr(vname(1,indxabl_t_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_t_abl)(1:lvar), rstAblT)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_t_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblT,nf_collective)
+# endif
+!
+! 3D ABL Q
+!
+        lvar=lenstr(vname(1,indxabl_q_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_q_abl)(1:lvar), rstAblQ)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_q_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblQ,nf_collective)
+# endif
+!
 ! 3D ABL TKE
 !
         lvar=lenstr(vname(1,indxabl_tke_abl))
@@ -1300,7 +1537,67 @@
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstVb,nf_collective)
+        ierr=nf_var_par_access(ncid,rstAblTke,nf_collective)
+# endif
+!
+! 3D ABL AVM
+!
+        lvar=lenstr(vname(1,indxabl_avm_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_avm_abl)(1:lvar), rstAblAvm)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_avm_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAvm,nf_collective)
+# endif
+!
+! 3D ABL AVT
+!
+        lvar=lenstr(vname(1,indxabl_avt_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_avt_abl)(1:lvar), rstAblAvt)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_avt_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAvt,nf_collective)
+# endif
+!
+! 3D ABL MXLM
+!
+        lvar=lenstr(vname(1,indxabl_mxlm_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_mxlm_abl)(1:lvar), rstAblMxlm)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_mxlm_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblMxlm,nf_collective)
+# endif
+!
+! 3D ABL MXLD
+!
+        lvar=lenstr(vname(1,indxabl_mxld_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_mxld_abl)(1:lvar), rstAblMxld)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_mxld_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblMxld,nf_collective)
+# endif
+!
+! 2D ABL ABLH
+!
+        lvar=lenstr(vname(1,indxabl_ablh_abl))
+        ierr=nf_inq_varid (ncid, vname(1,indxabl_ablh_abl)(1:lvar), rstAblAblh)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxabl_ablh_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAblh,nf_collective)
 # endif
 !
 #endif

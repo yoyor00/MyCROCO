@@ -203,7 +203,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    u_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_u_abl)) then
-        work3dabl=u_abl(:,:,:,nt_n)
+        work3dabl=u_abl(:,:,:,nt_a)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_u_abl,
      &                   indxabl_u_abl,
      &                   record,abl3dvar,type)
@@ -212,7 +212,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    v_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_v_abl)) then
-        work3dabl=v_abl(:,:,:,nt_n)
+        work3dabl=v_abl(:,:,:,nt_a)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_v_abl,
      &                   indxabl_v_abl,
      &                   record,abl3dvar,type)
@@ -221,7 +221,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    t_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_t_abl)) then
-        work3dabl=tq_abl(:,:,:,nt_n,jp_ta)
+        work3dabl=tq_abl(:,:,:,nt_a,jp_ta)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_t_abl,
      &                   indxabl_t_abl,
      &                   record,abl3dvar,type)
@@ -230,7 +230,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    q_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_q_abl)) then
-        work3dabl=tq_abl(:,:,:,nt_n,jp_qa)
+        work3dabl=tq_abl(:,:,:,nt_a,jp_qa)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_q_abl,
      &                   indxabl_q_abl,
      &                   record,abl3dvar,type)
@@ -239,7 +239,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    tke_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_tke_abl)) then
-        work3dabl=tke_abl(:,:,:,nt_n)
+        work3dabl=tke_abl(:,:,:,nt_a)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_tke_abl,
      &                   indxabl_tke_abl,
      &                   record,abl3dvar,type)
@@ -248,7 +248,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    mxlm_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_mxlm_abl)) then
-        work3dabl=mxlm_abl(:,:,:)
+        work3dabl=mxlm_abl(:,:,:,nt_a)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_mxlm_abl,
      &                   indxabl_mxlm_abl,
      &                   record,abl3dvar,type)
@@ -257,7 +257,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    mxld_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_mxld_abl)) then
-        work3dabl=mxld_abl(:,:,:)
+        work3dabl=mxld_abl(:,:,:,nt_a)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_mxld_abl,
      &                   indxabl_mxld_abl,
      &                   record,abl3dvar,type)
@@ -266,7 +266,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    avm_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_avm_abl)) then
-        work3dabl=avm_abl(:,:,:)
+        work3dabl=avm_abl(:,:,:,nt_a)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_avm_abl,
      &                   indxabl_avm_abl,
      &                   record,abl3dvar,type)
@@ -275,7 +275,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    avt_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_avt_abl)) then
-        work3dabl=avt_abl(:,:,:)
+        work3dabl=avt_abl(:,:,:,nt_a)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_avt_abl,
      &                   indxabl_avt_abl,
      &                   record,abl3dvar,type)
@@ -284,7 +284,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    ablh
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_ablh_abl)) then
-        work2d=ablh(:,:)
+        work2d=ablh(:,:,nt_a)
         call fillvalue2d(work2d,ncidablhis,ablhis_ablh_abl,
      &                   indxabl_ablh_abl,
      &                   record,r2dvar,type)
