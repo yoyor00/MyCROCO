@@ -74,7 +74,7 @@
 # endif
 !++ Parameter values (blk_ZW and blk_ZT should not be parameters with ABL)
       REAL, PARAMETER ::  blk_ZW =  10.0
-      REAL, PARAMETER ::  blk_ZT =  10.0
+      REAL, PARAMETER ::  blk_ZT =   2.0
       REAL, PARAMETER ::  blk_ZToZW = blk_ZT/blk_ZW
       REAL            ::  logus10,logts10
 # if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
