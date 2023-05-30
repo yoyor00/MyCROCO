@@ -950,7 +950,7 @@
             goto 99                                       !--> ERROR
           endif
 # ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_zw(itrc), nf_collective)
+          ierr=nf_var_par_access(ncid, viddiags_uw(itrc), nf_collective)
 # endif
 !
 ! ---------------------------------
@@ -1073,6 +1073,36 @@
           ierr=nf_var_par_access(ncid, viddiags_vsv(itrc),nf_collective)
 # endif
 !
+! ---------------------------------
+! indxeddyugsu
+!
+          lvar=lenstr(vname(1,indxeddyugsu+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyugsu+itrc-1)(1:lvar),
+     &                                            viddiags_ugsu(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyugsu+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_ugsu(itrc),nf_collective)
+# endif
+!
+! ---------------------------------
+! indxeddyvgsv
+!
+          lvar=lenstr(vname(1,indxeddyvgsv+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyvgsv+itrc-1)(1:lvar),
+     &                                            viddiags_vgsv(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyvgsv+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vgsv(itrc),nf_collective)
+# endif
+!
         endif ! wrt(itrc)
 !
 ! ---------------------------------
@@ -1138,6 +1168,8 @@
 # undef viddiags_vbv
 # undef viddiags_usu
 # undef viddiags_vsv
+# undef viddiags_ugsu
+# undef viddiags_vgsv
 !
 # ifdef AVERAGES
 #  ifndef AVRH
