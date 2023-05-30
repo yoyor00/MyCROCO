@@ -8,13 +8,14 @@
 
    ! pass from fix (F) to free format (F90)
 
-#include "param.h"
-#include "ncscrum.h"
-#include "scalars.h"
-#include "forces.h"
-#include "grid.h"
+# include "param.h"
+# include "ncscrum.h"
+# include "scalars.h"
+# include "forces.h"
+# include "grid.h"
 # include "ocean3d.h"
 # include "mixing.h"
+# include "coupling.h"
 
       end module module_OBSTRUCTIONS
 #else

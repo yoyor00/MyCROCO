@@ -44,12 +44,15 @@ CONTAINS
 #   ifdef WET_DRY
         obst_mask(:,:) =  obst_mask(:,:) * mask_wet(:,:)
 #   endif
-
+        write(*,*) "PLUG"
+        write(*,*) nstp, nnew, nrhs
+        write(*,*) u(23,3,40,nstp), u(23,3,40,nnew), u(23,3,40,nrhs)
+        write(*,*) "PLUG"
       CALL OBSTRUCTIONS_update(Istr, Iend, Jstr, Jend, & 
                  cm0, h, zob,     &
-                 zeta(:,:,knew),  &
-                 u(:,:,:,3),   &
-                 v(:,:,:,3)    &
+                 Zt_avg1,         &
+                 u(:,:,:,nstp),   &
+                 v(:,:,:,nstp)    &
                  )
 
       end subroutine
