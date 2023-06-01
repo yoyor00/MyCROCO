@@ -405,6 +405,24 @@
 #if defined SOLVE3D && defined TRACERS
 !
 !---------------------------------------------------------------
+!     Simplest sea ice correction to T,S fluxes
+!     in case of OA_COUPLING
+!---------------------------------------------------------------
+!      
+#  if defined OA_COUPLING && defined SEA_ICE_NOFLUX
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          if ( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
+                   stflx(i,j,itemp)=0.
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+                   srflx(i,j)=0.
+#   endif
+          endif
+        enddo
+      enddo
+#endif  /* OA_COUPLING && defined SEA_ICE_NOFLUX */
+!
+!---------------------------------------------------------------
 !  Kinematic bottom temperature (heat) flux [degC m/s].
 !  (Analytical bottom heat flux is usually set to zero.)
 !---------------------------------------------------------------
