@@ -83,7 +83,7 @@
       REAL            :: blk_ZW, blk_ZT, blk_ZToZW
 # ifndef ABL1D
       PARAMETER ( blk_ZW    =  10.0 )
-      PARAMETER ( blk_ZT    =  10.0 )
+      PARAMETER ( blk_ZT    =   2.0 )
       PARAMETER ( blk_ZToZW = blk_ZT/blk_ZW )
 # endif
       REAL            ::  logus10,logts10
