@@ -1979,7 +1979,7 @@ MODULE OBSTRUCTIONS
                      !--------------------------
                      ! Here, tuz has unit:
                      ! [tuz] = s-1 * m.s-1 * m.s-1
-                     ! [tuz] = m2.s-2
+                     ! [tuz] = m2.s-3
                      tuz = tuz + fuv * (obst_uz(k,i,j)**2.0_rsh)
                      tvz = tvz + fuv * (obst_vz(k,i,j)**2.0_rsh)
                      !-------------------------------
@@ -1998,7 +1998,7 @@ MODULE OBSTRUCTIONS
                ! * Work spent by the fluid
                !--------------------------
                ! Here, obst_t has unit:
-               ! [obst_t] = m3.s-2
+               ! [obst_t] = m2.s-3
                obst_t(k,i,j)    = SQRT(tuz**2.0_rsh + tvz**2.0_rsh)
                !-------------------------------------
                ! * Smallest distance between elements
