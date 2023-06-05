@@ -80,7 +80,8 @@
      &    UFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &    UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &    VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
-     &    VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),    gamma
+     &    VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+      real gamma
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY),
      &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),
      &    UFx(PRIVATE_2D_SCRATCH_ARRAY),

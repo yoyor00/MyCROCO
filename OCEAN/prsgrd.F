@@ -45,15 +45,18 @@ c********************************************************************
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax
 # include "param.h"
-      real ru(PRIVATE_2D_SCRATCH_ARRAY,N),   OneFifth,
-     &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),   OneTwelfth,
-     &      P(PRIVATE_2D_SCRATCH_ARRAY,N),   epsil,dpth,cff1,cff2,
+      real ru(PRIVATE_2D_SCRATCH_ARRAY,N),
+     &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),
+     &      P(PRIVATE_2D_SCRATCH_ARRAY,N),   dpth,cff1,cff2,
      &     dR(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff, GRho,
      &     dZ(PRIVATE_1D_SCRATCH_ARRAY,0:N), cfr, HalfGRho, 
      &     FC(PRIVATE_2D_SCRATCH_ARRAY),
      &    dZx(PRIVATE_2D_SCRATCH_ARRAY),
      &     rx(PRIVATE_2D_SCRATCH_ARRAY),
      &    dRx(PRIVATE_2D_SCRATCH_ARRAY)
+      real OneFifth
+      real OneTwelfth
+      real epsil
 !
       parameter (OneFifth=0.2, OneTwelfth=1./12., epsil=0.) !1.E-10) 
 !
