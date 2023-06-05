@@ -65,8 +65,9 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 # include "boundary.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
-      real grad(PRIVATE_2D_SCRATCH_ARRAY), cff,eps,
+      real grad(PRIVATE_2D_SCRATCH_ARRAY), cff,
      &      cx,cy, dft,dfx,dfy, tau,tau_in,tau_out
+      real eps
       parameter (eps=1.E-20)
 !
 # include "compute_auxiliary_bounds.h"

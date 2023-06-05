@@ -80,10 +80,12 @@
      &       rw(PRIVATE_2D_SCRATCH_ARRAY,0:N),     
      &       FC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  cff2,
      &       CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
-     &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  gamma, 
-     &       FX(PRIVATE_2D_SCRATCH_ARRAY),      epsil,
+     &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), 
+     &       FX(PRIVATE_2D_SCRATCH_ARRAY),
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
      &     WORK(PRIVATE_2D_SCRATCH_ARRAY)
+      real gamma
+      real epsil
 #ifdef OPENACC
       real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
