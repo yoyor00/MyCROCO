@@ -2,23 +2,23 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
       integer imin,imax,ishft, jmin,jmax,jshft
-# ifdef EW_PERIODIC
+#ifdef EW_PERIODIC
       if (NP_XI.eq.1) then                ! This means that if there
-        imin=Istr-Npts                    ! is no partition in XI- 
-        imax=Iend+Npts                    ! direction, then periodic 
+        imin=Istr-Npts                    ! is no partition in XI-
+        imax=Iend+Npts                    ! direction, then periodic
       else                                ! margins are included into
-        imin=Istr                         ! the message; 
+        imin=Istr                         ! the message;
         imax=Iend                         ! otherwise strip them out.
       endif
-# else
+#else
       if (ii.eq.0 .and. Istr.eq.1) then   ! Extra point on either
         imin=Istr-1                       ! side to accomodate ghost
       else                                ! points associated with
@@ -29,18 +29,18 @@
       else
         imax=Iend
       endif
-# endif
+#endif
       ishft=imax-imin+1
 
-# ifdef NS_PERIODIC
+#ifdef NS_PERIODIC
       if (NP_ETA.eq.1) then               ! This means that if there
         jmin=Jstr-Npts                    ! is no partition in ETA-
         jmax=Jend+Npts                    ! direction, then periodic
-      else                                ! margins are included into 
+      else                                ! margins are included into
         jmin=Jstr                         ! the message;
         jmax=Jend                         ! otherwise strip them out.
       endif
-# else
+#else
       if (jj.eq.0 .and. Jstr.eq.1) then   ! Extra point on either
         jmin=Jstr-1                       ! side to accomodate ghost
       else                                ! points associated with
@@ -51,5 +51,5 @@
       else
         jmax=Jend
       endif
-# endif
+#endif
       jshft=jmax-jmin+1

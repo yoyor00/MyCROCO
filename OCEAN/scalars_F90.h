@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -36,7 +36,7 @@
       real dt, dtfast, time, time2, time_start, tdays, start_time
 #ifdef USE_CALENDAR
       real time_mars, time_end
-      character*19 date, run_end_date, run_start_date
+      character*19 date, end_date, start_date
 #endif
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
@@ -64,13 +64,13 @@
                              PREDICTOR_2D_STEP
 #ifdef USE_CALENDAR
       common /time_indices2/ time_mars, time_end,                      &
-                             date, run_end_date, run_start_date
+                            date, end_date, start_date
 #endif
 
 !
 ! Slowly changing variables: these are typically set in the beginning
 ! of the run and either remain unchanged, or are changing only in
-! association with the I/0. 
+! association with the I/0.
 !
 ! xl, el   Physical size (m) of domain box in the XI-,ETA-directions.
 !
@@ -100,10 +100,10 @@
 ! rdrg     Linear bottom drag coefficient.
 ! rdrg2    Quadratic bottom drag coefficient.
 ! Cdb_max  Maximum bottom drag coefficient allowed.
-! Cdb_min  Minimum bottom drag coefficient to avoid the 
+! Cdb_min  Minimum bottom drag coefficient to avoid the
 !                law-of-the-wall to extend indefinitely.
 ! Zobt      Bottom roughness (m).
-! 
+!
 ! gamma2   Slipperiness parameter, either 1. (free-slip)
 !
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
@@ -132,13 +132,13 @@
 !                                                 bodyforce.
 ! levbfrc  Shallowest level to apply bottom momentum stress as
 !                                                 bodyforce.
-! got_tini Logical switch used at initialisation 
+! got_tini Logical switch used at initialisation
 !              If TRUE, the tracer is present in the initial file
-!              If FALSE, the tracer needs an analytical value  
+!              If FALSE, the tracer needs an analytical value
 !
 ! got_inised Logical switch used at initialisation  of sediments
 !              If TRUE, the sediment var. is in the initial file
-!              If FALSE, the sed. var. gets analytical value from file 
+!              If FALSE, the sed. var. gets analytical value from file
 !
 ! got_inibed Logical switch used at initialisation of ripple height, length
 !              If TRUE, the ripple var. is in the initial file
@@ -147,9 +147,9 @@
 !
       real time_avg, time2_avg, rho0  &
      &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt  &
-     &               , xl, el, visc2, visc4, gamma2  
+     &               , xl, el, visc2, visc4, gamma2
 #ifdef SOLVE3D
-      real  theta_s,   theta_b,   Tcline,  hc 
+      real  theta_s,   theta_b,   Tcline,  hc
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
       real  rx0, rx1
 # ifdef TRACERS
@@ -160,12 +160,12 @@
 # endif
       real weight(6,0:NWEIGHT)
 #endif
-#if  defined SPONGE || \
+#if defined SPONGE || \
      defined TNUDGING   || defined M2NUDGING  || \
      defined M3NUDGING  || defined ZNUDGING
       real  x_sponge,   v_sponge
 #endif
-#if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
      defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
@@ -307,7 +307,7 @@
 
       common /scalars_main/                                        &
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2 &
-     &           , Zobt,       Cdb_min,   Cdb_max                  &                       
+     &           , Zobt,       Cdb_min,   Cdb_max                  &
      &           , xl, el,    visc2,     visc4,   gamma2           &
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc               &
@@ -317,16 +317,16 @@
      &           ,       tnu2,    tnu4                             &
 # endif
 # ifndef NONLIN_EOS
-     &                      , R0,T0,S0,  Tcoef,   Scoef            & 
+     &                      , R0,T0,S0,  Tcoef,   Scoef            &
 # endif
-     &                      , weight                               & 
+     &                      , weight                               &
 #endif
-#if  defined SPONGE || \
+#if defined SPONGE || \
      defined TNUDGING   || defined M2NUDGING  || \
      defined M3NUDGING  || defined ZNUDGING
-     &                      , x_sponge,   v_sponge                 & 
+     &                      , x_sponge,   v_sponge                 &
 #endif
-#if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
      defined W_FRC_BRY     ||                          \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
@@ -334,16 +334,16 @@
      defined WCLIMATOLOGY
      &           , tauT_in, tauT_out, tauM_in, tauM_out            &
 #endif
-     &      , numthreads,     ntstart,   ntimes,  ninfo            & 
-     &      , nfast,  nrrec,     nrst,    nwrt                     & 
+     &      , numthreads,     ntstart,   ntimes,  ninfo            &
+     &      , nfast,  nrrec,     nrst,    nwrt                     &
 #ifdef EXACT_RESTART
      &       , forw_start &
 #endif
 #ifdef AVERAGES
-     &                                 , ntsavg,  navg             & 
+     &                                 , ntsavg,  navg             &
 #endif
 #ifdef BODYFORCE
-     &                      , levbfrc,   levsfrc    & 
+     &                      , levbfrc,   levsfrc    &
 #endif
 #ifdef FLOATS
      &                      , nflt, nrpfflt         &
@@ -430,16 +430,16 @@
 #ifdef STATIONS
      &                      , ldefsta                  &
 #endif
-     &                      , ldefhis         
+     &                      , ldefhis
 
-# if defined SOLVE3D  && !defined LMD_MIXING
+#if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak
       common /scalars_akv/ Akv_bak
-#  ifdef TRACERS
+# ifdef TRACERS
       real Akt_bak(NT)
       common /scalars_akt/ Akt_bak
-#  endif
 # endif
+#endif
 !
 !-----------------------------------------------------------------------
 ! This following common block contains a set of globally accessable
@@ -452,7 +452,7 @@
 ! the case of summation between the parallel threads; not doing so
 ! would make it impossible to pass an ETALON CHECK test if there is
 ! a feedback of these sums into the dynamics of the model, such as
-! in the case when global mass conservation is enforced. 
+! in the case when global mass conservation is enforced.
 !
 !  One sunny spring day, sometime in 1989 an american tourist, who
 ! happened to be an attorney, was walking along a Moscow street.
@@ -479,21 +479,21 @@
       common /sync_flag/ synchro_flag
 
       integer may_day_flag  ! This is a shared variable among nested grids
-      integer tile_count, first_time, bc_count          
+      integer tile_count, first_time, bc_count
 #ifdef BIOLOGY
-      integer bio_count         
+      integer bio_count
 #endif
 
 #ifdef BIOLOGY
       common /communicators_i/              &
             may_day_flag, tile_count, first_time, bc_count  &
-           , bio_count  
+           , bio_count
 #else
       common /communicators_i/              &
-            may_day_flag, tile_count, first_time, bc_count         
+            may_day_flag, tile_count, first_time, bc_count
 #endif
 
-      real hmin, hmax, grdmin, grdmax, Cu_min, Cu_max         
+      real hmin, hmax, grdmin, grdmax, Cu_min, Cu_max
       common /communicators_r/              &
           hmin, hmax, grdmin, grdmax, Cu_min, Cu_max
 

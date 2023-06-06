@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -29,7 +29,7 @@
         r2=stainfo(istazgrd,iflt) - float(k1)
         r1=1.-r2
         k2=min(k1+1, N)
-        
+
         i1=int(stainfo(istaxgrd,iflt))
         i2=i1+1
         p2=stainfo(istaxgrd,iflt)-float(i1)
@@ -40,7 +40,7 @@
         q2=stainfo(istaygrd,iflt)-float(j1)
         q1=1.0-q2
 
-#ifdef MASKING
+# ifdef MASKING
         cff1=p1*q1*rmask(i1,j1)*(r1*A(i1,j1,k1)+r2*A(i1,j1,k2))
      &      +p2*q1*rmask(i2,j1)*(r1*A(i2,j1,k1)+r2*A(i2,j1,k2))
      &      +p1*q2*rmask(i1,j2)*(r1*A(i1,j2,k1)+r2*A(i1,j2,k2))
@@ -54,12 +54,12 @@
         else
           stadata(ifld,iflt)=0.0
         endif
-#else
+# else
         stadata(ifld,iflt)=p1*q1*(r1*A(i1,j1,k1)+r2*A(i1,j1,k2))
      &                    +p2*q1*(r1*A(i2,j1,k1)+r2*A(i2,j1,k2))
      &                    +p1*q2*(r1*A(i1,j2,k1)+r2*A(i1,j2,k2))
      &                    +p2*q2*(r1*A(i2,j2,k1)+r2*A(i2,j2,k2))
-#endif
+# endif
       enddo
       return
       end
@@ -148,7 +148,7 @@
          if (wrtsta(indxstaGrd)) then
            stadata(istazgrd,iflt)=stainfo(istazgrd,iflt) ! sigma level position
                                                          ! is unavailaible
-           stadata(istaxgrd,iflt)=stainfo(istaxgrd,iflt) ! for initial storage 
+           stadata(istaxgrd,iflt)=stainfo(istaxgrd,iflt) ! for initial storage
            stadata(istaygrd,iflt)=stainfo(istaygrd,iflt)
          endif
       enddo

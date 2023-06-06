@@ -13,15 +13,15 @@
 #if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 
           module debug
-#if defined OPENACC
+# if defined OPENACC
           use exchange_device_host
-#endif
+# endif
 !$AGRIF_DO_NOT_TREAT
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
 !$AGRIF_END_DO_NOT_TREAT
 # if defined RVTK_DEBUG_PERFRST
-# define DEBUG_MPI_MASTER_ONLY
+#  define DEBUG_MPI_MASTER_ONLY
 !
 !     define DEBUG_MPI_MASTER_ONLY : do the restartability test
 !     in case of a mpi run, but it only test the master node 0
@@ -42,14 +42,14 @@
 !
           subroutine debug_ini()
           implicit none
-#include "param.h"
-#include "scalars.h"
+# include "param.h"
+# include "scalars.h"
           character(len=80) :: filename
           character(len=80) :: tmp_string
           integer :: nb, new_unit
           
           filename="check_file"
-#if !defined RVTK_DEBUG_WRITE
+# if !defined RVTK_DEBUG_WRITE
           open(107,file="debug_infos",form="formatted",
      &  status='OLD')
             read(107,*)nbprocs_in
@@ -66,8 +66,8 @@
 !$AGRIF_END_DO_NOT_TREAT
             debug_procs_units(nb)=new_unit
           enddo
-#else
-#if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
+# else
+#  if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
           if (mynode == 0) then
           open(107,file="debug_infos",form="formatted")
             write(107,*)NNODES
@@ -76,15 +76,15 @@
           print *,'MYNODE = ',mynode
           write(filename,'(a11,i0,a1,i0)')
      &    "check_file_",NNODES,'_',mynode
-#else
+#  else
           open(107,file="debug_infos",form="formatted")
             write(107,*)1
           close(107)
           write(filename,'(a14)')"check_file_1_0"
-#endif
+#  endif
           open(107,file=filename,form='unformatted',
      &            status='UNKNOWN')
-#endif
+# endif
  
           if (non_strict) then
             tolerance = max_tolerance
@@ -106,7 +106,7 @@
 # include "scalars.h"  
 # include "ocean2d.h" 
 # ifdef MPI
-# include "mpi_cpl.h"
+#  include "mpi_cpl.h"
       include 'mpif.h'
 # endif   
       real,dimension(GLOBAL_2D_ARRAY) :: tab
@@ -116,15 +116,15 @@
       character*(*) :: comment,typevar
       logical, optional :: ondevice
       integer i0,j0,i,j,i1,j1,i2,j2
-#if !defined RVTK_DEBUG_WRITE
+# if !defined RVTK_DEBUG_WRITE
       integer i1_r,i2_r,j1_r,j2_r,nb
-#endif
-#if !defined RVTK_DEBUG_WRITE && defined OPENACC
+# endif
+# if !defined RVTK_DEBUG_WRITE && defined OPENACC
       real,dimension(GLOBAL_2D_ARRAY) :: temp_host
       logical :: ondevice_l
-#else
+# else
       logical, parameter :: ondevice_l=.FALSE.
-#endif
+# endif
 # ifdef OPENMP
 #  undef mynode
       integer mynode 
@@ -143,57 +143,57 @@
 # endif
 
 !# if !defined MPI && !defined OPENMP
-#if defined RVTK_DEBUG_WRITE
-#include "debug_indices.h"
+# if defined RVTK_DEBUG_WRITE
+#  include "debug_indices.h"
 
-# if defined RVTK_DEBUG_PERFRST
+#  if defined RVTK_DEBUG_PERFRST
       if (iic.gt.start_debug
-#  if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+#   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
-#  endif
+#   endif
      &    ) then
       write(*,*)'iic.gt.start_debug check_tab2d write'
-# endif /* RVTK_DEBUG_PERFRST */
+#  endif /* RVTK_DEBUG_PERFRST */
       
-#if defined MPI
+#  if defined MPI
       i1 = i1 + iminmpi - 1
       i2 = i2 + iminmpi - 1
       j1 = j1 + jminmpi - 1
       j2 = j2 + jminmpi - 1
-#endif
+#  endif
       write(107)i1,i2,j1,j2
       write(107)lbound(tab)
-#if defined MPI
+#  if defined MPI
      &  + (/iminmpi-1,jminmpi-1/)
-#endif
+#  endif
       write(107)ubound(tab)
-#if defined MPI
+#  if defined MPI
      &  + (/iminmpi-1,jminmpi-1/)
-#endif
+#  endif
       write(107)tab
 
-# if defined RVTK_DEBUG_PERFRST
+#  if defined RVTK_DEBUG_PERFRST
       endif
-# endif
+#  endif
 
-#else /* defined RVTK_DEBUG_WRITE   */
-#ifdef OPENACC
+# else /* defined RVTK_DEBUG_WRITE   */
+#  ifdef OPENACC
       ondevice_l = .false.
       if (present(ondevice)) ondevice_l = ondevice
       if (ondevice_l) then
         temp_host=tab
         call update_host(tab)
       endif
-#endif
-# if defined RVTK_DEBUG_PERFRST      
-      if (iic.gt.start_debug_read
-#  if defined DEBUG_MPI_MASTER_ONLY && defined MPI
-     &    .and.mynode.eq.0
 #  endif
+#  if defined RVTK_DEBUG_PERFRST      
+      if (iic.gt.start_debug_read
+#   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+     &    .and.mynode.eq.0
+#   endif
      &    ) then
         !write(*,*)'iic=',iic
         write(*,*)'iic.gt.start_debug_read check_tab2d read'
-# endif /* RVTK_DEBUG_PERFRST */
+#  endif /* RVTK_DEBUG_PERFRST */
         
       if (non_strict) max_abs=0.
 
@@ -204,7 +204,7 @@
       allocate(tabread(lb(1):ub(1),lb(2):ub(2)))
       read(debug_procs_units(nb))tabread
 
-#include "debug_indices.h"
+#  include "debug_indices.h"
       
       iseq1 = i1_r
       iseq2 = i2_r
@@ -246,25 +246,25 @@
 #  if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
         call MPI_barrier(MPI_COMM_WORLD,ierr)
         call MPI_Finalize (ierr)
-#   endif
+#  endif
         stop                            !-->  EXIT
       endif
             
       deallocate(tabread)
       enddo /* do nb = 0, nbprocs_in-1 */
-# if defined RVTK_DEBUG_PERFRST      
+#  if defined RVTK_DEBUG_PERFRST      
       endif
-# endif
+#  endif
 # endif /* !defined RVTK_DEBUG_WRITE */      
 
 # ifdef MPI
       call MPI_Barrier(MPI_COMM_WORLD,ierr)
 # endif
 
-#if !defined RVTK_DEBUG_WRITE
-# if defined RVTK_DEBUG_PERFRST      
+# if !defined RVTK_DEBUG_WRITE
+#  if defined RVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read) then
-# endif
+#  endif
       if (non_strict) then
         MPI_master_only print *,'CHECK ',comment,' PASSED with MAX_ABS = ',
      & max_abs
@@ -279,13 +279,13 @@
 #  endif
       endif
 
-# if defined RVTK_DEBUG_PERFRST      
+#  if defined RVTK_DEBUG_PERFRST      
       endif
-# endif
-#ifdef OPENACC
+#  endif
+#  ifdef OPENACC
       if (ondevice_l) tab=temp_host
-#endif
-#endif /*  !defined RVTK_DEBUG_WRITE     */
+#  endif
+# endif /*  !defined RVTK_DEBUG_WRITE     */
 
           return
           end subroutine check_tab2d
@@ -300,7 +300,7 @@
 # include "scalars.h"  
 # include "ocean2d.h" 
 # ifdef MPI
-# include "mpi_cpl.h"
+#  include "mpi_cpl.h"
       include 'mpif.h'
 # endif   
 # ifdef MPI
@@ -314,15 +314,15 @@
       character*(*) :: comment,typevar
       logical, optional :: ondevice
       integer i0,j0,k,i,j,i1,i2,j1,j2
-#if !defined RVTK_DEBUG_WRITE
+# if !defined RVTK_DEBUG_WRITE
       integer i1_r,i2_r,j1_r,j2_r,nb
-#endif
-#if !defined RVTK_DEBUG_WRITE && defined OPENACC
+# endif
+# if !defined RVTK_DEBUG_WRITE && defined OPENACC
       real,dimension(GLOBAL_2D_ARRAY,N) :: temp_host
       logical :: ondevice_l
-#else
+# else
       logical, parameter :: ondevice_l=.FALSE.
-#endif
+# endif
       character*80 :: comment_k
 # ifdef OPENMP
       integer mynode
@@ -333,10 +333,10 @@
       integer :: imax,jmax,kmax
       real :: diff
 
-#ifdef OPENACC
+# ifdef OPENACC
       ondevice_l = .false.
       if (present(ondevice)) ondevice_l = ondevice
-#endif
+# endif
 
       if (typevar == 'w') then
         do k=1,N+1
@@ -358,56 +358,56 @@
           mynode=0 
 # endif
 
-#if defined RVTK_DEBUG_WRITE
-#include "debug_indices.h"
+# if defined RVTK_DEBUG_WRITE
+#  include "debug_indices.h"
           
-# if defined RVTK_DEBUG_PERFRST      
+#  if defined RVTK_DEBUG_PERFRST      
           if (iic.gt.start_debug
-#  if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+#   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
-#  endif
+#   endif
      &         ) then         
             write(*,*)'iic.gt.start_debug check_tab3d write'
-# endif /* defined RVTK_DEBUG_PERFRST   */
+#  endif /* defined RVTK_DEBUG_PERFRST   */
             
-#if defined MPI
+#  if defined MPI
       i1 = i1 + iminmpi - 1
       i2 = i2 + iminmpi - 1
       j1 = j1 + jminmpi - 1
       j2 = j2 + jminmpi - 1
-#endif
+#  endif
       write(107)i1,i2,j1,j2
       write(107)lbound(tab)
-#if defined MPI
+#  if defined MPI
      &  + (/iminmpi-1,jminmpi-1,0/)
-#endif
+#  endif
       write(107)ubound(tab)
-#if defined MPI
+#  if defined MPI
      &  + (/iminmpi-1,jminmpi-1,0/)
-#endif
+#  endif
       write(107)tab
-# if defined RVTK_DEBUG_PERFRST      
+#  if defined RVTK_DEBUG_PERFRST      
       endif
-# endif
+#  endif
       
 # else /* defined RVTK_DEBUG_WRITE */
       
-# if defined RVTK_DEBUG_PERFRST      
+#  if defined RVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read
-#  if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+#   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
-#  endif
+#   endif
      &     ) then
         !write(*,*)'iic ',iic
         write(*,*)'iic.gt.start_debug_read check_tab3d read'
-# endif /* defined RVTK_DEBUG_PERFRST  */
+#  endif /* defined RVTK_DEBUG_PERFRST  */
       
-#ifdef OPENACC
+#  ifdef OPENACC
       if (ondevice_l) then
         temp_host=tab
         call update_host(tab)
       endif
-#endif
+#  endif
 
       if (non_strict) max_abs=0.
 
@@ -418,7 +418,7 @@
       allocate(tabread(lb(1):ub(1),lb(2):ub(2),lb(3):ub(3)))
       read(debug_procs_units(nb))tabread
 
-#include "debug_indices.h"
+#  include "debug_indices.h"
 
       iseq1 = i1_r
       iseq2 = i2_r
@@ -472,29 +472,29 @@
 #  if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
         call MPI_barrier(MPI_COMM_WORLD,ierr)
         call MPI_Finalize (ierr)
-#   endif
+#  endif
         stop                            !-->  EXIT
       endif
            
       deallocate(tabread)
       enddo /* do nb = 0, nbprocs_in-1 */
-# if defined RVTK_DEBUG_PERFRST      
+#  if defined RVTK_DEBUG_PERFRST      
       endif
-# endif     
+#  endif     
 # endif /* !defined RVTK_DEBUG_WRITE */
 
 # ifdef MPI
       call MPI_Barrier(MPI_COMM_WORLD,ierr)
 # endif
 
-#if !defined RVTK_DEBUG_WRITE
-# if defined RVTK_DEBUG_PERFRST        
+# if !defined RVTK_DEBUG_WRITE
+#  if defined RVTK_DEBUG_PERFRST        
       if (iic.gt.start_debug_read
-#  if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+#   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
-#  endif
+#   endif
      &     ) then
-# endif
+#  endif
       if (non_strict) then
         MPI_master_only print *,'CHECK ',comment,' PASSED with MAX_ABS = ',
      & max_abs
@@ -508,13 +508,13 @@
      &                       ,' ON GRID ',Agrif_CFixed()
 #  endif
       endif
-# if defined RVTK_DEBUG_PERFRST      
+#  if defined RVTK_DEBUG_PERFRST      
       endif
-# endif
-#ifdef OPENACC
+#  endif
+#  ifdef OPENACC
       if (ondevice_l) tab=temp_host
-#endif
-#endif /* !defined RVTK_DEBUG_WRITE  */
+#  endif
+# endif /* !defined RVTK_DEBUG_WRITE  */
           return
           end subroutine check_tab3d    
 

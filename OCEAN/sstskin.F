@@ -108,9 +108,13 @@
           db   = z_w(i,j,N)-z_r(i,j,N)
           q    = stflx(i,j,itemp)-srflx(i,j)
           sw   = srflx(i,j)
+# ifdef STRESS_AT_RHO_POINTS
+          usw  = max(0.01,sqrt(sqrt( sustr(i,j)**2+svstr(i,j)**2)))
+# else
           usw  = max(0.01,
      &           sqrt(sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
      &                     +(0.5*(svstr(i,j)+svstr(i,j+1)))**2)))
+# endif
           dtwo = dT_skin(i,j)
 !
 !------------------------------------------------

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,7 +14,7 @@
 # include "cppdefs.h"
 # if defined SOLVE3D && defined TRACERS
       subroutine t3dbc_tile(Istr,Iend,Jstr,Jend,indx,itrc,grad)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use Agrif_Util
       integer Istr,Iend,Jstr,Jend,indx,itrc
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
@@ -48,7 +48,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !
 # endif /* SOLVE3D */
 #endif /* CHILD */
-# if defined SOLVE3D && defined TRACERS
+#if defined SOLVE3D && defined TRACERS
 !
 ! Common Code
 !
@@ -124,9 +124,9 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           do j=Jstr,Jend
             dft=t(Istr,j,k,nstp,itrc)-t(Istr  ,j,k,indx,itrc)
             dfx=t(Istr,j,k,indx,itrc)-t(Istr+1,j,k,indx,itrc)
- 
+
             if (dfx*dft .lt. 0.) then
-              dft=0.                  ! <-- cancel, if inflow 
+              dft=0.                  ! <-- cancel, if inflow
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
               tau=tau_in
             else
@@ -149,7 +149,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
             t(Istr-1,j,k,indx,itrc)=(1.-tau)*t(Istr-1,j,k,indx,itrc)
 #    ifdef T_FRC_BRY
-     &                                    +tau*tbry_west(j,k,itrc)     
+     &                                    +tau*tbry_west(j,k,itrc)
 #    else
      &                                    +tau*tclm(Istr-1,j,k,itrc)
 #    endif
@@ -240,7 +240,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
             dft=t(Iend,j,k,nstp,itrc)-t(Iend  ,j,k,indx,itrc)
             dfx=t(Iend,j,k,indx,itrc)-t(Iend-1,j,k,indx,itrc)
             if (dfx*dft .lt. 0.) then
-              dft=0.                  ! <-- cancel, if inflow 
+              dft=0.                  ! <-- cancel, if inflow
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
               tau=tau_in
             else
@@ -295,7 +295,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           enddo
         enddo
 !
-#  else 
+#  else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
         do k=1,N
@@ -352,7 +352,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
             dft=t(i,Jstr,k,nstp,itrc)-t(i,Jstr  ,k,indx,itrc)
             dfx=t(i,Jstr,k,indx,itrc)-t(i,Jstr+1,k,indx,itrc)
             if (dfx*dft .lt. 0.) then
-              dft=0.                   ! <-- cancel, if inflow 
+              dft=0.                   ! <-- cancel, if inflow
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
               tau=tau_in
             else
@@ -462,7 +462,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
             dft=t(i,Jend,k,nstp,itrc)-t(i,Jend  ,k,indx,itrc)
             dfx=t(i,Jend,k,indx,itrc)-t(i,Jend-1,k,indx,itrc)
             if (dfx*dft .lt. 0.) then
-              dft=0.                          ! <-- cancel, if inflow 
+              dft=0.                          ! <-- cancel, if inflow
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
               tau=tau_in
             else
@@ -541,9 +541,9 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           t(Istr-1,Jstr-1,k,indx,itrc)=0.5*
      &                          ( t(Istr,Jstr-1,k,indx,itrc)
      &                           +t(Istr-1,Jstr,k,indx,itrc))
-#   ifdef MASKING
+#  ifdef MASKING
      &                                 *rmask(Istr-1,Jstr-1)
-#   endif
+#  endif
         enddo
       endif
 # endif
@@ -553,9 +553,9 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           t(Iend+1,Jstr-1,k,indx,itrc)=0.5*
      &                          (t(Iend,Jstr-1,k,indx,itrc)
      &                          +t(Iend+1,Jstr,k,indx,itrc))
-#   ifdef MASKING
+#  ifdef MASKING
      &                                 *rmask(Iend+1,Jstr-1)
-#   endif
+#  endif
         enddo
       endif
 # endif
@@ -565,9 +565,9 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           t(Istr-1,Jend+1,k,indx,itrc)=0.5*
      &                          ( t(Istr,Jend+1,k,indx,itrc)
      &                           +t(Istr-1,Jend,k,indx,itrc))
-#   ifdef MASKING
+#  ifdef MASKING
      &                                 *rmask(Istr-1,Jend+1)
-#   endif
+#  endif
         enddo
       endif
 # endif
@@ -577,9 +577,9 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           t(Iend+1,Jend+1,k,indx,itrc)=0.5*
      &                          ( t(Iend,Jend+1,k,indx,itrc)
      &                           +t(Iend+1,Jend,k,indx,itrc))
-#   ifdef MASKING
+#  ifdef MASKING
      &                                 *rmask(Iend+1,Jend+1)
-#   endif
+#  endif
         enddo
       endif
 # endif

@@ -121,19 +121,19 @@
 # include "compute_auxiliary_bounds.h"
  
 # ifdef EW_PERIODIC 
-#   define IU_RANGE Istr,Iend
-#   define IV_RANGE Istr,Iend
+#  define IU_RANGE Istr,Iend
+#  define IV_RANGE Istr,Iend
 # else
-#   define IU_RANGE Istr,IendR
-#   define IV_RANGE IstrR,IendR
+#  define IU_RANGE Istr,IendR
+#  define IV_RANGE IstrR,IendR
 # endif
 
 # ifdef NS_PERIODIC 
-#   define JU_RANGE Jstr,Jend
-#   define JV_RANGE Jstr,Jend
+#  define JU_RANGE Jstr,Jend
+#  define JV_RANGE Jstr,Jend
 # else
-#   define JU_RANGE JstrR,JendR
-#   define JV_RANGE Jstr,JendR
+#  define JU_RANGE JstrR,JendR
+#  define JV_RANGE Jstr,JendR
 # endif
 
 !$acc kernels if(compute_on_device) default(present)

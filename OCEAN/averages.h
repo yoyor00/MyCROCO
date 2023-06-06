@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -16,7 +16,7 @@
       real zeta_avg(GLOBAL_2D_ARRAY)
       real ubar_avg(GLOBAL_2D_ARRAY)
       real vbar_avg(GLOBAL_2D_ARRAY)
-      common /avg_zeta/zeta_avg 
+      common /avg_zeta/zeta_avg
      &       /avg_ubar/ubar_avg
      &       /avg_vbar/vbar_avg
       real bostr_avg(GLOBAL_2D_ARRAY)
@@ -42,24 +42,24 @@
       real v_avg(GLOBAL_2D_ARRAY,N)
       real t_avg(GLOBAL_2D_ARRAY,N,NT)
       real rho_avg(GLOBAL_2D_ARRAY,N)
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
       real bvf_avg(GLOBAL_2D_ARRAY,0:N)
-# endif
+#  endif
       real omega_avg(GLOBAL_2D_ARRAY,0:N)
-# ifdef NBQ
+#  ifdef NBQ
       real w_avg(GLOBAL_2D_ARRAY,0:N)
-# else
+#  else
       real w_avg(GLOBAL_2D_ARRAY,N)
-# endif
+#  endif
       common /avg_u/u_avg /avg_v/v_avg /avg_t/t_avg
      &       /avg_rho/rho_avg /avg_omega/omega_avg
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &       /avg_bvf/bvf_avg
-# endif
+#  endif
      &       /avg_w/w_avg
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
@@ -111,10 +111,10 @@
 #    endif /* OXYGEN */
 /*-----------------------------------------------------------------*/
 #   elif defined BIO_BioEBUS
-      real AOU_avg(GLOBAL_2D_ARRAY,N)  
+      real AOU_avg(GLOBAL_2D_ARRAY,N)
       real wind10_avg(GLOBAL_2D_ARRAY)
       common /ocean_AOU_avg/AOU_avg
-      common /ocean_wind10_avg/wind10_avg    
+      common /ocean_wind10_avg/wind10_avg
 #   endif
 /*-----------------------------------------------------------------*/
 #  endif /* BIOLOGY */
@@ -144,19 +144,19 @@
      &       /avg_wac/wac_avg /avg_wkx/wkx_avg
      &       /avg_wke/wke_avg /avg_wepb/wepb_avg
      &       /avg_wepd/wepd_avg
-#  ifdef WAVE_ROLLER 
+#  ifdef WAVE_ROLLER
       real war_avg(GLOBAL_2D_ARRAY)
       real wepr_avg(GLOBAL_2D_ARRAY)
       common /avg_war/war_avg
      &       /avg_wepr/wepr_avg
-#  endif    
+#  endif
 # endif
 # ifdef MRL_WCI
       real sup_avg(GLOBAL_2D_ARRAY)
       real ust2d_avg(GLOBAL_2D_ARRAY)
       real vst2d_avg(GLOBAL_2D_ARRAY)
-      common /avg_sup/sup_avg 
-     &       /avg_ust2d/ust2d_avg /avg_vst2d/vst2d_avg 
+      common /avg_sup/sup_avg
+     &       /avg_ust2d/ust2d_avg /avg_vst2d/vst2d_avg
 #  ifdef SOLVE3D
       real ust_avg(GLOBAL_2D_ARRAY,N)
       real vst_avg(GLOBAL_2D_ARRAY,N)

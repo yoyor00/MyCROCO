@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -49,7 +49,7 @@
 
       start_x =  iminmpi
       start_y =  jminmpi
-      
+
 !     Set the CROCO partition definition to PRISM system
 !------------------------------------------------------------------
 
@@ -60,7 +60,7 @@
       oasis_ig_paral(5) = LLm
 
 
-      CALL prism_def_partition_proto(oasis_part_id, 
+      CALL prism_def_partition_proto(oasis_part_id,
      &     oasis_ig_paral, comp_ierror, LLm*MMm)
       IF ( comp_ierror /= PRISM_Ok ) THEN
         CALL prism_abort_proto ( comp_id, 'cpl_prism_grid',
@@ -88,8 +88,8 @@
       oasis_var_shape(4) = Mmmpi !Mm+2+padd_E + 1  !Mm
 
 ! default definiton
-      ssnd_clname(:) = 'not defined' 
-      srcv_clname(:) = 'not defined' 
+      ssnd_clname(:) = 'not defined'
+      srcv_clname(:) = 'not defined'
 # ifdef AGRIF
       level=Agrif_Fixed()
       write(clevel,'(a,i1.1)') "_", level
@@ -151,7 +151,7 @@
 !     wave_phioc :  wave to ocean TKE flux  [W.m-2]
       srcv_clname(15) = 'CROCO_FOC'//trim(rclevel)
 !     wave_wlm :  wave mean wave length  [m]
-      srcv_clname(16) = 'CROCO_LM'//trim(rclevel)   
+      srcv_clname(16) = 'CROCO_LM'//trim(rclevel)
 !     wave_ubrx: x-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
       srcv_clname(17) = 'CROCO_UBRX'//trim(rclevel)
 !     wave_ubry: y-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
@@ -161,19 +161,19 @@
 !     wave_ussy: y-component of surface Stokes drift velocity [m.s-1]
       srcv_clname(20) = 'CROCO_USSY'//trim(rclevel)
 !     wave_tauox: x-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(21) = 'CROCO_UTWO'//trim(rclevel)  
+      srcv_clname(21) = 'CROCO_UTWO'//trim(rclevel)
 !     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(22) = 'CROCO_VTWO'//trim(rclevel)  
+      srcv_clname(22) = 'CROCO_VTWO'//trim(rclevel)
 !     wave_tauox: eastward-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(23) = 'CROCO_ETWO'//trim(rclevel) 
+      srcv_clname(23) = 'CROCO_ETWO'//trim(rclevel)
 !     wave_tauoy: northward-component of the wave-ocean momentum flux [m2.s-2]
       srcv_clname(24) = 'CROCO_NTWO'//trim(rclevel)
 !     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
-      srcv_clname(25) = 'CROCO_UTAW'//trim(rclevel)  
+      srcv_clname(25) = 'CROCO_UTAW'//trim(rclevel)
 !     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
-      srcv_clname(26) = 'CROCO_VTAW'//trim(rclevel) 
+      srcv_clname(26) = 'CROCO_VTAW'//trim(rclevel)
 !     wave_tauwx: Net wave-supported stress, eastward-component [m2.s-2]
-      srcv_clname(27) = 'CROCO_ETAW'//trim(rclevel)   
+      srcv_clname(27) = 'CROCO_ETAW'//trim(rclevel)
 !     wave_tauwy: Net wave-supported stress, northward-component [m2.s-2]
       srcv_clname(28) = 'CROCO_NTAW'//trim(rclevel)
 
@@ -182,7 +182,7 @@
          IF ( ja == 0 ) THEN   ;   catm = ""
          ELSE                  ;   WRITE(catm,'(a,i1.1)') "_EXT", ja
          ENDIF
-!     
+!
 !     ... Announce sent variables.
       DO ji = 1, nmaxfld
           CALL prism_def_var_proto ( ssnd_nid(ja,ji),
@@ -195,7 +195,7 @@
      &        'Failure in prism_def_var: '//ssnd_clname(ji)//trim(catm))
           ELSE
              IF ( ssnd_nid(ja,ji) /= -1 ) THEN
-                MPI_master_only write(*,*) 
+                MPI_master_only write(*,*)
      & 'CPL-CROCO: sent ',trim(ssnd_clname(ji))//trim(catm),ssnd_nid(ja,ji)
              ENDIF
           ENDIF
@@ -205,15 +205,15 @@
       DO ji = 1, nmaxfld
          CALL prism_def_var_proto ( srcv_nid(ja,ji),
      &       trim(srcv_clname(ji))//trim(catm),
-     &       oasis_part_id, oasis_var_nodims, 
-     &       PRISM_In, oasis_var_shape, 
+     &       oasis_part_id, oasis_var_nodims,
+     &       PRISM_In, oasis_var_shape,
      &       oasis_var_type, comp_ierror)
           IF ( comp_ierror /= PRISM_Ok ) THEN
              CALL prism_abort_proto( srcv_nid(ja,ji),'cpl_prism_define',
      &        'Failure in prism_def_var: '//trim(srcv_clname(ji))//trim(catm))
           ELSE
              IF ( srcv_nid(ja,ji) /= -1 ) THEN
-                MPI_master_only write(*,*) 
+                MPI_master_only write(*,*)
      & 'CPL-CROCO: received ',trim(srcv_clname(ji))//trim(catm),srcv_nid(ja,ji)
              ENDIF
           ENDIF
@@ -224,17 +224,17 @@
 !------------------------------------------------------------------
 !     End of definition phase
 !------------------------------------------------------------------
-      CALL MPI_Barrier( MPI_COMM_WORLD, comp_ierror ) 
+      CALL MPI_Barrier( MPI_COMM_WORLD, comp_ierror )
 # ifdef AGRIF
       if (.not.Agrif_Root()) then
          if (Agrif_fixed() == Agrif_Nb_Fine_Grids()) then
 # endif
             CALL prism_enddef_proto( comp_ierror )
             IF ( comp_ierror /= PRISM_Ok ) THEN
-               CALL prism_abort_proto ( comp_id, 'cpl_prism_enddef', 
+               CALL prism_abort_proto ( comp_id, 'cpl_prism_enddef',
      &              'Failure in prism_enddef')
             ELSE
-               MPI_master_only write(*,*) 
+               MPI_master_only write(*,*)
      &              'CPL-CROCO: ENDDEF OK'
             ENDIF
 # ifdef AGRIF
@@ -245,20 +245,20 @@
       cplmsk(:,:,0) = 1.            ! default use, no coupling mask
       cplmsk(:,:,1:nmaxatm) = 0.    ! default definition when using coupling mask
       fname = 'coupling_masks'//trim(clevel)//'.nc'
-#  if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES
       ierr=0
       call insert_node (fname, len_trim(fname), mynode, NNODES, ierr)
-#  endif
+# endif
       ierr=nf_open(trim(fname), nf_nowrite, ncid)
       if (ierr == NF_NOERR) then
-          MPI_master_only write(*,*) 
+          MPI_master_only write(*,*)
      &    'CPL-CROCO: open coupling_masks'//trim(clevel)//'.nc ok'
           DO ja = 1, nmaxatm
              WRITE(catm,'(a,i1.1)') "_atm", ja
              ierr=nf_inq_varid (ncid, 'cplmsk'//catm, varid)
              if (ierr == NF_NOERR) then
       ierr=nf_fread (cplmsk(START_2D_ARRAY,ja), ncid, varid, 0, r2dvar)
-                MPI_master_only write(*,*) 
+                MPI_master_only write(*,*)
      &               'CPL-CROCO: read cplmsk'//catm//' ok',
      &               minval(cplmsk(1:Lmmpi,1:Mmmpi,ja)),
      &               maxval(cplmsk(1:Lmmpi,1:Mmmpi,ja))
@@ -266,7 +266,7 @@
           enddo
           ierr=nf_close(ncid)
       else
-          MPI_master_only write(*,*) 
+          MPI_master_only write(*,*)
      &        'CPL-CROCO: coupling_masks'//trim(clevel)//'.nc not found'
       endif
       return
@@ -277,4 +277,4 @@
 !---------------------------------------------------------------------------------------
       subroutine cpl_prism_define_empty
       end
-#endif 
+#endif

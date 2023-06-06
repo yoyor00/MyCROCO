@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -83,15 +83,15 @@
 !
       do j=Jstr,Jend
         do i=Istr,Iend
-          indx=Jwtype(i,j)      
+          indx=Jwtype(i,j)
           cff1=Z(i,j)*Zscale/lmd_mu1(indx)
           cff2=Z(i,j)*Zscale/lmd_mu2(indx)
-          if (cff1.ge.-20.) then            ! Quick fix to avoid computing 
+          if (cff1.ge.-20.) then            ! Quick fix to avoid computing
             cff3=lmd_r1(indx) *exp(cff1)    ! exp(-15000)
           else
             cff3=0.
           endif
-          if (cff2.ge.-20.) then         
+          if (cff2.ge.-20.) then
             cff4=(1.-lmd_r1(indx)) *exp(cff2)
           else
             cff4=0.
@@ -207,15 +207,15 @@
 !
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
-          indx=Jwtype(i,j)      
+          indx=Jwtype(i,j)
           cff1=Z(i,j)*Zscale/lmd_mu1(indx)
           cff2=Z(i,j)*Zscale/lmd_mu2(indx)
-          if (cff1.ge.-20.) then            ! Quick fix to avoid computing 
+          if (cff1.ge.-20.) then            ! Quick fix to avoid computing
             cff3=lmd_r1(indx) *exp(cff1)    ! exp(-15000)
           else
             cff3=0.
           endif
-          if (cff2.ge.-20.) then         
+          if (cff2.ge.-20.) then
             cff4=(1.-lmd_r1(indx)) *exp(cff2)
           else
             cff4=0.
@@ -230,6 +230,6 @@
       subroutine lmd_swfrac
       return
       end
-#endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */ 
+#endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */
 
 

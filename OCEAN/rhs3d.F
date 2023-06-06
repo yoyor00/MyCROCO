@@ -102,7 +102,7 @@
 # ifdef MRL_WCI
       real vstu,dudx,dvdx,ustv,dude,dvde
 # endif
-#include "openacc_work.h"
+# include "openacc_work.h"
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -403,12 +403,12 @@
 # endif /* BODYFORCE */
 
 ! TO BE CHANGED, hugly
-#define wrk1(i,j) wrk1_3D(i,j,k)
-#define wrk2(i,j) wrk2_3D(i,j,k)
-#define UFx(i,j) UFx_3D(i,j,k)
-#define UFe(i,j) UFe_3D(i,j,k)
-#define VFx(i,j) VFx_3D(i,j,k)
-#define VFe(i,j) VFe_3D(i,j,k)
+# define wrk1(i,j) wrk1_3D(i,j,k)
+# define wrk2(i,j) wrk2_3D(i,j,k)
+# define UFx(i,j) UFx_3D(i,j,k)
+# define UFe(i,j) UFe_3D(i,j,k)
+# define VFx(i,j) VFx_3D(i,j,k)
+# define VFe(i,j) VFe_3D(i,j,k)
 
       do k=1,N
 
@@ -731,7 +731,7 @@
      &                    -0.125*(Huxx(i,j)+Huxx(i+1,j)))
 
 #   else
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFx4(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
@@ -739,7 +739,7 @@
      &                         *(Huon(i,j,k)+Huon(i+1,j,k)
      &                     -0.125*(Huxx(i,j)+Huxx(i+1,j)))
             endif
-#     endif
+#    endif
             cffX=u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
             if (cffX.gt.0.) then
               curvX=uxx(i,j)
@@ -816,7 +816,7 @@
      &                    -0.125*(Hvee(i,j)+Hvee(i,j+1)))
 
 #   else
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFe4(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
@@ -824,7 +824,7 @@
      &                         *(Hvom(i,j,k)+Hvom(i,j+1,k)
      &                     -0.125*(Hvee(i,j)+Hvee(i,j+1)))
             endif
-#     endif
+#    endif
             cffE=v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
             if (cffE.gt.0.) then
               curvE=vee(i,j)
@@ -900,7 +900,7 @@
      &                        *(Hvom(i,j,k)+Hvom(i-1,j,k)
      &                    -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
 #   else
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFe4(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
@@ -908,7 +908,7 @@
      &                         *(Hvom(i,j,k)+Hvom(i-1,j,k)
      &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
             endif
-#     endif
+#    endif
             cffX=u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
             cffE=Hvom(i,j,k)+Hvom(i-1,j,k)
             if (cffE.gt.0.) then
@@ -987,7 +987,7 @@
      &                    -0.125*(Huee(i,j)+Huee(i,j-1)))
 
 #   else
-#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
          defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFx4(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
@@ -995,7 +995,7 @@
      &                         *(Huon(i,j,k)+Huon(i,j-1,k)
      &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
             endif
-#     endif
+#    endif
             cffE=v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
             cffX=Huon(i,j,k)+Huon(i,j-1,k)
             if (cffX.gt.0.) then
@@ -1044,9 +1044,9 @@
 !
 ! Correction with Total Variance Diminishing method
 !
-#  ifdef UV_HADV_TVD
-#   include "uvhadv_tvd.h"
-#  endif
+#   ifdef UV_HADV_TVD
+#    include "uvhadv_tvd.h"
+#   endif
 
 #  endif /* UV_HADV_UP3 */
 !
@@ -1255,9 +1255,11 @@
 
 !$acc end kernels
 
+# ifdef UV_ADV
 
-#define DC3D UFx_3D
-#define CF3D UFe_3D
+#  ifdef UV_VADV_SPLINES
+#  define DC3D UFx_3D
+#  define CF3D UFe_3D
 !$acc parallel loop if(compute_on_device) default(present) async(1)
 !$acc& collapse(3)
       do k=1,N
@@ -1279,11 +1281,10 @@
           enddo
         enddo
        enddo
+#  endif       
 
 !$acc parallel loop if(compute_on_device) default(present) async(1)
       DOLOOP2D(IstrU,Iend,Jstr,Jend)
-
-# ifdef UV_ADV
 !
 !======================================================================
 !
@@ -1517,10 +1518,10 @@
 !
        ENDDOLOOP2D
 
-#undef DC3D
-#undef CF3D
-#define DC3D VFx_3D
-#define CF3D VFe_3D
+#  undef DC3D
+#  undef CF3D
+#  define DC3D VFx_3D
+#  define CF3D VFe_3D
 
 !$acc parallel loop if(compute_on_device) default(present) async(2)
 !$acc& collapse(3)
@@ -1755,6 +1756,9 @@
           endif
 #  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
 
+        ENDDOLOOP2D
+
+
 # endif /* UV_ADV */
 !
 !======================================================================
@@ -1764,6 +1768,7 @@
 !======================================================================
 !
 # ifdef MRL_WCI
+       do j=Jstr,Jend
         do k=1,N
           do i=IstrU,iend
             cff  =0.5*on_u(i,j)*(Hz(i-1,j,k)+Hz(i,j,k))
@@ -1821,10 +1826,10 @@
 #  endif /* DIAGNOSTICS_UV */
          enddo
       enddo
+      enddo
 # endif   /* MRL_WCI */
-        ENDDOLOOP2D
-#undef DC3D
-#undef CF3D
+# undef DC3D
+# undef CF3D
 !$acc wait(1,2)
 !$acc kernels if(compute_on_device) default(present)
 

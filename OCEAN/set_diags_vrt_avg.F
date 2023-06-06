@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 #if (defined DIAGNOSTICS_VRT && defined AVERAGES)
- 
+
       subroutine set_diags_vrt_avg (tile)
       implicit none
       integer tile
@@ -9,7 +9,7 @@
       call set_diags_vrt_avg_tile (istr,iend,jstr,jend)
       return
       end
- 
+
       subroutine set_diags_vrt_avg_tile (istr,iend,jstr,jend)
 !
 ! Compute time-averaged fields within a tile.
@@ -47,10 +47,10 @@
 # include "ocean3d.h"
 
 # include "averages.h"
-#include "diags_vrt.h"
+# include "diags_vrt.h"
 
 !
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 !
       ilc=1+iic-ntstart  ! number of time step since restart
 !
@@ -70,61 +70,61 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  vrtXadv_avg(i,j)=vrtXadv(i,j)  
+                do i=IstrR,IendR
+                  vrtXadv_avg(i,j)=vrtXadv(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtYadv_avg(i,j)=vrtYadv(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtHdiff_avg(i,j)=vrtHdiff(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtCor_avg(i,j)=vrtCor(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtPrsgrd_avg(i,j)=vrtPrsgrd(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtHmix_avg(i,j)=vrtHmix(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtVmix_avg(i,j)=vrtVmix(i,j)
             enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtVmix2_avg(i,j)=vrtVmix2(i,j)
             enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtWind_avg(i,j)=vrtWind(i,j)
             enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtDrag_avg(i,j)=vrtDrag(i,j)
             enddo
           enddo
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtrate_avg(i,j)=vrtrate(i,j)
            enddo
           enddo
@@ -150,73 +150,73 @@
           if (ZEROTH_TILE) timediags_vrt_avg=timediags_vrt_avg+time
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  vrtXadv_avg(i,j) = 
+                do i=IstrR,IendR
+                  vrtXadv_avg(i,j) =
      &                       vrtXadv_avg(i,j) +
      &                       vrtXadv(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  vrtYadv_avg(i,j) = 
+                do i=IstrR,IendR
+                  vrtYadv_avg(i,j) =
      &                       vrtYadv_avg(i,j) +
      &                       vrtYadv(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtHdiff_avg(i,j) =
      &                       vrtHdiff_avg(i,j) +
      &                       vrtHdiff(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtCor_avg(i,j) =
      &                       vrtCor_avg(i,j) +
      &                       vrtCor(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtPrsgrd_avg(i,j) =
      &                       vrtPrsgrd_avg(i,j) +
      &                       vrtPrsgrd(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtHmix_avg(i,j) =
      &                       vrtHmix_avg(i,j) +
      &                       vrtHmix(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  vrtVmix_avg(i,j) = 
+                do i=IstrR,IendR
+                  vrtVmix_avg(i,j) =
      &                       vrtVmix_avg(i,j) +
      &                       vrtVmix(i,j)
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  vrtVmix2_avg(i,j) = 
+                do i=IstrR,IendR
+                  vrtVmix2_avg(i,j) =
      &                       vrtVmix2_avg(i,j) +
      &                       vrtVmix2(i,j)
            enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  vrtWind_avg(i,j) = 
+                do i=IstrR,IendR
+                  vrtWind_avg(i,j) =
      &                       vrtWind_avg(i,j) +
      &                       vrtWind(i,j)
            enddo
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  vrtDrag_avg(i,j) = 
+                do i=IstrR,IendR
+                  vrtDrag_avg(i,j) =
      &                       vrtDrag_avg(i,j) +
      &                       vrtDrag(i,j)
            enddo
@@ -224,10 +224,10 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
-                  vrtrate_avg(i,j) = 
-     &                    vrtrate_avg(i,j) + 
-     &                    vrtrate(i,j)  
+                do i=IstrR,IendR
+                  vrtrate_avg(i,j) =
+     &                    vrtrate_avg(i,j) +
+     &                    vrtrate(i,j)
            enddo
           enddo
 
@@ -262,21 +262,21 @@
 
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtXadv_avg(i,j) = cff *
      &                       ( vrtXadv_avg(i,j) +
      &                         vrtXadv(i,j) )
              enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtYadv_avg(i,j) = cff *
      &                       ( vrtYadv_avg(i,j) +
      &                         vrtYadv(i,j) )
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtHdiff_avg(i,j) = cff *
      &                       ( vrtHdiff_avg(i,j) +
      &                         vrtHdiff(i,j) )
@@ -304,14 +304,14 @@
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtVmix_avg(i,j) = cff *
      &                       ( vrtVmix_avg(i,j) +
      &                         vrtVmix(i,j) )
            enddo
           enddo
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtVmix2_avg(i,j) = cff *
      &                       ( vrtVmix2_avg(i,j) +
      &                         vrtVmix2(i,j) )
@@ -319,7 +319,7 @@
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtWind_avg(i,j) = cff *
      &                       ( vrtWind_avg(i,j) +
      &                         vrtWind(i,j) )
@@ -327,7 +327,7 @@
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtDrag_avg(i,j) = cff *
      &                       ( vrtDrag_avg(i,j) +
      &                         vrtDrag(i,j) )
@@ -335,9 +335,9 @@
           enddo
 
              do j=JstrR,JendR
-                do i=IstrR,IendR 
+                do i=IstrR,IendR
                   vrtrate_avg(i,j) = cff *
-     &                    ( vrtrate_avg(i,j) + 
+     &                    ( vrtrate_avg(i,j) +
      &                      vrtrate(i,j) )
            enddo
           enddo

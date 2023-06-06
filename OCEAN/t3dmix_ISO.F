@@ -26,10 +26,10 @@
       trd=omp_get_thread_num()
       do itrc=1,NTRA_T3DMIX
 
-#  ifdef MUSTANG
+# ifdef MUSTANG
 !  With MUSTANG, mixing of sediments is done in step3d_t
        if (itrc.lt.itsubs1+nv_grav .or. itrc.gt.itsubs1+nvp) then
-#  endif
+# endif
 
 # ifdef AGRIF
         if (AGRIF_Root()) then
@@ -75,9 +75,9 @@
      &                    )
 # endif   /* AGRIF */
 
-#  ifdef MUSTANG
+# ifdef MUSTANG
        endif
-#  endif
+# endif
 
       enddo
       return
@@ -182,9 +182,9 @@
 #ifdef DIAGNOSTICS_TS
 # include "diagnostics.h"
 #endif
-# ifdef DIAGNOSTICS_PV
-#  include "diags_pv.h"
-# endif
+#ifdef DIAGNOSTICS_PV
+# include "diags_pv.h"
+#endif
 #ifdef AGRIF
 # include "zoom.h"
 #endif
@@ -542,14 +542,14 @@
             enddo
           enddo
 
-# if defined AGRIF && defined AGRIF_CONSERV_TRA
+#if defined AGRIF && defined AGRIF_CONSERV_TRA
           MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
      &          MYFX(IstrR:IendR,JstrR:JendR,k,itrc)+
      &          dt*FX(IstrR:IendR,JstrR:JendR)
           MYFY(IstrR:IendR,JstrR:JendR,k,itrc)=
      &          MYFY(IstrR:IendR,JstrR:JendR,k,itrc)+
      &          dt*FE(IstrR:IendR,JstrR:JendR)
-# endif
+#endif
 
 #ifdef TS_DIF4
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -857,7 +857,7 @@
 
 
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -876,27 +876,27 @@
 
       enddo   ! --> k
 
-# ifdef TS_MIX_IMP
+#ifdef TS_MIX_IMP
        DOLOOP2D(Istr,Iend,Jstr,Jend)
-#  ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
         do i=Istr,Iend
             DC(i,0)=dt*pn(i,j)*pm(i,j)
         enddo
-#  endif
+# endif
 # define FC FFC
 # include "t3dmix_tridiagonal.h"
 # undef FC   
       ENDDOLOOP2D
-# endif
+#endif
 
-# undef MIN
-# undef MAX
-# undef LT
-# undef GT
-# undef diff3u 
-# undef diff3v 
+#undef MIN
+#undef MAX
+#undef LT
+#undef GT
+#undef diff3u 
+#undef diff3v 
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -923,7 +923,7 @@
 
 # if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
 
-# include "finalize_diagnostics_tsadv.h"
+#  include "finalize_diagnostics_tsadv.h"
 
 # endif
 
@@ -1005,7 +1005,7 @@
        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
          i=5
          j=5
-#   if defined DIAGNOSTICS_TS_MLD
+#  if defined DIAGNOSTICS_TS_MLD
         cff=Trate_mld(i,j,itrc)-
      &      TXadv_mld(i,j,itrc)-
      &      TYadv_mld(i,j,itrc)-
@@ -1017,7 +1017,7 @@
            MPI_master_only write(stdout,'(A,2x,1pe10.3)')
      &     ' T3DMIX: T budget closure MLD     :', cff
 
-#   endif /* DIAGNOSTICS_TS_MLD */
+#  endif /* DIAGNOSTICS_TS_MLD */
         cff=Trate(i,j,N-5,itrc)-
      &       TXadv(i,j,N-5,itrc)-
      &       TYadv(i,j,N-5,itrc)-

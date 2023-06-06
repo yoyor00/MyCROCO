@@ -2,16 +2,16 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
                                 !
-      subroutine closecdf       ! Close output netCDF files. 
+      subroutine closecdf       ! Close output netCDF files.
                                 !
       implicit none
 #include "param.h"
@@ -24,7 +24,7 @@
 # include "nc_sta.h"
 #endif
 #include "netcdf.inc"
-      integer ierr 
+      integer ierr
       if (ncidrst.ne.-1) ierr=nf_close(ncidrst)
       if (ncidhis.ne.-1) ierr=nf_close(ncidhis)
 #ifdef AVERAGES
@@ -32,6 +32,12 @@
 #endif
 #ifdef FLOATS
       if (ncidflt.ne.-1) ierr=nf_close(ncidflt)
+#endif
+#if defined ABL1D && ! defined XIOS
+      if (ncidablhis.ne.-1) ierr=nf_close(ncidablhis)
+# ifdef AVERAGES
+      if (ncidablavg.ne.-1) ierr=nf_close(ncidablavg)
+# endif
 #endif
 #if defined DIAGNOSTICS_TS
       if (nciddia.ne.-1) ierr=nf_close(nciddia)
@@ -67,7 +73,7 @@
 # endif
 #endif
 
-# if defined DIAGNOSTICS_EDDY && !  defined XIOS
+#if defined DIAGNOSTICS_EDDY && !  defined XIOS
       if (nciddiags_eddy.ne.-1) ierr=nf_close(nciddiags_eddy)
 # ifdef AVERAGES
       if (nciddiags_eddy_avg.ne.-1) ierr=nf_close(nciddiags_eddy_avg)
@@ -90,7 +96,7 @@
       if (ncidsta.ne.-1) ierr=nf_close(ncidsta)
 #endif
 
-      MPI_master_only write(stdout,'(/1x,2A,I5,3(/8x,A,I5)/)') 
+      MPI_master_only write(stdout,'(/1x,2A,I5,18(/8x,A,I5)/)')
      &   'MAIN - '
      &  ,'number of records written into history  file(s):', nrechis
      &  ,'number of records written into restart  file(s):', nrecrst
@@ -103,6 +109,14 @@
 #ifdef FLOATS
      &  ,'number of records written into floats   file(s):', nrecflt
 #endif /* FLOATS */
+#if defined ABL1D && ! defined XIOS
+     &  ,'number of records written into abl history file(s):',
+     &                                                    nrecablhis
+# ifdef AVERAGES
+     &  ,'number of records written into abl averages file(s):',
+     &                                                    nrecablavg
+# endif
+#endif
 #if defined DIAGNOSTICS_TS
      &  ,'number of records written into diags_t  file(s):', nrecdia
 # ifdef AVERAGES
@@ -141,7 +155,7 @@
      &                                                 nrecdiags_pv_avg
 # endif
 #endif /* DIAGNOSTICS_PV */
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
      &  ,'number of records written into surf  file(s):',
      &                                                     nrecsurf
 # ifdef AVERAGES

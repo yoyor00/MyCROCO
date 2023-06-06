@@ -14,13 +14,13 @@
 #ifdef LMD_SKPP
 # if defined LMD_SKPP2005
 #  include "lmd_skpp2005.F"
-#else
+# else
 #  include "lmd_skpp1994.F"
-#endif
+# endif
 #else
 !========================
       subroutine lmd_skpp_empty
       return
-      end  
-!========================          
+      end
+!========================
 #endif

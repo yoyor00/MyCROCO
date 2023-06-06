@@ -1,14 +1,14 @@
-# ifdef TS_VADV_SPLINES
+#ifdef TS_VADV_SPLINES
 !
 !----------------------------------------------------------
-! Compute vertical advective fluxes using parabolic splines: 
+! Compute vertical advective fluxes using parabolic splines:
 ! FC=W*[spline-interpolated tracer]
 !----------------------------------------------------------
 !
                               ! Construct parabolic splines: here
           do i=Istr,Iend      ! CF is the set of vertical derivatives
             FC(i,0)=0.        ! of the tracer field t(:,:,:,nadv,:),
-            CF(i,0)=0.        ! FC is an auxiliary scratch variable. 
+            CF(i,0)=0.        ! FC is an auxiliary scratch variable.
           enddo
           do k=1,N-1,+1
             do i=Istr,Iend
@@ -17,7 +17,7 @@
               CF(i,k)= cff*( 6.*( t(i,j,k+1,nadv,itrc)
      &                           -t(i,j,k  ,nadv,itrc) )-HZR(i,j,k)*CF(i,k-1)
      &                                                                      )
-            enddo 
+            enddo
           enddo
           do i=Istr,Iend
             CF(i,N)=0.
@@ -28,11 +28,11 @@
             enddo
           enddo               !--> discard FC, keep CF
 
-          cff=1./3.           ! Compute vertical advective fluxes 
+          cff=1./3.           ! Compute vertical advective fluxes
           do k=1,N-1          ! FC=W*[spline-interpolated tracer]
             do i=Istr,Iend
               FC(i,k)=We(i,j,k)*( t(i,j,k,nadv,itrc)+cff*HZR(i,j,k)
-     &                                  *(CF(i,k)+0.5*CF(i,k-1)) 
+     &                                  *(CF(i,k)+0.5*CF(i,k-1))
      &                                                            )
             enddo
           enddo               !--> discard CF
@@ -42,10 +42,10 @@
             CF(i,0)=dt*pm(i,j)*pn(i,j)
           enddo
 
-# elif defined TS_VADV_AKIMA
+#elif defined TS_VADV_AKIMA
 !
 !----------------------------------------------------------
-! Compute vertical advective fluxes 
+! Compute vertical advective fluxes
 ! using 4th-order Akima scheme
 !----------------------------------------------------------
 !
@@ -72,7 +72,7 @@
             do i=istr,iend
               FC(i,k)=0.5*(   t(i,j,k  ,nadv,itrc)
      &                +       t(i,j,k+1,nadv,itrc)
-     &                -0.333333333333*(CF(i,k+1)-CF(i,k)) 
+     &                -0.333333333333*(CF(i,k+1)-CF(i,k))
      &                                                  )*We(i,j,k)
             enddo
           enddo            !--> discard CF
@@ -82,22 +82,22 @@
             CF(i,0)=dt*pm(i,j)*pn(i,j)
           enddo
 
-# elif defined TS_VADV_WENO5
+#elif defined TS_VADV_WENO5
 !
 !----------------------------------------------------------
-! Compute vertical advective fluxes 
+! Compute vertical advective fluxes
 ! using 5th-order WENO scheme
 !----------------------------------------------------------
 !
           do k=3,N-3
             do i=Istr,Iend
               FC(i,k)=We(i,j,k)*
-#  ifdef PREDICTOR
+# ifdef PREDICTOR
      &              flux6(
-#  else
-     &              flux5_weno( 
-#  endif
-     &             t(i,j,k-2,nadv,itrc), t(i,j,k-1,nadv,itrc), 
+# else
+     &              flux5_weno(
+# endif
+     &             t(i,j,k-2,nadv,itrc), t(i,j,k-1,nadv,itrc),
      &             t(i,j,k  ,nadv,itrc), t(i,j,k+1,nadv,itrc),
      &             t(i,j,k+2,nadv,itrc), t(i,j,k+3,nadv,itrc), We(i,j,k))
             enddo
@@ -105,38 +105,38 @@
 
           do i=Istr,Iend
             FC(i,2)=We(i,j,2)*
-#  ifdef PREDICTOR
+# ifdef PREDICTOR
      &              flux4(
-#  else
+# else
      &              flux3_weno(
-#  endif
-     &             t(i,j,1,nadv,itrc), t(i,j,2,nadv,itrc), 
+# endif
+     &             t(i,j,1,nadv,itrc), t(i,j,2,nadv,itrc),
      &             t(i,j,3,nadv,itrc), t(i,j,4,nadv,itrc), We(i,j,2))
 
             FC(i,N-2)=We(i,j,N-2)*
-#  ifdef PREDICTOR
+# ifdef PREDICTOR
      &              flux4(
-#  else
+# else
      &              flux3_weno(
-#  endif
-     &             t(i,j,N-3,nadv,itrc), t(i,j,N-2,nadv,itrc), 
+# endif
+     &             t(i,j,N-3,nadv,itrc), t(i,j,N-2,nadv,itrc),
      &             t(i,j,N-1,nadv,itrc), t(i,j,N  ,nadv,itrc), We(i,j,N-2))
 
             FC(i,1  )=We(i,j,1)*
-#  ifdef PREDICTOR
+# ifdef PREDICTOR
      &              flux2(
-#  else
+# else
      &              flux1(
-#  endif
+# endif
      &             t(i,j,1  ,nadv,itrc),
      &             t(i,j,2  ,nadv,itrc), We(i,j,1  ), 1.)
 
             FC(i,N-1)=We(i,j,N-1)*
-#  ifdef PREDICTOR
+# ifdef PREDICTOR
      &              flux2(
-#  else
+# else
      &              flux1(
-#  endif
+# endif
      &             t(i,j,N-1,nadv,itrc),
      &             t(i,j,N  ,nadv,itrc), We(i,j,N-1), 1.)
 
@@ -145,7 +145,7 @@
             CF(i,0)=dt*pm(i,j)*pn(i,j)
           enddo
 
-# elif defined TS_VADV_C2
+#elif defined TS_VADV_C2
 !
 !----------------------------------------------------------
 ! Compute vertical advective fluxes
@@ -164,7 +164,7 @@
            CF(i,0 )=dt*pm(i,j)*pn(i,j)
          enddo
 
-# else
+#else
 !
 !----------------------------------------------------------
 ! Compute vertical advective fluxes
@@ -194,4 +194,4 @@
             FC(i,N )=0.0
             CF(i,0 )=dt*pm(i,j)*pn(i,j)
           enddo
-# endif
+#endif

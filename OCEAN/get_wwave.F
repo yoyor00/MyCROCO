@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,11 +15,11 @@
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
-#ifdef OPENACC
+# ifdef OPENACC
       use exchange_device_host
-#endif
+# endif
       implicit none
-# include "param.h" 
+# include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
 # include "forces.h"
@@ -44,12 +44,12 @@
 !
 ! If not opened yet, open forcing NetCDF file for reading.
 ! Find and save IDs for relevant variables, determine whether
-! wind wave data are field or scalar values. 
+! wind wave data are field or scalar values.
 !
 
         if (ncidwave.eq.-1) then
           ierr=nf_open(wave_file(1:lstr), nf_nowrite, ncidwave)
-          if (ierr .ne. nf_noerr) goto 4                !--> ERROR 
+          if (ierr .ne. nf_noerr) goto 4                !--> ERROR
         endif
 
         ierr=nf_inq_varid (ncidwave, 'wwv_time', ww_tid)
@@ -63,7 +63,7 @@
 # endif
 
 ! Check if wave amplitude present, and if so, if field or scalar series
-      
+
         lvar=lenstr(vname(1,indxWWA))
         ierr=nf_inq_varid (ncidwave,vname(1,indxWWA)(1:lvar),wwa_id)
         if (ierr .eq. nf_noerr) then
@@ -100,9 +100,9 @@
           goto 99                                         !--> ERROR
         endif
 
-     
+
 ! Check if wave period present, and if so, if field or scalar series
-      
+
         lvar=lenstr(vname(1,indxWWP))
         ierr=nf_inq_varid (ncidwave,vname(1,indxWWP)(1:lvar),wwp_id)
         if (ierr .eq. nf_noerr) then
@@ -144,7 +144,7 @@
 
 ! Check if breaking dissipation present, and if so, if field or scalar series
 
-# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING   
+# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
         lvar=lenstr(vname(1,indxWEB))
         ierr=nf_inq_varid (ncidwave,vname(1,indxWEB)(1:lvar),wweb_id)
         if (ierr .eq. nf_noerr) then
@@ -165,7 +165,7 @@
 
 ! Check if frictional dissipation present, and if so, if field or scalar series
 
-# if defined MRL_WCI && defined WAVE_OFFLINE_FRICTION  
+# if defined MRL_WCI && defined WAVE_OFFLINE_FRICTION
         lvar=lenstr(vname(1,indxWED))
         ierr=nf_inq_varid (ncidwave,vname(1,indxWED)(1:lvar),wwed_id)
         if (ierr .eq. nf_noerr) then
@@ -219,7 +219,7 @@
         call set_cycle (ncidwave,   ww_tid,    ntww,
      &                  ww_cycle, ww_ncycle, ww_rec)
         if (may_day_flag.ne.0) return    !-->  EXIT
-      
+
         itww=2
         wwv_time(1)=-1.E+20
         wwv_time(2)=-1.E+20
@@ -231,10 +231,10 @@
         wweb_scale=1.
         wwed_scale=1.
         wwer_scale=1.
-#  ifdef MUSTANG
+# ifdef MUSTANG
         wwu_scale=1.
-#  endif
-     
+# endif
+
       endif                   !<-- itww.eq.0 .or. iic.eq.0
 
 !
@@ -253,9 +253,14 @@
 
       ierr=nf_get_var1_FTYPE(ncidwave, ww_tid, ww_rec, cff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,6) 'wwv_time', ww_rec 
+        write(stdout,6) 'wwv_time', ww_rec
         goto 99                                         !--> ERROR
       endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidwave,ww_tid,
+     &                       ww_origin_date_in_sec)
+        cff=cff+ww_origin_date_in_sec*sec2day
+# endif
       wwv_time(i)=cff*day2sec+ww_cycle*ww_ncycle
       if (wwv_time(itww).eq.-1.E+20) wwv_time(itww)=wwv_time(i)
 
@@ -264,9 +269,9 @@
       if (wwagrd.eq.1.) then
         ierr=nf_fread (wwag(START_2D_ARRAY,i), ncidwave, wwa_id,
      &                                           ww_rec, r2dvar)
-#ifdef OPENACC
+# ifdef OPENACC
         call update_device(wwag(:,:,i))
-#endif
+# endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwa_id,ww_rec,wwap(i))
       endif
@@ -274,16 +279,16 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wind-wave amplitude', ww_rec
         goto 99                                         !--> ERROR
-      endif 
-      
+      endif
+
 ! Read wave direction
 
       if (wwdgrd.eq.1.) then
         ierr=nf_fread (wwdg(START_2D_ARRAY,i), ncidwave, wwd_id,
      &                                           ww_rec, r2dvar)
-#ifdef OPENACC
+# ifdef OPENACC
         call update_device(wwdg(:,:,i))
-#endif
+# endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwd_id,ww_rec,wwdp(i))
       endif
@@ -291,16 +296,16 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wind-wave direction', ww_rec
         goto 99                                         !--> ERROR
-      endif 
-      
+      endif
+
 ! Read wave period
 
       if (wwpgrd.eq.1.) then
         ierr=nf_fread (wwpg(START_2D_ARRAY,i), ncidwave, wwp_id,
      &                                           ww_rec, r2dvar)
-#ifdef OPENACC
+# ifdef OPENACC
         call update_device(wwpg(:,:,i))
-#endif
+# endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwp_id,ww_rec,wwpp(i))
       endif
@@ -308,17 +313,17 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wind-wave period', ww_rec
         goto 99                                         !--> ERROR
-      endif 
-      
+      endif
+
 ! Read orbital velocity
 
 # ifdef MUSTANG
       if (wwugrd.eq.1.) then
         ierr=nf_fread (wwug(START_2D_ARRAY,i), ncidwave, wwu_id,
      &                                           ww_rec, r2dvar)
-#ifdef OPENACC
+#  ifdef OPENACC
         call update_device(wwug(:,:,i))
-#endif
+#  endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwu_id,ww_rec,wwup(i))
       endif
@@ -335,9 +340,9 @@
       if (wwebgrd.eq.1.) then
         ierr=nf_fread (wweb(START_2D_ARRAY,i), ncidwave, wweb_id,
      &                                           ww_rec, r2dvar)
-#ifdef OPENACC
+#  ifdef OPENACC
         call update_device(wweb(:,:,i))
-#endif
+#  endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wweb_id,ww_rec,wwebp(i))
       endif
@@ -345,18 +350,18 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wave breaking dissipation', ww_rec
         goto 99                                         !--> ERROR
-      endif       
+      endif
 # endif
-    
+
 ! Read frictional dissipation
 
 # if defined MRL_WCI && defined WAVE_OFFLINE_FRICTION
       if (wwedgrd.eq.1.) then
         ierr=nf_fread (wwedd(START_2D_ARRAY,i), ncidwave, wwed_id,
      &                                           ww_rec, r2dvar)
-#ifdef OPENACC
+#  ifdef OPENACC
         call update_device(wwedd(:,:,i))
-#endif
+#  endif
      else
         ierr=nf_get_var1_FTYPE (ncidwave,wwed_id,ww_rec,wwedp(i))
       endif
@@ -364,18 +369,18 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wave frictional dissipation', ww_rec
         goto 99                                         !--> ERROR
-      endif       
+      endif
 # endif
-   
+
 ! Read frictional dissipation
 
-# if defined MRL_WCI && defined WAVE_OFFLINE_ROLLER 
+# if defined MRL_WCI && defined WAVE_OFFLINE_ROLLER
       if (wwergrd.eq.1.) then
         ierr=nf_fread (wwer(START_2D_ARRAY,i), ncidwave, wwer_id,
      &                                           ww_rec, r2dvar)
-#ifdef OPENACC
+#  ifdef OPENACC
         call update_device(wwer(:,:,i))
-#endif
+#  endif
       else
         ierr=nf_get_var1_FTYPE (ncidwave,wwer_id,ww_rec,wwerp(i))
       endif
@@ -383,18 +388,21 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wave roller dissipation', ww_rec
         goto 99                                         !--> ERROR
-      endif       
+      endif
 # endif
 
-  
+
       itww=i
       MPI_master_only write(stdout,'(6x,A,1x,A,1x,F10.4,1x,I4)')
      &  'GET_WWAVE --','Read wind wave input data for time =', cff
+# ifdef USE_CALENDAR
+     &  -ww_origin_date_in_sec*sec2day
+# endif
 # ifdef MPI
      &                                                      , mynode
 # endif
       if (ntww.gt.1) goto 1
-      if (ntww.eq.1) return 
+      if (ntww.eq.1) return
 !
 !
 ! Sort out error messages: The following portion of the code is
@@ -411,13 +419,16 @@
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) ww_rec, ntww, wave_file(1:lstr), tdays,
      &                                wwv_time(itww)*sec2day
+# ifdef USE_CALENDAR
+     &  -ww_origin_date_in_sec*sec2day
+# endif
   8   format(/,' GET_WWAVE - ERROR: requested time record ',I4,
      &       1x,'exceeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing NetCDF file: ',a, /,14x,'TDAYS = ',
      &       g12.4,2x,'last available wwv_time = ',g12.4)
 
   99  may_day_flag=2
-    
+
       return
       end
 !
@@ -430,7 +441,7 @@
       subroutine set_wwave (tile)
       implicit none
 # include "param.h"
-      integer tile 
+      integer tile
 # include "compute_tile_bounds.h"
 !
       call set_wwave_tile (Istr,Iend,Jstr,Jend)
@@ -452,7 +463,7 @@
 # ifdef MUSTANG
      &       , wwU, fac71, fac72
 # endif
-      real    cff,cff1,cff2, kh,khd,kw, eps, wramp,m2p,isr2 
+      real    cff,cff1,cff2, kh,khd,kw, eps, wramp,m2p,isr2
 # ifdef BBL_OFFLINE
      &                                            , ab, orb_vel
 # endif
@@ -487,20 +498,20 @@
 !
       if (ww_cycle.lt.0.) then
         if (FIRST_TIME_STEP) then
-        
+
             wwA=wwa_scale*wwap(itww)
             wwD=wwd_scale*wwdp(itww)
             wwP=wwp_scale*wwpp(itww)
 # ifdef MUSTANG
             wwU=wwu_scale*wwup(itww)
 # endif
-# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING    
+# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
             wwEpb=wweb_scale*wwebp(itww)
 # endif
 # if defined MRL_WCI && defined WAVE_OFFLINE_FRICTION
             wwEpd=wwed_scale*wwedp(itww)
 # endif
-# if defined MRL_WCI && defined WAVE_OFFLINE_ROLLER   
+# if defined MRL_WCI && defined WAVE_OFFLINE_ROLLER
             wwEpr=wwer_scale*wwerp(itww)
 # endif
 
@@ -510,7 +521,7 @@
                 Awave(i,j)=(wwagrd)*wwa_scale*wwag(i,j,itww) +
      &                     (1.-wwagrd)*wwA
                 Dwave(i,j)=(wwdgrd)*wwd_scale*wwdg(i,j,itww) +
-     &                     (1.-wwdgrd)*wwD 
+     &                     (1.-wwdgrd)*wwD
 
                 Pwave(i,j)=(wwpgrd)*wwp_scale*wwpg(i,j,itww) +
      &                     (1.-wwpgrd)*wwP
@@ -542,7 +553,7 @@
 !
       elseif (fac1.ge.0. .and. fac2.ge.0.) then
        if (ZEROTH_TILE .and. fac1.lt.dt) synchro_flag=.TRUE.
-      
+
         fac=wwa_scale/(fac1+fac2)
         fac11=fac*fac1
         fac12=fac*fac2
@@ -589,7 +600,7 @@
             Awave(i,j)=wwagrd*(fac11*wwag(i,j,it1)+fac12*wwag(i,j,it2))
      &                +(1.-wwagrd)*wwA
             Dwave(i,j)=wwdgrd*(fac21*wwdg(i,j,it1)+fac22*wwdg(i,j,it2))
-     &                +(1.-wwdgrd)*wwD 
+     &                +(1.-wwdgrd)*wwD
 
             Pwave(i,j)=wwpgrd*(fac31*wwpg(i,j,it1)+fac32*wwpg(i,j,it2))
      &                +(1.-wwpgrd)*wwP
@@ -600,7 +611,7 @@
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
             wepb(i,j)=wwebgrd*(fac41*wweb(i,j,it1)+fac42*wweb(i,j,it2))
      &                +(1.-wwebgrd)*wwEpb
-# endif        
+# endif
 # if defined MRL_WCI && defined WAVE_OFFLINE_FRICTION
             wepd(i,j)=wwedgrd*(fac51*wwed(i,j,it1)+fac52*wwed(i,j,it2))
      &                +(1.-wwedgrd)*wwEpd
@@ -618,22 +629,22 @@
 !--------------------------------------------------------------------
 !
 !  Wave direction conventions:
-!  - Cartesian convention (CROCO): 
-!          the direction to where the vector points, 
+!  - Cartesian convention (CROCO):
+!          the direction to where the vector points,
 !          measured counterclockwise from the positive x-axis
 !          of the model grid (must account for grid angle)
-!  - Meteorological convention (i.e., ECMWF data ...): 
-!          the direction where the waves come from, 
+!  - Meteorological convention (i.e., ECMWF data ...):
+!          the direction where the waves come from,
 !          measured clockwise from geographic North.
-!  - Oceanographic convention: 
-!          the direction where the waves travel to, 
+!  - Oceanographic convention:
+!          the direction where the waves travel to,
 !          measured clockwise from geographic North.
 !
 # if defined CURVGRID || !defined SHOREFACE
 !$acc parallel loop if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
-#  if !defined SHOREFACE && !defined MUSTANG 
+#  if !defined SHOREFACE && !defined MUSTANG
 !         Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
           Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
 #  endif
@@ -673,13 +684,13 @@
      &                                  +khd*0.0065407983)))))) )
           kw=kh/Dstp
 !
-! Strong mudbank dissipation formulation: frequency and depth-dependent 
-! dissipation rate is a function akin to that proposed by Bretschneider 
-! and Reid (1954) and Grosskopf (1980): longer and higher waves are more 
+! Strong mudbank dissipation formulation: frequency and depth-dependent
+! dissipation rate is a function akin to that proposed by Bretschneider
+! and Reid (1954) and Grosskopf (1980): longer and higher waves are more
 ! highly dissipated.
 !
           Awave(i,j)=Awave(i,j)*
-     &                (.5*(1-tanh(1.-2.*kw**.9*Dstp/hrms**0.2)))**2 
+     &                (.5*(1-tanh(1.-2.*kw**.9*Dstp/hrms**0.2)))**2
 #  else
 !
 ! Simulate surf-zone dissipation due to depth-induced wave breaking
@@ -701,7 +712,7 @@
         do i=istrR,iendR
           whrm(i,j)=2*Awave(i,j)                  ! Amp to Hrms conversion
           wfrq(i,j)=2.0*pi/max(Pwave(i,j),0.1D0)  ! Pwave peak period
-          wdrx(i,j)=cos(Dwave(i,j))             
+          wdrx(i,j)=cos(Dwave(i,j))
           wdre(i,j)=sin(Dwave(i,j))
 #  ifdef MASKING
           wfrq(i,j)=wfrq(i,j)*rmask(i,j)
@@ -729,7 +740,10 @@
 !
       if ((ww_cycle.gt.0.) .and. (fac1.lt.0..or.fac2.lt.0.)) then
         if (ZEROTH_TILE) then
-          write(stdout,1) 'wwv_time', tdays, wwv_time(it2)*sec2day  
+          write(stdout,1) 'wwv_time', tdays, wwv_time(it2)*sec2day
+# ifdef USE_CALENDAR
+     &  -ww_origin_date_in_sec*sec2day
+# endif
   1       format(/,' SET_WWAVE_TILE - current model time exceeds',
      &             ' ending value for variable: ',a,/,14x,'TDAYS = ',
      &                                      g12.4,2x,'TEND = ',g12.4)

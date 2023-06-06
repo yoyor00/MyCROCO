@@ -1,9 +1,9 @@
 !======================================================================
 ! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
@@ -48,7 +48,7 @@
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, itrc, iflux, k, ilc
       integer trd, omp_get_thread_num
-      real    GRho, cff, cff1, cffu, cffv, cffb
+      real    GRho, cff, cff1, cffu, cffv, cffb, cffug, cffvg
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -107,7 +107,7 @@
         endif
 
 !###############################################
-          
+
         do j=JstrR,JendR
           do i=IstrR,IendR
             eddyzz_avg(i,j)= cff *
@@ -125,12 +125,12 @@
               cffu = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
               cffv = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
 
-#  ifdef SPLIT_EOS
+# ifdef SPLIT_EOS
               cffb =rho1(i,j,k)+qp1(i,j,k)
      &                          *(z_w(i,j,N)-z_r(i,j,k))
-#  else
+# else
               cffb =rho(i,j,k)
-#  endif
+# endif
 
               if (k.eq.1) then
                 eddyubu_avg(i,j)= cff *
@@ -142,12 +142,28 @@
               endif
 
               if (k.eq.N) then
+                  cffug = -g/f(i,j)*(
+     &                    vmask(i,j+1)
+     &              *(zeta(i,j+1,fast_indx_out)-zeta(i,j,fast_indx_out))
+     &                   *0.5*(pm(i,j+1)+pm(i,j))
+     &                    )
+                  cffvg = g/f(i,j)*(
+     &                    umask(i+1,j)
+     &              *(zeta(i+1,j,fast_indx_out)-zeta(i,j,fast_indx_out))
+     &                   *0.5*(pn(i+1,j)+pn(i,j))
+     &                    )
                 eddyusu_avg(i,j)= cff *
      &                           ( cff1*eddyusu_avg(i,j)
      &                             +cffu * sustr(i,j) )
                 eddyvsv_avg(i,j)= cff *
      &                           ( cff1*eddyvsv_avg(i,j)
      &                             +cffv * svstr(i,j) )
+                eddyugsu_avg(i,j)= cff *
+     &                           ( cff1*eddyugsu_avg(i,j)
+     &                             +cffug * sustr(i,j) )
+                eddyvgsv_avg(i,j)= cff *
+     &                           ( cff1*eddyvgsv_avg(i,j)
+     &                             +cffvg * svstr(i,j) )
               endif
 
               eddyuu_avg(i,j,k)= cff *

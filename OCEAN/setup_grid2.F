@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -29,7 +29,7 @@
 ! Setting up curvilinear grid: Compute minimum and maximum depth of
 ! model topography; minimum andmaximumhorizontal areas of grid boxes
 ! around h-points; minimum and maximum values of Courant number for
-! barotropic mode; combined crossection of all open boundaries. 
+! barotropic mode; combined crossection of all open boundaries.
 !
 !     implicit none
       integer Istr,Iend,Jstr,Jend, i,j, NSUB
@@ -71,14 +71,14 @@
                                    ! speed for barotropic mode,
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR             ! and dx,dy are grid spacings
-        do i=IstrR,IendR           ! in each direction. 
+        do i=IstrR,IendR           ! in each direction.
 
             my_hmin=min(my_hmin, h(i,j))
             my_hmax=max(my_hmax, h(i,j))
-          
+
 #ifdef MASKING
-          if (rmask(i,j).gt.0.) then            
-#endif          
+          if (rmask(i,j).gt.0.) then
+#endif
             cff=1./sqrt(pm(i,j)*pn(i,j))
             my_grdmin=min(my_grdmin, cff)
             my_grdmax=max(my_grdmax, cff)
@@ -95,7 +95,7 @@
 #ifdef SPHERICAL
 !
 ! Get minima and maxima for longitude and latitude
-! Warning: for openmp we are using the extremma for the global grid 
+! Warning: for openmp we are using the extremma for the global grid
 !          for mpi we are using the values of the local subgrids
 ! used for online interpolations
 
@@ -116,9 +116,9 @@
           my_volume=my_volume+h(i,j)/(pm(i,j)*pn(i,j))
         enddo
       enddo
-      
+
 !
-! Compute integral crossections of all open boundaries. 
+! Compute integral crossections of all open boundaries.
 !
       my_crss=QuadZero
 #ifdef OBC_WEST
@@ -175,10 +175,10 @@
       else
         NSUB=NSUB_X*NSUB_E
       endif
-        
+
 C$OMP CRITICAL (grd2_cr_rgn)          ! Global MIN/MAX operations
         hmin=min(hmin, my_hmin)       ! within each shared memory
-        hmax=max(hmax, my_hmax)       ! group (an MPI-node). 
+        hmax=max(hmax, my_hmax)       ! group (an MPI-node).
 #ifdef SPHERICAL
         lonmin=min(lonmin, my_lonmin)
         lonmax=max(lonmax, my_lonmax)
@@ -192,14 +192,14 @@ C$OMP CRITICAL (grd2_cr_rgn)          ! Global MIN/MAX operations
         volume=volume+my_volume       ! the last thread (within each
         bc_crss=bc_crss+my_crss       ! MPI-process) leaving critical
                                       ! region. This thread (which is
-        tile_count=tile_count+1       ! not necessarily master thread 
-        if (tile_count.eq.NSUB) then  ! within its MPI-process) is 
-          tile_count=0                ! responsible for communication 
-# ifdef MPI
-#  if QUAD == 16
+        tile_count=tile_count+1       ! not necessarily master thread
+        if (tile_count.eq.NSUB) then  ! within its MPI-process) is
+          tile_count=0                ! responsible for communication
+#ifdef MPI
+# if QUAD == 16
           i_buff11=loc(buff(11))      ! exchange between MPI-nodes.
           i_buff13=loc(buff(13))      ! Here each real*QUAD number is
-#  endif
+# endif
           size=NNODES                 ! stored as two real*8 words.
   1        step=(size+1)/2
             if (mynode.ge.step .and. mynode.lt.size) then
@@ -209,19 +209,19 @@ C$OMP CRITICAL (grd2_cr_rgn)          ! Global MIN/MAX operations
               buff(4)=grdmax          ! that MIN/MAX and two real*QUAD
               buff(5)=Cu_min          ! summations come together.
               buff(6)=Cu_max
-#  ifdef SPHERICAL
+# ifdef SPHERICAL
               buff(7)=lonmin
               buff(8)=lonmax
               buff(9)=latmin
-              buff(10)=latmax       
-#  endif
-#  if QUAD == 16
+              buff(10)=latmax
+# endif
+# if QUAD == 16
               buff_vol=volume
               buff_crss=bc_crss
-#  else
+# else
               buff(11)=volume
               buff(12)=bc_crss
-#  endif
+# endif
               call MPI_Send (buff,  14, MPI_DOUBLE_PRECISION,
      &             mynode-step, 17, MPI_COMM_WORLD,      ierr)
             elseif (mynode .lt. size-step) then
@@ -233,19 +233,19 @@ C$OMP CRITICAL (grd2_cr_rgn)          ! Global MIN/MAX operations
               grdmax=max(grdmax, buff(4))
               Cu_min=min(Cu_min, buff(5))
               Cu_max=max(Cu_max, buff(6))
-#  ifdef SPHERICAL
+# ifdef SPHERICAL
               lonmin=min(lonmin,buff(7))
               lonmax=max(lonmax,buff(8))
               latmin=min(latmin,buff(9))
-              latmax=max(latmax,buff(10))     
-#  endif
-#  if QUAD == 16
+              latmax=max(latmax,buff(10))
+# endif
+# if QUAD == 16
               volume=volume + buff_vol
               bc_crss=bc_crss + buff_crss
-#  else
-              volume=volume + buff(11) 
+# else
+              volume=volume + buff(11)
                bc_crss=bc_crss + buff(12)
-#  endif
+# endif
             endif
            size=step
           if (size.gt.1) goto 1
@@ -256,19 +256,19 @@ C$OMP CRITICAL (grd2_cr_rgn)          ! Global MIN/MAX operations
           buff(4)=grdmax
           buff(5)=Cu_min
           buff(6)=Cu_max
-#  ifdef SPHERICAL
+# ifdef SPHERICAL
           buff(7)=lonmin
           buff(8)=lonmax
           buff(9)=latmin
-          buff(10)=latmax       
-#  endif
-#  if QUAD == 16
+          buff(10)=latmax
+# endif
+# if QUAD == 16
           buff_vol=volume
           buff_crss=bc_crss
-#  else
+# else
           buff(11)=volume
           buff(12)=bc_crss
-#  endif
+# endif
           call MPI_Bcast(buff, 14, MPI_DOUBLE_PRECISION,
      &                          0, MPI_COMM_WORLD, ierr)
           hmin=  buff(1)
@@ -277,20 +277,20 @@ C$OMP CRITICAL (grd2_cr_rgn)          ! Global MIN/MAX operations
           grdmax=buff(4)
           Cu_min=buff(5)
           Cu_max=buff(6)
-#  ifdef SPHERICAL
+# ifdef SPHERICAL
           lonmin=buff(7)
           lonmax=buff(8)
           latmin=buff(9)
-          latmax=buff(10)       
-#  endif
-#  if QUAD == 16
+          latmax=buff(10)
+# endif
+# if QUAD == 16
           volume=buff_vol
           bc_crss=buff_crss
-#  else
+# else
           volume=buff(11)
           bc_crss=buff(12)
-#  endif
 # endif
+#endif
 
 c**       write(*,'(I4,F12.6,F13.6,2(1x,E12.7),2F12.8)')
 c**  &         mynode, hmin,hmax, grdmin,grdmax, Cu_min,Cu_max
@@ -300,11 +300,11 @@ c**       write(*,*) mynode, ' crss =',bc_crss, 'vol =',volume
      &        '(/1x,A,8x,A,9x,A,9x,A,9x,A,6x,A)')
      &        'hmin','hmax','grdmin','grdmax','Cu_min','Cu_max'
           MPI_master_only write( stdout,
-! S. Theetten (May,6, 2029) avoid Remark 8291 during compilation 
+! S. Theetten (May,6, 2029) avoid Remark 8291 during compilation
 !     &        '(F12.6,F13.6,2(1x,E14.9),2F12.8)')
      &        '(F12.6,F13.6,2(1x,E16.9),2F12.8)')
      &         hmin,  hmax,  grdmin,  grdmax,  Cu_min,  Cu_max
-! S. Theetten (May,6, 2029) avoid Remark 8291 during compilation 
+! S. Theetten (May,6, 2029) avoid Remark 8291 during compilation
 !          MPI_master_only write( stdout,'(2(3x,A,1PE27.21)/)')
           MPI_master_only write( stdout,'(2(3x,A,1PE28.21)/)')
      &        'volume=', volume, 'open_cross=', bc_crss

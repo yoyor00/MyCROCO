@@ -9,7 +9,7 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-# ifdef TS_VADV_FCT
+#ifdef TS_VADV_FCT
 !
 !======================================================================
 ! Compute vertical advective fluxes using FCT Zalezak (1979) scheme
@@ -17,23 +17,23 @@
 !
 ! Compute low-order (diffusive) and antidiffusive fluxes
 !
-#  define MINMAX_UPSTREAM
-#  define WENO_SELECTION
+# define MINMAX_UPSTREAM
+# define WENO_SELECTION
 !
-! MINMAX_UPSTREAM: Max and min tracer values giving permissible bounds use a more 
+! MINMAX_UPSTREAM: Max and min tracer values giving permissible bounds use a more
 ! restrictive upstream stencil than in Zalesak (1979)
 !
-! WENO_SELECTION: an addition from Blossey & Durran (2008) to 
-! selectively preserves monotonicity. Monotonicity preservation is applied 
-! only where the scalar field is likely to contain discontinuities as indicated 
-! by significant grid-cell-to-grid-cell variations in a smoothness measure 
-! conceptually similar to that used in weighted essentially non-oscillatory (WENO) 
-! methods. Strict positivity preservation is efficiently obtained through an 
+! WENO_SELECTION: an addition from Blossey & Durran (2008) to
+! selectively preserves monotonicity. Monotonicity preservation is applied
+! only where the scalar field is likely to contain discontinuities as indicated
+! by significant grid-cell-to-grid-cell variations in a smoothness measure
+! conceptually similar to that used in weighted essentially non-oscillatory (WENO)
+! methods. Strict positivity preservation is efficiently obtained through an
 ! additional flux correction step.
 
-#  define FH FC
-#  define FL BC
-#  define AF DC
+# define FH FC
+# define FL BC
+# define AF DC
           do k=1,N-1
             do i=Istr,Iend
               cff =pm(i,j)*pn(i,j)
@@ -48,7 +48,7 @@
             FL(i,0)=0.
             FL(i,N)=0.
           enddo
-#  undef FH
+# undef FH
 !
 ! Monotone estimate of tracer field at nnew
 !
@@ -58,17 +58,17 @@
      &                           -dt*(FL(i,k)-FL(i,k-1)))/Hz(i,j,k)
              enddo
           enddo
-#  undef FL
+# undef FL
 !
 ! Flux Correction
 !
-#  define RPOS CF
-#  define RNEG BC
-#  define RNEG2 EC
-#  define GAM GC
+# define RPOS CF
+# define RNEG BC
+# define RNEG2 EC
+# define GAM GC
           do k=2,N-1
             do i=Istr,Iend
-#  ifdef MINMAX_UPSTREAM
+# ifdef MINMAX_UPSTREAM
               if (W(i,j,k).gt.0) then
                 tmax=max(t(i,j,k-1,3,itrc),t(i,j,k-1,nnew,itrc),
      &                   t(i,j,k  ,3,itrc),t(i,j,k  ,nnew,itrc))
@@ -80,14 +80,14 @@
                 tmin=min(t(i,j,k+1,3,itrc),t(i,j,k+1,nnew,itrc),
      &                   t(i,j,k  ,3,itrc),t(i,j,k  ,nnew,itrc))
               endif
-#  else
+# else
               tmax=max(t(i,j,k-1,3,itrc),t(i,j,k-1,nnew,itrc),
      &                 t(i,j,k  ,3,itrc),t(i,j,k  ,nnew,itrc),
      &                 t(i,j,k+1,3,itrc),t(i,j,k+1,nnew,itrc))
               tmin=min(t(i,j,k-1,3,itrc),t(i,j,k-1,nnew,itrc),
      &                 t(i,j,k  ,3,itrc),t(i,j,k  ,nnew,itrc),
      &                 t(i,j,k+1,3,itrc),t(i,j,k+1,nnew,itrc))
-#  endif
+# endif
 
               Ppos=max(0.,AF(i,k-1))-min(0.,AF(i,k))
               Qpos=Hz(i,j,k)/dt*(tmax-t(i,j,k,nnew,itrc))
@@ -97,14 +97,14 @@
               Qneg=Hz(i,j,k)/dt*(t(i,j,k,nnew,itrc)-tmin)
               RNEG(i,k)=max(0.,min(1.,Qneg/Pneg))
 
-#  ifdef WENO_SELECTION
+# ifdef WENO_SELECTION
               Qneg=Hz(i,j,k)/dt*t(i,j,k,nnew,itrc)
               RNEG2(i,k)=max(0.,min(1.,Qneg/Pneg))
               GAM(i,k)=(t(i,j,k  ,3,itrc)-t(i,j,k-1,3,itrc))*
-     &                 (t(i,j,k  ,3,itrc)-t(i,j,k-1,3,itrc)) + 
+     &                 (t(i,j,k  ,3,itrc)-t(i,j,k-1,3,itrc)) +
      &                 (t(i,j,k+1,3,itrc)-t(i,j,k  ,3,itrc))*
      &                 (t(i,j,k+1,3,itrc)-t(i,j,k  ,3,itrc))
-#  endif
+# endif
             enddo
           enddo
 
@@ -113,12 +113,12 @@
             RPOS(i,N)=RPOS(i,N-1)
             RNEG(i,1)=RNEG(i,2)
             RNEG(i,N)=RNEG(i,N-1)
-#  ifdef WENO_SELECTION
+# ifdef WENO_SELECTION
             RNEG2(i,1)=RNEG2(i,2)
             RNEG2(i,N)=RNEG2(i,N-1)
             GAM(i,1)=GAM(i,2)
             GAM(i,N)=GAM(i,N-1)
-#  endif
+# endif
           enddo
 
           do k=1,N-1
@@ -131,7 +131,7 @@
             enddo
           enddo
 
-#  ifdef WENO_SELECTION
+# ifdef WENO_SELECTION
           lmdmax=20.
           do k=2,N-1
             do i=Istr,Iend
@@ -142,7 +142,7 @@
               endif
             enddo
           enddo
-#  endif
+# endif
 
           do i=Istr,Iend
             FC(i,0)=0.
@@ -155,11 +155,11 @@
             enddo
           enddo
 
-#  undef RPOS
-#  undef RNEG
-#  undef AF
-#  undef RNEG2
-#  undef GAM
+# undef RPOS
+# undef RNEG
+# undef AF
+# undef RNEG2
+# undef GAM
 
-# endif
+#endif
 

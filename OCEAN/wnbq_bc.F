@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,7 +14,7 @@
 # include "cppdefs.h"
 # ifdef NBQ
       subroutine wnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
@@ -47,7 +47,7 @@
 !
 # endif /* NBQ */
 #endif /* CHILD */
-# ifdef NBQ
+#ifdef NBQ
 !
 ! Common Code
 !
@@ -61,7 +61,7 @@
 # include "nbq.h"
 # include "climat.h"
 # include "scalars.h"
-# include "boundary.h"  
+# include "boundary.h"
 # ifdef AGRIF
 #  include "zoom.h"
 # endif
@@ -122,7 +122,7 @@
               tau=tau_out
 #    endif
             endif
- 
+
             if (dft*(grad(Istr,j)+grad(Istr,j+1)) .gt. 0.) then
               dfy=grad(Istr,j)
             else
@@ -131,18 +131,18 @@
             cff=max(dfx*dfx+dfy*dfy, eps)
             cx=dft*dfx
             cy=min(cff,max(dft*dfy,-cff))
- 
+
             qdmw_nbq(Istr-1,j,k)=(    cff*qdmw_nbq_west(j,k,1)
      &                                +cx*qdmw_nbq(Istr  ,j,k)
      &                            -max(cy,0.)*grad(Istr-1,j  )
      &                            -min(cy,0.)*grad(Istr-1,j+1)
      &                                              )/(cff+cx)
 
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmw_nbq(Istr-1,j,k)=(1.-tau)*qdmw_nbq(Istr-1,j,k)
 #     ifdef NBQ_FRC_BRY
      &                                  +tau*wnbqbry_west(j,k)
-#     else     
+#     else
      &                                +tau*wnbqclm(Istr-1,j,k)
 #     endif
 #    endif
@@ -224,7 +224,7 @@
           do j=Jstr,Jend
             dft=qdmw_nbq_east(j,k,2)-qdmw_nbq(Iend  ,j,k)
             dfx=qdmw_nbq(Iend  ,j,k)-qdmw_nbq(Iend-1,j,k)
- 
+
             if (dfx*dft .lt. 0.) then
               dft=0.                      ! <-- cancel cx, if inflow
 #    if defined NBQ_FRC_BRY || defined NBQ_NUDGING
@@ -233,7 +233,7 @@
               tau=tau_out
 #    endif
             endif
- 
+
             if (dft*(grad(Iend,j)+grad(Iend,j+1)) .gt. 0.) then
               dfy=grad(Iend,j)
             else
@@ -242,17 +242,17 @@
             cff=max(dfx*dfx+dfy*dfy, eps)
             cx=dft*dfx
             cy=min(cff,max(dft*dfy,-cff))
- 
+
             qdmw_nbq(Iend+1,j,k)=(     cff*qdmw_nbq_east(j,k,1)
      &                                 +cx*qdmw_nbq(Iend  ,j,k)
      &                             -max(cy,0.)*grad(Iend+1,j  )
      &                             -min(cy,0.)*grad(Iend+1,j+1)
      &                                               )/(cff+cx)
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmw_nbq(Iend+1,j,k)=(1.-tau)*qdmw_nbq(Iend+1,j,k)
 #     ifdef NBQ_FRC_BRY
      &                                  +tau*wnbqbry_east(j,k)
-#     else     
+#     else
      &                                +tau*wnbqclm(Iend+1,j,k)
 #     endif
 #    endif
@@ -313,7 +313,7 @@
       endif         !<-- EASTERN_EDGE
 
 # endif             /* !EW_COM_PERIODIC */
- 
+
 # ifndef NS_COM_PERIODIC
 !
 !====================================================================
@@ -347,7 +347,7 @@
               tau=tau_out
 #    endif
             endif
- 
+
             if (dft*(grad(i,Jstr)+grad(i+1,Jstr)) .gt. 0.) then
               dfy=grad(i,Jstr)
             else
@@ -356,18 +356,18 @@
             cff=max(dfx*dfx+dfy*dfy, eps)
             cx=dft*dfx
             cy=min(cff,max(dft*dfy,-cff))
- 
+
             qdmw_nbq(i,Jstr-1,k)=(   cff*qdmw_nbq_south(i,k,1)
      &                                  +cx*qdmw_nbq(i,Jstr,k)
      &                            -max(cy,0.)*grad(i  ,Jstr-1)
      &                            -min(cy,0.)*grad(i+1,Jstr-1)
      &                                              )/(cff+cx)
 
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmw_nbq(i,Jstr-1,k)=(1.-tau)*qdmw_nbq(i,Jstr-1,k)
 #     ifdef NBQ_FRC_BRY
      &                                 +tau*wnbqbry_south(i,k)
-#     else     
+#     else
      &                                +tau*wnbqclm(i,Jstr-1,k)
 #     endif
 #    endif
@@ -457,7 +457,7 @@
               tau=tau_out
 #    endif
             endif
- 
+
             if (dft*(grad(i,Jend)+grad(i+1,Jend)) .gt. 0.) then
               dfy=grad(i,Jend)
             else
@@ -466,18 +466,18 @@
             cff=max(dfx*dfx+dfy*dfy, eps)
             cx=dft*dfx
             cy=min(cff,max(dft*dfy,-cff))
- 
+
             qdmw_nbq(i,Jend+1,k)=(   cff*qdmw_nbq_north(i,k,1)
      &                                  +cx*qdmw_nbq(i,Jend,k)
      &                            -max(cy,0.)*grad(i  ,Jend+1)
      &                            -min(cy,0.)*grad(i+1,Jend+1)
      &                                              )/(cff+cx)
 
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmw_nbq(i,Jend+1,k)=(1.-tau)*qdmw_nbq(i,Jend+1,k)
 #     ifdef NBQ_FRC_BRY
      &                                 +tau*wnbqbry_north(i,k)
-#     else     
+#     else
      &                                +tau*wnbqclm(i,Jend+1,k)
 #     endif
 #    endif
@@ -541,7 +541,7 @@
 !====================================================================
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
- 
+
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
@@ -557,7 +557,7 @@
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
           qdmw_nbq(Iend+1,Jstr-1,k)=0.5*(qdmw_nbq(Iend,Jstr-1,k)
-     &                                  +qdmw_nbq(Iend+1,Jstr,k))     
+     &                                  +qdmw_nbq(Iend+1,Jstr,k))
 #  ifdef MASKING
      &                                *rmask(Iend+1,Jstr-1)
 #  endif
@@ -568,7 +568,7 @@
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
           qdmw_nbq(Istr-1,Jend+1,k)=0.5*(qdmw_nbq(Istr  ,Jend+1,k)
-     &                                  +qdmw_nbq(Istr-1,Jend,k)) 
+     &                                  +qdmw_nbq(Istr-1,Jend,k))
 #  ifdef MASKING
      &                                *rmask(Istr-1,Jend+1)
 #  endif
@@ -579,7 +579,7 @@
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
           qdmw_nbq(Iend+1,Jend+1,k)=0.5*(qdmw_nbq(Iend  ,Jend+1,k)
-     &                                  +qdmw_nbq(Iend+1,Jend,k))     
+     &                                  +qdmw_nbq(Iend+1,Jend,k))
 #  ifdef MASKING
      &                                *rmask(Iend+1,Jend+1)
 #  endif

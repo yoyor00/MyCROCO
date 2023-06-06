@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -19,7 +19,7 @@
 
 #if defined MUSTANG
       USE comMUSTANG, only: ksmi,ksma,cv_sed,dzs
-#     include "coupler_define_MUSTANG.h"
+# include "coupler_define_MUSTANG.h"
 #endif
 
 !     implicit none
@@ -37,7 +37,7 @@
 #if defined EXACT_RESTART
 # include "coupling.h"
 # if defined M3FAST
-# include "nbq.h"
+#  include "nbq.h"
 # endif
 #endif
 #ifdef SEDIMENT
@@ -49,9 +49,12 @@
 #ifdef BBL
 # include "bbl.h"
 #endif
-#if defined FLOATS 
+#if defined FLOATS
 # include "ncscrum_floats.h"
 # include "floats.h"
+#endif
+#ifdef ABL1D
+# include "abl1d.h"
 #endif
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), nf_fwrite
@@ -102,7 +105,7 @@
       lstr=lenstr(rstname)
 !                                            !!! WARNING: Here it is
 ! Set record within the file.                !!! assumed that global
-!                                            !!! restart record index 
+!                                            !!! restart record index
       nrecrst=max(nrecrst,1)                 !!! nrecrst is already
       if (nrpfrst.eq.0) then                 !!! advanced by main.
         record=nrecrst
@@ -115,7 +118,7 @@
 ! Write out evolving model variables:
 ! ----- --- -------- ----- ----------
 !
-! Time step number and record indices. 
+! Time step number and record indices.
 !
       ibuff(1)=iic
       ibuff(2)=nrecrst
@@ -158,13 +161,32 @@
 !
 ! Time.
 !
-      ierr=nf_put_var1_FTYPE (ncidrst, rstTime, record, time)
+      ! scrum_time
+      ierr=nf_put_var1_FTYPE (ncidrst, rstTime, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
+
+      ! time
+      ierr=nf_put_var1_FTYPE (ncidrst, rstTime2, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxTime2))
+        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+
 !
 ! Free-surface.
 !
@@ -202,7 +224,21 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
-      
+
+#ifdef ABL1D
+!
+! 3D TKE ABL
+!
+      ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nstp), ncidrst, rstAblTke,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxabl_tke_abl))
+        write(stdout,1) vname(1,indxabl_tke_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+#endif
+
 #ifdef SOLVE3D
 !
 ! 3D momentum component in XI-direction.
@@ -231,7 +267,7 @@
 !
 ! Tracer variables.
 !
-#  ifdef TRACERS
+# ifdef TRACERS
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,:))
       do itrc=1,NT
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
@@ -245,7 +281,7 @@
       enddo
 # endif
 
-# if defined LMD_MIXING 
+# if defined LMD_MIXING
 !
 !     Write out depth of planetary boundary layer (m).
 !
@@ -264,8 +300,8 @@
           goto 99               !--> ERROR
         endif
 #   endif /* LMD_SKPP2005  */
-#  endif /* LMD_SKPP  */  
-        
+#  endif /* LMD_SKPP  */
+
 #  if defined LMD_BKPP
 #   if defined LMD_BKPP2005
 !
@@ -281,7 +317,7 @@
             goto 99                                         !--> ERROR
         endif
 #   endif /* LMD_BKPP2005  */
-#  endif /* LMD_BKPP  */         
+#  endif /* LMD_BKPP  */
 # endif /* LMD_MIXING */
 
 # if defined GLS_MIXING
@@ -331,7 +367,7 @@
           write(stdout,1) vname(1,indxAkt)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
-        endif   
+        endif
 #  ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.
@@ -344,14 +380,14 @@
           write(stdout,1) vname(1,indxAks)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
-        endif       
-#  endif /* SALINITY  */       
+        endif
+#  endif /* SALINITY  */
 # endif  /* GLS_MIXING  */
 
 # if defined LMD_MIXING
 #  if defined M3FAST
 !
-! Write out bottom stress u component 
+! Write out bottom stress u component
 !
 !$acc update if(compute_on_device) host(bustr(:,:))
         ierr=nf_fwrite(bustr(START_2D_ARRAY), ncidrst,
@@ -361,9 +397,9 @@
           write(stdout,1) vname(1,indxBustr)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
-        endif       
+        endif
 !
-! Write out bottom stress v component 
+! Write out bottom stress v component
 !
 !$acc update if(compute_on_device) host(bvstr(:,:))
         ierr=nf_fwrite(bvstr(START_2D_ARRAY), ncidrst,
@@ -373,7 +409,7 @@
           write(stdout,1) vname(1,indxBvstr)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
-        endif       
+        endif
 #  endif
 # endif
 
@@ -402,7 +438,7 @@
      &                    ierr MYID
             goto 99                                         !--> ERROR
           endif
-          
+
 #  ifdef M3FAST
 !
 ! 3D rhs for M3FAST in XI-direction.
@@ -513,16 +549,16 @@
      &                  MYID
          goto 99                                           !--> ERROR
        endif
-       
+
 #  endif /* TS_MIX_ISO_FILT */
 # endif /* EXACT_RESTART */
-       
+
 # ifdef SEDIMENT
 !
-! Write out sediment bed layer thickness, porosity, volume 
+! Write out sediment bed layer thickness, porosity, volume
 ! fraction of size class in sediment bed (2+2*NST b3dgrd variables)
 !
-      ierr=nf_fwrite(bed_thick, ncidrst, rstSed(1), 
+      ierr=nf_fwrite(bed_thick, ncidrst, rstSed(1),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxBTHK))
@@ -531,7 +567,7 @@
         goto 99                                         !--> ERROR
       endif
 CR      write(*,*) 'wrt_rst:  Bed_thick' MYID
-      ierr=nf_fwrite(bed_poros, ncidrst, rstSed(2), 
+      ierr=nf_fwrite(bed_poros, ncidrst, rstSed(2),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxBPOR))
@@ -543,11 +579,11 @@ CR      write(*,*) 'wrt_rst:  Bed_poros' MYID
 
       do itrc=1,NST
         indxWrk=indxBFRA(1)+itrc-1
-        ierr=nf_fwrite(bed_frac(START_2D_ARRAY,1,itrc), 
+        ierr=nf_fwrite(bed_frac(START_2D_ARRAY,1,itrc),
      &             ncidrst, rstSed(itrc+2), record, b3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWrk))
-          write(stdout,1) vname(1,indxWrk)(1:lvar), record, 
+          write(stdout,1) vname(1,indxWrk)(1:lvar), record,
      &                ierr
      &                MYID
           goto 99                                         !--> ERROR
@@ -582,7 +618,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
         goto 99                                         !--> ERROR
       endif
 
-! dzs 
+! dzs
       do k=1,ksdmax
         workrsed(:,:,k)=dzs(k,:,:)
       enddo
@@ -594,7 +630,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
         write(stdout,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
-      endif 
+      endif
 
 ! tempsed
       do k=1,ksdmax
@@ -646,9 +682,9 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 #endif /* SOLVE3D */
 
 #ifdef MORPHODYN
-!     
+!
 !     Write out time evolving bathymetry
-!     
+!
       ierr=nf_fwrite(h, ncidrst, rstHm, record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxHm))
@@ -749,7 +785,7 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
         tmp(2,level)=mod(tmp(4,level)+2,NFT+1)
         tmp(3,level)=mod(tmp(4,level)+1,NFT+1)
       enddo
-#endif
+# endif
       do i=1,NFT+1
         do j=1,nfloats
           bufftrack(1,i,j)=track(ixgrd,tmp(i,fltgrd(j)),j)
@@ -776,7 +812,7 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
   1   format(/1x, 'WRT_RST ERROR while writing variable ''', A,
      &           ''' into restart file.', /11x, 'Time record:',
      &               i6, 3x, 'netCDF error code', i4, 3x, A,i4)
-      goto 100 
+      goto 100
   99  may_day_flag=3
  100  continue
 
@@ -788,7 +824,7 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
       ierr=nf_close (ncidrst)
       if (nrpfrst.gt.0 .and. record.ge.nrpfrst) ncidrst=-1
 #else
-      if (nrpfrst.gt.0 .and. record.ge.nrpfrst) then 
+      if (nrpfrst.gt.0 .and. record.ge.nrpfrst) then
         ierr=nf_close (ncidrst)
         ncidrst=-1
       else
@@ -796,12 +832,12 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
       endif
 #endif
       if (ierr .eq. nf_noerr) then
-      MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 
+      MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_RST -- wrote ',
      &            'restart fields into time record =', record, '/',
      &             nrecrst  MYID
       else
-      MPI_master_only  write(stdout,'(/1x,2A/)') 
+      MPI_master_only  write(stdout,'(/1x,2A/)')
      &             'WRT_RST ERROR: Cannot ',
      &             'synchronize/close restart netCDF file.'
         may_day_flag=3

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers Universit (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -122,6 +122,11 @@ c**        call opencdf (btfname,N)
 
         ierr=nf_get_var1_FTYPE(ncidbtf, btf_tid(itrc),
      &                             btf_rec(itrc), cff)
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidbtf,btf_tid,
+     &                       btf_origin_date_in_sec)
+        cff=cff+btf_origin_date_in_sec*sec2day
+# endif
         if (ierr .ne. nf_noerr) then
           write(stdout,6) 'btf_time', btf_rec(i)
           goto 99                                         !--> ERROR
@@ -138,16 +143,19 @@ c**        call opencdf (btfname,N)
      &                     btf_rec(itrc), btflxp(i,itrc))
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'btflux', btf_rec 
+          write(stdout,6) 'btflux', btf_rec
           goto 99                                         !--> ERROR
         endif
        itbtf(itrc)=i
        MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
      &            'GET_BTFLUX -- Read surface flux of tracer', itrc,
      &                                             'for time =', cff
-#ifdef MPI
+# ifdef USE_CALENDAR
+     &  -btf_origin_date_in_sec*sec2day
+# endif
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
 
       if (ntbtf(itrc).gt.1) goto 1
       if (ntbtf(itrc).eq.1) return
@@ -165,6 +173,9 @@ c**        call opencdf (btfname,N)
      &                                a,' at TIME index = ',i4)
   7   write(stdout,8) btf_rec(itrc),ntbtf(itrc),btfname(1:lstr),
      &                tdays, btf_time(itbtf(itrc),itrc)*sec2day
+# ifdef USE_CALENDAR
+     &  -btf_origin_date_in_sec*sec2day
+# endif
   8   format(/,' GET_BTFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing file: ', a,/,14x,'TDAYS = ',
@@ -252,13 +263,16 @@ c**        call opencdf (btfname,N)
         !  write(*,*)'I=',i,' J=',j
         !  write(*,*)'btflx(10,10,1)=',btflx(10,10,1)
         !endif
-!     
+!
 !     Unable to set-up surface tracer flux:
 !     Complain about the error and signal to quit (ONE THRED ONLY).
 !
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'btf_time',tdays,btf_time(it2,itrc)*sec2day
+# ifdef USE_CALENDAR
+     &  -btf_origin_date_in_sec*sec2day
+# endif
   1       format(/,' SET_BTFLUX_TILE - current model time exceeds',
      &          1x,'ending value for variable: ',A8,/,14x,'TDAYS = ',
      &                                    g12.4, 2x, 'TBTF = ',g12.4)

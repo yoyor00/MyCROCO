@@ -2,12 +2,12 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! This routine belongs to the specific CROCO package.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -53,7 +53,7 @@
       real,dimension(:,:,:),pointer :: parentdv_avg1,parentvbar
 
       real,dimension(:,:), allocatable :: duavg2parentold
-      real,dimension(:,:), allocatable :: dvavg2parentold 
+      real,dimension(:,:), allocatable :: dvavg2parentold
 
       integer  :: i,j,ipu,jpu,ipv,jpv,ipr,jpr
       real     :: dtparent
@@ -69,16 +69,16 @@
       logical global_update_2d
       common/globalupdate/global_update_2d
       integer :: iiffine, irhotfine, nbgrid
-      common/updateubar2val/iiffine,irhotfine,nbgrid      
-!$AGRIF_END_DO_NOT_TREAT      
+      common/updateubar2val/iiffine,irhotfine,nbgrid
+!$AGRIF_END_DO_NOT_TREAT
 # ifdef MPI
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
 #  define LOCALLM Lm
 #  define LOCALMM Mm
-# endif 
-      
+# endif
+
       irhot = Agrif_Irhot()
 
       IF ((mod(iif+(nbcoarse-1)*mod(nfast,irhot),irhot).NE.0)) RETURN
@@ -86,17 +86,17 @@
       iiffine = iif
       irhotfine = Agrif_Irhot()
       nbgrid = Agrif_Fixed()
-         
+
 C$OMP BARRIER
 C$OMP MASTER
       irhox = Agrif_Irhox()
       irhoy = Agrif_Irhoy()
-     
+
       pngrid = Agrif_Parent_Fixed()
       if (nbgrid == grids_at_level(pngrid,0)) then
-         Call Agrif_Set_Parent(indupdate,0) 
+         Call Agrif_Set_Parent(indupdate,0)
       endif
-        
+
 # ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
 # endif
@@ -118,19 +118,19 @@ C$OMP MASTER
       Call Agrif_Update_Variable(updateubarid,
      &     locupdate1=(/0,3/),locupdate2=(/1,4/),
      &     procname = updateubar)
-     
+
       Call Agrif_Update_Variable(updatevbarid,
      &     locupdate1=(/1,4/),locupdate2=(/0,3/),
-     &     procname = updatevbar) 
-     
+     &     procname = updatevbar)
+
 #  ifdef M3FAST
       Call Agrif_Update_Variable(updateunbqid,
      &     locupdate1=(/0,3/),locupdate2=(/1,4/),
      &     procname = updateunbq)
-     
+
       Call Agrif_Update_Variable(updatevnbqid,
      &     locupdate1=(/1,4/),locupdate2=(/0,3/),
-     &     procname = updatevnbq) 
+     &     procname = updatevnbq)
 #   ifdef NBQ
 #    ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
@@ -153,23 +153,23 @@ C$OMP MASTER
       Call Agrif_Update_Variable(rmask_wetid,
      &     procname = updatermask_child)
 #  endif
-                 
+
       Call Agrif_Update_Variable(updateubarid,
      &     locupdate1=(/0,1/),locupdate2=(/0,1/),
      &     procname = updateubar)
-     
+
       Call Agrif_Update_Variable(updatevbarid,
      &     locupdate1=(/0,1/),locupdate2=(/0,1/),
-     &     procname = updatevbar)          
+     &     procname = updatevbar)
 
 #  ifdef M3FAST
       Call Agrif_Update_Variable(updateunbqid,
      &     locupdate1=(/0,3/),locupdate2=(/0,3/),
      &     procname = updateunbq)
-     
+
       Call Agrif_Update_Variable(updatevnbqid,
      &     locupdate1=(/0,3/),locupdate2=(/0,3/),
-     &     procname = updatevnbq) 
+     &     procname = updatevnbq)
 #   ifdef NBQ
       if ((iif /= nfast) .OR. (nbcoarse /= irhot)) then
 #    ifdef MASKING
@@ -184,7 +184,7 @@ C$OMP MASTER
       Call Agrif_Update_Variable(updaterhonbqid,
      &     procname = updaterhonbq)
 #   endif
-#  endif 
+#  endif
 # endif /* AGRIF_UPDATE_DECAL */
 
       IF (iif == nfast) THEN
@@ -206,7 +206,7 @@ C$OMP MASTER
           Call Agrif_Update_Variable(updateubarid,
      &         locupdate1=(/0,-1/),locupdate2=(/1,-2/),
      &         procname = updateubar)
-     
+
           Call Agrif_Update_Variable(updatevbarid,
      &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &         procname = updatevbar)
@@ -215,10 +215,10 @@ C$OMP MASTER
           Call Agrif_Update_Variable(updateunbqid,
      &         locupdate1=(/0,-1/),locupdate2=(/1,-2/),
      &         procname = updateunbq)
-     
+
           Call Agrif_Update_Variable(updatevnbqid,
      &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
-     &         procname = updatevnbq) 
+     &         procname = updatevnbq)
 #   ifdef NBQ
 #    ifdef MASKING
           Agrif_UseSpecialValueInUpdate = .TRUE.
@@ -242,16 +242,16 @@ C$OMP MASTER
 
           Call Agrif_Update_Variable(updateubarid,
      &         procname = updateubar)
-     
+
           Call Agrif_Update_Variable(updatevbarid,
      &         procname = updatevbar)
 
 #  ifdef M3FAST
           Call Agrif_Update_Variable(updateunbqid,
      &         procname = updateunbq)
-     
+
           Call Agrif_Update_Variable(updatevnbqid,
-     &         procname = updatevnbq) 
+     &         procname = updatevnbq)
 #   ifdef NBQ
 #    ifdef MASKING
           Agrif_UseSpecialValueInUpdate = .TRUE.
@@ -263,17 +263,17 @@ C$OMP MASTER
           Call Agrif_Update_Variable(updaterhonbqid,
      &         procname = updaterhonbq)
 #   endif
-#  endif 
+#  endif
 # endif /* AGRIF_UPDATE_DECAL */
 
 # ifdef AGRIF_CONSERV_VOL
 #  if defined AGRIF_UPDATE_DECAL && !defined AGRIF_OLD_CONSERV
           Call Agrif_Update_Variable(updateduavg2id,
-     &         locupdate1=(/0,0/),locupdate2=(/1,1/),        
+     &         locupdate1=(/0,0/),locupdate2=(/1,1/),
      &         procname = updateduavg2)
-     
+
           Call Agrif_Update_Variable(updatedvavg2id,
-     &         locupdate1=(/1,1/),locupdate2=(/0,0/),         
+     &         locupdate1=(/1,1/),locupdate2=(/0,0/),
      &         procname = updatedvavg2)
 #   ifdef MPI
           Call Agrif_ChildGrid_To_ParentGrid()
@@ -316,7 +316,7 @@ C$OMP END MASTER
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
       integer :: nb, ndir
-      
+
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmu_nbq(i1:i2,j1:j2,k1:k2)
       else
@@ -342,13 +342,13 @@ C$OMP END MASTER
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
       integer :: nb, ndir
-      
+
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmv_nbq(i1:i2,j1:j2,k1:k2)
       else
         qdmv_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
       endif
-      
+
       return
       end
 
@@ -374,7 +374,7 @@ C$OMP END MASTER
       logical :: before
       integer :: nb, ndir
       integer :: i,j,k
-      
+
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmw_nbq(i1:i2,j1:j2,k1:k2)
       else
@@ -396,7 +396,7 @@ C$OMP END MASTER
       endif
 
       return
-      end 
+      end
 
 !=====================================================================
 
@@ -423,22 +423,22 @@ C$OMP END MASTER
       endif
 
       return
-      end 
+      end
 
 #  endif /* NBQ */
 # endif /* M3FAST */
 
 !=====================================================================
- 
+
        Subroutine Updateubar(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
       implicit none
-#  include "param.h"
-#  include "grid.h"
-#  include "ocean2d.h"
-#  include "coupling.h"
-#  include "scalars.h"
-#  include "zoom.h"
+# include "param.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "coupling.h"
+# include "scalars.h"
+# include "zoom.h"
       integer :: i1,i2,j1,j2,k1,k2
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
@@ -450,56 +450,56 @@ C$OMP END MASTER
       real    :: rrhoy
       real    :: cff, cff1, cff2
       logical :: western_side, eastern_side,northern_side,southern_side
-      integer :: irhot, ibegin,isize  
-      real    :: tabtemp(i1:i2,j1:j2) 
+      integer :: irhot, ibegin,isize
+      real    :: tabtemp(i1:i2,j1:j2)
 !$AGRIF_DO_NOT_TREAT
       logical global_update_2d
       common/globalupdate/global_update_2d
       integer :: iiffine, irhotfine, nbgrid
-      common/updateubar2val/iiffine,irhotfine,nbgrid      
-!$AGRIF_END_DO_NOT_TREAT  
-              
+      common/updateubar2val/iiffine,irhotfine,nbgrid
+!$AGRIF_END_DO_NOT_TREAT
+
       IF (before) THEN
         rrhoy = real(Agrif_Irhoy())
- 
+
         IF (global_update_2d) THEN
           tabres(i1:i2,j1:j2,1) = rrhoy * DU_avg1(i1:i2,j1:j2,nnew)
           RETURN
         ENDIF
 
         irhot=Agrif_Irhot()
-         
+
         western_side  = (nb == 1).AND.(ndir == 1)
         eastern_side  = (nb == 1).AND.(ndir == 2)
         southern_side = (nb == 2).AND.(ndir == 1)
         northern_side = (nb == 2).AND.(ndir == 2)
 
         ibegin = min(irhot,iif+1)
-         
+
         IF (iif .LE. irhot) THEN
           ibegin = iif + 1
         ENDIF
 
         do iter=1,ibegin
-          do j=j1,j2  
-            do i=i1,i2                 
+          do j=j1,j2
+            do i=i1,i2
               tabres(i,j,iter) = du_avg3(i,j,iif-iter+1)
             enddo
-          enddo          
+          enddo
         enddo
-         
+
         tabres = rrhoy * tabres
-         
+
       ELSE
 
         IF (global_update_2d) THEN
           DU_avg1(i1:i2,j1:j2,nnew) = tabres(i1:i2,j1:j2,1)
 # ifdef MASKING
      &                                * umask(i1:i2,j1:j2)
-# endif         
+# endif
           RETURN
         ENDIF
-              
+
         ibegin = min(irhotfine,iiffine+1)
 
         IF (iiffine .LE. irhotfine) THEN
@@ -507,26 +507,26 @@ C$OMP END MASTER
         ENDIF
 
         isize = (j2-j1+1)*(i2-i1+1)
-       
+
         IF ((nbstep3d == 0).AND.(iif == 1)) THEN
           IF (.NOT.allocated(finevalues)) THEN
             Allocate(finevalues(isize,0:nfast))
             Allocate(coarsevalues(isize,0:nfast))
-          ELSE       
+          ELSE
             CALL checksize(indupdate+isize)
           ENDIF
         ENDIF
-       
+
         do iter=1,ibegin
           oldindupdate = indupdate
-          do j=j1,j2  
+          do j=j1,j2
             do i=i1,i2
               oldindupdate = oldindupdate + 1
               finevalues(oldindupdate,iiffine-iter+1) = tabres(i,j,iter)
             enddo
-          enddo          
+          enddo
         enddo
-          
+
         IF (iif == 1) THEN
           oldindupdate = indupdate
           do j=j1,j2
@@ -534,24 +534,24 @@ C$OMP END MASTER
               oldindupdate = oldindupdate + 1
               coarsevalues(oldindupdate,0) = DU_avg1(i,j,nstp)
             enddo
-          enddo        
-        ENDIF   
-          
+          enddo
+        ENDIF
+
         tabtemp = 0.
          do iter=0,iif-1
          cff = -weight2(iif,iter)
          call copy1d(tabtemp,coarsevalues(indupdate+1,iter),
      &               cff,isize)
-         enddo    
-         
+         enddo
+
          do iter=0,iiffine
          cff=weight2(iiffine,iter)
          call copy1d(tabtemp,finevalues(indupdate+1,iter),
      &               cff,isize)
          enddo
-         
+
          tabtemp = tabtemp/weight2(iif,iif)
-                               
+
          DO j=j1,j2
            DO i=i1,i2
              t1 = 0.5*(zeta(i  ,j,knew)+h(i  ,j)+
@@ -564,9 +564,9 @@ C$OMP END MASTER
              indupdate = indupdate + 1
              coarsevalues(indupdate,iif) = tabtemp(i,j)
           ENDDO
-        ENDDO 
+        ENDDO
       ENDIF
-      
+
       return
       end
 
@@ -597,11 +597,11 @@ C$OMP END MASTER
       common/globalupdate/global_update_2d
       integer :: iiffine, irhotfine, nbgrid
       common/updateubar2val/iiffine,irhotfine,nbgrid
-!$AGRIF_END_DO_NOT_TREAT  
+!$AGRIF_END_DO_NOT_TREAT
 
       real eps
       parameter (eps=1.e-10)
-       
+
       IF (before) THEN
 
       do j=j1,j2
@@ -613,7 +613,7 @@ C$OMP END MASTER
           ENDIF
         enddo
       enddo
-      
+
       ELSE
 
       do j=j1,j2
@@ -627,12 +627,12 @@ C$OMP END MASTER
       enddo
 
       ENDIF
-      
+
       end subroutine updatermask_child
 # endif
-      
+
 !=====================================================================
- 
+
       Subroutine Updatezeta(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
       implicit none
@@ -652,41 +652,41 @@ C$OMP END MASTER
       integer  :: oldindupdate
       real     :: cff, cff1, cff2
       logical  :: western_side,eastern_side,northern_side,southern_side
-      integer  :: irhot, ibegin,isize  
-      real     :: tabtemp(i1:i2,j1:j2) 
+      integer  :: irhot, ibegin,isize
+      real     :: tabtemp(i1:i2,j1:j2)
 !$AGRIF_DO_NOT_TREAT
       logical global_update_2d
       common/globalupdate/global_update_2d
       integer :: iiffine, irhotfine, nbgrid
       common/updateubar2val/iiffine,irhotfine,nbgrid
-!$AGRIF_END_DO_NOT_TREAT  
+!$AGRIF_END_DO_NOT_TREAT
 
       IF (before) THEN
- 
+
         IF (global_update_2d) THEN
           tabres(i1:i2,j1:j2,1) = Zt_avg1(i1:i2,j1:j2)
           RETURN
         ENDIF
-                 
+
         irhot=Agrif_Irhot()
-         
+
         western_side  = (nb == 1).AND.(ndir == 1)
         eastern_side  = (nb == 1).AND.(ndir == 2)
-        southern_side = (nb == 2).AND.(ndir == 1) 
+        southern_side = (nb == 2).AND.(ndir == 1)
         northern_side = (nb == 2).AND.(ndir == 2)
 
         ibegin = min(irhot,iif+1)
 
         IF (iif .LE. irhot) THEN
           ibegin = iif + 1
-        ENDIF  
+        ENDIF
 
         do iter=1,ibegin
-          do j=j1,j2  
-            do i=i1,i2    
+          do j=j1,j2
+            do i=i1,i2
               tabres(i,j,iter) = Zt_avg3(i,j,iif-iter+1)
             enddo
-          enddo          
+          enddo
         enddo
 
       ELSE
@@ -699,34 +699,34 @@ C$OMP END MASTER
           zeta(i1:i2,j1:j2,knew) = Zt_avg1(i1:i2,j1:j2)
           RETURN
         ENDIF
-              
+
         ibegin = min(irhotfine,iiffine+1)
-       
+
         IF (iiffine .LE. irhotfine) THEN
           ibegin = iiffine + 1
         ENDIF
-       
+
         isize = (j2-j1+1)*(i2-i1+1)
-       
+
         IF ((nbstep3d == 0).AND.(iif == 1)) THEN
           IF (.NOT.allocated(finevalues)) THEN
             Allocate(finevalues(isize,0:nfast))
             Allocate(coarsevalues(isize,0:nfast))
-          ELSE       
+          ELSE
             CALL checksize(indupdate+isize)
           ENDIF
         ENDIF
-       
+
         do iter=1,ibegin
           oldindupdate = indupdate
-          do j=j1,j2  
+          do j=j1,j2
             do i=i1,i2
               oldindupdate = oldindupdate + 1
               finevalues(oldindupdate,iiffine-iter+1) = tabres(i,j,iter)
             enddo
-          enddo          
+          enddo
         enddo
-          
+
         IF (iif == 1) THEN
           oldindupdate = indupdate
           do j=j1,j2
@@ -734,23 +734,23 @@ C$OMP END MASTER
               oldindupdate = oldindupdate + 1
               coarsevalues(oldindupdate,0) = zeta(i,j,kstp)
             enddo
-          enddo        
-        ENDIF   
-          
+          enddo
+        ENDIF
+
         tabtemp = 0.
         do iter=0,iif-1
           cff = -weight2(iif,iter)
           call copy1d(tabtemp,coarsevalues(indupdate+1,iter),cff,isize)
-        enddo    
+        enddo
         do iter=0,iiffine
           cff=weight2(iiffine,iter)
           call copy1d(tabtemp,finevalues(indupdate+1,iter),cff,isize)
         enddo
-         
+
         tabtemp = tabtemp/weight2(iif,iif)
         DO j=j1,j2
           DO i=i1,i2
-            
+
             t2 = tabtemp(i,j)
 # ifdef MASKING
      &           * rmask(i,j)
@@ -759,7 +759,7 @@ C$OMP END MASTER
 # if defined WET_DRY && defined MASKING
 !   Modify new free-surface  to ensure that depth is > Dcrit
 !   for masked cells.
-            zeta(i,j,knew) = zeta(i,j,knew)+ 
+            zeta(i,j,knew) = zeta(i,j,knew)+
      &                       (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
 # endif
             indupdate = indupdate + 1
@@ -768,11 +768,11 @@ C$OMP END MASTER
         ENDDO
 
       ENDIF
-      
+
       return
       end
 !=====================================================================
- 
+
       Subroutine Updatevbar(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
       implicit none
@@ -793,15 +793,15 @@ C$OMP END MASTER
       real    :: rrhox
       real    :: cff, cff1, cff2
       logical :: western_side,eastern_side,northern_side,southern_side
-      integer :: irhot, ibegin,isize  
-      real    :: tabtemp(i1:i2,j1:j2) 
+      integer :: irhot, ibegin,isize
+      real    :: tabtemp(i1:i2,j1:j2)
 !$AGRIF_DO_NOT_TREAT
       logical global_update_2d
       common/globalupdate/global_update_2d
       integer :: iiffine, irhotfine, nbgrid
       common/updateubar2val/iiffine,irhotfine,nbgrid
-!$AGRIF_END_DO_NOT_TREAT  
-              
+!$AGRIF_END_DO_NOT_TREAT
+
       IF (before) THEN
 
         rrhox = real(Agrif_Irhox())
@@ -810,25 +810,25 @@ C$OMP END MASTER
           tabres(i1:i2,j1:j2,1) = rrhox * DV_avg1(i1:i2,j1:j2,nnew)
           RETURN
         ENDIF
-                  
+
         irhot=Agrif_Irhot()
 
         western_side  = (nb == 1).AND.(ndir == 1)
         eastern_side  = (nb == 1).AND.(ndir == 2)
-        southern_side = (nb == 2).AND.(ndir == 1) 
+        southern_side = (nb == 2).AND.(ndir == 1)
         northern_side = (nb == 2).AND.(ndir == 2)
 
         ibegin = min(irhot,iif+1)
         IF (iif .LE. irhot) THEN
           ibegin = iif + 1
         ENDIF
-     
+
         do iter=1,ibegin
-          do j=j1,j2  
-            do i=i1,i2                 
+          do j=j1,j2
+            do i=i1,i2
               tabres(i,j,iter) = dv_avg3(i,j,iif-iter+1)
             enddo
-          enddo          
+          enddo
         enddo
 
         tabres = rrhox * tabres
@@ -850,26 +850,26 @@ C$OMP END MASTER
         ENDIF
 
         isize = (j2-j1+1)*(i2-i1+1)
-       
+
         IF ((nbstep3d == 0).AND.(iif == 1)) THEN
           IF (.NOT.allocated(finevalues)) THEN
             Allocate(finevalues(isize,0:nfast))
             Allocate(coarsevalues(isize,0:nfast))
-          ELSE       
+          ELSE
             CALL checksize(indupdate+isize)
           ENDIF
         ENDIF
-       
+
         do iter=1,ibegin
           oldindupdate = indupdate
-          do j=j1,j2  
+          do j=j1,j2
             do i=i1,i2
               oldindupdate = oldindupdate + 1
               finevalues(oldindupdate,iiffine-iter+1) = tabres(i,j,iter)
             enddo
-          enddo          
+          enddo
         enddo
-          
+
         IF (iif == 1) THEN
           oldindupdate = indupdate
           do j=j1,j2
@@ -877,23 +877,23 @@ C$OMP END MASTER
               oldindupdate = oldindupdate + 1
               coarsevalues(oldindupdate,0) = DV_avg1(i,j,nstp)
             enddo
-          enddo        
-        ENDIF   
-          
-          
+          enddo
+        ENDIF
+
+
         tabtemp = 0.
         do iter=0,iif-1
           cff = -weight2(iif,iter)
           call copy1d(tabtemp,coarsevalues(indupdate+1,iter),cff,isize)
-        enddo    
-         
+        enddo
+
         do iter=0,iiffine
           cff=weight2(iiffine,iter)
           call copy1d(tabtemp,finevalues(indupdate+1,iter),cff,isize)
         enddo
-         
+
         tabtemp = tabtemp/weight2(iif,iif)
-                               
+
         DO j=j1,j2
           DO i=i1,i2
             t1 = 0.5*(zeta(i,j  ,knew)+h(i,j  )+
@@ -906,14 +906,14 @@ C$OMP END MASTER
             indupdate = indupdate + 1
             coarsevalues(indupdate,iif) = tabtemp(i,j)
           ENDDO
-        ENDDO 
+        ENDDO
       ENDIF
-      
+
       return
-      end 
+      end
 
 !=====================================================================
-    
+
       Subroutine Updateduavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
       implicit none
@@ -932,13 +932,13 @@ C$OMP END MASTER
       logical :: western_side, eastern_side
 
       IF (before) THEN
-      
+
         rrhoy = real(Agrif_Irhoy())
 
         tabres(i1:i2,j1:j2) = rrhoy * DU_avg1(i1:i2,j1:j2,4)
-         
+
       ELSE
-       
+
         western_side  = (nb == 1).AND.(ndir == 1)
         eastern_side  = (nb == 1).AND.(ndir == 2)
 
@@ -949,31 +949,31 @@ C$OMP END MASTER
      &                            (tabres(i,j) - DU_avg1(i,j,5))
 # ifdef MASKING
      &                     * umask(i,j)
-# endif  
+# endif
           enddo
         endif
-         
+
         if (eastern_side) then
           i = i2
-          do j=j1,j2  
+          do j=j1,j2
             Zt_avg1(i,j) = Zt_avg1(i,j)+pm(i,j)*pn(i,j)*
      &                    (tabres(i,j) - DU_avg1(i,j,5))
 # ifdef MASKING
      &                    * umask(i,j)
-# endif  
+# endif
           enddo
         endif
-      
+
         DU_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt)
 # ifdef MASKING
      &                         * umask(i1:i2,j1:j2)
 # endif
 
       ENDIF
-      
+
       return
       end
-   
+
 !=====================================================================
 
       Subroutine Updatedvavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
@@ -993,15 +993,15 @@ C$OMP END MASTER
       integer :: nb,ndir
       real    :: t1
       logical :: northern_side,southern_side
-                    
+
       IF (before) THEN
-      
+
          rrhox = real(Agrif_Irhox())
 
          tabres(i1:i2,j1:j2) = rrhox * DV_avg1(i1:i2,j1:j2,4)
-         
+
        ELSE
-       
+
          southern_side = (nb == 2).AND.(ndir == 1)
          northern_side = (nb == 2).AND.(ndir == 2)
 
@@ -1012,28 +1012,28 @@ C$OMP END MASTER
      &                             (tabres(i,j) - DV_avg1(i,j,5))
 # ifdef MASKING
      &                       * vmask(i,j)
-# endif  
+# endif
            enddo
          endif
-         
+
          if (northern_side) then
            j = j1
-           do i=i1,i2  
+           do i=i1,i2
              Zt_avg1(i,j) = Zt_avg1(i,j)+pm(i,j)*pn(i,j)*
      &                     (tabres(i,j) - DV_avg1(i,j,5))
 # ifdef MASKING
      &                     * vmask(i,j)
-# endif  
+# endif
            enddo
          endif
-         
+
          DV_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt)
 # ifdef MASKING
      &                          * vmask(i1:i2,j1:j2)
 # endif
 
       ENDIF
-             
+
       return
       end
 
@@ -1048,7 +1048,7 @@ C$OMP END MASTER
 # include "ocean2d.h"
 # include "coupling.h"
 # include "scalars.h"
-# include "zoom.h"     
+# include "zoom.h"
 !$AGRIF_DO_NOT_TREAT
       logical global_update_2d
       common/globalupdate/global_update_2d
@@ -1063,15 +1063,15 @@ C$OMP END MASTER
         deallocate(finevalues)
         allocate(finevalues(isize,0:nfast))
         finevalues(1:n1,0:nfast) = tempvalues
-       
+
         tempvalues=coarsevalues(1:n1,0:nfast)
         deallocate(coarsevalues)
         allocate(coarsevalues(isize,0:nfast))
         coarsevalues(1:n1,0:nfast) = tempvalues
-              
-        deallocate(tempvalues)      
+
+        deallocate(tempvalues)
       ENDIF
-      
+
       return
       end
 
@@ -1096,7 +1096,7 @@ C$OMP END MASTER
 #  include "param.h"
 #  include "scalars.h"
       integer iif_bak
-      integer omp_get_num_threads, omp_get_thread_num 
+      integer omp_get_num_threads, omp_get_thread_num
       integer ntrds,trd,range, my_first,my_last, tile
 
       ntrds=omp_get_num_threads()
@@ -1108,11 +1108,11 @@ C$OMP BARRIER
 
       iif_bak = iif
       iif = -1 ! Prevent reinitialization of Hz_bak
- 
+
       do tile=my_first,my_last
         call set_depth (tile)
       enddo
- 
+
       iif = iif_bak
 
       end subroutine Recall_set_depth

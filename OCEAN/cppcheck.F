@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -21,8 +21,8 @@
 ! creates catalog of CPP-switches found there. It does not matter,
 ! whether switches are in defined or undefined status, either way
 ! they are put into catalog. For the purpose of this algorithm
-! CPP-switch (CPP-macro name) is a word which follows a command 
-! (reserved word) of C-preprocessor, such as "ifdef", "define" etc.   
+! CPP-switch (CPP-macro name) is a word which follows a command
+! (reserved word) of C-preprocessor, such as "ifdef", "define" etc.
 ! Conversely, a word which follows another word which is not a
 ! CPP-command is not considered as a CPP-macro name.
 !
@@ -35,12 +35,12 @@
 ! 0. reset catalog: arrays of names of CPP-switches and their sizes;
 ! 1. read line from the file; ignore all lines which do not have #;
 ! 2. find non-trivial length of that line;
-! 3. set all symbols within C-style comments to blank (' ');  
+! 3. set all symbols within C-style comments to blank (' ');
 ! 4. set all special characters to blank;
 ! 5. identify words within the modified line;
-! 6. identify words which are CPP commands and CPP-macro names. 
+! 6. identify words which are CPP commands and CPP-macro names.
 ! 7. for each CPP-macro name encountered in (6) check whether it
-!     already listed in the catalog, and if not, place it there. 
+!     already listed in the catalog, and if not, place it there.
 ! 8. Once catalog is complete, generate code for checkdefs.
 !
 ! Created by Alexander Shchepetkin <alex@atmos.ucla.edu> on May 2000.
@@ -55,7 +55,7 @@
       integer istart(nwords), is        , size(max_switches)
      &       ,  iend(nwords), ie,ln     , line(max_switches)
       logical macro(nwords)             , example
-      character*32                        switch(max_switches) 
+      character*32                        switch(max_switches)
       integer count, iocheck, i,k,n
       logical end_of_file, comment, word, command, new
 
@@ -82,8 +82,8 @@
         if (string(1:1).ne.'#') goto 1  !
         goto 3                          ! Find length of the string,
    2    end_of_file=.true.              ! which is equal to position
-                                        ! of the most right nonblank 
-   3    lstring=maxstring+1             ! character. 
+                                        ! of the most right nonblank
+   3    lstring=maxstring+1             ! character.
    4     lstring=lstring-1              !
          if ((string(lstring:lstring).eq.' ').AND.(lstring.GT.1)) goto 4
 !
@@ -100,12 +100,12 @@
           elseif (comment  .and. string(i:i+1).eq.'*/') then
             comment=.false.
             iend(n)=i+1
-          endif 
-         if (i+1.lt.lstring) goto 5     ! 
+          endif
+         if (i+1.lt.lstring) goto 5     !
         if (comment) then               ! If string ends as an open
-          lstring=istart(n)-1           ! comment, restrict lstring  
-          n=n-1                         ! and disregard all symbols 
-        endif                           ! one right right from it. 
+          lstring=istart(n)-1           ! comment, restrict lstring
+          n=n-1                         ! and disregard all symbols
+        endif                           ! one right right from it.
         do k=1,n                        !
           do i=istart(k),iend(k)        !
             string(i:i)=' '             ! blank out C-style comments
@@ -147,11 +147,11 @@ c**     do k=1,n
 c**       write(*,'(10x,80A1)') (string(i:i), i=istart(k),iend(k))
 c**     enddo                           !
                                         ! Identify CPP-commands (i.e.
-        command=.false.                 ! reserved words) and CPP- 
-        do k=1,n                        ! macro names among the words 
+        command=.false.                 ! reserved words) and CPP-
+        do k=1,n                        ! macro names among the words
           macro(k)=.false.              ! of the line. Cancel example
           is=istart(k)                  ! switch when encounter first
-          ie=iend(k)                    ! conditional CPP-command. 
+          ie=iend(k)                    ! conditional CPP-command.
           ln=ie-is+1                    !
 
           if (ln.eq.6 .and. string(is:ie).eq.'define') then
@@ -194,7 +194,7 @@ c**     enddo
         do k=1,n                        ! Scan catalog of previously
           if (macro(k)) then            ! discovered switches to find
             is=istart(k)                ! match with CPP-macro names
-            ie=iend(k)                  ! found in the present line. 
+            ie=iend(k)                  ! found in the present line.
             ln=ie-is+1                  ! If no match is found, add
             new=.true.                  ! the new switch to the
             do i=1,nswitches            ! catalog.
@@ -211,7 +211,7 @@ c**     enddo
             endif                       !
           endif                         ! CPP-switches found prior
         enddo                           ! to the first conditional
-      if (.not.end_of_file) goto 1      ! CPP-command correspond to 
+      if (.not.end_of_file) goto 1      ! CPP-command correspond to
       close(unit=input)                   ! predefined examples.
 
 c**   write(*,'(/,I4,/)') nswitches     ! Print out catalog.
@@ -220,7 +220,7 @@ c**      ln=size(i)
 c**     write(*,'(10x,I4,I4,2x,A)') line(i), ln, switch(i)(1:ln)
 c**   enddo
 !
-! Generate CPP-checking subroutine. 
+! Generate CPP-checking subroutine.
 !
       open (unit=iout,file='check_switches1.F',form='formatted')
       write(iout,'(A/)')  '#include "cppdefs.h"'
@@ -234,17 +234,17 @@ c**   enddo
      &                                ' NO ACTION IS NEEDED  !!!!!!',
      &  '!!!!!! if changes in "cppdefs.h" are limited',
      &                                    'to activation or  !!!!!!',
-     &  '!!!!!! deactivation of previously known switches.','!!!!!!', 
+     &  '!!!!!! deactivation of previously known switches.','!!!!!!',
      &  '!!!!!! To refresh this file compile and execute',
      &                                      '"cppcheck.F"', '!!!!!!',
      &  '!!!!!! as an independent program, or use commands','!!!!!!',
-     &  '!!!!!! "make checkdefs" or "make depend".',        '!!!!!!' 
+     &  '!!!!!! "make checkdefs" or "make depend".',        '!!!!!!'
       write(iout,'(A,20x,I3,1x,A/A,23x,I3,1x,A)')
      &  '!!!!!! Number of Configuration Choices:',nexample, '!!!!!!',
      &  '!!!!!! Total number of CPP-switches:', nswitches,  '!!!!!!'
       write(iout,'(2(/6x,A), 5(/A) /6x,A /5x,A1,6x,A, 5(/6x,A))')
-     &  'implicit none',        'integer ierr, is,ie, iexample', 
-     &  '#include "param.h"',   '#include "strings.h"', 
+     &  'implicit none',        'integer ierr, is,ie, iexample',
+     &  '#include "param.h"',   '#include "strings.h"',
      &  '#ifdef MPI',           '# include "scalars.h"',    '#endif',
      &  'MPI_master_only write(stdout,''(/1x,A/)'')',       '&',
      &  '''Activated C-preprocessing Options:''',
@@ -258,7 +258,7 @@ c**   enddo
      &         'MPI_master_only write(stdout,''(10x,A)'')',
      &                       '''', switch(i)(1:ln), ''''
         write(iout,'(6x,A7,I2/6x,A/6x,A,A,A1/6x,A/6x,A/A)')
-     &       'ie=is +', ln-1, 'if (ie.ge.max_opt_size) goto 99', 
+     &       'ie=is +', ln-1, 'if (ie.ge.max_opt_size) goto 99',
      &       'Coptions(is:ie)=''', switch(i)(1:ln), '''',
      &       'Coptions(ie+1:ie+1)='' ''', 'is=ie+2', '#endif'
       enddo
@@ -276,7 +276,7 @@ c**   enddo
      &   '99  MPI_master_only write(stdout,''(/1x,A,A/14x,A)'')',
      &   '&', '''CHECKDEFS -- ERROR: Unsufficient size of string',
      &     'Coptions'',', '&', '''in file "strings.h".'',',
-     &                   '''Increase the size it and recompile.''' 
+     &                   '''Increase the size it and recompile.'''
       write(iout,'(6x,A,2(/6x,A))') 'ierr=ierr+1', 'return', 'end'
       close(unit=iout)
       stop

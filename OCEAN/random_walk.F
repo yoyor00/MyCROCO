@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,11 +14,11 @@
 
       subroutine random_walk (indx,nfltmax)
       implicit none
-#  include "param.h"
-#  include "grid.h"
-#  include "floats.h"
-#  include "scalars.h"
-#  include "ocean3d.h"
+# include "param.h"
+# include "grid.h"
+# include "floats.h"
+# include "scalars.h"
+# include "ocean3d.h"
 # ifdef RANDOM_VERTICAL
 #  include "mixing.h"
 # endif
@@ -36,7 +36,7 @@
       real p1,p2, q1,q2, r1,r2,znow
      & ,d1, d2, temp, sum,temp2,maxdepth
 
-!  in the case of some larvae (e.g. crab) the 
+!  in the case of some larvae (e.g. crab) the
 !  vertical migration is limited by some maximum
 !  in depth
 
@@ -57,7 +57,7 @@
 # endif
 
 !
-!  We calculate a velocity fluctuation based on a 
+!  We calculate a velocity fluctuation based on a
 !  a random number (uniformly distribute between  [0 1])
 !  scaled by the vertical tracer mixing Ak and its vertical gradient
 !
@@ -77,15 +77,15 @@
 # ifdef DIEL_MIGRATION
 
 !  A wmig is added in case of forced (time dependent)
-!  vertical migration. Particles sink from 10 - 12 pm. 
+!  vertical migration. Particles sink from 10 - 12 pm.
 !  and rise from 4 -6 am. The rising process is not so
 !  dramatic as the the sinking one. Some of the particles
-!  do not surface completely. To simulate that in the surfacing 
+!  do not surface completely. To simulate that in the surfacing
 !  phase we add a random fluctuation.
 
-      tofday=tdays-int(tdays) 
+      tofday=tdays-int(tdays)
       if(tofday.gt.0.9167 .and. tofday.lt.1) then
-        wflag =  1.            
+        wflag =  1.
       elseif(tofday.gt.0.1667 .and. tofday.lt.0.25) then
         wflag =  -1.
       else
@@ -97,7 +97,7 @@
 ! calculate random number varing a "seed" with tdays
 ! wich will be stored in vector of with the same size
 ! of the number of floats. NOTE: the firts element of the vector
-! is fixed and is not used 
+! is fixed and is not used
 
       do i=1,nfltmax+1
        randz(i)=0.
@@ -160,17 +160,17 @@ c       write(*,*) 'Random displacement ', deltaw*dt
         r1=1.-r2
         k1=max(k1,   0)
         k2=min(k1+1, N)
-  
+
         i1=int(track(ixgrd,nfp1,iflt))
         i2=i1+1
         p2=track(ixgrd,nfp1,iflt)-float(i1)
         p1=1.-p2
-  
+
         j1=int(track(iygrd,nfp1,iflt))
         j2=j1+1
         q2=track(iygrd,nfp1,iflt)-float(j1)
         q1=1.0-q2
-  
+
         znow=p1*q1*(r1*z_w(i1,j1,k1)+r2*z_w(i1,j1,k2))
      &              +p2*q1*(r1*z_w(i2,j1,k1)+r2*z_w(i2,j1,k2))
      &              +p1*q2*(r1*z_w(i1,j2,k1)+r2*z_w(i1,j2,k2))
@@ -189,7 +189,7 @@ c       write(*,*) 'ZNOW upgraded', znow
 # ifdef DIEL_MIGRATION
         znow=max(znow,maxdepth)
 # endif
-  
+
 ! use Capet code to get new sigma level for the float
 
         track(izgrd,nfp1,iflt)=0.
@@ -208,7 +208,7 @@ c       write(*,*) 'ZNOW upgraded', znow
      &              (znow-z_w(ifix,jfix,k-1))/Hz(ifix,jfix,k))
                 track(izgrd,nfp1,iflt)=track(izgrd,nfp1,iflt)+temp2*
      &                            temp
-  
+
              endif
             enddo !  -> k
           enddo !  -> k2
@@ -226,18 +226,18 @@ c       write(*,*) 'new track ', track(izgrd,nfp1,iflt)
         lxy =((1./pn(ifix,jfix))+(1./pm(ifix,jfix)))/2.
         kh  = epsl**(1./3.)*lxy**(4./3.)
 
-        deltau=sqrt(2.*kh/dt)*(randz(i+1)*2.-1.) 
+        deltau=sqrt(2.*kh/dt)*(randz(i+1)*2.-1.)
      &        *tanh(dt*sec2day*float(iic-ntstart))
         track(ixgrd,nfp1,iflt)=track(ixgrd,nfp1,iflt)+
      &       deltau*umask(ifix,jfix)*dt/lxy
 
-! to have different rand numb. in the directions 
-! we use the inverse of the random number vector in 
+! to have different rand numb. in the directions
+! we use the inverse of the random number vector in
 ! y direction
 
-        deltau=sqrt(2.*kh/dt)*(randz(nfltmax+1-i+1)*2.-1.) 
+        deltau=sqrt(2.*kh/dt)*(randz(nfltmax+1-i+1)*2.-1.)
      &        *tanh(dt*sec2day*float(iic-ntstart))
-        track(iygrd,nfp1,iflt)=track(iygrd,nfp1,iflt)+ 
+        track(iygrd,nfp1,iflt)=track(iygrd,nfp1,iflt)+
      &       deltau*vmask(ifix,jfix)*dt/lxy
 !
 ! These random horizontal excursions are not isopycnal
@@ -278,7 +278,7 @@ c       write(*,*) 'new track ', track(izgrd,nfp1,iflt)
 !#endif
 !
 !  Local variable declarations.
-!    
+!
       integer, parameter :: a = 16807          ! 7^5
       integer, parameter :: b15 = 32768        ! 2^15
       integer, parameter :: b16 = 65536        ! 2^16
@@ -346,7 +346,7 @@ c       write(*,*) 'new track ', track(izgrd,nfp1,iflt)
          x(l)=real(ix,8)*s
       enddo
       return
-      end 
+      end
 
 #else
       subroutine random_walk_empty

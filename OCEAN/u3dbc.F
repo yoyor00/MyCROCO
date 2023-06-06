@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,7 +14,7 @@
 # include "cppdefs.h"
 # ifdef SOLVE3D
       subroutine u3dbc_tile (Istr,Iend,Jstr,Jend,grad)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
@@ -60,7 +60,7 @@
 # include "coupling.h"
 # include "climat.h"
 # include "scalars.h"
-# include "boundary.h"  
+# include "boundary.h"
 # ifdef MRL_WCI
 #  include "forces.h"
 # endif
@@ -146,11 +146,11 @@
      &                    -max(cy,0.)*grad(Istr,j  )
      &                    -min(cy,0.)*grad(Istr,j+1)
      &                                    )/(cff+cx)
-#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY 
+#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY
             u(Istr,j,k,nnew)=(1.-tau)*u(Istr,j,k,nnew)+tau*
 #     ifdef M3_FRC_BRY
      &                                      ubry_west(j,k)
-#     else     
+#     else
      &                                      uclm(Istr,j,k)
 #     endif
 #    endif
@@ -255,11 +255,11 @@
      &                      -max(cy,0.)*grad(Iend+1,j  )
      &                      -min(cy,0.)*grad(Iend+1,j+1)
      &                                        )/(cff+cx)
-#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY 
+#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY
             u(Iend+1,j,k,nnew)=(1.-tau)*u(Iend+1,j,k,nnew)+tau*
 #     ifdef M3_FRC_BRY
      &                                          ubry_east(j,k)
-#     else     
+#     else
      &                                        uclm(Iend+1,j,k)
 #     endif
 #    endif
@@ -304,7 +304,7 @@
 #  endif            /* OBC_COM_EAST */
       endif         !<-- EASTERN_EDGE
 # endif             /* !EW_COM_PERIODIC */
- 
+
 # ifndef NS_COM_PERIODIC
 !
 !====================================================================
@@ -361,11 +361,11 @@
      &                      -max(cy,0.)*grad(i-1,Jstr-1)
      &                      -min(cy,0.)*grad(i  ,Jstr-1)
      &                                        )/(cff+cx)
-#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY 
+#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY
            u(i,Jstr-1,k,nnew)=(1.-tau)*u(i,Jstr-1,k,nnew)
 #     ifdef M3_FRC_BRY
      &                               +tau*ubry_south(i,k)
-#     else     
+#     else
      &                              +tau*uclm(i,Jstr-1,k)
 #     endif
 #    endif
@@ -465,11 +465,11 @@
      &                      -max(cy,0.)*grad(i-1,Jend+1)
      &                      -min(cy,0.)*grad(i  ,Jend+1)
      &                                        )/(cff+cx)
-#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY 
+#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY
             u(i,Jend+1,k,nnew)=(1.-tau)*u(i,Jend+1,k,nnew)
 #     ifdef M3_FRC_BRY
      &                                +tau*ubry_north(i,k)
-#     else     
+#     else
      &                               +tau*uclm(i,Jend+1,k)
 #     endif
 #    endif
@@ -515,10 +515,10 @@
 #  endif
       endif   !<-- NORTHERN_EDGE
 # endif        /* !NS_COM_PERIODIC */
- 
+
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
- 
+
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,7 +14,7 @@
 # include "cppdefs.h"
 # ifdef SOLVE3D
       subroutine v3dbc_tile (Istr,Iend,Jstr,Jend,grad)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
@@ -61,7 +61,7 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
 # include "climat.h"
 # include "scalars.h"
 # if defined MRL_WCI || defined OW_COUPLING
-# include "forces.h"
+#  include "forces.h"
 # endif
 # include "boundary.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -145,11 +145,11 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
      &                    -max(cy,0.)*grad(i  ,Jstr)
      &                    -min(cy,0.)*grad(i+1,Jstr)
      &                                    )/(cff+cx)
-#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY 
+#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY
             v(i,Jstr,k,nnew)=(1.-tau)*v(i,Jstr,k,nnew)+tau*
 #     ifdef M3_FRC_BRY
      &                                    vbry_south(i,k)
-#     else     
+#     else
      &                                     vclm(i,Jstr,k)
 #     endif
 #    endif
@@ -253,11 +253,11 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
      &                      -max(cy,0.)*grad(i  ,Jend+1)
      &                      -min(cy,0.)*grad(i+1,Jend+1)
      &                                        )/(cff+cx)
-#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY 
+#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY
             v(i,Jend+1,k,nnew)=(1.-tau)*v(i,Jend+1,k,nnew)+tau*
 #     ifdef M3_FRC_BRY
      &                                         vbry_north(i,k)
-#     else     
+#     else
      &                                        vclm(i,Jend+1,k)
 #     endif
 #    endif
@@ -302,7 +302,7 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
 #  endif
       endif     !<--  NORTHERN_EDGE
 # endif          /* !NS_COM_PERIODIC */
- 
+
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -359,11 +359,11 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
      &                      -max(cy,0.)*grad(Istr-1,j-1)
      &                      -min(cy,0.)*grad(Istr-1,j  )
      &                                        )/(cff+cx)
-#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY 
+#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY
             v(Istr-1,j,k,nnew)=(1.-tau)*v(Istr-1,j,k,nnew)
 #     ifdef M3_FRC_BRY
      &                                 +tau*vbry_west(j,k)
-#     else     
+#     else
      &                               +tau*vclm(Istr-1,j,k)
 #     endif
 #    endif
@@ -463,11 +463,11 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
      &                      -max(cy,0.)*grad(Iend+1,j-1)
      &                      -min(cy,0.)*grad(Iend+1,j  )
      &                                        )/(cff+cx)
-#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY 
+#    if defined M3_FRC_BRY  || defined M3CLIMATOLOGY
             v(Iend+1,j,k,nnew)=(1.-tau)*v(Iend+1,j,k,nnew)
 #     ifdef M3_FRC_BRY
      &                                 +tau*vbry_east(j,k)
-#     else     
+#     else
      &                               +tau*vclm(Iend+1,j,k)
 #     endif
 #    endif
@@ -513,10 +513,10 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
 #  endif
       endif     !<-- EASTERN_EDGE
 # endif          /* !EW_COM_PERIODIC */
- 
+
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
- 
+
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
@@ -575,4 +575,4 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 # undef CHILD
 #endif  /* !CHILD */
- 
+

@@ -27,29 +27,29 @@
       call pre_step3d_tile (Istr,Iend,Jstr,Jend,
      &                A3d(1,1,trd), A3d(1,2,trd), A3d(1,3,trd),
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-# ifdef VADV_ADAPT_IMP     
-     &                                            A2d(1,4,trd), 
-# endif           
+# ifdef VADV_ADAPT_IMP
+     &                                            A2d(1,4,trd),
+# endif
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
-#ifdef OPENACC
+# ifdef OPENACC
      &   ,A3d(1,4,trd),A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd)
-#endif
+# endif
      &                                          , A3d(1,8,trd)         
      &                                                        )
       return
       end
 
       subroutine pre_step3d_tile (Istr,Iend,Jstr,Jend, ru,rv,rw,
-     &                                                 FC,CF,DC, 
-# ifdef VADV_ADAPT_IMP     
-     &                                                       WC, 
-# endif     
+     &                                                 FC,CF,DC,
+# ifdef VADV_ADAPT_IMP
+     &                                                       WC,
+# endif
      &                                               FX,FE,WORK
-#ifdef OPENACC
+# ifdef OPENACC
      &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
-#endif
+# endif
      &                                                 ,Hz_half
-     &                                                         )  
+     &                                                         )
 !
 !--------------------------------------------------------------------
 ! Preliminary step: initialize computations of the new time step
@@ -77,26 +77,26 @@
 # endif
       real   ru(PRIVATE_2D_SCRATCH_ARRAY,N),    cff,
      &       rv(PRIVATE_2D_SCRATCH_ARRAY,N),    cff1,
-     &       rw(PRIVATE_2D_SCRATCH_ARRAY,0:N),     
+     &       rw(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &       FC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  cff2,
      &       CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
-     &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  gamma, 
+     &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  gamma,
      &       FX(PRIVATE_2D_SCRATCH_ARRAY),      epsil,
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
      &     WORK(PRIVATE_2D_SCRATCH_ARRAY)
-#ifdef OPENACC
+# ifdef OPENACC
       real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     WORK_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-#endif
+# endif
 # ifdef VADV_ADAPT_IMP      
       real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
       real Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
 # ifdef WET_DRY
       real cff3,cff4,cff5
-#  endif
+# endif
 # ifdef M3FAST
       real qdm_nstp,qdm_indx
 # endif
@@ -115,7 +115,7 @@
 # ifdef M3FAST
 #  include "nbq.h"
 # endif
-#include "openacc_work.h"
+# include "openacc_work.h"
 # ifdef MASKING
 #  define SWITCH *
 # else
@@ -132,9 +132,9 @@
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
-! used in UP5 and C6 advection schemes (and order degradation near 
-! land masks). cdiff is part of laplacian diffusion in flux1 (used 
-! near mask): 
+! used in UP5 and C6 advection schemes (and order degradation near
+! land masks). cdiff is part of laplacian diffusion in flux1 (used
+! near mask):
 !    0 --> flux1=flux2 (second order C2 advection scheme)
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
@@ -154,7 +154,7 @@
       flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff)
      &                          - 0.5*cdiff*sign(1.,ua)*(q_i - q_im1)
 
-      flux4(q_im2, q_im1, q_i, q_ip1, ua) = 
+      flux4(q_im2, q_im1, q_i, q_ip1, ua) =
      &                     ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.
 
       flux3(q_im2, q_im1, q_i, q_ip1, ua) =
@@ -188,13 +188,14 @@
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
-      
-#if defined RVTK_DEBUG_PERFRST
+
+# if defined RVTK_DEBUG_PERFRST
        call check_tab3d(Hz(:,:,:),'Hz in prestep3d','r')
        call check_tab3d(Hz_bak(:,:,:),'Hz_bak in prestep3d','r')
        call check_tab3d(Huon(:,:,:),'Huon in prestep3d','r')
-#endif
+# endif
 !$acc kernels if(compute_on_device) default(present)
+
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -202,9 +203,9 @@
      &        -cff*pm(i,j)*pn(i,j)*( Huon(i+1,j,k)-Huon(i,j,k)
      &                              +Hvom(i,j+1,k)-Hvom(i,j,k)
      &                                  +We(i,j,k)-We(i,j,k-1)
-# ifdef VADV_ADAPT_IMP     
-     &                                  +Wi(i,j,k)-Wi(i,j,k-1)     
-# endif     
+# ifdef VADV_ADAPT_IMP
+     &                                  +Wi(i,j,k)-Wi(i,j,k-1)
+# endif
      &                                                       )
           enddo
         enddo
@@ -213,10 +214,10 @@
 !
 !  Set extended range
 !
-#  ifdef EW_PERIODIC
+# ifdef EW_PERIODIC
       imin=Istr-2
       imax=Iend+2
-#  else
+# else
       if (WESTERN_EDGE) then
         imin=Istr-1
       else
@@ -227,11 +228,11 @@
       else
         imax=Iend+2
       endif
-#  endif
-#  ifdef NS_PERIODIC
+# endif
+# ifdef NS_PERIODIC
       jmin=Jstr-2
       jmax=Jend+2
-#  else
+# else
       if (SOUTHERN_EDGE) then
         jmin=Jstr-1
       else
@@ -242,7 +243,7 @@
       else
         jmax=Jend+2
       endif
-#  endif
+# endif
 !
 !--------------------------------------------------------------------
 !  Start computation of the auxiliary tracer field
@@ -256,11 +257,11 @@
 !  Since this field will be used exclussively to compute the high-
 !  order fluxes during subsequent step3d_t operation, the final
 !  values of t(i,j,k,??,itrc) alfer step3d_t will be computed in
-!  a flux-conservative manner. The overall time step will be both 
+!  a flux-conservative manner. The overall time step will be both
 !  conservative and constancy preserving.
 !
 !  This preliminary step shall be done before field t(:,:,:,???,:)
-!  loses its meaningful values during the pre-step operation. 
+!  loses its meaningful values during the pre-step operation.
 !
 !======================================================================
 !
@@ -271,27 +272,28 @@
 
 # ifdef TRACERS
       do itrc=1,NT
-#if !defined OPENACC
+#  if !defined OPENACC
       do k=1,N
-#endif
-# ifdef BIO_HADV_WENO5
-#  if defined TEMPERATURE && defined SALINITY
-          if (itrc .le. 2) then
-#  elif defined TEMPERATURE || defined SALINITY
-          if (itrc .le. 1) then
 #  endif
-# endif
+#  ifdef BIO_HADV_WENO5
+#   if defined TEMPERATURE && defined SALINITY
+
+          if (itrc .le. 2) then
+#   elif defined TEMPERATURE || defined SALINITY
+          if (itrc .le. 1) then
+#   endif
+#  endif
 !
 !----------------------------------------------------------
 ! Advection for active tracers: Compute fluxes FX and FE
 !----------------------------------------------------------
 !
 #  define PREDICTOR
-#if !defined OPENACC
-#  include "compute_horiz_tracer_fluxes.h"
-#else
-#  include "compute_horiz_tracer_fluxes_3D.h"
-#endif
+#  if !defined OPENACC
+#   include "compute_horiz_tracer_fluxes.h"
+#  else
+#   include "compute_horiz_tracer_fluxes_3D.h"
+#  endif
 #  undef PREDICTOR
 
 !
@@ -299,66 +301,66 @@
 ! WENO5 advection for passive tracers (biology ...)
 !----------------------------------------------------------
 !
-# ifdef BIO_HADV_WENO5
+#  ifdef BIO_HADV_WENO5
           else  ! if (itrc .gt. 2)
-#  define FLUX5 flux5_weno
-#  define FLUX3 flux3_weno
-#  define FLUX2 flux1
-#  define UP5_MASKING
+#   define FLUX5 flux5_weno
+#   define FLUX3 flux3_weno
+#   define FLUX2 flux1
+#   define UP5_MASKING
 !
             cdif=1.
-#  include "t3dadv_order5.h"
+#   include "t3dadv_order5.h"
 !
-#  undef FLUX5
-#  undef FLUX3
-#  undef FLUX2
-#  undef UP5_MASKING
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+#   undef UP5_MASKING
           endif
-# endif
+#  endif
 !
 !----------------------------------------------------------
 ! Apply point sources for river runoff simulations
 !----------------------------------------------------------
 !
-# ifdef PSOURCE
+#  ifdef PSOURCE
 !$acc parallel loop if(compute_on_device) default(present)
 !$acc& collapse(2)
           do is=1,Nsrc
-#  if defined OPENACC
+#   if defined OPENACC
             DOEXTEND(k,1,N,FX,FE,WORK)
-#  endif
-#  ifdef MPI
+#   endif
+#   ifdef MPI
            i=Isrc_mpi(is,mynode)
            j=Jsrc_mpi(is,mynode)
-#  else
+#   else
            i=Isrc(is)
            j=Jsrc(is)
-#  endif
+#   endif
             if (Istr.le.i .and. i.le.Iend+1
      &                   .and. Jstr.le.j .and. j.le.Jend+1) then
               if (Dsrc(is).eq.0) then
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
-#  ifdef MASKING
+#   ifdef MASKING
                 else
                   if (rmask(i,j).eq.0 .and. rmask(i-1,j).eq.1) then
                     FX(i,j)=Huon(i,j,k)*t(i-1,j,k,nstp,itrc)
                   elseif (rmask(i,j).eq.1. .and. rmask(i-1,j).eq.0) then
                     FX(i,j)=Huon(i,j,k)*t(i  ,j,k,nstp,itrc)
                   endif
-#  endif
+#   endif
                 endif
               elseif(Dsrc(is).eq.1) then
                 if (Lsrc(is,itrc)) then
                   FE(i,j)=Hvom(i,j,k)*Tsrc(is,k,itrc)
-#  ifdef MASKING
+#   ifdef MASKING
                 else
                   if (rmask(i,j).eq.0 .and. rmask(i,j-1).eq.1) then
                     FE(i,j)=Hvom(i,j,k)*t(i,j-1,k,nstp,itrc)
                   elseif (rmask(i,j).eq.1 .and. rmask(i,j-1).eq.0) then
                     FE(i,j)=Hvom(i,j,k)*t(i,j  ,k,nstp,itrc)
                   endif
-#  endif
+#   endif
                 endif
               endif
             endif
@@ -366,7 +368,7 @@
             ENDDOEXTEND
 #   endif
           enddo
-# endif /* PSOURCE */
+#  endif /* PSOURCE */
 !
 !----------------------------------------------------------
 ! Finalize horizontal advection: compute flux divergences
@@ -375,9 +377,9 @@
           if (FIRST_TIME_STEP) then
             cff=0.5*dt
 !$acc parallel loop if(compute_on_device) default(present)
-#if defined OPENACC
+#  if defined OPENACC
             DOEXTEND(k,1,N,FX,FE,WORK)
-#endif
+#  endif
             do j=Jstr,Jend
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nstp,itrc)
@@ -385,18 +387,18 @@
      &                                      +FE(i,j+1)-FE(i,j))
               enddo
             enddo
-#if defined OPENACC
+#  if defined OPENACC
             ENDDOEXTEND
-#endif
+#  endif
           else
             cff=(1.-gamma)*dt
             cff1=0.5+gamma
             cff2=0.5-gamma
 !$acc parallel loop if(compute_on_device) default(present)
 !$acc& collapse(3)
-#if defined OPENACC
+#  if defined OPENACC
             DOEXTEND(k,1,N,FX,FE,WORK)
-#endif
+#  endif
             do j=Jstr,Jend
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=cff1*Hz(i,j,k)*t(i,j,k,nstp,itrc)
@@ -405,13 +407,13 @@
      &                                     +FE(i,j+1)-FE(i,j))
               enddo
             enddo
-#if defined OPENACC
+#  if defined OPENACC
             ENDDOEXTEND
-#endif
+#  endif
           endif
-#if !defined OPENACC
+#  if !defined OPENACC
         enddo   ! <-- k
-#endif
+#  endif
       enddo       ! <-- itrc
 !
 !----------------------------------------------------------
@@ -431,7 +433,7 @@
            if (Istr.le.i .and. i.le.Iend+1
      &        .and. Jstr.le.j .and. j.le.Jend+1) then
              cff1=dt*pm(i,j)*pn(i,j)
-             do k=1,N 
+             do k=1,N
                if (Lsrc(is,itrc)) then
                  cff2=Tsrc(is,k,itrc)
                else
@@ -465,12 +467,12 @@
 ! box interfaces (W-points). This can be done by either using
 ! parabolic spline interpolation or, more simple local cubic
 ! polynomial [linear interpolation is considered obsolete].
-!      
+!
       if (FIRST_TIME_STEP) then
             cdt=0.5*dt
       else
             cdt=(1.-gamma)*dt
-      endif 
+      endif
 
 # ifdef M3FAST
       do j=Jstr,Jend
@@ -516,13 +518,13 @@
 
         DOLOOP2D(Istr,Iend,Jstr,Jend)
 # ifdef TRACERS
-# ifndef VADV_ADAPT_IMP 
+#  ifndef VADV_ADAPT_IMP 
         do k=1,N
           do i=Istr,Iend
              DC(i,k)=1./Hz_half(i,j,k)
           enddo
         enddo
-# endif
+#  endif
         do i=Istr,Iend
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
         enddo
@@ -535,53 +537,53 @@
 ! Compute vertical fluxes FC
 !----------------------------------------------------------------------
 !
-# ifdef TS_VADV_WENO5
+#  ifdef TS_VADV_WENO5
+#   undef PREDICTOR
+#  else
+#   define PREDICTOR
+#  endif
+#  include "compute_vert_tracer_fluxes.h"
 #  undef PREDICTOR
-# else
-#  define PREDICTOR
-# endif
-# include "compute_vert_tracer_fluxes.h"
-# undef PREDICTOR
 !
-# ifdef TS_HADV_TEST
+#  ifdef TS_HADV_TEST
       FC(istr:iend,0:N) = 0.d0
-# endif
+#  endif
 !
-!----------------------------------------------------------------------    
+!----------------------------------------------------------------------
 !++ Apply vertical advection for tracers (DC corresponds to 1/Hz_half)
 !----------------------------------------------------------------------
 !
           do k=1,N
             do i=Istr,Iend
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
               t(i,j,k,nnew,itrc)= t(i,j,k,nnew,itrc)  !<-- in this case division by Hz
      &               -DC(i,0)*(FC(i,k)-FC(i,k-1))     !<-- in the tridiagonal matrix problem
-# else
+#  else
               t(i,j,k,nnew,itrc)=DC(i,k)*( t(i,j,k,nnew,itrc)
      &               -DC(i,0)*(FC(i,k)-FC(i,k-1)))
-#  ifdef CONST_TRACERS 
-              t(i,j,k,nnew,itrc)=t(i,j,k,nstp,itrc)  
+#   ifdef CONST_TRACERS
+              t(i,j,k,nnew,itrc)=t(i,j,k,nstp,itrc)
+#   endif
 #  endif
-# endif
             enddo
-          enddo            !--> discard FC  
+          enddo            !--> discard FC
 !
 !----------------------------------------------------------------------
 !  Compute implicit vertical advection/diffusion
 !----------------------------------------------------------------------
 !
-# ifdef VADV_ADAPT_IMP
-#  ifdef SALINITY
+#  ifdef VADV_ADAPT_IMP
+#   ifdef SALINITY
         iAKt=min(itrc,isalt)
-#  else
+#   else
         iAKt=min(itrc,itemp)
-#  endif  
-#  define TRIDIAG_TRA
-#  undef  TRIDIAG_U
-#  undef  TRIDIAG_V 
+#   endif
+#   define TRIDIAG_TRA
+#   undef  TRIDIAG_U
+#   undef  TRIDIAG_V
 #   include "tridiag_pred.h"
-#  undef TRIDIAG_TRA
-# endif          
+#   undef TRIDIAG_TRA
+#  endif
 !
         enddo   !<-- itrc  !--> discard DC
         ENDDOLOOP2D
@@ -593,25 +595,25 @@
 !
 !======================================================================
 !
-#undef DC
-#undef FC
-#undef CF
+# undef DC
+# undef FC
+# undef CF
 
       do j=Jstr,Jend
         do i=IstrU,Iend
           WORK(i,j)=pm_u(i,j)*pn_u(i,j)
         enddo
       enddo
-        
+
         if (FIRST_TIME_STEP) then
           do k=1,N
            do j=Jstr,Jend
             do i=IstrU,Iend
-# ifdef VADV_ADAPT_IMP              
+# ifdef VADV_ADAPT_IMP
               cff = 1.
 # else
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
-# endif           
+# endif
               u(i,j,k,nnew)=(u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
      &                                    +cdt*WORK(i,j)*ru(i,j,k)
      &                      )*cff
@@ -636,7 +638,7 @@
 !          enddo
 !# endif
 
-        else 
+        else
 
           cff1=0.5+gamma
           cff2=0.5-gamma
@@ -644,11 +646,11 @@
             do j=Jstr,Jend
              do i=IstrU,Iend
 
-# ifdef VADV_ADAPT_IMP              
+# ifdef VADV_ADAPT_IMP
               cff = 1.
 # else
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
-# endif 
+# endif
 
 # ifdef M3FAST
               qdm_nstp = u(i,j,k,nstp)*0.5*(Hz(i  ,j,k)+
@@ -705,11 +707,11 @@
             do k=1,N
              do j=JstrV,Jend
               do i=Istr,Iend
-# ifdef VADV_ADAPT_IMP              
+# ifdef VADV_ADAPT_IMP
                 cff = 1.
 # else
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
-# endif 
+# endif
                 v(i,j,k,nnew)=(v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
      &                                    +cdt*WORK(i,j)*rv(i,j,k)
      &                           )*cff
@@ -741,13 +743,12 @@
             cff2=0.5-gamma
             do k=1,N
               do j=JstrV,Jend
-               do i=Istr,Iend
-              
+               do i=Istr,Iend              
 # ifdef VADV_ADAPT_IMP              
                 cff = 1.
 # else
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
-# endif              
+# endif
 
 # ifdef M3FAST
                 qdm_nstp = v(i,j,k,nstp)*0.5*(Hz(i,j  ,k)+
@@ -811,7 +812,7 @@
 #  undef  TRIDIAG_TRA
 #  define TRIDIAG_U
 #  undef  TRIDIAG_V
-#   include "tridiag_pred.h"
+#  include "tridiag_pred.h"
 
 !
 !======================================================================
@@ -826,22 +827,23 @@
 !  Compute implicit vertical advection/viscosity
 !
 
-# undef  TRIDIAG_TRA
-# undef  TRIDIAG_U
-# define TRIDIAG_V
+#  undef  TRIDIAG_TRA
+#  undef  TRIDIAG_U
+#  define TRIDIAG_V
+
 #  include "tridiag_pred.h"
 !
 !======================================================================
 !
       enddo     !<-- j
 # endif
-      
+
 # ifdef NBQ
 !----------------------------------------------------------
-!<-- at this point 
+!<-- at this point
 !<-- rw            contains internal 3D advection + Coriolis
-!<-- rw_nbq_avg1   contains NBQ pressure gradient (+ gravity) 
-!                                        + second viscosity 
+!<-- rw_nbq_avg1   contains NBQ pressure gradient (+ gravity)
+!                                        + second viscosity
 !----------------------------------------------------------
       do j=Jstr,Jend
 !**************************************
@@ -852,21 +854,21 @@
             wz(i,j,k,nnew)=( wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
      &                                          +dt*pn(i,j)*pm(i,j)
      &                              *(rw(i,j,k)+rw_nbq_avg1(i,j,k))
-     &                     )   /  (Hz_half(i,j,k)+Hz_half(i,j,k+1)) 
+     &                     )   /  (Hz_half(i,j,k)+Hz_half(i,j,k+1))
 
             rw_int_nbq(i,j,k)= 0.
             wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
      &                                         Hz(i,j,k+1))
           enddo
         enddo
-!==       
+!==
         do i=Istr,Iend
-!== Special treatment for k=N because the control volume at the top is Hz(N)/2 
+!== Special treatment for k=N because the control volume at the top is Hz(N)/2
             wz(i,j,N,nnew)=( wz(i,j,N,nstp)*Hz(i,j,N)
      &                            +dt*pn(i,j)*pm(i,j)
      &                *(rw(i,j,N)+rw_nbq_avg1(i,j,N))
      &                     )        /  Hz_half(i,j,N) !<-- wz has units m.s-1
-            rw_int_nbq(i,j,N)= 0. 
+            rw_int_nbq(i,j,N)= 0.
             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N) !<-- wz(indx) has units kg.m-1.s-1
 
 !== Special treatment for k=0 because the control volume at the top is Hz(1)/2
@@ -879,28 +881,28 @@
 
             rw_int_nbq(i,j,0)=0.
 
-            wz(i,j,0,nnew)=  ( u(i,j,1,nnew) * pm_u(i,j) 
+            wz(i,j,0,nnew)=  ( u(i,j,1,nnew) * pm_u(i,j)
      &                                    * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
-     &                        +v(i,j,1,nnew) * pm_v(i,j) 
+     &                        +v(i,j,1,nnew) * pm_v(i,j)
      &                                    * ( z_w(i,j  ,0)-z_w(i,j-1,0) )  )
             wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1) !<-- wz(indx) has units kg.m-1.s-1
-# else
+#  else
             wz(i,j,0,nnew)=0.
             wz(i,j,0,indx)=0.
-# endif
-        enddo      
+#  endif
+        enddo
 
 !**************************************
       else
 !**************************************
         cff1=0.5+gamma
         cff2=0.5-gamma
-!==        
+!==
         do k=1,N-1
           do i=Istr,Iend
-            qdm_nstp = wz(i,j,k,nstp)*(Hz(i,j,k  )+             
+            qdm_nstp = wz(i,j,k,nstp)*(Hz(i,j,k  )+
      &                                             Hz(i,j,k+1))
-            qdm_indx = wz(i,j,k,indx)*(Hz_bak(i,j,k  )+     
+            qdm_indx = wz(i,j,k,indx)*(Hz_bak(i,j,k  )+
      &                                             Hz_bak(i,j,k+1))
             wz(i,j,k,nnew)=( cff1*qdm_nstp         !
      &                      +cff2*qdm_indx         !
@@ -914,10 +916,10 @@
      &                                          Hz(i,j,k+1)) !<-- wz(indx) has units kg.m-1.s-1
           enddo
         enddo
-           
+
         do i=Istr,Iend
 
-!== Special treatment for k=N because the control volume at the top is Hz(N)/2  
+!== Special treatment for k=N because the control volume at the top is Hz(N)/2
           qdm_nstp = wz(i,j,N,nstp)*Hz    (i,j,N)
           qdm_indx = wz(i,j,N,indx)*Hz_bak(i,j,N)
           wz(i,j,N,nnew)=( cff1*qdm_nstp
@@ -931,7 +933,7 @@
           wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)   !<-- wz(indx) has units kg.m-1.s-1
 
 !== Special treatment for k=0 because the control volume at the bottom
-!    is Hz(1)/2  
+!    is Hz(1)/2
 #  ifdef NBQ_FREESLIP
 !         wz(i,j,0,nnew)=( cff1*wz(i,j,0,nstp)*Hz    (i,j,1)
 !     &                   +cff2*wz(i,j,0,indx)*Hz_bak(i,j,1)
@@ -942,27 +944,27 @@
 
           rw_int_nbq(i,j,0)=0.
 
-          wz(i,j,0,nnew)= (  u(i,j,1,nnew) * pm_u(i,j) 
+          wz(i,j,0,nnew)= (  u(i,j,1,nnew) * pm_u(i,j)
      &                                  * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
-     &                     + v(i,j,1,nnew) * pm_v(i,j) 
+     &                     + v(i,j,1,nnew) * pm_v(i,j)
      &                                  * ( z_w(i,j  ,0)-z_w(i,j-1,0) )  )
-          wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1)   !<-- wz(indx) has units kg.m-1.s-1 
+          wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1)   !<-- wz(indx) has units kg.m-1.s-1
 #  else
           wz(i,j,0,nnew)=0.
           wz(i,j,0,indx)=0.
 #  endif
-        enddo    
-!==                  
+        enddo
+!==
       endif
 
-      enddo  
-!==  
+      enddo
+!==
 
 !==
-# endif /* NBQ */   
-  
-# if defined M3FAST && defined M2FILTER_NONE 
-#  undef ru_nbq_avg1 
+# endif /* NBQ */
+
+# if defined M3FAST && defined M2FILTER_NONE
+#  undef ru_nbq_avg1
 #  undef rv_nbq_avg1
 #  ifdef NBQ
 #   undef rw_nbq_avg1
@@ -1012,28 +1014,28 @@
 # if defined TRACERS
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
-# if defined BD_EXCHANGE
-#  ifdef THREE_GHOST_POINTS_TS
+#  if defined BD_EXCHANGE
+#   ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))
-#  else
+#   else
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
+#   endif
 #  endif
-# endif
       enddo
 # endif
 
       call u3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
       call v3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
 # ifdef NBQ
-      call w3dbc_tile (Istr,Iend,Jstr,Jend, WORK)      
+      call w3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
 !
 !======================================================================
 ! Coupling, include ghost points associated with PHYSICAL
 ! boundaries ONLY. Do not touch periodic ghost points or
-! internal computational margins (MPI code). 
+! internal computational margins (MPI code).
 !======================================================================
 !
 # ifdef EW_PERIODIC
@@ -1061,7 +1063,7 @@
      &                             u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ    
+#   ifdef NBQ
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,nnew))
 #   endif
@@ -1070,9 +1072,9 @@
      &                        u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ    
+#   ifdef NBQ
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                        wz(START_2D_ARRAY,0,nnew))   
+     &                        wz(START_2D_ARRAY,0,nnew))
 #   endif
 #  endif
 # endif
@@ -1094,7 +1096,7 @@
             Akt_old(i,j,k)=Akt(i,j,k,itemp)
 #  elif defined SALINITY
             Akt_old(i,j,k)=Akt(i,j,k,isalt)
-#  endif            
+#  endif
           enddo
         enddo
       enddo
@@ -1125,7 +1127,7 @@
       enddo     
 !$acc end kernels
 #  endif
-#else
+# else
 !$acc end kernels
 # endif
 # undef IU_RANGE
