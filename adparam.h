@@ -26,6 +26,8 @@ C     number of steps between cost function computations
       parameter (ad_ns = 180)
 #elif defined INTERNAL
       parameter (ad_ns = 1)
+#elif defined BASIN
+      parameter (ad_ns = 1)
 #endif
 
 C     number of cost function computations
@@ -36,6 +38,8 @@ C     number of cost function computations
       parameter (ad_nt = 48)
 #elif defined INTERNAL
       parameter (ad_nt = 2)
+#elif defined BASIN
+      parameter (ad_nt = 1)
 #endif
 
 C     number of obs in observation file
@@ -44,6 +48,8 @@ C     number of obs in observation file
       parameter (ad_nobs = ad_nt*ad_ns+3)
 #elif defined INTERNAL
       parameter(ad_nobs = 130*32)
+#elif defined BASIN
+      parameter (ad_nobs = 1)
 #endif
 
 C     start of assimilation in the obs file
@@ -53,6 +59,8 @@ C     start of assimilation in the obs file
 #elif defined AD_ATLN
       parameter (ad_ast = 388)
 #elif defined INTERNAL
+      parameter (ad_ast = 1)
+#elif defined BASIN
       parameter (ad_ast = 1)
 #endif
 
