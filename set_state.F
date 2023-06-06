@@ -22,9 +22,7 @@
         call start_timers()
         call init_arrays (tile)
       enddo
-      do tile=my_first,my_last
-         call set_state_2d(tile, ad_x)
-      end do
+
 
 c      call check_tab2d(h(:,:),'h initialisation #1','r')
 
@@ -56,10 +54,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 
 C$OMP PARALLEL DO PRIVATE(tile)
+#ifdef INTERNAL
       do tile=0,NSUB_X*NSUB_E-1
         call ana_initial (tile)
       enddo
+#endif
 
+      do tile=my_first,my_last
+         call set_state_2d(tile, ad_x)
+      end do
 C$OMP PARALLEL DO PRIVATE(tile)
 c      do tile=0,NSUB_X*NSUB_E-1
 c        call set_HUV (tile)
@@ -165,8 +168,9 @@ c     cf ana_initial
 # include "adinc.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend, i,j,k,ik,cpoint
-      double precision cff1,cff,depth,ridge_width,ridge_height,d1,d2,d3
+      integer Istr,Iend,Jstr,Jend, i,j,k,ik,cpoint,itrc
+      double precision cff1,cff2,cff,depth,ridge_width,ridge_height,d1,
+     &     d2,d3
       character*6 counter_str
 #include "compute_extended_bounds.h"
 
@@ -235,6 +239,27 @@ c      ridge_height = 1600  +  200*(1- exp(-d3*(ad_x(3)*ad_x(3))))
       return
  900  format(1PE16.9)
  910  format(I2.2,'-',I3.3)
+
 #elif defined BASIN
+      cff1=ad_x(1)
+      cff2=cff1*(rho0*800./g)*(5.0e-5/((42.689/44.690)**2))
+      do k=1,N
+         do j=JR_RANGE
+            do i=IR_RANGE
+               t(i,j,k,1,itemp)=cff2*exp(z_r(i,j,k)/800.)
+     &              *(0.6-0.4*tanh(z_r(i,j,k)/800.))
+               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+            enddo
+         enddo
+      enddo
+
+      do itrc=1,NT
+        if (.not.got_tini(itrc)) then
+          call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                            t(-1,-1,1,1,itrc))
+          call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                            t(-1,-1,1,2,itrc))
+        endif
+      enddo
 #endif      
       end subroutine set_state_2d_1_tile

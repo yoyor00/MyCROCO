@@ -113,6 +113,9 @@ c      ad_x(3) = 1D-10 * ridge_height
       write(*,*) 'minobs,maxobs',minval(ad_obs),maxval(ad_obs)
 
 #elif defined BASIN
+c
+      ad_x(1) = (44.690/39.382)**2
+      ad_array_real_node_size=1
 #endif      
 
       end subroutine init_local_arrays_2d_tile

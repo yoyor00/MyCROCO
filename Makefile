@@ -176,7 +176,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # =========
 #
 
-ADJ_SRCS=cost_fun.F init_control.F set_state.F save_restore.F get_vbc.F step.F step2d.F pre_step3d.F set_depth.F grid_stiffness.F rho_eos.F ana_vmix.F omega.F prsgrd.F rhs3d.F step3d_uv1.F step3d_uv2.F step3d_t.F t3dbc.F u3dbc.F v3dbc.F v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F MessPass3D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F get_date.F
+ADJ_SRCS=cost_fun.F init_control.F set_state.F save_restore.F t3dmix.F uv3dmix.F get_vbc.F step.F step2d.F pre_step3d.F set_depth.F grid_stiffness.F rho_eos.F ana_vmix.F omega.F prsgrd.F rhs3d.F step3d_uv1.F step3d_uv2.F step3d_t.F t3dbc.F u3dbc.F v3dbc.F v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F MessPass3D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F get_date.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
 ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o adj_driver.o cost_fun.o init_control.o set_state.o save_restore.o get_ij.o distance.o xtime.o code_insertion.o

@@ -45,7 +45,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=8
+  nbcores=16
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
@@ -79,7 +79,7 @@ cp basin_his.nc obs.nc
 #
 # 2. second run with obs.dat file
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/g' cppdefs.h
-sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
+sed -i 's/undef[\t ]*AMPI/define AMPI/g' cppdefs.h
 
 #sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
 #sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
@@ -94,7 +94,6 @@ cd ..
 #./croco_adc croco.internal-friction-obs.in
 echo "in directory `pwd`"
 #./croco_tgt croco.internal-friction-obs.in
-mpirun -np 4 ./croco_adj croco.basin-obs.in : \
-       -np 4 ./croco_adj croco.basin-obs.in 
+$mpirun_cmd ./croco_adj croco.basin-obs.in
 #mpirun -np 1 ./croco_adj_dbg1 croco.internal-friction-obs.in &
 #mpirun -np 1 ./croco_adj_dbg2 croco.internal-friction-obs.in
