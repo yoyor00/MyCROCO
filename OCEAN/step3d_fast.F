@@ -2412,7 +2412,7 @@ C$OMP END MASTER
 
 #  if !defined NBQ_GRID_SLOW
 #   define dZdxq_u dthetadiv_nbqdz
-#   define dZdxq_w dthetadiv_nbqdz_uv
+!#   define dZdxq_w FX_3D
 #  endif
 
 #  ifdef NBQ_GRID_SLOW
@@ -2556,7 +2556,7 @@ C$OMP END MASTER
 !
 #  if !defined NBQ_GRID_SLOW
 #   define dZdyq_v dthetadiv_nbqdz
-#   define dZdyq_w dthetadiv_nbqdz_uv
+!#   define dZdyq_w dthetadiv_nbqdz_uv
 #  endif
 
 #  ifdef NBQ_GRID_SLOW
@@ -2808,8 +2808,8 @@ C$OMP END MASTER
         enddo !<-- j loop
 
         do k=1,N
-          do j=JstrV-2,Jend+1
-            do i=IstrU-2,Iend+1
+          do j=Jstr,Jend
+            do i=Istr,Iend
               thetadiv3_nbq(i,j,k)=
      &    CF(i,j,k)-CF(i,j,k-1) 
 #  ifdef NBQ_HZ_PROGNOSTIC
