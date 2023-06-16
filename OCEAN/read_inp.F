@@ -331,7 +331,7 @@
    4  kwlen=ie-is
       if (is.gt.1) keyword(1:kwlen)=keyword(is:is+kwlen-1)
 !
-h! Read input parameters according to the keyword:
+! Read input parameters according to the keyword:
 ! ==== ===== ========== ========= == === ========
 !
 ! Title

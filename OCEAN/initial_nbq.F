@@ -264,6 +264,8 @@
           do j=JR_RANGE
             do i=IR_RANGE
               thetadiv_nbq(i,j,k)=0.
+              thetadiv2_nbq(i,j,k)=0.
+              thetadiv3_nbq(i,j,k)=0.
             enddo
           enddo
         enddo

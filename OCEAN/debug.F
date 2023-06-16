@@ -100,7 +100,7 @@
 !                    check_tab2d
 !======================================================================
 !
-          subroutine check_tab2d(tab,comment,typevar,ondevice)
+          subroutine check_tab2d(tab,comment,typevar,ondevice,correct)
       implicit none
 # include "param.h"
 # include "scalars.h"  
@@ -114,7 +114,7 @@
       integer lb(2),ub(2)
       real,dimension(:,:),allocatable :: tabread
       character*(*) :: comment,typevar
-      logical, optional :: ondevice
+      logical, optional :: ondevice, correct
       integer i0,j0,i,j,i1,j1,i2,j2
 # if !defined RVTK_DEBUG_WRITE
       integer i1_r,i2_r,j1_r,j2_r,nb
@@ -125,6 +125,7 @@
 # else
       logical, parameter :: ondevice_l=.FALSE.
 # endif
+      logical :: correct_l
 # ifdef OPENMP
 #  undef mynode
       integer mynode 
@@ -137,6 +138,7 @@
 # endif
       real max_abs
       integer imax,jmax
+      character*200 :: comment_bug
           
 # if defined OPENMP && !defined MPI
       mynode=0 
@@ -185,6 +187,9 @@
         call update_host(tab)
       endif
 #  endif
+
+      correct_l = .false.
+      if (present(correct)) correct_l = correct
 #  if defined RVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read
 #   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
@@ -224,7 +229,7 @@
                         endif
                     endif
                     if (abs(tabread(i0,j0)-tab(i,j))>tolerance) then
-                       write(*,'(A,A,2x,5i4,3e20.12)')'BUGBIN = ',
+            write(comment_bug,'(A,A,2x,5i4,3e20.12)')'BUGBIN = ',
      &                 comment,mynode,i0,j0,i,j,
      &                 tabread(i0,j0),tab(i,j),
      &                 abs(tabread(i0,j0)-tab(i,j))
@@ -232,8 +237,15 @@
 #  ifdef AGRIF
                        print *,'GRID# ',Agrif_CFixed()
 #  endif                    
+                       if (.not.correct_l) then
+                        write(*,'(A)')comment_bug
                        mystop=.true.
                        exit DebugExit
+                      else
+                        comment_bug = TRIM(comment_bug) // '-- CORRECTED'
+                        write(*,'(A)')comment_bug
+                        tab(i,j) = tabread(i0,j0)
+                      endif
                      endif
                    enddo
                  enddo DebugExit
@@ -265,7 +277,7 @@
 #  if defined RVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read) then
 #  endif
-      if (non_strict) then
+      if (non_strict.AND.(max_abs > 0.)) then
         MPI_master_only print *,'CHECK ',comment,' PASSED with MAX_ABS = ',
      & max_abs
 #  ifdef AGRIF
@@ -294,7 +306,7 @@
 !                    check_tab3d
 !======================================================================
 !
-          subroutine check_tab3d(tab,comment,typevar,ondevice)
+          subroutine check_tab3d(tab,comment,typevar,ondevice,correct)
       implicit none
 # include "param.h"
 # include "scalars.h"  
@@ -312,14 +324,14 @@
       integer lb(3),ub(3)
       real,dimension(:,:,:),allocatable :: tabread
       character*(*) :: comment,typevar
-      logical, optional :: ondevice
+      logical, optional :: ondevice, correct
       integer i0,j0,k,i,j,i1,i2,j1,j2
 # if !defined RVTK_DEBUG_WRITE
       integer i1_r,i2_r,j1_r,j2_r,nb
 # endif
 # if !defined RVTK_DEBUG_WRITE && defined OPENACC
       real,dimension(GLOBAL_2D_ARRAY,N) :: temp_host
-      logical :: ondevice_l
+      logical :: ondevice_l 
 # else
       logical, parameter :: ondevice_l=.FALSE.
 # endif
@@ -332,24 +344,28 @@
       real :: max_abs
       integer :: imax,jmax,kmax
       real :: diff
+      logical :: correct_l
 
 # ifdef OPENACC
       ondevice_l = .false.
       if (present(ondevice)) ondevice_l = ondevice
 # endif
 
+      correct_l = .false.
+      if (present(correct)) correct_l = correct
+
       if (typevar == 'w') then
         do k=1,N+1
           write(comment_k,'(a,a,i0)')TRIM(comment),' layer : ',k-1
           call check_tab2d(tab(START_2D_ARRAY,k),
-     &                     TRIM(comment_k),'r',ondevice_l)
+     &                     TRIM(comment_k),'r',ondevice_l,correct_l)
         enddo
         return
       elseif (typevar == 'wint') then
         do k=1,N+1
           write(comment_k,'(a,a,i0)')TRIM(comment),' layer : ',k-1
           call check_tab2d(tab(START_2D_ARRAY,k),
-     &                         TRIM(comment_k),'rint',ondevice_l)
+     &                         TRIM(comment_k),'rint',ondevice_l,correct_l)
         enddo
         return
       endif 
@@ -432,12 +448,12 @@
                 do i=max(i1,iseq1-iminmpi+1),min(i2,iseq2-iminmpi+1)
                     i0 = i+iminmpi-1
                      if (non_strict) then
-                        if (abs(tabread(i0,j0,k))>1.D-8) then
-                          diff =
-     &             abs(tabread(i0,j0,k)-tab(i,j,k))/abs(tabread(i0,j0,k))
-                        else
+ !                       if (abs(tabread(i0,j0,k))>1.D-8) then
+ !                         diff =
+ !    &             abs(tabread(i0,j0,k)-tab(i,j,k))/abs(tabread(i0,j0,k))
+ !                       else
                           diff = abs(tabread(i0,j0,k)-tab(i,j,k))
-                        endif
+ !                       endif
                       if (diff>max_abs) then
                               imax=i;jmax=j;kmax=k
                               max_abs=diff
@@ -456,8 +472,13 @@
 #  ifdef AGRIF
                        print *,'GRID# ',Agrif_CFixed()
 #  endif    
+                       if (.not.correct_l) then
                         mystop=.true.
                        exit DebugExit
+                      else
+                        print *,'CORRECTED'
+                        tab(i,j,k) = tabread(i0,j0,k)
+                      endif
                       endif
                      enddo
                     enddo
@@ -495,7 +516,7 @@
 #   endif
      &     ) then
 #  endif
-      if (non_strict) then
+      if (non_strict.AND.(max_abs > 0.)) then
         MPI_master_only print *,'CHECK ',comment,' PASSED with MAX_ABS = ',
      & max_abs
 #  ifdef AGRIF
