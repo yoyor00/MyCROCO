@@ -540,8 +540,8 @@
                   ig2   = (ig-itke)
                   invk  =     1. / trb( i,j,k,nstp,itke )
                   gls   =          trb( i,j,k,nstp,igls )
-                  ! invG = 1 for tke invg=1/psi for gls
-                  invG  =  ig1+ig2*(1./gls)
+                  ! invG = 1/tke for tke ; invG = 1/psi for gls
+                  invG  =  ig1*invk+ig2*(1./gls)
                   cff1  =  ig1+ig2*beta1   * invk*gls
                   cff2  = (ig1+ig2*beta2 ) * invk
                   cff3m =  ig1+ig2*beta3m  * invk*gls
