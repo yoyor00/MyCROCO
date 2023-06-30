@@ -284,7 +284,6 @@ MODULE initobstructions
    ! Dynamic allocation of sw
    ALLOCATE(sw(0:obst_kmax+1))
    ! Allocation of virtual sigma for 2D
-   ! if 3D, obst_sig and obst_dsig compute at each time step !TODO
    
    ! Dynamic deallocation
    DEALLOCATE(sw)
@@ -1291,13 +1290,7 @@ SUBROUTINE OBSTRUCTIONS_alloc_nbvar
     ! Definition of effective kmax to use
     !------------------------------------
     obst_kmax = kmax
-    !----------------------
-    ! Variables on (k)
-    !----------------------
-    ALLOCATE(obst_sig             (0:obst_kmax+1))
-    obst_sig(:)                   = 0.0_rsh
-    ALLOCATE(obst_dsig            (obst_kmax))
-    obst_dsig(:)                  = 0.0_rsh
+
     !----------------------
     ! Variables on (iv,i,j)
     !----------------------
@@ -1548,11 +1541,6 @@ SUBROUTINE OBSTRUCTIONS_alloc_nbvar
     DEALLOCATE(obst_c_z0bstress_x1)
     DEALLOCATE(obst_c_z0bstress_x2)
  
-    !----------------------
-    ! Variables on (k)
-    !----------------------
-    DEALLOCATE(obst_sig)
-    DEALLOCATE(obst_dsig)
     !----------------------
     ! Variables on (iv,i,j)
     !----------------------

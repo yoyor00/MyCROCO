@@ -25,34 +25,15 @@ CONTAINS
 
       integer :: tile
 
-      real :: obst_mask(GLOBAL_2D_ARRAY)
-
-      ! for zeta,ubar,vbar include ocean2d.h
-      ! for u,v, z_r, z_w include ocean3d.h
-      ! for cm0 include mixing.h
-      ! for D_wetdry include param.h
-      ! for h, zob, rmask, rmask_wet include grid.h
-      ! for nstp,nnew,nrhs include scalars.h
-      ! for Istr, Iend, Jstr, Jend include compute_tile_bounds.h
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-        obst_mask(:,:) = 1.
-#   ifdef MASKING
-        obst_mask(:,:) =  obst_mask(:,:) * rmask(:,:)
-#   endif
-#   ifdef WET_DRY
-        obst_mask(:,:) =  obst_mask(:,:) * mask_wet(:,:)
-#   endif
-        write(*,*) "PLUG"
-        write(*,*) nstp, nnew, nrhs
-        write(*,*) u(23,3,40,nstp), u(23,3,40,nnew), u(23,3,40,nrhs)
-        write(*,*) "PLUG"
       CALL OBSTRUCTIONS_update(Istr, Iend, Jstr, Jend, & 
                  cm0, h, zob,     &
                  Zt_avg1,         &
                  u(:,:,:,nstp),   &
-                 v(:,:,:,nstp)    &
+                 v(:,:,:,nstp),   &
+                 Hz               &
                  )
 
       end subroutine
