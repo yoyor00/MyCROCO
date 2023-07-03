@@ -103,6 +103,7 @@ MODULE initobstructions
    !&E---------------------------------------------------------------------
 
 
+   USE module_OBSTRUCTIONS
    IMPLICIT NONE
 
    REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: z0b 
@@ -111,7 +112,7 @@ MODULE initobstructions
 
    !! * Local declaration
    CHARACTER(len=lchain)                   :: filepc
-   INTEGER                                 :: iv,k
+   INTEGER                                 :: iv, k, indvar
    CHARACTER(len=lchain) :: obst_fn_var1,obst_fn_var2,obst_fn_var3,      &
                             obst_fn_var4,obst_fn_var5,obst_fn_var6
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE :: sw
@@ -207,9 +208,9 @@ MODULE initobstructions
 
    obst_nout_fuv           = 'fuv'       ! Name 2D obstruction friction force (i,j)
    obst_nout_fuzvz         = 'fuzvz'     ! Name 3D obstruction friction force (k,i,j)
-   obst_nout_a3d           = 'a2d'       ! Name 2D obstruction horizontal area (iv+3,i,j)
+   obst_nout_a2d           = 'a2d'       ! Name 2D obstruction horizontal area (iv+3,i,j)
    obst_nout_a3d           = 'a3d'       ! Name 3D obstruction horizontal area (iv+3,k,i,j)
-   obst_nout_s3d           = 's2d'       ! Name 2D obstruction vertical area (iv+3,i,j)
+   obst_nout_s2d           = 's2d'       ! Name 2D obstruction vertical area (iv+3,i,j)
    obst_nout_s3d           = 's3d'       ! Name 3D obstruction vertical area (iv+3,k,i,j)
    obst_nout_drag          = 'cd3d'      ! Name 3D obstruction drag coefficient (iv,k,i,j)
    obst_nout_tau           = 'tau3d'     ! Name 3D obstruction turbulence dissipation scale (k,i,j)
@@ -220,40 +221,7 @@ MODULE initobstructions
    obst_nout_bstressc      = 'taubc'     ! Name 2D current bottom shear stress
    obst_nout_bstressw      = 'taubw'     ! Name 2D wave bottom shear stress
 
-   obst_riog_min_pos     =  0.0_riosh
-   obst_riog_max_pos     =  1.0_riosh
-   obst_riog_min_height  =  0.0_riosh
-   obst_riog_max_height  =  10000.0_riosh
-   obst_riog_min_dens    =  0.0_riosh
-   obst_riog_max_dens    =  1000000.0_riosh
-   obst_riog_min_width   =  0.0_riosh
-   obst_riog_max_width   =  1000.0_riosh
-   obst_riog_min_thick   =  0.0_riosh
-   obst_riog_max_thick   =  1000.0_riosh
-   obst_riog_min_oai     =  0.0_riosh
-   obst_riog_max_oai     =  1000.0_riosh
-   obst_riog_min_theta   =  0.0_riosh
-   obst_riog_max_theta   =  180._riosh
-   obst_riog_min_cover   =  0.0_riosh
-   obst_riog_max_cover   =  1.0_riosh
-   obst_riog_min_fracz   =  0.0_riosh
-   obst_riog_max_fracz   =  1.0_riosh
-   obst_riog_min_fuv     = -10000.0_riosh
-   obst_riog_max_fuv     =  10000.0_riosh
-   obst_riog_min_a       =  0.0_riosh
-   obst_riog_max_a       =  1.0_riosh
-   obst_riog_min_s       =  0.0_riosh
-   obst_riog_max_s       =  10000.0_riosh
-   obst_riog_min_drag    =  0.0_riosh
-   obst_riog_max_drag    =  10.0_riosh
-   obst_riog_min_tau     = -10000.0_riosh
-   obst_riog_max_tau     =  10000.0_riosh
-   obst_riog_min_z0      =  0.0_riosh
-   obst_riog_max_z0      =  1.0_riosh
-   obst_riog_min_bstress =  0.0_riosh
-   obst_riog_max_bstress =  100.0_riosh
-   obst_riog_min_zroot   =  0.0_riosh
-   obst_riog_max_zroot   =  10.0_riosh
+ 
    ! ***********************
    ! * READING VARIABLES
    ! ***********************
@@ -306,6 +274,65 @@ MODULE initobstructions
    obst_c_exp3d = 1.0_rsh-obst_c_imp3d
    obst_c_exp2d = 1.0_rsh-obst_c_imp2d
    ! ***********************
+
+   do iv=1,obst_nbvar
+    indvar = indxObst+iv-1
+    vname(1,indvar)= &
+         TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv))
+    vname(2,indvar)= &
+         'Obstruction position and coverage for '//TRIM(obst_varname(iv))
+    vname(3,indvar)='-                                    '
+    vname(4,indvar)='                                     '
+    vname(5,indvar)='                                     '
+    vname(6,indvar)='time lat_rho lon_rho                 '
+    vname(7,indvar)='                                     '
+
+    indvar = indxObst+obst_nbvar+iv-1
+    vname(1,indvar)= &
+         TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv))
+    vname(2,indvar)= &
+         'Obstruction forcing height for '//TRIM(obst_varname(iv))
+    vname(3,indvar)='-                                    '
+    vname(4,indvar)='                                     '
+    vname(5,indvar)='                                     '
+    vname(6,indvar)='time lat_rho lon_rho                 '
+    vname(7,indvar)='                                     '
+
+    indvar = indxObst+2*obst_nbvar+iv-1
+    vname(1,indvar)= &
+         TRIM(obst_nout_height_e)//'_'//TRIM(obst_varname(iv))
+    vname(2,indvar)= &
+         'Obstruction effective height for '//TRIM(obst_varname(iv))
+    vname(3,indvar)='-                                    '
+    vname(4,indvar)='                                     '
+    vname(5,indvar)='                                     '
+    vname(6,indvar)='time lat_rho lon_rho                 '
+    vname(7,indvar)='                                     '
+
+    indvar = indxObst+3*obst_nbvar+iv-1
+    vname(1,indvar)= &
+         TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv))
+    vname(2,indvar)= &
+         'Obstruction forcing density for '//TRIM(obst_varname(iv))
+    vname(3,indvar)='m-2                                  '
+    vname(4,indvar)='                                     '
+    vname(5,indvar)='                                     '
+    vname(6,indvar)='time lat_rho lon_rho                 '
+    vname(7,indvar)='                                     '
+
+    indvar = indxObst+4*obst_nbvar+iv-1
+    vname(1,indvar)= &
+         TRIM(obst_nout_dens_e)//'_'//TRIM(obst_varname(iv))
+    vname(2,indvar)= &
+         'Obstruction effective density for '//TRIM(obst_varname(iv))
+    vname(3,indvar)='m-2                                  '
+    vname(4,indvar)='                                     '
+    vname(5,indvar)='                                     '
+    vname(6,indvar)='time lat_rho lon_rho                 '
+    vname(7,indvar)='                                     '
+
+
+  enddo
 
    END SUBROUTINE OBSTRUCTIONS_init
 

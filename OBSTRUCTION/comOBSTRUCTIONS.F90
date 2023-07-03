@@ -119,24 +119,6 @@ MODULE comobstructions
    CHARACTER(LEN=lchain),PUBLIC :: obst_nout_bstressc                        ! Name 2D current bottom shear stress within output file
    CHARACTER(LEN=lchain),PUBLIC :: obst_nout_bstressw                        ! Name 2D wave bottom shear stress within output file
 
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_pos,obst_riog_max_pos         ! Valid minimum and maximum for output obstruction position
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_height,obst_riog_max_height   ! Valid minimum and maximum for output obstruction height
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_dens,obst_riog_max_dens       ! Valid minimum and maximum for output obstruction density
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_width,obst_riog_max_width     ! Valid minimum and maximum for output obstruction width
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_thick,obst_riog_max_thick     ! Valid minimum and maximum for output obstruction tickness
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_oai,obst_riog_max_oai         ! Valid minimum and maximum for output obstruction area index
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_theta,obst_riog_max_theta     ! Valid minimum and maximum for output obstruction bending angle
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_cover,obst_riog_max_cover     ! Valid minimum and maximum for output obstruction coverage
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_fracz,obst_riog_max_fracz     ! Valid minimum and maximum for output obstruction fraction in z
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_fuv,obst_riog_max_fuv         ! Valid minimum and maximum for output obstructin friction force
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_a,obst_riog_max_a             ! Valid minimum and maximum for output obstruction horizontal area
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_s,obst_riog_max_s             ! Valid minimum and maximum for output obstruction vertical area
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_drag,obst_riog_max_drag       ! Valid minimum and maximum for output obstruction drag
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_tau,obst_riog_max_tau         ! Valid minimum and maximum for output obstruction tau
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_z0,obst_riog_max_z0           ! Valid minimum and maximum for output obstruction roughness length
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_bstress,obst_riog_max_bstress ! Valid minimum and maximum for output bottom shear stress
-   REAL(KIND=riosh),PUBLIC :: obst_riog_min_zroot,obst_riog_max_zroot     ! Valid minimum and maximum for output obstruction root depth
-
    ! Other variables/parameters
    INTEGER,PUBLIC  :: obst_iv
    INTEGER,PUBLIC  :: obst_nbvar                       ! The total number of obstruction variables

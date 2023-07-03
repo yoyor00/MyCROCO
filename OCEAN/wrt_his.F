@@ -31,6 +31,15 @@
 # endif
 # include "coupler_define_MUSTANG.h"
 #endif
+
+#ifdef OBSTRUCTION
+      USE comOBSTRUCTIONS, ONLY : obst_nbvar, obst_position, l_obstout_pos,
+     &     l_obstout_height_f, l_obstout_height_e,  
+     &     obst_height_inst, obst_height, 
+     &     l_obstout_dens_f, l_obstout_dens_e,
+     &     obst_dens_inst, obst_dens3d
+#endif
+
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik
@@ -1368,6 +1377,50 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
        enddo
 #  endif
 # endif /* MUSTANG */
+
+# ifdef OBSTRUCTION
+        do itrc=1,obst_nbvar
+            if (l_obstout_pos) then
+                indx=indxObst+itrc-1
+                work2d(:,:)=obst_position(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,hisObst(itrc),
+     &                     indx,record,r2dvar,type)
+            endif
+
+            if (l_obstout_height_f) then
+                indx=indxObst+obst_nbvar+itrc-1
+                work2d(:,:)=obst_height_inst(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(obst_nbvar+itrc),
+     &                     indx,record,r2dvar,type)
+            endif
+
+            if (l_obstout_height_e) then
+                indx=indxObst+2*obst_nbvar+itrc-1
+                work2d(:,:)=obst_height(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(2*obst_nbvar+itrc),
+     &                     indx,record,r2dvar,type)
+            endif
+
+            if (l_obstout_dens_f) then
+                indx=indxObst+3*obst_nbvar+itrc-1
+                work2d(:,:)=obst_dens_inst(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(3*obst_nbvar+itrc),
+     &                     indx,record,r2dvar,type)
+            endif
+
+            if (l_obstout_dens_e) then
+                indx=indxObst+4*obst_nbvar+itrc-1
+                workr(:,:,:)=obst_dens3d(itrc,:,:,:)
+                call fillvalue3d(workr,ncidhis,
+     &                     hisObst(4*obst_nbvar+itrc),
+     &                     indx,record,r3dvar,type)
+            endif
+        enddo
+
+#endif /* OBSTRUCTION */
 
 #endif /* SOLVE3D */
 
