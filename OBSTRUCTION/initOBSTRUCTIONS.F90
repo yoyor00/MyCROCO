@@ -328,7 +328,29 @@ MODULE initobstructions
     vname(3,indvar)='m-2                                  '
     vname(4,indvar)='                                     '
     vname(5,indvar)='                                     '
+    vname(6,indvar)='time N lat_rho lon_rho               '
+    vname(7,indvar)='                                     '
+
+    indvar = indxObst+5*obst_nbvar+iv-1
+    vname(1,indvar)= &
+         TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv))
+    vname(2,indvar)= &
+         'Obstruction forcing width for '//TRIM(obst_varname(iv))
+    vname(3,indvar)='m                                    '
+    vname(4,indvar)='                                     '
+    vname(5,indvar)='                                     '
     vname(6,indvar)='time lat_rho lon_rho                 '
+    vname(7,indvar)='                                     '
+
+    indvar = indxObst+6*obst_nbvar+iv-1
+    vname(1,indvar)= &
+         TRIM(obst_nout_width_e)//'_'//TRIM(obst_varname(iv))
+    vname(2,indvar)= &
+         'Obstruction effective width for '//TRIM(obst_varname(iv))
+    vname(3,indvar)='m                                    '
+    vname(4,indvar)='                                     '
+    vname(5,indvar)='                                     '
+    vname(6,indvar)='time N lat_rho lon_rho               '
     vname(7,indvar)='                                     '
 
 

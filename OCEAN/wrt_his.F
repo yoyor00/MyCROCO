@@ -37,7 +37,9 @@
      &     l_obstout_height_f, l_obstout_height_e,  
      &     obst_height_inst, obst_height, 
      &     l_obstout_dens_f, l_obstout_dens_e,
-     &     obst_dens_inst, obst_dens3d
+     &     obst_dens_inst, obst_dens3d, 
+     &     l_obstout_width_f, l_obstout_width_e,
+     &     obst_width_inst, obst_width3d
 #endif
 
 !     implicit none
@@ -1413,9 +1415,29 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 
             if (l_obstout_dens_e) then
                 indx=indxObst+4*obst_nbvar+itrc-1
-                workr(:,:,:)=obst_dens3d(itrc,:,:,:)
+                do k=1,N
+                    workr(:,:,k)=obst_dens3d(itrc,k,:,:)
+                enddo
                 call fillvalue3d(workr,ncidhis,
      &                     hisObst(4*obst_nbvar+itrc),
+     &                     indx,record,r3dvar,type)
+            endif
+
+            if (l_obstout_width_f) then
+                indx=indxObst+5*obst_nbvar+itrc-1
+                work2d(:,:)=obst_width_inst(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(5*obst_nbvar+itrc),
+     &                     indx,record,r2dvar,type)
+            endif
+
+            if (l_obstout_width_e) then
+                indx=indxObst+6*obst_nbvar+itrc-1
+                do k=1,N
+                    workr(:,:,k)=obst_width3d(itrc,k,:,:)
+                enddo
+                call fillvalue3d(workr,ncidhis,
+     &                     hisObst(6*obst_nbvar+itrc),
      &                     indx,record,r3dvar,type)
             endif
         enddo

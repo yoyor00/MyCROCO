@@ -286,12 +286,13 @@ MODULE OBSTRUCTIONS
    !! * Executable part
    !---------------------------------
    obst_zc(:,:,:) = 0.0_rsh
-   obst_zc(1,:,:) = Hz(1,:,:) / 2.
-   obst_dz(:,:,:) = Hz(:,:,:)
+   obst_zc(1,:,:) = Hz(:,:,1) / 2.
+   obst_dz(1,:,:) = Hz(:,:,1)
    obst_uz(:,:,:) = 0.0_rsh
    obst_vz(:,:,:) = 0.0_rsh
    DO k=2,obst_kmax
-    obst_zc(k,:,:) = obst_zc(k-1,:,:) + Hz(k-1,:,:) / 2. + Hz(k,:,:) / 2.
+    obst_dz(k,:,:) = Hz(:,:,k)
+    obst_zc(k,:,:) = obst_zc(k-1,:,:) + Hz(:,:,k-1) / 2. + Hz(:,:,k) / 2.
    ENDDO
    DO j=ljmin,ljmax
      DO i=limin,limax

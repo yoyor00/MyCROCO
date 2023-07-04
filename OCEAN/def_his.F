@@ -42,7 +42,8 @@
 #ifdef OBSTRUCTION
       USE comOBSTRUCTIONS, ONLY : obst_nbvar, l_obstout_pos,
      &     l_obstout_height_f, l_obstout_height_e, 
-     &     l_obstout_dens_f, l_obstout_dens_e
+     &     l_obstout_dens_f, l_obstout_dens_e, 
+     &     l_obstout_width_f, l_obstout_width_e
 #endif
 
 
@@ -2175,7 +2176,7 @@
             indx=indxObst+4*obst_nbvar+itrv-1
             if (l_obstout_dens_e) then ! obst effective density
                 ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 3, r3dgrd, vidObst(4*obst_nbvar+itrv)) 
+     &              NF_FOUT, 4, r3dgrd, vidObst(4*obst_nbvar+itrv)) 
 #   ifdef NC4PAR
                 ierr=nf_var_par_access(ncid,vidObst(4*obst_nbvar+itrv),
      &                           nf_collective)
@@ -2190,6 +2191,48 @@
                 ierr=nf_put_att_text (ncid, vidObst(4*obst_nbvar+itrv), 'field',
      &                            lvar,vname(4,indx)(1:lvar))
                 call nf_add_attribute(ncid, vidObst(4*obst_nbvar+itrv),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indx=indxObst+5*obst_nbvar+itrv-1
+            if (l_obstout_width_f) then ! obst forcing width
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 3, r2dgrd, vidObst(5*obst_nbvar+itrv)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(5*obst_nbvar+itrv),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(5*obst_nbvar+itrv), 
+     &                           'long_name', lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(5*obst_nbvar+itrv), 'units',
+     &                            lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(5*obst_nbvar+itrv), 'field',
+     &                            lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(5*obst_nbvar+itrv),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indx=indxObst+6*obst_nbvar+itrv-1
+            if (l_obstout_width_e) then ! obst effective width
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(6*obst_nbvar+itrv)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(6*obst_nbvar+itrv),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(6*obst_nbvar+itrv), 
+     &                           'long_name', lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(6*obst_nbvar+itrv), 'units',
+     &                            lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(6*obst_nbvar+itrv), 'field',
+     &                            lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(6*obst_nbvar+itrv),indx, 5,
      &              NF_FOUT, ierr)
             endif
 
