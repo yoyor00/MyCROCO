@@ -1581,13 +1581,6 @@
          ! effet lumiere DIAT : somme a chaque pas de temps = moyenne a minuit pour memoriser la variable diagnostique
           effetlumiere_day_diat(k,i,j)=effetlumiere_day_diat(k,i,j)+effetlumierediat*dtbio
           diag_3d_wat(irk_diag(id_diat_limlight),k,i,j)=effetlumierediat
-          IF (i==26 .and. j==39) THEN
-             MPI_master_only PRINT*,'Howdy, here the diag is worth',i,j,diag_3d_wat(irk_diag(id_diat_limlight),k,i,j)
-          ENDIF
-
-          IF (i==39 .and. j==41) THEN
-             MPI_master_only PRINT*,'Howdy, here the diag is worth',i,j,diag_3d_wat(irk_diag(id_diat_limlight),k,i,j)
-          ENDIF
 
 !          IF(iheure_BIOLINK==0 .and. iminu_BIOLINK ==0 .and. isec_BIOLINK <= dtbio) THEN
 !             diag_3d_wat(irk_diag(id_diat_limlight),k,i,j)=effetlumiere_day_diat(k,i,j)/86400.0_rsh

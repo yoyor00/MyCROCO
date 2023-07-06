@@ -353,10 +353,10 @@ CONTAINS
 
            idimv_r(isubs)=1
            ndiag_1d=ndiag_1d+1
-!           vname(1,indxBLMdiag1D+ndiag_1d-1) = namvar_r
-!           vname(2,indxBLMdiag1D+ndiag_1d-1) = long_name_var_r
-!           vname(3,indxBLMdiag1D+ndiag_1d-1) = standard_name_var_r
-!           vname(4,indxBLMdiag1D+ndiag_1d-1) = unitvar_r
+           vname(1,indxBLMdiag1D+ndiag_1d-1) = namvar_r
+           vname(2,indxBLMdiag1D+ndiag_1d-1) = long_name_var_r
+           vname(3,indxBLMdiag1D+ndiag_1d-1) = standard_name_var_r
+           vname(4,indxBLMdiag1D+ndiag_1d-1) = unitvar_r
 
          ELSE IF (dimvar==2) THEN
 

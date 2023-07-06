@@ -1541,14 +1541,52 @@ ENDIF
      CASE('depth_of_maximum_vertical_gradient_of_sea_water_density')
        id_graddens_depthmax = id
 #ifdef key_BLOOM_insed
-     CASE('diffusive_flux_of_ammonium_threw_water_sediment_interface')
+     CASE('diffusive_flux_of_ammonium_through_water_sediment_interface')
        id_diffuflux_NH4 = id
-     CASE('diffusive_flux_of_nitrate_threw_water_sediment_interface')
+     CASE('diffusive_flux_of_nitrate_through_water_sediment_interface')
        id_diffuflux_NO3 = id
-     CASE('diffusive_flux_of_phosphate_threw_water_sediment_interface')
+     CASE('diffusive_flux_of_phosphate_through_water_sediment_interface')
        id_diffuflux_PO4 = id
-     CASE('diffusive_flux_of_oxygen_threw_water_sediment_interface')
+     CASE('diffusive_flux_of_oxygen_through_water_sediment_interface')
        id_diffuflux_O2D = id
+     CASE('Fluxcum_aerobic_miner_Norg')
+       id_remin_aerN = id
+     CASE('Fluxcum_aerobic_miner_Porg')
+       id_remin_aerP = id
+     CASE('Fluxcum_aerobic_miner_Si')
+       id_remin_aerSi = id
+     CASE('Fluxcum_anaerobic_miner_Norg')
+       id_remin_anaerN = id
+     CASE('Fluxcum_anaerobic_miner_Porg')
+       id_remin_anaerP = id
+     CASE('Fluxcum_nitrate_miner_Norg')
+       id_remin_nitrateN = id
+     CASE('Fluxcum_drna_miner_Norg')
+       id_remin_drnaN = id
+     CASE('Fluxcum_denit_miner_Norg')
+       id_remin_denitN = id
+     CASE('Fluxcum_nitrate_miner_Porg')
+       id_remin_nitrateP = id
+     CASE('Fluxcum_nitrification')
+       id_nitrif = id
+     CASE('Fluxcum_ODU_oxyd_solid')
+       id_oxyd_solid_ODU = id
+     CASE('Fluxcum_adsorb_desorb_P')
+       id_adsor_desorb_P = id
+     CASE('Fluxcum_dissolution_PFe')
+       id_dissol_PFe = id
+     CASE('Fluxcum_precipitation_P')
+       id_precipit_P = id
+     CASE('Fluxcum_precipitation_Si')
+       id_precipit_Si = id
+     CASE('Fluxcum_mortality_phyto_sed')
+       id_morta_phyto = id
+     CASE('Fluxcum_benthic_filtre_grazing')
+       id_filtr_benth = id
+     CASE('Fluxcum_aeration_sediment')
+       id_fluxsed_aeration = id
+     CASE('sediment_porosity')
+        id_porosite_sed= id
 #endif
 #if defined key_BLOOM_opt2
      CASE('corrected_concentration_of_suspended_matter_in_sea_water')
@@ -1667,46 +1705,6 @@ ENDIF
        id_zoo_meso_columnprod=id
      CASE('cumulated_total_zooplancton_production_in_sea_water_column_expressed_in_carbon')
        id_zoo_columnprodtotal=id
-#endif
-#ifdef key_BLOOM_insed
-     CASE('Fluxcum_aerobic_miner_Norg')
-       id_remin_aerN = id
-     CASE('Fluxcum_aerobic_miner_Porg')
-       id_remin_aerP = id
-     CASE('Fluxcum_aerobic_miner_Si')
-       id_remin_aerSi = id
-     CASE('Fluxcum_anaerobic_miner_Norg')
-       id_remin_anaerN = id
-     CASE('Fluxcum_anaerobic_miner_Porg')
-       id_remin_anaerP = id
-     CASE('Fluxcum_nitrate_miner_Norg')
-       id_remin_nitrateN = id
-     CASE('Fluxcum_drna_miner_Norg')
-       id_remin_drnaN = id
-     CASE('Fluxcum_denit_miner_Norg')
-       id_remin_denitN = id
-     CASE('Fluxcum_nitrate_miner_Porg')
-       id_remin_nitrateP = id
-     CASE('Fluxcum_nitrification')
-       id_nitrif = id
-     CASE('Fluxcum_ODU_oxyd_solid')
-       id_oxyd_solid_ODU = id
-     CASE('Fluxcum_adsorb_desorb_P')
-       id_adsor_desorb_P = id
-     CASE('Fluxcum_dissolution_PFe')
-       id_dissol_PFe = id
-     CASE('Fluxcum_precipitation_P')
-       id_precipit_P = id
-     CASE('Fluxcum_precipitation_Si')
-       id_precipit_Si = id
-     CASE('Fluxcum_mortality_phyto_sed')
-       id_morta_phyto = id
-     CASE('Fluxcum_benthic_filtre_grazing')
-       id_filtr_benth = id
-     CASE('Fluxcum_aeration_sediment')
-       id_fluxsed_aeration = id
-     CASE('porosite')
-        id_porosite_sed= id
 #endif
 #ifdef key_ulvas
      CASE('suspended_ulva_growth')
