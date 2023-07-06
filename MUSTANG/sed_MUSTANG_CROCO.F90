@@ -795,7 +795,8 @@ END SUBROUTINE sed_gradvit
 ! CVSED
  
       c_sedtot(:,:,:)=0.0_rsh
-      do iv=-1,nv_tot 
+!      do iv=-1,nv_tot 
+      do iv=-1,nv_adv 
        
        indWrk=indxT+ntrc_salt+ntrc_substot+iv+4+2
        nomcv=vname(1,indWrk)
