@@ -66,8 +66,8 @@
 :                   fraction
 :------------------------------------------------------------------------------
 &namsedim_init
-   date_start_dyninsed = '01/01/0000 00:00:00'
-   date_start_morpho = '01/01/0000 00:00:00' 
+   date_start_dyninsed = '0000/01/01 00:00:00'
+   date_start_morpho = '0000/01/01 00:00:00' 
    l_repsed = .false. 
    filrepsed = './' 
    l_initsed_vardiss = .false. 

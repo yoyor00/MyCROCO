@@ -660,7 +660,7 @@ C$OMP BARRIER
 #endif
 #if defined READ_PATM && !defined SOLVE3D
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
-     &                                   *( patm2d(i,j)-patm2d(i-1,j) )
+     &    *( rmask(i,j)*rmask(i-1,j)* (patm2d(i,j)-patm2d(i-1,j)) )
 #endif
      &                                                              )
 ! 
@@ -682,7 +682,7 @@ C$OMP BARRIER
 #endif
 #if defined READ_PATM && !defined SOLVE3D
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
-     &                                   *( patm2d(i,j)-patm2d(i,j-1) )
+     &   *( rmask(i,j)*rmask(i,j-1) * (patm2d(i,j)-patm2d(i,j-1)) )
 #endif
      &                                                              )
         enddo

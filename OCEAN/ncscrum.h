@@ -466,7 +466,8 @@
      &        indxeddyuu,indxeddyvv,indxeddyuv,indxeddyub,
      &        indxeddyvb,indxeddywb,indxeddyuw,indxeddyvw,
      &        indxeddyubu,indxeddyvbv,
-     &        indxeddyusu,indxeddyvsv
+     &        indxeddyusu,indxeddyvsv,
+     &        indxeddyugsu,indxeddyvgsv
       parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt
      &                           +ntrc_pas+ntrc_bio+ntrc_sed
      &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
@@ -482,7 +483,9 @@
      &           indxeddyubu=indxeddyvw+1,
      &           indxeddyvbv=indxeddyubu+1,
      &           indxeddyusu=indxeddyvbv+1,
-     &           indxeddyvsv=indxeddyusu+1)
+     &           indxeddyvsv=indxeddyusu+1,
+     &           indxeddyugsu=indxeddyvsv+1,
+     &           indxeddyvgsv=indxeddyugsu+1)
 # endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
@@ -1214,6 +1217,7 @@
      &      , diags_eddyuw(2), diags_eddyvw(2)
      &      , diags_eddyubu(2), diags_eddyvbv(2)
      &      , diags_eddyusu(2), diags_eddyvsv(2)
+     &      , diags_eddyugsu(2), diags_eddyvgsv(2)
 # endif
 
 # if defined OUTPUTS_SURFACE && ! defined XIOS
@@ -1401,6 +1405,7 @@
      &      , diags_eddyuw_avg(2), diags_eddyvw_avg(2)
      &      , diags_eddyubu_avg(2), diags_eddyvbv_avg(2)
      &      , diags_eddyusu_avg(2), diags_eddyvsv_avg(2)
+     &      , diags_eddyugsu_avg(2), diags_eddyvgsv_avg(2)
 #  endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
        integer ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg
@@ -1772,6 +1777,7 @@
      &      , diags_eddyvb, diags_eddywb, diags_eddyuw, diags_eddyvw
      &      , diags_eddyubu, diags_eddyvbv
      &      , diags_eddyusu, diags_eddyvsv
+     &      , diags_eddyugsu, diags_eddyvgsv
 # ifdef AVERAGES
      &      , nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg
      &      , diags_eddyTime_avg, diags_eddyTime2_avg, diags_eddyTstep_avg
@@ -1781,6 +1787,7 @@
      &      , diags_eddyuw_avg, diags_eddyvw_avg
      &      , diags_eddyubu_avg, diags_eddyvbv_avg
      &      , diags_eddyusu_avg, diags_eddyvsv_avg
+     &      , diags_eddyugsu_avg, diags_eddyvgsv_avg
 # endif
 #endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
@@ -1932,14 +1939,14 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-      character*80 date_str, title, start_date
-      character*80 origin_date, start_date_run
+      character*80 date_str, title
+      character*80 origin_date, start_date_run, xios_origin_date
       integer      start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year
      &         ,   origin_hour, origin_minute, origin_second
 
-      REAL(kind=8)             :: origin_date_in_sec
+      REAL(kind=8) :: origin_date_in_sec, xios_origin_date_in_sec
 
       character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
@@ -2032,12 +2039,14 @@
       character*75  vname(20, 90)
 #endif
 
-      common /cncscrum/   date_str,   title,  start_date
+      common /cncscrum/   date_str,   title
      &         ,   origin_date, start_date_run
+     &         ,   xios_origin_date
      &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname, origin_date_in_sec
+     &         ,   xios_origin_date_in_sec 
      &         ,   start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year

@@ -61,10 +61,12 @@
       real    sms_cycle, sms_scale
       integer itsms, sms_ncycle, sms_rec, lsusgrd
       integer lsvsgrd,sms_tid, susid, svsid
+      real    sms_origin_date_in_sec
       common /smsdat1/ sustrp, svstrp, sms_time
-      common /smsdat2/ sms_cycle, sms_scale
-      common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd
-      common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
+      common /smsdat2/ sms_origin_date_in_sec
+      common /smsdat3/ sms_cycle, sms_scale
+      common /smsdat4/ itsms, sms_ncycle, sms_rec, lsusgrd
+      common /smsdat5/ lsvsgrd,sms_tid, susid, svsid
 
 # if defined SFLUX_CFB && !defined BULK_FLUX
       real wspd(GLOBAL_2D_ARRAY)
@@ -151,9 +153,11 @@
       real stf_cycle(NT), stf_scale(NT)
       integer itstf(NT), stf_ncycle(NT), stf_rec(NT)
       integer lstfgrd(NT), stf_tid(NT), stf_id(NT)
+      REAL(kind=8) :: stf_origin_date_in_sec
       common /stfdat1/ stflxp,  stf_time, stf_cycle, stf_scale
-      common /stfdat2/ itstf, stf_ncycle, stf_rec, lstfgrd
-      common /stfdat3/  stf_tid, stf_id
+      common /stfdat2/ stf_origin_date_in_sec
+      common /stfdat3/ itstf, stf_ncycle, stf_rec, lstfgrd
+      common /stfdat4/  stf_tid, stf_id
 #   undef STFLUX_DATA
 #  endif /* !ANA_STFLUX || !ANA_SSFLUX */
 !
@@ -178,7 +182,9 @@
       real btf_cycle(NT), btf_scale(NT)
       integer itbtf(NT), btf_ncycle(NT), btf_rec(NT)
       integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
-      common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale
+      REAL(kind=8) :: btf_origin_date_in_sec
+      common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale,
+     &                 btf_origin_date_in_sec
       common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd
       common /btfdat3/  btf_tid, btf_id
 #   undef BTFLUX_DATA
@@ -214,7 +220,8 @@
       real    sst_cycle, scldqdt
       integer itsst, sst_ncycle, sst_rec,  sst_tid,  sst_id
       integer dqdt_id,     lsstgrd,   sstunused
-      common /sstdat1/ sstp, dqdtp, sst_time
+      REAL(kind=8) :: sst_origin_date_in_sec
+      common /sstdat1/ sstp, dqdtp, sst_time,sst_origin_date_in_sec
       common /sstdat2/ sst_cycle, scldqdt
       common /sstdat3/ itsst, sst_ncycle, sst_rec, sst_tid, sst_id
       common /sstdat4/ dqdt_id, lsstgrd, sstunused
@@ -257,7 +264,8 @@
       real sss_cycle
       integer itsss, sss_ncycle, sss_rec,  sss_tid,  sss_id
       integer lsssgrd,   sssunused
-      common /sssdat1/sssp,  sss_time, sss_cycle
+      REAL(kind=8) :: sss_origin_date_in_sec
+      common /sssdat1/sssp,  sss_time, sss_cycle,sss_origin_date_in_sec
       common /sssdat2/itsss, sss_ncycle, sss_rec,  sss_tid, sss_id
       common /sssdat3/lsssgrd,   sssunused
 #   if !defined QCORRECTION
@@ -372,6 +380,7 @@
       real    bulk_time(2), bulk_cycle
       integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
       integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
+      REAL(kind=8) :: blk_origin_date_in_sec
 # ifdef READ_PATM
       integer patm_id,lpatmgrd
 #endif
@@ -395,8 +404,8 @@
 # endif
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
-      common /bulkdat2_tim/ bulk_time, bulk_cycle
-# ifdef READ_PATM
+      common /bulkdat2_tim/ bulk_time, bulk_cycle, blk_origin_date_in_sec
+#  ifdef READ_PATM
       common /bulkdat2_patm/ patmp
 # endif
       common /bulkdat2_wnd/ uwndp,vwndp
@@ -435,8 +444,10 @@
       real srf_cycle, srf_scale
       integer itsrf, srf_ncycle, srf_rec
       integer lsrfgrd, srf_tid, srf_id
+      REAL(kind=8) :: srf_origin_date_in_sec
       common /srfdat1/ srflxp, srf_time, srf_cycle, srf_scale
-      common /srfdat2/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
+      common /srfdat2/ srf_origin_date_in_sec
+      common /srfdat3/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
 
 # ifdef DIURNAL_INPUT_SRFLX
       real srflxbiog(GLOBAL_2D_ARRAY,2)
@@ -649,6 +660,7 @@
       real    wweb_scale,wwed_scale,wwer_scale
       real    wwagrd,wwdgrd,wwpgrd
       real    wwebgrd,wwedgrd,wwergrd
+      REAL(kind=8) :: ww_origin_date_in_sec
 #  ifdef MUSTANG
       real    wwup(2),wwugrd,wwu_scale
 #  endif
@@ -664,7 +676,7 @@
 #  ifdef BBL
       integer wwu_id
 #  endif
-      common /wwdat/ ww_cycle, wwv_time
+      common /wwdat/ ww_cycle, wwv_time,ww_origin_date_in_sec
       common /wwdat/ wwap,wwdp,wwpp
       common /wwdat/ wwebp,wwedp,wwerp
       common /wwdat/ wwa_scale,wwd_scale,wwp_scale

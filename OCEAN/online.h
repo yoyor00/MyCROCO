@@ -44,6 +44,7 @@
      &        bulk_tidO(nblkvrs), ntbulkO(nblkvrs)
       real    bulk_timeO(2,nblkvrs), bulk_cycleO(nblkvrs)
       logical newbulk(nblkvrs)
+      real    blkO_origin_date_in_sec
       ! -------------------------- !
       ! Bulk variable''s dimensions !
       ! -------------------------- !
@@ -51,7 +52,7 @@
 
       common /bulkonline_real/
      &        dum_array, 
-     &        bulk_timeO, bulk_cycleO
+     &        bulk_timeO, bulk_cycleO,blkO_origin_date_in_sec
 
       common /bulkonline_integer/
      &        itbulkO, bulk_varid, ncidbulkO,

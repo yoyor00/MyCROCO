@@ -161,6 +161,14 @@
           ierr=nf_get_var1_FTYPE(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id), 
      &                           ntbulkO(blkvar_id),bulkend)
 
+# ifdef USE_CALENDAR
+!
+! Get origin date
+          call tool_origindate(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),
+     &                          blkO_origin_date_in_sec)
+          bulkstart=bulkstart+blkO_origin_date_in_sec*sec2day
+          bulkend=bulkend+blkO_origin_date_in_sec*sec2day
+# endif
 !
 ! Length of time vector in seconds
 !
@@ -260,6 +268,13 @@
           ierr=nf_get_var1_FTYPE(ncidbulkO(blkvar_id),bulk_tidO(blkvar_id),
      &                           bulk_recO(blkvar_id),daycfsr)
           if (ierr .ne. nf_noerr) goto 99
+# ifdef USE_CALENDAR
+!
+! Get origin date
+          call tool_origindate(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),
+     &                          blkO_origin_date_in_sec)
+          daycfsr=daycfsr+blkO_origin_date_in_sec*sec2day
+# endif
 !
 ! Computation of the time in seconds for time interpolation
 !
@@ -462,7 +477,10 @@
           if (blkvar_id.eq.nblkvrs) then
             MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I8)') 
      &              'ONLINE_BULK --',
-     &              'Read CFSR for time =', daycfsr  
+     &              'Read CFSR for time =', daycfsr
+# ifdef USE_CALENDAR
+     &  -blkO_origin_date_in_sec*sec2day
+# endif
           endif
 !
 ! Leap incrementation
