@@ -101,7 +101,7 @@ reg_run:
 
 reg_perfrst:
   only:
-    - schedules  
+    - schedules
   script:
     - cd $PERFRSTHOME/Scripts_reg_perfrst
     - ./create_link_master_reg_perfrst.sh

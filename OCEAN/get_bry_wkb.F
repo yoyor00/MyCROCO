@@ -119,6 +119,11 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (brywkb_id, brywkb_time_id, brywkb_rec, cff)
           if (ierr.eq.nf_noerr) then
+# ifdef USE_CALENDAR
+            call tool_origindate(brywkb_id,brywkb_time_id,
+     &                         brywkb_origin_date_in_sec)
+            cff=cff+brywkb_origin_date_in_sec*sec2day
+# endif
             itbrywkb=min(3-itbrywkb,ntbrywkb)
             brywkb_time(itbrywkb)=cff*day2sec + brywkb_cycle*brywkb_ncycle
             ierr_all=0
@@ -201,6 +206,9 @@
      &    'file ''',   brywkb_file(1:lstr),  '''',  'tdays = ',tdays,
      &    '  but the last available  brywkb_time =',
      &                                   brywkb_time(itbrywkb)*sec2day
+# ifdef USE_CALENDAR
+     &  -brywkb_origin_date_in_sec*sec2day
+# endif
         endif
       enddo
   2   format(' ERROR in get_bry: cannot read variable ''',A,'''')
@@ -295,8 +303,14 @@
       elseif (ZEROTH_TILE) then
         write(stdout,'(/2(1x,A)/3(1x,A,F16.10)/)')
      &   'SET_BRY_WKB_TILE - current model time is out of bounds of',
-     &   '''brywkb_time''.',     'BRY_WKB_TSTART=', brywkb_time(it1)*sec2day,
-     &   'TDAYS=',  tdays,    'BRY_WKB_TEND=', brywkb_time(it2)*sec2day
+     &   '''brywkb_time''.',     'BRY_WKB_TSTART=', brywkb_time(it1)*sec2day
+# ifdef USE_CALENDAR
+     &  -brywkb_origin_date_in_sec*sec2day
+# endif
+     &   ,'TDAYS=',  tdays,    'BRY_WKB_TEND=', brywkb_time(it2)*sec2day
+# ifdef USE_CALENDAR
+     &  -brywkb_origin_date_in_sec*sec2day
+# endif
         may_day_flag=2
       endif
       return

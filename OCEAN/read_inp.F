@@ -59,6 +59,9 @@
 #ifdef USE_CALENDAR
       real  dt_his,dt_avg,dt_rst
 #endif
+#ifdef XIOS
+      REAL*8        :: tool_datosec
+#endif
 !
 ! Use pre-set default startup filename for known applications,
 ! or get it as an argument from command line via iargc-getarg
@@ -327,56 +330,38 @@
         read(input,'(A)',err=95) title
         lstr=lenstr(title)
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
+
+
+#ifdef USE_CALENDAR
 !
-#ifdef XIOS
-!
-! origin_date is the origin date of time axis.
-! It must the same used in croco_tool for input files preprocessing
-! 
-      elseif (keyword(1:kwlen).eq.'origin_date') then
-          call cancel_kwd (keyword(1:kwlen), ierr)
-          read(input,'(A)',err=95) origin_date
-          lstr=lenstr(origin_date)
-          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &    'Origin date of time axis (dd/mm/yy hh:mm:ss) :',
-     &    origin_date(1:lstr)
-          origin_date_in_sec=tool_datosec(origin_date(1:lstr))
-      READ(origin_date(1:2),fmt='(i2)') origin_day
-      READ(origin_date(4:5),fmt='(i2)') origin_month
-      READ(origin_date(7:10),fmt='(i4)') origin_year
-      READ(origin_date(12:13),fmt='(i2)') origin_hour
-      READ(origin_date(15:16),fmt='(i2)') origin_minute
-      READ(origin_date(18:19),fmt='(i2)') origin_second
-#endif
-#ifdef START_DATE
-!
-! Start date
+! start date
 !
       elseif (keyword(1:kwlen).eq.'start_date') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) start_date
         lstr=lenstr(start_date)
-        MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
-     &   'Start date:', start_date(1:lstr)
-#endif
-#ifdef USE_CALENDAR 
-!
-! Run start date
-!
-      elseif (keyword(1:kwlen).eq.'run_start_date') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) run_start_date
-        lstr=lenstr(run_end_date)
         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &   'Run start date:', run_start_date(1:lstr)
-! Run END date
+     &   'Run start date:', start_date(1:lstr)
+# ifdef ANA_INITIAL
+        if (nrrec.eq.0) then
+          origin_date=start_date
+          origin_date_in_sec=tool_datosec(origin_date)
+          READ(origin_date(1:4),fmt='(i4)') origin_year
+          READ(origin_date(6:7),fmt='(i2)') origin_month
+          READ(origin_date(9:10),fmt='(i2)') origin_day
+          READ(origin_date(12:13),fmt='(i2)') origin_hour
+          READ(origin_date(15:16),fmt='(i2)') origin_minute
+          READ(origin_date(18:19),fmt='(i2)') origin_second
+        endif
+# endif
+! END date
 !
-      elseif (keyword(1:kwlen).eq.'run_end_date') then
+      elseif (keyword(1:kwlen).eq.'end_date') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) run_end_date
-        lstr=lenstr(run_end_date)
+        read(input,'(A)',err=95) end_date
+        lstr=lenstr(end_date)
         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &   'Run end date:', run_end_date(1:lstr)
+     &   'Run end date:', end_date(1:lstr)
 ! output time steps
       elseif (keyword(1:kwlen).eq.'output_time_steps') then
         call cancel_kwd (keyword(1:kwlen), ierr)
@@ -385,9 +370,19 @@
      &  '(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
      &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
      &  'DT RST=',dt_rst,'H'
-        MPI_master_only write(stdout,*) 
+        MPI_master_only write(stdout,*)
 #endif
-!     
+
+#ifdef XIOS 
+!
+! XIOS origin date
+!
+      elseif (keyword(1:kwlen).eq.'xios_origin_date') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) xios_origin_date
+        xios_origin_date_in_sec=tool_datosec(xios_origin_date)
+#endif
+!
 ! Time-stepping parameters
 !
       elseif (keyword(1:kwlen).eq.'time_stepping') then

@@ -266,7 +266,7 @@
             dpth=z_w(i,j,N)-0.5*(z_r(i,j,k+1)+z_r(i,j,k))
             cff2=( rho1(i,j,k+1)-rho1(i,j,k)             ! Elementary
      &                        +(qp1(i,j,k+1)-qp1(i,j,k)) ! adiabatic 
-     &                            *dpth*(1.-2.*qp2*dpth) ! difference
+     &                            *dpth*(1.-qp2*dpth)    ! difference
      &                       )
 
             bvf(i,j,k)=-cff*cff2 / (z_r(i,j,k+1)-z_r(i,j,k))

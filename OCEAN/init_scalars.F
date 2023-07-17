@@ -314,8 +314,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(1,indxTime)='scrum_time'
 #endif
       vname(2,indxTime)='time since initialization'
-#ifdef USE_CALENDAR
-      vname(3,indxTime)='seconds since 1900-01-01'
+#if defined USE_CALENDAR && defined ANA_INITIAL
+      vname(3,indxTime)='seconds since '//start_date
 #else
       vname(3,indxTime)='second'
 #endif
@@ -325,7 +325,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(7,indxTime)='T'
       vname(8,indxTime)='.NO.'
       vname(9,indxTime)=' '
-#ifdef START_DATE
+#ifdef USE_CALENDAR 
       vname(10,indxTime)=start_date
 !     vname(11,indxTime)='Gregorian'
 #endif
@@ -333,8 +333,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
 CR      write(stdout,'(1x,A,I3)') 'indxTime2 =',indxTime2
       vname(1,indxTime2)='time'
       vname(2,indxTime2)='time since initialization'
-#ifdef USE_CALENDAR
-      vname(3,indxTime2)='seconds since 1900-01-01'
+#if defined USE_CALENDAR && defined ANA_INITIAL
+      vname(3,indxTime2)='seconds since '//start_date
 #else
       vname(3,indxTime2)='second'
 #endif
@@ -3592,6 +3592,28 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvsv)
        vname(4,indxeddyvsv)='                               '
        vname(5,indxeddyvsv)='                               '
        vname(7,indxeddyvsv)='                               '
+
+CR       write(stdout,'(1x,A,I3)') 'indxeddyugsu = ',indxeddyugsu
+       write(vname1,*) 'ugsustr                              '
+       vname(1,indxeddyugsu)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyugsu)
+       vname(2,indxeddyugsu)='ugsustr                        '
+       write(vname3,*) 'meter3 second-3                      '
+       vname(3,indxeddyugsu)=vname3
+       vname(4,indxeddyugsu)='                               '
+       vname(5,indxeddyugsu)='                               '
+       vname(7,indxeddyugsu)='                               '
+
+CR       write(stdout,'(1x,A,I3)') 'indxeddyvgsv = ',indxeddyvgsv
+       write(vname1,*) 'vgsvstr                              '
+       vname(1,indxeddyvgsv)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyvgsv)
+       vname(2,indxeddyvgsv)='vgsvstr                        '
+       write(vname3,*) 'meter3 second-3                      '
+       vname(3,indxeddyvgsv)=vname3
+       vname(4,indxeddyvgsv)='                               '
+       vname(5,indxeddyvgsv)='                               '
+       vname(7,indxeddyvgsv)='                               '
 #endif  /* DIAGNOSTICS_EDDY */
 
 # if defined OUTPUTS_SURFACE && ! defined XIOS

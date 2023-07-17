@@ -360,7 +360,7 @@ while [ $NY != $NY_END ]; do
 	  exit 1
 	fi
 	sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
-	    -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/' \
+	    -e 's/\bNUMAVG\b/'$NUMAVG'/' -e 's/\bNUMHIS\b/'$NUMHIS'/' -e 's/\bNUMRST\b/'$NUMRST'/' \
 	    -e 's/NUMRECINI/'$NUMRECINI'/' \
 	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
 	

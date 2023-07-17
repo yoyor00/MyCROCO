@@ -16,7 +16,9 @@
 
 #ifndef ANA_BRY
       real bry_time(2)
-      common /bry_indices_array/ bry_time
+      REAL(kind=8) :: bry_origin_date_in_sec
+      common /bry_indices_array/ bry_time,
+     &        bry_origin_date_in_sec
       real bry_cycle
       common /bry_indices_real/ bry_cycle
       integer bry_id, bry_time_id, bry_ncycle, bry_rec, itbry, ntbry
@@ -253,7 +255,9 @@
 #ifdef WKB_WWAVE
 # ifndef ANA_BRY_WKB
       real    brywkb_time(2)
-      common /brywkb_indices_array/ brywkb_time
+      REAL(kind=8) :: brywkb_origin_date_in_sec
+      common /brywkb_indices_array/ brywkb_time,
+     &        brywkb_origin_date_in_sec
       real    brywkb_cycle
       common /brywkb_indices_real/ brywkb_cycle
       integer brywkb_id, brywkb_time_id, 
