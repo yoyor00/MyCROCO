@@ -6,10 +6,10 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
 S-coord: THETA_S,   THETA_B,    Hc (m)
            1.0         0.8       0.
 
-run_start_date:
-01/01/2019 00:00:00
-run_end_date:
-10/02/2019 00:00:00
+start_date:
+2019-01-01 00:00:00
+end_date:
+2019-02-10 00:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                      1         1         24
 
