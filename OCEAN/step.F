@@ -982,6 +982,9 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
+#   ifdef SUBSTANCE_SUBMASSBALANCE
+      USE submassbalance, ONLY :  submassbalance_main
+#   endif
 #ifdef MUSTANG
       use plug_MUSTANG_CROCO, only: mustang_update_main
       use plug_MUSTANG_CROCO, only: mustang_deposition_main
@@ -1064,6 +1067,11 @@ C$OMP BARRIER
 # ifdef MUSTANG
         call mustang_deposition_main (tile)
 # endif
+
+# ifdef SUBSTANCE_SUBMASSBALANCE
+       call submassbalance_main(tile)
+#endif
+
 
 # ifdef SEDIMENT
 #  ifdef AGRIF
