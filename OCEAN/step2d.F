@@ -31,9 +31,15 @@ C$    trd=omp_get_thread_num()
      &                    , A2d(1, 8,trd), A2d(1, 9,trd)
 # ifdef M2_HADV_UP3
      &                    , A2d(1,10,trd), A2d(1,11,trd)
+#  ifdef LERAY_TURB
+     &                    , A2d(1,12,trd)
+#  endif      
 # else
      &                    , A2d(1,10,trd), A2d(1,11,trd)
      &                    , A2d(1,12,trd), A2d(1,13,trd)
+#  ifdef LERAY_TURB
+     &                    , A2d(1,14,trd)
+#  endif      
 # endif
      &                    )
 
@@ -46,9 +52,15 @@ C$    trd=omp_get_thread_num()
      &                           VFx,VFe
 # ifdef M2_HADV_UP3
      &                          ,wrk1,wrk2
+#  ifdef LERAY_TURB
+     &                          ,wrk3
+#  endif          
 # else
      &                          ,urhs,vrhs
      &                          ,DUon,DVom
+#  ifdef LERAY_TURB
+     &                          ,wrk3
+#  endif          
 # endif
      &                          )
 
@@ -153,6 +165,10 @@ C$    trd=omp_get_thread_num()
 #  include "zoom.h"
         integer irhox, irhoy, irhot
 # endif
+# ifdef LERAY_TURB
+#  include "leray_smoothing.h"
+        real wrk3(PRIVATE_2D_SCRATCH_ARRAY)
+# endif        
 # if defined INTERNAL || defined BODYTIDE
       real U0, omega
 # endif
@@ -556,6 +572,9 @@ C$OMP END MASTER
 ! in some cases with wetdry but not sure it is
 ! the proper fix
 C$OMP BARRIER
+#  ifdef LERAY_TURB
+      call compute_fwidth_array_tile(Istr,Iend,Jstr,Jend)
+#  endif      
 # endif
 
 !-----------------------------------------------------------------------
@@ -710,6 +729,10 @@ C$OMP BARRIER
 !========================================================================
 !
 # ifdef UV_ADV
+!
+#  if defined LERAY_TURB
+#   include "leray_smoothing_2d.h" 
+#  endif      
 !
 #  if defined SOLVE3D || !defined M2_HADV_UP3
 !-----------------------------------------------------------------------

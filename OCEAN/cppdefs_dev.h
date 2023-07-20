@@ -554,6 +554,25 @@
 
 /*
 ======================================================================
+   LERAY ALPHA TURBULENCE
+======================================================================
+*/
+#if defined LERAY_FILTER_3PTS || defined LERAY_FILTER_5PTS \
+ || defined LERAY_FILTER_7PTS || defined LERAY_FILTER_9PTS
+# define LERAY_TURB
+#endif
+#if defined LERAY_TURB
+# if defined LERAY_FILTER_3PTS
+# elif defined LERAY_FILTER_5PTS
+# elif defined LERAY_FILTER_7PTS
+# elif defined LERAY_FILTER_9PTS
+# else
+#  define LERAY_FILTER_3PTS
+# endif
+#endif
+
+/*
+======================================================================
    GLS_MIXING
 ======================================================================
 */

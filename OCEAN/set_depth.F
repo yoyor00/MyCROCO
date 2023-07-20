@@ -450,11 +450,17 @@ C$    integer omp_get_thread_num
 #  undef JU_RANGE
 #  undef IV_RANGE
 #  undef JV_RANGE
+
 !
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   ifdef THREE_GHOST_POINTS_UV
+#   if defined LERAY_FILTER_9PTS
+      call exchange_u3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Huon(START_2D_ARRAY,1))
+      call exchange_v3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Hvom(START_2D_ARRAY,1))
+#   elif defined THREE_GHOST_POINTS_UV | defined LERAY_FILTER_7PTS
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -704,24 +710,33 @@ C$    integer omp_get_thread_num
 #  undef JU_RANGE
 #  undef IV_RANGE
 #  undef JV_RANGE
+
 !
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   ifdef THREE_GHOST_POINTS_UV
+#   if defined LERAY_FILTER_9PTS
+      call exchange_u3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Huon(START_2D_ARRAY,1))
+      call exchange_v3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Hvom(START_2D_ARRAY,1))
+#   elif defined THREE_GHOST_POINTS_UV | defined LERAY_FILTER_7PTS
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Hvom(START_2D_ARRAY,1))
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nrhs))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nrhs))
 #   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        Huon(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hvom(START_2D_ARRAY,1))
+#   endif
+#   ifdef THREE_GHOST_POINTS_UV
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,nrhs))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,nrhs))
+#   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nrhs))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,

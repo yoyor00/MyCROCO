@@ -43,7 +43,46 @@
 # define THREE_GHOST_POINTS_UV
 #endif
 
-#ifdef THREE_GHOST_POINTS
+#if defined LERAY_FILTER_9PTS
+# ifdef MPI
+#  define GLOBAL_2D_ARRAY -3:Lm+4+padd_X,-3:Mm+4+padd_E
+#  define GLOBAL_1D_ARRAYXI -3:Lm+4+padd_X
+#  define GLOBAL_1D_ARRAYETA -3:Mm+4+padd_E
+#  define START_2D_ARRAY -3,-3
+#  define START_1D_ARRAYXI -3
+#  define START_1D_ARRAYETA -3
+# else
+#  ifdef EW_PERIODIC
+#   define GLOBAL_1D_ARRAYXI -3:Lm+4+padd_X
+#   define START_1D_ARRAYXI -3
+#   ifdef NS_PERIODIC
+#    define GLOBAL_2D_ARRAY -3:Lm+4+padd_X,-3:Mm+4+padd_E
+#    define GLOBAL_1D_ARRAYETA -3:Mm+4+padd_E
+#    define START_2D_ARRAY -3,-3
+#    define START_1D_ARRAYETA -3
+#   else
+#    define GLOBAL_2D_ARRAY -3:Lm+4+padd_X,0:Mm+1+padd_E
+#    define START_2D_ARRAY -3,0
+#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#    define START_1D_ARRAYETA 0
+#   endif
+#  else
+#   define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
+#   define START_1D_ARRAYXI 0
+#   ifdef NS_PERIODIC
+#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-3:Mm+4+padd_E
+#    define GLOBAL_1D_ARRAYETA -3:Mm+4+padd_E
+#    define START_2D_ARRAY 0,-3
+#    define START_1D_ARRAYETA -3
+#   else
+#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
+#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#    define START_2D_ARRAY 0,0
+#    define START_1D_ARRAYETA 0
+#   endif
+#  endif
+# endif
+#elif defined THREE_GHOST_POINTS | defined LERAY_FILTER_7PTS 
 # ifdef MPI
 #  define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,-2:Mm+3+padd_E
 #  define GLOBAL_1D_ARRAYXI -2:Lm+3+padd_X
@@ -123,10 +162,22 @@
 # endif
 #endif
 
-#define PRIVATE_1D_SCRATCH_ARRAY Istr-2:Iend+2
-#define PRIVATE_2D_SCRATCH_ARRAY Istr-2:Iend+2,Jstr-2:Jend+2
-#define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2:Iend+2
-#define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2:Jend+2
+#ifdef LERAY_FILTER_9PTS
+# define PRIVATE_1D_SCRATCH_ARRAY Istr-4:Iend+4
+# define PRIVATE_2D_SCRATCH_ARRAY Istr-4:Iend+4,Jstr-4:Jend+4
+# define PRIVATE_1DXI_SCRATCH_ARRAY Istr-4:Iend+4
+# define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-4:Jend+4
+#elif defined LERAY_FILTER_7PTS
+# define PRIVATE_1D_SCRATCH_ARRAY Istr-3:Iend+3
+# define PRIVATE_2D_SCRATCH_ARRAY Istr-3:Iend+3,Jstr-3:Jend+3
+# define PRIVATE_1DXI_SCRATCH_ARRAY Istr-3:Iend+3
+# define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-3:Jend+3
+#else
+# define PRIVATE_1D_SCRATCH_ARRAY Istr-2:Iend+2
+# define PRIVATE_2D_SCRATCH_ARRAY Istr-2:Iend+2,Jstr-2:Jend+2
+# define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2:Iend+2
+# define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2:Jend+2
+#endif
 
 /*
   The following definitions contain fortran logical expressions

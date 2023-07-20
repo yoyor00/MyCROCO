@@ -133,7 +133,12 @@
       nj=jmax-jmin+1
 
       ! from set_global_definitions.h
-# ifdef THREE_GHOST_POINTS
+# if defined LERAY_TURB && defined LERAY_FILTER_9PTS
+#  ifdef MPI
+      data_ni = Lm+4+padd_X+3+1
+      data_nj = Mm+4+padd_E+3+1
+#  endif      
+# elif defined THREE_GHOST_POINTS || (defined LERAY_TURB && LERAY_FILTER_7PTS)
 #  ifdef MPI
       data_ni = Lm+3+padd_X+2+1
       data_nj = Mm+3+padd_E+2+1

@@ -378,8 +378,13 @@
 # ifdef ALLOW_SINGLE_BLOCK_MODE
       parameter (size_XI=6+Lm, size_ETA=6+Mm)
 # else
+#  ifdef LERAY_FILTER_9PTS
+      parameter (size_XI=8+(Lm+NSUB_X-1)/NSUB_X)
+      parameter (size_ETA=8+(Mm+NSUB_E-1)/NSUB_E)
+#  else    
       parameter (size_XI=7+(Lm+NSUB_X-1)/NSUB_X)
       parameter (size_ETA=7+(Mm+NSUB_E-1)/NSUB_E)
+#  endif    
 # endif
       parameter (sse=size_ETA/Np, ssz=Np/size_ETA)
       parameter (se=sse/(sse+ssz), sz=1-se)
@@ -1042,3 +1047,25 @@
       integer inc_faststep_max
       parameter(inc_faststep_max = 10)
 #endif
+
+!
+!----------------------------------------------------------------------
+! Parameters for the Leray turbulence model
+!----------------------------------------------------------------------
+#ifdef LERAY_TURB
+! coefficients for the convolution smoothing filter (Petersen et al., 2008)
+      real avs, bvs, cvs, dvs, evs
+      parameter (avs=1.0, bvs=0.45, cvs=0.4, dvs=0.35, evs=0.3)
+!
+! width of the filter window (3, 5, 7 or 9)
+      integer filter_width
+# ifdef LERAY_FILTER_3PTS      
+      parameter (filter_width=3)
+# elif defined LERAY_FILTER_5PTS
+      parameter (filter_width=5)
+# elif defined LERAY_FILTER_7PTS
+      parameter (filter_width=7)
+# elif defined LERAY_FILTER_9PTS
+      parameter (filter_width=9)
+# endif    
+#endif 

@@ -26,6 +26,11 @@
 # ifdef VADV_ADAPT_IMP
      &                                               ,A2d(1,5,trd)
 # endif
+# ifdef LERAY_TURB      
+     &                                               ,A3d(1,1,trd)
+     &                                               ,A3d(1,2,trd)
+     &                                               ,A3d(1,3,trd)
+# endif      
      &                                                            )
       return
       end
@@ -34,6 +39,11 @@
 # ifdef VADV_ADAPT_IMP
      &                                                         ,WC
 # endif
+# ifdef LERAY_TURB
+     &                                                         ,DC3
+     &                                                         ,CF3
+     &                                                         ,FC3
+# endif          
      &                                                            )
 !
 !--------------------------------------------------------------------
@@ -83,6 +93,9 @@
 # ifdef DIAGNOSTICS_PV
 #  include "diags_pv.h"
 # endif
+# ifdef LERAY_TURB
+#  include "leray_smoothing.h"
+# endif      
       integer Istr,Iend,Jstr,Jend, i,j,k
 # ifdef PSOURCE
      &       ,is
@@ -91,6 +104,12 @@
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,
      &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), u_str,v_str
+# ifdef LERAY_TURB
+      real DC3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     CF3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     FC3(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#  include "work.h"      
+# endif     
 # ifdef DIAGNOSTICS_PV
       real cff1 , cff2
 # endif
@@ -872,6 +891,9 @@
 !
 # ifdef WET_DRY
       CALL wetdry_tile (Istr,Iend,Jstr,Jend)
+#  ifdef LERAY_TURB
+      call compute_fwidth_array_tile(Istr,Iend,Jstr,Jend)
+#  endif      
 # endif
 !
 !--------------------------------------------------------------------
@@ -937,6 +959,9 @@
 !  Couple XI-component of velocity
 !--------------------------------------------------
 !
+# ifdef LERAY_TURB
+#  include "leray_smoothing_ucorrector.h"
+# else 
       do j=JU_RANGE
         do i=IU_RANGE
           DC(i,0)=0.
@@ -1016,6 +1041,7 @@
             Huon(i,j,k)=FC(i,k)-DC(i,k)*FC(i,0)
           enddo
         enddo
+# endif /* LERAY_TURB */
 !
 !-------------------------------------------------
 ! Compute density XI gradients for use in t3dmix
@@ -1082,6 +1108,9 @@
 !  Couple ETA-component of velocity
 !--------------------------------------------------
 !
+# ifdef LERAY_TURB
+#  include "leray_smoothing_vcorrector.h"
+# else 
         if (j.ge.Jstr) then
           do i=IV_RANGE
             DC(i,0)=0.
@@ -1160,6 +1189,7 @@
               Hvom(i,j,k)=FC(i,k)-DC(i,k)*FC(i,0)
             enddo
           enddo
+# endif /* LERAY_TURB */
 !
 !-------------------------------------------------
 ! Compute density ETA gradients for use in t3dmix
@@ -1218,7 +1248,9 @@
 # endif /* TS_DIF2 || TS_DIF4 */
 !
 !
+# ifndef LERAY_TURB      
         endif  !<-- j.ge.Jstr
+# endif        
       enddo    !<-- j loop
 
 !
