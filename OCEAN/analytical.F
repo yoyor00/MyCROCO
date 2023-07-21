@@ -1977,8 +1977,8 @@ C$    integer  trd, omp_get_thread_num
 # include "ocean3d.h"
 # include "grid.h"
 !
-      integer is, k, Istr,Iend,Jstr,Jend, i,j,itrc
-      real cff, cff1, cff2, ramp, Hs
+      integer is, k, Istr,Iend,Jstr,Jend, i,j,itrc,ised
+      real    cff, cff1, cff2, ramp, Hs
       real    xno3,temp,SiO4,zsrc
 # include "compute_auxiliary_bounds.h"
 
@@ -2176,6 +2176,12 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef PASSIVE_TRACER
           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
 #   endif
+#   ifdef SEDIMENT
+          do itrc=1,NST
+            ised=itrc_sed+itrc-1
+            Tsrc(is,k,ised)=Tsrc0(is,ised)
+          enddo
+#   endif
         enddo
       enddo
 #  elif defined REGIONAL
@@ -2206,6 +2212,12 @@ C$    integer  trd, omp_get_thread_num
            endif
 #    endif
            Tsrc(is,k,itpas)=Tsrc0(is,itpas)
+#   endif
+#   ifdef SEDIMENT
+          do itrc=1,NST
+            ised=itrc_sed+itrc-1
+            Tsrc(is,k,ised)=Tsrc0(is,ised)
+          enddo
 #   endif
          enddo
        enddo

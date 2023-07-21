@@ -159,6 +159,10 @@
      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 #   include "mixing.h"
 #  endif
+#  ifdef SEDIMENT
+#   include "sediment.h"
+      integer itrc,ised
+#  endif
 !
 #  include "compute_extended_bounds.h"
 !
@@ -176,8 +180,6 @@
 !
       dr00=r00-rho0
 !
-
-
 #  ifdef RVTK_DEBUG_PERFRST
       call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
@@ -437,6 +439,28 @@
           enddo
         enddo
 # endif /* CROCO_QH */
+
+#  if defined SEDIMENT && defined SED_DENS
+!======================================================================
+!  Include suspended sediment density in rho (kg/m3 - rho0)
+!  (Eq. 36 of Warner et al., 2008)
+!======================================================================
+!
+        do k=1,N
+          do i=IstrR,IendR
+            cff=0.
+            do ised=1,NST
+              itrc=itrc_sed+ised-1
+              cff=cff+t(i,j,k,nrhs,itrc)*
+     &                (Srho(ised)-rho(i,j,k)-rho0)/Srho(ised)
+            enddo
+            rho(i,j,k)=rho(i,j,k)+cff
+#  ifdef MASKING
+            rho(i,j,k)=rho(i,j,k)*rmask(i,j)
+#  endif
+          enddo
+        enddo
+#  endif
 
 # ifdef VAR_RHO_2D
 !
