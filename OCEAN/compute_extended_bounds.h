@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -22,19 +22,19 @@
 */
       integer IstrR,IendR,JstrR,JendR
       if (Istr.eq.1) then
-# ifdef EW_PERIODIC
+#ifdef EW_PERIODIC
         IstrR=Istr-2
-# else
-#  ifdef MPI
+#else
+# ifdef MPI
         if (WEST_INTER) then
           IstrR=Istr-2
         else
           IstrR=Istr-1
         endif
-#  else
+# else
         IstrR=Istr-1
-#  endif
 # endif
+#endif
       else
         IstrR=Istr
       endif
@@ -43,38 +43,38 @@
       if (Iend.eq.Lmmpi) then
 #else
       if (Iend.eq.Lm) then
-#endif      
-# ifdef EW_PERIODIC
+#endif
+#ifdef EW_PERIODIC
         IendR=Iend+2
-# else
-#  ifdef MPI
+#else
+# ifdef MPI
         if (EAST_INTER) then
           IendR=Iend+2
         else
           IendR=Iend+1
         endif
-#  else
+# else
         IendR=Iend+1
-#  endif
 # endif
+#endif
       else
         IendR=Iend
       endif
 
       if (Jstr.eq.1) then
-# ifdef NS_PERIODIC
+#ifdef NS_PERIODIC
         JstrR=Jstr-2
-# else
-#  ifdef MPI
+#else
+# ifdef MPI
         if (SOUTH_INTER) then
           JstrR=Jstr-2
         else
           JstrR=Jstr-1
         endif
-#  else
+# else
         JstrR=Jstr-1
-#  endif
 # endif
+#endif
       else
         JstrR=Jstr
       endif
@@ -83,20 +83,20 @@
       if (Jend.eq.Mmmpi) then
 #else
       if (Jend.eq.Mm) then
-#endif 
-# ifdef NS_PERIODIC
+#endif
+#ifdef NS_PERIODIC
         JendR=Jend+2
-# else
-#  ifdef MPI
+#else
+# ifdef MPI
         if (NORTH_INTER) then
           JendR=Jend+2
         else
           JendR=Jend+1
         endif
-#  else
+# else
         JendR=Jend+1
-#  endif
 # endif
+#endif
       else
         JendR=Jend
       endif

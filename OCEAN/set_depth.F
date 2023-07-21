@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -38,14 +38,14 @@ C$    integer omp_get_thread_num
 # include "param.h"
 # include "grid.h"
 # ifdef AGRIF
-# include "zoom.h"
+#  include "zoom.h"
 # endif
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "coupling.h"
 # include "scalars.h"
 # ifdef MRL_WCI
-#   include "forces.h"
+#  include "forces.h"
 # endif
 # ifdef M3FAST
 #  include "nbq.h"
@@ -69,7 +69,7 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
 !
-!  During initialization and/or restart: copy initial free surface 
+!  During initialization and/or restart: copy initial free surface
 !  field into array for holding fast-time averaged free surface.
 !----------------------------------------------------------------------
 !
@@ -80,7 +80,7 @@ C$    integer omp_get_thread_num
             wetdry(i,j)=1.
 #  ifdef AGRIF
             rmask_childs(i,j)=1.
-#  endif         
+#  endif
             IF (h(i,j).eq.0.) THEN
               h(i,j)=eps
             END IF
@@ -94,13 +94,13 @@ C$    integer omp_get_thread_num
             rmask_wet(i,j)=wetdry(i,j)
 # endif
 # ifdef SOLVE3D
-#  ifdef NEW_S_COORD 
-            hinv(i,j)=1./(h(i,j)+hc)      
+#  ifdef NEW_S_COORD
+            hinv(i,j)=1./(h(i,j)+hc)
 #  else
-            hinv(i,j)=1./h(i,j) 
+            hinv(i,j)=1./h(i,j)
 #  endif
-            Zt_avg1(i,j)=zeta(i,j,knew)  ! knew=1 unless modified 
-                                         ! in ana_initial (JET)     
+            Zt_avg1(i,j)=zeta(i,j,knew)  ! knew=1 unless modified
+                                         ! in ana_initial (JET)
 # endif /* SOLVE3D */
           enddo
         enddo
@@ -125,14 +125,14 @@ C$    integer omp_get_thread_num
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_childs)
 #   endif
 #  endif
-#  if defined M3FAST || defined WET_DRY 
-        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+#  if defined M3FAST || defined WET_DRY
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          zeta(START_2D_ARRAY,1))
-        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          zeta(START_2D_ARRAY,2))
-        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          zeta(START_2D_ARRAY,3))
-        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          zeta(START_2D_ARRAY,4))
 #  endif
 # endif
@@ -147,7 +147,7 @@ C$    integer omp_get_thread_num
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
 #  endif
 
-      do j=J_RANGE              !!! WARNING: Setting must be consistent 
+      do j=J_RANGE              !!! WARNING: Setting must be consistent
         do i=I_RANGE            !!!          with omega.F
           z_w(i,j,0)=-h(i,j)
         enddo
@@ -173,15 +173,15 @@ C$    integer omp_get_thread_num
 #  if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #  endif
-            z_w0=cff_w+cff1_w*h(i,j) 
-            z_r0=cff_r+cff1_r*h(i,j)            
+            z_w0=cff_w+cff1_w*h(i,j)
+            z_r0=cff_r+cff1_r*h(i,j)
 #  ifdef NEW_S_COORD
             z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
-     &                                       *(1.+z_w0*hinv(i,j)) 
+     &                                       *(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_r0*hinv(i,j))
 #  else
-            z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
+            z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
 
@@ -196,13 +196,13 @@ C$    integer omp_get_thread_num
 #   endif
 #  else
             Hz_bak(i,j,k)=Hz(i,j,k)
-#  endif 
+#  endif
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
 
 #  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
             Hz(i,j,k) =Hz(i,j,k)*(1.+rho_grd(i,j,k))
-     &                              +rho_nbq(i,j,k) 
+     &                              +rho_nbq(i,j,k)
 #  endif
           enddo
         enddo
@@ -224,9 +224,9 @@ C$    integer omp_get_thread_num
 #  undef J_RANGE
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_w(START_2D_ARRAY,0))
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_r(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
@@ -236,7 +236,7 @@ C$    integer omp_get_thread_num
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
 #   endif
-#  endif 
+#  endif
       return
       end
 
@@ -294,7 +294,7 @@ C$    integer omp_get_thread_num
 #    define J_RANGE JstrR,JendR
 #   endif
 
-      do j=J_RANGE              !!! WARNING: Setting must be consistent 
+      do j=J_RANGE              !!! WARNING: Setting must be consistent
         do i=I_RANGE            !!!          with omega.F
           h(i,j)=h(i,j)+dh(i,j)
           z_w(i,j,0)=-h(i,j)
@@ -321,24 +321,24 @@ C$    integer omp_get_thread_num
 #   if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #   endif
-            z_w0=cff_w+cff1_w*h(i,j) 
-            z_r0=cff_r+cff1_r*h(i,j)            
+            z_w0=cff_w+cff1_w*h(i,j)
+            z_r0=cff_r+cff1_r*h(i,j)
 #   ifdef NEW_S_COORD
             hinv(i,j)=1./(h(i,j)+hc)
             z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
-     &                                       *(1.+z_w0*hinv(i,j)) 
+     &                                       *(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_r0*hinv(i,j))
 #   else
             hinv(i,j)=1./h(i,j)
-            z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
+            z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #   endif
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
 #   ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
             Hz(i,j,k) =Hz(i,j,k)*(1.+rho_grd(i,j,k))
-     &                              +rho_nbq(i,j,k) 
+     &                              +rho_nbq(i,j,k)
 #   endif
           enddo
         enddo
@@ -348,18 +348,18 @@ C$    integer omp_get_thread_num
 #   undef J_RANGE
 
 #   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_w(START_2D_ARRAY,0))
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_r(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
-#     ifdef NBQ_MASS
+#    ifdef NBQ_MASS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
+#    endif
 #   endif
-#   endif 
       return
       end
 #  endif /* MORPHODYN */
@@ -389,11 +389,11 @@ C$    integer omp_get_thread_num
 #  include "scalars.h"
 !
 #  ifdef MRL_WCI
-#    include "forces.h"
+#   include "forces.h"
 #  endif
 #  include "compute_auxiliary_bounds.h"
 !
-#  ifdef EW_PERIODIC 
+#  ifdef EW_PERIODIC
 #   define IU_RANGE Istr,Iend
 #   define IV_RANGE Istr,Iend
 #  else
@@ -401,7 +401,7 @@ C$    integer omp_get_thread_num
 #   define IV_RANGE IstrR,IendR
 #  endif
 
-#  ifdef NS_PERIODIC 
+#  ifdef NS_PERIODIC
 #   define JU_RANGE Jstr,Jend
 #   define JV_RANGE Jstr,Jend
 #  else
@@ -460,9 +460,9 @@ C$    integer omp_get_thread_num
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Hvom(START_2D_ARRAY,1))
 #   else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        Huon(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hvom(START_2D_ARRAY,1))
 #   endif
 #   if defined UV_VIS4 && defined UV_MIX_GEO
@@ -503,7 +503,7 @@ C$    integer omp_get_thread_num
 #  include "ocean3d.h"
 #  include "scalars.h"
 #  ifdef MRL_WCI
-#    include "forces.h"
+#   include "forces.h"
 #  endif
 !
 #  include "compute_auxiliary_bounds.h"
@@ -531,7 +531,7 @@ C$    integer omp_get_thread_num
      &                   -Hz_bak(i,j,k)-Hz_bak(i-1,j,k))
      &                        *on_u(i,j)*( u(i,j,k,nrhs)
 #  ifdef MRL_WCI
-     &                                      + ust(i,j,k) 
+     &                                      + ust(i,j,k)
 #  endif
      &                                                 )
 #  if defined MRL_WCI && defined MASKING
@@ -569,14 +569,14 @@ C$    integer omp_get_thread_num
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Hvom(START_2D_ARRAY,1))
 #   else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        Huon(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hvom(START_2D_ARRAY,1))
 #   endif
 #  endif
       return
-      end 
+      end
 !
 !======================================================================
 !
@@ -606,7 +606,7 @@ C$    integer omp_get_thread_num
 #  include "ocean3d.h"
 #  include "scalars.h"
 #  ifdef MRL_WCI
-#    include "forces.h"
+#   include "forces.h"
 #  endif
 #  include "coupling.h"
 !
@@ -651,9 +651,9 @@ C$    integer omp_get_thread_num
             u(i,j,k,nrhs)=(u(i,j,k,nrhs)-FC(i,0))
 #  ifdef MASKING
      &                                *umask(i,j)
-#    ifdef MRL_WCI
+#   ifdef MRL_WCI
      &               +ust(i,j,k)*(umask(i,j)-1.0)
-#    endif
+#   endif
 #  endif
             Huon(i,j,k)=DC(i,k)*( u(i,j,k,nrhs)
 #  ifdef MRL_WCI
@@ -687,9 +687,9 @@ C$    integer omp_get_thread_num
             v(i,j,k,nrhs)=(v(i,j,k,nrhs)-FC(i,0))
 #  ifdef MASKING
      &                                *vmask(i,j)
-#    ifdef MRL_WCI
+#   ifdef MRL_WCI
      &               +vst(i,j,k)*(vmask(i,j)-1.0)
-#    endif
+#   endif
 #  endif
             Hvom(i,j,k)=DC(i,k)*( v(i,j,k,nrhs)
 #  ifdef MRL_WCI
@@ -708,7 +708,7 @@ C$    integer omp_get_thread_num
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   ifdef THREE_GHOST_POINTS_UV  
+#   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,

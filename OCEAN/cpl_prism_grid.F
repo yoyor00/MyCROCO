@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,7 +20,7 @@
 # endif
       IMPLICIT NONE
       include 'mpif.h'
-      
+
 # include "param.h"
 # include "grid.h"
 # include "scalars.h"
@@ -207,7 +207,7 @@
       CALL prism_write_mask('ocnv'//trim(clevel), LLm, MMm,
      &                     vmask_inv(1:Lmmpi,1:Mmmpi),
      &                     id_partition)
-      
+
 ! Terminate grid writing
 !------------------------------------------------------------------
       CALL prism_terminate_grids_writing()
@@ -217,10 +217,10 @@
 !------------------------------------------------------------------
       return
       end
-#else 
+#else
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
       subroutine cpl_prism_grid_empty
       end
-#endif 
+#endif

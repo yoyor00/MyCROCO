@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,7 +13,7 @@
       integer function nf_fwrite_y (ncid, varid, type)
 #else
       integer function nf_fread_y  (ncid, varid, type)
-#include "cppdefs.h"
+# include "cppdefs.h"
 #endif
 !
 ! Read/Write a floating point array from/into an input/output
@@ -23,14 +23,14 @@
 !                             which is to be read or written.
 !            ncid    NetCDF ID of in the file.
 !            varid   variable ID of that variable in NetCDF file.
-!            record  record number. 
+!            record  record number.
 !            type    type of the grid (RHO-, U, V, W, PSI etc.)
 !
 ! Because significant portion of the code calculates starting and
 ! stopping indices for the subarray (which are exactly the same for
 ! both read and write operations) the code has been unified to
-! guarantee that both functions are exactly adjoint. 
-!            
+! guarantee that both functions are exactly adjoint.
+!
       implicit none
 #include "param.h"
       real A(Mm+2)
@@ -42,10 +42,10 @@
 #endif
 #include "netcdf.inc"
                                       ! Decode grid type into
-      vert_type=type/4                ! vertical and horizontal 
-      horiz_type=type-4*vert_type     ! grid types, then calculate 
+      vert_type=type/4                ! vertical and horizontal
+      horiz_type=type-4*vert_type     ! grid types, then calculate
       jmin=horiz_type/2               ! starting indices indices
-      imin=horiz_type-2*jmin          ! in horizontal directions. 
+      imin=horiz_type-2*jmin          ! in horizontal directions.
 
       start=1
 #if defined AGRIF && defined AGRIF_ADAPTIVE && !defined WRITER
@@ -54,11 +54,11 @@
         start(2)=1+(Agrif_iy()-1)*Agrif_irhoy()
       endif
 #endif
-     
+
 #ifdef MPI
 # ifdef PARALLEL_FILES
 #  ifdef NS_PERIODIC
-      jmin=1  
+      jmin=1
       jmax=Mm
 #  else
       if (jj.gt.0) jmin=1
@@ -77,7 +77,7 @@
         jmax=Mmmpi+1
       else
         jmax=Mmmpi
-      endif     
+      endif
 # endif
 #else
       jmax=Mm+1
@@ -86,7 +86,7 @@
 
 !      write(stdout,'(1x,A,i4,1x,A,i2,1(3x,A,I2,2x,A,I3,2x,A,I3))')
 !     &      'NF_READ/WRITE: mynode=',mynode,'horiz_grid',horiz_type,
-!     &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax 
+!     &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 
       do j=1,Mm+2
          A(j) = j + start - 1 + 0.25*horiz_type

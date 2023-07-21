@@ -11,7 +11,7 @@
       call set_diags_pv_tile (istr,iend,jstr,jend,tile)
       return
       end
- 
+
       subroutine set_diags_pv_tile (istr,iend,jstr,jend,tile)
 !
 !
@@ -38,18 +38,18 @@
 #  include "diags_ek.h"
 # endif
 
-#include "diags_pv.h"
+# include "diags_pv.h"
 ! diagnostic dissipation NJAL August 2017
-# if defined DIAGNOSTICS_DISS       
-      real alfa(PRIVATE_2D_SCRATCH_ARRAY), 
+# if defined DIAGNOSTICS_DISS
+      real alfa(PRIVATE_2D_SCRATCH_ARRAY),
      &     beta(PRIVATE_2D_SCRATCH_ARRAY)
-#endif
-#include "compute_auxiliary_bounds.h"
+# endif
+# include "compute_auxiliary_bounds.h"
 
         do itrc=1,NTA
           do k=1,N
             do j=JstrR,JendR
-              do i=IstrR,IendR 
+              do i=IstrR,IendR
                 Trhs(i,j,k,itrc) = TForc(i,j,k,itrc)
      &                           + THmix(i,j,k,itrc)
      &                           + TVmix(i,j,k,itrc)

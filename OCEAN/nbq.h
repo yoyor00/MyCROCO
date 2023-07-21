@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,29 +14,29 @@
       logical M2bc_nbq_flag
       common /nbq_M2bc/ M2bc_nbq_flag
 
-!********************************************************************** 
-      integer iteration_nbq_max  
-      common /nbq_var1/ iteration_nbq_max             
-      integer iteration_nbq      
-      common /nbq_var2/ iteration_nbq      
-      integer ifl_nbq     
-      common /nbq_var3/ ifl_nbq     
-      integer slip_nbq   
-      common /nbq_var4/ slip_nbq    
+!**********************************************************************
+      integer iteration_nbq_max
+      common /nbq_var1/ iteration_nbq_max
+      integer iteration_nbq
+      common /nbq_var2/ iteration_nbq
+      integer ifl_nbq
+      common /nbq_var3/ ifl_nbq
+      integer slip_nbq
+      common /nbq_var4/ slip_nbq
 
 !**********************************************************************
-      real soundspeed_nbq(GLOBAL_2D_ARRAY) 
-      common /nbq_param1/ soundspeed_nbq                              
-      real soundspeed2_nbq(GLOBAL_2D_ARRAY) 
+      real soundspeed_nbq(GLOBAL_2D_ARRAY)
+      common /nbq_param1/ soundspeed_nbq
+      real soundspeed2_nbq(GLOBAL_2D_ARRAY)
       common /nbq_param2/ soundspeed2_nbq
 
-      double precision time_nbq               
+      double precision time_nbq
       common /nbq_param3/ time_nbq
-      double precision csvisc1_nbq                
-      common /nbq_param4/ csvisc1_nbq 
-      double precision csvisc2_nbq            
-      common /nbq_param5/ csvisc2_nbq 
-      double precision cw_int_nbq       
+      double precision csvisc1_nbq
+      common /nbq_param4/ csvisc1_nbq
+      double precision csvisc2_nbq
+      common /nbq_param5/ csvisc2_nbq
+      double precision cw_int_nbq
       common /nbq_param6/ cw_int_nbq
       double precision ifl_imp_nbq
       common /nbq_param7/ ifl_imp_nbq
@@ -45,7 +45,7 @@
       integer ndtnbq
       common /time_nbq1/ ndtnbq
       real dtnbq
-      common /time_nbq2/ dtnbq 
+      common /time_nbq2/ dtnbq
       real csound_nbq
       common /nbq_csound/ csound_nbq
       real visc2_nbq
@@ -64,7 +64,7 @@
       common /nbq_qdmw_nbq/ qdmw_nbq
 # endif
 
-!**********************************************************************       
+!**********************************************************************
 # ifdef NBQ
       real thetadiv_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_thetadiv_nbq/ thetadiv_nbq
@@ -92,7 +92,7 @@
 
 # ifdef NBQ
       real rw_int_nbq(GLOBAL_2D_ARRAY,0:N)
-      common /nbq_rwint/ rw_int_nbq   
+      common /nbq_rwint/ rw_int_nbq
       real rw_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_rw/ rw_nbq
       real rw_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
@@ -112,9 +112,9 @@
       real DV_nbq(GLOBAL_2D_ARRAY)
       common /nbq_DV_nbq/ DV_nbq
 
-      real ru_int_nbq_2d (GLOBAL_2D_ARRAY)  
+      real ru_int_nbq_2d (GLOBAL_2D_ARRAY)
       common /nbq_ruint_2d/ru_int_nbq_2d
-      real rv_int_nbq_2d (GLOBAL_2D_ARRAY)  
+      real rv_int_nbq_2d (GLOBAL_2D_ARRAY)
       common /nbq_rvint_2d/rv_int_nbq_2d
 
 # ifdef NBQ
@@ -155,7 +155,7 @@
        real Hz_correct(GLOBAL_2D_ARRAY,N)
        common /grid_Hz_correct/ Hz_correct
 #  ifdef NBQ_HZCORR_DEBUG
-      real  Hz_corr(GLOBAL_2D_ARRAY,N) 
+      real  Hz_corr(GLOBAL_2D_ARRAY,N)
       common/corr_Hz/Hz_corr
 #  endif
 # endif
@@ -244,7 +244,7 @@
       common /bry_rnbq_north/ rho_nbq_north
 #   endif
 #  endif
-# endif     
+# endif
 
 !**********************************************************************
 # ifdef NBQ_NUDGING
@@ -254,13 +254,13 @@
 
 !**********************************************************************
 # ifdef ACOUSTIC
-      real  period_exp  
+      real  period_exp
       common/ACOUS1/period_exp
-      real  for_a_exp   
+      real  for_a_exp
       common/ACOUS2/for_a_exp
-      real  dg_exp     
-      common/ACOUS3/dg_exp 
-      real  hmax_exp    
+      real  dg_exp
+      common/ACOUS3/dg_exp
+      real  hmax_exp
       common/ACOUS4/hmax_exp
       real  amp_exp
       common/ACOUS4/amp_exp
@@ -268,4 +268,4 @@
 
 #endif /* M3FAST */
 
-  
+

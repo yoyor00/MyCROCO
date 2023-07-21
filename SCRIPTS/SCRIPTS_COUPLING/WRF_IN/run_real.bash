@@ -318,13 +318,26 @@ for yy in `seq $start_y $end_y`; do
 
     for mm in `seq $mstart $mend`; do      
         [[ $yy == $start_y && $mm == $start_m ]] && { sday=$start_d ; shour=$start_h;} || { sday=01 ; shour=00;}
-        [[ $yy == $end_y && $mm == $end_m ]] && { emth=$mm ; eday=$end_d ; ehour=$end_h ;} || { emth=$(( $mm + 1 )) ; eday=01 ; ehour=00;}
 
+	if [[ $yy == $end_y && $mm == $end_m ]] ; then 
+            eday=$end_d ; ehour=$end_h
+            yy2=$yy
+            emth=$mm
+        elif [[ $mm == 12 ]]; then
+            eday=01 ; ehour=00;
+            yy2=$(( $yy + 1 ))
+            emth=$(( $mm + 1 - 12 ))
+        else
+            eday=01 ; ehour=00;
+            yy2=$yy
+            emth=$(( $mm + 1 ))
+        fi
+	
         if [ $yy == $end_y ] && [ $mm == $end_m ] && [ $eday == $sday ] && [ $ehour == $shour ] ; then
                 exit
         fi
-         
-        sed -e "s/<yr1>/$yy/g"   -e "s/<yr2>/$yy/g"  \
+ 
+        sed -e "s/<yr1>/$yy/g"   -e "s/<yr2>/$yy2/g"  \
             -e "s/<mo1>/$mm/g"   -e "s/<mo2>/$emth/g"  \
             -e "s/<dy1>/$sday/g"   -e "s/<dy2>/$eday/g"  \
             -e "s/<hr1>/$shour/g"   -e "s/<hr2>/$ehour/g"  \

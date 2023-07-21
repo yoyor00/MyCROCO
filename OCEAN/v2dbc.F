@@ -48,18 +48,18 @@
 !
 ! Common Code
 !
-# include "set_obc_definitions.h"
+#include "set_obc_definitions.h"
 !
       implicit none
 #include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j
       real    grad(PRIVATE_2D_SCRATCH_ARRAY)
 #ifdef AGRIF
-#include "private_scratch.h"
+# include "private_scratch.h"
       integer trd
 C$    integer omp_get_thread_num
 #endif
-      real    eps,cff, cx,cy,
+      real    eps,cff, cx,cy,v_str,
      &        dft,dfx,dfy, tau,tau_in,tau_out,hx,zx
 #ifdef OBC_REDUCED_PHYSICS
      &        ,bry_val,bry_pgr,bry_str,bry_cor
@@ -85,10 +85,10 @@ C$    integer omp_get_thread_num
 !  AGRIF does not work yet with #undef SOLVE3D
 !
 #ifdef CHILD
-#  ifdef SOLVE3D
-#   ifdef NBQ
+# ifdef SOLVE3D
+#  ifdef NBQ
       if (M2bc_nbq_flag) then
-#   endif
+#  endif
       trd=0
 C$    trd=omp_get_thread_num()
       call v2dbc_interp_tile(Istr,Iend,Jstr,Jend
@@ -100,12 +100,12 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,2+NWEIGHT)
      &                    ,A1dXI(1,3+2*NWEIGHT)
      &                    ,A1dXI(1,4+2*NWEIGHT))
-#   ifdef NBQ
+#  ifdef NBQ
       endif
-#   endif
-#  else
-      Some coding is needed to have AGRIF without SOLVE3D.....
 #  endif
+# else
+      Some coding is needed to have AGRIF without SOLVE3D.....
+# endif
 #endif
 !
 #if defined M2_FRC_BRY || defined M2CLIMATOLOGY
@@ -221,7 +221,12 @@ C$    trd=omp_get_thread_num()
 #   ifdef OBC_REDUCED_PHYSICS
           cff1=1.0/(0.5*(h(i,Jstr-1)+zeta(i,Jstr-1,kstp)+
      &                   h(i,Jstr  )+zeta(i,Jstr  ,kstp)))
-          bry_str=cff1*(svstr(i,Jstr)-bvstr(i,Jstr))
+#    ifdef STRESS_AT_RHO_POINTS
+          v_str=0.5*(svstr(i,Jstr-1)+svstr(i,Jstr  ))
+#    else
+          v_str=svstr(i,Jstr)
+#    endif
+          bry_str=cff1*(v_str-bvstr(i,Jstr))
 #    ifdef UV_COR
           bry_cor=-0.125*(ubar(i  ,Jstr-1,kstp)+
      &                    ubar(i+1,Jstr-1,kstp)+
@@ -251,7 +256,7 @@ C$    trd=omp_get_thread_num()
 #    endif
 #   elif defined M2CLIMATOLOGY
      &                                     +vbclm(i,Jstr)
-#    endif
+#   endif
      &                                     -hx*( zx
 #   ifdef Z_FRC_BRY
      &                                        -zetabry_south(i)
@@ -385,7 +390,12 @@ C$    trd=omp_get_thread_num()
 #   ifdef OBC_REDUCED_PHYSICS
           cff1=1.0/(0.5*(h(i,Jend  )+zeta(i,Jend  ,kstp)+
      &                   h(i,Jend+1)+zeta(i,Jend+1,kstp)))
-          bry_str=cff1*(svstr(i,Jend+1)-bvstr(i,Jend+1))
+#    ifdef STRESS_AT_RHO_POINTS
+          v_str=0.5*(svstr(i,Jend)+svstr(i,Jend+1))
+#    else
+          v_str=svstr(i,Jend+1)
+#    endif
+          bry_str=cff1*(v_str-bvstr(i,Jend+1))
 #    ifdef UV_COR
           bry_cor=-0.125*(ubar(i  ,Jend,  kstp)+
      &                    ubar(i+1,Jend,  kstp)+
@@ -415,7 +425,7 @@ C$    trd=omp_get_thread_num()
 #    endif
 #   elif defined M2CLIMATOLOGY
      &                                       +vbclm(i,Jend+1)
-#    endif
+#   endif
      &                                       +hx*( zx
 #   ifdef Z_FRC_BRY
      &                                         -zetabry_north(i)
@@ -740,36 +750,36 @@ C$    trd=omp_get_thread_num()
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         vbar(Istr-1,Jstr,knew)=0.5*( vbar(Istr-1,Jstr+1,knew)
      &                              +vbar(Istr  ,Jstr  ,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                         *vmask(Istr-1,Jstr)
-#  endif
+# endif
       endif
 #endif
 #if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         vbar(Iend+1,Jstr,knew)=0.5*( vbar(Iend+1,Jstr+1,knew)
      &                              +vbar(Iend  ,Jstr  ,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                         *vmask(Iend+1,Jstr)
-#  endif
+# endif
       endif
 #endif
 #if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         vbar(Istr-1,Jend+1,knew)=0.5*( vbar(Istr-1,Jend,knew)
      &                                +vbar(Istr,Jend+1,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                         *vmask(Istr-1,Jend+1)
-#  endif
+# endif
       endif
 #endif
 #if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         vbar(Iend+1,Jend+1,knew)=0.5*( vbar(Iend+1,Jend,knew)
      &                                +vbar(Iend,Jend+1,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                         *vmask(Iend+1,Jend+1)
-#  endif
+# endif
       endif
 #endif
 
@@ -788,7 +798,7 @@ C$    trd=omp_get_thread_num()
       if (WESTERN_EDGE) then
         DO j=JstrV,Jend
           cff1=ABS(ABS(vmask_wet(Istr-1,j))-1.)
-          cff2=0.5+SIGN(0.5,vbar(Istr-1,j,kstp))*vmask_wet(Istr-1,j)
+          cff2=0.5+SIGN(0.5,vbar(Istr-1,j,knew))*vmask_wet(Istr-1,j)
           vmask_wet(Istr-1,j)=0.5*vmask_wet(Istr-1,j)*cff1
      &                                               +cff2*(1.-cff1)
           vbar(Istr-1,j,knew)=vbar(Istr-1,j,knew)*vmask_wet(Istr-1,j)
@@ -797,7 +807,7 @@ C$    trd=omp_get_thread_num()
       if (EASTERN_EDGE) then
         DO j=JstrV,Jend
           cff1=ABS(ABS(vmask_wet(Iend+1,j))-1.)
-          cff2=0.5+SIGN(0.5,vbar(Iend+1,j,kstp))*vmask_wet(Iend+1,j)
+          cff2=0.5+SIGN(0.5,vbar(Iend+1,j,knew))*vmask_wet(Iend+1,j)
           vmask_wet(Iend+1,j)=0.5*vmask_wet(Iend+1,j)*cff1
      &                                               +cff2*(1.-cff1)
           vbar(Iend+1,j,knew)=vbar(Iend+1,j,knew)*vmask_wet(Iend+1,j)
@@ -808,7 +818,7 @@ C$    trd=omp_get_thread_num()
       if (SOUTHERN_EDGE) then
         DO i=Istr,Iend
           cff1=ABS(ABS(vmask_wet(i,Jstr))-1.)
-          cff2=0.5+SIGN(0.5,vbar(i,Jstr,kstp))*vmask_wet(i,Jstr)
+          cff2=0.5+SIGN(0.5,vbar(i,Jstr,knew))*vmask_wet(i,Jstr)
           vmask_wet(i,Jstr)=0.5*vmask_wet(i,Jstr)*cff1
      &                                           +cff2*(1.-cff1)
           vbar(i,Jstr,knew)=vbar(i,Jstr,knew)*vmask_wet(i,Jstr)
@@ -817,7 +827,7 @@ C$    trd=omp_get_thread_num()
       if (NORTHERN_EDGE) then
         DO i=Istr,Iend
           cff1=ABS(ABS(vmask_wet(i,Jend+1))-1.)
-          cff2=0.5+SIGN(0.5,vbar(i,Jend+1,kstp))*vmask_wet(i,Jend+1)
+          cff2=0.5+SIGN(0.5,vbar(i,Jend+1,knew))*vmask_wet(i,Jend+1)
           vmask_wet(i,Jend+1)=0.5*vmask_wet(i,Jend+1)*cff1
      &                                               +cff2*(1.-cff1)
           vbar(i,Jend+1,knew)=vbar(i,Jend+1,knew)*vmask_wet(i,Jend+1)
@@ -827,7 +837,7 @@ C$    trd=omp_get_thread_num()
 # if !defined EW_COM_PERIODIC && !defined NS_COM_PERIODIC
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
         cff1=ABS(ABS(vmask_wet(Istr-1,Jstr))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jstr,kstp))*vmask_wet(Istr-1,Jstr)
+        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jstr,knew))*vmask_wet(Istr-1,Jstr)
         vmask_wet(Istr-1,Jstr)=0.5*vmask_wet(Istr-1,Jstr)*cff1
      &                                                   +cff2*(1.-cff1)
         vbar(Istr-1,Jstr,knew)=vbar(Istr-1,Jstr,knew)
@@ -835,7 +845,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (SOUTHERN_EDGE .and. EASTERN_EDGE) then
         cff1=ABS(ABS(vmask_wet(Iend+1,Jstr))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jstr,kstp))*vmask_wet(Iend+1,Jstr)
+        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jstr,knew))*vmask_wet(Iend+1,Jstr)
         vmask_wet(Iend+1,Jstr)=0.5*vmask_wet(Iend+1,Jstr)*cff1
      &                                                   +cff2*(1.-cff1)
         vbar(Iend+1,Jstr,knew)=vbar(Iend+1,Jstr,knew)
@@ -843,7 +853,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (NORTHERN_EDGE .and. WESTERN_EDGE) then
         cff1=ABS(ABS(vmask_wet(Istr-1,Jend+1))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jend+1,kstp))
+        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jend+1,knew))
      &                                       *vmask_wet(Istr-1,Jend+1)
         vmask_wet(Istr-1,Jend+1)=0.5*vmask_wet(Istr-1,Jend+1)*cff1
      &                                              +cff2*(1.-cff1)
@@ -852,7 +862,7 @@ C$    trd=omp_get_thread_num()
       END IF
       if (NORTHERN_EDGE .and. EASTERN_EDGE) then
         cff1=ABS(ABS(vmask_wet(Iend+1,Jend+1))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jend+1,kstp))
+        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jend+1,knew))
      &                                       *vmask_wet(Iend+1,Jend+1)
         vmask_wet(Iend+1,Jend+1)=0.5*vmask_wet(Iend+1,Jend+1)*cff1
      &                                              +cff2*(1.-cff1)

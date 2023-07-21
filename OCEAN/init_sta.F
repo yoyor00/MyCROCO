@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -124,7 +124,7 @@
 !---------------------------------------------------------------------
 !
 !  Set time of station recording (seconds after model initialization) and
-!  horizontal positions (grid units). Fill the initial vertical level or 
+!  horizontal positions (grid units). Fill the initial vertical level or
 !  depth position.
 !
       mc=0
@@ -133,7 +133,7 @@
           nc=nc+1
           stainfo(istatstr,nc)=(tdays+stat0(i))*day2sec
           stainfo(istazgrd,nc)=staz0(i)
-          stainfo(istagrd,i)=FLOAT(STgrd(i)) ! each station belongs 
+          stainfo(istagrd,i)=FLOAT(STgrd(i)) ! each station belongs
           if (stacoor(i).eq.0) then          ! to this grid initially
 # ifdef MPI
             stax0(i)=stax0(i)-iminmpi+1
@@ -151,9 +151,9 @@
           else
 # ifdef SPHERICAL
             mc=mc+1
-            if (stax0(i).ge.lonu(1,1) .and. 
+            if (stax0(i).ge.lonu(1,1) .and.
      &          stax0(i).lt.lonu(LOCALLM+1,1) .and.
-     &          stay0(i).ge.latv(1,1) .and. 
+     &          stay0(i).ge.latv(1,1) .and.
      &          stay0(i).lt.latv(1,LOCALMM+1)) then
               lon(mc)=stax0(i)
               lat(mc)=stay0(i)
@@ -232,7 +232,7 @@
       logical found
       logical Try_Range
       integer Imax, Imin, Jmax, Jmin, Npos, i0, j0, k
-      real Ipos(Npos), Jpos(Npos), Xpos(Npos), Ypos(Npos), 
+      real Ipos(Npos), Jpos(Npos), Xpos(Npos), Ypos(Npos),
      &  deltax, deltay, dx1, dy1, dx2, dy2, c1, c2
       real Xgrd(GLOBAL_2D_ARRAY),
      &     Ygrd(GLOBAL_2D_ARRAY)
@@ -287,10 +287,10 @@
             endif
           enddo
 
-! Improved interpolation block (02/06/03). Not totally 
-! accurate in case where the grid is strongly deformed. 
-! The nonalignment of xsi (eta) axis with longitude 
-! (latitude) direction is taken into account. 
+! Improved interpolation block (02/06/03). Not totally
+! accurate in case where the grid is strongly deformed.
+! The nonalignment of xsi (eta) axis with longitude
+! (latitude) direction is taken into account.
 
           dy1=Ygrd(Imin,Jmin+1)-Ygrd(Imin,Jmin)
           dx1=Xgrd(Imin,Jmin+1)-Xgrd(Imin,Jmin)
@@ -305,7 +305,7 @@
 
           c1=Xgrd(Imin,Jmin)*dy1-Ygrd(Imin,Jmin)*dx1
           c2=Xpos(k)        *dy2-Ypos(k)        *dx2
-          deltay=(c1*dy2-c2*dy1)/(dx2*dy1-dy2*dx1) 
+          deltay=(c1*dy2-c2*dy1)/(dx2*dy1-dy2*dx1)
           deltay=(deltay-Ygrd(Imin,Jmin))/dy1
           Jpos(k)=FLOAT(Jmin)+MIN(MAX(0.0,deltay),1.0)
 
@@ -331,7 +331,7 @@
 !=====================================================================
 !
       implicit none
-#include "param.h"
+# include "param.h"
 !
       logical Try_Range, inside
       integer Imax, Imin, Jmax, Jmin, Nb, NX, i, j, shft

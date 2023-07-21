@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -31,7 +31,7 @@ C$    integer omp_get_thread_num
 !      r_x = ---------------------------------------------
 !             z(i,j,k)+z(i-1,j,k)-z(i,j,k-1)-z(i-1,j,k-1)
 !
-! This is done for purely diagnostic purposes does not affect 
+! This is done for purely diagnostic purposes does not affect
 ! computations.
 !
 !     implicit none
@@ -108,9 +108,9 @@ C$OMP CRITICAL (grd_stff_cr_rgn)
           rx0=max(rx0, my_rx0)
           rx1=max(rx1, my_rx1)
         endif
-        tile_count=tile_count+1 
+        tile_count=tile_count+1
         if (tile_count.eq.NSUB) then
-          tile_count=0 
+          tile_count=0
 # ifdef MPI
           size=NNODES
   1        step=(size+1)/2

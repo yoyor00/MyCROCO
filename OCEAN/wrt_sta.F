@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -22,7 +22,7 @@
 !=====================================================================
 !
 # ifdef AGRIF
-      USE Agrif_Util 
+      USE Agrif_Util
 # endif
       implicit none
 # include "param.h"
@@ -60,8 +60,8 @@
       stamax=nstas
 # if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) then
-        call MPI_Recv (nstas_inc, 1, MPI_INTEGER, mynode-1, 
-     &                 1, MPI_COMM_WORLD, status, ierr) 
+        call MPI_Recv (nstas_inc, 1, MPI_INTEGER, mynode-1,
+     &                 1, MPI_COMM_WORLD, status, ierr)
         stamin=stamin+nstas_inc
         stamax=stamin+nstas-1
       endif
@@ -73,17 +73,17 @@
 !
       newf=.false.
       call def_sta (ncidsta, nrecsta, ierr, newf)
-      if (ierr .ne. nf_noerr) goto 101 
+      if (ierr .ne. nf_noerr) goto 101
 
       endif
 
       if (nstas.gt.0) then
 
-!                                       !!! WARNING: Once time  
+!                                       !!! WARNING: Once time
 ! Set record within the file.           !!! stepping has been
 !                                       !!! started, it is assumed
       if (iic.eq.0) nrecsta=nrecsta+1   !!! that the global station
-      if (nrpfsta.eq.0) then            !!!  history record index 
+      if (nrpfsta.eq.0) then            !!!  history record index
         record=nrecsta                  !!! "nrecsta" is advanced
       else                              !!! by main.
         record=1+mod(nrecsta-1, nrpfsta)
@@ -136,7 +136,7 @@ c     write(*,*) 'record = ', record
       countN(3)=1
 # endif
 !
-! Store information about station horizontal and vertical 
+! Store information about station horizontal and vertical
 ! location if required
 !
       if (wrtsta(indxstaGrd)) then
@@ -460,7 +460,7 @@ c      endif ! iic=0
      &        ''' into station file.'  /11x, 'Time record:', I6,
      &        3x,'netCDF error code',i4 /11x,'Cause of error: ',
      &                                            A, 3x, A, i4)
-      goto 100 
+      goto 100
   99  may_day_flag=3
  100  continue
 
@@ -481,12 +481,12 @@ c      endif ! iic=0
       endif
 # endif
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 
+       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &       'WRT_STA -- wrote ',
      &       'station fields into time record =', record, '/',
      &        nrecsta  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)') 
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &        'WRT_STA ERROR: Cannot ',
      &        'synchronize/close station netCDF file.'
          may_day_flag=3
@@ -507,7 +507,7 @@ c      endif ! iic=0
 
 # ifdef MPI
       if (mynode.eq.0 .and. nstas.eq.0 .and. nstas0.gt.0) then
-        MPI_master_only write(stdout,'(6x,A)') 
+        MPI_master_only write(stdout,'(6x,A)')
      &                      'WRT_STA -- wrote station fields'
       endif
 # endif

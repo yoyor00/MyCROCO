@@ -1,10 +1,10 @@
 !
 !======================================================================
 ! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
@@ -12,7 +12,7 @@
 #if defined DIAGNOSTICS_PV
 !
 !---------------------------------------------------------------
-! Write diagnostics fields at requested levels into diagnostics 
+! Write diagnostics fields at requested levels into diagnostics
 ! netCDF file.
 
 !---------------------------------------------------------------
@@ -22,43 +22,43 @@
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
-#endif
-#include "param.h"
-#include "scalars.h"
-#include "ncscrum.h"
-#include "forces.h"
-#include "grid.h"
-#include "ocean2d.h"
-#include "ocean3d.h"
-#include "mixing.h"
-#include "diags_pv.h"
-#include "diagnostics.h"
-#include "mpi_cpl.h"
-#ifdef SEDIMENT
-# include "sediment.h"
-#endif
-#ifdef BBL
-# include "bbl.h"
-#endif
-#ifdef SOLVE3D
-      integer tile,itrc,i,j,k,ivar
-# ifdef SEDIMENT
-     &      , indxWrk
 # endif
-# include "work.h"
-#endif
-#include "netcdf.inc"
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+# include "param.h"
+# include "scalars.h"
+# include "ncscrum.h"
+# include "forces.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
+# include "mixing.h"
+# include "diags_pv.h"
+# include "diagnostics.h"
+# include "mpi_cpl.h"
+# ifdef SEDIMENT
+#  include "sediment.h"
+# endif
+# ifdef BBL
+#  include "bbl.h"
+# endif
+# ifdef SOLVE3D
+      integer tile,itrc,i,j,k,ivar
+#  ifdef SEDIMENT
+     &      , indxWrk
+#  endif
+#  include "work.h"
+# endif
+# include "netcdf.inc"
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
-        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
-     &                 1, MPI_COMM_WORLD, status, ierr) 
+        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
+     &                 1, MPI_COMM_WORLD, status, ierr)
       endif
-#endif
+# endif
 !
-#undef DEBUG
+# undef DEBUG
 !
 !
 ! Create/open diagnostic file; write grid arrays, if so needed.
@@ -67,8 +67,8 @@
       if (ierr .ne. nf_noerr) goto 99
       lstr=lenstr(diags_pvname)
 !                                          !!! WARNING: Once time
-! Set record within the file.              !!! stepping has been 
-!     
+! Set record within the file.              !!! stepping has been
+!
                                            !!! started, it is assumed
       if (iic.eq.0) nrecdiags_pv=nrecdiags_pv+1  !!! that global history
       if (nrpfdiags_pv.eq.0) then            !!! record index "nrecdiags_pv"
@@ -161,7 +161,7 @@
            workr=Mrhs(:,:,:,itrc)
            call fillvalue3d(workr,nciddiags_pv,diags_pvMrhs(itrc),
      &                      indxpvMrhs+itrc-1,
-     &                      record,ivar,type)  
+     &                      record,ivar,type)
 
         enddo
 !---------------------------------------------------------------
@@ -192,7 +192,7 @@
   1   format(/1x,'WRT_DIAGS_PV ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',
      &                   I6,3x,'netCDF error code',i4,3x,a,i4)
-      goto 100 
+      goto 100
   99  may_day_flag=3
  100  continue
 
@@ -202,17 +202,17 @@
 ! to access data immediately after it is written.
 !---------------------------------------------------------------
 !
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (nciddiags_pv)
       if (nrpfdiags_pv.gt.0 .and. record.ge.nrpfdiags_pv) nciddiags_pv=-1
-#else
+# else
       if (nrpfdiags_pv.gt.0 .and. record.ge.nrpfdiags_pv) then
         ierr=nf_close (nciddiags_pv)
         nciddiags_pv=-1
       else
         ierr=nf_sync(nciddiags_pv)
       endif
-#endif
+# endif
 
 
       if (ierr .eq. nf_noerr) then
@@ -221,18 +221,18 @@
      &            ' diag fields into time record =', record, '/',
      &             nrecdiags_pv  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)') 
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &             'WRT_DIAGS_PV ERROR: Cannot ',
      &             'synchronize/close diag netCDF file.'
         may_day_flag=3
       endif
 
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &                        1, MPI_COMM_WORLD,  ierr)
       endif
-#endif
+# endif
       return
       end
 
