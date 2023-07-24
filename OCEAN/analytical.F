@@ -2182,6 +2182,11 @@ C$    integer  trd, omp_get_thread_num
             Tsrc(is,k,ised)=Tsrc0(is,ised)
           enddo
 #   endif
+#   ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+          enddo
+#   endif
         enddo
       enddo
 #  elif defined REGIONAL

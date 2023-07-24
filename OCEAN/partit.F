@@ -2,21 +2,19 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-#include "cppdefs.h"
-#ifdef PARALLEL_FILES
-      program partit 
+      program partit
 !
 ! Generic netCDF partitioning tool: reads netCDF files corresonding
 ! to the whole physical grid and prepares multiple files which hold
 ! data corresponding to different subdomains. These files can be
-! then read in parallel by different MPI processes. 
+! then read in parallel by different MPI processes.
 !
 ! Usage:  partit NP_XI NP_ETA ncname1 ... ncnameN
 ! ------  where NP_XI  number of subdomains along XI-direction
@@ -35,8 +33,8 @@
 ! by name, then then their values are read and compared in pairs to
 ! detect if any of the directions have periodicity. It is assumed
 ! that ghost points corresponding to physical boundaries are stored
-! in the file, but computational margins (including periodic margins) 
-! are not. Consequently, if xi_rho and xi_u are equal to each other, 
+! in the file, but computational margins (including periodic margins)
+! are not. Consequently, if xi_rho and xi_u are equal to each other,
 ! XI-direction is periodic, and if they differ by one, it is not.
 ! ETA-direction is treated similarly. Once periodicity type is
 ! determined, the internal number of internal points in each
@@ -55,7 +53,7 @@
       integer stdout, max_buff_size, maxdims, maxvars, maxnodes
       parameter (stdout=6,           max_buff_size=3000*2000*100,
      &           maxdims=40,         maxvars=128,     maxnodes=4000)
-      character*120 ncname0, ncname(0:maxnodes-1), string 
+      character*120 ncname0, ncname(0:maxnodes-1), string
       character*32 dimname(maxdims), varname(maxvars)
       logical XiPeriodic, EtaPeriodic, part_switch(maxvars),
      &                                           series(maxvars)
@@ -65,7 +63,7 @@
      &        iargc, subXI,     ii,  eta_rho, id_eta_rho, id_eta_psi,
      &        ierr, subETA,     jj,  eta_v,   id_eta_v,   id_eta_u,
      &        ndims, nvars, ngatts,  tsize,   unlimdimid, varatts,
-     &        i,j,k,  lstr,   lvar,  lenstr,  rec,  size, ncid0, 
+     &        i,j,k,  lstr,   lvar,  lenstr,  rec,  size, ncid0,
      &  ncid(0:maxnodes-1), dimid(maxdims),   dimsize(maxdims),
      &      varid(maxvars), vartype(maxvars), vardims(maxvars),
      &      start(maxdims), count(maxdims),   start1(maxdims),
@@ -74,11 +72,11 @@
      &    vartype, vardims, start, count, start1, dimids,  ibuff
       integer LLm, MMm
       integer chunk_size_X, margin_X
-      integer chunk_size_E, margin_E      
+      integer chunk_size_E, margin_E
       integer istrmpi, jstrmpi
       integer iendmpi, jendmpi
       integer Lmmpi, Mmmpi
-      
+
 #include "netcdf.inc"
 !
 ! Check how many arguments are given, complain about the error,
@@ -177,7 +175,7 @@
 ! Sort out dimensions: For each dimension find and save its name and
 ! size. Then check whether all partitionable dimensions (identified
 ! by names 'xi_rho', 'xi_u', 'eta_rho' and 'eta_v')  are present and
-! save their IDs and sizes. 
+! save their IDs and sizes.
 !
         tsize=1      ! <-- default value.
         do i=1,ndims
@@ -185,7 +183,7 @@
           if (ierr .ne. nf_noerr) then
              write(stdout,'(/8x,A,I3/15x,3A/)')
      &           'ERROR: Cannot determine name for dimension ID =',
-     &            i,  'in netCDF file ''',  ncname0(1:lstr),  '''.' 
+     &            i,  'in netCDF file ''',  ncname0(1:lstr),  '''.'
              goto 97     !--> next file
           endif
           ierr=nf_inq_dimlen  (ncid0, i, dimsize(i))
@@ -211,7 +209,7 @@
         id_xi_rho=0                     ! xi_psi  --> xi_u
         id_xi_u=0                       ! xi_v    --> xi_rho
         id_eta_rho=0                    ! eta_psi --> eta_v
-        id_eta_v=0                      ! eta_u   --> eta_rho 
+        id_eta_v=0                      ! eta_u   --> eta_rho
         id_xi_psi=0
         id_xi_v=0
         id_eta_psi=0
@@ -246,14 +244,14 @@ c**       write(*,'(I3,1x,A,T16,I3)') i,dimname(i)(1:lvar),dimsize(i)
           write(stdout,'(/8x,2A/15x,3A/)') 'ERROR: not all ',
      &            'partitionable dimensions are found',
      &            'in netCDF file ''', ncname0(1:lstr), '''.'
-          goto 97     !--> next file 
+          goto 97     !--> next file
         endif
 !
 ! Determine subdomain dimensions. Here "subXI" and "subETA" are
 ! the nimbers of internal grid points within each subdomains (that
-! is, excluding physical boundary points and computational margins). 
+! is, excluding physical boundary points and computational margins).
 ! The number of internal points in either direction for the the
-! whole computational domain must be divisible by NP_XI and NP_ETA  
+! whole computational domain must be divisible by NP_XI and NP_ETA
 ! respectively. If it cannot be divided, complain about the error
 ! and exit.
 !
@@ -270,12 +268,12 @@ c**       write(*,'(I3,1x,A,T16,I3)') i,dimname(i)(1:lvar),dimsize(i)
 
             goto 97
           endif
-        elseif (xi_rho .eq. xi_u+1) then 
+        elseif (xi_rho .eq. xi_u+1) then
           XiPeriodic=.false.
           subXI=(xi_rho-2)/NP_XI
           chunk_size_X=(LLm+NP_XI-1)/NP_XI
           margin_X=(NP_XI*chunk_size_X-LLm)/2
-          
+
 C          if (subXI*NP_XI .ne. xi_rho-2) then
 C            write(stdout,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
 C     &         'ERROR: Cannot partition XI-direction:', 'xi_rho-2 =',
@@ -285,14 +283,14 @@ C            goto 97
 C          endif
         else
           write(stdout,'(/8x,2A/)') 'ERROR: inconsistent ',
-     &                'dimensions ''xi_rho'' and ''xi_u''.' 
+     &                'dimensions ''xi_rho'' and ''xi_u''.'
           goto 97     !--> next file
         endif
 
         if (eta_rho .eq. eta_v) then
           EtaPeriodic=.true.
           subETA=eta_rho/NP_ETA
-      
+
           if (subETA*NP_ETA .ne. eta_rho) then
             write(stdout,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
      &         'ERROR: Cannot partition ETA-direction:', 'eta_rho =',
@@ -304,9 +302,9 @@ C          endif
         elseif (eta_rho .eq. eta_v+1) then
           EtaPeriodic=.false.
           subETA=(eta_rho-2)/NP_ETA
-          
+
           chunk_size_E=(MMm+NP_ETA-1)/NP_ETA
-          margin_E=(NP_ETA*chunk_size_E-MMm)/2          
+          margin_E=(NP_ETA*chunk_size_E-MMm)/2
 
 C          if (subETA*NP_ETA .ne. eta_rho-2) then
 C            write(stdout,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
@@ -335,7 +333,7 @@ C          endif
      &                   nf_64bit_offset,ncid(node))
           if (ierr .eq. nf_noerr) then
             write(stdout,'(12x,3A)') 'Created partitioned file ''',
-     &                                  ncname(node)(1:lstr), '''.' 
+     &                                  ncname(node)(1:lstr), '''.'
           else
             write(stdout,'(/8x,A,1x,3A/)') 'ERROR: cannot create',
      &              'netCDF file ''', ncname(node)(1:lstr), '''.'
@@ -346,7 +344,7 @@ C          endif
 !
           jj=node/NP_XI
           ii=node-jj*NP_XI
-          
+
       istrmpi=1+ii*chunk_size_X-margin_X
       iendmpi=istrmpi+chunk_size_X-1
       istrmpi=max(istrmpi,1)
@@ -355,11 +353,11 @@ C          endif
       jstrmpi=1+jj*chunk_size_E-margin_E
       jendmpi=jstrmpi+chunk_size_E-1
       jstrmpi=max(jstrmpi,1)
-      jendmpi=min(jendmpi,MMm)     
- 
+      jendmpi=min(jendmpi,MMm)
+
       Lmmpi=iendmpi-istrmpi+1
       Mmmpi=jendmpi-jstrmpi+1
-      
+
           do i=1,ndims
             size=dimsize(i)
             if (i .eq. id_xi_rho) then
@@ -371,21 +369,21 @@ C          endif
             elseif (i .eq. id_xi_u) then
               size=Lmmpi
               if (.not.XiPeriodic) then
-                if (ii.eq.NP_XI-1) size=size+1 
+                if (ii.eq.NP_XI-1) size=size+1
               endif
             elseif (i .eq. id_eta_rho) then
               size=Mmmpi
               if (.not.EtaPeriodic) then
-                if (jj.eq.0       ) size=size+1 
-                if (jj.eq.NP_ETA-1) size=size+1 
+                if (jj.eq.0       ) size=size+1
+                if (jj.eq.NP_ETA-1) size=size+1
               endif
             elseif (i .eq. id_eta_v) then
               size=Mmmpi
               if (.not.EtaPeriodic) then
-                if (jj.eq.NP_ETA-1) size=size+1 
+                if (jj.eq.NP_ETA-1) size=size+1
               endif
             endif
-            if (i.ne.id_xi_psi   .and.  i.ne.id_xi_v  .and. 
+            if (i.ne.id_xi_psi   .and.  i.ne.id_xi_v  .and.
      &          i.ne.id_eta_psi  .and.  i.ne.id_eta_u)  then
               lvar=lenstr(dimname(i))
               ierr=nf_def_dim (ncid(node), dimname(i)(1:lvar),
@@ -424,8 +422,8 @@ c**  &                            jj, size, dimname(i)(1:lvar)
 !
 ! Copy global attributes
 !
-        do i=1,ngatts 
-          ierr=nf_inq_attname (ncid0, nf_global, i, string) 
+        do i=1,ngatts
+          ierr=nf_inq_attname (ncid0, nf_global, i, string)
           if (ierr. eq. nf_noerr) then
             lvar=lenstr(string)
             do node=0,NNODES-1
@@ -469,7 +467,7 @@ c**  &                            jj, size, dimname(i)(1:lvar)
           enddo
 !
 ! Determine whether partitionable dimensions or unlimited dimension
-! are present for this variable. 
+! are present for this variable.
 !
           series(i)=.false.
           part_switch(i)=.false.
@@ -478,18 +476,18 @@ c**  &                            jj, size, dimname(i)(1:lvar)
      &          dimids(j,i).eq.id_xi_u    .or.
      &          dimids(j,i).eq.id_eta_rho .or.
      &          dimids(j,i).eq.id_eta_v) then
-              part_switch(i)=.true. 
+              part_switch(i)=.true.
             elseif (dimids(j,i).eq.unlimdimid) then
-              series(i)=.true. 
+              series(i)=.true.
             endif
           enddo
 !
 ! WARNING: Since dimids(1:vardims(i),i) contains dimension IDs
 ! corresponding to the set of IDs of the ORIGINAL file, and since
 ! some of the original dimensions were eliminated (merged), the
-! set of dimension IDs in the NEW definitions is obtained by 
+! set of dimension IDs in the NEW definitions is obtained by
 ! inverse mapping of dimids(j,i) onto ibuff(j) using dimid(k) as
-! a mapping array.  
+! a mapping array.
 !
           do j=1,vardims(i)
             do k=1,ndims
@@ -524,7 +522,7 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
           ierr=nf_enddef(ncid(node))
         enddo
 !
-! Transfer variables into newly created files. 
+! Transfer variables into newly created files.
 !
         do rec=1,tsize
           if (tsize.gt.1) write(stdout,'(16x,A,I4,A)')
@@ -566,7 +564,7 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                       write(stdout,'(/8x,3A/15x,3A,I4,A/)')
      &                    'ERROR: Cannot write scalar variable ''',
      &                     varname(i)(1:lvar), ''' into netCDF file',
-     &                    '''',  ncname(node)(1:lstr), 
+     &                    '''',  ncname(node)(1:lstr),
      &                    '''.     netCDF error code =',  ierr,   '.'
                       goto 97
                     endif
@@ -582,14 +580,14 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
 ! Non-partitionable array.
 !
                 size=1
-                do j=1,vardims(i) 
+                do j=1,vardims(i)
                   if (dimids(j,i).eq.unlimdimid) then
                     start(j)=rec
                     count(j)=1
                   else
                     start(j)=1
                     count(j)=dimsize(dimids(j,i))
-                  endif 
+                  endif
                   size=size*count(j)
                 enddo
                 if (vartype(i) .eq. nf_char) then
@@ -665,12 +663,12 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                 endif
               elseif (part_switch(i)) then
 !
-! Partitioned array: 
+! Partitioned array:
 !
                 do node=0,NNODES-1
                   jj=node/NP_XI
                   ii=node-jj*NP_XI
-                  
+
       istrmpi=1+ii*chunk_size_X-margin_X
       iendmpi=istrmpi+chunk_size_X-1
       istrmpi=max(istrmpi,1)
@@ -679,11 +677,11 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
       jstrmpi=1+jj*chunk_size_E-margin_E
       jendmpi=jstrmpi+chunk_size_E-1
       jstrmpi=max(jstrmpi,1)
-      jendmpi=min(jendmpi,MMm)     
- 
+      jendmpi=min(jendmpi,MMm)
+
       Lmmpi=iendmpi-istrmpi+1
       Mmmpi=jendmpi-jstrmpi+1
-      
+
                   size=1
                   do j=1,vardims(i)
                     if (dimids(j,i).eq.id_xi_rho) then
@@ -825,10 +823,4 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
       enddo
       stop
       end
-
-#else
-      program partit_empty
-      return
-      end
-#endif /* PARALLEL_FILES */
 
