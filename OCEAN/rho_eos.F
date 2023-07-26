@@ -113,7 +113,7 @@
 !======================================================================
 !
 #  ifdef MUSTANG
-      USE comsubstance, ONLY : ros, nvpc
+      USE comsubstance, ONLY : ros, nvpc, l_subs2D
 #  endif
       implicit none
 
@@ -466,9 +466,15 @@
 
 #  elif defined MUSTANG /* MUSTANG */
             do iv=1,nvpc
-              itrc=iv+itsubs1-1
-              cff=cff+t(i,j,k,nrhs,itrc)*
+#    if defined key_sand2D
+              if (.not.l_subs2D(iv)) then
+#    endif
+                itrc=iv+itsubs1-1
+                cff=cff+t(i,j,k,nrhs,itrc)*
      &                (ros(iv)-rho(i,j,k)-rho0)/ros(iv)
+#    if defined key_sand2D
+              endif
+#    endif
             enddo
 
 #  endif /* SEDMENT or MUSTANG */
