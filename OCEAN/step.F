@@ -119,6 +119,9 @@ C$OMP END PARALLEL
 #ifdef ONLINE_ANALYSIS
       use module_interface_oa, only : if_oa
 #endif
+#ifdef OBSTRUCTION
+          USE plug_OBSTRUCTIONS, ONLY : OBSTRUCTIONS_update_main
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -308,6 +311,14 @@ C$OMP BARRIER
 # else
         call diag(tile)
 # endif
+
+
+
+#ifdef OBSTRUCTION
+        call OBSTRUCTIONS_update_main (tile)
+#endif
+
+
       enddo
 C$OMP BARRIER
       do tile=my_first,my_last
@@ -936,7 +947,10 @@ C$OMP BARRIER
         call rhs3d_w_nh (tile)
 #  endif
 # endif
+
         call step3d_uv1 (tile)
+
+
 # ifdef NBQ
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call step3d_w (tile)

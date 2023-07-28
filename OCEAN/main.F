@@ -38,6 +38,10 @@
 #ifdef MUSTANG
           USE plug_MUSTANG_CROCO, ONLY : mustang_init_main
 #endif
+#ifdef OBSTRUCTION
+          USE plug_OBSTRUCTIONS, ONLY : OBSTRUCTIONS_init_main
+          USE plug_OBSTRUCTIONS, ONLY : OBSTRUCTIONS_update_main
+#endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
      &                                   ,if_oa
@@ -440,6 +444,18 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
 #endif
+!
+!----------------------------------------------------------------------
+! OBSTRUCTION : initialization
+!----------------------------------------------------------------------
+!
+#ifdef OBSTRUCTION
+      do tile=0,NSUB_X*NSUB_E-1
+        call OBSTRUCTIONS_init_main (tile)
+        call OBSTRUCTIONS_update_main (tile)
+      enddo
+#endif
+
 !
 !----------------------------------------------------------------------
 !  Finalize grid setup
