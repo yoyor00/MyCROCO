@@ -312,12 +312,9 @@ C$OMP BARRIER
         call diag(tile)
 # endif
 
-
-
 #ifdef OBSTRUCTION
         call OBSTRUCTIONS_update_main (tile)
 #endif
-
 
       enddo
 C$OMP BARRIER
@@ -947,10 +944,7 @@ C$OMP BARRIER
         call rhs3d_w_nh (tile)
 #  endif
 # endif
-
         call step3d_uv1 (tile)
-
-
 # ifdef NBQ
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call step3d_w (tile)
