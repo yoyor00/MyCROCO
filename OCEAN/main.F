@@ -451,7 +451,7 @@ CR      write(*,*)  ' -5' MYID0
 !
 #ifdef OBSTRUCTION
       do tile=0,NSUB_X*NSUB_E-1
-        call OBSTRUCTIONS_init_main (tile)
+        call OBSTRUCTIONS_init_main ()
         call OBSTRUCTIONS_update_main (tile)
       enddo
 #endif

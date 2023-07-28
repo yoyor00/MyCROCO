@@ -1416,7 +1416,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
             if (l_obstout_dens_e) then
                 indx=indxObst+4*obst_nbvar+itrc-1
                 do k=1,N
-                    workr(:,:,k)=obst_dens3d(itrc,k,:,:)
+                    workr(:,:,k)=obst_dens3d(k,itrc,:,:)
                 enddo
                 call fillvalue3d(workr,ncidhis,
      &                     hisObst(4*obst_nbvar+itrc),
@@ -1434,7 +1434,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
             if (l_obstout_width_e) then
                 indx=indxObst+6*obst_nbvar+itrc-1
                 do k=1,N
-                    workr(:,:,k)=obst_width3d(itrc,k,:,:)
+                    workr(:,:,k)=obst_width3d(k,itrc,:,:)
                 enddo
                 call fillvalue3d(workr,ncidhis,
      &                     hisObst(6*obst_nbvar+itrc),

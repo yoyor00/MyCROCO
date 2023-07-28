@@ -522,7 +522,7 @@
                   FC(i,k)= cff* OneOverSig(ig)*
      &                   ( Akv_old(i,j,k)+Akv_old(i,j,k-1) ) / Hz(i,j,k) 
 # if defined OBSTRUCTION_TURB
-     &                   * (1. - (obst_a3d(obst_nbvar+2,k,i,j))) 
+     &                   * (1. - (obst_a3d(obst_nbvar+2,i,j,k))) 
                                  ! centered vertically on the cell
 # endif
                ENDDO
@@ -550,9 +550,9 @@
                   Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k) 
 # if defined OBSTRUCTION_TURB
                   if (ig == itke) then
-                    Sprod = Sprod + obst_t(k,i,j)
+                    Sprod = Sprod + obst_t(i,j,k)
                   else
-                    Sprod = Sprod + obst_t(k,i,j)*MAX(obst_tau(k,i,j),
+                    Sprod = Sprod + obst_t(i,j,k)*MAX(obst_tau(i,j,k),
      &                  obst_c2turb * gls * invk)
                   endif
 # endif
@@ -565,8 +565,8 @@
                   ! Patankar trick to ensure non-negative solutions
                   cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1)) 
 # if defined OBSTRUCTION_TURB
-     &                         * (1. - (obst_a3d(obst_nbvar+2,k,i,j) 
-     &                                + obst_a3d(obst_nbvar+2,k+1,i,j))*0.5) 
+     &                         * (1. - (obst_a3d(obst_nbvar+2,i,j,k) 
+     &                                + obst_a3d(obst_nbvar+2,i,j,k+1))*0.5) 
                        ! TODO siggen!
 # endif
 

@@ -3,59 +3,51 @@ MODULE initobstructions
 #include "cppdefs.h"
 
 #ifdef OBSTRUCTION
-   !&E==========================================================================
-   !&E                   ***  MODULE  initOBSTRUCTIONS  ***
-   !&E
-   !&E
-   !&E ** Purpose : concerns all subroutines related to obstructions interactions
-   !&E    with hydrodynamics
-   !&E
-   !&E ** Description :
-   !&E     
-   !&E     subroutine OBSTRUCTIONS_init               ! Defines obstructions outputs parameters
-   !&E                                                ! and initialize some variables
-   !&E
-   !&E     subroutine OBSTRUCTIONS_readvar            ! Read the file (variables_obstructions.dat)
-   !&E                                                ! for initialization
-   !&E
-   !&E     subroutine OBSTRUCTIONS_write_summary      ! Perform some checks and write a summary 
-   !&E                                                ! of obstructions variables
-   !&E
-   !&E     subroutine OBSTRUCTIONS_compatibility      ! Check compatibility of parameterization used
-   !&E
-   !&E     subroutine OBSTRUCTIONS_readfile_char      ! Reads input files (time-series) for 
-   !&E                                                ! obstructions characteristics
-   !&E
-   !&E     subroutine OBSTRUCTIONS_readfile_pos       ! Reads input file for obstruction position
-   !&E                                                ! within the domain
-   !&E
-   !&E     subroutine OBSTRUCTIONS_readfile_distri    ! Read input file for obstructions vertical
-   !&E                                                ! distribution (normalized in height and density)
-   !&E
-   !&E     subroutine OBSTRUCTIONS_alloc_nbvar        ! Allocates variables depending on
-   !&E                                                ! number of obstructions variables
-   !&E
-   !&E     subroutine OBSTRUCTIONS_alloc_xyz          ! Allocates spatial tables for obstructions
-   !&E
-   !&E     subroutine OBSTRUCTIONS_alloc_other        ! Allocates other tables for obstructions
-   !&E
-   !&E     subroutine OBSTRUCTIONS_dealloc            ! Deallocates variables for obstructions
-   !&E
-   !&E ** History :
-   !&E     ! 2021-10 (F. Ganthy) Original code extracted from OBSTRUCTION.F90
-   !&E     ! 2022-12 (S. Le Gac) Adaptation for CROCO, extraction of alloc/dealloc from comOBSTRUCTIONS.F90
-   !&E
-   !&E==========================================================================
+   !!==========================================================================
+   !!                   ***  MODULE  initOBSTRUCTIONS  ***
+   !!
+   !!
+   !! ** Purpose : concerns all subroutines related to obstructions interactions
+   !!    with hydrodynamics
+   !!
+   !! ** Description :
+   !!     
+   !!     subroutine OBSTRUCTIONS_init               ! Defines obstructions outputs parameters
+   !!                                                ! and initialize some variables
+   !!
+   !!     subroutine OBSTRUCTIONS_readvar            ! Read the file (variables_obstructions.dat)
+   !!                                                ! for initialization
+   !!
+   !!     subroutine OBSTRUCTIONS_write_summary      ! Perform some checks and write a summary 
+   !!                                                ! of obstructions variables
+   !!
+   !!     subroutine OBSTRUCTIONS_compatibility      ! Check compatibility of parameterization used
+   !!
+   !!     subroutine OBSTRUCTIONS_readfile_char      ! Reads input files (time-series) for 
+   !!                                                ! obstructions characteristics
+   !!
+   !!     subroutine OBSTRUCTIONS_readfile_pos       ! Reads input file for obstruction position
+   !!                                                ! within the DOmain
+   !!
+   !!     subroutine OBSTRUCTIONS_readfile_distri    ! Read input file for obstructions vertical
+   !!                                                ! distribution (normalized in height and density)
+   !!
+   !!     subroutine OBSTRUCTIONS_alloc_nbvar        ! Allocates variables depending on
+   !!                                                ! number of obstructions variables
+   !!
+   !!     subroutine OBSTRUCTIONS_alloc_xyz          ! Allocates spatial tables for obstructions
+   !!
+   !!==========================================================================
    !! * Modules used
    USE comOBSTRUCTIONS
+   USE OBSTRUCTIONS1DV
 
    IMPLICIT NONE
 
    !! * Accessibility
 
-   ! function & routines of this module, called outside :
+   ! function & routines of this module, CALLed outside :
    ! PUBLIC functions
-   PUBLIC OBSTRUCTIONS_init_dimension
    PUBLIC OBSTRUCTIONS_init
    PUBLIC OBSTRUCTIONS_readfile_char ! used in OBSTRUCTIONS
 
@@ -64,49 +56,29 @@ MODULE initobstructions
   CONTAINS
 
    !!==========================================================================================================
+   SUBROUTINE OBSTRUCTIONS_init(h0fond_in)
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_init  ***
+   !!
+   !! ** Purpose : Initialization of obstruction parameters
+   !!
+   !! ** History :
+   !!       ! 2012-04-20 (F. Ganthy) Original code
+   !!       ! 2014-08    (F. Ganthy) Routine simplification, removing useless
+   !!                                initializations
+   !!       ! 2014-10    (F. Ganthy) Add bending angle
+   !!       ! 2015-09    (F. Ganthy) Minor correction (obst_cmu)
+   !!       ! 2016-03    (F. Ganthy) Add logical to choose turbulence coefficient
+   !!                                values (default or user-defined)
+   !!       ! 2017-04    (F. Ganthy) Change initialization of turbulence coefficients cmu and c2turb
+   !!       ! 2017-11    (F. Ganthy) Remove useless variables related to turbulence coefficients
+   !!       ! 2021-10    (F. Ganthy) Few modification/organization on paraOBSTRUCTIONS
+   !!       ! 2022-01    (A. Le Pevedic) Added wave friction factor (used for shear stress computation)
+   !!---------------------------------------------------------------------
 
-   SUBROUTINE OBSTRUCTIONS_init_dimension(imin_in, imax_in, jmin_in, jmax_in, N, stdout)
-
-    INTEGER,INTENT(IN) :: imin_in, imax_in, jmin_in, jmax_in, N, stdout
-
-    imin = imin_in
-    imax = imax_in
-    jmin = jmin_in
-    jmax = jmax_in
-    kmax = N
-    iscreenlog = stdout
-    ierrorlog = stdout
-    iwarnlog = stdout
-
-    !!#TODO check mynode in MPI
-
-   END SUBROUTINE OBSTRUCTIONS_init_dimension
-
-   SUBROUTINE OBSTRUCTIONS_init(z0b, h0fond_in)
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE OBSTRUCTIONS_init  ***
-   !&E
-   !&E ** Purpose : Initialization of obstruction parameters
-   !&E
-   !&E ** History :
-   !&E       ! 2012-04-20 (F. Ganthy) Original code
-   !&E       ! 2014-08    (F. Ganthy) Routine simplification, removing useless
-   !&E                                initializations
-   !&E       ! 2014-10    (F. Ganthy) Add bending angle
-   !&E       ! 2015-09    (F. Ganthy) Minor correction (obst_cmu)
-   !&E       ! 2016-03    (F. Ganthy) Add logical to choose turbulence coefficient
-   !&E                                values (default or user-defined)
-   !&E       ! 2017-04    (F. Ganthy) Change initialization of turbulence coefficients cmu and c2turb
-   !&E       ! 2017-11    (F. Ganthy) Remove useless variables related to turbulence coefficients
-   !&E       ! 2021-10    (F. Ganthy) Few modification/organization on paraOBSTRUCTIONS
-   !&E       ! 2022-01    (A. Le Pevedic) Added wave friction factor (used for shear stress computation)
-   !&E---------------------------------------------------------------------
-
-
-   USE module_OBSTRUCTIONS
+   USE module_OBSTRUCTIONS ! for GLOBAL_2D_ARRAY, N, stdout
    IMPLICIT NONE
 
-   REAL(KIND=rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: z0b 
    REAL(KIND=rsh),INTENT(IN) :: h0fond_in
 
 
@@ -115,12 +87,11 @@ MODULE initobstructions
    INTEGER                                 :: iv, k, indvar
    CHARACTER(len=lchain) :: obst_fn_var1,obst_fn_var2,obst_fn_var3,      &
                             obst_fn_var4,obst_fn_var5,obst_fn_var6
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE :: sw
    !! * Namelist
    NAMELIST/obst_main/obst_nbvar,obst_fn_position,             & 
                       obst_fn_var1,obst_fn_var2,obst_fn_var3,  &
                       obst_fn_var4,obst_fn_var5,obst_fn_var6
-   NAMELIST/obst_numerics/obst_i_z0bstress,obst_c_paramhuv,obst_c_imp3d,obst_c_imp2d
+   NAMELIST/obst_numerics/obst_i_z0bstress,obst_c_paramhuv
    NAMELIST/obst_output/l_obstout_pos,l_obstout_height_f,l_obstout_height_e,l_obstout_dens_f,    &
                         l_obstout_dens_e,l_obstout_width_f,l_obstout_width_e,                    &
                         l_obstout_thick_f,l_obstout_thick_e,l_obstout_oai,                       &
@@ -131,7 +102,10 @@ MODULE initobstructions
                         l_obstout_bstressc,l_obstout_bstressw
    !!----------------------------------------------------------------------
    !! * Executable part
-    obst_h0fond = h0fond_in
+   obst_kmax =  N
+   iscreenlog = stdout
+   ierrorlog = stdout
+   iwarnlog = stdout
 
    ! ************************
    ! * READING NAMELIST
@@ -226,13 +200,21 @@ MODULE initobstructions
    ! * READING VARIABLES
    ! ***********************
    DO iv=1,obst_nbvar
-     CALL OBSTRUCTIONS_readvar(iv)
+      CALL OBSTRUCTIONS_readvar(iv)
+      IF (obst_l_downward(iv)) THEN
+         obst_type(iv) = "DO"
+      ELSE
+         IF (obst_l_3dobst(iv)) THEN
+            obst_type(iv) = "3D"
+         ELSE
+            obst_type(iv) = "UP"
+         ENDIF
+      ENDIF
    ENDDO
    ! **********************
    ! * TABLES ALLOCATION
    ! ***********************
    CALL OBSTRUCTIONS_alloc_xyz
-   CALL OBSTRUCTIONS_alloc_other
    ! **********************
    ! * CHECKS AND SUMMARY
    ! ***********************
@@ -246,155 +228,158 @@ MODULE initobstructions
    ! * READING DISTRIBUTION FILE
    ! ***********************
    CALL OBSTRUCTIONS_readfile_distri
-   ! ***************************************
-   ! * INITIALIZATION OF OBT_SIG / OBST_DSIG
-   ! ***************************************
-   ! Dynamic allocation of sw
-   ALLOCATE(sw(0:obst_kmax+1))
-   ! Allocation of virtual sigma for 2D
-   
-   ! Dynamic deallocation
-   DEALLOCATE(sw)
+
    ! ***********************************
    ! * INITIALIZATION OF ROUGHNESS SEDIM
    ! ***********************************
    obst_l_z0bstress_tot = .FALSE.
    DO iv=1,obst_nbvar
-     IF(obst_l_z0bstress(iv)) THEN
-       obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
-     ENDIF
+      IF(obst_l_z0bstress(iv)) THEN
+         obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
+      ENDIF
    ENDDO
    IF(.NOT.obst_l_z0bstress_tot) THEN
-     obst_z0bstress(:,:) = obst_i_z0bstress
+      obst_z0bstress(:,:) = obst_i_z0bstress
    ENDIF
    ! **********************
    ! * OTHER INITIALIZATIONS
    ! ***********************
-   obst_z0bed(:,:)       = z0b(:,:) ! Saving the surface z0 tables from hydraulical initialization (without obstructions)
-   obst_c_exp3d = 1.0_rsh-obst_c_imp3d
-   obst_c_exp2d = 1.0_rsh-obst_c_imp2d
+   obst_z0bed(:,:)       = zob(:,:) ! Saving the surface z0 tables from hydraulical initialization (without obstructions)
    ! ***********************
 
-   do iv=1,obst_nbvar
-    indvar = indxObst+iv-1
-    vname(1,indvar)= &
-         TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv))
-    vname(2,indvar)= &
-         'Obstruction position and coverage for '//TRIM(obst_varname(iv))
-    vname(3,indvar)='-                                    '
-    vname(4,indvar)='                                     '
-    vname(5,indvar)='                                     '
-    vname(6,indvar)='time lat_rho lon_rho                 '
-    vname(7,indvar)='                                     '
+   CALL o1dv_alloc(obst_nbvar, obst_kmax, obst_nb_max_hnorm)
+   CALL o1dv_init(h0fond_in, obst_c_paramhuv, &
+      obst_varname, obst_type, obst_l_flexible, obst_l_abdelposture, &
+      obst_l_param_height, obst_l_cylinder, obst_l_noturb, obst_l_drag_cste, &
+      obst_l_abdelrough_cste, obst_l_fracxy, obst_l_z0bstress, &
+      obst_fracxy_type, obst_c_abdel_nmax, obst_z0bstress_option, &
+      obst_c_rho , obst_c_height_x0, obst_c_height_x1, obst_c_shelter, &
+      obst_c_lift, obst_c_drag, obst_c_lz, obst_c_crough_x0, obst_c_crough_x1, &
+      obst_c_fracxy_k0, obst_c_fracxy_k1, obst_c_fracxy_l, obst_c_z0bstress, &
+      obst_c_z0bstress_x0, obst_c_z0bstress_x1, obst_c_z0bstress_x2, &
+      obst_l_filedistri, obst_nbhnorm, obst_height_norm, obst_dens_norm, &
+      stdout)
 
-    indvar = indxObst+obst_nbvar+iv-1
-    vname(1,indvar)= &
-         TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv))
-    vname(2,indvar)= &
-         'Obstruction forcing height for '//TRIM(obst_varname(iv))
-    vname(3,indvar)='-                                    '
-    vname(4,indvar)='                                     '
-    vname(5,indvar)='                                     '
-    vname(6,indvar)='time lat_rho lon_rho                 '
-    vname(7,indvar)='                                     '
+   DO iv=1,obst_nbvar
+      indvar = indxObst+iv-1
+      vname(1,indvar)= &
+            TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv))
+      vname(2,indvar)= &
+            'Obstruction position and coverage for '//TRIM(obst_varname(iv))
+      vname(3,indvar)='-                                    '
+      vname(4,indvar)='                                     '
+      vname(5,indvar)='                                     '
+      vname(6,indvar)='time lat_rho lon_rho                 '
+      vname(7,indvar)='                                     '
 
-    indvar = indxObst+2*obst_nbvar+iv-1
-    vname(1,indvar)= &
-         TRIM(obst_nout_height_e)//'_'//TRIM(obst_varname(iv))
-    vname(2,indvar)= &
-         'Obstruction effective height for '//TRIM(obst_varname(iv))
-    vname(3,indvar)='-                                    '
-    vname(4,indvar)='                                     '
-    vname(5,indvar)='                                     '
-    vname(6,indvar)='time lat_rho lon_rho                 '
-    vname(7,indvar)='                                     '
+      indvar = indxObst+obst_nbvar+iv-1
+      vname(1,indvar)= &
+            TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv))
+      vname(2,indvar)= &
+            'Obstruction forcing height for '//TRIM(obst_varname(iv))
+      vname(3,indvar)='-                                    '
+      vname(4,indvar)='                                     '
+      vname(5,indvar)='                                     '
+      vname(6,indvar)='time lat_rho lon_rho                 '
+      vname(7,indvar)='                                     '
 
-    indvar = indxObst+3*obst_nbvar+iv-1
-    vname(1,indvar)= &
-         TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv))
-    vname(2,indvar)= &
-         'Obstruction forcing density for '//TRIM(obst_varname(iv))
-    vname(3,indvar)='m-2                                  '
-    vname(4,indvar)='                                     '
-    vname(5,indvar)='                                     '
-    vname(6,indvar)='time lat_rho lon_rho                 '
-    vname(7,indvar)='                                     '
+      indvar = indxObst+2*obst_nbvar+iv-1
+      vname(1,indvar)= &
+            TRIM(obst_nout_height_e)//'_'//TRIM(obst_varname(iv))
+      vname(2,indvar)= &
+            'Obstruction effective height for '//TRIM(obst_varname(iv))
+      vname(3,indvar)='-                                    '
+      vname(4,indvar)='                                     '
+      vname(5,indvar)='                                     '
+      vname(6,indvar)='time lat_rho lon_rho                 '
+      vname(7,indvar)='                                     '
 
-    indvar = indxObst+4*obst_nbvar+iv-1
-    vname(1,indvar)= &
-         TRIM(obst_nout_dens_e)//'_'//TRIM(obst_varname(iv))
-    vname(2,indvar)= &
-         'Obstruction effective density for '//TRIM(obst_varname(iv))
-    vname(3,indvar)='m-2                                  '
-    vname(4,indvar)='                                     '
-    vname(5,indvar)='                                     '
-    vname(6,indvar)='time N lat_rho lon_rho               '
-    vname(7,indvar)='                                     '
+      indvar = indxObst+3*obst_nbvar+iv-1
+      vname(1,indvar)= &
+            TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv))
+      vname(2,indvar)= &
+            'Obstruction forcing density for '//TRIM(obst_varname(iv))
+      vname(3,indvar)='m-2                                  '
+      vname(4,indvar)='                                     '
+      vname(5,indvar)='                                     '
+      vname(6,indvar)='time lat_rho lon_rho                 '
+      vname(7,indvar)='                                     '
 
-    indvar = indxObst+5*obst_nbvar+iv-1
-    vname(1,indvar)= &
-         TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv))
-    vname(2,indvar)= &
-         'Obstruction forcing width for '//TRIM(obst_varname(iv))
-    vname(3,indvar)='m                                    '
-    vname(4,indvar)='                                     '
-    vname(5,indvar)='                                     '
-    vname(6,indvar)='time lat_rho lon_rho                 '
-    vname(7,indvar)='                                     '
+      indvar = indxObst+4*obst_nbvar+iv-1
+      vname(1,indvar)= &
+            TRIM(obst_nout_dens_e)//'_'//TRIM(obst_varname(iv))
+      vname(2,indvar)= &
+            'Obstruction effective density for '//TRIM(obst_varname(iv))
+      vname(3,indvar)='m-2                                  '
+      vname(4,indvar)='                                     '
+      vname(5,indvar)='                                     '
+      vname(6,indvar)='time N lat_rho lon_rho               '
+      vname(7,indvar)='                                     '
 
-    indvar = indxObst+6*obst_nbvar+iv-1
-    vname(1,indvar)= &
-         TRIM(obst_nout_width_e)//'_'//TRIM(obst_varname(iv))
-    vname(2,indvar)= &
-         'Obstruction effective width for '//TRIM(obst_varname(iv))
-    vname(3,indvar)='m                                    '
-    vname(4,indvar)='                                     '
-    vname(5,indvar)='                                     '
-    vname(6,indvar)='time N lat_rho lon_rho               '
-    vname(7,indvar)='                                     '
+      indvar = indxObst+5*obst_nbvar+iv-1
+      vname(1,indvar)= &
+            TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv))
+      vname(2,indvar)= &
+            'Obstruction forcing width for '//TRIM(obst_varname(iv))
+      vname(3,indvar)='m                                    '
+      vname(4,indvar)='                                     '
+      vname(5,indvar)='                                     '
+      vname(6,indvar)='time lat_rho lon_rho                 '
+      vname(7,indvar)='                                     '
+
+      indvar = indxObst+6*obst_nbvar+iv-1
+      vname(1,indvar)= &
+            TRIM(obst_nout_width_e)//'_'//TRIM(obst_varname(iv))
+      vname(2,indvar)= &
+            'Obstruction effective width for '//TRIM(obst_varname(iv))
+      vname(3,indvar)='m                                    '
+      vname(4,indvar)='                                     '
+      vname(5,indvar)='                                     '
+      vname(6,indvar)='time N lat_rho lon_rho               '
+      vname(7,indvar)='                                     '
 
 
-  enddo
+   ENDDO
 
    END SUBROUTINE OBSTRUCTIONS_init
 
    !!==========================================================================================================
 
    SUBROUTINE OBSTRUCTIONS_readvar(iv)
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE OBSTRUCTIONS_readvar  ***
-   !&E
-   !&E ** Purpose : read "obstruction_variables.dat" file describing obstructions
-   !&E
-   !&E ** Description : 
-   !&E
-   !&E ** Called by : main.F90
-   !&E
-   !&E ** External calls :
-   !&E
-   !&E ** Used ij-arrays :
-   !&E
-   !&E ** Modified variables : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       ! 2012-04-20 (F. Ganthy) Original code
-   !&E       ! 2014-08    (F. Ganthy) Routine simplification, removing useless
-   !&E                                initializations
-   !&E       ! 2014-10    (F. Ganthy) More modifications + computation of obstructions
-   !&E                                posture following Abdelrhman 2007
-   !&E       ! 2016-08    (F. Ganthy) Optimization on Abdelrhman 2007 method :
-   !&E                                - added number of segment within namelist for each obstruction variable
-   !&E                                - added sheltering coefficient witinh namelist
-   !&E                                - update number according with these changes
-   !&E       ! 2017-02    (F. Ganthy) Some modifications:
-   !&E                                - Differenciation of cylindric / parallelepipedic structures
-   !&E                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell) 
-   !&E                                - Cleaning (removing useless parameters)
-   !&E       ! 2017-10    (F. Ganthy) Add count for different types of variables
-   !&E       ! 2021-10    (F. Ganthy) Convert into namelist reading
-   !&E---------------------------------------------------------------------
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_readvar  ***
+   !!
+   !! ** Purpose : read "obstruction_variables.dat" file describing obstructions
+   !!
+   !! ** Description : 
+   !!
+   !! ** CALLed by : main.F90
+   !!
+   !! ** External CALLs :
+   !!
+   !! ** Used ij-arrays :
+   !!
+   !! ** Modified variables : 
+   !!
+   !! ** Reference :
+   !!
+   !! ** History :
+   !!       ! 2012-04-20 (F. Ganthy) Original code
+   !!       ! 2014-08    (F. Ganthy) Routine simplification, removing useless
+   !!                                initializations
+   !!       ! 2014-10    (F. Ganthy) More modifications + computation of obstructions
+   !!                                posture following Abdelrhman 2007
+   !!       ! 2016-08    (F. Ganthy) Optimization on Abdelrhman 2007 method :
+   !!                                - added number of segment within namelist for each obstruction variable
+   !!                                - added sheltering coefficient witinh namelist
+   !!                                - update number according with these changes
+   !!       ! 2017-02    (F. Ganthy) Some modifications:
+   !!                                - Differenciation of cylindric / parallelepipedic structures
+   !!                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell) 
+   !!                                - Cleaning (removing useless parameters)
+   !!       ! 2017-10    (F. Ganthy) Add count for different types of variables
+   !!       ! 2021-10    (F. Ganthy) Convert into namelist reading
+   !!---------------------------------------------------------------------
 
    IMPLICIT NONE
 
@@ -406,8 +391,8 @@ MODULE initobstructions
    INTEGER               :: r_obst_varnum
    CHARACTER(len=lchain) :: r_obst_varname
    ! For obst_var_option
-   LOGICAL               :: r_l_obst_cylindre,r_l_obst_flexible,r_l_obst_downward, &
-                            r_l_obst_3dobst,r_l_obst_noturb
+   LOGICAL               :: r_l_obst_cylinder,r_l_obst_flexible,r_l_obst_downward, &
+                            r_l_obst_3DObst,r_l_obst_noturb
    ! For obst_var_init
    LOGICAL               :: r_l_obst_filechar,r_l_obst_init_spatial,r_l_obst_filedistri
    CHARACTER(len=lchain) :: r_obst_fn_char,r_obst_fn_distrib
@@ -429,8 +414,8 @@ MODULE initobstructions
    REAL(KIND=rsh)        :: r_obst_c_z0bstress,r_obst_c_z0bstress_x0,r_obst_c_z0bstress_x1,r_obst_c_z0bstress_x2
    !! * Namelists
    NAMELIST/obst_var_main/r_obst_varnum,r_obst_varname
-   NAMELIST/obst_var_option/r_l_obst_cylindre,r_l_obst_flexible,r_l_obst_downward,          &
-                            r_l_obst_3dobst,r_l_obst_noturb
+   NAMELIST/obst_var_option/r_l_obst_cylinder,r_l_obst_flexible,r_l_obst_downward,          &
+                            r_l_obst_3DObst,r_l_obst_noturb
    NAMELIST/obst_var_init/r_l_obst_filechar,r_l_obst_init_spatial,r_l_obst_filedistri,      &
                           r_obst_fn_char,r_obst_fn_distrib,                                 &
                           r_obst_i_height,r_obst_i_width,r_obst_i_thick,r_obst_i_dens
@@ -476,10 +461,10 @@ MODULE initobstructions
    obst_varnum(iv)            = r_obst_varnum
    obst_varname(iv)           = r_obst_varname
    ! * For namelist obst_var_option
-   obst_l_cylindre(iv)        = r_l_obst_cylindre
+   obst_l_cylinder(iv)        = r_l_obst_cylinder
    obst_l_flexible(iv)        = r_l_obst_flexible
    obst_l_downward(iv)        = r_l_obst_downward
-   obst_l_3dobst(iv)          = r_l_obst_3dobst
+   obst_l_3dobst(iv)          = r_l_obst_3DObst
    obst_l_noturb(iv)          = r_l_obst_noturb
    ! * For namelist obst_var_init
    obst_l_filechar(iv)        = r_l_obst_filechar
@@ -526,34 +511,34 @@ MODULE initobstructions
    !!==========================================================================================================
 
    SUBROUTINE OBSTRUCTIONS_write_summary
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE OBSTRUCTIONS_write_summary  ***
-   !&E
-   !&E ** Purpose : Write a summary of obstructions parameters
-   !&E
-   !&E ** Called by : OBSTRUCTIONS_init
-   !&E
-   !&E ** History :
-   !&E       ! 2012-04-20 (F. Ganthy) Original code (initally within obst_read_var)
-   !&E       ! 2014-02    (F. Ganthy) Mooved into independant subroutine
-   !&E                                to permit it use for test-cases
-   !&E       ! 2014-02    (F. Ganthy) Add test on turbulence closure scheme
-   !&E       ! 2014-10    (F. Ganthy) Some modifications + computation of obstructions
-   !&E                                posture following Abdelrhman 2007
-   !&E       ! 2015-10    (F. Ganthy) Add test on OMP parallelization
-   !&E       ! 2016-08    (F. Ganthy) Optimization on Abdelrhman 2007 method :
-   !&E                                updated summary according with
-   !&E       ! 2017-02    (F. Ganthy) Some modifications:
-   !&E                                - Differenciation of cylindric / parallelepipedic structures
-   !&E                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell) 
-   !&E                                - Cleaning (removing useless parameters)
-   !&E       ! 2017-04    (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
-   !&E       ! 2017-04    (F. Ganthy) Add simplified formulation (not using turbulence, but using roughness)
-   !&E       ! 2017-10    (F. Ganthy) Add vairables types and test of validity
-   !&E       ! 2021-10    (F. Ganthy) Convert into namelist reading
-   !&E       ! 2021-10    (F. Ganthy) Extract all check into OBSTRUCTIONS_compatibility
-   !&E
-   !&E---------------------------------------------------------------------
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_write_summary  ***
+   !!
+   !! ** Purpose : Write a summary of obstructions parameters
+   !!
+   !! ** CALLed by : OBSTRUCTIONS_init
+   !!
+   !! ** History :
+   !!       ! 2012-04-20 (F. Ganthy) Original code (initally within obst_read_var)
+   !!       ! 2014-02    (F. Ganthy) Mooved into independant subroutine
+   !!                                to permit it use for test-cases
+   !!       ! 2014-02    (F. Ganthy) Add test on turbulence closure scheme
+   !!       ! 2014-10    (F. Ganthy) Some modifications + computation of obstructions
+   !!                                posture following Abdelrhman 2007
+   !!       ! 2015-10    (F. Ganthy) Add test on OMP parallelization
+   !!       ! 2016-08    (F. Ganthy) Optimization on Abdelrhman 2007 method :
+   !!                                updated summary according with
+   !!       ! 2017-02    (F. Ganthy) Some modifications:
+   !!                                - Differenciation of cylindric / parallelepipedic structures
+   !!                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell) 
+   !!                                - Cleaning (removing useless parameters)
+   !!       ! 2017-04    (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
+   !!       ! 2017-04    (F. Ganthy) Add simplified formulation (not using turbulence, but using roughness)
+   !!       ! 2017-10    (F. Ganthy) Add vairables types and test of validity
+   !!       ! 2021-10    (F. Ganthy) Convert into namelist reading
+   !!       ! 2021-10    (F. Ganthy) Extract all check into OBSTRUCTIONS_compatibility
+   !!
+   !!---------------------------------------------------------------------
 
    IMPLICIT NONE
 
@@ -572,9 +557,9 @@ MPI_master_only  WRITE(iscreenlog,*) 'LISTING OF OBSTRUCTION VARIABLES :'
 MPI_master_only  WRITE(iscreenlog,*) '------------------------------------------------'
 MPI_master_only  WRITE(iscreenlog,*) 'TOTAL NUMBER OF OBSTRUCTION VARIABLES : ',obst_nbvar
 MPI_master_only  WRITE(iscreenlog,*) 'Number of RIGID_UP                    : ',obst_nv_rigid_up
-MPI_master_only  WRITE(iscreenlog,*) 'Number of RIGID_DO                    : ',obst_nv_rigid_do
+MPI_master_only  WRITE(iscreenlog,*) 'Number of RIGID_DO                    : ',obst_nv_rigid_DO
 MPI_master_only  WRITE(iscreenlog,*) 'Number of FLEXI_UP                    : ',obst_nv_flexi_up
-MPI_master_only  WRITE(iscreenlog,*) 'Number of FLEXI_DO                    : ',obst_nv_flexi_do
+MPI_master_only  WRITE(iscreenlog,*) 'Number of FLEXI_DO                    : ',obst_nv_flexi_DO
 MPI_master_only  WRITE(iscreenlog,*) 'Number of 3DVARS                      : ',obst_nv_3d
 MPI_master_only  WRITE(iscreenlog,*) '------------------------------------------------'
 MPI_master_only  WRITE(iscreenlog,*) 'File for obstruction position is : ',TRIM(obst_fn_position)
@@ -588,9 +573,9 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Name (identifier) of the variable    :
 MPI_master_only  WRITE(iscreenlog,*) '!=============================!'
 MPI_master_only  WRITE(iscreenlog,*) '! NAMELIST : obst_var_option  !'
 MPI_master_only  WRITE(iscreenlog,*) '!=============================!'
-MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is cylinder-like                : ',obst_l_cylindre(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is cylinder-like                : ',obst_l_cylinder(iv)
 MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is flexible                     : ',obst_l_flexible(iv)
-MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is downvard                     : ',obst_l_downward(iv)
+MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is DOwnvard                     : ',obst_l_downward(iv)
 MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is full 3D                      : ',obst_l_3dobst(iv)
 MPI_master_only  WRITE(iscreenlog,*) '  - If the current variable is considered a macro-roughness : ',obst_l_noturb(iv)
 MPI_master_only  WRITE(iscreenlog,*) '!===========================!'
@@ -730,17 +715,17 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Coefficient to correct 3D roughness le
    !!==========================================================================================================
 
    SUBROUTINE OBSTRUCTIONS_compatibility
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE OBSTRUCTIONS_compatibility ***
-   !&E
-   !&E ** Purpose : Check compatibility of parameterization used
-   !&E
-   !&E ** Called by : OBSTRUCTIONS_init
-   !&E
-   !&E ** History :
-   !&E       ! 2021-10    (F. Ganthy) Original code (extracted from OBSTRUCTIONS_write_summary)
-   !&E
-   !&E---------------------------------------------------------------------
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_compatibility ***
+   !!
+   !! ** Purpose : Check compatibility of parameterization used
+   !!
+   !! ** CALLed by : OBSTRUCTIONS_init
+   !!
+   !! ** History :
+   !!       ! 2021-10    (F. Ganthy) Original code (extracted from OBSTRUCTIONS_write_summary)
+   !!
+   !!---------------------------------------------------------------------
 
    IMPLICIT NONE
 
@@ -754,12 +739,12 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Coefficient to correct 3D roughness le
    ! COUNT NUMBER OF VARIABLES OF DIFFERENT TYPES
    ! ********************************************
    obst_nv_up       = 0
-   obst_nv_do       = 0
+   obst_nv_DO       = 0
    obst_nv_3d       = 0
    obst_nv_rigid_up = 0
-   obst_nv_rigid_do = 0
+   obst_nv_rigid_DO = 0
    obst_nv_flexi_up = 0
-   obst_nv_flexi_do = 0
+   obst_nv_flexi_DO = 0
    obst_nv_turb     = 0
    obst_nv_noturb   = 0
    DO iv=1,obst_nbvar
@@ -772,11 +757,11 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Coefficient to correct 3D roughness le
        obst_nv_3d           = obst_nv_3d+1
      ELSE
        IF(obst_l_downward(iv))THEN
-         obst_nv_do         = obst_nv_do+1
+         obst_nv_DO         = obst_nv_DO+1
          IF(obst_l_flexible(iv))THEN
-           obst_nv_flexi_do = obst_nv_flexi_do+1
+           obst_nv_flexi_DO = obst_nv_flexi_DO+1
          ELSE
-           obst_nv_rigid_do = obst_nv_rigid_do+1
+           obst_nv_rigid_DO = obst_nv_rigid_DO+1
          ENDIF
        ELSE
          obst_nv_up         = obst_nv_up+1
@@ -794,7 +779,7 @@ MPI_master_only  WRITE(iscreenlog,*) '  - Coefficient to correct 3D roughness le
    !--------------------------------
    ! TESTING THE NUMBER OF VARIABLES
    !--------------------------------
-   nv_tot = obst_nv_rigid_up + obst_nv_rigid_do + obst_nv_flexi_up + obst_nv_flexi_do + obst_nv_3d
+   nv_tot = obst_nv_rigid_up + obst_nv_rigid_DO + obst_nv_flexi_up + obst_nv_flexi_DO + obst_nv_3d
    IF (nv_tot /= obst_nbvar) THEN
 MPI_master_only  WRITE(ierrorlog,*) ' '
 MPI_master_only  WRITE(ierrorlog,*) ' '
@@ -950,23 +935,23 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
    !!==========================================================================================================
 
    SUBROUTINE OBSTRUCTIONS_readfile_char(limin, limax, ljmin, ljmax)
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE OBSTRUCTIONS_readfile_char  ***
-   !&E
-   !&E ** Purpose : Readinf .dat file for time-varying obstructions characteristics
-   !&E
-   !&E ** Called by : obst_update
-   !&E
-   !&E ** History :
-   !&E       ! 2012-04-20 (F. Ganthy) Original code
-   !&E       ! 2014-10-16 (F. Ganthy) Replacing diameter by width and thickness  
-   !&E       ! 2015-01-15 (F. Ganthy) MPI parallelization
-   !&E       ! 2016-09-20 (F. Ganthy) Change computation of obstruction area index to be more 
-   !&E       !                        consistent with biological aspects
-   !&E       ! 2017-02-16 (F. Ganthy) Changes on instantaneous obstruction state variables for 
-   !&E                                future coupling with Zostera growth module
-   !&E
-   !&E---------------------------------------------------------------------
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_readfile_char  ***
+   !!
+   !! ** Purpose : Readinf .dat file for time-varying obstructions characteristics
+   !!
+   !! ** CALLed by : obst_update
+   !!
+   !! ** History :
+   !!       ! 2012-04-20 (F. Ganthy) Original code
+   !!       ! 2014-10-16 (F. Ganthy) Replacing diameter by width and thickness  
+   !!       ! 2015-01-15 (F. Ganthy) MPI parallelization
+   !!       ! 2016-09-20 (F. Ganthy) Change computation of obstruction area index to be more 
+   !!       !                        consistent with biological aspects
+   !!       ! 2017-02-16 (F. Ganthy) Changes on instantaneous obstruction state variables for 
+   !!                                future coupling with Zostera growth module
+   !!
+   !!---------------------------------------------------------------------
 
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
@@ -1001,7 +986,7 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
              obst_width_inst(iv,i,j)       = obst_i_width(iv)  !TODO : add reading of temporal file (careful, no tchrono in croco)
              obst_thick_inst(iv,i,j)       = obst_i_thick(iv)  !TODO : add reading of temporal file (careful, no tchrono in croco)
              obst_dens_inst(iv,i,j)        = obst_i_dens(iv)   !TODO : add reading of temporal file (careful, no tchrono in croco)
-             IF(obst_l_cylindre(iv))THEN ! Cylindric/Ellipse obstruction
+             IF(obst_l_cylinder(iv))THEN ! Cylindric/Ellipse obstruction
                obst_area_index_inst(iv,i,j)  = obst_dens_inst(iv,i,j) * obst_height_inst(iv,i,j) * &
                                                 (2.0_rsh*pi*SQRT(0.5_rsh*(obst_width_inst(iv,i,j)**2.0_rsh + & 
                                                 obst_thick_inst(iv,i,j)**2.0_rsh)))
@@ -1018,7 +1003,7 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
            ENDIF
          ELSE
            IF(obst_position(iv,i,j).GT.0.0_rsh) THEN
-             IF(obst_l_cylindre(iv))THEN ! Cylindric/Ellipse obstruction
+             IF(obst_l_cylinder(iv))THEN ! Cylindric/Ellipse obstruction
                obst_area_index_inst(iv,i,j)  = obst_dens_inst(iv,i,j) * obst_height_inst(iv,i,j) * &
                                                 (2.0_rsh*pi*SQRT(0.5_rsh*(obst_width_inst(iv,i,j)**2.0_rsh + &
                                                 obst_thick_inst(iv,i,j)**2.0_rsh)))
@@ -1039,24 +1024,24 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
    !!==========================================================================================================
 
    SUBROUTINE OBSTRUCTIONS_readfile_pos
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE OBSTRUCTIONS_readfile_pos  ***
-   !&E
-   !&E ** Purpose : read the obstruction position file
-   !&E              in the historical DEL/AO format
-   !&E
-   !&E ** Called by : obst_init
-   !&E
-   !&E ** Modified variables : obst_position
-   !&E
-   !&E ** History :
-   !&E       ! 2012-04-20 (F. Ganthy) Original code
-   !&E
-   !&E---------------------------------------------------------------------
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_readfile_pos  ***
+   !!
+   !! ** Purpose : read the obstruction position file
+   !!              in the historical DEL/AO format
+   !!
+   !! ** CALLed by : obst_init
+   !!
+   !! ** Modified variables : obst_position
+   !!
+   !! ** History :
+   !!       ! 2012-04-20 (F. Ganthy) Original code
+   !!
+   !!---------------------------------------------------------------------
 
    IMPLICIT NONE
 
-   ! to do for croco with appropriate netcdf reading
+   ! to DO for croco with appropriate netcdf reading
 
    obst_position(1,14:31,:) = 1.0_rsh
 
@@ -1066,20 +1051,20 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
    !!==========================================================================================================
 
    SUBROUTINE OBSTRUCTIONS_readfile_distri
-   !&E---------------------------------------------------------------------
-   !&E                 ***  ROUTINE OBSTRUCTIONS_readfile_distri  ***
-   !&E
-   !&E ** Purpose : Initialization of obstruction parameters
-   !&E
-   !&E ** History :
-   !&E       ! 2012-04-20 (F. Ganthy) Original code
-   !&E
-   !&E---------------------------------------------------------------------
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_readfile_distri  ***
+   !!
+   !! ** Purpose : Initialization of obstruction parameters
+   !!
+   !! ** History :
+   !!       ! 2012-04-20 (F. Ganthy) Original code
+   !!
+   !!---------------------------------------------------------------------
 
    IMPLICIT NONE
 
    !! * Local declaration
-   INTEGER :: kk,iv,nb_max_hnorm
+   INTEGER :: kk,iv
    LOGICAL :: ex
    !!----------------------------------------------------------------------
    !! * Executable part
@@ -1110,7 +1095,7 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
     MPI_master_only  WRITE(ierrorlog,*) '************************************************************************'
     MPI_master_only  WRITE(ierrorlog,*) '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_READFILE_DISTRI *****'
     MPI_master_only  WRITE(ierrorlog,*) '************************************************************************'
-    MPI_master_only  WRITE(ierrorlog,*) ' ERROR : File ',TRIM(obst_fn_distrib(iv)),'does not exist'
+    MPI_master_only  WRITE(ierrorlog,*) ' ERROR : File ',TRIM(obst_fn_distrib(iv)),'DOes not exist'
     MPI_master_only  WRITE(ierrorlog,*) ' --> THE SIMULATION IS STOPPED !!! '
     MPI_master_only  WRITE(ierrorlog,*) '************************************************************************'
         STOP
@@ -1125,23 +1110,23 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
      ENDIF
    ENDDO
 
-   nb_max_hnorm = 0
+   obst_nb_max_hnorm = 0
    IF (obst_nbvar.EQ.1)THEN
-     nb_max_hnorm = obst_nbhnorm(1)
+      obst_nb_max_hnorm = obst_nbhnorm(1)
    ELSE
-     DO iv = 1,obst_nbvar-1
-       nb_max_hnorm = MAX(obst_nbhnorm(iv),obst_nbhnorm(iv+1))
+     DO iv = 1,obst_nbvar
+      obst_nb_max_hnorm = MAX(obst_nb_max_hnorm, obst_nbhnorm(iv))
      ENDDO
    ENDIF
-   ALLOCATE(obst_dens_norm   (1:obst_nbvar,1:nb_max_hnorm))
-   ALLOCATE(obst_height_norm (1:obst_nbvar,1:nb_max_hnorm))
+   ALLOCATE(obst_dens_norm   (1:obst_nbvar,1:obst_nb_max_hnorm))
+   ALLOCATE(obst_height_norm (1:obst_nbvar,1:obst_nb_max_hnorm))
 
    DO iv = 1,obst_nbvar
      IF(obst_l_filedistri(iv)) THEN
        OPEN(53,file=obst_fn_distrib(iv),form='formatted')
        READ(53,*) ! Filename
        READ(53,*) ! Title
-       READ(53,*) !NBhnorm
+       READ(53,*) ! NBhnorm
        READ(53,*) ! Column titles
        kk=1
        DO WHILE (kk.LE.obst_nbhnorm(iv))
@@ -1171,515 +1156,258 @@ END SUBROUTINE OBSTRUCTIONS_readfile_distri
 
 SUBROUTINE OBSTRUCTIONS_alloc_nbvar
 
-    !&E---------------------------------------------------------------------
-    !&E                 ***  ROUTINE OBSTRUCTIONS_alloc_nbvar  ***
-    !&E
-    !&E ** Purpose : Allocation of tables depending on number of obstructions variables
-    !&E
-    !&E ** History :
-    !&E       ! 2012-04-20 (F. Ganthy) Original code
-    !&E       ! 2014-08    (F. Ganthy) Add variables pre-initialization
-    !&E       ! 2014-10    (F. Ganthy) More modifications + computation of obstructions
-    !&E                                posture following Abdelrhman 2007
-    !&E       ! 2016-08    (F. Ganthy) Optimization on Abdelrhman 2007 method
-    !&E       ! 2017-02-16 (F. Ganthy) Some modifications:
-    !&E                                - Allowing multiple obstructions type in a single grid cell
-    !&E                                  --> allowed multispecific computation.
-    !&E                                  This imply that some tables must be allocated depending on (iv,k,i,j) or (iv,i,j)
-    !&E                                  These allocations are done within obst_alloc_xyz (because tables allocated within
-    !&E                                  obst_alloc_nbvar are only those read within namelist).
-    !&E                                - Changes on instantaneous obstruction state variables for future coupling with Zostera growth module
-    !&E                                - Differenciation of cylindric / parallelepipedic structures
-    !&E                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell)
-    !&E                                - Cleaning (removing useless parameters and tests)
-    !&E       ! 2017-04 (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
-    !&E       ! 2017-04 (F. Ganthy) Add simplified formulation (not using turbulence, but using roughness)
-    !&E
-    !&E---------------------------------------------------------------------
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_alloc_nbvar  ***
+   !!
+   !! ** Purpose : Allocation of tables depending on number of obstructions variables
+   !!
+   !! ** History :
+   !!       ! 2012-04-20 (F. Ganthy) Original code
+   !!       ! 2014-08    (F. Ganthy) Add variables pre-initialization
+   !!       ! 2014-10    (F. Ganthy) More modifications + computation of obstructions
+   !!                                posture following Abdelrhman 2007
+   !!       ! 2016-08    (F. Ganthy) Optimization on Abdelrhman 2007 method
+   !!       ! 2017-02-16 (F. Ganthy) Some modifications:
+   !!                                - Allowing multiple obstructions type in a single grid cell
+   !!                                  --> allowed multispecific computation.
+   !!                                  This imply that some tables must be allocated depending on (iv,k,i,j) or (iv,i,j)
+   !!                                  These allocations are DOne within obst_alloc_xyz (because tables allocated within
+   !!                                  obst_alloc_nbvar are only those read within namelist).
+   !!                                - Changes on instantaneous obstruction state variables for future coupling with Zostera growth module
+   !!                                - Differenciation of cylindric / parallelepipedic structures
+   !!                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell)
+   !!                                - Cleaning (removing useless parameters and tests)
+   !!       ! 2017-04 (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
+   !!       ! 2017-04 (F. Ganthy) Add simplified formulation (not using turbulence, but using roughness)
+   !!
+   !!---------------------------------------------------------------------
 
-    IMPLICIT NONE
- 
-    !!----------------------------------------------------------------------
-    !! * Executable part
-    !-------------------------
-    ! Variables on (iv)
-    !--------------------
-    ALLOCATE(obst_varnum               (1:obst_nbvar))
-    obst_varnum(:)                     = 0
-    ALLOCATE(obst_fracxy_type          (1:obst_nbvar))
-    obst_fracxy_type(:)                = 0
-    ALLOCATE(obst_nbhnorm              (1:obst_nbvar))
-    obst_nbhnorm(:)                    = 0
-    ALLOCATE(obst_c_abdel_nmax         (1:obst_nbvar))
-    obst_c_abdel_nmax(:)               = 1
- 
-    ALLOCATE(obst_l_filechar           (1:obst_nbvar))
-    obst_l_filechar(:)                 = .FALSE.
-    ALLOCATE(obst_l_filedistri         (1:obst_nbvar))
-    obst_l_filedistri(:)               = .FALSE.
-    ALLOCATE(obst_l_init_spatial       (1:obst_nbvar))
-    obst_l_init_spatial(:)             = .FALSE.
-    ALLOCATE(obst_l_flexible           (1:obst_nbvar))
-    obst_l_flexible(:)                 = .FALSE.
-    ALLOCATE(obst_l_cylindre           (1:obst_nbvar))
-    obst_l_cylindre(:)                 = .FALSE.
-    ALLOCATE(obst_l_downward           (1:obst_nbvar))
-    obst_l_downward(:)                 = .FALSE.
-    ALLOCATE(obst_l_3dobst             (1:obst_nbvar))
-    obst_l_3dobst(:)                   = .FALSE.
-    ALLOCATE(obst_l_noturb             (1:obst_nbvar))
-    obst_l_noturb(:)                   = .FALSE.
-    ALLOCATE(obst_l_abdelrough_cste    (1:obst_nbvar))
-    obst_l_abdelrough_cste             = .FALSE.
-    ALLOCATE(obst_l_fracxy             (1:obst_nbvar))
-    obst_l_fracxy(:)                    = .FALSE.
-    ALLOCATE(obst_l_abdelposture       (1:obst_nbvar))
-    obst_l_abdelposture(:)             = .FALSE.
-    ALLOCATE(obst_l_param_height       (1:obst_nbvar))
-    obst_l_param_height(:)             = .FALSE.
-    ALLOCATE(obst_l_drag_cste          (1:obst_nbvar))
-    obst_l_drag_cste(:)                = .TRUE.
-    ALLOCATE(obst_l_z0bstress          (1:obst_nbvar))
-    obst_l_z0bstress(:)                = .FALSE.
- 
-    ALLOCATE(obst_z0bstress_option     (1:obst_nbvar))
-    obst_z0bstress_option(:)           = 0
- 
-    ALLOCATE(obst_varname              (1:obst_nbvar))
-    obst_varname(:)                    = '.'
-    ALLOCATE(obst_fn_vardat            (1:obst_nbvar))
-    obst_fn_vardat(:)                  = '.'
-    ALLOCATE(obst_fn_char              (1:obst_nbvar))
-    obst_fn_char(:)                    = '.'
-    ALLOCATE(obst_fn_distrib           (1:obst_nbvar))
-    obst_fn_distrib(:)                 = '.'
- 
-    ALLOCATE(obst_i_height             (1:obst_nbvar))
-    obst_i_height(:)                   = 0.0_rsh
-    ALLOCATE(obst_i_width              (1:obst_nbvar))
-    obst_i_width(:)                    = 0.0_rsh
-    ALLOCATE(obst_i_thick              (1:obst_nbvar))
-    obst_i_thick(:)                    = 0.0_rsh
-    ALLOCATE(obst_i_dens               (1:obst_nbvar))
-    obst_i_dens(:)                     = 0.0_rsh
- 
-    ALLOCATE(obst_c_rho                (1:obst_nbvar))
-    obst_c_rho(:)                      = 0.0_rsh
-    ALLOCATE(obst_c_drag               (1:obst_nbvar))
-    obst_c_drag(:)                     = 0.0_rsh
-    ALLOCATE(obst_c_lift               (1:obst_nbvar))
-    obst_c_lift(:)                     = 0.0_rsh
-    ALLOCATE(obst_c_z0bstress          (1:obst_nbvar))
-    obst_c_z0bstress(:)                = 0.0_rsh
-    ALLOCATE(obst_c_fracxy_k0          (1:obst_nbvar))
-    obst_c_fracxy_k0(:)                = 0.0_rsh
-    ALLOCATE(obst_c_fracxy_k1          (1:obst_nbvar))
-    obst_c_fracxy_k1(:)                = 0.0_rsh
-    ALLOCATE(obst_c_fracxy_l           (1:obst_nbvar))
-    obst_c_fracxy_l(:)                 = 0.0_rsh
-    ALLOCATE(obst_c_crough_x0          (1:obst_nbvar))
-    obst_c_crough_x0(:)                = 0.0_rsh
-    ALLOCATE(obst_c_crough_x1          (1:obst_nbvar))
-    obst_c_crough_x1(:)                = 0.0_rsh
-    ALLOCATE(obst_c_lz                 (1:obst_nbvar))
-    obst_c_lz(:)                       = 0.0_rsh
-    ALLOCATE(obst_c_shelter            (1:obst_nbvar))
-    obst_c_shelter(:)                  = 1.0_rsh
-    ALLOCATE(obst_c_height_x0          (1:obst_nbvar))
-    obst_c_height_x0                   = 0.0_rsh
-    ALLOCATE(obst_c_height_x1          (1:obst_nbvar))
-    obst_c_height_x1(:)                = 0.0_rsh
-    ALLOCATE(obst_c_z0bstress_x0       (1:obst_nbvar))
-    obst_c_z0bstress_x0(:)             = 0.0_rsh
-    ALLOCATE(obst_c_z0bstress_x1       (1:obst_nbvar))
-    obst_c_z0bstress_x1(:)             = 0.0_rsh
-    ALLOCATE(obst_c_z0bstress_x2       (1:obst_nbvar))
-    obst_c_z0bstress_x2(:)             = 0.0_rsh
-    !-------------------------
+   IMPLICIT NONE
+
+   !!----------------------------------------------------------------------
+   !! * Executable part
+   !-------------------------
+   ! Variables on (iv)
+   !--------------------
+   ALLOCATE(obst_varnum               (1:obst_nbvar))
+   obst_varnum(:)                     = 0
+   ALLOCATE(obst_fracxy_type          (1:obst_nbvar))
+   obst_fracxy_type(:)                = 0
+   ALLOCATE(obst_nbhnorm              (1:obst_nbvar))
+   obst_nbhnorm(:)                    = 0
+   ALLOCATE(obst_c_abdel_nmax         (1:obst_nbvar))
+   obst_c_abdel_nmax(:)               = 1
+
+   ALLOCATE(obst_l_filechar           (1:obst_nbvar))
+   obst_l_filechar(:)                 = .FALSE.
+   ALLOCATE(obst_l_filedistri         (1:obst_nbvar))
+   obst_l_filedistri(:)               = .FALSE.
+   ALLOCATE(obst_l_init_spatial       (1:obst_nbvar))
+   obst_l_init_spatial(:)             = .FALSE.
+   ALLOCATE(obst_l_flexible           (1:obst_nbvar))
+   obst_l_flexible(:)                 = .FALSE.
+   ALLOCATE(obst_l_cylinder           (1:obst_nbvar))
+   obst_l_cylinder(:)                 = .FALSE.
+   ALLOCATE(obst_l_downward           (1:obst_nbvar))
+   obst_l_downward(:)                 = .FALSE.
+   ALLOCATE(obst_l_3dobst             (1:obst_nbvar))
+   obst_l_3dobst(:)                   = .FALSE.
+   ALLOCATE(obst_l_noturb             (1:obst_nbvar))
+   obst_l_noturb(:)                   = .FALSE.
+   ALLOCATE(obst_l_abdelrough_cste    (1:obst_nbvar))
+   obst_l_abdelrough_cste             = .FALSE.
+   ALLOCATE(obst_l_fracxy             (1:obst_nbvar))
+   obst_l_fracxy(:)                    = .FALSE.
+   ALLOCATE(obst_l_abdelposture       (1:obst_nbvar))
+   obst_l_abdelposture(:)             = .FALSE.
+   ALLOCATE(obst_l_param_height       (1:obst_nbvar))
+   obst_l_param_height(:)             = .FALSE.
+   ALLOCATE(obst_l_drag_cste          (1:obst_nbvar))
+   obst_l_drag_cste(:)                = .TRUE.
+   ALLOCATE(obst_l_z0bstress          (1:obst_nbvar))
+   obst_l_z0bstress(:)                = .FALSE.
+
+   ALLOCATE(obst_z0bstress_option     (1:obst_nbvar))
+   obst_z0bstress_option(:)           = 0
+
+   ALLOCATE(obst_varname              (1:obst_nbvar))
+   obst_varname(:)                    = '.'
+   ALLOCATE(obst_type                 (1:obst_nbvar))
+   obst_type(:)                       = '..'
+   ALLOCATE(obst_fn_vardat            (1:obst_nbvar))
+   obst_fn_vardat(:)                  = '.'
+   ALLOCATE(obst_fn_char              (1:obst_nbvar))
+   obst_fn_char(:)                    = '.'
+   ALLOCATE(obst_fn_distrib           (1:obst_nbvar))
+   obst_fn_distrib(:)                 = '.'
+
+   ALLOCATE(obst_i_height             (1:obst_nbvar))
+   obst_i_height(:)                   = 0.0_rsh
+   ALLOCATE(obst_i_width              (1:obst_nbvar))
+   obst_i_width(:)                    = 0.0_rsh
+   ALLOCATE(obst_i_thick              (1:obst_nbvar))
+   obst_i_thick(:)                    = 0.0_rsh
+   ALLOCATE(obst_i_dens               (1:obst_nbvar))
+   obst_i_dens(:)                     = 0.0_rsh
+
+   ALLOCATE(obst_c_rho                (1:obst_nbvar))
+   obst_c_rho(:)                      = 0.0_rsh
+   ALLOCATE(obst_c_drag               (1:obst_nbvar))
+   obst_c_drag(:)                     = 0.0_rsh
+   ALLOCATE(obst_c_lift               (1:obst_nbvar))
+   obst_c_lift(:)                     = 0.0_rsh
+   ALLOCATE(obst_c_z0bstress          (1:obst_nbvar))
+   obst_c_z0bstress(:)                = 0.0_rsh
+   ALLOCATE(obst_c_fracxy_k0          (1:obst_nbvar))
+   obst_c_fracxy_k0(:)                = 0.0_rsh
+   ALLOCATE(obst_c_fracxy_k1          (1:obst_nbvar))
+   obst_c_fracxy_k1(:)                = 0.0_rsh
+   ALLOCATE(obst_c_fracxy_l           (1:obst_nbvar))
+   obst_c_fracxy_l(:)                 = 0.0_rsh
+   ALLOCATE(obst_c_crough_x0          (1:obst_nbvar))
+   obst_c_crough_x0(:)                = 0.0_rsh
+   ALLOCATE(obst_c_crough_x1          (1:obst_nbvar))
+   obst_c_crough_x1(:)                = 0.0_rsh
+   ALLOCATE(obst_c_lz                 (1:obst_nbvar))
+   obst_c_lz(:)                       = 0.0_rsh
+   ALLOCATE(obst_c_shelter            (1:obst_nbvar))
+   obst_c_shelter(:)                  = 1.0_rsh
+   ALLOCATE(obst_c_height_x0          (1:obst_nbvar))
+   obst_c_height_x0                   = 0.0_rsh
+   ALLOCATE(obst_c_height_x1          (1:obst_nbvar))
+   obst_c_height_x1(:)                = 0.0_rsh
+   ALLOCATE(obst_c_z0bstress_x0       (1:obst_nbvar))
+   obst_c_z0bstress_x0(:)             = 0.0_rsh
+   ALLOCATE(obst_c_z0bstress_x1       (1:obst_nbvar))
+   obst_c_z0bstress_x1(:)             = 0.0_rsh
+   ALLOCATE(obst_c_z0bstress_x2       (1:obst_nbvar))
+   obst_c_z0bstress_x2(:)             = 0.0_rsh
+   !-------------------------
  END SUBROUTINE OBSTRUCTIONS_alloc_nbvar
  
     !!==========================================================================================================
  
  SUBROUTINE OBSTRUCTIONS_alloc_xyz
  
-    !&E---------------------------------------------------------------------
-    !&E                 ***  ROUTINE OBSTRUCTIONS_alloc_xyz  ***
-    !&E
-    !&E ** Purpose : Allocation of spatial obstruction tables
-    !&E
-    !&E ** History :
-    !&E       ! 2012-04-20 (F. Ganthy) Original code
-    !&E       ! 2014-08    (F. Ganthy) Add variables pre-initialization
-    !&E       ! 2014-10    (F. Ganthy) More modifications + computation of obstructions
-    !&E                                posture following Abdelrhman 2007
-    !&E       ! 2016-03    (F. Ganthy) Add fraction of sigma layers occupied by obstructions
-    !&E       ! 2017-02-16 (F. Ganthy) Some modifications:
-    !&E                                - Allowing multiple obstructions type in a single grid cell
-    !&E                                  --> allowed multispecific computation.
-    !&E                                  This imply that some tables must be allocated depending on (iv,k,i,j) or (iv,i,j)
-    !&E                                  These allocations are done within obst_alloc_xyz (because tables allocated within
-    !&E                                  obst_alloc_nbvar are only those read within namelist).
-    !&E                                - Changes on instantaneous obstruction state variables for future coupling with Zostera growth module
-    !&E                                - Differenciation of cylindric / parallelepipedic structures
-    !&E                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell)
-    !&E                                - Cleaning (removing useless parameters and tests)
-    !&E       ! 2017-04    (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
-    !&E       ! 2017-04    (F. Ganthy) Add simplified formulation (not using turbulence, but using roughness)
-    !&E       ! 2017-11    (F. Ganthy) Change order of initializations
-    !&E
-    !&E---------------------------------------------------------------------
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE OBSTRUCTIONS_alloc_xyz  ***
+   !!
+   !! ** Purpose : Allocation of spatial obstruction tables
+   !!
+   !! ** History :
+   !!       ! 2012-04-20 (F. Ganthy) Original code
+   !!       ! 2014-08    (F. Ganthy) Add variables pre-initialization
+   !!       ! 2014-10    (F. Ganthy) More modifications + computation of obstructions
+   !!                                posture following Abdelrhman 2007
+   !!       ! 2016-03    (F. Ganthy) Add fraction of sigma layers occupied by obstructions
+   !!       ! 2017-02-16 (F. Ganthy) Some modifications:
+   !!                                - Allowing multiple obstructions type in a single grid cell
+   !!                                  --> allowed multispecific computation.
+   !!                                  This imply that some tables must be allocated depending on (iv,k,i,j) or (iv,i,j)
+   !!                                  These allocations are DOne within obst_alloc_xyz (because tables allocated within
+   !!                                  obst_alloc_nbvar are only those read within namelist).
+   !!                                - Changes on instantaneous obstruction state variables for future coupling with Zostera growth module
+   !!                                - Differenciation of cylindric / parallelepipedic structures
+   !!                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell)
+   !!                                - Cleaning (removing useless parameters and tests)
+   !!       ! 2017-04    (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
+   !!       ! 2017-04    (F. Ganthy) Add simplified formulation (not using turbulence, but using roughness)
+   !!       ! 2017-11    (F. Ganthy) Change order of initializations
+   !!
+   !!---------------------------------------------------------------------
+   USE module_OBSTRUCTIONS ! for GLOBAL_2D_ARRAY,
+   IMPLICIT NONE
  
-    IMPLICIT NONE
- 
-    !! * Local declaration
- 
-    !!----------------------------------------------------------------------
-    !! * Executable part
-    !------------------------------------
-    ! Definition of effective kmax to use
-    !------------------------------------
-    obst_kmax = kmax
+   !! * Local declaration
 
-    !----------------------
-    ! Variables on (iv,i,j)
-    !----------------------
-    ALLOCATE(obst_dens_inst       (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_dens_inst(:,:,:)         = 0.0_rsh
-    ALLOCATE(obst_width_inst      (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_width_inst(:,:,:)        = 0.0_rsh
-    ALLOCATE(obst_thick_inst      (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_thick_inst(:,:,:)        = 0.0_rsh
-    ALLOCATE(obst_height_inst     (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_height_inst(:,:,:)       = 0.0_rsh
-    ALLOCATE(obst_area_index_inst (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_area_index_inst(:,:,:)   = 0.0_rsh
- 
-    ALLOCATE(obst_position        (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_position(:,:,:)          = 0.0_rsh
-    ALLOCATE(obst_height          (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_height(:,:,:)            = 0.0_rsh
-    ALLOCATE(obst_oai             (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_oai(:,:,:)               = 0.0_rsh
-    ALLOCATE(obst_fracxy          (1:obst_nbvar,imin:imax, jmin:jmax))
-    obst_fracxy(:,:,:)            = 0.0_rsh
- 
-    ALLOCATE(obst_a2d             (1:obst_nbvar+3,imin:imax, jmin:jmax))
-    obst_a2d(:,:,:)               = 0.0_rsh
-    ALLOCATE(obst_s2d             (1:obst_nbvar+3,imin:imax, jmin:jmax))
-    obst_s2d(:,:,:)               = 0.0_rsh
-    ALLOCATE(obst_z0obst          (1:obst_nbvar+3,imin:imax, jmin:jmax))
-    obst_z0obst(:,:,:)            = 0.0_rsh
- 
-    !-------------------
-    ! Variables on (i,j)
-    !-------------------
-    ALLOCATE(obst_roswat_bot      (imin:imax, jmin:jmax))
-    obst_roswat_bot               = 0.0_rsh
-    ALLOCATE(obst_fu_i            (imin:imax, jmin:jmax))
-    obst_fu_i(:,:)                = 0.0_rsh
-    ALLOCATE(obst_fv_i            (imin:imax, jmin:jmax))
-    obst_fv_i(:,:)                = 0.0_rsh
-    ALLOCATE(obst_fu_e            (imin:imax, jmin:jmax))
-    obst_fu_e(:,:)                = 0.0_rsh
-    ALLOCATE(obst_fv_e            (imin:imax, jmin:jmax))
-    obst_fv_e(:,:)                = 0.0_rsh
-    ALLOCATE(obst_z0bed           (imin:imax, jmin:jmax))
-    obst_z0bed(:,:)               = 0.0_rsh
-    ALLOCATE(obst_bstress         (imin:imax, jmin:jmax))
-    obst_bstress(:,:)             = 0.0_rsh
-    ALLOCATE(obst_bstressc        (imin:imax, jmin:jmax))
-    obst_bstressc(:,:)            = 0.0_rsh
-    ALLOCATE(obst_bstressw        (imin:imax, jmin:jmax))
-    obst_bstressw(:,:)            = 0.0_rsh
-    ALLOCATE(obst_z0bstress       (imin:imax, jmin:jmax))
-    obst_z0bstress(:,:)           = 0.0_rsh
-    ALLOCATE(obst_raphbx          (imin:imax, jmin:jmax))
-    obst_raphbx(:,:)              = 0.0_rsh
-    ALLOCATE(obst_raphby          (imin:imax, jmin:jmax))
-    obst_raphby(:,:)              = 0.0_rsh
-     ALLOCATE(obst_frofonx        (imin:imax, jmin:jmax))
-    obst_frofonx(:,:)             = 0.0_rsh
-    ALLOCATE(obst_frofony         (imin:imax, jmin:jmax))
-    obst_frofony(:,:)             = 0.0_rsh
-    ALLOCATE(obst_dens_mean       (imin:imax, jmin:jmax))
-    obst_dens_mean(:,:)           = 0.0_rsh
-    ALLOCATE(obst_width_mean      (imin:imax, jmin:jmax))
-    obst_width_mean(:,:)          = 0.0_rsh
-    ALLOCATE(obst_height_mean     (imin:imax, jmin:jmax))
-    obst_height_mean(:,:)         = 0.0_rsh
-    !------------------------
-    ! Variables on (iv,k,i,j)
-    !------------------------
-    ALLOCATE(obst_dens3d          (1:obst_nbvar,1:obst_kmax,imin:imax, jmin:jmax))
-    obst_dens3d(:,:,:,:)          = 0.0_rsh
-    ALLOCATE(obst_width3d         (1:obst_nbvar,1:obst_kmax,imin:imax, jmin:jmax))
-    obst_width3d(:,:,:,:)         = 0.0_rsh
-    ALLOCATE(obst_thick3d         (1:obst_nbvar,1:obst_kmax,imin:imax, jmin:jmax))
-    obst_thick3d(:,:,:,:)         = 0.0_rsh
-    ALLOCATE(obst_theta3d         (1:obst_nbvar,1:obst_kmax,imin:imax, jmin:jmax))
-    obst_theta3d(:,:,:,:)         = 0.0_rsh
-    ALLOCATE(obst_fracz3d         (1:obst_nbvar,1:obst_kmax,imin:imax, jmin:jmax))
-    obst_fracz3d(:,:,:,:)         = 0.0_rsh
-    ALLOCATE(obst_drag3d          (1:obst_nbvar,1:obst_kmax,imin:imax, jmin:jmax))
-    obst_drag3d(:,:,:,:)          = 0.0_rsh
- 
-    ALLOCATE(obst_a3d             (1:obst_nbvar+3,1:obst_kmax,imin:imax, jmin:jmax))
-    obst_a3d(:,:,:,:)             = 0.0_rsh
-    ALLOCATE(obst_s3d             (1:obst_nbvar+3,1:obst_kmax,imin:imax, jmin:jmax))
-    obst_s3d(:,:,:,:)             = 0.0_rsh
-    !---------------------
-    ! Variables on (k,i,j)
-    !---------------------
-    ALLOCATE(obst_zc              (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_zc(:,:,:)                = 0.0_rsh
-    ALLOCATE(obst_dz              (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_dz(:,:,:)                = 0.0_rsh
-    ALLOCATE(obst_uz              (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_uz(:,:,:)                = 0.0_rsh
-    ALLOCATE(obst_vz              (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_vz(:,:,:)                = 0.0_rsh
-    ALLOCATE(obst_fuz_i           (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_fuz_i(:,:,:)             = 0.0_rsh
-    ALLOCATE(obst_fvz_i           (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_fvz_i(:,:,:)             = 0.0_rsh
-    ALLOCATE(obst_fuz_e           (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_fuz_e(:,:,:)             = 0.0_rsh
-    ALLOCATE(obst_fvz_e           (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_fvz_e(:,:,:)             = 0.0_rsh
-    ALLOCATE(obst_t               (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_t(:,:,:)                 = 0.0_rsh
-    ALLOCATE(obst_tau             (1:obst_kmax,imin:imax, jmin:jmax))
-    obst_tau(:,:,:)               = 0.0_rsh
-    !------------------------------
+   !!----------------------------------------------------------------------
+   !! * Executable part
+   !----------------------
+   ! Variables on (iv,i,j)
+   !----------------------
+   ALLOCATE(obst_dens_inst       (1:obst_nbvar,GLOBAL_2D_ARRAY))
+   obst_dens_inst(:,:,:)         = 0.0_rsh
+   ALLOCATE(obst_width_inst      (1:obst_nbvar,GLOBAL_2D_ARRAY))
+   obst_width_inst(:,:,:)        = 0.0_rsh
+   ALLOCATE(obst_thick_inst      (1:obst_nbvar,GLOBAL_2D_ARRAY))
+   obst_thick_inst(:,:,:)        = 0.0_rsh
+   ALLOCATE(obst_height_inst     (1:obst_nbvar,GLOBAL_2D_ARRAY))
+   obst_height_inst(:,:,:)       = 0.0_rsh
+   ALLOCATE(obst_area_index_inst (1:obst_nbvar,GLOBAL_2D_ARRAY))
+   obst_area_index_inst(:,:,:)   = 0.0_rsh
+
+   ALLOCATE(obst_position        (1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_position(:,:,:)          = 0.0_rsh
+   ALLOCATE(obst_height          (1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_height(:,:,:)            = 0.0_rsh
+   ALLOCATE(obst_oai             (1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_oai(:,:,:)               = 0.0_rsh
+   ALLOCATE(obst_fracxy          (1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_fracxy(:,:,:)            = 0.0_rsh
+
+   ALLOCATE(obst_a2d             (1:obst_nbvar+3, GLOBAL_2D_ARRAY))
+   obst_a2d(:,:,:)               = 0.0_rsh
+   ALLOCATE(obst_s2d             (1:obst_nbvar+3, GLOBAL_2D_ARRAY))
+   obst_s2d(:,:,:)               = 0.0_rsh
+   ALLOCATE(obst_z0obst          (1:obst_nbvar+3, GLOBAL_2D_ARRAY))
+   obst_z0obst(:,:,:)            = 0.0_rsh
+
+   !-------------------
+   ! Variables on (i,j)
+   !-------------------
+
+   ALLOCATE(obst_fu            (GLOBAL_2D_ARRAY))
+   obst_fu(:,:)                = 0.0_rsh
+   ALLOCATE(obst_fv            (GLOBAL_2D_ARRAY))
+   obst_fv(:,:)                = 0.0_rsh
+
+   ALLOCATE(obst_z0bed           (GLOBAL_2D_ARRAY))
+   obst_z0bed(:,:)               = 0.0_rsh
+   ALLOCATE(obst_bstress         (GLOBAL_2D_ARRAY))
+   obst_bstress(:,:)             = 0.0_rsh
+   ALLOCATE(obst_bstressc        (GLOBAL_2D_ARRAY))
+   obst_bstressc(:,:)            = 0.0_rsh
+   ALLOCATE(obst_bstressw        (GLOBAL_2D_ARRAY))
+   obst_bstressw(:,:)            = 0.0_rsh
+   ALLOCATE(obst_z0bstress       (GLOBAL_2D_ARRAY))
+   obst_z0bstress(:,:)           = 0.0_rsh
+
+   ALLOCATE(obst_height_mean     (GLOBAL_2D_ARRAY))
+   obst_height_mean(:,:)         = 0.0_rsh
+   !------------------------
+   ! Variables on (iv,i,j,k)
+   !------------------------
+   ALLOCATE(obst_dens3d          (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_dens3d(:,:,:,:)          = 0.0_rsh
+   ALLOCATE(obst_width3d         (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_width3d(:,:,:,:)         = 0.0_rsh
+   ALLOCATE(obst_thick3d         (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_thick3d(:,:,:,:)         = 0.0_rsh
+   ALLOCATE(obst_theta3d         (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_theta3d(:,:,:,:)         = 0.0_rsh
+   ALLOCATE(obst_fracz3d         (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_fracz3d(:,:,:,:)         = 0.0_rsh
+   ALLOCATE(obst_drag3d          (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   obst_drag3d(:,:,:,:)          = 0.0_rsh
+   ALLOCATE(obst_a3d             (1:obst_nbvar+3, GLOBAL_2D_ARRAY, 1:obst_kmax))
+   obst_a3d(:,:,:,:)             = 0.0_rsh
+   ALLOCATE(obst_s3d             (1:obst_nbvar+3, 1:obst_kmax, GLOBAL_2D_ARRAY))
+   obst_s3d(:,:,:,:)             = 0.0_rsh
+   !---------------------
+   ! Variables on (i,j,k)
+   !---------------------
+   ALLOCATE(obst_fuz             (GLOBAL_2D_ARRAY, 1:obst_kmax))
+   obst_fuz(:,:,:)             = 0.0_rsh
+   ALLOCATE(obst_fvz             (GLOBAL_2D_ARRAY, 1:obst_kmax))
+   obst_fvz(:,:,:)             = 0.0_rsh
+   ALLOCATE(obst_t               (GLOBAL_2D_ARRAY, 1:obst_kmax))
+   obst_t(:,:,:)                 = 0.0_rsh
+   ALLOCATE(obst_tau             (GLOBAL_2D_ARRAY, 1:obst_kmax))
+   obst_tau(:,:,:)               = 0.0_rsh
+   !------------------------------
  END SUBROUTINE OBSTRUCTIONS_alloc_xyz
  
     !!==========================================================================================================
- 
- SUBROUTINE OBSTRUCTIONS_alloc_other
- 
-    !&E---------------------------------------------------------------------
-    !&E                 ***  ROUTINE OBSTRUCTIONS_alloc_other  ***
-    !&E
-    !&E ** Purpose : Allocation of other obstruction tables
-    !&E
-    !&E ** Description : 
-    !&E
-    !&E ** Called by : casxxx or obst_init
-    !&E
-    !&E ** External calls :
-    !&E
-    !&E ** Used ij-arrays :
-    !&E
-    !&E ** Modified variables : 
-    !&E
-    !&E ** Reference :
-    !&E
-    !&E ** History :
-    !&E       ! 2016-08-16 (F. Ganthy) Original code
-    !&E
-    !&E---------------------------------------------------------------------
- 
-    IMPLICIT NONE
-    !!----------------------------------------------------------------------
-    !! * Executable part
-    !--------------------------
-    ! OTHER : Abdelrhman method
-    ALLOCATE(obst_abdel_fx     (1:obst_nbvar,1:MAXVAL(obst_c_abdel_nmax)))
-    obst_abdel_fx (:,:)        = 0.0_rsh
-    ALLOCATE(obst_abdel_fz     (1:obst_nbvar,1:MAXVAL(obst_c_abdel_nmax)))
-    obst_abdel_fz(:,:)         = 0.0_rsh
-    ALLOCATE(obst_abdel_zcent  (1:obst_nbvar,1:MAXVAL(obst_c_abdel_nmax)))
-    obst_abdel_zcent(:,:)      = 0.0_rsh
-    ALLOCATE(obst_abdel_t0cent (1:obst_nbvar,1:MAXVAL(obst_c_abdel_nmax)))
-    obst_abdel_t0cent(:,:)     = 0.0_rsh
-    ALLOCATE(obst_abdel_t1cent (1:obst_nbvar,1:MAXVAL(obst_c_abdel_nmax)))
-    obst_abdel_t1cent(:,:)     = 0.0_rsh
-    ALLOCATE(obst_abdel_dtheta (1:obst_nbvar,1:MAXVAL(obst_c_abdel_nmax)))
-    obst_abdel_dtheta(:,:)     = 0.0_rsh
-    ALLOCATE(obst_abdel_uvcent (1:obst_nbvar,1:MAXVAL(obst_c_abdel_nmax)))
-    obst_abdel_uvcent(:,:)     = 0.0_rsh
-    ALLOCATE(obst_abdel_zn     (1:obst_nbvar,0:MAXVAL(obst_c_abdel_nmax)+1))
-    obst_abdel_zn(:,:)         = 0.0_rsh
-    ALLOCATE(obst_abdel_tn     (1:obst_nbvar,0:MAXVAL(obst_c_abdel_nmax)+1))
-    obst_abdel_tn(:,:)         = 0.0_rsh
-    !--------------------------
- END SUBROUTINE OBSTRUCTIONS_alloc_other
- 
-    !!==========================================================================================================
- 
- SUBROUTINE OBSTRUCTIONS_dealloc
- 
-    !&E---------------------------------------------------------------------
-    !&E                 ***  ROUTINE OBSTRUCTIONS_dealloc  ***
-    !&E
-    !&E ** Purpose : Deallocation of variables
-    !&E
-    !&E ** History :
-    !&E       ! 2012-04-20 (F. Ganthy) Original code
-    !&E       ! 2016-03-11 (F. Ganthy) Add fraction of sigma layers occupied by obstructions
-    !&E       ! 2016-08    (F. Ganthy) Optimization on Abdelrhman 2007 method
-    !&E       ! 2017-02-16 (F. Ganthy) Some modifications:
-    !&E                                - Allowing multiple obstructions type in a single grid cell
-    !&E                                  --> allowed multispecific computation.
-    !&E                                  This imply that some tables must be allocated depending on (iv,k,i,j) or (iv,i,j)
-    !&E                                  These allocations are done within obst_alloc_xyz (because tables allocated within
-    !&E                                  obst_alloc_nbvar are only those read within namelist).
-    !&E                                - Changes on instantaneous obstruction state variables for future coupling with Zostera growth module
-    !&E                                - Differenciation of cylindric / parallelepipedic structures
-    !&E                                - Taking into accounts for horizontal fractionning of obstructions (no empty grid cell)
-    !&E                                - Cleaning (removing useless parameters and tests)
-    !&E       ! 2017-04    (F. Ganthy) Allow 3D obstructions (e.g. oyster bags)
-    !&E       ! 2017-04    (F. Ganthy) Add simplified formulation (not using turbulence, but using roughness)
-    !&E
-    !&E---------------------------------------------------------------------
-    IMPLICIT NONE
- 
-    !! * Local declaration
- 
-    !!----------------------------------------------------------------------
-    !! * Executable part
-    !-------------------------
-    ! Variables on (iv)
-    !--------------------
-    DEALLOCATE(obst_varnum)
-    DEALLOCATE(obst_nbhnorm)
-    DEALLOCATE(obst_fracxy_type)
-    DEALLOCATE(obst_c_abdel_nmax)
- 
-    DEALLOCATE(obst_l_filechar)
-    DEALLOCATE(obst_l_filedistri)
-    DEALLOCATE(obst_l_init_spatial)
-    DEALLOCATE(obst_l_flexible)
-    DEALLOCATE(obst_l_cylindre)
-    DEALLOCATE(obst_l_downward)
-    DEALLOCATE(obst_l_3dobst)
-    DEALLOCATE(obst_l_noturb)
-    DEALLOCATE(obst_l_abdelrough_cste)
-    DEALLOCATE(obst_l_fracxy)
-    DEALLOCATE(obst_l_abdelposture)
-    DEALLOCATE(obst_l_param_height)
-    DEALLOCATE(obst_l_drag_cste)
-    DEALLOCATE(obst_l_z0bstress)
- 
-    DEALLOCATE(obst_z0bstress_option)
- 
-    DEALLOCATE(obst_varname)
-    DEALLOCATE(obst_fn_vardat)
-    DEALLOCATE(obst_fn_char)
-    DEALLOCATE(obst_fn_distrib)
- 
-    DEALLOCATE(obst_i_height)
-    DEALLOCATE(obst_i_width)
-    DEALLOCATE(obst_i_thick)
-    DEALLOCATE(obst_i_dens)
- 
-    DEALLOCATE(obst_c_rho)
-    DEALLOCATE(obst_c_drag)
-    DEALLOCATE(obst_c_lift)
-    DEALLOCATE(obst_c_z0bstress)
-    DEALLOCATE(obst_c_fracxy_k0)
-    DEALLOCATE(obst_c_fracxy_k1)
-    DEALLOCATE(obst_c_fracxy_l)
-    DEALLOCATE(obst_c_crough_x0)
-    DEALLOCATE(obst_c_crough_x1)
-    DEALLOCATE(obst_c_lz)
-    DEALLOCATE(obst_c_shelter)
-    DEALLOCATE(obst_c_height_x0)
-    DEALLOCATE(obst_c_height_x1)
-    DEALLOCATE(obst_c_z0bstress_x0)
-    DEALLOCATE(obst_c_z0bstress_x1)
-    DEALLOCATE(obst_c_z0bstress_x2)
- 
-    !----------------------
-    ! Variables on (iv,i,j)
-    !----------------------
-    DEALLOCATE(obst_position)
- 
-    DEALLOCATE(obst_dens_inst)
-    DEALLOCATE(obst_width_inst)
-    DEALLOCATE(obst_thick_inst)
-    DEALLOCATE(obst_height_inst)
-    DEALLOCATE(obst_area_index_inst)
- 
-    DEALLOCATE(obst_height)
-    DEALLOCATE(obst_oai)
-    DEALLOCATE(obst_fracxy)
- 
-    DEALLOCATE(obst_a2d)
-    DEALLOCATE(obst_s2d)
-    DEALLOCATE(obst_z0obst)
- 
-    !-------------------
-    ! Variables on (i,j)
-    !-------------------
-    DEALLOCATE(obst_fu_i)
-    DEALLOCATE(obst_fv_i)
-    DEALLOCATE(obst_fu_e)
-    DEALLOCATE(obst_fv_e)
-    DEALLOCATE(obst_z0bed)
-    DEALLOCATE(obst_bstress)
-    DEALLOCATE(obst_bstressc)
-    DEALLOCATE(obst_bstressw)
-    DEALLOCATE(obst_z0bstress)
- 
-    DEALLOCATE(obst_raphbx)
-    DEALLOCATE(obst_raphby)
-    DEALLOCATE(obst_frofonx)
-    DEALLOCATE(obst_frofony)
- 
-    DEALLOCATE(obst_dens_mean)
-    DEALLOCATE(obst_width_mean)
-    DEALLOCATE(obst_height_mean)
-    !------------------------
-    ! Variables on (iv,k,i,j)
-    !------------------------
-    DEALLOCATE(obst_dens3d)
-    DEALLOCATE(obst_width3d)
-    DEALLOCATE(obst_thick3d)
-    DEALLOCATE(obst_theta3d)
-    DEALLOCATE(obst_fracz3d)
-    DEALLOCATE(obst_drag3d)
- 
-    DEALLOCATE(obst_a3d)
-    DEALLOCATE(obst_s3d)
-    !---------------------
-    ! Variables on (k,i,j)
-    !---------------------
-    DEALLOCATE(obst_zc)
-    DEALLOCATE(obst_dz)
-    DEALLOCATE(obst_uz)
-    DEALLOCATE(obst_vz)
-    DEALLOCATE(obst_fuz_i)
-    DEALLOCATE(obst_fvz_i)
-    DEALLOCATE(obst_fuz_e)
-    DEALLOCATE(obst_fvz_e)
-    DEALLOCATE(obst_t)
-    DEALLOCATE(obst_tau)
-    !---------------------
-    ! Variables on (other)
-    !---------------------
-    DEALLOCATE(obst_abdel_fx)
-    DEALLOCATE(obst_abdel_fz)
-    DEALLOCATE(obst_abdel_zcent)
-    DEALLOCATE(obst_abdel_t0cent)
-    DEALLOCATE(obst_abdel_t1cent)
-    DEALLOCATE(obst_abdel_dtheta)
-    DEALLOCATE(obst_abdel_uvcent)
-    DEALLOCATE(obst_abdel_zn)
-    DEALLOCATE(obst_abdel_tn)
- 
-    DEALLOCATE(obst_dens_norm)
-    DEALLOCATE(obst_height_norm)
-    DEALLOCATE(obst_dens_t)
-    DEALLOCATE(obst_width_t)
-    DEALLOCATE(obst_thick_t)
-    DEALLOCATE(obst_height_t)
-    !-------------------------
- END SUBROUTINE OBSTRUCTIONS_dealloc
- 
-!!==========================================================================================================
- 
-
 
 #endif
 END MODULE initOBSTRUCTIONS
