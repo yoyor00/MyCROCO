@@ -82,7 +82,7 @@
 
       integer :: omp_get_num_threads, omp_get_thread_num
 
-      integer :: imm 
+      integer :: imm
       character(len=22) :: vnamr, vnami, pnam 
 !     not useful if iom_swap ok
 !      character(len=10) :: cdname
@@ -112,43 +112,16 @@
       type(model_mode_loc), pointer :: pdl => null() 
       type(model_mode_glo), pointer :: pdg => null()
 
-      set_mode : if ( imm==0 ) then
+      set_mode : if (( imm==0 ).or.( imm==1 )) then
           
           ilc=1+iic-ntstart   ! number of time step since rst
           ! Must be > 1 to get 'once' variables 
-          call iom_swap('crocox')
-          print*,'In output_oa SLOW ilc and max... ',ilc,max(ilc-1,1)
-          call xios_update_calendar(max(ilc-1,1))
-          !CALL xios_get_handle(TRIM(cdname))
-          !CALL xios_set_current_context(croco_hdl)
-          !IF (dt<1) THEN
-          ! call xios_send_field("time",ilc)
-          !ELSE 
-          ! call xios_send_field("time",time)
-          !ENDIF
+          if (ilc == 0) ilc=1
+           call xios_update_calendar(ilc)
+          if (xios_field_is_active("time")) then
+           call xios_send_field("time",time)
+          endif
 
-      else if ( imm==1 ) then set_mode
-
-          !ilc=(1+iic-ntstart)*ndtfast+iif   ! number of time step since restart
-          ilc=(iic-ntstart)*ndtfast+iif   ! number of time step since restart
-         ! Must be > 1 to get 'once' variables 
-          !BUG BLXD call xios_update_calendar(max(ilc-1,1))
-
-          !ilc=iif*ntimes  ! number of fast time step since rst
-          ! Must be > 1 to get 'once' variables 
-          call iom_swap('crocoxfast')
-          print*,'In output_oa FAST ilc and max... ',ilc,max(ilc-1,1)
-
-          call xios_update_calendar(max(ilc-1,1))
-          !IF (dtfast<1) THEN
-          !call xios_send_field("time",ilc)
-          !ELSE 
-! BLXD include nbq.h encadre de cles CPP adequat
-          ! call xios_send_field("time",time_nbq)
-          !ENDIF
-
-          !CALL xios_get_handle(TRIM(cdname))
-          !CALL xios_set_current_context(croco_hdl)
 
       end if set_mode
 
@@ -186,15 +159,14 @@
         end if oa_stop2
       
 #ifdef OA_TRACES
-#if defined MILES || defined IGW
+#if defined MILES || defined IGW || define TANK
 
         call traces_oa1(verbose_oa)
 #endif
 #endif
 
         
-        set_choix : if( .true. ) then
-!if ( cnb_oa(iv) == imm ) then
+        set_choix : if ( cnb_oa(iv) == imm ) then
 
 
 ! 3Dvar
@@ -295,13 +267,11 @@ C$OMP BARRIER
 
               pdg   => mdg(imm) 
               nsclg =  nzupd0d_oa(imm)
-
-              call scal0d_oa_out_full( ww_re,ww_im
+              call scal0d_oa_out_full( imm,ww_re,ww_im
      &                                ,vvnamr,vvnami
      &                                ,pper,ppnam
      &                                ,inam,jnam,knam
      &                                ,if_imag_part)
-
 #ifdef OA_TRACES_XIOS             
                   write(*,fmt='(a,1(i5))') 
      &            '...OA-Scalogram : send re to XIOS subdom',mynode
@@ -309,7 +279,7 @@ C$OMP BARRIER
               call xios_send_field( trim(vvnamr), 
      &                  real(ww_re(1:nper_sclg, 1:nsclg)))
               if ( if_imag_part ) then
-#ifdef OA_TRACES_XIOS             
+#ifdef OA_TRACES_XIOS
                   write(*,fmt='(a,1(i5))') 
      &            '...OA-Scalogram : send im to XIOS subdom',mynode
 #endif
@@ -358,8 +328,7 @@ C$OMP BARRIER
               nsclg =  nsclg_loc(imm)
               ! if nsclg_loc=0 isclg=0 => array range 0:0
               isclg=min(1,nsclg) !isclg=min(1,nsclg_loc)
-              !if ( nsclg_loc > 0 ) then
-              call scal0d_oa_out_loc(  wl_re,wl_im
+              call scal0d_oa_out_loc(  imm, wl_re,wl_im
      &                                ,vvnamr,vvnami
      &                                ,perl,ppnam
      &                                ,inam,jnam
@@ -379,7 +348,9 @@ C$OMP BARRIER
                   write(*,fmt='(a,1(i5))') 
      &            '..OA-Scalogram-loc : send re to XIOS subdom',mynode
 #endif
-              call xios_send_field( trim(vvnamr), 
+
+          if (xios_field_is_active(trim(vvnamr)))
+     &        call xios_send_field( trim(vvnamr), 
      &                  real(wl_re(1:nper_sclg, isclg:nsclg)))
 
      !CRBS         write(stdout,fmt='(2i,1(ES22.15E2))')mynode,                !CRBE
@@ -389,14 +360,16 @@ C$OMP BARRIER
                   write(*,fmt='(a,1(i5))') 
      &            '..OA-Scalogram-loc : send im to XIOS subdom',mynode
 #endif
-              call xios_send_field( trim(vvnami), 
+          if (xios_field_is_active(trim(vvnami)))
+     &        call xios_send_field( trim(vvnami), 
      &                  real(wl_im(1:nper_sclg, isclg:nsclg)))
               endif
 #ifdef OA_TRACES_XIOS             
                   write(*,fmt='(a,1(i5))') 
      &            '..OA-Scalogram : send period to XIOS subdom',mynode
 #endif
-              call xios_send_field( trim(ppnam),
+          if (xios_field_is_active(trim(ppnam)))
+     &        call xios_send_field( trim(ppnam),
      &                  real(perl(1:nper_sclg, isclg:nsclg)))
      !&                    per0d_oa(1:nper_sclg_max, isclg:nsclg_loc))
 
@@ -422,7 +395,8 @@ C$OMP BARRIER
                   write(*,fmt='(a,1(i5))') 
      &            '..OA-Scalogram-loc :send re40 to XIOS subdo',mynode
 #endif
-              call xios_send_field( trim(vvnamr), 
+          if (xios_field_is_active(trim(vvnamr)))
+     &        call xios_send_field( trim(vvnamr), 
      &                  RESHAPE(
      &                  real(wl_re(1:nper_sclg, isclg:nsclg))
      &                  ,(/nper_sclg,0/) ) )
@@ -435,7 +409,8 @@ C$OMP BARRIER
                   write(*,fmt='(a,1(i5))') 
      &            '..OA-Scalogram-loc :send im40 to XIOS subdo',mynode
 #endif
-              call xios_send_field( trim(vvnami), 
+          if (xios_field_is_active(trim(vvnami)))
+     &        call xios_send_field( trim(vvnami), 
      &                  RESHAPE(
      &                  real(wl_im(1:nper_sclg, isclg:nsclg))
      &                  ,(/nper_sclg,0/) ) )
@@ -445,7 +420,8 @@ C$OMP BARRIER
                   write(*,fmt='(a,1(i5))') 
      &            '..OA-Scalogram :send period40 to XIOS subdo',mynode
 #endif
-              call xios_send_field( trim(ppnam),
+          if (xios_field_is_active(trim(ppnam)))
+     &        call xios_send_field( trim(ppnam),
      &                  RESHAPE(
      &                  real(perl(1:nper_sclg, isclg:nsclg))
      &                  ,(/nper_sclg,0/) ) )

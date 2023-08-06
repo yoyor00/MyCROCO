@@ -162,6 +162,10 @@
       !> External time step
       double precision, dimension(0:nmod_oa), target :: dti
 
+      !> Scalogram index and period axe name
+      character(len=20), dimension(0:nmod_oa), target :: oa_sclg_grd, &
+     &                   oa_sclg_dgrd, oa_sclg_axis, oa_sclg_dom, pervnam
+
       !> Shared Croco log io_unit
       integer :: io_unit
  
@@ -618,6 +622,10 @@
         
         call var_per_oa( .true., dti )
 
+        if ( scalogram_analysis .and. if_xios_output .and. if_xios_dom_grid )  then
+            call init_xios_sclg_dom_grid()
+        endif
+
         if(if_print_node) then
             if(scalogram_analysis) then
                 if(if_print_node)then
@@ -637,8 +645,10 @@
 
         ! Calculation of last dimension of var?d/scal0d_oa, i.e., nzupd?d_oa ?=2,3
         ! For model mode ichoix, calculation of the total number of scalogram nzupd0d_oa(ichoix)
-        call upd_init_oa(.false.,0)
-        if ( if_oa_fast_mode ) call upd_init_oa(.false.,1)
+        ! call upd_init_oa(.false.,0)
+        ! if ( if_oa_fast_mode ) call upd_init_oa(.false.,1)
+        call upd_init_oa(.false.)
+
    
 !.....if function returning true : init_parameter_oa = .true.
          
@@ -1669,6 +1679,35 @@
        return
        end subroutine var_copy_oa
 
+!------------------------------------------------------------------------------
+! PROCEDURE
+!
+! DESCRIPTION: initialise les noms des axes des scalograms pour XIOS 
+!
+!> @brief initialize scalogram axis names for XIOS outputs :
+!!        scalogram index, scalogram period
+!
+!------------------------------------------------------------------------------
+
+       subroutine init_xios_sclg_dom_grid()
+
+        implicit none
+
+        oa_sclg_grd (0)='oa_sclg_grd'
+        oa_sclg_dgrd(0)='oa_sclg_dgrd'
+        oa_sclg_axis(0)='oa_sclg_axis'
+        oa_sclg_dom (0)='oa_sclg_dom'
+        pervnam     (0)='persl'
+
+        if (nmod_oa>=1) then
+            oa_sclg_grd (1)='oa_sclg_grd_fast'
+            oa_sclg_dgrd(1)='oa_sclg_dgrd_fast'
+            oa_sclg_axis(1)='oa_sclg_axis_fast'
+            oa_sclg_dom (1)='oa_sclg_dom_fast'
+            pervnam     (1)='perfs'
+        endif
+
+       end subroutine init_xios_sclg_dom_grid
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
@@ -1769,12 +1808,22 @@
       tgv3d_oa(21) = 3
       tgvnam_oa(21) = 'rnbq_'
 
-!.....variable scalogram ubar:
+!.....scalogram for the fast mode density variable (must be consistent with var_oa rnbq code):
+      tgv_oa(51)   = 1 
+      tgv3d_oa(51) = 3
+      tgvnam_oa(51) = 'scalf'
+
+!.....scalogram for the zeta variable (must be consistent with var_oa zeta code):
+      tgv_oa(54)   = 1 
+      tgv3d_oa(54) = 2
+      tgvnam_oa(54) = 'scal_'
+
+!.....scalogram for the ubar variable (must be consistent with var_oa ubar code):
       tgv_oa(56)   = 1 
       tgv3d_oa(56) = 2
       tgvnam_oa(56) = 'scal_'
 
-!.....variable scalogram density:
+!.....scalogram for the density variable (must be consistent with the var_oa density code):
       tgv_oa(61)   = 1 
       tgv3d_oa(61) = 3
       tgvnam_oa(61) = 'scal_'
@@ -2238,13 +2287,9 @@
       ! For model mode ichoix, use the total number of scalogram nzupd0d_oa(ichoix)
       ! to allocate the scalogram arrays per0d_cr, (ijk)scal0d_cr, scal0d_cr
       ! required for outputs when option if_mpi_oa=T (i.e., mpi not handled by XIOS) 
-      print*,'bef upd_init_oa imm=0'
-
-      call upd_init_oa(.true.,0)
-
-      print*,'bef upd_init_oa imm=1'
-
-      if ( if_oa_fast_mode ) call upd_init_oa(.true.,1)
+      !call upd_init_oa(.true.,0)
+      !if ( if_oa_fast_mode ) call upd_init_oa(.true.,1)
+      call upd_init_oa(.true.)
 
 !$OMP END MASTER
 ! openMP barrier called few lines later if no CRITICAL region
@@ -2807,7 +2852,7 @@
              io_nodoa = set_io_nodoa(iv_g,mynode,6,5) ! [5/6](odd/even-iv)000+mynode
          end if
 
-         if (flag_s.eq..false.) then
+         if (flag_s .eqv. .false.) then
 
 
 !.... Check user values : openMP tile-thread modifying openMP SHARED module var. implicit synchro END SINGLE
@@ -5659,7 +5704,7 @@
 !! - Croco-OA module_parameter_oa not really needed for scalogram, modify allocation ?
 !------------------------------------------------------------------------------
 
-      subroutine upd_init_oa( flag_alloc, imm )
+      subroutine upd_init_oa( flag_alloc )
 
       use module_oa_variables
       use module_parameter_oa, only : allocate_3D_glob_array_oa_cplx  &
@@ -5673,7 +5718,7 @@
       implicit none
 
       logical, intent(in) :: flag_alloc
-      integer, intent(in) :: imm
+      integer :: imm
 
       integer                                                         &
        ic_u                                                           &
@@ -5693,7 +5738,7 @@
       nzupd2d_oa = 0
       nzupd1d_oa = 0
       !nzupd0d_oa = 0
-      nzupd0d_oa(imm) = 0
+      nzupd0d_oa(0:nmod_oa) = 0
 
       tvar_oa(1:maxtyp_oa,1:max_idcfg_oa,1:nmvar_oa) = 0
 
@@ -5720,11 +5765,13 @@
           else
              ! Currently scalogram only possible for a given point i,j,k
              ! Parameters for the global scal0d_cr(1:nper_sclg_max,1:nzupd0d) array
-             if ( cnb_oa(iv_u) == imm ) then
-                nzupd0d_oa(imm)    = nzupd0d_oa(imm) + 1
-                tupd_oa(iv_u) = nzupd0d_oa(imm) 
-                tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd0d_oa(imm)
-             endif
+             do imm=0,nmod_oa 
+                if ( cnb_oa(iv_u) == imm ) then
+                    nzupd0d_oa(imm)    = nzupd0d_oa(imm) + 1
+                    tupd_oa(iv_u) = nzupd0d_oa(imm) 
+                    tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd0d_oa(imm)
+                endif
+             enddo
           endif
         else if (tgv3d_oa(tv_oa(iv_u)).eq.2) then
           if ( .not. tv_sclg_oa(iv_u) )  then
@@ -5734,11 +5781,13 @@
           else
              ! Currently scalogram only possible for a given point i,j,k
              ! Parameters for the global scal0d_cr(1:nper_sclg_max,1:nzupd0d) array
-             if ( cnb_oa(iv_u) == imm ) then
-                 nzupd0d_oa(imm)    = nzupd0d_oa(imm) + 1
-                 tupd_oa(iv_u) = nzupd0d_oa(imm) 
-                 tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd0d_oa(imm)
-             endif
+             do imm=0,nmod_oa 
+                if ( cnb_oa(iv_u) == imm ) then
+                    nzupd0d_oa(imm)    = nzupd0d_oa(imm) + 1
+                    tupd_oa(iv_u) = nzupd0d_oa(imm) 
+                    tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd0d_oa(imm)
+                endif
+             enddo
           endif
         ! #BLXD TODO eventually see if 0D/1D analysis can be useful
         !       => var1d_oa, var0d_oa
@@ -5774,9 +5823,9 @@
 
 !.....History file:
         
-        print*,'bef his11 ',imm
+      do imm=0,nmod_oa 
         call history_oa(11,-1,-1,-1,-1, -1,imm)
-        print*,'aft his11 ',imm
+      enddo
 
 !$OMP END MASTER
 
@@ -5791,7 +5840,7 @@
       !        tiles        => if ( .not. allocated then allocate(...     
       ! This routine should be called by the MASTER thread only + synchronization
 
-      if ( imm==0 ) then
+      !if ( imm==0 ) then
       ! BLXD : allocation needed for the 1st model mode <=> imm=1
       !        TODO slow/fast model mode optimization :
       !        to reduce the size of output arrays each model mode
@@ -5799,9 +5848,9 @@
       !        OOP with array of derived type 
       !        having the number of model mode dimensions
       !        => mdl(imd)%var3d( GLOBAL_2_ARRAY, kmin:N, mdl%tupd_oa )
-        call allocate_3D_glob_array_oa_cplx( var3d_oa, nzupd3d_oa )
-        call allocate_2D_glob_array_oa_cplx( var2d_oa, nzupd2d_oa )
-      endif
+      call allocate_3D_glob_array_oa_cplx( var3d_oa, nzupd3d_oa )
+      call allocate_2D_glob_array_oa_cplx( var2d_oa, nzupd2d_oa )
+      !endif
 
       if ( scalogram_analysis ) then
           ! BLXD tmp
@@ -5809,7 +5858,7 @@
 
           ! BLXD TODO Scalogram
           ! Croco interface module_parameter_oa not really needed
-
+          do imm=0,nmod_oa 
 #ifndef MPI
             call allocate_0D_sclg_array_oa_cplx( mdg(imm)%scal0d_cr, nper_sclg_max(imm), nzupd0d_oa(imm) )
             call allocate_0D_sclg_array_oa_int ( mdg(imm)%iscal0d_cr, nzupd0d_oa(imm) )
@@ -5817,20 +5866,20 @@
             call allocate_0D_sclg_array_oa_int ( mdg(imm)%kscal0d_cr, nzupd0d_oa(imm) )
             call allocate_0D_sclg_array_oa_real( mdg(imm)%per0d_cr, nper_sclg_max(imm), nzupd0d_oa(imm) )
 #else
-        if ( if_mpi_oa ) then
+            if ( if_mpi_oa ) then
             call allocate_0D_sclg_array_oa_cplx( mdg(imm)%scal0d_cr, nper_sclg_max(imm), nzupd0d_oa(imm) )
             call allocate_0D_sclg_array_oa_int   ( mdg(imm)%iscal0d_cr, nzupd0d_oa(imm) )
             call allocate_0D_sclg_array_oa_int   ( mdg(imm)%jscal0d_cr, nzupd0d_oa(imm) )
             call allocate_0D_sclg_array_oa_int   ( mdg(imm)%kscal0d_cr, nzupd0d_oa(imm) )
             call allocate_0D_sclg_array_oa_real( mdg(imm)%per0d_cr, nper_sclg_max(imm), nzupd0d_oa(imm) )
-        endif
+            endif
 #endif
+         enddo
       endif
 !$OMP END MASTER
 
       endif if_flag_alloc
 
-      print*,'end upd_init_oa ',imm
 
       return
       end subroutine upd_init_oa
@@ -7400,18 +7449,20 @@
                 ju_glob = j_u 
 #endif
                  !if ( (lt_u==ltrec_fst_oa(iv_u)) ) then
-# ifdef IGW
+
+# if ( defined IGW || defined MILES || defined TANK )
+
+#   if defined IGW
                 if ( iu_glob ==itgt_glob .and. (k_u==ktgt) ) then
-# else
-#  ifdef MILES
+#   elif ( defined MILES || defined TANK )
                 if ( iu_glob==itgt_glob .and. ju_glob==jtgt_glob .and. k_u==ktgt ) then
-#  endif
-# endif
+#   endif
                      io_nodoa = set_io_nodoa(iv_u,mynode,4,3)! [3/4](odd/even-iv)000+mynode
                      ! old script iv_u =1 => 30000+mynode iv_u=2 => 40000+mynode
                      write (io_nodoa,fmt='(i5,i5,i3,2(1x,ES22.15E2))')i_u,j_u,k_u &
                          ,REAL(DBLE( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) )),REAL(DIMAG( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) ))
-                end if
+                endif
+# endif
              endif if_verb3d
 #endif
           else not_a_scalogram
@@ -10014,7 +10065,7 @@
        !if (ifl_oa_out.eq.1.or.(ifl_oa_out.eq.2.and.par%rank.eq.0)) then
         !if (ifl_oa_out.eq.1) call sequential_begin()
         open(unit=io_hist,file=trim(file_hist),position='append')   
-        write(io_hist,*) 'mise a jour des coord. des scalogram ip, perv =',i1_h,perv_oa(1,i1_h) 
+        write(io_hist,*) 'update coord. des scalogram ip, perv =',i1_h,perv_oa(1,i1_h) 
         write(io_hist,*) ' - index global du scalogram tupd_oa    ',tupd_oa(i2_h)
         close(io_hist)
         !if (ifl_oa_out.eq.1) call sequential_end()

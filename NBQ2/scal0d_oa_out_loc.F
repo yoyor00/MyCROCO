@@ -49,7 +49,7 @@
       use module_interface_oa, only : !scal0d_oa, per0d_oa
      &  mdl, model_mode_loc
      & ,tvar_oa , tgv_oa, tgvnam_oa, nzvc_oa, nzupd0d_oa
-     & ,nper_sclg_max
+     & ,nper_sclg_max, pervnam
      & ,nsclg_loc, v2locsclg, verbose_oa
       use module_oa_variables,  only : tv_oa     
      & ,tupd_oa, tv_sclg_oa, cnb_oa
@@ -67,7 +67,7 @@
      &       ,per0d    (1:nper_sclg_max(imm),nsclg_loc(imm))
 
       logical, intent(inout) :: if_imag_part
-      character(len=9),  intent(inout)  :: vnam_oa_r, vnam_oa_i 
+      character(len=9), intent(inout)   :: vnam_oa_r, vnam_oa_i 
       character(len=5), intent(inout)   :: pnam_oa 
       character(len=7), intent(inout)   :: inam_oa, jnam_oa
      &                                    ,knam_oa
@@ -133,7 +133,7 @@
 #endif
 
 #ifdef OA_TRACES
-#if defined MILES || defined IGW
+#if defined MILES || defined IGW || defined TANK
         if ( v2locsclg(iv)/=-99 ) call traces_oa1(verbose_oa)
 #endif
 #endif
@@ -216,7 +216,7 @@
 #endif
 
 #ifdef OA_TRACES
-#if defined MILES || defined IGW
+#if defined MILES || defined IGW || defined TANK
                        if(verbose_oa>=verbl) then
                        call traces2_oa_scal0d(ip) 
                        !call traces_oa_scal0d(ip) 
@@ -228,7 +228,7 @@
         endif
 
             pnam_oa = get_pnam_full( pnamfmt='(a5)'
-     &              ,pnamdp='perv_',verbose=verbose_oa )
+     &              ,pnamdp=pervnam(imm),verbose=verbose_oa )
 
        inam_oa = get_vnam_full( vnamfmt='(a5,a1)'
      &              ,vnams='i',verbose=verbose_oa)
