@@ -126,6 +126,12 @@
          var_oa = rho_nbq(i_v,j_v,k_v)
 #endif
 ! Scalogram >>>
+#ifdef M3FAST
+      elseif (ivar_v.eq.51) then
+         var_oa = rho_nbq(i_v,j_v,k_v)
+#endif
+      elseif (ivar_v.eq.54) then
+         var_oa = zeta(i_v,j_v,fast_indx_out)
       elseif (ivar_v.eq.56) then
          var_oa = ubar(i_v,j_v,fast_indx_out)
       elseif (ivar_v.eq.61) then

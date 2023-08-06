@@ -610,7 +610,7 @@
 
 #if defined ONLINE_ANALYSIS
       SUBROUTINE set_scalogram_axis( cdid
-     &                         ,nzv_oa, nsclg_glo
+     &                         ,nsclg_glo
      &                         ,nsclg_loc
      &                         ,sclg_coord1D, isclg_beg
      &                         ,mynode )
@@ -626,7 +626,7 @@
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*)      , INTENT(in) ::   cdid
       !> Module OA variable names but passed as args IN 
-      INTEGER, INTENT(IN) :: nzv_oa, nsclg_glo
+      INTEGER, INTENT(IN) :: nsclg_glo
       INTEGER, INTENT(IN) :: nsclg_loc, isclg_beg
       INTEGER, INTENT(IN) :: mynode 
       !> Local MPI process/global scalogram indices index_s_oa/index_s_cr
@@ -693,7 +693,7 @@
 
 #if defined ONLINE_ANALYSIS
       SUBROUTINE set_scalogram_dom( cdid
-     &                         ,nzv_oa, nsclg_glo
+     &                         ,nsclg_glo
      &                         ,nsclg_loc, nper_sclg_max
      &                         ,sclg_coord1D, isclg_beg
      &                         ,period_coord2D
@@ -710,7 +710,7 @@
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*)      , INTENT(in) ::   cdid
       !> Module OA variable names but passed as args IN 
-      INTEGER, INTENT(IN) :: nzv_oa, nsclg_glo,  nper_sclg_max
+      INTEGER, INTENT(IN) :: nsclg_glo,  nper_sclg_max
       INTEGER, INTENT(IN) :: nsclg_loc, isclg_beg
       INTEGER, INTENT(IN) :: mynode 
       !> Local MPI process/global scalogram indices index_s_oa/index_s_cr
@@ -1764,6 +1764,7 @@ C 				  endif
       CHARACTER(len=*),OPTIONAL,INTENT(IN) :: cdnamin
 
 # include "param.h"
+
 # include "compute_tile_bounds.h"
       
       CALL init_xios_tile (Istr,Iend,Jstr,Jend)
@@ -1795,7 +1796,10 @@ C 				  endif
       use module_oa_variables, only : nzv_oa
       use module_interface_oa, only : nzupd0d_oa, nsclg_loc, isclg_beg
      &                               ,nper_sclg_max
-     &                               ,model_mode_glo, mdg
+     &                               ,model_mode_glo, mdg, nmod_oa
+     &                               ,oa_sclg_grd,oa_sclg_dgrd
+     &                               ,oa_sclg_axis, oa_sclg_dom
+
 #ifdef MPI
      &                               ,model_mode_loc, mdl
 #endif
@@ -1804,7 +1808,6 @@ C 				  endif
      &                               ,if_record_sclg_ijpoints
      &                               ,if_xios_dom_grid
 
-      use module_oa_periode,   only : nper_sclg_max
 #endif
       !    
       IMPLICIT NONE
@@ -1948,26 +1951,34 @@ C 				  endif
 
         oa_dom : if ( if_xios_dom_grid ) then
 
-          if ( .not. xios_is_valid_grid("oa_sclg_dgrd") ) then
+          oa_mmode_loop : do imd=0,nmod_oa
+
+          if ( .not. xios_is_valid_grid(oa_sclg_dgrd(imd)) ) then
             print*,'ERROR OA : oa_sclg_dgrd XIOS INvalid grid'
+            print*,oa_sclg_dgrd(imd)
             stop
           endif
 
           if  (if_record_sclg_ijpoints) then
 
-           if ( .not. xios_is_valid_grid("oa_sclg_grd") ) then
+           if ( .not. xios_is_valid_grid(oa_sclg_grd(imd)) ) then
              print*,'ERROR OA : oa_sclg_grd XIOS INvalid grid'
+             print*,oa_sclg_grd(imd)
              stop
            endif
 
           endif
 
+          enddo oa_mmode_loop
+
+
 #ifdef MPI
           distributed_sclg_axis : if ( .not. if_mpi_oa ) then
-            ! BLXD remove nzv_oa unused var
 
-            CALL set_scalogram_dom( "oa_sclg_dom"
-     &                           ,nzv_oa
+          oa_mmode_loop0 : do imd=0,nmod_oa
+
+            ! BLXD remove nzv_oa unused var
+            CALL set_scalogram_dom( oa_sclg_dom(imd)
      &                           ,nzupd0d_oa(imd)
      &                           ,nsclg_loc(imd)
      &                           ,nper_sclg_max(imd)
@@ -1979,30 +1990,33 @@ C 				  endif
 
             ijkscal : if  (if_record_sclg_ijpoints) then
 
-                CALL set_scalogram_axis( "oa_sclg_axis"
-     &                           ,nzv_oa
+                CALL set_scalogram_axis( oa_sclg_axis(imd)
      &                           ,nzupd0d_oa(imd)
      &                           ,nsclg_loc(imd)
      &                           ,mdl(imd)%index_s_oa, isclg_beg(imd)
      &                           ,mynode  )
             else ijkscal
 
-             if(xios_is_valid_axis("oa_sclg_axis"))then
-              call xios_set_axis_attr( "oa_sclg_axis"
+             if(xios_is_valid_axis(oa_sclg_axis(imd)))then
+              call xios_set_axis_attr( oa_sclg_axis(imd)
      &                                 ,n_glo=1)
              else
 !$OMP MASTER
               print*,'WARNING OA : INvalid XIOS axis'
+              print*,oa_sclg_axis(imd)
 !$OMP END MASTER
               !stop
              endif
 
             endif ijkscal
 
+          enddo oa_mmode_loop0
+
           else distributed_sclg_axis  
 
-            CALL set_scalogram_dom( "oa_sclg_dom"
-     &                           ,nzv_oa
+          oa_mmode_loop1 : do imd=0,nmod_oa
+
+            CALL set_scalogram_dom( oa_sclg_dom(imd)
      &                           ,nzupd0d_oa(imd)
      &                           ,nzupd0d_oa(imd)
      &                           ,nper_sclg_max(imd)
@@ -2014,8 +2028,7 @@ C 				  endif
 
             ijkscal2 : if  (if_record_sclg_ijpoints) then
 
-                CALL set_scalogram_axis( "oa_sclg_axis"
-     &                           ,nzv_oa
+                CALL set_scalogram_axis( oa_sclg_axis(imd)
      &                           ,nzupd0d_oa(imd)
      &                           ,nzupd0d_oa(imd)
      &                           ,mdg(imd)%index_s_cr, 0
@@ -2023,17 +2036,20 @@ C 				  endif
 
             else ijkscal2
 
-             if(xios_is_valid_axis("oa_sclg_axis"))then
-              call xios_set_axis_attr( "oa_sclg_axis"
+             if(xios_is_valid_axis(oa_sclg_axis(imd)))then
+              call xios_set_axis_attr( oa_sclg_axis(imd)
      &                                 ,n_glo=1)
              else
 !$OMP MASTER
               print*,'WARNING OA : INvalid XIOS axis'
+              print*,oa_sclg_axis(imd)
 !$OMP END MASTER
               !stop
              endif
 
             endif ijkscal2
+
+          enddo oa_mmode_loop1
 
           endif distributed_sclg_axis  
 
@@ -2045,9 +2061,9 @@ C 				  endif
           print*,'- test => comment stop/compile/restart'
           stop
 
+          oa_mmode_loop2 : do imd=0,nmod_oa
 
-          CALL set_scalogram_dom( "oa_sclg_dom"
-     &                         ,nzv_oa
+          CALL set_scalogram_dom( oa_sclg_dom(imd)
      &                         ,nzupd0d_oa(imd)
      &                         ,nzupd0d_oa(imd)
      &                         ,nper_sclg_max(imd)
@@ -2059,8 +2075,7 @@ C 				  endif
 
           ijkscal3 : if  (if_record_sclg_ijpoints) then
 
-            CALL set_scalogram_axis( "oa_sclg_axis"
-     &                           ,nzv_oa
+            CALL set_scalogram_axis( oa_sclg_axis(imd)
      &                           ,nzupd0d_oa(imd)
      &                           ,nzupd0d_oa(imd)
      &                           ,mdg(imd)%index_s_cr, 0
@@ -2069,12 +2084,13 @@ C 				  endif
 
           else ijkscal3
 
-             if(xios_is_valid_axis("oa_sclg_axis"))then
-              call xios_set_axis_attr( "oa_sclg_axis"
+             if(xios_is_valid_axis(oa_sclg_axis(imd)))then
+              call xios_set_axis_attr( oa_sclg_axis(imd)
      &                                 ,n_glo=1)
              else
 !$OMP MASTER
               print*,'WARNING OA : INvalid XIOS axis'
+              print*,oa_sclg_axis(imd)
 !$OMP END MASTER
               !stop
              endif
@@ -2082,6 +2098,8 @@ C 				  endif
           endif ijkscal3
 
           CALL xios_solve_inheritance()
+
+          enddo oa_mmode_loop2
 
 #endif /* MPI */
 
@@ -2091,15 +2109,19 @@ C 				  endif
 
       else oa_wth_sclg
 
+      oa_mmode_loop4 : do imd=0,nmod_oa
+
       !BLXD Prevent failure with potential scalogram domain/axis grid
       !     incompletely def. in xml files
-      null_sclg_dom : if ( xios_is_valid_domain("oa_sclg_dom") ) then
-         CALL xios_set_domain_attr("oa_sclg_dom"
+      null_sclg_dom : if ( xios_is_valid_domain(oa_sclg_dom(imd)) ) then
+         CALL xios_set_domain_attr(oa_sclg_dom(imd)
      &     ,ni_glo=1
      &     ,nj_glo=1
      &     )
-
       endif null_sclg_dom 
+
+      enddo oa_mmode_loop4
+
 
       endif oa_wth_sclg
 #endif  /* ONLINE_ANALYSIS */

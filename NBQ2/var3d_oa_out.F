@@ -223,7 +223,8 @@ C$    trd=omp_get_thread_num()
                 enddo
             enddo
 
-            vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
+c             vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
+            vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3,a5)'
      &              ,vnamdp='3d_r_',vnams='',verbose=verbose_oa)
 
         endif if_oa_re_im_rho_3D
@@ -273,7 +274,8 @@ C$    trd=omp_get_thread_num()
                     enddo
                 enddo
             enddo
-            vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
+c             vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
+            vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3,a5)'
      &              ,vnamdp='3d_u_',vnams='',verbose=verbose_oa)
 
         endif if_oa_re_im_u_3D
@@ -322,7 +324,8 @@ C$    trd=omp_get_thread_num()
                     enddo
                 enddo
             enddo
-            vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
+c             vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
+            vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3,a5)'
      &              ,vnamdp='3d_v_',vnams='',verbose=verbose_oa)
 
         endif if_oa_re_im_v_3D
@@ -373,7 +376,8 @@ C$    trd=omp_get_thread_num()
                 enddo
             enddo
 
-            vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
+c             vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
+            vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3,a5)'
      &              ,vnamdp='3d_p_',vnams='',verbose=verbose_oa)
 
         endif if_oa_re_im_f_3D
@@ -450,9 +454,25 @@ C$    trd=omp_get_thread_num()
 !            write( vnam_oa, fmt='(a5,a5,i3.3,a1,i3.3)') 
 !& tgvnam_oa(tv_oa(iv)),'3d_r_',ic,'_',iv
 
+#ifdef OA_TRACES 
+        if(mynode ==0) then
+        print *,"-----"
+        print *,trim(vnamfmt)
+        print *,"    ",tv_oa(iv)
+        print *,tgvnam_oa(tv_oa(iv))
+        print *,trim(vnamdp)
+        print *,ic,iv
+        print *,trim(vnams)
+        endif
+#endif
         !tmpfmt=trim(vnamfmt)
         write( tmpvnam, fmt=trim(vnamfmt)) 
      &         tgvnam_oa(tv_oa(iv)),trim(vnamdp),ic,'_',iv,trim(vnams)
+#ifdef OA_TRACES 
+        if(mynode ==0) then
+            print *,trim(tmpvnam),"----"
+        endif
+#endif
        
         if (verbose >=16 ) then
 !        MPI_master_only write(stdout,fmt='(2(22a))') 
