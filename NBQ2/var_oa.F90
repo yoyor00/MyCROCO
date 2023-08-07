@@ -129,6 +129,8 @@
 #ifdef M3FAST
       elseif (ivar_v.eq.51) then
          var_oa = rho_nbq(i_v,j_v,k_v)
+      elseif (ivar_v.eq.52) then
+         var_oa = qdmu_nbq(i_v,j_v,k_v)
 #endif
       elseif (ivar_v.eq.54) then
          var_oa = zeta(i_v,j_v,fast_indx_out)

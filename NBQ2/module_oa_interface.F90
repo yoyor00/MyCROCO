@@ -1803,7 +1803,7 @@
       tgv3d_oa(20) = 3
       tgvnam_oa(20) = 'isplv'
 
-!.....variable density:
+!.....variable density :
       tgv_oa(21)   = 1 
       tgv3d_oa(21) = 3
       tgvnam_oa(21) = 'rnbq_'
@@ -1811,7 +1811,12 @@
 !.....scalogram for the fast mode density variable (must be consistent with var_oa rnbq code):
       tgv_oa(51)   = 1 
       tgv3d_oa(51) = 3
-      tgvnam_oa(51) = 'scalf'
+      tgvnam_oa(51) = 'scaf_'
+
+!.....scalogram for the fast mode qdmu variable (must be consistent with var_oa rnbq code):
+      tgv_oa(52)   = 2 
+      tgv3d_oa(52) = 3
+      tgvnam_oa(52) = 'scaf_'
 
 !.....scalogram for the zeta variable (must be consistent with var_oa zeta code):
       tgv_oa(54)   = 1 
@@ -1819,7 +1824,7 @@
       tgvnam_oa(54) = 'scal_'
 
 !.....scalogram for the ubar variable (must be consistent with var_oa ubar code):
-      tgv_oa(56)   = 1 
+      tgv_oa(56)   = 2 
       tgv3d_oa(56) = 2
       tgvnam_oa(56) = 'scal_'
 

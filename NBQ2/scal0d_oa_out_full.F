@@ -49,7 +49,7 @@
       use module_interface_oa, only : !scal0d_cr, per0d_cr
      &  mdg, model_mode_glo
      & ,tvar_oa , tgv_oa, tgvnam_oa, nzvc_oa, nzupd0d_oa
-     & ,nper_sclg_max
+     & ,nper_sclg_max, pervnam
      & ,verbose_oa
       use module_oa_variables,  only : tv_oa     
      & ,tupd_oa, tv_sclg_oa, cnb_oa
@@ -207,9 +207,11 @@
 
         enddo loop_for_per_axis
 
-
-       pnam_oa = get_pnam_full( pnamfmt='(a5)'
-     &              ,pnamdp='perv_',verbose=verbose_oa )
+            pnam_oa = get_pnam_full( pnamfmt='(a5)'
+     &              ,pnamdp=pervnam(imm),verbose=verbose_oa )
+!
+!       pnam_oa = get_pnam_full( pnamfmt='(a5)'
+!     &              ,pnamdp='perv_',verbose=verbose_oa )
 
        inam_oa = get_vnam_full( vnamfmt='(a5,a1)'
      &              ,vnams='i',verbose=verbose_oa)
