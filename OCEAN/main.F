@@ -358,6 +358,9 @@ C$OMP BARRIER
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
+#if defined PASSIVE_TRACER
+        call rho_eos (tile)
+#endif
         call ana_initial (tile)
       enddo
 !

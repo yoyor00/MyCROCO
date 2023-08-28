@@ -107,6 +107,12 @@
 #ifdef JET
       integer istr1,iend1,jstr1,jend1
 #endif
+#ifdef PASSIVE_TRACER
+      integer xc,yc,radius,dxc,dyc
+      real rr,ztarget,ztarget2,dzz,drr,grr,rhotarget,rhotarget2,drho 
+      real xr(0:Lm,0:Mm)  
+      real yr(0:Lm,0:Mm)  
+#endif 
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -1223,103 +1229,121 @@ C$OMP BARRIER
 !  Initial conditions for passive tracer
 !--------------------------------------------------------------------
 !
-# ifdef PASSIVE_TRACER
-      do k=1,N
-        do j=JR_RANGE
-          do i=IR_RANGE
-            if (.not.got_tini(itpas)) then
-#  if defined REGIONAL && !defined ANA_PSOURCE
-              if (h(i,j).lt.300) then
-!             if (z_r(i,j,k).lt.-800 .and.
-!     &           z_r(i,j,k).gt.-1200 ) then
-                t(i,j,k,1,itpas)=1
-              else
-                t(i,j,k,1,itpas)=0
-              endif
-#  elif defined SHOREFACE || defined RIP
-            if (h(i,j).lt.2) then
-              t(i,j,k,1,itpas)=1.
-            else
-              t(i,j,k,1,itpas)=0
-            endif
-            t(i,j,k,2,itpas)=t(i,j,k,1,itpas)
-#  elif defined KH_INST
-              zdye10 = -0.65*depth
-              t(i,j,k,1,itpas) =
-     &            + 35 +0.05* drho* (
-     &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hsalt0 ) )**2.
-     &                     )
-!
-              t(i,j,k,2,itpas) = t(i,j,k,1,itpas)
+# if defined PASSIVE_TRACER 
 
-              zdye20 = -0.35*depth
-              t(i,j,k,1,itpas+1) =
-     &            + 35 +0.05* drho* (
-     &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hsalt0 ) )**2.
-     &                     )!
-              t(i,j,k,2,itpas+1) = t(i,j,k,1,itpas+1)
-#  elif defined SED_TOY
-            if (k.gt.int(N/2)) then
-              t(i,j,k,1,itpas)=1.
-            else
-              t(i,j,k,1,itpas)=0
-            endif
-#  elif defined TIDAL_FLAT || defined ESTUARY
-            if (k.gt.int(N/2)) then
-              t(i,j,k,1,itpas)=1.
-            else
-              t(i,j,k,1,itpas)=0
-            endif
-#  else
-            if (h(i,j).lt.300) then
-              t(i,j,k,1,itpas)=1.
-            else
-              t(i,j,k,1,itpas)=0
-            endif
-#  endif
-            endif
+      if (.not.got_tini(itpas)) then ! consider if no tracer1 there are no other tracer either    
+
+        xc = 400.
+        yc = 320.
+        dxc = 100
+        dyc = 100
+
+        drr = 20 !2 km
+
+        rhotarget = 1027.70
+        rhotarget2 = 1027.775
+        drho = 0.02
+
+        ! ------ SET UP GRID ------       
+        do j=JstrR,JendR ! compute grid coordinates (approx)  
+          do i=IstrR,IendR
+            xr(i,j) = (1./pm(1,1))*(float(i+iminmpi-1-1)+0.5)*1.e-3 ! km 
+            yr(i,j) = (1./pn(1,1))*(float(j+jminmpi-1-1)+0.5)*1.e-3
           enddo
         enddo
-      enddo
+
+        ! ------ TRACER 2.1 PATCH ------
+
+        t(:,:,:,1,itpas)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc+dyc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+                t(i,j,k,1,itpas)=grr*exp(-((rho1(i,j,k)+1027.4)-
+     &                               rhotarget)**2/(2*(drho**2)))
+                t(i,j,k,2,itpas)=  t(i,j,k,1,itpas)
+          enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+
+       ! ------ TRACER 2.2 PATCH ------
+        t(:,:,:,1,itpas+1)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc-dxc)**2.+(yr(i,j)-yc+dyc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+                t(i,j,k,1,itpas+1)=grr*exp(-((rho1(i,j,k)+1027.4)-
+     &                               rhotarget)**2/(2*(drho**2)))
+                t(i,j,k,2,itpas+1)=  t(i,j,k,1,itpas+1)
+            enddo ! k loop
+          enddo ! i loop
+        enddo ! j loop
+
+       ! ------ TRACER 2.3 PATCH ------
+        t(:,:,:,1,itpas+2)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc+dxc)**2.+(yr(i,j)-yc+dyc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+                t(i,j,k,1,itpas+2)=grr*exp(-((rho1(i,j,k)+1027.4)-
+     &                               rhotarget)**2/(2*(drho**2)))
+                t(i,j,k,2,itpas+2)=  t(i,j,k,1,itpas+2)
+            enddo ! k loop
+          enddo ! i loop
+        enddo ! j loop
+
+       ! ------ TRACER 2.4 PATCH ------
+        t(:,:,:,1,itpas+3)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc+dyc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+                t(i,j,k,1,itpas+3)=grr*exp(-((rho1(i,j,k)+1027.4)-
+     &                               rhotarget2)**2/(2*(drho**2)))
+                t(i,j,k,2,itpas+3)=  t(i,j,k,1,itpas+3)
+            enddo ! k loop
+          enddo ! i loop
+        enddo ! j loop
+
+       ! ------ TRACER 2.5 PATCH ------
+        t(:,:,:,1,itpas+4)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc-dxc)**2.+(yr(i,j)-yc+dyc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+                t(i,j,k,1,itpas+4)=grr*exp(-((rho1(i,j,k)+1027.4)-
+     &                               rhotarget2)**2/(2*(drho**2)))
+                t(i,j,k,2,itpas+4)=  t(i,j,k,1,itpas+4)
+            enddo ! k loop
+          enddo ! i loop
+        enddo ! j loop
+
+
+       ! ------ TRACER 2.6 PATCH ------
+        t(:,:,:,1,itpas+5)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc+dxc)**2.+(yr(i,j)-yc+dyc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+                t(i,j,k,1,itpas+5)=grr*exp(-((rho1(i,j,k)+1027.4)-
+     &                               rhotarget2)**2/(2*(drho**2)))
+                t(i,j,k,2,itpas+5)=  t(i,j,k,1,itpas+5)
+            enddo ! k loop
+          enddo ! i loop
+        enddo ! j loop
+
+
+      endif ! got_tini(itpas) 
+
 # endif /* PASSIVE_TRACER */
 !
-!
-!--------------------------------------------------------------------
-!  Initial conditions for tracer-Substance
-!--------------------------------------------------------------------
-!
-# ifdef SUBSTANCE
-      do k=1,N
-        do j=JR_RANGE
-          do i=IR_RANGE
-            do iv=itsubs1,itsubs2
-              if (.not.got_tini(iv)) then
-#  if defined REGIONAL && !defined ANA_PSOURCE
-                t(i,j,k,1,iv)=cini_wat(iv)
-#  elif defined TIDAL_FLAT || defined ESTUARY
-                if (h(i,j).gt.0) then
-                  t(i,j,k,1,iv)=cini_wat(iv)
-                else
-                  t(i,j,k,1,iv)=0.
-                endif
-#  elif defined DUNE && defined MUSTANG
-                t(i,j,k,1,iv)=cini_wat(iv)
-#  elif defined SED_TOY
-                t(i,j,k,1,iv)=cini_wat(iv)
-#  else
-                if (h(i,j).lt.300) then
-                  t(i,j,k,1,iv)=cini_wat(iv)
-                else
-                  t(i,j,k,1,iv)=0.
-                endif
-#  endif
-              endif
-            enddo
-          enddo
-        enddo
-      enddo
-# endif /*SUBSTANCE */
-
 !----------------------------------------------------------------------
 !  Initial conditions for sediment tracer variables.
 !----------------------------------------------------------------------
