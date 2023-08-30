@@ -55,7 +55,8 @@
         ... OR REALISTIC CONFIGURATIONS
 */
 #undef  COASTAL         /* COASTAL Applications */
-#define REGIONAL        /* REGIONAL Applications */
+#undef REGIONAL        /* REGIONAL Applications */
+#define BASIN
 
 
 
@@ -668,6 +669,7 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
+# define OPENACC
 #elif defined CANYON
 /*
 !                       Canyon Example

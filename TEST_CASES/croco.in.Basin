@@ -2,7 +2,7 @@ title:
 	Basin Example
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                3240     1200     65      1
+                100      1200     65      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
           1.0d0      0.0d0        10.d0
@@ -27,12 +27,12 @@ primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   T 
 
 auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
-                            30*F
+                            F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F 
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
-                   T    T    T    T  T   30*T
+                   T    T    T    T  T   T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T 
 auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Visc3d Diff3d HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
-                     30*F
+                     F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F 
 
 rho0:
       1025.
@@ -57,7 +57,7 @@ tracer_diff2: TNU2         [m^2/sec]
                  1000. 0.
 
 tracer_diff4: TNU4(1:NT)           [m^4/sec for all]
-               30*0.d11
+               0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 0.d11 
 
 bodyforce:  levsfrc [level], levbfrc [level]
                  10               1
