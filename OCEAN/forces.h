@@ -20,7 +20,7 @@
       real sustr(GLOBAL_2D_ARRAY)
       real svstr(GLOBAL_2D_ARRAY)
       common /forces_sustr/sustr /forces_svstr/svstr
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING
       real smstr(GLOBAL_2D_ARRAY)
       common /forces_smstr/smstr
 #  ifdef READ_PATM
