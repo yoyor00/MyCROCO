@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.1)
 ######################################################
 project(CROCO
         VERSION 1.3.0
-        DESCRIPTION "Oceanic simulation"
+        DESCRIPTION "Oceanic simulation : Coastal and Regional Ocean COmmunity (CROCO)"
         LANGUAGES Fortran C)
 
 ######################################################
