@@ -82,7 +82,8 @@ function(croco_cpp_and_mpc_preprocess list_to_update)
 		# build command
 		add_custom_command(
 			OUTPUT ${newfile}
-			COMMAND ${CROCO_FORTAN_CPP} ${CROCO_FORTRAN_CPP_FLAGS} ${oldfile} | ${CROCO_MPC} > ${newfile}
+			COMMAND ${CROCO_FORTAN_CPP} ${CROCO_FORTRAN_CPP_FLAGS} ${oldfile} ${newfile}.tmp.F 
+			COMMAND ${CROCO_MPC} < ${newfile}.tmp.F > ${newfile}
 			MAIN_DEPENDENCY ${oldfile}
 			DEPENDS mpc ${OCEAN_CPP_H}
 			VERBATIM
@@ -121,7 +122,6 @@ function(croco_change_loop_preprocess list_to_update)
 			COMMAND ${CROCO_MPC} < ${newfile}  > ${newfile_mpc}
 			MAIN_DEPENDENCY ${oldfile}
 			DEPENDS mpc ${OCEAN_CPP_H}
-			BYPRODUCTS ${newfile}
 			VERBATIM
 		)
 		list(APPEND _newfiles ${newfile_mpc})
