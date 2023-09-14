@@ -11,8 +11,8 @@ cfg_set_projet "CROCO"
 
 ######################################################
 #this is an MPI app, we directly use the mpi wrappers
-CFG_EXTRA_CC='mpicc'
-CFG_EXTRA_FORT='mpifort'
+#CFG_EXTRA_CC='mpicc'
+#CFG_EXTRA_FORT='mpifort'
 
 ######################################################
 #coverage
