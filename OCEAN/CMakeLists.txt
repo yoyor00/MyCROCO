@@ -9,17 +9,16 @@
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BUILD_DIR})
 
 ######################################################
+# generate config.h
+configure_file(config.h.in config.h)
+
+######################################################
 # -I directives
 #include_directories(${CMAKE_CURRENT_BUILD_DIR})
 include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(/home/svalat/usr/include/)
+include_directories(${NETCDFF_INCLUDE_DIR})
 set(CPP_INCLUDES -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_BINARY_DIR} -I/home/svalat/usr/include/)
-
-######################################################
-macro(replace_compile_flag variable flag new_flag)
-	string(REPLACE "${flag}" "${new_flag}" ${variable} "${CMAKE_Fortran_FLAGS_RELEASE}")
-endmacro()
 
 ######################################################
 # configure build options
@@ -46,7 +45,7 @@ set(CROCO_MPC ${CMAKE_CURRENT_BINARY_DIR}/mpc)
 
 ######################################################
 # Get list of files
-file(GLOB OCEAN_CPP_H *.h)
+file(GLOB OCEAN_CPP_H *.h *.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 file(GLOB OCEAN_SRC_F *.F)
 file(GLOB OCEAN_SRC_F90 *.F90)
 
@@ -86,76 +85,6 @@ list(REMOVE_ITEM OCEAN_SRC_F90
     ${CMAKE_CURRENT_SOURCE_DIR}/module_qsort.F90
 	${CMAKE_CURRENT_SOURCE_DIR}/module_tracetxt_out.F90
 )
-
-######################################################
-# Replace the include to use the one without OPENACC
-# Inspired from https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
-#
-# TODO: REMOVED WHEN FINISHED
-function(croco_psyclone_pre_filter_acc oldfiles newfiles)
-	# reset the list
-	set(_newfiles)
-
-	# create dir not to trash everything in the root dir
-	make_directory(${CMAKE_CURRENT_BINARY_DIR}/prepared_sources)
-
-	# loop on all files
-	foreach(oldfile IN LISTS oldfiles)
-		# build new name
-		string(REGEX REPLACE "\\.F" ".no-acc.F" newfile ${oldfile})
-
-		# build new path
-		get_filename_component(newfile ${newfile} NAME)
-		set(newfile ${CMAKE_CURRENT_BINARY_DIR}/prepared_sources/${newfile})
-
-		# build command
-		add_custom_command(
-			OUTPUT ${newfile}
-			COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/psyclone/psyclone.preprocessor.skip.acc.sh ${oldfile} ${newfile}
-			MAIN_DEPENDENCY ${oldfile}
-			DEPENDS psyclone/psyclone.preprocessor.skip.acc.sh
-			        psyclone/skip.openacc.rules.lst
-					
-			VERBATIM
-		)
-		list(APPEND _newfiles ${newfile})
-	endforeach()
-
-	# move to user variable
-	set(${newfiles} ${_newfiles} PARENT_SCOPE)
-endfunction()
-
-######################################################
-# Apply cpp + mpc on the sources to prepare them before build
-# Inspired from https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
-function(croco_cpp_and_mpc_preprocess oldfiles newfiles)
-	# reset the list
-	set(_newfiles)
-
-	# create dir not to trash everything in the root dir
-	make_directory(${CMAKE_CURRENT_BINARY_DIR}/prepared_sources)
-
-	# loop on all files
-	foreach(oldfile IN LISTS oldfiles)
-		# build new name
-		string(REGEX REPLACE "\\.F" ".preprocessed.F" newfile ${oldfile})
-
-		# build new full path
-		get_filename_component(newfile ${newfile} NAME)
-		set(newfile ${CMAKE_CURRENT_BINARY_DIR}/prepared_sources/${newfile})
-
-		# build command
-		add_custom_command(
-			OUTPUT ${newfile}
-			COMMAND ${CROCO_FORTAN_CPP} ${CROCO_FORTRAN_CPP_FLAGS} ${oldfile} | ${CROCO_MPC} > ${newfile}
-			MAIN_DEPENDENCY ${oldfile}
-			DEPENDS mpc ${OCEAN_CPP_H}
-			VERBATIM
-		)
-		list(APPEND _newfiles ${newfile})
-	endforeach()
-	set(${newfiles} ${_newfiles} PARENT_SCOPE)
-endfunction()
 
 ######################################################
 # generate some sources files byb using some binary programs
@@ -201,18 +130,18 @@ add_library(croco_common STATIC lenstr.F insert_node.F)
 ######################################################
 # build ncjoin utility
 set(OCEAN_NCJOIN_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/ncjoin.F)
-croco_cpp_and_mpc_preprocess("${OCEAN_NCJOIN_SRC_F}" OCEAN_NCJOIN_SRC_F_PRE_PROCESSED)
-add_executable(ncjoin ${OCEAN_NCJOIN_SRC_F_PRE_PROCESSED})
-target_link_libraries(ncjoin /home/svalat/usr/lib/libnetcdff.so)
+croco_cpp_and_mpc_preprocess(OCEAN_NCJOIN_SRC_F)
+add_executable(ncjoin ${OCEAN_NCJOIN_SRC_F})
+target_link_libraries(ncjoin ${NETCDFF_LIBRARY})
 target_link_libraries(ncjoin croco_common)
 set_property(TARGET ncjoin PROPERTY LINKER_LANGUAGE Fortran)
 
 ######################################################
 # build ncrename utility
 set(OCEAN_NCRENAME_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/ncrename.F)
-croco_cpp_and_mpc_preprocess("${OCEAN_NCRENAME_SRC_F}" OCEAN_NCRENAME_SRC_F_PRE_PROCESSED)
-add_executable(ncrename ${OCEAN_NCRENAME_SRC_F_PRE_PROCESSED})
-target_link_libraries(ncrename /home/svalat/usr/lib/libnetcdff.so)
+croco_cpp_and_mpc_preprocess(OCEAN_NCRENAME_SRC_F)
+add_executable(ncrename ${OCEAN_NCRENAME_SRC_F})
+target_link_libraries(ncrename ${NETCDFF_LIBRARY})
 target_link_libraries(ncrename croco_common)
 set_property(TARGET ncrename PROPERTY LINKER_LANGUAGE Fortran)
 
@@ -244,18 +173,32 @@ set_property(TARGET cross_matrix PROPERTY LINKER_LANGUAGE Fortran)
 ######################################################
 # build partit utility
 add_executable(partit partit.F)
-target_link_libraries(partit /home/svalat/usr/lib/libnetcdff.so)
+target_link_libraries(partit ${NETCDFF_LIBRARY})
 target_link_libraries(partit croco_common)
 set_property(TARGET partit PROPERTY LINKER_LANGUAGE Fortran)
 
 ######################################################
 # build croco ocean simulation
-croco_psyclone_pre_filter_acc("${OCEAN_SRC_F}" CROCO_SRC_F_PRE_PROCESSED_NO_ACC)
-croco_cpp_and_mpc_preprocess("${CROCO_SRC_F_PRE_PROCESSED_NO_ACC}" CROCO_SRC_F_PRE_PROCESSED_MPC)
+
+# TODO: remove when finished
+if (ENABLE_PSYCLONE_OPENACC)
+	croco_psyclone_pre_filter_acc(OCEAN_SRC_F)
+endif (ENABLE_PSYCLONE_OPENACC)
+
+# build
+croco_cpp_and_mpc_preprocess(OCEAN_SRC_F)
+croco_change_loop_preprocess(OCEAN_SRC_F)
 set(CMAKE_Fortran_PREPROCESS ON)
-add_executable(croco ${CROCO_SRC_F90} ${CROCO_SRC_F_PRE_PROCESSED_MPC})
-target_link_libraries(croco /home/svalat/usr/lib/libnetcdff.so)
+add_executable(croco ${CROCO_SRC_F90} ${OCEAN_SRC_F})
+target_link_libraries(croco ${NETCDFF_LIBRARY})
 target_link_libraries(croco croco_common)
-target_compile_options(croco PRIVATE -acc=gpu)
-set_target_properties(croco PROPERTIES Fortran_COMPILER_LAUNCHER ${CMAKE_CURRENT_SOURCE_DIR}/psyclone/psyclone.compiler.wrapper.py)
 set_property(TARGET croco PROPERTY LINKER_LANGUAGE Fortran)
+
+# Inject psyclone in the loop if enabled
+if (ENABLE_PSYCLONE_OPENACC)
+	set_target_properties(croco PROPERTIES Fortran_COMPILER_LAUNCHER ${CMAKE_SOURCE_DIR}/psyclone/psyclone.compiler.wrapper.py)
+endif (ENABLE_PSYCLONE_OPENACC)
+
+######################################################
+# Make some of the executables landing directly in root dir
+set_property(TARGET partit croco cross_matrix PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

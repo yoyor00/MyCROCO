@@ -1,0 +1,39 @@
+#ifndef CMAKE_CONFIG_H
+
+/*
+Select case to run.
+CAUTION : Should enable only one at a time !
+*/
+#cmakedefine BASIN           /* Basin Example */
+#cmakedefine CANYON          /* Canyon Example */
+#cmakedefine EQUATOR         /* Equator Example  */
+#cmakedefine INNERSHELF      /* Inner Shelf Example */
+#cmakedefine SINGLE_COLUMN   /* 1DV vertical mixing Example */
+#cmakedefine RIVER           /* River run-off Example */
+#cmakedefine OVERFLOW        /* Gravitational/Overflow Example */
+#cmakedefine SEAMOUNT        /* Seamount Example */
+#cmakedefine SHELFRONT       /* Shelf Front Example */
+#cmakedefine SOLITON         /* Equatorial Rossby Wave Example */
+#cmakedefine THACKER         /* Thacker wetting-drying Example */
+#cmakedefine UPWELLING       /* Upwelling Example */
+#cmakedefine VORTEX          /* Baroclinic Vortex Example */
+#cmakedefine INTERNAL        /* Internal Tide Example */
+#cmakedefine IGW             /* COMODO Internal Tide Example */
+#cmakedefine JET             /* Baroclinic Jet Example */
+#cmakedefine SHOREFACE       /* Shoreface Test Case on a Planar Beach */
+#cmakedefine RIP             /* Rip Current Test Case */
+#cmakedefine SANDBAR         /* Bar-generating Flume Example */
+#cmakedefine SWASH           /* Swash Test Case on a Planar Beach */
+#cmakedefine TANK            /* Tank Example */
+#cmakedefine MOVING_BATHY    /* Moving Bathymetry Example */
+#cmakedefine ACOUSTIC        /* Acoustic wave Example */
+#cmakedefine GRAV_ADJ        /* Graviational Adjustment Example */
+#cmakedefine ISOLITON        /* Internal Soliton Example */
+#cmakedefine KH_INST         /* Kelvin-Helmholtz Instability Example */
+#cmakedefine TS_HADV_TEST    /* Horizontal tracer advection Example */
+#cmakedefine DUNE            /* Dune migration Example */
+#cmakedefine SED_TOY         /* 1DV sediment toy Example */
+#cmakedefine TIDAL_FLAT      /* 2DV tidal flat Example */
+#cmakedefine ESTUARY         /* 3D tidal estuary Example */
+
+#endif
