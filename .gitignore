@@ -18,3 +18,7 @@ Run/amr.in
 OCEAN.bak/cpl_prism_getlistvals.F
 
 /OCEAN/mergcpp.txt
+
+# cmake usual build dir
+/build
+__pycache__
