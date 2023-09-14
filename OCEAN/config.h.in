@@ -36,4 +36,12 @@ CAUTION : Should enable only one at a time !
 #cmakedefine TIDAL_FLAT      /* 2DV tidal flat Example */
 #cmakedefine ESTUARY         /* 3D tidal estuary Example */
 
+/*
+Check that one has be activated. It is triggered if the value of
+WITH_CASE (from cmake) correspond to none of the case listed on top.
+*/
+#ifndef @WITH_CASE@
+#error "Activated the wrong value to select CASE, none has been activated !"
+#endif
+
 #endif

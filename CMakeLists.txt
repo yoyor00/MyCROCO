@@ -29,6 +29,7 @@ set(WITH_CASE "BASIN" CACHE STRING "Select the case to run.")
 ######################################################
 # Enable case so it lands in config.h.in
 add_definitions(-DHAS_CMAKE_CONFIG)
+# Trigger the case definition (macro variable having the name of the case)
 set(${WITH_CASE} ON)
 
 ######################################################
