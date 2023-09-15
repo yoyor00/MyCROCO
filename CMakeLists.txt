@@ -45,4 +45,5 @@ endif (ENABLE_PSYCLONE_OPENACC AND NOT PSYCLONE_FOUND)
 
 ######################################################
 # add subdirs
+add_subdirectory(AGRIF)
 add_subdirectory(OCEAN)
