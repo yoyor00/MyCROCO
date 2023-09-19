@@ -42,10 +42,9 @@ def extract_source_file(args: list):
 def get_transformation_for_file(config_file: str, source_file: str):
     # extract file name
     file_name = os.path.basename(source_file)
-    
+
     # calc cleaned file name (without .no-acc.cpp.mpc.......)
     file_name_simple = '.'.join([file_name.split('.')[i] for i in [0,-1]])
-    print(file_name_simple)
 
     # search in config file
     with open(config_file, 'r') as fp:
@@ -55,7 +54,7 @@ def get_transformation_for_file(config_file: str, source_file: str):
             entries = line.replace('\n','').split('\t')
             if entries[0] == file_name or entries[0] == file_name_simple:
                 return entries[1]
-    
+
     # not found
     return None
 
@@ -77,7 +76,7 @@ if __name__ == '__main__':
         assert source_file is not None
 
         # get path of current script
-        current_script = os.path.realpath(__file__) 
+        current_script = os.path.realpath(__file__)
         script_path = os.path.dirname(current_script)
 
         # Get transformation script
@@ -97,7 +96,7 @@ if __name__ == '__main__':
                             '-opsy' ,psyclone_dummy_source_file, source_file
                         ],
                         check=True)
-            
+
             # run psyclone
             psyclone_source_file = source_file.replace(".F", ".psyclone.F90")
             subprocess.run([
@@ -108,7 +107,7 @@ if __name__ == '__main__':
                                 '-opsy' ,psyclone_source_file, source_file
                             ],
                             check=True)
-            
+
             # replace source filestart
             pos = sys.argv.index(source_file)
             sys.argv[pos] = psyclone_source_file
