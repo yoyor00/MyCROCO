@@ -1,6 +1,11 @@
 #!/bin/bash
+##########################################################
+#  CROCO cmake build system, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
-###########################################################
+##########################################################
 # This script simply aims (for now) on removing the ACC
 # from some files
 # TODO : this can be removed when work will be finished
