@@ -28,3 +28,4 @@ OCEAN.bak/cpl_prism_getlistvals.F
 # do not commit psyclone pre-built packages
 __pycache__
 venv
+.vscode
