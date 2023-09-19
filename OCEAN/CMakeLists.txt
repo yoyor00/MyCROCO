@@ -266,7 +266,7 @@ set_property(TARGET partit PROPERTY LINKER_LANGUAGE Fortran)
 # build croco ocean simulation
 
 # TODO: remove when finished
-if (WITH_OPENACC STREQUAL "psyclone")
+if (WITH_PARALLEL STREQUAL "openacc-psyclone")
 	croco_psyclone_pre_filter_acc(CROCO_SRCS_F77)
 endif ()
 
@@ -277,7 +277,7 @@ if (ENABLE_AGRIF)
 else()
 	croco_cpp_and_mpc_preprocess(CROCO_SRCS_F77)
 endif()
-if (WITH_OPENACC)
+if (OPENACC)
 	croco_change_loop_preprocess(CROCO_SRCS_F77)
 endif ()
 
@@ -289,7 +289,7 @@ target_link_libraries(croco croco_common)
 set_property(TARGET croco PROPERTY LINKER_LANGUAGE Fortran)
 
 # Inject psyclone in the loop if enabled
-if (WITH_OPENACC STREQUAL "psyclone")
+if (WITH_PARALLEL STREQUAL "openacc-psyclone")
 	set_target_properties(croco PROPERTIES Fortran_COMPILER_LAUNCHER ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.compiler.wrapper.py)
 endif ()
 

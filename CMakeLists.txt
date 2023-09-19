@@ -14,6 +14,10 @@ project(CROCO
         LANGUAGES Fortran C)
 
 ######################################################
+# to support old versions
+cmake_policy(SET CMP0057 NEW)
+
+######################################################
 #Add internal search path for scripts
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/)
 
@@ -26,9 +30,8 @@ include(${CMAKE_SOURCE_DIR}/cmake/croco_compiler_options.cmake)
 
 ######################################################
 # Handle configuration
-set(WITH_OPENACC   OFF    CACHE STRING "Enable OenACC version, either by using 'native' or 'psyclone'.")
+set(WITH_PARALLEL  OFF    CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
 set(CROCO_CASE    "BASIN" CACHE STRING "Select the case to run.")
-set(ENABLE_OPENMP OFF     CACHE BOOL   "Enable OpenMP for CPU parallelism.")
 set(ENABLE_AGRIF  OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
 
 ######################################################
@@ -37,19 +40,21 @@ add_definitions(-DHAVE_CMAKE_CONFIG)
 # Trigger the case definition (macro variable having the name of the case)
 set(${CROCO_CASE} ON)
 # Enable some vars for config.parallelism.h.in
-set(OPENMP ${ENABLE_OPENMP})
+if (WITH_PARALLEL STREQUAL "openmp")
+	set(OPENMP ON)
+endif()
 set(AGRIF ${ENABLE_AGRIF})
-if (WITH_OPENACC)
+if (WITH_PARALLEL STREQUAL "openacc-native" OR WITH_PARALLEL STREQUAL "openacc-psyclone")
 	set(OPENACC ON)
 endif()
 
 ######################################################
 # Search dependences
 find_package(NetCDFF REQUIRED)
-if (WITH_OPENACC STREQUAL "psyclone")
+if (WITH_PARALLEL STREQUAL "openacc-psyclone")
 	find_package(PSyClone REQUIRED)
 endif ()
-if (ENABLE_OPENMP)
+if (OPENMP)
 	find_package(OpenMP REQUIRED)
 endif ()
 

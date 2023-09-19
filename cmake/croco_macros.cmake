@@ -75,8 +75,9 @@ function(croco_print_status)
 	message(STATUS "|  Compiler         : ${CMAKE_Fortran_COMPILER}")
 	message(STATUS "--------------------------------------------------------------")
 	message(STATUS "|  NetCDF           : ${NETCDFF_LIBRARY}")
+	message(STATUS "|  Parallelism      : ${WITH_PARALLEL}")
 	message(STATUS "|  PSyClone         : ${PSYCLONE_COMMAND}")
-	message(STATUS "|  OpenACC          : ${WITH_OPENACC}")
+	message(STATUS "|  OpenACC          : ${OPENACC}")
 	message(STATUS "|  MPI              : ${MPI_FOUND}")
 	message(STATUS "|  OpenMP           : ${ENABLE_OPENMP}")
 	message(STATUS "|  AGRIF            : ${ENABLE_AGRIF}")
@@ -93,8 +94,14 @@ endfunction()
 ######################################################
 # Perform some extra checks on variables to see if everything is correct
 function(croco_last_checkings)
+	# allowed
+	list(APPEND para_allowed OFF openmp openacc-native openacc-psyclone)
+	if (NOT ${WITH_PARALLEL} IN_LIST para_allowed)
+		message(FATAL_ERROR "Select an invalid parallelism mode : -DWITH_PARALLEL=${WITH_PARALLEL}, should be in (${para_allowed})")
+	endif()
+
 	# Require psyclone
-	if (WITH_OPENACC STREQUAL "psyclone" AND NOT PSYCLONE_FOUND)
+	if (WITH_PARALLEL STREQUAL "openacc-psyclone" AND NOT PSYCLONE_FOUND)
 		message(FATAL_ERROR "Fail to find PSyClone, required if enabling PSyClone OpenACC via -DWITH_PSYCLONE_VENV !")
 	endif ()
 endfunction()

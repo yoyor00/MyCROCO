@@ -16,9 +16,9 @@ cfg_set_projet "CROCO"
 
 ######################################################
 #openacc
-cfg_add_with_option   --name='openacc' \
-                      --var='WITH_OPENACC' \
-                      --doc='Enable usage of OpenACC (native or psyclone)'
+cfg_add_with_option   --name='parallel' \
+                      --var='WITH_PARALLEL' \
+                      --doc='Select the parallelism mode : OFF, openmp, openacc-native, openacc-psyclone'
 
 #openmp
 cfg_add_enable_option --name='openmp' \
@@ -39,7 +39,7 @@ cfg_add_with_option   --name='netcdf' \
 cfg_add_with_option   --name='psyclone' \
                       --doc='Define venv directory to get access to psyclone & poseidon' \
                       --var='PSYCLONE_PREFIX'\
-                      --on='-DWITH_OPENACC=psyclone'
+                      --on='-DWITH_PARALLEL=openacc-psyclone'
 
 #select the case to run
 cfg_add_with_option   --name='case' \
