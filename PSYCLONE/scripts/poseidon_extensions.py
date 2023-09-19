@@ -66,7 +66,7 @@ from utils import add_kernels, normalise_loops, \
 from psyclone.transformations import ACCEnterDataTrans, ACCLoopTrans
 from psyclone.psyir.transformations import ACCUpdateTrans
 from psyclone.psyir.nodes.routine import Routine
-from psyclone.psyir.nodes.ifblock import IfBlock
+from psyclone.psyir.nodes.if_block import IfBlock
 
 class ACCWaitDirective(ACCStandaloneDirective):
     '''

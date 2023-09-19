@@ -56,7 +56,6 @@
 */
 #undef  COASTAL         /* COASTAL Applications */
 #undef REGIONAL        /* REGIONAL Applications */
-#undef BASIN
 
 /*
 To make configuration via cmake command line directly and not edit
