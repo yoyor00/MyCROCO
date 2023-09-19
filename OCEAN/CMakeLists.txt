@@ -11,7 +11,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BUILD_DIR})
 ######################################################
 # generate config.h
 configure_file(config.h.in config.h)
-configure_file(config_parallelism.h.in config_parallelism.h)
+configure_file(config_post.h.in config_post.h)
 
 ######################################################
 # -I directives
