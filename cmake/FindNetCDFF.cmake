@@ -10,13 +10,13 @@
 set(NETCDF_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE STRING "Help cmake to find NetCDF-Fortran library (https://www.unidata.ucar.edu/software/netcdf/) into your system.")
 
 ######################################################
-find_path(NETCDFF_INCLUDE_DIR 
+find_path(NETCDFF_INCLUDE_DIR
 	NAMES netcdf.inc
-	HINTS ${NETCDFF_PREFIX}/include)
+	HINTS ${NETCDF_PREFIX}/include)
 
 ######################################################
 find_library(NETCDFF_LIBRARY NAMES netcdff
-	HINTS ${NETCDFF_PREFIX}/lib ${NETCDFF_PREFIX}/lib64)
+	HINTS ${NETCDF_PREFIX}/lib ${NETCDF_PREFIX}/lib64)
 
 ######################################################
 set(NETCDFF_LIBRARIES ${NETCDFF_LIBRARY} )
