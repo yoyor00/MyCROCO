@@ -1,5 +1,5 @@
-#ifndef CMAKE_CONFIG_H
-#define CMAKE_CONFIG_H
+#ifndef CMAKE_CROCO_CONFIG_H
+#define CMAKE_CROCO_CONFIG_H
 
 /*
 Select case to run.

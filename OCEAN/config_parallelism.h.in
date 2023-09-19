@@ -1,10 +1,10 @@
-#ifndef CMAKE_CONFIG_PARALLELISM_H
-#define CMAKE_CONFIG_PARALLELISM_H
+#ifndef CMAKE_CROCO_CONFIG_PARALLELISM_H
+#define CMAKE_CROCO_CONFIG_PARALLELISM_H
 
 /*
 To ensure we do not redefine
 */
-#undef OPENLP
+#undef OPENMP
 #undef OPENACC
 
 /*
