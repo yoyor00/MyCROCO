@@ -7,7 +7,7 @@
 #  NETCDFF_DEFINITIONS - Compiler switches required for using NETCDFF
 
 ######################################################
-set(NETCDFF_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE STRING "Help cmake to find NetCDF-Fortran library (https://www.unidata.ucar.edu/software/netcdf/) into your system.")
+set(NETCDF_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE STRING "Help cmake to find NetCDF-Fortran library (https://www.unidata.ucar.edu/software/netcdf/) into your system.")
 
 ######################################################
 find_path(NETCDFF_INCLUDE_DIR 

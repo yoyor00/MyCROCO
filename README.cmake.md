@@ -27,7 +27,7 @@ you can simply use the provided script :
 
 ```sh
 # by default is install in ./venv
-./build-prefix-with-deps.sh [--nvhpc] [PREFIX_DIR]
+./create_prefix_with_deps.sh [--nvhpc] [PREFIX_DIR]
 ```
 
 Building
@@ -55,7 +55,7 @@ To build the sequential version you can :
 ../configure
 
 # if needs to say where to find NetCDF :
-../configure --with-netcdff=$HOME/usr-netcdf/
+../configure --with-netcdf=$HOME/usr-netcdf/
 
 # Default CASE is BASIN, but you can alter with :
 ../configure --with-case=CANYON
