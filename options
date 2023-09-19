@@ -15,9 +15,14 @@ cfg_set_projet "CROCO"
 #CFG_EXTRA_FORT='mpifort'
 
 ######################################################
-#coverage
+#psyclone openacc
 cfg_add_enable_option --name='psyclone-openacc' \
                       --on='-DENABLE_PSYCLONE_OPENACC=${ON} -DCMAKE_Fortran_COMPILER=nvfortran' \
+                      --doc='Enable coverage report'
+
+#openmp
+cfg_add_enable_option --name='openmp' \
+                      --on='-DENABLE_OPENMP=${ON}' \
                       --doc='Enable coverage report'
 
 #psyclone venv
@@ -29,7 +34,7 @@ cfg_add_with_option   --name='psyclone' \
 #select the case to run
 cfg_add_with_option   --name='case' \
                       --doc='Define the CASE to compiler and run (look in OCEAN/config.h.in)' \
-                      --var='WITH_CASE'
+                      --var='CROCO_CASE'
 
 ######################################################
 #If we want to document extra options

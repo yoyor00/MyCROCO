@@ -56,12 +56,13 @@
 */
 #undef  COASTAL         /* COASTAL Applications */
 #undef REGIONAL        /* REGIONAL Applications */
+#define BASIN
 
 /*
 To make configuration via cmake command line directly and not edit
 cppdef.h by hand for the common setups.
 */
-#ifndef HAS_CMAKE_CONFIG
+#ifdef HAS_CMAKE_CONFIG
 #include "config.h"
 #endif
 
@@ -674,7 +675,6 @@ cppdef.h by hand for the common setups.
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
-# define OPENACC
 #elif defined CANYON
 /*
 !                       Canyon Example
@@ -1948,6 +1948,17 @@ cppdef.h by hand for the common setups.
 #endif /* END OF CONFIGURATION CHOICE */
 
 #include "cppdefs_dev.h"
+
+/*
+Override the cppdef hand written value with cmake one.
+TODO: can be merged into config.h.in and avoid this trick
+if remove all "undef OPENMP/OPENACC/MPI" in case definition
+on top of this line.
+*/
+#ifdef HAS_CMAKE_CONFIG
+#include "config_parallelism.h"
+#endif
+
 #include "set_global_definitions.h"
 
 #endif

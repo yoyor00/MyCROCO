@@ -10,10 +10,13 @@
 	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > $*.f
 
 .F.o:
-	$(CPP) -P $(CPPFLAGS) $*.F > $*_.f1
-	python3 ./change_loops.py $*_.f1 $*_.tmp
-	cat $*_.tmp | ./mpc > $*_.f && \rm $*_.tmp
-	$(CFT) -c $(FFLAGS) $*_.f -o $*.o
+	#TODO: skip when finished
+	./PSYCLONE/psyclone.preprocessor.skip.acc.sh $*.F $*.noa-acc.F
+	$(CPP) -P $(CPPFLAGS) $*.noa-acc.F > $*.noa-acc.cpp-done.F
+	#python3 ./change_loops.py $*.noa-acc.cpp-done.F $*.noa-acc.cpp-done-loops.F
+	cp $*.noa-acc.cpp-done.F $*.noa-acc.cpp-done-loops.F
+	cat $*.noa-acc.cpp-done-loops.F | ./mpc > $*.noa-acc.cpp-done-loops-mpc.F
+	./PSYCLONE/psyclone.compiler.wrapper.py $(CFT) -c $(FFLAGS) -acc=gpu $*.noa-acc.cpp-done-loops-mpc.F -o $*.o
 
 .f90.o:
 	$(CFT) -c $(FFLAGS90) $*.f90 -o $*.o
