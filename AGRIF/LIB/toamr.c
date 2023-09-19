@@ -32,9 +32,13 @@
 /******************************************************************************/
 /* version 1.7                                                                */
 /******************************************************************************/
+/* keep asserts in any case */
+#undef NDEBUG
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include "decl.h"
 
 const char * tabvarsname(const variable *var)
@@ -434,6 +438,7 @@ void write_Setnumberofcells_file()
     if ( IndicenbmaillesX == 0 )  return;
 
     setnumberofcells = open_for_write("SetNumberofcells.h");
+    assert(setnumberofcells >= 0);
 
     if ( onlyfixedgrids == 1 )
         strcpy(cformat, "Agrif_Gr %% nb(%d) = Agrif_Curgrid %% tabvars_i(%d) %% iarray0");

@@ -7712,8 +7712,6 @@ void fortran_free (void *  );
 
 typedef unsigned char YY_CHAR;
 
-FILE *fortran_in = (FILE *) 0, *fortran_out = (FILE *) 0;
-
 typedef int yy_state_type;
 
 extern int fortran_lineno;

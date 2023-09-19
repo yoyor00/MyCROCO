@@ -32,6 +32,10 @@
 /******************************************************************************/
 /* version 1.7                                                                */
 /******************************************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+
 #define LONG_VNAME 80		// Max length for a variable name
 #define LONG_FNAME 1000		// Max length for a file name
 #define LONG_C     200
@@ -190,217 +194,217 @@ typedef struct listindice
    struct  listindice * suiv;
 } listindice;              /* list of indiced                                 */
 
- variable *curvar;
+extern variable *curvar;
 
- listvar *List_ModuleUsedInModuleUsed_Var;
- listvar *List_ModuleUsed_Var;
- listvar *listduplicated;
+extern listvar *List_ModuleUsedInModuleUsed_Var;
+extern listvar *List_ModuleUsed_Var;
+extern listvar *listduplicated;
 
- listvar *List_GlobalParameter_Var;
- listvar *List_Global_Var;
- listvar *List_Data_Var;
- listvar *List_Data_Var_Cur;
- listvar *List_Save_Var;
- listvar *List_SubroutineArgument_Var;
- listvar *List_SubroutineDeclaration_Var;
- listvar *List_UsedInSubroutine_Var;
- listvar *List_Parameter_Var;
- listvar *List_Dimension_Var;
- listvar *List_FunctionType_Var;
- listvar *List_NotGridDepend_Var;
- listvar *List_Common_Var;
+extern listvar *List_GlobalParameter_Var;
+extern listvar *List_Global_Var;
+extern listvar *List_Data_Var;
+extern listvar *List_Data_Var_Cur;
+extern listvar *List_Save_Var;
+extern listvar *List_SubroutineArgument_Var;
+extern listvar *List_SubroutineDeclaration_Var;
+extern listvar *List_UsedInSubroutine_Var;
+extern listvar *List_Parameter_Var;
+extern listvar *List_Dimension_Var;
+extern listvar *List_FunctionType_Var;
+extern listvar *List_NotGridDepend_Var;
+extern listvar *List_Common_Var;
 
 
- listname *List_Pointer_Var;
- listname *List_ImplicitNoneSubroutine;
+extern listname *List_Pointer_Var;
+extern listname *List_ImplicitNoneSubroutine;
  
- listname *List_Do_labels; 
+extern listname *List_Do_labels; 
  /* A list that contains the do labels if any */
 
- listusemodule *List_NameOfModuleUsed;
- listusemodule *List_Include;
- listusemodule *listofmoduletmp;
- listusemodule *tmpuselocallist;
+extern listusemodule *List_NameOfModuleUsed;
+extern listusemodule *List_Include;
+extern listusemodule *listofmoduletmp;
+extern listusemodule *tmpuselocallist;
 
- listparameter *List_GlobParamModuleUsedInModuleUsed_Var;
- listparameter *List_GlobParamModuleUsed_Var;
+extern listparameter *List_GlobParamModuleUsedInModuleUsed_Var;
+extern listparameter *List_GlobParamModuleUsed_Var;
 
- listnom *List_ContainsSubroutine;
- listnom *List_Subroutine_For_Alloc;
- listnom *listofmodules;
- listnom *listofkind;
- listnom *List_NameOfModule;
- listnom *List_NameOfCommon;
- listnom *List_SubroutineWhereAgrifUsed;
+extern listnom *List_ContainsSubroutine;
+extern listnom *List_Subroutine_For_Alloc;
+extern listnom *listofmodules;
+extern listnom *listofkind;
+extern listnom *List_NameOfModule;
+extern listnom *List_NameOfCommon;
+extern listnom *List_SubroutineWhereAgrifUsed;
 
- listallocate *List_Allocate_Var;
+extern listallocate *List_Allocate_Var;
 
- listvarpointtovar *List_CouplePointed_Var;
+extern listvarpointtovar *List_CouplePointed_Var;
                            /*  variables which are pointed to an other one    */
 
- listindice *Listofavailableindices;
+extern listindice *Listofavailableindices;
                            /* List of available indices in the tabvars table  */
- listindice **Listofavailableindices_glob;
+extern listindice **Listofavailableindices_glob;
 
- listdim *curdim;
- listdim *commondim;
+extern listdim *curdim;
+extern listdim *commondim;
 
 /******************************************************************************/
 /****************   *** COMMON Variables ***  *********************************/
 /******************************************************************************/
 
- int positioninblock;
- char commonvar[LONG_VNAME];
- char commonblockname[LONG_VNAME];
+extern int positioninblock;
+extern char commonvar[LONG_VNAME];
+extern char commonblockname[LONG_VNAME];
 
 /******************************************************************************/
 /****************   *** AGRIF Variables ***   *********************************/
 /******************************************************************************/
- int inagrifcallargument;
- int afterpercent;
- int sameagrifargument;
- int InAgrifParentDef;
- char sameagrifname[LONG_VNAME];
+extern int inagrifcallargument;
+extern int afterpercent;
+extern int sameagrifargument;
+extern int InAgrifParentDef;
+extern char sameagrifname[LONG_VNAME];
 /******************************************************************************/
 /****************   *** VAR DEF Variables ***   *******************************/
 /******************************************************************************/
- int indicemaxtabvars[NB_CAT_VARIABLES];     /* Number of variables in the model i.e. last      */
+extern int indicemaxtabvars[NB_CAT_VARIABLES];     /* Number of variables in the model i.e. last      */
                            /*    indice used in  the tabvars table            */
- int PublicDeclare;        /* Variable has been declared as PUBLIC */
- int PrivateDeclare;       /* Variable has been declared as PRIVATE */
- int ExternalDeclare;      /* Variable has been declared as EXTERNAL */
- int InitialValueGiven;    /* An initial value has been given */
- int Allocatabledeclare;
- int Targetdeclare;
- int SaveDeclare;
- int functiondeclarationisdone;
- int pointerdeclare;
- int optionaldeclare;
- int inside_type_declare;
- int VariableIsParameter;
- int dimsgiven;
- int shouldincludempif;
- int c_star;
- char DeclType[LONG_VNAME];
- char nameinttypename[LONG_VNAME];
- char nameinttypenameback[LONG_VNAME];
- int GlobalDeclaration;
- int GlobalDeclarationType;
- char InitValue[LONG_M];
- char IntentSpec[LONG_M];
- char NamePrecision[LONG_C];
- char CharacterSize[LONG_VNAME];
- char vallengspec[LONG_VNAME];
- int isrecursive;
- int is_result_present;
+extern int PublicDeclare;        /* Variable has been declared as PUBLIC */
+extern int PrivateDeclare;       /* Variable has been declared as PRIVATE */
+extern int ExternalDeclare;      /* Variable has been declared as EXTERNAL */
+extern int InitialValueGiven;    /* An initial value has been given */
+extern int Allocatabledeclare;
+extern int Targetdeclare;
+extern int SaveDeclare;
+extern int functiondeclarationisdone;
+extern int pointerdeclare;
+extern int optionaldeclare;
+extern int inside_type_declare;
+extern int VariableIsParameter;
+extern int dimsgiven;
+extern int shouldincludempif;
+extern int c_star;
+extern char DeclType[LONG_VNAME];
+extern char nameinttypename[LONG_VNAME];
+extern char nameinttypenameback[LONG_VNAME];
+extern int GlobalDeclaration;
+extern int GlobalDeclarationType;
+extern char InitValue[LONG_M];
+extern char IntentSpec[LONG_M];
+extern char NamePrecision[LONG_C];
+extern char CharacterSize[LONG_VNAME];
+extern char vallengspec[LONG_VNAME];
+extern int isrecursive;
+extern int is_result_present;
 
 /******************************************************************************/
 /****************   *** CONV Variables ***   **********************************/
 /******************************************************************************/
- int dimprob ;             /* dimension of the problem : 1 for 1D,2 for 2D,   */
+extern int dimprob ;             /* dimension of the problem : 1 for 1D,2 for 2D,   */
                            /*    3 for 3D                                     */
- int onlyfixedgrids;       /* = 1 if onlyfixedgrids is true                   */
- int todebug;
- int fixedgrids;           /* = 1 if fixedgrids is true                       */
- char nbmaillesX[LONG_VNAME];	// number of cells in the x direction
- char nbmaillesY[LONG_VNAME];	// number of cells in the y direction
- char nbmaillesZ[LONG_VNAME];	// number of cells in the z direction
- int IndicenbmaillesX;
- int IndicenbmaillesY;
- int IndicenbmaillesZ;
+extern int onlyfixedgrids;       /* = 1 if onlyfixedgrids is true                   */
+extern int todebug;
+extern int fixedgrids;           /* = 1 if fixedgrids is true                       */
+extern char nbmaillesX[LONG_VNAME];	// number of cells in the x direction
+extern char nbmaillesY[LONG_VNAME];	// number of cells in the y direction
+extern char nbmaillesZ[LONG_VNAME];	// number of cells in the z direction
+extern int IndicenbmaillesX;
+extern int IndicenbmaillesY;
+extern int IndicenbmaillesZ;
 
- int inmodulemeet;
- int incalldeclare;
- int aftercontainsdeclare; /* Signale si l'on vient d'un contains ou non */
- int retour77;
- int callagrifinitgrids;
- int callmpiinit;
- int firstpass;
- int pointedvar;
- int NbMailleXDefined;
- int agrif_parentcall;
- int didvariableadded;
- int SubloopScalar;        /* = 1 we should put in argument of sub_loop       */
+extern int inmodulemeet;
+extern int incalldeclare;
+extern int aftercontainsdeclare; /* Signale si l'on vient d'un contains ou non */
+extern int retour77;
+extern int callagrifinitgrids;
+extern int callmpiinit;
+extern int firstpass;
+extern int pointedvar;
+extern int NbMailleXDefined;
+extern int agrif_parentcall;
+extern int didvariableadded;
+extern int SubloopScalar;        /* = 1 we should put in argument of sub_loop       */
                            /*    only                                         */
                            /*    scalar and not table u(1,1,1) in place of u  */
- int inprogramdeclare;
- int insubroutinedeclare;
- int inmoduledeclare;
- int dimsempty;
- int created_dimensionlist;
- int incontainssubroutine;
+extern int inprogramdeclare;
+extern int insubroutinedeclare;
+extern int inmoduledeclare;
+extern int dimsempty;
+extern int created_dimensionlist;
+extern int incontainssubroutine;
 
- char meetagrifinitgrids[LONG_M];
- char mpiinitvar[LONG_M];
- char toprintglob[LONG_M];
- char tmpvargridname[LONG_M];
- char dependfilename[LONG_FNAME];
- char charusemodule[LONG_VNAME];
- char subofagrifinitgrids[LONG_M];
- char curmodulename[LONG_VNAME];
- char subroutinename[LONG_VNAME];
- char old_subroutinename[LONG_VNAME]; // For internal subprogramm
- char cur_filename[LONG_FNAME];		// Name of the current parsed Fortran file
- char config_file[LONG_FNAME];		// Name of conv configuration file (ex: amr.in)
- char work_dir[LONG_FNAME];			// Work directory         (default: './')
- char include_dir[LONG_FNAME];		// Include directory      (default: './AGRIF_INC')
- char output_dir[LONG_FNAME];		// output directory       (default: './AGRIF_MODELFILES')
- char input_dir[LONG_FNAME];		// source input directory (default: './')
+extern char meetagrifinitgrids[LONG_M];
+extern char mpiinitvar[LONG_M];
+extern char toprintglob[LONG_M];
+extern char tmpvargridname[LONG_M];
+extern char dependfilename[LONG_FNAME];
+extern char charusemodule[LONG_VNAME];
+extern char subofagrifinitgrids[LONG_M];
+extern char curmodulename[LONG_VNAME];
+extern char subroutinename[LONG_VNAME];
+extern char old_subroutinename[LONG_VNAME]; // For internal subprogramm
+extern char cur_filename[LONG_FNAME];		// Name of the current parsed Fortran file
+extern char config_file[LONG_FNAME];		// Name of conv configuration file (ex: amr.in)
+extern char work_dir[LONG_FNAME];			// Work directory         (default: './')
+extern char include_dir[LONG_FNAME];		// Include directory      (default: './AGRIF_INC')
+extern char output_dir[LONG_FNAME];		// output directory       (default: './AGRIF_MODELFILES')
+extern char input_dir[LONG_FNAME];		// source input directory (default: './')
 
- FILE *fortran_out;          /* Output File                                    */
- FILE *fortran_in;           /* Input File                                     */
- FILE *oldfortran_out;
- FILE *old_oldfortran_out; // For internal subprogramm
- FILE *subloop;
- FILE *module_declar;
- FILE *allocationagrif;
+extern FILE *fortran_out;          /* Output File                                    */
+extern FILE *fortran_in;           /* Input File                                     */
+extern FILE *oldfortran_out;
+extern FILE *old_oldfortran_out; // For internal subprogramm
+extern FILE *subloop;
+extern FILE *module_declar;
+extern FILE *allocationagrif;
 
- long int pos_cur;         /* current position in the output file             */
- long int pos_curagrifparent;
+extern long int pos_cur;         /* current position in the output file             */
+extern long int pos_curagrifparent;
                            /* current position in the output file             */
- long int pos_curcall;     /* current position in the output file             */
- long int pos_curuse;      /* current position in the output file             */
- long int pos_curuseold;   /* current position in the output file             */
- long int pos_curfunction; /* current position in the output file             */
- long int pos_cur_decl;    /* current position in the output file             */
- long int pos_curdata;     /* current position in the output file             */
- long int pos_curparameter;/* current position in the output file             */
- long int pos_curcommon;   /* current position in the output file             */
- long int pos_cursave;     /* current position in the output file             */
- long int pos_curdimension;/* current position in the output file             */
- long int pos_curinclude;  /* final position of a line in file                */
- long int pos_end;         /* final position of a line in file                */
- long int pos_endsubroutine;
+extern long int pos_curcall;     /* current position in the output file             */
+extern long int pos_curuse;      /* current position in the output file             */
+extern long int pos_curuseold;   /* current position in the output file             */
+extern long int pos_curfunction; /* current position in the output file             */
+extern long int pos_cur_decl;    /* current position in the output file             */
+extern long int pos_curdata;     /* current position in the output file             */
+extern long int pos_curparameter;/* current position in the output file             */
+extern long int pos_curcommon;   /* current position in the output file             */
+extern long int pos_cursave;     /* current position in the output file             */
+extern long int pos_curdimension;/* current position in the output file             */
+extern long int pos_curinclude;  /* final position of a line in file                */
+extern long int pos_end;         /* final position of a line in file                */
+extern long int pos_endsubroutine;
                            /* final position of a line in file                */
 
-size_t length_last;
-size_t length_first;
-size_t length_v_vallengspec;
-size_t length_v_commoninfile;
-size_t length_v_precision;
-size_t length_v_IntentSpec;
-size_t length_v_initialvalue;
-size_t length_v_readedlistdimension;
-size_t length_a_nomvar;
-size_t length_toprintglob;
-size_t length_tmpvargridname;
-size_t length_ligne_Subloop;
-size_t length_toprint_utilagrif;
-size_t length_toprinttmp_utilchar;
-size_t length_ligne_writedecl;
-size_t length_newname_toamr;
-size_t length_newname_writedecl;
-size_t length_ligne_toamr;
-size_t length_tmpligne_writedecl;
- int value_char_size;
- int value_char_size1;
- int value_char_size2;
- int value_char_size3;
+extern size_t length_last;
+extern size_t length_first;
+extern size_t length_v_vallengspec;
+extern size_t length_v_commoninfile;
+extern size_t length_v_precision;
+extern size_t length_v_IntentSpec;
+extern size_t length_v_initialvalue;
+extern size_t length_v_readedlistdimension;
+extern size_t length_a_nomvar;
+extern size_t length_toprintglob;
+extern size_t length_tmpvargridname;
+extern size_t length_ligne_Subloop;
+extern size_t length_toprint_utilagrif;
+extern size_t length_toprinttmp_utilchar;
+extern size_t length_ligne_writedecl;
+extern size_t length_newname_toamr;
+extern size_t length_newname_writedecl;
+extern size_t length_ligne_toamr;
+extern size_t length_tmpligne_writedecl;
+extern int value_char_size;
+extern int value_char_size1;
+extern int value_char_size2;
+extern int value_char_size3;
 
 
- int inallocate;
- int infixed;
- int infree;
+extern int inallocate;
+extern int infixed;
+extern int infree;
 /******************************************************************************/
 /*********** Declaration of externals subroutines *****************************/
 /***************************************************** ************************/
