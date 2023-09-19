@@ -56,13 +56,13 @@
 */
 #undef  COASTAL         /* COASTAL Applications */
 #undef REGIONAL        /* REGIONAL Applications */
-#define BASIN
+#undef BASIN
 
 /*
 To make configuration via cmake command line directly and not edit
 cppdef.h by hand for the common setups.
 */
-#ifdef HAS_CMAKE_CONFIG
+#ifdef HAVE_CMAKE_CONFIG
 #include "config.h"
 #endif
 
@@ -1955,7 +1955,7 @@ TODO: can be merged into config.h.in and avoid this trick
 if remove all "undef OPENMP/OPENACC/MPI" in case definition
 on top of this line.
 */
-#ifdef HAS_CMAKE_CONFIG
+#ifdef HAVE_CMAKE_CONFIG
 #include "config_parallelism.h"
 #endif
 

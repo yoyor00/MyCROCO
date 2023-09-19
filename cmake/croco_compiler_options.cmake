@@ -56,6 +56,12 @@ macro(croco_tune_compile_flags)
 	endif()
 
 	#######################################################
+	# OpenACC is enabled
+	if (ENABLE_PSYCLONE_OPENACC)
+		list(APPEND CROCO_FORTRAN_FLAGS -acc=gpu -Minfo=accel)
+	endif()
+
+	#######################################################
 	# Assign default not to let cmake using -O3 which is default
 	list(JOIN CROCO_FORTRAN_FLAGS " " CROCO_FORTRAN_FLAGS_STR)
 	if (CMAKE_Fortran_FLAGS STREQUAL "")

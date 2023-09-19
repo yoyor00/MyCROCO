@@ -17,7 +17,7 @@ cfg_set_projet "CROCO"
 ######################################################
 #psyclone openacc
 cfg_add_enable_option --name='psyclone-openacc' \
-                      --on='-DENABLE_PSYCLONE_OPENACC=${ON} -DCMAKE_Fortran_COMPILER=nvfortran' \
+                      --on='-DENABLE_PSYCLONE_OPENACC=${ON}' \
                       --doc='Enable coverage report'
 
 #openmp
@@ -26,10 +26,15 @@ cfg_add_enable_option --name='openmp' \
                       --doc='Enable coverage report'
 
 #psyclone venv
+cfg_add_with_option   --name='netcdff' \
+                      --doc='Define prefix directory to get access to NetCDF-Fortran' \
+                      --var='NETCDFF_PREFIX'
+
+#psyclone venv
 cfg_add_with_option   --name='psyclone' \
                       --doc='Define venv directory to get access to psyclone & poseidon' \
                       --var='PSYCLONE_PREFIX'\
-                      --on='-DENABLE_PSYCLONE_OPENACC=${ON} -DCMAKE_Fortran_COMPILER=nvfortran'
+                      --on='-DENABLE_PSYCLONE_OPENACC=${ON}'
 
 #select the case to run
 cfg_add_with_option   --name='case' \

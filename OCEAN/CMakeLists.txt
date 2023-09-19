@@ -19,10 +19,11 @@ configure_file(config_parallelism.h.in config_parallelism.h)
 include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${NETCDFF_INCLUDE_DIR})
-set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_BINARY_DIR})
+set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -DHAVE_CMAKE_CONFIG -I${NETCDFF_INCLUDE_DIR} -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_BINARY_DIR})
 
 ######################################################
 # Apply croco flags
+add_definitions(-DHAVE_CMAKE_CONFIG)
 add_compile_options(${CROCO_FORTRAN_FLAGS})
 add_link_options(${CROCO_FORTRAN_FLAGS})
 

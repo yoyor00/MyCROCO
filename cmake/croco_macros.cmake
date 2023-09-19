@@ -100,7 +100,8 @@ function(croco_change_loop_preprocess list_to_update)
 		add_custom_command(
 			OUTPUT ${newfile_mpc}
 			COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/change_loops.py ${oldfile} ${newfile}
-			COMMAND ${CROCO_MPC} < ${newfile}  > ${newfile_mpc}
+			COMMAND ${CROCO_MPC} < ${newfile}  > ${newfile_mpc}.to_fix.F
+			COMMAND egrep -v "^ +& *$" ${newfile_mpc}.to_fix.F > ${newfile_mpc} || cp ${newfile_mpc}.to_fix.F ${newfile_mpc} 
 			MAIN_DEPENDENCY ${oldfile}
 			DEPENDS mpc ${OCEAN_CPP_H}
 			VERBATIM
