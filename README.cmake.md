@@ -27,7 +27,7 @@ If you want to quickly build and install the dependencies localy in a subdirecto
 you can simply use the provided script :
 
 ```sh
-# by default is install in ./venv
+# by default it install in ./venv
 ./create_prefix_with_deps.sh [--nvhpc] [PREFIX_DIR]
 ```
 
@@ -47,7 +47,7 @@ different `case` and `parallelism` mode.
 
 Then you need to call the `configure` script which is just a simple wrapper
 arround the `cmake` command to ease its use and provide an interface similar
-to `àutotools`.
+to `autotools`.
 
 To build the sequential version you can :
 
@@ -85,7 +85,7 @@ Building the OpenMP version
 Simply play with the `configure` options :
 
 ```sh
-../configure --enable-openmp
+../configure --with-parallel=openmp
 ```
 
 Building the GPU/OpenACC version
@@ -96,13 +96,14 @@ Simply play with the `configure` options by :
  * Select the OpenACC mode : `--with-openacc={MODE}` which can be either :
     * `psyclone` to use the OpenACC auto-generated version with PSyClone.
     * `native` to use the hand made version.
+ * Change the compiler for the NVHPC one.
 
 ```sh
 # manual version
-../configure --with-openacc=native FORT=nvfortran
+../configure --with-parallel=openacc-native FORT=nvfortran
 
 # psyclone version
-../configure --with-openacc=psyclone FORT=nvfortran
+../configure --with-parallel=openacc-psyclone FORT=nvfortran
 ```
 
 Custom compile flags

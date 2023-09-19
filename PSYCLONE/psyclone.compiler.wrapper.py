@@ -42,6 +42,10 @@ def extract_source_file(args: list):
 def get_transformation_for_file(config_file: str, source_file: str):
     # extract file name
     file_name = os.path.basename(source_file)
+    
+    # calc cleaned file name (without .no-acc.cpp.mpc.......)
+    file_name_simple = '.'.join([file_name.split('.')[i] for i in [0,-1]])
+    print(file_name_simple)
 
     # search in config file
     with open(config_file, 'r') as fp:
@@ -49,7 +53,7 @@ def get_transformation_for_file(config_file: str, source_file: str):
         lines = fp.readlines()
         for line in lines:
             entries = line.replace('\n','').split('\t')
-            if entries[0] == file_name:
+            if entries[0] == file_name or entries[0] == file_name_simple:
                 return entries[1]
     
     # not found
@@ -82,6 +86,18 @@ if __name__ == '__main__':
 
         # call psyclone if needed
         if transformation_script is not None:
+            # Generate the dummy version to be able to diff easily to see what we injected
+            # Remark:  This is only for debugging purpose
+            psyclone_dummy_source_file = source_file.replace(".F", ".psyclone.dummy.F90")
+            subprocess.run([
+                            'psyclone',
+                            '-api', 'nemo',
+                            '-l' , 'output',
+                            '-s', os.path.join(script_path, 'scripts', 'trans_dummy.py'),
+                            '-opsy' ,psyclone_dummy_source_file, source_file
+                        ],
+                        check=True)
+            
             # run psyclone
             psyclone_source_file = source_file.replace(".F", ".psyclone.F90")
             subprocess.run([

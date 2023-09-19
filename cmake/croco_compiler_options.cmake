@@ -57,13 +57,13 @@ macro(croco_tune_compile_flags)
 
 	#######################################################
 	# OpenMP is enabled
-	if (ENABLE_OPENMP)
+	if (OPENMP)
 		list(APPEND CROCO_FORTRAN_FLAGS ${OpenMP_Fortran_FLAGS})
 	endif()
 
 	#######################################################
 	# OpenACC is enabled
-	if (WITH_OPENACC)
+	if (OPENACC)
 		if(CMAKE_Fortran_COMPILER_ID STREQUAL "PGI" OR CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
 			list(APPEND CROCO_FORTRAN_FLAGS -acc=gpu -Minfo=accel)
 		else()

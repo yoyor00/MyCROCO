@@ -35,7 +35,7 @@ PREP_OUT_FILE=$2
 # TODO: to remove in final version
 echo ${PREP_IN_FILENAME} 1>&2
 if egrep "^${PREP_IN_FILENAME}\$" ${PREP_PATH}/skip.openacc.rules.lst; then
-    cat ${PREP_IN_DIRNAME}/cppdefs.h | sed -e "s/# define OPENACC/# undef OPENACC/g" -e "s/#include \"config_parallelism.h\"/# undef OPENACC/g" > ${PREP_OUT_FILE}.cppdefs-no-acc.h
+    cat ${PREP_IN_DIRNAME}/cppdefs.h | sed -e "s/# define OPENACC/# undef OPENACC/g" -e "s/#include \"config_post.h\"/# undef OPENACC/g" > ${PREP_OUT_FILE}.cppdefs-no-acc.h
     sed -e "s#cppdefs.h#${PREP_OUT_FILE}.cppdefs-no-acc.h#g" ${PREP_IN_FILE} > ${PREP_OUT_FILE}
 else
     cp ${PREP_IN_FILE} ${PREP_OUT_FILE}
