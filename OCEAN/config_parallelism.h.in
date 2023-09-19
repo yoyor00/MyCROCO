@@ -27,4 +27,10 @@ Remark: If will fail if we redefine a second time HAS_PARA_MODE
 #define HAS_PARA_MODE
 #endif
 
+/*
+Enable AGRIF
+*/
+#undef AGRIF
+#cmakedefine AGRIF
+
 #endif

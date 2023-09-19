@@ -23,13 +23,14 @@ set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -DHAVE_CMAKE_CONFIG -I${N
 
 ######################################################
 # Apply croco flags
-add_definitions(-DHAVE_CMAKE_CONFIG)
+add_definitions    (-DHAVE_CMAKE_CONFIG)
 add_compile_options(${CROCO_FORTRAN_FLAGS})
-add_link_options(${CROCO_FORTRAN_FLAGS})
+add_link_options   (${CROCO_FORTRAN_FLAGS})
 
 ######################################################
 # path to "mpc", the ocean internal source preprocessor
-set(CROCO_MPC ${CMAKE_CURRENT_BINARY_DIR}/mpc)
+set(CROCO_MPC        $<TARGET_FILE:mpc>)
+set(CROCO_AGRIF_CONV $<TARGET_FILE:conv>)
 
 ######################################################
 file(GLOB CROCO_CPP_H *.h *.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h ${CMAKE_CURRENT_BINARY_DIR}/config_parallelism.h)
@@ -119,14 +120,14 @@ list(APPEND CROCO_SRCS_F77 init_sta.F wrt_sta.F step_sta.F interp_sta.F
                            def_sta.F init_arrays_sta.F)
 # 14) biology/sediment routines
 list(APPEND CROCO_SRCS_F77 biology.F o2sato.F sediment.F bbl.F)
-# 15) PISCES biology
+# 16) MPI routines
 list(APPEND CROCO_SRCS_F77 MPI_Setup.F MessPass2D.F MessPass3D.F exchange.F
                            autotiling.F)
-# 16) MPI routines
+# 16) AGRIF routines
 list(APPEND CROCO_SRCS_F77 zoom.F update2D.F set_nudgcof_fine.F zoombc_2D.F
                            zoombc_3D.F uv3dpremix.F t3dpremix.F update3D.F
                            zoombc_3Dfast.F Agrif2Model.F)
-# 17) AGRIF routines
+# 17) XIOS routines
 #list(APPEND CROCO_SRCS_F77 send_xios_diags.F)
 # 18) OASIS coupling interface
 list(APPEND CROCO_SRCS_F77 cpl_prism_define.F cpl_prism_put.F cpl_prism_init.F
@@ -169,6 +170,7 @@ list(APPEND CROCO_SRCS_F90 module_oa_space.F90 module_oa_periode.F90
 ######################################################
 # Make absolute paths for source prepare pass
 croco_make_absolute_paths(CROCO_SRCS_F77 ${CMAKE_CURRENT_SOURCE_DIR})
+croco_make_absolute_paths(CROCO_SRCS_F90 ${CMAKE_CURRENT_SOURCE_DIR})
 
 ######################################################
 # generate some sources files byb using some binary programs
@@ -269,11 +271,18 @@ if (WITH_OPENACC STREQUAL "psyclone")
 	croco_psyclone_pre_filter_acc(CROCO_SRCS_F77)
 endif ()
 
-# build
-croco_cpp_and_mpc_preprocess(CROCO_SRCS_F77)
+# prepare the sources with filters
+if (ENABLE_AGRIF)
+	croco_agrif_preprocess(CROCO_SRCS_F77)
+	croco_agrif_preprocess(CROCO_SRCS_F90)
+else()
+	croco_cpp_and_mpc_preprocess(CROCO_SRCS_F77)
+endif()
 if (WITH_OPENACC)
 	croco_change_loop_preprocess(CROCO_SRCS_F77)
 endif ()
+
+# build executable
 set(CMAKE_Fortran_PREPROCESS ON)
 add_executable(croco ${CROCO_SRCS_F90} ${CROCO_SRCS_F77})
 target_link_libraries(croco ${NETCDFF_LIBRARY})
@@ -284,6 +293,11 @@ set_property(TARGET croco PROPERTY LINKER_LANGUAGE Fortran)
 if (WITH_OPENACC STREQUAL "psyclone")
 	set_target_properties(croco PROPERTIES Fortran_COMPILER_LAUNCHER ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.compiler.wrapper.py)
 endif ()
+
+# enable AGRIF
+if (ENABLE_AGRIF)
+	target_link_libraries(croco agrif)
+endif()
 
 ######################################################
 # Make some of the executables landing directly in root dir

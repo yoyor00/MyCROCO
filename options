@@ -25,6 +25,11 @@ cfg_add_enable_option --name='openmp' \
                       --on='-DENABLE_OPENMP=${ON}' \
                       --doc='Enable the OpenMP version of the code'
 
+#agrif
+cfg_add_enable_option --name='agrif' \
+                      --on='-DENABLE_AGRIF=${ON}' \
+                      --doc='Enable AGRIF to handle mesh refinement'
+
 #psyclone venv
 cfg_add_with_option   --name='netcdf' \
                       --doc='Define prefix directory to get access to NetCDF-Fortran' \
