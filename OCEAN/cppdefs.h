@@ -1955,7 +1955,7 @@ if remove all "undef OPENMP/OPENACC/MPI" in case definition
 on top of this line.
 */
 #ifdef HAVE_CMAKE_CONFIG
-#include "config_parallelism.h"
+#include "config_post.h"
 #endif
 
 #include "set_global_definitions.h"
