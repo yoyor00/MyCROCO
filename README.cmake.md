@@ -11,6 +11,7 @@ Dependencies
 
 The CROCO **required** dependecies are :
 
+ * CMake (Tested : 3.22.1) : https://cmake.org/
  * NetCDF-Fortran (Tested: 4.5.3) : https://downloads.unidata.ucar.edu/netcdf/
 
 The CROCO **optional** dependecies are :
@@ -56,6 +57,10 @@ To build the sequential version you can :
 
 # if needs to say where to find NetCDF :
 ../configure --with-netcdf=$HOME/usr-netcdf/
+
+# If all the required dependencies are in the same prefix
+# you can simply (not to use --with-XXX for each one)
+../configure --prefix=$HOME/usr-all/
 
 # Default CASE is BASIN, but you can alter with :
 ../configure --with-case=CANYON
@@ -145,9 +150,10 @@ You can get a basic summary on the setup by calling `cmake` without options :
 cmake ..
 ```
 
-Of you can use the terminal cmake browser `ccmake` to get access to all the
+If you can use the terminal cmake browser `ccmake` to get access to all the
 defined variables and see their values:
 
 ```sh
+# the curses version
 ccmake ..
 ```
