@@ -26,9 +26,9 @@ cfg_add_enable_option --name='openmp' \
                       --doc='Enable the OpenMP version of the code'
 
 #psyclone venv
-cfg_add_with_option   --name='netcdff' \
+cfg_add_with_option   --name='netcdf' \
                       --doc='Define prefix directory to get access to NetCDF-Fortran' \
-                      --var='NETCDFF_PREFIX'
+                      --var='NETCDF_PREFIX'
 
 #psyclone venv
 cfg_add_with_option   --name='psyclone' \
