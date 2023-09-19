@@ -50,7 +50,7 @@ much code as possible in each Kernels region).
 from poseidon.dsl.helper import *
 from poseidon.dsl.kernel import PsycloneACCKernelsDirective
 from psyclone.psyir.nodes.routine import Routine
-from psyclone.psyir.nodes.ifblock import IfBlock
+from psyclone.psyir.nodes.if_block import IfBlock
 from psyclone.psyir.nodes.call import Call
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.nodes import ACCDirective, RegionDirective

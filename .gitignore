@@ -20,5 +20,6 @@ OCEAN.bak/cpl_prism_getlistvals.F
 /OCEAN/mergcpp.txt
 
 # cmake usual build dir
-/build
+/build*/
 __pycache__
+venv
