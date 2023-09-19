@@ -23,7 +23,6 @@ set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -DHAVE_CMAKE_CONFIG -I${N
 
 ######################################################
 # Apply croco flags
-add_definitions    (-DHAVE_CMAKE_CONFIG)
 add_compile_options(${CROCO_FORTRAN_FLAGS})
 add_link_options   (${CROCO_FORTRAN_FLAGS})
 

@@ -33,7 +33,7 @@ set(ENABLE_AGRIF  OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
 
 ######################################################
 # Enable case so it lands in config.h.in
-add_definitions(-DHAS_CMAKE_CONFIG)
+add_definitions(-DHAVE_CMAKE_CONFIG)
 # Trigger the case definition (macro variable having the name of the case)
 set(${CROCO_CASE} ON)
 # Enable some vars for config.parallelism.h.in
