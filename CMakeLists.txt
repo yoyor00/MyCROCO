@@ -24,7 +24,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/croco_compiler_options.cmake)
 
 ######################################################
 # Handle configuration
-set(ENABLE_PSYCLONE_OPENACC OFF CACHE BOOL "Enable usage of PSyClone to genrate the GPU/OpenACC version of the code.")
+set(WITH_OPENACC OFF CACHE STRING "Enable OenACC version, either by using 'native' or 'psyclone'.")
 set(CROCO_CASE "BASIN" CACHE STRING "Select the case to run.")
 set(ENABLE_OPENMP OFF CACHE BOOL "Enable OpenMP for CPU parallelism.")
 
@@ -33,13 +33,15 @@ set(ENABLE_OPENMP OFF CACHE BOOL "Enable OpenMP for CPU parallelism.")
 add_definitions(-DHAS_CMAKE_CONFIG)
 # Trigger the case definition (macro variable having the name of the case)
 set(${CROCO_CASE} ON)
-set(OPENACC ${ENABLE_PSYCLONE_OPENACC})
 set(OPENMP ${ENABLE_OPENMP})
+if (WITH_OPENACC)
+	set(OPENACC ON)
+endif()
 
 ######################################################
 # Search dependences
 find_package(NetCDFF REQUIRED)
-if (ENABLE_PSYCLONE_OPENACC)
+if (WITH_OPENACC STREQUAL "psyclone")
 	find_package(PSyClone REQUIRED)
 endif ()
 if (ENABLE_OPENMP)
@@ -52,9 +54,9 @@ croco_tune_compile_flags()
 
 ######################################################
 # Check
-if (ENABLE_PSYCLONE_OPENACC AND NOT PSYCLONE_FOUND)
+if (WITH_OPENACC STREQUAL "psyclone" AND NOT PSYCLONE_FOUND)
 	message(FATAL_ERROR "Fail to find PSyClone, required if enabling PSyClone OpenACC via -DWITH_PSYCLONE_VENV !")
-endif (ENABLE_PSYCLONE_OPENACC AND NOT PSYCLONE_FOUND)
+endif ()
 
 ######################################################
 # add subdirs
@@ -79,7 +81,7 @@ message(STATUS "|  Compiler         : ${CMAKE_Fortran_COMPILER}")
 message(STATUS "--------------------------------------------------------------")
 message(STATUS "|  NetCDF           : ${NETCDFF_FOUND}")
 message(STATUS "|  PsyClone         : ${PSYCLONE_FOUND}")
-message(STATUS "|  OpenACC          : ${OPENACC}")
+message(STATUS "|  OpenACC          : ${WITH_OPENACC}")
 message(STATUS "|  MPI              : ${MPI_FOUND}")
 message(STATUS "|  OpenMP           : ${OPENMP_FOUND}")
 message(STATUS "--------------------------------------------------------------")

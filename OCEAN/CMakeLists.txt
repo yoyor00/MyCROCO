@@ -265,15 +265,15 @@ set_property(TARGET partit PROPERTY LINKER_LANGUAGE Fortran)
 # build croco ocean simulation
 
 # TODO: remove when finished
-if (ENABLE_PSYCLONE_OPENACC)
+if (WITH_OPENACC STREQUAL "psyclone")
 	croco_psyclone_pre_filter_acc(CROCO_SRCS_F77)
-endif (ENABLE_PSYCLONE_OPENACC)
+endif ()
 
 # build
 croco_cpp_and_mpc_preprocess(CROCO_SRCS_F77)
-if (ENABLE_PSYCLONE_OPENACC)
+if (WITH_OPENACC)
 	croco_change_loop_preprocess(CROCO_SRCS_F77)
-endif (ENABLE_PSYCLONE_OPENACC)
+endif ()
 set(CMAKE_Fortran_PREPROCESS ON)
 add_executable(croco ${CROCO_SRCS_F90} ${CROCO_SRCS_F77})
 target_link_libraries(croco ${NETCDFF_LIBRARY})
@@ -281,9 +281,9 @@ target_link_libraries(croco croco_common)
 set_property(TARGET croco PROPERTY LINKER_LANGUAGE Fortran)
 
 # Inject psyclone in the loop if enabled
-if (ENABLE_PSYCLONE_OPENACC)
+if (WITH_OPENACC STREQUAL "psyclone")
 	set_target_properties(croco PROPERTIES Fortran_COMPILER_LAUNCHER ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.compiler.wrapper.py)
-endif (ENABLE_PSYCLONE_OPENACC)
+endif ()
 
 ######################################################
 # Make some of the executables landing directly in root dir

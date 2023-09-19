@@ -15,15 +15,15 @@ cfg_set_projet "CROCO"
 #CFG_EXTRA_FORT='mpifort'
 
 ######################################################
-#psyclone openacc
-cfg_add_enable_option --name='psyclone-openacc' \
-                      --on='-DENABLE_PSYCLONE_OPENACC=${ON}' \
-                      --doc='Enable coverage report'
+#openacc
+cfg_add_with_option   --name='openacc' \
+                      --var='WITH_OPENACC' \
+                      --doc='Enable usage of OpenACC (native or psyclone)'
 
 #openmp
 cfg_add_enable_option --name='openmp' \
                       --on='-DENABLE_OPENMP=${ON}' \
-                      --doc='Enable coverage report'
+                      --doc='Enable the OpenMP version of the code'
 
 #psyclone venv
 cfg_add_with_option   --name='netcdff' \
@@ -34,7 +34,7 @@ cfg_add_with_option   --name='netcdff' \
 cfg_add_with_option   --name='psyclone' \
                       --doc='Define venv directory to get access to psyclone & poseidon' \
                       --var='PSYCLONE_PREFIX'\
-                      --on='-DENABLE_PSYCLONE_OPENACC=${ON}'
+                      --on='-DWITH_OPENACC=psyclone'
 
 #select the case to run
 cfg_add_with_option   --name='case' \
