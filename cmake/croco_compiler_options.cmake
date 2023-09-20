@@ -1,12 +1,21 @@
-######################################################
+###########################################################
 #  CROCO cmake build system, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
-######################################################
+###########################################################
 
 ###########################################################
 # Determine what are the default flags to use depending on the
 # Compiler & OS
+#
+# Output variables
+# ----------------
+# CROCO_FORTRAN_CPP:
+#     The `cpp` command to be used to pre-process the code.
+# CROCO_FORTRAN_CPP_FLAGS:
+#     The flags to be given to `cpp` in addition to -I... -D...
+# CROCO_FORTRAN_FLAGS:
+#     The tuned compile flags to be used to build fortran files.
 macro(croco_tune_compile_flags)
 	######################################################
 	if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
@@ -45,7 +54,9 @@ macro(croco_tune_compile_flags)
 		                             -qunroll=yes)
 		set(CROCO_OPTIMIZE_LEVEL     -O3)
 	else()
-		message(FATAL_ERROR "Unsupported operating system (uname -s) : ${CMAKE_HOST_SYSTEM_NAME}")
+		message(FATAL_ERROR "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+		"Unsupported operating system (uname -s) : ${CMAKE_HOST_SYSTEM_NAME}\n"
+			                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	endif()
 
 	#######################################################

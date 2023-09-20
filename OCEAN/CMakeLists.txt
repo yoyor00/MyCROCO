@@ -1,19 +1,19 @@
-######################################################
+###########################################################
 #  CROCO cmake build system, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
-######################################################
+###########################################################
 
-######################################################
+###########################################################
 # Add the source files
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BUILD_DIR})
 
-######################################################
+###########################################################
 # generate config.h
 configure_file(config.h.in config.h)
 configure_file(config_post.h.in config_post.h)
 
-######################################################
+###########################################################
 # -I directives
 #include_directories(${CMAKE_CURRENT_BUILD_DIR})
 include_directories(.)
@@ -21,20 +21,20 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${NETCDFF_INCLUDE_DIR})
 set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -DHAVE_CMAKE_CONFIG -I${NETCDFF_INCLUDE_DIR} -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_BINARY_DIR})
 
-######################################################
+###########################################################
 # Apply croco flags
 add_compile_options(${CROCO_FORTRAN_FLAGS})
 add_link_options   (${CROCO_FORTRAN_FLAGS})
 
-######################################################
+###########################################################
 # path to "mpc", the ocean internal source preprocessor
 set(CROCO_MPC        $<TARGET_FILE:mpc>)
 set(CROCO_AGRIF_CONV $<TARGET_FILE:conv>)
 
-######################################################
+###########################################################
 file(GLOB CROCO_CPP_H *.h *.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h ${CMAKE_CURRENT_BINARY_DIR}/config_parallelism.h)
 
-######################################################
+###########################################################
 # List files
 #======================================================================
 # SRCS: source codes files are sorted into groups, separated by
@@ -166,12 +166,12 @@ list(APPEND CROCO_SRCS_F90 module_oa_space.F90 module_oa_periode.F90
 #                           sed_MUSTANG_CROCO.F90 sed_MUSTANG.F90 initMUSTANG.F90
 #                           plug_MUSTANG_CROCO.F90
 
-######################################################
+###########################################################
 # Make absolute paths for source prepare pass
 croco_make_absolute_paths(CROCO_SRCS_F77 ${CMAKE_CURRENT_SOURCE_DIR})
 croco_make_absolute_paths(CROCO_SRCS_F90 ${CMAKE_CURRENT_SOURCE_DIR})
 
-######################################################
+###########################################################
 # generate some sources files byb using some binary programs
 
 # setup_kwds.F
@@ -206,13 +206,13 @@ list(APPEND CROCO_SRCS_F77 ${CMAKE_CURRENT_BINARY_DIR}/setup_kwds.F)
 list(APPEND CROCO_SRCS_F77 ${CMAKE_CURRENT_BINARY_DIR}/check_srcs.F)
 list(APPEND CROCO_SRCS_F77 ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F)
 
-######################################################
+###########################################################
 # ISSUE: remark, this is to solve an issue due to the trick
 # of pre-applying MPC for "ocean" which is we let lenstr.F
 # in the list, make add_executable(partit) skipping it.
 add_library(croco_common STATIC lenstr.F insert_node.F)
 
-######################################################
+###########################################################
 # build ncjoin utility
 set(NCJOIN_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/ncjoin.F)
 croco_cpp_and_mpc_preprocess(NCJOIN_SRC_F)
@@ -221,7 +221,7 @@ target_link_libraries(ncjoin ${NETCDFF_LIBRARY})
 target_link_libraries(ncjoin croco_common)
 set_property(TARGET ncjoin PROPERTY LINKER_LANGUAGE Fortran)
 
-######################################################
+###########################################################
 # build ncrename utility
 set(NCRENAME_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/ncrename.F)
 croco_cpp_and_mpc_preprocess(CRENAME_SRC_F)
@@ -230,39 +230,39 @@ target_link_libraries(ncrename ${NETCDFF_LIBRARY})
 target_link_libraries(ncrename croco_common)
 set_property(TARGET ncrename PROPERTY LINKER_LANGUAGE Fortran)
 
-######################################################
+###########################################################
 # build mpc utility
 add_executable(mpc mpc.F)
 set_property(TARGET mpc PROPERTY LINKER_LANGUAGE Fortran)
 
-######################################################
+###########################################################
 # build checkkwds utility (used to produce setup_kwds.F)
 add_executable(checkkwds checkkwds.F)
 set_property(TARGET checkkwds PROPERTY LINKER_LANGUAGE Fortran)
 
-######################################################
+###########################################################
 # build checkkwds utility (used to produce setup_kwds.F)
 add_executable(cppcheck cppcheck.F)
 set_property(TARGET cppcheck PROPERTY LINKER_LANGUAGE Fortran)
 
-######################################################
+###########################################################
 # build checkkwds utility (used to produce check_srcs.F)
 add_executable(srcscheck srcscheck.F)
 set_property(TARGET srcscheck PROPERTY LINKER_LANGUAGE Fortran)
 
-######################################################
+###########################################################
 # build cross_matrix utility
 add_executable(cross_matrix cross_matrix.F)
 set_property(TARGET cross_matrix PROPERTY LINKER_LANGUAGE Fortran)
 
-######################################################
+###########################################################
 # build partit utility
 add_executable(partit partit.F)
 target_link_libraries(partit ${NETCDFF_LIBRARY})
 target_link_libraries(partit croco_common)
 set_property(TARGET partit PROPERTY LINKER_LANGUAGE Fortran)
 
-######################################################
+###########################################################
 # build croco ocean simulation
 
 # TODO: remove when finished
@@ -298,6 +298,6 @@ if (ENABLE_AGRIF)
 	target_link_libraries(croco agrif)
 endif()
 
-######################################################
+###########################################################
 # Make some of the executables landing directly in root dir
 set_property(TARGET partit croco cross_matrix PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
