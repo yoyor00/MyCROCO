@@ -45,11 +45,10 @@ function(croco_psyclone_pre_filter_acc list_to_update)
 		# build command
 		add_custom_command(
 			OUTPUT ${newfile_no_acc}
-			COMMAND ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.preprocessor.skip.acc.sh ${oldfile} ${newfile_no_acc}
+			COMMAND ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.preprocessor.skip.acc.py ${oldfile} ${newfile_no_acc}
 			MAIN_DEPENDENCY ${oldfile}
-			DEPENDS ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.preprocessor.skip.acc.sh
-			        ${CMAKE_SOURCE_DIR}/PSYCLONE/skip.openacc.rules.lst
-			        ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.rules.lst
+			DEPENDS ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.preprocessor.skip.acc.py
+			        ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.rules.json
 			VERBATIM
 		)
 		list(APPEND _newfiles ${newfile_no_acc})

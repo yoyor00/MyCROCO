@@ -10,6 +10,14 @@ set -x
 # default
 BENCH_PREFIX=${PWD}/venv
 BENCH_USE_NVHPC=no
+BENCH_USE_NETCDF=no
+
+###########################################################
+# selection versions
+NETCDF_C_VERSION=4.9.2
+NETCDF_FORT_VERSION=4.5.3
+NETCDF_CXX_VERSION=4.3.1
+HDF5_VERSION=1_14_2
 
 ############################################################
 # help
@@ -17,11 +25,18 @@ for arg in "$@"
 do
 	case "${arg}" in
 		-h|--help)
-			echo "Usage : $0 [--nvhpc] [PREFIX_DIR]"
+			echo "Usage : $0 [--nvhpc] [--netcdf] [--all] [PREFIX_DIR]"
 			exit 0
 			;;
 		--nvhpc)
 			BENCH_USE_NVHPC=yes
+			;;
+		--netcdf)
+			BENCH_USE_NETCDF=yes
+			;;
+		--all)
+			BENCH_USE_NVHPC=yes
+			BENCH_USE_NETCDF=yes
 			;;
 		*)
 			BENCH_PREFIX="${arg}"
@@ -46,13 +61,6 @@ else
 	# load prefix
 	source ${BENCH_PREFIX}/bin/activate
 fi
-
-###########################################################
-# selection versions
-NETCDF_C_VERSION=4.9.2
-NETCDF_FORT_VERSION=4.5.3
-NETCDF_CXX_VERSION=4.3.1
-HDF5_VERSION=1_14_2
 
 ###########################################################
 # download sources
@@ -80,7 +88,7 @@ fi
 
 ###########################################################
 # build HDF-5
-if [[ ! -f ${BENCH_PREFIX}/include/hdf5.h ]]; then
+if [[ ${BENCH_USE_NETCDF} == 'yes' && ! -f ${BENCH_PREFIX}/include/hdf5.h ]]; then
 	wget --continue https://github.com/HDFGroup/hdf5/releases/download/hdf5-${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz
 	tar -xvf hdf5-${HDF5_VERSION}.tar.gz
 	pushd hdfsrc
@@ -91,7 +99,7 @@ fi
 
 ###########################################################
 # build netcdf-c
-if [[ ! -f ${BENCH_PREFIX}/include/netcdf.h ]]; then
+if [[ ${BENCH_USE_NETCDF} == 'yes' && ! -f ${BENCH_PREFIX}/include/netcdf.h ]]; then
 	wget --continue https://downloads.unidata.ucar.edu/netcdf-c/${NETCDF_C_VERSION}/netcdf-c-${NETCDF_C_VERSION}.tar.gz
 	tar -xvf netcdf-c-${NETCDF_C_VERSION}.tar.gz
 	pushd  netcdf-c-${NETCDF_C_VERSION}
@@ -102,7 +110,7 @@ fi
 
 ###########################################################
 # build netcdf-fortran
-if [[ ! -f ${BENCH_PREFIX}/include/netcdf.inc ]]; then
+if [[ ${BENCH_USE_NETCDF} == 'yes' && ! -f ${BENCH_PREFIX}/include/netcdf.inc ]]; then
 	wget --continue https://downloads.unidata.ucar.edu/netcdf-fortran/${NETCDF_FORT_VERSION}/netcdf-fortran-${NETCDF_FORT_VERSION}.tar.gz
 	tar -xvf netcdf-fortran-${NETCDF_FORT_VERSION}.tar.gz
 	pushd netcdf-fortran-${NETCDF_FORT_VERSION}
@@ -113,7 +121,7 @@ fi
 
 ###########################################################
 # build netcdf-cxx
-if [[ ! -f ${BENCH_PREFIX}/include/ncFile.h ]]; then
+if [[ ${BENCH_USE_NETCDF} == 'yes' && ! -f ${BENCH_PREFIX}/include/ncFile.h ]]; then
 	wget --continue https://downloads.unidata.ucar.edu/netcdf-cxx/${NETCDF_CXX_VERSION}/netcdf-cxx4-${NETCDF_CXX_VERSION}.tar.gz
 	tar -xvf netcdf-cxx4-${NETCDF_CXX_VERSION}.tar.gz
 	pushd netcdf-cxx4-${NETCDF_CXX_VERSION}
