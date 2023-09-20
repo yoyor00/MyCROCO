@@ -1,11 +1,18 @@
-######################################################
+###########################################################
 #  CROCO cmake build system, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
-######################################################
+###########################################################
 
-######################################################
+###########################################################
 # Loop on all values of the list and make them absolute path
+#
+# Parameters
+# ----------
+# list_to_update:
+#     Name of the list to loop in and to update.
+# path:
+#     Path to preprend to each sub paths.
 function(croco_make_absolute_paths list_to_update path)
 	# reset the list
 	set(_newfiles)
@@ -19,9 +26,19 @@ function(croco_make_absolute_paths list_to_update path)
 	set(${list_to_update} ${_newfiles} PARENT_SCOPE)
 endfunction()
 
-######################################################
-# Apply cpp + mpc on the sources to prepare them before build
-# Inspired from https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
+###########################################################
+# Apply the CPP pre-processor and MPC code reshaper
+# to prepare the sources before build.
+#
+# Parameters
+# ----------
+# list_to_update : list [IN,OUT]
+#     Name of the list to loop in and in which to replace all the file
+#     names after building the make rules.
+#
+# Inspiration
+# -----------
+# https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
 function(croco_cpp_and_mpc_preprocess list_to_update)
 	# reset the list
 	set(_newfiles)
@@ -55,7 +72,7 @@ function(croco_cpp_and_mpc_preprocess list_to_update)
 	set(${list_to_update} ${_newfiles} PARENT_SCOPE)
 endfunction()
 
-######################################################
+###########################################################
 # Print a summary status to help ensuring everything
 # is correct
 function(croco_print_status)
@@ -91,7 +108,7 @@ function(croco_print_status)
 	message(STATUS "==============================================================")
 endfunction()
 
-######################################################
+###########################################################
 # Perform some extra checks on variables to see if everything is correct
 function(croco_last_checkings)
 	# allowed

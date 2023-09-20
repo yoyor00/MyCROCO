@@ -1,14 +1,31 @@
-######################################################
+###########################################################
 #  CROCO cmake build system, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
-######################################################
+###########################################################
 
-######################################################
-# Replace the include to use the one without OPENACC
-# Inspired from https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
+###########################################################
+# Replace the includes to make the files listing in 
+# PSYCLONE/skip.openacc.rules.lst not applying the OPENACC
+# macro to keep them sequential.
 #
-# TODO: REMOVED WHEN FINISHED
+# It is a temporary solution to keep working with psyclone
+# from the relady GPU code.
+#
+# TODO
+# ----
+# Remove this when going back to the master branch
+# if not keeping the manual GPU code.
+#
+# Parameters
+# ----------
+# list_to_update : list [IN,OUT]
+#     Name of the list to loop in and in which to replace all the file
+#     names after building the make rules.
+#
+# Inspiration
+# -----------
+# https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
 function(croco_psyclone_pre_filter_acc list_to_update)
 	# reset the list
 	set(_newfiles)
@@ -42,9 +59,24 @@ function(croco_psyclone_pre_filter_acc list_to_update)
 	set(${list_to_update} ${_newfiles} PARENT_SCOPE)
 endfunction()
 
-######################################################
-# Apply cpp + mpc on the sources to prepare them before build
-# Inspired from https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
+###########################################################
+# Apply the change_loop.py script on the manual GPU
+# code to reshape some loops.
+#
+# TODO
+# ----
+# Remove this when going back to the master branch
+# if not keeping the manual GPU code.
+#
+# Parameters
+# ----------
+# list_to_update : list [IN,OUT]
+#     Name of the list to loop in and in which to replace all the file
+#     names after building the make rules.
+# 
+# Inspiration
+# -----------
+# https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
 function(croco_change_loop_preprocess list_to_update)
 	# reset the list
 	set(_newfiles)
