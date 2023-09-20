@@ -64,6 +64,9 @@ To build the sequential version you can :
 
 # Default CASE is BASIN, but you can alter with :
 ../configure --with-case=CANYON
+
+# Pass any variable to CMake directly bypassing the configure script.
+../configure --with-netcdf=$HOME/usr-netcdf/ -DCROCO_CASE=CANYON
 ```
 
 Finally you can simply build :
@@ -157,4 +160,21 @@ defined variables and see their values:
 ```sh
 # the curses version
 ccmake ..
+# With the QT GUi
+cmake-qui ..
+```
+
+Playing directly with cmake
+---------------------------
+
+Of course you can bypass the `configure` script if you already know well
+`cmake`.
+
+Here an example :
+
+```sh
+mkdir build
+cd build
+cmake .. -DNETCDF_PREFIX=$HOME/usr-netcdf -DWITH_PARALLEL=openmp -DBUILD_TYPE=Debug
+make
 ```
