@@ -10,36 +10,63 @@ import sys
 import subprocess
 
 ###########################################################
-# This script aims at wrapping the compiler to apply psyclone
-# with the given transformation on the files listed in the
-# config file.
-#
-# The way to use is is just giving the same options you would
-# have given to the compiler and just define the real compiler
-# to be used by adding the compiler as first option.
+'''
+This script aims at wrapping the compiler to apply psyclone
+with the given transformation on the files listed in the
+config file.
 
-###########################################################
-def extract_compiler_and_remove_from_list(args: list):
-    '''Search for compiler name by searching --compiler option'''
-    # search and extract
-    compiler = args[1]
+The way to use is is just giving the same options you would
+have given to the compiler and just define the real compiler
+to be used by adding the compiler as first option.
 
-    # remove from options to get only what to forward to compiler
-    del args[1]
-
-    # ok
-    return compiler
+USAGE :
+  ./psyclone.compiler.wrapper.py gcc -I./src my_file.F90 -o my_file.o
+'''
 
 ###########################################################
 def extract_source_file(args: list):
-    source = ''
+    '''
+    Extract the fortran source file from the compiler command line.
+    
+    Remark: we consider here a single fortran file compile at a time.
+
+    Parameters
+    ----------
+    args: list
+        The argument list in which to search.
+
+    Returns
+    -------
+    Path of the source file we are compiling.
+    '''
+
+    # search first
     for value in args:
         if value.endswith(('.F', '.f', '.F90', '.f90')):
-            source = value
-    return source
+            return value
+    
+    # not found
+    raise Exception("No fortran file found in command line !")
 
 ###########################################################
 def get_transformation_for_file(config_file: str, source_file: str):
+    '''
+    Extract the transformation script to apply to the given file
+    from the textual config file given as parameter.
+
+    Parameters
+    ----------
+    config_file : str
+        Path of the textual config file to load.
+    source_file : str
+        The current source file to compile and for which we want
+        to extract the psyclone script to use.
+
+    Returns
+    -------
+    Path to the script to be used or None.
+    '''
+
     # extract file name
     file_name = os.path.basename(source_file)
 
@@ -60,9 +87,6 @@ def get_transformation_for_file(config_file: str, source_file: str):
 
 ###########################################################
 if __name__ == '__main__':
-    # extracct compiler from command line
-    real_compiler = extract_compiler_and_remove_from_list(sys.argv)
-
     # default
     transformation_script = None
 
@@ -113,6 +137,5 @@ if __name__ == '__main__':
             sys.argv[pos] = psyclone_source_file
 
     # call compiler
-    cmd = [real_compiler] + sys.argv[1:]
-    #print(' '.join(cmd))
+    cmd = sys.argv[1:]
     subprocess.run(cmd, check=True)
