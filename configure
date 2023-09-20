@@ -27,7 +27,7 @@ CFG_DEFAULT_PREFIX='/usr/local'
 #compiler default flags
 CFG_EXTRA_CC=''
 CFG_EXTRA_CXX=''
-CFG_EXTRA_FORT=''
+CFG_EXTRA_FC=''
 CFG_EXTRA_CFLAGS="${CFLAGS}"
 CFG_EXTRA_CXXFLAGS="${CXXFLAGS}"
 CFG_EXTRA_LDFLAGS="${LDFLAGS}"
@@ -492,7 +492,7 @@ Some influential environment variables:
    CFLAGS      C compiler flags
    CXX         C++ compiler command
    CXXFLAGS    C++ compiler flags
-   FORT        Fortran compiler
+   FC          Fortran compiler
    FFLAGS      Fortran compiler flags"
 }
 
@@ -561,8 +561,8 @@ cfg_parse_global_args()
 			CC=*)
 				CFG_EXTRA_CC="${val}"
 				;;
-			FORT=*)
-				CFG_EXTRA_FORT="${val}"
+			FC=*)
+				CFG_EXTRA_FC="${val}"
 				;;
 			CXX=*)
 				CFG_EXTRA_CXX="${val}"
@@ -716,15 +716,15 @@ fi
 
 ######################################################
 #Gen CC/CXX/LDFLAGS commands
-if [ ! -z "$CFG_EXTRA_CC" ];       then cfg_push_cmake_opt "-DCMAKE_C_COMPILER=${CFG_EXTRA_CC}"               ; fi
-if [ ! -z "$CFG_EXTRA_CFLAGS" ];   then cfg_push_cmake_opt "-DCMAKE_C_FLAGS=${CFG_EXTRA_CFLAGS}"              ; fi
-if [ ! -z "$CFG_EXTRA_CXX" ];      then cfg_push_cmake_opt "-DCMAKE_CXX_COMPILER=${CFG_EXTRA_CXX}"            ; fi
-if [ ! -z "$CFG_EXTRA_CXXFLAGS" ]; then cfg_push_cmake_opt "-DCMAKE_CXX_FLAGS=${CFG_EXTRA_CXXFLAGS}"          ; fi
-if [ ! -z "$CFG_EXTRA_FFLAGS" ];   then cfg_push_cmake_opt "-DCMAKE_Fortran_FLAGS=${CFG_EXTRA_FFLAGS}"        ; fi
-if [ ! -z "$CFG_EXTRA_LDFLAGS" ];  then cfg_push_cmake_opt "-DCMAKE_EXE_LINKER_FLAGS=${CFG_EXTRA_LDFLAGS}"    ; fi
-if [ ! -z "$CFG_EXTRA_LDFLAGS" ];  then cfg_push_cmake_opt "-DCMAKE_SHARED_LINKER_FLAGS=${CFG_EXTRA_LDFLAGS}" ; fi
-if [ ! -z "$CFG_EXTRA_LDFLAGS" ];  then cfg_push_cmake_opt "-DCMAKE_STATIC_LINKER_FLAGS=${CFG_EXTRA_LDFLAGS}" ; fi
-if [ ! -z "$CFG_EXTRA_FORT" ];     then cfg_push_cmake_opt "-DCMAKE_Fortran_COMPILER=${CFG_EXTRA_FORT}"       ; fi
+if [ ! -z "$CFG_EXTRA_CC"       ];  then cfg_push_cmake_opt "-DCMAKE_C_COMPILER=${CFG_EXTRA_CC}"               ; fi
+if [ ! -z "$CFG_EXTRA_CFLAGS"   ];  then cfg_push_cmake_opt "-DCMAKE_C_FLAGS=${CFG_EXTRA_CFLAGS}"              ; fi
+if [ ! -z "$CFG_EXTRA_CXX"      ];  then cfg_push_cmake_opt "-DCMAKE_CXX_COMPILER=${CFG_EXTRA_CXX}"            ; fi
+if [ ! -z "$CFG_EXTRA_CXXFLAGS" ];  then cfg_push_cmake_opt "-DCMAKE_CXX_FLAGS=${CFG_EXTRA_CXXFLAGS}"          ; fi
+if [ ! -z "$CFG_EXTRA_FFLAGS"   ];  then cfg_push_cmake_opt "-DCMAKE_Fortran_FLAGS=${CFG_EXTRA_FFLAGS}"        ; fi
+if [ ! -z "$CFG_EXTRA_LDFLAGS"  ];  then cfg_push_cmake_opt "-DCMAKE_EXE_LINKER_FLAGS=${CFG_EXTRA_LDFLAGS}"    ; fi
+if [ ! -z "$CFG_EXTRA_LDFLAGS"  ];  then cfg_push_cmake_opt "-DCMAKE_SHARED_LINKER_FLAGS=${CFG_EXTRA_LDFLAGS}" ; fi
+if [ ! -z "$CFG_EXTRA_LDFLAGS"  ];  then cfg_push_cmake_opt "-DCMAKE_STATIC_LINKER_FLAGS=${CFG_EXTRA_LDFLAGS}" ; fi
+if [ ! -z "$CFG_EXTRA_FC"       ];  then cfg_push_cmake_opt "-DCMAKE_Fortran_COMPILER=${CFG_EXTRA_FC}"         ; fi
 
 ######################################################
 #execute or display

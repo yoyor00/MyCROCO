@@ -100,10 +100,10 @@ Simply play with the `configure` options by :
 
 ```sh
 # manual version
-../configure --with-parallel=openacc-native FORT=nvfortran
+../configure --with-parallel=openacc-native FC=nvfortran
 
 # psyclone version
-../configure --with-parallel=openacc-psyclone FORT=nvfortran
+../configure --with-parallel=openacc-psyclone FC=nvfortran
 ```
 
 Custom compile flags

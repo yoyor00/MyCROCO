@@ -32,6 +32,7 @@ function(croco_psyclone_pre_filter_acc list_to_update)
 			MAIN_DEPENDENCY ${oldfile}
 			DEPENDS ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.preprocessor.skip.acc.sh
 			        ${CMAKE_SOURCE_DIR}/PSYCLONE/skip.openacc.rules.lst
+			        ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.rules.lst
 			VERBATIM
 		)
 		list(APPEND _newfiles ${newfile_no_acc})
@@ -69,7 +70,9 @@ function(croco_change_loop_preprocess list_to_update)
 			COMMAND ${CROCO_MPC} < ${newfile_loops}  > ${newfile_loops_mpc}
 			COMMAND egrep -v "^ +& *$" ${newfile_loops_mpc} > ${newfile_loops_mpc_fix} || cp ${newfile_loops_mpc} ${newfile_loops_mpc_fix} 
 			MAIN_DEPENDENCY ${oldfile}
-			DEPENDS mpc ${OCEAN_CPP_H}
+			DEPENDS mpc
+			        ${OCEAN_CPP_H}
+			        ${CMAKE_CURRENT_SOURCE_DIR}/change_loops.py
 			VERBATIM
 		)
 		list(APPEND _newfiles ${newfile_loops_mpc_fix})

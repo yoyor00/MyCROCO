@@ -67,7 +67,9 @@ macro(croco_tune_compile_flags)
 		if(CMAKE_Fortran_COMPILER_ID STREQUAL "PGI" OR CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
 			list(APPEND CROCO_FORTRAN_FLAGS -acc=gpu -Minfo=accel)
 		else()
-			message(FATAT_ERROR "Unsupported compiler to use OpenACC !")
+			message(FATAL_ERROR "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+			                    "Unsupported compiler (${CMAKE_Fortran_COMPILER}) to use OpenACC !\n"
+			                    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 		endif()
 	endif()
 
