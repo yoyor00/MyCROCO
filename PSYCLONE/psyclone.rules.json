@@ -1,0 +1,39 @@
+{
+    "rules": {
+        "step2d.F":               {"script": "poseidon_openacc_kernels.py"},
+        "zetabc.F":               {"script": "poseidon_openacc_kernels.py"},
+        "u2dbc.F":                {"script": "poseidon_openacc_kernels.py"},
+        "v2dbc.F":                {"script": "poseidon_openacc_kernels.py"},
+
+        "step3d_t.F":             {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "t3dbc.F":                {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "step3d_uv2.F":           {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "step3d_uv1.F":           {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "rhs3d.F":                {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "pre_step3d.F":           {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "u3dbc.F":                {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "v3dbc.F":                {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "t3dmix.F":               {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "wvlcty.F":               {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "setup_grid1.F":          {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "setup_grid2.F":          {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "rho_eos.F":              {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "prsgrd.F":               {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "omega.F":                {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "grid_stiffness.F":       {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "get_stflux.F":           {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "get_vbc.F":              {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "diag.F":                 {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "analytical.F":           {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "ana_initial.F":          {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "get_srflux.F":           {"script": "acc_kernels_step3d.py", "skip_acc": true},
+        "ana_grid.F":             {"script": "acc_kernels_step3d.py", "skip_acc": true},
+
+        "TODO": {
+            "copy_to_devices.F":      {"script": "....py", "skip_acc": true},
+            "exchange_device_host.F": {"script": "....py", "skip_acc": true},
+            "wrt_his.F":              {"script": "....py", "skip_acc": true},
+            "wrt_rst.F":              {"script": "....py", "skip_acc": true}
+        }
+    }
+}

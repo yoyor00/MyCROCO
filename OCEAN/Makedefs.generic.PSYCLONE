@@ -11,7 +11,7 @@
 
 .F.o:
 	#TODO: skip when finished
-	./PSYCLONE/psyclone.preprocessor.skip.acc.sh $*.F $*.noa-acc.F
+	./PSYCLONE/psyclone.preprocessor.skip.acc.py $*.F $*.noa-acc.F
 	$(CPP) -P $(CPPFLAGS) $*.noa-acc.F > $*.noa-acc.cpp-done.F
 	#python3 ./change_loops.py $*.noa-acc.cpp-done.F $*.noa-acc.cpp-done-loops.F
 	cp $*.noa-acc.cpp-done.F $*.noa-acc.cpp-done-loops.F

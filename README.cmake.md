@@ -17,7 +17,7 @@ The CROCO **required** dependecies are :
 The CROCO **optional** dependecies are :
 
  * NVidia HPC SDK (Tested: 2023 / 23.7 ) : https://developer.nvidia.com/hpc-sdk-downloads
- * PSyClone (Tested : 2.3.1, branch: async-and-merge-master-ok) : https://psyclone.readthedocs.io/
+ * PSyClone (Tested : 2.3.1, branch: async-and-merge-master-ok of fork https://github.com/svalat/PSyclone/) : https://psyclone.readthedocs.io/
  * psyclone-poseidon (Tested : master) : https://gitlab.inria.fr/svalat/croco-psyclone
 
 Installing the dependencies
