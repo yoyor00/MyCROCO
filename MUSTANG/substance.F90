@@ -15,6 +15,9 @@ MODULE substance
 
    USE module_substance
    USE comsubstance
+#ifdef SUBSTANCE_SUBMASSBALANCE 
+   USE submassbalance, ONLY :  submassbalance_readdomain
+#endif
 
 # if defined BIOLink
    USE comBIOLink
@@ -117,6 +120,10 @@ CONTAINS
    LOGICAL, DIMENSION(ntrc_subs)              :: l_outsandrouse_r, l_sand2D_r
 #endif
 #endif
+
+#ifdef SUBSTANCE_SUBMASSBALANCE 
+   REAL(KIND=rlg)        :: tool_datosec
+#endif
                                     
    !! *  define namelists reading in parasubstance.txt
 #ifdef MUSTANG
@@ -167,6 +174,11 @@ CONTAINS
 #ifdef key_benthic 
    NAMELIST/nmlvarbent/name_var_bent, long_name_var_bent, standard_name_var_bent, unit_var_bent, &
                        cini_bent, l_out_subs_bent
+#endif 
+#ifdef SUBSTANCE_SUBMASSBALANCE 
+   NAMELIST/nmlsubmassbalance/submassbalance_l, submassbalance_nb_border, &
+                    submassbalance_input_file, submassbalance_output_file, &
+                    submassbalance_dtout, submassbalance_date_start
 #endif 
 
    !!----------------------------------------------------------------------
@@ -455,6 +467,16 @@ CONTAINS
    nv_state=nv_adv+nv_fix
    nv_tot=nv_state
 
+#ifdef SUBSTANCE_SUBMASSBALANCE 
+    READ(500, nmlsubmassbalance)
+    if (submassbalance_l) then
+        submassbalance_tdeb = tool_datosec(submassbalance_date_start)
+        CALL submassbalance_readdomain()
+    endif
+#endif 
+
+
+
     !******************************************
     !    create new variables 
     !******************************************
@@ -673,7 +695,8 @@ CONTAINS
       ws_free_max(:)=0.0
 #endif
    ENDIF
-   ALLOCATE(l_subs2D(-1:nvp))
+!   ALLOCATE(l_subs2D(-1:nvp))
+   ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
 #if defined key_sand2D
    ALLOCATE(l_outsandrouse(nvp))

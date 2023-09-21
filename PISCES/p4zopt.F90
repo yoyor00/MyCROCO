@@ -34,10 +34,11 @@ MODULE p4zopt
    REAL(wp) ::   xsi0r       ! 1. /rn_si0
 
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   ekb, ekg, ekr  ! wavelength (Red-Green-Blue)
-
    INTEGER  ::   nksrp   ! levels below which the light cannot penetrate ( depth larger than 391 m)
-
    REAL(wp), DIMENSION(3,61) ::   xkrgb   ! tabulated attenuation coefficients for RGB absorption
+
+   LOGICAL  :: l_dia_heup, l_dia_par
+
    
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
@@ -61,13 +62,22 @@ CONTAINS
       INTEGER  ::   irgb
       REAL(wp) ::   zchl
       REAL(wp) ::   zc0 , zc1 , zc2, zc3, z1_dep
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zetmp5
-      REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zdepmoy, zetmp1, zetmp2, zetmp3, zetmp4
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zetmp4, zetmp5
+      REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zdepmoy, zetmp1, zetmp2, zetmp3
       REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zqsr100, zqsr_corr
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zpar, ze0, ze1, ze2, ze3, zchl3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       !!---------------------------------------------------------------------
       !
-      IF( ln_p5z    )   ALLOCATE( zetmp5(PRIV_2D_BIOARRAY) )
+
+      IF( kt == nittrc000 )  THEN
+         l_dia_heup = iom_use( "Heup")
+         l_dia_par  = iom_use( "PAR" )
+      ENDIF
+
+      IF( .NOT. ln_p2z )   ALLOCATE( zetmp4(PRIV_2D_BIOARRAY) )
+      IF( ln_p5z       )   ALLOCATE( zetmp5(PRIV_2D_BIOARRAY) )
 
       !     Initialisation of variables used to compute PAR
       !     -----------------------------------------------
@@ -80,8 +90,12 @@ CONTAINS
       DO jk = KRANGE   
          DO jj = JRANGE
             DO ji = IRANGE
-                     zchl3d(ji,jj,jk) = trb(ji,jj,K,jpnch) + trb(ji,jj,K,jpdch)
-                     IF( ln_p5z )   zchl3d(ji,jj,jk) = zchl3d(ji,jj,jk)    + trb(ji,jj,K,jppch)
+               IF( ln_p2z ) THEN
+                  zchl3d(ji,jj,jk) =  ( trb(ji,jj,K,jpphy) * 12.0 * thetanano(ji,jj,jk) + rtrn ) * 1.e6
+               ELSE
+                  zchl3d(ji,jj,jk) = trb(ji,jj,K,jpnch) + trb(ji,jj,K,jpdch)
+                  IF( ln_p5z )   zchl3d(ji,jj,jk) = zchl3d(ji,jj,jk)    + trb(ji,jj,K,jppch)
+               ENDIF
             END DO
          END DO
       END DO
@@ -115,12 +129,16 @@ CONTAINS
          DO jk = KRANGE
             etot_ndcy(:,:,jk) =        ze1(:,:,jk) +        ze2(:,:,jk) +       ze3(:,:,jk)
             enano    (:,:,jk) =  1.85 * ze1(:,:,jk) + 0.69 * ze2(:,:,jk) + 0.46 * ze3(:,:,jk)
-            ediat    (:,:,jk) =  1.62 * ze1(:,:,jk) + 0.74 * ze2(:,:,jk) + 0.63 * ze3(:,:,jk)
          END DO
-         IF( ln_p5z ) THEN
+         IF( .NOT. ln_p2z ) THEN
             DO jk = KRANGE
-              epico  (:,:,jk) =  1.94 * ze1(:,:,jk) + 0.66 * ze2(:,:,jk) + 0.4 * ze3(:,:,jk)
+               ediat(:,:,jk) =  1.62 * ze1(:,:,jk) + 0.74 * ze2(:,:,jk) + 0.63 * ze3(:,:,jk)
             END DO
+            IF( ln_p5z ) THEN
+               DO jk = KRANGE
+                 epico(:,:,jk) =  1.94 * ze1(:,:,jk) + 0.66 * ze2(:,:,jk) + 0.4 * ze3(:,:,jk)
+               END DO
+            ENDIF
          ENDIF
          !
          DO jj = JRANGE
@@ -146,14 +164,18 @@ CONTAINS
          CALL p4z_opt_par( kt, zqsr_corr, ze1, ze2, ze3, pqsr100 = zqsr100  ) 
          !
          DO jk = KRANGE
-            etot (:,:,jk) =        ze1(:,:,jk) +        ze2(:,:,jk) +       ze3(:,:,jk)
+            etot (:,:,jk) =         ze1(:,:,jk) +        ze2(:,:,jk) +       ze3(:,:,jk)
             enano(:,:,jk) =  1.85 * ze1(:,:,jk) + 0.69 * ze2(:,:,jk) + 0.46 * ze3(:,:,jk)
-            ediat(:,:,jk) =  1.62 * ze1(:,:,jk) + 0.74 * ze2(:,:,jk) + 0.63 * ze3(:,:,jk)
          END DO
-         IF( ln_p5z ) THEN
+         IF( .NOT. ln_p2z ) THEN
             DO jk = KRANGE
-              epico(:,:,jk) =  1.94 * ze1(:,:,jk) + 0.66 * ze2(:,:,jk) + 0.4 * ze3(:,:,jk)
+               ediat(:,:,jk) =  1.62 * ze1(:,:,jk) + 0.74 * ze2(:,:,jk) + 0.63 * ze3(:,:,jk)
             END DO
+            IF( ln_p5z ) THEN
+               DO jk = KRANGE
+                 epico(:,:,jk) =  1.94 * ze1(:,:,jk) + 0.66 * ze2(:,:,jk) + 0.4 * ze3(:,:,jk)
+               END DO
+            ENDIF
          ENDIF
          etot_ndcy(:,:,:) =  etot(:,:,:) 
       ENDIF
@@ -234,21 +256,18 @@ CONTAINS
       !
       zdepmoy(:,:)   = 0.e0
       zetmp3 (:,:)   = 0.e0
-      zetmp4 (:,:)   = 0.e0
       !
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
                IF( gdepw_n(ji,jj,jk+1) <= MIN(hmld(ji,jj), heup_01(ji,jj)) ) THEN
                   zetmp3 (ji,jj) = zetmp3 (ji,jj) + enano    (ji,jj,jk) * e3t_n(ji,jj,K) ! production
-                  zetmp4 (ji,jj) = zetmp4 (ji,jj) + ediat    (ji,jj,jk) * e3t_n(ji,jj,K) ! production
                   zdepmoy(ji,jj) = zdepmoy(ji,jj) +                       e3t_n(ji,jj,K)
                ENDIF
             END DO
          END DO
       END DO
       enanom(:,:,:) = enano(:,:,:)
-      ediatm(:,:,:) = ediat(:,:,:)
       !
       DO jk = KRANGE
          DO jj = JRANGE
@@ -256,47 +275,88 @@ CONTAINS
                IF( gdepw_n(ji,jj,jk+1) <= hmld(ji,jj) ) THEN
                   z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
                   enanom(ji,jj,jk) = zetmp3(ji,jj) * z1_dep
-                  ediatm(ji,jj,jk) = zetmp4(ji,jj) * z1_dep
                ENDIF
             END DO
          END DO
       END DO
       !
-      IF( ln_p5z ) THEN
-         zetmp5 (:,:) = 0.e0
+      !
+      ! Diatoms when using PISCES-operational or PISCES-QUOTA
+      IF( .NOT. ln_p2z ) THEN
+         zetmp4 (:,:)   = 0.e0
+         !
          DO jk = KRANGE
             DO jj = JRANGE
                DO ji = IRANGE
                   IF( gdepw_n(ji,jj,jk+1) <= MIN(hmld(ji,jj), heup_01(ji,jj)) ) THEN
-                     zetmp5(ji,jj)  = zetmp5 (ji,jj) + epico(ji,jj,jk) * e3t_n(ji,jj,K) ! production
+                     zetmp4 (ji,jj) = zetmp4 (ji,jj) + ediat    (ji,jj,jk) * e3t_n(ji,jj,K) ! production
                   ENDIF
                END DO
             END DO
          END DO
-         !
-         epicom(:,:,:) = epico(:,:,:)
+         ediatm(:,:,:) = ediat(:,:,:)
          !
          DO jk = KRANGE
             DO jj = JRANGE
                DO ji = IRANGE
-                  IF( gdepw_n(ji,jj,jk+1) <= hmld(ji,jj) ) THEN
+                   IF( gdepw_n(ji,jj,jk+1) <= hmld(ji,jj) ) THEN
                      z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
-                     epicom(ji,jj,jk) = zetmp5(ji,jj) * z1_dep
+                     ediatm(ji,jj,jk) = zetmp4(ji,jj) * z1_dep
                   ENDIF
                END DO
             END DO
          END DO
+         IF( ln_p5z ) THEN
+            zetmp5 (:,:) = 0.e0
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                     IF( gdepw_n(ji,jj,jk+1) <= MIN(hmld(ji,jj), heup_01(ji,jj)) ) THEN
+                        zetmp5(ji,jj)  = zetmp5 (ji,jj) + epico(ji,jj,jk) * e3t_n(ji,jj,K) ! production
+                     ENDIF
+                  END DO
+               END DO
+            END DO
+            !
+            epicom(:,:,:) = epico(:,:,:)
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                     IF( gdepw_n(ji,jj,jk+1) <= hmld(ji,jj) ) THEN
+                        z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
+                        epicom(ji,jj,jk) = zetmp5(ji,jj) * z1_dep
+                     ENDIF
+                  END DO
+               END DO
+            END DO
+         ENDIF
       ENDIF
 
-#if defined key_iomput
-      IF( lk_iomput ) THEN
-        IF( knt == nrdttrc ) THEN
-           IF( iom_use( "Heup"  ) ) CALL iom_put( "Heup" , heup(:,:  ) * tmask(:,:,1) )  ! euphotic layer deptht
-           IF( iom_use( "PARDM" ) ) CALL iom_put( "PARDM", zpar(:,:,:) * tmask(:,:,:) )  ! Photosynthetically Available Radiation
-           IF( iom_use( "PAR"   ) ) CALL iom_put( "PAR"  , emoy(:,:,:) * tmask(:,:,:) )  ! Photosynthetically Available Radiation
-        ENDIF
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia_heup ) THEN   ! euphotic layer
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;   zw2d(:,:) = 0.
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zw2d(ji,jj) = heup(ji,jj) * tmask(ji,jj,KSURF) 
+               ENDDO
+            ENDDO
+            CALL iom_put( "Heup", zw2d )
+            DEALLOCATE( zw2d )
+         ENDIF
+         IF( l_dia_par ) THEN  ! Photosynthetically Available Radiation
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = etot(ji,jj,jk) * tmask(ji,jj,jk)
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "PAR", zw3d )
+            DEALLOCATE( zw3d )
+          ENDIF
       ENDIF
-#endif
       !
 #if defined key_trc_diaadd
       DO jk = KRANGE
@@ -314,7 +374,8 @@ CONTAINS
       END DO
 #endif
       !
-      IF( ln_p5z    )   DEALLOCATE( zetmp5 )
+      IF( .NOT. ln_p2z )   DEALLOCATE( zetmp4 )
+      IF( ln_p5z       )   DEALLOCATE( zetmp5 )
       !
    END SUBROUTINE p4z_opt
 
@@ -423,15 +484,15 @@ CONTAINS
 !      CALL trc_oce_rgb( xkrgb )                  ! tabulated attenuation coefficients
       CALL trc_oce_rgb_read( xkrgb )     ! tabulated attenuation coefficients
       !
-                         ekr      (:,:,:) = 0.
-                         ekb      (:,:,:) = 0.
-                         ekg      (:,:,:) = 0.
-                         etot     (:,:,:) = 0.
-                         etot_ndcy(:,:,:) = 0.
-                         enano    (:,:,:) = 0.
-                         ediat    (:,:,:) = 0.
-      IF( ln_p5z     )   epico    (:,:,:) = 0.
-      IF( ln_qsr_bio )   etot3    (:,:,:) = 0.
+                          ekr      (:,:,:) = 0.
+                          ekb      (:,:,:) = 0.
+                          ekg      (:,:,:) = 0.
+                          etot     (:,:,:) = 0.
+                          etot_ndcy(:,:,:) = 0.
+                          enano    (:,:,:) = 0.
+      IF( .NOT. ln_p2z )  ediat    (:,:,:) = 0.
+      IF( ln_p5z       )  epico    (:,:,:) = 0.
+      IF( ln_qsr_bio   )  etot3    (:,:,:) = 0.
       ! 
    END SUBROUTINE p4z_opt_init
 

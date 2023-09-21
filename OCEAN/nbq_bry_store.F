@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,7 +20,7 @@
 # include "cppdefs.h"
 # if defined OBC_NBQ && defined OBC_NBQORLANSKI
       subroutine nbq_bry_store_tile (Istr,Iend,Jstr,Jend)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       if (AGRIF_Root()) then
@@ -59,11 +59,11 @@
 # include "set_obc_definitions.h"
 !
 !----------------------------------------------------------------------
-!  Store boundary values of nbq variables 
+!  Store boundary values of nbq variables
 !  for use in radiative conditions
 !----------------------------------------------------------------------
 !
-      implicit none          
+      implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # include "param.h"
 # include "scalars.h"

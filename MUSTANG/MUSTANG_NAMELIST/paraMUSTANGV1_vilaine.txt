@@ -29,8 +29,8 @@
 :                            (only if key_MUSTANG_flocmod)
 
 &namsedim_init
-   date_start_dyninsed='30/01/2000 00:00:00'  
-   date_start_morpho='08/01/1990 00:00:00' 
+   date_start_dyninsed='2000/01/30 00:00:00'  
+   date_start_morpho='1990/01/08 00:00:00' 
    l_repsed=.true. 
    filrepsed='./CROCO_FILES/sed_init.nc'
    l_initsed_vardiss=.false.

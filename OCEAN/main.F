@@ -90,6 +90,7 @@
 #endif
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
+!      real*8       :: tool_datosec
 #endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -212,26 +213,26 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 ! Online spectral analysis module
 !
-# ifdef ONLINE_ANALYSIS
+#ifdef ONLINE_ANALYSIS
       CALL init_parameter_oa(
      &  io_unit_oa=stdout
-#ifdef MPI
+# ifdef MPI
      & ,if_print_node_oa=(mynode==0)
-#else
+# else
      & ,if_print_node_oa=.true.
-#endif
-#ifdef MPI
+# endif
+# ifdef MPI
      & ,mynode_oa=mynode
      & ,comm_oa=MPI_COMM_WORLD
-#else
+# else
      & ,mynode_oa=0
      & ,comm_oa=0
-#endif
+# endif
      & ,dti_oa=dt
      & ,kount0_oa=ntstart-1
      & ,nt_max_oa=ntimes
      & ,ntiles=NSUB_X*NSUB_E)
-# endif
+#endif
 !
 !
 !----------------------------------------------------------------------
@@ -360,11 +361,12 @@ C$OMP BARRIER
 
 #ifdef USE_CALENDAR
       ! compute start time and ntimes
-# ifdef ANA_INITIAL
-      ! if no initial file set start_date from croco.in
-      if (nrrec.eq.0) time=tool_datosec(run_start_date)
-# endif
-      time_end=tool_datosec(run_end_date)
+      time=start_time +origin_date_in_sec
+!# ifdef ANA_INITIAL
+!      ! if no initial file set start_date from croco.in
+!      if (nrrec.eq.0) time=tool_datosec(start_date)
+!# endif
+      time_end=tool_datosec(end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
@@ -383,7 +385,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
 !
-#ifdef BIOLink
+!#if defined BIOLink
+#if defined BIOLink && defined ECO3M && defined DYFAMED
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
            CALL BIOLink_initialization(2,tile)
@@ -437,9 +440,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
 # ifdef AGRIF
       if (Agrif_lev_sedim.EQ.0) call get_bsedim
-#  else
+# else
       call get_bsedim
-#  endif
+# endif
 #endif
 !
 #if defined SEDIMENT && !defined ANA_SEDIMENT
@@ -525,14 +528,14 @@ CR      write(*,*)  ' -2' MYID
 !  for sea surface height, momentum and tracers
 !----------------------------------------------------------------------
 !
-# if defined TNUDGING  || defined ZNUDGING  \
+#if defined TNUDGING  || defined ZNUDGING  \
   || defined M2NUDGING || defined M3NUDGING \
                        || defined SPONGE
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_nudgcof (tile)
       enddo
-# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Read initial climatology fields from NetCDF file
@@ -558,7 +561,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #if !defined ANA_BRY_WKB && defined WKB_WWAVE
       call get_bry_wkb
-# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Set analytical initial climatology fields
@@ -628,6 +631,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 !
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
+!
+#ifdef ABL1D
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call abl_ini (tile)
+      enddo
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialization for Lagrangian floats
@@ -834,6 +844,16 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #endif
 
+#ifdef ABL1D
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call abl_ini (tile)
+      enddo
+# ifndef XIOS
+      if (ldefablhis .and. wrtabl(indxTime)) call wrt_abl_his
+# endif
+#endif
+
 CR      write(*,*) '  0' MYID
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
 !
@@ -858,7 +878,7 @@ CR      write(*,*) '  0' MYID
       time_start=time
 #ifdef USE_CALENDAR
       time_mars=time
-      time_end=tool_datosec(run_end_date)
+      time_end=tool_datosec(end_date)
 #endif
 
 ! XIOS (
@@ -893,7 +913,7 @@ CR      write(*,*) '  0' MYID
 
 #ifdef USE_CALENDAR
         if (mod(iicroot-1,ninfo) .eq. 0) then
-          MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+          MPI_master_only write(stdout,'(a)') tool_sectodat(time_mars)
         endif
         if (time .gt. time_end) goto 99
 #endif
@@ -976,7 +996,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 !!!      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
 !!!#   endif
 
-#  if  !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
+#  if !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
        call MPI_Finalize (ierr)      !  if No coupling + No AGRIF : MPI_Finalize is needed
 #  endif
 

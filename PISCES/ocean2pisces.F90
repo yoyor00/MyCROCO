@@ -405,6 +405,19 @@ CONTAINS
 #endif
    END FUNCTION iom_use
 
+   LOGICAL FUNCTION iom_setkt( kt )
+      !!----------------------------------------------------------------------
+      !!----------------------------------------------------------------------
+      INTEGER         , INTENT(in) ::   kt
+      !!----------------------------------------------------------------------
+#ifdef XIOS
+      CALL xios_update_calendar(kt)
+#else
+      iom_setkt = .FALSE.
+#endif
+   END FUNCTION iom_setkt
+
+
 END MODULE ocean2pisces
 
 #else

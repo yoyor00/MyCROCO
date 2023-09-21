@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -41,11 +41,11 @@
 ! indxHi,indxHS   depth of ice cover and depth of snow cover
 ! indxTIsrf       temperature of ice surface
 !
-! indxBSD,indxBSS bottom sediment grain Density and Size 
-!                 to be read from file if(!defined ANA_BSEDIM, 
-!                 && !defined SEDIMENT) 
+! indxBSD,indxBSS bottom sediment grain Density and Size
+!                 to be read from file if(!defined ANA_BSEDIM,
+!                 && !defined SEDIMENT)
 !
-! indxBTHK,       sediment bed thickness, porosity, size class fractions 
+! indxBTHK,       sediment bed thickness, porosity, size class fractions
 ! indxBPOR,indxBFRA
 !
 ! indxWWA,indxWWD,indxWWP   wind induced wave Amplitude,

@@ -72,9 +72,9 @@
 #  endif
 # endif /* AVERAGES */
 
-      common /diag_ekHadv/ekHadv   
+      common /diag_ekHadv/ekHadv
      &       /diag_ekHdiff/ekHdiff
-     &       /diag_ekVadv/ekVadv     
+     &       /diag_ekVadv/ekVadv
      &       /diag_ekCor/ekCor
      &       /diag_ekPrsgrd/ekPrsgrd
      &       /diag_ekHmix/ekHmix
@@ -95,7 +95,7 @@
       common /diag_timediags_ek_avg/timediags_ek_avg
       common /diag_ekHadv_avg/ekHadv_avg
      &       /diag_ekHdiff_avg/ekHdiff_avg
-     &       /diag_ekVadv_avg/ekVadv_avg     
+     &       /diag_ekVadv_avg/ekVadv_avg
      &       /diag_ekCor_avg/ekCor_avg
      &       /diag_ekPrsgrd_avg/ekPrsgrd_avg
      &       /diag_ekHmix_avg/ekHmix_avg
@@ -111,7 +111,7 @@
 #  if defined M3FAST
      &       /diag_ekfast_avg/ekfast_avg
 #  endif
-# endif  /* AVERAGES */   
+# endif  /* AVERAGES */
 
 # ifdef DIAGNOSTICS_EK_MLD
       real ekHadv_mld(GLOBAL_2D_ARRAY)
@@ -182,7 +182,7 @@
 #  ifdef AVERAGES
       common /diag_ekHadv_mld_avg/ekHadv_mld_avg
      &       /diag_ekHdiff_mld_avg/ekHdiff_mld_avg
-     &       /diag_ekVadv_mld_avg/ekVadv_mld_avg     
+     &       /diag_ekVadv_mld_avg/ekVadv_mld_avg
      &       /diag_ekCor_mld_avg/ekCor_mld_avg
      &       /diag_ekPrsgrd_mld_avg/ekPrsgrd_mld_avg
      &       /diag_ekHmix_mld_avg/ekHmix_mld_avg
@@ -229,9 +229,9 @@
       real ekwrkfast(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE ekwrkfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
-      common /diag_ekwrkHadv/ekwrkHadv   
+      common /diag_ekwrkHadv/ekwrkHadv
      &       /diag_ekwrkHdiff/ekwrkHdiff
-     &       /diag_ekwrkVadv/ekwrkVadv     
+     &       /diag_ekwrkVadv/ekwrkVadv
      &       /diag_ekwrkCor/ekwrkCor
      &       /diag_ekwrkPrsgrd/ekwrkPrsgrd
      &       /diag_ekwrkHmix/ekwrkHmix
@@ -322,8 +322,8 @@
 #  endif
 # endif /* DIAGNOSTICS_EK_FULL */
 
-# endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_EK */
 
 
 
- 
+

@@ -80,8 +80,13 @@ CONTAINS
       DO jnt = 1, nrdttrc          ! Potential time splitting if requested
          !
          CALL p4z_bio (kt, jnt )    ! Compute soft tissue production (POC)
-         CALL p4z_lys( kt, jnt )    ! Compute CaCO3 saturation
-         CALL p4z_sed (kt, jnt )    ! compute soft tissue remineralisation
+         IF( ln_p2z ) THEN
+            CALL p2z_lys( kt, jnt )   ! Compute CaCO3 saturation
+            CALL p2z_sed (kt, jnt )    ! compute soft tissue remineralisation
+         ELSE
+            CALL p4z_lys( kt, jnt )   ! Compute CaCO3 saturation
+            CALL p4z_sed (kt, jnt )    ! compute soft tissue remineralisation
+         ENDIF
          CALL p4z_flx( kt, jnt )    ! Compute surface fluxes
          !
          !                             ! test if tracers concentrations fall below 0.
@@ -171,17 +176,17 @@ CONTAINS
          ENDIF
          WRITE(numout,*) '      Fe/C in zooplankton                       ferat3      =', ferat3
          WRITE(numout,*) '    Use of new sinking scheme (y/n)           ln_sink_new   =', ln_sink_new
-         WRITE(numout,*) '      Big particles sinking speed               wsbio2      =', wsbio2
-         WRITE(numout,*) '      Big particles maximum sinking speed       wsbio2max   =', wsbio2max
-         WRITE(numout,*) '      Big particles sinking speed length scale  wsbio2scale =', wsbio2scale
-         WRITE(numout,*) '    Maximum number of iterations for POC      niter1max   =', niter1max
-         WRITE(numout,*) '    Maximum number of iterations for GOC      niter2max   =', niter2max
-         IF( ln_ligand ) THEN
-            IF( ln_p4z ) THEN
-               WRITE(numout,*) '      Phyto ligand production per unit doc           ldocp  =', ldocp
-               WRITE(numout,*) '      Zoo ligand production per unit doc             ldocz  =', ldocz
-               WRITE(numout,*) '      Proportional loss of ligands due to Fe uptake  lthet  =', lthet
-            ENDIF
+         WRITE(numout,*) '      Maximum number of iterations for POC      niter1max   =', niter1max
+         IF( .NOT. ln_p2z ) THEN
+            WRITE(numout,*) '      Maximum number of iterations for GOC      niter2max   =', niter2max
+            WRITE(numout,*) '      Big particles sinking speed               wsbio2      =', wsbio2
+            WRITE(numout,*) '      Big particles maximum sinking speed       wsbio2max   =', wsbio2max
+            WRITE(numout,*) '      Big particles sinking speed length scale  wsbio2scale =', wsbio2scale
+         ENDIF
+         IF( ln_ligand .AND. ln_p4z ) THEN
+            WRITE(numout,*) '      Phyto ligand production per unit doc           ldocp  =', ldocp
+            WRITE(numout,*) '      Zoo ligand production per unit doc             ldocz  =', ldocz
+            WRITE(numout,*) '      Proportional loss of ligands due to Fe uptake  lthet  =', lthet
          ENDIF
       ENDIF
 

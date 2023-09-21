@@ -5,11 +5,11 @@
 !
 !===============================================================
 !
-#  ifdef NS_PERIODIC
+#ifdef NS_PERIODIC
           jmin=0
           jmax=LOCALMM
-#  else
-#   ifdef MPI
+#else
+# ifdef MPI
           if (SOUTH_INTER) then
             jmin=0
           else
@@ -20,16 +20,16 @@
           else
             jmax=Mmmpi-2
           endif
-#   else
+# else
           jmin=3
           jmax=Mm-2
-#   endif
-#  endif
-#  ifdef EW_PERIODIC
+# endif
+#endif
+#ifdef EW_PERIODIC
           imin=1
           imax=LOCALLM+1
-#  else
-#   ifdef MPI
+#else
+# ifdef MPI
           if (WEST_INTER) then
             imin=1
           else
@@ -40,11 +40,11 @@
           else
             imax=Lmmpi-1
           endif
-#   else
+# else
           imin=3
           imax=Lm-1
-#   endif
-#  endif
+# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  j loop: VFe
@@ -59,37 +59,37 @@
      &                      Hvom(i,j+1,k),Hvom(i,j+2,k),Hvom(i,j+3,k),1.)
 !               vel = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
                 flx5 = vel*FLUX5(
-     &             v(i,j-2,k,nrhs), v(i,j-1,k,nrhs), 
+     &             v(i,j-2,k,nrhs), v(i,j-1,k,nrhs),
      &             v(i,j  ,k,nrhs), v(i,j+1,k,nrhs),
      &             v(i,j+2,k,nrhs), v(i,j+3,k,nrhs), vel )
-#  ifdef MASKING 
+#ifdef MASKING
                 vel = flux4(Hvom(i,j-1,k),Hvom(i,j  ,k),
      &                      Hvom(i,j+1,k),Hvom(i,j+2,k),1.)
                 flx3 = vel*FLUX3(
      &             v(i,j-1,k,nrhs), v(i,j  ,k,nrhs),
-     &             v(i,j+1,k,nrhs), v(i,j+2,k,nrhs), vel ) 
+     &             v(i,j+1,k,nrhs), v(i,j+2,k,nrhs), vel )
                 vel = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
                 flx2 = vel*FLUX2(
      &             v(i,j  ,k,nrhs), v(i,j+1,k,nrhs), vel, cdif)
-#   ifdef UP5_MASKING
+# ifdef UP5_MASKING
                 mask2=vmask(i,j-1)*vmask(i,j+2)
                 IF (vel.gt.0) THEN
                   mask1=vmask(i,j-1)
-                  mask0=vmask(i,j-2)*mask2          
+                  mask0=vmask(i,j-2)*mask2
                 ELSE
                   mask1=vmask(i,j+2)
                   mask0=vmask(i,j+3)*mask2
                 ENDIF
-#   else
+# else
                 mask1=vmask(i,j-1)*vmask(i,j+2)
                 mask2=vmask(i,j-2)*vmask(i,j+3)
                 mask0=mask1*mask2
-#   endif
+# endif
                 VFe(i,j)=mask0*flx5+(1-mask0)*mask1*flx3+
      &                              (1-mask0)*(1-mask1)*flx2
-#  else
+#else
                 VFe(i,j)=flx5
-#  endif /* MASKING */
+#endif /* MASKING */
               ENDDO
 
             ELSE IF ( j.eq.jmin-2 ) THEN   ! 2nd order flux next to south
@@ -109,15 +109,15 @@
                 flx3 = vel*FLUX3(
      &             v(i,j-1,k,nrhs), v(i,j  ,k,nrhs),
      &             v(i,j+1,k,nrhs), v(i,j+2,k,nrhs), vel )
-#  ifdef MASKING
+#ifdef MASKING
                 vel = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
                 flx2 = vel*FLUX2(
      &             v(i,j  ,k,nrhs), v(i,j+1,k,nrhs), vel, cdif)
                 mask1=vmask(i,j-1)*vmask(i,j+2)
                 VFe(i,j)=mask1*flx3+(1-mask1)*flx2
-#  else
+#else
                 VFe(i,j)=flx3
-#  endif
+#endif
               ENDDO
                                           !
             ELSE IF ( j.eq.jmax+2 ) THEN  ! 2nd order flux next to north
@@ -137,15 +137,15 @@
                 flx3 = vel*FLUX3(
      &             v(i,j-1,k,nrhs), v(i,j  ,k,nrhs),
      &             v(i,j+1,k,nrhs), v(i,j+2,k,nrhs), vel )
-#  ifdef MASKING
+#ifdef MASKING
                 vel = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
                 flx2 = vel*FLUX2(
      &             v(i,j  ,k,nrhs), v(i,j+1,k,nrhs), vel, cdif)
                 mask1=vmask(i,j-1)*vmask(i,j+2)
                 VFe(i,j)=mask1*flx3+(1-mask1)*flx2
-#  else
+#else
                 VFe(i,j)=flx3
-#  endif
+#endif
               ENDDO
             ENDIF
           ENDDO ! j_loop_y_flux_5
@@ -169,9 +169,9 @@
      &             v(i-3,j,k,nrhs), v(i-2,j,k,nrhs),
      &             v(i-1,j,k,nrhs), v(i  ,j,k,nrhs),
      &             v(i+1,j,k,nrhs), v(i+2,j,k,nrhs), vel )
-#  ifdef MASKING
+#ifdef MASKING
 !               vel = flux4(Huon(i,j-2,k),Huon(i,j-1,k),
-!     &                      Huon(i,j,k),Huon(i,j+1,k),1.) 
+!     &                      Huon(i,j,k),Huon(i,j+1,k),1.)
                 vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
                 flx3 = vel*FLUX3(
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
@@ -179,25 +179,25 @@
 !                vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
                 flx2 = vel*FLUX2(
      &             v(i-1,j,k,nrhs), v(i  ,j,k,nrhs), vel, cdif)
-#   ifdef UP5_MASKING
+# ifdef UP5_MASKING
                 mask2=vmask(i-2,j)*vmask(i+1,j)
                 IF (vel.gt.0) THEN
                   mask1=vmask(i-2,j)
-                  mask0=vmask(i-3,j)*mask2          
+                  mask0=vmask(i-3,j)*mask2
                 ELSE
                   mask1=vmask(i+1,j)
                   mask0=vmask(i+2,j)*mask2
                 ENDIF
-#   else
+# else
                 mask1=vmask(i-2,j)*vmask(i+1,j)
                 mask2=vmask(i-3,j)*vmask(i+2,j)
                 mask0=mask1*mask2
-#   endif
+# endif
                 VFx(i,j)=mask0*flx5+(1-mask0)*mask1*flx3+
      &                              (1-mask0)*(1-mask1)*flx2
-#  else
+#else
                 VFx(i,j)=flx5
-#  endif /* MASKING */
+#endif /* MASKING */
               ENDDO
                                            !
             ELSE IF ( i.eq.imin-2 ) THEN   ! 2nd order flux next to south
@@ -213,19 +213,19 @@
               DO j = JstrV,Jend
                 vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
 !               vel = flux4(Huon(i,j-2,k),Huon(i,j-1,k),
-!     &                     Huon(i,j  ,k),Huon(i,j+1,k),1.) 
+!     &                     Huon(i,j  ,k),Huon(i,j+1,k),1.)
                 flx3 = vel*FLUX3(
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs), vel )
-#  ifdef MASKING
+#ifdef MASKING
 !                vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
                 flx2 = vel*FLUX2(
      &             v(i-1,j,k,nrhs), v(i  ,j,k,nrhs), vel, cdif)
                 mask1=vmask(i-2,j)*vmask(i+1,j)
                 VFx(i,j)=mask1*flx3+(1-mask1)*flx2
-#  else
+#else
                 VFx(i,j)=flx3
-#  endif
+#endif
               ENDDO
                                           !
             ELSE IF ( i.eq.imax+2 ) THEN  ! 2nd order flux next to north
@@ -241,19 +241,19 @@
               DO j = JstrV,Jend
                 vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
 !               vel = flux4(Huon(i,j-2,k),Huon(i,j-1,k),
-!     &                     Huon(i,j  ,k),Huon(i,j+1,k),1.) 
+!     &                     Huon(i,j  ,k),Huon(i,j+1,k),1.)
                 flx3 = vel*FLUX3(
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs),  vel )
-#  ifdef MASKING
+#ifdef MASKING
 !                vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
                 flx2 = vel*FLUX2(
      &             v(i-1,j,k,nrhs), v(i,j,k,nrhs), vel, cdif)
                 mask1=vmask(i-2,j)*vmask(i+1,j)
                 VFx(i,j)=mask1*flx3+(1-mask1)*flx2
-#  else
+#else
                 VFx(i,j)=flx3
-#  endif
+#endif
               ENDDO
             ENDIF
           ENDDO ! i_loop_x_flux_5

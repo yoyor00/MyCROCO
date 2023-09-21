@@ -53,6 +53,8 @@ MODULE p5zmeso
    REAL(wp), PUBLIC ::  grazflux     !: mesozoo flux feeding rate
    LOGICAL,  PUBLIC ::  bmetexc2     !: Use of excess carbon for respiration
 
+   LOGICAL          :: l_fezoo2, l_graz2, l_lprodz2, l_pcal, l_o2csp2
+
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p5zmeso.F90 10362 2018-11-30 15:38:17Z aumont $ 
@@ -90,8 +92,15 @@ CONTAINS
       REAL(wp) :: zrfact2, zmetexcess
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zgrazing, zfezoo2
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d, zz2ligprod
-
       !!---------------------------------------------------------------------
+      !
+      IF( kt == nittrc000 )  THEN
+         l_graz2  = iom_use( "GRAZ2" )
+         l_fezoo2  = iom_use( "FEZOO2" )
+         l_lprodz2 = ln_ligand .AND. iom_use( "LPRODZ2" )
+         l_pcal = iom_use( "PCAL" )
+         l_o2csp2  = iom_use( "MesoZo2" )
+      ENDIF
       !
       zgrazing(:,:,:) = 0.
       zfezoo2 (:,:,:) = 0.
@@ -377,28 +386,70 @@ CONTAINS
          END DO
       END DO
       !
-#if defined key_iomput
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
-         ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
-         IF( iom_use( "GRAZ2" ) ) THEN
-            zw3d(:,:,:) = zgrazing(:,:,:) * 1.e+3 * rfact2r * tmask(:,:,:)  !   Total grazing of phyto by zooplankton
+         IF( l_graz2 ) THEN  !  Total grazing of phyto by zooplankton
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                 ENDDO
+              ENDDO
+            ENDDO
             CALL iom_put( "GRAZ2", zw3d )
+            DEALLOCATE( zw3d )
          ENDIF
-         IF( iom_use( "PCAL" ) ) THEN
-            zw3d(:,:,:) = prodcal(:,:,:) * 1.e+3 * rfact2r * tmask(:,:,:)   !  Calcite production
-            CALL iom_put( "PCAL", zw3d )
+         IF( l_o2csp2 ) THEN   ! o2 consumption by Mesozoo
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                   zw3d(ji,jj,jk) = zgrazing(ji,jj,jk) * ( 1.- epsher2 - unass2c ) &
+                  &               * (-o2ut) * ssigma2 * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "MesoZo2", zw3d )
+            DEALLOCATE( zw3d )
          ENDIF
-         IF( iom_use( "FEZOO2" ) ) THEN
-            zw3d(:,:,:) = zfezoo2(:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(:,:,:)   !
+         IF( l_fezoo2 ) THEN  ! zooplankton iron recycling rate
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk) = zfezoo2(ji,jj,jk) * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                 ENDDO
+              ENDDO
+            ENDDO
             CALL iom_put( "FEZOO2", zw3d )
+            DEALLOCATE( zw3d )
          ENDIF
-         IF( iom_use( "LPRODZ2" ) .AND. ln_ligand )  THEN
-            zw3d(:,:,:) = zz2ligprod(:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(:,:,:)
-            CALL iom_put( "LPRODZ2"  , zw3d )
+         IF( l_lprodz2 ) THEN  !  microzooplankton ligand production rate
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk) = zz2ligprod(ji,jj,jk) &
+                   &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "LPRODZ2", zw3d )
+            DEALLOCATE( zw3d )
          ENDIF
-         DEALLOCATE( zw3d )
+         IF( l_pcal ) THEN   !  Calcite production
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk) = prodcal(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "PCAL", zw3d )
+            DEALLOCATE( zw3d )
+         ENDIF
       ENDIF
-#endif
       !
 #if defined key_trc_diaadd
       DO jk = KRANGE

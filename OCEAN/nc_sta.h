@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,7 +20,7 @@
 !       Salt - Salt
 !       Rho  - Density
 !       Vel  - u and v components
-! ncidsta      id of station output file  
+! ncidsta      id of station output file
 ! nrecsta      step to output station data
 ! sta[...]     several reference names of netcdf output
 ! staname      station output filename
@@ -32,7 +32,7 @@
      & indxstaRho, indxstaVel
       parameter (     indxstaGrd=1, indxstaTemp=2,
      & indxstaSalt=3, indxstaRho=4,  indxstaVel=5)
- 
+
 
       integer ncidsta,    nrecsta,    staGlevel
      &      , staTstep,   staTime,    staXgrd,   staYgrd

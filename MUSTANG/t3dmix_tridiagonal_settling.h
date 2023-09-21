@@ -97,6 +97,8 @@
 !++
 !++ Start sub-timestep loop
 !++
+
+# if defined MUSTANG
           do i=istr,iend
             cflm=0.
             dz_cflm=Hz(i,j,1)
@@ -137,6 +139,34 @@
      &                                            *t(i,j,1,nnew,itrc)*
      &                                        dt/(Hz(i,j,1)*nbsubstep)
               CD(i,N) = 0.
+# else /*MUSTANG cas substance with ws but not MUSTANG, no flx_w2s and flx_s2w*/
+          do i=istr,iend
+            dz_cflm=Hz(i,j,1)
+            ws_cflm=MAX(1e-6,ws_part(i,j,1,itrc))
+            cflm=MAX(0.,ws_cflm*dt/dz_cflm)
+            do k=2,N
+              cfl_loc=MAX(cflm,ws_part(i,j,k,itrc)*dt/Hz(i,j,k))
+              if (cfl_loc .gt. cflm) then
+               cflm=cfl_loc
+               dz_cflm=Hz(i,j,k)
+               ws_cflm=MAX(1e-6,ws_part(i,j,k,itrc))
+              endif
+            enddo
+            NBSUBSTEP(i,0)=dt/MIN((dz_cflm/ws_cflm),dt)
+          enddo
+          
+          do i=istr,iend
+
+            nbsubstep=CEILING(NBSUBSTEP(i,0))
+
+            do isubstep=1,nbsubstep  ! <== SUB TIMESTEP
+
+              do k=1,N-1
+                CD(i,k) = -t(i,j,k+1,nnew,itrc)*ws_part(i,j,k,itrc)/
+     &                                     (Hz(i,j,k+1)*nbsubstep)
+              enddo 
+              CD(i,N) = 0.
+# endif /*MUSTANG*/
 !
 !++
 !++ Implicit Part

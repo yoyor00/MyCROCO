@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -35,12 +35,12 @@
 ! of free surface.
 ! This computation is done solely for diagnostic/output purposes and
 ! does not have any feedback onto the model. Unlike W, absolute
-! vertical velocity is defined at RHO-points. 
+! vertical velocity is defined at RHO-points.
 !
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, imin,imax,jmin,jmax, i,j,k
-      real Wvlc(GLOBAL_2D_ARRAY,N), 
+      real Wvlc(GLOBAL_2D_ARRAY,N),
      &     Wrk(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     Wxi(PRIVATE_2D_SCRATCH_ARRAY),
      &     Weta(PRIVATE_2D_SCRATCH_ARRAY)
@@ -98,9 +98,9 @@
       jmax=Jend
 # endif
 !
-!   Compute "omega" vertical velocity by means of integration of 
+!   Compute "omega" vertical velocity by means of integration of
 ! mass divergence of mass fluxes from bottom up. In this computation,
-! unlike that in omega.F, there is (1) immediate multiplication by 
+! unlike that in omega.F, there is (1) immediate multiplication by
 ! pm*pn so that the result has meaning of velocity, rather than
 ! finite volume mass flux through vertical facet of tracer grid box;
 ! and (2, also unlike omega.F) no subtraction of vertical velocity
@@ -224,7 +224,7 @@ c**    Wrk(i,k)=0.!(uncomment to test the second part)
       return
       end
 #else
-      subroutine Wvlcty_empty 
+      subroutine Wvlcty_empty
       return
       end
 #endif /* SOLVE3D */

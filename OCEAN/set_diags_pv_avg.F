@@ -1,9 +1,9 @@
 !======================================================================
 ! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
@@ -93,7 +93,7 @@
         do iflux=1,2
           do k=1,N
             do j=JstrR,JendR
-              do i=IstrR,IendR 
+              do i=IstrR,IendR
                 Mrhs_avg(i,j,k,iflux) = cff *
      &                     ( cff1*Mrhs_avg(i,j,k,iflux) +
      &                            Mrhs(i,j,k,iflux) )
@@ -105,7 +105,7 @@
         do itrc=1,NTA
           do k=1,N
             do j=JstrR,JendR
-              do i=IstrR,IendR 
+              do i=IstrR,IendR
                 Trhs_avg(i,j,k,itrc) = cff *
      &                     ( cff1*Trhs_avg(i,j,k,itrc) +
      &                            Trhs(i,j,k,itrc) )
@@ -118,7 +118,7 @@
 
           do k=0,N
             do j=JstrR,JendR
-              do i=IstrR,IendR 
+              do i=IstrR,IendR
                 pv_avg(i,j,k) = cff *
      &                     ( cff1*pv_avg(i,j,k) +
      &                            pv(i,j,k) )

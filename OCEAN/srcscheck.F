@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -31,10 +31,10 @@
       backslash=char(92)
       sources=.false.
       end_of_file=.false.
- 
+
       write(*,'(/1x,A,1x,A/)') 'This is SRCSCHECK:',
      &          'Creating new version of check_srcs.F.'
- 
+
       open (unit=iout,file='check_srcs.F',form='formatted')
       write(iout,'(A/, /6x,A/, /3(A,1x,A/),A,29x,A/)')
      &     '#include "cppdefs.h"',    'subroutine check_srcs',
@@ -48,7 +48,7 @@
       write(iout,'(6x,A/6x,A/A/6x,A/8x,A/6x,A)')
      &     'implicit none', 'integer i', '#include "strings.h"',
      &     'do i=1,max_opt_size',  'srcs(i:i)='' ''',   'enddo'
- 
+
       indx=1
       open(unit=input,file='Makefile')
    1  string=' '
@@ -91,7 +91,7 @@
           else
             sources=.false.
           endif
- 
+
    6      if (string(is:is).eq.' ') then
             is=is+1
             if (is.lt.lstr) goto 6
@@ -127,4 +127,4 @@
       close(iout)
       stop
       end
- 
+

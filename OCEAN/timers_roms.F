@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,8 +15,8 @@
 #if defined SGI || defined SUN
       real*4 etime
       integer  trd, omp_get_thread_num, getpid
-#include "param.h"
-#include "scalars.h"
+# include "param.h"
+# include "scalars.h"
 !
 ! Initialize timing for all threads.
 !
@@ -46,8 +46,8 @@ C$OMP END CRITICAL (start_timers_cr_rgn)
 #if defined SGI || defined SUN
       real*4 etime
       integer  trd, omp_get_thread_num
-#include "param.h"
-#include "scalars.h"
+# include "param.h"
+# include "scalars.h"
 !
 ! Finalize timings for all threads.
 !
@@ -73,7 +73,7 @@ C$OMP CRITICAL (stop_timers_cr_rgn)
            trd_count=0
            write(stdout,'(A6,8x,F14.3,3x,F12.3,1x,F14.3)') 'TOTAL:',
      &               CPU_time(1,NPP),CPU_time(2,NPP),CPU_time(0,NPP)
-         endif 
+         endif
 C$OMP END CRITICAL (stop_timers_cr_rgn)
       endif
 #endif

@@ -11,13 +11,13 @@
       INTEGER,PARAMETER :: nb_var_bio=16
       INTEGER,PARAMETER :: nb_fix_bio=4
 #else
-  #ifdef key_BLOOM_insed
+#ifdef key_BLOOM_insed
       ! add PFe & ODU & NdetR & PdetR
-      INTEGER,PARAMETER :: nb_var_bio=18
-  #else
       INTEGER,PARAMETER :: nb_var_bio=17
-  #endif
-  INTEGER,PARAMETER :: nb_fix_bio=3
+#else
+      INTEGER,PARAMETER :: nb_var_bio=13
+#endif
+      INTEGER,PARAMETER :: nb_fix_bio=3
 #endif
 
   !!***************************************

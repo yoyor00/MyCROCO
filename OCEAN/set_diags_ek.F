@@ -11,7 +11,7 @@
       call set_diags_ek_tile (istr,iend,jstr,jend,tile)
       return
       end
- 
+
       subroutine set_diags_ek_tile (istr,iend,jstr,jend,tile)
 !
 !
@@ -32,8 +32,8 @@
 # include "ocean3d.h"
 
 
-#include "diags_ek.h"
-#include "compute_auxiliary_bounds.h"
+# include "diags_ek.h"
+# include "compute_auxiliary_bounds.h"
 
 
 
@@ -54,8 +54,8 @@
 
 # if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
           ekHdiff(i,j) = ekHadv(i,j) - ekHdiff(i,j)
-# endif       
-                 
+# endif
+
           ekVadv(i,j) = 0.5 * (ekwrkVadv(i,j,1) + ekwrkVadv(i+1,j,1))
      &                + 0.5 * (ekwrkVadv(i,j,2) + ekwrkVadv(i,j+1,2))
 
@@ -115,10 +115,10 @@
      &                + 0.5*(ekwrkHdiff_mld(i,j,2) + ekwrkHdiff_mld(i,j+1,2))
 
 
-# if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
+#  if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
           ekHdiff_mld(i,j) = ekHadv_mld(i,j) - ekHdiff_mld(i,j)
-# endif       
-                 
+#  endif
+
           ekVadv_mld(i,j) =
      &         0.5 * (ekwrkVadv_mld(i,j,1) + ekwrkVadv(i+1,j,1))
      &       + 0.5 * (ekwrkVadv_mld(i,j,2) + ekwrkVadv_mld(i,j+1,2))
@@ -158,11 +158,11 @@
      &         0.5*(ekwrkVmix2_mld(i,j,1) + ekwrkVmix2(i+1,j,1))
      &        +0.5*(ekwrkVmix2_mld(i,j,2) + ekwrkVmix2_mld(i,j+1,2))
 
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
           ekBaro_mld(i,j)=
      &         0.5*(ekwrkBaro_mld(i,j,1)+ekwrkBaro(i+1,j,1))
      &       + 0.5*(ekwrkBaro_mld(i,j,2) + ekwrkBaro_mld(i,j+1,2))
-# endif
+#  endif
 # endif
 
           enddo

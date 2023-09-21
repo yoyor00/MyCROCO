@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -16,8 +16,8 @@
 !     !---------------------------------------------------------------------
 !     !              ***  ROUTINE cpl_prism_get  ***
 !     !
-!     ! ** Purpose : - 
-!     !           
+!     ! ** Purpose : -
+!     !
 !     !
 !     !----------------------------------------------------------------------
       USE mod_prism             ! OASIS3 prism module
@@ -39,13 +39,13 @@
       INTEGER    :: iok_utau, iok_vtau, iok_etau, iok_ntau, iok_taum
       INTEGER    :: iok_srflx, iok_itemp , iok_isalt
       INTEGER    :: iok_psfc
-      INTEGER    :: iok_wdry 
+      INTEGER    :: iok_wdry
       INTEGER    :: iok_wt0m1, iok_whs, iok_wdir
       INTEGER    :: iok_wbhd, iok_wfoc, iok_wlm
       INTEGER    :: iok_wubrx, iok_wubry
-      INTEGER    :: iok_wust, iok_wvst 
+      INTEGER    :: iok_wust, iok_wvst
       INTEGER    :: iok_utwo, iok_vtwo, iok_etwo, iok_ntwo
-      INTEGER    :: iok_utaw, iok_vtaw, iok_etaw, iok_ntaw 
+      INTEGER    :: iok_utaw, iok_vtaw, iok_etaw, iok_ntaw
       INTEGER    :: imin_halo, imax_halo, jmin_halo, jmax_halo
       INTEGER    :: level
       CHARACTER*9 rclevel
@@ -71,33 +71,33 @@
       write(rclevel,'(a)') '         '
 # endif
 
-!      
+!
 !!$      if (level==0) then
-!!$         MPI_master_only 
+!!$         MPI_master_only
 !!$     & write(*,*) 'CPL-CROCO : Get for parent at time', rcvtime
-!!$      else		
-!!$         MPI_master_only 
+!!$      else
+!!$         MPI_master_only
 !!$     & write(*,*) 'CPL-CROCO : Get for child:', level,
 !!$     &  'at time', rcvtime
 !!$      endif
 !
-      imin_halo = 1  
-      imax_halo = Lmmpi  
-      jmin_halo = 1  
-      jmax_halo = Mmmpi  
+      imin_halo = 1
+      imax_halo = Lmmpi
+      jmin_halo = 1
+      jmax_halo = Mmmpi
 
       if (WEST_INTER) then
          imin_halo = imin_halo - 1
-      endif 
+      endif
       if (EAST_INTER) then
          imax_halo = imax_halo + 1
-      endif 
-      if (SOUTH_INTER) then     
+      endif
+      if (SOUTH_INTER) then
          jmin_halo = jmin_halo - 1
       endif
       if (NORTH_INTER) then
          jmax_halo = jmax_halo + 1
-      endif 
+      endif
 !
       iok_srflx = 0
       iok_isalt = 0
@@ -139,21 +139,21 @@
 !        Solar radiation flux - srflx
          if (trim(srcv_clname(i))=='CROCO_SRFL'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_srflx) 
+     &  tab_t_tmp, rcvtime, iok_srflx)
             if (iok_srflx /= 0) then
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               srflx = tab_t_tmp / (rho0*Cp) 
+               srflx = tab_t_tmp / (rho0*Cp)
             endif
-         end if  
+         end if
 !-------------------------------------------------
 !        Non-solar heat flux - stflx(:,:,itemp)
          if (trim(srcv_clname(i))=='CROCO_STFL'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_itemp) 
+     &  tab_t_tmp, rcvtime, iok_itemp)
             if (iok_itemp /= 0)  then
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
-            endif     
+            endif
          end if
 !--------------------------------------------------
 !        Evaporation - precipitation flux - stflx(:,:,isalt)
@@ -201,9 +201,9 @@
 !        U component of wind stress - sustr
          if (trim(srcv_clname(i))=='CROCO_UTAU'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_utau) 
-            if (iok_utau /= 0) then  
-#  if (!defined OA_GRID_UV)  
+     &  tab_t_tmp, rcvtime, iok_utau)
+            if (iok_utau /= 0) then
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
                do jo=jmin_halo-1,jmax_halo+1
@@ -216,16 +216,16 @@
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                sustr  = tab_t_tmp / rho0
-#  endif   
+#  endif
             endif
          end if
 !-------------------------------------------------
 !        V component of wind stress - svstr
          if (trim(srcv_clname(i))=='CROCO_VTAU'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_vtau) 
-            if (iok_vtau /= 0) then 
-#  if (!defined OA_GRID_UV) 
+     &  tab_t_tmp, rcvtime, iok_vtau)
+            if (iok_vtau /= 0) then
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
                do jo=jmin_halo,jmax_halo+1
@@ -237,8 +237,8 @@
                if (iok_taum == 0) tab_v_tmp = tab_t_tmp ! temporary storage...
 #  else
                call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               svstr = tab_t_tmp(:,:) / rho0                
-#  endif 
+               svstr = tab_t_tmp(:,:) / rho0
+#  endif
             endif
          end if
 !-------------------------------------------------
@@ -247,13 +247,13 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_etau)
             if (iok_etau /= 0) then
-#  if (!defined OA_GRID_UV)  
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                etau = tab_t_tmp / rho0
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                etau  = tab_t_tmp / rho0
-#  endif   
+#  endif
             endif
          end if
 !-------------------------------------------------
@@ -262,13 +262,13 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_ntau)
             if (iok_ntau /= 0) then
-#  if (!defined OA_GRID_UV)  
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntau = tab_t_tmp / rho0
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntau  = tab_t_tmp / rho0
-#  endif   
+#  endif
             endif
          end if
 # endif
@@ -308,14 +308,14 @@
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                wfrq = rmask * (2*pi) / max(tab_t_tmp, eps)
 !     gc
-               where ( wfrq > 1000. )  
+               where ( wfrq > 1000. )
                  wfrq = 0.
                end where
 !     End gc
             endif
          end if
 !-------------------------------------------------
-!        Wave mean direction (deg) 
+!        Wave mean direction (deg)
 !            + then we apply croco grid rotation (-angler)
 !              and projection on xi/eta trigo croco_grid - wdrx, wdre
          if (trim(srcv_clname(i))=='CROCO_DIR'//trim(rclevel)) then
@@ -327,7 +327,7 @@
              wdre = rmask * sin(tab_t_tmp - angler)
            endif
          endif
-!------------------------------------------------- 
+!-------------------------------------------------
 !        wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !        not tested/performed yet
          if (trim(srcv_clname(i))=='CROCO_BHD'//trim(rclevel)) then
@@ -361,7 +361,7 @@
 !
 !  -- Vector variables converted to modules  --
 !--------------------------------------------------
-!        ORBITAL BOTTOM VELOCITY      
+!        ORBITAL BOTTOM VELOCITY
 !        wave_ubrx : x-component rms amplitude of wave orbital bottom velocity(m/s)
          if (trim(srcv_clname(i))=='CROCO_UBRX'//trim(rclevel)) then
              call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
@@ -380,8 +380,8 @@
                ubr = rmask * sqrt(ubr**2+tab_t_tmp**2)
             endif
          endif
-!-----------------------------------------------------------------------------------------------------------------         
-!        SURFACE STOKES DRIFT VELOCITY        
+!-----------------------------------------------------------------------------------------------------------------
+!        SURFACE STOKES DRIFT VELOCITY
 !        wave_ussx : x-component of stokes drift surface velocity
          if (trim(srcv_clname(i))=='CROCO_USSX'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
@@ -408,7 +408,7 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_utwo)
             if (iok_utwo /= 0) then
-#  if (!defined OA_GRID_UV)  
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
                do jo=jmin_halo-1,jmax_halo+1
@@ -419,7 +419,7 @@
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                twox  = tab_t_tmp
-#  endif   
+#  endif
             endif
          endif
 !-------------------------------------------------
@@ -428,7 +428,7 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_vtwo)
             if (iok_vtwo /= 0) then
-#  if (!defined OA_GRID_UV) 
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
                do jo=jmin_halo,jmax_halo+1
@@ -439,7 +439,7 @@
 #  else
                call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                twoy = tab_t_tmp
-#  endif 
+#  endif
             endif
          endif
 !-------------------------------------------------
@@ -448,13 +448,13 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_etwo)
             if (iok_etwo /= 0) then
-#  if (!defined OA_GRID_UV)  
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                etwo = tab_t_tmp / rho0
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                etwo  = tab_t_tmp / rho0
-#  endif   
+#  endif
             endif
          end if
 !-------------------------------------------------
@@ -463,13 +463,13 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_ntwo)
             if (iok_ntwo /= 0) then
-#  if (!defined OA_GRID_UV)  
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntwo = tab_t_tmp / rho0
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntwo  = tab_t_tmp / rho0
-#  endif   
+#  endif
             endif
          end if
 !-------------------------------------------------
@@ -478,7 +478,7 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_utaw)
             if (iok_utaw /= 0) then
-#  if (!defined OA_GRID_UV)  
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
                do jo=jmin_halo-1,jmax_halo+1
@@ -489,7 +489,7 @@
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                tawx = tab_t_tmp
-#  endif   
+#  endif
             endif
          endif
 !-------------------------------------------------
@@ -498,7 +498,7 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_vtaw)
             if (iok_vtaw /= 0) then
-#  if (!defined OA_GRID_UV) 
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
                do jo=jmin_halo,jmax_halo+1
@@ -509,7 +509,7 @@
 #  else
                call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                tawy = tab_t_tmp
-#  endif 
+#  endif
             endif
          endif
 !-------------------------------------------------
@@ -518,13 +518,13 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_etaw)
             if (iok_etaw /= 0) then
-#  if (!defined OA_GRID_UV)  
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                etaw = tab_t_tmp / rho0
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                etaw  = tab_t_tmp / rho0
-#  endif   
+#  endif
             endif
          end if
 !-------------------------------------------------
@@ -533,13 +533,13 @@
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_ntaw)
             if (iok_ntaw /= 0) then
-#  if (!defined OA_GRID_UV)  
+#  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntaw = tab_t_tmp / rho0
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntaw  = tab_t_tmp / rho0
-#  endif   
+#  endif
             endif
          end if
 # endif
@@ -583,12 +583,12 @@
          return  !-->  EXIT
 #  endif
       endif
-! 
+!
       IF  (iok_taum == 0 .and. iok_utau /= 0 .and. iok_vtau /= 0) THEN
 !-------------------------------------------------
 !     Compute CROCO module stress when not exchanged
 !-------------------------------------------------
-#  if (!defined OA_GRID_UV) 
+#  if (!defined OA_GRID_UV)
          smstr = sqrt(tab_u_tmp**2 + tab_v_tmp**2)  / rho0
 #  else
          do jo=jmin_halo-1,jmax_halo+1
@@ -597,7 +597,7 @@
      &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) / rho0
          enddo
          enddo
-#  endif 
+#  endif
       ENDIF
 # endif
 !
@@ -624,7 +624,7 @@
          enddo
 #  else
          write(*,*) 'OA_GRID_UV and grid rotation: case not coded...'
-         return  !-->  EXIT 
+         return  !-->  EXIT
 #  endif
       endif
 !
@@ -666,14 +666,14 @@
 #  endif
 # endif
       return
-      end 
+      end
 !-------------------------------------------------
-!      
-!	
-#else 
+!
+!
+#else
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
       subroutine cpl_prism_get_empty
       end
-#endif 
+#endif

@@ -1,79 +1,75 @@
-CROCO v1.2
------------
-Released date : 18 January 2022
-
-Previous release : CROCO v1.1 (October 2019)
+CROCO v1.3
+Released date : 28 November 2022
+Previous release : CROCO v1.2.1 (March 2022)
 
 Reminders:
-==========
-CROCO sources and CROCO_TOOLS (the follow-on of ROMS_TOOLS) are now distributed separately (for croco_tools releases, see associated tab at  [https://www.croco-ocean.org/download/croco-project](https://www.croco-ocean.org/download/croco-project) ). 
-**ROMS_AGRIF  is not maintained anymore**  and we strongly encourage ROMS_AGRIF users to switch  to CROCO. CROCO version available directly from the git repository is an **unstable** development  version. **Standard users should use the stable one downloaded from the web site**. 
+CROCO sources and CROCO_TOOLS (the follow-on of ROMS_TOOLS) are now distributed separately (for croco_tools releases, see associated tab at https://www.croco-ocean.org/download/croco-project ). ROMS_AGRIF is not maintained anymore and we strongly encourage ROMS_AGRIF users to switch to CROCO. CROCO version available directly from the git repository is an unstable development version. Standard users should use the stable one downloaded from the web site.
+CROCO documentation is available at https://croco-ocean.gitlabpages.inria.fr/croco_doc
+You can also subscribe at CROCO forum at https://forum.croco-ocean.org
+
+New in CROCO v1.3
+CROCO v1.3 is recommended for users of PISCES, MUSTANG and the coupling toolbox. In addition it includes correction of critical bugs, inconsistencies and light improvements
+
+Environment
+
+Little updates on create_config.bash : mostly comments and some little bugfixes
 
 
-# New in CROCO v1.2
+Coupling
+full description : https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.coupling.html and https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.16.coupling.html
 
-## Environment
+put by default exchanges of AVERAGE fields over the coupling timestep
+add possibility to use coupling with WRF moving nests (coupling only on the parent domain, and interpolation in WRF between the parent and moving nest for ocean surface conditions => requires to use the last version of WRF in the WRF-CROCO github fork)
+some corrections for coupling with a toy model
+add the possibility to create oasis restart files from pre-existing model outputs
+coupling scripts: correct some typos, comments, and directory and grid names for oasis files and oce_compile for AROME and ECMWF
 
-The whole structure of the repository has been updated, please read carefully. It comes with a new set of scripts to help to launch production simulations. See <https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.02.contents.html> for details.
 
-- create_config.bash: script to create a configuration environment. 2 typical modes are proposed: all-dev for the usual ("all-in") architecture for forced CROCO runs and/or dev, and all-prod/all-prod-cpl for production run architecture and coupling with external models
-- SCRIPTS/ directory: where scripts for running croco in production mode are provided
-- croco input and output files for interannual simulations can now be named systematically with 2 digits for month: croco_..._Y????M??.nc instead of croco_..._Y????M?.nc (the old option is however still available)
-- croco/XIOS/process_xios_xml.sh : stand-alone cpp-process of the XIOS xml files. It is now separated from the jobcomp script. It is deployed in _Run/_ in all-dev setup, and in _CONFIGS/PREPRO/XIOS/_ in all-prod setup
+Sediment
+full description : https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.modules.sediment.html
 
-## Air-sea interactions
+Test and reorganise flocculation capabilities. FLOCMOD module is present in MUSTANG and in SEDIMENT with equal routines. To avoid redundancies and clarify maintenance/dev on this module, an independent module has been be created, flocmod.F90 with interfaces in MUSTANG/SEDIMENT
 
-_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.forcing.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.forcing.html)
 
-- 1D Atmospheric Boundary Layer model (ABL)
-- Updated Bulks
-- Updated current feedback
+Numerics and parametrisations
+full description : https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.numerics.html
 
-## Coupling
+UV_HADV_UP5: change to apply UP5 to both predictor and corrector time steps to avoid checkboard noise detected in regional simulations (thanks to J. Gula)
+GLS_MIXING: add limitation in potential flow region following Larsen and Fuhrman (2018), to prevent the instable growth of turbulent viscosity for non-breaking external or internal waves
 
-_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.coupling.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.coupling.html) and [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.16.coupling.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.16.coupling.html)
 
-- SCRIPTS/SCRIPTS_COUPLING: new coupling toolbox for running CROCO interannual simulations coupled with atmosphere and wave models. For more details see <https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.16.coupling.workflow.html>
-- Now manage nesting in the ocean and in the atmosphere
-- Additional wave parameters can now be exchanged
+New Configurations
+full description : https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.test_cases.html
 
-## Sediment
+1 new test cases for sediment processes (can be used with USGS or MUSTANG sediment model) :a schematized estuary (from MARS corresponding test case). From TIDAL_FLAT, the grid is set to 200x90 then the cells sizes are fixed to dx = 600m and dy = 100m. The OBC West is the same as in TIDAL_FLAT. The bathymetry is derived from MARS code with the same parameters. A river is placed on the East side with sediment input (400m3/s - 50mg/L of MUD)
 
-_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.modules.sediment.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.modules.sediment.html)
 
-- MUSTANG sediment model : MUSTANG is a sediment model developed at Ifremer and proposed in addition to the existing one from USGS
-- Bedload : improvement of robustness and new parametrization available
-- Cohesive bed : introduction of bed stratigraphy with cohesive or mixed cohesive/non-cohesive case
+Pisces
 
-## Numerics
+fix various bugs and improve robustness
 
-_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.numerics.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.numerics.html)
 
-- quasi-hydro CROCO_QH : a quasi-hydrostatic option (non-traditional Coriolis terms)
-- MORPHODYN correction : improvement of robustness for morphodynamics
-- NO_TEMPERATURE and NO_TRACERS option : use only salinity as active tracer, run in fully homogeneous mode
+Runoff
+Possibility to add a source point as a volume vertical influx. With this feature there is no need to take care of the position of the source with the mask and a source can be added anywhere on the grid. The outflow is applied at rho point (cpp key PSOURCE_MASS)
 
-## New Configurations
+Miscellaneous
 
-_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.test_cases.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.test_cases.html)
+run_croco scripts: some corrections for adequation with prod env, comments and re-organization
+NC4 for diagnostics
+Some fixes when writing into existing diagnostics files (diag TS, diag Momentum, Vorticity, PV, EK, PV, VRT...)
+Various fixes when using NC4PAR
+Move Surface atmospheric forcing and Lateral forcing cpp-keys upper in cppdefs.h
+Output in double precisions in case of PARALLEL_FILES (to be compatible with ncjoin)
+Put back by default previous partit.F to handle with FRC_FRY
+Changes in compilations options for ifort and gfortran
 
-- 3 new test cases for sediment processes (can be used with USGS or MUSTANG sediment model)
-  * TIDAL_FLAT : a 2DV tidal flat with sediment mixture
-  * SED_TOY : a single column case
-  * DUNE : migration of a dune with different sand classes
-- 1 new realistic configuration COASTAL : a coastal configuration with a finer resolution than BENGUELA and corresponding/different settings (rivers, GLS mixing ...)
 
-## Miscellaneous
+CROCO_TOOLS
 
-- Multiple passive tracers : the number of passive tracers is now a parameter up to 100
-- XIOS : former XIOS2 option is now the only option
-- Restart
-- NC4 for all diagnostics : all diagnostics are compatible with NetCDF4 parallel writing
-- NO_LAND and PARALLEL_FILES compatibility
-- EXACT_RESTART : bit to bit restartability
-
-## Detail list of CPP keys
-
-Suppressed keys : ''ANA_BPFLUX', 'ANA_SPFLUX', 'BEDLOAD_SOULSBY', 'BULK_EP', 'BULK_FAIRALL', 'BULK_SMFLUX', 'BULK_SM_UPDATE', 'CFB_STRESS2', 'CFB_WIND', 'MLCONVEC', 'PLUME', 'SMFLUX_CFB', 'STFLUX_CFB', 'WAVE_BODY_STREAMING', 'XIOS2'
-
-New keys (extented version...) : 'ANA_DUNE', 'ANA_MORPHODYN', 'BEDLOAD_MARIEU', 'BEDLOAD_UP1', 'BEDLOAD_UP5', 'BEDLOAD_VANDERA', 'BEDLOAD_WENO5', 'BEDLOAD_WULIN', 'BED_ARMOR', 'BED_HIDEXP', **~~'BHFLUX'~~,** 'BULK_ECUMEV0', 'BULK_ECUMEV6', 'BULK_GUSTINESS', 'BULK_WASP', **~~'~~** 'CFB_WIND_TRA', 'COASTAL', 'COHESIVE_BED', 'CROCO_QH', 'DIAGNOSTICS_BARO', 'DIAGNOSTICS_TSVAR', 'DO_NOT_OVERWRITE', 'DUNE', 'DUNE3D', 'ECUMEv0', 'ECUMEv6', 'EXACT_RESTART', 'FLOC_BBL_DISS', 'FLOC_TURB_DISS', 'GUSTINESS', 'HOURLY_VELOCITIES', 'ISOLITON', 'LMD_LANGMUIR', 'M3FAST_REINIT', 'MIXED_BED', 'MORPHODYN_MUSTANG_byHYDRO', 'MPI_TIME', 'MUSTANG', 'MUSTANG_CORFLUX', 'NO_TEMPERATURE', 'NO_TRACER', 'RVTK_DEBUG', 'RVTK_DEBUG_ADVANCED', 'RVTK_DEBUG_PERFRST', 'SANDBAR_OFFSHORE', 'SANDBAR_ONSHORE', 'SED_DEFLOC', 'SED_FLOCS', 'SED_TAU_CD_CONST', 'SED_TOY', 'SED_TOY_CONSOLID', 'SED_TOY_FLOC', 'SED_TOY_RESUSP', 'SED_TOY_ROUSE', 'SFLUX_CFB', 'SLOPE_KIRWAN', 'START_DATE', 'STOKES_DRIFT', 'SUBSTANCE', 'TAU_CRIT_WULIN', 'TEMPERATURE', 'TIDAL_FLAT', 'TRACERS', 'VILAINE', 'WASP', 'WAVE_BREAK_BJ78', 'ZETA_DRY_IO', 'key_CROCO', 'key_MUSTANG_V2', 'key_MUSTANG_bedload', 'key_MUSTANG_specif_outputs', 'key_noTSdiss_insed', 'key_nofluxwat_IWS', 'key_sand2D', 'key_tenfon_upwind'
+Improve octave compatibility
+Add global attribute in netcdf files (notably: origin date)
+Tides: add the possibility to create frc files with tides only, and add a routine to create tide-only frc files for interanual simulation
+Add pre-processing scripts for downlading glorys oceanic reanalysis data.
+Coupling: add scripts to create weight files and smoothing for the coupler (interpolation between model grids), some corrections in pre-processing for WWIII for adequations with more recent versions of WWIII, and some other minor corrections in scripts
+Biology: Pre-processing scripts have been moved to Preprocessing_tools/Bio. Update some scripts to handle PISCES-quota
+Nesting_tools: some small corrections

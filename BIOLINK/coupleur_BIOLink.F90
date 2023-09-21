@@ -1811,8 +1811,14 @@ END SUBROUTINE  BIOLink2hydro
                    ind_diag3d=ind_diag3d+1
                    bioFlux(i4,i3,i2,ind_diag3d) = diag_3d_wat(irk_diag(isubs),i2,i4,i3)
                  END IF
-!                 IF(idimv_r(isubs) == 5) bioFlux(i4,i3,i2,isubs) = diag_3d_sed(irk_diag(isubs),i2,i4,i3)
-!                 IF(idimv_r(isubs) == 6) bioFlux(i4,i3,i2,isubs) = diag_2d_sed(irk_diag(isubs),i4,i3)
+                 IF(idimv_r(isubs) == 5) THEN
+                   ind_diag3d=ind_diag3d+1
+                   bioFlux(i4,i3,i2,ind_diag3d) = diag_3d_sed(irk_diag(isubs),i2,i4,i3)
+                 END IF
+                 IF(idimv_r(isubs) == 6) THEN 
+                   ind_diag2d=ind_diag2d+1
+                   bioVSink(i4,i3,ind_diag2d) = diag_2d_sed(irk_diag(isubs),i4,i3)
+                 END IF
 #endif
                END DO
              END DO

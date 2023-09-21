@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,19 +20,19 @@
 !                    (12hr clock) of day (hour:minute:sec)
 !
 ! Calls: day_code (vax/cray only, code is provided in this file);
-!        none, except cray/vax;  
+!        none, except cray/vax;
 !
-! NOTE: This file is shared with plottin package. 
+! NOTE: This file is shared with plottin package.
 !
 ! Copyright (c) 1996 Rutgers University
 !
       implicit none
       character*(*) date_str
-      integer year,hour, minute,sec, half, iday,imon, dstat,tstat, 
+      integer year,hour, minute,sec, half, iday,imon, dstat,tstat,
      &        nday, lmonth(12), lday(31), len1, len2, len3, lenstr
       character*3  ampm(0:1)
       character*9 day(0:6), month(12)
-      data lmonth/7,8,5,5,3,4,4,6,9,7,8,8/ ampm/' AM',' PM'/ 
+      data lmonth/7,8,5,5,3,4,4,6,9,7,8,8/ ampm/' AM',' PM'/
      &    lday /9*1,22*2/ day /'Sunday   ', 'Monday   ', 'Tuesday  ',
      &            'Wednesday', 'Thursday ', 'Friday   ', 'Saturday '/
      &      month/'January  ', 'February ', 'March    ', 'April    ',
@@ -194,7 +194,7 @@ c      mon='Jan'
      &        base_qyear, base_year,  bym1_dec31, feb_end,   leap,
      &        no_day, no_yr,  nqy,    nyc, nyqc,  month_day(12)
       parameter (base_cen=1700,   base_qcen=1600, base_qyear=1748,
-     &           base_year=1752,  bym1_dec31=5,   feb_end=59) 
+     &           base_year=1752,  bym1_dec31=5,   feb_end=59)
       data month_day /31,28,31,30,31,30,31,31,30,31,30,31/
 !
 ! Compute the number of years since the base year, the number of

@@ -39,6 +39,7 @@ MODULE p4zpoc
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:)       ::   alphan, reminp   !:
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) ::   alphap           !:
 
+   LOGICAL  :: l_dia
 
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
@@ -68,11 +69,15 @@ CONTAINS
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY)   :: zremipoc, zremigoc, zorem3, ztremint, zfolimi
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) ::  ztrn, zgdept_n, ze3t_n
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY,jcpoc) :: alphag
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
       ! Initialization of local variables
       ! ---------------------------------
-
+      IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "REMINP" ) .OR. iom_use( "REMING" )  &
+           &    .OR. iom_use( "REMINF" )
+      !
       ! Here we compute the GOC -> POC rate due to the shrinking
       ! of the fecal pellets/aggregates as a result of bacterial
       ! solubilization
@@ -82,7 +87,9 @@ CONTAINS
       solgoc = 0.04/ 2.56 * 1./ ( 1.-50**(-0.04) )
 
       ! Initialisation of temprary arrys
-      IF( ln_p4z ) THEN
+      IF( ln_p2z ) THEN
+         zremipoc(:,:,:) = xremip
+      ELSE IF( ln_p4z ) THEN
          zremipoc(:,:,:) = xremip
          zremigoc(:,:,:) = xremip
       ELSE    ! ln_p5z
@@ -99,16 +106,16 @@ CONTAINS
         alphap(:,:,:,jn) = alphan(jn)
       END DO
 
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               ze3t_n(ji,jj,jk)    = e3t_n(ji,jj,K)
-               zgdept_n(ji,jj,jk)  = gdept_n(ji,jj,K)
-               ztrn (ji,jj,jk)     = trb(ji,jj,K,jpgoc)
+     IF( .NOT. ln_p2z) THEN
+        DO jk = KRANGE
+           DO jj = JRANGE
+              DO ji = IRANGE
+                 ze3t_n(ji,jj,jk)    = e3t_n(ji,jj,K)
+                 zgdept_n(ji,jj,jk)  = gdept_n(ji,jj,K)
+                 ztrn (ji,jj,jk)     = trb(ji,jj,K,jpgoc)
+             END DO
            END DO
-         END DO
-      ENDDO
-
+        ENDDO
 
      ! -----------------------------------------------------------------------
      ! Lability parameterization. This is the big particles part (GOC)
@@ -261,11 +268,13 @@ CONTAINS
          END DO
       ENDIF
 
-     IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
-        WRITE(charout, FMT="('poc1')")
-        CALL prt_ctl_trc_info(charout)
-        CALL prt_ctl_trc( charout, ltra='tra')
-     ENDIF
+      IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+         WRITE(charout, FMT="('poc1')")
+         CALL prt_ctl_trc_info(charout)
+         CALL prt_ctl_trc( charout, ltra='tra')
+      ENDIF
+
+     ENDIF  ! .NOT. ln_p2z
 
      ! ------------------------------------------------------------------
      ! Lability parameterization for the small OM particles. This param 
@@ -327,8 +336,8 @@ CONTAINS
         END DO
      END DO
      !
-     IF( ln_p4z ) THEN   ;  zremipoc(:,:,:) = MIN( xremip , ztremint(:,:,:) )
-     ELSE                ;  zremipoc(:,:,:) = MIN( xremipc, ztremint(:,:,:) )
+     IF( ln_p2z .OR. ln_p4z ) THEN   ;  zremipoc(:,:,:) = MIN( xremip , ztremint(:,:,:) )
+     ELSE                            ;  zremipoc(:,:,:) = MIN( xremipc, ztremint(:,:,:) )
      ENDIF
 
      ! -----------------------------------------------------------------------
@@ -420,11 +429,28 @@ CONTAINS
          END DO
       END DO
 
-     IF( ln_p4z ) THEN   ;   zremipoc(:,:,:) = MIN( xremip , ztremint(:,:,:) )
-     ELSE                ;   zremipoc(:,:,:) = MIN( xremipc, ztremint(:,:,:) )
+     IF( ln_p2z .OR. ln_p4z ) THEN   ;   zremipoc(:,:,:) = MIN( xremip , ztremint(:,:,:) )
+     ELSE                            ;   zremipoc(:,:,:) = MIN( xremipc, ztremint(:,:,:) )
      ENDIF
 
-     IF( ln_p4z ) THEN
+     IF( ln_p2z ) THEN
+         DO jk = KRANGE
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  IF (tmask(ji,jj,jk) == 1.) THEN
+                    ! POC disaggregation by turbulence and bacterial activity. 
+                    ! --------------------------------------------------------
+                    zremip          = zremipoc(ji,jj,jk) * xstep * tgfunc(ji,jj,jk)
+                    zorem           = zremip * trb(ji,jj,K,jppoc)
+                    tra(ji,jj,jk,jpdoc) = tra(ji,jj,jk,jpdoc) + zorem
+                    orem(ji,jj,jk)      = orem(ji,jj,jk) + zorem
+                    tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) + zofer
+                    tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) - zorem
+                  ENDIF
+               END DO
+            END DO
+         END DO
+     ELSE IF( ln_p4z ) THEN
          DO jk = KRANGE
             DO jj = JRANGE
                DO ji = IRANGE
@@ -434,7 +460,6 @@ CONTAINS
                     zremip          = zremipoc(ji,jj,jk) * xstep * tgfunc(ji,jj,jk)
                     zorem           = zremip * trb(ji,jj,K,jppoc)
                     zofer           = zremip * trb(ji,jj,K,jpsfe)
-
                     tra(ji,jj,jk,jpdoc) = tra(ji,jj,jk,jpdoc) + zorem
                     orem(ji,jj,jk)      = orem(ji,jj,jk) + zorem
                     tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) + zofer
@@ -471,18 +496,42 @@ CONTAINS
            END DO
         END DO
      ENDIF
-
-#if defined key_iomput
-     IF( lk_iomput ) THEN
-        IF( knt == nrdttrc ) THEN
-          zrfact2 = 1.e3 * rfact2r
-          CALL iom_put( "REMINP" , zremipoc(:,:,:) * tmask(:,:,:) )  ! Remineralisation rate
-          CALL iom_put( "REMING" , zremigoc(:,:,:) * tmask(:,:,:) )  ! Remineralisation rate
-          CALL iom_put( "REMINF" , zfolimi(:,:,:)  * tmask(:,:,:)  * 1.e+9 * zrfact2 )  ! Remineralisation rate
-        ENDIF
-     ENDIF
-#endif
-
+     !
+     IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zremipoc(ji,jj,jk) * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
+            CALL iom_put( "REMINP", zw3d )  ! Remineralisation rate of POC
+            !
+            IF( .NOT. ln_p2z ) THEN
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                       zw3d(ji,jj,jk ) = zremigoc(ji,jj,jk) * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "REMING", zw3d ) ! Remineralisation rate of GOC 
+               !
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                       zw3d(ji,jj,jk ) = zfolimi(ji,jj,jk) * 1.e3 * rfact2r * 1e+9 * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "REMINF", zw3d )  ! Remineralisation rate of Fe
+            ENDIF
+            DEALLOCATE( zw3d )
+         ENDIF
+      ENDIF
+      !
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('poc2')")
          CALL prt_ctl_trc_info(charout)
@@ -527,7 +576,7 @@ CONTAINS
 
       IF(lwp) THEN                         ! control print
          WRITE(numout,*) '   Namelist : nampispoc'
-         IF( ln_p4z ) THEN
+         IF( ln_p2z .OR. ln_p4z ) THEN
             WRITE(numout,*) '      remineralisation rate of POC              xremip    =', xremip
          ELSE
             WRITE(numout,*) '      remineralisation rate of POC              xremipc   =', xremipc

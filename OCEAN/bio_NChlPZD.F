@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -21,36 +21,36 @@
 !
       implicit none
       integer Istr,Iend,Jstr,Jend
-#include "param.h"
-#include "grid.h"
-#include "ocean3d.h"
-#include "ocean2d.h"
-#include "diagnostics.h"
-#include "scalars.h"
-#include "forces.h"
-#include "mixing.h"
+# include "param.h"
+# include "grid.h"
+# include "ocean3d.h"
+# include "ocean2d.h"
+# include "diagnostics.h"
+# include "scalars.h"
+# include "forces.h"
+# include "mixing.h"
 
       real kwater, palpha, kChla, CN_Phyt, theta_m, opc,
      &     K_NO3, mu_P_D, gmax, beta, K_Phyt,
      &     mu_Z_A, mu_Z_D, mu_D_N,
      &     wPhyt, wDet
-#ifdef OXYGEN
+# ifdef OXYGEN
      &   , CN_Z
-#endif
+# endif
       integer ITERMAX
       integer nsink
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
 
       real trend_no3,trend_phy,trend_zoo,trend_det,somme
-      real bilan_no3,bilan_phy,bilan_zoo,bilan_det, sinking_loss, 
+      real bilan_no3,bilan_phy,bilan_zoo,bilan_det, sinking_loss,
      &     trend_total
       integer l, iflux
       real ThisVSinkFlux(N, NumVSinkTerms),  ! [mmol m-2 s-1], upward flux is positive
      &     ThisFlux(N, NumFluxTerms)
-# ifdef OXYGEN
+#  ifdef OXYGEN
       real ThisGasExcFlux(NumGasExcTerms), trend_o2, bilan_o2
+#  endif
 # endif
-#endif
       parameter (
      &  ITERMAX = 3,      ! number of small implicit time step
      &  nsink   = NumVSinkTerms + 1, ! add'lly: Chlorophyll
@@ -61,21 +61,21 @@
                            ! range:(0.04<==>0.04];    units:[m-1]
      &  palpha  = 1.0,     ! initial slope of the P-I curve
                            ! range:(1.00<==>1.00);       [(W m-2 d)-1]
-     &  kChla  = 0.024,    ! light attenuation by Chlorophyl  
+     &  kChla  = 0.024,    ! light attenuation by Chlorophyl
                            !                         [(m^2 mg Chla)-1]
      &  CN_Phyt= 6.625,    ! C:N ratio for phytoplankton
                            !                       [mMol C (mMol N)-1]
-#ifdef OXYGEN
+# ifdef OXYGEN
      &  CN_Z   = 6.625,    ! C:N ratio for zoo
                            ! range:(4.<==>6.);     [mol-C (mol-N)-1]
-#endif
+# endif
      &  theta_m= 0.0535,    ! max Cellular Chlorophyll to Carbon Ratio
                            ! range:(0.015<==>0.072);    [mg Chla/mg C]
      &  K_NO3   = 1./0.5,  ! inverse half-saturation for Phytoplankton
                            ! range:(1./.0 <==> 1./.9);[1/(mmol-N m-3)]
      &  mu_P_D  = 0.03,    ! Phyto mortality to Det rate        [d-1]
      &  gmax    = 0.9,     ! maximum Zooplankton growth rate     [d-1]
-     &  beta    = 0.75,    ! Zooplankton assimilation efficiency of 
+     &  beta    = 0.75,    ! Zooplankton assimilation efficiency of
                            !                       Phytoplankton [n.d.]
      &  K_Phyt  = 1.0,     ! Zooplankton half-saturation constant
                            ! for ingestion of phyto [d-1]
@@ -87,7 +87,7 @@
      &  wDet    = 5.0  )   !    ''       ''      '' Detritus
 !
       integer i,j,k, ITER, iB
-      real    NO3(N), Phyt(N), Zoo(N), Det(N), Chla(N), 
+      real    NO3(N), Phyt(N), Zoo(N), Det(N), Chla(N),
      &        aJ(N),FC(0:N),
      &        PAR, PARsup, attn, Vp, Epp, cu, aL,aR, dtdays, L_NO3,
      &        E_NO3,cff,cff0,cff1,cff2,cff6,
@@ -96,8 +96,8 @@
      &      , O2(N), tem(N), sal(N), den(N)
      &      , O2satu_loc, Kv_O2_loc
      &      , eos80, u10_loc, Sc
-     
-#define OCMIP_OXYGENSAT
+
+#  define OCMIP_OXYGENSAT
 
 #  ifdef OCMIP_OXYGENSAT
      &       , o2sato   ! OCMIP function, calculates O2 saturation
@@ -130,12 +130,12 @@
 ! satisfy equations
 !
 !           BIO = BIO + dtdays * rhs(BIO)
-! 
+!
 ! where rhs(BIO) is the vector of biological r.h.s. computed at
 ! the new time step. During the iterative procedure a series of
 ! fractional time steps is performed in a chained mode (splitting
-! by different biological conversion processes) in sequence NO3 -- 
-! Phyt -- Zoo -- Det, that is the main food chain. In all 
+! by different biological conversion processes) in sequence NO3 --
+! Phyt -- Zoo -- Det, that is the main food chain. In all
 ! stages the concentration of the component being consumed is
 ! treated in fully implicit manner, so that the algorithm guarantees
 ! non-negative values, no matter how strong is the concentration of
@@ -158,14 +158,14 @@
 #   define J_RANGE JstrR,JendR
 #  endif
 */
-#  define I_RANGE Istr,Iend
-#  define J_RANGE Jstr,Jend
+# define I_RANGE Istr,Iend
+# define J_RANGE Jstr,Jend
 
 
 
       do j=J_RANGE
         do i=I_RANGE
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
 ! Reset the biogeochemical fluxes. This is necessary because the
 ! biological routine uses multiple. time steps for each physical time
 ! step.
@@ -179,12 +179,12 @@
               bioVSink(i,j,k,l) = 0.0
             enddo
           enddo
-# ifdef OXYGEN
+#  ifdef OXYGEN
           do l=1,NumGasExcTerms
             GasExcFlux(i,j,l) = 0.0
           enddo
-# endif
-#endif /* DIAGNOSTICS_BIO */
+#  endif
+# endif /* DIAGNOSTICS_BIO */
 !
 ! Extract biological variables from tracer arrays; place them into
 ! scratch variables; restrict their values to be positive definite.
@@ -210,7 +210,7 @@
         den(k) =1000.+ rho1(i,j,k)   		 ! potential density; [kg m-3]
 #  endif
         O2(k)  =max(t(i,j,k,nnew,iO2),0.)        ! Oxygen;  [mmol O2 m-3]
-# endif 
+# endif
       enddo
 
       DO ITER=1,ITERMAX      !--> Start internal iterations to achieve
@@ -242,7 +242,7 @@
             PARsup=PAR*attn
             Vp=0.59*(1.066**t(i,j,k,nnew,itemp))   ! From Eppley
 !            Vp=0.8356*(1.066**t(i,j,k,nnew,itemp))   ! a.b^cT=µ_max=3.0
-            cff0=PARsup*palpha*theta(i,j,k)           ! for diatoms & 
+            cff0=PARsup*palpha*theta(i,j,k)           ! for diatoms &
             Epp=Vp/sqrt(Vp*Vp+cff0*cff0)             ! 2.0 for flagelates
             aJ(k)=Epp*cff0
 !
@@ -255,15 +255,15 @@
             E_NO3=K_NO3/(1+K_NO3*NO3(k)) ! Parker 1993 Ecol Mod. 66 113-120
             cff=dtdays*aJ(k)*Phyt(k)*E_NO3
             NO3(k)=NO3(k)/(1.+cff)
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
             ThisFlux(k, NFlux_NewProd) = cff*NO3(k)
 !
-# ifdef OXYGEN
+#  ifdef OXYGEN
 !           production of O2 by phyto growth
             ThisFlux(k, OGain_NewProd) =
      &           ThisFlux(k, NFlux_NewProd) * (CN_Phyt + 2.)
-# endif /* OXYGEN */
-#endif /* DIAGNOSTICS_BIO */
+#  endif /* OXYGEN */
+# endif /* DIAGNOSTICS_BIO */
 # ifdef OXYGEN
             O2(k) = O2(k) + cff*NO3(k)*(CN_Phyt + 2.)
 # endif
@@ -283,14 +283,14 @@
           enddo
 !
         else
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
           do k = N, 1, -1
             ThisFlux(k, NFlux_NewProd) = 0.0
-# ifdef OXYGEN
+#  ifdef OXYGEN
             ThisFlux(k, OGain_NewProd) = 0.0
-# endif /* OXYGEN */
+#  endif /* OXYGEN */
           enddo
-#endif /* DIAGNOSTICS_BIO */
+# endif /* DIAGNOSTICS_BIO */
 !#ifdef AVERAGES
 !! if the sun is down, set the logical variable "sun_down"
 !! to true for not taking into account this time step in the averaging
@@ -309,11 +309,11 @@
           cff2=dtdays*mu_P_D
           Phyt(k)=Phyt(k)/(1.+cff1+cff2)
           Zoo(k)=Zoo(k)+Phyt(k)*cff1*beta
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
           ThisFlux(k, NFlux_Grazing)=Phyt(k)*cff1*beta
           ThisFlux(k, NFlux_SlopFeed) = Phyt(k) * cff1 * (1.-beta)
           ThisFlux(k, NFlux_Pmort) = Phyt(k) * cff2
-#endif /* DIAGNOSTICS_BIO */
+# endif /* DIAGNOSTICS_BIO */
           Det(k)=Det(k)+Phyt(k)*(cff1*(1.-beta)+cff2)
 !
 ! (1) Zoo excretion to NO3  (rate mu_Z_A)
@@ -322,20 +322,20 @@
           cff1=dtdays*mu_Z_A
           cff2=dtdays*mu_Z_D*Zoo(k)
           Zoo(k)=Zoo(k)/(1.+cff1+cff2)
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
           ThisFlux(k, NFlux_Zmetab)=cff1*Zoo(k)
           ThisFlux(k, NFlux_Zmort)=cff2*Zoo(k)
-# ifdef OXYGEN
+#  ifdef OXYGEN
 !         Zoo uptake of O2 (rate t_Zbmet + R_C)
 !         there is no control yet for assuring non-negative Oxygen
 !         values!
           ThisFlux(k, OLoss_Zmetab) =
      &         ThisFlux(k, NFlux_Zmetab) * CN_Z
-# endif /* OXYGEN */
-#endif /* DIAGNOSTICS_BIO */
-#ifdef OXYGEN 
+#  endif /* OXYGEN */
+# endif /* DIAGNOSTICS_BIO */
+# ifdef OXYGEN
           O2(k)  = O2(k) - cff1 * Zoo(k) * CN_Z
-#endif
+# endif
           NO3(k)=NO3(k)+Zoo(k)*cff1
           Det(k)=Det(k)+Zoo(k)*cff2
 !
@@ -343,21 +343,21 @@
 !
           cff1=dtdays*mu_D_N
           Det(k)=Det(k)/(1.+cff1)
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
           ThisFlux(k, NFlux_ReminD)=Det(k)*cff1
-# ifdef OXYGEN
+#  ifdef OXYGEN
 !         Loss of O2 in Det/Det remineralization
           ThisFlux(k, OLoss_ReminD)=
      &             ThisFlux(k,NFlux_ReminD) * (CN_Phyt+2.)
-# endif /* OXYGEN */
-#endif /* DIAGNOSTICS_BIO */
-#ifdef OXYGEN
+#  endif /* OXYGEN */
+# endif /* DIAGNOSTICS_BIO */
+# ifdef OXYGEN
           O2(k) = O2(k) - Det(k) * cff1 * (CN_Phyt+2.)
-#endif
+# endif
           NO3(k)=NO3(k)+Det(k)*cff1
         enddo
 !
-#ifdef OXYGEN
+# ifdef OXYGEN
 #  ifdef OCMIP_OXYGEN_SC
 !*********************************************************************
 !  alternative formulation (Sc will be slightly smaller up to about 35
@@ -381,7 +381,7 @@
      &                         +(0.5*(svstr(i,j)+svstr(i,j+1)))**2)
      &       * rho0 * 550.)   ! 550 = 1 / (1.3 * 0.0014) (=rho_air * CD)
 !       calculate the gas transfer coef for O2
-        Kv_O2_loc=0.31*u10_loc*u10_loc*sqrt(660./Sc)/(100.*3600.) 
+        Kv_O2_loc=0.31*u10_loc*u10_loc*sqrt(660./Sc)/(100.*3600.)
 !  denominator: convert Kv from [cm/h] to [m/s]
 !       calculate the saturation oxygen level
 #  ifdef OCMIP_OXYGENSAT
@@ -398,8 +398,8 @@
 !       atmosphere
 #  endif
         O2(N) = O2(N) + Kv_O2_loc * (O2satu_loc - O2(N))
-     &                        * dtsec / ( z_w(i,j,N) - z_w(i,j,N-1) )  
-#endif /* OXYGEN */
+     &                        * dtsec / ( z_w(i,j,N) - z_w(i,j,N-1) )
+# endif /* OXYGEN */
 !
 ! Vertical sinking: Vertical advection algorithm based on monotonic,
 ! continuous conservative parabolic splines.
@@ -449,7 +449,7 @@
             dSB(k-1,iB)=max(dSB(k-1,iB),min(SB(k-1,iB),SB(k,iB)))
             dSB(k-1,iB)=min(dSB(k-1,iB),max(SB(k-1,iB),SB(k,iB)))
           enddo
-!  
+!
 ! Part (iii): Convert dSB into flux-integrated values,
 ! complete PPM flux limiting. This procedure starts from assigning
 ! Left and Right (aR,aL) values of the interpolating parabolae, then
@@ -484,51 +484,51 @@
           enddo
         enddo  ! <-- iB
 
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
         do iflux = 1, NumVSinkTerms
           ColumnMassOld(iflux) = 0.0
           ColumnMassNew(iflux) = 0.0
         end do
-#endif /* DIAGNOSTICS_BIO */
+# endif /* DIAGNOSTICS_BIO */
 
         do k=1,N
           theta(i,j,k)= SB(k,1)/(SB(k,2)*CN_Phyt*12.+1.E-20)
           if (theta(i,j,k).gt.theta_m) theta(i,j,k)=theta_m
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
 ! ColumnMassOld and ColumnMassNew are needed to compute the sinking flux
 ! into the sediment
           ColumnMassOld(1)=ColumnMassOld(1)
      &                    +Phyt(k)
           ThisVSinkFlux(k, NFlux_VSinkP1)=Phyt(k)-SB(k,2)
-#endif /* DIAGNOSTICS_BIO */
+# endif /* DIAGNOSTICS_BIO */
           Phyt(k) = SB(k,2)
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
           ColumnMassNew(1)=ColumnMassNew(1)
      &                    +Phyt(k)
-#endif /* DIAGNOSTICS_BIO */
+# endif /* DIAGNOSTICS_BIO */
           ! detritus
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
           ColumnMassOld(2)=ColumnMassOld(2)
      &                    +Det(k)
           ThisVSinkFlux(k, NFlux_VSinkD1)=Det(k)-SB(k,3)
-#endif /* DIAGNOSTICS_BIO */
+# endif /* DIAGNOSTICS_BIO */
           Det(k) = SB(k,3)
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
           ColumnMassNew(2)=ColumnMassNew(2)
      &                    +Det(k)
-#endif /* DIAGNOSTICS_BIO */
+# endif /* DIAGNOSTICS_BIO */
         enddo
 !
-#ifdef DIAGNOSTICS_BIO
+# ifdef DIAGNOSTICS_BIO
 ! Transfer fluxes to global arrays at the end of each biological time step
 ! for computational efficiency, divide now by dtsec to get the correct units
         do iflux = 1, NumFluxTerms
           do k = 1, N
             bioFlux(i,j,k,iflux) = ( bioFlux(i,j,k,iflux) +
      &                               ThisFlux(k, iflux) / dt )
-# ifdef MASKING
+#  ifdef MASKING
      &             * rmask(i,j)
-# endif /* MASKING */
+#  endif /* MASKING */
           end do
         end do
         do iflux = 1, NumVSinkTerms
@@ -540,37 +540,37 @@
      &                      ColumnMassOld(iflux) )
           bioVSink(i,j,0,iflux) = (  bioVSink(i,j,0,iflux) +
      &                               LastVSinkFlux / dt )
-# ifdef MASKING
+#  ifdef MASKING
      &          * rmask(i,j)
-# endif /* MASKING */
+#  endif /* MASKING */
           do k = 1, N
             LastVSinkFlux = LastVSinkFlux +
      &                      ThisVSinkFlux(k,iflux)
             bioVSink(i,j,k,iflux) =(  bioVSink(i,j,k,iflux) +
      &                                LastVSinkFlux / dt )
-# ifdef MASKING
+#  ifdef MASKING
      &          * rmask(i,j)
-# endif /* MASKING */
+#  endif /* MASKING */
           end do
         end do
-# ifdef OXYGEN
+#  ifdef OXYGEN
 ! ThisGasExcFlux is already in the correct units [mmol s^-1]
         do iflux = 1, NumGasExcTerms
            GasExcFlux(i,j,iflux) = ( GasExcFlux(i,j,iflux) +
      &                               ThisGasExcFlux(iflux) / dt )
-#  ifdef MASKING
+#   ifdef MASKING
      &          * rmask(i,j)
-#  endif /* MASKING */
+#   endif /* MASKING */
         end do
-# endif
-#endif /* DIAGNOSTICS_BIO */
+#  endif
+# endif /* DIAGNOSTICS_BIO */
 !
       ENDDO  ! <-- ITER
 !
 ! Write back
 !
 !          print*,'N=',N
-#undef DEBUG_BIO
+# undef DEBUG_BIO
 # if defined DIAGNOSTICS_BIO && defined DEBUG_BIO
 !
       k=N
@@ -583,10 +583,10 @@
      &           - bioFlux(i,j,k,NFlux_Pmort)
      &           - bioFlux(i,j,k,NFlux_Grazing)
      &           - bioFlux(i,j,k,NFlux_SlopFeed)
-     &           - ( bioVSink(i,j,k,NFlux_VSinkP1) 
+     &           - ( bioVSink(i,j,k,NFlux_VSinkP1)
      &               - bioVSink(i,j,k-1,NFlux_VSinkP1) )
 !
-        bilan_zoo = bioFlux(i,j,k,NFlux_Grazing) 
+        bilan_zoo = bioFlux(i,j,k,NFlux_Grazing)
      &            - bioFlux(i,j,k,NFlux_Zmetab)
      &            - bioFlux(i,j,k,NFlux_Zmort)
 !
@@ -594,18 +594,18 @@
      &            + bioFlux(i,j,k,NFlux_Zmort)
      &            + bioFlux(i,j,k,NFlux_Pmort)
      &            - bioFlux(i,j,k,NFlux_ReminD)
-     &            - ( bioVSink(i,j,k,NFlux_VSinkD1) 
+     &            - ( bioVSink(i,j,k,NFlux_VSinkD1)
      &                - bioVSink(i,j,k-1,NFlux_VSinkD1) )
-#   ifdef OXYGEN
+#  ifdef OXYGEN
         bilan_o2 = bioFlux(i,j,k, OGain_NewProd)
      &           - bioFlux(i,j,k, OLoss_Zmetab)
      &           - bioFlux(i,j,k, OLoss_ReminD)
         if (k.eq.N) then
            bilan_o2 =  bilan_o2 + GasExcFlux(i,j, OFlux_GasExc)
-        endif                     
+        endif
         trend_o2 = ( (min(t(i,j,k,nnew,iO2),0.) +O2(k))
      &               -   t(i,j,k,nnew,iO2) ) / dt
-#   endif
+#  endif
         somme = bilan_no3+bilan_phy+bilan_zoo+bilan_det
         trend_no3 = ( (min(t(i,j,k,nnew,iNO3_),0.) +NO3(k))
      &               - t(i,j,k,nnew,iNO3_) ) / dt
@@ -618,11 +618,11 @@
 !
         trend_total =  trend_no3 + trend_phy + trend_zoo + trend_det
 !
-        sinking_loss = - ( bioVSink(i,j,k,NFlux_VSinkD1) 
+        sinking_loss = - ( bioVSink(i,j,k,NFlux_VSinkD1)
      &                     - bioVSink(i,j,k-1,NFlux_VSinkD1) )
-     &                 - ( bioVSink(i,j,k,NFlux_VSinkP1) 
+     &                 - ( bioVSink(i,j,k,NFlux_VSinkP1)
      &                     - bioVSink(i,j,k-1,NFlux_VSinkP1) )
-! 
+!
         print*, '=================='
         print*, 'i=',i,' j=',j,' k=',k
         print*, 'somme SMS(of N)=         ',somme
@@ -636,25 +636,25 @@
         print*, 'bilan_zoo-trend_zoo=  ', bilan_zoo-trend_zoo
         print*, 'bilan_det-trend_det=  ', bilan_det-trend_det
         print*, '-----------------'
-        print*, 'bioFlux(i,j,k,NFlux_NewProd)= ', 
+        print*, 'bioFlux(i,j,k,NFlux_NewProd)= ',
      &                               bioFlux(i,j,k,NFlux_NewProd)
-        print*, 'bioFlux(i,j,k,NFlux_Grazing)= ', 
+        print*, 'bioFlux(i,j,k,NFlux_Grazing)= ',
      &                               bioFlux(i,j,k,NFlux_Grazing)
-        print*, 'bioFlux(i,j,k,NFlux_SlopFeed)=', 
+        print*, 'bioFlux(i,j,k,NFlux_SlopFeed)=',
      &                               bioFlux(i,j,k,NFlux_SlopFeed)
-        print*, 'bioFlux(i,j,k,NFlux_Pmort)=   ', 
+        print*, 'bioFlux(i,j,k,NFlux_Pmort)=   ',
      &                               bioFlux(i,j,k,NFlux_Pmort)
-        print*, 'bioFlux(i,j,k,NFlux_Zmetab)=  ', 
+        print*, 'bioFlux(i,j,k,NFlux_Zmetab)=  ',
      &                               bioFlux(i,j,k,NFlux_Zmetab)
-        print*, 'bioFlux(i,j,k,NFlux_Zmort)=   ', 
+        print*, 'bioFlux(i,j,k,NFlux_Zmort)=   ',
      &                               bioFlux(i,j,k,NFlux_Zmort)
-        print*, 'bioFlux(i,j,k,NFlux_ReminD)=  ', 
+        print*, 'bioFlux(i,j,k,NFlux_ReminD)=  ',
      &                               bioFlux(i,j,k,NFlux_ReminD)
-        print*, 'bioVSink(i,j,k,NFlux_VSinkP1)=', 
+        print*, 'bioVSink(i,j,k,NFlux_VSinkP1)=',
      &                                bioVSink(i,j,k,NFlux_VSinkP1)
-        print*, 'bioVSink(i,j,k,NFlux_VSinkD1)=', 
+        print*, 'bioVSink(i,j,k,NFlux_VSinkD1)=',
      &                                bioVSink(i,j,k,NFlux_VSinkD1)
-#    ifdef OXYGEN
+#  ifdef OXYGEN
         print*, '-----------------'
         print*, 'Error for O2 = trend_O2-SMS(O2)=',trend_o2-bilan_o2
         print*, 'bioFlux(i,j,k,OGain_NewProd)=',
@@ -666,8 +666,8 @@
         if (k.eq.N) then
         print*, 'GasExcFlux(i,j,OFlux_GasExc)= ',
      &                                GasExcFlux(i,j,OFlux_GasExc)
-        endif 
-#    endif
+        endif
+#  endif
         print*, '=================='
       endif
 # endif
@@ -687,7 +687,7 @@
           O2satu(i,j) = O2satu_loc
           Kv_O2(i,j) = Kv_O2_loc
           u10(i,j) = u10_loc
-!         if (i==10.and.j==10) then 
+!         if (i==10.and.j==10) then
 !            write (*,*) 'O2satu(10,10)=',O2satu(10,10)
 !            write (*,*) 'Kv_O2(10,10)=',KV_O2(10,10)
 !            write (*,*) 'u10(10,10)=',u10(10,10)

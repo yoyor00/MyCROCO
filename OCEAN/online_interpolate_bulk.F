@@ -2,25 +2,25 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 !
 !  This is the "online_interpolate_bulk.F" script
 !------------------------------------------------------------------------------
-!  This file contains the subfunctions enabling the online extraction of the 
-!  forcing from a NCEP/CFSR dataset. A spatial and time interpolation are applied 
-!  to the extracted data in order to adapt these to the considered simulation 
+!  This file contains the subfunctions enabling the online extraction of the
+!  forcing from a NCEP/CFSR dataset. A spatial and time interpolation are applied
+!  to the extracted data in order to adapt these to the considered simulation
 !  domain as well as the associated MPI/OPENMP discretisation (if defined MPI/
 !  OPENMP).
 !------------------------------------------------------------------------------
 #include "cppdefs.h"
 
-#if defined BULK_FLUX && defined ONLINE 
+#if defined BULK_FLUX && defined ONLINE
 
 
 !*******************************************************************************
@@ -28,14 +28,14 @@
      &                                   lonref,latref,varref,
      &                                   blkvar_id,iblkrec)
 !------------------------------------------------------------------------------
-!  This subfunction complete the call to the interpolation and the recalculation 
+!  This subfunction complete the call to the interpolation and the recalculation
 !  of the forcing fields to generate the roms bulk forcing (tairg, rhumg, prateg,
-!  radlwg, radswg, uwndg, vwndg) on the current tile. 
+!  radlwg, radswg, uwndg, vwndg) on the current tile.
 !------------------------------------------------------------------------------
 !  The main steps of this interpolation and recalculation are:
-!  - Interpolation from the varref matrix of the dum_array matrix on the 
+!  - Interpolation from the varref matrix of the dum_array matrix on the
 !  simulation domain for the blkvar_id variable.
-!  - Recalculation of the roms bulk forcings (tairg, rhumg, prateg, radlwg, 
+!  - Recalculation of the roms bulk forcings (tairg, rhumg, prateg, radlwg,
 !  radswg, uwndg, vwndg) from the interpolated dum_array fields.
 
 !  INPUTS
@@ -50,7 +50,7 @@
 !
 !  OUTPUTS
 !  dum_array (interpolated forcing fields)
-!  tairg, rhumg, prateg, radlwg, radswg, uwndg, vwndg (recalculated roms 
+!  tairg, rhumg, prateg, radlwg, radswg, uwndg, vwndg (recalculated roms
 !                                                             bulk forcings)
       implicit none
 # include "param.h"
@@ -60,7 +60,7 @@
 # include "grid.h"
 # include "online.h"
       integer, intent(in) :: NXref, NYref, blkvar_id, iblkrec
-      real(kind=8), intent(in) :: lonref(1:NXref), latref(1:NYref)    
+      real(kind=8), intent(in) :: lonref(1:NXref), latref(1:NYref)
       real(kind=8), intent(in) :: varref(1:NXref,1:NYref)
       real blk_dum1(GLOBAL_2D_ARRAY)
       real blk_dum2(GLOBAL_2D_ARRAY)
@@ -73,7 +73,7 @@
       !--------
       ! Limits:
       !--------
-      ! Local loop ranges 
+      ! Local loop ranges
       ! This is not parallel with openMP
 
 # ifdef MPI
@@ -88,12 +88,12 @@
       ! Interpolation:
       !===============
 
-# ifdef CUBIC_INTERP 
+# ifdef CUBIC_INTERP
 #  define MYINTERP cinterp2d
 # else
 #  define MYINTERP linterp2d
 # endif
-  
+
       if (blkvar_id.eq.1) then
 !
 ! 1 process Tair
@@ -102,7 +102,7 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                tairg(GLOBAL_2D_ARRAY,iblkrec))
 
@@ -126,11 +126,11 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                rhumg(GLOBAL_2D_ARRAY,iblkrec))
 
-# ifndef AROME        
+# ifndef AROME
         do j=J_RANGE
           do i=I_RANGE
             ew=6.1121*(1.0007+3.46e-6*Pref)*
@@ -140,7 +140,7 @@
             rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
           enddo
         enddo
-# endif        
+# endif
 
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,
@@ -156,10 +156,10 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                prateg(GLOBAL_2D_ARRAY,iblkrec))
-        
+
         do j=J_RANGE
           do i=I_RANGE
             prateg(i,j,iblkrec)=prateg(i,j,iblkrec)*8640.
@@ -173,11 +173,11 @@
         call exchange_r2d_tile(1,Lm,1,Mm,
      &                         prateg(START_2D_ARRAY,iblkrec))
 # endif
-      
+
       elseif (blkvar_id.eq.4) then
 !
 ! 4 process radsw (warning!! first (4) downward then (5) upward)
-! Net solar shortwave radiation: Downwards short wave  
+! Net solar shortwave radiation: Downwards short wave
 !
 # if defined ERA_ECMWF || defined AROME
 ! In the case of ERA we used the net short wave - downward short wave is not used
@@ -185,7 +185,7 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &       radswg_down(GLOBAL_2D_ARRAY,iblkrec))
 
@@ -195,16 +195,16 @@
 #  endif
 
 # endif
-      
+
       elseif (blkvar_id.eq.5) then
 !
 ! 5 process radsw (warning!! first (4) downward then (5) upward)
-! Net solar shortwave radiation: Downwards short wave - Upward short wave 
+! Net solar shortwave radiation: Downwards short wave - Upward short wave
 !
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                blk_dum1(GLOBAL_2D_ARRAY))
 
@@ -216,7 +216,7 @@
 # else
             radswg(i,j,iblkrec)=radswg_down(i,j,iblkrec)
      &                         -blk_dum1(i,j)
-# endif      
+# endif
             if (1e-10.gt.abs(radswg(i,j,iblkrec))) then
               radswg(i,j,iblkrec)=0.
             endif
@@ -230,13 +230,13 @@
 
       elseif (blkvar_id.eq.6) then
 !
-! 6 process radlw 
+! 6 process radlw
 ! Net longwave flux: Downward long wave
 !
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                radlwg(GLOBAL_2D_ARRAY,iblkrec))
 
@@ -244,7 +244,7 @@
         call exchange_r2d_tile(1,Lm,1,Mm,
      &                         radlwg(START_2D_ARRAY,iblkrec))
 # endif
-      
+
       elseif (blkvar_id.eq.7) then
 !
 ! 7 upward longwave: OBSOLETE
@@ -257,7 +257,7 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                uwndg_norot(GLOBAL_2D_ARRAY,iblkrec))
 !
@@ -271,10 +271,10 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                vwndg(GLOBAL_2D_ARRAY,iblkrec))
-     
+
         do j=J_RANGE
           do i=I_RANGE
 ! Compute wind speed module
@@ -292,7 +292,7 @@
 # endif
            enddo
         enddo
-	 
+
 # ifdef MPI
         do j=0,Mmmpi+1
           do i=1,Lmmpi+1
@@ -333,7 +333,7 @@
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY), 
+     &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                patmg(GLOBAL_2D_ARRAY,iblkrec))
 #  ifdef MPI
@@ -343,7 +343,7 @@
 # endif
 
       endif
- 
+
       return
       end
 
