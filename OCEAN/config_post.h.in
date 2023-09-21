@@ -6,12 +6,14 @@ To ensure we do not redefine
 */
 #undef OPENMP
 #undef OPENACC
+#undef MPI
 
 /*
 Enable parallelism modes
 */
 #cmakedefine OPENMP
 #cmakedefine OPENACC
+#cmakedefine MPI
 
 /*
 Currently support only one at a time
