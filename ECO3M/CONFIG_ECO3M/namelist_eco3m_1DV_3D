@@ -8,7 +8,7 @@
 !======= Files for the configuration of the biogeochemical model included in the Eco3M platform  =====
 !=====================================================================================================
 &nam_eco3m_config
-eco3m_root_dir   = "/home/mazoyer/CROCO/SRC/croco/croco_git_dev_2022_BIOLink_ok/ECO3M/" ! Name of the root directory for Eco3M
+eco3m_root_dir   = "../" ! Name of the root directory for Eco3M
 filename_config  = "CONFIG_ECO3M/config.ini" ! Biogeochemical model's configuration (flux matrix). Must be placed in CONFIG_ECO3M
 filename_confmod = "CONFIG_ECO3M/modele.def" ! Process functions (from the F_PROCESS library) used by the model. Must be placed in CONFIG_ECO3M
 /
@@ -35,7 +35,7 @@ nx_min = 1  ! First x-dimension index
 nx_max = 1  ! Last  x-dimension index
 ny_min = 1  ! First y-dimension index
 ny_max = 1  ! Last  y-dimension index
-nz_max = 12  ! Last  z-dimension index 
+nz_max = 42  ! Last  z-dimension index 
 
 ! Filename of the file containing the layers depth (key M3D_NCOUPL)
 filename_depth = "CONFIG_ECO3M/INPUTS/zdepth_meso.dat"
@@ -71,7 +71,7 @@ rgb_nbands=3
 !         only for CPP keys  (NCOUPL && M3D_NCOUPL)  or (COUPL && key_tke_eco3m) 
 !=================================================================================================== 
 &nam_eco3m_ic
-ic_input_directory = "CONFIG_ECO3M/C_INI/1DV/C_INI_MESOCOSM/" ! Input directory for concentrations (ended by a "/")
+ic_input_directory = "CONFIG_ECO3M/C_INI/1DV/C_INI_DYFAMED/" ! Input directory for concentrations (ended by a "/")
 default_conc = 1e-30  ! Default concentration used for the initialization of a state variable if no ini file exists
 default_temp = 18  ! Default temperature (C) if NCOUPL
 default_salt = 35  ! Default salinity if NCOUPL
@@ -105,7 +105,7 @@ outphy(13) = "irrad"
 /
 
 &nam_eco3m_outflux_nb
-num_outflux =  1  ! Number of grid nodes where biogeochemical fluxes will be saved if the SAVE_FLUX key is used
+num_outflux =  0  ! Number of grid nodes where biogeochemical fluxes will be saved if the SAVE_FLUX key is used
 /
 
 &nam_eco3m_outflux_loc

@@ -1,5 +1,4 @@
 !***************************************************************************
-!***************************************************************************
 !Copyright or © or Copr. CNRS/IRD/Université de la Méditerranée
 !contributor(s) : Melika BAKLOUTI & Vincent FAURE (10/10/2006)
 !
@@ -37,52 +36,57 @@
 !***************************************************************************
 !--------------------------------------------------------------------
 !
-function f_extinc_morel88(Chl_tot)
-!    
-!-------------------------------------------------------------------------
-!> This function computes the light extinction coefficients through diffusion according to the
-!! \cite Mor88 model, which takes into account the absorption by Chlorophyll A and by Pheotinine A.
-!! It also includes dispersion effects (scattering):
-!!
-!! \f[
-!! K_{ext} =  K_{bio}
-!! \f]
-!! \f[
-!! K_{bio} = 0.0518\times Chl_{tot}^{1-0.572}
-!! \f]
-!!
-!! \f$K_{bio}\f$ combines the diffuse attenuation coefficient in pure marine water and the light attenuation due to Chl absorption
-!! \ingroup lightex
-!! \warning Valid only if \f$0.03 mg.m^{-3} < Chl_{tot} < 30 mg.m^{-3}\f$ (see \cite Mor88
-!! , page 10,757)
-!! Ref:  Morel, A. et al. (1988) J. Geophys. Res., 93(C9):10,749:10,768
-!! \warning Chlorophyll concentration \f$Chl_{tot}\f$ must be in \f$g.m^{-3}\f$
-!!
-!! \author Melika Baklouti 
-!! \date 2017-09-25
-!-------------------------------------------------------------------------
-!
+function f_mort_linear_cell(ili,jcol,kmort)
+    !      
+    !--------------------------------------------------------------------
+    !
+    ! Cette fonction calcule la vitesse de mortalite du zoo, phyto,
+    ! ou celle des bactéries par lyse virale selon une loi LINEAIRE
+    !
+    !
+    ! Variables et parametres et leurs unites:
+    !----------------------------------------- 
+    !
+    ! kmort : cste de vitesse de la mortalite (s^-1)
+    !
+    ! ATTENTION: c'est la variable d'indice ili qui disparait par mortalité
+    !
+    !
+    ! Melika Baklouti 09/07/2007
+    ! Melika Baklouti 29/05/2017
+    !--------------------------------------------------------------------
+
+
     Implicit None
 
-    ! function:
-    Real(8):: f_extinc_morel88(nx_min:nx_max, ny_min:ny_max, 1:nz_max) 
+    !-- fonction:
+    Real(8)             :: f_mort_linear_cell(nx_min:nx_max,ny_min:ny_max,nz_max)
 
     !-- arguments
-    real(8):: Chl_tot(nx_min:nx_max, ny_min:ny_max, 1:nz_max)
+    Real(8)             :: kmort !-- cste spécifique de mortalité, s^-1
+    Integer             :: ili,jcol,i,j,k,iiCell,iorg
+    Character(L_CHAIN)  :: chain
+    
+!--variables locales:
+    chain = 'cell'
+    iorg = var(ili)%idorg
+    iiCell = f_idorg2id(iorg,chain)
 
-    ! local variables
-    integer :: i, j, k
 
-    do k = 1, nz_max
-        do j = ny_min, ny_max
-            do i = nx_min, nx_max
-              
-              f_extinc_morel88(i,j,k) = 0.d0
-              ! extinction coefficient through diffusion by biological particles (Chl exprime in mg m-3)
-              if (Chl_tot(i,j,k) > 0.d0)  f_extinc_morel88(i,j,k) =  0.0518/(1-0.572) * (Chl_tot(i,j,k)*1.d6)**(1-0.572)  
-           enddo
-       enddo
-   enddo
+    !-- Vitesse de mortalite naturelle (mol.X .m-3 . s-1):
+    do k=1,nz_max
+        do j=ny_min,ny_max
+            do i=nx_min,nx_max
+                if (var(iiCell)%conc(i,j,k) > var(iiCell)%conc(i,j,k) * kmort * 20 * 60) then
+                    f_mort_linear_cell(i,j,k)= var(ili)%conc(i,j,k) * kmort
+                else
+                    f_mort_linear_cell(i,j,k) = 0.0
+                endif
+            enddo
+        enddo
+    enddo
 
-end function f_extinc_morel88
+    ! write(*,*) 'fin de la fonction f_mort_linear_cell'
+
+End function f_mort_linear_cell
 !--------------------------------------------------------------------

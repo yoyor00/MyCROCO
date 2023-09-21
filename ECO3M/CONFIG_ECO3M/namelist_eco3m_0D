@@ -7,7 +7,7 @@
 !======= Files for the configuration of the biogeochemical model included in the Eco3M platform  =====
 !=====================================================================================================
 &nam_eco3m_config
-eco3m_root_dir   = "/home/mazoyer/CROCO/SRC/croco/croco_git_dev_2022_BIOLink_ok/ECO3M/" ! Name of the root directory for Eco3M
+eco3m_root_dir   = "/home/mazoyer/CROCO/SRC/croco/croco_git_dev_2022_BIOLink_ok_derniereMAJ/ECO3M/" ! Name of the root directory for Eco3M
 filename_config  = "CONFIG_ECO3M/config.ini" ! Biogeochemical model's configuration (flux matrix). Must be placed in CONFIG_ECO3M
 filename_confmod = "CONFIG_ECO3M/modele.def" ! Process functions (from the F_PROCESS library) used by the model. Must be placed in CONFIG_ECO3M
 /

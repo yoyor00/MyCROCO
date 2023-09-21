@@ -22,7 +22,7 @@ filename_confmod = "CONFIG_ECO3M/modele.def" ! Process functions (from the F_PRO
 !===================================================================================================================
 &nam_eco3m_run
 run_name = "sim_eco3m_1DV"  ! simulation name
-dt_bio = 1200.         ! Simulation time-step (in seconds) 
+dt_bio = 300.         ! Simulation time-step (in seconds) 
 pos_nzmax = "SURF" ! Position of the nz_max point (ie BOTT for bottom or SURF for surface)
 /
 
@@ -35,7 +35,7 @@ nx_min = 1  ! First x-dimension index
 nx_max = 1  ! Last  x-dimension index
 ny_min = 1  ! First y-dimension index
 ny_max = 1  ! Last  y-dimension index
-nz_max = 42  ! Last  z-dimension index 
+nz_max = 41  ! Last  z-dimension index 
 
 ! Filename of the file containing the layers depth (key M3D_NCOUPL)
 filename_depth = "CONFIG_ECO3M/INPUTS/zdepth_meso.dat"

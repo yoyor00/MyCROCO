@@ -37,52 +37,39 @@
 !***************************************************************************
 !--------------------------------------------------------------------
 !
-function f_extinc_morel88(Chl_tot)
-!    
-!-------------------------------------------------------------------------
-!> This function computes the light extinction coefficients through diffusion according to the
-!! \cite Mor88 model, which takes into account the absorption by Chlorophyll A and by Pheotinine A.
-!! It also includes dispersion effects (scattering):
-!!
-!! \f[
-!! K_{ext} =  K_{bio}
-!! \f]
-!! \f[
-!! K_{bio} = 0.0518\times Chl_{tot}^{1-0.572}
-!! \f]
-!!
-!! \f$K_{bio}\f$ combines the diffuse attenuation coefficient in pure marine water and the light attenuation due to Chl absorption
-!! \ingroup lightex
-!! \warning Valid only if \f$0.03 mg.m^{-3} < Chl_{tot} < 30 mg.m^{-3}\f$ (see \cite Mor88
-!! , page 10,757)
-!! Ref:  Morel, A. et al. (1988) J. Geophys. Res., 93(C9):10,749:10,768
-!! \warning Chlorophyll concentration \f$Chl_{tot}\f$ must be in \f$g.m^{-3}\f$
-!!
-!! \author Melika Baklouti 
-!! \date 2017-09-25
-!-------------------------------------------------------------------------
-!
+function f_extinc_morel(kk0,aa0,Chl_tot,dz)
+    !    
+    !-------------------------------------------------------------------------
+    ! This function calculates the diffusion attenuation coefficient according to
+    ! Morel's (1993) model
+    ! 
+    ! Variables et parametres et leurs unites:
+    !-----------------------------------------
+    !  kk0  : diffusion attenuation coefficient of pure marine water (m-1), typical val.  0.0384
+    !  aa0  : Chl-specific absorption coefficient  (m2*mg-1), typical val. 0.029
+
+    ! Ref:  Morel et al. (1993) J. MAR. Res., 51:617-
+    !
+    ! Melika Baklouti 09/07/2008
+    !-------------------------------------------------------------------------
+    !
+    ! USE COUPLEUR_PHY_BIO
+    ! USE VAR_GLOBAL
+    ! USE MOD_FCHAIN
+
     Implicit None
 
-    ! function:
-    Real(8):: f_extinc_morel88(nx_min:nx_max, ny_min:ny_max, 1:nz_max) 
+    !-- fonction:
+    Real(8):: f_extinc_morel
 
     !-- arguments
-    real(8):: Chl_tot(nx_min:nx_max, ny_min:ny_max, 1:nz_max)
+    real(8) :: kk0  !(0.0384)  
+    real(8) :: aa0  !(0.029)  
+    real(8),optional :: Chl_tot,dz
 
-    ! local variables
-    integer :: i, j, k
 
-    do k = 1, nz_max
-        do j = ny_min, ny_max
-            do i = nx_min, nx_max
-              
-              f_extinc_morel88(i,j,k) = 0.d0
-              ! extinction coefficient through diffusion by biological particles (Chl exprime in mg m-3)
-              if (Chl_tot(i,j,k) > 0.d0)  f_extinc_morel88(i,j,k) =  0.0518/(1-0.572) * (Chl_tot(i,j,k)*1.d6)**(1-0.572)  
-           enddo
-       enddo
-   enddo
+    !-- relation for Chl in g m-3
+    f_extinc_morel = exp(-dz*(kk0 + 0.0088 * (Chl_tot*1d3)  + 0.054 * (Chl_tot*1d3)**(2./3))) 
 
-end function f_extinc_morel88
+end function f_extinc_morel
 !--------------------------------------------------------------------

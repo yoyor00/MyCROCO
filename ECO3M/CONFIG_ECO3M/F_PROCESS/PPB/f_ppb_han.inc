@@ -1,6 +1,6 @@
 !***************************************************************************
 !***************************************************************************
-!Copyright or ï¿½ or Copr. CNRS/IRD/Universitï¿½ de la Mï¿½diterranï¿½e
+!Copyright or © or Copr. CNRS/IRD/Université de la Méditerranée
 !contributor(s) : Melika BAKLOUTI & Vincent FAURE (10/10/2006)
 !
 !m.baklouti@univmed.fr; vincent.faure@univmed.fr
@@ -38,96 +38,90 @@
 !--------------------------------------------------------------------
 !--------------------------------------------------------------------
 !
-   function f_ppb_han(ili,jcol,a_chl,phi_max_C,tau,&
-	              sig_ps2,k_d,k_r)
-!
-!--------------------------------------------------------------------
-!
-! Cette fonction calcule la vitesse de production primaire BRUTE de la variable
-! d'etat dont la concentration est donnee par la variable d'indice ili
-!
-! variables parametres et leurs unites: 
-!--------------------------------------
-! a_chl     : coeff. d''absorption spec. de la Chl, m^2 / (g Chl)
-! phi_max_C : rendement quantique max., (mol C)/ J
-! tau       : temps de turnover des electrons, s
-! sig_ps2   : section efficace des PSII, m^2 / Joules
-! kd_Han    : constante d''endommagement des PSII, adim ds modele de Han
-! kr        : constante de reparation  des PSII, s^-1 
-! f_ppb_han : en molC/m3/s
-!
-! cette fonction permet aussi de remplir le tableau muphy_NR
-! muphy_NR : vitesse specifique de production primaire en absence de lim. 
-!            par les nutriments, en s^-1
-!
-! Ref:  Han, B. P. (2002) J. Theor. Biol. 214:519-527
-!
-! Melika Baklouti 6/07/2007
-!-------------------------------------------------------------------------
- Implicit None
+function f_ppb_han(ili,jcol,a_chl,phi_max_C,tau,&
+        sig_ps2,k_d,k_r,iphyC)
+    !
+    ! Cette fonction calcule la vitesse de production primaire BRUTE de la variable
+    ! d'etat dont la concentration est donnee par la variable d'indice ili
+    !
+    ! variables parametres et leurs unites: 
+    !--------------------------------------
+    ! iphyC     : concentration de phyto en carbone (mol C/l). Si absente, ili utilise par defaut
+    ! a_chl     : coeff. d''absorption spec. de la Chl, m^2 / (g Chl)
+    ! phi_max_C : rendement quantique max., (mol C)/ J
+    ! tau       : temps de turnover des electrons, s
+    ! sig_ps2   : section efficace des PSII, m^2 / Joules
+    ! kd_Han    : constante d'endommagement des PSII, adim ds modele de Han
+    ! kr        : constante de réparation  des PSII, s^-1 
+    ! f_ppb_han : en molC/l/s
+    !
+    ! cette fonction permet aussi de remplir le tableau muphy_NR
+    ! muphy_NR : vitesse specifique de production primaire en absence de lim. 
+    !            par les nutriments, en s^-1
+    !
+    ! Ref:  Han, B. P. (2002) J. Theor. Biol. 214:519-527
+    !
+    ! Melika Baklouti 6/07/2007
+    !-------------------------------------------------------------------------
+    !-- Variables globales
 
-!-- arguments
- Real(8) :: a_chl,phi_max_C,tau,sig_ps2,k_d,k_r
- Real(8) :: f_ppb_han(nx_min:nx_max,ny_min:ny_max,nz_max)
- Integer :: ili,jcol,i
+    Implicit None
 
-!-- variables locales:
- Integer:: iorg,ik,iichl,iiC,istat,coord(3)
- Real(8),Allocatable:: po(:,:,:)
- Real(8),Allocatable::  Chl(:,:,:)
- Character(L_VAR)::elmt
+    !-- arguments
+    Real(8) :: a_chl,phi_max_C,tau,sig_ps2,k_d,k_r
+    Real(8),optional:: iphyC
+    Real(8) :: f_ppb_han(nx_min:nx_max,ny_min:ny_max,nz_max)
+    Integer :: ili,jcol, ii
 
-!-- allocation dynamique
- Allocate(po(nx_min:nx_max,ny_min:ny_max,nz_max), STAT=istat)
- if (istat /=0) write(*,*) 'probleme d''allocation de po dans f_ppb_han'
- Allocate(Chl(nx_min:nx_max,ny_min:ny_max,nz_max), STAT=istat)
- if (istat /=0) write(*,*) 'probleme d''allocation de Chl dans f_ppb_han'
+    !-- variables locales:
+    Integer:: iorg,iichl,iiC,iiphyC
+    Real(8)  :: po(nx_min:nx_max,ny_min:ny_max,nz_max),Chl(nx_min:nx_max,ny_min:ny_max,nz_max)
+    Character(L_VAR)::elmt
 
+    !-- pourcentage de PSII ouverts:
+    po = 1.e0/(1.d0 + sig_ps2 &
+        * E_PARZ * tau + k_d/k_r * (sig_ps2 * E_PARZ)**2 *tau)
 
-!-- pourcentage de PSII ouverts:
- po(:,:,:) = 1.d0/(1.d0 + sig_ps2 &
-   * E_PARZ(:,:,:) * tau + k_d/k_r * (sig_ps2 * E_PARZ(:,:,:))**2 *tau)
+    !-- organisme:
+    if (present(iphyC)) then
+      iiphyC = nint(iphyC)
+      iorg = var(iiphyC)%idorg
+    else
+      iorg = var(ili)%idorg
+      iiphyC = ili
+    endif
 
+    !-- cas d'un rapport CHL:C constant:
+    if (.not. CHL_C_BOOL) then
+        Chl = CHL_C0 * var(iiphyC)%conc
+    elseif ((CHL_C_BOOL) .and. (.not. CHL_C_FUNC)) then
 
-!-- organisme:
- iorg = var(ili)%idorg
+        !-- Indice correspondant a la conc. chlorophylienne du phyto:
+        elmt ='Chl'
+        iichl = f_idorg2id (iorg,elmt)
+        Chl = var(iichl)%conc
+    else !-- cas ou CHL:C est calcule par une fction analytique:
+        elmt ='C'
+        iiC = f_idorg2id (iorg,elmt)
+        Chl = CHL_C(1)%val * var(iiC)%conc
+    endif
 
-!-- cas d''un rapport CHL:C constant:
-if (.not. CHL_C_BOOL) then
-    Chl = CHL_C0 * var(ili)%conc
-elseif (CHL_C_BOOL  .and.  .not. CHL_C_FUNC ) then
-!-- Indice correspondant a la conc. chlorophylienne du phyto:
-   elmt ='Chl'
-   iichl = f_idorg2id (iorg,elmt)
-   Chl = var(iichl)%conc
-else !-- cas ou CHL:C est calcule par une fction analytique:
-   elmt ='C'
-   iiC = f_idorg2id (iorg,elmt)
-   Chl = CHL_C(1)%val * var(iiC)%conc
-endif
-
-!-- Vitesse de production primaire (en molC/m3/s):
- f_ppb_han =  a_chl * phi_max_C * po * E_PARZ * Chl
-
-!-- Sauvegarde de la vitesse specifique de croissance en absence
-!-- de limitation par les nutriments (Nutrient Replete), en s^-1, il faut:
-! Important: verifier que l''allocation dyn. de mu_PPB_NR
-! dans la subroutine ALLOC_VAR_Eco3M du fichier coupleur.F90
-! est operationnelle
-!
-do i=1,nscp_phy
- if (mu_PPB_NR(i)%idorg == iorg) then
-     mu_PPB_NR(i)%val(:,:,:) = a_chl * phi_max_C * po * E_PARZ * Chl/(var(ili)%conc+1.d-15)
-     exit
- endif
-enddo
+    !-- Vitesse de production primaire (en molC/m3/s):
+    f_ppb_han =  a_chl * phi_max_C * po * E_PARZ * Chl
 
 
-Deallocate (po, STAT=istat)
- if (istat /=0) write(*,*) 'probleme de desallocation de po dans f_ppb_han'
-Deallocate (Chl, STAT = istat)
- if (istat /=0) write(*,*) 'probleme de desallocation de Chl'
-
-!  write(*,*) 'fin de la fonction f_ppb_han'
+    !-- Sauvegarde de la vitesse specifique de croissance en absence
+    !-- de limitation par les nutriments (Nutrient Replete), en s^-1, il faut:
+    ! Important: verifier que l'allocation dyn. de mu_PPB_NR
+    ! dans la subroutine ALLOC_VAR_Eco3M du fichier coupleur.F90
+    ! est operationnelle
+    !
+    do ii = 1, nscp_phy
+        if (mu_PPB_NR(ii)%idorg == iorg) then
+            mu_PPB_NR(ii)%val = &
+                a_chl*phi_max_C*po*E_PARZ*Chl/(var(iiphyC)%conc+1.0d-80)
+            exit
+        endif
+    enddo
 
 end function f_ppb_han
