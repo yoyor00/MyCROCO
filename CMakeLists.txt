@@ -42,17 +42,23 @@ add_definitions(-DHAVE_CMAKE_CONFIG)
 set(${WITH_CASE} ON)
 set(AGRIF ${ENABLE_AGRIF})
 
-# Enable some vars for config.parallelism.h.in
+# Enable some vars for config.post.h.in
 if (WITH_PARALLEL STREQUAL "openmp")
 	set(OPENMP ON)
 endif()
 if (WITH_PARALLEL STREQUAL "openacc-native" OR WITH_PARALLEL STREQUAL "openacc-psyclone")
 	set(OPENACC ON)
 endif()
+if (WITH_PARALLEL STREQUAL "mpi")	
+	set(MPI ON)
+endif ()
 
 ###########################################################
 # Search dependences
 find_package(NetCDFF REQUIRED)
+if (MPI)
+	find_package(MPI REQUIRED)
+endif ()
 if (WITH_PARALLEL STREQUAL "openacc-psyclone")
 	find_package(PSyClone REQUIRED)
 endif ()

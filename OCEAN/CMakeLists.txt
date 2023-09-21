@@ -20,6 +20,9 @@ include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${NETCDFF_INCLUDE_DIR})
 set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -DHAVE_CMAKE_CONFIG -I${NETCDFF_INCLUDE_DIR} -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_BINARY_DIR})
+if (MPI_FOUND)
+	set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -I${MPI_INCLUDE_DIR})
+endif()
 
 ###########################################################
 # Apply croco flags

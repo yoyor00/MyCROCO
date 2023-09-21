@@ -112,7 +112,7 @@ endfunction()
 # Perform some extra checks on variables to see if everything is correct
 function(croco_last_checkings)
 	# allowed
-	list(APPEND para_allowed OFF openmp openacc-native openacc-psyclone)
+	list(APPEND para_allowed OFF openmp openacc-native openacc-psyclone mpi)
 	if (NOT ${WITH_PARALLEL} IN_LIST para_allowed)
 		message(FATAL_ERROR "Select an invalid parallelism mode : -DWITH_PARALLEL=${WITH_PARALLEL}, should be in (${para_allowed})")
 	endif()
