@@ -44,7 +44,7 @@ cfg_add_with_option   --name='psyclone' \
 #select the case to run
 cfg_add_with_option   --name='case' \
                       --doc='Define the CASE to compiler and run (look in OCEAN/config.h.in)' \
-                      --var='CROCO_CASE'
+                      --var='WITH_CASE'
 
 ###########################################################
 #If we want to document extra options

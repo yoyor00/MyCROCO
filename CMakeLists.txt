@@ -30,15 +30,15 @@ include(${CMAKE_SOURCE_DIR}/cmake/croco_compiler_options.cmake)
 
 ###########################################################
 # Handle configuration
-set(WITH_PARALLEL  OFF    CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
-set(CROCO_CASE    "BASIN" CACHE STRING "Select the case to run.")
+set(WITH_PARALLEL OFF     CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
+set(WITH_CASE     "BASIN" CACHE STRING "Select the case to run.")
 set(ENABLE_AGRIF  OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
 
 ###########################################################
 # Enable case so it lands in config.h.in
 add_definitions(-DHAVE_CMAKE_CONFIG)
 # Trigger the case definition (macro variable having the name of the case)
-set(${CROCO_CASE} ON)
+set(${WITH_CASE} ON)
 # Enable some vars for config.parallelism.h.in
 if (WITH_PARALLEL STREQUAL "openmp")
 	set(OPENMP ON)

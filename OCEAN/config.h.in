@@ -41,8 +41,8 @@ CAUTION : Should enable only one at a time !
 Check that one has be activated. It is triggered if the value of
 WITH_CASE (from cmake) correspond to none of the case listed on top.
 */
-#ifndef @CROCO_CASE@
-#error "Activated the wrong value to select CASE, none has been activated (CROCO_CASE=@CROCO_CASE@) !"
+#ifndef @WITH_CASE@
+#error "Activated the wrong value to select CASE, none has been activated (-DWITH_CASE=@WITH_CASE@) !"
 #endif
 
 #endif
