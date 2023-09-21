@@ -66,7 +66,7 @@ To build the sequential version you can :
 ../configure --with-case=CANYON
 
 # Pass any variable to CMake directly bypassing the configure script.
-../configure --with-netcdf=$HOME/usr-netcdf/ -DCROCO_CASE=CANYON
+../configure --with-netcdf=$HOME/usr-netcdf/ -DWITH_CASE=CANYON
 ```
 
 Finally you can simply build :

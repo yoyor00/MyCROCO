@@ -104,7 +104,7 @@ function(croco_print_status)
 	message(STATUS "|  CMake fflags     : ${CMAKE_BUILD_TYPE_FLAGS}")
 	message(STATUS "|  Croco fflags     : ${CROCO_FORTRAN_FLAGS_STR}")
 	message(STATUS "--------------------------------------------------------------")
-	message(STATUS "|  Case             : ${CROCO_CASE}")
+	message(STATUS "|  Case             : ${WITH_CASE}")
 	message(STATUS "==============================================================")
 endfunction()
 
