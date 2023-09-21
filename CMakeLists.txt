@@ -37,13 +37,15 @@ set(ENABLE_AGRIF  OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
 ###########################################################
 # Enable case so it lands in config.h.in
 add_definitions(-DHAVE_CMAKE_CONFIG)
+
 # Trigger the case definition (macro variable having the name of the case)
 set(${WITH_CASE} ON)
+set(AGRIF ${ENABLE_AGRIF})
+
 # Enable some vars for config.parallelism.h.in
 if (WITH_PARALLEL STREQUAL "openmp")
 	set(OPENMP ON)
 endif()
-set(AGRIF ${ENABLE_AGRIF})
 if (WITH_PARALLEL STREQUAL "openacc-native" OR WITH_PARALLEL STREQUAL "openacc-psyclone")
 	set(OPENACC ON)
 endif()
