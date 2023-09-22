@@ -35,5 +35,16 @@
             "wrt_his.F":              {"script": "....py", "skip_acc": true},
             "wrt_rst.F":              {"script": "....py", "skip_acc": true}
         }
+    },
+
+    "array" :
+    {
+        {"name": "latr"},
+        {"name": "latu"}
+    },
+
+    "progFields" :
+    {
+        {"variable_name": "rho", "niceName"="\rho", "staggering"="[0,0]"},
     }
 }
