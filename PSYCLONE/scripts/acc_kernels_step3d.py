@@ -44,24 +44,36 @@ import sys
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
 
+
 def add_missing_vars(psy) -> None:
+    """
+    Mimic existing hand-acc version
+    """
     routines = psy.container.walk(Routine)
     for routine in routines:
-        # set device directiv
+        # set device directive
         if routine.name == "step3d_t" or routine.name == "step3d_t_tile" or routine.name == "step3d_uv2" or routine.name == "step3d_uv2_tile":
-            # add vars
+            # add const integer 'my_acc_device' = 0
             symbol = DataSymbol("my_acc_device", INTEGER_TYPE, is_constant = True, initial_value = Literal("0", INTEGER_TYPE))
             routine.symbol_table.add(symbol)
 
-            # add vars
+            # add const boolean 'compute_on_device' = true
             symbol = DataSymbol("compute_on_device", BOOLEAN_TYPE, is_constant = True, initial_value = Literal("true", BOOLEAN_TYPE))
             routine.symbol_table.add(symbol)
 
 def set_device_tile(psy) -> None:
+    """
+    Mimic existing ACC code.
+
+    Future: This can be done automatically.
+    """
     routines = psy.container.walk(Routine)
     for routine in routines:
-        # set device directiv
+        # set device directive
         if routine.name == "step3d_t" or routine.name == "step3d_uv2":
+            """
+            Some hack to insert an 'acc device_num=tile'
+            """
             # add acc set device
             calls = psy.container.walk(Call)
             for call in calls:
@@ -71,6 +83,12 @@ def set_device_tile(psy) -> None:
             call.parent.children.insert(pos, ACCSetDeviceNumDirective(device_num='tile'))
 
 def add_1d_scratch_var(routine: Routine, var_name:str) -> None:
+    """
+    Scratch arrays are just temporary arrays to speedup things and save memory.
+    This is to mimic existing ACC code.
+
+    Future: This can be done automatically.
+    """
     # dup 3D
     sym_N = routine.symbol_table.lookup("N")
     sym_1d_name = f"{var_name}1d"
@@ -80,6 +98,12 @@ def add_1d_scratch_var(routine: Routine, var_name:str) -> None:
     routine.symbol_table.add(sym_1d)
 
 def add_3d_scratch_var(psy, routine: Routine, var_2d_name: str, scratch_id: int) -> None:
+    """
+    Scratch arrays are just temporary arrays to speedup things and save memory.
+    This is to mimic existing ACC code.
+
+    Future: This can be done automatically.
+    """
     # dup 3D
     sym_N = routine.symbol_table.lookup("N")
     sym_Istr = routine.symbol_table.lookup("istr")
@@ -120,20 +144,30 @@ def add_3d_scratch_var(psy, routine: Routine, var_2d_name: str, scratch_id: int)
                                                                 ]))
 
 def extract_loop_indices_order(top_loop: Loop, exclude=[]) -> list:
+    """
+    Extract loop variable names and return them as array.
+    E.g., ['l','j','k']
+    """
     vars=[]
     for inloop in top_loop.walk(Loop):
-        vars.append(inloop.variable.name)
+        vars.append(inloop.variable.name)   # Get loop variable
     for indice in exclude:
         if indice in vars:
             vars.remove(indice)
     return vars
 
 def get_first_loop_on(top_loop: Loop, var: str) -> Loop:
+    """
+    Return psy representation of loop using 'var'
+    """
     while top_loop.variable.name != var:
         top_loop = top_loop.walk(Loop)[1]
     return top_loop
 
 def detach_and_get_childs(loop: Loop) -> list:
+    """
+    TODO: you know better...
+    """
     # extract content
     to_detach = []
     for op in loop.loop_body:
@@ -148,8 +182,32 @@ def detach_and_get_childs(loop: Loop) -> list:
     # ok
     return ops
 
+
+def patch_scratch_1d_arrays(top_loop: Loop) -> None:
+    """
+    Convert 1D scratch arrays to 2D ones to avoid race conditions if parallelizing over the outer loop
+    """
+    for ref in top_loop.walk(ArrayReference):
+        if ref.name.lower() in VARS_1D:
+            new_name = ref.name.lower()+'1d'
+            ref.symbol = Symbol(new_name)
+            ref.indices.pop(0)
+
+
 def patch_scratch_3d_arrays(top_loop: Loop) -> None:
-    # apply 3d temp work var
+    """
+    Convert 2D scratch arrays to 3D ones to avoid race conditions if parallelizing over the outer loop
+
+    do k = 1, n, 1
+      do j = jstr, jend, 1
+        do i = MAX(istr - 1, 1), MIN(iend + 2, lm + 1), 1
+          fx(i,j) = t(i,j,k,nadv,itrc) - t(i - 1,j,k,nadv,itrc)
+
+    do k = 1, n, 1
+      do j = jstr, jend, 1
+        do i = MAX(istr - 1, 1), MIN(iend + 2, lm + 1), 1
+          fx_3d(i,j,k) = t(i,j,k,nadv,itrc) - t(i - 1,j,k,nadv,itrc)
+    """
     for ref in top_loop.walk(ArrayReference):
         if ref.name.lower() in  VARS_3D:
             new_name = ref.name.lower()+'_3d'
@@ -157,6 +215,9 @@ def patch_scratch_3d_arrays(top_loop: Loop) -> None:
             ref.indices.append(Reference(Symbol('k')))
 
 def handle_kji_loop(top_loop: Loop) -> None:
+    """
+    Swapping indices of 'kji' loops to TODO
+    """
     # get top k loop
     k_loop = get_first_loop_on(top_loop, 'k')
 
@@ -200,6 +261,9 @@ def handle_kji_loop(top_loop: Loop) -> None:
     patch_scratch_3d_arrays(top_loop)
 
 def handle_kji_loop_old(top_loop: Loop) -> None:
+    """
+    TODO: obsolete
+    """
     # get top k loop
     k_loop = get_first_loop_on(top_loop, 'k')
 
@@ -233,15 +297,10 @@ def handle_kji_loop_old(top_loop: Loop) -> None:
     patch_scratch_3d_arrays(top_loop)
 
 
-def patch_scratch_1d_arrays(top_loop: Loop) -> None:
-    # patch arrays
-    for ref in top_loop.walk(ArrayReference):
-        if ref.name.lower() in VARS_1D:
-            new_name = ref.name.lower()+'1d'
-            ref.symbol = Symbol(new_name)
-            ref.indices.pop(0)
-
 def is_loop_using_var(loop: Loop, vars: list):
+    """
+    Check if loop is using var as index
+    """
     for ref in loop.walk(Reference):
         if ref.name in vars:
             return True
@@ -249,6 +308,11 @@ def is_loop_using_var(loop: Loop, vars: list):
 
 
 def set_private_on_loop(top_loop: Node, loop_var: str, vars:list):
+    """
+    Add acc private on all these loops
+
+    TODO: if it's ACC related, use acc_ prefix for this function call.
+    """
     loop: Loop
     for loop in top_loop.walk(Loop):
         if loop.variable.name == loop_var and is_loop_using_var(loop, vars):
@@ -260,6 +324,9 @@ def set_private_on_loop(top_loop: Node, loop_var: str, vars:list):
             parent.children.insert(pos, loop_directive)
 
 def handle_jki_loop(top_loop: Loop) -> None:
+    """
+    TODO: Describe it
+    """
     # remove inner j loops
     for inner_i_loop in top_loop.walk(Loop):
         if inner_i_loop.variable.name == 'i':
@@ -290,6 +357,9 @@ def handle_jki_loop(top_loop: Loop) -> None:
     set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'dZ1D', 'dR1D'])
 
 def handle_jik_loop(top_loop: Loop, do_k_loop_fuse: bool = True) -> None:
+    """
+    Describe what it does
+    """
     # remove inner j loops
     #for inner_i_loop in top_loop.walk(Loop):
     #    if inner_i_loop.variable.name == 'i':
@@ -347,7 +417,13 @@ def handle_jik_loop(top_loop: Loop, do_k_loop_fuse: bool = True) -> None:
     # add private to i loops
     set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'bc1d'])
 
+
 def apply_acc_loop_collapse(kernels: KernelList) -> None:
+    """
+    For all kernel loops, collapse loop if possible.
+
+    TODO: Make sure that this is always valid
+    """
     for kernel in kernels.kernels:
         loop = kernel.root_node
 
@@ -371,6 +447,7 @@ def apply_acc_loop_collapse(kernels: KernelList) -> None:
             loop.parent.parent.collapse = num_nested_loops
 
 def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], merge_joinable: bool = False) -> None:
+    
     # extract kernels
     kernels = extract_kernels_from_psyir(container, ignore_loops=ignore_loops)
 
@@ -388,6 +465,12 @@ def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], mer
         apply_acc_loop_collapse(kernels)
 
 def apply_acc_fetch_vars(psy) -> None:
+    """
+    Fetch vars used inside kernel loop.
+    These vars can then be made private.
+
+    TODO: rename function properly
+    """
     vars_to_fetch = []
     for invoke in psy.invokes.invoke_list:
         for ref in invoke.schedule.walk(Reference):
@@ -408,12 +491,13 @@ def apply_acc_fetch_vars(psy) -> None:
                 dir.sig_set = signatures
 
 def trans(psy):
-    '''A PSyclone-script compliant transformation function. Applies
-    OpenACC 'kernels' to NEMO code.
+    """
+    A PSyclone-script compliant transformation function. Applies
+    OpenACC 'kernels' to Croco code.
 
     :param psy: The PSy layer object to apply transformations to.
     :type psy: :py:class:`psyclone.psyGen.PSy`
-    '''
+    """
 
     # steps
     add_missing_vars(psy)
