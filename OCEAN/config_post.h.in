@@ -35,7 +35,17 @@ Remark: It will fail if we redefine a second time HAS_PARA_MODE to habing two
 /*
 Enable AGRIF
 */
-#undef AGRIF
 #cmakedefine AGRIF
+
+/*
+Configure OpenMP threads allowed
+*/
+#cmakedefine NB_THREADS @NB_THREADS@
+
+/*
+Configure MPI splitting
+*/
+#cmakedefine SPLITTING_X @SPLITTING_X@
+#cmakedefine SPLITTING_ETA @SPLITTING_ETA@
 
 #endif

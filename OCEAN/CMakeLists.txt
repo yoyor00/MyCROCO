@@ -34,7 +34,7 @@ set(CROCO_MPC        $<TARGET_FILE:mpc>)
 set(CROCO_AGRIF_CONV $<TARGET_FILE:conv>)
 
 ###########################################################
-file(GLOB CROCO_CPP_H *.h *.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h ${CMAKE_CURRENT_BINARY_DIR}/config_parallelism.h)
+file(GLOB CROCO_CPP_H *.h *.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h ${CMAKE_CURRENT_BINARY_DIR}/config_post.h)
 
 ###########################################################
 # List files

@@ -30,9 +30,11 @@ include(${CMAKE_SOURCE_DIR}/cmake/croco_compiler_options.cmake)
 
 ###########################################################
 # Handle configuration
-set(WITH_PARALLEL OFF     CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
-set(WITH_CASE     "BASIN" CACHE STRING "Select the case to run.")
-set(ENABLE_AGRIF  OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
+set(WITH_PARALLEL  OFF     CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
+set(WITH_SPLITTING "1x4"   CACHE STRING "Define the splitting for parallel=openmp : {NP_X}x{NP_Y}")
+set(WITH_THREADS   4       CACHE STRING "Number of threads to use with parallel=openmp")
+set(WITH_CASE      "BASIN" CACHE STRING "Select the case to run.")
+set(ENABLE_AGRIF   OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
 
 ###########################################################
 # Enable case so it lands in config.h.in
@@ -52,6 +54,13 @@ endif()
 if (WITH_PARALLEL STREQUAL "mpi")	
 	set(MPI ON)
 endif ()
+
+# enable some static config
+set(NB_THREADS ${WITH_THREADS})
+# extract NP_x & NP_eta
+string(REPLACE "x" ";" WITH_SPLITTING ${WITH_SPLITTING})
+list(GET WITH_SPLITTING 0 SPLITTING_X)
+list(GET WITH_SPLITTING 1 SPLITTING_ETA)
 
 ###########################################################
 # Search dependences

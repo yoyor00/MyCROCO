@@ -41,6 +41,16 @@ cfg_add_with_option   --name='psyclone' \
                       --var='PSYCLONE_PREFIX'\
                       --on='-DWITH_PARALLEL=openacc-psyclone'
 
+#set mesh splitting for patallel MPI
+cfg_add_with_option   --name='splitting' \
+                      --doc='Define the splitting for parallel=openmp : {NP_X}x{NP_Y}, (default : 1x4)' \
+                      --var='WITH_SPLITTING'
+
+#set mesh splitting for patallel MPI
+cfg_add_with_option   --name='threads' \
+                      --doc='Define the number of threads for parallel=openmp (default: 4)' \
+                      --var='WITH_THREADS'
+
 #select the case to run
 cfg_add_with_option   --name='case' \
                       --doc='Define the CASE to compiler and run (look in OCEAN/config.h.in)' \
