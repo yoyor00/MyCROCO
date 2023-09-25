@@ -222,7 +222,11 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
+#if defined(SPLITTING_X) && defined(SPLITTING_ETA)
+      parameter (NP_XI=SPLITTING_X,  NP_ETA=SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
+#else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+#endif
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #ifdef OPENACC
@@ -231,7 +235,11 @@
       common/comm_my_device/my_acc_device,compute_on_device
 #endif
 #elif defined OPENMP
+#ifdef NB_THREADS
+      parameter (NPP=NB_THREADS)
+#else
       parameter (NPP=4)
+#endif
 # ifdef AUTOTILING
       common/distrib/NSUB_X, NSUB_E
 # else

@@ -28,7 +28,7 @@ you can simply use the provided script :
 
 ```sh
 # by default it install in ./venv
-./create_prefix_with_deps.sh [--nvhpc] [PREFIX_DIR]
+./create_prefix_with_deps.sh [--netcdf] [--nvhpc] [--all] [PREFIX_DIR]
 ```
 
 Building
@@ -88,7 +88,7 @@ Building the OpenMP version
 Simply play with the `configure` options :
 
 ```sh
-../configure --with-parallel=openmp
+../configure --with-parallel=openmp --with-threads=8
 ```
 
 Building the GPU/OpenACC version
@@ -96,9 +96,9 @@ Building the GPU/OpenACC version
 
 Simply play with the `configure` options by :
 
- * Select the OpenACC mode : `--with-openacc={MODE}` which can be either :
-    * `psyclone` to use the OpenACC auto-generated version with PSyClone.
-    * `native` to use the hand made version.
+ * Select the OpenACC mode : `--with-parallel={MODE}` which can be either :
+    * `openacc-psycone` to use the OpenACC auto-generated version with PSyClone.
+    * `openacc-native` to use the hand made version.
  * Change the compiler for the NVHPC one.
 
 ```sh
@@ -107,6 +107,16 @@ Simply play with the `configure` options by :
 
 # psyclone version
 ../configure --with-parallel=openacc-psyclone FC=nvfortran
+```
+
+Building the MPI version
+------------------------
+
+Simply play with `--with-parallel` :
+
+```sh
+# MPI with 8 tasks
+../configure --with-parallel=mpi --with-splitting=2x4 FC=mpifort
 ```
 
 Custom compile flags
