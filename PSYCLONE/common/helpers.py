@@ -66,7 +66,7 @@ def get_rules_for_file(source_file: str):
             file_rule = rules[file_name_simple]
 
             # apply default when needed
-            for key, value in enumerate(file_rule):
+            for key, value in file_rule.items():
                 rule[key] = value
 
     # not found
