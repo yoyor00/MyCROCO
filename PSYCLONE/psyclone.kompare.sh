@@ -105,7 +105,9 @@ fi
 
 # kaunch
 if [[ ${NATIVE_BUILD_DIR} != 'OFF' ]]; then
+	set -x
 	kompare ${PREP_DIR}/compare/orig-acc ${PREP_DIR}/compare/acc
 else
+	set -x
 	kompare ${PREP_DIR}/compare/no-acc ${PREP_DIR}/compare/acc
 fi
