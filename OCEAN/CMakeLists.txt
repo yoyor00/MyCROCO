@@ -15,7 +15,6 @@ configure_file(config_post.h.in config_post.h)
 
 ###########################################################
 # -I directives
-#include_directories(${CMAKE_CURRENT_BUILD_DIR})
 include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${NETCDFF_INCLUDE_DIR})
