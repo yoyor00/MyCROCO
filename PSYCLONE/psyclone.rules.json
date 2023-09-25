@@ -37,14 +37,14 @@
         }
     },
 
-    "array" :
-    {
+    "array":
+    [
         {"name": "latr"},
         {"name": "latu"}
-    },
+    ],
 
     "progFields" :
-    {
-        {"variable_name": "rho", "niceName"="\rho", "staggering"="[0,0]"},
-    }
+    [
+        {"variable_name": "rho", "niceName": "\rho", "staggering": "[0,0]"}
+    ]
 }
