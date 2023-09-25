@@ -1946,8 +1946,6 @@ cppdef.h by hand for the common setups.
 
 #endif /* END OF CONFIGURATION CHOICE */
 
-#include "cppdefs_dev.h"
-
 /*
 Override the cppdef hand written value with cmake one.
 TODO: can be merged into config.h.in and avoid this trick
@@ -1957,6 +1955,9 @@ on top of this line.
 #ifdef HAVE_CMAKE_CONFIG
 #include "config_post.h"
 #endif
+
+/* Note: should come after config_post.h */
+#include "cppdefs_dev.h"
 
 #include "set_global_definitions.h"
 
