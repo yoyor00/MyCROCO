@@ -1397,7 +1397,6 @@ C$    integer  trd, omp_get_thread_num
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-!$acc kernels if(compute_on_device) default(present)
       do itrc=1,NT
 #  ifndef ANA_TCLIMA
         if (.not.got_tclm(itrc)) then
@@ -1413,7 +1412,6 @@ C$    integer  trd, omp_get_thread_num
         endif
 #  endif
       enddo
-!$acc end kernels      
 # endif
 
       return
