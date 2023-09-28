@@ -22,36 +22,17 @@ much code as possible in each Kernels region).
 """
 TODO: Cleanup includes
 """
-from poseidon.dsl.helper import *
-from poseidon.dsl.kernel import PsycloneACCKernelsDirective
+from poseidon.dsl.helper import extract_kernels_from_psyir
+from poseidon_extensions import ACCWaitDirective, ACCSetDeviceNumDirective
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes.if_block import IfBlock
 from psyclone.psyir.nodes.call import Call
 from psyclone.psyir.backend.fortran import FortranWriter
-from psyclone.psyir.nodes import ACCDirective, RegionDirective
-from psyclone.f2pygen import DirectiveGen
-from poseidon_extensions import ACCWaitDirective, ACCSetDeviceNumDirective
-from psyclone.transformations import ACCEnterDataTrans
-from psyclone.psyGen import Transformation
 from psyclone.psyir.transformations.transformation_error import \
     TransformationError
-from psyclone.psyir.nodes import ACCDataDirective, ACCDirective, \
-    ACCEnterDataDirective, ACCKernelsDirective, ACCLoopDirective, \
-    ACCParallelDirective, ACCRoutineDirective, Assignment, CodeBlock, \
-    Directive, Loop, Node, OMPDeclareTargetDirective, \
-    OMPDirective, OMPMasterDirective, \
-    OMPParallelDirective, OMPParallelDoDirective, OMPSerialDirective, \
-    OMPSingleDirective, OMPTaskloopDirective, PSyDataNode, Reference, \
-    Return, Routine, Schedule, ACCUpdateDirective, IntrinsicCall
-from utils import add_kernels, normalise_loops, \
-    insert_explicit_loop_parallelism
-from psyclone.transformations import ACCEnterDataTrans, ACCLoopTrans
-from psyclone.psyir.transformations import ACCUpdateTrans
-from poseidon_extensions import CrocoACCRaiseKernelThroughIf
-
-from psyclone.core import Signature
-from psyclone.nemo import NemoACCEnterDataDirective as \
-                AccEnterDataDir
+from psyclone.psyir.nodes import Loop, Routine, IntrinsicCall
+from psyclone.transformations import ACCLoopTrans
+from utils import normalise_loops
 
 def trans(psy):
     '''A PSyclone-script compliant transformation function. Applies

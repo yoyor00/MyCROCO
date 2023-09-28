@@ -79,13 +79,13 @@ if __name__ == '__main__':
             # run psyclone
             psyclone_source_file = source_file.replace(".F", ".psyclone.F90")
             subprocess.run([
-                                'psyclone',
-                                '-api', 'nemo',
-                                '-l' , 'output',
-                                '-s', get_local_file_path(os.path.join('scripts', transformation_script)),
-                                '-opsy' ,psyclone_source_file, source_file
-                            ],
-                            check=True)
+                            'psyclone',
+                            '-api', 'nemo',
+                            '-l' , 'output',
+                            '-s', get_local_file_path(os.path.join('scripts', transformation_script)),
+                            '-opsy' ,psyclone_source_file, source_file
+                        ],
+                        check=True)
 
             # replace source filestart
             pos = sys.argv.index(source_file)
