@@ -42,6 +42,9 @@ function(croco_psyclone_pre_filter_acc list_to_update)
 		# build new name
 		string(REGEX REPLACE "\\.F" ".no-acc.F" newfile_no_acc ${oldfile_abs})
 
+		# get deps
+		file(GLOB_RECURSE PSYCLONE_SCRIPTS "${CMAKE_SOURCE_DIR}/PSYCLONE/*.py")
+
 		# build command
 		add_custom_command(
 			OUTPUT ${newfile_no_acc}
@@ -49,6 +52,7 @@ function(croco_psyclone_pre_filter_acc list_to_update)
 			MAIN_DEPENDENCY ${oldfile}
 			DEPENDS ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.preprocessor.skip.acc.py
 			        ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.rules.json
+					${PSYCLONE_SCRIPTS}
 			VERBATIM
 		)
 		list(APPEND _newfiles ${newfile_no_acc})

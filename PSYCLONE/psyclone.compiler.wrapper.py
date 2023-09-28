@@ -9,7 +9,7 @@ import os
 import sys
 import json
 import subprocess
-from common.helpers import get_rules_for_file, get_local_file_path
+from common.wrapper_helpers import get_rules_for_file, get_local_file_path
 
 ###########################################################
 '''

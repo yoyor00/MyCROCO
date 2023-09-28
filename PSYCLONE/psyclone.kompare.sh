@@ -24,9 +24,23 @@ set -e
 ###########################################################
 # handle options
 if [[ $# < 1 ]]; then
-	echo "Usage : $0 {BUILD_DIR} [NATIVE_BUILD_DIR]"
+	echo "Usage : $0 [--file diag.F] {BUILD_DIR} [NATIVE_BUILD_DIR]"
 	exit 1
 fi
+
+###########################################################
+FILTER=''
+while true; do
+	case $1 in
+		'--filter')
+			FILTER=$(echo $2 | sed -e 's/.F$/.F90/g')
+			shift 2
+			;;
+		*)
+			break
+			;;
+	esac
+done
 
 ###########################################################
 # get path
@@ -76,18 +90,30 @@ function run()
 	"$@"
 }
 
+function filter()
+{
+	local fname=$1
+	if [[ ${FILTER} == '' ]]; then
+		return 0
+	elif [[ ${fname} == ${FILTER} ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
 # copy files (acc)
 for file in $(find ${PREP_DIR} -iname "*.psyclone.F90"); do
 	orig_name=$(basename $file | sed -e 's/\.no-acc\.cpp\.mpc\.loops\.mpc\.fix\.psyclone//g')
 	fname=$(basename $file)
-	run ln -sf ${PREP_DIR}/${fname} ${PREP_DIR}/compare/acc/${orig_name}
+	filter ${orig_name} && run ln -sf ${PREP_DIR}/${fname} ${PREP_DIR}/compare/acc/${orig_name}
 done
 
 # copy files (no acc)
 for file in $(find ${PREP_DIR} -iname "*.psyclone.dummy.F90"); do
 	orig_name=$(basename $file | sed -e 's/\.no-acc\.cpp\.mpc\.loops\.mpc\.fix\.psyclone\.dummy//g')
 	fname=$(basename $file)
-	run ln -sf ${PREP_DIR}/${fname} ${PREP_DIR}/compare/no-acc/${orig_name}
+	filter ${orig_name} && run ln -sf ${PREP_DIR}/${fname} ${PREP_DIR}/compare/no-acc/${orig_name}
 done
 
 # copy files (acc)
@@ -97,7 +123,7 @@ if [[ ${NATIVE_BUILD_DIR} != 'OFF' ]]; then
 		fname=$(basename $file)
 		if [[ -f ${PREP_DIR}/compare/acc/${orig_name}90 ]]; then
 			#ln -sf ${NATIVE_PREP_DIR}/${fname} ${PREP_DIR}/compare/orig-acc/${orig_name}90
-			run psyclone -api nemo -l output -opsy ${PREP_DIR}/compare/orig-acc/${orig_name}90 ${NATIVE_PREP_DIR}/${fname} &
+			filter ${orig_name} && run psyclone -api nemo -l output -opsy ${PREP_DIR}/compare/orig-acc/${orig_name}90 ${NATIVE_PREP_DIR}/${fname} &
 		fi
 	done
 	wait

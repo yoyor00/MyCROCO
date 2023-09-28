@@ -418,7 +418,7 @@ def handle_jik_loop(top_loop: Loop, do_k_loop_fuse: bool = True) -> None:
     set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'bc1d'])
 
 
-def apply_acc_loop_collapse(kernels: KernelList) -> None:
+def apply_acc_loop_collapse(kernels: KernelList, options: dict) -> None:
     """
     For all kernel loops, collapse loop if possible.
 
@@ -428,7 +428,7 @@ def apply_acc_loop_collapse(kernels: KernelList) -> None:
         loop = kernel.root_node
 
         try:
-            ACCLoopTrans().apply(loop)
+            ACCLoopTrans().apply(loop, options=options)
         except TransformationError as err:
             # This loop can not be transformed, proceed to next loop
             print("Loop not parallelised because:", str(err))
@@ -446,10 +446,17 @@ def apply_acc_loop_collapse(kernels: KernelList) -> None:
         if num_nested_loops > 1:
             loop.parent.parent.collapse = num_nested_loops
 
-def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], merge_joinable: bool = False) -> None:
+def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], merge_joinable: bool = False, options: dict = None) -> None:
     
     # extract kernels
     kernels = extract_kernels_from_psyir(container, ignore_loops=ignore_loops)
+
+    # skip some kernels to tests
+    # TODO fin a nice way to make this cleanly
+    for kernel in kernels.kernels:
+        for reference in kernel.root_node.walk(Reference):
+            if reference.symbol.name == 'may_day_flag':
+                kernels.kernels.remove(kernel)
 
     # disable streams
     for kernel in kernels.kernels:
@@ -462,7 +469,7 @@ def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], mer
 
     # apply collaspse
     if collapse:
-        apply_acc_loop_collapse(kernels)
+        apply_acc_loop_collapse(kernels, options)
 
 def apply_acc_fetch_vars(psy) -> None:
     """
@@ -560,10 +567,14 @@ def trans(psy):
     collapse = True
     if routine.name == "rhs3d_tile":
         joinable = False
+    if routine.name == "diag_tile":
+        joinable = False
     if routine.name == "pre_step3d_tile":
         collapse = True
     for routine in routines:  
-        if routine.name != 'set_HUV1':
+        if routine.name == 'diag_tile':
+            apply_acc_kernel(routine, collapse, ignore_loops=['itrc'], merge_joinable=joinable, options={'independent': False})
+        elif routine.name != 'set_HUV1':
             apply_acc_kernel(routine, collapse, ignore_loops=['itrc'], merge_joinable=joinable)
 
     ####################################################################
