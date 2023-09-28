@@ -20,7 +20,7 @@ import os
 import json
 import shutil
 import argparse
-from common.helpers import get_rules_for_file
+from common.wrapper_helpers import get_rules_for_file
 
 ###########################################################
 def parse_command_line():

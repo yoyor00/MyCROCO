@@ -23,15 +23,16 @@
         "grid_stiffness.F":       {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "get_stflux.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "get_vbc.F":              {"script": "acc_kernels_step3d.py", "skip-acc": true},
-        "diag.F":                 {"script": "acc_kernels_step3d.py", "skip-acc": true},
+        "diag.F":                 {"script": "acc_kernels_step3d.py", "skip-acc": true, "issue": "BROKEN"},
         "analytical.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "ana_initial.F":          {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "get_srflux.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "ana_grid.F":             {"script": "acc_kernels_step3d.py", "skip-acc": true},
-
-        "TODO": {
+        "TODO_vars": {
             "copy_to_devices.F":      {"script": "....py", "skip-acc": true},
-            "exchange_device_host.F": {"script": "....py", "skip-acc": true},
+            "exchange_device_host.F": {"script": "....py", "skip-acc": true}
+        },
+        "TODO_IO": {
             "wrt_his.F":              {"script": "....py", "skip-acc": true},
             "wrt_rst.F":              {"script": "....py", "skip-acc": true}
         }
