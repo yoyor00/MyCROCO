@@ -32,15 +32,10 @@ from psyclone.psyir.symbols import DataSymbol, REAL_TYPE, INTEGER_TYPE, BOOLEAN_
 from psyclone.psyir.nodes import Loop, Node, Reference, ArrayReference, \
     Routine, Literal, BinaryOperation, ACCLoopDirective, Schedule, IntrinsicCall
 from psyclone.psyir.symbols import Symbol, ArrayType
-from utils import add_kernels, normalise_loops, \
-    insert_explicit_loop_parallelism
 from psyclone.transformations import ACCEnterDataTrans, ACCLoopTrans
-
 from psyclone.core import Signature
 from psyclone.nemo import NemoACCEnterDataDirective as \
                 AccEnterDataDir, InlinedKern
-import sys
-
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
 
