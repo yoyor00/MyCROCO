@@ -28,6 +28,9 @@
         "ana_initial.F":          {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "get_srflux.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "ana_grid.F":             {"script": "acc_kernels_step3d.py", "skip-acc": true},
+
+        "fake_for_unit_test.F90": {"script": "fake_script.py", "skip-acc": true},
+
         "TODO_vars": {
             "copy_to_devices.F":      {"script": "....py", "skip-acc": true},
             "exchange_device_host.F": {"script": "....py", "skip-acc": true}

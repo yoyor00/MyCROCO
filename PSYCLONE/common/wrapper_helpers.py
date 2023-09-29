@@ -79,3 +79,19 @@ def get_rules_for_file(source_file: str) -> dict:
 
     # not found
     return rule
+
+###########################################################
+def extract_source_file_from_args(args: list):
+    '''
+    Extract the fortran source file from the compiler command line.
+    
+    Remark: we consider here a single fortran file compile at a time.
+    '''
+
+    # search first
+    for value in args:
+        if value.endswith(('.F', '.f', '.F90', '.f90')):
+            return value
+    
+    # not found
+    raise Exception("No fortran file found in command line !")
