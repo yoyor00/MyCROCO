@@ -25,7 +25,16 @@ def get_local_file_path(file_name: str):
     return path
 
 ###########################################################
-def get_rules_for_file(source_file: str):
+def simplify_file_name(filename: str) -> str:
+    # calc cleaned file name (without .no-acc.cpp.mpc.......)
+    # So keep [0].[-1]
+    parts = filename.split('.')
+    extention = parts[-1]
+    name = parts[0]
+    return f'{name}.{extention}'
+
+###########################################################
+def get_rules_for_file(source_file: str) -> dict:
     '''
     Extract the transformation script to apply to the given file
     from the textual config file given as parameter.
@@ -38,11 +47,7 @@ def get_rules_for_file(source_file: str):
     file_name = os.path.basename(source_file)
 
     # calc cleaned file name (without .no-acc.cpp.mpc.......)
-    # So keep [0].[-1]
-    parts = file_name.split('.')
-    extention = parts[-1]
-    name = parts[0]
-    file_name_simple = f'{name}.{extention}'
+    file_name_simple = simplify_file_name(file_name)
 
     # default
     rule = {
@@ -68,6 +73,9 @@ def get_rules_for_file(source_file: str):
             # apply default when needed
             for key, value in file_rule.items():
                 rule[key] = value
+
+    # debug
+    #print({file_name_simple: rule})
 
     # not found
     return rule

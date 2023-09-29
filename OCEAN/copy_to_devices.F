@@ -229,7 +229,11 @@
 #  include "nbq.h"
 # endif
 
+# ifdef defined(HAVE_CMAKE_CONFIG) && defined(OPENACC)
+# include "copy_to_devices_generated.h"
+# else
 # include "copy_to_devices.h"
+# endif
 
        return
        end

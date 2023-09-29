@@ -17,7 +17,7 @@ This can be removed when work will be finished
 
 ###########################################################
 import os
-import json
+import re
 import shutil
 import argparse
 from common.wrapper_helpers import get_rules_for_file
@@ -54,7 +54,7 @@ def patch_cppdef(in_file: str, out_file: str):
         data = fp_in.read()
 
         # replace the definition of OPENACC keys in cppdef
-        data = data.replace('# define OPENACC', '# undef OPENACC')
+        data = re.sub('# *define +OPENACC', '# undef OPENACC', data)
 
         # for the CMake version, we need to override and erase the definition done in  config_post.h
         data = data.replace('#include \"config_post.h\"', '#include \"config_post.h\"\n# undef OPENACC')

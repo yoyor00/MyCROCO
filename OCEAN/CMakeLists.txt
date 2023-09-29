@@ -169,6 +169,47 @@ list(APPEND CROCO_SRCS_F90 module_oa_space.F90 module_oa_periode.F90
 #                           plug_MUSTANG_CROCO.F90
 
 ###########################################################
+# files for copy to device
+set(COPY_TO_DEVICE_VAR_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/ocean2d.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/scalars.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ocean3d.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/grid.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/coupling.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/private_scratch.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/mixing.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/forces.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/work.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ncscrum.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/averages.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lmd_kpp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/climat.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/nbq.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/wkb_wwave.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/boundary.h
+)
+
+###########################################################
+# Regenerate the copy_to_device.F file to auto-inject the vars to upload
+# to the GPU
+if (OPENACC)
+    # build command to gen copy_to_device
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/copy_to_devices_generated.h
+        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/common2device.py
+                ${COPY_TO_DEVICE_VAR_FILES}
+                -o ${CMAKE_CURRENT_BINARY_DIR}/copy_to_devices_generated.h
+        MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/common2device.py
+        DEPENDS ${COPY_TO_DEVICE_VAR_FILES}
+        VERBATIM
+    )
+    
+    # add it in deps loop
+    list(APPEND CROCO_CPP_H ${CMAKE_CURRENT_BINARY_DIR}/copy_to_devices_generated.h)
+endif()
+
+###########################################################
 # Make absolute paths for source prepare pass
 croco_make_absolute_paths(CROCO_SRCS_F77 ${CMAKE_CURRENT_SOURCE_DIR})
 croco_make_absolute_paths(CROCO_SRCS_F90 ${CMAKE_CURRENT_SOURCE_DIR})
