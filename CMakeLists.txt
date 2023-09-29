@@ -96,5 +96,5 @@ croco_print_status()
 
 ###########################################################
 if (WITH_PARALLEL STREQUAL "openacc-psyclone")
-	add_test(NAME psyclone-pytest WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/PSYCLONE COMMAND pytest-3)
+	add_test(NAME psyclone-pytest WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/PSYCLONE COMMAND pytest)
 endif()

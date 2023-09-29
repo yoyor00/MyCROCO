@@ -5,4 +5,7 @@
 ##########################################################
 
 def trans(psy):
+	'''
+	Dummy transformation which does nothing.
+	'''
 	pass
