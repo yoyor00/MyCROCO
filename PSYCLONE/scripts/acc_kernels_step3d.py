@@ -21,6 +21,7 @@ much code as possible in each Kernels region).
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
 VARS_3D = ['fx', 'fe', 'work', 'work2']
 
+from helper import add_missing_device_vars
 from poseidon.dsl.helper import *
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes.call import Call
@@ -38,23 +39,6 @@ from psyclone.nemo import NemoACCEnterDataDirective as \
                 AccEnterDataDir, InlinedKern
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
-
-
-def add_missing_vars(psy) -> None:
-    """
-    Mimic existing hand-acc version
-    """
-    routines = psy.container.walk(Routine)
-    for routine in routines:
-        # set device directive
-        if routine.name == "step3d_t" or routine.name == "step3d_t_tile" or routine.name == "step3d_uv2" or routine.name == "step3d_uv2_tile":
-            # add const integer 'my_acc_device' = 0
-            symbol = DataSymbol("my_acc_device", INTEGER_TYPE, is_constant = True, initial_value = Literal("0", INTEGER_TYPE))
-            routine.symbol_table.add(symbol)
-
-            # add const boolean 'compute_on_device' = true
-            symbol = DataSymbol("compute_on_device", BOOLEAN_TYPE, is_constant = True, initial_value = Literal("true", BOOLEAN_TYPE))
-            routine.symbol_table.add(symbol)
 
 def set_device_tile(psy) -> None:
     """
@@ -502,7 +486,7 @@ def trans(psy):
     """
 
     # steps
-    add_missing_vars(psy)
+    add_missing_device_vars(psy.container)
     set_device_tile(psy)
 
     print(psy.container.view())
