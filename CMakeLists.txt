@@ -16,6 +16,8 @@ project(CROCO
 ###########################################################
 # to support old versions
 cmake_policy(SET CMP0057 NEW)
+# enable testing
+enable_testing()
 
 ###########################################################
 #Add internal search path for scripts
@@ -91,3 +93,8 @@ add_subdirectory(OCEAN)
 ###########################################################
 # Print status to help ensure everything is correct
 croco_print_status()
+
+###########################################################
+if (WITH_PARALLEL STREQUAL "openacc-psyclone")
+	add_test(NAME psyclone-pytest WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/PSYCLONE COMMAND pytest-3)
+endif()

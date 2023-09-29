@@ -9,7 +9,7 @@ import os
 import sys
 import json
 import subprocess
-from common.wrapper_helpers import get_rules_for_file, get_local_file_path
+from common.wrapper_helpers import get_rules_for_file, get_local_file_path, extract_source_file_from_args
 
 ###########################################################
 '''
@@ -26,22 +26,6 @@ USAGE :
 '''
 
 ###########################################################
-def extract_source_file(args: list):
-    '''
-    Extract the fortran source file from the compiler command line.
-    
-    Remark: we consider here a single fortran file compile at a time.
-    '''
-
-    # search first
-    for value in args:
-        if value.endswith(('.F', '.f', '.F90', '.f90')):
-            return value
-    
-    # not found
-    raise Exception("No fortran file found in command line !")
-
-###########################################################
 if __name__ == '__main__':
     # default
     transformation_script = None
@@ -52,7 +36,7 @@ if __name__ == '__main__':
     # if possibly needs psyclone
     if is_for_o_file:
         # extract source file
-        source_file = extract_source_file(sys.argv)
+        source_file = extract_source_file_from_args(sys.argv)
         assert source_file is not None
 
         # get path of current script
