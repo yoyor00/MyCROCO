@@ -1137,3 +1137,7 @@
 #else
 #define DOLOOP2D_R(irange,jrange) DOLOOP2D(irange,jrange)
 #endif
+
+#if defined OPENACC
+#define OPENACC_PSYCLONE
+#endif

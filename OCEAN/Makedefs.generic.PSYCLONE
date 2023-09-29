@@ -11,12 +11,12 @@
 
 .F.o:
 	#TODO: skip when finished
-	./PSYCLONE/psyclone.preprocessor.skip.acc.py $*.F $*.noa-acc.F
-	$(CPP) -P $(CPPFLAGS) $*.noa-acc.F > $*.noa-acc.cpp-done.F
-	#python3 ./change_loops.py $*.noa-acc.cpp-done.F $*.noa-acc.cpp-done-loops.F
-	cp $*.noa-acc.cpp-done.F $*.noa-acc.cpp-done-loops.F
-	cat $*.noa-acc.cpp-done-loops.F | ./mpc > $*.noa-acc.cpp-done-loops-mpc.F
-	./PSYCLONE/psyclone.compiler.wrapper.py $(CFT) -c $(FFLAGS) -acc=gpu $*.noa-acc.cpp-done-loops-mpc.F -o $*.o
+	./PSYCLONE/psyclone.preprocessor.skip.acc.py $*.F $*.no-acc.F
+	$(CPP) -P $(CPPFLAGS) $*.no-acc.F > $*.no-acc.cpp-done.F
+	#python3 ./change_loops.py $*.no-acc.cpp-done.F $*.no-acc.cpp-done-loops.F
+	cp $*.no-acc.cpp-done.F $*.no-acc.cpp-done-loops.F
+	cat $*.no-acc.cpp-done-loops.F | ./mpc > $*.no-acc.cpp-done-loops-mpc.F
+	./PSYCLONE/psyclone.compiler.wrapper.py $(CFT) -c $(FFLAGS) -acc=gpu $*.no-acc.cpp-done-loops-mpc.F -o $*.o
 
 .f90.o:
 	$(CFT) -c $(FFLAGS90) $*.f90 -o $*.o
