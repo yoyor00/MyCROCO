@@ -238,6 +238,9 @@
   ! Reads information on the configuration of the biogeochemical model 
         rewind(namelist_eco3m_id)
         read(namelist_eco3m_id, nam_eco3m_config)
+#if defined INI
+    eco3m_root_dir   = "../"
+#endif
 
 
 

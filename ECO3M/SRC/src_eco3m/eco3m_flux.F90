@@ -389,7 +389,7 @@
 
 #ifdef INI
       if (len_trim(signe_facteur)>1) then
-         write(file_call_id,'(a8,a4)') adjustl(signe_facteur), '* &'
+         write(file_call_id,'(a10,a4)') adjustl(signe_facteur), '* &'
        else
          write(file_call_id,'(a1,a2)') signe_facteur(1:1), ' &'
       endif
@@ -566,7 +566,7 @@ END SUBROUTINE process_subflux
              write(file_saveflx_id,*) 'ss_flux(',idproc_loc,',:,:,:) =  &'
              if (signe_facteur(1:1) /= '*') then
                 if (len_trim(signe_facteur)>1) then
-                   write(file_saveflx_id,'(a1,a8,a5)') '(',signe_facteur, ') * &'
+                   write(file_saveflx_id,'(a1,a10,a5)') '(',signe_facteur, ') * &'
                 else
                    write(file_saveflx_id,'(a,a1,a6)') '(',signe_facteur(1:1), '1) *&'
                 endif
