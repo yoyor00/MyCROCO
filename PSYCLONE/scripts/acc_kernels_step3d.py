@@ -21,7 +21,8 @@ much code as possible in each Kernels region).
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
 VARS_3D = ['fx', 'fe', 'work', 'work2']
 
-from helper import add_missing_device_vars
+from extensions.device import add_missing_device_vars, set_device_tile
+from extensions.scratch import add_1d_scratch_var, add_3d_scratch_var, patch_scratch_1d_arrays, patch_scratch_3d_arrays
 from poseidon.dsl.helper import *
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes.call import Call
@@ -39,88 +40,6 @@ from psyclone.nemo import NemoACCEnterDataDirective as \
                 AccEnterDataDir, InlinedKern
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
-
-def set_device_tile(psy) -> None:
-    """
-    Mimic existing ACC code.
-
-    Future: This can be done automatically.
-    """
-    routines = psy.container.walk(Routine)
-    for routine in routines:
-        # set device directive
-        if routine.name == "step3d_t" or routine.name == "step3d_uv2":
-            """
-            Some hack to insert an 'acc device_num=tile'
-            """
-            # add acc set device
-            calls = psy.container.walk(Call)
-            for call in calls:
-                if not isinstance(call, IntrinsicCall):
-                    break
-            pos = call.position
-            call.parent.children.insert(pos, ACCSetDeviceNumDirective(device_num='tile'))
-
-def add_1d_scratch_var(routine: Routine, var_name:str) -> None:
-    """
-    Scratch arrays are just temporary arrays to speedup things and save memory.
-    This is to mimic existing ACC code.
-
-    Future: This can be done automatically.
-    """
-    # dup 3D
-    sym_N = routine.symbol_table.lookup("N")
-    sym_1d_name = f"{var_name}1d"
-    sym_1d = DataSymbol(sym_1d_name, ArrayType(REAL_TYPE, [ArrayType.ArrayBounds(Literal("0", INTEGER_TYPE), Reference(sym_N))]))
-
-    # reg
-    routine.symbol_table.add(sym_1d)
-
-def add_3d_scratch_var(psy, routine: Routine, var_2d_name: str, scratch_id: int) -> None:
-    """
-    Scratch arrays are just temporary arrays to speedup things and save memory.
-    This is to mimic existing ACC code.
-
-    Future: This can be done automatically.
-    """
-    # dup 3D
-    sym_N = routine.symbol_table.lookup("N")
-    sym_Istr = routine.symbol_table.lookup("istr")
-    sym_Iend = routine.symbol_table.lookup("iend")
-    sym_Jstr = routine.symbol_table.lookup("jstr")
-    sym_Jend = routine.symbol_table.lookup("jend")
-    sym_3d_name = f"{var_2d_name}_3d"
-    # TODO : avoid this by copyging from the original var
-    # currently has issues because it also copy the name of the var
-    sym_3d = DataSymbol(sym_3d_name, ArrayType(REAL_TYPE, [
-                                                ArrayType.ArrayBounds(
-                                                    BinaryOperation.create(BinaryOperation.Operator.SUB, Reference(sym_Istr), Literal("2", INTEGER_TYPE)),
-                                                    BinaryOperation.create(BinaryOperation.Operator.ADD, Reference(sym_Iend), Literal("2", INTEGER_TYPE))),
-                                                ArrayType.ArrayBounds(
-                                                    BinaryOperation.create(BinaryOperation.Operator.SUB, Reference(sym_Jstr), Literal("2", INTEGER_TYPE)),
-                                                    BinaryOperation.create(BinaryOperation.Operator.ADD, Reference(sym_Jend), Literal("2", INTEGER_TYPE))),
-                                                Reference(sym_N)
-                        ]))
-    #sym_3d.copy_properties(sym)
-    #for shape_entry in sym.shape:
-    #    sym_3d.shape.append(shape_entry.copy())
-    #sym_3d.shape.append(sum_N)
-
-    # reg
-    original_arg_list = routine.symbol_table.argument_list[:]
-    sym_3d.interface = ArgumentInterface(ArgumentInterface.Access.READWRITE)
-    routine.symbol_table.specify_argument_list(original_arg_list + [sym_3d])
-    routine.symbol_table.add(sym_3d)
-
-    # add to call
-    for call in psy.container.walk(Call):
-        if call.routine.name == routine.name:
-            scratch_var = call.ancestor(Routine).symbol_table.lookup("A3d")
-            call.children.append(ArrayReference.create(scratch_var,[
-                                                                Literal("1", INTEGER_TYPE),
-                                                                Literal(str(scratch_id), INTEGER_TYPE),
-                                                                Reference(Symbol("trd"))
-                                                                ]))
 
 def extract_loop_indices_order(top_loop: Loop, exclude=[]) -> list:
     """
@@ -160,38 +79,6 @@ def detach_and_get_childs(loop: Loop) -> list:
 
     # ok
     return ops
-
-
-def patch_scratch_1d_arrays(top_loop: Loop) -> None:
-    """
-    Convert 1D scratch arrays to 2D ones to avoid race conditions if parallelizing over the outer loop
-    """
-    for ref in top_loop.walk(ArrayReference):
-        if ref.name.lower() in VARS_1D:
-            new_name = ref.name.lower()+'1d'
-            ref.symbol = Symbol(new_name)
-            ref.indices.pop(0)
-
-
-def patch_scratch_3d_arrays(top_loop: Loop) -> None:
-    """
-    Convert 2D scratch arrays to 3D ones to avoid race conditions if parallelizing over the outer loop
-
-    do k = 1, n, 1
-      do j = jstr, jend, 1
-        do i = MAX(istr - 1, 1), MIN(iend + 2, lm + 1), 1
-          fx(i,j) = t(i,j,k,nadv,itrc) - t(i - 1,j,k,nadv,itrc)
-
-    do k = 1, n, 1
-      do j = jstr, jend, 1
-        do i = MAX(istr - 1, 1), MIN(iend + 2, lm + 1), 1
-          fx_3d(i,j,k) = t(i,j,k,nadv,itrc) - t(i - 1,j,k,nadv,itrc)
-    """
-    for ref in top_loop.walk(ArrayReference):
-        if ref.name.lower() in  VARS_3D:
-            new_name = ref.name.lower()+'_3d'
-            ref.symbol = Symbol(new_name)
-            ref.indices.append(Reference(Symbol('k')))
 
 def handle_kji_loop(top_loop: Loop) -> None:
     """
@@ -237,7 +124,7 @@ def handle_kji_loop(top_loop: Loop) -> None:
                 loop_parent.addchild(new_k_loop, loop_position)
 
      # patch vars
-    patch_scratch_3d_arrays(top_loop)
+    patch_scratch_3d_arrays(top_loop, VARS_3D)
 
 def handle_kji_loop_old(top_loop: Loop) -> None:
     """
@@ -273,7 +160,7 @@ def handle_kji_loop_old(top_loop: Loop) -> None:
         parent_node.addchild(new_loops[i+1], pos + i + 1)
 
     # patch vars
-    patch_scratch_3d_arrays(top_loop)
+    patch_scratch_3d_arrays(top_loop, VARS_3D)
 
 
 def is_loop_using_var(loop: Loop, vars: list):
@@ -330,7 +217,7 @@ def handle_jki_loop(top_loop: Loop) -> None:
     top_loop.loop_body.addchild(inner_i_loop)
 
     # patch arrays
-    patch_scratch_1d_arrays(top_loop)
+    patch_scratch_1d_arrays(top_loop, VARS_1D)
 
     # add private to i loops
     set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'dZ1D', 'dR1D'])
@@ -391,7 +278,7 @@ def handle_jik_loop(top_loop: Loop, do_k_loop_fuse: bool = True) -> None:
                 next_id += 1
 
     # patch arrays
-    patch_scratch_1d_arrays(top_loop)
+    patch_scratch_1d_arrays(top_loop, VARS_1D)
 
     # add private to i loops
     set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'bc1d'])
@@ -487,7 +374,7 @@ def trans(psy):
 
     # steps
     add_missing_device_vars(psy.container)
-    set_device_tile(psy)
+    set_device_tile(psy.container)
 
     print(psy.container.view())
 
@@ -500,14 +387,14 @@ def trans(psy):
             if routine.name == "step3d_t_tile":
                 scratch_3d_id = 2
                 for var in ['fx', 'fe', 'work']:
-                    add_3d_scratch_var(psy, routine, var, scratch_3d_id)
+                    add_3d_scratch_var(psy.container, routine, var, scratch_3d_id)
                     scratch_3d_id += 1
 
             # add scratch 3d vars
             if routine.name == "pre_step3d_tile":
                 scratch_3d_id = 4
                 for var in ['fx', 'fe', 'work']:
-                    add_3d_scratch_var(psy, routine, var, scratch_3d_id)
+                    add_3d_scratch_var(psy.container, routine, var, scratch_3d_id)
                     scratch_3d_id += 1
 
             ############################################################
@@ -529,7 +416,7 @@ def trans(psy):
                         #TODO might look to make work, work2 to possibly fix an issue and do not apply
                         handle_kji_loop(top_loop)
                     else:
-                        patch_scratch_3d_arrays(top_loop)
+                        patch_scratch_3d_arrays(top_loop, VARS_3D)
                 elif vars[0:3] == ['j','k','i']:
                     handle_jki_loop(top_loop)
                 elif vars[0:3] == ['j','i','k']:

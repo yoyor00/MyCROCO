@@ -6,11 +6,11 @@
 
 ##########################################################
 '''
-Implement some basic unit test check check the transformation helper functins.
+Implement some basic unit test check check the transformation device helper functions.
 '''
 
 ##########################################################
-from helper import *
+from .device import *
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 
@@ -22,10 +22,10 @@ def test_add_missing_device_vars_step3d():
     # parse to get IR tree
     root_node: Node
     root_node = FortranReader().psyir_from_source('''
-        subroutine step3d_t(Istr,Iend,Jstr,Jend)
+        subroutine step3d_t(istr)
             implicit none
-            integer*4 Istr,Iend,Jstr,Jend, i,j
-            integer*4 IstrR,IendR,JstrR,JendR
+            integer*4 istr
+            integer*4 istrr
             if (istr.eq.1) then
                 IstrR=Istr-1
             endif
@@ -40,8 +40,19 @@ def test_add_missing_device_vars_step3d():
 
     # check
     print(gen_source)
-    assert 'integer, parameter :: my_acc_device = 0' in gen_source
-    assert 'logical, parameter :: compute_on_device = .true.' in gen_source
+    assert gen_source == '''\
+subroutine step3d_t(istr)
+  integer, parameter :: my_acc_device = 0
+  logical, parameter :: compute_on_device = .true.
+  integer*4 :: istr
+  integer*4 :: istrr
+
+  if (istr == 1) then
+    istrr = istr - 1
+  end if
+
+end subroutine step3d_t
+'''
 
 ##########################################################
 def test_add_missing_device_vars_not_apply():
@@ -52,10 +63,10 @@ def test_add_missing_device_vars_not_apply():
     # parse to get IR tree
     root_node: Node
     root_node = FortranReader().psyir_from_source('''
-        subroutine dummy(Istr,Iend,Jstr,Jend)
+        subroutine dummy(istr)
             implicit none
-            integer*4 Istr,Iend,Jstr,Jend, i,j
-            integer*4 IstrR,IendR,JstrR,JendR
+            integer*4 istr
+            integer*4 istrr
             if (istr.eq.1) then
                 IstrR=Istr-1
             endif
@@ -69,5 +80,51 @@ def test_add_missing_device_vars_not_apply():
     gen_source = FortranWriter()(root_node)
 
     # check
-    assert 'my_acc_device' not in gen_source
-    assert 'compute_on_device' not in gen_source
+    print(gen_source)
+    assert gen_source == '''\
+subroutine dummy(istr)
+  integer*4 :: istr
+  integer*4 :: istrr
+
+  if (istr == 1) then
+    istrr = istr - 1
+  end if
+
+end subroutine dummy
+'''
+
+##########################################################
+def test_set_device_type():
+    '''
+    Check if well inject the expected code.
+    '''
+
+    # parse to get IR tree
+    root_node: Node
+    root_node = FortranReader().psyir_from_source('''
+        subroutine step3d_t(istr)
+            implicit none
+            integer*4 istr
+            integer*4 tile
+            call child_subroutine(istr)
+        end
+    ''', free_form = True)
+
+    # apply
+    set_device_tile(root_node)
+
+    # regen
+    gen_source = FortranWriter()(root_node)
+
+    # check
+    print(gen_source)
+    assert gen_source == '''\
+subroutine step3d_t(istr)
+  integer*4 :: istr
+  integer*4 :: tile
+
+  !$acc set device_num(tile)
+  call child_subroutine(istr)
+
+end subroutine step3d_t
+'''
