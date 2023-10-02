@@ -23,6 +23,7 @@ VARS_3D = ['fx', 'fe', 'work', 'work2']
 
 from extensions.device import add_missing_device_vars, set_device_tile
 from extensions.scratch import add_1d_scratch_var, add_3d_scratch_var, patch_scratch_1d_arrays, patch_scratch_3d_arrays
+from extensions.loops import extract_loop_indices_order, get_first_loop_on, detach_and_get_childs
 from poseidon.dsl.helper import *
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes.call import Call
@@ -40,45 +41,6 @@ from psyclone.nemo import NemoACCEnterDataDirective as \
                 AccEnterDataDir, InlinedKern
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
-
-def extract_loop_indices_order(top_loop: Loop, exclude=[]) -> list:
-    """
-    Extract loop variable names and return them as array.
-    E.g., ['l','j','k']
-    """
-    vars=[]
-    for inloop in top_loop.walk(Loop):
-        vars.append(inloop.variable.name)   # Get loop variable
-    for indice in exclude:
-        if indice in vars:
-            vars.remove(indice)
-    return vars
-
-def get_first_loop_on(top_loop: Loop, var: str) -> Loop:
-    """
-    Return psy representation of loop using 'var'
-    """
-    while top_loop.variable.name != var:
-        top_loop = top_loop.walk(Loop)[1]
-    return top_loop
-
-def detach_and_get_childs(loop: Loop) -> list:
-    """
-    TODO: you know better...
-    """
-    # extract content
-    to_detach = []
-    for op in loop.loop_body:
-        to_detach.append(op)
-
-    # detach all child ops to keep the nested loops as template to copy
-    ops = []
-    for op in to_detach:
-        ops.append(op)
-        op.detach()
-
-    # ok
-    return ops
 
 def handle_kji_loop(top_loop: Loop) -> None:
     """
