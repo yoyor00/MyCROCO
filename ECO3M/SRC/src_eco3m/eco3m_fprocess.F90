@@ -38,19 +38,21 @@
 !
 !---------------------------------------------------------------------------
 !
-               MODULE mod_eco3m_fprocess
- !
- !---------------------------------------------------------------------------
- !
- ! This module is used to include all the process functions from the F_PROCESS
- ! library used in the current configuration of the biogeochemical model. 
- !
- ! It must also include the name of the light extinction function used when 
- ! the RGB key is not activated
- !
- !! \author Melika Baklouti, Vincent Faure
- !  \date 2007-07-06
- !----------------------------------------------------------------------------
+MODULE mod_eco3m_fprocess
+    !
+    !---------------------------------------------------------------------------
+    !
+    ! This module is used to include all the process functions from the F_PROCESS
+    ! library used in the current configuration of the biogeochemical model. 
+    ! 
+    ! This file is therefore one of the few files that the user can modify.
+    !
+    ! It must also include the name of the light extinction function used when 
+    ! the RGB key is not activated
+    !
+    !! \author Melika Baklouti, Vincent Faure
+    !  \date 2007-07-06
+    !----------------------------------------------------------------------------
 
     use mod_eco3m
     use mod_eco3m_user
@@ -61,179 +63,98 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!-----------------------------------------------------------------
-! --------- Gross Primary production (PPB) models      -----------
-!-----------------------------------------------------------------
-
-!-- Han (2002):
+    !----------------------------------------------------------------------------
+    !-----------------------------UPTAKE DE NUTRIMENTS---------------------------
+    !----------------------------------------------------------------------------
+    !FONCTION DE MONOD:
+#include "F_PROCESS/UPT/f_upt_monod_cell.inc"
+    !----------------------------------------------------------------------------
+    !-----------------------INHIBITION UPTAKE PAR UN NUTRIMENT-------------------
+#include "F_PROCESS/UPT/f_inhib_Frost_Franzen.inc"
+#include "F_PROCESS/UPT/f_cp_inhib_Frost_Franzen.inc"
+    !----------------------------------------------------------------------------
+    !-----------------------------------------------------------------------------
+    !------------------------------MORTALITE NATURELLE----------------------------
+    !-----------------------------------------------------------------------------
+    !FONCTION DE MORTALITE:
+#include "F_PROCESS/MORT/f_mort_quadratique_cell.inc"
+#include "F_PROCESS/MORT/f_mort_linear_cell.inc"
+#include "F_PROCESS/MORT/f_mort_linear_implicit.inc"
+    !-----------------------------------------------------------------------------
+    !----------------------LIMITATION PAR UN QUOTA INTRACELLULAIRE----------------
+    !-----------------------------------------------------------------------------
+    !FONCTION DE GEIDER:
+#include "F_PROCESS/FQUOTA/f_fQPPX_geid_2020.inc"
+!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_2021.inc"
+!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_2019.inc"
+!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2018_hind3D.inc"
+!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2018_ssbug.inc"
+!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2019.inc"
+#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2020.inc"
+!#include "F_PROCESS/FQUOTA/f_fQRESP_X_geid.inc"
+#include "F_PROCESS/FQUOTA/f_fQRESPX_geid_2020.inc"
+!#include "F_PROCESS/FQUOTA/f_fQRESPX_geid_2021.inc"
+!#include "F_PROCESS/FQUOTA/f_fQPPC_geid_2018_hind3D.inc"
+#include "F_PROCESS/FQUOTA/f_fQPPC_geid_2020.inc"
+!#include "F_PROCESS/FQUOTA/f_fQRESPC_geid_2018_hind3D.inc"
+!#include "F_PROCESS/FQUOTA/f_fQPPC_geid_2019_new.inc"
+!#include "F_PROCESS/FQUOTA/f_fQRESP_C_geid.inc"
+!#include "F_PROCESS/FQUOTA/f_fQRESPC_geid_2019_new.inc"
+#include "F_PROCESS/FQUOTA/f_fQRESPC_geid_2020.inc"
+    !-----------------------------------------------------------------------------
+    !--------------------------------PHOTOSYNTHESE--------------------------------
+    !-----------------------------------------------------------------------------
+    !FONCTION DE HAN:
 #include "F_PROCESS/PPB/f_ppb_han.inc"
-!-- Geider et al. (1998):
-!#include "F_PROCESS/PPB/f_ppb_geid98.inc"
-!
-!----------------------------------------------------------------------
-!---- Quota functions of growth limitation by a single nutrient ----
-!----------------------------------------------------------------------
-
-!-- Caperon & Meyer (1972):
-#include "F_PROCESS/FQUOTA/f_fQPP_capmey.inc"
-!-- Droop (1968):
-#include "F_PROCESS/FQUOTA/f_fQPP_droop.inc"
-!-- Geider et al. (1998):
-#include "F_PROCESS/FQUOTA/f_fQPP_flynn.inc"
-!-- Flynn (2001):
-#include "F_PROCESS/FQUOTA/f_fQPP_geid.inc"
-
-!----------------------------------------------------------------------------------------------------
-!---- Quota functions of growth limitation by several nutrients (2 or more limiting nutrients) ------
-!----------------------------------------------------------------------------------------------------
-!
-! -- Case where we the minimum is calculated on the fQ quota function:
-!-- Caperon & Meyer (1972):
-!#include "F_PROCESS/FQUOTA/MULTI_LIM/f_fQPP_capmey_min.inc"
-!-- Droop (1968):
-!#include "F_PROCESS/FQUOTA/MULTI_LIM/f_fQPP_droop_min.inc"
-!-- Geider et al. (1998):
-!#include "F_PROCESS/FQUOTA/MULTI_LIM/f_fQPP_flynn_min.inc"
-!-- Flynn (2001):
-!#include "F_PROCESS/FQUOTA/MULTI_LIM/f_fQPP_geid_min.inc"
-!
-! -- Case where the minimum is calculated on the Q/Qmax ratio:
-!-- Caperon & Meyer (1972):
-!#include "F_PROCESS/FQUOTA/MULTI_LIM/f_fQPP_capmey_min2.inc"
-!-- Droop (1968):
-!#include "F_PROCESS/FQUOTA/MULTI_LIM/f_fQPP_droop_min2.inc"
-!
-!---------------------------------------------------------------------------------
-!---- Photoacclimatation models for the Chl dynamics (Chl is a state variable) ---
-!---------------------------------------------------------------------------------
-!
-! Geider et al. (1998)
-!#include "F_PROCESS/PChl/f_pchl_geid98.inc"
-! Baklouti et al. (2006)  
-#include "F_PROCESS/PChl/f_pchl_bak06.inc" 
-!
-!------------------------------------------------------------------------
-!---- Correlations for the Chl:C ratio (Chl is not a state variable) ----
-!------------------------------------------------------------------------
-!
-! Cloern et al. (19f_ChlC_cloern_95.inc)
-#include "F_PROCESS/Chl_C/f_ChlC_cloern_95.inc"
-! Smith and Tett (2000)  
-!#include "F_PROCESS/Chl_C/f_ChlC_smith_tett_00.inc" 
-!
-!-----------------------------------------------------------------
-!----     Bacterial production models (PB)                --------
-!-----------------------------------------------------------------
-
-! uptake de COD selon Monod-Michaelis-Menten: 
-!-----------------------------------------
-! utiliser les modeles d''uptake f_upt_monod*.inc fournis dans le 
-! repertoire../../CONFIG_ECO3M/F_PROCESS/UPT/
-#include "F_PROCESS/PBACT/f_gbp_monod.inc"
-!-----------------------------------------------------------------
-!---------   Respiration models   -------------------------------
-!-----------------------------------------------------------------
-#include "F_PROCESS/RESP/f_respB_vichi07.inc"
-!-----------------------------------------------------------------
-!-------   Release models :    excretion, exudation...  ----------
-!-----------------------------------------------------------------
-!
-!-----------------------------------------------------------------
-!---------- Uptake models     ------------------------------------
-!-----------------------------------------------------------------
-!
-!-- Monod-Michaelis-Menten (Vmax in s-1)
-#include "F_PROCESS/UPT/f_upt_monod.inc"
-!-- Monod-Michaelis-Menten (Vmax in molN molC-1 s-1)
-#include "F_PROCESS/UPT/f_upt_monod_C_units.inc"
-!-- Monod-Michaelis-Menten (Vmax calculated by PBmaxQmax)
-#include "F_PROCESS/UPT/f_upt_monod_Qmax.inc"
-!
-!-- Vichi et al.(2007) model for bacterial uptake/exudation of nutrients:
-#include "F_PROCESS/UPT/f_uptB_nut_vichi07.inc"
-!-- inhibition d''uptake nitrate par ammonium ---
-#include "F_PROCESS/UPT/f_inhib_harrison.inc"
-!--------------------------------------------------
-!---- Quota functions limiting nutrient uptake ----
-!--------------------------------------------------
-!
-!-- Flynn (2003):
-#include "F_PROCESS/FQUOTA/f_fQupt_flynn.inc"
-!-- Geider et al. (1998):
-#include "F_PROCESS/FQUOTA/f_fQupt_geid.inc"
-!-- Lehman et al. (1975):
-#include "F_PROCESS/FQUOTA/f_fQupt_lehman.inc"
-!
-!---------------------------------------------------
-! ----- Grazing models : case of a single prey  ----
-!---------------------------------------------------
-!
-!-- Holling II model 
-!#include "F_PROCESS/GRAZ/SINGL_PREY/f_graz_C_holling2.inc"
-!
-!--------------------------------------------------
-! ----- Grazing models : case of several preys ---- 
-!--------------------------------------------------
-!
-!-- Holling II model with Chesson''s (1983) preferences
-!#include "F_PROCESS/GRAZ/MULT_PREYS/f_graz_C_hol2_chesson.inc"
-!
-!--Holling II model with Murdoch''s (1973) preferences
-!#include "F_PROCESS/GRAZ/MULT_PREYS/f_graz_C_hol2_murdoch.inc"
-!
-!-- Evans () threshold model
-!#include "F_PROCESS/GRAZ/MULT_PREYS/f_graz_C_thres_evans.inc"
-!
-!-- Fasham model
-#include "F_PROCESS/GRAZ/MULT_PREYS/f_graz_C_Fasham90.inc"
-#include "F_PROCESS/GRAZ/MULT_PREYS/f_graz_C2X.inc"
-!
-!--------------------------------------------------------------
-! --------- Mortality models             ----------------------
-!--------------------------------------------------------------
-!
-!-- Linear mortality law:
-#include "F_PROCESS/MORT/f_mort_linear.inc"
-!-- Quadratic mortality law :
-#include "F_PROCESS/MORT/f_mort_quadratique.inc"
-!
-!-----------------------------------------------------------------
-! --------- Mineralization  models       -------------------------
-!-----------------------------------------------------------------
-#include "F_PROCESS/REMIN/f_rem.inc"
-!-----------------------------------------------------------------
-! ---------  Nitrification  models       -------------------------
-!-----------------------------------------------------------------
-!
-!-- Adapted from Vichi et al.(2007) 
-#include "F_PROCESS/NITRIF/f_nitrif_vichi07diaz.inc"
-!
-!-----------------------------------------------------------------
-!---- Mod¿le de retour du zooplancton: source de DET_C et DET_N --
-!-----------------------------------------------------------------
-!
-!-----------------------------------------------------------------
-!----------------- Temperature models ----------------------------
-!-----------------------------------------------------------------
-!-- Arrhenius (1889):
-!#include "F_PROCESS/TEMP/f_tfunc_Arrhenius.inc"
-!
-!-- Q10 formulation:
-#include "F_PROCESS/TEMP/f_tfunc_Q10.inc"
-!
-!-- Lacroix&Gregoire (2002)
-#include "F_PROCESS/TEMP/f_tfunc_Lacroix02.inc"
-!
-!-----------------------------------------------------------------
-!----- Light attenuation models in the water column           ----
-!-----------------------------------------------------------------
-!-- Morel (1988) model:
-!#include "F_PROCESS/LIGHT/ATTENUATION/f_extinc_morel88.inc"
-!-- Morel (1993) model:
-#include "F_PROCESS/LIGHT/ATTENUATION/f_extinc_morel93.inc"
-!-- Bricaud (1998) model :
-!#include "F_PROCESS/LIGHT/ATTENUATION/f_extinc_bricaud98.inc"
-!-- Levy (2005) model  
-!#include "F_PROCESS/LIGHT/ATTENUATION/f_extinc_levy.inc"
-
+    !-----------------------------------------------------------------------------
+    !---------------------------------CROISSANCE----------------------------------
+    !-----------------------------------------------------------------------------
+    !FONCTION DE CROISSANCE:
+!#include "F_PROCESS/GROWTH/f_growth_cell_droop.inc"
+#include "F_PROCESS/GROWTH/f_growth_cell_droop_2020.inc"
+#include "F_PROCESS/GROWTH/f_growth_cell_droop_conv.inc"
+!#include "F_PROCESS/GROWTH/f_grow_cell_droop_conv_NP.inc"
+    !-----------------------------------------------------------------------------
+    !-------------------- LIMITATION PAR DES QUOTA INTRACELLULAIRES---------------
+    !-----------------------------------------------------------------------------
+    !-----------------------------------------------------------------------------
+    !----------------------NITRIFICATION------------------------------------------
+#include "F_PROCESS/NITRIF/f_nitrif_linear.inc"
+    !-----------------------------------------------------------------------------
+    !-----------------------------------------------------------------------------
+    !---------------------------------RESPIRATION---------------------------------
+    !-----------------------------------------------------------------------------
+    !FONCTION DE THINGSTAD(COUT DE LA CROISSANCE):
+#include "F_PROCESS/RESP/f_resp.inc"
+#include "F_PROCESS/RESP/f_resp_maint.inc"
+    !-----------------------------------------------------------------------------
+    !----------------------PRODUCTION DE CHLOROPHYLLE-----------------------------
+    !-----------------------------------------------------------------------------
+!#include "F_PROCESS/PChl/f_lchl_bak06_2018.inc"
+!#include "F_PROCESS/PChl/f_lchl_bak06_2019.inc"
+#include "F_PROCESS/PChl/f_lchl_bak06_2020.inc"
+#include "F_PROCESS/PChl/f_lchl_bak06_2021.inc"
+!#include "F_PROCESS/PChl/f_Chl_bak2021.inc"
+!#include "F_PROCESS/PChl/f_lchl_bak06_2019b.inc"
+!#include "F_PROCESS/FQUOTA/f_fQChl.inc"
+!#include "F_PROCESS/FQUOTA/f_fQChl_2019.inc"
+#include "F_PROCESS/FQUOTA/f_fQChl_2020.inc"
+    !-----------------------------------------------------------------------------
+    !------------------------FONCTION DE DIAZOTROPHIE-----------------------------
+    !-----------------------------------------------------------------------------
+    !-----------------------------------------------------------------------------
+    !-------------------------REMINERALISATION DE LA MO---------------------------
+    !-----------------------------------------------------------------------------
+#include "F_PROCESS/REMIN/f_hydrolysis.inc"
+#include "F_PROCESS/REMIN/f_hydrolysis_XC.inc"
+!#include "F_PROCESS/REMIN/f_rem_DOM.inc"
+#include "F_PROCESS/REMIN/f_rem_DOM_baretta95.inc"
+    !-----------------------------------------------------------------------------
+    !--------------------------PREDATION DU ZOOPLANCTON---------------------------
+    !-----------------------------------------------------------------------------
+#include "F_PROCESS/GRAZ/M_PROIES/f_graz_KOOIJ_KTW_cell.inc"
+#include "F_PROCESS/GRAZ/M_PROIES/f_graz_hol2_mpreys_X.inc"
+    !-----------------------------------------------------------------------------
+#include "F_PROCESS/LIGHT/ATTENUATION/f_extinc_morel88.inc"
+    !-----------------------------------------------------------------------------
 END MODULE mod_eco3m_fprocess

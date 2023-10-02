@@ -31,6 +31,7 @@ SOURCE=$SOURCE_CROCO
 echo 'SOURCE_CROCO='$SOURCE_CROCO
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
+useECO3M=true
 #
 # determine operating system
 #
@@ -115,6 +116,11 @@ ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB6
 ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/* $SCRDIR
 ls ${ROOT_DIR}/BLOOM/*         > /dev/null 2>1 && \cp -r ${ROOT_DIR}/BLOOM/* $SCRDIR
 ls ${ROOT_DIR}/BIOLINK/*         > /dev/null 2>1 && \cp -r ${ROOT_DIR}/BIOLINK/* $SCRDIR
+ls ${ROOT_DIR}/ECO3M/SRC/src_eco3m/*.F90     > /dev/null 2>1 && \cp  ${ROOT_DIR}/ECO3M/SRC/src_eco3m/*.F90 $SCRDIR
+ls ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/F_PROCESS  > /dev/null 2>1 && \cp -r ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/F_PROCESS $SCRDIR
+ls ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/config.ini > /dev/null 2>1 && \cp  ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/config.ini $SCRDIR
+ls ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/modele.def > /dev/null 2>1 && \cp  ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/modele.def $SCRDIR
+ls ${ROOT_DIR}/ECO3M/MAKE/*.inc              > /dev/null 2>1 && \cp  ${ROOT_DIR}/ECO3M/MAKE/*.inc $SCRDIR
 
 
 if [[ -e "namelist_pisces_ref" ]] ; then
@@ -142,6 +148,9 @@ ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
 ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
 ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
 ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
+if [ "$useECO3M" = true ]; then                
+	ln -sf ${ROOT_DIR}/ECO3M $RUNDIR/../.
+fi
 #
 # RVTK  files  DEBUG CPP KEYS
 #
@@ -156,6 +165,10 @@ cd $SCRDIR
 #
 LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
 CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
+if [ "$useECO3M" = true ]; then                 
+   CPPFLAGS1="$CPPFLAGS1 -DECO3M_SUB -DCALC -DCOUPL -DRGB" 
+fi
+
 #
 # Set compilation options
 #
