@@ -98,6 +98,9 @@ function(croco_change_loop_preprocess list_to_update)
 		string(REGEX REPLACE "\\.F" ".mpc.F"   newfile_loops_mpc     ${newfile_loops})
 		string(REGEX REPLACE "\\.F" ".fix.F"   newfile_loops_mpc_fix ${newfile_loops_mpc})
 
+		# get deps
+		file(GLOB_RECURSE PSYCLONE_SCRIPTS "${CMAKE_SOURCE_DIR}/PSYCLONE/*.py")
+
 		# build command
 		add_custom_command(
 			OUTPUT ${newfile_loops_mpc_fix}
@@ -108,6 +111,7 @@ function(croco_change_loop_preprocess list_to_update)
 			DEPENDS mpc
 			        ${OCEAN_CPP_H}
 			        ${CMAKE_CURRENT_SOURCE_DIR}/change_loops.py
+			        ${PSYCLONE_SCRIPTS}
 			VERBATIM
 		)
 		list(APPEND _newfiles ${newfile_loops_mpc_fix})

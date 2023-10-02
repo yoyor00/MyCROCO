@@ -15,12 +15,10 @@ generic intead.
 '''
 
 ##########################################################
-VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
-VARS_3D = ['fx', 'fe', 'work', 'work2']
-
-##########################################################
+from .directives.ACCSetDeviceNumDirective import ACCSetDeviceNumDirective
 from psyclone.psyir.nodes import Node, Routine, Literal
 from psyclone.psyir.symbols import DataSymbol, INTEGER_TYPE, BOOLEAN_TYPE
+from psyclone.psyir.nodes import Call, IntrinsicCall
 
 ##########################################################
 def add_missing_device_vars(root_node: Node) -> None:
@@ -55,3 +53,25 @@ def add_missing_device_vars(root_node: Node) -> None:
             # add const boolean 'compute_on_device' = true
             symbol = DataSymbol("compute_on_device", BOOLEAN_TYPE, is_constant = True, initial_value = Literal("true", BOOLEAN_TYPE))
             routine.symbol_table.add(symbol)
+
+##########################################################
+def set_device_tile(root_node: Node) -> None:
+    """
+    Mimic existing ACC code.
+
+    Future: This can be done automatically.
+    """
+    routines = root_node.walk(Routine)
+    for routine in routines:
+        # set device directive
+        if routine.name == "step3d_t" or routine.name == "step3d_uv2":
+            """
+            Some hack to insert an 'acc device_num=tile'
+            """
+            # add acc set device
+            calls = routine.walk(Call)
+            for call in calls:
+                if not isinstance(call, IntrinsicCall):
+                    break
+            pos = call.position
+            call.parent.children.insert(pos, ACCSetDeviceNumDirective(device_num='tile'))
