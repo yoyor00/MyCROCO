@@ -35,8 +35,10 @@ auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL 
 gls_history_fields:   TKE  GLS  Lscale
                        F     F    F
 
-sediments_mustang: input file
+substance: input file
                MUSTANG_NAMELIST/parasubstance_MUSTANG_estuary.txt
+
+sediments_mustang: input file           
                MUSTANG_NAMELIST/paraMUSTANGV1_estuary.txt
 
 rho0:
