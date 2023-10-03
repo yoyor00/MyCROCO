@@ -10,7 +10,7 @@ Implement some basic unit test check check the transformation device helper func
 '''
 
 ##########################################################
-from .scratch import *
+from ..scratch import *
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 

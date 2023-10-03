@@ -76,7 +76,8 @@ macro(croco_tune_compile_flags)
 	# OpenACC is enabled
 	if (OPENACC)
 		if(CMAKE_Fortran_COMPILER_ID STREQUAL "PGI" OR CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
-			list(APPEND CROCO_FORTRAN_FLAGS -acc=gpu -Minfo=accel)
+			list(APPEND CROCO_FORTRAN_FLAGS -acc=gpu)
+			#list(APPEND CROCO_FORTRAN_FLAGS -Minfo=accel)
 		else()
 			message(FATAL_ERROR "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
 			                    "Unsupported compiler (${CMAKE_Fortran_COMPILER}) to use OpenACC !\n"
