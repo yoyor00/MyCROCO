@@ -15,10 +15,12 @@ generic intead.
 '''
 
 ##########################################################
+from .loops_helpers import is_loop_using_var
 from .directives.ACCSetDeviceNumDirective import ACCSetDeviceNumDirective
 from psyclone.psyir.nodes import Node, Routine, Literal
 from psyclone.psyir.symbols import DataSymbol, INTEGER_TYPE, BOOLEAN_TYPE
-from psyclone.psyir.nodes import Call, IntrinsicCall
+from psyclone.psyir.nodes import Call, IntrinsicCall, Node, Loop
+from psyclone.psyir.nodes.acc_directives import ACCLoopDirective
 
 ##########################################################
 def add_missing_device_vars(root_node: Node) -> None:
@@ -75,3 +77,20 @@ def set_device_tile(root_node: Node) -> None:
                     break
             pos = call.position
             call.parent.children.insert(pos, ACCSetDeviceNumDirective(device_num='tile'))
+
+##########################################################
+def set_private_on_loop(top_loop: Node, loop_var: str, vars:list):
+    """
+    Add acc private on all these loops
+
+    TODO: if it's ACC related, use acc_ prefix for this function call.
+    """
+    loop: Loop
+    for loop in top_loop.walk(Loop):
+        if loop.variable.name == loop_var and is_loop_using_var(loop, vars):
+            parent = loop.parent
+            pos = loop.position
+            loop_directive = ACCLoopDirective(private=vars)
+            loop.detach()
+            loop_directive.children[0].children.append(loop)
+            parent.children.insert(pos, loop_directive)

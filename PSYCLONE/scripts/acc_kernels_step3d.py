@@ -21,19 +21,16 @@ much code as possible in each Kernels region).
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
 VARS_3D = ['fx', 'fe', 'work', 'work2']
 
-from extensions.device import add_missing_device_vars, set_device_tile
+from extensions.acc import add_missing_device_vars, set_device_tile, set_private_on_loop
 from extensions.scratch import add_1d_scratch_var, add_3d_scratch_var, patch_scratch_1d_arrays, patch_scratch_3d_arrays
-from extensions.loops import extract_loop_indices_order, get_first_loop_on, detach_and_get_childs
+from extensions.loops import extract_loop_indices_order, get_first_loop_on, detach_and_get_childs, is_loop_using_var, handle_jki_loop, handle_kji_loop, handle_jik_loop
 from poseidon.dsl.helper import *
 from psyclone.psyir.nodes.routine import Routine
-from psyclone.psyir.nodes.call import Call
-from poseidon_extensions import ACCSetDeviceNumDirective
 from psyclone.transformations import ACCEnterDataTrans
 from psyclone.psyir.transformations.transformation_error import \
     TransformationError
-from psyclone.psyir.symbols import DataSymbol, REAL_TYPE, INTEGER_TYPE, BOOLEAN_TYPE, ArgumentInterface
-from psyclone.psyir.nodes import Loop, Node, Reference, ArrayReference, \
-    Routine, Literal, BinaryOperation, ACCLoopDirective, Schedule, IntrinsicCall
+from psyclone.psyir.nodes import Loop, Node, Reference, \
+    Routine, Schedule, IntrinsicCall
 from psyclone.psyir.symbols import Symbol, ArrayType
 from psyclone.transformations import ACCEnterDataTrans, ACCLoopTrans
 from psyclone.core import Signature
@@ -41,210 +38,6 @@ from psyclone.nemo import NemoACCEnterDataDirective as \
                 AccEnterDataDir, InlinedKern
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
-
-def handle_kji_loop(top_loop: Loop) -> None:
-    """
-    Swapping indices of 'kji' loops to TODO
-    """
-    # get top k loop
-    k_loop = get_first_loop_on(top_loop, 'k')
-
-    # check ok
-    assert k_loop.variable.name == 'k'
-
-    # get infos
-    k_loop_position = k_loop.position
-    parent_node = k_loop.parent
-
-    # detach all child ops to keep the k loop as template
-    ops = detach_and_get_childs(k_loop)
-
-    # remove template k_loop
-    k_loop.detach()
-   
-    # rebuild
-    op: Node
-    for i, op in enumerate(ops):
-        # re inject in place of k_loop
-        print(parent_node.view())
-        parent_node.addchild(op, k_loop_position + i)
-
-        # TODO before downling in ifs we need to check we didn't crossed
-        # usage of k in the in-between ops
-        for loop in op.walk(Loop, stop_type=Loop):
-            # remember loop pos
-            loop_position = loop.position
-            loop_parent = loop.parent
-
-            # detach it to put in in k_loop
-            loop.detach()
-            new_k_loop = k_loop.copy()
-            new_k_loop.loop_body.addchild(loop)
-
-            # put in place
-            if loop_parent != None:
-                loop_parent.addchild(new_k_loop, loop_position)
-
-     # patch vars
-    patch_scratch_3d_arrays(top_loop, VARS_3D)
-
-def handle_kji_loop_old(top_loop: Loop) -> None:
-    """
-    TODO: obsolete
-    """
-    # get top k loop
-    k_loop = get_first_loop_on(top_loop, 'k')
-
-    # check ok
-    assert k_loop.variable.name == 'k'
-
-    # get infos
-    k_loop_position = k_loop.position
-    parent_node = k_loop.parent
-
-    # detach all child ops to keep the k loop as template
-    ops = detach_and_get_childs(k_loop)
-
-    # rebuild N k-loops
-    new_loops = [k_loop]
-    pos = k_loop_position
-    for i in range(len(ops) - 1):
-        new_empty_loop = k_loop.copy()
-        new_loops.append(new_empty_loop)
-
-    # fill
-    for i, op in enumerate(ops):
-        inner_new_loop = new_loops[i]
-        inner_new_loop.loop_body.addchild(op)
-
-    # attach loops
-    for i in range(len(new_loops) - 1):
-        parent_node.addchild(new_loops[i+1], pos + i + 1)
-
-    # patch vars
-    patch_scratch_3d_arrays(top_loop, VARS_3D)
-
-
-def is_loop_using_var(loop: Loop, vars: list):
-    """
-    Check if loop is using var as index
-    """
-    for ref in loop.walk(Reference):
-        if ref.name in vars:
-            return True
-    return False
-
-
-def set_private_on_loop(top_loop: Node, loop_var: str, vars:list):
-    """
-    Add acc private on all these loops
-
-    TODO: if it's ACC related, use acc_ prefix for this function call.
-    """
-    loop: Loop
-    for loop in top_loop.walk(Loop):
-        if loop.variable.name == loop_var and is_loop_using_var(loop, vars):
-            parent = loop.parent
-            pos = loop.position
-            loop_directive = ACCLoopDirective(private=vars)
-            loop.detach()
-            loop_directive.children[0].children.append(loop)
-            parent.children.insert(pos, loop_directive)
-
-def handle_jki_loop(top_loop: Loop) -> None:
-    """
-    TODO: Describe it
-    """
-    # remove inner j loops
-    for inner_i_loop in top_loop.walk(Loop):
-        if inner_i_loop.variable.name == 'i':
-            parent = inner_i_loop.parent
-            inner_loop_position = inner_i_loop.position
-            childs = []
-            for op in inner_i_loop.loop_body:
-                childs.append(op)
-            for op in childs:
-                op.detach()
-            for op in childs:
-                parent.addchild(op, inner_loop_position)
-            inner_i_loop.detach()
-    # put i loop on top to make j,i, k 
-    childs = []
-    for op in top_loop.loop_body:
-        childs.append(op)
-    for op in childs:
-        op.detach()
-    for op in childs:
-        inner_i_loop.loop_body.addchild(op)
-    top_loop.loop_body.addchild(inner_i_loop)
-
-    # patch arrays
-    patch_scratch_1d_arrays(top_loop, VARS_1D)
-
-    # add private to i loops
-    set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'dZ1D', 'dR1D'])
-
-def handle_jik_loop(top_loop: Loop, do_k_loop_fuse: bool = True) -> None:
-    """
-    Describe what it does
-    """
-    # remove inner j loops
-    #for inner_i_loop in top_loop.walk(Loop):
-    #    if inner_i_loop.variable.name == 'i':
-    #        parent = inner_i_loop.parent
-    #        inner_loop_position = inner_i_loop.position
-    #        childs = []
-    #        for op in inner_i_loop.loop_body:
-    #            childs.append(op)
-    #        for op in childs:
-    #            op.detach()
-    #        for op in childs:
-    #            parent.addchild(op, inner_loop_position)
-    #        inner_i_loop.detach()
-    ## put i loop on top to make j,i, k 
-    #childs = []
-    #for op in top_loop.loop_body:
-    #    childs.append(op)
-    #for op in childs:
-    #    op.detach()
-    #for op in childs:
-    #    inner_i_loop.loop_body.addchild(op)
-    #top_loop.loop_body.addchild(inner_i_loop)
-
-    # swap the i inner loop
-    for inner_i_loop in top_loop.walk(Loop):
-        parent_loop = inner_i_loop.ancestor(Loop)
-        if parent_loop != None and parent_loop.variable.name == 'k':
-            if inner_i_loop.variable.name == 'i':
-                LoopSwapTrans().apply(parent_loop)
-
-    # remove inline kernel which generate bug
-    for ikernel in top_loop.walk(InlinedKern):
-        ikernel.parent.replace_with(Schedule(children=ikernel.children[0].pop_all_children()))
-
-    # fuse k loops
-    if do_k_loop_fuse:
-        lst = []
-        for inner_i_loop in top_loop.walk(Loop):
-            if inner_i_loop.variable.name == 'i':
-                lst.append(inner_i_loop)
-        top_id = 0
-        next_id = top_id + 1
-        while next_id < len(lst):
-            if lst[top_id].parent == lst[next_id].parent and lst[top_id].position == lst[next_id].position - 1:
-                merge = True
-                LoopFuseTrans().apply(lst[top_id], lst[next_id])
-                next_id += 1
-            else:
-                top_id = next_id
-                next_id += 1
-
-    # patch arrays
-    patch_scratch_1d_arrays(top_loop, VARS_1D)
-
-    # add private to i loops
-    set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'bc1d'])
-
 
 def apply_acc_loop_collapse(kernels: KernelList, options: dict) -> None:
     """
@@ -376,13 +169,13 @@ def trans(psy):
                 if vars[0:3] == ['k','j','i']:
                     if routine.name == "pre_step3d_tile":
                         #TODO might look to make work, work2 to possibly fix an issue and do not apply
-                        handle_kji_loop(top_loop)
+                        handle_kji_loop(top_loop, VARS_3D)
                     else:
                         patch_scratch_3d_arrays(top_loop, VARS_3D)
                 elif vars[0:3] == ['j','k','i']:
-                    handle_jki_loop(top_loop)
+                    handle_jki_loop(top_loop, VARS_1D, ['fc1d', 'cf1d', 'dc1d', 'dZ1D', 'dR1D'])
                 elif vars[0:3] == ['j','i','k']:
-                    handle_jik_loop(top_loop, do_k_loop_fuse=True)
+                    handle_jik_loop(top_loop, VARS_1D, ['fc1d', 'cf1d', 'dc1d', 'bc1d'], do_k_loop_fuse=True)
             
             ############################################################
             # add scratch 3d vars

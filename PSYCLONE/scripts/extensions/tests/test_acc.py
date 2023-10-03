@@ -10,9 +10,10 @@ Implement some basic unit test check check the transformation device helper func
 '''
 
 ##########################################################
-from .device import *
+from ..acc import *
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
+from psyclone.transformations import ACCParallelTrans
 
 ##########################################################
 def test_add_missing_device_vars_step3d():
@@ -125,6 +126,74 @@ subroutine step3d_t(istr)
 
   !$acc set device_num(tile)
   call child_subroutine(istr)
+
+end subroutine step3d_t
+'''
+
+##########################################################
+def test_set_private_on_loop():
+    '''
+    Check whether it inserts the vars in subroutine.
+    '''
+    # parse to get IR tree
+    root_node: Node
+    root_node = FortranReader().psyir_from_source('''
+        subroutine step3d_t(N)
+            integer*4 N, i, j, k
+            real tt(N, 10, 20)
+            implicit none
+            do k = 1, 100
+                do j = 1, 10
+                    do i = 1, 20
+                        tt(i, j, k) = i+j+k
+                    end do
+                end do
+                do j = 1, 10
+                    do i = 1, 20
+                        tt(i, j, k) = i+j+k
+                    end do
+                end do
+            end do
+        end
+    ''', free_form = True)
+
+    # apply
+    k_loop = root_node.walk(Loop)[0]
+    assert k_loop.variable.name == 'k'
+
+    # patch
+    ACCParallelTrans().apply(k_loop, options={})
+    set_private_on_loop(k_loop, 'i', ['tt'])
+
+    # regen
+    gen_source = FortranWriter()(root_node)
+    print(gen_source)
+
+    # check
+    assert gen_source == '''\
+subroutine step3d_t(n)
+  integer*4 :: n
+  integer*4 :: i
+  integer*4 :: j
+  integer*4 :: k
+  real, dimension(n,10,20) :: tt
+
+  !$acc parallel default(present)
+  do k = 1, 100, 1
+    do j = 1, 10, 1
+      !$acc loop independent private(tt)
+      do i = 1, 20, 1
+        tt(i,j,k) = i + j + k
+      enddo
+    enddo
+    do j = 1, 10, 1
+      !$acc loop independent private(tt)
+      do i = 1, 20, 1
+        tt(i,j,k) = i + j + k
+      enddo
+    enddo
+  enddo
+  !$acc end parallel
 
 end subroutine step3d_t
 '''

@@ -92,10 +92,10 @@ function run()
 
 function filter()
 {
-	local fname=$1
+	local filename=$1
 	if [[ ${FILTER} == '' ]]; then
 		return 0
-	elif [[ ${fname} == ${FILTER} ]]; then
+	elif [[ ${filename} == ${FILTER} ]]; then
 		return 0
 	else
 		return 1
@@ -121,12 +121,12 @@ if [[ ${NATIVE_BUILD_DIR} != 'OFF' ]]; then
 	for file in $(find ${NATIVE_PREP_DIR} -iname "*.fix.F"); do
 		orig_name=$(basename $file | sed -e 's/\.cpp\.mpc\.loops\.mpc\.fix//g')
 		fname=$(basename $file)
-		if [[ -f ${PREP_DIR}/compare/acc/${orig_name}90 ]]; then
+		#if [[ -f ${PREP_DIR}/compare/acc/${orig_name}90 ]]; then
 			#ln -sf ${NATIVE_PREP_DIR}/${fname} ${PREP_DIR}/compare/orig-acc/${orig_name}90
-			filter ${orig_name} && run psyclone -api nemo -l output -opsy ${PREP_DIR}/compare/orig-acc/${orig_name}90 ${NATIVE_PREP_DIR}/${fname} &
-		fi
+			filter ${orig_name}90 && run psyclone -api nemo -l output -opsy ${PREP_DIR}/compare/orig-acc/${orig_name}90 ${NATIVE_PREP_DIR}/${fname} &
+		#fi
 	done
-	wait
+	wait || exit 1
 fi
 
 # kaunch

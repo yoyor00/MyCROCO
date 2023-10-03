@@ -6,11 +6,14 @@
 
 ##########################################################
 '''
-Implement some basic unit test check check the transformation device helper functions.
+Implement some basic unit test check check the transformation device helper
+functions.
 '''
 
 ##########################################################
-from .loops import *
+import pytest
+from ..loops_helpers import *
+from psyclone.psyir.nodes import Node
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 
@@ -128,7 +131,6 @@ def test_detach_and_get_childs():
     gen_source = FortranWriter()(root_node)
 
     # check
-    print(gen_source)
     assert gen_source == '''\
 subroutine step3d_t(n)
   integer*4 :: n
@@ -151,3 +153,34 @@ subroutine step3d_t(n)
 
 end subroutine step3d_t
 '''
+
+##########################################################
+def is_loop_using_var():
+    '''
+    Check whether it inserts the vars in subroutine.
+    '''
+    # parse to get IR tree
+    root_node: Node
+    root_node = FortranReader().psyir_from_source('''
+        subroutine step3d_t(N)
+            integer*4 N, i, j, k
+            integer*4 istr, jstr, iend, jend
+            real fx(N, 20)
+            implicit none
+            do i = 1, 10
+                do j = 1, 20
+                    do k = 1, 10
+                        fx(i, j) = i+j+k
+                    end do
+                end do
+            end do
+        end
+    ''', free_form = True)
+
+    # apply
+    first_loop = root_node.walk(Loop)[0]
+    k_loop = get_first_loop_on(first_loop, "k")
+
+    # check
+    assert is_loop_using_var(k_loop, "k")
+    assert not is_loop_using_var(k_loop, "l")
