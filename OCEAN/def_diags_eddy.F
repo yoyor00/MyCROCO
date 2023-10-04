@@ -1168,6 +1168,8 @@
 # undef viddiags_vbv
 # undef viddiags_usu
 # undef viddiags_vsv
+# undef viddiags_ugsu
+# undef viddiags_vgsv
 !
 # ifdef AVERAGES
 #  ifndef AVRH
