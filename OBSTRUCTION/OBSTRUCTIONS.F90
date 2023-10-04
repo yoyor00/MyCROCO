@@ -60,6 +60,8 @@ MODULE OBSTRUCTIONS
    ! ******************************
    ! * READING CHARACTERISTICS FILE
    ! ******************************
+   ! update obst_height_inst, obst_width_inst, obst_thick_inst
+    ! obst_dens_inst and obst_area_index_inst
    CALL OBSTRUCTIONS_readfile_char(limin, limax, ljmin, ljmax)
 
 
@@ -70,6 +72,7 @@ MODULE OBSTRUCTIONS
          ! **************************************
          obst_uz(:) = (u(i,j,:,nstp) + u(i+1,j,:,nstp)) / 2.
          obst_vz(:) = (v(i,j,:,nstp) + v(i,j+1,:,nstp)) / 2.
+
          ! ***********************************************
          ! * COMPUTES CELL THICKNESS AND HEIGHT AT CENTER
          ! ***********************************************
@@ -78,13 +81,13 @@ MODULE OBSTRUCTIONS
          DO k = 2, obst_kmax
             obst_zc(k) = obst_zc(k-1) + Hz(i,j,k-1) / 2. + Hz(i,j,k) / 2.
          ENDDO
-
+         ! at this phase of time stepping, total water height is obtain with Zt_avg1
          hwat = h(i,j) + Zt_avg1(i,j)
 
          ! ************************
          ! * UPDATING OBSTRUCTION 
          ! ************************
-         CALL o1dv_main(hwat, cm0, zob(i,j), obst_uz, obst_vz, obst_dz, obst_zc, &
+         CALL o1dv_main(hwat, cm0, obst_z0bed(i,j), obst_uz, obst_vz, obst_dz, obst_zc, &
             obst_height_inst(:,i,j), obst_dens_inst(:,i,j), &
             obst_thick_inst(:,i,j), obst_width_inst(:,i,j), &
             obst_position(:,i,j), obst_height(:,i,j), &
@@ -94,14 +97,17 @@ MODULE OBSTRUCTIONS
          ! * SAVE FOR OUTPUT
          ! ************************
          obst_height(:,i,j) = obst_output_ij%height(:)
-         obst_dens3d(:,:,i,j) = obst_output_ij%dens(:,:)
-         obst_width3d(:,:,i,j) = obst_output_ij%width(:,:)
-         obst_thick3d(:,:,i,j) = obst_output_ij%thick(:,:)
+         obst_dens3d(:,:,i,j) = obst_output_ij%dens3d(:,:)
+         obst_width3d(:,:,i,j) = obst_output_ij%width3d(:,:)
+         obst_thick3d(:,:,i,j) = obst_output_ij%thick3d(:,:)
          obst_fuz(i,j,:) = obst_output_ij%fuz(:)
          obst_fvz(i,j,:) = obst_output_ij%fvz(:)
-         obst_a3d(:,i,j,:) = obst_output_ij%a3d(:,:)
+         obst_a3d(:,:,i,j) = obst_output_ij%a3d(:,:)
          obst_tau(i,j,:) = obst_output_ij%tau(:)
          obst_t(i,j,:) = obst_output_ij%t(:)
+         if (obst_nv_noturb > 0) then
+            zob(i,j) = obst_output_ij%z0obst(obst_nbvar+1)
+         endif
       ENDDO
    ENDDO
 

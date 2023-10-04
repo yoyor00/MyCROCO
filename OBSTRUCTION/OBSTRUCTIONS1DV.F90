@@ -10,6 +10,7 @@ MODULE OBSTRUCTIONS1DV
    ! SUBROUTINES and VARIABLE names of this module are precede by "o1dv_"
    !
    ! Vertical axis is from 1 at bottom to o1dv_kmax at sea surface
+   !
    
    IMPLICIT NONE
    PRIVATE
@@ -21,7 +22,7 @@ MODULE OBSTRUCTIONS1DV
    PUBLIC :: o1dv_main
    ! TYPE
    PUBLIC :: param_obst
-   PUBLIC :: output_obst
+   PUBLIC :: output_obst ! use of structure output to add flexibility for using it in the hydrodynamic code part
    
    ! Declaration
 
@@ -30,6 +31,8 @@ MODULE OBSTRUCTIONS1DV
    INTEGER, PARAMETER :: rsh = 8
    REAL(KIND = rsh), PARAMETER :: pi = 3.14159265358979323846 ! pi value in the module
    REAL(KIND = rsh), PARAMETER :: o1dv_c2turb = 1.92 
+   ! obst_c2turb = beta2 in gls kepsilon 
+   ! TODO : add compatibility test to be sure GLS_KEPSILON is used and take beta2 value at initialisation
    REAL(KIND = rsh), PARAMETER :: o1dv_p_hmin = 0.05_rsh ! Minimum coefficient value for 
                                                          ! obstruction height under bending  
 
@@ -38,18 +41,18 @@ MODULE OBSTRUCTIONS1DV
       CHARACTER(LEN = lchain) :: name   ! obstruction name (arbitrary, user defined)
       CHARACTER(LEN = 2)  :: type   ! type of obstruction, one of 'UP', 'DO' or '3D'
       LOGICAL       :: l_flexible   ! True if obstruction is flexible
-      LOGICAL       :: l_abdelposture  ! 
-      LOGICAL       :: l_param_height  ! 
-      LOGICAL       :: l_cylinder  ! 
+      LOGICAL       :: l_abdelposture
+      LOGICAL       :: l_param_height
+      LOGICAL       :: l_cylinder
       LOGICAL       :: l_noturb
       LOGICAL       :: l_drag_cste
       LOGICAL       :: l_abdelrough_cste
       LOGICAL       :: l_fracxy
       LOGICAL       :: l_z0bstress
       INTEGER       :: fracxy_type
-      INTEGER       :: c_abdel_nmax        ! 
+      INTEGER       :: c_abdel_nmax
       INTEGER       :: z0bstress_option 
-      REAL(KIND = rsh) :: c_rho        ! 
+      REAL(KIND = rsh) :: c_rho
       REAL(KIND = rsh) :: c_height_x0
       REAL(KIND = rsh) :: c_height_x1
       REAL(KIND = rsh) :: c_shelter
@@ -323,7 +326,7 @@ MODULE OBSTRUCTIONS1DV
    END FUNCTION o1dv_init_output
 
    !==============================================================================
-   SUBROUTINE o1dv_main(o1dv_hwat, o1dv_cmu, o1dv_z0, o1dv_uz, o1dv_vz, o1dv_dz, o1dv_zc, &
+   SUBROUTINE o1dv_main(o1dv_hwat, o1dv_cmu, o1dv_z0bed, o1dv_uz, o1dv_vz, o1dv_dz, o1dv_zc, &
       o1dv_height_f, o1dv_dens_f, o1dv_thick_f, o1dv_width_f, o1dv_position, o1dv_height_p, &
       o1dv_output)
       !!---------------------------------------------------------------------
@@ -338,7 +341,7 @@ MODULE OBSTRUCTIONS1DV
       !! * Arguments
       REAL(KIND = rsh), INTENT(IN) :: o1dv_hwat
       REAL(KIND = rsh), INTENT(IN) :: o1dv_cmu
-      REAL(KIND = rsh), INTENT(IN) :: o1dv_z0
+      REAL(KIND = rsh), INTENT(IN) :: o1dv_z0bed
       REAL(KIND = rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_uz
       REAL(KIND = rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_vz
       REAL(KIND = rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_dz
@@ -406,10 +409,10 @@ MODULE OBSTRUCTIONS1DV
 
          CALL o1dv_comp_projarea(o1dv_position, o1dv_dz, o1dv_output)
 
-         CALL o1dv_comp_obstroughness(o1dv_z0, o1dv_output)
-         ! comp_hydroparam
+         CALL o1dv_comp_obstroughness(o1dv_position, o1dv_z0bed, &
+               o1dv_height_f, o1dv_dens_f, o1dv_width_f, o1dv_output)
 
-         ! if not MUSTANG comp_bedroughness
+         CALL o1dv_comp_hydroparam(o1dv_position, o1dv_cmu, o1dv_uz, o1dv_vz, o1dv_output)
 
       ELSE ! Not enough water
          DO iv = 1, o1dv_nbvar
@@ -417,6 +420,7 @@ MODULE OBSTRUCTIONS1DV
                o1dv_output%height(:)  = 0.99_rsh * o1dv_height_f(:)
             ENDIF
          ENDDO
+         o1dv_output%z0obst(:) = o1dv_z0bed
       ENDIF
 
    END SUBROUTINE o1dv_main
@@ -1395,6 +1399,7 @@ MODULE OBSTRUCTIONS1DV
             o1dv_output%s3d(o1dv_nbvar+3,k) = MIN(o1dv_output%s3d(o1dv_nbvar+3,k) + o1dv_output%s3d(iv,k),gamma)
          ENDDO ! * END LOOP ON o1dv_NBVAR
       ENDDO ! * END LOOP ON K
+
       !----------------------------------
       ! Now computes depth-averaged value
       !----------------------------------
@@ -1486,7 +1491,8 @@ MODULE OBSTRUCTIONS1DV
    
    !!==========================================================================================================
 
-   SUBROUTINE o1dv_comp_obstroughness(o1dv_z0bed, o1dv_output)
+   SUBROUTINE o1dv_comp_obstroughness(o1dv_position, o1dv_z0bed, &
+      o1dv_height_f, o1dv_dens_f, o1dv_width_f, o1dv_output)
       !!---------------------------------------------------------------------
       !!                 ***  ROUTINE o1dv_comp_obstroughness  ***
       !!
@@ -1496,7 +1502,11 @@ MODULE OBSTRUCTIONS1DV
       IMPLICIT NONE
    
       !! * Arguments
+      REAL(KIND = rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_position
       REAL(KIND = rsh), INTENT(IN) ::  o1dv_z0bed
+      REAL(KIND = rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_height_f
+      REAL(KIND = rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_dens_f
+      REAL(KIND = rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_width_f
       TYPE(output_obst), INTENT(INOUT) :: o1dv_output
 
       !! * Local declaration
@@ -1515,22 +1525,22 @@ MODULE OBSTRUCTIONS1DV
          !--------------------------------
          ! *** Abdelhrman parameterization
          !--------------------------------
-         IF((.NOT.o1dv_l_downward(iv)).AND.(.NOT.o1dv_l_3dobst(iv)))THEN
-            IF(o1dv_position.GT.0.0_rsh)THEN
-               IF(o1dv_l_abdelrough_cste(iv))THEN
-                  coef = o1dv_c_crough_x0(iv)
+         IF(o1dv_obst_param(iv)%type == "UP")THEN ! * UPWARD (not downward and not 3D)
+            IF(o1dv_position(iv).GT.0.0_rsh)THEN
+               IF(o1dv_obst_param(iv)%l_abdelrough_cste)THEN
+                  coef = o1dv_obst_param(iv)%c_crough_x0
                ELSE
-                  coef = o1dv_c_crough_x1(iv) + o1dv_c_crough_x0(iv) * (o1dv_height_inst**2.0_rsh)/ &
-                        ((o1dv_height(iv,i,j)**2.0_rsh) * o1dv_width_inst*o1dv_dens_inst(iv,i,j))
+                  coef = o1dv_obst_param(iv)%c_crough_x1 + o1dv_obst_param(iv)%c_crough_x0 * (o1dv_height_f(iv)**2.0_rsh)/ &
+                        ((o1dv_output%height(iv)**2.0_rsh) * o1dv_width_f(iv)*o1dv_dens_f(iv))
                ENDIF
-               a   = o1dv_width_inst*o1dv_height_inst*(o1dv_height(iv,i,j)/o1dv_height_inst)
-               d   = (coef*o1dv_height(iv,i,j)*o1dv_height(iv,i,j)*o1dv_width_inst) / &
-                     (a+coef*o1dv_width_inst*o1dv_height(iv,i,j))
-               z0a = (0.5_rsh*o1dv_width_inst*o1dv_height(iv,i,j)*o1dv_height(iv,i,j)*a) / &
-                     (a+coef*o1dv_width_inst*o1dv_height(iv,i,j))**2.0_rsh
-               z0a = MAX(z0a+d,o1dv_z0bed(i,j))
+               a   = o1dv_width_f(iv)*o1dv_height_f(iv)*(o1dv_output%height(iv)/o1dv_height_f(iv))
+               d   = (coef*o1dv_output%height(iv)*o1dv_output%height(iv)*o1dv_width_f(iv)) / &
+                     (a+coef*o1dv_width_f(iv)*o1dv_output%height(iv))
+               z0a = (0.5_rsh*o1dv_width_f(iv)*o1dv_output%height(iv)*o1dv_output%height(iv)*a) / &
+                     (a+coef*o1dv_width_f(iv)*o1dv_output%height(iv))**2.0_rsh
+               z0a = MAX(z0a+d,o1dv_z0bed)
                ! Now apply fraction
-               o1dv_z0obst(iv,i,j) = (z0a*o1dv_position)+((1.0_rsh-o1dv_position)*o1dv_z0bed(i,j))
+               o1dv_output%z0obst(iv) = (z0a*o1dv_position(iv))+((1.0_rsh-o1dv_position(iv))*o1dv_z0bed)
             ENDIF
          ENDIF
       ENDDO ! * END LOOP o1dv_NBVAR
@@ -1542,15 +1552,15 @@ MODULE OBSTRUCTIONS1DV
       z0tot = 0.0_rsh
       ctot  = 0.0_rsh
       DO iv=1,o1dv_nbvar
-         IF(o1dv_l_noturb(iv))THEN
-            z0tot = z0tot + o1dv_z0obst(iv,i,j)
+         IF(o1dv_obst_param(iv)%l_noturb)THEN
+            z0tot = z0tot + o1dv_output%z0obst(iv)
             ctot  = ctot  + 1.0_rsh
          ENDIF
       ENDDO
       IF(z0tot.EQ.0.0_rsh) THEN
-         o1dv_z0obst(o1dv_nbvar+1,i,j) = o1dv_z0bed(i,j)
+         o1dv_output%z0obst(o1dv_nbvar+1) = o1dv_z0bed
       ELSE
-         o1dv_z0obst(o1dv_nbvar+1,i,j) = MAX(z0tot/ctot,o1dv_z0bed(i,j))
+         o1dv_output%z0obst(o1dv_nbvar+1) = MAX(z0tot/ctot,o1dv_z0bed)
       ENDIF
       ! *********************************************** !
       ! *** Total computation for Turb Formulations *** !
@@ -1560,15 +1570,15 @@ MODULE OBSTRUCTIONS1DV
       z0tot = 0.0_rsh
       ctot  = 0.0_rsh
       DO iv=1,o1dv_nbvar
-         IF(.NOT.o1dv_l_noturb(iv))THEN
-            z0tot = z0tot + o1dv_z0obst(iv,i,j)
+         IF(.NOT.o1dv_obst_param(iv)%l_noturb)THEN
+            z0tot = z0tot + o1dv_output%z0obst(iv)
             ctot  = ctot  + 1.0_rsh
          ENDIF
       ENDDO
       IF(z0tot.EQ.0.0_rsh) THEN
-         o1dv_z0obst(o1dv_nbvar+2,i,j) = o1dv_z0bed(i,j)
+         o1dv_output%z0obst(o1dv_nbvar+2) = o1dv_z0bed
       ELSE
-         o1dv_z0obst(o1dv_nbvar+2,i,j) = MAX(z0tot/ctot,o1dv_z0bed(i,j))
+         o1dv_output%z0obst(o1dv_nbvar+2) = MAX(z0tot/ctot,o1dv_z0bed)
       ENDIF
       ! ************************* !
       ! *** Total computation *** !
@@ -1578,290 +1588,137 @@ MODULE OBSTRUCTIONS1DV
       z0tot = 0.0_rsh
       ctot  = 0.0_rsh
       DO iv=1,o1dv_nbvar
-            z0tot = z0tot + o1dv_z0obst(iv,i,j)
+            z0tot = z0tot + o1dv_output%z0obst(iv)
             ctot  = ctot  + 1.0_rsh
       ENDDO
       IF(z0tot.EQ.0.0_rsh) THEN
-         o1dv_z0obst(o1dv_nbvar+3,i,j) = o1dv_z0bed(i,j)
+         o1dv_output%z0obst(o1dv_nbvar+3) = o1dv_z0bed
       ELSE
-         o1dv_z0obst(o1dv_nbvar+3,i,j) = MAX(z0tot/ctot,o1dv_z0bed(i,j))
+         o1dv_output%z0obst(o1dv_nbvar+3) = MAX(z0tot/ctot,o1dv_z0bed)
       ENDIF
 
    !-----------------------------------------
    END SUBROUTINE o1dv_comp_obstroughness
    
-   !    !!==========================================================================================================
-   
-   !    SUBROUTINE o1dv_comp_hydroparam(limin, limax, ljmin, ljmax, ssh, h0, z0b)
-   !    !!---------------------------------------------------------------------
-   !    !!                 ***  ROUTINE o1dv_comp_hydroparam  ***
-   !    !!
-   !    !! ** Purpose : Computes obstuctions parameters used for hydrodynamics
-   !    !!
-   !    !!---------------------------------------------------------------------
-   !    !! * Modules used
-   ! !    USE comvars2d,  ONLY  : h0,z0b
-   ! !    USE comvarp2d,  ONLY  : ssh
-   
-   !    IMPLICIT NONE
-   
-   !    !! * Arguments
-   !    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
-   !    REAL(KIND = rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
-   !    REAL(KIND = rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
-   !    REAL(KIND = rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(INOUT) :: z0b
-   !    !! * Local declaration
-   !    INTEGER                           :: iv,i,j,k
-   !    REAL(KIND = rsh)                    :: o1dv_hwat,phi,ntot,clz,nclz,lz
-   !    REAL(KIND = rsh)                    :: uzvz,fuv,tuz,tvz
-   !    REAL(KIND = rsh),PARAMETER          :: gamma  = 1.0E-5
-   !    !!----------------------------------------------------------------------
-   !    !! * Executable part
-   !    !-----------------------------------------
-   !    ! **********************
-   !    ! * RE-INITIALIZATION OF VARIABLES
-   !    ! ***********************
-   !    !-------------------
-   !    ! Variables on (i,j)
-   !    !-------------------
-   !    o1dv_fu_i(:,:)    = 0.0_rsh
-   !    o1dv_fv_i(:,:)    = 0.0_rsh
-   !    o1dv_fu_e(:,:)    = 0.0_rsh
-   !    o1dv_fv_e(:,:)    = 0.0_rsh
-   !    !---------------------
-   !    ! Variables on (k,i,j)
-   !    !---------------------
-   !    o1dv_fuz_i(:,:,:) = 0.0_rsh
-   !    o1dv_fvz_i(:,:,:) = 0.0_rsh
-   !    o1dv_fuz_e(:,:,:) = 0.0_rsh
-   !    o1dv_fvz_e(:,:,:) = 0.0_rsh
-   !    o1dv_t(:,:,:)     = 0.0_rsh
-   !    o1dv_tau(:,:,:)   = 0.0_rsh
-   !    !-----------------------
-   !    ! Variable on (iv,k,i,j)
-   !    !-----------------------
-   !    o1dv_drag3d(:,:,:,:) = 0.0_rsh
-   !    !*************************
-   !    DO j=ljmin,ljmax
-   !      DO i=limin,limax
-   !        o1dv_hwat = h0(i,j) + ssh(i,j)
-   !        IF(o1dv_hwat.GT.o1dv_h0fond)THEN
-   !          ! *************************************************** !
-   !          ! ********** SIMPLIFIED (NoTurb) VARIABLES ********** !
-   !          ! *************************************************** !
-   !          IF(o1dv_z0obst(o1dv_nbvar+1,i,j) /= o1dv_z0bed(i,j))THEN
-   !            z0b(i,j) = o1dv_z0obst(o1dv_nbvar+1,i,j)
-   !          ENDIF
-   !          ! *************************************************** !
-   !          ! *************** TURBULENT VARIABLES *************** !
-   !          ! *************************************************** !
-   !          DO k=1,o1dv_kmax
-   !            uzvz = SQRT(o1dv_uz(k,i,j)**2.0_rsh + o1dv_vz(k,i,j)**2.0_rsh)
-   !            IF(uzvz.GT.0.0001_rsh)THEN
-   !              ! *************************************************** !
-   !              ! *********** TURBULENT VARIABLES 1ST PART ********** !
-   !              ! *************************************************** !
-   !              ntot = 0.0_rsh
-   !              tuz  = 0.0_rsh
-   !              tvz  = 0.0_rsh
-   !              clz  = 0.0_rsh
-   !              nclz = 0.0_rsh
-   !              DO iv=1,o1dv_nbvar
-   !                IF((o1dv_position.GT.0.0_rsh) .AND. (.NOT.o1dv_l_noturb(iv)))THEN
-   !                  IF(o1dv_dens3d(k).GT.0.0_rsh)THEN
-   !                    !----------------------------
-   !                    ! * Total obstruction density
-   !                    !----------------------------
-   !                    ntot = ntot + o1dv_dens3d(k)*o1dv_fracxy(iv,i,j)
-   !                    !-------------------
-   !                    ! * Drag coefficient         
-   !                    !-------------------
-   !                    IF(o1dv_l_drag_cste(iv)) THEN
-   !                      o1dv_drag3d(iv,k,i,j) = obst%c_drag
-   !                    ELSE
-   !                      phi =  (pi/2.0_rsh) - o1dv_theta3d(k)
-   !                      o1dv_drag3d(iv,k,i,j) = gamma + ABS(phi) * (obst%c_drag-gamma)/(pi/2.0_rsh)
-   !                    ENDIF
-   !                      !-------------------
-   !                      ! * Resistance force
-   !                      !-------------------
-   !                      ! Here, fuv has unit:
-   !                      ! [fuv] = - * - * m * m.s-1 * m-2 * - * -
-   !                      ! [fuv] = s-1
-   !                      ! Here o1dv_fuz_e (o1dv_fvz_e) has unit:
-   !                      ! [o1dv_fuz_e]     = [fuv] * [o1dv_uz]
-   !                      ! [o1dv_fuz_e]     = s-1   * m.s-1
-   !                      ! [o1dv_fuz_e]     = m.s-2
-   !                      ! [o1dv_fuz_e*rho] = kg.m-3 * m.s-2
-   !                      ! [o1dv_fuz_e*rho] = N.m-3
-   !                      ! Here o1dv_fuz_i (o1dv_fvz_i) has unit:
-   !                      ! [o1dv_fuz_i]     = [fuv]
-   !                      ! [o1dv_fuz_i]     = s-1
-   !                      !-------------------
-   !                      fuv = 0.5_rsh * o1dv_drag3d(iv,k,i,j) * o1dv_width3d(k) * uzvz * &
-   !                            o1dv_dens3d(k) * o1dv_fracxy* o1dv_fracz3d(k)
-   !                      o1dv_fuz_e(k,i,j) = o1dv_fuz_e(k,i,j) + (fuv * o1dv_uz(k,i,j))
-   !                      o1dv_fvz_e(k,i,j) = o1dv_fvz_e(k,i,j) + (fuv * o1dv_vz(k,i,j))
-   !                      o1dv_fuz_i(k,i,j) = o1dv_fuz_i(k,i,j) + fuv
-   !                      o1dv_fvz_i(k,i,j) = o1dv_fvz_i(k,i,j) + fuv 
-   !                      !--------------------------
-   !                      ! * Work spent by the fluid
-   !                      !--------------------------
-   !                      ! Here, tuz has unit:
-   !                      ! [tuz] = s-1 * m.s-1 * m.s-1
-   !                      ! [tuz] = m2.s-3
-   !                      tuz = tuz + fuv * (o1dv_uz(k,i,j)**2.0_rsh)
-   !                      tvz = tvz + fuv * (o1dv_vz(k,i,j)**2.0_rsh)
-   !                      !-------------------------------
-   !                      ! * Averaging coefficient for lz
-   !                      !-------------------------------
-   !                      clz  = clz  + o1dv_c_lz(iv)
-   !                      nclz = nclz + 1.0_rsh
-   !                  ENDIF ! * END TEST ON OBSTRUCTION DENSITY
-   !                ENDIF ! * END TEST ON POSITION AND TURB VARIABLE
-   !              ENDDO ! * END LOOP ON NBVAR
-   !              ! *************************************************** !
-   !              ! *********** TURBULENT VARIABLES 2ND PART ********** !
-   !              ! *************************************************** !
-   !              IF(ntot.GT.0.0_rsh)THEN
-   !                !--------------------------
-   !                ! * Work spent by the fluid
-   !                !--------------------------
-   !                ! Here, o1dv_t has unit:
-   !                ! [o1dv_t] = m2.s-3
-   !                o1dv_t(k,i,j)    = SQRT(tuz**2.0_rsh + tvz**2.0_rsh)
-   !                !-------------------------------------
-   !                ! * Smallest distance between elements
-   !                !-------------------------------------
-   !                clz = clz/nclz
-   !                lz  = clz * SQRT((1.0_rsh-o1dv_output%a3d(o1dv_nbvar+2,k,i,j)) / ntot)
-   !                !-----------------------------------------------------
-   !                ! * Dissipation timescale of eddies between structures
-   !                ! ----------------------------------------------------
-   !                IF((o1dv_t(k,i,j)/=0.0_rsh).AND.(o1dv_c2turb/=0.0_rsh).AND.(o1dv_cmu/=0.0_rsh))THEN
-   !                  o1dv_tau(k,i,j) = 1.0_rsh / (1.0_rsh / (o1dv_c2turb * sqrt(o1dv_cmu)) * &
-   !                      ((lz*lz) / (o1dv_t(k,i,j)))**(1.0_rsh/3.0_rsh))
-   !                ENDIF
-   !              ENDIF ! * END TEST ON OBSTRUCTION DENSITY
-   !            ENDIF ! * END TEST ON ENOUGH VELOCITY
-   !          ENDDO ! * END LOOP ON k
-   !          ! *************************************************** !
-   !          ! *********** TURBULENT VARIABLES 3RD PART ********** !
-   !          ! *************************************************** ! 
-   !          ! ********************************************* !
-   !          ! ****************** 2D FORCES **************** !
-   !          ! ********************************************* !
-   !          !-----------------------------------
-   !          ! * Resistance force : depth average
-   !          !-----------------------------------
-   !          DO k=1,o1dv_kmax
-   !            o1dv_fu_e(i,j) = o1dv_fu_e(i,j) + o1dv_fuz_e(k,i,j) * o1dv_dz(k)
-   !            o1dv_fv_e(i,j) = o1dv_fv_e(i,j) + o1dv_fvz_e(k,i,j) * o1dv_dz(k)
-   !            o1dv_fu_i(i,j) = o1dv_fu_i(i,j) + o1dv_fuz_i(k,i,j) * o1dv_dz(k)
-   !            o1dv_fv_i(i,j) = o1dv_fv_i(i,j) + o1dv_fvz_i(k,i,j) * o1dv_dz(k)
-   !          ENDDO
-   !          o1dv_fu_e(i,j) = o1dv_fu_e(i,j) / o1dv_hwat
-   !          o1dv_fv_e(i,j) = o1dv_fv_e(i,j) / o1dv_hwat
-   !          o1dv_fu_i(i,j) = o1dv_fu_i(i,j) / o1dv_hwat
-   !          o1dv_fv_i(i,j) = o1dv_fv_i(i,j) / o1dv_hwat
-   !          !---------------------------------------------
-   !          ! * Resistance force : implicit/explicit parts
-   !          !---------------------------------------------
-   !          o1dv_fu_e(i,j) = o1dv_fu_e(i,j) * o1dv_c_exp2d
-   !          o1dv_fv_e(i,j) = o1dv_fv_e(i,j) * o1dv_c_exp2d
-   !          o1dv_fu_i(i,j) = o1dv_fu_i(i,j) * o1dv_c_imp2d
-   !          o1dv_fv_i(i,j) = o1dv_fv_i(i,j) * o1dv_c_imp2d
-   !        ! ********************************************* !
-   !        ! ****************** 3D FORCES **************** !
-   !        ! ********************************************* !
-   !        !---------------------------------------------
-   !        ! * Resistance force : implicit/explicit parts
-   !        !---------------------------------------------
-   !        DO k=1,o1dv_kmax
-   !          o1dv_fuz_e(k,i,j) = o1dv_fuz_e(k,i,j) * o1dv_c_exp3d
-   !          o1dv_fvz_e(k,i,j) = o1dv_fvz_e(k,i,j) * o1dv_c_exp3d
-   !          o1dv_fuz_i(k,i,j) = o1dv_fuz_i(k,i,j) * o1dv_c_imp3d
-   !          o1dv_fvz_i(k,i,j) = o1dv_fvz_i(k,i,j) * o1dv_c_imp3d
-   !        ENDDO
-   !        ENDIF ! * END TEST ON o1dv_hwat
-   !      ENDDO ! * END LOOP ON i
-   !    ENDDO ! * END LOOP ON j
-   !    !-------------------------------------
-   !    END SUBROUTINE OBSTRUCTIONS_comp_hydroparam
-   
-   !    !!==========================================================================================================
-   
-   !    SUBROUTINE OBSTRUCTIONS_comp_bedroughness(limin, limax, ljmin, ljmax, ssh, h0)
-   !    !!---------------------------------------------------------------------
-   !    !!                 ***  ROUTINE OBSTRUCTIONS_comp_bedroughness  ***
-   !    !!
-   !    !! ** Purpose : Computes roughness length for bottom shear stress computation
-   !    !!
-   !    !! ** Description : Here, depending on obstructions you wanted to simulate,
-   !    !!                  you may have to add your own parameterization
-   !    !!
-   !    !!---------------------------------------------------------------------
-   !    IMPLICIT NONE
-   
-   !    !! * Arguments
-   !    INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
-   !    REAL(KIND = rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: h0 
-   !    REAL(KIND = rsh),DIMENSION(imin:imax, jmin:jmax),INTENT(IN) :: ssh
-   !    !! * Local declaration
-   !    INTEGER :: iv,i,j
-   !    REAL(KIND = rsh) :: o1dv_hwat,z0tmp,stmp,z00,oal,oah
-   !    REAL(KIND = rsh),PARAMETER :: epsi=1E-6
-   !    !!----------------------------------------------------------------------
-   !    !! * Executable part
-   !    !-------------------------------------
-   !    o1dv_z0bstress(:,:) = o1dv_i_z0bstress
-   !    DO j=ljmin,ljmax
-   !      DO i=limin,limax
-   !        o1dv_hwat = h0(i,j) + ssh(i,j)
-   !        IF(o1dv_hwat.GT.o1dv_h0fond)THEN
-   !          z0tmp = 0.0_rsh
-   !          stmp  = 0.0_rsh
-   !          DO iv=1,o1dv_nbvar
-   !            IF((.NOT.o1dv_l_downward(iv)).AND.(.NOT.o1dv_l_3dobst(iv)).AND.(o1dv_l_z0bstress(iv)))THEN
-   !              IF(o1dv_position.GT.0.0_rsh)THEN
-   !                IF(o1dv_z0bstress_option(iv).EQ.0)THEN
-   !                  !-----------------------
-   !                  ! Constant value is used
-   !                  !-----------------------
-   !                  z00 = o1dv_c_z0bstress(iv)
-   !                ELSE
-   !                  !-------------------------
-   !                  ! Parameterization is used
-   !                  !-------------------------
-   !                  oah = o1dv_dens_inst(iv,i,j)*o1dv_width_inst*o1dv_height(iv,i,j)
-   !                  z00 = o1dv_c_z0bstress_x0(iv)* oah**o1dv_c_z0bstress_x1(iv)
-   !                  z00 = MAX(MIN(z00,0.01_rsh),epsi)
-   !                ENDIF ! END test on parameterization
-   !                z0tmp = (o1dv_position*z00) + ((1.0_rsh-o1dv_position)*o1dv_i_z0bstress)
-   !                stmp  = stmp + 1.0_rsh
-   !              ELSE
-   !                z0tmp = z0tmp + o1dv_i_z0bstress
-   !                stmp  = stmp + 1.0_rsh
-   !              ENDIF           
-   !            ELSE
-   !              z0tmp = z0tmp + o1dv_i_z0bstress
-   !              stmp  = stmp + 1.0_rsh
-   !            ENDIF
-   !          ENDDO ! END LOOP nbvar
-   !          !----------
-   !          ! Averaging
-   !          !----------
-   !          o1dv_z0bstress(i,j) = z0tmp/stmp
-   !          o1dv_z0bstress(i,j) = MAX(epsi,o1dv_z0bstress(i,j))
-   
-   !        ENDIF ! * END TEST ON o1dv_hwat
-   !      ENDDO ! * END LOOP ON i
-   !    ENDDO ! * END LOOP ON j
-   !    !-------------------------------------
-   !    END SUBROUTINE o1dv_comp_bedroughness
-   
-   !    !!==========================================================================================================
+   !!==========================================================================================================
 
+   SUBROUTINE o1dv_comp_hydroparam(o1dv_position, o1dv_cmu, o1dv_uz, o1dv_vz, o1dv_output)
+   !!---------------------------------------------------------------------
+   !!                 ***  ROUTINE o1dv_comp_hydroparam  ***
+   !!
+   !! ** Purpose : Computes obstuctions parameters used for hydrodynamics
+   !!
+   !!---------------------------------------------------------------------
+
+   IMPLICIT NONE
+
+   !! * Arguments
+   REAL(KIND = rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_position
+   REAL(KIND = rsh), INTENT(IN) ::  o1dv_cmu
+   REAL(KIND = rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_uz
+   REAL(KIND = rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_vz
+   TYPE(output_obst), INTENT(INOUT) :: o1dv_output
+
+   !! * Local declaration
+   INTEGER                     :: iv, k
+   REAL(KIND = rsh)            :: phi,ntot,clz,nclz,lz
+   REAL(KIND = rsh)            :: uzvz,fuv,tuz,tvz
+   REAL(KIND = rsh),PARAMETER  :: gamma  = 1.0E-5
+   !!----------------------------------------------------------------------
+   !! * Executable part
+
+      ! *************************************************** !
+      ! *************** TURBULENT VARIABLES *************** !
+      ! *************************************************** !
+      DO k=1,o1dv_kmax
+         uzvz = SQRT(o1dv_uz(k)**2.0_rsh + o1dv_vz(k)**2.0_rsh)
+         IF(uzvz.GT.0.0001_rsh)THEN
+            ! *************************************************** !
+            ! *********** TURBULENT VARIABLES 1ST PART ********** !
+            ! *************************************************** !
+            ntot = 0.0_rsh
+            tuz  = 0.0_rsh
+            tvz  = 0.0_rsh
+            clz  = 0.0_rsh
+            nclz = 0.0_rsh
+            DO iv=1,o1dv_nbvar
+            IF((o1dv_position(iv).GT.0.0_rsh) .AND. (.NOT.o1dv_obst_param(iv)%l_noturb))THEN
+               IF(o1dv_output%dens3d(iv,k).GT.0.0_rsh)THEN
+                  !----------------------------
+                  ! * Total obstruction density
+                  !----------------------------
+                  ntot = ntot + o1dv_output%dens3d(iv,k)*o1dv_output%fracxy(iv)
+                  !-------------------
+                  ! * Drag coefficient         
+                  !-------------------
+                  IF(o1dv_obst_param(iv)%l_drag_cste) THEN
+                     o1dv_output%drag3d(iv,k) = o1dv_obst_param(iv)%c_drag
+                  ELSE
+                  phi =  (pi/2.0_rsh) - o1dv_output%theta3d(iv,k)
+                     o1dv_output%drag3d(iv,k) = gamma + ABS(phi) * (o1dv_obst_param(iv)%c_drag-gamma)/(pi/2.0_rsh)
+                  ENDIF
+                  !-------------------
+                  ! * Resistance force
+                  !-------------------
+                  ! Here, fuv has unit:
+                  ! [fuv] = - * - * m * m.s-1 * m-2 * - * -
+                  ! [fuv] = s-1
+                  ! Here o1dv_fuz_e (o1dv_fvz_e) has unit:
+                  ! [o1dv_fuz_e]     = [fuv] * [o1dv_uz]
+                  ! [o1dv_fuz_e]     = s-1   * m.s-1
+                  ! [o1dv_fuz_e]     = m.s-2
+                  ! [o1dv_fuz_e*rho] = kg.m-3 * m.s-2
+                  ! [o1dv_fuz_e*rho] = N.m-3
+                  !-------------------
+                  fuv = 0.5_rsh *  o1dv_output%drag3d(iv,k) * o1dv_output%width3d(iv,k) * uzvz * &
+                        o1dv_output%dens3d(iv,k) * o1dv_output%fracxy(iv) * o1dv_output%fracz3d(iv,k)
+                  o1dv_output%fuz(k) = o1dv_output%fuz(k) + (fuv * o1dv_uz(k))
+                  o1dv_output%fvz(k) = o1dv_output%fvz(k) + (fuv * o1dv_vz(k))
+                  !--------------------------
+                  ! * Work spent by the fluid
+                  !--------------------------
+                  ! Here, tuz has unit:
+                  ! [tuz] = s-1 * m.s-1 * m.s-1
+                  ! [tuz] = m2.s-3
+                  tuz = tuz + fuv * (o1dv_uz(k)**2.0_rsh)
+                  tvz = tvz + fuv * (o1dv_vz(k)**2.0_rsh)
+                  !-------------------------------
+                  ! * Averaging coefficient for lz
+                  !-------------------------------
+                  clz  = clz  + o1dv_obst_param(iv)%c_lz
+                  nclz = nclz + 1.0_rsh
+               ENDIF ! * END TEST ON OBSTRUCTION DENSITY
+            ENDIF ! * END TEST ON POSITION AND TURB VARIABLE
+            ENDDO ! * END LOOP ON NBVAR
+            ! *************************************************** !
+            ! *********** TURBULENT VARIABLES 2ND PART ********** !
+            ! *************************************************** !
+            IF(ntot.GT.0.0_rsh)THEN
+            !--------------------------
+            ! * Work spent by the fluid
+            !--------------------------
+            ! Here, o1dv_t has unit:
+            ! [o1dv_t] = m2.s-3
+            o1dv_output%t(k) = SQRT(tuz**2.0_rsh + tvz**2.0_rsh)
+            !-------------------------------------
+            ! * Smallest distance between elements
+            !-------------------------------------
+            clz = clz/nclz
+            lz  = clz * SQRT((1.0_rsh-o1dv_output%a3d(o1dv_nbvar+2,k)) / ntot)
+            !-----------------------------------------------------
+            ! * Dissipation timescale of eddies between structures
+            ! ----------------------------------------------------
+            IF((o1dv_output%t(k)/=0.0_rsh).AND.(o1dv_c2turb/=0.0_rsh).AND.(o1dv_cmu/=0.0_rsh))THEN
+               o1dv_output%tau(k) = 1.0_rsh / (1.0_rsh / (o1dv_c2turb * sqrt(o1dv_cmu)) * &
+                  ((lz*lz) / (o1dv_output%t(k)))**(1.0_rsh/3.0_rsh))
+            ENDIF
+            ENDIF ! * END TEST ON OBSTRUCTION DENSITY
+         ENDIF ! * END TEST ON ENOUGH VELOCITY
+      ENDDO ! * END LOOP ON k
+
+   !-------------------------------------
+   END SUBROUTINE o1dv_comp_hydroparam
+   
    !==================================================================================================  
 END MODULE OBSTRUCTIONS1DV
     

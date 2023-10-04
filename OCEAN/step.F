@@ -312,19 +312,10 @@ C$OMP BARRIER
         call diag(tile)
 # endif
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> dev_2023_obstruction
 #ifdef OBSTRUCTION
         call OBSTRUCTIONS_update_main (tile)
 #endif
 
-<<<<<<< HEAD
-
-=======
->>>>>>> dev_2023_obstruction
       enddo
 C$OMP BARRIER
       do tile=my_first,my_last

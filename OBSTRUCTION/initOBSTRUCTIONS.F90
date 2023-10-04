@@ -1028,7 +1028,6 @@ MPI_master_only  WRITE(ierrorlog,*) '*******************************************
    !!                 ***  ROUTINE OBSTRUCTIONS_readfile_pos  ***
    !!
    !! ** Purpose : read the obstruction position file
-   !!              in the historical DEL/AO format
    !!
    !! ** CALLed by : obst_init
    !!
@@ -1363,19 +1362,14 @@ SUBROUTINE OBSTRUCTIONS_alloc_nbvar
 
    ALLOCATE(obst_z0bed           (GLOBAL_2D_ARRAY))
    obst_z0bed(:,:)               = 0.0_rsh
-   ALLOCATE(obst_bstress         (GLOBAL_2D_ARRAY))
-   obst_bstress(:,:)             = 0.0_rsh
-   ALLOCATE(obst_bstressc        (GLOBAL_2D_ARRAY))
-   obst_bstressc(:,:)            = 0.0_rsh
-   ALLOCATE(obst_bstressw        (GLOBAL_2D_ARRAY))
-   obst_bstressw(:,:)            = 0.0_rsh
+
    ALLOCATE(obst_z0bstress       (GLOBAL_2D_ARRAY))
    obst_z0bstress(:,:)           = 0.0_rsh
 
    ALLOCATE(obst_height_mean     (GLOBAL_2D_ARRAY))
    obst_height_mean(:,:)         = 0.0_rsh
    !------------------------
-   ! Variables on (iv,i,j,k)
+   ! Variables on (iv,k,i,j)
    !------------------------
    ALLOCATE(obst_dens3d          (1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_dens3d(:,:,:,:)          = 0.0_rsh

@@ -1,5 +1,5 @@
 #include "cppdefs.h"
- 
+
 MODULE comobstructions
 
 #ifdef OBSTRUCTION
@@ -22,7 +22,9 @@ MODULE comobstructions
    INTEGER, PARAMETER :: riosh = 8, riolg = 8, rlg = 8, rsh = 8
    INTEGER, PARAMETER :: lchain = 200
    REAL(KIND = rsh), PARAMETER :: pi = 3.14159265358979323846
-   REAL(KIND = rsh), PARAMETER :: obst_c2turb = 1.92
+   REAL(KIND = rsh), PARAMETER :: obst_c2turb = 1.92  
+   ! obst_c2turb = beta2 in gls kepsilon 
+   ! TODO : add compatibility test to be sure GLS_KEPSILON is used and take beta2 value at initialisation
 
    INTEGER :: obst_kmax 
    INTEGER :: ierrorlog, iwarnlog, iscreenlog 
@@ -109,7 +111,6 @@ MODULE comobstructions
    CHARACTER(LEN = lchain) :: obst_nout_bstressw                        ! Name 2D wave bottom shear stress within output file
 
    ! Other variables/parameters
-   INTEGER  :: obst_iv
    INTEGER  :: obst_nbvar                       ! The total number of obstruction variables
    INTEGER  :: obst_nv_up                       ! Number of variable for upward obstructions
    INTEGER  :: obst_nv_do                       ! Number of variable for downward obstruction
@@ -194,9 +195,6 @@ MODULE comobstructions
    REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_fu              ! Sink term in the momentum equation for 2D formulation (x direction) (i,j), [-]
    REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_fv              ! Sink term in the momentum equation for 2D formulation (y direction) (i,j), [-]
    REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_z0bed           ! z0 for bed without obstructions from source code (used where no obstructions are present) (i,j), [m]
-   REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_bstress         ! Total bottom shear stress (i,j), [N.m-2]
-   REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_bstressc        ! Current bottom shear stress (i,j), [N.m-2]
-   REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_bstressw        ! Wave bottom shear stress (i,j), [N.m-2]
    REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_z0bstress       ! z0Sed from sedimento (i,j) but modified by obstructions, [m]
 
    REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_height_mean     ! Mean obstruction height (i,j) [m]
