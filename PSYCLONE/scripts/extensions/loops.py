@@ -15,6 +15,7 @@ generic intead.
 '''
 
 ##########################################################
+import os
 from .scratch import patch_scratch_3d_arrays, patch_scratch_1d_arrays
 from .acc import set_private_on_loop
 from .loops_helpers import *
@@ -23,6 +24,35 @@ from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
 from psyclone.nemo import NemoACCEnterDataDirective as \
                 AccEnterDataDir, InlinedKern
+from psyclone.psyir.backend.fortran import FortranWriter
+
+##########################################################
+def dump_node_as_source(node: Node, variant: str = "origin"):
+    '''
+    Generated the snippets to reuse in unit test. Needs to be copied
+    by hand into scripts/extension/tests/croco-loops-snippets/ in right
+    directory.
+    '''
+    # get parent routine
+    routine = node.ancestor(Routine)
+
+    # calc ID
+    childs = routine.walk(Node)
+    cursor = childs[0]
+    id = 0
+    while cursor is not node:
+        id += 1
+        cursor = childs[id]
+
+    # create directory if not exist
+    path = os.path.expanduser(f'./loops-snippets/{variant}')
+    os.makedirs(path, exist_ok=True)
+
+    # open file
+    fname = os.path.join(path, f"snippet-{routine.name}-{id}.F")
+    with open(fname, "w+") as fp:
+        source = FortranWriter()(node)
+        fp.write(source)
 
 ##########################################################
 def handle_kji_loop(top_loop: Loop, patch_scratch_vars: list) -> None:
@@ -31,6 +61,9 @@ def handle_kji_loop(top_loop: Loop, patch_scratch_vars: list) -> None:
 
     - pre_step3d_tile
     """
+
+    # to generate source to build unit tests
+    dump_node_as_source(top_loop, "kji-origin")
 
     # help finding where it applies (debug)
     #if not top_loop.ancestor(Routine).name in ['pre_step3d_tile']:
@@ -88,7 +121,7 @@ def handle_kji_loop(top_loop: Loop, patch_scratch_vars: list) -> None:
                 loop_parent.addchild(new_k_loop, loop_position)
 
 ##########################################################
-def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list, vars_to_private: list) -> None:
+def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list) -> None:
     """
     TODO: Describe it
 
@@ -98,6 +131,9 @@ def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list, vars_to_private: list)
     - prsgrd_tile
     - rhs3d_tile
     """
+
+    # to generate source to build unit tests
+    dump_node_as_source(top_loop, "jki-origin")
 
     # help finding where it applies (debug)
     #if not top_loop.ancestor(Routine).name in ['step3d_t_tile', 'acc_kernels_step3d', 'pre_step3d_tile', 'prsgrd_tile', 'rhs3d_tile']:
@@ -127,14 +163,8 @@ def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list, vars_to_private: list)
         inner_i_loop.loop_body.addchild(op)
     top_loop.loop_body.addchild(inner_i_loop)
 
-    # patch arrays
-    patch_scratch_1d_arrays(top_loop, scratch_1d_vars)
-
-    # add private to i loops
-    set_private_on_loop(top_loop, 'i', vars_to_private)
-
 ##########################################################
-def handle_jik_loop(top_loop: Loop, scratch_1d_vars:list, vars_to_private: list, do_k_loop_fuse: bool = True) -> None:
+def handle_jik_loop(top_loop: Loop, scratch_1d_vars:list, do_k_loop_fuse: bool = True) -> None:
     """
     Describe what it does
 
@@ -142,6 +172,12 @@ def handle_jik_loop(top_loop: Loop, scratch_1d_vars:list, vars_to_private: list,
     - rhs3d_tile
     - omega_tile
     """
+
+    # to generate source to build unit tests
+    dump_node_as_source(top_loop, "jik-origin")
+
+    # patch arrays
+    patch_scratch_1d_arrays(top_loop, scratch_1d_vars)
 
     # help finding where it applies (debug)
     #if not top_loop.ancestor(Routine).name in ['step3d_uv2_tile', 'rhs3d_tile', 'omega_tile']:
@@ -174,9 +210,3 @@ def handle_jik_loop(top_loop: Loop, scratch_1d_vars:list, vars_to_private: list,
             else:
                 top_id = next_id
                 next_id += 1
-
-    # patch arrays
-    patch_scratch_1d_arrays(top_loop, scratch_1d_vars)
-
-    # add private to i loops
-    set_private_on_loop(top_loop, 'i', vars_to_private)

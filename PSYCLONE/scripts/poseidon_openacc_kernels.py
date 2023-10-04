@@ -32,7 +32,7 @@ from psyclone.psyir.transformations.transformation_error import \
     TransformationError
 from psyclone.psyir.nodes import Loop, Routine, IntrinsicCall
 from psyclone.transformations import ACCLoopTrans
-from utils import normalise_loops
+from from_nemo_psyclone.utils import normalise_loops
 
 def trans(psy):
     '''A PSyclone-script compliant transformation function. Applies

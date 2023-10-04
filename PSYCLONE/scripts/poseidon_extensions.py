@@ -24,18 +24,7 @@ from psyclone.f2pygen import DirectiveGen
 import abc
 from psyclone.psyGen import Transformation
 from poseidon.dsl.kernel import PsycloneACCKernelsDirective
-from psyclone.psyir.nodes import ACCDataDirective, ACCDirective, \
-    ACCEnterDataDirective, ACCKernelsDirective, ACCLoopDirective, \
-    ACCParallelDirective, ACCRoutineDirective, Assignment, CodeBlock, \
-    Directive, Loop, Node, OMPDeclareTargetDirective, \
-    OMPDirective, OMPMasterDirective, \
-    OMPParallelDirective, OMPParallelDoDirective, OMPSerialDirective, \
-    OMPSingleDirective, OMPTaskloopDirective, PSyDataNode, Reference, \
-    Return, Routine, Schedule
-from utils import add_kernels, normalise_loops, \
-    insert_explicit_loop_parallelism
-from psyclone.transformations import ACCEnterDataTrans, ACCLoopTrans
-from psyclone.psyir.transformations import ACCUpdateTrans
+from psyclone.psyir.nodes import ACCDirective, ACCKernelsDirective, Routine, Schedule
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes.if_block import IfBlock
 

@@ -15,8 +15,6 @@ from psyclone.psyir.nodes import ACCDirective, RegionDirective
 from psyclone.f2pygen import DirectiveGen
 import abc
 from psyclone.psyir.nodes import ACCDirective
-from utils import add_kernels, normalise_loops, \
-    insert_explicit_loop_parallelism
 
 ##########################################################
 class ACCSetDeviceNumDirective(ACCDirective, RegionDirective, metaclass=abc.ABCMeta):

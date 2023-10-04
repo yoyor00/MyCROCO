@@ -21,23 +21,20 @@ much code as possible in each Kernels region).
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
 VARS_3D = ['fx', 'fe', 'work', 'work2']
 
-from extensions.acc import add_missing_device_vars, set_device_tile, set_private_on_loop
-from extensions.scratch import add_1d_scratch_var, add_3d_scratch_var, patch_scratch_1d_arrays, patch_scratch_3d_arrays
-from extensions.loops import extract_loop_indices_order, get_first_loop_on, detach_and_get_childs, is_loop_using_var, handle_jki_loop, handle_kji_loop, handle_jik_loop
+from extensions import acc
+from extensions import scratch
+from extensions import loops
 from poseidon.dsl.helper import *
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.transformations import ACCEnterDataTrans
 from psyclone.psyir.transformations.transformation_error import \
     TransformationError
 from psyclone.psyir.nodes import Loop, Node, Reference, \
-    Routine, Schedule, IntrinsicCall
-from psyclone.psyir.symbols import Symbol, ArrayType
+    Routine
 from psyclone.transformations import ACCEnterDataTrans, ACCLoopTrans
 from psyclone.core import Signature
 from psyclone.nemo import NemoACCEnterDataDirective as \
                 AccEnterDataDir, InlinedKern
-from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
-from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
 
 def apply_acc_loop_collapse(kernels: KernelList, options: dict) -> None:
     """
@@ -128,8 +125,8 @@ def trans(psy):
     """
 
     # steps
-    add_missing_device_vars(psy.container)
-    set_device_tile(psy.container)
+    acc.add_missing_device_vars(psy.container)
+    acc.set_device_tile(psy.container)
 
     print(psy.container.view())
 
@@ -142,45 +139,47 @@ def trans(psy):
             if routine.name == "step3d_t_tile":
                 scratch_3d_id = 2
                 for var in ['fx', 'fe', 'work']:
-                    add_3d_scratch_var(psy.container, routine, var, scratch_3d_id)
+                    scratch.add_3d_scratch_var(psy.container, routine, var, scratch_3d_id)
                     scratch_3d_id += 1
 
             # add scratch 3d vars
             if routine.name == "pre_step3d_tile":
                 scratch_3d_id = 4
                 for var in ['fx', 'fe', 'work']:
-                    add_3d_scratch_var(psy.container, routine, var, scratch_3d_id)
+                    scratch.add_3d_scratch_var(psy.container, routine, var, scratch_3d_id)
                     scratch_3d_id += 1
 
             ############################################################
             # add scratch 1d vars
             for var in VARS_1D:
-                add_1d_scratch_var(routine, var)
+                scratch.add_1d_scratch_var(routine, var)
 
             ############################################################
             # handle loop kinds
             top_loop: Loop
             for top_loop in routine.walk(Loop, stop_type=Loop):
                 # extract nested loop indice order
-                vars=extract_loop_indices_order(top_loop, exclude=['itrc'])
+                vars=loops.extract_loop_indices_order(top_loop, exclude=['itrc'])
                 print(vars[0:5])
 
                 # handle 'kji' loops kind
                 if vars[0:3] == ['k','j','i']:
                     if routine.name == "pre_step3d_tile":
                         #TODO might look to make work, work2 to possibly fix an issue and do not apply
-                        handle_kji_loop(top_loop, VARS_3D)
+                        loops.handle_kji_loop(top_loop, VARS_3D)
                     else:
-                        patch_scratch_3d_arrays(top_loop, VARS_3D)
+                        scratch.patch_scratch_3d_arrays(top_loop, VARS_3D)
                 elif vars[0:3] == ['j','k','i']:
-                    handle_jki_loop(top_loop, VARS_1D, ['fc1d', 'cf1d', 'dc1d', 'dZ1D', 'dR1D'])
+                    loops.handle_jki_loop(top_loop, VARS_1D)
+                    acc.set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'dZ1D', 'dR1D'])
                 elif vars[0:3] == ['j','i','k']:
-                    handle_jik_loop(top_loop, VARS_1D, ['fc1d', 'cf1d', 'dc1d', 'bc1d'], do_k_loop_fuse=True)
+                    loops.handle_jik_loop(top_loop, VARS_1D, do_k_loop_fuse=True)
+                    acc.set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'bc1d'])
             
             ############################################################
             # add scratch 3d vars
             #if routine.name == "step3d_uv1_tile":
-            #    set_private_on_loop(routine, 'j', ['dc'])
+            #    acc.set_private_on_loop(routine, 'j', ['dc'])
 
 
     ####################################################################
@@ -204,13 +203,13 @@ def trans(psy):
         # to be confirmed the other way is also valid as it does not genereate exact same
         # code than by hand.
         if routine.name == "step3d_uv1_tile":
-            set_private_on_loop(routine, 'j', ['dc'])
+            acc.set_private_on_loop(routine, 'j', ['dc'])
         if routine.name == "wvlcty_tile":
-            set_private_on_loop(routine, 'j', ['wrk'])
+            acc.set_private_on_loop(routine, 'j', ['wrk'])
         if routine.name == "set_HUV2_tile":
-            set_private_on_loop(routine, 'j', ['dc','fc'])
+            acc.set_private_on_loop(routine, 'j', ['dc','fc'])
         if routine.name == "prsgrd_tile":
-            set_private_on_loop(routine, 'i', ['dz1d','dr1d'])
+            acc.set_private_on_loop(routine, 'i', ['dz1d','dr1d'])
 
     ##################################################################
     # automatic bench to fix the private issue
