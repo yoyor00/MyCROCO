@@ -27,6 +27,9 @@ from psyclone.nemo import NemoACCEnterDataDirective as \
 from psyclone.psyir.backend.fortran import FortranWriter
 
 ##########################################################
+ENABLE_SNIPPET_DUMPS=False
+
+##########################################################
 def dump_node_as_source(node: Node, variant: str = "origin"):
     '''
     Generated the snippets to reuse in unit test. Needs to be copied
@@ -63,7 +66,8 @@ def handle_kji_loop(top_loop: Loop, patch_scratch_vars: list) -> None:
     """
 
     # to generate source to build unit tests
-    dump_node_as_source(top_loop, "kji-origin")
+    if ENABLE_SNIPPET_DUMPS:
+        dump_node_as_source(top_loop, "kji-origin")
 
     # help finding where it applies (debug)
     #if not top_loop.ancestor(Routine).name in ['pre_step3d_tile']:
@@ -133,7 +137,8 @@ def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list) -> None:
     """
 
     # to generate source to build unit tests
-    dump_node_as_source(top_loop, "jki-origin")
+    if ENABLE_SNIPPET_DUMPS:
+        dump_node_as_source(top_loop, "jki-origin")
 
     # help finding where it applies (debug)
     #if not top_loop.ancestor(Routine).name in ['step3d_t_tile', 'acc_kernels_step3d', 'pre_step3d_tile', 'prsgrd_tile', 'rhs3d_tile']:
@@ -174,7 +179,8 @@ def handle_jik_loop(top_loop: Loop, scratch_1d_vars:list, do_k_loop_fuse: bool =
     """
 
     # to generate source to build unit tests
-    dump_node_as_source(top_loop, "jik-origin")
+    if ENABLE_SNIPPET_DUMPS:
+        dump_node_as_source(top_loop, "jik-origin")
 
     # patch arrays
     patch_scratch_1d_arrays(top_loop, scratch_1d_vars)

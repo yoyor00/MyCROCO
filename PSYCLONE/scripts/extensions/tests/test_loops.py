@@ -484,7 +484,7 @@ end subroutine step3d_t
 def helper_load_snippet(kind: str, step: str, name: str, generated_node: Node = None, dump: bool = False) -> str:
     # calc path
     test_dir = os.path.dirname(os.path.realpath(__file__))
-    snipped_dir = os.path.join(test_dir, "croco-loops-snippets/", kind, step)
+    snipped_dir = os.path.join(test_dir, "croco-loops-snippets/", step, kind)
     fname = os.path.join(snipped_dir, f"snippet-{name}.F")
 
     # check it matches
