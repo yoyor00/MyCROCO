@@ -1377,19 +1377,19 @@ SUBROUTINE OBSTRUCTIONS_alloc_nbvar
    !------------------------
    ! Variables on (iv,i,j,k)
    !------------------------
-   ALLOCATE(obst_dens3d          (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   ALLOCATE(obst_dens3d          (1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_dens3d(:,:,:,:)          = 0.0_rsh
-   ALLOCATE(obst_width3d         (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   ALLOCATE(obst_width3d         (1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_width3d(:,:,:,:)         = 0.0_rsh
-   ALLOCATE(obst_thick3d         (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   ALLOCATE(obst_thick3d         (1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_thick3d(:,:,:,:)         = 0.0_rsh
-   ALLOCATE(obst_theta3d         (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   ALLOCATE(obst_theta3d         (1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_theta3d(:,:,:,:)         = 0.0_rsh
-   ALLOCATE(obst_fracz3d         (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   ALLOCATE(obst_fracz3d         (1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_fracz3d(:,:,:,:)         = 0.0_rsh
-   ALLOCATE(obst_drag3d          (1:obst_kmax, 1:obst_nbvar, GLOBAL_2D_ARRAY))
+   ALLOCATE(obst_drag3d          (1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_drag3d(:,:,:,:)          = 0.0_rsh
-   ALLOCATE(obst_a3d             (1:obst_nbvar+3, GLOBAL_2D_ARRAY, 1:obst_kmax))
+   ALLOCATE(obst_a3d             (1:obst_nbvar+3, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_a3d(:,:,:,:)             = 0.0_rsh
    ALLOCATE(obst_s3d             (1:obst_nbvar+3, 1:obst_kmax, GLOBAL_2D_ARRAY))
    obst_s3d(:,:,:,:)             = 0.0_rsh

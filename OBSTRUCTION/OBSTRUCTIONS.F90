@@ -93,10 +93,10 @@ MODULE OBSTRUCTIONS
          ! ************************
          ! * SAVE FOR OUTPUT
          ! ************************
-         obst_height(:,i,j) = obst_output_ij%height_e(:)
-         obst_dens3d(:,:,i,j) = obst_output_ij%dens_e(:,:)
-         obst_width3d(:,:,i,j) = obst_output_ij%width_e(:,:)
-         obst_thick3d(:,:,i,j) = obst_output_ij%thick_e(:,:)
+         obst_height(:,i,j) = obst_output_ij%height(:)
+         obst_dens3d(:,:,i,j) = obst_output_ij%dens(:,:)
+         obst_width3d(:,:,i,j) = obst_output_ij%width(:,:)
+         obst_thick3d(:,:,i,j) = obst_output_ij%thick(:,:)
          obst_fuz(i,j,:) = obst_output_ij%fuz(:)
          obst_fvz(i,j,:) = obst_output_ij%fvz(:)
          obst_a3d(:,i,j,:) = obst_output_ij%a3d(:,:)

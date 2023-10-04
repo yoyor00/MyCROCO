@@ -129,7 +129,6 @@ MODULE comobstructions
 
    REAL(KIND = rsh)  :: obst_i_z0bstress          ! Roughness length for bottom shear stress without obstruction (= z0seduni if key_sedim)
 
-
    !--------------------------------------------------------------------------
    ! * VARIABLES DEPENDING ONLY ON THE NUMBER OF OBSTRUCTIONS VARIABLES (iv) :
    !--------------------------------------------------------------------------
@@ -155,7 +154,6 @@ MODULE comobstructions
    LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_z0bstress              ! For using a roughness length for obstructions (iv)
 
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_z0bstress_option         ! For using various parameterizations of bottom roughness
-
 
    CHARACTER(LEN = lchain), DIMENSION(:), ALLOCATABLE :: obst_varname    ! Name of obstructions variables (iv)
    CHARACTER(LEN =      2), DIMENSION(:), ALLOCATABLE :: obst_type       ! Type of obstruction, one of 'UP', 'DO' or '3D' (iv)
@@ -186,7 +184,6 @@ MODULE comobstructions
    REAL(KIND = rsh), DIMENSION(:), ALLOCATABLE :: obst_c_z0bstress_x0    ! First parameter for roughness length parameterization (iv), [-]
    REAL(KIND = rsh), DIMENSION(:), ALLOCATABLE :: obst_c_z0bstress_x1    ! Second parameter for roughness length parameterization (iv), [-]
    REAL(KIND = rsh), DIMENSION(:), ALLOCATABLE :: obst_c_z0bstress_x2    ! Third parameter for roughness length parameterization (correction for 2Dsmall-depth) (iv), [-]
-
 
    !--------------------------------------------------------------------------
    ! * VARIABLES DEPENDING ONLY ON GRID (i,j) or (k,i,j)                     :
@@ -255,7 +252,6 @@ MODULE comobstructions
    REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE :: obst_height_t        ! Instantaneous obstruction heights (iv,t), allocated within obst_readfile_char subroutine, [m]
 
    CONTAINS
-
 !!=============================================================================
 
 #endif
