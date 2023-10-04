@@ -23,7 +23,7 @@ much code as possible in each Kernels region).
 TODO: Cleanup includes
 """
 from poseidon.dsl.helper import extract_kernels_from_psyir
-from poseidon_extensions import ACCWaitDirective, ACCSetDeviceNumDirective
+from extensions.directives import ACCWaitDirective, ACCSetDeviceNumDirective
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes.if_block import IfBlock
 from psyclone.psyir.nodes.call import Call

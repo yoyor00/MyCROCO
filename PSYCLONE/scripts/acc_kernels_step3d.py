@@ -107,9 +107,7 @@ def apply_acc_fetch_vars(psy) -> None:
             # build sigs
             signatures = []
             for var in vars_to_fetch:
-                print(var)
                 signatures.append(Signature(var))
-            print(signatures)
 
             ACCEnterDataTrans().apply(invoke.schedule, options={'signatures': signatures})
             for dir in invoke.schedule.walk(AccEnterDataDir):
@@ -127,8 +125,6 @@ def trans(psy):
     # steps
     acc.add_missing_device_vars(psy.container)
     acc.set_device_tile(psy.container)
-
-    print(psy.container.view())
 
     routines = psy.container.walk(Routine)
     for routine in routines:  
@@ -155,12 +151,20 @@ def trans(psy):
                 scratch.add_1d_scratch_var(routine, var)
 
             ############################################################
-            # handle loop kinds
+            # First extract what we need to trans (to avoid issues as we change the tree while we run over it)
             top_loop: Loop
+            loops_to_trans = []
             for top_loop in routine.walk(Loop, stop_type=Loop):
                 # extract nested loop indice order
                 vars=loops.extract_loop_indices_order(top_loop, exclude=['itrc'])
                 print(vars[0:5])
+                if vars[0:3] == ['k','j','i'] or vars[0:3] == ['j','k','i'] or vars[0:3] == ['j','i','k']:
+                    loops_to_trans.append(top_loop)
+
+            # now apply
+            for top_loop in loops_to_trans:
+                # extract nested loop indice order
+                vars=loops.extract_loop_indices_order(top_loop, exclude=['itrc'])
 
                 # handle 'kji' loops kind
                 if vars[0:3] == ['k','j','i']:
