@@ -509,63 +509,80 @@ def helper_load_snippet(kind: str, step: str, name: str, generated_node: Node = 
     return current_source
 
 ##########################################################
-def helper_gen_var_decl(vars):
+def helper_gen_var_decl(vars: dict, common: bool = False) -> str:
     # to aggregate
     decl = []
 
     # loop on scalars
-    scalars = vars['scalars']
+    scalars = vars['scalars_int']
     for vname in scalars:
         decl.append(f'integer*4 {vname}')
+
+    # loop on scalars
+    scalars = vars['scalars']
+    for vname in scalars:
+        decl.append(f'real*4 {vname}')
 
     # loop on 1d arrays
     scalars = vars['1d']
     for vname in scalars:
-        decl.append(f'integer*4 {vname}(10)')
+        decl.append(f'real*4 {vname}(0:10)')
 
     # loop on 2d arrays
     scalars = vars['2d']
     for vname in scalars:
-        decl.append(f'integer*4 {vname}(10,10)')
+        decl.append(f'real*4 {vname}(0:10,0:10)')
 
     # loop on 3d arrays
     scalars = vars['3d']
     for vname in scalars:
-        decl.append(f'integer*4 {vname}(10,10,10)')
+        decl.append(f'real*4 {vname}(0:10,0:10,0:10)')
 
     # loop on 4d arrays
     scalars = vars['4d']
     for vname in scalars:
-        decl.append(f'integer*4 {vname}(10,10,10,10)')
+        decl.append(f'real*4 {vname}(0:10,0:10,0:10,0:10)')
 
     # loop on 5d arrays
     scalars = vars['5d']
     for vname in scalars:
-        decl.append(f'integer*4 {vname}(10,10,10,10,10)')
-    
+        decl.append(f'real*4 {vname}(0:10,0:10,0:10,0:10,0:10)')
+  
+    # common
+    if common:
+        for dim in vars:
+            for vname in vars[dim]:
+                decl.append(f'common {vname}')
+
     # ok
     return '\n'.join(decl)
 
 ##########################################################
 LOOP_USED_VARS={
-    'scalars': [
+    'scalars_int': [
         'itrc', 'nt', 'i', 'j', 'k', 'nadv', 'iend', 'lm', 'n', 'jstr', 'jend',
-        'istr', 'mm', 'iic', 'ntstart', 'cff', 'dt', 'nnew', 'nstp', 'gamma',
-        'cff1', 'cff2', 'indx', 'jstrv', 'cdt', 'istru', 'ru', 'epsil', 'itemp',
-        'akt', 'nrhs', 'cfr', 'g', 'grho', 'onefifth', 'halfgrho', 'onetwelfth',
-        'jendr', 'istrr', 'iendr', 'knew', 'jstrr', 'aa', 'akv', 'cc'],
-    '1d': [],
+        'istr', 'mm', 'iic', 'ntstart', 'nnew', 'nstp',
+        'indx', 'jstrv', 'istru', 'itemp',
+        'nrhs',
+        'jendr', 'istrr', 'iendr', 'knew', 'jstrr'],
+    'scalars': [
+        'cff', 'dt', 'gamma',
+        'cff1', 'cff2', 'cdt', 'epsil',
+        'cfr', 'g', 'grho', 'onefifth', 'halfgrho', 'onetwelfth',
+        'aa', 'cc'],
+    '1d': ['fc1d', 'cf1d', 'dc1d', 'bc1d', 'dz1d', 'dr1d'],
     '2d': [
-        'work', 'fe', 'pm', 'pn', 'hz_bak', 'fc', 'cf', 'dz', 'dr', 'on_u',
-        'rufrc', 'rvfrc', 'bc'
+        'fx', 'work', 'fe', 'pm', 'pn', 'fc', 'cf', 'dz', 'dr', 'on_u',
+        'rufrc', 'rvfrc', 'bc', 'dc', 'om_v', 'dv_avg2', 'du_avg2'
     ],
     '3d': [
-        'fx', 'huon', 'hvom', 'hz', 'hz_half', 'rv', 'we', 'u', 'stflx',
-        'btflx', 'z_r', 'dc', 'vfx_3d', 'vfe_3d', 'ufx_3d', 'ufe_3d', 'rho',
-        'p', 'z_w', 'om_v', 'du_avg1', 'du_avg2', 'ubar', 'dv_avg1', 'dv_avg2',
-        'vbar', 'romega'
+        'huon', 'hvom', 'hz', 'hz_half', 'rv', 'we', 'stflx',
+        'btflx', 'z_r', 'vfx_3d', 'vfe_3d', 'ufx_3d', 'ufe_3d', 'rho',
+        'p', 'z_w', 'du_avg1', 'ubar', 'dv_avg1',
+        'vbar', 'romega', 'ru', 'work_3d', 'hz_bak', 'fx_3d', 'fe_3d',
+        'akv'
     ],
-    '4d': ['v'],
+    '4d': ['v', 'u', 'akt'],
     '5d': ['t']
 }
 LOOP_PARAMETERS = [
