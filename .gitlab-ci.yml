@@ -156,7 +156,15 @@ reg_perfrst:
     - ci.inria.fr
     - large
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  variables:
+    DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
+    - mkdir -p $DATAREG
   before_script:
+    - mkdir -p $DATAREG
+    - cd $DATAREG
+    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    - tar -xf ForCI-INRIA.tar.gz
+    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
