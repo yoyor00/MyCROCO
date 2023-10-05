@@ -268,9 +268,9 @@ if [[ $COMPILEAGRIF ]] ; then
 # Test if the C compiler is the GNU Compiler
 # if True add '-fcommon' to CFLAGS
     if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
-	echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
-	CFLAGS1="$CFLAGS1 -fcommon"
-
+		echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
+		CFLAGS1="$CFLAGS1 -fcommon"
+	fi
 #
 # compile the AGRIF librairy
 #
