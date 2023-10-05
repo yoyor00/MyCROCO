@@ -14,78 +14,87 @@ subroutine snippet()
   integer*4 :: mm
   integer*4 :: iic
   integer*4 :: ntstart
-  integer*4 :: cff
-  integer*4 :: dt
   integer*4 :: nnew
   integer*4 :: nstp
-  integer*4 :: gamma
-  integer*4 :: cff1
-  integer*4 :: cff2
   integer*4 :: indx
   integer*4 :: jstrv
-  integer*4 :: cdt
   integer*4 :: istru
-  integer*4 :: ru
-  integer*4 :: epsil
   integer*4 :: itemp
-  integer*4 :: akt
   integer*4 :: nrhs
-  integer*4 :: cfr
-  integer*4 :: g
-  integer*4 :: grho
-  integer*4 :: onefifth
-  integer*4 :: halfgrho
-  integer*4 :: onetwelfth
   integer*4 :: jendr
   integer*4 :: istrr
   integer*4 :: iendr
   integer*4 :: knew
   integer*4 :: jstrr
-  integer*4 :: aa
-  integer*4 :: akv
-  integer*4 :: cc
-  integer*4, dimension(10,10) :: work
-  integer*4, dimension(10,10) :: fe
-  integer*4, dimension(10,10) :: pm
-  integer*4, dimension(10,10) :: pn
-  integer*4, dimension(10,10) :: hz_bak
-  integer*4, dimension(10,10) :: fc
-  integer*4, dimension(10,10) :: cf
-  integer*4, dimension(10,10) :: dz
-  integer*4, dimension(10,10) :: dr
-  integer*4, dimension(10,10) :: on_u
-  integer*4, dimension(10,10) :: rufrc
-  integer*4, dimension(10,10) :: rvfrc
-  integer*4, dimension(10,10) :: bc
-  integer*4, dimension(10,10,10) :: fx
-  integer*4, dimension(10,10,10) :: huon
-  integer*4, dimension(10,10,10) :: hvom
-  integer*4, dimension(10,10,10) :: hz
-  integer*4, dimension(10,10,10) :: hz_half
-  integer*4, dimension(10,10,10) :: rv
-  integer*4, dimension(10,10,10) :: we
-  integer*4, dimension(10,10,10) :: u
-  integer*4, dimension(10,10,10) :: stflx
-  integer*4, dimension(10,10,10) :: btflx
-  integer*4, dimension(10,10,10) :: z_r
-  integer*4, dimension(10,10,10) :: dc
-  integer*4, dimension(10,10,10) :: vfx_3d
-  integer*4, dimension(10,10,10) :: vfe_3d
-  integer*4, dimension(10,10,10) :: ufx_3d
-  integer*4, dimension(10,10,10) :: ufe_3d
-  integer*4, dimension(10,10,10) :: rho
-  integer*4, dimension(10,10,10) :: p
-  integer*4, dimension(10,10,10) :: z_w
-  integer*4, dimension(10,10,10) :: om_v
-  integer*4, dimension(10,10,10) :: du_avg1
-  integer*4, dimension(10,10,10) :: du_avg2
-  integer*4, dimension(10,10,10) :: ubar
-  integer*4, dimension(10,10,10) :: dv_avg1
-  integer*4, dimension(10,10,10) :: dv_avg2
-  integer*4, dimension(10,10,10) :: vbar
-  integer*4, dimension(10,10,10) :: romega
-  integer*4, dimension(10,10,10,10) :: v
-  integer*4, dimension(10,10,10,10,10) :: t
+  real*4 :: cff
+  real*4 :: dt
+  real*4 :: gamma
+  real*4 :: cff1
+  real*4 :: cff2
+  real*4 :: cdt
+  real*4 :: epsil
+  real*4 :: cfr
+  real*4 :: g
+  real*4 :: grho
+  real*4 :: onefifth
+  real*4 :: halfgrho
+  real*4 :: onetwelfth
+  real*4 :: aa
+  real*4 :: cc
+  real*4, dimension(0:10) :: fc1d
+  real*4, dimension(0:10) :: cf1d
+  real*4, dimension(0:10) :: dc1d
+  real*4, dimension(0:10) :: bc1d
+  real*4, dimension(0:10) :: dz1d
+  real*4, dimension(0:10) :: dr1d
+  real*4, dimension(0:10,0:10) :: fx
+  real*4, dimension(0:10,0:10) :: work
+  real*4, dimension(0:10,0:10) :: fe
+  real*4, dimension(0:10,0:10) :: pm
+  real*4, dimension(0:10,0:10) :: pn
+  real*4, dimension(0:10,0:10) :: fc
+  real*4, dimension(0:10,0:10) :: cf
+  real*4, dimension(0:10,0:10) :: dz
+  real*4, dimension(0:10,0:10) :: dr
+  real*4, dimension(0:10,0:10) :: on_u
+  real*4, dimension(0:10,0:10) :: rufrc
+  real*4, dimension(0:10,0:10) :: rvfrc
+  real*4, dimension(0:10,0:10) :: bc
+  real*4, dimension(0:10,0:10) :: dc
+  real*4, dimension(0:10,0:10) :: om_v
+  real*4, dimension(0:10,0:10) :: dv_avg2
+  real*4, dimension(0:10,0:10) :: du_avg2
+  real*4, dimension(0:10,0:10,0:10) :: huon
+  real*4, dimension(0:10,0:10,0:10) :: hvom
+  real*4, dimension(0:10,0:10,0:10) :: hz
+  real*4, dimension(0:10,0:10,0:10) :: hz_half
+  real*4, dimension(0:10,0:10,0:10) :: rv
+  real*4, dimension(0:10,0:10,0:10) :: we
+  real*4, dimension(0:10,0:10,0:10) :: stflx
+  real*4, dimension(0:10,0:10,0:10) :: btflx
+  real*4, dimension(0:10,0:10,0:10) :: z_r
+  real*4, dimension(0:10,0:10,0:10) :: vfx_3d
+  real*4, dimension(0:10,0:10,0:10) :: vfe_3d
+  real*4, dimension(0:10,0:10,0:10) :: ufx_3d
+  real*4, dimension(0:10,0:10,0:10) :: ufe_3d
+  real*4, dimension(0:10,0:10,0:10) :: rho
+  real*4, dimension(0:10,0:10,0:10) :: p
+  real*4, dimension(0:10,0:10,0:10) :: z_w
+  real*4, dimension(0:10,0:10,0:10) :: du_avg1
+  real*4, dimension(0:10,0:10,0:10) :: ubar
+  real*4, dimension(0:10,0:10,0:10) :: dv_avg1
+  real*4, dimension(0:10,0:10,0:10) :: vbar
+  real*4, dimension(0:10,0:10,0:10) :: romega
+  real*4, dimension(0:10,0:10,0:10) :: ru
+  real*4, dimension(0:10,0:10,0:10) :: work_3d
+  real*4, dimension(0:10,0:10,0:10) :: hz_bak
+  real*4, dimension(0:10,0:10,0:10) :: fx_3d
+  real*4, dimension(0:10,0:10,0:10) :: fe_3d
+  real*4, dimension(0:10,0:10,0:10) :: akv
+  real*4, dimension(0:10,0:10,0:10,0:10) :: v
+  real*4, dimension(0:10,0:10,0:10,0:10) :: u
+  real*4, dimension(0:10,0:10,0:10,0:10) :: akt
+  real*4, dimension(0:10,0:10,0:10,0:10,0:10) :: t
 
   do j = jstrv, jend, 1
     do k = 1, n, 1

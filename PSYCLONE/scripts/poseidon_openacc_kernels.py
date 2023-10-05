@@ -116,7 +116,8 @@ def trans(psy):
                 if not isinstance(call, IntrinsicCall):
                     break
             pos = call.position
-            call.parent.children.insert(pos, ACCSetDeviceNumDirective(device_num='tile'))
+            directive = ACCSetDeviceNumDirective(device_num='tile')
+            call.parent.children.insert(pos, directive)
 
         #################################################################
 
