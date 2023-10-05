@@ -158,7 +158,6 @@ reg_perfrst:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   variables:
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
-    - mkdir -p $DATAREG
   before_script:
     - mkdir -p $DATAREG
     - cd $DATAREG
