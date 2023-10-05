@@ -155,7 +155,7 @@ reg_perfrst:
   tags:
     - ci.inria.fr
     - large
-    image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
