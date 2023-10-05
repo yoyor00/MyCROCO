@@ -37,7 +37,7 @@ download_latest:
   stage: download
   tags:
     - ci.inria.fr
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   script:
     - cd $CVTKHOME
     - mkdir -p latest
@@ -60,7 +60,7 @@ ana_run:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
@@ -85,7 +85,7 @@ vort_run:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
@@ -108,40 +108,15 @@ vort_run:
     paths:
        - $CVTKWORK/ftp
     when: always
-   
+
 reg_run:
   stage: run
-  variables:
-    DATAREG: "$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
-  before_script:
-  - mkdir -p $DATADIR
-  - mkdir -p $CVTKWORK
-  - cd $DATADIR
-  - mkdir -p TESTROOT/REG
-  - cd -
-  script:
-    - cd $CVTKHOME/Scripts_reg
-    - ./create_link_master_reg.sh
-    - cd -
-    - cd $CVTKWORK/REG
-    
-    - ./mk_TESTALL.bash CONFIGURE_REG reg
-    - ./gather_recap.bash REG > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
- 
-  artifacts:
-    paths:
-      - $CVTKWORK/ftp
-    when: always 
-
-reg_run_docker:
-  stage: run
+  only:
+    - schedules
   tags:
   - ci.inria.fr
   - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   variables:
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
@@ -177,10 +152,10 @@ reg_perfrst:
   stage: run
   only:
     - schedules
-      #tags:
-      #- ci.inria.fr
-      #- large
-      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  tags:
+    - ci.inria.fr
+    - large
+    image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK

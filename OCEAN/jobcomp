@@ -254,14 +254,24 @@ fi
 # prepare and compile the library
 #
 if [[ $COMPILEAGRIF ]] ; then
+
+# Find the default C compiler
+    CC1=$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)
+    CFLAGS1=$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)
+# Test if the C compiler is the GNU Compiler
+# if True add '-fcommon' to CFLAGS
+    if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
+	echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
+	CFLAGS1="$CFLAGS1 -fcommon"
+
 #
 # compile the AGRIF librairy
 #
 	if [[ $COMPILEMPI ]] ; then
-		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1"
+		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
 	else
-		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1"
-	fi
+		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
+
 	if [[ $OS == Darwin ]] ; then          # DARWIN
 # run RANLIB on Darwin system
 		ranlib AGRIF/libagrif.a
