@@ -271,7 +271,7 @@ if [[ $COMPILEAGRIF ]] ; then
 		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
 	else
 		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
-
+	fi
 	if [[ $OS == Darwin ]] ; then          # DARWIN
 # run RANLIB on Darwin system
 		ranlib AGRIF/libagrif.a
