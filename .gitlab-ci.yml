@@ -187,6 +187,7 @@ reg_perfrst:
   artifacts:
     paths:
       - $PERFRSTWORK/ftp
+      - $PERFRSTWORK/REG/*/*.log
     when: always
 
 
