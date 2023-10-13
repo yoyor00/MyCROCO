@@ -112,7 +112,11 @@
 !
 !======================================================================
 !
+#  ifdef MUSTANG
+      USE comsubstance, ONLY : ros, nvpc, l_subs2D
+#  endif
       implicit none
+
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N), K0,
@@ -159,6 +163,13 @@
      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 #   include "mixing.h"
 #  endif
+#  ifdef SEDIMENT
+#   include "sediment.h"
+      integer itrc,ised
+#  endif
+#  ifdef MUSTANG
+      integer itrc,iv
+#  endif
 !
 #  include "compute_extended_bounds.h"
 !
@@ -176,8 +187,6 @@
 !
       dr00=r00-rho0
 !
-
-
 #  ifdef RVTK_DEBUG_PERFRST
       call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
@@ -437,6 +446,47 @@
           enddo
         enddo
 # endif /* CROCO_QH */
+
+# if defined SED_DENS
+!======================================================================
+!  Include suspended sediment density in rho (kg/m3 - rho0)
+!  (Eq. 36 of Warner et al., 2008)
+!======================================================================
+!
+        do k=1,N
+          do i=IstrR,IendR
+            cff=0.
+
+#  if defined SEDIMENT /* SEDIMENT */
+            do ised=1,NST
+              itrc=itrc_sed+ised-1
+              cff=cff+t(i,j,k,nrhs,itrc)*
+     &                (Srho(ised)-rho(i,j,k)-rho0)/Srho(ised)
+            enddo
+
+#  elif defined MUSTANG /* MUSTANG */
+            do iv=1,nvpc
+#    if defined key_sand2D
+              if (.not.l_subs2D(iv)) then
+#    endif
+                itrc=iv+itsubs1-1
+                cff=cff+t(i,j,k,nrhs,itrc)*
+     &                (ros(iv)-rho(i,j,k)-rho0)/ros(iv)
+#    if defined key_sand2D
+              endif
+#    endif
+            enddo
+
+#  endif /* SEDMENT or MUSTANG */
+
+            rho(i,j,k)=rho(i,j,k)+cff
+#  ifdef MASKING
+            rho(i,j,k)=rho(i,j,k)*rmask(i,j)
+#  endif
+          enddo
+        enddo
+
+# endif /* SED_DENS */
 
 # ifdef VAR_RHO_2D
 !
