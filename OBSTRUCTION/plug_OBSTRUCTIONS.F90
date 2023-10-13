@@ -2,25 +2,25 @@
 
 #if defined OBSTRUCTION
 
-      MODULE plug_OBSTRUCTIONS
-      ! interface between croco and obstruction module
+MODULE plug_OBSTRUCTIONS
+   ! interface between croco and obstruction module
 
-      USE module_OBSTRUCTIONS
+   USE module_OBSTRUCTIONS
 
-      USE initOBSTRUCTIONS, ONLY : OBSTRUCTIONS_init
-      USE OBSTRUCTIONS, ONLY : OBSTRUCTIONS_update
+   USE initOBSTRUCTIONS, ONLY: OBSTRUCTIONS_init
+   USE OBSTRUCTIONS, ONLY: OBSTRUCTIONS_update
 
-      IMPLICIT NONE
+   IMPLICIT NONE
 
-      PRIVATE
+   PRIVATE
 
-      PUBLIC   OBSTRUCTIONS_update_main
-      PUBLIC   OBSTRUCTIONS_init_main
+   PUBLIC OBSTRUCTIONS_update_main
+   PUBLIC OBSTRUCTIONS_init_main
 
 contains
 !
 !-----------------------------------------------------------------------
-      SUBROUTINE OBSTRUCTIONS_update_main (tile)
+   SUBROUTINE OBSTRUCTIONS_update_main(tile)
 
       INTEGER :: tile
 # include "ocean2d.h"
@@ -28,29 +28,29 @@ contains
 
       CALL OBSTRUCTIONS_update(Istr, Iend, Jstr, Jend)
 
-      END SUBROUTINE
+   END SUBROUTINE
 
 !-----------------------------------------------------------------------
-      SUBROUTINE OBSTRUCTIONS_init_main ()
+   SUBROUTINE OBSTRUCTIONS_init_main()
 
       REAL :: h0fond
 # include "ocean2d.h"
-      
+
 # ifdef WET_DRY
-            h0fond = D_wetdry
+      h0fond = D_wetdry
 # else
-            h0fond = 0.
+      h0fond = 0.
 # endif
 
       CALL OBSTRUCTIONS_init(h0fond)
-      END SUBROUTINE
+   END SUBROUTINE
 
 !-----------------------------------------------------------------------
-      END MODULE plug_OBSTRUCTIONS
+END MODULE plug_OBSTRUCTIONS
 
 #else
 
-      MODULE plug_OBSTRUCTIONS_empty
-      END MODULE plug_OBSTRUCTIONS_empty
+MODULE plug_OBSTRUCTIONS_empty
+END MODULE plug_OBSTRUCTIONS_empty
 
 #endif /* OBSTRUCTIONS */

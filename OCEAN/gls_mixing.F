@@ -565,8 +565,9 @@
                   ! Patankar trick to ensure non-negative solutions
                   cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1)) 
 # if defined OBSTRUCTION_TURB
-     &                         * (1. - (obst_a3d(obst_nbvar+2,k,i,j) 
-     &                                + obst_a3d(obst_nbvar+2,k+1,i,j))*0.5) 
+     &                 * (1. - (obst_a3d(obst_nbvar+2,k,i,j)*Hz(i,j,k) 
+     &                 + obst_a3d(obst_nbvar+2,k+1,i,j)*Hz(i,j,k+1))
+     &                 / (Hz(i,j,k) + Hz(i,j,k+1)) ) 
                        ! TODO siggen!
 # endif
 
