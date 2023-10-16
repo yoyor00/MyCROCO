@@ -202,6 +202,10 @@ C$    integer omp_get_thread_num
                      depth=150.
                      f0=8.26E-5
                      beta=0.
+# elif defined SEAGRASS
+                     depth=0.215
+                     f0=0.
+                     beta=0.
 # elif defined JET
                      depth=4000.
                      f0=1.E-4
@@ -338,6 +342,9 @@ C$    integer omp_get_thread_num
 # elif defined RIVER
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
+# elif defined SEAGRASS
+                     Length_ETA=0.25
+                     Length_XI =36.*0.05
 # elif defined JET
                      Length_XI = 500.e+3
                      Length_ETA=2000.e+3
@@ -629,6 +636,14 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=h(i,JstrR)
         enddo
       enddo
+
+# elif defined SEAGRASS
+        do j=JstrR,JendR
+            do i=IstrR,IendR
+            h(i,j)=depth
+            enddo
+        enddo
+
 
 # elif defined SHOREFACE
       do j=JstrR,JendR
@@ -1073,6 +1088,18 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           zob(i,j)=zobt
         end do
       end do
+
+# ifdef SEAGRASS
+      do j=JstrR,JendR
+         do i=IstrR,IendR
+             if ((i .lt. 14) .or. (i .gt. 31)) then
+                 zob(i,j) = 6.E-8 ! out of patch
+             else
+                 zob(i,j) = 1.E-6 ! in patch
+             end if
+         end do
+       end do
+# endif
 !
 !----------------------------------------------------------------------
 !  Set masking at RHO-points.
@@ -1135,6 +1162,38 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       endif ! WESTERN_EDGE
 #  endif /* RIVER */
+
+#  ifdef SEAGRASS
+!
+! Mask out 8-point wide strip of land on the west, and
+! carve two 1-point wide channels through that strip.
+
+      if (WESTERN_EDGE) then
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            rmask(i,j)=0.            ! <-- strip of land
+          enddo
+        enddo
+        do is=1,Nsrc
+#   ifdef MPI
+          i0=Isrc_mpi(is,mynode)
+          j0=Jsrc_mpi(is,mynode)
+#   else
+          i0=Isrc(is)
+          j0=Jsrc(is)
+#   endif
+          if (IstrR.le.i0 .and. i0.le.IendR .and.
+     &        JstrR.le.j0 .and. j0.le.JendR) then
+            if (is.eq.1) then
+                do i=IstrR+3,IendR
+                    rmask(i,j0)=1.     ! <-- lower channel along xi
+                enddo
+            endif
+          endif
+        enddo
+      endif ! WESTERN_EDGE
+#  endif /* SEAGRASS */
+
 # endif /* MASKING */
 !
 #else

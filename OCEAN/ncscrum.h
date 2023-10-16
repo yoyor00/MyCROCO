@@ -2173,6 +2173,9 @@
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsname
 #endif
+#if defined OBSTRUCTION
+     &               ,    obstname
+#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)

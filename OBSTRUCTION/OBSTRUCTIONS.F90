@@ -104,9 +104,9 @@ CONTAINS
             obst_a3d(:, :, i, j) = obst_output_ij%a3d(:, :)
             obst_tau(i, j, :) = obst_output_ij%tau(:)
             obst_t(i, j, :) = obst_output_ij%t(:)
-            if (obst_nv_noturb > 0) then
+            IF (obst_nv_noturb > 0) THEN
                zob(i, j) = obst_output_ij%z0obst(obst_nbvar + 1)
-            end if
+            END IF
          END DO
       END DO
 

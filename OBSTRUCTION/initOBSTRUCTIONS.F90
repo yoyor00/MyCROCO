@@ -44,9 +44,7 @@ MODULE initobstructions
 
    IMPLICIT NONE
 
-   !! * Accessibility
-
-   ! function & routines of this module, CALLed outside :
+   ! function & routines of this module, called outside :
    ! PUBLIC functions
    PUBLIC OBSTRUCTIONS_init
    PUBLIC OBSTRUCTIONS_readfile_char ! used in OBSTRUCTIONS
@@ -69,12 +67,10 @@ CONTAINS
 
       REAL(KIND=rsh), INTENT(IN) :: h0fond_in
 
-   !! * Local declaration
-      CHARACTER(len=lchain)                   :: filepc
       INTEGER                                 :: iv, k, indvar
       CHARACTER(len=lchain) :: obst_fn_var1, obst_fn_var2, obst_fn_var3, &
                                obst_fn_var4, obst_fn_var5, obst_fn_var6
-   !! * Namelist
+
       NAMELIST /obst_main/ obst_nbvar, obst_fn_position, &
          obst_fn_var1, obst_fn_var2, obst_fn_var3, &
          obst_fn_var4, obst_fn_var5, obst_fn_var6
@@ -97,8 +93,8 @@ CONTAINS
       ! ************************
       ! * READING NAMELIST
       ! ************************
-      filepc = './paraOBSTRUCTIONS.txt'
-      OPEN (50, file=filepc, status='old', form='formatted', access='sequential')
+      lstr=lenstr(obstname)
+      OPEN(50,file=obstname(1:lstr),status='old',form='formatted',access='sequential')
       READ (50, obst_main)
       READ (50, obst_numerics)
       READ (50, obst_output)
@@ -108,7 +104,7 @@ CONTAINS
       MPI_master_only WRITE (iscreenlog, *) '*****************************************************'
       MPI_master_only WRITE (iscreenlog, *) '***** module OBSTRUCTIONS, subroutine OBST_INIT *****'
       MPI_master_only WRITE (iscreenlog, *) '*****************************************************'
-      MPI_master_only WRITE (iscreenlog, *) ' Reading file ', TRIM(filepc)
+      MPI_master_only WRITE (iscreenlog, *) ' Reading file ', TRIM(obstname)
       MPI_master_only WRITE (iscreenlog, *) '***********************'
 
       ! ************************************
@@ -339,12 +335,10 @@ CONTAINS
 
       IMPLICIT NONE
 
-   !! * Arguments
       INTEGER, INTENT(IN) :: iv
-   !! * Local declaration
+
       CHARACTER(len=lchain) :: filepc
       ! For obst_var_main
-      INTEGER               :: r_obst_varnum
       CHARACTER(len=lchain) :: r_obst_varname
       ! For obst_var_option
       LOGICAL               :: r_l_obst_cylinder, r_l_obst_flexible, r_l_obst_downward, &
@@ -369,7 +363,7 @@ CONTAINS
       INTEGER               :: r_obst_z0bstress_option
       REAL(KIND=rsh)        :: r_obst_c_z0bstress, r_obst_c_z0bstress_x0, r_obst_c_z0bstress_x1, r_obst_c_z0bstress_x2
    !! * Namelists
-      NAMELIST /obst_var_main/ r_obst_varnum, r_obst_varname
+      NAMELIST /obst_var_main/ r_obst_varname
       NAMELIST /obst_var_option/ r_l_obst_cylinder, r_l_obst_flexible, r_l_obst_downward, &
          r_l_obst_3DObst, r_l_obst_noturb
       NAMELIST /obst_var_init/ r_l_obst_filechar, r_l_obst_init_spatial, r_l_obst_filedistri, &
@@ -414,7 +408,6 @@ CONTAINS
       ! * Alocate to corresponding parameter
       ! ************************************
       ! * For namelist obst_var_main
-      obst_varnum(iv) = r_obst_varnum
       obst_varname(iv) = r_obst_varname
       ! * For namelist obst_var_option
       obst_l_cylinder(iv) = r_l_obst_cylinder
@@ -503,7 +496,6 @@ CONTAINS
          MPI_master_only WRITE (iscreenlog, *) '!===========================!'
          MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_main  !'
          MPI_master_only WRITE (iscreenlog, *) '!===========================!'
-         MPI_master_only WRITE (iscreenlog, *) '  - Number (identifier) of the variable  : ', obst_varnum(iv)
          MPI_master_only WRITE (iscreenlog, *) '  - Name (identifier) of the variable    : ', obst_varname(iv)
          MPI_master_only WRITE (iscreenlog, *) '!=============================!'
          MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_option  !'
@@ -621,7 +613,7 @@ CONTAINS
             MPI_master_only WRITE (iscreenlog, *) &
                '  - Second parameter for empirical formulation                             : NOT USED'
          END IF
-         MPI_master_only WRITE (iscreenlog, *) &'!================================!'
+         MPI_master_only WRITE (iscreenlog, *) '!================================!'
          MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_roughdrag  !'
          MPI_master_only WRITE (iscreenlog, *) '!================================!'
          MPI_master_only WRITE (iscreenlog, *) &
@@ -744,12 +736,9 @@ CONTAINS
 
       IMPLICIT NONE
 
-   !! * Local declaration
       INTEGER          :: iv, nv_tot
       LOGICAL          :: l_turb
 
-   !!----------------------------------------------------------------------
-   !! * Executable part
       ! ********************************************
       ! COUNT NUMBER OF VARIABLES OF DIFFERENT TYPES
       ! ********************************************
@@ -810,24 +799,6 @@ CONTAINS
          MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
          STOP
       END IF
-      !------------------------
-      ! TESTING VARIABLES ORDER
-      !------------------------
-      DO iv = 1, obst_nbvar
-         IF (obst_varnum(iv) /= iv) THEN
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-            MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-            MPI_master_only WRITE (ierrorlog, *) ' ERROR : Wrong obstruction variable order'
-            MPI_master_only WRITE (ierrorlog, *) '         Variable number ', obst_varnum(iv)
-            MPI_master_only WRITE (ierrorlog, *) '         corresponds to the ', iv, ' variable read'
-            MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!! '
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-            STOP
-         END IF
-      END DO
 
       !---------------------------
       ! TEST FOR 2D and GLS_KEPSILON
@@ -963,15 +934,12 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
 
-   !! * Local declaration
       LOGICAL               :: ex
       INTEGER               :: i, j, eof, kk, iv, numfile
       CHARACTER(LEN=lchain) :: rec
       REAL(KIND=rlg)        :: tool_datosec, tint1, tint2, dt1, dt2, t1, tdb, tfi
       REAL(KIND=rsh)        :: height1, height2, width1, width2, thick1, thick2, dens1, dens2
 
-   !!--------------------------------------------------------------------------
-   !! * Executable part
       !-------------------------
       ! **** Initialization ****
       !-------------------------
@@ -1039,9 +1007,11 @@ CONTAINS
 
       IMPLICIT NONE
 
-      ! to DO for croco with appropriate netcdf reading
-
+#ifdef SEAGRASS
       obst_position(1, 14:31, :) = 1.0_rsh
+#else
+! to DO for croco with appropriate netcdf reading
+#endif
 
    END SUBROUTINE OBSTRUCTIONS_readfile_pos
 
@@ -1057,11 +1027,8 @@ CONTAINS
 
       IMPLICIT NONE
 
-   !! * Local declaration
       INTEGER :: kk, iv
       LOGICAL :: ex
-   !!----------------------------------------------------------------------
-   !! * Executable part
 
       MPI_master_only WRITE (iscreenlog, *) ' '
       MPI_master_only WRITE (iscreenlog, *) ' '
@@ -1158,13 +1125,9 @@ CONTAINS
 
       IMPLICIT NONE
 
-   !!----------------------------------------------------------------------
-   !! * Executable part
       !-------------------------
       ! Variables on (iv)
       !--------------------
-      ALLOCATE (obst_varnum(1:obst_nbvar))
-      obst_varnum(:) = 0
       ALLOCATE (obst_fracxy_type(1:obst_nbvar))
       obst_fracxy_type(:) = 0
       ALLOCATE (obst_nbhnorm(1:obst_nbvar))
@@ -1273,10 +1236,6 @@ CONTAINS
       USE module_OBSTRUCTIONS ! for GLOBAL_2D_ARRAY,
       IMPLICIT NONE
 
-   !! * Local declaration
-
-   !!----------------------------------------------------------------------
-   !! * Executable part
       !----------------------
       ! Variables on (iv,i,j)
       !----------------------

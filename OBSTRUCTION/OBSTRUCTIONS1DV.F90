@@ -76,23 +76,23 @@ MODULE OBSTRUCTIONS1DV
 
    TYPE output_obst
       ! output of obstruction module
-      REAL(KIND=rsh), ALLOCATABLE :: height(:) ! iv
-      REAL(KIND=rsh), ALLOCATABLE :: dens3d(:, :) ! iv,k
-      REAL(KIND=rsh), ALLOCATABLE :: width3d(:, :)
-      REAL(KIND=rsh), ALLOCATABLE :: thick3d(:, :)
-      REAL(KIND=rsh), ALLOCATABLE :: theta3d(:, :)
-      REAL(KIND=rsh), ALLOCATABLE :: fracz3d(:, :)
-      REAL(KIND=rsh), ALLOCATABLE :: drag3d(:, :)
-      REAL(KIND=rsh), ALLOCATABLE :: fracxy(:)    ! iv
-      REAL(KIND=rsh), ALLOCATABLE :: fuz(:)       ! k
-      REAL(KIND=rsh), ALLOCATABLE :: fvz(:)       ! k
-      REAL(KIND=rsh), ALLOCATABLE :: tau(:)       ! k
-      REAL(KIND=rsh), ALLOCATABLE :: t(:)         ! k
+      REAL(KIND=rsh), ALLOCATABLE :: height(:)     ! iv
+      REAL(KIND=rsh), ALLOCATABLE :: dens3d(:, :)  ! iv,k
+      REAL(KIND=rsh), ALLOCATABLE :: width3d(:, :) ! iv,k
+      REAL(KIND=rsh), ALLOCATABLE :: thick3d(:, :) ! iv,k
+      REAL(KIND=rsh), ALLOCATABLE :: theta3d(:, :) ! iv,k
+      REAL(KIND=rsh), ALLOCATABLE :: fracz3d(:, :) ! iv,k
+      REAL(KIND=rsh), ALLOCATABLE :: drag3d(:, :)  ! iv,k
+      REAL(KIND=rsh), ALLOCATABLE :: fracxy(:)     ! iv
+      REAL(KIND=rsh), ALLOCATABLE :: fuz(:)        ! k
+      REAL(KIND=rsh), ALLOCATABLE :: fvz(:)        ! k
+      REAL(KIND=rsh), ALLOCATABLE :: tau(:)        ! k
+      REAL(KIND=rsh), ALLOCATABLE :: t(:)          ! k
       REAL(KIND=rsh), ALLOCATABLE :: a3d(:, :)     ! iv+3,k
       REAL(KIND=rsh), ALLOCATABLE :: s3d(:, :)     ! iv+3,k
-      REAL(KIND=rsh), ALLOCATABLE :: a2d(:)       ! iv+3
-      REAL(KIND=rsh), ALLOCATABLE :: s2d(:)       ! iv+3
-      REAL(KIND=rsh), ALLOCATABLE :: z0obst(:)    ! iv+3
+      REAL(KIND=rsh), ALLOCATABLE :: a2d(:)        ! iv+3
+      REAL(KIND=rsh), ALLOCATABLE :: s2d(:)        ! iv+3
+      REAL(KIND=rsh), ALLOCATABLE :: z0obst(:)     ! iv+3
       REAL(KIND=rsh) :: height_mean
       REAL(KIND=rsh) :: dens_mean
       REAL(KIND=rsh) :: width_mean

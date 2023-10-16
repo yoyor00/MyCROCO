@@ -36,7 +36,7 @@ MODULE comobstructions
    ! obst_i_*  : variables used for initialization
    ! obst_c_*  : constant parameters
    ! obst_fn_* : filename variables
-   ! obst_l_*  : logical variables
+   ! obst_l_* or l_obst* : logical variables
 
    !--------------------------------------------------------------------------
    ! * VARIABLES WITHOUT DEPENDANCE ON THE NUMBER OF OBSTRUCTIONS VARIABLES  :
@@ -46,8 +46,6 @@ MODULE comobstructions
    CHARACTER(LEN=lchain) :: obst_fn_position                         ! Name of the input file for the obstruction position within the domain
 
    ! * Variables for outputs purpose
-   CHARACTER(LEN=lchain) :: obst_fn_out                              ! Name of the output file for obstructions
-
    LOGICAL :: l_obstout_pos                                          ! Write obstruction position (iv,i,j)
    LOGICAL :: l_obstout_height_f                                     ! Write 2D obstruction height (forcing) (iv,i,j)
    LOGICAL :: l_obstout_height_e                                     ! Write 2D obstruction height (effective) (iv,i,j)
@@ -133,7 +131,6 @@ MODULE comobstructions
    ! * VARIABLES DEPENDING ONLY ON THE NUMBER OF OBSTRUCTIONS VARIABLES (iv) :
    !--------------------------------------------------------------------------
 
-   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_varnum                   ! The number allocated to each variables (iv)
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_fracxy_type              ! The type of correction for horizontal coverage ((grid cell not completely fill with obstructions) (iv)
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_nbhnorm                  ! Number of vertical steps from the distribution file (iv)
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_c_abdel_nmax             ! Number of segments for Abdlerhman method (bending) (iv)

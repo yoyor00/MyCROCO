@@ -2699,6 +2699,16 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 
 #endif /* BBL */
 
+#if defined OBSTRUCTION
+      elseif (keyword(1:kwlen).eq.'obstruction') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) obstname
+        lstr=lenstr(obstname)
+        MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for Obstruction module:' ,
+     &          obstname(1:lstr)
+#endif
+
 #ifdef MRL_WCI
 !
 ! MRL wave-current interaction variables history fields
