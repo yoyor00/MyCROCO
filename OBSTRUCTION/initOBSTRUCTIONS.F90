@@ -83,8 +83,7 @@ CONTAINS
          l_obstout_s3d, l_obstout_drag, l_obstout_tau, &
          l_obstout_z0bed, l_obstout_z0obst, l_obstout_z0bstress, l_obstout_bstress, &
          l_obstout_bstressc, l_obstout_bstressw
-   !!----------------------------------------------------------------------
-   !! * Executable part
+
       obst_kmax = N
       iscreenlog = stdout
       ierrorlog = stdout
@@ -138,6 +137,7 @@ CONTAINS
             MPI_master_only WRITE (ierrorlog, *) '!!! --> Namelist contains (subroutine OBSTRUCTIONS_INIT)      !!!'
             MPI_master_only WRITE (ierrorlog, *) '!!! --> Allocation of names of parameters files               !!!'
             MPI_master_only WRITE (ierrorlog, *) '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            STOP
          END IF
       END DO
       ! ***********************
@@ -461,17 +461,13 @@ CONTAINS
    !!                 ***  ROUTINE OBSTRUCTIONS_write_summary  ***
    !!
    !! ** Purpose : Write a summary of obstructions parameters
-
    !!
    !!---------------------------------------------------------------------
 
       IMPLICIT NONE
 
-   !! * Local declaration
       INTEGER          :: iv
-   !!----------------------------------------------------------------------
-   !! * Executable part
-      !***********************************************
+
       MPI_master_only WRITE (iscreenlog, *) ' '
       MPI_master_only WRITE (iscreenlog, *) ' '
       MPI_master_only WRITE (iscreenlog, *) '***********************************************************************'
@@ -735,6 +731,21 @@ CONTAINS
 
       INTEGER          :: iv, nv_tot
       LOGICAL          :: l_turb
+
+      ! ************************
+      ! * Check GLS_KEPSILON is activated
+      ! ************************
+#if undef GLS_KEPSILON
+      MPI_master_only WRITE (ierrorlog, *) ' '
+      MPI_master_only WRITE (ierrorlog, *) ' '
+      MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+      MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
+      MPI_master_only WRITE (ierrorlog, *) '************* Missing GLS_KEPSILON activation*****************'
+      MPI_master_only WRITE (ierrorlog, *) ' ERROR : #OBSTRUCTION need #GLS_MIXING and #GLS_KEPSILON'
+      MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!! '
+      MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+      STOP
+# endif
 
       ! ********************************************
       ! COUNT NUMBER OF VARIABLES OF DIFFERENT TYPES
