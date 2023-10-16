@@ -125,8 +125,6 @@ MODULE comobstructions
 
    REAL(KIND=rsh)  :: obst_c_paramhuv           ! The coefficient of obstruction height for computation of velocity
 
-   REAL(KIND=rsh)  :: obst_i_z0bstress          ! Roughness length for bottom shear stress without obstruction (= z0seduni if key_sedim)
-
    !--------------------------------------------------------------------------
    ! * VARIABLES DEPENDING ONLY ON THE NUMBER OF OBSTRUCTIONS VARIABLES (iv) :
    !--------------------------------------------------------------------------

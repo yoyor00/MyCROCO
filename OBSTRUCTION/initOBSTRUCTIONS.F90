@@ -74,7 +74,7 @@ CONTAINS
       NAMELIST /obst_main/ obst_nbvar, obst_fn_position, &
          obst_fn_var1, obst_fn_var2, obst_fn_var3, &
          obst_fn_var4, obst_fn_var5, obst_fn_var6
-      NAMELIST /obst_numerics/ obst_i_z0bstress, obst_c_paramhuv
+      NAMELIST /obst_numerics/ obst_c_paramhuv
       NAMELIST /obst_output/ l_obstout_pos, l_obstout_height_f, l_obstout_height_e, l_obstout_dens_f, &
          l_obstout_dens_e, l_obstout_width_f, l_obstout_width_e, &
          l_obstout_thick_f, l_obstout_thick_e, l_obstout_oai, &
@@ -219,9 +219,6 @@ CONTAINS
             obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
          END IF
       END DO
-      IF (.NOT. obst_l_z0bstress_tot) THEN
-         obst_z0bstress(:, :) = obst_i_z0bstress
-      END IF
       ! **********************
       ! * OTHER INITIALIZATIONS
       ! ***********************

@@ -38,13 +38,11 @@
 : obst_numerics : OBSTRUCTIONS numerical parameters
 :------------------------------------------------------------------------------
 :
-: obst_i_z0bstress        : Roughness length for OBSTRUCTIONS without obstructions (eqv. z0seduni in MUSTANG)
 : obst_c_paramhuv         : coefficient for unconfined conditions (height * osbt_paramhuv)
 :
 :------------------------------------------------------------------------------
 :
 &obst_numerics
-  obst_i_z0bstress        = 1.0E-7
   obst_c_paramhuv         = 10. /
 :------------------------------------------------------------------------------
 : obst_output  : OBSTRUCTIONS outputs parameters
