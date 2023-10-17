@@ -2178,7 +2178,7 @@ C$OMP BARRIER
         enddo
       endif
 # endif
-
+!$acc end kernels
       return
       end
 #endif /* JET */
