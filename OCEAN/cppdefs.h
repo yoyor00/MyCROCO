@@ -2036,6 +2036,7 @@
 #  define M2_FRC_BRY
 #  undef  M3_FRC_BRY
 #  define T_FRC_BRY
+# endif
 # undef  RVTK_DEBUG
 
 #endif /* END OF CONFIGURATION CHOICE */

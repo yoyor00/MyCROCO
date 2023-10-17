@@ -27,8 +27,8 @@
 :
 &obst_main
   obst_nbvar              = 1
-  obst_fn_position        = ''
-  obst_fn_var1            = './obstruction_seagrass_var.txt'
+  obst_fn_position        = 'obstruction_seagrass_position.nc'
+  obst_fn_var1            = 'TEST_CASES/obstruction_seagrass_var.txt'
   obst_fn_var2            = ''
   obst_fn_var3            = ''
   obst_fn_var4            = ''
@@ -92,7 +92,6 @@
   l_obstout_theta         = .TRUE.
   l_obstout_cover         = .TRUE.
   l_obstout_frac_z        = .FALSE.
-  l_obstout_fuv           = .FALSE.
   l_obstout_fuzvz         = .FALSE.
   l_obstout_a2d           = .FALSE.
   l_obstout_a3d           = .FALSE.
@@ -102,10 +101,7 @@
   l_obstout_tau           = .FALSE.
   l_obstout_z0bed         = .FALSE.
   l_obstout_z0obst        = .FALSE.
-  l_obstout_z0bstress     = .FALSE.
-  l_obstout_bstress       = .FALSE.
-  l_obstout_bstressc      = .FALSE.
-  l_obstout_bstressw      = .FALSE. /
+  l_obstout_z0bstress     = .FALSE. /
 : 
 :------------------------------------------------------------------------------
 :

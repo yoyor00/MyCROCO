@@ -90,7 +90,7 @@ C$    integer omp_get_thread_num
 # ifdef SANDBAR
       real p1,p2,p3,p4,p5,p6,p7,xx
 # endif
-# ifdef RIVER
+# if defined RIVER || defined SEAGRASS
       integer is,i0,j0
 #  include "sources.h"
 # endif
@@ -1092,7 +1092,12 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 # ifdef SEAGRASS
       do j=JstrR,JendR
          do i=IstrR,IendR
-             if ((i .lt. 14) .or. (i .gt. 31)) then
+#   ifdef MPI
+        cff  = (float(i +ii*Lm) )
+#   else
+        cff  = (float(i       ) )
+#   endif
+             if ((cff .lt. 14) .or. (cff .gt. 31)) then
                  zob(i,j) = 6.E-8 ! out of patch
              else
                  zob(i,j) = 1.E-6 ! in patch
@@ -1164,34 +1169,22 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  endif /* RIVER */
 
 #  ifdef SEAGRASS
-!
-! Mask out 8-point wide strip of land on the west, and
-! carve two 1-point wide channels through that strip.
+      do j=JstrR,JendR
+         do i=IstrR,IendR
+         rmask(i,j)=0.      
+         enddo
+      enddo
 
       if (WESTERN_EDGE) then
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            rmask(i,j)=0.            ! <-- strip of land
-          enddo
-        enddo
-        do is=1,Nsrc
-#   ifdef MPI
-          i0=Isrc_mpi(is,mynode)
-          j0=Jsrc_mpi(is,mynode)
-#   else
-          i0=Isrc(is)
-          j0=Jsrc(is)
-#   endif
-          if (IstrR.le.i0 .and. i0.le.IendR .and.
-     &        JstrR.le.j0 .and. j0.le.JendR) then
-            if (is.eq.1) then
-                do i=IstrR+3,IendR
-                    rmask(i,j0)=1.     ! <-- lower channel along xi
-                enddo
-            endif
-          endif
-        enddo
+         do i=IstrR+3,IendR
+            rmask(i,3)=1.
+         enddo
+      else
+         do i=IstrR,IendR
+            rmask(i,3)=1.   
+         enddo
       endif ! WESTERN_EDGE
+
 #  endif /* SEAGRASS */
 
 # endif /* MASKING */

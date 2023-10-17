@@ -182,6 +182,8 @@
       fname='TEST_CASES/croco.in.Kilpatrick'
 #elif defined ESTUARY
       fname='TEST_CASES/croco.in.Estuary'
+#elif defined SEAGRASS
+      fname='TEST_CASES/croco.in.Seagrass'
 #else
       fname='croco.in'
 #endif
@@ -2707,7 +2709,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         MPI_master_only write(stdout,'(7x,A,12x,A)')
      &         'Input file for Obstruction module:' ,
      &          obstname(1:lstr)
-#endif
+#endif /* OBSTRUCTION */
 
 #ifdef MRL_WCI
 !

@@ -2278,6 +2278,9 @@
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsname
 #endif
+#if defined OBSTRUCTION
+     &               ,    obstname
+#endif
 #ifdef BIOLOGY
      &                                ,   bioname
 #endif

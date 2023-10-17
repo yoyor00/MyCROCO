@@ -62,12 +62,12 @@ CONTAINS
    !!
    !!---------------------------------------------------------------------
 
-      USE module_OBSTRUCTIONS ! for GLOBAL_2D_ARRAY, N, stdout
+      USE module_OBSTRUCTIONS ! for GLOBAL_2D_ARRAY, N, stdout, mynode
       IMPLICIT NONE
 
       REAL(KIND=rsh), INTENT(IN) :: h0fond_in
 
-      INTEGER                                 :: iv, k, indvar
+      INTEGER                                 :: iv, k, indvar, lstr, lenstr
       CHARACTER(len=lchain) :: obst_fn_var1, obst_fn_var2, obst_fn_var3, &
                                obst_fn_var4, obst_fn_var5, obst_fn_var6
 
@@ -79,10 +79,9 @@ CONTAINS
          l_obstout_dens_e, l_obstout_width_f, l_obstout_width_e, &
          l_obstout_thick_f, l_obstout_thick_e, l_obstout_oai, &
          l_obstout_theta, l_obstout_cover, l_obstout_frac_z, &
-         l_obstout_fuv, l_obstout_fuzvz, l_obstout_a2d, l_obstout_a3d, l_obstout_s2d, &
+         l_obstout_fuzvz, l_obstout_a2d, l_obstout_a3d, l_obstout_s2d, &
          l_obstout_s3d, l_obstout_drag, l_obstout_tau, &
-         l_obstout_z0bed, l_obstout_z0obst, l_obstout_z0bstress, l_obstout_bstress, &
-         l_obstout_bstressc, l_obstout_bstressw
+         l_obstout_z0bed, l_obstout_z0obst, l_obstout_z0bstress
 
       obst_kmax = N
       iscreenlog = stdout
@@ -98,13 +97,16 @@ CONTAINS
       READ (50, obst_numerics)
       READ (50, obst_output)
       CLOSE (50)
-      MPI_master_only WRITE (iscreenlog, *) ' '
-      MPI_master_only WRITE (iscreenlog, *) ' '
-      MPI_master_only WRITE (iscreenlog, *) '*****************************************************'
-      MPI_master_only WRITE (iscreenlog, *) '***** module OBSTRUCTIONS, subroutine OBST_INIT *****'
-      MPI_master_only WRITE (iscreenlog, *) '*****************************************************'
-      MPI_master_only WRITE (iscreenlog, *) ' Reading file ', TRIM(obstname)
-      MPI_master_only WRITE (iscreenlog, *) '***********************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+      MPI_master_only WRITE (iscreenlog, *) &
+            '*****************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '***** module OBSTRUCTIONS, subroutine OBST_INIT *****'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '*****************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            ' Reading file ', TRIM(obstname)
 
       ! ************************************
       ! * ALLOCATION OF VARIABLES PARAMETERS
@@ -127,27 +129,32 @@ CONTAINS
          ELSEIF (iv .EQ. 6) THEN
             obst_fn_vardat(iv) = obst_fn_var6
          ELSE
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) '*****************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '******* module OBSTRUCTIONS, subroutine OBSTRUCTIONS_INIT *******'
-            MPI_master_only WRITE (ierrorlog, *) '*****************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '!!! ERROR : Maximum number of variables >6                    !!!'
-            MPI_master_only WRITE (ierrorlog, *) '!!! Few changes must be performed in the code                 !!!'
-            MPI_master_only WRITE (ierrorlog, *) '!!! to increase number of allowed variables :                 !!!'
-            MPI_master_only WRITE (ierrorlog, *) '!!! --> Namelist contains (subroutine OBSTRUCTIONS_INIT)      !!!'
-            MPI_master_only WRITE (ierrorlog, *) '!!! --> Allocation of names of parameters files               !!!'
-            MPI_master_only WRITE (ierrorlog, *) '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+            MPI_master_only WRITE (ierrorlog, *) &
+            '*****************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '******* module OBSTRUCTIONS, subroutine OBSTRUCTIONS_INIT *******'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '*****************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '!!! ERROR : Maximum number of variables >6                    !!!'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '!!! Few changes must be performed in the code                 !!!'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '!!! to increase number of allowed variables :                 !!!'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '!!! --> Namelist contains (subroutine OBSTRUCTIONS_INIT)      !!!'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '!!! --> Allocation of names of parameters files               !!!'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
             STOP
          END IF
       END DO
       ! ***********************
       ! * OUTPUTS VARIABLES
       ! ***********************
-#ifdef MUSTANG
-      l_obstout_bstress = .FALSE.
-      l_obstout_bstressc = .FALSE.
-      l_obstout_bstressw = .FALSE.
-#endif
       obst_nout_pos = 'pos'       ! Name obstruction position
       obst_nout_height_f = 'height_f'  ! Name 2D obstruction height (forcing) (iv,i,j)
       obst_nout_height_e = 'height_e'  ! Name 2D obstruction height (effective) (iv,i,j)
@@ -161,8 +168,6 @@ CONTAINS
       obst_nout_theta = 'theta'     ! Name 3D obstruction bending angle (iv,k,i,j)
       obst_nout_cover = 'frac_xy'   ! Name 2D obstruction coverage (iv,i,j)
       obst_nout_frac_z = 'frac_z'    ! Name 2D obstruction fraction of sigma layer (iv,i,j)
-
-      obst_nout_fuv = 'fuv'       ! Name 2D obstruction friction force (i,j)
       obst_nout_fuzvz = 'fuzvz'     ! Name 3D obstruction friction force (k,i,j)
       obst_nout_a2d = 'a2d'       ! Name 2D obstruction horizontal area (iv+3,i,j)
       obst_nout_a3d = 'a3d'       ! Name 3D obstruction horizontal area (iv+3,k,i,j)
@@ -173,9 +178,6 @@ CONTAINS
       obst_nout_z0bed = 'z0bed'     ! Name 2D bottom roughness length of bed (i,j)
       obst_nout_z0obst = 'z0obst'    ! Name 2D bottom roughness length of obstructions (i,j)
       obst_nout_z0bstress = 'z0bstress' ! Name 2D bottom roughness length used for bottom shear stress computation (i,j)
-      obst_nout_bstress = 'taub'      ! Name 2D total bottom shear stress
-      obst_nout_bstressc = 'taubc'     ! Name 2D current bottom shear stress
-      obst_nout_bstressw = 'taubw'     ! Name 2D wave bottom shear stress
 
       ! ***********************
       ! * READING VARIABLES
@@ -201,42 +203,6 @@ CONTAINS
       ! ***********************
       CALL OBSTRUCTIONS_write_summary
       CALL OBSTRUCTIONS_compatibility
-      ! ***********************
-      ! * READING POSITION FILE
-      ! ***********************
-      CALL OBSTRUCTIONS_readfile_pos
-      ! **********************
-      ! * READING DISTRIBUTION FILE
-      ! ***********************
-      CALL OBSTRUCTIONS_readfile_distri
-
-      ! ***********************************
-      ! * INITIALIZATION OF ROUGHNESS SEDIM
-      ! ***********************************
-      obst_l_z0bstress_tot = .FALSE.
-      DO iv = 1, obst_nbvar
-         IF (obst_l_z0bstress(iv)) THEN
-            obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
-         END IF
-      END DO
-      ! **********************
-      ! * OTHER INITIALIZATIONS
-      ! ***********************
-      obst_z0bed(:, :) = zob(:, :) ! Saving the surface z0 tables from hydraulical initialization (without obstructions)
-      ! ***********************
-
-      CALL o1dv_alloc(obst_nbvar, obst_kmax, obst_nb_max_hnorm)
-      CALL o1dv_init(h0fond_in, obst_c_paramhuv, &
-                     obst_varname, obst_type, obst_l_flexible, obst_l_abdelposture, &
-                     obst_l_param_height, obst_l_cylinder, obst_l_noturb, obst_l_drag_cste, &
-                     obst_l_abdelrough_cste, obst_l_fracxy, obst_l_z0bstress, &
-                     obst_fracxy_type, obst_c_abdel_nmax, obst_z0bstress_option, &
-                     obst_c_rho, obst_c_height_x0, obst_c_height_x1, obst_c_shelter, &
-                     obst_c_lift, obst_c_drag, obst_c_lz, obst_c_crough_x0, obst_c_crough_x1, &
-                     obst_c_fracxy_k0, obst_c_fracxy_k1, obst_c_fracxy_l, obst_c_z0bstress, &
-                     obst_c_z0bstress_x0, obst_c_z0bstress_x1, obst_c_z0bstress_x2, &
-                     obst_l_filedistri, obst_nbhnorm, obst_height_norm, obst_dens_norm, &
-                     stdout)
 
       DO iv = 1, obst_nbvar
          indvar = indxObst + iv - 1
@@ -318,6 +284,43 @@ CONTAINS
 
       END DO
 
+      ! ***********************
+      ! * READING POSITION FILE
+      ! ***********************
+      CALL OBSTRUCTIONS_readfile_pos
+      ! **********************
+      ! * READING DISTRIBUTION FILE
+      ! ***********************
+      CALL OBSTRUCTIONS_readfile_distri
+
+      ! ***********************************
+      ! * INITIALIZATION OF ROUGHNESS SEDIM
+      ! ***********************************
+      obst_l_z0bstress_tot = .FALSE.
+      DO iv = 1, obst_nbvar
+         IF (obst_l_z0bstress(iv)) THEN
+            obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
+         END IF
+      END DO
+      ! **********************
+      ! * OTHER INITIALIZATIONS
+      ! ***********************
+      obst_z0bed(:, :) = zob(:, :) ! Saving the surface z0 tables from hydraulical initialization (without obstructions)
+      ! ***********************
+
+      CALL o1dv_alloc(obst_nbvar, obst_kmax, obst_nb_max_hnorm)
+      CALL o1dv_init(h0fond_in, obst_c_paramhuv, &
+                     obst_varname, obst_type, obst_l_flexible, obst_l_abdelposture, &
+                     obst_l_param_height, obst_l_cylinder, obst_l_noturb, obst_l_drag_cste, &
+                     obst_l_abdelrough_cste, obst_l_fracxy, obst_l_z0bstress, &
+                     obst_fracxy_type, obst_c_abdel_nmax, obst_z0bstress_option, &
+                     obst_c_rho, obst_c_height_x0, obst_c_height_x1, obst_c_shelter, &
+                     obst_c_lift, obst_c_drag, obst_c_lz, obst_c_crough_x0, obst_c_crough_x1, &
+                     obst_c_fracxy_k0, obst_c_fracxy_k1, obst_c_fracxy_l, obst_c_z0bstress, &
+                     obst_c_z0bstress_x0, obst_c_z0bstress_x1, obst_c_z0bstress_x2, &
+                     obst_l_filedistri, obst_nbhnorm, obst_height_norm, obst_dens_norm, &
+                     stdout)
+
    END SUBROUTINE OBSTRUCTIONS_init
 
    !!==========================================================================================================
@@ -329,7 +332,7 @@ CONTAINS
    !! ** Purpose : read "obstruction_variables.dat" file describing obstructions
    !!
    !!---------------------------------------------------------------------
-
+      USE module_OBSTRUCTIONS ! for mynode
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: iv
@@ -380,14 +383,18 @@ CONTAINS
 
       ! save into simu.log
       !-------------------
-      MPI_master_only WRITE (iscreenlog, *) ' '
-      MPI_master_only WRITE (iscreenlog, *) ' '
-      MPI_master_only WRITE (iscreenlog, *) '****************************************************************'
-      MPI_master_only WRITE (iscreenlog, *) '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_READVAR *****'
-      MPI_master_only WRITE (iscreenlog, *) '****************************************************************'
-      MPI_master_only WRITE (iscreenlog, *) ' Reading file ', TRIM(obst_fn_vardat(iv))
-      MPI_master_only WRITE (iscreenlog, *) ' defining obstructions parameters'
-      MPI_master_only WRITE (iscreenlog, *) '********************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+      MPI_master_only WRITE (iscreenlog, *) &
+            '****************************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_READVAR *****'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '****************************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            ' Reading file ', TRIM(obst_fn_vardat(iv))
+      MPI_master_only WRITE (iscreenlog, *) &
+            ' defining obstructions parameters'
       ! ******************************
       ! * Start reading variables file
       ! ******************************
@@ -463,44 +470,74 @@ CONTAINS
    !! ** Purpose : Write a summary of obstructions parameters
    !!
    !!---------------------------------------------------------------------
-
+      USE module_OBSTRUCTIONS ! for mynode
       IMPLICIT NONE
 
       INTEGER          :: iv
 
-      MPI_master_only WRITE (iscreenlog, *) ' '
-      MPI_master_only WRITE (iscreenlog, *) ' '
-      MPI_master_only WRITE (iscreenlog, *) '***********************************************************************'
-      MPI_master_only WRITE (iscreenlog, *) '********************** module OBSTRUCTIONS ****************************'
-      MPI_master_only WRITE (iscreenlog, *) '************** subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-      MPI_master_only WRITE (iscreenlog, *) '***********************************************************************'
-      MPI_master_only WRITE (iscreenlog, *) 'LISTING OF OBSTRUCTION VARIABLES :'
-      MPI_master_only WRITE (iscreenlog, *) '------------------------------------------------'
-      MPI_master_only WRITE (iscreenlog, *) 'TOTAL NUMBER OF OBSTRUCTION VARIABLES : ', obst_nbvar
-      MPI_master_only WRITE (iscreenlog, *) 'Number of RIGID_UP                    : ', obst_nv_rigid_up
-      MPI_master_only WRITE (iscreenlog, *) 'Number of RIGID_DO                    : ', obst_nv_rigid_DO
-      MPI_master_only WRITE (iscreenlog, *) 'Number of FLEXI_UP                    : ', obst_nv_flexi_up
-      MPI_master_only WRITE (iscreenlog, *) 'Number of FLEXI_DO                    : ', obst_nv_flexi_DO
-      MPI_master_only WRITE (iscreenlog, *) 'Number of 3DVARS                      : ', obst_nv_3d
-      MPI_master_only WRITE (iscreenlog, *) '------------------------------------------------'
-      MPI_master_only WRITE (iscreenlog, *) 'File for obstruction position is : ', TRIM(obst_fn_position)
+      MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+      MPI_master_only WRITE (iscreenlog, *) &
+            '***********************************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '********************** module OBSTRUCTIONS ****************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '************** subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '***********************************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            'LISTING OF OBSTRUCTION VARIABLES :'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '------------------------------------------------'
+      MPI_master_only WRITE (iscreenlog, *) &
+            'TOTAL NUMBER OF OBSTRUCTION VARIABLES : ', obst_nbvar
+      MPI_master_only WRITE (iscreenlog, *) &
+            'Number of RIGID_UP                    : ', obst_nv_rigid_up
+      MPI_master_only WRITE (iscreenlog, *) &
+            'Number of RIGID_DO                    : ', obst_nv_rigid_DO
+      MPI_master_only WRITE (iscreenlog, *) &
+            'Number of FLEXI_UP                    : ', obst_nv_flexi_up
+      MPI_master_only WRITE (iscreenlog, *) &
+            'Number of FLEXI_DO                    : ', obst_nv_flexi_DO
+      MPI_master_only WRITE (iscreenlog, *) &
+            'Number of 3DVARS                      : ', obst_nv_3d
+      MPI_master_only WRITE (iscreenlog, *) &
+            '------------------------------------------------'
+      MPI_master_only WRITE (iscreenlog, *) &
+            'File for obstruction position is : ', TRIM(obst_fn_position)
       DO iv = 1, obst_nbvar
-         MPI_master_only WRITE (iscreenlog, *) '***********************************************************************************'
-         MPI_master_only WRITE (iscreenlog, *) '!===========================!'
-         MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_main  !'
-         MPI_master_only WRITE (iscreenlog, *) '!===========================!'
-         MPI_master_only WRITE (iscreenlog, *) '  - Name (identifier) of the variable    : ', obst_varname(iv)
-         MPI_master_only WRITE (iscreenlog, *) '!=============================!'
-         MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_option  !'
-         MPI_master_only WRITE (iscreenlog, *) '!=============================!'
-         MPI_master_only WRITE (iscreenlog, *) '  - If the current variable is cylinder-like                : ', obst_l_cylinder(iv)
-         MPI_master_only WRITE (iscreenlog, *) '  - If the current variable is flexible                     : ', obst_l_flexible(iv)
-         MPI_master_only WRITE (iscreenlog, *) '  - If the current variable is DOwnvard                     : ', obst_l_downward(iv)
-         MPI_master_only WRITE (iscreenlog, *) '  - If the current variable is full 3D                      : ', obst_l_3dobst(iv)
-         MPI_master_only WRITE (iscreenlog, *) '  - If the current variable is considered a macro-roughness : ', obst_l_noturb(iv)
-         MPI_master_only WRITE (iscreenlog, *) '!===========================!'
-         MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_init  !'
-         MPI_master_only WRITE (iscreenlog, *) '!===========================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '***********************************************************************************'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '!===========================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '! NAMELIST : obst_var_main  !'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '!===========================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '  - Name (identifier) of the variable    : ', obst_varname(iv)
+         MPI_master_only WRITE (iscreenlog, *) &
+         '!=============================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '! NAMELIST : obst_var_option  !'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '!=============================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '  - If the current variable is cylinder-like                : ', obst_l_cylinder(iv)
+         MPI_master_only WRITE (iscreenlog, *) &
+         '  - If the current variable is flexible                     : ', obst_l_flexible(iv)
+         MPI_master_only WRITE (iscreenlog, *) &
+         '  - If the current variable is DOwnvard                     : ', obst_l_downward(iv)
+         MPI_master_only WRITE (iscreenlog, *) &
+         '  - If the current variable is full 3D                      : ', obst_l_3dobst(iv)
+         MPI_master_only WRITE (iscreenlog, *) &
+         '  - If the current variable is considered a macro-roughness : ', obst_l_noturb(iv)
+         MPI_master_only WRITE (iscreenlog, *) &
+         '!===========================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '! NAMELIST : obst_var_init  !'
+         MPI_master_only WRITE (iscreenlog, *) &
+         '!===========================!'
          MPI_master_only WRITE (iscreenlog, *) &
             '  - Use a time-series file for obstructions characteristics                : ', obst_l_filechar(iv)
          MPI_master_only WRITE (iscreenlog, *) &
@@ -540,9 +577,12 @@ CONTAINS
             MPI_master_only WRITE (iscreenlog, *) &
                '  - Initial density of obstructions (or maximum density)                   : ', obst_i_dens(iv)
          END IF
-         MPI_master_only WRITE (iscreenlog, *) '!==================================!'
-         MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_flexibility  !'
-         MPI_master_only WRITE (iscreenlog, *) '!==================================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '!==================================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '! NAMELIST : obst_var_flexibility  !'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '!==================================!'
          IF (obst_l_flexible(iv)) THEN
             MPI_master_only WRITE (iscreenlog, *) &
                '  - Use Abdhelhrmans (2007) procedure to compute bending                   : ', obst_l_abdelposture(iv)
@@ -606,9 +646,12 @@ CONTAINS
             MPI_master_only WRITE (iscreenlog, *) &
                '  - Second parameter for empirical formulation                             : NOT USED'
          END IF
-         MPI_master_only WRITE (iscreenlog, *) '!================================!'
-         MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_roughdrag  !'
-         MPI_master_only WRITE (iscreenlog, *) '!================================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '!================================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '! NAMELIST : obst_var_roughdrag  !'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '!================================!'
          MPI_master_only WRITE (iscreenlog, *) &
             '  - Use a constant drag coefficient for obstructions in hydrodynamics      : ', obst_l_drag_cste(iv)
          MPI_master_only WRITE (iscreenlog, *) &
@@ -633,9 +676,12 @@ CONTAINS
             MPI_master_only WRITE (iscreenlog, *) &
                '  - Coef. turbulent dissipation time-scale between obstructions elements   : ', obst_c_lz(iv)
          END IF
-         MPI_master_only WRITE (iscreenlog, *) '!=============================!'
-         MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_fracxy  !'
-         MPI_master_only WRITE (iscreenlog, *) '!=============================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '!=============================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '! NAMELIST : obst_var_fracxy  !'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '!=============================!'
          MPI_master_only WRITE (iscreenlog, *) &
             '  - Take account for non-linear patchiness correction                      : ', obst_l_fracxy(iv)
          IF (.NOT. obst_l_fracxy(iv)) THEN
@@ -668,9 +714,12 @@ CONTAINS
                   '  - Second parameter for correction of the exponential coefficient         : ', obst_c_fracxy_l(iv)
             END IF
          END IF
-         MPI_master_only WRITE (iscreenlog, *) '!==============================!'
-         MPI_master_only WRITE (iscreenlog, *) '! NAMELIST : obst_var_bstress  !'
-         MPI_master_only WRITE (iscreenlog, *) '!==============================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '!==============================!'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '! NAMELIST : obst_var_bstress  !'
+         MPI_master_only WRITE (iscreenlog, *) &
+            '!==============================!'
          MPI_master_only WRITE (iscreenlog, *) &
             '  - To activate the impact of obstruction on Z0 (BSS computation)          : ', obst_l_z0bstress(iv)
          IF (obst_l_z0bstress(iv)) THEN
@@ -708,7 +757,6 @@ CONTAINS
                '  - Coefficient to correct 3D roughness length into 2D roughness length    : NOT USED'
          END IF
       END DO
-      MPI_master_only WRITE (iscreenlog, *) '***************************************************************'
       !-------------------------------------------
    END SUBROUTINE OBSTRUCTIONS_write_summary
 
@@ -726,26 +774,11 @@ CONTAINS
    !!       ! 2021-10    (F. Ganthy) Original code (extracted from OBSTRUCTIONS_write_summary)
    !!
    !!---------------------------------------------------------------------
-
+      USE module_OBSTRUCTIONS ! for mynode
       IMPLICIT NONE
 
       INTEGER          :: iv, nv_tot
       LOGICAL          :: l_turb
-
-      ! ************************
-      ! * Check GLS_KEPSILON is activated
-      ! ************************
-#if undef GLS_KEPSILON
-      MPI_master_only WRITE (ierrorlog, *) ' '
-      MPI_master_only WRITE (ierrorlog, *) ' '
-      MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-      MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-      MPI_master_only WRITE (ierrorlog, *) '************* Missing GLS_KEPSILON activation*****************'
-      MPI_master_only WRITE (ierrorlog, *) ' ERROR : #OBSTRUCTION need #GLS_MIXING and #GLS_KEPSILON'
-      MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!! '
-      MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-      STOP
-# endif
 
       ! ********************************************
       ! COUNT NUMBER OF VARIABLES OF DIFFERENT TYPES
@@ -793,18 +826,26 @@ CONTAINS
       !--------------------------------
       nv_tot = obst_nv_rigid_up + obst_nv_rigid_DO + obst_nv_flexi_up + obst_nv_flexi_DO + obst_nv_3d
       IF (nv_tot /= obst_nbvar) THEN
-         MPI_master_only WRITE (ierrorlog, *) ' '
-         MPI_master_only WRITE (ierrorlog, *) ' '
-         MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-         MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-         MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-         MPI_master_only WRITE (ierrorlog, *) ' ERROR : The total number of obstruction variables read from'
-         MPI_master_only WRITE (ierrorlog, *) '         file', TRIM(obst_fn_vardat(iv))
-         MPI_master_only WRITE (ierrorlog, *) '         is DIFFERENT from the number of variables defined'
-         MPI_master_only WRITE (ierrorlog, *) '         nbvar', obst_nbvar
-         MPI_master_only WRITE (ierrorlog, *) '         nv_tot', nv_tot
-         MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!! '
-         MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+         MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+         MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+         MPI_master_only WRITE (ierrorlog, *) &
+            '********************** module OBSTRUCTIONS ***************************'
+         MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+         MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : The total number of obstruction variables read from'
+         MPI_master_only WRITE (ierrorlog, *) &
+            '         file', TRIM(obst_fn_vardat(iv))
+         MPI_master_only WRITE (ierrorlog, *) &
+            '         is DIFFERENT from the number of variables defined'
+         MPI_master_only WRITE (ierrorlog, *) &
+            '         nbvar', obst_nbvar
+         MPI_master_only WRITE (ierrorlog, *) &
+            '         nv_tot', nv_tot
+         MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!! '
          STOP
       END IF
 
@@ -812,28 +853,36 @@ CONTAINS
       ! TEST FOR 2D and GLS_KEPSILON
       !---------------------------
 #ifndef SOLVE3D
-      MPI_master_only WRITE (ierrorlog, *) ' '
-      MPI_master_only WRITE (ierrorlog, *) ' '
-      MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-      MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-      MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-      MPI_master_only WRITE (ierrorlog, *) ' ERROR : OBSTRUCTION only available with SOLVE3D'
-      MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!!'
-      MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+      MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+      MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+      MPI_master_only WRITE (ierrorlog, *) &
+            '********************** module OBSTRUCTIONS ***************************'
+      MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+      MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : OBSTRUCTION only available with SOLVE3D'
+      MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!!'
       STOP
 #endif
       !---------------------------------------------------
       ! TEST FOR VARIABLES USING FULL TURBULENCE PROCEDURE
       !---------------------------------------------------
 #ifndef GLS_KEPSILON
-      MPI_master_only WRITE (ierrorlog, *) ' '
-      MPI_master_only WRITE (ierrorlog, *) ' '
-      MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-      MPI_master_only WRITE (ierrorlog, *) '************************* module OBSTRUCTIONS ************************'
-      MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-      MPI_master_only WRITE (ierrorlog, *) ' ERROR : OBSTRUCTION only available with GLS_KEPSILON'
-      MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!!'
-      MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+      MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+      MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+      MPI_master_only WRITE (ierrorlog, *) &
+            '************************* module OBSTRUCTIONS ************************'
+      MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+      MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : OBSTRUCTION only available with GLS_KEPSILON'
+      MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!!'
       STOP
 #endif
       !--------------------------------------------------------------
@@ -841,87 +890,127 @@ CONTAINS
       !--------------------------------------------------------------
       DO iv = 1, obst_nbvar
          IF ((obst_l_downward(iv)) .AND. (obst_l_noturb(iv))) THEN
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-            MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-            MPI_master_only WRITE (ierrorlog, *) ' ERROR : Inconsistency for variable :', obst_varname(iv)
-            MPI_master_only WRITE (ierrorlog, *) '         This variable is defined as a downward one, while'
-            MPI_master_only WRITE (ierrorlog, *) '         it uses simplified (obst_l_noturb) procedure'
-            MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!!'
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+            MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '********************** module OBSTRUCTIONS ***************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : Inconsistency for variable :', obst_varname(iv)
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         This variable is defined as a downward one, while'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         it uses simplified (obst_l_noturb) procedure'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!!'
             STOP
          END IF
          IF ((obst_l_3dobst(iv)) .AND. (obst_l_noturb(iv))) THEN
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '************************* module OBSTRUCTIONS ************************'
-            MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-            MPI_master_only WRITE (ierrorlog, *) ' ERROR : Inconsistency for variable :', obst_varname(iv)
-            MPI_master_only WRITE (ierrorlog, *) '         This variable is defined as a full 3d one, while'
-            MPI_master_only WRITE (ierrorlog, *) '         it uses simplified (obst_l_noturb) procedure'
-            MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!!'
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+            MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '************************* module OBSTRUCTIONS ************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : Inconsistency for variable :', obst_varname(iv)
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         This variable is defined as a full 3d one, while'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         it uses simplified (obst_l_noturb) procedure'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!!'
             STOP
          END IF
          IF ((obst_l_3dobst(iv)) .AND. (obst_l_flexible(iv))) THEN
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-            MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-            MPI_master_only WRITE (ierrorlog, *) ' ERROR : Inconsistency for variable :', obst_varname(iv)
-            MPI_master_only WRITE (ierrorlog, *) '         This variable is defined as a full 3d one, while'
-            MPI_master_only WRITE (ierrorlog, *) '         it is also defined as a flexible one'
-            MPI_master_only WRITE (ierrorlog, *) '         This kind of variable is not available yet...'
-            MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!!'
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+            MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '********************** module OBSTRUCTIONS ***************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : Inconsistency for variable :', obst_varname(iv)
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         This variable is defined as a full 3d one, while'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         it is also defined as a flexible one'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         This kind of variable is not available yet...'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!!'
             STOP
          END IF
          IF ((obst_l_3dobst(iv)) .AND. (obst_l_downward(iv))) THEN
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-            MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-            MPI_master_only WRITE (ierrorlog, *) ' ERROR : Inconsistency for variable :', obst_varname(iv)
-            MPI_master_only WRITE (ierrorlog, *) '         This variable is defined as a full 3d one, while'
-            MPI_master_only WRITE (ierrorlog, *) '         it is also defined as a downward one'
-            MPI_master_only WRITE (ierrorlog, *) '         This kind of variable is not available yet...'
-            MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!!'
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+            MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '********************** module OBSTRUCTIONS ***************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : Inconsistency for variable :', obst_varname(iv)
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         This variable is defined as a full 3d one, while'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         it is also defined as a downward one'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         This kind of variable is not available yet...'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!!'
             STOP
          END IF
          IF ((obst_l_downward(iv)) .AND. (obst_l_flexible(iv)) .AND. (obst_l_abdelposture(iv))) THEN
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-            MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-            MPI_master_only WRITE (ierrorlog, *) ' ERROR : Inconsistency for variable :', obst_varname(iv)
-            MPI_master_only WRITE (ierrorlog, *) '         This variable is defined as a flexible and downward one'
-            MPI_master_only WRITE (ierrorlog, *) '         and uses Abdelhrman procedure'
-            MPI_master_only WRITE (ierrorlog, *) '         This procedure is not available yet for downward variables...'
-            MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!!'
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+            MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '********************** module OBSTRUCTIONS ***************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : Inconsistency for variable :', obst_varname(iv)
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         This variable is defined as a flexible and downward one'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         and uses Abdelhrman procedure'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         This procedure is not available yet for downward variables...'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!!'
             STOP
          END IF
          IF (obst_l_init_spatial(iv) .AND. obst_l_filechar(iv)) THEN
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) ' '
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
-            MPI_master_only WRITE (ierrorlog, *) '********************** module OBSTRUCTIONS ***************************'
-            MPI_master_only WRITE (ierrorlog, *) '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
-            MPI_master_only WRITE (ierrorlog, *) ' ERROR : Inconsistency for variable :', obst_varname(iv)
-            MPI_master_only WRITE (ierrorlog, *) '         Spatial initialization is defined with also spatial forcing'
-            MPI_master_only WRITE (ierrorlog, *) '         for obstruction characteristics : This is not ready yet...'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+            MPI_master_only WRITE (ierrorlog, *) &
+            '**********************************************************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '********************** module OBSTRUCTIONS ***************************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '************* subroutine OBSTRUCTIONS_WRITE_SUMMARY ******************'
+            MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : Inconsistency for variable :', obst_varname(iv)
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         Spatial initialization is defined with also spatial forcing'
+            MPI_master_only WRITE (ierrorlog, *) &
+            '         for obstruction characteristics : This is not ready yet...'
             MPI_master_only WRITE (ierrorlog, *) &
                '         Choose between : spatial initialization (but no time-varying characteristics)'
             MPI_master_only WRITE (ierrorlog, *) &
                '         and homogeneous initialization (but with time-varying characteristics)'
-            MPI_master_only WRITE (ierrorlog, *) '**********************************************************************'
             STOP
          END IF
       END DO
@@ -936,7 +1025,6 @@ CONTAINS
    !!
    !! ** Purpose : Read file for time-varying obstructions characteristics
    !!
-
    !!---------------------------------------------------------------------
 
       IMPLICIT NONE
@@ -1012,14 +1100,64 @@ CONTAINS
    !! ** Purpose : read the obstruction position file
    !!
    !!---------------------------------------------------------------------
-
+      USE module_OBSTRUCTIONS 
       IMPLICIT NONE
 
-#ifdef SEAGRASS
-      obst_position(1, 14:31, :) = 1.0_rsh
-#else
-! to DO for croco with appropriate netcdf reading
-#endif
+# include "netcdf.inc"
+
+      integer iv, k, itrc, indWrk
+      integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,       &
+         nf_fread, checkdims
+      character units*180, nomcv*30
+      real tmp(GLOBAL_2D_ARRAY)
+
+      lstr = lenstr(obst_fn_position)
+      ierr = nf_open(obst_fn_position(1:lstr), nf_nowrite, ncid)
+      IF (ierr.eq.nf_noerr) THEN
+         ierr = checkdims(ncid, obst_fn_position, lstr, indx)
+
+         IF (ierr.ne.nf_noerr) THEN
+         GOTO 99
+         ELSEIF (indx.eq.0) THEN
+         indx = 1
+         ENDIF
+      ELSE
+         WRITE(stdout,'(/1x,2A/15x,3A)') 'SEDINIT_FROMFILE ERROR: Cannot ', &
+                     'open netCDF file', '''', obst_fn_position(1:lstr) ,'''.'
+         GOTO 99                                           !--> ERROR
+      ENDIF
+
+      DO iv = 1, obst_nbvar
+         indWrk = indxObst + iv - 1
+         nomcv= vname(1, indWrk) 
+         ierr=nf_inq_varid (ncid,nomcv, varid)
+         IF (ierr .eq. nf_noerr) THEN
+            ierr=nf_fread (tmp, ncid, varid, indx, 0)
+            obst_position(iv, GLOBAL_2D_ARRAY)=tmp(GLOBAL_2D_ARRAY)
+
+            IF (ierr .ne. nf_noerr) THEN
+            MPI_master_only WRITE(stdout,2) nomcv, indx, obst_fn_position(1:lstr)
+            GOTO 99                                         !--> ERROR
+            ENDIF
+         
+         ELSE
+            MPI_master_only  WRITE(stdout,1) nomcv, obst_fn_position(1:lstr)
+            GOTO 99                          !--> ERROR
+         ENDIF
+      ENDDO
+        
+      ! Close input NetCDF file.
+      ierr=nf_close(ncid)
+
+1     format(/1x,'OBSTRUCTIONS_readfile_pos - unable to find variable:',    1x,A,  &
+                              /15x,'in input NetCDF file:',1x,A/)
+2     format(/1x,'OBSTRUCTIONS_readfile_pos - error while reading variable:',1x, A, &
+         2x,'at time record =',i4/15x,'in input NetCDF file:',1x,A/)
+3     format(/1x,'OBSTRUCTIONS_readfile_pos - unable to find variable:',    1x,A,/10x,A, &
+                           /15x,'in input NetCDF file:',1x,A/)
+      return
+99  may_day_flag=2
+      return
 
    END SUBROUTINE OBSTRUCTIONS_readfile_pos
 
@@ -1032,22 +1170,30 @@ CONTAINS
    !! ** Purpose : Initialization of obstruction parameters
    !!
    !!---------------------------------------------------------------------
-
+      USE module_OBSTRUCTIONS ! for mynode
       IMPLICIT NONE
 
       INTEGER :: kk, iv
       LOGICAL :: ex
 
-      MPI_master_only WRITE (iscreenlog, *) ' '
-      MPI_master_only WRITE (iscreenlog, *) ' '
-      MPI_master_only WRITE (iscreenlog, *) '************************************************************************'
-      MPI_master_only WRITE (iscreenlog, *) '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_READFILE_DISTRI *****'
-      MPI_master_only WRITE (iscreenlog, *) '************************************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+      MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+      MPI_master_only WRITE (iscreenlog, *) &
+            '************************************************************************'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_READFILE_DISTRI *****'
+      MPI_master_only WRITE (iscreenlog, *) &
+            '************************************************************************'
       DO iv = 1, obst_nbvar
          IF (obst_l_filedistri(iv)) THEN
-            MPI_master_only WRITE (iscreenlog, *) ' '
-            MPI_master_only WRITE (iscreenlog, *) 'Obstruction variable : ', obst_varname(iv)
-            MPI_master_only WRITE (iscreenlog, *) 'file defining vertical distribution of obstuctions :'
+            MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+            MPI_master_only WRITE (iscreenlog, *) &
+            'Obstruction variable : ', obst_varname(iv)
+            MPI_master_only WRITE (iscreenlog, *) &
+            'file defining vertical distribution of obstuctions :'
             MPI_master_only WRITE (iscreenlog, *) TRIM(obst_fn_distrib(iv))
             INQUIRE (file=obst_fn_distrib(iv), exist=ex)
             IF (ex) THEN
@@ -1055,27 +1201,42 @@ CONTAINS
                READ (53, *) ! Filename
                READ (53, *) ! Title
                READ (53, *) obst_nbhnorm(iv)
-               MPI_master_only WRITE (iscreenlog, *) ' '
-               MPI_master_only WRITE (iscreenlog, *) 'Number of vertical discretization : ', obst_nbhnorm(iv)
+               MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+               MPI_master_only WRITE (iscreenlog, *) &
+            'Number of vertical discretization : ', obst_nbhnorm(iv)
                CLOSE (53)
             ELSE
-               MPI_master_only WRITE (ierrorlog, *) ' '
-               MPI_master_only WRITE (ierrorlog, *) ' '
-               MPI_master_only WRITE (ierrorlog, *) '************************************************************************'
-               MPI_master_only WRITE (ierrorlog, *) '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_READFILE_DISTRI *****'
-               MPI_master_only WRITE (ierrorlog, *) '************************************************************************'
-               MPI_master_only WRITE (ierrorlog, *) ' ERROR : File ', TRIM(obst_fn_distrib(iv)), 'DOes not exist'
-               MPI_master_only WRITE (ierrorlog, *) ' --> THE SIMULATION IS STOPPED !!! '
-               MPI_master_only WRITE (ierrorlog, *) '************************************************************************'
+               MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+               MPI_master_only WRITE (ierrorlog, *) &
+            ' '
+               MPI_master_only WRITE (ierrorlog, *) &
+            '************************************************************************'
+               MPI_master_only WRITE (ierrorlog, *) &
+            '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_READFILE_DISTRI *****'
+               MPI_master_only WRITE (ierrorlog, *) &
+            '************************************************************************'
+               MPI_master_only WRITE (ierrorlog, *) &
+            ' ERROR : File ', TRIM(obst_fn_distrib(iv)), 'DOes not exist'
+               MPI_master_only WRITE (ierrorlog, *) &
+            ' --> THE SIMULATION IS STOPPED !!! '
+               MPI_master_only WRITE (ierrorlog, *) &
+            '************************************************************************'
                STOP
             END IF
          ELSE
             obst_nbhnorm(iv) = 11
-            MPI_master_only WRITE (iscreenlog, *) ' '
-            MPI_master_only WRITE (iscreenlog, *) 'Obstruction variable : ', obst_varname(iv)
-            MPI_master_only WRITE (iscreenlog, *) 'An homogene distribution is applied'
-            MPI_master_only WRITE (iscreenlog, *) ' '
-            MPI_master_only WRITE (iscreenlog, *) 'Number of vertical discretization : ', obst_nbhnorm(iv)
+            MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+            MPI_master_only WRITE (iscreenlog, *) &
+            'Obstruction variable : ', obst_varname(iv)
+            MPI_master_only WRITE (iscreenlog, *) &
+            'An homogene distribution is applied'
+            MPI_master_only WRITE (iscreenlog, *) &
+            ' '
+            MPI_master_only WRITE (iscreenlog, *) &
+            'Number of vertical discretization : ', obst_nbhnorm(iv)
          END IF
       END DO
 
@@ -1100,8 +1261,10 @@ CONTAINS
             kk = 1
             DO WHILE (kk .LE. obst_nbhnorm(iv))
                READ (53, *) obst_height_norm(iv, kk), obst_dens_norm(iv, kk)
-               MPI_master_only WRITE (iscreenlog, *) 'kk', kk
-               MPI_master_only WRITE (iscreenlog, *) 'height : ', obst_height_norm(iv, kk), ' dens : ', obst_dens_norm(iv, kk)
+               MPI_master_only WRITE (iscreenlog, *) &
+            'kk', kk
+               MPI_master_only WRITE (iscreenlog, *) &
+            'height : ', obst_height_norm(iv, kk), ' dens : ', obst_dens_norm(iv, kk)
                kk = kk + 1
             END DO
             CLOSE (53)
@@ -1277,20 +1440,12 @@ CONTAINS
       !-------------------
       ! Variables on (i,j)
       !-------------------
-
-      ALLOCATE (obst_fu(GLOBAL_2D_ARRAY))
-      obst_fu(:, :) = 0.0_rsh
-      ALLOCATE (obst_fv(GLOBAL_2D_ARRAY))
-      obst_fv(:, :) = 0.0_rsh
-
       ALLOCATE (obst_z0bed(GLOBAL_2D_ARRAY))
       obst_z0bed(:, :) = 0.0_rsh
 
       ALLOCATE (obst_z0bstress(GLOBAL_2D_ARRAY))
       obst_z0bstress(:, :) = 0.0_rsh
 
-      ALLOCATE (obst_height_mean(GLOBAL_2D_ARRAY))
-      obst_height_mean(:, :) = 0.0_rsh
       !------------------------
       ! Variables on (iv,k,i,j)
       !------------------------

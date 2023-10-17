@@ -10,43 +10,37 @@ MODULE OBSTRUCTIONS
    !!              link from hydro model to OBSTRUCTIONS1DV module
    !!
    !!              Strong dependancy with hydro model for mesh size,
-   !!              position of u,v, name of variable, order of indexes i,j,k...
+   !!              position of u,v, name of variable, order of indexes (i,j,k),
+   !!              MPI exchange...
    !!
    !! ** Description :
    !!
-   !!     subroutine OBSTRUCTIONS_update   ! Main subroutine controlling updates
+   !!     subroutine OBSTRUCTIONS_update  ! Main subroutine controlling updates
    !!                                       of obstructions characteristics
    !!==========================================================================
-
-   !! * Modules used
    USE comOBSTRUCTIONS
    USE OBSTRUCTIONS1DV
 
    IMPLICIT NONE
 
-   !! * Accessibility
    PUBLIC OBSTRUCTIONS_update
 
    PRIVATE
 
 CONTAINS
-
-   !!==========================================================================================================
-
+   !!==========================================================================
    SUBROUTINE OBSTRUCTIONS_update(limin, limax, ljmin, ljmax)
       !!---------------------------------------------------------------------
       !!                 ***  ROUTINE OBSTRUCTIONS_update  ***
       !!
       !! ** Purpose : Update of obstruction parameters at each time step
       !!---------------------------------------------------------------------
-      !! * Modules used
       USE initOBSTRUCTIONS, ONLY: OBSTRUCTIONS_readfile_char
       USE module_OBSTRUCTIONS  ! needed for zob, h, u,v, cm0, Zt_avg1
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: limin, limax, ljmin, ljmax
 
-      !! * Local declaration
       TYPE(output_obst) :: obst_output_ij
       REAL(KIND=rsh)            :: hwat
       REAL(KIND=rsh), DIMENSION(obst_kmax)   :: obst_uz
@@ -54,8 +48,6 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(obst_kmax)   :: obst_zc
       REAL(KIND=rsh), DIMENSION(obst_kmax)   :: obst_dz
       INTEGER :: i, j, k
-
-      !! * Executable part
 
       ! ******************************
       ! * READING CHARACTERISTICS FILE
@@ -96,9 +88,6 @@ CONTAINS
             ! * SAVE FOR OUTPUT
             ! ************************
             obst_height(:, i, j) = obst_output_ij%height(:)
-            obst_dens3d(:, :, i, j) = obst_output_ij%dens3d(:, :)
-            obst_width3d(:, :, i, j) = obst_output_ij%width3d(:, :)
-            obst_thick3d(:, :, i, j) = obst_output_ij%thick3d(:, :)
             obst_fuz(i, j, :) = obst_output_ij%fuz(:)
             obst_fvz(i, j, :) = obst_output_ij%fvz(:)
             obst_a3d(:, :, i, j) = obst_output_ij%a3d(:, :)
@@ -107,12 +96,21 @@ CONTAINS
             IF (obst_nv_noturb > 0) THEN
                zob(i, j) = obst_output_ij%z0obst(obst_nbvar + 1)
             END IF
+            ! Non mandatory variables, allocated only if wanted in output
+            obst_dens3d(:, :, i, j) = obst_output_ij%dens3d(:, :)
+            obst_width3d(:, :, i, j) = obst_output_ij%width3d(:, :)
+            obst_thick3d(:, :, i, j) = obst_output_ij%thick3d(:, :)
+
          END DO
       END DO
 
-   END SUBROUTINE OBSTRUCTIONS_update
+# ifdef MPI /* exchange needed to retrieve fuz/fvz at cells edges */
+      CALL  exchange_r3d_tile(limin, limax, ljmin, ljmax, obst_fuz(START_2D_ARRAY,1))
+      CALL  exchange_r3d_tile(limin, limax, ljmin, ljmax, obst_fvz(START_2D_ARRAY,1))
+#endif /* MPI */
 
-   !!==========================================================================================================
+   END SUBROUTINE OBSTRUCTIONS_update
+   !!==========================================================================
 
 #endif
 END MODULE OBSTRUCTIONS

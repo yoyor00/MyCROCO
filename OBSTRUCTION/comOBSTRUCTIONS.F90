@@ -10,7 +10,6 @@ MODULE comobstructions
    !!
    !!==========================================================================
 
-   !! * Declaration
    IMPLICIT NONE
 
    ! default
@@ -24,7 +23,7 @@ MODULE comobstructions
    REAL(KIND=rsh), PARAMETER :: pi = 3.14159265358979323846
    REAL(KIND=rsh), PARAMETER :: obst_c2turb = 1.92
    ! obst_c2turb = beta2 in gls kepsilon
-   ! TODO : add compatibility test to be sure GLS_KEPSILON is used and take beta2 value at initialisation
+   ! TODO : take beta2 value at initialisation
 
    INTEGER :: obst_kmax
    INTEGER :: ierrorlog, iwarnlog, iscreenlog
@@ -49,7 +48,6 @@ MODULE comobstructions
    LOGICAL :: l_obstout_pos                                          ! Write obstruction position (iv,i,j)
    LOGICAL :: l_obstout_height_f                                     ! Write 2D obstruction height (forcing) (iv,i,j)
    LOGICAL :: l_obstout_height_e                                     ! Write 2D obstruction height (effective) (iv,i,j)
-   LOGICAL :: l_obstout_height_mean                                  ! Write mean obstruction height (over all obstructions) (i,j)
    LOGICAL :: l_obstout_dens_f                                       ! Write 2D obstruction density (forcing) (iv,i,j)
    LOGICAL :: l_obstout_dens_e                                       ! Write 3D obstruction density (3D effective) (iv,k,i,j)
    LOGICAL :: l_obstout_dens_2d                                      ! Write 2D obstruction density (2D effective) (i,j)
@@ -62,8 +60,6 @@ MODULE comobstructions
    LOGICAL :: l_obstout_theta                                        ! Write 3D obstruction bending angle, (iv,k,i,j)
    LOGICAL :: l_obstout_cover                                        ! Write 2D obstruction coverage, (iv,i,j)
    LOGICAL :: l_obstout_frac_z                                       ! Write 3D obstruction fraction of sigma layer, (iv,k,i,j)
-
-   LOGICAL :: l_obstout_fuv                                          ! Write 2D obstruction friction force (i,j)
    LOGICAL :: l_obstout_fuzvz                                        ! Write 3D obstruction friction force (k,i,j)
    LOGICAL :: l_obstout_a2d                                          ! Write 2D obstruction horizontal area (iv+3,i,j)
    LOGICAL :: l_obstout_a3d                                          ! Write 3D obstruction horizontal area (iv+3,k,i,j)
@@ -74,9 +70,6 @@ MODULE comobstructions
    LOGICAL :: l_obstout_z0bed                                        ! Write 2D bottom roughness length for bed (i,j)
    LOGICAL :: l_obstout_z0obst                                       ! Write 2D bottom roughness length for obstructions (iv+3,i,j)
    LOGICAL :: l_obstout_z0bstress                                    ! Write 2D bottom roughness length used for bottom shear stress computation (i,j)
-   LOGICAL :: l_obstout_bstress                                      ! Write 2D total bottom shear stress (i,j)
-   LOGICAL :: l_obstout_bstressc                                     ! Write 2D current bottom shear stress (i,j)
-   LOGICAL :: l_obstout_bstressw                                     ! Write 2D wave bottom shear stress (i,j)
 
    CHARACTER(LEN=lchain) :: obst_nout_pos                             ! Name obstruction position (iv,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_height_f                        ! Name 2D obstruction height (forcing) (iv,i,j)
@@ -91,8 +84,6 @@ MODULE comobstructions
    CHARACTER(LEN=lchain) :: obst_nout_theta                           ! Name 3D obstruction bending angle (iv,k,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_cover                           ! Name 2D obstruction coverage, (iv,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_frac_z                          ! Name 3D obstruction fraction of sigma layer, (iv,i,j)
-
-   CHARACTER(LEN=lchain) :: obst_nout_fuv                             ! Name 2D obstruction friction force (i,j)
    CHARACTER(LEN=lchain) :: obst_nout_fuzvz                           ! Name 3D obstruction friction force (k,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_a2d                             ! Name 2D obstruction horizontal area (iv+3,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_a3d                             ! Name 3D obstruction horizontal area (iv+3,k,i,j)
@@ -103,9 +94,6 @@ MODULE comobstructions
    CHARACTER(LEN=lchain) :: obst_nout_z0bed                           ! Name 2D bottom roughness length for bed (i,j)
    CHARACTER(LEN=lchain) :: obst_nout_z0obst                          ! Name 2D bottom roughness length for obstruction (iv+3,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_z0bstress                       ! Name 2D bottom roughness length used for bottom shear stress computation (i,j)
-   CHARACTER(LEN=lchain) :: obst_nout_bstress                         ! Name 2D total bottom shear stress within output file
-   CHARACTER(LEN=lchain) :: obst_nout_bstressc                        ! Name 2D current bottom shear stress within output file
-   CHARACTER(LEN=lchain) :: obst_nout_bstressw                        ! Name 2D wave bottom shear stress within output file
 
    ! Other variables/parameters
    INTEGER  :: obst_nbvar                       ! The total number of obstruction variables
@@ -151,7 +139,7 @@ MODULE comobstructions
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_z0bstress_option         ! For using various parameterizations of bottom roughness
 
    CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_varname    ! Name of obstructions variables (iv)
-   CHARACTER(LEN=2), DIMENSION(:), ALLOCATABLE :: obst_type       ! Type of obstruction, one of 'UP', 'DO' or '3D' (iv)
+   CHARACTER(LEN=2), DIMENSION(:), ALLOCATABLE :: obst_type            ! Type of obstruction, one of 'UP', 'DO' or '3D' (iv)
    CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_vardat  ! Name of the input file for obstruction variables
    CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_char    ! Name of the file for times-series of obstructions characteristics (iv)
    CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_distrib ! Name of the file for the vertical distribution of obstructions (iv)
@@ -186,12 +174,8 @@ MODULE comobstructions
 
    ! Variables on (i,j)
    !----------------------
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_fu              ! Sink term in the momentum equation for 2D formulation (x direction) (i,j), [-]
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_fv              ! Sink term in the momentum equation for 2D formulation (y direction) (i,j), [-]
    REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_z0bed           ! z0 for bed without obstructions from source code (used where no obstructions are present) (i,j), [m]
    REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_z0bstress       ! z0Sed from sedimento (i,j) but modified by obstructions, [m]
-
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_height_mean     ! Mean obstruction height (i,j) [m]
 
    ! Variables on (i,j,k)
    !---------------------
@@ -201,7 +185,7 @@ MODULE comobstructions
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_tau           ! Source term tau_veg in y equation (k,i,j), [N.m-2]
 
    !--------------------------------------------------------------------------
-   ! * VARIABLES DEPENDING ONLY ON BOTH (iv,i,j) or (iv,k,i,j) or other      :
+   ! * VARIABLES DEPENDING ON BOTH (iv,i,j) or (iv,k,i,j) or other           :
    !--------------------------------------------------------------------------
    ! Variables on (iv,i,j)
    !----------------------

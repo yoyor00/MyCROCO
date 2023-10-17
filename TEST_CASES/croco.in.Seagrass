@@ -2,7 +2,7 @@
 ! Keyword-based startup file 
 !
 title:
-	River run off  Example
+   Seagrass example
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                80000    0.0025        20      1
@@ -22,11 +22,12 @@ initial: NRREC  filename
 
 restart:          NRST, NRPFRST / filename
                   172800   0
-                          croco_rst.nc
+                          seagrass_rst.nc
+
 
 history: LDEFHIS, NWRT, NRPFHIS / filename
             T     400        0
-                          croco_his.nc
+                          seagrass_his.nc
 
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
@@ -57,5 +58,5 @@ psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
                  3     3    0     0.0039775         T T         10. 36.
 
 
-obstruction:
-   obstruction_seagrass_para.txt
+obstruction: input file
+               TEST_CASES/obstruction_seagrass_para.txt

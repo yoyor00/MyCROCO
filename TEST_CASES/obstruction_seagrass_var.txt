@@ -61,14 +61,14 @@
   r_l_obst_init_spatial = .FALSE.
   r_l_obst_filedistri   = .TRUE.
   r_obst_fn_char        = './'
-  r_obst_fn_distrib     = 'obstruction_seagrass_distri.txt'
+  r_obst_fn_distrib     = 'TEST_CASES/obstruction_seagrass_distri.txt'
   r_obst_i_height       =  0.073
   r_obst_i_width        = 0.00082
   r_obst_i_thick        = 0.0002
   r_obst_i_dens         = 80940.0 /
 :
 :------------------------------------------------------------------------------
-: obst_var_flexibility : parameters relative to the flexible obctructions
+: obst_var_flexibility : parameters relative to the flexible obstructions
 :------------------------------------------------------------------------------
 :
 : r_l_obst_abdelposture   : To use Abdhelhrman's (2007) procedure to compute bending
