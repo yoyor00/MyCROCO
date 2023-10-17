@@ -1,11 +1,11 @@
-! $Id: prsgrd.F 1458 2014-02-03 15:01:25Z gcambon $
+!d$Id: prsgrd.F 1458 2014-02-03 15:01:25Z gcambon $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -22,17 +22,17 @@
 !
 c********************************************************************
 c Subroutine prsgrd32AC1 from Alex Shchepetkin
-c Density Jacobian (3), Cubic Polynomial fit (2), Alternative 
+c Density Jacobian (3), Cubic Polynomial fit (2), Alternative
 c formulation (A), compressible (C), Revision 1 (adiabatic differences)
 c********************************************************************
 !
       implicit none
       integer tile, trd, omp_get_thread_num
-# include "param.h"
-# include "private_scratch.h"
-# include "compute_tile_bounds.h" 
+#  include "param.h"
+#  include "private_scratch.h"
+#  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      call prsgrd_tile (Istr,Iend,Jstr,Jend, 
+      call prsgrd_tile (Istr,Iend,Jstr,Jend,
      &                  A3d(1,1,trd), A3d(1,2,trd), A3d(1,3,trd),
      &                  A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                  A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
@@ -44,72 +44,68 @@ c********************************************************************
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax
-# include "param.h"
+#  include "param.h"
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),   OneFifth,
      &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),   OneTwelfth,
      &      P(PRIVATE_2D_SCRATCH_ARRAY,N),   epsil,dpth,cff1,cff2,
      &     dR(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff, GRho,
-     &     dZ(PRIVATE_1D_SCRATCH_ARRAY,0:N), cfr, HalfGRho, 
+     &     dZ(PRIVATE_1D_SCRATCH_ARRAY,0:N), cfr, HalfGRho,
      &     FC(PRIVATE_2D_SCRATCH_ARRAY),
      &    dZx(PRIVATE_2D_SCRATCH_ARRAY),
      &     rx(PRIVATE_2D_SCRATCH_ARRAY),
      &    dRx(PRIVATE_2D_SCRATCH_ARRAY)
 !
-      parameter (OneFifth=0.2, OneTwelfth=1./12., epsil=0.) !1.E-10) 
+      parameter (OneFifth=0.2, OneTwelfth=1./12., epsil=0.) !1.E-10)
 !
-# include "grid.h"
-# include "ocean3d.h"
-# include "scalars.h"
-# ifdef INNERSHELF_APG
+#  include "grid.h"
+#  include "ocean3d.h"
+#  include "scalars.h"
+#  ifdef INNERSHELF_APG
 ! Impose alongshore pressure gradient balancing
 ! a constant cross-shore geostrophic flow UG (m/s)
        real UG
        parameter (UG=0.02)
-# elif defined FORCED_EKBBL
+#  elif defined FORCED_EKBBL
        real UG
        parameter (UG=10.0)
-# elif defined  FORCED_DBLEEK
+#  elif defined  FORCED_DBLEEK
        real UG
        parameter (UG=0.0015)
-# elif defined FORCED_OSCNONROTBBL || defined FORCED_NONROTBBL 
+#  elif defined FORCED_OSCNONROTBBL || defined FORCED_NONROTBBL
        real gdzetady, omega
        parameter (gdzetady=2.e-6*9.81)
        parameter (omega=2.*pi/(12.4*3600.))
-# endif
-# ifdef DIAGNOSTICS_UV
-# include "diagnostics.h"
-# else
-# if defined DIAGNOSTICS_VRT
-# include "diags_vrt.h"
-# endif
-# if defined DIAGNOSTICS_EK
-# include "diags_ek.h"
-# if defined DIAGNOSTICS_EK_MLD
-#  include "mixing.h"
-# endif
-# endif
-# endif
-# if defined MRL_WCI || defined READ_PATM
-#  include "forces.h"
-# endif
-# ifdef POT_TIDES
-#  include "tides.h"
-# endif
-# ifdef NBQ_GRAV
-#  include "nbq.h"
-# endif
-# ifdef SED_TOY
-#  include "forces.h"
-# endif
-#include "openacc_work.h"
+#  endif
+#  ifdef DIAGNOSTICS_UV
+#   include "diagnostics.h"
+#  else
+#   if defined DIAGNOSTICS_VRT
+#    include "diags_vrt.h"
+#   endif
+#   if defined DIAGNOSTICS_EK
+#    include "diags_ek.h"
+#    if defined DIAGNOSTICS_EK_MLD
+#     include "mixing.h"
+#    endif
+#   endif
+#  endif
+#  if defined MRL_WCI || defined READ_PATM
+#   include "forces.h"
+#  endif
+#  ifdef POT_TIDES
+#   include "tides.h"
+#  endif
+#  ifdef SED_TOY
+#   include "forces.h"
+#  endif
 !
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
+#  ifdef MASKING
+#   define SWITCH *
+#  else
+#   define SWITCH !
+#  endif
 !
-# include "compute_auxiliary_bounds.h"
+#  include "compute_auxiliary_bounds.h"
 !
 !----------------------------------------------------------------------
 ! Non-conservative Density-Jacobian scheme, based on cubic polynomial
@@ -119,16 +115,16 @@ c********************************************************************
 ! interpolated fields on co-located (non-staggered) grid. These
 ! derivatives are computed using harmonic (rather that algebraic)
 ! averaging of elementary differences, which guarantees monotonicity
-! of the resultant interpolant. 
+! of the resultant interpolant.
 !
 ! In the code below, if CPP-switch SPLIT_EOS is defined, the Equation
-! of State (EOS) is assumed to have form 
+! of State (EOS) is assumed to have form
 !
 !           rho(T,S,z) = rho1(T,S) + (zeta-z) * qp1(T,S)
 !
 ! where rho1 is potential density at 1 atm and qp1 is compressibility
 ! coefficient, which does not depend on z (or weakly dependent on z).
-! In this case 
+! In this case
 !
 !          d rho     d rho1              d qp1            d z
 !         ------- = -------- + (zeta-z) -------  -  qp1 -------
@@ -136,7 +132,7 @@ c********************************************************************
 !
 !                   !<---- adiabatic part ---->|  !<- compress ->|
 !
-! where the first two terms constitute "adiabatic derivative" of 
+! where the first two terms constitute "adiabatic derivative" of
 ! density, which is subject to harmonic averaging, while the last
 ! term is added in later. This approach quarantees that density
 ! profile reconstructed by cubic polynomial maintains its positive
@@ -150,7 +146,7 @@ c********************************************************************
 ! to standard Jacobian.
 !
 ! NOTE: This routine is an alternative form of prsgrd32 and it
-!       produces results identical to that of its prototype. 
+!       produces results identical to that of its prototype.
 !----------------------------------------------------------------------
 !
 ! Preliminary step (same for XI- and ETA-components:
@@ -168,15 +164,15 @@ c********************************************************************
         do k=1,N-1
           do i=IstrU-1,Iend
             dZ(i,k)=z_r(i,j,k+1)-z_r(i,j,k)
-# ifdef SPLIT_EOS 
+#  ifdef SPLIT_EOS
             dpth=z_w(i,j,N)-0.5*(z_r(i,j,k+1)+z_r(i,j,k))
 
             dR(i,k)=rho1(i,j,k+1)-rho1(i,j,k)            ! Elementary
      &              +(qp1(i,j,k+1)-qp1(i,j,k))           ! adiabatic
      &                     *dpth*(1.-qp2*dpth)           ! difference
-# else
+#  else
             dR(i,k)=rho(i,j,k+1)-rho(i,j,k)
-# endif
+#  endif
           enddo
         enddo
         do i=IstrU-1,Iend
@@ -196,10 +192,10 @@ c********************************************************************
             else
               dR(i,k)=0.
             endif
-# ifdef SPLIT_EOS
+#  ifdef SPLIT_EOS
             dpth=z_w(i,j,N)-z_r(i,j,k)
             dR(i,k)=dR(i,k)  -qp1(i,j,k)*dZ(i,k)*(1.-2.*qp2*dpth)
-# endif
+#  endif
           enddo
         enddo
 
@@ -207,10 +203,10 @@ c********************************************************************
           P(i,j,N)=g*z_w(i,j,N) + GRho*( rho(i,j,N)
      &            +0.5*(rho(i,j,N)-rho(i,j,N-1))*(z_w(i,j,N)-z_r(i,j,N))
      &              /(z_r(i,j,N)-z_r(i,j,N-1)) )*(z_w(i,j,N)-z_r(i,j,N))
-# ifdef POT_TIDES
+#  ifdef POT_TIDES
           P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
-# endif
-#  ifdef READ_PATM 
+#  endif
+#  ifdef READ_PATM
          P(i,j,N) = P(i,j,N) + patm2d(i,j)/rho0
 #  endif
         enddo
@@ -242,67 +238,52 @@ c********************************************************************
 ! Compute XI-component of pressure gradient term:
 !-------- ------------ -- -------- -------- -----
 !
-# ifndef PGF_FLAT_BOTTOM
-#  ifndef EW_PERIODIC
+#  ifndef PGF_FLAT_BOTTOM
+#   ifndef EW_PERIODIC
       if (WESTERN_EDGE) then     ! Restrict extended ranges one
         imin=IstrU               ! point inward near the physical
       else                       ! boundary. Note that this version
         imin=IstrU-1             ! of code works in MPI configuration
       endif                      ! too, while a more straightforward
       if (EASTERN_EDGE) then     ! loop range setting
-        imax=Iend                ! 
+        imax=Iend                !
       else                       !   i=max(2,IstrU-1),min(Iend+1,Lm)
         imax=Iend+1              !
       endif                      ! does not.
-#  else
+#   else
       imin=Istr-1
       imax=Iend+1
-#  endif
-#  ifndef NS_PERIODIC
-        if (SOUTHERN_EDGE) then
-          jmin=JstrV
-        else
-          jmin=JstrV-1
-        endif
-        if (NORTHERN_EDGE) then
-          jmax=Jend
-        else
-          jmax=Jend+1
-        endif
-#  else
-        jmin=Jstr-1
-        jmax=Jend+1
-#  endif
-# endif /* PGF_FLAT_BOTTOM */
+#   endif
+#  endif /* PGF_FLAT_BOTTOM */
 
 !!$acc loop private(FC,rx,dRx,dZx) gang vector(1)
 !$acc loop seq
       do k=N,1,-1    !<-- k loop
 
-# ifndef PGF_FLAT_BOTTOM
+#  ifndef PGF_FLAT_BOTTOM
         do j=Jstr,Jend
           do i=imin,imax
             FC(i,j)=(z_r(i,j,k)-z_r(i-1,j,k))
-#  ifdef MASKING
+#   ifdef MASKING
      &                              *umask(i,j)
-#  endif
-#  ifdef SPLIT_EOS
+#   endif
+#   ifdef SPLIT_EOS
             dpth=0.5*( z_w(i,j,N)+z_w(i-1,j,N)
      &                -z_r(i,j,k)-z_r(i-1,j,k))
 
             rx(i,j)=( rho1(i,j,k)-rho1(i-1,j,k)          ! Elementary
      &                +(qp1(i,j,k)-qp1(i-1,j,k))         ! adiabatic
      &                     *dpth*(1.-qp2*dpth) )         ! difference
-#  else
-            rx(i,j)=(rho(i,j,k)-rho(i-1,j,k)) 
-#  endif
-#  ifdef MASKING
+#   else
+            rx(i,j)=(rho(i,j,k)-rho(i-1,j,k))
+#   endif
+#   ifdef MASKING
      &                              *umask(i,j)
-#  endif
+#   endif
           enddo
         enddo
 
-#  ifndef EW_PERIODIC
+#   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then         ! Extrapolate elementary
           do j=Jstr,Jend               ! differences near physical
             FC(imin-1,j)=FC(imin,j)    ! boundaries to compencate.
@@ -315,7 +296,7 @@ c********************************************************************
             rx(imax+1,j)=rx(imax,j)
           enddo
         endif
-#  endif
+#   endif
 
         do j=Jstr,Jend
           do i=IstrU-1,Iend
@@ -332,19 +313,19 @@ c********************************************************************
             else
               dRx(i,j)=0.
             endif
-#  ifdef SPLIT_EOS
+#   ifdef SPLIT_EOS
             dRx(i,j)=dRx(i,j) -qp1(i,j,k)*dZx(i,j)
      &         *(1.-2.*qp2*(z_w(i,j,N)-z_r(i,j,k)))
-#  endif
-          enddo   
+#   endif
+          enddo
         enddo                 !--> discard FC, rx
-# endif /* PGF_FLAT_BOTTOM */
+#  endif /* PGF_FLAT_BOTTOM */
 
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*(
      &                                             P(i-1,j,k)-P(i,j,k)
-# ifndef PGF_FLAT_BOTTOM
+#  ifndef PGF_FLAT_BOTTOM
      &                           -HalfGRho*( (rho(i,j,k)+rho(i-1,j,k))
      &                                      *(z_r(i,j,k)-z_r(i-1,j,k))
      &     -OneFifth*( (dRx(i,j)-dRx(i-1,j))*( z_r(i,j,k)-z_r(i-1,j,k)
@@ -355,11 +336,11 @@ c********************************************************************
 #  endif
      &    )
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.N) then
                 ekwrkPrsgrd(i,j,1) = ru(i,j,k)
@@ -368,7 +349,7 @@ c********************************************************************
                 ekwrkPrsgrd(i,j,1) = ekwrkPrsgrd(i,j,1) + ru(i,j,k)
      &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.N) then
                 ekwrkPrsgrd_mld(i,j,1) = ru(i,j,k)
      &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
@@ -376,10 +357,10 @@ c********************************************************************
             ekwrkPrsgrd_mld(i,j,1) = ekwrkPrsgrd_mld(i,j,1) + ru(i,j,k)
      &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# endif
+#   endif
             endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  endif
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
               if (k.eq.N) then
                 wrkPrsgrd(i,j,1) = ru(i,j,k) SWITCH umask(i,j)
@@ -388,7 +369,7 @@ c********************************************************************
      &                     SWITCH umask(i,j)
               endif
             endif
-# endif
+#  endif
 
           enddo
         enddo
@@ -396,30 +377,45 @@ c********************************************************************
 ! ETA-component of pressure gradient term:
 !-------------- -- -------- -------- -----
 !
-# ifndef PGF_FLAT_BOTTOM
+#  ifndef PGF_FLAT_BOTTOM
+#   ifndef NS_PERIODIC
+        if (SOUTHERN_EDGE) then
+          jmin=JstrV
+        else
+          jmin=JstrV-1
+        endif
+        if (NORTHERN_EDGE) then
+          jmax=Jend
+        else
+          jmax=Jend+1
+        endif
+#   else
+        jmin=Jstr-1
+        jmax=Jend+1
+#   endif
 
         do j=jmin,jmax
           do i=Istr,Iend
             FC(i,j)=(z_r(i,j,k)-z_r(i,j-1,k))
-#  ifdef MASKING
+#   ifdef MASKING
      &                              *vmask(i,j)
-#  endif
-#  ifdef SPLIT_EOS
+#   endif
+#   ifdef SPLIT_EOS
             dpth=0.5*( z_w(i,j,N)+z_w(i,j-1,N)
      &                -z_r(i,j,k)-z_r(i,j-1,k))
-            
+
             rx(i,j)=( rho1(i,j,k)-rho1(i,j-1,k)          ! Elementary
      &                +(qp1(i,j,k)-qp1(i,j-1,k))         ! adiabatic
      &                     *dpth*(1.-qp2*dpth) )         ! difference
-#  else
+#   else
             rx(i,j)=(rho(i,j,k)-rho(i,j-1,k))
-#  endif
-#  ifdef MASKING
+#   endif
+#   ifdef MASKING
      &                              *vmask(i,j)
-#  endif
+#   endif
           enddo
         enddo
- 
+
         if (SOUTHERN_EDGE) then
           do i=Istr,Iend
             FC(i,jmin-1)=FC(i,jmin)
@@ -437,39 +433,39 @@ c********************************************************************
         do j=JstrV-1,Jend
           do i=Istr,Iend
             cff=2.*FC(i,j)*FC(i,j+1)
-            if (cff.gt.epsil) then      
+            if (cff.gt.epsil) then
               dZx(i,j)=cff/(FC(i,j)+FC(i,j+1))
             else
               dZx(i,j)=0.
             endif
 
             cfr=2.*rx(i,j)*rx(i,j+1)
-            if (cfr.gt.epsil) then    
+            if (cfr.gt.epsil) then
               dRx(i,j)=cfr/(rx(i,j)+rx(i,j+1))
             else
               dRx(i,j)=0.
             endif
-#  ifdef SPLIT_EOS
+#   ifdef SPLIT_EOS
             dRx(i,j)=dRx(i,j) -qp1(i,j,k)*dZx(i,j)
      &         *(1.-2.*qp2*(z_w(i,j,N)-z_r(i,j,k)))
-#  endif
+#   endif
           enddo
         enddo                 !--> discard FC, rx
-# endif /* PGF_FLAT_BOTTOM */
+#  endif /* PGF_FLAT_BOTTOM */
 
         do j=JstrV,Jend
           do i=Istr,Iend
             rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*(
 
-# if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
+#  if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
      &                on_v(i,j)*f(i,j)*UG +  ! specified alongshore PG
-# elif defined FORCED_OSCNONROTBBL
+#  elif defined FORCED_OSCNONROTBBL
      &     -gdzetady*cos(omega*time)*on_v(i,j)+
-# elif defined FORCED_NONROTBBL
+#  elif defined FORCED_NONROTBBL
      &     -gdzetady*on_v(i,j)+
-# endif
+#  endif
      &                                             P(i,j-1,k)-P(i,j,k)
-# ifndef PGF_FLAT_BOTTOM
+#  ifndef PGF_FLAT_BOTTOM
      &                           -HalfGRho*( (rho(i,j,k)+rho(i,j-1,k))
      &                                      *(z_r(i,j,k)-z_r(i,j-1,k))
      &     -OneFifth*( (dRx(i,j)-dRx(i,j-1))*( z_r(i,j,k)-z_r(i,j-1,k)
@@ -477,13 +473,13 @@ c********************************************************************
      &                -(dZx(i,j)-dZx(i,j-1))*( rho(i,j,k)-rho(i,j-1,k)
      &                             -OneTwelfth*(dRx(i,j)+dRx(i,j-1)) )
      &                                                             ))
-# endif
+#  endif
      &                                                               )
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.N) then
                 ekwrkPrsgrd(i,j,2) = rv(i,j,k)
@@ -492,7 +488,7 @@ c********************************************************************
                 ekwrkPrsgrd(i,j,2) = ekwrkPrsgrd(i,j,2) + rv(i,j,k)
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.N) then
                 ekwrkPrsgrd_mld(i,j,2) = rv(i,j,k)
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
@@ -500,10 +496,10 @@ c********************************************************************
             ekwrkPrsgrd_mld(i,j,2) = ekwrkPrsgrd_mld(i,j,2) + rv(i,j,k)
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# endif
+#   endif
             endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  endif
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
               if (k.eq.N) then
                 wrkPrsgrd(i,j,2) = rv(i,j,k) SWITCH vmask(i,j)
@@ -524,13 +520,13 @@ c********************************************************************
 !
 !======================================================================
 !
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
+#  ifdef MASKING
+#   define SWITCH *
+#  else
+#   define SWITCH !
+#  endif
 c********************************************************************
-! Compute pressure gradient term: STANDARD JACOBIAN or WEIGHTED 
+! Compute pressure gradient term: STANDARD JACOBIAN or WEIGHTED
 ! JACOBIAN of Tony Song. Both these approaches imply that the
 ! horizontal differencing of the density field is done before
 ! its vertical integration.
@@ -560,9 +556,9 @@ c********************************************************************
       integer tile, trd, omp_get_thread_num
 #  include "param.h"
 #  include "private_scratch.h"
-#  include "compute_tile_bounds.h" 
+#  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      call prsgrd_tile (Istr,Iend,Jstr,Jend, 
+      call prsgrd_tile (Istr,Iend,Jstr,Jend,
      &                  A3d(1,1,trd), A3d(1,2,trd),
      &                  A2d(1,1,trd), A2d(1,2,trd)
 #  ifdef MRL_WCI
@@ -572,7 +568,7 @@ c********************************************************************
       return
       end
 !
-      subroutine prsgrd_tile (Istr,Iend,Jstr,Jend, 
+      subroutine prsgrd_tile (Istr,Iend,Jstr,Jend,
      &                          ru,rv,rsurf, pgrd
 #  ifdef MRL_WCI
      &                                     ,FC,rx
@@ -594,24 +590,24 @@ c********************************************************************
 #  include "ocean3d.h"
 #  include "scalars.h"
 #  ifdef DIAGNOSTICS_UV
-#    include "diagnostics.h"
+#   include "diagnostics.h"
 #  else
-#    if defined DIAGNOSTICS_VRT
-#      include "diags_vrt.h"
+#   if defined DIAGNOSTICS_VRT
+#    include "diags_vrt.h"
+#   endif
+#   if defined DIAGNOSTICS_EK
+#    include "diags_ek.h"
+#    if defined DIAGNOSTICS_EK_MLD
+#     include "mixing.h"
 #    endif
-#    if defined DIAGNOSTICS_EK
-#      include "diags_ek.h"
-#      if defined DIAGNOSTICS_EK_MLD
-#        include "mixing.h"
-#      endif
-#    endif
+#   endif
 #  endif
 #  ifdef MRL_WCI
-#    include "forces.h"
+#   include "forces.h"
 #  endif
-# ifdef READ_PATM 
-#  include "forces.h"
-# endif
+#  ifdef READ_PATM
+#   include "forces.h"
+#  endif
 !
 #  include "compute_auxiliary_bounds.h"
 !
@@ -634,85 +630,85 @@ c********************************************************************
      &                             *(z_w(i,j,N)-z_r(i,j,N))
      &                           /(z_r(i,j,N)-z_r(i,j,N-1))
         enddo
- 
+
         if (j.ge.Jstr) then
           cff=0.5*g/rho0
           do i=IstrU,Iend
             pgrd(i)=(g+cff*(rsurf(i-1,j)+rsurf(i,j)))*( z_w(i-1,j,N)
      &                                                   -z_w(i,j,N))
- 
+
      &     +cff*( (rho(i-1,j,N)-rsurf(i,j))*(z_w(i-1,j,N)-z_r(i,j,N))
      &           +(rsurf(i-1,j)-rho(i,j,N))*(z_w(i,j,N)-z_r(i-1,j,N))
      &                                                              )
-    
+
 #  ifdef POT_TIDES
      &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
 #  endif
-#  ifdef READ_PATM 
-     &                         - (patm2d(i,j)-patm2d(i-1,j))/rho0
+#  ifdef READ_PATM
+     &  - (rmask(i,j)*rmask(i-1,j)*(patm2d(i,j)-patm2d(i-1,j)))/rho0
 #  endif
- 
+
             ru(i,j,N)=0.5*(HZR(i,j,N)+HZR(i-1,j,N))*on_u(i,j)*pgrd(i)
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,N,1) = ru(i,j,N) SWITCH umask(i,j)
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
                 ekwrkPrsgrd(i,j,1) = ru(i,j,N)
      &                           * u(i,j,N,nrhs) SWITCH umask(i,j)
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
                 ekwrkPrsgrd_mld(i,j,1) = ru(i,j,N)
      &                           * u(i,j,N,nrhs) SWITCH umask(i,j)
-# endif
+#   endif
             endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  endif
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
                 wrkPrsgrd(i,j,1) = ru(i,j,N) SWITCH umask(i,j)
             endif
-# endif
+#  endif
           enddo
-# ifdef WJ_GRADP
+#  ifdef WJ_GRADP
           cff=0.25*g/rho0
-# else
+#  else
           cff=0.5*g/rho0
-# endif
+#  endif
           do k=N-1,1,-1
             do i=IstrU,Iend
-# ifdef WJ_GRADP
+#  ifdef WJ_GRADP
               gamma=WJ_GRADP
      &         *(z_r(i,j,k+1)-z_r(i-1,j,k+1)+z_r(i,j,k)-z_r(i-1,j,k))
      &         *(z_r(i,j,k+1)-z_r(i-1,j,k+1)-z_r(i,j,k)+z_r(i-1,j,k))
      &     /((z_r(i,j,k+1)-z_r(i,j,k))*(z_r(i-1,j,k+1)-z_r(i-1,j,k)))
-# endif
+#  endif
               pgrd(i)=pgrd(i)-cff*(
-# ifdef WJ_GRADP
+#  ifdef WJ_GRADP
      &                    ( (1.+gamma)*(rho(i,j,k+1)-rho(i-1,j,k+1))
      &                     +(1.-gamma)*(rho(i,j,k  )-rho(i-1,j,k  )))
      &                               *( z_r(i,j,k+1)+z_r(i-1,j,k+1)
      &                                 -z_r(i,j,k  )-z_r(i-1,j,k  ))
- 
+
      &                               -( rho(i,j,k+1)+rho(i-1,j,k+1)
      &                                 -rho(i,j,k  )-rho(i-1,j,k  ))
      &                   *( (1.+gamma)*(z_r(i,j,k+1)-z_r(i-1,j,k+1))
      &                     +(1.-gamma)*(z_r(i,j,k  )-z_r(i-1,j,k  )))
-# else
+#  else
      &                                   (rho(i,j,k+1)-rho(i-1,j,k))
      &                                  *(z_r(i-1,j,k+1)-z_r(i,j,k))
      &                                  +(rho(i,j,k)-rho(i-1,j,k+1))
      &                                  *(z_r(i,j,k+1)-z_r(i-1,j,k))
-# endif
+#  endif
      &                                                             )
- 
+
               ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*pgrd(i)
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.N) then
                 ekwrkPrsgrd(i,j,1) = ru(i,j,k)
@@ -721,7 +717,7 @@ c********************************************************************
                 ekwrkPrsgrd(i,j,1) = ekwrkPrsgrd(i,j,1) + ru(i,j,k)
      &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.N) then
                 ekwrkPrsgrd_mld(i,j,1) = ru(i,j,k)
      &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
@@ -729,10 +725,10 @@ c********************************************************************
             ekwrkPrsgrd_mld(i,j,1) = ekwrkPrsgrd_mld(i,j,1) + ru(i,j,k)
      &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# endif
+#   endif
             endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  endif
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
               if (k.eq.N) then
                 wrkPrsgrd(i,j,1) = ru(i,j,k) SWITCH umask(i,j)
@@ -741,7 +737,7 @@ c********************************************************************
      &                     SWITCH umask(i,j)
               endif
             endif
-# endif
+#  endif
 
             enddo
           enddo     !--> discard pgrd
@@ -755,7 +751,7 @@ c********************************************************************
           do i=Istr,Iend
             pgrd(i)=(g+cff*(rsurf(i,j-1)+rsurf(i,j)))*( z_w(i,j-1,N)
      &                                                   -z_w(i,j,N))
- 
+
      &     +cff*( (rho(i,j-1,N)-rsurf(i,j))*(z_w(i,j-1,N)-z_r(i,j,N))
      &           +(rsurf(i,j-1)-rho(i,j,N))*(z_w(i,j,N)-z_r(i,j-1,N))
      &                                                              )
@@ -763,74 +759,74 @@ c********************************************************************
 #  ifdef POT_TIDES
      &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
 #  endif
-#  ifdef READ_PATM 
-     &                               - (patm2d(i,j)-patm2d(i,j-1))/rho0
+#  ifdef READ_PATM
+     & -( rmask(i,j)*rmask(i,j-1)* (patm2d(i,j)-patm2d(i,j-1)))/rho0
 #  endif
- 
+
             rv(i,j,N)=0.5*(HZR(i,j,N)+HZR(i,j-1,N))*om_v(i,j)*pgrd(i)
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,N,2) = rv(i,j,N) SWITCH vmask(i,j)
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
                 ekwrkPrsgrd(i,j,2) = rv(i,j,N)
      &                           * v(i,j,N,nrhs) SWITCH vmask(i,j)
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.N) then
                 ekwrkPrsgrd_mld(i,j,2) = rv(i,j,N)
      &                           * v(i,j,N,nrhs) SWITCH vmask(i,j)
               endif
-# endif
+#   endif
             endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  endif
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
                 wrkPrsgrd(i,j,2) = rv(i,j,N) SWITCH vmask(i,j)
             endif
 #  endif
 
           enddo
-# ifdef WJ_GRADP
+#  ifdef WJ_GRADP
           cff=0.25*g/rho0
-# else
+#  else
           cff=0.5*g/rho0
-# endif
+#  endif
           do k=N-1,1,-1
             do i=Istr,Iend
-# ifdef WJ_GRADP
+#  ifdef WJ_GRADP
               gamma=WJ_GRADP
      &         *(z_r(i,j,k+1)-z_r(i,j-1,k+1)+z_r(i,j,k)-z_r(i,j-1,k))
      &         *(z_r(i,j,k+1)-z_r(i,j-1,k+1)-z_r(i,j,k)+z_r(i,j-1,k))
      &     /((z_r(i,j,k+1)-z_r(i,j,k))*(z_r(i,j-1,k+1)-z_r(i,j-1,k)))
-# endif
+#  endif
               pgrd(i)=pgrd(i)-cff*(
-# ifdef WJ_GRADP
+#  ifdef WJ_GRADP
      &                    ( (1.+gamma)*(rho(i,j,k+1)-rho(i,j-1,k+1))
      &                     +(1.-gamma)*(rho(i,j,k  )-rho(i,j-1,k  )))
      &                               *( z_r(i,j,k+1)+z_r(i,j-1,k+1)
      &                                 -z_r(i,j,k  )-z_r(i,j-1,k  ))
- 
+
      &                               -( rho(i,j,k+1)+rho(i,j-1,k+1)
      &                                 -rho(i,j,k  )-rho(i,j-1,k  ))
      &                   *( (1.+gamma)*(z_r(i,j,k+1)-z_r(i,j-1,k+1))
      &                     +(1.-gamma)*(z_r(i,j,k  )-z_r(i,j-1,k  )))
-# else
+#  else
      &                                   (rho(i,j,k+1)-rho(i,j-1,k))
      &                                  *(z_r(i,j-1,k+1)-z_r(i,j,k))
      &                                  +(rho(i,j,k)-rho(i,j-1,k+1))
      &                                  *(z_r(i,j,k+1)-z_r(i,j-1,k))
-# endif
+#  endif
      &                                                             )
- 
+
               rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*pgrd(i)
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.N) then
                 ekwrkPrsgrd(i,j,2) = rv(i,j,k)
@@ -839,7 +835,7 @@ c********************************************************************
                 ekwrkPrsgrd(i,j,2) = ekwrkPrsgrd(i,j,2) + rv(i,j,k)
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.N) then
                 ekwrkPrsgrd_mld(i,j,2) = rv(i,j,k)
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
@@ -847,10 +843,10 @@ c********************************************************************
             ekwrkPrsgrd_mld(i,j,2) = ekwrkPrsgrd_mld(i,j,2) + rv(i,j,k)
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# endif
+#   endif
             endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  endif
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
               if (k.eq.N) then
                 wrkPrsgrd(i,j,2) = rv(i,j,k) SWITCH vmask(i,j)
@@ -895,7 +891,7 @@ c********************************************************************
             enddo
           enddo
         endif
-      
+
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff  = 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
@@ -933,7 +929,7 @@ c********************************************************************
 !
 !--------------------------------------------------------------------
 !
-#ifdef TS_HADV_TEST
+# ifdef TS_HADV_TEST
       do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -946,7 +942,7 @@ c********************************************************************
           enddo
         enddo
       enddo
-#endif
+# endif
 
 !$acc end kernels
 

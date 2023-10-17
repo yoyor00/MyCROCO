@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -19,6 +19,11 @@
       common /work3d_r/ workr
       real worknbq(GLOBAL_2D_ARRAY,0:N+N_sl)
       common /work3dnbq/ worknbq
+#endif
+
+#ifdef ABL1D
+      real work3dabl(GLOBAL_2D_ARRAY,N_abl)
+      common /work3d_abl/ work3dabl
 #endif
 
       real work2d(GLOBAL_2D_ARRAY)

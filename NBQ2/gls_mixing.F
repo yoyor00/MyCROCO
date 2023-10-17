@@ -20,6 +20,7 @@
 
 # ifdef GLS_MIXING_3D
 #  define GLS_SHEAR_3D
+#  define GLS_STRAIN_LIM
 # endif
 !
 !=======================================================================
@@ -40,16 +41,16 @@
 
       call gls_mixing_tile ( Istr, Iend, Jstr, Jend,
      &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
-     &                    A2d(1, 2,trd), A2d(1, 3,trd), A2d(1, 4,trd),
-     &                    A2d(1, 5,trd), A2d(1, 6,trd), A2d(1, 7,trd),
-     &                                                  A2d(1, 8,trd))
+     &                    A3d(1, 4,trd), A3d(1, 5,trd), A2d(1, 2,trd),
+     &                    A2d(1, 3,trd), A2d(1, 4,trd), A2d(1, 5,trd),
+     &                    A2d(1, 6,trd), A2d(1, 7,trd), A2d(1, 8,trd))
 
       RETURN
       END
       SUBROUTINE gls_mixing_tile ( Istr, Iend, Jstr, Jend,
-     &                                         tke_new, gls_new,
-     &                               shear2, diss, ustar_sfc_sq,
-     &                             ustar_bot_sq, DC, FC, CF, RH)
+     &                          tke_new, gls_new, shear2, vort2, work,
+     &                                diss, ustar_sfc_sq,ustar_bot_sq,
+     &                                                 DC, FC, CF, RH)
 
 !
 !======================================================================
@@ -95,7 +96,9 @@
       ! Local arrays
       REAL            ::  tke_new     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL            ::  gls_new     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL            ::  work        (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL            ::  shear2      (PRIVATE_2D_SCRATCH_ARRAY,0:N-1)
+      REAL            ::  vort2       (PRIVATE_2D_SCRATCH_ARRAY,0:N-1)
       REAL            ::  diss        (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
       REAL            ::  ustar_sfc_sq(PRIVATE_2D_SCRATCH_ARRAY      )
       REAL            ::  ustar_bot_sq(PRIVATE_2D_SCRATCH_ARRAY      )
@@ -111,7 +114,6 @@
       REAL            ::  flux_top, flux_bot, lgthsc, L_lim, du,dv,dw
       REAL            ::  trb_new, trb_sfc, trb_bot, z0_s, z0_b, gls_min
       REAL            ::  HUon_w, HVom_w, trb_min(2), Denom
-!$acc declare create(trb_min)      
       REAL            ::  su_r,sv_r
 # ifdef MRL_WCI
       REAL            ::  cmu_fac, cb_wallE, gls_sigp_cb
@@ -120,7 +122,7 @@
       REAL, PARAMETER ::  eps_min =  1.0E-12 ! min value for dissipation rate
       REAL, PARAMETER ::  tke_min =  1.0E-10 ! min value for TKE
 # ifdef GLS_MIXING_3D
-      REAL, PARAMETER ::  eps     =  1.0E-10 ! min stable stratification
+      REAL, PARAMETER ::  eps     =  1.0E-12 ! min stable stratification
       REAL, PARAMETER ::  nuws    =  0.1E-06 ! background diffusivity
       REAL, PARAMETER ::  nuwm    =  1.0E-06 ! background viscosity
 # else
@@ -131,7 +133,7 @@
       REAL, PARAMETER ::  galp    =  0.53    ! parameter for Galperin
                                              ! mixing length limitation
       REAL, PARAMETER ::  chk     =  1400./g ! charnock coefficient
-# ifdef SANDBAR
+# if defined SANDBAR || defined SHOREFACE
       REAL, PARAMETER ::  Zosmin  =  1.e-2   ! min surface roughness length
       REAL, PARAMETER ::  Zobmin  =  5.e-2   ! min bottom  roughness length
 # else
@@ -142,6 +144,23 @@
       REAL, PARAMETER ::  zalp    =  0.05    ! fraction of wave energy
 # endif
 
+      ! Choice of GLS model
+      real            :: rp,    rm,    rn              !<-- n,m and p exponents
+      real            :: beta1, beta2, beta3m, beta3p  !<-- beta terms for psi equation
+      real            :: OneOverSig(2)   !<-- inverse of Schmidt number for tke and psi
+# if defined GLS_KOMEGA                            /* K-omega model */
+      parameter( rp    = -1.0 , rm    = 0.5  , rn     = -1.0           )
+      parameter( beta1 = 0.555, beta2 = 0.833, beta3m = -0.6, beta3p = 1.0)
+      parameter( OneOverSig = (/ 0.5, 0.5 /) )
+# elif defined GLS_KEPSILON                      /* K-epsilon model */
+      parameter( rp    = 3.0 , rm    = 1.5 , rn     = -1.0             )
+      parameter( beta1 = 1.44, beta2 = 1.92, beta3m = -0.4, beta3p = 1.0)
+      parameter( OneOverSig = (/ 1.0, 0.7692 /) )
+# else                                                 /* GEN model */
+      parameter( rp    = 0.0, rm    = 1.0 , rn     = -0.67             )
+      parameter( beta1 = 1.0, beta2 = 1.22, beta3m =  0.05, beta3p = 1.0)
+      parameter( OneOverSig = (/ 1.25, 0.9345 /) )
+# endif
       REAL, PARAMETER :: e1 =  3.0 + 1.*rp / rn
       REAL, PARAMETER :: e2 =  1.5 + 1.*rm / rn
       REAL, PARAMETER :: e3 = -1.0 / rn
@@ -149,6 +168,16 @@
       ! 9-point isotropic laplacian filter
       REAL, PARAMETER :: smth_a = 1./12.
       REAL, PARAMETER :: smth_b = 3./16.
+# endif
+# ifdef GLS_STRAIN_LIM
+      REAL, PARAMETER :: lars = 5.e-3*beta2/beta1  ! parameter for Larsen
+                                                   ! dissipation limitation
+# endif
+
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
 # endif
 !
 !--------------------------------------------------------------------
@@ -243,19 +272,14 @@
 ! Horizontal advection (first-order upwind)
 !--------------------------------------------------------------------
 !
-!$acc kernels if(compute_on_device) default(present)
 # ifdef GLS_HADV_UP1
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
       ig=itke         ! <-- TKE
-!$acc loop private(ustar_bot_sq,ustar_sfc_sq)
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
-            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
-#  ifdef MASKING
-     &                                   *umask(i,j)
-#  endif
+            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1)) SWITCH umask(i,j)
             FX(i,j)=
      &            trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
      &           +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)
@@ -263,10 +287,7 @@
         ENDDO
         DO j=jmin,jmax+1
           DO i=imin,imax
-            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
-#  ifdef MASKING
-     &                                   *vmask(i,j)
-#  endif
+            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1)) SWITCH vmask(i,j)
             FE(i,j)=
      &            trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
      &           +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
@@ -284,14 +305,10 @@
       ENDDO
 !
       ig=igls         ! <-- GLS
-!$acc loop private(ustar_bot_sq,ustar_sfc_sq)
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
-            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
-#  ifdef MASKING
-     &                                   *umask(i,j)
-#  endif
+            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1)) SWITCH umask(i,j)
             FX(i,j)=
      &            trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
      &           +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)
@@ -299,10 +316,7 @@
         ENDDO
         DO j=jmin,jmax+1
           DO i=imin,imax
-            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
-#  ifdef MASKING
-     &                                   *vmask(i,j)
-#  endif
+            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1)) SWITCH vmask(i,j)
             FE(i,j)=
      &            trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
      &           +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
@@ -330,7 +344,6 @@
         ENDDO
       ENDDO
 # endif /* GLS_HADV_UP1 */
-
 !
 !--------------------------------------------------------------------
 ! Vertical advection (first-order upwind)
@@ -338,7 +351,6 @@
 !
 # ifdef GLS_VADV_UP1
       ig=itke         ! <-- TKE
-!$acc loop private(FC)
       DO j=jmin,jmax
         DO k=1,N
           DO i=imin,imax
@@ -358,7 +370,6 @@
       ENDDO
 !
       ig=igls         ! <-- GLS
-!$acc loop private(FC)
       DO j=jmin,jmax
         DO k=1,N
           DO i=imin,imax
@@ -383,13 +394,16 @@
 !--------------------------------------------------------------------
 !
 !    D^2 = 2 DijDij      -- Dij = 0.5*(dui/dxj + duj/dxi) --
-!        = (dudz+dwdx)^2 + (dvdz+dwdy)^2
+!        = (dudz + dwdx)^2 + (dvdz + dwdy)^2 + (dvdx + dudy)^2
 !          + 2 dudx^2 + 2 dvdy^2 + 2 dwdz^2
-!          + (dvdx+dudy)^2
+!
+!  Also compute enstrophy to identify nearly potential flow regions
+!  (Larsen & Fuhrman, 2018) :
+!    V^2 = 2 VijVij      -- Vij = 0.5*(dui/dxj - duj/dxi) --
+!        = (dudz - dwdx)^2 + (dvdz - dwdy)^2 + (dvdx - dudy)^2
 !--------------------------------------------------------------------
 !
       tind  = nrhs
-!---$acc kernels if(compute_on_device) default(present)
       DO k=1,N-1
          DO j=jmin,jmax
             DO i=imin,imax
@@ -398,16 +412,26 @@
      &                    -u(i, j, k  ,tind)-u(i+1, j, k  ,tind))
                dv  = cff*( v(i, j, k+1,tind)+v(i, j+1, k+1,tind)     ! dvdz
      &                    -v(i, j, k  ,tind)-v(i, j+1, k  ,tind))
+
 # ifdef GLS_SHEAR_3D
-#  ifdef M3FAST
+#  ifdef NBQ
                dw  = 0.5*pm(i,j)
      &                  *( wz(i+1,j,k,tind)-wz(i-1,j,k,tind))        ! dwdx
-               shear2(i,j,k) = (du+dw)**2
+               shear2(i,j,k) = (du+dw)*(du+dw)
+#   ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = (du-dw)*(du-dw)
+#   endif
                dw  = 0.5*pn(i,j)
      &                  *( wz(i,j+1,k,tind)-wz(i,j-1,k,tind))        ! dwdy
-               shear2(i,j,k) = shear2(i,j,k) + (dv+dw)**2
+               shear2(i,j,k) = shear2(i,j,k) + (dv+dw)*(dv+dw)
+#   ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = vort2(i,j,k)  + (dv-dw)*(dv-dw)
+#   endif
 #  else
                shear2(i,j,k) = du*du + dv*dv
+#   ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = shear2(i,j,k)
+#   endif
 #  endif
                du  = 0.5*pm(i,j)
      &                  *( u(i+1, j, k+1,tind)-u(i, j, k+1,tind)     ! dudx
@@ -415,7 +439,7 @@
                dv  = 0.5*pn(i,j)
      &                  *( v(i, j+1, k+1,tind)-v(i, j, k+1,tind)     ! dvdy
      &                    +v(i, j+1, k  ,tind)-v(i, j, k  ,tind))
-#  ifdef M3FAST
+#  ifdef NBQ
                dw  = cff*( wz(i,j,k+1,tind)-wz(i,j,k-1,tind))        ! dwdz
 #  else
                dw = 0.
@@ -433,33 +457,44 @@
      &                        +v(i+1,j,k+1,tind)+v(i+1,j+1,k+1,tind)
      &                        -v(i-1,j,k+1,tind)-v(i-1,j+1,k+1,tind))
                shear2(i,j,k) = (du+dv)*(du+dv) + shear2(i,j,k)
+#  ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = vort2(i,j,k)  + (dv-du)*(dv-du)
+#  endif
 # else
                shear2(i,j,k) = du*du + dv*dv
+#  ifdef GLS_STRAIN_LIM
+               vort2(i,j,k)  = shear2(i,j,k)
+#  endif
 # endif
            ENDDO
          ENDDO
       ENDDO
+!
 !--------------------------------------------------------------------
 !  Compute ustar squared at the surface and at the bottom
 !--------------------------------------------------------------------
 !
       DO j=jmin,jmax
-         DO i=imin,imax 
+         DO i=imin,imax
 # ifdef OA_COUPLING
             ustar_sfc_sq(i,j)=smstr(i,j)
 # else
+#  ifdef STRESS_AT_RHO_POINTS
+            su_r=sustr(i,j)
+            sv_r=svstr(i,j)
+#  else
             su_r=0.5*(sustr(i,j)+sustr(i+1,j))
             sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+#  endif
             ustar_sfc_sq( i, j ) = sqrt(su_r**2+sv_r**2)
 # endif
-            ustar_bot_sq( i, j ) = 
+            ustar_bot_sq( i, j ) =
      &                        sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                             +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2 )
          ENDDO
       ENDDO
 
       !--------------------------------------------------
-!$acc loop private(diss) 
       DO j=jmin,jmax         !<-- j-outer loop
       !--------------------------------------------------
 
@@ -473,7 +508,6 @@
          ENDDO !<-- terminate i-loop
 
          !--------------------------------------------------
-!$acc loop private(gls_new,tke_new,dc,rh,fc,cf) 
          DO ig = 1,ngls     ! ig = 2 for gls and = 1 for tke
          !--------------------------------------------------
 
@@ -494,17 +528,18 @@
             ! Production/Dissipation terms and diagonal term
             DO k=1,N-1
                DO i=imin,imax
-                  ig1   = (igls-ig); ig2 = (ig-itke)
+                  ig1   = (igls-ig)
+                  ig2   = (ig-itke)
                   invk  =     1. / trb( i,j,k,nstp,itke )
                   gls   =          trb( i,j,k,nstp,igls )
-                  ! invG = 1 for tke invg=1/psi for gls
-                  invG  =  ig1+ig2*(1./gls)
+                  ! invG = 1/tke for tke ; invG = 1/psi for gls
+                  invG  =  ig1*invk+ig2*(1./gls)
                   cff1  =  ig1+ig2*beta1   * invk*gls
                   cff2  = (ig1+ig2*beta2 ) * invk
                   cff3m =  ig1+ig2*beta3m  * invk*gls
                   cff3p =  ig1+ig2*beta3p  * invk*gls
                   ! Shear and buoyancy production
-                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)    
+                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)
 # if defined TEMPERATURE || defined SALINITY
                   Bprod = -Akt_old(i,j,k)*( cff3m*MAX(bvf(i,j,k),0.)
      &                                   +  cff3p*MIN(bvf(i,j,k),0.) )
@@ -575,11 +610,11 @@
      &                                  *   zalp*   wepb(i,j)
 # endif
                   ! bottom
-#  ifdef BBL
+# ifdef BBL
                   z0_b = MAX( Zbapp(i,j) , Zobmin )
-#  else
+# else
                   z0_b = MAX( Zob(i,j) , Zobmin )
-#  endif
+# endif
                   cff = 0.5*(tke_new(i,j,1)+tke_new(i,j,0))
                   lgthsc = vonKar*(0.5*Hz(i,j,1)+z0_b)
                   trb_bot = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
@@ -637,7 +672,6 @@
       !--------------------------------------------------
       ENDDO     ! j loop
       !--------------------------------------------------
-!$acc end kernels
 
 !
 !--------------------------------------------------------------------
@@ -649,9 +683,9 @@
 #  define TRB_NEW gls_new
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
-#  define FE1 shear2
+#  define FE1 work
       DO k=0,N
-#        include "gls_smooth.h"
+#  include "gls_smooth.h"
       ENDDO
 #  undef FX
 #  undef FE
@@ -664,9 +698,9 @@
 #  define TRB_NEW tke_new
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
-#  define FE1 shear2
+#  define FE1 work
       DO k=0,N
-#        include "gls_smooth.h"
+#  include "gls_smooth.h"
       ENDDO
 #  undef FX
 #  undef FE
@@ -682,7 +716,6 @@
 !    Compute Akv & Lscale
 !--------------------------------------------------------------------
 !
-!$acc kernels if(compute_on_device) default(present)
       !--------------------------------------------------
       DO j=jstr,jend  !<-- j-outer loop
       !--------------------------------------------------
@@ -697,10 +730,17 @@
                cff = (cm0**rp)*(L_lim**rn)*(trb(i,j,k,nnew,itke)**rm)
                trb( i,j,k,nnew,igls ) = MAX( trb( i,j,k,nnew,igls ),cff)
                !
-               ! Dissipation rate
+               ! Dissipation rate epsilon
                epsilon = (cm0**e1) * ( trb( i,j,k,nnew,itke )**e2 )
      &                             * ( trb( i,j,k,nnew,igls )**e3 )
-               epsilon = MAX(epsilon,eps_min)
+               !
+               ! Limitation of epsilon
+# ifdef GLS_STRAIN_LIM
+               ! increase diss in potential flow (Larsen & Fuhrman, 2018)
+               cff = lars * (shear2(i,j,k)/MAX(vort2(i,j,k),1.e-10))**2
+               epsilon = MAX(epsilon, cff*epsilon)
+# endif
+               epsilon = MAX(epsilon, eps_min)
                !
                ! Compute alpha_n and alpha_m
                cff     = ( trb(i,j,k,nnew,itke)/epsilon )**2
@@ -727,27 +767,21 @@
                !
                ! Finalize the computation of Akv and Akt
                cff = trb( i,j,k,nnew,itke )**2 / epsilon
-               Akv(i,j,k) = MAX( cff*c_mu , nuwm )
-# ifdef MASKING
-     &                                                 *rmask(i,j)
-# endif
+               Akv(i,j,k) = MAX( cff*c_mu , nuwm ) SWITCH rmask(i,j)
 # ifdef TEMPERATURE
-               Akt(i,j,k,itemp)= MAX( cff*c_mu_prim,nuws )
-#  ifdef MASKING
-     &                                                 *rmask(i,j)
-#  endif
+               Akt(i,j,k,itemp)= MAX( cff*c_mu_prim , nuws )
+     &                                             SWITCH rmask(i,j)
 # endif
 # ifdef SALINITY
-               Akt(i,j,k,isalt)= MAX( cff*c_mu_prim,nuws )
-#  ifdef MASKING
-     &                                                 *rmask(i,j)
-#  endif
+               Akt(i,j,k,isalt)= MAX( cff*c_mu_prim , nuws )
+     &                                             SWITCH rmask(i,j)
 # endif
+               !
+               ! Computate and store Lscale and epsilon
                Lscale( i, j , k ) =  cm0 * cm0 * cm0 * cff
-     &                            / sqrt( trb( i,j,k,nnew,itke ) )
-# ifdef MASKING
-               Lscale( i, j , k ) = Lscale( i, j , k ) * rmask(i,j)
-# endif
+     &                              / sqrt( trb( i,j,k,nnew,itke ) )
+     &                                             SWITCH rmask(i,j)
+               Eps_gls(i,j,k) = epsilon SWITCH rmask(i,j)
             ENDDO
          ENDDO
 
@@ -845,12 +879,12 @@
           trb(istr-1,jstr-1,k,nnew,itke)=trb(istr,jstr,k,nnew,itke)
           trb(istr-1,jstr-1,k,nnew,igls)=trb(istr,jstr,k,nnew,igls)
           Akv(istr-1,jstr-1,k      )=Akv(istr,jstr,k      )
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(istr-1,jstr-1,k,itemp)=Akt(istr,jstr,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(istr-1,jstr-1,k,isalt)=Akt(istr,jstr,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
@@ -858,12 +892,12 @@
           trb(istr-1,jend+1,k,nnew,itke)=trb(istr,jend,k,nnew,itke)
           trb(istr-1,jend+1,k,nnew,igls)=trb(istr,jend,k,nnew,igls)
           Akv(istr-1,jend+1,k      )=Akv(istr,jend,k      )
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(istr-1,jend+1,k,itemp)=Akt(istr,jend,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(istr-1,jend+1,k,isalt)=Akt(istr,jend,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
@@ -871,12 +905,12 @@
           trb(iend+1,jstr-1,k,nnew,itke)=trb(iend,jstr,k,nnew,itke)
           trb(iend+1,jstr-1,k,nnew,igls)=trb(iend,jstr,k,nnew,igls)
           Akv(iend+1,jstr-1,k      )=Akv(iend,jstr,k      )
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(iend+1,jstr-1,k,itemp)=Akt(iend,jstr,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(iend+1,jstr-1,k,isalt)=Akt(iend,jstr,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
@@ -884,12 +918,12 @@
           trb(iend+1,jend+1,k,nnew,itke)=trb(iend,jend,k,nnew,itke)
           trb(iend+1,jend+1,k,nnew,igls)=trb(iend,jend,k,nnew,igls)
           Akv(iend+1,jend+1,k)=Akv(iend,jend,k)
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(iend+1,jend+1,k,itemp)=Akt(iend,jend,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(iend+1,jend+1,k,isalt)=Akt(iend,jend,k,isalt)
-#  endif
+#   endif
         enddo
       endif
 #  endif
@@ -922,13 +956,11 @@
           enddo
         enddo
       enddo
-!$acc end kernels
-
 !
 ! Exchange computational margines and/or periodic boundaries:
 !--------- ------------- -------- ------ -------- -----------
 !
-# if defined BD_EXCHANGE
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        trb(START_2D_ARRAY,0,nnew,itke))
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
@@ -944,6 +976,8 @@
 #  endif
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        Lscale(START_2D_ARRAY,0))
+!      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+!     &                        Eps_gls(START_2D_ARRAY,0))
 # endif
 !======================================================================
       return
