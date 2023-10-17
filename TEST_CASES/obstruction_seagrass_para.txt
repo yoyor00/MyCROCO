@@ -1,0 +1,109 @@
+:=============================================================================
+:         NAMELIST FOR OBSTRUCTIONS AND MANAGEMENT PARAMETERS
+:=============================================================================
+:
+: obst_main     : Main OBSTRUCTIONS parameters
+: obst_numerics : OBSTRUCTIONS numerical parameters
+: obst_output   : OBSTRUCTIONS outputs parameters
+:
+:------------------------------------------------------------------------------
+: obst_main     : Main OBSTRUCTIONS parameters 
+:------------------------------------------------------------------------------
+:
+: obst_nbvar              : Number of OBSTRUCTIONS variables
+: obst_fn_position        : File name for input OBSTRUCTIONS variables positions
+:                           if '' no obstruction
+:
+:                  ***  Currently, maximum number of variables is 6 ***
+:                  This may be changed in init_OBSTRUCTIONS (NAMELIST obst_main)
+: obst_fn_var1            : name of parameter file for variable 1
+: obst_fn_var2            : name of parameter file for variable 2
+: obst_fn_var3            : name of parameter file for variable 3
+: obst_fn_var4            : name of parameter file for variable 4
+: obst_fn_var5            : name of parameter file for variable 5
+: obst_fn_var6            : name of parameter file for variable 6
+:
+:------------------------------------------------------------------------------
+:
+&obst_main
+  obst_nbvar              = 1
+  obst_fn_position        = 'obstruction_seagrass_position.nc'
+  obst_fn_var1            = 'TEST_CASES/obstruction_seagrass_var.txt'
+  obst_fn_var2            = ''
+  obst_fn_var3            = ''
+  obst_fn_var4            = ''
+  obst_fn_var5            = ''
+  obst_fn_var6            = '' /
+:------------------------------------------------------------------------------
+: obst_numerics : OBSTRUCTIONS numerical parameters
+:------------------------------------------------------------------------------
+:
+: obst_c_paramhuv         : coefficient for unconfined conditions (height * osbt_paramhuv)
+:
+:------------------------------------------------------------------------------
+:
+&obst_numerics
+  obst_c_paramhuv         = 10. /
+:------------------------------------------------------------------------------
+: obst_output  : OBSTRUCTIONS outputs parameters
+:------------------------------------------------------------------------------
+:
+: l_obstout_pos           : write obstructions position within output file (iv,x,y)
+: l_obstout_height_f      : write obstructions forcing height within output file (iv,x,y)
+: l_obstout_height_e      : write obstructions effective height within output file (iv,x,y)
+: l_obstout_dens_f        : write obstructions forcing density within output file (iv,x,y)
+: l_obstout_dens_e        : write obstructions effective density within output file (iv,z,x,y,)
+: l_obstout_width_f       : write obstructions forcing width (iv,x,y)
+: l_obstout_width_e       : write obstructions effective width (iv,z,x,y)
+: l_obstout_thick_f       : write obstructions forcing thick (iv,x,y)
+: l_obstout_thick_e       : write obstructions effective thick (iv,z,x,y)
+: l_obstout_oai           : write obstructions area index within output file (iv,x,y)
+: l_obstout_theta         : write obstructions bending angle (iv,z,x,y)
+: l_obstout_cover         : write obstructions coverage (iv,x,y)
+: l_obstout_frac_z        : write obstructions fraction of sigma layer occupied (iv,z,x,y)
+: l_obstout_fuv           : write obstructions resistance force 2D (x,y)
+: l_obstout_fuzvz         : write obstructions resistance force 3D (z,x,y)
+: l_obstout_a2d           : write 2D obstructions horizontal area (iv+3,x,y)
+: l_obstout_a3d           : write 3D obstructions horizontal area (iv+3,z,x,y)
+: l_obstout_s2d           : write 2D obstructions vertical area (iv+3,x,y)
+: l_obstout_s3d           : write 3D obstructions vertical area (iv+3,z,x,y)
+: l_obstout_drag          : write obstructions drag coefficient (iv,z,x,y)
+: l_obstout_tau           : write obstructions turbulent stress (z,x,y)
+: l_obstout_z0bed         : write obstructions roughness lenght (no obstructions) (x,y)
+: l_obstout_z0obst        : write obstructions roughness length for obstructions (x,y)
+: l_obstout_z0bstress     : write obstructions roughness lenght for bottom shear stress (x,y)
+: l_obstout_bstress       : write obstructions bottom shear stress (x,y)
+: l_obstout_bstressc      : write obstructions current bottom shear stress (x,y)
+: l_obstout_bstressw      : write obstructions wave bottom shear stress (x,y)
+:
+:------------------------------------------------------------------------------
+:
+&obst_output
+  l_obstout_pos           = .TRUE.
+  l_obstout_height_f      = .TRUE.
+  l_obstout_height_e      = .TRUE.
+  l_obstout_dens_f        = .TRUE.
+  l_obstout_dens_e        = .TRUE.
+  l_obstout_width_f       = .TRUE.
+  l_obstout_width_e       = .TRUE.
+  l_obstout_thick_f       = .TRUE.
+  l_obstout_thick_e       = .TRUE.
+  l_obstout_oai           = .TRUE.
+  l_obstout_theta         = .TRUE.
+  l_obstout_cover         = .TRUE.
+  l_obstout_frac_z        = .FALSE.
+  l_obstout_fuzvz         = .FALSE.
+  l_obstout_a2d           = .FALSE.
+  l_obstout_a3d           = .FALSE.
+  l_obstout_s2d           = .FALSE.
+  l_obstout_s3d           = .FALSE.
+  l_obstout_drag          = .FALSE.
+  l_obstout_tau           = .FALSE.
+  l_obstout_z0bed         = .FALSE.
+  l_obstout_z0obst        = .FALSE.
+  l_obstout_z0bstress     = .FALSE. /
+: 
+:------------------------------------------------------------------------------
+:
+
+

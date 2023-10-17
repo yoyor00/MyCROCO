@@ -3433,6 +3433,88 @@
       enddo
 #  endif
 # endif /* MUSTANG */
+
+# ifdef OBSTRUCTION
+
+      do itrv=1,obst_nbvar
+         indx=indxObst+itrv-1
+         if (l_obstout_pos) then ! obst_pos
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+         
+         indx=indxObst+obst_nbvar+itrv-1
+         if (l_obstout_height_f) then ! obst forcing height
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+2*obst_nbvar+itrv-1
+         if (l_obstout_height_e) then ! obst effective height
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(2*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(2*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+3*obst_nbvar+itrv-1
+         if (l_obstout_dens_f) then ! obst forcing density
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(3*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(3*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+4*obst_nbvar+itrv-1
+         if (l_obstout_dens_e) then ! obst effective density
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(4*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(4*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+5*obst_nbvar+itrv-1
+         if (l_obstout_width_f) then ! obst forcing width
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(5*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(5*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+6*obst_nbvar+itrv-1
+         if (l_obstout_width_e) then ! obst effective width
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(6*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(6*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+      enddo ! itrv
+# endif /* OBSTRUCTION */
 !
 #endif /* SOLVE3D */
 !

@@ -24,6 +24,7 @@
       end
 
       subroutine step3d_uv1_tile (Istr,Iend,Jstr,Jend, ru,rv,DC)
+
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 # include "param.h"
@@ -101,6 +102,7 @@
      &                    +0.5*ust(i,j,k)*(Hz(i-1,j,k)+Hz(i,j,k))
      &                                          *(umask(i,j)-1.0)
 # endif
+
           enddo
         enddo
         if (j.ge.JstrV) then
@@ -146,6 +148,7 @@
      &                      +0.5*vst(i,j,k)*(Hz(i,j-1,k)+Hz(i,j,k))
      &                                            *(vmask(i,j)-1.0)
 # endif
+
             enddo
           enddo
         endif

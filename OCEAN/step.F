@@ -944,7 +944,10 @@ C$OMP BARRIER
         call rhs3d_w_nh (tile)
 #  endif
 # endif
+
         call step3d_uv1 (tile)
+
+
 # ifdef NBQ
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call step3d_w (tile)
