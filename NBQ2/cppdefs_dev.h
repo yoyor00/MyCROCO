@@ -199,6 +199,7 @@
 #   define M3FAST_COUPLING2D
 #   define M3FAST_COUPLING1
 #   define NHINT_3M
+#   define NHINT_CORR
 #   define M3FAST_AVG_CLASSIC
 #endif
 /*

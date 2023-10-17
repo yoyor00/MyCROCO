@@ -1126,7 +1126,7 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
       endif  ! nrrec.eq.0.
 !$acc end kernels
 !$acc update host( t(:,:,:,:,itemp) )
-        print *,"ana_ini 1: sum(t)=",sum(t(:,:,:,:,itemp))
+!       print *,"ana_ini 1: sum(t)=",sum(t(:,:,:,:,itemp))
       
 !
 
