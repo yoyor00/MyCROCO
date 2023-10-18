@@ -8,16 +8,24 @@ set -x
 
 ############################################################
 # default
-BENCH_PREFIX=${PWD}/venv
-BENCH_USE_NVHPC=no
-BENCH_USE_NETCDF=no
+INST_CROCO_SOURCE_DIR=$(realpath $(dirname $0))
+INST_PREFIX=${PWD}/venv
+INST_USE_NVHPC=no
+INST_USE_NETCDF=no
+INST_PSYCLONE=no
 
 ###########################################################
 # selection versions
-NETCDF_C_VERSION=4.9.2
-NETCDF_FORT_VERSION=4.5.3
-NETCDF_CXX_VERSION=4.3.1
-HDF5_VERSION=1_14_2
+INST_NETCDF_C_VERSION=4.9.2
+INST_NETCDF_FORT_VERSION=4.5.3
+INST_NETCDF_CXX_VERSION=4.3.1
+INST_HDF5_VERSION=1_14_2
+# we use git version for psyclone
+INST_PSYCLONE_GITHUB_USER=svalat
+INST_PSYCLONE_BRANCH=async-and-merge-master-ok
+# When patches will be submitted we might fallback to something close to :
+#INST_PSYCLONE_GITHUB_USER=stfc
+#INST_PSYCLONE_BRANCH=2.4.0
 
 ############################################################
 # help
@@ -25,134 +33,138 @@ for arg in "$@"
 do
 	case "${arg}" in
 		-h|--help)
-			echo "Usage : $0 [--nvhpc] [--netcdf] [--all] [PREFIX_DIR]"
+			echo "Usage : $0 [--nvhpc] [--netcdf] [--psyclone] [--all] [PREFIX_DIR]" 1>&2
 			exit 0
 			;;
 		--nvhpc)
-			BENCH_USE_NVHPC=yes
+			INST_USE_NVHPC=yes
 			;;
 		--netcdf)
-			BENCH_USE_NETCDF=yes
+			INST_USE_NETCDF=yes
+			;;
+		--psyclone)
+			INST_PSYCLONE=yes
 			;;
 		--all)
-			BENCH_USE_NVHPC=yes
-			BENCH_USE_NETCDF=yes
+			INST_USE_NVHPC=yes
+			INST_USE_NETCDF=yes
+			INST_PSYCLONE=yes
 			;;
 		*)
-			BENCH_PREFIX="${arg}"
+			INST_PREFIX="${arg}"
 			;;
 	esac
 done
 
 ###########################################################
 # install NetCDF
-BENCH_SOURCES=${BENCH_PREFIX}/sources
+INST_SOURCES=${INST_PREFIX}/sources
 
 ###########################################################
 # create a prefix
 if [[ ! -e ./venv/bin/activate ]]; then
 	# create a prefix
-	python3 -m venv ${BENCH_PREFIX}
-	source ${BENCH_PREFIX}/bin/activate
+	python3 -m venv ${INST_PREFIX}
+	source ${INST_PREFIX}/bin/activate
 
 	# install python deps
 	pip install --upgrade pip
 else
 	# load prefix
-	source ${BENCH_PREFIX}/bin/activate
+	source ${INST_PREFIX}/bin/activate
 fi
 
 ###########################################################
 # download sources
-mkdir -p ${BENCH_SOURCES}
-cd ${BENCH_SOURCES}
+mkdir -p ${INST_SOURCES}
+cd ${INST_SOURCES}
 
 ###########################################################
 # Clone psyclone
-if [[ ! -f ${BENCH_PREFIX}/bin/psyclone ]]; then
-	git clone https://github.com/svalat/PSyclone.git
+if [[ ${INST_PSYCLONE} == 'yes' && ! -f ${INST_PREFIX}/bin/psyclone ]]; then
+	git clone https://github.com/${INST_PSYCLONE_GITHUB_USER}/PSyclone.git
 	pushd PSyclone
-	git checkout async-and-merge-master-ok
+	git checkout ${INST_PSYCLONE_BRANCH}
 	pip install .
-	pip install -r PSYCLONE/requirements.txt
+	pip install -r ${INST_CROCO_SOURCE_DIR}/PSYCLONE/requirements.txt
 	popd
 fi
 
 ###########################################################
 # build HDF-5
-if [[ ${BENCH_USE_NETCDF} == 'yes' && ! -f ${BENCH_PREFIX}/include/hdf5.h ]]; then
-	wget --continue https://github.com/HDFGroup/hdf5/releases/download/hdf5-${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz
-	tar -xvf hdf5-${HDF5_VERSION}.tar.gz
+if [[ ${INST_USE_NETCDF} == 'yes' && ! -f ${INST_PREFIX}/include/hdf5.h ]]; then
+	wget --continue https://github.com/HDFGroup/hdf5/releases/download/hdf5-${INST_HDF5_VERSION}/hdf5-${INST_HDF5_VERSION}.tar.gz
+	tar -xvf hdf5-${INST_HDF5_VERSION}.tar.gz
 	pushd hdfsrc
-	./configure --prefix=$BENCH_PREFIX
+	./configure --prefix=$INST_PREFIX
 	make -j8 install
 	popd
 fi
 
 ###########################################################
 # build netcdf-c
-if [[ ${BENCH_USE_NETCDF} == 'yes' && ! -f ${BENCH_PREFIX}/include/netcdf.h ]]; then
-	wget --continue https://downloads.unidata.ucar.edu/netcdf-c/${NETCDF_C_VERSION}/netcdf-c-${NETCDF_C_VERSION}.tar.gz
-	tar -xvf netcdf-c-${NETCDF_C_VERSION}.tar.gz
-	pushd  netcdf-c-${NETCDF_C_VERSION}
-	./configure --prefix=$BENCH_PREFIX --disable-byterange CFLAGS=-I${BENCH_PREFIX}/include LDFLAGS=-L${BENCH_PREFIX}/lib
+if [[ ${INST_USE_NETCDF} == 'yes' && ! -f ${INST_PREFIX}/include/netcdf.h ]]; then
+	wget --continue https://downloads.unidata.ucar.edu/netcdf-c/${INST_NETCDF_C_VERSION}/netcdf-c-${INST_NETCDF_C_VERSION}.tar.gz
+	tar -xvf netcdf-c-${INST_NETCDF_C_VERSION}.tar.gz
+	pushd  netcdf-c-${INST_NETCDF_C_VERSION}
+	./configure --prefix=$INST_PREFIX --disable-byterange CFLAGS=-I${INST_PREFIX}/include LDFLAGS=-L${INST_PREFIX}/lib
 	make -j8 install
 	popd
 fi
 
 ###########################################################
 # build netcdf-fortran
-if [[ ${BENCH_USE_NETCDF} == 'yes' && ! -f ${BENCH_PREFIX}/include/netcdf.inc ]]; then
-	wget --continue https://downloads.unidata.ucar.edu/netcdf-fortran/${NETCDF_FORT_VERSION}/netcdf-fortran-${NETCDF_FORT_VERSION}.tar.gz
-	tar -xvf netcdf-fortran-${NETCDF_FORT_VERSION}.tar.gz
-	pushd netcdf-fortran-${NETCDF_FORT_VERSION}
-	./configure --prefix=$BENCH_PREFIX CFLAGS=-I$(nc-config --includedir) LDFLAGS=-L$(nc-config --libdir)
+if [[ ${INST_USE_NETCDF} == 'yes' && ! -f ${INST_PREFIX}/include/netcdf.inc ]]; then
+	wget --continue https://downloads.unidata.ucar.edu/netcdf-fortran/${INST_NETCDF_FORT_VERSION}/netcdf-fortran-${INST_NETCDF_FORT_VERSION}.tar.gz
+	tar -xvf netcdf-fortran-${INST_NETCDF_FORT_VERSION}.tar.gz
+	pushd netcdf-fortran-${INST_NETCDF_FORT_VERSION}
+	./configure --prefix=$INST_PREFIX CFLAGS=-I$(nc-config --includedir) LDFLAGS=-L$(nc-config --libdir)
 	make -j8 install
 	popd
 fi
 
 ###########################################################
 # build netcdf-cxx
-if [[ ${BENCH_USE_NETCDF} == 'yes' && ! -f ${BENCH_PREFIX}/include/ncFile.h ]]; then
-	wget --continue https://downloads.unidata.ucar.edu/netcdf-cxx/${NETCDF_CXX_VERSION}/netcdf-cxx4-${NETCDF_CXX_VERSION}.tar.gz
-	tar -xvf netcdf-cxx4-${NETCDF_CXX_VERSION}.tar.gz
-	pushd netcdf-cxx4-${NETCDF_CXX_VERSION}
-	./configure --prefix=$BENCH_PREFIX CFLAGS=-I$(nc-config --includedir) CXXFLAGS=-I$(nc-config --includedir) LDFLAGS=-L$(nc-config --libdir)
+if [[ ${INST_USE_NETCDF} == 'yes' && ! -f ${INST_PREFIX}/include/ncFile.h ]]; then
+	wget --continue https://downloads.unidata.ucar.edu/netcdf-cxx/${INST_NETCDF_CXX_VERSION}/netcdf-cxx4-${INST_NETCDF_CXX_VERSION}.tar.gz
+	tar -xvf netcdf-cxx4-${INST_NETCDF_CXX_VERSION}.tar.gz
+	pushd netcdf-cxx4-${INST_NETCDF_CXX_VERSION}
+	./configure --prefix=$INST_PREFIX CFLAGS=-I$(nc-config --includedir) CXXFLAGS=-I$(nc-config --includedir) LDFLAGS=-L$(nc-config --libdir)
 	make -j8 install
 	popd
 fi
 
 ###########################################################
 # build load script
-cat > ${BENCH_PREFIX}/activate.sh <<EOF
+cat > ${INST_PREFIX}/activate.sh <<EOF
 #!/bin/bash
 
-BENCH_PREFIX=${BENCH_PREFIX}
+INST_PREFIX=${INST_PREFIX}
 
 # venv
-source \${BENCH_PREFIX}/bin/activate
+source \${INST_PREFIX}/bin/activate
 
 EOF
 
 ###########################################################
 # import nvidia SDK
-if [[ ${BENCH_USE_NVHPC} == 'yes' ]]; then
-	if [[ ! -d ${BENCH_PREFIX}/nvhpc_sdk ]]; then
+if [[ ${INST_USE_NVHPC} == 'yes' ]]; then
+	if [[ ! -d ${INST_PREFIX}/nvhpc_sdk ]]; then
 		# install
 		wget --continue https://developer.download.nvidia.com/hpc-sdk/23.7/nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz
 		tar xpzf nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz
 		nvhpc_2023_237_Linux_x86_64_cuda_12.2/install <<EOF
 
 1
-${BENCH_PREFIX}/nvhpc_sdk
+${INST_PREFIX}/nvhpc_sdk
 EOF
 	fi
 
 	# add to load
-	cat >> ${BENCH_PREFIX}/activate.sh <<EOF
+	cat >> ${INST_PREFIX}/activate.sh <<EOF
 # cuda
 export NVARCH=\`uname -s\`_\`uname -m\`; export NVARCH
-export NVCOMPILERS=\${BENCH_PREFIX}/nvhpc_sdk; export NVCOMPILERS
+export NVCOMPILERS=\${INST_PREFIX}/nvhpc_sdk; export NVCOMPILERS
 export MANPATH=\$MANPATH:\$NVCOMPILERS/\$NVARCH/23.7/compilers/man; export MANPATH
 export PATH=\$NVCOMPILERS/\$NVARCH/23.7/compilers/bin:\$PATH; export PATH
 #export PATH=\$NVCOMPILERS/\$NVARCH/23.7/comm_libs/mpi/bin:\$PATH
@@ -168,5 +180,5 @@ echo "================= DONE ==================="
 echo "You can now source the env by using :"
 echo ""
 echo "------------------------------------------"
-echo "source ${BENCH_PREFIX}/activate.sh"
+echo "source ${INST_PREFIX}/activate.sh"
 echo "------------------------------------------"
