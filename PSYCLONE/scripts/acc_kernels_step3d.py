@@ -4,6 +4,7 @@
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
 
+##########################################################
 '''A transformation script that seeks to apply OpenACC KERNELS directives to
 NEMO style code. In order to use it you must first install PSyclone. See
 README.md in the top-level directory.
@@ -18,101 +19,24 @@ much code as possible in each Kernels region).
 
 '''
 
+##########################################################
+# specific CROCO vars
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
 VARS_3D = ['fx', 'fe', 'work', 'work2']
 
+##########################################################
+# internal
 from extensions import acc
+from extensions import kernels
 from extensions import scratch
 from extensions import loops
+# poseidon
 from poseidon.dsl.helper import *
+# psyclone
 from psyclone.psyir.nodes.routine import Routine
-from psyclone.transformations import ACCEnterDataTrans
-from psyclone.psyir.transformations.transformation_error import \
-    TransformationError
-from psyclone.psyir.nodes import Loop, Node, Reference, \
-    Routine
-from psyclone.transformations import ACCEnterDataTrans, ACCLoopTrans
-from psyclone.core import Signature
-from psyclone.nemo import NemoACCEnterDataDirective as \
-                AccEnterDataDir, InlinedKern
+from psyclone.psyir.nodes import Loop, Routine
 
-def apply_acc_loop_collapse(kernels: KernelList, options: dict) -> None:
-    """
-    For all kernel loops, collapse loop if possible.
-
-    TODO: Make sure that this is always valid
-    """
-    for kernel in kernels.kernels:
-        loop = kernel.root_node
-
-        try:
-            ACCLoopTrans().apply(loop, options=options)
-        except TransformationError as err:
-            # This loop can not be transformed, proceed to next loop
-            print("Loop not parallelised because:", str(err))
-            continue
-
-        # Count the number of perfectly nested loops & collapse them
-        num_nested_loops = 0
-        next_loop = loop
-        while isinstance(next_loop, Loop):
-            num_nested_loops += 1
-            if len(next_loop.loop_body.children) > 1:
-                break
-            next_loop = next_loop.loop_body.children[0]
-
-        if num_nested_loops > 1:
-            loop.parent.parent.collapse = num_nested_loops
-
-def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], merge_joinable: bool = False, options: dict = None) -> None:
-    
-    # extract kernels
-    kernels = extract_kernels_from_psyir(container, ignore_loops=ignore_loops)
-
-    # skip some kernels to tests
-    # TODO fin a nice way to make this cleanly
-    for kernel in kernels.kernels:
-        for reference in kernel.root_node.walk(Reference):
-            if reference.symbol.name == 'may_day_flag':
-                kernels.kernels.remove(kernel)
-
-    # disable streams
-    for kernel in kernels.kernels:
-        kernel.acc_async_stream = None
-
-    # gen acc
-    kernels.make_acc_tranformation(False)
-    if merge_joinable:
-        kernels.merge_joinable_kernels()
-
-    # apply collaspse
-    if collapse:
-        apply_acc_loop_collapse(kernels, options)
-
-def apply_acc_fetch_vars(psy) -> None:
-    """
-    Fetch vars used inside kernel loop.
-    These vars can then be made private.
-
-    TODO: rename function properly
-    """
-    vars_to_fetch = []
-    for invoke in psy.invokes.invoke_list:
-        for ref in invoke.schedule.walk(Reference):
-            if ref.name.lower() in ['fc1d', 'cf1d', 'dc1d']:
-                vars_to_fetch.append(ref.name.lower())
-        vars_to_fetch = list(set(vars_to_fetch))
-
-        if len(vars_to_fetch) > 0:
-            # build sigs
-            signatures = []
-            for var in vars_to_fetch:
-                signatures.append(Signature(var))
-
-            ACCEnterDataTrans().apply(invoke.schedule, options={'signatures': signatures})
-            for dir in invoke.schedule.walk(AccEnterDataDir):
-                dir.sig_set = signatures
-
+##########################################################
 def trans(psy):
     """
     A PSyclone-script compliant transformation function. Applies
@@ -157,7 +81,7 @@ def trans(psy):
             for top_loop in routine.walk(Loop, stop_type=Loop):
                 # extract nested loop indice order
                 vars=loops.extract_loop_indices_order(top_loop, exclude=['itrc'])
-                print(vars[0:5])
+                #print(vars[0:5])
                 if vars[0:3] == ['k','j','i'] or vars[0:3] == ['j','k','i'] or vars[0:3] == ['j','i','k']:
                     loops_to_trans.append(top_loop)
 
@@ -197,9 +121,9 @@ def trans(psy):
         collapse = True
     for routine in routines:  
         if routine.name == 'diag_tile':
-            apply_acc_kernel(routine, collapse, ignore_loops=['itrc'], merge_joinable=joinable, options={'independent': False})
+            kernels.apply_acc_kernel(routine, collapse, ignore_loops=['itrc'], merge_joinable=joinable, options={'independent': False})
         elif routine.name != 'set_HUV1':
-            apply_acc_kernel(routine, collapse, ignore_loops=['itrc'], merge_joinable=joinable)
+            kernels.apply_acc_kernel(routine, collapse, ignore_loops=['itrc'], merge_joinable=joinable)
 
     ####################################################################
     for routine in routines:  

@@ -188,3 +188,6 @@ cd build
 cmake .. -DNETCDF_PREFIX=$HOME/usr-netcdf -DWITH_PARALLEL=openmp -DBUILD_TYPE=Debug
 make
 ```
+
+You can look in file `options` to get the mapping between `./configure` options
+and `cmake` variables.

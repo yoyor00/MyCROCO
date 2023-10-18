@@ -19,11 +19,13 @@ much code as possible in each Kernels region).
 '''
 
 
-"""
-TODO: Cleanup includes
-"""
+##########################################################
+# poesidon
 from poseidon.dsl.helper import extract_kernels_from_psyir
+# intenral
 from extensions.directives import ACCWaitDirective, ACCSetDeviceNumDirective
+from from_nemo_psyclone.utils import normalise_loops
+# psyclone
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes.if_block import IfBlock
 from psyclone.psyir.nodes.call import Call
@@ -32,8 +34,8 @@ from psyclone.psyir.transformations.transformation_error import \
     TransformationError
 from psyclone.psyir.nodes import Loop, Routine, IntrinsicCall
 from psyclone.transformations import ACCLoopTrans
-from from_nemo_psyclone.utils import normalise_loops
 
+##########################################################
 def trans(psy):
     '''A PSyclone-script compliant transformation function. Applies
     OpenACC 'kernels' to NEMO code.
