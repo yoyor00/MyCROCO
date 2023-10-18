@@ -38,3 +38,13 @@ Note
 It helps on the path to handle the fact that the F77 files which goes through
 psyclone are renamed as F90 files and not the others which is hidden from the
 top compiling system.
+
+Testing
+-------
+
+You can simply run the unit test checking the internal behavor of the scripts
+with :
+
+```sh
+pytest ./PSYCLONE
+```

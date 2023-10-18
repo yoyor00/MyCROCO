@@ -1,0 +1,7 @@
+###### Requirements without Version Specifiers ######
+
+###### Requirements with Version Specifiers ######
+deepdiff ~= 4.1.0
+
+###### Requirements to run tests ######
+pytest
