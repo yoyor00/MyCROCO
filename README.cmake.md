@@ -4,7 +4,7 @@ Building CROCO with CMake
 This page descrived how to build CROCO with CMake in place of the default
 manual script.
 
-**CAUTION :** It currently still lack some support.
+**CAUTION :** It currently still lack some support (eg. AGRIF & XIOS).
 
 Dependencies
 ------------
