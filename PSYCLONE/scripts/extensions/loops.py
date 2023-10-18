@@ -15,10 +15,12 @@ generic intead.
 '''
 
 ##########################################################
+# python
 import os
+# internal
 from .scratch import patch_scratch_3d_arrays, patch_scratch_1d_arrays
-from .acc import set_private_on_loop
 from .loops_helpers import *
+# psyclone
 from psyclone.psyir.nodes import Node, Reference, Loop, Routine, Schedule
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans

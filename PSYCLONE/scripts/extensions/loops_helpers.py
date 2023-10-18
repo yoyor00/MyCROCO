@@ -15,6 +15,7 @@ generic intead.
 '''
 
 ##########################################################
+# psyclone
 from psyclone.psyir.nodes import Reference, Loop
 
 ##########################################################

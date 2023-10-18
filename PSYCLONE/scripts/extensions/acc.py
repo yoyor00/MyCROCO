@@ -11,12 +11,14 @@ Some helper function to make some specific transform on the CROCO code.
 Remark
 ------
 There is a lot of things currently hard coded and which requires to be made
-generic intead.
+generic instead.
 '''
 
 ##########################################################
+# internal
 from .loops_helpers import is_loop_using_var
 from .directives.ACCSetDeviceNumDirective import ACCSetDeviceNumDirective
+# psyclone
 from psyclone.psyir.nodes import Node, Routine, Literal
 from psyclone.psyir.symbols import DataSymbol, INTEGER_TYPE, BOOLEAN_TYPE
 from psyclone.psyir.nodes import Call, IntrinsicCall, Node, Loop
@@ -45,7 +47,6 @@ def add_missing_device_vars(root_node: Node) -> None:
     routines: Routine
     routines = root_node.walk(Routine)
     for routine in routines:
-        print(routine.name)
         # set device directive
         if routine.name == "step3d_t" or routine.name == "step3d_t_tile" or routine.name == "step3d_uv2" or routine.name == "step3d_uv2_tile":
             # add const integer 'my_acc_device' = 0

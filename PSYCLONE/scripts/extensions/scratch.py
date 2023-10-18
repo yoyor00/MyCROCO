@@ -15,7 +15,9 @@ generic intead.
 '''
 
 ##########################################################
+# internal
 from .directives.ACCSetDeviceNumDirective import ACCSetDeviceNumDirective
+# psyclone
 from psyclone.psyir.nodes import Node, Routine, Literal, Reference, ArrayReference, Loop
 from psyclone.psyir.symbols import DataSymbol, INTEGER_TYPE, BOOLEAN_TYPE
 from psyclone.psyir.nodes import Call, IntrinsicCall, BinaryOperation
