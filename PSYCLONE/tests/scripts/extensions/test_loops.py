@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -11,10 +11,13 @@ functions.
 '''
 
 ##########################################################
+# pytest package
 import pytest
-from ..loops import *
+# psyclone
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
+# internal
+from scripts.extensions.loops import *
 
 ##########################################################
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']

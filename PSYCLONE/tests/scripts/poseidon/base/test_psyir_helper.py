@@ -1,7 +1,12 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
+# psyclone
 from psyclone.psyir.frontend.fortran import FortranReader
-from poseidon.base import psyir_helpers
 
 CODE='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)

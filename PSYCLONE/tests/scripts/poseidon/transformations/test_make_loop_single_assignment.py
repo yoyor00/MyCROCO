@@ -1,10 +1,19 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
+# from pytest package
+import pytest
+# psycone
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.psyir.backend.fortran import FortranWriter
-from poseidon.transformations.make_loop_single_assignment import MakeLoopSingleAssignmentTrans, Loop, TransformationError
-import pytest
+# internal
+from scripts.poseidon.transformations.make_loop_single_assignment import MakeLoopSingleAssignmentTrans, Loop, TransformationError
 
+##########################################################
 CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -23,6 +32,7 @@ CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_2='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
     REAL      :: vrhs(0:10, 0:20)
@@ -45,6 +55,7 @@ subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end
 '''
 
+##########################################################
 EXPECT_CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -71,6 +82,7 @@ EXPECT_CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end subroutine test
 '''
 
+##########################################################
 CODE_3='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
     REAL      :: vrhs(0:10, 0:20)
@@ -93,6 +105,7 @@ subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end
 '''
 
+##########################################################
 CODE_4='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
     REAL      :: vrhs(0:10, 0:20)
@@ -117,6 +130,7 @@ subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end
 '''
 
+##########################################################
 CODE_5='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
     REAL      :: vrhs(0:10, 0:20)
@@ -142,6 +156,7 @@ subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end
 '''
 
+##########################################################
 CODE_6='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
     REAL      :: vrhs(0:10, 0:20)
@@ -170,6 +185,7 @@ subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end
 '''
 
+##########################################################
 EXPECT_CODE_6='''subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -202,6 +218,7 @@ EXPECT_CODE_6='''subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end subroutine test
 '''
 
+##########################################################
 def parse_apply_regen(code, trans):
     # load
     reader = FortranReader()
@@ -218,32 +235,38 @@ def parse_apply_regen(code, trans):
     # ok
     return final
 
+##########################################################
 def test_loop_single():
     '''If we apply on a loop with single line, should be not changed'''
     # do
     assert parse_apply_regen(CODE_1, MakeLoopSingleAssignmentTrans()) == CODE_1
 
+##########################################################
 def test_loop_two():
     '''Shoud effectively split the loops'''
     # do
     assert parse_apply_regen(CODE_2, MakeLoopSingleAssignmentTrans()) == EXPECT_CODE_2
 
+##########################################################
 def test_loop_scalar_in_loops():
     '''Detect error if scala assignement in loops (not supported yet)'''
     with pytest.raises(TransformationError) as error:
         parse_apply_regen(CODE_3, MakeLoopSingleAssignmentTrans())
     #assert "scalar assignement" in str(error)
 
+##########################################################
 def test_loop_complex_nesting():
     '''Check that we do not handle complex loop nesting'''
     with pytest.raises(TransformationError) as error:
         parse_apply_regen(CODE_4, MakeLoopSingleAssignmentTrans())
 
+##########################################################
 def test_loop_complex_nesting_with_if():
     '''Check that we do not handle complex if statement in loops'''
     with pytest.raises(TransformationError) as error:
         parse_apply_regen(CODE_5, MakeLoopSingleAssignmentTrans())
 
+##########################################################
 def test_loop_appy_in_middle_of_others():
     '''check that we insert at right place, if parent loop is followed by other ops'''
     assert parse_apply_regen(CODE_6, MakeLoopSingleAssignmentTrans()) == EXPECT_CODE_6

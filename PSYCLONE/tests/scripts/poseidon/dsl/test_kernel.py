@@ -1,8 +1,15 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
-from poseidon.dsl.helper import *
-from poseidon.dsl.kernel_pre_scheduler import KernelPreScheduler
+##########################################################
+# internal
+from scripts.poseidon.dsl.helper import *
+from scripts.poseidon.dsl.kernel_pre_scheduler import KernelPreScheduler
 
+##########################################################
 CODE='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
     REAL      :: vrhs(0:10, 0:20)
@@ -25,6 +32,7 @@ subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end
 '''
 
+##########################################################
 CODE_2='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
     REAL      :: vrhs(0:10, 0:20)
@@ -56,6 +64,7 @@ subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end
 '''
 
+##########################################################
 KERNEL_1='''================= KERNEL ==================
 IN    : cff1, cff2, cff3, drhs, dvom, om_v, vbar, vrhs
 OUT   : dvom, vrhs
@@ -71,6 +80,7 @@ enddo
 -------------------------------------------
 '''
 
+##########################################################
 KERNEL_2='''================= KERNEL ==================
 IN    : cff1, cff2, cff3, drhs, dvom, om_v, vbar, vrhs
 OUT   : dvom, vrhs
@@ -86,6 +96,7 @@ enddo
 -------------------------------------------
 '''
 
+##########################################################
 KERNEL_3='''================= KERNEL ==================
 IN    : cff1, cff2, cff3, drhs, dvom, om_v, vbar, vrhs
 OUT   : dvom, vrhs
@@ -114,6 +125,7 @@ enddo
 -------------------------------------------
 '''
 
+##########################################################
 KERNEL_4='''================= KERNEL ==================
 IN    : cff1, cff2, cff3, drhs, dvom, om_v, vbar, vrhs
 OUT   : dvom, vrhs
@@ -187,6 +199,7 @@ enddo
 -------------------------------------------
 '''
 
+##########################################################
 KERNEL_5='''================= KERNEL ==================
 IN    : cff1
 OUT   : vrhs
@@ -309,6 +322,7 @@ enddo
 -------------------------------------------
 '''
 
+##########################################################
 GRAPH_1='''digraph CROCO {
    cff1 -> vrhs
    vbar -> vrhs
@@ -320,6 +334,7 @@ GRAPH_1='''digraph CROCO {
 }
 '''
 
+##########################################################
 GRAPH_2='''digraph CROCO
 {
 node_0 [label="vrhs", color="red"]
@@ -343,6 +358,7 @@ node_0 -> node_5
 }
 '''
 
+##########################################################
 CODE_3='''
 subroutine test1(cff1, cff2, cff3, vbar, drhs)
     REAL      :: vbar(0:10, 0:20)
@@ -388,6 +404,7 @@ subroutine test2(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)
 end
 '''
 
+##########################################################
 CODE_3_SUMMARY='''================= KERNEL ==================
 IN    : cff1, cff2, cff3, vbar
 OUT   : drhs
@@ -435,32 +452,39 @@ enddo
 -------------------------------------------
 '''
 
+##########################################################
 def test_basic_no_walk():
     kernel = extract_kernel_no_walk(CODE, free_form=True)
     assert kernel.render_summary(actual=False, fused=False) == KERNEL_1
 
+##########################################################
 def test_basic_walk():
     kernel = extract_kernel_walk(CODE, free_form=True)
     assert kernel.render_summary(actual=False, fused=False) == KERNEL_2
 
+##########################################################
 def test_two_kernels_walk():
     kernels = extract_kernels(CODE_2, free_form=True)
     assert kernels.render_summary(actual=False, fused=False) == KERNEL_3
 
+##########################################################
 def test_render_dep_graph():
     kernels = extract_kernels(CODE, free_form=True)
     assert kernels.render_dep_graph() == GRAPH_1
 
+##########################################################
 def test_render_step_graph():
     kernels = extract_kernels(CODE, free_form=True)
     assert kernels.render_step_graph(single_link=False) == GRAPH_2
 
+##########################################################
 def test_split_fuse():
     kernels = extract_kernels(CODE, free_form=True)
     kernels.make_acc_tranformation()
     kernels.make_loop_splitting()
     assert kernels.render_summary(actual=True, fused=True) == KERNEL_4
 
+##########################################################
 def test_split_acc_async():
     # parse
     psyir_tree = get_psyir_from_code(CODE, free_form=True)
@@ -479,6 +503,7 @@ def test_split_acc_async():
     
     assert kernels.render_summary(orig = False, actual=True, fused=False) == KERNEL_5
 
+##########################################################
 def test_split_acc_async_multi_func_1():
     # preparse
     sched = KernelPreScheduler()

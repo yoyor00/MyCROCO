@@ -1,14 +1,23 @@
-#!/usr/bin/env python
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
-from psyclone.psyir.frontend.fortran import FortranReader
-from psyclone.psyir.backend.fortran import FortranWriter
-from psyclone.psyir.nodes import Routine, FileContainer, CodeBlock
-import pytest
-
+##########################################################
 '''
 List the features which needs to be supported and needs some work to be supported.
 '''
 
+##########################################################
+# from pytest package
+import pytest
+# psyclone
+from psyclone.psyir.frontend.fortran import FortranReader
+from psyclone.psyir.backend.fortran import FortranWriter
+from psyclone.psyir.nodes import Routine, FileContainer, CodeBlock
+
+##########################################################
 CODE_COMMON = '''
       subroutine zetabc_tile(Istr,Iend,Jstr,Jend)
           implicit none
@@ -21,6 +30,7 @@ CODE_COMMON = '''
       end
 '''
 
+##########################################################
 CODE_PARAMETER = '''subroutine zetabc_tile()
   integer*4 :: size
   parameter (size=3)
@@ -30,6 +40,7 @@ CODE_PARAMETER = '''subroutine zetabc_tile()
 end subroutine zetabc_tile
 '''
 
+##########################################################
 CODE_PARAMETER_REGEN = '''subroutine zetabc_tile()
   integer*4, parameter :: size = 3
   REAL :: h(0 : size + 1)
@@ -38,6 +49,7 @@ CODE_PARAMETER_REGEN = '''subroutine zetabc_tile()
 end subroutine zetabc_tile
 '''
 
+##########################################################
 CODE_FIXED_FORM='''
       subroutine insert_node (lstr, node, nnodes, ierr)
       integer*4 lstr, ierr, i,j,k, lsffx, digits, power, ndots, idot(3)
@@ -45,6 +57,7 @@ CODE_FIXED_FORM='''
       end
 '''
 
+##########################################################
 CODE_WRITE_UNSUPPORTED='''
       subroutine step2d()
         implicit none
@@ -52,6 +65,7 @@ CODE_WRITE_UNSUPPORTED='''
       end
 '''
 
+##########################################################
 CODE_STEP3D_ISSUE_1='''
       subroutine step3d_t (tile)
 
@@ -63,6 +77,7 @@ CODE_STEP3D_ISSUE_1='''
       end
 '''
 
+##########################################################
 def test_parse_fixed_form():
     '''
     When starting the free_form option was missing.
@@ -70,6 +85,7 @@ def test_parse_fixed_form():
     fortran_reader = FortranReader()
     fortran_reader.psyir_from_source(CODE_FIXED_FORM, free_form = False)
 
+##########################################################
 @pytest.mark.xfail
 def test_handle_common_keyword():
     '''
@@ -80,11 +96,12 @@ def test_handle_common_keyword():
     print(file_container.view())
     assert isinstance(file_container, FileContainer)
     subroutine = file_container.children[0]
-    assert isinstance(subroutine, Routine)
-    block = subroutine.children[0]
     # Originally we have CodeBlock here because 'common' is not supported.
     assert not isinstance(block, CodeBlock)
+    assert isinstance(subroutine, Routine)
+    block = subroutine.children[0]
 
+##########################################################
 def test_handle_parameter_keyword():
     '''
     When starting the free_form option was missing.
@@ -97,6 +114,7 @@ def test_handle_parameter_keyword():
     # Current issue : the parameter line is missing !
     assert result == CODE_PARAMETER_REGEN
 
+##########################################################
 def contains_block(node):
     if isinstance(node, CodeBlock):
         return True
@@ -105,6 +123,7 @@ def contains_block(node):
             return True
     return False
 
+##########################################################
 @pytest.mark.xfail
 def test_handle_write_keyword():
     '''
@@ -120,6 +139,7 @@ def test_handle_write_keyword():
     # Originally we have CodeBlock here because 'common' is not supported.
     assert not contains_block(block)
 
+##########################################################
 def test_parse_step_3d_1():
     '''
     When starting the free_form option was missing.

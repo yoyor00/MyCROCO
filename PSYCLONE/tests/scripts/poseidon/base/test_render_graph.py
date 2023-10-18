@@ -1,9 +1,17 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
+# python
 import os
-from poseidon.base.render_graph import RenderGraph
-from poseidon.base.types import AccessMode
+# internal
+from scripts.poseidon.base.render_graph import RenderGraph
+from scripts.poseidon.base.types import AccessMode
 
+##########################################################
 GRAPH_1='''graph CROCO
 {
 node_0 [label="A"]
@@ -12,6 +20,7 @@ node_0 -- node_1
 }
 '''
 
+##########################################################
 GRAPH_2='''graph CROCO
 {
 node_0 [label="ROOT"]
@@ -26,6 +35,7 @@ node_3 -- node_4
 }
 '''
 
+##########################################################
 GRAPH_3='''graph CROCO
 {
 node_0 [label="A"]
@@ -34,6 +44,7 @@ node_2 [label="A", color="green"]
 }
 '''
 
+##########################################################
 def test_basic_node_link():
     graph = RenderGraph()
     node_a = graph.add_node("A")
@@ -41,6 +52,7 @@ def test_basic_node_link():
     graph.add_link(node_a, node_b)
     assert graph.render() == GRAPH_1
 
+##########################################################
 def test_various_nodes():
     graph = RenderGraph()
     node_root = graph.add_node("ROOT")
@@ -50,6 +62,7 @@ def test_various_nodes():
     graph.add_schedule(parent_name=node_loop)
     assert graph.render() == GRAPH_2
 
+##########################################################
 def test_gen_svg():
     graph = RenderGraph()
     node_a = graph.add_node("A")
@@ -58,6 +71,7 @@ def test_gen_svg():
     graph.render_as_image(filename, "svg")
     os.unlink(filename)
 
+##########################################################
 def test_mode():
     graph = RenderGraph()
     graph.add_node("A", mode=AccessMode.UNDEFINED)

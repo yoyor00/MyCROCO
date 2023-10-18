@@ -1,10 +1,11 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
 
 ##########################################################
+# psyclone
 from psyclone.core import Signature
 from psyclone.psyir.nodes import ACCStandaloneDirective
 from psyclone.f2pygen import DirectiveGen

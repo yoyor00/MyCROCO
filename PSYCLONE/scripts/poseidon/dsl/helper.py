@@ -1,18 +1,28 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
-from psyclone.psyir.frontend.fortran import FortranReader
-from psyclone.psyir.nodes import Call, Node
-from poseidon.dsl.kernel import Kernel, KernelList, Loop, Routine
-from poseidon.base.psyir_helpers import get_first_loop, get_previous
-from poseidon.parsing.walker import Walker
-from poseidon.parsing.kernel_extractor import KernelExtractor
+##########################################################
+# python
 import json
+# psyclone
+from psyclone.psyir.frontend.fortran import FortranReader
+from psyclone.psyir.nodes import Call
+# internal
+from scripts.poseidon.dsl.kernel import Kernel, KernelList, Loop, Routine
+from scripts.poseidon.base.psyir_helpers import get_first_loop, get_previous
+from scripts.poseidon.parsing.walker import Walker
+from scripts.poseidon.parsing.kernel_extractor import KernelExtractor
 
+##########################################################
 def get_psyir_from_code(code: str, free_form=False):
     reader = FortranReader()
     psyir_tree = reader.psyir_from_source(code, free_form=free_form)
     return psyir_tree
 
+##########################################################
 def extract_kernel_no_walk(code: str, free_form=False) -> Kernel:
     reader = FortranReader()
     psyir_tree = reader.psyir_from_source(code, free_form=free_form)
@@ -20,16 +30,19 @@ def extract_kernel_no_walk(code: str, free_form=False) -> Kernel:
     kernel = Kernel(loop)
     return kernel
 
+##########################################################
 def extract_kernels(code: str, free_form=False) -> KernelList:
     reader = FortranReader()
     psyir_tree = reader.psyir_from_source(code, free_form=free_form)
     return extract_kernels_from_psyir(psyir_tree)
 
+##########################################################
 def extract_kernels_from_file(code: str, free_form=False) -> KernelList:
     reader = FortranReader()
     psyir_tree = reader.psyir_from_file(code, free_form=free_form)
     return extract_kernels_from_psyir(psyir_tree)
 
+##########################################################
 def extract_kernels_from_psyir_internal(kernels, psyir_tree, ignore_loops=[]):
     top_loop: Loop
     for top_loop in psyir_tree.walk(Loop, stop_type=Loop):
@@ -38,14 +51,17 @@ def extract_kernels_from_psyir_internal(kernels, psyir_tree, ignore_loops=[]):
         else:
             kernels.push_kernel(Kernel(top_loop))
 
+##########################################################
 def extract_kernels_from_psyir(psyir_tree, ignore_loops=[]) -> KernelList:
     kernels = KernelList()
     extract_kernels_from_psyir_internal(kernels, psyir_tree, ignore_loops=ignore_loops)
     return kernels
 
+##########################################################
 def extract_kernel_walk(code: str, free_form=False) -> Kernel:
     return extract_kernels(code, free_form=free_form).get(0)
 
+##########################################################
 def dump_async_var_streams(psy_ir_tree):
     # loop on all calls
     for call in psy_ir_tree.walk(Call):

@@ -1,13 +1,22 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
 '''
 Implement a simple graphviz helper to generate graphs.
 '''
 
+##########################################################
+# python
 import tempfile
 import subprocess
+# internal
 from .types import AccessMode
 
+##########################################################
 class RenderGraphNode:
     def __init__(self, name: str):
         self._name = name
@@ -16,6 +25,7 @@ class RenderGraphNode:
     def name(self):
         return self._name
 
+##########################################################
 class RenderGraph:
         def __init__(self, digraph: bool = False):
             self.next_id = 0

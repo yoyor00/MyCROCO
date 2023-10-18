@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -10,15 +10,21 @@ Implement some basic unit test check check the transformation device helper func
 '''
 
 ##########################################################
+# python
 from tempfile import NamedTemporaryFile
-from ..kernels import *
+# internal
+from scripts.extensions.kernels import KernelList, apply_acc_fetch_vars, \
+  apply_acc_kernel, apply_acc_loop_and_collapse
+# internal poseidon
+from scripts.poseidon.dsl.helper import extract_kernels_from_psyir
+# psyclone
 from psyclone.configuration import Config
+from psyclone.psyir.nodes import Routine, Loop
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.transformations import ACCParallelTrans
 from psyclone.parse.algorithm import parse
 from psyclone.psyGen import PSyFactory
-from poseidon.dsl.helper import extract_kernels_from_psyir
 
 ##########################################################
 def helper_reproduce_psyclone_psy(source: str):

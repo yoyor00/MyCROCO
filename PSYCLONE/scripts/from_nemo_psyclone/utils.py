@@ -1,8 +1,4 @@
-##########################################################
-#  CROCO cmake build system, under CeCILL-C
-#  From Sébastien Valat (INRIA) - 2023
-#  CROCO website : http://www.croco-ocean.org
-##########################################################
+# imported from PSyClone NEMO scripts
 
 ''' Utilities file to parallelise Nemo code. '''
 

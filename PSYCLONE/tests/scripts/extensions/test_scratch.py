@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -10,9 +10,11 @@ Implement some basic unit test check check the transformation device helper func
 '''
 
 ##########################################################
-from ..scratch import *
+# psyclone
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
+# internal
+from scripts.extensions.scratch import *
 
 ##########################################################
 def test_add_1d_scratch_var():

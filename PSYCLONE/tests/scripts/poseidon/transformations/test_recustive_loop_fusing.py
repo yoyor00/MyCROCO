@@ -1,10 +1,19 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
+# from pytest package
+import pytest
+# psyclone
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.psyir.backend.fortran import FortranWriter
-from poseidon.transformations.recursive_loop_fusing import RecusiveLoopFusing, Loop, TransformationError
-import pytest
+# internal
+from scripts.poseidon.transformations.recursive_loop_fusing import RecusiveLoopFusing, Loop, TransformationError
 
+##########################################################
 CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -28,6 +37,7 @@ CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 EXPECT_CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -47,6 +57,7 @@ EXPECT_CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -75,6 +86,7 @@ CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 EXPECT_CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -95,6 +107,7 @@ EXPECT_CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -118,6 +131,7 @@ CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 EXPECTED_CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -139,6 +153,7 @@ EXPECTED_CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_4='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -162,6 +177,7 @@ CODE_4='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_5='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -186,6 +202,7 @@ CODE_5='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 def parse_apply_regen(code, trans):
     # load
     reader = FortranReader()
@@ -202,27 +219,32 @@ def parse_apply_regen(code, trans):
     # ok
     return final
 
+##########################################################
 def test_loop_fuse_basic():
     '''See if merge simple case'''
     # do
     assert parse_apply_regen(CODE_1, RecusiveLoopFusing()) == EXPECT_CODE_1
 
+##########################################################
 def test_loop_fuse_basic_2():
     '''See if merge simple case'''
     # do
     assert parse_apply_regen(CODE_2, RecusiveLoopFusing()) == EXPECT_CODE_2
 
+##########################################################
 def test_loop_fuse_partial_failure_1():
     '''See if merge simple case'''
     # do
     assert parse_apply_regen(CODE_3, RecusiveLoopFusing()) == EXPECTED_CODE_3
 
+##########################################################
 def test_loop_fuse_failure_3():
     '''See if merge simple case'''
     # do
     with pytest.raises(TransformationError):
         assert parse_apply_regen(CODE_4, RecusiveLoopFusing()) == CODE_4
 
+##########################################################
 def test_loop_fuse_failure_4():
     '''See if merge simple case'''
     # do
