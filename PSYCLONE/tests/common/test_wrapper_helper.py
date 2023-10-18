@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -10,8 +10,8 @@ Implement some unit tests about the wrapper helper functions.
 '''
 
 ##########################################################
-import os
-from .wrapper_helpers import simplify_file_name, get_rules_for_file, extract_source_file_from_args
+# internal
+from common.wrapper_helpers import simplify_file_name, get_rules_for_file, extract_source_file_from_args
 
 ##########################################################
 def test_simplify_file_name():

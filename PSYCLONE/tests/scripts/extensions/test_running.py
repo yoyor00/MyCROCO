@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -11,19 +11,21 @@ functions.
 '''
 
 ##########################################################
+# python
 import pytest
 import subprocess
 import tempfile
-from .. import acc
-from ..loops import *
-from .test_loops import helper_load_snippet, helper_gen_var_decl
+# Psyclone
+from psyclone.psyir.nodes import Node, Loop, Routine
+# internal
+from scripts.extensions import acc
+from scripts.extensions.loops import get_first_loop_on, handle_kji_loop, handle_jki_loop, handle_jik_loop
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
-from poseidon.dsl.helper import extract_kernels_from_psyir
-
-from psyclone.parse.algorithm import parse
-from psyclone.psyGen import PSyFactory
-from psyclone.transformations import ACCKernelsTrans, ACCEnterDataTrans
+# internal poseidon
+from scripts.poseidon.dsl.helper import extract_kernels_from_psyir
+# local test dir
+from .test_loops import helper_load_snippet, helper_gen_var_decl
 
 ##########################################################
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']

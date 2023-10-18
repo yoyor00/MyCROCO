@@ -1,15 +1,21 @@
-import sys
-import contextlib
-import subprocess
-from argparse import ArgumentParser
-from poseidon.dsl.helper import *
-from poseidon.base.render_graph import RenderGraph
-from poseidon.parsing.graph_generator import GraphGenerator
-from psyclone.psyir.backend.fortran import FortranWriter
-from deepdiff import DeepDiff
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
+
+##########################################################
+# python
 from copy import deepcopy
+# internal
+from scripts.poseidon.dsl.helper import *
+from scripts.poseidon.base.render_graph import RenderGraph
+# psyclone
+from psyclone.psyir.nodes import Node
+from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.transformations import TransformationError
 
+##########################################################
 class KernelPreScheduler:
 
     def __init__(self):

@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -10,10 +10,12 @@ Implement some basic unit test check check the transformation device helper func
 '''
 
 ##########################################################
-from ..acc import *
+# psyclone
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.transformations import ACCParallelTrans
+# internal
+from scripts.extensions.acc import *
 
 ##########################################################
 def test_add_missing_device_vars_step3d():

@@ -1,10 +1,19 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
+# from pytest package
+import pytest
+# psyclone
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.psyir.backend.fortran import FortranWriter
-from poseidon.transformations.make_loop_single_top_level_operand import MakeLoopSingleTopLevelOperandTrans, Loop, TransformationError
-import pytest
+# internal
+from scripts.poseidon.transformations.make_loop_single_top_level_operand import MakeLoopSingleTopLevelOperandTrans, Loop, TransformationError
 
+##########################################################
 CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -23,6 +32,7 @@ CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -41,6 +51,7 @@ CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 EXPECT_CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -61,6 +72,7 @@ EXPECT_CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -79,6 +91,7 @@ CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 EXPECT_CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -99,6 +112,7 @@ EXPECT_CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_4='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -117,6 +131,7 @@ CODE_4='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 EXPECT_CODE_4='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -140,6 +155,7 @@ EXPECT_CODE_4='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 CODE_5='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
@@ -158,6 +174,7 @@ CODE_5='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 end subroutine test
 '''
 
+##########################################################
 def parse_apply_regen(code, trans):
     # load
     reader = FortranReader()
@@ -174,6 +191,7 @@ def parse_apply_regen(code, trans):
     # ok
     return final
 
+##########################################################
 def test_loop_single_op():
     '''If we apply on a loop with single line, should be not changed'''
     # do
@@ -181,21 +199,25 @@ def test_loop_single_op():
         assert parse_apply_regen(CODE_1, MakeLoopSingleTopLevelOperandTrans()) == CODE_1
     #assert "not contain binary operation" in str(error)
 
+##########################################################
 def test_loop_split_add():
     '''Shoud effectively split add ops'''
     # do
     assert parse_apply_regen(CODE_2, MakeLoopSingleTopLevelOperandTrans()) == EXPECT_CODE_2
 
+##########################################################
 def test_loop_split_add_sub():
     '''Shoud effectively split add/sub ops'''
     # do
     assert parse_apply_regen(CODE_3, MakeLoopSingleTopLevelOperandTrans()) == EXPECT_CODE_3
 
+##########################################################
 def test_loop_split_full_mul():
     '''Shoud effectively split add/sub ops'''
     # do
     assert parse_apply_regen(CODE_4, MakeLoopSingleTopLevelOperandTrans()) == EXPECT_CODE_4
 
+##########################################################
 def test_loop_not_split_scalar():
     '''If we apply on a loop with single line, should be not changed'''
     # do

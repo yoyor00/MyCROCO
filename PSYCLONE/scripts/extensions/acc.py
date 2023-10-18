@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -15,14 +15,14 @@ generic instead.
 '''
 
 ##########################################################
-# internal
-from .loops_helpers import is_loop_using_var
-from .directives.ACCSetDeviceNumDirective import ACCSetDeviceNumDirective
 # psyclone
 from psyclone.psyir.nodes import Node, Routine, Literal
 from psyclone.psyir.symbols import DataSymbol, INTEGER_TYPE, BOOLEAN_TYPE
 from psyclone.psyir.nodes import Call, IntrinsicCall, Node, Loop
 from psyclone.psyir.nodes.acc_directives import ACCLoopDirective
+# internal
+from .loops_helpers import is_loop_using_var
+from .directives.ACCSetDeviceNumDirective import ACCSetDeviceNumDirective
 
 ##########################################################
 def add_missing_device_vars(root_node: Node) -> None:

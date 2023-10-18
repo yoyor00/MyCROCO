@@ -1,14 +1,18 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
 #PSyIR internal representation
-from psyclone.psyir.nodes.array_reference import ArrayReference
-from psyclone.psyir.nodes.loop import Loop
-
+from psyclone.psyir.nodes import Loop, ArrayReference
 # internal
 from . walker import WalkerCallbackInterface
 from ..dsl.kernel import Kernel, KernelList
 from ..base.types import AccessMode
 
+##########################################################
 class KernelExtractor(WalkerCallbackInterface):
     def __init__(self) -> None:
         self.loop_depth = 0

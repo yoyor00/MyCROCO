@@ -1,5 +1,11 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
+# psyclone
 from psyclone.psyir.nodes.reference import Reference
 from psyclone.psyir.nodes.assignment import Assignment
 from psyclone.psyir.nodes.array_reference import ArrayReference
@@ -7,6 +13,7 @@ from psyclone.psyir.nodes.node import Node
 from psyclone.psyir.nodes.loop import Loop
 from psyclone.psyir.nodes.routine import Routine
 
+##########################################################
 def extract_var_ref_list(node: Node, id: int) -> list:
     result = []
     if isinstance(node, ArrayReference):
@@ -25,6 +32,7 @@ def extract_var_ref_list(node: Node, id: int) -> list:
         result += extract_var_ref_list(child, id)
     return result
 
+##########################################################
 def extract_var_ref_list_reduced(node: Node, id: int = 0) -> dict:
     lst = extract_var_ref_list(node, id)
     map = {}
@@ -37,6 +45,7 @@ def extract_var_ref_list_reduced(node: Node, id: int = 0) -> dict:
             map[var_name] = var['mode']
     return map
 
+##########################################################
 def is_using_var(node: Node, name: str) -> bool:
     vars = extract_var_ref_list(node, 0)
     for var in vars:
@@ -44,6 +53,7 @@ def is_using_var(node: Node, name: str) -> bool:
             return True
     return False
 
+##########################################################
 def get_first_loop(node: Node) -> Loop:
     if isinstance(node, Loop):
         return node
@@ -54,6 +64,7 @@ def get_first_loop(node: Node) -> Loop:
                 return res
     return None
 
+##########################################################
 def get_previous(node: Node, type):
     #get previous kernel to get state
     i = node.position - 1
@@ -63,6 +74,7 @@ def get_previous(node: Node, type):
         i -= 1
     return None
 
+##########################################################
 def get_previous_2(node: Node, type):
     #get previous kernel to get state
     precedors = node.parent.walk(type, stop_type=type)

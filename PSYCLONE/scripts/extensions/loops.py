@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -17,16 +17,15 @@ generic intead.
 ##########################################################
 # python
 import os
-# internal
-from .scratch import patch_scratch_3d_arrays, patch_scratch_1d_arrays
-from .loops_helpers import *
 # psyclone
 from psyclone.psyir.nodes import Node, Reference, Loop, Routine, Schedule
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
-from psyclone.nemo import NemoACCEnterDataDirective as \
-                AccEnterDataDir, InlinedKern
+from psyclone.nemo import NemoACCEnterDataDirective as InlinedKern
 from psyclone.psyir.backend.fortran import FortranWriter
+# internal
+from .scratch import patch_scratch_3d_arrays, patch_scratch_1d_arrays
+from .loops_helpers import *
 
 ##########################################################
 ENABLE_SNIPPET_DUMPS=False

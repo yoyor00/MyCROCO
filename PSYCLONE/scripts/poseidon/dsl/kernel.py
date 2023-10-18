@@ -1,31 +1,29 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
-# psyir
+##########################################################
+# python
+import json
+import copy
+# psyclone
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.nodes.loop import Loop
-
-# psyclone
 from psyclone.transformations import ACCEnterDataTrans, ACCParallelTrans, \
                                      ACCLoopTrans, ACCRoutineTrans
-
+from psyclone.psyir.nodes import ACCKernelsDirective, Assignment, Reference, ArrayReference, Routine, Call
+from psyclone.psyir.nodes.schedule import Schedule
 # internals
 from ..base.types import AccessMode
-from ..base.psyir_helpers import is_using_var, get_previous, get_previous_2
+from ..base.psyir_helpers import is_using_var, get_previous_2
 from ..base.render_graph import RenderGraph
 from ..transformations.make_loop_single_assignment import MakeLoopSingleAssignmentTrans
 from ..transformations.make_loop_single_top_level_operand import MakeLoopSingleTopLevelOperandTrans
 from ..transformations.recursive_loop_fusing import RecusiveLoopFusing
 
-# transf
-from psyclone.psyir.nodes import ACCKernelsDirective, Assignment, Reference, ArrayReference, Routine, Call
-from psyclone.psyir.nodes.directive import RegionDirective
-from psyclone.psyir.nodes.schedule import Schedule
-from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
-
-# python
-import json
-import copy
-
+##########################################################
 class PsycloneACCKernelsDirective(ACCKernelsDirective):
     '''
     Class representing the !$ACC KERNELS directive in the PSyIR.
@@ -84,6 +82,7 @@ class PsycloneACCKernelsDirective(ACCKernelsDirective):
 
         return result
 
+##########################################################
 class Kernel:
     nextKernelId = 0
 
@@ -363,6 +362,7 @@ MASKS : {masks}
             'var_stream': copy.deepcopy(var_stream),
         }
 
+##########################################################
 class KernelList:
     def __init__(self):
         self.kernels = []

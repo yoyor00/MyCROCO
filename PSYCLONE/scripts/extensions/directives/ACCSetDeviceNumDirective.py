@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -11,9 +11,11 @@ Implement some new type of ACC nodes to help porting Croco.
 '''
 
 ##########################################################
+# python
+import abc
+# psyclone
 from psyclone.psyir.nodes import ACCDirective, RegionDirective
 from psyclone.f2pygen import DirectiveGen
-import abc
 from psyclone.psyir.nodes import ACCDirective
 
 ##########################################################

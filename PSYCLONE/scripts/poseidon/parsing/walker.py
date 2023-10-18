@@ -1,34 +1,27 @@
-#!/usr/bin/env python3
+##########################################################
+#  CROCO PSYCLONE scripts, under CeCILL-C
+#  From Sébastien Valat (INRIA) - 2023
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
 
+##########################################################
 #PSyIR internal representation
-from psyclone.psyir.nodes.routine import Routine
-from psyclone.psyir.nodes.reference import Reference
-from psyclone.psyir.nodes.assignment import Assignment
-from psyclone.psyir.nodes.array_reference import ArrayReference
-from psyclone.psyir.nodes.loop import Loop
-from psyclone.psyir.nodes.file_container import FileContainer
-from psyclone.psyir.nodes.operation import BinaryOperation
-from psyclone.psyir.nodes.literal import Literal
-from psyclone.psyir.nodes.call import Call
-from psyclone.psyir.nodes.return_stmt import Return
-from psyclone.psyir.nodes.if_block import IfBlock
-from psyclone.psyir.nodes.schedule import Schedule
-from psyclone.psyir.nodes.operation import UnaryOperation
-from psyclone.psyir.nodes.codeblock import CodeBlock
-from psyclone.psyir.nodes.node import Node
+from psyclone.psyir.nodes import Routine, Reference, Assignment, ArrayReference, \
+    FileContainer, BinaryOperation, Literal, Return, IfBlock, Schedule, \
+    UnaryOperation, CodeBlock, Node, Loop, Call
 from psyclone.nemo import NemoKern
 # internal
 from ..base.types import AccessMode
-from ..base.render_graph import RenderGraph
-from ..base.psyir_helpers import extract_var_ref_list
-from ..dsl.kernel import Kernel, KernelList
 
+##########################################################
 class WalkerInterupt(Exception):
     pass
 
+##########################################################
 class WalkerCutRecurse(Exception):
     pass
 
+##########################################################
 class WalkerCallbackInterface:
     def __init__(self) -> None:
         pass
@@ -81,6 +74,7 @@ class WalkerCallbackInterface:
     def on_others(self, node: Node, enter: bool) -> None:
         pass
 
+##########################################################
 class Walker:
     def __init__(self, callback: WalkerCallbackInterface) -> None:
         self.callback = callback

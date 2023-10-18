@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -15,12 +15,10 @@ generic intead.
 '''
 
 ##########################################################
-# internal
-from .directives.ACCSetDeviceNumDirective import ACCSetDeviceNumDirective
 # psyclone
 from psyclone.psyir.nodes import Node, Routine, Literal, Reference, ArrayReference, Loop
-from psyclone.psyir.symbols import DataSymbol, INTEGER_TYPE, BOOLEAN_TYPE
-from psyclone.psyir.nodes import Call, IntrinsicCall, BinaryOperation
+from psyclone.psyir.symbols import DataSymbol, INTEGER_TYPE
+from psyclone.psyir.nodes import Call, BinaryOperation
 from psyclone.psyir.symbols import Symbol, ArrayType, REAL_TYPE, ArgumentInterface
 
 ##########################################################

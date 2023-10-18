@@ -1,5 +1,5 @@
 ##########################################################
-#  CROCO cmake build system, under CeCILL-C
+#  CROCO PSYCLONE scripts, under CeCILL-C
 #  From Sébastien Valat (INRIA) - 2023
 #  CROCO website : http://www.croco-ocean.org
 ##########################################################
@@ -11,11 +11,12 @@ functions.
 '''
 
 ##########################################################
-import pytest
-from ..loops_helpers import *
+# psyclone
 from psyclone.psyir.nodes import Node
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
+# internal
+from scripts.extensions.loops_helpers import *
 
 ##########################################################
 def test_extract_loop_indices_order():
