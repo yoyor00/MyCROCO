@@ -74,15 +74,7 @@ if [[ ! -f ${BENCH_PREFIX}/bin/psyclone ]]; then
 	pushd PSyclone
 	git checkout async-and-merge-master-ok
 	pip install .
-	popd
-fi
-
-###########################################################
-# Clone poseidon
-if [[ ! -f ${BENCH_PREFIX}/bin/poseidon ]]; then
-	git clone git@gitlab.inria.fr:svalat/croco-psyclone.git
-	pushd croco-psyclone/psyclone-poseidon
-	pip install .
+	pip install -r PSYCLONE/requirements.txt
 	popd
 fi
 
