@@ -86,6 +86,11 @@ croco_tune_compile_flags()
 croco_last_checkings()
 
 ###########################################################
+# some croco trick to keep same way to work than with jobcomp
+croco_trick_create_cpp_def_override()
+include_directories(${CMAKE_BINARY_DIR})
+
+###########################################################
 # add subdirs
 add_subdirectory(AGRIF)
 add_subdirectory(OCEAN)
