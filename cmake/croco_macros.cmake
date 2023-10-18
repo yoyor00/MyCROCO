@@ -125,3 +125,22 @@ function(croco_last_checkings)
 		message(FATAL_ERROR "Fail to find PSyClone, required if enabling PSyClone OpenACC via -DWITH_PSYCLONE_VENV !")
 	endif ()
 endfunction()
+
+###########################################################
+# create an empty cppdef.h & cppdef_dev.h in build directory
+# to override (as with jobcomp) the content of the default one
+function(croco_trick_create_cpp_def_override)
+	# set file names
+	set(CPPDEF_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_override.h)
+	set(CPPDEF_DEV_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_dev_override.h)
+
+	# create if needs
+	if (NOT EXISTS ${CPPDEF_OVERRIDE})
+		write_file(${CPPDEF_OVERRIDE} "/* please just override the keys you needs here */")
+	endif ()
+
+	# create if needs
+	if (NOT EXISTS ${CPPDEF_DEV_OVERRIDE})
+		file(COPY_FILE ${CMAKE_SOURCE_DIR}/OCEAN/cppdefs_dev.h ${CPPDEF_DEV_OVERRIDE})
+	endif ()
+endfunction(croco_trick_create_cpp_def_override)

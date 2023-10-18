@@ -1953,11 +1953,16 @@ if remove all "undef OPENMP/OPENACC/MPI" in case definition
 on top of this line.
 */
 #ifdef HAVE_CMAKE_CONFIG
+#include "cppdefs_override.h"
 #include "config_post.h"
 #endif
 
 /* Note: should come after config_post.h */
+#ifdef HAVE_CMAKE_CONFIG
+#include "cppdefs_dev_override.h"
+#else /*HAVE_CMAKE_CONFIG*/
 #include "cppdefs_dev.h"
+#endif /*HAVE_CMAKE_CONFIG*/
 
 #include "set_global_definitions.h"
 
