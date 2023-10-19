@@ -1,16 +1,16 @@
 {
     ///////////////////////////// TUNING ///////////////////////////////////////
     "build_tuning": {
-        "default": {
-            "gcc": "-march=native",
+        "@default": {
+            "gnu": "-march=native",
             "nvfortran": "-tp=native"
         },
         "bigfoot" : {
-            "gcc": "-march=znver2",
+            "gnu": "-march=znver2",
             "nvfortran": "-tp=zen"
         },
         "bigfoot7" : {
-            "gcc": "-march=native",
+            "gnu": "-march=native",
             "nvfortran": "-tp=native"
         }
     },
@@ -31,6 +31,15 @@
             "mpi-8",
             "openacc-native",
             "openacc-psyclone"
+        ],
+        "@wip-cpu": [
+            "sequential",
+            "openmp-2",
+            "openmp-4",
+            "openmp-8",
+            "mpi-2",
+            "mpi-4",
+            "mpi-8"
         ]
     },
     ////////////////////////////// VARIANTS ////////////////////////////////////
@@ -38,61 +47,70 @@
         // seq default
         "sequential": {
             "configure": "",
+            "tuning_familly": "gnu",
             "environ": [],
             "command_prefix": ""
         },
         // openmp
         "openmp-2": {
-            "configure": "--with-parallel=openmp --with-splitting=1x2",
+            "configure": "--with-parallel=openmp --with-threads=2",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 2
             },
             "command_prefix": ""
         },
         "openmp-4": {
-            "configure": "--with-parallel=openmp --with-splitting=1x4",
+            "configure": "--with-parallel=openmp --with-threads=4",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 4
             },
             "command_prefix": ""
         },
         "openmp-6": {
-            "configure": "--with-parallel=openmp --with-splitting=1x6",
+            "configure": "--with-parallel=openmp --with-threads=6",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 6
             },
             "command_prefix": ""
         },
         "openmp-8": {
-            "configure": "--with-parallel=openmp --with-splitting=1x8",
+            "configure": "--with-parallel=openmp --with-threads=8",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 8
             },
             "command_prefix": ""
         },
         "openmp-12": {
-            "configure": "--with-parallel=openmp --with-splitting=1x12",
+            "configure": "--with-parallel=openmp --with-threads=12",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 12
             },
             "command_prefix": ""
         },
         "openmp-16": {
-            "configure": "--with-parallel=openmp --with-splitting=1x16",
+            "configure": "--with-parallel=openmp --with-threads=16",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 16
             },
             "command_prefix": ""
         },
         "openmp-32": {
-            "configure": "--with-parallel=openmp --with-splitting=1x32",
+            "configure": "--with-parallel=openmp --with-threads=32",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 32
             },
             "command_prefix": ""
         },
         "openmp-64": {
-            "configure": "--with-parallel=openmp --with-splitting=1x64",
+            "configure": "--with-parallel=openmp --with-threads=64",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 64
             },
@@ -101,6 +119,7 @@
         // mpi
         "mpi-2": {
             "configure": "--with-parallel=mpi --with-splitting={case.mpi.2.splitting} FC=mpifort",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 1
             },
@@ -108,6 +127,7 @@
         },
         "mpi-4": {
             "configure": "--with-parallel=mpi --with-splitting={case.mpi.4.splitting} FC=mpifort",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 1
             },
@@ -115,6 +135,7 @@
         },
         "mpi-6": {
             "configure": "--with-parallel=mpi --with-splitting={case.mpi.6.splitting} FC=mpifort",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 1
             },
@@ -122,6 +143,7 @@
         },
         "mpi-8": {
             "configure": "--with-parallel=mpi --with-splitting={case.mpi.8.splitting} FC=mpifort",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 1
             },
@@ -129,6 +151,7 @@
         },
         "mpi-12": {
             "configure": "--with-parallel=mpi --with-splitting={case.mpi.12.splitting} FC=mpifort",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 1
             },
@@ -136,6 +159,7 @@
         },
         "mpi-16": {
             "configure": "--with-parallel=mpi --with-splitting={case.mpi.16.splitting} FC=mpifort",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 1
             },
@@ -143,6 +167,7 @@
         },
         "mpi-32": {
             "configure": "--with-parallel=mpi --with-splitting={case.mpi.32.splitting} FC=mpifort",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 1
             },
@@ -150,6 +175,7 @@
         },
         "mpi-64": {
             "configure": "--with-parallel=mpi --with-splitting={case.mpi.64.splitting} FC=mpifort",
+            "tuning_familly": "gnu",
             "environ": {
                 "OMP_NUM_THREADS": 1
             },
@@ -157,11 +183,13 @@
         },
         "openacc-native": {
             "configure": "--with-parallel=openacc-native FC=nvfortran",
+            "tuning_familly": "nvfortran",
             "environ": {},
             "command_prefix": ""
         },
         "openacc-psyclone": {
             "configure": "--with-parallel=openacc-psyclone FC=nvfortran",
+            "tuning_familly": "nvfortran",
             "environ": {},
             "command_prefix": ""
         }

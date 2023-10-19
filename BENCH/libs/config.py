@@ -8,6 +8,7 @@
 import os
 import json5
 import argparse
+import platform
 
 ##########################################################
 class Config:
@@ -79,3 +80,11 @@ class Config:
             else:
                 final_variants.append(variant)
         self.variant_names = final_variants
+        
+        # select tunning
+        hostname = platform.node()
+        tunings = self.config['build_tuning']
+        if hostname in tunings:
+            self.tunning = tunings[hostname]
+        else:
+            self.tunning = tunings['@default']

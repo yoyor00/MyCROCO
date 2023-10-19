@@ -52,4 +52,4 @@ class Benchmarking:
 
     def run(self):
         for instance in self.instances:
-            instance.run()
+            instance.build()
