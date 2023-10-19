@@ -21,7 +21,8 @@ import os
 from psyclone.psyir.nodes import Node, Reference, Loop, Routine, Schedule
 from psyclone.psyir.transformations.loop_fuse_trans import LoopFuseTrans
 from psyclone.psyir.transformations.loop_swap_trans import LoopSwapTrans
-from psyclone.nemo import NemoACCEnterDataDirective as InlinedKern
+from psyclone.nemo import NemoACCEnterDataDirective as \
+                AccEnterDataDir, InlinedKern
 from psyclone.psyir.backend.fortran import FortranWriter
 # internal
 from .scratch import patch_scratch_3d_arrays, patch_scratch_1d_arrays
