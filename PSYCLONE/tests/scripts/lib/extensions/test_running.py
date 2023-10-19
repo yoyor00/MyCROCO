@@ -18,12 +18,12 @@ import tempfile
 # Psyclone
 from psyclone.psyir.nodes import Node, Loop, Routine
 # internal
-from scripts.extensions import acc
-from scripts.extensions.loops import get_first_loop_on, handle_kji_loop, handle_jki_loop, handle_jik_loop
+from scripts.lib.extensions import acc
+from scripts.lib.extensions.loops import get_first_loop_on, handle_kji_loop, handle_jki_loop, handle_jik_loop
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 # internal poseidon
-from scripts.poseidon.dsl.helper import extract_kernels_from_psyir
+from scripts.lib.poseidon.dsl.helper import extract_kernels_from_psyir
 # local test dir
 from .test_loops import helper_load_snippet, helper_gen_var_decl
 

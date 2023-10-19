@@ -16,7 +16,7 @@ from psyclone.psyir.nodes import Node
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 # internal
-from scripts.extensions.loops_helpers import *
+from scripts.lib.extensions.loops_helpers import *
 
 ##########################################################
 def test_extract_loop_indices_order():

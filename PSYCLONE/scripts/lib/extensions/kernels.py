@@ -22,7 +22,7 @@ from psyclone.transformations import ACCLoopTrans, TransformationError, ACCEnter
 from psyclone.nemo import NemoACCEnterDataDirective as \
                 AccEnterDataDir
 # internal poseidon
-from scripts.poseidon.dsl.helper import KernelList, extract_kernels_from_psyir
+from ..poseidon.dsl.helper import KernelList, extract_kernels_from_psyir
 
 ##########################################################
 def apply_acc_fetch_vars(psy) -> None:

@@ -7,6 +7,8 @@
 ##########################################################
 # psyclone
 from psyclone.psyir.frontend.fortran import FortranReader
+# internal
+from scripts.lib.poseidon.base import psyir_helpers
 
 CODE='''
 subroutine test(cff1, cff2, cff3, vrhs, vbar, dvom, drhs, om_v)

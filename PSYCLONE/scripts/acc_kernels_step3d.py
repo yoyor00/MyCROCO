@@ -26,12 +26,12 @@ VARS_3D = ['fx', 'fe', 'work', 'work2']
 
 ##########################################################
 # internal
-from extensions import acc
-from extensions import kernels
-from extensions import scratch
-from extensions import loops
+from lib.extensions import acc
+from lib.extensions import kernels
+from lib.extensions import scratch
+from lib.extensions import loops
 # poseidon
-from poseidon.dsl.helper import *
+from lib.poseidon.dsl.helper import *
 # psyclone
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes import Loop, Routine

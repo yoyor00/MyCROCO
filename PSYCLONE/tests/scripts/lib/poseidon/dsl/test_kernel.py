@@ -6,8 +6,8 @@
 
 ##########################################################
 # internal
-from scripts.poseidon.dsl.helper import *
-from scripts.poseidon.dsl.kernel_pre_scheduler import KernelPreScheduler
+from scripts.lib.poseidon.dsl.helper import *
+from scripts.lib.poseidon.dsl.kernel_pre_scheduler import KernelPreScheduler
 
 ##########################################################
 CODE='''

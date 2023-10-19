@@ -11,7 +11,7 @@ import pytest
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.psyir.backend.fortran import FortranWriter
 # internal
-from scripts.poseidon.transformations.make_loop_single_top_level_operand import MakeLoopSingleTopLevelOperandTrans, Loop, TransformationError
+from scripts.lib.poseidon.transformations.recursive_loop_fusing import RecusiveLoopFusing, Loop, TransformationError
 
 ##########################################################
 CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
@@ -26,6 +26,31 @@ CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   do j = 0, 20, 1
     do i = 0, 10, 1
       vrhs(i,j) = cff1
+    enddo
+  enddo
+  do j = 0, 20, 1
+    do i = 0, 10, 1
+      vrhs(i,j) = cff2
+    enddo
+  enddo
+
+end subroutine test
+'''
+
+##########################################################
+EXPECT_CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
+  real, dimension(0:10,0:20) :: vrhs
+  real, dimension(0:10,0:20) :: vbar
+  real :: cff1
+  real :: cff2
+  real :: cff3
+  integer*4 :: i
+  integer*4 :: j
+
+  do j = 0, 20, 1
+    do i = 0, 10, 1
+      vrhs(i,j) = cff1
+      vrhs(i,j) = cff2
     enddo
   enddo
 
@@ -44,7 +69,17 @@ CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 
   do j = 0, 20, 1
     do i = 0, 10, 1
-      vrhs(i,j) = cff1 * vbar(i,j) + cff2 * vbar(i,j) + cff3 * vbar(i,j)
+      vrhs(i,j) = cff1
+    enddo
+  enddo
+  do j = 0, 20, 1
+    do i = 0, 10, 1
+      vrhs(i,j) = cff2
+    enddo
+  enddo
+  do j = 0, 20, 1
+    do i = 0, 10, 1
+      vrhs(i,j) = cff3
     enddo
   enddo
 
@@ -63,9 +98,9 @@ EXPECT_CODE_2='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 
   do j = 0, 20, 1
     do i = 0, 10, 1
-      vrhs(i,j) = cff1 * vbar(i,j)
-      vrhs(i,j) = vrhs(i,j) + cff2 * vbar(i,j)
-      vrhs(i,j) = vrhs(i,j) + cff3 * vbar(i,j)
+      vrhs(i,j) = cff1
+      vrhs(i,j) = cff2
+      vrhs(i,j) = cff3
     enddo
   enddo
 
@@ -84,7 +119,12 @@ CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 
   do j = 0, 20, 1
     do i = 0, 10, 1
-      vrhs(i,j) = cff1 * vbar(i,j) + cff2 * vbar(i,j) - cff3 * vbar(i,j)
+      vrhs(i,j) = cff1
+    enddo
+  enddo
+  do j = 0, 20, 1
+    do i = 5, 10, 1
+      vrhs(i,j) = cff2
     enddo
   enddo
 
@@ -92,7 +132,7 @@ end subroutine test
 '''
 
 ##########################################################
-EXPECT_CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
+EXPECTED_CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   real, dimension(0:10,0:20) :: vrhs
   real, dimension(0:10,0:20) :: vbar
   real :: cff1
@@ -103,9 +143,10 @@ EXPECT_CODE_3='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 
   do j = 0, 20, 1
     do i = 0, 10, 1
-      vrhs(i,j) = cff1 * vbar(i,j)
-      vrhs(i,j) = vrhs(i,j) + cff2 * vbar(i,j)
-      vrhs(i,j) = vrhs(i,j) - cff3 * vbar(i,j)
+      vrhs(i,j) = cff1
+    enddo
+    do i = 5, 10, 1
+      vrhs(i,j) = cff2
     enddo
   enddo
 
@@ -122,33 +163,14 @@ CODE_4='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
   integer*4 :: i
   integer*4 :: j
 
-  do j = 0, 20, 1
-    do i = 0, 10, 1
-      vrhs(i,j) = cff1 * vbar(i,j) * cff2 * vbar(i,j) * cff3 * vbar(i,j)
-    enddo
-  enddo
-
-end subroutine test
-'''
-
-##########################################################
-EXPECT_CODE_4='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
-  real, dimension(0:10,0:20) :: vrhs
-  real, dimension(0:10,0:20) :: vbar
-  real :: cff1
-  real :: cff2
-  real :: cff3
-  integer*4 :: i
-  integer*4 :: j
-
-  do j = 0, 20, 1
+  do j = 10, 20, 1
     do i = 0, 10, 1
       vrhs(i,j) = cff1
-      vrhs(i,j) = vrhs(i,j) * vbar(i,j)
-      vrhs(i,j) = vrhs(i,j) * cff2
-      vrhs(i,j) = vrhs(i,j) * vbar(i,j)
-      vrhs(i,j) = vrhs(i,j) * cff3
-      vrhs(i,j) = vrhs(i,j) * vbar(i,j)
+    enddo
+  enddo
+  do j = 0, 20, 1
+    do i = 5, 10, 1
+      vrhs(i,j) = cff2
     enddo
   enddo
 
@@ -167,7 +189,13 @@ CODE_5='''subroutine test(cff1, cff2, cff3, vrhs, vbar)
 
   do j = 0, 20, 1
     do i = 0, 10, 1
-      cff1 = cff1 * vbar(i,j) + cff2 * vbar(i,j) + cff3 * vbar(i,j)
+      vrhs(i,j) = cff1
+    enddo
+  enddo
+  cff3 = 5
+  do j = 0, 20, 1
+    do i = 5, 10, 1
+      vrhs(i,j) = cff2
     enddo
   enddo
 
@@ -181,7 +209,7 @@ def parse_apply_regen(code, trans):
     psyir_tree = reader.psyir_from_source(code, free_form=True)
 
     # make trans
-    top_loop = psyir_tree.walk(Loop)[0]
+    top_loop = psyir_tree.walk(Loop, stop_type=Loop)
     trans.apply(top_loop)
 
     # write again
@@ -192,35 +220,33 @@ def parse_apply_regen(code, trans):
     return final
 
 ##########################################################
-def test_loop_single_op():
-    '''If we apply on a loop with single line, should be not changed'''
+def test_loop_fuse_basic():
+    '''See if merge simple case'''
     # do
-    with pytest.raises(TransformationError) as error:
-        assert parse_apply_regen(CODE_1, MakeLoopSingleTopLevelOperandTrans()) == CODE_1
-    #assert "not contain binary operation" in str(error)
+    assert parse_apply_regen(CODE_1, RecusiveLoopFusing()) == EXPECT_CODE_1
 
 ##########################################################
-def test_loop_split_add():
-    '''Shoud effectively split add ops'''
+def test_loop_fuse_basic_2():
+    '''See if merge simple case'''
     # do
-    assert parse_apply_regen(CODE_2, MakeLoopSingleTopLevelOperandTrans()) == EXPECT_CODE_2
+    assert parse_apply_regen(CODE_2, RecusiveLoopFusing()) == EXPECT_CODE_2
 
 ##########################################################
-def test_loop_split_add_sub():
-    '''Shoud effectively split add/sub ops'''
+def test_loop_fuse_partial_failure_1():
+    '''See if merge simple case'''
     # do
-    assert parse_apply_regen(CODE_3, MakeLoopSingleTopLevelOperandTrans()) == EXPECT_CODE_3
+    assert parse_apply_regen(CODE_3, RecusiveLoopFusing()) == EXPECTED_CODE_3
 
 ##########################################################
-def test_loop_split_full_mul():
-    '''Shoud effectively split add/sub ops'''
+def test_loop_fuse_failure_3():
+    '''See if merge simple case'''
     # do
-    assert parse_apply_regen(CODE_4, MakeLoopSingleTopLevelOperandTrans()) == EXPECT_CODE_4
+    with pytest.raises(TransformationError):
+        assert parse_apply_regen(CODE_4, RecusiveLoopFusing()) == CODE_4
 
 ##########################################################
-def test_loop_not_split_scalar():
-    '''If we apply on a loop with single line, should be not changed'''
+def test_loop_fuse_failure_4():
+    '''See if merge simple case'''
     # do
-    with pytest.raises(TransformationError) as error:
-        assert parse_apply_regen(CODE_5, MakeLoopSingleTopLevelOperandTrans()) == CODE_5
-    #assert "not contain binary operation" in str(error)
+    with pytest.raises(TransformationError):
+        assert parse_apply_regen(CODE_5, RecusiveLoopFusing()) == CODE_5

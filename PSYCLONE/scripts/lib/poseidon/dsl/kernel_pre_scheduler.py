@@ -8,8 +8,8 @@
 # python
 from copy import deepcopy
 # internal
-from scripts.poseidon.dsl.helper import *
-from scripts.poseidon.base.render_graph import RenderGraph
+from ..dsl.helper import *
+from ..base.render_graph import RenderGraph
 # psyclone
 from psyclone.psyir.nodes import Node
 from psyclone.psyir.backend.fortran import FortranWriter

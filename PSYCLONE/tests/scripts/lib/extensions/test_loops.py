@@ -17,7 +17,7 @@ import pytest
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 # internal
-from scripts.extensions.loops import *
+from scripts.lib.extensions.loops import *
 
 ##########################################################
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
