@@ -11,7 +11,7 @@ import pytest
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.psyir.backend.fortran import FortranWriter
 # internal
-from scripts.poseidon.transformations.make_loop_single_assignment import MakeLoopSingleAssignmentTrans, Loop, TransformationError
+from scripts.lib.poseidon.transformations.make_loop_single_assignment import MakeLoopSingleAssignmentTrans, Loop, TransformationError
 
 ##########################################################
 CODE_1='''subroutine test(cff1, cff2, cff3, vrhs, vbar)

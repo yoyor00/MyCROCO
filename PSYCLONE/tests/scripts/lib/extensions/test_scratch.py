@@ -14,7 +14,7 @@ Implement some basic unit test check check the transformation device helper func
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 # internal
-from scripts.extensions.scratch import *
+from scripts.lib.extensions.scratch import *
 
 ##########################################################
 def test_add_1d_scratch_var():

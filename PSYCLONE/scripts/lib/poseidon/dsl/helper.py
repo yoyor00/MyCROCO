@@ -11,10 +11,10 @@ import json
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.psyir.nodes import Call
 # internal
-from scripts.poseidon.dsl.kernel import Kernel, KernelList, Loop, Routine
-from scripts.poseidon.base.psyir_helpers import get_first_loop, get_previous
-from scripts.poseidon.parsing.walker import Walker
-from scripts.poseidon.parsing.kernel_extractor import KernelExtractor
+from ..dsl.kernel import Kernel, KernelList, Loop, Routine
+from ..base.psyir_helpers import get_first_loop, get_previous
+from ..parsing.walker import Walker
+from ..parsing.kernel_extractor import KernelExtractor
 
 ##########################################################
 def get_psyir_from_code(code: str, free_form=False):

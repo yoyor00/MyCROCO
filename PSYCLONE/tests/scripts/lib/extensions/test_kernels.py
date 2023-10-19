@@ -13,10 +13,10 @@ Implement some basic unit test check check the transformation device helper func
 # python
 from tempfile import NamedTemporaryFile
 # internal
-from scripts.extensions.kernels import KernelList, apply_acc_fetch_vars, \
+from scripts.lib.extensions.kernels import KernelList, apply_acc_fetch_vars, \
   apply_acc_kernel, apply_acc_loop_and_collapse
 # internal poseidon
-from scripts.poseidon.dsl.helper import extract_kernels_from_psyir
+from scripts.lib.poseidon.dsl.helper import extract_kernels_from_psyir
 # psyclone
 from psyclone.configuration import Config
 from psyclone.psyir.nodes import Routine, Loop

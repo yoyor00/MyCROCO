@@ -8,8 +8,8 @@
 # python
 import os
 # internal
-from scripts.poseidon.base.render_graph import RenderGraph
-from scripts.poseidon.base.types import AccessMode
+from scripts.lib.poseidon.base.render_graph import RenderGraph
+from scripts.lib.poseidon.base.types import AccessMode
 
 ##########################################################
 GRAPH_1='''graph CROCO

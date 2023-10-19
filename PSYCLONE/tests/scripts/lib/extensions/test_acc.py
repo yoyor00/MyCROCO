@@ -15,7 +15,7 @@ from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.transformations import ACCParallelTrans
 # internal
-from scripts.extensions.acc import *
+from scripts.lib.extensions.acc import *
 
 ##########################################################
 def test_add_missing_device_vars_step3d():
