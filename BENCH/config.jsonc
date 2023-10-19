@@ -1,0 +1,251 @@
+{
+    ///////////////////////////// TUNING ///////////////////////////////////////
+    "build_tuning": {
+        "default": {
+            "gcc": "-march=native",
+            "nvfortran": "-tp=native"
+        },
+        "bigfoot" : {
+            "gcc": "-march=znver2",
+            "nvfortran": "-tp=zen"
+        },
+        "bigfoot7" : {
+            "gcc": "-march=native",
+            "nvfortran": "-tp=native"
+        }
+    },
+    ////////////////////////////// DEFAULT SELECTION ///////////////////////////
+    "default_selection": {
+        "cases": ["BASIN", "BASIN-LARGE"],
+        "variants" : ["@wip-all"]
+    },
+    ////////////////////////////// PRE-SELECTIONS //////////////////////////////
+    "meta_variants": {
+        "@wip-all": [
+            "sequential",
+            "openmp-2",
+            "openmp-4",
+            "openmp-8",
+            "mpi-2",
+            "mpi-4",
+            "mpi-8",
+            "openacc-native",
+            "openacc-psyclone"
+        ]
+    },
+    ////////////////////////////// VARIANTS ////////////////////////////////////
+    "variants": {
+        // seq default
+        "sequential": {
+            "configure": "",
+            "environ": [],
+            "command_prefix": ""
+        },
+        // openmp
+        "openmp-2": {
+            "configure": "--with-parallel=openmp --with-splitting=1x2",
+            "environ": {
+                "OMP_NUM_THREADS": 2
+            },
+            "command_prefix": ""
+        },
+        "openmp-4": {
+            "configure": "--with-parallel=openmp --with-splitting=1x4",
+            "environ": {
+                "OMP_NUM_THREADS": 4
+            },
+            "command_prefix": ""
+        },
+        "openmp-6": {
+            "configure": "--with-parallel=openmp --with-splitting=1x6",
+            "environ": {
+                "OMP_NUM_THREADS": 6
+            },
+            "command_prefix": ""
+        },
+        "openmp-8": {
+            "configure": "--with-parallel=openmp --with-splitting=1x8",
+            "environ": {
+                "OMP_NUM_THREADS": 8
+            },
+            "command_prefix": ""
+        },
+        "openmp-12": {
+            "configure": "--with-parallel=openmp --with-splitting=1x12",
+            "environ": {
+                "OMP_NUM_THREADS": 12
+            },
+            "command_prefix": ""
+        },
+        "openmp-16": {
+            "configure": "--with-parallel=openmp --with-splitting=1x16",
+            "environ": {
+                "OMP_NUM_THREADS": 16
+            },
+            "command_prefix": ""
+        },
+        "openmp-32": {
+            "configure": "--with-parallel=openmp --with-splitting=1x32",
+            "environ": {
+                "OMP_NUM_THREADS": 32
+            },
+            "command_prefix": ""
+        },
+        "openmp-64": {
+            "configure": "--with-parallel=openmp --with-splitting=1x64",
+            "environ": {
+                "OMP_NUM_THREADS": 64
+            },
+            "command_prefix": ""
+        },
+        // mpi
+        "mpi-2": {
+            "configure": "--with-parallel=mpi --with-splitting={case.mpi.2.splitting} FC=mpifort",
+            "environ": {
+                "OMP_NUM_THREADS": 1
+            },
+            "command_prefix": "mpirun -np 2"
+        },
+        "mpi-4": {
+            "configure": "--with-parallel=mpi --with-splitting={case.mpi.4.splitting} FC=mpifort",
+            "environ": {
+                "OMP_NUM_THREADS": 1
+            },
+            "command_prefix": "mpirun -np 4"
+        },
+        "mpi-6": {
+            "configure": "--with-parallel=mpi --with-splitting={case.mpi.6.splitting} FC=mpifort",
+            "environ": {
+                "OMP_NUM_THREADS": 1
+            },
+            "command_prefix": "mpirun -np 6"
+        },
+        "mpi-8": {
+            "configure": "--with-parallel=mpi --with-splitting={case.mpi.8.splitting} FC=mpifort",
+            "environ": {
+                "OMP_NUM_THREADS": 1
+            },
+            "command_prefix": "mpirun -np 8"
+        },
+        "mpi-12": {
+            "configure": "--with-parallel=mpi --with-splitting={case.mpi.12.splitting} FC=mpifort",
+            "environ": {
+                "OMP_NUM_THREADS": 1
+            },
+            "command_prefix": "mpirun -np 12"
+        },
+        "mpi-16": {
+            "configure": "--with-parallel=mpi --with-splitting={case.mpi.16.splitting} FC=mpifort",
+            "environ": {
+                "OMP_NUM_THREADS": 1
+            },
+            "command_prefix": "mpirun -np 16"
+        },
+        "mpi-32": {
+            "configure": "--with-parallel=mpi --with-splitting={case.mpi.32.splitting} FC=mpifort",
+            "environ": {
+                "OMP_NUM_THREADS": 1
+            },
+            "command_prefix": "mpirun -np 32"
+        },
+        "mpi-64": {
+            "configure": "--with-parallel=mpi --with-splitting={case.mpi.64.splitting} FC=mpifort",
+            "environ": {
+                "OMP_NUM_THREADS": 1
+            },
+            "command_prefix": "mpirun -np 64"
+        },
+        "openacc-native": {
+            "configure": "--with-parallel=openacc-native FC=nvfortran",
+            "environ": {},
+            "command_prefix": ""
+        },
+        "openacc-psyclone": {
+            "configure": "--with-parallel=openacc-psyclone FC=nvfortran",
+            "environ": {},
+            "command_prefix": ""
+        }
+    },
+    ////////////////////////////// CASES ///////////////////////////////////////
+    "cases": {
+        // Default BASIN case
+        "BASIN": {
+            "title": "BASIN (60 x 50 x 10)",
+            "case": "BASIN",
+            "steps": 200,
+            "mpi": {
+                "1":  {"splitting": "1x1",  "mpirun":""},
+                "2":  {"splitting": "1x2",  "mpirun":""},
+                "4":  {"splitting": "1x4",  "mpirun":""},
+                "6":  {"splitting": "1x6",  "mpirun":""},
+                "8":  {"splitting": "2x4",  "mpirun":""},
+                "12": {"splitting": "2x6",  "mpirun":"--use-hwthread-cpus"},
+                "16": {"splitting": "1x16", "mpirun":""},
+                "32": {"splitting": "1x32", "mpirun":""},
+                "64": {"splitting": "1x64", "mpirun":"--use-hwthread-cpus"}
+            }
+        },
+        // BASIN a bit larger
+        "BASIN-LARGE": {
+            "title": "BASIN - LARGE - (200 x 200 x 50)",
+            "case": "BASIN",
+            "steps": 100,
+            "mpi": {
+                "1":  {"splitting": "1x1",  "mpirun":""},
+                "2":  {"splitting": "1x2",  "mpirun":""},
+                "4":  {"splitting": "1x4",  "mpirun":""},
+                "6":  {"splitting": "1x6",  "mpirun":""},
+                "8":  {"splitting": "2x4",  "mpirun":""},
+                "12": {"splitting": "2x6",  "mpirun":"--use-hwthread-cpus"},
+                "16": {"splitting": "1x16", "mpirun":""},
+                "32": {"splitting": "1x32", "mpirun":""},
+                "64": {"splitting": "1x64", "mpirun":"--use-hwthread-cpus"}
+            },
+            "patch": {
+                // Change the size of the mesh
+                "TEST_CASES/croco.in.Basin": {
+                    "next_to": "#if defined BASIN",
+                    "before":  "     parameter (LLm0=60,   MMm0=50,   N=10)",
+                    "after":   "     parameter (LLm0=200,  MMm0=200,  N=50)"
+                },
+                // Reduce the dt
+                "param.h": {
+                    "next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+                    "before":  "                3240     9600     65      1",
+                    "after":   "                3240     2400     65      1"
+                }
+            }
+        },
+        // BASIN a bit huger
+        "BASIN-HUGE": {
+            "title": "BASIN - HUGE - (400 x 400 x 100)",
+            "case": "BASIN",
+            "steps": 100,
+            "mpi": {
+                "1":  {"splitting": "1x1",  "mpirun":""},
+                "2":  {"splitting": "1x2",  "mpirun":""},
+                "4":  {"splitting": "1x4",  "mpirun":""},
+                "6":  {"splitting": "1x6",  "mpirun":""},
+                "8":  {"splitting": "2x4",  "mpirun":""},
+                "12": {"splitting": "2x6",  "mpirun":"--use-hwthread-cpus"},
+                "16": {"splitting": "1x16", "mpirun":""},
+                "32": {"splitting": "1x32", "mpirun":""},
+                "64": {"splitting": "1x64", "mpirun":"--use-hwthread-cpus"}
+            },
+            "patch": {
+                // Change the size of the mesh
+                "TEST_CASES/croco.in.Basin": {
+                    "next_to": "#if defined BASIN",
+                    "before":  "     parameter (LLm0=60,   MMm0=50,   N=10)",
+                    "after":   "     parameter (LLm0=400,  MMm0=400,  N=100)"
+                },
+                // Reduce the dt
+                "param.h": {
+                    "next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+                    "before":  "                3240     9600     65      1",
+                    "after":   "                3240     1200     65      1"
+                }
+            }
+        }
+    }
+}
