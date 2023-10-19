@@ -1,7 +1,9 @@
 ###### Requirements without Version Specifiers ######
 
 ###### Requirements with Version Specifiers ######
-deepdiff ~= 4.1.0
+deepdiff == 6.6.1
+# CAUTION: I currently use a patched one, not the official one, but based on that version
+psyclone == 2.3.1
 
 ###### Requirements to run tests ######
 pytest
