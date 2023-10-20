@@ -40,7 +40,15 @@ set(CROCO_MPC        $<TARGET_FILE:mpc>)
 set(CROCO_AGRIF_CONV $<TARGET_FILE:conv>)
 
 ###########################################################
-file(GLOB CROCO_CPP_H *.h *.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h ${CMAKE_CURRENT_BINARY_DIR}/config_post.h)
+file(GLOB CROCO_CPP_H
+    *.h
+    *.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/config.h
+    ${CMAKE_CURRENT_BINARY_DIR}/config_post.h
+    ${CPPDEF_OVERRIDE}
+    ${CPPDEF_DEV_OVERRIDE}
+    ${PARAM_H_OVERRIDE}
+)
 
 ###########################################################
 # List files
