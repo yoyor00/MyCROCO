@@ -16,13 +16,17 @@ class Benchmarking:
         # set
         self.config = config
 
+        # init
+        Messaging.section("Benchmark initialization")
+        Messaging.step(f"Results  = {self.config.results}")
+        Messaging.step(f"Cases    = {self.config.case_names}")
+        Messaging.step(f"Variants = {self.config.variant_names}")
+
         # create work dir
-        if not os.path.exists(config.workdir):
-            os.mkdir(config.workdir)
+        os.makedirs(config.workdir, exist_ok=True)
 
         # create result dir
-        if not os.path.exists(config.results):
-            os.mkdir(config.results)
+        os.makedirs(config.results, exist_ok=True)
 
         # make sequential first as we use as reference to validate the data produced
         self.make_sequential_first()
@@ -35,8 +39,8 @@ class Benchmarking:
         Make sequential first as we use as reference to validate the data produced
         '''
         if 'sequential' in self.config.case_names:
-            self.config.case_names.removes('sequential')
-            self.config.case_names.insert(0, 'sequential')
+            self.config.variant_names.remove('sequential')
+            self.config.variant_names.insert(0, 'sequential')
 
     def create_croco_instances(self) -> [Croco]:
         # res
@@ -51,5 +55,10 @@ class Benchmarking:
         return res
 
     def run(self):
-        for instance in self.instances:
-            instance.build()
+        cnt = len(self.instances)
+        # build
+        for id, instance in enumerate(self.instances):
+            instance.build(extra_info=f" - [ {id + 1} / {cnt} ]")
+        # run
+        for id, instance in enumerate(self.instances):
+            instance.run(extra_info=f" - [ {id + 1} / {cnt} ]")
