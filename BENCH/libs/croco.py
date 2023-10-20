@@ -45,7 +45,7 @@ class Croco:
         dirname = self.dirname
         case_cpp_key = self.case['case']
         tuning_familly = self.variant['tuning_familly']
-        tuning_flags = self.config.tunning[tuning_familly]
+        tuning_flags = self.config.host['tuning'][tuning_familly]
         verbose = self.config.verbose
 
         # create dir
@@ -62,7 +62,7 @@ class Croco:
 
         # build command
         command = f"{croco_source_dir}/configure {configure_compiler_option} {configure_case_option} {configure_variant_options}"
-        command = apply_vars_in_str(command, {'case': self.case, 'tuning': self.config.tunning})
+        command = apply_vars_in_str(command, {'case': self.case, 'tuning': self.config.host['tuning']})
 
         # jump in & configure
         with move_in_dir(dirname):
@@ -106,6 +106,9 @@ class Croco:
         dirname = self.dirname
         runs = self.config.runs
         results = self.config.results
+
+        # apply vars
+        command_prefix = apply_vars_in_str(command_prefix, {'case': self.case, 'tuning': self.config.host['tuning']})
 
         # build end
         env_line = ""
