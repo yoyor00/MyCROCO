@@ -8,7 +8,25 @@
 !
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
-!
+
+/*
+This is a trick currently for cmake (not changing jobcom & source oragnization)
+With cmake we read the BUILD_DIR/param_override.h.
+
+Remark: we can solve the inclusion issue in a cleaner we by renaming
+        OCEAN/param.h -> OCEAN/param_default.h so we can keep name param.h in
+        BUILD_DIR.
+        Compatibility is kept for jobcomp if we patch create_config.bash to
+        renamed the copied one as param.h so it does not change anything for the
+        users.
+        But I was not sure yet if people where happy of the rename in the sources.
+Note: I don't like this way of making the trick (the one currently implemented).
+*/
+#if defined(HAVE_CMAKE_CONFIG) && !defined(CMAKE_PARAM_OVERRIDE_NOT_RECURSE)
+#define CMAKE_PARAM_OVERRIDE_NOT_RECURSE
+#include "param_override.h"
+#undef CMAKE_PARAM_OVERRIDE_NOT_RECURSE
+#else /* HAVE_CMAKE_CONFIG */
 !----------------------------------------------------------------------
 ! Dimensions of Physical Grid and array dimensions
 !----------------------------------------------------------------------
@@ -1022,3 +1040,5 @@
       integer inc_faststep_max
       parameter(inc_faststep_max = 10)
 #endif
+
+#endif /* HAVE_CMAKE_CONFIG */
