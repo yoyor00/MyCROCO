@@ -129,10 +129,19 @@ endfunction()
 ###########################################################
 # create an empty cppdef.h & cppdef_dev.h in build directory
 # to override (as with jobcomp) the content of the default one
+#
+# Todo
+# ----
+# If we fully move to cmake we can keep the current user way by using cppdef.h
+# instead of cppdef_override.h but it requires to rename the orginal file in
+# OCEAN source dir (which break jobcomp). Can also patch jobcomp to get both.
 function(croco_trick_create_cpp_def_override)
 	# set file names
 	set(CPPDEF_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_override.h)
 	set(CPPDEF_DEV_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_dev_override.h)
+
+	# give access to them via -I
+	include_directories(${CMAKE_BINARY_DIR})
 
 	# create if needs
 	if (NOT EXISTS ${CPPDEF_OVERRIDE})
@@ -144,3 +153,17 @@ function(croco_trick_create_cpp_def_override)
 		file(COPY_FILE ${CMAKE_SOURCE_DIR}/OCEAN/cppdefs_dev.h ${CPPDEF_DEV_OVERRIDE})
 	endif ()
 endfunction(croco_trick_create_cpp_def_override)
+
+###########################################################
+# Copy the required files in the build dir so we are ready to run croco
+#
+# Todo
+# ----
+# There is currently more stuff done by the script /create_config.bash for jobcomp
+# which should also bringed here. Or we should re-arranged this bash script to
+# be able to all its sub-part from here.
+function(croco_copy_case_files)
+	if (NOT EXISTS ${CMAKE_BINARY_DIR}/TEST_CASES)
+		file(COPY ${CMAKE_SOURCE_DIR}/TEST_CASES DESTINATION ${CMAKE_BINARY_DIR})
+	endif()
+endfunction(croco_copy_case_files)

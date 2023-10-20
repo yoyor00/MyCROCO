@@ -87,8 +87,8 @@ croco_last_checkings()
 
 ###########################################################
 # some croco trick to keep same way to work than with jobcomp
+croco_copy_case_files()
 croco_trick_create_cpp_def_override()
-include_directories(${CMAKE_BINARY_DIR})
 
 ###########################################################
 # add subdirs
