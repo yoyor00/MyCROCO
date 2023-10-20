@@ -48,7 +48,7 @@ Note: I don't like this way of making the trick (the one currently implemented).
 #endif
 
 #if defined BASIN
-      parameter (LLm0=400,   MMm0=400,   N=100)
+      parameter (LLm0=60,   MMm0=50,   N=10)
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
 #elif defined EQUATOR
