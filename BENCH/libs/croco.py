@@ -6,9 +6,11 @@
 
 ##########################################################
 import os
+import json
 import shutil
 from .config import Config
-from .helpes import move_in_dir, run_shell_command, apply_vars_in_str, Messaging
+from .helpes import move_in_dir, run_shell_command, apply_vars_in_str, Messaging, patch_lines
+from .hyperfine import run_hyperfine
 
 ##########################################################
 class Croco:
@@ -54,7 +56,7 @@ class Croco:
         configure_variant_options = self.variant['configure']
         configure_case_option = f"--with-case={case_cpp_key}"
         if tuning_flags != '':
-            configure_compiler_option = f"FFLAGS=\"{tuning_flags}\" CFLAGS=\"{tuning_flags}\""
+            configure_compiler_option = f"FFLAGS=\"{tuning_flags}\""
         else:
             configure_compiler_option = ""
 
@@ -78,8 +80,69 @@ class Croco:
         with move_in_dir(dirname):
             run_shell_command(f"make {make_jobs}")
 
-    def build(self):
-        Messaging.section(f"Building CROCO - {self.full_name}")
-        self.reset()
+    def build(self, extra_info: str = "", force_rebuild: bool = False):
+        # display
+        Messaging.section(f"Building CROCO - {self.full_name}{extra_info}")
+        Messaging.step(f"Directory: {self.dirname}")
+        # perform steps
+        if force_rebuild:
+            self.reset()
+        elif not force_rebuild and os.path.exists(f"{self.dirname}/croco"):
+            Messaging.step(f"Already built...")
+            return
+
+        # effectively built
         self.configure()
         self.compile()
+        self.setup_case()
+
+    def run(self, extra_info: str = ""):
+        # display
+        Messaging.section(f"Running CROCO - {self.full_name}{extra_info}")
+        Messaging.step(f"Directory: {self.dirname}")
+        # extract some vars
+        command_prefix = self.variant['command_prefix']
+        environ = self.variant.get('environ', {})
+        dirname = self.dirname
+        runs = self.config.runs
+        results = self.config.results
+
+        # build end
+        env_line = ""
+        for var, value in environ.items():
+            env_line += f"{var}=\"{value}\""
+
+        # build command and run
+        command = f"{env_line} ../../scripts/correct_end.sh {command_prefix} ./croco"
+        with move_in_dir(dirname):
+            result = run_hyperfine(command, runs=runs)
+
+        # dump results
+        with open(f"{results}/result-{self.full_name}.json", "w+") as fp:
+            json.dump(result, fp=fp, indent='\t')
+
+    def setup_case(self):
+        # apply the case paches
+        case_name = self.case_name
+        patches = self.case['patches']
+
+        # display
+        Messaging.step(f"Apply case config : {case_name}")
+
+        # loop
+        with move_in_dir(self.dirname):
+            for file, changes in patches.items():
+                # convert to list if needed
+                if isinstance(changes, dict):
+                    changes = [changes]
+
+                # loop on all changes
+                for change in changes:
+                    patch_lines(file, [
+                        {
+                            "mode": "replace",
+                            "after": change['after'],
+                            "what": change['what'] + '\n',
+                            "by": change['by'] + '\n',
+                        }
+                    ])

@@ -9,6 +9,7 @@ import os
 import json5
 import argparse
 import platform
+from datetime import datetime
 
 ##########################################################
 class Config:
@@ -35,6 +36,7 @@ class Config:
         parser.add_argument('-R', '--runs', help="Number or runs to perform.", default='4')
         parser.add_argument('-j', '--jobs', help="Make -j option value to build", default='8')
         parser.add_argument('--results', help="Name of the results directory to use.", default='results')
+        parser.add_argument('-t', '--title', help="A possible extra name to prepent to the result directory name", default='.')
 
         # parse
         self.args = parser.parse_args()
@@ -49,7 +51,12 @@ class Config:
         self.rebuild = self.args.rebuild
         self.runs = int(self.args.runs)
         self.make_jobs = int(self.args.jobs)
-        self.results = self.args.results
+        self.title = self.args.title
+
+        # compute clean result subdir name
+        hostname = platform.node()
+        run_date = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+        self.results = os.path.join(self.args.results, self.title, f"{hostname}-{run_date}")
 
         # extract some many time used paths
         self.croco_source_dir = os.path.abspath(f"{__file__}/../../../")
