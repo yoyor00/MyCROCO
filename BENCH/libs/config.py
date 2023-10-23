@@ -39,6 +39,8 @@ class Config:
         parser.add_argument('-j', '--jobs', help="Make -j option value to build", default='8')
         parser.add_argument('--results', help="Name of the results directory to use.", default='results')
         parser.add_argument('-t', '--title', help="A possible extra name to prepent to the result directory name", default='.')
+        parser.add_argument('-a', '--auto-skip', help='Automatically skip the cases with not enougth ressources.', action='store_true')
+        parser.add_argument('-N', '--no-previous', help='Do not load the preivous missing results to plot full graph.', action='store_true')
 
         # parse
         self.args = parser.parse_args()
@@ -54,11 +56,19 @@ class Config:
         self.runs = int(self.args.runs)
         self.make_jobs = int(self.args.jobs)
         self.title = self.args.title
+        self.auto_skip = self.args.auto_skip
+        self.no_previous = self.args.no_previous
 
         # compute clean result subdir name
         hostname = platform.node()
-        run_date = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+        run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         self.results = os.path.join(self.args.results, self.title, f"{hostname}-{run_date}")
+
+        # pattern to search results files (to also take the previous runs if not re-run all)
+        if self.no_previous:
+            self.results = self.results
+        else:
+            self.results_pattern = os.path.join(self.args.results, self.title, f"{hostname}-*")
 
         # extract some many time used paths
         self.croco_source_dir = os.path.abspath(f"{__file__}/../../../")
@@ -141,7 +151,10 @@ class Config:
                 has = host_ressources[ressource_name]
                 if has < int(ressource_min):
                     Messaging.step(f"Filter out {name} due to lack of {ressource_name} ({has} < {ressource_min})...")
-                    self.variant_names.remove(name)
+                    if self.auto_skip:
+                        self.variant_names.remove(name)
+                    else:
+                        raise Exception(f"Cannot run {name} due to lack of {ressource_name} ({has} < {ressource_min})... You can use -a/--auto-skip to skip silently.")
 
     def load_config(self) -> None:
         '''Load the config file and extract some infos'''
@@ -155,6 +168,13 @@ class Config:
         # unpack variant templates
         self.unpack_variant_vars()
 
+        # apply meta : @.....
+        self.apply_meta()
+
+        # filter ressources
+        self.filter_variant_ressources()
+
+    def apply_meta(self):
         # apply default
         if self.variant_names == ["@default"]:
             self.variant_names = self.config['default_selection']['variants']
@@ -183,6 +203,3 @@ class Config:
             self.host = hosts[hostname]
         else:
             self.host = hosts['@default']
-
-        # filter ressources
-        self.filter_variant_ressources()

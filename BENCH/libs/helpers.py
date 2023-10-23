@@ -141,21 +141,27 @@ def move_in_dir(path):
         os.chdir(oldpwd)
 
 def apply_vars_in_str(value: str, vars: {}) -> str:
+    # TODO: do not yet allow recursion but can ben done easly the way it is.
+
     # extract {case.value} patterns
     patterns = re.findall(r"\{[a-zA-Z0-9._-]+\}", value)
 
     # replace all
-    for pattern in patterns:
-        # fetch value
-        path = pattern.replace("{", "").replace('}','').split('.')
+    if patterns:
+        for pattern in patterns:
+            # progress
+            Messaging.step("Apply variable {pattern}...")
 
-        # start
-        cursor = vars
-        for element in path:
-            cursor = cursor[element]
+            # fetch value
+            path = pattern.replace("{", "").replace('}','').split('.')
 
-        # replace
-        value = value.replace(pattern, cursor)
+            # start
+            cursor = vars
+            for element in path:
+                cursor = cursor[element]
+
+            # replace
+            value = value.replace(pattern, cursor)
 
     # ok
     return value

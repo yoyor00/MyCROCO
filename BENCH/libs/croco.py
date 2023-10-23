@@ -9,7 +9,7 @@ import os
 import json
 import shutil
 from .config import Config
-from .helpes import move_in_dir, run_shell_command, apply_vars_in_str, Messaging, patch_lines
+from .helpers import move_in_dir, run_shell_command, apply_vars_in_str, Messaging, patch_lines
 from .hyperfine import run_hyperfine
 
 ##########################################################
@@ -93,8 +93,8 @@ class Croco:
 
         # effectively built
         self.configure()
-        self.compile()
         self.setup_case()
+        self.compile()
 
     def run(self, extra_info: str = ""):
         # display

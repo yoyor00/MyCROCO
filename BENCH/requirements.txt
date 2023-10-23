@@ -1,0 +1,10 @@
+# dependencies to run the bench script (in addition to the one required for
+# CROCO alone)
+
+# to plot
+numpy
+matplotlib
+# to display progress bars
+tqdm
+# json with comments
+json5

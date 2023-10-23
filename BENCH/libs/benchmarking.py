@@ -11,6 +11,7 @@ from .config import Config
 from .croco import Croco
 from .messaging import Messaging
 from .system import gen_system_info
+from .plotting import Plotting
 
 ##########################################################
 class Benchmarking:
@@ -30,6 +31,9 @@ class Benchmarking:
         # create result dir
         os.makedirs(config.results, exist_ok=True)
 
+        # create last directory
+        self.create_last_symlink()
+
         # make sequential first as we use as reference to validate the data produced
         self.make_sequential_first()
 
@@ -38,6 +42,18 @@ class Benchmarking:
 
         # dump
         self.dump_bench_infos()
+
+    def create_last_symlink(self):
+        # extract
+        results = self.config.results
+
+        # create last directory
+        dirname = os.path.dirname(results)
+        basename = os.path.basename(results)
+        link_name = f"{dirname}/last"
+        if os.path.exists(link_name):
+            os.remove(link_name)
+        os.symlink(basename, link_name)
 
     def make_sequential_first(self):
         '''
@@ -80,3 +96,7 @@ class Benchmarking:
         # dump config
         with open(f"{results}/config.json", "w+") as fp:
             json.dump(self.config.config, fp=fp, indent='\t')
+
+    def plot(self):
+        plot = Plotting(self.config)
+        plot.plot()

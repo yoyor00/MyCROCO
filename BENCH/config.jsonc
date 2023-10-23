@@ -8,7 +8,8 @@
 			},
 			"tuning": {
 				"gnu": "-march=native",
-				"nvfortran": "-tp=native"
+				"nvfortran": "-tp=native",
+				"mpi_options": ""
 			}
 		},
 		"bigfoot" : {
@@ -18,7 +19,8 @@
 			},
 			"tuning": {
 				"gnu": "-march=znver2",
-				"nvfortran": "-tp=zen"
+				"nvfortran": "-tp=zen",
+				"mpi_options": ""
 			}
 		},
 		"bigfoot7" : {
@@ -28,7 +30,8 @@
 			},
 			"tuning": {
 				"gnu": "-march=native",
-				"nvfortran": "-tp=native"
+				"nvfortran": "-tp=native",
+				"mpi_options": ""
 			}
 		},
 		"sebv4": {
@@ -184,7 +187,7 @@
 				"TEST_CASES/croco.in.Basin": {
 					"after":   " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 					"what":    "                100      1200     65      1",
-					"by":      "                3240     2400     65      1"
+					"by":      "                100      2400     65      1"
 				}
 			}
 		},
@@ -215,7 +218,7 @@
 				"TEST_CASES/croco.in.Basin": {
 					"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 					"what":    "                100      1200     65      1",
-					"by":      "                3240     1200     65      1"
+					"by":      "                100      1200     65      1"
 				}
 			}
 		}
