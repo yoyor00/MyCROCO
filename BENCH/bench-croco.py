@@ -24,6 +24,7 @@ def main():
     # benchmark
     bench = Benchmarking(config)
     bench.run()
+    bench.plot()
 
 ##########################################################
 if __name__ == '__main__':

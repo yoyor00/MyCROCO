@@ -8,6 +8,7 @@
 import platform
 import subprocess
 import json
+from datetime import datetime
 
 ##########################################################
 def run_and_get_first_line(command: str) -> str:
@@ -25,7 +26,11 @@ def get_lscpu_as_json() -> dict:
 def gen_system_info() -> dict:
     # dict
     infos = {}
-    
+
+    # date
+    infos['date'] = datetime.now().strftime("%d/%m/%y")
+    infos['time'] = datetime.now().strftime("%H:%M:%S")
+
     # get hostname
     system = infos['plateforme'] = {}
     system['hostname'] = platform.node()

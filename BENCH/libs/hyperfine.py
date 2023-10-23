@@ -20,7 +20,7 @@ import shutil
 from tqdm import tqdm
 from tempfile import NamedTemporaryFile
 from .messaging import Messaging
-from .helpes import run_shell_command_time, run_shell_command
+from .helpers import run_shell_command_time, run_shell_command
 
 ##########################################################
 def emulate_hyperfine(command: str, progress_bar: tqdm = None, runs: int = 2, retries: int = 8, verbose: bool = False) -> dict:
