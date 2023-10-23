@@ -133,7 +133,7 @@ class Plotting:
             ax.set_ylabel('Average runtime (seconds)')
             ax.set_xticks(x_pos)
             ax.set_xticklabels(case_data['variants'], rotation=45, ha='right')
-            ax.set_title(f'Running case {title}')
+            ax.set_title(f'CROCO - {title}')
             ax.yaxis.grid(True)
 
             # Save the figure and show
