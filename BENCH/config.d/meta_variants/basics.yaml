@@ -1,0 +1,23 @@
+---
+# Meta variants available by default
+'@wip-all':
+  - sequential
+  - openmp-2
+  - openmp-4
+  - openmp-8
+  - mpi-2
+  - mpi-4
+  - mpi-8
+  - openacc-native
+  - openacc-psyclone
+'@cpu':
+  - sequential
+  - openmp-2
+  - openmp-4
+  - openmp-8
+  - mpi-2
+  - mpi-4
+  - mpi-8
+'@gpu':
+  - openacc-native
+  - openacc-psyclone

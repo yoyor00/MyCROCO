@@ -91,6 +91,15 @@ cases the script will search the missing results in the previous result
 directories in order to aggregate no the charts (with same `title`). This is
 usefull in dev process to compare without re-running everything.
 
+Configuration
+-------------
+
+The configuration file can be provided under `json` or `yaml` form as you
+prefer. It can also be splitted in subdirectory mode by merging sevarl subfiles.
+
+In the main `config.yaml` file, the inclusion is described by the `imports`
+section.
+
 Meta variants
 -------------
 

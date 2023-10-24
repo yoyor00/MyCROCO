@@ -1,0 +1,18 @@
+---
+# openacc manual version
+openacc-native:
+  configure: --with-parallel=openacc-native FC=nvfortran
+  tuning_familly: nvfortran
+  environ: {}
+  command_prefix: ''
+  requires:
+    gpu: 1
+
+# openacc via psyclone
+openacc-psyclone:
+  configure: --with-parallel=openacc-psyclone FC=nvfortran
+  tuning_familly: nvfortran
+  environ: {}
+  command_prefix: ''
+  requires:
+    gpu: 1

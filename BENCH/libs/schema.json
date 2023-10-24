@@ -1,0 +1,92 @@
+{
+    "type" : "object",
+    "properties" : {
+        "imports" : {
+            "type" : "array",
+            "items": {
+                "type": "object",
+                "properties" : {
+                    "glob": {"type": "string"},
+                    "inject_at": {"type": "string"}
+                },
+                "required": ["glob", "inject_at"]
+            }
+        },
+        "hosts": {
+            "type": "object",
+            "additionalProperties" : {
+                "type" : "object",
+                "properties" : {
+                    "ressources" : {
+                        "type" : "object",
+                        "properties": {
+                            "cpu": {"type" : "integer"},
+                            "gpu": {"type" : "integer"}
+                        },
+                        "required" : [ "cpu", "gpu" ]
+                    },
+                    "tuning" : {
+                        "type" : "object",
+                         "properties": {
+                            "gnu": {"type" : "string"},
+                            "nvfortran": {"type" : "string"},
+                            "mpi_options": {"type" : "string"}
+                        },
+                        "required" : [ "gnu", "nvfortran", "mpi_options" ]
+                    }
+                },
+                "required" : [ "ressources", "tuning" ]
+            }
+        },
+        "default_selection": {
+            "type": "object",
+            "properties" : {
+                "cases": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "variants": {
+                    "type": "array",
+                    "items": { "type": "string"}
+                }
+            },
+            "required": ["cases", "variants"]
+        },
+        "meta_variants": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": { "type": "string" }
+            }
+        },
+        "variants": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "configure": {"type": "string"},
+                    "tuning_familly": {"type": "string"},
+                    "environ": {
+                        "type": "object",
+                        "additionalProperties": { "type" : ["string", "integer"] }
+                    },
+                    "command_prefix": { "type": "string" },
+                    "unpack": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array"
+                        }
+                    },
+                    "requires": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": ["string", "integer"]
+                        }
+                    },
+                },
+                "required": ["configure", "tuning_familly", "command_prefix", "requires"]
+            }
+        }
+    },
+    "required": ["imports", "hosts", "default_selection", "meta_variants"]
+}

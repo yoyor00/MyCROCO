@@ -1,0 +1,10 @@
+---
+# my home workstation
+svalat-inria:
+  ressources:
+    cpu: 12
+    gpu: 1
+  tuning:
+    gnu: -march=native
+    nvfortran: -tp=native
+    mpi_options: -use-hwthread-cpus
