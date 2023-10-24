@@ -5,24 +5,6 @@
 ######################################################
 
 ######################################################
-# Macro to replace some flage, like -O3 => -O2
-# Params:
-#   - variable : Name of the variable to affect
-#   - flag     : Flag to search and replace.
-#   - new_flag : New value (can be empty to erase)
-macro(replace_compile_flag variable flag new_flag)
-	set(tmp_list)
-	foreach(lvalue IN LISTS variable)
-		if (lvalue STREQUAL ${flag})
-			list(APPEND tmp_list ${new_flag})
-		else (lvalue STREQUAL ${flag})
-			list(APPEND tmp_list ${value})
-		endif (lvalue STREQUAL ${flag})
-	endforeach(lvalue IN LISTS variable)
-	#string(REPLACE "${flag}" "${new_flag}" ${variable} "${CMAKE_Fortran_FLAGS_RELEASE}")
-endmacro()
-
-######################################################
 # Replace the include to use the one without OPENACC
 # Inspired from https://fortran.cat/2021/09/24/cmake-and-fypp-preprocessor/
 #
@@ -46,11 +28,10 @@ function(croco_psyclone_pre_filter_acc list_to_update)
 		# build command
 		add_custom_command(
 			OUTPUT ${newfile}
-			COMMAND ${CMAKE_SOURCE_DIR}/psyclone/psyclone.preprocessor.skip.acc.sh ${oldfile} ${newfile}
+			COMMAND ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.preprocessor.skip.acc.sh ${oldfile} ${newfile}
 			MAIN_DEPENDENCY ${oldfile}
-			DEPENDS psyclone/psyclone.preprocessor.skip.acc.sh
-					psyclone/skip.openacc.rules.lst
-					
+			DEPENDS ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.preprocessor.skip.acc.sh
+			        ${CMAKE_SOURCE_DIR}/PSYCLONE/skip.openacc.rules.lst
 			VERBATIM
 		)
 		list(APPEND _newfiles ${newfile})
@@ -82,10 +63,10 @@ function(croco_cpp_and_mpc_preprocess list_to_update)
 		# build command
 		add_custom_command(
 			OUTPUT ${newfile}
-			COMMAND ${CROCO_FORTAN_CPP} ${CROCO_FORTRAN_CPP_FLAGS} ${oldfile} ${newfile}.tmp.F 
+			COMMAND ${CROCO_FORTRAN_CPP} ${CROCO_FORTRAN_CPP_FLAGS} ${oldfile} -o ${newfile}.tmp.F 
 			COMMAND ${CROCO_MPC} < ${newfile}.tmp.F > ${newfile}
 			MAIN_DEPENDENCY ${oldfile}
-			DEPENDS mpc ${OCEAN_CPP_H}
+			DEPENDS mpc ${CROCO_CPP_H}
 			VERBATIM
 		)
 		list(APPEND _newfiles ${newfile})
@@ -126,5 +107,22 @@ function(croco_change_loop_preprocess list_to_update)
 		)
 		list(APPEND _newfiles ${newfile_mpc})
 	endforeach()
+
+	# export
+	set(${list_to_update} ${_newfiles} PARENT_SCOPE)
+endfunction()
+
+######################################################
+# Loop on all values of the list and make them absolute path
+function(croco_make_absolute_paths list_to_update path)
+	# reset the list
+	set(_newfiles)
+
+	# loop on all files
+	foreach(file IN LISTS ${list_to_update})
+		list(APPEND _newfiles ${path}/${file})
+	endforeach()
+
+	# export
 	set(${list_to_update} ${_newfiles} PARENT_SCOPE)
 endfunction()

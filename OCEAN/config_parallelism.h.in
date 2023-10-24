@@ -1,0 +1,30 @@
+#ifndef CMAKE_CONFIG_PARALLELISM_H
+#define CMAKE_CONFIG_PARALLELISM_H
+
+/*
+To ensure we do not redefine
+*/
+#undef OPENLP
+#undef OPENACC
+
+/*
+Enable parallelism modes
+*/
+#cmakedefine OPENMP
+#cmakedefine OPENACC
+
+/*
+Currently support only one at a time
+Remark: If will fail if we redefine a second time HAS_PARA_MODE
+*/
+#ifdef OPENMP
+#define HAS_PARA_MODE
+#endif
+#ifdef OPENACC
+#define HAS_PARA_MODE
+#endif
+#ifdef MPI
+#define HAS_PARA_MODE
+#endif
+
+#endif
