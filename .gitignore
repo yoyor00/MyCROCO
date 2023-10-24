@@ -22,5 +22,8 @@ OCEAN.bak/cpl_prism_getlistvals.F
 # for VSCode users
 .vscode
 
+# cmake usual build dir
+/build
+
 # do not commit psyclone pre-built packages
 __pycache__

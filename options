@@ -38,6 +38,11 @@ cfg_add_enable_option --name='coverage' \
                       --on='-DENABLE_COVERAGE=${ON}' \
                       --doc='Enable coverage report'
 
+#psyclone venv
+cfg_add_with_option   --name='psyclone-venv' \
+                      --doc='Define venv directory to get access to psyclone & poseidon' \
+                      --var='PSYCLONE_VENV'
+
 ######################################################
 #libfabric
 #cfg_add_with_option --name='libfabric' \
