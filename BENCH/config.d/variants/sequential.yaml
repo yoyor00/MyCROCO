@@ -1,0 +1,9 @@
+---
+# seq default
+sequential:
+  configure: ''
+  tuning_familly: gnu
+  environ: {}
+  command_prefix: ''
+  requires:
+    cpu: 1

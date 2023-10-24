@@ -1,4 +1,11 @@
 {
+	///////////////////////////// IMPOTS ///////////////////////////////////////
+	"imports": [
+		{
+			"glob": "config.d/hosts/*.",
+			"inject_at": "hosts"
+		}
+	],
 	///////////////////////////// TUNING ///////////////////////////////////////
 	"hosts": {
 		"@default": {
@@ -10,39 +17,6 @@
 				"gnu": "-march=native",
 				"nvfortran": "-tp=native",
 				"mpi_options": ""
-			}
-		},
-		"bigfoot" : {
-			"ressources": {
-				"cpu": 64,
-				"gpu": 1
-			},
-			"tuning": {
-				"gnu": "-march=znver2",
-				"nvfortran": "-tp=zen",
-				"mpi_options": ""
-			}
-		},
-		"bigfoot7" : {
-			"ressources": {
-				"cpu": 64,
-				"gpu": 1
-			},
-			"tuning": {
-				"gnu": "-march=native",
-				"nvfortran": "-tp=native",
-				"mpi_options": ""
-			}
-		},
-		"sebv4": {
-			"ressources": {
-				"cpu": 8,
-				"gpu": 0
-			},
-			"tuning": {
-				"gnu": "-march=native",
-				"nvfortran": "-tp=native",
-				"mpi_options": "-use-hwthread-cpus"
 			}
 		}
 	},

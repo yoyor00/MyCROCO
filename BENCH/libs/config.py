@@ -7,11 +7,16 @@
 ##########################################################
 import os
 import json5
+import yaml
+import glob
+from yaml import Loader
+from jsonschema import validate
 import argparse
 import platform
 import copy
 from datetime import datetime
 from .messaging import Messaging
+from .configfile import ConfigFile
 
 ##########################################################
 class Config:
@@ -73,71 +78,6 @@ class Config:
         # extract some many time used paths
         self.croco_source_dir = os.path.abspath(f"{__file__}/../../../")
 
-    @staticmethod
-    def apply_vars(value: str, var_name: str, var_value: str) -> str:
-        return value.replace("{" + var_name + "}", str(var_value))
-
-    @staticmethod
-    def tranverse_and_apply_vars(element, var_name: str, var_value):
-        if isinstance(element, list):
-            for key, entry in enumerate(element):
-                if isinstance(entry, int):
-                    pass
-                elif isinstance(entry, str):
-                    element[key] = Config.apply_vars(entry, var_name, var_value)
-                elif isinstance(element, (dict|list)):
-                    Config.tranverse_and_apply_vars(entry, var_name, var_value)
-                else:
-                    raise Exception(f"Unsupported type in tree : {type(entry)}")
-        elif isinstance(element, dict):
-            for key, entry in element.items():
-                if isinstance(entry, int):
-                    pass
-                elif isinstance(entry, str):
-                    element[key] = Config.apply_vars(entry, var_name, var_value)
-                elif isinstance(element, (dict|list)):
-                    Config.tranverse_and_apply_vars(entry, var_name, var_value)
-                else:
-                    raise Exception(f"Unsupported type in tree : {type(entry)}")
-        else:
-            raise Exception(f"Unsupported type in tree : {type(element)}")
-
-    def unpack_variant_vars(self) -> None:
-        '''Unpack the vars {xxx} in variant names'''
-        variants = self.config['variants']
-        new_variants = {}
-        to_delete = []
-        for name, variant in variants.items():
-            if 'unpack' in variant:
-                # check
-                if len(variant['unpack']) > 1:
-                    raise Exception("Do not yet support multiple variable applying, need to think how to run over & mix !")
-
-                # loop on vars
-                for var_name, var_values in variant['unpack'].items():
-                    for var_value in var_values:
-                        # copy & make not anymore a template
-                        variant_copy = copy.deepcopy(variant)
-                        del variant_copy['unpack']
-
-                        # apply
-                        Config.tranverse_and_apply_vars(variant_copy, var_name, var_value)
-
-                        # calc new name
-                        name_copy = Config.apply_vars(name, var_name, var_value)
-
-                        # inject
-                        new_variants[name_copy] = variant_copy
-
-                # remove template
-                to_delete.append(name)
-                
-        # inject & clean
-        for name in to_delete:
-            del variants[name]
-        for key, value in new_variants.items():
-            variants[key] = value
-
     def filter_variant_ressources(self):
         # extract needed vars
         variants = self.config['variants']
@@ -162,14 +102,13 @@ class Config:
         Messaging.section("Loading configuration")
 
         # load
-        with open(self.args.config, 'r') as fp:
-            self.config = json5.load(fp)
-
-        # unpack variant templates
-        self.unpack_variant_vars()
+        self.config = ConfigFile(self.args.config).load()
 
         # apply meta : @.....
         self.apply_meta()
+
+        # select host
+        self.select_host()
 
         # filter ressources
         self.filter_variant_ressources()
@@ -196,6 +135,7 @@ class Config:
                 final_variants.append(variant)
         self.variant_names = final_variants
 
+    def select_host(self):
         # select tunning
         hostname = platform.node()
         hosts = self.config['hosts']
