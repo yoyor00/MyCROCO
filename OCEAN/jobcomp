@@ -215,6 +215,14 @@ if $($CPP1 testkeys.F | grep -i -q agrifisdefined) ; then
 fi
 
 #
+# Use PSyClone to generate the OpenACC version
+# Need to swtich to the other Makedefs
+#
+if $($CPP1 testkeys.F | grep -i -q openaccdefined) ; then
+	cp -f Makedefs.generic.PSYCLONE Makedefs.generic
+fi
+
+#
 # determine if MPI compilation is required
 #
 unset COMPILEMPI
