@@ -28,7 +28,7 @@ you can simply use the provided script :
 
 ```sh
 # by default it install in ./venv
-./create_prefix_with_deps.sh [--netcdf] [--nvhpc] [--all] [PREFIX_DIR]
+./create_prefix_with_deps.sh [--netcdf] [--nvhpc] [--psyclone] [--cmake] [--all] [PREFIX_DIR]
 ```
 
 Building
@@ -155,8 +155,8 @@ closely you will see the first line printed by the script showing the exact
 You can of course directly call `cmake` as you want to play with more advanced
 options.
 
-Seeing tu actual CMake configuration
-------------------------------------
+Seeing the actual CMake configuration
+-------------------------------------
 
 You can get a basic summary on the setup by calling `cmake` without options :
 
@@ -172,6 +172,14 @@ defined variables and see their values:
 ccmake ..
 # With the QT GUi
 cmake-qui ..
+```
+
+If you used the `configure` wrapper script, you can also see the history of
+calls to the script in :
+
+```sh
+# if you used ./configure
+cat configure.log
 ```
 
 Playing directly with cmake
@@ -191,3 +199,6 @@ make
 
 You can look in file `options` to get the mapping between `./configure` options
 and `cmake` variables.
+
+Also notice that the `configure` script display the exact `cmake` command call
+it generates so you can also starts from there is you want to extend.
