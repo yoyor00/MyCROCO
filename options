@@ -15,40 +15,21 @@ CFG_EXTRA_CC='mpicc'
 CFG_EXTRA_FORT='mpifort'
 
 ######################################################
-#test
-cfg_add_enable_option --name='test' \
-                      --on='-DENABLE_TESTS=${ON}' \
-                      --doc='Disable unit tests' \
-                      --invert-help
-#junit xml out
-cfg_add_enable_option --name='junit-output'  \
-                      --on='-DENABLE_JUNIT_OUTPUT=${ON}' \
-                      --doc='Save test output in JUnit format (only in self-test mode)' 
-#valgrind
-cfg_add_enable_option --name='valgrind' \
-                      --on='-DENABLE_VALGRIND=${ON}' \
-                      --doc='Enable running unit tests into valgrind to generate reports'
-#jenkins full features
-cfg_add_enable_option --name='jenkins' \
-                      --on-enable-inherit='--enable-junit-output --enable-debug "CXXFLAGS=-Wall -fprofile-arcs -ftest-coverage"' \
-                      --doc='Enable all checking modes (unit, valgrind, coverage...)' \
-                      --only='enable'
 #coverage
-cfg_add_enable_option --name='coverage' \
-                      --on='-DENABLE_COVERAGE=${ON}' \
+cfg_add_enable_option --name='psyclone-openacc' \
+                      --on='-DENABLE_PSYCLONE_OPENACC=${ON} -DCMAKE_Fortran_COMPILER=nvfortran' \
                       --doc='Enable coverage report'
 
 #psyclone venv
-cfg_add_with_option   --name='psyclone-venv' \
+cfg_add_with_option   --name='psyclone' \
                       --doc='Define venv directory to get access to psyclone & poseidon' \
-                      --var='PSYCLONE_VENV'
+                      --var='PSYCLONE_PREFIX'\
+                      --on='-DENABLE_PSYCLONE_OPENACC=${ON} -DCMAKE_Fortran_COMPILER=nvfortran'
 
-######################################################
-#libfabric
-#cfg_add_with_option --name='libfabric' \
-#                    --doc='Define prefix to find libfabric [/usr]' \
-#                    --var='LIBFABRIC_PREFIX'
-
+#select the case to run
+cfg_add_with_option   --name='case' \
+                      --doc='Define the CASE to compiler and run (look in OCEAN/config.h.in)' \
+                      --var='WITH_CASE'
 
 ######################################################
 #If we want to document extra options

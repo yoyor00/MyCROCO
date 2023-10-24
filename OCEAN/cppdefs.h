@@ -56,9 +56,14 @@
 */
 #undef  COASTAL         /* COASTAL Applications */
 #undef REGIONAL        /* REGIONAL Applications */
-#define BASIN
 
-
+/*
+To make configuration via cmake command line directly and not edit
+cppdef.h by hand for the common setups.
+*/
+#ifndef HAS_CMAKE_CONFIG
+#include "config.h"
+#endif
 
 #if defined REGIONAL
 /*
