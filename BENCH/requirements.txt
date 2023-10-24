@@ -8,3 +8,6 @@ matplotlib
 tqdm
 # json with comments
 json5
+# yaml
+pyyaml
+jsonschema

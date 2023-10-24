@@ -2,14 +2,15 @@
 ################################ IMPORTS #######################################
 # Declare how to import sub-files from config.d
 imports:
-  - glob: config.d/hosts/*
-    inject_at: hosts
-  - glob: config.d/meta_variants/*
-    inject_at: meta_variants
-  - glob: config.d/variants/*
-    inject_at: variants
-  - glob: config.d/cases/*
-    inject_at: cases
+  hosts: 
+    - config.d/hosts/*
+  meta_variants:
+    - config.d/meta_variants/*
+  variants:
+    - config.d/variants/*
+  cases:
+    - config.d/cases/*
+
 ################################ TUNING ########################################
 hosts:
   # if not host defined, fallback on this

@@ -91,7 +91,8 @@ class ConfigFile:
     def _load_config(self) -> None:
         '''Load the config file and extract some infos'''
         # message
-        Messaging.section("Loading configuration")
+        Messaging.section("Loading configuration file")
+        Messaging.step("Reading {self.file_path}")
 
         # load
         self.config = self.load_json_yaml_file(self.file_path)
@@ -111,23 +112,21 @@ class ConfigFile:
 
     def _handle_imports(self):
         # loop on patterns
-        for entry in self.config['imports']:
-            # extract
-            pattern = entry['glob']
-            target = entry['inject_at']
+        for target, patterns in self.config['imports'].items():
+            for pattern in patterns:
+                # loop on found sub files
+                for file in glob.glob(pattern):
+                    Messaging.step(f"Importing {file}")
+                    # load
+                    data = self.load_json_yaml_file(file)
 
-            # loop on found sub files
-            for file in glob.glob(pattern):
-                # load
-                data = self.load_json_yaml_file(file)
-
-                # merge in given target key
-                for key, value in data.items():
-                    if self.config[target] == None:
-                        self.config[target] = {}
-                    if key in self.config[target]:
-                        raise Exception(f"Try to override an already existing key in {file} : {target}.{key}")
-                    self.config[target][key] = value
+                    # merge in given target key
+                    for key, value in data.items():
+                        if self.config[target] == None:
+                            self.config[target] = {}
+                        if key in self.config[target]:
+                            raise Exception(f"Try to override an already existing key in {file} : {target}.{key}")
+                        self.config[target][key] = value
 
         schema_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
