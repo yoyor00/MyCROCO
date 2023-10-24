@@ -157,7 +157,7 @@
 				// CHange the dt
 				"TEST_CASES/croco.in.Basin": {
 					"after":   " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-					"what":    "                100      1200     65      1",
+					"what":    "                3240     9600     65      1",
 					"by":      "                100      2400     65      1"
 				}
 			}
@@ -188,7 +188,7 @@
 				// CHange the dt
 				"TEST_CASES/croco.in.Basin": {
 					"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-					"what":    "                100      1200     65      1",
+					"what":    "                3240     9600     65      1",
 					"by":      "                100      1200     65      1"
 				}
 			}
