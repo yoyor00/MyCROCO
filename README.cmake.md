@@ -28,7 +28,34 @@ you can simply use the provided script :
 
 ```sh
 # by default it install in ./venv
+#
+# Note: to have cmake installed you really need to force --cmake,
+#       but you might oftenly prefer to use the system one in practice.
 ./create_prefix_with_deps.sh [--netcdf] [--nvhpc] [--psyclone] [--cmake] [--all] [PREFIX_DIR]
+```
+
+Then afterward while you will need in each terminal session to run:
+
+```sh
+# load the venv paths in your shell env
+source venv/activate.sh
+```
+
+Installing most dependecies via the system
+------------------------------------------
+
+If you prefer to install the dependencies via your system, under `debian` flavor
+you will want to do:
+
+```sh
+# minimum requirement
+sudo apt install cmake libnetcdff-dev python3 python3-virtualenv
+# if you follow the nvidia setup to get the repo for package
+sudo apt install nvhpc-23-7
+# You will still need the venv to get the patched psyclone
+./create_prefix_with_deps.sh --psyclone
+# source
+source venv/bin/activate
 ```
 
 Building
@@ -63,7 +90,7 @@ To build the sequential version you can :
 ../configure --prefix=$HOME/usr-all/
 
 # Default CASE is BASIN, but you can alter with :
-../configure --with-case=CANYON
+../configure --with-case=BASIN
 
 # Pass any variable to CMake directly bypassing the configure script.
 ../configure --with-netcdf=$HOME/usr-netcdf/ -DWITH_CASE=CANYON
@@ -148,7 +175,7 @@ You can get all the `configure` option via
 Handling CMake
 --------------
 
-The `configure` script is just a simple wrapper arround CMake, is you look
+The `configure` script is just a simple wrapper arround CMake, if you look
 closely you will see the first line printed by the script showing the exact
 `cmake` command used.
 
