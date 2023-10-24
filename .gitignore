@@ -19,5 +19,8 @@ OCEAN.bak/cpl_prism_getlistvals.F
 
 /OCEAN/mergcpp.txt
 
+# for VSCode users
+.vscode
+
 # do not commit psyclone pre-built packages
 __pycache__
