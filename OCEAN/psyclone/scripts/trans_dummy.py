@@ -1,0 +1,2 @@
+def trans(psy):
+	pass
