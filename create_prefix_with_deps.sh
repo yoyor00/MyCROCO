@@ -13,6 +13,7 @@ INST_PREFIX=${PWD}/venv
 INST_USE_NVHPC=no
 INST_USE_NETCDF=no
 INST_PSYCLONE=no
+INST_USE_CMAKE=no
 
 ###########################################################
 # selection versions
@@ -20,6 +21,7 @@ INST_NETCDF_C_VERSION=4.9.2
 INST_NETCDF_FORT_VERSION=4.5.3
 INST_NETCDF_CXX_VERSION=4.3.1
 INST_HDF5_VERSION=1_14_2
+INST_CMAKE_VERSION=3.27.7
 # we use git version for psyclone
 INST_PSYCLONE_GITHUB_USER=svalat
 INST_PSYCLONE_BRANCH=async-and-merge-master-ok
@@ -33,7 +35,7 @@ for arg in "$@"
 do
 	case "${arg}" in
 		-h|--help)
-			echo "Usage : $0 [--nvhpc] [--netcdf] [--psyclone] [--all] [PREFIX_DIR]" 1>&2
+			echo "Usage : $0 [--nvhpc] [--netcdf] [--psyclone] [--cmake] [--all] [PREFIX_DIR]" 1>&2
 			exit 0
 			;;
 		--nvhpc)
@@ -45,13 +47,16 @@ do
 		--psyclone)
 			INST_PSYCLONE=yes
 			;;
+		--cmake)
+			INST_USE_CMAKE=yes
+			;;
 		--all)
 			INST_USE_NVHPC=yes
 			INST_USE_NETCDF=yes
 			INST_PSYCLONE=yes
 			;;
 		*)
-			INST_PREFIX="${arg}"
+			INST_PREFIX=$(realpath ${arg})
 			;;
 	esac
 done
@@ -62,7 +67,7 @@ INST_SOURCES=${INST_PREFIX}/sources
 
 ###########################################################
 # create a prefix
-if [[ ! -e ./venv/bin/activate ]]; then
+if [[ ! -e ${INST_PREFIX}/bin/activate ]]; then
 	# create a prefix
 	python3 -m venv ${INST_PREFIX}
 	source ${INST_PREFIX}/bin/activate
@@ -131,6 +136,18 @@ if [[ ${INST_USE_NETCDF} == 'yes' && ! -f ${INST_PREFIX}/include/ncFile.h ]]; th
 	pushd netcdf-cxx4-${INST_NETCDF_CXX_VERSION}
 	./configure --prefix=$INST_PREFIX CFLAGS=-I$(nc-config --includedir) CXXFLAGS=-I$(nc-config --includedir) LDFLAGS=-L$(nc-config --libdir)
 	make -j8 install
+	popd
+fi
+
+###########################################################
+# build cmake
+if [[ ${INST_USE_CMAKE} == 'yes' && ! -f ${INST_PREFIX}/bin/cmake ]]; then
+	wget --continue https://github.com/Kitware/CMake/releases/download/v${INST_CMAKE_VERSION}/cmake-${INST_CMAKE_VERSION}.tar.gz
+	tar -xvf cmake-${INST_CMAKE_VERSION}.tar.gz
+	pushd cmake-${INST_CMAKE_VERSION}
+	./configure --prefix=$INST_PREFIX
+	make -j8
+	make install
 	popd
 fi
 
