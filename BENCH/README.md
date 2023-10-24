@@ -21,16 +21,29 @@ of :
 Dependencies
 ------------
 
-**Note**: It currently used the `cmake` build and not the `jobcomp` one.
+**Note**: It currently uses the `cmake` build and not the `jobcomp` one.
 
-
-As it will build CROCO you will need to have the dependencies available
-(see main README.cmake.md).
+As it will build CROCO for you, you will need to have the basic dependencies
+available (see main README.cmake.md to know what is required).
 
 You might need some extended dependences so if you built the deps prefix for
 CROCO with `create_prefix_with_deps.sh`, then just run:
 
 ```sh
+# if you already have an activated venv
+pip install -r requirement.txt
+```
+
+Otherwise you first needs to create a `virtualenv` :
+
+```sh
+# only the first time
+python3 -m venv venv
+
+# for every terminal used to run the bench script
+source venv/bin/activate
+
+# only once
 pip install -r requirement.txt
 ```
 
@@ -116,8 +129,8 @@ Then you can just use them easily:
 Variables
 ---------
 
-You might notice in the script the use of some variables to be replaced at
-parsing time on the form of : `{tuning.gnu}`.
+You might notice in the configuration file the use of some variables to be
+replaced at parsing time on the form of : `{tuning.gnu}`.
 
 It avoids duplicating too many entries in the file.
 
@@ -138,7 +151,19 @@ You will mostly find them at two places :
   corresponding to the corresponding par of the config file you are running
   (host & current case).
 
-Author:
+Imports
 -------
 
- - Sébastien Valat - INRIA / LJK - 2023
+You will also notice at the head of the configuration file the `imports` section
+which allow to split the config file in multiple sub files and merge them
+at loading time.
+
+This is usefull for exemple for the `hosts` definitions as it permits a user
+to define its own hosts without requirement to patch the files tracked by
+git and to keep its definition for himself until he finally decide the commit
+it.
+
+Author
+------
+
+- Sébastien Valat - INRIA / LJK - 2023
