@@ -17,8 +17,8 @@ class Plotting:
     def __init__(self, config: Config):
         self.config = config
 
-    def load_case_variant_data(self, case_name: str, variant_name: str) -> dict:
-        # name
+    def get_file_path(self, case_name: str, variant_name: str) -> str:
+         # name
         name = f"{case_name}-{variant_name}"
         results_pattern = self.config.results_pattern
 
@@ -29,10 +29,21 @@ class Plotting:
         # has none
         if avail is None or len(avail) == 0:
             return None
-        
+
         # we can sort by date and take the last one
         avail.sort()
         fpath = avail[-1]
+
+        # ok
+        return fpath
+
+    def load_case_variant_data(self, case_name: str, variant_name: str) -> dict:
+        # get path
+        fpath = self.get_file_path(case_name, variant_name)
+        
+        # if not found skip
+        if fpath is None:
+            return None
 
         # progress
         Messaging.step(f"Loading {fpath}")

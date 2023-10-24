@@ -78,11 +78,16 @@ class Benchmarking:
     def run(self):
         cnt = len(self.instances)
         # build
-        for id, instance in enumerate(self.instances):
-            instance.build(extra_info=f" - [ {id + 1} / {cnt} ]", force_rebuild = self.config.rebuild)
+        if 'build' in self.config.modes:
+            for id, instance in enumerate(self.instances):
+                instance.build(extra_info=f" - [ {id + 1} / {cnt} ]", force_rebuild = self.config.rebuild)
         # run
-        for id, instance in enumerate(self.instances):
-            instance.run(extra_info=f" - [ {id + 1} / {cnt} ]")
+        if 'run' in self.config.modes:
+            for id, instance in enumerate(self.instances):
+                instance.run(extra_info=f" - [ {id + 1} / {cnt} ]")
+        # plot
+        if 'plot' in self.config.modes:
+            self.plot()
 
     def dump_bench_infos(self):
         # get needs

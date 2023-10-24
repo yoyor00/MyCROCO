@@ -2,14 +2,10 @@
     "type" : "object",
     "properties" : {
         "imports" : {
-            "type" : "array",
-            "items": {
-                "type": "object",
-                "properties" : {
-                    "glob": {"type": "string"},
-                    "inject_at": {"type": "string"}
-                },
-                "required": ["glob", "inject_at"]
+            "type" : "object",
+            "additionalProperties": {
+                "type": "array",
+                "items" : { "type": "string" }
             }
         },
         "hosts": {

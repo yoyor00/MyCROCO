@@ -98,11 +98,11 @@ class Config:
 
     def load_config(self) -> None:
         '''Load the config file and extract some infos'''
-        # message
-        Messaging.section("Loading configuration")
-
         # load
         self.config = ConfigFile(self.args.config).load()
+        
+        # message
+        Messaging.section("Applying selection")
 
         # apply meta : @.....
         self.apply_meta()
@@ -139,7 +139,13 @@ class Config:
         # select tunning
         hostname = platform.node()
         hosts = self.config['hosts']
-        if hostname in hosts:
-            self.host = hosts[hostname]
-        else:
-            self.host = hosts['@default']
+        
+        # fallback
+        if not hostname in hosts:
+            hostname = '@default'
+            
+        # display
+        Messaging.step(f"Select host : {hostname}")
+        
+        # apply
+        self.host = hosts[hostname]
