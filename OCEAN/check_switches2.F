@@ -2,21 +2,21 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
-      subroutine check_switches2 (ierr) 
+      subroutine check_switches2 (ierr)
       implicit none
       integer ierr, iwest, ieast, isouth, inorth, iAk
 #include "param.h"
 #include "scalars.h"
 !
-! Checking the number of selections of boundary conditions. 
+! Checking the number of selections of boundary conditions.
 !
       iwest=0
       ieast=0
@@ -57,7 +57,7 @@
         write(stdout,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
      &       'one boundary condition is chosen on the SOUTHERN EGGE.'
         ierr=ierr+1
-      endif 
+      endif
       if (inorth.gt.1) then
         write(stdout,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
      &       'one boundary condition is chosen on the NORTHERN EGGE.'
@@ -68,7 +68,7 @@
 !
       iAk=0
 #ifdef ANA_VMIX
-      iAk=iAk+1 
+      iAk=iAk+1
 #endif
 #ifdef BVF_MIXING
       iAk=iAk+1
@@ -98,7 +98,7 @@
         write(stdout,'(1x,A,I3,1x,A/8x,A,6x,A)') 'ERROR: NDTFAST =',
      &         ndtfast, 'is greater than unity for a shallow water',
      &        'configuration.','Change it to unity in startup file.'
-     &           
+     &
         ierr=ierr+1
       endif
 #endif

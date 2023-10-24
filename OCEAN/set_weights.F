@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,7 +13,7 @@
 #ifdef SOLVE3D
 c--# define TEST_WEIGHTS
 
- 
+
       subroutine set_weights
       implicit none
 # include "param.h"
@@ -33,14 +33,14 @@ c--# define TEST_WEIGHTS
 #  include "zoom.h"
       real t1,t2,t3,t4,t11,t12
       real cff10,cff1m
-# endif     
-      
+# endif
+
       nfast=0
       do i=0,2*ndtfast                  ! Reset both sets of
         weight(1,i)=0.                  ! weights to all-zeros.
         weight(2,i)=0.
       enddo
- 
+
 # ifdef M2FILTER_POWER
 !                                        ! Possible settings of
 ! Power-function shaped filters          ! parameters to yield the
@@ -59,7 +59,7 @@ c--# define TEST_WEIGHTS
       p=2.0
       q=4.0
       r=0.25
-      
+
       scale=(p+1.)*(p+q+1.)/((p+2.)*(p+q+2.)*float(ndtfast))
       do iter=1,16
         nfast=0
@@ -71,8 +71,8 @@ c--# define TEST_WEIGHTS
           else
             nfast=i                  ! Find center of gravity of
           endif                      ! the primary weighting shape
-        enddo                        ! function and iteratively 
-        sum=0.                       ! adjust "scale" to place the 
+        enddo                        ! function and iteratively
+        sum=0.                       ! adjust "scale" to place the
         shft=0.                      ! centroid exactly at
         do i=1,nfast                 ! "ndtfast".
           sum=sum+weight(1,i)
@@ -90,10 +90,10 @@ c**     write(*,*) shft/sum, ndtfast
           nfast=i
         endif
       enddo
-            
+
 # elif defined M2FILTER_COSINE
       cff=pi/float(ndtfast)               ! cos**2 shaped
-      do i=1,2*ndtfast                    ! filter 
+      do i=1,2*ndtfast                    ! filter
         arg=cff*float(i-ndtfast)
         if (2.*abs(arg) .lt. pi) then
           weight(1,i)=(cos(arg))**2
@@ -182,27 +182,27 @@ c**     write(*,*) shft/sum, ndtfast
       cff=1./cff
       do i=1,nfast
         weight(1,i)=sum*weight(1,i)
-        weight(2,i)=cff*weight(2,i) 
+        weight(2,i)=cff*weight(2,i)
 !        MPI_master_only print *,'i = ',i,nfast,weight(1,i),weight(2,i)
       enddo
-            
+
 # ifdef AGRIF
-       
+
 !      weight2 = 0.
       weight2 = 1.  !-- Quick fix to prevent division by zero in zetabc_interp
-       
+
       weight2(nfast,:) = weight(1,:)
-            
+
       do j=nfast-1,1,-1
-      
+
       cff10 = weight2(j+1,0)
       cff1m = weight2(j+1,j+1)
-      
+
       t1 = (1+cff10*(-1.+(j+1)))*ndtfast
      &        +(-1+cff10)*nfast
       t2 = (cff10-cff1m)*(j+1)*ndtfast-
      & (-1.+cff10)*(-1.+cff1m+cff1m*(j+1))*nfast
-     
+
       if (t2==0.) then ! discriminant is zero, only first equation is used
       t3=0.
       t4=1./(1.-cff10)
@@ -210,18 +210,18 @@ c**     write(*,*) shft/sum, ndtfast
       t3 = t1/t2
       t4 = (1.-t3*(1-cff1m))/(1.-cff10)
       endif
-           
+
       do i=0,j
         weight2(j,i) = t3*weight2(j+1,i)+t4*weight2(j+1,i+1)
       enddo
-                      
+
       weight2(j,j+1:) = 0.
- 
+
       enddo
-                   
+
 # endif
-       
- 
+
+
 # ifdef TEST_WEIGHTS
       MPI_master_only write(*,'(/1x,A,I3,4x,A,I3/4x,A,2(12x,A))')
      &               'Time Splitting weights: ndtfast =', ndtfast,
@@ -260,25 +260,25 @@ c**     write(*,*) shft/sum, ndtfast
         MPI_master_only write(*,'(/1x,A/)')
      &  'WARNING: unstable weights, reduce parameter "r".'
       endif
- 
+
       MPI_master_only write(*,'(/A/A,1x,A,15x,A,7x,A/)')
      &  'Checking consistency of primary and secondary weights...',
      &                     'step',  'zeta_avr1', 'dt*divVBAR_avr2',
      &                     'zeta_avr1-dt*divVBAR_avr2'
- 
+
       do j=1,nfast              !--> Loop over realizations
         next_kstp=1
         zeta(1)=0.              ! set initial conditions
         zeta(2)=0.              ! for each realization.
         do iif=1,nfast
 
- 
+
           if (iif.eq.j) then
             DUon=1.
           else                  ! Set up delta function over
             DUon=0.             ! over ensamble of individual
           endif                 ! realizations j.
- 
+
 #  undef FORW_BAK
 #  ifdef FORW_BAK
 
@@ -291,11 +291,11 @@ c**     write(*,*) shft/sum, ndtfast
           kstp=next_kstp
           knew=3
           call step2d_imitator (zeta, DUon, Zt_avg1, DU_avg2)
- 
+
           knew=3-kstp
           next_kstp=knew
           call step2d_imitator (zeta, DUon, Zt_avg1, DU_avg2)
-#  endif          
+#  endif
         enddo
         write(*,'(I4,2F24.18,F24.20)') j, Zt_avg1, dt*DU_avg2,
      &                                     Zt_avg1-dt*DU_avg2
@@ -307,8 +307,8 @@ c**     write(*,*) shft/sum, ndtfast
       knew=1                           ! default initial
       return                           ! values, as set
       end                              ! by "init_scalars".
- 
- 
+
+
       subroutine step2d_FB_imitator (zeta, DUon, Zt_avg1, DU_avg2)
       implicit none
       real zeta(4), DUon, Zt_avg1, DU_avg2, zeta_new, cff1,cff2
@@ -330,13 +330,13 @@ c**     write(*,*) shft/sum, ndtfast
       return
       end
 
- 
+
       subroutine step2d_imitator (zeta, DUon, Zt_avg1, DU_avg2)
       implicit none
       real zeta(3), DUon, Zt_avg1, DU_avg2, zeta_new
 #  include "param.h"
 #  include "scalars.h"
- 
+
       if (knew.eq.3) then
         krhs=kstp
         PREDICTOR_2D_STEP=.true.
@@ -350,7 +350,7 @@ c**     write(*,*) shft/sum, ndtfast
 ! with the fast-time-averaging procedure in step2d_tile (see
 ! file "step2D_LF_AM3.F").
 !
- 
+
       if (PREDICTOR_2D_STEP) then
         if (FIRST_2D_STEP) then
           Zt_avg1=0.
@@ -367,7 +367,7 @@ c**     write(*,*) shft/sum, ndtfast
 ! see file "step2d_LF_AM3.F".
 !
       if (PREDICTOR_2D_STEP) then
- 
+
       else
         zeta(knew)=zeta(kstp) + dtfast*DUon
       endif
@@ -377,17 +377,17 @@ c**     write(*,*) shft/sum, ndtfast
       if (iif.eq.nfast .and. .not.PREDICTOR_2D_STEP) then
         Zt_avg1=Zt_avg1 + weight(1,iif)*zeta(knew)
       endif
- 
+
 # else
       MPI_master_only write(stdout,'(/1x,A,I3,4x,A,I3/)')
      &   'Time splitting: ndtfast =', ndtfast, 'nfast =', nfast
- 
+
 # endif   /* TEST_WEIGHTS */
       return
       end
- 
+
 #else
       subroutine set_weights_empty
       end
 #endif     /* SOLVE3D */
- 
+

@@ -38,6 +38,9 @@ MODULE p4zflx
 
    REAL(wp) ::   xconv  = 0.01 / 3600.   !: coefficients for conversion 
 
+   LOGICAL  :: l_cflx
+   LOGICAL  :: l_oflx
+
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zflx.F90 10425 2018-12-19 21:54:16Z smasson $ 
@@ -70,6 +73,10 @@ CONTAINS
       REAL(wp), ALLOCATABLE, DIMENSION(:,:) ::   zw2d
       !!---------------------------------------------------------------------
       !
+      IF( kt == nittrc000 )  THEN
+         l_cflx  = iom_use( "Cflx" ) .OR. iom_use( "Dpco2" ) .OR. iom_use( "Kg" )
+         l_oflx  = iom_use( "Oflx" ) .OR. iom_use( "Dpo2" )
+      ENDIF
       ! SURFACE CHEMISTRY (PCO2 AND [H+] IN
       !     SURFACE LAYER); THE RESULT OF THIS CALCULATION
       !     IS USED TO COMPUTE AIR-SEA FLUX OF CO2
@@ -147,35 +154,48 @@ CONTAINS
          CALL prt_ctl_trc( charout, ltra='tra')
 !         CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
       ENDIF
- 
-#if defined key_iomput
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
-         ALLOCATE( zw2d(PRIV_2D_BIOARRAY) )  
-         IF( iom_use( "Cflx"  ) )  THEN
-            zw2d(:,:) = oce_co2(:,:) * rfact2r
-            CALL iom_put( "Cflx"     , zw2d )
+         IF( l_cflx ) THEN
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+            DO jj = JRANGE
+               DO ji = IRANGE
+                    zw2d(ji,jj) = oce_co2(ji,jj) * rfact2r
+                ENDDO
+            ENDDO
+            CALL iom_put( "Cflx", zw2d )
+            DO jj = JRANGE
+               DO ji = IRANGE
+                    zw2d(ji,jj) = ( zpco2atm(ji,jj) - zh2co3(ji,jj) &
+                      &         / ( chemc(ji,jj,1) + rtrn ) ) * tmask(ji,jj,1)
+                ENDDO
+            ENDDO
+            CALL iom_put( "Dpco2" ,  zw2d )
+            DO jj = JRANGE
+               DO ji = IRANGE
+                    zw2d(ji,jj) = zkgco2(ji,jj) * tmask(ji,jj,1)
+                ENDDO
+            ENDDO
+            CALL iom_put( "Kg", zw2d )
+            DEALLOCATE( zw2d )
          ENDIF
-
-         IF( iom_use( "Oflx"  ) )  THEN
-            zw2d(:,:) =  zoflx(:,:) * 1000 * tmask(:,:,1)
+         IF( l_oflx ) THEN
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
+            DO jj = JRANGE
+               DO ji = IRANGE
+                    zw2d(ji,jj) = zoflx(ji,jj) * 1000. * tmask(ji,jj,1)
+                ENDDO
+            ENDDO
             CALL iom_put( "Oflx" , zw2d )
+            DO jj = JRANGE
+               DO ji = IRANGE
+                    zw2d(ji,jj) = ( atcox * patm(ji,jj) &
+                      &         - atcox * trb(ji,jj,KSURF,jpoxy) / ( chemo2(ji,jj,1) + rtrn ) ) * tmask(ji,jj,1)
+                ENDDO
+            ENDDO
+            CALL iom_put( "Dpo2" ,  zw2d )
+            DEALLOCATE( zw2d )
          ENDIF
-         IF( iom_use( "Kg"    ) )  THEN
-            zw2d(:,:) =  zkgco2(:,:) * tmask(:,:,1)
-            CALL iom_put( "Kg"   , zw2d )
-         ENDIF
-         IF( iom_use( "Dpco2" ) ) THEN
-           zw2d(:,:) = ( zpco2atm(:,:) - zh2co3(:,:) / ( chemc(:,:,1) + rtrn ) ) * tmask(:,:,1)
-           CALL iom_put( "Dpco2" ,  zw2d )
-         ENDIF
-         IF( iom_use( "Dpo2" ) )  THEN
-           zw2d(:,:) = ( atcox * patm(:,:) - atcox * trb(:,:,KSURF,jpoxy) / ( chemo2(:,:,1) + rtrn ) ) * tmask(:,:,1)
-           CALL iom_put( "Dpo2"  , zw2d )
-         ENDIF
-         !
-         DEALLOCATE( zw2d )
       ENDIF
-#endif
       !
 #if defined key_trc_diaadd
       DO jj = JRANGE

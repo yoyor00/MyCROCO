@@ -4,9 +4,9 @@
 #include "cppdefs.h"
 #ifdef MPI
 
-#if (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_3PTS) && (!defined MP_1PTS)
       subroutine MessPass2D_tile (Istr,Iend,Jstr,Jend, A)
-#elif defined MP_1PTS
+# elif defined MP_1PTS
       subroutine MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend, A)
 # else
       subroutine MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend, A)
@@ -27,15 +27,15 @@
 # include "mpi_cpl.h"
       include 'mpif.h'
       integer Npts
-#if (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_3PTS) && (!defined MP_1PTS)
       parameter (Npts=2)
-#elif defined MP_1PTS
+# elif defined MP_1PTS
       parameter (Npts=1)
-#else
+# else
       parameter (Npts=3)
-#endif
+# endif
       logical, parameter :: use_host_device = .TRUE.
-#include "mpi_buffers.h"
+# include "mpi_buffers.h"
 !
 ! Nb of boundary points involved in communication
 !
@@ -45,9 +45,9 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j, isize,jsize,ksize,  iter,
      &        req(8), status(MPI_STATUS_SIZE,8), ierr, mdii,mdjj
      
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
       real,dimension(Npts)        :: checksum
-#endif
+# endif
 !
 # include "compute_message_bounds.h"
 
@@ -69,7 +69,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       isize=Npts*ishft                  ! sizes for side messages
       jsize=Npts*jshft                  ! in XI and ETA directions
 
-#define write !
+# define write !
 c*      write(*,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
 c*     &        'ii=',ii,'imin=',imin,'imax=',imax,
 c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
@@ -96,7 +96,7 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
             enddo
 !$acc update host(jbuf_sndW) if(.not.use_host_device)
 !$acc host_data if(compute_on_device.and.use_host_device) 
-!$&acc& use_device(jbuf_revW, jbuf_sndW)
+!$acc& use_device(jbuf_revW, jbuf_sndW)
             call MPI_Irecv (jbuf_revW, jsize, MPI_DOUBLE_PRECISION,
      &                         p_W, 2, MPI_COMM_WORLD, req(1), ierr)
             call MPI_Send  (jbuf_sndW, jsize, MPI_DOUBLE_PRECISION,
@@ -239,23 +239,23 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
         call MPI_Wait (req(1),status(1,1),ierr)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
           checksum(:) = 0.
-#endif          
+# endif          
 c           print *,"chkbandname:",chkbandname,"---"
         do j=jmin,jmax
           do ipts=1,Npts
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
             if ( A(ipts-Npts,j)==jbuf_revW(j-jmin+(ipts-1)*jshft) ) 
      &           checksum(ipts) = checksum(ipts)+1
 c            endif
-#endif
+# endif
            A(ipts-Npts,j)=jbuf_revW(j-jmin+(ipts-1)*jshft)
           enddo
         enddo
         ! 
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
 c         if ( chkbandname .ne. 'none') then
           do ipts=1,Npts
 c             print *,"checksum(ipts)=",checksum(ipts)
@@ -268,7 +268,7 @@ c                stop
           enddo
           checksum(:) = 0.
 c          endif
-#endif        
+# endif        
       endif
       if ( WEST_INTER .and. .not. WEST_INTER2 ) then
         do j=jmin,jmax
@@ -282,21 +282,21 @@ c          endif
         call MPI_Wait (req(2),status(1,2),ierr)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
         checksum(:) = 0.
-#endif        
+# endif        
         do j=jmin,jmax
           do ipts=1,Npts
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
             if (  A(Lmmpi+ipts,j)==jbuf_revE(j-jmin+(ipts-1)*jshft) ) 
      &          checksum(ipts) = checksum(ipts)+1
 c            endif
-#endif
+# endif
            A(Lmmpi+ipts,j)=jbuf_revE(j-jmin+(ipts-1)*jshft)
           enddo
         enddo
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
 c         if ( chkbandname .ne. 'none') then
           do ipts=1,Npts
 c             print *,"checksum(ipts)=",checksum(ipts)
@@ -309,7 +309,7 @@ c                stop
           enddo
           checksum(:) = 0.
 c          endif
-#endif        
+# endif        
       endif
       if ( EAST_INTER .and. .not. EAST_INTER2 ) then
         do j=jmin,jmax
@@ -324,21 +324,21 @@ c          endif
 !$acc update device(ibuf_revS) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
            checksum(:) = 0.
-#endif           
+# endif           
        do jpts=1,Npts
           do i=imin,imax
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
             if ( A(i,jpts-Npts)==ibuf_revS(i-imin+(jpts-1)*ishft) ) 
      &          checksum(jpts) = checksum(jpts)+1
 c            endif
-#endif
+# endif
            A(i,jpts-Npts)=ibuf_revS(i-imin+(jpts-1)*ishft)
           enddo
         enddo
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
 c         if ( chkbandname .ne. 'none') then
           do jpts=1,Npts
 c             print *,"checksum(ipts)=",checksum(ipts)
@@ -351,7 +351,7 @@ c                stop
           enddo
           checksum(:) = 0.
 c          endif
-#endif        
+# endif        
       endif
       if ( SOUTH_INTER .and. .not. SOUTH_INTER2 ) then
         do jpts=1,Npts
@@ -366,21 +366,21 @@ c          endif
 !$acc update device(ibuf_revN) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
         checksum(:) = 0.
-#endif        
+# endif        
         do jpts=1,Npts
           do i=imin,imax
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
 c            if ( chkbandname .ne. 'none' ) then
             if ( A(i,Mmmpi+jpts)==ibuf_revN(i-imin+(jpts-1)*ishft) ) 
      &          checksum(jpts) = checksum(jpts)+1
 c            endif
-#endif
+# endif
             A(i,Mmmpi+jpts)=ibuf_revN(i-imin+(jpts-1)*ishft)
           enddo
         enddo
-#ifdef  BAND_DEBUG         
+# ifdef  BAND_DEBUG         
 c         if ( chkbandname .ne. 'none') then
           do jpts=1,Npts
 c             print *,"checksum(ipts)=",checksum(ipts)
@@ -393,7 +393,7 @@ c                stop
           enddo
           checksum(:) = 0.
 c          endif
-#endif        
+# endif        
       endif
       if (NORTH_INTER .AND. .not. NORTH_INTER2) then
         do jpts=1,Npts
@@ -496,15 +496,15 @@ c      write(*,*) 'MessPass2D:    ', mynode,' exit'
       return
       end
 
-#if (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_3PTS) && (!defined MP_1PTS)
 #  define MP_3PTS
 #  include "MessPass2D.F"
 #  undef MP_3PTS
-#ifndef MP_1PTS
-#define MP_1PTS
-#  include "MessPass2D.F"
-#undef MP_1PTS
-#endif
+#  ifndef MP_1PTS
+#   define MP_1PTS
+#   include "MessPass2D.F"
+#   undef MP_1PTS
+#  endif
 # endif
 
 

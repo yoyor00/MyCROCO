@@ -3,13 +3,13 @@
 !
 #include "cppdefs.h"
 
-# ifdef MPI
-#  define LOCALLM Lmmpi
-#  define LOCALMM Mmmpi
-# else
-#  define LOCALLM Lm
-#  define LOCALMM Mm
-# endif
+#ifdef MPI
+# define LOCALLM Lmmpi
+# define LOCALMM Mmmpi
+#else
+# define LOCALLM Lm
+# define LOCALMM Mm
+#endif
 #if defined BD_EXCHANGE
 
 # define exchange_2d_tile exchange_r2d_tile
@@ -18,8 +18,8 @@
 # define JSTART JstrR
 # define ISTART IstrR
 # include "exchange_2d_tile.h"
-# undef ISTART 
-# undef JSTART 
+# undef ISTART
+# undef JSTART
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 # undef exchange_2d_1pts_tile
@@ -30,8 +30,8 @@
 # define JSTART JstrR
 # define ISTART Istr
 # include "exchange_2d_tile.h"
-# undef ISTART 
-# undef JSTART 
+# undef ISTART
+# undef JSTART
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 # undef exchange_2d_1pts_tile
@@ -42,8 +42,8 @@
 # define JSTART Jstr
 # define ISTART IstrR
 # include "exchange_2d_tile.h"
-# undef ISTART 
-# undef JSTART 
+# undef ISTART
+# undef JSTART
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 # undef exchange_2d_1pts_tile
@@ -54,8 +54,8 @@
 # define JSTART Jstr
 # define ISTART Istr
 # include "exchange_2d_tile.h"
-# undef ISTART 
-# undef JSTART 
+# undef ISTART
+# undef JSTART
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 # undef exchange_2d_1pts_tile

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -63,7 +63,7 @@
       real    cffwx, cffwy, cffuz, cffvz
 
 # include "param.h"
-#  include "work.h"
+# include "work.h"
 # include "scalars.h"
 # include "ncscrum.h"
 # include "grid.h"
@@ -319,7 +319,7 @@
      &                     ( cff1*Mrate_avg(i,j,k,iflux) +
      &                            cffM )
 
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
             cffM = ( MBaro(i+1,j,k,iflux)-MBaro(i,j,k,iflux) )
      &             * 0.5 * (pm_u(i+1,j) + pm_u(i,j)) * cffux
      & + (0.25 *(MBaro(i,j+1,k,iflux)-MBaro(i,j,k,iflux))
@@ -334,9 +334,9 @@
                 MBaro_avg(i,j,k,iflux) = cff *
      &                     ( cff1*MBaro_avg(i,j,k,iflux) +
      &                            cffM )
-# endif
+#  endif
 
-# if defined M3FAST
+#  if defined M3FAST
             cffM = ( Mfast(i+1,j,k,iflux)-Mfast(i,j,k,iflux) )
      &             * 0.5 * (pm_u(i+1,j) + pm_u(i,j)) * cffux
      & + (0.25 *(Mfast(i,j+1,k,iflux)-Mfast(i,j,k,iflux))
@@ -351,7 +351,7 @@
                 Mfast_avg(i,j,k,iflux) = cff *
      &                     ( cff1*Mfast_avg(i,j,k,iflux) +
      &                            cffM )
-# endif
+#  endif
 
                elseif (iflux.eq.2) then
 
@@ -532,7 +532,7 @@
      &                     ( cff1*Mrate_avg(i,j,k,iflux) +
      &                            cffM )
 
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
         cffM = (MBaro(i,j+1,k,iflux) - MBaro(i,j,k,iflux))
      &            * 0.5 * (pn_v(i,j+1) + pn_v(i,j)) * cffvy
      &  +(0.25*(MBaro(i+1,j,k,iflux)-MBaro(i,j,k,iflux))
@@ -547,9 +547,9 @@
                 MBaro_avg(i,j,k,iflux) = cff *
      &                     ( cff1*MBaro_avg(i,j,k,iflux) +
      &                            cffM )
-# endif
+#  endif
 
-# if defined M3FAST
+#  if defined M3FAST
         cffM = (Mfast(i,j+1,k,iflux) - Mfast(i,j,k,iflux))
      &            * 0.5 * (pn_v(i,j+1) + pn_v(i,j)) * cffvy
      &  +(0.25*(Mfast(i+1,j,k,iflux)-Mfast(i,j,k,iflux))
@@ -564,12 +564,12 @@
                 Mfast_avg(i,j,k,iflux) = cff *
      &                     ( cff1*Mfast_avg(i,j,k,iflux) +
      &                            cffM )
-# endif
+#  endif
 
                endif
 
 
-#else
+# else
                 MXadv_avg(i,j,k,iflux) = cff *
      &                     ( cff1*MXadv_avg(i,j,k,iflux) +
      &                            MXadv(i,j,k,iflux) )
@@ -598,43 +598,43 @@
      &                     ( cff1*MVmix2_avg(i,j,k,iflux) +
      &                            MVmix2(i,j,k,iflux) )
                 Mrate_avg(i,j,k,iflux) = cff *
-     &                     ( cff1*Mrate_avg(i,j,k,iflux) + 
+     &                     ( cff1*Mrate_avg(i,j,k,iflux) +
      &                            Mrate(i,j,k,iflux) )
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
                 MBaro_avg(i,j,k,iflux) = cff *
      &                     ( cff1*MBaro_avg(i,j,k,iflux) +
      &                            MBaro(i,j,k,iflux) )
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
                 Mfast_avg(i,j,k,iflux) = cff *
      &                     ( cff1*Mfast_avg(i,j,k,iflux) +
      &                            Mfast(i,j,k,iflux) )
-# endif
+#  endif
 # endif
 # if defined MRL_WCI
                 Mvf_avg(i,j,k,iflux)= cff *
-     &                     ( cff1*Mvf_avg(i,j,k,iflux) + 
+     &                     ( cff1*Mvf_avg(i,j,k,iflux) +
      &                            Mvf(i,j,k,iflux) )
                 Mbrk_avg(i,j,k,iflux)= cff *
-     &                     ( cff1*Mbrk_avg(i,j,k,iflux) + 
+     &                     ( cff1*Mbrk_avg(i,j,k,iflux) +
      &                            Mbrk(i,j,k,iflux) )
                 MStCo_avg(i,j,k,iflux)= cff *
-     &                     ( cff1*MStCo_avg(i,j,k,iflux) + 
+     &                     ( cff1*MStCo_avg(i,j,k,iflux) +
      &                            MStCo(i,j,k,iflux) )
                 MVvf_avg(i,j,k,iflux)= cff *
-     &                     ( cff1*MVvf_avg(i,j,k,iflux) + 
+     &                     ( cff1*MVvf_avg(i,j,k,iflux) +
      &                            MVvf(i,j,k,iflux) )
                 MPrscrt_avg(i,j,k,iflux)= cff *
-     &                     ( cff1*MPrscrt_avg(i,j,k,iflux) + 
+     &                     ( cff1*MPrscrt_avg(i,j,k,iflux) +
      &                            MPrscrt(i,j,k,iflux) )
                 Msbk_avg(i,j,k,iflux)= cff *
-     &                     ( cff1*Msbk_avg(i,j,k,iflux) + 
+     &                     ( cff1*Msbk_avg(i,j,k,iflux) +
      &                            Msbk(i,j,k,iflux) )
                 Mbwf_avg(i,j,k,iflux)= cff *
-     &                     ( cff1*Mbwf_avg(i,j,k,iflux) + 
+     &                     ( cff1*Mbwf_avg(i,j,k,iflux) +
      &                            Mbwf(i,j,k,iflux) )
                 Mfrc_avg(i,j,k,iflux)= cff *
-     &                     ( cff1*Mfrc_avg(i,j,k,iflux) + 
+     &                     ( cff1*Mfrc_avg(i,j,k,iflux) +
      &                            Mfrc(i,j,k,iflux) )
 # endif
               enddo

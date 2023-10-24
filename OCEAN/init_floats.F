@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -85,7 +85,7 @@ c             frmt='(i1,i2,i5,f10.4,2f8.0,f8.2,2x,i1,4f9.3)'
 c           else
 c            frmt='(i1,i2,i5,f10.4,3f8.2,2x,i1,4f9.3)'
 c           endif
-c# else 
+c# else
 c             frmt='(i1,i2,i5,f10.4,3f8.2,2x,i1,4f9.3)'
 c# endif
 c           write(stdout,frmt) Fcoor(i), Ftype(i), Fcount(i),
@@ -224,7 +224,7 @@ c    &                   Fgrd(i),Fdt(i), Fdx(i), Fdy(i), Fdz(i)
       return
 
  195  write(stdout,205) fposnam
- 205  format(/,'float file ',A,/,' not found => float initialization', 
+ 205  format(/,'float file ',A,/,' not found => float initialization',
      &   ' using restart file')
 
           call get_initial_floats
@@ -255,16 +255,16 @@ C! Fin test
 !                                                                    !
 !=====================================================================
 !
-#ifdef AGRIF
+# ifdef AGRIF
         USE Agrif_Util
-#endif
+# endif
       implicit none
 # include "param.h"
 !
       logical found
       logical Try_Range
       integer Imax, Imin, Jmax, Jmin, Npos, i0, j0, k
-      real Ipos(Npos), Jpos(Npos), Xpos(Npos), Ypos(Npos), 
+      real Ipos(Npos), Jpos(Npos), Xpos(Npos), Ypos(Npos),
      &  deltax, deltay, dx1, dy1, dx2, dy2, c1, c2
       real Xgrd(GLOBAL_2D_ARRAY),
      &     Ygrd(GLOBAL_2D_ARRAY)
@@ -318,10 +318,10 @@ C! Fin test
             endif
           enddo
 
-! Improved interpolation block (02/06/03). Not totally 
-! accurate in case where the grid is strongly deformed. 
-! The nonalignment of xsi (eta) axis with longitude 
-! (latitude) direction is taken into account. 
+! Improved interpolation block (02/06/03). Not totally
+! accurate in case where the grid is strongly deformed.
+! The nonalignment of xsi (eta) axis with longitude
+! (latitude) direction is taken into account.
 
            dy1=Ygrd(Imin,Jmin+1)-Ygrd(Imin,Jmin)
            dx1=Xgrd(Imin,Jmin+1)-Xgrd(Imin,Jmin)
@@ -336,7 +336,7 @@ C! Fin test
 
            c1=Xgrd(Imin,Jmin)*dy1-Ygrd(Imin,Jmin)*dx1
            c2=Xpos(k)        *dy2-Ypos(k)        *dx2
-           deltay=(c1*dy2-c2*dy1)/(dx2*dy1-dy2*dx1) 
+           deltay=(c1*dy2-c2*dy1)/(dx2*dy1-dy2*dx1)
            deltay=(deltay-Ygrd(Imin,Jmin))/dy1
            Jpos(k)=FLOAT(Jmin)+MIN(MAX(0.0,deltay),1.0)
 
@@ -362,7 +362,7 @@ C! Fin test
 !=====================================================================
 !
       implicit none
-#include "param.h"
+# include "param.h"
 !
       logical Try_Range, inside
       integer Imax, Imin, Jmax, Jmin, Nb, NX, i, j, shft

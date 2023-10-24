@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -41,7 +41,7 @@
 !netCDF files.  The differences are due to index shifting (netCDF
 !array index must always start from 1, while Fortran does not);
 !Fortran array dimension padding; and stripping periodic/computational
-!margins. 
+!margins.
 
       integer imin,imax,jmin,jmax, start(4), count(4),
      &                            vert_type, horiz_type
@@ -99,7 +99,7 @@
         jmax=Mmmpi+1
       else
         jmax=Mmmpi
-      endif       
+      endif
 # endif
 #else
       imax=Lm+1

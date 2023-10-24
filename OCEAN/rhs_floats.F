@@ -2,16 +2,16 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #ifdef FLOATS
-#ifdef SOLVE3D
+# ifdef SOLVE3D
 
       subroutine rhs_floats (uf,vf,Wf, nfltmax,indx)
       implicit none
@@ -106,7 +106,7 @@
         r2=track(izgrd,nfp1,iflt)+0.5 - float(k1)
         r1=1.-r2
         k1=max(k1,   1)
-        k2=min(k1+1, N) 
+        k2=min(k1+1, N)
 
         i1=int(track(ixgrd,nfp1,iflt)+0.5)
         i2=i1+1
@@ -117,9 +117,9 @@
         j2=j1+1
 #  ifdef MASKING
 !
-! Note that the following code segment yields 
+! Note that the following code segment yields
 !
-!           rmask(i1,j1) rmask(i1,j2)       q1   q2 
+!           rmask(i1,j1) rmask(i1,j2)       q1   q2
 !           ----------------------------------------------
 !               1            1        0< q1,q2 <1, q1+q2=1
 !               1            0               1    0

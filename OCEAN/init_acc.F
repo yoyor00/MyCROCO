@@ -1,10 +1,10 @@
         subroutine initialisation_openacc
 #ifdef OPENACC
-#ifdef JEANZAY
+# ifdef JEANZAY
         USE openacc
         implicit none
-#include "cppdefs.h"
-#include "param.h"
+#  include "cppdefs.h"
+#  include "param.h"
  
         character(len=6) :: local_rank_env
         integer          :: local_rank_env_status
@@ -35,6 +35,6 @@
      &   "Erreur : impossible de déterminer le rang local du processus"
             stop 1
         end if
-#endif
+# endif
 #endif        
         end subroutine initialisation_openacc

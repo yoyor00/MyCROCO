@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -57,12 +57,12 @@
 !
 !---------------------------------------------------------------
 !  Compute thermal expansion and saline contraction coefficients
-!  at surface 
+!  at surface
 !
 !  Ts salinity [PSU].
 !  Tt potential temperature [deg Celsius].
 !  den(Ts,Tt,0) surface density [kg/m^3]
-!  rho1(Ts,Tt,0)=den(Ts,Tt,0)-1000. , computed from Jackett & 
+!  rho1(Ts,Tt,0)=den(Ts,Tt,0)-1000. , computed from Jackett &
 !                                               McDougall, 1992)
 !  alpha(Ts,Tt,0)=-d(rho1(Ts,Tt,0))/d(Tt) / den(Ts,Tt,0)
 !  beta(Ts,Tt,0) = d(rho1(Ts,Tt,0))/d(Ts) / den(Ts,Tt,0)
@@ -101,7 +101,7 @@
 !$acc kernels if(compute_on_device) default(present)
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
-# ifdef NONLIN_EOS 
+# ifdef NONLIN_EOS
 #  ifdef TEMPERATURE
           Tt=t(i,j,N,nstp,itemp)
 #  else
@@ -125,7 +125,7 @@
           beta(i,j)= cff*( U00+Tt*(U01+Tt*(U02+Tt*(U03+Tt*U04)))
      &                 +1.5*(V00+Tt*(V01+Tt*V02))*sqrtTs+2.*W00*Ts
      &                                                            )
-# else     
+# else
 !
 !   Linear Equation of state thermal expansion and saline
 !   contraction coefficients:

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,10 +20,10 @@
       integer :: MAX_NSUB_E
       common/autotilingparams/MAX_NSUB_X,MAX_NSUB_E
 #endif
-      
+
       integer, parameter :: nbvalid = 3
       integer, parameter :: nbdistrib = 4
-      
+
       real cpu_domain(0:2)
       real times(MAX_NSUB_X,MAX_NSUB_E,nbdistrib*nbvalid)
       integer nbinst(MAX_NSUB_X,MAX_NSUB_E)

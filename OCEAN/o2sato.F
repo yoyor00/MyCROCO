@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,19 +15,19 @@
 !  Routines from the OCMIP project for the ROMS carbonized ecosystem model.
 !  Some of these routines were adapted for the use in a parallel code.
 !
-! 
+!
 !  Revision 1.1  1999/03/22 12:57:48  orr
 !  Initial revision
-! 
+!
 !  ---------------------------------------------------------------------
-!  
+!
       function o2sato(T,S)
 !
 ! ********************************************************************
-!                                     
+!
 ! Computes the oxygen saturation concentration at 1 atm total pressure
 ! in mol/m^3 given the temperature (t, in deg C) and the salinity (s,
-! in permil). 
+! in permil).
 !
 ! FROM GARCIA AND GORDON (1992), LIMNOLOGY and OCEANOGRAPHY.
 ! THE FORMULA USED IS FROM PAGE 1310, EQUATION (8).
@@ -38,7 +38,7 @@
 ! o2sato IS DEFINED BETWEEN T(freezing) <= T <= 40(deg C) AND
 ! 0 permil <= S <= 42 permil
 ! C
-! CHECK VALUE:  T = 10.0 deg C, S = 35.0 permil, 
+! CHECK VALUE:  T = 10.0 deg C, S = 35.0 permil,
 ! o2sato = 0.282015 mol/m^3
 !
 ! The unit for the return value is now [mmol/m^3], as needed by ROMS
@@ -59,7 +59,7 @@
      &           B3=-8.17083E-3, C0=-4.88682E-7)
 
 ! other variables
-      real    TT      
+      real    TT
       real    TK        ! Temperature [K]
       real    TS, TS2, TS3, TS4, TS5
       real    CO

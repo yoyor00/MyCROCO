@@ -61,7 +61,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
     fi
 #
     if [ ${USE_WAV} -eq 1 ] ; then
-        varlist='WW3_T0M1 WW3__OHS WW3__DIR WW3_ACHA WW3_TAWX WW3_TAWY WW3_TWOX WW3_TWOY'
+        varlist='WW3_T0M1 WW3__OHS WW3__DIR WW3_ACHA WW3_TAWX WW3_TAWY WW3_TWOX WW3_TWOY WW3_USSX WW3_USSY WW3__FOC WW3___LM WW3__BHD WW3_UBRX WW3_UBRY'
         if [[ ${CPL_restart} == "TRUE" ]] && [[ ! -z ${wav_rst_file} ]]; then
             echo "create wave restart file for oasis from preexisting file ${wav_rst_file}"
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${WAV_FILES_DIR}/${wav_rst_file}" wav.nc ww3
@@ -105,15 +105,15 @@ else
 
     [ ${USE_WAV} -eq 1 ] && cpfile ${RESTDIR_IN}/wav_${CEXPER}_${DATE_END_JOBm1}.nc wav.nc 
 
-    [[ ${USE_ATM} -eq 1 && ${USE_OCE} -eq 1 ]] && cp ${RESTDIR_IN}/*atmt_to_ocn* . && cp ${RESTDIR_IN}/*ocn*_to_atmt* . 
+    [[ ${USE_ATM} -eq 1 && ${USE_OCE} -eq 1 ]] && cp ${RESTDIR_IN}/*atmt_to_ocnt* . && cp ${RESTDIR_IN}/*ocnt_to_atmt* . 
     [[ ${USE_ATM} -eq 1 && ${USE_WAV} -eq 1 ]] && cp ${RESTDIR_IN}/*atmt_to_ww3t* . && cp ${RESTDIR_IN}/*ww3t_to_atmt* .
-    [[ ${USE_OCE} -eq 1 && ${USE_WAV} -eq 1 ]] && cp ${RESTDIR_IN}/*ocn*_to_ww3t* . && cp ${RESTDIR_IN}/*ww3t_to_ocn* .  
+    [[ ${USE_OCE} -eq 1 && ${USE_WAV} -eq 1 ]] && cp ${RESTDIR_IN}/*ocn*_to_ww3t* . && cp ${RESTDIR_IN}/*ww3t_to_ocnt* .  
 
     if [ ${USE_TOY} -ge 1 ] ; then
         for k in `seq 0 $(( ${nbtoy} - 1 ))`; do
             cpfile ${RESTDIR_IN}/${toytype[$k]}_${CEXPER}_${DATE_END_JOBm1}.nc ${toytype[$k]}.nc
         done
-	[ ${USE_OCE} -eq 1 ] && cp ${RESTDIR_IN}/*toy*_to_ocn* . && cp ${RESTDIR_IN}/*ocn*_to_toy* . 
+	[ ${USE_OCE} -eq 1 ] && cp ${RESTDIR_IN}/*toy*_to_ocnt* . && cp ${RESTDIR_IN}/*ocn*_to_toy* . 
 	[ ${USE_WAV} -eq 1 ] && cp ${RESTDIR_IN}/*toy*_to_ww3t* . && cp ${RESTDIR_IN}/*ww3t_to_toy* .
         [ ${USE_ATM} -eq 1 ] && cp ${RESTDIR_IN}/*toy*_to_atmt* . && cp ${RESTDIR_IN}/*atmt_to_toy* .
         if [ ${nbtoy} -gt 1 ]; then

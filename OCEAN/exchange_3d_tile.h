@@ -17,11 +17,11 @@
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-# ifndef MP_3PTS
+#ifndef MP_3PTS
       parameter (Npts=2)
-# else
+#else
       parameter (Npts=3)
-# endif
+#endif
       real A(GLOBAL_2D_ARRAY,KSTART:N)
       integer Istr,Iend,Jstr,Jend, i,j,k
 !
@@ -168,9 +168,9 @@ C$OMP BARRIER
       return
       end
 
-# ifndef MP_3PTS
-#  define MP_3PTS
-#  include "exchange_3d_tile.h"
-#  undef MP_3PTS
-# endif
+#ifndef MP_3PTS
+# define MP_3PTS
+# include "exchange_3d_tile.h"
+# undef MP_3PTS
+#endif
 

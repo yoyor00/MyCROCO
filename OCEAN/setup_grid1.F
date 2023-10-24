@@ -3,10 +3,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -31,9 +31,9 @@ C$    integer omp_get_thread_num
 #include "param.h"
 #include "scalars.h"
 #include "grid.h"
-# ifdef WKB_WWAVE
-#  include "wkb_wwave.h"
-# endif
+#ifdef WKB_WWAVE
+# include "wkb_wwave.h"
+#endif
 !
 #include "compute_extended_bounds.h"
 !$acc kernels if(compute_on_device) default(present)
@@ -41,20 +41,20 @@ C$    integer omp_get_thread_num
 !  Set f/mn,at horizontal RHO-points.
 !
       do j=JstrR,JendR                             ! This array
-        do i=IstrR,IendR                           ! is NOT to be 
-          fomn(i,j)=f(i,j)/(pm(i,j)*pn(i,j))       ! communicated 
-                                                   ! in MPI code; 
+        do i=IstrR,IendR                           ! is NOT to be
+          fomn(i,j)=f(i,j)/(pm(i,j)*pn(i,j))       ! communicated
+                                                   ! in MPI code;
                                                    ! others are...
-# if defined UV_COR_NT || defined CROCO_QH
+#if defined UV_COR_NT || defined CROCO_QH
 !
 !  Horizontal Coriolis parameter e/mn
 !   e = 2 Omega cos(Phi)
 !
-#  ifndef ANA_GRID
+# ifndef ANA_GRID
           e(i,j)=2.*Erotation*cos(asin(f(i,j)/(2.*Erotation)))
-#  endif
-          eomn(i,j)=e(i,j)/(pm(i,j)*pn(i,j))          
 # endif
+          eomn(i,j)=e(i,j)/(pm(i,j)*pn(i,j))
+#endif
         enddo
       enddo
 
@@ -66,7 +66,7 @@ C$    integer omp_get_thread_num
 # define IU_RANGE  Istr,IendR
 # ifdef MPI
                                           ! Ghost points along
-      if (WEST_INTER) IstrR=Istr          ! computational boundary 
+      if (WEST_INTER) IstrR=Istr          ! computational boundary
       if (EAST_INTER) IendR=Iend          ! are filled during
                                           ! subsequent communication;
                                           ! see also below...
@@ -79,7 +79,7 @@ C$    integer omp_get_thread_num
 # define JR_RANGE JstrR,JendR
 # define JV_RANGE  Jstr,JendR
 # ifdef MPI
-      if (SOUTH_INTER) JstrR=Jstr         ! same as above.  
+      if (SOUTH_INTER) JstrR=Jstr         ! same as above.
       if (NORTH_INTER) JendR=Jend         !
 # endif
 #endif
@@ -92,15 +92,15 @@ C$    integer omp_get_thread_num
           on_r(i,j)=1./pn(i,j)
           pnom_r(i,j)=pn(i,j)/pm(i,j)
           pmon_r(i,j)=pm(i,j)/pn(i,j)
-# if defined UV_COR_NT || defined CROCO_QH
+#if defined UV_COR_NT || defined CROCO_QH
 # ifdef CURVGRID
           cosa(i,j) = cos(angler(i,j))
           sina(i,j) = sin(angler(i,j))
 # else
           cosa(i,j) = 1.
-          sina(i,j) = 0.          
+          sina(i,j) = 0.
 # endif
-#endif     
+#endif
         enddo
       enddo
 !
@@ -176,7 +176,7 @@ C$    integer omp_get_thread_num
 
 #ifdef WET_DRY
 !
-!  Compute critical depth term at RHO-points 
+!  Compute critical depth term at RHO-points
 !  as a function of topographic slope
 !
       do j=Jstr,Jend
@@ -212,7 +212,7 @@ C$    integer omp_get_thread_num
 
 #ifdef WAVE_DRY
 !
-!  Compute critical depth term at RHO-points 
+!  Compute critical depth term at RHO-points
 !  as a function of topographic slope
 !
       do j=Jstr,Jend
@@ -246,13 +246,13 @@ C$    integer omp_get_thread_num
 # endif /* !NS_PERIODIC */
 #endif
 
-# ifdef WKB_WWAVE
+#ifdef WKB_WWAVE
       do j=JR_RANGE
         do i=IR_RANGE
             h(i,j)=h(i,j)+wkb_tide
         enddo
       enddo
-# endif
+#endif
 
 
 #undef IR_RANGE
@@ -299,7 +299,7 @@ C$    integer omp_get_thread_num
 
 
 # ifdef MASKING
-#  ifdef THREE_GHOST_POINTS_TS 
+#  ifdef THREE_GHOST_POINTS_TS
       call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend, rmask)
 #  else
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  rmask)
@@ -309,7 +309,7 @@ C$    integer omp_get_thread_num
 #  else
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  umask)
 #  endif
-#  ifdef THREE_GHOST_POINTS_UV 
+#  ifdef THREE_GHOST_POINTS_UV
       call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend, vmask)
 #  else
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,  vmask)

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -18,10 +18,10 @@
       real visc2_sponge_r(GLOBAL_2D_ARRAY)
       real visc2_sponge_p(GLOBAL_2D_ARRAY)
       common /mixing_visc2_r/visc2_r /mixing_visc2_p/visc2_p
-      common /mixing_visc2_sponge_r/visc2_sponge_r 
+      common /mixing_visc2_sponge_r/visc2_sponge_r
       common /mixing_visc2_sponge_p/visc2_sponge_p
 #endif
-#if defined UV_VIS4 
+#if defined UV_VIS4
 # if !defined SPONGE_VIS2
       real visc2_sponge_r(GLOBAL_2D_ARRAY)
       real visc2_sponge_p(GLOBAL_2D_ARRAY)
@@ -42,7 +42,7 @@
       common /mixing_diff2_sponge/diff2_sponge
       common /mixing_diff2/diff2
 #endif
-#if defined TS_DIF4 
+#if defined TS_DIF4
 # if !defined SPONGE_DIF2
       real diff2_sponge(GLOBAL_2D_ARRAY)
       common /mixing_diff2_sponge/diff2_sponge
@@ -61,7 +61,7 @@
 #ifdef DIF_COEF_3D
       real diff3d_u(GLOBAL_2D_ARRAY,N)
       real diff3d_v(GLOBAL_2D_ARRAY,N)
-      common /mixing_diff3d_u/diff3d_u 
+      common /mixing_diff3d_u/diff3d_u
       common /mixing_diff3d_v/diff3d_v
 # if defined TS_DIF_SMAGO || defined GLS_MIXING_3D
       real diff3d_r(GLOBAL_2D_ARRAY,N)
@@ -118,10 +118,10 @@
 # endif
 
 # ifdef LMD_MIXING
-      real ustar(GLOBAL_2D_ARRAY) 
+      real ustar(GLOBAL_2D_ARRAY)
       common /lmd_kpp_ustar/ustar
 #  ifdef LMD_LANGMUIR
-      real Langmuir(GLOBAL_2D_ARRAY) 
+      real Langmuir(GLOBAL_2D_ARRAY)
       common /lmd_kpp_lang/Langmuir
 #  endif
 #  if defined LMD_SKPP || defined LMD_BKPP
@@ -136,15 +136,15 @@
       integer kbl(GLOBAL_2D_ARRAY)
       integer kbbl(GLOBAL_2D_ARRAY)
       real hbbl(GLOBAL_2D_ARRAY)
-      common /lmd_kpp_kbl/ kbl 
-      common /lmd_kpp_hbbl/ hbbl  
-      common /lmd_kpp_kbbl/ kbbl 
-#   ifdef LMD_SKPP2005      
+      common /lmd_kpp_kbl/ kbl
+      common /lmd_kpp_hbbl/ hbbl
+      common /lmd_kpp_kbbl/ kbbl
+#   ifdef LMD_SKPP2005
       real hbls(GLOBAL_2D_ARRAY,2)
       common /lmd_kpp_hbl/ hbls
-#   else           
-      real hbl (GLOBAL_2D_ARRAY  )      
-      common /lmd_kpp_hbl/ hbl   
+#   else
+      real hbl (GLOBAL_2D_ARRAY  )
+      common /lmd_kpp_hbl/ hbl
 #   endif
 #   ifdef LMD_NONLOCAL
       real ghats(GLOBAL_2D_ARRAY,0:N)
@@ -155,7 +155,7 @@
 # elif defined GLS_MIXING
 !
 ! Generic Length Scale
-!      
+!
       real trb(GLOBAL_2D_ARRAY,0:N,2,NGLS)
       common /gls_trb/trb
       real Lscale(GLOBAL_2D_ARRAY,0:N)
@@ -163,11 +163,11 @@
       real Eps_gls(GLOBAL_2D_ARRAY,0:N)
       common /gls_eps/Eps_gls
       integer kbl(GLOBAL_2D_ARRAY)
-      common /gls_kbl/ kbl 
-      real hbl(GLOBAL_2D_ARRAY  )      
+      common /gls_kbl/ kbl
+      real hbl(GLOBAL_2D_ARRAY  )
       common /gls_hbl/ hbl
       real cm0
-      common /gls_cm0/ cm0 
+      common /gls_cm0/ cm0
 # endif /* GLS_MIXING */
 
 #else

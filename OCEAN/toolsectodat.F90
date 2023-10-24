@@ -5,7 +5,7 @@
    !&E
    !&E ** Purpose : convert a time expressed in seconds elapsed since date_ref
    !&E              (set in para.*****) into a date of the tool_julien calendar,
-   !&E              returned as a 19-character string ("dd/mm/yyyy hh:mm:ss")
+   !&E              returned as a 19-character string ("yyyy/mm/dd hh:mm:ss")
    !&E
    !&E ** Description :
    !&E
@@ -117,9 +117,9 @@
 
    ! on peut alors construire la chaine de caracteres resultante
 
-   WRITE (date,800) jour,mois,annee,heure,minute,seconde
+   WRITE (date,800) annee,mois,jour,heure,minute,seconde
    tool_sectodat = date
 
-800 FORMAT(i2.2,'/',i2.2,'/',i4.4,' ',2(i2.2,':'),i2.2)
+800 FORMAT(i4.4,'-',i2.2,'-',i2.2,' ',2(i2.2,':'),i2.2)
 
   END FUNCTION tool_sectodat

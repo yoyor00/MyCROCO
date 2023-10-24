@@ -222,7 +222,7 @@
           enddo            !--> discard grad
           ENDDOEXTEND
 !---------------------------------------------------------------------
-#  ifdef TS_HADV_UP3
+#if (defined TS_HADV_UP3 && !defined PREDICTOR)
 #undef curv
 #   define curv WORK2
 #  else

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,7 +15,7 @@
 
 # ifdef M3FAST
       subroutine vnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
@@ -49,7 +49,7 @@
 !
 # endif /* M3FAST */
 #endif /* CHILD */
-# ifdef M3FAST
+#ifdef M3FAST
 !
 ! Common Code
 !
@@ -154,11 +154,11 @@
      &                               -max(cy,0.)*grad(i  ,Jstr)
      &                               -min(cy,0.)*grad(i+1,Jstr)
      &                                               )/(cff+cx)
-#    if defined NBQ_FRC_BRY || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY || defined NBQ_NUDGING
             qdmv_nbq(i,Jstr,k)=(1.-tau)*qdmv_nbq(i,Jstr,k)
 #     ifdef NBQ_FRC_BRY
      &                                  +tau*vnbqbry_south(i,k)
-#     else     
+#     else
      &                                   +tau*vnbqclm(i,Jstr,k)
 #     endif
 #    endif
@@ -300,11 +300,11 @@
      &                            -min(cy,0.)*grad(i+1,Jend+1)
      &                                              )/(cff+cx)
 
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmv_nbq(i,Jend+1,k)=(1.-tau)*qdmv_nbq(i,Jend+1,k)
 #     ifdef NBQ_FRC_BRY
      &                                 +tau*vnbqbry_north(i,k)
-#     else     
+#     else
      &                                +tau*vnbqclm(i,Jend+1,k)
 #     endif
 #    endif
@@ -382,7 +382,7 @@
 
       endif     !<--  NORTHERN_EDGE
 # endif          /* !NS_COM_PERIODIC */
- 
+
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -441,7 +441,7 @@
      &                            -max(cy,0.)*grad(Istr-1,j-1)
      &                            -min(cy,0.)*grad(Istr-1,j  )
      &                                              )/(cff+cx)
-#    if defined NBQ_FRC_BRY || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY || defined NBQ_NUDGING
             qdmv_nbq(Istr-1,j,k)=(1.-tau)*qdmv_nbq(Istr-1,j,k)
 #     ifdef NBQ_FRC_BRY
      &                                  +tau*vnbqbry_west(j,k)
@@ -471,15 +471,15 @@
      &                         *vmask_wet(Istr-1,j)
 #    endif
           enddo
-        enddo    
+        enddo
 
 #   endif /* OBC_COM_NBQORLANSKI */
 
 !
 !  Replace external mode
 !
-#  if defined NBQ && defined QDM_OBC_TANG_CORRECT
-#   define vsum grad
+#   if defined NBQ && defined QDM_OBC_TANG_CORRECT
+#    define vsum grad
         vsum=0.
         do k=1,N
           do j=JstrV,Jend
@@ -502,8 +502,8 @@
 #    endif
           enddo
         enddo
-#   undef vsum
-#  endif
+#    undef vsum
+#   endif
 
 #  else
 #   ifdef NS_COM_PERIODIC
@@ -581,11 +581,11 @@
      &                            -max(cy,0.)*grad(Iend+1,j-1)
      &                            -min(cy,0.)*grad(Iend+1,j  )
      &                                              )/(cff+cx)
-#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING 
+#    if defined NBQ_FRC_BRY  || defined NBQ_NUDGING
             qdmv_nbq(Iend+1,j,k)=(1.-tau)*qdmv_nbq(Iend+1,j,k)
 #     ifdef NBQ_FRC_BRY
      &                                  +tau*vnbqbry_east(j,k)
-#     else     
+#     else
      &                                +tau*vnbqclm(Iend+1,j,k)
 #     endif
 #    endif
@@ -611,7 +611,7 @@
      &                              *vmask_wet(Iend+1,j)
 #    endif
           enddo
-        enddo      
+        enddo
 #   endif /* OBC_COM_NBQORLANSKI */
 
 !
@@ -641,8 +641,8 @@
 #    endif
           enddo
         enddo
-#   undef vsum
-#  endif
+#    undef vsum
+#   endif
 
 #  else
 #   ifdef NS_COM_PERIODIC
@@ -669,7 +669,7 @@
 !====================================================================
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
-      
+
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
@@ -696,7 +696,7 @@
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
           qdmv_nbq(Istr-1,Jend+1,k)=0.5*(qdmv_nbq(Istr-1,Jend,k)
-     &                                  +qdmv_nbq(Istr  ,Jend+1,k))     
+     &                                  +qdmv_nbq(Istr  ,Jend+1,k))
 #  ifdef MASKING
      &                                *vmask(Istr-1,Jend+1)
 #  endif
@@ -733,4 +733,4 @@
 # endif
 # undef CHILD
 #endif  /* !CHILD */
- 
+

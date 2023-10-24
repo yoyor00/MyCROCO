@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -28,7 +28,7 @@
 !     implicit none
       integer ierr
 # if defined MPI
-# include "mpi_cpl.h"
+#  include "mpi_cpl.h"
       include 'mpif.h'
 # endif
 # include "param.h"
@@ -49,8 +49,8 @@
 !  and/or increase horizontal mixing in the sponge areas.
 !--------------------------------------------------------------------
 !
-!  
-      isp = 2*max(Agrif_Irhox(),Agrif_Irhoy())  
+!
+      isp = 2*max(Agrif_Irhox(),Agrif_Irhoy())
 !
       do j=max(-1,JstrR-1),JendR
         do i=max(-1,IstrR-1),IendR
@@ -112,7 +112,7 @@
         enddo
       enddo
 !
-!  Apply nudging to the tracers 
+!  Apply nudging to the tracers
 !
 # ifdef TNUDGING
       do itrc=1,NT               ! includes BIOLOGY variables
@@ -124,7 +124,7 @@
           enddo
         enddo
       enddo
-#  ifdef ROBUST_DIAG  
+#  ifdef ROBUST_DIAG
       do itrc=1,2               ! nudging everywhere
         do k=1,N
           do j=JstrR,JendR
@@ -145,11 +145,11 @@
 !
 #  if defined UV_VIS2 || defined UV_VIS4 || defined SPONGE_VIS2
 !
-! Add Viscosity at rho points 
+! Add Viscosity at rho points
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          visc2_sponge_r(i,j)=(0.005/(pm(i,j)*pn(i,j)*dt))*wrk(i,j) 
+          visc2_sponge_r(i,j)=(0.005/(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
 #   ifdef UV_VIS4
           visc4_sponge_r(i,j)=visc2_sponge_r(i,j)/(pm(i,j)*pn(i,j))
 #   endif
@@ -162,7 +162,7 @@
         do i=Istr,IendR
           visc2_sponge_p(i,j)=0.25*(0.005/(pm(i,j)*pn(i,j)*dt))*
      &                       ( wrk(i,j  )+wrk(i-1,j  )
-     &                        +wrk(i,j-1)+wrk(i-1,j-1) ) 
+     &                        +wrk(i,j-1)+wrk(i-1,j-1) )
 #   ifdef UV_VIS4
           visc4_sponge_p(i,j)=visc2_sponge_p(i,j)/(pm(i,j)*pn(i,j))
 #   endif

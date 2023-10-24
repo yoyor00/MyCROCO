@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !
 ! This routine was adapted from John Warner's code
@@ -34,7 +34,7 @@
 #  define SWITCH !
 # endif
 !
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 !
 !-----------------------------------------------------------------------
 ! If WAVE_DRY CPP-key, compute new masks for cells with depth < D_wavedry.
@@ -69,7 +69,7 @@
         DO j=Jstr,JendR
           DO i=Istr,IendR
             pmask_wavewet(i,j)=
-     &             wave_wetdry(i-1,j  )*wave_wetdry(i  ,j  )*  
+     &             wave_wetdry(i-1,j  )*wave_wetdry(i  ,j  )*
      &             wave_wetdry(i-1,j-1)*wave_wetdry(i  ,j-1)
           END DO
         END DO
@@ -111,6 +111,6 @@
 !
       RETURN
       END SUBROUTINE wavedry_tile
-!     
+!
 #endif
 
