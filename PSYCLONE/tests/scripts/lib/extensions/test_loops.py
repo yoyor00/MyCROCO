@@ -299,7 +299,7 @@ subroutine step3d_t(n)
   do j = 1, 100, 1
     do i = 1, 20, 1
       do k = 1, 10, 1
-        fx(i,j) = i + j + k
+        fx1d(j) = i + j + k
       enddo
     enddo
   enddo

@@ -146,6 +146,9 @@ def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list) -> None:
     #if not top_loop.ancestor(Routine).name in ['step3d_t_tile', 'acc_kernels_step3d', 'pre_step3d_tile', 'prsgrd_tile', 'rhs3d_tile']:
     #    raise Exception(f"Applying on {top_loop.ancestor(Routine).name}")
 
+    # patch 1D
+    patch_scratch_1d_arrays(top_loop, scratch_1d_vars)
+
     # remove inner j loops
     for inner_i_loop in top_loop.walk(Loop):
         if inner_i_loop.variable.name == 'i':

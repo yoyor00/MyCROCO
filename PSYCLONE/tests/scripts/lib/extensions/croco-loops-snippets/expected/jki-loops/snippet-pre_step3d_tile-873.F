@@ -99,31 +99,31 @@ subroutine snippet()
   do j = jstr, jend, 1
     do i = istr, iend, 1
       do k = 1, n, 1
-        dc(i,k) = 1. / hz_half(i,j,k)
+        dc1d(k) = 1. / hz_half(i,j,k)
       enddo
-      dc(i,0) = cdt * pn(i,j) * pm(i,j)
+      dc1d(0) = cdt * pn(i,j) * pm(i,j)
       do itrc = 1, nt, 1
         do k = 1, n - 1, 1
-          fc(i,k) = t(i,j,k + 1,nadv,itrc) - t(i,j,k,nadv,itrc)
+          fc1d(k) = t(i,j,k + 1,nadv,itrc) - t(i,j,k,nadv,itrc)
         enddo
-        fc(i,n) = fc(i,n - 1)
-        fc(i,0) = fc(i,1)
+        fc1d(n) = fc1d(n - 1)
+        fc1d(0) = fc1d(1)
         do k = 1, n, 1
           if (cff > epsil) then
-            cf(i,k) = cff / (fc(i,k) + fc(i,k - 1))
+            cf1d(k) = cff / (fc1d(k) + fc1d(k - 1))
           else
-            cf(i,k) = 0.
+            cf1d(k) = 0.
           end if
-          cff = 2. * fc(i,k) * fc(i,k - 1)
+          cff = 2. * fc1d(k) * fc1d(k - 1)
         enddo
         do k = 1, n - 1, 1
-          fc(i,k) = 0.5 * (t(i,j,k,nadv,itrc) + t(i,j,k + 1,nadv,itrc) - 0.333333333333 * (cf(i,k + 1) - cf(i,k))) * we(i,j,k)
+          fc1d(k) = 0.5 * (t(i,j,k,nadv,itrc) + t(i,j,k + 1,nadv,itrc) - 0.333333333333 * (cf1d(k + 1) - cf1d(k))) * we(i,j,k)
         enddo
-        cf(i,0) = dt * pm(i,j) * pn(i,j)
-        fc(i,n) = 0.
-        fc(i,0) = 0.
+        cf1d(0) = dt * pm(i,j) * pn(i,j)
+        fc1d(n) = 0.
+        fc1d(0) = 0.
         do k = 1, n, 1
-          t(i,j,k,nnew,itrc) = dc(i,k) * (t(i,j,k,nnew,itrc) - dc(i,0) * (fc(i,k) - fc(i,k - 1)))
+          t(i,j,k,nnew,itrc) = dc1d(k) * (t(i,j,k,nnew,itrc) - dc1d(0) * (fc1d(k) - fc1d(k - 1)))
         enddo
       enddo
     enddo
