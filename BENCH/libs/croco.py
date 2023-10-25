@@ -11,6 +11,7 @@ import shutil
 from .config import Config
 from .helpers import move_in_dir, run_shell_command, apply_vars_in_str, Messaging, patch_lines
 from .hyperfine import run_hyperfine
+from .check import compare_netcdf_files
 
 ##########################################################
 class Croco:
@@ -149,3 +150,26 @@ class Croco:
                             "by": change['by'] + '\n',
                         }
                     ])
+
+    def check(self):
+        # extract vars
+        case_name = self.case_name
+        dirname = self.dirname
+        fname = 'basin_his.nc'
+
+        # if sequential skip
+        if self.variant_name == 'sequential':
+            Messaging.step(f"Checking {case_name} skiped for sequential")
+            return
+        else:
+            Messaging.step(f"Checking {case_name}")
+
+        # error
+        seq_dirname = dirname.replace(self.full_name, f'{case_name}-sequential')
+        seq_file = f"{seq_dirname}/{fname}"
+        if not os.path.exists(seq_file):
+            raise Exception("Missing {seq_file}, are you sure you ran case 'sequential' first to get a reference for checks ?")
+
+        # compare
+        actual_file = f"{dirname}/{fname}"
+        compare_netcdf_files(seq_file, actual_file)

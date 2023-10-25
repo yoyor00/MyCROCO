@@ -39,7 +39,7 @@ class Config:
         parser.add_argument('-s', '--steps', help="Number of time steps to perform.")
         parser.add_argument('--check', help="Check that the resulting mesh is same than seq run.", action='store_true')
         parser.add_argument('-C', '--config', help="Config file to use.", default='config.jsonc')
-        parser.add_argument('-m', '--modes', help="List of modes to run.", default='build,run,plot')
+        parser.add_argument('-m', '--modes', help="List of modes to run.", default='build,run,check,plot')
         parser.add_argument('-R', '--runs', help="Number or runs to perform.", default='4')
         parser.add_argument('-j', '--jobs', help="Make -j option value to build", default='8')
         parser.add_argument('--results', help="Name of the results directory to use.", default='results')

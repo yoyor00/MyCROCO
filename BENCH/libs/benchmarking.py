@@ -84,7 +84,12 @@ class Benchmarking:
         # run
         if 'run' in self.config.modes:
             for id, instance in enumerate(self.instances):
+                # run
                 instance.run(extra_info=f" - [ {id + 1} / {cnt} ]")
+                # check
+                if 'check' in self.config.modes:
+                    instance.check()
+
         # plot
         if 'plot' in self.config.modes:
             self.plot()

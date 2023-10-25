@@ -8,6 +8,8 @@ matplotlib
 tqdm
 # json with comments
 json5
-# yaml
+# yaml & validate json/yaml correctness
 pyyaml
 jsonschema
+# to check maching of seq vs parallel netcdf files
+netcdf4
