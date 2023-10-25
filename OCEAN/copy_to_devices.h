@@ -1,23 +1,36 @@
 !$acc enter data if(compute_on_device) copyin(
 
+!ocean2d.h
+!$acc& zeta
+!$acc&, ubar
+!$acc&, vbar
+#if !defined SOLVE3D && defined M2_HADV_UP3
+!$acc&, urhs
+!$acc&, vrhs
+!$acc&, Duon
+!$acc&, DVom
+#endif
+
 !scalars.h
 #ifdef SOLVE3D
-!$acc& sc_w, Cs_w, sc_r, Cs_r
+!$acc&, sc_w, Cs_w, sc_r, Cs_r
 # ifdef TRACERS
 !$acc&, tnu2, tnu4
 # endif
 !$acc&, weight
 #endif
-#if  defined SPONGE || \
+#if defined SPONGE || \
      defined TNUDGING   || defined M2NUDGING  || \
      defined M3NUDGING  || defined ZNUDGING
 #endif
-#if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
      defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
      defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
      defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
+#endif
+#ifdef ABL1D
 #endif
 #if defined DIAGNOSTICS_TS
 #endif
@@ -62,11 +75,11 @@
 #endif
 #ifdef SOLVE3D
 #endif
-#if  defined SPONGE || \
+#if defined SPONGE || \
      defined TNUDGING   || defined M2NUDGING  || \
      defined M3NUDGING  || defined ZNUDGING
 #endif
-#if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
      defined W_FRC_BRY     ||                          \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
@@ -89,11 +102,13 @@
 #endif
 #ifdef DIAGNOSTICS_BIO
 #endif
-# if defined SOLVE3D  && !defined LMD_MIXING
-#  ifdef TRACERS
+#ifdef ABL1D
+#endif
+#if defined SOLVE3D  && !defined LMD_MIXING
+# ifdef TRACERS
 !$acc&, Akt_bak
-#  endif
 # endif
+#endif
 #if defined BIOLOGY && defined TRACERS
 !$acc&, global_sum
 #endif
@@ -101,17 +116,6 @@
 !$acc&, proc
 #ifdef SOLITON
 #else
-#endif
-
-!ocean2d.h
-!$acc&, zeta
-!$acc&, ubar
-!$acc&, vbar
-#if !defined SOLVE3D && defined M2_HADV_UP3
-!$acc&, urhs
-!$acc&, vrhs
-!$acc&, Duon
-!$acc&, DVom
 #endif
 
 !ocean3d.h
@@ -134,7 +138,7 @@
 #  ifdef NBQ_MASS
 !$acc&, Hzr
 #  else
-#     define Hzr Hz
+#   define Hzr Hz
 #  endif
 # endif
 # if defined UV_VIS4 && defined UV_MIX_GEO
@@ -151,7 +155,7 @@
 # ifdef BIOLOGY
 #  ifdef BIO_NChlPZD
 !$acc&, theta
-#  elif defined BIO_BioEBUS  
+#  elif defined BIO_BioEBUS
 !$acc&, AOU
 !$acc&, wind10
 #  endif
@@ -168,12 +172,12 @@
 !$acc&, hinv
 !$acc&, f
 !$acc&, fomn
-# ifdef MORPHODYN
+#ifdef MORPHODYN
 !$acc&, dh
-# endif      
-# ifdef CURVGRID
+#endif
+#ifdef CURVGRID
 !$acc&, angler
-# endif
+#endif
 #ifdef SPHERICAL
 !$acc&, latr
 !$acc&, lonr
@@ -228,6 +232,14 @@
 !$acc&, Dcrit
 !$acc&, wetdry
 #endif
+#ifdef WAVE_DRY
+!$acc&, rmask_wavewet
+!$acc&, pmask_wavewet
+!$acc&, umask_wavewet
+!$acc&, vmask_wavewet
+!$acc&, Dcrit_wave
+!$acc&, wave_wetdry
+#endif
 #ifdef REDUC_SECTION
 !$acc&, ureduc
 !$acc&, vreduc
@@ -263,10 +275,18 @@
 # if defined SEDIMENT || defined LMD_MIXING
 !$acc&, B2d
 # endif
+# if defined ABL1D
+!$acc&, T1d
+!$acc&, T2d,T3d
+# endif
 #else
 !$acc&, A2d, A3d
 # if defined SEDIMENT || defined LMD_MIXING
 !$acc&, B2d
+# endif
+# if defined ABL1D
+!$acc&, T1d
+!$acc&, T2d, T3d
 # endif
 #endif
 
@@ -277,7 +297,7 @@
 !$acc&, visc2_sponge_r
 !$acc&, visc2_sponge_p
 #endif
-#if defined UV_VIS4 
+#if defined UV_VIS4
 # if !defined SPONGE_VIS2
 !$acc&, visc2_sponge_r
 !$acc&, visc2_sponge_p
@@ -291,7 +311,7 @@
 !$acc&, diff2_sponge
 !$acc&, diff2
 #endif
-#if defined TS_DIF4 
+#if defined TS_DIF4
 # if !defined SPONGE_DIF2
 !$acc&, diff2_sponge
 # endif
@@ -344,9 +364,9 @@
 !$acc&, kbl
 !$acc&, kbbl
 !$acc&, hbbl
-#   ifdef LMD_SKPP2005      
+#   ifdef LMD_SKPP2005
 !$acc&, hbls
-#   else           
+#   else
 !$acc&, hbl
 #   endif
 #   ifdef LMD_NONLOCAL
@@ -356,13 +376,9 @@
 # elif defined GLS_MIXING
 !$acc&, trb
 !$acc&, Lscale
+!$acc&, Eps_gls
 !$acc&, kbl
 !$acc&, hbl
-!$acc&, OneOverSig
-#  if defined GLS_KOMEGA                            /* K-omega model */
-#  elif defined GLS_KEPSILON                      /* K-epsilon model */
-#  else                                                 /* GEN model */
-#  endif
 # endif /* GLS_MIXING */
 #else
 # define u(i,j,k,nrhs) ubar(i,j,kstp)
@@ -377,9 +393,9 @@
 !$acc&, svstr
 #ifdef OA_COUPLING
 !$acc&, smstr
-#  ifdef READ_PATM
+# ifdef READ_PATM
 !$acc&, patm2d
-#  endif
+# endif
 #endif
 #ifdef OW_COUPLING
 !$acc&, twox
@@ -405,18 +421,16 @@
 !$acc&, bustrg
 !$acc&, bvstrg
 !$acc&, bms_tintrp, bustrp, bvstrp, tbms
-#  undef BMFLUX_DATA
+# undef BMFLUX_DATA
 #endif /* !ANA_BMFLUX */
 #ifdef SOLVE3D
-# ifdef TRACERS
 !$acc&, stflx
-# endif /* TRACERS */
-# if defined BULK_FLUX && defined TEMPERATURE
+# if defined BULK_FLUX
 !$acc&, shflx_rsw
 !$acc&, shflx_rlw
 !$acc&, shflx_lat
 !$acc&, shflx_sen
-# endif /* BULK_FLUX && TEMPERATURE */
+# endif /* BULK_FLUX */
 # if defined SST_SKIN && defined TEMPERATURE
 !$acc&, sst_skin
 !$acc&, dT_skin
@@ -447,7 +461,7 @@
 !$acc&, dqdtg
 !$acc&, sstg
 !$acc&, sstp, dqdtp, sst_time
-#    undef SST_DATA
+#   undef SST_DATA
 #  endif /* !ANA_SST */
 # endif /* QCORRECTION && TEMPERATURE */
 # if defined SALINITY && defined SFLX_CORR
@@ -465,48 +479,49 @@
 #   undef SSS_DATA
 #  endif /* !ANA_SSS */
 # endif /* SALINITY && SFLX_CORR */
-# if defined BULK_FLUX && defined TEMPERATURE
+# if defined BULK_FLUX
 !$acc&, tair
 !$acc&, rhum
 !$acc&, prate
 !$acc&, radlw
 !$acc&, radsw
 !$acc&, wspd
-# ifdef READ_PATM
+#  ifdef READ_PATM
 !$acc&, patm2d
-# endif
+#  endif
 !$acc&, uwnd
 !$acc&, vwnd
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
 !$acc&, radswbio
-# endif
+#  endif
 !$acc&, tairg
 !$acc&, rhumg
 !$acc&, prateg
 !$acc&, radlwg
 !$acc&, radswg
-# ifdef READ_PATM
+#  ifdef READ_PATM
 !$acc&, patmg
-# endif
-# ifdef ONLINE
+#  endif
+#  ifdef ONLINE
 !$acc&, uwndg_norot
 !$acc&, radswg_down
-# endif
+#  endif
 !$acc&, uwndg
 !$acc&, vwndg
-# ifdef DIURNAL_INPUT_SRFLX
+!$acc&, wspdg
+#  ifdef DIURNAL_INPUT_SRFLX
 !$acc&, radswbiog
-# endif
+#  endif
 !$acc&, tairp, rhump, pratep, radlwp, radswp
-# ifdef READ_PATM
+#  ifdef READ_PATM
 !$acc&, patmp
-# endif
+#  endif
 !$acc&, uwndp, vwndp
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
 !$acc&, radswbiop
-# endif
+#  endif
 !$acc&, bulk_time
-# endif /* BULK_FLUX && TEMPERATURE */
+# endif /* BULK_FLUX */
 !$acc&, srflx
 # ifdef ANA_DIURNAL_SW
 !$acc&, sin_phi
@@ -519,11 +534,11 @@
 # ifndef ANA_SRFLUX
 !$acc&, srflxg
 !$acc&, srflxp, srf_time
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
 !$acc&, srflxbiog
 !$acc&, srflxbiop
-# endif /*  DIURNAL_INPUT_SRFLX   */
-#   undef SRFLUX_DATA
+#  endif /*  DIURNAL_INPUT_SRFLX   */
+#  undef SRFLUX_DATA
 # endif /* !ANA_SRFLUX */
 #endif /* SOLVE3D */
 #if defined BBL || defined MRL_WCI || defined OW_COUPLING
@@ -628,23 +643,26 @@
 !$acc&, work
 !$acc&, workr
 #endif
+#ifdef ABL1D
+!$acc&, work3dabl
+#endif
 !$acc&, work2d
 !$acc&, work2d2
 
 !ncscrum.h
 #ifdef SOLVE3D
-#ifdef TRACERS
-# ifdef PASSIVE_TRACER
+# ifdef TRACERS
+#  ifdef PASSIVE_TRACER
 !$acc&, indxTPAS
+#  endif
 # endif
-#endif
 # ifdef BIOLOGY
 #  ifdef PISCES
-#    ifdef key_pisces_quota
-#     ifdef key_ligand
-#     else
-#     endif
-#  endif
+#   ifdef key_pisces_quota
+#    ifdef key_ligand
+#    else
+#    endif
+#   endif
 #  elif defined BIO_NChlPZD
 #  elif defined BIO_N2ChlPZD2
 #  elif defined BIO_BioEBUS
@@ -656,9 +674,9 @@
 !$acc&, indxMUD
 # endif
 # ifdef DIAGNOSTICS_TS
-# ifdef DIAGNOSTICS_TSVAR
-# else
-# endif
+#  ifdef DIAGNOSTICS_TSVAR
+#  else
+#  endif
 # endif
 # ifdef DIAGNOSTICS_UV
 # endif
@@ -724,6 +742,8 @@
 #ifdef SOLVE3D
 # ifdef SALINITY
 # else
+# endif
+# ifdef BULK_FLUX
 # endif
 #endif /* SOLVE3D */
 #ifdef SOLVE3D
@@ -901,6 +921,7 @@
 !$acc&, diags_eddyuw, diags_eddyvw
 !$acc&, diags_eddyubu, diags_eddyvbv
 !$acc&, diags_eddyusu, diags_eddyvsv
+!$acc&, diags_eddyugsu, diags_eddyvgsv
 # endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
 !$acc&, surf_surft, surf_surfs, surf_surfz
@@ -925,11 +946,11 @@
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
 #   elif defined BIO_BioEBUS
-#  endif
-# endif  /* BIOLOGY */
-# if defined TRACERS
+#   endif
+#  endif  /* BIOLOGY */
+#  if defined TRACERS
 !$acc&, avgT
-# endif
+#  endif
 #  ifdef SEDIMENT
 #  endif
 #  ifdef MUSTANG
@@ -948,9 +969,9 @@
 #  if defined DIAGNOSTICS_TS && defined TRACERS
 !$acc&, diaTXadv_avg, diaTYadv_avg, diaTVadv_avg
 !$acc&, diaTHmix_avg, diaTVmix_avg
-#  ifdef DIAGNOSTICS_TSVAR
+#   ifdef DIAGNOSTICS_TSVAR
 !$acc&, diaTVmixt_avg
-#  endif
+#   endif
 !$acc&, diaTForc_avg, diaTrate_avg
 #   ifdef DIAGNOSTICS_TS_MLD
 !$acc&, diaTXadv_mld_avg, diaTYadv_mld_avg
@@ -1012,15 +1033,16 @@
 #   endif
 !$acc&, diags_pvMrhs_avg, diags_pvTrhs_avg
 #  endif
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#  if defined DIAGNOSTICS_EDDY && ! defined XIOS
 !$acc&, diags_eddyzz_avg
 !$acc&, diags_eddyuu_avg, diags_eddyvv_avg, diags_eddyuv_avg
 !$acc&, diags_eddyub_avg, diags_eddyvb_avg, diags_eddywb_avg
 !$acc&, diags_eddyuw_avg, diags_eddyvw_avg
 !$acc&, diags_eddyubu_avg, diags_eddyvbv_avg
 !$acc&, diags_eddyusu_avg, diags_eddyvsv_avg
+!$acc&, diags_eddyugsu_avg, diags_eddyvgsv_avg
 #  endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#  if defined OUTPUTS_SURFACE && ! defined XIOS
 !$acc&, surf_surft_avg, surf_surfs_avg, surf_surfz_avg
 !$acc&, surf_surfu_avg, surf_surfv_avg
 #  endif
@@ -1037,13 +1059,19 @@
 # endif
 #endif /* AVERAGES */
 #ifdef SOLVE3D
-# define NWRTHIS 500+NT
+# define NWRTHIS 1000+NT
 #else
 # define NWRTHIS 500
 #endif
 !$acc&, wrthis
 #ifdef AVERAGES
 !$acc&, wrtavg
+#endif
+#ifdef ABL1D
+!$acc&, wrtabl
+# ifdef AVERAGES
+!$acc&, wrtabl_avg
+# endif
 #endif
 #ifdef DIAGNOSTICS_TS
 !$acc&, wrtdia3D
@@ -1077,13 +1105,13 @@
 !$acc&, wrtdiags_pv_avg
 # endif
 #endif
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 !$acc&, wrtdiags_eddy
 # ifdef AVERAGES
 !$acc&, wrtdiags_eddy_avg
 # endif
 #endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
 !$acc&, wrtsurf
 # ifdef AVERAGES
 !$acc&, wrtsurf_avg
@@ -1104,8 +1132,8 @@
 # endif
 # ifdef M3FAST
 # endif
-#ifdef EXACT_RESTART
-#endif
+# ifdef EXACT_RESTART
+# endif
 #endif
 #ifdef SOLVE3D
 # if defined ANA_VMIX || defined BVF_MIXING \
@@ -1142,9 +1170,9 @@
 # ifdef AVERAGES
 # endif
 #endif
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
 #endif
 #ifdef DIAGNOSTICS_BIO
 #endif
@@ -1173,11 +1201,13 @@
 #endif
 #ifdef DIAGNOSTICS_PV
 #endif
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
 #endif
 #ifdef DIAGNOSTICS_BIO
+#endif
+#ifdef ABL1D
 #endif
 #ifdef DIAGNOSTICS_TS
 #endif
@@ -1189,9 +1219,9 @@
 #endif
 #ifdef DIAGNOSTICS_PV
 #endif
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
 #endif
 #ifdef DIAGNOSTICS_BIO
 #endif
@@ -1208,6 +1238,8 @@
 #else
 !$acc&, vname
 #endif
+#ifdef ABL1D
+#endif
 #ifdef DIAGNOSTICS_TS
 #endif
 #ifdef DIAGNOSTICS_UV
@@ -1218,9 +1250,9 @@
 #endif
 #ifdef DIAGNOSTICS_PV
 #endif
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
 #endif
 #ifdef DIAGNOSTICS_BIO
 #endif
@@ -1253,21 +1285,21 @@
 !$acc&, v_avg
 !$acc&, t_avg
 !$acc&, rho_avg
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 !$acc&, bvf_avg
-# endif
+#  endif
 !$acc&, omega_avg
-# ifdef NBQ
+#  ifdef NBQ
 !$acc&, w_avg
-# else
+#  else
 !$acc&, w_avg
-# endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  endif
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
-# endif
+#  endif
 !$acc&, stflx_avg
 !$acc&, btflx_avg
 #  if defined LMD_SKPP || defined GLS_MIXING
@@ -1323,10 +1355,10 @@
 !$acc&, wke_avg
 !$acc&, wepb_avg
 !$acc&, wepd_avg
-#  ifdef WAVE_ROLLER 
+#  ifdef WAVE_ROLLER
 !$acc&, war_avg
 !$acc&, wepr_avg
-#  endif    
+#  endif
 # endif
 # ifdef MRL_WCI
 !$acc&, sup_avg
@@ -1361,7 +1393,7 @@
 # ifndef ANA_SSH
 !$acc&, sshg
 !$acc&, ssh_time
-#   undef SSH_DATA
+#  undef SSH_DATA
 # endif /* !ANA_SSH */
 #endif
 #ifdef SOLVE3D
@@ -1402,13 +1434,13 @@
 # endif
 #endif
 #if defined SOLVE3D && defined M3CLIMATOLOGY
-#   ifdef M3NUDGING
+# ifdef M3NUDGING
 !$acc&, M3nudgcof
-#   endif
-#   ifndef ANA_M3CLIMA
+# endif
+# ifndef ANA_M3CLIMA
 !$acc&, uclima
 !$acc&, vclima
-#   endif
+# endif
 #endif
 #if defined M2CLIMATOLOGY || defined M3CLIMATOLOGY
 !$acc&, uclm_time
@@ -1438,6 +1470,155 @@
 # ifdef NBQ
 !$acc&, wnbqclm
 !$acc&, rnbqclm
+# endif
+#endif
+
+!nbq.h
+#ifdef M3FAST
+!$acc&, soundspeed_nbq
+!$acc&, soundspeed2_nbq
+!$acc&, qdmu_nbq
+!$acc&, qdmv_nbq
+# ifdef NBQ
+!$acc&, qdmw_nbq
+# endif
+# ifdef NBQ
+!$acc&, thetadiv_nbq
+!$acc&, thetadiv2_nbq
+!$acc&, thetadiv3_nbq
+# endif
+!$acc&, ru_int_nbq
+!$acc&, rv_int_nbq
+!$acc&, ru_nbq
+!$acc&, rv_nbq
+!$acc&, ru_nbq_avg2
+!$acc&, rv_nbq_avg2
+# ifdef NBQ
+!$acc&, rw_int_nbq
+!$acc&, rw_nbq
+!$acc&, rw_nbq_avg2
+!$acc&, rho_nbq
+# endif
+!$acc&, DU_nbq
+!$acc&, DV_nbq
+!$acc&, ru_int_nbq_2d
+!$acc&, rv_int_nbq_2d
+# ifdef NBQ
+!$acc&, rho_grd
+!$acc&, rho_bak
+#  ifdef NBQ_MASS
+!$acc&, rho_nbq_avg1
+!$acc&, rhobar_nbq
+!$acc&, rhobar_nbq_avg1
+#  endif
+# else
+!$acc&, rubar_nbq
+!$acc&, rvbar_nbq
+!$acc&, rubar_sum
+!$acc&, rvbar_sum
+# endif
+!$acc&, Hzw_half_nbq
+# ifdef NBQ
+!$acc&, zw_nbq
+# endif
+# ifdef NBQ_HZCORRECT
+!$acc&, Hz_correct
+#  ifdef NBQ_HZCORR_DEBUG
+!$acc&, Hz_corr
+#  endif
+# endif
+# ifdef NBQ_HZ_PROGNOSTIC
+!$acc&, Hz_bak2
+# endif
+# ifdef NBQ
+#  ifdef NBQ_GRID_SLOW
+!$acc&, dthetadiv_nbqdz
+!$acc&, dZdxq_w
+!$acc&, dZdyq_w
+#  else
+!$acc&, dthetadiv_nbqdz
+!$acc&, dZdxq_w
+!$acc&, dZdyq_w
+#  endif /* NBQ_GRID_SLOW */
+# endif
+# ifdef NBQ
+!$acc&, wsurf_nbq
+!$acc&, usurf_nbq
+!$acc&, vsurf_nbq
+# endif
+# if defined OBC_NBQ && defined OBC_NBQORLANSKI
+#  ifdef OBC_COM_WEST
+!$acc&, qdmu_nbq_west
+!$acc&, qdmv_nbq_west
+#   ifdef NBQ
+!$acc&, qdmw_nbq_west
+!$acc&, rho_nbq_west
+#   endif
+#  endif
+#  ifdef OBC_COM_EAST
+!$acc&, qdmu_nbq_east
+!$acc&, qdmv_nbq_east
+#   ifdef NBQ
+!$acc&, qdmw_nbq_east
+!$acc&, rho_nbq_east
+#   endif
+#  endif
+#  ifdef OBC_COM_SOUTH
+!$acc&, qdmu_nbq_south
+!$acc&, qdmv_nbq_south
+#   ifdef NBQ
+!$acc&, qdmw_nbq_south
+!$acc&, rho_nbq_south
+#   endif
+#  endif
+#  ifdef OBC_COM_NORTH
+!$acc&, qdmu_nbq_north
+!$acc&, qdmv_nbq_north
+#   ifdef NBQ
+!$acc&, qdmw_nbq_north
+!$acc&, rho_nbq_north
+#   endif
+#  endif
+# endif
+# ifdef NBQ_NUDGING
+!$acc&, NBQnudgcof
+# endif
+#endif /* M3FAST */
+
+!sources.h
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+!$acc&, Qbar0
+!$acc&, Qbar
+!$acc&, Qsrc
+!$acc&, Qshape
+# if defined TRACERS
+!$acc&, Tsrc
+!$acc&, Tsrc0
+# endif
+!$acc&, lasrc
+!$acc&, losrc
+!$acc&, Dsrc
+!$acc&, Isrc
+!$acc&, Jsrc
+# if defined TRACERS
+!$acc&, Lsrc
+# endif
+# ifdef PSOURCE_NCFILE
+!$acc&, qbarg
+!$acc&, qbar_time
+!$acc&, qbardir
+#  if defined PSOURCE_NCFILE_TS && defined TRACERS
+!$acc&, tsrcg
+!$acc&, tsrc_time
+!$acc&, tsrc_cycle
+!$acc&, ittsrc, tsrc_ncycle, tsrc_rec, tsrc_tid
+!$acc&, tsrc_id
+!$acc&, got_tsrc
+#  endif
+# endif /* PSOURCE_NCFILE */
+# ifdef MPI
+!$acc&, Isrc_mpi
+!$acc&, Jsrc_mpi
 # endif
 #endif
 
@@ -1473,7 +1654,7 @@
 !boundary.h
 #ifdef T_FRC_BRY
 !$acc&, got_tbry
-# endif
+#endif
 #ifndef ANA_BRY
 !$acc&, bry_time
 # if defined BIOLOGY || defined PISCES
@@ -1532,6 +1713,10 @@
 #  ifdef T_FRC_BRY
 !$acc&, tbry_west
 !$acc&, tbry_west_dt
+#   ifdef WAVE_MAKER_INTERNAL
+!$acc&, t0bry_west
+!$acc&, bvf0bry_west
+#   endif
 #  endif
 # endif
 #endif
@@ -1546,7 +1731,7 @@
 !$acc&, vbarbry_east
 !$acc&, vbarbry_east_dt
 # endif
-# ifdef SOLVE3D 
+# ifdef SOLVE3D
 #  ifdef M3_FRC_BRY
 !$acc&, ubry_east
 !$acc&, ubry_east_dt
@@ -1560,7 +1745,7 @@
 # endif
 #endif
 #if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
-# ifdef Z_FRC_BRY 
+# ifdef Z_FRC_BRY
 !$acc&, zetabry_south
 !$acc&, zetabry_south_dt
 # endif
@@ -1651,7 +1836,7 @@
 !$acc&, warbry_north
 !$acc&, warbry_north_dt
 # endif
-#endif  /* WKB_WWAVE */ 
+#endif  /* WKB_WWAVE */
 #if defined M3FAST && defined NBQ_FRC_BRY
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 !$acc&, unbqbry_west

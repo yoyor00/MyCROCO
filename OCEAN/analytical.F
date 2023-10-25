@@ -921,6 +921,7 @@ c
 #  if defined SALINITY || defined TEMPERATURE
       endif
 #  endif /* SALINITY || TEMPERATURE*/
+!$acc end kernels 
 # endif /* TRACERS */
       return
       end
