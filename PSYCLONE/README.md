@@ -19,10 +19,20 @@ You can use the script provided in one shot :
 source ./venv/bin/activate
 ```
 
-**Otherwise** the requirement is to install :
+**Otherwise** your will be required to install by hand :
 
 - https://github.com/svalat/PSyclone/ branch `async-and-merge-master-ok`
 - Python package `deepdiff` and `pytest` if you want to run the unit tests.
+
+```sh
+# create venv if not already done (or skip if you want to install in your user dir)
+python3 -m venv venv
+source venv/bin/activate
+# install patched psyclone
+pip install git+https://github.com/svalat/PSyclone.git@async-and-merge-master-ok
+pip install deepdiff pytest
+# Enjoy, you are ready to use
+```
 
 Installing nvfortran
 --------------------

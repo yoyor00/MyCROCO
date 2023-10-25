@@ -23,3 +23,10 @@ Note
 It helps on the path to handle the fact that the F77 files which goes through
 psyclone are renamed as F90 files and not the others which is hidden from the
 top compiling system.
+
+Configuration
+-------------
+
+The compiler wrapper script will automatically search and load the
+`psyclone.rules.json` file to get the list of transformation scripts to apply
+on each source file.
