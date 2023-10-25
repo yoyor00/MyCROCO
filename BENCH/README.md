@@ -126,6 +126,15 @@ Then you can just use them easily:
 ./bench-croco.py --case BASIN --variants @cpu
 ```
 
+Meta case
+---------
+
+If you want to simply run all available cases and all variants, you can just:
+
+```sh
+./bench-croco.py --case @all --variants @all --auto-skip
+```
+
 Variables
 ---------
 

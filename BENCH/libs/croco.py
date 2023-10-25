@@ -144,7 +144,7 @@ class Croco:
                     patch_lines(file, [
                         {
                             "mode": "replace",
-                            "after": change['after'],
+                            "after": change['next_to'],
                             "what": change['what'] + '\n',
                             "by": change['by'] + '\n',
                         }

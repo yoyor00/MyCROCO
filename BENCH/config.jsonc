@@ -150,13 +150,13 @@
 			"patches": {
 				// Change the size of the mesh
 				"param_override.h": {
-					"after":   "#if defined BASIN",
+					"next_to": "#if defined BASIN",
 					"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
 					"by":      "      parameter (LLm0=200,  MMm0=200,  N=50)"
 				},
 				// CHange the dt
 				"TEST_CASES/croco.in.Basin": {
-					"after":   " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+					"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 					"what":    "                3240     9600     65      1",
 					"by":      "                100      2400     65      1"
 				}
