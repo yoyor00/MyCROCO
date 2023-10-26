@@ -53,6 +53,7 @@ ana_run:
   artifacts:
     paths:
       - $CVTKWORK/ftp
+      - $CVTKWORK/KTEST/*/*.log
     when: always
 
 vort_run:
@@ -113,6 +114,7 @@ reg_run:
   artifacts:
     paths:
       - $CVTKWORK/ftp
+      - $CVTKWORK/KTEST/*/*.log
     when: always 
 
 reg_perfrst:
@@ -146,6 +148,7 @@ reg_perfrst:
   artifacts:
     paths:
       - $PERFRSTWORK/ftp
+      - $CVTKWORK/KTEST/*/*.log
     when: always
 
 
