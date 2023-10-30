@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>CROCO variables</title>
+		<!-- Use JQuery to render dynamically -->
+		<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+		<!-- Rendering Latex math -->
+		<script>
+			MathJax = {
+				tex: {
+					inlineMath: [['$', '$'], ['\\(', '\\)']],
+					tags: 'ams'
+				},
+				chtml: {
+					displayAlign: 'left',
+				},
+				svg: {
+					displayAlign: 'left',
+				}
+			};
+		</script>
+		<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+		<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+		<!-- Load DATA -->
+		<script src="./croco_variables.js"></script>
+		<!-- Internal redering script -->
+		<script language="javascript">
+			$(function(){
+				// get div to inject in
+				var varNode = $("#vars");
+				console.log(varNode);
+
+				//loop on vars
+				console.log("ok");
+				for (var i in crocoVariables) {
+					// extract
+					var variable = crocoVariables[i];
+
+					//log
+					console.log(variable);
+
+					//create div for var
+					var div = $('<div>');
+
+					//set title
+					$('<h2>').text(variable['name'] + " / $"+variable['latex']+"$").appendTo(div);
+
+					//keys
+					var ul = $(document.createElement('ul')).appendTo(div);
+					for (var key in variable)
+						if (key == "latex")
+							$(document.createElement('li')).text(key + ": $"+variable[key]+"$").appendTo(ul);
+						else if (key == "docUrl")
+							$(document.createElement('li')).append($("<span>").text(key + ":")).append($("<a>").text(variable[key]).attr('href', variable[key])).appendTo(ul);
+						else if (key == "compatOrigFile")
+							$(document.createElement('li')).append($("<span>").text(key + ":")).append($("<a>").text(variable[key]).attr('href', "https://gitlab.inria.fr/croco-ocean/croco/-/blob/dev2022_GPU_merge/OCEAN/"+variable[key]+"#L"+variable["sourceLine"])).appendTo(ul);
+						else
+							$(document.createElement('li')).text(key + ": "+variable[key]).appendTo(ul);
+
+					//draw cell attach
+					var view = "\
+						<div style='border:1px solid black; display:block; width:50px; height:50px;'>\
+							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:00px; margin-left:00px'></div>\
+							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:00px; margin-left:20px'></div>\
+							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:00px; margin-left:40px'></div>\
+							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:20px; margin-left:00px'></div>\
+							<div style='background-color:red; position: absolute; display: block; width:10px; height: 10px; margin-top:20px; margin-left:20px'></div>\
+							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:20px; margin-left:40px'></div>\
+							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:40px; margin-left:00px'></div>\
+							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:40px; margin-left:20px'></div>\
+							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:40px; margin-left:40px'></div>\
+						</div>"
+					$(document.createElement('div')).html(view).appendTo(div);
+
+					//add
+					div.appendTo(varNode);
+
+					//sep
+					varNode.append($("<hr>"));
+				}
+			})
+		</script>
+	</head>
+	<body>
+		<h1>CROCO variables</h1>
+		<div id="vars">
+
+		</div>
+	</body>
+</html>

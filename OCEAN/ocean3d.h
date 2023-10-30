@@ -18,7 +18,23 @@
       real t(GLOBAL_2D_ARRAY,N,3,NT)
       common /ocean_u/u /ocean_v/v /ocean_t/t
 
+
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! VARIABLE !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !POSEIDON name: Hz
+      !POSEIDON type: real
+      !POSEIDON latex: H_z
+      !POSEIDON longName: level_thikness
+      !POSEIDON description: Level thikness
+      !POSEIDON docUrl: https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.variables.html#tri-dimensionnal-variables-ocean3d-h
+      !POSEIDON dimension: dim(x,y,z)
+      !POSEIDON kind: prognostic !TODO: prognostic|diagnostic(physics)|scratch|integer
+      !POSEIDON usedAs: infos
+      !POSEIDON gridOrigin: (0, 0, 0)
+      !POSEIDON compatVarName: Hz
+      !POSEIDON compatOrigFile: ocean3d.h
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       real Hz(GLOBAL_2D_ARRAY,N)
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       real Hz_bak(GLOBAL_2D_ARRAY,N)
       real z_r(GLOBAL_2D_ARRAY,N)
       real z_w(GLOBAL_2D_ARRAY,0:N)
@@ -56,8 +72,39 @@
       common /grid_dz_u/dz_u /grid_dz_v/dz_v
 # endif
 
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! VARIABLE !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !POSEIDON name: rho1
+      !POSEIDON type: real
+      !POSEIDON latex: \rho_1
+      !POSEIDON longName: pot_density_1_atm
+      !POSEIDON description: Potential density at 1 atm.
+      !POSEIDON docUrl: https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.variables.html#tri-dimensionnal-variables-ocean3d-h
+      !POSEIDON dimension: dim(x,y,z)
+      !POSEIDON kind: prognostic !TODO: prognostic|diagnostic(physics)|scratch|integer
+      !POSEIDON usedAs: tracer
+      !POSEIDON gridOrigin: (0, 0, 0)
+      !POSEIDON compatVarName: rho1
+      !POSEIDON compatOrigFile: ocean3d.h
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       real rho1(GLOBAL_2D_ARRAY,N)
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! VARIABLE !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !POSEIDON name: rho
+      !POSEIDON type: real
+      !POSEIDON latex: \rho
+      !POSEIDON longName: density_anomaly
+      !POSEIDON description: Density anomaly
+      !POSEIDON docUrl: https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.variables.html#tri-dimensionnal-variables-ocean3d-h
+      !POSEIDON dimension: dim(x,y,z)
+      !POSEIDON kind: prognostic !TODO: prognostic|diagnostic(physics)|scratch|integer
+      !POSEIDON usedAs: tracer
+      !POSEIDON gridOrigin: (0, 0, 0)
+      !POSEIDON compatVarName: rho
+      !POSEIDON compatOrigFile: ocean3d.h
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       real rho(GLOBAL_2D_ARRAY,N)
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       common /ocean_rho1/rho1 /ocean_rho/rho
 # if defined NONLIN_EOS && defined SPLIT_EOS
       real qp1(GLOBAL_2D_ARRAY,N)
