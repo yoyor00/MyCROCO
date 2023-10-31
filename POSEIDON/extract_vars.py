@@ -26,6 +26,7 @@ class CrocoVariable:
         self.compatOrigFile = infos['compatOrigFile']
         self.sourceLine = infos['sourceLine']
         self.cppKeyCond = infos['cppKeyCond']
+        self.decl = infos['decl']
 
     def to_dict(self):
         return {
@@ -40,8 +41,9 @@ class CrocoVariable:
             'gridOrigin': self.gridOrigin,
             'compatVarName': self.compatVarName,
             'compatOrigFile': self.compatOrigFile,
+            'sourceLine': self.sourceLine,
             'cppKeyCond': self.cppKeyCond,
-            'sourceLine': self.sourceLine
+            'decl': self.decl
         }
 
 ##########################################################
@@ -125,6 +127,9 @@ class CrocoVariableExtractor:
                     assert vtype == state_infos['type']
                     assert vname == state_infos['compatVarName']
                     assert os.path.basename(fname) == state_infos['compatOrigFile']
+
+                    # extract exact line decl
+                    state_infos["decl"] = line.strip()
 
                     # store #if stack
                     print(state_macro_if_stack)

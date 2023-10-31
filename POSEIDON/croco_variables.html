@@ -4,6 +4,13 @@
 		<title>CROCO variables</title>
 		<!-- Use JQuery to render dynamically -->
 		<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+		<!-- Use mustash JS to render templates -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.min.js"></script>
+		<!-- Code hilight -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+		<!-- and it's easy to individually load additional languages -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/fortran.min.js"></script>
 		<!-- Rendering Latex math -->
 		<script>
 			MathJax = {
@@ -25,52 +32,102 @@
 		<script src="./croco_variables.js"></script>
 		<!-- Internal redering script -->
 		<script language="javascript">
-			$(function(){
+			////////////////////////////////////////////////////////////////////
+			function renderVariable(variable) {
+				//create div for var
+				var div = $('<div>').attr('class', 'variable');
+
+				//set title
+				$('<h2>').text(variable['name'] + " / $"+variable['latex']+"$").appendTo(div);
+
+				//tags
+				var tags = [];
+				tags.push("dim:3D");
+				tags.push("kind:"+variable['kind']);
+				tags.push("as:"+variable['usedAs']);
+				var tagDiv = $('<div>').attr('class', 'tags').appendTo(div)
+				for (var i in tags) {
+					$('<span>').attr('class', tags[i].split(':')[0]).text(tags[i]).appendTo(tagDiv);
+				}
+
+				//code of dec
+				$('<h3>').text("Declaration:").appendTo(div);
+				var code = "";
+				var conds = variable['cppKeyCond'];
+				for (var entry in conds)
+					code += "#if " + conds[entry] + "\n";
+				code += variable['decl'] + "\n";
+				for (var entry in conds)
+					code += "#endif\n";
+				$('<pre>').text(code).appendTo(div);
+				/*var pre = $('<pre>').appendTo(div);
+				$('<code>').attr('class', 'language-fortran').text(code).appendTo(pre);*/
+
+				//draw cell attach
+				$('<h3>').text("In cell attachement:").appendTo(div);
+				var view = "\
+					<div class='cell_value_attach'>\
+						<div style='margin-top:-5px; margin-left:-5px'></div>\
+						<div style='margin-top:-5px; margin-left:20px'></div>\
+						<div style='margin-top:-5px; margin-left:45px'></div>\
+						<div style='margin-top:20px; margin-left:-5px'></div>\
+						<div style='margin-top:20px; margin-left:20px' class='cell_value_here'></div>\
+						<div style='margin-top:20px; margin-left:45px'></div>\
+						<div style='margin-top:45px; margin-left:-5px'></div>\
+						<div style='margin-top:45px; margin-left:20px'></div>\
+						<div style='margin-top:45px; margin-left:45px'></div>\
+					</div>"
+				$(document.createElement('div')).html(view).appendTo(div);
+
+				//dimensions
+				$('<h3>').text("Dimensions:").appendTo(div);
+				$('<span>').text("TODO").appendTo(div);
+
+				//documentation
+				$('<h3>').text("Documentation:").appendTo(div);
+				$('<p>').text(variable['description']).appendTo(div);
+
+				//pointers
+				$('<h3>').text("Pointers:").appendTo(div);
+				var docUrl = variable['docUrl'];
+				var sourceFile = variable['compatOrigFile'];
+				var sourceLine = variable['sourceLine'];
+				var sourceUrl = "https://gitlab.inria.fr/croco-ocean/croco/-/blob/dev2022_GPU_merge/OCEAN/"+sourceFile+"#L"+sourceLine;
+				var mustashData = {sourceFile: sourceFile, sourceLine: sourceLine, sourceUrl: sourceUrl, docUrl: docUrl};
+				var mustashModel = "\
+					<ul>\
+						<li><span>Documentation : </span><a href='{{docUrl}}'>{{docUrl}}</a></li>\
+						<li><span>Source :        </span><a href='{{sourceUrl}}'>{{sourceFile}}:{{sourceLine}}</a></li>\
+					</ul>\
+				";
+				$('<ul>').html(Mustache.render(mustashModel, mustashData)).appendTo(div);
+
+				//keys
+				var divKeys = $('<div>').attr('class', 'keys').appendTo(div);
+				$('<h3>').text("Keys:").appendTo(divKeys);
+				var ul = $(document.createElement('ul')).appendTo(divKeys);
+				for (var key in variable)
+					if (key == "latex")
+						$(document.createElement('li')).text(key + ": $"+variable[key]+"$").appendTo(ul);
+					else
+						$(document.createElement('li')).text(key + ": "+variable[key]).appendTo(ul);
+
+				//ok
+				return div;
+			}
+
+			////////////////////////////////////////////////////////////////////
+			function renderAllVariables(variables) {
 				// get div to inject in
 				var varNode = $("#vars");
-				console.log(varNode);
 
 				//loop on vars
-				console.log("ok");
-				for (var i in crocoVariables) {
+				for (var i in variables) {
 					// extract
-					var variable = crocoVariables[i];
+					var variable = variables[i];
 
-					//log
-					console.log(variable);
-
-					//create div for var
-					var div = $('<div>');
-
-					//set title
-					$('<h2>').text(variable['name'] + " / $"+variable['latex']+"$").appendTo(div);
-
-					//keys
-					var ul = $(document.createElement('ul')).appendTo(div);
-					for (var key in variable)
-						if (key == "latex")
-							$(document.createElement('li')).text(key + ": $"+variable[key]+"$").appendTo(ul);
-						else if (key == "docUrl")
-							$(document.createElement('li')).append($("<span>").text(key + ":")).append($("<a>").text(variable[key]).attr('href', variable[key])).appendTo(ul);
-						else if (key == "compatOrigFile")
-							$(document.createElement('li')).append($("<span>").text(key + ":")).append($("<a>").text(variable[key]).attr('href', "https://gitlab.inria.fr/croco-ocean/croco/-/blob/dev2022_GPU_merge/OCEAN/"+variable[key]+"#L"+variable["sourceLine"])).appendTo(ul);
-						else
-							$(document.createElement('li')).text(key + ": "+variable[key]).appendTo(ul);
-
-					//draw cell attach
-					var view = "\
-						<div style='border:1px solid black; display:block; width:50px; height:50px;'>\
-							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:00px; margin-left:00px'></div>\
-							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:00px; margin-left:20px'></div>\
-							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:00px; margin-left:40px'></div>\
-							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:20px; margin-left:00px'></div>\
-							<div style='background-color:red; position: absolute; display: block; width:10px; height: 10px; margin-top:20px; margin-left:20px'></div>\
-							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:20px; margin-left:40px'></div>\
-							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:40px; margin-left:00px'></div>\
-							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:40px; margin-left:20px'></div>\
-							<div style='background-color:gray; position: absolute; display: block; width:10px; height: 10px; margin-top:40px; margin-left:40px'></div>\
-						</div>"
-					$(document.createElement('div')).html(view).appendTo(div);
+					//build var
+					var div = renderVariable(variable);
 
 					//add
 					div.appendTo(varNode);
@@ -78,13 +135,107 @@
 					//sep
 					varNode.append($("<hr>"));
 				}
+			}
+
+			////////////////////////////////////////////////////////////////////
+			$(function(){
+				//render all
+				renderAllVariables(crocoVariables);
+				//hiligth
+				hljs.highlightAll();
+				//end
+				console.log("All done...");
 			})
 		</script>
+		<!-- CSS -->
+		<style>
+			/* page */
+			body {
+				background-color: #1A4A61;
+			}
+			div#content {
+				margin-left: auto;
+				margin-right: auto;
+				padding:20px;
+				width: 1200px;
+				background-color: #dee8ec;
+				border-radius: 20px;
+			}
+			div#content h1 {
+				text-align: center;
+			}
+			div#content pre {
+				color: white;
+				background-color: rgb(12, 12, 12);
+				border-radius: 10px;
+				padding: 5px;
+				width:100%;
+				font-family: "Avenir", Verdana, sans-serif;
+			}
+			/* cell value position */
+			div.cell_value_attach {
+				border:1px solid black;
+				display:block;
+				width:50px;
+				height:50px;
+			}
+			div.cell_value_attach div {
+				background-color:gray;
+				position: absolute;
+				display: block;
+				width:10px;
+				height: 10px;
+				border-radius: 5px;
+			}
+			div.cell_value_attach div.cell_value_here {
+				background-color:red;
+				position: absolute;
+				display: block;
+				width:10px;
+				height: 10px;
+			}
+			/* tags */
+			div.variable div.tags span {
+				border-radius: 3px;
+				border: 1px solid;
+				padding:3px;
+				margin:3px;
+			}
+			div.variable div.tags span.dim {
+				background-color: #206cff;
+				border-color: blue;
+				color: #e0ecff;
+			}
+			div.variable div.tags span.kind {
+				background-color: rgb(185, 154, 255);
+				border-color: rgb(66, 38, 129);
+				color: black;
+			}
+			div.variable div.tags span.as {
+				background-color: rgb(66, 214, 146);
+				border-color: rgb(23, 78, 53);
+				color: black;
+			}
+			/* keys */
+			div.keys {
+				color: gray;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>CROCO variables</h1>
-		<div id="vars">
-
+		<div id="content">
+			<h1>CROCO variables</h1>
+			<div id="search">
+				<h2>Search:</h2>
+				<table>
+					<tr>
+						<td>Search:</td>
+						<td><input type="text" name="search"></input></td>
+					</tr>
+				</table>
+			</div>
+			<hr>
+			<div id="vars"></div>
 		</div>
 	</body>
 </html>
