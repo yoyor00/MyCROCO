@@ -85,6 +85,7 @@
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
      &     WORK(PRIVATE_2D_SCRATCH_ARRAY),
      &    WORK1(PRIVATE_2D_SCRATCH_ARRAY)
+!$acc declare create( WORK1 )      
 # ifdef OPENACC
       real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -672,8 +673,8 @@
 #  endif
 ! !
         enddo   ! !<-- itrc  ! !--> discard DC
-        ENDDOLOOP2D
 # endif /* TRACERS */
+        ENDDOLOOP2D
 ! !
 ! !===================================================================
 ! !
@@ -762,7 +763,7 @@
            cff0=WORK(i,j)*ru(i,j,k)! ! *(1.-gamma)   
 #   ifndef M3FAST_ZETAW
 ! !    &            -rufrc(i,j) *WORK1(i,j)  
-! !    &            *(Hz(i,j,k)+Hz(i-1,j,k))                    ! ! Check Hz_half
+! !    &            *(Hz(i,j,k)+Hz(i-1,j,k))  ! ! Check Hz_half
 #   endif
            ru_int_nbq(i,j,k)=(cff1*cff0
      &                         + cff2*ru_intt_nbq(i,j,k,3-nstp)
@@ -880,14 +881,14 @@
                cff0=WORK(i,j)*rv(i,j,k)
 #   ifndef M3FAST_ZETAW
 ! !    &            -rvfrc(i,j) *WORK1(i,j)  
-! !    &            *(Hz(i,j,k)+Hz(i,j-1,k))                    ! ! Check Hz_half
+! !    &            *(Hz(i,j,k)+Hz(i,j-1,k))  ! ! Check Hz_half
 #   endif
                rv_int_nbq(i,j,k)= (cff1*cff0
      &                            + cff2*rv_intt_nbq(i,j,k,3-nstp)
      &                            + cff13*rv_intt_nbq(i,j,k,nstp))
 ! !#   ifndef M3FAST_ZETAW
 ! !     &            -rvfrc(i,j) *WORK1(i,j)  
-! !     &            *(Hz(i,j,k)+Hz(i,j-1,k))                    ! ! Check Hz_half
+! !     &            *(Hz(i,j,k)+Hz(i,j-1,k))   ! ! Check Hz_half
 ! !#  endif
 #   ifdef MASKING
      &                           *vmask(i,j)   
@@ -969,6 +970,7 @@
 ! !
       enddo     ! !<-- j
 # endif
+!$acc end kernels      
 
 # ifdef M3SLOW_W
 ! !----------------------------------------------------------
@@ -977,7 +979,6 @@
 ! !<-- rw_nbq_avg1   contains NBQ pressure gradient (+ gravity)
 ! !                                        + second viscosity
 ! !----------------------------------------------------------
-!$acc end kernels      
 !$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
        do i=Istr,Iend

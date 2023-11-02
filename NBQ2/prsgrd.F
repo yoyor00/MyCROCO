@@ -60,6 +60,7 @@ c********************************************************************
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
+# include "weno_interfaces.h"
 #  ifdef INNERSHELF_APG
 ! Impose alongshore pressure gradient balancing
 ! a constant cross-shore geostrophic flow UG (m/s)
@@ -98,6 +99,7 @@ c********************************************************************
 #  ifdef SED_TOY
 #   include "forces.h"
 #  endif
+#include "openacc_work.h"
 !
 #  ifdef MASKING
 #   define SWITCH *

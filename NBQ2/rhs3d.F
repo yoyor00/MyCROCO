@@ -98,6 +98,7 @@
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"
+# include "weno_interfaces.h"
 # ifdef M3FAST
 #  include "nbq.h"
 # endif

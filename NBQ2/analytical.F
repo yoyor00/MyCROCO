@@ -788,7 +788,7 @@ C$    integer  trd, omp_get_thread_num
 
 # else
 !$acc kernels if(compute_on_device) default(present)
-     do j=JstrR,JendR
+      do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=0.
         enddo

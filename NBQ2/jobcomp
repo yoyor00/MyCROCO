@@ -27,6 +27,14 @@ SOURCE=../OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
+# SAVE SOURCES (dev mode)
+DD=`date "+%y/%m/%d/%H/%M/%S"`
+mkdir -p SRC/$DD
+cp *.F SRC/$DD/
+cp *.h SRC/$DD/
+cp *.F90 SRC/$DD/
+
+
 # 
 # get source information, commit number
 #
@@ -356,7 +364,7 @@ echo "Checking COMPILEOPENACC..."
 if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
 	COMPILEOPENACC=TRUE
 	if [[ $FC == pgfortran || $FC == nvfortran ]] ; then
-		  FFLAGS1="$FFLAGS1 -acc -Minfo=accel"
+		  FFLAGS1="$FFLAGS1 -acc -Minfo=accel -gpu=zeroinit"
 	fi
 fi
 
@@ -377,8 +385,11 @@ rm -f flags.tmp
 # compile croco
 #
 $MAKE depend
-$MAKE -j 8
-  
+#$MAKE -j 8 oasrc
+#$MAKE -j 8
+
+$MAKE -j 8 
+
 [[ -f croco  ]] && mv croco $RUNDIR
 [[ -f partit ]] && mv partit $RUNDIR
 [[ -f ncjoin ]] && mv ncjoin  $RUNDIR

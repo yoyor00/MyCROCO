@@ -299,11 +299,11 @@
       endif  !  nrrec.eq.0.
 
 # ifdef SOLVE3D
-!
-!----------------------------------------------------------------------
-!  Initial conditions for momentum components [m/s].
-!----------------------------------------------------------------------
-!
+! !
+! !------------------------------------------------------------------
+! !  Initial conditions for momentum components [m/s].
+! !------------------------------------------------------------------
+! !
       if (nrrec.eq.0) then
 !
 #  if defined THACKER
@@ -483,9 +483,9 @@
       else   ! nrrec.ne.0.
 
 #  if defined RIP && defined RIP_TOPO_2D
-!
-!  Add perturbation to restart field
-!
+! !
+! !  Add perturbation to restart field
+! !
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -511,12 +511,12 @@
 #  endif /* RIP */
 !
       endif   !nrrec.eq.0.
-!
-!----------------------------------------------------------------------
-!  Set initial conditions for potential temperature [degC] and
-!  salinity [PSU] and passive tracer
-!----------------------------------------------------------------------
-!
+! !
+! !--------------------------------------------------------------------
+! !  Set initial conditions for potential temperature [degC] and
+! !  salinity [PSU] and passive tracer
+! !--------------------------------------------------------------------
+! !
       if (nrrec.eq.0) then
 !
 #  if defined TRACERS
@@ -729,11 +729,11 @@
         enddo
 
 #  elif defined KH_INST
-!
-! Traditional KH instability: 
-!
-!  Configuration from Pelletier et al.: linear shear within mixed layer 
-!
+! !
+! ! ! Traditional KH instability: 
+! !
+! !   Configuration from Pelletier et al.: linear shear within mixed layer 
+! !
 #   if defined TEMPERATURE
         htemp0 = 10.
 #   endif /* TEMPERATURE */        
@@ -773,14 +773,14 @@
 #  elif defined ISOLITON
 #   define HORN_PROFILE
 #   ifdef HORN_PROFILE
-!
-!  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
-!  The degeneration of large-scale interfacial gravity waves in lakes. 
-!  J. Fluid Mech., 434:181-207.
-!  --> initialy setup with variable salinity in the tank experiment of 
-!      Horn et al (2001); the conversion to temperature variations 
-!      through linear EOS gives unrealistic range
-!
+! !
+! !  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
+! !  The degeneration of large-scale interfacial gravity waves in lakes. 
+! !  J. Fluid Mech., 434:181-207.
+! !  --> initialy setup with variable salinity in the tank experiment of 
+! !      Horn et al (2001); the conversion to temperature variations 
+! !      through linear EOS gives unrealistic range
+! !
         rho1_exp = R0 - 10.  ! * 0.7286 /2.
         rho2_exp = R0 + 10.  ! * 0.7286 /2.
         h1_exp = 0.7 * h(1,1)
@@ -1619,6 +1619,7 @@ C$OMP BARRIER
       enddo
 # endif /* BIOLOGY */
 #endif /* SOLVE3D */
+!$acc end kernels
 !
 !--------------------------------------------------------------------
 !  Exchange boundary information
@@ -1768,6 +1769,7 @@ C$OMP BARRIER
      &         *sqrt(1+0.5*((zz-zasym)+abs(zz-zasym))**2/dzasym**2)
      &         +zasym
 !
+!$acc declare create( mssh,allmssh,area,allarea )
 # include "compute_auxiliary_bounds.h"
 
 ! ---------------------------------------------------------------------
@@ -1953,24 +1955,32 @@ C$OMP BARRIER
       mssh=mssh/area
 !$acc end kernels
 # ifdef MPI
-#ifdef OPENACC
-      NOTREADY
-#endif
+!#ifdef OPENACC
+!      NOTREADY
+!#endif
+!$acc host_data if(compute_on_device)
+!$acc&   use_device (mssh,allmssh,area,allarea )
       call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
      &                allmssh,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
       call MPI_ALLGATHER(area,1,MPI_DOUBLE_PRECISION,
      &                allarea,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
+!$acc end host_data      
+!$acc kernels if(compute_on_device) default(present)
       mssh=QuadZero
       area=QuadZero
+!$acc loop vector reduction(+:mssh,area)
       do i=1,NNODES
         mssh=mssh+allmssh(1,i)*allarea(1,i)
         area=area+allarea(1,i)
       enddo
       mssh=mssh/area
+!$acc end kernels
 # endif
+!$acc kernels if(compute_on_device) default(present)
       mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
+!$acc end kernels      
 
 !$acc kernels if(compute_on_device) default(present)
 
@@ -2083,9 +2093,9 @@ C$OMP BARRIER
         enddo
       enddo
 # undef WORK
-!
-! --- Compute geostrophic u,v velocities ---
-!
+! !
+! ! --- Compute geostrophic u,v velocities ---
+! !
       do k=1,N
         do j=Jstr,Jend
           do i=Istr,Iend
@@ -2108,9 +2118,9 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
-!
-! --- Compute barotropic u velocity ---
-!
+! !
+! ! --- Compute barotropic u velocity ---
+! !
       ubar(:,:,tndx)=0.
       do k=1,N
         do j=Jstr,Jend
@@ -2127,9 +2137,9 @@ C$OMP BARRIER
      &                  + 0.5*(h(i,j)+h(i-1,j)) )
         enddo
       enddo
-!
-! --- Compute barotropic v velocity ---
-!
+! !
+! ! --- Compute barotropic v velocity ---
+! !
       vbar(:,:,tndx)=0.
       do k=1,N
         do j=Jstr,Jend
@@ -2149,9 +2159,9 @@ C$OMP BARRIER
 
 # ifdef CLIMATOLOGY
       if (jet_perturb .eq. 0) then
-!
-! Fill climatological arrays. MPI exchanges are done in analytical
-!
+! !
+! ! Fill climatological arrays. MPI exchanges are done in analytical
+! !
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
