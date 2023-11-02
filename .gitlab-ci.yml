@@ -38,7 +38,7 @@ ana_run:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
@@ -62,7 +62,7 @@ vort_run:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
   before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
@@ -92,7 +92,7 @@ reg_run:
       #tags:
       #- ci.inria.fr
       #- large
-      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0
+      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
   before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
@@ -123,7 +123,7 @@ reg_perfrst:
       #tags:
       #- ci.inria.fr
       #- large
-      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_fortran:1.0.0  
+      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0  
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
