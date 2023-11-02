@@ -1886,4 +1886,24 @@
 # endif
 #endif /* NBQ */
 
+!tides.h
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+!$acc&, Tperiod
+#endif /* SSH_TIDES || UV_TIDES */
+#if defined SSH_TIDES && (defined ZCLIMATOLOGY || defined Z_FRC_BRY)
+!$acc&, SSH_Tamp
+!$acc&, SSH_Tphase
+#endif
+#if defined UV_TIDES && (defined M2CLIMATOLOGY || defined M2_FRC_BRY)
+!$acc&, UV_Tangle
+!$acc&, UV_Tmajor
+!$acc&, UV_Tminor
+!$acc&, UV_Tphase
+#endif
+#ifdef POT_TIDES
+!$acc&, POT_Tamp
+!$acc&, POT_Tphase
+!$acc&, PTide
+#endif
+
 !$acc& )
