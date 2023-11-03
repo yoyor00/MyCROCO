@@ -149,7 +149,7 @@
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
 # if  defined UV_HADV_WENO5 || defined UV_VADV_WENO5
-      REAL    :: flux3_weno, flux5_weno
+!!      REAL    :: flux3_weno, flux5_weno
 # endif
 !
 # include "compute_auxiliary_bounds.h"
