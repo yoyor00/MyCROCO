@@ -349,6 +349,7 @@
           enddo
         enddo
       endif
+!$acc end kernels      
 # else      
 !$acc kernels if(compute_on_device) default(present) async(1)
 # endif

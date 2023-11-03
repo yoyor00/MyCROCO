@@ -13,12 +13,12 @@
 
       SUBROUTINE rhs3d_w_nh(tile)
 
-!======================================================================
-!                   ***  Subroutine RHS3D  ***
-! NBQ mode :  compute right-hand-side for the vertical velocity wz 
-!======================================================================
-! History :   2016-11  (F. Lemarié)  Original code
-!----------------------------------------------------------------------
+! !========================================================
+! !                   ***  Subroutine RHS3D  ***
+! ! NBQ mode :  compute right-hand-side for the vertical velocity wz 
+! !========================================================
+! ! History :   2016-11  (F. Lemarié)  Original code
+! !------------------------------------------------------------
 
       implicit none
       integer tile, trd, omp_get_thread_num
@@ -26,27 +26,39 @@
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-!
-!   A3d(1,1,trd), A3d(1,2,trd) contain ru,rv 
-!   A3d(1,3,trd) contains rw 
-!   A3d(1,3,trd) and A3d(1,4,trd) is available at this point
-!
+! !
+! !   A3d(1,1,trd), A3d(1,2,trd) contain ru,rv 
+! !   A3d(1,3,trd) contains rw 
+! !   A3d(1,3,trd) and A3d(1,4,trd) is available at this point
+! !
       CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A3d(1,3,trd),
+#ifndef OPENACC      
      &             A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &             A2d(1,4,trd), A2d(1,5,trd),
-     &             A3d(1,4,trd), A3d(1,5,trd),
-     &             A3d(1,6,trd), A3d(1,7,trd))
+     &             A3d(1,5,trd), A3d(1,6,trd),
+     &             A3d(1,7,trd), A3d(1,8,trd))
+#else     
+     &             A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
+     &             A2d(1,4,trd), A3d(1,4,trd),
+     &             A3d(1,5,trd), A3d(1,6,trd),
+     &             A3d(1,7,trd), A3d(1,8,trd))
+#endif    
       return
       END
       
-!======================================================================
+! !========================================================
       
       SUBROUTINE rhs3d_w_tile (istr, iend,   jstr,   jend, rw ,
-     &                           CF,   FC,  We_r ,    lap, Hzw, 
+     &                           CF,   FC,  We_r ,    lap,
+#ifndef OPENACC     
+     &                          Hzw,
+#else
+     &                          Hzw3D,
+#endif
      &                          HUon_w, HVom_w,
      &                          WFx, WFe)      
       IMPLICIT NONE
-      !!
+      ! !! !
       INTEGER  :: Istr,Iend,Jstr,Jend
       INTEGER  :: i,j,k,kp
       INTEGER  :: imin,imax,jmin,jmax
@@ -54,6 +66,7 @@
       integer     kp2,kp1,km1
       !!
 # include "param.h"
+#ifndef OPENACC
       REAL     :: rw     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: CF     (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL     :: FC     (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)  
@@ -62,16 +75,50 @@
       REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY,0:N  ) 
       REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
-!      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY )
-!      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY )
+! !      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY )
+! !      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY )
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
-      !!    
+#else
+      REAL     :: rw     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL     :: CF     (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
+      REAL     :: FC     (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)  
+      REAL     :: We_r   (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)        
+      REAL     :: lap    (PRIVATE_2D_SCRATCH_ARRAY      )
+      REAL     :: Hzw3D  (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY,0:N  ) 
+      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+! !      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY )
+! !      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY )
+      REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+#endif
+      ! !! !    
       REAL     :: gamma, epsil, cff, cff1, cff2, cff3, Omeg_r
       REAL     :: wz_bot,wz_sfc
       PARAMETER (gamma=0.25  )
       PARAMETER (epsil=1.E-16)
-      !!
+      ! !! !
+c       REAL     :: Hzw3D    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+!!!!$acc declare create( Hzw3D )      
+
+
+#ifndef OPENACC
+#define HZWIK       Hzw(i,k)
+#define HZWIKM1     Hzw(i,k-1)
+#define HZWI0       Hzw(i,0)
+#define HZWI1       Hzw(i,1)
+#define HZWIN       Hzw(i,N)
+#define HZWINM1     Hzw(i,N-1)
+#else
+#define HZWIK       Hzw3D(i,j,k)
+#define HZWIKM1     Hzw3D(i,j,k-1)
+#define HZWI0       Hzw3D(i,j,0)
+#define HZWI1       Hzw3d(i,j,1) 
+#define HZWIN       Hzw3D(i,j,N)
+#define HZWINM1     Hzw3D(i,j,N-1)
+#endif
+
 # include "grid.h"
 # include "ocean3d.h"
 # include "coupling.h"
@@ -79,16 +126,16 @@
 # include "scalars.h"  
 # include "nbq.h"
 # include "weno_interfaces.h"
-!
-!--------------------------------------------------------------------
-! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
-! used in UP5 and C6 advection schemes (and order degradation near 
-! land masks). cdiff is part of laplacian diffusion in flux1 (used 
-! near mask): 
-!    0 --> flux1=flux2 (second order C2 advection scheme)
-!    1 --> flux1 gives 1st order monotonic UP1 advection scheme
-!--------------------------------------------------------------------
-!
+! !
+! !----------------------------------------------------------
+! ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
+! ! used in UP5 and C6 advection schemes (and order degradation near 
+! ! land masks). cdiff is part of laplacian diffusion in flux1 (used 
+! ! near mask): 
+! !    0 --> flux1=flux2 (second order C2 advection scheme)
+! !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
+! !----------------------------------------------------------
+! !
 # if defined W_HADV_WENO5 || defined W_HADV_C6 || defined W_HADV_UP5 \
   || defined W_VADV_WENO5 || defined W_VADV_C6 || defined W_VADV_UP5
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
@@ -139,6 +186,8 @@
 # endif
 
 !$acc kernels if(compute_on_device) default(present)
+!$acc&          , copyin( rr,rrm,rrp, Cr, cff1, cu )
+c       workrvtk = -23.d00
       DO j=Jstr,Jend
         DO i=Istr,Iend+1
           HUon_w(i,j,0)=0.5*HUon(i,j,1)                
@@ -173,13 +222,13 @@
       ENDDO 
 
 # if defined UV_ADV && defined W_HADV
-!
-!=======================================================================
-!
-!  Horizontal advection
-!
-!=======================================================================
-!
+! !
+! !=========================================================
+! !
+! !  Horizontal advection
+! !
+! !=========================================================
+! !
 #  if defined W_HADV_TVD || defined W_VADV_TVD
       if(nrhs.eq.3) then
         cdt = dt                     !<-- Corrector
@@ -265,12 +314,13 @@
 #   endif
 #  endif /* W_HADV_WENO5 */
 
+!$acc loop independent
       DO k=0,N             
 
 #  ifdef W_HADV_C2
-!
-! === C2 horizontal advection scheme ===
-!
+! !
+! ! === C2 horizontal advection scheme ===
+! !
         DO j=Jstr,Jend
           DO i=Istr,Iend+1
             WFx(i,j,k)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
@@ -285,30 +335,31 @@
         ENDDO
 
 #  elif defined W_HADV_TVD
-!
-! === TVD horizontal advection scheme ===
-!
+! !
+! ! === TVD horizontal advection scheme ===
+! !
         DO j=Jstr,Jend
           DO i=Istr,Iend+1
             WFx(i,j,k)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
      &                                     )*Huon_w(i,j,k)
-          ENDDO    
+          ENDDO 
         ENDDO
 
+!$acc loop independent private( cff, cff1, cu, rrm,rr,rrp, Cr )            
         DO j=Jstr,Jend
           ! wz(i-2,..) out of bounds
           i = Istr
             if (k==0) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
+              HZWIK = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
             elseif (k==N) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
+              HZWIK = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
             else
-              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
+              HZWIK = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
      &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
             endif
             cff = Huon_w(i,j,k)
             cu = pn_u(i,j)*cdt*cff
-     &           /Hzw(i,k)*pm(i,j)
+     &           /HZWIK*pm(i,j)
 
             rrp= (wz(i+1,j,k,nstp)-wz(i  ,j,k,nstp))
 #   ifdef MASKING
@@ -327,18 +378,19 @@
             Cr=limiter2(cu,WFx(i,j,k),cff1,rrm,rr,rrp)
             WFx(i,j,k) = (1-Cr)*cff1 + Cr* WFx(i,j,k)
 
+!$acc loop independent private( cff, cff1, cu, rrm,rr,rrp, Cr )            
           DO i=Istr+1,Iend
             if (k==0) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
+              HZWIK = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
             elseif (k==N) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
+              HZWIK = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
             else
-              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
+              HZWIK = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
      &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
             endif
             cff = Huon_w(i,j,k)
             cu = pn_u(i,j)*cdt*cff
-     &           /Hzw(i,k)*pm(i,j)
+     &           /HZWIK*pm(i,j)
 
             rrp= (wz(i+1,j,k,nstp)-wz(i  ,j,k,nstp))
 #   ifdef MASKING
@@ -360,20 +412,20 @@
           ! wz(i+1,.) out of bounds
           i=Iend+1
             if (k==0) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
+              HZWIK = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
             elseif (k==N) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
+              HZWIK = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
             else
-              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
+              HZWIK = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
      &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
             endif
             cff = Huon_w(i,j,k)
             cu = pn_u(i,j)*cdt*cff
-     &           /Hzw(i,k)*pm(i,j)
+     &           /HZWIK*pm(i,j)
 
             rrp= wz(i  ,j,k,nstp)
 #   ifdef MASKING
-     &                                 *0.0 ! *umask(i+1,j) out of bounds
+     &                                 *0.0 ! ! *umask(i+1,j) out of bounds
 #   endif
             rr = (wz(i  ,j,k,nstp)-wz(i-1,j,k,nstp))
 #   ifdef MASKING
@@ -399,18 +451,19 @@
 
         ! (wz(:,j-2)outof bounds
         j=JstrV-1
+!$acc loop independent        
           DO i=Istr,Iend
             if (k==0) then
-              Hzw(i,k) = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
+              HZWIK = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
             elseif (k==N) then
-              Hzw(i,k) = 0.25 * (HZR(i,j,k  ) + HZR(i,j-1,k  ))
+              HZWIK = 0.25 * (HZR(i,j,k  ) + HZR(i,j-1,k  ))
             else
-              Hzw(i,k) = 0.25 * (HZR(i,j  ,k) + HZR(i,j  ,k+1)
+              HZWIK = 0.25 * (HZR(i,j  ,k) + HZR(i,j  ,k+1)
      &                         + HZR(i,j-1,k) + HZR(i,j-1,k+1))
             endif
             cff = Hvom_w(i,j,k)
             cu = pm_v(i,j)*cdt*cff
-     &           /Hzw(i,k)*pn(i,j)
+     &           /HZWIK*pn(i,j)
 
             rrp= (wz(i,j+1,k,nstp)-wz(i,j  ,k,nstp))
 #   ifdef MASKING
@@ -430,19 +483,21 @@
             WFe(i,j,k) = (1-Cr)*cff1  + Cr* WFe(i,j,k)
           ENDDO
 
+!$acc loop independent        
         DO j=JstrV,Jend+1
+!$acc loop independent
           DO i=Istr,Iend
             if (k==0) then
-              Hzw(i,k) = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
+              HZWIK = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
             elseif (k==N) then
-              Hzw(i,k) = 0.25 * (HZR(i,j,k  ) + HZR(i,j-1,k  ))
+              HZWIK = 0.25 * (HZR(i,j,k  ) + HZR(i,j-1,k  ))
             else
-              Hzw(i,k) = 0.25 * (HZR(i,j  ,k) + HZR(i,j  ,k+1)
+              HZWIK = 0.25 * (HZR(i,j  ,k) + HZR(i,j  ,k+1)
      &                         + HZR(i,j-1,k) + HZR(i,j-1,k+1))
             endif
             cff = Hvom_w(i,j,k)
             cu = pm_v(i,j)*cdt*cff
-     &           /Hzw(i,k)*pn(i,j)
+     &           /HZWIK*pn(i,j)
 
             rrp= (wz(i,j+1,k,nstp)-wz(i,j  ,k,nstp))
 #   ifdef MASKING
@@ -464,9 +519,9 @@
         ENDDO
 
 #  elif defined W_HADV_WENO5 || defined W_HADV_C6 || defined W_HADV_UP5
-!
-! === WENO5 or 5th/6th order horizontal advection scheme ===
-!
+! !
+! ! === WENO5 or 5th/6th order horizontal advection scheme ===
+! !
 #   ifdef W_HADV_WENO5
 #    define FLUX5 flux5_weno
 #    define FLUX3 flux3_weno
@@ -481,7 +536,7 @@
 
 #   else /* C6 or UP5 */
 
-        if (nnew.eq.3) then  ! predictor
+        if (nnew.eq.3) then  ! ! predictor
 #    define FLUX5 flux6
 #    define FLUX3 flux4
 #    define FLUX2 flux2
@@ -514,9 +569,9 @@
 #   endif /* WENO5 */
 
 #  else /* W_HADV_C4 */
-!
-! === Fourth order horizontal advection scheme ===
-!
+! !
+! ! === Fourth order horizontal advection scheme ===
+! !
         DO j=jstr,jend
           DO i=imin,imax+1
             WFx(i,j,k) = ( wz(i,j,k,nrhs) - wz(i-1,j,k,nrhs) )
@@ -593,13 +648,13 @@
           ENDDO
         ENDDO 
 #  endif /* W_HADV_C2 */
-      ENDDO  !<-- outer loop k
+      ENDDO  ! !<-- outer loop k
 
-!
-!-------------------------------------------------------
-! Finalize horizontal advection: compute flux divergence
-!-------------------------------------------------------
-!
+! !
+! !-----------------------------------------------
+! ! Finalize horizontal advection: compute flux divergence
+! !-----------------------------------------------
+! !
       DO k=0,N
         DO j=Jstr,Jend
           DO i=Istr,Iend
@@ -614,53 +669,53 @@
 
 
 # if defined UV_ADV && defined W_VADV
-!
-!=======================================================================
-!
-!  Vertical advection
-!
-!=======================================================================
-!
+! !
+! !=========================================================
+! !
+! !  Vertical advection
+! !
+! !=========================================================
+! !
       DO j=Jstr,Jend 
  
         DO i=Istr,Iend          
-          Hzw (i,0  ) = 0.5 * HZR(i,j,1) 
-          Hzw (i,N  ) = 0.5 * HZR(i,j,N)  
+          HZWI0 = 0.5 * HZR(i,j,1) 
+          HZWIN = 0.5 * HZR(i,j,N)  
           We_r(i,0  ) =        We(i,j,0)
           We_r(i,N  ) = 0.5 * (We(i,j,N)+We(i,j,N-1))             
           We_r(i,N+1) =        We(i,j,N)        
         ENDDO
         DO k=1,N-1
           DO i=Istr,Iend
-            Hzw (i,k) = 0.5 * ( HZR(i,j,k) + HZR(i,j,k+1) )
+            HZWIK = 0.5 * ( HZR(i,j,k) + HZR(i,j,k+1) )
             We_r(i,k) = 0.5 * ( We (i,j,k) + We (i,j,k-1) ) 
           ENDDO        
         ENDDO
 
 #  ifdef W_VADV_SPLINES          
-!
-! === SPLINES vertical advection scheme ===
-!
+! !
+! ! === SPLINES vertical advection scheme ===
+! !
         DO i=Istr,Iend
-          cff     =   0.5 / ( Hzw (i,1) + Hzw (i,0) )       !<- 1 / b(1)
-          CF(i,1) =   cff * Hzw(i,0)                        !<- q(1) = c(1) / b(1)
-          FC(i,1) =   cff * 3.*( Hzw(i,0)*wz(i,j,1,nrhs)    !<- f(1) / b(1)
-     &                         + Hzw(i,1)*wz(i,j,0,nrhs) )
+          cff     =   0.5 / ( HZWI1 + HZWI0 )       ! !<- 1 / b(1)
+          CF(i,1) =   cff * HZWI0                        ! !<- q(1) = c(1) / b(1)
+          FC(i,1) =   cff * 3.*( HZWI0*wz(i,j,1,nrhs)    ! !<- f(1) / b(1)
+     &                         + HZWI1*wz(i,j,0,nrhs) )
         ENDDO          
         DO k=2,N-1
           DO i=Istr,Iend          
-            cff     = 1./( 2.*Hzw(i,k-1)+Hzw(i,k)*(2.-CF(i,k-1)) ) !<- p = 1 / ( b(k)+a(k)*q(k-1) )
-            CF(i,k) = cff * Hzw(i,k-1)                             !<- c(k) * p
-            FC(i,k) = cff * ( 3.*( Hzw(i,k-1)*wz(i,j,k  ,nrhs)     !<- f(k)=( f(k)-a(k)*f(k-1) )*p
-     &                           + Hzw(i,k  )*wz(i,j,k-1,nrhs) )
-     &                           - Hzw(i,k  )*FC(i,k-1)  )
+            cff     = 1./( 2.*HZWIKM1+HZWIK)*(2.-CF(i,k-1)) ) ! !<- p = 1 / ( b(k)+a(k)*q(k-1) )
+            CF(i,k) = cff * HZWIKM1                             ! !<- c(k) * p
+            FC(i,k) = cff * ( 3.*( HZWIKM1*wz(i,j,k  ,nrhs)     ! !<- f(k)=( f(k)-a(k)*f(k-1) )*p
+     &                           + HZWIK*wz(i,j,k-1,nrhs) )
+     &                           - HZWIK*FC(i,k-1)  )
           ENDDO
         ENDDO                   
         DO i=Istr,Iend           
-          cff     = 1./( 2.*Hzw(i,N-1)+Hzw(i,N)*(2.-CF(i,N-1)) )   !<- p = 1 / ( b(N)+a(N)*q(k-1) )
-          FC(i,N) = cff*( 3.*( Hzw(i,N-1)*wz(i,j,N  ,nrhs)         !<- f(N)=( f(N)-a(N)*f(N-1) )*p
-     &                       + Hzw(i,N  )*wz(i,j,N-1,nrhs) )
-     &                       - Hzw(i,N  )*FC(i,N-1)  )    
+          cff     = 1./( 2.*HZWINM1+HZWIN*(2.-CF(i,N-1)) )   ! !<- p = 1 / ( b(N)+a(N)*q(k-1) )
+          FC(i,N) = cff*( 3.*( HZWINM1*wz(i,j,N  ,nrhs)         ! !<- f(N)=( f(N)-a(N)*f(N-1) )*p
+     &                       + HZWIN*wz(i,j,N-1,nrhs) )
+     &                       - HZWIN*FC(i,N-1)  )    
         ENDDO          
         DO k=N-1,1,-1
           DO i=Istr,Iend 
@@ -675,9 +730,8 @@
         ENDDO
 
 #  elif defined W_VADV_WENO5 || defined W_VADV_C6 || defined W_VADV_UP5
-!
-! === WENO5 vertical advection scheme ===
-!
+! !
+! ! === WENO5 vertical advection scheme ===
 #   ifdef W_VADV_WENO5
 #    define FLUX5 flux5_weno
 #    define FLUX3 flux3_weno
@@ -717,9 +771,10 @@
 #   endif /* WENO5 */
 
 #  else
-!
-! === C2 vertical advection scheme with TVD correction ===
-!
+! !
+! ! === C2 vertical advection scheme with TVD correction ===
+! !
+!$acc loop independent
         DO k=2,N-1
           DO i=Istr,Iend
             FC(i,k) = 0.5*(wz(i,j,k,nrhs) + wz(i,j,k-1,nrhs))*We_r(i,k)
@@ -744,20 +799,23 @@
 #   endif
         ENDDO          
 
+!$acc loop independent
         DO i=Istr,Iend
           FC(i,0  )=0.
           FC(i,N+1)=0.
         ENDDO          
 
 #   ifdef W_VADV_TVD
+!$acc loop independent private( kp2, kp1, km1 )
         DO k=1,N
           kp2=min(N+1,k+2)
           kp1=min(N+1,k+1)
           km1=max(1,k-1)
+!$acc loop independent private( cff, cff1, cu, rrp, rr, rrm, Cr )
           DO i=IstrU,Iend
             cff= We_r(i,k)
             cu = cff*pm(i,j)*pn(i,j)
-     &            *cdt/Hzw(i,k)
+     &            *cdt/HZWIK
             rrp= (wz(i,j,min(kp2,N),nstp) -wz(i,j,min(kp1,N),nstp))
             rr = (wz(i,j,min(kp1,N),nstp) -wz(i ,j,k,nstp))
             rrm= (wz(i,j,k  ,nstp) -wz(i ,j,km1,nstp))
@@ -768,11 +826,11 @@
 #   endif
 
 #  endif /* W_VADV_SPLINES */
-!
-!-----------------------------------------------------
-! Finalize vertical advection: compute flux divergence
-!-----------------------------------------------------
-! 
+! !
+! !---------------------------------------------
+! ! Finalize vertical advection: compute flux divergence
+! !---------------------------------------------
+! ! 
         DO k=1,N
           DO i=Istr,Iend
             rw(i,j,k) = rw(i,j,k)  - FC(i,k+1) + FC(i,k)
@@ -788,22 +846,22 @@
 !$acc end kernels
       return
       end
-!
-!=======================================================================
-!
+! !
+! !=========================================================
+! !
 # if defined W_VADV_TVD || defined W_HADV_TVD
 
       function limiter2(nu,hf,lf,rrm,rr,rrp)
-
+!$acc routine( limiter2 ) seq
       implicit none
       real    :: cff,limiter2,Rj,nu,hf,lf,rrm,rr,rrp
-!
-!  Upwind        Limiter(Rj)=0.
-!  Lax-Wendroff  Limiter(Rj)=1.
-!  Min-Mod       Limiter(Rj)=max(0.,min(1.,Rj))
-!  Suberbee      Limiter(Rj)=max(0.,max(min(1.,2*Rj),min(2.,Rj)))
-!  Van Leer      Limiter(Rj)=(Rj+abs(Rj))/(1+abs(Rj))  => default
-!
+! !
+! !  Upwind        Limiter(Rj)=0.
+! !  Lax-Wendroff  Limiter(Rj)=1.
+! !  Min-Mod       Limiter(Rj)=max(0.,min(1.,Rj))
+! !  Suberbee      Limiter(Rj)=max(0.,max(min(1.,2*Rj),min(2.,Rj)))
+! !  Van Leer      Limiter(Rj)=(Rj+abs(Rj))/(1+abs(Rj))  => default
+! !
       if (abs(rr).gt.1.e-20) THEN
         if (nu .gt. 1.e-20) THEN
           Rj=rrm/rr
@@ -823,15 +881,15 @@
 #  elif defined MINMOD
        limiter2=max(0.D0,min(1.,Rj))
 #  else
-       limiter2=(Rj+abs(Rj))/(1+abs(Rj))  ! Van Leer
+       limiter2=(Rj+abs(Rj))/(1+abs(Rj))  ! ! Van Leer
 #  endif
 
       end function
 
 # endif /* W_VADV_TVD || W_VADV_TVD */
-!
-!=======================================================================
-!
+! !
+! !=========================================================
+! !
 #else
       subroutine rhs3d_w_empty
       end

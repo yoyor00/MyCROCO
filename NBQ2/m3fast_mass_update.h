@@ -29,13 +29,15 @@
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
        
-              do k=N-1,Max(1,N-2*alphaNw_nbq),-1
+              do k=N-1,Max(1,N-alphaNw_nbq),-1
                cff=(alphaw_nbq-1.)
 !    &               *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
 !    &                    /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
                cff2= cff*(
      &    +         qdmw_nbq(i,j,N)
-     &         *(z_w(i,j,k)+H(i,j))/(z_w(i,j,N)+H(i,j))
+!    &         *(z_w(i,j,k)+H(i,j))/(z_w(i,j,N)+H(i,j))
+     &         *(z_w(i,j,k)-z_w(i,j,N-alphaNw_nbq))
+     &         /(z_w(i,j,N)-z_w(i,j,N-alphaNw_nbq))
      &         *(Hz(i,j,k)+Hz(i,j,k+1))/Hz(i,j,N))
 
                qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)+cff2
