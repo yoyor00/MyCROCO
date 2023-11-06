@@ -38,7 +38,11 @@
      &                                   size,    vdims(5), lenstr
       real*8  tstart
       real*8  cycle_origin_date_in_sec
-      character*16 varname, dimname, attname
+#     if defined SUBSTANCE
+        character*60 varname, dimname, attname
+#     else
+        character*16 varname, dimname, attname
+#     endif
 
 #include "param.h"
 #include "ncscrum.h"
