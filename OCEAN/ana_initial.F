@@ -1321,6 +1321,8 @@ C$OMP BARRIER
                 t(i,j,k,1,iv)=cini_wat(iv)
 #  elif defined SED_TOY
                 t(i,j,k,1,iv)=cini_wat(iv)
+#  elif defined COASTAL
+                t(i,j,k,1,iv)=cini_wat(iv)
 #  else
                 if (h(i,j).lt.300) then
                   t(i,j,k,1,iv)=cini_wat(iv)
