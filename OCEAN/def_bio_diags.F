@@ -363,6 +363,9 @@
             ierr=nf_def_var (ncid,
      &           vname(1,indxbioVSink+iflux-1)(1:lvar),
      &          NF_FOUT, 3, r2dgrd, vidVSink(iflux))
+#   ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
+#   endif
 
 #else
             ierr=nf_def_var (ncid,
