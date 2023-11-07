@@ -248,6 +248,7 @@
           enddo
         enddo
 # else
+!$acc kernels if(compute_on_device) default(present)
         do j=JR_RANGE
           do i=IR_RANGE
             zeta(i,j,1)=0.
@@ -258,6 +259,7 @@
             vbar(i,j,2)=0.
           enddo
         enddo
+!$acc end kernels        
 # endif
 
       else  !  nrrec.ne.0.
@@ -456,6 +458,7 @@
 #   endif
 
 #  else
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -477,6 +480,7 @@
           enddo
         enddo
 #   endif
+!$acc end kernels        
 
 #  endif
 
