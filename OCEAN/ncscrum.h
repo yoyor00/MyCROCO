@@ -546,7 +546,7 @@
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
 # ifdef OBSTRUCTION
       integer indxObst
-      parameter (indxObst   = 700)
+      parameter(indxObst = 700)
 # endif
 # ifdef ABL1D
       integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
@@ -1198,7 +1198,7 @@
 # endif /* MUSTANG */
 
 # ifdef OBSTRUCTION
-      integer hisObst(27*6+4*3) ! max 6 obstruction var
+      integer hisObst(17*6+15) ! max 6 obstruction var
 # endif
 
 # if defined DIAGNOSTICS_TS
@@ -1391,7 +1391,7 @@
       integer avgMust(ntrc_subs+6)
 #  endif
 #  ifdef OBSTRUCTION
-      integer avgObst(27*6+4*3) ! max 6 obstruction var
+      integer avgObst(17*6+15) ! max 6 obstruction var
 #  endif
 
 # endif /* SOLVE3D */

@@ -30,8 +30,8 @@
 
       subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
      &                                 wrk1,wrk2, UFx,UFe, VFx,VFe)
-#ifdef OBSTRUCTION_FORCE
-      USE comOBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
+#ifdef OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
 #endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -402,7 +402,7 @@
       do k=1,N
 
 
-# ifdef OBSTRUCTION_FORCE
+# ifdef OBSTRUCTION
         do j=Jstr,Jend
             do i=IstrU,Iend
               ru(i,j,k)=ru(i,j,k)-(obst_fuz(i-1,j,k)+obst_fuz(i,j,k)) !/2/2*4 half sum equilibrium

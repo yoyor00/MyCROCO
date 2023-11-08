@@ -1989,8 +1989,6 @@
 !                       ==========================
 */
 # define OBSTRUCTION
-# define OBSTRUCTION_TURB
-# define OBSTRUCTION_FORCE
 
 # undef  OPENMP
 # undef  MPI

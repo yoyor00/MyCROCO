@@ -40,10 +40,16 @@
      &                      nv_out2D_specif, nv_out3Dk_specif
 #endif
 #ifdef OBSTRUCTION
-      USE comOBSTRUCTIONS, ONLY : obst_nbvar, l_obstout_pos,
+      USE com_OBSTRUCTIONS, ONLY : obst_nbvar,
+     &     l_obstout_pos,
      &     l_obstout_height_f, l_obstout_height_e, 
      &     l_obstout_dens_f, l_obstout_dens_e, 
-     &     l_obstout_width_f, l_obstout_width_e
+     &     l_obstout_width_f, l_obstout_width_e, 
+     &     l_obstout_thick_f, l_obstout_thick_e,
+     &     l_obstout_theta, l_obstout_frac_xy, 
+     &     l_obstout_frac_z, l_obstout_fuzvz, 
+     &     l_obstout_a2d, l_obstout_a3d, l_obstout_s2d, 
+     &     l_obstout_s3d, l_obstout_drag, l_obstout_tau
 #endif
 
 
@@ -67,7 +73,9 @@
 #if defined MUSTANG || defined OBSTRUCTION
      &      , indx,ik
 #endif
-
+#if defined OBSTRUCTION
+     &      , indxObstvar
+#endif
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
@@ -2089,154 +2097,538 @@
 # ifdef OBSTRUCTION
 
         do itrv=1,obst_nbvar
-            indx=indxObst+itrv-1
+            indxObstvar = itrv
+            indx = indxObst + indxObstvar - 1
             if (l_obstout_pos) then ! obst_pos
                 ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 3, r2dgrd, vidObst(itrv))  
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar))  
 #   ifdef NC4PAR
-                ierr=nf_var_par_access(ncid,vidObst(itrv),
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
      &                           nf_collective)
 #   endif
                 lvar=lenstr(vname(2,indx))
-                ierr=nf_put_att_text (ncid, vidObst(itrv), 'long_name',
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
      &                                  lvar,vname(2,indx)(1:lvar))
                 lvar=lenstr(vname(3,indx))
-                ierr=nf_put_att_text (ncid, vidObst(itrv), 'units',
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
      &                                  lvar,vname(3,indx)(1:lvar))
                 lvar=lenstr(vname(4,indx))
-                ierr=nf_put_att_text (ncid, vidObst(itrv), 'field',
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(itrv),indx, 5,
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
      &              NF_FOUT, ierr)
             endif
             
-            indx=indxObst+obst_nbvar+itrv-1
+            indxObstvar = obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
             if (l_obstout_height_f) then ! obst forcing height
                 ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 3, r2dgrd, vidObst(obst_nbvar+itrv)) 
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
 #   ifdef NC4PAR
-                ierr=nf_var_par_access(ncid,vidObst(obst_nbvar+itrv),
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
      &                           nf_collective)
 #   endif
                 lvar=lenstr(vname(2,indx))
-                ierr=nf_put_att_text (ncid, vidObst(obst_nbvar+itrv), 
-     &                            'long_name', lvar,vname(2,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
                 lvar=lenstr(vname(3,indx))
-                ierr=nf_put_att_text (ncid, vidObst(obst_nbvar+itrv), 'units',
-     &                            lvar,vname(3,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
                 lvar=lenstr(vname(4,indx))
-                ierr=nf_put_att_text (ncid, vidObst(obst_nbvar+itrv), 'field',
-     &                             lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(obst_nbvar+itrv),indx, 5,
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
      &              NF_FOUT, ierr)
             endif
 
-            indx=indxObst+2*obst_nbvar+itrv-1
+            indxObstvar = 2 * obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
             if (l_obstout_height_e) then ! obst effective height
                 ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 3, r2dgrd, vidObst(2*obst_nbvar+itrv)) 
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
 #   ifdef NC4PAR
-                ierr=nf_var_par_access(ncid,vidObst(2*obst_nbvar+itrv),
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
      &                           nf_collective)
 #   endif
                 lvar=lenstr(vname(2,indx))
-                ierr=nf_put_att_text (ncid, vidObst(2*obst_nbvar+itrv), 
-     &                           'long_name', lvar,vname(2,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
                 lvar=lenstr(vname(3,indx))
-                ierr=nf_put_att_text (ncid, vidObst(2*obst_nbvar+itrv), 'units',
-     &                            lvar,vname(3,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
                 lvar=lenstr(vname(4,indx))
-                ierr=nf_put_att_text (ncid, vidObst(2*obst_nbvar+itrv), 'field',
-     &                            lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(2*obst_nbvar+itrv),indx, 5,
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
      &              NF_FOUT, ierr)
             endif
 
-            indx=indxObst+3*obst_nbvar+itrv-1
+            indxObstvar = 3 * obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
             if (l_obstout_dens_f) then ! obst forcing density
                 ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 3, r2dgrd, vidObst(3*obst_nbvar+itrv)) 
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
 #   ifdef NC4PAR
-                ierr=nf_var_par_access(ncid,vidObst(3*obst_nbvar+itrv),
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
      &                           nf_collective)
 #   endif
                 lvar=lenstr(vname(2,indx))
-                ierr=nf_put_att_text (ncid, vidObst(3*obst_nbvar+itrv), 
-     &                           'long_name', lvar,vname(2,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
                 lvar=lenstr(vname(3,indx))
-                ierr=nf_put_att_text (ncid, vidObst(3*obst_nbvar+itrv), 'units',
-     &                            lvar,vname(3,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
                 lvar=lenstr(vname(4,indx))
-                ierr=nf_put_att_text (ncid, vidObst(3*obst_nbvar+itrv), 'field',
-     &                            lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(3*obst_nbvar+itrv),indx, 5,
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
      &              NF_FOUT, ierr)
             endif
 
-            indx=indxObst+4*obst_nbvar+itrv-1
+            indxObstvar = 4 * obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
             if (l_obstout_dens_e) then ! obst effective density
                 ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 4, r3dgrd, vidObst(4*obst_nbvar+itrv)) 
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
 #   ifdef NC4PAR
-                ierr=nf_var_par_access(ncid,vidObst(4*obst_nbvar+itrv),
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
      &                           nf_collective)
 #   endif
                 lvar=lenstr(vname(2,indx))
-                ierr=nf_put_att_text (ncid, vidObst(4*obst_nbvar+itrv), 
-     &                           'long_name', lvar,vname(2,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
                 lvar=lenstr(vname(3,indx))
-                ierr=nf_put_att_text (ncid, vidObst(4*obst_nbvar+itrv), 'units',
-     &                            lvar,vname(3,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
                 lvar=lenstr(vname(4,indx))
-                ierr=nf_put_att_text (ncid, vidObst(4*obst_nbvar+itrv), 'field',
-     &                            lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(4*obst_nbvar+itrv),indx, 5,
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
      &              NF_FOUT, ierr)
             endif
 
-            indx=indxObst+5*obst_nbvar+itrv-1
+            indxObstvar = 5 * obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
             if (l_obstout_width_f) then ! obst forcing width
                 ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 3, r2dgrd, vidObst(5*obst_nbvar+itrv)) 
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
 #   ifdef NC4PAR
-                ierr=nf_var_par_access(ncid,vidObst(5*obst_nbvar+itrv),
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
      &                           nf_collective)
 #   endif
                 lvar=lenstr(vname(2,indx))
-                ierr=nf_put_att_text (ncid, vidObst(5*obst_nbvar+itrv), 
-     &                           'long_name', lvar,vname(2,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
                 lvar=lenstr(vname(3,indx))
-                ierr=nf_put_att_text (ncid, vidObst(5*obst_nbvar+itrv), 'units',
-     &                            lvar,vname(3,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
                 lvar=lenstr(vname(4,indx))
-                ierr=nf_put_att_text (ncid, vidObst(5*obst_nbvar+itrv), 'field',
-     &                            lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(5*obst_nbvar+itrv),indx, 5,
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
      &              NF_FOUT, ierr)
             endif
 
-            indx=indxObst+6*obst_nbvar+itrv-1
+            indxObstvar = 6 * obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
             if (l_obstout_width_e) then ! obst effective width
                 ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 4, r3dgrd, vidObst(6*obst_nbvar+itrv)) 
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
 #   ifdef NC4PAR
-                ierr=nf_var_par_access(ncid,vidObst(6*obst_nbvar+itrv),
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
      &                           nf_collective)
 #   endif
                 lvar=lenstr(vname(2,indx))
-                ierr=nf_put_att_text (ncid, vidObst(6*obst_nbvar+itrv), 
-     &                           'long_name', lvar,vname(2,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
                 lvar=lenstr(vname(3,indx))
-                ierr=nf_put_att_text (ncid, vidObst(6*obst_nbvar+itrv), 'units',
-     &                            lvar,vname(3,indx)(1:lvar))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
                 lvar=lenstr(vname(4,indx))
-                ierr=nf_put_att_text (ncid, vidObst(6*obst_nbvar+itrv), 'field',
-     &                            lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(6*obst_nbvar+itrv),indx, 5,
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
      &              NF_FOUT, ierr)
             endif
 
+            indxObstvar = 7*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_thick_f) then ! obst forcing thickness
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 8 * obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_thick_e) then ! obst effective thickness
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 9 * obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_theta) then ! obst theta bending angle
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 10*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_frac_xy) then ! obst fragmentation correction factor
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 11*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_frac_z) then ! obst sigma fraction
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 12*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_drag) then ! obst drag coefficient
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 13*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_a2d) then ! 2D Obstruction horizontal area
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 14*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_a3d) then ! 3D Obstruction horizontal area
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 15*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_s2d) then ! 2D Obstruction vertical area
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 16*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_s3d) then ! 3D Obstruction verticalarea
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+
         enddo
+
+        do itrv=1,3
+            indxObstvar = 17*obst_nbvar + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_a2d) then ! 2D Obstruction horizontal area
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 17*obst_nbvar + 3 + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_a3d) then ! 3D Obstruction horizontal area
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 17*obst_nbvar + 6 + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_s2d) then ! 2D Obstruction vertical area
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 3, r2dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 17*obst_nbvar + 9 + itrv
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_s3d) then ! 3D Obstruction verticalarea
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+         end do
+
+            indxObstvar = 17*obst_nbvar + 13
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_tau) then ! 3D turbulent dissipation
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 17*obst_nbvar + 14
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_fuzvz) then ! 3D friction force FUZ
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
+
+            indxObstvar = 17*obst_nbvar + 15
+            indx = indxObst + indxObstvar - 1
+            if (l_obstout_fuzvz) then ! 3D friction force FVZ
+                ierr=nf_def_var (ncid, vname(1,indx),
+     &              NF_FOUT, 4, r3dgrd, vidObst(indxObstvar)) 
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indxObstvar),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+                lvar=lenstr(vname(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar ), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+                lvar=lenstr(vname(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
+     &              NF_FOUT, ierr)
+            endif
 
 # endif /* OBSTRUCTION */
 

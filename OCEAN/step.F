@@ -120,7 +120,7 @@ C$OMP END PARALLEL
       use module_interface_oa, only : if_oa
 #endif
 #ifdef OBSTRUCTION
-          USE plug_OBSTRUCTIONS, ONLY : OBSTRUCTIONS_update_main
+          USE plug_OBSTRUCTIONS, ONLY : obst_update_main
 #endif
       implicit none
 #include "param.h"
@@ -313,7 +313,7 @@ C$OMP BARRIER
 # endif
 
 #ifdef OBSTRUCTION
-        call OBSTRUCTIONS_update_main (tile)
+        call obst_update_main (tile)
 #endif
 
       enddo

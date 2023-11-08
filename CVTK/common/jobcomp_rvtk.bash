@@ -185,6 +185,8 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
+# Netcdf for F90
+FFLAGS1="$FFLAGS1 $NETCDFINC"
 #
 # determine if AGRIF compilation is required
 #

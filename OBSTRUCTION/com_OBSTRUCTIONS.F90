@@ -1,10 +1,10 @@
 #include "cppdefs.h"
 
-MODULE comobstructions
+MODULE com_OBSTRUCTIONS
 
 #ifdef OBSTRUCTION
    !!==========================================================================
-   !!                   ***  MODULE comOBSTRUCTIONS  ***
+   !!                   ***  MODULE com_OBSTRUCTIONS  ***
    !!
    !! ** Purpose : Declaration of variables used by obstructions module
    !!
@@ -21,14 +21,10 @@ MODULE comobstructions
    INTEGER, PARAMETER :: riosh = 8, riolg = 8, rlg = 8, rsh = 8
    INTEGER, PARAMETER :: lchain = 200
    REAL(KIND=rsh), PARAMETER :: pi = 3.14159265358979323846
-   REAL(KIND=rsh), PARAMETER :: obst_c2turb = 1.92
-   ! obst_c2turb = beta2 in gls kepsilon
-   ! TODO : take beta2 value at initialisation
+   REAL(KIND=rsh), PARAMETER :: obst_c2turb = 1.92 ! obst_c2turb = beta2 in gls kepsilon
 
    INTEGER :: obst_kmax
    INTEGER :: ierrorlog, iwarnlog, iscreenlog
-
-   !! * Shared or public module variables
 
    ! Variables nomenclature :
    ! obst_*    : variables for obstructions
@@ -56,9 +52,8 @@ MODULE comobstructions
    LOGICAL :: l_obstout_width_2d                                     ! Write 2D obstruction width (2D effective) (i,j)
    LOGICAL :: l_obstout_thick_f                                      ! Write 2D obstruction thick (forcing )(iv,i,j)
    LOGICAL :: l_obstout_thick_e                                      ! Write 3D obstruction thick (3D effective) (iv,k,i,j)
-   LOGICAL :: l_obstout_oai                                          ! Write 2D obstruction area index, (iv,i,j)
    LOGICAL :: l_obstout_theta                                        ! Write 3D obstruction bending angle, (iv,k,i,j)
-   LOGICAL :: l_obstout_cover                                        ! Write 2D obstruction coverage, (iv,i,j)
+   LOGICAL :: l_obstout_frac_xy                                      ! Write 2D obstruction coverage, (iv,i,j)
    LOGICAL :: l_obstout_frac_z                                       ! Write 3D obstruction fraction of sigma layer, (iv,k,i,j)
    LOGICAL :: l_obstout_fuzvz                                        ! Write 3D obstruction friction force (k,i,j)
    LOGICAL :: l_obstout_a2d                                          ! Write 2D obstruction horizontal area (iv+3,i,j)
@@ -67,9 +62,7 @@ MODULE comobstructions
    LOGICAL :: l_obstout_s3d                                          ! Write 3D obstruction vertical area (iv+3,k,i,j)
    LOGICAL :: l_obstout_drag                                         ! Write 3D obstruction drag coefficient (iv,k,i,j)
    LOGICAL :: l_obstout_tau                                          ! Write 3D obstruction turbulence dissipation scale (k,i,j)
-   LOGICAL :: l_obstout_z0bed                                        ! Write 2D bottom roughness length for bed (i,j)
-   LOGICAL :: l_obstout_z0obst                                       ! Write 2D bottom roughness length for obstructions (iv+3,i,j)
-   LOGICAL :: l_obstout_z0bstress                                    ! Write 2D bottom roughness length used for bottom shear stress computation (i,j)
+
 
    CHARACTER(LEN=lchain) :: obst_nout_pos                             ! Name obstruction position (iv,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_height_f                        ! Name 2D obstruction height (forcing) (iv,i,j)
@@ -80,10 +73,9 @@ MODULE comobstructions
    CHARACTER(LEN=lchain) :: obst_nout_width_e                         ! Name 3D obstruction width (3D effective) (iv,k,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_thick_f                         ! Name 2D obstruction thick (forcing) (iv,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_thick_e                         ! Name 3D obstruction thick (3D effective) (iv,k,i,j)
-   CHARACTER(LEN=lchain) :: obst_nout_oai                             ! Name 2D obstruction area index, (iv,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_theta                           ! Name 3D obstruction bending angle (iv,k,i,j)
-   CHARACTER(LEN=lchain) :: obst_nout_cover                           ! Name 2D obstruction coverage, (iv,i,j)
-   CHARACTER(LEN=lchain) :: obst_nout_frac_z                          ! Name 3D obstruction fraction of sigma layer, (iv,i,j)
+   CHARACTER(LEN=lchain) :: obst_nout_frac_xy                         ! Name 2D obstruction coverage, (iv,i,j)
+   CHARACTER(LEN=lchain) :: obst_nout_frac_z                          ! Name 3D obstruction fraction of sigma layer, (iv,k,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_fuzvz                           ! Name 3D obstruction friction force (k,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_a2d                             ! Name 2D obstruction horizontal area (iv+3,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_a3d                             ! Name 3D obstruction horizontal area (iv+3,k,i,j)
@@ -91,9 +83,6 @@ MODULE comobstructions
    CHARACTER(LEN=lchain) :: obst_nout_s3d                             ! Name 3D obstruction vertical area (iv+3,k,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_drag                            ! Name 3D obstruction drag coefficient (k,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_tau                             ! Name 3D obstruction turbulence dissipation scale (k,i,j)
-   CHARACTER(LEN=lchain) :: obst_nout_z0bed                           ! Name 2D bottom roughness length for bed (i,j)
-   CHARACTER(LEN=lchain) :: obst_nout_z0obst                          ! Name 2D bottom roughness length for obstruction (iv+3,i,j)
-   CHARACTER(LEN=lchain) :: obst_nout_z0bstress                       ! Name 2D bottom roughness length used for bottom shear stress computation (i,j)
 
    ! Other variables/parameters
    INTEGER  :: obst_nbvar                       ! The total number of obstruction variables
@@ -108,8 +97,9 @@ MODULE comobstructions
    INTEGER  :: obst_nv_flexi_do                 ! Number of variable for flexible and downward (from sea-surface) obstructions
 
    INTEGER  :: obst_nb_max_hnorm
+   INTEGER  :: obst_nmax_var_out 
 
-   LOGICAL :: obst_l_z0bstress_tot              ! IF ONLY ONE obstruction VARIABLE USED Z0SED
+   LOGICAL  :: obst_l_z0bstress_tot              ! IF ONLY ONE obstruction VARIABLE USED Z0SED
 
    REAL(KIND=rsh)  :: obst_c_paramhuv           ! The coefficient of obstruction height for computation of velocity
 
@@ -121,13 +111,11 @@ MODULE comobstructions
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_nbhnorm                  ! Number of vertical steps from the distribution file (iv)
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_c_abdel_nmax             ! Number of segments for Abdlerhman method (bending) (iv)
 
-   LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_filechar               ! For reading time-series of obstructions characteristics from a file (iv)
+   LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_filetimeserie          ! For reading time-series of obstructions characteristics from a file (iv)
    LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_filedistri             ! For reading the vertical distribution of obstructions from a file (iv)
    LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_init_spatial           ! For reading spatial file for density, height, width and thickness (iv)
    LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_flexible               ! For obstructions flexibility (iv)
    LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_cylinder               ! For obstruction shape (cylinder, ellispe / parallelepipeds), (iv)
-   LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_downward               ! For downward obstructions (iv)
-   LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_3dobst                 ! For fully 3D obstructions (iv)
    LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_noturb                 ! For use of simplified formulation (roughness length) instead of full turbulent formulation (iv)
    LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_abdelrough_cste        ! For use constant Abdelrhman 2003 coefficient (iv)
    LOGICAL, DIMENSION(:), ALLOCATABLE :: obst_l_fracxy                 ! For horizontal coverage correction (grid cell not completely fill with obstructions) (iv)
@@ -138,11 +126,22 @@ MODULE comobstructions
 
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_z0bstress_option         ! For using various parameterizations of bottom roughness
 
-   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_varname    ! Name of obstructions variables (iv)
-   CHARACTER(LEN=2), DIMENSION(:), ALLOCATABLE :: obst_type            ! Type of obstruction, one of 'UP', 'DO' or '3D' (iv)
-   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_vardat  ! Name of the input file for obstruction variables
-   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_char    ! Name of the file for times-series of obstructions characteristics (iv)
-   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_distrib ! Name of the file for the vertical distribution of obstructions (iv)
+   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_varname        ! Name of obstructions variables (iv)
+   CHARACTER(LEN=2), DIMENSION(:), ALLOCATABLE :: obst_type                ! Type of obstruction, one of 'UP', 'DO' or '3D' (iv)
+   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_var         ! Name of the input file for obstruction variables
+   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_timeserie   ! Name of the file for times-series of obstructions characteristics (iv)
+   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_initspatial ! Name of the file for spatial obstructions characteristics (iv)
+   CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_distrib     ! Name of the file for the vertical distribution of obstructions (iv)
+
+   ! Timeseries variables
+   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tmax
+   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tbefore
+   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tafter
+   REAL(KIND=rlg), DIMENSION(:,:), ALLOCATABLE :: obst_ts_time
+   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: obst_ts_height
+   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: obst_ts_dens
+   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: obst_ts_width
+   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: obst_ts_thick
 
    ! Initialization variables
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: obst_i_height          ! Initial height of obstructions (iv), [m]
@@ -193,11 +192,9 @@ MODULE comobstructions
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_width_inst      ! Instantaneous obstruction real width (iv,i,j), [m]
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_thick_inst      ! Instantaneous obstruction real thickness (iv,i,j), [m]
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_height_inst     ! Instantaneous obstruction real unbend height (iv,i,j), [m]
-   REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_area_index_inst ! Instantaneous obstruction real area index (iv,i,j), [-]
 
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_position      ! The table where the position of the differents variables is defined through occupation rate (iv,i,j), [-]
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_height        ! Obstruction height within the domain (iv,i,j), [m]
-   REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_oai           ! Obstruction area index (iv,i,j), [-]
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_fracxy        ! Obstruction correction factor for horizontal coverage (iv,i,j), [-]
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_a2d           ! Horizontal area occupied by obstructions per unit area (iv+3,i,j), [-]
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: obst_s2d           ! Vertical area occupied by obstructions per unit area (iv+3,i,j), [-]
@@ -217,8 +214,8 @@ MODULE comobstructions
 
    ! Variables on (iv,kk)
    !---------------------
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_dens_norm       ! Normalized density from the distribution file (iv,kk), allocated within obst_readfile_char subroutine, [-]
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_height_norm     ! Normalized heigth from the distribution file (iv,kk), allocated within obst_readfile_char subroutine, [-]
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_dens_norm       ! Normalized density from the distribution file (iv,kk) [-]
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_height_norm     ! Normalized heigth from the distribution file (iv,kk) [-]
 
    ! Variables on (iv,t)
    !--------------------
@@ -232,4 +229,4 @@ CONTAINS
 
 #endif
 
-END MODULE comOBSTRUCTIONS
+END MODULE com_OBSTRUCTIONS

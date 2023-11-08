@@ -7,7 +7,8 @@ MODULE OBSTRUCTIONS1DV
    ! Authors : F.Ganthy
    ! adaptation from MARS version to an independant module S.Le Gac, 2023
    !
-   ! SUBROUTINES and VARIABLE names of this module are precede by "o1dv_"
+   ! PUBLIC SUBROUTINES, VARIABLES and TYPES names of this module are precede by "o1dv_"
+   ! All variables are private except o1dv_obst_param
    !
    ! Vertical axis is from 1 at bottom to o1dv_kmax at sea surface
    !
@@ -21,8 +22,8 @@ MODULE OBSTRUCTIONS1DV
    PUBLIC :: o1dv_alloc
    PUBLIC :: o1dv_main
    ! TYPE
-   PUBLIC :: param_obst
-   PUBLIC :: output_obst ! use of structure output to add flexibility for using it in the hydrodynamic code part
+   PUBLIC :: o1dv_param_type
+   PUBLIC :: o1dv_out_type ! use of structure output to add flexibility for using it in the hydrodynamic code part
 
    ! Declaration
 
@@ -36,7 +37,7 @@ MODULE OBSTRUCTIONS1DV
    REAL(KIND=rsh), PARAMETER :: o1dv_p_hmin = 0.05_rsh ! Minimum coefficient value for
    ! obstruction height under bending
 
-   TYPE param_obst
+   TYPE o1dv_param_type
       ! characteristic of an obstruction
       CHARACTER(LEN=lchain) :: name   ! obstruction name (arbitrary, user defined)
       CHARACTER(LEN=2)  :: type   ! type of obstruction, one of 'UP', 'DO' or '3D'
@@ -74,7 +75,7 @@ MODULE OBSTRUCTIONS1DV
       REAL(KIND=rsh), ALLOCATABLE :: dens_norm(:)
    END TYPE
 
-   TYPE output_obst
+   TYPE o1dv_out_type
       ! output of obstruction module
       REAL(KIND=rsh), ALLOCATABLE :: height(:)     ! iv
       REAL(KIND=rsh), ALLOCATABLE :: dens3d(:, :)  ! iv,k
@@ -107,8 +108,8 @@ MODULE OBSTRUCTIONS1DV
    INTEGER :: o1dv_iwarnlog
    REAL(KIND=rsh) :: o1dv_h0fond
    REAL(KIND=rsh) :: o1dv_c_paramhuv
-   TYPE(param_obst), DIMENSION(:), ALLOCATABLE :: o1dv_obst_param
-   TYPE(output_obst) :: o1dv_output_reset
+   TYPE(o1dv_param_type), DIMENSION(:), ALLOCATABLE :: o1dv_obst_param
+   TYPE(o1dv_out_type) :: o1dv_output_reset
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: o1dv_zz
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: o1dv_uvz
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: o1dv_abdel_fx         ! Horizontal force acting on leaves seagment (Abdelrhman method for bending) (iv,o1dv_c_abdel_nmax)
@@ -126,7 +127,7 @@ CONTAINS
    !==============================================================================
    SUBROUTINE o1dv_alloc(nbvar, kmax, nb_max_hnorm)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE o1dv_alloc  ***
+      !!                 *** SUBROUTINE o1dv_alloc  ***
       !!
       !! ** Purpose : Initialize dimensions
       !!---------------------------------------------------------------------
@@ -163,7 +164,7 @@ CONTAINS
                         o1dv_l_filedistri, o1dv_nbhnorm, o1dv_height_norm, o1dv_dens_norm, &
                         o1dv_stdout)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE o1dv_init  ***
+      !!                 *** SUBROUTINE o1dv_init  ***
       !!
       !! ** Purpose : Initialize the dimensions of number of obstructions
       !!              and vertical layers and allocate the global arrays
@@ -274,7 +275,7 @@ CONTAINS
    !==============================================================================
    FUNCTION o1dv_init_output() result(o1dv_output)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE o1dv_init_output  ***
+      !!                 *** SUBROUTINE o1dv_init_output  ***
       !!
       !! ** Purpose : Initialize output by allocating arrays and fill with zeros
       !!
@@ -282,7 +283,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       IMPLICIT NONE
       !! * Arguments
-      TYPE(output_obst) :: o1dv_output
+      TYPE(o1dv_out_type) :: o1dv_output
 
       ALLOCATE (o1dv_output%height(o1dv_nbvar))
       o1dv_output%height(:) = 0.
@@ -329,7 +330,7 @@ CONTAINS
                         o1dv_height_f, o1dv_dens_f, o1dv_thick_f, o1dv_width_f, o1dv_position, o1dv_height_p, &
                         o1dv_output)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE o1dv_main  ***
+      !!                 *** SUBROUTINE o1dv_main  ***
       !!
       !! ** Purpose : From hydrodynamic variables and OBSTRUCTIONS parameters,
       !!              compute OBSTRUCTIONS output variable
@@ -351,9 +352,9 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_width_f
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_position
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_height_p ! previous value of height for o1dv_comp_height subroutine
-      TYPE(output_obst), INTENT(INOUT) :: o1dv_output
+      TYPE(o1dv_out_type), INTENT(INOUT) :: o1dv_output
 
-      TYPE(param_obst) :: obst
+      TYPE(o1dv_param_type) :: obst
       INTEGER :: iv
 
       ! initialize output with zero
@@ -429,7 +430,7 @@ CONTAINS
                                 o1dv_height_inst, o1dv_dens_inst, o1dv_thick_inst, o1dv_width_inst, &
                                 o1dv_height, o1dv_theta3d)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE OBSTRUCTIONS_abdelposture  ***
+      !!                 *** SUBROUTINE o1dv_abdelposture  ***
       !!
       !! ** Purpose : Computes obstruction posture (height, diameters and bending angle)
       !!
@@ -444,7 +445,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       IMPLICIT NONE
       !! * Arguments
-      TYPE(param_obst), INTENT(IN) :: obst
+      TYPE(o1dv_param_type), INTENT(IN) :: obst
       REAL(KIND=rsh), INTENT(IN) :: o1dv_hwat
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_uz
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_vz
@@ -697,7 +698,7 @@ CONTAINS
                         WRITE (o1dv_iwarnlog, *) ' '
                         WRITE (o1dv_iwarnlog, *) ' '
                         WRITE (o1dv_iwarnlog, *) '**************************************************************************'
-                        WRITE (o1dv_iwarnlog, *) '***** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_COMP_ABDELPOSTURE *****'
+                        WRITE (o1dv_iwarnlog, *) '***** module OBSTRUCTIONS, subroutine o1dv_COMP_ABDELPOSTURE *****'
                         WRITE (o1dv_iwarnlog, *) ' WARNING : no solution was found for the sum of moment'
                         WRITE (o1dv_iwarnlog, *) '           At obst', obst%name, 's', s
                         WRITE (o1dv_iwarnlog, *) '           o1dv_hwat', o1dv_hwat, 'o1dv_height_inst', o1dv_height_inst
@@ -795,7 +796,7 @@ CONTAINS
             WRITE (o1dv_iwarnlog, *) ' '
             WRITE (o1dv_iwarnlog, *) ' '
             WRITE (o1dv_iwarnlog, *) '************************************************************************'
-            WRITE (o1dv_iwarnlog, *) '**** module OBSTRUCTIONS, subroutine OBSTRUCTIONS_COMP_ABDELPOSTURE ****'
+            WRITE (o1dv_iwarnlog, *) '**** module OBSTRUCTIONS, subroutine o1dv_COMP_ABDELPOSTURE ****'
             WRITE (o1dv_iwarnlog, *) ' WARNING : convergence for flow-obstruction coupling was not reached'
             WRITE (o1dv_iwarnlog, *) '           At obst', obst%name
             WRITE (o1dv_iwarnlog, *) '           Niter', niter_eff, 'Niter_max', niter_max
@@ -863,7 +864,7 @@ CONTAINS
    SUBROUTINE o1dv_comp_height(obst, o1dv_hwat, o1dv_uz, o1dv_vz, o1dv_dz, o1dv_zc, &
                                o1dv_height_inst, o1dv_height_p, o1dv_height)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE OBSTRUCTIONS_comp_height  ***
+      !!                 *** SUBROUTINE o1dv_comp_height  ***
       !!
       !! ** Purpose : Computes obstructions height depending on choosen
       !!              parameterization
@@ -880,7 +881,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       IMPLICIT NONE
       !! * Arguments
-      TYPE(param_obst), INTENT(IN) :: obst
+      TYPE(o1dv_param_type), INTENT(IN) :: obst
       REAL(KIND=rsh), INTENT(IN) :: o1dv_hwat
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_uz
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_vz
@@ -947,7 +948,7 @@ CONTAINS
    SUBROUTINE o1dv_comp_theta(obst, o1dv_hwat, o1dv_dz, o1dv_zc, &
                               o1dv_height_inst, o1dv_height, o1dv_theta3d)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE OBSTRUCTIONS_comp_theta  ***
+      !!                 *** SUBROUTINE o1dv_comp_theta  ***
       !!
       !! ** Purpose : Computes obstructions height depending on choosen
       !!              parameterization
@@ -964,7 +965,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       IMPLICIT NONE
       !! * Arguments
-      TYPE(param_obst), INTENT(IN) :: obst
+      TYPE(o1dv_param_type), INTENT(IN) :: obst
       REAL(KIND=rsh), INTENT(IN) :: o1dv_hwat
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_dz
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_zc
@@ -1001,7 +1002,7 @@ CONTAINS
    SUBROUTINE o1dv_comp_distrib(obst, o1dv_hwat, o1dv_dz, o1dv_zc, &
                                 o1dv_dens_inst, o1dv_height, o1dv_dens3d)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE OBSTRUCTIONS_comp_distrib  ***
+      !!                 *** SUBROUTINE o1dv_comp_distrib  ***
       !!
       !! ** Purpose : Computes vertical distribution of obstructions densities
       !!
@@ -1013,7 +1014,7 @@ CONTAINS
       IMPLICIT NONE
 
       !! * Arguments
-      TYPE(param_obst), INTENT(IN) :: obst
+      TYPE(o1dv_param_type), INTENT(IN) :: obst
       REAL(KIND=rsh), INTENT(IN) :: o1dv_hwat
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_dz
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_zc
@@ -1103,7 +1104,7 @@ CONTAINS
    SUBROUTINE o1dv_comp_fracz(obst, o1dv_hwat, o1dv_dz, o1dv_zc, o1dv_height, &
                               o1dv_dens3d, o1dv_fracz3d)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE OBSTRUCTIONS_comp_fracz ***
+      !!                 *** SUBROUTINE o1dv_comp_fracz ***
       !!
       !! ** Purpose : Computes obstructions height depending on choosen
       !!              parameterization
@@ -1120,7 +1121,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       IMPLICIT NONE
       !! * Arguments
-      TYPE(param_obst), INTENT(IN) :: obst
+      TYPE(o1dv_param_type), INTENT(IN) :: obst
       REAL(KIND=rsh), INTENT(IN) :: o1dv_hwat
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_dz
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_zc
@@ -1185,7 +1186,7 @@ CONTAINS
                              o1dv_height_inst, o1dv_thick_inst, o1dv_width_inst, &
                              o1dv_dens3d, o1dv_theta3d, o1dv_fracz3d, o1dv_width3d, o1dv_thick3d)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE OBSTRUCTIONS_comp_diam  ***
+      !!                 *** SUBROUTINE o1dv_comp_diam  ***
       !!
       !! ** Purpose : Computes obstruction diameters (width and thickness)
       !!
@@ -1197,7 +1198,7 @@ CONTAINS
       IMPLICIT NONE
 
       !! * Arguments
-      TYPE(param_obst), INTENT(IN) :: obst
+      TYPE(o1dv_param_type), INTENT(IN) :: obst
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_dz
       REAL(KIND=rsh), INTENT(IN) :: o1dv_height_inst
       REAL(KIND=rsh), INTENT(IN) :: o1dv_thick_inst
@@ -1273,7 +1274,7 @@ CONTAINS
 
    SUBROUTINE o1dv_comp_fracxy(obst, o1dv_position, o1dv_fracxy)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE OBSTRUCTIONS_comp_fracxy  ***
+      !!                 *** SUBROUTINE o1dv_comp_fracxy  ***
       !!
       !! ** Purpose : Computes obstructions correction term for coverage (fragmentation)
       !!              within one single grid cell
@@ -1282,7 +1283,7 @@ CONTAINS
       IMPLICIT NONE
 
       !! * Arguments
-      TYPE(param_obst), INTENT(IN) :: obst
+      TYPE(o1dv_param_type), INTENT(IN) :: obst
       REAL(KIND=rsh), INTENT(IN) :: o1dv_position
       REAL(KIND=rsh), INTENT(INOUT) :: o1dv_fracxy
 
@@ -1328,7 +1329,7 @@ CONTAINS
 
    SUBROUTINE o1dv_comp_projarea(o1dv_position, o1dv_dz, o1dv_output)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE OBSTRUCTIONS_comp_projarea  ***
+      !!                 *** SUBROUTINE o1dv_comp_projarea  ***
       !!
       !! ** Purpose : Computes obstuctions projected horizontal and vertical area
       !!---------------------------------------------------------------------
@@ -1338,7 +1339,7 @@ CONTAINS
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_position
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN)  :: o1dv_dz
-      TYPE(output_obst), INTENT(INOUT) :: o1dv_output
+      TYPE(o1dv_out_type), INTENT(INOUT) :: o1dv_output
 
       !! * Local declaration
       INTEGER                    :: iv, k
@@ -1493,7 +1494,7 @@ CONTAINS
    SUBROUTINE o1dv_comp_obstroughness(o1dv_position, o1dv_z0bed, &
                                       o1dv_height_f, o1dv_dens_f, o1dv_width_f, o1dv_output)
       !!---------------------------------------------------------------------
-      !!                 ***  ROUTINE o1dv_comp_obstroughness  ***
+      !!                 *** SUBROUTINE o1dv_comp_obstroughness  ***
       !!
       !! ** Purpose : Computes obstuctions bottom roughness
       !!---------------------------------------------------------------------
@@ -1506,7 +1507,7 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_height_f
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_dens_f
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_width_f
-      TYPE(output_obst), INTENT(INOUT) :: o1dv_output
+      TYPE(o1dv_out_type), INTENT(INOUT) :: o1dv_output
 
       !! * Local declaration
       INTEGER         :: iv
@@ -1603,7 +1604,7 @@ CONTAINS
 
    SUBROUTINE o1dv_comp_hydroparam(o1dv_position, o1dv_cmu, o1dv_uz, o1dv_vz, o1dv_output)
    !!---------------------------------------------------------------------
-   !!                 ***  ROUTINE o1dv_comp_hydroparam  ***
+   !!                 *** SUBROUTINE o1dv_comp_hydroparam  ***
    !!
    !! ** Purpose : Computes obstuctions parameters used for hydrodynamics
    !!
@@ -1616,7 +1617,7 @@ CONTAINS
       REAL(KIND=rsh), INTENT(IN) ::  o1dv_cmu
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_uz
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(IN) :: o1dv_vz
-      TYPE(output_obst), INTENT(INOUT) :: o1dv_output
+      TYPE(o1dv_out_type), INTENT(INOUT) :: o1dv_output
 
    !! * Local declaration
       INTEGER                     :: iv, k

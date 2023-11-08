@@ -83,8 +83,8 @@
 !
 !======================================================================
 
-#ifdef OBSTRUCTION_TURB
-      USE comOBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
+#ifdef OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
      &  obst_tau, obst_t, obst_c2turb
 #endif
       IMPLICIT NONE
@@ -521,7 +521,7 @@
                DO i=imin,imax
                   FC(i,k)= cff* OneOverSig(ig)*
      &                   ( Akv_old(i,j,k)+Akv_old(i,j,k-1) ) / Hz(i,j,k) 
-# if defined OBSTRUCTION_TURB
+# if defined OBSTRUCTION
      &                   * (1. - (obst_a3d(obst_nbvar+2,k,i,j))) 
                                  ! centered vertically on the cell
 # endif
@@ -548,7 +548,7 @@
                   cff3p =  ig1+ig2*beta3p  * invk*gls
                   ! Shear and buoyancy production
                   Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k) 
-# if defined OBSTRUCTION_TURB
+# if defined OBSTRUCTION
                   if (ig == itke) then
                     Sprod = Sprod + obst_t(i,j,k)
                   else
@@ -564,11 +564,10 @@
 # endif
                   ! Patankar trick to ensure non-negative solutions
                   cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1)) 
-# if defined OBSTRUCTION_TURB
+# if defined OBSTRUCTION
      &                 * (1. - (obst_a3d(obst_nbvar+2,k,i,j)*Hz(i,j,k) 
      &                 + obst_a3d(obst_nbvar+2,k+1,i,j)*Hz(i,j,k+1))
      &                 / (Hz(i,j,k) + Hz(i,j,k+1)) ) 
-                       ! TODO siggen!
 # endif
 
                   IF( ig == itke ) THEN

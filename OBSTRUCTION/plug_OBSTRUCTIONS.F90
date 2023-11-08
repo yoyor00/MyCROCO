@@ -7,31 +7,31 @@ MODULE plug_OBSTRUCTIONS
 
    USE module_OBSTRUCTIONS
 
-   USE initOBSTRUCTIONS, ONLY: OBSTRUCTIONS_init
-   USE OBSTRUCTIONS, ONLY: OBSTRUCTIONS_update
+   USE init_OBSTRUCTIONS, ONLY: obst_init
+   USE OBSTRUCTIONS, ONLY: obst_update
 
    IMPLICIT NONE
 
    PRIVATE
 
-   PUBLIC OBSTRUCTIONS_update_main
-   PUBLIC OBSTRUCTIONS_init_main
+   PUBLIC obst_update_main
+   PUBLIC obst_init_main
 
 contains
 !
 !-----------------------------------------------------------------------
-   SUBROUTINE OBSTRUCTIONS_update_main(tile)
+   SUBROUTINE obst_update_main(tile)
 
       INTEGER :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-      CALL OBSTRUCTIONS_update(Istr, Iend, Jstr, Jend)
+      CALL obst_update(Istr, Iend, Jstr, Jend)
 
    END SUBROUTINE
 
 !-----------------------------------------------------------------------
-   SUBROUTINE OBSTRUCTIONS_init_main()
+   SUBROUTINE obst_init_main()
 
       REAL :: h0fond
 # include "ocean2d.h"
@@ -42,7 +42,7 @@ contains
       h0fond = 0.
 # endif
 
-      CALL OBSTRUCTIONS_init(h0fond)
+      CALL obst_init(h0fond)
    END SUBROUTINE
 
 !-----------------------------------------------------------------------
