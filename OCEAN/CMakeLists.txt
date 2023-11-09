@@ -69,7 +69,7 @@ file(GLOB CROCO_CPP_H
 #        analysis routines
 #======================================================================
 # 1) Main driving part
-list(APPEND CROCO_SRCS_F77 main/main.F main/step.F read_inp.F main/timers_roms.F
+list(APPEND CROCO_SRCS_F77 main/main.F main/step.F main/read_inp.F main/timers_roms.F
                            main/init_scalars.F
                            main/init_arrays.F main/set_weights.F main/set_scoord.F
                            main/ana_grid.F main/setup_grid1.F main/setup_grid2.F
@@ -314,7 +314,7 @@ list(APPEND CROCO_SRCS_F77 ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F)
 # ISSUE: remark, this is to solve an issue due to the trick
 # of pre-applying MPC for "ocean" which is we let lenstr.F
 # in the list, make add_executable(partit) skipping it.
-add_library(croco_common STATIC lenstr.F insert_node.F)
+add_library(croco_common STATIC lib/lenstr.F lib/insert_node.F)
 
 ###########################################################
 # build ncjoin utility

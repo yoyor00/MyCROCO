@@ -82,7 +82,7 @@
 ! Open input file and process it line-by-line: copy all CPP-command
 ! structure of the input file into the subprogram to be created.
 !
-      open(input,file='read_inp.F',status='old',form='formatted')
+      open(input,file='main/read_inp.F',status='old',form='formatted')
       count=0                           !
       cont_switch=.false.               ! Set string to blank, then
       end_of_file=.false.               ! read in a line from input 
