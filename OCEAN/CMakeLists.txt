@@ -74,7 +74,8 @@ list(APPEND CROCO_SRCS_F77 main.F step.F read_inp.F timers_roms.F init_scalars.F
                            setup_grid1.F setup_grid2.F set_nudgcof.F
                            ana_initial.F analytical.F zonavg.F)
 # 2) 2D time stepping engine
-list(APPEND CROCO_SRCS_F77 step2d.F u2dbc.F v2dbc.F zetabc.F obc_volcons.F)
+list(APPEND CROCO_SRCS_F77 ts_2d/step2d.F ts_2d/u2dbc.F ts_2d/v2dbc.F ts_2d/zetabc.F
+                           ts_2d/obc_volcons.F)
 # 3) 3D time stepping engine
 list(APPEND CROCO_SRCS_F77 ts_3d/pre_step3d.F ts_3d/step3d_t.F ts_3d/step3d_uv1.F
                            ts_3d/step3d_uv2.F ts_3d/prsgrd.F ts_3d/rhs3d.F
