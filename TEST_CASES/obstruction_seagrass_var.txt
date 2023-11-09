@@ -141,12 +141,10 @@
 : r_obst_c_z0bstress       : Constant (uncorrected value of roughness length)
 : r_obst_c_z0bstress_x0    : First parameter for rouhgness length computation (in 3D)
 : r_obst_c_z0bstress_x1    : Second parameter for rouhgness length computation (in 3D)
-: r_obst_c_z0bstress_x2    : Coefficient to correct 3D roughness length into 2D roughness length
 :------------------------------------------------------------------------------
 &obst_var_bstress
   r_l_obst_z0bstress      = .TRUE.
   r_obst_z0bstress_option = 0
   r_obst_c_z0bstress      = 0.00012
   r_obst_c_z0bstress_x0   = 0.00055
-  r_obst_c_z0bstress_x1   = -0.397
-  r_obst_c_z0bstress_x2   = 0.22 /
+  r_obst_c_z0bstress_x1   = -0.397 /

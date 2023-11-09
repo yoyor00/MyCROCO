@@ -165,7 +165,6 @@ MODULE com_OBSTRUCTIONS
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: obst_c_z0bstress       ! roughness length for obstructions (iv), [m]
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: obst_c_z0bstress_x0    ! First parameter for roughness length parameterization (iv), [-]
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: obst_c_z0bstress_x1    ! Second parameter for roughness length parameterization (iv), [-]
-   REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: obst_c_z0bstress_x2    ! Third parameter for roughness length parameterization (correction for 2Dsmall-depth) (iv), [-]
 
    !--------------------------------------------------------------------------
    ! * VARIABLES DEPENDING ONLY ON GRID (i,j) or (k,i,j)                     :

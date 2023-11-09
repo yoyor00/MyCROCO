@@ -21,6 +21,8 @@ MODULE OBSTRUCTIONS1DV
    PUBLIC :: o1dv_init
    PUBLIC :: o1dv_alloc
    PUBLIC :: o1dv_main
+   ! FUNCTION
+   PUBLIC :: o1dv_comp_z0sedim
    ! TYPE
    PUBLIC :: o1dv_param_type
    PUBLIC :: o1dv_out_type ! use of structure output to add flexibility for using it in the hydrodynamic code part
@@ -68,7 +70,6 @@ MODULE OBSTRUCTIONS1DV
       REAL(KIND=rsh) :: c_z0bstress       ! roughness length for obstructions (iv), [m]
       REAL(KIND=rsh) :: c_z0bstress_x0    ! First parameter for roughness length parameterization (iv), [-]
       REAL(KIND=rsh) :: c_z0bstress_x1    ! Second parameter for roughness length parameterization (iv), [-]
-      REAL(KIND=rsh) :: c_z0bstress_x2
       LOGICAL          :: l_filedistri
       INTEGER          :: nbhnorm
       REAL(KIND=rsh), ALLOCATABLE :: height_norm(:)
@@ -160,7 +161,7 @@ CONTAINS
                         o1dv_c_rho, o1dv_c_height_x0, o1dv_c_height_x1, o1dv_c_shelter, &
                         o1dv_c_lift, o1dv_c_drag, o1dv_c_lz, o1dv_c_crough_x0, o1dv_c_crough_x1, &
                         o1dv_c_fracxy_k0, o1dv_c_fracxy_k1, o1dv_c_fracxy_l, o1dv_c_z0bstress, &
-                        o1dv_c_z0bstress_x0, o1dv_c_z0bstress_x1, o1dv_c_z0bstress_x2, &
+                        o1dv_c_z0bstress_x0, o1dv_c_z0bstress_x1, &
                         o1dv_l_filedistri, o1dv_nbhnorm, o1dv_height_norm, o1dv_dens_norm, &
                         o1dv_stdout)
       !!---------------------------------------------------------------------
@@ -203,7 +204,6 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_c_z0bstress
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_c_z0bstress_x0
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_c_z0bstress_x1
-      REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: o1dv_c_z0bstress_x2
       LOGICAL, DIMENSION(o1dv_nbvar), INTENT(IN)       :: o1dv_l_filedistri
       INTEGER, DIMENSION(o1dv_nbvar), INTENT(IN)       :: o1dv_nbhnorm
       REAL(KIND=rsh), DIMENSION(o1dv_nbvar, o1dv_nb_max_hnorm), INTENT(IN) :: o1dv_height_norm
@@ -247,7 +247,6 @@ CONTAINS
          o1dv_obst_param(iv)%c_z0bstress = o1dv_c_z0bstress(iv)
          o1dv_obst_param(iv)%c_z0bstress_x0 = o1dv_c_z0bstress_x0(iv)
          o1dv_obst_param(iv)%c_z0bstress_x1 = o1dv_c_z0bstress_x1(iv)
-         o1dv_obst_param(iv)%c_z0bstress_x2 = o1dv_c_z0bstress_x2(iv)
          o1dv_obst_param(iv)%l_filedistri = o1dv_l_filedistri(iv)
          o1dv_obst_param(iv)%nbhnorm = o1dv_nbhnorm(iv)
          o1dv_obst_param(iv)%height_norm(:) = o1dv_height_norm(iv, :)
@@ -1718,6 +1717,69 @@ CONTAINS
 
       !-------------------------------------
    END SUBROUTINE o1dv_comp_hydroparam
+
+   !!==========================================================================================================
+   FUNCTION o1dv_comp_z0sedim(position, height, width, dens, z0sedim) result(o1dv_z0sedim)
+   !!---------------------------------------------------------------------
+   !!                 *** FUNCTION o1dv_comp_z0sedim ***
+   !!
+   !! ** Purpose : Computes z0sedim in presence of obstructions
+   !!
+   !!---------------------------------------------------------------------
+
+      IMPLICIT NONE
+
+      !! * Arguments
+      REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: position
+      REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: height
+      REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: width
+      REAL(KIND=rsh), DIMENSION(o1dv_nbvar), INTENT(IN) :: dens
+      REAL(KIND=rsh), INTENT(IN) :: z0sedim
+      REAL(KIND=rsh) :: o1dv_z0sedim
+      !! * Local declaration
+      INTEGER :: iv
+      REAL(KIND=rsh) :: z0tmp,stmp,z00,oal,oah
+      REAL(KIND=rsh),PARAMETER :: epsi=1E-6
+      !!----------------------------------------------------------------------
+      !! * Executable part
+      !!------------------
+      z0tmp = 0.0_rsh
+      stmp  = 0.0_rsh
+      DO iv = 1, o1dv_nbvar
+         IF ((o1dv_obst_param(iv)%type == "UP") .AND. (o1dv_obst_param(iv)%l_z0bstress)) THEN
+            IF(position(iv).GT.0.0_rsh)THEN
+               IF(o1dv_obst_param(iv)%z0bstress_option == 0)THEN
+                  !-----------------------
+                  ! Constant value is used
+                  !-----------------------
+                  z00 = o1dv_obst_param(iv)%c_z0bstress
+               ELSE
+                  !-------------------------
+                  ! Parameterization is used
+                  !-------------------------
+                  oah = dens(iv)*width(iv)*height(iv)
+                  z00 = o1dv_obst_param(iv)%c_z0bstress_x0* oah**o1dv_obst_param(iv)%c_z0bstress_x1
+                  z00 = MAX(MIN(z00,0.01_rsh),epsi)
+               ENDIF ! END test on parameterization
+               z0tmp = z0tmp + (position(iv)*z00) + ((1.0_rsh-position(iv))*z0sedim)
+               stmp  = stmp + 1.0_rsh
+            ELSE
+               z0tmp = z0tmp + z0sedim
+               stmp  = stmp + 1.0_rsh
+            END IF
+         ELSE
+            z0tmp = z0tmp + z0sedim
+            stmp  = stmp + 1.0_rsh
+         END IF
+      END DO ! END LOOP obst_nbvar
+      !----------
+      ! Averaging
+      !----------
+      o1dv_z0sedim = MAX(epsi, z0tmp / stmp)
+
+   !!**********************************************************************
+   END FUNCTION o1dv_comp_z0sedim
+
 
    !==================================================================================================
 END MODULE OBSTRUCTIONS1DV

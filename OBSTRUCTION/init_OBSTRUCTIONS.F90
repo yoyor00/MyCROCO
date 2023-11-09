@@ -180,7 +180,7 @@ CONTAINS
                      obst_c_rho, obst_c_height_x0, obst_c_height_x1, obst_c_shelter, &
                      obst_c_lift, obst_c_drag, obst_c_lz, obst_c_crough_x0, obst_c_crough_x1, &
                      obst_c_fracxy_k0, obst_c_fracxy_k1, obst_c_fracxy_l, obst_c_z0bstress, &
-                     obst_c_z0bstress_x0, obst_c_z0bstress_x1, obst_c_z0bstress_x2, &
+                     obst_c_z0bstress_x0, obst_c_z0bstress_x1, &
                      obst_l_filedistri, obst_nbhnorm, obst_height_norm, obst_dens_norm, &
                      stdout)
 
@@ -617,7 +617,7 @@ CONTAINS
       ! For obst_var_bstress
       LOGICAL               :: r_l_obst_z0bstress
       INTEGER               :: r_obst_z0bstress_option
-      REAL(KIND=rsh)        :: r_obst_c_z0bstress, r_obst_c_z0bstress_x0, r_obst_c_z0bstress_x1, r_obst_c_z0bstress_x2
+      REAL(KIND=rsh)        :: r_obst_c_z0bstress, r_obst_c_z0bstress_x0, r_obst_c_z0bstress_x1
       !! * Namelists
       NAMELIST /obst_var_main/ r_obst_varname, r_obst_type, r_l_obst_cylinder
       NAMELIST /obst_var_option/ r_l_obst_flexible, r_l_obst_noturb, &
@@ -633,7 +633,7 @@ CONTAINS
       NAMELIST /obst_var_fracxy/ r_l_obst_fracxy, r_obst_fracxy_type, r_obst_c_fracxy_k0, &
          r_obst_c_fracxy_k1, r_obst_c_fracxy_l
       NAMELIST /obst_var_bstress/ r_l_obst_z0bstress, r_obst_z0bstress_option, r_obst_c_z0bstress, &
-         r_obst_c_z0bstress_x0, r_obst_c_z0bstress_x1, r_obst_c_z0bstress_x2
+         r_obst_c_z0bstress_x0, r_obst_c_z0bstress_x1
       !!----------------------------------------------------------------------
       !! * Executable part
 
@@ -713,7 +713,6 @@ CONTAINS
       obst_c_z0bstress(iv) = r_obst_c_z0bstress
       obst_c_z0bstress_x0(iv) = r_obst_c_z0bstress_x0
       obst_c_z0bstress_x1(iv) = r_obst_c_z0bstress_x1
-      obst_c_z0bstress_x2(iv) = r_obst_c_z0bstress_x2
       !!**********************************
    END SUBROUTINE obst_readvar
 
@@ -1004,8 +1003,6 @@ CONTAINS
                MPI_master_only WRITE (iscreenlog, *) &
                   '  - Second parameter for rouhgness length computation (in 3D)              : ', obst_c_z0bstress_x1(iv)
             END IF
-            MPI_master_only WRITE (iscreenlog, *) &
-               '  - Coefficient to correct 3D roughness length into 2D roughness length    : ', obst_c_z0bstress_x2(iv)
          ELSE
             MPI_master_only WRITE (iscreenlog, *) &
                '  - Option to compute the obstruction induced roughness length             : NOT USED'
@@ -1548,7 +1545,7 @@ CONTAINS
                                        "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" time")
 
                CALL tool_origindate(ncid, varid, origin_date_in_sec)
-               
+
                CALL obst_nccheck(NF90_GET_VAR(ncid, varid, tmp(1:obst_ts_tmax(iv))), &
                                        "obst_init_timeseries nf90_get_var "//obst_fn_timeserie(iv)//" time")
                obst_ts_time(iv, 1:obst_ts_tmax(iv)) = tmp(1:obst_ts_tmax(iv)) + origin_date_in_sec
@@ -1809,8 +1806,6 @@ CONTAINS
       obst_c_z0bstress_x0(:) = 0.0_rsh
       ALLOCATE (obst_c_z0bstress_x1(1:obst_nbvar))
       obst_c_z0bstress_x1(:) = 0.0_rsh
-      ALLOCATE (obst_c_z0bstress_x2(1:obst_nbvar))
-      obst_c_z0bstress_x2(:) = 0.0_rsh
       !-------------------------
    END SUBROUTINE obst_alloc_nbvar
 
