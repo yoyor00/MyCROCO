@@ -177,9 +177,17 @@ list(APPEND CROCO_SRCS_F77 bio_sediments/biology.F
 list(APPEND CROCO_SRCS_F77 mpi/MPI_Setup.F mpi/MessPass2D.F mpi/MessPass3D.F mpi/exchange.F
                            mpi/autotiling.F)
 # 16) AGRIF routines
-list(APPEND CROCO_SRCS_F77 zoom.F update2D.F set_nudgcof_fine.F zoombc_2D.F
-                           zoombc_3D.F uv3dpremix.F t3dpremix.F update3D.F
-                           zoombc_3Dfast.F Agrif2Model.F)
+list(APPEND CROCO_SRCS_F77 agrif/zoom.F
+                           agrif/update2D.F
+                           agrif/set_nudgcof_fine.F
+                           agrif/zoombc_2D.F
+                           agrif/zoombc_3D.F
+                           agrif/uv3dpremix.F
+                           agrif/t3dpremix.F
+                           agrif/update3D.F
+                           agrif/zoombc_3Dfast.F
+                           agrif/Agrif2Model.F
+)
 # 17) XIOS routines
 #list(APPEND CROCO_SRCS_F77 send_xios_diags.F)
 # 18) OASIS coupling interface
@@ -334,7 +342,7 @@ set_property(TARGET ncjoin PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
 # build ncrename utility
-set(NCRENAME_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/ncrename.F)
+set(NCRENAME_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/bin/ncrename.F)
 croco_cpp_and_mpc_preprocess(CRENAME_SRC_F)
 add_executable(ncrename ${NCRENAME_SRC_F})
 target_link_libraries(ncrename ${NETCDFF_LIBRARY})
@@ -343,22 +351,22 @@ set_property(TARGET ncrename PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
 # build mpc utility
-add_executable(mpc mpc.F)
+add_executable(mpc bin/mpc.F)
 set_property(TARGET mpc PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
 # build checkkwds utility (used to produce setup_kwds.F)
-add_executable(checkkwds checkkwds.F)
+add_executable(checkkwds bin/checkkwds.F)
 set_property(TARGET checkkwds PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
 # build checkkwds utility (used to produce setup_kwds.F)
-add_executable(cppcheck cppcheck.F)
+add_executable(cppcheck bin/cppcheck.F)
 set_property(TARGET cppcheck PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
 # build checkkwds utility (used to produce check_srcs.F)
-add_executable(srcscheck srcscheck.F)
+add_executable(srcscheck bin/srcscheck.F)
 set_property(TARGET srcscheck PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
@@ -368,7 +376,7 @@ set_property(TARGET cross_matrix PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
 # build partit utility
-add_executable(partit partit.F)
+add_executable(partit bin/partit.F)
 target_link_libraries(partit ${NETCDFF_LIBRARY})
 target_link_libraries(partit croco_common)
 set_property(TARGET partit PROPERTY LINKER_LANGUAGE Fortran)
