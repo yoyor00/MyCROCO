@@ -84,9 +84,18 @@ list(APPEND CROCO_SRCS_F77 ts_3d/pre_step3d.F ts_3d/step3d_t.F ts_3d/step3d_uv1.
                            ts_3d/hmix_coef.F ts_3d/wetdry.F ts_3d/wavedry.F
                            ts_3d/u3dbc.F ts_3d/v3dbc.F ts_3d/t3dbc.F)
 # 4) non-hydrostatic engine
-list(APPEND CROCO_SRCS_F77 step3d_fast.F step3d_w.F rhs3d_w_nh.F initial_nbq.F
-                           grid_nbq.F unbq_bc.F vnbq_bc.F wnbq_bc.F rnbq_bc.F
-                           w3dbc.F nbq_bry_store.F)
+list(APPEND CROCO_SRCS_F77 nonhydro/step3d_fast.F
+                           nonhydro/step3d_w.F
+                           nonhydro/rhs3d_w_nh.F
+                           nonhydro/initial_nbq.F
+                           nonhydro/grid_nbq.F
+                           nonhydro/unbq_bc.F
+                           nonhydro/vnbq_bc.F
+                           nonhydro/wnbq_bc.F
+                           nonhydro/rnbq_bc.F
+                           nonhydro/w3dbc.F
+                           nonhydro/nbq_bry_store.F
+)
 # 5) sea-water EOS
 list(APPEND CROCO_SRCS_F77 seawater_eos/rho_eos.F
                            seawater_eos/ab_ratio.F
