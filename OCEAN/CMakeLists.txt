@@ -69,10 +69,12 @@ file(GLOB CROCO_CPP_H
 #        analysis routines
 #======================================================================
 # 1) Main driving part
-list(APPEND CROCO_SRCS_F77 main.F step.F read_inp.F timers_roms.F init_scalars.F
-                           init_arrays.F set_weights.F set_scoord.F ana_grid.F
-                           setup_grid1.F setup_grid2.F set_nudgcof.F
-                           ana_initial.F analytical.F zonavg.F)
+list(APPEND CROCO_SRCS_F77 main/main.F main/step.F read_inp.F main/timers_roms.F
+                           main/init_scalars.F
+                           main/init_arrays.F main/set_weights.F main/set_scoord.F
+                           main/ana_grid.F main/setup_grid1.F main/setup_grid2.F
+                           main/set_nudgcof.F main/ana_initial.F main/analytical.F
+                           main/zonavg.F)
 # 2) 2D time stepping engine
 list(APPEND CROCO_SRCS_F77 ts_2d/step2d.F ts_2d/u2dbc.F ts_2d/v2dbc.F ts_2d/zetabc.F
                            ts_2d/obc_volcons.F)
