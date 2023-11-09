@@ -160,8 +160,8 @@ list(APPEND CROCO_SRCS_F77 station_diagnostics/init_sta.F
 # 14) biology/sediment routines
 list(APPEND CROCO_SRCS_F77 biology.F o2sato.F sediment.F bbl.F)
 # 16) MPI routines
-list(APPEND CROCO_SRCS_F77 MPI_Setup.F MessPass2D.F MessPass3D.F exchange.F
-                           autotiling.F)
+list(APPEND CROCO_SRCS_F77 mpi/MPI_Setup.F mpi/MessPass2D.F mpi/MessPass3D.F mpi/exchange.F
+                           mpi/autotiling.F)
 # 16) AGRIF routines
 list(APPEND CROCO_SRCS_F77 zoom.F update2D.F set_nudgcof_fine.F zoombc_2D.F
                            zoombc_3D.F uv3dpremix.F t3dpremix.F update3D.F
