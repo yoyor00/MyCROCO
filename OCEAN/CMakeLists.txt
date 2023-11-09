@@ -87,8 +87,10 @@ list(APPEND CROCO_SRCS_F77 step3d_fast.F step3d_w.F rhs3d_w_nh.F initial_nbq.F
 # 5) sea-water EOS
 list(APPEND CROCO_SRCS_F77 rho_eos.F ab_ratio.F alfabeta.F alfabeta_k.F)
 # 6) vertical mixing schemes
-list(APPEND CROCO_SRCS_F77 ana_vmix.F bvf_mix.F lmd_vmix.F gls_mixing.F
-                           lmd_skpp.F lmd_bkpp.F lmd_swfrac.F lmd_wscale.F)
+list(APPEND CROCO_SRCS_F77 wave_forcing/ana_vmix.F wave_forcing/bvf_mix.F
+                           wave_forcing/lmd_vmix.F wave_forcing/gls_mixing.F
+                           wave_forcing/lmd_skpp.F wave_forcing/lmd_bkpp.F
+                           wave_forcing/lmd_swfrac.F wave_forcing/lmd_wscale.F)
 # 7) on-fly model diagnostics
 list(APPEND CROCO_SRCS_F77 diag.F wvlcty.F checkdims.F grid_stiffness.F
                            bio_diag.F check_kwds.F
