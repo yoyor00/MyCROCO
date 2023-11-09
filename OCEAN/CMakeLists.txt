@@ -312,10 +312,9 @@ add_custom_command(
 # check_switches1.F
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F
-	COMMAND cat cppdefs.h include/cppdefs_dev.h > mergcpp.txt
+	COMMAND cat ${CMAKE_CURRENT_SOURCE_DIR}/cppdefs.h ${CMAKE_CURRENT_SOURCE_DIR}/include/cppdefs_dev.h > mergcpp.txt
              && ${CMAKE_CURRENT_BINARY_DIR}/cppcheck
-             && mv check_switches1.F ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	DEPENDS cppcheck cppdefs.h include/cppdefs_dev.h
 	VERBATIM
 )
