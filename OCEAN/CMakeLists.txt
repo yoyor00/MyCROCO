@@ -122,7 +122,7 @@ list(APPEND CROCO_SRCS_F77 get_grid.F get_initial.F get_vbc.F get_wwave.F
                            get_bry_bio.F sstskin.F get_psource.F
                            get_psource_ts.F get_btflux.F)
 # 10) Wave forcing routines
-list(APPEND CROCO_SRCS_F77 mrl_wci.F wkb_wwave.F wkbbc.F get_bry_wkb.F)
+list(APPEND CROCO_SRCS_F77 wave_forcing/mrl_wci.F wave_forcing/wkb_wwave.F wave_forcing/wkbbc.F wave_forcing/get_bry_wkb.F)
 # 11) Online surface forcing
 list(APPEND CROCO_SRCS_F77 online_bulk_var.F online_get_bulk.F online_interp.F
                            online_interpolate_bulk.F online_set_bulk.F)
