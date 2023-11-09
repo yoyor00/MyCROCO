@@ -168,12 +168,21 @@ list(APPEND CROCO_SRCS_F77 online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F
                            copy_to_devices.F exchange_device_host.F init_acc.F)
 # SRC90: additional F90 routines for PISCES code and Non-hydrostatic
 #        analysis routines
-list(APPEND CROCO_SRCS_F90 module_oa_space.F90 module_oa_periode.F90
-                           module_oa_variables.F90 module_oa_type.F90
-                           module_tile_oa.F90 module_oa_level.F90
-                           module_oa_interface.F90 var_oa.F90 tooldatosec.F90
-                           toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90
+list(APPEND CROCO_SRCS_F90 online_analysis/module_oa_space.F90
+                           online_analysis/module_oa_periode.F90
+                           online_analysis/module_oa_variables.F90
+                           online_analysis/module_oa_type.F90
+                           online_analysis/module_tile_oa.F90
+                           online_analysis/module_oa_level.F90
+                           online_analysis/module_oa_interface.F90
+                           online_analysis/var_oa.F90
                            )
+# libs
+list(APPEND CROCO_SRC_F90 lib/tooldatosec.F90
+                          lib/toolsectodat.F90
+                          lib/tooldecompdat.F90
+                          lib/tooldatetosec.F90
+                          )
 # Pices files
 #list(APPEND CROCO_SRCS_F90 par_pisces.F90 ocean2pisces.F90 trc.F90
 #                           sms_pisces.F90 p4zche.F90 p4zint.F90 p4zlys.F90
@@ -189,7 +198,7 @@ list(APPEND CROCO_SRCS_F90 module_oa_space.F90 module_oa_periode.F90
 #                           sedini.F90 sedinitrc.F90 sedinorg.F90 sedmat.F90
 #                           sedmbc.F90 sedmodel.F90 sed_oce.F90 sedorg.F90
 #                           sedrst.F90 sedsfc.F90 sedstp.F90 sedwri.F90
-#                           setavg_sed.F90 module_parameter_oa.F90
+#                           setavg_sed.F90 online_analysis/module_parameter_oa.F90
 #
 #                           flocmod.F90 comsubstance.F90 substance.F90
 #
