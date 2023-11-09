@@ -158,9 +158,9 @@ list(APPEND CROCO_SRCS_F77 surface_forcing/online_bulk_var.F
                            surface_forcing/online_interpolate_bulk.F
                            surface_forcing/online_set_bulk.F)
 # 12) Floats routines
-list(APPEND CROCO_SRCS_F77 init_floats.F wrt_floats.F step_floats.F rhs_floats.F
-                           interp_rho.F def_floats.F init_arrays_floats.F
-                           random_walk.F get_initial_floats.F)
+list(APPEND CROCO_SRCS_F77 floats/init_floats.F floats/wrt_floats.F floats/step_floats.F floats/rhs_floats.F
+                           floats/interp_rho.F floats/def_floats.F floats/init_arrays_floats.F
+                           floats/random_walk.F floats/get_initial_floats.F)
 # 13) Station diagnostics
 list(APPEND CROCO_SRCS_F77 station_diagnostics/init_sta.F
                            station_diagnostics/wrt_sta.F
