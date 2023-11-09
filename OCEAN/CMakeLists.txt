@@ -132,13 +132,19 @@ list(APPEND CROCO_SRCS_F77 netcdf/param.F netcdf/ncscrum.F netcdf/scalars.F netc
                            netcdf/wrt_diags_eddy_avg.F netcdf/def_surf.F wrt_surf.F
                            netcdf/set_surf_avg.F netcdf/wrt_surf_avg.F)
 # 9) main forcing
-list(APPEND CROCO_SRCS_F77 get_grid.F get_initial.F get_vbc.F get_wwave.F
-                           get_tclima.F get_uclima.F get_ssh.F get_sss.F
-                           get_smflux.F get_stflux.F get_srflux.F get_sst.F
-                           mod_tides_mas.F tidedata.F mas.F get_tides.F
-                           clm_tides.F get_bulk.F bulk_flux.F get_bry.F
-                           get_bry_bio.F sstskin.F get_psource.F
-                           get_psource_ts.F get_btflux.F)
+list(APPEND CROCO_SRCS_F77 main_forcing/get_grid.F main_forcing/get_initial.F
+                           main_forcing/get_vbc.F main_forcing/get_wwave.F
+                           main_forcing/get_tclima.F main_forcing/get_uclima.F
+                           main_forcing/get_ssh.F main_forcing/get_sss.F
+                           main_forcing/get_smflux.F main_forcing/get_stflux.F
+                           main_forcing/get_srflux.F main_forcing/get_sst.F
+                           main_forcing/mod_tides_mas.F main_forcing/tidedata.F mas.F
+                           main_forcing/get_tides.F
+                           main_forcing/clm_tides.F main_forcing/get_bulk.F
+                           main_forcing/bulk_flux.F main_forcing/get_bry.F
+                           main_forcing/get_bry_bio.F main_forcing/sstskin.F
+                           main_forcing/get_psource.F
+                           main_forcing/get_psource_ts.F main_forcing/get_btflux.F)
 # 10) Wave forcing routines
 list(APPEND CROCO_SRCS_F77 wave_forcing/mrl_wci.F wave_forcing/wkb_wwave.F wave_forcing/wkbbc.F wave_forcing/get_bry_wkb.F)
 # 11) Online surface forcing
