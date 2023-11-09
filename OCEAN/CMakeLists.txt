@@ -129,8 +129,11 @@ list(APPEND CROCO_SRCS_F77 get_grid.F get_initial.F get_vbc.F get_wwave.F
 # 10) Wave forcing routines
 list(APPEND CROCO_SRCS_F77 wave_forcing/mrl_wci.F wave_forcing/wkb_wwave.F wave_forcing/wkbbc.F wave_forcing/get_bry_wkb.F)
 # 11) Online surface forcing
-list(APPEND CROCO_SRCS_F77 online_bulk_var.F online_get_bulk.F online_interp.F
-                           online_interpolate_bulk.F online_set_bulk.F)
+list(APPEND CROCO_SRCS_F77 surface_forcing/online_bulk_var.F
+                           surface_forcing/online_get_bulk.F
+                           surface_forcing/online_interp.F
+                           surface_forcing/online_interpolate_bulk.F
+                           surface_forcing/online_set_bulk.F)
 # 12) Floats routines
 list(APPEND CROCO_SRCS_F77 init_floats.F wrt_floats.F step_floats.F rhs_floats.F
                            interp_rho.F def_floats.F init_arrays_floats.F
