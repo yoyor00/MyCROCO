@@ -16,6 +16,7 @@ configure_file(config_post.h.in config_post.h)
 ###########################################################
 # -I directives
 include_directories(.)
+include_directories(include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${NETCDFF_INCLUDE_DIR})
 set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS}
@@ -24,6 +25,7 @@ set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS}
                             -I${CMAKE_CURRENT_SOURCE_DIR}
                             -I${CMAKE_CURRENT_BINARY_DIR}
                             -I${CMAKE_BINARY_DIR}
+                            -I${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 if (MPI_FOUND)
 	set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -I${MPI_INCLUDE_DIR})
@@ -232,23 +234,23 @@ list(APPEND CROCO_SRC_F90 lib/tooldatosec.F90
 ###########################################################
 # files for copy to device
 set(COPY_TO_DEVICE_VAR_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/ocean2d.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/scalars.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ocean3d.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/grid.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/coupling.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/private_scratch.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/mixing.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/forces.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/work.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ncscrum.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/averages.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/lmd_kpp.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/climat.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/nbq.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/wkb_wwave.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/boundary.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ocean2d.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/scalars.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ocean3d.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/grid.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/coupling.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/private_scratch.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/mixing.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/forces.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/work.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ncscrum.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/averages.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/lmd_kpp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/climat.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/nbq.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/sources.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/wkb_wwave.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/boundary.h
 )
 
 ###########################################################
@@ -299,9 +301,11 @@ add_custom_command(
 # check_switches1.F
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F
-	COMMAND cat cppdefs.h cppdefs_dev.h > mergcpp.txt && ${CMAKE_CURRENT_BINARY_DIR}/cppcheck && mv check_switches1.F ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F
+	COMMAND cat cppdefs.h include/cppdefs_dev.h > mergcpp.txt
+             && ${CMAKE_CURRENT_BINARY_DIR}/cppcheck
+             && mv check_switches1.F ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	DEPENDS cppcheck cppdefs.h cppdefs_dev.h
+	DEPENDS cppcheck cppdefs.h include/cppdefs_dev.h
 	VERBATIM
 )
 
