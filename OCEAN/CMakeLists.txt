@@ -88,7 +88,10 @@ list(APPEND CROCO_SRCS_F77 step3d_fast.F step3d_w.F rhs3d_w_nh.F initial_nbq.F
                            grid_nbq.F unbq_bc.F vnbq_bc.F wnbq_bc.F rnbq_bc.F
                            w3dbc.F nbq_bry_store.F)
 # 5) sea-water EOS
-list(APPEND CROCO_SRCS_F77 rho_eos.F ab_ratio.F alfabeta.F alfabeta_k.F)
+list(APPEND CROCO_SRCS_F77 seawater_eos/rho_eos.F
+                           seawater_eos/ab_ratio.F
+                           seawater_eos/alfabeta.F
+                           seawater_eos/alfabeta_k.F)
 # 6) vertical mixing schemes
 list(APPEND CROCO_SRCS_F77 wave_forcing/ana_vmix.F wave_forcing/bvf_mix.F
                            wave_forcing/lmd_vmix.F wave_forcing/gls_mixing.F
@@ -139,8 +142,12 @@ list(APPEND CROCO_SRCS_F77 init_floats.F wrt_floats.F step_floats.F rhs_floats.F
                            interp_rho.F def_floats.F init_arrays_floats.F
                            random_walk.F get_initial_floats.F)
 # 13) Station diagnostics
-list(APPEND CROCO_SRCS_F77 init_sta.F wrt_sta.F step_sta.F interp_sta.F
-                           def_sta.F init_arrays_sta.F)
+list(APPEND CROCO_SRCS_F77 station_diagnostics/init_sta.F
+                           station_diagnostics/wrt_sta.F
+                           station_diagnostics/step_sta.F
+                           station_diagnostics/interp_sta.F
+                           station_diagnostics/def_sta.F
+                           station_diagnostics/init_arrays_sta.F)
 # 14) biology/sediment routines
 list(APPEND CROCO_SRCS_F77 biology.F o2sato.F sediment.F bbl.F)
 # 16) MPI routines
