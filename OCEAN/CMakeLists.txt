@@ -169,7 +169,10 @@ list(APPEND CROCO_SRCS_F77 station_diagnostics/init_sta.F
                            station_diagnostics/def_sta.F
                            station_diagnostics/init_arrays_sta.F)
 # 14) biology/sediment routines
-list(APPEND CROCO_SRCS_F77 biology.F o2sato.F sediment.F bbl.F)
+list(APPEND CROCO_SRCS_F77 bio_sediments/biology.F
+                           bio_sediments/o2sato.F
+                           bio_sediments/sediment.F
+                           bio_sediments/bbl.F)
 # 16) MPI routines
 list(APPEND CROCO_SRCS_F77 mpi/MPI_Setup.F mpi/MessPass2D.F mpi/MessPass3D.F mpi/exchange.F
                            mpi/autotiling.F)
