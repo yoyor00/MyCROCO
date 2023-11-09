@@ -76,10 +76,12 @@ list(APPEND CROCO_SRCS_F77 main.F step.F read_inp.F timers_roms.F init_scalars.F
 # 2) 2D time stepping engine
 list(APPEND CROCO_SRCS_F77 step2d.F u2dbc.F v2dbc.F zetabc.F obc_volcons.F)
 # 3) 3D time stepping engine
-list(APPEND CROCO_SRCS_F77 pre_step3d.F step3d_t.F step3d_uv1.F step3d_uv2.F
-                           prsgrd.F rhs3d.F set_depth.F omega.F uv3dmix.F
-                           uv3dmix_spg.F t3dmix.F t3dmix_spg.F hmix_coef.F
-                           wetdry.F wavedry.F u3dbc.F v3dbc.F t3dbc.F)
+list(APPEND CROCO_SRCS_F77 ts_3d/pre_step3d.F ts_3d/step3d_t.F ts_3d/step3d_uv1.F
+                           ts_3d/step3d_uv2.F ts_3d/prsgrd.F ts_3d/rhs3d.F
+                           ts_3d/set_depth.F ts_3d/omega.F ts_3d/uv3dmix.F
+                           ts_3d/uv3dmix_spg.F ts_3d/t3dmix.F ts_3d/t3dmix_spg.F
+                           ts_3d/hmix_coef.F ts_3d/wetdry.F ts_3d/wavedry.F
+                           ts_3d/u3dbc.F ts_3d/v3dbc.F ts_3d/t3dbc.F)
 # 4) non-hydrostatic engine
 list(APPEND CROCO_SRCS_F77 step3d_fast.F step3d_w.F rhs3d_w_nh.F initial_nbq.F
                            grid_nbq.F unbq_bc.F vnbq_bc.F wnbq_bc.F rnbq_bc.F
