@@ -111,25 +111,25 @@ list(APPEND CROCO_SRCS_F77 diag.F wvlcty.F checkdims.F grid_stiffness.F
                            bio_diag.F check_kwds.F
                            check_switches2.F debug.F)
 # 8) netCDF I/O routines
-list(APPEND CROCO_SRCS_F77 param.F ncscrum.F scalars.F output.F
-                           put_global_atts.F nf_fread.F nf_fread_x.F
-                           nf_fread_y.F nf_read_bry.F get_date.F
-                           closecdf.F fillvalue.F
-                           nf_add_attribute.F set_cycle.F def_grid_2d.F
-                           def_grid_3d.F def_his.F def_rst.F def_diags.F
-                           def_diagsM.F def_bio_diags.F wrt_grid.F wrt_his.F
-                           wrt_avg.F wrt_rst.F wrt_diags.F wrt_diags_avg.F
-                           wrt_diagsM.F wrt_diagsM_avg.F wrt_bio_diags.F
-                           wrt_bio_diags_avg.F set_avg.F set_diags_avg.F
-                           set_diagsM_avg.F set_bio_diags_avg.F def_diags_vrt.F
-                           wrt_diags_vrt.F set_diags_vrt.F set_diags_vrt_avg.F
-                           wrt_diags_vrt_avg.F def_diags_ek.F wrt_diags_ek.F
-                           set_diags_ek.F set_diags_ek_avg.F wrt_diags_ek_avg.F
-                           def_diags_pv.F wrt_diags_pv.F set_diags_pv.F
-                           set_diags_pv_avg.F wrt_diags_pv_avg.F
-                           def_diags_eddy.F set_diags_eddy_avg.F
-                           wrt_diags_eddy_avg.F def_surf.F wrt_surf.F
-                           set_surf_avg.F wrt_surf_avg.F)
+list(APPEND CROCO_SRCS_F77 netcdf/param.F netcdf/ncscrum.F netcdf/scalars.F netcdf/output.F
+                           netcdf/put_global_atts.F netcdf/nf_fread.F netcdf/nf_fread_x.F
+                           netcdf/nf_fread_y.F netcdf/nf_read_bry.F netcdf/get_date.F
+                           netcdf/closecdf.F netcdf/fillvalue.F
+                           netcdf/nf_add_attribute.F netcdf/set_cycle.F netcdf/def_grid_2d.F
+                           netcdf/def_grid_3d.F netcdf/def_his.F netcdf/def_rst.F netcdf/def_diags.F
+                           netcdf/def_diagsM.F netcdf/def_bio_diags.F netcdf/wrt_grid.F netcdf/wrt_his.F
+                           netcdf/wrt_avg.F netcdf/wrt_rst.F netcdf/wrt_diags.F netcdf/wrt_diags_avg.F
+                           netcdf/wrt_diagsM.F netcdf/wrt_diagsM_avg.F netcdf/wrt_bio_diags.F
+                           netcdf/wrt_bio_diags_avg.F netcdf/set_avg.F netcdf/set_diags_avg.F
+                           netcdf/set_diagsM_avg.F netcdf/set_bio_diags_avg.F netcdf/def_diags_vrt.F
+                           netcdf/wrt_diags_vrt.F netcdf/set_diags_vrt.F netcdf/set_diags_vrt_avg.F
+                           netcdf/wrt_diags_vrt_avg.F netcdf/def_diags_ek.F netcdf/wrt_diags_ek.F
+                           netcdf/set_diags_ek.F netcdf/set_diags_ek_avg.F netcdf/wrt_diags_ek_avg.F
+                           netcdf/def_diags_pv.F netcdf/wrt_diags_pv.F netcdf/set_diags_pv.F
+                           netcdf/set_diags_pv_avg.F netcdf/wrt_diags_pv_avg.F
+                           netcdf/def_diags_eddy.F netcdf/set_diags_eddy_avg.F
+                           netcdf/wrt_diags_eddy_avg.F netcdf/def_surf.F wrt_surf.F
+                           netcdf/set_surf_avg.F netcdf/wrt_surf_avg.F)
 # 9) main forcing
 list(APPEND CROCO_SRCS_F77 get_grid.F get_initial.F get_vbc.F get_wwave.F
                            get_tclima.F get_uclima.F get_ssh.F get_sss.F
