@@ -107,9 +107,10 @@ list(APPEND CROCO_SRCS_F77 wave_forcing/ana_vmix.F wave_forcing/bvf_mix.F
                            wave_forcing/lmd_skpp.F wave_forcing/lmd_bkpp.F
                            wave_forcing/lmd_swfrac.F wave_forcing/lmd_wscale.F)
 # 7) on-fly model diagnostics
-list(APPEND CROCO_SRCS_F77 diag.F wvlcty.F checkdims.F grid_stiffness.F
-                           bio_diag.F check_kwds.F
-                           check_switches2.F debug.F)
+list(APPEND CROCO_SRCS_F77 model_diagnostics/diag.F model_diagnostics/wvlcty.F
+                           model_diagnostics/checkdims.F model_diagnostics/grid_stiffness.F
+                           model_diagnostics/bio_diag.F model_diagnostics/check_kwds.F
+                           model_diagnostics/check_switches2.F model_diagnostics/debug.F)
 # 8) netCDF I/O routines
 list(APPEND CROCO_SRCS_F77 netcdf/param.F netcdf/ncscrum.F netcdf/scalars.F netcdf/output.F
                            netcdf/put_global_atts.F netcdf/nf_fread.F netcdf/nf_fread_x.F
