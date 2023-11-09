@@ -3905,7 +3905,198 @@
      &                             nf_collective)
 #  endif
          endif
+
+         indx=indxObst+7*obst_nbvar+itrv-1
+         if (l_obstout_thick_f) then ! obst forcing thick
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(7*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(7*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+8*obst_nbvar+itrv-1
+         if (l_obstout_thick_e) then ! obst effective thick
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(8*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(8*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+9*obst_nbvar+itrv-1
+         if (l_obstout_theta) then ! obst theta
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(9*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(9*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+10*obst_nbvar+itrv-1
+         if (l_obstout_frac_xy) then ! obst frac_xy
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(10*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(10*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+11*obst_nbvar+itrv-1
+         if (l_obstout_frac_z) then ! obst frac_z
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(11*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(11*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+12*obst_nbvar+itrv-1
+         if (l_obstout_drag) then ! obst drag
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(12*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(12*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+13*obst_nbvar+itrv-1
+         if (l_obstout_a2d) then ! obst a2d
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(13*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(13*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+14*obst_nbvar+itrv-1
+         if (l_obstout_a3d) then ! obst a3d
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(14*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(14*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+15*obst_nbvar+itrv-1
+         if (l_obstout_s2d) then ! obst s2d
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(15*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(15*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+16*obst_nbvar+itrv-1
+         if (l_obstout_s3d) then ! obst s3d
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(16*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(16*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
       enddo ! itrv
+
+      do itrv=1,3
+
+         indx=indxObst+17*obst_nbvar+itrv-1
+         if (l_obstout_a2d) then ! obst a2d
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(17*obst_nbvar+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(17*obst_nbvar+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+17*obst_nbvar+3+itrv-1
+         if (l_obstout_a3d) then ! obst a3d
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(17*obst_nbvar+3+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(17*obst_nbvar+3+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+17*obst_nbvar+6+itrv-1
+         if (l_obstout_s2d) then ! obst s2d
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(17*obst_nbvar+6+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(17*obst_nbvar+6+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         indx=indxObst+17*obst_nbvar+9+itrv-1
+         if (l_obstout_s3d) then ! obst s3d
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(17*obst_nbvar+9+itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(17*obst_nbvar+9+itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+      enddo ! itrv 1->3 
+
+         indx=indxObst+17*obst_nbvar+13-1
+         if (l_obstout_tau) then ! obst tau
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(17*obst_nbvar+13))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(17*obst_nbvar+13),,
+     &                             nf_collective)
+#  endif
+         endif
+
+         
+         if (l_obstout_fuzvz) then ! obst fuz
+            indx=indxObst+17*obst_nbvar+14-1
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(17*obst_nbvar+14))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(17*obst_nbvar+14),,
+     &                             nf_collective)
+#  endif
+
+            indx=indxObst+17*obst_nbvar+15-1
+            lvar=lenstr(vname(1,indx))
+            ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                             vidObst(17*obst_nbvar+15))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(17*obst_nbvar+15),,
+     &                             nf_collective)
+#  endif
+         endif
+
 # endif /* OBSTRUCTION */
 !
 #endif /* SOLVE3D */
