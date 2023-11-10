@@ -135,7 +135,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_pu_dta)) then
         work3dabl=pu_dta_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_pu_dta,
-     &                   vname(1,indxabl_pu_dta),
+     &                   vname_abl1d(1,indxabl_pu_dta),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -144,7 +144,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_pv_dta)) then
         work3dabl=pv_dta_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_pv_dta,
-     &                   vname(1,indxabl_pv_dta),
+     &                   vname_abl1d(1,indxabl_pv_dta),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -153,7 +153,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_pt_dta)) then
         work3dabl=pt_dta_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_pt_dta,
-     &                   vname(1,indxabl_pt_dta),
+     &                   vname_abl1d(1,indxabl_pt_dta),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -162,7 +162,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_pq_dta)) then
         work3dabl=pq_dta_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_pq_dta,
-     &                   vname(1,indxabl_pq_dta),
+     &                   vname_abl1d(1,indxabl_pq_dta),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -171,7 +171,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_pgu_dta)) then
         work3dabl=pgu_dta_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_pgu_dta,
-     &                   vname(1,indxabl_pgu_dta),
+     &                   vname_abl1d(1,indxabl_pgu_dta),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -180,7 +180,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_pgv_dta)) then
         work3dabl=pgv_dta_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_pgv_dta,
-     &                   vname(1,indxabl_pgv_dta),
+     &                   vname_abl1d(1,indxabl_pgv_dta),
      &                   record,abl3dvar,type)
       endif
 !
@@ -194,7 +194,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_u_abl)) then
         work3dabl=u_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_u_abl,
-     &                   vname(1,indxabl_u_abl),
+     &                   vname_abl1d(1,indxabl_u_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -203,7 +203,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_v_abl)) then
         work3dabl=v_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_v_abl,
-     &                   vname(1,indxabl_v_abl),
+     &                   vname_abl1d(1,indxabl_v_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -212,7 +212,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_t_abl)) then
         work3dabl=t_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_t_abl,
-     &                   vname(1,indxabl_t_abl),
+     &                   vname_abl1d(1,indxabl_t_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -221,7 +221,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_q_abl)) then
         work3dabl=q_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_q_abl,
-     &                   vname(1,indxabl_q_abl),
+     &                   vname_abl1d(1,indxabl_q_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -230,7 +230,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_tke_abl)) then
         work3dabl=tke_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_tke_abl,
-     &                   vname(1,indxabl_tke_abl),
+     &                   vname_abl1d(1,indxabl_tke_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -239,7 +239,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_mxlm_abl)) then
         work3dabl=mxlm_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_mxlm_abl,
-     &                   vname(1,indxabl_mxlm_abl),
+     &                   vname_abl1d(1,indxabl_mxlm_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -248,7 +248,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_mxld_abl)) then
         work3dabl=mxld_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_mxld_abl,
-     &                   vname(1,indxabl_mxld_abl),
+     &                   vname_abl1d(1,indxabl_mxld_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -257,7 +257,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_avm_abl)) then
         work3dabl=avm_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_avm_abl,
-     &                   vname(1,indxabl_avm_abl),
+     &                   vname_abl1d(1,indxabl_avm_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -266,7 +266,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_avt_abl)) then
         work3dabl=avt_abl_avg(:,:,:)
         call fillvalue3d(work3dabl,ncidablavg,ablavg_avt_abl,
-     &                   vname(1,indxabl_avt_abl),
+     &                   vname_abl1d(1,indxabl_avt_abl),
      &                   record,abl3dvar,type)
       endif
 !-----------------------------------------------------------------------
@@ -275,7 +275,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtabl_avg(indxabl_ablh_abl)) then
         work2d=ablh_avg(:,:)
         call fillvalue2d(work2d,ncidablavg,ablavg_ablh_abl,
-     &                   vname(1,indxabl_ablh_abl),
+     &                   vname_abl1d(1,indxabl_ablh_abl),
      &                   record,r2dvar,type)
       endif
 ! ============================================================
@@ -286,36 +286,36 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !    zr_abl
 !-----------------------------------------------------------------------
         if (wrtabl_avg(indxabl_zr_abl)) then
-          lvar=lenstr(vname(1,indxabl_zr_abl))
-          ierr=nf_inq_varid (ncidablavg, vname(1,indxabl_zr_abl)(1:lvar),
-     &                                                   varid)
+          lvar=lenstr(vname_abl1d(1,indxabl_zr_abl))
+          ierr=nf_inq_varid (ncidablavg, 
+     &         vname_abl1d(1,indxabl_zr_abl)(1:lvar), varid)
           ierr=nf_put_vara_FTYPE(ncidablavg,varid,1,N_abl,zr_abl)
         endif
 !-----------------------------------------------------------------------
 !    zw_abl
 !-----------------------------------------------------------------------
         if (wrtabl_avg(indxabl_zw_abl)) then
-          lvar=lenstr(vname(1,indxabl_zw_abl))
-          ierr=nf_inq_varid (ncidablavg, vname(1,indxabl_zw_abl)(1:lvar),
-     &                                                   varid)
+          lvar=lenstr(vname_abl1d(1,indxabl_zw_abl))
+          ierr=nf_inq_varid (ncidablavg, 
+     &         vname_abl1d(1,indxabl_zw_abl)(1:lvar), varid)
           ierr=nf_put_vara_FTYPE(ncidablavg,varid,1,N_abl,zw_abl)
         endif
 !-----------------------------------------------------------------------
 !    Hzr_abl
 !-----------------------------------------------------------------------
         if (wrtabl_avg(indxabl_Hzr_abl)) then
-          lvar=lenstr(vname(1,indxabl_Hzr_abl))
-          ierr=nf_inq_varid (ncidablavg, vname(1,indxabl_Hzr_abl)(1:lvar),
-     &                                                   varid)
+          lvar=lenstr(vname_abl1d(1,indxabl_Hzr_abl))
+          ierr=nf_inq_varid (ncidablavg, 
+     &         vname_abl1d(1,indxabl_Hzr_abl)(1:lvar), varid)
           ierr=nf_put_vara_FTYPE(ncidablavg,varid,1,N_abl,Hzr_abl)
         endif
 !-----------------------------------------------------------------------
 !    Hzw_abl
 !-----------------------------------------------------------------------
         if (wrtabl_avg(indxabl_Hzw_abl)) then
-          lvar=lenstr(vname(1,indxabl_Hzw_abl))
-          ierr=nf_inq_varid (ncidablavg, vname(1,indxabl_Hzw_abl)(1:lvar),
-     &                                                   varid)
+          lvar=lenstr(vname_abl1d(1,indxabl_Hzw_abl))
+          ierr=nf_inq_varid (ncidablavg, 
+     &         vname_abl1d(1,indxabl_Hzw_abl)(1:lvar), varid)
           ierr=nf_put_vara_FTYPE(ncidablavg,varid,1,N_abl,Hzw_abl)
         endif
 !

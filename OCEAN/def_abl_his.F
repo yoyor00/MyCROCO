@@ -312,31 +312,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pu_dta)) then
-          lvar=lenstr(vname(1,indxabl_pu_dta))
-          ierr=nf_def_var (ncid, vname(1,indxabl_pu_dta)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_pu_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pu_dta))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_pu_dta)(1:lvar),
+     &        NF_FOUT, 4, abl3dgrd, vidabl_pu_dta)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_pu_dta,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_pu_dta))
+          lvar=lenstr(vname_abl1d(2,indxabl_pu_dta))
           ierr=nf_put_att_text (ncid, vidabl_pu_dta, 'long_name',
-     &                          lvar, vname(2,indxabl_pu_dta)(1:lvar))
+     &          lvar, vname_abl1d(2,indxabl_pu_dta)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_pu_dta)
+          text='averaged '/ /vname_abl1d(2,indxabl_pu_dta)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_pu_dta, 'long_name',
-     &                          lvar, text(1:lvar))
+     &         lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_pu_dta))
+          lvar=lenstr(vname_abl1d(3,indxabl_pu_dta))
           ierr=nf_put_att_text (ncid, vidabl_pu_dta, 'units',
-     &                          lvar, vname(3,indxabl_pu_dta)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_pu_dta))
+     &          lvar, vname_abl1d(3,indxabl_pu_dta)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_pu_dta))
           ierr=nf_put_att_text (ncid, vidabl_pu_dta, 'field',
-     &                          lvar, vname(4,indxabl_pu_dta)(1:lvar))
+     &         lvar, vname_abl1d(4,indxabl_pu_dta)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_pu_dta,
-     &                          vname(:,indxabl_pu_dta), 5, NF_FOUT, ierr)
+     &         vname_abl1d(:,indxabl_pu_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -344,31 +344,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pv_dta)) then
-          lvar=lenstr(vname(1,indxabl_pv_dta))
-          ierr=nf_def_var (ncid, vname(1,indxabl_pv_dta)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_pv_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pv_dta))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_pv_dta)(1:lvar),
+     &        NF_FOUT, 4, abl3dgrd, vidabl_pv_dta)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_pv_dta,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_pv_dta))
+          lvar=lenstr(vname_abl1d(2,indxabl_pv_dta))
           ierr=nf_put_att_text (ncid, vidabl_pv_dta, 'long_name',
-     &                          lvar, vname(2,indxabl_pv_dta)(1:lvar))
+     &        lvar, vname_abl1d(2,indxabl_pv_dta)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_pv_dta)
+          text='averaged '/ /vname_abl1d(2,indxabl_pv_dta)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_pv_dta, 'long_name',
-     &                          lvar, text(1:lvar))
+     &         lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_pv_dta))
+          lvar=lenstr(vname_abl1d(3,indxabl_pv_dta))
           ierr=nf_put_att_text (ncid, vidabl_pv_dta, 'units',
-     &                          lvar, vname(3,indxabl_pv_dta)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_pv_dta))
+     &          lvar, vname_abl1d(3,indxabl_pv_dta)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_pv_dta))
           ierr=nf_put_att_text (ncid, vidabl_pv_dta, 'field',
-     &                          lvar, vname(4,indxabl_pv_dta)(1:lvar))
+     &          lvar, vname_abl1d(4,indxabl_pv_dta)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_pv_dta,
-     &                          vname(:,indxabl_pv_dta), 5, NF_FOUT, ierr)
+     &          vname_abl1d(:,indxabl_pv_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -376,31 +376,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pt_dta)) then
-          lvar=lenstr(vname(1,indxabl_pt_dta))
-          ierr=nf_def_var (ncid, vname(1,indxabl_pt_dta)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_pt_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pt_dta))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_pt_dta)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_pt_dta)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_pt_dta,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_pt_dta))
+          lvar=lenstr(vname_abl1d(2,indxabl_pt_dta))
           ierr=nf_put_att_text (ncid, vidabl_pt_dta, 'long_name',
-     &                        lvar, vname(2,indxabl_pt_dta)(1:lvar))
+     &            lvar, vname_abl1d(2,indxabl_pt_dta)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_pt_dta)
+          text='averaged '/ /vname_abl1d(2,indxabl_pt_dta)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_pt_dta, 'long_name',
-     &                          lvar, text(1:lvar))
+     &             lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_pt_dta))
+          lvar=lenstr(vname_abl1d(3,indxabl_pt_dta))
           ierr=nf_put_att_text (ncid, vidabl_pt_dta, 'units',
-     &                          lvar, vname(3,indxabl_pt_dta)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_pt_dta))
+     &              lvar, vname_abl1d(3,indxabl_pt_dta)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_pt_dta))
           ierr=nf_put_att_text (ncid, vidabl_pt_dta, 'field',
-     &                          lvar, vname(4,indxabl_pt_dta)(1:lvar))
+     &              lvar, vname_abl1d(4,indxabl_pt_dta)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_pt_dta,
-     &                          vname(:,indxabl_pt_dta), 5, NF_FOUT, ierr)
+     &              vname_abl1d(:,indxabl_pt_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -408,31 +408,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pq_dta)) then
-          lvar=lenstr(vname(1,indxabl_pq_dta))
-          ierr=nf_def_var (ncid, vname(1,indxabl_pq_dta)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_pq_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pq_dta))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_pq_dta)(1:lvar),
+     &           NF_FOUT, 4, abl3dgrd, vidabl_pq_dta)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_pq_dta,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_pq_dta))
+          lvar=lenstr(vname_abl1d(2,indxabl_pq_dta))
           ierr=nf_put_att_text (ncid, vidabl_pq_dta, 'long_name',
-     &                          lvar, vname(2,indxabl_pq_dta)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_pq_dta)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_pq_dta)
+          text='averaged '/ /vname_abl1d(2,indxabl_pq_dta)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_pq_dta, 'long_name',
-     &                          lvar, text(1:lvar))
+     &            lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_pq_dta))
+          lvar=lenstr(vname_abl1d(3,indxabl_pq_dta))
           ierr=nf_put_att_text (ncid, vidabl_pq_dta, 'units',
-     &                          lvar, vname(3,indxabl_pq_dta)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_pq_dta))
+     &            lvar, vname_abl1d(3,indxabl_pq_dta)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_pq_dta))
           ierr=nf_put_att_text (ncid, vidabl_pq_dta, 'field',
-     &                          lvar, vname(4,indxabl_pq_dta)(1:lvar))
+     &            lvar, vname_abl1d(4,indxabl_pq_dta)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_pq_dta,
-     &                          vname(:,indxabl_pq_dta), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_pq_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -440,31 +440,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pgu_dta)) then
-          lvar=lenstr(vname(1,indxabl_pgu_dta))
-          ierr=nf_def_var (ncid, vname(1,indxabl_pgu_dta)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_pgu_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pgu_dta))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_pgu_dta)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_pgu_dta)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_pgu_dta,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_pgu_dta))
+          lvar=lenstr(vname_abl1d(2,indxabl_pgu_dta))
           ierr=nf_put_att_text (ncid, vidabl_pgu_dta, 'long_name',
-     &                        lvar, vname(2,indxabl_pgu_dta)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_pgu_dta)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_pgu_dta)
+          text='averaged '/ /vname_abl1d(2,indxabl_pgu_dta)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_pgu_dta, 'long_name',
-     &                          lvar, text(1:lvar))
+     &           lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_pgu_dta))
+          lvar=lenstr(vname_abl1d(3,indxabl_pgu_dta))
           ierr=nf_put_att_text (ncid, vidabl_pgu_dta, 'units',
-     &                          lvar, vname(3,indxabl_pgu_dta)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_pgu_dta))
+     &           lvar, vname_abl1d(3,indxabl_pgu_dta)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_pgu_dta))
           ierr=nf_put_att_text (ncid, vidabl_pgu_dta, 'field',
-     &                          lvar, vname(4,indxabl_pgu_dta)(1:lvar))
+     &            lvar, vname_abl1d(4,indxabl_pgu_dta)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_pgu_dta,
-     &                          vname(:,indxabl_pgu_dta), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_pgu_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -472,31 +472,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pgv_dta)) then
-          lvar=lenstr(vname(1,indxabl_pgv_dta))
-          ierr=nf_def_var (ncid, vname(1,indxabl_pgv_dta)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_pgv_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pgv_dta))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_pgv_dta)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_pgv_dta)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_pgv_dta,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_pgv_dta))
+          lvar=lenstr(vname_abl1d(2,indxabl_pgv_dta))
           ierr=nf_put_att_text (ncid, vidabl_pgv_dta, 'long_name',
-     &                          lvar, vname(2,indxabl_pgv_dta)(1:lvar))
+     &          lvar, vname_abl1d(2,indxabl_pgv_dta)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_pgv_dta)
+          text='averaged '/ /vname_abl1d(2,indxabl_pgv_dta)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_pgv_dta, 'long_name',
-     &                          lvar, text(1:lvar))
+     &          lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_pgv_dta))
+          lvar=lenstr(vname_abl1d(3,indxabl_pgv_dta))
           ierr=nf_put_att_text (ncid, vidabl_pgv_dta, 'units',
-     &                          lvar, vname(3,indxabl_pgv_dta)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_pgv_dta))
+     &          lvar, vname_abl1d(3,indxabl_pgv_dta)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_pgv_dta))
           ierr=nf_put_att_text (ncid, vidabl_pgv_dta, 'field',
-     &                          lvar, vname(4,indxabl_pgv_dta)(1:lvar))
+     &          lvar, vname_abl1d(4,indxabl_pgv_dta)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_pgv_dta,
-     &                          vname(:,indxabl_pgv_dta), 5, NF_FOUT, ierr)
+     &          vname_abl1d(:,indxabl_pgv_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -504,31 +504,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_u_abl)) then
-          lvar=lenstr(vname(1,indxabl_u_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_u_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_u_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_u_abl)(1:lvar),
+     &           NF_FOUT, 4, abl3dgrd, vidabl_u_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_u_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_u_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_u_abl))
           ierr=nf_put_att_text (ncid, vidabl_u_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_u_abl)(1:lvar))
+     &          lvar, vname_abl1d(2,indxabl_u_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_u_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_u_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_u_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &          lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_u_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_u_abl))
           ierr=nf_put_att_text (ncid, vidabl_u_abl, 'units',
-     &                          lvar, vname(3,indxabl_u_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_u_abl))
+     &          lvar, vname_abl1d(3,indxabl_u_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_u_abl))
           ierr=nf_put_att_text (ncid, vidabl_u_abl, 'field',
-     &                          lvar, vname(4,indxabl_u_abl)(1:lvar))
+     &          lvar, vname_abl1d(4,indxabl_u_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_u_abl,
-     &                          vname(:,indxabl_u_abl), 5, NF_FOUT, ierr)
+     &          vname_abl1d(:,indxabl_u_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -536,31 +536,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_v_abl)) then
-          lvar=lenstr(vname(1,indxabl_v_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_v_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_v_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_v_abl)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_v_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_v_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_v_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_v_abl))
           ierr=nf_put_att_text (ncid, vidabl_v_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_v_abl)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_v_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_v_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_v_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_v_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &           lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_v_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_v_abl))
           ierr=nf_put_att_text (ncid, vidabl_v_abl, 'units',
-     &                          lvar, vname(3,indxabl_v_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_v_abl))
+     &           lvar, vname_abl1d(3,indxabl_v_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_v_abl))
           ierr=nf_put_att_text (ncid, vidabl_v_abl, 'field',
-     &                          lvar, vname(4,indxabl_v_abl)(1:lvar))
+     &           lvar, vname_abl1d(4,indxabl_v_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_v_abl,
-     &                          vname(:,indxabl_v_abl), 5, NF_FOUT, ierr)
+     &           vname_abl1d(:,indxabl_v_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -568,31 +568,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_t_abl)) then
-          lvar=lenstr(vname(1,indxabl_t_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_t_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_t_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_t_abl)(1:lvar),
+     &         NF_FOUT, 4, abl3dgrd, vidabl_t_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_t_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_t_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_t_abl))
           ierr=nf_put_att_text (ncid, vidabl_t_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_t_abl)(1:lvar))
+     &          lvar, vname_abl1d(2,indxabl_t_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_t_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_t_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_t_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &           lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_t_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_t_abl))
           ierr=nf_put_att_text (ncid, vidabl_t_abl, 'units',
-     &                          lvar, vname(3,indxabl_t_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_t_abl))
+     &           lvar, vname_abl1d(3,indxabl_t_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_t_abl))
           ierr=nf_put_att_text (ncid, vidabl_t_abl, 'field',
-     &                          lvar, vname(4,indxabl_t_abl)(1:lvar))
+     &           lvar, vname_abl1d(4,indxabl_t_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_t_abl,
-     &                          vname(:,indxabl_t_abl), 5, NF_FOUT, ierr)
+     &           vname_abl1d(:,indxabl_t_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -600,31 +600,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_q_abl)) then
-          lvar=lenstr(vname(1,indxabl_q_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_q_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_q_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_q_abl)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_q_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_q_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_q_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_q_abl))
           ierr=nf_put_att_text (ncid, vidabl_q_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_q_abl)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_q_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_q_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_q_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_q_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &            lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_q_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_q_abl))
           ierr=nf_put_att_text (ncid, vidabl_q_abl, 'units',
-     &                          lvar, vname(3,indxabl_q_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_q_abl))
+     &            lvar, vname_abl1d(3,indxabl_q_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_q_abl))
           ierr=nf_put_att_text (ncid, vidabl_q_abl, 'field',
-     &                          lvar, vname(4,indxabl_q_abl)(1:lvar))
+     &            lvar, vname_abl1d(4,indxabl_q_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_q_abl,
-     &                          vname(:,indxabl_q_abl), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_q_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -632,31 +632,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_tke_abl)) then
-          lvar=lenstr(vname(1,indxabl_tke_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_tke_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_tke_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_tke_abl)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_tke_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_tke_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_tke_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_tke_abl))
           ierr=nf_put_att_text (ncid, vidabl_tke_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_tke_abl)(1:lvar))
+     &          lvar, vname_abl1d(2,indxabl_tke_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_tke_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_tke_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_tke_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &          lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_tke_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_tke_abl))
           ierr=nf_put_att_text (ncid, vidabl_tke_abl, 'units',
-     &                          lvar, vname(3,indxabl_tke_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_tke_abl))
+     &           lvar, vname_abl1d(3,indxabl_tke_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_tke_abl))
           ierr=nf_put_att_text (ncid, vidabl_tke_abl, 'field',
-     &                          lvar, vname(4,indxabl_tke_abl)(1:lvar))
+     &            lvar, vname_abl1d(4,indxabl_tke_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_tke_abl,
-     &                          vname(:,indxabl_tke_abl), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_tke_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -664,31 +664,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_mxlm_abl)) then
-          lvar=lenstr(vname(1,indxabl_mxlm_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_mxlm_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_mxlm_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_mxlm_abl)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_mxlm_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_mxlm_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_mxlm_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_mxlm_abl))
           ierr=nf_put_att_text (ncid, vidabl_mxlm_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_mxlm_abl)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_mxlm_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_mxlm_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_mxlm_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_mxlm_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &            lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_mxlm_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_mxlm_abl))
           ierr=nf_put_att_text (ncid, vidabl_mxlm_abl, 'units',
-     &                          lvar, vname(3,indxabl_mxlm_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_mxlm_abl))
+     &            lvar, vname_abl1d(3,indxabl_mxlm_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_mxlm_abl))
           ierr=nf_put_att_text (ncid, vidabl_mxlm_abl, 'field',
-     &                          lvar, vname(4,indxabl_mxlm_abl)(1:lvar))
+     &             lvar, vname_abl1d(4,indxabl_mxlm_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_mxlm_abl,
-     &                          vname(:,indxabl_mxlm_abl), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_mxlm_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -696,31 +696,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_mxld_abl)) then
-          lvar=lenstr(vname(1,indxabl_mxld_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_mxld_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_mxld_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_mxld_abl)(1:lvar),
+     &           NF_FOUT, 4, abl3dgrd, vidabl_mxld_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_mxld_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_mxld_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_mxld_abl))
           ierr=nf_put_att_text (ncid, vidabl_mxld_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_mxld_abl)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_mxld_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_mxld_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_mxld_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_mxld_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &           lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_mxld_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_mxld_abl))
           ierr=nf_put_att_text (ncid, vidabl_mxld_abl, 'units',
-     &                          lvar, vname(3,indxabl_mxld_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_mxld_abl))
+     &            lvar, vname_abl1d(3,indxabl_mxld_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_mxld_abl))
           ierr=nf_put_att_text (ncid, vidabl_mxld_abl, 'field',
-     &                          lvar, vname(4,indxabl_mxld_abl)(1:lvar))
+     &            lvar, vname_abl1d(4,indxabl_mxld_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_mxld_abl,
-     &                          vname(:,indxabl_mxld_abl), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_mxld_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -728,31 +728,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_avm_abl)) then
-          lvar=lenstr(vname(1,indxabl_avm_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_avm_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_avm_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_avm_abl)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_avm_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_avm_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_avm_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_avm_abl))
           ierr=nf_put_att_text (ncid, vidabl_avm_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_avm_abl)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_avm_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_avm_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_avm_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_avm_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &           lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_avm_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_avm_abl))
           ierr=nf_put_att_text (ncid, vidabl_avm_abl, 'units',
-     &                          lvar, vname(3,indxabl_avm_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_avm_abl))
+     &            lvar, vname_abl1d(3,indxabl_avm_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_avm_abl))
           ierr=nf_put_att_text (ncid, vidabl_avm_abl, 'field',
-     &                          lvar, vname(4,indxabl_avm_abl)(1:lvar))
+     &            lvar, vname_abl1d(4,indxabl_avm_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_avm_abl,
-     &                          vname(:,indxabl_avm_abl), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_avm_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -760,31 +760,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_avt_abl)) then
-          lvar=lenstr(vname(1,indxabl_avt_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_avt_abl)(1:lvar),
-     &                     NF_FOUT, 4, abl3dgrd, vidabl_avt_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_avt_abl)(1:lvar),
+     &          NF_FOUT, 4, abl3dgrd, vidabl_avt_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_avt_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_avt_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_avt_abl))
           ierr=nf_put_att_text (ncid, vidabl_avt_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_avt_abl)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_avt_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_avt_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_avt_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_avt_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &           lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_avt_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_avt_abl))
           ierr=nf_put_att_text (ncid, vidabl_avt_abl, 'units',
-     &                          lvar, vname(3,indxabl_avt_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_avt_abl))
+     &            lvar, vname_abl1d(3,indxabl_avt_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_avt_abl))
           ierr=nf_put_att_text (ncid, vidabl_avt_abl, 'field',
-     &                          lvar, vname(4,indxabl_avt_abl)(1:lvar))
+     &            lvar, vname_abl1d(4,indxabl_avt_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_avt_abl,
-     &                          vname(:,indxabl_avt_abl), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_avt_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -792,31 +792,31 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_ablh_abl)) then
-          lvar=lenstr(vname(1,indxabl_ablh_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_ablh_abl)(1:lvar),
-     &                     NF_FOUT, 3, abl2dgrd, vidabl_ablh_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_ablh_abl)(1:lvar),
+     &           NF_FOUT, 3, abl2dgrd, vidabl_ablh_abl)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidabl_ablh_abl,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxabl_ablh_abl))
+          lvar=lenstr(vname_abl1d(2,indxabl_ablh_abl))
           ierr=nf_put_att_text (ncid, vidabl_ablh_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_ablh_abl)(1:lvar))
+     &            lvar, vname_abl1d(2,indxabl_ablh_abl)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxabl_ablh_abl)
+          text='averaged '/ /vname_abl1d(2,indxabl_ablh_abl)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidabl_ablh_abl, 'long_name',
-     &                          lvar, text(1:lvar))
+     &            lvar, text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxabl_ablh_abl))
+          lvar=lenstr(vname_abl1d(3,indxabl_ablh_abl))
           ierr=nf_put_att_text (ncid, vidabl_ablh_abl, 'units',
-     &                          lvar, vname(3,indxabl_ablh_abl)(1:lvar))
-          lvar=lenstr(vname(4,indxabl_ablh_abl))
+     &            lvar, vname_abl1d(3,indxabl_ablh_abl)(1:lvar))
+          lvar=lenstr(vname_abl1d(4,indxabl_ablh_abl))
           ierr=nf_put_att_text (ncid, vidabl_ablh_abl, 'field',
-     &                          lvar, vname(4,indxabl_ablh_abl)(1:lvar))
+     &            lvar, vname_abl1d(4,indxabl_ablh_abl)(1:lvar))
 !
           call nf_add_attribute(ncid,vidabl_ablh_abl,
-     &                          vname(:,indxabl_ablh_abl), 5, NF_FOUT, ierr)
+     &            vname_abl1d(:,indxabl_ablh_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -824,11 +824,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_zr_abl)) then
-          lvar=lenstr(vname(1,indxabl_zr_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_zr_abl)(1:lvar),
-     &                     NF_FOUT, 1, abl3dgrd(3), vidabl_zr_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_zr_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_zr_abl)(1:lvar),
+     &            NF_FOUT, 1, abl3dgrd(3), vidabl_zr_abl)
           ierr=nf_put_att_text (ncid, vidabl_zr_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_zr_abl)(1:lvar))
+     &           lvar, vname_abl1d(2,indxabl_zr_abl)(1:lvar))
         endif
 !
 !-----------------------------------------------------------------------
@@ -836,11 +836,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_zw_abl)) then
-          lvar=lenstr(vname(1,indxabl_zw_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_zw_abl)(1:lvar),
-     &                     NF_FOUT, 1, abl3dgrd(3), vidabl_zw_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_zw_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_zw_abl)(1:lvar),
+     &            NF_FOUT, 1, abl3dgrd(3), vidabl_zw_abl)
           ierr=nf_put_att_text (ncid, vidabl_zw_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_zw_abl)(1:lvar))
+     &            lvar, vname_abl1d(2,indxabl_zw_abl)(1:lvar))
         endif
 !
 !-----------------------------------------------------------------------
@@ -848,11 +848,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_Hzr_abl)) then
-          lvar=lenstr(vname(1,indxabl_Hzr_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_Hzr_abl)(1:lvar),
-     &                     NF_FOUT, 1, abl3dgrd(3), vidabl_Hzr_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_Hzr_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_Hzr_abl)(1:lvar),
+     &          NF_FOUT, 1, abl3dgrd(3), vidabl_Hzr_abl)
           ierr=nf_put_att_text (ncid, vidabl_Hzr_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_Hzr_abl)(1:lvar))
+     &          lvar, vname_abl1d(2,indxabl_Hzr_abl)(1:lvar))
         endif
 !
 !-----------------------------------------------------------------------
@@ -860,11 +860,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_Hzw_abl)) then
-          lvar=lenstr(vname(1,indxabl_Hzw_abl))
-          ierr=nf_def_var (ncid, vname(1,indxabl_Hzw_abl)(1:lvar),
-     &                     NF_FOUT, 1, abl3dgrd(3), vidabl_Hzw_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_Hzw_abl))
+          ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_Hzw_abl)(1:lvar),
+     &          NF_FOUT, 1, abl3dgrd(3), vidabl_Hzw_abl)
           ierr=nf_put_att_text (ncid, vidabl_Hzw_abl, 'long_name',
-     &                          lvar, vname(2,indxabl_Hzw_abl)(1:lvar))
+     &          lvar, vname_abl1d(2,indxabl_Hzw_abl)(1:lvar))
         endif
 !
 !-----------------------------------------------------------------------
@@ -980,11 +980,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pu_dta)) then
-          lvar=lenstr(vname(1,indxabl_pu_dta))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_pu_dta)(1:lvar),
-     &                                                 vidabl_pu_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pu_dta))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_pu_dta)(1:lvar),vidabl_pu_dta)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_pu_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pu_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -995,11 +995,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pv_dta)) then
-          lvar=lenstr(vname(1,indxabl_pv_dta))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_pv_dta)(1:lvar),
-     &                                                 vidabl_pv_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pv_dta))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_pv_dta)(1:lvar),vidabl_pv_dta)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_pv_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pv_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1010,11 +1010,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pt_dta)) then
-          lvar=lenstr(vname(1,indxabl_pt_dta))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_pt_dta)(1:lvar),
-     &                                                 vidabl_pt_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pt_dta))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_pt_dta)(1:lvar),vidabl_pt_dta)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_pt_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pt_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1025,11 +1025,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pq_dta)) then
-          lvar=lenstr(vname(1,indxabl_pq_dta))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_pq_dta)(1:lvar),
-     &                                                 vidabl_pq_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pq_dta))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_pq_dta)(1:lvar),vidabl_pq_dta)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_pq_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pq_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1040,11 +1040,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pgu_dta)) then
-          lvar=lenstr(vname(1,indxabl_pgu_dta))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_pgu_dta)(1:lvar),
-     &                                                 vidabl_pgu_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pgu_dta))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_pgu_dta)(1:lvar),vidabl_pgu_dta)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_pgu_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pgu_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1055,11 +1055,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_pgv_dta)) then
-          lvar=lenstr(vname(1,indxabl_pgv_dta))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_pgv_dta)(1:lvar),
-     &                                                 vidabl_pgv_dta)
+          lvar=lenstr(vname_abl1d(1,indxabl_pgv_dta))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_pgv_dta)(1:lvar),vidabl_pgv_dta)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_pgv_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pgv_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1070,11 +1070,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_u_abl)) then
-          lvar=lenstr(vname(1,indxabl_u_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_u_abl)(1:lvar),
-     &                                                 vidabl_u_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_u_abl)(1:lvar),vidabl_u_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_u_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_u_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1085,11 +1085,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_v_abl)) then
-          lvar=lenstr(vname(1,indxabl_v_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_v_abl)(1:lvar),
-     &                                                 vidabl_v_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_v_abl)(1:lvar),vidabl_v_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_v_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_v_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1100,11 +1100,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_t_abl)) then
-          lvar=lenstr(vname(1,indxabl_t_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_t_abl)(1:lvar),
-     &                                                 vidabl_t_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_t_abl)(1:lvar),vidabl_t_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_t_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_t_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1115,11 +1115,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_q_abl)) then
-          lvar=lenstr(vname(1,indxabl_q_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_q_abl)(1:lvar),
-     &                                                 vidabl_q_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
+          ierr=nf_inq_varid (ncid, 
+     &          vname_abl1d(1,indxabl_q_abl)(1:lvar),vidabl_q_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_q_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_q_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1130,11 +1130,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_tke_abl)) then
-          lvar=lenstr(vname(1,indxabl_tke_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_tke_abl)(1:lvar),
-     &                                                 vidabl_tke_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_tke_abl)(1:lvar),vidabl_tke_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_tke_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1145,11 +1145,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_mxlm_abl)) then
-          lvar=lenstr(vname(1,indxabl_mxlm_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_mxlm_abl)(1:lvar),
-     &                                                 vidabl_mxlm_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_mxlm_abl)(1:lvar),vidabl_mxlm_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_mxlm_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1160,11 +1160,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_mxld_abl)) then
-          lvar=lenstr(vname(1,indxabl_mxld_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_mxld_abl)(1:lvar),
-     &                                                 vidabl_mxld_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_mxld_abl)(1:lvar),vidabl_mxld_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_mxld_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_mxld_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1175,11 +1175,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_avm_abl)) then
-          lvar=lenstr(vname(1,indxabl_avm_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_avm_abl)(1:lvar),
-     &                                                 vidabl_avm_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_avm_abl)(1:lvar),vidabl_avm_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_avm_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_avm_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1190,11 +1190,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_avt_abl)) then
-          lvar=lenstr(vname(1,indxabl_avt_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_avt_abl)(1:lvar),
-     &                                                 vidabl_avt_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_avt_abl)(1:lvar),vidabl_avt_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_avt_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_avt_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1205,11 +1205,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_ablh_abl)) then
-          lvar=lenstr(vname(1,indxabl_ablh_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_ablh_abl)(1:lvar),
-     &                                                 vidabl_ablh_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_ablh_abl)(1:lvar),vidabl_ablh_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_ablh_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_ablh_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1220,11 +1220,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_zr_abl)) then
-          lvar=lenstr(vname(1,indxabl_zr_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_zr_abl)(1:lvar),
-     &                                                 vidabl_zr_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_zr_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_zr_abl)(1:lvar),vidabl_zr_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_zr_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_zr_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1235,11 +1235,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_zw_abl)) then
-          lvar=lenstr(vname(1,indxabl_zw_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_zw_abl)(1:lvar),
-     &                                                 vidabl_zw_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_zw_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_zw_abl)(1:lvar),vidabl_zw_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_zw_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_zw_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1250,11 +1250,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_Hzr_abl)) then
-          lvar=lenstr(vname(1,indxabl_Hzr_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_Hzr_abl)(1:lvar),
-     &                                                 vidabl_Hzr_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_Hzr_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_Hzr_abl)(1:lvar),vidabl_Hzr_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_Hzr_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_Hzr_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1265,11 +1265,11 @@
 !-----------------------------------------------------------------------
 !
         if (wrt(indxabl_Hzw_abl)) then
-          lvar=lenstr(vname(1,indxabl_Hzw_abl))
-          ierr=nf_inq_varid (ncid, vname(1,indxabl_Hzw_abl)(1:lvar),
-     &                                                 vidabl_Hzw_abl)
+          lvar=lenstr(vname_abl1d(1,indxabl_Hzw_abl))
+          ierr=nf_inq_varid (ncid, 
+     &         vname_abl1d(1,indxabl_Hzw_abl)(1:lvar),vidabl_Hzw_abl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxabl_Hzw_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_Hzw_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif

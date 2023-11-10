@@ -375,24 +375,24 @@
 !
 ! 3D ABL TKE
 !
-        lvar=lenstr(vname(1,indxabl_tke_abl))
-        ierr=nf_def_var (ncid, vname(1,indxabl_tke_abl)(1:lvar),
-     &                              NF_DOUBLE, 4, abl3dgrd, rstAblTke)
+        lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_tke_abl)(1:lvar),
+     &                   NF_DOUBLE, 4, abl3dgrd, rstAblTke)
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstAblTke,nf_collective)
 # endif
-        lvar=lenstr(vname(2,indxabl_tke_abl))
+        lvar=lenstr(vname_abl1d(2,indxabl_tke_abl))
         ierr=nf_put_att_text (ncid, rstAblTke, 'long_name', lvar,
-     &                                   vname(2,indxabl_tke_abl)(1:lvar))
-        lvar=lenstr(vname(3,indxabl_tke_abl))
+     &                  vname_abl1d(2,indxabl_tke_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_tke_abl))
         ierr=nf_put_att_text (ncid, rstAblTke, 'units',     lvar,
-     &                                   vname(3,indxabl_tke_abl)(1:lvar))
-        lvar=lenstr(vname(4,indxabl_tke_abl))
+     &                  vname_abl1d(3,indxabl_tke_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_tke_abl))
         ierr=nf_put_att_text (ncid, rstAblTke, 'field',     lvar,
-     &                                  vname(4,indxabl_tke_abl)(1:lvar))
+     &                  vname_abl1d(4,indxabl_tke_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblTke, vname(:,indxabl_tke_abl), 5,
-     &                        NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstAblTke, 
+     &                  vname_abl1d(:,indxabl_tke_abl), 5, NF_DOUBLE, ierr)
 #endif
 
 #ifdef SOLVE3D
@@ -1300,10 +1300,12 @@
 !
 ! 3D ABL TKE
 !
-        lvar=lenstr(vname(1,indxabl_tke_abl))
-        ierr=nf_inq_varid (ncid, vname(1,indxabl_tke_abl)(1:lvar), rstAblTke)
+        lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
+        ierr=nf_inq_varid (ncid, 
+     &      vname_abl1d(1,indxabl_tke_abl)(1:lvar), rstAblTke)
         if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxabl_tke_abl)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar), 
+     &      rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR

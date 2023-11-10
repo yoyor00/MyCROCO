@@ -21,7 +21,7 @@
       real mask2(GLOBAL_2D_ARRAY)
       integer ierr, record, lstr, lvar, lenstr,
      &     nf_fwrite, typevar2d, vid, ncid, typefile
-      character*75  varname
+      character*75 varname
       character*20 text
 
 !     Include the common
@@ -78,6 +78,8 @@
          text='WRT_SURF_AVG'
       elseif (typefile ==filetype_diags_eddy_avg) then
          text='WRT_DIAGS_EDDY_AVG'
+      elseif (typefile ==filetype_abl) then
+         text='WRT_ABL'
       endif
  !
 # ifdef FILLVAL
@@ -88,6 +90,7 @@
       END WHERE
 # endif
 #endif
+
       ierr=nf_fwrite(work2d_tmp, ncid, vid, record, typevar2d)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(varname)
@@ -121,7 +124,7 @@
      &     nf_fwrite, typevar3d, vid, ncid, k, typefile
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
-      character*75  varname
+      character*75 varname
       character*20 text
 !     Include the common
 #include "scalars.h"
@@ -179,7 +182,10 @@
          text='WRT_SURF_AVG'
       elseif (typefile ==filetype_diags_eddy_avg) then
          text='WRT_DIAGS_EDDY_AVG'
+      elseif (typefile ==filetype_abl) then
+         text='WRT_ABL'
       endif
+
 !
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)
@@ -191,6 +197,7 @@
       enddo
 # endif
 #endif
+
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(varname)
@@ -224,7 +231,7 @@
      &     nf_fwrite, typevar3d, vid, ncid, k, typefile
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
-      character*75  varname
+      character*75 varname
       character*20 text
 !     Include the common
 # include "scalars.h"
@@ -282,6 +289,8 @@
          text='WRT_SURF_AVG'
       elseif (typefile ==filetype_diags_eddy_avg) then
          text='WRT_DIAGS_EDDY_AVG'
+      elseif (typefile ==filetype_abl) then
+         text='WRT_ABL'
       endif
 !
 #  ifdef FILLVAL
@@ -328,7 +337,7 @@
      &     nf_fwrite, typevar3d, vid, ncid, k, nn, typefile
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
-      character*75  varname
+      character*75 varname
       character*20 text
 !     Include the common
 #include "scalars.h"
@@ -377,6 +386,8 @@
          text='WRT_SURF_AVG'
       elseif (typefile ==filetype_diags_eddy_avg) then
          text='WRT_DIAGS_EDDY_AVG'
+      elseif (typefile ==filetype_abl) then
+         text='WRT_ABL'
       endif
 !
 # ifdef FILLVAL
