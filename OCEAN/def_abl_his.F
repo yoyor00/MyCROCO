@@ -267,7 +267,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 
 !
@@ -298,7 +298,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 
 !=======================================================================
@@ -335,8 +335,8 @@
           ierr=nf_put_att_text (ncid, vidabl_pu_dta, 'field',
      &                          lvar, vname(4,indxabl_pu_dta)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_pu_dta,indxabl_pu_dta,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_pu_dta,
+     &                          vname(:,indxabl_pu_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -367,8 +367,8 @@
           ierr=nf_put_att_text (ncid, vidabl_pv_dta, 'field',
      &                          lvar, vname(4,indxabl_pv_dta)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_pv_dta,indxabl_pv_dta,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_pv_dta,
+     &                          vname(:,indxabl_pv_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -399,8 +399,8 @@
           ierr=nf_put_att_text (ncid, vidabl_pt_dta, 'field',
      &                          lvar, vname(4,indxabl_pt_dta)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_pt_dta,indxabl_pt_dta,5,
-     &                        NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_pt_dta,
+     &                          vname(:,indxabl_pt_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -431,8 +431,8 @@
           ierr=nf_put_att_text (ncid, vidabl_pq_dta, 'field',
      &                          lvar, vname(4,indxabl_pq_dta)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_pq_dta,indxabl_pq_dta,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_pq_dta,
+     &                          vname(:,indxabl_pq_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -463,8 +463,8 @@
           ierr=nf_put_att_text (ncid, vidabl_pgu_dta, 'field',
      &                          lvar, vname(4,indxabl_pgu_dta)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_pgu_dta,indxabl_pgu_dta,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_pgu_dta,
+     &                          vname(:,indxabl_pgu_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -495,8 +495,8 @@
           ierr=nf_put_att_text (ncid, vidabl_pgv_dta, 'field',
      &                          lvar, vname(4,indxabl_pgv_dta)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_pgv_dta,indxabl_pgv_dta,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_pgv_dta,
+     &                          vname(:,indxabl_pgv_dta), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -527,8 +527,8 @@
           ierr=nf_put_att_text (ncid, vidabl_u_abl, 'field',
      &                          lvar, vname(4,indxabl_u_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_u_abl,indxabl_u_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_u_abl,
+     &                          vname(:,indxabl_u_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -559,8 +559,8 @@
           ierr=nf_put_att_text (ncid, vidabl_v_abl, 'field',
      &                          lvar, vname(4,indxabl_v_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_v_abl,indxabl_v_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_v_abl,
+     &                          vname(:,indxabl_v_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -591,8 +591,8 @@
           ierr=nf_put_att_text (ncid, vidabl_t_abl, 'field',
      &                          lvar, vname(4,indxabl_t_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_t_abl,indxabl_t_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_t_abl,
+     &                          vname(:,indxabl_t_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -623,8 +623,8 @@
           ierr=nf_put_att_text (ncid, vidabl_q_abl, 'field',
      &                          lvar, vname(4,indxabl_q_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_q_abl,indxabl_q_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_q_abl,
+     &                          vname(:,indxabl_q_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -655,8 +655,8 @@
           ierr=nf_put_att_text (ncid, vidabl_tke_abl, 'field',
      &                          lvar, vname(4,indxabl_tke_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_tke_abl,indxabl_tke_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_tke_abl,
+     &                          vname(:,indxabl_tke_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -687,8 +687,8 @@
           ierr=nf_put_att_text (ncid, vidabl_mxlm_abl, 'field',
      &                          lvar, vname(4,indxabl_mxlm_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_mxlm_abl,indxabl_mxlm_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_mxlm_abl,
+     &                          vname(:,indxabl_mxlm_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -719,8 +719,8 @@
           ierr=nf_put_att_text (ncid, vidabl_mxld_abl, 'field',
      &                          lvar, vname(4,indxabl_mxld_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_mxld_abl,indxabl_mxld_abl,5,
-     &                        NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_mxld_abl,
+     &                          vname(:,indxabl_mxld_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -751,8 +751,8 @@
           ierr=nf_put_att_text (ncid, vidabl_avm_abl, 'field',
      &                          lvar, vname(4,indxabl_avm_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_avm_abl,indxabl_avm_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_avm_abl,
+     &                          vname(:,indxabl_avm_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -783,8 +783,8 @@
           ierr=nf_put_att_text (ncid, vidabl_avt_abl, 'field',
      &                          lvar, vname(4,indxabl_avt_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_avt_abl,indxabl_avt_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_avt_abl,
+     &                          vname(:,indxabl_avt_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -815,8 +815,8 @@
           ierr=nf_put_att_text (ncid, vidabl_ablh_abl, 'field',
      &                          lvar, vname(4,indxabl_ablh_abl)(1:lvar))
 !
-          call nf_add_attribute(ncid,vidabl_ablh_abl,indxabl_ablh_abl,5,
-     &                          NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidabl_ablh_abl,
+     &                          vname(:,indxabl_ablh_abl), 5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------

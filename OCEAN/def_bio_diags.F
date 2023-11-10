@@ -241,7 +241,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 !
 ! Time2.
@@ -273,7 +273,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 !
 ! Tracer diagnostics variables.
@@ -306,7 +306,7 @@
      &          lvar, vname(4,indxbioFlux+iflux-1)(1:lvar))
 
            call nf_add_attribute(ncid, vidFlux(iflux),
-     &          indxbioFlux+iflux-1, 5, NF_FOUT, ierr)
+     &          vname(:,indxbioFlux+iflux-1), 5, NF_FOUT, ierr)
          endif
        end do
 ! vertical sinking fluxes
@@ -351,7 +351,7 @@
      &          lvar, vname(4,indxbioVSink+iflux-1)(1:lvar))
 
           call nf_add_attribute(ncid, vidVSink(iflux),
-     &          indxbioVSink+iflux-1, 5, NF_FOUT, ierr)
+     &          vname(:,indxbioVSink+iflux-1), 5, NF_FOUT, ierr)
         endif
       end do
 !--------------------------------------------------------------------------------
@@ -386,7 +386,7 @@
      &          lvar, vname(4,indxGasExcFlux+iflux-1)(1:lvar))
 
            call nf_add_attribute(ncid, vidGasExc(iflux),
-     &          indxGasExcFlux+iflux-1, 5, NF_FOUT, ierr)
+     &          vname(:,indxGasExcFlux+iflux-1), 5, NF_FOUT, ierr)
          endif
        end do
 # endif
