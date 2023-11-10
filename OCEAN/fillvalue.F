@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-      subroutine fillvalue2d(work2d_tmp,ncid,vid,indx,
+      subroutine fillvalue2d(work2d_tmp,ncid,vid,varname,
      &                       record,typevar2d,typefile)
       implicit none
 
@@ -20,7 +20,8 @@
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
       integer ierr, record, lstr, lvar, lenstr,
-     &     nf_fwrite, typevar2d, vid, ncid, indx, typefile
+     &     nf_fwrite, typevar2d, vid, ncid, typefile
+      character*75  varname
       character*20 text
 
 !     Include the common
@@ -89,8 +90,8 @@
 #endif
       ierr=nf_fwrite(work2d_tmp, ncid, vid, record, typevar2d)
       if (ierr .ne. nf_noerr) then
-         lvar=lenstr(vname(1,indx))
-         write(stdout,1) TRIM(text), vname(1,indx)(1:lvar), record, ierr
+         lvar=lenstr(varname)
+         write(stdout,1) TRIM(text), varname(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
@@ -108,7 +109,7 @@
 
 !====================================================================
 
-      subroutine fillvalue3d(work3d_tmp,ncid,vid,indx,
+      subroutine fillvalue3d(work3d_tmp,ncid,vid,varname,
      &                       record,typevar3d,typefile)
       implicit none
 
@@ -117,9 +118,10 @@
       real work3d_tmp(GLOBAL_2D_ARRAY,N)
       real work2d_tmp(GLOBAL_2D_ARRAY)
       integer ierr, record, lstr, lvar, lenstr,
-     &     nf_fwrite, typevar3d, vid, ncid, indx, k, typefile
+     &     nf_fwrite, typevar3d, vid, ncid, k, typefile
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
+      character*75  varname
       character*20 text
 !     Include the common
 #include "scalars.h"
@@ -191,8 +193,8 @@
 #endif
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
-         lvar=lenstr(vname(1,indx))
-         write(stdout,1) TRIM(text), vname(1,indx)(1:lvar), record, ierr
+         lvar=lenstr(varname)
+         write(stdout,1) TRIM(text), varname(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
@@ -209,7 +211,7 @@
       end
 !====================================================================
 #ifdef MUSTANG
-      subroutine fillvalue3d_must(work3d_tmp,ncid,vid,indx,
+      subroutine fillvalue3d_must(work3d_tmp,ncid,vid,varname,
      &                       record,typevar3d,typefile)
       USE comMUSTANG,   ONLY : nk_nivsed_out
       implicit none
@@ -219,9 +221,10 @@
       real work3d_tmp(GLOBAL_2D_ARRAY,nk_nivsed_out)
       real work2d_tmp(GLOBAL_2D_ARRAY)
       integer ierr, record, lstr, lvar, lenstr,
-     &     nf_fwrite, typevar3d, vid, ncid, indx, k, typefile
+     &     nf_fwrite, typevar3d, vid, ncid, k, typefile
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
+      character*75  varname
       character*20 text
 !     Include the common
 # include "scalars.h"
@@ -293,8 +296,8 @@
 # endif
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
-         lvar=lenstr(vname(1,indx))
-         write(stdout,1) TRIM(text), vname(1,indx)(1:lvar), record, ierr
+         lvar=lenstr(varname)
+         write(stdout,1) TRIM(text), varname(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
@@ -313,7 +316,7 @@
 
 !====================================================================
 
-      subroutine fillvalue3d_w(work3d_tmp,ncid,vid,indx,
+      subroutine fillvalue3d_w(work3d_tmp,ncid,vid,varname,
      &                       record,typevar3d,typefile)
       implicit none
 
@@ -322,9 +325,10 @@
       real work3d_tmp(GLOBAL_2D_ARRAY,0:N)
       real work2d_tmp(GLOBAL_2D_ARRAY)
       integer ierr, record, lstr, lvar, lenstr,
-     &     nf_fwrite, typevar3d, vid, ncid, indx, k, nn, typefile
+     &     nf_fwrite, typevar3d, vid, ncid, k, nn, typefile
       logical mask(GLOBAL_2D_ARRAY)
       real mask2(GLOBAL_2D_ARRAY)
+      character*75  varname
       character*20 text
 !     Include the common
 #include "scalars.h"
@@ -387,8 +391,8 @@
 #endif
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
-         lvar=lenstr(vname(1,indx))
-         write(stdout,1) TRIM(text), vname(1,indx)(1:lvar), record, ierr
+         lvar=lenstr(varname)
+         write(stdout,1) TRIM(text), varname(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
