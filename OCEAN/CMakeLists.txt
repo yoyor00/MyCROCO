@@ -17,6 +17,7 @@ configure_file(config_post.h.in config_post.h)
 # -I directives
 include_directories(.)
 include_directories(include)
+include_directories(netcdf)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${NETCDFF_INCLUDE_DIR})
 set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS}
@@ -26,6 +27,7 @@ set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS}
                             -I${CMAKE_CURRENT_BINARY_DIR}
                             -I${CMAKE_BINARY_DIR}
                             -I${CMAKE_CURRENT_SOURCE_DIR}/include
+                            -I${CMAKE_CURRENT_SOURCE_DIR}/netcdf
 )
 if (MPI_FOUND)
 	set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -I${MPI_INCLUDE_DIR})
@@ -115,8 +117,9 @@ list(APPEND CROCO_SRCS_F77 model_diagnostics/diag.F model_diagnostics/wvlcty.F
                            model_diagnostics/checkdims.F model_diagnostics/grid_stiffness.F
                            model_diagnostics/bio_diag.F model_diagnostics/check_kwds.F
                            model_diagnostics/check_switches2.F model_diagnostics/debug.F)
+list(APPEND CROCO_SRCS_F77 param.F)
 # 8) netCDF I/O routines
-list(APPEND CROCO_SRCS_F77 netcdf/param.F netcdf/ncscrum.F netcdf/scalars.F netcdf/output.F
+list(APPEND CROCO_SRCS_F77 netcdf/ncscrum.F netcdf/scalars.F netcdf/output.F
                            netcdf/put_global_atts.F netcdf/nf_fread.F netcdf/nf_fread_x.F
                            netcdf/nf_fread_y.F netcdf/nf_read_bry.F netcdf/get_date.F
                            netcdf/closecdf.F netcdf/fillvalue.F
@@ -133,7 +136,7 @@ list(APPEND CROCO_SRCS_F77 netcdf/param.F netcdf/ncscrum.F netcdf/scalars.F netc
                            netcdf/def_diags_pv.F netcdf/wrt_diags_pv.F netcdf/set_diags_pv.F
                            netcdf/set_diags_pv_avg.F netcdf/wrt_diags_pv_avg.F
                            netcdf/def_diags_eddy.F netcdf/set_diags_eddy_avg.F
-                           netcdf/wrt_diags_eddy_avg.F netcdf/def_surf.F wrt_surf.F
+                           netcdf/wrt_diags_eddy_avg.F netcdf/def_surf.F netcdf/wrt_surf.F
                            netcdf/set_surf_avg.F netcdf/wrt_surf_avg.F)
 # 9) main forcing
 list(APPEND CROCO_SRCS_F77 main_forcing/get_grid.F main_forcing/get_initial.F
@@ -142,7 +145,7 @@ list(APPEND CROCO_SRCS_F77 main_forcing/get_grid.F main_forcing/get_initial.F
                            main_forcing/get_ssh.F main_forcing/get_sss.F
                            main_forcing/get_smflux.F main_forcing/get_stflux.F
                            main_forcing/get_srflux.F main_forcing/get_sst.F
-                           main_forcing/mod_tides_mas.F main_forcing/tidedata.F mas.F
+                           main_forcing/mod_tides_mas.F main_forcing/tidedata.F main_forcing/mas.F
                            main_forcing/get_tides.F
                            main_forcing/clm_tides.F main_forcing/get_bulk.F
                            main_forcing/bulk_flux.F main_forcing/get_bry.F
@@ -183,7 +186,7 @@ list(APPEND CROCO_SRCS_F77 agrif/zoom.F
                            agrif/zoombc_2D.F
                            agrif/zoombc_3D.F
                            agrif/uv3dpremix.F
-                           agrif/t3dpremix.F
+                           ts_3d/t3dpremix.F
                            agrif/update3D.F
                            agrif/zoombc_3Dfast.F
                            agrif/Agrif2Model.F
@@ -199,9 +202,15 @@ list(APPEND CROCO_SRCS_F77 oasis/cpl_prism_define.F
                            oasis/cpl_prism_grid.F
 )
 #list(APPEND CROCO_SRCS_F77 module_substance.F module_MUSTANG.F)
-list(APPEND CROCO_SRCS_F77 online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F
-                           scal0d_oa_out_loc.F scal0d_oa_out_full.F output_oa.F
-                           copy_to_devices.F exchange_device_host.F init_acc.F)
+list(APPEND CROCO_SRCS_F77 online_analysis/online_spectral_diags.F
+                           online_analysis/var3d_oa_out.F
+                           online_analysis/var2d_oa_out.F
+                           online_analysis/scal0d_oa_out_loc.F
+                           online_analysis/scal0d_oa_out_full.F
+                           online_analysis/output_oa.F
+)
+# GPU
+list(APPEND CROCO_SRCS_F77 copy_to_devices.F exchange_device_host.F init_acc.F)
 # SRC90: additional F90 routines for PISCES code and Non-hydrostatic
 #        analysis routines
 list(APPEND CROCO_SRCS_F90 online_analysis/module_oa_space.F90
@@ -332,7 +341,7 @@ add_library(croco_common STATIC lib/lenstr.F lib/insert_node.F)
 
 ###########################################################
 # build ncjoin utility
-set(NCJOIN_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/ncjoin.F)
+set(NCJOIN_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/bin/ncjoin.F)
 croco_cpp_and_mpc_preprocess(NCJOIN_SRC_F)
 add_executable(ncjoin ${NCJOIN_SRC_F})
 target_link_libraries(ncjoin ${NETCDFF_LIBRARY})
