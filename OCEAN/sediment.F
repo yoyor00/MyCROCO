@@ -4647,11 +4647,11 @@ C$OMP BARRIER
 ! Ursell number defined as 3/(32*pi^2) * Hs*L^2/h^3
 !               (Fourier coeff for NL terms)
 !
-      Ur=0.375*H_s/(k_wn*k_wn*depth**3.)
+      Ur=max(0.375*H_s/(k_wn*k_wn*depth**3.),1.e-12)
 !
 ! Ruessink et al. (2012), Eq 9
 !
-      cff=EXP((p3-log10(Ur))/p4)
+      cff=EXP((p3-log10(max(Ur,1.e-10)))/p4)
       B=p1+((p2-p1)/(1.+cff))
 !
       psi=-90.*deg2rad*(1.-TANH(p5/Ur**p6))
@@ -4926,7 +4926,7 @@ C$OMP BARRIER
       real cff, worb1, worb2, worb
 !
       worb1=pi*Hs*zws/(Td*depth)
-      worb2=worb1*2.*(RR+RR-1.)
+      worb2=max(worb1*2.*(RR+RR-1.),1.e-14)
 !
 !  Using the SANTOSS model formulation
 !

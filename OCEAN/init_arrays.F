@@ -167,7 +167,9 @@ C$    integer omp_get_thread_num
 #endif
         enddo
       enddo
-
+      
+      wvn=1
+      trb =1.e-6
 #ifdef SOLVE3D
 !
 !  Initialize 3-D primitive variables.
@@ -813,7 +815,7 @@ C$    integer omp_get_thread_num
           Hripple(i,j)=init
           Lripple(i,j)=init
           Zbnot(i,j)=init
-          Zbapp(i,j)=init
+          Zbapp(i,j)=1.e-4
           Bustrw(i,j)=init
           Bvstrw(i,j)=init
         enddo

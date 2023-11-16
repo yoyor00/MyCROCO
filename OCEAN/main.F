@@ -682,6 +682,7 @@ C$OMP END MASTER
       winfo=1
       iwave=1
       thwave=1.D+10
+      wvn =1
 # ifndef ANA_BRY_WKB
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1

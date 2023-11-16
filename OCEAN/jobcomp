@@ -160,7 +160,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 		CFT1=gfortran
 		FFLAGS1="-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
-#			-fbounds-check -finit-real=zero -finit-integer=0 -ffp-contract=off"
+#			-fbounds-check -finit-real=zero -finit-integer=0"
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======

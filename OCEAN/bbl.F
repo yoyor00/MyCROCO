@@ -271,7 +271,7 @@
 #  else
           cff=wepb(i,j)
 #  endif
-          Ut=cff/(exp(depth/whrm(i,j))-1)
+          Ut=cff/(exp(depth/ max(whrm(i,j),1.e-4)   )-1)
      &                              SWITCH rmask(i,j)
      &                              SWITCH_WET rmask_wet(i,j)
           Ut=500.*Ut  ! * efficient factor
@@ -365,7 +365,7 @@
 !  combined wave-current skin stress
             tau_cws = tau_cs*(1.+scf4*((tau_ws/(tau_ws+tau_cs))**scf5))
             taucw(i,j) = tau_cws
-
+            tau_cw = tau_cws
 !  Maximum of combined wave-current skin stress (for sediment model)
             taucwmax(i,j) = SQRT((tau_cws + tau_ws*COS(phicw))**2
      &                                    +(tau_ws*SIN(phicw))**2)
