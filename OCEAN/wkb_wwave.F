@@ -763,7 +763,7 @@ C$OMP BARRIER
 # if defined WET_DRY && defined WAVE_BREAK_SWASH
 !  Add dissipation near shoreline (e.g., SANDBAR case)
           wsb(i,j,wnew)=wsb(i,j,wnew)*
-          &                  max(1.,(0.5/max(Dstp(i,j)-Dcrit(i,j),eps)**0.2))
+     &                  max(1.,(0.5/max(Dstp(i,j)-Dcrit(i,j),eps)**0.2))
 # endif
 # ifdef WAVE_ROLLER
           wcr(i,j,wnew) = frq(i,j,wnew)*(inv_k**2)   ! c/k
