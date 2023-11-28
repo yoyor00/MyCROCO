@@ -377,6 +377,7 @@ C$OMP END MASTER
 ! !********************************
 ! !
 # if defined PSOURCE && !defined M3FAST 
+!$acc kernels if(compute_on_device) default(present)
       do is=1,Nsrc 
 #  ifdef MPI
         i=Isrc_mpi(is,mynode)
@@ -398,6 +399,7 @@ C$OMP END MASTER
           endif
         endif
       enddo
+!$acc end kernels
 # endif
 ! !
 ! !********************************
@@ -424,7 +426,7 @@ C$OMP END MASTER
         endif
       endif
 #  endif /* ZONAL_NUDGING */
-
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=IstrU,Iend
 #  ifdef ZONAL_NUDGING        
@@ -469,24 +471,25 @@ C$OMP END MASTER
 # endif /*   M3FAST_AVG_CLASSIC */
         enddo
       enddo
+!$acc end kernels      
 # endif /* M2NUDGING */
 ! !
 ! !********************************
 ! ! Update BRY if necessary
 ! !********************************
 ! !
-# if defined M2_FRC_BRY || defined Z_FRC_BRY
-      if (FIRST_FAST_STEP) then
-!$acc update device(                    
-#   ifdef M2_FRC_BRY
-!$acc&        ubarbry_west, ubarbry_east
-#   endif
-#  ifdef Z_FRC_BRY
-!$acc&       ,zetabry_west, zetabry_east
-#  endif
-!$acc&              ) !! iif=1
-      endif
-# endif      
+!# if defined M2_FRC_BRY || defined Z_FRC_BRY
+!      if (FIRST_FAST_STEP) then
+!!!$acc update device(                    
+!!#   ifdef M2_FRC_BRY
+!!!$acc&        ubarbry_west, ubarbry_east
+!!#   endif
+!!#  ifdef Z_FRC_BRY
+!!!$acc&       ,zetabry_west, zetabry_east
+!!#  endif
+!!!$acc&              ) !! iif=1
+!      endif
+!# endif      
 ! !
 ! !********************************
 ! ! Set boundary conditions and 
@@ -500,6 +503,7 @@ C$OMP END MASTER
       call u2dbc_tile (Istr,Iend,Jstr,Jend, work) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
 # ifdef WET_DRY
+!$acc kernels if(compute_on_device) default(present)
 #  ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
         DO j=Jstr,Jend
@@ -560,6 +564,7 @@ C$OMP END MASTER
         END DO
       END IF
 #  endif
+!$acc end kernels      
 # endif
 !
 ! zeta vill be recomputed via depth-integrated continuity equation

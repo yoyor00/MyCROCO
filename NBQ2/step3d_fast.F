@@ -277,6 +277,9 @@ C$    trd=omp_get_thread_num()
 ! ! PART A.3: Commons
 ! !*********************************************************************
 ! ! 
+# ifdef OPENACC
+#  include "set_obc_definitions.h"
+#endif
 # include "nbq.h"
 # ifdef AGRIF
 #  include "zoom.h"
@@ -429,7 +432,7 @@ C$    trd=omp_get_thread_num()
 ! !--------------------------------------------------------------------
 ! !
 # ifdef NBQ_HZCORRECT
-!$acc kernels default(present)
+!$acc kernels if(compute_on_device) default(present)
       if (iic.gt.ntstart .and. FIRST_FAST_STEP) then
         do k=-N_sl+1,N
           do j=JstrV-2,Jend+1
@@ -847,6 +850,8 @@ C$    trd=omp_get_thread_num()
 ! !
       VMAXL=100.
       VMAX=0.
+!$acc kernels if(compute_on_device) default(present) 
+!$acc&      copyout( VMAX, imax, jmax )
       do j=Jstr,Jend
         do i=Istr,Iend
           cff1=ubar(i,j,knew)
@@ -868,6 +873,7 @@ C$    trd=omp_get_thread_num()
           ENDIF
         enddo
       enddo
+!$acc end kernels      
       IF (VMAX.GT.VMAXL) THEN
         write(stdout,'(9(A/))')
      &     '                                         ',

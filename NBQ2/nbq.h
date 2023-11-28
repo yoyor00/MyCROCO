@@ -51,6 +51,7 @@
       common /nbq_param1/ soundspeed_nbq         
       real soundspeed2_nbq(GLOBAL_2D_ARRAY,NSLP1N) 
       common /nbq_param2/ soundspeed2_nbq
+!$acc declare create( soundspeed_nbq, soundspeed2_nbq )      
 #  endif
       double precision time_nbq               
       common /nbq_param3/ time_nbq
@@ -95,12 +96,12 @@
       common /nbq_visc2/ visc2_nbq
       real visc2v_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /test_visc2v/ visc2v_nbq
+!$acc declare create( visc2_nbq , visc2v_nbq )      
 #  endif
 #  ifdef NBQ_SPONGE
       real visc2_nbq_sponge (GLOBAL_2D_ARRAY)
       common /nbq_visc2_sponge/ visc2_nbq_sponge
 #  endif
-!$acc declare create( visc2_nbq , visc2v_nbq )      
       real visc2read_nbq
       common /nbq_visc2read/ visc2read_nbq
       real dtgrid_nbq

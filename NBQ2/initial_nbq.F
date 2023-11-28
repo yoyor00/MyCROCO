@@ -105,9 +105,16 @@
 ! !  Pseudoacoustic speed
 ! !   should be around 5 times external phase speed sqrt(g*h)
 !
-!$acc kernels if(compute_on_device) default(present)
+# if !defined M3FAST_CSVISC2K
+        visc2_nbq=visc2read_nbq
+        visc2v_nbq=visc2read_nbq   
         soundspeed_nbq  =csound_nbq
         soundspeed2_nbq =csound_nbq**2
+c c c c !$acc update host( visc2_nbq,  visc2v_nbq
+c c c c !$acc&          , soundspeed_nbq, soundspeed2_nbq
+c c c c !$acc&           )       
+# endif
+!$acc kernels if(compute_on_device) default(present)
 #  if defined M3FAST_SEDLAYERS && defined M3FAST_CSVISC2K
         do k=-N_sl+1,0
           do j=JR_RANGE
@@ -127,9 +134,7 @@
 #  endif
 !
 ! Bulk viscosity (horizontal & vertical components)
-!
-        visc2_nbq=visc2read_nbq
-        visc2v_nbq=visc2read_nbq
+!     
 #  if defined NBQ_SPONGE || defined NHINT
 #   ifdef M3FAST_CSVISC2K
         do k=1,N
@@ -171,6 +176,7 @@
         enddo
 #  endif
 !$acc end kernels
+c c c !$acc update host( visc2_nbq, visc2v_nbq )
 
 !$acc kernels if(compute_on_device) default(present)
 !

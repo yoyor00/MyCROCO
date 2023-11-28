@@ -546,7 +546,8 @@
 ! !********************************
 ! !
 # ifdef WET_DRY
-      do j=Jstr,Jend
+!$acc kernels if(compute_on_device) default(present)
+ 	do j=Jstr,Jend
         do i=IstrU,Iend
           cff1_WD=ABS(ABS(umask_wet(i,j))-1.)
           cff2_WD=0.5+SIGN(0.5,DU_nbq(i,j))*umask_wet(i,j)
@@ -576,6 +577,7 @@
           enddo
         enddo 
       enddo
+!$acc end kernels      
 # endif
 
 # ifdef RVTK_DEBUG

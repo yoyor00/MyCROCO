@@ -273,6 +273,7 @@
 !        is > Dcrit in masked cells.
 !
 # if defined WET_DRY && defined MASKING
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
@@ -280,6 +281,7 @@
      &                   cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
         enddo
       enddo 
+!$acc end kernels      
 # endif
 !
 ! Then compute wet/dry masks

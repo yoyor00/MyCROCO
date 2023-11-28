@@ -41,6 +41,7 @@
 #  include "nbq.h"
 # endif
 # include "boundary.h"
+# include "tides.h"       
 
 !$acc enter data if(compute_on_device) copyin(h
 !$acc$ ,hinv,zeta
@@ -227,6 +228,7 @@
 #  include "nbq.h"
 # endif
 # include "boundary.h"
+# include "tides.h"      
 
 # include "copy_to_devices.h"
 

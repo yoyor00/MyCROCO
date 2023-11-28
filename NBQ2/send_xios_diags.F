@@ -2773,6 +2773,30 @@ c !$acc wait
       endif
 
 #  ifdef M3FAST
+      if (xios_field_is_active("u_nbq")) then
+        worknbq=0.
+          do k=-N_sl+1,N-1
+          do j=0,Mm
+            do i=0,Lm
+            worknbq(i,j,k+N_sl)=2.*qdmu_nbq(i,j,k)
+     &                /(Hz(min(Lm,i+1),j,k)+Hz(i,j,k))
+            enddo
+          enddo
+          enddo
+      call xios_send_field(" u_nbq",worknbq)
+      endif
+      if (xios_field_is_active("v_nbq")) then
+        worknbq=0.
+          do k=-N_sl+1,N-1
+          do j=0,Mm
+            do i=0,Lm
+            worknbq(i,j,k+N_sl)=2.*qdmv_nbq(i,j,k)
+     &                /(Hz(i,min(Mm,j+1),k)+Hz(i,j,k))
+            enddo
+          enddo
+          enddo
+      call xios_send_field(" v_nbq",worknbq)
+      endif
       if (xios_field_is_active("w_nbq")) then
       !call xios_send_field("w_nbq",wz(:,:,:,nstp))
       
@@ -2780,8 +2804,12 @@ c !$acc wait
           do k=-N_sl+1,N-1
           do j=0,Mm
             do i=0,Lm
-            worknbq(i,j,k+N_sl)=2.*qdmw_nbq(i,j,k)
-     &                /(Hz(i,j,k)+Hz(i,j,k+1))
+            worknbq(i,j,k+N_sl)=2.*(
+     &         qdmw_nbq(i,j,k)
+     &        )/(Hz(i,j,k)+Hz(i,j,k+1))
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
             enddo
           enddo
           enddo
@@ -2789,17 +2817,31 @@ c !$acc wait
           do j=0,Mm
             do i=0,Lm
 #   ifndef M3FAST_SEDLAYERS
-            work(i,j,k)=2.*qdmw_nbq(i,j,k)/Hz(i,j,k+1)
+            worknbq(i,j,k)=2.*(
+     &         qdmw_nbq(i,j,k)
+     &        )/Hz(i,j,k+1) 
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
 #   else
-            work(i,j,k)=2.*qdmw_nbq(i,j,k)
-     &                /(Hz(i,j,k)+Hz(i,j,k+1))
+            worknbq(i,j,k)=2.*(
+     &                qdmw_nbq(i,j,k)
+     &                )/(Hz(i,j,k)+Hz(i,j,k+1))
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
 #   endif
             enddo
           enddo
           k=N
           do j=0,Mm
             do i=0,Lm 
-            work(i,j,k)=2.*qdmw_nbq(i,j,k)/Hz(i,j,k)
+            worknbq(i,j,k)=2.*(
+     &                qdmw_nbq(i,j,k)
+     &                )/Hz(i,j,k)
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
             enddo
           enddo
      
@@ -2820,8 +2862,25 @@ c !$acc wait
 #  endif
 
       if (xios_field_is_active("w")) then
+# ifndef M3FAST
       call Wvlcty (tile, workr) 
-!     call xios_send_field("w",wz(:,:,:,nstp))
+      call xios_send_field("w",workr)
+# else        
+      worknbq=0.
+      do k=0,N
+      do j=0,Mm
+         do i=0,Lm
+            worknbq(i,j,k)=
+!          rw_int_nbq(i,j,k)
+     &         wz     (i,j,k,nstp)
+#  ifdef NHINT_WH
+     &        +wzh_nbq(i,j,k)
+#  endif
+         enddo
+      enddo
+      enddo
+      call xios_send_field("w",worknbq(:,:,0:N))
+# endif
       endif
 
 #  ifdef DIAGNOSTICS_EDDY

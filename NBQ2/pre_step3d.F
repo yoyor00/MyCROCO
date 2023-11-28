@@ -487,7 +487,6 @@
 #  endif /* PSOURCE_MASS */
 # endif /* TRACERS */
 
-!$acc kernels if(compute_on_device) default(present)
 ! !
 ! ! Continue computation of the auxiliary tracer field: auxiliary
 ! ! continuity equation (the same for all tracers): DC=1/Hz_half_new,
@@ -514,6 +513,7 @@
       endif
 
 # if defined M3FAST_COUPLING2D && defined M3FAST_C3D_UVSF
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=IstrU,Iend
            ru_int_nbq_2d(i,j)=0.

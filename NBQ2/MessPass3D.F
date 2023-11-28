@@ -324,10 +324,10 @@ c          endif
 
       if (EAST_INTER2) then
         call MPI_Wait (req(2),status(1,2),ierr)
-!$acc parallel loop if(compute_on_device) collapse(3) 
 #ifdef  BAND_DEBUG         
         checksum(:) = 0.
 #endif        
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
@@ -359,6 +359,7 @@ c          endif
 #endif        
       endif
       if (EAST_INTER .and. .not. EAST_INTER2) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
@@ -393,6 +394,7 @@ c            endif
         enddo
       endif
       if (SOUTH_INTER .and. .not. SOUTH_INTER2) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
        do k=1,nmax
           do i=imin,imax
             do jpts=1,Npts
@@ -454,6 +456,7 @@ c          endif
 #endif        
       endif
       if (NORTH_INTER .and. .not. NORTH_INTER2) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do i=imin,imax
             do jpts=1,Npts
@@ -483,6 +486,7 @@ c          endif
         print *,'NOT READY FOR OPENACC'
         stop
 #endif
+!$acc parallel loop if(compute_on_device) collapse(3) 
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -507,6 +511,7 @@ c          endif
       endif
       if (.not. CORNER_NE  .and.
      &   NORTH_INTER .and.  EAST_INTER ) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -532,6 +537,7 @@ c          endif
       endif
       if (.not. CORNER_SE .and.
      &   SOUTH_INTER .and.  EAST_INTER ) then
+!$acc parallel loop if(compute_on_device) collapse(3)
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -557,6 +563,7 @@ c          endif
       endif
       if (.not. CORNER_NW  .and.
      &   NORTH_INTER .and.  WEST_INTER ) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts

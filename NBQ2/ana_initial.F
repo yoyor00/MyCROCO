@@ -92,13 +92,14 @@
       real d(0:N)
 !$acc declare create(d)
       real zu0,zr0,zint,depth,dz,gam,del,hint,du,drho
-      real zdye10,zdye20
-      real hu0,hup0,htemp0,hsalt0,eps3D
+      real zdye10,zdye20,zdye30
+      real hu0,hup0,htemp0,hsalt0,hdye0,eps3D
 #endif
 #ifdef ISOLITON
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
+!$acc declare create(d)      
 #endif
 #ifdef TS_HADV_TEST 
       real cff,cff1,cx,cy,cmax,xx,yy
@@ -155,7 +156,7 @@
       endif
 # endif      
 
-!$acc kernels if(compute_on_device) default(present)
+!!!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Initial conditions for free surface and 2D momentum components.
@@ -164,6 +165,7 @@
       if (nrrec.eq.0) then
 !
 # if defined SOLITON
+!$acc kernels if(compute_on_device) default(present)
 #  ifdef AGRIF
         if (Agrif_Root()) then
 #  endif
@@ -204,17 +206,20 @@
             vbar(i,j,1)=2.*fac*y*(-2.*cff1*tanh(cff1*x))
      &                                    *exp(-0.5*y*y)
           enddo
+!$acc end kernels
         enddo
 
 # elif defined KH_INST 
+!$acc kernels if(compute_on_device) default(present)
         do j=JR_RANGE
           do i=IR_RANGE
             zeta(i,j,1)=0.
             zeta(i,j,2)=0.
           enddo
         enddo
-
+!$acc end kernels
 # elif defined THACKER
+!$acc kernels if(compute_on_device) default(present)
         ETA0=0.1
         depth=10.
         Lt=80.e3
@@ -229,10 +234,12 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
+!$acc end kernels
 
 # elif defined TANK 
         ETA0=0.001
         Lt=10.
+!$acc kernels if(compute_on_device) default(present)
         do j=JR_RANGE
           do i=IR_RANGE
 #  ifndef TANKY
@@ -247,6 +254,7 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
+!$acc end kernels
 # else
 !$acc kernels if(compute_on_device) default(present)
         do j=JR_RANGE
@@ -263,6 +271,7 @@
 # endif
 
       else  !  nrrec.ne.0.
+!$acc kernels if(compute_on_device) default(present)
 
 # if defined RIP && defined RIP_TOPO_2D
 !
@@ -297,6 +306,7 @@
           enddo
         enddo
 # endif /* RIP */
+!$acc end kernels        
 
       endif  !  nrrec.eq.0.
 
@@ -309,6 +319,7 @@
       if (nrrec.eq.0) then
 !
 #  if defined THACKER
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -319,8 +330,10 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #  elif defined TS_HADV_TEST
 #    ifdef DIAGONAL_ADV
+!$acc kernels if(compute_on_device) default(present)
         do j=Jstr,Jend
           do k=1,N
             do i=IstrU,Iend
@@ -335,10 +348,12 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif
 #    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
 
 # define psi work2d
+!$acc kernels if(compute_on_device) default(present)
         cff  = - xl / pi
         cff1 =   pi / xl
         do j=Jstr,Jend+1
@@ -347,11 +362,13 @@
      &                      * (sin(cff1*yp(i,j)))**2
           enddo
         enddo
+!$acc end kernels        
 
 #     if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_p2d_tile(Istr,Iend,Jstr,Jend,psi)
 #     endif
 
+!$acc kernels if(compute_on_device) default(present)
         cff  = pm(1,1)
         do k=1,N
           do j=Jstr,Jend
@@ -375,8 +392,10 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif
 # undef psi
+!$acc kernels if(compute_on_device) default(present)
        cmax = 0.D0
        do j=JstrV,Jend-1
          do i=IstrU,Iend-1
@@ -385,6 +404,7 @@
             cmax = MAX( cx+cy, cmax )
          enddo
        enddo
+!$acc end kernels        
        print*,'CFL_max = ',cmax
 
 #  elif defined KH_INST
@@ -395,9 +415,10 @@
 !
         du     = 1.0    ! Value to be replaced by the RunBuilder script. 
         hu0    = 10.
-        eps3D  = 0.   ! 3D perturbation
+        eps3D  = 0.2   ! 3D perturbation
 !
-!$acc loop private (hint,hintu)
+!$acc kernels if(compute_on_device) default(present)
+!!!$acc loop independent private ( depth, zu0, hup0, hint )        
         do j=JR_RANGE
           do i=IU_RANGE
             depth=h(i,j)
@@ -406,29 +427,36 @@
             hup0=0.15*depth  ! perturbation
             hint = 0.
             do k=1,N
-              u(i,j,k,1)  = -du*tanh((z_r(1,1,k)-zu0)/hu0)
+              u(i,j,k,1)  = -du !*tanh((z_r(1,1,k)-zu0)/hu0)
               u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
      &                       (-2.*tanh((z_r(1,1,k)-zu0)/hup0))*
      &                       (1. -tanh((z_r(1,1,k)-zu0)/hup0)**2.)
-     &                                      *sin(2.*2.*pi/xl*xp(i,j))
+     &                                      *sin(2.*1.*pi/xl*xr(i,j))
      &                       *(1.+eps3D*(sin( 2.*4.*pi/el*yr(i,j))))
-
+#if defined RVTK_DEBUG && defined OPENACC
+              u(i,j,k,1) = real(u(i,j,k,1), kind=4)
+#endif
               u(i,j,k,2)  = u(i,j,k,1)
               ubar(i,j,1) = ubar(i,j,1) + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
      &                                  * u(i,j,k,1)
               hint = hint               + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
             enddo
             ubar(i,j,1) = ubar(i,j,1) / hint
-            ubar(i,j,:) = ubar(i,j,1)
+            ubar(i,j,2) = ubar(i,j,1)
+            ubar(i,j,3) = ubar(i,j,1)
+            ubar(i,j,4) = ubar(i,j,1)            
+!            ubar(i,j,:) = ubar(i,j,1)
             do k=1,N
                 u(i,j,k,1) = u(i,j,k,1) - ubar(i,j,1) 
                 u(i,j,k,2) = u(i,j,k,1)
             enddo
-            ubar(i,j,1) = 0. 
-            ubar(i,j,:) = ubar(i,j,1)
+            ubar(i,j,1) = 0.
+            ubar(i,j,2) = ubar(i,j,1)
+            ubar(i,j,3) = ubar(i,j,1)
+            ubar(i,j,4) = ubar(i,j,1) 
+            !ubar(i,j,:) = ubar(i,j,1) !!! nvfortra n veriov 23.1-0 bug???
           enddo
         enddo
-
         do j=JR_RANGE
           do i=IR_RANGE
             depth=h(i,j)
@@ -441,8 +469,11 @@
 #   ifdef M3SLOW_W
               wz(i,j,k,1) = -0.01*du*hup0*
      &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                                  *2.*1.*pi/xl*cos(2.*1.*pi/xl*xp(i,j))
      &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
+#if defined RVTK_DEBUG && defined OPENACC
+              wz(i,j,k,1) = real(wz(i,j,k,1), kind=4)
+#endif
 
               wz(i,j,k,2) = wz(i,j,k,1)
 #   endif
@@ -452,11 +483,13 @@
 #   ifdef M3SLOW_W
         do j=JR_RANGE
           do i=IR_RANGE
-              wz(i,j,0,:)=0.
+              wz(i,j,0,1)=0.
+              wz(i,j,0,2)=0.
+              wz(i,j,0,3)=0.
           enddo
         enddo
 #   endif
-
+!$acc end kernels
 #  else
 !$acc kernels if(compute_on_device) default(present)
         do k=1,N
@@ -487,6 +520,7 @@
       else   ! nrrec.ne.0.
 
 #  if defined RIP && defined RIP_TOPO_2D
+!$acc kernels if(compute_on_device) default(present)
 ! !
 ! !  Add perturbation to restart field
 ! !
@@ -512,6 +546,7 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #  endif /* RIP */
 !
       endif   !nrrec.eq.0.
@@ -528,6 +563,7 @@
         cff1=(44.690/39.382)**2
         cff2=cff1*(rho0*800./g)*(5.0e-5/((42.689/44.690)**2))
 #    if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -537,9 +573,11 @@
              enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif /* TEMPERATURE */
 #  elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
 #    if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -548,9 +586,11 @@
              enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif /* TEMPERATURE */
 #  elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
 #    if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -559,9 +599,11 @@
              enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif /* TEMPERATURE */
 #  elif defined SINGLE_COLUMN && defined KATO_PHILIPS
 #    if defined TEMPERATURE        
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -571,8 +613,10 @@
              enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif /* TEMPERATURE */
 #  elif defined TS_HADV_TEST && defined DIAGONAL_ADV
+!$acc kernels if(compute_on_device) default(present)
         cff = 1./(50.*50.)
         do k=1,N
           do j=JR_RANGE
@@ -589,8 +633,10 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #  elif defined TS_HADV_TEST && ( defined SOLID_BODY_ROT || defined SOLID_BODY_PER )
-        cff = 1./(50.*50.)
+!$acc kernels if(compute_on_device) default(present)
+       cff = 1./(50.*50.)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -606,9 +652,11 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #  elif defined CANYON
 #   ifdef CANYON_STRAT
 #   if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -618,9 +666,11 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #   endif /* TEMPERATURE */
 #   else
 #   if defined TEMPERATURE        
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -629,9 +679,11 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #   endif /* TEMPERATURE */
 #   endif
 #  elif defined SHOREFACE || defined RIP
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=jstrR,jendR
             do i=istrR,iendR
@@ -646,8 +698,10 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 
 #  elif defined SWASH
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -659,8 +713,10 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 
 #  elif defined PLUME
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -676,9 +732,11 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 
 #  elif defined THACKER
 #   if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -688,10 +746,12 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #   endif /* TEMPERATURE */
 
 #  elif defined TANK
 #   if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -700,10 +760,12 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #   endif /* TEMPERATURE */
 #  elif defined MOVING_BATHY
         cff=((0.92461)**2)/g
 #    if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -715,8 +777,10 @@
             enddo
           enddo
         enddo 
+!$acc end kernels        
 #    endif /* TEMPERATURE */
 #  elif defined EQUATOR
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -731,12 +795,14 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 
 #  elif defined KH_INST
 ! !
 ! ! ! Traditional KH instability: 
 ! !
-! !   Configuration from Pelletier et al.: linear shear within mixed layer 
+! !   Configuration from Pelletier et al.: 
+! !             linear shear within mixed layer 
 ! !
 #   if defined TEMPERATURE
         htemp0 = 10.
@@ -746,6 +812,7 @@
 #   endif
         drho   = 1.2    ! Value to be replaced by script (originally 1.2)
 !
+!$acc kernels if(compute_on_device) default(present)
         do j=JR_RANGE
           do i=IR_RANGE
               depth=h(i,j)
@@ -755,25 +822,30 @@
               do k=1,N
 #    if defined TEMPERATURE
                  t(i,j,k,1,itemp) = 13.+ 1.*drho * (
-     &                              0.1*(z_r(1,1,k)-zr0)/depth +
-     &                              dtanh((z_r(1,1,k)-zr0)/htemp0) 
+     &                              2*(z_r(1,1,k)-zr0)/depth +
+     &                              0.*dtanh((z_r(1,1,k)-zr0)/htemp0) 
      &                                              )  / Tcoef
 !    &            +0.001*
 !!   &                       (tanh(abs(z_r(1,1,k)-zr0)/hup0))*
 !    &                       (1. -tanh((z_r(1,1,k)-zr0)/hup0)**2.)
 !    &                                      *sin(2.*2.*pi/xl*xr(i,j))
-
+#if defined RVTK_DEBUG && defined OPENACC
+                t(i,j,k,1,itemp) = real(t(i,j,k,1,itemp), kind=4) 
+#endif
                  t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
 #    endif /* TEMPERATURE */
 #    ifdef SALINITY
                  t(i,j,k,1,isalt) = 35. +0.05*drho* ( 1. -
      &                             (dtanh((z_r(1,1,k)-zr0)/hsalt0))**2 )
                  t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
+#if defined RVTK_DEBUG && defined OPENACC
+                t(i,j,k,1,isalt) = real(t(i,j,k,1,isalt), kind=4) 
+#endif
 #    endif
               enddo
            enddo
         enddo
-
+!$acc end kernels
 #  elif defined ISOLITON
 #   define HORN_PROFILE
 #   ifdef HORN_PROFILE
@@ -785,6 +857,7 @@
 ! !      Horn et al (2001); the conversion to temperature variations 
 ! !      through linear EOS gives unrealistic range
 ! !
+!$acc kernels if(compute_on_device) default(present)
         rho1_exp = R0 - 10.  ! * 0.7286 /2.
         rho2_exp = R0 + 10.  ! * 0.7286 /2.
         h1_exp = 0.7 * h(1,1)
@@ -804,8 +877,10 @@
               enddo
            enddo
         enddo
+!$acc end kernels
 #     endif /* TEMPERATURE */
 #    else
+!$acc kernels if(compute_on_device) default(present)
         depth=h(1,1)
         gam=0.9
         del=0.3
@@ -822,11 +897,13 @@
             enddo
           enddo
         enddo
+!$acc end kernels
 #     endif /* TEMPERATURE */
 #    endif /* HORN_PROFILE */ 
 
 #  elif defined GRAV_ADJ
 #    if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -844,11 +921,12 @@
             enddo
           enddo
         enddo
+!$acc end kernels
 #    endif /* TEMPERATURE */
 
 #  elif defined ACOUSTIC 
 #    if defined TEMPERATURE
-
+!$acc kernels if(compute_on_device) default(present)
         do j=JstrR,JendR
            do i=IstrR,IendR
               do k=1,N
@@ -857,9 +935,11 @@
               enddo
            enddo
         enddo
+!$acc end kernels
 #    endif /* TEMPERATURE */
 
 #  elif defined INNERSHELF
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -894,10 +974,12 @@
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #  elif defined  INTERNAL
         cff=((2.e-3)**2)/g
 #    if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -906,16 +988,17 @@
             enddo
           enddo
         enddo
+!$acc end kernels
 #    endif /* TEMPERATURE */
 
 #  elif defined IGW || defined MILES
-     !  cff=((1.e-4)**2)/g
-        cff=0.
+!$acc kernels if(compute_on_device) default(present)
+        cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-              depth = -z_r(i,j,k)*0.
+              depth = -z_r(i,j,k)         
 #   ifdef EXPERIMENT1
               if(depth.le.50.) then
                 sig = 25.0  
@@ -949,8 +1032,10 @@
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #  elif defined TUBE_AW
+!$acc kernels if(compute_on_device) default(present)
       dr=0.4*yr(1,JendR)
         do k=1,N
           do j=JR_RANGE
@@ -966,8 +1051,10 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #   elif defined  RIVER
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -982,8 +1069,10 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #  elif defined SEAMOUNT
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -998,8 +1087,10 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #  elif defined SHELFRONT
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1014,8 +1105,10 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #  elif  defined SED_TEST2 
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -1030,8 +1123,10 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #  elif defined UPWELLING
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1058,9 +1153,11 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 
 #  elif defined REGIONAL
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1087,9 +1184,11 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #  elif defined CONVECT
 ! "Convection" testcase:
+!$acc kernels if(compute_on_device) default(present)
         drho = 0.1    
         do k=1,N
           do j=JR_RANGE
@@ -1102,12 +1201,11 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
 #   ifdef NBQ_GRAV
               rhoi_nh(i,j,k)=13.-drho*(0.-z_r(i,j,k))/Tcoef
 #   endif
-!               rd=sqrt( (xr(i,j)-16.)**2/1.**2
-!     &                +(-z_r(i,j,k)-8.)**2)
-!               if (rd<2.) then
-               if (z_r(i,j,k).ge.-10.) then
-                  t(i,j,k,1,itemp)= t(i,j,k,1,itemp)
-     &                -(16.-8.)*drho/Tcoef*10.
+               rd=sqrt( (xr(i,j)-16.)**2/1.**2
+     &                +(-z_r(i,j,k)-8.)**2)
+               if (rd<2.) then
+                  t(i,j,k,1,itemp)=t(i,j,k,1,itemp)
+     &                -(16.-8.)*drho/Tcoef
     !&              13.-drho*(0.+16.)/Tcoef
                endif
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
@@ -1118,6 +1216,7 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #  elif defined JET
 !
@@ -1128,7 +1227,6 @@ c             if (k .le. 4) t(i,j,k,1,itemp)=EXP(-200.*((rr-dr)/dr)**2)
 !      and restart procedures
 !
       endif  ! nrrec.eq.0.
-!$acc end kernels
 !$acc update host( t(:,:,:,:,itemp) )
 !       print *,"ana_ini 1: sum(t)=",sum(t(:,:,:,:,itemp))
       
@@ -1165,6 +1263,7 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 #  else
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1179,6 +1278,7 @@ C$OMP BARRIER
             enddo
           enddo
         enddo
+!$acc end kernels
 #  endif
 !
 #  endif /*TRACERS */        
@@ -1217,11 +1317,12 @@ C$OMP BARRIER
 !  Initial conditions for passive tracer
 !--------------------------------------------------------------------
 !
-# ifdef PASSIVE_TRACER 
+# ifdef PASSIVE_TRACER2
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JR_RANGE
           do i=IR_RANGE
-            if (.not.got_tini(itpas)) then
+            if (.not.got_tini(itpas1)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
               if (h(i,j).lt.300) then
 !             if (z_r(i,j,k).lt.-800 .and.
@@ -1238,24 +1339,60 @@ C$OMP BARRIER
             endif
             t(i,j,k,2,itpas)=t(i,j,k,1,itpas)
 #  elif defined KH_INST
-              zdye10 = -0.65*depth
-              t(i,j,k,1,itpas1) =
-     &            + 35 +0.05* drho* (
-     &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hsalt0 ) )**2.
-!    &                     )/Scoef      
-     &                     )
+
+	hdye0 = 10.
+
+              zdye10 = -0.50*depth
+
+              t(i,j,k,1,itpas1) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hdye0 ) )**2.)
 !
                  t(i,j,k,2,itpas1) = t(i,j,k,1,itpas1)
 
-              zdye20 = -0.35*depth
-              t(i,j,k,1,itpas2) =
-!
-     &            + 35 +0.05* drho* (
-     &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hsalt0 ) )**2.
-!    &                     )/Scoef      
-     &                     )
+              t(i,j,k,1,itpas2) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hdye0 ) )**2.)
 !
                  t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
+
+              t(i,j,k,1,itpas3) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hdye0 ) )**2.)
+!
+                 t(i,j,k,2,itpas3) = t(i,j,k,1,itpas3)
+
+              zdye20 = -0.55*depth
+
+              t(i,j,k,1,itpas4) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hdye0 ) )**2.)
+!
+                 t(i,j,k,2,itpas4) = t(i,j,k,1,itpas4)
+
+              t(i,j,k,1,itpas5) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hdye0 ) )**2.)
+!
+                 t(i,j,k,2,itpas5) = t(i,j,k,1,itpas5)
+
+              t(i,j,k,1,itpas6) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hdye0 ) )**2.)
+!
+                 t(i,j,k,2,itpas6) = t(i,j,k,1,itpas6)
+
+	      zdye30 = -0.60*depth
+
+              t(i,j,k,1,itpas7) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye30)/hdye0 ) )**2.)
+!
+                 t(i,j,k,2,itpas7) = t(i,j,k,1,itpas7)
+
+              t(i,j,k,1,itpas8) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye30)/hdye0 ) )**2.)
+!
+                 t(i,j,k,2,itpas8) = t(i,j,k,1,itpas8)
+
+              t(i,j,k,1,itpas9) = + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye30)/hdye0 ) )**2.)
+!
+                 t(i,j,k,2,itpas9) = t(i,j,k,1,itpas9)
+
 #  elif defined CONVECT
 !           if (k.gt.N-5) then
 !             t(i,j,k,1,itpas)=1.
@@ -1274,6 +1411,7 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
+!$acc end kernels
 # endif /*PASSIVE_TRACER */
 !
 !----------------------------------------------------------------------
@@ -1281,6 +1419,7 @@ C$OMP BARRIER
 !----------------------------------------------------------------------
 !
 # ifdef SEDIMENT
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JR_RANGE
           do i=IR_RANGE
@@ -1295,6 +1434,7 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
+!$acc end kernels
 #  endif
 !
 !----------------------------------------------------------------------
@@ -1303,12 +1443,14 @@ C$OMP BARRIER
 !
 # ifdef SST_SKIN
 #  if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
       do j=JR_RANGE
         do i=IR_RANGE
           sst_skin(i,j)=t(i,j,N,1,itemp)
           dT_skin(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 #  endif /* TEMPERATURE */
 # endif
 !
@@ -1623,7 +1765,6 @@ C$OMP BARRIER
       enddo
 # endif /* BIOLOGY */
 #endif /* SOLVE3D */
-!$acc end kernels
 !
 !--------------------------------------------------------------------
 !  Exchange boundary information
