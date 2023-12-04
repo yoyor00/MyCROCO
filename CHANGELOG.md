@@ -22,14 +22,14 @@
   issue [#124](https://gitlab.inria.fr/croco-ocean/croco/-/issues/124)
 
 ### Fixed
-  - TKE : Changing the coefficient 'invG' used in the tridiagonal solving of 
-    the tke and gls variables in gls_mixing.F. Using the Patankar trick in the 
-    tridiagonal solving consists of moving the Bprod term from the forcing 
-    vector S to the diagonal D when the total forcing Sprod + Bprod is 
-    negative. Doing this change needs to add to the term Bprod a 'minus' sign 
-    and a division by the variable (tke for the tke loop and psi for the gls 
-    loop). This was done for the gls loop (invG = 1/psi in this case) but not 
-    for the tke loop (ingG = 1). Hence, invG is set to 1/tke in the tke loop.
+- TKE : Changing the coefficient 'invG' used in the tridiagonal solving of 
+  the tke and gls variables in gls_mixing.F. Using the Patankar trick in the 
+  tridiagonal solving consists of moving the Bprod term from the forcing 
+  vector S to the diagonal D when the total forcing Sprod + Bprod is 
+  negative. Doing this change needs to add to the term Bprod a 'minus' sign 
+  and a division by the variable (tke for the tke loop and psi for the gls 
+  loop). This was done for the gls loop (invG = 1/psi in this case) but not 
+  for the tke loop (ingG = 1). Hence, invG is set to 1/tke in the tke loop.
 
 - EDDY_DIAGS : fixed see issues: 
   [#107](https://gitlab.inria.fr/croco-ocean/croco/-/issues/107), 
@@ -42,6 +42,9 @@
   (thanks to ChangShui Xia )
 
 ### Changed
+
+- OUTPUT : rename Cs_r > Cs_rho, delete redundancy with sc_r and sc_w , see issue 
+  [#126](https://gitlab.inria.fr/croco-ocean/croco/-/issues/126) 
 
 ### Deprecated
 
