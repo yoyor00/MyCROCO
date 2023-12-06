@@ -2124,8 +2124,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
             
             indxObstvar = obst_nbvar + itrv
@@ -2146,8 +2146,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 2 * obst_nbvar + itrv
@@ -2168,8 +2168,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 3 * obst_nbvar + itrv
@@ -2190,8 +2190,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 4 * obst_nbvar + itrv
@@ -2212,8 +2212,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 5 * obst_nbvar + itrv
@@ -2234,8 +2234,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 6 * obst_nbvar + itrv
@@ -2256,8 +2256,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 7*obst_nbvar + itrv
@@ -2278,8 +2278,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 8 * obst_nbvar + itrv
@@ -2300,8 +2300,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 9 * obst_nbvar + itrv
@@ -2322,8 +2322,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 10*obst_nbvar + itrv
@@ -2344,8 +2344,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 11*obst_nbvar + itrv
@@ -2366,8 +2366,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 12*obst_nbvar + itrv
@@ -2388,8 +2388,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 13*obst_nbvar + itrv
@@ -2410,8 +2410,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 14*obst_nbvar + itrv
@@ -2432,8 +2432,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 15*obst_nbvar + itrv
@@ -2454,8 +2454,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 16*obst_nbvar + itrv
@@ -2476,8 +2476,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
 
@@ -2502,8 +2502,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 17*obst_nbvar + 3 + itrv
@@ -2524,8 +2524,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 17*obst_nbvar + 6 + itrv
@@ -2546,8 +2546,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 17*obst_nbvar + 9 + itrv
@@ -2568,8 +2568,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
          end do
 
@@ -2591,8 +2591,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 17*obst_nbvar + 14
@@ -2613,8 +2613,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
             indxObstvar = 17*obst_nbvar + 15
@@ -2635,8 +2635,8 @@
                 lvar=lenstr(vname(4,indx))
                 ierr=nf_put_att_text (ncid, vidObst(indxObstvar), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-                call nf_add_attribute(ncid, vidObst(indxObstvar),indx, 5,
-     &              NF_FOUT, ierr)
+                call nf_add_attribute(ncid, vidObst(indxObstvar),
+     &              vname(:,indx), 5, NF_FOUT, ierr)
             endif
 
 # endif /* OBSTRUCTION */
