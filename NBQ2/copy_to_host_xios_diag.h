@@ -205,282 +205,290 @@
 #  endif
 #ifdef OPENACC
 #endif
-      if (xios_field_is_active("time")) then
-!$acc update host("time") 
-      endif
+c       if (xios_field_is_active("time")) then
+c !$acc update host( time ) 
+c       endif
 # ifdef SOLVE3D
       if (xios_field_is_active("Cs_r")) then
-!$acc update host("Cs_r") 
+!$acc update host( Cs_r ) 
       endif
       if (xios_field_is_active("Cs_w")) then
-!$acc update host("Cs_w") 
+!$acc update host( Cs_w ) 
       endif
       if (xios_field_is_active("sc_r")) then
-!$acc update host("sc_r") 
+!$acc update host( sc_r ) 
       endif
       if (xios_field_is_active("sc_w")) then
-!$acc update host("sc_w") 
+!$acc update host( sc_w ) 
       endif
-      if (xios_field_is_active("hc")) then
-!$acc update host("hc") 
-      endif
-      if (xios_field_is_active("theta_s")) then
-!$acc update host("theta_s") 
-      endif
-      if (xios_field_is_active("theta_b")) then
-!$acc update host("theta_b") 
-      endif
-      if (xios_field_is_active("Tcline")) then
-!$acc update host("Tcline") 
-      endif
-      if (xios_field_is_active("Vtransform")) then
-!$acc update host("Vtransform") 
-      endif
+c       if (xios_field_is_active("hc")) then
+c !$acc update host( hc ) 
+c       endif
+c       if (xios_field_is_active("theta_s")) then
+c !$acc update host( theta_s ) 
+c       endif
+c       if (xios_field_is_active("theta_b")) then
+c !$acc update host( theta_b ) 
+c       endif
+c       if (xios_field_is_active("Tcline")) then
+c !$acc update host( Tcline ) 
+c       endif
+c       if (xios_field_is_active("Vtransform")) then
+c !$acc update host( Vtransform ) 
+c       endif
       if (xios_field_is_active("levels_rho")) then
-!$acc update host("levels_rho") 
+!$acc update host( z_r ) 
       endif
       if (xios_field_is_active("levels_w")) then
-!$acc update host("levels_w") 
+!$acc update host( z_w ) 
       endif
-      if (xios_field_is_active("levels_u")) then
-!$acc update host("levels_u") 
-      endif
-      if (xios_field_is_active("levels_v")) then
-!$acc update host("levels_v") 
-      endif
+c       if (xios_field_is_active("levels_u")) then
+c !$acc update host( levels_u ) 
+c       endif
+c       if (xios_field_is_active("levels_v")) then
+c !$acc update host( levels_v ) 
+c       endif
 # endif
       if (xios_field_is_active("h")) then
-!$acc update host("h") 
+!$acc update host( h ) 
       endif
       if (xios_field_is_active("f")) then
-!$acc update host("f") 
+!$acc update host( f ) 
       endif
       if (xios_field_is_active("pm")) then
-!$acc update host("pm") 
+!$acc update host( pm ) 
       endif
       if (xios_field_is_active("pn")) then
-!$acc update host("pn") 
+!$acc update host( pn ) 
       endif
 # ifdef SPHERICAL
       if (xios_field_is_active("lon_rho")) then
-!$acc update host("lon_rho") 
+!$acc update host( lonr ) 
       endif
       if (xios_field_is_active("lat_rho")) then
-!$acc update host("lat_rho") 
+!$acc update host( latr ) 
       endif
       if (xios_field_is_active("lon_u")) then
-!$acc update host("lon_u") 
+!$acc update host( lonu ) 
       endif
       if (xios_field_is_active("lat_u")) then
-!$acc update host("lat_u") 
+!$acc update host( latu ) 
       endif
       if (xios_field_is_active("lon_v")) then
-!$acc update host("lon_v") 
+!$acc update host( lonv ) 
       endif
       if (xios_field_is_active("lat_v")) then
-!$acc update host("lat_v") 
+!$acc update host( latv ) 
       endif
 # else  
       if (xios_field_is_active("x_rho")) then
-!$acc update host("x_rho") 
+!$acc update host( xr ) 
       endif
       if (xios_field_is_active("y_rho")) then
-!$acc update host("y_rho") 
+!$acc update host( yr ) 
       endif
 # endif
 # ifdef CURVGRID
       if (xios_field_is_active("angle")) then
-!$acc update host("angle") 
+!$acc update host( angler ) 
       endif
 # endif
 # ifdef MASKING
       if (xios_field_is_active("mask_rho")) then
-!$acc update host("mask_rho") 
+!$acc update host( rmask ) 
       endif
 # endif
 # ifdef WET_DRY
       if (xios_field_is_active("Dcrit")) then
-!$acc update host("Dcrit") 
+!$acc update host( Dcrit ) 
       endif
 # endif
       if (xios_field_is_active("zeta")) then
-!$acc update host("zeta") 
+!$acc update host( zeta ) 
       endif
       if (xios_field_is_active("ubar")) then
-!$acc update host("ubar") 
+!$acc update host( ubar ) 
       endif
       if (xios_field_is_active("vbar")) then
-!$acc update host("vbar") 
+!$acc update host( vbar ) 
       endif
 # ifdef MORPHODYN
       if (xios_field_is_active("hmorph")) then
-!$acc update host("hmorph") 
+!$acc update host( hmorph ) 
       endif
 # endif
 # ifdef WET_DRY
       if (xios_field_is_active("rmask_wet")) then
-!$acc update host("rmask_wet") 
+!$acc update host( rmask_wet ) 
       endif
       if (xios_field_is_active("umask_wet")) then
-!$acc update host("umask_wet") 
+!$acc update host( umask_wet ) 
       endif
       if (xios_field_is_active("vmask_wet")) then
-!$acc update host("vmask_wet") 
+!$acc update host( vmask_wet ) 
       endif
 #endif
       if (xios_field_is_active("bustr")) then
-!$acc update host("bustr") 
+!$acc update host( bustr ) 
       endif
       if (xios_field_is_active("bvstr")) then
-!$acc update host("bvstr") 
+!$acc update host( bvstr ) 
       endif
       if (xios_field_is_active("bostr")) then
-!$acc update host("bostr") 
+!$acc update host( bustr, bvstr ) 
       endif
       if (xios_field_is_active("wstr")) then
-!$acc update host("wstr") 
+!$acc update host( sustr, svstr ) 
       endif
       if (xios_field_is_active("sustr")) then
-!$acc update host("sustr") 
+!$acc update host( sustr ) 
       endif
       if (xios_field_is_active("svstr")) then
-!$acc update host("svstr") 
+!$acc update host( svstr ) 
       endif
 # ifdef BULK_SM_UPDATE
       if (xios_field_is_active("uwnd")) then
-!$acc update host("uwnd") 
+!$acc update host( uwnd ) 
       endif
       if (xios_field_is_active("vwnd")) then
-!$acc update host("vwnd") 
+!$acc update host( vwnd ) 
       endif
 # endif
 # ifdef WKB_WWAVE
       if (xios_field_is_active("hrm")) then
-!$acc update host("hrm") 
+!$acc update host( hrm ) 
       endif
       if (xios_field_is_active("frq")) then
-!$acc update host("frq") 
+!$acc update host( frq ) 
       endif
       if (xios_field_is_active("wac")) then
-!$acc update host("wac") 
+!$acc update host( wac ) 
       endif
       if (xios_field_is_active("wkx")) then
-!$acc update host("wkx") 
+!$acc update host( wkx ) 
       endif
       if (xios_field_is_active("wke")) then
-!$acc update host("wke") 
+!$acc update host( wke ) 
       endif
       if (xios_field_is_active("epb")) then
-!$acc update host("epb") 
+!$acc update host( epb ) 
       endif
       if (xios_field_is_active("epd")) then
-!$acc update host("epd") 
+!$acc update host( epd ) 
       endif
 #  ifdef WAVE_ROLLER
       if (xios_field_is_active("war")) then
-!$acc update host("war") 
+!$acc update host( war ) 
       endif
       if (xios_field_is_active("epr")) then
-!$acc update host("epr") 
+!$acc update host( epr ) 
       endif
 #  endif
 # endif
 # ifdef MRL_WCI
       if (xios_field_is_active("sup")) then
-!$acc update host("sup") 
+!$acc update host( sup ) 
       endif
       if (xios_field_is_active("ust2d")) then
-!$acc update host("ust2d") 
+!$acc update host( ust2d ) 
       endif
       if (xios_field_is_active("vst2d")) then
-!$acc update host("vst2d") 
+!$acc update host( vst2d ) 
       endif
 #  ifdef SOLVE3D
       if (xios_field_is_active("ust")) then
-!$acc update host("ust") 
+!$acc update host( ust ) 
       endif
       if (xios_field_is_active("vst")) then
-!$acc update host("vst") 
+!$acc update host( vst ) 
       endif
       if (xios_field_is_active("wst")) then
-!$acc update host("wst") 
+!$acc update host( wst ) 
       endif
       if (xios_field_is_active("Akb")) then
-!$acc update host("Akb") 
+!$acc update host( Akb ) 
       endif
       if (xios_field_is_active("Akw")) then
-!$acc update host("Akw") 
+!$acc update host( Akw ) 
       endif
       if (xios_field_is_active("kvf")) then
-!$acc update host("kvf") 
+!$acc update host( kvf ) 
       endif
       if (xios_field_is_active("calP")) then
-!$acc update host("calP") 
+!$acc update host( calP ) 
       endif
       if (xios_field_is_active("Kapsrf")) then
-!$acc update host("Kapsrf") 
+!$acc update host( Kapsrf ) 
       endif
 #  endif
 # endif
 # ifdef OW_COUPLING
       if (xios_field_is_active("hrm")) then
-!$acc update host("hrm") 
+!$acc update host( hrm ) 
       endif
       if (xios_field_is_active("frq")) then
-!$acc update host("frq") 
+!$acc update host( frq ) 
       endif
       if (xios_field_is_active("wkx")) then
-!$acc update host("wkx") 
+!$acc update host( wkx ) 
       endif
       if (xios_field_is_active("wke")) then
-!$acc update host("wke") 
+!$acc update host( wke ) 
       endif
       if (xios_field_is_active("epb")) then
-!$acc update host("epb") 
+!$acc update host( epb ) 
       endif
       if (xios_field_is_active("epd")) then
-!$acc update host("epd") 
+!$acc update host( epd ) 
       endif
 #  endif
 #  ifdef SOLVE3D
       if (xios_field_is_active("u")) then
-!$acc update host("u") 
+!$acc update host( u ) 
       endif
       if (xios_field_is_active("v")) then
-!$acc update host("v") 
+!$acc update host( v ) 
       endif
       if (xios_field_is_active("u_surf")) then
-!$acc update host("u_surf") 
+!$acc update host( u(:,:,N,nstp) ) 
       endif
       if (xios_field_is_active("v_surf")) then
-!$acc update host("v_surf") 
+!$acc update host( v(:,:,N,nstp) ) 
       endif
 # ifdef TEMPERATURE
       if (xios_field_is_active("temp")) then
-!$acc update host("temp") 
+!$acc update host( t(:,:,:,nstp,itemp) ) 
       endif
       if (xios_field_is_active("temp_surf")) then
-!$acc update host("temp_surf") 
+!$acc update host( t(:,:,N,nstp,itemp) ) 
       endif
 # endif
 # ifdef SALINITY
       if (xios_field_is_active("salt")) then
-!$acc update host("salt") 
+!$acc update host( t(:,:,:,nstp,isalt) ) 
       endif
       if (xios_field_is_active("salt_surf")) then
-!$acc update host("salt_surf") 
+!$acc update host( t(:,:,N,nstp,isalt) ) 
       endif
 # endif /* SALINITY */
       if (xios_field_is_active("rho")) then
-!$acc update host("rho") 
+!$acc update host( rho ) 
       endif
 # if defined ANA_VMIX || defined BVF_MIXING 
       if (xios_field_is_active("bvf")) then
-!$acc update host("bvf") 
+!$acc update host( bvf ) 
       endif
 # endif
       if (xios_field_is_active("omega")) then
-!$acc update host("omega") 
+!$acc update host( We
+#  ifdef VADV_ADAPT_IMP
+!$acc&  , Wi
+#  endif
+#  ifdef NBQ_MASS
+!$acc&  , /rho_nbq_avg1
+#  endif
+!$acc& )
+!
       endif
 #  ifdef VADV_ADAPT_IMP
 #  endif                  
@@ -488,88 +496,88 @@
 #  endif
 #  ifdef M3FAST
       if (xios_field_is_active("w_nbq")) then
-!$acc update host("qdmw_nbq") 
+!$acc update host( qdmw_nbq ) 
       endif
 #   ifndef M3FAST_SEDLAYERS
 #   else
 #   endif
       if (xios_field_is_active("rho_nbq")) then
-!$acc update host("rho_nbq") 
+!$acc update host( rho_nbq ) 
       endif
 #  endif
       if (xios_field_is_active("w")) then
-!$acc update host("w") 
+!$acc update host( wz ) 
       endif
 #  ifdef DIAGNOSTICS_EDDY
       if (xios_field_is_active("uu")) then
-!$acc update host("uu") 
+!$acc update host( uu ) 
       endif
       if (xios_field_is_active("uv")) then
-!$acc update host("uv") 
+!$acc update host( uv ) 
       endif
       if (xios_field_is_active("vv")) then
-!$acc update host("vv") 
+!$acc update host( vv ) 
       endif
       if (xios_field_is_active("ub")) then
-!$acc update host("ub") 
+!$acc update host( ub ) 
       endif
       if (xios_field_is_active("vb")) then
-!$acc update host("vb") 
+!$acc update host( vb ) 
       endif
       if (xios_field_is_active("wb")) then
-!$acc update host("wb") 
+!$acc update host( wb ) 
       endif
       if (xios_field_is_active("uw")) then
-!$acc update host("uw") 
+!$acc update host( uw ) 
       endif
       if (xios_field_is_active("vw")) then
-!$acc update host("vw") 
+!$acc update host( vw ) 
       endif
       if (xios_field_is_active("usustr")) then
-!$acc update host("usustr") 
+!$acc update host( usustr ) 
       endif
       if (xios_field_is_active("vsvstr")) then
-!$acc update host("vsvstr") 
+!$acc update host( vsvstr ) 
       endif
       if (xios_field_is_active("ugsustr")) then
-!$acc update host("ugsustr") 
+!$acc update host( ugsustr ) 
       endif
       if (xios_field_is_active("vgsvstr")) then
-!$acc update host("vgsvstr") 
+!$acc update host( vgsvstr ) 
       endif
       if (xios_field_is_active("ubustr")) then
-!$acc update host("ubustr") 
+!$acc update host( ubustr ) 
       endif
       if (xios_field_is_active("vbvstr")) then
-!$acc update host("vbvstr") 
+!$acc update host( vbvstr ) 
       endif
       if (xios_field_is_active("uT")) then
-!$acc update host("uT") 
+!$acc update host( uT ) 
       endif
       if (xios_field_is_active("vT")) then
-!$acc update host("vT") 
+!$acc update host( vT ) 
       endif
       if (xios_field_is_active("wT")) then
-!$acc update host("wT") 
+!$acc update host( wT ) 
       endif
       if (xios_field_is_active("uS")) then
-!$acc update host("uS") 
+!$acc update host( uS ) 
       endif
       if (xios_field_is_active("vS")) then
-!$acc update host("vS") 
+!$acc update host( vS ) 
       endif
       if (xios_field_is_active("wS")) then
-!$acc update host("wS") 
+!$acc update host( wS ) 
       endif
 #  endif
 #  ifdef VIS_COEF_3D
       if (xios_field_is_active("visc3d")) then
-!$acc update host("visc3d") 
+!$acc update host( visc3d ) 
       endif
 #  endif
 #  ifdef DIF_COEF_3D
       if (xios_field_is_active("diff3d")) then
-!$acc update host("diff3d") 
+!$acc update host( diff3d ) 
       endif
 #   ifdef TS_DIF2
 #    ifdef TS_DIF_SMAGO
@@ -580,357 +588,357 @@
 #   endif
 #  endif
       if (xios_field_is_active("AKv")) then
-!$acc update host("AKv") 
+!$acc update host( AKv ) 
       endif
 #  ifdef TEMPERATURE
       if (xios_field_is_active("AKt")) then
-!$acc update host("AKt") 
+!$acc update host( Akt(:,:,:,itemp) ) 
       endif
 #  endif
 #  ifdef SALINITY      
       if (xios_field_is_active("AKs")) then
-!$acc update host("AKs") 
+!$acc update host( Akt(:,:,:,isalt) ) 
       endif
 #  endif
 #  ifdef GLS_MIXING
-      if (xios_field_is_active("AKk")) then
-!$acc update host("AKk") 
-      endif
-      if (xios_field_is_active("AKp")) then
-!$acc update host("AKp") 
-      endif
+c       if (xios_field_is_active("AKk")) then
+c !$acc update host( AKk ) 
+c       endif
+c       if (xios_field_is_active("AKp")) then
+c !$acc update host( AKp ) 
+c       endif
 #  endif
 #  ifdef LMD_SKPP
       if (xios_field_is_active("hbl")) then
-!$acc update host("hbl") 
+!$acc update host( hbl ) 
       endif
 #   ifdef LMD_SKPP2005
 #   else
 #   endif
 #  elif defined GLS_MIXING
       if (xios_field_is_active("hbl")) then
-!$acc update host("hbl") 
+!$acc update host( hbl ) 
       endif
 #  endif
 #  ifdef LMD_BKPP
       if (xios_field_is_active("hbbl")) then
-!$acc update host("hbbl") 
+!$acc update host( hbbl ) 
       endif
 #  endif
 #  ifdef GLS_MIXING
       if (xios_field_is_active("tke")) then
-!$acc update host("tke") 
+!$acc update host(  trb(:,:,:,nstp,itke)) 
       endif
       if (xios_field_is_active("gls")) then
-!$acc update host("gls") 
+!$acc update host( trb(:,:,:,nstp,igls) ) 
       endif
       if (xios_field_is_active("Lscale")) then
-!$acc update host("Lscale") 
+!$acc update host( Lscale ) 
       endif
 #  endif
 #  ifdef TEMPERATURE
-      if (xios_field_is_active("shflx")) then
-!$acc update host("shflx") 
-      endif
+c       if (xios_field_is_active("shflx")) then
+c !$acc update host( shflx ) 
+c       endif
 #  endif      
 #  ifdef SALINITY    
-      if (xios_field_is_active("swflx")) then
-!$acc update host("swflx") 
-      endif
+c       if (xios_field_is_active("swflx")) then
+c !$acc update host( swflx ) 
+c       endif
 #  endif
 #  ifdef BULK_FLUX
       if (xios_field_is_active("radsw")) then
-!$acc update host("radsw") 
+!$acc update host( radsw ) 
       endif
 #  else 
       if (xios_field_is_active("swrad")) then
-!$acc update host("swrad") 
+!$acc update host( srflx ) 
       endif
 #  endif
 #  ifdef BULK_FLUX
       if (xios_field_is_active("shflx_rlw")) then
-!$acc update host("shflx_rlw") 
+!$acc update host( shflx_rlw ) 
       endif
       if (xios_field_is_active("shflx_lat")) then
-!$acc update host("shflx_lat") 
+!$acc update host( shflx_lat ) 
       endif
       if (xios_field_is_active("shflx_sen")) then
-!$acc update host("shflx_sen") 
+!$acc update host( shflx_sen ) 
       endif
 #  endif
 #  ifdef SST_SKIN
       if (xios_field_is_active("sst_skin")) then
-!$acc update host("sst_skin") 
+!$acc update host( sst_skin ) 
       endif
 #  endif
 #  ifdef DIAGNOSTICS_UV
       if (xios_field_is_active("u_rate")) then
-!$acc update host("u_rate") 
+!$acc update host( u_rate ) 
       endif
       if (xios_field_is_active("u_adv")) then
-!$acc update host("u_adv") 
+!$acc update host( u_adv ) 
       endif
       if (xios_field_is_active("u_Cor")) then
-!$acc update host("u_Cor") 
+!$acc update host( u_Cor ) 
       endif
       if (xios_field_is_active("u_Prsgrd")) then
-!$acc update host("u_Prsgrd") 
+!$acc update host( u_Prsgrd ) 
       endif
       if (xios_field_is_active("u_Hmix")) then
-!$acc update host("u_Hmix") 
+!$acc update host( u_Hmix ) 
       endif
       if (xios_field_is_active("u_Hdiff")) then
-!$acc update host("u_Hdiff") 
+!$acc update host( u_Hdiff ) 
       endif
       if (xios_field_is_active("u_Vmix")) then
-!$acc update host("u_Vmix") 
+!$acc update host( u_Vmix ) 
       endif
       if (xios_field_is_active("u_Vmix2")) then
-!$acc update host("u_Vmix2") 
+!$acc update host( u_Vmix2 ) 
       endif
 #  ifdef DIAGNOSTICS_BARO
       if (xios_field_is_active("u_Baro")) then
-!$acc update host("u_Baro") 
+!$acc update host( u_Baro ) 
       endif
 #  endif
 #  ifdef M3FAST
       if (xios_field_is_active("u_fast")) then
-!$acc update host("u_fast") 
+!$acc update host( u_fast ) 
       endif
 #  endif
 #  ifdef MRL_WCI
       if (xios_field_is_active("u_vf")) then
-!$acc update host("u_vf") 
+!$acc update host( u_vf ) 
       endif
       if (xios_field_is_active("u_brk")) then
-!$acc update host("u_brk") 
+!$acc update host( u_brk ) 
       endif
       if (xios_field_is_active("u_StCo")) then
-!$acc update host("u_StCo") 
+!$acc update host( u_StCo ) 
       endif
       if (xios_field_is_active("u_Vvf")) then
-!$acc update host("u_Vvf") 
+!$acc update host( u_Vvf ) 
       endif
       if (xios_field_is_active("u_Prscrt")) then
-!$acc update host("u_Prscrt") 
+!$acc update host( u_Prscrt ) 
       endif
       if (xios_field_is_active("u_sbk")) then
-!$acc update host("u_sbk") 
+!$acc update host( u_sbk ) 
       endif
       if (xios_field_is_active("u_bwf")) then
-!$acc update host("u_bwf") 
+!$acc update host( u_bwf ) 
       endif
       if (xios_field_is_active("u_frc")) then
-!$acc update host("u_frc") 
+!$acc update host( u_frc ) 
       endif
 #  endif
       if (xios_field_is_active("v_rate")) then
-!$acc update host("v_rate") 
+!$acc update host( v_rate ) 
       endif
       if (xios_field_is_active("v_adv")) then
-!$acc update host("v_adv") 
+!$acc update host( v_adv ) 
       endif
       if (xios_field_is_active("v_Cor")) then
-!$acc update host("v_Cor") 
+!$acc update host( v_Cor ) 
       endif
       if (xios_field_is_active("v_Prsgrd")) then
-!$acc update host("v_Prsgrd") 
+!$acc update host( v_Prsgrd ) 
       endif
       if (xios_field_is_active("v_Hmix")) then
-!$acc update host("v_Hmix") 
+!$acc update host( v_Hmix ) 
       endif
       if (xios_field_is_active("v_Hdiff")) then
-!$acc update host("v_Hdiff") 
+!$acc update host( v_Hdiff ) 
       endif
       if (xios_field_is_active("v_Vmix")) then
-!$acc update host("v_Vmix") 
+!$acc update host( v_Vmix ) 
       endif
       if (xios_field_is_active("v_Vmix2")) then
-!$acc update host("v_Vmix2") 
+!$acc update host( v_Vmix2 ) 
       endif
 #  ifdef DIAGNOSTICS_BARO
       if (xios_field_is_active("v_Baro")) then
-!$acc update host("v_Baro") 
+!$acc update host( v_Baro ) 
       endif
 #  endif
 #  ifdef M3FAST
       if (xios_field_is_active("v_fast")) then
-!$acc update host("v_fast") 
+!$acc update host( v_fast ) 
       endif
 #  endif
 #  ifdef MRL_WCI
       if (xios_field_is_active("v_vf")) then
-!$acc update host("v_vf") 
+!$acc update host( v_vf ) 
       endif
       if (xios_field_is_active("v_brk")) then
-!$acc update host("v_brk") 
+!$acc update host( v_brk ) 
       endif
       if (xios_field_is_active("v_StCo")) then
-!$acc update host("v_StCo") 
+!$acc update host( v_StCo ) 
       endif
       if (xios_field_is_active("v_Vvf")) then
-!$acc update host("v_Vvf") 
+!$acc update host( v_Vvf ) 
       endif
       if (xios_field_is_active("v_Prscrt")) then
-!$acc update host("v_Prscrt") 
+!$acc update host( v_Prscrt ) 
       endif
       if (xios_field_is_active("v_sbk")) then
-!$acc update host("v_sbk") 
+!$acc update host( v_sbk ) 
       endif
       if (xios_field_is_active("v_bwf")) then
-!$acc update host("v_bwf") 
+!$acc update host( v_bwf ) 
       endif
       if (xios_field_is_active("v_frc")) then
-!$acc update host("v_frc") 
+!$acc update host( v_frc ) 
       endif
 #  endif
 #  endif
 #  ifdef DIAGNOSTICS_TS
 #  ifdef TEMPERATURE
       if (xios_field_is_active("T_rate")) then
-!$acc update host("T_rate") 
+!$acc update host( T_rate ) 
       endif
       if (xios_field_is_active("T_adv")) then
-!$acc update host("T_adv") 
+!$acc update host( T_adv ) 
       endif
       if (xios_field_is_active("T_Hmix")) then
-!$acc update host("T_Hmix") 
+!$acc update host( T_Hmix ) 
       endif
       if (xios_field_is_active("T_Vmix")) then
-!$acc update host("T_Vmix") 
+!$acc update host( T_Vmix ) 
       endif
       if (xios_field_is_active("T_Forc")) then
-!$acc update host("T_Forc") 
+!$acc update host( T_Forc ) 
       endif
 #  endif          
 #  ifdef SALINITY
       if (xios_field_is_active("S_rate")) then
-!$acc update host("S_rate") 
+!$acc update host( S_rate ) 
       endif
       if (xios_field_is_active("S_adv")) then
-!$acc update host("S_adv") 
+!$acc update host( S_adv ) 
       endif
       if (xios_field_is_active("S_Hmix")) then
-!$acc update host("S_Hmix") 
+!$acc update host( S_Hmix ) 
       endif
       if (xios_field_is_active("S_Vmix")) then
-!$acc update host("S_Vmix") 
+!$acc update host( S_Vmix ) 
       endif
       if (xios_field_is_active("S_Forc")) then
-!$acc update host("S_Forc") 
+!$acc update host( S_Forc ) 
       endif
 #  endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
       if (xios_field_is_active("vrtrate")) then
-!$acc update host("vrtrate") 
+!$acc update host( vrtrate ) 
       endif
       if (xios_field_is_active("vrtadv")) then
-!$acc update host("vrtadv") 
+!$acc update host( vrtadv ) 
       endif
       if (xios_field_is_active("vrtCor")) then
-!$acc update host("vrtCor") 
+!$acc update host( vrtCor ) 
       endif
       if (xios_field_is_active("vrtPrsgrd")) then
-!$acc update host("vrtPrsgrd") 
+!$acc update host( vrtPrsgrd ) 
       endif
       if (xios_field_is_active("vrtHmix")) then
-!$acc update host("vrtHmix") 
+!$acc update host( vrtHmix ) 
       endif
       if (xios_field_is_active("vrtHdiff")) then
-!$acc update host("vrtHdiff") 
+!$acc update host( vrtHdiff ) 
       endif
       if (xios_field_is_active("vrtVmix")) then
-!$acc update host("vrtVmix") 
+!$acc update host( vrtVmix ) 
       endif
       if (xios_field_is_active("vrtVmix2")) then
-!$acc update host("vrtVmix2") 
+!$acc update host( vrtVmix2 ) 
       endif
 #  ifdef DIAGNOSTICS_BARO
       if (xios_field_is_active("vrtBaro")) then
-!$acc update host("vrtBaro") 
+!$acc update host( vrtBaro ) 
       endif
 #  endif
       if (xios_field_is_active("vrtDrag")) then
-!$acc update host("vrtDrag") 
+!$acc update host( vrtDrag ) 
       endif
       if (xios_field_is_active("vrtWind")) then
-!$acc update host("vrtWind") 
+!$acc update host( vrtWind ) 
       endif
 #  ifdef M3FAST
       if (xios_field_is_active("vrtfast")) then
-!$acc update host("vrtfast") 
+!$acc update host( vrtfast ) 
       endif
 #  endif
 #  endif
 #  ifdef DIAGNOSTICS_EK
       if (xios_field_is_active("ekrate")) then
-!$acc update host("ekrate") 
+!$acc update host( ekrate ) 
       endif
       if (xios_field_is_active("ekadv")) then
-!$acc update host("ekadv") 
+!$acc update host( ekadv ) 
       endif
       if (xios_field_is_active("ekCor")) then
-!$acc update host("ekCor") 
+!$acc update host( ekCor ) 
       endif
       if (xios_field_is_active("ekPrsgrd")) then
-!$acc update host("ekPrsgrd") 
+!$acc update host( ekPrsgrd ) 
       endif
       if (xios_field_is_active("ekHmix")) then
-!$acc update host("ekHmix") 
+!$acc update host( ekHmix ) 
       endif
       if (xios_field_is_active("ekHdiff")) then
-!$acc update host("ekHdiff") 
+!$acc update host( ekHdiff ) 
       endif
       if (xios_field_is_active("ekVmix")) then
-!$acc update host("ekVmix") 
+!$acc update host( ekVmix ) 
       endif
       if (xios_field_is_active("ekVmix2")) then
-!$acc update host("ekVmix2") 
+!$acc update host( ekVmix2 ) 
       endif
 #  ifdef DIAGNOSTICS_BARO
       if (xios_field_is_active("ekBaro")) then
-!$acc update host("ekBaro") 
+!$acc update host( ekBaro ) 
       endif
 #  endif
       if (xios_field_is_active("ekvol")) then
-!$acc update host("ekvol") 
+!$acc update host( ekvol ) 
       endif
       if (xios_field_is_active("ekDrag")) then
-!$acc update host("ekDrag") 
+!$acc update host( ekDrag ) 
       endif
       if (xios_field_is_active("ekWind")) then
-!$acc update host("ekWind") 
+!$acc update host( ekWind ) 
       endif
 #  ifdef M3FAST
       if (xios_field_is_active("ekfast")) then
-!$acc update host("ekfast") 
+!$acc update host( ekfast ) 
       endif
 #  endif
 #  endif
 # ifdef DIAGNOSTICS_PV
       if (xios_field_is_active("u_rhs")) then
-!$acc update host("u_rhs") 
+!$acc update host( u_rhs ) 
       endif
       if (xios_field_is_active("v_rhs")) then
-!$acc update host("v_rhs") 
+!$acc update host( v_rhs ) 
       endif
 # ifdef TEMPERATURE          
       if (xios_field_is_active("T_rhs")) then
-!$acc update host("T_rhs") 
+!$acc update host( T_rhs ) 
       endif
 #  endif
 #  ifdef SALINITY
       if (xios_field_is_active("S_rhs")) then
-!$acc update host("S_rhs") 
+!$acc update host( S_rhs ) 
       endif
 #  endif
 # ifdef DIAGNOSTICS_PV_FULL
       if (xios_field_is_active("u_vmix_trans")) then
-!$acc update host("u_vmix_trans") 
+!$acc update host( u_vmix_trans ) 
       endif
       if (xios_field_is_active("v_vmix_trans")) then
-!$acc update host("v_vmix_trans") 
+!$acc update host( v_vmix_trans ) 
       endif
 #  endif
 #  endif
@@ -938,105 +946,105 @@
 #   if defined PISCES
 #   else
       if (xios_field_is_active("hel")) then
-!$acc update host("hel") 
+!$acc update host( hel ) 
       endif
 #   if (defined BIO_NChlPZD ||  defined BIO_N2ChlPZD2)
       if (xios_field_is_active("theta")) then
-!$acc update host("theta") 
+!$acc update host( theta ) 
       endif
 #    ifdef OXYGEN
       if (xios_field_is_active("U10")) then
-!$acc update host("U10") 
+!$acc update host( U10 ) 
       endif
       if (xios_field_is_active("KvO2")) then
-!$acc update host("KvO2") 
+!$acc update host( KvO2 ) 
       endif
       if (xios_field_is_active("O2sat")) then
-!$acc update host("O2sat") 
+!$acc update host( O2sat ) 
       endif
 #    endif /* OXYGEN */
 #   elif defined BIO_BioEBUS 
       if (xios_field_is_active("AOU")) then
-!$acc update host("AOU") 
+!$acc update host( AOU ) 
       endif
       if (xios_field_is_active("wind10")) then
-!$acc update host("wind10") 
+!$acc update host( wind10 ) 
       endif
 #   endif
 #   endif
 #  endif /* BIOLOGY */
 #  ifdef SEDIMENT
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active("bed_thick")) then
-!$acc update host("bed_thick") 
+!$acc update host( bed_thick ) 
       endif
       if (xios_field_is_active("bed_poros")) then
-!$acc update host("bed_poros") 
+!$acc update host( bed_poros ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
 #   ifdef SUSPLOAD
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
 #   endif
 #   ifdef BEDLOAD
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
 #   endif
 #  endif /* SEDIMENT */
@@ -1045,68 +1053,68 @@
 #else
 #endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active("tauskin")) then
-!$acc update host("tauskin") 
+!$acc update host( tauskin ) 
       endif
 # ifdef WAVE_OFFLINE
       if (xios_field_is_active("tauskin_c")) then
-!$acc update host("tauskin_c") 
+!$acc update host( tauskin_c ) 
       endif
       if (xios_field_is_active("tauskin_w")) then
-!$acc update host("tauskin_w") 
+!$acc update host( tauskin_w ) 
       endif
 # endif
       if (xios_field_is_active("ksma")) then
-!$acc update host("ksma") 
+!$acc update host( ksma ) 
       endif
       if (xios_field_is_active("eptot")) then
-!$acc update host("eptot") 
+!$acc update host( eptot ) 
       endif
       if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
       if (xios_field_is_active('dzs')) then
-!$acc update host("") 
+!$acc update host(  ) 
       endif
 # endif /* MUSTANG */     
 #  ifdef BBL
       if (xios_field_is_active("Abed")) then
-!$acc update host("Abed") 
+!$acc update host( Abed ) 
       endif
       if (xios_field_is_active("Hripple")) then
-!$acc update host("Hripple") 
+!$acc update host( Hripple ) 
       endif
       if (xios_field_is_active("Lripple")) then
-!$acc update host("Lripple") 
+!$acc update host( Lripple ) 
       endif
       if (xios_field_is_active("Zbnot")) then
-!$acc update host("Zbnot") 
+!$acc update host( Zbnot ) 
       endif
       if (xios_field_is_active("Zbapp")) then
-!$acc update host("Zbapp") 
+!$acc update host( Zbapp ) 
       endif
       if (xios_field_is_active("bostrw")) then
-!$acc update host("bostrw") 
+!$acc update host( bostrw ) 
       endif
       if (xios_field_is_active("bustrc")) then
-!$acc update host("bustrc") 
+!$acc update host( bustrc ) 
       endif
       if (xios_field_is_active("bvstrc")) then
-!$acc update host("bvstrc") 
+!$acc update host( bvstrc ) 
       endif
       if (xios_field_is_active("bustrw")) then
-!$acc update host("bustrw") 
+!$acc update host( bustrw ) 
       endif
       if (xios_field_is_active("bvstrw")) then
-!$acc update host("bvstrw") 
+!$acc update host( bvstrw ) 
       endif
       if (xios_field_is_active("bustrcwmax")) then
-!$acc update host("bustrcwmax") 
+!$acc update host( bustrcwmax ) 
       endif
       if (xios_field_is_active("bvstrcwmax")) then
-!$acc update host("bvstrcwmax") 
+!$acc update host( bvstrcwmax ) 
       endif
 #  endif /* BBL */
 # endif /* SOLVE3D */

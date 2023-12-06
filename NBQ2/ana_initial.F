@@ -1907,6 +1907,7 @@ C$OMP BARRIER
 # ifdef MPI
       include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
+!$acc declare create( mssh,allmssh,area,allarea )
 # endif
       real asymth,zz,zasym,dzasym
       asymth(zz,zasym,dzasym) = 
@@ -1914,7 +1915,6 @@ C$OMP BARRIER
      &         *sqrt(1+0.5*((zz-zasym)+abs(zz-zasym))**2/dzasym**2)
      &         +zasym
 !
-!$acc declare create( mssh,allmssh,area,allarea )
 # include "compute_auxiliary_bounds.h"
 
 ! ---------------------------------------------------------------------

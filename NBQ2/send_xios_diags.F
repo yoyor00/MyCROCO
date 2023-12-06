@@ -2545,13 +2545,15 @@ c !$acc wait
       endif
 # endif
       if (xios_field_is_active("zeta")) then
-!$acc update host ( zeta )      
+!!$acc update host ( zeta )      
       call xios_send_field("zeta",zeta(:,:,fast_indx_out))
       endif
       if (xios_field_is_active("ubar")) then
+!!$acc update host ( ubar )              
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       endif
       if (xios_field_is_active("vbar")) then
+!!$acc update host ( vbar )              
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
       endif
 

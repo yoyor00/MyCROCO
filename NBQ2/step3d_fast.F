@@ -850,7 +850,9 @@ C$    trd=omp_get_thread_num()
 ! !
       VMAXL=100.
       VMAX=0.
-!$acc kernels if(compute_on_device) default(present) 
+!$acc parallel loop if(compute_on_device) independent
+!$acc& collapse(2)
+!$ass& reduction(max:VMAX)
 !$acc&      copyout( VMAX, imax, jmax )
       do j=Jstr,Jend
         do i=Istr,Iend
@@ -873,7 +875,6 @@ C$    trd=omp_get_thread_num()
           ENDIF
         enddo
       enddo
-!$acc end kernels      
       IF (VMAX.GT.VMAXL) THEN
         write(stdout,'(9(A/))')
      &     '                                         ',
