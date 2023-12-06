@@ -137,63 +137,63 @@
 !
            workr=MXadv(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMXadv(itrc),
-     &                      indxMXadv+itrc-1,
+     &                      vname(1,indxMXadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMYadv
 !
            workr=MYadv(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMYadv(itrc),
-     &                      indxMYadv+itrc-1,
+     &                      vname(1,indxMYadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVadv
 !
            workr=MVadv(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMVadv(itrc),
-     &                      indxMVadv+itrc-1,
+     &                      vname(1,indxMVadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMCor
 !
            workr=MCor(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMCor(itrc),
-     &                      indxMCor+itrc-1,
+     &                      vname(1,indxMCor+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMPrsgrd
 !
            workr=MPrsgrd(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMPrsgrd(itrc),
-     &                      indxMPrsgrd+itrc-1,
+     &                      vname(1,indxMPrsgrd+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMHmix
 !
            workr=MHmix(:,:,:,itrc,nstp)
            call fillvalue3d(workr,nciddiaM,diaMHmix(itrc),
-     &                      indxMHmix+itrc-1,
+     &                      vname(1,indxMHmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMHdiff
 !
            workr=MHdiff(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMHdiff(itrc),
-     &                      indxMHdiff+itrc-1,
+     &                      vname(1,indxMHdiff+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVmix
 !
            workr=MVmix(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMVmix(itrc),
-     &                      indxMVmix+itrc-1,
+     &                      vname(1,indxMVmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVmix2
 !
            workr=MVmix2(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMVmix2(itrc),
-     &                      indxMVmix2+itrc-1,
+     &                      vname(1,indxMVmix2+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMBaro
@@ -201,7 +201,7 @@
 # if defined DIAGNOSTICS_BARO
            workr=MBaro(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMBaro(itrc),
-     &                      indxMBaro+itrc-1,
+     &                      vname(1,indxMBaro+itrc-1),
      &                      record,ivar,type)
 # endif
 !
@@ -210,7 +210,7 @@
 # if defined M3FAST
            workr=Mfast(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMfast(itrc),
-     &                      indxMfast+itrc-1,
+     &                      vname(1,indxMfast+itrc-1),
      &                      record,ivar,type)
 # endif
 # if defined MRL_WCI
@@ -219,56 +219,56 @@
 !
            workr=Mvf(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMvf(itrc),
-     &                      indxMvf+itrc-1,
+     &                      vname(1,indxMvf+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMbrk
 !
            workr=Mbrk(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMbrk(itrc),
-     &                      indxMbrk+itrc-1,
+     &                      vname(1,indxMbrk+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMStCo
 !
            workr=MStCo(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMStCo(itrc),
-     &                      indxMStCo+itrc-1,
+     &                      vname(1,indxMStCo+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVvf
 !
            workr=MVvf(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMVvf(itrc),
-     &                      indxMVvf+itrc-1,
+     &                      vname(1,indxMVvf+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMPrscrt
 !
            workr=MPrscrt(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMPrscrt(itrc),
-     &                      indxMPrscrt+itrc-1,
+     &                      vname(1,indxMPrscrt+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMsbk
 !
            workr=Msbk(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMsbk(itrc),
-     &                      indxMsbk+itrc-1,
+     &                      vname(1,indxMsbk+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMbwf
 !
            workr=Mbwf(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMbwf(itrc),
-     &                      indxMbwf+itrc-1,
+     &                      vname(1,indxMbwf+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMfrc
 !
            workr=Mfrc(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMfrc(itrc),
-     &                      indxMfrc+itrc-1,
+     &                      vname(1,indxMfrc+itrc-1),
      &                      record,ivar,type)
 # endif
 !
@@ -276,7 +276,7 @@
 !
            workr=Mrate(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMrate(itrc),
-     &                      indxMrate+itrc-1,
+     &                      vname(1,indxMrate+itrc-1),
      &                      record,ivar,type)
 !
         endif

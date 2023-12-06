@@ -280,7 +280,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 !
 ! Time2.
@@ -315,7 +315,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 
 ! Momentum diagnostics variables.
@@ -353,7 +353,7 @@
      &                      lvar, vname(4,indxvrtXadv+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtXadv(itrc),
-     &         indxvrtXadv+itrc-1, 5, NF_FOUT, ierr)
+     &         vname(:,indxvrtXadv+itrc-1), 5, NF_FOUT, ierr)
 !------------------------------
 !
 ! indxvrtYadv
@@ -381,7 +381,7 @@
      &                      lvar, vname(4,indxvrtYadv+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtYadv(itrc),
-     &        indxvrtYadv+itrc-1, 5, NF_FOUT, ierr)
+     &        vname(:,indxvrtYadv+itrc-1), 5, NF_FOUT, ierr)
 !------------------------------
 !
 ! indxvrtHdiff
@@ -409,7 +409,7 @@
      &                      lvar, vname(4,indxvrtHdiff+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtHdiff(itrc),
-     &            indxvrtHdiff+itrc-1, 5,NF_FOUT, ierr)
+     &            vname(:,indxvrtHdiff+itrc-1), 5,NF_FOUT, ierr)
 !------------------------------!
 ! indxvrtCor
 !
@@ -436,7 +436,7 @@
      &                      lvar, vname(4,indxvrtCor+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtCor(itrc),
-     &            indxvrtCor+itrc-1, 5, NF_FOUT, ierr)
+     &            vname(:,indxvrtCor+itrc-1), 5, NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -465,7 +465,7 @@
      &                      lvar, vname(4,indxvrtPrsgrd+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtPrsgrd(itrc),
-     &           indxvrtPrsgrd+itrc-1, 5,NF_FOUT, ierr)
+     &           vname(:,indxvrtPrsgrd+itrc-1), 5,NF_FOUT, ierr)
 !------------------------------
 !
 ! indxvrtHmix
@@ -493,7 +493,7 @@
      &                      lvar, vname(4,indxvrtHmix+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtHmix(itrc),
-     &            indxvrtHmix+itrc-1,5, NF_FOUT, ierr)
+     &            vname(:,indxvrtHmix+itrc-1),5, NF_FOUT, ierr)
 !------------------------------
 !
 ! indxvrtVmix
@@ -521,7 +521,7 @@
      &                      lvar, vname(4,indxvrtVmix+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtVmix(itrc),
-     &            indxvrtVmix+itrc-1, 5,NF_FOUT, ierr)
+     &            vname(:,indxvrtVmix+itrc-1), 5,NF_FOUT, ierr)
 !------------------------------
 !
 ! indxvrtrate
@@ -549,7 +549,7 @@
      &                      lvar, vname(4,indxvrtrate+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtrate(itrc),
-     &             indxvrtrate+itrc-1, 5,NF_FOUT, ierr)
+     &             vname(:,indxvrtrate+itrc-1), 5,NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -578,7 +578,7 @@
      &                    lvar, vname(4,indxvrtVmix2+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtVmix2(itrc),
-     &               indxvrtVmix2+itrc-1, 5,NF_FOUT, ierr)
+     &               vname(:,indxvrtVmix2+itrc-1), 5,NF_FOUT, ierr)
 !
 
 
@@ -609,7 +609,7 @@
      &                    lvar, vname(4,indxvrtWind+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtWind(itrc),
-     &           indxvrtWind+itrc-1, 5,NF_FOUT, ierr)
+     &           vname(:,indxvrtWind+itrc-1), 5,NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -638,7 +638,7 @@
      &                    lvar, vname(4,indxvrtDrag+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtWind(itrc),
-     &              indxvrtDrag+itrc-1, 5, NF_FOUT, ierr)
+     &              vname(:,indxvrtDrag+itrc-1), 5, NF_FOUT, ierr)
         endif
 # if defined DIAGNOSTICS_BARO
 !------------------------------
@@ -668,7 +668,7 @@
      &                      lvar, vname(4,indxvrtBaro+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtBaro(itrc),
-     &           indxvrtBaro+itrc-1, 5,NF_FOUT, ierr)
+     &           vname(:,indxvrtBaro+itrc-1), 5,NF_FOUT, ierr)
 # endif
 
 # if defined M3FAST
@@ -699,7 +699,7 @@
      &                      lvar, vname(4,indxvrtfast+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtfast(itrc),
-     &           indxvrtfast+itrc-1, 5,NF_FOUT, ierr)
+     &           vname(:,indxvrtfast+itrc-1), 5,NF_FOUT, ierr)
 # endif
 
 !
