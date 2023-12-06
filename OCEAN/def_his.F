@@ -445,7 +445,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 
 !
@@ -474,7 +474,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 
 !=======================================================================
@@ -512,8 +512,8 @@
           ierr=nf_put_att_text (ncid, vidZ, 'field',     lvar,
      &                                  vname(4,indxZ)(1:lvar))
 
-          call nf_add_attribute(ncid, vidZ, indxZ, 5, NF_FOUT,
-     &         ierr)
+          call nf_add_attribute(ncid, vidZ, vname(:,indxZ), 
+     &         5, NF_FOUT, ierr)
 
         endif
 !
@@ -545,7 +545,8 @@
           ierr=nf_put_att_text (ncid, vidUb, 'field',    lvar,
      &                                  vname(4,indxUb)(1:lvar))
 
-          call nf_add_attribute(ncid, vidUb, indxUb, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidUb, vname(:,indxUb), 
+     &           5, NF_FOUT, ierr)
         endif
 
         if (wrt(indxVb)) then
@@ -572,8 +573,8 @@
           ierr=nf_put_att_text (ncid, vidVb, 'field',     lvar,
      &                                  vname(4,indxVb)(1:lvar))
 
-          call nf_add_attribute(ncid, vidVb, indxVb, 5, NF_FOUT,
-     &         ierr)
+          call nf_add_attribute(ncid, vidVb, vname(:,indxVb), 
+     &        5, NF_FOUT, ierr)
         endif
 
 #ifdef MORPHODYN
@@ -606,8 +607,8 @@
           ierr=nf_put_att_text (ncid, vidHm, 'field',     lvar,
      &                                  vname(4,indxHm)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHm, indxHm, 5, NF_FOUT,
-     &         ierr)
+          call nf_add_attribute(ncid, vidHm, vname(:,indxHm), 
+     &         5, NF_FOUT, ierr)
         endif
 #endif /* MORPHODYN */
 
@@ -641,7 +642,8 @@
           ierr=nf_put_att_text (ncid, vidU, 'field',     lvar,
      &                                  vname(4,indxU)(1:lvar))
 
-          call nf_add_attribute(ncid, vidU, indxU, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidU, vname(:,indxU), 
+     &         5, NF_FOUT, ierr)
         endif
 
         if (wrt(indxV)) then
@@ -668,7 +670,8 @@
           ierr=nf_put_att_text (ncid, vidV, 'field',     lvar,
      &                                  vname(4,indxV)(1:lvar))
 
-          call nf_add_attribute(ncid, vidV, indxV, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidV, vname(:,indxV), 
+     &         5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -701,7 +704,7 @@
             ierr=nf_put_att_text (ncid, vidT(itrc), 'field', lvar,
      &                               vname(4,indxV+itrc)(1:lvar))
 
-            call nf_add_attribute(ncid,vidT(itrc),indxV+itrc,5,
+            call nf_add_attribute(ncid,vidT(itrc),vname(:,indxV+itrc),5,
      &           NF_FOUT, ierr)
           endif
         enddo
@@ -735,7 +738,8 @@
           ierr=nf_put_att_text (ncid, vidR, 'field',     lvar,
      &                                  vname(4,indxR)(1:lvar))
 
-          call nf_add_attribute(ncid, vidR, indxR, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidR, vname(:,indxR), 
+     &         5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -769,7 +773,8 @@
           ierr=nf_put_att_text (ncid, vidR, 'field',     lvar,
      &                                  vname(4,indxbvf)(1:lvar))
 
-          call nf_add_attribute(ncid, vidbvf, indxbvf, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidbvf, vname(:,indxbvf), 
+     &         5, NF_FOUT, ierr)
         endif
 # endif
 !
@@ -802,7 +807,7 @@
           ierr=nf_put_att_text (ncid, vidAOU, 'field',lvar,
      &                                vname(4,indxAOU)(1:lvar))
 
-          call nf_add_attribute(ncid, vidAOU, indxAOU, 5,
+          call nf_add_attribute(ncid, vidAOU, vname(:,indxAOU), 5,
      &    NF_FOUT, ierr)
         endif
 
@@ -830,7 +835,7 @@
           ierr=nf_put_att_text (ncid,vidwind10,'field',lvar,
      &                              vname(4,indxWIND10)(1:lvar))
 
-          call nf_add_attribute(ncid, vidwind10, indxWIND10, 5,
+          call nf_add_attribute(ncid, vidwind10, vname(:,indxWIND10), 5,
      &    NF_FOUT, ierr)
         endif
 # endif /* BIO_BioEBUS */
@@ -863,7 +868,8 @@
           ierr=nf_put_att_text (ncid, vidO, 'field',     lvar,
      &                                  vname(4,indxO)(1:lvar))
 
-          call nf_add_attribute(ncid, vidO, indxO, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidO, vname(:,indxO), 
+     &          5, NF_FOUT, ierr)
         endif
 !
 !-----------------------------------------------------------------------
@@ -899,7 +905,8 @@
           ierr=nf_put_att_text (ncid, vidW, 'field',     lvar,
      &                                  vname(4,indxW)(1:lvar))
 
-          call nf_add_attribute(ncid, vidW, indxW, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidW, vname(:,indxW), 
+     &        5, NF_FOUT, ierr)
         endif
 #endif /* SOLVE3D */
 
@@ -929,7 +936,7 @@
           ierr=nf_put_att_text (ncid, vidBostr, 'units',     lvar,
      &                                 vname(3,indxBostr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidBostr,indxBostr,5,
+          call nf_add_attribute(ncid, vidBostr,vname(:,indxBostr),5,
      &                          NF_FOUT, ierr)
         endif
 
@@ -956,7 +963,7 @@
           ierr=nf_put_att_text (ncid, vidBustr, 'units',     lvar,
      &                                 vname(3,indxBustr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidBustr,indxBustr,5,
+          call nf_add_attribute(ncid, vidBustr,vname(:,indxBustr),5,
      &                          NF_FOUT, ierr)
 
         endif
@@ -983,7 +990,7 @@
           ierr=nf_put_att_text (ncid, vidBvstr, 'units',     lvar,
      &                                 vname(3,indxBvstr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidBvstr,indxBvstr,5,
+          call nf_add_attribute(ncid, vidBvstr,vname(:,indxBvstr),5,
      &                          NF_FOUT, ierr)
 
         endif
@@ -1009,7 +1016,7 @@
           ierr=nf_put_att_text (ncid, vidWstr, 'units',     lvar,
      &                                 vname(3,indxWstr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidWstr, indxWstr, 5,
+          call nf_add_attribute(ncid, vidWstr, vname(:,indxWstr), 5,
      &                          NF_FOUT, ierr)
         endif
 !
@@ -1039,7 +1046,7 @@
           ierr=nf_put_att_text (ncid, vidUWstr, 'units',     lvar,
      &                                 vname(3,indxUWstr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidUWstr, indxUWstr, 5,
+          call nf_add_attribute(ncid, vidUWstr, vname(:,indxUWstr), 5,
      &                          NF_FOUT, ierr)
         endif
 !
@@ -1069,7 +1076,7 @@
           ierr=nf_put_att_text (ncid, vidVWstr, 'units',     lvar,
      &                                 vname(3,indxVWstr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidVWstr, indxVWstr, 5,
+          call nf_add_attribute(ncid, vidVWstr, vname(:,indxVWstr), 5,
      &                          NF_FOUT, ierr)
         endif
 
@@ -1102,7 +1109,7 @@
           ierr=nf_put_att_text (ncid, vidVisc, 'field',     lvar,
      &                                  vname(4,indxVisc)(1:lvar))
 
-          call nf_add_attribute(ncid, vidVisc, indxVisc, 5,
+          call nf_add_attribute(ncid, vidVisc, vname(:,indxVisc), 5,
      &                          NF_FOUT, ierr)
         endif
 # endif
@@ -1131,7 +1138,7 @@
           ierr=nf_put_att_text (ncid, vidDiff, 'field',     lvar,
      &                                  vname(4,indxDiff)(1:lvar))
 
-          call nf_add_attribute(ncid, vidDiff, indxDiff, 5,
+          call nf_add_attribute(ncid, vidDiff, vname(:,indxDiff), 5,
      &                          NF_FOUT, ierr)
         endif
 # endif
@@ -1162,8 +1169,8 @@
           ierr=nf_put_att_text (ncid, vidAkv, 'field',     lvar,
      &                                  vname(4,indxAkv)(1:lvar))
 
-          call nf_add_attribute(ncid, vidAkv, indxAkv, 5, NF_FOUT,
-     &                                                          ierr)
+          call nf_add_attribute(ncid, vidAkv, vname(:,indxAkv), 
+     &                          5, NF_FOUT, ierr)
         endif
 !
 ! Vertical diffusion coefficient for potential temperature.
@@ -1193,8 +1200,8 @@
           ierr=nf_put_att_text (ncid, vidAkt, 'field',     lvar,
      &                                  vname(4,indxAkt)(1:lvar))
 
-          call nf_add_attribute(ncid, vidAkt, indxAkt, 5, NF_FOUT,
-     &                                                           ierr)
+          call nf_add_attribute(ncid, vidAkt, vname(:,indxAkt), 
+     &                           5, NF_FOUT, ierr)
         endif
 # endif
 # ifdef SALINITY
@@ -1225,8 +1232,8 @@
           ierr=nf_put_att_text (ncid, vidAks, 'field',     lvar,
      &                                  vname(4,indxAks)(1:lvar))
 
-          call nf_add_attribute(ncid, vidAks, indxAks, 5, NF_FOUT,
-     &                                                           ierr)
+          call nf_add_attribute(ncid, vidAks, vname(:,indxAks), 
+     &                          5, NF_FOUT, ierr)
         endif
 # endif
 
@@ -1259,8 +1266,8 @@
           ierr=nf_put_att_text (ncid, vidHbl, 'field',     lvar,
      &                                  vname(4,indxHbl)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHbl, indxHbl, 5, NF_FOUT,
-     &                                                            ierr)
+          call nf_add_attribute(ncid, vidHbl, vname(:,indxHbl), 
+     &                          5, NF_FOUT, ierr)
         endif
 # endif
 # ifdef LMD_BKPP
@@ -1291,7 +1298,7 @@
           ierr=nf_put_att_text (ncid, vidHbbl, 'field',     lvar,
      &                                  vname(4,indxHbbl)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHbbl, indxHbbl, 5,
+          call nf_add_attribute(ncid, vidHbbl, vname(:,indxHbbl), 5,
      &                          NF_FOUT, ierr)
         endif
 # endif
@@ -1324,8 +1331,8 @@
           ierr=nf_put_att_text (ncid, vidTke, 'field',     lvar,
      &                                  vname(4,indxTke)(1:lvar))
 
-          call nf_add_attribute(ncid, vidTke, indxTke, 5, NF_FOUT,
-     &                                                            ierr)
+          call nf_add_attribute(ncid, vidTke, vname(:,indxTke), 
+     &                          5, NF_FOUT, ierr)
         endif
 !
 ! Generic Length Scale.
@@ -1354,8 +1361,8 @@
           ierr=nf_put_att_text (ncid, vidGls, 'field',     lvar,
      &                                  vname(4,indxGls)(1:lvar))
 
-          call nf_add_attribute(ncid, vidGls, indxGls, 5, NF_FOUT,
-     &                                                            ierr)
+          call nf_add_attribute(ncid, vidGls, vname(:,indxGls), 
+     &                          5, NF_FOUT, ierr)
         endif
 !
 ! Vertical mixing turbulent length scale.
@@ -1384,8 +1391,8 @@
           ierr=nf_put_att_text (ncid, vidLsc, 'field',     lvar,
      &                                  vname(4,indxLsc)(1:lvar))
 
-          call nf_add_attribute(ncid, vidLsc, indxLsc, 5, NF_FOUT,
-     &                                                             ierr)
+          call nf_add_attribute(ncid, vidLsc, vname(:,indxLsc),
+     &                          5, NF_FOUT, ierr)
         endif
 # endif /* GLS_MIXING */
 
@@ -1414,7 +1421,7 @@
           ierr=nf_put_att_text (ncid, vidShflx, 'units',     lvar,
      &                                 vname(3,indxShflx)(1:lvar))
 
-          call nf_add_attribute(ncid, vidShflx, indxShflx, 5,
+          call nf_add_attribute(ncid, vidShflx, vname(:,indxShflx), 5,
      &                          NF_FOUT, ierr)
         endif
 # endif
@@ -1443,7 +1450,7 @@
           ierr=nf_put_att_text (ncid, vidSwflx, 'units',     lvar,
      &                                 vname(3,indxSwflx)(1:lvar))
 
-          call nf_add_attribute(ncid, vidSwflx, indxSwflx, 5,
+          call nf_add_attribute(ncid, vidSwflx, vname(:,indxSwflx), 5,
      &                          NF_FOUT, ierr)
         endif
 # endif
@@ -1473,7 +1480,7 @@
           ierr=nf_put_att_text (ncid, vidBhflx, 'units',     lvar,
      &                                 vname(3,indxBhflx)(1:lvar))
 
-          call nf_add_attribute(ncid, vidBhflx, indxBhflx, 5,
+          call nf_add_attribute(ncid, vidBhflx, vname(:,indxBhflx), 5,
      &                          NF_FOUT, ierr)
 
         endif
@@ -1504,7 +1511,7 @@
           ierr=nf_put_att_text (ncid, vidBwflx, 'units',     lvar,
      &                                 vname(3,indxBwflx)(1:lvar))
 
-          call nf_add_attribute(ncid, vidBwflx, indxBwflx, 5,
+          call nf_add_attribute(ncid, vidBwflx, vname(:,indxBwflx), 5,
      &                          NF_FOUT, ierr)
 
         endif
@@ -1534,8 +1541,8 @@
           ierr=nf_put_att_text (ncid, vidShflx_rsw, 'units',     lvar,
      &                                 vname(3,indxShflx_rsw)(1:lvar))
 
-        call nf_add_attribute(ncid, vidShflx_rsw, indxShflx_rsw,5,
-     &                                                   NF_FOUT, ierr)
+        call nf_add_attribute(ncid, vidShflx_rsw, 
+     &               vname(:,indxShflx_rsw), 5, NF_FOUT, ierr)
 
       endif
 # endif
@@ -1566,8 +1573,8 @@
           ierr=nf_put_att_text (ncid, vidShflx_rlw, 'units',     lvar,
      &                               vname(3,indxShflx_rlw)(1:lvar))
 
-          call nf_add_attribute(ncid, vidShflx_rlw, indxShflx_rlw,5,
-     &         NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidShflx_rlw, 
+     &         vname(:,indxShflx_rlw),5, NF_FOUT, ierr)
         endif
 !
 ! Latent Shflx [W/m2]
@@ -1593,8 +1600,8 @@
           ierr=nf_put_att_text (ncid, vidShflx_lat, 'units',     lvar,
      &                                 vname(3,indxShflx_lat)(1:lvar))
 
-          call nf_add_attribute(ncid, vidShflx_lat, indxShflx_lat, 5,
-     &         NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidShflx_lat, 
+     &         vname(:,indxShflx_lat), 5, NF_FOUT, ierr)
         endif
 !
 ! Sensible Shflx [W/m2]
@@ -1620,8 +1627,8 @@
           ierr=nf_put_att_text (ncid, vidShflx_sen, 'units',     lvar,
      &                                 vname(3,indxShflx_sen)(1:lvar))
 
-        call nf_add_attribute(ncid, vidShflx_sen, indxShflx_sen, 5,
-     &       NF_FOUT, ierr)
+        call nf_add_attribute(ncid, vidShflx_sen, 
+     &       vname(:,indxShflx_sen), 5, NF_FOUT, ierr)
 
       endif
 # endif  /* BULK_FLUX && TEMPERATURE  */
@@ -1654,8 +1661,8 @@
           ierr=nf_put_att_text (ncid, vidHel, 'field',     lvar,
      &                                  vname(4,indxHel)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHel, indxHel, 5, NF_FOUT,
-     &                                                           ierr)
+          call nf_add_attribute(ncid, vidHel, vname(:,indxHel), 
+     &                          5, NF_FOUT, ierr)
         endif
 !
 ! Chlorophyll/Carbon ratio
@@ -1685,8 +1692,8 @@
           ierr=nf_put_att_text (ncid, vidChC, 'field',     lvar,
      &                                  vname(4,indxChC)(1:lvar))
 
-          call nf_add_attribute(ncid, vidChC, indxChC, 5, NF_FOUT,
-     &                                                            ierr)
+          call nf_add_attribute(ncid, vidChC, vname(:,indxChC), 
+     &                          5, NF_FOUT, ierr)
         endif
 #   ifdef OXYGEN
 !
@@ -1716,8 +1723,8 @@
           ierr=nf_put_att_text (ncid, vidU10, 'field',     lvar,
      &                                  vname(4,indxU10)(1:lvar))
 
-          call nf_add_attribute(ncid, vidU10, indxU10, 5, NF_FOUT,
-     &                                                            ierr)
+          call nf_add_attribute(ncid, vidU10, vname(:,indxU10), 
+     &                          5, NF_FOUT, ierr)
         endif
 !
 ! Gas exchange coefficient of O2
@@ -1746,7 +1753,7 @@
           ierr=nf_put_att_text (ncid, vidKvO2, 'field',     lvar,
      &                                  vname(4,indxKvO2)(1:lvar))
 
-          call nf_add_attribute(ncid, vidKvO2, indxKvO2, 5,
+          call nf_add_attribute(ncid, vidKvO2, vname(:,indxKvO2), 5,
      &         NF_FOUT, ierr)
         endif
 !
@@ -1776,7 +1783,7 @@
           ierr=nf_put_att_text (ncid, vidO2sat, 'field',     lvar,
      &                                  vname(4,indxO2sat)(1:lvar))
 
-          call nf_add_attribute(ncid, vidO2sat, indxO2sat, 5,
+          call nf_add_attribute(ncid, vidO2sat, vname(:,indxO2sat), 5,
      &         NF_FOUT, ierr)
         endif
 #   endif /* OXYGEN */
@@ -1818,8 +1825,8 @@
           ierr=nf_put_att_text (ncid, vidSed(1), 'field',     lvar,
      &                                  vname(4,indxWrk)(1:lvar))
 
-          call nf_add_attribute(ncid, vidSed(1), indxWrk, 5, NF_FOUT,
-     &         ierr)
+          call nf_add_attribute(ncid, vidSed(1), vname(:,indxWrk),
+     &          5, NF_FOUT, ierr)
         endif
 !
         do itrc=1,2+NST
@@ -1845,8 +1852,8 @@
             ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'units',   lvar,
      &                                    vname(3,indxWrk)(1:lvar))
 
-            call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5,
-     &                                                   NF_FOUT, ierr)
+            call nf_add_attribute(ncid, vidSed(itrc+1), 
+     &          vname(:,indxWrk), 5, NF_FOUT, ierr)
           endif
         enddo
 
@@ -1879,8 +1886,8 @@
             ierr=nf_put_att_text (ncid,vidSed(itrc+1),'units',     lvar,
      &                                    vname(3,indxWrk)(1:lvar))
 
-            call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5,
-     &                                                 NF_FOUT, ierr)
+            call nf_add_attribute(ncid, vidSed(itrc+1), 
+     &            vname(:,indxWrk), 5, NF_FOUT, ierr)
           endif
         enddo
 !
@@ -1907,8 +1914,8 @@
           ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'units',     lvar,
      &                                  vname(3,indxWrk)(1:lvar))
 
-          call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5,
-     &                                                 NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidSed(itrc+1), 
+     &         vname(:,indxWrk), 5, NF_FOUT, ierr)
         endif
 #  endif
 !
@@ -1946,8 +1953,8 @@
             ierr=nf_put_att_text (ncid, vidBBL(itrc), 'units',     lvar,
      &                                    vname(3,indxWrk)(1:lvar))
 
-            call nf_add_attribute(ncid, vidBBL(itrc), indxWrk, 5,
-     &           NF_FOUT, ierr)
+            call nf_add_attribute(ncid, vidBBL(itrc), 
+     &           vname(:,indxWrk), 5, NF_FOUT, ierr)
           endif
         enddo
 # endif /* BBL */
@@ -1975,8 +1982,8 @@
      &                                 vname(3,indxSST_skin)(1:lvar))
           lvar=lenstr(vname(5,indxSST_skin))
 
-          call nf_add_attribute(ncid, vidSST_skin, indxSST_skin,5,
-     &         NF_FOUT , ierr)
+          call nf_add_attribute(ncid, vidSST_skin, 
+     &         vname(:,indxSST_skin), 5, NF_FOUT , ierr)
         endif
 # endif /* SST_SKIN */
 !
@@ -2002,7 +2009,8 @@
           lvar=lenstr(vname(4,indx))
           ierr=nf_put_att_text (ncid, vidM(itrc), 'field',     lvar,
      &                                  vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(itrc),indx,5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidM(itrc),vname(:,indx),
+     &         5, NF_FOUT, ierr)
         enddo
 !
         do itrc=1,3
@@ -2038,7 +2046,8 @@
           lvar=lenstr(vname(4,indx))
           ierr=nf_put_att_text (ncid, vidM(itrc+6), 'field',     lvar,
      &                                  vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(itrc+6),indx, 5, NF_FOUT,ierr)
+          call nf_add_attribute(ncid,vidM(itrc+6),vname(:,indx), 
+     &           5, NF_FOUT,ierr)
         enddo
 #  ifdef key_MUSTANG_specif_outputs
         ik=0
@@ -2062,8 +2071,8 @@
           lvar=lenstr(vname(4,indx))
           ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
      &                                 lvar,vname(4,indx)(1:lvar))
-            call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx,5,
-     &                 NF_FOUT, ierr)
+            call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),vname(:,indx),
+     &                 5, NF_FOUT, ierr)
           enddo
         enddo
         do itrv=1,nv_out2D_specif
@@ -2084,8 +2093,8 @@
           lvar=lenstr(vname(4,indx))
           ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
      &                                  lvar,vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx, 5,
-     &              NF_FOUT, ierr)
+          call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),vname(:,indx), 
+     &              5, NF_FOUT, ierr)
         enddo
 #  endif
 # endif /* MUSTANG */

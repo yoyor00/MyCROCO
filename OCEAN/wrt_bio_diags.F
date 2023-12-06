@@ -122,7 +122,7 @@ CDEBUG      write(*,*) 'Write Time'
          if (wrtdiabioFlux(iflux)) then
            workr=bioFlux(:,:,:,iflux)
            call fillvalue3d(workr, nciddiabio, diabioFlux(iflux),
-     &          indxbioFlux+iflux-1,record,r3dvar,type)
+     &        vname(1,indxbioFlux+iflux-1),record,r3dvar,type)
          endif
        end do
 !     2-D terms (it is called Vsink but it means nothing) Christophe Menkes
@@ -131,7 +131,7 @@ CDEBUG      write(*,*) 'Write Time'
 !     if (iflux.eq.11)  write(*,*) 'ZMEU WRT',bioVSink(30,30,iflux)
           work2d=bioVSink(:,:,iflux)
           call fillvalue2d(work2d, nciddiabio, diabioVsink(iflux),
-     &         indxbioVSink+iflux-1,record,r2dvar,type)
+     &        vname(1,indxbioVSink+iflux-1),record,r2dvar,type)
         endif
       end do
 
@@ -145,7 +145,7 @@ CDEBUG      write(*,*) 'Write Time'
 !     write(*,*)'write fluxes terms'
           workr=bioFlux(:,:,:,iflux)
           call fillvalue3d(workr, nciddiabio, diabioFlux(iflux),
-     &         indxbioFlux+iflux-1,record,r3dvar,type)
+     &        vname(1,indxbioFlux+iflux-1),record,r3dvar,type)
         endif
       end do
 !     vertical sinking fluxes
@@ -154,7 +154,7 @@ CDEBUG      write(*,*) 'Write Time'
 !     write(*,*)'write vertical sinking fluxes'
           work=bioVsink(:,:,:,iflux)
           call fillvalue3d(work, nciddiabio, diabioVsink(iflux),
-     &         indxbioVSink+iflux-1,record,w3dvar,type)
+     &        vname(1,indxbioVSink+iflux-1),record,w3dvar,type)
         endif
       end do
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
@@ -163,7 +163,7 @@ CDEBUG      write(*,*) 'Write Time'
         if (wrtdiabioGasExc(iflux)) then
           work2d=GasExcFlux(:,:,iflux)
           call fillvalue2d(work2d, nciddiabio, diabioGasExc(iflux),
-     &         indxGasExcFlux+iflux-1,record,r2dvar,type)
+     &        vname(1,indxGasExcFlux+iflux-1),record,r2dvar,type)
         endif
       end do
 #  endif

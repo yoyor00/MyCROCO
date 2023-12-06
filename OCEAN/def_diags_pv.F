@@ -262,7 +262,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 !
 ! Time2.
@@ -297,7 +297,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 
 ! PV diagnostics variables.
@@ -337,7 +337,7 @@
      &                       lvar, vname(4,indxpvTrhs+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,viddiags_Trhs(itrc)
-     &                       ,indxpvTrhs+itrc-1,5,NF_FOUT, ierr)
+     &                       ,vname(:,indxpvTrhs+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 
@@ -378,7 +378,7 @@
      &                      lvar, vname(4,indxpvpv)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_pv(itrc),
-     &                       indxpvpv, 5,
+     &                       vname(:,indxpvpv), 5,
      &                        NF_FOUT, ierr)
 
 
@@ -409,7 +409,7 @@
      &                      lvar, vname(4,indxpvpvd)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_pvd(itrc),
-     &                       indxpvpvd, 5,
+     &                       vname(:,indxpvpvd), 5,
      &                        NF_FOUT, ierr)
 
 
@@ -458,7 +458,7 @@
      &                    lvar, vname(4,indxpvMrhs+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_Mrhs(itrc),
-     &                        indxpvMrhs+itrc-1, 5, NF_FOUT, ierr)
+     &         vname(:,indxpvMrhs+itrc-1), 5, NF_FOUT, ierr)
 
 
 !------------------------------
