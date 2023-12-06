@@ -135,96 +135,96 @@
 ! indxeddyubu
 !
         call fillvalue2d(eddyubu_avg,nciddiags_eddy_avg,diags_eddyubu_avg(1),
-     &                      indxeddyubu,
+     &                      vname(1,indxeddyubu),
      &                      record,u2dvar,type)
 
 !---------------------------------------------------------------
 ! indxeddyvbv
 !
         call fillvalue2d(eddyvbv_avg,nciddiags_eddy_avg,diags_eddyvbv_avg(1),
-     &                      indxeddyvbv,
+     &                      vname(1,indxeddyvbv),
      &                      record,v2dvar,type)
 !---------------------------------------------------------------
 ! indxeddyusu
 !
         call fillvalue2d(eddyusu_avg,nciddiags_eddy_avg,diags_eddyusu_avg(1),
-     &                      indxeddyusu,
+     &                      vname(1,indxeddyusu),
      &                      record,u2dvar,type)
 
 !---------------------------------------------------------------
 ! indxeddyvsv
 !
         call fillvalue2d(eddyvsv_avg,nciddiags_eddy_avg,diags_eddyvsv_avg(1),
-     &                      indxeddyvsv,
+     &                      vname(1,indxeddyvsv),
      &                      record,v2dvar,type)
 !---------------------------------------------------------------
 ! indxeddyugsu
 !
         call fillvalue2d(eddyugsu_avg,nciddiags_eddy_avg,diags_eddyugsu_avg(1),
-     &                      indxeddyugsu,
+     &                      vname(1,indxeddyugsu),
      &                      record,u2dvar,type)
 
 !---------------------------------------------------------------
 ! indxeddyvgsv
 !
         call fillvalue2d(eddyvgsv_avg,nciddiags_eddy_avg,diags_eddyvgsv_avg(1),
-     &                      indxeddyvgsv,
+     &                      vname(1,indxeddyvgsv),
      &                      record,v2dvar,type)
 !---------------------------------------------------------------
 ! indxeddyzz
 !
         call fillvalue2d(eddyzz_avg,nciddiags_eddy_avg,diags_eddyzz_avg(1),
-     &                      indxeddyzz,
+     &                      vname(1,indxeddyzz),
      &                      record,r2dvar,type)
 
 !---------------------------------------------------------------
 ! indxeddyuu
 !
         call fillvalue3d(eddyuu_avg,nciddiags_eddy_avg,diags_eddyuu_avg(1),
-     &                      indxeddyuu,
+     &                      vname(1,indxeddyuu),
      &                      record,r3dvar,type)
 
 !---------------------------------------------------------------
 ! indxeddyvv
 !
         call fillvalue3d(eddyvv_avg,nciddiags_eddy_avg,diags_eddyvv_avg(1),
-     &                      indxeddyvv,
+     &                      vname(1,indxeddyvv),
      &                      record,r3dvar,type)
 !---------------------------------------------------------------
 ! indxeddyuv
 !
         call fillvalue3d(eddyuv_avg,nciddiags_eddy_avg,diags_eddyuv_avg(1),
-     &                      indxeddyuv,
+     &                      vname(1,indxeddyuv),
      &                      record,r3dvar,type)
 !---------------------------------------------------------------
 ! indxeddyuw
 !
         call fillvalue3d(eddyuw_avg,nciddiags_eddy_avg,diags_eddyuw_avg(1),
-     &                      indxeddyuw,
+     &                      vname(1,indxeddyuw),
      &                      record,r3dvar,type)
 !---------------------------------------------------------------
 ! indxeddyvw
 !
         call fillvalue3d(eddyvw_avg,nciddiags_eddy_avg,diags_eddyvw_avg(1),
-     &                      indxeddyvw,
+     &                      vname(1,indxeddyvw),
      &                      record,r3dvar,type)
 !---------------------------------------------------------------
 ! indxeddywb
 !
         call fillvalue3d(eddywb_avg,nciddiags_eddy_avg,diags_eddywb_avg(1),
-     &                      indxeddywb,
+     &                      vname(1,indxeddywb),
      &                      record,r3dvar,type)
 !---------------------------------------------------------------
 ! indxeddyub
 !
         call fillvalue3d(eddyub_avg,nciddiags_eddy_avg,diags_eddyub_avg(1),
-     &                      indxeddyub,
+     &                      vname(1,indxeddyub),
      &                      record,r3dvar,type)
 !---------------------------------------------------------------
 ! indxeddyvb
 !
         call fillvalue3d(eddyvb_avg,nciddiags_eddy_avg,diags_eddyvb_avg(1),
-     &                      indxeddyvb,
+     &                      vname(1,indxeddyvb),
      &                      record,r3dvar,type)
 !---------------------------------------------------------------
        endif
