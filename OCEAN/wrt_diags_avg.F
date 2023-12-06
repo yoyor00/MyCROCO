@@ -131,36 +131,36 @@
 ! indxTXadv
 !
            workr=TXadv_avg(:,:,:,itrc)
-           call fillvalue3d(workr,nciddia_avg,diaTXadv_avg(itrc),
-     &                      indxTXadv+itrc-1,
+           call fillvalue3d(workr,nciddia_avg,diaTXadv_avg(itrc), 
+     &                      vname(1,indxTXadv+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTYadv
 !
            workr=TYadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTYadv_avg(itrc),
-     &                      indxTYadv+itrc-1,
+     &                      vname(1,indxTYadv+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTVadv
 !
            workr=TVadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTVadv_avg(itrc),
-     &                      indxTVadv+itrc-1,
+     &                      vname(1,indxTVadv+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTHmix
 !
            workr=THmix_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTHmix_avg(itrc),
-     &                      indxTHmix+itrc-1,
+     &                      vname(1,indxTHmix+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTVmix
 !
            workr=TVmix_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTVmix_avg(itrc),
-     &                      indxTVmix+itrc-1,
+     &                      vname(1,indxTVmix+itrc-1),
      &                      record,r3dvar,type)
 # ifdef DIAGNOSTICS_TSVAR
 !
@@ -168,7 +168,7 @@
 !
            workr=TVmixt_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTVmixt_avg(itrc),
-     &                      indxTVmixt+itrc-1,
+     &                      vname(1,indxTVmixt+itrc-1),
      &                      record,r3dvar,type)
 # endif
 !
@@ -176,14 +176,14 @@
 !
            workr=TForc_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTForc_avg(itrc),
-     &                      indxTForc+itrc-1,
+     &                      vname(1,indxTForc+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTrate
 !
            workr=Trate_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddia_avg,diaTrate_avg(itrc),
-     &                      indxTrate+itrc-1,
+     &                      vname(1,indxTrate+itrc-1),
      &                      record,r3dvar,type)
 
         endif
@@ -199,56 +199,56 @@
 !
            work2d=TXadv_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTXadv_mld_avg(itrc),
-     &                      indxTXadv_mld+itrc-1,
+     &                      vname(1,indxTXadv_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTYadv_mld
 !
            work2d=TYadv_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTYadv_mld_avg(itrc),
-     &                      indxTYadv_mld+itrc-1,
+     &                      vname(1,indxTYadv_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTVadv_mld
 !
            work2d=TVadv_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTVadv_mld_avg(itrc),
-     &                      indxTVadv_mld+itrc-1,
+     &                      vname(1,indxTVadv_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTHmix_mld
 !
            work2d=THmix_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTHmix_mld_avg(itrc),
-     &                      indxTHmix_mld+itrc-1,
+     &                      vname(1,indxTHmix_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTVmix_mld
 !
            work2d=TVmix_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTVmix_mld_avg(itrc),
-     &                      indxTVmix_mld+itrc-1,
+     &                      vname(1,indxTVmix_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTForc_mld
 !
            work2d=TForc_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTForc_mld_avg(itrc),
-     &                      indxTForc_mld+itrc-1,
+     &                      vname(1,indxTForc_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTrate_mld
 !
            work2d=Trate_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTrate_mld_avg(itrc),
-     &                      indxTrate_mld+itrc-1,
+     &                      vname(1,indxTrate_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTentr_mld
 !
            work2d=Tentr_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTentr_mld_avg(itrc),
-     &                      indxTentr_mld+itrc-1,
+     &                      vname(1,indxTentr_mld+itrc-1),
      &                      record,r2dvar,type)
 
         endif

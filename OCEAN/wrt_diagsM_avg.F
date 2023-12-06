@@ -145,63 +145,63 @@
 !
            workr=MXadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMXadv_avg(itrc),
-     &                      indxMXadv+itrc-1,
+     &                      vname(1,indxMXadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMYadv
 !
            workr=MYadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMYadv_avg(itrc),
-     &                      indxMYadv+itrc-1,
+     &                      vname(1,indxMYadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVadv
 !
            workr=MVadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMVadv_avg(itrc),
-     &                      indxMVadv+itrc-1,
+     &                      vname(1,indxMVadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMCor
 !
            workr=MCor_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMCor_avg(itrc),
-     &                      indxMCor+itrc-1,
+     &                      vname(1,indxMCor+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMPrsgrd
 !
            workr=MPrsgrd_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMPrsgrd_avg(itrc),
-     &                      indxMPrsgrd+itrc-1,
+     &                      vname(1,indxMPrsgrd+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMHmix
 !
            workr=MHmix_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMHmix_avg(itrc),
-     &                      indxMHmix+itrc-1,
+     &                      vname(1,indxMHmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMHdiff
 !
            workr=MHdiff_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMHdiff_avg(itrc),
-     &                      indxMHdiff+itrc-1,
+     &                      vname(1,indxMHdiff+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVmix
 !
            workr=MVmix_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMVmix_avg(itrc),
-     &                      indxMVmix+itrc-1,
+     &                      vname(1,indxMVmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVmix2
 !
            workr=MVmix2_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMVmix2_avg(itrc),
-     &                      indxMVmix2+itrc-1,
+     &                      vname(1,indxMVmix2+itrc-1),
      &                      record,ivar,type)
 # if defined DIAGNOSTICS_BARO
 !
@@ -209,7 +209,7 @@
 !
            workr=MBaro_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMBaro_avg(itrc),
-     &                      indxMBaro+itrc-1,
+     &                      vname(1,indxMBaro+itrc-1),
      &                      record,ivar,type)
 # endif
 # if defined M3FAST
@@ -218,7 +218,7 @@
 !
            workr=Mfast_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMfast_avg(itrc),
-     &                      indxMfast+itrc-1,
+     &                      vname(1,indxMfast+itrc-1),
      &                      record,ivar,type)
 # endif
 # ifdef MRL_WCI
@@ -227,56 +227,56 @@
 !
            workr=Mvf_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMvf_avg(itrc),
-     &                      indxMvf+itrc-1,
+     &                      vname(1,indxMvf+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMbrk
 !
            workr=Mbrk_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMbrk_avg(itrc),
-     &                      indxMbrk+itrc-1,
+     &                      vname(1,indxMbrk+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMStCo
 !
            workr=MStCo_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMStCo_avg(itrc),
-     &                      indxMStCo+itrc-1,
+     &                      vname(1,indxMStCo+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVvf
 !
            workr=MVvf_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMVvf_avg(itrc),
-     &                      indxMVvf+itrc-1,
+     &                      vname(1,indxMVvf+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMPrscrt
 !
            workr=MPrscrt_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMPrscrt_avg(itrc),
-     &                      indxMPrscrt+itrc-1,
+     &                      vname(1,indxMPrscrt+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMsbk
 !
            workr=Msbk_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMsbk_avg(itrc),
-     &                      indxMsbk+itrc-1,
+     &                      vname(1,indxMsbk+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMbwf
 !
            workr=Mbwf_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMbwf_avg(itrc),
-     &                      indxMbwf+itrc-1,
+     &                      vname(1,indxMbwf+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMfrc
 !
            workr=Mfrc_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMfrc_avg(itrc),
-     &                      indxMfrc+itrc-1,
+     &                      vname(1,indxMfrc+itrc-1),
      &                      record,ivar,type)
 # endif
 !
@@ -284,7 +284,7 @@
 !
            workr=Mrate_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMrate_avg(itrc),
-     &                      indxMrate+itrc-1,
+     &                      vname(1,indxMrate+itrc-1),
      &                      record,ivar,type)
 !
 

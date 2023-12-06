@@ -135,49 +135,49 @@
 !
            work2d=ekHadv(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekHadv(itrc),
-     &                      indxekHadv+itrc-1,
+     &                      vname(1,indxekHadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekHdiff
 !
            work2d=ekHdiff(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekHdiff(itrc),
-     &                      indxekHdiff+itrc-1,
+     &                      vname(1,indxekHdiff+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekVadv
 !
            work2d=ekVadv(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekVadv(itrc),
-     &                      indxekVadv+itrc-1,
+     &                      vname(1,indxekVadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekCor
 !
            work2d=ekCor(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekCor(itrc),
-     &                      indxekCor+itrc-1,
+     &                      vname(1,indxekCor+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekPrsgrd
 !
            work2d=ekPrsgrd(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekPrsgrd(itrc),
-     &                      indxekPrsgrd+itrc-1,
+     &                      vname(1,indxekPrsgrd+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekHmix
 !
            work2d=ekHmix(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekHmix(itrc),
-     &                      indxekHmix+itrc-1,
+     &                      vname(1,indxekHmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekVmix
 !
            work2d=ekVmix(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekVmix(itrc),
-     &                      indxekVmix+itrc-1,
+     &                      vname(1,indxekVmix+itrc-1),
      &                      record,ivar,type)
 
 !
@@ -185,7 +185,7 @@
 !
            work2d=ekrate(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekrate(itrc),
-     &                      indxekrate+itrc-1,
+     &                      vname(1,indxekrate+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -194,7 +194,7 @@
 !
            work2d=ekvol(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekvol(itrc),
-     &                      indxekvol+itrc-1,
+     &                      vname(1,indxekvol+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -203,7 +203,7 @@
 !
            work2d=ekVmix2(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekVmix2(itrc),
-     &                      indxekVmix2+itrc-1,
+     &                      vname(1,indxekVmix2+itrc-1),
      &                      record,ivar,type)
 
 !
@@ -211,7 +211,7 @@
 !
            work2d=ekWind(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekWind(itrc),
-     &                      indxekWind+itrc-1,
+     &                      vname(1,indxekWind+itrc-1),
      &                      record,ivar,type)
 
 
@@ -220,7 +220,7 @@
 !
            work2d=ekDrag(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekDrag(itrc),
-     &                      indxekDrag+itrc-1,
+     &                      vname(1,indxekDrag+itrc-1),
      &                      record,ivar,type)
 # if defined DIAGNOSTICS_BARO
 !
@@ -228,7 +228,7 @@
 !
            work2d=ekBaro(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekBaro(itrc),
-     &                      indxekBaro+itrc-1,
+     &                      vname(1,indxekBaro+itrc-1),
      &                      record,ivar,type)
 !
 # endif
@@ -239,7 +239,7 @@
 !
            work2d=ekfast(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekfast(itrc),
-     &                      indxekfast+itrc-1,
+     &                      vname(1,indxekfast+itrc-1),
      &                      record,ivar,type)
 !
 # endif
@@ -258,49 +258,49 @@
 !
            work2d=ekHadv_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekHadv_mld(itrc),
-     &                      indxekHadv_mld+itrc-1,
+     &                      vname(1,indxekHadv_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekHdiff
 !
            work2d=ekHdiff_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekHdiff_mld(itrc),
-     &                      indxekHdiff_mld+itrc-1,
+     &                      vname(1,indxekHdiff_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekVadv
 !
            work2d=ekVadv_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekVadv_mld(itrc),
-     &                      indxekVadv_mld+itrc-1,
+     &                      vname(1,indxekVadv_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekCor
 !
            work2d=ekCor_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekCor_mld(itrc),
-     &                      indxekCor_mld+itrc-1,
+     &                      vname(1,indxekCor_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekPrsgrd
 !
            work2d=ekPrsgrd_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekPrsgrd_mld(itrc),
-     &                      indxekPrsgrd_mld+itrc-1,
+     &                      vname(1,indxekPrsgrd_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekHmix
 !
            work2d=ekHmix_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekHmix_mld(itrc),
-     &                      indxekHmix_mld+itrc-1,
+     &                      vname(1,indxekHmix_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekVmix
 !
            work2d=ekVmix_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekVmix_mld(itrc),
-     &                      indxekVmix_mld+itrc-1,
+     &                      vname(1,indxekVmix_mld+itrc-1),
      &                      record,ivar,type)
 
 !
@@ -308,7 +308,7 @@
 !
            work2d=ekrate_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekrate_mld(itrc),
-     &                      indxekrate_mld+itrc-1,
+     &                      vname(1,indxekrate_mld+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -317,7 +317,7 @@
 !
            work2d=ekvol_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekvol_mld(itrc),
-     &                      indxekvol_mld+itrc-1,
+     &                      vname(1,indxekvol_mld+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -326,7 +326,7 @@
 !
            work2d=ekVmix2_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekVmix2_mld(itrc),
-     &                      indxekVmix2_mld+itrc-1,
+     &                      vname(1,indxekVmix2_mld+itrc-1),
      &                      record,ivar,type)
 #  if defined DIAGNOSTICS_BARO
 !
@@ -334,7 +334,7 @@
 !
            work2d=ekBaro_mld(:,:)
            call fillvalue2d(work2d,nciddiags_ek,diags_ekBaro_mld(itrc),
-     &                      indxekBaro_mld+itrc-1,
+     &                      vname(1,indxekBaro_mld+itrc-1),
      &                      record,ivar,type)
 !
 #  endif
