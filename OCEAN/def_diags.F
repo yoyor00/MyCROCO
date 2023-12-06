@@ -267,7 +267,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 !
 ! Time2.
@@ -302,7 +302,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 !
 ! Tracer diagnostics variables :
@@ -337,8 +337,8 @@
           ierr=nf_put_att_text (ncid,vidTXadv(itrc), 'field',
      &          lvar, vname(4,indxTXadv+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,vidTXadv(itrc),indxTXadv+itrc-1,5,
-     &       NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidTXadv(itrc),
+     &       vname(:,indxTXadv+itrc-1), 5, NF_FOUT, ierr)
 !
 ! indxTYadv
 !
@@ -365,8 +365,8 @@
            ierr=nf_put_att_text (ncid,vidTYadv(itrc), 'field',
      &                       lvar, vname(4,indxTYadv+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,vidTYadv(itrc),indxTYadv+itrc-1,5,
-     &       NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidTYadv(itrc),
+     &       vname(:,indxTYadv+itrc-1), 5, NF_FOUT, ierr)
 !
 ! indxTVadv
 !
@@ -393,8 +393,8 @@
            ierr=nf_put_att_text (ncid,vidTVadv(itrc), 'field',
      &                       lvar, vname(4,indxTVadv+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,vidTVadv(itrc),indxTVadv+itrc-1,5,
-     &       NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidTVadv(itrc),
+     &       vname(:,indxTVadv+itrc-1), 5, NF_FOUT, ierr)
 !
 ! indxTHmix
 !
@@ -421,8 +421,8 @@
            ierr=nf_put_att_text (ncid,vidTHmix(itrc), 'field',
      &                       lvar, vname(4,indxTHmix+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,vidTHmix(itrc),indxTHmix+itrc-1,5,
-     &       NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidTHmix(itrc),
+     &       vname(:,indxTHmix+itrc-1), 5, NF_FOUT, ierr)
 !
 !indxTVmix
 !
@@ -449,8 +449,8 @@
            ierr=nf_put_att_text (ncid,vidTVmix(itrc), 'field',
      &                       lvar, vname(4,indxTVmix+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,vidTVmix(itrc),indxTVmix+itrc-1,5,
-     &       NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidTVmix(itrc),
+     &       vname(:,indxTVmix+itrc-1), 5, NF_FOUT, ierr)
 # ifdef DIAGNOSTICS_TSVAR
 !
 !indxTVmixt
@@ -478,8 +478,8 @@
            ierr=nf_put_att_text (ncid,vidTVmixt(itrc), 'field',
      &                       lvar, vname(4,indxTVmixt+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,vidTVmixt(itrc),indxTVmixt+itrc-1,5,
-     &       NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidTVmixt(itrc),
+     &       vname(:,indxTVmixt+itrc-1), 5, NF_FOUT, ierr)
 # endif
 !
 ! indxTForc - Solar radiation and nudging body forces
@@ -507,8 +507,8 @@
            ierr=nf_put_att_text (ncid, vidTForc(itrc),'field',
      &                     lvar, vname(4,indxTForc+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,vidTForc(itrc),indxTForc+itrc-1,5,
-     &       NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidTForc(itrc),
+     &       vname(:,indxTForc+itrc-1), 5, NF_FOUT, ierr)
 !
 ! Trate indxTrate
 !
@@ -535,8 +535,8 @@
            ierr=nf_put_att_text (ncid, vidTrate(itrc),'field',
      &                     lvar, vname(4,indxTrate+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,vidTrate(itrc),indxTrate+itrc-1,5,
-     &       NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidTrate(itrc),
+     &       vname(:,indxTrate+itrc-1), 5, NF_FOUT, ierr)
 !
          endif
 !
@@ -570,7 +570,7 @@
      &                      lvar, vname(4,indxTXadv_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTXadv_mld(itrc),
-     &                       indxTXadv_mld+itrc-1,5, NF_FOUT, ierr)
+     &      vname(:,indxTXadv_mld+itrc-1), 5, NF_FOUT, ierr)
 !
 ! indxTYadv on MLD
 !
@@ -598,7 +598,7 @@
      &                      lvar, vname(4,indxTYadv_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTYadv_mld(itrc),
-     &                       indxTYadv_mld+itrc-1,5, NF_FOUT, ierr)
+     &      vname(:,indxTYadv_mld+itrc-1), 5, NF_FOUT, ierr)
 !
 ! indxTVadv on MLD
 !
@@ -626,7 +626,7 @@
      &                      lvar, vname(4,indxTVadv_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTVadv_mld(itrc),
-     &                       indxTVadv_mld+itrc-1,5, NF_FOUT, ierr)
+     &      vname(:,indxTVadv_mld+itrc-1), 5, NF_FOUT, ierr)
 !
 ! indxTHmix on MLD
 !
@@ -654,7 +654,7 @@
      &                      lvar, vname(4,indxTHmix_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTHmix_mld(itrc),
-     &                       indxTHmix_mld+itrc-1,5, NF_FOUT, ierr)
+     &      vname(:,indxTHmix_mld+itrc-1), 5, NF_FOUT, ierr)
 !
 !indxTVmix on MLD
 !
@@ -682,7 +682,7 @@
      &                      lvar, vname(4,indxTVmix_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTVmix_mld(itrc),
-     &                       indxTVmix_mld+itrc-1,5, NF_FOUT, ierr)
+     &      vname(:,indxTVmix_mld+itrc-1), 5, NF_FOUT, ierr)
 !
 ! indxTForc - Solar radiation and nudging body forces - on MLD
 !
@@ -710,7 +710,7 @@
      &                     lvar, vname(4,indxTForc_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTForc_mld(itrc),
-     &                       indxTForc_mld+itrc-1,5, NF_FOUT, ierr)
+     &      vname(:,indxTForc_mld+itrc-1), 5, NF_FOUT, ierr)
 !
 ! Trate indxTrate on MLD
 !
@@ -738,7 +738,7 @@
      &                     lvar, vname(4,indxTrate_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTrate_mld(itrc),
-     &                       indxTrate_mld+itrc-1,5, NF_FOUT, ierr)
+     &      vname(:,indxTrate_mld+itrc-1), 5, NF_FOUT, ierr)
 !
 ! Tentr indxTentr on MLD
 !
@@ -766,7 +766,7 @@
      &                     lvar, vname(4,indxTentr_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTentr_mld(itrc),
-     &                       indxTentr_mld+itrc-1,5, NF_FOUT, ierr)
+     &      vname(:,indxTentr_mld+itrc-1), 5, NF_FOUT, ierr)
          endif
 !
 # endif /* DIAGNOSTICS_TS_MLD */
