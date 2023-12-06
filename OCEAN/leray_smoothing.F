@@ -189,7 +189,7 @@
      &     .and. count(umask(i-k:i+k,j-k:j+k).eq.1.0).eq.(2*k+1)**2
 # endif
 # ifdef WET_DRY
-     &     .and. count(umask_wet(i-k:i+k,j-k:j+k).eq.1.0).eq.(2*k+1)**2
+     &     .and. count(umask_wet(i-k:i+k,j-k:j+k).gt.0.0).eq.(2*k+1)**2
 # endif           
      &                                                          ) then
                 exit
@@ -212,7 +212,7 @@
 #   endif              
 #  endif
 #  ifdef WET_DRY
-     &          count(umask_wet(i-k:i+k,j-k:j+k).eq.1.0).eq.(2*k+1)**2
+     &          count(umask_wet(i-k:i+k,j-k:j+k).gt.0.0).eq.(2*k+1)**2
 #  endif           
      &                                                          ) then
                 exit
@@ -278,7 +278,7 @@
      &     .and. count(vmask(i-k:i+k,j-k:j+k).eq.1.0).eq.(2*k+1)**2
 # endif
 # ifdef WET_DRY
-     &     .and. count(vmask_wet(i-k:i+k,j-k:j+k).eq.1.0).eq.(2*k+1)**2
+     &     .and. count(vmask_wet(i-k:i+k,j-k:j+k).gt.0.0).eq.(2*k+1)**2
 # endif           
      &                                                          ) then
                 exit
@@ -301,7 +301,7 @@
 #   endif              
 #  endif
 #  ifdef WET_DRY
-     &          count(vmask_wet(i-k:i+k,j-k:j+k).eq.1.0).eq.(2*k+1)**2
+     &          count(vmask_wet(i-k:i+k,j-k:j+k).gt.0.0).eq.(2*k+1)**2
 #  endif           
      &                                                          ) then
                 exit
