@@ -1738,7 +1738,7 @@ CONTAINS
       REAL(KIND=rsh) :: o1dv_z0sedim
       !! * Local declaration
       INTEGER :: iv
-      REAL(KIND=rsh) :: z0tmp,stmp,z00,oal,oah
+      REAL(KIND=rsh) :: z0tmp,stmp,z00,oah
       REAL(KIND=rsh),PARAMETER :: epsi=1E-6
       !!----------------------------------------------------------------------
       !! * Executable part

@@ -2233,12 +2233,12 @@ C 				  endif
      &   obst_nout_thick_e, obst_nout_theta, obst_nout_frac_xy, 
      &   obst_nout_frac_z, obst_nout_fuzvz, obst_nout_a2d, 
      &   obst_nout_a3d, obst_nout_s2d , obst_nout_s3d, 
-     &   obst_nout_drag, obst_nout_tau
+     &   obst_nout_drag, obst_nout_tau,
      &   obst_varname, obst_position, obst_height_inst, obst_height, 
      &   obst_dens_inst, obst_dens3d, obst_width_inst, obst_width3d,
      &   obst_thick_inst, obst_thick3d, obst_theta3d, obst_fracxy, 
      &   obst_fracz3d, obst_drag3d, obst_a2d, obst_a3d, obst_s2d, obst_s3d, 
-     &   obst_tau, obst_fuz, obst_fvz
+     &   obst_tau, obst_fuz, obst_fvz, obst_nbvar
 #endif
           IMPLICIT NONE
 
@@ -2337,6 +2337,9 @@ C 				  endif
 
 #endif
 
+#if defined OBSTRUCTION
+      integer iv
+#endif
 
 
 # include "compute_auxiliary_bounds.h"
