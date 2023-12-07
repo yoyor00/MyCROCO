@@ -44,7 +44,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=2
+  nbcores=16
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
@@ -57,6 +57,12 @@ mkdir -p RunC
 cd RunC
 
 # 1. first run with ANA_INITIAL to build obs.nc file
+cp ../AD/set_state_z0b_ctrl.F set_state.F
+cp ../AD/save_restore_z0b_ctrl.F save_restore.F
+cp ../AD/cost_fun_z0b_ctrl.F cost_fun.F
+cp ../AD/init_control_z0b_ctrl.F init_control.F
+cp ../AD/read_obs_z0b_ctrl.F read_obs.F
+
 ln -sf ../AD/croco.in.AD-DL-Z0B-CTRL-OBS.in
 cp -f ../OCEAN/cppdefs.h .
 sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
@@ -79,5 +85,6 @@ sed -i 's/define[\t ]*ANA_INITIAL/undef ANA_INITIAL/' cppdefs.h
 cd Compile
 make croco_adc && mv croco_adc .. || exit 1
 make croco_adj && mv croco_adj .. || exit 1
+cd ..
 $mpirun_cmd time -v ./croco_adc croco.in.AD-DL-Z0B-CTRL.in
-$mpirun_cmd time -v ./croco_adj croco.in.AD-DL-Z0B-CTRL.in
+#$mpirun_cmd time -v ./croco_adj croco.in.AD-DL-Z0B-CTRL.in

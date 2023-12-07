@@ -1,0 +1,177 @@
+%.tap.f: %.F
+	$(CPP) -P $(CPPFLAGS) -D__TAPENADE__ $*.F | ./mpc > $*.tap.f
+
+#======================================================================
+#
+# Tapenade:
+# =========
+#
+
+ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F get_vbc.F get_smflux.F set_state.F
+ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
+TAP_TARGET=autodiff
+ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o save_restore.o
+
+TGT_SRCS=$(ADJ_SRCS)
+TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
+TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o tgt_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o
+
+DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o div_driver.o cost_fun.o get_ij.o distance.o xtime.o
+
+TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
+
+#======================================================================
+
+#
+# Everything
+# ==========
+all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_adc $(SBIN)_tgt $(SBIN)_div
+
+#
+# Executables files.
+# =========== =====
+#
+$(SBIN): $(OBJS90) $(OBJS) main.o read_obs.o $(MPI_DIR_OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
+
+$(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_adc:  $(ADJ_OBJS) $(TAP_TARGET)_d.o check_driver.o $(OBJS90) $(OBJS) main_adc.o $(MPI_ADJ_OBJS) 
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_div: $(DIV_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+
+# $Id: Makefile 3922 2011-05-19 08:54:39Z llh $
+
+profile.o: profile.c
+	$(CC) $(FLAGS) -c profile.c
+
+testMemSizef.o : testMemSizef.f
+	$(CFT) $(FFLAGS) -c testMemSizef.f
+
+testMemSizec.o : testMemSizec.c
+	$(CC) $(FFLAGS) -c testMemSizec.c
+
+testMemSize : testMemSizef.o testMemSizec.o
+	$(CFT) $(FFLAGS) testMemSizef.o testMemSizec.o -o testMemSize
+
+treeverse.f: treeverse.F
+	/bin/cp $^ $@
+
+adBuffer.f: adBuffer.F
+	/bin/cp $^ $@
+
+treeverse.o: treeverse.f
+	$(CFT) $(FFLAGS) -c $^
+
+adBinomial.o: adBinomial.c
+	$(CC) $(CFLAGS) -c $^
+
+adBuffer.o : adBuffer.f
+	$(CFT) $(FFLAGS) -c $^
+
+adBufferC.o: adBufferC.c
+	$(CC) $(CFLAGS) -c $^
+
+adStack.o : adStack.c
+	$(CC) $(CFLAGS) -c adStack.c
+
+adDebug.o : adDebug.c
+	$(CC) $(CFLAGS) -c adDebug.c
+
+dpStack.o : dpStack.c
+	$(CC) $(CFLAGS) -c dpStack.c
+
+dpTest.o : dpTest.f
+	$(CFT) $(FFLAGS) -c dpTest.f
+
+validityTest.o : validityTest.f
+	$(CFT) $(FFLAGS) -c validityTest.f
+
+treeverseFtest : treeverseFtest.f treeverse.f
+	$(CFT) $(FFLAGS) -c treeverseFtest.f
+	$(CFT) $(FFLAGS) -c treeverse.f
+	$(CFT) $(FFLAGS) $(LDFLAGS) treeverseFtest.o treeverse.o -o treeverseFtest
+
+treeverseCtest : treeverseCtest.c treeverse.c treeverse.h
+	$(CC) $(CFLAGS) -c treeverse.c
+	$(CC) $(CFLAGS) -c treeverseCtest.c
+	$(CC) $(CFLAGS) $(LDFLAGS) treeverseCtest.o treeverse.o -o treeverseCtest
+
+adBufferFtest : adStack.c adBuffer.f adBufferFtest.f
+	$(CFT) $(FFLAGS) $^ -o $@
+
+adBufferCtest : adStack.c adBuffer.c adBufferCtest.c
+	$(CFT) $(FFLAGS) $^ -o $@
+
+m1qn3.o: m1qn3.F
+	$(CFT) $(FFLAGS) -c $^ -o $@
+
+
+
+$(TAP_TARGET)_d.o: $(TAP_TARGET)_d.f
+	ln -sf empty_code_insertion.h code_insertion.h
+	$(CFT) -c $(FFLAGS) $*.f -o $*.o
+
+$(TAP_TARGET)_b.o: $(TAP_TARGET)_b.f
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+	$(CFT) -c $(FFLAGS) $*.f -o $*.o
+
+$(TAP_TARGET)_b.f: $(ADJ_PSRCS)
+	ln -sf empty_code_insertion.h code_insertion.h
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+
+
+
+cmaker.f: cmaker.F
+	$(CPP) -P $(CPPFLAGS) $^ | ./mpc > $@
+
+cmaker: cmaker.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
+
+main.f: main.F
+	$(CPP) -P $(CPPFLAGS) -DGENERATE_OBS $^ | ./mpc > $@
+
+main_tgt.f: main.F
+	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
+
+main_adj.f: main.F
+	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $@
+
+main_adc.f: main.F
+	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL -DAD_CHECK $^ | ./mpc > $@
+
+$(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
+	ln -sf empty_code_insertion.h code_insertion.h
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) $(AMPIINC)
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+
+$(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
+	ln -sf empty_code_insertion.h code_insertion.h
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) $(AMPIINC)
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+
+fortranSupport.o : fortranSupport.F
+	$(CFT) $(FFLAGS) $(CPPFLAGS) -c $^ -o $@
+
+ampiSupport.o : ampiSupport.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@
+
+
+# Special treatment for barrier function:
+# THERE SHALL BE NO OPTIMIZATION HERE!!!!
+#
+my_barrier.o: my_barrier.f
+	$(CFT) -c -O0 my_barrier.f
+#
+# Include automatically generated dependency list:
+#
+
+-include Make.depend
+

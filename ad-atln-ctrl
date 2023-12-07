@@ -1,6 +1,6 @@
 #!/bin/bash
 #OAR --project airsea-modeling
-#OAR -l /nodes=1/cpu=1/core=1,walltime=48:00:00
+#OAR -l /nodes=4/cpu=1/core=4,walltime=48:00:00
 ################################################################################
 case $1 in
   --env-ok)
@@ -54,55 +54,62 @@ if [ -f AD/tapenade_3.16/bin/tapenade ]; then
     export TAPENADE=`pwd`/AD/tapenade_3.16/bin/tapenade
 fi
 
-mkdir -p RunIC
-cd RunIC
+mkdir -p RunAtlnC
+cd RunAtlnC
+[ -d CROCO_FILES ] || { echo "I need a CROCO_FILE dir!"; exit 1; }
+
 
 # 1. first run: build of obs.dat
-cp -f ../AD/croco.internal-friction-obs.in .
+cp -f ../AD/croco-atln-obs.in .
+cp -f ../AD/croco-atln-est.in .
 
-cp -f ../OCEAN/cppdefs.h .
-sed -i 's/undef[\t ]*INTERNAL/define INTERNAL/' cppdefs.h
-sed -i 's/undef[\t ]*GENERATE_OBS/define GENERATE_OBS/' cppdefs.h
-sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
-sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
-sed -i 's/undef[\t ]*MPI/define MPI/' cppdefs.h
-sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
+cp -f ../AD/cppdefs-atln.h cppdefs.h
+cp -f ../AD/param-atln.h param.h
 
-# ../OCEAN/jobcomp
-# cd Compile
-# make croco && mv croco .. || exit 1
-# cd ..
-# rm -f obs.*.dat
-# $mpirun_cmd ./croco croco.internal-friction-obs.in
+cp -f ../AD/read_obs_atln.F read_obs.F
+cp -f ../AD/cost_fun_atln.F cost_fun.F
+cp -f ../AD/set_state_atln.F set_state.F
 
+cp -f ../AD/init_control_atln.F init_control.F
+cp -f ../AD/save_restore_atln.F save_restore.F
 
-# #./croco croco.internal-friction-obs.in
-# cp internal_his.nc obs.nc
-#
-# 2. second run with obs.dat file
-cp ../AD/set_state_internal.F set_state.F
-cp ../AD/save_restore_internal.F save_restore.F
-cp ../AD/cost_fun_full_zeta.F cost_fun.F
-cp ../AD/init_control_internal.F init_control.F
-cp ../AD/read_obs_full_zeta.F read_obs.F
-
-
-sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
-
-#sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
-#sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
-#sed -i 's/undef[\t ]*MPI/define MPI/' cppdefs.h
+cp -f ../AD/data/tideg-*.txt .
+#sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/' cppdefs.h
+sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/g' cppdefs.h
+#sed -i 's/undef[\t ]*MPI/define MPI/g' cppdefs.h
+sed -i 's/define[\t ]*MPI/undef MPI/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
-#make croco_adj && mv croco_adj .. || exit 1
+#make croco && mv croco .. || exit 1
+cd ..
+#m -f obs.*.dat
+#$mpirun_cmd ./croco croco-atln-obs.in
+#cp CROCO_FILES/croco_his.nc CROCO_FILES/obs.nc
+#
+# 2. second run with obs.dat file
+#sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
+sed -i 's/define[\t ]*AMPI/undef AMPI/g' cppdefs.h
+
+sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
+#sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
+#sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
+
+../OCEAN/jobcomp
+cd Compile
+#make croco_adc && mv croco_adc .. || exit 1
 make croco_adj && mv croco_adj .. || exit 1
+make croco_tgt && mv croco_tgt .. || exit 1
+#make croco_tgt_dbg && mv croco_tgt_dbg .. || exit 1
+
 #make croco_adj_dbg1 && mv croco_adj_dbg1 .. || exit 1
 #make croco_adj_dbg2 && mv croco_adj_dbg2 .. || exit 1
 cd ..
 
-#./croco_adc croco.internal-friction-obs.in
 echo "in directory `pwd`"
 #./croco_tgt croco.internal-friction-obs.in
-$mpirun_cmd ./croco_adj croco.internal-friction-obs.in
+#$mpirun_cmd ./croco_adc croco-atln-est.in
+./croco_adj croco-atln-obs.in
+#(export DBAD_PHASE=1 ; ./croco_tgt_dbg croco-atln-est.in > /tmp/l1) & (export DBAD_PHASE=2 ; ./croco_tgt_dbg croco-atln-est.in > /tmp/l2)
+#./croco_adc croco.internal-friction-obs.in
 #mpirun -np 1 ./croco_adj_dbg1 croco.internal-friction-obs.in &
 #mpirun -np 1 ./croco_adj_dbg2 croco.internal-friction-obs.in

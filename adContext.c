@@ -10,7 +10,12 @@ static double dbad_currentSeed = 0.0 ;
 static double dbad_condensed_val, dbad_condensed_tgt, dbad_condensed_adj ;
 
 double dbad_nextRandom() {
-  dbad_currentSeed += dbad_seed ;
+  dbad_currentSeed
+
+
+
+
+    += dbad_seed ;
   if (dbad_currentSeed>=1.0) dbad_currentSeed-=1.0 ;
   /* Return a value in range [1.0 2.0[ */
   return dbad_currentSeed+1.0 ;

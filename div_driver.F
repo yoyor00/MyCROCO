@@ -22,17 +22,19 @@ c     this file is not differentiated
       if (indic.eq.4) then
          write(*,*) 'indic = 4'
 
-         call save_croco_state()
 
          icost = 0
+         call save_croco_state()
          call cost_fun(ad_x, icost)
-         cost = icost
          call restore_croco_state()
+         cost = icost
+
 
          eps = 1.0D-10
-
          xbck(1) = ad_x(1) + eps
          icost = 0
+
+         call save_croco_state()
          call cost_fun(xbck, icost)
          ad_g(1) = (icost-cost)/eps
          call restore_croco_state()

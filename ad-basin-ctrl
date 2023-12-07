@@ -27,7 +27,7 @@ case $1 in
         openblas lapack \
         openjdk coreutils binutils sed grep bash which time patch gdb"
     guix_cmd="guix time-machine --commit=fa59a22140bcb98fa6e5cf895deaa5f2fbdb9bcf --"
-    exec $guix_cmd environment -m $MYDIR/adjoinable-mpi.scm --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
+    exec $guix_cmd environment --root=$pwd/.croco-guix-profile --preserve='OAR*' --preserve='TAPENADE' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac
 ################################################################################
@@ -45,7 +45,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=16
+  nbcores=1
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
@@ -59,6 +59,7 @@ cd RunBC
 
 # 1. first run: build of obs.dat
 cp -f ../AD/croco.basin-obs.in .
+cp -f ../AD/croco.basin-rdrg.in .
 
 cp -f ../OCEAN/cppdefs.h .
 sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
@@ -66,27 +67,27 @@ sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
 sed -i 's/undef[\t ]*BASIN/define BASIN/' cppdefs.h
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
 #sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
-sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
-sed -i 's/undef[\t ]*MPI/define MPI/' cppdefs.h
+#sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
+#sed -i 's/undef[\t ]*MPI/define MPI/' cppdefs.h
 #sed -i 's/undef[\t ]*TAPENADE/define TAPENADE\n# define AUTOTILING/' cppdefs.h
-../OCEAN/jobcomp
-cd Compile
-make croco && mv croco .. || exit 1
-cd ..
-rm -f obs.*.dat
-$mpirun_cmd ./croco croco.basin-obs.in
-cp basin_his.nc obs.nc
-#
-# 2. second run with obs.dat file
+# ../OCEAN/jobcomp
+# cd Compile
+# make croco && mv croco .. || exit 1
+# cd ..
+# rm -f obs.*.dat
+# $mpirun_cmd ./croco croco.basin-obs.in
+# cp basin_his.nc obs.nc
+# #
+# # 2. second run with obs.dat file
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/g' cppdefs.h
-sed -i 's/undef[\t ]*AMPI/define AMPI/g' cppdefs.h
+#sed -i 's/undef[\t ]*AMPI/define AMPI/g' cppdefs.h
 
 #sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
 #sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
 #sed -i 's/undef[\t ]*MPI/define MPI/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
-make croco_adj && mv croco_adj .. || exit 1
+make croco_tgt_dbg && mv croco_tgt_dbg .. || exit 1
 #make croco_adj_dbg1 && mv croco_adj_dbg1 .. || exit 1
 #make croco_adj_dbg2 && mv croco_adj_dbg2 .. || exit 1
 cd ..
@@ -94,6 +95,11 @@ cd ..
 #./croco_adc croco.internal-friction-obs.in
 echo "in directory `pwd`"
 #./croco_tgt croco.internal-friction-obs.in
-$mpirun_cmd ./croco_adj croco.basin-obs.in
+export DBAD_PHASE=1 ; ./croco_tgt
+export DBAD_PHASE=2 ; ./croco_tgt
+
+
+
+#$mpirun_cmd ./croco_tgt_dbg croco.basin-rdrg.in
 #mpirun -np 1 ./croco_adj_dbg1 croco.internal-friction-obs.in &
 #mpirun -np 1 ./croco_adj_dbg2 croco.internal-friction-obs.in

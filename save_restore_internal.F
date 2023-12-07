@@ -116,17 +116,3 @@
       write(*,*) '++++++++++'
 
       end subroutine restore_croco_state
-
-      subroutine restore_croco_state_2d(tile)
-
-      implicit none
-# include "adinc.h"
-# include "adparam.h"
-      integer tile
-# include "compute_tile_bounds.h"
-
-c      call set_depth(tile)
-
-c      call grid_stiffness(tile)
-
-      end subroutine restore_croco_state_2d

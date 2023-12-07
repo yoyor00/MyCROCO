@@ -21,8 +21,8 @@ c     real size of the problem per node (<= ad_array_size/nnodes)
 C     number of steps between cost function computations
       integer ad_ns
 #if defined AD_DL_Z0B_CTRL
-      parameter (ad_ns = 2400)
-#elif defined AD_ATLN
+      parameter (ad_ns = 10)
+#elif defined ATLN_CTRL
       parameter (ad_ns = 180)
 #elif defined INTERNAL
       parameter (ad_ns = 1)
@@ -33,9 +33,9 @@ C     number of steps between cost function computations
 C     number of cost function computations
       integer ad_nt
 #if defined AD_DL_Z0B_CTRL
+      parameter (ad_nt = 240)
+#elif defined ATLN_CTRL
       parameter (ad_nt = 1)
-#elif defined AD_ATLN
-      parameter (ad_nt = 48)
 #elif defined INTERNAL
       parameter (ad_nt = 2)
 #elif defined BASIN
@@ -46,6 +46,11 @@ C     number of obs in observation file
       integer ad_nobs
 #if defined AD_DL_Z0B_CTRL
       parameter (ad_nobs = ad_nt*ad_ns+3)
+#elif defined ATLN_CTRL
+      integer ad_nobs_max
+      parameter (ad_nobs_max = 481)
+      integer ad_obs_i(ad_nobs_max)
+      integer ad_obs_j(ad_nobs_max)
 #elif defined INTERNAL
       parameter(ad_nobs = 130*32)
 #elif defined BASIN
@@ -56,8 +61,8 @@ C     start of assimilation in the obs file
       integer ad_ast
 #if defined AD_DL_Z0B_CTRL
       parameter (ad_ast = 1200)
-#elif defined AD_ATLN
-      parameter (ad_ast = 388)
+#elif defined ATLN_CTRL
+      parameter (ad_ast = 64800)
 #elif defined INTERNAL
       parameter (ad_ast = 1)
 #elif defined BASIN
@@ -66,11 +71,19 @@ C     start of assimilation in the obs file
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st
-      parameter (ad_main_st = 1)
 
+#if defined(ATLN_CTRL)
+      parameter (ad_main_st = 64800)
+#else      
+      parameter (ad_main_st = 1)
+#endif
+      
 c     observations
+#if defined(INTERNAL) || defined(BASIN) || defined(AD_DL_Z0B_CTRL)
       double precision ad_obs(GLOBAL_2D_ARRAY,ad_nobs)
-      double precision ad_obs_time(ad_nobs)
+#elif defined (ATLN_CTRL)
+      double precision ad_obs(ad_nobs_max, 200001)
+#endif
 
 c     state vector / process
       double precision ad_x(ad_array_node_size)
@@ -169,7 +182,12 @@ C     commons
 
       common /ad_timings/ ad_dir_time,ad_adj_time
 
-      common /ad_obs_data/ ad_obs, ad_obs_time
+#if defined(ATLN_CTRL)      
+      common /ad_obs_data/ ad_obs, ad_obs_i, ad_obs_j, ad_nobs
+#else
+      common /ad_obs_data/ ad_obs, ad_nobs
+#endif
+      
       common /ad_state_info/ ad_sim_iicroot,ad_counter,ad_cost_counter,
      &     ad_ta,
      &     ad_rms,ad_irms,ad_irms_f,ad_cost, ad_step_counter

@@ -35,11 +35,11 @@ c     write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
       cost=0
       ad_irms=0
 
-      next_kstp=kstp
-      time_start=time
-      iif = -1
-      nbstep3d = 0
-      iic = ntstart
+c      next_kstp=kstp
+c      time_start=time
+c      iif = -1
+c      nbstep3d = 0
+c      iic = ntstart
 
       if (ad_main_st.gt.0) then
          call ad_step(ad_main_st)

@@ -113,7 +113,7 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       ad_counter = ad_counter + 1
 
       dx=1.e-8
-      df1=cost
+      df1=cost/1000
       epsrel=1.e-5
       niter=2000
       nsim=2000
@@ -137,6 +137,15 @@ c     imode(3)=0 ==> simulator never called with indic=1
       open(unit=780, file="grad.dat", action="write",
      &     form='FORMATTED')
 
+c     write first guess
+      if (mynode.eq.0) then
+         write (779,*) ad_counter,ad_rms,cost,norm2(ad_g_f),
+     &        ad_dir_time,ad_adj_time
+         call flush(779)
+         write (780,*) ad_counter,ad_g_f
+         call flush(780)
+      end if
+         
 
       reverse = 1
 c     reverse mode

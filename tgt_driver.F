@@ -29,7 +29,7 @@ c         f = cost
 c         call restore_croco_state()
 c     call save_croco_state()
          do i=1,Sn
-            ad_xd(k) = 0
+            ad_xd(i) = 0
          end do
          icost = cost
          do i=1,Sn
@@ -51,8 +51,9 @@ c     call save_croco_state()
          end do
          write (*,*) '######################################'
          do i=1,Sn
-            write(*,*) 'node:',mynode,'ad_x(',i,'),ad_xd(',i,'),grad(',i,')=',
-     &           ad_x(i),ad_xd(i),grad(i)
+            write(*,*) 'node:',mynode,'ad_x(',i,')',
+     &           'grad(',i,')=',
+     &           ad_x(i),grad(i)
          end do
          write (*,*) '######################################'
 

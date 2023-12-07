@@ -4,13 +4,13 @@ c     this file is not differentiated
 
 C     !! adjoint check only
 C     !! x size = 1 ==> dfdx ok
-      subroutine simul(indic,Sn,ad_x,cost,grad,izs,rzs,dzs)
+      subroutine simul(indic,Sn,ad_x,cost,diff_grad,izs,rzs,dzs)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
       real t1, t2, xtime
       integer indic, Sn, i, k
-      real grad(Sn), idfdx
+      real grad(Sn), diff_grad(Sn), diff_x(Sn), idfdx, eps
       real izs(1)
       real rzs(1)
       real dzs(1)
@@ -77,7 +77,7 @@ c         write(*,*) '-||->', (cost-f)/eps
 
 c     2. Call tangent
          do i=1,Sn
-            ad_xd(k) = 0
+            ad_xd(i) = 0
          end do
          icost = cost
          do i=1,Sn
@@ -97,11 +97,37 @@ c     2. Call tangent
             ad_xd(i) = 0
             grad(i)  = idfdx
          end do
+
+c     3. Call finite difference
+         do i=1,Sn
+            diff_x(i) = ad_x(i)
+         enddo
+         do i=1,Sn
+            icost = 0
+            call save_croco_state()
+            call cost_fun(ad_x, icost)
+            call restore_croco_state()
+            cost = icost
+
+            eps = 1.0D-10
+
+            icost = 0
+
+            diff_x(i) = ad_x(i) + eps
+            call save_croco_state()
+            call cost_fun(diff_x, icost)
+            call restore_croco_state()
+            diff_x(i) = ad_x(i)
+            
+            diff_grad(i) = (icost-cost)/eps
+         enddo
          write (*,*) '######################################'
          do i=1,Sn
-            write(*,*) 'node:',mynode,'ad_x(',i,'),ad_xd(',i,'),grad(',i,')',
-     &           'check(',i,')=',
-     &           ad_x(i),ad_xd(i),grad(i),ad_g(i)/grad(i)
+            write(*,*) 'node:',mynode,'ad_x(',i,')=',ad_x(i),
+     &           'diff_grad(',i,')=',diff_grad(i),
+     &           'tgt_grad(',i,')=',grad(i),'ad_g(',i,')=', ad_g(i),
+     &           'diff check(',i,')=', diff_grad(i)/grad(i),
+     &           'adjoint/tangent check(',i,')=', ad_g(i)/grad(i)
          end do
          write (*,*) '######################################'
 
