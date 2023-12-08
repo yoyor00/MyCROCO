@@ -325,7 +325,7 @@ CONTAINS
             TRIM(obst_nout_theta)//'_'//TRIM(obst_varname(iv))
          vname(2, indvar) = &
             'Obstruction bending angle for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'def                                  '
+         vname(3, indvar) = 'deg                                  '
          vname(4, indvar) = '                                     '
          vname(5, indvar) = '                                     '
          vname(6, indvar) = 'time N lat_rho lon_rho               '

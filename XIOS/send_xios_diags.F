@@ -3102,226 +3102,201 @@ C 				  endif
 
 
 #  ifdef OBSTRUCTION
-      do itrc=1,obst_nbvar
-         if (l_obstout_pos) then
-            call xios_send_field(
-     &         TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv)),
-     &         obst_position(itrc,:,:))
-         endif
+      do iv=1,obst_nbvar
+         call xios_send_field(
+     &      TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv)),
+     &      obst_position(iv,:,:))
 
-         if (l_obstout_height_f) then
-            call xios_send_field(
-     &         TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv)),
-     &         obst_height_inst(itrc,:,:))
-         endif
+         call xios_send_field(
+     &      TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_height_inst(iv,:,:))
 
-         if (l_obstout_height_e) then
-            call xios_send_field(
-     &         TRIM(obst_nout_height_e)//'_'//TRIM(obst_varname(iv)),
-     &         obst_height(itrc,:,:))
-         endif
+         call xios_send_field(
+     &      TRIM(obst_nout_height_e)//'_'//TRIM(obst_varname(iv)),
+     &      obst_height(iv,:,:))
 
-         if (l_obstout_dens_f) then
-            call xios_send_field(
-     &         TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv)),
-     &         obst_dens_inst(itrc,:,:))
-         endif
-
-         if (l_obstout_dens_e) then
+         call xios_send_field(
+     &      TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_dens_inst(iv,:,:))
+         
+         ! obst_dens3d is not allocated if not wanted in output
+         IF (l_obstout_dens_e) then
             do k=1,N
-               workr(:,:,k)=obst_dens3d(itrc,k,:,:)
+                  workr(:,:,k)=obst_dens3d(iv,k,:,:)
             enddo
             call xios_send_field(
      &         TRIM(obst_nout_dens_e)//'_'//TRIM(obst_varname(iv)),
      &         workr)
-         endif
+         END IF
 
-         if (l_obstout_width_f) then
-            call xios_send_field(
-     &         TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv)),
-     &         obst_width_inst(itrc,:,:))
-         endif
+         call xios_send_field(
+     &      TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_width_inst(iv,:,:))
 
-         if (l_obstout_width_e) then
+         ! obst_width3d is not allocated if not wanted in output
+         IF (l_obstout_width_e) then
             do k=1,N
-               workr(:,:,k)=obst_width3d(itrc,k,:,:)
+                  workr(:,:,k)=obst_width3d(iv,k,:,:)
             enddo
             call xios_send_field(
      &         TRIM(obst_nout_width_e)//'_'//TRIM(obst_varname(iv)),
      &         workr)
-         endif
+         END IF
 
-         if (l_obstout_thick_f) then
-            call xios_send_field(
-     &         TRIM(obst_nout_thick_f)//'_'//TRIM(obst_varname(iv)),
-     &         obst_thick_inst(itrc,:,:))
-         endif
+         call xios_send_field(
+     &      TRIM(obst_nout_thick_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_thick_inst(iv,:,:))
 
-         if (l_obstout_thick_e) then
+         ! obst_thick3d is not allocated if not wanted in output
+         IF (l_obstout_thick_e) then
             do k=1,N
-               workr(:,:,k)=obst_thick3d(itrc,k,:,:)
+                  workr(:,:,k)=obst_thick3d(iv,k,:,:)
             enddo
             call xios_send_field(
      &         TRIM(obst_nout_thick_e)//'_'//TRIM(obst_varname(iv)),
      &         workr)
-         endif
+         END IF
 
-         if (l_obstout_theta) then
+         ! obst_theta3d is not allocated if not wanted in output
+         IF (l_obstout_theta) then
             do k=1,N
-               workr(:,:,k)=obst_theta3d(itrc,k,:,:)*180.0/3.1415
+                  workr(:,:,k)=obst_theta3d(iv,k,:,:)*180.0/3.1415
             enddo
             call xios_send_field(
      &         TRIM(obst_nout_theta)//'_'//TRIM(obst_varname(iv)),
      &         workr)
-         endif
+         END IF
 
-         if (l_obstout_frac_xy) then
+         ! obst_fracxy is not allocated if not wanted in output
+         IF (l_obstout_frac_xy) then
             call xios_send_field(
      &         TRIM(obst_nout_frac_xy)//'_'//TRIM(obst_varname(iv)),
-     &         obst_fracxy(itrc,:,:))
-         endif
+     &         obst_fracxy(iv,:,:))
+         END IF
 
-         if (l_obstout_frac_z) then
+         ! obst_fracz3d is not allocated if not wanted in output
+         IF (l_obstout_frac_z) then
             do k=1,N
-               workr(:,:,k)=obst_fracz3d(itrc,k,:,:)
+                  workr(:,:,k)=obst_fracz3d(iv,k,:,:)
             enddo
             call xios_send_field(
      &         TRIM(obst_nout_frac_z)//'_'//TRIM(obst_varname(iv)),
      &         workr)
-         endif
+         END IF
 
-         if (l_obstout_drag) then
+         ! obst_drag3d is not allocated if not wanted in output
+         IF (l_obstout_drag) then
             do k=1,N
-               workr(:,:,k)=obst_drag3d(itrc,k,:,:)
+                  workr(:,:,k)=obst_drag3d(iv,k,:,:)
             enddo
             call xios_send_field(
      &         TRIM(obst_nout_drag)//'_'//TRIM(obst_varname(iv)),
      &         workr)
-         endif
+         END IF
 
-         if (l_obstout_a2d) then
+         ! obst_a2d is not allocated if not wanted in output
+         IF (l_obstout_a2d) then
             call xios_send_field(
-     &         TRIM(obst_nout_a2d)//'_'//TRIM(obst_varname(iv)),
-     &         obst_a2d(itrc,:,:))
-         endif
+     &      TRIM(obst_nout_a2d)//'_'//TRIM(obst_varname(iv)),
+     &      obst_a2d(iv,:,:))
+         END IF
 
-         if (l_obstout_a3d) then
+         do k=1,N
+            workr(:,:,k)=obst_a3d(iv,k,:,:)
+         enddo
+         call xios_send_field(
+     &      TRIM(obst_nout_a3d)//'_'//TRIM(obst_varname(iv)),
+     &      workr)
+
+         ! obst_s2d is not allocated if not wanted in output
+         IF (l_obstout_s2d) then
+            call xios_send_field(
+     &      TRIM(obst_nout_s2d)//'_'//TRIM(obst_varname(iv)),
+     &      obst_s2d(iv,:,:))
+         END IF
+
+         ! obst_s3d is not allocated if not wanted in output
+         IF (l_obstout_s3d) then
             do k=1,N
-               workr(:,:,k)=obst_a3d(itrc,k,:,:)
+                  workr(:,:,k)=obst_s3d(iv,k,:,:)
             enddo
             call xios_send_field(
-     &         TRIM(obst_nout_a3d)//'_'//TRIM(obst_varname(iv)),
-     &         workr)
-         endif
-
-         if (l_obstout_s2d) then
-            call xios_send_field(
-     &         TRIM(obst_nout_s2d)//'_'//TRIM(obst_varname(iv)),
-     &         obst_s2d(itrc,:,:))
-         endif
-
-         if (l_obstout_s3d) then
-            do k=1,N
-               workr(:,:,k)=obst_s3d(itrc,k,:,:)
-            enddo
-            call xios_send_field(
-     &         TRIM(obst_nout_s3d)//'_'//TRIM(obst_varname(iv)),
-     &         workr)
-         endif
+     &      TRIM(obst_nout_s3d)//'_'//TRIM(obst_varname(iv)),
+     &      workr)
+         END IF
 
       enddo
 
-
-         if (l_obstout_a2d) then
-            call xios_send_field(
+      ! obst_a2d is not allocated if not wanted in output
+      IF (l_obstout_a2d) then
+         call xios_send_field(
      &         TRIM(obst_nout_a2d)//'_NoTurb',
      &         obst_a2d(obst_nbvar + 1,:,:))
-         endif
-         if (l_obstout_a2d) then
-            call xios_send_field(
+
+         call xios_send_field(
      &         TRIM(obst_nout_a2d)//'_Turb',
      &         obst_a2d(obst_nbvar + 2,:,:))
-         endif
-         if (l_obstout_a2d) then
-            call xios_send_field(
+         call xios_send_field(
      &         TRIM(obst_nout_a2d)//'_All',
      &         obst_a2d(obst_nbvar + 3,:,:))
-         endif
+      END IF   
 
-         if (l_obstout_a3d) then
-            do k=1,N
+         do k=1,N
                workr(:,:,k)=obst_a3d(obst_nbvar + 1,k,:,:)
-            enddo
-            call xios_send_field(
+         enddo
+         call xios_send_field(
      &         TRIM(obst_nout_a3d)//'_NoTurb',
      &         workr)
-         endif
-         if (l_obstout_a3d) then
-            do k=1,N
+         do k=1,N
                workr(:,:,k)=obst_a3d(obst_nbvar + 2,k,:,:)
-            enddo
-            call xios_send_field(
+         enddo
+         call xios_send_field(
      &         TRIM(obst_nout_a3d)//'_Turb',
      &         workr)
-         endif
-         if (l_obstout_a3d) then
-            do k=1,N
+         do k=1,N
                workr(:,:,k)=obst_a3d(obst_nbvar + 3,k,:,:)
-            enddo
-            call xios_send_field(
+         enddo
+         call xios_send_field(
      &         TRIM(obst_nout_a3d)//'_All',
      &         workr)
-         endif
 
-         if (l_obstout_s2d) then
-            call xios_send_field(
+      ! obst_s2d is not allocated if not wanted in output
+      IF (l_obstout_s2d) then
+         call xios_send_field(
      &         TRIM(obst_nout_s2d)//'_NoTurb',
      &         obst_s2d(obst_nbvar + 1,:,:))
-         endif
-         if (l_obstout_s2d) then
-            call xios_send_field(
+         call xios_send_field(
      &         TRIM(obst_nout_s2d)//'_Turb',
      &         obst_s2d(obst_nbvar + 2,:,:))
-         endif
-         if (l_obstout_s2d) then
-            call xios_send_field(
+         call xios_send_field(
      &         TRIM(obst_nout_s2d)//'_All',
      &         obst_s2d(obst_nbvar + 3,:,:))
-         endif
+      END IF
 
-         if (l_obstout_s3d) then
-            do k=1,N
+      ! obst_s3d is not allocated if not wanted in output
+      IF (l_obstout_s3d) then
+         do k=1,N
                workr(:,:,k)=obst_s3d(obst_nbvar + 1,k,:,:)
-            enddo
-            call xios_send_field(
+         enddo
+         call xios_send_field(
      &         TRIM(obst_nout_s3d)//'_NoTurb',
      &         workr)
-         endif
-         if (l_obstout_s3d) then
-            do k=1,N
+         do k=1,N
                workr(:,:,k)=obst_s3d(obst_nbvar + 2,k,:,:)
-            enddo
-            call xios_send_field(
+         enddo
+         call xios_send_field(
      &         TRIM(obst_nout_s3d)//'_Turb',
      &         workr)
-         endif
-         if (l_obstout_s3d) then
-            do k=1,N
+         do k=1,N
                workr(:,:,k)=obst_s3d(obst_nbvar + 3,k,:,:)
-            enddo
-            call xios_send_field(
+         enddo
+         call xios_send_field(
      &         TRIM(obst_nout_s3d)//'_All',
      &         workr)
-         endif
-
-         if (l_obstout_tau) then
-            call xios_send_field(TRIM(obst_nout_tau), obst_tau)
-         endif
-
-         if (l_obstout_fuzvz) then
-            call xios_send_field(TRIM(obst_nout_fuzvz)//'_uz', obst_fuz)
-            call xios_send_field(TRIM(obst_nout_fuzvz)//'_vz', obst_fvz)
-         endif
+      END IF
+         call xios_send_field(TRIM(obst_nout_tau), obst_tau)
+         call xios_send_field(TRIM(obst_nout_fuzvz)//'_uz', obst_fuz)
+         call xios_send_field(TRIM(obst_nout_fuzvz)//'_vz', obst_fvz)
 
 #  endif /* OBSTRUCTION */
 
