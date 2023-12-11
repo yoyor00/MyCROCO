@@ -220,359 +220,496 @@ CONTAINS
       obst_nout_drag = 'cd3d'      ! Name 3D obstruction drag coefficient (iv,k,i,j)
       obst_nout_tau = 'tau3d'     ! Name 3D obstruction turbulence dissipation scale (k,i,j)
 
+      ALLOCATE (hisObst(1:17*obst_nbvar+15))
+      ALLOCATE (avgObst(1:17*obst_nbvar+15))
+      ALLOCATE (outObst(1:17*obst_nbvar+15))
+      ALLOCATE (out2DObst(1:17*obst_nbvar+15))
+      ALLOCATE (vname_obst(20, 1:17*obst_nbvar+15))
+
+      outObst(:) = .FALSE.
+      out2DObst(:) = .FALSE.
+
       DO iv = 1, obst_nbvar
-         indvar = indxObst + iv - 1
-         vname(1, indvar) = &
+         indvar = iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction occupation rate for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = '-                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = '-                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_pos) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction forcing height for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'm                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'm                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_height_f) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + 2*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 2*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_height_e)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction effective height for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'm                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'm                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_height_e) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + 3*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 3*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction forcing density for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'm-2                                  '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'm-2                                  '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_dens_f) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + 4*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 4*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_dens_e)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction effective density for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'm-2                                  '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time N lat_rho lon_rho               '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'm-2                                  '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_dens_e) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .FALSE.
+         ENDIF
 
-         indvar = indxObst + 5*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 5*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction forcing width for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'm                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'm                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_width_f) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + 6*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 6*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_width_e)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction effective width for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'm                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time N lat_rho lon_rho               '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'm                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_width_e) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .FALSE.
+         ENDIF
 
-         indvar = indxObst + 7*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 7*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_thick_f)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction forcing thickness for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'm                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'm                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_thick_f) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + 8*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 8*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_thick_e)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction effective thickness for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'm                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time N lat_rho lon_rho               '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'm                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_thick_e) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .FALSE.
+         ENDIF
 
-         indvar = indxObst + 9*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 9*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_theta)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction bending angle for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = 'deg                                  '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time N lat_rho lon_rho               '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = 'deg                                  '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_theta) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .FALSE.
+         ENDIF
 
-         indvar = indxObst + 10*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 10*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_frac_xy)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction fragmentation correction factor for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = '-                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = '-                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_frac_xy) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + 11*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 11*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_frac_z)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction sigma fraction for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = '-                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time N lat_rho lon_rho               '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = '-                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_frac_z) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .FALSE.
+         ENDIF
 
-         indvar = indxObst + 12*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 12*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_drag)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             'Obstruction drag coefficient for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = '-                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time N lat_rho lon_rho               '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = '-                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_drag) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .FALSE.
+         ENDIF
 
-         indvar = indxObst + 13*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 13*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_a2d)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             '2D Obstruction horizontal area for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = '-                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = '-                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_a2d) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + 14*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 14*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_a3d)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             '3D Obstruction horizontal area for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = '-                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time N lat_rho lon_rho               '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = '-                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_a3d) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .FALSE.
+         ENDIF
 
-         indvar = indxObst + 15*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 15*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_s2d)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             '2D Obstruction vertical area for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = '-                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time lat_rho lon_rho                 '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = '-                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_s2d) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .TRUE.
+         ENDIF
 
-         indvar = indxObst + 16*obst_nbvar + iv - 1
-         vname(1, indvar) = &
+         indvar = 16*obst_nbvar + iv
+         vname_obst(1, indvar) = &
             TRIM(obst_nout_s3d)//'_'//TRIM(obst_varname(iv))
-         vname(2, indvar) = &
+         vname_obst(2, indvar) = &
             '3D Obstruction vertical area for '//TRIM(obst_varname(iv))
-         vname(3, indvar) = '-                                    '
-         vname(4, indvar) = '                                     '
-         vname(5, indvar) = '                                     '
-         vname(6, indvar) = 'time N lat_rho lon_rho               '
-         vname(7, indvar) = '                                     '
+         vname_obst(3, indvar) = '-                                    '
+         vname_obst(4, indvar) = '                                     '
+         vname_obst(5, indvar) = '                                     '
+         vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+         vname_obst(7, indvar) = '                                     '
+         IF (l_obstout_s3d) THEN
+            outObst(indvar) = .TRUE.
+            out2DObst(indvar) = .FALSE.
+         ENDIF
       END DO
 
-      indvar = indxObst + 17*obst_nbvar
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 1
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_a2d)//'_NoTurb'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '2D Obstruction horizontal area for NoTurb variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time lat_rho lon_rho                 '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_a2d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .TRUE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 1
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 2
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_a2d)//'_Turb'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '2D Obstruction horizontal area for Turb variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time lat_rho lon_rho                 '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_a2d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .TRUE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 2
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 3
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_a2d)//'_All'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '2D Obstruction horizontal area for All variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time lat_rho lon_rho                 '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_a2d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .TRUE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 3
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 4
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_a3d)//'_NoTurb'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '3D Obstruction horizontal area for NoTurb variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_a3d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 4
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 5
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_a3d)//'_Turb'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '3D Obstruction horizontal area for Turb variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_a3d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 5
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 6
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_a3d)//'_All'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '3D Obstruction horizontal area for All variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_a3d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 6
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 7
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_s2d)//'_NoTurb'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '2D Obstruction vertical area for NoTurb variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time lat_rho lon_rho                 '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_s2d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .TRUE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 7
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 8
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_s2d)//'_Turb'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '2D Obstruction vertical area for Turb variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time lat_rho lon_rho                 '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_s2d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .TRUE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 8
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 9
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_s2d)//'_All'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '2D Obstruction vertical area for All variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time lat_rho lon_rho                 '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time lat_rho lon_rho                 '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_s2d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .TRUE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 9
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 10
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_s3d)//'_NoTurb'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '3D Obstruction vertical area for NoTurb variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_s3d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 10
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 11
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_s3d)//'_Turb'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '3D Obstruction vertical area for Turb variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_s3d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 11
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 12
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_s3d)//'_All'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          '3D Obstruction vertical area for All variables'
-      vname(3, indvar) = '-                                    '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = '-                                    '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_s3d) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 12
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 13
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_tau)
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          'Obstruction 3D turbulent dissipation'
-      vname(3, indvar) = 'N.m-2                                '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = 'N.m-2                                '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_tau) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 13
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 14
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_fuzvz)//'_uz'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          'Obstruction 3D friction force FUZ'
-      vname(3, indvar) = 'N.m-2                                '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = 'N.m-2                                '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_fuzvz) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
-      indvar = indxObst + 17*obst_nbvar + 14
-      vname(1, indvar) = &
+      indvar = 17*obst_nbvar + 15
+      vname_obst(1, indvar) = &
          TRIM(obst_nout_fuzvz)//'_vz'
-      vname(2, indvar) = &
+      vname_obst(2, indvar) = &
          'Obstruction 3D friction force FVZ'
-      vname(3, indvar) = 'N.m-2                                '
-      vname(4, indvar) = '                                     '
-      vname(5, indvar) = '                                     '
-      vname(6, indvar) = 'time N lat_rho lon_rho               '
-      vname(7, indvar) = '                                     '
+      vname_obst(3, indvar) = 'N.m-2                                '
+      vname_obst(4, indvar) = '                                     '
+      vname_obst(5, indvar) = '                                     '
+      vname_obst(6, indvar) = 'time N lat_rho lon_rho               '
+      vname_obst(7, indvar) = '                                     '
+      IF (l_obstout_fuzvz) THEN
+         outObst(indvar) = .TRUE.
+         out2DObst(indvar) = .FALSE.
+      ENDIF
 
    END SUBROUTINE obst_vname
 

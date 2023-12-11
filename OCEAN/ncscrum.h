@@ -544,10 +544,6 @@
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
-# ifdef OBSTRUCTION
-      integer indxObst
-      parameter(indxObst = 700)
-# endif
 # ifdef ABL1D
       integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
      &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
@@ -1198,10 +1194,6 @@
      &               )
 # endif /* MUSTANG */
 
-# ifdef OBSTRUCTION
-      integer hisObst(17*6+15) ! max 6 obstruction var
-# endif
-
 # if defined DIAGNOSTICS_TS
       integer nciddia, nrecdia, nrpfdia
      &      , diaTime, diaTime2, diaTstep
@@ -1390,9 +1382,6 @@
 #  endif
 #  ifdef MUSTANG
       integer avgMust(ntrc_subs+6)
-#  endif
-#  ifdef OBSTRUCTION
-      integer avgObst(17*6+15) ! max 6 obstruction var
 #  endif
 
 # endif /* SOLVE3D */
@@ -1724,9 +1713,6 @@
 # endif
 # ifdef MUSTANG
      &      , hisMust
-# endif
-# ifdef OBSTRUCTION
-     &      , hisObst
 # endif
 #endif
 #ifdef BBL

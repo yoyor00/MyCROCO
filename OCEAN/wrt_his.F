@@ -34,7 +34,7 @@
 
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_nbvar,
-     &     l_obstout_pos,
+     &     vname_obst, hisObst, l_obstout_pos,
      &     l_obstout_height_f, l_obstout_height_e, 
      &     l_obstout_dens_f, l_obstout_dens_e, 
      &     l_obstout_width_f, l_obstout_width_e, 
@@ -1397,154 +1397,154 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 # ifdef OBSTRUCTION
         do itrc=1,obst_nbvar
             if (l_obstout_pos) then
-                indx=indxObst+itrc-1
+                indx=itrc
                 work2d(:,:)=obst_position(itrc,:,:)
                 call fillvalue2d(work2d,ncidhis,hisObst(itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_height_f) then
-                indx=indxObst+obst_nbvar+itrc-1
+                indx=obst_nbvar+itrc
                 work2d(:,:)=obst_height_inst(itrc,:,:)
                 call fillvalue2d(work2d,ncidhis,
      &                     hisObst(obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_height_e) then
-                indx=indxObst+2*obst_nbvar+itrc-1
+                indx=2*obst_nbvar+itrc
                 work2d(:,:)=obst_height(itrc,:,:)
                 call fillvalue2d(work2d,ncidhis,
      &                     hisObst(2*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_dens_f) then
-                indx=indxObst+3*obst_nbvar+itrc-1
+                indx=3*obst_nbvar+itrc
                 work2d(:,:)=obst_dens_inst(itrc,:,:)
                 call fillvalue2d(work2d,ncidhis,
      &                     hisObst(3*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_dens_e) then
-                indx=indxObst+4*obst_nbvar+itrc-1
+                indx=4*obst_nbvar+itrc
                 do k=1,N
                     workr(:,:,k)=obst_dens3d(itrc,k,:,:)
                 enddo
                 call fillvalue3d(workr,ncidhis,
      &                     hisObst(4*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_width_f) then
-                indx=indxObst+5*obst_nbvar+itrc-1
+                indx=5*obst_nbvar+itrc
                 work2d(:,:)=obst_width_inst(itrc,:,:)
                 call fillvalue2d(work2d,ncidhis,
      &                     hisObst(5*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_width_e) then
-                indx=indxObst+6*obst_nbvar+itrc-1
+                indx=6*obst_nbvar+itrc
                 do k=1,N
                     workr(:,:,k)=obst_width3d(itrc,k,:,:)
                 enddo
                 call fillvalue3d(workr,ncidhis,
      &                     hisObst(6*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_thick_f) then
-               indx=indxObst+7*obst_nbvar+itrc-1
+               indx=7*obst_nbvar+itrc
                work2d(:,:)=obst_thick_inst(itrc,:,:)
                call fillvalue2d(work2d,ncidhis,
      &                     hisObst(7*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_thick_e) then
-               indx=indxObst+8*obst_nbvar+itrc-1
+               indx=8*obst_nbvar+itrc
                do k=1,N
                    workr(:,:,k)=obst_thick3d(itrc,k,:,:)
                enddo
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(8*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_theta) then
-               indx=indxObst+9*obst_nbvar+itrc-1
+               indx=9*obst_nbvar+itrc
                do k=1,N
                    workr(:,:,k)=obst_theta3d(itrc,k,:,:)*180.0/3.1415
                enddo
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(9*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_frac_xy) then
-               indx=indxObst+10*obst_nbvar+itrc-1
+               indx=10*obst_nbvar+itrc
                work2d(:,:)=obst_fracxy(itrc,:,:)
                call fillvalue2d(work2d,ncidhis,
      &                     hisObst(10*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_frac_z) then
-               indx=indxObst+11*obst_nbvar+itrc-1
+               indx=11*obst_nbvar+itrc
                do k=1,N
                    workr(:,:,k)=obst_fracz3d(itrc,k,:,:)
                enddo
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(11*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_drag) then
-               indx=indxObst+12*obst_nbvar+itrc-1
+               indx=12*obst_nbvar+itrc
                do k=1,N
                    workr(:,:,k)=obst_drag3d(itrc,k,:,:)
                enddo
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(12*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_a2d) then
-               indx=indxObst+13*obst_nbvar+itrc-1
+               indx=13*obst_nbvar+itrc
                work2d(:,:)=obst_a2d(itrc,:,:)
                call fillvalue2d(work2d,ncidhis,
      &                     hisObst(13*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_a3d) then
-               indx=indxObst+14*obst_nbvar+itrc-1
+               indx=14*obst_nbvar+itrc
                do k=1,N
                    workr(:,:,k)=obst_a3d(itrc,k,:,:)
                enddo
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(14*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_s2d) then
-               indx=indxObst+15*obst_nbvar+itrc-1
+               indx=15*obst_nbvar+itrc
                work2d(:,:)=obst_s2d(itrc,:,:)
                call fillvalue2d(work2d,ncidhis,
      &                     hisObst(15*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_s3d) then
-               indx=indxObst+16*obst_nbvar+itrc-1
+               indx=16*obst_nbvar+itrc
                do k=1,N
                    workr(:,:,k)=obst_s3d(itrc,k,:,:)
                enddo
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(16*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
         enddo
@@ -1552,62 +1552,62 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
         do itrc=1,3
 
             if (l_obstout_a2d) then
-               indx=indxObst+17*obst_nbvar+itrc-1
+               indx=17*obst_nbvar+itrc
                work2d(:,:)=obst_a2d(obst_nbvar+itrc,:,:)
                call fillvalue2d(work2d,ncidhis,
      &                     hisObst(17*obst_nbvar+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_a3d) then
-               indx=indxObst+17*obst_nbvar+3+itrc-1
+               indx=17*obst_nbvar+3+itrc
                do k=1,N
                    workr(:,:,k)=obst_a3d(obst_nbvar+itrc,k,:,:)
                enddo
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(17*obst_nbvar+3+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_s2d) then
-               indx=indxObst+17*obst_nbvar+6+itrc-1
+               indx=17*obst_nbvar+6+itrc
                work2d(:,:)=obst_s2d(obst_nbvar+itrc,:,:)
                call fillvalue2d(work2d,ncidhis,
      &                     hisObst(17*obst_nbvar+6+itrc),
-     &                     vname(1,indx),record,r2dvar,type)
+     &                     vname_obst(1,indx),record,r2dvar,type)
             endif
 
             if (l_obstout_s3d) then
-               indx=indxObst+17*obst_nbvar+9+itrc-1
+               indx=17*obst_nbvar+9+itrc
                do k=1,N
                    workr(:,:,k)=obst_s3d(obst_nbvar+itrc,k,:,:)
                enddo
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(17*obst_nbvar+9+itrc),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
          enddo
 
             if (l_obstout_tau) then
-               indx=indxObst+17*obst_nbvar+13-1
+               indx=17*obst_nbvar+13
                workr(:,:,:)=obst_tau(:,:,:)
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(17*obst_nbvar+13),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
             if (l_obstout_fuzvz) then
-               indx=indxObst+17*obst_nbvar+14-1
+               indx=17*obst_nbvar+14
                workr(:,:,:)=obst_fuz(:,:,:)
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(17*obst_nbvar+14),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
 
-               indx=indxObst+17*obst_nbvar+15-1
+               indx=17*obst_nbvar+15
                workr(:,:,:)=obst_fvz(:,:,:)
                call fillvalue3d(workr,ncidhis,
      &                     hisObst(17*obst_nbvar+15),
-     &                     vname(1,indx),record,r3dvar,type)
+     &                     vname_obst(1,indx),record,r3dvar,type)
             endif
 
 

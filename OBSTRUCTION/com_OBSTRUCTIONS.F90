@@ -63,6 +63,11 @@ MODULE com_OBSTRUCTIONS
    LOGICAL :: l_obstout_drag                                         ! Write 3D obstruction drag coefficient (iv,k,i,j)
    LOGICAL :: l_obstout_tau                                          ! Write 3D obstruction turbulence dissipation scale (k,i,j)
 
+   INTEGER, DIMENSION(:), ALLOCATABLE :: hisObst
+   INTEGER, DIMENSION(:), ALLOCATABLE :: avgObst
+   LOGICAL, DIMENSION(:), ALLOCATABLE :: outObst
+   LOGICAL, DIMENSION(:), ALLOCATABLE :: out2DObst
+   CHARACTER(LEN=75), DIMENSION(:,:), ALLOCATABLE :: vname_obst
 
    CHARACTER(LEN=lchain) :: obst_nout_pos                             ! Name obstruction position (iv,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_height_f                        ! Name 2D obstruction height (forcing) (iv,i,j)
