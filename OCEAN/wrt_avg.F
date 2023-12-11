@@ -141,21 +141,21 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
             enddo
          enddo
 # endif
-         call fillvalue2d(work2d,ncidavg,avgZ,indxZ,
+         call fillvalue2d(work2d,ncidavg,avgZ,vname(1,indxZ),
      &                   record,r2dvar,type)
       endif
 
       if (wrtavg(indxUb)) then
 !$acc update if(compute_on_device) host(ubar_avg)
          work2d=ubar_avg
-         call fillvalue2d(work2d,ncidavg,avgUb,indxUb,
+         call fillvalue2d(work2d,ncidavg,avgUb,vname(1,indxUb),
      &                      record,u2dvar,type)
       endif
 
       if (wrtavg(indxVb)) then
 !$acc update if(compute_on_device) host(vbar_avg)
          work2d=vbar_avg
-         call fillvalue2d(work2d,ncidavg,avgVb,indxVb,
+         call fillvalue2d(work2d,ncidavg,avgVb,vname(1,indxVb),
      &                   record,v2dvar,type)
       endif
 
@@ -163,7 +163,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtavg(indxHm)) then
 !$acc update if(compute_on_device) host(h_avg)
          work2d=h_avg
-         call fillvalue2d(work2d,ncidavg,avgHm,indxHm,
+         call fillvalue2d(work2d,ncidavg,avgHm,vname(1,indxHm),
      &                    record,r2dvar,type)
       endif
 # endif
@@ -173,7 +173,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtavg(indxBostr)) then
 !$acc update if(compute_on_device) host(bostr_avg)
          work2d=bostr_avg
-         call fillvalue2d(work2d,ncidavg,avgBostr,indxBostr,
+         call fillvalue2d(work2d,ncidavg,avgBostr,vname(1,indxBostr),
      &        record,r2dvar,type)
       endif
 
@@ -183,7 +183,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtavg(indxBustr)) then
 !$acc update if(compute_on_device) host(bustr_avg)
          work2d=bustr_avg
-         call fillvalue2d(work2d,ncidavg,avgBustr,indxBustr,
+         call fillvalue2d(work2d,ncidavg,avgBustr,vname(1,indxBustr),
      &        record,u2dvar,type)
       endif
 
@@ -194,7 +194,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (wrtavg(indxBvstr)) then
 !$acc update if(compute_on_device) host(bvstr_avg)
          work2d=bvstr_avg
-         call fillvalue2d(work2d,ncidavg,avgBvstr,indxBvstr,
+         call fillvalue2d(work2d,ncidavg,avgBvstr,vname(1,indxBvstr),
      &        record,v2dvar,type)
       endif
 
@@ -263,14 +263,16 @@ CR      write(*,*) 'wrt_avg: VWstr' MYID
       if (wrtavg(indxU)) then
 !$acc update if(compute_on_device) host(u_avg)
          workr=u_avg
-         call fillvalue3d(workr,ncidavg,avgU,indxU,record,u3dvar,type)
+         call fillvalue3d(workr,ncidavg,avgU,
+     &        vname(1,indxU),record,u3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtU' MYID
       endif
 !
       if (wrtavg(indxV)) then
 !$acc update if(compute_on_device) host(v_avg)
          workr=v_avg
-         call fillvalue3d(workr,ncidavg,avgV,indxV,record,v3dvar,type)
+         call fillvalue3d(workr,ncidavg,avgV,
+     &        vname(1,indxV),record,v3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtV' MYID
       endif
 !
@@ -281,8 +283,8 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
          if (wrtavg(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t_avg(:,:,:,itrc))
             workr=t_avg(:,:,:,itrc)
-            call fillvalue3d(workr,ncidavg,avgT(itrc),indxV+itrc,
-     &           record,r3dvar,type)
+            call fillvalue3d(workr,ncidavg,avgT(itrc),
+     &        vname(1,indxV+itrc), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          endif
       enddo
@@ -293,7 +295,8 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
       if (wrtavg(indxR)) then
 !$acc update if(compute_on_device) host(rho_avg)
          workr=rho_avg+rho0-1000.
-         call fillvalue3d(workr,ncidavg,avgR,indxR,record,r3dvar,type)
+         call fillvalue3d(workr,ncidavg,avgR,
+     &        vname(1,indxR), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
@@ -305,8 +308,8 @@ CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       if (wrtavg(indxbvf)) then
 !$acc update if(compute_on_device) host(bvf_avg)
          work=bvf_avg
-         call fillvalue3d_w(work,ncidavg,avgbvf,indxbvf,
-     &           record,w3dvar,type)
+         call fillvalue3d_w(work,ncidavg,avgbvf,
+     &        vname(1,indxbvf), record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtbvf' MYID
       endif
 #  endif
@@ -316,7 +319,8 @@ CR      write(*,*) 'wrt_avg:  wrtbvf' MYID
       if (wrtavg(indxO)) then
 !$acc update if(compute_on_device) host(omega_avg)
          work=omega_avg
-         call fillvalue3d_w(work,ncidavg,avgO,indxO,record,w3dvar,type)
+         call fillvalue3d_w(work,ncidavg,avgO,
+     &        vname(1,indxO), record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
       endif
 !
@@ -326,10 +330,12 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 !$acc update if(compute_on_device) host(w_avg)
 #  ifdef NBQ
          work=w_avg
-         call fillvalue3d(work ,ncidavg,avgW,indxW,record,w3dvar,type)
+         call fillvalue3d(work ,ncidavg,avgW,
+     &        vname(1,indxW), record,w3dvar,type)
 #  else
          workr=w_avg
-         call fillvalue3d(workr,ncidavg,avgW,indxW,record,r3dvar,type)
+         call fillvalue3d(workr,ncidavg,avgW,
+     &        vname(1,indxW), record,r3dvar,type)
 #  endif
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
       endif
@@ -341,8 +347,8 @@ CR      write(*,*) 'wrt_avg:  wrtW' MYID
       if (wrtavg(indxT)) then
 !$acc update if(compute_on_device) host(sst_skin_avg)
          work2d=sst_skin_avg
-         call fillvalue2d(work2d,ncidavg,avgSST_skin,indxSST_skin,
-     &                    record,r2dvar,type)
+         call fillvalue2d(work2d,ncidavg,avgSST_skin,
+     &        vname(1,indxSST_skin), record,r2dvar,type)
       endif
 #  endif
 !
@@ -354,8 +360,8 @@ CR      write(*,*) 'wrt_avg:  wrtW' MYID
       if (wrtavg(indxVisc)) then
 !$acc update if(compute_on_device) host(visc3d_avg)
          workr=visc3d_avg
-         call fillvalue3d(workr,ncidavg,avgVisc,indxVisc,
-     &        record,r3dvar,type)
+         call fillvalue3d(workr,ncidavg,avgVisc,
+     &        vname(1,indxVisc), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtVisc' MYID
       endif
 #  endif
@@ -366,8 +372,8 @@ CR      write(*,*) 'wrt_avg:  wrtVisc' MYID
       if (wrtavg(indxDiff)) then
 !$acc update if(compute_on_device) host(diff3d_avg)
          workr=diff3d_avg
-         call fillvalue3d(workr,ncidavg,avgDiff,indxDiff,
-     &        record,r3dvar,type)
+         call fillvalue3d(workr,ncidavg,avgDiff,
+     &        vname(1,indxDiff), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtDiff' MYID
       endif
 #  endif
@@ -378,8 +384,8 @@ CR      write(*,*) 'wrt_avg:  wrtDiff' MYID
       if (wrtavg(indxAkv)) then
 !$acc update if(compute_on_device) host(Akv_avg)
          work=Akv_avg
-         call fillvalue3d_w(work,ncidavg,avgAkv,indxAkv,
-     &        record,w3dvar,type)
+         call fillvalue3d_w(work,ncidavg,avgAkv,
+     &        vname(1,indxAkv), record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
       endif
 !
@@ -389,8 +395,8 @@ CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
       if (wrtavg(indxAkt)) then
 !$acc update if(compute_on_device) host(Akt_avg(:,:,:,itemp))
          work=Akt_avg(:,:,:,itemp)
-         call fillvalue3d_w(work,ncidavg,avgAkt,indxAkt,
-     &        record,w3dvar,type)
+         call fillvalue3d_w(work,ncidavg,avgAkt,
+     &        vname(1,indxAkt), record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
       endif
 #   endif /* TEMPERATURE */
@@ -401,8 +407,8 @@ CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
       if (wrtavg(indxAks)) then
 !$acc update if(compute_on_device) host(Akt_avg(:,:,:,isalt))
          work=Akt_avg(:,:,:,isalt)
-         call fillvalue3d_w(work,ncidavg,avgAks,indxAks,
-     &        record,w3dvar,type)
+         call fillvalue3d_w(work,ncidavg,avgAks,
+     &        vname(1,indxAks), record,w3dvar,type)
 CR       write(*,*) 'wrt_avg:  wrtAks' MYID
       endif
 #   endif /* SALINITY */
@@ -415,8 +421,8 @@ CR       write(*,*) 'wrt_avg:  wrtAks' MYID
       if (wrtavg(indxHbl)) then
 !$acc update if(compute_on_device) host(hbl_avg)
          work2d=hbl_avg
-         call fillvalue2d(work2d,ncidavg,avgHbl,indxHbl,
-     &        record,r2dvar,type)
+         call fillvalue2d(work2d,ncidavg,avgHbl,
+     &        vname(1,indxHbl), record,r2dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
       endif
 #  endif
@@ -427,8 +433,8 @@ CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
       if (wrtavg(indxHbbl)) then
 !$acc update if(compute_on_device) host(hbbl_avg)
          work2d=hbbl_avg
-         call fillvalue2d(work2d,ncidavg,avgHbbl,indxHbbl,
-     &        record,r2dvar,type)
+         call fillvalue2d(work2d,ncidavg,avgHbbl,
+     &        vname(1,indxHbbl), record,r2dvar,type)
       endif
 CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
 #  endif
@@ -440,8 +446,8 @@ CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
       if (wrtavg(indxTke)) then
 !$acc update if(compute_on_device) host(tke_avg)
          work=tke_avg
-         call fillvalue3d_w(work,ncidavg,avgTke,indxTke,
-     &        record,w3dvar,type)
+         call fillvalue3d_w(work,ncidavg,avgTke,
+     &        vname(1,indxTke), record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtTke' MYID
       endif
 !
@@ -450,8 +456,8 @@ CR      write(*,*) 'wrt_avg:  wrtTke' MYID
       if (wrtavg(indxGls)) then
 !$acc update if(compute_on_device) host(gls_avg)
          work=gls_avg
-         call fillvalue3d_w(work,ncidavg,avgGls,indxGls,
-     &        record,w3dvar,type)
+         call fillvalue3d_w(work,ncidavg,avgGls,
+     &        vname(1,indxGls), record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtGls' MYID
       endif
 !
@@ -460,8 +466,8 @@ CR      write(*,*) 'wrt_avg:  wrtGls' MYID
       if (wrtavg(indxLsc)) then
 !$acc update if(compute_on_device) host(Lscale_avg)
          work=Lscale_avg
-         call fillvalue3d_w(work,ncidavg,avgLsc,indxLsc,
-     &        record,w3dvar,type)
+         call fillvalue3d_w(work,ncidavg,avgLsc,
+     &        vname(1,indxLsc), record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
       endif
 #  endif
@@ -621,8 +627,8 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       if (wrtavg(indxHel)) then
 !$acc update if(compute_on_device) host(hel_avg)
          work2d=hel_avg
-         call fillvalue2d(work2d,ncidavg,avgHel,indxHel,
-     &        record,r2dvar,type)
+         call fillvalue2d(work2d,ncidavg,avgHel,
+     &        vname(1,indxHel), record,r2dvar,type)
       endif
 !
 !     Write out Chlorophyll to Carbon ratio (m).
@@ -631,27 +637,27 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       if (wrtavg(indxChC)) then
 !$acc update if(compute_on_device) host(theta_avg)
          workr=theta_avg
-         call fillvalue3d(workr,ncidavg,avgChC,indxChC,
-     &        record,r3dvar,type)
+         call fillvalue3d(workr,ncidavg,avgChC,
+     &        vname(1,indxChC), record,r3dvar,type)
       endif
 #    ifdef OXYGEN
       if (wrtavg(indxU10)) then
 !$acc update if(compute_on_device) host(u10_avg)
          work2d=u10_avg
-         call fillvalue2d(work2d,ncidavg,avgU10,indxU10,
-     &        record,r2dvar,type)
+         call fillvalue2d(work2d,ncidavg,avgU10,
+     &        vname(1,indxU10), record,r2dvar,type)
       endif
       if (wrtavg(indxKvO2)) then
 !$acc update if(compute_on_device) host(Kv_O2_avg)
          work2d=Kv_O2_avg
-         call fillvalue2d(work2d,ncidavg,avgKvO2,indxKvO2,
-     &        record,r2dvar,type)
+         call fillvalue2d(work2d,ncidavg,avgKvO2,
+     &        vname(1,indxKvO2), record,r2dvar,type)
       endif
       if (wrtavg(indxO2sat)) then
 !$acc update if(compute_on_device) host(O2satu_avg)
          work2d=O2satu_avg
-         call fillvalue2d(work2d,ncidavg,avgO2sat,indxO2sat,
-     &        record,r2dvar,type)
+         call fillvalue2d(work2d,ncidavg,avgO2sat,
+     &        vname(1,indxO2sat), record,r2dvar,type)
       endif
 #    endif /* OXYGEN */
 !
@@ -659,14 +665,14 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       if (wrtavg(indxAOU)) then
 !$acc update if(compute_on_device) host(AOU_avg)
          workr=AOU_avg
-         call fillvalue3d(workr,ncidavg,avgAOU,indxAOU,
-     &        record,r3dvar,type)
+         call fillvalue3d(workr,ncidavg,avgAOU,
+     &        vname(1,indxAOU), record,r3dvar,type)
       endif
        if (wrtavg(indxWIND10)) then
 !$acc update if(compute_on_device) host(wind10_avg)
          work2d=wind10_avg
-         call fillvalue2d(work2d,ncidavg,avgwind10,indxWIND10,
-     &        record,r2dvar,type)
+         call fillvalue2d(work2d,ncidavg,avgwind10,
+     &        vname(1,indxWIND10), record,r2dvar,type)
       endif
 #   endif
 #  endif /* BIOLOGY */
@@ -679,15 +685,15 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
       if (wrtavg(indxBTHK)) then
 !$acc update if(compute_on_device) host(bed_thick_avg)
          worksed_bed=bed_thick_avg
-         call fillvalue3d(worksed_bed,ncidavg,avgSed(2),indxBTHK,
-     &        record,b3dvar,type)
+         call fillvalue3d(worksed_bed,ncidavg,avgSed(2),
+     &        vname(1,indxBTHK), record,b3dvar,type)
       endif
 !
       if (wrtavg(indxBPOR)) then
 !$acc update if(compute_on_device) host(bed_poros_avg)
          worksed_bed=bed_poros_avg
-         call fillvalue3d(worksed_bed,ncidavg,avgSed(3),indxBPOR,
-     &        record,b3dvar,type)
+         call fillvalue3d(worksed_bed,ncidavg,avgSed(3),
+     &        vname(1,indxBPOR), record,b3dvar,type)
       endif
 
       do itrc=1,NST
@@ -696,7 +702,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !$acc update if(compute_on_device) host(bed_frac_avg(:,:,:,itrc))
             worksed_frac=bed_frac_avg(:,:,:,itrc)
             call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+3),
-     &           indxWrk,record,b3dvar,type)
+     &        vname(1,indxWrk), record,b3dvar,type)
          endif
       enddo
 
@@ -707,7 +713,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !$acc update if(compute_on_device) host(settling_flux_avg(:,:,itrc))
             work2d=settling_flux_avg(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+NST),
-     &           indxWrk,record,r2dvar,type)
+     &        vname(1,indxWrk), record,r2dvar,type)
          endif
       enddo
       do itrc=1,NST
@@ -716,7 +722,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !$acc update if(compute_on_device) host(ero_flux_avg(:,:,itrc))
             work2d=ero_flux_avg(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+2*NST),
-     &           indxWrk,record,r2dvar,type)
+     &        vname(1,indxWrk),record,r2dvar,type)
          endif
       enddo
 #   endif
@@ -728,10 +734,10 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
             work2d=bedldu_avg(:,:,itrc)
 #    ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+3*NST),
-     &           indxWrk,record,r2dvar,type)
+     &        vname(1,indxWrk),record,r2dvar,type)
 #    else
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3*NST),
-     &           indxWrk,record,r2dvar,type)
+     &        vname(1,indxWrk),record,r2dvar,type)
 #    endif
          endif
       enddo
@@ -742,10 +748,10 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
             work2d=bedldv_avg(:,:,itrc)
 #    ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+4*NST),
-     &           indxWrk,record,r2dvar,type)
+     &        vname(1,indxWrk),record,r2dvar,type)
 #    else
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+2*NST),
-     &           indxWrk,record,r2dvar,type)
+     &        vname(1,indxWrk),record,r2dvar,type)
 #    endif
          endif
       enddo

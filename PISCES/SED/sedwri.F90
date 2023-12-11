@@ -436,7 +436,7 @@ CONTAINS         ! Write model prognostic
         ierr = nf_put_att_text(ncid, vidTime, 'field',     lvar,      &
         &                                  vname(4,indxTime)(1:lvar))
 
-        CALL nf_add_attribute(ncid, vidTime, indxTime, 5, NF_FOUT, ierr)
+        CALL nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5, NF_FOUT, ierr)
 
 ! Time2.
 !
@@ -458,7 +458,7 @@ CONTAINS         ! Write model prognostic
         ierr = nf_put_att_text(ncid, vidTime2, 'field',     lvar,      &
         &                                  vname(4,indxTime2)(1:lvar))
 
-        CALL nf_add_attribute(ncid, vidTime2, indxTime2, 5, NF_FOUT, ierr)
+        CALL nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5, NF_FOUT, ierr)
 !
 ! Tracer variables.
 !
@@ -470,7 +470,7 @@ CONTAINS         ! Write model prognostic
            ierr=nf_put_att_text (ncid, wrised(itrc), 'long_name', lvar, text(1:lvar))
            lvar = lenstr(TRIM(sedtrcu(itrc)))
            ierr = nf_put_att_text (ncid, wrised(itrc), 'units', lvar, TRIM(sedtrcu(itrc)))
-           CALL nf_add_attribute(ncid, wrised(itrc), itrc, 5, NF_FOUT,ierr)
+           CALL nf_add_attribute(ncid, wrised(itrc), vname(:,itrc), 5, NF_FOUT,ierr)
         END DO
 !
 ! 3D diagnostics variable
@@ -483,7 +483,7 @@ CONTAINS         ! Write model prognostic
            ierr=nf_put_att_text (ncid, dia3wrised(itrc), 'long_name', lvar, text(1:lvar))
            lvar = lenstr(TRIM(seddia3u(itrc)))
            ierr = nf_put_att_text (ncid, dia3wrised(itrc), 'units', lvar, TRIM(seddia3u(itrc)))
-           CALL nf_add_attribute(ncid, dia3wrised(itrc), itrc, 5, NF_FOUT,ierr)
+           CALL nf_add_attribute(ncid, dia3wrised(itrc), vname(:,itrc), 5, NF_FOUT,ierr)
         END DO
 !
 ! 2D diagnostics variable
@@ -496,7 +496,7 @@ CONTAINS         ! Write model prognostic
            ierr=nf_put_att_text (ncid, dia2wrised(itrc), 'long_name', lvar, text(1:lvar))
            lvar = lenstr(TRIM(seddia2u(itrc)))
            ierr = nf_put_att_text (ncid, dia2wrised(itrc), 'units', lvar, TRIM(seddia2u(itrc)))
-           CALL nf_add_attribute(ncid, dia2wrised(itrc), itrc, 5, NF_FOUT,ierr)
+           CALL nf_add_attribute(ncid, dia2wrised(itrc), vname(:,itrc), 5, NF_FOUT,ierr)
         END DO
 !
 ! Leave definition mode.                  Also initialize record

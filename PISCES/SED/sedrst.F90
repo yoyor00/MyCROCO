@@ -387,7 +387,7 @@ CONTAINS         ! Write model prognostic
         ierr = nf_put_att_text(ncid, rstTime, 'field',     lvar,      &
         &                                  vname(4,indxTime)(1:lvar))
 
-        CALL nf_add_attribute(ncid, rstTime, indxTime, 5, NF_DOUBLE, ierr)
+        CALL nf_add_attribute(ncid, rstTime, vname(:,indxTime), 5, NF_DOUBLE, ierr)
 !
 ! Time2.
 !
@@ -407,7 +407,7 @@ CONTAINS         ! Write model prognostic
         ierr = nf_put_att_text(ncid, rstTime2, 'field',     lvar,      &
         &                                  vname(4,indxTime2)(1:lvar))
 
-        CALL nf_add_attribute(ncid, rstTime2, indxTime2, 5, NF_DOUBLE, ierr)
+        CALL nf_add_attribute(ncid, rstTime2, vname(:,indxTime2), 5, NF_DOUBLE, ierr)
 !
 ! Tracer variables.
 !
@@ -422,7 +422,7 @@ CONTAINS         ! Write model prognostic
            &                     lvar, TRIM(sedtrcl(itrc)))
            lvar = lenstr(TRIM(sedtrcu(itrc)))
            ierr = nf_put_att_text (ncid, rstsed(itrc), 'units', lvar, TRIM(sedtrcu(itrc)))
-           CALL nf_add_attribute(ncid, rstsed(itrc), itrc, 5, NF_DOUBLE,ierr)
+           CALL nf_add_attribute(ncid, rstsed(itrc), vname(:,itrc), 5, NF_DOUBLE,ierr)
         END DO
 
         DO itrc = 1, 5
@@ -436,7 +436,7 @@ CONTAINS         ! Write model prognostic
            &                     lvar, sname(itrc,2) )
            lvar = lenstr(sname(itrc,3))
            ierr = nf_put_att_text (ncid, rstadd(itrc), 'units', lvar, sname(itrc,3))
-           CALL nf_add_attribute(ncid, rstadd(itrc), itrc, 5, NF_DOUBLE,ierr)
+           CALL nf_add_attribute(ncid, rstadd(itrc), vname(:,itrc), 5, NF_DOUBLE,ierr)
         END DO
 
 !

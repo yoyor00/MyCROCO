@@ -139,7 +139,7 @@
            work2d=vrtXadv_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtXadv_avg(itrc),
-     &                      indxvrtXadv+itrc-1,
+     &                      vname(1,indxvrtXadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxvrtYadv
@@ -147,7 +147,7 @@
            work2d=vrtYadv_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtYadv_avg(itrc),
-     &                      indxvrtYadv+itrc-1,
+     &                      vname(1,indxvrtYadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxvrtHdiff
@@ -155,7 +155,7 @@
            work2d=vrtHdiff_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtHdiff_avg(itrc),
-     &                      indxvrtHdiff+itrc-1,
+     &                      vname(1,indxvrtHdiff+itrc-1),
      &                      record,ivar,type)
 !
 ! indxvrtCor
@@ -163,7 +163,7 @@
            work2d=vrtCor_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtCor_avg(itrc),
-     &                      indxvrtCor+itrc-1,
+     &                      vname(1,indxvrtCor+itrc-1),
      &                      record,ivar,type)
 !
 ! indxvrtPrsgrd
@@ -171,7 +171,7 @@
            work2d=vrtPrsgrd_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtPrsgrd_avg(itrc),
-     &                      indxvrtPrsgrd+itrc-1,
+     &                      vname(1,indxvrtPrsgrd+itrc-1),
      &                      record,ivar,type)
 !
 ! indxvrtHmix
@@ -179,7 +179,7 @@
            work2d=vrtHmix_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtHmix_avg(itrc),
-     &                      indxvrtHmix+itrc-1,
+     &                      vname(1,indxvrtHmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxvrtVmix
@@ -187,7 +187,7 @@
            work2d=vrtVmix_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtVmix_avg(itrc),
-     &                      indxvrtVmix+itrc-1,
+     &                      vname(1,indxvrtVmix+itrc-1),
      &                      record,ivar,type)
 
 !
@@ -196,7 +196,7 @@
            work2d=vrtrate_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtrate_avg(itrc),
-     &                      indxvrtrate+itrc-1,
+     &                      vname(1,indxvrtrate+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -206,7 +206,7 @@
            work2d=vrtVmix2_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtVmix2_avg(itrc),
-     &                      indxvrtVmix2+itrc-1,
+     &                      vname(1,indxvrtVmix2+itrc-1),
      &                      record,ivar,type)
 
 !
@@ -215,7 +215,7 @@
            work2d=vrtWind_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtWind_avg(itrc),
-     &                      indxvrtWind+itrc-1,
+     &                      vname(1,indxvrtWind+itrc-1),
      &                      record,ivar,type)
 
 
@@ -225,7 +225,7 @@
            work2d=vrtDrag_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtDrag_avg(itrc),
-     &                      indxvrtDrag+itrc-1,
+     &                      vname(1,indxvrtDrag+itrc-1),
      &                      record,ivar,type)
 # if defined DIAGNOSTICS_BARO
 !
@@ -234,7 +234,7 @@
            work2d=vrtBaro_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtBaro_avg(itrc),
-     &                      indxvrtBaro+itrc-1,
+     &                      vname(1,indxvrtBaro+itrc-1),
      &                      record,ivar,type)
 # endif
 
@@ -245,7 +245,7 @@
            work2d=vrtfast_avg(:,:)
            call fillvalue2d(work2d,nciddiags_vrt_avg,
      &                      diags_vrtfast_avg(itrc),
-     &                      indxvrtfast+itrc-1,
+     &                      vname(1,indxvrtfast+itrc-1),
      &                      record,ivar,type)
 # endif
 

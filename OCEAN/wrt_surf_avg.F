@@ -141,7 +141,7 @@
            work2d=surft_avg(:,:)
            call fillvalue2d(work2d,ncidsurf_avg,
      &                      surf_surft_avg(itrc),
-     &                      indxsurft+itrc-1,
+     &                      vname(1,indxsurft+itrc-1),
      &                      record,r2dvar,type)
 # ifdef SALINITY
 !
@@ -150,7 +150,7 @@
            work2d=surfs_avg(:,:)
            call fillvalue2d(work2d,ncidsurf_avg,
      &                      surf_surfs_avg(itrc),
-     &                      indxsurfs+itrc-1,
+     &                      vname(1,indxsurfs+itrc-1),
      &                      record,r2dvar,type)
 # endif
 !
@@ -159,7 +159,7 @@
            work2d=surfz_avg(:,:)
            call fillvalue2d(work2d,ncidsurf_avg,
      &                      surf_surfz_avg(itrc),
-     &                      indxsurfz+itrc-1,
+     &                      vname(1,indxsurfz+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxU
@@ -167,7 +167,7 @@
            work2d=surfu_avg(:,:)
            call fillvalue2d(work2d,ncidsurf_avg,
      &                      surf_surfu_avg(itrc),
-     &                      indxsurfu+itrc-1,
+     &                      vname(1,indxsurfu+itrc-1),
      &                      record,u2dvar,type)
 !
 ! indxV
@@ -175,7 +175,7 @@
            work2d=surfv_avg(:,:)
            call fillvalue2d(work2d,ncidsurf_avg,
      &                      surf_surfv_avg(itrc),
-     &                      indxsurfv+itrc-1,
+     &                      vname(1,indxsurfv+itrc-1),
      &                      record,v2dvar,type)
 !
 

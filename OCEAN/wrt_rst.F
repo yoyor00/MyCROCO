@@ -232,8 +232,8 @@
       ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nstp), ncidrst, rstAblTke,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxabl_tke_abl))
-        write(stdout,1) vname(1,indxabl_tke_abl)(1:lvar), record, ierr
+        lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
