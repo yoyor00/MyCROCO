@@ -402,7 +402,7 @@ CR      write(*,*) 'wrt_his:  wrtFrq' MYID
       endif
 # ifdef WKB_WWAVE
       if (wrthis(indxWAC)) then
-!$acc update if(compute_on_device) host(wac(:,:))
+!$acc update if(compute_on_device) host(wac(:,:,wstp))
         ierr=nf_fwrite (wac(START_2D_ARRAY,wstp), ncidhis,
      &                                   hisWAVE(3), record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -470,7 +470,7 @@ CR      write(*,*) 'wrt_his:  wrtEpd' MYID
 # ifdef WAVE_ROLLER
 #  ifdef WKB_WWAVE
       if (wrthis(indxWAR)) then
-!$acc update if(compute_on_device) host(war(:,:))
+!$acc update if(compute_on_device) host(war(:,:,wstp))
         ierr=nf_fwrite (war(START_2D_ARRAY,wstp), ncidhis,
      &                                   hisWAVE(8), record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -1233,7 +1233,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       do itrc=1,NST
         indxWrk=indxBDLU(1)+itrc-1
         if (wrthis(indxWrk)) then
-!$acc update if(compute_on_device) host(bedlu(:,:,itrc))
+!$acc update if(compute_on_device) host(bedldu(:,:,itrc))
           work2d=bedldu(:,:,itrc)
 #   ifdef SUSPLOAD
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+3*NST),
@@ -1248,7 +1248,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       do itrc=1,NST
         indxWrk=indxBDLV(1)+itrc-1
         if (wrthis(indxWrk)) then
-!$acc update if(compute_on_device) host(bedlv(:,:,itrc))
+!$acc update if(compute_on_device) host(bedldv(:,:,itrc))
           work2d=bedldv(:,:,itrc)
 #   ifdef SUSPLOAD
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+4*NST),

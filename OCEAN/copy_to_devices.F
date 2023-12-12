@@ -228,6 +228,9 @@
 # if defined WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
+# if defined BBL
+#  include "bbl.h"
+# endif
 # if defined NBQ
 #  include "nbq.h"
 # endif

@@ -122,6 +122,7 @@
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
+!$acc declare create(wrk4,wrk5,wrk6)
 # endif
       parameter ( eps    = 1.e-10,
      &            bconst = 0.03,              ! breaking contribution to KPP

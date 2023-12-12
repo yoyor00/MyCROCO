@@ -391,7 +391,7 @@
 !forces.h
 !$acc&, sustr
 !$acc&, svstr
-#ifdef OA_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING
 !$acc&, smstr
 # ifdef READ_PATM
 !$acc&, patm2d
@@ -1239,6 +1239,9 @@
 !$acc&, vname
 #endif
 #ifdef ABL1D
+!$acc&, vname_abl1d
+#endif
+#ifdef ABL1D
 #endif
 #ifdef DIAGNOSTICS_TS
 #endif
@@ -1904,6 +1907,21 @@
 !$acc&, POT_Tamp
 !$acc&, POT_Tphase
 !$acc&, PTide
+#endif
+
+!bbl.h
+#if defined BBL || defined SEDIMENT
+!$acc&, Abed
+!$acc&, Hripple
+!$acc&, Lripple
+!$acc&, w_set
+!$acc&, Sdens
+!$acc&, Ssize
+!$acc&, taucb
+!$acc&, Zbnot
+!$acc&, Zbapp
+!$acc&, bustrw
+!$acc&, bvstrw
 #endif
 
 !$acc& )
