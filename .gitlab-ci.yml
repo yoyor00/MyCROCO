@@ -27,18 +27,21 @@ variables:
   nest_position_vort: ""
   # => for ANA if needed
   DATAANA: ""
+  
+before_script:
+  - mkdir -p $DATADIR
+  - mkdir -p $CVTKWORK
+  - cd $DATADIR
+  - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
+  - mkdir -p $PERFRSTDIR
+  - mkdir -p $PERFRSTWORK
+  - cd $PERFRSTDIR
+  - mkdir -p TESTROOT/REG
+  - cd -
 
 ana_run:
-  before_script:
-    - mkdir -p $DATADIR
-    - mkdir -p $CVTKWORK
-    - cd $DATADIR
-    - mkdir -p TESTROOT/KTEST
-    - cd -
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
+  #only:
+  #  - pushes    
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
@@ -49,26 +52,16 @@ ana_run:
     - ./gather_recap.bash KTEST > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1  
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    
   artifacts:
     paths:
       - $CVTKWORK/ftp
-      - $CVTKWORK/KTEST/*/*.log
     when: always
 
 vort_run:
   only:
     - schedules
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
-  before_script:
-  - mkdir -p $DATADIR
-  - mkdir -p $CVTKWORK
-  - cd $DATADIR
-  - mkdir -p TESTROOT/VORT
-  - cd -
   script:
     - cd $CVTKHOME/Scripts_vort
     - ./create_link_master_vort.sh
@@ -89,16 +82,6 @@ vort_run:
 reg_run:
   only:
     - schedules  
-      #tags:
-      #- ci.inria.fr
-      #- large
-      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0
-  before_script:
-  - mkdir -p $DATADIR
-  - mkdir -p $CVTKWORK
-  - cd $DATADIR
-  - mkdir -p TESTROOT/REG
-  - cd -
   script:
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
@@ -114,25 +97,11 @@ reg_run:
   artifacts:
     paths:
       - $CVTKWORK/ftp
-      - $CVTKWORK/KTEST/*/*.log
     when: always 
 
 reg_perfrst:
   only:
-    - schedules
-      #tags:
-      #- ci.inria.fr
-      #- large
-      #image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:1.0.0  
-  before_script:
-    - mkdir -p $DATADIR
-    - mkdir -p $CVTKWORK
-    - cd $DATADIR
-    - mkdir -p TESTROOT/REG
-    - mkdir -p $PERFRSTDIR
-    - mkdir -p $PERFRSTWORK
-    - cd $PERFRSTDIR
-    - cd -
+    - schedules  
   script:
     - cd $PERFRSTHOME/Scripts_reg_perfrst
     - ./create_link_master_reg_perfrst.sh
@@ -148,9 +117,4 @@ reg_perfrst:
   artifacts:
     paths:
       - $PERFRSTWORK/ftp
-      - $CVTKWORK/KTEST/*/*.log
     when: always
-
-
-
-
