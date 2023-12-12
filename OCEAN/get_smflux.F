@@ -139,6 +139,9 @@ c**        call opencdf (frcname,N)
 # endif        
         else
           ierr=nf_get_var1_FTYPE(ncidfrc,susid,sms_rec,sustrp(i))
+#ifdef OPENACC
+          call update_device(sustrp)
+#endif
         endif
         if (ierr .ne. nf_noerr) then
           write(stdout,6) 'sustr', sms_rec
@@ -157,6 +160,9 @@ c**        call opencdf (frcname,N)
 # endif
         else
           ierr=nf_get_var1_FTYPE(ncidfrc,svsid,sms_rec,svstrp(i))
+#ifdef OPENACC
+          call update_device(svstrp)
+#endif
         endif
         if (ierr .ne. nf_noerr) then
           write(stdout,6) 'svstr', sms_rec

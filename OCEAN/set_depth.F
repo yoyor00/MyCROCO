@@ -621,6 +621,9 @@ C$    integer omp_get_thread_num
 #   include "forces.h"
 #  endif
 #  include "coupling.h"
+#ifdef OPENACC
+#  include "openacc_work.h"
+#endif
 !
 #  include "compute_auxiliary_bounds.h"
 !
@@ -641,8 +644,9 @@ C$    integer omp_get_thread_num
 #  endif
 
 !$acc kernels if(compute_on_device) default(present)
-!$acc loop private(DC,FC(:,0))
-      do j=JU_RANGE
+
+ !     do j=JU_RANGE
+        DOLOOP2D_R(IU_RANGE,JU_RANGE)
         do i=IU_RANGE
           DC(i,0)=0.
           FC(i,0)=0.
@@ -676,11 +680,12 @@ C$    integer omp_get_thread_num
      &                                        )
           enddo
         enddo
-      enddo
+!      enddo
+        ENDDOLOOP2D
 
 
-!$acc loop private(DC,FC(:,0))
-      do j=JV_RANGE
+!      do j=JV_RANGE
+        DOLOOP2D_R(IV_RANGE,JV_RANGE)
         do i=IV_RANGE
           DC(i,0)=0.
           FC(i,0)=0.
@@ -714,7 +719,8 @@ C$    integer omp_get_thread_num
      &                                        )
           enddo
         enddo
-      enddo
+!     enddo
+        ENDDOLOOP2D
 
 !$acc end kernels
 
