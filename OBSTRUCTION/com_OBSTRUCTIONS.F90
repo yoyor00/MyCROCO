@@ -67,7 +67,7 @@ MODULE com_OBSTRUCTIONS
    INTEGER, DIMENSION(:), ALLOCATABLE :: avgObst
    LOGICAL, DIMENSION(:), ALLOCATABLE :: outObst
    LOGICAL, DIMENSION(:), ALLOCATABLE :: out2DObst
-   CHARACTER(LEN=75), DIMENSION(:,:), ALLOCATABLE :: vname_obst
+   CHARACTER(LEN=75), DIMENSION(:, :), ALLOCATABLE :: vname_obst
 
    CHARACTER(LEN=lchain) :: obst_nout_pos                             ! Name obstruction position (iv,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_height_f                        ! Name 2D obstruction height (forcing) (iv,i,j)
@@ -102,7 +102,7 @@ MODULE com_OBSTRUCTIONS
    INTEGER  :: obst_nv_flexi_do                 ! Number of variable for flexible and downward (from sea-surface) obstructions
 
    INTEGER  :: obst_nb_max_hnorm
-   INTEGER  :: obst_nmax_var_out 
+   INTEGER  :: obst_nmax_var_out
 
    LOGICAL  :: obst_l_z0bstress_tot              ! IF ONLY ONE obstruction VARIABLE USED Z0SED
 
@@ -142,11 +142,11 @@ MODULE com_OBSTRUCTIONS
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tmax
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tbefore
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tafter
-   REAL(KIND=rlg), DIMENSION(:,:), ALLOCATABLE :: obst_ts_time
-   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: obst_ts_height
-   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: obst_ts_dens
-   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: obst_ts_width
-   REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: obst_ts_thick
+   REAL(KIND=rlg), DIMENSION(:, :), ALLOCATABLE :: obst_ts_time
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_height
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_dens
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_width
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_thick
 
    ! Initialization variables
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: obst_i_height          ! Initial height of obstructions (iv), [m]

@@ -7,7 +7,7 @@ MODULE init_OBSTRUCTIONS
    !!                   ***  MODULE  init_OBSTRUCTIONS  ***
    !!
    !!
-   !! ** Purpose : concerns all subroutines related to obstruction module 
+   !! ** Purpose : concerns all subroutines related to obstruction module
    !!              initialization
    !!
    !! ** Description :
@@ -15,7 +15,7 @@ MODULE init_OBSTRUCTIONS
    !!     subroutine obst_init   ! Defines obstructions outputs parameters
    !!                            ! and initialize some variables
    !!
-   !!     subroutine obst_vname  ! Defines output vname vector for def_his and 
+   !!     subroutine obst_vname  ! Defines output vname vector for def_his and
    !!                            ! wrt_his
    !!
    !!     subroutine obst_readvar ! Read the file (variables_obstructions.dat)
@@ -33,11 +33,11 @@ MODULE init_OBSTRUCTIONS
    !!     subroutine obst_init_spatial ! Read the spatial initialization file
    !!                                  ! or apply constant values
    !!
-   !!     subroutine obst_init_timeseries ! Read timeseries files and 
+   !!     subroutine obst_init_timeseries ! Read timeseries files and
    !!                                     ! initialize obst_ts_* variables
    !!
    !!     subroutine obst_readfile_distri    ! Read input file for vertical
-   !!                                        ! distribution 
+   !!                                        ! distribution
    !!
    !!     subroutine obst_alloc_nbvar  ! Allocates variables depending on
    !!                                  ! number of obstructions variables
@@ -165,7 +165,7 @@ CONTAINS
             obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
          END IF
       END DO
-      
+
       ! ***********************
       ! * OTHER INITIALIZATIONS
       ! ***********************
@@ -198,7 +198,7 @@ CONTAINS
       USE module_OBSTRUCTIONS
       IMPLICIT NONE
 
-      INTEGER :: iv, jv, indvar
+      INTEGER :: iv, indvar
 
       obst_nout_pos = 'pos'       ! Name obstruction position
       obst_nout_height_f = 'height_f'  ! Name 2D obstruction height (forcing) (iv,i,j)
@@ -220,11 +220,11 @@ CONTAINS
       obst_nout_drag = 'cd3d'      ! Name 3D obstruction drag coefficient (iv,k,i,j)
       obst_nout_tau = 'tau3d'     ! Name 3D obstruction turbulence dissipation scale (k,i,j)
 
-      ALLOCATE (hisObst(1:17*obst_nbvar+15))
-      ALLOCATE (avgObst(1:17*obst_nbvar+15))
-      ALLOCATE (outObst(1:17*obst_nbvar+15))
-      ALLOCATE (out2DObst(1:17*obst_nbvar+15))
-      ALLOCATE (vname_obst(20, 1:17*obst_nbvar+15))
+      ALLOCATE (hisObst(1:17*obst_nbvar + 15))
+      ALLOCATE (avgObst(1:17*obst_nbvar + 15))
+      ALLOCATE (outObst(1:17*obst_nbvar + 15))
+      ALLOCATE (out2DObst(1:17*obst_nbvar + 15))
+      ALLOCATE (vname_obst(20, 1:17*obst_nbvar + 15))
 
       outObst(:) = .FALSE.
       out2DObst(:) = .FALSE.
@@ -243,7 +243,7 @@ CONTAINS
          IF (l_obstout_pos) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -258,7 +258,7 @@ CONTAINS
          IF (l_obstout_height_f) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = 2*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -273,7 +273,7 @@ CONTAINS
          IF (l_obstout_height_e) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = 3*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -288,7 +288,7 @@ CONTAINS
          IF (l_obstout_dens_f) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = 4*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -303,7 +303,7 @@ CONTAINS
          IF (l_obstout_dens_e) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .FALSE.
-         ENDIF
+         END IF
 
          indvar = 5*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -318,7 +318,7 @@ CONTAINS
          IF (l_obstout_width_f) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = 6*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -333,7 +333,7 @@ CONTAINS
          IF (l_obstout_width_e) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .FALSE.
-         ENDIF
+         END IF
 
          indvar = 7*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -348,7 +348,7 @@ CONTAINS
          IF (l_obstout_thick_f) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = 8*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -363,7 +363,7 @@ CONTAINS
          IF (l_obstout_thick_e) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .FALSE.
-         ENDIF
+         END IF
 
          indvar = 9*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -378,7 +378,7 @@ CONTAINS
          IF (l_obstout_theta) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .FALSE.
-         ENDIF
+         END IF
 
          indvar = 10*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -393,7 +393,7 @@ CONTAINS
          IF (l_obstout_frac_xy) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = 11*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -408,7 +408,7 @@ CONTAINS
          IF (l_obstout_frac_z) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .FALSE.
-         ENDIF
+         END IF
 
          indvar = 12*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -423,7 +423,7 @@ CONTAINS
          IF (l_obstout_drag) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .FALSE.
-         ENDIF
+         END IF
 
          indvar = 13*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -438,7 +438,7 @@ CONTAINS
          IF (l_obstout_a2d) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = 14*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -453,7 +453,7 @@ CONTAINS
          IF (l_obstout_a3d) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .FALSE.
-         ENDIF
+         END IF
 
          indvar = 15*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -468,7 +468,7 @@ CONTAINS
          IF (l_obstout_s2d) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .TRUE.
-         ENDIF
+         END IF
 
          indvar = 16*obst_nbvar + iv
          vname_obst(1, indvar) = &
@@ -483,7 +483,7 @@ CONTAINS
          IF (l_obstout_s3d) THEN
             outObst(indvar) = .TRUE.
             out2DObst(indvar) = .FALSE.
-         ENDIF
+         END IF
       END DO
 
       indvar = 17*obst_nbvar + 1
@@ -499,7 +499,7 @@ CONTAINS
       IF (l_obstout_a2d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .TRUE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 2
       vname_obst(1, indvar) = &
@@ -514,7 +514,7 @@ CONTAINS
       IF (l_obstout_a2d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .TRUE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 3
       vname_obst(1, indvar) = &
@@ -529,7 +529,7 @@ CONTAINS
       IF (l_obstout_a2d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .TRUE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 4
       vname_obst(1, indvar) = &
@@ -544,7 +544,7 @@ CONTAINS
       IF (l_obstout_a3d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 5
       vname_obst(1, indvar) = &
@@ -559,7 +559,7 @@ CONTAINS
       IF (l_obstout_a3d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 6
       vname_obst(1, indvar) = &
@@ -574,7 +574,7 @@ CONTAINS
       IF (l_obstout_a3d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 7
       vname_obst(1, indvar) = &
@@ -589,7 +589,7 @@ CONTAINS
       IF (l_obstout_s2d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .TRUE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 8
       vname_obst(1, indvar) = &
@@ -604,7 +604,7 @@ CONTAINS
       IF (l_obstout_s2d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .TRUE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 9
       vname_obst(1, indvar) = &
@@ -619,7 +619,7 @@ CONTAINS
       IF (l_obstout_s2d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .TRUE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 10
       vname_obst(1, indvar) = &
@@ -634,7 +634,7 @@ CONTAINS
       IF (l_obstout_s3d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 11
       vname_obst(1, indvar) = &
@@ -649,7 +649,7 @@ CONTAINS
       IF (l_obstout_s3d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 12
       vname_obst(1, indvar) = &
@@ -664,7 +664,7 @@ CONTAINS
       IF (l_obstout_s3d) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 13
       vname_obst(1, indvar) = &
@@ -679,7 +679,7 @@ CONTAINS
       IF (l_obstout_tau) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 14
       vname_obst(1, indvar) = &
@@ -694,7 +694,7 @@ CONTAINS
       IF (l_obstout_fuzvz) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
       indvar = 17*obst_nbvar + 15
       vname_obst(1, indvar) = &
@@ -709,7 +709,7 @@ CONTAINS
       IF (l_obstout_fuzvz) THEN
          outObst(indvar) = .TRUE.
          out2DObst(indvar) = .FALSE.
-      ENDIF
+      END IF
 
    END SUBROUTINE obst_vname
 
@@ -1521,20 +1521,20 @@ CONTAINS
       REAL tmp(GLOBAL_2D_ARRAY)
 
       CALL obst_nccheck(NF90_OPEN(obst_fn_position, NF90_NOWRITE, ncid), &
-                              "obst_init_pos nf90_open "//obst_fn_position)
+                        "obst_init_pos nf90_open "//obst_fn_position)
 
       DO iv = 1, obst_nbvar
          name = TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv))
          CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                 "obst_init_pos nf90_inq_varid "//name)
+                           "obst_init_pos nf90_inq_varid "//name)
          CALL obst_ncget2D(ncid, varid, tmp, &
-                                 "obst_init_pos getvar "//name)
+                           "obst_init_pos getvar "//name)
          obst_position(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
       END DO
 
       ! Close input NetCDF file.
       CALL obst_nccheck(NF90_CLOSE(ncid), &
-                              "obst_init_pos nf90_close "//obst_fn_position)
+                        "obst_init_pos nf90_close "//obst_fn_position)
 
       RETURN
 
@@ -1561,39 +1561,39 @@ CONTAINS
       DO iv = 1, obst_nbvar
          IF (obst_l_init_spatial(iv)) THEN
             CALL obst_nccheck(NF90_OPEN(obst_fn_initspatial(iv), NF90_NOWRITE, ncid), &
-                                    "obst_init_spatial nf90_open "//obst_fn_initspatial(iv))
+                              "obst_init_spatial nf90_open "//obst_fn_initspatial(iv))
 
             name = TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv))
             CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                    "obst_init_spatial nf90_inq_varid "//obst_fn_initspatial(iv)//" "//name)
+                              "obst_init_spatial nf90_inq_varid "//obst_fn_initspatial(iv)//" "//name)
             CALL obst_ncget2D(ncid, varid, tmp, &
-                                    "obst_init_spatial getvar "//obst_fn_initspatial(iv)//" "//name)
+                              "obst_init_spatial getvar "//obst_fn_initspatial(iv)//" "//name)
             obst_height_inst(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
             name = TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv))
             CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                    "obst_init_spatial nf90_inq_varid "//obst_fn_initspatial(iv)//" "//name)
+                              "obst_init_spatial nf90_inq_varid "//obst_fn_initspatial(iv)//" "//name)
             CALL obst_ncget2D(ncid, varid, tmp, &
-                                    "obst_init_spatial getvar "//obst_fn_initspatial(iv)//" "//name)
+                              "obst_init_spatial getvar "//obst_fn_initspatial(iv)//" "//name)
             obst_dens_inst(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
             name = TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv))
             CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                    "obst_init_spatial nf90_inq_varid "//obst_fn_initspatial(iv)//" "//name)
+                              "obst_init_spatial nf90_inq_varid "//obst_fn_initspatial(iv)//" "//name)
             CALL obst_ncget2D(ncid, varid, tmp, &
-                                    "obst_init_spatial getvar "//obst_fn_initspatial(iv)//" "//name)
+                              "obst_init_spatial getvar "//obst_fn_initspatial(iv)//" "//name)
             obst_width_inst(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
             name = TRIM(obst_nout_thick_f)//'_'//TRIM(obst_varname(iv))
             CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                    "obst_init_spatial nf90_inq_varid "//obst_fn_initspatial(iv)//" "//name)
+                              "obst_init_spatial nf90_inq_varid "//obst_fn_initspatial(iv)//" "//name)
             CALL obst_ncget2D(ncid, varid, tmp, &
-                                    "obst_init_spatial getvar "//obst_fn_initspatial(iv)//" "//name)
+                              "obst_init_spatial getvar "//obst_fn_initspatial(iv)//" "//name)
             obst_thick_inst(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
             ! Close input NetCDF file.
             CALL obst_nccheck(NF90_CLOSE(ncid), &
-                                    "obst_init_spatial nf90_close "//obst_fn_initspatial(iv))
+                              "obst_init_spatial nf90_close "//obst_fn_initspatial(iv))
          ELSE
             obst_height_inst(iv, :, :) = obst_i_height(iv)
             obst_dens_inst(iv, :, :) = obst_i_dens(iv)
@@ -1642,13 +1642,13 @@ CONTAINS
       DO iv = 1, obst_nbvar
          IF (obst_l_filetimeserie(iv)) THEN
             CALL obst_nccheck(NF90_OPEN(obst_fn_timeserie(iv), NF90_NOWRITE, ncid), &
-                                    "obst_init_timeseries nf90_open "//obst_fn_timeserie(iv))
+                              "obst_init_timeseries nf90_open "//obst_fn_timeserie(iv))
             CALL obst_nccheck(NF90_INQ_DIMID(ncid, 'time', dimid), &
-                                    "obst_init_timeseries nf90_inq_dimid "//obst_fn_timeserie(iv)//' time')
+                              "obst_init_timeseries nf90_inq_dimid "//obst_fn_timeserie(iv)//' time')
             CALL obst_nccheck(NF90_INQUIRE_DIMENSION(ncid, dimid, len=lendim), &
-                                    "obst_init_timeseries nf90_inquire_dimension "//obst_fn_timeserie(iv)//' time')
+                              "obst_init_timeseries nf90_inquire_dimension "//obst_fn_timeserie(iv)//' time')
             CALL obst_nccheck(NF90_CLOSE(ncid), &
-                                    "obst_init_timeseries nf90_close "//obst_fn_timeserie(iv))
+                              "obst_init_timeseries nf90_close "//obst_fn_timeserie(iv))
             obst_ts_tmax(iv) = lendim
          END IF
       END DO
@@ -1673,50 +1673,50 @@ CONTAINS
          DO iv = 1, obst_nbvar
             IF (obst_l_filetimeserie(iv)) THEN
                CALL obst_nccheck(NF90_OPEN(obst_fn_timeserie(iv), NF90_NOWRITE, ncid), &
-                                       "obst_init_timeseries nf90_open "//obst_fn_timeserie(iv))
+                                 "obst_init_timeseries nf90_open "//obst_fn_timeserie(iv))
 
                CALL obst_nccheck(NF90_INQ_DIMID(ncid, 'time', dimid), &
-                                       "obst_init_timeseries nf90_inq_dimid "//obst_fn_timeserie(iv)//" time")
+                                 "obst_init_timeseries nf90_inq_dimid "//obst_fn_timeserie(iv)//" time")
 
                CALL obst_nccheck(NF90_INQ_VARID(ncid, 'time', varid), &
-                                       "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" time")
+                                 "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" time")
 
                CALL tool_origindate(ncid, varid, origin_date_in_sec)
 
                CALL obst_nccheck(NF90_GET_VAR(ncid, varid, tmp(1:obst_ts_tmax(iv))), &
-                                       "obst_init_timeseries nf90_get_var "//obst_fn_timeserie(iv)//" time")
+                                 "obst_init_timeseries nf90_get_var "//obst_fn_timeserie(iv)//" time")
                obst_ts_time(iv, 1:obst_ts_tmax(iv)) = tmp(1:obst_ts_tmax(iv)) + origin_date_in_sec
 
                name = TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv))
                CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                       "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" "//name)
+                                 "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" "//name)
                CALL obst_nccheck(NF90_GET_VAR(ncid, varid, tmp(1:obst_ts_tmax(iv))), &
-                                       "obst_init_timeseries nf90_getvar "//obst_fn_timeserie(iv)//" "//name)
+                                 "obst_init_timeseries nf90_getvar "//obst_fn_timeserie(iv)//" "//name)
                obst_ts_height(iv, 1:obst_ts_tmax(iv)) = tmp(1:obst_ts_tmax(iv))
 
                name = TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv))
                CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                       "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" "//name)
+                                 "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" "//name)
                CALL obst_nccheck(NF90_GET_VAR(ncid, varid, tmp(1:obst_ts_tmax(iv))), &
-                                       "obst_init_timeseries nf90_getvar "//obst_fn_timeserie(iv)//" "//name)
+                                 "obst_init_timeseries nf90_getvar "//obst_fn_timeserie(iv)//" "//name)
                obst_ts_dens(iv, 1:obst_ts_tmax(iv)) = tmp(1:obst_ts_tmax(iv))
 
                name = TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv))
                CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                       "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" "//name)
+                                 "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" "//name)
                CALL obst_nccheck(NF90_GET_VAR(ncid, varid, tmp(1:obst_ts_tmax(iv))), &
-                                       "obst_init_timeseries nf90_getvar "//obst_fn_timeserie(iv)//" "//name)
+                                 "obst_init_timeseries nf90_getvar "//obst_fn_timeserie(iv)//" "//name)
                obst_ts_width(iv, 1:obst_ts_tmax(iv)) = tmp(1:obst_ts_tmax(iv))
 
                name = TRIM(obst_nout_thick_f)//'_'//TRIM(obst_varname(iv))
                CALL obst_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                                       "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" "//name)
+                                 "obst_init_timeseries nf90_inq_varid "//obst_fn_timeserie(iv)//" "//name)
                CALL obst_nccheck(NF90_GET_VAR(ncid, varid, tmp(1:obst_ts_tmax(iv))), &
-                                       "obst_init_timeseries nf90_getvar "//obst_fn_timeserie(iv)//" "//name)
+                                 "obst_init_timeseries nf90_getvar "//obst_fn_timeserie(iv)//" "//name)
                obst_ts_thick(iv, 1:obst_ts_tmax(iv)) = tmp(1:obst_ts_tmax(iv))
 
                CALL obst_nccheck(NF90_CLOSE(ncid), &
-                                       "obst_init_timeseries nf90_close "//obst_fn_timeserie(iv))
+                                 "obst_init_timeseries nf90_close "//obst_fn_timeserie(iv))
             END IF
          END DO
       END IF

@@ -17,7 +17,7 @@ MODULE OBSTRUCTIONS
    !!
    !!     subroutine obst_update  ! Main subroutine controlling updates
    !!                               of obstructions characteristics
-   !!     subroutine obst_rd_timeserie ! Read file for time-varying 
+   !!     subroutine obst_rd_timeserie ! Read file for time-varying
    !!                                  ! obstructions characteristics
    !!==========================================================================
    USE com_OBSTRUCTIONS
@@ -122,10 +122,10 @@ CONTAINS
                obst_s2d(:, i, j) = obst_output_ij%s2d(:)
             END IF
             IF (l_obstout_s3d) then
-               obst_s3d(:, :,i, j) = obst_output_ij%s3d(:, :)
+               obst_s3d(:, :, i, j) = obst_output_ij%s3d(:, :)
             END IF
             IF (l_obstout_drag) then
-               obst_drag3d(:, :,i, j) = obst_output_ij%drag3d(:, :)
+               obst_drag3d(:, :, i, j) = obst_output_ij%drag3d(:, :)
             END IF
          END DO
       END DO

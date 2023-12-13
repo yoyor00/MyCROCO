@@ -416,7 +416,7 @@ CONTAINS
       ELSE ! Not enough water
          DO iv = 1, o1dv_nbvar
             IF (o1dv_position(iv) .gt. 0.0_rsh) THEN
-               o1dv_output%height(:) = 0.99_rsh*o1dv_height_f(:)
+               o1dv_output%height(iv) = 0.99_rsh*o1dv_height_f(iv)
             END IF
          END DO
          o1dv_output%z0obst(:) = o1dv_z0bed
@@ -1738,17 +1738,17 @@ CONTAINS
       REAL(KIND=rsh) :: o1dv_z0sedim
       !! * Local declaration
       INTEGER :: iv
-      REAL(KIND=rsh) :: z0tmp,stmp,z00,oah
-      REAL(KIND=rsh),PARAMETER :: epsi=1E-6
+      REAL(KIND=rsh) :: z0tmp, stmp, z00, oah
+      REAL(KIND=rsh), PARAMETER :: epsi = 1E-6
       !!----------------------------------------------------------------------
       !! * Executable part
       !!------------------
       z0tmp = 0.0_rsh
-      stmp  = 0.0_rsh
+      stmp = 0.0_rsh
       DO iv = 1, o1dv_nbvar
          IF ((o1dv_obst_param(iv)%type == "UP") .AND. (o1dv_obst_param(iv)%l_z0bstress)) THEN
-            IF(position(iv).GT.0.0_rsh)THEN
-               IF(o1dv_obst_param(iv)%z0bstress_option == 0)THEN
+            IF (position(iv) .GT. 0.0_rsh) THEN
+               IF (o1dv_obst_param(iv)%z0bstress_option == 0) THEN
                   !-----------------------
                   ! Constant value is used
                   !-----------------------
@@ -1758,28 +1758,27 @@ CONTAINS
                   ! Parameterization is used
                   !-------------------------
                   oah = dens(iv)*width(iv)*height(iv)
-                  z00 = o1dv_obst_param(iv)%c_z0bstress_x0* oah**o1dv_obst_param(iv)%c_z0bstress_x1
-                  z00 = MAX(MIN(z00,0.01_rsh),epsi)
-               ENDIF ! END test on parameterization
-               z0tmp = z0tmp + (position(iv)*z00) + ((1.0_rsh-position(iv))*z0sedim)
-               stmp  = stmp + 1.0_rsh
+                  z00 = o1dv_obst_param(iv)%c_z0bstress_x0*oah**o1dv_obst_param(iv)%c_z0bstress_x1
+                  z00 = MAX(MIN(z00, 0.01_rsh), epsi)
+               END IF ! END test on parameterization
+               z0tmp = z0tmp + (position(iv)*z00) + ((1.0_rsh - position(iv))*z0sedim)
+               stmp = stmp + 1.0_rsh
             ELSE
                z0tmp = z0tmp + z0sedim
-               stmp  = stmp + 1.0_rsh
+               stmp = stmp + 1.0_rsh
             END IF
          ELSE
             z0tmp = z0tmp + z0sedim
-            stmp  = stmp + 1.0_rsh
+            stmp = stmp + 1.0_rsh
          END IF
       END DO ! END LOOP obst_nbvar
       !----------
       ! Averaging
       !----------
-      o1dv_z0sedim = MAX(epsi, z0tmp / stmp)
+      o1dv_z0sedim = MAX(epsi, z0tmp/stmp)
 
    !!**********************************************************************
    END FUNCTION o1dv_comp_z0sedim
-
 
    !==================================================================================================
 END MODULE OBSTRUCTIONS1DV
