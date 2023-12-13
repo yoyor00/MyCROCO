@@ -17,6 +17,9 @@
 # ifdef TIDES_MAS
       USE MOD_TIDES_MAS
 # endif
+#ifdef OPENACC
+      use exchange_device_host
+#endif
       implicit none
 
 # ifndef TIDES_MAS
@@ -132,6 +135,9 @@
         status=nf_inq_varid(ncidfrc,'tide_Eamp',varid)
         status=nf_fread(SSH_Tamp(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+#ifdef OPENACC
+          call update_device(SSH_Tamp(:,:,itide))
+#endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_Eamp',itide,frcname(1:lstr)
           stop                           !-->  EXIT
@@ -168,6 +174,9 @@
           enddo
         enddo
 #  endif
+#ifdef OPENACC
+          call update_device(SSH_Tphase(:,:,itide))
+#endif     
 
 # endif
 # ifdef UV_TIDES
@@ -202,6 +211,9 @@
         status=nf_inq_varid(ncidfrc,'tide_Cmax',varid)
         status=nf_fread(UV_Tmajor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+#ifdef OPENACC
+          call update_device(UV_Tmajor(:,:,itide))
+#endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_Cmax',itide,frcname(1:lstr)
           stop                           !-->  EXIT
@@ -213,6 +225,9 @@
         status=nf_inq_varid(ncidfrc,'tide_Cmin',varid)
         status=nf_fread(UV_Tminor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+#ifdef OPENACC
+          call update_device(UV_Tminor(:,:,itide))
+#endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_Cmin',itide,frcname(1:lstr)
           stop                           !-->  EXIT
@@ -223,6 +238,10 @@
             UV_Tphase(i,j,itide)=UV_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#ifdef OPENACC
+          call update_device(UV_Tangle(:,:,itide))
+          call update_device(UV_Tphase(:,:,itide))
+#endif
 # endif
 # ifdef POT_TIDES
 !
@@ -231,6 +250,9 @@
         status=nf_inq_varid(ncidfrc,'tide_Pamp',varid)
         status=nf_fread(POT_Tamp(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
+#ifdef OPENACC
+          call update_device(POT_Tamp(:,:,itide))
+#endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_Pamp',itide,frcname(1:lstr)
           stop                           !-->  EXIT
@@ -247,6 +269,9 @@
             POT_Tphase(i,j,itide)=POT_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#ifdef OPENACC
+          call update_device(POT_Tphase(:,:,itide))
+#endif
 # endif
 
       enddo !Ntides
