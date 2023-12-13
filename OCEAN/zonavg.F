@@ -22,33 +22,43 @@
       include 'mpif.h'
       integer ierr, lenode
       real*8 allsumd(0:Mm+1,NNODES)
+!$acc declare create( allsumd )      
 # endif
 
 !$acc kernels if(compute_on_device) default(present)
 
       Ad = A
+!$acc end kernels
 
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop vector reduction(+:Azond)
       do j=jstr-1,jend+1
          Azond(j)=sum(A(istr:iend,j))
       enddo
 !$acc end kernels
 
 # ifdef MPI
-#  ifdef OPENACC
-      NOTREADY
-#  endif
-
+!$acc host_data if(compute_on_device)
+!$acc&   use_device (Azond,allsumd )
       call MPI_ALLGATHER(Azond,(Mm+2),MPI_DOUBLE_PRECISION,
      &                   allsumd,(Mm+2),MPI_DOUBLE_PRECISION,
      &                   MPI_COMM_WORLD,ierr)
+!$acc end host_data
 
+!$acc kernels if(compute_on_device) default(present)
       Azond=0.
+!$acc end kernels
+
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop gang reduction(+:Azond)
       do i=1,NP_XI
          lenode=jj*NP_XI + i
+!$acc loop vector reduction(+:Azond)
          do j=jstr-1,jend+1
             Azond(j)=Azond(j)+allsumd(j,lenode)
          enddo
       enddo
+!$acc end kernels
 # endif /* MPI */
 
 !$acc kernels if(compute_on_device) default(present)
@@ -83,11 +93,14 @@
       include 'mpif.h'
       integer ierr, lenode
       real*8 allsumd(0:Mm+1,N,NNODES)
+!$acc declare create( allsumd )      
 # endif
 
 !$acc kernels if(compute_on_device) default(present)
-
       Ad = A
+!$acc end kernels
+      
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
          do j=jstr-1,jend+1
          Azond(j,k)=sum(A(istr:iend,j,k))
@@ -97,14 +110,18 @@
 
 # ifdef MPI
 #  ifdef OPENACC
-      NOTREADY
+!$acc host_data if(compute_on_device)
+!$acc&       use_device(Azond,allsumd)           
 #  endif
-
       call MPI_ALLGATHER(Azond,(Mm+2)*N,MPI_DOUBLE_PRECISION,
      &                   allsumd,(Mm+2)*N,MPI_DOUBLE_PRECISION,
      &                   MPI_COMM_WORLD,ierr)
+!$acc end host_data
 
+!$acc kernels if(compute_on_device) default(present)
       Azond=0.
+!$acc end kernels      
+!$acc kernels if(compute_on_device) default(present)
       do i=1,NP_XI
          lenode=jj*NP_XI + i
          do k=1,N
@@ -113,6 +130,19 @@
             enddo
          enddo
       enddo
+!$acc end kernels
+
+!!!$acc parallel loop if(compute_on_device) default(present) 
+!!!$acc& loop gang reduction(+:Azond) collapse(3)
+!!      do i=1,NP_XI
+!!         lenode=jj*NP_XI + i
+!!         do k=1,N
+!!            do j=jstr-1,jend+1
+!!               Azond(j,k)=Azond(j,k)+allsumd(j,k,lenode)
+!!            enddo
+!!         enddo
+!!      enddo
+      
 # endif /* MPI */
 
 !$acc kernels if(compute_on_device) default(present)

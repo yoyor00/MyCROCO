@@ -10,7 +10,7 @@
 !======================================================================
 !
 #ifdef AUTOTILING
-      real,dimension(:,:,:), pointer :: A2d, A3d
+      real,dimension(:,:,:), pointer :: A2d, A3d, A3dHz
 # if defined SEDIMENT || defined LMD_MIXING
       integer,dimension(:,:),pointer :: B2d
 # endif
@@ -20,6 +20,7 @@
 # endif
 #else
       real A2d(N2d,NSA,0:NPP-1), A3d(N3d,8,0:NPP-1)
+     &    ,A3dHz(N3dHz,4,0:NPP-1)
 # if defined SEDIMENT || defined LMD_MIXING
       integer B2d(N2d,0:NPP-1)
 # endif
@@ -29,7 +30,7 @@
 # endif
 #endif
 
-      common/private_scratch/ A2d,A3d
+      common/private_scratch/ A2d,A3d,A3dHz
 #if defined SEDIMENT || defined LMD_MIXING
       common/private_scratch_bis/ B2d
 #endif

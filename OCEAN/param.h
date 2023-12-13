@@ -410,6 +410,7 @@
       parameter (se=sse/(sse+ssz), sz=1-se)
       parameter (N2d=size_XI*(se*size_ETA+sz*Np))
       parameter (N3d=size_XI*size_ETA*Np)
+      parameter (N3dHz=size_XI*size_ETA*NpHz)
 # ifdef ABL1D
       parameter (sse_abl=size_ETA/(N_abl+1), ssz_abl=(N_abl+1)/size_ETA)
       parameter (se_abl=sse_abl/(sse_abl+ssz_abl), sz_abl=1-se_abl)

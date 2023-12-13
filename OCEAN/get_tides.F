@@ -126,6 +126,9 @@
           stop                           !-->  EXIT
         endif
         Tperiod(itide)=Tperiod(itide)*3600.
+#ifdef OPENACC
+!$acc update device( Tperiod(itide) ) 
+#endif
 # endif
 
 # ifdef SSH_TIDES

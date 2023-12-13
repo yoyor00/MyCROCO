@@ -1,9 +1,9 @@
         subroutine initialisation_openacc
+#include "cppdefs.h"
 #ifdef OPENACC
 # ifdef JEANZAY
         USE openacc
         implicit none
-#  include "cppdefs.h"
 #  include "param.h"
  
         character(len=6) :: local_rank_env
