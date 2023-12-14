@@ -185,7 +185,7 @@ C     commons
 #if defined(ATLN_CTRL)      
       common /ad_obs_data/ ad_obs, ad_obs_i, ad_obs_j, ad_nobs
 #else
-      common /ad_obs_data/ ad_obs, ad_nobs
+      common /ad_obs_data/ ad_obs
 #endif
       
       common /ad_state_info/ ad_sim_iicroot,ad_counter,ad_cost_counter,

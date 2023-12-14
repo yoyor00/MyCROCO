@@ -199,8 +199,8 @@ DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs
 
 TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o init_control.o set_state.o save_restore.o contextAD.o
 
-LAMPI_PLAINC= #-lampiPlainC
-LAMPI= #-lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
+LAMPI_PLAINC= -lampiPlainC
+LAMPI= -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
 
 #======================================================================
 

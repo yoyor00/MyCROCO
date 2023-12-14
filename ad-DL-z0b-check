@@ -44,7 +44,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=16
+  nbcores=1
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
@@ -83,8 +83,8 @@ sed -i 's/undef[\t ]*AD_DL_Z0B_CTRL/define AD_DL_Z0B_CTRL/' cppdefs.h
 sed -i 's/define[\t ]*ANA_INITIAL/undef ANA_INITIAL/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
-make croco_adc && mv croco_adc .. || exit 1
+#make croco_adc && mv croco_adc .. || exit 1
 make croco_adj && mv croco_adj .. || exit 1
 cd ..
-$mpirun_cmd time -v ./croco_adc croco.in.AD-DL-Z0B-CTRL.in
-#$mpirun_cmd time -v ./croco_adj croco.in.AD-DL-Z0B-CTRL.in
+#$mpirun_cmd time -v ./croco_adc croco.in.AD-DL-Z0B-CTRL.in
+$mpirun_cmd time -v ./croco_adj croco.in.AD-DL-Z0B-CTRL.in
