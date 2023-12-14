@@ -36,7 +36,7 @@
 # include "climat.h"
 # include "mixing.h"
 # include "scalars.h"
-# ifdef NBQ_NUDGING
+# if defined NBQ_NUDGING || defined NBQ_SPONGE
 #  include "nbq.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i, j, k, isp, itrc, ibnd
@@ -187,6 +187,19 @@
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 
 # endif /* SPONGE */
+
+# ifdef NBQ_SPONGE
+!
+!-------------------------------------------------------------------
+!  Add second Viscosity in SPONGE layers
+!-------------------------------------------------------------------
+!
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          visc2_nbq_sponge(i,j)=10.*wrk(i,j)
+        enddo
+      enddo
+# endif /* NBQ_SPONGE */
 !
 !-------------------------------------------------------------------
 !  add configuration specific stuff

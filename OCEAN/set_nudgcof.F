@@ -253,6 +253,19 @@
       enddo
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 # endif /* SPONGE */
+
+# ifdef NBQ_SPONGE
+!
+!-------------------------------------------------------------------
+!  Add second Viscosity in SPONGE layers
+!-------------------------------------------------------------------
+!
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          visc2_nbq_sponge(i,j)=10.*wrk(i,j)
+        enddo
+      enddo
+# endif /* NBQ_SPONGE */
 !
 !-------------------------------------------------------------------
 !  add configuration specific stuff

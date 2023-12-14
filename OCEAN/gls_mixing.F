@@ -42,15 +42,26 @@
       call gls_mixing_tile ( Istr, Iend, Jstr, Jend,
      &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
      &                    A3d(1, 4,trd), A3d(1, 5,trd), A2d(1, 2,trd),
-     &                    A2d(1, 3,trd), A2d(1, 4,trd), A2d(1, 5,trd),
+     &                    A2d(1, 3,trd), A2d(1, 4,trd), 
+#ifndef OPENACC     
+     &                    A2d(1, 5,trd),
      &                    A2d(1, 6,trd), A2d(1, 7,trd), A2d(1, 8,trd))
-
+#else
+     &                    A3d(1, 6,trd),
+     &                    A3d(1, 7,trd), A3d(1, 8,trd), A3d(1, 9,trd))
+#endif
       RETURN
       END
       SUBROUTINE gls_mixing_tile ( Istr, Iend, Jstr, Jend,
-     &                          tke_new, gls_new, shear2, vort2, work,
-     &                                diss, ustar_sfc_sq,ustar_bot_sq,
+     &                          tke_new, gls_new, work, 
+     &                          shear2,  vort2,   diss, 
+     &                          ustar_sfc_sq,ustar_bot_sq,
+#ifndef OPENACC     
      &                                                 DC, FC, CF, RH)
+#else
+     &                              DC3D, FC3D, CF3D, RH3D)
+#endif
+
 
 !
 !======================================================================
@@ -102,10 +113,17 @@
       REAL            ::  diss        (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
       REAL            ::  ustar_sfc_sq(PRIVATE_2D_SCRATCH_ARRAY      )
       REAL            ::  ustar_bot_sq(PRIVATE_2D_SCRATCH_ARRAY      )
+#ifndef OPENACC      
       REAL            ::  DC          (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL            ::  FC          (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL            ::  CF          (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
       REAL            ::  RH          (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
+#else
+      REAL            ::  DC3D        (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL            ::  FC3D        (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL            ::  CF3D        (PRIVATE_2D_SCRATCH_ARRAY,1:N-1)
+      REAL            ::  RH3D        (PRIVATE_2D_SCRATCH_ARRAY,1:N-1)
+#endif
       ! Local scalars
       REAL            ::  cff , cff1 , cff2, cff3m, cff3p
       REAL            ::  invk, invG, Bprod, Sprod, epsilon
@@ -195,6 +213,50 @@
 # ifdef BBL
 #  include "bbl.h"
 # endif
+
+
+!! define to move from 2D to 3D
+#ifndef OPENACC
+#define DCIK        DC(i,k)
+#define DCINM1      DC(i,N-1)
+
+#define FCIK        FC(i,k)
+#define FCI1        FC(i,1)       
+#define FCIN        FC(i,N)
+#define FCIKP1      FC(i,k+1) 
+#define FCINM1      FC(i,N-1)
+
+#define CFIK        CF(i,k)        
+#define CFIKP1      CF(i,k+1)
+#define CFINM1      CF(i,N-1) 
+
+#define RHIK        RH(i,k)   
+#define RHI1        RH(i,1) 
+#define RHIKP1      RH(i,k+1)
+#define RHIKM1      RH(i,k-1)  
+#define RHINM1      RH(i,N-1)  
+#else
+!! 3D VAR for GPU
+#define DCIK        DC3D(i,j,k)
+#define DCINM1      DC3D(i,j,N-1)
+
+#define FCIK        FC3D(i,j,k)
+#define FCI1        FC3D(i,j,1)       
+#define FCIN        FC3D(i,j,N)
+#define FCIKP1      FC3D(i,j,k+1) 
+#define FCINM1      FC3D(i,j,N-1)
+
+#define CFIK        CF3D(i,j,k)        
+#define CFIKP1      CF3D(i,j,k+1)
+#define CFINM1      CF3D(i,j,N-1) 
+
+#define RHIK        RH3D(i,j,k)   
+#define RHI1        RH3D(i,j,1) 
+#define RHIKP1      RH3D(i,j,k+1)
+#define RHIKM1      RH3D(i,j,k-1)  
+#define RHINM1      RH3D(i,j,N-1)  
+
+#endif
 !
 !--------------------------------------------------------------------
 ! Compute extended bounds (necessary because of
@@ -273,7 +335,10 @@
 ! Horizontal advection (first-order upwind)
 !--------------------------------------------------------------------
 !
+
 !$acc kernels if(compute_on_device) default(present)
+!$acc& copyin( trb_min, gls_min, cff, itke )
+      
 # ifdef GLS_HADV_UP1
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
@@ -356,12 +421,11 @@
 !
 # ifdef GLS_VADV_UP1
       ig=itke         ! <-- TKE
-!$acc loop private(FC)
       DO j=jmin,jmax
         DO k=1,N
           DO i=imin,imax
             cff=0.5*(We(i,j,k)+We(i,j,k-1))
-            FC(i,k)=trb(i,j,k-1,nstp,ig)*max(cff,0.)
+            FCIK=trb(i,j,k-1,nstp,ig)*max(cff,0.)
      &             +trb(i,j,k  ,nstp,ig)*min(cff,0.)
           ENDDO
         ENDDO
@@ -370,18 +434,17 @@
             cff=2./(Hz(i,j,k)+Hz(i,j,k+1))
             tke_new(i,j,k)= tke_new(i,j,k)
      &                     -dt*cff*pm(i,j)*pn(i,j)
-     &                        *(FC(i,k+1)-FC(i,k))
+     &                        *(FCIKP1-FCIK)
           ENDDO
         ENDDO
       ENDDO
 !
       ig=igls         ! <-- GLS
-!$acc loop private(FC)
       DO j=jmin,jmax
         DO k=1,N
           DO i=imin,imax
             cff=0.5*(We(i,j,k)+We(i,j,k-1))
-            FC(i,k)=trb(i,j,k-1,nstp,ig)*max(cff,0.)
+            FCIK=trb(i,j,k-1,nstp,ig)*max(cff,0.)
      &             +trb(i,j,k  ,nstp,ig)*min(cff,0.)
           ENDDO
         ENDDO
@@ -390,7 +453,7 @@
             cff=2./(Hz(i,j,k)+Hz(i,j,k+1))
             gls_new(i,j,k)= gls_new(i,j,k)
      &                     -dt*cff*pm(i,j)*pn(i,j)
-     &                        *(FC(i,k+1)-FC(i,k))
+     &                        *(FCIKP1-FCIK)
           ENDDO
         ENDDO
       ENDDO
@@ -516,7 +579,7 @@
          ENDDO !<-- terminate i-loop
 
          !--------------------------------------------------
-!$acc loop private(gls_new,tke_new,dc,rh,fc,cf) 
+!!$acc loop private(gls_new,tke_new,dc,rh,fc,cf) 
          DO ig = 1,ngls     ! ig = 2 for gls and = 1 for tke
          !--------------------------------------------------
 
@@ -524,14 +587,14 @@
             cff=-0.5*dt
             DO k=2,N-1
                DO i=imin,imax
-                  FC(i,k)= cff* OneOverSig(ig)*
+                  FCIK= cff* OneOverSig(ig)*
      &                   ( Akv_old(i,j,k)+Akv_old(i,j,k-1) ) / Hz(i,j,k)
                ENDDO
             ENDDO
 
             DO i=imin,imax
-               FC(i,1)=0.
-               FC(i,N)=0.
+               FCI1=0.
+               FCIN=0.
             ENDDO
 
             ! Production/Dissipation terms and diagonal term
@@ -563,13 +626,13 @@
                     trb_new=gls_new(i,j,k)
                   ENDIF
                   IF( (Bprod + Sprod) .gt. 0.) THEN
-                     RH(i,k) = cff*( trb_new + dt*(Bprod+Sprod) )
-                     DC(i,k) = cff*(1.+dt*cff2*diss(i,k))
-     &                                                -FC(i,k)-FC(i,k+1)
+                     RHIK = cff*( trb_new + dt*(Bprod+Sprod) )
+                     DCIK = cff*(1.+dt*cff2*diss(i,k))
+     &                                                -FCIK-FCIKP1
                   ELSE
-                     RH(i,k) = cff*( trb_new + dt*Sprod  )
-                     DC(i,k) = cff*(1.+dt*(cff2*diss(i,k)
-     &                              -invG*Bprod)) - FC(i,k) - FC(i,k+1)
+                     RHIK = cff*( trb_new + dt*Sprod  )
+                     DCIK = cff*(1.+dt*(cff2*diss(i,k)
+     &                              -invG*Bprod)) - FCIK - FCIKP1
                   ENDIF
                ENDDO
             ENDDO
@@ -590,8 +653,8 @@
                   trb_bot = MAX( tke_min, cm0inv2*ustar_bot_sq(i,j) )
                   flux_bot = 0.
                   ! finalize
-                  RH(i,1  ) = RH(i,  1) + dt*flux_bot
-                  RH(i,N-1) = RH(i,N-1) + dt*flux_top
+                  RHI1 = RHI1 + dt*flux_bot
+                  RHINM1 = RHINM1 + dt*flux_top
                   tke_new(i,j,N) = trb_sfc
                   tke_new(i,j,0) = trb_bot
                ENDDO
@@ -632,8 +695,8 @@
      &                          *vonKar*OneOverSig(igls)
      &                          *(cff**(rm+0.5))*(lgthsc**rn)
                   ! finalize
-                  RH(i,  1) = RH(i,  1) + dt*flux_bot
-                  RH(i,N-1) = RH(i,N-1) + dt*flux_top
+                  RHI1 = RHI1 + dt*flux_bot
+                  RHINM1 = RHINM1 + dt*flux_top
                   gls_new(i,j,N) = trb_sfc
                   gls_new(i,j,0) = trb_bot
                ENDDO
@@ -641,35 +704,35 @@
 
             ! tridiagonal resolution
             DO i=imin,imax
-               cff       =  1./DC(i,N-1)
-               CF(i,N-1) = cff*FC(i,N-1)
-               RH(i,N-1) = cff*RH(i,N-1)
+               cff       =  1./DCINM1
+               CFINM1 = cff*FCINM1
+               RHINM1 = cff*RHINM1
             ENDDO
             DO k=N-2,1,-1
                DO i=imin,imax
-                  cff     =   1./(DC(i,k)-CF(i,k+1)*FC(i,k+1))
-                  CF(i,k) = cff*FC(i,k)
-                  RH(i,k) = cff*( RH(i,k)-FC(i,k+1)*RH(i,k+1))
+                  cff     =   1./(DCIK-CFIKP1*FCIKP1)
+                  CFIK = cff*FCIK
+                  RHIK = cff*( RHIK-FCIKP1*RHIKP1)
                ENDDO
             ENDDO
             IF( ig == itke ) THEN
               DO i=imin,imax
-                tke_new(i,j,1) = MAX( RH(i,1), trb_min(ig) )
+                tke_new(i,j,1) = MAX( RHI1, trb_min(ig) )
               ENDDO
               DO k=2,N-1
                 DO i=imin,imax
-                  RH(i,k) = RH(i,k)-CF(i,k)*RH(i,k-1)
-                  tke_new(i,j,k) = MAX( RH(i,k), trb_min(ig) )
+                  RHIK = RHIK-CFIK*RHIKM1
+                  tke_new(i,j,k) = MAX( RHIK, trb_min(ig) )
                 ENDDO
               ENDDO
             ELSE
               DO i=imin,imax
-                gls_new(i,j,1) = MAX( RH(i,1), trb_min(ig) )
+                gls_new(i,j,1) = MAX( RHI1, trb_min(ig) )
               ENDDO
               DO k=2,N-1
                 DO i=imin,imax
-                  RH(i,k) = RH(i,k)-CF(i,k)*RH(i,k-1)
-                  gls_new( i,j,k) = MAX( RH(i,k), trb_min(ig) )
+                  RHIK = RHIK-CFIK*RHIKM1
+                  gls_new( i,j,k) = MAX( RHIK, trb_min(ig) )
                 ENDDO
               ENDDO
             ENDIF
@@ -682,7 +745,7 @@
       ENDDO     ! j loop
       !--------------------------------------------------
 !$acc end kernels
-
+!$acc kernels if(compute_on_device) default(present)
 !
 !--------------------------------------------------------------------
 !    GLS Smoothing
@@ -720,7 +783,7 @@
 
 # undef I_EXT_RANGE
 # undef J_EXT_RANGE
-
+!$acc end kernels
 !
 !--------------------------------------------------------------------
 !    Compute Akv & Lscale
