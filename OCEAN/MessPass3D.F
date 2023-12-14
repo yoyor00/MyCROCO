@@ -5,9 +5,19 @@
 #if defined MPI && defined SOLVE3D
 
 # ifndef MP_3PTS
+#  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_tile (Istr,Iend,Jstr,Jend, A, nmax)
 # else
+       subroutine MessPass3D_sl_tile (Istr,Iend,Jstr,Jend, A, 
+     &  nmax)
+#  endif
+# else
+#  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
+#  else
+       subroutine MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend, A,
+     &  nmax)
+#  endif
 # endif
 !
 !======================================================================
@@ -37,6 +47,12 @@
 # else
       parameter (Npts=3)
 # endif
+# undef  NP1      
+# define NP1 N+1
+#ifdef MP_M3FAST_SEDLAYERS
+# undef  NP1
+# define NP1 N+N_sl+1
+#endif 
       integer nmax
 # ifdef  BAND_DEBUG         
       real,dimension(Npts)        :: checksum
@@ -50,19 +66,23 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 # include "compute_message_bounds.h"
 
 # ifdef AGRIF
+      size_Z=Npts*Npts*(NP1)
       sub_X=(Lm+NSUB_X-1)/NSUB_X
-      size_X=(N+1)*Npts*(sub_X+2*Npts)
+      size_X=(NP1)*Npts*(sub_X+2*Npts)
       sub_E=(Mm+NSUB_E-1)/NSUB_E
-      size_E=(N+1)*Npts*(sub_E+2*Npts)
-      size_Z=MAXNPTS*MAXNPTS*(N+1)
+      size_E=(NP1)*Npts*(sub_E+2*Npts)
 
       if(.not. allocated(buf_snd4_3D)) then
-      Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  buf_snd2_3D(size_Z),
-     &         buf_rev4_3D(size_Z),  ibuf_revN_3D(size_X),  buf_rev2_3D(size_Z),
+      Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  
+     &         buf_snd2_3D(size_Z),
+     &         buf_rev4_3D(size_Z),  ibuf_revN_3D(size_X),  
+     &         buf_rev2_3D(size_Z),
      &        jbuf_sndW_3D(size_E),                     jbuf_sndE_3D(size_E),
      &        jbuf_revW_3D(size_E),                     jbuf_revE_3D(size_E),
-     &         buf_snd1_3D(size_Z),  ibuf_sndS_3D(size_X),  buf_snd3_3D(size_Z),
-     &         buf_rev1_3D(size_Z),  ibuf_revS_3D(size_X),  buf_rev3_3D(size_Z))
+     &         buf_snd1_3D(size_Z),  ibuf_sndS_3D(size_X),  
+     &         buf_snd3_3D(size_Z),
+     &         buf_rev1_3D(size_Z),  ibuf_revS_3D(size_X),  
+     &         buf_rev3_3D(size_Z))
       endif
 # endif
 
@@ -91,7 +111,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             do k=1,nmax
               do j=jmin,jmax
                 do ipts=1,Npts
-                  jbuf_sndW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))=A(ipts,j,k)
+                  jbuf_sndW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))=
+     &                  A(ipts,j,k)
                 enddo
               enddo
             enddo
@@ -131,7 +152,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             do k=1,nmax
               do jpts=1,Npts
                 do i=imin,imax
-                  ibuf_sndS_3D(k+nmax*(i-imin+(jpts-1)*ishft))=A(i,jpts,k)
+                  ibuf_sndS_3D(k+nmax*(i-imin+(jpts-1)*ishft))=
+     &                          A(i,jpts,k)
                 enddo
               enddo
             enddo
@@ -175,7 +197,8 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
-                  buf_snd1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=A(ipts,jpts,k)
+                  buf_snd1_3D(k+nmax*(ipts-1+Npts*(jpts-1)))=
+     &                 A(ipts,jpts,k)
                 enddo
               enddo
             enddo
@@ -200,10 +223,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
 !$acc host_data if(compute_on_device)
 !$acc&   use_device(buf_rev2_3D,buf_snd2_3D)
-            call MPI_Irecv (buf_rev2_3D, ksize, MPI_DOUBLE_PRECISION, p_NE,
-     &                                  5, MPI_COMM_WORLD, req(6),ierr)
-            call MPI_Send  (buf_snd2_3D, ksize, MPI_DOUBLE_PRECISION, p_NE,
-     &                                  6, MPI_COMM_WORLD,        ierr)
+            call MPI_Irecv (buf_rev2_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                  p_NE, 5, MPI_COMM_WORLD, req(6),ierr)
+            call MPI_Send  (buf_snd2_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                  p_NE, 6, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         endif
@@ -221,10 +244,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
 !$acc host_data if(compute_on_device)
 !$acc&   use_device(buf_rev3_3D,buf_snd3_3D)
-            call MPI_Irecv (buf_rev3_3D, ksize, MPI_DOUBLE_PRECISION, p_SE,
-     &                                8, MPI_COMM_WORLD, req(7),ierr)
-            call MPI_Send  (buf_snd3_3D, ksize, MPI_DOUBLE_PRECISION, p_SE,
-     &                                7, MPI_COMM_WORLD,        ierr)
+            call MPI_Irecv (buf_rev3_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                  p_SE, 8, MPI_COMM_WORLD, req(7),ierr)
+            call MPI_Send  (buf_snd3_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                  p_SE, 7, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         else
@@ -240,10 +263,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
 !$acc host_data if(compute_on_device)
 !$acc&   use_device(buf_rev4_3D,buf_snd4_3D)
-            call MPI_Irecv (buf_rev4_3D, ksize, MPI_DOUBLE_PRECISION, p_NW,
-     &                                7, MPI_COMM_WORLD, req(8),ierr)
-            call MPI_Send  (buf_snd4_3D, ksize, MPI_DOUBLE_PRECISION, p_NW,
-     &                                8, MPI_COMM_WORLD,        ierr)
+            call MPI_Irecv (buf_rev4_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                  p_NW, 7, MPI_COMM_WORLD, req(8),ierr)
+            call MPI_Send  (buf_snd4_3D, ksize, MPI_DOUBLE_PRECISION, 
+     &                  p_NW, 8, MPI_COMM_WORLD,        ierr)
 !$acc end host_data
           endif
         endif
@@ -265,8 +288,8 @@ c            if ( chkbandname .ne. 'none' ) then
      &           checksum(ipts) = checksum(ipts)+1
 c            endif
 # endif
-             A(ipts-Npts,j,k)=jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)
-     &         *jshft))
+             A(ipts-Npts,j,k)=
+     &          jbuf_revW_3D(k+nmax*(j-jmin+(ipts-1)*jshft))
             enddo
           enddo
         enddo
@@ -301,10 +324,10 @@ c          endif
 
       if (EAST_INTER2) then
         call MPI_Wait (req(2),status(1,2),ierr)
-!$acc parallel loop if(compute_on_device) collapse(3) 
 # ifdef  BAND_DEBUG         
         checksum(:) = 0.
 # endif        
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
@@ -337,6 +360,7 @@ c          endif
 # endif        
       endif
       if (EAST_INTER .and. .not. EAST_INTER2) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
@@ -371,6 +395,7 @@ c            endif
         enddo
       endif
       if (SOUTH_INTER .and. .not. SOUTH_INTER2) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
        do k=1,nmax
           do i=imin,imax
             do jpts=1,Npts
@@ -412,8 +437,7 @@ c            if ( chkbandname .ne. 'none' ) then
 c            endif
 # endif
               A(i,Mmmpi+jpts,k)=
-     &                         ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)
-     &                         *ishft))
+     &          ibuf_revN_3D(k+nmax*(i-imin+(jpts-1)*ishft))
             enddo
           enddo
         enddo
@@ -433,6 +457,7 @@ c          endif
 # endif        
       endif
       if (NORTH_INTER .and. .not. NORTH_INTER2) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do i=imin,imax
             do jpts=1,Npts
@@ -462,6 +487,7 @@ c          endif
         print *,'NOT READY FOR OPENACC'
         stop
 # endif
+!$acc parallel loop if(compute_on_device) collapse(3) 
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -486,6 +512,7 @@ c          endif
       endif
       if (.not. CORNER_NE  .and.
      &   NORTH_INTER .and.  EAST_INTER ) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -511,6 +538,7 @@ c          endif
       endif
       if (.not. CORNER_SE .and.
      &   SOUTH_INTER .and.  EAST_INTER ) then
+!$acc parallel loop if(compute_on_device) collapse(3)
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -536,6 +564,7 @@ c          endif
       endif
       if (.not. CORNER_NW  .and.
      &   NORTH_INTER .and.  WEST_INTER ) then
+!$acc parallel loop if(compute_on_device) collapse(3) 
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -562,6 +591,18 @@ c          endif
 #  include "MessPass3D.F"
 #  undef MP_3PTS
 # endif
+
+# ifndef MP_3PTS
+# ifdef M3FAST_SEDLAYERS      
+# ifndef MP_M3FAST_SEDLAYERS
+#  define MP_M3FAST_SEDLAYERS
+#  include "MessPass3D.F"
+#  undef  MP_M3FAST_SEDLAYERS
+# endif
+# endif      
+# endif
+
+# undef  NP1
 
 #else
       subroutine MessPass3D_empty

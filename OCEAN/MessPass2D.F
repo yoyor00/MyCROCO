@@ -237,6 +237,7 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 !
       if (WEST_INTER2) then
         call MPI_Wait (req(1),status(1,1),ierr)
+!$acc update device(jbuf_revW) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
 # ifdef  BAND_DEBUG         
@@ -271,6 +272,8 @@ c          endif
 # endif        
       endif
       if ( WEST_INTER .and. .not. WEST_INTER2 ) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
         do j=jmin,jmax
           do ipts=1,Npts
            A(ipts-Npts,j)=A(ipts,j)
@@ -280,6 +283,7 @@ c          endif
 
       if (EAST_INTER2) then
         call MPI_Wait (req(2),status(1,2),ierr)
+!$acc update device(jbuf_revE) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
 # ifdef  BAND_DEBUG         
@@ -312,6 +316,8 @@ c          endif
 # endif        
       endif
       if ( EAST_INTER .and. .not. EAST_INTER2 ) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
         do j=jmin,jmax
           do ipts=1,Npts
            A(Lmmpi+ipts,j)=A(Lmmpi-Npts+ipts,j)
@@ -354,6 +360,8 @@ c          endif
 # endif        
       endif
       if ( SOUTH_INTER .and. .not. SOUTH_INTER2 ) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
         do jpts=1,Npts
           do i=imin,imax
            A(i,jpts-Npts)=A(i,jpts)
@@ -396,6 +404,8 @@ c          endif
 # endif        
       endif
       if (NORTH_INTER .AND. .not. NORTH_INTER2) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
         do jpts=1,Npts
           do i=imin,imax
             A(i,Mmmpi+jpts)=A(i,Mmmpi-Npts+jpts)
@@ -408,6 +418,7 @@ c          endif
 !
       if ( CORNER_SW) then
         call MPI_Wait (req(5),status(1,5),ierr)
+!$acc update device(buf_rev1) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
         do jpts=1,Npts
@@ -418,6 +429,8 @@ c          endif
       endif
       if (.not.CORNER_SW .and.
      &  SOUTH_INTER .and.WEST_INTER ) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
         do jpts=1,Npts
           do ipts=1,Npts
            A(ipts-Npts,jpts-Npts)=A(ipts,jpts)
@@ -427,6 +440,7 @@ c          endif
 
       if ( CORNER_NE) then
         call MPI_Wait (req(6),status(1,6),ierr)
+!$acc update device(buf_rev2) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
         do jpts=1,Npts
@@ -437,6 +451,8 @@ c          endif
       endif
       if (.not.CORNER_NE .and.
      &  NORTH_INTER .and.EAST_INTER ) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
         do jpts=1,Npts
           do ipts=1,Npts
             A(Lmmpi+ipts,Mmmpi+jpts)=A(Lmmpi+ipts-NPts,Mmmpi+jpts-Npts)
@@ -446,6 +462,7 @@ c          endif
 
       if (CORNER_SE) then
         call MPI_Wait (req(7),status(1,7),ierr)
+!$acc update device(buf_rev3) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
         do jpts=1,Npts
@@ -456,6 +473,8 @@ c          endif
       endif
       if (.not. CORNER_SE .and. 
      &  SOUTH_INTER .and. EAST_INTER ) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
         do jpts=1,Npts
           do ipts=1,Npts
             A(Lmmpi+ipts,jpts-Npts)=A(Lmmpi+ipts-Npts,jpts)
@@ -466,6 +485,7 @@ c          endif
 
       if (CORNER_NW) then
         call MPI_Wait (req(8),status(1,8),ierr)
+!$acc update device(buf_rev4) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
         do jpts=1,Npts
@@ -476,6 +496,8 @@ c          endif
       endif
       if (.not. CORNER_NW .and.
      &   NORTH_INTER .and.  WEST_INTER ) then
+!$acc parallel loop if(compute_on_device) independent
+!$acc&  default(present) collapse(2)
        do jpts=1,Npts
           do ipts=1,Npts
             A(ipts-Npts,Mmmpi+jpts)=A(ipts,Mmmpi+jpts-NPts)
