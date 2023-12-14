@@ -40,7 +40,7 @@
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
-     &                                   ,if_oa
+     &                                   ,if_oa, if_oa_fast_mode
 #endif
 #ifdef RVTK_DEBUG
       use debug
@@ -234,6 +234,8 @@
      & ,dti_oa=dt
      & ,kount0_oa=ntstart-1
      & ,nt_max_oa=ntimes
+     & ,dtf_oa=dtfast
+     & ,ntf_max_oa=ndtfast
      & ,ntiles=NSUB_X*NSUB_E)
 #endif
 !
@@ -633,7 +635,7 @@ CR      write(*,*) ' -1' MYID
       if ( if_oa.eqv..true. ) then
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
-           call online_spectral_diags(tile,0)
+           call online_spectral_diags(tile,-1)
          enddo
       endif
 #endif
@@ -836,13 +838,25 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !
 #ifdef ONLINE_ANALYSIS
-      if ( if_oa.eqv..true. ) then
+      if_online_analysis : if ( if_oa.eqv..true. ) then
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
+! BLXD online_spectral_diags/output_oa 1st argument his the model mode 0/1 = Slow/Fast mode
+           call online_spectral_diags(tile,0)
+         enddo
+        call output_oa(0)
+! BLXD Fast mode analysis
+        if(if_oa_fast_mode.eqv..true.) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=0,NSUB_X*NSUB_E-1
+! BLXD online_spectral_diags/output_oa 1st argument his the model mode 0/1 = Slow/Fast mode
            call online_spectral_diags(tile,1)
          enddo
-        call output_oa
+! BLXD output_oa source now set to be only called within the slow mode
+!      even when the spectral online diagnostics have been calculated in the fast mode  
+         call output_oa(1)
       endif
+      endif if_online_analysis
 #endif
 !
 !----------------------------------------------------------------------

@@ -64,9 +64,13 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
-#ifdef NBQ
+!#ifdef NBQ
+!# include "nbq.h"
+!#endif
+# ifdef M3FAST
 # include "nbq.h"
-#endif
+# endif
+
 
       integer, intent(in) ::                                          &
             cnb_v                                                     &
@@ -93,7 +97,7 @@
          var_oa = u(i_v,j_v,k_v,nstp)-ubar(i_v,j_v,fast_indx_out)
       elseif (ivar_v.eq.2) then
          var_oa = v(i_v,j_v,k_v,nstp)-vbar(i_v,j_v,fast_indx_out)
-#  ifdef NBQ
+#  ifdef M3FAST
       elseif (ivar_v.eq.3) then
          var_oa = wz(i_v,j_v,k_v,nstp) 
 #  endif
@@ -117,10 +121,24 @@
          pst => st(tile)
          var_oa = pst%wlev_oa(v2lev_oa(lv_v))%z(ls1_v)
          pst => null()
+#ifdef M3FAST
+      elseif (ivar_v.eq.21) then
+         var_oa = rho_nbq(i_v,j_v,k_v)
+#endif
+! Scalogram >>>
+#ifdef M3FAST
+      elseif (ivar_v.eq.51) then
+         var_oa = rho_nbq(i_v,j_v,k_v)
+      elseif (ivar_v.eq.52) then
+         var_oa = qdmu_nbq(i_v,j_v,k_v)
+#endif
+      elseif (ivar_v.eq.54) then
+         var_oa = zeta(i_v,j_v,fast_indx_out)
       elseif (ivar_v.eq.56) then
          var_oa = ubar(i_v,j_v,fast_indx_out)
       elseif (ivar_v.eq.61) then
          var_oa = rho(i_v,j_v,k_v)
+! Scalogram <<<
 !*********************************************************************
 ! OA test variable
 !*********************************************************************

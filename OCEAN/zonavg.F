@@ -124,8 +124,10 @@
 !$acc kernels if(compute_on_device) default(present)
       do i=1,NP_XI
          lenode=jj*NP_XI + i
-         do k=1,N
+!!$acc loop gang reduction(+:Azond)
             do j=jstr-1,jend+1
+!!$acc loop vector reduction(+:Azond)
+            do k=1,N
                Azond(j,k)=Azond(j,k)+allsumd(j,k,lenode)
             enddo
          enddo

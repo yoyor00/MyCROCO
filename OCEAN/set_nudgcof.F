@@ -37,7 +37,7 @@
 # include "scalars.h"
 # include "ocean3d.h"
 # include "mpi_cpl.h"
-# ifdef NBQ_NUDGING
+# if defined NBQ_NUDGING || defined NBQ_SPONGE
 #  include "nbq.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i, j, k, isp, itrc, ibnd

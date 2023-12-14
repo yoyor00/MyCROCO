@@ -70,6 +70,7 @@
       N1dETA = size_ETA
       N2d=size_XI*(se*size_ETA+sz*Np)
       N3d=size_XI*size_ETA*Np
+      N3dHz=size_XI*size_ETA*NpHz
 #endif
 
 #if defined AGRIF && defined AUTOTILING

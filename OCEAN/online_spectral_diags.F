@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,28 +14,28 @@
 !> @brief Croco interface for Online Analysis (OA=OnlineAnalysis)
 !! - Performs online spectral and wavelet analyses.
 !
-!! @details written to support tile-threads and
-!!  possible dual OpenMP-MPI parallelization.
+!! @details written to support tile-threads and 
+!!  possible dual OpenMP-MPI parallelization. 
 !!  More history/info in source module_interface_oa.F90
 !
-!> @authors
+!> @authors  
 !! - B. Lemieux-Dudon
-!!  - Twd a Croco Tile(-threads) compliant version (2021)
-!!    supporting tile-threads and possible dual OpenMP-MPI
+!!  - Twd a Croco Tile(-threads) compliant version (2021) 
+!!    supporting tile-threads and possible dual OpenMP-MPI 
 !!    parallelization of the horizontal domain
-!!     => online_spectral_diags :
-!!        main routine called by Croco main.F and step.F
-!!     => module_tile_oa : tile-compliant OA state vector
+!!     => online_spectral_diags : 
+!!        main routine called by Croco main.F and step.F 
+!!     => module_tile_oa : tile-compliant OA state vector 
 !!        spatial structure
-!!     => output_oa      : OA updates global array looping on tiles
+!!     => output_oa      : OA updates global array looping on tiles 
 !!        and finally send them to XIOS (out of the loop)
 !!  - based on a preliminary Croco-OA interface version : spring 2020.
 !! - More history (authors, comments) in source module_interface_oa.F90
-!> @todo BLXD
+!> @todo BLXD 
 !!  - test with a Croco Tile(-threads) working version
 !!  - isopycnal level tracking not yet tested with Croco-OA (2021)
 !  REFERENCE:
-!
+!  
 !======================================================================
 
 #include "cppdefs.h"
@@ -43,7 +43,7 @@
 ! - cppdefs_dev.h
 ! - set_global_definitions.h
 !   with GLOBAL_2D_ARRAY
-!        PRIVATE_SCRATCH_2D_ARRAY...
+!        PRIVATE_SCRATCH_2D_ARRAY... 
 #ifdef ONLINE_ANALYSIS
 
       subroutine online_spectral_diags (tile, icall)
@@ -54,26 +54,28 @@ C$    integer trd, omp_get_thread_num
 
 # include "param.h"
 # include "compute_tile_bounds.h"
-! compute_tile_bounds.h :
+! compute_tile_bounds.h : 
 ! 1) declaration
 ! 1) instructions for computing
 !    Istr,Iend,Jstr,Jend
-!    Using param.h, MPI subdom. (or not) and tile var.
+!    Using param.h, MPI subdom. (or not) and tile var. 
 C$      trd=omp_get_thread_num()
 
-      if ( icall==0 ) then
+      if ( icall==-1 ) then
 
         call init_online_spectral_diags_tile (Istr,Iend
      &                                       ,Jstr,Jend
-     &                                       ,tile)
-! No need of any openMP BARRIER since included at the end
+     &                                       ,tile) 
+! No need of any openMP BARRIER since included at the end 
 ! of init_online_spectral_diags_tile
 
-      else if ( icall==1 ) then
+! Select Fast/Slow mode with icall
+      !else if ( icall==0 ) then
+      else if ( (icall==0) .or. (icall==1) ) then
 
-      !endif
-      !if ( icall==0 .or. icall==1 ) then
-        call run_online_spectral_diags_tile (Istr,Iend,Jstr,Jend,tile)
+        call run_online_spectral_diags_tile (Istr,Iend,Jstr,Jend,tile
+     &                                                     ,icall)
+
       end if
       return
       end subroutine online_spectral_diags
@@ -97,13 +99,13 @@ C$      trd=omp_get_thread_num()
 !
 !
 !#ifdef NBQ
-!      use module_nh
+!      use module_nh 
 !      use module_nbq
 !#endif
       use module_interface_oa, only : init_oa
       use module_grd_oa, only : deallocate_tile_grid_tmp_str
-! BLXD TODO (eventually) TEST
-! use scalars => i) use param ii) include "scalars.h"
+! BLXD TODO (eventually) TEST 
+! use scalars => i) use param ii) include "scalars.h" 
 ! use param   => include "param.h"
 ! REQUIRES to comment
 ! - include "param.h"
@@ -116,35 +118,35 @@ C$      trd=omp_get_thread_num()
 ! >> Include with variable declaration
 # include "param.h"
 # include "scalars.h"
-! BLXD init_oa doesn't require (yet) 2D ocean fields
+! BLXD init_oa doesn't require (yet) 2D ocean fields 
 ! # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
-# ifdef NBQ
-#  include "nbq.h"
-# endif
+#ifdef NBQ
+# include "nbq.h"
+#endif
 
 ! >> Put declaration bef. computations
 ! Local variables
-      integer :: i,j,k
+      integer :: i,j,k    
 
-      integer ::
-     &  maskr_c (PRIVATE_2D_SCRATCH_ARRAY,1:N)
-     & ,masku_c (PRIVATE_2D_SCRATCH_ARRAY,1:N)
-     & ,maskv_c (PRIVATE_2D_SCRATCH_ARRAY,1:N)
-     & ,maskf_c (PRIVATE_2D_SCRATCH_ARRAY,1:N)
+      integer ::                        
+     &  maskr_c (PRIVATE_2D_SCRATCH_ARRAY,1:N)  
+     & ,masku_c (PRIVATE_2D_SCRATCH_ARRAY,1:N)  
+     & ,maskv_c (PRIVATE_2D_SCRATCH_ARRAY,1:N)  
+     & ,maskf_c (PRIVATE_2D_SCRATCH_ARRAY,1:N)  
 
-      real ::
-     &  hu_c(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,hv_c(PRIVATE_2D_SCRATCH_ARRAY)
+      real ::                           
+     &  hu_c(PRIVATE_2D_SCRATCH_ARRAY)           
+     & ,hv_c(PRIVATE_2D_SCRATCH_ARRAY)          
 
-# ifndef SPHERICAL
-      real ::
+#ifndef SPHERICAL
+      real ::                          
      &   xu_c (PRIVATE_2D_SCRATCH_ARRAY)
      &  ,yu_c (PRIVATE_2D_SCRATCH_ARRAY)
      &  ,xv_c (PRIVATE_2D_SCRATCH_ARRAY)
      &  ,yv_c (PRIVATE_2D_SCRATCH_ARRAY)
-# endif
+#endif
 
       integer, dimension(1:2) :: ip_ran,jp_ran
      &                          ,ir_ran,jr_ran
@@ -154,7 +156,7 @@ C$      trd=omp_get_thread_num()
 
 ! >> Include with computation instructions
 # include "compute_auxiliary_bounds.h"
-! From param.h, MPI subdom., tile
+! From param.h, MPI subdom., tile 
 ! From compute_tile_bounds.h with Istr,Iend,Jstr,Jend
 ! Computes Physical Bdy indices IstrR, IendR, JstrR, JendR
 !          Interior U or V points (start) IstrU, JstrV
@@ -162,11 +164,11 @@ C$      trd=omp_get_thread_num()
 ! Does not require #include def_bounds.h
 ! LOCALLM, LOCALMM not needed at tile level
 
-# define I_EXT_RANGE Istr-1,Iend+1
-# define J_EXT_RANGE Jstr-1,Jend+1
+#  define I_EXT_RANGE Istr-1,Iend+1
+#  define J_EXT_RANGE Jstr-1,Jend+1
 
-# define I_PRI_RANGE Istr-2,Iend+2
-# define J_PRI_RANGE Jstr-2,Jend+2
+#  define I_PRI_RANGE Istr-2,Iend+2
+#  define J_PRI_RANGE Jstr-2,Jend+2
 
 # ifdef EW_PERIODIC
 #  define IU_RANGE Istr,Iend
@@ -187,17 +189,17 @@ C$      trd=omp_get_thread_num()
 ! BLXD OA diags must include Bdy
 ! - rho IstrR:IendR, JstrR:JendR
 ! - v   Istr :Iend , Jstr :JendR
-! - u   Istr :IendR, Jstr :Jend
+! - u   Istr :IendR, Jstr :Jend  
 ! - p   Istr :IendR, Jstr :JendR
 
 ! BLXD In case of periodic Bdy two options regarding OA diags
 ! - calc inner domain points only then complete the bdy
-! - calc inner domain points + bdy
+! - calc inner domain points + bdy 
 
 
-      ip_ran = (/I_PRI_RANGE/)
+      ip_ran = (/I_PRI_RANGE/) 
       jp_ran = (/J_PRI_RANGE/)
-      ir_ran = (/IstrR,IendR/)
+      ir_ran = (/IstrR,IendR/) 
       jr_ran = (/JstrR,JendR/)
       iu_ran = (/IU_RANGE/)
       ju_ran = (/JU_RANGE/)
@@ -206,33 +208,33 @@ C$      trd=omp_get_thread_num()
 
 
 ! BLXD rec. var3d_oa, var2d_oa calculated over :
-! a) the only interior domain points
+! a) the only interior domain points 
 ! b) or also at physical Bdy points
 ! Option (b) chosen : requires to loop over indices
 ! rho : IstrR, IendR ...etc
 
 ! BLXD Warning Croco 2D masks (terrain-following coord) are of type real
 !      OA masks are :
-!      - 3D array of integer type
+!      - 3D array of integer type 
 !        to be used with geopotential vert. coord.
 !      - an explicit int conversion is applied
 !        below ifdef MASKING
 
-
+      
       if ( size(hu_c, 1) .ne. ( ip_ran(2) - ip_ran(1)+1 )   .or.
-     &     size(hu_c, 2) .ne. ( jp_ran(2) - jp_ran(1)+1 ) )
+     &     size(hu_c, 2) .ne. ( jp_ran(2) - jp_ran(1)+1 ) ) 
      & then
-        MPI_master_only write(stdout,*)
+        MPI_master_only write(stdout,*) 
      &   'STOP : inconsistent private scratch size'
         stop
       endif
-
-# ifndef MASKING
+        
+#ifndef MASKING
       maskr_c(PRIVATE_2D_SCRATCH_ARRAY,1:N) = 1
       masku_c(PRIVATE_2D_SCRATCH_ARRAY,1:N) = 1
       maskv_c(PRIVATE_2D_SCRATCH_ARRAY,1:N) = 1
       maskf_c(PRIVATE_2D_SCRATCH_ARRAY,1:N) = 1
-# else
+#else
 
       maskr_c(PRIVATE_2D_SCRATCH_ARRAY,1:N) = 0
       masku_c(PRIVATE_2D_SCRATCH_ARRAY,1:N) = 0
@@ -245,13 +247,13 @@ C$      trd=omp_get_thread_num()
       do j=JU_RANGE
         do i=IU_RANGE
           masku_c(i,j,1:N) = INT(umask(i,j))
-        enddo
-      enddo
+        enddo 
+      enddo 
       do j=JV_RANGE
         do i=IV_RANGE
           maskv_c(i,j,1:N) = INT(vmask(i,j))
-        enddo
-      enddo
+        enddo 
+      enddo 
 
       do j=JV_RANGE
         do i=IU_RANGE
@@ -261,32 +263,32 @@ C$      trd=omp_get_thread_num()
 !      See grid.h pmask=(0=Land, 1=Sea, 1-gamma2 =boundary).
 ! using pmask instead
           maskf_c(i,j,1:N) = INT(pmask2(i,j))
-        enddo
-      enddo
+        enddo 
+      enddo 
 
       do j=JstrR,JendR
-        do i=IstrR,IendR
+        do i=IstrR,IendR 
           maskr_c(i,j,1:N) = INT(rmask(i,j))
         enddo
       enddo
 
-# endif
+#endif
 
-! BLXD add u-grid bdy points + bug with - sign
+! BLXD add u-grid bdy points + bug with - sign 
       do j=JU_RANGE
         do i=IU_RANGE
           hu_c(i,j)=0.5*(h(i,j)+h(i-1,j))
-        enddo
-      enddo
+        enddo 
+      enddo 
 
-! BLXD add v-grid bdy points + bug with - sign
+! BLXD add v-grid bdy points + bug with - sign 
       do j=JV_RANGE
         do i=IV_RANGE
           hv_c(i,j)=0.5*(h(i,j)+h(i,j-1))
         enddo
       enddo
 
-# ifndef SPHERICAL
+#ifndef SPHERICAL
 ! BLXD 2020 BUG change minus to plus sign
       do j=JU_RANGE
         do i=IU_RANGE
@@ -300,7 +302,7 @@ C$      trd=omp_get_thread_num()
           yv_c(i,j)=0.5*(yr(i,j)+yr(i,j-1))
         enddo
       enddo
-# endif
+#endif
 
 ! BLXD GRID OPTION 2
 ! the grd structure could eventually be constructed here
@@ -317,35 +319,35 @@ C$      trd=omp_get_thread_num()
      & ,imin=Istr-2, imax=Iend+2
      & ,jmin=Jstr-2, jmax=Jend+2
      & ,kmin=1,    kmax=N
-# ifdef SPHERICAL
+#ifdef SPHERICAL
      & ,lon_t_oa=lonr(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lat_t_oa=latr(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lon_u_oa=lonu(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lat_u_oa=latu(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lon_v_oa=lonv(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lat_v_oa=latv(PRIVATE_2D_SCRATCH_ARRAY)
+     & ,lat_t_oa=latr(PRIVATE_2D_SCRATCH_ARRAY)  
+     & ,lon_u_oa=lonu(PRIVATE_2D_SCRATCH_ARRAY)  
+     & ,lat_u_oa=latu(PRIVATE_2D_SCRATCH_ARRAY)  
+     & ,lon_v_oa=lonv(PRIVATE_2D_SCRATCH_ARRAY)  
+     & ,lat_v_oa=latv(PRIVATE_2D_SCRATCH_ARRAY) 
      & ,lon_f_oa=lonr(PRIVATE_2D_SCRATCH_ARRAY)    ! Wrong grid !
      & ,lat_f_oa=latr(PRIVATE_2D_SCRATCH_ARRAY)    ! Wrong grid !
-# else
+#else
      & ,lon_t_oa=xr  (PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lat_t_oa=yr  (PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lon_u_oa=xu_c(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lat_u_oa=yu_c(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lon_v_oa=xv_c(PRIVATE_2D_SCRATCH_ARRAY)
-     & ,lat_v_oa=yv_c(PRIVATE_2D_SCRATCH_ARRAY)
+     & ,lat_t_oa=yr  (PRIVATE_2D_SCRATCH_ARRAY)    
+     & ,lon_u_oa=xu_c(PRIVATE_2D_SCRATCH_ARRAY)  
+     & ,lat_u_oa=yu_c(PRIVATE_2D_SCRATCH_ARRAY)  
+     & ,lon_v_oa=xv_c(PRIVATE_2D_SCRATCH_ARRAY)  
+     & ,lat_v_oa=yv_c(PRIVATE_2D_SCRATCH_ARRAY) 
      & ,lon_f_oa=xr  (PRIVATE_2D_SCRATCH_ARRAY)      ! Wrong grid !
      & ,lat_f_oa=yr  (PRIVATE_2D_SCRATCH_ARRAY)      ! Wrong grid !
-# endif
-     & ,mask_t_oa=maskr_c(PRIVATE_2D_SCRATCH_ARRAY,1:N)
+#endif
+     & ,mask_t_oa=maskr_c(PRIVATE_2D_SCRATCH_ARRAY,1:N)   
      & ,mask_f_oa=maskf_c(PRIVATE_2D_SCRATCH_ARRAY,1:N)  ! Wrong grid !
-     & ,mask_u_oa=masku_c(PRIVATE_2D_SCRATCH_ARRAY,1:N)
-     & ,mask_v_oa=maskv_c(PRIVATE_2D_SCRATCH_ARRAY,1:N)
-     & ,h_w_oa=h         (PRIVATE_2D_SCRATCH_ARRAY)
-     & ,h_u_oa=hu_c      (PRIVATE_2D_SCRATCH_ARRAY)
-     & ,h_v_oa=hv_c      (PRIVATE_2D_SCRATCH_ARRAY)
+     & ,mask_u_oa=masku_c(PRIVATE_2D_SCRATCH_ARRAY,1:N)  
+     & ,mask_v_oa=maskv_c(PRIVATE_2D_SCRATCH_ARRAY,1:N) 
+     & ,h_w_oa=h         (PRIVATE_2D_SCRATCH_ARRAY)               
+     & ,h_u_oa=hu_c      (PRIVATE_2D_SCRATCH_ARRAY)            
+     & ,h_v_oa=hv_c      (PRIVATE_2D_SCRATCH_ARRAY)            
      & ,h_f_oa=h         (PRIVATE_2D_SCRATCH_ARRAY)      ! Wrong grid !
-     & ,rhp_t  =rho   (PRIVATE_2D_SCRATCH_ARRAY,1:N)
-     & ,depth_t=z_r   (PRIVATE_2D_SCRATCH_ARRAY,1:N)
+     & ,rhp_t  =rho   (PRIVATE_2D_SCRATCH_ARRAY,1:N)      
+     & ,depth_t=z_r   (PRIVATE_2D_SCRATCH_ARRAY,1:N)     
      & )
 
 C$OMP BARRIER
@@ -354,7 +356,7 @@ C$OMP BARRIER
 !CRBS print*, 'ooo OUT OF init_online_spectral_diags_tile ', mynode !CRBE
 
 ! ------- ------------- ------ ------ - -----
-      return
+      return 
       end subroutine init_online_spectral_diags_tile
 
 ! BLXD GRID OPTION 2
@@ -368,28 +370,30 @@ C$OMP BARRIER
 !
 !----------------------------------------------------------------------
 !
-! Running online spectral analysis
+! Running online spectral analysis 
 !
 !----------------------------------------------------------------------
 !
 #ifdef ONLINE_ANALYSIS
 
       subroutine run_online_spectral_diags_tile (Istr,Iend,Jstr,Jend
-     &                                          ,tile)
+     &                                          ,tile,ichoix)
 !
 !
 !#ifdef NBQ
-!      use module_nh
+!      use module_nh 
 !      use module_nbq
 !#endif
       use module_interface_oa, only : main_oa, scalogram_analysis
+     &                               ,nmsimult_oa_verif_max
+
       use module_tile_oa, only : deallocate_tile_space_str
      &                          ,deallocate_tile_sclg_str
      &                          ,deallocate_tile_test_str
       use module_oa_variables, only : test_analysis
 
-! BLXD WARNING TESTING
-! use scalars => i) use param ii) include "scalars.h"
+! BLXD WARNING TESTING 
+! use scalars => i) use param ii) include "scalars.h" 
 ! use param   => include "param.h"
 ! REQUIRES to comment
 ! - include "param.h"
@@ -398,8 +402,9 @@ C$OMP BARRIER
       implicit none
       integer, intent(in) :: Istr, Iend, Jstr, Jend
       integer, intent(in) :: tile
+      integer, intent(in) :: ichoix
 ! Local variables
-      integer :: i,j,k
+      integer :: i,j,k,iic_oa    
 
 ! >> Include with variable declaration
 # include "param.h"
@@ -407,12 +412,12 @@ C$OMP BARRIER
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
-# ifdef NBQ
-#  include "nbq.h"
-# endif
+#ifdef NBQ
+# include "nbq.h"
+#endif
 ! >> Include with computation instructions
 # include "compute_auxiliary_bounds.h"
-! From param.h, MPI subdom., tile
+! From param.h, MPI subdom., tile 
 ! From compute_tile_bounds.h with Istr,Iend,Jstr,Jend
 ! Computes Physical Bdy indices IstrR, IendR, JstrR, JendR
 !          Interior U or V points (start) IstrU, JstrV
@@ -423,37 +428,55 @@ C$OMP BARRIER
 ! BLXD removing "node" variables set at initialisation
 !      which are common to each MPI subdomain
 !      - mynode, if_print_mode... etc
-!      removing simulation constant
+!      removing simulation constant 
 !      - dti, nt_max (cannot be adapative time step unless restarting)
-!      Tile dimensions are already stored in the module_tile_oa
+!      Tile dimensions are already stored in the module_tile_oa 
 !      see st%imin,st%imax,...
-!      TODO check if removing imin,imax,... arguments
+!      TODO check if removing imin,imax,... arguments 
+
 
 !$OMP MASTER
-# ifdef OA_TRACES
+#ifdef OA_TRACES
          print*,
-     &   'eee ENTERING main_oa iic/node ',iic,mynode
-# endif
+     &   'eee ENTERING main_oa iic/iif/node ',iic,iif,mynode
+#endif
 !$OMP END MASTER
 
 
+!     BLXD TODO For isopycne tracking : 
+!     move call to main_oa within ichoix mode test
+!     with proper density anomaly args
+
+!     Slow/Fast mode
+      if ( ichoix==0 ) then
+        iic_oa = iic
+      else if ( ichoix==1 ) then
+        iic_oa = iic*ndtfast+iif
+      endif
+
       call main_oa( tile=tile+1
-     & ,ichoix=0
+     & ,ichoix=ichoix
      & ,ivar_m=0
-     & ,iic_oa=iic
+     & ,iic_oa=iic_oa
      & ,imin=Istr-2, imax=Iend+2
      & ,jmin=Jstr-2, jmax=Jend+2
      & ,kmin=1,    kmax=N
-     & ,rhp_t  =rho(PRIVATE_2D_SCRATCH_ARRAY,1:N)
-     & ,depth_t=z_r(PRIVATE_2D_SCRATCH_ARRAY,1:N)
+     & ,rhp_t  =rho(PRIVATE_2D_SCRATCH_ARRAY,1:N)      
+     & ,depth_t=z_r(PRIVATE_2D_SCRATCH_ARRAY,1:N)     
      & )
 
 !$OMP MASTER
-# ifdef OA_TRACES
+#ifdef OA_TRACES
          print*,
-     &   'ooo OUT OF main_oa iic/node ',iic,mynode
-# endif
+     &   'ooo OUT OF main_oa iic/iif/node ',iic,iif,mynode
+#endif
 !$OMP END MASTER
+
+      if ( mynode.eq.0 ) then
+         print*,
+     &   '>> nmsimult_oa_verif_max,iic,iif,mynode << '
+     &     ,nmsimult_oa_verif_max,iic,iif,mynode
+      endif
 
 ! At the very end icc = ntimes
 ! BLXD omp_barrier should be either here OR at the end of main_oa
@@ -462,9 +485,9 @@ C$OMP BARRIER
 !        in module_oa_interface with test on icc_oa as well
       if ( iic.eq.(ntimes+1) ) then
 !$OMP MASTER
-# ifdef OA_TRACES
+#ifdef OA_TRACES
          print*,'ooo END ONLINE_ANALYSIS icc/node ',iic,mynode
-# endif
+#endif
 !$OMP END MASTER
          call deallocate_tile_space_str()
          if (scalogram_analysis) call deallocate_tile_sclg_str()
@@ -473,11 +496,9 @@ C$OMP BARRIER
       endif
 
 ! ------- ------------- ------ ------ - -----
-      return
+      return 
       end subroutine run_online_spectral_diags_tile
 #else /* ONLINE_ANALYSIS */
       subroutine run_online_spectral_diags_empty
       end subroutine run_online_spectral_diags_empty
 #endif /* ONLINE_ANALYSIS */
-
-
