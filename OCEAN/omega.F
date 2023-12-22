@@ -75,8 +75,9 @@
       integer is,iis,jjs
 # endif
 # include "param.h"
-
-# include "nbq.h" 
+# if defined M3FAST || defined K3FAST
+#  include "nbq.h" 
+# endif
       real DC    (PRIVATE_1D_SCRATCH_ARRAY,0:N    )
       real FC  (PRIVATE_1D_SCRATCH_ARRAY,0:N    )
       real CF  (PRIVATE_2D_SCRATCH_ARRAY    )

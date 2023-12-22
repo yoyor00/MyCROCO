@@ -116,8 +116,8 @@
 
 
 
-#  ifdef M3FAST_SEDLAYERS
-#   define MP_M3FAST_SEDLAYERS
+#  ifdef K3FAST_SEDLAYERS
+#   define MP_K3FAST_SEDLAYERS
 #   define KSTART (-N_sl+1)
 #   define exchange_3d_tile exchange_r3d_sedlay_tile
 #   define exchange_3d_3pts_tile exchange_r3d_3pts_sedlay_tile
@@ -223,9 +223,9 @@
 #   undef exchange_3d_3pts_tile
 
 #   undef KSTART
-#   undef MP_M3FAST_SEDLAYERS
+#   undef MP_K3FAST_SEDLAYERS
 # endif
-!! <---- M3FAST_SEDLAYERS
+!! <---- K3FAST_SEDLAYERS
 
 # endif
 #else

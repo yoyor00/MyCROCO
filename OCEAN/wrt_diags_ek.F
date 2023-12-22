@@ -233,7 +233,7 @@
 !
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxekfast
 !
@@ -362,7 +362,7 @@
 #  if defined DIAGNOSTICS_BARO
       write(*,*) 'ekBaro(i,j) ',ekBaro(i,j)
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       write(*,*) 'ekfast(i,j) ',ekfast(i,j)
 #  endif
       write(*,*) 'SumUVhis(i,j) = ',ekHadv(i,j)
@@ -372,7 +372,7 @@
      &                                  +  ekHmix(i,j)
      &                                  +  ekVmix(i,j)
      &                                  +  ekvol(i,j)
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
      &                                  +  ekfast(i,j)
 #  endif
      &                                  -  ekrate(i,j)

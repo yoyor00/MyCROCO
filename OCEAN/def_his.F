@@ -223,14 +223,14 @@
 # define vidM avgMust
 #endif
 
-# ifdef M3FAST_HIS
+# ifdef K3FAST_HIS
 #  define vidRnbq hisRnbq
 #  define vidUnbq hisUnbq
 #  define vidVnbq hisVnbq
 #  define vidWnbq hisWnbq
 #  define vidCnbq hisCnbq
 !
-! M3FAST-kernel related variables:
+! K3FAST-kernel related variables:
 !
 !****** Init parameters ******
 !
@@ -900,7 +900,7 @@
 !
         if (wrt(indxW)) then
           lvar=lenstr(vname(1,indxW))
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
           ierr=nf_def_var (ncid, vname(1,indxW)(1:lvar),
      &                               NF_FOUT, 4, w3dgrd, vidW)
 # else
@@ -931,7 +931,7 @@
      &        5, NF_FOUT, ierr)
         endif
         
-#ifdef M3FAST_HIS
+#ifdef K3FAST_HIS
 
 !****** Rho *****
 !
@@ -2852,9 +2852,9 @@
 !
 ! 3D momenta in XI- and ETA-directions.
 !
-#ifdef M3FAST_HIS
+#ifdef K3FAST_HIS
 !
-! M3FAST-kernel related variables:
+! K3FAST-kernel related variables:
 !
         if (wrt(indxRnbq)) then
           lvar=lenstr(vname(1,indxRnbq))

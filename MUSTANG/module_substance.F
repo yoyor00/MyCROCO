@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 
-!!! give access to dimensions, variables, parameters from hydro model to substance
+! give access to dimensions, variables, parameters from hydro model to substance
 
 #if defined SUBSTANCE
 

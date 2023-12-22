@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
       module module_param
 # include "param.h"
       end module module_param

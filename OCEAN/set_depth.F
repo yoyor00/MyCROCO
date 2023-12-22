@@ -47,7 +47,7 @@ C$    integer omp_get_thread_num
 # ifdef MRL_WCI
 #  include "forces.h"
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  include "nbq.h"
 # endif
       real eps
@@ -127,7 +127,7 @@ C$    integer omp_get_thread_num
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_childs)
 #   endif
 #  endif
-#  if defined M3FAST || defined WET_DRY
+#  if defined M3FAST || defined K3FAST || defined WET_DRY
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          zeta(START_2D_ARRAY,1))
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -168,7 +168,7 @@ C$    integer omp_get_thread_num
           cff1_r=Cs_r(k)
 #  endif
           do i=I_RANGE
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST 
             zetatmp=zeta(i,j,knew)
 #  else
             zetatmp=Zt_avg1(i,j)
@@ -194,7 +194,7 @@ C$    integer omp_get_thread_num
       do k=1,N
         do j=J_RANGE
           do i=I_RANGE
-#  ifdef NBQ
+#  if defined NBQ || defined KNBQ
 #   ifdef NBQ_GRID_SLOW
             if (LAST_FAST_STEP)  Hz_bak(i,j,k)=Hz(i,j,k)
 #   else
@@ -217,7 +217,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-#  if defined M3FAST && ! defined EXACT_RESTART
+#  if (defined M3FAST || defined K3FAST) && ! defined EXACT_RESTART
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
         do k=1,N,+1
           do j=J_RANGE
@@ -286,7 +286,7 @@ C$    integer omp_get_thread_num
 #   ifdef MRL_WCI
 #    include "forces.h"
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 #    include "nbq.h"
 #   endif
       real eps
@@ -324,7 +324,7 @@ C$    integer omp_get_thread_num
           cff1_r=Cs_r(k)
 #   endif
           do i=I_RANGE
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST 
             zetatmp=zeta(i,j,knew)
 #   else
             zetatmp=Zt_avg1(i,j)

@@ -122,9 +122,9 @@ C$      trd=omp_get_thread_num()
 ! # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
-#ifdef NBQ
-# include "nbq.h"
-#endif
+# if defined NBQ || defined K3FAST
+#  include "nbq.h"
+# endif
 
 ! >> Put declaration bef. computations
 ! Local variables
@@ -412,7 +412,7 @@ C$OMP BARRIER
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 # include "nbq.h"
 #endif
 ! >> Include with computation instructions

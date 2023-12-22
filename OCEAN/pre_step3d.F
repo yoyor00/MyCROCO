@@ -1,14 +1,14 @@
-! $Id: pre_step3d.F 1568 2014-06-30 15:57:49Z gcambon $
-!
-!======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
-!
-! CROCO website : http://www.croco-ocean.org
-!======================================================================
-!
+! ! $Id: pre_step3d.F 1568 2014-06-30 15:57:49Z gcambon $
+! !
+! !====================================================================
+! ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! ! The two other branches from UCLA (Shchepetkin et al)
+! ! and Rutgers University (Arango et al) are under MIT/X style license.
+! ! CROCO specific routines (nesting) are under CeCILL-C license.
+! !
+! ! CROCO website : http://www.croco-ocean.orgPredictor
+! !====================================================================
+! !
 #include "cppdefs.h"
 #ifdef SOLVE3D
 # ifndef VADV_ADAPT_PRED
@@ -16,7 +16,7 @@
 # endif
 
       subroutine pre_step3d (tile)
-!
+! !
       implicit none
       integer tile,  trd,omp_get_thread_num
 # include "param.h"
@@ -50,24 +50,24 @@
 # endif
      &                                                 ,Hz_half
      &                                                         )
-!
-!--------------------------------------------------------------------
-! Preliminary step: initialize computations of the new time step
-! 3D primitive variables.
-!
-! Since r.h.s. arrays ru,rv,rt(:,:,???[,:]), which at this moment
-! contain r.h.s at time step n-2 will be overwritten by the
-! subsequent routines within rhs3d driver, both [n-1 and n-2] old-
-! time-step r.h.s. term in Adams-Bashforth stepping scheme are
-! added at this time to the time step [n] fields and the result is
-! stored as u,v,t(:,:,???[,:]).
-!
-! The actual time step will be completed in step3d, after the
-! time step [n] r.h.s. terms and new-time step Hz will be available
-! after the completion rhs3d computations and the 2D (barotropic
-! mode) computations.
-!--------------------------------------------------------------------
-!
+! !
+! !----------------------------------------------------------------
+! ! Preliminary step: initialize computations of the new time step
+! ! 3D primitive variables.
+! !
+! ! Since r.h.s. arrays ru,rv,rt(:,:,???[,:]), which at this moment
+! ! contain r.h.s at time step n-2 will be overwritten by the
+! ! subsequent routines within rhs3d driver, both [n-1 and n-2] old-
+! ! time-step r.h.s. term in Adams-Bashforth stepping scheme are
+! ! added at this time to the time step [n] fields and the result is
+! ! stored as u,v,t(:,:,???[,:]).
+! !
+! ! The actual time step will be completed in step3d, after the
+! ! time step [n] r.h.s. terms and new-time step Hz will be available
+! ! after the completion rhs3d computations and the 2D (barotropic
+! ! mode) computations.
+! !-----------------------------------------------------------------
+! !
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
@@ -83,23 +83,35 @@
      &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  gamma,
      &       FX(PRIVATE_2D_SCRATCH_ARRAY),      epsil,
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
-     &     WORK(PRIVATE_2D_SCRATCH_ARRAY)
+     &       WORK(PRIVATE_2D_SCRATCH_ARRAY)
+!$acc declare create( WORK )      
+      real   cff0,cff14,cff15 
+# ifdef K3FAST 
+      real   cff13
+      real   cff6,cff7,cff10,cff11
+#  ifdef K3FAST_DISSCOUPLING
+      real   alpha_uv,alpha_w
+#  endif
+#  if defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF
+      real   ru_int_nbq_2d(PRIVATE_2D_SCRATCH_ARRAY),
+     &       rv_int_nbq_2d(PRIVATE_2D_SCRATCH_ARRAY)
+!$acc declare create( ru_int_nbq_2d, rv_int_nbq_2d )     
+#  endif
+# endif
 # ifdef OPENACC
-      real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &     WORK_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &     WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+      real   FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &       FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &       WORK_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &       WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 # endif
 # ifdef VADV_ADAPT_IMP      
       real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
-      real Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
+      real   Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
 # ifdef WET_DRY
-      real cff3,cff4,cff5
+      real   cff3,cff4,cff5
 # endif
-# ifdef M3FAST
-      real qdm_nstp,qdm_indx
-# endif
+      real   qdm_nstp,qdm_indx
       parameter (gamma=1./6., epsil=1.E-16)
 # include "grid.h"
 # include "ocean3d.h"
@@ -112,33 +124,33 @@
 # if defined PSOURCE || defined PSOURCE_MASS
 #  include "sources.h"
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  include "nbq.h"
 # endif
 # include "openacc_work.h"
 # ifdef MASKING
 #  define SWITCH *
 # else
-#  define SWITCH !
+#  define SWITCH ! !
 # endif
 
-# ifdef M3FAST
+# if defined  M3FAST || defined K3FAST_C3D_UVFS
 #  define ru_nbq_avg1 ru_nbq
 #  define rv_nbq_avg1 rv_nbq
-#  ifdef NBQ
-#   define rw_nbq_avg1 rw_nbq
-#  endif
 # endif
-!
-!--------------------------------------------------------------------
-! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
-! used in UP5 and C6 advection schemes (and order degradation near
-! land masks). cdiff is part of laplacian diffusion in flux1 (used
-! near mask):
-!    0 --> flux1=flux2 (second order C2 advection scheme)
-!    1 --> flux1 gives 1st order monotonic UP1 advection scheme
-!--------------------------------------------------------------------
-!
+# if defined NBQ || defined K3FAST_C3D_WFS
+#   define rw_nbq_avg1 rw_nbq
+# endif
+! !
+! !-----------------------------------------------------------------
+! ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
+! ! used in UP5 and C6 advection schemes (and order degradation near
+! ! land masks). cdiff is part of laplacian diffusion in flux1 (used
+! ! near mask):
+! !    0 --> flux1=flux2 (second order C2 advection scheme)
+! !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
+! !-----------------------------------------------------------------
+! !
 # if defined TS_HADV_UP5 || defined TS_HADV_C6 \
       || defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 \
       || defined TS_VADV_WENO5
@@ -175,7 +187,29 @@
 !--------------------------------------------------------------------
 !
 # include "compute_auxiliary_bounds.h"
-!
+! !
+! !
+! !-----------------------------------------------------------------
+! ! Dissipation in coupling scheme: 
+! !   0: no dissipation,
+! !   1: dissipative coupling.
+! !-----------------------------------------------------------------
+! !
+# ifdef K3FAST_DISSCOUPLING
+#  ifdef KH_INST
+      alpha_uv=0.75
+      alpha_w =0.
+#  elif defined TANK
+      alpha_uv=0.
+      alpha_w =0.
+#  elif defined MILES
+      alpha_uv=0.
+      alpha_w =0. 
+#  else      
+      alpha_uv=0.
+      alpha_w =0.
+#  endif
+# endif
       indx=3-nstp
       nadv=  nstp   !<-- do not remove: used in compute_tracer_fluxes.h
 
@@ -244,31 +278,31 @@
         jmax=Jend+2
       endif
 # endif
-!
-!--------------------------------------------------------------------
-!  Start computation of the auxiliary tracer field
-!  -----------------------------------------------
-!  Once it will be completed, t(:,:,???,:) is effectively halfway
-!  between time steps n and n+1. A high spatial order, centered,
-!  non-conservative [but constancy preserving!] scheme is used for
-!  this auxiliary step. This is done by introducing an artificial
-!  continuity equation [Easter, 1993].
-!
-!  Since this field will be used exclussively to compute the high-
-!  order fluxes during subsequent step3d_t operation, the final
-!  values of t(i,j,k,??,itrc) alfer step3d_t will be computed in
-!  a flux-conservative manner. The overall time step will be both
-!  conservative and constancy preserving.
-!
-!  This preliminary step shall be done before field t(:,:,:,???,:)
-!  loses its meaningful values during the pre-step operation.
-!
-!======================================================================
-!
-!  Compute horizontal advection
-!
-!======================================================================
-!
+! !
+! !-----------------------------------------------------------------
+! !  Start computation of the auxiliary tracer field
+! !  -----------------------------------------------
+! !  Once it will be completed, t(:,:,???,:) is effectively halfway
+! !  between time steps n and n+1. A high spatial order, centered,
+! !  non-conservative [but constancy preserving! !] scheme is used for
+! !  this auxiliary step. This is done by introducing an artificial
+! !  continuity equation [Easter, 1993].
+! !
+! !  Since this field will be used exclussively to compute the high-
+! !  order fluxes during subsequent step3d_t operation, the final
+! !  values of t(i,j,k,??,itrc) alfer step3d_t will be computed in
+! !  a flux-conservative manner. The overall time step will be both
+! !  conservative and constancy preserving.
+! !
+! !  This preliminary step shall be done before field t(:,:,:,???,:)
+! !  loses its meaningful values during the pre-step operation.
+! !
+! !===================================================================
+! !
+! !  Compute horizontal advection
+! !
+! !===================================================================
+! !
 
 # ifdef TRACERS
       do itrc=1,NT
@@ -283,11 +317,11 @@
           if (itrc .le. 1) then
 #   endif
 #  endif
-!
-!----------------------------------------------------------
-! Advection for active tracers: Compute fluxes FX and FE
-!----------------------------------------------------------
-!
+! !
+! !----------------------------------------------------------
+! ! Advection for active tracers: Compute fluxes FX and FE
+! !----------------------------------------------------------
+! !
 #  define PREDICTOR
 #  if !defined OPENACC
 #   include "compute_horiz_tracer_fluxes.h"
@@ -296,32 +330,32 @@
 #  endif
 #  undef PREDICTOR
 
-!
-!----------------------------------------------------------
-! WENO5 advection for passive tracers (biology ...)
-!----------------------------------------------------------
-!
+! !
+! !----------------------------------------------------------
+! ! WENO5 advection for passive tracers (biology ...)
+! !----------------------------------------------------------
+! !
 #  ifdef BIO_HADV_WENO5
-          else  ! if (itrc .gt. 2)
+          else  ! ! if (itrc .gt. 2)
 #   define FLUX5 flux5_weno
 #   define FLUX3 flux3_weno
 #   define FLUX2 flux1
 #   define UP5_MASKING
-!
+! !
             cdif=1.
 #   include "t3dadv_order5.h"
-!
+! !
 #   undef FLUX5
 #   undef FLUX3
 #   undef FLUX2
 #   undef UP5_MASKING
           endif
 #  endif
-!
-!----------------------------------------------------------
-! Apply point sources for river runoff simulations
-!----------------------------------------------------------
-!
+! !
+! !----------------------------------------------------------
+! ! Apply point sources for river runoff simulations
+! !----------------------------------------------------------
+! !
 #  ifdef PSOURCE
 !$acc parallel loop if(compute_on_device) default(present)
 !$acc& collapse(2)
@@ -369,11 +403,11 @@
 #   endif
           enddo
 #  endif /* PSOURCE */
-!
-!----------------------------------------------------------
-! Finalize horizontal advection: compute flux divergences
-!----------------------------------------------------------
-!
+! !
+! !----------------------------------------------------------
+! ! Finalize horizontal advection: compute flux divergences
+! !----------------------------------------------------------
+! !
           if (FIRST_TIME_STEP) then
             cff=0.5*dt
 !$acc parallel loop if(compute_on_device) default(present)
@@ -395,7 +429,7 @@
             cff1=0.5+gamma
             cff2=0.5-gamma
 !$acc parallel loop if(compute_on_device) default(present)
-!$acc& collapse(3)
+!$acc& collapse(2)
 #  if defined OPENACC
             DOEXTEND(k,1,N,FX,FE,WORK)
 #  endif
@@ -412,14 +446,16 @@
 #  endif
           endif
 #  if !defined OPENACC
-        enddo   ! <-- k
+        enddo   ! ! <-- k
 #  endif
-      enddo       ! <-- itrc
-!
-!----------------------------------------------------------
-! Add tracer divergence due to cell-centered point sources
-!----------------------------------------------------------
-!
+      enddo       ! ! <-- itrc
+! !RBACC
+! ! part below (PSOURCE_MASS° not done for GPU)
+! !
+! !----------------------------------------------------------
+! ! Add tracer divergence due to cell-centered point sources
+! !----------------------------------------------------------
+! !
 #  if defined PSOURCE_MASS
         do itrc=1,NT
           do is=1,Nsrc
@@ -443,38 +479,38 @@
      &          cff1*Qsrc(is,k)*cff2
              enddo
            endif
-          enddo ! source
-        enddo ! itrc
+          enddo ! ! source
+        enddo ! ! itrc
 #  endif /* PSOURCE_MASS */
 # endif /* TRACERS */
 
-!$acc kernels if(compute_on_device) default(present)
-!
-! Continue computation of the auxiliary tracer field: auxiliary
-! continuity equation (the same for all tracers): DC=1/Hz_half_new,
-! where Hz_half_new is Hz at time step n+1/2 as it would be computed
-! from three-dimensional divergence of volume fluxes Huon,Hvom and W.
-!
-!======================================================================
-!
-! Compute vertical advection
-!
-!======================================================================
-!
-! Finalize computation of the auxiliary tracer field: compute its
-! change due to vertical advection. Computation of vertical advective
-! fluxes requires interpolation of tracer values to the verical grid-
-! box interfaces (W-points). This can be done by either using
-! parabolic spline interpolation or, more simple local cubic
-! polynomial [linear interpolation is considered obsolete].
-!
+! !
+! ! Continue computation of the auxiliary tracer field: auxiliary
+! ! continuity equation (the same for all tracers): DC=1/Hz_half_new,
+! ! where Hz_half_new is Hz at time step n+1/2 as it would be computed
+! ! from three-dimensional divergence of volume fluxes Huon,Hvom and W.
+! !
+! !===================================================================
+! !
+! ! Compute vertical advection
+! !
+! !===================================================================
+! !
+! ! Finalize computation of the auxiliary tracer field: compute its
+! ! change due to vertical advection. Computation of vertical advective
+! ! fluxes requires interpolation of tracer values to the verical grid-
+! ! box interfaces (W-points). This can be done by either using
+! ! parabolic spline interpolation or, more simple local cubic
+! ! polynomial [linear interpolation is considered obsolete].
+! !
       if (FIRST_TIME_STEP) then
             cdt=0.5*dt
       else
             cdt=(1.-gamma)*dt
       endif
 
-# ifdef M3FAST
+# if defined  M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=IstrU,Iend
            ru_int_nbq_2d(i,j)=0.
@@ -485,9 +521,11 @@
            rv_int_nbq_2d(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 # endif
 
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstR,JendR
           do i=IstrR,IendR
@@ -500,7 +538,10 @@
           enddo
         enddo
       enddo
-
+!$acc end kernels
+! !
+! ! Francis: useless ?
+! !
 #  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -516,6 +557,48 @@
 #  endif
 # endif
 
+! !===================================================================
+! ! Predictor final computations
+! !===================================================================
+
+        cff14=0.5+gamma
+        cff15=0.5-gamma
+# ifdef K3FAST
+        if (FIRST_TIME_STEP) then
+        cff13=0.                        ! ! This version is designed
+        cff2=0.                        ! ! for coupling during 3D
+        cff1=1.                        ! ! predictor sub-step: here
+#  if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=1.
+        cff7=0.
+#  endif
+        elseif (FIRST_TIME_STEP+1) then  ! ! forcing term "rufrc" is
+        cff13= 0.                       ! ! computed as instantaneous
+        cff2=-0.5                      ! ! value at 3D time step
+        cff1= 1.5                      ! ! "nstp" first, and then
+#  if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=2.-0.6
+        cff7=-(1.-0.6)
+#  endif
+        else                             ! ! extrapolated half-step
+        cff13=0.281105                 ! ! forward using  AB3-like
+        cff2=-0.5-2.*cff13              ! ! weights optimized for
+        cff1=1.5+cff13                 ! ! maximum stability (with
+#  if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=2.-0.6
+        cff7=-(1.-0.6)
+#  endif
+        endif      
+                      ! ! special care for startup)
+# endif
+ 
+! !! !
+! !--------------------------------------------------------------------
+! ! Main j-loop 
+! !--------------------------------------------------------------------
+! !
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop private( DC, FC, CF)
         DOLOOP2D(Istr,Iend,Jstr,Jend)
 # ifdef TRACERS
 #  ifndef VADV_ADAPT_IMP 
@@ -528,15 +611,12 @@
         do i=Istr,Iend
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
         enddo
-# endif /* TRACERS */
-
-# if defined TRACERS
         do itrc=1,NT
-!
-!----------------------------------------------------------------------
-! Compute vertical fluxes FC
-!----------------------------------------------------------------------
-!
+! !
+! !-------------------------------------------------------------------
+! ! Compute vertical fluxes FC
+! !-------------------------------------------------------------------
+! !
 #  ifdef TS_VADV_WENO5
 #   undef PREDICTOR
 #  else
@@ -544,20 +624,20 @@
 #  endif
 #  include "compute_vert_tracer_fluxes.h"
 #  undef PREDICTOR
-!
+! !
 #  ifdef TS_HADV_TEST
       FC(istr:iend,0:N) = 0.d0
 #  endif
-!
-!----------------------------------------------------------------------
-!++ Apply vertical advection for tracers (DC corresponds to 1/Hz_half)
-!----------------------------------------------------------------------
-!
+! !
+! !-------------------------------------------------------------------
+! !++ Apply vertical advection for tracers (DC corresponds to 1/Hz_half)
+! !-------------------------------------------------------------------
+! !
           do k=1,N
             do i=Istr,Iend
 #  ifdef VADV_ADAPT_IMP
-              t(i,j,k,nnew,itrc)= t(i,j,k,nnew,itrc)  !<-- in this case division by Hz
-     &               -DC(i,0)*(FC(i,k)-FC(i,k-1))     !<-- in the tridiagonal matrix problem
+              t(i,j,k,nnew,itrc)= t(i,j,k,nnew,itrc)  ! !<-- in this case division by Hz
+     &               -DC(i,0)*(FC(i,k)-FC(i,k-1))     ! !<-- in the tridiagonal matrix problem
 #  else
               t(i,j,k,nnew,itrc)=DC(i,k)*( t(i,j,k,nnew,itrc)
      &               -DC(i,0)*(FC(i,k)-FC(i,k-1)))
@@ -566,12 +646,12 @@
 #   endif
 #  endif
             enddo
-          enddo            !--> discard FC
-!
-!----------------------------------------------------------------------
-!  Compute implicit vertical advection/diffusion
-!----------------------------------------------------------------------
-!
+          enddo            ! !--> discard FC
+! !
+! !-------------------------------------------------------------------
+! !  Compute implicit vertical advection/diffusion
+! !-------------------------------------------------------------------
+! !
 #  ifdef VADV_ADAPT_IMP
 #   ifdef SALINITY
         iAKt=min(itrc,isalt)
@@ -584,103 +664,162 @@
 #   include "tridiag_pred.h"
 #   undef TRIDIAG_TRA
 #  endif
-!
-        enddo   !<-- itrc  !--> discard DC
-        ENDDOLOOP2D
+! !
+        enddo   ! !<-- itrc  ! !--> discard DC
 # endif /* TRACERS */
-!
-!======================================================================
-!
-! Momentum equations: time stepping to time n+1/2
-!
-!======================================================================
-!
+        ENDDOLOOP2D
+! !
+! !===================================================================
+! !
+! ! Momentum equations: time stepping to time n+1/2
+! !
+! !===================================================================
+! !
 # undef DC
 # undef FC
 # undef CF
-
-      do j=Jstr,Jend
+! !
+! !-------------------------------------------------------------------
+! ! U momentum
+! !-------------------------------------------------------------------
+! !
+        do j=Jstr,Jend
         do i=IstrU,Iend
           WORK(i,j)=pm_u(i,j)*pn_u(i,j)
         enddo
-      enddo
-
+        enddo 
+! !        
+! !*******************************************
+! !************* U: 1st timestep ************* 
+! !*******************************************
+! !       
         if (FIRST_TIME_STEP) then
           do k=1,N
            do j=Jstr,Jend
-            do i=IstrU,Iend
+            do i=IstrU,Iend    
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
 # ifdef VADV_ADAPT_IMP
               cff = 1.
 # else
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
+# endif           
+              cff0=WORK(i,j)*ru(i,j,k)
+              u(i,j,k,nnew)=( u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &                       +cdt*cff0 )*cff
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+# if defined M3FAST || (defined K3FAST_COUPLING_SCH0 && defined K3FAST_C3D_UVSF )
+              ru_int_nbq(i,j,k) =cff0
+# elif defined K3FAST_C3D_UVSF 
+              ru_int_nbq(i,j,k) =cff0
+#  ifndef K3FAST_COUPLING_SCH2
+              ru_intt_nbq(i,j,k)=cff0
+#  else
+              ru_intt_nbq(i,j,k,nstp)=cff0
+#  endif
 # endif
-              u(i,j,k,nnew)=(u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-     &                                    +cdt*WORK(i,j)*ru(i,j,k)
-     &                      )*cff
-# ifdef M3FAST
-              ru_int_nbq(i,j,k) = 0.
-!              ru_int_nbq_2d(i,j)=ru_int_nbq_2d(i,j)+ru_int_nbq(i,j,k)
+! !
+! !******** Depth-average ********************      
+! !
+# if defined M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
+              ru_int_nbq_2d(i,j)= ru_int_nbq_2d(i,j) 
+     &                           +ru_int_nbq(i,j,k) 
 # endif
-              u(i,j,k,indx)=u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
-     &                                         Hz(i-1,j,k))
+! !
+! !******** u(t) x dz ************************      
+! !
+              u(i,j,k,indx)=u(i,j,k,nstp)*0.5*( Hz(i  ,j,k)
+     &                                         +Hz(i-1,j,k))
             enddo
           enddo
          enddo
-
-!# ifdef M3FAST
-!          do k=1,N
-!            do i=IstrU,Iend
-!               ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
-!     &            - ru_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
-!     &                               /( Zt_avg1(i  ,j)+h(i  ,j)
-!     &                                 +Zt_avg1(i-1,j)+h(i-1,j))
-!            enddo
-!          enddo
-!# endif
-
+! !*******************************************
+! !************* U: timesteps > 1 ************ 
+! !*******************************************
         else
-
-          cff1=0.5+gamma
-          cff2=0.5-gamma
           do k=1,N
             do j=Jstr,Jend
              do i=IstrU,Iend
-
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
 # ifdef VADV_ADAPT_IMP
               cff = 1.
 # else
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
+# endif 
+              qdm_nstp = u(i,j,k,nstp)*0.5*( Hz(i  ,j,k)
+     &                                      +Hz(i-1,j,k))
+              qdm_indx = u(i,j,k,indx)*0.5*( Hz_bak(i  ,j,k)
+     &                                      +Hz_bak(i-1,j,k))
+              u(i,j,k,nnew)=( cff14*qdm_nstp
+     &                       +cff15*qdm_indx
+     &                       +cdt*WORK(i,j)*(ru(i,j,k)
+# if defined M3FAST || defined K3FAST_C3D_UVFS
+     &                                     +ru_nbq_avg1(i,j,k)
+# endif     
+     &                                      ))*cff 
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+# if defined M3FAST  || defined K3FAST_COUPLING_SCH0
+              ru_int_nbq(i,j,k)=((qdm_nstp-qdm_indx) /dt
+     &               -WORK(i,j)*ru_nbq_avg2(i,j,k))
+#  ifdef MASKING
+     &                          *umask(i,j)
+#  endif   
+# elif defined K3FAST_C3D_UVSF
+#  ifndef K3FAST_COUPLING_SCH2
+              cff0=((qdm_nstp-qdm_indx) /dt
+     &               -WORK(i,j)*ru_nbq_avg2(i,j,k))
+              ru_int_nbq(i,j,k)=(cff6*cff0
+     &                          +cff7*ru_intt_nbq(i,j,k))
+#   ifdef MASKING
+     &                          *umask(i,j)
+#   endif        
+              ru_intt_nbq(i,j,k)=cff0
+#  else
+           cff0=WORK(i,j)*ru(i,j,k)! ! *(1.-gamma)   
+           ru_int_nbq(i,j,k)=(cff1 *cff0
+     &                      + cff2 *ru_intt_nbq(i,j,k,3-nstp)
+     &                      + cff13*ru_intt_nbq(i,j,k,nstp))  
+#   ifdef MASKING
+     &                         *umask(i,j)
+#   endif        
+           ru_intt_nbq(i,j,k,nstp)=cff0
+#  endif /* ! !K3FAST_COUPLING_SCH2 */
+! !
+! !******** Test dissipation *****************      
+! !                  
+#  ifdef K3FAST_DISSCOUPLING
+              cff10=((qdm_nstp-qdm_indx) /dt
+     &              -WORK(i,j)*ru_nbq_avg2(i,j,k))
+              ru_int_nbq(i,j,k) = (1.-alpha_uv) * ru_int_nbq(i,j,k) ! !ICI
+     &                            +alpha_uv * cff10
+#  endif     
+# endif /* M3FAST || K3FAST_C3D_UVSF */
+! !
+! !******** Depth-average ********************      
+! !
+# if defined M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
+              ru_int_nbq_2d(i,j)= ru_int_nbq_2d(i,j) 
+     &                           +ru_int_nbq(i,j,k) 
 # endif
-
-# ifdef M3FAST
-              qdm_nstp = u(i,j,k,nstp)*0.5*(Hz(i  ,j,k)+
-     &                                      Hz(i-1,j,k))
-              qdm_indx = u(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
-     &                                      Hz_bak(i-1,j,k))
-              u(i,j,k,nnew)=( cff1*qdm_nstp
-     &                       +cff2*qdm_indx
-     &                       +cdt*WORK(i,j)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
-     &                                                     )*cff
-              ru_int_nbq(i,j,k) = (qdm_nstp-qdm_indx) /dt
-     &                                -WORK(i,j)*ru_nbq_avg2(i,j,k)
-       
-              ru_int_nbq_2d(i,j)=ru_int_nbq_2d(i,j)+ru_int_nbq(i,j,k)
-# else
-              u(i,j,k,nnew)=( cff1*u(i,j,k,nstp)*0.5*(Hz(i  ,j,k)+
-     &                                                Hz(i-1,j,k))
-     &                       +cff2*u(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
-     &                                                Hz_bak(i-1,j,k))
-     &                       +cdt*WORK(i,j)*ru(i,j,k)
-     &                                                     )*cff
-# endif
-              u(i,j,k,indx)=u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
-     &                                         Hz(i-1,j,k))
-
+! !
+! !******** u(t) x dz ************************      
+! !
+              u(i,j,k,indx)=u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
             enddo
           enddo  
-        enddo
-
-# ifdef M3FAST
+         enddo
+        endif ! ! .not. FIRST_TIME_STEP
+! !
+! !******** Substract depth average **********
+! !    
+# if defined M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
           do k=1,N
             do j=Jstr,Jend
              do i=IstrU,Iend
@@ -692,94 +831,150 @@
           enddo
         enddo
 # endif
-         endif
-
-!
-!======================================================================
-!
-
+! !
+! !-------------------------------------------------------------------
+! ! V momentum
+! !-------------------------------------------------------------------
+! !
         do j=JstrV,Jend
           do i=Istr,Iend
             WORK(i,j)=pm_v(i,j)*pn_v(i,j)
           enddo
         enddo
+! !
+! !*******************************************
+! !************* V: 1st timestep ************* 
+! !*******************************************
+! !
           if (FIRST_TIME_STEP) then
             do k=1,N
              do j=JstrV,Jend
               do i=Istr,Iend
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
 # ifdef VADV_ADAPT_IMP
                 cff = 1.
 # else
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
+# endif 
+                cff0=WORK(i,j)*rv(i,j,k)
+                v(i,j,k,nnew)=( v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+     &                         +cdt*cff0)*cff
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+# if defined M3FAST || (defined K3FAST_COUPLING_SCH0 && defined K3FAST_C3D_UVSF)
+                rv_int_nbq(i,j,k) =cff0
+# elif defined K3FAST_C3D_UVSF
+                rv_int_nbq(i,j,k) =cff0
+#  ifndef K3FAST_COUPLING_SCH2
+                rv_intt_nbq(i,j,k)=cff0
+#  else
+                rv_intt_nbq(i,j,k,nstp)=cff0
+#  endif
 # endif
-                v(i,j,k,nnew)=(v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-     &                                    +cdt*WORK(i,j)*rv(i,j,k)
-     &                           )*cff
-
-# ifdef M3FAST
-                rv_int_nbq(i,j,k) = 0.
-!                rv_int_nbq_2d(i,j)=rv_int_nbq_2d(i,j)+rv_int_nbq(i,j,k)
+! !
+! !******** Depth-average ********************      
+! !
+# if defined M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
+                rv_int_nbq_2d(i,j)= rv_int_nbq_2d(i,j)
+     &                             +rv_int_nbq(i,j,k) 
 # endif
-                v(i,j,k,indx)=v(i,j,k,nstp)*0.5*(Hz(i,j  ,k)+
-     &                                           Hz(i,j-1,k))
+! !
+! !******** v(t) x dz ************************      
+! !
+                v(i,j,k,indx)=v(i,j,k,nstp)*0.5*( Hz(i,j  ,k)
+     &                                           +Hz(i,j-1,k))
               enddo
             enddo
           enddo
-
-!# ifdef M3FAST
-!          do k=1,N
-!            do i=Istr,Iend
-!               rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
-!     &            - rv_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
-!     &                               /( Zt_avg1(i,j  )+h(i,j  )
-!     &                                 +Zt_avg1(i,j-1)+h(i,j-1))
-!            enddo
-!          enddo
-!# endif
-
+! !
+! !*******************************************
+! !************* V: timesteps > 1 ************ 
+! !*******************************************
+! !
           else
-
-            cff1=0.5+gamma
-            cff2=0.5-gamma
             do k=1,N
               do j=JstrV,Jend
-               do i=Istr,Iend              
+               do i=Istr,Iend     
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
 # ifdef VADV_ADAPT_IMP              
                 cff = 1.
 # else
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
+# endif              
+                qdm_nstp = v(i,j,k,nstp)*0.5*( Hz(i,j  ,k)
+     &                                        +Hz(i,j-1,k))
+                qdm_indx = v(i,j,k,indx)*0.5*( Hz_bak(i  ,j,k)
+     &                                        +Hz_bak(i,j-1,k))
+                v(i,j,k,nnew)=( cff14*qdm_nstp
+     &                         +cff15*qdm_indx
+     &                         +cdt*WORK(i,j)*(rv(i,j,k)
+# if defined M3FAST || defined K3FAST_C3D_UVFS
+     &                                  +rv_nbq_avg1(i,j,k)
+# endif     
+     &                                  ))*cff
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+# if defined M3FAST || defined K3FAST_COUPLING_SCH0
+                rv_int_nbq(i,j,k)=((qdm_nstp-qdm_indx) /dt
+     &               -WORK(i,j)*rv_nbq_avg2(i,j,k))
+#   ifdef MASKING
+     &                           *vmask(i,j)   
+#   endif   
+# elif defined K3FAST_C3D_UVSF
+#  ifndef K3FAST_COUPLING_SCH2
+                cff0=((qdm_nstp-qdm_indx) /dt
+     &               -WORK(i,j)*rv_nbq_avg2(i,j,k))
+                rv_int_nbq(i,j,k)=(cff6*cff0
+     &                            +cff7*rv_intt_nbq(i,j,k))
+#   ifdef MASKING
+     &                            *vmask(i,j)   
+#   endif     
+                rv_intt_nbq(i,j,k)=cff0
+#  else
+                cff0=WORK(i,j)*rv(i,j,k)
+                rv_int_nbq(i,j,k)= (cff1*cff0
+     &                            + cff2 *rv_intt_nbq(i,j,k,3-nstp)
+     &                            + cff13*rv_intt_nbq(i,j,k,nstp))
+#   ifdef MASKING
+     &                           *vmask(i,j)   
+#   endif     
+                rv_intt_nbq(i,j,k,nstp)=cff0
+#  endif /* ! !K3FAST_COUPLING_SCH2 */
+! !
+! !******** Test dissipation *****************      
+! !    
+#  ifdef K3FAST_DISSCOUPLING
+                cff10=((qdm_nstp-qdm_indx) /dt
+     &                -WORK(i,j)*rv_nbq_avg2(i,j,k))
+                rv_int_nbq(i,j,k) = (1.-alpha_uv) * rv_int_nbq(i,j,k)  
+     &                             +alpha_uv * cff10
+#  endif   
+# endif /* M3FAST || K3FAST_C3D_UVSF */ 
+! !
+! !******** Depth-average ********************      
+! !  
+# if defined M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
+              rv_int_nbq_2d(i,j)= rv_int_nbq_2d(i,j)
+     &                           +rv_int_nbq(i,j,k) 
 # endif
-
-# ifdef M3FAST
-                qdm_nstp = v(i,j,k,nstp)*0.5*(Hz(i,j  ,k)+
-     &                                        Hz(i,j-1,k))
-                qdm_indx = v(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
-     &                                        Hz_bak(i,j-1,k))
-                v(i,j,k,nnew)=( cff1*qdm_nstp
-     &                         +cff2*qdm_indx
-     &                     +cdt*WORK(i,j)*(rv(i,j,k)+rv_nbq_avg1(i,j,k))
-     &                                                           )*cff
-
-                rv_int_nbq(i,j,k) = (qdm_nstp-qdm_indx)/dt
-     &                                 -WORK(i,j)*rv_nbq_avg2(i,j,k)
-
-                rv_int_nbq_2d(i,j)=rv_int_nbq_2d(i,j)+rv_int_nbq(i,j,k)
-# else
-                v(i,j,k,nnew)=( cff1*v(i,j,k,nstp)*0.5*(Hz(i,j  ,k)+
-     &                                                  Hz(i,j-1,k))
-     &                         +cff2*v(i,j,k,indx)*0.5*(Hz_bak(i,j  ,k)+
-     &                                                  Hz_bak(i,j-1,k))
-     &                         +cdt*WORK(i,j)*rv(i,j,k)
-     &                                                           )*cff
-# endif
-
-                v(i,j,k,indx)=v(i,j,k,nstp)*0.5*(Hz(i,j,k)+
-     &                                           Hz(i,j-1,k))
+! !
+! !******** v(t) x dz ************************      
+! !
+                v(i,j,k,indx)=v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
               enddo
-            enddo               !--> discard DC(:,:)
-          enddo
-
-# ifdef M3FAST
+            enddo
+           enddo    
+          endif        ! !   .not. FIRST_TIME_STEP 
+! !
+! !******** Substract depth average **********
+! !    
+# if defined M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
             do k=1,N
              do j=JstrV,Jend
               do i=Istr,Iend
@@ -790,191 +985,329 @@
             enddo
           enddo
         enddo
-# endif
-
-          endif
-!
-!======================================================================
-!
-
+# endif   
+! !
+! !-------------------------------------------------------------------
+! ! Solve tridiag system for U & V (if required)
+! !-------------------------------------------------------------------
+! !
 # ifdef VADV_ADAPT_IMP
 !$acc loop private(DC)
       do j=Jstr,Jend
         do i=IstrU,Iend
           DC(i,0)=pm_u(i,j)*pn_u(i,j)
         enddo
-!
-!======================================================================
-!
-!  Compute implicit vertical advection/viscosity
-!
-
 #  undef  TRIDIAG_TRA
 #  define TRIDIAG_U
 #  undef  TRIDIAG_V
 #  include "tridiag_pred.h"
-
-!
-!======================================================================
-!
         if (j.ge.JstrV) then
           do i=Istr,Iend
             DC(i,0)=pm_v(i,j)*pn_v(i,j)
           enddo
-!
-!======================================================================
-!
-!  Compute implicit vertical advection/viscosity
-!
-
 #  undef  TRIDIAG_TRA
 #  undef  TRIDIAG_U
 #  define TRIDIAG_V
-
 #  include "tridiag_pred.h"
-!
-!======================================================================
-!
-      enddo     !<-- j
+        endif
+        
+      enddo     ! !<-- j
 # endif
-
-# ifdef NBQ
-!----------------------------------------------------------
-!<-- at this point
-!<-- rw            contains internal 3D advection + Coriolis
-!<-- rw_nbq_avg1   contains NBQ pressure gradient (+ gravity)
-!                                        + second viscosity
-!----------------------------------------------------------
+!$acc end kernels      
+! !
+! !-------------------------------------------------------------------
+! ! W momentum
+! !-------------------------------------------------------------------
+! !
+# if defined NBQ || defined K3SLOW_W
+! !
+! !----------------------------------------------------------
+! !<-- at this point
+! !<-- rw            contains internal 3D advection + Coriolis
+! !<-- rw_nbq_avg1   contains NBQ pressure gradient (+ gravity)
+! !                                        + second viscosity
+! !----------------------------------------------------------
+! !
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
-!**************************************
-      if (FIRST_TIME_STEP) then
-!**************************************
+       do i=Istr,Iend
+        WORK(i,j)=pm(i,j)*pn(i,j)
+       enddo
+! !
+! !*******************************************
+! !************* W: 1st timestep ************* 
+! !*******************************************
+! !
+       if (FIRST_TIME_STEP) then
         do k=1,N-1
           do i=Istr,Iend
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
+            cff0=WORK(i,j)*rw(i,j,k)
             wz(i,j,k,nnew)=( wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
-     &                                          +dt*pn(i,j)*pm(i,j)
-     &                              *(rw(i,j,k)+rw_nbq_avg1(i,j,k))
-     &                     )   /  (Hz_half(i,j,k)+Hz_half(i,j,k+1))
-
-            rw_int_nbq(i,j,k)= 0.
+     &                              +2.*dt*cff0) 
+     &                     /  (Hz_half(i,j,k)+Hz_half(i,j,k+1)) 
+#  ifdef MASKING
+     &                           *rmask(i,j)
+#  endif    
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+#  if defined NBQ || (defined K3FAST_COUPLINGW_SCH0 && defined K3FAST_C3D_WSF)
+            rw_int_nbq(i,j,k) =cff0
+#  elif defined K3FAST_C3D_WSF
+            rw_int_nbq(i,j,k) =cff0
+#   ifndef K3FAST_COUPLINGW_SCH2            
+            rw_intt_nbq(i,j,k)=cff0
+#   else
+            rw_intt_nbq(i,j,k,nstp)=cff0
+#   endif
+#  endif
+! !
+! !******** w(t) x dz ************************      
+! !
             wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
      &                                         Hz(i,j,k+1))
           enddo
-        enddo
-!==
+        enddo    
+! !
+! !== Special treatment for k=N because the control 
+! !== volume at the top is Hz(N)/2
+! !
         do i=Istr,Iend
-!== Special treatment for k=N because the control volume at the top is Hz(N)/2
-            wz(i,j,N,nnew)=( wz(i,j,N,nstp)*Hz(i,j,N)
-     &                            +dt*pn(i,j)*pm(i,j)
-     &                *(rw(i,j,N)+rw_nbq_avg1(i,j,N))
-     &                     )        /  Hz_half(i,j,N) !<-- wz has units m.s-1
-            rw_int_nbq(i,j,N)= 0.
-            wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N) !<-- wz(indx) has units kg.m-1.s-1
-
-!== Special treatment for k=0 because the control volume at the top is Hz(1)/2
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
+            cff0=WORK(i,j)*rw(i,j,N)
+            wz(i,j,N,nnew)=(wz(i,j,N,nstp)*Hz(i,j,N)+2.*dt*cff0)
+     &                     /Hz_half(i,j,N) ! !<-- wz has units m.s-1
+#  ifdef MASKING
+     &                     *rmask(i,j)
+#  endif     
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+#  if defined NBQ || (defined K3FAST_COUPLINGW_SCH0 && defined K3FAST_C3D_WSF)
+            rw_int_nbq(i,j,N) =cff0
+#  elif defined K3FAST_C3D_WSF
+            rw_int_nbq(i,j,N) =cff0
+#   ifndef K3FAST_COUPLINGW_SCH2            
+            rw_intt_nbq(i,j,N)=cff0
+#   else
+            rw_intt_nbq(i,j,N,nstp)=cff0
+#   endif
+#  endif     
+! !
+! !******** v(t) x dz ************************      
+! !       
+            wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N) ! !<-- wz(indx) has units kg.m-1.s-1
+! !
+! !== Special treatment for k=0 because the control 
+! !== volume at the top is Hz(1)/2
+! !
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
 #  ifdef NBQ_FREESLIP
-!           wz(i,j,0,nnew)=( wz(i,j,0,nstp)*Hz(i,j,1)
-!     &                            +dt*pn(i,j)*pm(i,j)
-!     &                *(rw(i,j,0)+ rw_nbq_avg1(i,j,0))
-!     &                     )        /  Hz_half(i,j,1) !<-- wz has units m.s-1
-!           rw_int_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0) ! ! Francis: switch from k=0 to k=1 here
-
-            rw_int_nbq(i,j,0)=0.
-
-            wz(i,j,0,nnew)=  ( u(i,j,1,nnew) * pm_u(i,j)
-     &                                    * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
-     &                        +v(i,j,1,nnew) * pm_v(i,j)
-     &                                    * ( z_w(i,j  ,0)-z_w(i,j-1,0) )  )
-            wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1) !<-- wz(indx) has units kg.m-1.s-1
+            wz(i,j,0,nnew)=  0.5*
+     &                       ( u(i,j,1,nnew) * pm_u(i,j) 
+     &                                    * ( z_w(i  ,j,0)-z_w(i-1,j,0))
+     &                        +u(i+1,j,1,nnew) * pm_u(i+1,j) 
+     &                                    * ( z_w(i+1,j,0)-z_w(i  ,j,0))
+     &                        +v(i,j,1,nnew) * pm_v(i,j) 
+     &                                    * ( z_w(i,j  ,0)-z_w(i,j-1,0)) 
+     &                        +v(i,j+1,1,nnew) * pm_v(i,j+1) 
+     &                                    * ( z_w(i,j+1,0)-z_w(i,j,0)))
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+            rw_int_nbq (i,j,0)=0.
+! !
+! !******** w(t) x dz ************************      
+! !
+            wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1) ! !<-- wz(indx) has units kg.m-1.s-1
 #  else
             wz(i,j,0,nnew)=0.
             wz(i,j,0,indx)=0.
 #  endif
-        enddo
-
-!**************************************
-      else
-!**************************************
-        cff1=0.5+gamma
-        cff2=0.5-gamma
-!==
+        enddo  
+! !
+! !*******************************************
+! !************* W: timesteps > 1 ************ 
+! !*******************************************
+! !
+      else 
         do k=1,N-1
           do i=Istr,Iend
-            qdm_nstp = wz(i,j,k,nstp)*(Hz(i,j,k  )+
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
+            qdm_nstp = wz(i,j,k,nstp)*(Hz(i,j,k  )+             
      &                                             Hz(i,j,k+1))
-            qdm_indx = wz(i,j,k,indx)*(Hz_bak(i,j,k  )+
+            qdm_indx = wz(i,j,k,indx)*(Hz_bak(i,j,k  )+     
      &                                             Hz_bak(i,j,k+1))
-            wz(i,j,k,nnew)=( cff1*qdm_nstp         !
-     &                      +cff2*qdm_indx         !
-     &                      +2.*cdt*pn(i,j)*pm(i,j)                 ! n - 1/2
-     &                             *(rw(i,j,k)+rw_nbq_avg1(i,j,k))  !
-     &                     ) / (Hz_half(i,j,k)+Hz_half(i,j,k+1))  !<-- wz has units m.s-1
-
-            rw_int_nbq(i,j,k)=(qdm_nstp-qdm_indx)*0.5/dt
-     &                       - pn(i,j)*pm(i,j)*rw_nbq_avg2(i,j,k)
+            wz(i,j,k,nnew)=( (cff14*qdm_nstp
+     &                       +cff15*qdm_indx)  
+     &                      +2.*cdt*WORK(i,j)       
+     &                             *(rw(i,j,k)
+#  if defined NBQ || defined K3FAST_C3D_WFS
+     &                               +rw_nbq_avg1(i,j,k)  
+#  endif     
+     &                     )) / (Hz_half(i,j,k)+Hz_half(i,j,k+1))  ! !<-- wz has units m.s-1
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+#  if defined NBQ || defined K3FAST_COUPLINGW_SCH0
+           rw_int_nbq(i,j,k)=((qdm_nstp-qdm_indx)*0.5/dt
+     &                 - WORK(i,j)*rw_nbq_avg2(i,j,k))
+#    ifdef MASKING
+     &                              *rmask(i,j)
+#    endif     
+#  elif defined K3FAST_C3D_WSF
+#   ifndef K3FAST_COUPLINGW_SCH2  
+           cff0 = ((qdm_nstp-qdm_indx)*0.5/dt
+     &                 - WORK(i,j)*rw_nbq_avg2(i,j,k))
+           rw_int_nbq(i,j,k)=(cff6*cff0
+     &                       +cff7*rw_intt_nbq(i,j,k))
+#    ifdef MASKING
+     &                              *rmask(i,j)
+#    endif     
+           rw_intt_nbq(i,j,k)=cff0
+#   else
+            cff0=WORK(i,j)*rw(i,j,k) ! ! wzdiff here if necessary
+            rw_int_nbq(i,j,k)= (cff1*cff0
+     &                        + cff2*rw_intt_nbq(i,j,k,3-nstp)
+     &                        + cff13*rw_intt_nbq(i,j,k,nstp))
+#    ifdef MASKING
+     &                              *rmask(i,j)
+#    endif     
+           rw_intt_nbq(i,j,k,nstp)=cff0
+#   endif /* K3FAST_COUPLINGW_SCH2 */
+! !
+! !******** Test dissipation *****************      
+! !    
+#   ifdef K3FAST_DISSCOUPLING
+           cff10 = ((qdm_nstp-qdm_indx)*0.5/dt
+     &                 - WORK(i,j)*rw_nbq_avg2(i,j,k))
+           rw_int_nbq(i,j,k)=(1.-alpha_w)*rw_int_nbq(i,j,k)   
+     &                      +alpha_w * cff10
+#   endif
+#  endif /* NBQ ||K3FAST_C3D_WSF */
+! !
+! !******** w(t) x dz ************************      
+! !
             wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
-     &                                          Hz(i,j,k+1)) !<-- wz(indx) has units kg.m-1.s-1
+     &                                         Hz(i,j,k+1)) 
           enddo
         enddo
-
         do i=Istr,Iend
-
-!== Special treatment for k=N because the control volume at the top is Hz(N)/2
-          qdm_nstp = wz(i,j,N,nstp)*Hz    (i,j,N)
-          qdm_indx = wz(i,j,N,indx)*Hz_bak(i,j,N)
-          wz(i,j,N,nnew)=( cff1*qdm_nstp
-     &                    +cff2*qdm_indx
-     &                    +2.*cdt*pn(i,j)*pm(i,j)
-     &                       *(rw(i,j,N)+rw_nbq_avg1(i,j,N))
-     &                   )/ Hz_half(i,j,N)          !<-- wz has units m.s-1
-
-          rw_int_nbq(i,j,N)=(qdm_nstp-qdm_indx)*0.5/dt
-     &                     -  pn(i,j)*pm(i,j)*rw_nbq_avg2(i,j,N)
-          wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)   !<-- wz(indx) has units kg.m-1.s-1
-
-!== Special treatment for k=0 because the control volume at the bottom
-!    is Hz(1)/2
+! !
+! !== Special treatment for k=N because 
+! !== the control volume at the top is Hz(N)/2  
+! !
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
+           qdm_nstp = wz(i,j,N,nstp)*Hz    (i,j,N)
+           qdm_indx = wz(i,j,N,indx)*Hz_bak(i,j,N)
+           wz(i,j,N,nnew)=((cff14*qdm_nstp
+     &                     +cff15*qdm_indx)  
+     &                     +2.*cdt*WORK(i,j)
+     &                        *(rw(i,j,N)
+#  if defined NBQ || defined K3FAST_C3D_WFS
+     &                         +rw_nbq_avg1(i,j,N)
+#  endif     
+     &                   ))/ Hz_half(i,j,N)          ! !<-- wz has units m.s-1   
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+#  if defined NBQ || defined K3FAST_COUPLINGW_SCH0
+           rw_int_nbq(i,j,N)= ((qdm_nstp-qdm_indx)*0.5/dt
+     &                      - WORK(i,j)*rw_nbq_avg2(i,j,N))
+#    ifdef MASKING
+     &                           *rmask(i,j)
+#    endif     
+#  elif defined K3FAST_C3D_WSF
+#   ifndef K3FAST_COUPLINGW_SCH2  
+           cff0 = ((qdm_nstp-qdm_indx)*0.5/dt
+     &                      - WORK(i,j)*rw_nbq_avg2(i,j,N))
+           rw_int_nbq(i,j,N)=(cff6*cff0
+     &                       +cff7*rw_intt_nbq(i,j,N))
+#    ifdef MASKING
+     &                           *rmask(i,j)
+#    endif     
+           rw_intt_nbq(i,j,N)=cff0
+#   else
+           cff0=WORK(i,j)*rw(i,j,N) 
+           rw_int_nbq(i,j,N)= (cff1*cff0
+     &                        +cff2 *rw_intt_nbq(i,j,N,3-nstp)
+     &                        +cff13*rw_intt_nbq(i,j,N,nstp))
+#    ifdef MASKING
+     &                           *rmask(i,j)
+#    endif     
+           rw_intt_nbq(i,j,N,nstp)=cff0
+#   endif /* K3FAST_COUPLINGW_SCH2 */
+! !
+! !******** Test dissipation *****************      
+! !    
+#   ifdef K3FAST_DISSCOUPLING
+           cff10 = ((qdm_nstp-qdm_indx)*0.5/dt
+     &                      - WORK(i,j)*rw_nbq_avg2(i,j,N))
+           rw_int_nbq(i,j,N)=  (1.-alpha_w)*rw_int_nbq(i,j,N)     ! ! ICI
+     &                         +alpha_w*cff10
+#   endif
+#  endif /* NBQ || K3FAST_C3D_WSF */
+! !
+! !******** w(t) x dz ************************      
+! !
+           wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)   ! !<-- wz(indx) has units kg.m-1.s-1
+! !
+! !== Special treatment for k=0 because 
+! ! the control volume at the bottom is Hz(1)/2  
+! !
 #  ifdef NBQ_FREESLIP
-!         wz(i,j,0,nnew)=( cff1*wz(i,j,0,nstp)*Hz    (i,j,1)
-!     &                   +cff2*wz(i,j,0,indx)*Hz_bak(i,j,1)
-!     &                   +2.*cdt*pn(i,j)*pm(i,j)
-!     &                   *(rw(i,j,0)+rw_nbq_avg1(i,j,0))
-!     &                  )/ Hz_half(i,j,1)         !<-- wz has units m.s-1
-!        rw_int_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0)  !! Francis: switch from k=0 to k=1 here
-
-          rw_int_nbq(i,j,0)=0.
-
-          wz(i,j,0,nnew)= (  u(i,j,1,nnew) * pm_u(i,j)
-     &                                  * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
-     &                     + v(i,j,1,nnew) * pm_v(i,j)
-     &                                  * ( z_w(i,j  ,0)-z_w(i,j-1,0) )  )
-          wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1)   !<-- wz(indx) has units kg.m-1.s-1
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
+            wz(i,j,0,nnew)=  0.5*
+     &                       ( u(i,j,1,nnew) * pm_u(i,j) 
+     &                                    * ( z_w(i  ,j,0)-z_w(i-1,j,0))
+     &                        +u(i+1,j,1,nnew) * pm_u(i+1,j) 
+     &                                    * ( z_w(i+1,j,0)-z_w(i  ,j,0))
+     &                        +v(i,j,1,nnew) * pm_v(i,j) 
+     &                                    * ( z_w(i,j  ,0)-z_w(i,j-1,0)) 
+     &                        +v(i,j+1,1,nnew) * pm_v(i,j+1) 
+     &                                    * ( z_w(i,j+1,0)-z_w(i,j,0)))
+! !
+! !******** w(t) x dz ************************      
+! !
+          wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1) ! !<-- wz(indx) has units kg.m-1.s-1
 #  else
-          wz(i,j,0,nnew)=0.
-          wz(i,j,0,indx)=0.
+            wz(i,j,0,nnew)=0.
+            wz(i,j,0,indx)=0.
 #  endif
-        enddo
-!==
+
+        enddo          
       endif
-
-      enddo
-!==
-
-!==
-# endif /* NBQ */
-
-# if defined M3FAST && defined M2FILTER_NONE
-#  undef ru_nbq_avg1
+  
+      enddo  
+!$acc end kernels
+! !==  
+# endif /* NBQ || K3SLOW_W */   
+  
+# if defined M3FAST || defined K3FAST_C3D_UVFS
+#  undef ru_nbq_avg1 
 #  undef rv_nbq_avg1
-#  ifdef NBQ
-#   undef rw_nbq_avg1
-#  endif
 # endif
-!
-!--------------------------------------------------------------------
-!
-
+# if defined NBQ || defined K3FAST_C3D_WFS
+#  undef rw_nbq_avg1
+# endif
+! !
+! !---------------------- Test ?---------------------------------
+! !
 # if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -987,9 +1320,16 @@
           enddo
         enddo
       enddo
-# endif
+!$acc end kernels
+# endif   
+! !
+! !-------------------------------------------------------------------
+! ! Solid body ?
+! !-------------------------------------------------------------------
+! !
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
       cff = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1002,42 +1342,40 @@
           enddo
         enddo
       enddo
-# endif
 !$acc end kernels
-!
-!--------------------------------------------------------------------
-!
-!======================================================================
-! Set PHYSICAL lateral boundary conditions for tracers.
-!======================================================================
-!
+# endif
+! !
+! !===================================================================
+! ! Set PHYSICAL lateral boundary conditions for tracers.
+! !===================================================================
+! !
 # if defined TRACERS
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
-#  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_TS
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))
 #   else
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
-#   endif
 #  endif
+# endif
       enddo
 # endif
 
       call u3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
       call v3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
-# ifdef NBQ
-      call w3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
+# ifdef K3SLOW_W
+      call w3dbc_tile (Istr,Iend,Jstr,Jend, WORK)      
 # endif
-!
-!======================================================================
-! Coupling, include ghost points associated with PHYSICAL
-! boundaries ONLY. Do not touch periodic ghost points or
-! internal computational margins (MPI code).
-!======================================================================
-!
+! !
+! !===================================================================
+! ! Coupling, include ghost points associated with PHYSICAL
+! ! boundaries ONLY. Do not touch periodic ghost points or
+! ! internal computational margins (MPI code).
+! !===================================================================
+! !
 # ifdef EW_PERIODIC
 #  define IU_RANGE Istr,Iend
 #  define IV_RANGE Istr,Iend
@@ -1052,42 +1390,62 @@
 #  define JU_RANGE JstrR,JendR
 #  define JV_RANGE Jstr,JendR
 # endif
-!
-!======================================================================
-! Set PHYSICAL lateral boundary conditions for momentum.
-!======================================================================
-!
-# if defined BD_EXCHANGE
+! !
+! !===================================================================
+! ! Set PHYSICAL lateral boundary conditions for momentum.
+! !===================================================================
+! !
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ
+#   if defined NBQ || defined K3SLOW_W
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,nnew))
+#   endif
+#   if defined M3FAST || defined K3FAST_C3D_UVSF
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &            ru_int_nbq(START_2D_ARRAY,1))   
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &            rv_int_nbq(START_2D_ARRAY,1))   
+#   endif
+#   if defined NBQ || defined K3FAST_C3D_WSF
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &            rw_int_nbq(START_2D_ARRAY,0))   
 #   endif
 #  else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ
+#   if defined NBQ || defined K3SLOW_W   
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                        wz(START_2D_ARRAY,0,nnew))
+     &                        wz(START_2D_ARRAY,0,nnew))   
+#   endif
+#   if defined M3FAST || defined K3FAST_C3D_UVSF
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &            ru_int_nbq(START_2D_ARRAY,1))   
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &            rv_int_nbq(START_2D_ARRAY,1))   
+#   endif
+#   if defined NBQ || defined K3FAST_C3D_WSF
+       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &            rw_int_nbq(START_2D_ARRAY,0))   
 #   endif
 #  endif
 # endif
 
-!
-!======================================================================
-! Prepare viscosity/diffusivity array for GLS_MIXING
-! (needed for OPENMP parallelization)
-!======================================================================
-!
-!$acc kernels if(compute_on_device) default(present)
+! !
+! !===================================================================
+! ! Prepare viscosity/diffusivity array for GLS_MIXING
+! ! (needed for OPENMP parallelization)
+! !===================================================================
+! !
 
 # ifdef GLS_MIXING
+!$acc kernels if(compute_on_device) default(present)
       do k=0,N
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
@@ -1100,15 +1458,16 @@
           enddo
         enddo
       enddo
+!$acc end kernels
 # endif
-!
-!======================================================================
-! Prepare to start two-dimensional time stepping:
-! set the initial values of the fast-time-step free-surface
-! field to its fast-time-averaged values corresponding
-! to the time step n (nstp).
-!======================================================================
-!
+! !
+! !===================================================================
+! ! Prepare to start two-dimensional time stepping:
+! ! set the initial values of the fast-time-step free-surface
+! ! field to its fast-time-averaged values corresponding
+! ! to the time step n (nstp).
+! !===================================================================
+! !
 # ifndef M2FILTER_NONE 
 #  if defined BD_EXCHANGE
       do j=JU_RANGE
@@ -1120,6 +1479,7 @@
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          zeta(START_2D_ARRAY,knew))
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           zeta(i,j,knew)=Zt_avg1(i,j)
@@ -1127,8 +1487,6 @@
       enddo     
 !$acc end kernels
 #  endif
-# else
-!$acc end kernels
 # endif
 # undef IU_RANGE
 # undef JU_RANGE

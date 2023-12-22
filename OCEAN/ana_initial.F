@@ -49,6 +49,9 @@
 #if defined SUBSTANCE || defined SEDIMENT
       integer :: iv
 #endif
+#ifdef K3FAST_SACOUS
+# include "nbq.h"
+#endif
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif
@@ -67,11 +70,12 @@
 #ifdef THACKER
       real ETA0, omega, depth, Lt
 #endif
-#ifdef TANK
+#if defined TANK || defined MOVING_BATHY
       real ETA0, depth, Lt,cff
 #endif
 #ifdef MOVING_BATHY
-      real cff
+      real cff,cff1
+      integer im1,jm1
 #endif
 #ifdef RIP
       integer iper
@@ -128,8 +132,27 @@
 #endif
 
 #ifdef ANA_INITIAL
+!
+!----------------------------------------------------------------------
+!  Initial conditions for acoustic forcing source.
+!----------------------------------------------------------------------
+!
+# ifdef K3FAST_SACOUS
+      if (nrrec.eq.0) then!
+!-------------------------------
+!  Acoustic wave emission
+!-------------------------------
+!
+        period_exp = 1./50./2.
+        for_a_exp  = 0.5
+        amp_exp    = 1.e-4
+        hmax_exp   = 128.
+        dg_exp     = 2.
+        time_nbq   = 0. 
+      endif
+# endif      
 
-!$acc kernels if(compute_on_device) default(present)
+!!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Initial conditions for free surface and 2D momentum components.
@@ -207,6 +230,7 @@
 # elif defined TANK
         ETA0=0.001
         Lt=10.
+!$acc kernels if(compute_on_device) default(present)
         do j=JR_RANGE
           do i=IR_RANGE
 #  ifndef TANKY
@@ -221,6 +245,7 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
+!$acc end kernels
 
 # elif defined DUNE
         cff=0.5*(1./10)**2
@@ -327,6 +352,7 @@
       if (nrrec.eq.0) then
 !
 #  if defined THACKER
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -337,6 +363,7 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #  elif defined TS_HADV_TEST
 #   ifdef DIAGONAL_ADV
         do j=Jstr,Jend
@@ -468,7 +495,7 @@
             do k=1,N
               v(i,j,k,1)  = 0.
               v(i,j,k,2)  = 0.
-#   ifdef NBQ
+#   if defined NBQ || defined K3SLOW_W
               wz(i,j,k,1) = -0.01*du*hup0*
      &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
      &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
@@ -479,7 +506,7 @@
             enddo
           enddo
         enddo
-#   ifdef NBQ
+#   if defined NBQ || defined K3SLOW_W
         do j=JR_RANGE
           do i=IR_RANGE
               wz(i,j,0,:)=0.
@@ -488,6 +515,7 @@
 #   endif
 
 #  else
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -495,13 +523,13 @@
               v(i,j,k,1)=0.
               u(i,j,k,2)=0.
               v(i,j,k,2)=0.
-#   ifdef NBQ
+#   if defined NBQ || defined K3SLOW_W
               wz(i,j,k,:)=0.
 #   endif
             enddo
           enddo
         enddo
-#   ifdef NBQ
+#   if defined NBQ || defined K3SLOW_W
         do j=JR_RANGE
           do i=IR_RANGE
              wz(i,j,0,1)=0.
@@ -509,6 +537,7 @@
           enddo
         enddo
 #   endif
+!$acc end kernels        
 
 #  endif
 
@@ -702,7 +731,8 @@
 #    endif /* TEMPERATURE */
 
 #   elif defined TANK
-#    ifdef TEMPERATURE
+#   if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -711,10 +741,12 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif /* TEMPERATURE */
 #   elif defined MOVING_BATHY
         cff=((0.92461)**2)/g
-#    ifdef TEMPERATURE
+#    if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -723,6 +755,7 @@
             enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif /* TEMPERATURE */
 #   elif defined EQUATOR
         do k=1,N
@@ -855,8 +888,8 @@
 #    endif /* TEMPERATURE */
 
 #   elif defined ACOUSTIC
-#    ifdef TEMPERATURE
-
+#    if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             do k=1,N
@@ -865,6 +898,7 @@
             enddo
           enddo
         enddo
+!$acc end kernels
 #    endif /* TEMPERATURE */
 
 #   elif defined INNERSHELF
@@ -1732,7 +1766,7 @@ C$OMP BARRIER
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,3))
 #    endif
-#    ifdef NBQ
+#    if defined NBQ || defined K3SLOW_W
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,1))
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -1755,7 +1789,7 @@ C$OMP BARRIER
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,3))
 #    endif
-#    ifdef NBQ
+#    if defined NBQ || defined K3SLOW_W
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,1))
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,

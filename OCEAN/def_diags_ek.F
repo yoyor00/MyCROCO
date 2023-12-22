@@ -70,7 +70,7 @@
 #  ifdef DIAGNOSTICS_BARO
 #   define viddiags_ekBaro diags_ekBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 #   define viddiags_ekfast diags_ekfast
 #  endif
 #  ifdef DIAGNOSTICS_EK_MLD
@@ -112,7 +112,7 @@
 #  ifdef DIAGNOSTICS_BARO
 #   define viddiags_ekBaro diags_ekBaro_avg
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 #   define viddiags_ekfast diags_ekfast_avg
 #  endif
 #  ifdef DIAGNOSTICS_EK_MLD
@@ -750,7 +750,7 @@
      &                          NF_FOUT, ierr)
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !------------------------------
 !
 ! indxekfast
@@ -1464,7 +1464,7 @@
 #  endif
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxekfast
 !
@@ -1727,7 +1727,7 @@
 # if defined DIAGNOSTICS_BARO
 #  undef viddiags_ekBaro
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 #  undef viddiags_ekfast
 # endif
 # ifdef DIAGNOSTICS_EK_MLD

@@ -76,7 +76,7 @@ C$    integer omp_get_thread_num
 #include "scalars.h"
 #include "forces.h"
 #include "zoom.h"
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 # include "nbq.h"
 #endif
 !
@@ -87,7 +87,7 @@ C$    integer omp_get_thread_num
 !
 #ifdef CHILD
 # ifdef SOLVE3D
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
       if (M2bc_nbq_flag) then
 #  endif
       trd=0
@@ -101,7 +101,7 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,6+4*NWEIGHT)
      &                    ,A1dXI(1,7+5*NWEIGHT)
      &                    ,A1dXI(1,8+5*NWEIGHT))
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
        endif
 #  endif
 # else
@@ -793,7 +793,7 @@ C$    trd=omp_get_thread_num()
 #endif
 
 !------------------------------------------------------------
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
        if (M2bc_nbq_flag) then
 #endif
 !------------------------------------------------------------
@@ -882,7 +882,7 @@ C$    trd=omp_get_thread_num()
 # endif
 #endif  /* WET_DRY */
 
-#ifdef NBQ
+#if defined NBQ || defined K3FAST_ZETAW
 !=======================================================================
 !  Computes normal boundary values of DU_nbq for NBQ OBCs
 !=======================================================================
@@ -963,9 +963,51 @@ C$    trd=omp_get_thread_num()
       endif
 # endif /* NS_COM_PERIODIC */
 !
+                           ! Corners between adjacent open boundaries
+                           ! ======= ======= ======== ==== ==========
+
+# if defined OBC_COM_SOUTH && defined OBC_COM_WEST
+      if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+        DU_nbq(Istr,Jstr-1)=0.5*( DU_nbq(Istr+1,Jstr-1)
+     &                           +DU_nbq(Istr,Jstr))
+#  ifdef MASKING
+     &                        *umask(Istr,Jstr-1)
+#  endif
+      endif
+# endif
+# if defined OBC_COM_SOUTH && defined OBC_COM_EAST
+      if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+        DU_nbq(Iend+1,Jstr-1)=0.5*( DU_nbq(Iend,Jstr-1)
+     &                             +DU_nbq(Iend+1,Jstr))
+#  ifdef MASKING
+     &                        *umask(Iend+1,Jstr-1)
+#  endif
+      endif
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_WEST
+      if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+        DU_nbq(Istr,Jend+1)=0.5*( DU_nbq(Istr+1,Jend+1)
+     &                           +DU_nbq(Istr,Jend))
+#  ifdef MASKING
+     &                        *umask(Istr,Jend+1)
+#  endif
+      endif
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_EAST
+      if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+        DU_nbq(Iend+1,Jend+1)=0.5*( DU_nbq(Iend,Jend+1)
+     &                             +DU_nbq(Iend+1,Jend))
+#  ifdef MASKING
+     &                        *umask(Iend+1,Jend+1)
+#  endif
+      endif
+# endif
+#endif /* K3FAST_ZETAW */
+
+# if defined NBQ || defined K3FAST
       endif ! M2bc_nbq_flag
+# endif
 !
-#endif /* NBQ */
 !$acc end kernels
       return
       end

@@ -152,13 +152,13 @@
         do j=jmin,jmax
           do i=imin,imax
             defrate(i,j,k)=defrate(i,j,k)
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
      &           +((wz(i,j,k,nrhs)-wz(i,j,k-1,nrhs))/Hzr(i,j,k))**2
 #   endif
      &               +0.125*( (u(i,j,k+1,nrhs)+u(i+1,j,k+1,nrhs)
      &                        -u(i,j,k-1,nrhs)-u(i+1,j,k-1,nrhs))
      &                               /(z_r(i,j,k+1)-z_r(i,j,k-1))
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
      &                        +pm(i,j)*
      &                        (wz(i+1,j,k,nrhs)+wz(i+1,j,k+1,nrhs)
      &                        -wz(i-1,j,k,nrhs)-wz(i-1,j,k+1,nrhs))
@@ -167,7 +167,7 @@
      &               +0.125*( (v(i,j,k+1,nrhs)+v(i,j+1,k+1,nrhs)
      &                        -v(i,j,k-1,nrhs)-v(i,j+1,k-1,nrhs))
      &                               /(z_r(i,j,k+1)-z_r(i,j,k-1))
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
      &                        +pn(i,j)*
      &                        (wz(i,j+1,k,nrhs)+wz(i,j+1,k+1,nrhs)
      &                        -wz(i,j-1,k,nrhs)-wz(i,j-1,k+1,nrhs))

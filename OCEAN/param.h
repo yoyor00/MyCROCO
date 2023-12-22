@@ -50,7 +50,7 @@
 #elif defined ACOUSTIC
       parameter (LLm0=64,   MMm0=1,    N=64)
 #elif defined GRAV_ADJ
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
       parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
 # else
@@ -67,7 +67,7 @@
       parameter (LLm0=800,  MMm0=3,    N=40)   ! 1.5 km resolution
 !     parameter (LLm0=1600, MMm0=3,    N=40)   ! .75 km resolution
 #elif defined IGW
-# ifndef NBQ
+# if !defined NBQ && !defined K3FAST
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution
        parameter (LLm0=878, MMm0=3,    N=40)
 !      parameter (LLm0=878, MMm0=3,    N=20)
@@ -121,7 +121,7 @@
 #elif defined SHOREFACE
       parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach
 #elif defined SANDBAR
-# ifndef NBQ
+# if !defined NBQ && !defined K3FAST
       parameter (LLm0=100,  MMm0=1,    N=10)   !  3 m Sandbar
 # else
 !     parameter (LLm0=180,  MMm0=1,    N=10)   !  1.0 m Sandbar
@@ -382,7 +382,7 @@
 
 #if defined AGRIF || defined AUTOTILING
       integer NSA, N2d,N3d,N3dHz,N1dXI,N1dETA
-# if !defined NBQ
+# if !defined NBQ && !defined K3FAST
       parameter (NSA=28)
 # else
       parameter (NSA=35)
@@ -395,7 +395,7 @@
       integer N2dabl,N3dabl
       integer se_abl,sse_abl, sz_abl,ssz_abl
 # endif
-# if !defined NBQ
+# if !defined NBQ && !defined K3FAST
       parameter (NSA=28)
 # else
       parameter (NSA=35)

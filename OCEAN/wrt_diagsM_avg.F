@@ -212,7 +212,7 @@
      &                      vname(1,indxMBaro+itrc-1),
      &                      record,ivar,type)
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxMfast
 !
@@ -310,7 +310,7 @@
 #  if defined DIAGNOSTICS_BARO
       write(*,*) 'MBaro_avg(i,j,k,itrc) ',MBaro_avg(i,j,k,itrc)
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       write(*,*) 'Mfast_avg(i,j,k,itrc) ',Mfast_avg(i,j,k,itrc)
 #  endif
 #  ifdef MRL_WCI
@@ -333,7 +333,7 @@
      &                                  +  MHmix_avg(i,j,k,itrc)
      &                                  +  MVmix_avg(i,j,k,itrc)
      &                                  +  MVmix2_avg(i,j,k,itrc)
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
      &                                  +  Mfast_avg(i,j,k,itrc)
 #  endif
 #  ifdef MRL_WCI

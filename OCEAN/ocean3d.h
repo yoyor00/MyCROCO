@@ -18,7 +18,7 @@
       real t(GLOBAL_2D_ARRAY,N,3,NT)
       common /ocean_u/u /ocean_v/v /ocean_t/t
 
-# ifndef M3FAST_SEDLAYERS
+# ifndef K3FAST_SEDLAYERS
       real Hz(GLOBAL_2D_ARRAY,N)
       real Hz_bak(GLOBAL_2D_ARRAY,N)
       real z_r(GLOBAL_2D_ARRAY,N)
@@ -38,11 +38,11 @@
 #  endif
 # endif
 
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz
 #  ifdef NBQ_MASS
-#   ifndef M3FAST_SEDLAYERS
+#   ifndef K3FAST_SEDLAYERS
       real Hzr(GLOBAL_2D_ARRAY,N)
 #   else
       real Hzr(GLOBAL_2D_ARRAY,-N_sl+1:N)

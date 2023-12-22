@@ -485,7 +485,7 @@
      &                    -v(i, j, k  ,tind)-v(i, j+1, k  ,tind))
 
 # ifdef GLS_SHEAR_3D
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
                dw  = 0.5*pm(i,j)
      &                  *( wz(i+1,j,k,tind)-wz(i-1,j,k,tind))        ! dwdx
                shear2(i,j,k) = (du+dw)*(du+dw)
@@ -510,7 +510,7 @@
                dv  = 0.5*pn(i,j)
      &                  *( v(i, j+1, k+1,tind)-v(i, j, k+1,tind)     ! dvdy
      &                    +v(i, j+1, k  ,tind)-v(i, j, k  ,tind))
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
                dw  = cff*( wz(i,j,k+1,tind)-wz(i,j,k-1,tind))        ! dwdz
 #  else
                dw = 0.

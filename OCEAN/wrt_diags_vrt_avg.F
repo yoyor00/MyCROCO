@@ -238,7 +238,7 @@
      &                      record,ivar,type)
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxvrtfast
 !
@@ -266,7 +266,7 @@
 #  if defined DIAGNOSTICS_BARO
       write(*,*) 'vrtBaro_avg(i,j) ',vrtBaro_avg(i,j)
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       write(*,*) 'vrtfast_avg(i,j) ',vrtfast_avg(i,j)
 #  endif
       write(*,*) 'vrtrate_avg(i,j)   ',vrtrate_avg(i,j)
@@ -277,7 +277,7 @@
      &                                  +  vrtPrsgrd_avg(i,j)
      &                                  +  vrtHmix_avg(i,j)
      &                                  +  vrtVmix_avg(i,j)
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
      &                                  +  vrtfast_avg(i,j)
 #  endif
      &                                  -  vrtrate_avg(i,j)

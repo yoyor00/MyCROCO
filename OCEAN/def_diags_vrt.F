@@ -73,7 +73,7 @@
 #  if defined DIAGNOSTICS_BARO
 #   define viddiags_vrtBaro diags_vrtBaro
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
 #   define viddiags_vrtfast diags_vrtfast
 #  endif
 # else
@@ -99,7 +99,7 @@
 #  if defined DIAGNOSTICS_BARO
 #   define viddiags_vrtBaro diags_vrtBaro_avg
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
 #   define viddiags_vrtfast diags_vrtfast_avg
 #  endif
 # endif
@@ -671,7 +671,7 @@
      &           vname(:,indxvrtBaro+itrc-1), 5,NF_FOUT, ierr)
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !------------------------------
 !
 ! indxvrtfast
@@ -1016,7 +1016,7 @@
 #  endif
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxvrtfast
 !
@@ -1100,7 +1100,7 @@
 # if defined DIAGNOSTICS_BARO
 #  undef viddiags_vrtBaro
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 #  undef viddiags_vrtfast
 # endif
 !

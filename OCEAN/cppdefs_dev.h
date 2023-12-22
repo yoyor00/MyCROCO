@@ -161,10 +161,11 @@
 
 /*
 ======================================================================
-   Activate NBQ choices for non-hydrostatic simulations
+   Activate NBQ choices for non-hydrostatic simulations (KNBQ2)
 ======================================================================
 */
 #ifdef NBQ              /* General options */
+# define KNBQ2
 # define M3FAST
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
@@ -195,14 +196,140 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
+#endif /* NBQ */
+
+/*
+======================================================================
+   Activate NBQ choices for non-hydrostatic simulations (KNBQ3)
+======================================================================
+*/   
+#if defined KNBQ || defined KH3D || defined KNHINT || defined KHCOMP
+# define KNBQ3
+# undef  K3FAST        
+# undef  K3FAST_UV
+# undef  K3SLOW_W
+# undef  K3FAST_W
+# undef  K3FAST_RHO
+# undef  K3FAST_ZETAW
+# undef  K3FAST_C3D_UVSF
+# undef  K3FAST_C3D_UVFS
+# undef  K3FAST_C3D_WSF
+# undef  K3FAST_C3D_WFS
+# undef  NBQ_GRID_SLOW
+# undef  NBQ_HZCORRECT
+# undef  K3FAST_AM4 
+# undef  K3FAST_COUPLING2D
+# undef  K3FAST_COUPLING3D
+# undef  K3FAST_BOTH
+# undef  K3FAST_COUPLING_SCH0
+# undef  K3FAST_COUPLING_SCH1
+# undef  K3FAST_COUPLING_SCH2
+# undef  K3FAST_COUPLINGW_SCH0
+# undef  K3FAST_COUPLINGW_SCH1
+# undef  K3FAST_COUPLINGW_SCH2
+# undef  KNHINT_3M
+# undef  K3FAST_AVG_CLASSIC
+# ifdef KNBQ    
+#   define K3FAST        
+#   define K3FAST_UV
+#   define K3SLOW_W
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_ZETAW
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_C3D_UVFS
+#   define K3FAST_C3D_WSF
+#   define K3FAST_C3D_WFS
+#   define NBQ_HZCORRECT
+#   define NBQ_HZCORRECT_ZETA
+#   define K3FAST_AM4 
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH2
+#   define K3FAST_COUPLINGW_SCH0
+# elif defined KH3D
+#   define K3FAST   
+#   define K3FAST_AM4
+#   define NBQ_GRID_SLOW
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH2
+#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_AVG_CLASSIC
+# elif defined KHCOMP
+#   define K3FAST        
+#   define K3FAST_UV
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_AM4
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH2
+#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_AVG_CLASSIC
+# elif defined KNHINT
+#   define K3FAST        
+#   define K3FAST_BOTH
+#   define K3FAST_UV
+#   define K3SLOW_W
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_C3D_UVFS
+#   define K3FAST_C3D_WSF
+#   define K3FAST_C3D_WFS
+#   define K3FAST_AM4
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH2
+#   define K3FAST_COUPLINGW_SCH0
+#   define KNHINT_3M
+#   define KNHINT_CORR
+#   define K3FAST_AVG_CLASSIC
+# endif
+/*
+   General options 
+*/
+# if defined KH3D
+#  define M2FILTER_NONE  /* no filter with NBQ */
+#  undef  M2FILTER_POWER
+# endif
+/*
+   All keys but KH3D 
+*/
+# if defined KNBQ || defined KHCOMP  || defined KNHINT   
+#  define SOLVE3D
+#  define M2FILTER_NONE  /* no filter with KNBQ */
+#  undef  M2FILTER_POWER
+#  define NBQ_IMP
+#  undef  NBQ_THETAIMP
+#  undef  NBQ_FREESLIP
+#  undef  NBQ_HZ_PROGNOSTIC
+#  undef  K3FAST_REINIT
+#  undef  TRACETXT
+#  define HZR Hzr
+/*
+    KNBQ Precise or Performance options (default: NBQ_PERF) 
+*/
+#  ifndef NBQ_PRECISE
+#   define NBQ_PERF
+#  endif
+#  ifdef NBQ_PERF
+#   undef  NBQ_MASS
+#   define NBQ_GRID_SLOW
+#  else
+#   define NBQ_MASS
+#   undef  NBQ_GRID_SLOW
+#  endif
+# endif  /* KNBQ || KNHINT || KHCOMP */
+#endif  /* KNBQ || KNHINT || KHCOMP || KH3D */
+
+#if defined NBQ || defined KNBQ || defined KHCOMP  || defined KNHINT || defined KH3D
 /*
    Options for wz HADV numerical schemes (default C4)
 */
 # ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
-# elif defined W_HADV_TVD
-# elif defined W_HADV_WENO5
-# elif defined W_HADV_C4
-# elif defined W_HADV_C2
+#  elif defined W_HADV_TVD
+#  elif defined W_HADV_WENO5
+#  elif defined W_HADV_C4
+#  elif defined W_HADV_C2
 # else
 #  undef  W_HADV_SPLINES  /* Splines vertical advection             */
 #  undef  W_HADV_TVD      /* TVD vertical advection                 */
@@ -214,9 +341,9 @@
    Options for wz VADV numerical schemes (default SPLINES)
 */
 # ifdef W_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
-# elif defined W_VADV_TVD
-# elif defined W_VADV_WENO5
-# elif defined W_VADV_C2
+#  elif defined W_VADV_TVD
+#  elif defined W_VADV_WENO5
+#  elif defined W_VADV_C2
 # else
 #  undef  W_VADV_SPLINES  /* Splines vertical advection             */
 #  undef  W_VADV_TVD      /* TVD vertical advection                 */
@@ -224,10 +351,10 @@
 #  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
-   NBQ Open boundary conditions
+   NBQ Open boundary conditions (Recall "all but H3D")
 */
 # if defined OBC_WEST  || defined OBC_EAST  || \
-     defined OBC_NORTH || defined OBC_SOUTH
+   defined OBC_NORTH || defined OBC_SOUTH
 #  define OBC_NBQ
 # endif
 # ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
@@ -241,12 +368,20 @@
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
 # endif
 
+/* 
+   TANK
+*/
+# ifdef TANK
+#  undef K3FAST_AM4
+# endif
+# ifdef K3FAST_SACOUS
+#  undef NBQ_IMP
+# endif
 #else                /* Hydrostatic mode */
 
 # define HZR Hz
 
-#endif  /* NBQ */
-
+#endif  /* NBQ || KNBQ || KNHINT || KHCOMP || KH3D */
 /*
 ======================================================================
    Activate FAST timestep 3D dynamics for hydrostatic simulations

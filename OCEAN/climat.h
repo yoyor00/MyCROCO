@@ -180,13 +180,13 @@
 # undef GLOBAL_1D_ETA
 #endif
 
-#if defined M3FAST && (defined NBQCLIMATOLOGY || \
+#if (defined M3FAST || defined K3FAST) && (defined NBQCLIMATOLOGY || \
                    (defined AGRIF && !defined NBQ_FRC_BRY))
       real unbqclm(GLOBAL_2D_ARRAY,N)
       real vnbqclm(GLOBAL_2D_ARRAY,N)
       common /climat_unbqclm/unbqclm
       common /climat_vnbqclm/vnbqclm
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
       real wnbqclm(GLOBAL_2D_ARRAY,0:N)
       real rnbqclm(GLOBAL_2D_ARRAY,N)
       common /climat_wnbqclm/wnbqclm

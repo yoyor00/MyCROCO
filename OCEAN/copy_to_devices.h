@@ -133,7 +133,7 @@
 # ifdef VADV_ADAPT_IMP
 !$acc&, Wi
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, wz
 #  ifdef NBQ_MASS
 !$acc&, Hzr
@@ -728,7 +728,7 @@
   || defined GLS_MIXING
 #endif
 #ifdef EXACT_RESTART
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  ifdef TS_MIX_ISO_FILT
 #  else
 #  endif
@@ -803,7 +803,7 @@
 # endif
 # if defined GLS_MIXING
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 # endif
 # ifdef SEDIMENT
 !$acc&, rstSed
@@ -865,7 +865,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diaMBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diaMfast
 #  endif
 #  ifdef MRL_WCI
@@ -882,7 +882,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diags_vrtBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diags_vrtfast
 #  endif
 # endif
@@ -894,7 +894,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diags_ekBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diags_ekfast
 #  endif
 #  ifdef DIAGNOSTICS_EK_MLD
@@ -989,7 +989,7 @@
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diaMBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diaMfast_avg
 #   endif
 #  endif
@@ -1001,7 +1001,7 @@
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diags_vrtBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diags_vrtfast_avg
 #   endif
 #  endif
@@ -1013,7 +1013,7 @@
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diags_ekBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diags_ekfast_avg
 #   endif
 #   ifdef DIAGNOSTICS_EK_MLD
@@ -1130,7 +1130,7 @@
 #ifdef SOLVE3D
 # if defined GLS_MIXING
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 # endif
 # ifdef EXACT_RESTART
 # endif
@@ -1294,7 +1294,7 @@
 !$acc&, bvf_avg
 #  endif
 !$acc&, omega_avg
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, w_avg
 #  else
 !$acc&, w_avg
@@ -1466,26 +1466,26 @@
 # endif
 # undef GLOBAL_1D_ETA
 #endif
-#if defined M3FAST && (defined NBQCLIMATOLOGY || \
+#if (defined M3FAST || defined K3FAST) && (defined NBQCLIMATOLOGY || \
                    (defined AGRIF && !defined NBQ_FRC_BRY))
 !$acc&, unbqclm
 !$acc&, vnbqclm
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, wnbqclm
 !$acc&, rnbqclm
 # endif
 #endif
 
 !nbq.h
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 !$acc&, soundspeed_nbq
 !$acc&, soundspeed2_nbq
 !$acc&, qdmu_nbq
 !$acc&, qdmv_nbq
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, qdmw_nbq
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, thetadiv_nbq
 !$acc&, thetadiv2_nbq
 !$acc&, thetadiv3_nbq
@@ -1496,7 +1496,7 @@
 !$acc&, rv_nbq
 !$acc&, ru_nbq_avg2
 !$acc&, rv_nbq_avg2
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, rw_int_nbq
 !$acc&, rw_nbq
 !$acc&, rw_nbq_avg2
@@ -1506,7 +1506,7 @@
 !$acc&, DV_nbq
 !$acc&, ru_int_nbq_2d
 !$acc&, rv_int_nbq_2d
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, rho_grd
 !$acc&, rho_bak
 #  ifdef NBQ_MASS
@@ -1521,7 +1521,7 @@
 !$acc&, rvbar_sum
 # endif
 !$acc&, Hzw_half_nbq
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, zw_nbq
 # endif
 # ifdef NBQ_HZCORRECT
@@ -1533,7 +1533,7 @@
 # ifdef NBQ_HZ_PROGNOSTIC
 !$acc&, Hz_bak2
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  ifdef NBQ_GRID_SLOW
 !$acc&, dthetadiv_nbqdz
 !$acc&, dZdxq_w
@@ -1544,7 +1544,7 @@
 !$acc&, dZdyq_w
 #  endif /* NBQ_GRID_SLOW */
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, wsurf_nbq
 !$acc&, usurf_nbq
 !$acc&, vsurf_nbq
@@ -1553,7 +1553,7 @@
 #  ifdef OBC_COM_WEST
 !$acc&, qdmu_nbq_west
 !$acc&, qdmv_nbq_west
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
 !$acc&, qdmw_nbq_west
 !$acc&, rho_nbq_west
 #   endif
@@ -1561,7 +1561,7 @@
 #  ifdef OBC_COM_EAST
 !$acc&, qdmu_nbq_east
 !$acc&, qdmv_nbq_east
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
 !$acc&, qdmw_nbq_east
 !$acc&, rho_nbq_east
 #   endif
@@ -1569,7 +1569,7 @@
 #  ifdef OBC_COM_SOUTH
 !$acc&, qdmu_nbq_south
 !$acc&, qdmv_nbq_south
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
 !$acc&, qdmw_nbq_south
 !$acc&, rho_nbq_south
 #   endif
@@ -1577,7 +1577,7 @@
 #  ifdef OBC_COM_NORTH
 !$acc&, qdmu_nbq_north
 !$acc&, qdmv_nbq_north
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
 !$acc&, qdmw_nbq_north
 !$acc&, rho_nbq_north
 #   endif
@@ -1586,7 +1586,7 @@
 # ifdef NBQ_NUDGING
 !$acc&, NBQnudgcof
 # endif
-#endif /* M3FAST */
+#endif /* M3FAST || K3FAST */
 
 !sources.h
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
@@ -1840,11 +1840,11 @@
 !$acc&, warbry_north_dt
 # endif
 #endif  /* WKB_WWAVE */
-#if defined M3FAST && defined NBQ_FRC_BRY
+#if (defined M3FAST || defined K3FAST) && defined NBQ_FRC_BRY
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 !$acc&, unbqbry_west
 !$acc&, vnbqbry_west
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, wnbqbry_west
 !$acc&, rnbqbry_west
 #  endif
@@ -1852,7 +1852,7 @@
 # if defined OBC_EAST || defined AGRIF_OBC_EAST
 !$acc&, unbqbry_east
 !$acc&, vnbqbry_east
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, wnbqbry_east
 !$acc&, rnbqbry_east
 #  endif
@@ -1860,7 +1860,7 @@
 # if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
 !$acc&, unbqbry_south
 !$acc&, vnbqbry_south
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, wnbqbry_south
 !$acc&, rnbqbry_south
 #  endif
@@ -1868,12 +1868,12 @@
 # if defined OBC_NORTH || defined AGRIF_OBC_NORTH
 !$acc&, unbqbry_north
 !$acc&, vnbqbry_north
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, wnbqbry_north
 !$acc&, rnbqbry_north
 #  endif
 # endif
-#endif /* M3FAST */
+#endif /* M3FAST || defined K3FAST */
 #if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 !$acc&, wbry_west
@@ -1887,7 +1887,7 @@
 # if defined OBC_NORTH || defined AGRIF_OBC_NORTH
 !$acc&, wbry_north
 # endif
-#endif /* NBQ */
+#endif /* NBQ || K3FAST */
 
 !tides.h
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES

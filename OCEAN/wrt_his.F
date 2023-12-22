@@ -69,7 +69,7 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 # include "nbq.h"
 #endif
 #include "work.h"
@@ -753,7 +753,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrthis(indxW)) then
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc update if(compute_on_device) host(wz(:,:,:))
         do k=0,N
           do j=0,Mm+1

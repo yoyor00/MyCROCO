@@ -248,7 +248,7 @@
      &                      record,ivar,type)
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxekfast
 !
@@ -380,7 +380,7 @@
 #  if defined DIAGNOSTICS_BARO
       write(*,*) 'ekBaro_avg(i,j) ',ekBaro_avg(i,j)
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       write(*,*) 'ekfast_avg(i,j) ',ekfast_avg(i,j)
 #  endif
       write(*,*) 'ekrate_avg(i,j)   ',ekrate_avg(i,j)

@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 
-!!! give access to dimensions, variables, parameters from hydro model to MUSTANG
+! give access to dimensions, variables, parameters from hydro model to MUSTANG
 
 #if defined MUSTANG
 

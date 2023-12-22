@@ -48,7 +48,7 @@
       real bvf_avg(GLOBAL_2D_ARRAY,0:N)
 #  endif
       real omega_avg(GLOBAL_2D_ARRAY,0:N)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
       real w_avg(GLOBAL_2D_ARRAY,0:N)
 #  else
       real w_avg(GLOBAL_2D_ARRAY,N)

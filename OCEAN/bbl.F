@@ -92,7 +92,7 @@
 # include "ocean2d.h"
 # include "scalars.h"
 # include "sediment.h"
-# if defined M3FAST && defined BSTRESS_FAST
+# if (defined M3FAST || defined K3FAST) && defined BSTRESS_FAST
 #  include "nbq.h"
 # endif
 # include "mixing.h"
@@ -183,7 +183,7 @@
         DO i=IstrU-1,Iend+1
 # ifdef SOLVE3D
           Zr(i,j)=max(z_r(i,j,1)-z_w(i,j,0),Zob(i,j)+1.E-4)
-#  if defined M3FAST && defined BSTRESS_FAST
+#  if (defined M3FAST || defined K3FAST) && defined BSTRESS_FAST
           Ur(i,j)=2.*qdmu_nbq(i,j,1)/(Hz(i,j,1)+Hz(i-1,j,1))
           Vr(i,j)=2.*qdmv_nbq(i,j,1)/(Hz(i,j,1)+Hz(i,j-1,1))
 #  else
@@ -593,7 +593,7 @@
 ! Set boundary conditions
 !---------------------------------------------------------------------
 !
-# if defined M3FAST && defined BSTRESS_FAST
+# if (defined M3FAST || defined K3FAST) && defined BSTRESS_FAST
       if (LAST_FAST_STEP) then
 # endif
 
@@ -694,7 +694,7 @@
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, bvstrw)
 # endif
 
-# if defined M3FAST && defined BSTRESS_FAST
+# if (defined M3FAST || defined K3FAST) && defined BSTRESS_FAST
       endif
 # endif
 

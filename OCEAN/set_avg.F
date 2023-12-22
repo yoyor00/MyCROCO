@@ -26,7 +26,7 @@ C$    integer omp_get_thread_num
 # ifdef MRL_WCI
       call wstokes (tile)
 # endif
-# if defined SOLVE3D && !defined NBQ
+# if defined SOLVE3D && (!defined NBQ && !defined K3FAST)
       if (wrtavg(indxW)) then
         call Wvlcty (tile, workr)
       endif
@@ -318,7 +318,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
         if (wrtavg(indxW)) then
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR

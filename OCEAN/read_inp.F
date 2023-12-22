@@ -43,7 +43,7 @@
 #ifdef MPI
       include 'mpif.h'
 #endif
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 # include "nbq.h"
 #endif
 #include "mpi_cpl.h"
@@ -85,7 +85,7 @@
 #elif defined EQUATOR
       fname='TEST_CASES/croco.in.Equator'
 #elif defined GRAV_ADJ
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
       fname='TEST_CASES/croco.in.Grav_adj_nbq'
 # else
       fname='TEST_CASES/croco.in.Grav_adj'
@@ -145,7 +145,7 @@
 #elif defined KH_INST
       fname='TEST_CASES/croco.in.KH_INST'
 #elif defined IGW
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
       fname='TEST_CASES/croco.in.IGW_nbq'
 # else
       fname='TEST_CASES/croco.in.IGW'
@@ -420,22 +420,35 @@
           goto 95
         endif
 
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 !
 ! NBQ Time-stepping parameters
 !
       elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
+        print *,"time_stepping_nbq...."
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ndtnbq, csound_nbq, visc2_nbq
+        read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
         MPI_master_only write(stdout,
      &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
      &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
      &                                                 '2D step.',
      &   csound_nbq,'csound_nbq  Sound wave celerity.',
-     &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
+     &   visc2read_nbq, 'visc2_nbq   Second viscosity coefficient for',
      &                                      'compressible fluids.'
-        dtnbq=dtfast
-        ndtnbq=1
+        if (mynode==0) print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
+# ifndef KNHINT_3M
+        ndtnbq =ndtfast
+        nsdtnbq=1
+        dtnbq  =dtfast
+# else
+        if (int(ndtfast/ndtnbq).ne.ndtfast/ndtnbq) then
+          MPI_master_only write(stdout,*)
+     &         'CAUTION: bad choice for ndtnbq!'
+          ndtnbq=ndtfast
+        endif
+        nsdtnbq=ndtfast/ndtnbq
+# endif
+        dtnbq=dt/float(ndtnbq)
 #endif
 
 #ifdef SOLVE3D

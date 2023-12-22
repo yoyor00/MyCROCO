@@ -37,7 +37,7 @@
 # ifdef MPI
 #  include "mpi_buffers.h"
 # endif
-# if defined NBQ
+# if defined NBQ || defined K3FAST
 #  include "nbq.h"
 # endif
 
@@ -85,7 +85,7 @@
 !$acc&     jbuf_revW_3D, jbuf_revE_3D
 #  endif
 # endif
-# if defined NBQ
+# if defined NBQ || defined K3FAST
 !$acc&  , rho_nbq, rho_grd
 !$acc&  , wz
 #  if defined NBQ_MASS
@@ -231,7 +231,7 @@
 # if defined BBL
 #  include "bbl.h"
 # endif
-# if defined NBQ
+# if defined NBQ || defined K3FAST
 #  include "nbq.h"
 # endif
 

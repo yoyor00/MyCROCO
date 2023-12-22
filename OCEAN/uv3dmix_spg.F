@@ -832,7 +832,7 @@
       enddo
 # endif /* UV_MIX_S_SPONGE */
 
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
 !==================================================================
 !
 ! WZ horizontal Laplacian diffusion along constant S-surfaces.
@@ -904,7 +904,7 @@
       enddo
 #  undef FX
 #  undef FE
-# endif /* NBQ */
+# endif /* NBQ || K3SLOW_W */
 
 
       return

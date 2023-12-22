@@ -75,7 +75,7 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 # if coupling with OASIS3-MCT is activated :
 # => you need to use XIOS compiled with the "--use_oasis oasis3_mct" flag
 #-----------------------------------------------------------
-XIOS_ROOT_DIR=$HOME/xios
+#XIOS_ROOT_DIR=$HOME/xios
 
 #
 # END OF USER'S MODIFICATIONS
@@ -108,6 +108,8 @@ ls ${SOURCE}/*.py              > /dev/null  2>&1 && \cp ${SOURCE}/*.py  $SCRDIR
 ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
 ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
+ls ${ROOT_DIR}/KNBQ2/*           > /dev/null  2>&1 && \cp ${ROOT_DIR}/KNBQ2/* $SCRDIR
+ls ${ROOT_DIR}/KNBQ3/*         > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/KNBQ3 $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* $SCRDIR
@@ -170,6 +172,17 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
                 FFLAGS1="-O0 -mcmodel=medium -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
 			-fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
+	elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+    		CPP1="cpp  -traditional -DLinux -DXLF"
+    		CFT1=$FC
+    		FFLAGS1="-g -fast -r8 -i4 -mcmodel=medium -Mbackslash"
+		#FFLAGS1="-g -O0 -C -Kieee -r8 -i4 -traceback"
+		if [[ $HOSTNAME == "jean-zay"* ]]; then
+			CPP1=$CPP1" -DJEANZAY"
+		fi
+	else
+		echo "Unknown Fortran Compiler"
+		exit
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
         CPP1="cpp -traditional -DLinux"
@@ -184,6 +197,23 @@ elif [[ $OS == AIX ]] ; then           # ===== IBM =====
 else
 	echo "Unknown Operating System"
 	exit
+fi
+#
+# determine if KNBQ3 sources is needed
+#
+echo "Checking KNBQ3..."
+if $($CPP1 testkeys.F | grep -i -q knbq3isdefined) ; then
+        echo " => KNBQ3 activated"
+	cp KNBQ3/*  .
+	#
+	# overwrite with local files
+	#
+	ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+	ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+	ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+	ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+	ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+	ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
 fi
 #
 # determine if AGRIF compilation is required
@@ -307,6 +337,18 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 	elif [[ $OS == AIX ]] ; then
 		FFLAGS1="$FFLAGS1 -qsmp=omp"
 		CFT1="xlf95_r"
+	fi
+fi
+
+#
+# determine if OPENACC compilation is needed
+#
+unset COMPILEOPENACC
+echo "Checking COMPILEOPENACC..."
+if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
+	COMPILEOPENACC=TRUE
+	if [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+		  FFLAGS1="$FFLAGS1 -acc -Minfo=accel"
 	fi
 fi
 

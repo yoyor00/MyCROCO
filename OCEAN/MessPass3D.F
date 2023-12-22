@@ -5,14 +5,14 @@
 #if defined MPI && defined SOLVE3D
 
 # ifndef MP_3PTS
-#  ifndef MP_M3FAST_SEDLAYERS
+#  ifndef MP_K3FAST_SEDLAYERS
       subroutine MessPass3D_tile (Istr,Iend,Jstr,Jend, A, nmax)
 # else
        subroutine MessPass3D_sl_tile (Istr,Iend,Jstr,Jend, A, 
      &  nmax)
 #  endif
 # else
-#  ifndef MP_M3FAST_SEDLAYERS
+#  ifndef MP_K3FAST_SEDLAYERS
       subroutine MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  else
        subroutine MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend, A,
@@ -49,7 +49,7 @@
 # endif
 # undef  NP1      
 # define NP1 N+1
-#ifdef MP_M3FAST_SEDLAYERS
+#ifdef MP_K3FAST_SEDLAYERS
 # undef  NP1
 # define NP1 N+N_sl+1
 #endif 
@@ -593,11 +593,11 @@ c          endif
 # endif
 
 # ifndef MP_3PTS
-# ifdef M3FAST_SEDLAYERS      
-# ifndef MP_M3FAST_SEDLAYERS
-#  define MP_M3FAST_SEDLAYERS
+# ifdef K3FAST_SEDLAYERS      
+# ifndef MP_K3FAST_SEDLAYERS
+#  define MP_K3FAST_SEDLAYERS
 #  include "MessPass3D.F"
-#  undef  MP_M3FAST_SEDLAYERS
+#  undef  MP_K3FAST_SEDLAYERS
 # endif
 # endif      
 # endif

@@ -40,7 +40,7 @@
 # ifdef SEDIMENT
 #  include "sediment.h"
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  include "nbq.h"
 # endif
 # ifdef MASKING
@@ -328,7 +328,7 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 !
       if (wrtavg(indxW)) then
 !$acc update if(compute_on_device) host(w_avg)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
          work=w_avg
          call fillvalue3d(work ,ncidavg,avgW,
      &        vname(1,indxW), record,w3dvar,type)

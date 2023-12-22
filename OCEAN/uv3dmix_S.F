@@ -30,7 +30,7 @@
         call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
@@ -38,7 +38,7 @@
         call uv3dmix_child_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
@@ -49,7 +49,7 @@
       call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
@@ -65,7 +65,7 @@
 ! 
       subroutine uv3dmix_tile (Istr,Iend,Jstr,Jend, 
      &                                       UFx,UFe,VFx,VFe
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
      &                                      ,FX,FE
 # endif
      &                                                 )
@@ -77,7 +77,7 @@
 !
       subroutine uv3dmix_child_tile (Istr,Iend,Jstr,Jend, 
      &                                         UFx,UFe,VFx,VFe
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
      &                                        ,FX,FE
 # endif
      &                                                 )
@@ -126,7 +126,7 @@
      &     UFx(PRIVATE_2D_SCRATCH_ARRAY), cff,
      &     VFe(PRIVATE_2D_SCRATCH_ARRAY), cff1,
      &     VFx(PRIVATE_2D_SCRATCH_ARRAY)
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
       real FX(PRIVATE_2D_SCRATCH_ARRAY,1:N),
      &     FE(PRIVATE_2D_SCRATCH_ARRAY,1:N)
 #endif
@@ -154,7 +154,7 @@
 #ifdef AGRIF
 # include "zoom.h"
 #endif
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
       integer kp
 #endif
 !
@@ -323,7 +323,7 @@
         enddo
       enddo
 
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 !
 !  Compute XI- and ETA-components of diffusive wz flux.
 !

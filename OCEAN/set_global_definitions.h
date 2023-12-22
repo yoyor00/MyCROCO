@@ -229,7 +229,7 @@
 # define NOT_LAST_2D_STEP iic.lt.ntimes+2
 #endif
 !
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # define FIRST_FAST_STEP iif.eq.1
 # define NOT_LAST_FAST_STEP iif.lt.nfast+1
 #endif
