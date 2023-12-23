@@ -371,7 +371,7 @@
 /* 
    TANK
 */
-# ifdef TANK
+# if defined TANK && defined KNBQ
 #  undef K3FAST_AM4
 # endif
 # ifdef K3FAST_SACOUS

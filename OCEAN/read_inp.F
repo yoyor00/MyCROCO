@@ -450,6 +450,7 @@
 # endif
         dtnbq=dt/float(ndtnbq)
 #endif
+        if (mynode==0) print *,"nsdtnbq=",nsdtnbq
 
 #ifdef SOLVE3D
 !

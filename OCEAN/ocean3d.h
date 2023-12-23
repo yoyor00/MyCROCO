@@ -38,9 +38,11 @@
 #  endif
 # endif
 
-# if defined NBQ || defined K3SLOW_W
+# if defined NBQ || defined K3FAST 
+#  ifdef K3SLOW_W
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz
+#  endif
 #  ifdef NBQ_MASS
 #   ifndef K3FAST_SEDLAYERS
       real Hzr(GLOBAL_2D_ARRAY,N)
@@ -49,7 +51,7 @@
 #   endif
       common /grid_Hzr/Hzr
 #  else
-#   define Hzr Hz
+#   define Hzr Hz 
 #  endif
 # endif
 

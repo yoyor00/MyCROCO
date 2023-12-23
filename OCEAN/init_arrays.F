@@ -1619,7 +1619,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif  
-# ifdef K3FAST_W
+# ifdef K3SLOW_W
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1627,7 +1627,7 @@ C$    integer omp_get_thread_num
             wz(i,j,k,2)  =init
             rw_nbq(i,j,k)=init
 #  ifdef K3FAST_C3D_WFS
-!            rw_nbq_avg1(i,j,k)=init
+!           rw_nbq_avg1(i,j,k)=init
             rw_nbq_avg2(i,j,k)=init
 #  endif
 #  ifdef K3FAST_C3D_WSF
@@ -1648,7 +1648,7 @@ C$    integer omp_get_thread_num
 !          rvbar_nbq(i,j)=init
 !        enddo
 !      enddo
-#  endif/* K3FAST_W */
+#  endif/* K3SLOW_W */
 # endif /* K3FAST */
 
 #endif /* SOLVE3D */

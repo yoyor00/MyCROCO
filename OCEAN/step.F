@@ -955,7 +955,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# if defined NBQ || defined K3FAST
+# if defined NBQ || defined K3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
