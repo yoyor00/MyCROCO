@@ -180,7 +180,7 @@
 # endif
 # undef  TRACETXT
 # undef  DIAG_CFL
-# define HZR Hzr
+# define HZR Hzr  \* KH3D: HZR -> Hz as all hydrostatic cases treated above. *\
 /*
    NBQ Precise or Performance options (default: NBQ_PERF)
 */
@@ -196,6 +196,11 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
+
+#elif !defined KNBQ && !defined KNHINT && !defined KHCOMP   /* Hydrostatic mode */
+
+# define HZR Hz
+
 #endif /* NBQ */
 
 /*
@@ -377,10 +382,6 @@
 # ifdef K3FAST_SACOUS
 #  undef NBQ_IMP
 # endif
-#else                /* Hydrostatic mode */
-
-# define HZR Hz
-
 #endif  /* NBQ || KNBQ || KNHINT || KHCOMP || KH3D */
 /*
 ======================================================================

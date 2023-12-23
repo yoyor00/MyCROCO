@@ -149,7 +149,7 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined GRAV_ADJ
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
                      depth=0.3
 #  else
                      depth=20.
@@ -306,7 +306,7 @@ C$    integer omp_get_thread_num
                      Length_XI =128.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined GRAV_ADJ
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
                      Length_XI =3.0
 #  else
                      Length_XI =64.0e+3

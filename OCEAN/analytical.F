@@ -1515,7 +1515,8 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 
-# if defined NBQ && (defined NBQCLIMATOLOGY || \
+# if (defined NBQ || defined K3FAST) \
+                 && (defined NBQCLIMATOLOGY || \
                     (defined AGRIF && !defined NBQ_FRC_BRY)) \
                  && (defined M3CLIMATOLOGY || \
                     (defined AGRIF && !defined M3_FRC_BRY))
@@ -1530,7 +1531,7 @@ C$    integer  trd, omp_get_thread_num
             vnbqclm(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nrhs)
           enddo
         enddo
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
         do j=JstrR,JendR
           do i=IstrR,IendR
             wnbqclm(i,j,k)=0.
@@ -1551,7 +1552,7 @@ C$    integer  trd, omp_get_thread_num
             vnbqclm(i,j,k)=0.
           enddo
         enddo
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
         do j=JstrR,JendR
           do i=IstrR,IendR
             wnbqclm(i,j,k)=0.
@@ -1565,7 +1566,7 @@ C$    integer  trd, omp_get_thread_num
 # if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vnbqclm)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  wnbqclm)
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  rnbqclm)
 #  endif
@@ -3069,7 +3070,7 @@ C$    integer  trd, omp_get_thread_num
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
      &                                   *v(0,j,k,nrhs)
           enddo
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
           do j=IstrR,IendR
             wnbqbry_west(j,k)=0.
             rnbqbry_west(j,k)=0.
@@ -3085,7 +3086,7 @@ C$    integer  trd, omp_get_thread_num
           do j=JU_RANGE
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
 #  endif
@@ -3104,7 +3105,7 @@ C$    integer  trd, omp_get_thread_num
           do i=IV_RANGE
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
 #  endif
@@ -3123,7 +3124,7 @@ C$    integer  trd, omp_get_thread_num
           do i=IV_RANGE
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
 #  endif
