@@ -42,6 +42,11 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
+#ifdef CONVECT
+# include "work.h"
+      real drho,rd
+# include "nbq.h"
+#endif
 #ifdef SST_SKIN
 # include "forces.h"
 #endif
@@ -1103,6 +1108,40 @@
               t(i,j,k,1,isalt)=35.
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
+            enddo
+          enddo
+        enddo
+        
+#  elif defined CONVECT
+! "Convection" testcase:
+        drho = 0.1
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=13.-drho*(0.-z_r(i,j,k))/Tcoef
+#   ifdef NBQ_GRAV
+              rhoi_nh(i,j,k)=13.-drho*(0.-z_r(i,j,k))/Tcoef
+#   endif
+            enddo
+          enddo
+        enddo
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+               rd=sqrt( (xr(i,j)-16.)**2/8.**2
+     &                +(-z_r(i,j,k)-16.)**2/4.**2)
+               if (rd<1.) then
+                if (z_r(i,j,k).le.-16.) then
+                  t(i,j,k,1,itemp)=t(i,j,int(0.15*N),1,itemp)
+                else
+                  t(i,j,k,1,itemp)=t(i,j,int(0.85*N),1,itemp)
+                endif
+               endif
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=35.
+              t(i,j,k,2,isalt)=35.
+#   endif
             enddo
           enddo
         enddo

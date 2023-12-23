@@ -95,6 +95,9 @@ c********************************************************************
 #  ifdef POT_TIDES
 #   include "tides.h"
 #  endif
+#  ifdef NBQ_GRAV
+#   include "nbq.h"
+#  endif
 #  ifdef SED_TOY
 #   include "forces.h"
 #  endif
@@ -153,6 +156,9 @@ c********************************************************************
 ! Preliminary step (same for XI- and ETA-components:
 !------------ ---- ----- --- --- --- ---------------
 !
+# ifdef NBQ_GRAV
+       rho=rho-rho_nh
+# endif
       GRho=g/rho0
       HalfGRho=0.5*GRho
 
@@ -947,6 +953,9 @@ c********************************************************************
 !
 !--------------------------------------------------------------------
 !
+# ifdef NBQ_GRAV
+       rho=rho+rho_nh
+# endif
       return
       end
 #else
