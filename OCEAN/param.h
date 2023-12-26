@@ -152,9 +152,7 @@
       parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
 # endif
 #elif defined MOVING_BATHY
-      parameter (LLm0=500,  MMm0=1,    N=50)   !  8 mm resolution
-!     parameter (LLm0=1000, MMm0=1,    N=100)  !  4 mm resolution
-!     parameter (LLm0=4000, MMm0=1,    N=400)  !  1 mm resolution
+      parameter (LLm0=400,  MMm0=1,    N=400)  !  1 mm resolution
 #elif defined CALDEIRA
       parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined DUNE

@@ -369,7 +369,7 @@ C$    integer omp_get_thread_num
                      Length_XI =Length_XI_ISO_GRID
 #  endif
 # elif defined MOVING_BATHY
-                     Length_XI =4.0
+                     Length_XI =0.4
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined DUNE
 #  ifdef ANA_DUNE

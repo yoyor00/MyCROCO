@@ -250,7 +250,7 @@
 #   define K3FAST_AM4 
 #   define K3FAST_COUPLING2D
 #   define K3FAST_COUPLING_SCH2
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLINGW_SCH2
 # elif defined KH3D
 #   define K3FAST   
 #   define K3FAST_AM4
@@ -389,8 +389,10 @@
    -- Fast friction BSTRESS_FAST --
 ======================================================================
 */
-#ifdef BSTRESS_FAST
+#if defined BSTRESS_FAST && defined KNBQ2
 # define M3FAST
+#elif defined BSTRESS_FAST && defined KNBQ3
+# define K3FAST
 #endif
 #if !defined NBQ && defined M3FAST       /* General options */
 # define SOLVE3D

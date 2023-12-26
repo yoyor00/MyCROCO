@@ -79,7 +79,7 @@
       real ETA0, depth, Lt,cff
 #endif
 #ifdef MOVING_BATHY
-      real cff,cff1
+      real cff1
       integer im1,jm1
 #endif
 #ifdef RIP
@@ -109,6 +109,9 @@
 #ifdef ESTUARY
       real cff
 #endif
+# ifdef ANA_MVB
+      integer it
+# endif
 #ifdef DUNE
       real cff, cff2
 # ifdef DUNE3D
@@ -1293,6 +1296,27 @@ C$OMP BARRIER
       endif   !  nrrec.eq.0.
 !
 # endif /*SOLVE3D */
+!
+!----------------------------------------------------------------------
+!  Initial conditions for moving bathymetry
+!------------------------------------------------------------------
+# ifdef ANA_MVB
+
+      knew2=2
+      kstp2=1
+      kbak2=0
+      do it=6,0,-1  
+      ! time_mvb=time_start+dt*float(1-ntstart)-dtfast*float(it)
+       time_mvb=time_start+dt*float(1-ntstart-it)
+#      include "mvb.h"      
+      enddo  ! it
+       do j=JstrR,JendR
+        do i=IstrR,IendR
+          h0_mvb(i,j)=0.
+!         h(i,j)=h0_mvb(i,j)+dh_mvb(i,j,knew2)  ! should have been done in ana_gr
+        enddo
+       enddo
+# endif
 # if !defined JET
 !$acc end kernels
 # endif

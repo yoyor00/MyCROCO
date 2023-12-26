@@ -187,6 +187,71 @@
       end
 # endif /* ANA_BTFLUX */
 #endif /* SOLVE3D && TRACERS */
+!======================================================================
+!                   subroutine ana_moving_bathy (MVB)
+!======================================================================
+!
+#ifdef ANA_MVB
+      subroutine ana_mvb (tile)
+      implicit none
+# include "param.h"
+      integer tile
+#ifdef  ALLOW_SINGLE_BLOCK_MODE
+C$    integer  trd, omp_get_thread_num
+#endif
+# include "compute_tile_bounds.h"
+      call ana_mvb_tile (Istr,Iend,Jstr,Jend)
+      return
+      end
+
+      subroutine ana_mvb_tile (Istr,Iend,Jstr,Jend)
+!
+!----------------------------------------------------------------------
+!  This routine sets bathymetry increment
+!  dh using an analytical expression:
+!  example for SEAMOUNT test case
+!----------------------------------------------------------------------
+!
+      implicit none
+# include "param.h"
+# include "grid.h"
+# include "forces.h"
+# include "scalars.h"
+      integer Istr,Iend,Jstr,Jend, i,j
+# ifdef mvb
+    integer it
+# endif
+      real cff,cff1
+      integer im1,jm1
+!
+# include "compute_extended_bounds.h"
+!
+#if defined EW_PERIODIC && !defined MPI
+# define IR_RANGE Istr,Iend
+# define IU_RANGE Istr,Iend
+#else
+# define IR_RANGE IstrR,IendR
+# define IU_RANGE Istr,IendR
+#endif
+#if defined NS_PERIODIC && !defined MPI
+# define JR_RANGE Jstr,Jend
+# define JV_RANGE Jstr,Jend
+#else
+# define JR_RANGE JstrR,JendR
+# define JV_RANGE Jstr,JendR
+#endif
+      time_mvb=time + dtfast*float(iif)
+#  ifdef MOVING_BATHY
+#     include "mvb.h"      
+       do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=h0_mvb(i,j)+dh_mvb(i,j,knew2)
+        enddo
+        enddo
+#  endif    
+      return
+      end
+#endif /* ANA_MVB */ 
 !
 !======================================================================
 !                   subroutine ana_moving_bathy
