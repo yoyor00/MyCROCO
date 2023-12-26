@@ -1,25 +1,23 @@
 #include "cppdefs.h"
 
+
 MODULE sedstp
    !!======================================================================
    !!                       ***  MODULE sedstp   ***
    !!   Sediment model : Sediment model time-stepping
    !!======================================================================
-#if defined key_pisces
    USE sed      ! sediment global variables
    USE seddta   ! data read
    USE sedchem  ! chemical constant
-   USE sedco3   ! carbonate in sediment pore water
-   USE sedorg   ! Organic reactions and diffusion
-   USE sedinorg ! Inorganic dissolution
-   USE sedbtb   ! bioturbation
+   USE sedsol   ! Organic reactions and diffusion
    USE sedadv   ! vertical advection
-   USE sedmbc   ! mass balance calculation
    USE sedsfc   ! sediment surface data
    USE sedrst   ! restart
    USE sedwri   ! outputs
-   USE setavg_sed
-   USE sms_pisces, ONLY : rfact
+   USE sedini
+!   USE trcdmp_sed
+   USE lib_mpp         ! distribued memory computing library
+   USE iom
 
    IMPLICIT NONE
    PRIVATE
@@ -27,10 +25,15 @@ MODULE sedstp
    !! * Routine accessibility
    PUBLIC sed_stp  ! called by step.F90
 
-   !! $Id: sedstp.F90 10222 2018-10-25 09:42:23Z aumont $
+   !! * Substitutions
+#  include "ocean2pisces.h90"
+#  include "do_loop_substitute.h90"
+#  include "domzgr_substitute.h90"
+
+   !! $Id: sedstp.F90 15450 2021-10-27 14:32:08Z cetlod $
 CONTAINS
 
-   SUBROUTINE sed_stp ( kt )
+   SUBROUTINE sed_stp ( kt, Kbb, Kmm, Krhs )
       !!---------------------------------------------------------------------
       !!                  ***  ROUTINE sed_stp  ***
       !!
@@ -46,42 +49,28 @@ CONTAINS
       !!        !  06-04 (C. Ethe)  Re-organization
       !!----------------------------------------------------------------------
       INTEGER, INTENT(in) ::   kt       ! number of iteration
-      INTEGER :: ji,jk,js,jn,jw
-      INTEGER :: ilc
+      INTEGER, INTENT(in) ::   Kbb, Kmm, Krhs  ! time level indices
+      INTEGER  :: ilc
       !!----------------------------------------------------------------------
+      IF( ln_timing )           CALL timing_start('sed_stp')
         !
-      dtsed  = rfact
-!      dtsed2 = dtsed
-      IF (kt /= nitsed000) THEN
-         CALL sed_dta( kt )       ! Load  Data for bot. wat. Chem and fluxes
-      ENDIF
+!                                CALL sed_rst_opn  ( kt )       ! Open tracer restart file 
+!      IF( lrst_sed )            CALL sed_rst_cal  ( kt, 'WRITE' )   ! calenda
 
-      IF (sedmask == 1. ) THEN
-         IF( kt /= nitsed000 )  THEN
-           CALL sed_chem( kt )      ! update of chemical constant to account for salinity, temperature changes
-         ENDIF
+      dtsed  = rDt_trc
+      IF (kt /= nitsed000)      CALL sed_dta( kt, Kbb, Kmm )    ! Load  Data for bot. wat. Chem and fluxes
 
-         CALL sed_btb( kt )         ! 1st pass of bioturbation at t+1/2
-         CALL sed_org( kt )         ! Organic related reactions and diffusion
-         CALL sed_inorg( kt )       ! Dissolution reaction
-         CALL sed_btb( kt )         ! 2nd pass of bioturbation at t+1
-         tokbot(:,:) = 0.0
-         DO jw = 1, jpwat
-            DO ji = 1, jpoce
-               tokbot(ji,jw) = pwcp(ji,1,jw) * 1.e-3 * dzkbot(ji)
-            END DO
-         ENDDO
-         CALL sed_adv( kt )         ! advection
-         CALL sed_co3( kt )         ! pH actualization for saving
-         ! This routine is commented out since it does not work at all
-!         CALL sed_mbc( kt )         ! cumulation for mass balance calculation
+      IF( kt /= nitsed000 )  &
+        &  CALL sed_chem( kt )      ! update of chemical constant to account for salinity, temperature changes
+           CALL sed_sol( kt )       ! Solute diffusion and reactions 
+           CALL sed_adv( kt )       ! advection
 
-         IF (ln_sed_2way) CALL sed_sfc( kt )         ! Give back new bottom wat chem to tracer model
-      ENDIF
+      IF (ln_sed_2way) CALL sed_sfc( kt, Kbb )   ! Give back new bottom wat chem to tracer model
+
 #if ! defined XIOS  && defined AVERAGES
       CALL set_avg_sed
-      ilc = 1+iic-ntstart   ! number of time step since restart
-      IF ( iic > ntstart .AND. mod(ilc-1,nwrtsedpis_avg) == 0 .AND. wrtavg(indxTime) ) THEN
+      ilc = 1+iic-nit000 ! number of time step since restart
+      IF ( iic > nit000 .AND. mod(ilc-1,nwrtsedpis_avg) == 0 .AND. wrtavg(indxTime) ) THEN
          nrecsedpis_avg=nrecsedpis_avg+1
          CALL sed_wri
       ENDIF
@@ -91,12 +80,14 @@ CONTAINS
       IF( kt == nitsed000 ) THEN
           CALL iom_close( numrsr )       ! close input tracer restart file
       ENDIF
-      IF (iic > ntstart .AND. MOD(ilc-1,nrst) == 0) CALL sed_rst_wri
+
+      ilc = 1+iic-nit000 ! number of time step since restart
+      IF (iic > nit000 .AND. MOD(ilc-1,nitrst) == 0) CALL sed_rst_wri
 
       IF( kt == nitsedend )  CLOSE( numsed )
 
-   END SUBROUTINE sed_stp
+      IF( ln_timing )           CALL timing_stop('sed_stp')
 
-#endif
+   END SUBROUTINE sed_stp
 
 END MODULE sedstp

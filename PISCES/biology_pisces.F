@@ -24,72 +24,83 @@
 !----------------------------------------------------------------
        USE sms_pisces
        USE trcsms_pisces
+       USE oce_trc
 
-C       implicit none
-       INTEGER Istr,Iend,Jstr,Jend
-       INTEGER i, j, jk, k, jn, ilc
+# include "ocean2pisces.h90"
+# include "do_loop_substitute.h90"
 
-#include "ocean2pisces.h90"
+       implicit none
+       INTEGER :: Istr,Iend,Jstr,Jend
+       INTEGER :: ji, jk, jn
+       INTEGER :: Kbb, Kmm
+!----------------------------------------------------------------
+!----------------------------------------------------------------
+
+
+      Kbb = nnew     ;      Kmm = nnew     ;       Krhs = nrhs
 
       CALL ocean_2_pisces( Istr,Iend,Jstr,Jend) 
 
       DO jn = 1, jptra
-         DO jk = KRANGE
-            DO j = JRANGE
-               DO i = IRANGE          ! masked grid volume
-                  trb(i,j,K,jn) 
-     &           = MAX( 0., trb(i,j,K,jn) * 1.e-6 )
-               ENDDO
-            ENDDO
-         ENDDO
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+           tr(ji,jj,jk,jn,Kbb) 
+     &  = MAX( 0., tr(ji,jj,jk,jn,Kbb) * 1.e-6 )
+         END_3D
       END DO
-      DO jk = KRANGE
-         DO j = JRANGE
-            DO i = IRANGE          ! masked grid volume
-                trb(i,j,K,jpno3) 
-     &        = trb(i,j,K,jpno3) / rno3
+
+      DO_3D( 0, 0, 0, 0, 1, jpk)
+         tr(ji,jj,jk,jpno3,Kbb) 
+     &   = tr(ji,jj,jk,jpno3,Kbb) / rno3
 # if ! defined key_pisces_light
-                trb(i,j,K,jpnh4) 
-     &        = trb(i,j,K,jpnh4) / rno3
-                trb(i,j,K,jppo4) 
-     &        = trb(i,j,K,jppo4) / po4r
+         tr(ji,jj,jk,jpnh4,Kbb) 
+     &   = tr(ji,jj,jk,jpnh4,Kbb) / rno3
+         tr(ji,jj,jk,jppo4,Kbb)
+     &   = tr(ji,jj,jk,jppo4,Kbb) / po4r
 #endif
-            ENDDO
-         ENDDO
-       ENDDO
+      END_3D
 
 !       ilc=1+iic-ntstart   ! number of time step since restart
 !       ! To be conform with clasic (no xios) croco file first
 !       ! time step must be writen
 !       if (ilc == 0) ilc=1
 !       CALL iom_setkt( ilc )
-       CALL trc_sms_pisces( iic )
-
       DO jn = 1, jptra
-         DO jk = KRANGE
-            DO j = JRANGE
-               DO i = IRANGE          ! masked grid volume
-                  trb(i,j,K,jn) 
-     &          = trb(i,j,K,jn) * 1.e6
-               ENDDO
-            ENDDO
-         ENDDO
-      END DO
-      DO jk = KRANGE
-         DO j = JRANGE
-            DO i = IRANGE          ! masked grid volume
-               trb(i,j,K,jpno3)
-     &       = trb(i,j,K,jpno3) * rno3
-# if ! defined key_pisces_light
-               trb(i,j,K,jpnh4) 
-     &       = trb(i,j,K,jpnh4) * rno3
-               trb(i,j,K,jppo4) 
-     &       = trb(i,j,K,jppo4) * po4r
-# endif
-            ENDDO
-         ENDDO
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            tra(ji,jj,jk,jn)
+     &    = tr(ji,jj,jk,jn,Krhs)
+         END_3D
+         !
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            tr(ji,jj,jk,jn,Krhs) = 0.
+         END_3D
       ENDDO
 
+       CALL trc_sms_pisces( iic, Kbb, Kmm, Krhs )
+
+      DO jn = 1, jptra
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+           tr(ji,jj,jk,jn,Kbb) 
+     &   = tr(ji,jj,jk,jn,Kbb) * 1.e6 
+         END_3D
+      END DO
+
+      DO_3D( 0, 0, 0, 0, 1, jpk)
+         tr(ji,jj,jk,jpno3,Kbb)
+     &   = tr(ji,jj,jk,jpno3,Kbb) * rno3
+# if ! defined key_pisces_light
+         tr(ji,jj,jk,jpnh4,Kbb) 
+     &  = tr(ji,jj,jk,jpnh4,Kbb) * rno3
+         tr(ji,jj,jk,jppo4,Kbb) 
+     &  = tr(ji,jj,jk,jppo4,Kbb) * po4r
+#endif
+      END_3D
+      !
+      DO jn = 1, jptra
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            tr(ji,jj,jk,jn,Krhs)
+     &    = tra(ji,jj,jk,jn)
+        END_3D
+      ENDDO
 
       RETURN       
       END

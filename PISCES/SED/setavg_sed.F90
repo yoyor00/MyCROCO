@@ -14,12 +14,10 @@
 
 MODULE setavg_sed
 
-#if defined key_pisces
+#if defined key_pisces && ! defined XIOS
 
    !! * Modules used
    USE sed
-   USE sedarr
-   USE sms_pisces, ONLY : rtrn, rfact
 
    IMPLICIT NONE
    PRIVATE

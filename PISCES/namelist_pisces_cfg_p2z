@@ -18,6 +18,13 @@
 !              !    name   !           title of the field              !   units    
 !              !           !                                           !            
 !              !           !                                           !            
+!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+&nampistrc     !   tracers definition
+!,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+!
+!              !    name   !           title of the field              !   units
+!              !           !                                           !
+!
    tracer(1)   = 'DIC     ' , 'Dissolved inorganic Concentration      ',  'mmol/m3'
    tracer(2)   = 'Alkalini' , 'Total Alkalinity Concentration         ',  'meq/m3 '
    tracer(3)   = 'O2      ' , 'Dissolved Oxygen Concentration         ',  'mmol/m3'
@@ -28,30 +35,31 @@
    tracer(8)   = 'NO3     ' , 'Nitrates Concentration                 ',  'mmol/m3'
    tracer(9)   = 'Fer     ' , 'Dissolved Iron Concentration           ',  'mmol/m3'
 /
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+!-----------------------------------------------------------------------
 &nampisext     !   air-sea exchange
-!,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+!-----------------------------------------------------------------------
 /
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+!-----------------------------------------------------------------------
+&nampisatm     !  Atmospheric prrssure 
+!-----------------------------------------------------------------------
+   ln_presatm    = .false.   ! constant atmopsheric pressure (F) or from a file (T)
+   ln_presatmco2 = .false.   ! Read spatialized atm co2 files [ppm] if TRUE
+/
+!-----------------------------------------------------------------------
+&nampis_snk      !  Sedimentation of particles
+!-----------------------------------------------------------------------
+/
+!-----------------------------------------------------------------------
 &nampisbio     !   biological parameters
-!,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+!-----------------------------------------------------------------------
 /
 !-----------------------------------------------------------------------
 &namp2zlim     !   parameters for nutrient limitations for PISCES reduced  - ln_p2z
 !-----------------------------------------------------------------------
-   concnno3   =  1.e-6    ! Nitrate half saturation of nanophytoplankton
-   concbno3   =  3.E-7    ! Nitrate half saturation for DOC remin.
-   concnfer   =  1E-10    ! Iron half saturation for phyto
-   xsizephy   =  2.E-6    ! Minimum size criteria for phyto
-   xsizern    =  3.0      ! Size ratio for nanophytoplankton
-   concbfe    =  3.E-11   ! Iron half-saturation for DOC remin.
-   xkdoc      =  417.E-6  ! half-saturation constant of DOC remineralization
-   caco3r     =  0.07     ! mean rain ratio
-   oxymin     =  1.E-6    ! Half-saturation constant for anoxia
 /
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-&namp4zlim     !   parameters for nutrient limitations
-!,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+!-----------------------------------------------------------------------
+&namp4zlim     !   parameters for nutrient limitations for PISCES std  - ln_p4z
+!-----------------------------------------------------------------------
 /
 !-----------------------------------------------------------------------
 &namp5zlim     !   parameters for nutrient limitations PISCES QUOTA    - ln_p5z
@@ -64,15 +72,13 @@
 !-----------------------------------------------------------------------
 &nampisopt     !   parameters for optics
 !-----------------------------------------------------------------------
-/
+!              !  file name       ! frequency (hours) ! variable  ! time interp. !  clim  ! 'yearly'/ ! weights  ! rotation ! land/sea mask !
+!              !                  !  (if <0  months)  !   name    !   (logical)  !  (T/F) ! 'monthly' ! filename ! pairing  ! filename      !
+   ln_varpar   =  .false.   ! boolean for PAR variable
+/ 
 !-----------------------------------------------------------------------
 &namp2zprod    !   parameters for phytoplankton growth for PISCES reduced  - ln_p2z
 !-----------------------------------------------------------------------
-   pislopen   =  2.       ! P-I slope
-   excretn    =  0.05     ! excretion ratio of phytoplankton
-   bresp      =  0.03     ! Basal respiration rate
-   chlcnm     =  0.033    ! Maximum Chl/C in nanophytoplankton
-   chlcmin    =  0.0025   ! Minimum Chl/c in phytoplankton
 /
 !-----------------------------------------------------------------------
 &namp4zprod    !   parameters for phytoplankton growth for PISCES std  - ln_p4z
@@ -82,11 +88,9 @@
 &namp5zprod    !   parameters for phytoplankton growth for PISCES quota- ln_p5z
 !-----------------------------------------------------------------------
 /
------------------------------------------------------------------------
+!-----------------------------------------------------------------------
 &namp2zmort    !   parameters for phytoplankton sinks for PISCES std   - ln_p2z
 !-----------------------------------------------------------------------
-   wchl      =  0.01     ! quadratic mortality of phytoplankton
-   mprat     =  0.01     ! phytoplankton mortality rate
 /
 !-----------------------------------------------------------------------
 &namp4zmort    !   parameters for phytoplankton sinks for PISCES std   - ln_p4z
@@ -107,20 +111,6 @@
 !-----------------------------------------------------------------------
 &namp2zzoo     !   parameters for microzooplankton for PISCES reduced  - ln_p2z
 !-----------------------------------------------------------------------
-   part       =  0.75     ! part of calcite not dissolved in microzoo guts
-   grazrat    =  2.0      ! maximal zoo grazing rate
-   resrat     =  0.02     ! Linear mortality rate of zooplankton
-   mzrat      =  0.02     ! zooplankton mortality rate
-   xprefc     =  0.1      ! Microzoo preference for POM
-   xprefn     =  1.       ! Microzoo preference for Nanophyto
-   xthreshphy =  1.E-8    ! Nanophyto feeding threshold for microzooplankton
-   xthreshpoc =  1.E-8    ! POC feeding threshold for microzooplankton
-   xthresh    =  3.E-7    ! Food threshold for feeding
-   xkgraz     =  20.E-6   ! half sturation constant for grazing
-   epsher     =  0.4     ! Efficiency of microzoo growth
-   epshermin  =  0.4     ! Minimum efficiency of microzoo growth
-   sigma1     =  0.6      ! Fraction of microzoo excretion as DOM
-   unass      =  0.3      ! non assimilated fraction of phyto by zoo
 /
 !-----------------------------------------------------------------------
 &namp4zzoo     !   parameters for microzooplankton for PISCES std      - ln_p4z
@@ -134,29 +124,27 @@
 &nampisfer     !   parameters for iron chemistry
 !-----------------------------------------------------------------------
 /
-!-----------------------------------------------------------------------
+!-----------------------------------------------------------------------  
 &nampisrem     !   parameters for remineralization
 !-----------------------------------------------------------------------
 /
 !-----------------------------------------------------------------------
 &nampispoc     !   parameters for organic particles
 !-----------------------------------------------------------------------
-   jcpoc     =  10        ! Number of lability classes
-   rshape    =  1.0       ! Shape of the gamma function
-!                         ! ln_p5z
-   xremipc   =  0.02      ! remineralisation rate of POC
-   xremipn   =  0.025     ! remineralisation rate of PON
-   xremipp   =  0.03      ! remineralisation rate of POP
 /
 !-----------------------------------------------------------------------
 &nampiscal     !   parameters for Calcite chemistry
 !-----------------------------------------------------------------------
 /
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-&nampissbc     !   parameters for inputs deposition
-!,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+!-----------------------------------------------------------------------
+&nampisbc     !   parameters for inputs deposition
+!-----------------------------------------------------------------------
 /
 !-----------------------------------------------------------------------
 &nampislig     !   Namelist parameters for ligands, nampislig
+!-----------------------------------------------------------------------
+/
+!-----------------------------------------------------------------------
+&nampissed     !   Namelist parameters for sediment mobilisation
 !-----------------------------------------------------------------------
 /

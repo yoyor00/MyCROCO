@@ -5,23 +5,22 @@ MODULE sedsfc
    !!              ***  MODULE  sedsfc  ***
    !!    Sediment : Data at sediment surface
    !!=====================================================================
-#if defined key_pisces
    !! * Modules used
    USE sed     ! sediment global variable
    USE sedini
-   USE sedarr
    USE seddta
 
    PUBLIC sed_sfc
 
-   !!* Substitution
+   !! * Substitutions
+      !!* Substitution
 #  include "ocean2pisces.h90"
-#  include "top_substitute.h90"
+#  include "do_loop_substitute.h90"
+!!#  include "domzgr_substitute.h90"
 
-   !! $Id: sedsfc.F90 10222 2018-10-25 09:42:23Z aumont $
 CONTAINS
 
-   SUBROUTINE sed_sfc( kt )
+   SUBROUTINE sed_sfc( kt, Kbb )
       !!---------------------------------------------------------------------
       !!                  ***  ROUTINE sed_sfc ***
       !!
@@ -33,40 +32,42 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!* Arguments
       INTEGER, INTENT(in) ::  kt              ! time step
+      INTEGER, INTENT(in) ::  Kbb             ! time level indices
 
       ! * local variables
-      INTEGER :: ji, jj     ! dummy loop indices
+      INTEGER :: ji, jj, ikt     ! dummy loop indices
 
       !------------------------------------------------------------------------
       ! reading variables
 
-      CALL unpack_arr ( jpoce, trc_data(PRIV_2D_BIOARRAY,1), iarroce(1:jpoce), pwcp(1:jpoce,1,jwalk) )
-      CALL unpack_arr ( jpoce, trc_data(PRIV_2D_BIOARRAY,2), iarroce(1:jpoce), pwcp(1:jpoce,1,jwdic) )
-      CALL unpack_arr ( jpoce, trc_data(PRIV_2D_BIOARRAY,3), iarroce(1:jpoce), pwcp(1:jpoce,1,jwno3) )
-      CALL unpack_arr ( jpoce, trc_data(PRIV_2D_BIOARRAY,4), iarroce(1:jpoce), pwcp(1:jpoce,1,jwpo4) )
-      CALL unpack_arr ( jpoce, trc_data(PRIV_2D_BIOARRAY,5), iarroce(1:jpoce), pwcp(1:jpoce,1,jwoxy) )
-      CALL unpack_arr ( jpoce, trc_data(PRIV_2D_BIOARRAY,6), iarroce(1:jpoce), pwcp(1:jpoce,1,jwsil) )
-      CALL unpack_arr ( jpoce, trc_data(PRIV_2D_BIOARRAY,7), iarroce(1:jpoce), pwcp(1:jpoce,1,jwnh4) )
-      CALL unpack_arr ( jpoce, trc_data(PRIV_2D_BIOARRAY,8), iarroce(1:jpoce), pwcp(1:jpoce,1,jwfe2) )
+      IF( ln_timing )  CALL timing_start('sed_sfc')
 
+      trc_data(:,:,1) = UNPACK( pwcp(:,1,jwalk), sedmask == 1.0, 0.0 )
+      trc_data(:,:,2) = UNPACK( pwcp(:,1,jwdic), sedmask == 1.0, 0.0 )
+      trc_data(:,:,3) = UNPACK( pwcp(:,1,jwno3), sedmask == 1.0, 0.0 )
+      trc_data(:,:,4) = UNPACK( pwcp(:,1,jwpo4), sedmask == 1.0, 0.0 )
+      trc_data(:,:,5) = UNPACK( pwcp(:,1,jwoxy), sedmask == 1.0, 0.0 )
+      trc_data(:,:,6) = UNPACK( pwcp(:,1,jwsil), sedmask == 1.0, 0.0 )
+      trc_data(:,:,7) = UNPACK( pwcp(:,1,jwnh4), sedmask == 1.0, 0.0 )
+      trc_data(:,:,8) = UNPACK( pwcp(:,1,jwfe2), sedmask == 1.0, 0.0 )
+      trc_data(:,:,9) = UNPACK( pwcp(:,1,jwlgw), sedmask == 1.0, 0.0 )
 
-      DO jj = JRANGE
-         DO ji = IRANGE
-            IF ( tmask(ji,jj,ikt) == 1 ) THEN
-               trb(ji,jj,KSED,jptal) = trc_data(ji,jj,1)
-               trb(ji,jj,KSED,jpdic) = trc_data(ji,jj,2)
-               trb(ji,jj,KSED,jpno3) = trc_data(ji,jj,3) * redC / redNo3
-               trb(ji,jj,KSED,jppo4) = trc_data(ji,jj,4) * redC
-               trb(ji,jj,KSED,jpoxy) = trc_data(ji,jj,5)
-               trb(ji,jj,KSED,jpsil) = trc_data(ji,jj,6)
-               trb(ji,jj,KSED,jpnh4) = trc_data(ji,jj,7) * redC / redNo3
-               trb(ji,jj,KSED,jpfer) = trc_data(ji,jj,8)
-            ENDIF
-         ENDDO
-      ENDDO
+      DO_2D( 0, 0, 0, 0 )
+         ikt = mbkt(ji,jj)
+         IF ( tmask(ji,jj,ikt) == 1 ) THEN
+            tr(ji,jj,ikt,jptal,Kbb) = trc_data(ji,jj,1)
+            tr(ji,jj,ikt,jpdic,Kbb) = trc_data(ji,jj,2)
+            tr(ji,jj,ikt,jpno3,Kbb) = trc_data(ji,jj,3) * redC / redNo3
+            tr(ji,jj,ikt,jppo4,Kbb) = trc_data(ji,jj,4) * redC / redPo4
+            tr(ji,jj,ikt,jpoxy,Kbb) = trc_data(ji,jj,5)
+            tr(ji,jj,ikt,jpsil,Kbb) = trc_data(ji,jj,6)
+            tr(ji,jj,ikt,jpnh4,Kbb) = trc_data(ji,jj,7) * redC / redNo3
+            tr(ji,jj,ikt,jpfer,Kbb) = trc_data(ji,jj,8)
+         ENDIF
+      END_2D
+
+      IF( ln_timing )  CALL timing_stop('sed_sfc')
 
    END SUBROUTINE sed_sfc
-
-#endif
 
 END MODULE sedsfc

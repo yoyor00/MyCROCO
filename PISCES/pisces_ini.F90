@@ -6,11 +6,8 @@ MODULE pisces_ini
    !!----------------------------------------------------------------------
    !!   'key_pisces'                                       PISCES bio-model
    !!----------------------------------------------------------------------
-   USE ocean2pisces
+   USE oce_trc
    USE trcini_pisces
-
-   !!* Substitution
-#  include "ocean2pisces.h90"
 
 
    IMPLICIT NONE
@@ -18,16 +15,20 @@ MODULE pisces_ini
 
    PUBLIC   pisces_ini_tile   ! called by trcini.F90 module
 
+   !!* Substitution
+#  include "ocean2pisces.h90"
+
 CONTAINS
 
     SUBROUTINE pisces_ini_tile( tile )
 
-       INTEGER :: tile
+       INTEGER :: tile, Nbb
 
 #include "compute_tile_bounds.h"
       
+       Nbb = nnew
        CALL ocean_2_pisces(Istr,Iend,Jstr,Jend)
-       CALL trc_ini_pisces
+       CALL trc_ini_pisces( Nbb )
 
     END SUBROUTINE pisces_ini_tile
  
