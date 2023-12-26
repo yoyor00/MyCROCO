@@ -8,92 +8,97 @@ MODULE p2zmort
    !! History :   1.0  !  2002     (O. Aumont)  Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!----------------------------------------------------------------------
-#if defined key_pisces
-   !!   p2z_mort       : Compute the mortality terms for phytoplankton
-   !!   p2z_mort_init  : Initialize the mortality params for phytoplankton
+   !!   p4z_mort       : Compute the mortality terms for phytoplankton
+   !!   p4z_mort_init  : Initialize the mortality params for phytoplankton
    !!----------------------------------------------------------------------
+   USE oce_trc         ! shared variables between ocean and passive tracers
+   USE trc             ! passive tracers common variables 
    USE sms_pisces      ! PISCES Source Minus Sink variables
-   USE p2zprod         ! Primary productivity 
    USE p2zlim          ! Phytoplankton limitation terms
+   USE prtctl          ! print control for debugging
 
    IMPLICIT NONE
    PRIVATE
 
-   PUBLIC   p2z_mort    
-   PUBLIC   p2z_mort_init    
+   PUBLIC   p2z_mort           ! Called from p4zbio.F90 
+   PUBLIC   p2z_mort_init      ! Called from trcini_pisces.F90 
 
-   !!* Substitution
-#  include "ocean2pisces.h90"
-#  include "top_substitute.h90"
+   REAL(wp), PUBLIC ::   wchln    !: Quadratic mortality rate of nanophytoplankton
+   REAL(wp), PUBLIC ::   mpratn   !: Linear mortality rate of nanophytoplankton
 
-   REAL(wp), PUBLIC ::   wchl     !:
-   REAL(wp), PUBLIC ::   mprat    !:
-
+   !! * Substitutions
+#  include "ocean2pisces.h90"   
+#  include "do_loop_substitute.h90"
+#  include "read_nml_substitute.h90"
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
-   !! $Id: p2zmort.F90 10227 2018-10-25 14:42:24Z aumont $ 
+   !! $Id: p4zmort.F90 15459 2021-10-29 08:19:18Z cetlod $ 
    !! Software governed by the CeCILL license (see ./LICENSE)
    !!----------------------------------------------------------------------
 CONTAINS
 
-   SUBROUTINE p2z_mort( kt )
+   SUBROUTINE p2z_mort( kt, Kbb, Krhs )
       !!---------------------------------------------------------------------
-      !!                     ***  ROUTINE p2z_nano  ***
+      !!                     ***  ROUTINE p4z_mort_nano  ***
       !!
       !! ** Purpose :   Compute the mortality terms for nanophytoplankton
       !!
-      !! ** Method  : - ???
+      !! ** Method  :   Both quadratic and simili linear mortality terms
       !!---------------------------------------------------------------------
       INTEGER, INTENT(in) ::   kt ! ocean time step
+      INTEGER, INTENT(in) ::   Kbb, Krhs  ! time level indices
+      !!---------------------------------------------------------------------
+      !
       INTEGER  ::   ji, jj, jk
-      REAL(wp) ::   zsizerat, zcompaph
-      REAL(wp) ::   zprcaca
-      REAL(wp) ::   ztortp , zrespp , zmortp 
+      REAL(wp) ::   zcompaph, zprcaca
+      REAL(wp) ::   ztortp , zrespp , zmortp, zlim1, zlim2 
       CHARACTER (len=25) ::   charout
       !!---------------------------------------------------------------------
       !
-      prodcal(:,:,:) = 0.   ! calcite production variable set to zero
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               zcompaph = MAX( ( trb(ji,jj,K,jpphy) - 1e-8 ), 0.e0 )
-               !     When highly limited by macronutrients, very small cells 
-               !     dominate the community. As a consequence, aggregation
-               !     due to turbulence is negligible. Mortality is also set
-               !     to 0
-               zsizerat = MIN(1., MAX( 0., (quotan(ji,jj,jk) - 0.2) / 0.3) ) * trb(ji,jj,K,jpphy)
-               !     Squared mortality of Phyto similar to a sedimentation term during
-               !     blooms (Doney et al. 1996)
-               zrespp = wchl * 1.e6 * xstep * xdiss(ji,jj,jk) * zcompaph * zsizerat 
-
-               !     Phytoplankton mortality. This mortality loss is slightly
-               !     increased when nutrients are limiting phytoplankton growth
-               !     as observed for instance in case of iron limitation.
-               ztortp = mprat * xstep * zcompaph / ( xkmort + trb(ji,jj,K,jpphy) ) * zsizerat
-
-               zmortp = zrespp + ztortp
-
-               !   Update the arrays TRA which contains the biological sources and sinks
-
-               tra(ji,jj,jk,jpphy) = tra(ji,jj,jk,jpphy) - zmortp
-               !
-               zprcaca = xfracal(ji,jj,jk) * zmortp
-               prodcal(ji,jj,jk) = prodcal(ji,jj,jk) + zprcaca  ! prodcal=prodcal(nanophy)+prodcal(microzoo)+prodcal(mesozoo)
-               !
-               tra(ji,jj,jk,jpdic) = tra(ji,jj,jk,jpdic) - zprcaca
-               tra(ji,jj,jk,jptal) = tra(ji,jj,jk,jptal) - 2. * zprcaca
-               tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) + zmortp
-               prodpoc(ji,jj,jk) = prodpoc(ji,jj,jk) +  zmortp
-            END DO
-         END DO
-      END DO
+      IF( ln_timing )   CALL timing_start('p2z_mort')
       !
-       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+      prodcal(:,:,:) = 0._wp   ! calcite production variable set to zero
+      DO_3D( 0, 0, 0, 0, 1, jpkm1)
+         zcompaph = MAX( ( tr(ji,jj,jk,jpphy,Kbb) - 1e-9 ), 0.e0 )
+
+         ! Quadratic mortality of nano due to aggregation during
+         ! blooms (Doney et al. 1996)
+         ! -----------------------------------------------------
+         zlim2   = xlimphy(ji,jj,jk) * xlimphy(ji,jj,jk)
+         zlim1   = 0.25 * ( 1. - zlim2 ) / ( 0.25 + zlim2 ) * tr(ji,jj,jk,jpphy,Kbb)
+         zrespp  = wchln * 1.e6 * xstep * zlim1 * xdiss(ji,jj,jk) * zcompaph
+
+         ! Phytoplankton linear mortality
+         ! A michaelis-menten like term is introduced to avoid 
+         ! extinction of nanophyto in highly limited areas
+         ! ----------------------------------------------------
+         ztortp = mpratn * xstep * zcompaph / ( xkmort + tr(ji,jj,jk,jpphy,Kbb) ) * tr(ji,jj,jk,jpphy,Kbb)
+
+         zmortp = zrespp + ztortp
+         
+         !   Update the arrays TRA which contains the biological sources and sinks
+         tr(ji,jj,jk,jpphy,Krhs) = tr(ji,jj,jk,jpphy,Krhs) - zmortp
+
+         ! Production PIC particles due to mortality
+         zprcaca = xfracal(ji,jj,jk) * zmortp
+         prodcal(ji,jj,jk) = prodcal(ji,jj,jk) + zprcaca  ! prodcal=prodcal(nanophy)+prodcal(microzoo)+prodcal(mesozoo)
+
+         ! POC associated with the shell is supposed to be routed to 
+         ! big particles because of the ballasting effect
+         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) - zprcaca
+         tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - 2. * zprcaca
+         tr(ji,jj,jk,jppoc,Krhs) = tr(ji,jj,jk,jppoc,Krhs) + zmortp
+         prodpoc(ji,jj,jk) = prodpoc(ji,jj,jk) + zmortp
+         !
+      END_3D
+      !
+       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('nano')")
-         CALL prt_ctl_trc_info(charout)
-         CALL prt_ctl_trc( charout, ltra='tra')
-!        CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
+         CALL prt_ctl_info( charout, cdcomp = 'top' )
+ !        CALL prt_ctl(tab4d_1=tr(:,:,:,:,Krhs), mask1=tmask, clinfo=ctrcnm)
        ENDIF
+      !
+      IF( ln_timing )   CALL timing_stop('p2z_mort')
       !
    END SUBROUTINE p2z_mort
 
@@ -103,15 +108,15 @@ CONTAINS
       !!
       !! ** Purpose :   Initialization of phytoplankton parameters
       !!
-      !! ** Method  :   Read the nampismort namelist and check the parameters
+      !! ** Method  :   Read the namp4zmort namelist and check the parameters
       !!              called at the first timestep
       !!
-      !! ** input   :   Namelist nampismort
+      !! ** input   :   Namelist namp2zmort
       !!
       !!----------------------------------------------------------------------
       INTEGER ::   ios   ! Local integer
       !
-      NAMELIST/namp2zmort/ wchl, mprat
+      NAMELIST/namp2zmort/ wchln, mpratn
       !!----------------------------------------------------------------------
       !
       IF(lwp) THEN
@@ -120,30 +125,17 @@ CONTAINS
          WRITE(numout,*) '~~~~~~~~~~~~~'
       ENDIF
       !
-      REWIND( numnatp_ref )              ! Namelist nampismort in reference namelist : Pisces phytoplankton
-      READ  ( numnatp_ref, namp2zmort, IOSTAT = ios, ERR = 901)
-901   IF( ios /= 0 )   CALL ctl_nam ( ios , 'namp2zmort in reference namelist', lwp )
-      REWIND( numnatp_cfg )              ! Namelist nampismort in configuration namelist : Pisces phytoplankton
-      READ  ( numnatp_cfg, namp2zmort, IOSTAT = ios, ERR = 902 )
-902   IF( ios >  0 )   CALL ctl_nam ( ios , 'namp2zmort in configuration namelist', lwp )
+      READ_NML_REF(numnatp,namp2zmort)
+      READ_NML_CFG(numnatp,namp2zmort)
       IF(lwm) WRITE( numonp, namp2zmort )
       !
       IF(lwp) THEN                         ! control print
-         WRITE(numout,*) '   Namelist : namp2zmort'
-         WRITE(numout,*) '      quadratic mortality of phytoplankton        wchl   =', wchl
-         WRITE(numout,*) '      phytoplankton mortality rate                mprat  =', mprat
+         WRITE(numout,*) '   Namelist : namp4zmort'
+         WRITE(numout,*) '      quadratic mortality of phytoplankton        wchln  =', wchln
+         WRITE(numout,*) '      phytoplankton mortality rate                mpratn =', mpratn
       ENDIF
       !
    END SUBROUTINE p2z_mort_init
-
-#else
-   !!======================================================================
-   !!  Dummy module :                                   No PISCES bio-model
-   !!======================================================================
-CONTAINS
-   SUBROUTINE p2z_mort                    ! Empty routine
-   END SUBROUTINE p2z_mort
-#endif 
 
    !!======================================================================
 END MODULE p2zmort

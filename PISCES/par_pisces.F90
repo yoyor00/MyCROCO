@@ -9,6 +9,25 @@ MODULE par_pisces
    !!----------------------------------------------------------------------
    IMPLICIT NONE
    PUBLIC
+      !!* Substitution
+#  include "ocean2pisces.h90"
+
+   !                                                                !!** Floating point **
+   INTEGER, PUBLIC, PARAMETER ::   sp = SELECTED_REAL_KIND( 6, 37)   !: single precision (real 4)
+   INTEGER, PUBLIC, PARAMETER ::   dp = SELECTED_REAL_KIND(12,307)   !: double precision (real 8)
+# if defined key_single
+   INTEGER, PUBLIC, PARAMETER ::   wp = sp                              !: working precision
+# else
+   INTEGER, PUBLIC, PARAMETER ::   wp = dp                              !: working precision
+# endif
+   !                                                                !!** Integer **
+   INTEGER, PUBLIC, PARAMETER ::   i4 = SELECTED_INT_KIND( 9)        !: single precision (integer 4)
+   INTEGER, PUBLIC, PARAMETER ::   i8 = SELECTED_INT_KIND(14)        !: double precision (integer 8)
+
+   !                                                                !!** Integer **
+   INTEGER, PUBLIC, PARAMETER ::   lc  = 256                          !: Lenght of Character strings
+   INTEGER, PUBLIC, PARAMETER ::   lca = 400                          !: Lenght of Character arrays
+
 
 #if defined key_pisces
    !!---------------------------------------------------------------------
@@ -196,6 +215,12 @@ MODULE par_pisces
    INTEGER, PUBLIC, PARAMETER ::   jptra       = jp_pisces                  !: First index of PISCES tracers
    INTEGER, PUBLIC, PARAMETER ::   jp_pcs0     = 1                  !: First index of PISCES tracers
    INTEGER, PUBLIC, PARAMETER ::   jp_pcs1     = jp_pisces          !: Last  index of PISCES tracers
+
+   REAL(wp), PUBLIC ::  mMass_C  = 12.00      ! Molar mass of carbon
+   REAL(wp), PUBLIC ::  mMass_N  = 14.00      ! Molar mass of nitrogen
+   REAL(wp), PUBLIC ::  mMass_P  = 31.00      ! Molar mass of phosphorus
+   REAL(wp), PUBLIC ::  mMass_Fe = 55.85      ! Molar mass of iron
+   REAL(wp), PUBLIC ::  mMass_Si = 28.00      ! Molar mass of silver
 
    !!======================================================================
 END MODULE par_pisces

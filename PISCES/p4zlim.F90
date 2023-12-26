@@ -3,34 +3,31 @@
 MODULE p4zlim
    !!======================================================================
    !!                         ***  MODULE p4zlim  ***
-   !! TOP :   PISCES 
+   !! TOP :   Computes the nutrient limitation terms of phytoplankton
    !!======================================================================
    !! History :   1.0  !  2004     (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-04  (O. Aumont, C. Ethe) Limitation for iron modelled in quota 
    !!----------------------------------------------------------------------
-#if defined key_pisces
    !!   p4z_lim        :   Compute the nutrients limitation terms 
    !!   p4z_lim_init   :   Read the namelist 
    !!----------------------------------------------------------------------
+   USE oce_trc         ! Shared ocean-passive tracers variables
+   USE trc             ! Tracers defined
    USE sms_pisces      ! PISCES variables
-   USE p2zlim  
-!  USE iom             !  I/O manager
+   USE p2zlim          ! Reduced PISCES nutrient limitation
+   USE iom             ! I/O manager
 
    IMPLICIT NONE
    PRIVATE
 
-   PUBLIC p4z_lim    
-   PUBLIC p4z_lim_init    
-   PUBLIC p4z_lim_alloc
-
-   !!* Substitution
-#  include "ocean2pisces.h90"
-#  include "top_substitute.h90"
+   PUBLIC p4z_lim           ! called in p4zbio.F90 
+   PUBLIC p4z_lim_init      ! called in trcsms_pisces.F90 
+   PUBLIC p4z_lim_alloc     ! called in trcini_pisces.F90
 
    !! * Shared module variables
    REAL(wp), PUBLIC ::  concdno3    !:  Phosphate half saturation for diatoms  
-   REAL(wp), PUBLIC ::  concnnh4    !:  NH4 half saturation for phyto  
+   REAL(wp), PUBLIC ::  concnnh4    !:  NH4 half saturation for nanophyto  
    REAL(wp), PUBLIC ::  concdnh4    !:  NH4 half saturation for diatoms
    REAL(wp), PUBLIC ::  concdfer    !:  Iron half saturation for diatoms  
    REAL(wp), PUBLIC ::  concbnh4    !:  NH4 half saturation for bacteria
@@ -40,25 +37,35 @@ MODULE p4zlim
    REAL(wp), PUBLIC ::  xksi2       !:  half saturation constant for Si/C 
    REAL(wp), PUBLIC ::  qnfelim     !:  optimal Fe quota for nanophyto
    REAL(wp), PUBLIC ::  qdfelim     !:  optimal Fe quota for diatoms
+   REAL(wp), PUBLIC ::  ratchl      !:  C associated with Chlorophyll
 
    !!* Phytoplankton limitation terms
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatno3   !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanonh4   !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatnh4   !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanopo4   !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatpo4   !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimdia    !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimdfe    !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimsi     !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   concdfe    !: ???
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   concnfe    !: ???
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatno3   !: Diatoms limitation by NO3
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanonh4   !: Nanophyto limitation by NH4
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatnh4   !:  Diatoms limitation by NH4
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanopo4   !: Nanophyto limitation by PO4
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatpo4   !: Diatoms limitation by PO4
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimdia    !: Nutrient limitation term of diatoms
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimdfe    !: Diatoms limitation by iron
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xlimsi     !: Diatoms limitation by Si
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   concdfe    !: Limitation of diatoms uptake of Fe
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   concnfe    !: Limitation of Nano uptake of Fe
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xnanofer   !: Limitation of Fe uptake by nanophyto
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xdiatfer   !: Limitation of Fe uptake by diatoms
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   xqfuncfecd, xqfuncfecn
 
-   ! Coefficient for iron limitation
+   ! Coefficient for iron limitation following Flynn and Hipkin (1999)
    REAL(wp) ::  xcoef1   = 0.0016  / 55.85  
-   REAL(wp) ::  xcoef2   = 1.21E-5 * 14. / 55.85 / 7.625 * 0.5 * 1.5
-   REAL(wp) ::  xcoef3   = 1.15E-4 * 14. / 55.85 / 7.625 * 0.5 
+   REAL(wp) ::  xcoef2   = 1.21E-5 * 14. / 55.85 / 7.3125 * 0.5 * 1.5
+   REAL(wp) ::  xcoef3   = 1.15E-4 * 14. / 55.85 / 7.3125 * 0.5 
 
-   LOGICAL  :: l_dia
+   LOGICAL  :: l_dia_nut_lim, l_dia_iron_lim, l_dia_size_lim, l_dia_fracal
+
+   !! * Substitutions
+#  include "ocean2pisces.h90"   
+#  include "do_loop_substitute.h90"
+#  include "read_nml_substitute.h90"
+
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zlim.F90 10069 2018-08-28 14:12:24Z nicolasmartin $ 
@@ -66,208 +73,226 @@ MODULE p4zlim
    !!----------------------------------------------------------------------
 CONTAINS
 
-   SUBROUTINE p4z_lim( kt, knt )
+   SUBROUTINE p4z_lim( kt, knt, Kbb, Kmm )
       !!---------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_lim  ***
       !!
       !! ** Purpose :   Compute the co-limitations by the various nutrients
-      !!              for the various phytoplankton species
+      !!                for the various phytoplankton species
       !!
-      !! ** Method  : - ???
+      !! ** Method  : - Limitation follows the Liebieg law of the minimum
+      !!              - Monod approach for N, P and Si. Quota approach 
+      !!                for Iron
       !!---------------------------------------------------------------------
       INTEGER, INTENT(in)  :: kt, knt
+      INTEGER, INTENT(in)  :: Kbb, Kmm      ! time level indices
       !
       INTEGER  ::   ji, jj, jk
-      REAL(wp) ::   zlim1, zlim2, zlim3, zlim4, zno3, zferlim
-      REAL(wp) ::   zconcd, zconcd2, zconcn, zconcn2
+      REAL(wp) ::   zlim1, zlim2, zlim3, zlim4, zcoef
       REAL(wp) ::   z1_trbdia, z1_trbphy, ztem1, ztem2, zetot1, zetot2
-      REAL(wp) ::   zdenom, zratio, zironmin
+      REAL(wp) ::   zdenom, zratio, zironmin, zbactno3, zbactnh4
       REAL(wp) ::   zconc1d, zconc1dnh4, zconc0n, zconc0nnh4   
+      REAL(wp) ::   fananof, fadiatf, znutlim, zfalim
+      REAL(wp) ::   znutlimtot, zlimno3, zlimnh4, zbiron
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
-      IF( kt == nittrc000 )  &
-           & l_dia = iom_use( "LNnut" ) .OR. iom_use( "LNFe" )  &
-           &    .OR. iom_use( "LDnut" ) .OR. iom_use( "LDFe" )  &
-           &    .OR. iom_use( "xfracal" )
+      IF( ln_timing )   CALL timing_start('p4z_lim')
       !
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
+      IF( kt == nittrc000 )  THEN
+         l_dia_nut_lim  = iom_use( "LNnut"   ) .OR. iom_use( "LDnut" )  
+         l_dia_iron_lim = iom_use( "LNFe"    ) .OR. iom_use( "LDFe"  )
+         l_dia_size_lim = iom_use( "SIZEN"   ) .OR. iom_use( "SIZED" )
+         l_dia_fracal   = iom_use( "xfracal" )
+      ENDIF
+      !
+      sizena(:,:,:) = 1.0  ;  sizeda(:,:,:) = 1.0
+      !
+      DO_3D( 0, 0, 0, 0, 1, jpkm1)
+         
+         ! Computation of a variable Ks for iron on diatoms taking into account
+         ! that increasing biomass is made of generally bigger cells
+         ! The allometric relationship is classical.
+         !------------------------------------------------
+         z1_trbphy   = 1. / ( tr(ji,jj,jk,jpphy,Kbb) + rtrn )
+         z1_trbdia   = 1. / ( tr(ji,jj,jk,jpdia,Kbb) + rtrn )
+
+         concnfe(ji,jj,jk) = concnfer * sizen(ji,jj,jk)**0.81
+         zconc0n           = concnno3 * sizen(ji,jj,jk)**0.81
+         zconc0nnh4        = concnnh4 * sizen(ji,jj,jk)**0.81
+
+         concdfe(ji,jj,jk) = concdfer * sized(ji,jj,jk)**0.81 
+         zconc1d           = concdno3 * sized(ji,jj,jk)**0.81 
+         zconc1dnh4        = concdnh4 * sized(ji,jj,jk)**0.81  
+
+          ! Computation of the optimal allocation parameters
+          ! Based on the different papers by Pahlow et al., and 
+          ! Smith et al.
+          ! ---------------------------------------------------
+
+          ! Nanophytoplankton
+          zbiron = ( 75.0 * ( 1.0 - plig(ji,jj,jk) ) + plig(ji,jj,jk) ) * biron(ji,jj,jk)
+          znutlim = zbiron / concnfe(ji,jj,jk)
+          fananof = MAX(0.01, MIN(0.99, 1. / ( SQRT(znutlim) + 1.) ) )
+
+          ! Diatoms
+          znutlim = zbiron / concdfe(ji,jj,jk)
+          fadiatf = MAX(0.01, MIN(0.99, 1. / ( SQRT(znutlim) + 1.) ) )
+
+          ! Michaelis-Menten Limitation term by nutrients of
+          ! heterotrophic bacteria
+          ! -------------------------------------------------
+          zlimnh4 = tr(ji,jj,jk,jpnh4,Kbb) / ( concbno3 + tr(ji,jj,jk,jpnh4,Kbb) )
+          zlimno3 = tr(ji,jj,jk,jpno3,Kbb) / ( concbno3 + tr(ji,jj,jk,jpno3,Kbb) )
+          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) / ( concbno3 + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
+          zbactnh4 = znutlimtot * 5.0 * zlimnh4 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
+          zbactno3 = znutlimtot * zlimno3 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
+          !
+          zlim1    = zbactno3 + zbactnh4
+          zlim2    = tr(ji,jj,jk,jppo4,Kbb) / ( tr(ji,jj,jk,jppo4,Kbb) + concbnh4 )
+          zlim3    = tr(ji,jj,jk,jpfer,Kbb) / ( concbfe + tr(ji,jj,jk,jpfer,Kbb) )
+          zlim4    = tr(ji,jj,jk,jpdoc,Kbb) / ( xkdoc   + tr(ji,jj,jk,jpdoc,Kbb) )
+          ! Xlimbac is used for DOC solubilization whereas xlimbacl
+          ! is used for all the other bacterial-dependent terms
+          ! -------------------------------------------------------
+          xlimbacl(ji,jj,jk) = MIN( zlim1, zlim2, zlim3 )
+          xlimbac (ji,jj,jk) = MIN( zlim1, zlim2, zlim3 ) * zlim4
+
+          ! Michaelis-Menten Limitation term by nutrients: Nanophyto
+          ! Optimal parameterization by Smith and Pahlow series of 
+          ! papers is used. Optimal allocation is supposed independant
+          ! for all nutrients. 
+          ! --------------------------------------------------------
+
+          ! Limitation of Fe uptake (Quota formalism)
+          zfalim = (1.-fananof) / fananof
+          xnanofer(ji,jj,jk) = (1. - fananof) * zbiron / ( zbiron + zfalim * concnfe(ji,jj,jk) )
+
+          ! Limitation of nanophytoplankton growth
+          zlimnh4 = tr(ji,jj,jk,jpnh4,Kbb) / ( zconc0n + tr(ji,jj,jk,jpnh4,Kbb) )
+          zlimno3 = tr(ji,jj,jk,jpno3,Kbb) / ( zconc0n + tr(ji,jj,jk,jpno3,Kbb) )
+          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) / ( zconc0n + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
+          xnanonh4(ji,jj,jk) = znutlimtot * 5.0 * zlimnh4 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
+          xnanono3(ji,jj,jk) = znutlimtot * zlimno3 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
+          !
+          zlim1    = xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk)
+          zlim2    = tr(ji,jj,jk,jppo4,Kbb) / ( tr(ji,jj,jk,jppo4,Kbb) + zconc0nnh4 )
+          zratio   = tr(ji,jj,jk,jpnfe,Kbb) * z1_trbphy 
+
+          ! The minimum iron quota depends on the size of PSU, respiration
+          ! and the reduction of nitrate following the parameterization 
+          ! proposed by Flynn and Hipkin (1999)
+          zironmin = xcoef1 * tr(ji,jj,jk,jpnch,Kbb) * z1_trbphy + xcoef2 * zlim1 + xcoef3 * xnanono3(ji,jj,jk)
+          xqfuncfecn(ji,jj,jk) = zironmin + qnfelim
+          zlim3    = MAX( 0.,( zratio - zironmin ) / qnfelim )
+          xnanopo4(ji,jj,jk) = zlim2
+          xlimnfe (ji,jj,jk) = MIN( 1., zlim3 )
+          xlimphy (ji,jj,jk) = MIN( zlim1, zlim2, zlim3 )
                
-               ! Tuning of the iron concentration to a minimum level that is set to the detection limit
-               !-------------------------------------
-               zno3    = trb(ji,jj,K,jpno3) / 40.e-6
-               zferlim = MAX( 3e-11 * zno3 * zno3, 5e-12 )
-               zferlim = MIN( zferlim, 7e-11 )
-               trb(ji,jj,K,jpfer) = MAX( trb(ji,jj,K,jpfer), zferlim )
+          !   Michaelis-Menten Limitation term by nutrients : Diatoms
+          !   -------------------------------------------------------
+          ! Limitation of Fe uptake (Quota formalism)
+          zfalim = (1.-fadiatf) / fadiatf
+          xdiatfer(ji,jj,jk) = (1. - fadiatf) * zbiron / ( zbiron + zfalim * concdfe(ji,jj,jk) )
 
-               ! Computation of a variable Ks for iron on diatoms taking into account
-               ! that increasing biomass is made of generally bigger cells
-               !------------------------------------------------
-               zconcd   = MAX( 0.e0 , trb(ji,jj,K,jpdia) - xsizedia )
-               zconcd2  = trb(ji,jj,K,jpdia) - zconcd
-               zconcn   = MAX( 0.e0 , trb(ji,jj,K,jpphy) - xsizephy )
-               zconcn2  = trb(ji,jj,K,jpphy) - zconcn
-               z1_trbphy   = 1. / ( trb(ji,jj,K,jpphy) + rtrn )
-               z1_trbdia   = 1. / ( trb(ji,jj,K,jpdia) + rtrn )
+          ! Limitation of diatoms growth
+          zlimnh4 = tr(ji,jj,jk,jpnh4,Kbb) / ( zconc1d + tr(ji,jj,jk,jpnh4,Kbb) )
+          zlimno3 = tr(ji,jj,jk,jpno3,Kbb) / ( zconc1d + tr(ji,jj,jk,jpno3,Kbb) )
+          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) / ( zconc1d + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
+          xdiatnh4(ji,jj,jk) = znutlimtot * 5.0 * zlimnh4 / ( zlimno3 + 5.0 * zlimnh4 + rtrn ) 
+          xdiatno3(ji,jj,jk) = znutlimtot * zlimno3 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
+          !
+          zlim1    = xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk)
+          zlim2    = tr(ji,jj,jk,jppo4,Kbb) / ( tr(ji,jj,jk,jppo4,Kbb) + zconc1dnh4  )
+          zlim3    = tr(ji,jj,jk,jpsil,Kbb) / ( tr(ji,jj,jk,jpsil,Kbb) + xksi(ji,jj) + rtrn )
+          zratio   = tr(ji,jj,jk,jpdfe,Kbb) * z1_trbdia
 
-               concdfe(ji,jj,jk) = MAX( concdfer, ( zconcd2 * concdfer + concdfer * xsizerd * zconcd ) * z1_trbdia )
-               zconc1d           = MAX( concdno3, ( zconcd2 * concdno3 + concdno3 * xsizerd * zconcd ) * z1_trbdia )
-               zconc1dnh4        = MAX( concdnh4, ( zconcd2 * concdnh4 + concdnh4 * xsizerd * zconcd ) * z1_trbdia )
+          ! The minimum iron quota depends on the size of PSU, respiration
+          ! and the reduction of nitrate following the parameterization 
+          ! proposed by Flynn and Hipkin (1999)
+          zironmin = xcoef1 * tr(ji,jj,jk,jpdch,Kbb) * z1_trbdia + xcoef2 * zlim1 + xcoef3 * xdiatno3(ji,jj,jk)
+          xqfuncfecd(ji,jj,jk) = zironmin + qdfelim
+          zlim4    = MAX( 0., ( zratio - zironmin ) / qdfelim )
+          xdiatpo4(ji,jj,jk) = zlim2
+          xlimdfe (ji,jj,jk) = MIN( 1., zlim4 )
+          xlimdia (ji,jj,jk) = MIN( zlim1, zlim2, zlim3, zlim4 )
+          xlimsi  (ji,jj,jk) = MIN( zlim1, zlim2, zlim4 )
+      END_3D
 
-               concnfe(ji,jj,jk) = MAX( concnfer, ( zconcn2 * concnfer + concnfer * xsizern * zconcn ) * z1_trbphy )
-               zconc0n           = MAX( concnno3, ( zconcn2 * concnno3 + concnno3 * xsizern * zconcn ) * z1_trbphy )
-               zconc0nnh4        = MAX( concnnh4, ( zconcn2 * concnnh4 + concnnh4 * xsizern * zconcn ) * z1_trbphy )
 
-               ! Michaelis-Menten Limitation term for nutrients Small bacteria
-               ! -------------------------------------------------------------
-               zdenom = 1. /  ( concbno3 * concbnh4 + concbnh4 * trb(ji,jj,K,jpno3) &
-               &              + concbno3 * trb(ji,jj,K,jpnh4) )
-               xnanono3(ji,jj,jk) = trb(ji,jj,K,jpno3) * concbnh4 * zdenom
-               xnanonh4(ji,jj,jk) = trb(ji,jj,K,jpnh4) * concbno3 * zdenom
-               !
-               zlim1    = xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk)
-               zlim2    = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + concbnh4 )
-               zlim3    = trb(ji,jj,K,jpfer) / ( concbfe + trb(ji,jj,K,jpfer) )
-               zlim4    = trb(ji,jj,K,jpdoc) / ( xkdoc   + trb(ji,jj,K,jpdoc) )
-               xlimbacl(ji,jj,jk) = MIN( zlim1, zlim2, zlim3 )
-               xlimbac (ji,jj,jk) = MIN( zlim1, zlim2, zlim3 ) * zlim4
+      ! Size estimation of phytoplankton based on total biomass
+      ! Assumes that larger biomass implies addition of larger cells
+      ! ------------------------------------------------------------
+      DO_3D( 0, 0, 0, 0, 1, jpkm1)
+         zcoef = tr(ji,jj,jk,jpphy,Kbb) - MIN(xsizephy, tr(ji,jj,jk,jpphy,Kbb) )
+         sizena(ji,jj,jk) = 1. + ( xsizern -1.0 ) * zcoef / ( xsizephy + zcoef )
+         zcoef = tr(ji,jj,jk,jpdia,Kbb) - MIN(xsizedia, tr(ji,jj,jk,jpdia,Kbb) )
+         sizeda(ji,jj,jk) = 1. + ( xsizerd - 1.0 ) * zcoef / ( xsizedia + zcoef )
+      END_3D
 
-               ! Michaelis-Menten Limitation term for nutrients Small flagellates
-               ! -----------------------------------------------
-               zdenom = 1. /  ( zconc0n * zconc0nnh4 + zconc0nnh4 * trb(ji,jj,K,jpno3)&
-               &              + zconc0n * trb(ji,jj,K,jpnh4) )
-               xnanono3(ji,jj,jk) = trb(ji,jj,K,jpno3) * zconc0nnh4 * zdenom
-               xnanonh4(ji,jj,jk) = trb(ji,jj,K,jpnh4) * zconc0n    * zdenom
-               !
-               zlim1    = xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk)
-               zlim2    = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + zconc0nnh4 )
-               zratio   = trb(ji,jj,K,jpnfe) * z1_trbphy 
-               zironmin = xcoef1 * trb(ji,jj,K,jpnch) * z1_trbphy   &
-               &        + xcoef2 * zlim1 + xcoef3 * xnanono3(ji,jj,jk)
-               zlim3    = MAX( 0.,( zratio - zironmin ) / qnfelim )
-               xnanopo4(ji,jj,jk) = zlim2
-               xlimnfe (ji,jj,jk) = MIN( 1., zlim3 )
-               xlimphy (ji,jj,jk) = MIN( zlim1, zlim2, zlim3 )
-               !
-               !   Michaelis-Menten Limitation term for nutrients Diatoms
-               !   ----------------------------------------------
-               zdenom   = 1. / ( zconc1d * zconc1dnh4 + zconc1dnh4 * trb(ji,jj,K,jpno3) &
-               &               + zconc1d * trb(ji,jj,K,jpnh4) )
-               xdiatno3(ji,jj,jk) = trb(ji,jj,K,jpno3) * zconc1dnh4 * zdenom
-               xdiatnh4(ji,jj,jk) = trb(ji,jj,K,jpnh4) * zconc1d    * zdenom
-               !
-               zlim1    = xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk)
-               zlim2    = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + zconc1dnh4  )
-               zlim3    = trb(ji,jj,K,jpsil) / ( trb(ji,jj,K,jpsil) + xksi(ji,jj) )
-               zratio   = trb(ji,jj,K,jpdfe) * z1_trbdia
-               zironmin = xcoef1 * trb(ji,jj,K,jpdch) * z1_trbdia  &
-               &        + xcoef2 * zlim1 + xcoef3 * xdiatno3(ji,jj,jk)
-               zlim4    = MAX( 0., ( zratio - zironmin ) / qdfelim )
-               xdiatpo4(ji,jj,jk) = zlim2
-               xlimdfe (ji,jj,jk) = MIN( 1., zlim4 )
-               xlimdia (ji,jj,jk) = MIN( zlim1, zlim2, zlim3, zlim4 )
-               xlimsi  (ji,jj,jk) = MIN( zlim1, zlim2, zlim4 )
-           END DO
-         END DO
-      END DO
 
       ! Compute the fraction of nanophytoplankton that is made of calcifiers
+      ! This is a purely adhoc formulation described in Aumont et al. (2015)
+      ! This fraction depends on nutrient limitation, light, temperature
       ! --------------------------------------------------------------------
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               zlim1 =  ( trb(ji,jj,K,jpno3) * concnnh4  &
-                  &     + trb(ji,jj,K,jpnh4) * concnno3 )    &
-                  &   / ( concnno3 * concnnh4     &
-                  &   + concnnh4 * trb(ji,jj,K,jpno3) &
-                  &     + concnno3 * trb(ji,jj,K,jpnh4) ) 
-               zlim2  = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + concnnh4 )
-               zlim3  = trb(ji,jj,K,jpfer) / ( trb(ji,jj,K,jpfer) +  5.E-11   )
-               ztem1  = MAX( 0., tsn(ji,jj,K,jp_tem) )
-               ztem2  = tsn(ji,jj,K,jp_tem) - 10.
-               zetot1 = MAX( 0., etot_ndcy(ji,jj,jk) - 1.) / ( 4. + etot_ndcy(ji,jj,jk) ) 
-               zetot2 = 30. / ( 30. + etot_ndcy(ji,jj,jk) ) 
+      DO_3D( 0, 0, 0, 0, 1, jpkm1)
+         zlim1  = xnanonh4(ji,jj,jk) + xnanono3(ji,jj,jk) 
+         zlim2  = tr(ji,jj,jk,jppo4,Kbb) / ( tr(ji,jj,jk,jppo4,Kbb) + concnnh4 )
+         zlim3  = tr(ji,jj,jk,jpfer,Kbb) / ( tr(ji,jj,jk,jpfer,Kbb) +  6.E-11   )
+         ztem1  = MAX( 0., ts(ji,jj,jk,jp_tem,Kmm) + 1.8)
+         ztem2  = ts(ji,jj,jk,jp_tem,Kmm) - 10.
+         zetot1 = MAX( 0., etot_ndcy(ji,jj,jk) - 1.) / ( 4. + etot_ndcy(ji,jj,jk) ) 
+         zetot2 = 30. / ( 30.0 + etot_ndcy(ji,jj,jk) )
 
-               xfracal(ji,jj,jk) = caco3r * MIN( zlim1, zlim2, zlim3 )                  &
-                  &                       * ztem1 / ( 0.1 + ztem1 )                     &
-                  &                       * MAX( 1., trb(ji,jj,K,jpphy) * 1.e6 / 2. )  &
-                  &                       * zetot1 * zetot2               &
-                  &                       * ( 1. + EXP(-ztem2 * ztem2 / 25. ) )         &
-                  &                       * MIN( 1., 50. / ( hmld(ji,jj) + rtrn ) )
-               xfracal(ji,jj,jk) = MIN( 0.8 , xfracal(ji,jj,jk) )
-               xfracal(ji,jj,jk) = MAX( 0.02, xfracal(ji,jj,jk) )
-            END DO
-         END DO
-      END DO
+         xfracal(ji,jj,jk) = caco3r * MIN( zlim1, zlim2, zlim3 )                  &
+            &                       * ztem1 / ( 0.1 + ztem1 )                     &
+            &                       * MAX( 1., tr(ji,jj,jk,jpphy,Kbb) / xsizephy )  &
+            &                       * zetot1 * zetot2               &
+            &                       * ( 1. + EXP(-ztem2 * ztem2 / 25. ) )         &
+            &                       * MIN( 1., 50. / ( hmld(ji,jj) + rtrn ) )
+         xfracal(ji,jj,jk) = MIN( 0.8 , xfracal(ji,jj,jk) )
+         xfracal(ji,jj,jk) = MAX( 0.02, xfracal(ji,jj,jk) )
+      END_3D
       !
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               ! denitrification factor computed from O2 levels
-               nitrfac(ji,jj,jk) = MAX(  0.e0, 0.4 * ( 6.e-6  - trb(ji,jj,K,jpoxy) )    &
-                  &                                / ( oxymin + trb(ji,jj,K,jpoxy) )  )
-               nitrfac(ji,jj,jk) = MIN( 1., nitrfac(ji,jj,jk) )
-               !
-               ! denitrification factor computed from NO3 levels
-               nitrfac2(ji,jj,jk) = MAX( 0.e0,       ( 1.E-6 - trb(ji,jj,K,jpno3) )  &
-                  &                                / ( 1.E-6 + trb(ji,jj,K,jpno3) ) )
-               nitrfac2(ji,jj,jk) = MIN( 1., nitrfac2(ji,jj,jk) )
-            END DO
-         END DO
-      END DO
-      !
-      IF( lk_iomput .AND. knt == nrdttrc ) THEN
-         IF( l_dia ) THEN
-            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
-            DO jk = KRANGE
-               DO jj = JRANGE
-                  DO ji = IRANGE
-                    zw3d(ji,jj,jk ) = xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
-                  ENDDO
-               ENDDO
-            ENDDO
-            CALL iom_put( "LNnut", zw3d )  ! Nutrient limitation term
-            !
-            DO jk = KRANGE
-               DO jj = JRANGE
-                  DO ji = IRANGE
-                    zw3d(ji,jj,jk ) = xlimdia(ji,jj,jk) * tmask(ji,jj,jk)
-                  ENDDO
-               ENDDO
-            ENDDO
-            CALL iom_put( "LDnut", zw3d )  ! Nutrient limitation term
-            !
-            DO jk = KRANGE
-               DO jj = JRANGE
-                  DO ji = IRANGE
-                    zw3d(ji,jj,jk ) = xlimnfe(ji,jj,jk) * tmask(ji,jj,jk)
-                  ENDDO
-               ENDDO
-            ENDDO
-            CALL iom_put( "LNFe", zw3d )  ! Iron limitation term
-            !
-            DO jk = KRANGE
-               DO jj = JRANGE
-                  DO ji = IRANGE
-                    zw3d(ji,jj,jk ) = xlimdfe(ji,jj,jk) * tmask(ji,jj,jk)
-                  ENDDO
-               ENDDO
-            ENDDO
-            CALL iom_put( "LDFe", zw3d )  ! Iron limitation term
-            !
-            DO jk = KRANGE
-               DO jj = JRANGE
-                  DO ji = IRANGE
-                    zw3d(ji,jj,jk ) = xfracal(ji,jj,jk) * tmask(ji,jj,jk)
-                  ENDDO
-               ENDDO
-            ENDDO
-            CALL iom_put( "xfracal", zw3d )  ! Calcifiers
-            DEALLOCATE( zw3d )
-         ENDIF
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
+        !
+        IF( l_dia_fracal ) THEN   ! fraction of calcifiers
+          ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
+          zw3d(A2D(0),1:jpkm1) = xfracal(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          CALL iom_put( "xfracal",  zw3d)
+          DEALLOCATE( zw3d )
+        ENDIF
+        !
+        IF( l_dia_nut_lim ) THEN   ! Nutrient limitation term
+          ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
+          zw3d(A2D(0),1:jpkm1) = xlimphy(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          CALL iom_put( "LNnut",  zw3d)
+          zw3d(A2D(0),1:jpkm1) = xlimdia(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          CALL iom_put( "LDnut",  zw3d)
+          DEALLOCATE( zw3d )
+        ENDIF
+        !
+        IF( l_dia_iron_lim ) THEN   ! Iron limitation term
+          ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
+          zw3d(A2D(0),1:jpkm1) = xlimnfe(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          CALL iom_put( "LNFe",  zw3d)
+          zw3d(A2D(0),1:jpkm1) = xlimdfe(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          CALL iom_put( "LDFe",  zw3d)
+          DEALLOCATE( zw3d )
+        ENDIF
+        !
+        IF( l_dia_size_lim ) THEN   ! Size limitation term
+          ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
+          zw3d(A2D(0),1:jpkm1) = sizen(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          CALL iom_put( "SIZEN",  zw3d)
+          zw3d(A2D(0),1:jpkm1) = sized(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          CALL iom_put( "SIZED",  zw3d)
+          DEALLOCATE( zw3d )
+        ENDIF
+        !
       ENDIF
+      !
+      IF( ln_timing )   CALL timing_stop('p4z_lim')
       !
    END SUBROUTINE p4z_lim
 
@@ -276,19 +301,20 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!                  ***  ROUTINE p4z_lim_init  ***
       !!
-      !! ** Purpose :   Initialization of nutrient limitation parameters
+      !! ** Purpose :   Initialization of the nutrient limitation parameters
       !!
-      !! ** Method  :   Read the nampislim namelist and check the parameters
+      !! ** Method  :   Read the namp4zlim namelist and check the parameters
       !!      called at the first timestep (nittrc000)
       !!
-      !! ** input   :   Namelist nampislim
+      !! ** input   :   Namelist namp4zlim
       !!
       !!----------------------------------------------------------------------
       INTEGER ::   ios   ! Local integer
-      !
+
+      ! Namelist block
       NAMELIST/namp4zlim/ concnno3, concdno3, concnnh4, concdnh4, concnfer, concdfer, concbfe,   &
          &                concbno3, concbnh4, xsizedia, xsizephy, xsizern, xsizerd,          & 
-         &                xksi1, xksi2, xkdoc, qnfelim, qdfelim, caco3r, oxymin
+         &                xksi1, xksi2, xkdoc, qnfelim, qdfelim, caco3r, oxymin, ratchl
       !!----------------------------------------------------------------------
       !
       IF(lwp) THEN
@@ -297,17 +323,15 @@ CONTAINS
          WRITE(numout,*) '~~~~~~~~~~~~'
       ENDIF
       !
-      REWIND( numnatp_ref )              ! Namelist nampislim in reference namelist : Pisces nutrient limitation parameters
-      READ  ( numnatp_ref, namp4zlim, IOSTAT = ios, ERR = 901)
-901   IF( ios /= 0 )   CALL ctl_nam ( ios , 'namp4zlim in reference namelist', lwp )
-      REWIND( numnatp_cfg )              ! Namelist nampislim in configuration namelist : Pisces nutrient limitation parameters 
-      READ  ( numnatp_cfg, namp4zlim, IOSTAT = ios, ERR = 902 )
-902   IF( ios >  0 )   CALL ctl_nam ( ios , 'namp4zlim in configuration namelist', lwp )
+      READ_NML_REF(numnatp,namp4zlim)
+      READ_NML_CFG(numnatp,namp4zlim)
       IF(lwm) WRITE( numonp, namp4zlim )
+
       !
       IF(lwp) THEN                         ! control print
          WRITE(numout,*) '   Namelist : namp4zlim'
          WRITE(numout,*) '      mean rainratio                           caco3r    = ', caco3r
+         WRITE(numout,*) '      C associated with Chlorophyll            ratchl    = ', ratchl
          WRITE(numout,*) '      NO3 half saturation of nanophyto         concnno3  = ', concnno3
          WRITE(numout,*) '      NO3 half saturation of diatoms           concdno3  = ', concdno3
          WRITE(numout,*) '      NH4 half saturation for phyto            concnnh4  = ', concnnh4
@@ -324,13 +348,16 @@ CONTAINS
          WRITE(numout,*) '      Minimum size criteria for diatoms        xsizedia  = ', xsizedia
          WRITE(numout,*) '      Minimum size criteria for nanophyto      xsizephy  = ', xsizephy
          WRITE(numout,*) '      Fe half saturation for bacteria          concbfe   = ', concbfe
-         WRITE(numout,*) '      halk saturation constant for anoxia       oxymin   =' , oxymin
+         WRITE(numout,*) '      halk saturation constant for anoxia      oxymin    =' , oxymin
          WRITE(numout,*) '      optimal Fe quota for nano.               qnfelim   = ', qnfelim
          WRITE(numout,*) '      Optimal Fe quota for diatoms             qdfelim   = ', qdfelim
       ENDIF
       !
-      nitrfac (:,:,:) = 0.0
-      nitrfac2(:,:,:) = 0.0
+      xfracal (:,:,jpk) = 0._wp
+      xlimphy (:,:,jpk) = 0._wp
+      xlimdia (:,:,jpk) = 0._wp
+      xlimnfe (:,:,jpk) = 0._wp
+      xlimdfe (:,:,jpk) = 0._wp
       !
    END SUBROUTINE p4z_lim_init
 
@@ -338,29 +365,25 @@ CONTAINS
    INTEGER FUNCTION p4z_lim_alloc()
       !!----------------------------------------------------------------------
       !!                     ***  ROUTINE p5z_lim_alloc  ***
+      !! 
+      !            Allocation of the arrays used in this module
+      !!----------------------------------------------------------------------
+      USE lib_mpp , ONLY: ctl_stop
       !!----------------------------------------------------------------------
 
       !*  Biological arrays for phytoplankton growth
-      ALLOCATE( xdiatno3(jpi,jpj,jpk),       &
-         &      xnanonh4(jpi,jpj,jpk), xdiatnh4(jpi,jpj,jpk),       &
-         &      xnanopo4(jpi,jpj,jpk), xdiatpo4(jpi,jpj,jpk),       &
-         &      xlimdia (jpi,jpj,jpk),       &
-         &      xlimdfe (jpi,jpj,jpk),       &
-         &      concnfe (jpi,jpj,jpk), concdfe (jpi,jpj,jpk),       &
-         &      xlimsi  (jpi,jpj,jpk), STAT=p4z_lim_alloc )
+      ALLOCATE( xdiatno3(A2D(0),jpk),                             &
+         &      xnanonh4(A2D(0),jpk), xdiatnh4(A2D(0),jpk),       &
+         &      xnanopo4(A2D(0),jpk), xdiatpo4(A2D(0),jpk),       &
+         &      xnanofer(A2D(0),jpk), xdiatfer(A2D(0),jpk),       &
+         &      xlimdia (A2D(0),jpk), xlimdfe (A2D(0),jpk),       &
+         &      concnfe (A2D(0),jpk), concdfe (A2D(0),jpk),       &
+         &      xqfuncfecn(A2D(0),jpk), xqfuncfecd(A2D(0),jpk),   &
+         &      xlimsi  (A2D(0),jpk), STAT=p4z_lim_alloc )
       !
-      IF( p4z_lim_alloc /= 0 ) CALL ctl_warn( 'p4z_lim_alloc : failed to allocate arrays.' )
+      IF( p4z_lim_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p4z_lim_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p4z_lim_alloc
-
-#else
-   !!======================================================================
-   !!  Dummy module :                                   No PISCES bio-model
-   !!======================================================================
-CONTAINS
-   SUBROUTINE p4z_lim                   ! Empty routine
-   END SUBROUTINE p4z_lim
-#endif
 
    !!======================================================================
 END MODULE p4zlim

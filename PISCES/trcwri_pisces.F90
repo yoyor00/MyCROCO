@@ -14,6 +14,7 @@ MODULE trcwri_pisces
    USE sms_pisces  ! PISCES variables
    USE trc         ! passive tracers common variables 
    USE sedwri
+   USE iom
 
    IMPLICIT NONE
    PRIVATE
@@ -22,6 +23,7 @@ MODULE trcwri_pisces
 
    !! * Substitutions
 #include "ocean2pisces.h90"
+#include "do_loop_substitute.h90"
 
 
 CONTAINS
@@ -33,14 +35,18 @@ CONTAINS
       !! ** Purpose :   output passive tracers fields 
       !!---------------------------------------------------------------------
       CHARACTER (len=20)   :: cltra
-      INTEGER              :: jn
+      INTEGER              :: ji, jj, jk, jn
+      REAL(wp), DIMENSION(A2D(0),jpk) :: ztra
       !!---------------------------------------------------------------------
  
       IF( ln_sediment )  CALL sed_wri
 
       DO jn = jp_pcs0, jp_pcs1
          cltra = TRIM( ctrcnm(jn) )                  ! short title for tracer
-         CALL iom_put( cltra, MAX(0., trn(:,:,:,jn) ) )
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            ztra(ji,jj,jk) = MAX( 0., tr(ji,jj,jk,jn,nnew) )
+         END_3D   
+         CALL iom_put( cltra, ztra )
       END DO
 
 # if defined key_trc_diaadd
@@ -83,7 +89,7 @@ CONTAINS
       CALL iom_put( "PFeN"    , trc3d(:,:,:,jp_pfen)   )
       CALL iom_put( "PFeD"    , trc3d(:,:,:,jp_pfed)   )
       CALL iom_put( "PPRego2" , trc3d(:,:,:,jp_prego2) )
-      CALL iom_put( "GRAZ2", trc3d(:,:,:,jp_grapoc2) )
+      CALL iom_put( "GRAZ2"   , trc3d(:,:,:,jp_grapoc2) )
       CALL iom_put( "MesoZo2" , trc3d(:,:,:,jp_meso2 )  )
       CALL iom_put( "Nitrifo2", trc3d(:,:,:,jp_nitrifo2) )
 #endif

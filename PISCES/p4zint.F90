@@ -1,84 +1,112 @@
 #include "cppdefs.h"
 
 MODULE p4zint
-   !!======================================================================
+   !!=========================================================================
    !!                         ***  MODULE p4zint  ***
    !! TOP :   PISCES interpolation and computation of various accessory fields
-   !!======================================================================
+   !!=========================================================================
    !! History :   1.0  !  2004-03 (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!----------------------------------------------------------------------
-#if defined key_pisces
    !!   p4z_int        :  interpolation and computation of various accessory fields
    !!----------------------------------------------------------------------
+   USE oce_trc         !  shared variables between ocean and passive tracers
+   USE trc             !  passive tracers common variables 
    USE sms_pisces      !  PISCES Source Minus Sink variables
 
    IMPLICIT NONE
    PRIVATE
 
    PUBLIC   p4z_int  
+   REAL(wp) ::   xksilim = 16.5e-6_wp   ! Half-saturation constant for the Si half-saturation constant computation
 
-   !!* Substitution
-#  include "ocean2pisces.h90"
-
-   REAL(wp) ::   xksilim = 16.5e-6   ! Half-saturation constant for the Si half-saturation constant computation
+!! * Substitutions
+#  include "ocean2pisces.h90"   
+#  include "do_loop_substitute.h90"
 
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
-   !! $Id: p4zint.F90 10068 2018-08-28 14:09:04Z nicolasmartin $ 
+   !! $Id: p4zint.F90 15459 2021-10-29 08:19:18Z cetlod $ 
    !! Software governed by the CeCILL license (see ./LICENSE)
    !!----------------------------------------------------------------------
 CONTAINS
 
-   SUBROUTINE p4z_int
+   SUBROUTINE p4z_int( kt, Kbb, Kmm )
       !!---------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_int  ***
       !!
       !! ** Purpose :   interpolation and computation of various accessory fields
       !!
       !!---------------------------------------------------------------------
-      INTEGER  :: ji, jj, jk             ! dummy loop indices
-      REAL(wp) :: zvar                   ! local variable
+      INTEGER, INTENT( in ) ::   kt       ! ocean time-step index
+      INTEGER, INTENT( in ) ::   Kbb, Kmm ! time level indices
+      !
+      INTEGER  :: ji, jj, jk              ! dummy loop indices
+      REAL(wp) :: zrum, zcodel, zargu, zvar
       !!---------------------------------------------------------------------
+      !
+      IF( ln_timing )   CALL timing_start('p4z_int')
       !
       ! Computation of phyto and zoo metabolic rate
       ! -------------------------------------------
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               tgfunc (ji,jj,jk) = EXP( 0.063913 * tsn(ji,jj,K,jp_tem) )
-               tgfunc2(ji,jj,jk) = EXP( 0.07608  * tsn(ji,jj,K,jp_tem) )
-            END DO
-         END DO
-      END DO
+      DO_3D( 0, 0, 0, 0, 1, jpk )
+         ! Generic temperature dependence (Eppley, 1972)
+         tgfunc (ji,jj,jk) = EXP( 0.0631 * ts(ji,jj,jk,jp_tem,Kmm) )
+         ! Temperature dependence of mesozooplankton (Buitenhuis et al. (2005))
+         tgfunc2(ji,jj,jk) = EXP( 0.0761 * ts(ji,jj,jk,jp_tem,Kmm) )
+      END_3D
 
-      ! Computation of the silicon dependant half saturation  constant for silica uptake
-      ! ---------------------------------------------------
+
       IF( ln_p4z .OR. ln_p5z ) THEN
-         DO jj = JRANGE
-            DO ji = IRANGE
-               zvar = trb(ji,jj,KSURF,jpsil) * trb(ji,jj,KSURF,jpsil)
-               xksimax(ji,jj) = MAX( xksimax(ji,jj), ( 1.+ 7.* zvar / ( xksilim * xksilim + zvar ) ) * 1e-6 )
-            END DO
-         END DO
+         ! Computation of the silicon dependant half saturation  constant for silica uptake
+         ! This is based on an old study by Pondaven et al. (1998)
+         ! --------------------------------------------------------------------------------
+         DO_2D( 0, 0, 0, 0 )
+            zvar = tr(ji,jj,1,jpsil,Kbb) * tr(ji,jj,1,jpsil,Kbb)
+            xksimax(ji,jj) = MAX( xksimax(ji,jj), ( 1.+ 7.* zvar / ( xksilim * xksilim + zvar ) ) * 1e-6 )
+         END_2D
+         !
+         ! At the end of each year, the half saturation constant for silica is 
+         ! updated as this is based on the highest concentration reached over 
+         ! the year
+         ! -------------------------------------------------------------------
+         IF( nday_year == nyear_len(1) ) THEN
+            xksi   (:,:) = xksimax(:,:)
+            xksimax(:,:) = 0._wp
+         ENDIF
       ENDIF
-      !
-      IF( nday_year == 365 ) THEN
-         xksi   (:,:) = xksimax(:,:)
-         xksimax(:,:) = 0.
-      ENDIF
-      !
-   END SUBROUTINE p4z_int
+         !
+         ! compute the day length depending on latitude and the day
+         ! Astronomical parameterization taken from HAMOCC3
+      zrum = REAL( nday_year - 80, wp ) / REAL( nyear_len(1), wp )
+      zcodel = ASIN(  SIN( zrum * rpi * 2._wp ) * SIN( rad * 23.5_wp )  )
 
-#else
-   !!======================================================================
-   !!  Dummy module :                                   No PISCES bio-model
-   !!======================================================================
-CONTAINS
-   SUBROUTINE p4z_int                   ! Empty routine
-      WRITE(*,*) 'p4z_int: You should not have seen this print! error?'
+      ! day length in hours
+      DO_2D( 0, 0, 0, 0 )
+         zargu = TAN( zcodel ) * TAN( gphit(ji,jj) * rad )
+         zargu = MAX( -1., MIN(  1., zargu ) )
+         strn(ji,jj) = MAX( 0.0, 24. - 2. * ACOS( zargu ) / rad / 15. )
+      END_2D
+      !
+      DO_3D( 0, 0, 0, 0, 1, jpkm1 )
+        ! denitrification factor computed from O2 levels
+         ! This factor diagnoses below which level of O2 denitrification
+         ! is active
+         nitrfac(ji,jj,jk) = MAX(  0.e0, 0.4 * ( 6.e-6  - tr(ji,jj,jk,jpoxy,Kbb) )    &
+            &                                / ( oxymin + tr(ji,jj,jk,jpoxy,Kbb) )  )
+         nitrfac(ji,jj,jk) = MIN( 1., nitrfac(ji,jj,jk) )
+         !
+         ! redox factor computed from NO3 levels
+         ! This factor diagnoses below which level of NO3 additional redox
+         ! reactions are taking place.
+         nitrfac2(ji,jj,jk) = MAX( 0.e0,       ( 1.E-6 - tr(ji,jj,jk,jpno3,Kbb) )  &
+            &                                / ( 1.E-6 + tr(ji,jj,jk,jpno3,Kbb) ) )
+         nitrfac2(ji,jj,jk) = MIN( 1., nitrfac2(ji,jj,jk) )
+      END_3D
+      !
+      IF( ln_timing )   CALL timing_stop('p4z_int')
+      !
    END SUBROUTINE p4z_int
-#endif 
 
    !!======================================================================
 END MODULE p4zint

@@ -3,29 +3,22 @@
 MODULE sms_pisces   
    !!----------------------------------------------------------------------
    !!                     ***  sms_pisces.F90  ***  
-   !! TOP :   PISCES Source Minus Sink variables
+   !! TOP :   PISCES Source Minus Sink variables are declared and allocated
    !!----------------------------------------------------------------------
    !! History :   1.0  !  2000-02 (O. Aumont) original code
    !!             3.2  !  2009-04 (C. Ethe & NEMO team) style
    !!----------------------------------------------------------------------
-
-#if defined key_pisces
-   !!----------------------------------------------------------------------
-   !!   'key_pisces'                                         PISCES model
-   !!----------------------------------------------------------------------
-   USE par_pisces
-   USE ocean2pisces
-   USE trc
+!   USE par_oce
+!   USE par_trc
+    USE oce_trc
 
    IMPLICIT NONE
    PUBLIC
 
-#include "ocean2pisces.h90"
 
-   !!*  Time variables
-   INTEGER  ::   numnatp_ref = -1           !! Logical units for namelist pisces
-   INTEGER  ::   numnatp_cfg = -1           !! Logical units for namelist pisces
-   INTEGER  ::   numonp      = -1           !! Logical unit for namelist pisces output
+   CHARACTER(:), ALLOCATABLE ::   numnatp_ref   !! Character buffer for reference namelist pisces
+   CHARACTER(:), ALLOCATABLE ::   numnatp_cfg   !! Character buffer for configuration namelist pisces
+   INTEGER ::   numonp      = -1                !! Logical unit for namelist pisces output
 
    !!* Model used
    LOGICAL  ::  ln_p2z            !: Flag to use PISCES  reduced model
@@ -35,347 +28,191 @@ MODULE sms_pisces
    LOGICAL  ::  ln_sediment       !: Flag to enable sediment module
 
    !!*  Time variables
-   INTEGER  ::   nrdttrc           !: ???
-   INTEGER  ::   niter1max, niter2max           !: ???
-   INTEGER  ::   neos
-   REAL(wp) ::   rfact , rfactr    !: ???
-   REAL(wp) ::   rfact2, rfact2r   !: ???
-   REAL(wp) ::   xstep             !: Time step duration for biology
+   INTEGER  ::   nrdttrc          !: ???
+   REAL(wp) ::   rfact , rfactr   !: time step duration (in seconds)
+   REAL(wp) ::   rfact2, rfact2r  !: time step duration (in seconds) when timesplitting is activated for PISCES
+   REAL(wp) ::   xstep            !: Time step duration for biology
+!   REAL(wp) ::   ryyss            !: number of seconds per year 
+   REAL(wp) ::   r1_ryyss         !: inverse number of seconds per year 
 
    !!*  Biological parameters 
-   REAL(wp) ::   rno3              !: ???
-   REAL(wp) ::   o2ut              !: ???
-   REAL(wp) ::   po4r              !: ???
-   REAL(wp) ::   rdenit            !: ???
-   REAL(wp) ::   rdenita           !: ???
-   REAL(wp) ::   o2nit             !: ???
-   REAL(wp) ::   wsbio, wsbio2     !: ???
-   REAL(wp) ::   wsbio2max         !: ???
-   REAL(wp) ::   wsbio2scale       !: ???
-   LOGICAL  ::   ln_sink_new       !: 
-   REAL(wp) ::   xkmort            !: ???
-   REAL(wp) ::   ferat3            !: ???
-   REAL(wp) ::   ldocp             !: ???
-   REAL(wp) ::   ldocz             !: ???
-   REAL(wp) ::   lthet             !: ???
-   REAL(wp) ::   no3rat3           !: ???
-   REAL(wp) ::   po4rat3           !: ???
+   REAL(wp) ::   rno3             !: C/N stoichiometric ratio
+   REAL(wp) ::   o2ut             !: O2/N stoichiometric ratio for ammonification
+   REAL(wp) ::   po4r             !: C/P stoichiometric ratio
+   REAL(wp) ::   rdenit           !: C/N ratio for denitrification
+   REAL(wp) ::   rdenita          !: C/N ratio for denitrification
+   REAL(wp) ::   o2nit            !: O2/N ratio for nitrification
+   REAL(wp) ::   wsbio, wsbio2    !: Sinking speeds of particles
+   REAL(wp) ::   wsbio2max        !: Maximum sinking speed of the largest particles
+   REAL(wp) ::   wsbio2scale      !: Length scale for the variations of wsbio2
+   REAL(wp) ::   oxymin           !:  half saturation constant for anoxia
+   REAL(wp) ::   xkmort           !: Mortality half-saturation constant
+   REAL(wp) ::   feratz           !: Fe/C in microzooplankton
+   REAL(wp) ::   feratm           !: Fe/C in mesozooplankton
+   REAL(wp) ::   ldocp            !: Ligand production ratio during PP
+   REAL(wp) ::   ldocz            !: Ligand production ratio by grazing
+   REAL(wp) ::   lthet            !: Uptake of ligand by phytoplankton
+   REAL(wp) ::   no3rat3          !: C/N ratio of zooplankton
+   REAL(wp) ::   po4rat3          !: C/P ratio of zooplankton
 
-   !!* Damping 
-   LOGICAL  ::   ln_pisdmp         !: relaxation or not of nutrients to a mean value
-                                   !: when initialize from a restart file 
-   LOGICAL  ::   ln_pisclo         !: Restoring or not of nutrients to initial value
-                                   !: on close seas
+   !!*  diagnostic parameters 
+   REAL(wp) ::  tpp               !: total primary production
+   REAL(wp) ::  t_oce_co2_exp     !: total carbon export
+   REAL(wp) ::  t_oce_co2_flx     !: Total ocean carbon flux
+   REAL(wp) ::  t_oce_co2_flx_cum !: Cumulative Total ocean carbon flux
+   REAL(wp) ::  t_atm_co2_flx     !: global mean of atmospheric pco2
 
-   REAL(wp), DIMENSION(:), ALLOCATABLE ::   tra_ctl         !: previous trend values
+   !!* restoring
+   LOGICAL  ::  ln_pisdmp         !: restoring or not of nutrients to a mean value
+   INTEGER  ::  nn_pisdmp         !: frequency of relaxation or not of nutrients to a mean value
 
-   !!*  Biological fluxes for light
-   INTEGER , ALLOCATABLE, SAVE, DIMENSION(:,:)   ::  neln  !: number of T-levels+ 1 in the euphotic layer
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:)   ::  heup  !: euphotic layer depth
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:)   ::  fr_i  !: euphotic layer depth
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  tmask
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  etot3
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  etot, etot_ndcy      !: PAR over 24h in case of diurnal cycle
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  enano, ediat   !: PAR for phyto, nano and diat
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  enanom, ediatm !: PAR for phyto, nano and diat 
+   !!* Mass conservation
+   LOGICAL  ::  ln_check_mass     !: Flag to check mass conservation
+   LOGICAL, PUBLIC ::   ln_ironice   !: boolean for Fe input from sea ice
+
+   !!* Diurnal cycle in PISCES
+   LOGICAL  ::  ln_p4z_dcyc       !: Flag to activate diurnal cycle in PISCES
+
+   !!*  Biological fluxes for light : variables shared by pisces & lobster
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:  ) ::  strn  !: Day duration in hours
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  enano, ediat   !: PAR for phyto, nano and diat 
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  enanom, ediatm !: mean PAR for phyto, nano and diat 
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  epico          !: PAR for pico
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  epicom         !: PAR for pico
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  emoy           !: averaged PAR in the mixed layer
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:)   ::  heup_01 !: Absolute euphotic layer depth
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:)   ::  xksi  !:  LOBSTER : zooplakton closure
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  epicom         !: mean PAR for pico
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::  emoy, etotm    !: averaged PAR in the mixed layer
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:)   ::  xksi  !:  Half-saturation con,stant for diatoms
 
    !!*  Biological fluxes for primary production
-   REAL(wp), ALLOCATABLE, SAVE,   DIMENSION(:,:)  ::   xksimax    !: ???
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:)    ::   xksimax    !: Maximum half-saturation constant over the year (Si)
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   biron      !: bioavailable fraction of iron
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:)  ::   plig       !: proportion of iron organically complexed
 
    !!*  Sinking speed
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   wsbio3   !: POC sinking speed
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   wsbio3   !: POC sinking speed 
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   wsbio4   !: GOC sinking speed
 
    !!*  SMS for the organic matter
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   xfracal    !: ??
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   nitrfac    !: ??
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   nitrfac2   !: ??
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   orem       !: ??
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   xdiss      !: ??
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   xfracal    !: Fraction of nanophytoplankton that are calcifying organisms
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   nitrfac    !: OMZ 
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   nitrfac2   !: N depleted indice
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   orem       !: oxic remineralisation
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   xdiss      !: Shear rate
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   prodcal    !: Calcite production
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   prodpoc    !: Calcite production
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   conspoc    !: Calcite production
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   prodgoc    !: Calcite production
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   consgoc    !: Calcite production
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   prodpoc    !: POC production
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   conspoc    !: POC consumption
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   prodgoc    !: GOC production
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   consgoc    !: GOC consumption
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   consfe3    !: GOC consumption
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   blim       !: bacterial production factor
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sizen      !: size of diatoms
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sizep      !: size of diatoms
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sized      !: size of diatoms
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sizen      !: size of nanophyto
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sizep      !: size of picophyto
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sized      !: size of diatoms 
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sizena     !: size of nanophytoplankton, after
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sizepa     !: size of picophyto, after
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sizeda     !: size of diatomss, after
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   thetanano  !: size of diatomss, after
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   xfecolagg  !: Refractory diagnostic concentration of ligands
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   xcoagfe    !: Coagulation rate of colloidal Fe/ligands
 
    !!* Variable for chemistry of the CO2 cycle
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   ak13    !: ??
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   ak23    !: ??
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   aksp    !: ??
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   hi      !: 
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   excess   !: 
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   aphscale   !:
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   ak13       !: Carbonate chemistry constant
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   ak23       !: Carbonate chemistry constant
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   aksp       !: Solubility product of CaCO3
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   hi         !: Proton concentration
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   excess     !: CO3 saturation
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   aphscale   !: 
+
 
    !!* Temperature dependancy of SMS terms
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tgfunc    !: Temp.  dependancy of various biological rates
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tgfunc2   !: Temp.  dependancy of mesozooplankton rates
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tgfunc    !: Temp. dependancy of various biological rates
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tgfunc2   !: Temp. dependancy of mesozooplankton rates
 
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   thetanano   !: Proxy of Chl/C ratio ( ln_p2z )
-   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:) ::     sinkcalb    !: Calcite sinking flux at the bottom ( ln_p2z )
-   !! * Shared module variables
+   LOGICAL, SAVE :: lk_sed
 
-  REAL(wp), PARAMETER     ::  rtrn = 1.e-20
-  INTEGER :: jip1 = 120
-  INTEGER :: jjp1 = 60
-  INTEGER :: jip2 = 38
-  INTEGER :: jjp2 = 20
-  INTEGER :: jkp = KSURF
-
-   !!* Substitution
+!! * Substitutions
 #  include "ocean2pisces.h90"
+#  include "do_loop_substitute.h90"
    !!----------------------------------------------------------------------
-   !! NEMO/TOP 3.2 , LOCEAN-IPSL (2009) 
-   !! $Id: sms_pisces.F90 1830 2010-04-12 13:03:51Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!======================================================================   
-
+   !! NEMO/TOP 4.0 , NEMO Consortium (2018)
+   !! $Id: sms_pisces.F90 15459 2021-10-29 08:19:18Z cetlod $ 
+   !! Software governed by the CeCILL license (see ./LICENSE)
+   !!----------------------------------------------------------------------
 CONTAINS
 
-  INTEGER FUNCTION sms_pisces_alloc()
+   INTEGER FUNCTION sms_pisces_alloc()
       !!----------------------------------------------------------------------
       !!        *** ROUTINE sms_pisces_alloc ***
       !!----------------------------------------------------------------------
-      INTEGER ::   ierr(14)        ! Local variables
+      INTEGER ::   ierr(17)        ! Local variables
       !!----------------------------------------------------------------------
       ierr(:) = 0
-      !*  Biological fluxes for light
-      ALLOCATE( etot   (PRIV_3D_BIOARRAY), neln(PRIV_2D_BIOARRAY), heup(PRIV_2D_BIOARRAY),    &
-        &       heup_01(PRIV_2D_BIOARRAY), xksi(PRIV_2D_BIOARRAY), STAT=ierr(1) )
+      !*  Biological fluxes for light : shared variables for pisces & lobster
+      ALLOCATE( strn(A2D(0)),  STAT=ierr(1) )
+
+      !* Optics
+      ALLOCATE(  enano(A2D(0),jpk) , enanom(A2D(0),jpk) ,   &
+         &       emoy(A2D(0),jpk)  , etotm(A2D(0),jpk)  ,      STAT=ierr(2) )
+
+      ! Biological SMS
+      ALLOCATE( orem     (A2D(0),jpk), xdiss   (A2D(0),jpk),  &
+         &      nitrfac  (A2D(0),jpk), nitrfac2(A2D(0),jpk),  &
+         &      prodcal  (A2D(0),jpk), prodpoc (A2D(0),jpk),  &
+         &      conspoc  (A2D(0),jpk), xfracal (A2D(0),jpk),   STAT=ierr(3) )
+
+      !* Carbonate chemistry
+      ALLOCATE( ak13(A2D(0),jpk),                         &
+         &      ak23(A2D(0),jpk), aksp  (A2D(0),jpk) ,    &
+         &      hi  (A2D(0),jpk), excess(A2D(0),jpk) ,    &
+         &      aphscale(A2D(0),jpk),                          STAT=ierr(4) )
       !
-      ALLOCATE( fr_i  (PRIV_2D_BIOARRAY),                                &
-                tmask (PRIV_3D_BIOARRAY), etot3 (PRIV_3D_BIOARRAY) ,     &
-                enano (PRIV_3D_BIOARRAY),                                &
-                enanom(PRIV_3D_BIOARRAY),                                &
-                etot_ndcy(PRIV_3D_BIOARRAY), emoy(PRIV_3D_BIOARRAY),  STAT=ierr(2) )
-      
-     IF( .NOT. ln_p2z )  &
-       &   ALLOCATE( ediat (PRIV_3D_BIOARRAY) ,     &
-       &             ediatm(PRIV_3D_BIOARRAY),  STAT=ierr(12) )
-      !
-      !*  Biological fluxes for primary production
-      ALLOCATE( xksimax(PRIV_2D_BIOARRAY), biron(PRIV_3D_BIOARRAY),  STAT=ierr(3) )
-         !
-      !*  SMS for the organic matter
-      ALLOCATE( xfracal (PRIV_3D_BIOARRAY), orem    (PRIV_3D_BIOARRAY),   &
-         &      nitrfac(PRIV_3D_BIOARRAY) , nitrfac2(PRIV_3D_BIOARRAY),   & 
-         &      prodcal(PRIV_3D_BIOARRAY) , xdiss   (PRIV_3D_BIOARRAY),   &
-         &      prodpoc(PRIV_3D_BIOARRAY) , conspoc(PRIV_3D_BIOARRAY) ,   &
-         &      prodgoc(PRIV_3D_BIOARRAY) , consgoc(PRIV_3D_BIOARRAY) ,   &
-         &      blim   (PRIV_3D_BIOARRAY) ,     STAT=ierr(4) )
-         !
-      !* Variable for chemistry of the CO2 cycle
-      ALLOCATE( ak13(PRIV_3D_BIOARRAY)    ,                                  &
-         &      ak23(PRIV_3D_BIOARRAY)    , aksp  (PRIV_3D_BIOARRAY) ,       &
-         &      aphscale(PRIV_3D_BIOARRAY), excess(PRIV_3D_BIOARRAY) ,       &
-         &      hi  (PRIV_3D_BIOARRAY)    ,    STAT=ierr(5) )
-         !
-      !* Temperature dependancy of SMS terms
-      ALLOCATE( tgfunc(PRIV_3D_BIOARRAY)  , tgfunc2(PRIV_3D_BIOARRAY),   STAT=ierr(6) )
+      !* Temperature dependency of SMS terms
+      ALLOCATE( tgfunc (A2D(0),jpk) , tgfunc2(A2D(0),jpk),     STAT=ierr(5) )
       !
       !* Sinking speed
-      ALLOCATE( wsbio3 (PRIV_3D_BIOARRAY) , wsbio4 (PRIV_3D_BIOARRAY),   STAT=ierr(7) )
-      !
+      ALLOCATE( wsbio3 (A2D(0),jpk) , wsbio4 (A2D(0),jpk),     STAT=ierr(6) )
 
-      IF( ln_p2z )  &
-       &  ALLOCATE( thetanano(PRIV_3D_BIOARRAY), sinkcalb(PRIV_2D_BIOARRAY),         STAT=ierr(8) )
+      !*  Size of phytoplankton cells
+      ALLOCATE( sizen (A2D(0),jpk), sizena(A2D(0),jpk),        STAT=ierr(7) )
 
-      IF( ln_ligand ) ALLOCATE( plig(PRIV_3D_BIOARRAY) ,              STAT=ierr(9) )
+      ALLOCATE( blim     (A2D(0),jpk), consfe3 (A2D(0),jpk),  &
+         &      xfecolagg(A2D(0),jpk), xcoagfe (A2D(0),jpk),   STAT=ierr(8) )
+      ! 
+      ALLOCATE( plig(A2D(0),jpk)  ,   biron(A2D(0),jpk)    ,   STAT=ierr(9) )
 
-      IF( ln_p5z ) THEN
+      IF( ln_p2z )   &
+         &   ALLOCATE( thetanano (A2D(0),jpk),                 STAT=ierr(10) )
+
+      IF( ln_p4z .OR. ln_p5z ) THEN
+         !* Optics
+         ALLOCATE(  ediat(A2D(0),jpk) , ediatm(A2D(0),jpk),    STAT=ierr(11) )
+
+         !* Biological SMS
+         ALLOCATE( xksimax(A2D(0))  ,                          STAT=ierr(12) )
+
+         ! Biological SMS
+         ALLOCATE( prodgoc(A2D(0),jpk), consgoc(A2D(0),jpk),   STAT=ierr(13) )
          !
-         ALLOCATE( epico(PRIV_3D_BIOARRAY), epicom(PRIV_3D_BIOARRAY) ,   STAT=ierr(10) )
+         !* Si 1/2 saturation constant 
+         ALLOCATE( xksi (A2D(0))  ,                            STAT=ierr(14) )
 
          !*  Size of phytoplankton cells
-         ALLOCATE( sizen(PRIV_3D_BIOARRAY), sizep(PRIV_3D_BIOARRAY),         &
-           &       sized(PRIV_3D_BIOARRAY), STAT=ierr(11) )
+         ALLOCATE( sized (A2D(0),jpk), sizeda(A2D(0),jpk),     STAT=ierr(15) )
+         ! 
       ENDIF
+      !
+      IF( ln_p5z ) THEN
+         ! PISCES-QUOTA specific part      
+         ALLOCATE( epico(A2D(0),jpk)   , epicom(A2D(0),jpk),   STAT=ierr(16) ) 
 
+         !*  Size of phytoplankton cells
+         ALLOCATE( sizep(A2D(0),jpk), sizepa(A2D(0),jpk),      STAT=ierr(17) )
+      ENDIF
       !
       sms_pisces_alloc = MAXVAL( ierr )
       !
-      IF( sms_pisces_alloc /= 0 )   CALL ctl_warn('sms_pisces_alloc: failed to allocate arrays')
+      IF( sms_pisces_alloc /= 0 )   CALL ctl_stop( 'STOP', 'sms_pisces_alloc: failed to allocate arrays' ) 
       !
    END FUNCTION sms_pisces_alloc
 
-
-   SUBROUTINE tracer_stat( kt )
-      !!----------------------------------------------------------------------
-      !!                    ***  trc_rst_stat  ***
-      !!
-      !! ** purpose  :   Compute tracers statistics
-      !!----------------------------------------------------------------------
-      INTEGER, INTENT(in)  :: kt
-      INTEGER  :: ji, jj, jk, jn
-      REAL(wp) :: ztra, zmin, zmax, zmean, areatot, zcoef
-      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY,jptra)  :: ptra
-      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY)        :: zmask, zvol
-      !!----------------------------------------------------------------------
-
-      IF( lwp ) THEN
-         WRITE(numout,*) 
-         WRITE(numout,*) ' TRACER STAT at time-step kt = ', kt
-         WRITE(numout,*) 
-      ENDIF
-      !
-! to have coherent units when calling tracer_stat
-      IF( kt .eq. nit000 ) THEN
-        zcoef = 1.e-6
-      ELSE
-        zcoef = 1.
-      ENDIF
-
-      DO jn = 1, jptra
-         DO jk = KRANGE
-            DO jj = JRANGE
-               DO ji = IRANGE
-                  ptra(ji,jj,jk,jn) = trb(ji,jj,K,jn) * zcoef
-        !          ptra(ji,jj,jk,jn) = tra(ji,jj,jk,jn) * zcoef
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDDO
-      areatot = 0.                                                           ! total volume of the ocean 
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE          ! masked grid volume
-               zvol(ji,jj,jk)  = cvol(ji,jj,K)
-               zmask(ji,jj,jk) = tmask(ji,jj,jk) * tmask_i(ji,jj) 
-               areatot         = areatot + zvol(ji,jj,jk)
-            ENDDO
-        ENDDO
-     ENDDO
-     IF( lk_mpp )   CALL mpp_sum( areatot )     ! sum over the global domain  
-
-     DO jn = 1, jptra
-         ztra = 0.
-         DO jk = KRANGE
-            DO jj = JRANGE
-               DO ji = IRANGE          ! masked grid volume
-                  ztra  = ztra + ptra(ji,jj,jk,jn) * zvol(ji,jj,jk) 
-               ENDDO
-            ENDDO
-         ENDDO
-         zmin  = MINVAL( ptra(:,:,:,jn), mask= ( zmask(:,:,:) /= 0. ) ) 
-         zmax  = MAXVAL( ptra(:,:,:,jn), mask= ( zmask(:,:,:) /= 0. ) ) 
-         IF( lk_mpp ) THEN
-            CALL mpp_sum( ztra )      ! min over the global domain
-            CALL mpp_min( zmin )      ! min over the global domain
-            CALL mpp_max( zmax )      ! max over the global domain
-         END IF
-         zmean  = ztra / areatot
-         IF(lwp) WRITE(numout,9000) jn, TRIM( ctrcnm(jn) ), zmean, zmin, zmax
-      END DO
-      WRITE(numout,*) 
-9000  FORMAT(' tracer nb :',i2,'    name :',a10,'    mean :',e18.10,'    min :',e18.10, '    max :',e18.10 )
-      !
-   END SUBROUTINE tracer_stat
-
-   SUBROUTINE prt_trc( charout, ptab, ndim, lchar)
-
-      INTEGER, INTENT(in)  :: ndim
-      CHARACTER (len=*),  INTENT(in)           :: charout   ! information about the tab3d array
-      CHARACTER (len=*),  DIMENSION(ndim), INTENT(in)  :: lchar   ! information about the tab3d array
-      REAL(wp), INTENT(in), DIMENSION(PRIV_3D_BIOARRAY,ndim)  :: ptab
-      INTEGER :: ji, jj, jk, jn
-      REAL(wp)  :: zsum
-
-      WRITE(numout,*) charout
-
-      DO jn = 1, ndim
-         zsum   = SUM( ptab(:,:,:,jn) * tmask(:,:,:) )
-         IF( lk_mpp ) CALL mpp_sum( zsum )      ! min over the global domain
-         IF( lwp ) WRITE(numout,FMT="(3x,a10,' : ',D23.16)") TRIM(lchar(jn)), zsum
-      END DO
-
-   END SUBROUTINE prt_trc      
-
-   SUBROUTINE prt_ctl_trc( charout, ltra )
-
-      CHARACTER (len=*),  INTENT(in)           :: charout   ! information about the tab3d array
-      CHARACTER (len=*),  INTENT(in), OPTIONAL :: ltra    ! information about the tab3d array
-      INTEGER :: ji, jj, jk, jn
-      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY,jptra)        :: ztab
-      REAL(wp)  :: zsum,  zvctl  
-
-
-      IF( PRESENT( ltra ) ) THEN
-         DO jn = 1, jptra
-            DO jk = KRANGE
-               DO jj = JRANGE
-                  DO ji = IRANGE
-                     ztab(ji,jj,jk,jn) = tra(ji,jj,jk,jn) * tmask(ji,jj,jk)
-                  ENDDO
-               ENDDO
-            ENDDO
-         ENDDO
-      ELSE 
-         DO jn = 1, jptra
-            DO jk = KRANGE
-               DO jj = JRANGE
-                  DO ji = IRANGE
-                     ztab(ji,jj,jk,jn) = trn(ji,jj,K,jn) * tmask(ji,jj,jk)
-                  ENDDO
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDIF
-
-      WRITE(numout,*) charout
-
-      IF( PRESENT( ltra ) ) THEN
-          DO jn = 1, jptra
-             zvctl  = tra_ctl(jn)
-             zsum   = SUM( ztab(:,:,:,jn) )
-             IF( lk_mpp ) CALL mpp_sum( zsum )      ! min over the global domain
-             IF( lwp ) WRITE(numout,FMT="(3x,a10,' : ',D23.16)") TRIM(ctrcnm(jn)), zsum-zvctl
-             tra_ctl(jn) = zsum
-          END DO
-       ELSE
-          DO jn = 1, jptra
-             zvctl  = tra_ctl(jn)
-             zsum   = SUM( ztab(:,:,:,jn) )
-             IF( lk_mpp ) CALL mpp_sum( zsum )      ! min over the global domain
-             IF( lwp ) WRITE(numout,FMT="(3x,a10,' : ',D23.16)") TRIM(ctrcnm(jn)), zsum
-          END DO
-      ENDIF
-
-   END SUBROUTINE prt_ctl_trc      
-
-   SUBROUTINE prt_ctl_trc_ini
-
-      ALLOCATE( tra_ctl(jptra) )
-      tra_ctl(:) = 0.e0           ! Initialization to zero
-
-   END SUBROUTINE prt_ctl_trc_ini
-
-  SUBROUTINE prt_ctl_trc_info( clinfo )
-      !!----------------------------------------------------------------------
-      !!                     ***  ROUTINE prt_ctl_trc_info  ***
-      !!
-      !! ** Purpose : - print information without any computation
-      !!----------------------------------------------------------------------
-      CHARACTER (len=*), INTENT(in) ::   clinfo      ! information to print
-      !! 
-      !
-   END SUBROUTINE prt_ctl_trc_info
-
-
-
-#else
-   !!----------------------------------------------------------------------   
-   !!  Empty module :                                     NO PISCES model
-   !!----------------------------------------------------------------------
-#endif
-   
+   !!======================================================================   
 END MODULE sms_pisces    

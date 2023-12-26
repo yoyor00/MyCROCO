@@ -5,28 +5,26 @@ MODULE sedinitrc
    !!              ***  MODULE  sedinitrc  ***
    !! Sediment : define sediment variables
    !!=====================================================================
-#if defined key_pisces
+
    !!----------------------------------------------------------------------
    !!   sed_init    : initialization, namelist read, and parameters control
    !!----------------------------------------------------------------------
    !! * Modules used
    USE sed     ! sediment global variable
-   USE sed_oce
    USE sedini
    USE seddta
    USE sedrst
    USE sedco3
    USE sedchem
-   USE sedarr
+   USE sed_oce
+   USE lib_mpp         ! distribued memory computing library
+
 
    IMPLICIT NONE
    PRIVATE
 
-   !!* Substitution
+      !!* Substitution
 #  include "ocean2pisces.h90"
-
-   REAL(wp)    ::  &
-      ryear = 365. * 24. * 3600. !:  1 year converted in second
 
    !! *  Routine accessibility
    PUBLIC sed_initrc          ! routine called by opa.F90
@@ -35,7 +33,7 @@ MODULE sedinitrc
 CONTAINS
 
 
-   SUBROUTINE sed_initrc
+   SUBROUTINE sed_initrc( Kbb, Kmm )
       !!----------------------------------------------------------------------
       !!                   ***  ROUTINE sed_init  ***
       !!
@@ -52,6 +50,7 @@ CONTAINS
       !!        !  04-10  (N. Emprin, M. Gehlen )  Original code
       !!        !  06-07  (C. Ethe)  Re-organization
       !!----------------------------------------------------------------------
+      INTEGER, INTENT(in) ::   Kbb, Kmm  ! time level indices
       INTEGER :: ji, jj, ikt
       !!----------------------------------------------------------------------
 
@@ -64,10 +63,13 @@ CONTAINS
 
       ! Determination of sediments number of points and allocate global variables
 
+      IF(lwp) WRITE(numsed,*) ' nit000 = ', nit000, '  nitrc000 = ', nittrc000, '  nitsed000 = ', nitsed000
+      IF(lwp) WRITE(numsed,*) ' '
+
       ! sets initial sediment composition
       ! ( only clay or reading restart file )
       !---------------------------------------
-      CALL sed_init_data
+      CALL sed_init_data( Kbb, Kmm )
 
 
       CALL sed_init_wri
@@ -76,7 +78,7 @@ CONTAINS
    END SUBROUTINE sed_initrc
 
 
-   SUBROUTINE sed_init_data
+   SUBROUTINE sed_init_data( Kbb, Kmm )
       !!----------------------------------------------------------------------
       !!                   ***  ROUTINE sed_init_data  ***
       !!
@@ -87,10 +89,11 @@ CONTAINS
       !!   History :
       !!        !  06-07  (C. Ethe)  original
       !!----------------------------------------------------------------------
- 
+
+      INTEGER, INTENT(in) ::   Kbb, Kmm  ! time level indices
+
       ! local variables
-      INTEGER :: &
-         ji, jk, zhipor
+      INTEGER :: ji, jk, zhipor
 
       !--------------------------------------------------------------------
  
@@ -104,8 +107,9 @@ CONTAINS
          ! default value for initial solid component (fraction of dry weight dim=[0])
          ! clay
          solcp(:,:,:) = 0.
-         solcp(:,2:jpksed,jsclay) = 1.0 * 0.965
-         solcp(:,2:jpksed,jsfeo)  = 1.0 * 0.035
+         solcp(:,2:jpksed,jsclay) = dens_sol(jsclay) * ( 1.0 - 0.035 * 0.5 )
+         solcp(:,2:jpksed,jsfeo)  = dens_sol(jsfeo) * 0.035 * 0.5
+         burial(:,:) = 0.0
 
          ! Initialization of [h+] and [co3--]
 
@@ -122,20 +126,19 @@ CONTAINS
       ELSE   
   
          IF (lwp) WRITE(numsed,*) ' Initilization of Sediment components from restart'
+
+ !        CALL sed_rst_cal( nitsed000, 'READ' )
          CALL sed_rst_read
 
       ENDIF
 
+!      dtsed = rDt_trc
 
       ! Load initial Pisces Data for bot. wat. Chem and fluxes
-      CALL sed_dta ( nitsed000 ) 
+      CALL sed_dta ( nitsed000, Kbb, Kmm ) 
 
       ! Initialization of chemical constants
       CALL sed_chem ( nitsed000 )
-
-      ! Stores initial sediment data for mass balance calculation
-      pwcp0 (1:jpoce,1:jpksed,1:jpwat ) = pwcp (1:jpoce,1:jpksed,1:jpwat ) 
-      solcp0(1:jpoce,1:jpksed,1:jpsol ) = solcp(1:jpoce,1:jpksed,1:jpsol) 
 
       ! Conversion of [h+] in mol/Kg to get it in mol/l ( multiplication by density)
       DO jk = 1, jpksed
@@ -155,10 +158,11 @@ CONTAINS
 
    SUBROUTINE sed_init_wri
 
-      INTEGER :: jpij, jk
+      INTEGER :: jk, jpij
+
+      jpij = jpi * jpj
 
       IF (lwp) THEN
-         jpij = jpi*jpj
          WRITE(numsed,*)' '
          WRITE(numsed,*)'======== Write summary of sediment char.  ============'
          WRITE(numsed,*)' '
@@ -177,12 +181,11 @@ CONTAINS
             WRITE(numsed,*) jk,profsed(jk),dz(jk) 
          END DO
          WRITE(numsed,*)' nb solid comp : ',jpsol
-         WRITE(numsed,*)'(1=opal,2=clay,3=POC,4=CaCO3), 5=POS, 6=POR, 7=FEO, 8=FeS'
+         WRITE(numsed,*)'1=FeO,2=FeS,3=CaCO3,4=Opal, 5=clay, (>5)=POC'
          WRITE(numsed,*)'weight mol 1,2,3,4,5,6,7'
-         WRITE(numsed,'(8(F0.2,3X))')mol_wgt(jsopal),mol_wgt(jsclay),mol_wgt(jspoc),mol_wgt(jscal),   &
-         &                           mol_wgt(jspos),mol_wgt(jspor),mol_wgt(jsfeo),mol_wgt(jsfes)
+         WRITE(numsed,'(6(F0.2,3X))')mol_wgt(jsfeo),mol_wgt(jsfes),mol_wgt(jscal),mol_wgt(jsopal),mol_wgt(jsclay),mol_wgt(jspoc2)
          WRITE(numsed,*)'nb dissolved comp',jpwat
-         WRITE(numsed,*)'1=silicic acid,,2=O2,3=DIC,4=NO3,5=PO4,6=Alk,7=NH4,8=ODU'
+         WRITE(numsed,*)'1=O2,,2=NO3,3=PO4,4=NH4,5=H2S,6=SO4,7=Fe2,8=ALK,9=LGW,10=DIC,11=Si'
          WRITE(numsed,*)'redfield coef C,O,N P Dit '
          WRITE(numsed,'(5(F0.2,3X))')1./spo4r,so2ut/spo4r,srno3/spo4r,spo4r/spo4r,srDnit/spo4r
          WRITE(numsed,*) ' '
@@ -191,7 +194,5 @@ CONTAINS
       ENDIF
 !
    END SUBROUTINE sed_init_wri
-
-#endif
 
 END MODULE sedinitrc
