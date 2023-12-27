@@ -42,10 +42,12 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
+#if defined K3FAST_SACOUS || defined CONVECT
+# include "nbq.h"
+#endif
 #ifdef CONVECT
 # include "work.h"
       real drho,rd
-# include "nbq.h"
 #endif
 #ifdef SST_SKIN
 # include "forces.h"
@@ -53,9 +55,6 @@
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 #if defined SUBSTANCE || defined SEDIMENT
       integer :: iv
-#endif
-#ifdef K3FAST_SACOUS
-# include "nbq.h"
 #endif
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
@@ -75,7 +74,7 @@
 #ifdef THACKER
       real ETA0, omega, depth, Lt
 #endif
-#if defined TANK || defined MOVING_BATHY
+#if defined TANK || defined MOVING_BATHY || defined AgAc
       real ETA0, depth, Lt,cff
 #endif
 #ifdef MOVING_BATHY
@@ -157,6 +156,9 @@
         hmax_exp   = 128.
         dg_exp     = 2.
         time_nbq   = 0. 
+        rx_exp     = 2. 
+        ry_exp     = 2. 
+        rz_exp     = 2.
       endif
 # endif      
 
@@ -253,6 +255,37 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
+!$acc end kernels
+
+# elif defined AgAc
+!$acc kernels if(compute_on_device) default(present)
+!  Free-surface anomaly
+        ETA0=0.D0
+        Lt=10.
+        do j=JR_RANGE
+          do i=IR_RANGE
+            zeta(i,j,1)=ETA0*cos(pi*xr(i,j)/Lt)
+            ubar(i,j,1)=0.
+            vbar(i,j,1)=0.
+            zeta(i,j,2)=zeta(i,j,1)
+            ubar(i,j,2)=ubar(i,j,1)
+            vbar(i,j,2)=vbar(i,j,1)
+          enddo
+        enddo
+#  ifdef K3FAST_SACOUS
+       if (nrrec.eq.0) then!
+!  Acoustic wave emission
+         period_exp = 1./25.
+         for_a_exp  = 2.D0
+         amp_exp    = 1.e-6
+         hmax_exp   = 80.
+         dg_exp     = 2.
+         time_nbq   = 0. 
+         rx_exp     = 4. 
+         ry_exp     = 2. 
+         rz_exp     = 2.
+       endif
+#  endif
 !$acc end kernels
 
 # elif defined DUNE
@@ -739,6 +772,19 @@
 #    endif /* TEMPERATURE */
 
 #   elif defined TANK
+#   if defined TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=20.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+            enddo
+          enddo
+        enddo
+!$acc end kernels        
+#    endif /* TEMPERATURE */
+#   elif defined AgAc
 #   if defined TEMPERATURE
 !$acc kernels if(compute_on_device) default(present)
         do k=1,N

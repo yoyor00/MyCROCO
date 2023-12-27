@@ -25,8 +25,8 @@ C$OMP END MASTER
       !  do i=IstrU-2,Iend+1 ! Patch temporaire pour sorties (Francis)
          do i=IstrU-1,Iend
           do k=-N_sl+1,N
-              dist_d=sqrt((xr(i,j)-xl/2.)**2+(0.*(yr(i,j)-el/2.))**2
-     &                             +(abs(z_w(i,j,k))-hmax_exp/2.)**2)
+              dist_d=sqrt((xr(i,j)-xl/rx_exp)**2+(yr(i,j)-el/ry_exp)**2
+     &                             +(abs(z_w(i,j,k))-hmax_exp/rz_exp)**2)
 
              rho_nbq(i,j,k)=rho_nbq(i,j,k)
      &               +amp_exp*sin(2*acos(-1.)*time_nbq/period_exp)

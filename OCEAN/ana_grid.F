@@ -234,6 +234,10 @@ C$    integer omp_get_thread_num
                      depth=10.
                      f0=0.
                      beta=0.
+# elif defined AgAc
+                     depth=80.
+                     f0=0.
+                     beta=0.
 # elif defined CONVECT
                      depth=32.
                      f0=0.
@@ -368,6 +372,9 @@ C$    integer omp_get_thread_num
                      Length_ETA=10.0
                      Length_XI =Length_XI_ISO_GRID
 #  endif
+# elif defined AgAc
+                     Length_XI =80.0
+                     Length_ETA=80.0
 # elif defined MOVING_BATHY
                      Length_XI =0.4
                      Length_ETA=Length_ETA_ISO_GRID
@@ -883,6 +890,14 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=depth
         enddo
       enddo
+
+# elif defined AgAc 
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=depth
+        enddo
+      enddo
+
 # elif defined MOVING_BATHY
       cff=1./(0.03686)**2
       do j=JstrR,JendR

@@ -180,7 +180,7 @@
 # endif
 # undef  TRACETXT
 # undef  DIAG_CFL
-# define HZR Hzr  \* KH3D: HZR -> Hz as all hydrostatic cases treated above. *\
+# define HZR Hzr  /* KH3D: HZR -> Hz as all hydrostatic cases treated above. */
 /*
    NBQ Precise or Performance options (default: NBQ_PERF)
 */
@@ -249,8 +249,8 @@
 #   define NBQ_HZCORRECT_ZETA
 #   define K3FAST_AM4 
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH2
-#   define K3FAST_COUPLINGW_SCH2
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
 # elif defined KH3D
 #   define K3FAST   
 #   define K3FAST_AM4
@@ -449,7 +449,8 @@
                   || defined SOLITON  || defined JET \
                   || defined ACOUSTIC || defined VORTEX \
                   || defined THACKER  || defined TANK \
-                  || defined KH_INST  || defined TS_HADV_TEST
+                  || defined KH_INST  || defined TS_HADV_TEST \
+                  || defined AgAc
 # define PGF_FLAT_BOTTOM
 #elif defined RIP
 # define PGF_BASIC_JACOBIAN
@@ -1152,7 +1153,7 @@
 #  define AGRIF_OBC_M3ORLANSKI
 #  define AGRIF_OBC_TORLANSKI
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  define AGRIF_OBC_WSPECIFIED
 #  define AGRIF_OBC_NBQSPECIFIED
 # endif

@@ -61,7 +61,7 @@
       real tclm(GLOBAL_2D_ARRAY,N,NT)
       common /climat_tclm/tclm
 # endif
-# if defined TRACERS && defined TCLIMATOLOGY
+# if defined TRACERS && defined TCLIMATOLOGY /* Potential pb */
 #  ifdef TNUDGING
       real Tnudgcof(GLOBAL_2D_ARRAY,N,NT)
       common /climat_Tnudgcof/Tnudgcof
@@ -109,6 +109,10 @@
       real uclm(GLOBAL_2D_ARRAY,N)
       real vclm(GLOBAL_2D_ARRAY,N)
       common /climat_uclm/uclm /climat_vclm/vclm
+# ifdef K3SLOW_W
+      real wclm(GLOBAL_2D_ARRAY,0:N)
+      common /climat_wclm/wclm
+# endif
 #endif
 #ifdef M2CLIMATOLOGY
 # ifdef M2NUDGING

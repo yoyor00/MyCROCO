@@ -39,7 +39,7 @@
 # endif
 
 # if defined NBQ || defined K3FAST 
-#  ifdef K3SLOW_W
+#  if defined NBQ || defined K3SLOW_W
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz
 #  endif

@@ -14,7 +14,7 @@
 ! ! computation of barotropic 
 ! ! pressure-gradient
 ! !
-# ifdef TANK
+# if defined TANK || defined AgAc
          myalpha   = 0.01
 # else
          myalpha   = 0.1 

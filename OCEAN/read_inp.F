@@ -425,7 +425,7 @@
 ! NBQ Time-stepping parameters
 !
       elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
-        print *,"time_stepping_nbq...."
+        MPI_master_only print *,"time_stepping_nbq...."
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
         MPI_master_only write(stdout,

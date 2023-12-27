@@ -151,6 +151,8 @@
 # else
       parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
 # endif
+#elif defined AgAc
+      parameter (LLm0=80,   MMm0=80,   N=80)  
 #elif defined MOVING_BATHY
       parameter (LLm0=400,  MMm0=1,    N=400)  !  1 mm resolution
 #elif defined CALDEIRA

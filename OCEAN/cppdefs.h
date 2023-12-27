@@ -37,6 +37,7 @@
 #undef  SANDBAR         /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  TANK            /* Tank Example */
+#undef  AgAc            /* AgAc (AGRIF-ACOUSTIC) Example */
 #undef  MOVING_BATHY    /* Moving Bathymetry Example */
 #undef  ACOUSTIC        /* Acoustic wave Example */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
@@ -1497,6 +1498,50 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
+#elif defined AgAc
+/*
+!                       AgAc Example
+!                       ==== =======
+!
+*/
+# define MPI
+# define AGRIF
+# define AGRIF_2WAY
+# define NC4PAR
+# undef  K3FAST_HIS
+# define KNBQ3
+# define KNBQ 
+# define K3FAST_SACOUS
+# define K3FAST_DIAGACOUS
+# undef  K3FAST_SEDLAYERS
+# define K3FAST_CSVISC2K
+# undef  XIOS
+# define M2FILTER_NONE
+# define SOLVE3D
+# define UV_ADV
+# define NEW_S_COORD
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_BTFLUX
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define NO_FRCFILE
+# undef  BSTRESS_FAST
+# undef OBC_EAST
+# undef OBC_WEST
+# undef OBC_NORTH
+# undef OBC_SOUTH
+# define  SPONGE
+# undef SPONGE_GRID
+# undef NBQ_NUDGING
+# undef FRC_BRY
+# undef ANA_BRY 
+#  undef Z_FRC_BRY
+#  undef M2_FRC_BRY
+#  undef M3_FRC_BRY
+#  undef T_FRC_BRY
+
 #elif defined MOVING_BATHY
 /*
 !                       Moving Bathy Example
@@ -1539,8 +1584,15 @@
 */
 # undef  MPI
 # define NBQ
+# undef  KNBQ3
+# undef  KNBQ
 # ifdef NBQ
 #  undef  NBQ_PRECISE
+# elif defined KNBQ
+#  define K3FAST_SACOUS
+#  define K3FAST_DIAGACOUS
+#  undef  K3FAST_SEDLAYERS
+#  define K3FAST_CSVISC2K
 # endif
 # undef  UV_VIS2
 # define SOLVE3D

@@ -77,7 +77,9 @@
       real  hmax_exp    
       common/ACOUS4/hmax_exp
       real  amp_exp
-      common/ACOUS4/amp_exp
+      common/ACOUS5/amp_exp
+      real  rx_exp,ry_exp,rz_exp
+      common/ACOUS6/rx_exp,ry_exp,rz_exp
 #  endif
 #  ifdef K3FAST_SEDLAYERS
       real rho_sdl
