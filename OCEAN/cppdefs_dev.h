@@ -249,7 +249,7 @@
 #   define NBQ_HZCORRECT_ZETA
 #   define K3FAST_AM4 
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLING_SCH2
 #   define K3FAST_COUPLINGW_SCH0
 # elif defined KH3D
 #   define K3FAST   
