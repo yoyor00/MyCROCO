@@ -1443,13 +1443,15 @@ CR      write(*,*) 'wrt_his:  wrtWnbq  ' MYID
 !     
 !     Cnbq
 !     
+#  ifdef K3FAST_CSVISC2K 
       if (wrthis(indxCnbq)) then
 !!$acc update if(compute_on_device) host(soundspeed_nbq)
-!         workr=soundspeed_nbq(:,:,1-ksl:N-ksl)
+         workr=soundspeed_nbq(:,:,1-ksl:N-ksl)
          call fillvalue3d(workr,ncidhis,hisCnbq,vname(1,indxCnbq),
      &        record,r3dvar,type)           
 CR      write(*,*) 'wrt_his:  wrtCnbq' MYID
       endif
+#  endif
 # endif
 
 !

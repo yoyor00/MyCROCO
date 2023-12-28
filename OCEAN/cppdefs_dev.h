@@ -379,7 +379,18 @@
 */
 # if defined TANK && defined KNBQ
 #  undef K3FAST_AM4
+# endif 
+
+/* 
+   RIP 
+*/
+# ifdef RIP
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
 # endif
+/* 
+   SACOUS 
+*/
 # ifdef K3FAST_SACOUS
 #  undef NBQ_IMP
 # endif
