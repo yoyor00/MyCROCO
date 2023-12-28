@@ -49,6 +49,7 @@
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
 #undef  ESTUARY         /* 3D tidal estuary Example */
 #undef  KILPATRICK      /* 2D sst front*/
+#undef  CONVECT         /* 2D Convection */
 /*
         ... OR REALISTIC CONFIGURATIONS
 */
@@ -123,7 +124,7 @@
 # endif
 # undef  AUTOTILING
                       /* Non-hydrostatic options */
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  define W_HADV_TVD
 #  define W_VADV_TVD
 # endif
@@ -508,7 +509,7 @@
 # endif
 # undef  AUTOTILING
                       /* Non-hydrostatic options */
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  define W_HADV_WENO5
 #  define W_VADV_WENO5
 # endif
@@ -1253,7 +1254,7 @@
 # define OBC_WEST
 # define SPONGE
 # define WET_DRY
-# ifndef NBQ /* ! NBQ */
+# if !defined NBQ && !defined KNBQ /* ! NBQ */
 #  define MRL_WCI
 #  ifdef MRL_WCI
 #   define WKB_WWAVE
@@ -1298,7 +1299,7 @@
 # define SEDIMENT
 # ifdef SEDIMENT
 #  define SUSPLOAD
-#  ifndef NBQ
+# if !defined NBQ && defined K3FAST
 #   define BEDLOAD
 #  endif
 #  define MORPHODYN
@@ -1348,7 +1349,7 @@
 # define NEW_S_COORD
 # define UV_ADV
 # undef  NBQ
-# ifdef NBQ
+# if defined NBQ || defined KNBQ
 #  define NBQ_PRECISE
 #  define WAVE_MAKER
 #  define WAVE_MAKER_SPECTRUM
@@ -1552,9 +1553,17 @@
 !     wave generation
 !
 */
-# undef  MPI
-# define ANA_MORPHODYN
 # define NBQ
+# undef  KNBQ3
+# undef  KNBQ 
+# ifdef NBQ
+#  undef  MPI
+#  define ANA_MORPHODYN
+# elif defined KNBQ
+#  define MPI
+#  define MVB
+#  define ANA_MVB
+# endif
 # define NBQ_PRECISE
 # define M2FILTER_NONE
 # define SOLVE3D
@@ -1622,7 +1631,7 @@
 # define TS_VADV_WENO5
 # define UV_HADV_WENO5
 # define UV_VADV_WENO5
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  define W_HADV_WENO5
 #  define W_VADV_WENO5
 # endif
@@ -1918,6 +1927,51 @@
 # else
 #  undef BULK_FLUX
 # endif
+
+#elif defined CONVECT
+/*
+!                       2D CONVECTION (testcase)
+!                       ====================
+!
+*/
+# define KNBQ3
+# define KNBQ 
+# define NBQ_GRAV
+# undef  NBQ_PRECISE
+
+# define MPI
+# define NC4PAR
+
+# define ANA_GRID
+# define ANA_INITIAL
+# define NEW_S_COORD
+# undef  EW_PERIODIC
+# undef  NS_PERIODIC
+# undef  OBC_EAST
+# undef  OBC_WEST
+
+# define SOLVE3D
+# undef  UV_COR
+# define UV_ADV
+# define UV_VIS2
+# define SPONGE
+
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+# undef  GLS_MIXING_3D
+# undef  UV_VIS_SMAGO_3D
+
+# define NO_FRCFILE
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SRFLUX
+# define ANA_BTFLUX
+
+# undef AVERAGES
 
 #elif defined TIDAL_FLAT
 /*
