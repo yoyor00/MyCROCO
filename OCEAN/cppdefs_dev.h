@@ -290,8 +290,9 @@
 #   define K3FAST_AVG_CLASSIC
 # endif
 /*
-   General options 
+   General options (all kernels)
 */
+# define K3FAST_HIS
 # if defined KH3D
 #  define M2FILTER_NONE  /* no filter with NBQ */
 #  undef  M2FILTER_POWER

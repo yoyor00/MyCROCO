@@ -101,19 +101,26 @@
               endif
 
 # if defined NBQ || defined K3FAST
-              cz_nbq=(soundspeed_nbq(i,j)*dtnbq/max(1.D-30,Hzr(i,j,k)))
+#  ifdef NBQ
+              cff = soundspeed_nbq(i,j)
+#  elif !defined K3FAST_CSVISC2K
+              cff = soundspeed_nbq
+#  else
+              cff = soundspeed_nbq(i,j,k)
+#  endif
+              cz_nbq=(cff*dtnbq/max(1.D-30,Hzr(i,j,k)))
 #  ifdef MASKING
      &                *rmask(i,j)
 #  endif
               my_Cu_Nbq_Z=max(my_Cu_Nbq_Z,cz_nbq)
 
-              cx_nbq=soundspeed_nbq(i,j)*dtnbq*pm_u(i,j)
+              cx_nbq=cff*dtnbq*pm_u(i,j)
 #  ifdef MASKING
      &                *umask(i,j)
 #  endif
               my_Cu_Nbq_X=max(my_Cu_Nbq_X,cx_nbq)
 
-              cy_nbq=soundspeed_nbq(i,j)*dtnbq*pn_v(i,j)
+              cy_nbq=cff*dtnbq*pn_v(i,j)
 #  ifdef MASKING
      &                *vmask(i,j)
 #  endif

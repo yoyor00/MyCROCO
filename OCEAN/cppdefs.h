@@ -1,4 +1,4 @@
-! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello $
+! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello... Please remove$ 
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -1482,7 +1482,7 @@
 */
 # undef  MPI
 # define NBQ
-# ifdef NBQ
+# if defined NBQ || defined KNBQ
 #  define NBQ_PRECISE
 # endif
 # define M2FILTER_NONE
