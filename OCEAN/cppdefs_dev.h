@@ -256,8 +256,8 @@
 #   define K3FAST_AM4
 #   define NBQ_GRID_SLOW
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH2
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH1
+#   define K3FAST_COUPLINGW_SCH1
 #   define K3FAST_AVG_CLASSIC
 # elif defined KHCOMP
 #   define K3FAST        
@@ -267,8 +267,8 @@
 #   define K3FAST_C3D_UVSF
 #   define K3FAST_AM4
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH2
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH1
+#   define K3FAST_COUPLINGW_SCH1
 #   define K3FAST_AVG_CLASSIC
 # elif defined KNHINT
 #   define K3FAST        
@@ -283,8 +283,8 @@
 #   define K3FAST_C3D_WFS
 #   define K3FAST_AM4
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH2
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH1
+#   define K3FAST_COUPLINGW_SCH1
 #   define KNHINT_3M
 #   define KNHINT_CORR
 #   define K3FAST_AVG_CLASSIC

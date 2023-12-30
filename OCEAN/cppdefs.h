@@ -1,4 +1,4 @@
-! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello... Please remove$ 
+! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello$ 
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
