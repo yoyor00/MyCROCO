@@ -577,16 +577,16 @@
         cff2=-0.5                      ! ! value at 3D time step
         cff1= 1.5                      ! ! "nstp" first, and then
 #  if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
-        cff6=2.-0.6
-        cff7=-(1.-0.6)
+        cff6=2.  !2.-0.6
+        cff7=-1. !-(1.-0.6)
 #  endif
         else                             ! ! extrapolated half-step
         cff13=0.281105                 ! ! forward using  AB3-like
         cff2=-0.5-2.*cff13              ! ! weights optimized for
         cff1=1.5+cff13                 ! ! maximum stability (with
 #  if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
-        cff6=2.-0.6
-        cff7=-(1.-0.6)
+        cff6=2.    !2.-0.6
+        cff7=-1.  !-(1.-0.6)
 #  endif
         endif      
                       ! ! special care for startup)
