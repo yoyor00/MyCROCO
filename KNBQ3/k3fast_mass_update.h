@@ -55,7 +55,7 @@
 ! !********************************
 ! !
 #   ifdef AGRIF
-        call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) 
+!       call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) 
 #   endif
 ! !
 ! !********************************

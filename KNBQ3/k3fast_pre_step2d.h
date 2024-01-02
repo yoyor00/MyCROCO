@@ -190,7 +190,7 @@ C$OMP MASTER
             rv_ext_nbq_old(i,j)=0.
           enddo
         enddo 
-# if defined MASKING && defined K3FAST_2D
+# if defined MASKING && defined K3FAST
         do k=1,N
           do j=Jstr,Jend
             do i=IstrU,Iend

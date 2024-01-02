@@ -369,6 +369,7 @@
 #  define OBC_WORLANSKI      /*  W Radiative conditions         */
 #  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  undef  NBQ_NUDGING_W      /* interior/bdy forcing/nudging (W)*/
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
