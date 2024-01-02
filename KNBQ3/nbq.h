@@ -121,7 +121,7 @@
       real qdmw0_nbq(GLOBAL_2D_ARRAY)
       common /nbq_qdmw0_nbq/ qdmw0_nbq
 #  endif
-#  ifdef K3FAST_ZETAW
+#  if defined K3FAST_ZETAW || defined PSOURCE || defined WET_DRY
       real DU_nbq(GLOBAL_2D_ARRAY)
       common /nbq_DU_nbq/ DU_nbq
       real DV_nbq(GLOBAL_2D_ARRAY)
