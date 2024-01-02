@@ -920,6 +920,10 @@ C$OMP BARRIER
 
         call omega (tile)
 
+# if defined DIAGNOSTICS_DIAPYCNAL
+        call compute_buoyancy_gradient (tile)
+# endif
+
         call rho_eos (tile)
         
 #  if defined MLD_RHO
@@ -931,6 +935,7 @@ C$OMP BARRIER
 C$OMP BARRIER
 
       do tile=my_first,my_last
+
         call prsgrd (tile)
         call rhs3d (tile)
 # ifdef NBQ

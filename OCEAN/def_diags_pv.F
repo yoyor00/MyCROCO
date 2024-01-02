@@ -60,7 +60,7 @@
 #  define vidTime2 diags_pvTime2
 #  define vidTstep diags_pvTstep
 
-#  ifdef DIAGNOSTICS_PV_FULL
+#  ifdef DIAGNOSTICS_DIAPYCNAL
 #   define viddiags_pv diags_pvpv
 #   define viddiags_pvd diags_pvpvd
 #  endif
@@ -76,7 +76,7 @@
 #  define vidTime2 diags_pvTime2_avg
 #  define vidTstep diags_pvTstep_avg
 
-#  ifdef DIAGNOSTICS_PV_FULL
+#  ifdef DIAGNOSTICS_DIAPYCNAL
 #   define viddiags_pv diags_pvpv_avg
 #   define viddiags_pvd diags_pvpvd_avg
 #  endif
@@ -305,9 +305,9 @@
 
 
 
-        do itrc=1,NTA
+        do itrc=1,2 !NTA
 
-          if (wrt(itrc)) then
+          if (wrt(1)) then
 
 !------------------------------
 !
@@ -347,7 +347,7 @@
 
           if (wrt(1)) then
 
-# if defined DIAGNOSTICS_PV_FULL
+# if defined DIAGNOSTICS_DIAPYCNAL
 
             itrc = 1
 
@@ -357,7 +357,7 @@
 !
           lvar=lenstr(vname(1,indxpvpv))
           ierr=nf_def_var (ncid, vname(1,indxpvpv)(1:lvar),
-     &                     NF_FOUT, 4, u3dgrd, viddiags_pv(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_pv(itrc))
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_pv(itrc),nf_collective)
 #  endif
@@ -388,7 +388,7 @@
 !
           lvar=lenstr(vname(1,indxpvpvd))
           ierr=nf_def_var (ncid, vname(1,indxpvpvd)(1:lvar),
-     &                     NF_FOUT, 4, v3dgrd, viddiags_pvd(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_pvd(itrc))
 #  ifdef NC4PAR
            ierr=nf_var_par_access(ncid,viddiags_pvd(itrc),nf_collective)
 #  endif
@@ -588,7 +588,7 @@
 
 
 
-# ifdef DIAGNOSTICS_PV_FULL
+# ifdef DIAGNOSTICS_DIAPYCNAL
         itrc=1
 
 !
@@ -645,8 +645,8 @@
 
 ! ---------------------------------
 
-      do itrc=1,NTA
-        if (wrt(itrc)) then
+      do itrc=1,2 !NTA
+        if (wrt(1)) then
 !
 !
 ! indxpvTrhs
@@ -718,7 +718,7 @@
 # undef vidTime2
 # undef vidTstep
 !
-# ifdef DIAGNOSTICS_PV_FULL
+# ifdef DIAGNOSTICS_DIAPYCNAL
 #  undef viddiags_pv
 #  undef viddiags_pvd
 # endif

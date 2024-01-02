@@ -889,12 +889,41 @@
      &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
      &                         +(FC(i,j,k2)-FC(i,j,k1))/cff1
-     &                                   SWITCH rmask(i,j)
+#  ifdef MASKING
+     &                                        * rmask(i,j)
+#  endif
             enddo
           enddo
 #endif
 
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
+          enddo
+        enddo
+      endif 
+#   endif
+
         endif  ! <-- k.gt.0
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend
+              TF_zHmix(i,j,k,itrc)= -FC(i,j,k2)/(pm(i,j)*pn(i,j))
+          enddo
+        enddo
+      endif 
+#   endif
+
       enddo   ! --> k
 
 #ifdef TS_MIX_IMP

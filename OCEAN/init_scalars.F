@@ -3731,10 +3731,13 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
 #endif /* DIAGNOSTICS_EK */
 
 #ifdef DIAGNOSTICS_PV
-# ifdef DIAGNOSTICS_PV_FULL
+# if defined  DIAGNOSTICS_DIAPYCNAL
+
+# if defined  DIAGNOSTICS_DIAPYCNAL_DEBUG
+
 CR       write(stdout,'(1x,A,I3)') 'indxpvpv = ',indxpvpv
-       nametrc='u_vmix_trans'
-       unitt='meter second-1 second-1'
+       nametrc='gradbuoy'
+       unitt=' '
        write(vname1,*) trim(nametrc)
        vname(1,indxpvpv)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxpvpv)
@@ -3745,9 +3748,26 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvpv)
        vname(5,indxpvpv)='                                        '
        vname(7,indxpvpv)='                                        '
 
+#else
+
+CR       write(stdout,'(1x,A,I3)') 'indxpvpv = ',indxpvpv
+       nametrc='b_rhs'
+       unitt=' '
+       write(vname1,*) trim(nametrc)
+       vname(1,indxpvpv)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxpvpv)
+       vname(2,indxpvpv)='                                '
+       write(vname3,*) trim(unitt)
+       vname(3,indxpvpv)=vname3
+       vname(4,indxpvpv)='                                        '
+       vname(5,indxpvpv)='                                        '
+       vname(7,indxpvpv)='                                        '
+
+# endif
+
 CR       write(stdout,'(1x,A,I3)') 'indxpvpvd = ',indxpvpvd
-       nametrc='v_vmix_trans'
-       unitt='meter second-1 second-1'
+       nametrc='diffusivity'
+       unitt=' '
        write(vname1,*) trim(nametrc)
        vname(1,indxpvpvd)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxpvpvd)
@@ -3757,20 +3777,39 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvpvd)
        vname(4,indxpvpvd)='                                       '
        vname(5,indxpvpvd)='                                       '
        vname(7,indxpvpvd)='                                       '
+
 # endif
 
-      do itrc=1,NTA
+      do itrc=1,2
 
 CR       write(stdout,'(1x,A,I3)') 'indxpvTrhs = ',indxpvTrhs+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
        nametrc=vname(1,indxT+itrc-1)(1:lvar)
        lvar=lenstr(nametrc)
        unitt=vname(3,indxT+itrc-1)
-#if defined  DIAPYCNAL_W
+# if defined  DIAGNOSTICS_DIAPYCNAL_DEBUG
        if (itrc.eq.1) then
-         write(vname1,*) 'wdia_vmix                                 '
-       else
-         write(vname1,*) 'wdia_hmix                                 '
+         write(vname1,*) 'temp_xHmix                              '
+       elseif (itrc.eq.2) then
+         write(vname1,*) 'temp_yHmix                              '
+       elseif (itrc.eq.3) then
+         write(vname1,*) 'temp_zHmix                              '
+       elseif (itrc.eq.4) then
+         write(vname1,*) 'temp_zVmix                              '
+       elseif (itrc.eq.5) then
+         write(vname1,*) 'salt_xHmix                              '
+       elseif (itrc.eq.6) then
+         write(vname1,*) 'salt_yHmix                              '
+       elseif (itrc.eq.7) then
+         write(vname1,*) 'salt_zHmix                              '
+       elseif (itrc.eq.8) then
+         write(vname1,*) 'salt_zVmix                              '
+       endif
+# elif defined  DIAGNOSTICS_DIAPYCNAL
+       if (itrc.eq.1) then
+         write(vname1,*) 'flux_b_dia                              '
+       elseif (itrc.eq.2) then
+         write(vname1,*) 'wdia                                    '
        endif
 #else
        write(vname1,*) trim(nametrc),'_rhs                        '
@@ -3810,15 +3849,15 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvMrhs+itrc-1)
 
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
 CR       write(stdout,'(1x,A,I3)') 'indxeddyzz = ',indxeddyzz
-       write(vname1,*) 'zz                                  '
+       write(vname1,*) 'zz                                        '
        vname(1,indxeddyzz)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxeddyzz)
-       vname(2,indxeddyzz)='zz                              '
-       write(vname3,*) 'meter2                              '
+       vname(2,indxeddyzz)='zz                                    '
+       write(vname3,*) 'meter2                                    '
        vname(3,indxeddyzz)=vname3
-       vname(4,indxeddyzz)='                                '
-       vname(5,indxeddyzz)='                                '
-       vname(7,indxeddyzz)='                                '
+       vname(4,indxeddyzz)='                                      '
+       vname(5,indxeddyzz)='                                      '
+       vname(7,indxeddyzz)='                                      '
 
 CR       write(stdout,'(1x,A,I3)') 'indxeddyuu = ',indxeddyuu
        write(vname1,*) 'uu                                        '

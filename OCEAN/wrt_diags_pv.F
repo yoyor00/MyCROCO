@@ -129,19 +129,19 @@
       if (wrtdiags_pv(1)) then
 
 
-# if defined DIAGNOSTICS_PV_FULL
+# if defined DIAGNOSTICS_DIAPYCNAL
 
          itrc=1
 
 
          call fillvalue3d(pv,nciddiags_pv,diags_pvpv(itrc),
      &                      indxpvpv,
-     &                      record,u3dvar,type)
+     &                      record,r3dvar,type)
 
 
          call fillvalue3d(pvd,nciddiags_pv,diags_pvpvd(itrc),
      &                      indxpvpvd,
-     &                      record,v3dvar,type)
+     &                      record,r3dvar,type)
 
 # endif
 !---------------------------------------------------------------
@@ -170,15 +170,14 @@
 
 !---------------------------------------------------------------
 
-        do itrc=1,NTA
-          if (wrtdiags_pv(itrc)) then
+        do itrc=1,2
+          if (wrtdiags_pv(1)) then
 
 !
 ! indxTrhs
 !
 
            workr=Trhs(:,:,:,itrc)
-!           workr=TXadv(:,:,:,itrc)
            call fillvalue3d(workr,nciddiags_pv,diags_pvTrhs(itrc),
      &                      indxpvTrhs+itrc-1,
      &                      record,r3dvar,type)

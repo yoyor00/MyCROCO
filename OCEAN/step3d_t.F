@@ -318,7 +318,10 @@
 ! Store diagnostic transport term
 !----------------------------------------------------------
 !
-#  ifdef DIAGNOSTICS_TS
+
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL
+
+#  ifdef DIAGNOSTICS_TS 
 
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -326,8 +329,27 @@
               TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
           enddo
         enddo
+#   endif
+
 !
-#   if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
+# if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_xHmix(i,j,k,itrc)= FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_yHmix(i,j,k,itrc)= FE(i,j)
+          enddo
+        enddo
+      endif
+#   endif
+
 !
 ! Compute centered scheme fluxes FX and FE to separate
 ! advection and diffusion parts of the transport term
@@ -356,6 +378,8 @@
 #     define TS_HADV_UP3
 
 #    endif
+
+#    if defined DIAGNOSTICS_TS
         do j=Jstr,Jend
           do i=Istr,Iend
               THmix(i,j,k,itrc)=( TXadv(i,j,k,itrc)+TYadv(i,j,k,itrc)
@@ -365,7 +389,27 @@
               TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j))   SWITCH rmask(i,j)
           enddo
         enddo
-#   else
+#     endif
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
+          enddo
+        enddo
+      endif
+#     endif
+
+#   else /* defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3*/
+
+#  if defined DIAGNOSTICS_TS
         do j=Jstr,Jend
           do i=Istr,Iend
               THmix(i,j,k,itrc)=0.
@@ -373,7 +417,35 @@
         enddo
 #   endif
 
-#  endif /* DIAGNOSTICS_TS */
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_xHmix(i,j,k,itrc)= 0
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_yHmix(i,j,k,itrc)= 0
+          enddo
+        enddo
+      endif
+#   endif
+
+#  endif /* defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3*/
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend
+              TF_zHmix(i,j,k,itrc)= 0.
+          enddo
+        enddo
+      endif 
+#   endif
+
+#  endif /* DIAGNOSTICS_TS || DIAGNOSTICS_DIAPYCNAL */
 
         enddo    !<-- k
         

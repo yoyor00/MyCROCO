@@ -192,7 +192,7 @@
           if (ierr .eq. nf_noerr) then
             latt=lenstr(units)
             ! If use_calendar or xios, read origin time in ini file
-            ! units need to hate the format
+            ! units need to have the format
             ! seconds/days since YYYY/MM/DD hh:mm:ss
             if (units(1:6).eq.'second') then
               time_scale=1.
@@ -228,7 +228,7 @@
 #if defined USE_CALENDAR
             call tool_origindate(ncid,varid,origin_date_in_sec)
       MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &    'Origin date of time axis (YYYY/MM/DD hh:mm:ss) :',
+     &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)
       origin_date=tool_sectodat(origin_date_in_sec)
       READ(origin_date(1:4),fmt='(i4)') origin_year
@@ -321,7 +321,7 @@
       endif
 
 #ifdef XIOS
-      start_date_run = tool_sectodat(start_time+origin_date_in_sec)
+      start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
       READ(start_date_run(6:7),fmt='(i2)') start_month
       READ(start_date_run(9:10),fmt='(i2)') start_day
@@ -350,40 +350,43 @@
 #endif
 
 #if defined RESTART_DIAGS && ! defined XIOS
-
+!
+! It is currently assumed that diagnostics use the same output frequency than HIS/AVG
+! The "-1" is because we write history but not diagnostics at initialisation 
+!
 # ifdef DIAGNOSTICS_VRT
-          nrecdiags_vrt=ibuff(3)
+          nrecdiags_vrt=ibuff(3)-1
 #  ifdef AVERAGES
           nrecdiags_vrt_avg=ibuff(4)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_EK
-          nrecdiags_ek=ibuff(3)
+          nrecdiags_ek=ibuff(3)-1
 #  ifdef AVERAGES
           nrecdiags_ek_avg=ibuff(4)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_PV
-          nrecdiags_pv=ibuff(3)
+          nrecdiags_pv=ibuff(3)-1
 #  ifdef AVERAGES
           nrecdiags_pv_avg=ibuff(4)
 #  endif
 # endif
 
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
-          nrecdiags_eddy=ibuff(3)
+          nrecdiags_eddy=ibuff(3)-1
 #  ifdef AVERAGES
           nrecdiags_eddy_avg=ibuff(4)
 #  endif
 # endif
 # if defined DIAGNOSTICS_TS
-          nrecdia=ibuff(3)
+          nrecdia=ibuff(3)-1
 #  ifdef AVERAGES
           nrecdia_avg=ibuff(4)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
-          nrecdiaM=ibuff(3)
+          nrecdiaM=ibuff(3)-1
 #  ifdef AVERAGES
           nrecdiaM_avg=ibuff(4)
 #  endif
@@ -805,6 +808,28 @@
 #  endif /* LMD_BKPP */
 # endif /* LMD_MIXING */
 
+# ifdef LMD_MIXING
+!
+!  vertical diffusion coefficient for potential temperature.
+!
+#  if defined TEMPERATURE
+        lvar=lenstr(vname(1,indxAkt))
+        ierr=nf_inq_varid (ncid, vname(1,indxAkt)(1:lvar), varid)
+       if (ierr .eq. nf_noerr) then
+          ierr=nf_fread (Akt(START_2D_ARRAY,0,itemp), ncid,
+     &                                    varid, record, w3dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2) vname(1,indxAkt)(1:lvar)
+     &                                     , record, ininame(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        else
+          MPI_master_only write(stdout,4) vname(1,indxAkt)(1:lvar)
+     &                                  , ininame(1:lstr)
+        endif
+#  endif /* TEMPERATURE */
+# endif /* LMD_MIXING */
+
 # ifdef GLS_MIXING
 !
 !  turbulent kinetic energy.
@@ -1143,9 +1168,17 @@
 #endif /* SOLVE3D */
 
 #if defined OA_COUPLING || defined OW_COUPLING
+#  if defined EXACT_RESTART
+!     Do cpl_prism_define just on time. 
+!     In case of EXACT_RESTART add a condition on tindx value
+      if (tindx.eq.1) then
+#  endif
       call cpl_prism_define
       oasis_time = 0
       MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+#  if defined EXACT_RESTART   
+      endif
+#  endif
 #endif
 
   1   format(/1x,'GET_INITIAL - unable to find variable:',    1x,A,

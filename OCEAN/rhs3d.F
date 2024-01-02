@@ -480,8 +480,7 @@
      &                         +0.5*(UFe(i,j)+UFe(i-1,j))
 #  endif
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
-                             || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MCor(i,j,k,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
      &                        SWITCH umask(i,j)

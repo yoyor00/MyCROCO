@@ -662,10 +662,19 @@ C$    integer omp_get_thread_num
 # endif /* DIAGNOSTICS_EK */
 
 # ifdef DIAGNOSTICS_PV
-#  if defined DIAGNOSTICS_PV_FULL
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      do k=0,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+            dbdz(i,j,k)=init
+          enddo
+        enddo
+      enddo
       do k=1,N
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
+            dbdx(i,j,k)=init
+            dbdy(i,j,k)=init
             pv(i,j,k)=init
 #   ifdef AVERAGES
             pv_avg(i,j,k)=init
@@ -684,7 +693,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 #  endif
-      do itrc=1,NTA
+      do itrc=1,2
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -708,6 +717,28 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+# if defined DIAGNOSTICS_DIAPYCNAL
+      do itrc=1,NTA
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              TF_xHmix(i,j,k,itrc)=init
+              TF_yHmix(i,j,k,itrc)=init
+            enddo
+          enddo
+        enddo
+      enddo
+      do itrc=1,2
+        do k=0,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              TF_zHmix(i,j,k,itrc)=init
+              TF_zVmix(i,j,k,itrc)=init
+            enddo
+          enddo
+        enddo
+      enddo
+# endif
 # endif /* DIAGNOSTICS_PV */
 
 # ifdef DIAGNOSTICS_BIO

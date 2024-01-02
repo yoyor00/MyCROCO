@@ -238,9 +238,11 @@
 !
         do j=jstr,jend
           do i=istr,iend
-            cff1=pm(i,j)*pn(i,j)
-            THmix(i,j,k,itrc)=FX(i+1,j)-FX(i,j)
-     &                       +FE(i,j+1)-FE(i,j)
+              cff1=pm(i,j)*pn(i,j)
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+     &                         +FX(i+1,j)-FX(i,j)
+     &                         +FE(i,j+1)-FE(i,j)
 #  ifdef MASKING
      &                                        * rmask(i,j)
 #  endif
@@ -260,6 +262,22 @@
             Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
           enddo
         enddo
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
+          enddo
+        enddo
+#   endif
+
+
 # endif /* DIAGNOSTICS */
 
 #endif /* TS_DIF2 */
@@ -456,6 +474,8 @@
             THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
             Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
 
+
+
 #  if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
 
 #   include "finalize_diagnostics_tsadv.h"
@@ -463,6 +483,23 @@
 #  endif
           enddo
         enddo
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
+          enddo
+        enddo
+      endif
+#   endif
+
 # endif /* DIAGNOSTICS_TS */
 
 #endif /* TS_DIF4 */

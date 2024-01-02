@@ -130,18 +130,18 @@
 !
 
 !###########################
-# if defined DIAGNOSTICS_DISS
+# if defined DIAGNOSTICS_PV
         do k=1,N
           do j=JstrR,JendR
                 Mrhs(Istr,j,k,1) =  0.
                 Mrhs(IendR,j,k,1)=  0.
           enddo
           do i=Istr,IendR
-                Mrhs(i,JstrR,k,1) =  0.
+                Mrhs(i,JstrR,k,1)=  0.
                 Mrhs(i,JendR,k,1)=  0.
           enddo
           do j=Jstr,JendR
-                Mrhs(IstrR,j,k,2) =  0.
+                Mrhs(IstrR,j,k,2)=  0.
                 Mrhs(IendR,j,k,2)=  0.
           enddo
           do i=IstrR,IendR
@@ -335,7 +335,7 @@
 !###########################
 
 !###########################
-# if defined DIAGNOSTICS_DISS
+# if defined DIAGNOSTICS_PV
 ! Compute the transport part of ke_vmix : d/dz[ Akv u du/dz]
 ! ------- ------------- ------ ------ - -----
       do k=1,N-1
@@ -649,7 +649,7 @@
 !###########################
 
 !###########################
-# if defined DIAGNOSTICS_DISS
+# if defined DIAGNOSTICS_PV
 ! Compute the transport part of ke_vmix : d/dz[ Akv v dv/dz]
 
 ! ------- ------------- ------ ------ - -----
@@ -2037,9 +2037,6 @@
           do k=1,N
             do j=JU_RANGE
               do i=IU_RANGE
-#  if defined DIAGNOSTICS_PV_FULL
-                pv(i,j,k) = Mrhs(i,j,k,1)
-#  endif
                 Mrhs(i,j,k,1) = (MVmix2(i,j,k,1)
      &                            + MVmix(i,j,k,1)
 #  if defined DIAGNOSTICS_BARO
@@ -2050,12 +2047,11 @@
 #  endif
      &                            + MHmix(i,j,k,1,3-nstp)
      &                            + MHdiff(i,j,k,1) )
-#  if defined DIAGNOSTICS_DISS
+#  if defined DIAGNOSTICS_PV
      &        * (Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
      &        * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
-#   if ! defined DIAGNOSTICS_PV_FULL
+! Remove the transport part of ke_vmix : d/dz[ Akv u du/dz]
      &                            - Mrhs(i,j,k,1)
-#   endif
 #  endif
               enddo
             enddo
@@ -2064,9 +2060,6 @@
           do k=1,N
             do j=JV_RANGE
               do i=IV_RANGE
-#  if defined DIAGNOSTICS_PV_FULL
-                pvd(i,j,k) = Mrhs(i,j,k,2)
-#  endif
                 Mrhs(i,j,k,2) = (MVmix2(i,j,k,2)
      &                            + MVmix(i,j,k,2)
 #  if defined DIAGNOSTICS_BARO
@@ -2077,12 +2070,11 @@
 #  endif
      &                            + MHmix(i,j,k,2,3-nstp)
      &                            + MHdiff(i,j,k,2))
-#  if defined DIAGNOSTICS_DISS
+#  if defined DIAGNOSTICS_PV
      &        * (Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
      &        * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
-#   if ! defined DIAGNOSTICS_PV_FULL
+! Remove the transport part of ke_vmix : d/dz[ Akv v dv/dz]
      &                            - Mrhs(i,j,k,2)
-#   endif
 #  endif
               enddo
             enddo

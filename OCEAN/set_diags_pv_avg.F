@@ -102,7 +102,7 @@
           enddo
         enddo
 
-        do itrc=1,NTA
+        do itrc=1,2
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -114,9 +114,9 @@
           enddo
         enddo
 
-# if defined DIAGNOSTICS_PV_FULL
+# if defined DIAGNOSTICS_DIAPYCNAL
 
-          do k=0,N
+          do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
                 pv_avg(i,j,k) = cff *

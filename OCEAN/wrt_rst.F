@@ -312,6 +312,22 @@
 #  endif /* LMD_BKPP  */
 # endif /* LMD_MIXING */
 
+
+# ifdef LMD_SKPP
+!
+! Write out vertical diffusion coefficient for potential temperature (useful for tracer exp.)
+!
+        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,itemp), ncidrst,
+     &                             rstAkt, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAkt))
+          write(stdout,1) vname(1,indxAkt)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+
+# endif /* LMD_MIXING */
+
 # if defined GLS_MIXING
 !
 ! Turbulent kinetic energy.

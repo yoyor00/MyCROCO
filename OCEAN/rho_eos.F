@@ -178,6 +178,7 @@
 !
 
 
+
 #  ifdef RVTK_DEBUG_PERFRST
       call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
@@ -286,7 +287,7 @@
      &                                                          )
 #   endif
 #   ifdef MASKING
-            bvf (i,j,k)= bvf (i,j,k)*rmask(i,j)
+            bvf(i,j,k)= bvf(i,j,k)*rmask(i,j)
 #   endif
 #  endif /* ANA_VMIX ... */
           enddo

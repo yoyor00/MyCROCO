@@ -71,6 +71,10 @@
          text='WRT_DIAGS_EK'
       elseif (typefile ==filetype_diags_ek_avg) then
          text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_diags_pv) then
+         text='WRT_DIAGS_PV'
+      elseif (typefile ==filetype_diags_pv_avg) then
+         text='WRT_DIAGS_PV_AVG'
       elseif (typefile ==filetype_surf) then
          text='WRT_SURF'
       elseif (typefile ==filetype_surf_avg) then
@@ -171,6 +175,10 @@
          text='WRT_DIAGS_EK'
       elseif (typefile ==filetype_diags_ek_avg) then
          text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_diags_pv) then
+         text='WRT_DIAGS_PV'
+      elseif (typefile ==filetype_diags_pv_avg) then
+         text='WRT_DIAGS_PV_AVG'
       elseif (typefile ==filetype_surf) then
          text='WRT_SURF'
       elseif (typefile ==filetype_surf_avg) then
@@ -273,6 +281,10 @@
          text='WRT_DIAGS_EK'
       elseif (typefile ==filetype_diags_ek_avg) then
          text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_diags_pv) then
+         text='WRT_DIAGS_PV'
+      elseif (typefile ==filetype_diags_pv_avg) then
+         text='WRT_DIAGS_PV_AVG'
       elseif (typefile ==filetype_surf) then
          text='WRT_SURF'
       elseif (typefile ==filetype_surf_avg) then
@@ -363,7 +375,7 @@
          text='WRT_DIAGS_EK'
       elseif (typefile ==filetype_diags_ek_avg) then
          text='WRT_DIAGS_EK_AVG'
-      elseif (typefile ==filetype_diags_pv) then    ! next 4 lines NJAL
+      elseif (typefile ==filetype_diags_pv) then
          text='WRT_DIAGS_PV'
       elseif (typefile ==filetype_diags_pv_avg) then
          text='WRT_DIAGS_PV_AVG'

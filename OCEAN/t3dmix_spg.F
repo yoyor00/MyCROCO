@@ -295,9 +295,28 @@
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1
      &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
-     &                                SWITCH rmask(i,j)
+#  ifdef MASKING
+     &                                        * rmask(i,j)
+#  endif
             enddo
           enddo
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
+          enddo
+        enddo
+      endif
+#   endif
+
 #  endif
       enddo
 
@@ -546,9 +565,41 @@
      &                                   SWITCH rmask(i,j)
             enddo
           enddo
+
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
+          enddo
+        enddo
+      endif 
+#   endif
+
 #  endif
 
         endif  ! <-- k.gt.0
+
+#  if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then 
+        do j=Jstr,Jend
+          do i=Istr,Iend
+              TF_zHmix(i,j,k,itrc)= TF_zHmix(i,j,k,itrc)
+     &                              -FC(i,j,k2)/(pm(i,j)*pn(i,j))
+          enddo
+        enddo
+      endif 
+#   endif
+
+
+
       enddo   ! --> k
 
 #  ifdef TS_SPONGE_IMP
@@ -644,6 +695,17 @@
 #    endif
             enddo
           enddo
+#  if defined DIAGNOSTICS_DIAPYCNAL
+        if (itrc.le.NTA) then 
+            ! Convert TVmix to flux at w-point
+            do i=Istr,Iend
+              do k=1,N
+                TF_zVmix(i,j,k,itrc) = -TVmix(i,j,k,itrc) 
+     &                               + TF_zVmix(i,j,k-1,itrc)
+              enddo
+            enddo
+        endif
+#  endif /* DIAGNOSTICS_DIAPYCNAL */
 #   endif /* DIAGNOSTICS_TS */
 
        enddo ! j loop

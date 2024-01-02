@@ -465,8 +465,8 @@
       parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
      &                ntrc_bio+ntrc_sed+
      &                ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
-     &           indxpvMrhs=indxpvTrhs+2)
-#  ifdef DIAGNOSTICS_PV_FULL
+     &           indxpvMrhs=indxpvTrhs+8)
+#  ifdef DIAGNOSTICS_DIAPYCNAL
       integer indxpvpv,indxpvpvd
       parameter (indxpvpv=indxpvMrhs+2,
      &           indxpvpvd=indxpvpv+1)
@@ -1061,6 +1061,9 @@
 # ifdef LMD_BKPP
       integer rstHbbl
 # endif
+# if defined LMD_MIXING
+      integer rstAkt
+# endif
 # if defined GLS_MIXING
       integer rstAkv,rstAkt
 #  if defined SALINITY
@@ -1272,10 +1275,10 @@
 # ifdef DIAGNOSTICS_PV
       integer nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
-#  ifdef DIAGNOSTICS_PV_FULL
+#  ifdef DIAGNOSTICS_DIAPYCNAL
      &      , diags_pvpv(2), diags_pvpvd(2)
 #  endif
-     &      , diags_pvMrhs(2), diags_pvTrhs(2)
+     &      , diags_pvMrhs(2), diags_pvTrhs(8)
 # endif
 
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
@@ -1476,10 +1479,10 @@
 #  ifdef DIAGNOSTICS_PV
        integer nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
-#   ifdef DIAGNOSTICS_PV_FULL
+#   ifdef DIAGNOSTICS_DIAPYCNAL
      &      , diags_pvpv_avg(2), diags_pvpvd_avg(2)
 #   endif
-     &      , diags_pvMrhs_avg(2), diags_pvTrhs_avg(2)
+     &      , diags_pvMrhs_avg(2), diags_pvTrhs_avg(8)
 #  endif
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
        integer nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg
@@ -1620,6 +1623,9 @@
 # endif
 # ifdef LMD_BKPP
      &      , rstHbbl
+# endif
+# if defined LMD_MIXING
+     &      , rstAkt
 # endif
 # if defined GLS_MIXING
      &      , rstAkv,rstAkt
@@ -1866,14 +1872,14 @@
 #ifdef DIAGNOSTICS_PV
      &      , nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
-# ifdef DIAGNOSTICS_PV_FULL
+# ifdef DIAGNOSTICS_DIAPYCNAL
      &      , diags_pvpv, diags_pvpvd
 # endif
      &      , diags_pvTrhs, diags_pvMrhs
 # ifdef AVERAGES
      &      , nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
-#  ifdef DIAGNOSTICS_PV_FULL
+#  ifdef DIAGNOSTICS_DIAPYCNAL
      &      , diags_pvpv_avg, diags_pvpvd_avg
 #  endif
      &      , diags_pvTrhs_avg, diags_pvMrhs_avg
