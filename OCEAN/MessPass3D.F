@@ -72,7 +72,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       sub_E=(Mm+NSUB_E-1)/NSUB_E
       size_E=(NP1)*Npts*(sub_E+2*Npts)
 
-      if(.not. allocated(buf_snd4_3D)) then
+      !if(.not. allocated(buf_snd4_3D)) then
       Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  
      &         buf_snd2_3D(size_Z),
      &         buf_rev4_3D(size_Z),  ibuf_revN_3D(size_X),  
@@ -83,7 +83,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &         buf_snd3_3D(size_Z),
      &         buf_rev1_3D(size_Z),  ibuf_revS_3D(size_X),  
      &         buf_rev3_3D(size_Z))
-      endif
+      !endif
 # endif
 
       ksize=Npts*Npts*nmax               ! message sizes for
@@ -574,14 +574,14 @@ c          endif
         enddo
        endif
 
-!# if defined AGRIF
-!        DeAllocate(buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
-!     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
-!     &    jbuf_sndW_3D,                      jbuf_sndE_3D,
-!     &    jbuf_revW_3D,                      jbuf_revE_3D,
-!     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
-!     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D)
-!# endif
+# if defined AGRIF
+        DeAllocate(buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
+     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
+     &    jbuf_sndW_3D,                      jbuf_sndE_3D,
+     &    jbuf_revW_3D,                      jbuf_revE_3D,
+     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
+     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D)
+# endif
 
       return
       end
