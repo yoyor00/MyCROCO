@@ -545,7 +545,7 @@
 ! !  U & V momentum wet mask
 ! !********************************
 ! !
-# ifdef WET_DRY
+# if defined WET_DRY && defined K3FAST_ZETAW
 !$acc kernels if(compute_on_device) default(present)
  	do j=Jstr,Jend
         do i=IstrU,Iend

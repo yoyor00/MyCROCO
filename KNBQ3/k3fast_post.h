@@ -304,8 +304,22 @@ C$OMP END MASTER
      &                                     *umask(i,j)
 #  endif
 # endif
-# ifdef WET_DRY
+# if defined WET_DRY && defined K3FAST_ZETAW
      &                                     *umask_wet(i,j)
+# endif
+# if defined WET_DRY && !defined K3FAST_ZETAW
+          cff1_WD=ABS(ABS(umask_wet(i,j))-1.)
+          cff2_WD=0.5+SIGN(0.5,DUnew)*umask_wet(i,j)
+          umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
+     &                         +cff2_WD*(1.-cff1_WD)
+          DUnew=DUnew*umask_wet(i,j)
+#  ifdef MRL_WCI
+          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
+#  endif
+   	  do k=1,N
+            qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask_wet(i,j)
+          enddo
+
 # endif
           ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) 
@@ -344,8 +358,21 @@ C$OMP END MASTER
      &                                     *vmask(i,j)
 #  endif
 # endif
-# ifdef WET_DRY
+# if defined WET_DRY && defined K3FAST_ZETAW
      &                                     *vmask_wet(i,j)
+# endif
+# if defined WET_DRY && !defined K3FAST_ZETAW
+          cff1_WD=ABS(ABS(vmask_wet(i,j))-1.)
+          cff2_WD=0.5+SIGN(0.5,DVnew)*vmask_wet(i,j)
+          vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
+     &                        +cff2_WD*(1.-cff1_WD)
+          DVnew=DVnew*vmask_wet(i,j)
+#  ifdef MRL_WCI
+          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
+#  endif
+   	  do k=1,N
+            qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask_wet(i,j)
+          enddo
 # endif
           vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) 

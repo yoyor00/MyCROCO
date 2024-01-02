@@ -589,7 +589,7 @@
           do j=Jstr,Jend !<-- j loop
             do i=Istr,Iend
 #   ifdef NBQ_HZ_PROGNOSTIC
-              FC3D(i,k)=   
+              FC3D(i,j,k)=   
      &          -(z_w(i,j,k)-zw_nbq(i,j,k))/dtgrid_nbq
      &           *0.5*( (1.+rho_grd(i,j,k  ))
      &                  +rho_nbq(i,j,k  )*Hzr_nbq_inv(i,j,k  )  

@@ -195,11 +195,11 @@ C$OMP MASTER
 ! ! terms (2D only).
 ! !********************************
 ! !
-# if defined UV_COR || (defined CURVGRID && defined UV_ADV)
+# if defined UV_COR_NT || (defined CURVGRID && defined UV_ADV)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           cff=Drhs(i,j)*(
-#  ifdef UV_COR
+#  ifdef UV_COR_NT
      &                   fomn(i,j)
 #  endif
 #  if (defined CURVGRID && defined UV_ADV)
@@ -235,7 +235,7 @@ C$OMP MASTER
           rvbar(i,j)=rvbar(i,j)-0.25*(VFe(i,j)+VFe(i,j-1))
         enddo 
       enddo
-# endif /* UV_COR */
+# endif /* UV_COR_NT */
 ! !
 ! !********************************
 ! ! Linear and/or quadratic bottom 
