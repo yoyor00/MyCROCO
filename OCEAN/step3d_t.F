@@ -104,7 +104,7 @@
 !
 #  if defined TS_HADV_UP5 || defined TS_HADV_C6 || \
      defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
-     defined TS_VADV_WENO5
+     defined TS_VADV_WENO5 || defined BIO_VADV_WENO5
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -143,7 +143,8 @@
      &      -sign(1.,ua)*(
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 #  endif
-#  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
+#  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
+      defined TS_VADV_WENO5 || defined BIO_VADV_WENO5
       REAL    :: flux3_weno, flux5_weno
 #  endif
 !
@@ -565,6 +566,14 @@
 !
       do j=Jstr,Jend
         do itrc=1,NT
+
+#  ifdef BIO_VADV_WENO5
+#   if defined TEMPERATURE && defined SALINITY
+        if (itrc .le. 2) then
+#   elif defined TEMPERATURE || defined SALINITY
+        if (itrc .eq. 1) then
+#   endif
+#  endif
 !
 !----------------------------------------------------------
 ! Compute vertical fluxes FC
@@ -575,6 +584,19 @@
 
 #  ifdef TS_HADV_TEST
       FC(Istr:Iend,0:N) = 0.0
+#  endif
+
+!----------------------------------------------------------
+! WENO5 advection for passive tracers (biology ...)
+!----------------------------------------------------------
+!
+#  ifdef BIO_VADV_WENO5
+          else  !<-- if (itrc .gt. 2)
+
+#  undef PREDICTOR
+#   include "t3dvadv_order5.h"
+
+          endif
 #  endif
 
 !----------------------------------------------------------
@@ -1201,7 +1223,7 @@
 !
 !======================================================================
 !
-# if defined BIO_HADV_WENO5 || \
+# if defined BIO_HADV_WENO5 || defined BIO_VADV_WENO5 || \
      defined TS_HADV_WENO5  || defined TS_VADV_WENO5 || \
      defined UV_HADV_WENO5  || defined UV_VADV_WENO5 || \
      defined W_HADV_WENO5   || defined W_VADV_WENO5 || \

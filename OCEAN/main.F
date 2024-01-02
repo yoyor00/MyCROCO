@@ -809,7 +809,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 #else
 # ifdef DO_NOT_OVERWRITE
-      if (ldefhis .and. wrthis(indxTime) .and. ntstart.eq.1) call wrt_his
+      if (ldefhis 
+     &      .and. wrthis(indxTime)
+# if defined PASSIVE_TRACER 
+     &      .and. .not. got_tini(itpas) ! Write history file at restart if a new tracer is released
+# else
+     &      .and. ntstart.eq.1
+# endif 
+     &      ) call wrt_his
 # else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
 # endif 

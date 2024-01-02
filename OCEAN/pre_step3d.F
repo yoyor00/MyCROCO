@@ -127,7 +127,7 @@
 !
 # if defined TS_HADV_UP5 || defined TS_HADV_C6 \
       || defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 \
-      || defined TS_VADV_WENO5
+      || defined TS_VADV_WENO5 || defined BIO_VADV_WENO5
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
       REAL    :: ua, vel, cdiff, cdif
@@ -157,7 +157,7 @@
      &                                      + 10.*(q_i - q_im1) )/60.
 
 # endif
-# if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
+# if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5 || defined BIO_VADV_WENO5
       REAL    :: flux3_weno, flux5_weno
 # endif
 !
@@ -486,6 +486,14 @@
 
 # if defined TRACERS
         do itrc=1,NT
+
+#  ifdef BIO_VADV_WENO5
+#   if defined TEMPERATURE && defined SALINITY
+          if (itrc .le. 2) then
+#   elif defined TEMPERATURE || defined SALINITY
+          if (itrc .le. 1) then
+#   endif
+#  endif
 !
 !----------------------------------------------------------------------
 ! Compute vertical fluxes FC
@@ -502,6 +510,21 @@
 #  ifdef TS_HADV_TEST
       FC(istr:iend,0:N) = 0.d0
 #  endif
+
+!
+!----------------------------------------------------------
+! WENO5 advection for passive tracers (biology ...)
+!----------------------------------------------------------
+!
+#  ifdef BIO_VADV_WENO5
+          else  ! if (itrc .gt. 2)
+
+#  undef PREDICTOR
+#   include "t3dvadv_order5.h"
+
+          endif
+#  endif
+
 !
 !----------------------------------------------------------------------
 !++ Apply vertical advection for tracers (DC corresponds to 1/Hz_half)
