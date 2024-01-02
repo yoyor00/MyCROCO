@@ -2300,7 +2300,7 @@ C 				  endif
 # else
 #  define SWITCH !
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 # include "nbq.h"
 # endif
 # include "scalars.h"
@@ -2407,25 +2407,25 @@ C 				  endif
 !
       if (xios_field_is_active("Cs_r")) then
       call xios_send_field("Cs_r",Cs_r(1:N))
-# ifdef M3FAST_SEDLAYERS   
+# ifdef K3FAST_SEDLAYERS    
       call xios_send_field("Cs_r_total",Cs_r(-N_sl+1:N))
 # endif      
       endif
       if (xios_field_is_active("Cs_w")) then
       call xios_send_field("Cs_w",Cs_w(0:N))
-# ifdef M3FAST_SEDLAYERS   
+# ifdef K3FAST_SEDLAYERS    
       call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
 # endif      
       endif
       if (xios_field_is_active("sc_r")) then
       call xios_send_field("sc_r",sc_r(1:N))
-# ifdef M3FAST_SEDLAYERS   
+# ifdef K3FAST_SEDLAYERS    
       call xios_send_field("sc_r_total",sc_r(-N_sl+1:N))
 # endif      
       endif
       if (xios_field_is_active("sc_w")) then
       call xios_send_field("sc_w",sc_w(0:N))
-# ifdef M3FAST_SEDLAYERS   
+# ifdef K3FAST_SEDLAYERS    
       call xios_send_field("sc_w_total",sc_w(-N_sl:N))
 # endif      
       endif
@@ -2774,10 +2774,10 @@ c !$acc wait
       call xios_send_field("omega",work)
       endif
 
-#  ifdef M3FAST
+#  ifdef K3FAST
       if (xios_field_is_active("u_nbq")) then
         worknbq=0.
-          do k=-N_sl+1,N-1
+          do k=-N_sl+1,N
           do j=0,Mm
             do i=0,Lm
             worknbq(i,j,k+N_sl)=2.*qdmu_nbq(i,j,k)
@@ -2785,11 +2785,11 @@ c !$acc wait
             enddo
           enddo
           enddo
-      call xios_send_field(" u_nbq",worknbq)
+          call xios_send_field(" u_nbq",worknbq(:,:,-N_sl+1:N))
       endif
       if (xios_field_is_active("v_nbq")) then
         worknbq=0.
-          do k=-N_sl+1,N-1
+          do k=-N_sl+1,N
           do j=0,Mm
             do i=0,Lm
             worknbq(i,j,k+N_sl)=2.*qdmv_nbq(i,j,k)
@@ -2797,7 +2797,7 @@ c !$acc wait
             enddo
           enddo
           enddo
-      call xios_send_field(" v_nbq",worknbq)
+          call xios_send_field(" v_nbq",worknbq(:,:,-N_sl+1:N))
       endif
       if (xios_field_is_active("w_nbq")) then
       !call xios_send_field("w_nbq",wz(:,:,:,nstp))
@@ -2818,7 +2818,7 @@ c !$acc wait
           k=-N_sl
           do j=0,Mm
             do i=0,Lm
-#   ifndef M3FAST_SEDLAYERS
+#   ifndef K3FAST_SEDLAYERS
             worknbq(i,j,k)=2.*(
      &         qdmw_nbq(i,j,k)
      &        )/Hz(i,j,k+1) 
@@ -2847,16 +2847,16 @@ c !$acc wait
             enddo
           enddo
      
-      call xios_send_field(" w_nbq",worknbq)
+      call xios_send_field(" w_nbq",worknbq(:,:,-N_sl:N))
       endif
       if (xios_field_is_active("rho_nbq")) then
 !$acc update host ( rho_nbq
-# ifdef M3FAST_DIAGACOUS              
+# ifdef K3FAST_DIAGACOUS              
 !$acc&  , p_nbq,p_nbq_max 
 # endif              
 !$acc&                  )  
       call xios_send_field("rho_nbq",rho_nbq)
-# ifdef M3FAST_DIAGACOUS              
+# ifdef K3FAST_DIAGACOUS              
       call xios_send_field("p_nbq",p_nbq)
       call xios_send_field("p_nbq_max",p_nbq_max)
 # endif       
@@ -2864,7 +2864,7 @@ c !$acc wait
 #  endif
 
       if (xios_field_is_active("w")) then
-# ifndef M3FAST
+# if !defined M3FAST && !defined K3FAST
       call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
 # else        
@@ -3168,7 +3168,7 @@ c !$acc wait
           call xios_send_field("u_Baro",MBaro(:,:,:,itrc))
       endif
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       if (xios_field_is_active("u_fast")) then
           call xios_send_field("u_fast",Mfast(:,:,:,itrc))
       endif
@@ -3231,7 +3231,7 @@ c !$acc wait
           call xios_send_field("v_Baro",MBaro(:,:,:,itrc))
       endif
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       if (xios_field_is_active("v_fast")) then
           call xios_send_field("v_fast",Mfast(:,:,:,itrc))
       endif
@@ -3347,7 +3347,7 @@ c !$acc wait
       if (xios_field_is_active("vrtWind")) then
           call xios_send_field("vrtWind",vrtWind(:,:))
       endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       if (xios_field_is_active("vrtfast")) then
           call xios_send_field("vrtfast",vrtfast(:,:))
       endif
@@ -3395,7 +3395,7 @@ c !$acc wait
       if (xios_field_is_active("ekWind")) then
           call xios_send_field("ekWind",ekWind(:,:))
       endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       if (xios_field_is_active("ekfast")) then
           call xios_send_field("ekfast",ekfast(:,:))
       endif
