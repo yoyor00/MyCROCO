@@ -82,6 +82,7 @@ CONTAINS
       USE p4zmort         !  Mortality terms for phytoplankton
       USE p4zlys          !  Calcite saturation
       USE p4zsed          !  Sedimentation & burial
+      USE p4zdiaz         !  Diazotrophy
       USE p4zpoc          !  Remineralization of organic particles
       USE p4zligand       !  Remineralization of organic ligands
       USE p5zlim          !  Co-limitations of differents nutrients (QUOTA)
@@ -129,6 +130,7 @@ CONTAINS
       ierr = ierr +  p4z_opt_alloc()
       ierr = ierr +  p4z_flx_alloc()
       ierr = ierr +  p4z_sed_alloc()
+      ierr = ierr +  p4z_diaz_alloc()
       ierr = ierr +  p2z_lim_alloc()
       IF( ln_p2z ) THEN
          ierr = ierr +  p2z_prod_alloc()
@@ -357,6 +359,7 @@ CONTAINS
          CALL p5z_micro_init     !  microzooplankton
          CALL p5z_meso_init      !  mesozooplankton
       ENDIF
+      CALL p4z_diaz_init         ! Diazotrophy
       CALL p4z_lys_init          !  calcite saturation
       IF( .NOT.l_co2cpl ) &
         & CALL p4z_flx_init      !  gas exchange 
@@ -364,7 +367,6 @@ CONTAINS
       ! Initialization of the sediment model
       IF( ln_sediment)   &
         & CALL sed_ini           ! Initialization of the sediment model 
-
       CALL p4z_sed_init          ! loss of organic matter in the sediments 
 
       IF(lwp) WRITE(numout,*) 

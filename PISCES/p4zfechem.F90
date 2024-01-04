@@ -68,7 +68,7 @@ CONTAINS
       REAL(wp) ::   zrfact2
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(A2D(0),jpk) ::   zFe3, ztotlig,  zfecoll
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d, zcoll3d, zscav3d, zfeprecip
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zcoll3d, zscav3d, zfeprecip
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p4z_fechem')
@@ -240,44 +240,27 @@ CONTAINS
       !
       !  Output of some diagnostics variables
       !     ---------------------------------
-      IF( lk_iomput .AND.  knt == nrdttrc ) THEN
+      IF( l_dia_fechem .AND. lk_iomput .AND. knt == nrdttrc ) THEN
         !
-        IF( l_dia_fechem ) THEN
-           zrfact2 = 1.e3 * rfact2r  ! conversion from mol/L/timestep into mol/m3/s
-           ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
-           ! Fe3+
-           zw3d(A2D(0),1:jpkm1) = zFe3(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-           CALL iom_put( "Fe3", zw3d )
-           !  FeL1
-           DO_3D( 0, 0, 0, 0, 1, jpkm1)
-              zw3d(ji,jj,jk) = MAX( 0., tr(ji,jj,jk,jpfer,Kbb) - zFe3(ji,jj,jk) ) * tmask(ji,jj,jk)
-           END_3D
-           CALL iom_put( "FeL1", zw3d )
-           ! TL1 = Totlig
-           zw3d(A2D(0),1:jpkm1) = ztotlig(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-           CALL iom_put( "TL1", zw3d )
-           ! Totlig
-           zw3d(A2D(0),1:jpkm1) = ztotlig(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-           CALL iom_put( "Totlig", zw3d )
-           ! biron
-           zw3d(A2D(0),1:jpkm1) = biron(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-           CALL iom_put( "Biron", zw3d )
-           ! FESCAV
-           zw3d(A2D(0),1:jpkm1) = zscav3d(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1) * zrfact2
-           CALL iom_put( "FESCAV", zw3d )
-           ! FECOLL
-           zw3d(A2D(0),1:jpkm1) = zcoll3d(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1) * zrfact2
-           CALL iom_put( "FECOLL", zw3d )
-           ! FEPREC
-           zw3d(A2D(0),1:jpkm1) = zfeprecip(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1) * zrfact2
-           CALL iom_put( "FEPREC", zw3d )
-           !
-           DEALLOCATE( zcoll3d, zscav3d, zfeprecip, zw3d ) 
-           !
-        ENDIF
+         zFe3(:,:,jpk)    = 0.   ;   ztotlig(:,:,jpk) = 0.   ;   biron(:,:,jpk)     = 0.
+         zcoll3d(:,:,jpk) = 0.   ;   zscav3d(:,:,jpk) = 0.   ;   zfeprecip(:,:,jpk) = 0.
+!        zrfact2 = 1.e3 * rfact2r  ! conversion from mol/L/timestep into mol/m3/s
+        CALL iom_put( "Fe3"   , zFe3(:,:,:)      * tmask(A2D(0),:) )  ! Fe3+
+        DO_3D( 0, 0, 0, 0, 1, jpkm1)
+           zFe3(ji,jj,jk) = MAX( 0., tr(ji,jj,jk,jpfer,Kbb) - zFe3(ji,jj,jk) )
+        END_3D
+        CALL iom_put( "FeL1"   , zFe3(:,:,:)      * tmask(A2D(0),:) )  ! FeL1
+        CALL iom_put( "TL1"   , ztotlig(:,:,:)   * tmask(A2D(0),:) )  ! TL1 = Totlig
+        CALL iom_put( "Totlig",  ztotlig(:,:,:)  * tmask(A2D(0),:) ) ! Totlig
+        CALL iom_put( "Biron" , biron(:,:,:)     * tmask(A2D(0),:) )  ! biron
+        CALL iom_put( "FESCAV", zscav3d(:,:,:)   * tmask(A2D(0),:) * 1.e3 * rfact2r )  ! FESCAV
+        CALL iom_put( "FECOLL", zcoll3d(:,:,:)   * tmask(A2D(0),:) * 1.e3 * rfact2r ) ! FECOLL
+        CALL iom_put( "FEPREC", zfeprecip(:,:,:) * tmask(A2D(0),:) * 1.e3 * rfact2r ) ! FEPREC
+        !
+        DEALLOCATE( zcoll3d, zscav3d, zfeprecip ) 
         !
       ENDIF
-
+      !
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('fechem')")
          CALL prt_ctl_info( charout, cdcomp = 'top' )
