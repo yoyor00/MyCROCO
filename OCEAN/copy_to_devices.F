@@ -87,7 +87,9 @@
 # endif
 # if defined NBQ || defined K3FAST
 !$acc&  , rho_nbq, rho_grd
+#  if defined NBQ || defined K3SLOW_W
 !$acc&  , wz
+#  endif
 #  if defined NBQ_MASS
 !$acc&  , Hzr
 #  endif

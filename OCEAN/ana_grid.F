@@ -541,6 +541,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=depth
         enddo
       enddo
+!$acc end kernels
 
 # elif defined CANYON
       do j=JstrR,JendR
@@ -1110,11 +1111,13 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 ! initialisation of z0b in case of analytical cases
 !----------------------------------------------------------------------
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           zob(i,j)=zobt
         end do
       end do
+!$acc end kernels
 !
 !----------------------------------------------------------------------
 !  Set masking at RHO-points.
