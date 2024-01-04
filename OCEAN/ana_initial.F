@@ -1363,9 +1363,9 @@ C$OMP BARRIER
         enddo
        enddo
 # endif
-# if !defined JET
-!$acc end kernels
-# endif
+!# if !defined JET
+!!$acc end kernels
+!# endif
 #endif /* ANA_INITIAL */
 
 #ifdef SOLVE3D

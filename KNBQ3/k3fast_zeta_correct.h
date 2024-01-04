@@ -122,6 +122,7 @@
 !
 !  Prognostic evaluation using momentum divergence
 !
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
@@ -132,6 +133,7 @@
             enddo
           enddo
         enddo
+!$acc end kernels
 ! ! 
 ! !********************************
 ! !  Exchange:  ATTENTION FRANCIS
@@ -212,6 +214,7 @@
 ! !********************************
 ! !
 # ifdef NBQ_MASS
+!$acc kernels if(compute_on_device) default(present)
       if (LAST_FAST_STEP) then
         do k=1,N
           do j=JstrV-2,Jend+1
@@ -221,6 +224,7 @@
            enddo
          enddo
       endif
+!$acc end kernels
 # endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

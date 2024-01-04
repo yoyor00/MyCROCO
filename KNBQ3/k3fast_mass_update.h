@@ -76,6 +76,7 @@
 ! Compute rhobar_nbq(m+1) used in zeta diagnostic from 
 ! depth-integrated continuity equation
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
           rhobar_nbq(i,j,knew)=0.
@@ -96,6 +97,7 @@
      &                            / (z_w(i,j,N)-z_w(i,j,0))
         enddo
       enddo
+!$acc end kernels
 ! !
 ! !********************************
 ! !   ATTENTION exchange !!!!!!! FRANCIS
@@ -136,6 +138,7 @@
 ! !********************************
 ! !
 # ifdef  NBQ_DIAGMASS
+!$acc kernels if(compute_on_device) default(present)
       masstot =0.
       masstot2=0.
       do j=Jstr,Jend
@@ -153,6 +156,7 @@
           enddo
         enddo
       enddo
+!$acc end kernels
 #  ifdef MPI
       call MPI_ALLGATHER(masstot,1,MPI_DOUBLE_PRECISION,
      &                allmasstot,1,MPI_DOUBLE_PRECISION,

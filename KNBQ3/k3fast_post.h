@@ -75,6 +75,7 @@ C$OMP END MASTER
 ! !********************************
 ! !     
 # ifdef NBQ_MASS
+!$acc kernels if(compute_on_device) default(present)
         do j=Jstr,Jend
           do i=Istr,Iend
             rhobar_nbq_avg1(i,j)=rhobar_nbq(i,j,knew)
@@ -89,6 +90,7 @@ C$OMP END MASTER
             enddo
           enddo 
         enddo
+!$acc end kernels 
 # endif /* NBQ_MASS */
 ! !
 ! !********************************

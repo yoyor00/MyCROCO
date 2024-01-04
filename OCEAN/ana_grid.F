@@ -459,7 +459,6 @@ C$    integer omp_get_thread_num
       y0=-9.E+3
 # endif
 
-!$acc kernels if(compute_on_device) default(present)
 CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
 CR     &                                'x0=',x0, 'y0=',y0, mynode
 !
@@ -842,6 +841,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 #  else
+!$acc kernels if(compute_on_device) default(present)
 !
 ! Weir et al. 2011 after Lippmann et al. 1999 (idealization of Duck beach)
 !
@@ -869,9 +869,11 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=(1+per)*h0!-0.8;
         enddo
       enddo
+!$acc end kernels
 #  endif
 
 # elif defined THACKER
+!$acc kernels if(compute_on_device) default(present)
       cff=80.e3
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -883,28 +885,35 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  endif
         enddo
       enddo
+!$acc end kernels
 
 # elif defined TANK
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
         enddo
       enddo
+!$acc end kernels
 
 # elif defined AgAc 
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
         enddo
       enddo
+!$acc end kernels
 
 # elif defined MOVING_BATHY
+!$acc kernels if(compute_on_device) default(present)
       cff=1./(0.03686)**2
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth-0.1*exp(-cff*xr(i,j)**2)
         enddo
       enddo
+!$acc end kernels
 
 # elif defined DUNE
 #  ifdef ANA_DUNE
@@ -1169,7 +1178,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       endif ! WESTERN_EDGE
 #  endif /* RIVER */
 # endif /* MASKING */
-!$acc end kernels
+!!$acc end kernels
 !
 #else
       subroutine ana_grid_empty
