@@ -61,7 +61,8 @@ MODULE p5zmeso
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:) :: depmig  !: DVM of mesozooplankton : migration depth
    INTEGER , ALLOCATABLE, SAVE, DIMENSION(:,:) :: kmig    !: Vertical indice of the the migration depth
 
-   LOGICAL          :: l_dia_fezoo2, l_dia_graz2, l_dia_lprodz2
+   REAL(wp) ::  xfracmigm1     !: Fractional biomass of meso that performs DVM
+   LOGICAL  :: l_dia_graz, l_dia_lprodz
 
    !! * Substitutions
 #  include "ocean2pisces.h90"    
@@ -117,31 +118,26 @@ CONTAINS
       REAL(wp), ALLOCATABLE, DIMENSION(:,:)   ::   zgramigrem, zgramigref, zgramigpoc, zgramigpof
       REAL(wp), ALLOCATABLE, DIMENSION(:,:)   ::   zgramigrep, zgramigren, zgramigpop, zgramigpon
       REAL(wp), ALLOCATABLE, DIMENSION(:,:)   ::   zgramigdoc, zgramigdop, zgramigdon, zgramigbsi
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing2, zfezoo2, zzligprod2, zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing2, zzligprod
 
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p5z_meso')
       !
       IF( kt == nittrc000 )  THEN
-         l_dia_graz2   = iom_use( "GRAZ2" )
-         l_dia_fezoo2  = iom_use( "FEZOO2" )
-         l_dia_lprodz2 = ln_ligand .AND. iom_use( "LPRODZ2" )
+         l_dia_graz    = iom_use( "GRAZ2" ) .OR. iom_use( "FEZOO2" )
+         l_dia_lprodz  = ln_ligand .AND. iom_use( "LPRODZ2" )
       ENDIF
-      IF( l_dia_lprodz2 ) THEN
-         ALLOCATE( zzligprod2(A2D(0),jpk) )
+
+      IF( l_dia_graz ) THEN
+         ALLOCATE( zgrazing2(A2D(0),jpk) )     ;    zgrazing2(A2D(0),jpk) = 0.
+      ENDIF
+      !
+      IF( l_dia_lprodz ) THEN
+         ALLOCATE( zzligprod(A2D(0),jpk) )
          DO_3D( 0, 0, 0, 0, 1, jpkm1)
-            zzligprod2(ji,jj,jk) = tr(ji,jj,jk,jplgw,Krhs)
+            zzligprod(ji,jj,jk) = tr(ji,jj,jk,jplgw,Krhs)
          END_3D
-      ENDIF
-      IF( l_dia_fezoo2 ) THEN
-         ALLOCATE( zfezoo2(A2D(0),jpk) )
-         DO_3D( 0, 0, 0, 0, 1, jpkm1)
-            zfezoo2(ji,jj,jk) = tr(ji,jj,jk,jpfer,Krhs)
-         END_3D
-      ENDIF
-      IF( l_dia_graz2 ) THEN
-         ALLOCATE( zgrazing2(A2D(0),jpk) )
       ENDIF
 
       ! Initialization of local arrays
@@ -317,7 +313,7 @@ CONTAINS
          &            + zgrazffpp + zgrazffpg
 
          ! Total grazing ( grazing by microzoo is already computed in p5zmicro )
-         IF( l_dia_graz2 ) zgrazing2(ji,jj,jk) = zgraztotc
+         IF( l_dia_graz ) zgrazing2(ji,jj,jk) = zgraztotc
 
          !   Stoichiometruc ratios of the food ingested by zooplanton 
          !   --------------------------------------------------------
@@ -477,18 +473,18 @@ CONTAINS
                 zgramigdon(ji,jj) = zgramigdon(ji,jj) + xfracmig * zgradon(ji,jj,jk) * zmigthick
                 zgramigbsi(ji,jj) = zgramigbsi(ji,jj) + xfracmig * zgrabsi(ji,jj,jk) * zmigthick
 
-                zgrarem(ji,jj,jk)  = zgrarem(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgrarep(ji,jj,jk)  = zgrarep(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgraren(ji,jj,jk)  = zgraren(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgraref(ji,jj,jk)  = zgraref(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgrapoc(ji,jj,jk)  = zgrapoc(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgrapop(ji,jj,jk)  = zgrapop(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgrapon(ji,jj,jk)  = zgrapon(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgrapof(ji,jj,jk)  = zgrapof(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgradoc(ji,jj,jk)  = zgradoc(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgradop(ji,jj,jk)  = zgradop(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgradon(ji,jj,jk)  = zgradon(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
-                zgrabsi(ji,jj,jk)  = zgrabsi(ji,jj,jk) * ( (1.0 - xfracmig) + xfracmig * zmigreltime )
+                zgrarem(ji,jj,jk)  = zgrarem(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgrarep(ji,jj,jk)  = zgrarep(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgraren(ji,jj,jk)  = zgraren(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgraref(ji,jj,jk)  = zgraref(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgrapoc(ji,jj,jk)  = zgrapoc(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgrapop(ji,jj,jk)  = zgrapop(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgrapon(ji,jj,jk)  = zgrapon(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgrapof(ji,jj,jk)  = zgrapof(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgradoc(ji,jj,jk)  = zgradoc(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgradop(ji,jj,jk)  = zgradop(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgradon(ji,jj,jk)  = zgradon(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+                zgrabsi(ji,jj,jk)  = zgrabsi(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
              ENDIF
           END_3D
 
@@ -538,7 +534,6 @@ CONTAINS
          tr(ji,jj,jk,jpdop,Krhs) = tr(ji,jj,jk,jpdop,Krhs) + zgradop(ji,jj,jk)
          tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) - o2ut * zgrarem(ji,jj,jk)
          tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) + zgraref(ji,jj,jk)
-         IF( l_dia_fezoo2 )  zfezoo2(ji,jj,jk)   = zgraref(ji,jj,jk)
          tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) + zgrarem(ji,jj,jk)
          tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + rno3 * zgraren(ji,jj,jk)                      
          tr(ji,jj,jk,jpgoc,Krhs) = tr(ji,jj,jk,jpgoc,Krhs) + zgrapoc(ji,jj,jk)
@@ -552,42 +547,19 @@ CONTAINS
       ! Write the output
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
-        IF( iom_use ( "PCAL" ) ) THEN   ! Calcite production
-            ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zw3d(ji,jj,jk) = prodcal(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
-            END_3D
-          CALL iom_put( "PCAL", zw3d )
-          DEALLOCATE( zw3d )
-        ENDIF
-        !
-        IF( l_dia_graz2 ) THEN  !   Total grazing of phyto by zooplankton
-            zgrazing2(A2D(0),jpk) = 0._wp
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zgrazing2(ji,jj,jk) =  zgrazing2(ji,jj,jk) *  1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in mol/m2/s
-            END_3D
-            CALL iom_put( "GRAZ2" , zgrazing2 )
+        IF( l_dia_graz ) THEN  !
+            CALL iom_put( "GRAZ2" , zgrazing2(:,:,:)       * 1.e+3 * rfact2r * tmask(A2D(0),:) )
+            CALL iom_put( "FEZOO2", zgraref  (:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:) )
             DEALLOCATE( zgrazing2 )
         ENDIF
         !
-        IF( l_dia_fezoo2 ) THEN
-            zfezoo2(A2D(0),jpk) = 0._wp
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zfezoo2(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo2(ji,jj,jk) ) &
-                  &              * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
-            END_3D
-           CALL iom_put( "FEZOO2", zfezoo2 )
-           DEALLOCATE( zfezoo2 )
-        ENDIF
-        !
-        IF( l_dia_lprodz2 ) THEN
-            zzligprod2(A2D(0),jpk) = 0._wp
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zzligprod2(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod2(ji,jj,jk) ) &
+        IF( l_dia_lprodz ) THEN
+           DO_3D( 0, 0, 0, 0, 1, jpkm1)
+               zzligprod(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
                    &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
-           CALL iom_put( "LPRODZ2", zzligprod2 )
-           DEALLOCATE( zzligprod2 )
+           CALL iom_put( "LPRODZ2", zzligprod )
+           DEALLOCATE( zzligprod )
         ENDIF
         !
       ENDIF
@@ -662,6 +634,8 @@ CONTAINS
          WRITE(numout,*) '      Diurnal vertical migration of mesozoo.         ln_dvm_meso  =', ln_dvm_meso
          WRITE(numout,*) '      Fractional biomass of meso  that performs DVM  xfracmig     =', xfracmig
       ENDIF
+      !
+      xfracmigm1 = 1.0 - xfracmig
       !
    END SUBROUTINE p5z_meso_init
 

@@ -54,7 +54,7 @@ MODULE p5zmicro
    REAL(wp), PUBLIC ::  xsigmadel   !: Maximum additional width of the grazing window at low food density
    LOGICAL,  PUBLIC ::  bmetexc     !: Use of excess carbon for respiration
 
-   LOGICAL          :: l_dia_fezoo, l_dia_graz1, l_dia_lprodz
+   LOGICAL          :: l_dia_graz, l_dia_lprodz
 
    !! * Substitutions
 #  include "ocean2pisces.h90"    
@@ -95,31 +95,30 @@ CONTAINS
       REAL(wp) :: zgrazdc, zgrazdn, zgrazdp, zgrazdf, zgraznf, zgrazz
       REAL(wp) :: zgrazpc, zgrazpn, zgrazpp, zgrazpf, zbeta, zrfact2, zmetexcess
       REAL(wp) :: zsigma, zdiffdn, zdiffpn, zdiffdp, zproport, zproport2
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing, zfezoo, zzligprod, zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing, zfezoo, zzligprod
       CHARACTER (len=25) :: charout
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p5z_micro')
       !
-      IF( kt == nittrc000 )  THEN
-         l_dia_graz1  = iom_use( "GRAZ1" )
-         l_dia_fezoo  = iom_use( "FEZOO" )
-         l_dia_lprodz = ln_ligand .AND. iom_use( "LPRODZ" )
+      IF( kt == nittrc000 )  THEN 
+         l_dia_graz    = iom_use( "GRAZ1" ) .OR. iom_use( "FEZOO" ) 
+         l_dia_lprodz  = ln_ligand .AND. iom_use( "LPRODZ" ) 
       ENDIF
-      IF( l_dia_lprodz ) THEN
-         ALLOCATE( zzligprod(A2D(0),jpk) )
-         DO_3D( 0, 0, 0, 0, 1, jpk)
-            zzligprod(ji,jj,jk) = tr(ji,jj,jk,jplgw,Krhs)
-         END_3D
-      ENDIF
-      IF( l_dia_fezoo ) THEN
-         ALLOCATE( zfezoo(A2D(0),jpk) )
+      !
+      IF( l_dia_graz ) THEN
+         ALLOCATE( zgrazing(A2D(0),jpk), zfezoo(A2D(0),jpk) ) 
+         zgrazing(A2D(0),:) = 0.
          DO_3D( 0, 0, 0, 0, 1, jpk)
             zfezoo(ji,jj,jk) = tr(ji,jj,jk,jpfer,Krhs)
          END_3D
       ENDIF
-      IF( l_dia_graz1 ) THEN
-         ALLOCATE( zgrazing(A2D(0),jpk) )
+      !
+      IF( l_dia_lprodz ) THEN
+         ALLOCATE( zzligprod(A2D(0),jpk) ) 
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zzligprod(ji,jj,jk) = tr(ji,jj,jk,jplgw,Krhs)
+         END_3D
       ENDIF
 
       ! Use of excess carbon for metabolism
@@ -239,7 +238,7 @@ CONTAINS
          !
                ! Total ingestion rates in C, P, Fe, N
          zgraztotc = zgraznc + zgrazpoc + zgrazdc + zgrazz + zgrazpc ! Grazing by microzooplankton
-         IF( l_dia_graz1 ) zgrazing(ji,jj,jk) = zgraztotc
+         IF( l_dia_graz ) zgrazing(ji,jj,jk) = zgraztotc
 
          zgraztotn = zgraznn + zgrazpn + zgrazpon + zgrazdn + zgrazz * no3rat3
          zgraztotp = zgraznp + zgrazpp + zgrazpop + zgrazdp + zgrazz * po4rat3
@@ -371,27 +370,17 @@ CONTAINS
       !
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
-        IF( l_dia_graz1 ) THEN  !   Total grazing of phyto by zooplankton
-            zgrazing(A2D(0),jpk) = 0._wp
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zgrazing(ji,jj,jk) = zgrazing(ji,jj,jk) *  1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in mol/m2/s
-            END_3D
+        IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
             CALL iom_put( "GRAZ1" , zgrazing )
-            DEALLOCATE( zgrazing )
-        ENDIF
-        !
-        IF( l_dia_fezoo ) THEN
-            zfezoo(A2D(0),jpk) = 0._wp                
             DO_3D( 0, 0, 0, 0, 1, jpkm1)
                zfezoo(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo(ji,jj,jk) ) &
                   &              * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
            CALL iom_put( "FEZOO", zfezoo )
-           DEALLOCATE( zfezoo )
+           DEALLOCATE( zgrazing, zfezoo )
         ENDIF
         !
         IF( l_dia_lprodz ) THEN
-            zzligprod(A2D(0),jpk) = 0._wp
             DO_3D( 0, 0, 0, 0, 1, jpkm1)
                zzligprod(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
                    &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s

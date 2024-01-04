@@ -37,6 +37,7 @@ MODULE p4zbio
    USE p4zagg          !  Aggregation of particles
    USE p4zfechem
    USE p4zligand       !  Prognostic ligand model
+   USE p4zdiaz         !  Diazotrophy
    USE prtctl          !  print control for debugging
    USE iom             !  I/O manager
   
@@ -123,6 +124,8 @@ CONTAINS
       ! Ligand production. ln_ligand should be set .true. to activate
       IF( ln_ligand )  &
       & CALL p4z_ligand( kt, knt, Kbb,      Krhs )
+
+      CALL p4z_diaz( kt, knt, Kbb, Kmm, Krhs )     ! Diazotrophy
 
       ! Update of the size of the different phytoplankton groups
       sizen(:,:,:) = MAX(1.0, sizena(:,:,:) )

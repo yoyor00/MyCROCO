@@ -140,7 +140,9 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'no3_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
-#   if ! defined key_pisces_light
+#   if defined key_pisces_light
+          endif
+#   else
           elseif (itrc.eq.iCAL_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'cal_time', tclm_tid(itrc))

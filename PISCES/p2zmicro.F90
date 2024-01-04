@@ -90,12 +90,8 @@ CONTAINS
       !
       IF( ln_timing )   CALL timing_start('p2z_micro')
       !
-      IF( kt == nittrc000 )  THEN
-         l_dia_graz1  = iom_use( "GRAZ1" )
-      ENDIF
-      IF( l_dia_graz1 ) THEN
-         ALLOCATE( zgrazing(A2D(0),jpk) ) 
-      ENDIF
+      IF( kt == nittrc000 )  l_dia_graz1  = iom_use( "GRAZ1" )
+      IF( l_dia_graz1 )  ALLOCATE( zgrazing(A2D(0),jpk) ) 
       !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          zcompaz = MAX( ( tr(ji,jj,jk,jpzoo,Kbb) - 1.e-9 ), 0.e0 )
@@ -233,10 +229,7 @@ CONTAINS
         !
         IF( l_dia_graz1 ) THEN  !   Total grazing of phyto by zooplankton
             zgrazing(A2D(0),jpk) = 0._wp
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zgrazing(ji,jj,jk) = zgrazing(ji,jj,jk) *  1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in mol/m2/s
-            END_3D
-            CALL iom_put( "GRAZ1" , zgrazing )
+            CALL iom_put( "GRAZ1" , zgrazing(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! conversion in mol/m2/s
             DEALLOCATE( zgrazing )
         ENDIF
         !

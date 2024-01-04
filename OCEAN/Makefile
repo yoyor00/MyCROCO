@@ -139,13 +139,14 @@ include Makedefs
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
 	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
 	p4zmort.F90	p4zopt.F90		p4zprod.F90	p4zrem.F90\
-	p4zbc.F90	p4zsed.F90		trcwri_pisces.F90	trcsink.F90\
+	p4zbc.F90	p4zsed.F90		p4zdiaz.F90\
 	p4zagg.F90	p4zfechem.F90		p4zligand.F90	p4zpoc.F90\
 	p2zlim.F90	p2zmicro.F90		p2zmort.F90	p2zprod.F90\
 	p5zmicro.F90	p5zmort.F90		p5zprod.F90\
 	p5zlim.F90	p5zmeso.F90		p4zbio.F90	p4zsms.F90\
-	trcnam_pisces.F90	trcsms_pisces.F90	trcini_pisces.F90\
-	pisces_ini.F90	oce_sed.F90		par_sed.F90	sedadv.F90\
+	trcsink.F90	trcwri_pisces.F90	trcnam_pisces.F90\
+	trcsms_pisces.F90	trcini_pisces.F90	pisces_ini.F90\
+	oce_sed.F90		par_sed.F90	sedadv.F90\
 	sedbtb.F90		sedchem.F90	sedco3.F90\
 	seddsr.F90		seddta.F90	sed.F90\
 	seddsrjac.F90	sedfunc.F90		sedjac.F90	sedsol.F90\

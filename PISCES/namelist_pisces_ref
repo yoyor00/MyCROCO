@@ -406,6 +406,13 @@
    xremipp   =  0.032     ! remineralisation rate of POP
 /
 !-----------------------------------------------------------------------
+&nampisdiaz     !   Namelist parameters for diazotrophy
+!-----------------------------------------------------------------------
+   nitrfix     =  2.e-7    ! Nitrogen fixation rate
+   diazolight  =  30.      ! Diazotrophs sensitivity to light (W/m2)
+   concfediaz  =  1.e-10   ! Diazotrophs half-saturation Cste for Iron
+/
+!-----------------------------------------------------------------------
 &nampiscal     !   parameters for Calcite chemistry
 !-----------------------------------------------------------------------
    kdca       =  100.     ! calcite dissolution rate constant (1/time)
@@ -434,7 +441,6 @@
 !-----------------------------------------------------------------------
 &nampissed     !   Namelist parameters for sediment mobilisation
 !-----------------------------------------------------------------------
-   nitrfix     =  2.e-7    ! Nitrogen fixation rate
-   diazolight  =  30.      ! Diazotrophs sensitivity to light (W/m2)
-   concfediaz  =  1.e-10   ! Diazotrophs half-saturation Cste for Iron
+    bureffmin  = 0.013     !: Minimum burial efficiency
+    bureffvar  = 0.53      !: Variable coef. for burial efficiency
 /

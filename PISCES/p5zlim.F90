@@ -477,43 +477,25 @@ CONTAINS
       IF( lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
         !
         IF( l_dia_fracal ) THEN   ! fraction of calcifiers
-          ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
-          zw3d(A2D(0),1:jpkm1) = xfracal(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "xfracal",  zw3d)
-          DEALLOCATE( zw3d )
+          CALL iom_put( "xfracal",  xfracal(:,:,:) * tmask(A2D(0),:) )
         ENDIF
         !
         IF( l_dia_nut_lim ) THEN   ! Nutrient limitation term
-          ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
-          zw3d(A2D(0),1:jpkm1) = xlimphy(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "LNnut",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = xlimdia(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "LDnut",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = xlimpic(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "LPnut",  zw3d)
-          DEALLOCATE( zw3d )
+          CALL iom_put( "LNnut",  xlimphy(:,:,:) * tmask(A2D(0),:) )
+          CALL iom_put( "LDnut",  xlimdia(:,:,:) * tmask(A2D(0),:) )
+          CALL iom_put( "LPnut",  xlimpic(:,:,:) * tmask(A2D(0),:) )
         ENDIF
         !
         IF( l_dia_iron_lim ) THEN   ! Iron limitation term
-          ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
-          zw3d(A2D(0),1:jpkm1) = xlimnfe(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "LNFe",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = xlimdfe(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "LDFe",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = xlimpfe(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "LPFe",  zw3d)
-          DEALLOCATE( zw3d )
+          CALL iom_put( "LNFe",  xlimnfe(:,:,:) * tmask(A2D(0),:) )
+          CALL iom_put( "LDFe",  xlimdfe(:,:,:) * tmask(A2D(0),:) )
+          CALL iom_put( "LPFe",  xlimpfe(:,:,:) * tmask(A2D(0),:) )
         ENDIF
         !
         IF( l_dia_size_lim ) THEN   ! Size limitation term
-          ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
-          zw3d(A2D(0),1:jpkm1) = sizen(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "SIZEN",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = sized(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "SIZED",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = sizep(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
-          CALL iom_put( "SIZEP",  zw3d)
-          DEALLOCATE( zw3d )
+          CALL iom_put( "SIZEN",  sizen(:,:,:) * tmask(A2D(0),:) )
+          CALL iom_put( "SIZED",  sized(:,:,:) * tmask(A2D(0),:) )
+          CALL iom_put( "SIZEP",  sizep(:,:,:) * tmask(A2D(0),:) )
         ENDIF
         !
         IF( l_dia_size_pro ) THEN   ! Size of the protein machinery

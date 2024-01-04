@@ -46,7 +46,7 @@ MODULE p4zrem
 
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   denitr   !: denitrification array
 
-   LOGICAL         :: l_dia_remin, l_dia_febact, l_dia_bact, l_dia_denit
+   LOGICAL         :: l_dia_remin, l_dia_bact, l_dia_denit
 
    !! * Substitutions
 #  include "ocean2pisces.h90"   
@@ -158,6 +158,7 @@ CONTAINS
       ENDIF
 
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
+!            zfact = rno3 * 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
           !
           IF( l_dia_remin ) THEN    ! Remineralisation rate
              DO_3D( 0, 0, 0, 0, 1, jpkm1)
@@ -167,24 +168,12 @@ CONTAINS
              CALL iom_put( "REMIN", zolimi )
              DEALLOCATE( zolimi )
           ENDIF
-          !
-          IF( l_dia_bact ) THEN   ! Bacterial biomass
-             ALLOCATE( zw3d(A2D(0),jpk) )    ;    zw3d(A2D(0),jpk) = 0._wp
-             DO_3D( 0, 0, 0, 0, 1, jpkm1)
-                zw3d(ji,jj,jk) = zdepbac(ji,jj,jk) * 1.E6 * tmask(ji,jj,jk)
-             END_3D
-             CALL iom_put( "BACT", zw3d )
-             DEALLOCATE( zw3d )
+          IF( l_dia_bact )  THEN
+            zdepbac(:,:,jpk) = 0._wp
+            CALL iom_put( "BACT", zdepbac(:,:,:) * 1.E6 * tmask(A2D(0),:) )  ! Bacterial biomass 
           ENDIF
-          !
-          IF( l_dia_denit )  THEN ! Denitrification
-             ALLOCATE( zw3d(A2D(0),jpk) )    ;    zw3d(A2D(0),jpk) = 0._wp
-             DO_3D( 0, 0, 0, 0, 1, jpkm1)
-                zw3d(ji,jj,jk) = denitr(ji,jj,jk) * 1E+3 * rfact2r * rno3 * tmask(ji,jj,jk)
-             END_3D
-             CALL iom_put( "DENIT", zw3d )
-             DEALLOCATE( zw3d )
-          ENDIF
+          IF( l_dia_denit )  CALL iom_put( "DENIT", denitr(:,:,:) * &
+            &                              1.E3 * rfact2r * rno3 * tmask(A2D(0),:) ) ! Denitrification
           !
       ENDIF
       !
@@ -225,9 +214,8 @@ CONTAINS
       !
       IF( kt == nittrc000 )  THEN
          l_dia_remin  = iom_use( "REMIN" )
-         l_dia_febact = iom_use( "FEBACT" )
+         l_dia_bact   = iom_use( "FEBACT" ) .OR. iom_use( "BACT" )
          l_dia_denit  = iom_use( "DENIT" )
-         l_dia_bact   = iom_use( "BACT" )
       ENDIF
       IF( l_dia_remin ) THEN
          ALLOCATE( zolimi(A2D(0),jpk) )    ;   zolimi(A2D(0),jpk) = 0._wp
@@ -235,7 +223,7 @@ CONTAINS
             zolimi(ji,jj,jk) = tr(ji,jj,jk,jpoxy,Krhs)
          END_3D
       ENDIF
-      IF( l_dia_febact ) THEN
+      IF( l_dia_bact ) THEN
          ALLOCATE( zfebact(A2D(0),jpk) )   ;   zfebact(A2D(0),jpk) = 0._wp
          DO_3D( 0, 0, 0, 0, 1, jpk)
             zfebact(ji,jj,jk) = tr(ji,jj,jk,jpfer,Krhs)
@@ -398,15 +386,8 @@ CONTAINS
       ENDIF
 
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
+!            zfact = rno3 * 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
           !
-          IF( l_dia_febact ) THEN
-             DO_3D( 0, 0, 0, 0, 1, jpkm1)
-                zfebact(ji,jj,jk) = ( zfebact(ji,jj,jk) - tr(ji,jj,jk,jpfer,Krhs) ) &
-                   &              * 1e9 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
-             END_3D
-             CALL iom_put( "FEBACT", zfebact )
-             DEALLOCATE( zfebact )
-          ENDIF
           IF( l_dia_remin ) THEN    ! Remineralisation rate
              DO_3D( 0, 0, 0, 0, 1, jpkm1)
                 zolimi(ji,jj,jk) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
@@ -415,24 +396,17 @@ CONTAINS
              CALL iom_put( "REMIN", zolimi )
              DEALLOCATE( zolimi )
           ENDIF
-          !
-          IF( l_dia_bact ) THEN   ! Bacterial biomass
-             ALLOCATE( zw3d(A2D(0),jpk) )    ;    zw3d(A2D(0),jpk) = 0._wp
+          IF( l_dia_bact )  THEN
+             CALL iom_put( "BACT", zdepbac(:,:,:) * 1.E6 * tmask(A2D(0),:) )  ! Bacterial biomass
              DO_3D( 0, 0, 0, 0, 1, jpkm1)
-                zw3d(ji,jj,jk) = zdepbac(ji,jj,jk) * 1.E6 * tmask(ji,jj,jk)
+                zfebact(ji,jj,jk) = ( zfebact(ji,jj,jk) - tr(ji,jj,jk,jpfer,Krhs) ) &
+                   &              * 1e9 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
              END_3D
-             CALL iom_put( "BACT", zw3d )
-             DEALLOCATE( zw3d )
+             CALL iom_put( "FEBACT", zfebact )
+             DEALLOCATE( zfebact )
           ENDIF
-          !
-          IF( l_dia_denit )  THEN ! Denitrification
-             ALLOCATE( zw3d(A2D(0),jpk) )    ;    zw3d(A2D(0),jpk) = 0._wp
-             DO_3D( 0, 0, 0, 0, 1, jpkm1)
-                zw3d(ji,jj,jk) = denitr(ji,jj,jk) * 1E+3 * rfact2r * rno3 * tmask(ji,jj,jk)
-             END_3D
-             CALL iom_put( "DENIT", zw3d )
-             DEALLOCATE( zw3d )
-          ENDIF
+          IF( l_dia_denit )  CALL iom_put( "DENIT", denitr(:,:,:) &
+             &                            * 1.E3 * rfact2r * rno3 * tmask(A2D(0),:) ) ! Denitrification
           !
       ENDIF
       !
@@ -486,7 +460,8 @@ CONTAINS
          ENDIF
       ENDIF
       !
-      denitr(:,:,:) = 0._wp
+      denitr(:,:,jpk) = 0._wp
+      blim  (:,:,jpk) = 0._wp
       !
    END SUBROUTINE p4z_rem_init
 
