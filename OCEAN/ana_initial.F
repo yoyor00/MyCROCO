@@ -150,6 +150,7 @@
 !  Acoustic wave emission
 !-------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)              
         period_exp = 1./50./2.
         for_a_exp  = 0.5
         amp_exp    = 1.e-4
@@ -159,16 +160,17 @@
         rx_exp     = 2. 
         ry_exp     = 2. 
         rz_exp     = 2.
+!$acc end kernels      
       endif
 # endif      
 
-!!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Initial conditions for free surface and 2D momentum components.
 !----------------------------------------------------------------------
 !
       if (nrrec.eq.0) then
+!$acc kernels if(compute_on_device) default(present)
 !
 # if defined SOLITON
 #  ifdef AGRIF
@@ -240,7 +242,7 @@
 # elif defined TANK
         ETA0=0.001
         Lt=10.
-!$acc kernels if(compute_on_device) default(present)
+c c !$acc kernels if(compute_on_device) default(present)
         do j=JR_RANGE
           do i=IR_RANGE
 #  ifndef TANKY
@@ -255,10 +257,10 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
-!$acc end kernels
+c c !!!$acc end kernels
 
 # elif defined AgAc
-!$acc kernels if(compute_on_device) default(present)
+c c !$acc kernels if(compute_on_device) default(present)
 !  Free-surface anomaly
         ETA0=0.D0
         Lt=10.
@@ -272,8 +274,11 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
+c c !!!$acc end kernels
+
 #  ifdef K3FAST_SACOUS
        if (nrrec.eq.0) then!
+c c !$acc kernels if(compute_on_device) default(present)
 !  Acoustic wave emission
          period_exp = 1./25.
          for_a_exp  = 2.D0
@@ -286,7 +291,6 @@
          rz_exp     = 2.
        endif
 #  endif
-!$acc end kernels
 
 # elif defined DUNE
         cff=0.5*(1./10)**2
@@ -345,7 +349,7 @@
           enddo
         enddo
 # endif
-
+!$acc end kernels
       else  !  nrrec.ne.0.
 
 # if defined RIP && defined RIP_TOPO_2D

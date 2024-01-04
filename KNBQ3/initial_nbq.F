@@ -105,15 +105,15 @@
 ! !  Pseudoacoustic speed
 ! !   should be around 5 times external phase speed sqrt(g*h)
 !
-!# if !defined K3FAST_CSVISC2K
         visc2_nbq=visc2read_nbq
         visc2v_nbq=visc2read_nbq   
         soundspeed_nbq  =csound_nbq
         soundspeed2_nbq =csound_nbq**2
-c c c c !$acc update host( visc2_nbq,  visc2v_nbq
-c c c c !$acc&          , soundspeed_nbq, soundspeed2_nbq
-c c c c !$acc&           )       
-!# endif
+#ifdef K3FAST_CSVISC2K        
+!$acc update device( visc2_nbq,  visc2v_nbq
+!$acc&          , soundspeed_nbq, soundspeed2_nbq
+!$acc&           )       
+#endif        
 !$acc kernels if(compute_on_device) default(present)
 #  if defined K3FAST_SEDLAYERS && defined K3FAST_CSVISC2K
         do k=-N_sl+1,0
