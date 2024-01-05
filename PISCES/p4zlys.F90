@@ -190,6 +190,14 @@ CONTAINS
          DEALLOCATE( zcaldiss )
       ENDIF
       !
+# if defined key_trc_diaadd
+      DO_3D( 0, 0, 0, 0, 1, jpk)
+         trc3d(ji,jj,jk,jp_hi    ) = -1. * LOG10( MAX( hi(ji,jj,jk), rtrn) ) * tmask(ji,jj,jk)  ! PH
+         trc3d(ji,jj,jk,jp_co3   ) = zco3(ji,jj,jk)  * 1.e+3 * tmask(ji,jj,jk)  ! Ion carbonate
+         trc3d(ji,jj,jk,jp_co3sat) = aksp(ji,jj,jk) * rhop(ji,jj,jk) / 1000._wp &   ! calcite saturation
+              &                  / calcon * ( salinprac(ji,jj,jk) / 35._wp ) * tmask(ji,jj,jk)
+      END_3D
+# endif      
       IF( ln_timing )   CALL timing_stop('p2z_lys')
       !
    END SUBROUTINE p2z_lys

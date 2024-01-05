@@ -395,6 +395,15 @@ CONTAINS
          ENDIF
       ENDIF
       !
+#if defined key_trc_diaadd
+      DO_3D( 0, 0, 0, 0, 1, jpk )
+         trc3d(ji,jj,jk,jp_etot) = etot(ji,jj,jk) * tmask(ji,jj,jk)   ! PAR
+      END_3D
+      !
+      DO_2D( 0, 0, 0, 0 )
+         trc2d(ji,jj,jp_heup) = heup(ji,jj) * tmask(ji,jj,1)   ! euphotic layer
+      END_2D
+#endif      
       IF( ln_timing )   CALL timing_stop('p4z_opt')
       !
    END SUBROUTINE p4z_opt

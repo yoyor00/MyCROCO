@@ -150,6 +150,8 @@ MODULE sed
    INTEGER, PUBLIC ::  numsed = 27    ! units
    INTEGER , PUBLIC               ::  numrsr, numrsw   !
 
+   REAL(wp), PUBLIC, DIMENSION(:,:,:), ALLOCATABLE ::  pwcp_avg   !: pore water sediment data at initial time
+   REAL(wp), PUBLIC, DIMENSION(:,:,:), ALLOCATABLE ::  solcp_avg  !: solid sediment data at initial time
    REAL(wp), PUBLIC, DIMENSION(:,:,:), ALLOCATABLE ::  trcsed_avg
    REAL(wp), PUBLIC, DIMENSION(:,:) , ALLOCATABLE  ::  flxsed_avg
 

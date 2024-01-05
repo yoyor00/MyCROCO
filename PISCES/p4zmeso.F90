@@ -109,10 +109,10 @@ CONTAINS
       IF( ln_timing )   CALL timing_start('p4z_meso')
       !
       IF( kt == nittrc000 )  THEN
-         l_dia_graz    = iom_use( "GRAZ2" ) .OR. iom_use( "FEZOO2" )
+         l_dia_graz    = iom_use( "GRAZ2" ) .OR. iom_use( "FEZOO2" ) .OR. iom_use( "MesoZo2" )
          l_dia_lprodz  = ln_ligand .AND. iom_use( "LPRODZ2" )
+         l_dia_graz = l_dia_graz .OR. l_diaadd
       ENDIF
-
       IF( l_dia_graz ) THEN
          ALLOCATE( zgrazing2(A2D(0),jpk) )     ;    zgrazing2(A2D(0),jpk) = 0.
       ENDIF
@@ -431,9 +431,10 @@ CONTAINS
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
         IF( l_dia_graz ) THEN  !
-            CALL iom_put( "GRAZ2" , zgrazing2(:,:,:)       * 1.e+3 * rfact2r * tmask(A2D(0),:) )
+            CALL iom_put( "GRAZ2"  , zgrazing2(:,:,:)       * 1.e+3 * rfact2r * tmask(A2D(0),:) )
+            CALL iom_put( "MesoZo2", zgrazing2(:,:,:) * ( 1. - epsher2 - unass2 ) * (-o2ut) * sigma2  &
+                 &                 * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! o2 consumption by Mesozoo            
             CALL iom_put( "FEZOO2", zgraref  (:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:) )
-            DEALLOCATE( zgrazing2 )
         ENDIF
         !
         IF( l_dia_lprodz ) THEN
@@ -447,6 +448,15 @@ CONTAINS
         !
       ENDIF
       !
+#if defined key_trc_diaadd
+      DO_3D( 0, 0, 0, 0, 1, jpk)
+         trc3d(ji,jj,jk,jp_grapoc2) = zgrazing2(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by mesozoo
+         trc3d(ji,jj,jk,jp_meso2)   = zgrazing2(ji,jj,jk) * ( 1. - epsher2 - unass2 ) &
+            &                   * (-o2ut) * sigma2 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! o2 consumption by Mesozoo
+      END_3D
+#endif
+     IF( l_dia_graz ) DEALLOCATE( zgrazing2 )
+
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
         WRITE(charout, FMT="('meso')")
         CALL prt_ctl_info( charout, cdcomp = 'top' )

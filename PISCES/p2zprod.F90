@@ -39,8 +39,7 @@ MODULE p2zprod
    REAL(wp) ::   r1_rday    ! 1 / rday
    REAL(wp) ::   texcretn   ! 1 - excretn 
 
-   LOGICAL  :: l_dia_ppphy
-   LOGICAL  :: l_dia_mu, l_dia_light, l_dia_lprod
+   LOGICAL  :: l_dia_pp, l_dia_mu, l_dia_light, l_dia_lprod
 
    !! * Substitutions
 #  include "ocean2pisces.h90"      
@@ -79,7 +78,7 @@ CONTAINS
       IF( ln_timing )   CALL timing_start('p2z_prod')
       !
       IF( kt == nittrc000 ) THEN
-         l_dia_ppphy = iom_use( "PPPHYN" ) .OR. iom_use( "TPP"  ) 
+         l_dia_pp    = iom_use( "PPPHYN" ) .OR. iom_use( "TPP"  ) .OR. iom_use( "PPNEWo2" )
          l_dia_mu    = iom_use( "Mumax"  ) .OR. iom_use( "MuN"    )
          l_dia_light = iom_use( "LNlight")
       ENDIF
@@ -206,12 +205,13 @@ CONTAINS
       END_3D
 
     ! Total primary production per year
-    IF( l_dia_ppphy  )  tpp = glob_sum( 'p2zprod', zprorcan(:,:,:) * cvol(:,:,:) )
+    IF( l_dia_pp  )  tpp = glob_sum( 'p2zprod', zprorcan(:,:,:) * cvol(:,:,:) )
     IF( lk_iomput .AND.  knt == nrdttrc ) THEN
        CALL iom_put( "THETANANO", thetanano(:,:,:) )  ! Diagnostic Chl:C ratio
-       IF( l_dia_ppphy ) THEN
+       IF( l_dia_pp ) THEN
           zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
           CALL iom_put( "TPP", zprorcan(:,:,:) * zfact * tmask(A2D(0),:) )   ! primary production 
+          CALL iom_put( "PPNEWo2", zprorcan(:,:,:) * ( o2ut + o2nit ) * zfact * tmask(A2D(0),:) )   ! Oxygen production by the New Produc
           CALL iom_put( "tintpp"  , tpp * zfact )  !  global total integrated primary production molC/s
        ENDIF
        !
@@ -224,6 +224,15 @@ CONTAINS
        !
      ENDIF
 
+#if defined key_trc_diaadd
+      !   Supplementary diagnostics
+     zfact = 1.e3 * rfact2r
+     DO_3D( 0, 0, 0, 0, 1, jpk)
+        trc3d(ji,jj,jk,jp_pphy  ) = zprorcan(ji,jj,jk) * zfact * tmask(ji,jj,jk)  ! primary production by nanophyto
+        trc3d(ji,jj,jk,jp_pnew  ) = thetanano(ji,jj,jk) * zfact * tmask(ji,jj,jk) ! new primary production by nanophyto
+        trc3d(ji,jj,jk,jp_pnewo2) = ( o2ut + o2nit ) * zprorcan(ji,jj,jk) * zfact * tmask(ji,jj,jk) ! Oxygen production by the New Produc.
+     END_3D
+#endif
      IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('prod')")
          CALL prt_ctl_info( charout, cdcomp = 'top' )

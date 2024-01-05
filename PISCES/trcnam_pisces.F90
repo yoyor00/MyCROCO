@@ -107,6 +107,11 @@ CONTAINS
       ln_sediment = .false.
       ln_sed_2way = .false.
 #endif
+#if defined key_trc_diaadd
+      l_diaadd = .true.
+#else
+      l_diaadd = .false.
+#endif
       
       !
       IF(lwp) THEN                  ! control print

@@ -80,7 +80,7 @@ CONTAINS
       !
       IF( ln_timing )   CALL timing_start('p4z_diaz')
       !
-      IF( kt == nittrc000 )  l_dia_nfix   = iom_use( "Nfix" )
+      IF( kt == nittrc000 )  l_dia_nfix   = iom_use( "Nfix" ) .OR. iom_use( "Nfixo2" )
 
       ! Nitrogen fixation process
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
@@ -177,9 +177,30 @@ CONTAINS
   !       CALL prt_ctl(tab4d_1=tr(:,:,:,:,Krhs), mask1=tmask, clinfo=ctrcnm)
       ENDIF
 
-      IF( l_dia_nfix .AND. lk_iomput .AND. knt == nrdttrc )  &
+      IF( l_dia_nfix .AND. lk_iomput .AND. knt == nrdttrc ) THEN 
 !            zfact = rno3 * 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
-          & CALL iom_put( "Nfix", nitrpot(:,:,:) * nitrfix * rno3 * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! diazotrophy
+         CALL iom_put( "Nfix", nitrpot(:,:,:) * nitrfix  &
+            &             * rno3 * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! diazotrophy
+         CALL iom_put( "Nfixo2", nitrpot(:,:,:) * nitrfix &
+            &     * o2nit * rno3 * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! O2 production by diazotrophy
+      ENDIF
+
+#if defined key_trc_diaadd
+      zfact = 1.e+3 * rfact2r
+      DO_2D( 0, 0, 0, 0 )
+        trc2d(ji,jj,jp_nfix) = 0.
+      END_2D
+      DO_3D( 0, 0, 0, 0, 1, jpk )
+         trc2d(ji,jj,jp_nfix) = trc2d(ji,jj,jp_nfix ) &
+            &                 +  nitrpot(ji,jj,jk) * nitrfix * rno3    &
+            &                 * zfact * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk) ! nitrogen fixation at surface
+      END_3D
+      !
+      DO_3D( 0, 0, 0, 0, 1, jpk )
+         trc3d(ji,jj,jk,jp_nfixo2 ) = nitrpot(ji,jj,jk) * nitrfix * rno3 &
+           &                      * zfact * o2nit * tmask(ji,jj,jk)  ! O2 production by Nfix
+      END_3D
+# endif
       !
       IF( ln_timing )   CALL timing_stop('p4z_diaz')
       !

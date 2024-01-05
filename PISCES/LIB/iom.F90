@@ -9,8 +9,6 @@ MODULE iom
    IMPLICIT NONE
    PUBLIC
 
-# define numout   stdout
-  
   PUBLIC iom_open, iom_close, iom_get, iom_put
   PUBLIC iom_use, iom_getszuld, iom_varid, iom_rstput
 
@@ -51,8 +49,6 @@ CONTAINS
       REAL,  INTENT(in) ::   pfield0d
 #ifdef XIOS
       CALL xios_send_field(cdname, (/pfield0d/))
-#else
-      IF( .FALSE. )   WRITE(numout,*) cdname, pfield0d   ! useless test to avoid compilation warnings
 #endif
    END SUBROUTINE iom_p0d
 
@@ -61,8 +57,6 @@ CONTAINS
       REAL,     DIMENSION(:), INTENT(in) ::   pfield1d
 #ifdef XIOS
       CALL xios_send_field( cdname, RESHAPE( (/pfield1d/), (/1,1,SIZE(pfield1d)/) ) )
-#else
-      IF( .FALSE. )   WRITE(numout,*) cdname, pfield1d   ! useless test to avoid compilation warnings
 #endif
    END SUBROUTINE iom_p1d
 
@@ -71,8 +65,6 @@ CONTAINS
       REAL,     DIMENSION(:,:), INTENT(in) ::   pfield2d
 #ifdef XIOS
       CALL xios_send_field(cdname, pfield2d)
-#else
-      IF( .FALSE. )   WRITE(numout,*) cdname, pfield2d   ! useless test to avoid compilation warnings
 #endif
    END SUBROUTINE iom_p2d
 
@@ -81,8 +73,6 @@ CONTAINS
       REAL,       DIMENSION(:,:,:), INTENT(in) ::   pfield3d
 #ifdef XIOS
       CALL xios_send_field(cdname, pfield3d)
-#else
-      IF( .FALSE. )   WRITE(numout,*) cdname, pfield3d   ! useless test to avoid compilation warnings
 #endif
    END SUBROUTINE iom_p3d
 

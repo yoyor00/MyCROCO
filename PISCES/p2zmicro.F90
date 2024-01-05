@@ -44,7 +44,7 @@ MODULE p2zmicro
    REAL(wp), PUBLIC ::   epsher      !: growth efficiency for grazing 1 
    REAL(wp), PUBLIC ::   epshermin   !: minimum growth efficiency for grazing 1
 
-   LOGICAL          ::   l_dia_graz1, l_dia_lprodz
+   LOGICAL          ::   l_dia_graz, l_dia_lprodz
 
    !! * Substitutions
 #  include "ocean2pisces.h90"      
@@ -90,8 +90,12 @@ CONTAINS
       !
       IF( ln_timing )   CALL timing_start('p2z_micro')
       !
-      IF( kt == nittrc000 )  l_dia_graz1  = iom_use( "GRAZ1" )
-      IF( l_dia_graz1 )  ALLOCATE( zgrazing(A2D(0),jpk) ) 
+      IF( kt == nittrc000 )  THEN
+         l_dia_graz  = iom_use( "GRAZ1" ) .OR. iom_use( "MicroZo2" )
+         l_dia_graz = l_dia_graz .OR. l_diaadd
+      ENDIF
+
+      IF( l_dia_graz )  ALLOCATE( zgrazing(A2D(0),jpk) ) 
       !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          zcompaz = MAX( ( tr(ji,jj,jk,jpzoo,Kbb) - 1.e-9 ), 0.e0 )
@@ -167,7 +171,7 @@ CONTAINS
          ! Ingestion terms on the iron content of the different preys
          ! Total ingestion rate in C, Fe, N units
          zgraztotc = zgraznc + zgrazpoc + zgrazz
-         IF( l_dia_graz1 )   zgrazing(ji,jj,jk) = zgraztotc
+         IF( l_dia_graz )   zgrazing(ji,jj,jk) = zgraztotc
          zgraztotn = zgraznc * quotan(ji,jj,jk) + zgrazpoc + zgrazz
 
          !   Stoichiometruc ratios of the food ingested by zooplanton 
@@ -227,13 +231,23 @@ CONTAINS
       !
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
-        IF( l_dia_graz1 ) THEN  !   Total grazing of phyto by zooplankton
+        IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
             zgrazing(A2D(0),jpk) = 0._wp
             CALL iom_put( "GRAZ1" , zgrazing(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! conversion in mol/m2/s
-            DEALLOCATE( zgrazing )
+            CALL iom_put( "MicroZo2" , zgrazing(:,:,:) * ( 1. - epsher - unass ) * (-o2ut) * sigma1  &
+                 &                      * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! o2 consumption by Microzoo
         ENDIF
         !
       ENDIF
+      !
+#if defined key_trc_diaadd
+      DO_3D( 0, 0, 0, 0, 1, jpk)
+         trc3d(ji,jj,jk,jp_grapoc) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by microzoo
+         trc3d(ji,jj,jk,jp_mico2)  = zgrazing(ji,jj,jk) * ( 1. -  epsher - unass ) &
+           &                      * (-o2ut) * sigma1 * 1.e+3 * rfact2r * tmask(ji,jj,jk)   ! o2 consumption by Microzoo
+      END_3D
+#endif      
+      IF( l_dia_graz )   DEALLOCATE( zgrazing )
       !
       IF(sn_cfctl%l_prttrc) THEN      ! print mean trends (used for debugging)
          WRITE(charout, FMT="('micro')")

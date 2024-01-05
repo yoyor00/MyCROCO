@@ -9,8 +9,6 @@ MODULE par_pisces
    !!----------------------------------------------------------------------
    IMPLICIT NONE
    PUBLIC
-      !!* Substitution
-#  include "ocean2pisces.h90"
 
    !                                                                !!** Floating point **
    INTEGER, PUBLIC, PARAMETER ::   sp = SELECTED_REAL_KIND( 6, 37)   !: single precision (real 4)

@@ -80,12 +80,12 @@ CONTAINS
       !
       INTEGER  :: ji, jj, jk
       REAL(wp) :: zcompadi, zcompaz , zcompaph, zcompapoc
-      REAL(wp) :: zgraze, zdenom, zfact, zfood, zfoodlim, zbeta
+      REAL(wp) :: zgraze, zdenom, zdenom2, zfact, zfood, zfoodlim, zbeta
       REAL(wp) :: zepsherf, zepshert, zepsherq, zepsherv, zgrarsig, zgraztotc, zgraztotn, zgraztotf
       REAL(wp) :: zgrarem, zgrafer, zgrapoc, zprcaca, zmortz
       REAL(wp) :: zrespz, ztortz, zgrasratf, zgrasratn
       REAL(wp) :: zgraznc, zgrazz, zgrazpoc, zgrazdc, zgrazpof, zgrazdf, zgraznf
-      REAL(wp) :: zsigma, zdiffdn, ztmp1, ztmp2, ztmp3, ztmp4, ztmptot, zproport
+      REAL(wp) :: zsigma, zsigma2, zdiffdn, ztmp1, ztmp2, ztmp3, ztmp4, ztmptot, zproport
       REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing, zfezoo, zzligprod
       CHARACTER (len=25) :: charout
 
@@ -94,13 +94,14 @@ CONTAINS
       IF( ln_timing )   CALL timing_start('p4z_micro')
       !
       IF( kt == nittrc000 )  THEN 
-         l_dia_graz    = iom_use( "GRAZ1" ) .OR. iom_use( "FEZOO" ) 
+         l_dia_graz    = iom_use( "GRAZ1" ) .OR. iom_use( "FEZOO" ) .OR. iom_use( "MicroZo2" ) 
          l_dia_lprodz  = ln_ligand .AND. iom_use( "LPRODZ" ) 
+         l_dia_graz = l_dia_graz .OR. l_diaadd
       ENDIF
       !
       IF( l_dia_graz ) THEN
-         ALLOCATE( zgrazing(A2D(0),jpk), zfezoo(A2D(0),jpk) ) 
-         zgrazing(A2D(0),:) = 0.
+         ALLOCATE( zgrazing(A2D(0),jpk) ) ;  zgrazing(A2D(0),jpk) = 0.
+         ALLOCATE( zfezoo(A2D(0),jpk) ) 
          DO_3D( 0, 0, 0, 0, 1, jpk)
             zfezoo(ji,jj,jk) = tr(ji,jj,jk,jpfer,Krhs)
          END_3D
@@ -171,13 +172,15 @@ CONTAINS
          ! have low abundance, .i.e. zooplankton become less specific 
          ! to avoid starvation.
          ! ----------------------------------------------------------
-         zsigma = 1.0 - zdenom**2/(0.05**2+zdenom**2)
+         zdenom2 = zdenom * zdenom
+         zsigma = 1.0 - zdenom2/(0.05 * 0.05 + zdenom2)
          zsigma = xsigma + xsigmadel * zsigma
-         zdiffdn = EXP( -ABS(LOG(1.67 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )**2 / zsigma**2)
+         zsigma2 = zsigma * zsigma
+         zdiffdn = EXP( -ABS(LOG(1.67 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )**2 / zsigma2)
          ztmp1 = xprefn * zcompaph * ( zcompaph + zdiffdn * zcompadi ) 
          ztmp2 = xprefd * zcompadi * ( zdiffdn * zcompaph + zcompadi )
-         ztmp3 = xprefc * zcompapoc**2
-         ztmp4 = xprefz * zcompaz**2
+         ztmp3 = xprefc * zcompapoc * zcompapoc 
+         ztmp4 = xprefz * zcompaz * zcompaz
          ztmptot = ztmp1 + ztmp2 + ztmp3 + ztmp4 + rtrn
          ztmp1 = ztmp1 / ztmptot
          ztmp2 = ztmp2 / ztmptot
@@ -281,13 +284,15 @@ CONTAINS
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
         IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
-            CALL iom_put( "GRAZ1" , zgrazing )
+            CALL iom_put( "GRAZ1"    , zgrazing(:,:,:) *  1.e+3 * rfact2r * tmask(A2D(0),:) )
+            CALL iom_put( "MicroZo2" , zgrazing(:,:,:) * ( 1. - epsher - unass ) * (-o2ut) * sigma1  &
+                 &                      * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! o2 consumption by Microzoo
             DO_3D( 0, 0, 0, 0, 1, jpkm1)
                zfezoo(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo(ji,jj,jk) ) &
                   &              * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
            CALL iom_put( "FEZOO", zfezoo )
-           DEALLOCATE( zgrazing, zfezoo )
+           DEALLOCATE( zfezoo )
         ENDIF
         !
         IF( l_dia_lprodz ) THEN
@@ -300,6 +305,15 @@ CONTAINS
         ENDIF
         !
       ENDIF
+      !
+#if defined key_trc_diaadd
+      DO_3D( 0, 0, 0, 0, 1, jpk)
+         trc3d(ji,jj,jk,jp_grapoc) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by microzoo
+         trc3d(ji,jj,jk,jp_mico2) = zgrazing(ji,jj,jk) * ( 1.- epsher - unass ) &
+          &                      * (-o2ut) * sigma1 * 1.e+3 * rfact2r * tmask(ji,jj,jk)   ! o2 consumption by Microzoo
+      END_3D
+#endif
+      IF( l_dia_graz ) DEALLOCATE( zgrazing )
       !
       IF(sn_cfctl%l_prttrc) THEN      ! print mean trends (used for debugging)
          WRITE(charout, FMT="('micro')")

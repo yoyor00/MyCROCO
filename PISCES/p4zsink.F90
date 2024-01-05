@@ -140,6 +140,13 @@ CONTAINS
                 &                * xfact * tmask(A2D(0),:) )      ! Export of carbon in the water column
          CALL iom_put( "tcexp" , t_oce_co2_exp )      ! Total cabon exort
       ENDIF
+#if defined key_trc_diaadd
+      zfact = 1.e3 * rfact2r
+      DO_2D( 0, 0, 0, 0 )
+         zfact = zfact * tmask(ji,jj,ik100)
+         trc2d(ji,jj,jp_sinkco2) = ( zsinking(ji,jj,ik100) + zsinking2(ji,jj,ik100) ) * zfact ! export of carbon at 100m
+      END_2D
+#endif      
       !
       IF( .NOT. ln_p2z ) THEN
          !
@@ -154,7 +161,13 @@ CONTAINS
             CALL iom_put( "EXPCAL"  ,  zsinking(A2D(0),:)     &
                 &                     * xfact * tmask(A2D(0),:) )    ! Export of calcite in the water column
          ENDIF
-
+#if defined key_trc_diaadd
+      zfact = 1.e3 * rfact2r
+      DO_2D( 0, 0, 0, 0 )
+         zfact = zfact * tmask(ji,jj,ik100)
+         trc2d(ji,jj,jp_sinkcal) = zsinking(ji,jj,ik100)  * zfact ! export of calcite at 100m
+      END_2D
+#endif      
          CALL trc_sink( kt, Kbb, Kmm, wsbio4, zsinking, jpgsi, rfact2 )
          DO_2D( 0, 0, 0, 0 )
             ikb = mbkt(ji,jj)+1
@@ -166,6 +179,13 @@ CONTAINS
             CALL iom_put( "EXPSI"  , zsinking(A2D(0),:)     &
                 &                   * xfact * tmask(A2D(0),:)   )    ! Export of Silicate in the water column
          ENDIF
+#if defined key_trc_diaadd
+      zfact = 1.e3 * rfact2r
+      DO_2D( 0, 0, 0, 0 )
+         zfact = zfact * tmask(ji,jj,ik100)
+         trc2d(ji,jj,jp_sinksil) = zsinking(ji,jj,ik100)  * zfact ! export of biogenic silica at 100m
+      END_2D
+#endif      
          !
          CALL trc_sink( kt, Kbb, Kmm, wsbio3, zsinking , jpsfe, rfact2 )
          CALL trc_sink( kt, Kbb, Kmm, wsbio4, zsinking2, jpbfe, rfact2 )
@@ -175,6 +195,13 @@ CONTAINS
             CALL iom_put( "EXPFE"  , ( zsinking(A2D(0),:)     + zsinking2(A2D(0),:) ) &
                   &                  * xfact * tmask(A2D(0),:) )      ! Export of iron in the water column
          ENDIF
+#if defined key_trc_diaadd
+      zfact = 1.e3 * rfact2r
+      DO_2D( 0, 0, 0, 0 )
+         zfact = zfact * tmask(ji,jj,ik100)
+         trc2d(ji,jj,jp_sinkfer) = ( zsinking(ji,jj,ik100) + zsinking2(ji,jj,ik100) ) * zfact ! export of iron at 100m
+      END_2D
+#endif      
       ENDIF
       !
       ! PISCES-QUOTA part
