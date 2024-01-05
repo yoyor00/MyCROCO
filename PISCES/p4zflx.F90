@@ -225,6 +225,14 @@ CONTAINS
         !
       ENDIF
       !
+#if defined key_trc_diaadd
+      DO_2D( 0, 0, 0, 0 )
+         trc2d(ji,jj,jp_flxco2) = oce_co2(ji,jj) * 1000.  !  carbon flux
+         trc2d(ji,jj,jp_flxo2 ) = zoflx(ji,jj)  * 1000.   !  O2 flux
+         trc2d(ji,jj,jp_kgco2 ) = zkgco2(ji,jj) * tmask(ji,jj,1)           !  gas exchange for CO2
+         trc2d(ji,jj,jp_dpco2 ) = ( zpco2atm(ji,jj) - zpco2oce(ji,jj) ) * tmask(ji,jj,1) ! delta pco2
+      END_2D
+#endif      
       IF( ln_timing )   CALL timing_stop('p4z_flx')
       !
    END SUBROUTINE p4z_flx

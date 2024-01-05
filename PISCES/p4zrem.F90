@@ -85,7 +85,7 @@ CONTAINS
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(A2D(0),jpk) :: zdepbac
       REAL(wp), DIMENSION(A2D(0)    ) :: ztempbac
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zw3d, zolimi
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zolimi
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p2z_rem')
@@ -207,15 +207,16 @@ CONTAINS
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(A2D(0),jpk) :: zdepbac, zfacsib
       REAL(wp), DIMENSION(A2D(0)    ) :: ztempbac
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zw3d, zolimi, zfebact
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::  zolimi, zfebact
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p4z_rem')
       !
       IF( kt == nittrc000 )  THEN
-         l_dia_remin  = iom_use( "REMIN" )
+         l_dia_remin  = iom_use( "REMIN" )  .OR. iom_use( "Remino2" )
          l_dia_bact   = iom_use( "FEBACT" ) .OR. iom_use( "BACT" )
          l_dia_denit  = iom_use( "DENIT" )
+         l_dia_remin  = l_dia_remin .OR. l_diaadd
       ENDIF
       IF( l_dia_remin ) THEN
          ALLOCATE( zolimi(A2D(0),jpk) )    ;   zolimi(A2D(0),jpk) = 0._wp
@@ -393,8 +394,8 @@ CONTAINS
                 zolimi(ji,jj,jk) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
                    &               * rfact2r * tmask(ji,jj,jk) ! 
              END_3D
-             CALL iom_put( "REMIN", zolimi )
-             DEALLOCATE( zolimi )
+             CALL iom_put( "REMIN", zolimi )  ! Remineralisation rate
+             CALL iom_put( "Remino2", (-o2ut) * zolimi ) ! O2 consumption by nitrification
           ENDIF
           IF( l_dia_bact )  THEN
              CALL iom_put( "BACT", zdepbac(:,:,:) * 1.E6 * tmask(A2D(0),:) )  ! Bacterial biomass
@@ -410,6 +411,16 @@ CONTAINS
           !
       ENDIF
       !
+# if defined key_trc_diaadd
+     zfact = 1.e3 * rfact2r
+     DO_3D( 0, 0, 0, 0, 1, jpkm1)
+        zfact = zfact * tmask(ji,jj,jk)
+        trc3d(ji,jj,jk,jp_remino2) = (-o2ut) * zfact &
+           &                       * ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) ! O2 consumption by nitrification
+     END_3D
+#endif
+      IF( l_dia_remin ) DEALLOCATE( zolimi )
+
       IF( ln_timing )   CALL timing_stop('p4z_rem')
       !
    END SUBROUTINE p4z_rem

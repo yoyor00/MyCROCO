@@ -49,8 +49,7 @@ MODULE p5zprod
    REAL(wp) :: xq10_p      !: q10 coef for pico =  1. + xpsino3 * qnpmax
    REAL(wp) :: xq10_d      !: q10 coef for diat =  1. + xpsino3 * qndmax
 
-   LOGICAL  :: l_dia_ppphy, l_dia_gpphy, l_dia_ppnew, l_dia_ppbfe, l_dia_ppbsi
-   LOGICAL  :: l_dia_mu, l_dia_light, l_dia_lprod
+   LOGICAL  :: l_dia_pp, l_dia_mu, l_dia_light, l_dia_lprod
 
    !! * Substitutions
 #  include "ocean2pisces.h90"   
@@ -108,11 +107,12 @@ CONTAINS
       IF( ln_timing )   CALL timing_start('p5z_prod')
       !
       IF( kt == nittrc000 ) THEN
-         l_dia_ppphy = iom_use( "PPPHYN" ) .OR. iom_use( "PPPHYD" ) .OR. iom_use( "PPPHYP" ) .OR. iom_use( "TPP"  )
-         l_dia_gpphy = iom_use( "GPPHYN" ) .OR. iom_use( "GPPHYD" ) .OR. iom_use( "GPPHYP" )
-         l_dia_ppnew = iom_use( "PPNEWN" ) .OR. iom_use( "PPNEWD" ) .OR. iom_use( "PPNEWP" ) .OR. iom_use( "TPNEW")
-         l_dia_ppbfe = iom_use( "PFeN"   ) .OR. iom_use( "PFeD"   ) .OR. iom_use( "PFeP"   ) .OR. iom_use( "TPBFE")
-         l_dia_ppbsi = iom_use( "PBSi"   )
+         l_dia_pp =  iom_use( "PPPHYN" ) .OR. iom_use( "PPPHYD" ) .OR. iom_use( "PPPHYP" ) &
+             &  .OR. iom_use( "TPP"  )   .OR. iom_use( "GPPHYN" ) .OR. iom_use( "GPPHYD" ) &
+             &  .OR. iom_use( "GPPHYP" ) .OR. iom_use( "PPNEWN" ) .OR. iom_use( "PPNEWD" ) &
+             &  .OR. iom_use( "PPNEWP" ) .OR. iom_use( "TPNEW")   .OR. iom_use( "PFeN"   ) &
+             &  .OR. iom_use( "PFeD"   ) .OR. iom_use( "PFeP"   ) .OR. iom_use( "TPBFE")   &
+             &  .OR. iom_use( "PBSi"   ) .OR. iom_use( "PPNEWo2") .OR. iom_use( "PPRego2" )
          l_dia_mu    = iom_use( "Mumax"  ) .OR. iom_use( "MuN"    ) .OR. iom_use( "MuD") .OR. iom_use( "MuP")
          l_dia_light = iom_use( "LNlight") .OR. iom_use( "LDlight") .OR. iom_use( "LPlight")
          l_dia_lprod = ln_ligand .AND. ( iom_use( "LPRODP") .OR. iom_use( "LDETP") )
@@ -563,7 +563,7 @@ CONTAINS
 
     ! Output of the diagnostics
     ! Total primary production per year
-    IF( l_dia_ppphy )  &
+    IF( l_dia_pp )  &
         & tpp = glob_sum( 'p5zprod', ( zprorcan(:,:,:) + zprorcad(:,:,:) + zprorcap(:,:,:)     &
               &            - zpronmaxn(:,:,:) * ( xpsino3 * xnanono3(:,:,:) + xpsinh4 * xnanonh4(:,:,:) )   &
               &            - zpronmaxd(:,:,:) * ( xpsino3 * xdiatno3(:,:,:) + xpsinh4 * xdiatnh4(:,:,:) )   &
@@ -572,7 +572,7 @@ CONTAINS
 
     IF( lk_iomput .AND.  knt == nrdttrc ) THEN
        !
-       IF( l_dia_ppphy ) THEN  ! Net primary production
+       IF( l_dia_pp ) THEN  ! Net primary production
           CALL iom_put( "PPPHYN", ( zprorcan(:,:,:) - xpsinh4 * zpronmaxn(:,:,:) * xnanonh4(:,:,:)   &  ! nano
               &                  - xpsino3 * zpronmaxn(:,:,:) * xnanono3(:,:,:) ) * 1.e+3 * rfact2r * tmask(A2D(0),:) )
           CALL iom_put( "PPPHYD", ( zprorcad(:,:,:) - xpsinh4 * zpronmaxd(:,:,:) * xdiatnh4(:,:,:)   &  ! diatomes
@@ -584,16 +584,19 @@ CONTAINS
               &               - zpronmaxd(:,:,:) * ( xpsino3 * xdiatno3(:,:,:) + xpsinh4 * xdiatnh4(:,:,:) )   &
               &               - zpronmaxp(:,:,:) * ( xpsino3 * xpicono3(:,:,:) + xpsinh4 * xpiconh4(:,:,:) ) ) &
               &                 * 1.e+3 * rfact2r * tmask(A2D(0),:) )
+
+          CALL iom_put( "PPNEWo2", ( zprorcan(:,:,:) + zprorcad(:,:,:) + zprorcap(:,:,:)                           &
+              &               - zpronmaxn(:,:,:) * ( xpsino3 * xnanono3(:,:,:) + xpsinh4 * xnanonh4(:,:,:) )   &
+              &               - zpronmaxd(:,:,:) * ( xpsino3 * xdiatno3(:,:,:) + xpsinh4 * xdiatnh4(:,:,:) )   &
+              &               - zpronmaxp(:,:,:) * ( xpsino3 * xpicono3(:,:,:) + xpsinh4 * xpiconh4(:,:,:) ) ) &
+              &                 * ( o2ut + o2nit )* 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! Oxygen production by the New Produc
+      
           CALL iom_put( "tintpp"  , tpp * 1.e+3 * rfact2r )  !  global total integrated primary production molC/s
-       ENDIF
-       !
-       IF( l_dia_gpphy ) THEN   !  primary production
+          !  primary production
           CALL iom_put( "GPPHYN", zprorcan(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! nano
           CALL iom_put( "GPPHYD", zprorcad(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! diatomes
           CALL iom_put( "GPPHYP", zprorcap(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! pico
-       ENDIF
-       !
-       IF( l_dia_ppnew ) THEN  !  new primary production
+          !  new primary production
           CALL iom_put( "PPNEWN", zpronmaxn(:,:,:) * xnanono3(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )
           CALL iom_put( "PPNEWD", zpronmaxd(:,:,:) * xdiatno3(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )
           CALL iom_put( "PPNEWP", zpronmaxp(:,:,:) * xpicono3(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )
@@ -601,15 +604,14 @@ CONTAINS
                 &                  zpronmaxd(:,:,:) * xdiatno3(:,:,:) +  &
                 &                  zpronmaxp(:,:,:) * xpicono3(:,:,:) ) &
                 &                  * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! total
-       ENDIF
-       !
-       IF( l_dia_ppbsi ) THEN  !  biogenic silica production
+          !  Regenerated production
+          CALL iom_put( "PPRego2", ( zpronmaxn(:,:,:) * xnanonh4(:,:,:) +  &
+                &                  zpronmaxd(:,:,:) * xdiatnh4(:,:,:) +  &
+                &                  zpronmaxp(:,:,:) * xpiconh4(:,:,:) ) &
+                &                  * o2ut * 1.e+3 * rfact2r * tmask(A2D(0),:) ) 
+         !  biogenic silica production
           CALL iom_put( "PBSi", zprmaxd(:,:,:) * zysopt(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )
-       ENDIF
-       !
-       !
-       IF( l_dia_ppbfe ) THEN  ! biogenic iron production
-          ! biogenic iron production by nanophyto
+          ! biogenic iron production 
           CALL iom_put( "PFeN", zprofen(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! nano
           CALL iom_put( "PFeD", zprofed(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! diatomes
           CALL iom_put( "PFeP", zprofep(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! pico
@@ -641,6 +643,29 @@ CONTAINS
        ENDIF
        !
      ENDIF
+
+#if defined key_trc_diaadd
+      !   Supplementary diagnostics
+     zfact = 1.e3 * rfact2r
+     DO_3D( 0, 0, 0, 0, 1, jpk)
+        zfact = zfact * tmask(ji,jj,jk)
+        trc3d(ji,jj,jk,jp_pphy  )  = zprorcan(ji,jj,jk) * zfact  ! primary production by nanophyto
+        trc3d(ji,jj,jk,jp_pphy2 )  = zprorcad(ji,jj,jk) * zfact  ! primary production by diatom
+        trc3d(ji,jj,jk,jp_pnew  )  = ( ( zprorcan(ji,jj,jk) * xnanono3(ji,jj,jk) ) &
+           &                      / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn ) ) * zfact ! new primary production by nanophyto
+        trc3d(ji,jj,jk,jp_pnew2 )  = ( ( zprorcad(ji,jj,jk) * xdiatno3(ji,jj,jk) ) &
+           &                       / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn ) ) * zfact ! new primary production by nanophyto
+        trc3d(ji,jj,jk,jp_pbsi  )  = zprorcad(ji,jj,jk) * zysopt(ji,jj,jk) * zfact ! biogenic silica production
+        trc3d(ji,jj,jk,jp_pfed  )  = zprofed (ji,jj,jk) * zfact  ! biogenic iron production by diatom
+        trc3d(ji,jj,jk,jp_pfen  )  = zprofen (ji,jj,jk) * zfact !  biogenic iron production by nanophyto
+        trc3d(ji,jj,jk,jp_pnewo2)  = ( o2ut + o2nit ) &  ! Oxygen production by the New Produc.
+           &                        * ( zprorcan(ji,jj,jk) + zprorcad(ji,jj,jk) + zprorcap(ji,jj,jk) ) * zfact
+        trc3d(ji,jj,jk,jp_prego2)  = ( zpronmaxn(ji,jj,jk) * xnanonh4(ji,jj,jk)  &
+            &                       +  zpronmaxd(ji,jj,jk) * xdiatnh4(ji,jj,jk) &
+            &                       +  zpronmaxp(ji,jj,jk) * zpronmaxp(ji,jj,jk) ) &
+            &                       * o2ut * zfact
+     END_3D
+#endif
 
      IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('prod')")

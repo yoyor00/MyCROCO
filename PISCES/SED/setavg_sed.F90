@@ -63,11 +63,13 @@ CONTAINS
 !
       integer ji,jj, jk, jn, ilc, iout
       real cff, cff1, stf_cff
-      REAL(wp) :: zflx, zrate, zsedph
+      REAL(wp) :: zflx, zrate, zsedph, jpwatp1
       REAL(wp), DIMENSION(jpoce) :: zflxs
       parameter(stf_cff=86400/0.01)
       integer itrc,k
 !
+      jpwatp1 = jpwat + 1
+
       ilc=1+iic-ntstart   ! number of time step since restart
 !
       if (ilc.gt.ntssedpis_avg) then 
@@ -109,14 +111,13 @@ CONTAINS
               &                                +zsedph)
               trcsed_avg(ji,jk,2) = cff*( cff1*trcsed_avg(ji,jk,2)    &
               &                                +co3por(ji,jk))
-              trcsed_avg(ji,jk,3) = cff*( cff1*trcsed_avg(ji,jk,3)    &
-              &                                +sedligand(ji,jk))
+              trcsed_avg(ji,jk,3) = cff*( cff1*trcsed_avg(ji,jk,3) ) 
            END DO
         END DO 
         DO jn = 1, jpwat
            DO ji = 1, jpoce
               zflx = ( pwcp(ji,1,jn) - pwcp_dta(ji,jn) ) &
-              &         * 1.e3 / 1.e2 * dzkbot(ji) / rfact 
+              &         * 1.e3 / 1.e2 * dzkbot(ji) / dtsed 
               flxsed_avg(ji,jn) = cff*( cff1*flxsed_avg(ji,jn)    &
               &                                +zflx)
            END DO
@@ -124,7 +125,7 @@ CONTAINS
 
         zflxs(:) = 0.0
         DO jn = 1, jpsol
-           zrate =  1.0 / ( denssol * por1(jpksed) ) / rfact
+           zrate =  1.0 / ( dens_sol(jn) * por1(jpksed) ) / dtsed
            DO ji = 1, jpoce
               zflxs(ji) = zflxs(ji) + ( tosed(ji,jn) - fromsed(ji,jn) ) * zrate
            ENDDO

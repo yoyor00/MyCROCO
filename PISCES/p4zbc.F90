@@ -72,11 +72,11 @@ CONTAINS
       !
       INTEGER :: ji, jj, jk
       INTEGER, PARAMETER :: jpmois = 12
-      INTEGER :: irec1, irec2, i15
-      REAL(wp)    :: zpdtan, zpdtmo, zdemi, zt
-      REAL(wp)   :: zxy, zjulian, zsec
+      INTEGER  :: irec1, irec2, i15
+      REAL(wp) :: zpdtan, zpdtmo, zdemi, zt
+      REAL(wp) :: zxy, zjulian, zsec
       !
-      REAL(wp)   :: zdustdep, zwdust, zfact
+      REAL(wp)   :: zdust, zwdust, zfact, zdustsil, zdustpo4
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zno3dep, znh4dep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zirondep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
@@ -89,7 +89,8 @@ CONTAINS
         WRITE(numout,*) ' Number of days per year in file year2daydta = ', year2daydta
         WRITE(numout,*) ' '
          l_dia_iron   = iom_use( "Ironsed" ) 
-         l_dia_dust   = iom_use( "Irondep" ) .OR. iom_use( "pdust" ) 
+         l_dia_dust   = iom_use( "Irondep" ) .OR. iom_use( "pdust" ) &
+           &            .OR. iom_use( "Sildep" ) .OR. iom_use( "Po4dep" )
          l_dia_ndep   = iom_use( "No3dep" ) .OR. iom_use( "Nh4dep" )
       ENDIF
       !
@@ -119,7 +120,7 @@ CONTAINS
          END_2D
          !
          DO_2D( 0, 0, 0, 0 )
-            zirondep(ji,jj,1) = dustsolub  * dust(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm) 
+            zirondep(ji,jj,1) = dustsolub  * dust(ji,jj) * mfrac * rfact2 / e3t(ji,jj,1,Kmm) 
          END_2D
          !                                              ! Iron solubilization of particles in the water column
          !                                              ! dust in kg/m2/s ---> 1/55.85 to put in mol/Fe ;  wdust in m/j
@@ -134,10 +135,22 @@ CONTAINS
          !
 #if ! defined key_pisces_light
          ! Atmospheric input of PO4 and Si dissolves in the water column
-         DO_3D( 0, 0, 0, 0, 1, jpk )
-            zdustdep = dust(ji,jj) * zwdust * rfact * EXP( -gdept(ji,jj,jk,Kmm) /( 250. * wdust ) )
-            tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) + zdustdep * 1.e-3 / mMass_P
-            tr(ji,jj,jk,jpsil,Krhs) = tr(ji,jj,jk,jpsil,Krhs) + zdustdep * 0.269 / mMass_Si
+         DO_2D( 0, 0, 0, 0 )
+            zdustpo4 =  8.8 * 0.075 * dust(ji,jj) * rfact2 * mfrac / e3t(ji,jj,1,Kmm) / mMass_P / po4r
+            zdustsil =  0.1 * 0.021 * dust(ji,jj) * rfact2 * mfrac / e3t(ji,jj,1,Kmm) / mMass_Si
+            tr(ji,jj,1,jppo4,Krhs) = tr(ji,jj,1,jppo4,Krhs) + zdustpo4 
+            tr(ji,jj,1,jpsil,Krhs) = tr(ji,jj,1,jpsil,Krhs) + zdustsil
+#if defined key_trc_diaadd
+            zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
+            trc2d(ji,jj,jp_sildep) = zdustsil * zfact        ! Si surface deposition
+            trc2d(ji,jj,jp_po4dep) = zdustpo4 * zfact * po4r ! PO4 surface deposition
+# endif
+         END_2D
+
+         DO_3D( 0, 0, 0, 0, 2, jpk )
+            zdust = dust(ji,jj) * zwdust * rfact2 * EXP( -gdept(ji,jj,jk,Kmm) /( 250. * wdust ) )
+            tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) + zdust * 1.e-3 / mMass_P
+            tr(ji,jj,jk,jpsil,Krhs) = tr(ji,jj,jk,jpsil,Krhs) + zdust * 0.269 / mMass_Si
          END_3D
 # endif
          !
@@ -149,9 +162,23 @@ CONTAINS
             CALL iom_put( "Irondep", zw3d )  ! surface downward dust depo of iron
             DEALLOCATE( zw3d )
             !
+            DO_2D( 0, 0, 0, 0 )
+               zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
+               zdustpo4 =  8.8 * 0.075 * dust(ji,jj) * rfact2 * mfrac / e3t(ji,jj,1,Kmm) / mMass_P / po4r
+               zw2d(ji,jj) = zdustpo4 * zfact        ! Si surface deposition
+            END_2D
+            CALL iom_put( "Po4dep", zw2d ) ! PO4 concentration at surface
+
+            DO_2D( 0, 0, 0, 0 )
+               zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
+               zdustsil =  0.1 * 0.021 * dust(ji,jj) * rfact2 * mfrac / e3t(ji,jj,1,Kmm) / mMass_Si
+               zw2d(ji,jj) = zdustsil * zfact        ! Si surface deposition
+            END_2D
+            CALL iom_put( "Sildep", zw2d ) ! Si concentration at surface
+
             ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
             DO_2D( 0, 0, 0, 0 )
-                 zw2d(ji,jj) = dust(ji,jj) / ( wdust * rday ) * tmask(ji,jj,1) ! dust concentration at surface
+               zw2d(ji,jj) = dust(ji,jj) / ( wdust * rday ) * tmask(ji,jj,1) ! dust concentration at surface
             END_2D
             CALL iom_put( "pdust", zw2d ) ! dust concentration at surface
             DEALLOCATE( zw2d )
@@ -159,7 +186,7 @@ CONTAINS
          !
 #if defined key_trc_diaadd
          DO_3D( 0, 0, 0, 0, 1, jpk )
-            trc3d(ji,jj,K,jp_irondep)  = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
+            trc3d(ji,jj,jk,jp_irondep)  = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
          END_3D
 # endif
          DEALLOCATE( zirondep )
@@ -238,7 +265,7 @@ CONTAINS
          ENDIF
 #if defined key_trc_diaadd
          DO_3D( 0, 0, 0, 0, 1, jpk )
-            trc3d(ji,jj,K,jp_ironsed ) = ironsed(ji,jj,jk) * 1e+3 * tmask(ji,jj,K)  ! iron from  sediment
+            trc3d(ji,jj,jk,jp_ironsed ) = ironsed(ji,jj,jk) * 1e+3 * tmask(ji,jj,jk)  ! iron from  sediment
          END_3D
 #endif
       ENDIF

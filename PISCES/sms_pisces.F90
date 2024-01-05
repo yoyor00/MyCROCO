@@ -127,6 +127,8 @@ MODULE sms_pisces
 
    LOGICAL, SAVE :: lk_sed
 
+   LOGICAL, SAVE :: l_diaadd
+
 !! * Substitutions
 #  include "ocean2pisces.h90"
 #  include "do_loop_substitute.h90"

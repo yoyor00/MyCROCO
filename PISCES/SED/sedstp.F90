@@ -15,6 +15,7 @@ MODULE sedstp
    USE sedrst   ! restart
    USE sedwri   ! outputs
    USE sedini
+   USE setavg_sed
 !   USE trcdmp_sed
    USE lib_mpp         ! distribued memory computing library
    USE iom
