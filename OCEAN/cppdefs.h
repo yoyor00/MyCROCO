@@ -1985,8 +1985,8 @@
 
 #elif defined SEAGRASS
 /*
-!                       River run-off test problem
-!                       ==========================
+!                       Seagrass example
+!                       ================
 */
 # define OBSTRUCTION
 
@@ -2012,14 +2012,6 @@
 # define ANA_PSOURCE
 # define NS_PERIODIC
 # undef  FLOATS
-# ifdef FLOATS
-#  define RANDOM_WALK
-#  ifdef RANDOM_WALK
-#   define DIEL_MIGRATION
-#   define RANDOM_VERTICAL
-#   define RANDOM_HORIZONTAL
-#  endif
-# endif
 # define NO_FRCFILE
 # define USE_CALENDAR
 # define NEW_S_COORD

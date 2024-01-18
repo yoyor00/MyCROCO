@@ -18,13 +18,13 @@ MODULE com_OBSTRUCTIONS
    ! -------------------------------------------------------------------------
    ! Definition of rsh, rlg, riosh, riolg, lchain
    ! -------------------------------------------------------------------------
-   INTEGER, PARAMETER :: riosh = 8, riolg = 8, rlg = 8, rsh = 8
+   INTEGER, PARAMETER :: riosh = 8, riolg = 8, rlg = 8, rsh = 8  ! working precision
    INTEGER, PARAMETER :: lchain = 200
    REAL(KIND=rsh), PARAMETER :: pi = 3.14159265358979323846
    REAL(KIND=rsh), PARAMETER :: obst_c2turb = 1.92 ! obst_c2turb = beta2 in gls kepsilon
 
-   INTEGER :: obst_kmax
-   INTEGER :: ierrorlog, iwarnlog, iscreenlog
+   INTEGER :: obst_kmax ! number of layers in water
+   INTEGER :: ierrorlog, iwarnlog, iscreenlog ! logging IO
 
    ! Variables nomenclature :
    ! obst_*    : variables for obstructions
@@ -63,11 +63,11 @@ MODULE com_OBSTRUCTIONS
    LOGICAL :: l_obstout_drag                                         ! Write 3D obstruction drag coefficient (iv,k,i,j)
    LOGICAL :: l_obstout_tau                                          ! Write 3D obstruction turbulence dissipation scale (k,i,j)
 
-   INTEGER, DIMENSION(:), ALLOCATABLE :: hisObst
-   INTEGER, DIMENSION(:), ALLOCATABLE :: avgObst
-   LOGICAL, DIMENSION(:), ALLOCATABLE :: outObst
-   LOGICAL, DIMENSION(:), ALLOCATABLE :: out2DObst
-   CHARACTER(LEN=75), DIMENSION(:, :), ALLOCATABLE :: vname_obst
+   INTEGER, DIMENSION(:), ALLOCATABLE :: hisObst                     ! Output identifier
+   INTEGER, DIMENSION(:), ALLOCATABLE :: avgObst                     ! Output identifier
+   LOGICAL, DIMENSION(:), ALLOCATABLE :: outObst                     ! To choose which variable is outputed
+   LOGICAL, DIMENSION(:), ALLOCATABLE :: out2DObst                   ! To indicate if the output variable is 2D or 3D
+   CHARACTER(LEN=75), DIMENSION(:, :), ALLOCATABLE :: vname_obst     ! Vector of characteristics of each outputed variables
 
    CHARACTER(LEN=lchain) :: obst_nout_pos                             ! Name obstruction position (iv,i,j)
    CHARACTER(LEN=lchain) :: obst_nout_height_f                        ! Name 2D obstruction height (forcing) (iv,i,j)
@@ -101,10 +101,9 @@ MODULE com_OBSTRUCTIONS
    INTEGER  :: obst_nv_flexi_up                 ! Number of variable for flexible and upward (from sea-bed) obstructions
    INTEGER  :: obst_nv_flexi_do                 ! Number of variable for flexible and downward (from sea-surface) obstructions
 
-   INTEGER  :: obst_nb_max_hnorm
-   INTEGER  :: obst_nmax_var_out
+   INTEGER  :: obst_nb_max_hnorm                ! Maximum number of vertical steps from the distribution file
 
-   LOGICAL  :: obst_l_z0bstress_tot              ! IF ONLY ONE obstruction VARIABLE USED Z0SED
+   LOGICAL  :: obst_l_z0bstress_tot             ! IF ONLY ONE obstruction VARIABLE USED Z0SED
 
    REAL(KIND=rsh)  :: obst_c_paramhuv           ! The coefficient of obstruction height for computation of velocity
 
@@ -112,7 +111,7 @@ MODULE com_OBSTRUCTIONS
    ! * VARIABLES DEPENDING ONLY ON THE NUMBER OF OBSTRUCTIONS VARIABLES (iv) :
    !--------------------------------------------------------------------------
 
-   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_fracxy_type              ! The type of correction for horizontal coverage ((grid cell not completely fill with obstructions) (iv)
+   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_fracxy_type              ! The type of correction for horizontal coverage (grid cell not completely fill with obstructions) (iv)
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_nbhnorm                  ! Number of vertical steps from the distribution file (iv)
    INTEGER, DIMENSION(:), ALLOCATABLE :: obst_c_abdel_nmax             ! Number of segments for Abdlerhman method (bending) (iv)
 
@@ -139,14 +138,14 @@ MODULE com_OBSTRUCTIONS
    CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: obst_fn_distrib     ! Name of the file for the vertical distribution of obstructions (iv)
 
    ! Timeseries variables
-   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tmax
-   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tbefore
-   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tafter
-   REAL(KIND=rlg), DIMENSION(:, :), ALLOCATABLE :: obst_ts_time
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_height
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_dens
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_width
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_thick
+   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tmax                  ! number maximum of value in timeserie
+   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tbefore               ! time index before current time (for interpolation)
+   INTEGER, DIMENSION(:), ALLOCATABLE :: obst_ts_tafter                ! time index after current time (for interpolation)
+   REAL(KIND=rlg), DIMENSION(:, :), ALLOCATABLE :: obst_ts_time        ! time axis of timeserie
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_height      ! height of timeserie
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_dens        ! height of timeserie
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_width       ! height of timeserie
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: obst_ts_thick       ! height of timeserie
 
    ! Initialization variables
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: obst_i_height          ! Initial height of obstructions (iv), [m]

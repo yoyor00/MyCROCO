@@ -30,50 +30,47 @@ MODULE OBSTRUCTIONS1DV
    ! Declaration
 
    ! parameters
-   INTEGER, PARAMETER :: lchain = 200
-   INTEGER, PARAMETER :: rsh = 8
+   INTEGER, PARAMETER :: lchain = 200 ! max length for string
+   INTEGER, PARAMETER :: rsh = 8 ! working precision
    REAL(KIND=rsh), PARAMETER :: pi = 3.14159265358979323846 ! pi value in the module
-   REAL(KIND=rsh), PARAMETER :: o1dv_c2turb = 1.92
-   ! obst_c2turb = beta2 in gls kepsilon
-   ! TODO : add compatibility test to be sure GLS_KEPSILON is used and take beta2 value at initialisation
-   REAL(KIND=rsh), PARAMETER :: o1dv_p_hmin = 0.05_rsh ! Minimum coefficient value for
-   ! obstruction height under bending
+   REAL(KIND=rsh), PARAMETER :: o1dv_c2turb = 1.92 ! obst_c2turb = beta2 in kepsilon
+   REAL(KIND=rsh), PARAMETER :: o1dv_p_hmin = 0.05_rsh ! Minimum coefficient value for obstruction height under bending
 
    TYPE o1dv_param_type
       ! characteristic of an obstruction
-      CHARACTER(LEN=lchain) :: name   ! obstruction name (arbitrary, user defined)
-      CHARACTER(LEN=2)  :: type   ! type of obstruction, one of 'UP', 'DO' or '3D'
-      LOGICAL       :: l_flexible   ! True if obstruction is flexible
-      LOGICAL       :: l_abdelposture
-      LOGICAL       :: l_param_height
-      LOGICAL       :: l_cylinder
-      LOGICAL       :: l_noturb
-      LOGICAL       :: l_drag_cste
-      LOGICAL       :: l_abdelrough_cste
-      LOGICAL       :: l_fracxy
-      LOGICAL       :: l_z0bstress
-      INTEGER       :: fracxy_type
-      INTEGER       :: c_abdel_nmax
-      INTEGER       :: z0bstress_option
-      REAL(KIND=rsh) :: c_rho
-      REAL(KIND=rsh) :: c_height_x0
-      REAL(KIND=rsh) :: c_height_x1
-      REAL(KIND=rsh) :: c_shelter
-      REAL(KIND=rsh) :: c_lift
-      REAL(KIND=rsh) :: c_drag
-      REAL(KIND=rsh) :: c_lz
-      REAL(KIND=rsh) :: c_crough_x0
-      REAL(KIND=rsh) :: c_crough_x1
-      REAL(KIND=rsh) :: c_fracxy_k0
-      REAL(KIND=rsh) :: c_fracxy_k1
-      REAL(KIND=rsh) :: c_fracxy_l
-      REAL(KIND=rsh) :: c_z0bstress       ! roughness length for obstructions (iv), [m]
-      REAL(KIND=rsh) :: c_z0bstress_x0    ! First parameter for roughness length parameterization (iv), [-]
-      REAL(KIND=rsh) :: c_z0bstress_x1    ! Second parameter for roughness length parameterization (iv), [-]
-      LOGICAL          :: l_filedistri
-      INTEGER          :: nbhnorm
-      REAL(KIND=rsh), ALLOCATABLE :: height_norm(:)
-      REAL(KIND=rsh), ALLOCATABLE :: dens_norm(:)
+      CHARACTER(LEN=lchain) :: name        ! obstruction name (arbitrary, user defined)
+      CHARACTER(LEN=2)  :: type            ! type of obstruction, one of 'UP', 'DO' or '3D'
+      LOGICAL       :: l_flexible          ! True if obstruction is flexible
+      LOGICAL       :: l_abdelposture      ! True for computation of obstructions posture following abdelrhman 2007
+      LOGICAL       :: l_param_height      ! True for use a parameterization (from velocity) for obstruction height
+      LOGICAL       :: l_cylinder          ! True for cylinder/ellipse obstruction shape , False for parallelepiped
+      LOGICAL       :: l_noturb            ! True for use of simplified formulation (roughness length) instead of full turbulent formulation
+      LOGICAL       :: l_drag_cste         ! True for constant drag coefficient, False, for correction from bending angle
+      LOGICAL       :: l_abdelrough_cste   ! True for use constant Abdelrhman 2003 coefficient
+      LOGICAL       :: l_fracxy            ! True for horizontal coverage correction (grid cell not completely fill with obstructions)
+      LOGICAL       :: l_z0bstress         ! True for using a roughness length for obstructions (for sedim module)
+      INTEGER       :: fracxy_type         ! The type of correction for horizontal coverage (grid cell not completely fill with obstructions)
+      INTEGER       :: c_abdel_nmax        ! Number of segments for Abdlerhman method (bending)
+      INTEGER       :: z0bstress_option    ! For using various parameterizations of bottom roughness
+      REAL(KIND=rsh) :: c_rho              ! Initial density of obstructions [kg.m-3]
+      REAL(KIND=rsh) :: c_height_x0        ! First parameter for obstruction height [-]
+      REAL(KIND=rsh) :: c_height_x1        ! Second parameter for obstruction height [-]
+      REAL(KIND=rsh) :: c_shelter          ! sheltering coefficient [-]
+      REAL(KIND=rsh) :: c_lift             ! Lift coefficient for obstructions [-]
+      REAL(KIND=rsh) :: c_drag             ! Drag coefficient for obstructions [-]
+      REAL(KIND=rsh) :: c_lz               ! obstructions spacing coefficient [-]
+      REAL(KIND=rsh) :: c_crough_x0        ! First coefficient (or cst value) for Abdelrhman (2003) c value [-]
+      REAL(KIND=rsh) :: c_crough_x1        ! Second coefficient for Abdelrhman (2003) c value [-]
+      REAL(KIND=rsh) :: c_fracxy_k0        ! First parameter for horizontal coverage correction [-]
+      REAL(KIND=rsh) :: c_fracxy_k1        ! Second parameter for horizontal coverage correction [-]
+      REAL(KIND=rsh) :: c_fracxy_l         ! Third parameter for horizontal coverage correction [-]
+      REAL(KIND=rsh) :: c_z0bstress        ! roughness length for obstructions [m]
+      REAL(KIND=rsh) :: c_z0bstress_x0     ! First parameter for roughness length parameterization [-]
+      REAL(KIND=rsh) :: c_z0bstress_x1     ! Second parameter for roughness length parameterization [-]
+      LOGICAL        :: l_filedistri       ! For using a vertical distribution of obstructions
+      INTEGER        :: nbhnorm            ! Number of vertical steps for the vertical distribution
+      REAL(KIND=rsh), ALLOCATABLE :: height_norm(:) ! Normalized heigth from the vertical distribution [-]
+      REAL(KIND=rsh), ALLOCATABLE :: dens_norm(:)   ! Normalized density from the vertical distribution [-]
    END TYPE
 
    TYPE o1dv_out_type
@@ -102,14 +99,14 @@ MODULE OBSTRUCTIONS1DV
 
    ! variables of the module
 
-   INTEGER :: o1dv_nbvar    ! total number of obstruction variables
-   INTEGER :: o1dv_kmax     !
-   INTEGER :: o1dv_nb_max_hnorm
-   INTEGER :: o1dv_abdel_nmax
-   INTEGER :: o1dv_iwarnlog
-   REAL(KIND=rsh) :: o1dv_h0fond
-   REAL(KIND=rsh) :: o1dv_c_paramhuv
-   TYPE(o1dv_param_type), DIMENSION(:), ALLOCATABLE :: o1dv_obst_param
+   INTEGER :: o1dv_nbvar    ! Total number of obstruction variables
+   INTEGER :: o1dv_kmax     ! Number of vertical layer in water (from hydro model)
+   INTEGER :: o1dv_nb_max_hnorm ! Maximum number of vertical steps from the vertical distribution
+   INTEGER :: o1dv_abdel_nmax ! Number of segments for Abdlerhman method (bending)
+   INTEGER :: o1dv_iwarnlog ! Logging io
+   REAL(KIND=rsh) :: o1dv_h0fond ! Threshold, no computation for water depth below this range
+   REAL(KIND=rsh) :: o1dv_c_paramhuv ! The coefficient of obstruction height for computation of velocity
+   TYPE(o1dv_param_type), DIMENSION(:), ALLOCATABLE :: o1dv_obst_param ! Obstruction parameters
    TYPE(o1dv_out_type) :: o1dv_output_reset
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: o1dv_zz
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: o1dv_uvz
@@ -130,13 +127,13 @@ CONTAINS
       !!---------------------------------------------------------------------
       !!                 *** SUBROUTINE o1dv_alloc  ***
       !!
-      !! ** Purpose : Initialize dimensions
+      !! ** Purpose : Initialize the dimensions
       !!---------------------------------------------------------------------
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: nbvar  !
-      INTEGER, INTENT(IN) :: kmax   !
-      INTEGER, INTENT(IN) :: nb_max_hnorm   !
+      INTEGER, INTENT(IN) :: nbvar  ! number of obstructions
+      INTEGER, INTENT(IN) :: kmax   ! number of layers in water column
+      INTEGER, INTENT(IN) :: nb_max_hnorm   ! maximum number of vertical steps from the vertical distribution
 
       INTEGER :: iv
 
@@ -167,9 +164,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       !!                 *** SUBROUTINE o1dv_init  ***
       !!
-      !! ** Purpose : Initialize the dimensions of number of obstructions
-      !!              and vertical layers and allocate the global arrays
-      !!              of the module.
+      !! ** Purpose : Allocate the global arrays of the module.
       !!---------------------------------------------------------------------
       IMPLICIT NONE
 
@@ -334,7 +329,8 @@ CONTAINS
       !! ** Purpose : From hydrodynamic variables and OBSTRUCTIONS parameters,
       !!              compute OBSTRUCTIONS output variable
       !!
-      !! ** Description : TODO
+      !! ** Description : Main subroutine of this module, entry point for 
+      !!                  hydrodynamic model
       !!---------------------------------------------------------------------
       IMPLICIT NONE
       !! * Arguments
@@ -458,22 +454,22 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(o1dv_kmax), INTENT(INOUT) :: o1dv_theta3d
 
       !! * Local declaration
-      LOGICAL                                     :: l_theta
-      INTEGER                                     :: k, niter, niter_eff, s
-      INTEGER                                     :: k0, k1
-      REAL(KIND=rsh)                            :: z0, z1, zc, zt0, zt1, dz, udz, uv, htmp
-      REAL(KIND=rsh)                            :: lseg, cd, cl, cf, dtheti, phi, re, cshelt
-      REAL(KIND=rsh)                            :: th0, th0p, th0m, th1, th1p, th1m, sm0, sm0p, sm0m, sm1, sm1p, sm1m
-      REAL(KIND=rsh)                            :: drag_xz_0, drag_xz_1m, drag_xz_1p
-      REAL(KIND=rsh)                            :: lift_xz_0, lift_xz_1m, lift_xz_1p
-      REAL(KIND=rsh)                            :: buoy_xz_0, buoy_xz_1m, buoy_xz_1p
-      REAL(KIND=rsh)                            :: drag_x, fric_x, lift_z, buoy_z, fric_z
+      LOGICAL                     :: l_theta
+      INTEGER                     :: k, niter, niter_eff, s
+      INTEGER                     :: k0, k1
+      REAL(KIND=rsh)              :: z0, z1, zc, zt0, zt1, dz, udz, uv, htmp
+      REAL(KIND=rsh)              :: lseg, cd, cl, cf, dtheti, phi, re, cshelt
+      REAL(KIND=rsh)              :: th0, th0p, th0m, th1, th1p, th1m, sm0, sm0p, sm0m, sm1, sm1p, sm1m
+      REAL(KIND=rsh)              :: drag_xz_0, drag_xz_1m, drag_xz_1p
+      REAL(KIND=rsh)              :: lift_xz_0, lift_xz_1m, lift_xz_1p
+      REAL(KIND=rsh)              :: buoy_xz_0, buoy_xz_1m, buoy_xz_1p
+      REAL(KIND=rsh)              :: drag_x, fric_x, lift_z, buoy_z, fric_z
 
       REAL(KIND=rsh), PARAMETER   :: g = 9.81_rsh
       REAL(KIND=rsh), PARAMETER   :: rw = 1025.0_rsh
       REAL(KIND=rsh), PARAMETER   :: nu = 1.4E-6_rsh
       REAL(KIND=rsh), PARAMETER   :: gamma = 1.0e-6_rsh
-      INTEGER, PARAMETER            :: niter_max = 25                    ! Maximum number of iterations
+      INTEGER, PARAMETER          :: niter_max = 25                    ! Maximum number of iterations
       REAL(KIND=rsh), PARAMETER   :: dtheta_max = 0.25_rsh              ! Angle variation (degree) to reach stability
       REAL(KIND=rsh), PARAMETER   :: dtheta_iter = 10.0_rsh*pi/180.0_rsh ! Searching step
       REAL(KIND=rsh), PARAMETER   :: phi_max = 10.0_rsh*pi/180.0_rsh ! Max angle for lift
