@@ -61,11 +61,11 @@
       real tclm(GLOBAL_2D_ARRAY,N,NT)
       common /climat_tclm/tclm
 # endif
-# if defined TRACERS && defined TCLIMATOLOGY /* Potential pb */
-#  ifdef TNUDGING
+# if defined TRACERS && (defined TCLIMATOLOGY || defined TEMPERATURE) /* Potential pb */
+!#  ifdef TNUDGING
       real Tnudgcof(GLOBAL_2D_ARRAY,N,NT)
       common /climat_Tnudgcof/Tnudgcof
-#  endif
+!#  endif
 #  ifndef ANA_TCLIMA
       real tclima(GLOBAL_2D_ARRAY,N,2,NT)
       common /climat_tclima/tclima
