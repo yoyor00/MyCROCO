@@ -74,6 +74,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
         if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
             sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" \
                 -e "s/# *undef *MRL_WCI/# define MRL_WCI/g" \
+                -e "s/# *define *OW_COUPLING_FULL/# undef OW_COUPLING_FULL/g" \
                 cppdefs.h > tmp$$
             printf "\n Coupling with WAV \n"
 	    mv tmp$$ cppdefs.h
