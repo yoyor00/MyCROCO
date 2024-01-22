@@ -828,7 +828,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
 
 #else
       program partit_empty
-      return
+      stop
       end
 #endif /* PARALLEL_FILES */
 
