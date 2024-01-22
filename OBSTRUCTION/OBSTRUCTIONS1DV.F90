@@ -865,13 +865,10 @@ CONTAINS
       !!              parameterization
       !!
       !! ** Description : For rigid obstructions, o1dv_height is not changed
-      !!                  only o1dv_kmin and o1dv_kmax are computed, if
-      !!                  o1dv_height < dsigu(k) o1dv_kmin=o1dv_kmax
       !!                  For flexible obstructions, partial depth averaged velocity
-      !!                  (from bottom or surface to 2.5*previous o1dv_height)
+      !!                  (from bottom or surface to o1dv_c_paramhuv*previous o1dv_height)
       !!                  corresponding to unconfined canopy is computed and used
-      !!                  to compute o1dv_height. Then o1dv_kmin and o1dv_kmax are
-      !!                  computed similarily than for rigid obstructions.
+      !!                  to compute o1dv_height. 
       !!
       !!---------------------------------------------------------------------
       IMPLICIT NONE
@@ -945,17 +942,11 @@ CONTAINS
       !!---------------------------------------------------------------------
       !!                 *** SUBROUTINE o1dv_comp_theta  ***
       !!
-      !! ** Purpose : Computes obstructions height depending on choosen
+      !! ** Purpose : Computes obstructions bending angla depending on choosen
       !!              parameterization
       !!
-      !! ** Description : For rigid obstructions, o1dv_height is not changed
-      !!                  only o1dv_kmin and o1dv_kmax are computed, if
-      !!                  o1dv_height < dsigu(k) o1dv_kmin=o1dv_kmax
-      !!                  For flexible obstructions, partial depth averaged velocity
-      !!                  (from bottom or surface to 2.5*previous o1dv_height)
-      !!                  corresponding to unconfined canopy is computed and used
-      !!                  to compute o1dv_height. Then o1dv_kmin and o1dv_kmax are
-      !!                  computed similarily than for rigid obstructions.
+      !! ** Description : For rigid obstructions, o1dv_theta is zero 
+      !!                  For flexible obstructions, o1dv_height is used
       !!
       !!---------------------------------------------------------------------
       IMPLICIT NONE
@@ -1000,9 +991,6 @@ CONTAINS
       !!                 *** SUBROUTINE o1dv_comp_distrib  ***
       !!
       !! ** Purpose : Computes vertical distribution of obstructions densities
-      !!
-      !! ** Description : In all case, o1dv_dens3d(o1dv_kmin) = o1dv_dens_inst (100%)
-      !!                  if obstructions are flexible
       !!
       !!---------------------------------------------------------------------
 
@@ -1101,17 +1089,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       !!                 *** SUBROUTINE o1dv_comp_fracz ***
       !!
-      !! ** Purpose : Computes obstructions height depending on choosen
-      !!              parameterization
-      !!
-      !! ** Description : For rigid obstructions, o1dv_height is not changed
-      !!                  only o1dv_kmin and o1dv_kmax are computed, if
-      !!                  o1dv_height < dsigu(k) o1dv_kmin=o1dv_kmax
-      !!                  For flexible obstructions, partial depth averaged velocity
-      !!                  (from bottom or surface to 2.5*previous o1dv_height)
-      !!                  corresponding to unconfined canopy is computed and used
-      !!                  to compute o1dv_height. Then o1dv_kmin and o1dv_kmax are
-      !!                  computed similarily than for rigid obstructions.
+      !! ** Purpose : Computes the fraction of sigma layer occupied by obstruction
       !!
       !!---------------------------------------------------------------------
       IMPLICIT NONE
@@ -1307,7 +1285,7 @@ CONTAINS
                           (EXP(kv) - 1.0_rsh)
          ELSEIF (obst%fracxy_type .EQ. 3) THEN
             !---------------------------------------------------------
-            ! Constant correction factor (for parameteriation purpose)
+            ! Constant correction factor (for parameterization purpose)
             !---------------------------------------------------------
             o1dv_fracxy = obst%c_fracxy_k0*o1dv_position
          END IF ! * END TEST ON CORRECTION TYPE
@@ -1326,7 +1304,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       !!                 *** SUBROUTINE o1dv_comp_projarea  ***
       !!
-      !! ** Purpose : Computes obstuctions projected horizontal and vertical area
+      !! ** Purpose : Computes obstructions projected horizontal and vertical area
       !!---------------------------------------------------------------------
 
       IMPLICIT NONE
@@ -1491,7 +1469,7 @@ CONTAINS
       !!---------------------------------------------------------------------
       !!                 *** SUBROUTINE o1dv_comp_obstroughness  ***
       !!
-      !! ** Purpose : Computes obstuctions bottom roughness
+      !! ** Purpose : Computes obstructions bottom roughness
       !!---------------------------------------------------------------------
 
       IMPLICIT NONE
@@ -1601,8 +1579,7 @@ CONTAINS
    !!---------------------------------------------------------------------
    !!                 *** SUBROUTINE o1dv_comp_hydroparam  ***
    !!
-   !! ** Purpose : Computes obstuctions parameters used for hydrodynamics
-   !!
+   !! ** Purpose : Computes obstructions parameters used for hydrodynamics
    !!---------------------------------------------------------------------
 
       IMPLICIT NONE

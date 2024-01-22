@@ -926,10 +926,10 @@ CONTAINS
             '  - Use a time-series file for obstructions characteristics : ', obst_l_filetimeserie(iv)
          IF (obst_l_filetimeserie(iv)) THEN
             MPI_master_only WRITE (iscreenlog, *) &
-               '  - Name of temporal file for obstructions charcateristics      : ', obst_fn_timeserie(iv)
+               '  - Name of temporal file for obstructions characteristics      : ', obst_fn_timeserie(iv)
          ELSE
             MPI_master_only WRITE (iscreenlog, *) &
-               '  - Name of temporal file for obstructions charcateristics      : NOT USED'
+               '  - Name of temporal file for obstructions characteristics      : NOT USED'
          END IF
          MPI_master_only WRITE (iscreenlog, *) &
             '!===========================!'
@@ -939,15 +939,15 @@ CONTAINS
             '!===========================!'
 
          MPI_master_only WRITE (iscreenlog, *) &
-            '  - Use a spatially variable file obstructions charcateristics             : ', obst_l_init_spatial(iv)
+            '  - Use a spatially variable file obstructions characteristics             : ', obst_l_init_spatial(iv)
          MPI_master_only WRITE (iscreenlog, *) &
             '  - Use a file describing the vertical distribution of obstruction density : ', obst_l_filedistri(iv)
          IF (obst_l_init_spatial(iv)) THEN
             MPI_master_only WRITE (iscreenlog, *) &
-               '  - Name of spatial file for obstructions charcateristics      : ', obst_fn_initspatial(iv)
+               '  - Name of spatial file for obstructions characteristics      : ', obst_fn_initspatial(iv)
          ELSE
             MPI_master_only WRITE (iscreenlog, *) &
-               '  - Name of spatial file for obstructions charcateristics      : NOT USED'
+               '  - Name of spatial file for obstructions characteristics      : NOT USED'
          END IF
          IF (obst_l_filedistri(iv)) THEN
             MPI_master_only WRITE (iscreenlog, *) &
@@ -1163,11 +1163,6 @@ CONTAINS
       !!                 *** SUBROUTINE obst_compatibility ***
       !!
       !! ** Purpose : Check compatibility of parameterization used
-      !!
-      !! ** CALLed by : obst_init
-      !!
-      !! ** History :
-      !!       ! 2021-10    (F. Ganthy) Original code (extracted from obst_write_summary)
       !!
       !!---------------------------------------------------------------------
       USE module_OBSTRUCTIONS ! for mynode

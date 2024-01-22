@@ -113,13 +113,17 @@
 :------------------------------------------------------------------------------
 : obst_var_fracxy      : parameters relative to small-scale patchiness correction
 :------------------------------------------------------------------------------
-: r_l_obst_fracxy     : To take account for patchiness correction (if false, a linear
-:                       relationship between the fraction of cell occupied by obstructions
-:                       and their effective density will be applied)
+: r_l_obst_fracxy     : To take account for patchiness correction (if false, no correction)
 : r_obst_fracxy_type  : Kind of correction method :
-:                            1 : exponential with one coefficient
-:                            2 : exponential wiht a variable coefficient
-: r_obst_c_fracxy_k0  : Coefficient for the exponential correction (type 1 and 2)
+:                            0 : patchiness correction is equal to the fraction of cell occupied by obstructions 
+:                            1 : patchiness correction is equal to an exponential of the fraction of cell occupied 
+:                                by obstructions with one coefficient (r_obst_c_fracxy_k0)
+:                            2 : patchiness correction is equal to an exponential of the fraction of cell occupied 
+:                                by obstructions with several coefficients (r_obst_c_fracxy_k0, r_obst_c_fracxy_k1 and
+:                                r_obst_c_fracxy_l)
+:                            3 : patchiness correction is equal to the product of the fraction of cell occupied by obstructions 
+:                                and r_obst_c_fracxy_k0
+: r_obst_c_fracxy_k0  : Coefficient for the corrections (type 1 and 2 and 3)
 : r_obst_c_fracxy_k1  : First parameter for correction of the exponential coefficient (type 2)
 : r_obst_c_fracxy_l   : Second parameter for correction of the exponential coefficient (type 2)
 :------------------------------------------------------------------------------
