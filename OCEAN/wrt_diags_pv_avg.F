@@ -140,13 +140,13 @@
 
          call fillvalue3d(pv_avg,nciddiags_pv_avg,
      &                      diags_pvpv_avg(itrc),
-     &                      indxpvpv,
+     &                      vname(1,indxpvpv),
      &                      record,u3dvar,type)
 
 
          call fillvalue3d(pvd_avg,nciddiags_pv_avg,
      &                      diags_pvpvd_avg(itrc),
-     &                      indxpvpvd,
+     &                      vname(1,indxpvpvd),
      &                      record,v3dvar,type)
 
 !---------------------------------------------------------------
@@ -164,7 +164,7 @@
            workr=Mrhs_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiags_pv_avg,
      &                      diags_pvMrhs_avg(itrc),
-     &                      indxpvMrhs+itrc-1,
+     &                      vname(1,indxpvMrhs+itrc-1),
      &                      record,ivar,type)
 
         enddo
@@ -183,7 +183,7 @@
            workr=Trhs_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiags_pv_avg,
      &                      diags_pvTrhs_avg(itrc),
-     &                      indxpvTrhs+itrc-1,
+     &                      vname(1,indxpvTrhs+itrc-1),
      &                      record,r3dvar,type)
           endif
         enddo

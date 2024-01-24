@@ -286,7 +286,8 @@
         ierr=nf_put_att_text(ncid, rstTime, 'field',     lvar,
      &                                  vname(4,indxTime)(1:lvar))
 
-      call nf_add_attribute(ncid, rstTime, indxTime, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstTime, vname(:,indxTime), 
+     &      5, NF_DOUBLE, ierr)
 !
 ! Time2.
 !
@@ -306,7 +307,7 @@
         ierr=nf_put_att_text(ncid, rstTime2, 'field',     lvar,
      &                                  vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, rstTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, rstTime2, vname(:,indxTime2), 5,
      &       NF_DOUBLE, ierr)
 !
 !     Free-surface.
@@ -327,7 +328,8 @@
         ierr=nf_put_att_text (ncid, rstZ, 'field', lvar,
      &                                     vname(4,indxZ)(1:lvar))
 
-      call nf_add_attribute(ncid, rstZ, indxZ, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstZ, 
+     &       vname(:,indxZ), 5, NF_DOUBLE, ierr)
 
 !
 !   2D momenta in XI- and ETA-directions.
@@ -347,7 +349,8 @@
         lvar=lenstr(vname(4,indxUb))
         ierr=nf_put_att_text (ncid, rstUb, 'field', lvar,
      &                                   vname(4,indxUb)(1:lvar))
-      call nf_add_attribute(ncid, rstUb, indxUb, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstUb, 
+     &      vname(:,indxUb), 5, NF_DOUBLE, ierr)
 
         lvar=lenstr(vname(1,indxVb))
         ierr=nf_def_var (ncid, vname(1,indxVb)(1:lvar),
@@ -365,30 +368,31 @@
         ierr=nf_put_att_text (ncid, rstVb, 'field',     lvar,
      &                                  vname(4,indxVb)(1:lvar))
 
-       call nf_add_attribute(ncid, rstVb, indxVb, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstVb, vname(:,indxVb), 
+     &     5, NF_DOUBLE, ierr)
 
 #ifdef ABL1D
 !
 ! 3D ABL TKE
 !
-        lvar=lenstr(vname(1,indxabl_tke_abl))
-        ierr=nf_def_var (ncid, vname(1,indxabl_tke_abl)(1:lvar),
-     &                              NF_DOUBLE, 4, abl3dgrd, rstAblTke)
+        lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_tke_abl)(1:lvar),
+     &                   NF_DOUBLE, 4, abl3dgrd, rstAblTke)
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstAblTke,nf_collective)
 # endif
-        lvar=lenstr(vname(2,indxabl_tke_abl))
+        lvar=lenstr(vname_abl1d(2,indxabl_tke_abl))
         ierr=nf_put_att_text (ncid, rstAblTke, 'long_name', lvar,
-     &                                   vname(2,indxabl_tke_abl)(1:lvar))
-        lvar=lenstr(vname(3,indxabl_tke_abl))
+     &                  vname_abl1d(2,indxabl_tke_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_tke_abl))
         ierr=nf_put_att_text (ncid, rstAblTke, 'units',     lvar,
-     &                                   vname(3,indxabl_tke_abl)(1:lvar))
-        lvar=lenstr(vname(4,indxabl_tke_abl))
+     &                  vname_abl1d(3,indxabl_tke_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_tke_abl))
         ierr=nf_put_att_text (ncid, rstAblTke, 'field',     lvar,
-     &                                  vname(4,indxabl_tke_abl)(1:lvar))
+     &                  vname_abl1d(4,indxabl_tke_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblTke, indxabl_tke_abl, 5,
-     &                        NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstAblTke, 
+     &                  vname_abl1d(:,indxabl_tke_abl), 5, NF_DOUBLE, ierr)
 #endif
 
 #ifdef SOLVE3D
@@ -411,7 +415,8 @@
         ierr=nf_put_att_text (ncid, rstU, 'field',     lvar,
      &                                  vname(4,indxU)(1:lvar))
 
-        call nf_add_attribute(ncid, rstU, indxU, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstU, 
+     &         vname(:,indxU), 5, NF_DOUBLE, ierr)
 
         lvar=lenstr(vname(1,indxV))
         ierr=nf_def_var (ncid, vname(1,indxV)(1:lvar),
@@ -429,7 +434,8 @@
         ierr=nf_put_att_text (ncid, rstV, 'field',     lvar,
      &                                  vname(4,indxV)(1:lvar))
 
-        call nf_add_attribute(ncid, rstV, indxV, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstV, 
+     &         vname(:,indxV), 5, NF_DOUBLE, ierr)
 
 !
 ! Tracer variables.
@@ -453,8 +459,9 @@
           lvar=lenstr(vname(4,indxV+itrc))
           ierr=nf_put_att_text (ncid, rstT(itrc), 'field', lvar,
      &         vname(4,indxV+itrc)(1:lvar))
-          call nf_add_attribute(ncid, rstT(itrc), indxV+itrc, 5, 
-     &         NF_DOUBLE,ierr)          
+
+          call nf_add_attribute(ncid, rstT(itrc), 
+     &         vname(:,indxV+itrc), 5, NF_DOUBLE,ierr)
         enddo
 # endif
 
@@ -479,8 +486,8 @@
         ierr=nf_put_att_text (ncid, rstHbl, 'field', lvar,
      &       vname(4,indxHbl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstHbl, indxHbl, 5,
-     &       NF_DOUBLE,ierr)
+        call nf_add_attribute(ncid, rstHbl, 
+     &       vname(:,indxHbl), 5, NF_DOUBLE,ierr)
 #  endif
 
 #  ifdef LMD_BKPP
@@ -503,7 +510,7 @@
         ierr=nf_put_att_text (ncid, rstHbbl, 'field', lvar,
      &       vname(4,indxHbbl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstHbbl, indxHbbl, 5,
+        call nf_add_attribute(ncid, rstHbbl, vname(:,indxHbbl), 5,
      &       NF_DOUBLE,ierr)
 
 #  endif /*  LMD_BKPP  */
@@ -529,7 +536,7 @@
           ierr=nf_put_att_text (ncid, rstTke, 'field', lvar,
      &         vname(4,indxTke)(1:lvar))
 
-          call nf_add_attribute(ncid, rstTke, indxTke, 5,
+          call nf_add_attribute(ncid, rstTke, vname(:,indxTke), 5,
      &         NF_DOUBLE,ierr)
 
 !
@@ -551,7 +558,7 @@
           ierr=nf_put_att_text (ncid, rstGls, 'field', lvar,
      &         vname(4,indxGls)(1:lvar))
 
-          call nf_add_attribute(ncid, rstGls, indxGls, 5,
+          call nf_add_attribute(ncid, rstGls, vname(:,indxGls), 5,
      &         NF_DOUBLE,ierr)
 !
 ! Vertical length scale.
@@ -571,7 +578,7 @@
           lvar=lenstr(vname(4,indxLsc))
           ierr=nf_put_att_text (ncid, rstLsc, 'field', lvar,
      &         vname(4,indxLsc)(1:lvar))
-          call nf_add_attribute(ncid, rstLsc, indxLsc, 5,
+          call nf_add_attribute(ncid, rstLsc, vname(:,indxLsc), 5,
      &         NF_DOUBLE,ierr)
 
 !
@@ -594,7 +601,7 @@
         ierr=nf_put_att_text (ncid, rstAkv, 'field', lvar,
      &       vname(4,indxAkv)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAkv, indxAkv, 5,
+        call nf_add_attribute(ncid, rstAkv, vname(:,indxAkv), 5,
      &       NF_DOUBLE,ierr)
 
 #  ifdef TEMPERATURE
@@ -618,7 +625,7 @@
         ierr=nf_put_att_text (ncid, rstAkt, 'field', lvar,
      &       vname(4,indxAkt)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAkt, indxAkt, 5,
+        call nf_add_attribute(ncid, rstAkt, vname(:,indxAkt), 5,
      &       NF_DOUBLE,ierr)
 #  endif /* TEMPERATURE  */
 
@@ -643,7 +650,7 @@
           ierr=nf_put_att_text (ncid, rstAks, 'field', lvar,
      &         vname(4,indxAks)(1:lvar))
 
-          call nf_add_attribute(ncid, rstAks, indxAks, 5,
+          call nf_add_attribute(ncid, rstAks, vname(:,indxAks), 5,
      &         NF_DOUBLE,ierr)
 #  endif /* SALINITY  */
 # endif /* GLS_MIXING */
@@ -669,7 +676,7 @@
         ierr=nf_put_att_text (ncid, rstBustr, 'field', lvar,
      &       vname(4,indxBustr)(1:lvar))
 
-        call nf_add_attribute(ncid, rstBustr, indxBustr, 5,
+        call nf_add_attribute(ncid, rstBustr, vname(:,indxBustr), 5,
      &       NF_DOUBLE,ierr)
 !
 !  Bottom stress v component
@@ -690,7 +697,7 @@
         ierr=nf_put_att_text (ncid, rstBvstr, 'field', lvar,
      &       vname(4,indxBvstr)(1:lvar))
 
-        call nf_add_attribute(ncid, rstBvstr, indxBvstr, 5,
+        call nf_add_attribute(ncid, rstBvstr, vname(:,indxBvstr), 5,
      &       NF_DOUBLE,ierr)
 #  endif /* M3FAST */
 # endif /* LMD_MIXING */
@@ -715,7 +722,7 @@
         ierr=nf_put_att_text (ncid, rstrufrc, 'field', lvar,
      &                         vname(4,indxrufrc)(1:lvar))
       call nf_add_attribute(ncid, rstrufrc,
-     &                         indxrufrc, 5, NF_DOUBLE, ierr)
+     &                      vname(:,indxrufrc), 5, NF_DOUBLE, ierr)
 !
 ! Forcing for barotropic equations in ETA-direction.
 !
@@ -735,7 +742,7 @@
         ierr=nf_put_att_text (ncid, rstrvfrc, 'field', lvar,
      &                         vname(4,indxrvfrc)(1:lvar))
       call nf_add_attribute(ncid, rstrvfrc,
-     &                         indxrvfrc, 5, NF_DOUBLE, ierr)
+     &                      vname(:,indxrvfrc), 5, NF_DOUBLE, ierr)
 
 #  ifdef M3FAST
 !
@@ -757,7 +764,7 @@
         ierr=nf_put_att_text (ncid, rstru_nbq, 'field',     lvar,
      &                                  vname(4,indxru_nbq)(1:lvar))
 
-        call nf_add_attribute(ncid, rstru_nbq, indxru_nbq,
+        call nf_add_attribute(ncid, rstru_nbq, vname(:,indxru_nbq),
      &                                   5, NF_DOUBLE, ierr)
 
         lvar=lenstr(vname(1,indxrv_nbq))
@@ -776,7 +783,7 @@
         ierr=nf_put_att_text (ncid, rstrv_nbq, 'field',     lvar,
      &                                  vname(4,indxrv_nbq)(1:lvar))
 
-        call nf_add_attribute(ncid, rstrv_nbq, indxrv_nbq,
+        call nf_add_attribute(ncid, rstrv_nbq, vname(:,indxrv_nbq),
      &                                   5, NF_DOUBLE, ierr)
 
 !
@@ -798,8 +805,8 @@
         ierr=nf_put_att_text (ncid, rstru_nbq_avg2, 'field', lvar,
      &                       vname(4,indxru_nbq_avg2)(1:lvar))
 
-        call nf_add_attribute(ncid, rstru_nbq_avg2, indxru_nbq_avg2,
-     &                                   5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstru_nbq_avg2, 
+     &       vname(:,indxru_nbq_avg2), 5, NF_DOUBLE, ierr)
 
         lvar=lenstr(vname(1,indxrv_nbq_avg2))
         ierr=nf_def_var (ncid, vname(1,indxrv_nbq_avg2)(1:lvar),
@@ -817,8 +824,8 @@
         ierr=nf_put_att_text (ncid, rstrv_nbq_avg2, 'field',  lvar,
      &                       vname(4,indxrv_nbq_avg2)(1:lvar))
 
-        call nf_add_attribute(ncid, rstrv_nbq_avg2, indxrv_nbq_avg2,
-     &                                   5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstrv_nbq_avg2, 
+     &       vname(:,indxrv_nbq_avg2), 5, NF_DOUBLE, ierr)
 
 !
 ! 3D rhs for M3FAST in XI- and ETA-directions.
@@ -839,8 +846,8 @@
         ierr=nf_put_att_text (ncid, rstqdmu_nbq, 'field', lvar,
      &                       vname(4,indxqdmu_nbq)(1:lvar))
 
-        call nf_add_attribute(ncid, rstqdmu_nbq, indxqdmu_nbq,
-     &                                   5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstqdmu_nbq, 
+     &       vname(:,indxqdmu_nbq), 5, NF_DOUBLE, ierr)
 
         lvar=lenstr(vname(1,indxqdmv_nbq))
         ierr=nf_def_var (ncid, vname(1,indxqdmv_nbq)(1:lvar),
@@ -858,8 +865,8 @@
         ierr=nf_put_att_text (ncid, rstqdmv_nbq, 'field',  lvar,
      &                       vname(4,indxqdmv_nbq)(1:lvar))
 
-        call nf_add_attribute(ncid, rstqdmv_nbq, indxqdmv_nbq,
-     &                                   5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstqdmv_nbq, 
+     &       vname(:,indxqdmv_nbq), 5, NF_DOUBLE, ierr)
 #  endif  /* M3FAST */
 
 #  ifdef TRACERS
@@ -883,7 +890,7 @@
         ierr=nf_put_att_text (ncid, rstdRdx, 'field', lvar,
      &                       vname(4,indxdRdx)(1:lvar))
 
-        call nf_add_attribute(ncid, rstdRdx, indxdRdx,
+        call nf_add_attribute(ncid, rstdRdx, vname(:,indxdRdx),
      &                                   5, NF_DOUBLE, ierr)
 
         lvar=lenstr(vname(1,indxdRde))
@@ -902,7 +909,7 @@
         ierr=nf_put_att_text (ncid, rstdRde, 'field',  lvar,
      &                       vname(4,indxdRde)(1:lvar))
 
-        call nf_add_attribute(ncid, rstdRde, indxdRde,
+        call nf_add_attribute(ncid, rstdRde, vname(:,indxdRde),
      &                                   5, NF_DOUBLE, ierr)
 
 #   endif /* TS_MIX_ISO_FILT */
@@ -931,7 +938,7 @@
         ierr=nf_put_att_text (ncid, rstSed(1), 'field',     lvar,
      &                                  vname(4,indxBTHK)(1:lvar))
 
-      call nf_add_attribute(ncid, rstSed(1), indxBTHK, 5,
+      call nf_add_attribute(ncid, rstSed(1), vname(:,indxBTHK), 5,
      &       NF_DOUBLE,ierr)
 
 !
@@ -954,7 +961,7 @@
         ierr=nf_put_att_text (ncid, rstSed(2), 'field',     lvar,
      &                                  vname(4,indxBPOR)(1:lvar))
 
-      call nf_add_attribute(ncid, rstSed(2), indxBPOR, 5,
+      call nf_add_attribute(ncid, rstSed(2), vname(:,indxBPOR), 5,
      &       NF_DOUBLE, ierr)
 
 !
@@ -978,7 +985,7 @@
           ierr=nf_put_att_text (ncid, rstSed(itrc+2), 'field', lvar,
      &                             vname(4,indxWrk)(1:lvar))
 
-      call nf_add_attribute(ncid, rstSed(itrc+2), indxWrk, 5,
+      call nf_add_attribute(ncid, rstSed(itrc+2), vname(:,indxWrk), 5,
      &         NF_DOUBLE, ierr)
 
         enddo
@@ -996,7 +1003,7 @@
        ierr=nf_var_par_access(ncid,rstMUS(itrc),nf_collective)
 # endif
 
-        call nf_add_attribute(ncid, rstMUS(itrc), indx, 5,
+        call nf_add_attribute(ncid, rstMUS(itrc), vname(:,indx), 5,
      &         NF_INT, ierr)
        enddo
 
@@ -1010,7 +1017,7 @@
        ierr=nf_var_par_access(ncid,rstMUS(itrc+2),nf_collective)
 # endif
 
-        call nf_add_attribute(ncid, rstMUS(itrc+2), indx, 5,
+        call nf_add_attribute(ncid, rstMUS(itrc+2), vname(:,indx), 5,
      &         NF_DOUBLE, ierr)
       enddo
 
@@ -1023,7 +1030,7 @@
         ierr=nf_var_par_access(ncid,rstMUS(itrc+5),nf_collective)
 # endif
 
-        call nf_add_attribute(ncid, rstMUS(itrc+5), indx, 5,
+        call nf_add_attribute(ncid, rstMUS(itrc+5), vname(:,indx), 5,
      &         NF_DOUBLE, ierr)
         enddo
 #endif
@@ -1046,7 +1053,8 @@
         ierr=nf_put_att_text (ncid, rstHm, 'field',     lvar,
      &                                vname(4,indxHm)(1:lvar))
 
-        call nf_add_attribute(ncid, rstHm, indxHm, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstHm, vname(:,indxHm), 
+     &       5, NF_DOUBLE, ierr)
 
 #endif
 
@@ -1070,7 +1078,7 @@
         ierr=nf_put_att_text (ncid, rstBBL(1), 'field',     lvar,
      &                                  vname(4,indxHrip)(1:lvar))
 
-        call nf_add_attribute(ncid, rstBBL(1), indxHrip, 5,
+        call nf_add_attribute(ncid, rstBBL(1), vname(:,indxHrip), 5,
      &    NF_DOUBLE, ierr)
 
 
@@ -1093,7 +1101,7 @@
         ierr=nf_put_att_text (ncid, rstBBL(2), 'field',     lvar,
      &                                  vname(4,indxLrip)(1:lvar))
 
-        call nf_add_attribute(ncid, rstBBL, indxLrip, 5,
+        call nf_add_attribute(ncid, rstBBL, vname(:,indxLrip), 5,
      &       NF_DOUBLE, ierr)
 #endif /* BBL */
 
@@ -1314,10 +1322,12 @@
 !
 ! 3D ABL TKE
 !
-        lvar=lenstr(vname(1,indxabl_tke_abl))
-        ierr=nf_inq_varid (ncid, vname(1,indxabl_tke_abl)(1:lvar), rstAblTke)
+        lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
+        ierr=nf_inq_varid (ncid, 
+     &      vname_abl1d(1,indxabl_tke_abl)(1:lvar), rstAblTke)
         if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxabl_tke_abl)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar), 
+     &      rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR

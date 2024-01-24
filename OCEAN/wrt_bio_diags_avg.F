@@ -127,7 +127,7 @@ C      write(*,*) 'Write Time'
         if (wrtdiabioFlux_avg(iflux)) then
           workr=bioFlux_avg(:,:,:,iflux)
           call fillvalue3d(workr, nciddiabio_avg, diabioFlux_avg(iflux),
-     &         indxbioFlux+iflux-1,record,r3dvar,type)
+     &        vname(1,indxbioFlux+iflux-1),record,r3dvar,type)
         endif
       end do
 !     2-D terms (it is called Vsink but it means nothing)
@@ -136,7 +136,7 @@ C      write(*,*) 'Write Time'
 !     if (iflux.eq.11)  write(*,*) 'ZMEU WRT_AVG',bioVSink_avg(30,30,iflux)
           work2d=bioVSink_avg(:,:,iflux)
           call fillvalue2d(work2d, nciddiabio_avg, diabioVsink_avg(iflux),
-     &         indxbioVSink+iflux-1,record,r2dvar,type)
+     &        vname(1,indxbioVSink+iflux-1),record,r2dvar,type)
         endif
       end do
 #  endif
@@ -148,7 +148,7 @@ C      write(*,*) 'Write Time'
         if (wrtdiabioFlux_avg(iflux)) then
           workr=bioFlux_avg(:,:,:,iflux)
           call fillvalue3d(workr, nciddiabio_avg, diabioFlux_avg(iflux),
-     &         indxbioFlux+iflux-1,record,r3dvar,type)
+     &        vname(1,indxbioFlux+iflux-1),record,r3dvar,type)
         endif
       end do
 !     vertical sinking fluxes
@@ -156,7 +156,7 @@ C      write(*,*) 'Write Time'
         if (wrtdiabioVSink_avg(iflux)) then
           work=bioVsink_avg(:,:,:,iflux)
           call fillvalue3d(work, nciddiabio_avg, diabioVsink_avg(iflux),
-     &         indxbioVSink+iflux-1,record,w3dvar,type)
+     &        vname(1,indxbioVSink+iflux-1),record,w3dvar,type)
         endif
       end do
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
@@ -165,7 +165,7 @@ C      write(*,*) 'Write Time'
         if (wrtdiabioGasExc_avg(iflux)) then
           work2d=GasExcFlux_avg(:,:,iflux)
           call fillvalue2d(work2d,nciddiabio_avg,diabioGasExc_avg(iflux),
-     &         indxGasExcFlux+iflux-1,record,r2dvar,type)
+     &        vname(1,indxGasExcFlux+iflux-1),record,r2dvar,type)
         endif
       end do
 #  endif

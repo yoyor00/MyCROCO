@@ -239,9 +239,9 @@ while [ $NY != $NY_END ]; do
         echo "Getting ${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} from $MSSDIR"
         $LN -sf $MSSDIR/${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} ${BLKFILE}.nc${ENDF}
       fi
-     if [[ ${RNF_FILES} == 1 ]]; then
-        echo "Getting ${RNFFILE}_${RUNOFF_DAT}_${TIME}.nc${ENDF} from $MSSDIR"
-        $LN -sf $MSSDIR/${RNFFILE}_${RUNOFF_DAT}_${TIME}.nc${ENDF} ${RNFFILE}.nc${ENDF}
+     if [[ ${RUNOFF_FILES} == 1 ]]; then
+        echo "Getting ${RNFFILE}.nc${ENDF} from $MSSDIR"
+        $LN -sf $MSSDIR/${RNFFILE}.nc${ENDF} ${RNFFILE}.nc${ENDF}
       fi
       
       LEVEL=$((LEVEL + 1))

@@ -138,7 +138,7 @@
            work2d=ekHadv_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekHadv_avg(itrc),
-     &                      indxekHadv+itrc-1,
+     &                      vname(1,indxekHadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekHdiff
@@ -146,7 +146,7 @@
            work2d=ekHdiff_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekHdiff_avg(itrc),
-     &                      indxekHdiff+itrc-1,
+     &                      vname(1,indxekHdiff+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekVadv
@@ -154,7 +154,7 @@
            work2d=ekVadv_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekVadv_avg(itrc),
-     &                      indxekVadv+itrc-1,
+     &                      vname(1,indxekVadv+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekCor
@@ -162,7 +162,7 @@
            work2d=ekCor_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekCor_avg(itrc),
-     &                      indxekCor+itrc-1,
+     &                      vname(1,indxekCor+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekPrsgrd
@@ -170,7 +170,7 @@
            work2d=ekPrsgrd_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekPrsgrd_avg(itrc),
-     &                      indxekPrsgrd+itrc-1,
+     &                      vname(1,indxekPrsgrd+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekHmix
@@ -178,7 +178,7 @@
            work2d=ekHmix_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekHmix_avg(itrc),
-     &                      indxekHmix+itrc-1,
+     &                      vname(1,indxekHmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekVmix
@@ -186,7 +186,7 @@
            work2d=ekVmix_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekVmix_avg(itrc),
-     &                      indxekVmix+itrc-1,
+     &                      vname(1,indxekVmix+itrc-1),
      &                      record,ivar,type)
 
 !
@@ -195,7 +195,7 @@
            work2d=ekrate_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekrate_avg(itrc),
-     &                      indxekrate+itrc-1,
+     &                      vname(1,indxekrate+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -205,7 +205,7 @@
            work2d=ekvol_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekvol_avg(itrc),
-     &                      indxekvol+itrc-1,
+     &                      vname(1,indxekvol+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -215,7 +215,7 @@
            work2d=ekVmix2_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekVmix2_avg(itrc),
-     &                      indxekVmix2+itrc-1,
+     &                      vname(1,indxekVmix2+itrc-1),
      &                      record,ivar,type)
 
 !
@@ -224,7 +224,7 @@
            work2d=ekWind_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekWind_avg(itrc),
-     &                      indxekWind+itrc-1,
+     &                      vname(1,indxekWind+itrc-1),
      &                      record,ivar,type)
 
 
@@ -234,7 +234,7 @@
            work2d=ekDrag_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekDrag_avg(itrc),
-     &                      indxekDrag+itrc-1,
+     &                      vname(1,indxekDrag+itrc-1),
      &                      record,ivar,type)
 
 # if defined DIAGNOSTICS_BARO
@@ -244,7 +244,7 @@
            work2d=ekBaro_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekBaro_avg(itrc),
-     &                      indxekBaro+itrc-1,
+     &                      vname(1,indxekBaro+itrc-1),
      &                      record,ivar,type)
 # endif
 
@@ -255,7 +255,7 @@
            work2d=ekfast_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekfast_avg(itrc),
-     &                      indxekfast+itrc-1,
+     &                      vname(1,indxekfast+itrc-1),
      &                      record,ivar,type)
 # endif
 
@@ -270,7 +270,7 @@
            work2d=ekHadv_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekHadv_mld_avg(itrc),
-     &                      indxekHadv_mld+itrc-1,
+     &                      vname(1,indxekHadv_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekHdiff
@@ -278,7 +278,7 @@
            work2d=ekHdiff_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekHdiff_mld_avg(itrc),
-     &                      indxekHdiff_mld+itrc-1,
+     &                      vname(1,indxekHdiff_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekVadv
@@ -286,7 +286,7 @@
            work2d=ekVadv_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekVadv_mld_avg(itrc),
-     &                      indxekVadv_mld+itrc-1,
+     &                      vname(1,indxekVadv_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekCor
@@ -294,7 +294,7 @@
            work2d=ekCor_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekCor_mld_avg(itrc),
-     &                      indxekCor_mld+itrc-1,
+     &                      vname(1,indxekCor_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekPrsgrd
@@ -302,7 +302,7 @@
            work2d=ekPrsgrd_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekPrsgrd_mld_avg(itrc),
-     &                      indxekPrsgrd_mld+itrc-1,
+     &                      vname(1,indxekPrsgrd_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekHmix
@@ -310,7 +310,7 @@
            work2d=ekHmix_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekHmix_mld_avg(itrc),
-     &                      indxekHmix_mld+itrc-1,
+     &                      vname(1,indxekHmix_mld+itrc-1),
      &                      record,ivar,type)
 !
 ! indxekVmix
@@ -318,7 +318,7 @@
            work2d=ekVmix_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekVmix_mld_avg(itrc),
-     &                      indxekVmix_mld+itrc-1,
+     &                      vname(1,indxekVmix_mld+itrc-1),
      &                      record,ivar,type)
 
 !
@@ -327,7 +327,7 @@
            work2d=ekrate_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekrate_mld_avg(itrc),
-     &                      indxekrate_mld+itrc-1,
+     &                      vname(1,indxekrate_mld+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -337,7 +337,7 @@
            work2d=ekvol_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekvol_mld_avg(itrc),
-     &                      indxekvol_mld+itrc-1,
+     &                      vname(1,indxekvol_mld+itrc-1),
      &                      record,ivar,type)
 !
 
@@ -347,7 +347,7 @@
            work2d=ekVmix2_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekVmix2_mld_avg(itrc),
-     &                      indxekVmix2_mld+itrc-1,
+     &                      vname(1,indxekVmix2_mld+itrc-1),
      &                      record,ivar,type)
 #  if defined DIAGNOSTICS_BARO
 !
@@ -356,7 +356,7 @@
            work2d=ekBaro_mld_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekBaro_mld_avg(itrc),
-     &                      indxekBaro_mld+itrc-1,
+     &                      vname(1,indxekBaro_mld+itrc-1),
      &                      record,ivar,type)
 #  endif
 

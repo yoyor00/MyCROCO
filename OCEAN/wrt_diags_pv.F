@@ -135,12 +135,12 @@
 
 
          call fillvalue3d(pv,nciddiags_pv,diags_pvpv(itrc),
-     &                      indxpvpv,
+     &                      vname(1,indxpvpv),
      &                      record,u3dvar,type)
 
 
          call fillvalue3d(pvd,nciddiags_pv,diags_pvpvd(itrc),
-     &                      indxpvpvd,
+     &                      vname(1,indxpvpvd),
      &                      record,v3dvar,type)
 
 # endif
@@ -160,7 +160,7 @@
 
            workr=Mrhs(:,:,:,itrc)
            call fillvalue3d(workr,nciddiags_pv,diags_pvMrhs(itrc),
-     &                      indxpvMrhs+itrc-1,
+     &                      vname(1,indxpvMrhs+itrc-1),
      &                      record,ivar,type)
 
         enddo
@@ -180,7 +180,7 @@
            workr=Trhs(:,:,:,itrc)
 !           workr=TXadv(:,:,:,itrc)
            call fillvalue3d(workr,nciddiags_pv,diags_pvTrhs(itrc),
-     &                      indxpvTrhs+itrc-1,
+     &                      vname(1,indxpvTrhs+itrc-1),
      &                      record,r3dvar,type)
 
 

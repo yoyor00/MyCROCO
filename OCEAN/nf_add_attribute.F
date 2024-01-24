@@ -25,9 +25,10 @@
 ! 13 :
 !---------------------------------------------------------------
 #include "cppdefs.h"
-      subroutine nf_add_attribute(ncid, vid, indx, i, nf_type, ierr)
+      subroutine nf_add_attribute(ncid, vid, vnameindx, i, nf_type, ierr)
       implicit none
-      integer ncid,vid,lvar,indx,ierr,lenstr,i, nf_type
+      integer ncid,vid,lvar,ierr,lenstr,i, nf_type
+      character*75  vnameindx(20)
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
@@ -35,48 +36,48 @@
 
       character*70 text
 
-      text=vname(i,indx)
+      text=vnameindx(i)
       lvar=lenstr(text)
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'standard_name',
      &        lvar, text(1:lvar))
       endif
 
-      text=vname(i+1,indx)
+      text=vnameindx(i+1)
       lvar=lenstr(text)
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'coordinates',
      &        lvar, text(1:lvar))
       endif
 
-      text=vname(i+2,indx)
+      text=vnameindx(i+2)
       lvar=lenstr(text)
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'axis',
      &        lvar, text(1:lvar))
       endif
 
-      text=vname(i+4,indx)
+      text=vnameindx(i+4)
       lvar=lenstr(text)
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'positive',
      &        lvar, text(1:lvar))
       endif
-      text=vname(i+5,indx)
+      text=vnameindx(i+5)
       lvar=lenstr(text)
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'time_origin',
      &        lvar, text(1:lvar))
       endif
 
-      text=vname(i+6,indx)
+      text=vnameindx(i+6)
       lvar=lenstr(text)
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'calendar',
      &        lvar, text(1:lvar))
       endif
 #ifdef FILLVAL
-      text=vname(i+3,indx)
+      text=vnameindx(i+3)
       if (TRIM(text) /= '.NO.' .and. LEN_TRIM(text).gt.0) then
        if (nf_type == NF_REAL) then
         ierr= nf_put_att_real (ncid, vid,'_FillValue', nf_type,

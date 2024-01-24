@@ -249,7 +249,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 !
 ! Time2.
@@ -283,7 +283,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 
 #if defined BIOLink_PAR_eval && defined BLOOM
@@ -342,9 +342,9 @@
      &          lvar, vname(4,indxbioFlux+iflux-1)(1:lvar))
 
            call nf_add_attribute(ncid, vidFlux(iflux),
-     &          indxbioFlux+iflux-1, 5, NF_FOUT, ierr)
-          endif
-        end do
+     &          vname(:,indxbioFlux+iflux-1), 5, NF_FOUT, ierr)
+         endif
+       end do
 ! vertical sinking fluxes
         do iflux = 1, NumVSinkTerms
           if (wrtVSink(iflux)) then
@@ -393,13 +393,13 @@
             lvar=lenstr(vname(4,indxbioVSink+iflux-1))
             ierr=nf_put_att_text (ncid, vidVSink(iflux), 'field',
      &          lvar, vname(4,indxbioVSink+iflux-1)(1:lvar))
-           
-            call nf_add_attribute(ncid, vidVSink(iflux),
-     &           indxbioVSink+iflux-1, 5, NF_FOUT, ierr)
-          endif
-        end do
-!-------------------------------------------------------------------------------- 
-#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+
+          call nf_add_attribute(ncid, vidVSink(iflux),
+     &          vname(:,indxbioVSink+iflux-1), 5, NF_FOUT, ierr)
+        endif
+      end do
+!--------------------------------------------------------------------------------
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
 ! gas exchange fluxes
         do iflux = 1, NumGasExcTerms
           if (wrtGasExc(iflux)) then
@@ -430,10 +430,10 @@
      &          lvar, vname(4,indxGasExcFlux+iflux-1)(1:lvar))
 
            call nf_add_attribute(ncid, vidGasExc(iflux),
-     &          indxGasExcFlux+iflux-1, 5, NF_FOUT, ierr)
-          endif
-        end do
-#  endif
+     &          vname(:,indxGasExcFlux+iflux-1), 5, NF_FOUT, ierr)
+         endif
+       end do
+# endif
 !--------------------------------------------------------------------------------
 !
 ! Leave definition mode.

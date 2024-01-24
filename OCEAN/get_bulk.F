@@ -82,32 +82,32 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 ! READ VERTICAL GRID FOR ABL
 !
 # if defined ABL1D && !defined ANA_ABL_VGRID
-        lvar=lenstr(vname(1,indxZR))
-        ierr=nf_inq_varid (ncidbulk, vname(1,indxZR)(1:lvar),
+        lvar=lenstr(vname_abl1d(1,indxZR))
+        ierr=nf_inq_varid (ncidbulk, vname_abl1d(1,indxZR)(1:lvar),
      &                     zr_id)
         if (ierr .ne. nf_noerr) then
           write(stdout,3) 'zr not found in ', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
-        lvar=lenstr(vname(1,indxZW))
-        ierr=nf_inq_varid (ncidbulk, vname(1,indxZW)(1:lvar),
+        lvar=lenstr(vname_abl1d(1,indxZW))
+        ierr=nf_inq_varid (ncidbulk, vname_abl1d(1,indxZW)(1:lvar),
      &                     zw_id)
         if (ierr .ne. nf_noerr) then
           write(stdout,3) 'zw not found in ', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
-        lvar=lenstr(vname(1,indxHZR))
-        ierr=nf_inq_varid (ncidbulk, vname(1,indxHZR)(1:lvar),
+        lvar=lenstr(vname_abl1d(1,indxHZR))
+        ierr=nf_inq_varid (ncidbulk, vname_abl1d(1,indxHZR)(1:lvar),
      &                     Hzr_id)
         if (ierr .ne. nf_noerr) then
           write(stdout,3) 'Hzr not found in ', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
-        lvar=lenstr(vname(1,indxHZW))
-        ierr=nf_inq_varid (ncidbulk, vname(1,indxHZW)(1:lvar),
+        lvar=lenstr(vname_abl1d(1,indxHZW))
+        ierr=nf_inq_varid (ncidbulk, vname_abl1d(1,indxHZW)(1:lvar),
      &                     Hzw_id)
         if (ierr .ne. nf_noerr) then
           write(stdout,3) 'Hzw not found in ', bulkname(1:lstr)
@@ -330,37 +330,38 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 ! READ ZONAL LARGE SCALE pressure gradient
 !
-        lvar=lenstr(vname(1,indxUHPG))
-        ierr=nf_inq_varid (ncidbulk,vname(1,indxUHPG)(1:lvar),uhpg_id)
+        lvar=lenstr(vname_abl1d(1,indxUHPG))
+        ierr=nf_inq_varid (ncidbulk,vname_abl1d(1,indxUHPG)(1:lvar),uhpg_id)
         if (ierr .eq. nf_noerr) then
           ierr=nf_inq_varndims (ncidbulk, uhpg_id, i)
           if (ierr. eq. nf_noerr) then
             if(i.ne.4) then
-              write(stdout,3) vname(1,indxUHPG)(1:lvar),bulkname(1:lstr)
+              write(stdout,3) vname_abl1d(1,indxUHPG)(1:lvar),
+     &            bulkname(1:lstr)
               goto 99                                         !--> ERROR
             endif
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxUHPG)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname_abl1d(1,indxUHPG)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
 ! READ MERIDIONAL LARGE SCALE pressure gradient
 !
-        lvar=lenstr(vname(1,indxVHPG))
-        ierr=nf_inq_varid (ncidbulk,vname(1,indxVHPG)(1:lvar),vhpg_id)
+        lvar=lenstr(vname_abl1d(1,indxVHPG))
+        ierr=nf_inq_varid (ncidbulk,vname_abl1d(1,indxVHPG)(1:lvar),vhpg_id)
         if (ierr .eq. nf_noerr) then
           ierr=nf_inq_varndims (ncidbulk, vhpg_id, i)
           if (ierr. eq. nf_noerr) then
             if(i.ne.4) then
-              write(stdout,3) vname(1,indxVHPG)(1:lvar),bulkname(1:lstr)
+              write(stdout,3) vname_abl1d(1,indxVHPG)(1:lvar),bulkname(1:lstr)
               goto 99                                         !--> ERROR
             endif
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxVHPG)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname_abl1d(1,indxVHPG)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif

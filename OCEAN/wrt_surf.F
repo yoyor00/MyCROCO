@@ -130,7 +130,7 @@
 !
            work2d=t(:,:,N,nstp,1)
            call fillvalue2d(work2d,ncidsurf,surf_surft(itrc),
-     &                      indxsurft+itrc-1,
+     &                      vname(1,indxsurft+itrc-1),
      &                      record,r2dvar,type)
 # ifdef SALINITY
 !
@@ -138,7 +138,7 @@
 !
            work2d=t(:,:,N,nstp,2)
            call fillvalue2d(work2d,ncidsurf,surf_surfs(itrc),
-     &                      indxsurfs+itrc-1,
+     &                      vname(1,indxsurfs+itrc-1),
      &                      record,r2dvar,type)
 # endif
 !
@@ -146,21 +146,21 @@
 !
            work2d=zeta(:,:,fast_indx_out)
            call fillvalue2d(work2d,ncidsurf,surf_surfz(itrc),
-     &                      indxsurfz+itrc-1,
+     &                      vname(1,indxsurfz+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxU
 !
            work2d=u(:,:,N,nstp)
            call fillvalue2d(work2d,ncidsurf,surf_surfu(itrc),
-     &                      indxsurfu+itrc-1,
+     &                      vname(1,indxsurfu+itrc-1),
      &                      record,u2dvar,type)
 !
 ! indxV
 !
            work2d=v(:,:,N,nstp)
            call fillvalue2d(work2d,ncidsurf,surf_surfv(itrc),
-     &                      indxsurfv+itrc-1,
+     &                      vname(1,indxsurfv+itrc-1),
      &                      record,v2dvar,type)
 !
 

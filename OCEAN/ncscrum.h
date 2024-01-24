@@ -576,7 +576,8 @@
      &        indxabl_mxld_abl, indxabl_avm_abl, indxabl_avt_abl ,
      &        indxabl_ablh_abl, indxabl_zr_abl , indxabl_zw_abl  ,
      &        indxabl_Hzr_abl , indxabl_Hzw_abl
-      parameter (indxabl_pu_dta   = 900,
+! begin at 2 because 1 is for indxTime in wrtabl
+      parameter (indxabl_pu_dta   = 2,
      &           indxabl_pv_dta   = indxabl_pu_dta+ 1,
      &           indxabl_pt_dta   = indxabl_pu_dta+ 2,
      &           indxabl_pq_dta   = indxabl_pu_dta+ 3,
@@ -2230,6 +2231,11 @@
       character*75  vname(20, 90)
 #endif
 
+#ifdef ABL1D
+      character*75  vname_abl1d(20, 27) 
+! 26 abl1d var + 1 var Time
+#endif
+
       common /cncscrum/   date_str,   title
      &         ,   origin_date, start_date_run
      &         ,   xios_origin_date
@@ -2332,3 +2338,6 @@
      &                                ,   bioname
 #endif
      &                                ,   vname
+#ifdef ABL1D
+     &                                ,   vname_abl1d
+#endif
