@@ -907,8 +907,8 @@ C$OMP BARRIER
       integer  :: nbstep3dparent
       External :: w3dinterp
       real     :: ainterp(6)
-      integer  :: irhot,irhox,irhoy
-      real     :: rrhot,cffx,cffy
+      integer  :: irhot !,irhox,irhoy
+      real     :: rrhot !,cffx,cffy
       integer  :: nsource, ndest
       integer  :: parentnbstep
       
@@ -924,10 +924,10 @@ C$OMP BARRIER
 !
       irhot=Agrif_Irhot()
       rrhot=real(irhot)
-      irhox=Agrif_Irhox()
-      cffx=2./(real(irhox)+1)
-      irhoy=Agrif_Irhoy()
-      cffy=2./(real(irhoy)+1)
+     ! irhox=Agrif_Irhox()
+     ! cffx=2./(real(irhox)+1)
+     ! irhoy=Agrif_Irhoy()
+     ! cffy=2./(real(irhoy)+1)
 
 C$OMP BARRIER
 C$OMP MASTER
@@ -992,14 +992,14 @@ C$OMP BARRIER
 #   else
             wclm(i,Jstr-1,k)=
 #   endif
-     &  (cffy*
+!     &  (cffy*
      &  (ainterp(1)*W_south(i,Jstr-1,k,1)+
      &   ainterp(2)*W_south(i,Jstr-1,k,2)+
      &   ainterp(3)*W_south(i,Jstr-1,k,3)+
      &   ainterp(4)*W_south(i,Jstr-1,k,4)+
      &   ainterp(5)*wz(i,Jstr-1,k,3-nstp)+
      &   ainterp(6)*wz(i,Jstr-1,k,nstp))
-     &   +(1.-cffy)*wz(i,Jstr  ,k,nnew))
+!     &   +(1.-cffy)*wz(i,Jstr  ,k,nnew))
 #   ifdef MASKING     
      &    *rmask(i,Jstr-1)
 #   endif
@@ -1017,14 +1017,14 @@ C$OMP BARRIER
 #   else   
             wclm(i,Jend+1,k)=
 #   endif
-     &  (cffy*
+!     &  (cffy*
      &  (ainterp(1)*W_north(i,Jend+1,k,1)+
      &   ainterp(2)*W_north(i,Jend+1,k,2)+
      &   ainterp(3)*W_north(i,Jend+1,k,3)+
      &   ainterp(4)*W_north(i,Jend+1,k,4)+
      &   ainterp(5)*wz(i,Jend+1,k,3-nstp)+
      &   ainterp(6)*wz(i,Jend+1,k,nstp))
-     &   +(1.-cffy)*wz(i,Jend  ,k,nnew))
+!     &   +(1.-cffy)*wz(i,Jend  ,k,nnew))
 #   ifdef MASKING     
      &    *rmask(i,Jend+1)
 #   endif
@@ -1042,14 +1042,14 @@ C$OMP BARRIER
 #   else     
             wclm(Istr-1,j,k)=
 #   endif
-     &  (cffx*
+!     &  (cffx*
      &  (ainterp(1)*W_west(Istr-1,j,k,1)+
      &   ainterp(2)*W_west(Istr-1,j,k,2)+
      &   ainterp(3)*W_west(Istr-1,j,k,3)+
      &   ainterp(4)*W_west(Istr-1,j,k,4)+
      &   ainterp(5)*wz(Istr-1,j,k,3-nstp)+
      &   ainterp(6)*wz(Istr-1,j,k,nstp))
-     &   +(1.-cffx)*wz(Istr  ,j,k,nnew))
+!     &   +(1.-cffx)*wz(Istr  ,j,k,nnew))
 #   ifdef MASKING     
      &    *rmask(Istr-1,j)
 #   endif
@@ -1067,14 +1067,14 @@ C$OMP BARRIER
 #   else
             wclm(Iend+1,j,k)=
 #   endif
-     &  (cffx*
+!     &  (cffx*
      &  (ainterp(1)*W_east(Iend+1,j,k,1)+
      &   ainterp(2)*W_east(Iend+1,j,k,2)+
      &   ainterp(3)*W_east(Iend+1,j,k,3)+
      &   ainterp(4)*W_east(Iend+1,j,k,4)+
      &   ainterp(5)*wz(Iend+1,j,k,3-nstp)+
      &   ainterp(6)*wz(Iend+1,j,k,nstp))
-     &   +(1.-cffx)*wz(Iend  ,j,k,nnew))        
+!     &   +(1.-cffx)*wz(Iend  ,j,k,nnew))        
 #   ifdef MASKING     
      &    *rmask(Iend+1,j)
 #   endif

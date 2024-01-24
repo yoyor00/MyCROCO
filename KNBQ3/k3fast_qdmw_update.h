@@ -395,7 +395,7 @@
 ! !********************************
 ! !
 #   ifdef AGRIF    
-       call wnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
+!      call wnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 #   endif
 !#   ifdef UV_COR_NT
 !#    if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI

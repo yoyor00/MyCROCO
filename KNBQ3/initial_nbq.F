@@ -130,7 +130,7 @@
 ! !
 #  ifdef KNHINT_CORR
         alphaw_nbq  = 0.  
-        alphaNw_nbq = 5
+        alphaNw_nbq = N 
 #  endif
 !
 ! Bulk viscosity (horizontal & vertical components)
