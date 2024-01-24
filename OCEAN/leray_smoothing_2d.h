@@ -4,7 +4,7 @@
      &                    Duon(START_2D_ARRAY))
       call exchange_v2d_4pts_tile (Istr,Iend,Jstr,Jend,
      &                    Dvom(START_2D_ARRAY))
-#    elif defined THREE_GHOST_POINTS_UV | defined LERAY_FILTER_7PTS
+#    elif defined LERAY_FILTER_7PTS
       call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                    Duon(START_2D_ARRAY))
       call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend,
