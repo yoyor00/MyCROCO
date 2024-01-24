@@ -584,12 +584,13 @@
 # endif /* VAR_RHO_2D */
 
       enddo    ! <-- j
-# ifdef NBQ_GRAV
-!$acc update device( rho_nh )
-#  ifdef CONVECT
-!$acc update device( rhoi_nh )      
-#  endif      
-# endif
+
+!# ifdef NBQ_GRAV
+!!$acc update device( rho_nh )
+!#  ifdef CONVECT
+!!$acc update device( rhoi_nh )      
+!#  endif      
+!# endif
 
 c #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 c #   ifdef THREE_GHOST_POINTS_TS
