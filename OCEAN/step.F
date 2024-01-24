@@ -312,8 +312,8 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 # ifdef LERAY_TURB
-#  ifdef WET_DRY
       do tile=my_first,my_last
+#  ifdef WET_DRY
         call compute_fwidth_array(tile)
 #  endif
         call smooth_horiz_3d (tile)
@@ -928,8 +928,8 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 # ifdef LERAY_TURB
-#  ifdef WET_DRY
       do tile=my_first,my_last
+#  ifdef WET_DRY      
         call compute_fwidth_array(tile)
 #  endif
         call smooth_horiz_3d (tile)
