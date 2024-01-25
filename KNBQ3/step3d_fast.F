@@ -862,6 +862,13 @@ C$    trd=omp_get_thread_num()
           cff1=ubar(i,j,knew)
           cff2=vbar(i,j,knew)
           cff=max(abs(cff1),abs(cff2))
+# ifdef K3FAST_RHO
+          do k=1,N
+           cff1=rho_nbq(i,j,k)
+           cff2=rho_nbq(i,j,k)
+           cff=max(cff,abs(cff1),abs(cff2))
+          enddo
+# endif
           IF (cff.GE.VMAX .or. cff1.ne.cff1 .or. cff2.ne.cff2) THEN
             IF (cff.GE.VMAX .and. cff1.eq.cff1 .and. cff2.eq.cff2) THEN 
               VMAX=cff
