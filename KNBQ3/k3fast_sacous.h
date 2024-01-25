@@ -27,6 +27,7 @@ C$OMP END MASTER
           enddo
          enddo
         enddo
+!$acc end kernels     
 ! !
 ! !--------------------------------------------------------------------
 ! !         Exchange rho_nbq
@@ -35,7 +36,6 @@ C$OMP END MASTER
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        rho_nbq(-2,-2,1))
 
-!$acc end kernels     
 
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
