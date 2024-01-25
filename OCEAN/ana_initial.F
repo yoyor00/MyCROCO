@@ -98,6 +98,7 @@
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
+!$acc declare create(d)
 #endif
 #ifdef TS_HADV_TEST
       real cff,cff1,cx,cy,cmax,xx,yy
@@ -491,6 +492,7 @@ c c !$acc kernels if(compute_on_device) default(present)
         enddo
 
 #  elif defined KH_INST
+!$acc kernels if(compute_on_device) default(present)
 !
 ! Traditional KH instability:
 !
@@ -558,7 +560,7 @@ c c !$acc kernels if(compute_on_device) default(present)
           enddo
         enddo
 #   endif
-
+!$acc end kernels
 #  else
 !$acc kernels if(compute_on_device) default(present)
         do k=1,N
@@ -630,6 +632,7 @@ c c !$acc kernels if(compute_on_device) default(present)
         cff1=(44.690/39.382)**2
         cff2=cff1*(rho0*800./g)*(5.0e-5/((42.689/44.690)**2))
 #    ifdef TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -639,6 +642,7 @@ c c !$acc kernels if(compute_on_device) default(present)
              enddo
           enddo
         enddo
+!$acc end kernels        
 #    endif /* TEMPERATURE */
 #   elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
 #    ifdef TEMPERATURE
@@ -832,6 +836,7 @@ c c !$acc kernels if(compute_on_device) default(present)
         enddo
 
 #   elif defined KH_INST
+!$acc kernels if(compute_on_device) default(present)
 !
 ! Traditional KH instability:
 !
@@ -872,8 +877,9 @@ c c !$acc kernels if(compute_on_device) default(present)
             enddo
           enddo
         enddo
-
+!$acc end kernels
 #   elif defined ISOLITON
+!$acc kernels if(compute_on_device) default(present)
 #    define HORN_PROFILE
 #    ifdef HORN_PROFILE
 !
@@ -923,9 +929,10 @@ c c !$acc kernels if(compute_on_device) default(present)
         enddo
 #     endif /* TEMPERATURE */
 #    endif /* HORN_PROFILE */
-
+!$acc end kernels
 #   elif defined GRAV_ADJ
 #    ifdef TEMPERATURE
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -943,6 +950,7 @@ c c !$acc kernels if(compute_on_device) default(present)
             enddo
           enddo
         enddo
+!$acc end kernels
 #    endif /* TEMPERATURE */
 
 #   elif defined ACOUSTIC
@@ -1168,6 +1176,7 @@ c c !$acc kernels if(compute_on_device) default(present)
 #  elif defined CONVECT
 ! "Convection" testcase:
         drho = 0.1
+!$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1198,6 +1207,7 @@ c c !$acc kernels if(compute_on_device) default(present)
             enddo
           enddo
         enddo
+!$acc end kernels
 
 #   elif defined JET
 !
@@ -1208,7 +1218,7 @@ c c !$acc kernels if(compute_on_device) default(present)
 !      and restart procedures
 !
       endif  ! nrrec.eq.0.
-!$acc end kernels
+!!$acc end kernels
 !
 ! This is a quick fix to get the initialisation reproducible
 ! (and right...) with OpenMP or tiling. This initialisation is performed
@@ -1987,6 +1997,7 @@ C$OMP BARRIER
 # ifdef MPI
       include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
+!$acc declare create( mssh,allmssh,area,allarea )
 # endif
       real asymth,zz,zasym,dzasym
       asymth(zz,zasym,dzasym) =
@@ -2179,24 +2190,32 @@ C$OMP BARRIER
       mssh=mssh/area
 !$acc end kernels
 # ifdef MPI
-#  ifdef OPENACC
-      NOTREADY
-#  endif
+!#ifdef OPENACC
+!      NOTREADY
+!#endif
+!$acc host_data if(compute_on_device)
+!$acc&   use_device (mssh,allmssh,area,allarea )
       call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
      &                allmssh,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
       call MPI_ALLGATHER(area,1,MPI_DOUBLE_PRECISION,
      &                allarea,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
+!$acc end host_data      
+!$acc kernels if(compute_on_device) default(present)
       mssh=QuadZero
       area=QuadZero
+!$acc loop vector reduction(+:mssh,area)
       do i=1,NNODES
         mssh=mssh+allmssh(1,i)*allarea(1,i)
         area=area+allarea(1,i)
       enddo
       mssh=mssh/area
+!$acc end kernels
 # endif
+!$acc kernels if(compute_on_device) default(present)
       mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
+!$acc end kernels      
 
 !$acc kernels if(compute_on_device) default(present)
 
