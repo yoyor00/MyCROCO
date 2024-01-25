@@ -13,18 +13,10 @@ C$OMP MASTER
 C$OMP END MASTER
 #    endif   
 !$acc kernels if(compute_on_device) default(present)
-        if (JstrV.le.Jend) then
-          jvar1=JstrV-2
-          jvar2=Jend+1
-        else
-          jvar1=JstrV-1
-          jvar2=Jend
-        endif
         time_nbq = time_nbq + dtfast
-        do j=jvar1,jvar2
-      !  do i=IstrU-2,Iend+1 ! Patch temporaire pour sorties (Francis)
-         do i=IstrU-1,Iend
-          do k=-N_sl+1,N
+        do k=-N_sl+1,N
+        do j=Jstr,Jend
+        do i=Istr,Iend
               dist_d=sqrt((xr(i,j)-xl/rx_exp)**2+(yr(i,j)-el/ry_exp)**2
      &                             +(abs(z_w(i,j,k))-hmax_exp/rz_exp)**2)
 
@@ -35,6 +27,14 @@ C$OMP END MASTER
           enddo
          enddo
         enddo
+! !
+! !--------------------------------------------------------------------
+! !         Exchange rho_nbq
+! !--------------------------------------------------------------------
+! !     
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        rho_nbq(-2,-2,1))
+
 !$acc end kernels     
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
