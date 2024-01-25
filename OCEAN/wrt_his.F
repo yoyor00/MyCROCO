@@ -1346,7 +1346,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !$acc update if(compute_on_device) host(rho_nbq)
         workr=0.
         do k=1,N
-          do j=1,Mm  
+          do j=1,Mm 
             do i=1,Lm  
             workr(i,j,k)=rho_nbq(i,j,k-ksl)
           enddo
