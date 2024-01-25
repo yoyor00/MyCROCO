@@ -36,6 +36,7 @@ C$OMP END MASTER
      &                        rho_nbq(-2,-2,1))
 
 !$acc end kernels     
+
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! K3FAST_sacous.h (end)
