@@ -2466,8 +2466,8 @@
             ierr=nf_put_att_text (ncid, vidBLMdiag1D(i), 'field',  lvar,
      &                                vname(4,indxBLMdiag1D+i)(1:lvar))
 
-            call nf_add_attribute(ncid, vidBLMdiag1D(i), indxBLMdiag1D+i, 5,
-     &       NF_FOUT, ierr)
+            call nf_add_attribute(ncid, vidBLMdiag1D(i), 
+     &       vname(:,indxBLMdiag1D+i), 5,NF_FOUT, ierr)
 
 
          endif

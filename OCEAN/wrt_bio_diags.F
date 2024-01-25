@@ -148,7 +148,7 @@ CDEBUG      write(*,*) 'Write Time'
         if (wrtdiabioFlux(iflux)) then
           workr=bioFlux(:,:,:,iflux)
           call fillvalue3d(workr, nciddiabio, diabioFlux(iflux),
-     &         indxbioFlux+iflux-1,record,r3dvar,type)
+     &         vname(1,indxbioFlux+iflux-1),record,r3dvar,type)
         endif
       end do
 !     vars diag 2D are put into bioVSink
@@ -156,11 +156,11 @@ CDEBUG      write(*,*) 'Write Time'
         if (wrtdiabioVSink(iflux)) then
           work2d=bioVsink(:,:,iflux)
           call fillvalue2d(work2d, nciddiabio, diabioVsink(iflux),
-     &         indxbioVSink+iflux-1,record,r2dvar,type)
+     &         vname(1,indxbioVSink+iflux-1),record,r2dvar,type)
         endif
       end do
 # if defined BIOLink_PAR_eval
-        call fillvalue3d(PAR,nciddiabio,hisPAR,indxPAR,
+        call fillvalue3d(PAR,nciddiabio,hisPAR,vname(1,indxPAR),
      &        record,r3dvar,type)
 #endif
 #else

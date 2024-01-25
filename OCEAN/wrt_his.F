@@ -1409,7 +1409,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 # if defined BIOLink_PAR_eval
 
       if (wrthis(indxPAR)) then
-        call fillvalue3d(PAR,ncidhis,hisPAR,indxPAR,
+        call fillvalue3d(PAR,ncidhis,hisPAR,vname(1,indxPAR),
      &        record,r3dvar,type)
 CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
       endif
@@ -1443,7 +1443,7 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
       do i=1,ndiag_2D
         if (wrthis(indxBLMdiag2D+i)) then
           call fillvalue2d(diag_2D(i,:,:),ncidhis,hisBLMdiag2D(i),
-     &         indxBLMdiag2D+i,record,r2dvar,type)
+     &         vname(1,indxBLMdiag2D+i),record,r2dvar,type)
         endif
       end do
 
@@ -1464,7 +1464,7 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
           enddo
 
           call fillvalue3d(workr,ncidhis,
-     &         hisBLMdiag3D(i),indxBLMdiag3D+i,record,r3dvar,type)
+     &         hisBLMdiag3D(i),vname(1,indxBLMdiag3D+i),record,r3dvar,type)
         endif
       end do
 
