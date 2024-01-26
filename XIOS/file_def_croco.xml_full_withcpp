@@ -430,6 +430,10 @@
                    <field field_ref="TPP"    name="TPP"/>
                    <field field_ref="INTPP"    name="INTPP"/>
                    <field field_ref="PPNEWo2"    name="PPNEWo2"/>
+                   <field field_ref="Ironsed"  name="Ironsed" />
+                   <field field_ref="pdust"   name="pdust"  />
+                   <field field_ref="Irondep" name="Fedep" />
+                   <field field_ref="No3dep"  name="No3dep" />
 #if defined key_pisces_npzd
                    <field field_ref="Thetanano"  name="Thetanano"/>
 #else
@@ -460,6 +464,9 @@
                    <field field_ref="EXPFE"   name="EXPFE" />
                    <field field_ref="TPNEW"   name="TPNEW" />
                    <field field_ref="TPBFE"   name="TPBFE" />
+                   <field field_ref="Po4dep"  name="Po4dep" />
+                   <field field_ref="Sildep"  name="Sildep" />
+                   <field field_ref="Nh4dep"  name="Nh4dep" />
 #endif
 #if defined key_pisces_quota
                    <field field_ref="PFeP"     name="PFeP" />
