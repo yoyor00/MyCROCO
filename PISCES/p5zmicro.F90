@@ -83,7 +83,7 @@ CONTAINS
       !
       INTEGER  :: ji, jj, jk
       REAL(wp) :: zcompadi, zcompaz , zcompaph, zcompapoc, zcompapon, zcompapop
-      REAL(wp) :: zcompapi, zgraze  , zdenom, zfact, zfood, zfoodlim
+      REAL(wp) :: zcompapi, zgraze  , zdenom, zdenom3, zfact, zfood, zfoodlim
       REAL(wp) :: ztmp1, ztmp2, ztmp3, ztmp4, ztmp5, ztmptot
       REAL(wp) :: zepsherf, zepshert, zepsherq, zepsherv, zrespirc, zrespirn, zrespirp, zbasresb, zbasresi
       REAL(wp) :: zgraztotc, zgraztotn, zgraztotp, zgraztotf, zbasresn, zbasresp, zbasresf
@@ -94,30 +94,30 @@ CONTAINS
       REAL(wp) :: zgraznc, zgraznn, zgraznp, zgrazpoc, zgrazpon, zgrazpop, zgrazpof
       REAL(wp) :: zgrazdc, zgrazdn, zgrazdp, zgrazdf, zgraznf, zgrazz
       REAL(wp) :: zgrazpc, zgrazpn, zgrazpp, zgrazpf, zbeta, zrfact2, zmetexcess
-      REAL(wp) :: zsigma, zdiffdn, zdiffpn, zdiffdp, zproport, zproport2
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing, zfezoo, zzligprod
+      REAL(wp) :: zsigma, zsigma2, zproport, zproport2
+      REAL(wp) :: zsizepn, zsizedn, zsizedp, zdiffdn, zdiffpn, zdiffdp
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing, zfezoo, zzligprod, zw3d
       CHARACTER (len=25) :: charout
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p5z_micro')
       !
-      IF( kt == nittrc000 )  THEN 
+      IF( kt == nittrc000 )  THEN
          l_dia_graz    = iom_use( "GRAZ1" ) .OR. iom_use( "FEZOO" ) .OR. iom_use( "MicroZo2" ) 
-         l_dia_lprodz  = ln_ligand .AND. iom_use( "LPRODZ" ) 
+         l_dia_lprodz  = ln_ligand .AND. iom_use( "LPRODZ" )
          l_dia_graz = l_dia_graz .OR. l_diaadd
       ENDIF
       !
       IF( l_dia_graz ) THEN
-         ALLOCATE( zgrazing(A2D(0),jpk) ) ;  zgrazing(A2D(0),jpk) = 0.
-         ALLOCATE( zfezoo(A2D(0),jpk) ) 
-         DO_3D( 0, 0, 0, 0, 1, jpk)
+         ALLOCATE( zgrazing(A2D(0),jpk), zfezoo(A2D(0),jpk) )
+         zgrazing(A2D(0),:) = 0.
+         DO_3D( 0, 0, 0, 0, 1, jpkm1)
             zfezoo(ji,jj,jk) = tr(ji,jj,jk,jpfer,Krhs)
          END_3D
       ENDIF
-      !
       IF( l_dia_lprodz ) THEN
-         ALLOCATE( zzligprod(A2D(0),jpk) ) 
-         DO_3D( 0, 0, 0, 0, 1, jpk)
+         ALLOCATE( zzligprod(A2D(0),jpk) )
+         DO_3D( 0, 0, 0, 0, 1, jpkm1)
             zzligprod(ji,jj,jk) = tr(ji,jj,jk,jplgw,Krhs)
          END_3D
       ENDIF
@@ -191,16 +191,23 @@ CONTAINS
          ! have low abundance, .i.e. zooplankton become less specific 
          ! to avoid starvation.
          ! ----------------------------------------------------------
-         zsigma = 1.0 - zdenom**3/(0.05**3+zdenom**3)
+         zdenom3 = zdenom * zdenom * zdenom
+         zsigma = 1.0 - zdenom3/( 0.05 * 0.05 * 0.05 + zdenom3 )
          zsigma = xsigma + xsigmadel * zsigma
-         zdiffpn = exp( -ABS(log(0.7 * sizep(ji,jj,jk) / (3.0 * sizen(ji,jj,jk) + rtrn )) )**2 / zsigma**2 )
-         zdiffdn = exp( -ABS(log(3.0 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )**2 / zsigma**2)
-         zdiffdp = exp( -ABS(log(0.7 * sizep(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )**2 / zsigma**2)
+         zsigma2 = zsigma * zsigma
+         !
+         zsizepn = -ABS(LOG(0.7 * sizep(ji,jj,jk) / (3.0 * sizen(ji,jj,jk) + rtrn )) )
+         zsizedn = -ABS(LOG(3.0 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )
+         zsizedp = -ABS(LOG(0.7 * sizep(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )
+         zdiffpn = EXP( zsizepn * zsizepn / zsigma2 )
+         zdiffdn = EXP( zsizedn * zsizedn / zsigma2 )
+         zdiffdp = EXP( zsizedp * zsizedp / zsigma2 )
+         
          ztmp1 = xprefn * zcompaph * ( zcompaph + zdiffdn * zcompadi + zdiffpn * zcompapi )
          ztmp2 = xprefp * zcompapi * ( zcompapi + zdiffpn * zcompaph + zdiffdp * zcompadi )
-         ztmp3 = xprefc * zcompapoc**2
+         ztmp3 = xprefc * zcompapoc * zcompapoc
          ztmp4 = xprefd * zcompadi * ( zdiffdp * zcompapi + zdiffdn * zcompaph + zcompadi )
-         ztmp5 = xprefz * zcompaz**2
+         ztmp5 = xprefz * zcompaz * zcompaz
          ztmptot = ztmp1 + ztmp2 + ztmp3 + ztmp4 + ztmp5 + rtrn
          ztmp1 = ztmp1 / ztmptot
          ztmp2 = ztmp2 / ztmptot
@@ -372,24 +379,27 @@ CONTAINS
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
         IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
-            CALL iom_put( "GRAZ1"    , zgrazing(:,:,:) *  1.e+3 * rfact2r * tmask(A2D(0),:) )
-            CALL iom_put( "MicroZo2" , zgrazing(:,:,:) * ( 1. - epsher - unassc ) * (-o2ut) * ssigma  &
-                 &                      * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! o2 consumption by Microzoo
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zfezoo(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo(ji,jj,jk) ) &
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            zw3d(A2D(0),:) =  zgrazing(A2D(0),:) * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            CALL iom_put( "GRAZ1" , zw3d )  ! conversion in mol/m2/s
+            CALL iom_put( "MicroZo2" , zw3d * ( 1. - epsher - unassc ) * (-o2ut) * ssigma ) ! o2 consumption by Microzoo
+            !
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo(ji,jj,jk) ) &
                   &              * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
-           CALL iom_put( "FEZOO", zfezoo )
-           DEALLOCATE( zfezoo )
+           CALL iom_put( "FEZOO", zw3d )
+            DEALLOCATE( zw3d, zfezoo )
         ENDIF
         !
         IF( l_dia_lprodz ) THEN
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zzligprod(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
                    &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
-           CALL iom_put( "LPRODZ", zzligprod )
-           DEALLOCATE( zzligprod )
+           CALL iom_put( "LPRODZ", zw3d )
+           DEALLOCATE( zzligprod, zw3d )
         ENDIF
         !
       ENDIF
@@ -397,8 +407,8 @@ CONTAINS
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
          trc3d(ji,jj,jk,jp_grapoc) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by microzoo
-         trc3d(ji,jj,jk,jp_mico2) = zgrazing(ji,jj,jk) * ( 1.- epsher - unassc ) &
-          &                      * (-o2ut) * ssigma * 1.e+3 * rfact2r * tmask(ji,jj,jk)   ! o2 consumption by Microzoo
+         trc3d(ji,jj,jk,jp_mico2) = zgrazing(ji,jj,jk) * ( 1.- epsher - unass ) &
+          &                      * (-o2ut) * sigma1 * 1.e+3 * rfact2r * tmask(ji,jj,jk)   ! o2 consumption by Microzoo
       END_3D
 #endif
       IF( l_dia_graz ) DEALLOCATE( zgrazing )

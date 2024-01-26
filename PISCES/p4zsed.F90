@@ -72,6 +72,7 @@ CONTAINS
       !
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(A2D(0)) :: zdenit2d, zrivno3, zrivalk, zrivsil
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )  CALL timing_start('p4z_sed')
@@ -190,13 +191,26 @@ CONTAINS
       ENDIF
       !
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
-!            zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molC/m3/s
-          IF( l_dia_sdenit ) CALL iom_put( "Sdenit", sdenit(:,:) *  rno3 * 1.e+3 * rfact2r )
+          zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molC/m3/s
+          IF( l_dia_sdenit ) THEN
+             ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;  zw2d(:,:) = 0._wp
+             zw2d(A2D(0)) =  sdenit(A2D(0)) * rno3 * zfact
+             CALL iom_put( "Sdenit", zw2d )
+             DEALLOCATE( zw2d )
+          ENDIF        
           IF( l_dia_sed ) THEN
-               CALL iom_put( "SedCal", ( 1.0 - zrivalk(:,:) ) * sinkcalb(:,:) * 1.e+3 * rfact2r )
-               CALL iom_put( "SedC"  , ( 1.0 - zrivno3(:,:) ) * sinkpocb(:,:) * 1.e+3 * rfact2r )
-            IF( .NOT. ln_p2z )  &
-             & CALL iom_put( "SedSi" , ( 1.0 - zrivsil(:,:) ) * sinksilb(:,:) * 1.e+3 * rfact2r )
+             ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;  zw2d(:,:) = 0._wp
+             zw2d(A2D(0)) =  ( 1.0 - zrivalk(A2D(0)) ) * sinkcalb(A2D(0)) * zfact
+             CALL iom_put( "SedCal", zw2d )
+             !
+             zw2d(A2D(0)) =  ( 1.0 - zrivno3(A2D(0)) ) * sinkpocb(A2D(0)) * zfact
+             CALL iom_put( "SedC", zw2d )
+             !
+             IF( .NOT. ln_p2z ) THEN
+               zw2d(A2D(0)) =  ( 1.0 - zrivsil(A2D(0)) ) * sinksilb(A2D(0)) * zfact
+               CALL iom_put( "SedSi", zw2d )
+             ENDIF
+             DEALLOCATE( zw2d )
           ENDIF
           !
       ENDIF

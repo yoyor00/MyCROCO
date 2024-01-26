@@ -84,6 +84,13 @@ CONTAINS
          IF( gdepw(ji,jj,jk+1,Kmm) > hmld(ji,jj) )   xdiss(ji,jj,jk) = 0.01
       END_3D
 
+      ! Initialization of POC/GOC production and consumption
+      ! --------------------------------------------------
+         prodpoc(:,:,:) = 0.    ;   conspoc(:,:,:) = 0.
+      IF( .NOT. ln_p2z ) THEN
+         prodgoc(:,:,:) = 0.    ;   consgoc(:,:,:) = 0.
+      ENDIF
+
       CALL p4z_opt     ( kt, knt, Kbb, Kmm       )     ! Optic: PAR in the water column
       CALL p4z_sink    ( kt, knt, Kbb, Kmm, Krhs )     ! vertical flux of particulate organic matter
       CALL p4z_fechem  ( kt, knt, Kbb, Kmm, Krhs )     ! Iron chemistry/scavenging

@@ -95,22 +95,34 @@ CONTAINS
       END_3D
       
       IF( l_dia_ligand .AND. ( lk_iomput .AND. knt == nrdttrc ) ) THEN
-         ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
-         DO_3D( 0, 0, 0, 0, 1, jpkm1)
-            zw3d(ji,jj,jk)  = tr(ji,jj,jk,jplgw,Kbb)
-         END_3D   
+         ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp     
          !
-         CALL iom_put( "LPRODR", orem(:,:,:) * rlig * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:) )
-         CALL iom_put( "LIGREM", ( 1.0 / rlgs * MAX(0., zw3d(:,:,:) - xfecolagg(:,:,:) * 1.0E-9 )    &
-              &                  + 1.0 / rlgw * xfecolagg(:,:,:) * 1.0E-9 ) / ( rtrn + zw3d(:,:,:) ) &
-              &                 * tgfunc(:,:,:) * ( xstep / nyear_len(1) ) * blim(:,:,:) * zw3d(:,:,:) )
-         CALL iom_put( "LIGPR",  prlgw * xstep * etot(:,:,:) * zw3d(:,:,:)**3 &
-              &          * SPREAD( fr_i(A2D(0)), DIM=3,NCOPIES=jpk ) / ( zw3d(:,:,:)**2 + xklig2 ) )
-         CALL iom_put( "LGWCOLL",  xcoagfe(:,:,:) * xstep &
-              &        * 0.5 * MAX(0., zw3d(:,:,:) - xfecolagg(:,:,:) * 1.0E-9 ) )
+         zw3d(A2D(0),:) =  orem(A2D(0),:) * rlig * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:)
+         CALL iom_put( "LPRODR", zw3d )
+         !
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zlig = tr(ji,jj,jk,jplgw,Kbb)
+            zw3d(ji,jj,jk)  = ( 1.0 / rlgs * MAX(0., zlig - xfecolagg(ji,jj,jk) * 1.0E-9 )    &
+              &                  + 1.0 / rlgw * xfecolagg(ji,jj,jk) * 1.0E-9 ) / ( rtrn + zlig ) &
+              &                 * tgfunc(ji,jj,jk) * ( xstep / nyear_len(1) ) * blim(ji,jj,jk) * zlig 
+         END_3D   
+         CALL iom_put( "LIGREM", zw3d )
+         !
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zlig = tr(ji,jj,jk,jplgw,Kbb)
+            zw3d(ji,jj,jk)  = prlgw * xstep * etot(ji,jj,jk) * zlig*zlig*zlig &
+              &            * fr_i(ji,jj) / ( zlig*zlig + xklig2 )
+         END_3D   
+         CALL iom_put( "LIGPR", zw3d )
+         !
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zlig = tr(ji,jj,jk,jplgw,Kbb)
+            zw3d(ji,jj,jk)  =  xcoagfe(ji,jj,jk) * xstep &
+              &        * 0.5 * MAX(0., zlig - xfecolagg(ji,jj,jk) * 1.0E-9 )
+         END_3D   
+         CALL iom_put( "LGWCOLL", zw3d )
          !
          DEALLOCATE( zw3d ) 
-         
       ENDIF
 
       !

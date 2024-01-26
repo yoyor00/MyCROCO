@@ -72,6 +72,7 @@ CONTAINS
       REAL(wp) ::   zcoef, zconc0n, zconcnf, zlim1, zlim2, zlim3
       REAL(wp) ::   zbiron, ztem1, ztem2, zetot1, zetot2, zsize
       REAL(wp) ::   zferlim, zno3
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p2z_lim')
@@ -156,11 +157,20 @@ CONTAINS
          xfracal(ji,jj,jk) = MAX( 0.02, xfracal(ji,jj,jk) )
       END_3D
       !
-      IF( l_dia .AND. lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
+      IF( l_dia .AND. knt == nrdttrc ) THEN        ! save output diagnostics
         !
-        CALL iom_put( "xfracal", xfracal(:,:,:) * tmask(A2D(0),:) ) ! fraction of calcifiers
-        CALL iom_put( "LNnut"  , xlimphy(:,:,:) * tmask(A2D(0),:) ) ! Nutrient limitation term
-        CALL iom_put( "SIZEN"  , sizen(:,:,:)   * tmask(A2D(0),:) ) ! Size limitation term
+        ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+        ! fraction of calcifiers
+        zw3d(A2D(0),1:jpkm1) = xfracal(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+        CALL iom_put( "xfracal",  zw3d)
+        ! Nutrient limitation term
+        zw3d(A2D(0),1:jpkm1) = xlimphy(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+        CALL iom_put( "LNnut",  zw3d)
+        ! Size limitation term
+        zw3d(A2D(0),1:jpkm1) = sizen(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+        CALL iom_put( "SIZEN",  zw3d)
+        !
+        DEALLOCATE( zw3d )
         !
       ENDIF
       !
@@ -212,7 +222,6 @@ CONTAINS
          WRITE(numout,*) '      halk saturation constant for anoxia      oxymin    =' , oxymin
       ENDIF
       !
-      xfracal (:,:,jpk) = 0._wp
       xnanono3(:,:,jpk) = 0._wp
       xlimphy (:,:,jpk) = 0._wp
       xlimnfe (:,:,jpk) = 0._wp

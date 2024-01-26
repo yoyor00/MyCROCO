@@ -50,7 +50,7 @@ CONTAINS
       INTEGER, INTENT(in)  ::  Kmm      ! time level indices
       !
       ! Read the PISCES namelist
-      CALL trc_nam_pisces
+      !CALL trc_nam_pisces
       !
       CALL p4z_ini( Kmm )   !  PISCES
 
@@ -124,7 +124,9 @@ CONTAINS
       no3    =  30.9e-6_wp * 7.3125_wp
       !
       ! Allocate PISCES arrays
-      ierr =         sms_pisces_alloc()          
+      ierr =         trc_oce_alloc()    
+      ierr = ierr +  trc_alloc()       
+      ierr = ierr +  sms_pisces_alloc()
       ierr = ierr +  p4z_che_alloc()
       ierr = ierr +  p4z_sink_alloc()
       ierr = ierr +  p4z_opt_alloc()
@@ -211,6 +213,11 @@ CONTAINS
       !
       IF( ln_ctl )  CALL prt_ctl_ini
 
+      !
+      DO_3D( 0, 0, 0, 0, 1, jpk)
+         tmask(ji,jj,jk) = rmask(ji,jj)
+      END_3D   
+      !
       DO_2D( 0, 0, 0, 0 )
          e1e2t(ji,jj) = e1t(ji,jj) * e2t(ji,jj)
       END_2D   
@@ -218,10 +225,15 @@ CONTAINS
       DO_3D( 0, 0, 0, 0, 1, jpk)
          cvol(ji,jj,jk) = e1e2t(ji,jj) * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
       END_3D   
+
+      IF(lwp)   WRITE(numout,*) '   ==>>>   R-G-B   light penetration '
       !
-      DO_3D( 0, 0, 0, 0, 1, jpk)
-         tmask(ji,jj,jk) = rmask(ji,jj)
-      END_3D   
+      CALL trc_oce_rgb( rkrgb )                 ! tabulated attenuation coef.
+      !
+      !nksr = trc_oce_ext_lev( r_si2, 33._wp )   ! level of light extinction
+       nksr = jpk
+      !
+      IF(lwp) WRITE(numout,*) '      level of light extinction = ', nksr, ' ref depth = ', MAXVAL(gdepw(:,:,nksr+1,1)), ' m'
 
       CALL p4z_sms_init       !  Maint routine
       !

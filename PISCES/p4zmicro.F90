@@ -85,8 +85,8 @@ CONTAINS
       REAL(wp) :: zgrarem, zgrafer, zgrapoc, zprcaca, zmortz
       REAL(wp) :: zrespz, ztortz, zgrasratf, zgrasratn
       REAL(wp) :: zgraznc, zgrazz, zgrazpoc, zgrazdc, zgrazpof, zgrazdf, zgraznf
-      REAL(wp) :: zsigma, zsigma2, zdiffdn, ztmp1, ztmp2, ztmp3, ztmp4, ztmptot, zproport
-      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing, zfezoo, zzligprod
+      REAL(wp) :: zsigma, zsigma2, zsizedn, zdiffdn, ztmp1, ztmp2, ztmp3, ztmp4, ztmptot, zproport
+      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing, zfezoo, zzligprod, zw3d
       CHARACTER (len=25) :: charout
 
       !!---------------------------------------------------------------------
@@ -100,8 +100,7 @@ CONTAINS
       ENDIF
       !
       IF( l_dia_graz ) THEN
-         ALLOCATE( zgrazing(A2D(0),jpk) ) ;  zgrazing(A2D(0),jpk) = 0.
-         ALLOCATE( zfezoo(A2D(0),jpk) ) 
+         ALLOCATE( zgrazing(A2D(0),jpk), zfezoo(A2D(0),jpk) )
          DO_3D( 0, 0, 0, 0, 1, jpk)
             zfezoo(ji,jj,jk) = tr(ji,jj,jk,jpfer,Krhs)
          END_3D
@@ -176,7 +175,9 @@ CONTAINS
          zsigma = 1.0 - zdenom2/(0.05 * 0.05 + zdenom2)
          zsigma = xsigma + xsigmadel * zsigma
          zsigma2 = zsigma * zsigma
-         zdiffdn = EXP( -ABS(LOG(1.67 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )**2 / zsigma2)
+         !
+         zsizedn = -ABS(LOG(1.67 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )
+         zdiffdn = EXP( zsizedn * zsizedn / zsigma2 )
          ztmp1 = xprefn * zcompaph * ( zcompaph + zdiffdn * zcompadi ) 
          ztmp2 = xprefd * zcompadi * ( zdiffdn * zcompaph + zcompadi )
          ztmp3 = xprefc * zcompapoc * zcompapoc 
@@ -284,24 +285,27 @@ CONTAINS
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
         IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
-            CALL iom_put( "GRAZ1"    , zgrazing(:,:,:) *  1.e+3 * rfact2r * tmask(A2D(0),:) )
-            CALL iom_put( "MicroZo2" , zgrazing(:,:,:) * ( 1. - epsher - unass ) * (-o2ut) * sigma1  &
-                 &                      * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! o2 consumption by Microzoo
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zfezoo(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo(ji,jj,jk) ) &
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            zw3d(A2D(0),:) =  zgrazing(A2D(0),:) * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            CALL iom_put( "GRAZ1" , zw3d )  ! conversion in mol/m2/s
+            CALL iom_put( "MicroZo2" , zw3d * ( 1. - epsher - unass ) * (-o2ut) * sigma1 ) ! o2 consumption by Microzoo
+            !
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo(ji,jj,jk) ) &
                   &              * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
-           CALL iom_put( "FEZOO", zfezoo )
-           DEALLOCATE( zfezoo )
+           CALL iom_put( "FEZOO", zw3d )
+            DEALLOCATE( zw3d, zfezoo )
         ENDIF
         !
         IF( l_dia_lprodz ) THEN
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zzligprod(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
                    &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
-           CALL iom_put( "LPRODZ", zzligprod )
-           DEALLOCATE( zzligprod )
+           CALL iom_put( "LPRODZ", zw3d )
+           DEALLOCATE( zzligprod, zw3d )
         ENDIF
         !
       ENDIF

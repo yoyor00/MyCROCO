@@ -263,7 +263,7 @@ CONTAINS
       !! ** Purpose :   read the general PISCES namelist
       !!
       !! ** input   :   file 'namelist_pisces' containing the following
-      !!                namelist: nampisbio, nampisdmp, nampismass 
+      !!                namelist: nampisbio
       !!----------------------------------------------------------------------
       INTEGER :: ios                 ! Local integer output status for namelist read
       !!
@@ -605,7 +605,6 @@ CONTAINS
             CALL iom_put( "ppo4tot", zpo4budget )
             !
             ! Compute the budget of SiO3
-            ALLOCATE( zw3d(A2D(0),jpk) )  ;  zw3d(A2D(0),jpk) = 0._wp
             DO_3D( 0, 0, 0, 0, 1, jpk)
                zw3d(ji,jj,jk) =  ( tr(ji,jj,jk,jpsil,Kmm) + tr(ji,jj,jk,jpgsi,Kmm) + tr(ji,jj,jk,jpdsi,Kmm) ) * cvol(ji,jj,jk)
             END_3D

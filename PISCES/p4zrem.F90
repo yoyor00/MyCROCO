@@ -85,7 +85,7 @@ CONTAINS
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(A2D(0),jpk) :: zdepbac
       REAL(wp), DIMENSION(A2D(0)    ) :: ztempbac
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zolimi
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zw3d, zolimi
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p2z_rem')
@@ -158,22 +158,31 @@ CONTAINS
       ENDIF
 
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
-!            zfact = rno3 * 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
           !
           IF( l_dia_remin ) THEN    ! Remineralisation rate
-             DO_3D( 0, 0, 0, 0, 1, jpkm1)
-                zolimi(ji,jj,jk) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
+             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
+             !
+             DO_3D( 0, 0, 0, 0, 1, jpk)
+                zw3d(ji,jj,jk) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
                    &               * rfact2r * tmask(ji,jj,jk) ! 
              END_3D
-             CALL iom_put( "REMIN", zolimi )
-             DEALLOCATE( zolimi )
+             CALL iom_put( "REMIN", zw3d )
+             DEALLOCATE( zolimi, zw3d )
           ENDIF
-          IF( l_dia_bact )  THEN
-            zdepbac(:,:,jpk) = 0._wp
-            CALL iom_put( "BACT", zdepbac(:,:,:) * 1.E6 * tmask(A2D(0),:) )  ! Bacterial biomass 
+          !
+          IF( l_dia_bact ) THEN   ! Bacterial biomass
+             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
+             zw3d(A2D(0),:) =  zdepbac(A2D(0),:) * 1.e+6 * tmask(A2D(0),:)
+             CALL iom_put( "BACT", zw3d )
+             DEALLOCATE( zw3d )
           ENDIF
-          IF( l_dia_denit )  CALL iom_put( "DENIT", denitr(:,:,:) * &
-            &                              1.E3 * rfact2r * rno3 * tmask(A2D(0),:) ) ! Denitrification
+          !
+          IF( l_dia_denit )  THEN ! Denitrification
+             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
+             zw3d(A2D(0),:) =  denitr(A2D(0),:) * 1E+3 * rfact2r * rno3 * tmask(A2D(0),:)
+             CALL iom_put( "DENIT", zw3d )
+             DEALLOCATE( zw3d )
+          ENDIF
           !
       ENDIF
       !
@@ -207,7 +216,7 @@ CONTAINS
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(A2D(0),jpk) :: zdepbac, zfacsib
       REAL(wp), DIMENSION(A2D(0)    ) :: ztempbac
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::  zolimi, zfebact
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zw3d, zolimi, zfebact
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p4z_rem')
@@ -216,7 +225,6 @@ CONTAINS
          l_dia_remin  = iom_use( "REMIN" )  .OR. iom_use( "Remino2" )
          l_dia_bact   = iom_use( "FEBACT" ) .OR. iom_use( "BACT" )
          l_dia_denit  = iom_use( "DENIT" )
-         l_dia_remin  = l_dia_remin .OR. l_diaadd
       ENDIF
       IF( l_dia_remin ) THEN
          ALLOCATE( zolimi(A2D(0),jpk) )    ;   zolimi(A2D(0),jpk) = 0._wp
@@ -387,40 +395,40 @@ CONTAINS
       ENDIF
 
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
-!            zfact = rno3 * 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
           !
           IF( l_dia_remin ) THEN    ! Remineralisation rate
-             DO_3D( 0, 0, 0, 0, 1, jpkm1)
-                zolimi(ji,jj,jk) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
-                   &               * rfact2r * tmask(ji,jj,jk) ! 
+             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+             !
+             DO_3D( 0, 0, 0, 0, 1, jpk)
+                zw3d(ji,jj,jk) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
+                   &               * rfact2r * tmask(ji,jj,jk) !
              END_3D
-             CALL iom_put( "REMIN", zolimi )  ! Remineralisation rate
-             CALL iom_put( "Remino2", (-o2ut) * zolimi ) ! O2 consumption by nitrification
+             CALL iom_put( "REMIN", zw3d )
+             DEALLOCATE( zolimi, zw3d )
           ENDIF
-          IF( l_dia_bact )  THEN
-             CALL iom_put( "BACT", zdepbac(:,:,:) * 1.E6 * tmask(A2D(0),:) )  ! Bacterial biomass
-             DO_3D( 0, 0, 0, 0, 1, jpkm1)
-                zfebact(ji,jj,jk) = ( zfebact(ji,jj,jk) - tr(ji,jj,jk,jpfer,Krhs) ) &
+          !
+          IF( l_dia_bact ) THEN   ! Bacterial biomass
+             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+             zw3d(A2D(0),:) =  zdepbac(A2D(0),:) * 1.e+6 * tmask(A2D(0),:)
+             CALL iom_put( "BACT", zw3d )
+             !
+             DO_3D( 0, 0, 0, 0, 1, jpk)
+                zw3d(ji,jj,jk) = ( zfebact(ji,jj,jk) - tr(ji,jj,jk,jpfer,Krhs) ) &
                    &              * 1e9 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
              END_3D
-             CALL iom_put( "FEBACT", zfebact )
-             DEALLOCATE( zfebact )
+             CALL iom_put( "FEBACT", zw3d )
+             DEALLOCATE( zfebact, zw3d )
           ENDIF
-          IF( l_dia_denit )  CALL iom_put( "DENIT", denitr(:,:,:) &
-             &                            * 1.E3 * rfact2r * rno3 * tmask(A2D(0),:) ) ! Denitrification
           !
-      ENDIF
+          IF( l_dia_denit )  THEN ! Denitrification
+             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+             zw3d(A2D(0),:) =  denitr(A2D(0),:) * 1E+3 * rfact2r * rno3 * tmask(A2D(0),:)
+             CALL iom_put( "DENIT", zw3d )
+             DEALLOCATE( zw3d )
+          ENDIF
+          !
+      ENDIF          
       !
-# if defined key_trc_diaadd
-     zfact = 1.e3 * rfact2r
-     DO_3D( 0, 0, 0, 0, 1, jpkm1)
-        zfact = zfact * tmask(ji,jj,jk)
-        trc3d(ji,jj,jk,jp_remino2) = (-o2ut) * zfact &
-           &                       * ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) ! O2 consumption by nitrification
-     END_3D
-#endif
-      IF( l_dia_remin ) DEALLOCATE( zolimi )
-
       IF( ln_timing )   CALL timing_stop('p4z_rem')
       !
    END SUBROUTINE p4z_rem

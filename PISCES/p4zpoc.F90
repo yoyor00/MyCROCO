@@ -72,7 +72,7 @@ CONTAINS
       INTEGER, INTENT(in) ::   kt, knt         ! ocean time step and ???
       INTEGER, INTENT(in) ::   Kbb, Kmm, Krhs  ! time level indices
       !
-      INTEGER  ::   ji, jj, jk, jn
+      INTEGER  ::   ji, jj, jk, jn, jkm1
       REAL(wp) ::   zremip, zremig, zdep, zorem, zorem2, zofer
       REAL(wp) ::   zopon, zopop, zopon2, zopop2
       REAL(wp) ::   zsizek, zsizek1, alphat, remint, zpoc, zremipart
@@ -81,7 +81,7 @@ CONTAINS
       REAL(wp), DIMENSION(A2D(0)  )   :: totprod, totthick, totcons 
       REAL(wp), DIMENSION(A2D(0),jpk) :: zorem3, ztremint
       REAL(wp), DIMENSION(A2D(0),jpk,jcpoc) :: alphag
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zremipoc, zremigoc, zfolimi
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zremipoc, zremigoc, zfolimi, zw3d
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )  CALL timing_start('p4z_poc')
@@ -125,11 +125,12 @@ CONTAINS
               IF( gdept(ji,jj,jk,Kmm) > zdep ) THEN
                  alphat = 0.
                  remint = 0.
+                 jkm1 = jk-1
                  !
-                 zsizek1  = e3t(ji,jj,jk-1,Kmm) / 2. / (wsbio4(ji,jj,jk-1) + rtrn) * tgfunc(ji,jj,jk-1)
+                 zsizek1  = e3t(ji,jj,jkm1,Kmm) / 2. / (wsbio4(ji,jj,jk-1) + rtrn) * tgfunc(ji,jj,jk-1)
                  zsizek = e3t(ji,jj,jk,Kmm) / 2. / (wsbio4(ji,jj,jk) + rtrn) * tgfunc(ji,jj,jk)
                  !
-                 IF ( gdept(ji,jj,jk-1,Kmm) <= zdep ) THEN
+                 IF( gdept(ji,jj,jkm1,Kmm) <= zdep ) THEN
                     ! 
                     ! The first level just below the mixed layer needs a 
                     ! specific treatment because lability is supposed constant
@@ -140,7 +141,7 @@ CONTAINS
                     !
                     ! POC concentration is computed using the lagrangian 
                     ! framework. It is only used for the lability param
-                    zpoc = tr(ji,jj,jk-1,jpgoc,Kbb) + consgoc(ji,jj,jk) * rday / rfact2               &
+                    zpoc = tr(ji,jj,jkm1,jpgoc,Kbb) + consgoc(ji,jj,jk) * rday / rfact2               &
                     &   * e3t(ji,jj,jk,Kmm) / 2. / (wsbio4(ji,jj,jk) + rtrn)
                     zpoc = MAX(0., zpoc)
                     !
@@ -167,8 +168,8 @@ CONTAINS
                     ! See the comments in the previous block.
                     ! ---------------------------------------------------
                     !
-                    zpoc = tr(ji,jj,jk-1,jpgoc,Kbb) + consgoc(ji,jj,jk-1) * rday / rfact2               &
-                    &   * e3t(ji,jj,jk-1,Kmm) / 2. / (wsbio4(ji,jj,jk-1) + rtrn) + consgoc(ji,jj,jk)   &
+                    zpoc = tr(ji,jj,jkm1,jpgoc,Kbb) + consgoc(ji,jj,jk-1) * rday / rfact2               &
+                    &   * e3t(ji,jj,jkm1,Kmm) / 2. / (wsbio4(ji,jj,jk-1) + rtrn) + consgoc(ji,jj,jk)   &
                     &   * rday / rfact2 * e3t(ji,jj,jk,Kmm) / 2. / (wsbio4(ji,jj,jk) + rtrn)
                     zpoc = max(0., zpoc)
                     !
@@ -242,14 +243,11 @@ CONTAINS
               tr(ji,jj,jk,jpgop,Krhs) = tr(ji,jj,jk,jpgop,Krhs) - zopop2 * (1. + solgoc)
            END_3D
         ENDIF
-        ! Remineralisation rate of large particles diag.
-        IF( l_dia_remin .AND. lk_iomput .AND. knt == nrdttrc ) THEN
+        IF( l_dia_remin ) THEN
            DO_3D( 0, 0, 0, 0, 1, jpkm1)
               zremigoc(ji,jj,jk) = ( tr(ji,jj,jk,jpdoc,Krhs) - zremigoc(ji,jj,jk) ) / &
               &                  ( xstep * tgfunc(ji,jj,jk) * tr(ji,jj,jk,jpgoc,Kbb) + rtrn ) * tmask(ji,jj,jk) ! =zremipart
            END_3D
-           CALL iom_put( "REMING", zremigoc ) ! Remineralisation rate of large particles
-           DEALLOCATE ( zremigoc )
         ENDIF
 
         IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
@@ -319,24 +317,25 @@ CONTAINS
      ! -----------------------------------------------------------------------
      DO_3D( 0, 0, 0, 0, 2, jpkm1)
         IF (tmask(ji,jj,jk) == 1.) THEN
+          jkm1 = jk-1
           zdep = hmld(ji,jj)
           IF( gdept(ji,jj,jk,Kmm) > zdep ) THEN
             alphat = 0.
             remint = 0.
             !
             ! the scale factors are corrected with temperature
-            zsizek1  = e3t(ji,jj,jk-1,Kmm) / 2. / (wsbio3(ji,jj,jk-1) + rtrn) * tgfunc(ji,jj,jk-1)
+            zsizek1  = e3t(ji,jj,jkm1,Kmm) / 2. / (wsbio3(ji,jj,jk-1) + rtrn) * tgfunc(ji,jj,jk-1)
             zsizek = e3t(ji,jj,jk,Kmm) / 2. / (wsbio3(ji,jj,jk) + rtrn) * tgfunc(ji,jj,jk)
             !
             ! Special treatment of the level just below the MXL
             ! See the comments in the GOC section
             ! ---------------------------------------------------
             !
-            IF ( gdept(ji,jj,jk-1,Kmm) <= zdep ) THEN
+            IF ( gdept(ji,jj,jkm1,Kmm) <= zdep ) THEN
               !
               ! Computation of the POC concentration using the 
               ! lagrangian algorithm
-              zpoc = tr(ji,jj,jk-1,jppoc,Kbb) + conspoc(ji,jj,jk) * rday / rfact2               &
+              zpoc = tr(ji,jj,jkm1,jppoc,Kbb) + conspoc(ji,jj,jk) * rday / rfact2               &
               &   * e3t(ji,jj,jk,Kmm) / 2. / (wsbio3(ji,jj,jk) + rtrn)
               zpoc = max(0., zpoc)
               ! 
@@ -357,8 +356,8 @@ CONTAINS
               ! block
               ! --------------------------------------------------------
               !
-              zpoc = tr(ji,jj,jk-1,jppoc,Kbb) + conspoc(ji,jj,jk-1) * rday / rfact2               &
-              &   * e3t(ji,jj,jk-1,Kmm) / 2. / (wsbio3(ji,jj,jk-1) + rtrn) + conspoc(ji,jj,jk)   &
+              zpoc = tr(ji,jj,jkm1,jppoc,Kbb) + conspoc(ji,jj,jk-1) * rday / rfact2               &
+              &   * e3t(ji,jj,jkm1,Kmm) / 2. / (wsbio3(ji,jj,jk-1) + rtrn) + conspoc(ji,jj,jk)   &
               &   * rday / rfact2 * e3t(ji,jj,jk,Kmm) / 2. / (wsbio3(ji,jj,jk) + rtrn)
               zpoc = max(0., zpoc)
               !
@@ -450,19 +449,29 @@ CONTAINS
         END_3D
      ENDIF
      IF( l_dia_remin ) THEN
-     ENDIF
-
-     IF( l_dia_remin .AND. lk_iomput .AND. knt == nrdttrc ) THEN
          DO_3D( 0, 0, 0, 0, 1, jpkm1)
             zremipoc(ji,jj,jk) = ( tr(ji,jj,jk,jpdoc,Krhs) - zremipoc(ji,jj,jk) ) / &
                                  ( xstep * tgfunc(ji,jj,jk) * tr(ji,jj,jk,jppoc,Kbb) + rtrn ) * tmask(ji,jj,jk)
          END_3D
-         CALL iom_put( "REMINP", zremipoc )  ! Remineralisation rate of small particles
          DO_3D( 0, 0, 0, 0, 1, jpkm1)
             zfolimi (ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfolimi (ji,jj,jk) ) * tmask(ji,jj,jk)
          END_3D
-         CALL iom_put( "REMINF", zfolimi * 1.e+9 * 1.e3 * rfact2r ) ! Remineralisation of biogenic particulate iron
-         DEALLOCATE ( zremipoc, zfolimi )
+     ENDIF
+
+     IF( lk_iomput .AND. l_dia_remin .AND. knt == nrdttrc ) THEN
+        ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+        IF( .NOT. ln_p2z ) THEN
+           zw3d(A2D(0),:) = zremigoc(A2D(0),:)
+           CALL iom_put( "REMING", zw3d ) ! Remineralisation rate of large particles
+           DEALLOCATE ( zremigoc )
+        ENDIF
+        zw3d(A2D(0),:) = zremipoc(A2D(0),:)
+        CALL iom_put( "REMINP", zw3d )  ! Remineralisation rate of small particles
+        !
+        zw3d(A2D(0),:) = zfolimi(A2D(0),:) * 1.e+9 * 1.e3 * rfact2r
+        CALL iom_put( "REMINF", zw3d ) ! Remineralisation of biogenic particulate iron
+        DEALLOCATE ( zremipoc, zfolimi )
+        DEALLOCATE ( zw3d )
      ENDIF
 
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)

@@ -83,7 +83,7 @@ CONTAINS
       REAL(wp) :: zrespz, ztortz, zgrasratn
       REAL(wp) :: zgraznc, zgrazz, zgrazpoc
       REAL(wp) :: ztmp1, ztmp2, ztmp3, ztmptot, zproport, zproport2
-      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing
+      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing, zw3d
       CHARACTER (len=25) :: charout
 
       !!---------------------------------------------------------------------
@@ -232,10 +232,11 @@ CONTAINS
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
         IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
-            zgrazing(A2D(0),jpk) = 0._wp
-            CALL iom_put( "GRAZ1" , zgrazing(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! conversion in mol/m2/s
-            CALL iom_put( "MicroZo2" , zgrazing(:,:,:) * ( 1. - epsher - unass ) * (-o2ut) * sigma1  &
-                 &                      * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! o2 consumption by Microzoo
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            zw3d(A2D(0),:) =  zgrazing(A2D(0),:) * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            CALL iom_put( "GRAZ1" , zw3d )  ! conversion in mol/m2/s
+            CALL iom_put( "MicroZo2" , zw3d * ( 1. - epsher - unass ) * (-o2ut) * sigma1 ) ! o2 consumption by Microzoo
+            DEALLOCATE( zw3d )
         ENDIF
         !
       ENDIF

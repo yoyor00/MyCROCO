@@ -159,15 +159,7 @@ CONTAINS
          END DO
          !
       ENDDO
-
-      IF(lwp)   WRITE(numout,*) '   ==>>>   R-G-B   light penetration '
       !
-      CALL trc_oce_rgb( rkrgb )                 ! tabulated attenuation coef.
-      !
-      nksr = trc_oce_ext_lev( r_si2, 33._wp )   ! level of light extinction
-      !
-      IF(lwp) WRITE(numout,*) '      level of light extinction = ', nksr, ' ref depth = ', MAXVAL(gdepw(:,:,nksr+1,1)), ' m'
-
    END SUBROUTINE ocean_2_pisces
 
    INTEGER FUNCTION trc_oce_alloc()
@@ -367,9 +359,9 @@ CONTAINS
       ! Level of light extinction
       pjl = jpkm1
       DO jk = jpkm1, 1, -1
-         IF(SUM(tmask(:,:,jk)) > 0 ) THEN
+         IF(SUM(tmask(A2D(0),jk)) > 0 ) THEN
 !            zem = MAXVAL( gdepw_1d(jk+1) * tmask(:,:,jk) )
-            zem = MAXVAL( gdepw(:,:,jk+1,1) * tmask(:,:,jk) )
+            zem = MAXVAL( gdepw(A2D(0),jk+1,1) * tmask(A2D(0),jk) )
             IF( zem >= zhext )   pjl = jk                       ! last T-level reached by Qsr
          ELSE
             pjl = jk                                            ! or regional sea-bed depth

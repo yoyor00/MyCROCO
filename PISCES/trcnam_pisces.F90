@@ -46,7 +46,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER ::   ios   ! Local integer
       INTEGER  :: jn, ierr, ioptio
-#if defined key_ligand && ! defined key_pisces_light
+#if defined key_ligand && ! defined key_pisces_npzd
       TYPE(PTRACER), DIMENSION(jptra) :: tracer
 #else
       TYPE(PTRACER), DIMENSION(jptra+1) :: tracer
@@ -68,10 +68,11 @@ CONTAINS
       CALL load_nml( numnatp_cfg, TRIM( clname )//'_cfg', numout, lwm )
       IF(lwm) CALL ctl_opn( numonp     , 'output.namelist.pis' , 'UNKNOWN', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
 
-      ALLOCATE( ctrcnm(jptra), ctrcnl(jptra), ctrcnu(jptra), STAT = ierr  )  
-      IF( ierr /= 0 )   CALL ctl_stop('STOP','trc_alloc: failed to allocate arrays')
-
       IF(lwp) WRITE(numout,*) 'number of tracer : ', jptra
+
+      ALLOCATE( ctrcnm(jptra), ctrcnl(jptra), ctrcnu(jptra), STAT = ierr  )  
+      IF( ierr /= 0 )   CALL ctl_stop('STOP','trc_nam_pisces: failed to allocate arrays')
+
       DO jn = 1, jptra
          WRITE( ctrcnm(jn),'("TR_",I2)'           ) jn
          WRITE( ctrcnl(jn),'("TRACER NUMBER ",I2)') jn
@@ -87,7 +88,7 @@ CONTAINS
       ln_p5z = .true.
       ln_p2z = .false.
       ln_p4z = .false.
-#elif defined key_pisces_light
+#elif defined key_pisces_npzd
       ln_p4z = .false.
       ln_p2z = .true.
       ln_p5z = .false.
@@ -112,7 +113,7 @@ CONTAINS
 #else
       l_diaadd = .false.
 #endif
-      
+      ln_top_euler = .TRUE.
       !
       IF(lwp) THEN                  ! control print
          WRITE(numout,*) '   Namelist : nampismod '

@@ -65,7 +65,7 @@ CONTAINS
       INTEGER , INTENT(in)  :: jp_tra    ! tracer index index      
       REAL(wp), INTENT(in)  :: rsfact    ! time step duration
       REAL(wp), INTENT(in)   , DIMENSION(A2D(0),jpk) :: pwsink
-      REAL(wp), INTENT(inout), DIMENSION(A2D(0),jpk) :: psinkflx
+      REAL(wp), INTENT(inout), DIMENSION(A2D(0),jpk+1) :: psinkflx
       !
       INTEGER  ::   ji, jj, jk
       INTEGER , ALLOCATABLE, DIMENSION(:,:)   :: iiter
@@ -82,7 +82,7 @@ CONTAINS
       !                       !----------------------------!
       CASE( np_MUS )                                     !==  MUSCL sinking scheme  ==!
          !
-         ALLOCATE( iiter( A2D(0) ) )    ;     ALLOCATE( zwsink( A2D(0), jpk ) )
+         ALLOCATE( iiter( A2D(0) ) )    ;     ALLOCATE( zwsink(A2D(0), jpk+1 ) )
          ! OA This is (I hope) a temporary solution for the problem that may 
          ! OA arise in specific situation where the CFL criterion is broken 
          ! OA for vertical sedimentation of particles. To avoid this, a time
@@ -97,7 +97,7 @@ CONTAINS
          ELSE
             DO_2D( 0, 0, 0, 0 )
                iiter(ji,jj) = 1
-               DO jk = 1, jpkm1
+               DO jk = 1, jpk-1
                   IF( tmask(ji,jj,jk) == 1.0 ) THEN
                       zwsmax =  0.5 * e3t(ji,jj,jk,Kmm) * rday / rsfact
                       iiter(ji,jj) =  MAX( iiter(ji,jj), INT( pwsink(ji,jj,jk) / zwsmax ) + 1 )
@@ -108,10 +108,12 @@ CONTAINS
          ENDIF
 
          zwsink(:,:,:) = 0._wp
-         DO_3D( 0, 0, 0, 0, 1, jpkm1 )
+         DO_3D( 0, 0, 0, 0, 1, jpk-1 )
             zwsmax = 0.5 * e3t(ji,jj,jk,Kmm) * rday / rsfact
             zwsink(ji,jj,jk+1) = -MIN( pwsink(ji,jj,jk), zwsmax * REAL( iiter(ji,jj), wp ) ) / rday
          END_3D
+         zwsink(:,:,1)     = 0._wp
+         zwsink(:,:,jpk+1) = 0._wp
 
          !  Initializa to zero all the sinking arrays 
          !  -----------------------------------------
@@ -154,12 +156,13 @@ CONTAINS
       INTEGER,  INTENT(in   )                        ::   jp_tra    ! tracer index index      
       REAL(wp), INTENT(in   )                        ::   rsfact    ! duration of time step
       INTEGER,  INTENT(in   ), DIMENSION(A2D(0))     ::   kiter     ! number of iterations for time-splitting 
-      REAL(wp), INTENT(in   ), DIMENSION(A2D(0),jpk) ::   pwsink    ! sinking speed
-      REAL(wp), INTENT(inout), DIMENSION(A2D(0),jpk) ::   psinkflx  ! sinking fluxe
+      REAL(wp), INTENT(in   ), DIMENSION(A2D(0),jpk+1) ::   pwsink    ! sinking speed
+      REAL(wp), INTENT(inout), DIMENSION(A2D(0),jpk+1) ::   psinkflx  ! sinking fluxe
       !
-      INTEGER  ::   ji, jj, jk, jn, jt
+      INTEGER  ::   ji, jj, jk, jn, jt, jkm1, jkp1
       REAL(wp) ::   zigma,z0w,zign, zflx, zstep, zzwx, zzwy, zalpha
-      REAL(wp), DIMENSION(A2D(0),jpk) :: ztraz, zakz, ztrb, zsinking 
+      REAL(wp), DIMENSION(A2D(0),jpk) :: ztrb
+      REAL(wp), DIMENSION(A2D(0),jpk+1) :: ztraz, zakz, zsinking 
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('trc_sink2_mus')
@@ -175,42 +178,47 @@ CONTAINS
             ENDDO
             DO jn = 1, 2
                !              
-               DO jk = 2, jpkm1
-                  ztraz(ji,jj,jk) = ( tr(ji,jj,jk-1,jp_tra,Kbb) - tr(ji,jj,jk,jp_tra,Kbb) ) * tmask(ji,jj,jk)
+               DO jk = 2, jpk-1
+                  jkm1 = jk-1
+                  ztraz(ji,jj,jk) = ( tr(ji,jj,jkm1,jp_tra,Kbb) - tr(ji,jj,jk,jp_tra,Kbb) ) * tmask(ji,jj,jk)
                END DO
                ztraz(ji,jj,1  ) = 0.0
-               ztraz(ji,jj,jpk) = 0.0
+               ztraz(ji,jj,jpk+1) = 0.0
 
                ! slopes
-               DO jk = 2, jpkm1
+               DO jk = 2, jpk-1
                   zign = 0.25 + SIGN( 0.25_wp, ztraz(ji,jj,jk) * ztraz(ji,jj,jk+1) )
                   zakz(ji,jj,jk) = ( ztraz(ji,jj,jk) + ztraz(ji,jj,jk+1) ) * zign
                END DO
       
                ! Slopes limitation
-               DO jk = 2, jpkm1
+               DO jk = 2, jpk-1
                   zakz(ji,jj,jk) = SIGN( 1.0_wp, zakz(ji,jj,jk) ) *        &
                      &             MIN( ABS( zakz(ji,jj,jk) ), 2. * ABS(ztraz(ji,jj,jk+1)), 2. * ABS(ztraz(ji,jj,jk) ) )
                END DO
+               zakz(ji,jj,1) = 0.e0
+               zakz(ji,jj,jpk+1) = 0.e0
       
                ! vertical advective flux
-               DO jk = 1, jpkm1
+               DO jk = 1, jpk-1
+                  jkp1 = jk+1
                   z0w    = SIGN( 0.5_wp, pwsink(ji,jj,jk+1) )
                   zalpha = 0.5 + z0w 
                   zigma  = z0w - 0.5 * pwsink(ji,jj,jk+1) * zstep / e3w(ji,jj,jk+1,Kmm)
-                  zzwx   = tr(ji,jj,jk+1,jp_tra,Kbb) + zigma * zakz(ji,jj,jk+1)
+                  zzwx   = tr(ji,jj,jkp1,jp_tra,Kbb) + zigma * zakz(ji,jj,jk+1)
                   zzwy   = tr(ji,jj,jk,jp_tra,Kbb) + zigma * zakz(ji,jj,jk)
                   zsinking(ji,jj,jk+1) = -pwsink(ji,jj,jk+1) * ( zalpha * zzwx + (1.0 - zalpha) * zzwy ) * zstep
                END DO
                !
                ! Boundary conditions
-               zsinking(ji,jj,1  ) = 0.e0
-               DO jk = 1, jpkm1
+               zsinking(ji,jj,1    ) = 0.e0
+               zsinking(ji,jj,jpk+1) = 0.e0
+               DO jk = 1, jpk-1
                   zflx = ( zsinking(ji,jj,jk) - zsinking(ji,jj,jk+1) ) / e3t(ji,jj,jk,Kmm)
                   tr(ji,jj,jk,jp_tra,Kbb) = tr(ji,jj,jk,jp_tra,Kbb) + zflx * tmask(ji,jj,jk)
                END DO
             END DO
-            DO jk = 1, jpkm1
+            DO jk = 1, jpk-1
                zflx = ( zsinking(ji,jj,jk) - zsinking(ji,jj,jk+1) ) / e3t(ji,jj,jk,Kmm)
                ztrb(ji,jj,jk) = ztrb(ji,jj,jk) + 2. * zflx * tmask(ji,jj,jk)
             END DO
@@ -257,7 +265,7 @@ CONTAINS
       REAL(wp), INTENT(inout), DIMENSION(A2D(0),jpk) ::   psinkflx  ! sinking fluxe
       REAL(wp), INTENT(in   )                        ::   rsfact    ! duration of time step
       !
-      INTEGER  :: ji, jj, jk, ik
+      INTEGER  :: ji, jj, jk, ik, jkm1, jkp1
       REAL(wp) :: zcff, zcu, zcffL, zcffR, zdltL, zdltR, zflx
       REAL(wp) :: zHz_inv, zHz_inv2, zHz_inv3
       !
@@ -283,15 +291,17 @@ CONTAINS
       DO_1Dj( 0, 0 )                                  !  i-k slices loop  !
          !  Compute semi-Lagrangian flux due to sinking.
          DO_2Dik( 0, 0, 2, jpk, 1 )
-            zHz_inv2   = 1._wp / ( e3t(ji,jj,jk,Kmm) + e3t(ji,jj,jk-1,Kmm)  )
-            zFC(ji,jk) = ( tr(ji,jj,jk-1,jp_tra,Kbb) - tr(ji,jj,jk,jp_tra,Kbb) ) * zHz_inv2  
+            jkm1 = jk-1
+            zHz_inv2   = 1._wp / ( e3t(ji,jj,jk,Kmm) + e3t(ji,jj,jkm1,Kmm)  )
+            zFC(ji,jk) = ( tr(ji,jj,jkm1,jp_tra,Kbb) - tr(ji,jj,jk,jp_tra,Kbb) ) * zHz_inv2  
          END_2D
          !
          DO_2Dik( 0, 0, 2, jpk-1, 1 )
             !
+            jkp1 = jk+1
             zdltR = e3t(ji,jj,jk,Kmm) * zFC(ji,jk)
             zdltL = e3t(ji,jj,jk,Kmm) * zFC(ji,jk+1)
-            zcff  = e3t(ji,jj,jk+1,Kmm) + 2. * e3t(ji,jj,jk,kmm) + e3t(ji,jj,jk-1,Kmm)
+            zcff  = e3t(ji,jj,jkp1,Kmm) + 2. * e3t(ji,jj,jk,kmm) + e3t(ji,jj,jkm1,Kmm)
             zcffR = zcff * zFC(ji,jk)
             zcffL = zcff * zFC(ji,jk+1)
             !
@@ -314,10 +324,10 @@ CONTAINS
             !        trb(k+1)-trb(k).  This possibility is excluded, after qL and qR
             !        are reconciled using WENO procedure.
             !
-            zHz_inv3   = 1._wp / ( e3t(ji,jj,jk,Kmm) + e3t(ji,jj,jk-1,Kmm) + e3t(ji,jj,jk+1,Kmm) )
+            zHz_inv3   = 1._wp / ( e3t(ji,jj,jk,Kmm) + e3t(ji,jj,jkm1,Kmm) + e3t(ji,jj,jkp1,Kmm) )
             zcff       = ( zdltR - zdltL ) * zHz_inv3
-            zdltR      = zdltR - zcff * e3t(ji,jj,jk-1,Kmm)
-            zdltL      = zdltL + zcff * e3t(ji,jj,jk+1,Kmm)
+            zdltR      = zdltR - zcff * e3t(ji,jj,jkm1,Kmm)
+            zdltL      = zdltL + zcff * e3t(ji,jj,jkp1,Kmm)
             zqR(ji,jk) = tr(ji,jj,jk,jp_tra,Kbb) + zdltR
             zqL(ji,jk) = tr(ji,jj,jk,jp_tra,Kbb) - zdltL
             zWR(ji,jk) = ( 2._wp * zdltR - zdltL )**2
