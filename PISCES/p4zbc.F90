@@ -183,7 +183,6 @@ CONTAINS
             tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) + zdust * 1.e-3 / mMass_P
             tr(ji,jj,jk,jpsil,Krhs) = tr(ji,jj,jk,jpsil,Krhs) + zdust * 0.269 / mMass_Si
          END_3D
-# endif
          !
          IF( lk_iomput .AND. l_dia_dust ) THEN
             !
@@ -203,6 +202,7 @@ CONTAINS
          ENDIF
          !
          DEALLOCATE( zpo4dep, zsildep )
+# endif
          !
       ENDIF
       !
@@ -633,7 +633,7 @@ CONTAINS
          DO irec = 1, nrec_ndep
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  no3depmo(ji,jj,irec) = dustmp(ji,jj,irec) / mMass_N / rno3
+                  no3depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / mMass_N / rno3
                END DO
             END DO
          END DO
