@@ -75,6 +75,7 @@ CONTAINS
       REAL(wp) ::  zsoufer, zlight, ztrpo4, ztrdop, zratpo4
       REAL(wp) ::  zfact, zlim, zdiano3, zdianh4
       !
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zw3d
       CHARACTER (len=25) :: charout
       !!---------------------------------------------------------------------
       !
@@ -178,11 +179,12 @@ CONTAINS
       ENDIF
 
       IF( l_dia_nfix .AND. lk_iomput .AND. knt == nrdttrc ) THEN 
-!            zfact = rno3 * 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
-         CALL iom_put( "Nfix", nitrpot(:,:,:) * nitrfix  &
-            &             * rno3 * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! diazotrophy
-         CALL iom_put( "Nfixo2", nitrpot(:,:,:) * nitrfix &
-            &     * o2nit * rno3 * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! O2 production by diazotrophy
+         ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+         zfact = rno3 * 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
+         zw3d(A2D(0),:) =  nitrpot(A2D(0),:) * zfact * tmask(A2D(0),:)
+         CALL iom_put( "Nfix", zw3d ) ! diazotrophy
+         CALL iom_put( "Nfixo2", zw3d * o2nit) ! O2 production by diazotrophy
+         DEALLOCATE( zw3d ) 
       ENDIF
 
 #if defined key_trc_diaadd

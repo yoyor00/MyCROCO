@@ -209,25 +209,25 @@
 #  ifdef PISCES
       integer indxDIC, indxTAL, indxOXY, indxCAL, indxPO4,
      &        indxPOC, indxSIL, indxPHY, indxZOO, indxDOC,
-     &        indxDIA, indxMES, indxBSI, indxFER, indxBFE,
-     &        indxGOC, indxSFE, indxDFE, indxDSI, indxNFE,
+     &        indxDIA, indxMES, indxDSI, indxFER, indxBFE,
+     &        indxGOC, indxSFE, indxDFE, indxGSI, indxNFE,
      &        indxNCH, indxDCH, indxNO3, indxNH4
       parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
      &           indxTAL =indxDIC+1, indxOXY=indxDIC+2)
-#   ifdef key_pisces_light
+#   ifdef key_pisces_npzd
       parameter (indxPOC=indxDIC+3, indxPHY =indxDIC+4,
      &           indxZOO=indxDIC+5, indxDOC =indxDIC+6,
      &           indxNO3=indxDIC+7, indxFER =indxDIC+8)
 #   endif
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       parameter (indxCAL=indxDIC+3, indxPO4=indxDIC+4,
      &           indxPOC=indxDIC+5, indxSIL=indxDIC+6,
      &           indxPHY =indxDIC+7, indxZOO=indxDIC+8,
      &           indxDOC =indxDIC+9, indxDIA=indxDIC+10,
-     &           indxMES =indxDIC+11, indxBSI=indxDIC+12,
+     &           indxMES =indxDIC+11, indxDSI=indxDIC+12,
      &           indxFER =indxDIC+13, indxBFE=indxDIC+14,
      &           indxGOC =indxDIC+15, indxSFE=indxDIC+16,
-     &           indxDFE =indxDIC+17, indxDSI=indxDIC+18,
+     &           indxDFE =indxDIC+17, indxGSI=indxDIC+18,
      &           indxNFE =indxDIC+19, indxNCH=indxDIC+20,
      &           indxDCH =indxDIC+21, indxNO3=indxDIC+22,
      &           indxNH4 =indxDIC+23)

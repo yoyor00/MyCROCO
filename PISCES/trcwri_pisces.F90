@@ -36,15 +36,16 @@ CONTAINS
       !!---------------------------------------------------------------------
       CHARACTER (len=20)   :: cltra
       INTEGER              :: ji, jj, jk, jn
-      REAL(wp), DIMENSION(A2D(0),jpk) :: ztra
+      REAL(wp), DIMENSION(GLOBAL_2D_ARRAY,jpk) :: ztra
       !!---------------------------------------------------------------------
  
       IF( ln_sediment )  CALL sed_wri
 
+      ztra(:,:,:) = 0.
       DO jn = jp_pcs0, jp_pcs1
          cltra = TRIM( ctrcnm(jn) )                  ! short title for tracer
          DO_3D( 0, 0, 0, 0, 1, jpk)
-            ztra(ji,jj,jk) = MAX( 0., tr(ji,jj,jk,jn,nnew) )
+            ztra(ji,jj,N+1-jk) = MAX( 0., tr(ji,jj,jk,jn,nnew) )
          END_3D   
          CALL iom_put( cltra, ztra )
       END DO

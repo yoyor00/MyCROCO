@@ -59,7 +59,6 @@ MODULE p4zmeso
    REAL(wp)         ::  xfracmigm1     !: Fractional biomass of meso that performs DVM
    LOGICAL          :: l_dia_graz, l_dia_lprodz
 
-
    !! * Substitutions
 #  include "ocean2pisces.h90"   
 #  include "do_loop_substitute.h90"
@@ -92,18 +91,18 @@ CONTAINS
       !
       INTEGER  :: ji, jj, jk, jkt
       REAL(wp) :: zcompadi, zcompaph, zcompapoc, zcompaz, zcompam, zcompames
-      REAL(wp) :: zgraze2, zdenom, zfact, zfood, zfoodlim, zproport, zbeta
+      REAL(wp) :: zgraze2, zdenom, zdenom2, zfact, zfood, zfoodlim, zproport, zbeta
       REAL(wp) :: zmortzgoc, zfrac, zfracfe, zratio, zratio2, zfracal, zgrazcal
       REAL(wp) :: zepsherf, zepshert, zepsherq, zepsherv, zgraztotc, zgraztotn, zgraztotf
       REAL(wp) :: zmigreltime, zprcaca, zmortz, zgrasratf, zgrasratn
       REAL(wp) :: zrespz, ztortz, zgrazdc, zgrazz, zgrazpof, zgraznc, zgrazpoc, zgraznf, zgrazdf
       REAL(wp) :: zgrazm, zgrazfffp, zgrazfffg, zgrazffep, zgrazffeg, zdep
-      REAL(wp) :: zsigma, zdiffdn, ztmp1, ztmp2, ztmp3, ztmp4, ztmp5, ztmptot, zmigthick 
+      REAL(wp) :: zsigma, zsigma2, zsizedn, zdiffdn, ztmp1, ztmp2, ztmp3, ztmp4, ztmp5, ztmptot, zmigthick 
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(A2D(0),jpk) :: zgrarem, zgraref, zgrapoc, zgrapof, zgrabsi
       REAL(wp), ALLOCATABLE, DIMENSION(:,:)   ::   zgramigrem, zgramigref, zgramigpoc, zgramigpof
       REAL(wp), ALLOCATABLE, DIMENSION(:,:)   ::   zgramigbsi
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing2, zzligprod
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing2, zzligprod, zw3d
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p4z_meso')
@@ -188,17 +187,20 @@ CONTAINS
          ! have low abundance, .i.e. zooplankton become less specific 
          ! to avoid starvation.
          ! ----------------------------------------------------------
-         zsigma = 1.0 - zdenom**2/(0.05**2+zdenom**2)
-         zsigma = xsigma2 + xsigma2del * zsigma
+         zdenom2 = zdenom * zdenom
+         zsigma  = 1.0 - zdenom2/(0.05*0.05*0.05+zdenom2)
+         zsigma  = xsigma2 + xsigma2del * zsigma
+         zsigma2 = zsigma * zsigma
          ! Nanophytoplankton and diatoms are the only preys considered
          ! to be close enough to have potential interference
          ! -----------------------------------------------------------
-         zdiffdn = exp( -ABS(log(1.67 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )**2 / zsigma**2 )
+         zsizedn = -ABS(LOG(1.67 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )
+         zdiffdn = EXP( zsizedn * zsizedn / zsigma2 )
          ztmp1 = xpref2n * zcompaph * ( zcompaph + zdiffdn * zcompadi )
-         ztmp2 = xpref2m * zcompames**2
-         ztmp3 = xpref2c * zcompapoc**2
+         ztmp2 = xpref2m * zcompames * zcompames
+         ztmp3 = xpref2c * zcompapoc * zcompapoc
          ztmp4 = xpref2d * zcompadi * ( zcompadi + zdiffdn * zcompaph )
-         ztmp5 = xpref2z * zcompaz**2
+         ztmp5 = xpref2z * zcompaz * zcompaz
          ztmptot = ztmp1 + ztmp2 + ztmp3 + ztmp4 + ztmp5 + rtrn
          ztmp1 = ztmp1 / ztmptot
          ztmp2 = ztmp2 / ztmptot
@@ -430,23 +432,29 @@ CONTAINS
       ! Write the output
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
-        IF( l_dia_graz ) THEN  !
-            CALL iom_put( "GRAZ2"  , zgrazing2(:,:,:)       * 1.e+3 * rfact2r * tmask(A2D(0),:) )
-            CALL iom_put( "MesoZo2", zgrazing2(:,:,:) * ( 1. - epsher2 - unass2 ) * (-o2ut) * sigma2  &
-                 &                 * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! o2 consumption by Mesozoo            
-            CALL iom_put( "FEZOO2", zgraref  (:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:) )
+        IF( l_dia_graz ) THEN  !  
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            zw3d(A2D(0),:) =  zgrazing2(A2D(0),:) * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            CALL iom_put( "GRAZ2" , zw3d )  ! Total grazing of phyto by zooplankton
+            CALL iom_put( "MesoZo2" , zw3d * ( 1. - epsher2 - unass2 ) * (-o2ut) * sigma2 ) ! o2 consumption by Microzoo
+            !
+            zw3d(A2D(0),:) =  zgraref(A2D(0),:) * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            CALL iom_put( "FEZOO2", zw3d )  ! 
+           DEALLOCATE( zw3d)
         ENDIF
         !
         IF( l_dia_lprodz ) THEN
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zzligprod(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
                    &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
-           CALL iom_put( "LPRODZ2", zzligprod )
-           DEALLOCATE( zzligprod )
+           CALL iom_put( "LPRODZ2", zw3d )
+           DEALLOCATE( zzligprod, zw3d)
         ENDIF
         !
       ENDIF
+      !
       !
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
@@ -456,7 +464,7 @@ CONTAINS
       END_3D
 #endif
      IF( l_dia_graz ) DEALLOCATE( zgrazing2 )
-
+      
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
         WRITE(charout, FMT="('meso')")
         CALL prt_ctl_info( charout, cdcomp = 'top' )
@@ -542,7 +550,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER, INTENT(in)  ::  Kbb, kmm ! time level indices
       !
-      INTEGER  :: ji, jj, jk
+      INTEGER  :: ji, jj, jk, jkp1
       !
       REAL(wp) :: ztotchl, z1dep
       REAL(wp), DIMENSION(A2D(0)) :: oxymoy, tempmoy, zdepmoy
@@ -606,7 +614,8 @@ CONTAINS
       DO_2D( 0, 0, 0, 0 )
          IF( tr(ji,jj,kmig(ji,jj),jpoxy,Kbb) < 5E-6 ) THEN
             DO jk = kmig(ji,jj),1,-1
-               IF( tr(ji,jj,jk,jpoxy,Kbb) >= 5E-6 .AND. tr(ji,jj,jk+1,jpoxy,Kbb)  < 5E-6) THEN
+               jkp1 = jk+1
+               IF( tr(ji,jj,jk,jpoxy,Kbb) >= 5E-6 .AND. tr(ji,jj,jkp1,jpoxy,Kbb)  < 5E-6) THEN
                   kmig(ji,jj) = jk
                   depmig(ji,jj) = gdept(ji,jj,jk,Kmm)
                ENDIF

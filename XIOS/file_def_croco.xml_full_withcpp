@@ -350,7 +350,7 @@
                    <field field_ref="ZOO"       name="ZOO" />
                    <field field_ref="NO3"       name="NO3" />
                    <field field_ref="Fer"       name="Fer" />
-#if ! defined key_pisces_light
+#if ! defined key_pisces_npzd
                    <field field_ref="NH4"       name="NH4" />
                    <field field_ref="PO4"       name="PO4" />
                    <field field_ref="Si"        name="Si" />
@@ -358,13 +358,16 @@
                    <field field_ref="NCHL"      name="TCHL" > NCHL+DCHL </field>
                    <field field_ref="PHY2"      name="PHY2" />
                    <field field_ref="ZOO2"      name="ZOO2" />
+                   <field field_ref="DSi"      name="DSi" />
+                   <field field_ref="GSi"      name="GSi" />
+                   <field field_ref="BFe"      name="BFe" />
+                   <field field_ref="DFe"      name="DFe" />
+                   <field field_ref="SFe"      name="SFe" />
+                   <field field_ref="NFe"      name="NFe" />
+                   <field field_ref="CaCO3"     name="CaCO3" />
 #endif
 #if defined key_ligand
                    <field field_ref="LGW"       name="LGW" />
-                   <field field_ref="LPRODR"    name="LPRODR" />
-                   <field field_ref="LIGREM"    name="LIGREM" />
-                   <field field_ref="LIGPR"     name="LIGPR" />
-                   <field field_ref="LGWCOLL"    name="LGWCOLL"/>
 #endif
 #if defined key_pisces_quota
                    <field field_ref="DON"       name="DON" />
@@ -404,11 +407,7 @@
                    <field field_ref="Oflx"     name="Oflx" />
                    <field field_ref="Kg"       name="Kg" />
                    <field field_ref="Heup"     name="Zmeu" />
-                   <field field_ref="Irondep"  name="Fedep" />
-                   <field field_ref="INTNFIX"  name="INTNFIX"/>
                    <field field_ref="Nfix"     name="Nfix"/>
-                   <field field_ref="Ironsed"  name="Fesed"/>
-                   <field field_ref="pdust"    name="pdust"/>
                    <field field_ref="Sdenit"    name="Sdenit"/>
                    <field field_ref="SedC"    name="SedC"/>
                    <field field_ref="LNnut"    name="LNnut"/>
@@ -431,7 +430,7 @@
                    <field field_ref="TPP"    name="TPP"/>
                    <field field_ref="INTPP"    name="INTPP"/>
                    <field field_ref="PPNEWo2"    name="PPNEWo2"/>
-#if defined key_pisces_light
+#if defined key_pisces_npzd
                    <field field_ref="Thetanano"  name="Thetanano"/>
 #else
                    <field field_ref="MuD"    name="MuD"/>
@@ -471,6 +470,12 @@
                    <field field_ref="LPlight"    name="LPlight"/>
                    <field field_ref="MunetN"    name="MunetN"/>
                    <field field_ref="MunetD"    name="MunetD"/>
+#endif
+#if defined key_ligand
+                   <field field_ref="LPRODR"    name="LPRODR" />
+                   <field field_ref="LIGREM"    name="LIGREM" />
+                   <field field_ref="LIGPR"     name="LIGPR" />
+                   <field field_ref="LGWCOLL"    name="LGWCOLL"/>
 #endif
                  </field_group>
             </file>

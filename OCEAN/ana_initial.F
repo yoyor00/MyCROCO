@@ -1450,7 +1450,7 @@ C$OMP BARRIER
               t(i,j,k,1,iFER_)=6.e-4
               t(i,j,k,2,iFER_)=t(i,j,k,1,iFER_)
             endif
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
             if (.not.got_tini(iCAL_))  then
               t(i,j,k,1,iCAL_)=0.01
               t(i,j,k,2,iCAL_)=t(i,j,k,1,iCAL_)
@@ -1488,9 +1488,9 @@ C$OMP BARRIER
               t(i,j,k,1,iMES_)=0.01
               t(i,j,k,2,iMES_)=t(i,j,k,1,iMES_)
             endif
-            if (.not.got_tini(iBSI_))  then
-              t(i,j,k,1,iBSI_)=1.5e-3
-              t(i,j,k,2,iBSI_)=t(i,j,k,1,iBSI_)
+            if (.not.got_tini(iDSI_))  then
+              t(i,j,k,1,iDSI_)=1.5e-3
+              t(i,j,k,2,iDSI_)=t(i,j,k,1,iDSI_)
             endif
             if (.not.got_tini(iBFE_))  then
               t(i,j,k,1,iBFE_)=1.E-2*5E-6
@@ -1508,9 +1508,9 @@ C$OMP BARRIER
               t(i,j,k,1,iDFE_)=1.e-2*5.E-6
               t(i,j,k,2,iDFE_)=t(i,j,k,1,iDFE_)
             endif
-            if (.not.got_tini(iDSI_))  then
-              t(i,j,k,1,iDSI_)=1.e-2*0.15
-              t(i,j,k,2,iDSI_)=t(i,j,k,1,iDSI_)
+            if (.not.got_tini(iGSI_))  then
+              t(i,j,k,1,iGSI_)=1.e-2*0.15
+              t(i,j,k,2,iGSI_)=t(i,j,k,1,iGSI_)
             endif
             if (.not.got_tini(iNFE_))  then
               t(i,j,k,1,iNFE_)=1.e-2*5.E-6

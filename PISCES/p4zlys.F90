@@ -1,3 +1,5 @@
+#include "cppdefs.h"
+
 MODULE p4zlys
    !!======================================================================
    !!                         ***  MODULE p4zlys  ***
@@ -43,10 +45,11 @@ MODULE p4zlys
 !   REAL(wp) :: calcon = 1.0287E-2           !: mean calcite concentration [Ca2+] in sea water [mole/kg solution]
 
    !! * Substitutions
-#  include "ocean2pisces.h90"   
+   !! * Substitutions
+#  include "ocean2pisces.h90"
 #  include "do_loop_substitute.h90"
-#  include "read_nml_substitute.h90"
 #  include "domzgr_substitute.h90"
+#  include "read_nml_substitute.h90"
 
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
@@ -74,17 +77,18 @@ CONTAINS
       REAL(wp) ::   zomegaca, zexcess, zexcess0, zkd, zwsbio
       CHARACTER (len=25) ::   charout
       REAL(wp), DIMENSION(A2D(0),jpk) :: zhinit, zhi, zco3, zcaco3, ztra
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:)  :: zcaldiss
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:)  :: zw3d, zcaldiss
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )  CALL timing_start('p2z_lys')
       !
       IF( kt == nittrc000 )  &
-           & l_dia = iom_use( "PH" ) .OR. iom_use( "CO3" ) &
-           &       .OR. iom_use( "CO3sat" ) .OR. iom_use( "DCAL" ) .OR. iom_use( "PCAL" )
+           & l_dia = iom_use( "PH" ) .OR. iom_use( "CO3" ) .OR. iom_use( "CO3sat" ) &
+           &    .OR. iom_use( "DCAL" ) .OR. iom_use( "PCAL" )  &
+           &    .OR. iom_use( "EPC100" ) .OR. iom_use( "EXPCAL" )
       !
       IF( l_dia )   THEN                  !* Save ta and sa trends
-         ALLOCATE( zcaldiss(A2D(0),jpk) )    ;    zcaldiss(A2D(0),jpk) = 0._wp   ;   zco3(A2D(0),jpk) = 0._wp
+         ALLOCATE( zcaldiss(A2D(0),jpk) )    ;    zcaldiss(A2D(0),:) = 0._wp   ;   zco3(A2D(0),jpk) = 0._wp
       ENDIF
       !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
@@ -176,20 +180,34 @@ CONTAINS
       ENDIF
       !
       IF( l_dia .AND. knt == nrdttrc ) THEN
-         CALL iom_put( "PCAL", prodcal(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )   ! Calcite production
-         CALL iom_put( "DCAL", zcaldiss(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! calcite dissolution
-         CALL iom_put( "PH" , -1. * LOG10( MAX( hi(:,:,:), rtrn ) ) * tmask(A2D(0),:) )  !  PH
-         CALL iom_put( "CO3", zco3(:,:,:) * 1.e+3 * tmask(A2D(0),:) )    ! bicarbonate
-         DO_3D( 0, 0, 0, 0, 1, jpkm1)
-            zco3(ji,jj,jk) = aksp(ji,jj,jk) * rhop(ji,jj,jk) / 1000._wp & 
-              &         / calcon * ( salinprac(ji,jj,jk) / 35._wp )  
+         ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+         zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+         !
+         zw3d(A2D(0),:) = prodcal(A2D(0),:) * zfact * tmask(A2D(0),:)         
+         CALL iom_put( "PCAL", zw3d )   ! calcite production
+         !
+         zw3d(A2D(0),:) = zcaldiss(A2D(0),:) * zfact * tmask(A2D(0),:)         
+         CALL iom_put( "DCAL", zw3d )  ! calcite dissolution
+         !
+         zw3d(A2D(0),:) = wsbio4(A2D(0),:) * zcaco3(A2D(0),:) * 1.e+3 / rday * tmask(A2D(0),:)         
+         CALL iom_put( "EPCAL100",  zw3d(:,:,ik100) )  ! Export of calcite at 100m
+         CALL iom_put( "EXPCAL"  ,  zw3d )             ! Export of calcite in the water column
+         !
+         zw3d(A2D(0),:) = -1. * LOG10( MAX( hi(A2D(0),:), rtrn ) ) * tmask(A2D(0),:)         
+         CALL iom_put( "PH" , zw3d )  ! PH
+         !
+         zw3d(A2D(0),:) = zco3(A2D(0),:) * 1.e+3 * tmask(A2D(0),:)         
+         CALL iom_put( "CO3", zw3d ) ! ion carbonate
+         !
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+             zcalcon        = calcon * ( salinprac(ji,jj,jk) / 35._wp )
+             zfact          = rhop(ji,jj,jk) / 1000._wp
+             zw3d(ji,jj,jk) = aksp(ji,jj,jk) * zfact / ( zcalcon + rtrn )  * 1.e+3 * tmask(ji,jj,jk)
          END_3D
-         CALL iom_put( "CO3sat", zco3(:,:,:) * 1.e+3 * tmask(A2D(0),:) )    ! calcite saturation
-         CALL iom_put( "EPCAL100",  wsbio4(:,:,ik100) * zcaco3(:,:,ik100) * 1.e+3 / rday * tmask(A2D(0),ik100) )  ! Export of calcite at 100m
-         CALL iom_put( "EXPCAL"  ,  wsbio4(:,:,:) * zcaco3(:,:,:) * 1.e+3 / rday * tmask(A2D(0),:) )             ! Export of calcite in the water column
-         DEALLOCATE( zcaldiss )
+         CALL iom_put( "CO3sat", zw3d )  ! calcite saturation
+         !
+         DEALLOCATE( zcaldiss, zw3d )
       ENDIF
-      !
 # if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
          trc3d(ji,jj,jk,jp_hi    ) = -1. * LOG10( MAX( hi(ji,jj,jk), rtrn) ) * tmask(ji,jj,jk)  ! PH
@@ -198,6 +216,7 @@ CONTAINS
               &                  / calcon * ( salinprac(ji,jj,jk) / 35._wp ) * tmask(ji,jj,jk)
       END_3D
 # endif      
+      !
       IF( ln_timing )   CALL timing_stop('p2z_lys')
       !
    END SUBROUTINE p2z_lys
@@ -216,21 +235,21 @@ CONTAINS
       INTEGER, INTENT(in)  ::  Kbb, Krhs ! time level indices
       !
       INTEGER  ::   ji, jj, jk, jn
-      REAL(wp) ::   zdispot, zfact, zcalcon, zdissol
+      REAL(wp) ::   zdispot, zfact, zcalcon, ztra, zdissol
       REAL(wp) ::   zomegaca, zexcess, zexcess0, zkd
       CHARACTER (len=25) ::   charout
       REAL(wp), DIMENSION(A2D(0),jpk) :: zhinit, zhi, zco3
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:)  :: zcaldiss
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:)  :: zw3d, zcaldiss
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )  CALL timing_start('p4z_lys')
       !
-      IF( kt == nittrc000 )  &
-           & l_dia = iom_use( "PH" ) .OR. iom_use( "CO3" ) &
-           &       .OR. iom_use( "CO3sat" ) .OR. iom_use( "DCAL" ) .OR. iom_use( "PCAL" )
-      !
-      IF( l_dia )   THEN                  !* Save ta and sa trends
-         ALLOCATE( zcaldiss(A2D(0),jpk) )    ;    zcaldiss(A2D(0),jpk) = 0._wp   ;   zco3(A2D(0),jpk) = 0._wp
+     IF( kt == nittrc000 )  &
+           & l_dia = iom_use( "PH" ) .OR. iom_use( "CO3" ) .OR. iom_use( "CO3sat" ) &
+           &          .OR. iom_use( "DCAL" ) .OR. iom_use( "PCAL" )
+
+      IF( l_dia )   THEN                  
+         ALLOCATE( zcaldiss(A2D(0),jpk) )    ;    zcaldiss(A2D(0),:) = 0._wp   ;   zco3(A2D(0),jpk) = 0._wp
       ENDIF
       !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
@@ -279,29 +298,51 @@ CONTAINS
 
         !  CHANGE OF [CO3--] , [ALK], PARTICULATE [CACO3],
         !       AND [SUM(CO2)] DUE TO CACO3 DISSOLUTION/PRECIPITATION
-        zdissol  = zdispot * rfact2 / rmtss ! calcite dissolution
+        ztra  = zdispot * rfact2 / rmtss ! calcite dissolution
         !
-        tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + 2. * zdissol
-        tr(ji,jj,jk,jpcal,Krhs) = tr(ji,jj,jk,jpcal,Krhs) -      zdissol
-        tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) +      zdissol
+        tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + 2. * ztra
+        tr(ji,jj,jk,jpcal,Krhs) = tr(ji,jj,jk,jpcal,Krhs) -      ztra
+        tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) +      ztra
         !
-        IF( l_dia )  zcaldiss(ji,jj,jk) = zdissol
+        IF( l_dia ) zcaldiss(ji,jj,jk) = zdissol
         !
       END_3D
       !
       IF( l_dia .AND. knt == nrdttrc ) THEN
-         CALL iom_put( "PCAL", prodcal(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )   ! Calcite production
-         CALL iom_put( "DCAL", zcaldiss(:,:,:) * 1.e+3 * rfact2r * tmask(A2D(0),:) )  ! calcite dissolution
-         CALL iom_put( "PH" , -1. * LOG10( MAX( hi(:,:,:), rtrn ) ) * tmask(A2D(0),:) )  !  PH
-         CALL iom_put( "CO3", zco3(:,:,:) * 1.e+3 * tmask(A2D(0),:) )    ! bicarbonate
-         DO_3D( 0, 0, 0, 0, 1, jpkm1)
-            zco3(ji,jj,jk) = aksp(ji,jj,jk) * rhop(ji,jj,jk) / 1000._wp & 
-              &         / calcon * ( salinprac(ji,jj,jk) / 35._wp )  
+         ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )  ;  zw3d(:,:,:) = 0._wp     
+         zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+         !
+         zw3d(A2D(0),:) = prodcal(A2D(0),:) * zfact * tmask(A2D(0),:)         
+         CALL iom_put( "PCAL", zw3d )   ! calcite production
+         !
+         zw3d(A2D(0),:) = zcaldiss(A2D(0),:) * zfact * tmask(A2D(0),:)         
+         CALL iom_put( "DCAL", zw3d )  ! calcite dissolution
+         !
+         zw3d(A2D(0),:) = -1. * LOG10( MAX( hi(A2D(0),:), rtrn ) ) * tmask(A2D(0),:)         
+         CALL iom_put( "PH" , zw3d )  ! PH
+         !
+         zw3d(A2D(0),:) = zco3(A2D(0),:) * 1.e+3 * tmask(A2D(0),:)         
+         CALL iom_put( "CO3", zw3d ) ! ion carbonate
+         !
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+             zcalcon        = calcon * ( salinprac(ji,jj,jk) / 35._wp )
+             zfact          = rhop(ji,jj,jk) / 1000._wp
+             zw3d(ji,jj,jk) = aksp(ji,jj,jk) * zfact / ( zcalcon + rtrn )  * 1.e+3 * tmask(ji,jj,jk)
          END_3D
-         CALL iom_put( "CO3sat", zco3(:,:,:) * 1.e+3 * tmask(A2D(0),:) )    ! calcite saturation
-         DEALLOCATE( zcaldiss )
+         CALL iom_put( "CO3sat", zw3d )  ! calcite saturation
+         !
+         DEALLOCATE( zcaldiss, zw3d )
       ENDIF
       !
+# if defined key_trc_diaadd
+      DO_3D( 0, 0, 0, 0, 1, jpk)
+         trc3d(ji,jj,jk,jp_hi    ) = -1. * LOG10( MAX( hi(ji,jj,jk), rtrn) ) * tmask(ji,jj,jk)  ! PH
+         trc3d(ji,jj,jk,jp_co3   ) = zco3(ji,jj,jk)  * 1.e+3 * tmask(ji,jj,jk)  ! Ion carbonate
+         trc3d(ji,jj,jk,jp_co3sat) = aksp(ji,jj,jk) * rhop(ji,jj,jk) / 1000._wp &   ! calcite saturation
+              &                  / calcon * ( salinprac(ji,jj,jk) / 35._wp ) * tmask(ji,jj,jk)
+      END_3D
+# endif      
+      
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
         WRITE(charout, FMT="('lys ')")
         CALL prt_ctl_info( charout, cdcomp = 'top' )

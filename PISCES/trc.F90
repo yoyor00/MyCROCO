@@ -111,7 +111,7 @@ MODULE trc
    END TYPE PTRACER
    !
    CHARACTER(len=20), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnm   !: tracer name 
-   CHARACTER(len=20), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnl   !: trccer field long name
+   CHARACTER(len=80), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnl   !: trccer field long name
    CHARACTER(len=20), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnu   !: tracer unit
    !
    TYPE, PUBLIC ::   DIAG         !: Passive trcacer ddditional diagnostic type

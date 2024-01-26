@@ -33,7 +33,7 @@ MODULE par_pisces
    !!---------------------------------------------------------------------
    LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .TRUE.  !: PISCES flag 
 
-#if defined key_pisces_light
+#if defined key_pisces_npzd
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 9      !: number of PISCES passive tracers
 #elif defined key_pisces_quota
 #   if defined key_ligand
@@ -54,7 +54,7 @@ MODULE par_pisces
    ! assign an index in trc arrays for each LOBSTER prognostic variables
    !    WARNING: be carefull about the order when reading the restart
         !   !!gm  this warning should be obsolet with IOM
-#if defined key_pisces_light
+#if defined key_pisces_npzd
    INTEGER, PUBLIC, PARAMETER ::   jpdic =  1    !: dissolved inoganic carbon concentration 
    INTEGER, PUBLIC, PARAMETER ::   jptal =  2    !: total alkalinity 
    INTEGER, PUBLIC, PARAMETER ::   jpoxy =  3    !: oxygen carbon concentration 

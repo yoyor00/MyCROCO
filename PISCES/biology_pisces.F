@@ -25,6 +25,7 @@
        USE sms_pisces
        USE trcsms_pisces
        USE oce_trc
+       USE trc
 
 # include "ocean2pisces.h90"
 # include "do_loop_substitute.h90"
@@ -51,7 +52,7 @@
       DO_3D( 0, 0, 0, 0, 1, jpk)
          tr(ji,jj,jk,jpno3,Kbb) 
      &   = tr(ji,jj,jk,jpno3,Kbb) / rno3
-# if ! defined key_pisces_light
+# if ! defined key_pisces_npzd
          tr(ji,jj,jk,jpnh4,Kbb) 
      &   = tr(ji,jj,jk,jpnh4,Kbb) / rno3
          tr(ji,jj,jk,jppo4,Kbb)
@@ -75,7 +76,10 @@
          END_3D
       ENDDO
 
+!       CALL tracer_stat( iic, ctrcnm )
+
        CALL trc_sms_pisces( iic, Kbb, Kmm, Krhs )
+
 
       DO jn = 1, jptra
          DO_3D( 0, 0, 0, 0, 1, jpk)
@@ -87,7 +91,7 @@
       DO_3D( 0, 0, 0, 0, 1, jpk)
          tr(ji,jj,jk,jpno3,Kbb)
      &   = tr(ji,jj,jk,jpno3,Kbb) * rno3
-# if ! defined key_pisces_light
+# if ! defined key_pisces_npzd
          tr(ji,jj,jk,jpnh4,Kbb) 
      &  = tr(ji,jj,jk,jpnh4,Kbb) * rno3
          tr(ji,jj,jk,jppo4,Kbb) 
@@ -101,6 +105,8 @@
      &    = tra(ji,jj,jk,jn)
         END_3D
       ENDDO
+
+!       CALL tracer_stat( iic, ctrcnm )
 
       RETURN       
       END

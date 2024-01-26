@@ -96,7 +96,7 @@ CONTAINS
       !
       INTEGER  :: ji, jj, jk, jkt
       REAL(wp) :: zcompadi, zcompaph, zcompapoc, zcompaz, zcompam, zcompames
-      REAL(wp) :: zgraze2, zdenom, zfact, zfood, zfoodlim, zproport, zdep
+      REAL(wp) :: zgraze2, zdenom, zdenom3, zfact, zfood, zfoodlim, zproport, zdep
       REAL(wp) :: zmortzgoc, zfracc, zfracn, zfracp, zfracfe, zratio, zratio2
       REAL(wp) :: zepsherf, zepshert, zepsherq, zepsherv, zrespirc, zrespirn, zrespirp, zbasresb, zbasresi
       REAL(wp) :: zgraztotc, zgraztotn, zgraztotp, zgraztotf, zbasresn, zbasresp, zbasresf
@@ -111,15 +111,14 @@ CONTAINS
       REAL(wp) :: zgrazffnp, zgrazffng, zgrazffpp, zgrazffpg
       REAL(wp) :: zmigreltime, zrum, zcodel, zargu, zval, zmigthick 
       CHARACTER (len=25) :: charout
-      REAL(wp) :: zrfact2, zmetexcess, zsigma, zdiffdn
+      REAL(wp) :: zrfact2, zmetexcess, zsigma, zsigma2,  zsizedn, zdiffdn
       REAL(wp), DIMENSION(A2D(0),jpk) :: zgrarem, zgraref, zgrapoc, zgrapof
       REAL(wp), DIMENSION(A2D(0),jpk) :: zgrarep, zgraren, zgrapon, zgrapop
       REAL(wp), DIMENSION(A2D(0),jpk) :: zgradoc, zgradon, zgradop, zgrabsi
       REAL(wp), ALLOCATABLE, DIMENSION(:,:)   ::   zgramigrem, zgramigref, zgramigpoc, zgramigpof
       REAL(wp), ALLOCATABLE, DIMENSION(:,:)   ::   zgramigrep, zgramigren, zgramigpop, zgramigpon
       REAL(wp), ALLOCATABLE, DIMENSION(:,:)   ::   zgramigdoc, zgramigdop, zgramigdon, zgramigbsi
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing2, zzligprod
-
+      REAL(wp), DIMENSION(:,:,:)  , ALLOCATABLE :: zgrazing2, zzligprod, zw3d
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p5z_meso')
@@ -129,7 +128,6 @@ CONTAINS
          l_dia_lprodz  = ln_ligand .AND. iom_use( "LPRODZ2" )
          l_dia_graz    = l_dia_graz .OR. l_diaadd
       ENDIF
-
       IF( l_dia_graz ) THEN
          ALLOCATE( zgrazing2(A2D(0),jpk) )     ;    zgrazing2(A2D(0),jpk) = 0.
       ENDIF
@@ -218,17 +216,20 @@ CONTAINS
          ! have low abundance, .i.e. zooplankton become less specific 
          ! to avoid starvation.
          ! ----------------------------------------------------------
-         zsigma = 1.0 - zdenom**3/(0.05**3+zdenom**3)
+         zdenom3 = zdenom * zdenom * zdenom
+         zsigma = 1.0 - zdenom3/( 0.05 * 0.05 * 0.05 + zdenom3 )
          zsigma = xsigma2 + xsigma2del * zsigma
+         zsigma2 = zsigma * zsigma
          ! Nanophytoplankton and diatoms are the only preys considered
          ! to be close enough to have potential interference
          ! -----------------------------------------------------------
-         zdiffdn = exp( -ABS(log(3.0 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )**2 / zsigma**2 )
+         zsizedn = -ABS(LOG(3.0 * sizen(ji,jj,jk) / (5.0 * sized(ji,jj,jk) + rtrn )) )
+         zdiffdn = EXP( zsizedn * zsizedn / zsigma2 )
          ztmp1 = xpref2n * zcompaph * ( zcompaph + zdiffdn * zcompadi )
-         ztmp2 = xpref2m * zcompames**2
-         ztmp3 = xpref2c * zcompapoc**2
+         ztmp2 = xpref2m * zcompames * zcompames
+         ztmp3 = xpref2c * zcompapoc * zcompapoc
          ztmp4 = xpref2d * zcompadi * ( zcompadi + zdiffdn * zcompaph )
-         ztmp5 = xpref2z * zcompaz**2
+         ztmp5 = xpref2z * zcompaz * zcompaz
          ztmptot = ztmp1 + ztmp2 + ztmp3 + ztmp4 + ztmp5 + rtrn
          ztmp1 = ztmp1 / ztmptot
          ztmp2 = ztmp2 / ztmptot
@@ -473,7 +474,7 @@ CONTAINS
                 zgramigdop(ji,jj) = zgramigdop(ji,jj) + xfracmig * zgradop(ji,jj,jk) * zmigthick
                 zgramigdon(ji,jj) = zgramigdon(ji,jj) + xfracmig * zgradon(ji,jj,jk) * zmigthick
                 zgramigbsi(ji,jj) = zgramigbsi(ji,jj) + xfracmig * zgrabsi(ji,jj,jk) * zmigthick
-
+                
                 zgrarem(ji,jj,jk)  = zgrarem(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
                 zgrarep(ji,jj,jk)  = zgrarep(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
                 zgraren(ji,jj,jk)  = zgraren(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
@@ -486,6 +487,7 @@ CONTAINS
                 zgradop(ji,jj,jk)  = zgradop(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
                 zgradon(ji,jj,jk)  = zgradon(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
                 zgrabsi(ji,jj,jk)  = zgrabsi(ji,jj,jk) * ( xfracmigm1 + xfracmig * zmigreltime )
+
              ENDIF
           END_3D
 
@@ -549,37 +551,43 @@ CONTAINS
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
         !
         IF( l_dia_graz ) THEN  !
-            CALL iom_put( "GRAZ2"  , zgrazing2(:,:,:)       * 1.e+3 * rfact2r * tmask(A2D(0),:) )
-            CALL iom_put( "MesoZo2", zgrazing2(:,:,:) * ( 1. - epsher2 - unass2c ) * (-o2ut) * ssigma2  &
-                 &                 * 1.e+3 * rfact2r * tmask(A2D(0),:) ) ! o2 consumption by Mesozoo            
-            CALL iom_put( "FEZOO2", zgraref  (:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:) )
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            zw3d(A2D(0),:) =  zgrazing2(A2D(0),:) * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            CALL iom_put( "GRAZ2" , zw3d )  ! Total grazing of phyto by zooplankton
+            CALL iom_put( "MesoZo2" , zw3d * ( 1. - epsher2 - unass2c ) * (-o2ut) * ssigma2 ) ! o2 consumption by Microzoo
+            !
+            zw3d(A2D(0),:) =  zgraref(A2D(0),:) * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            CALL iom_put( "FEZOO2", zw3d )  !
+           DEALLOCATE( zw3d)
         ENDIF
         !
         IF( l_dia_lprodz ) THEN
-            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-               zzligprod(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
                    &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
-           CALL iom_put( "LPRODZ2", zzligprod )
-           DEALLOCATE( zzligprod )
+           CALL iom_put( "LPRODZ2", zw3d )
+           DEALLOCATE( zzligprod, zw3d)
         ENDIF
         !
       ENDIF
       !
+      !
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
          trc3d(ji,jj,jk,jp_grapoc2) = zgrazing2(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by mesozoo
-         trc3d(ji,jj,jk,jp_meso2)   = zgrazing2(ji,jj,jk) * ( 1. - epsher2 - unass2c ) &
-            &                   * (-o2ut) * ssigma2 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! o2 consumption by Mesozoo
+         trc3d(ji,jj,jk,jp_meso2)   = zgrazing2(ji,jj,jk) * ( 1. - epsher2 - unass2 ) &
+            &                   * (-o2ut) * sigma2 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! o2 consumption by Mesozoo
       END_3D
 #endif
      IF( l_dia_graz ) DEALLOCATE( zgrazing2 )
-     !
-     IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
-       WRITE(charout, FMT="('meso')")
-       CALL prt_ctl_info( charout, cdcomp = 'top' )
-   !    CALL prt_ctl(tab4d_1=tr(:,:,:,:,Krhs), mask1=tmask, clinfo=ctrcnm)
-     ENDIF
+      !
+      IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
+        WRITE(charout, FMT="('meso')")
+        CALL prt_ctl_info( charout, cdcomp = 'top' )
+   !     CALL prt_ctl(tab4d_1=tr(:,:,:,:,Krhs), mask1=tmask, clinfo=ctrcnm)
+      ENDIF
       !
       IF( ln_timing )   CALL timing_stop('p5z_meso')
       !
@@ -662,7 +670,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER, INTENT(in)  ::  Kbb, kmm ! time level indices
       !
-      INTEGER  :: ji, jj, jk
+      INTEGER  :: ji, jj, jk, jkp1
       !
       REAL(wp) :: ztotchl, z1dep
       REAL(wp), DIMENSION(jpi,jpj) :: oxymoy, tempmoy, zdepmoy
@@ -727,7 +735,8 @@ CONTAINS
       DO_2D( 0, 0, 0, 0 )
          IF( tr(ji,jj,kmig(ji,jj),jpoxy,Kbb) < 5E-6 ) THEN
             DO jk = kmig(ji,jj),1,-1
-               IF( tr(ji,jj,jk,jpoxy,Kbb) >= 5E-6 .AND. tr(ji,jj,jk+1,jpoxy,Kbb)  < 5E-6) THEN
+               jkp1 = jk+1
+               IF( tr(ji,jj,jk,jpoxy,Kbb) >= 5E-6 .AND. tr(ji,jj,jkp1,jpoxy,Kbb)  < 5E-6) THEN
                   kmig(ji,jj) = jk
                   depmig(ji,jj) = gdept(ji,jj,jk,Kmm)
                ENDIF

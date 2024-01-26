@@ -94,6 +94,7 @@ CONTAINS
       REAL(wp) ::   zconc1d, zconc1dnh4, zconc0n, zconc0nnh4   
       REAL(wp) ::   fananof, fadiatf, znutlim, zfalim
       REAL(wp) ::   znutlimtot, zlimno3, zlimnh4, zbiron
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p4z_lim')
@@ -256,22 +257,37 @@ CONTAINS
       IF( lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
         !
         IF( l_dia_fracal ) THEN   ! fraction of calcifiers
-          CALL iom_put( "xfracal",  xfracal(:,:,:) * tmask(A2D(0),:) ) 
+          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+          zw3d(A2D(0),:) = xfracal(A2D(0),:) * tmask(A2D(0),:)
+          CALL iom_put( "xfracal",  zw3d)
+          DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_nut_lim ) THEN   ! Nutrient limitation term
-          CALL iom_put( "LNnut",  xlimphy(:,:,:) * tmask(A2D(0),:) )
-          CALL iom_put( "LDnut",  xlimdia(:,:,:) * tmask(A2D(0),:) )
+          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+          zw3d(A2D(0),:) = xlimphy(A2D(0),:) * tmask(A2D(0),:)
+          CALL iom_put( "LNnut",  zw3d)
+          zw3d(A2D(0),:) = xlimdia(A2D(0),:) * tmask(A2D(0),:)
+          CALL iom_put( "LDnut",  zw3d)
+          DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_iron_lim ) THEN   ! Iron limitation term
-          CALL iom_put( "LNFe",  xlimnfe(:,:,:) * tmask(A2D(0),:) )
-          CALL iom_put( "LDFe",  xlimdfe(:,:,:) * tmask(A2D(0),:) )
+          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+          zw3d(A2D(0),:) = xlimnfe(A2D(0),:) * tmask(A2D(0),:)
+          CALL iom_put( "LNFe",  zw3d)
+          zw3d(A2D(0),:) = xlimdfe(A2D(0),:) * tmask(A2D(0),:)
+          CALL iom_put( "LDFe",  zw3d)
+          DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_size_lim ) THEN   ! Size limitation term
-          CALL iom_put( "SIZEN",  sizen(:,:,:) * tmask(A2D(0),:) )
-          CALL iom_put( "SIZED",  sized(:,:,:) * tmask(A2D(0),:) )
+          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
+          zw3d(A2D(0),:) = sizen(A2D(0),:) * tmask(A2D(0),:)
+          CALL iom_put( "SIZEN",  zw3d)
+          zw3d(A2D(0),:) = sized(A2D(0),:) * tmask(A2D(0),:)
+          CALL iom_put( "SIZED",  zw3d)
+          DEALLOCATE( zw3d )
         ENDIF
         !
       ENDIF

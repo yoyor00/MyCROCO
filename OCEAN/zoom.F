@@ -118,7 +118,6 @@
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
       USE trcnam_pisces
-      USE p4zbc
 # endif
       implicit none
       integer tile, ierr, trd, subs

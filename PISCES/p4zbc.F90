@@ -27,16 +27,17 @@ MODULE p4zbc
    LOGICAL , PUBLIC ::   ln_ndepo     !: boolean for atmospheric deposition of N
    LOGICAL , PUBLIC ::   ln_ironsed   !: boolean for Fe input from sediments
    REAL(wp), PUBLIC ::   sedfeinput   !: Coastal release of Iron
-   REAL(wp), PUBLIC ::   dustsolub    !: Solubility of the dust
    REAL(wp), PUBLIC ::   mfrac        !: Mineral Content of the dust
    REAL(wp), PUBLIC ::   wdust        !: Sinking speed of the dust 
    REAL(wp), PUBLIC ::   lgw_rath     !: Weak ligand ratio from sed hydro sources
    LOGICAL , PUBLIC ::   ll_bc
    LOGICAL , PUBLIC ::   ll_dust      !: boolean for dust input from the atmosphere
 
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:)   ::   dust             !: dust fields
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   ironsed          !: Coastal supply of iron
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   dustmo, no3depmo, nh4depmo !: 2 consecutive set of dust fields 
+   REAL(wp), PUBLIC, ALLOCATABLE, DIMENSION(:,:)   ::   dust             !: dust fields
+   REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   ironsed          !: Coastal supply of iron
+   REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   dustmo, ferdepmo !: 2 consecutive set of dust fields 
+   REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   po4depmo, sildepmo !: 2 consecutive set of dust fields 
+   REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   no3depmo, nh4depmo !: 2 consecutive set of dust fields 
 
    REAL(wp), PUBLIC :: sedsilfrac, sedcalfrac
    REAL(wp), PUBLIC :: year2daydta
@@ -76,22 +77,25 @@ CONTAINS
       REAL(wp) :: zpdtan, zpdtmo, zdemi, zt
       REAL(wp) :: zxy, zjulian, zsec
       !
-      REAL(wp)   :: zdust, zwdust, zfact, zdustsil, zdustpo4
+      REAL(wp)   :: zdust, zwdust, zfact
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zno3dep, znh4dep
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zpo4dep, zsildep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zirondep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       !!---------------------------------------------------------------------
       !
       ! Compute dust at nit000 or only if there is more than 1 time record in dust file
-      IF( kt == nit000 .AND. lwp ) THEN
-        WRITE(numout,*) ' '
-        WRITE(numout,*) ' Number of days per year in file year2daydta = ', year2daydta
-        WRITE(numout,*) ' '
-         l_dia_iron   = iom_use( "Ironsed" ) 
-         l_dia_dust   = iom_use( "Irondep" ) .OR. iom_use( "pdust" ) &
+      IF( kt == nit000 ) THEN
+        l_dia_iron   = iom_use( "Ironsed" ) 
+        l_dia_dust   = iom_use( "Irondep" ) .OR. iom_use( "pdust" ) &
            &            .OR. iom_use( "Sildep" ) .OR. iom_use( "Po4dep" )
-         l_dia_ndep   = iom_use( "No3dep" ) .OR. iom_use( "Nh4dep" )
+        l_dia_ndep   = iom_use( "No3dep" ) .OR. iom_use( "Nh4dep" )
+        IF( lwp ) THEN
+           WRITE(numout,*) ' '
+           WRITE(numout,*) ' Number of days per year in file year2daydta = ', year2daydta
+           WRITE(numout,*) ' '
+        ENDIF
       ENDIF
       !
       zpdtan = ( year2daydta * day2sec ) / rdt
@@ -120,30 +124,57 @@ CONTAINS
          END_2D
          !
          DO_2D( 0, 0, 0, 0 )
-            zirondep(ji,jj,1) = dustsolub  * dust(ji,jj) * mfrac * rfact2 / e3t(ji,jj,1,Kmm) 
+            zirondep(ji,jj,1) =  ( ( 1. - zxy ) * ferdepmo(ji,jj,irec1) + zxy * ferdepmo(ji,jj,irec2) ) &
+               &                   * rfact2 / e3t(ji,jj,1,Kmm) 
          END_2D
          !                                              ! Iron solubilization of particles in the water column
          !                                              ! dust in kg/m2/s ---> 1/55.85 to put in mol/Fe ;  wdust in m/j
          zwdust = 0.03  / ( wdust / rday ) / ( 250. * rday )
          DO_3D( 0, 0, 0, 0, 2, jpk)
-            zirondep(ji,jj,jk) = dust(ji,jj) * zwdust * rfact * EXP( -gdept(ji,jj,jk,Kmm) /( 250. * wdust ) )
+            zirondep(ji,jj,jk) = ( dust(ji,jj) * mfrac / mMass_Fe ) * zwdust &
+                   &              * rfact * EXP( -gdept(ji,jj,jk,Kmm) /( 250. * wdust ) )
          END_3D
          !                                              ! Iron solubilization of particles in the water column
          DO_3D( 0, 0, 0, 0, 1, jpk)
-            tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) + zirondep(ji,jj,jk) * mfrac / mMass_Fe
+            tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) + zirondep(ji,jj,jk)
          END_3D
          !
-#if ! defined key_pisces_light
+         IF( lk_iomput .AND. l_dia_dust ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )         ;   zw2d(:,:) = 0.
+            DO_3D( 0, 0, 0, 0, 1, jpk )
+               zw3d(ji,jj,jk) = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
+            END_3D
+            CALL iom_put( "Irondep", zw3d )  ! surface downward dust depo of iron
+            !
+            DO_2D( 0, 0, 0, 0 )
+               zw2d(ji,jj) = dust(ji,jj) / ( wdust * rday ) * tmask(ji,jj,1) ! dust concentration at surface
+            END_2D
+            CALL iom_put( "pdust", zw2d ) ! dust concentration at surface
+            DEALLOCATE( zw2d, zw3d )
+            !
+         ENDIF
+#if defined key_trc_diaadd
+         DO_3D( 0, 0, 0, 0, 1, jpk )
+            trc3d(ji,jj,jk,jp_irondep)  = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
+         END_3D
+# endif
+         DEALLOCATE( zirondep )
+         !                                              
+#if ! defined key_pisces_npzd
          ! Atmospheric input of PO4 and Si dissolves in the water column
+         ALLOCATE( zpo4dep(A2D(0)), zsildep(A2D(0)) )
          DO_2D( 0, 0, 0, 0 )
-            zdustpo4 =  8.8 * 0.075 * dust(ji,jj) * rfact2 * mfrac / e3t(ji,jj,1,Kmm) / mMass_P / po4r
-            zdustsil =  0.1 * 0.021 * dust(ji,jj) * rfact2 * mfrac / e3t(ji,jj,1,Kmm) / mMass_Si
-            tr(ji,jj,1,jppo4,Krhs) = tr(ji,jj,1,jppo4,Krhs) + zdustpo4 
-            tr(ji,jj,1,jpsil,Krhs) = tr(ji,jj,1,jpsil,Krhs) + zdustsil
+            zpo4dep(ji,jj) = ( 1. - zxy ) * po4depmo(ji,jj,irec1) + zxy * po4depmo(ji,jj,irec2)
+            zsildep(ji,jj) = ( 1. - zxy ) * sildepmo(ji,jj,irec1) + zxy * sildepmo(ji,jj,irec2)
+         END_2D
+         DO_2D( 0, 0, 0, 0 )
+            tr(ji,jj,1,jppo4,Krhs) = tr(ji,jj,1,jppo4,Krhs) + zpo4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm) 
+            tr(ji,jj,1,jpsil,Krhs) = tr(ji,jj,1,jpsil,Krhs) + zsildep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
 #if defined key_trc_diaadd
             zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
-            trc2d(ji,jj,jp_sildep) = zdustsil * zfact        ! Si surface deposition
-            trc2d(ji,jj,jp_po4dep) = zdustpo4 * zfact * po4r ! PO4 surface deposition
+            trc2d(ji,jj,jp_sildep) = zsildep(ji,jj) * zfact        ! Si surface deposition
+            trc2d(ji,jj,jp_po4dep) = zpo4dep(ji,jj) * zfact * po4r ! PO4 surface deposition
 # endif
          END_2D
 
@@ -155,42 +186,24 @@ CONTAINS
 # endif
          !
          IF( lk_iomput .AND. l_dia_dust ) THEN
-            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
-            DO_3D( 0, 0, 0, 0, 1, jpk )
-               zw3d(ji,jj,jk) = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
-            END_3D
-            CALL iom_put( "Irondep", zw3d )  ! surface downward dust depo of iron
-            DEALLOCATE( zw3d )
             !
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
             DO_2D( 0, 0, 0, 0 )
                zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
-               zdustpo4 =  8.8 * 0.075 * dust(ji,jj) * rfact2 * mfrac / e3t(ji,jj,1,Kmm) / mMass_P / po4r
-               zw2d(ji,jj) = zdustpo4 * zfact        ! Si surface deposition
+               zw2d(ji,jj) = zpo4dep(ji,jj) * zfact        ! Si surface deposition
             END_2D
             CALL iom_put( "Po4dep", zw2d ) ! PO4 concentration at surface
 
             DO_2D( 0, 0, 0, 0 )
                zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
-               zdustsil =  0.1 * 0.021 * dust(ji,jj) * rfact2 * mfrac / e3t(ji,jj,1,Kmm) / mMass_Si
-               zw2d(ji,jj) = zdustsil * zfact        ! Si surface deposition
+               zw2d(ji,jj) = zsildep(ji,jj) * zfact        ! Si surface deposition
             END_2D
             CALL iom_put( "Sildep", zw2d ) ! Si concentration at surface
-
-            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
-            DO_2D( 0, 0, 0, 0 )
-               zw2d(ji,jj) = dust(ji,jj) / ( wdust * rday ) * tmask(ji,jj,1) ! dust concentration at surface
-            END_2D
-            CALL iom_put( "pdust", zw2d ) ! dust concentration at surface
             DEALLOCATE( zw2d )
          ENDIF
          !
-#if defined key_trc_diaadd
-         DO_3D( 0, 0, 0, 0, 1, jpk )
-            trc3d(ji,jj,jk,jp_irondep)  = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
-         END_3D
-# endif
-         DEALLOCATE( zirondep )
-         !                                              
+         DEALLOCATE( zpo4dep, zsildep )
+         !
       ENDIF
       !
       IF( ln_ndepo ) THEN
@@ -198,11 +211,8 @@ CONTAINS
          !
          DO_2D( 0, 0, 0, 0 )
             zno3dep(ji,jj) = ( 1. - zxy ) * no3depmo(ji,jj,irec1) + zxy   * no3depmo(ji,jj,irec2)
-            ! conversion from KgN/m2/s to molC/L/s
-            zfact = rfact2 / rno3 / 14. / e3t(ji,jj,1,Kmm)
-            zno3dep(ji,jj) =  zfact * zno3dep(ji,jj)
-            tr(ji,jj,1,jpno3,Krhs) = tr(ji,jj,1,jpno3,Krhs) + zno3dep(ji,jj)
-            tr(ji,jj,1,jptal,Krhs) = tr(ji,jj,1,jptal,Krhs) - rno3 * zno3dep(ji,jj)
+            tr(ji,jj,1,jpno3,Krhs) = tr(ji,jj,1,jpno3,Krhs) +        zno3dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            tr(ji,jj,1,jptal,Krhs) = tr(ji,jj,1,jptal,Krhs) - rno3 * zno3dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
          END_2D
          !
          IF( lk_iomput .AND. l_dia_ndep ) THEN
@@ -220,16 +230,13 @@ CONTAINS
 # endif
          DEALLOCATE( zno3dep )
 
-#if ! defined key_pisces_light
+#if ! defined key_pisces_npzd
          ALLOCATE( znh4dep(A2D(0)) )
          !
          DO_2D( 0, 0, 0, 0 )
             znh4dep(ji,jj) = ( 1. - zxy ) * nh4depmo(ji,jj,irec1) + zxy   * nh4depmo(ji,jj,irec2)
-            ! conversion from KgN/m2/s to molC/L/s
-            zfact = rfact2 / rno3 / 14. / e3t(ji,jj,1,Kmm)
-            znh4dep(ji,jj) =  zfact * znh4dep(ji,jj)
-            tr(ji,jj,1,jpnh4,Krhs) = tr(ji,jj,1,jpnh4,Krhs) + znh4dep(ji,jj)
-            tr(ji,jj,1,jptal,Krhs) = tr(ji,jj,1,jptal,Krhs) + rno3 * znh4dep(ji,jj)
+            tr(ji,jj,1,jpnh4,Krhs) = tr(ji,jj,1,jpnh4,Krhs) +        znh4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            tr(ji,jj,1,jptal,Krhs) = tr(ji,jj,1,jptal,Krhs) + rno3 * znh4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
          END_2D
          !
          IF( lk_iomput .AND. l_dia_ndep ) THEN
@@ -244,8 +251,8 @@ CONTAINS
          DO_2D( 0, 0, 0, 0 )
             trc2d(ji,jj,jp_nh4dep ) = znh4dep(ji,jj) * rno3 * rfact2r * tmask(ji,jj,1)
          END_2D
-         DEALLOCATE( znh4dep )
 # endif
+         DEALLOCATE( znh4dep )
 # endif
       ENDIF
       ! Add the external input of iron from sediment mobilization
@@ -256,10 +263,11 @@ CONTAINS
          END_3D
          !
          IF( lk_iomput .AND. l_dia_iron ) THEN
-            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
-            DO_3D( 0, 0, 0, 0, 1, jpk )
-               zw3d(ji,jj,jk) = ironsed(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
-            END_3D
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )   ;   zw3d(:,:,:) = 0.
+            !DO_3D( 0, 0, 0, 0, 1, jpk )
+              ! zw3d(ji,jj,jk) = ironsed(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
+            !   zw3d(ji,jj,jk) = 1.e+3 * rmask(ji,jj)
+            !END_3D
             CALL iom_put( "Ironsed", zw3d )  ! iron inputs from sediments
             DEALLOCATE( zw3d )
          ENDIF
@@ -288,7 +296,7 @@ CONTAINS
       INTEGER, INTENT(in)  :: Kmm
 # include "netcdf.inc"
       INTEGER  :: ji, jj, jk, irec
-      INTEGER :: ncid, varid, dimid, ierr, lstr, lenstr, nf_fread, nrec_dust
+      INTEGER :: ncid, varid, dimid, ierr, lstr, lenstr, nf_fread, nrec_dust, nrec_ndep
       INTEGER :: vartype, nvatts, latt, nvdims
       INTEGER :: vdims(5)
       INTEGER  :: ios                 ! Local integer output status for namelist read
@@ -297,7 +305,6 @@ CONTAINS
 
       REAL     ::  cycle_length
       REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::  dustmp
-      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::  no3deptmp, nh4deptmp
       REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::  zcmask
 #ifdef MPI
 #define LOCALLM Lmmpi
@@ -320,7 +327,7 @@ CONTAINS
       READ_NML_REF(numnatp,nampisbc)
       READ_NML_CFG(numnatp,nampisbc)
       IF(lwm) WRITE ( numonp, nampisbc )      
-
+ 
       IF(lwp) THEN
          WRITE(numout,*) '   Namelist : nampissbc '
          WRITE(numout,*) '      dust input from the atmosphere           ln_dust     = ', ln_dust
@@ -333,7 +340,6 @@ CONTAINS
             WRITE(numout,*) '      Weak ligand ratio from sed hydro sources  lgw_rath   = ', lgw_rath
          ENDIF
          IF( ln_dust ) THEN
-            WRITE(numout,*) '      solubility of the dust                   dustsolub   = ', dustsolub
             WRITE(numout,*) '      Mineral Fe content of the dust           mfrac       = ', mfrac
             WRITE(numout,*) '      sinking speed of the dust                wdust       = ', wdust
          ENDIF
@@ -419,15 +425,18 @@ CONTAINS
          ENDIF
          ierr = nf_inq_dimid(ncid,"dust_time",dimid)
          ierr = nf_inq_dimlen(ncid,dimid,nrec_dust)
-         ALLOCATE( dustmp(GLOBAL_2D_ARRAY,nrec_dust), dustmo(GLOBAL_2D_ARRAY,12) )
-         ALLOCATE( dust(PRIV_2D_BIOARRAY) )
+         !
+         IF (lwp) WRITE(numout,*) ' nrec_dust = ', nrec_dust
+         ALLOCATE( dustmp(GLOBAL_2D_ARRAY,nrec_dust), dustmo(GLOBAL_2D_ARRAY,nrec_dust) )
+         ALLOCATE( ferdepmo(GLOBAL_2D_ARRAY,nrec_dust), dust(PRIV_2D_BIOARRAY) )
+         !
          DO irec = 1, nrec_dust
             ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
             IF (ierr .NE. nf_noerr .AND. lwp ) THEN
                WRITE(numout,6) "dust", irec
             ENDIF
          END DO
-         ierr = nf_close(ncid)
+         !
          IF (lwp) WRITE(numout,*)
          IF (lwp) WRITE(numout,'(6x,A,1x,I4)') &
 #ifdef MPI
@@ -435,7 +444,6 @@ CONTAINS
 #else
          &                   'TRCINI_PISCES -- Read dust deposition '
 #endif
-
          DO irec = 1, nrec_dust
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
@@ -444,8 +452,91 @@ CONTAINS
             ENDDO
          ENDDO
          !
+         ierr = nf_inq_varid (ncid,"dustfer",varid)
+         IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+            WRITE(numout,5) "dustfer", bioname
+         ENDIF
+         DO irec = 1, nrec_dust
+            ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
+            IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+               WRITE(numout,6) "dustfer", irec
+            ENDIF
+         END DO
+         !
+         IF (lwp) WRITE(numout,*)
+         IF (lwp) WRITE(numout,'(6x,A,1x,I4)') &
+#ifdef MPI
+         &                   'TRCINI_PISCES -- Read iron deposition ', mynode
+#else
+         &                   'TRCINI_PISCES -- Read iron deposition '
+#endif
+         DO irec = 1, nrec_dust
+            DO jj = 1, LOCALMM
+               DO ji = 1, LOCALLM
+                  ferdepmo(ji,jj,irec) = dustmp(ji,jj,irec) * mfrac / mMass_Fe
+               ENDDO
+            ENDDO
+         ENDDO
+         !
+#if ! defined key_pisces_npzd
+         ALLOCATE( sildepmo(GLOBAL_2D_ARRAY,nrec_dust), po4depmo(GLOBAL_2D_ARRAY,nrec_dust) )
+         !
+         ierr = nf_inq_varid (ncid,"dustpo4",varid)
+         IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+            WRITE(numout,5) "dustpo4", bioname
+         ENDIF
+         DO irec = 1, nrec_dust
+            ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
+            IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+               WRITE(numout,6) "dustpo4", irec
+            ENDIF
+         END DO
+         !
+         IF (lwp) WRITE(numout,*)
+         IF (lwp) WRITE(numout,'(6x,A,1x,I4)') &
+#ifdef MPI
+         &                   'TRCINI_PISCES -- Read phosphorus deposition ', mynode
+#else
+         &                   'TRCINI_PISCES -- Read phosphorus deposition '
+#endif
+         DO irec = 1, nrec_dust
+            DO jj = 1, LOCALMM
+               DO ji = 1, LOCALLM
+                  po4depmo(ji,jj,irec) = dustmp(ji,jj,irec) * 1e-3 / mMass_P / po4r
+               ENDDO
+            ENDDO
+         ENDDO
+         !
+         ierr = nf_inq_varid (ncid,"dustsi",varid)
+         IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+            WRITE(numout,5) "dustsi", bioname
+         ENDIF
+         DO irec = 1, nrec_dust
+            ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
+            IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+               WRITE(numout,6) "dustsi", irec
+            ENDIF
+         END DO
+         !
+         IF (lwp) WRITE(numout,*)
+         IF (lwp) WRITE(numout,'(6x,A,1x,I4)') &
+#ifdef MPI
+         &                   'TRCINI_PISCES -- Read silicate deposition ', mynode
+#else
+         &                   'TRCINI_PISCES -- Read silicate deposition '
+#endif
+         DO irec = 1, nrec_dust
+            DO jj = 1, LOCALMM
+               DO ji = 1, LOCALLM
+                  sildepmo(ji,jj,irec) = dustmp(ji,jj,irec) * 0.269 / mMass_Si
+               ENDDO
+            ENDDO
+         ENDDO
+         !
+#endif
+         ierr = nf_close(ncid)
          DEALLOCATE(dustmp)
-
+         !
       ENDIF
 !
 !    READ N DEPOSITION FROM ATMOSPHERE (use dust_time for time)
@@ -457,21 +548,23 @@ CONTAINS
          IF (ierr .NE. nf_noerr .AND. lwp) THEN
             WRITE(numout,4) bioname
          ENDIF
-         ierr = nf_inq_varid (ncid,"ndepo",varid)
+         ierr = nf_inq_dimid(ncid,"ndep_time",dimid)
+         ierr = nf_inq_dimlen(ncid,dimid,nrec_ndep)
+         ALLOCATE( dustmp(GLOBAL_2D_ARRAY,nrec_ndep) )
+#if ! defined key_pisces_npzd
+         ALLOCATE( no3depmo(GLOBAL_2D_ARRAY,nrec_ndep) )
+         ierr = nf_inq_varid (ncid,"noydepo",varid)
          IF (ierr .NE. nf_noerr .AND. lwp ) THEN
-            WRITE(numout,5) "ndepo", bioname
+            WRITE(numout,5) "noydepo", bioname
          ENDIF
-         ierr = nf_inq_dimid(ncid,"dust_time",dimid)
-         ierr = nf_inq_dimlen(ncid,dimid,nrec_dust)
-         ALLOCATE( no3deptmp(GLOBAL_2D_ARRAY,nrec_dust), no3depmo(GLOBAL_2D_ARRAY,12) )
-         DO irec = 1, nrec_dust
-            ierr = nf_fread(no3deptmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
+         !
+         DO irec = 1, nrec_ndep
+            ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
             IF (ierr .NE. nf_noerr .AND. lwp ) THEN
-               WRITE(numout,6) "ndepo", irec
+               WRITE(numout,6) "noydepo", irec
             ENDIF
          END DO
          !
-         ierr = nf_close(ncid)
          IF (lwp) WRITE(numout,*)
          IF (lwp) WRITE(numout,'(6x,A,1x,I4)') &
 #ifdef MPI
@@ -480,38 +573,26 @@ CONTAINS
          &                   'TRCINI_PISCES -- Read Nitrate deposition '
 #endif
 
-         DO irec = 1, nrec_dust
+         DO irec = 1, nrec_ndep
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  no3depmo(ji,jj,irec) = no3deptmp(ji,jj,irec)
+                  no3depmo(ji,jj,irec) = dustmp(ji,jj,irec) * rno3 / mMass_N
                END DO
             END DO
          END DO
          !
-         DEALLOCATE( no3deptmp )
-         !
-#if ! defined key_pisces_light
-         lstr = lenstr(bioname)
-         ierr = nf_open (bioname(1:lstr), nf_nowrite, ncid)
-         IF (ierr .NE. nf_noerr .AND. lwp) THEN
-            WRITE(numout,4) bioname
-         ENDIF
+         ALLOCATE( nh4depmo(GLOBAL_2D_ARRAY,nrec_ndep) )
          ierr = nf_inq_varid (ncid,"nhxdepo",varid)
          IF (ierr .NE. nf_noerr .AND. lwp ) THEN
             WRITE(numout,5) "nhxdepo", bioname
          ENDIF
-         ierr = nf_inq_dimid(ncid,"dust_time",dimid)
-         ierr = nf_inq_dimlen(ncid,dimid,nrec_dust)
-         ALLOCATE( nh4deptmp(GLOBAL_2D_ARRAY,nrec_dust), nh4depmo(GLOBAL_2D_ARRAY,12) )
-
-         DO irec = 1, nrec_dust
-            ierr = nf_fread(nh4deptmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
+         DO irec = 1, nrec_ndep
+            ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
             IF (ierr .NE. nf_noerr .AND. lwp ) THEN
                WRITE(numout,6) "nhxdepo", irec
             ENDIF
          END DO
          !
-         ierr = nf_close(ncid)
          IF (lwp) WRITE(numout,*)
          IF (lwp) WRITE(numout,'(6x,A,1x,I4)') &
 #ifdef MPI
@@ -520,16 +601,47 @@ CONTAINS
          &                   'TRCINI_PISCES -- Read Ammoniun deposition '
 #endif
 
-         DO irec = 1, nrec_dust
+         DO irec = 1, nrec_ndep
             DO jj= 1, LOCALMM
                DO ji =1, LOCALLM
-                  nh4depmo(ji,jj,irec) = nh4deptmp(ji,jj,irec)
+                  nh4depmo(ji,jj,irec) = dustmp(ji,jj,irec) / mMass_N / rno3
                END DO
             END DO
          END DO
          !
-         DEALLOCATE( nh4deptmp )
+#else         
+         ALLOCATE( no3depmo(GLOBAL_2D_ARRAY,nrec_ndep) )
+         ierr = nf_inq_varid (ncid,"ndep",varid)
+         IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+            WRITE(numout,5) "ndep", bioname
+         ENDIF
+         !
+         DO irec = 1, nrec_ndep
+            ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
+            IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+               WRITE(numout,6) "ndep", irec
+            ENDIF
+         END DO
+         !
+         IF (lwp) WRITE(numout,*)
+         IF (lwp) WRITE(numout,'(6x,A,1x,I4)') &
+#ifdef MPI
+         &                   'TRCINI_PISCES -- Read Nitrate deposition ', mynode
+#else
+         &                   'TRCINI_PISCES -- Read Nitrate deposition '
 #endif
+
+         DO irec = 1, nrec_ndep
+            DO jj = 1, LOCALMM
+               DO ji = 1, LOCALLM
+                  no3depmo(ji,jj,irec) = dustmp(ji,jj,irec) / mMass_N / rno3
+               END DO
+            END DO
+         END DO
+         !
+#endif
+         ierr = nf_close(ncid)
+         DEALLOCATE( dustmp )
 
       ENDIF
 

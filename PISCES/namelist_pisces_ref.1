@@ -9,7 +9,6 @@
 !!              8  - parameters for inputs deposition         (nampissed)
 !!              9  - parameters for Kriest parameterization   (nampiskrp, nampiskrs)
 !!              10 - additional 2D/3D  diagnostics            (nampisdia)
-!!              11 - Damping                                  (nampisdmp)
 !>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 &nampistrc     !   tracers definition
@@ -433,14 +432,21 @@
 !-----------------------------------------------------------------------
 &nampislig     !   Namelist parameters for ligands, nampislig
 !-----------------------------------------------------------------------
-   rlgw        =  100.     ! Lifetime (years) of weak ligands
+   rlgw        =  300.     ! Lifetime (years) of weak ligands
    rlig        =  1.E-4    ! Remin ligand production per unit C
-   prlgw       =  1.E-4    ! Photolysis of weak ligand
+   prlgw       =  3.E-4    ! Photolysis of weak ligand
    rlgs        =  1.       ! Lifetime (years) of strong ligands
+   xklig       =  1.E-9    ! 1/2 saturation constant of photolysis
 /
 !-----------------------------------------------------------------------
 &nampissed     !   Namelist parameters for sediment mobilisation
 !-----------------------------------------------------------------------
     bureffmin  = 0.013     !: Minimum burial efficiency
     bureffvar  = 0.53      !: Variable coef. for burial efficiency
+/
+!-----------------------------------------------------------------------
+&nampisdmp     !   Damping 
+!-----------------------------------------------------------------------
+   ln_pisdmp    =  .false.     !  Relaxation for some tracers to a mean value
+   nn_pisdmp    =  5475       !  Frequency of Relaxation 
 /

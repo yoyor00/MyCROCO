@@ -72,8 +72,10 @@ CONTAINS
       REAL(wp), DIMENSION(A2D(0)    ) :: zdepmoy, zetmp1, zetmp2
       REAL(wp), DIMENSION(A2D(0)    ) :: zqsr100, zqsr_corr
       REAL(wp), DIMENSION(A2D(0),jpk) :: ze0, ze1, ze2, ze3
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zetmp3
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zpar
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zetmp3
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zw2d
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p4z_opt')
@@ -294,7 +296,6 @@ CONTAINS
       ! The euphotic depth can not exceed 300 meters.
       heup   (:,:) = MIN( 300., heup   (:,:) )
       heup_01(:,:) = MIN( 300., heup_01(:,:) )
-
       ! Mean PAR over the mixed layer
       ! -----------------------------
       zdepmoy(:,:)   = 0.e0             
@@ -374,9 +375,14 @@ CONTAINS
       ENDIF
       !
       IF( lk_iomput .AND.  knt == nrdttrc ) THEN
-         IF( l_dia_heup ) CALL iom_put( "Heup", heup(:,:) * tmask(A2D(0),1) )  ! Euphotic layer depth
-         IF( l_dia_par ) THEN   ! diagnostic : PAR with no diurnal cycle
-           ALLOCATE( zpar(A2D(0),jpk) )  ;  zpar(:,:,:) = etot_ndcy(:,:,:)  
+         IF( l_dia_heup ) THEN
+           ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;  zw2d(:,:) = 0._wp
+           zw2d(A2D(0)) = heup(A2D(0)) * tmask(A2D(0),1)
+           CALL iom_put( "Heup", zw2d )  ! Euphotic layer depth
+           DEALLOCATE( zw2d ) 
+        ENDIF
+        IF( l_dia_par ) THEN   ! diagnostic : PAR with no diurnal cycle
+           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp  ;  zw3d(A2D(0),:) = etot_ndcy(A2D(0),:)  
            ALLOCATE( zetmp3(A2D(0) ) )   ;  zetmp3(:,:)   = 0.e0
            DO_3D( 0, 0, 0, 0, 1, nksr)
               IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
@@ -386,13 +392,14 @@ CONTAINS
            DO_3D( 0, 0, 0, 0, 1, nksr)
               IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
                  z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
-                 zpar (ji,jj,jk) = zetmp3(ji,jj) * z1_dep
+                 zw3d(ji,jj,jk) = zetmp3(ji,jj) * z1_dep
               ENDIF
            END_3D
-           zpar(:,:,1) = zpar(:,:,1) * ( 1._wp - fr_i(A2D(0)) ) 
-           CALL iom_put( "PAR", zpar(:,:,:) * tmask(A2D(0),:) ) 
-           DEALLOCATE( zpar, zetmp3 ) 
-         ENDIF
+           zw3d(A2D(0),:) = zw3d(A2D(0),:) * tmask(A2D(0),:) 
+           zw3d(A2D(0),1) = zw3d(A2D(0),1) * ( 1._wp - fr_i(A2D(0)) ) 
+           CALL iom_put( "PAR", zw3d ) 
+           DEALLOCATE( zw3d, zetmp3 ) 
+        ENDIF
       ENDIF
       !
 #if defined key_trc_diaadd
@@ -424,7 +431,7 @@ CONTAINS
       REAL(wp), DIMENSION(A2D(0),jpk), INTENT(inout), OPTIONAL ::   pe0               !
       REAL(wp), DIMENSION(A2D(0))    , INTENT(  out), OPTIONAL ::   pqsr100           !
       !
-      INTEGER    ::   ji, jj, jk     ! dummy loop indices
+      INTEGER    ::   ji, jj, jk, jkm1     ! dummy loop indices
       REAL(wp), DIMENSION(A2D(0)) ::  zqsr   ! shortwave
       !!----------------------------------------------------------------------
 
@@ -444,7 +451,8 @@ CONTAINS
          pe3(:,:,1) = zqsr(:,:)
          !
          DO_3D( 0, 0, 0, 0, 2, nksr + 1)
-            pe0(ji,jj,jk) = pe0(ji,jj,jk-1) * EXP( -e3t(ji,jj,jk-1,Kmm) * xsi0r )
+            jkm1 = jk-1
+            pe0(ji,jj,jk) = pe0(ji,jj,jk-1) * EXP( -e3t(ji,jj,jkm1,Kmm) * xsi0r )
             pe1(ji,jj,jk) = pe1(ji,jj,jk-1) * EXP( -ekb  (ji,jj,jk-1 )        )
             pe2(ji,jj,jk) = pe2(ji,jj,jk-1) * EXP( -ekg  (ji,jj,jk-1 )        )
             pe3(ji,jj,jk) = pe3(ji,jj,jk-1) * EXP( -ekr  (ji,jj,jk-1 )        )
