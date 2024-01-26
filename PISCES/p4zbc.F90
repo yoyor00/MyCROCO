@@ -447,7 +447,7 @@ CONTAINS
          DO irec = 1, nrec_dust
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  dustmo(ji,jj,irec) = dustmp(ji,jj,irec)
+                  dustmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) )
                ENDDO
             ENDDO
          ENDDO
@@ -473,7 +473,7 @@ CONTAINS
          DO irec = 1, nrec_dust
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  ferdepmo(ji,jj,irec) = dustmp(ji,jj,irec) * mfrac / mMass_Fe
+                  ferdepmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) * mfrac / mMass_Fe
                ENDDO
             ENDDO
          ENDDO
@@ -502,7 +502,7 @@ CONTAINS
          DO irec = 1, nrec_dust
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  po4depmo(ji,jj,irec) = dustmp(ji,jj,irec) * 1e-3 / mMass_P / po4r
+                  po4depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) * 1e-3 / mMass_P / po4r
                ENDDO
             ENDDO
          ENDDO
@@ -528,7 +528,7 @@ CONTAINS
          DO irec = 1, nrec_dust
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  sildepmo(ji,jj,irec) = dustmp(ji,jj,irec) * 0.269 / mMass_Si
+                  sildepmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) * 0.269 / mMass_Si
                ENDDO
             ENDDO
          ENDDO
@@ -576,7 +576,7 @@ CONTAINS
          DO irec = 1, nrec_ndep
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  no3depmo(ji,jj,irec) = dustmp(ji,jj,irec) * rno3 / mMass_N
+                  no3depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / mMass_N / rno3
                END DO
             END DO
          END DO
@@ -604,7 +604,7 @@ CONTAINS
          DO irec = 1, nrec_ndep
             DO jj= 1, LOCALMM
                DO ji =1, LOCALLM
-                  nh4depmo(ji,jj,irec) = dustmp(ji,jj,irec) / mMass_N / rno3
+                  nh4depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / mMass_N / rno3
                END DO
             END DO
          END DO
