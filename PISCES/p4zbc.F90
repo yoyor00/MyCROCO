@@ -264,10 +264,9 @@ CONTAINS
          !
          IF( lk_iomput .AND. l_dia_iron ) THEN
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )   ;   zw3d(:,:,:) = 0.
-            !DO_3D( 0, 0, 0, 0, 1, jpk )
-              ! zw3d(ji,jj,jk) = ironsed(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
-            !   zw3d(ji,jj,jk) = 1.e+3 * rmask(ji,jj)
-            !END_3D
+            DO_3D( 0, 0, 0, 0, 1, jpk )
+               zw3d(ji,jj,jk) = ironsed(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
+            END_3D
             CALL iom_put( "Ironsed", zw3d )  ! iron inputs from sediments
             DEALLOCATE( zw3d )
          ENDIF
@@ -345,8 +344,8 @@ CONTAINS
          ENDIF
       ENDIF
 
-      IF( ln_dust .OR. ln_ndepo ) THEN   ;   ll_bc = .TRUE.
-      ELSE                               ;   ll_bc = .FALSE.
+      IF( ln_dust .OR. ln_ndepo .OR. ln_ironsed ) THEN   ;   ll_bc = .TRUE.
+      ELSE                                               ;   ll_bc = .FALSE.
       ENDIF
 
       ll_dust = ln_dust .OR. ln_sediment
@@ -553,15 +552,15 @@ CONTAINS
          ALLOCATE( dustmp(GLOBAL_2D_ARRAY,nrec_ndep) )
 #if ! defined key_pisces_npzd
          ALLOCATE( no3depmo(GLOBAL_2D_ARRAY,nrec_ndep) )
-         ierr = nf_inq_varid (ncid,"noydepo",varid)
+         ierr = nf_inq_varid (ncid,"noyndepo",varid)
          IF (ierr .NE. nf_noerr .AND. lwp ) THEN
-            WRITE(numout,5) "noydepo", bioname
+            WRITE(numout,5) "noyndepo", bioname
          ENDIF
          !
          DO irec = 1, nrec_ndep
             ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
             IF (ierr .NE. nf_noerr .AND. lwp ) THEN
-               WRITE(numout,6) "noydepo", irec
+               WRITE(numout,6) "noyndepo", irec
             ENDIF
          END DO
          !
@@ -582,14 +581,14 @@ CONTAINS
          END DO
          !
          ALLOCATE( nh4depmo(GLOBAL_2D_ARRAY,nrec_ndep) )
-         ierr = nf_inq_varid (ncid,"nhxdepo",varid)
+         ierr = nf_inq_varid (ncid,"nhxndepo",varid)
          IF (ierr .NE. nf_noerr .AND. lwp ) THEN
-            WRITE(numout,5) "nhxdepo", bioname
+            WRITE(numout,5) "nhxndepo", bioname
          ENDIF
          DO irec = 1, nrec_ndep
             ierr = nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, irec, r2dvar)
             IF (ierr .NE. nf_noerr .AND. lwp ) THEN
-               WRITE(numout,6) "nhxdepo", irec
+               WRITE(numout,6) "nhxndepo", irec
             ENDIF
          END DO
          !
