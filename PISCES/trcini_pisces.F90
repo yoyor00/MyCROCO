@@ -49,11 +49,8 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER, INTENT(in)  ::  Kmm      ! time level indices
       !
-      ! Read the PISCES namelist
-      !CALL trc_nam_pisces
-      !
       CALL p4z_ini( Kmm )   !  PISCES
-
+      !
    END SUBROUTINE trc_ini_pisces
 
 
