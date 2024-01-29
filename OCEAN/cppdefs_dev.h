@@ -234,6 +234,7 @@
 # undef  K3FAST_COUPLINGW_SCH2
 # undef  KNHINT_3M
 # undef  K3FAST_AVG_CLASSIC
+# undef  K3FAST_PG2
 # ifdef KNBQ    
 #   define K3FAST        
 #   define K3FAST_UV
@@ -249,8 +250,9 @@
 #   define NBQ_HZCORRECT_ZETA
 #   define K3FAST_AM4 
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH0
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH2
+#   define K3FAST_COUPLINGW_SCH2
+#   define K3FAST_PG2
 # elif defined KH3D
 #   define K3FAST   
 #   define K3FAST_AM4
@@ -288,6 +290,7 @@
 #   define KNHINT_3M
 #   define KNHINT_CORR
 #   define K3FAST_AVG_CLASSIC
+#   define K3FAST_PG2
 # endif
 /*
    General options (all kernels)
@@ -304,9 +307,9 @@
 #  define SOLVE3D
 #  define M2FILTER_NONE  /* no filter with KNBQ */
 #  undef  M2FILTER_POWER
-#  define NBQ_IMP
 #  define NBQ_SPONGE
-#  undef  NBQ_THETAIMP
+#  define NBQ_IMP
+#  define NBQ_THETAIMP
 #  undef  NBQ_FREESLIP
 #  undef  NBQ_HZ_PROGNOSTIC
 #  undef  K3FAST_REINIT
