@@ -76,9 +76,7 @@
          END_3D
       ENDDO
 
-!       CALL tracer_stat( iic, ctrcnm )
-
-       CALL trc_sms_pisces( iic, Kbb, Kmm, Krhs )
+      CALL trc_sms_pisces( iic, Kbb, Kmm, Krhs )
 
 
       DO jn = 1, jptra
@@ -105,8 +103,6 @@
      &    = tra(ji,jj,jk,jn)
         END_3D
       ENDDO
-
-!       CALL tracer_stat( iic, ctrcnm )
 
       RETURN       
       END
