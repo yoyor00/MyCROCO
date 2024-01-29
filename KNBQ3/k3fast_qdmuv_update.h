@@ -188,20 +188,29 @@
 ! ! Horiz. PG
 ! !................................
 ! !
-#   ifdef MASKING
-              if (umask(i-1,j)*umask(i+1,j) .eq. 0.) then
-                dum_s=dum_s-( thetadiv_nbq(i  ,j,k)
-     &                       -thetadiv_nbq(i-1,j,k))  ! - d(delta p)dx
-              else
+#   ifdef MPI
+         if ((WEST_INTER.or.i.ne.IstrU).and.(EAST_INTER.or.i.ne.Iend)
+#    ifdef MASKING
+     &   .and.(umask(i-1,j)*umask(i+1,j) .ne. 0.)
+#    endif
+     &      ) then
+#   else
+         if (i.ne.IstrU.and.i.ne.Iend
+#    ifdef MASKING
+     &   .and.(umask(i-1,j)*umask(i+1,j) .ne. 0.)
+#    endif
+     &      ) then
 #   endif
               dum_s=dum_s
      &                -( gammau  *thetadiv_nbq(i  ,j,k)
      &                  +gammau_2*thetadiv_nbq(i+1,j,k)
      &                  -gammau  *thetadiv_nbq(i-1,j,k)
      &                  -gammau_2*thetadiv_nbq(i-2,j,k)) ! - d(delta p)dx
-#   ifdef MASKING
-              endif
-#   endif
+         else
+              dum_s=dum_s
+     &                -( thetadiv_nbq(i  ,j,k)
+     &                  -thetadiv_nbq(i-1,j,k))
+         endif
               dum_s=dum_s*0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
 #   ifdef MASKING
      &                   *umask(i,j)
@@ -377,21 +386,29 @@
 ! ! Horiz. PG
 ! !................................
 ! !
-#   ifdef MASKING
-              if (vmask(i,j-1)*vmask(i,j+1) .eq. 0.) then
-              dum_s=dum_s
-     &             -(thetadiv_nbq(i,j  ,k)-
-     &               thetadiv_nbq(i,j-1,k)) ! - d(delta p)dy
-              else
+#   ifdef MPI
+         if ((SOUTH_INTER.or.j.ne.Jstrv).and.(NORTH_INTER.or.j.ne.Jend)
+#    ifdef MASKING
+     &      .and.(vmask(i,j-1)*vmask(i,j+1).ne.0.) 
+#    endif              
+     &      ) then
+#   else
+         if (j.ne.JstrV.and.j.ne.Jend
+#    ifdef MASKING
+     &      .and.(vmask(i,j-1)*vmask(i,j+1).ne.0.) 
+#    endif              
+     &      ) then
 #   endif
               dum_s=dum_s
      &             -(gammau  *thetadiv_nbq(i,j  ,k)+
      &               gammau_2*thetadiv_nbq(i,j+1,k)-
      &               gammau  *thetadiv_nbq(i,j-1,k)-
      &               gammau_2*thetadiv_nbq(i,j-2,k)) ! - d(delta p)dy
-#   ifdef MASKING
-              endif
-#   endif
+         else
+              dum_s=dum_s
+     &             -(gammau  *thetadiv_nbq(i,j  ,k)+
+     &               gammau  *thetadiv_nbq(i,j-1,k)) 
+         endif
               dum_s=dum_s*0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
 #   ifdef MASKING
      &                   *vmask(i,j)

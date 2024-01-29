@@ -158,6 +158,10 @@
       common /nbq_qdmv_nbq/ qdmv_nbq
       real qdmw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /nbq_qdmw_nbq/ qdmw_nbq
+#     ifdef NBQ_THETAIMP
+       real qdmwold_nbq(GLOBAL_2D_ARRAY,NSLN)
+       common /nbq_qdmwold_nbq/ qdmwold_nbq
+#     endif
 #  ifdef K3FAST_UV
 !$acc declare create( dthetadiv_nbqdz )      
       real dZdxq_w(GLOBAL_2D_ARRAY,NSLN+1)

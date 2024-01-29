@@ -3,7 +3,6 @@
 ! ! K3FAST_qdmw_update.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
-#  ifndef NBQ_THETAIMP
 ! !
 ! !********************************
 ! !  Store qdmw_nbq into working array
@@ -30,7 +29,6 @@
 !$acc end kernels
 !$acc update host( rw_nbq )     !!iif=last
       endif
-#  endif  /* NBQ_THETAIMP */
 ! !
 ! !********************************
 ! ! Vertical fluxes
@@ -41,6 +39,11 @@
       do j=Jstr,Jend
         do i=Istr,Iend
             FC3D(i,j,N+1)=0
+#   ifdef NBQ_THETAIMP
+	    do k=-N_sl,N
+             qdmwold_nbq(i,j,k)=qdmw_nbq(i,j,k)
+	    enddo
+#   endif 
         enddo
       enddo
 #  ifndef K3FAST_SEDLAYERS        
@@ -62,9 +65,9 @@
      &           *thetadiv_nbq(i,j,k)   
 #  endif 
 #  ifdef NBQ_THETAIMP 
-#  ifdef NBQ_MASS
-	stop "CAUTION when THETAIMP and NBQ_MASS."
-#  endif
+!#  ifdef NBQ_MASS
+!	stop "CAUTION when THETAIMP and NBQ_MASS."
+!#  endif
             FC3D(i,j,k)=FC3D(i,j,k)
      &       -thetaimp_nbq*(1.-thetaimp_nbq)*dtfast
      &                    *( Hzw_nbq_inv(i,j,k  )*qdmw_nbq(i,j,k)      ! CAUTION when used with NBQ_MASS
@@ -225,12 +228,9 @@
             dum_s = FC3D(i,j,k) - FC3D(i,j,k+1)
 #   endif
 !
-!#   ifdef UV_COR_NT
+!#  ifdef UV_COR_NT
 !            dum_s = dum_s + ntcorw(i,j,k)
-!#   endif
-!#   ifdef NBQ_THETAIMP
-!            rw_nbq(i,j,k)=qdmw_nbq(i,j,k)
-!#   endif 
+!#  endif
 #   ifdef NBQ_GRAV
 !            cff=sign(1.,qdmw_nbq(i,j,k))     ! TBF CAUTION
 !            dum_s = dum_s  

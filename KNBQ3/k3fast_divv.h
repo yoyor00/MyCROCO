@@ -15,7 +15,7 @@
 #   ifdef NBQ_THETAIMP
           FC3D(i,j,k)=Hzw_nbq_inv(i,j,k)*
      &            (thetaimp_nbq*qdmw_nbq(i,j,k)
-     &           +(1.-thetaimp_nbq)*rw_nbq(i,j,k)) 
+     &           +(1.-thetaimp_nbq)*qdmwold_nbq(i,j,k)) 
 #   else
           FC3D(i,j,k)=Hzw_nbq_inv(i,j,k)*qdmw_nbq(i,j,k)       
 #   endif
@@ -34,7 +34,7 @@
 #  ifdef NBQ_THETAIMP
             FC3D(i,j,k)=Hzw_nbq_inv(i,j,k)*
      &              (thetaimp_nbq*qdmw_nbq(i,j,k)
-     &              +(1.-thetaimp_nbq)*rw_nbq(i,j,k))
+     &              +(1.-thetaimp_nbq)*qdmwold_nbq(i,j,k))
 #  else
             FC3D(i,j,k)=Hzw_nbq_inv(i,j,k)*qdmw_nbq(i,j,k)
 #  endif   
