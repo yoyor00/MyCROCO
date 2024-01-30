@@ -258,8 +258,8 @@
 #   define K3FAST_AM4
 #   define NBQ_GRID_SLOW
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH0
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH2
+#   define K3FAST_COUPLINGW_SCH2
 #   define K3FAST_AVG_CLASSIC
 # elif defined KHCOMP
 #   define K3FAST        
@@ -269,8 +269,8 @@
 #   define K3FAST_C3D_UVSF
 #   define K3FAST_AM4
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH0
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH2
+#   define K3FAST_COUPLINGW_SCH2
 #   define K3FAST_AVG_CLASSIC
 # elif defined KNHINT
 #   define K3FAST        
@@ -285,8 +285,8 @@
 #   define K3FAST_C3D_WFS
 #   define K3FAST_AM4
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH0
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH2
+#   define K3FAST_COUPLINGW_SCH2
 #   define KNHINT_3M
 #   define KNHINT_CORR
 #   define K3FAST_AVG_CLASSIC
@@ -307,9 +307,11 @@
 #  define SOLVE3D
 #  define M2FILTER_NONE  /* no filter with KNBQ */
 #  undef  M2FILTER_POWER
-#  define NBQ_SPONGE
 #  define NBQ_IMP
 #  define NBQ_THETAIMP
+#  ifdef SPONGE
+#   define  NBQ_SPONGE
+#  endif
 #  undef  NBQ_FREESLIP
 #  undef  NBQ_HZ_PROGNOSTIC
 #  undef  K3FAST_REINIT
