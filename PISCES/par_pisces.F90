@@ -27,7 +27,6 @@ MODULE par_pisces
    INTEGER, PUBLIC, PARAMETER ::   lca = 400                          !: Lenght of Character arrays
 
 
-#if defined key_pisces
    !!---------------------------------------------------------------------
    !!   'key_pisces'   :                         standard PISCES bio-model
    !!---------------------------------------------------------------------
@@ -199,15 +198,6 @@ MODULE par_pisces
    INTEGER, PUBLIC ::   jp_nfixo2  
    INTEGER, PUBLIC ::   jp_irondep  
    INTEGER, PUBLIC ::   jp_ironsed  
-#else
-   !!---------------------------------------------------------------------
-   !!   Default                                   No CFC geochemical model
-   !!---------------------------------------------------------------------
-   LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .FALSE.  !: CFC flag 
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces     =  0       !: No CFC tracers
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces_2d  =  0       !: No CFC additional 2d output arrays 
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces_3d  =  0       !: No CFC additional 3d output arrays 
-#endif
 
    ! Starting/ending PISCES do-loop indices (N.B. no PISCES : jpl_pcs < jpf_pcs the do-loop are never done)
    INTEGER, PUBLIC, PARAMETER ::   jptra       = jp_pisces                  !: First index of PISCES tracers
