@@ -1470,6 +1470,7 @@
 ! !
 # ifndef M2FILTER_NONE 
 #  if defined BD_EXCHANGE
+!$acc kernels if(compute_on_device) default(present)
       do j=JU_RANGE
         do i=IV_RANGE
           zeta(i,j,knew)=Zt_avg1(i,j)
