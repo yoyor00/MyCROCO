@@ -14,7 +14,7 @@
 
 MODULE setavg_sed
 
-#if defined key_pisces && ! defined XIOS
+#if ! defined XIOS
 
    !! * Modules used
    USE sed
