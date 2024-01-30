@@ -13,8 +13,6 @@
 
 MODULE sedrst
 
-#if defined key_pisces
-
    !! * Modules used
    USE sed
 #ifdef AGRIF
@@ -908,7 +906,5 @@ CONTAINS
   99  may_day_flag = 2
       RETURN
       END SUBROUTINE sed_rst_read
-
-#endif
 
 END MODULE sedrst
