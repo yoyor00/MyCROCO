@@ -291,6 +291,7 @@ CONTAINS
       !!
       !!----------------------------------------------------------------------
       INTEGER, INTENT(in)  :: Kmm
+#if defined key_pisces      
 # include "netcdf.inc"
       INTEGER  :: ji, jj, jk, irec
       INTEGER :: ncid, varid, dimid, ierr, lstr, lenstr, nf_fread, nrec_dust, nrec_ndep
@@ -647,6 +648,7 @@ CONTAINS
      &                               /,14x,'in forcing netCDF  ',A)
   6   FORMAT(/,' TRCINI_PISCES - error while reading variable: ',A,2x, &
      &                                           ' at TIME index = ',i4)
+#endif
 
    END SUBROUTINE p4z_bc_init
 
