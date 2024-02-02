@@ -156,7 +156,7 @@ CONTAINS
          ENDIF
 #if defined key_trc_diaadd
          DO_3D( 0, 0, 0, 0, 1, jpk )
-            trc3d(ji,jj,jk,jp_irondep)  = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
+            trc3d(ji,jj,jk,jp_irondep)  = zirondep(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
          END_3D
 # endif
          DEALLOCATE( zirondep )
@@ -172,7 +172,7 @@ CONTAINS
             tr(ji,jj,1,jppo4,Krhs) = tr(ji,jj,1,jppo4,Krhs) + zpo4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm) 
             tr(ji,jj,1,jpsil,Krhs) = tr(ji,jj,1,jpsil,Krhs) + zsildep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
 #if defined key_trc_diaadd
-            zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
+            zfact = 1.e+3 * tmask(ji,jj,1) 
             trc2d(ji,jj,jp_sildep) = zsildep(ji,jj) * zfact        ! Si surface deposition
             trc2d(ji,jj,jp_po4dep) = zpo4dep(ji,jj) * zfact * po4r ! PO4 surface deposition
 # endif
@@ -188,14 +188,12 @@ CONTAINS
             !
             ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
             DO_2D( 0, 0, 0, 0 )
-               zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
-               zw2d(ji,jj) = zpo4dep(ji,jj) * zfact        ! Si surface deposition
+               zw2d(ji,jj) = zpo4dep(ji,jj) * 1.e+3 * po4r * tmask(ji,jj,1)        ! Si surface deposition
             END_2D
             CALL iom_put( "Po4dep", zw2d ) ! PO4 concentration at surface
 
             DO_2D( 0, 0, 0, 0 )
-               zfact = 1.e+3 * rfact2r * e3t(ji,jj,1,Kmm) * tmask(ji,jj,1) 
-               zw2d(ji,jj) = zsildep(ji,jj) * zfact        ! Si surface deposition
+               zw2d(ji,jj) = zsildep(ji,jj) * 1.e+3 * tmask(ji,jj,1)        ! Si surface deposition
             END_2D
             CALL iom_put( "Sildep", zw2d ) ! Si concentration at surface
             DEALLOCATE( zw2d )
@@ -218,14 +216,14 @@ CONTAINS
          IF( lk_iomput .AND. l_dia_ndep ) THEN
              ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
              DO_2D( 0, 0, 0, 0 )
-                zw2d(ji,jj) = zno3dep(ji,jj) * rno3 * rfact2r * tmask(ji,jj,1)
+                zw2d(ji,jj) = zno3dep(ji,jj) * 1.e+3 * rno3 * tmask(ji,jj,1)
              END_2D
              CALL iom_put( "No3dep", zw2d )
              DEALLOCATE( zw2d )
          ENDIF
 #if defined key_trc_diaadd
          DO_2D( 0, 0, 0, 0 )
-            trc2d(ji,jj,jp_no3dep )  = zno3dep(ji,jj) * 1.e+3 * rfact2r *rno3 * tmask(ji,jj,1)
+            trc2d(ji,jj,jp_no3dep )  = zno3dep(ji,jj) * 1.e+3 * rno3 * tmask(ji,jj,1)
          END_2D
 # endif
          DEALLOCATE( zno3dep )
@@ -242,14 +240,14 @@ CONTAINS
          IF( lk_iomput .AND. l_dia_ndep ) THEN
              ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )   ;   zw2d(:,:) = 0.
              DO_2D( 0, 0, 0, 0 )
-                zw2d(ji,jj) = znh4dep(ji,jj) * rno3 * rfact2r * tmask(ji,jj,1)
+                zw2d(ji,jj) = znh4dep(ji,jj) * 1.e+3 * rno3 * tmask(ji,jj,1)
              END_2D
              CALL iom_put( "Nh4dep", zw2d )
              DEALLOCATE( zw2d )
          ENDIF
 #if defined key_trc_diaadd
          DO_2D( 0, 0, 0, 0 )
-            trc2d(ji,jj,jp_nh4dep ) = znh4dep(ji,jj) * rno3 * rfact2r * tmask(ji,jj,1)
+            trc2d(ji,jj,jp_nh4dep ) = znh4dep(ji,jj) * 1.e+3 * rno3 * tmask(ji,jj,1)
          END_2D
 # endif
          DEALLOCATE( znh4dep )
@@ -575,7 +573,7 @@ CONTAINS
          DO irec = 1, nrec_ndep
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  no3depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / mMass_N / rno3
+                  no3depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / rno3 / mMass_N 
                END DO
             END DO
          END DO
@@ -603,7 +601,7 @@ CONTAINS
          DO irec = 1, nrec_ndep
             DO jj= 1, LOCALMM
                DO ji =1, LOCALLM
-                  nh4depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / mMass_N / rno3
+                  nh4depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / rno3 / mMass_N 
                END DO
             END DO
          END DO
@@ -633,7 +631,7 @@ CONTAINS
          DO irec = 1, nrec_ndep
             DO jj = 1, LOCALMM
                DO ji = 1, LOCALLM
-                  no3depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / mMass_N / rno3
+                  no3depmo(ji,jj,irec) = MAX( 0., dustmp(ji,jj,irec) ) / rno3 / mMass_N 
                END DO
             END DO
          END DO
