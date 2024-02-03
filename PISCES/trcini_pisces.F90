@@ -230,7 +230,8 @@ CONTAINS
       !nksr = trc_oce_ext_lev( r_si2, 33._wp )   ! level of light extinction
        nksr = jpk
       !
-      IF(lwp) WRITE(numout,*) '      level of light extinction = ', nksr, ' ref depth = ', MAXVAL(gdepw(:,:,nksr+1,1)), ' m'
+      IF(lwp) WRITE(numout,*) ' level of light extinction = ', nksr, &
+              &               ' ref depth = ', MAXVAL(gdepw(:,:,nksr+1,1)), ' m'
 
       CALL p4z_sms_init       !  Maint routine
       !

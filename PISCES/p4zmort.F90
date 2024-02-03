@@ -94,7 +94,8 @@ CONTAINS
          ! A michaelis-menten like term is introduced to avoid 
          ! extinction of nanophyto in highly limited areas
          ! ----------------------------------------------------
-         ztortp = mpratn * xstep * zcompaph / ( xkmort + tr(ji,jj,jk,jpphy,Kbb) ) * tr(ji,jj,jk,jpphy,Kbb)
+         ztortp = mpratn * xstep * zcompaph / ( xkmort + tr(ji,jj,jk,jpphy,Kbb) ) &
+             &    * tr(ji,jj,jk,jpphy,Kbb)
 
          zmortp = zrespp + ztortp
          
@@ -174,7 +175,8 @@ CONTAINS
          ! A michaelis-menten like term is introduced to avoid 
          ! extinction of diatoms in highly limited areas
          !  ---------------------------------------------------
-         ztortp2 = mpratd * xstep * tr(ji,jj,jk,jpdia,Kbb)  / ( xkmort + tr(ji,jj,jk,jpdia,Kbb) ) * zcompadi 
+         ztortp2 = mpratd * xstep * tr(ji,jj,jk,jpdia,Kbb)  &
+            &     / ( xkmort + tr(ji,jj,jk,jpdia,Kbb) ) * zcompadi 
 
          zmortp2 = zrespp2 + ztortp2
 

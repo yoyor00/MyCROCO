@@ -435,8 +435,9 @@
                    <field field_ref="Irondep" name="Fedep" />
                    <field field_ref="No3dep"  name="No3dep" />
 #if defined key_pisces_npzd
-                   <field field_ref="Thetanano"  name="Thetanano"/>
+                   <field field_ref="CHL"  name="TCHL"/>
 #else
+                   <field field_ref="NCHL"   name="TCHL" > NCHL + DCHL </field>
                    <field field_ref="MuD"    name="MuD"/>
                    <field field_ref="LDlight"    name="LDlight"/>
                    <field field_ref="SedCal"    name="SedCal"/>

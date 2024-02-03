@@ -111,14 +111,16 @@ CONTAINS
          !  microzooplankton at very low food concentrations. Mortality is 
          !  enhanced in low O2 waters
          !  -----------------------------------------------------------------
-         zrespz = resrat * zfact * ( tr(ji,jj,jk,jpzoo,Kbb) / ( xkmort + tr(ji,jj,jk,jpzoo,Kbb) )  &
+         zrespz = resrat * zfact * ( tr(ji,jj,jk,jpzoo,Kbb) &
+            &    / ( xkmort + tr(ji,jj,jk,jpzoo,Kbb) )  &
             &   + 3. * nitrfac(ji,jj,jk) )
 
          !  Zooplankton quadratic mortality. A square function has been selected with
          !  to mimic predation and disease (density dependent mortality). It also tends
          !  to stabilise the model
          !  -------------------------------------------------------------------------
-         ztortz = mzrat * 1.e6 * zfact * tr(ji,jj,jk,jpzoo,Kbb) * (1. - nitrfac(ji,jj,jk))
+         ztortz = mzrat * 1.e6 * zfact * tr(ji,jj,jk,jpzoo,Kbb) &
+                 & * (1. - nitrfac(ji,jj,jk))
          zmortz = ztortz + zrespz
 
          !   Computation of the abundance of the preys
@@ -141,7 +143,8 @@ CONTAINS
          zfood     = xprefn * zcompaph + xprefc * zcompapoc + xprefz * zcompaz
          zfoodlim  = MAX( 0. , zfood - min(xthresh,0.5*zfood) )
          zdenom    = zfoodlim / ( xkgraz + zfoodlim )
-         zgraze    = grazrat * xstep * tgfunc2(ji,jj,jk) * tr(ji,jj,jk,jpzoo,Kbb) * (1. - nitrfac(ji,jj,jk))
+         zgraze    = grazrat * xstep * tgfunc2(ji,jj,jk) &
+                 &   * tr(ji,jj,jk,jpzoo,Kbb) * (1. - nitrfac(ji,jj,jk))
 
          ! An active switching parameterization is used here.
          ! We don't use the KTW parameterization proposed by 
@@ -195,7 +198,8 @@ CONTAINS
          ! Actual GGE of microzooplankton
          zepsherv  = zepsherf * zepshert * zepsherq
          ! Excretion of C, N, P
-         zgrarem   = zgraztotc * ( 1. - zepsherv - unass ) + ( 1. - epsher - unass ) / ( 1. - epsher ) * ztortz
+         zgrarem   = zgraztotc * ( 1. - zepsherv - unass ) &
+                 &  + ( 1. - epsher - unass ) / ( 1. - epsher ) * ztortz
          ! Egestion of C, N, P
          zgrapoc   = zgraztotc * unass + unass / ( 1. - epsher ) * ztortz + zrespz
 
@@ -212,7 +216,8 @@ CONTAINS
          tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - rno3 * zgrarsig
          !   Update the arrays TRA which contain the biological sources and sinks
          !   --------------------------------------------------------------------
-         tr(ji,jj,jk,jpzoo,Krhs) = tr(ji,jj,jk,jpzoo,Krhs) - zmortz + zepsherv * zgraztotc - zgrazz 
+         tr(ji,jj,jk,jpzoo,Krhs) = tr(ji,jj,jk,jpzoo,Krhs) &
+                 &               - zmortz + zepsherv * zgraztotc - zgrazz 
          tr(ji,jj,jk,jpphy,Krhs) = tr(ji,jj,jk,jpphy,Krhs) - zgraznc
          tr(ji,jj,jk,jppoc,Krhs) = tr(ji,jj,jk,jppoc,Krhs) + zgrapoc - zgrazpoc
          prodpoc(ji,jj,jk) = prodpoc(ji,jj,jk) + zgrapoc
@@ -233,7 +238,9 @@ CONTAINS
         !
         IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-            zw3d(A2D(0),:) =  zgrazing(A2D(0),:) * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jkR) =  zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+            END_3D
             CALL iom_put( "GRAZ1" , zw3d )  ! conversion in mol/m2/s
             CALL iom_put( "MicroZo2" , zw3d * ( 1. - epsher - unass ) * (-o2ut) * sigma1 ) ! o2 consumption by Microzoo
             DEALLOCATE( zw3d )

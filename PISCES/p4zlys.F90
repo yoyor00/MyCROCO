@@ -88,7 +88,9 @@ CONTAINS
            &    .OR. iom_use( "EPC100" ) .OR. iom_use( "EXPCAL" )
       !
       IF( l_dia )   THEN                  !* Save ta and sa trends
-         ALLOCATE( zcaldiss(A2D(0),jpk) )    ;    zcaldiss(A2D(0),:) = 0._wp   ;   zco3(A2D(0),jpk) = 0._wp
+         ALLOCATE( zcaldiss(A2D(0),jpk) )  
+         zcaldiss(A2D(0),:) = 0._wp   
+         zco3(A2D(0),jpk) = 0._wp
       ENDIF
       !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
@@ -144,7 +146,8 @@ CONTAINS
       zcaco3(:,:,:) = 0._wp
       !
       DO_2D( 0, 0, 0, 0 )
-         zcaco3(ji,jj,1) = prodcal(ji,jj,1) * rfact2r / ( wsbio4(ji,jj,1) / e3t(ji,jj,1,Kmm) / rday + ztra(ji,jj,1) )
+         zcaco3(ji,jj,1) = prodcal(ji,jj,1) * rfact2r &
+             &        / ( wsbio4(ji,jj,1) / e3t(ji,jj,1,Kmm) / rday + ztra(ji,jj,1) )
       END_2D
 
       DO_3D( 0, 0, 0, 0, 2, jpkm1)
@@ -152,7 +155,8 @@ CONTAINS
          zwsbio = wsbio4(ji,jj,jk) / rday
          IF ( tmask(ji,jj,1) == 1. ) THEN
             IF ( ztra(ji,jj,jk) == 0.0 ) THEN
-               zcaco3(ji,jj,jk) = zcaco3(ji,jj,jk-1) + prodcal(ji,jj,jk) * rfact2r / zwsbio * e3t(ji,jj,jk,Kmm) 
+               zcaco3(ji,jj,jk) = zcaco3(ji,jj,jk-1) &
+                 &      + prodcal(ji,jj,jk) * rfact2r / zwsbio * e3t(ji,jj,jk,Kmm) 
             ELSE
                zdepexp = exp( - ztra(ji,jj,jk) * e3t(ji,jj,jk,Kmm) / zwsbio )
                zcaco3(ji,jj,jk) = prodcal(ji,jj,jk) * rfact2r / ztra(ji,jj,jk)  &
@@ -170,7 +174,8 @@ CONTAINS
          ENDIF
       END_3D
       DO_2D( 0, 0, 0, 0 )
-         sinkcalb(ji,jj) = wsbio4(ji,jj,mbkt(ji,jj)) * zcaco3(ji,jj,mbkt(ji,jj)) * rfact2 / rday
+         sinkcalb(ji,jj) = wsbio4(ji,jj,mbkt(ji,jj)) &
+            &            * zcaco3(ji,jj,mbkt(ji,jj)) * rfact2 / rday
       END_2D
       !
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
@@ -183,26 +188,39 @@ CONTAINS
          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
          zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
          !
-         zw3d(A2D(0),:) = prodcal(A2D(0),:) * zfact * tmask(A2D(0),:)         
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = prodcal(ji,jj,jk) * zfact * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "PCAL", zw3d )   ! calcite production
          !
-         zw3d(A2D(0),:) = zcaldiss(A2D(0),:) * zfact * tmask(A2D(0),:)         
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = zcaldiss(ji,jj,jk) * zfact * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "DCAL", zw3d )  ! calcite dissolution
          !
-         zw3d(A2D(0),:) = wsbio4(A2D(0),:) * zcaco3(A2D(0),:) * 1.e+3 / rday * tmask(A2D(0),:)         
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = wsbio4(ji,jj,jk) * zcaco3(ji,jj,jk) &
+              &       * 1.e+3 / rday  * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "EPCAL100",  zw3d(:,:,ik100) )  ! Export of calcite at 100m
          CALL iom_put( "EXPCAL"  ,  zw3d )             ! Export of calcite in the water column
          !
-         zw3d(A2D(0),:) = -1. * LOG10( MAX( hi(A2D(0),:), rtrn ) ) * tmask(A2D(0),:)         
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = -1. * LOG10( MAX( hi(ji,jj,jk),rtrn ) ) & 
+                &                  * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "PH" , zw3d )  ! PH
          !
-         zw3d(A2D(0),:) = zco3(A2D(0),:) * 1.e+3 * tmask(A2D(0),:)         
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = zco3(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "CO3", zw3d ) ! ion carbonate
          !
          DO_3D( 0, 0, 0, 0, 1, jpk)
-             zcalcon        = calcon * ( salinprac(ji,jj,jk) / 35._wp )
-             zfact          = rhop(ji,jj,jk) / 1000._wp
-             zw3d(ji,jj,jk) = aksp(ji,jj,jk) * zfact / ( zcalcon + rtrn )  * 1.e+3 * tmask(ji,jj,jk)
+            zcalcon        = calcon * ( salinprac(ji,jj,jk) / 35._wp )
+            zfact          = rhop(ji,jj,jk) / 1000._wp
+            zw3d(ji,jj,jkR) = aksp(ji,jj,jk) * zfact &
+              &             / ( zcalcon + rtrn )  * 1.e+3 * tmask(ji,jj,jk)
          END_3D
          CALL iom_put( "CO3sat", zw3d )  ! calcite saturation
          !
@@ -213,7 +231,7 @@ CONTAINS
          trc3d(ji,jj,jk,jp_hi    ) = -1. * LOG10( MAX( hi(ji,jj,jk), rtrn) ) * tmask(ji,jj,jk)  ! PH
          trc3d(ji,jj,jk,jp_co3   ) = zco3(ji,jj,jk)  * 1.e+3 * tmask(ji,jj,jk)  ! Ion carbonate
          trc3d(ji,jj,jk,jp_co3sat) = aksp(ji,jj,jk) * rhop(ji,jj,jk) / 1000._wp &   ! calcite saturation
-              &                  / calcon * ( salinprac(ji,jj,jk) / 35._wp ) * tmask(ji,jj,jk)
+              &              / calcon * ( salinprac(ji,jj,jk) / 35._wp ) * tmask(ji,jj,jk)
       END_3D
 # endif      
       !
@@ -249,7 +267,9 @@ CONTAINS
            &          .OR. iom_use( "DCAL" ) .OR. iom_use( "PCAL" )
 
       IF( l_dia )   THEN                  
-         ALLOCATE( zcaldiss(A2D(0),jpk) )    ;    zcaldiss(A2D(0),:) = 0._wp   ;   zco3(A2D(0),jpk) = 0._wp
+         ALLOCATE( zcaldiss(A2D(0),jpk) )  
+         zcaldiss(A2D(0),:) = 0._wp  
+         zco3(A2D(0),jpk) = 0._wp
       ENDIF
       !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
@@ -310,24 +330,34 @@ CONTAINS
       !
       IF( l_dia .AND. knt == nrdttrc ) THEN
          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )  ;  zw3d(:,:,:) = 0._wp     
-         zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
          !
-         zw3d(A2D(0),:) = prodcal(A2D(0),:) * zfact * tmask(A2D(0),:)         
+         zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = prodcal(ji,jj,jk) * zfact * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "PCAL", zw3d )   ! calcite production
          !
-         zw3d(A2D(0),:) = zcaldiss(A2D(0),:) * zfact * tmask(A2D(0),:)         
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = zcaldiss(ji,jj,jk) * zfact * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "DCAL", zw3d )  ! calcite dissolution
          !
-         zw3d(A2D(0),:) = -1. * LOG10( MAX( hi(A2D(0),:), rtrn ) ) * tmask(A2D(0),:)         
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = -1. * LOG10( MAX( hi(ji,jj,jk),rtrn ) ) & 
+                &                  * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "PH" , zw3d )  ! PH
          !
-         zw3d(A2D(0),:) = zco3(A2D(0),:) * 1.e+3 * tmask(A2D(0),:)         
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) = zco3(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)         
+         END_3D
          CALL iom_put( "CO3", zw3d ) ! ion carbonate
          !
          DO_3D( 0, 0, 0, 0, 1, jpk)
              zcalcon        = calcon * ( salinprac(ji,jj,jk) / 35._wp )
              zfact          = rhop(ji,jj,jk) / 1000._wp
-             zw3d(ji,jj,jk) = aksp(ji,jj,jk) * zfact / ( zcalcon + rtrn )  * 1.e+3 * tmask(ji,jj,jk)
+             zw3d(ji,jj,jkR) = aksp(ji,jj,jk) * zfact &
+                 &        / ( zcalcon + rtrn )  * 1.e+3 * tmask(ji,jj,jk)
          END_3D
          CALL iom_put( "CO3sat", zw3d )  ! calcite saturation
          !

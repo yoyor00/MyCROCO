@@ -144,7 +144,8 @@ CONTAINS
           ! -------------------------------------------------
           zlimnh4 = tr(ji,jj,jk,jpnh4,Kbb) / ( concbno3 + tr(ji,jj,jk,jpnh4,Kbb) )
           zlimno3 = tr(ji,jj,jk,jpno3,Kbb) / ( concbno3 + tr(ji,jj,jk,jpno3,Kbb) )
-          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) / ( concbno3 + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
+          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) &
+             &       / ( concbno3 + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
           zbactnh4 = znutlimtot * 5.0 * zlimnh4 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
           zbactno3 = znutlimtot * zlimno3 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
           !
@@ -171,7 +172,8 @@ CONTAINS
           ! Limitation of nanophytoplankton growth
           zlimnh4 = tr(ji,jj,jk,jpnh4,Kbb) / ( zconc0n + tr(ji,jj,jk,jpnh4,Kbb) )
           zlimno3 = tr(ji,jj,jk,jpno3,Kbb) / ( zconc0n + tr(ji,jj,jk,jpno3,Kbb) )
-          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) / ( zconc0n + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
+          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) &
+              &      / ( zconc0n + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
           xnanonh4(ji,jj,jk) = znutlimtot * 5.0 * zlimnh4 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
           xnanono3(ji,jj,jk) = znutlimtot * zlimno3 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
           !
@@ -198,13 +200,15 @@ CONTAINS
           ! Limitation of diatoms growth
           zlimnh4 = tr(ji,jj,jk,jpnh4,Kbb) / ( zconc1d + tr(ji,jj,jk,jpnh4,Kbb) )
           zlimno3 = tr(ji,jj,jk,jpno3,Kbb) / ( zconc1d + tr(ji,jj,jk,jpno3,Kbb) )
-          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) / ( zconc1d + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
+          znutlimtot = ( tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) ) &
+              &     / ( zconc1d + tr(ji,jj,jk,jpnh4,Kbb) + tr(ji,jj,jk,jpno3,Kbb) )
           xdiatnh4(ji,jj,jk) = znutlimtot * 5.0 * zlimnh4 / ( zlimno3 + 5.0 * zlimnh4 + rtrn ) 
           xdiatno3(ji,jj,jk) = znutlimtot * zlimno3 / ( zlimno3 + 5.0 * zlimnh4 + rtrn )
           !
           zlim1    = xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk)
           zlim2    = tr(ji,jj,jk,jppo4,Kbb) / ( tr(ji,jj,jk,jppo4,Kbb) + zconc1dnh4  )
-          zlim3    = tr(ji,jj,jk,jpsil,Kbb) / ( tr(ji,jj,jk,jpsil,Kbb) + xksi(ji,jj) + rtrn )
+          zlim3    = tr(ji,jj,jk,jpsil,Kbb) &
+               &   / ( tr(ji,jj,jk,jpsil,Kbb) + xksi(ji,jj) + rtrn )
           zratio   = tr(ji,jj,jk,jpdfe,Kbb) * z1_trbdia
 
           ! The minimum iron quota depends on the size of PSU, respiration
@@ -258,34 +262,48 @@ CONTAINS
         !
         IF( l_dia_fracal ) THEN   ! fraction of calcifiers
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-          zw3d(A2D(0),:) = xfracal(A2D(0),:) * tmask(A2D(0),:)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xfracal(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "xfracal",  zw3d)
           DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_nut_lim ) THEN   ! Nutrient limitation term
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-          zw3d(A2D(0),:) = xlimphy(A2D(0),:) * tmask(A2D(0),:)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LNnut",  zw3d)
-          zw3d(A2D(0),:) = xlimdia(A2D(0),:) * tmask(A2D(0),:)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimdia(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LDnut",  zw3d)
           DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_iron_lim ) THEN   ! Iron limitation term
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-          zw3d(A2D(0),:) = xlimnfe(A2D(0),:) * tmask(A2D(0),:)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimnfe(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LNFe",  zw3d)
-          zw3d(A2D(0),:) = xlimdfe(A2D(0),:) * tmask(A2D(0),:)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimdfe(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LDFe",  zw3d)
           DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_size_lim ) THEN   ! Size limitation term
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-          zw3d(A2D(0),:) = sizen(A2D(0),:) * tmask(A2D(0),:)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = sizen(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "SIZEN",  zw3d)
-          zw3d(A2D(0),:) = sized(A2D(0),:) * tmask(A2D(0),:)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = sized(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "SIZED",  zw3d)
           DEALLOCATE( zw3d )
         ENDIF

@@ -180,7 +180,8 @@ CONTAINS
                !              
                DO jk = 2, jpk-1
                   jkm1 = jk-1
-                  ztraz(ji,jj,jk) = ( tr(ji,jj,jkm1,jp_tra,Kbb) - tr(ji,jj,jk,jp_tra,Kbb) ) * tmask(ji,jj,jk)
+                  ztraz(ji,jj,jk) = ( tr(ji,jj,jkm1,jp_tra,Kbb) - tr(ji,jj,jk,jp_tra,Kbb) ) &
+                  &                 * tmask(ji,jj,jk)
                END DO
                ztraz(ji,jj,1  ) = 0.0
                ztraz(ji,jj,jpk+1) = 0.0
@@ -194,7 +195,8 @@ CONTAINS
                ! Slopes limitation
                DO jk = 2, jpk-1
                   zakz(ji,jj,jk) = SIGN( 1.0_wp, zakz(ji,jj,jk) ) *        &
-                     &             MIN( ABS( zakz(ji,jj,jk) ), 2. * ABS(ztraz(ji,jj,jk+1)), 2. * ABS(ztraz(ji,jj,jk) ) )
+                     &             MIN( ABS( zakz(ji,jj,jk) ), &
+                     &           2. * ABS(ztraz(ji,jj,jk+1)), 2. * ABS(ztraz(ji,jj,jk) ) )
                END DO
                zakz(ji,jj,1) = 0.e0
                zakz(ji,jj,jpk+1) = 0.e0
@@ -207,7 +209,8 @@ CONTAINS
                   zigma  = z0w - 0.5 * pwsink(ji,jj,jk+1) * zstep / e3w(ji,jj,jk+1,Kmm)
                   zzwx   = tr(ji,jj,jkp1,jp_tra,Kbb) + zigma * zakz(ji,jj,jk+1)
                   zzwy   = tr(ji,jj,jk,jp_tra,Kbb) + zigma * zakz(ji,jj,jk)
-                  zsinking(ji,jj,jk+1) = -pwsink(ji,jj,jk+1) * ( zalpha * zzwx + (1.0 - zalpha) * zzwy ) * zstep
+                  zsinking(ji,jj,jk+1) = -pwsink(ji,jj,jk+1) &
+                     &            * ( zalpha * zzwx + (1.0 - zalpha) * zzwy ) * zstep
                END DO
                !
                ! Boundary conditions
@@ -444,7 +447,8 @@ CONTAINS
                &         + e3t(ji,jj,ik,Kmm) * zcu                      &
                &         * ( zqL(ji,ik) + zcu                           &
                &               * ( 0.5_wp * ( zqR(ji,ik) - zqL(ji,ik) ) &
-               &                    - ( 1.5_wp - zcu ) * ( zqR(ji,ik) + zqL(ji,ik) - 2._wp * tr(ji,jj,ik,jp_tra,Kbb) ) ) ) 
+               &                    - ( 1.5_wp - zcu ) * ( zqR(ji,ik) + zqL(ji,ik) &
+               &                            - 2._wp * tr(ji,jj,ik,jp_tra,Kbb) ) ) ) 
          END_2D
          !
          DO_2Dik( 0, 0, 1, jpk-1, 1 )

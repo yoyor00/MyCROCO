@@ -190,7 +190,8 @@ CONTAINS
 !      IF (jp_dia2d > 0 )   ALLOCATE( trc2d(jpi,jpj,jp_dia2d)    , STAT = ierr(4) )
       !
       ALLOCATE( neln(A2D(0)), heup(A2D(0)), heup_01(A2D(0)), &
-          &    cvol(A2D(0),jpk),  etot(A2D(0),jpk) , etot_ndcy(A2D(0),jpk), STAT = ierr(1)  )
+          &    cvol(A2D(0),jpk),  etot(A2D(0),jpk), &
+          &    etot_ndcy(A2D(0),jpk), STAT = ierr(1)  )
       ! 
       trc_alloc = MAXVAL( ierr )
       IF( trc_alloc /= 0 )   CALL ctl_stop( 'STOP', 'trc_alloc: failed to allocate arrays' )

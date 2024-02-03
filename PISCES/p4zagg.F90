@@ -89,22 +89,28 @@ CONTAINS
             zagg4 =  132.8 * xstep * tr(ji,jj,jk,jppoc,Kbb) * tr(ji,jj,jk,jpgoc,Kbb)
 
             zagg   = zagg1 + zagg2 + zagg3 + zagg4
-            zaggfe = zagg * tr(ji,jj,jk,jpsfe,Kbb) / ( tr(ji,jj,jk,jppoc,Kbb) + rtrn )
+            zaggfe = zagg * tr(ji,jj,jk,jpsfe,Kbb) &
+                    &   / ( tr(ji,jj,jk,jppoc,Kbb) + rtrn )
 
             ! Aggregation of DOC to POC : 
             ! 1st term is shear aggregation of DOC-DOC
             ! 2nd term is shear aggregation of DOC-POC
             ! 3rd term is differential settling of DOC-POC
             ! 1/3 of DOC is supposed to experience aggregation (HMW)
-            zaggdoc  = ( ( 12.0 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) + 9.05 * tr(ji,jj,jk,jppoc,Kbb) ) * zfact       &
-            &            + 2.49 * xstep * tr(ji,jj,jk,jppoc,Kbb) ) * 0.3 * tr(ji,jj,jk,jpdoc,Kbb)
+            zaggdoc  = ( ( 12.0 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) &
+            &            + 9.05 * tr(ji,jj,jk,jppoc,Kbb) ) * zfact       &
+            &            + 2.49 * xstep * tr(ji,jj,jk,jppoc,Kbb) ) &
+            &             * 0.3 * tr(ji,jj,jk,jpdoc,Kbb)
             ! transfer of DOC to GOC : 
             ! 1st term is shear aggregation
             ! 1/3 of DOC is supposed to experience aggregation (HMW)
-            zaggdoc2 = ( 1.94 * zfact + 1.37 * xstep ) * tr(ji,jj,jk,jpgoc,Kbb) * 0.3 * tr(ji,jj,jk,jpdoc,Kbb)
+            zaggdoc2 = ( 1.94 * zfact + 1.37 * xstep ) * tr(ji,jj,jk,jpgoc,Kbb) &
+                    &   * 0.3 * tr(ji,jj,jk,jpdoc,Kbb)
             ! tranfer of DOC to POC due to brownian motion
             ! The temperature dependency has been omitted.
-            zaggdoc3 =  ( 127.8 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) + 725.7 * tr(ji,jj,jk,jppoc,Kbb) ) * xstep * 0.3 * tr(ji,jj,jk,jpdoc,Kbb)
+            zaggdoc3 =  ( 127.8 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) &
+                    &  + 725.7 * tr(ji,jj,jk,jppoc,Kbb) ) &
+                    &   * xstep * 0.3 * tr(ji,jj,jk,jpdoc,Kbb)
 
             !  Update the trends
             tr(ji,jj,jk,jppoc,Krhs) = tr(ji,jj,jk,jppoc,Krhs) - zagg + zaggdoc + zaggdoc3
@@ -140,16 +146,20 @@ CONTAINS
             zaggpoc4 = zaggtmp * tr(ji,jj,jk,jppoc,Kbb)
 
             zaggpoc = zaggpoc1 + zaggpoc2 + zaggpoc3 + zaggpoc4
-            zaggpon = zaggpoc * tr(ji,jj,jk,jppon,Kbb) / ( tr(ji,jj,jk,jppoc,Kbb) + rtrn)
-            zaggpop = zaggpoc * tr(ji,jj,jk,jppop,Kbb) / ( tr(ji,jj,jk,jppoc,Kbb) + rtrn)
-            zaggfe  = zaggpoc * tr(ji,jj,jk,jpsfe,Kbb) / ( tr(ji,jj,jk,jppoc,Kbb)  + rtrn )
+            zaggpon = zaggpoc * tr(ji,jj,jk,jppon,Kbb) &
+                    &  / ( tr(ji,jj,jk,jppoc,Kbb) + rtrn)
+            zaggpop = zaggpoc * tr(ji,jj,jk,jppop,Kbb) &
+                    & / ( tr(ji,jj,jk,jppoc,Kbb) + rtrn)
+            zaggfe  = zaggpoc * tr(ji,jj,jk,jpsfe,Kbb) &
+                    & / ( tr(ji,jj,jk,jppoc,Kbb)  + rtrn )
 
             ! Aggregation of DOC to POC : 
             ! 1st term is shear aggregation of DOC-DOC
             ! 2nd term is shear aggregation of DOC-POC
             ! 3rd term is differential settling of DOC-POC
             ! 1/3 of DOC is supposed to experience aggregation (HMW)
-            zaggtmp = ( ( 12.0 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) + 9.05 * tr(ji,jj,jk,jppoc,Kbb) ) * zfact       &
+            zaggtmp = ( ( 12.0 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) &
+                    &  + 9.05 * tr(ji,jj,jk,jppoc,Kbb) ) * zfact       &
             &            + 2.49 * xstep * tr(ji,jj,jk,jppoc,Kbb) )
             zaggdoc  = zaggtmp * 0.3 * tr(ji,jj,jk,jpdoc,Kbb)
             zaggdon  = zaggtmp * 0.3 * tr(ji,jj,jk,jpdon,Kbb)
@@ -166,7 +176,8 @@ CONTAINS
 
             ! tranfer of DOC to POC due to brownian motion
             ! 1/3 of DOC is supposed to experience aggregation (HMW)
-            zaggtmp = ( 127.8 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) +  725.7 * tr(ji,jj,jk,jppoc,Kbb) ) * xstep
+            zaggtmp = ( 127.8 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) &
+                    & +  725.7 * tr(ji,jj,jk,jppoc,Kbb) ) * xstep
             zaggdoc3 =  zaggtmp * 0.3 * tr(ji,jj,jk,jpdoc,Kbb)
             zaggdon3 =  zaggtmp * 0.3 * tr(ji,jj,jk,jpdon,Kbb)
             zaggdop3 =  zaggtmp * 0.3 * tr(ji,jj,jk,jpdop,Kbb)

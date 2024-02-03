@@ -79,7 +79,7 @@ CONTAINS
       INTEGER, INTENT(in) ::   Kbb, Krhs  ! time level indices
       !
       INTEGER  :: ji, jj, jk
-      REAL(wp) :: zcompadi, zcompaz , zcompaph, zcompapoc
+      REAL(wp) :: zcompadi, zcompaz , zcompaph, zcompapoc, zratio
       REAL(wp) :: zgraze, zdenom, zdenom2, zfact, zfood, zfoodlim, zbeta
       REAL(wp) :: zepsherf, zepshert, zepsherq, zepsherv, zgrarsig, zgraztotc, zgraztotn, zgraztotf
       REAL(wp) :: zgrarem, zgrafer, zgrapoc, zprcaca, zmortz
@@ -126,14 +126,16 @@ CONTAINS
          !  microzooplankton at very low food concentrations. Mortality is 
          !  enhanced in low O2 waters
          !  -----------------------------------------------------------------
-         zrespz = resrat * zfact * ( tr(ji,jj,jk,jpzoo,Kbb) / ( xkmort + tr(ji,jj,jk,jpzoo,Kbb) )  &
+         zrespz = resrat * zfact * ( tr(ji,jj,jk,jpzoo,Kbb) &
+            &    / ( xkmort + tr(ji,jj,jk,jpzoo,Kbb) )  &
             &   + 3. * nitrfac(ji,jj,jk) )
 
          !  Zooplankton quadratic mortality. A square function has been selected with
          !  to mimic predation and disease (density dependent mortality). It also tends
          !  to stabilise the model
          !  -------------------------------------------------------------------------
-         ztortz = mzrat * 1.e6 * zfact * tr(ji,jj,jk,jpzoo,Kbb) * (1. - nitrfac(ji,jj,jk))
+         ztortz = mzrat * 1.e6 * zfact * tr(ji,jj,jk,jpzoo,Kbb) &
+             &        * (1. - nitrfac(ji,jj,jk))
          zmortz = ztortz + zrespz
 
          !   Computation of the abundance of the preys
@@ -157,7 +159,8 @@ CONTAINS
          zfood     = xprefn * zcompaph + xprefc * zcompapoc + xprefd * zcompadi + xprefz * zcompaz
          zfoodlim  = MAX( 0. , zfood - MIN(xthresh,0.5*zfood) )
          zdenom    = zfoodlim / ( xkgraz + zfoodlim )
-         zgraze    = grazrat * xstep * tgfunc2(ji,jj,jk) * tr(ji,jj,jk,jpzoo,Kbb) * (1. - nitrfac(ji,jj,jk))
+         zgraze    = grazrat * xstep * tgfunc2(ji,jj,jk) &
+             &      * tr(ji,jj,jk,jpzoo,Kbb) * (1. - nitrfac(ji,jj,jk))
 
          ! An active switching parameterization is used here.
          ! We don't use the KTW parameterization proposed by 
@@ -195,16 +198,20 @@ CONTAINS
          zgrazz    = zgraze   * ztmp4 * zdenom  ! Microzoo
 
          ! Ingestion terms on the iron content of the different preys
-         zgraznf   = zgraznc  * tr(ji,jj,jk,jpnfe,Kbb) / (tr(ji,jj,jk,jpphy,Kbb) + rtrn)
-         zgrazpof  = zgrazpoc * tr(ji,jj,jk,jpsfe,Kbb) / (tr(ji,jj,jk,jppoc,Kbb) + rtrn)
-         zgrazdf   = zgrazdc  * tr(ji,jj,jk,jpdfe,Kbb) / (tr(ji,jj,jk,jpdia,Kbb) + rtrn)
+         zgraznf   = zgraznc  * tr(ji,jj,jk,jpnfe,Kbb) &
+            &        / (tr(ji,jj,jk,jpphy,Kbb) + rtrn)
+         zgrazpof  = zgrazpoc * tr(ji,jj,jk,jpsfe,Kbb) &
+            &        / (tr(ji,jj,jk,jppoc,Kbb) + rtrn)
+         zgrazdf   = zgrazdc  * tr(ji,jj,jk,jpdfe,Kbb) &
+            &        / (tr(ji,jj,jk,jpdia,Kbb) + rtrn)
          !
          ! Total ingestion rate in C, Fe, N units
          zgraztotc = zgraznc + zgrazpoc + zgrazdc + zgrazz
          IF( l_dia_graz )   zgrazing(ji,jj,jk) = zgraztotc
 
          zgraztotf = zgraznf + zgrazdf  + zgrazpof + zgrazz * feratz
-         zgraztotn = zgraznc * quotan(ji,jj,jk) + zgrazpoc + zgrazdc * quotad(ji,jj,jk) + zgrazz
+         zgraztotn = zgraznc * quotan(ji,jj,jk) + zgrazpoc &
+             &      + zgrazdc * quotad(ji,jj,jk) + zgrazz
 
          !   Stoichiometruc ratios of the food ingested by zooplanton 
          !   --------------------------------------------------------
@@ -255,13 +262,18 @@ CONTAINS
          tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + rno3 * zgrarsig
          !   Update the arrays TRA which contain the biological sources and sinks
          !   --------------------------------------------------------------------
-         tr(ji,jj,jk,jpzoo,Krhs) = tr(ji,jj,jk,jpzoo,Krhs) - zmortz + zepsherv * zgraztotc - zgrazz 
+         tr(ji,jj,jk,jpzoo,Krhs) = tr(ji,jj,jk,jpzoo,Krhs) - zmortz &
+                 &                + zepsherv * zgraztotc - zgrazz 
          tr(ji,jj,jk,jpphy,Krhs) = tr(ji,jj,jk,jpphy,Krhs) - zgraznc
          tr(ji,jj,jk,jpdia,Krhs) = tr(ji,jj,jk,jpdia,Krhs) - zgrazdc
-         tr(ji,jj,jk,jpnch,Krhs) = tr(ji,jj,jk,jpnch,Krhs) - zgraznc * tr(ji,jj,jk,jpnch,Kbb)/(tr(ji,jj,jk,jpphy,Kbb)+rtrn)
-         tr(ji,jj,jk,jpdch,Krhs) = tr(ji,jj,jk,jpdch,Krhs) - zgrazdc * tr(ji,jj,jk,jpdch,Kbb)/(tr(ji,jj,jk,jpdia,Kbb)+rtrn)
-         tr(ji,jj,jk,jpdsi,Krhs) = tr(ji,jj,jk,jpdsi,Krhs) - zgrazdc * tr(ji,jj,jk,jpdsi,Kbb)/(tr(ji,jj,jk,jpdia,Kbb)+rtrn)
-         tr(ji,jj,jk,jpgsi,Krhs) = tr(ji,jj,jk,jpgsi,Krhs) + zgrazdc * tr(ji,jj,jk,jpdsi,Kbb)/(tr(ji,jj,jk,jpdia,Kbb)+rtrn)
+         !
+         zratio = tr(ji,jj,jk,jpnch,Kbb)/(tr(ji,jj,jk,jpphy,Kbb)+rtrn)
+         tr(ji,jj,jk,jpnch,Krhs) = tr(ji,jj,jk,jpnch,Krhs) - zgraznc * zratio
+         zratio = tr(ji,jj,jk,jpdch,Kbb)/(tr(ji,jj,jk,jpdia,Kbb)+rtrn)
+         tr(ji,jj,jk,jpdch,Krhs) = tr(ji,jj,jk,jpdch,Krhs) - zgrazdc * zratio
+         zratio = tr(ji,jj,jk,jpdsi,Kbb)/(tr(ji,jj,jk,jpdia,Kbb)+rtrn)
+         tr(ji,jj,jk,jpdsi,Krhs) = tr(ji,jj,jk,jpdsi,Krhs) - zgrazdc * zratio
+         tr(ji,jj,jk,jpgsi,Krhs) = tr(ji,jj,jk,jpgsi,Krhs) + zgrazdc * zratio
          tr(ji,jj,jk,jpnfe,Krhs) = tr(ji,jj,jk,jpnfe,Krhs) - zgraznf
          tr(ji,jj,jk,jpdfe,Krhs) = tr(ji,jj,jk,jpdfe,Krhs) - zgrazdf
          tr(ji,jj,jk,jppoc,Krhs) = tr(ji,jj,jk,jppoc,Krhs) + zmortz - zgrazpoc
@@ -286,7 +298,9 @@ CONTAINS
         !
         IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-            zw3d(A2D(0),:) =  zgrazing(A2D(0),:) * 1.e+3 * rfact2r * tmask(A2D(0),:)
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jk) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
+            END_3D
             CALL iom_put( "GRAZ1" , zw3d )  ! conversion in mol/m2/s
             CALL iom_put( "MicroZo2" , zw3d * ( 1. - epsher - unass ) * (-o2ut) * sigma1 ) ! o2 consumption by Microzoo
             !

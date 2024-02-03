@@ -119,8 +119,9 @@ CONTAINS
             trc_data(ji,jj,14)    = MIN(tr(ji,jj,ikt,jpcal,Kbb), 1E-4) * zwsbio4(ji,jj)
             trc_data(ji,jj,15)    = ts(ji,jj,ikt,jp_tem,Kmm)
             trc_data(ji,jj,16)    = ts(ji,jj,ikt,jp_sal,Kmm)
-            trc_data(ji,jj,17)    = ( tr(ji,jj,ikt,jpsfe,Kbb) * zwsbio3(ji,jj) + tr(ji,jj,ikt,jpbfe,Kbb)  &
-            &                       * zwsbio4(ji,jj) ) / ( trc_data(ji,jj,13) + rtrn )
+            trc_data(ji,jj,17)    = ( tr(ji,jj,ikt,jpsfe,Kbb) * zwsbio3(ji,jj) &
+            &                        + tr(ji,jj,ikt,jpbfe,Kbb) * zwsbio4(ji,jj) ) &
+            &                        / ( trc_data(ji,jj,13) + rtrn )
             trc_data(ji,jj,17)    = MIN(1E-3, trc_data(ji,jj,17) )
          ENDIF
       END_2D

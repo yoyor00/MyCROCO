@@ -166,8 +166,9 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!                  ***  trc_oce_alloc  ***
       !!----------------------------------------------------------------------
-      ALLOCATE( tra(A2D(0),jpk,jptra), tmask(A2D(0),jpk), e1e2t(A2D(0)), &
-         &      etot3(A2D(0),jpk), oce_co2(A2D(0)), atm_co2(A2D(0)), fr_i(A2D(0)),STAT=trc_oce_alloc )
+      ALLOCATE( tra(A2D(0),jpk,jptra),tmask(A2D(0),jpk), e1e2t(A2D(0)), &
+         &      etot3(A2D(0),jpk), oce_co2(A2D(0)), &
+         &     atm_co2(A2D(0)), fr_i(A2D(0)),STAT=trc_oce_alloc )
 
       IF( trc_oce_alloc /= 0 )   CALL ctl_warn('trc_oce_alloc: failed to allocate etot3 array')
       !

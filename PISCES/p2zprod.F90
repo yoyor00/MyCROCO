@@ -200,13 +200,15 @@ CONTAINS
             zprodfer = zprorcan(ji,jj,jk) * feratz * texcretn
             !
             tr(ji,jj,jk,jpno3,Krhs) = tr(ji,jj,jk,jpno3,Krhs) - zprorcan(ji,jj,jk)
-            tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) - zprorcan(ji,jj,jk) * feratz * texcretn
+            tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) &
+                    &               - zprorcan(ji,jj,jk) * feratz * texcretn
             consfe3(ji,jj,jk)   = zprodfer * 75.0 / ( rtrn + ( plig(ji,jj,jk) + 75.0 * (1.0 - plig(ji,jj,jk) ) )   &
             &                   * tr(ji,jj,jk,jpfer,Kbb) ) / rfact2
             !
             tr(ji,jj,jk,jpphy,Krhs) = tr(ji,jj,jk,jpphy,Krhs) + zprorcan(ji,jj,jk) * texcretn
             tr(ji,jj,jk,jpdoc,Krhs) = tr(ji,jj,jk,jpdoc,Krhs) + excretn * zprorcan(ji,jj,jk)
-            tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) + ( o2ut + o2nit ) * zprorcan(ji,jj,jk)
+            tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) &
+                    &                + ( o2ut + o2nit ) * zprorcan(ji,jj,jk)
             !
             tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) - zprorcan(ji,jj,jk)
             tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + rno3 * zprorcan(ji,jj,jk)
@@ -228,14 +230,20 @@ CONTAINS
        zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
        IF( l_dia_pp ) THEN
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-          zw3d(A2D(0),:) = thetanano(A2D(0),:) * tmask(A2D(0),:) 
-          CALL iom_put( "THETANANO", zw3d ) ! Diagnostic Chl:C ratio
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jk) = thetanano(ji,jj,jk) * 12. &
-               &             * tr(ji,jj,jk,jpphy,Kbb) * 1.0e+6 * tmask(ji,jj,jk) 
+             zw3d(ji,jj,jkR) = thetanano(ji,jj,jk) * zfact * tmask(ji,jj,jk) 
+          END_3D
+          CALL iom_put( "THETANANO", zw3d ) ! Diagnostic Chl:C ratio
+          !
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = thetanano(ji,jj,jk) * 12. &
+               &         * tr(ji,jj,jk,jpphy,Kbb) * 1.0e+6 * tmask(ji,jj,jk) 
           END_3D
           CALL iom_put( "CHL", zw3d ) ! total Chloropyll
-          zw3d(A2D(0),:) = zprorcan(A2D(0),:) * zfact * tmask(A2D(0),:)
+          !
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = zprorcan(ji,jj,jk) * zfact * tmask(ji,jj,jk) 
+          END_3D
           CALL iom_put( "PPPHYN", zw3d )  ! primary production by nanophyto
           CALL iom_put( "TPP", zw3d ) ! total primary production
           CALL iom_put( "PPNEWo2", ( o2ut + o2nit ) * zw3d ) ! Oxygen production by the New Produc
@@ -245,10 +253,15 @@ CONTAINS
        !
        IF( l_dia_mu ) THEN
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-          zw3d(A2D(0),1:jpkm1) = zprmax(A2D(0),1:jpkm1)  * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = zprmax(ji,jj,jk) * tmask(ji,jj,jk) 
+          END_3D
           CALL iom_put( "Mumax", zw3d )
           ! Realized growth rate for nanophyto
-          zw3d(A2D(0),1:jpkm1) = zprbio(A2D(0),1:jpkm1) * xlimphy(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = zprbio(ji,jj,jk) * xlimphy(ji,jj,jk) &
+                 &          * tmask(ji,jj,jk) 
+          END_3D
           CALL iom_put( "MuN", zw3d )
           DEALLOCATE ( zw3d )
        ENDIF
@@ -256,7 +269,11 @@ CONTAINS
        IF( l_dia_light ) THEN
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
           ! light limitation term for nano
-          zw3d(A2D(0),1:jpkm1) = zprbio(A2D(0),1:jpkm1) / ( zprmax(A2D(0),1:jpkm1) + rtrn ) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = zprbio(ji,jj,jk) &
+                 &          / ( zprmax(ji,jj,jk) + rtrn ) &
+                 &          * tmask(ji,jj,jk) 
+          END_3D
           CALL iom_put( "LNlight", zw3d )
           DEALLOCATE ( zw3d )
        ENDIF

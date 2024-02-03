@@ -28,11 +28,10 @@
        USE trc
 
 # include "ocean2pisces.h90"
-# include "do_loop_substitute.h90"
 
        implicit none
        INTEGER :: Istr,Iend,Jstr,Jend
-       INTEGER :: ji, jk, jn
+       INTEGER :: i, j, k, jn
        INTEGER :: Kbb, Kmm
 !----------------------------------------------------------------
 !----------------------------------------------------------------
@@ -43,22 +42,22 @@
       CALL ocean_2_pisces( Istr,Iend,Jstr,Jend) 
 
       DO jn = 1, jptra
-         DO_3D( 0, 0, 0, 0, 1, jpk)
-           tr(ji,jj,jk,jn,Kbb) 
-     &  = MAX( 0., tr(ji,jj,jk,jn,Kbb) * 1.e-6 )
-         END_3D
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+           tr(i,j,k,jn,Kbb) 
+     &  = MAX( 0., tr(i,j,k,jn,Kbb) * 1.e-6 )
+         END DO   ;   END DO   ;   END DO         
       END DO
 
-      DO_3D( 0, 0, 0, 0, 1, jpk)
-         tr(ji,jj,jk,jpno3,Kbb) 
-     &   = tr(ji,jj,jk,jpno3,Kbb) / rno3
+      DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+         tr(i,j,k,jpno3,Kbb) 
+     &   = tr(i,j,k,jpno3,Kbb) / rno3
 # if ! defined key_pisces_npzd
-         tr(ji,jj,jk,jpnh4,Kbb) 
-     &   = tr(ji,jj,jk,jpnh4,Kbb) / rno3
-         tr(ji,jj,jk,jppo4,Kbb)
-     &   = tr(ji,jj,jk,jppo4,Kbb) / po4r
+         tr(i,j,k,jpnh4,Kbb) 
+     &   = tr(i,j,k,jpnh4,Kbb) / rno3
+         tr(i,j,k,jppo4,Kbb)
+     &   = tr(i,j,k,jppo4,Kbb) / po4r
 #endif
-      END_3D
+      END DO   ;   END DO   ;   END DO         
 
 !       ilc=1+iic-ntstart   ! number of time step since restart
 !       ! To be conform with clasic (no xios) croco file first
@@ -66,42 +65,42 @@
 !       if (ilc == 0) ilc=1
 !       CALL iom_setkt( ilc )
       DO jn = 1, jptra
-         DO_3D( 0, 0, 0, 0, 1, jpk)
-            tra(ji,jj,jk,jn)
-     &    = tr(ji,jj,jk,jn,Krhs)
-         END_3D
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+             tra(i,j,k,jn)
+     &       = tr(i,j,k,jn,Krhs)
+         END DO   ;   END DO   ;   END DO         
          !
-         DO_3D( 0, 0, 0, 0, 1, jpk)
-            tr(ji,jj,jk,jn,Krhs) = 0.
-         END_3D
-      ENDDO
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+            tr(i,j,k,jn,Krhs) = 0.
+         END DO   ;   END DO   ;   END DO         
+       ENDDO
 
       CALL trc_sms_pisces( iic, Kbb, Kmm, Krhs )
 
 
       DO jn = 1, jptra
-         DO_3D( 0, 0, 0, 0, 1, jpk)
-           tr(ji,jj,jk,jn,Kbb) 
-     &   = tr(ji,jj,jk,jn,Kbb) * 1.e6 
-         END_3D
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+           tr(i,j,k,jn,Kbb) 
+     &   = tr(i,j,k,jn,Kbb) * 1.e6 
+         END DO   ;   END DO   ;   END DO         
       END DO
 
-      DO_3D( 0, 0, 0, 0, 1, jpk)
-         tr(ji,jj,jk,jpno3,Kbb)
-     &   = tr(ji,jj,jk,jpno3,Kbb) * rno3
+      DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+         tr(i,j,k,jpno3,Kbb)
+     &   = tr(i,j,k,jpno3,Kbb) * rno3
 # if ! defined key_pisces_npzd
-         tr(ji,jj,jk,jpnh4,Kbb) 
-     &  = tr(ji,jj,jk,jpnh4,Kbb) * rno3
-         tr(ji,jj,jk,jppo4,Kbb) 
-     &  = tr(ji,jj,jk,jppo4,Kbb) * po4r
+         tr(i,j,k,jpnh4,Kbb) 
+     &  = tr(i,j,k,jpnh4,Kbb) * rno3
+         tr(i,j,k,jppo4,Kbb) 
+     &  = tr(i,j,k,jppo4,Kbb) * po4r
 #endif
-      END_3D
+      END DO   ;   END DO   ;   END DO         
       !
       DO jn = 1, jptra
-         DO_3D( 0, 0, 0, 0, 1, jpk)
-            tr(ji,jj,jk,jn,Krhs)
-     &    = tra(ji,jj,jk,jn)
-        END_3D
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+            tr(i,j,k,jn,Krhs)
+     &    = tra(i,j,k,jn)
+         END DO   ;   END DO   ;   END DO         
       ENDDO
 
       RETURN       

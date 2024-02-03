@@ -138,7 +138,8 @@ CONTAINS
          DO jn = jp_pcs0, jp_pcs1
             DO_3D( 0, 0, 0, 0, 1, jpk)
                IF( ( tr(ji,jj,jk,jn,Kbb) + tr(ji,jj,jk,jn,Krhs) ) < 0.e0 ) THEN
-                  ztra             = ABS( tr(ji,jj,jk,jn,Kbb) ) / ( ABS( tr(ji,jj,jk,jn,Krhs) ) + rtrn )
+                  ztra = ABS( tr(ji,jj,jk,jn,Kbb) ) &
+                    &  / ( ABS( tr(ji,jj,jk,jn,Krhs) ) + rtrn )
                   xnegtr(ji,jj,jk) = MIN( xnegtr(ji,jj,jk),  ztra )
                ENDIF
             END_3D
@@ -148,7 +149,8 @@ CONTAINS
          ! Concentrations are updated
          DO jn = jp_pcs0, jp_pcs1
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               tr(ji,jj,jk,jn,Kbb) = tr(ji,jj,jk,jn,Kbb) + xnegtr(ji,jj,jk) * tr(ji,jj,jk,jn,Krhs)
+               tr(ji,jj,jk,jn,Kbb) = tr(ji,jj,jk,jn,Kbb) &
+                       &           + xnegtr(ji,jj,jk) * tr(ji,jj,jk,jn,Krhs)
             END_3D
          END DO
         !
@@ -185,7 +187,8 @@ CONTAINS
            zw2d(:,:) = 0.
            DO jk = 1, jpkm1
               DO_2D( 0, 0, 0, 0 )
-                 zw2d(ji,jj) = zw2d(ji,jj) + zw3d(ji,jj,jk) * rno3 * ( tr(ji,jj,jk,jpno3,Krhs) + tr(ji,jj,jk,jpnh4,Krhs) ) 
+                 ztra = tr(ji,jj,jk,jpno3,Krhs) + tr(ji,jj,jk,jpnh4,Krhs)
+                 zw2d(ji,jj) = zw2d(ji,jj) + zw3d(ji,jj,jk) * rno3 * ztra 
               END_2D
            ENDDO
            CALL iom_put( 'INTdtDIN', zw2d )
@@ -517,7 +520,8 @@ CONTAINS
            ! Correct the trn mean content of SiO3
            IF(lwp) WRITE(numout,*) '       SiO3N mean : ', zsilsumn
            DO_3D( 0, 0, 0, 0, 1, jpk)
-              tr(ji,jj,jk,jpsil,Kmm) = MIN( 400.e-6,tr(ji,jj,jk,jpsil,Kmm) * silmean / zsilsumn )
+              tr(ji,jj,jk,jpsil,Kmm) = MIN( 400.e-6,tr(ji,jj,jk,jpsil,Kmm) &
+                      &               * silmean / zsilsumn )
            END_3D
         ENDIF
             
@@ -558,23 +562,28 @@ CONTAINS
         !
         IF( ln_p2z ) THEN
             DO_3D( 0, 0, 0, 0, 1, jpk)
-            zw3d(ji,jj,jk)  =  ( tr(ji,jj,jk,jpno3,Kmm) + tr(ji,jj,jk,jpphy,Kmm)                      &
-               &             +   tr(ji,jj,jk,jppoc,Kmm) + tr(ji,jj,jk,jpdoc,Kmm)                      &
+            zw3d(ji,jj,jk)  =  ( tr(ji,jj,jk,jpno3,Kmm) + tr(ji,jj,jk,jpphy,Kmm) &
+               &             +   tr(ji,jj,jk,jppoc,Kmm) + tr(ji,jj,jk,jpdoc,Kmm) &
                &             +   tr(ji,jj,jk,jpzoo,Kmm) ) * cvol(ji,jj,jk)
             END_3D
         ELSE IF( ln_p4z ) THEN
             DO_3D( 0, 0, 0, 0, 1, jpk)
-            zw3d(ji,jj,jk)  =  ( tr(ji,jj,jk,jpno3,Kmm) + tr(ji,jj,jk,jpnh4,Kmm)                      &
-               &             +   tr(ji,jj,jk,jpphy,Kmm) + tr(ji,jj,jk,jpdia,Kmm)                      &
-               &             +   tr(ji,jj,jk,jppoc,Kmm) + tr(ji,jj,jk,jpgoc,Kmm)  + tr(ji,jj,jk,jpdoc,Kmm)  &        
-               &             +   tr(ji,jj,jk,jpzoo,Kmm) + tr(ji,jj,jk,jpmes,Kmm)  ) * cvol(ji,jj,jk)
+            zw3d(ji,jj,jk)  =  ( tr(ji,jj,jk,jpno3,Kmm) + tr(ji,jj,jk,jpnh4,Kmm) &
+               &             +   tr(ji,jj,jk,jpphy,Kmm) + tr(ji,jj,jk,jpdia,Kmm) &
+               &             +   tr(ji,jj,jk,jppoc,Kmm) + tr(ji,jj,jk,jpgoc,Kmm)  &
+               &             +   tr(ji,jj,jk,jpdoc,Kmm)  &        
+               &             +   tr(ji,jj,jk,jpzoo,Kmm) + tr(ji,jj,jk,jpmes,Kmm)  ) &
+               &                 * cvol(ji,jj,jk)
             END_3D
         ELSE
             DO_3D( 0, 0, 0, 0, 1, jpk)
-            zw3d(ji,jj,jk) =    ( tr(ji,jj,jk,jpno3,Kmm) + tr(ji,jj,jk,jpnh4,Kmm) + tr(ji,jj,jk,jpnph,Kmm)   &
-               &             +   tr(ji,jj,jk,jpndi,Kmm) + tr(ji,jj,jk,jpnpi,Kmm)                      & 
-               &             +   tr(ji,jj,jk,jppon,Kmm) + tr(ji,jj,jk,jpgon,Kmm) + tr(ji,jj,jk,jpdon,Kmm)   &
-               &             + ( tr(ji,jj,jk,jpzoo,Kmm) + tr(ji,jj,jk,jpmes,Kmm) ) * no3rat3 ) * cvol(ji,jj,jk)
+            zw3d(ji,jj,jk) =    ( tr(ji,jj,jk,jpno3,Kmm) + tr(ji,jj,jk,jpnh4,Kmm) &
+               &             +   tr(ji,jj,jk,jpnph,Kmm)   &
+               &             +   tr(ji,jj,jk,jpndi,Kmm) + tr(ji,jj,jk,jpnpi,Kmm) & 
+               &             +   tr(ji,jj,jk,jppon,Kmm) + tr(ji,jj,jk,jpgon,Kmm) &
+               &             +   tr(ji,jj,jk,jpdon,Kmm)   &
+               &             + ( tr(ji,jj,jk,jpzoo,Kmm) + tr(ji,jj,jk,jpmes,Kmm) ) &
+               &                * no3rat3 ) * cvol(ji,jj,jk)
             END_3D
         ENDIF
         !
@@ -586,17 +595,21 @@ CONTAINS
            ! Compute the budget of PO4
            IF( ln_p4z ) THEN
                DO_3D( 0, 0, 0, 0, 1, jpk)
-                  zw3d(ji,jj,jk) =    ( tr(ji,jj,jk,jppo4,Kmm)                                         &
-                     &             +   tr(ji,jj,jk,jpphy,Kmm) + tr(ji,jj,jk,jpdia,Kmm)                      &
-                     &             +   tr(ji,jj,jk,jppoc,Kmm) + tr(ji,jj,jk,jpgoc,Kmm)  + tr(ji,jj,jk,jpdoc,Kmm)  &        
-                     &             +   tr(ji,jj,jk,jpzoo,Kmm) + tr(ji,jj,jk,jpmes,Kmm) ) * cvol(ji,jj,jk)
+                  zw3d(ji,jj,jk) =    ( tr(ji,jj,jk,jppo4,Kmm)              &
+                     &    + tr(ji,jj,jk,jpphy,Kmm) + tr(ji,jj,jk,jpdia,Kmm) &
+                     &    + tr(ji,jj,jk,jppoc,Kmm) + tr(ji,jj,jk,jpgoc,Kmm) &
+                     &    + tr(ji,jj,jk,jpdoc,Kmm)  &        
+                     &    + tr(ji,jj,jk,jpzoo,Kmm) + tr(ji,jj,jk,jpmes,Kmm) ) &
+                     &             * cvol(ji,jj,jk)
                END_3D
             ELSE
                DO_3D( 0, 0, 0, 0, 1, jpk)
-                  zw3d(ji,jj,jk) =    ( tr(ji,jj,jk,jppo4,Kmm) + tr(ji,jj,jk,jppph,Kmm)                      &
-                     &             +   tr(ji,jj,jk,jppdi,Kmm) + tr(ji,jj,jk,jpppi,Kmm)                      & 
-                     &             +   tr(ji,jj,jk,jppop,Kmm) + tr(ji,jj,jk,jpgop,Kmm) + tr(ji,jj,jk,jpdop,Kmm)   &
-                     &             + ( tr(ji,jj,jk,jpzoo,Kmm) + tr(ji,jj,jk,jpmes,Kmm) ) * po4rat3 ) * cvol(ji,jj,jk)
+                  zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jppo4,Kmm) + tr(ji,jj,jk,jppph,Kmm) &
+                     &  + tr(ji,jj,jk,jppdi,Kmm) + tr(ji,jj,jk,jpppi,Kmm) & 
+                     &  + tr(ji,jj,jk,jppop,Kmm) + tr(ji,jj,jk,jpgop,Kmm) &
+                     &  + tr(ji,jj,jk,jpdop,Kmm)   &
+                     &  + (  tr(ji,jj,jk,jpzoo,Kmm) + tr(ji,jj,jk,jpmes,Kmm) ) &
+                     &  * po4rat3 ) * cvol(ji,jj,jk)
                END_3D
             ENDIF
             !
@@ -606,7 +619,8 @@ CONTAINS
             !
             ! Compute the budget of SiO3
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) =  ( tr(ji,jj,jk,jpsil,Kmm) + tr(ji,jj,jk,jpgsi,Kmm) + tr(ji,jj,jk,jpdsi,Kmm) ) * cvol(ji,jj,jk)
+               zw3d(ji,jj,jk) =  ( tr(ji,jj,jk,jpsil,Kmm) + tr(ji,jj,jk,jpgsi,Kmm) &
+                       &        + tr(ji,jj,jk,jpdsi,Kmm) ) * cvol(ji,jj,jk)
             END_3D
             !
             zsilbudget = glob_sum( 'p4zsms', zw3d(:,:,:)  )  
@@ -617,21 +631,29 @@ CONTAINS
         ! Compute the budget of Iron
         IF( ln_p2z ) THEN
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) =   ( tr(ji,jj,jk,jpfer,Kmm) + tr(ji,jj,jk,jpphy,Kmm) * feratz  &
-                  &            +    tr(ji,jj,jk,jppoc,Kmm) *feratz               &
-                  &            +    tr(ji,jj,jk,jpzoo,Kmm) * feratz ) * cvol(ji,jj,jk)
+               zw3d(ji,jj,jk) =   ( tr(ji,jj,jk,jpfer,Kmm) &
+                  &    + tr(ji,jj,jk,jpphy,Kmm) * feratz  &
+                  &    + tr(ji,jj,jk,jppoc,Kmm) *feratz    &
+                  &    + tr(ji,jj,jk,jpzoo,Kmm) * feratz ) &
+                  &       * cvol(ji,jj,jk)
             END_3D
          ELSE IF( ln_p4z ) THEN
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) =   ( tr(ji,jj,jk,jpfer,Kmm) + tr(ji,jj,jk,jpnfe,Kmm) + tr(ji,jj,jk,jpdfe,Kmm)   &
-                  &            +    tr(ji,jj,jk,jpbfe,Kmm) + tr(ji,jj,jk,jpsfe,Kmm)                      &
-                  &            +    tr(ji,jj,jk,jpzoo,Kmm) * feratz + tr(ji,jj,jk,jpmes,Kmm) * feratm ) * cvol(ji,jj,jk)
+               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Kmm) + tr(ji,jj,jk,jpnfe,Kmm) &
+                  &   + tr(ji,jj,jk,jpdfe,Kmm)   &
+                  &   + tr(ji,jj,jk,jpbfe,Kmm) + tr(ji,jj,jk,jpsfe,Kmm)  &
+                  &   + tr(ji,jj,jk,jpzoo,Kmm) * feratz &
+                  &   + tr(ji,jj,jk,jpmes,Kmm) * feratm ) &
+                  &                 * cvol(ji,jj,jk)
             END_3D
          ELSE
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) =   ( tr(ji,jj,jk,jpfer,Kmm) + tr(ji,jj,jk,jpnfe,Kmm) + tr(ji,jj,jk,jpdfe,Kmm)   &
-                  &            +    tr(ji,jj,jk,jppfe,Kmm) + tr(ji,jj,jk,jpbfe,Kmm) + tr(ji,jj,jk,jpsfe,Kmm)   &
-                  &            +    tr(ji,jj,jk,jpzoo,Kmm) * feratz + tr(ji,jj,jk,jpmes,Kmm) * feratm ) * cvol(ji,jj,jk)
+               zw3d(ji,jj,jk) =   ( tr(ji,jj,jk,jpfer,Kmm) + tr(ji,jj,jk,jpnfe,Kmm) &
+                  &    + tr(ji,jj,jk,jpdfe,Kmm) + tr(ji,jj,jk,jppfe,Kmm)  &
+                  &    + tr(ji,jj,jk,jpbfe,Kmm) + tr(ji,jj,jk,jpsfe,Kmm)   &
+                  &    + tr(ji,jj,jk,jpzoo,Kmm) * feratz &
+                  &    + tr(ji,jj,jk,jpmes,Kmm) * feratm ) &
+                  &                * cvol(ji,jj,jk)
             END_3D
          ENDIF
          !
@@ -642,12 +664,17 @@ CONTAINS
         ! Compute the budget of total alkalinity
         IF( ln_p2z ) THEN
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) =  ( tr(ji,jj,jk,jpno3,Kmm) * rno3 + tr(ji,jj,jk,jptal,Kmm) ) * cvol(ji,jj,jk)             
+               zw3d(ji,jj,jk) =  ( tr(ji,jj,jk,jpno3,Kmm) * rno3  &
+               &                 + tr(ji,jj,jk,jptal,Kmm) ) &
+                       &         * cvol(ji,jj,jk)             
             END_3D
          ELSE
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) =  ( tr(ji,jj,jk,jpno3,Kmm) * rno3 + tr(ji,jj,jk,jptal,Kmm)   &
-                 &               + tr(ji,jj,jk,jpcal,Kmm) * 2. - tr(ji,jj,jk,jpnh4,Kmm) * rno3 ) * cvol(ji,jj,jk)
+               zw3d(ji,jj,jk) =  ( tr(ji,jj,jk,jpno3,Kmm) * rno3 &
+                 &              +  tr(ji,jj,jk,jptal,Kmm)   &
+                 &              +  tr(ji,jj,jk,jpcal,Kmm) * 2. &
+                 &              -  tr(ji,jj,jk,jpnh4,Kmm) * rno3 ) &
+                 &           * cvol(ji,jj,jk)
             END_3D
          ENDIF
          !

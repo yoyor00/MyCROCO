@@ -46,11 +46,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER ::   ios   ! Local integer
       INTEGER  :: jn, ierr, ioptio
-#if defined key_ligand && ! defined key_pisces_npzd
       TYPE(PTRACER), DIMENSION(jptra) :: tracer
-#else
-      TYPE(PTRACER), DIMENSION(jptra+1) :: tracer
-#endif
       CHARACTER(LEN=20)::   clname
 
       NAMELIST/nampistrc/ tracer
@@ -66,7 +62,8 @@ CONTAINS
       clname = 'namelist_pisces'
       CALL load_nml( numnatp_ref, TRIM( clname )//'_ref', numout, lwm )
       CALL load_nml( numnatp_cfg, TRIM( clname )//'_cfg', numout, lwm )
-      IF(lwm) CALL ctl_opn( numonp     , 'output.namelist.pis' , 'UNKNOWN', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
+      IF(lwm) CALL ctl_opn( numonp, 'output.namelist.pis', &
+              &            'UNKNOWN', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
 
       IF(lwp) WRITE(numout,*) 'number of tracer : ', jptra
 

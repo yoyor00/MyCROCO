@@ -110,7 +110,8 @@ CONTAINS
       IF( ln_p2z ) THEN
          DO_3D( 0, 0, 0, 0, 1, jpkm1)
             zmax  = MAX( heup_01(ji,jj), hmld(ji,jj) )
-            zfact = MAX( 0., gdepw(ji,jj,jk+1,Kmm) - zmax ) * tgfunc(ji,jj,jk) * ( 0.03 / wsbio2 - 0.015/ wsbio)
+            zfact = MAX( 0., gdepw(ji,jj,jk+1,Kmm) - zmax ) &
+              &      * tgfunc(ji,jj,jk) * ( 0.03 / wsbio2 - 0.015/ wsbio)
             zfact = MIN(3.0, EXP(-zfact) )
             wsbio3(ji,jj,jk) = ( wsbio + wsbio2 * ( sizen(ji,jj,1) - 1.0 ) * 0.05 * zfact )    &
                &               / ( 1.0 + ( sizen(ji,jj,1) - 1.0 ) * 0.05 * zfact )
@@ -132,7 +133,10 @@ CONTAINS
       !
       IF( l_diag ) THEN
          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp     
-         zw3d(A2D(0),:) = ( zsinking(A2D(0),1:jpk) + zsinking2(A2D(0),1:jpk) ) * xfact * tmask(A2D(0),:)
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+         zw3d(ji,jj,jkR) = ( zsinking(ji,jj,jk) + zsinking2(ji,jj,jk) ) &
+               &        * xfact * tmask(ji,jj,jk)
+         END_3D
          CALL iom_put( "EPC100",  zw3d(:,:,ik100) )  ! Export of carbon at 100m
          CALL iom_put( "EXPC"  ,  zw3d )             ! Export of carbon in the water column
          ALLOCATE( zw2d(A2D(0)) )
@@ -152,7 +156,9 @@ CONTAINS
             sinkcalb(ji,jj) = zsinking(ji,jj,ikb)
          END_2D
          IF( l_diag ) THEN
-            zw3d(A2D(0),:) = zsinking(A2D(0),1:jpk) * xfact * tmask(A2D(0),:)
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jkR) =  zsinking(ji,jj,jk) * xfact * tmask(ji,jj,jk)
+            END_3D
             CALL iom_put( "EPCAL100",  zw3d(:,:,ik100) )  ! Export of calcite at 100m
             CALL iom_put( "EXPCAL"  ,  zw3d )             ! Export of calcite in the water column
          ENDIF
@@ -163,7 +169,9 @@ CONTAINS
             sinksilb(ji,jj) = zsinking(ji,jj,ikb)
          END_2D
          IF( l_diag ) THEN
-            zw3d(A2D(0),:) = zsinking(A2D(0),1:jpk) * xfact * tmask(A2D(0),:)
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jkR) =  zsinking(ji,jj,jk) * xfact * tmask(ji,jj,jk)
+            END_3D
             CALL iom_put( "EPSI100",  zw3d(:,:,ik100) )  ! Export of Silicate at 100m
             CALL iom_put( "EXPSI"  ,  zw3d )             ! Export of Silicate in the water column
          ENDIF
@@ -171,7 +179,10 @@ CONTAINS
          CALL trc_sink( kt, Kbb, Kmm, wsbio3, zsinking, jpsfe, rfact2 )
          CALL trc_sink( kt, Kbb, Kmm, wsbio4, zsinking2, jpbfe, rfact2 )
          IF( l_diag ) THEN
-            zw3d(A2D(0),:) = ( zsinking(A2D(0),1:jpk) + zsinking2(A2D(0),1:jpk) ) * xfact * tmask(A2D(0),:)
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+              zw3d(ji,jj,jkR) = ( zsinking(ji,jj,jk) + zsinking2(ji,jj,jk) ) &
+               &        * xfact * tmask(ji,jj,jk)
+            END_3D
             CALL iom_put( "EPFE100",  zw3d(:,:,ik100) )  ! Export of iron at 100m
             CALL iom_put( "EXPFE"  ,  zw3d )             ! Export of iron in the water column
          ENDIF
