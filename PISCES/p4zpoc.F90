@@ -245,8 +245,9 @@ CONTAINS
         ENDIF
         IF( l_dia_remin ) THEN
            DO_3D( 0, 0, 0, 0, 1, jpkm1)
-              zremigoc(ji,jj,jk) = ( tr(ji,jj,jk,jpdoc,Krhs) - zremigoc(ji,jj,jk) ) / &
-              &                  ( xstep * tgfunc(ji,jj,jk) * tr(ji,jj,jk,jpgoc,Kbb) + rtrn ) * tmask(ji,jj,jk) ! =zremipart
+              zremigoc(ji,jj,jk) = ( tr(ji,jj,jk,jpdoc,Krhs) - zremigoc(ji,jj,jk) )  &
+              &       / ( xstep * tgfunc(ji,jj,jk) * tr(ji,jj,jk,jpgoc,Kbb) + rtrn ) &
+              &             *  tmask(ji,jj,jk) ! =zremipart
            END_3D
         ENDIF
 
@@ -450,8 +451,9 @@ CONTAINS
      ENDIF
      IF( l_dia_remin ) THEN
          DO_3D( 0, 0, 0, 0, 1, jpkm1)
-            zremipoc(ji,jj,jk) = ( tr(ji,jj,jk,jpdoc,Krhs) - zremipoc(ji,jj,jk) ) / &
-                                 ( xstep * tgfunc(ji,jj,jk) * tr(ji,jj,jk,jppoc,Kbb) + rtrn ) * tmask(ji,jj,jk)
+            zremipoc(ji,jj,jk) = ( tr(ji,jj,jk,jpdoc,Krhs) - zremipoc(ji,jj,jk) ) &
+               &     / ( xstep * tgfunc(ji,jj,jk) * tr(ji,jj,jk,jppoc,Kbb) + rtrn ) &
+               &          * tmask(ji,jj,jk)
          END_3D
          DO_3D( 0, 0, 0, 0, 1, jpkm1)
             zfolimi (ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfolimi (ji,jj,jk) ) * tmask(ji,jj,jk)
@@ -461,14 +463,20 @@ CONTAINS
      IF( lk_iomput .AND. l_dia_remin .AND. knt == nrdttrc ) THEN
         ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
         IF( .NOT. ln_p2z ) THEN
-           zw3d(A2D(0),:) = zremigoc(A2D(0),:)
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              zw3d(ji,jj,jkR) = zremigoc(ji,jj,jk)
+           END_3D
            CALL iom_put( "REMING", zw3d ) ! Remineralisation rate of large particles
            DEALLOCATE ( zremigoc )
         ENDIF
-        zw3d(A2D(0),:) = zremipoc(A2D(0),:)
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = zremipoc(ji,jj,jk)
+        END_3D
         CALL iom_put( "REMINP", zw3d )  ! Remineralisation rate of small particles
         !
-        zw3d(A2D(0),:) = zfolimi(A2D(0),:) * 1.e+9 * 1.e3 * rfact2r
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = zfolimi(ji,jj,jk) * 1.e+9 * 1.e3 * rfact2r
+        END_3D
         CALL iom_put( "REMINF", zw3d ) ! Remineralisation of biogenic particulate iron
         DEALLOCATE ( zremipoc, zfolimi )
         DEALLOCATE ( zw3d )

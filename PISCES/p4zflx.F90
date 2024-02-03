@@ -155,7 +155,8 @@ CONTAINS
          zsch_co2 = 2116.8 - 136.25 * ztc + 4.7353 * ztc2 - 0.092307 * ztc3 + 0.0007555 * ztc4
          zsch_o2  = 1920.4 - 135.6  * ztc + 5.2122 * ztc2 - 0.109390 * ztc3 + 0.0009377 * ztc4
          !  wind speed 
-         zws  = wndm(ji,jj) * wndm(ji,jj)
+         zws =   wndm(ji,jj) &
+             & * wndm(ji,jj)
          ! Compute the piston velocity for O2 and CO2
          zkgwan = 0.251 * zws
          zkgwan = zkgwan * xconv * ( 1.- fr_i(ji,jj) ) * tmask(ji,jj,1)
@@ -181,13 +182,15 @@ CONTAINS
          zpco2oce(ji,jj) = zh2co3(ji,jj) / ( chemc(ji,jj,1) * zfugcoeff + rtrn )
          oce_co2(ji,jj)  = ( zfld - zflu ) * tmask(ji,jj,1) 
          ! compute the trend
-         tr(ji,jj,1,jpdic,Krhs) = tr(ji,jj,1,jpdic,Krhs) + oce_co2(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+         tr(ji,jj,1,jpdic,Krhs) = tr(ji,jj,1,jpdic,Krhs) &
+                 &         + oce_co2(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
 
          ! Compute O2 flux 
          zfld16 = patm(ji,jj) * chemo2(ji,jj,1) * zkgo2(ji,jj)          ! (mol/L) * (m/s)
          zflu16 = tr(ji,jj,1,jpoxy,Kbb) * zkgo2(ji,jj)
          zoflx(ji,jj) = ( zfld16 - zflu16 ) * tmask(ji,jj,1)
-         tr(ji,jj,1,jpoxy,Krhs) = tr(ji,jj,1,jpoxy,Krhs) + zoflx(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+         tr(ji,jj,1,jpoxy,Krhs) = tr(ji,jj,1,jpoxy,Krhs) &
+                 &        + zoflx(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
       END_2D
 
       IF( l_dia_tcflx .OR. kt == nitrst )  THEN
@@ -217,7 +220,8 @@ CONTAINS
            zw2d(A2D(0)) = oce_co2(A2D(0)) * 1000._wp
            CALL iom_put( "Cflx", zw2d )
            ! atmospheric Dpco2 
-           zw2d(A2D(0)) =  ( zpco2atm(A2D(0)) - zpco2oce(A2D(0)) ) * tmask(A2D(0),1)
+           zw2d(A2D(0)) =  ( zpco2atm(A2D(0)) - zpco2oce(A2D(0)) ) &
+                &           * tmask(A2D(0),1)
            CALL iom_put( "Dpco2", zw2d )
            ! oceanic Dpco2 
            zw2d(A2D(0)) =  zpco2oce(A2D(0)) * tmask(A2D(0),1)

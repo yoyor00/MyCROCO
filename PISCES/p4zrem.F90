@@ -135,7 +135,8 @@ CONTAINS
          ! -----------------------------------------------------
          zammonic = zremikc * nitrfac(ji,jj,jk) * tr(ji,jj,jk,jpdoc,Kbb)
          denitr(ji,jj,jk)  = zammonic * ( 1. - nitrfac2(ji,jj,jk) )
-         denitr(ji,jj,jk)  = MAX(0., MIN(  ( tr(ji,jj,jk,jpno3,Kbb) - rtrn ) / rdenit, denitr(ji,jj,jk) ) )
+         denitr(ji,jj,jk)  = MAX(0., MIN(  ( tr(ji,jj,jk,jpno3,Kbb) - rtrn ) &
+              &            / rdenit, denitr(ji,jj,jk) ) )
 
          ! Ammonification in waters depleted in O2 and NO3 based on 
          ! other redox processes
@@ -144,11 +145,17 @@ CONTAINS
 
          ! Update of the the trends arrays
          tr(ji,jj,jk,jpno3,Krhs) = tr(ji,jj,jk,jpno3,Krhs) - denitr (ji,jj,jk) * rdenit
-         tr(ji,jj,jk,jpdoc,Krhs) = tr(ji,jj,jk,jpdoc,Krhs) - ( zolimic + denitr(ji,jj,jk) + zoxyremc )
-         tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) - zolimic * (o2ut + o2nit)
-         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) + zolimic + denitr(ji,jj,jk) + zoxyremc
-         tr(ji,jj,jk,jpno3,Krhs) = tr(ji,jj,jk,jpno3,Krhs) + zolimic + denitr(ji,jj,jk) + zoxyremc
-         tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - rno3 * ( zolimic + zoxyremc - ( rdenit - 1.) * denitr(ji,jj,jk) )
+         tr(ji,jj,jk,jpdoc,Krhs) = tr(ji,jj,jk,jpdoc,Krhs) &
+            &                    - ( zolimic + denitr(ji,jj,jk) + zoxyremc )
+         tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) &
+            &                    - zolimic * (o2ut + o2nit)
+         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) &
+            &                    + zolimic + denitr(ji,jj,jk) + zoxyremc
+         tr(ji,jj,jk,jpno3,Krhs) = tr(ji,jj,jk,jpno3,Krhs) &
+            &                    + zolimic + denitr(ji,jj,jk) + zoxyremc
+         tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - &
+            &                      rno3 * ( zolimic + zoxyremc - &
+            &                      ( rdenit - 1.) * denitr(ji,jj,jk) )
       END_3D
 
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
@@ -163,7 +170,7 @@ CONTAINS
              ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
              !
              DO_3D( 0, 0, 0, 0, 1, jpk)
-                zw3d(ji,jj,jk) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
+                zw3d(ji,jj,jkR) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
                    &               * rfact2r * tmask(ji,jj,jk) ! 
              END_3D
              CALL iom_put( "REMIN", zw3d )
@@ -172,14 +179,19 @@ CONTAINS
           !
           IF( l_dia_bact ) THEN   ! Bacterial biomass
              ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
-             zw3d(A2D(0),:) =  zdepbac(A2D(0),:) * 1.e+6 * tmask(A2D(0),:)
+             DO_3D( 0, 0, 0, 0, 1, jpk)
+                zw3d(ji,jj,jkR) = zdepbac(ji,jj,jk) * 1.e+6 * tmask(ji,jj,jk)
+             END_3D
              CALL iom_put( "BACT", zw3d )
              DEALLOCATE( zw3d )
           ENDIF
           !
           IF( l_dia_denit )  THEN ! Denitrification
              ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
-             zw3d(A2D(0),:) =  denitr(A2D(0),:) * 1E+3 * rfact2r * rno3 * tmask(A2D(0),:)
+             DO_3D( 0, 0, 0, 0, 1, jpk)
+                zw3d(ji,jj,jkR) = denitr(ji,jj,jk) * 1.e+3 &
+                      &          * rfact2r * rno3 * tmask(ji,jj,jk)
+             END_3D
              CALL iom_put( "DENIT", zw3d )
              DEALLOCATE( zw3d )
           ENDIF
@@ -210,7 +222,7 @@ CONTAINS
       INTEGER  ::   ji, jj, jk
       REAL(wp) ::   zremik, zremikc, zremikn, zremikp, zsiremin, zfact 
       REAL(wp) ::   zsatur, zsatur2, znusil, znusil2, zdep, zdepmin, zfactdep
-      REAL(wp) ::   zbactfer, zonitr
+      REAL(wp) ::   zbactfer, zonitr, zootot, zratio, zremtrd
       REAL(wp) ::   zammonic, zoxyremc, zosil, ztem, zdenitnh4, zolimic
       REAL(wp) ::   zfacsi, zdepeff
       CHARACTER (len=25) :: charout
@@ -250,7 +262,8 @@ CONTAINS
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          zdep = MAX( hmld(ji,jj), heup_01(ji,jj), gdept(ji,jj,1,Kmm) )
          IF ( gdept(ji,jj,jk,Kmm) <= zdep ) THEN
-            zdepbac(ji,jj,jk) = 0.6 * ( MAX(0.0, tr(ji,jj,jk,jpzoo,Kbb) + tr(ji,jj,jk,jpmes,Kbb) ) * 1.0E6 )**0.6 * 1.E-6
+            zootot = tr(ji,jj,jk,jpzoo,Kbb) + tr(ji,jj,jk,jpmes,Kbb)
+            zdepbac(ji,jj,jk) = 0.6 * ( MAX(0.0, zootot ) * 1.0E6 )**0.6 * 1.E-6
             ztempbac(ji,jj)   = zdepbac(ji,jj,jk)
          ELSE
             zdepmin = MIN( 1., zdep / gdept(ji,jj,jk,Kmm) )
@@ -274,30 +287,37 @@ CONTAINS
          ! -----------------------------------------------------
          zammonic = zremikc * nitrfac(ji,jj,jk) * tr(ji,jj,jk,jpdoc,Kbb)
          denitr(ji,jj,jk)  = zammonic * ( 1. - nitrfac2(ji,jj,jk) )
-         denitr(ji,jj,jk)  = MAX(0., MIN(  ( tr(ji,jj,jk,jpno3,Kbb) - rtrn ) / rdenit, denitr(ji,jj,jk) ) )
+         denitr(ji,jj,jk)  = MAX(0., MIN(  ( tr(ji,jj,jk,jpno3,Kbb) - rtrn ) &
+             &             / rdenit, denitr(ji,jj,jk) ) )
 
          ! Ammonification in waters depleted in O2 and NO3 based on 
          ! other redox processes
          ! --------------------------------------------------------
-         zoxyremc          = MAX(0., zammonic - denitr(ji,jj,jk) )
-
+         zoxyremc   = MAX(0., zammonic - denitr(ji,jj,jk) )
+         zremtrd   =  zolimic + denitr(ji,jj,jk) + zoxyremc
          ! Update of the the trends arrays
          tr(ji,jj,jk,jpno3,Krhs) = tr(ji,jj,jk,jpno3,Krhs) - denitr (ji,jj,jk) * rdenit
-         tr(ji,jj,jk,jpdoc,Krhs) = tr(ji,jj,jk,jpdoc,Krhs) - ( zolimic + denitr(ji,jj,jk) + zoxyremc )
+         tr(ji,jj,jk,jpdoc,Krhs) = tr(ji,jj,jk,jpdoc,Krhs) - zremtrd
          tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) - zolimic * o2ut
-         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) + zolimic + denitr(ji,jj,jk) + zoxyremc
+         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) + zremtrd
          IF( ln_p4z ) THEN ! PISCES-std
-            tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) + zolimic + denitr(ji,jj,jk) + zoxyremc
-            tr(ji,jj,jk,jpnh4,Krhs) = tr(ji,jj,jk,jpnh4,Krhs) + zolimic + denitr(ji,jj,jk) + zoxyremc
-            tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + rno3 * ( zolimic + zoxyremc + ( rdenit + 1.) * denitr(ji,jj,jk) )
+            tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) + zremtrd
+            tr(ji,jj,jk,jpnh4,Krhs) = tr(ji,jj,jk,jpnh4,Krhs) + zremtrd
+            tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) &
+                    &               + rno3 * ( zolimic + zoxyremc &
+                    &                  + ( rdenit + 1.) * denitr(ji,jj,jk) )
          ELSE  ! PISCES-QUOTA (p5z)
-            zremikn = xremikn / xremikc * tr(ji,jj,jk,jpdon,kbb) / ( tr(ji,jj,jk,jpdoc,Kbb) + rtrn )
-            zremikp = xremikp / xremikc * tr(ji,jj,jk,jpdop,Kbb) / ( tr(ji,jj,jk,jpdoc,Kbb) + rtrn )
-            tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) + zremikp * ( zolimic + denitr(ji,jj,jk) + zoxyremc )
-            tr(ji,jj,jk,jpnh4,Krhs) = tr(ji,jj,jk,jpnh4,Krhs) + zremikn * ( zolimic + denitr(ji,jj,jk) + zoxyremc )
-            tr(ji,jj,jk,jpdon,Krhs) = tr(ji,jj,jk,jpdon,Krhs) - zremikn * ( zolimic + denitr(ji,jj,jk) + zoxyremc )
-            tr(ji,jj,jk,jpdop,Krhs) = tr(ji,jj,jk,jpdop,Krhs) - zremikp * ( zolimic + denitr(ji,jj,jk) + zoxyremc )
-            tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + rno3 * zremikn * ( zolimic + zoxyremc + ( rdenit + 1.) * denitr(ji,jj,jk) )
+            zratio = tr(ji,jj,jk,jpdon,kbb) / ( tr(ji,jj,jk,jpdoc,Kbb) + rtrn )
+            zremikn = xremikn / xremikc * zratio
+            zratio = tr(ji,jj,jk,jpdop,kbb) / ( tr(ji,jj,jk,jpdoc,Kbb) + rtrn )
+            zremikp = xremikp / xremikc * zratio
+            
+            tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) + zremikp * zremtrd
+            tr(ji,jj,jk,jpnh4,Krhs) = tr(ji,jj,jk,jpnh4,Krhs) + zremikn * zremtrd
+            tr(ji,jj,jk,jpdon,Krhs) = tr(ji,jj,jk,jpdon,Krhs) - zremikn * zremtrd
+            tr(ji,jj,jk,jpdop,Krhs) = tr(ji,jj,jk,jpdop,Krhs) - zremikp * zremtrd
+            tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + rno3 * zremikn &
+                 &             * ( zolimic + zoxyremc + ( rdenit + 1.) * denitr(ji,jj,jk) )
          ENDIF
       END_3D
 
@@ -314,7 +334,8 @@ CONTAINS
          tr(ji,jj,jk,jpnh4,Krhs) = tr(ji,jj,jk,jpnh4,Krhs) - zonitr - zdenitnh4
          tr(ji,jj,jk,jpno3,Krhs) = tr(ji,jj,jk,jpno3,Krhs) + zonitr - rdenita * zdenitnh4
          tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) - o2nit * zonitr
-         tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - 2 * rno3 * zonitr + rno3 * ( rdenita - 1. ) * zdenitnh4
+         tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - 2 * rno3 * zonitr &
+               &                  + rno3 * ( rdenita - 1. ) * zdenitnh4
       END_3D
 
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
@@ -362,9 +383,11 @@ CONTAINS
          ! The parameterization is taken from Ridgwell et al. (2002) 
          ! ---------------------------------------------------------
          zdep     = MAX( hmld(ji,jj), heup_01(ji,jj) )
-         zsatur   = MAX( rtrn, ( sio3eq(ji,jj,jk) - tr(ji,jj,jk,jpsil,Kbb) ) / ( sio3eq(ji,jj,jk) + rtrn ) )
+         zsatur   = MAX( rtrn, ( sio3eq(ji,jj,jk) - tr(ji,jj,jk,jpsil,Kbb) ) &
+             &     / ( sio3eq(ji,jj,jk) + rtrn ) )
          zsatur2  = ( 1. + ts(ji,jj,jk,jp_tem,Kmm) / 400.)**37
-         znusil   = 0.225  * ( 1. + ts(ji,jj,jk,jp_tem,Kmm) / 15.) * zsatur + 0.775 * zsatur2 * zsatur**9.25
+         znusil   = 0.225  * ( 1. + ts(ji,jj,jk,jp_tem,Kmm) / 15.) &
+             &     * zsatur + 0.775 * zsatur2 * zsatur**9.25
  
          ! Two fractions of bSi are considered : a labile one and a more
          ! refractory one based on the commonly observed two step 
@@ -374,7 +397,8 @@ CONTAINS
          ! of bSi. This is computed assuming steady state.
          ! --------------------------------------------------------------
          IF ( gdept(ji,jj,jk,Kmm) > zdep ) THEN
-            zfactdep = EXP( -0.5 * ( xsiremlab - xsirem ) * znusil * e3t(ji,jj,jk,Kmm) / wsbio4(ji,jj,jk) )
+            zfactdep = EXP( -0.5 * ( xsiremlab - xsirem ) &
+                &     * znusil * e3t(ji,jj,jk,Kmm) / wsbio4(ji,jj,jk) )
             zfacsib(ji,jj,jk) = zfacsib(ji,jj,jk-1) * zfactdep
             zfacsi            = zfacsib(ji,jj,jk) / ( 1.0 + zfacsib(ji,jj,jk) )
             zfacsib(ji,jj,jk) = zfacsib(ji,jj,jk) * zfactdep
@@ -400,8 +424,8 @@ CONTAINS
              ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
              !
              DO_3D( 0, 0, 0, 0, 1, jpk)
-                zw3d(ji,jj,jk) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) ) / o2ut &
-                   &               * rfact2r * tmask(ji,jj,jk) !
+                zw3d(ji,jj,jkR) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) )  &
+                   &              / o2ut  * rfact2r * tmask(ji,jj,jk) !
              END_3D
              CALL iom_put( "REMIN", zw3d )
              DEALLOCATE( zolimi, zw3d )
@@ -409,11 +433,13 @@ CONTAINS
           !
           IF( l_dia_bact ) THEN   ! Bacterial biomass
              ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-             zw3d(A2D(0),:) =  zdepbac(A2D(0),:) * 1.e+6 * tmask(A2D(0),:)
+             DO_3D( 0, 0, 0, 0, 1, jpk)
+                zw3d(ji,jj,jkR) = zdepbac(ji,jj,jk) * 1.e+6 * tmask(ji,jj,jk)
+             END_3D
              CALL iom_put( "BACT", zw3d )
              !
              DO_3D( 0, 0, 0, 0, 1, jpk)
-                zw3d(ji,jj,jk) = ( zfebact(ji,jj,jk) - tr(ji,jj,jk,jpfer,Krhs) ) &
+                zw3d(ji,jj,jkR) = ( zfebact(ji,jj,jk) - tr(ji,jj,jk,jpfer,Krhs) ) &
                    &              * 1e9 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
              END_3D
              CALL iom_put( "FEBACT", zw3d )
@@ -422,7 +448,10 @@ CONTAINS
           !
           IF( l_dia_denit )  THEN ! Denitrification
              ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
-             zw3d(A2D(0),:) =  denitr(A2D(0),:) * 1E+3 * rfact2r * rno3 * tmask(A2D(0),:)
+             DO_3D( 0, 0, 0, 0, 1, jpk)
+                zw3d(ji,jj,jkR) = denitr(ji,jj,jk) * 1.e+3 &
+                      &          * rfact2r * rno3 * tmask(ji,jj,jk)
+             END_3D
              CALL iom_put( "DENIT", zw3d )
              DEALLOCATE( zw3d )
           ENDIF

@@ -78,18 +78,21 @@ CONTAINS
             &            iom_use( "Totlig" ) .OR. iom_use( "Biron" ) .OR. iom_use( "FESCAV" ) .OR.  &
             &            iom_use( "FECOLL" ) .OR. iom_use( "FEPREC" ) 
 
-      IF( l_dia_fechem )  ALLOCATE( zcoll3d(A2D(0),jpk), zscav3d(A2D(0),jpk), zfeprecip(A2D(0),jpk) ) 
+      IF( l_dia_fechem )  &
+        & ALLOCATE( zcoll3d(A2D(0),jpk), zscav3d(A2D(0),jpk), zfeprecip(A2D(0),jpk) ) 
       !
       ! Total ligand concentration : Ligands can be chosen to be constant or variable
       ! Parameterization from Pham and Ito (2018)
       ! -------------------------------------------------
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
-         xfecolagg(ji,jj,jk) = ligand * 1E9 + 0.01 * MAX(0., (chemo2(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Kbb) ) * 1E6 )**0.8
+         xfecolagg(ji,jj,jk) = ligand * 1E9 + 0.01 &
+                 &  * MAX(0., (chemo2(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Kbb) ) * 1E6 )**0.8
       END_3D
       !
       IF( ln_ligvar ) THEN
          DO_3D( 0, 0, 0, 0, 1, jpkm1)
-            ztotlig(ji,jj,jk) =  0.07 * 0.667 * (tr(ji,jj,jk,jpdoc,Kbb) * 1E6 )**0.8  + xfecolagg(ji,jj,jk)
+            ztotlig(ji,jj,jk) =  0.07 * 0.667 * (tr(ji,jj,jk,jpdoc,Kbb) * 1E6 )**0.8  &
+                    &   + xfecolagg(ji,jj,jk)
             ztotlig(ji,jj,jk) =  MIN( ztotlig(ji,jj,jk), 10. )
          END_3D
       ELSE
@@ -178,9 +181,11 @@ CONTAINS
          !  could be thought as an equivalent of colloidal pumping.
          !  It requires certainly some more work as it is very poorly constrained.
          !  ----------------------------------------------------------------
-         zlam1a   = ( 12.0  * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) + 9.05  * tr(ji,jj,jk,jppoc,Kbb) ) * xdiss(ji,jj,jk)    &
+         zlam1a   = ( 12.0  * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) &
+             &        + 9.05  * tr(ji,jj,jk,jppoc,Kbb) ) * xdiss(ji,jj,jk)    &
              &    + ( 2.49  * tr(ji,jj,jk,jppoc,Kbb) )     &
-             &    + ( 127.8 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) + 725.7 * tr(ji,jj,jk,jppoc,Kbb) )
+             &    + ( 127.8 * 0.3 * tr(ji,jj,jk,jpdoc,Kbb) &
+             &         + 725.7 * tr(ji,jj,jk,jppoc,Kbb) )
          zaggdfea = zlam1a * xstep * zfecoll(ji,jj,jk)
          !
          IF( ll_dust )  zdust  = dust(ji,jj) / ( wdust / rday ) * tmask(ji,jj,jk)
@@ -189,7 +194,8 @@ CONTAINS
          IF( ln_p2z ) THEN
             ztrc = tr(ji,jj,jk,jppoc,Kbb) * 1e6
          ELSE
-            ztrc = ( tr(ji,jj,jk,jppoc,Kbb) + tr(ji,jj,jk,jpgoc,Kbb) + tr(ji,jj,jk,jpcal,Kbb) + tr(ji,jj,jk,jpgsi,Kbb) ) * 1.e6
+            ztrc = ( tr(ji,jj,jk,jppoc,Kbb) + tr(ji,jj,jk,jpgoc,Kbb) &
+               &  + tr(ji,jj,jk,jpcal,Kbb) + tr(ji,jj,jk,jpgsi,Kbb) ) * 1.e6
          ENDIF
          ztrc = MAX( rtrn, ztrc )
          zlam1b = 3.e-5 + ( xlamdust * zdust + xlam1 * ztrc ) * zxlam
@@ -204,8 +210,10 @@ CONTAINS
             zaggdfeb = zlam1b * xstep * zfecoll(ji,jj,jk)
             xcoagfe(ji,jj,jk) =  zlam1a + zlam1b
             !
-            tr(ji,jj,jk,jpsfe,Krhs) = tr(ji,jj,jk,jpsfe,Krhs) + zscave * scaveff * tr(ji,jj,jk,jppoc,Kbb) / ztrc
-            tr(ji,jj,jk,jpbfe,Krhs) = tr(ji,jj,jk,jpbfe,Krhs) + zscave * scaveff * tr(ji,jj,jk,jppoc,Kbb) / ztrc
+            tr(ji,jj,jk,jpsfe,Krhs) = tr(ji,jj,jk,jpsfe,Krhs) &
+                    &     + zscave * scaveff * tr(ji,jj,jk,jppoc,Kbb) / ztrc
+            tr(ji,jj,jk,jpbfe,Krhs) = tr(ji,jj,jk,jpbfe,Krhs) &
+                    &     + zscave * scaveff * tr(ji,jj,jk,jppoc,Kbb) / ztrc
             !
             ! Precipitated iron is supposed to be permanently lost.
             ! Scavenged iron is supposed to be released back to seawater
@@ -245,29 +253,42 @@ CONTAINS
         zrfact2 = 1.e3 * rfact2r  ! conversion from mol/L/timestep into mol/m3/s
         ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
         ! Fe3+
-        zw3d(A2D(0),:) = zFe3(A2D(0),:) * tmask(A2D(0),:)
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = zFe3(ji,jj,jk) * tmask(ji,jj,jk)
+        END_3D
         CALL iom_put( "Fe3", zw3d )
         !  FeL1
         DO_3D( 0, 0, 0, 0, 1, jpk)
-          zw3d(ji,jj,jk) = MAX( 0., tr(ji,jj,jk,jpfer,Kbb) - zFe3(ji,jj,jk) ) * tmask(ji,jj,jk)
+          zw3d(ji,jj,jkR) = MAX( 0., tr(ji,jj,jk,jpfer,Kbb) - zFe3(ji,jj,jk) ) &
+                  &        * tmask(ji,jj,jk)
         END_3D
         CALL iom_put( "FeL1", zw3d )
         ! TL1 = Totlig
-        zw3d(A2D(0),:) = ztotlig(A2D(0),:) * tmask(A2D(0),:)
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = ztotlig(ji,jj,jk) * tmask(ji,jj,jk)
+        END_3D
         CALL iom_put( "TL1", zw3d )
         ! Totlig
         CALL iom_put( "Totlig", zw3d )
         ! biron
-        zw3d(A2D(0),:) = biron(A2D(0),:) * tmask(A2D(0),:)
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = biron(ji,jj,jk) * tmask(ji,jj,jk)
+        END_3D
         CALL iom_put( "Biron", zw3d )
         ! FESCAV
-        zw3d(A2D(0),:) = zscav3d(A2D(0),:) * tmask(A2D(0),:) * zrfact2
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = zscav3d(ji,jj,jk) * tmask(ji,jj,jk) * zrfact2
+        END_3D
         CALL iom_put( "FESCAV", zw3d )
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = zcoll3d(ji,jj,jk) * tmask(ji,jj,jk) * zrfact2
+        END_3D
         ! FECOLL
-        zw3d(A2D(0),:) = zcoll3d(A2D(0),:) * tmask(A2D(0),:) * zrfact2
         CALL iom_put( "FECOLL", zw3d )
         ! FEPREC
-        zw3d(A2D(0),:) = zfeprecip(A2D(0),:) * tmask(A2D(0),:) * zrfact2
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = zfeprecip(ji,jj,jk) * tmask(ji,jj,jk) * zrfact2
+        END_3D
         CALL iom_put( "FEPREC", zw3d )
         !
         DEALLOCATE( zcoll3d, zscav3d, zfeprecip, zw3d )

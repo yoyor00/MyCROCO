@@ -77,7 +77,7 @@ CONTAINS
       REAL(wp) :: zpdtan, zpdtmo, zdemi, zt
       REAL(wp) :: zxy, zjulian, zsec
       !
-      REAL(wp)   :: zdust, zwdust, zfact
+      REAL(wp)   :: zdust, zwdust, zfact, ztra
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zno3dep, znh4dep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zpo4dep, zsildep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zirondep
@@ -124,7 +124,8 @@ CONTAINS
          END_2D
          !
          DO_2D( 0, 0, 0, 0 )
-            zirondep(ji,jj,1) =  ( ( 1. - zxy ) * ferdepmo(ji,jj,irec1) + zxy * ferdepmo(ji,jj,irec2) ) &
+            zirondep(ji,jj,1) =  ( ( 1. - zxy ) * ferdepmo(ji,jj,irec1) &
+                    &                   + zxy   * ferdepmo(ji,jj,irec2) ) &
                &                   * rfact2 / e3t(ji,jj,1,Kmm) 
          END_2D
          !                                              ! Iron solubilization of particles in the water column
@@ -132,7 +133,7 @@ CONTAINS
          zwdust = 0.03  / ( wdust / rday ) / ( 250. * rday )
          DO_3D( 0, 0, 0, 0, 2, jpk)
             zirondep(ji,jj,jk) = ( dust(ji,jj) * mfrac / mMass_Fe ) * zwdust &
-                   &              * rfact * EXP( -gdept(ji,jj,jk,Kmm) /( 250. * wdust ) )
+                   &        * rfact * EXP( -gdept(ji,jj,jk,Kmm) /( 250. * wdust ) )
          END_3D
          !                                              ! Iron solubilization of particles in the water column
          DO_3D( 0, 0, 0, 0, 1, jpk)
@@ -143,7 +144,8 @@ CONTAINS
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
             ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )         ;   zw2d(:,:) = 0.
             DO_3D( 0, 0, 0, 0, 1, jpk )
-               zw3d(ji,jj,jk) = zirondep(ji,jj,jk) * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
+               zw3d(ji,jj,jk) = zirondep(ji,jj,jk) &
+                    &         * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
             END_3D
             CALL iom_put( "Irondep", zw3d )  ! surface downward dust depo of iron
             !
@@ -165,23 +167,33 @@ CONTAINS
          ! Atmospheric input of PO4 and Si dissolves in the water column
          ALLOCATE( zpo4dep(A2D(0)), zsildep(A2D(0)) )
          DO_2D( 0, 0, 0, 0 )
-            zpo4dep(ji,jj) = ( 1. - zxy ) * po4depmo(ji,jj,irec1) + zxy * po4depmo(ji,jj,irec2)
-            zsildep(ji,jj) = ( 1. - zxy ) * sildepmo(ji,jj,irec1) + zxy * sildepmo(ji,jj,irec2)
+            zpo4dep(ji,jj) = ( 1. - zxy ) * po4depmo(ji,jj,irec1) &
+               &                  + zxy   * po4depmo(ji,jj,irec2)
+            ztra   = zpo4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            tr(ji,jj,1,jppo4,Krhs) = tr(ji,jj,1,jppo4,Krhs) + ztra
          END_2D
+         !
          DO_2D( 0, 0, 0, 0 )
-            tr(ji,jj,1,jppo4,Krhs) = tr(ji,jj,1,jppo4,Krhs) + zpo4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm) 
-            tr(ji,jj,1,jpsil,Krhs) = tr(ji,jj,1,jpsil,Krhs) + zsildep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            zsildep(ji,jj) = ( 1. - zxy ) * sildepmo(ji,jj,irec1) &
+               &                  + zxy   * sildepmo(ji,jj,irec2)
+            ztra   = zsildep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            tr(ji,jj,1,jpsil,Krhs) = tr(ji,jj,1,jpsil,Krhs) + ztra
+         END_2D
 #if defined key_trc_diaadd
+         DO_2D( 0, 0, 0, 0 )
             zfact = 1.e+3 * tmask(ji,jj,1) 
             trc2d(ji,jj,jp_sildep) = zsildep(ji,jj) * zfact        ! Si surface deposition
             trc2d(ji,jj,jp_po4dep) = zpo4dep(ji,jj) * zfact * po4r ! PO4 surface deposition
-# endif
          END_2D
+# endif
 
          DO_3D( 0, 0, 0, 0, 2, jpk )
-            zdust = dust(ji,jj) * zwdust * rfact2 * EXP( -gdept(ji,jj,jk,Kmm) /( 250. * wdust ) )
-            tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) + zdust * 1.e-3 / mMass_P
-            tr(ji,jj,jk,jpsil,Krhs) = tr(ji,jj,jk,jpsil,Krhs) + zdust * 0.269 / mMass_Si
+            zdust = dust(ji,jj) * zwdust * rfact2 &
+               &     * EXP( -gdept(ji,jj,jk,Kmm) /( 250. * wdust ) )
+            tr(ji,jj,jk,jppo4,Krhs) = tr(ji,jj,jk,jppo4,Krhs) &
+                    &                 + zdust * 1.e-3 / mMass_P
+            tr(ji,jj,jk,jpsil,Krhs) = tr(ji,jj,jk,jpsil,Krhs) &
+                    &                 + zdust * 0.269 / mMass_Si
          END_3D
          !
          IF( lk_iomput .AND. l_dia_dust ) THEN
@@ -208,9 +220,11 @@ CONTAINS
          ALLOCATE( zno3dep(A2D(0)) )
          !
          DO_2D( 0, 0, 0, 0 )
-            zno3dep(ji,jj) = ( 1. - zxy ) * no3depmo(ji,jj,irec1) + zxy   * no3depmo(ji,jj,irec2)
-            tr(ji,jj,1,jpno3,Krhs) = tr(ji,jj,1,jpno3,Krhs) +        zno3dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
-            tr(ji,jj,1,jptal,Krhs) = tr(ji,jj,1,jptal,Krhs) - rno3 * zno3dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            zno3dep(ji,jj) = ( 1. - zxy ) * no3depmo(ji,jj,irec1) &
+               &                  + zxy   * no3depmo(ji,jj,irec2)
+            ztra  = zno3dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            tr(ji,jj,1,jpno3,Krhs) = tr(ji,jj,1,jpno3,Krhs) + ztra
+            tr(ji,jj,1,jptal,Krhs) = tr(ji,jj,1,jptal,Krhs) - rno3 * ztra
          END_2D
          !
          IF( lk_iomput .AND. l_dia_ndep ) THEN
@@ -232,9 +246,11 @@ CONTAINS
          ALLOCATE( znh4dep(A2D(0)) )
          !
          DO_2D( 0, 0, 0, 0 )
-            znh4dep(ji,jj) = ( 1. - zxy ) * nh4depmo(ji,jj,irec1) + zxy   * nh4depmo(ji,jj,irec2)
-            tr(ji,jj,1,jpnh4,Krhs) = tr(ji,jj,1,jpnh4,Krhs) +        znh4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
-            tr(ji,jj,1,jptal,Krhs) = tr(ji,jj,1,jptal,Krhs) + rno3 * znh4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            znh4dep(ji,jj) = ( 1. - zxy ) * nh4depmo(ji,jj,irec1) &
+                &                 + zxy   * nh4depmo(ji,jj,irec2)
+            ztra  = znh4dep(ji,jj) * rfact2 / e3t(ji,jj,1,Kmm)
+            tr(ji,jj,1,jpnh4,Krhs) = tr(ji,jj,1,jpnh4,Krhs) + ztra 
+            tr(ji,jj,1,jptal,Krhs) = tr(ji,jj,1,jptal,Krhs) + rno3 * ztra
          END_2D
          !
          IF( lk_iomput .AND. l_dia_ndep ) THEN
@@ -257,7 +273,8 @@ CONTAINS
       ! ------------------------------------------------------
       IF( ln_ironsed ) THEN
          DO_3D( 0, 0, 0, 0, 1, jpk )
-           tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) + ironsed(ji,jj,jk) * rfact2
+           tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) &
+               &                   + ironsed(ji,jj,jk) * rfact2
          END_3D
          !
          IF( lk_iomput .AND. l_dia_iron ) THEN

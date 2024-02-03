@@ -71,11 +71,13 @@ MODULE sedini
       ryear = 365. * 24. * 3600. !:  1 year converted in second
 
    REAL(wp), DIMENSION(jpwat), PUBLIC  :: seddiff1
-   DATA seddiff1/ 1.0007E-5, 9.7866E-6, 3.1022E-6, 9.8066E-6, 9.1762E-6, 5.0035E-6, 3.412E-6, 4.8132E-6, 4.8132E-6, 4.8132E-6, 4.59E-6 /
+   DATA seddiff1/ 1.0007E-5, 9.7866E-6, 3.1022E-6, 9.8066E-6, 9.1762E-6, &
+           &      5.0035E-6, 3.412E-6, 4.8132E-6, 4.8132E-6, 4.8132E-6, 4.59E-6 /
 
 
    REAL(wp), DIMENSION(jpwat), PUBLIC  :: seddiff2
-   DATA seddiff2/ 4.528E-7, 3.656E-7, 1.627E-7, 3.884E-7, 4.177E-7, 2.258E-7, 1.477E-7, 2.521E-7, 2.521E-7, 2.521E-7, 1.74E-7 /
+   DATA seddiff2/ 4.528E-7, 3.656E-7, 1.627E-7, 3.884E-7, 4.177E-7, 2.258E-7, &
+           &      1.477E-7, 2.521E-7, 2.521E-7, 2.521E-7, 1.74E-7 /
 
    !! *  Routine accessibility
    PUBLIC sed_ini          ! routine called by opa.F90

@@ -417,7 +417,8 @@ CONTAINS
          ! ------------------------------
          zfuptk = 0.2 + 0.12 / ( 3.0 * sizen(ji,jj,jk) + rtrn )
          ! Computed from Inomura et al. (2020) using Pavlova Lutheri
-         zrpho  = 11.55 * tr(ji,jj,jk,jpnch,Kbb) / ( tr(ji,jj,jk,jpphy,Kbb) * 12. + rtrn )
+         zrpho  = 11.55 * tr(ji,jj,jk,jpnch,Kbb) &
+                 &  / ( tr(ji,jj,jk,jpphy,Kbb) * 12. + rtrn )
          zrass = 0.62 * (0.15 + 0.85 * ( 1. - zrpho - zfuptk ) * xlimnpn(ji,jj,jk) )
          xqpnmin(ji,jj,jk) = ( 0.0078 + 0.62 * 0.15 * 0.0783 ) * 16.
          xqpnmax(ji,jj,jk) = ( zrpho * 0.0089 + zrass * 0.0783 ) * 16.
@@ -434,7 +435,8 @@ CONTAINS
          ! ------------------------------
          zfuptk = 0.2 + 0.12 / ( 0.7 * sizep(ji,jj,jk) + rtrn )
          ! Computed from Inomura et al. (2020) using a synechococcus
-         zrpho = 13.4 * tr(ji,jj,jk,jppch,Kbb) / ( tr(ji,jj,jk,jppic,Kbb) * 12. + rtrn )
+         zrpho = 13.4 * tr(ji,jj,jk,jppch,Kbb) &
+                 &   / ( tr(ji,jj,jk,jppic,Kbb) * 12. + rtrn )
          zrass = 0.4 * ( 0.15 + 0.85 * ( 1. - zrpho - zfuptk ) * xlimnpp(ji,jj,jk) )
          xqppmin(ji,jj,jk) = ( 0.0078 + 0.4/4. * 0.0517 ) * 16.
          xqppmax(ji,jj,jk) = ( zrpho * 0.0076 + zrass * 0.0517 ) * 16.
@@ -450,7 +452,8 @@ CONTAINS
          ! --------------------
          zfuptk = 0.2 + 0.12 / ( 5.0 * sized(ji,jj,jk) + rtrn )
          ! Computed from Inomura et al. (2020) using a synechococcus
-         zrpho = 8.08 * tr(ji,jj,jk,jpdch,Kbb) / ( tr(ji,jj,jk,jpndi,Kbb) * 12. + rtrn )
+         zrpho = 8.08 * tr(ji,jj,jk,jpdch,Kbb) &
+                 &  / ( tr(ji,jj,jk,jpndi,Kbb) * 12. + rtrn )
          zrass = 0.66 * ( 0.15 + 0.85 * ( 1. - zrpho - zfuptk ) * xlimnpd(ji,jj,jk) )
          xqpdmin(ji,jj,jk) = ( 0.0078 + 0.66/4. * 0.0783 ) * 16.
          xqpdmax(ji,jj,jk) = ( zrpho * 0.0135 + zrass * 0.0783 ) * 16.
@@ -478,40 +481,60 @@ CONTAINS
         !
         IF( l_dia_fracal ) THEN   ! fraction of calcifiers
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
-          zw3d(A2D(0),1:jpkm1) = xfracal(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xfracal(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "xfracal",  zw3d)
           DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_nut_lim ) THEN   ! Nutrient limitation term
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
-          zw3d(A2D(0),1:jpkm1) = xlimphy(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LNnut",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = xlimdia(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimdia(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LDnut",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = xlimpic(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimpic(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LPnut",  zw3d)
           DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_iron_lim ) THEN   ! Iron limitation term
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
-          zw3d(A2D(0),1:jpkm1) = xlimnfe(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimnfe(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LNFe",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = xlimdfe(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimdfe(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LDFe",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = xlimpfe(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = xlimpfe(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "LPFe",  zw3d)
           DEALLOCATE( zw3d )
         ENDIF
         !
         IF( l_dia_size_lim ) THEN   ! Size limitation term
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
-          zw3d(A2D(0),1:jpkm1) = sizen(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = sizen(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "SIZEN",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = sized(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = sized(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "SIZED",  zw3d)
-          zw3d(A2D(0),1:jpkm1) = sizep(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+          DO_3D( 0, 0, 0, 0, 1, jpk)
+             zw3d(ji,jj,jkR) = sizep(ji,jj,jk) * tmask(ji,jj,jk)
+          END_3D
           CALL iom_put( "SIZEP",  zw3d)
           DEALLOCATE( zw3d )
         ENDIF
@@ -520,20 +543,26 @@ CONTAINS
           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp      
           DO_3D( 0, 0, 0, 0, 1, jpkm1)
              zfuptk = 0.2 + 0.12 / ( 3.0 * sizen(ji,jj,jk) + rtrn )
-             zrpho  = 11.55 * tr(ji,jj,jk,jpnch,Kbb) / ( tr(ji,jj,jk,jpphy,Kbb) * 12. + rtrn )
-             zw3d(ji,jj,jk) = MAX(0.62/4., ( 1. - zrpho - zfuptk ) * xlimnpn(ji,jj,jk) ) * tmask(ji,jj,jk)
+             zrpho  = 11.55 * tr(ji,jj,jk,jpnch,Kbb) &
+                     &  / ( tr(ji,jj,jk,jpphy,Kbb) * 12. + rtrn )
+             zw3d(ji,jj,jkR) = MAX(0.62/4., ( 1. - zrpho - zfuptk ) &
+                     &       * xlimnpn(ji,jj,jk) ) * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "RASSN",  zw3d)
           DO_3D( 0, 0, 0, 0, 1, jpkm1)
             zfuptk = 0.2 + 0.12 / ( 3.0 * sizep(ji,jj,jk) + rtrn )
-             zrpho  = 11.55 * tr(ji,jj,jk,jppch,Kbb) / ( tr(ji,jj,jk,jppic,Kbb) * 12. + rtrn )
-             zw3d(ji,jj,jk) = MAX(0.62/4., ( 1. - zrpho - zfuptk ) * xlimnpp(ji,jj,jk) ) * tmask(ji,jj,jk)
+            zrpho  = 11.55 * tr(ji,jj,jk,jppch,Kbb) &
+                &   / ( tr(ji,jj,jk,jppic,Kbb) * 12. + rtrn )
+            zw3d(ji,jj,jkR) = MAX(0.62/4., ( 1. - zrpho - zfuptk ) &
+                &            * xlimnpp(ji,jj,jk) ) * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "RASSP",  zw3d)
           DO_3D( 0, 0, 0, 0, 1, jpkm1)
              zfuptk = 0.2 + 0.12 / ( 3.0 * sized(ji,jj,jk) + rtrn )
-             zrpho  = 11.55 * tr(ji,jj,jk,jpdch,Kbb) / ( tr(ji,jj,jk,jpndi,Kbb) * 12. + rtrn )
-             zw3d(ji,jj,jk) = MAX(0.62/4., ( 1. - zrpho - zfuptk ) * xlimnpd(ji,jj,jk) ) * tmask(ji,jj,jk)
+             zrpho  = 11.55 * tr(ji,jj,jk,jpdch,Kbb) &
+                  &      / ( tr(ji,jj,jk,jpndi,Kbb) * 12. + rtrn )
+             zw3d(ji,jj,jkR) = MAX(0.62/4., ( 1. - zrpho - zfuptk ) &
+                  &  * xlimnpd(ji,jj,jk) ) * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "RASSD",  zw3d)
           DEALLOCATE( zw3d )

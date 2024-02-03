@@ -2,6 +2,7 @@
 
 #define ktop      N
 #define kbottom   1
+#define jkR       N+1-jk
 
 /* Model grid variables*/
 # define tmask_i(i,j)        rmask(i,j)

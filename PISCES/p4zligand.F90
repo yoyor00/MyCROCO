@@ -90,19 +90,22 @@ CONTAINS
          ! 50% of the ligands are supposed to be in the colloidal size fraction as for FeL
          zaggliga = xcoagfe(ji,jj,jk) * xstep * 0.5 * zligco
          !
-         tr(ji,jj,jk,jplgw,Krhs) = tr(ji,jj,jk,jplgw,Krhs) + zlgwp  - zlgwr - zlgwpr - zaggliga
+         tr(ji,jj,jk,jplgw,Krhs) = tr(ji,jj,jk,jplgw,Krhs) &
+                 &                 + zlgwp  - zlgwr - zlgwpr - zaggliga
          !
       END_3D
       
       IF( l_dia_ligand .AND. ( lk_iomput .AND. knt == nrdttrc ) ) THEN
          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp     
          !
-         zw3d(A2D(0),:) =  orem(A2D(0),:) * rlig * 1e9 * 1.e+3 * rfact2r * tmask(A2D(0),:)
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            zw3d(ji,jj,jkR) =  orem(ji,jj,jk) * rlig * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+         END_3D   
          CALL iom_put( "LPRODR", zw3d )
          !
          DO_3D( 0, 0, 0, 0, 1, jpk)
             zlig = tr(ji,jj,jk,jplgw,Kbb)
-            zw3d(ji,jj,jk)  = ( 1.0 / rlgs * MAX(0., zlig - xfecolagg(ji,jj,jk) * 1.0E-9 )    &
+            zw3d(ji,jj,jkR)  = ( 1.0 / rlgs * MAX(0., zlig - xfecolagg(ji,jj,jk) * 1.0E-9 )    &
               &                  + 1.0 / rlgw * xfecolagg(ji,jj,jk) * 1.0E-9 ) / ( rtrn + zlig ) &
               &                 * tgfunc(ji,jj,jk) * ( xstep / nyear_len(1) ) * blim(ji,jj,jk) * zlig 
          END_3D   
@@ -110,14 +113,14 @@ CONTAINS
          !
          DO_3D( 0, 0, 0, 0, 1, jpk)
             zlig = tr(ji,jj,jk,jplgw,Kbb)
-            zw3d(ji,jj,jk)  = prlgw * xstep * etot(ji,jj,jk) * zlig*zlig*zlig &
+            zw3d(ji,jj,jkR)  = prlgw * xstep * etot(ji,jj,jk) * zlig*zlig*zlig &
               &            * fr_i(ji,jj) / ( zlig*zlig + xklig2 )
          END_3D   
          CALL iom_put( "LIGPR", zw3d )
          !
          DO_3D( 0, 0, 0, 0, 1, jpk)
             zlig = tr(ji,jj,jk,jplgw,Kbb)
-            zw3d(ji,jj,jk)  =  xcoagfe(ji,jj,jk) * xstep &
+            zw3d(ji,jj,jkR)  =  xcoagfe(ji,jj,jk) * xstep &
               &        * 0.5 * MAX(0., zlig - xfecolagg(ji,jj,jk) * 1.0E-9 )
          END_3D   
          CALL iom_put( "LGWCOLL", zw3d )

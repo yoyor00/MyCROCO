@@ -56,7 +56,7 @@ CONTAINS
       REAL(wp), DIMENSION(jpoce,jpksed) :: preac, zundsat1, psms
       REAL(wp), DIMENSION(jpoce,jpksed) :: psmsdic, psmsalk
       REAL(wp), DIMENSION(jpoce,jpksed) :: zdic1, zalk1, zdic2, zalk2, zdicb, zalkb
-      REAL(wp)  ::  ztemp, zsolid1, zunder, zrearat, zdissol
+      REAL(wp)  ::  ztemp, zsolid1, zunder, zrearat, zdissol, zvol
       REAL(wp)  ::  zsolcpcl, zsolcpsi, zexcess
       !!
       !!----------------------------------------------------------------------
@@ -106,7 +106,8 @@ CONTAINS
       DO jk = 1, jpksed
          DO ji = 1, jpoce
             pwcp(ji,jk,jwsil) = zsieq(ji) - zundsat1(ji,jk)
-            solcp(ji,jk,jsopal) = solcp(ji,jk,jsopal) - preac(ji,jk) * zundsat1(ji,jk) / ( volc(ji,jk,jsopal) + rtrn ) * dtsed
+            solcp(ji,jk,jsopal) = solcp(ji,jk,jsopal) &
+               &            - preac(ji,jk) * zundsat1(ji,jk) / ( volc(ji,jk,jsopal) + rtrn ) * dtsed
          END DO
       END DO
 
@@ -144,8 +145,9 @@ CONTAINS
 
        DO jk = 2, jpksed
           DO ji = 1, jpoce
-             xirrigtrd(ji,jwdic) = xirrigtrd(ji,jwdic) - irrig(ji,jk) * (zdic1(ji,1) - zdic1(ji,jk) ) * volw3d(ji,jk) * 5.0 * dtsed / 11.0
-             xirrigtrd(ji,jwalk) = xirrigtrd(ji,jwalk) - irrig(ji,jk) * (zalk1(ji,1) - zalk1(ji,jk) ) * volw3d(ji,jk) * 5.0 * dtsed / 11.0
+             zvol = volw3d(ji,jk) * 5.0 * dtsed / 11.0
+             xirrigtrd(ji,jwdic) = xirrigtrd(ji,jwdic) - irrig(ji,jk) * (zdic1(ji,1) - zdic1(ji,jk) ) * zvol
+             xirrigtrd(ji,jwalk) = xirrigtrd(ji,jwalk) - irrig(ji,jk) * (zalk1(ji,1) - zalk1(ji,jk) ) * zvol
           END DO
        END DO
 
@@ -180,8 +182,9 @@ CONTAINS
 
        DO jk = 2, jpksed
           DO ji = 1, jpoce
-             xirrigtrd(ji,jwdic) = xirrigtrd(ji,jwdic) - irrig(ji,jk) * (zdic2(ji,1) - zdic2(ji,jk) ) * volw3d(ji,jk) * 4.0 * dtsed / 11.0
-             xirrigtrd(ji,jwalk) = xirrigtrd(ji,jwalk) - irrig(ji,jk) * (zalk2(ji,1) - zalk2(ji,jk) ) * volw3d(ji,jk) * 4.0 * dtsed / 11.0
+             zvol = volw3d(ji,jk) * 4.0 * dtsed / 11.0
+             xirrigtrd(ji,jwdic) = xirrigtrd(ji,jwdic) - irrig(ji,jk) * (zdic2(ji,1) - zdic2(ji,jk) ) * zvol
+             xirrigtrd(ji,jwalk) = xirrigtrd(ji,jwalk) - irrig(ji,jk) * (zalk2(ji,1) - zalk2(ji,jk) ) * zvol
           END DO
        END DO
 
@@ -214,8 +217,9 @@ CONTAINS
 
        DO jk = 2, jpksed
           DO ji = 1, jpoce
-             xirrigtrd(ji,jwdic) = xirrigtrd(ji,jwdic) - irrig(ji,jk) * (zdic1(ji,1) - zdic1(ji,jk) ) * volw3d(ji,jk) * 2.0 * dtsed / 11.0
-             xirrigtrd(ji,jwalk) = xirrigtrd(ji,jwalk) - irrig(ji,jk) * (zalk1(ji,1) - zalk1(ji,jk) ) * volw3d(ji,jk) * 2.0 * dtsed / 11.0
+             zvol = volw3d(ji,jk) * 2.0 * dtsed / 11.0
+             xirrigtrd(ji,jwdic) = xirrigtrd(ji,jwdic) - irrig(ji,jk) * (zdic1(ji,1) - zdic1(ji,jk) ) * zvol
+             xirrigtrd(ji,jwalk) = xirrigtrd(ji,jwalk) - irrig(ji,jk) * (zalk1(ji,1) - zalk1(ji,jk) ) * zvol
           END DO
        END DO
 

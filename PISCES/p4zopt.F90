@@ -98,10 +98,12 @@ CONTAINS
       ! look-up table
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          IF( ln_p2z ) THEN
-            zchl = ( tr(ji,jj,jk,jpphy,Kbb) * 12.0 * thetanano(ji,jj,jk) + rtrn ) * 1.e6
+            zchl = ( tr(ji,jj,jk,jpphy,Kbb) &
+              &     * 12.0 * thetanano(ji,jj,jk) + rtrn ) * 1.e6
          ELSE
-            zchl =  ( tr(ji,jj,jk,jpnch,Kbb) + tr(ji,jj,jk,jpdch,Kbb) + rtrn ) * 1.e6
-            IF( ln_p5z )       zchl = zchl + tr(ji,jj,jk,jppch,Kbb) * 1.e6
+            zchl =  ( tr(ji,jj,jk,jpnch,Kbb) &
+              &     + tr(ji,jj,jk,jpdch,Kbb) + rtrn ) * 1.e6
+            IF( ln_p5z ) zchl = zchl + tr(ji,jj,jk,jppch,Kbb) * 1.e6
          ENDIF
          zchl = MIN(  10. , MAX( 0.05, zchl )  )
          irgb = NINT( 41 + 20.* LOG10( zchl ) + rtrn )
@@ -382,21 +384,29 @@ CONTAINS
            DEALLOCATE( zw2d ) 
         ENDIF
         IF( l_dia_par ) THEN   ! diagnostic : PAR with no diurnal cycle
-           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp  ;  zw3d(A2D(0),:) = etot_ndcy(A2D(0),:)  
+           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              zw3d(ji,jj,jkR) = etot_ndcy(ji,jj,jk)  
+           END_3D
            ALLOCATE( zetmp3(A2D(0) ) )   ;  zetmp3(:,:)   = 0.e0
            DO_3D( 0, 0, 0, 0, 1, nksr)
               IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
-                 zetmp3(ji,jj) = zetmp3(ji,jj) + etot_ndcy(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Par averaged over 24h for production
+                 zetmp3(ji,jj) = zetmp3(ji,jj) &
+                    &       + etot_ndcy(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Par averaged over 24h for production
               ENDIF
            END_3D
            DO_3D( 0, 0, 0, 0, 1, nksr)
               IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
                  z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
-                 zw3d(ji,jj,jk) = zetmp3(ji,jj) * z1_dep
+                 zw3d(ji,jj,jkR) = zetmp3(ji,jj) * z1_dep
               ENDIF
            END_3D
-           zw3d(A2D(0),:) = zw3d(A2D(0),:) * tmask(A2D(0),:) 
-           zw3d(A2D(0),1) = zw3d(A2D(0),1) * ( 1._wp - fr_i(A2D(0)) ) 
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              zw3d(ji,jj,jk) = zw3d(ji,jj,jk) * tmask(ji,jj,jk) 
+           END_3D
+           DO_2D( 0, 0, 0, 0 )
+              zw3d(ji,jj,ktop) = zw3d(ji,jj,ktop) * ( 1._wp - fr_i(ji,jj) ) 
+           END_2D
            CALL iom_put( "PAR", zw3d ) 
            DEALLOCATE( zw3d, zetmp3 ) 
         ENDIF
@@ -592,7 +602,8 @@ CONTAINS
       !!                     ***  ROUTINE p4z_opt_alloc  ***
       !!----------------------------------------------------------------------
       !
-      ALLOCATE( ekb(A2D(0),jpk), ekr(A2D(0),jpk), ekg(A2D(0),jpk), STAT= p4z_opt_alloc  ) 
+      ALLOCATE( ekb(A2D(0),jpk), ekr(A2D(0),jpk), &
+          &     ekg(A2D(0),jpk), STAT= p4z_opt_alloc  ) 
       !
       IF( p4z_opt_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p4z_opt_alloc : failed to allocate arrays.' )
       !

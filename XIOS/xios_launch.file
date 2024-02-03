@@ -4,5 +4,5 @@
 #
 #    mpirun --app xios_launch.file
 #
--np 4 ./roms
+-np 4 ./croco
 -np 2 ./xios_server.exe

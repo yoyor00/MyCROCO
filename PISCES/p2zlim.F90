@@ -161,13 +161,19 @@ CONTAINS
         !
         ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
         ! fraction of calcifiers
-        zw3d(A2D(0),1:jpkm1) = xfracal(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = xfracal(ji,jj,jk) * tmask(ji,jj,jk)
+        END_3D
         CALL iom_put( "xfracal",  zw3d)
         ! Nutrient limitation term
-        zw3d(A2D(0),1:jpkm1) = xlimphy(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = xlimphy(ji,jj,jk) * tmask(ji,jj,jk)
+        END_3D
         CALL iom_put( "LNnut",  zw3d)
         ! Size limitation term
-        zw3d(A2D(0),1:jpkm1) = sizen(A2D(0),1:jpkm1) * tmask(A2D(0),1:jpkm1)
+        DO_3D( 0, 0, 0, 0, 1, jpk)
+           zw3d(ji,jj,jkR) = sizen(ji,jj,jk) * tmask(ji,jj,jk)
+        END_3D
         CALL iom_put( "SIZEN",  zw3d)
         !
         DEALLOCATE( zw3d )

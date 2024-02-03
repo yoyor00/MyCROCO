@@ -100,12 +100,14 @@ CONTAINS
            zflx1  = LOG10( MAX( 1E-3, zflx1 ) )
            zo2    = LOG10( MAX( 10. , tr(ji,jj,ikt,jpoxy,Kbb) * 1E6 ) )
            zno3   = LOG10( MAX( 1.  , tr(ji,jj,ikt,jpno3,Kbb) * 1E6 * rno3 ) )
-           zpdenit = -2.2567 - 1.185 * zflx1 - 0.221 * zflx1 * zflx1 - 0.3995 * zno3 * zo2 + 1.25 * zno3    &
-             &                + 0.4721 * zo2 - 0.0996 * LOG10(zdep) + 0.4256 * zflx1 * zo2
+           zpdenit = -2.2567 - 1.185 * zflx1 - 0.221 * zflx1 * zflx1 &
+             &       - 0.3995 * zno3 * zo2 + 1.25 * zno3    &
+             &       + 0.4721 * zo2 - 0.0996 * LOG10(zdep) + 0.4256 * zflx1 * zo2
            zdenit2d(ji,jj) = 10.0**zpdenit
            !
            zflx1 = ( 7.0 + zflx )
-           zbureff = bureffmin + bureffvar * zflx * zflx / ( zflx1 * zflx1 ) * MIN( zdep / 1000.00, 1.0 )
+           zbureff = bureffmin + bureffvar * zflx * zflx &
+              &     / ( zflx1 * zflx1 ) * MIN( zdep / 1000.00, 1.0 )
            zrivno3(ji,jj) = 1. - zbureff
         ENDIF
       END_2D
@@ -123,8 +125,10 @@ CONTAINS
             zfactcal = MAX(-0.1, MIN( excess(ji,jj,ikt), 0.2 ) )
             zfactcal = 0.3 + 0.7 * MIN( 1., (0.1 + zfactcal) / ( 0.5 - zfactcal ) )
             zrivalk(ji,jj) = sedcalfrac * zfactcal
-            tr(ji,jj,ikt,jptal,Krhs) =  tr(ji,jj,ikt,jptal,Krhs) + zcaloss * zrivalk(ji,jj) * 2.0
-            tr(ji,jj,ikt,jpdic,Krhs) =  tr(ji,jj,ikt,jpdic,Krhs) + zcaloss * zrivalk(ji,jj)
+            tr(ji,jj,ikt,jptal,Krhs) =  tr(ji,jj,ikt,jptal,Krhs) &
+                    &                  + zcaloss * zrivalk(ji,jj) * 2.0
+            tr(ji,jj,ikt,jpdic,Krhs) =  tr(ji,jj,ikt,jpdic,Krhs) &
+                    &                  + zcaloss * zrivalk(ji,jj)
          END_2D
 
          IF( .NOT. ln_p2z ) THEN
@@ -134,7 +138,8 @@ CONTAINS
                zsiloss = sinksilb(ji,jj) * zdep
                zsiloss2 = sinksilb(ji,jj) / xstep * 365.0 * 1E3 * 1E-4 * 1E6
                zrivsil(ji,jj) = 1.0 - sedsilfrac * zsiloss2 / ( 15.0 + zsiloss2 )
-               tr(ji,jj,ikt,jpsil,Krhs) = tr(ji,jj,ikt,jpsil,Krhs) + zsiloss * zrivsil(ji,jj)
+               tr(ji,jj,ikt,jpsil,Krhs) = tr(ji,jj,ikt,jpsil,Krhs) &
+                       &                 + zsiloss * zrivsil(ji,jj)
             END_2D
          ENDIF
       ENDIF
@@ -147,30 +152,46 @@ CONTAINS
             DO_2D( 0, 0, 0, 0 )
                ikt  = mbkt(ji,jj)
                zwstpoc = sinkpocb(ji,jj) / e3t(ji,jj,ikt,Kmm)
-               zpdenit  = MIN( 0.5 * ( tr(ji,jj,ikt,jpno3,Kbb) - rtrn ) / rdenit, zdenit2d(ji,jj) * zwstpoc * zrivno3(ji,jj) )
+               zpdenit  = MIN( 0.5 * ( tr(ji,jj,ikt,jpno3,Kbb) - rtrn ) &
+                   &    / rdenit, zdenit2d(ji,jj) * zwstpoc * zrivno3(ji,jj) )
                z1pdenit = zwstpoc * zrivno3(ji,jj) - zpdenit
-               zolimit = MIN( ( tr(ji,jj,ikt,jpoxy,Kbb) - rtrn ) / (o2ut + o2nit), z1pdenit * ( 1.- nitrfac(ji,jj,ikt) ) )
-               tr(ji,jj,ikt,jpdoc,Krhs) = tr(ji,jj,ikt,jpdoc,Krhs) + z1pdenit - zolimit
-               tr(ji,jj,ikt,jpno3,Krhs) = tr(ji,jj,ikt,jpno3,Krhs) + zpdenit + zolimit - rdenit * zpdenit
-               tr(ji,jj,ikt,jpoxy,Krhs) = tr(ji,jj,ikt,jpoxy,Krhs) - zolimit * (o2ut + o2nit)
-               tr(ji,jj,ikt,jptal,Krhs) = tr(ji,jj,ikt,jptal,Krhs) - rno3 * (zolimit + (1.-rdenit) * zpdenit )
-               tr(ji,jj,ikt,jpdic,Krhs) = tr(ji,jj,ikt,jpdic,Krhs) + zpdenit + zolimit
+               zolimit = MIN( ( tr(ji,jj,ikt,jpoxy,Kbb) - rtrn ) &
+                   &     / (o2ut + o2nit), z1pdenit * ( 1.- nitrfac(ji,jj,ikt) ) )
+               tr(ji,jj,ikt,jpdoc,Krhs) = tr(ji,jj,ikt,jpdoc,Krhs) &
+                       &                  + z1pdenit - zolimit
+               tr(ji,jj,ikt,jpno3,Krhs) = tr(ji,jj,ikt,jpno3,Krhs) &
+                       &                  + zpdenit + zolimit - rdenit * zpdenit
+               tr(ji,jj,ikt,jpoxy,Krhs) = tr(ji,jj,ikt,jpoxy,Krhs) &
+                       &                 - zolimit * (o2ut + o2nit)
+               tr(ji,jj,ikt,jptal,Krhs) = tr(ji,jj,ikt,jptal,Krhs) &
+                       &              - rno3 * (zolimit + (1.-rdenit) * zpdenit )
+               tr(ji,jj,ikt,jpdic,Krhs) = tr(ji,jj,ikt,jpdic,Krhs) &
+                       &                 + zpdenit + zolimit
                sdenit(ji,jj) = rdenit * zpdenit * e3t(ji,jj,ikt,Kmm)
             END_2D
          ELSE
             DO_2D( 0, 0, 0, 0 )
                ikt  = mbkt(ji,jj)
                zwstpoc = sinkpocb(ji,jj) / e3t(ji,jj,ikt,Kmm)
-               zpdenit  = MIN( 0.5 * ( tr(ji,jj,ikt,jpno3,Kbb) - rtrn ) / rdenit, zdenit2d(ji,jj) * zwstpoc * zrivno3(ji,jj) )
+               zpdenit  = MIN( 0.5 * ( tr(ji,jj,ikt,jpno3,Kbb) - rtrn ) &
+                  &     / rdenit, zdenit2d(ji,jj) * zwstpoc * zrivno3(ji,jj) )
                z1pdenit = zwstpoc * zrivno3(ji,jj) - zpdenit
-               zolimit = MIN( ( tr(ji,jj,ikt,jpoxy,Kbb) - rtrn ) / o2ut, z1pdenit * ( 1.- nitrfac(ji,jj,ikt) ) )
-               tr(ji,jj,ikt,jpdoc,Krhs) = tr(ji,jj,ikt,jpdoc,Krhs) + z1pdenit - zolimit
-               tr(ji,jj,ikt,jppo4,Krhs) = tr(ji,jj,ikt,jppo4,Krhs) + zpdenit + zolimit
-               tr(ji,jj,ikt,jpnh4,Krhs) = tr(ji,jj,ikt,jpnh4,Krhs) + zpdenit + zolimit
-               tr(ji,jj,ikt,jpno3,Krhs) = tr(ji,jj,ikt,jpno3,Krhs) - rdenit * zpdenit
-               tr(ji,jj,ikt,jpoxy,Krhs) = tr(ji,jj,ikt,jpoxy,Krhs) - zolimit * o2ut
-               tr(ji,jj,ikt,jptal,Krhs) = tr(ji,jj,ikt,jptal,Krhs) + rno3 * (zolimit + (1.+rdenit) * zpdenit )
-               tr(ji,jj,ikt,jpdic,Krhs) = tr(ji,jj,ikt,jpdic,Krhs) + zpdenit + zolimit 
+               zolimit = MIN( ( tr(ji,jj,ikt,jpoxy,Kbb) - rtrn ) &
+                    &  / o2ut, z1pdenit * ( 1.- nitrfac(ji,jj,ikt) ) )
+               tr(ji,jj,ikt,jpdoc,Krhs) = tr(ji,jj,ikt,jpdoc,Krhs) &
+                       &                + z1pdenit - zolimit
+               tr(ji,jj,ikt,jppo4,Krhs) = tr(ji,jj,ikt,jppo4,Krhs) &
+                       &                + zpdenit + zolimit
+               tr(ji,jj,ikt,jpnh4,Krhs) = tr(ji,jj,ikt,jpnh4,Krhs) &
+                       &                + zpdenit + zolimit
+               tr(ji,jj,ikt,jpno3,Krhs) = tr(ji,jj,ikt,jpno3,Krhs) &
+                       &                 - rdenit * zpdenit
+               tr(ji,jj,ikt,jpoxy,Krhs) = tr(ji,jj,ikt,jpoxy,Krhs) &
+                       &                 - zolimit * o2ut
+               tr(ji,jj,ikt,jptal,Krhs) = tr(ji,jj,ikt,jptal,Krhs) &
+                       &                  + rno3 * (zolimit + (1.+rdenit) * zpdenit )
+               tr(ji,jj,ikt,jpdic,Krhs) = tr(ji,jj,ikt,jpdic,Krhs) &
+                       &                  + zpdenit + zolimit 
                sdenit(ji,jj) = rdenit * zpdenit * e3t(ji,jj,ikt,Kmm)
             END_2D
          ENDIF
@@ -181,11 +202,15 @@ CONTAINS
                zwstpoc = sinkpocb(ji,jj) * zdep
                zwstpop = sinkpopb(ji,jj) * zdep
                zwstpon = sinkponb(ji,jj) * zdep
-               zpdenit  = MIN( 0.5 * ( tr(ji,jj,ikt,jpno3,Kbb) - rtrn ) / rdenit, zdenit2d(ji,jj) * zwstpoc * zrivno3(ji,jj) )
+               zpdenit  = MIN( 0.5 * ( tr(ji,jj,ikt,jpno3,Kbb) - rtrn ) &
+                  &       / rdenit, zdenit2d(ji,jj) * zwstpoc * zrivno3(ji,jj) )
                z1pdenit = zwstpoc * zrivno3(ji,jj) - zpdenit
-               zolimit = MIN( ( tr(ji,jj,ikt,jpoxy,Kbb) - rtrn ) / o2ut, z1pdenit * ( 1.- nitrfac(ji,jj,ikt) ) )
-               tr(ji,jj,ikt,jpdon,Krhs) = tr(ji,jj,ikt,jpdon,Krhs) + ( z1pdenit - zolimit ) * zwstpon / (zwstpoc + rtrn)
-               tr(ji,jj,ikt,jpdop,Krhs) = tr(ji,jj,ikt,jpdop,Krhs) + ( z1pdenit - zolimit ) * zwstpop / (zwstpoc + rtrn)
+               zolimit = MIN( ( tr(ji,jj,ikt,jpoxy,Kbb) - rtrn ) &
+                  &     / o2ut, z1pdenit * ( 1.- nitrfac(ji,jj,ikt) ) )
+               tr(ji,jj,ikt,jpdon,Krhs) = tr(ji,jj,ikt,jpdon,Krhs) &
+                       &              + ( z1pdenit - zolimit ) * zwstpon / (zwstpoc + rtrn)
+               tr(ji,jj,ikt,jpdop,Krhs) = tr(ji,jj,ikt,jpdop,Krhs) &
+                       &              + ( z1pdenit - zolimit ) * zwstpop / (zwstpoc + rtrn)
             END_2D
          ENDIF
       ENDIF
@@ -194,20 +219,28 @@ CONTAINS
           zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molC/m3/s
           IF( l_dia_sdenit ) THEN
              ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;  zw2d(:,:) = 0._wp
-             zw2d(A2D(0)) =  sdenit(A2D(0)) * rno3 * zfact
+             DO_2D( 0, 0, 0, 0 )
+                zw2d(ji,jj) =  sdenit(ji,jj) * rno3 * zfact
+             END_2D
              CALL iom_put( "Sdenit", zw2d )
              DEALLOCATE( zw2d )
           ENDIF        
           IF( l_dia_sed ) THEN
              ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;  zw2d(:,:) = 0._wp
-             zw2d(A2D(0)) =  ( 1.0 - zrivalk(A2D(0)) ) * sinkcalb(A2D(0)) * zfact
+             DO_2D( 0, 0, 0, 0 )
+                zw2d(ji,jj) =  ( 1.0 - zrivalk(ji,jj) ) * sinkcalb(ji,jj) * zfact
+             END_2D
              CALL iom_put( "SedCal", zw2d )
              !
-             zw2d(A2D(0)) =  ( 1.0 - zrivno3(A2D(0)) ) * sinkpocb(A2D(0)) * zfact
+             DO_2D( 0, 0, 0, 0 )
+                zw2d(ji,jj) =  ( 1.0 - zrivno3(ji,jj) ) * sinkpocb(ji,jj) * zfact
+             END_2D
              CALL iom_put( "SedC", zw2d )
              !
              IF( .NOT. ln_p2z ) THEN
-               zw2d(A2D(0)) =  ( 1.0 - zrivsil(A2D(0)) ) * sinksilb(A2D(0)) * zfact
+                DO_2D( 0, 0, 0, 0 )
+                   zw2d(ji,jj) =  ( 1.0 - zrivsil(ji,jj) ) * sinksilb(ji,jj) * zfact
+               END_2D
                CALL iom_put( "SedSi", zw2d )
              ENDIF
              DEALLOCATE( zw2d )

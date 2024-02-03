@@ -546,7 +546,8 @@ CONTAINS
          zrhd = 1._wp / ( rhd(ji,jj,jk) + 1. )
          p_alknw_inf(ji,jj,jk) =  -tr(ji,jj,jk,jppo4,Kbb) * zrhd * po4r - sulfat(ji,jj,jk) &
          &              - fluorid(ji,jj,jk)
-         p_alknw_sup(ji,jj,jk) =   (2. * tr(ji,jj,jk,jpdic,Kbb) + 2. * tr(ji,jj,jk,jppo4,Kbb) * po4r    &
+         p_alknw_sup(ji,jj,jk) =   (2. * tr(ji,jj,jk,jpdic,Kbb) &
+         &                + 2. * tr(ji,jj,jk,jppo4,Kbb) * po4r    &
          &               + tr(ji,jj,jk,jpsil,Kbb) ) * zrhd + borat(ji,jj,jk)
       END_3D
    ENDIF
@@ -827,7 +828,8 @@ CONTAINS
 
       ierr(:) = 0
 
-      ALLOCATE( fekeq(A2D(0),jpk), chemc(A2D(0),3), chemo2(A2D(0),jpk), STAT=ierr(1) )
+      ALLOCATE( fekeq(A2D(0),jpk), chemc(A2D(0),3), &
+         &      chemo2(A2D(0),jpk), STAT=ierr(1) )
 
       ALLOCATE( akb3(A2D(0),jpk)     , tempis(A2D(0),jpk),       &
          &      akw3(A2D(0),jpk)     , borat (A2D(0),jpk)  ,       &

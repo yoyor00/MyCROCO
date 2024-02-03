@@ -722,7 +722,8 @@ MODULE sedmat
 
        DO jk = 2, jpksed
           DO ji = 1, jpoce
-             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) - irrig(ji,jk) * (psol(ji,1) - psol(ji,jk) ) * volw3d(ji,jk) * dtsed_in
+             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) &
+                 &   - irrig(ji,jk) * (psol(ji,1) - psol(ji,jk) ) * volw3d(ji,jk) * dtsed_in
           END DO
        END DO  
 
@@ -766,7 +767,8 @@ MODULE sedmat
 
        DO jk = 2, jpksed
           DO ji = 1, jpoce
-             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) - irrig(ji,jk) * (psol1(ji,1) - psol1(ji,jk) ) * volw3d(ji,jk) * 5.0 * dtsed_in / 11.0
+             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) &
+                 &   - irrig(ji,jk) * (psol1(ji,1) - psol1(ji,jk) ) * volw3d(ji,jk) * 5.0 * dtsed_in / 11.0
           END DO
        END DO
 
@@ -776,7 +778,8 @@ MODULE sedmat
 
        DO jk = 2, jpksed
           DO ji = 1, jpoce
-             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) - irrig(ji,jk) * (psol2(ji,1) - psol2(ji,jk) ) * volw3d(ji,jk) * 4.0 * dtsed_in / 11.0
+             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) &
+                 &     - irrig(ji,jk) * (psol2(ji,1) - psol2(ji,jk) ) * volw3d(ji,jk) * 4.0 * dtsed_in / 11.0
           END DO
        END DO
 
@@ -786,7 +789,8 @@ MODULE sedmat
 
        DO jk = 2, jpksed
           DO ji = 1, jpoce
-             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) - irrig(ji,jk) * (psol(ji,1) - psol(ji,jk) ) * volw3d(ji,jk) * 2.0 * dtsed_in / 11.0
+             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) &
+                  &    - irrig(ji,jk) * (psol(ji,1) - psol(ji,jk) ) * volw3d(ji,jk) * 2.0 * dtsed_in / 11.0
           END DO
        END DO
 
