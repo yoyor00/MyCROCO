@@ -115,6 +115,10 @@ elif [ ${MACHINE} == "DATARMOR" ]; then
    export QSUB="qsub "
    export COMPUTER="DATARMOR"
    export jobname="job_${ROOT_NAME_1}.pbs"
+elif [ ${MACHINE} == "WCHPC" ]; then
+   export QSUB="qsub "
+   export COMPUTER="WCHPC"
+   export jobname="job_${ROOT_NAME_1}.pbs"
 else
    printf "\n\n Machine unknown  => EXIT \n\n"
    printf "To define your Machine:\n - Define your environement in ./SCRIPTS_TOOLBOX/MACHINE \n - Prepare your header \n - Prepare a launch_${MACHINE}\n - Add your machine in myjob.sh";  exit;

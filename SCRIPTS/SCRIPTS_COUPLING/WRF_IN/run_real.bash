@@ -116,6 +116,10 @@ elif [ ${MACHINE} == "DATARMOR" ]; then
     export myMPI="$MPI_LAUNCH -np $NBPROCS "
 elif [ ${MACHINE} == "IRENE" ]; then
     export myMPI="ccc_mprun -n $NBPROCS "
+elif [ ${MACHINE} == "LEFTRARU" ]; then
+    export myMPI="srun -n $NBPROCS "
+elif [ ${MACHINE} == "WCHPC" ]; then
+    export myMPI="$MPI_LAUNCH -np $NBPROCS ./"
 else
     echo "Define how to run the job in run_wps.bash"
     exit
