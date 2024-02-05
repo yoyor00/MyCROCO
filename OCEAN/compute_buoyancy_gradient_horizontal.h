@@ -1,6 +1,7 @@
 !
 !----------------------------------------------------------
-! Compute adiabatic buoyancy gradients
+! Compute horizontal adiabatic buoyancy gradients
+!
 ! used to diagnose diapycnal fluxes and diapycnal velocity 
 !----------------------------------------------------------
 !
@@ -56,11 +57,6 @@
         jmax=Jend+1
 #   endif
 
-!      if (mynode.eq.14) then 
-!        write(*,*) 'in gradh: imin,imax,Jstr,Jend',imin,imax,Jstr,Jend
-!        write(*,*) 'in gradh: IstrU-1,Iend,Jstr,Jend',IstrU-1,Iend,Jstr,Jend
-!      endif
-
 !
 ! Compute XI-component
 !-------- ------------ 
@@ -80,7 +76,7 @@
 #   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then         ! Extrapolate elementary
           do j=Jstr,Jend               ! differences near physical
-            dZx(imin-1,j)=dZx(imin,j)    ! boundaries to compencate.
+            dZx(imin-1,j)=dZx(imin,j)  ! boundaries to compencate.
           enddo
         endif
         if (EASTERN_EDGE) then

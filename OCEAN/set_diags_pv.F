@@ -96,7 +96,6 @@
 
 # include "diags_pv.h"
 
-! diagnostic dissipation NJAL August 2017
       real alfa(PRIVATE_2D_SCRATCH_ARRAY),
      &     beta(PRIVATE_2D_SCRATCH_ARRAY)
 
@@ -156,10 +155,6 @@
 ! compute horizontal dbdx, dbdy, dbdz (on rho-grid)
 # include "compute_buoyancy_gradient_horizontal.h"
 
-!      if (mynode.eq.14) then 
-!        write(*,*) 'in pv: Istr,Iend,Jstr,Jend',Istr,Iend,Jstr,Jend
-!      endif
-
       do k=1,N
 
           call alfabeta_k_tile(Istr,Iend,Jstr,Jend,k,alfa,beta)
@@ -170,6 +165,8 @@
                   gradbuoy(i,j,k) = sqrt( dbdx(i,j,k)**2
      &                                  + dbdy(i,j,k)**2
      &                                  + dbdz(i,j,k)**2 )
+
+
 
 
                   ! r.h.s. of buoyancy equation
@@ -189,8 +186,26 @@
      &                         / max(eps, gradbuoy(i,j,k) )
 
 
+                  ! rate of buoyancy equation
+                  Trhs(i,j,k,3)=  (  alfa(i,j)*Trate(i,j,k,1)
+# ifdef SALINITY
+     &                             - beta(i,j)*Trate(i,j,k,2)
+# endif
+     &                             ) * g
 
-                  pv(i,j,k) = - g * (
+                  ! rate of buoyancy equation
+                  Trhs(i,j,k,4)=  (  alfa(i,j)*TXadv(i,j,k,1)
+     &                             + alfa(i,j)*TYadv(i,j,k,1)
+     &                             + alfa(i,j)*TVadv(i,j,k,1)
+# ifdef SALINITY
+     &                             - beta(i,j)*TXadv(i,j,k,2)
+     &                             - beta(i,j)*TYadv(i,j,k,2)
+     &                             - beta(i,j)*TVadv(i,j,k,2)
+# endif
+     &                             ) * g
+
+
+                  bflux(i,j,k) = - g * (
      &                            alfa(i,j)* TF_xHmix_rot(i,j,k,1)
      &                          + alfa(i,j)* TF_yHmix_rot(i,j,k,1)
      &                          + alfa(i,j)* TF_zHmix_rot(i,j,k,1)
@@ -204,8 +219,8 @@
      &                              )
 
 
-                  pvd(i,j,k)  = pv(i,j,k)
-     &                          / max(eps, abs(gradbuoy(i,j,k)))**2 
+                  diffusivity(i,j,k)  = bflux(i,j,k)
+     &                          / max(eps, gradbuoy(i,j,k)**2 )
 
                   
                   ! debug
@@ -218,9 +233,9 @@
                   !Trhs(i,j,k,7) =  TF_zHmix(i,j,k,2)
                   !Trhs(i,j,k,8) =  TF_zVmix(i,j,k,2)
 
-                  !pv(i,j,k)     =  gradbuoy(i,j,k)
+                  !bflux(i,j,k)     =  gradbuoy(i,j,k)
 
-                  !pvd(i,j,k)    =  TF_zVmix(i,j,k,1)
+                  !diffusivity(i,j,k)    =  TF_zVmix(i,j,k,1)
 
 
 

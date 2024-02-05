@@ -134,13 +134,13 @@
          itrc=1
 
 
-         call fillvalue3d(pv,nciddiags_pv,diags_pvpv(itrc),
-     &                      indxpvpv,
+         call fillvalue3d(bflux,nciddiags_pv,diags_pvbflux(itrc),
+     &                      indxpvbflux,
      &                      record,r3dvar,type)
 
 
-         call fillvalue3d(pvd,nciddiags_pv,diags_pvpvd(itrc),
-     &                      indxpvpvd,
+         call fillvalue3d(diffusivity,nciddiags_pv,diags_pvdiff(itrc),
+     &                      indxpvdiffusivity,
      &                      record,r3dvar,type)
 
 # endif
@@ -170,7 +170,7 @@
 
 !---------------------------------------------------------------
 
-        do itrc=1,2
+        do itrc=1,4
           if (wrtdiags_pv(1)) then
 
 !

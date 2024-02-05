@@ -322,15 +322,12 @@
 
 #  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL
 
-#  ifdef DIAGNOSTICS_TS 
-
           do j=Jstr,Jend
             do i=Istr,Iend
               TXadv(i,j,k,itrc)=-(FX(i+1,j)-FX(i,j)) SWITCH rmask(i,j)
               TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
           enddo
         enddo
-#   endif
 
 !
 # if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
@@ -380,7 +377,6 @@
 
 #    endif
 
-#    if defined DIAGNOSTICS_TS
         do j=Jstr,Jend
           do i=Istr,Iend
               THmix(i,j,k,itrc)=( TXadv(i,j,k,itrc)+TYadv(i,j,k,itrc)
@@ -390,7 +386,6 @@
               TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j))   SWITCH rmask(i,j)
           enddo
         enddo
-#     endif
 
 #  if defined DIAGNOSTICS_DIAPYCNAL
       if (itrc.le.NTA) then 
@@ -410,13 +405,13 @@
 
 #   else /* defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3*/
 
-#  if defined DIAGNOSTICS_TS
+
         do j=Jstr,Jend
           do i=Istr,Iend
               THmix(i,j,k,itrc)=0.
           enddo
         enddo
-#   endif
+
 
 #  if defined DIAGNOSTICS_DIAPYCNAL
       if (itrc.le.NTA) then 
@@ -463,7 +458,7 @@
            TYout_mld(i,j,itrc) = 0.
 
             cff=pm(i,j)*pn(i,j)
-     &          /(z_w(i,j,N)-z_w(i,j,kbl_rho(i,j)-1))
+!     &          /(z_w(i,j,N)-z_w(i,j,kbl_rho(i,j)-1))
            
             if (kbl_rho(i+1,j) .gt. kbl_rho(i,j)) then
               do k=kbl_rho(i,j),kbl_rho(i+1,j)-1
@@ -620,7 +615,7 @@
      &                             -CF(i,0)*(FC(i,k)-FC(i,k-1))
               enddo
             enddo               !--> discard FC
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL
             do k=1,N
               do i=Istr,Iend
                 TVadv(i,j,k,itrc) = -(FC(i,k)-FC(i,k-1))
@@ -1024,11 +1019,11 @@
 #   endif /* DIAGNOSTICS_TS_ADV */
 !
               cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
-#   ifdef DIAGNOSTICS_TS
+
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
               TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)*cff
-#   endif
+
               TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
@@ -1075,7 +1070,7 @@
 #   endif
 #  endif
             do k=N,kmld,-1
-              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+              cff=Hz(i,j,k) !/(z_w(i,j,N)-z_w(i,j,kmld-1))
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
      &                            TXadv(i,j,k,itrc)*cff
               TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
@@ -1112,7 +1107,7 @@
 #    endif
 #   endif
             do k=N,kmld,-1
-              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+              cff=Hz_bak(i,j,k) !/(z_w(i,j,N)-z_w(i,j,kmld-1))
               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                        t(i,j,k,nstp,itrc)*cff
             enddo

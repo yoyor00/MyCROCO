@@ -102,7 +102,7 @@
           enddo
         enddo
 
-        do itrc=1,2
+        do itrc=1,4
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -119,12 +119,12 @@
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
-                pv_avg(i,j,k) = cff *
-     &                     ( cff1*pv_avg(i,j,k) +
-     &                            pv(i,j,k) )
-                pvd_avg(i,j,k) = cff *
-     &                     ( cff1*pvd_avg(i,j,k) +
-     &                            pvd(i,j,k) )
+                bflux_avg(i,j,k) = cff *
+     &                     ( cff1*bflux_avg(i,j,k) +
+     &                            bflux(i,j,k) )
+                diffusivity_avg(i,j,k) = cff *
+     &                     ( cff1*diffusivity_avg(i,j,k) +
+     &                            diffusivity(i,j,k) )
               enddo
             enddo
           enddo

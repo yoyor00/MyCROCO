@@ -4,35 +4,35 @@
 
 #ifdef DIAGNOSTICS_PV
 # if defined DIAGNOSTICS_DIAPYCNAL
-      real pv(GLOBAL_2D_ARRAY,N)
-!CSDISTRIBUTE_RESHAPE pv(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real pvd(GLOBAL_2D_ARRAY,N)
-!CSDISTRIBUTE_RESHAPE pvd(BLOCK_PATTERN,*) BLOCK_CLAUSE
+      real bflux(GLOBAL_2D_ARRAY,N)
+!CSDISTRIBUTE_RESHAPE bflux(BLOCK_PATTERN,*) BLOCK_CLAUSE
+      real diffusivity(GLOBAL_2D_ARRAY,N)
+!CSDISTRIBUTE_RESHAPE diffusivity(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
       real Mrhs(GLOBAL_2D_ARRAY,N,2)
 !CSDISTRIBUTE_RESHAPE Mrhs(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real Trhs(GLOBAL_2D_ARRAY,N,2)
+      real Trhs(GLOBAL_2D_ARRAY,N,4)
 !CSDISTRIBUTE_RESHAPE Trhs(BLOCK_PATTERN,*) BLOCK_CLAUSE
 
 
 # ifdef AVERAGES
       real timediags_pv_avg
 #  if defined DIAGNOSTICS_DIAPYCNAL
-      real pv_avg(GLOBAL_2D_ARRAY,N)
-!CSDISTRIBUTE_RESHAPE pv_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real pvd_avg(GLOBAL_2D_ARRAY,N)
-!CSDISTRIBUTE_RESHAPE pvd_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
+      real bflux_avg(GLOBAL_2D_ARRAY,N)
+!CSDISTRIBUTE_RESHAPE bflux_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
+      real diffusivity_avg(GLOBAL_2D_ARRAY,N)
+!CSDISTRIBUTE_RESHAPE diffusivity_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 #  endif
       real Mrhs_avg(GLOBAL_2D_ARRAY,N,2)
 !CSDISTRIBUTE_RESHAPE Mrhs_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real Trhs_avg(GLOBAL_2D_ARRAY,N,2)
+      real Trhs_avg(GLOBAL_2D_ARRAY,N,4)
 !CSDISTRIBUTE_RESHAPE Trhs_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 
 # endif
 
 # if defined DIAGNOSTICS_DIAPYCNAL
-      common /diag_pv/pv
-     &       /diag_pvd/pvd
+      common /diag_bflux/bflux
+     &       /diag_diffusivity/diffusivity
 # endif
       common /diag_Mrhs/Mrhs
      &       /diag_Trhs/Trhs
@@ -40,8 +40,8 @@
 # ifdef AVERAGES
       common /diag_timediags_pv_avg/timediags_pv_avg
 #  if defined DIAGNOSTICS_DIAPYCNAL
-      common /diag_pv_avg/pv_avg
-     &       /diag_pvd_avg/pvd_avg
+      common /diag_bflux_avg/bflux_avg
+     &       /diag_diffusivity_avg/diffusivity_avg
 #  endif
       common /diag_Mrhs_avg/Mrhs_avg
      &       /diag_Trhs_avg/Trhs_avg
@@ -87,11 +87,17 @@
       real TVmix(GLOBAL_2D_ARRAY,N,NT)
       real TForc(GLOBAL_2D_ARRAY,N,NT)
       real Trate(GLOBAL_2D_ARRAY,N,NT)
+      real TXadv(GLOBAL_2D_ARRAY,N,NT)
+      real TYadv(GLOBAL_2D_ARRAY,N,NT)
+      real TVadv(GLOBAL_2D_ARRAY,N,NT)
 
       common /diag_TForc/TForc
      &       /diag_THmix/THmix
      &       /diag_TVmix/TVmix
      &       /diag_Trate/Trate
+     &       /diag_TXadv/TXadv
+     &       /diag_TYadv/TYadv
+     &       /diag_TVadv/TVadv
 
 # endif
 

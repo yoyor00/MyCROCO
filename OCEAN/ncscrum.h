@@ -148,8 +148,8 @@
 !  indxekfast                    : Fast term
 !
 ! ** DIAGNOSTICS_PV **
-!  indxpvpv                      : Potential vorticity
-!  indxpvpvd                     : Potential vorticity (using alternative formulation)
+!  indxpvbflux                   : Buoyancy fluxes
+!  indxpvdiffusivity             : Diapycnal diffusivity
 !  indxpvTrhs                    : right hand side of tracer equation
 !  indxpvMrhs                    : right hand side of momentum equation
 !
@@ -467,9 +467,9 @@
      &                ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
      &           indxpvMrhs=indxpvTrhs+8)
 #  ifdef DIAGNOSTICS_DIAPYCNAL
-      integer indxpvpv,indxpvpvd
-      parameter (indxpvpv=indxpvMrhs+2,
-     &           indxpvpvd=indxpvpv+1)
+      integer indxpvbflux,indxpvdiffusivity
+      parameter (indxpvbflux=indxpvMrhs+2,
+     &           indxpvdiffusivity=indxpvbflux+1)
 #  endif
 # endif
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
@@ -1276,7 +1276,7 @@
       integer nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
 #  ifdef DIAGNOSTICS_DIAPYCNAL
-     &      , diags_pvpv(2), diags_pvpvd(2)
+     &      , diags_pvbflux(2), diags_pvdiff(2)
 #  endif
      &      , diags_pvMrhs(2), diags_pvTrhs(8)
 # endif
@@ -1480,7 +1480,7 @@
        integer nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
 #   ifdef DIAGNOSTICS_DIAPYCNAL
-     &      , diags_pvpv_avg(2), diags_pvpvd_avg(2)
+     &      , diags_pvbflux_avg(2), diags_pvdiff_avg(2)
 #   endif
      &      , diags_pvMrhs_avg(2), diags_pvTrhs_avg(8)
 #  endif
@@ -1873,14 +1873,14 @@
      &      , nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
 # ifdef DIAGNOSTICS_DIAPYCNAL
-     &      , diags_pvpv, diags_pvpvd
+     &      , diags_pvbflux, diags_pvdiff
 # endif
      &      , diags_pvTrhs, diags_pvMrhs
 # ifdef AVERAGES
      &      , nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
 #  ifdef DIAGNOSTICS_DIAPYCNAL
-     &      , diags_pvpv_avg, diags_pvpvd_avg
+     &      , diags_pvbflux_avg, diags_pvdiff_avg
 #  endif
      &      , diags_pvTrhs_avg, diags_pvMrhs_avg
 # endif

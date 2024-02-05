@@ -69,11 +69,6 @@
         jmax=Jend+1
 #   endif
 
-!      if (mynode.eq.14) then 
-!        write(*,*) 'in buoy: imin,imax,Jstr,Jend',imin,imax,Jstr,Jend
-!        write(*,*) 'in buoy: Istr,Iend,jmin,jmax',Istr,Iend,jmin,jmax
-!      endif
-
 
 ! Compute XI-component
 !-------- ------------ 
@@ -99,9 +94,7 @@
      &                              *umask(i,j)
 #   endif
 
-!            if (mynode.eq.14) then 
-!                  dbdx(i,j,k) = 1. * i
-!            endif
+
 
           enddo
         enddo

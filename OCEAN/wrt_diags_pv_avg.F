@@ -138,15 +138,15 @@
 # if defined DIAGNOSTICS_DIAPYCNAL
 
 
-         call fillvalue3d(pv_avg,nciddiags_pv_avg,
-     &                      diags_pvpv_avg(itrc),
-     &                      indxpvpv,
+         call fillvalue3d(bflux_avg,nciddiags_pv_avg,
+     &                      diags_pvbflux_avg(itrc),
+     &                      indxpvbflux,
      &                      record,r3dvar,type)
 
 
-         call fillvalue3d(pvd_avg,nciddiags_pv_avg,
-     &                      diags_pvpvd_avg(itrc),
-     &                      indxpvpvd,
+         call fillvalue3d(diffusivity_avg,nciddiags_pv_avg,
+     &                      diags_pvdiff_avg(itrc),
+     &                      indxpvdiffusivity,
      &                      record,r3dvar,type)
 
 !---------------------------------------------------------------
@@ -174,7 +174,7 @@
 
 !---------------------------------------------------------------
 
-        do itrc=1,2
+        do itrc=1,4
           if (wrtdiags_pv_avg(1)) then
 
 !

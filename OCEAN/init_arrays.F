@@ -441,6 +441,9 @@ C$    integer omp_get_thread_num
               TVmix(i,j,k,itrc)=init
               TForc(i,j,k,itrc)=init
               Trate(i,j,k,itrc)=init
+              TXadv(i,j,k,itrc)=init
+              TYadv(i,j,k,itrc)=init
+              TVadv(i,j,k,itrc)=init
             enddo
           enddo
         enddo
@@ -452,9 +455,6 @@ C$    integer omp_get_thread_num
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
-              TXadv(i,j,k,itrc)=init
-              TYadv(i,j,k,itrc)=init
-              TVadv(i,j,k,itrc)=init
 #  ifdef DIAGNOSTICS_TSVAR
               TVmixt(i,j,k,itrc)=init
 #  endif
@@ -675,9 +675,9 @@ C$    integer omp_get_thread_num
           do i=istrR,iendR           ! variables.
             dbdx(i,j,k)=init
             dbdy(i,j,k)=init
-            pv(i,j,k)=init
+            bflux(i,j,k)=init
 #   ifdef AVERAGES
-            pv_avg(i,j,k)=init
+            bflux_avg(i,j,k)=init
 #   endif /* AVERAGES */
           enddo
         enddo
@@ -685,15 +685,15 @@ C$    integer omp_get_thread_num
       do k=1,N
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
-            pvd(i,j,k)=init
+          diffusivity(i,j,k)=init
 #   ifdef AVERAGES
-            pvd_avg(i,j,k)=init
+            diffusivity_avg(i,j,k)=init
 #   endif /* AVERAGES */
           enddo
         enddo
       enddo
 #  endif
-      do itrc=1,2
+      do itrc=1,4
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR

@@ -3735,52 +3735,52 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
 
 # if defined  DIAGNOSTICS_DIAPYCNAL_DEBUG
 
-CR       write(stdout,'(1x,A,I3)') 'indxpvpv = ',indxpvpv
+CR       write(stdout,'(1x,A,I3)') 'indxpvbflux = ',indxpvbflux
        nametrc='gradbuoy'
        unitt=' '
        write(vname1,*) trim(nametrc)
-       vname(1,indxpvpv)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxpvpv)
-       vname(2,indxpvpv)='                                '
+       vname(1,indxpvbflux)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxpvbflux)
+       vname(2,indxpvbflux)='                                '
        write(vname3,*) trim(unitt)
-       vname(3,indxpvpv)=vname3
-       vname(4,indxpvpv)='                                        '
-       vname(5,indxpvpv)='                                        '
-       vname(7,indxpvpv)='                                        '
+       vname(3,indxpvbflux)=vname3
+       vname(4,indxpvbflux)='                                        '
+       vname(5,indxpvbflux)='                                        '
+       vname(7,indxpvbflux)='                                        '
 
 #else
 
-CR       write(stdout,'(1x,A,I3)') 'indxpvpv = ',indxpvpv
-       nametrc='b_rhs'
+CR       write(stdout,'(1x,A,I3)') 'indxpvbflux = ',indxpvbflux
+       nametrc='flux_b_dia'
        unitt=' '
        write(vname1,*) trim(nametrc)
-       vname(1,indxpvpv)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxpvpv)
-       vname(2,indxpvpv)='                                '
+       vname(1,indxpvbflux)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxpvbflux)
+       vname(2,indxpvbflux)='                                '
        write(vname3,*) trim(unitt)
-       vname(3,indxpvpv)=vname3
-       vname(4,indxpvpv)='                                        '
-       vname(5,indxpvpv)='                                        '
-       vname(7,indxpvpv)='                                        '
+       vname(3,indxpvbflux)=vname3
+       vname(4,indxpvbflux)='                                        '
+       vname(5,indxpvbflux)='                                        '
+       vname(7,indxpvbflux)='                                        '
 
 # endif
 
-CR       write(stdout,'(1x,A,I3)') 'indxpvpvd = ',indxpvpvd
+CR       write(stdout,'(1x,A,I3)') 'indxpvdiffusivity = ',indxpvdiffusivity
        nametrc='diffusivity'
        unitt=' '
        write(vname1,*) trim(nametrc)
-       vname(1,indxpvpvd)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxpvpvd)
-       vname(2,indxpvpvd)='                                '
+       vname(1,indxpvdiffusivity)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxpvdiffusivity)
+       vname(2,indxpvdiffusivity)='                                '
        write(vname3,*) trim(unitt)
-       vname(3,indxpvpvd)=vname3
-       vname(4,indxpvpvd)='                                       '
-       vname(5,indxpvpvd)='                                       '
-       vname(7,indxpvpvd)='                                       '
+       vname(3,indxpvdiffusivity)=vname3
+       vname(4,indxpvdiffusivity)='                                       '
+       vname(5,indxpvdiffusivity)='                                       '
+       vname(7,indxpvdiffusivity)='                                       '
 
 # endif
 
-      do itrc=1,2
+      do itrc=1,4
 
 CR       write(stdout,'(1x,A,I3)') 'indxpvTrhs = ',indxpvTrhs+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
@@ -3807,9 +3807,13 @@ CR       write(stdout,'(1x,A,I3)') 'indxpvTrhs = ',indxpvTrhs+itrc-1
        endif
 # elif defined  DIAGNOSTICS_DIAPYCNAL
        if (itrc.eq.1) then
-         write(vname1,*) 'flux_b_dia                              '
+         write(vname1,*) 'b_rhs                                   '
        elseif (itrc.eq.2) then
          write(vname1,*) 'wdia                                    '
+       elseif (itrc.eq.3) then
+         write(vname1,*) 'b_rate                                  '
+       elseif (itrc.eq.4) then
+         write(vname1,*) 'b_adv                                   '
        endif
 #else
        write(vname1,*) trim(nametrc),'_rhs                        '

@@ -61,8 +61,8 @@
 #  define vidTstep diags_pvTstep
 
 #  ifdef DIAGNOSTICS_DIAPYCNAL
-#   define viddiags_pv diags_pvpv
-#   define viddiags_pvd diags_pvpvd
+#   define viddiags_bflux diags_pvbflux
+#   define viddiags_diffusivity diags_pvdiff
 #  endif
 #  define viddiags_Mrhs diags_pvMrhs
 #  define viddiags_Trhs diags_pvTrhs
@@ -77,8 +77,8 @@
 #  define vidTstep diags_pvTstep_avg
 
 #  ifdef DIAGNOSTICS_DIAPYCNAL
-#   define viddiags_pv diags_pvpv_avg
-#   define viddiags_pvd diags_pvpvd_avg
+#   define viddiags_bflux diags_pvbflux_avg
+#   define viddiags_diffusivity diags_pvdiff_avg
 #  endif
 #  define viddiags_Mrhs diags_pvMrhs_avg
 #  define viddiags_Trhs diags_pvTrhs_avg
@@ -305,7 +305,7 @@
 
 
 
-        do itrc=1,2 !NTA
+        do itrc=1,4 !NTA
 
           if (wrt(1)) then
 
@@ -353,63 +353,63 @@
 
 !------------------------------
 !
-! indxpvpv
+! indxpvbflux
 !
-          lvar=lenstr(vname(1,indxpvpv))
-          ierr=nf_def_var (ncid, vname(1,indxpvpv)(1:lvar),
-     &                     NF_FOUT, 4, r3dgrd, viddiags_pv(itrc))
+          lvar=lenstr(vname(1,indxpvbflux))
+          ierr=nf_def_var (ncid, vname(1,indxpvbflux)(1:lvar),
+     &                     NF_FOUT, 4, r3dgrd, viddiags_bflux(itrc))
 #  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,viddiags_pv(itrc),nf_collective)
+          ierr=nf_var_par_access(ncid,viddiags_bflux(itrc),nf_collective)
 #  endif
 #  ifdef AVRH
-          text='averaged '/ /vname(2,indxpvpv)
+          text='averaged '/ /vname(2,indxpvbflux)
 #  else
-          text=vname(2,indxpvpv)
+          text=vname(2,indxpvbflux)
 #  endif
           lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_pv(itrc), 'long_name',
+          ierr=nf_put_att_text (ncid, viddiags_bflux(itrc), 'long_name',
      &                          lvar, text(1:lvar))
 
-          lvar=lenstr(vname(3,indxpvpv))
-          ierr=nf_put_att_text (ncid, viddiags_pv(itrc), 'units', lvar,
-     &                          vname(3,indxpvpv)(1:lvar))
-          lvar=lenstr(vname(4,indxpvpv))
-          ierr=nf_put_att_text (ncid,viddiags_pv(itrc), 'field',
-     &                      lvar, vname(4,indxpvpv)(1:lvar))
+          lvar=lenstr(vname(3,indxpvbflux))
+          ierr=nf_put_att_text (ncid, viddiags_bflux(itrc), 'units', lvar,
+     &                          vname(3,indxpvbflux)(1:lvar))
+          lvar=lenstr(vname(4,indxpvbflux))
+          ierr=nf_put_att_text (ncid,viddiags_bflux(itrc), 'field',
+     &                      lvar, vname(4,indxpvbflux)(1:lvar))
 
-        call nf_add_attribute(ncid, viddiags_pv(itrc),
-     &                       indxpvpv, 5,
+        call nf_add_attribute(ncid, viddiags_bflux(itrc),
+     &                       indxpvbflux, 5,
      &                        NF_FOUT, ierr)
 
 
 !------------------------------
 !
-! indxpvpvd
+! indxpvdiffusivity
 !
-          lvar=lenstr(vname(1,indxpvpvd))
-          ierr=nf_def_var (ncid, vname(1,indxpvpvd)(1:lvar),
-     &                     NF_FOUT, 4, r3dgrd, viddiags_pvd(itrc))
+          lvar=lenstr(vname(1,indxpvdiffusivity))
+          ierr=nf_def_var (ncid, vname(1,indxpvdiffusivity)(1:lvar),
+     &                     NF_FOUT, 4, r3dgrd, viddiags_diffusivity(itrc))
 #  ifdef NC4PAR
-           ierr=nf_var_par_access(ncid,viddiags_pvd(itrc),nf_collective)
+           ierr=nf_var_par_access(ncid,viddiags_diffusivity(itrc),nf_collective)
 #  endif
 #  ifdef AVRH
-          text='averaged '/ /vname(2,indxpvpvd)
+          text='averaged '/ /vname(2,indxpvdiffusivity)
 #  else
-          text=vname(2,indxpvpvd)
+          text=vname(2,indxpvdiffusivity)
 #  endif
           lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_pvd(itrc), 'long_name',
+          ierr=nf_put_att_text (ncid, viddiags_diffusivity(itrc), 'long_name',
      &                          lvar, text(1:lvar))
 
-          lvar=lenstr(vname(3,indxpvpvd))
-          ierr=nf_put_att_text (ncid, viddiags_pvd(itrc), 'units', lvar,
-     &                          vname(3,indxpvpvd)(1:lvar))
-          lvar=lenstr(vname(4,indxpvpvd))
-          ierr=nf_put_att_text (ncid,viddiags_pvd(itrc), 'field',
-     &                      lvar, vname(4,indxpvpvd)(1:lvar))
+          lvar=lenstr(vname(3,indxpvdiffusivity))
+          ierr=nf_put_att_text (ncid, viddiags_diffusivity(itrc), 'units', lvar,
+     &                          vname(3,indxpvdiffusivity)(1:lvar))
+          lvar=lenstr(vname(4,indxpvdiffusivity))
+          ierr=nf_put_att_text (ncid,viddiags_diffusivity(itrc), 'field',
+     &                      lvar, vname(4,indxpvdiffusivity)(1:lvar))
 
-        call nf_add_attribute(ncid, viddiags_pvd(itrc),
-     &                       indxpvpvd, 5,
+        call nf_add_attribute(ncid, viddiags_diffusivity(itrc),
+     &                       indxpvdiffusivity, 5,
      &                        NF_FOUT, ierr)
 
 
@@ -592,34 +592,34 @@
         itrc=1
 
 !
-! indxpvpv
+! indxpvbflux
 !
-         lvar=lenstr(vname(1,indxpvpv))
-         ierr=nf_inq_varid (ncid, vname(1,indxpvpv)(1:lvar),
-     &                      viddiags_pv(itrc))
+         lvar=lenstr(vname(1,indxpvbflux))
+         ierr=nf_inq_varid (ncid, vname(1,indxpvbflux)(1:lvar),
+     &                      viddiags_bflux(itrc))
          if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxpvpv)(1:lvar),
+           write(stdout,1) vname(1,indxpvbflux)(1:lvar),
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
 #  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_pv(itrc),nf_collective)
+         ierr=nf_var_par_access(ncid,viddiags_bflux(itrc),nf_collective)
 #  endif
 
 
 !
-! indxpvpvd
+! indxpvdiffusivity
 !
-         lvar=lenstr(vname(1,indxpvpvd))
-         ierr=nf_inq_varid (ncid, vname(1,indxpvpvd)(1:lvar),
-     &                      viddiags_pvd(itrc))
+         lvar=lenstr(vname(1,indxpvdiffusivity))
+         ierr=nf_inq_varid (ncid, vname(1,indxpvdiffusivity)(1:lvar),
+     &                      viddiags_diffusivity(itrc))
          if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxpvpvd)(1:lvar),
+           write(stdout,1) vname(1,indxpvdiffusivity)(1:lvar),
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
 #  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_pvd(itrc),nf_collective)
+         ierr=nf_var_par_access(ncid,viddiags_diffusivity(itrc),nf_collective)
 #  endif
 
 # endif
@@ -645,7 +645,7 @@
 
 ! ---------------------------------
 
-      do itrc=1,2 !NTA
+      do itrc=1,4 !NTA
         if (wrt(1)) then
 !
 !
@@ -719,8 +719,8 @@
 # undef vidTstep
 !
 # ifdef DIAGNOSTICS_DIAPYCNAL
-#  undef viddiags_pv
-#  undef viddiags_pvd
+#  undef viddiags_bflux
+#  undef viddiags_diffusivity
 # endif
 
 # undef viddiags_Mrhs
