@@ -126,8 +126,11 @@ MODULE sms_pisces
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tgfunc2   !: Temp. dependancy of mesozooplankton rates
 
    LOGICAL, SAVE :: lk_sed
-
    LOGICAL, SAVE :: l_diaadd
+
+   LOGICAL, SAVE :: ln_bio, ln_lys, ln_sed, ln_flx
+   LOGICAL, SAVE :: ln_fechem, ln_micro, ln_meso, ln_mort
+   LOGICAL, SAVE :: ln_prod, ln_agg, ln_rem, ln_poc, ln_diaz
 
 !! * Substitutions
 #  include "ocean2pisces.h90"
