@@ -637,6 +637,43 @@
         enddo
       enddo
 #  endif
+
+!---------------------------------------------------------------
+! Flux correction to surface net heat flux.
+!---------------------------------------------------------------
+!
+# ifdef QCORRECTION
+      do j=jmin,jmax
+        do i=imin,imax
+          stflx(i,j,itemp)=stflx(i,j,itemp)+
+     &                  dqdt(i,j)*(t(i,j,N,nrhs,itemp)-sst(i,j))
+#  ifdef WET_DRY
+     &                                           *rmask_wet(i,j)
+#  endif
+        enddo
+      enddo
+# endif /* QCORRECTION */
+!
+!--------------------------------------------------------------
+! Flux correction to surface salt flux.
+!--------------------------------------------------------------
+!
+# ifdef SFLX_CORR
+      do j=jmin,jmax
+        do i=imin,imax
+          stflx(i,j,isalt)=stflx(i,j,isalt)
+# ifdef SFLX_CORR_COEF
+     &  -Hz(i,j,N)/(dSdt*day2sec)*(t(i,j,N,nrhs,isalt)-sss(i,j))
+# else
+     &                 +dqdt(i,j)*(t(i,j,N,nrhs,isalt)-sss(i,j))
+# endif
+#  ifdef WET_DRY
+     &                                           *rmask_wet(i,j)
+#  endif
+        enddo
+      enddo
+# endif /* SFLX_CORR */
+!
 !
 !======================================================================
 !  Compute kinematic, surface wind stress (m2/s2).
