@@ -110,6 +110,7 @@ ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/LIB/*    > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/LIB/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/* $SCRDIR
