@@ -4803,6 +4803,16 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molC/m3/s                                  '
         vname(4,indxbioFlux+Nironsed-1)=
      &     'Nironsed         , scalar, series          '
+
+        vname(1,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2                         '
+        vname(2,indxbioFlux+Npronewo2-1)=
+     &     'o2 production by the NP         '
+        vname(3,indxbioFlux+Npronewo2-1)=
+     &     'molC/m3/s                       '
+        vname(4,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2         , scalar, series'
+
 #   if defined key_pisces_npzd
         vname(1,indxbioFlux+Npronew-1)=
      &     'Thetanano                         '
@@ -4867,15 +4877,6 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molFe/m3/s                      '
       vname(4,indxbioFlux+Nprofed-1)=
      &     'PFeD          , scalar, series  '
-
-        vname(1,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2                         '
-        vname(2,indxbioFlux+Npronewo2-1)=
-     &     'o2 production by the NP         '
-        vname(3,indxbioFlux+Npronewo2-1)=
-     &     'molC/m3/s                       '
-        vname(4,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2         , scalar, series'
 
         vname(1,indxbioFlux+Nprorego2-1)=
      &     'PPRego2                                    '

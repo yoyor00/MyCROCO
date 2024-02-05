@@ -773,16 +773,16 @@
      &            Nfixo2    = 9,
      &            Nirondep  = 10,
      &            Nironsed  = 11,
-     &            Npronew   = 12,
+     &            Npronewo2 = 12,
+     &            Npronew   = 13,
 #    if defined key_pisces_npzd
      &            NumFluxTerms = Npronew)
 #    else
-     &            Npronewd  = 13,
-     &            Nprorcad  = 14,
-     &            Nprobsi   = 15,
-     &            Nprofen   = 16,
-     &            Nprofed   = 17,
-     &            Npronewo2 = 18,
+     &            Npronewd  = 14,
+     &            Nprorcad  = 15,
+     &            Nprobsi   = 16,
+     &            Nprofen   = 17,
+     &            Nprofed   = 18,
      &            Nprorego2 = 19,
      &            Ngrapoc2  = 20,
      &            Nmeso2    = 21,
