@@ -108,7 +108,7 @@ CONTAINS
          IF( ln_mort )  CALL p4z_mort ( kt,      Kbb,      Krhs )     ! phytoplankton mortality
          ! zooplankton sources/sinks routines 
          IF( ln_micro ) CALL p4z_micro( kt, knt, Kbb,      Krhs )     ! microzooplankton
-         IF( ln_mesoi ) CALL p4z_meso ( kt, knt, Kbb, Kmm, Krhs )     ! mesozooplankton
+         IF( ln_meso ) CALL p4z_meso ( kt, knt, Kbb, Kmm, Krhs )     ! mesozooplankton
       ELSE  ! PISCES-QUOTA
          ! Phytoplankton only sources/sinks terms
                         CALL p5z_lim  ( kt, knt, Kbb, Kmm       )     ! co-limitations by the various nutrients
