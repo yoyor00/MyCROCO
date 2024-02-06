@@ -414,7 +414,7 @@ CONTAINS
       !
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk )
-         trc3d(ji,jj,jk,jp_etot) = etot(ji,jj,jk) * tmask(ji,jj,jk)   ! PAR
+         trc3d(ji,jj,jkR,jp_etot) = etot(ji,jj,jk) * tmask(ji,jj,jk)   ! PAR
       END_3D
       !
       DO_2D( 0, 0, 0, 0 )

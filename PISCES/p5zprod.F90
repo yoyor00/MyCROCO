@@ -814,18 +814,18 @@ CONTAINS
      zfact = 1.e3 * rfact2r
      DO_3D( 0, 0, 0, 0, 1, jpk)
         zfact = zfact * tmask(ji,jj,jk)
-        trc3d(ji,jj,jk,jp_pphy  )  = zprorcan(ji,jj,jk) * zfact  ! primary production by nanophyto
-        trc3d(ji,jj,jk,jp_pphy2 )  = zprorcad(ji,jj,jk) * zfact  ! primary production by diatom
-        trc3d(ji,jj,jk,jp_pnew  )  = ( ( zprorcan(ji,jj,jk) * xnanono3(ji,jj,jk) ) &
+        trc3d(ji,jj,jkR,jp_pphy  )  = zprorcan(ji,jj,jk) * zfact  ! primary production by nanophyto
+        trc3d(ji,jj,jkR,jp_pphy2 )  = zprorcad(ji,jj,jk) * zfact  ! primary production by diatom
+        trc3d(ji,jj,jkR,jp_pnew  )  = ( ( zprorcan(ji,jj,jk) * xnanono3(ji,jj,jk) ) &
            &                      / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn ) ) * zfact ! new primary production by nanophyto
-        trc3d(ji,jj,jk,jp_pnew2 )  = ( ( zprorcad(ji,jj,jk) * xdiatno3(ji,jj,jk) ) &
+        trc3d(ji,jj,jkR,jp_pnew2 )  = ( ( zprorcad(ji,jj,jk) * xdiatno3(ji,jj,jk) ) &
            &                       / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn ) ) * zfact ! new primary production by nanophyto
-        trc3d(ji,jj,jk,jp_pbsi  )  = zprorcad(ji,jj,jk) * zysopt(ji,jj,jk) * zfact ! biogenic silica production
-        trc3d(ji,jj,jk,jp_pfed  )  = zprofed (ji,jj,jk) * zfact  ! biogenic iron production by diatom
-        trc3d(ji,jj,jk,jp_pfen  )  = zprofen (ji,jj,jk) * zfact !  biogenic iron production by nanophyto
-        trc3d(ji,jj,jk,jp_pnewo2)  = ( o2ut + o2nit ) &  ! Oxygen production by the New Produc.
+        trc3d(ji,jj,jkR,jp_pbsi  )  = zprorcad(ji,jj,jk) * zysopt(ji,jj,jk) * zfact ! biogenic silica production
+        trc3d(ji,jj,jkR,jp_pfed  )  = zprofed (ji,jj,jk) * zfact  ! biogenic iron production by diatom
+        trc3d(ji,jj,jkR,jp_pfen  )  = zprofen (ji,jj,jk) * zfact !  biogenic iron production by nanophyto
+        trc3d(ji,jj,jkR,jp_pnewo2)  = ( o2ut + o2nit ) &  ! Oxygen production by the New Produc.
            &                        * ( zprorcan(ji,jj,jk) + zprorcad(ji,jj,jk) + zprorcap(ji,jj,jk) ) * zfact
-        trc3d(ji,jj,jk,jp_prego2)  = ( zpronmaxn(ji,jj,jk) * xnanonh4(ji,jj,jk)  &
+        trc3d(ji,jj,jkR,jp_prego2)  = ( zpronmaxn(ji,jj,jk) * xnanonh4(ji,jj,jk)  &
             &                       +  zpronmaxd(ji,jj,jk) * xdiatnh4(ji,jj,jk) &
             &                       +  zpronmaxp(ji,jj,jk) * zpronmaxp(ji,jj,jk) ) &
             &                       * o2ut * zfact
