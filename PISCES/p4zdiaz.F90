@@ -230,7 +230,7 @@ CONTAINS
       END_3D
       !
       DO_3D( 0, 0, 0, 0, 1, jpk )
-         trc3d(ji,jj,jk,jp_nfixo2 ) = nitrpot(ji,jj,jk) * nitrfix * rno3 &
+         trc3d(ji,jj,jkR,jp_nfixo2 ) = nitrpot(ji,jj,jk) * nitrfix * rno3 &
            &                      * zfact * o2nit * tmask(ji,jj,jk)  ! O2 production by Nfix
       END_3D
 # endif

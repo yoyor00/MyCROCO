@@ -326,8 +326,8 @@ CONTAINS
       !
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
-         trc3d(ji,jj,jk,jp_grapoc) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by microzoo
-         trc3d(ji,jj,jk,jp_mico2) = zgrazing(ji,jj,jk) * ( 1.- epsher - unass ) &
+         trc3d(ji,jj,jkR,jp_grapoc) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by microzoo
+         trc3d(ji,jj,jkR,jp_mico2) = zgrazing(ji,jj,jk) * ( 1.- epsher - unass ) &
           &                      * (-o2ut) * sigma1 * 1.e+3 * rfact2r * tmask(ji,jj,jk)   ! o2 consumption by Microzoo
       END_3D
 #endif

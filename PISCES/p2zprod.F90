@@ -284,9 +284,9 @@ CONTAINS
       !   Supplementary diagnostics
      zfact = 1.e3 * rfact2r
      DO_3D( 0, 0, 0, 0, 1, jpk)
-        trc3d(ji,jj,jk,jp_pphy  ) = zprorcan(ji,jj,jk) * zfact * tmask(ji,jj,jk)  ! primary production by nanophyto
-        trc3d(ji,jj,jk,jp_pnew  ) = thetanano(ji,jj,jk) * tr(ji,jj,jk,jpphy,Kbb) * 1.0e+6 * tmask(ji,jj,jk) ! Total chloro.
-        trc3d(ji,jj,jk,jp_pnewo2) = ( o2ut + o2nit ) * zprorcan(ji,jj,jk) * zfact * tmask(ji,jj,jk) ! Oxygen production by the New Produc.
+        trc3d(ji,jj,jkR,jp_pphy  ) = zprorcan(ji,jj,jk) * zfact * tmask(ji,jj,jk)  ! primary production by nanophyto
+        trc3d(ji,jj,jkR,jp_pnew  ) = thetanano(ji,jj,jk) * tr(ji,jj,jk,jpphy,Kbb) * 1.0e+6 * tmask(ji,jj,jk) ! Total chloro.
+        trc3d(ji,jj,jkR,jp_pnewo2) = ( o2ut + o2nit ) * zprorcan(ji,jj,jk) * zfact * tmask(ji,jj,jk) ! Oxygen production by the New Produc.
      END_3D
 #endif
      IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)

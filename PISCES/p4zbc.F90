@@ -158,7 +158,7 @@ CONTAINS
          ENDIF
 #if defined key_trc_diaadd
          DO_3D( 0, 0, 0, 0, 1, jpk )
-            trc3d(ji,jj,jk,jp_irondep)  = zirondep(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
+            trc3d(ji,jj,jkR,jp_irondep)  = zirondep(ji,jj,jk) * 1.e+3 * tmask(ji,jj,jk)
          END_3D
 # endif
          DEALLOCATE( zirondep )
@@ -287,7 +287,7 @@ CONTAINS
          ENDIF
 #if defined key_trc_diaadd
          DO_3D( 0, 0, 0, 0, 1, jpk )
-            trc3d(ji,jj,jk,jp_ironsed ) = ironsed(ji,jj,jk) * 1e+3 * tmask(ji,jj,jk)  ! iron from  sediment
+            trc3d(ji,jj,jkR,jp_ironsed ) = ironsed(ji,jj,jk) * 1e+3 * tmask(ji,jj,jk)  ! iron from  sediment
          END_3D
 #endif
       ENDIF
