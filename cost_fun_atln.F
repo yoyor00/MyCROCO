@@ -126,9 +126,9 @@ c     if (mode.eq.2.or.mode.eq.3) then
      &                 delta_z,
      &                 icost,
      &                 zeta(i,j,knew),
-     &                 ad_obs(l,ta)
-c     &                 ad_obs(l,ta+1),
-c     &                 ad_obs(l,ta+2)
+     &                 ad_obs(l,ta),
+     &                 ad_obs(l,ta+1),
+     &                 ad_obs(l,ta+2)
 c$$$                  write(*,*) 'AAAAA',mynode,i,j,
 c$$$     &                 knew,ad_sim_iicroot,k,
 c$$$     &                 ad_sim_iicroot+k,

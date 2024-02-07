@@ -68,12 +68,12 @@ sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
 sed -i 's/undef[\t ]*MPI/define MPI/' cppdefs.h
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
 
-# ../OCEAN/jobcomp
-# cd Compile
-# make croco && mv croco .. || exit 1
-# cd ..
-# rm -f obs.*.dat
-# $mpirun_cmd ./croco croco.internal-friction-obs.in
+../OCEAN/jobcomp
+cd Compile
+make croco && mv croco .. || exit 1
+cd ..
+rm -f obs.*.dat
+$mpirun_cmd ./croco croco.internal-friction-obs.in
 
 
 # #./croco croco.internal-friction-obs.in

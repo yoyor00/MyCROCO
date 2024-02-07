@@ -1,13 +1,13 @@
 title:
         FRICTION TIDE ATLN
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                1       10     1      1
+                100000      10     1      1
 
 start_date:
 01/04/2014 00:00:00
 
 grid:  filename
-                          CROCO_FILES/croco_grd_est.nc
+                          CROCO_FILES/croco_grd_obs.nc
 forcing: filename
                           CROCO_FILES/croco_frc.nc
 bulk_forcing: filename
@@ -18,10 +18,10 @@ boundary: filename
                           CROCO_FILES/croco_bry.nc
 initial: NRREC  filename
           1 
-                          CROCO_FILES/croco_ini_obs.nc
+                          CROCO_FILES/croco_ini.nc
 restart:          NRST, NRPFRST / filename
-                   25200    -1
-                          CROCO_FILES/croco_rst_adj.nc
+                   69840       -1
+                          CROCO_FILES/croco_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T      180     0
                           CROCO_FILES/croco_his.nc
@@ -60,7 +60,7 @@ vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
                    0.d0    30*0.d0
 
 bottom_drag:     RDRG [m/s],  RDRG2,  Zobt [m],  Cdb_min, Cdb_max
-                 0.0d-04      0.0d-2    0.005     1.d-4    1.d-1 
+                 0.0d-04      0.0d-02    0.005     1.d-4    1.d-1 
 
 gamma2:
                  1.d0

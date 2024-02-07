@@ -105,15 +105,26 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       call AMPI_Reduce(cost, cost_f, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
      &     0, MPI_COMM_WORLD, ierr)
 
+      call AMPI_Reduce(ad_irms, ad_irms_f, 1, AMPI_ADOUBLE_PRECISION,
+     &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
       if (mynode.eq.0) then
          cost = cost_f
       end if
 #endif
+#else
+      cost_f = cost
+      ad_irms_f = ad_irms
 #endif
+
+      if (mynode.eq.0) then
+         cost = cost_f
+         ad_rms = sqrt(ad_irms_f) / ad_array_real_node_size_f
+      end if
+
       ad_counter = ad_counter + 1
 
       dx=1.e-8
-      df1=cost/1000
+      df1=cost/10000
       epsrel=1.e-5
       niter=2000
       nsim=2000

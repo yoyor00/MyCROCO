@@ -3,6 +3,9 @@ C     some dummy procedures for tapenade
       subroutine output
       end subroutine output
 
+      subroutine diag(tile)
+      end subroutine diag
+
       subroutine diag_tile(Istr,Iend,Jstr,Jend, ke2d,pe2d)
       integer Istr,Iend,Jstr,Jend
       real ke2d(1,1,1), pe2d(1,1,1)
@@ -19,6 +22,9 @@ C     some dummy procedures for tapenade
 
       subroutine set_vbc
       end subroutine set_vbc
+
+      subroutine get_smflux
+      end subroutine get_smflux
 
       subroutine clm_tides(tile)
       integer tile

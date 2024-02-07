@@ -76,19 +76,23 @@ cp -f ../AD/save_restore_atln.F save_restore.F
 cp -f ../AD/data/tideg-*.txt .
 #sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/' cppdefs.h
 sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/g' cppdefs.h
-#sed -i 's/undef[\t ]*MPI/define MPI/g' cppdefs.h
-sed -i 's/define[\t ]*MPI/undef MPI/' cppdefs.h
+sed -i 's/undef[\t ]*MPI/define MPI/g' cppdefs.h
+
+#sed -i 's/NP_XI=1/NP_XI=4/g' param.h
+#sed -i 's/NP_ETA=1/NP_ETA=4/g' param.h
+
+#sed -i 's/define[\t ]*MPI/undef MPI/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
-#make croco && mv croco .. || exit 1
+make croco && mv croco .. || exit 1
 cd ..
-#m -f obs.*.dat
-#$mpirun_cmd ./croco croco-atln-obs.in
+rm -f obs.*.dat
+$mpirun_cmd ./croco croco-atln-obs.in
 #cp CROCO_FILES/croco_his.nc CROCO_FILES/obs.nc
 #
 # 2. second run with obs.dat file
-#sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
-sed -i 's/define[\t ]*AMPI/undef AMPI/g' cppdefs.h
+sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
+#sed -i 's/define[\t ]*AMPI/undef AMPI/g' cppdefs.h
 
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
 #sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
@@ -98,7 +102,7 @@ sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
 cd Compile
 #make croco_adc && mv croco_adc .. || exit 1
 make croco_adj && mv croco_adj .. || exit 1
-make croco_tgt && mv croco_tgt .. || exit 1
+#make croco_tgt && mv croco_tgt .. || exit 1
 #make croco_tgt_dbg && mv croco_tgt_dbg .. || exit 1
 
 #make croco_adj_dbg1 && mv croco_adj_dbg1 .. || exit 1
@@ -107,8 +111,8 @@ cd ..
 
 echo "in directory `pwd`"
 #./croco_tgt croco.internal-friction-obs.in
-#$mpirun_cmd ./croco_adc croco-atln-est.in
-./croco_adj croco-atln-obs.in
+$mpirun_cmd ./croco_adj croco-atln-est.in
+#$mpirun_cmd ./croco_adj croco-atln-obs.in
 #(export DBAD_PHASE=1 ; ./croco_tgt_dbg croco-atln-est.in > /tmp/l1) & (export DBAD_PHASE=2 ; ./croco_tgt_dbg croco-atln-est.in > /tmp/l2)
 #./croco_adc croco.internal-friction-obs.in
 #mpirun -np 1 ./croco_adj_dbg1 croco.internal-friction-obs.in &

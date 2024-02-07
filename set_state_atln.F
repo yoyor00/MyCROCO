@@ -54,7 +54,7 @@
 c            if (rmask(i,j).ne.0) then
             k=k+1
             zob(i,j)= ad_x(1)
-            write(*,*) 'set zob(i,j)=',  zob(i,j)
+c            write(*,*) 'set zob(i,j)=',  zob(i,j)
 c            end if
             if (zobmin.gt.zob(i,j)) then
                zobmin=zob(i,j)

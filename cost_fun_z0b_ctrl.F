@@ -122,9 +122,9 @@ c               icost = icost + delta_zob*delta_zob
                if (ad_obs(i,j,1).ne.spval) then
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+2)
                   icost = icost + delta_z*delta_z
-                  write(*,*) 'AAAAA',mynode,i,j,
-     &                 zeta(i,j,knew),ad_obs(i,j,ta),
-     &                 ad_obs(i,j,ta+1), ad_obs(i,j,ta+2)
+c$$$                  write(*,*) 'AAAAA',mynode,i,j,
+c$$$     &                 zeta(i,j,knew),ad_obs(i,j,ta),
+c$$$     &                 ad_obs(i,j,ta+1), ad_obs(i,j,ta+2)
 c$$$     &                 zob(i,j),zob_bck(i,j),
 c$$$     &                 delta_z,
 c$$$     &                 delta_zob
