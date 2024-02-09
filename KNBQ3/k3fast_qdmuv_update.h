@@ -263,6 +263,7 @@
 ! !  Nudging TBT
 ! !................................
 ! !       
+#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
         cff=alphaw_nbq/dtfast*
      &           *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
@@ -273,7 +274,7 @@
 #    ifdef MASKING
      &                         *umask(i,j)
 #    endif  
-     
+#   endif  
 ! !
 ! !................................
 ! !  Compute qdmu_nbq
@@ -493,6 +494,7 @@
 ! !  Nudging TBT
 ! !................................
 ! !      
+#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
         cff=alphaw_nbq/dtfast
      &           *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
@@ -502,6 +504,7 @@
 #     ifdef MASKING
      &                         *vmask(i,j)
 #     endif   
+#    endif   
 ! !
 ! !................................
 ! !  Compute qdmv_nbq
