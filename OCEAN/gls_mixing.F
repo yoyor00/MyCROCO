@@ -549,10 +549,18 @@
                   ! Shear and buoyancy production
                   Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k) 
 # if defined OBSTRUCTION
+                  ! obst_t and obst_tau centered vertically on the cell
                   if (ig == itke) then
-                    Sprod = Sprod + obst_t(i,j,k)
+                    Sprod = Sprod + ((obst_t(i,j,k)*Hz(i,j,k) 
+     &                 + obst_t(i,j,k+1)*Hz(i,j,k+1))
+     &                 / (Hz(i,j,k) + Hz(i,j,k+1)))
                   else
-                    Sprod = Sprod + obst_t(i,j,k)*MAX(obst_tau(i,j,k),
+                    Sprod = Sprod + ((obst_t(i,j,k)*Hz(i,j,k) 
+     &                 + obst_t(i,j,k+1)*Hz(i,j,k+1))
+     &                 / (Hz(i,j,k) + Hz(i,j,k+1)))
+     &              *MAX(((obst_tau(i,j,k)*Hz(i,j,k) 
+     &                 + obst_tau(i,j,k+1)*Hz(i,j,k+1))
+     &                 / (Hz(i,j,k) + Hz(i,j,k+1))),
      &                  obst_c2turb * gls * invk)
                   endif
 # endif
