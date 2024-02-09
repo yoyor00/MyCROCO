@@ -103,12 +103,40 @@
         slip_nbq = 0
 ! !
 ! !  Pseudoacoustic speed
-! !   should be around 5 times external phase speed sqrt(g*h)
-!
+! !     
+        if (csound_nbq.lt.0.) then
+# ifdef KNBQ
+           csound_nbq=sqrt(g*hmax)*2.
+# endif
+# ifdef KNHINT
+           csound_nbq=0.5/CFL_nbq
+#  ifdef K3FAST_PG2
+!           csound_nbq=csound_nbq*1.7
+#  endif
+# endif
+        endif
+        if (visc2read_nbq.lt.0.) then
+!           visc2read_nbq=0.95*min(grdmin
+!    &      ,hmin/real(N))**2/dtnbq
+!          visc2read_nbq=0.95*dtnbq/CFL_nbq*csound_nbq
+           visc2read_nbq=0.1*csound_nbq*min(grdmin
+     &      ,hmin/real(N))
+#  ifdef K3FAST_PG2
+!          visc2read_nbq=visc2read_nbq*1.7
+#  endif
+        endif
+        if (mynode==0) then
+         write(stdout,1) "[K3FAST] Cs, Visc2 recomputed: "
+     & ,csound_nbq," m/s, ",visc2read_nbq," m2/s"
+   1          format(A,F6.2,A,F6.2,A)
+         write(stdout,*)
+        endif
+
         visc2_nbq=visc2read_nbq
         visc2v_nbq=visc2read_nbq   
         soundspeed_nbq  =csound_nbq
         soundspeed2_nbq =csound_nbq**2
+        
 #ifdef K3FAST_CSVISC2K        
 !$acc update device( visc2_nbq,  visc2v_nbq
 !$acc&          , soundspeed_nbq, soundspeed2_nbq
@@ -129,8 +157,8 @@
 ! ! Depth KNHINT
 ! !
 #  ifdef KNHINT_CORR
-        alphaw_nbq  = 0.  
-        alphaNw_nbq = N 
+        alphaw_nbq  = 0.25 
+        alphaNw_nbq = 5 
 #  endif
 !
 ! Bulk viscosity (horizontal & vertical components)

@@ -85,6 +85,8 @@
       real rho_sdl
       common /SDL_RHO/ rho_sdl
 #  endif
+	real CFL_nbq
+	common/nbq_CFL/CFL_nbq
 ! !------------------------------------------------------------------
 ! ! nbq.h: nbq.h: Real scalars or arrays
 ! !------------------------------------------------------------------
@@ -126,6 +128,10 @@
       common /nbq_DU_nbq/ DU_nbq
       real DV_nbq(GLOBAL_2D_ARRAY)
       common /nbq_DV_nbq/ DV_nbq
+#  endif
+#  if defined K3FAST_ZETAW || defined PSOURCE || defined WET_DRY || defined KNHINT_ZETAW
+      real dzeta_nbq(GLOBAL_2D_ARRAY)
+      common /nbq_dzeta/dzeta_nbq
       real wsurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_wsurf/ wsurf_nbq
       real usurf_nbq(GLOBAL_2D_ARRAY)

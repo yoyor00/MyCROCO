@@ -37,9 +37,6 @@
           do k=0,N
            do j=Jstr,Jend
             do i=Istr,Iend
-#  ifdef KNHINT_WH
-              wzh_nbq(i,j,k)=0.
-#  endif
               rw_nbq_avg2(i,j,k)=qdmw_nbq(i,j,k)
             enddo
           enddo 

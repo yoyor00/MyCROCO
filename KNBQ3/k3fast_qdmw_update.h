@@ -105,7 +105,7 @@
 ! !--------------------------------
 ! !
 #  ifdef KNHINT_WH
-           wzh_nbq(i,j,k)=  !wzh_nbq(i,j,k)
+           wzh_nbq(i,j,k)=  
      &                      +((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
 #    ifdef KNHINT_3M
      &                         *nsdtnbq
@@ -160,8 +160,10 @@
      &            -0.5*g*Hzw_nbq(i,j,k)*(
      &      ((cff+abs(cff))*rho_nh(i,j,k  )
      &      -(cff-abs(cff))*rho_nh(i,j,k+1))/rho0
+#    ifdef NBQ_DGRAV
      &      +(cff+abs(cff))*rho_nbq(i,j,k  )*Hzr_nbq_inv(i,j,k)
      &      -(cff-abs(cff))*rho_nbq(i,j,k+1)*Hzr_nbq_inv(i,j,k+1)
+#    endif
      &                                  )
 #   endif
 ! ! 
@@ -350,7 +352,9 @@
           dum_s = dum_s 
      &         -g*Hzw_nbq(i,j,N)*(
      &            rho_nh (i,j,N)/rho0
+#    ifdef NBQ_DGRAV
      &           +rho_nbq(i,j,N)*Hzr_nbq_inv(i,j,N) 
+#    endif
      &                           )
 #    endif    
 ! ! 

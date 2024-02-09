@@ -97,6 +97,8 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+      integer iic_nbq
+      real csound0_nbq
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
 !      real*8       :: tool_datosec
@@ -830,9 +832,19 @@ C$OMP PARALLEL DO PRIVATE(tile)
 ! Set initial NBQ param. & var.
 !
 C$OMP PARALLEL DO PRIVATE(tile)
+      iic_nbq=iic
+      iic=ninfo+1
+      csound0_nbq=csound_nbq
+      csound_nbq=1.
+      soundspeed_nbq=1.
+      do tile=0,NSUB_X*NSUB_E-1
+        call diag(tile)
+      enddo
+      csound_nbq=csound0_nbq
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile)
       enddo
+      iic=iic_nbq
 #endif
 !
 !----------------------------------------------------------------------

@@ -388,6 +388,7 @@ C$OMP CRITICAL (diag_cr_rgn)
 #if defined MPI && defined DEBUG && !defined AGRIF
       call flush
 #endif
+              CFL_nbq=Sqrt(Cu_Nbq)
 
 C$OMP END CRITICAL (diag_cr_rgn)
       endif

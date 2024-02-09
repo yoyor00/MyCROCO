@@ -284,6 +284,11 @@
 #   define K3FAST_C3D_WSF
 #   define K3FAST_C3D_WFS
 #   define K3FAST_AM4
+#   undef  KNHINT_ZETAW
+#   ifdef KNHINT_ZETAW
+#    define NBQ_HZCORRECT
+#    define NBQ_HZCORRECT_ZETA
+#   endif
 #   define K3FAST_COUPLING2D
 #   define K3FAST_COUPLING_SCH2
 #   define K3FAST_COUPLINGW_SCH2

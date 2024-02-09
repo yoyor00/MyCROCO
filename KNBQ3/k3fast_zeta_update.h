@@ -3,7 +3,7 @@
 ! ! K3FAST_zeta_update.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
-#  ifdef K3FAST_ZETAW
+#  if defined K3FAST_ZETAW || defined KNHINT_ZETAW
 ! !
 ! !********************************
 ! ! Computes surface velocities
@@ -151,9 +151,16 @@
         enddo
       enddo
 #   endif /* !K3FAST_SPDUP */
+#   ifdef KNHINT_ZETAW
+      if (iic==1.and.iif==1) dzeta_nbq=0.
+#   endif
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
+#   ifdef K3FAST_ZETAW
 	  zeta(i,j,knew)=(zeta(i,j,kstp) + dtfast*( wsurf_nbq(i,j)
+#   elif defined KNHINT_ZETAW
+	  zeta(i,j,knew)=wsurf_nbq(i,j)
+#   endif
 #   ifndef K3FAST_SPDUP
      &                     -0.5*(usurf_nbq(i  ,j)
      &                                     *(zab3(i  ,j)
@@ -168,7 +175,11 @@
      &                          +vsurf_nbq(i,j+1)
      &                                     *(zab3(i,j+1)
      &                                      -zab3(i,j  ))*pn_v(i,j+1)
+#   ifdef K3FAST_ZETAW
      &                          )))
+#   elif defined KNHINT_ZETAW
+     &                          )-dzeta_nbq(i,j)
+#   endif
 #    endif    /* K3FAST_SPDUP */
 #    ifdef MASKING
      &                                                  *rmask(i,j)
@@ -176,7 +187,9 @@
         enddo
       enddo
 !$acc end kernels
-# else /* ! K3FAST_ZETAW */
+# endif /* ! K3FAST_ZETAW && ! KNHINT_ZETAW*/
+
+# ifndef K3FAST_ZETAW 
 ! !
 ! !********************************
 ! !  Advance zeta at m+1 from continuity 
@@ -209,9 +222,16 @@
       enddo
 #  endif
 !$acc kernels if(compute_on_device) default(present)
+#  ifdef KNHINT_ZETAW
+      if (iic==1.and.iif==1) zeta=0.
+#  endif
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
+#  ifndef KNHINT_ZETAW
           zeta(i,j,knew)=(zeta(i,j,kstp)
+#  else
+          cff=(zeta(i,j,kstp)
+#  endif
 #  ifdef MVB
      &                    -(dh_mvb(i,j,knew2)-dh_mvb(i,j,kstp2))
 #  endif
@@ -225,11 +245,15 @@
      &              + diss_zta*( zeta(i+1,j,kstp)-2.*zeta(i,j,kstp)
      &                       +zeta(i-1,j,kstp)) /2.*pm(i,j)**2
 #  endif
+#  ifdef KNHINT_ZETAW
+           dzeta_nbq(i,j)=(cff-zeta(i,j,kstp))/dtfast
+           zeta(i,j,knew)=cff -dtfast*zeta(i,j,knew)
+#  endif
 
         enddo
       enddo
 !$acc end kernels      
-# endif /* K3FAST_ZETAW */
+# endif /* !K3FAST_ZETAW */
 ! !
 ! !********************************
 ! !  Add nudging terms

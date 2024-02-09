@@ -179,7 +179,7 @@ C$    trd=omp_get_thread_num()
       real  sum_nbq
 
 # ifdef NBQ_THETAIMP
-      real,parameter :: thetaimp_nbq = 0.5 
+      real,parameter :: thetaimp_nbq = 0.6 
 # else
       real,parameter :: thetaimp_nbq = 1.
 # endif
@@ -700,7 +700,44 @@ C$    trd=omp_get_thread_num()
 ! !
 #  ifdef NBQ_IMP
 #   include "k3fast_qdmw_implicit.h"
-#  endif                                  
+#  endif  
+! !
+! !********************************
+! ! KNHINT numerical mode control: 
+! ! remove potential surface component
+! !********************************
+! !
+#  ifdef KNHINT_CORR 
+!       kzw=2.*pi/2./sqrt(om_r(1,1)**2+on_r(1,1)**2)
+        do j=JstrV-2,Jend+1
+          do i=IstrU-2,Iend+1
+              do k=N,Max(1,N-2*alphaNw_nbq),-1
+!              cff=(alphaw_nbq-1.)
+!    &               *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+!    &                    /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+!               cff2= cff*
+!     &              qdmw_nbq(i,j,N)
+!     &         *(Hz(i,j,k)+Hz(i,j,k+1))/Hz(i,j,N)
+!! Linear 1:
+!!!   &         *(z_w(i,j,k)+H(i,j))/(z_w(i,j,N)+H(i,j))
+!! Linear 2:
+!     &         *(z_w(i,j,k)-z_w(i,j,N-alphaNw_nbq))
+!     &         /(z_w(i,j,N)-z_w(i,j,N-alphaNw_nbq))
+!! Short waves:
+!!    &         *sinh(kzw*(H(i,j)+z_w(i,j,k)))
+!!    &         /sinh(kzw*H(i,j))
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)
+     &               *(1.-alphaw_nbq
+     &               *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+     &                    /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2))
+!
+             enddo
+!            k=N
+!            cff2=qdmw_nbq(i,j,N)*(alphaw_nbq-1.)
+!            qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*0.9
+           enddo
+         enddo
+#   endif /* KNHINT_CORR  */
 ! !
 ! !--------------------------------------------------------------------
 ! !  W-momentum open boundary conditions
