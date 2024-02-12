@@ -111,9 +111,15 @@
             wrk(i,j)=0.
           else
             wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
+#ifdef OPENACCNUMERIC 
+          wrk(i,j)=real(wrk(i,j), kind=4)
+#endif
           endif
 # else
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
+#ifdef OPENACCNUMERIC 
+          wrk(i,j)=real(wrk(i,j), kind=4)
+#endif
 !         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
 # endif
 
