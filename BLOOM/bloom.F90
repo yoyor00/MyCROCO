@@ -307,7 +307,8 @@
              EXTINCTION_RAD(k,i,j)=EXTINCTION_RAD(1,i,j)
              extinction_aveh(k,i,j)=extinction_aveh(1,i,j)
              IF(t_cum_extinctionh >= (3600._rsh-dtbio)) THEN
-                extinction_tab(numday_extinction,numhour_extinction,k,i,j)=extinction_tab(numday_extinction,numhour_extinction,1,i,j)
+                extinction_tab(numday_extinction,numhour_extinction,k,i,j)= &
+                   extinction_tab(numday_extinction,numhour_extinction,1,i,j)
                 extinction_ave4d(k,i,j)=extinction_ave4d(1,i,j)
              ENDIF
            ENDDO
@@ -1634,7 +1635,6 @@
           diag_3d_wat(irk_diag(id_totalchl),k,i,j)=(c(iv_phyto_diat_N)+c(iv_phyto_dino_N)+c(iv_phyto_nano_N)) &
                                                 *fact_phyto_ChlNratio
 
-
 #if defined key_psnz
    ! Evolution des variables liees a Pseudo-nitzschia
    ! corrige et calcule les dc , evalue total chloro, variables diagnostiques et vitesses de chute pseudo_nitzschia
@@ -2842,8 +2842,8 @@
              ! ----------------------
              dcdt(iv_nutr_PO4)=(F_remin_aerP + F_remin_anaerP + F_remin_NO3_P) * cs(iv_detr_P) * porosite_inv  &
                               +(F_reminR_aerP + F_reminR_anaerP + F_reminR_NO3_P) * cs(iv_detrR_P) * porosite_inv  &
-                              +F_desorP * cs(iv_nutr_Pads) * porosite_inv               &
-                              +F_dissolPFE * cs(iv_PFe) * porosite_inv                  &
+                              + (F_desorP * cs(iv_nutr_Pads) * porosite_inv)               &
+                              + (F_dissolPFE * cs(iv_PFe) * porosite_inv)                  &
 !#if defined key_zostera
 !                    +(F_remin_aerP/10._rsh)*cs(iv_detr_P)*porosite_inv*dtbiojour                &
 !#endif
@@ -2884,10 +2884,10 @@
              ! Fe bound P (micromol/l sed) 
              ! ---------------------------
              dcdt(iv_PFe)=(F_precPFE_O2 + F_precPFE_NO3) * cs(iv_nutr_PO4) * poro(k,i,j)  &
-                         -F_dissolPFE * cs(iv_PFe) - F_burried * cs(iv_PFe)
+                         - (F_dissolPFE * cs(iv_PFe)) - (F_burried * cs(iv_PFe))
                            
              diag_3d_sed(id_dissol_PFe,k,i,j)=diag_3d_sed(id_dissol_PFe,k,i,j)+  &
-                                             +F_dissolPFE * cs(iv_PFe) * dzs(k,i,j)
+                                             + (F_dissolPFE * cs(iv_PFe) * dzs(k,i,j))
 
              diag_3d_sed(id_precipit_P,k,i,j)=diag_3d_sed(id_precipit_P,k,i,j)+  &
                                              +(F_precPFE_O2 + F_precPFE_NO3) * cs(iv_nutr_PO4) * poro(k,i,j) * dzs(k,i,j)
@@ -2982,7 +2982,10 @@
              ! traite apres coup pour tenir compte des fortes consommations
             IF(htot(i,j) < RESIDUAL_THICKNESS_WAT) THEN
                F_aeration=KO2_aeration*exp(-KzO2_aeration*zmiddle)*(o2sats-cv_sed(iv_oxygen,k,i,j))*dtbiojour
-               IF(id_fluxsed_aeration .ne. 0)diag_3d_sed(id_fluxsed_aeration,k,i,j)=diag_3d_sed(id_fluxsed_aeration,k,i,j)+F_aeration*dzs(k,i,j)
+               IF(id_fluxsed_aeration .ne. 0) THEN
+                  diag_3d_sed(id_fluxsed_aeration,k,i,j)=diag_3d_sed(id_fluxsed_aeration,k,i,j)&
+                     +(F_aeration*dzs(k,i,j))
+               ENDIF
                cv_sed(iv_oxygen,k,i,j)=cv_sed(iv_oxygen,k,i,j)+ F_aeration
                
             ENDIF

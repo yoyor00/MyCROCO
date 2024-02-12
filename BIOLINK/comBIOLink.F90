@@ -190,7 +190,7 @@
      !=====================================================================
 
       INTEGER, PUBLIC :: ndiag_1d, ndiag_2d, ndiag_2d_sed, ndiag_3d, ndiag_3d_wat, &
-                         ndiag_3d_sed, ndiag_tot
+                         ndiag_3d_sed, ndiag_tot, ndiag_2d_wat
                          ! Number of diagnostics with different types of dimensions. 
                          ! Following the order of variables : 1d (time), 2d(horizontal),
                          ! 3d (without further precision),

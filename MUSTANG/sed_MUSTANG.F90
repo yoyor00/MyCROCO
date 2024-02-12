@@ -773,7 +773,8 @@ MODULE sed_MUSTANG
            var2D_hsed(i,j) = sumdzs
 #ifdef key_BLOOM_insed
            IF (l_out_subs_diag_sed) THEN
-             var2D_diagsed(i,j,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d) = diag_2D_sed(ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d,i,j)
+             var2D_diagsed(i,j,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d) = &
+                diag_2d_sed(ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d,i,j)
            ENDIF
 #endif
         ENDIF

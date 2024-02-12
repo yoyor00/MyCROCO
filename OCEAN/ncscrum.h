@@ -160,9 +160,9 @@
 !  indxPAR                       : PAR at the top layer
 !
 ! ** DIAGNOSTICS FROM BLOOM **
-!  indxBLMdiag1D                 : 1D diagnostics from BLOOM
-!  indxBLMdiag2D                 : 2D diagnostics from BLOOM
-!  indxBLMdiag3D                 : 3D diagnostics from BLOOM
+!  indxBLMdiag1d                 : 1D diagnostics from BLOOM
+!  indxBLMdiag2d                 : 2D diagnostics from BLOOM
+!  indxBLMdiag3d                 : 3D diagnostics from BLOOM
 !=======================================================================
 ! Output file codes
       integer filetype_his, filetype_avg
@@ -534,16 +534,15 @@
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
 # if defined BLOOM && defined DIAGNOSTICS_BIO
-      integer indxbioFlux, indxbioVSink, indxGasExcFlux
-      parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt
+      integer indxBLMdiag3d, indxBLMdiag2d, indxBLMdiag1d
+      parameter (indxBLMdiag1d=indxV+ntrc_temp+ntrc_salt
      &                       +ntrc_pas+ntrc_bio+ntrc_sed
      &                       +ntrc_diats+ntrc_diauv+ntrc_diavrt
      &                       +ntrc_diaek+ntrc_diapv+ntrc_diaeddy
      &                       +ntrc_surf+400)
-      parameter (indxbioVSink=indxbioFlux+NumFluxTerms)
-      parameter (indxGasExcFlux=indxbioFlux+NumFluxTerms+NumVSinkTerms)
+      parameter (indxBLMdiag2d=indxBLMdiag1d+NumBLMdiag1d)
+      parameter (indxBLMdiag3d=indxBLMdiag2d+NumBLMdiag2d)
 # endif
-
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv
       parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot
@@ -939,13 +938,12 @@
 #endif /* BIOLink_PAR_EVAL */
 
 #if defined BLOOM
-      integer indxBLMdiag1D
-      parameter (indxBLMdiag1D=indxSUSTR+155)
-      integer indxBLMdiag2D
-      parameter (indxBLMdiag2D=indxSUSTR+175)
-      integer indxBLMdiag3D
-      parameter (indxBLMdiag3D=indxSUSTR+205)
-
+!      integer indxBLMdiag1d
+!      parameter (indxBLMdiag1d=indxSUSTR+155)
+!      integer indxBLMdiag2d
+!      parameter (indxBLMdiag2d=indxSUSTR+175)
+!      integer indxBLMdiag3d
+!      parameter (indxBLMdiag3d=indxSUSTR+205)
 #endif /* BLOOM */
 
 #ifdef ICE
@@ -1239,11 +1237,6 @@
       integer hisPAR
 # endif /* BIOLink_PAR_EVAL */
 
-# ifdef BLOOM
-      integer hisBLMdiag1D(20)
-      integer hisBLMdiag2D(30)
-      integer hisBLMdiag3D(30)
-# endif /* BLOOM  */
 
 # if defined DIAGNOSTICS_TS
       integer nciddia, nrecdia, nrpfdia
@@ -1345,11 +1338,19 @@
      &      , surf_surfu(2), surf_surfv(2)
 # endif
 # ifdef DIAGNOSTICS_BIO
+# ifdef BLOOM
+      integer nciddiabio, nrecdiabio, nrpfdiabio
+     &      , diaTimebio, diaTime2bio, diaTstepbio
+     &      , hisBLMdiag1d(NumBLMdiag1d)
+     &      , hisBLMdiag2d(NumBLMdiag2d)
+     &      , hisBLMdiag3d(NumBLMdiag3d)
+# else 
       integer nciddiabio, nrecdiabio, nrpfdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio
      &      , diabioFlux(NumFluxTerms)
      &      , diabioVSink(NumVSinkTerms)
      &      , diabioGasExc(NumGasExcTerms)
+# endif
 # endif
 
 #elif defined DIAGNOSTICS_UV && defined MRL_WCI
@@ -1622,9 +1623,15 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
+#ifdef BLOOM
+     &      , wrtdiabio3d(NumBLMdiag3d+1)
+     &      , wrtdiabio2d(NumBLMdiag2d+1)
+     &      , wrtdiabio1d(NumBLMdiag1d+1)
+#else
      &      , wrtdiabioFlux(NumFluxTerms+1)
      &      , wrtdiabioVSink(NumVSinkTerms+1)
      &      , wrtdiabioGasExc(NumGasExcTerms+1)
+#endif
 # ifdef AVERAGES
      &      , wrtdiabioFlux_avg(NumFluxTerms+1)
      &      , wrtdiabioVSink_avg(NumVSinkTerms+1)
@@ -1771,11 +1778,6 @@
      &      , hisPAR
 #endif /* BIOLink_PAR_EVAL */
 
-#ifdef BLOOM
-     &      , hisBLMdiag1D
-     &      , hisBLMdiag2D
-     &      , hisBLMdiag3D
-#endif /* BLOOM */
 
 #ifdef BBL
      &      , hisBBL
@@ -1969,10 +1971,16 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
+#ifdef BLOOM
+     &      , nciddiabio, nrecdiabio, nrpfdiabio
+     &      , diaTimebio, diaTime2bio, diaTstepbio
+     &      , hisBLMdiag1d, hisBLMdiag2d, hisBLMdiag3d
+#else
      &      , nciddiabio, nrecdiabio, nrpfdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio, diabioFlux
      &      , diabioVSink
      &      , diabioGasExc
+#endif
 # ifdef AVERAGES
      &      , nciddiabio_avg, nrecdiabio_avg, nrpfdiabio_avg
      &      , diaTimebio_avg, diaTime2bio_avg, diaTstepbio_avg
@@ -2114,9 +2122,15 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
+#ifdef BLOOM
+     &      , wrtdiabio3d
+     &      , wrtdiabio2d
+     &      , wrtdiabio1d
+#else
      &      , wrtdiabioFlux
      &      , wrtdiabioVSink
      &      , wrtdiabioGasExc
+#endif
 # ifdef AVERAGES
      &      , wrtdiabioFlux_avg
      &      , wrtdiabioVSink_avg

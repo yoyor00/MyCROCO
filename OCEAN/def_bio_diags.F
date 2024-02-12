@@ -22,6 +22,13 @@
                                  ! Create diag data NetCDF file:
                                  ! Define its variables, dimensions,
                                  ! and attributes
+# if defined BIOLink && defined BLOOM
+      USE comBIOLINK, ONLY : ndiag_2d, ndiag_3d_wat, ndiag_3d_sed
+# endif
+#ifdef MUSTANG
+      USE comMUSTANG, ONLY :nk_nivsed_out
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -39,7 +46,10 @@
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3), u2dgrd(3), v2dgrd(3),auxil(2),checkdims
 # ifdef SOLVE3D
-     &      , r3dgrd(4), u3dgrd(4), v3dgrd(4), w3dgrd(4), iflux
+     &      , r3dgrd(4), u3dgrd(4), v3dgrd(4), w3dgrd(4),iflux
+# endif
+# ifdef MUSTANG
+     &      , b3dgrd(4)
 # endif
 # ifdef NC4PAR
      &      , csize,cmode
@@ -56,9 +66,15 @@
 #  ifdef BIOLink_PAR_eval
 #    define vidPAR hisPAR
 #  endif
-#  define vidFlux diabioFlux
-#  define vidGasExc diabioGasExc
-#  define vidVSink diabioVSink
+#  ifdef BLOOM
+#   define vidBLMdiag3d hisBLMdiag3d
+#   define vidBLMdiag1d hisBLMdiag1d
+#   define vidBLMdiag2d hisBLMdiag2d
+#  else
+#   define vidFlux diabioFlux
+#   define vidGasExc diabioGasExc
+#   define vidVSink diabioVSink
+#  endif
 #  define vidSed hisSed
 # else /* AVRH */
 #  define ncname dianamebio_avg
@@ -139,6 +155,11 @@
         ierr=nf_def_dim (ncid, 'xi_u',     xi_u,     u2dgrd(1))
         ierr=nf_def_dim (ncid, 'eta_rho',  eta_rho,  r2dgrd(2))
         ierr=nf_def_dim (ncid, 'eta_v',    eta_v,    v2dgrd(2))
+
+# if defined  BLOOM && defined MUSTANG && defined key_BLOOM_insed
+        ierr=nf_def_dim (ncid, 's_b',      nk_nivsed_out,  b3dgrd(3))
+# endif
+
 # ifdef SOLVE3D
         ierr=nf_def_dim (ncid, 's_rho',    N,        r3dgrd(3))
         ierr=nf_def_dim (ncid, 's_w',      N+1,      w3dgrd(3))
@@ -156,9 +177,9 @@
         v2dgrd(1)=r2dgrd(1)         ! 2D VBAR-type
         v2dgrd(3)=timedim
 
-!        b3dgrd(1)=r2dgrd(1)         !
-!        b3dgrd(2)=r2dgrd(2)         ! 3D BED-type
-!        b3dgrd(4)=timedim           !
+        b3dgrd(1)=r2dgrd(1)         !
+        b3dgrd(2)=r2dgrd(2)         ! 3D BED-type
+        b3dgrd(4)=timedim           !
 
 # ifdef SOLVE3D
         r3dgrd(1)=r2dgrd(1)         !
@@ -178,8 +199,6 @@
         w3dgrd(1)=r2dgrd(1)         !
         w3dgrd(2)=r2dgrd(2)         ! 3D W-type
         w3dgrd(4)=timedim           !
-
-
 # endif
 
 # if (defined PUT_GRID_INTO_HISTORY && !defined AVRH)\
@@ -316,24 +335,25 @@
 !
 !
 ! biogeochemical fluxes
+# ifndef BLOOM
         do iflux = 1, NumFluxTerms
           if (wrtFlux(iflux)) then
             lvar=lenstr(vname(1,indxbioFlux+iflux-1))
             ierr=nf_def_var (ncid, vname(1,indxbioFlux+iflux-1)(1:lvar),
      &           NF_FOUT, 4, r3dgrd, vidFlux(iflux))
-# ifdef NC4PAR
+#  ifdef NC4PAR
             ierr=nf_var_par_access(ncid,vidFlux(iflux),nf_collective)
-# endif
-# ifndef AVRH
+#  endif
+#  ifndef AVRH
             lvar=lenstr(vname(2,indxbioFlux+iflux-1))
             ierr=nf_put_att_text (ncid, vidFlux(iflux), 'long_name',
      &           lvar, vname(2,indxbioFlux+iflux-1)(1:lvar))
-# else
+#  else
             text='averaged '/ /vname(2,indxbioFlux+iflux-1)
            lvar=lenstr(text)
            ierr=nf_put_att_text (ncid, vidFlux(iflux), 'long_name',
      &          lvar, text(1:lvar))
-# endif
+#  endif
            lvar=lenstr(vname(3,indxbioFlux+iflux-1))
            ierr=nf_put_att_text (ncid, vidFlux(iflux), 'units',
      &          lvar, vname(3,indxbioFlux+iflux-1)(1:lvar))
@@ -349,38 +369,30 @@
         do iflux = 1, NumVSinkTerms
           if (wrtVSink(iflux)) then
             lvar=lenstr(vname(1,indxbioVSink+iflux-1))
-# ifdef PISCES
-#  ifdef key_trc_diaadd
+#  ifdef PISCES
+#   ifdef key_trc_diaadd
             ierr=nf_def_var (ncid,
      &           vname(1,indxbioVSink+iflux-1)(1:lvar),
      &          NF_FOUT, 3, r2dgrd, vidVSink(iflux))
-#   ifdef NC4PAR
+#    ifdef NC4PAR
             ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
-#   endif
+#    endif
 
-# endif
-#elif defined BLOOM
-            ierr=nf_def_var (ncid,
-     &           vname(1,indxbioVSink+iflux-1)(1:lvar),
-     &          NF_FOUT, 3, r2dgrd, vidVSink(iflux))
-#   ifdef NC4PAR
-            ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
 #   endif
-
-#else
+#  else
             ierr=nf_def_var (ncid,
      &           vname(1,indxbioVSink+iflux-1)(1:lvar),
      &           NF_FOUT, 4, w3dgrd, vidVSink(iflux))
-#  ifdef NC4PAR
+#   ifdef NC4PAR
             ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
+#   endif
 #  endif
-# endif
-# ifndef AVRH
+#  ifndef AVRH
             lvar=lenstr(vname(2,indxbioVSink+iflux-1))
             ierr=nf_put_att_text (ncid, vidVSink(iflux),
      &           'long_name',
      &           lvar, vname(2,indxbioVSink+iflux-1)(1:lvar))
-# else
+#  else
             text='averaged '/ /vname(2,indxbioVSink+iflux-1)
             lvar=lenstr(text)
             ierr=nf_put_att_text (ncid, vidVSink(iflux),
@@ -398,6 +410,111 @@
      &          vname(:,indxbioVSink+iflux-1), 5, NF_FOUT, ierr)
         endif
       end do
+#endif  /* if not BLOOM */
+
+#ifdef BLOOM
+! 2D
+      do iflux = 1, NumBLMdiag2d
+        if (wrtdiabio2d(iflux)) then
+          lvar=lenstr(vname(1,indxBLMdiag2d+iflux-1))
+          ierr=nf_def_var (ncid,
+     &         vname(1,indxBLMdiag2d+iflux-1)(1:lvar),
+     &         NF_FOUT, 3, r2dgrd, vidBLMdiag2d(iflux))
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBLMdiag2d(iflux),nf_collective)
+# endif
+
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxBLMdiag2d+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag2d(iflux),
+     &         'long_name',
+     &         lvar, vname(2,indxBLMdiag2d+iflux-1)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxBLMdiag2d+iflux-1)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBLMdiag2d(iflux),
+     &         'long_name',
+     &         lvar, text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxBLMdiag2d+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag2d(iflux), 'units',
+     &         lvar, vname(3,indxBLMdiag2d+iflux-1)(1:lvar))
+          lvar=lenstr(vname(4,indxBLMdiag2d+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag2d(iflux), 'field',
+     &        lvar, vname(4,indxBLMdiag2d+iflux-1)(1:lvar))
+
+          call nf_add_attribute(ncid, vidBLMdiag2d(iflux),
+     &         vname(:,indxBLMDiag2D+iflux-1), 5, NF_FOUT, ierr)
+        endif
+      end do
+
+! 3D
+      do iflux = 1, ndiag_3d_wat
+        if (wrtdiabio3d(iflux)) then
+          lvar=lenstr(vname(1,indxBLMdiag3d+iflux-1))
+          ierr=nf_def_var (ncid, vname(1,indxBLMdiag3d+iflux-1)(1:lvar),
+     &         NF_FOUT, 4, r3dgrd, vidBLMdiag3d(iflux))
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBLMdiag3d(iflux),nf_collective)
+#  endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxBLMdiag3d+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag3d(iflux), 'long_name',
+     &         lvar, vname(2,indxBLMdiag3d+iflux-1)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxBLMdiag3d+iflux-1)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBLMdiag3d(iflux), 'long_name',
+     &         lvar, text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxBLMdiag3d+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag3d(iflux), 'units',
+     &         lvar, vname(3,indxBLMdiag3d+iflux-1)(1:lvar))
+          lvar=lenstr(vname(4,indxBLMdiag3d+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag3d(iflux), 'field',
+     &         lvar, vname(4,indxBLMdiag3d+iflux-1)(1:lvar))
+
+          call nf_add_attribute(ncid, vidBLMdiag3d(iflux),
+     &         vname(:,indxBLMdiag3d+iflux-1), 5, NF_FOUT, ierr)
+        endif
+      end do
+
+# if defined MUSTANG && defined key_BLOOM_insed
+      do iflux = 1, ndiag_3d_sed
+        if (wrtdiabio3d(ndiag_3d_wat+iflux)) then
+          lvar=lenstr(vname(1,indxBLMdiag3d+ndiag_3d_wat+iflux-1))
+          ierr=nf_def_var(ncid, 
+     &                  vname(1,indxBLMdiag3d+ndiag_3d_wat+iflux-1)(1:lvar),
+     &                  NF_FOUT, 4, b3dgrd,vidBLMdiag3d(ndiag_3d_wat+iflux))
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBLMdiag3d(iflux),nf_collective)
+#  endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxBLMdiag3d+ndiag_3d_wat+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag3d(ndiag_3d_wat+iflux),
+     &         'long_name',lvar,vname(2,indxBLMdiag3d+ndiag_3d_wat+iflux-1)
+     &                               (1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxBLMdiag3d+ndiag_3d_wat+iflux-1)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBLMdiag3d(ndiag_3d_wat+iflux), 
+     &         'long_name',lvar, text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxBLMdiag3d+ndiag_3d_wat+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag3d(ndiag_3d_wat+iflux), 'units',
+     &         lvar, vname(3,indxBLMdiag3d+ndiag_3d_wat+iflux-1)(1:lvar))
+          lvar=lenstr(vname(4,indxBLMdiag3d+ndiag_3d_wat+iflux-1))
+          ierr=nf_put_att_text (ncid, vidBLMdiag3d(ndiag_3d_wat+iflux), 'field',
+     &         lvar, vname(4,indxBLMdiag3d+ndiag_3d_wat+iflux-1)(1:lvar))
+
+          call nf_add_attribute(ncid, vidBLMdiag3d(ndiag_3d_wat+iflux),
+     &         vname(:,indxBLMdiag3d+ndiag_3d_wat+iflux-1), 5, NF_FOUT, ierr)
+        endif
+      end do
+
+# endif  /* BLOOM_insed */
+#endif   /* BLOOM */
+
 !--------------------------------------------------------------------------------
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
 ! gas exchange fluxes
@@ -566,6 +683,7 @@
 ! Tracer flux diagnostics variables.
 !
 !
+# ifndef BLOOM
         do iflux = 1, NumFluxTerms
           if (wrtFlux(iflux)) then
             lvar=lenstr(vname(1,indxbioFlux+iflux-1))
@@ -576,9 +694,9 @@
      &             ncname(1:lstr)
               goto 99           !--> ERROR
             endif
-# ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidFlux(iflux),nf_collective)
-# endif
+#  endif
           endif
         enddo
 !
@@ -594,11 +712,68 @@
      &             ncname(1:lstr)
               goto 99           !--> ERROR
             endif
-# ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
-# endif
+#  endif
           endif
         enddo
+#  endif
+
+# ifdef BLOOM
+!      diags 2D
+        do iflux = 1, NumBLMdiag2d
+          if (wrtdiabio2d(iflux)) then
+            lvar=lenstr(vname(1,indxBLMdiag2d+iflux-1))
+            ierr=nf_inq_varid(ncid,vname(1,indxBLMdiag2d+iflux-1)(1:lvar),
+     &           vidBLMdiag2d(iflux))
+            if (ierr .ne. nf_noerr) then
+              write(stdout,1) vname(1,indxBLMDiag2D+iflux-1)(1:lvar),
+     &             ncname(1:lstr)
+              goto 99           !--> ERROR
+            endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
+#  endif
+          endif
+        enddo
+
+!      diags 3D 
+        do iflux = 1, ndiag_3d_wat
+          if (wrtdiabio3d(iflux)) then
+            lvar=lenstr(vname(1,indxBLMdiag3d+iflux-1))
+            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3d+iflux-1)(1:lvar),
+     &           vidBLMdiag3d(iflux))
+            if (ierr .ne. nf_noerr) then
+              write(stdout,1) vname(1,indxBLMdiag3d+iflux-1)(1:lvar),
+     &             ncname(1:lstr)
+              goto 99           !--> ERROR
+            endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBLMdiag3d(iflux),nf_collective)
+#  endif
+          endif
+        enddo
+#  if defined MUSTANG && defined key_BLOOM_insed
+       do iflux = 1, ndiag_3d_sed
+          if (wrtdiabio3d(ndiag_3d_wat+iflux)) then
+            lvar=lenstr(vname(1,indxBLMdiag3d+ndiag_3d_wat+iflux-1))
+            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3d+ndiag_3d_wat+iflux-1)
+     &                        (1:lvar),vidBLMdiag3d(ndiag_3d_wat+iflux))
+            if (ierr .ne. nf_noerr) then
+              write(stdout,1) vname(1,indxBLMdiag3d+ndiag_3d_wat+iflux-1)
+     &                             (1:lvar),ncname(1:lstr)
+              goto 99           !--> ERROR
+            endif
+#   ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBLMdiag3d(ndiag_3d_wat+iflux),
+     &                           nf_collective)
+#   endif
+          endif
+        enddo
+
+#  endif
+# endif /* BLOOM */
+
 !--------------------------------------------------------------------------------
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
 !  Gas exchange fluxes

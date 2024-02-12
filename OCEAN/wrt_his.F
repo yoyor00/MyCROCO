@@ -21,11 +21,12 @@
       USE comBIOLink_helping, ONLY : PAR
 #endif /* BIOLink_PAR_eval */ 
 
-#if defined BLOOM
-      USE comBIOLINK, ONLY: diag_1D,ndiag_1d,
-     &                      diag_2D,ndiag_2d,
-     &                      diag_3D_CROCO,ndiag_3d
-#endif
+!#if defined BLOOM
+!      USE comBIOLINK, ONLY: diag_1d,ndiag_1d,
+!     &                      diag_2d,ndiag_2d,
+!     &                      diag_3d_CROCO,ndiag_3d
+!     &                      diag_3d_wat,ndiag_3d
+!#endif
 
 #ifdef MUSTANG
       USE comsubstance, ONLY : nv_adv,nvpc,nvp
@@ -1415,60 +1416,57 @@ CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
       endif
 # endif /* BIOLink_PAR_eval */
 
-# if defined BLOOM && !defined DIAGNOSTICS_BIO
+!# if defined BLOOM && !defined DIAGNOSTICS_BIO
 !
 !  BLOOM 1D diagnostics
 !
-      do i=1,ndiag_1D
-        if (wrthis(indxBLMdiag1D+i)) then
-
-          ierr=nf_put_var1_FTYPE (ncidhis, hisBLMdiag1D(i),
-     &                            record, diag_1D(i))
-          if (ierr .ne. nf_noerr) then
-            lvar=lenstr(vname(1,indxBLMdiag1D+i))
-            MPI_master_only write(stdout,1)
-     &        vname(1,indxBLMdiag1D+i)(1:lvar), record, ierr
-     &        MYID
-            goto 99                !--> ERROR
-          endif
-
-        endif
-      end do
-
-
+!      do i=1,ndiag_1d
+!        if (wrthis(indxBLMdiag1d+i)) then
+!
+!          ierr=nf_put_var1_FTYPE (ncidhis, hisBLMdiag1d(i),
+!     &                            record, diag_1d(i))
+!          if (ierr .ne. nf_noerr) then
+!            lvar=lenstr(vname(1,indxBLMdiag1d+i))
+!            MPI_master_only write(stdout,1)
+!     &        vname(1,indxBLMdiag1d+i)(1:lvar), record, ierr
+!     &        MYID
+!            goto 99                !--> ERROR
+!          endif
+!
+!        endif
+!      end do
 !
 !  BLOOM 2D diagnostics
 !
-
-      do i=1,ndiag_2D
-        if (wrthis(indxBLMdiag2D+i)) then
-          call fillvalue2d(diag_2D(i,:,:),ncidhis,hisBLMdiag2D(i),
-     &         vname(1,indxBLMdiag2D+i),record,r2dvar,type)
-        endif
-      end do
-
+!
+!      do i=1,ndiag_2d
+!        if (wrthis(indxBLMdiag2d+i)) then
+!          call fillvalue2d(diag_2d(i,:,:),ncidhis,hisBLMdiag2d(i),
+!     &         vname(1,indxBLMdiag2d+i),record,r2dvar,type)
+!        endif
+!      end do
 !
 !  BLOOM 3D diagnostics
 !
+!
+!      do i=1,ndiag_3d
+!        if (wrthis(indxBLMdiag3d+i)) then
+!         workr = diag_3d_CROCO(i,:,:,:)
+!          do k=1,N
+!            workr(:,:,k)=workr(:,:,k)
+!#  ifdef WET_DRY
+!     &                SWITCH rmask_wet(:,:)
+!#  else
+!     &                SWITCH rmask(:,:)
+!#  endif
+!          enddo
+!
+!          call fillvalue3d(workr,ncidhis,
+!     &         hisBLMdiag3d(i),vname(1,indxBLMdiag3d+i),record,r3dvar,type)
+!        endif
+!      end do
 
-      do i=1,ndiag_3D
-        if (wrthis(indxBLMdiag3D+i)) then
-         workr = diag_3D_CROCO(i,:,:,:)
-          do k=1,N
-            workr(:,:,k)=workr(:,:,k)
-#  ifdef WET_DRY
-     &                SWITCH rmask_wet(:,:)
-#  else
-     &                SWITCH rmask(:,:)
-#  endif
-          enddo
-
-          call fillvalue3d(workr,ncidhis,
-     &         hisBLMdiag3D(i),vname(1,indxBLMdiag3D+i),record,r3dvar,type)
-        endif
-      end do
-
-# endif /* BLOOM && ! DIAGNOSTICS_BIO*/
+!# endif /* BLOOM && ! DIAGNOSTICS_BIO*/
 
  1    format(/1x,'WRT_HIS ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',
