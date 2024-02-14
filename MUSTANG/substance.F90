@@ -1423,12 +1423,9 @@ ENDDO
      !!                    *** ROUTINE substance_surfcell ***
      !!-------------------------------------------------------------------
      !
-#if defined MUSTANG || defined BIOLink
 ! evaluation of cell surface if not known in hydro model
     ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
     surf_cell(:,:)=om_r(:,:)*on_r(:,:)
-#endif
-
 
  END SUBROUTINE substance_surfcell
 
