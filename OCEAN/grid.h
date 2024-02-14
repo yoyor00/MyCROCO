@@ -66,11 +66,16 @@
 #ifdef MORPHODYN
       real dh(GLOBAL_2D_ARRAY)
 #endif
+#ifdef POROSITY
+      real hgrid(GLOBAL_2D_ARRAY)
+#endif
       common /grid_h/h /grid_hinv/hinv /grid_f/f /grid_fomn/fomn
 #ifdef MORPHODYN
       common /grid_dh/dh
 #endif
-
+#ifdef POROSITY
+      common /grid_hgrid/hgrid
+#endif
 
 #ifdef CURVGRID
       real angler(GLOBAL_2D_ARRAY)

@@ -420,7 +420,7 @@
           hbl(i,j)=(1-cff)*my_hbl(i,j)+
      &              0.25*(wrk1(i,j)  +wrk1(i+1,j)
      &                   +wrk1(i,j+1)+wrk1(i+1,j+1))
-          hbl(i,j)=min(hbl(i,j),z_w(i,j,N)-z_w(i,j,0))
+          hbl(i,j)=min(hbl(i,j),z_w(i,j,N)+h(i,j))
 #  ifdef MASKING
           hbl(i,j)=hbl(i,j)*rmask(i,j)
 #  endif
@@ -518,14 +518,14 @@
      &                       (0.5*(bvstr(i,j)+bvstr(i,j+1)))**2))
 
             dKv_bl=vonKar*ustarb
-            Kv_bl=dKv_bl*(zbl-z_w(i,j,0))
+            Kv_bl=dKv_bl*(zbl+h(i,j))
 # ifdef TEMPERATURE
             dKt_bl=vonKar*ustarb
-            Kt_bl=dKt_bl*(zbl-z_w(i,j,0))
+            Kt_bl=dKt_bl*(zbl+h(i,j))
 # endif /* TEMPERATURE */
 # ifdef SALINITY
             dKs_bl=vonKar*ustarb
-            Ks_bl=dKs_bl*(zbl-z_w(i,j,0))
+            Ks_bl=dKs_bl*(zbl+h(i,j))
 # endif /* SALINITY */
           else
             Kv_bl=cff_up*Kv(i,j,k)+cff_dn*Kv(i,j,k-1)

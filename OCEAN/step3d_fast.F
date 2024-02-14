@@ -1459,7 +1459,7 @@ C$OMP END MASTER
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
               !cff1=MAX(z_r(i,j,1)-z_w(i,j,0),Zob(i,j)+1.e-4)
-              cff1=z_r(i,j,1)-z_w(i,j,0)
+              cff1=z_r(i,j,1)+h(i,j)
               cff=vonKar/LOG(cff1/Zob(i,j))
               work(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
             enddo
@@ -3121,7 +3121,7 @@ C$OMP END MASTER
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
           rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq(i,j,knew))
-     &                            / (z_w(i,j,N)-z_w(i,j,0))
+     &                            / (z_w(i,j,N)+h(i,j))
         enddo
       enddo
 !
@@ -4048,7 +4048,7 @@ C$OMP END MASTER
      &               +DV_avg2(i,j+1)-DV_avg2(i,j)
      &               )*pm(i,j)*pn(i,j)
      &               *dt)
-     &               /(z_w(i,j,N)-z_w(i,j,0))
+     &               /(z_w(i,j,N)+h(i,j))
      &               *(z_w(i,j,k)-z_w(i,j,k-1))
 #  ifdef MASKING
      &               *rmask(i,j)

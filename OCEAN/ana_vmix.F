@@ -54,7 +54,7 @@
           do i=Istr,Iend
             Akv(i,j,k)=0.001+0.0095*(
      &                      exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
-     &                     +exp(cff*(z_w(i,j,0)-z_w(i,j,k)))
+     &                     +exp(cff*(-h(i,j)-z_w(i,j,k)))
      &                                                     )
 #  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)

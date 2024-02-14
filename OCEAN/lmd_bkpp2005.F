@@ -161,7 +161,7 @@
 !
         do k=1,N-1,+1
           do i=I_EXT_RANGE
-            zscale=z_r(i,j,k)-z_w(i,j,0)
+            zscale=z_r(i,j,k)+h(i,j)
             Kern=zscale/(zscale+Zob(i,j))
 
             Cr(i,k)=Cr(i,k-1) + Kern*(
@@ -192,14 +192,14 @@
 !-----------------------------------------------------------------
 !
         do i=I_EXT_RANGE
-          my_hbbl(i,j)=z_w(i,j,N)-z_w(i,j,0)
+          my_hbbl(i,j)=z_w(i,j,N)+h(i,j)
           if (my_kbbl(i).lt.N) then
             k=my_kbbl(i)
             if (k.eq.1) then
-              my_hbbl(i,j)=z_r(i,j,1)-z_w(i,j,0)
+              my_hbbl(i,j)=z_r(i,j,1)+h(i,j)
             else
               my_hbbl(i,j)=( z_r(i,j,k)*Cr(i,k-1)-z_r(i,j,k-1)*Cr(i,k)
-     &                            )/(Cr(i,k-1)-Cr(i,k)) -z_w(i,j,0)
+     &                            )/(Cr(i,k-1)-Cr(i,k)) +h(i,j)
             endif
           endif
         enddo     !--> discard kbl
@@ -222,7 +222,7 @@
 
       do j=Jstr,Jend
         do i=Istr,Iend
-          hbbl(i,j)=min(my_hbbl(i,j),z_w(i,j,N)-z_w(i,j,0))
+          hbbl(i,j)=min(my_hbbl(i,j),z_w(i,j,N)+h(i,j))
 # ifdef MASKING
      &                                          *rmask(i,j)
 # endif
@@ -230,7 +230,7 @@
         enddo
         do k=N-1,1,-1     ! find new boundary layer index "kbbl".
           do i=Istr,Iend
-            if (z_r(i,j,k)-z_w(i,j,0).gt.hbbl(i,j)) kbbl(i,j)=k
+            if (z_r(i,j,k)+h(i,j).gt.hbbl(i,j)) kbbl(i,j)=k
           enddo
         enddo
 !
@@ -242,7 +242,7 @@
 # ifdef OLD_BKPP
         do i=Istr,Iend
           k=kbbl(i,j)
-          z_bl=z_w(i,j,0)+hbbl(i,j)
+          z_bl=-h(i,j)+hbbl(i,j)
           if (z_bl.lt.z_w(i,j,k-1)) k=k-1
           cff=1./(z_w(i,j,k)-z_w(i,j,k-1))
           cff_up=cff*(z_bl -z_w(i,j,k-1))
@@ -275,7 +275,7 @@
           do k=1,N-1
             if (k.lt.kbbl(i,j)) then
 # ifdef OLD_BKPP
-              sigma=min((z_w(i,j,k)-z_w(i,j,0))/(hbbl(i,j)+eps),1.)
+              sigma=min((z_w(i,j,k)+h(i,j))/(hbbl(i,j)+eps),1.)
               a1=sigma-2.
               a2=3.-2.*sigma
               a3=sigma-1.
@@ -289,7 +289,7 @@
      &                            a1+a2*Gs1(i)+a3*dGs1dS(i) )))
 #  endif
 # else
-              sigma=(z_w(i,j,k)-z_w(i,j,0))/(hbbl(i,j)+eps)
+              sigma=(z_w(i,j,k)+h(i,j))/(hbbl(i,j)+eps)
               if (sigma.lt.1.) then
                 cff=sigma*(1.-sigma)**2
               else

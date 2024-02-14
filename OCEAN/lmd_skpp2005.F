@@ -331,7 +331,7 @@
      &                              -z_w(i,j,k)*Cr(i,k-1)
      &                              )/(Cr(i,k)-Cr(i,k-1))
           else
-            my_hbl(i,j)=z_w(i,j,N)-z_w(i,j,0)
+            my_hbl(i,j)=z_w(i,j,N)+h(i,j)
           endif
         enddo
 !======================================================================
@@ -361,7 +361,7 @@
         enddo
         do k=N-1,1,-1       ! find new boundary layer index "kbl".
           do i=istr,iend
-            my_hbl(i,j)=min(my_hbl(i,j),z_w(i,j,N)-z_w(i,j,0))
+            my_hbl(i,j)=min(my_hbl(i,j),z_w(i,j,N)+h(i,j))
 #ifdef MASKING
      &                                             *rmask(i,j)
 #endif
@@ -405,12 +405,12 @@
      &                       (0.5*(bvstr(i,j)+bvstr(i,j+1)))**2))
 
             dAv_bl=vonKar*ustarb
-            Av_bl=dAv_bl*(z_bl-z_w(i,j,0))
+            Av_bl=dAv_bl*(z_bl+h(i,j))
             dAt_bl=vonKar*ustarb
-            At_bl=dAt_bl*(z_bl-z_w(i,j,0))
+            At_bl=dAt_bl*(z_bl+h(i,j))
 #ifdef SALINITY
             dAs_bl=vonKar*ustarb
-            As_bl=dAs_bl*(z_bl-z_w(i,j,0))
+            As_bl=dAs_bl*(z_bl+h(i,j))
 #endif /* SALINITY */
           else
             Av_bl=cff_up*Kv(i,j,k)+cff_dn*Kv(i,j,k-1)

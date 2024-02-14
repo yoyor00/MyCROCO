@@ -88,6 +88,10 @@
 # ifdef MRL_WCI
       real vstu,dudx,dvdx,ustv,dude,dvde
 # endif
+# ifdef PERMEABILITY
+# include "penalization.h"
+       integer :: nind
+# endif
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -1257,8 +1261,13 @@
 #  ifdef UV_VADV_SPLINES
         do k=1,N
           do i=IstrU,Iend
+#   if defined POROSITY
+            DC(i,k)=0.5625*(Hzf(i  ,j,k)+Hzf(i-1,j,k))
+     &             -0.0625*(Hzf(i+1,j,k)+Hzf(i-2,j,k))
+#   else
             DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
      &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+#   endif
           enddo
         enddo
         do i=IstrU,Iend     ! Construct parabolic splines: here
@@ -1476,8 +1485,13 @@
 #  ifdef UV_VADV_SPLINES
           do k=1,N
             do i=Istr,Iend
+#   if defined POROSITY
+              DC(i,k)=0.5625*(Hzf(i  ,j,k)+Hzf(i,j-1,k))
+     &               -0.0625*(Hzf(i,j+1,k)+Hzf(i,j-2,k))
+#   else
               DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
      &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
+#   endif
             enddo
           enddo
           do i=Istr,Iend    ! Construct parabolic splines: here
@@ -1767,6 +1781,15 @@
 !
 !======================================================================
 !
+# if defined PERMEABILITY
+        if (nnew == 3) then
+          do k=1,N
+            do i=IstrU,Iend
+              ru(i,j,k)=ru(i,j,k)*(1.-pena_u(i,j,k))
+            enddo
+          enddo
+        endif
+# endif
         do i=IstrU,Iend
 # ifdef STRESS_AT_RHO_POINTS
           u_str = 0.5*( sustr(i,j)+sustr(i-1,j) )
@@ -1778,7 +1801,11 @@
 #  ifdef BSTRESS_FAST
      &        + u_str*om_u(i,j)*on_u(i,j)
 #  else
+#   if defined PERMEABILITY
+     &        + u_str*om_u(i,j)*on_u(i,j)
+#   else
      &        +(u_str-bustr(i,j))*om_u(i,j)*on_u(i,j)
+#   endif
 #  endif
 # endif
 # if defined MRL_WCI && defined WAVE_SFC_BREAK
@@ -1791,6 +1818,15 @@
           enddo
         enddo
         if (j.ge.JstrV) then
+# if defined PERMEABILITY
+          if (nnew == 3) then
+            do k=1,N
+              do i=Istr,Iend
+                rv(i,j,k)=rv(i,j,k)*(1.-pena_v(i,j,k))
+              enddo
+            enddo
+          endif
+# endif
           do i=Istr,Iend
 # ifdef STRESS_AT_RHO_POINTS
             v_str = 0.5*( svstr(i,j)+svstr(i,j-1) )
@@ -1802,7 +1838,11 @@
 #  ifdef BSTRESS_FAST
      &       + v_str*om_v(i,j)*on_v(i,j)
 #  else
+#   if defined PERMEABILITY
+     &       + v_str*om_v(i,j)*on_v(i,j)
+#   else
      &       +(v_str-bvstr(i,j))*om_v(i,j)*on_v(i,j)
+#   endif
 #  endif
 # endif
 # if defined MRL_WCI && defined WAVE_SFC_BREAK

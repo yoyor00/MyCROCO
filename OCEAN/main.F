@@ -453,6 +453,12 @@ CR      write(*,*)  ' -5' MYID0
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
+#  ifdef POROSITY
+        call set_depth_porosity (tile)
+#  endif
+#  ifdef PERMEABILITY
+        call set_depth_permeability (tile)
+#  endif
       enddo
 CR      write(*,*)  ' -5' MYID
 #endif

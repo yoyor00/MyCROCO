@@ -152,7 +152,7 @@
 !
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
-          my_hbbl(i,j)=z_r(i,j,N)-z_w(i,j,0)
+          my_hbbl(i,j)=z_r(i,j,N)+h(i,j)
           my_kbbl(i,j)=N
           Rib(i,j,ku)=0.
         enddo
@@ -201,7 +201,7 @@
             if (my_kbbl(i,j).eq.N .and. Rib(i,j,ka).gt.Ric) then
               zbl=z_r(i,j,k)-(z_r(i,j,k)-z_r(i,j,k-1))*
      &           (Ric-Rib(i,j,ka))/(Rib(i,j,ku)-Rib(i,j,ka))
-              my_hbbl(i,j)=zbl-z_w(i,j,0)
+              my_hbbl(i,j)=zbl+h(i,j)
               my_kbbl(i,j)=k
             endif
           enddo
@@ -232,7 +232,7 @@
 # undef J_EXT_RANGE
       do j=Jstr,Jend
         do i=Istr,Iend
-          hbbl(i,j)=min(my_hbbl(i,j),z_w(i,j,N)-z_w(i,j,0))
+          hbbl(i,j)=min(my_hbbl(i,j),z_w(i,j,N)+h(i,j))
 # ifdef MASKING
      &                                          *rmask(i,j)
 # endif
@@ -246,7 +246,7 @@
       do k=N,1,-1
         do j=Jstr,Jend
           do i=Istr,Iend
-            if (z_r(i,j,k)-z_w(i,j,0).gt.hbbl(i,j)) then
+            if (z_r(i,j,k)+h(i,j).gt.hbbl(i,j)) then
               kbbl(i,j)=k
             endif
           enddo
@@ -261,7 +261,7 @@
 !
       do j=Jstr,Jend
         do i=Istr,Iend
-          zbl=z_w(i,j,0)+hbbl(i,j)
+          zbl=-h(i,j)+hbbl(i,j)
           k=kbbl(i,j)
           if (zbl.lt.z_w(i,j,k-1)) k=k-1
           cff=1./(z_w(i,j,k)-z_w(i,j,k-1))
@@ -301,7 +301,7 @@
 !
 !  Set polynomial coefficients for shape function.
 !
-              sig=min((z_w(i,j,k)-z_w(i,j,0))/(hbbl(i,j)+eps),1.)
+              sig=min((z_w(i,j,k)+h(i,j))/(hbbl(i,j)+eps),1.)
 # ifdef MASKING
               sig=sig*rmask(i,j)
 # endif

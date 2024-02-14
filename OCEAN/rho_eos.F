@@ -526,7 +526,7 @@
         enddo
         cff1=1./rho0
         do i=IstrR,IendR
-          cff=1./(z_w(i,j,N)-z_w(i,j,0))
+          cff=1./(z_w(i,j,N)+h(i,j))
           rhoA(i,j)=cff*cff1*rhoA(i,j)
           rhoS(i,j)=2.*cff*cff*cff1*rhoS(i,j)
         enddo

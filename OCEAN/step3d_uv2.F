@@ -102,6 +102,14 @@
 # ifdef TS_MIX_ISO
       real dRx,dRe, cfilt
 # endif
+#ifdef PERMEABILITY
+# include "penalization.h"
+       real :: cff2, cff3,cff7
+       real FT(PRIVATE_2D_SCRATCH_ARRAY,3)
+       real FT_cor(PRIVATE_2D_SCRATCH_ARRAY,N)
+       real FT_V(PRIVATE_2D_SCRATCH_ARRAY,3)
+       real FT_cor_V(PRIVATE_2D_SCRATCH_ARRAY,N)
+#endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -117,6 +125,71 @@
        cfilt=csmooth            ! coefficient
       endif
 # endif
+# ifdef PERMEABILITY
+#  ifdef NS_PERIODIC
+#   define JU_RANGE Jstr,Jend
+#   define JV_RANGE Jstr,Jend
+#  else
+#   define JU_RANGE JstrR,JendR
+#   define JV_RANGE Jstr,JendR
+#  endif
+#  ifdef EW_PERIODIC
+#   define IU_RANGE Istr,Iend
+#   define IV_RANGE Istr,Iend
+#  else
+#   define IU_RANGE Istr,IendR
+#   define IV_RANGE IstrR,IendR
+#  endif
+      FT=0.
+      do j=JU_RANGE 
+        do k=1,N
+          do i=IU_RANGE
+            FT(i,j,1)=FT(i,j,1)+0.5*(Hz(i-1,j,k)+Hz(i,j,k))
+            FT(i,j,2) = FT(i,j,2) + 0.5*(Hz(i-1,j,k)+Hz(i,j,k))*
+     &                              (1.-pena_u(i,j,k))
+            FT(i,j,3) = FT(i,j,3) + (0.5*(Hz(i-1,j,k)+Hz(i,j,k))*
+     &                              (1.-pena_u(i,j,k)))**2
+          enddo
+        enddo
+      enddo
+      do j=JU_RANGE 
+        do k=1,N
+          do i=IU_RANGE
+            FT_cor(i,j,k)=(1.+0.5*(Hz(i-1,j,k)+Hz(i,j,k))*
+     &                                (1.-pena_u(i,j,k))*
+     &                    (FT(i,j,1)-FT(i,j,2))/FT(i,j,3))
+     &                                *(1.-pena_u(i,j,k))
+          enddo
+        enddo
+      enddo
+      FT_V=0.
+      do j=JU_RANGE 
+        if (j.ge.Jstr) then
+          do k=1,N
+            do i=IV_RANGE
+              FT_V(i,j,1)=FT_V(i,j,1)+0.5*(Hz(i,j-1,k)+Hz(i,j,k))
+              FT_V(i,j,2) = FT_V(i,j,2) + 0.5*(Hz(i,j-1,k)+Hz(i,j,k))*
+     &                                             (1.-pena_v(i,j,k))
+              FT_V(i,j,3) = FT_V(i,j,3) + (0.5*(Hz(i,j-1,k)+Hz(i,j,k))*
+     &                                          (1.-pena_v(i,j,k)))**2
+            enddo
+          enddo
+        endif
+      enddo
+      do j=JU_RANGE 
+        if (j.ge.Jstr) then
+          do k=1,N
+            do i=IV_RANGE
+              FT_cor_V(i,j,k)=(1.+0.5*(Hz(i,j-1,k)+Hz(i,j,k))*
+     &                                    (1.-pena_v(i,j,k))*
+     &                 (FT_V(i,j,1)-FT_V(i,j,2))/FT_V(i,j,3))*
+     &                                     (1.-pena_v(i,j,k))
+            enddo
+          enddo
+        endif
+      enddo
+# endif
+
 !
 !--------------------------------------------------------------------
 ! Time step momentum equation in the XI-direction.
@@ -257,7 +330,9 @@
 #  endif
           DC(i,N)=DC(i,N)+dt*u_str
 #  ifndef BSTRESS_FAST
+#   ifndef PERMEABILITY
           DC(i,1)=DC(i,1)-dt*bustr(i,j)
+#   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
@@ -318,6 +393,21 @@
           enddo
         enddo      !--> discard FC,BC; keep DC,CF(:,0)
 
+# if defined PERMEABILITY
+        do i=IstrU,Iend
+          DC(i,N)=DC(i,N)*(1.-pena_u(i,j,N))
+          CF(i,0)=0.5*(Hz(i,j,N)+Hz(i-1,j,N))
+          DC(i,0)=CF(i,0)*DC(i,N)
+        enddo
+        do k=N-1,1,-1
+          do i=IstrU,Iend
+            DC(i,k)=DC(i,k)*(1.-pena_u(i,j,k))
+            cff=0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+            CF(i,0)=CF(i,0)+cff
+            DC(i,0)=DC(i,0)+cff*DC(i,k)
+          enddo
+        enddo
+# endif
         do i=IstrU,Iend
           DC(i,0)=(DC(i,0)*on_u(i,j)-DU_avg1(i,j,nnew))
      &                             /(CF(i,0)*on_u(i,j))
@@ -329,7 +419,11 @@
 !###########################
         do k=1,N
           do i=IstrU,Iend
+# ifdef PERMEABILITY
+            u(i,j,k,nnew)=(DC(i,k)-FT_cor(i,j,k)*DC(i,0)) SWITCH umask(i,j)
+# else
             u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
+# endif
           enddo
         enddo        !--> discard DC,CF(:,0)
 !###########################
@@ -567,7 +661,9 @@
 #  endif
             DC(i,N)=DC(i,N)+dt*v_str
 #  ifndef BSTRESS_FAST
+#   ifndef PERMEABILITY
             DC(i,1)=DC(i,1)-dt*bvstr(i,j)
+#   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
@@ -633,6 +729,22 @@
             enddo
           enddo      !--> discard FC,BC; keep DC,CF(:,0)
 
+#if defined PERMEABILITY
+          do i=Istr,Iend
+            DC(i,N)=DC(i,N)*(1.-pena_v(i,j,N))
+            CF(i,0)=0.5*(Hz(i,j,N)+Hz(i,j-1,N))
+            DC(i,0)=CF(i,0)*DC(i,N)           
+          enddo
+          do k=N-1,1,-1
+            do i=Istr,Iend
+              DC(i,k)=DC(i,k)*(1.-pena_v(i,j,k))
+              cff=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+              CF(i,0)=CF(i,0)+cff
+              DC(i,0)=DC(i,0)+cff*DC(i,k)
+            enddo          
+          enddo
+#endif
+
           do i=Istr,Iend
             DC(i,0)=(DC(i,0)*om_v(i,j)-DV_avg1(i,j,nnew))
      &                               /(CF(i,0)*om_v(i,j))
@@ -643,7 +755,11 @@
 !###########################
           do k=1,N
             do i=Istr,Iend
+# if defined PERMEABILITY
+              v(i,j,k,nnew)=(DC(i,k)-FT_cor_V(i,j,k)*DC(i,0)) SWITCH vmask(i,j)
+# else
               v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
+# endif
           enddo
         enddo        !--> discard DC,CF(:,0)
 !###########################
@@ -970,7 +1086,11 @@
         enddo
         do k=N,1,-1
           do i=IU_RANGE
+# if defined PERMEABILITY
+            u(i,j,k,nnew)=(u(i,j,k,nnew)-FT_cor(i,j,k)*CF(i,0)) 
+# else
             u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
+# endif
 # ifdef MASKING
      &                                *umask(i,j)
 #  ifdef MRL_WCI
@@ -1013,7 +1133,11 @@
         enddo
         do k=1,N,+1
           do i=IU_RANGE
+# if defined PERMEABILITY
+            Huon(i,j,k)=FC(i,k)-FT_cor(i,j,k)*DC(i,k)*FC(i,0)
+# else
             Huon(i,j,k)=FC(i,k)-DC(i,k)*FC(i,0)
+# endif
           enddo
         enddo
 !
@@ -1115,7 +1239,11 @@
           enddo
           do k=N,1,-1
             do i=IV_RANGE
+# ifdef PERMEABILITY
+              v(i,j,k,nnew)=(v(i,j,k,nnew)-FT_cor_V(i,j,k)*CF(i,0)) 
+# else
               v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0))
+# endif
 # ifdef MASKING
      &                                  *vmask(i,j)
 #  ifdef MRL_WCI
@@ -1157,7 +1285,11 @@
           enddo
           do k=1,N,+1
             do i=IV_RANGE
+# ifdef PERMEABILITY
+              Hvom(i,j,k)=FC(i,k)-FT_cor_V(i,j,k)*DC(i,k)*FC(i,0)
+# else
               Hvom(i,j,k)=FC(i,k)-DC(i,k)*FC(i,0)
+# endif
             enddo
           enddo
 !

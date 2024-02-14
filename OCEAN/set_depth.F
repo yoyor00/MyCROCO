@@ -101,6 +101,7 @@ C$    integer omp_get_thread_num
 #  endif
             Zt_avg1(i,j)=zeta(i,j,knew)  ! knew=1 unless modified
                                          ! in ana_initial (JET)
+            hgrid(i,j)=h(i,j)  ! save in grid bathy for penalization
 # endif /* SOLVE3D */
           enddo
         enddo
@@ -117,6 +118,7 @@ C$    integer omp_get_thread_num
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hgrid)
 #  ifdef WET_DRY
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, wetdry)
@@ -149,7 +151,7 @@ C$    integer omp_get_thread_num
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent
         do i=I_RANGE            !!!          with omega.F
-          z_w(i,j,0)=-h(i,j)
+          z_w(i,j,0)=-hgrid(i,j)
         enddo
 
         do k=1,N,+1
@@ -174,16 +176,16 @@ C$    integer omp_get_thread_num
             zetatmp=zetatmp*rmask(i,j)
 #  endif
 #  ifdef NEW_S_COORD
-            htmp=abs(h(i,j))
+            htmp=abs(hgrid(i,j))
 #  else
-            htmp=h(i,j)
+            htmp=hgrid(i,j)
 #  endif
             z_w0=cff_w+cff1_w*htmp
             z_r0=cff_r+cff1_r*htmp
 #  ifdef NEW_S_COORD
-            z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
+            z_w(i,j,k)=z_w0*hgrid(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_w0*hinv(i,j))
-            z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+zetatmp
+            z_r(i,j,k)=z_r0*hgrid(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_r0*hinv(i,j))
 #  else
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
@@ -248,7 +250,7 @@ C$    integer omp_get_thread_num
 #  ifdef MORPHODYN
 !======================================================================
 !
-!                    subroutine set_depth_movbat
+!                    subroutine set_depth_morphodyn
 !
 !======================================================================
 !
@@ -373,6 +375,505 @@ C$    integer omp_get_thread_num
       return
       end
 #  endif /* MORPHODYN */
+
+#  ifdef POROSITY
+!======================================================================
+!
+!                    subroutine set_depth_porosity
+!
+!======================================================================
+!
+      subroutine set_depth_porosity (tile)
+      implicit none
+#   include "param.h"
+      integer tile, trd
+C$    integer omp_get_thread_num
+#   include "compute_tile_bounds.h"
+      call set_depth_porosity_tile (Istr,Iend,Jstr,Jend)
+      return
+      end
+
+      subroutine set_depth_porosity_tile (Istr,Iend,Jstr,Jend)
+!
+!----------------------------------------------------------------------
+! Create S-coordinate system: based on model topography h(i,j),
+! fast-time-averaged free-surface field and vertical coordinate
+! transformation metrics compute evolving depths of of the three-
+! dimensional model grid (z_r,z_w) and vertical heights of model
+! grid boxes.
+!----------------------------------------------------------------------
+!
+      implicit none
+      integer Istr,Iend,Jstr,Jend, i,j,k
+      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+#  include "param.h"
+#  include "grid.h"
+#  ifdef AGRIF
+#   include "zoom.h"
+#  endif
+#  include "ocean2d.h"
+#  include "ocean3d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "penalization.h"
+      real,parameter :: smooth_crit = 2.77259
+      real :: z_decal
+      real,parameter :: dzpena_min=0.25
+      real :: pena_ref
+      real z_u,z_bot,z_top,z_v,z_h,z_right,z_r1
+      real :: s1
+      real z_lastindex(GLOBAL_2D_ARRAY)
+      real, parameter :: alpha_poro = 0.02
+      real FZ3(0:N)
+      real mindz(N_poro_discrete)
+      integer :: k2
+      real cff4,cff5,cff6,cff7,cff8
+      integer :: i1,j1,k1
+      real eps
+      parameter (eps=1.e-14)
+!
+#  include "compute_auxiliary_bounds.h"
+!
+#  ifdef EW_PERIODIC
+#   define I_RANGE Istr,Iend
+#  else
+#   define I_RANGE IstrR,IendR
+#  endif
+#  ifdef NS_PERIODIC
+#   define J_RANGE Jstr,Jend
+#  else
+#   define J_RANGE JstrR,JendR
+#  endif
+!
+!----------------------------------------------------------------------
+!  Compute new Hz accounting for porosity
+!----------------------------------------------------------------------
+!
+!  First compute time-independent structure function poro_discrete
+!
+      if (iic.eq.0) then
+        call set_depth_poro_init_tile (Istr,Iend,Jstr,Jend)
+      endif
+!
+!  Save full Hz
+!
+      do j=J_RANGE
+        do i=I_RANGE
+          do k=1,N,+1
+            Hzf(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
+          enddo
+        enddo
+      enddo
+!
+!  Compute time-dependent function pororatio and new Hz
+!
+      do j=J_RANGE 
+        do i=I_RANGE
+          FZ3(0)=0.
+          do k=1,N
+            if (z_w(i,j,k)<0.)  then
+              k2=int(N_poro_discrete*(1.+z_w(i,j,k)/hgrid(i,j)))
+              FZ3(k)=z_int_poro(i,j,k2)
+     &               +(z_w(i,j,k)-z_poro_discrete(i,j,k2))
+     &                             *poro_discrete(i,j,k2+1)
+            else
+              FZ3(k)=z_int_poro(i,j,N_poro_discrete)+z_w(i,j,k)
+            endif
+          enddo
+          do k=1,N
+            Hz(i,j,k)=FZ3(k)-FZ3(k-1)
+            pororatio(i,j,k)=Hz(i,j,k)/(z_w(i,j,k)-z_w(i,j,k-1))
+          enddo
+        enddo
+      enddo
+!
+!  Compute index arrays of penalization region
+!
+      do j=J_RANGE
+        do i=I_RANGE
+          last_index(i,j) = 0
+          last_index_w(i,j)=0
+        enddo
+      enddo
+      do j=J_RANGE 
+        do i=I_RANGE
+          do k=N,1,-1
+            if (z_r(i,j,k)>=-h_pena_target(i,j)) then
+              last_index(i,j) = k
+            else
+              exit
+            endif
+          enddo
+          last_index(i,j) = last_index(i,j) - 1
+        enddo
+      enddo
+      do j=J_RANGE 
+        do i=I_RANGE
+          do k=N,1,-1
+            if (z_w(i,j,k)>=-h_pena_target(i,j)) then
+              last_index_w(i,j) = k
+            else
+              exit
+            endif
+          enddo
+        enddo
+      enddo
+
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hzf(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        pororatio(START_2D_ARRAY,1))
+      z_lastindex = last_index
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, z_lastindex)
+      last_index = nint(z_lastindex)
+      z_lastindex = last_index_w
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, z_lastindex)
+      last_index_w = nint(z_lastindex)
+#  endif
+
+#  undef I_RANGE
+#  undef J_RANGE
+
+      return
+      end
+!======================================================================
+!
+!                    subroutine set_depth_poro_init
+!
+!======================================================================
+!
+      subroutine set_depth_poro_init (tile)
+      implicit none
+#   include "param.h"
+      integer tile, trd
+C$    integer omp_get_thread_num
+#   include "compute_tile_bounds.h"
+      call set_depth_poro_init_tile (Istr,Iend,Jstr,Jend)
+      return
+      end
+
+      subroutine set_depth_poro_init_tile (Istr,Iend,Jstr,Jend)
+!
+!----------------------------------------------------------------------
+! Create S-coordinate system: based on model topography h(i,j),
+! fast-time-averaged free-surface field and vertical coordinate
+! transformation metrics compute evolving depths of of the three-
+! dimensional model grid (z_r,z_w) and vertical heights of model
+! grid boxes.
+!----------------------------------------------------------------------
+!
+      implicit none
+      integer Istr,Iend,Jstr,Jend, i,j,k
+      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+#  include "param.h"
+#  include "grid.h"
+#  ifdef AGRIF
+#   include "zoom.h"
+#  endif
+#  include "ocean2d.h"
+#  include "ocean3d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "penalization.h"
+      real,parameter :: smooth_crit = 2.77259
+      real :: z_decal
+      real,parameter :: dzpena_min=0.25
+      real :: pena_ref
+      real z_u,z_bot,z_top,z_v,z_h,z_right,z_r1
+      real :: s1
+      real z_lastindex(GLOBAL_2D_ARRAY)
+      real, parameter :: alpha_poro = 0.02
+      real z_w_tmp(GLOBAL_2D_ARRAY,0:N)
+      real FZ3(0:N)
+      real mindz(N_poro_discrete)
+      integer :: k2
+      real cff4,cff5,cff6,cff7,cff8
+      integer :: i1,j1,k1
+      real eps
+      parameter (eps=1.e-14)
+!
+#  include "compute_auxiliary_bounds.h"
+!
+#  ifdef EW_PERIODIC
+#   define I_RANGE Istr,Iend
+#  else
+#   define I_RANGE IstrR,IendR
+#  endif
+#  ifdef NS_PERIODIC
+#   define J_RANGE Jstr,Jend
+#  else
+#   define J_RANGE JstrR,JendR
+#  endif
+!
+!----------------------------------------------------------------------
+!  Initialization of free surface zeta arrays and wet/dry mask
+!
+!  During initialization and/or restart: copy initial free surface 
+!  field into array for holding fast-time averaged free surface.
+!----------------------------------------------------------------------
+!
+      z_decal = 2.19722/smooth_crit
+!
+! COMPUTE VERTICAL GRID WITH ZETA = 0 to get H_PORO
+!
+      do j=J_RANGE
+        do i=I_RANGE
+          z_w_tmp(i,j,0)=-hgrid(i,j)
+          h(i,j)=0.
+        enddo
+
+        do k=1,N,+1
+#  ifdef NEW_S_COORD
+          cff_w =hc*sc_w(k)
+          cff1_w=Cs_w(k)
+#  else
+          cff_w =hc*(sc_w(k)-Cs_w(k))
+          cff1_w=Cs_w(k)
+#  endif
+          do i=I_RANGE
+            zetatmp=0.
+#  if defined MASKING && !defined WET_DRY
+            zetatmp=zetatmp*rmask(i,j)
+#  endif
+            z_w0=cff_w+cff1_w*hgrid(i,j)        
+#  ifdef NEW_S_COORD
+            z_w_tmp(i,j,k)=z_w0*hgrid(i,j)*hinv(i,j)+zetatmp
+     &                                     *(1.+z_w0*hinv(i,j))
+#  else
+            z_w_tmp(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
+#  endif
+          enddo
+        enddo
+      enddo
+
+      do j=J_RANGE
+        do i=I_RANGE
+          z_poro_discrete(i,j,0) = -hgrid(i,j)
+          z_poro_discrete(i,j,N_poro_discrete) = 0.
+          do k=1,N_poro_discrete-1
+            z_poro_discrete(i,j,k)=-hgrid(i,j) + k * hgrid(i,j)/N_poro_discrete
+          enddo
+          mindz(:) = huge(1.)
+          do k=1,N_poro_discrete
+            do k2=1,N
+              if ((z_w_tmp(i,j,k2  ) >= z_poro_discrete(i,j,k-1)).AND.
+     &            (z_w_tmp(i,j,k2-1) <= z_poro_discrete(i,j,k))) then
+                mindz(k)=min(mindz(k),z_w_tmp(i,j,k2)-z_w_tmp(i,j,k2-1))
+              endif
+            enddo
+          enddo
+          do k=1,N_poro_discrete
+            z_u = 0.5*(z_poro_discrete(i,j,k-1)+z_poro_discrete(i,j,k))
+            z_right=(-h_pena_target(i,j)-z_u)/mindz(k)
+            z_h=-hgrid(i,j)
+            poro_discrete(i,j,k)=1.-0.5*(1.+tanh(smooth_crit*0.5*
+     &                                        (z_right-z_decal)))
+            poro_discrete(i,j,k)=max(poro_discrete(i,j,k),alpha_poro)
+            poro_discrete(i,j,k)=max(poro_discrete(i,j,k),
+     &                                     dzpena_min/(0.9*mindz(k)))
+            poro_discrete(i,j,k)=min(poro_discrete(i,j,k),1.)
+            if (abs(z_h+h_pena_target(i,j))<=0.1) then
+              poro_discrete(i,j,k)=1.
+            endif
+          enddo
+
+          poro_discrete(i,j,N_poro_discrete) = 1.
+
+          z_int_poro(i,j,0) = 0.
+          do k=1,N_poro_discrete
+            z_int_poro(i,j,k)=z_int_poro(i,j,k-1)+
+     &              (z_poro_discrete(i,j,k)-z_poro_discrete(i,j,k-1))*
+     &                                            poro_discrete(i,j,k)
+          enddo 
+
+          FZ3(0)=0.         
+          do k=1,N
+            if (z_w_tmp(i,j,k)<0.)  then
+              k2=int(N_poro_discrete*(1.+z_w_tmp(i,j,k)/hgrid(i,j)))
+              FZ3(k)=z_int_poro(i,j,k2)+
+     &                 (z_w_tmp(i,j,k)-z_poro_discrete(i,j,k2))
+     &                                  *poro_discrete(i,j,k2+1)
+            else
+              FZ3(k)=z_int_poro(i,j,N_poro_discrete)+z_w_tmp(i,j,k)
+            endif
+          enddo  
+          do k=1,N
+            Hz(i,j,k)=FZ3(k)-FZ3(k-1)
+            h(i,j)=h(i,j)+Hz(i,j,k)
+          enddo      
+
+        enddo ! END i   
+      enddo ! END j
+
+      
+
+
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend, Hz(START_2D_ARRAY,1))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
+#  endif 
+
+      return
+      end
+#  endif /* POROSITY */
+
+#  ifdef PERMEABILITY
+!======================================================================
+!
+!                    subroutine set_depth_permeability
+!
+!======================================================================
+!
+      subroutine set_depth_permeability (tile)
+      implicit none
+#   include "param.h"
+      integer tile, trd
+C$    integer omp_get_thread_num
+#   include "compute_tile_bounds.h"
+      call set_depth_permeability_tile (Istr,Iend,Jstr,Jend)
+      return
+      end
+
+      subroutine set_depth_permeability_tile (Istr,Iend,Jstr,Jend)
+!
+!----------------------------------------------------------------------
+! Create S-coordinate system: based on model topography h(i,j),
+! fast-time-averaged free-surface field and vertical coordinate
+! transformation metrics compute evolving depths of of the three-
+! dimensional model grid (z_r,z_w) and vertical heights of model
+! grid boxes.
+!----------------------------------------------------------------------
+!
+      implicit none
+      integer Istr,Iend,Jstr,Jend, i,j,k
+      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+#  include "param.h"
+#  include "grid.h"
+#  ifdef AGRIF
+#   include "zoom.h"
+#  endif
+#  include "ocean2d.h"
+#  include "ocean3d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "penalization.h"
+      real,parameter :: smooth_crit = 2.77259
+      real :: z_decal
+      real,parameter :: dzpena_min=0.25
+      real :: pena_ref
+      real z_u,z_bot,z_top,z_v,z_h,z_right,z_r1
+      real :: s1
+      real cff4,cff5,cff6,cff7,cff8
+      integer :: i1,j1,k1
+      real eps
+      parameter (eps=1.e-14)
+!
+#  include "compute_auxiliary_bounds.h"
+!
+#  ifdef EW_PERIODIC
+#   define I_RANGE Istr,Iend
+#  else
+#   define I_RANGE IstrR,IendR
+#  endif
+#  ifdef NS_PERIODIC
+#   define J_RANGE Jstr,Jend
+#  else
+#   define J_RANGE JstrR,JendR
+#  endif
+!
+!----------------------------------------------------------------------
+!  Initialization of free surface zeta arrays and wet/dry mask
+!
+!  During initialization and/or restart: copy initial free surface 
+!  field into array for holding fast-time averaged free surface.
+!----------------------------------------------------------------------
+!
+
+      z_decal = 2.19722/smooth_crit
+      epsilon_pena=dt/2.
+
+      do k=N,1,-1
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            pena_r(i,j,k)=0.
+          enddo
+        enddo
+      enddo
+
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          z_u=-h_pena_target(i,j)
+          z_h=-hgrid(i,j)
+          if (abs(z_h-z_u)<=-0.1) then
+            pena_r(i,j,:)=0.
+          else
+            cff5=-HUGE(1.)
+            do k=N,1,-1 ! compute velocity above floor
+              cff7=(z_r(i,j,k)-z_u)/Zob(i,j)
+              if (cff7>=1.) then
+                cff4=0.5*(v(i  ,j,k,nrhs)+v(i  ,j+1,k,nrhs))
+                cff6=0.5*(u(i  ,j,k,nrhs)+u(i+1,j ,k,nrhs))
+                cff5=SQRT(cff6*cff6+cff4*cff4)
+                k1 = k  ! Vertical index of last level
+                cff4=min(Cdb_max,max((vonKar/LOG(cff7))**2,Cdb_min))
+                pena_ref=dt*cff4*cff5/(0.5*(Hz(i-1,j,k)+Hz(i,j,k)))
+                pena_ref=max(min(pena_ref,1.-1.D-4),1.D-4)
+                z_bot=z_w(i,j,k-1)
+                z_top=z_w(i,j,k)
+                z_r1=(z_u-(z_r(i,j,k)))/(z_top-z_bot)
+              else 
+                exit
+              endif
+            enddo
+            s1=2.*atanh(1.-2.*pena_ref)/(z_decal-z_r1)
+            do k=N,1,-1
+              z_bot=z_w(i,j,k-1)
+              z_top=z_w(i,j,k)
+              z_right=(z_u-(z_r(i,j,k)))/(z_top-z_bot)
+              if (z_right<1.0001*z_r1) then
+                pena_r(i,j,k)=0.
+              else
+                pena_r(i,j,k)=pena_ref+(1.-pena_ref)*
+     &                       (tanh(smooth_crit*0.5*(z_right-z_r1)))
+              endif
+            enddo
+          endif
+        enddo
+      enddo
+       
+      do k=1,N
+        do j=JstrR,JendR
+          do i=Istr,Iend+1
+            pena_u(i,j,k)=max(pena_r(i-1,j,k),pena_r(i,j,k))
+          enddo
+        enddo
+      enddo
+      do k=1,N
+        do j=Jstr,Jend+1
+          do i=IstrR,IendR
+            pena_v(i,j,k)=max(pena_r(i,j-1,k),pena_r(i,j,k))
+          enddo
+        enddo
+      enddo
+
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        pena_r(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        pena_u(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        pena_v(START_2D_ARRAY,1))
+#  endif
+
+#  undef I_RANGE
+#  undef J_RANGE
+
+      return
+      end
+#  endif /* PERMEABILITY */
 !
 !======================================================================
 !

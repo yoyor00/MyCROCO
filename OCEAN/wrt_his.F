@@ -1242,9 +1242,9 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
                   do k=1,N
                     if ( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) .gt. 0.) then
                       workr(i,j,k)=t(i,j,1,nstp,itrc)*
-     &                             (z_w(i,j,1)-z_w(i,j,0))*
+     &                             (z_w(i,j,1)+h(i,j))*
      &                           ( (z_w(i,j,N)-z_r(i,j,k))
-     &                            /(z_r(i,j,k)-z_w(i,j,0))
+     &                            /(z_r(i,j,k)+h(i,j))
      &                           )**rouse2D(itrc-itsubs1-nv_grav+1,i,j)
                       workr(i,j,k)=workr(i,j,k)/
      &                             sum_tmp(itrc-itsubs1-nv_grav+1,i,j)

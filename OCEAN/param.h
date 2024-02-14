@@ -301,6 +301,15 @@
       real D_wavedry
       parameter (D_wavedry=1.0)
 # endif
+#endif    
+!
+!----------------------------------------------------------------------
+! Number of porosity layers (penalization method)
+!----------------------------------------------------------------------
+!
+#ifdef POROSITY
+      integer N_poro_discrete
+      parameter(N_poro_discrete=100*N)
 #endif
 !
 !----------------------------------------------------------------------

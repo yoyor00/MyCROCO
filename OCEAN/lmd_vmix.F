@@ -479,10 +479,10 @@ C$OMP BARRIER
         do j=Jstr,Jend
           do i=Istr,Iend
              hekman=lmd_cekman*ustar(i,j)/max(abs(f(i,j)),eps)
-             hekman=min(hekman,z_w(i,j,N)-z_w(i,j,0))
+             hekman=min(hekman,z_w(i,j,N)+h(i,j))
              Kvbotek=min(Kvbotmax,max(0.,vonKar*ustar(i,j)*
-     &                                (z_w(i,j,k)-z_w(i,j,0))*4.*
-     &             (hekman+z_w(i,j,0)-z_w(i,j,k))/(hekman*hekman) ))
+     &                                (z_w(i,j,k)+h(i,j))*4.*
+     &             (hekman-h(i,j)-z_w(i,j,k))/(hekman*hekman) ))
              Kv(i,j,k)=Kv(i,j,k)+Kvbotek
 #  ifdef TEMPERATURE
              Kt(i,j,k)=Kt(i,j,k)+Kvbotek
@@ -580,7 +580,7 @@ C$OMP BARRIER
 # if defined WET_DRY && defined LMD_VMIX_SWASH
             Kv_swash=Kv0_swash
      &               *.5*(1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*
-     &                                  (z_w(i,j,N)-z_w(i,j,0))))
+     &                                  (z_w(i,j,N)+h(i,j))))
             Kv(i,j,k)=Kv(i,j,k) + Kv_swash
 !# ifdef TEMPERATURE
 !            Kt(i,j,k)=Kt(i,j,k) + 0.1*Kv_swash

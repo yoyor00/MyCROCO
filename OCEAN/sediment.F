@@ -1069,9 +1069,9 @@ C$OMP BARRIER
 ! Total thickness available.
 !
 #  ifdef WET_DRY
-            Dstp=MAX(z_w(i,j,N)-z_w(i,j,0)-1.5*Dcrit(i,j),0.)
+            Dstp=MAX(z_w(i,j,N)+h(i,j)-1.5*Dcrit(i,j),0.)
 #  else
-            Dstp=MAX(z_w(i,j,N)-z_w(i,j,0)-0.01,0.)  !!!
+            Dstp=MAX(z_w(i,j,N)+h(i,j)-0.01,0.)  !!!
 #  endif
 !
 ! Thickness change that wants to occur.
@@ -1142,7 +1142,7 @@ C$OMP BARRIER
 #  endif
 
 #  ifdef BEDLOAD_SHALLOW_LIMIT
-            cff=cff/max(1.,(0.5/(z_w(i,j,N)-z_w(i,j,0)
+            cff=cff/max(1.,(0.5/(z_w(i,j,N)+h(i,j,0)
 #   ifdef WET_DRY
      &                           -Dcrit(i,j)+eps
 #   endif
@@ -5225,7 +5225,7 @@ C$OMP BARRIER
 #    else
                 ustr2 =sqrt((bustr(i,j)**2.0+bvstr(i,j)**2.0 ))
                 diss = MAX((ustr2**(1.5))/(vonKar*
-     &                       (z_r(i,j,1)-z_w(i,j,0))),diss)
+     &                       (z_r(i,j,1)+h(i,j))),diss)
 #    endif
               endif
 #   endif

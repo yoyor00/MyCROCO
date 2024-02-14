@@ -494,7 +494,7 @@
       if (maxval(Zob).ne.0.) then
         do j=JstrV-1,Jend     !! for currents
           do i=IstrU-1,Iend
-            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob(i,j))
+            cff=vonKar/LOG((z_r(i,j,1)+h(i,j))/Zob(i,j))
             CDRAG(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
           enddo
         enddo
@@ -584,7 +584,7 @@
 #   else
             znots=Ssize(i,j)/12.
 #   endif
-            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/znots)
+            cff=vonKar/LOG((z_r(i,j,1)+h(i,j))/znots)
             cff=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
             Ucur=0.5*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs))
             Vcur=0.5*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs))

@@ -57,10 +57,16 @@ C$    integer omp_get_thread_num
 # include "param.h"
 # include "grid.h"
 # include "scalars.h"
+# ifdef POROSITY
+#  include "penalization.h"
+# endif 
 !
       real Length_XI, Length_ETA, depth, f0, beta,
      &     cff, y, x0, y0, dx, dy, NSUB
 !
+# ifdef BASIN
+      real cff2
+#endif
 # ifdef DUNE
 #  ifdef DUNE3D
       real Rij,cffi,cffj,cff1
@@ -515,6 +521,20 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
+#  if defined POROSITY || defines PERMEABILITY
+          cff=320000.-160000.*(sin(pi*(yr(i,j)+500000.0)/Length_ETA))**24
+          cff2=320000.-160000.*(sin(pi*(yr(i,j)-500000.0)/Length_ETA))**24
+          h_pena_target(i,j)=200.+0.0625*(depth-200.)*
+     &      (1.+tanh((xr(i,j)-cff)/300000.))*
+     &      (1.+tanh((yr(i,j)-200000)/300000.))*
+     &      (1.+tanh((Length_ETA-yr(i,j)-200000)/300000.))*
+     &      (1.+tanh((Length_XI-xr(i,j)-cff)/300000.))
+          h(i,j)=1000.+0.0625*(depth-1000.)*
+     &      (1.+tanh((xr(i,j)-cff)/300000.))*
+     &      (1.+tanh((yr(i,j)-200000)/300000.))*
+     &      (1.+tanh((Length_ETA-yr(i,j)-200000)/300000.))*
+     &      (1.+tanh((Length_XI-xr(i,j)-cff2)/300000.))
+#  endif
         enddo
       enddo
 

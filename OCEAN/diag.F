@@ -170,7 +170,7 @@
      &                               v(i,j  ,k,nstp)*v(i,j  ,k,nstp)+
      &                               v(i,j+1,k,nstp)*v(i,j+1,k,nstp))
              pe2d(i,j)=pe2d(i,j)+cff*HZR(i,j,k)*rho(i,j,k)
-     &                                       *(z_r(i,j,k)-z_w(i,j,0))
+     &                                       *(z_r(i,j,k)+h(i,j))
             enddo
           enddo
 #else
@@ -204,7 +204,7 @@
           do i=Istr,Iend
             cff=1./(pm(i,j)*pn(i,j))
 #ifdef SOLVE3D
-            pe2d(i,Jend+1)=pe2d(i,Jend+1)+cff*(z_w(i,j,N)-z_w(i,j,0))
+            pe2d(i,Jend+1)=pe2d(i,Jend+1)+cff*(z_w(i,j,N)+h(i,j))
 #else
             pe2d(i,Jend+1)=pe2d(i,Jend+1)+cff*(zeta(i,j,krhs)+h(i,j))
 #endif

@@ -907,6 +907,12 @@ C$OMP BARRIER
 # elif !defined NBQ
       do tile=my_first,my_last
         call set_depth (tile)
+#  ifdef POROSITY
+        call set_depth_porosity (tile)
+#  endif
+#  ifdef PERMEABILITY
+        call set_depth_permeability (tile)
+#  endif
       enddo
 # endif
 C$OMP BARRIER

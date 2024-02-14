@@ -182,7 +182,7 @@
       DO j=JstrV-1,Jend+1
         DO i=IstrU-1,Iend+1
 # ifdef SOLVE3D
-          Zr(i,j)=max(z_r(i,j,1)-z_w(i,j,0),Zob(i,j)+1.E-4)
+          Zr(i,j)=max(z_r(i,j,1)+h(i,j),Zob(i,j)+1.E-4)
 #  if defined M3FAST && defined BSTRESS_FAST
           Ur(i,j)=2.*qdmu_nbq(i,j,1)/(Hz(i,j,1)+Hz(i-1,j,1))
           Vr(i,j)=2.*qdmv_nbq(i,j,1)/(Hz(i,j,1)+Hz(i,j-1,1))
