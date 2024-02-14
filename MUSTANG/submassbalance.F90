@@ -1,13 +1,9 @@
 #include "cppdefs.h"
-#ifdef MUSTANG
-#include "coupler_define_MUSTANG.h"
-#endif
 
 module submassbalance
 
 #if defined SUBSTANCE
 #if defined SUBSTANCE_SUBMASSBALANCE
-
     USE module_substance
     USE comsubstance
 #ifdef MUSTANG
@@ -107,19 +103,19 @@ subroutine submassbalance_readdomain()
     character(len = 1), dimension(:), allocatable :: rose
 
     ! Executable part
-    MPI_master_only  write(iscreenlog, *) ' '
-    MPI_master_only  write(iscreenlog, *) ' '
-    MPI_master_only  write(iscreenlog, *) '**************************************************'
-    MPI_master_only  write(iscreenlog, *) '*************** submassbalance *******************'
-    MPI_master_only  write(iscreenlog, *) '**************************************************'
-    MPI_master_only  write(iscreenlog, *) ' '
-    MPI_master_only  write(iscreenlog, *) 'file defining budget zones and borders for estimate fluxes :'
-    MPI_master_only  write(iscreenlog, *) trim(submassbalance_input_file)
+    MPI_master_only  write(stdout, *) ' '
+    MPI_master_only  write(stdout, *) ' '
+    MPI_master_only  write(stdout, *) '**************************************************'
+    MPI_master_only  write(stdout, *) '*************** submassbalance *******************'
+    MPI_master_only  write(stdout, *) '**************************************************'
+    MPI_master_only  write(stdout, *) ' '
+    MPI_master_only  write(stdout, *) 'file defining budget zones and borders for estimate fluxes :'
+    MPI_master_only  write(stdout, *) trim(submassbalance_input_file)
 
     if (trim(submassbalance_input_file) == "" .or. trim(submassbalance_input_file) == "all_domain") then
         ifile = 0  ! file "submassbalance_input_file" is not read
-        MPI_master_only  write(iscreenlog, *) 'only one budget zone is taking into account (all the domain)'
-        MPI_master_only  write(iscreenlog, *) 'and any fluxes threw open borders '
+        MPI_master_only  write(stdout, *) 'only one budget zone is taking into account (all the domain)'
+        MPI_master_only  write(stdout, *) 'and any fluxes threw open borders '
         submassbalance_nb_close=1
         submassbalance_nb_open=0
     else    
@@ -151,21 +147,21 @@ subroutine submassbalance_readdomain()
             enddo
             read(49,*)
             else
-            MPI_master_only  write(ierrorlog, *) 'ERROR : the total number of border for the '
-            MPI_master_only  write(ierrorlog, *) 'estimation of fluxes and budgets is = ',submassbalance_nb_border
-            MPI_master_only  write(ierrorlog, *) '(read in parasubstance file)'
-            MPI_master_only  write(ierrorlog, *) 'It is not the good number in the data file = ',trim(submassbalance_input_file)
+            MPI_master_only  write(stdout, *) 'ERROR : the total number of border for the '
+            MPI_master_only  write(stdout, *) 'estimation of fluxes and budgets is = ',submassbalance_nb_border
+            MPI_master_only  write(stdout, *) '(read in parasubstance file)'
+            MPI_master_only  write(stdout, *) 'It is not the good number in the data file = ',trim(submassbalance_input_file)
             stop
             endif
         enddo
         close(49)
         else
-            MPI_master_only write(ierrorlog, *) 'ERROR : the data file for budget does not exist'
-            MPI_master_only write(ierrorlog, *) 'you have given submassbalance_l=.true. in parasubs.txt'
-            MPI_master_only write(ierrorlog, *) 'and the name for the data file =',trim(submassbalance_input_file)
-            MPI_master_only write(ierrorlog, *) 'build or rename your data file'
-            MPI_master_only write(ierrorlog, *) 'or set submassbalance_l=.false.' 
-            MPI_master_only write(ierrorlog, *) 'if you don t want the calculation of budget'
+            MPI_master_only write(stdout, *) 'ERROR : the data file for budget does not exist'
+            MPI_master_only write(stdout, *) 'you have given submassbalance_l=.true. in parasubs.txt'
+            MPI_master_only write(stdout, *) 'and the name for the data file =',trim(submassbalance_input_file)
+            MPI_master_only write(stdout, *) 'build or rename your data file'
+            MPI_master_only write(stdout, *) 'or set submassbalance_l=.false.' 
+            MPI_master_only write(stdout, *) 'if you don t want the calculation of budget'
             stop
         endif  ! test on exist file  
     endif   ! test on file or compute on all domain
@@ -270,9 +266,9 @@ subroutine submassbalance_readdomain()
             submassbalance_name(iborder) = trim(ADJUSTL(ADJUSTR(name_read(1:ind_white))))
             read(49,*) l_border_close
             if (l_border_close) then
-MPI_master_only  write(ierrorlog, *) 'ERROR in the data file for budget :',trim(submassbalance_input_file)
-MPI_master_only  write(ierrorlog, *) 'you must give first all the open borders '
-MPI_master_only  write(ierrorlog, *) 'before closed borders '
+MPI_master_only  write(stdout, *) 'ERROR in the data file for budget :',trim(submassbalance_input_file)
+MPI_master_only  write(stdout, *) 'you must give first all the open borders '
+MPI_master_only  write(stdout, *) 'before closed borders '
 stop   
             endif
             read(49,*) nb_seg
@@ -287,10 +283,10 @@ stop
                     ! verification
                     if(is > 1) then
                         if( rose(ism1) /= 'N' .AND. (i1(is) .NE. i1(ism1) .OR. i3(is) .NE. i3(ism1))) then
-    MPI_master_only  write(ierrorlog, *)'Definition of open border number :',iborder,' name ',trim(submassbalance_name(iborder))
-    MPI_master_only  write(ierrorlog, *)'segment NORD number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
-    MPI_master_only  write(ierrorlog, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
-    MPI_master_only  write(ierrorlog, *)'i1 and i3 of segment',is,'must be = to i1 and i3 respectively of previous segment'
+    MPI_master_only  write(stdout, *)'Definition of open border number :',iborder,' name ',trim(submassbalance_name(iborder))
+    MPI_master_only  write(stdout, *)'segment NORD number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
+    MPI_master_only  write(stdout, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
+    MPI_master_only  write(stdout, *)'i1 and i3 of segment',is,'must be = to i1 and i3 respectively of previous segment'
     stop
                         endif
                     endif
@@ -305,10 +301,10 @@ stop
                     ! verification
                     if(is > 1) then
                         if(rose(ism1) /= 'S' .AND. (i1(is) .NE. i1(ism1) .OR. i3(is) .NE. i3(ism1))) then
-    MPI_master_only write(ierrorlog, *)'Definition of open border number :',iborder,' name ',trim(submassbalance_name(iborder))
-    MPI_master_only write(ierrorlog, *)'segment SOUTH number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
-    MPI_master_only write(ierrorlog, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
-    MPI_master_only write(ierrorlog, *)'i1 and i3 of segment',is,'must be = to i1 and i3 respectively of previous segment'
+    MPI_master_only write(stdout, *)'Definition of open border number :',iborder,' name ',trim(submassbalance_name(iborder))
+    MPI_master_only write(stdout, *)'segment SOUTH number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
+    MPI_master_only write(stdout, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
+    MPI_master_only write(stdout, *)'i1 and i3 of segment',is,'must be = to i1 and i3 respectively of previous segment'
     stop
                         endif
                     endif
@@ -323,10 +319,10 @@ stop
                     ! verification
                     if(is > 1) then
                         if(rose(ism1) /= 'E' .AND. (i1(is) .NE. i2(ism1) .OR. i2(is) .NE. i3(ism1))) then
-    MPI_master_only write(ierrorlog, *)'Definition of open border number :',iborder,' name ',trim(submassbalance_name(iborder))
-    MPI_master_only write(ierrorlog, *)'segment East number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
-    MPI_master_only write(ierrorlog, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
-    MPI_master_only write(ierrorlog, *)'i1 and i2 of segment',is,'must be = to i2 and i3 respectively of previous segment'
+    MPI_master_only write(stdout, *)'Definition of open border number :',iborder,' name ',trim(submassbalance_name(iborder))
+    MPI_master_only write(stdout, *)'segment East number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
+    MPI_master_only write(stdout, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
+    MPI_master_only write(stdout, *)'i1 and i2 of segment',is,'must be = to i2 and i3 respectively of previous segment'
     stop
                         endif
                     endif
@@ -341,10 +337,10 @@ stop
                     ! verification
                     if(is > 1) then
                         if(rose(ism1) /= 'W' .AND. (i1(is) .NE. i2(ism1) .OR. i2(is) .NE. i3(ism1))) then
-    MPI_master_only write(ierrorlog, *)'Definition of open border number :',iborder,' name ',trim(submassbalance_name(iborder))
-    MPI_master_only write(ierrorlog, *)'segment West number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
-    MPI_master_only write(ierrorlog, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
-    MPI_master_only write(ierrorlog, *)'i1 and i2 of segment',is,'must be = to i2 and i3 respectively of previous segment'
+    MPI_master_only write(stdout, *)'Definition of open border number :',iborder,' name ',trim(submassbalance_name(iborder))
+    MPI_master_only write(stdout, *)'segment West number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
+    MPI_master_only write(stdout, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
+    MPI_master_only write(stdout, *)'i1 and i2 of segment',is,'must be = to i2 and i3 respectively of previous segment'
     stop
                         endif
                     endif
@@ -386,10 +382,10 @@ stop
                 if (rose(is) == 'S') then
                 ! verification
                 if(rose(ism1) /= 'S' .AND. (i1(is) .NE. i1(ism1) .OR. i3(is) .NE. i3(ism1))) then
-    MPI_master_only write(ierrorlog, *)'Definition of closed border number :',iborder,' name ',trim(submassbalance_name(iborder))
-    MPI_master_only write(ierrorlog, *)'segment SOUTH number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
-    MPI_master_only write(ierrorlog, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
-    MPI_master_only write(ierrorlog, *)'i1 and i3 of segment',is,'must be = to i1 and i3 respectively of previous segment'
+    MPI_master_only write(stdout, *)'Definition of closed border number :',iborder,' name ',trim(submassbalance_name(iborder))
+    MPI_master_only write(stdout, *)'segment SOUTH number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
+    MPI_master_only write(stdout, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
+    MPI_master_only write(stdout, *)'i1 and i3 of segment',is,'must be = to i1 and i3 respectively of previous segment'
     stop
                 endif
                 if (i3(is) >= 1 .and.i3(is) <= MMm) then
@@ -408,10 +404,10 @@ stop
                 else if (rose(is) == 'N') then
                 ! verification
                 if(rose(ism1) /= 'N' .AND. (i1(is) .NE. i1(ism1) .OR. i3(is) .NE. i3(ism1))) then
-    MPI_master_only write(ierrorlog, *)'Definition of closed border number :',iborder,' name ',trim(submassbalance_name(iborder))
-    MPI_master_only write(ierrorlog, *)'segment NORD number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
-    MPI_master_only write(ierrorlog, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
-    MPI_master_only write(ierrorlog, *)'i1 and i3 of segment',is,'must be = to i1 and i3 respectively of previous segment'
+    MPI_master_only write(stdout, *)'Definition of closed border number :',iborder,' name ',trim(submassbalance_name(iborder))
+    MPI_master_only write(stdout, *)'segment NORD number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
+    MPI_master_only write(stdout, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
+    MPI_master_only write(stdout, *)'i1 and i3 of segment',is,'must be = to i1 and i3 respectively of previous segment'
     stop
                 endif
                 if (i3(is) >= 1 .and.i3(is) <= MMm) then
@@ -430,10 +426,10 @@ stop
                 else if (rose(is) == 'E') then
                 ! verification
                 if(rose(ism1) /= 'E' .AND. (i1(is) .NE. i2(ism1) .OR. i2(is) .NE. i3(ism1))) then
-    MPI_master_only write(ierrorlog, *)'Definition of closed border number :',iborder,' name ',trim(submassbalance_name(iborder))
-    MPI_master_only write(ierrorlog, *)'segment East number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
-    MPI_master_only write(ierrorlog, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
-    MPI_master_only write(ierrorlog, *)'i1 and i2 of segment',is,'must be = to i2 and i3 respectively of previous segment'
+    MPI_master_only write(stdout, *)'Definition of closed border number :',iborder,' name ',trim(submassbalance_name(iborder))
+    MPI_master_only write(stdout, *)'segment East number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
+    MPI_master_only write(stdout, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
+    MPI_master_only write(stdout, *)'i1 and i2 of segment',is,'must be = to i2 and i3 respectively of previous segment'
     stop
                 endif
                 if (i1(is) >= 1 .and.i1(is) <= LLm) then
@@ -452,10 +448,10 @@ stop
                 else if (rose(is) == 'W') then
                 ! verification
                 if(rose(ism1) /= 'W' .AND. (i1(is) .NE. i2(ism1) .OR. i2(is) .NE. i3(ism1))) then
-    MPI_master_only write(ierrorlog, *)'Definition of closed border number :',iborder,' name ',trim(submassbalance_name(iborder))
-    MPI_master_only write(ierrorlog, *)'segment West number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
-    MPI_master_only write(ierrorlog, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
-    MPI_master_only write(ierrorlog, *)'i1 and i2 of segment',is,'must be = to i2 and i3 respectively of previous segment'
+    MPI_master_only write(stdout, *)'Definition of closed border number :',iborder,' name ',trim(submassbalance_name(iborder))
+    MPI_master_only write(stdout, *)'segment West number :',is,'i1,i2,i3 ',i1(is),i2(is),i3(is)
+    MPI_master_only write(stdout, *)'is not contiguous to the previous one whom i1,i2,i3 are :', i1(ism1),i2(ism1),i3(ism1)
+    MPI_master_only write(stdout, *)'i1 and i2 of segment',is,'must be = to i2 and i3 respectively of previous segment'
     stop
                 endif
                 if (i1(is) >= 1 .and.i1(is) <= LLm) then
@@ -1025,7 +1021,7 @@ subroutine submassbalance_def_outnc()
             call submassbalance_check( nf90_def_var(submassbalance_ncid, 'budget_flux_ws', NF90_DOUBLE, &
                 dimids3_budget_t, submassbalance_budget_flux_ws_varid))
             call submassbalance_check( nf90_put_att(submassbalance_ncid, submassbalance_budget_flux_ws_varid, &
-                "description", "FLux at interface water-sediment") )
+                "description", "FLux at interface water-sediment (>0 if from sed to wat)") )
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
             call submassbalance_check( nf90_def_var(submassbalance_ncid, 'budget_flux_bedload', NF90_DOUBLE, &
                 dimids3_budget_t, submassbalance_budget_flux_bdl_varid))
@@ -1036,7 +1032,7 @@ subroutine submassbalance_def_outnc()
             call submassbalance_check( nf90_def_var(submassbalance_ncid, 'budget_flux_obc', NF90_DOUBLE, &
                 dimids3_budget_t, submassbalance_budget_flux_obc_varid))
             call submassbalance_check( nf90_put_att(submassbalance_ncid, submassbalance_budget_flux_obc_varid, &
-                "description", "FLux from zone boundaries (>if in)") )
+                "description", "FLux from zone boundaries (>0 if in)") )
             call submassbalance_check( nf90_def_var(submassbalance_ncid, 'budget_flux_source', NF90_DOUBLE, &
                 dimids3_budget_t, submassbalance_budget_flux_in_varid))
             call submassbalance_check( nf90_put_att(submassbalance_ncid, submassbalance_budget_flux_in_varid, &
