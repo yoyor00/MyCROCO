@@ -22,6 +22,9 @@
 # include "ncscrum.h"
 # include "grid.h"
 # include "netcdf.inc"
+# ifdef PENALIZATION
+#  include "penalization.h"
+# endif
 # ifdef MPI
       include 'mpif.h'
 #  define LOCALLM Lmmpi
@@ -114,8 +117,22 @@
         write(stdout,1) 'h', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
-! REMOVE WET DRY
-!     h(:,:)=max(h(:,:),10.0)
+# ifdef PENALIZATION
+!
+! Raw Bathymetry
+!
+      ierr=nf_inq_varid (ncid, 'hraw', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread(h_pena_target(START_2D_ARRAY), ncid, varid, 0, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'hraw', grdname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        write(stdout,1) 'hraw', grdname(1:lstr)
+        goto 99                                           !--> ERROR
+      endif
+# endif
 !
 ! Coriolis parameter.
 !

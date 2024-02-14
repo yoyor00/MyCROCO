@@ -122,6 +122,16 @@
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
 #endif
+/*
+======================================================================
+   Set PENALIZATION options:
+   Activate POROSITY & PERMEABILITY
+======================================================================
+*/
+#ifdef PENALIZATION
+# define POROSITY
+# define PERMEABILITY
+#endif
 
 /*
 ======================================================================
