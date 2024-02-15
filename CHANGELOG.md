@@ -24,6 +24,19 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- Correction of the vertical transformation function (in the NEW_S_COORD case) 
+  to better handle negative values of h when using wet/dry. 
+  The correction guarantees monotonicity of vertical coordinates 
+  for all stretching parameters.
+
+- DIAGNOSTICS_VRT : misspelling in key name
+
+- Avoid unnecessary compiling of partit.F when PARALLEL_FILES is not defined 
+  [#125](https://gitlab.inria.fr/croco-ocean/croco/-/issues/125)
+
+- Fix river in run_croco_inter.bash
+  [#145](https://gitlab.inria.fr/croco-ocean/croco/-/issues/145)
+
 - TKE : Changing the coefficient 'invG' used in the tridiagonal solving of 
   the tke and gls variables in gls_mixing.F. Using the Patankar trick in the 
   tridiagonal solving consists of moving the Bprod term from the forcing 
@@ -49,6 +62,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Changed
 
 - CI runs through docker container from croco-ocean/croco_docker project
+  
+- Use of separate vname(s) vector to avoid risk of overlapping 
+  [#133](https://gitlab.inria.fr/croco-ocean/croco/-/issues/133)
 
 ### Deprecated
 
