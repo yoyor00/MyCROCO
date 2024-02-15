@@ -174,7 +174,7 @@
      &                      )     nrecrst=nrecrst+1
         if (mod(ilc-1,nwrt).eq.0) nrechis=nrechis+1
 #ifdef AVERAGES
-        if (mod(ilc-1,navg).eq.0) nrecavg=nrecavg+1
+        if (mod(ilc-ntsavg,navg).eq.0) nrecavg=nrecavg+1
 #endif
 #ifndef XIOS
 # ifdef ABL1D
