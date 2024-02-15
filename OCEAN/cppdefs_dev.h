@@ -1026,6 +1026,9 @@
 # error "AGRIF + XIOS + OASIS coupling is not yet implemented"
 #endif
 
+#if defined AGRIF && defined USE_CALENDAR
+#error "AGRIF + USE_CALENDAR is not yet implemented"
+#endif
 /*
 ======================================================================
                             Standard I/O
