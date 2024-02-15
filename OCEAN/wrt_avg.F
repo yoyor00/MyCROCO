@@ -63,7 +63,7 @@
 !                                            !!! WARNING: Here it is
 ! Set record within the file.                !!! assumed that global
 !                                            !!! restart record index
-      nrecavg=max(nrecavg,1)                 !!! nrecrst is already
+      nrecavg=max(nrecavg,1)                 !!! nrecavg is already
       if (nrpfavg.eq.0) then                 !!! advanced by main.
         record=nrecavg
       else

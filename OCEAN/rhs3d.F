@@ -1081,7 +1081,7 @@
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
                              || defined DIAGNOSTICS_EK \
                              || defined DIAGNOSTICS_PV \
-                             || defined DIAGNOSTICS_VORT
+                             || defined DIAGNOSTICS_VRT
         if (nnew.ne.3) then
           do j=Jstr,Jend
             do i=IstrU,Iend
@@ -1249,7 +1249,7 @@
      &                         SWITCH vmask(i,j)
 #    endif
               endif
-#   endif  /* DIAGNOSTICS_VORT */
+#   endif  /* DIAGNOSTICS_VRT */
             enddo
           enddo
         endif !<-- nnew.ne.3
