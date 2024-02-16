@@ -486,6 +486,17 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+
+      if (iic.eq.0) then
+        do k=1,N,+1
+          do j=J_RANGE
+            do i=I_RANGE
+              Hz_bak(i,j,k)=Hz(i,j,k)
+            enddo
+          enddo
+        enddo
+      endif
+
 !
 !  Compute index arrays of penalization region
 !
@@ -526,6 +537,10 @@ C$    integer omp_get_thread_num
      &                        Hz(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        pororatio(START_2D_ARRAY,1))
+      if (iic.eq.0) then
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz_bak(START_2D_ARRAY,1))
+      endif
       z_lastindex = last_index
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, z_lastindex)
       last_index = nint(z_lastindex)
