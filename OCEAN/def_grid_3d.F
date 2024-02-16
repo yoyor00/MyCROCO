@@ -149,9 +149,11 @@
 #  if defined NEW_S_COORD
       ierr=nf_put_att_text (ncid, varid, 'standard_name',21,
      &     'ocean_s_coordinate_g2')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
 #  else
       ierr=nf_put_att_text (ncid, varid, 'standard_name',21,
      &     'ocean_s_coordinate_g1')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
 #  endif
       ierr=nf_put_att_text (ncid, varid, 'formula_terms',49,
      &     's: s_rho C: Cs_rho eta: zeta depth: h depth_c: hc')
@@ -166,12 +168,15 @@
 #  if defined NEW_S_COORD
       ierr=nf_put_att_text (ncid, varid, 'standard_name',35,
      &     'ocean_s_coordinate_g2_at_w_location')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
 #  else
       ierr=nf_put_att_text (ncid, varid, 'standard_name',35,
      &     'ocean_s_coordinate_g1_at_w_location')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
 #  endif
       ierr=nf_put_att_text (ncid, varid, 'formula_terms',46,
      &     's: s_w C: Cs_w eta: zeta depth: h depth_c: hc')
+
 
 !----
 ! Streching curves Cs_r, Cs_w

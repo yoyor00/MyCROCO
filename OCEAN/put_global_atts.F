@@ -307,6 +307,9 @@
 !
 # ifdef  NEW_S_COORD
       ierr=nf_put_att_text (ncid, nf_global, 'VertCoordType',3,'NEW')
+      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '2')
+# else
+      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '1')
 # endif
 # ifdef  LMD_SKPP2005
       ierr=nf_put_att_text (ncid, nf_global, 'skpp',4,'2005')
