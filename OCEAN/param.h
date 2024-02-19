@@ -22,11 +22,11 @@ Remark: we can solve the inclusion issue in a cleaner we by renaming
         But I was not sure yet if people where happy of the rename in the sources.
 Note: I don't like this way of making the trick (the one currently implemented).
 */
-#if defined(HAVE_CMAKE_CONFIG) && !defined(CMAKE_PARAM_OVERRIDE_NOT_RECURSE)
+#if defined(HAVE_CMAKE_CONFIG_OVERRIDE) && !defined(CMAKE_PARAM_OVERRIDE_NOT_RECURSE)
 #define CMAKE_PARAM_OVERRIDE_NOT_RECURSE
 #include "param_override.h"
 #undef CMAKE_PARAM_OVERRIDE_NOT_RECURSE
-#else /* HAVE_CMAKE_CONFIG */
+#else /* HAVE_CMAKE_CONFIG_OVERRIDE */
 !----------------------------------------------------------------------
 ! Dimensions of Physical Grid and array dimensions
 !----------------------------------------------------------------------
@@ -1041,4 +1041,4 @@ Note: I don't like this way of making the trick (the one currently implemented).
       parameter(inc_faststep_max = 10)
 #endif
 
-#endif /* HAVE_CMAKE_CONFIG */
+#endif /* HAVE_CMAKE_CONFIG_OVERRIDE */

@@ -32,7 +32,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/croco_compiler_options.cmake)
 
 ###########################################################
 # Handle configuration
-set(WITH_PARALLEL  OFF     CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
+set(WITH_OPTIM     OFF     CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
 set(WITH_SPLITTING "1x4"   CACHE STRING "Define the splitting for parallel=openmp : {NP_X}x{NP_Y}")
 set(WITH_THREADS   4       CACHE STRING "Number of threads to use with parallel=openmp")
 set(WITH_CASE      "BASIN" CACHE STRING "Select the case to run.")
@@ -40,6 +40,7 @@ set(ENABLE_AGRIF   OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
 
 ###########################################################
 # Enable case so it lands in config.h.in
+#add_definitions(-DHAVE_CMAKE_CONFIG_OVERRIDE)
 add_definitions(-DHAVE_CMAKE_CONFIG)
 
 # Trigger the case definition (macro variable having the name of the case)
@@ -47,13 +48,13 @@ set(${WITH_CASE} ON)
 set(AGRIF ${ENABLE_AGRIF})
 
 # Enable some vars for config_post.h.in
-if (WITH_PARALLEL STREQUAL "openmp")
+if (WITH_OPTIM STREQUAL "openmp")
 	set(OPENMP ON)
 endif()
-if (WITH_PARALLEL STREQUAL "openacc-native" OR WITH_PARALLEL STREQUAL "openacc-psyclone")
+if (WITH_OPTIM STREQUAL "openacc-native" OR WITH_OPTIM STREQUAL "openacc-psyclone")
 	set(OPENACC ON)
 endif()
-if (WITH_PARALLEL STREQUAL "mpi")	
+if (WITH_OPTIM STREQUAL "mpi")	
 	set(MPI ON)
 endif ()
 
@@ -70,7 +71,7 @@ find_package(NetCDFF REQUIRED)
 if (MPI)
 	find_package(MPI REQUIRED)
 endif ()
-if (WITH_PARALLEL STREQUAL "openacc-psyclone")
+if (WITH_OPTIM STREQUAL "openacc-psyclone")
 	find_package(PSyClone REQUIRED)
 endif ()
 if (OPENMP)
@@ -100,6 +101,6 @@ add_subdirectory(OCEAN)
 croco_print_status()
 
 ###########################################################
-if (WITH_PARALLEL STREQUAL "openacc-psyclone")
+if (WITH_OPTIM STREQUAL "openacc-psyclone")
 	add_test(NAME psyclone-pytest WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/PSYCLONE COMMAND pytest)
 endif()

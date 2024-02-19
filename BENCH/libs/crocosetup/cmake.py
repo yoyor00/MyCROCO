@@ -37,8 +37,8 @@ class CMakeCrocoSetup(AbstractCrocoSetup):
         in order to keep the whole case definition in bench agnostic to this
         we rename on the fly some files.
         '''
-        if filename == 'param.h':
-            return 'param_override.h'
+        if filename == 'param_override.h':
+            return 'param.h'
         else:
             return filename
 

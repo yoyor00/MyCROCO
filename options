@@ -16,8 +16,8 @@ cfg_set_projet "CROCO"
 
 ###########################################################
 #openacc
-cfg_add_with_option   --name='parallel' \
-                      --var='WITH_PARALLEL' \
+cfg_add_with_option   --name='optim' \
+                      --var='WITH_OPTIM' \
                       --doc='Select the parallelism mode : OFF, openmp, openacc-native, openacc-psyclone'
 
 #openmp
@@ -37,18 +37,18 @@ cfg_add_with_option   --name='netcdf' \
 
 #psyclone venv
 cfg_add_with_option   --name='psyclone' \
-                      --doc='Define venv directory to get access to psyclone & poseidon' \
+                      --doc='Define venv directory to get access to psyclone' \
                       --var='PSYCLONE_PREFIX'\
-                      --on='-DWITH_PARALLEL=openacc-psyclone'
+                      --on='-DWITH_OPTIM=openacc-psyclone'
 
 #set mesh splitting for parallelism in MPI
 cfg_add_with_option   --name='splitting' \
-                      --doc='Define the splitting for parallel=openmp : {NP_X}x{NP_Y}, (default : 1x4)' \
+                      --doc='Define the splitting for optim=openmp : {NP_X}x{NP_Y}, (default : 1x4)' \
                       --var='WITH_SPLITTING'
 
 #set mesh splitting for parallelism in OpenMP
 cfg_add_with_option   --name='threads' \
-                      --doc='Define the number of threads for parallel=openmp (default: 4)' \
+                      --doc='Define the number of threads for optim=openmp (default: 4)' \
                       --var='WITH_THREADS'
 
 #select the case to run

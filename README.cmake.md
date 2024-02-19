@@ -18,7 +18,6 @@ The CROCO **optional** dependecies are :
 
  * NVidia HPC SDK (Tested: 2023 / 23.7 ) : https://developer.nvidia.com/hpc-sdk-downloads
  * PSyClone (Tested : 2.3.1, branch: async-and-merge-master-ok of fork https://github.com/svalat/PSyclone/) : https://psyclone.readthedocs.io/
- * psyclone-poseidon (Tested : master) : https://gitlab.inria.fr/svalat/croco-psyclone
 
 Installing the dependencies
 ---------------------------
@@ -115,7 +114,7 @@ Building the OpenMP version
 Simply play with the `configure` options :
 
 ```sh
-../configure --with-parallel=openmp --with-threads=8
+../configure --with-optim=openmp --with-threads=8
 ```
 
 Building the GPU/OpenACC version
@@ -123,27 +122,27 @@ Building the GPU/OpenACC version
 
 Simply play with the `configure` options by :
 
- * Select the OpenACC mode : `--with-parallel={MODE}` which can be either :
+ * Select the OpenACC mode : `--with-optim={MODE}` which can be either :
     * `openacc-psycone` to use the OpenACC auto-generated version with PSyClone.
     * `openacc-native` to use the hand made version.
  * Change the compiler for the NVHPC one.
 
 ```sh
 # manual version
-../configure --with-parallel=openacc-native FC=nvfortran
+../configure --with-optim=openacc-native FC=nvfortran
 
 # psyclone version
-../configure --with-parallel=openacc-psyclone FC=nvfortran
+../configure --with-optim=openacc-psyclone FC=nvfortran
 ```
 
 Building the MPI version
 ------------------------
 
-Simply play with `--with-parallel` :
+Simply play with `--with-optim` :
 
 ```sh
 # MPI with 8 tasks
-../configure --with-parallel=mpi --with-splitting=2x4 FC=mpifort
+../configure --with-optim=mpi --with-splitting=2x4 FC=mpifort
 ```
 
 Custom compile flags
@@ -220,7 +219,7 @@ Here an example :
 ```sh
 mkdir build
 cd build
-cmake .. -DNETCDF_PREFIX=$HOME/usr-netcdf -DWITH_PARALLEL=openmp -DBUILD_TYPE=Debug
+cmake .. -DNETCDF_PREFIX=$HOME/usr-netcdf -DWITH_OPTIM=openmp -DBUILD_TYPE=Debug
 make
 ```
 

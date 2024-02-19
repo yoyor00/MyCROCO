@@ -40,7 +40,7 @@ Enable AGRIF
 /*
 Configure OpenMP threads allowed
 */
-#cmakedefine NB_THREADS @NB_THREADS@
+#cmakedefine WITH_THREADS @WITH_THREADS@
 
 /*
 Configure MPI splitting

@@ -35,9 +35,8 @@ function(croco_psyclone_pre_filter_acc list_to_update)
 
 	# loop on all files
 	foreach(oldfile IN LISTS ${list_to_update})
-		# build abs path
-		get_filename_component(oldfile_name ${oldfile} NAME)
-		set(oldfile_abs ${CMAKE_CURRENT_BINARY_DIR}/prepared_sources/${oldfile_name})
+		# get target path to build name from
+		croco_calc_prepared_sources_path(${oldfile} oldfile_abs)
 
 		# build new name
 		string(REGEX REPLACE "\\.F" ".no-acc.F" newfile_no_acc ${oldfile_abs})
@@ -89,9 +88,8 @@ function(croco_change_loop_preprocess list_to_update)
 
 	# loop on all files
 	foreach(oldfile IN LISTS ${list_to_update})
-		# build abs path
-		get_filename_component(oldfile_name ${oldfile} NAME)
-		set(oldfile_abs ${CMAKE_CURRENT_BINARY_DIR}/prepared_sources/${oldfile_name})
+		# get target path to build name from
+		croco_calc_prepared_sources_path(${oldfile} oldfile_abs)
 
 		# build new name
 		string(REGEX REPLACE "\\.F" ".loops.F" newfile_loops         ${oldfile_abs})

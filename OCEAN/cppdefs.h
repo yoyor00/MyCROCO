@@ -1954,15 +1954,17 @@ on top of this line.
 */
 #ifdef HAVE_CMAKE_CONFIG
 #include "config_post.h"
+#ifdef HAVE_CMAKE_CONFIG_OVERRIDE
 #include "cppdefs_override.h"
+#endif /*HAVE_CMAKE_CONFIG_OVERRIDE*/
 #endif
 
 /* Note: should come after config_post.h */
-#ifdef HAVE_CMAKE_CONFIG
+#ifdef HAVE_CMAKE_CONFIG_OVERRIDE
 #include "cppdefs_dev_override.h"
-#else /*HAVE_CMAKE_CONFIG*/
+#else /*HAVE_CMAKE_CONFIG_OVERRIDE*/
 #include "cppdefs_dev.h"
-#endif /*HAVE_CMAKE_CONFIG*/
+#endif /*HAVE_CMAKE_CONFIG_OVERRIDE*/
 
 #include "set_global_definitions.h"
 

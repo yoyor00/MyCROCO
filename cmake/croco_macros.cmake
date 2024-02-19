@@ -27,6 +27,28 @@ function(croco_make_absolute_paths list_to_update path)
 endfunction()
 
 ###########################################################
+# Create subdirectories for prepared sources and extract
+# destination basename
+function(croco_calc_prepared_sources_path oldfile newfile_var_name)
+	# create dir not to trash everything in the root dir
+	make_directory(${CMAKE_CURRENT_BINARY_DIR}/prepared_sources)
+
+	# build abs path (extract dirname & fname)
+	get_filename_component(oldfile_fname ${oldfile} NAME)
+	get_filename_component(oldfile_dir ${oldfile} DIRECTORY)
+	get_filename_component(oldfile_dirname ${oldfile_dir} NAME)
+
+	# create dir not to trash everything in the root dir
+	make_directory(${CMAKE_CURRENT_BINARY_DIR}/prepared_sources/${oldfile_dirname})
+
+	# export final path
+	set(newfile_name ${CMAKE_CURRENT_BINARY_DIR}/prepared_sources/${oldfile_dirname}/${oldfile_fname})
+
+	# export
+	set(${newfile_var_name} ${newfile_name} PARENT_SCOPE)
+endfunction()
+
+###########################################################
 # Apply the CPP pre-processor and MPC code reshaper
 # to prepare the sources before build.
 #
@@ -48,9 +70,8 @@ function(croco_cpp_and_mpc_preprocess list_to_update)
 
 	# loop on all files
 	foreach(oldfile IN LISTS ${list_to_update})
-		# build abs path
-		get_filename_component(oldfile_name ${oldfile} NAME)
-		set(oldfile_abs ${CMAKE_CURRENT_BINARY_DIR}/prepared_sources/${oldfile_name})
+		# get target path to build name from
+		croco_calc_prepared_sources_path(${oldfile} oldfile_abs)
 
 		# build new name
 		string(REGEX REPLACE "\\.F" ".cpp.F"   newfile_cpp           ${oldfile_abs})
@@ -92,15 +113,16 @@ function(croco_print_status)
 	message(STATUS "|  Compiler         : ${CMAKE_Fortran_COMPILER}")
 	message(STATUS "--------------------------------------------------------------")
 	message(STATUS "|  NetCDF           : ${NETCDFF_LIBRARY}")
-	message(STATUS "|  Parallelism      : ${WITH_PARALLEL}")
+	message(STATUS "|  Optimization     : ${WITH_OPTIM}")
 	message(STATUS "|  PSyClone         : ${PSYCLONE_COMMAND}")
 	message(STATUS "|  OpenACC          : ${OPENACC}")
 	message(STATUS "|  MPI              : ${MPI_FOUND}")
 	message(STATUS "|  OpenMP           : ${ENABLE_OPENMP}")
 	message(STATUS "|  AGRIF            : ${ENABLE_AGRIF}")
 	message(STATUS "--------------------------------------------------------------")
-	message(STATUS "|  THREADS          : ${NB_THREADS}")
-	message(STATUS "|  MPI SPLITTING    : ${SPLITTING_X}x${SPLITTING_ETA}")
+	message(STATUS "|  Parallelism      : ${PARALLELISM_SUMMARY}")
+	message(STATUS "|  Threads          : ${WITH_THREADS}")
+	message(STATUS "|  MPI splitting    : ${SPLITTING_X}x${SPLITTING_ETA}")
 	message(STATUS "--------------------------------------------------------------")
 	message(STATUS "|  CMake build type : ${CMAKE_BUILD_TYPE}")
 	message(STATUS "|  User fflags      : ${CMAKE_Fortran_FLAGS}")
@@ -114,14 +136,8 @@ endfunction()
 ###########################################################
 # Perform some extra checks on variables to see if everything is correct
 function(croco_last_checkings)
-	# allowed
-	list(APPEND para_allowed OFF openmp openacc-native openacc-psyclone mpi)
-	if (NOT ${WITH_PARALLEL} IN_LIST para_allowed)
-		message(FATAL_ERROR "Select an invalid parallelism mode : -DWITH_PARALLEL=${WITH_PARALLEL}, should be in (${para_allowed})")
-	endif()
-
 	# Require psyclone
-	if (WITH_PARALLEL STREQUAL "openacc-psyclone" AND NOT PSYCLONE_FOUND)
+	if (WITH_OPTIM STREQUAL "openacc-psyclone" AND NOT PSYCLONE_FOUND)
 		message(FATAL_ERROR "Fail to find PSyClone, required if enabling PSyClone OpenACC via -DWITH_PSYCLONE_VENV !")
 	endif ()
 endfunction()
@@ -137,9 +153,13 @@ endfunction()
 # OCEAN source dir (which break jobcomp). Can also patch jobcomp to get both.
 function(croco_trick_create_cpp_def_override)
 	# set file names
-	set(CPPDEF_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_override.h)
-	set(CPPDEF_DEV_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_dev_override.h)
-	set(PARAM_H_OVERRIDE ${CMAKE_BINARY_DIR}/param_override.h)
+	# ideally should be renamed (but break compat with jobcomp if we do that)
+	#  - cppdefs_override.h
+	#  - cppdefs_dev_override.h
+	#  - param_override.h
+	set(CPPDEF_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs.h)
+	set(CPPDEF_DEV_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_dev.h)
+	set(PARAM_H_OVERRIDE ${CMAKE_BINARY_DIR}/param.h)
 
 	# give access to them via -I
 	include_directories(${CMAKE_BINARY_DIR})

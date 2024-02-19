@@ -24,6 +24,9 @@ set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS}
                             -I${CMAKE_CURRENT_SOURCE_DIR}
                             -I${CMAKE_CURRENT_BINARY_DIR}
                             -I${CMAKE_BINARY_DIR}
+                            -I${CMAKE_CURRENT_SOURCE_DIR}/include
+                            -I${CMAKE_CURRENT_SOURCE_DIR}/netcdf
+                            -I${CMAKE_CURRENT_SOURCE_DIR}/config
 )
 if (MPI_FOUND)
 	set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -I${MPI_INCLUDE_DIR})
@@ -69,32 +72,53 @@ file(GLOB CROCO_CPP_H
 #        analysis routines
 #======================================================================
 # 1) Main driving part
-list(APPEND CROCO_SRCS_F77 main.F step.F read_inp.F timers_roms.F init_scalars.F
-                           init_arrays.F set_weights.F set_scoord.F ana_grid.F
-                           setup_grid1.F setup_grid2.F set_nudgcof.F
-                           ana_initial.F analytical.F zonavg.F)
+list(APPEND CROCO_SRCS_F77 main.F step.F read_inp.F timers_roms.F
+                           init_scalars.F
+                           init_arrays.F set_weights.F set_scoord.F
+                           ana_grid.F setup_grid1.F setup_grid2.F
+                           set_nudgcof.F ana_initial.F analytical.F
+                           zonavg.F)
 # 2) 2D time stepping engine
-list(APPEND CROCO_SRCS_F77 step2d.F u2dbc.F v2dbc.F zetabc.F obc_volcons.F)
+list(APPEND CROCO_SRCS_F77 step2d.F u2dbc.F v2dbc.F zetabc.F
+                           obc_volcons.F)
 # 3) 3D time stepping engine
-list(APPEND CROCO_SRCS_F77 pre_step3d.F step3d_t.F step3d_uv1.F step3d_uv2.F
-                           prsgrd.F rhs3d.F set_depth.F omega.F uv3dmix.F
-                           uv3dmix_spg.F t3dmix.F t3dmix_spg.F hmix_coef.F
-                           wetdry.F wavedry.F u3dbc.F v3dbc.F t3dbc.F)
+list(APPEND CROCO_SRCS_F77 pre_step3d.F step3d_t.F step3d_uv1.F
+                           step3d_uv2.F prsgrd.F rhs3d.F
+                           set_depth.F omega.F uv3dmix.F
+                           uv3dmix_spg.F t3dmix.F t3dmix_spg.F
+                           hmix_coef.F wetdry.F wavedry.F
+                           u3dbc.F v3dbc.F t3dbc.F)
 # 4) non-hydrostatic engine
-list(APPEND CROCO_SRCS_F77 step3d_fast.F step3d_w.F rhs3d_w_nh.F initial_nbq.F
-                           grid_nbq.F unbq_bc.F vnbq_bc.F wnbq_bc.F rnbq_bc.F
-                           w3dbc.F nbq_bry_store.F)
+list(APPEND CROCO_SRCS_F77 step3d_fast.F
+                           step3d_w.F
+                           rhs3d_w_nh.F
+                           initial_nbq.F
+                           grid_nbq.F
+                           unbq_bc.F
+                           vnbq_bc.F
+                           wnbq_bc.F
+                           rnbq_bc.F
+                           w3dbc.F
+                           nbq_bry_store.F
+)
 # 5) sea-water EOS
-list(APPEND CROCO_SRCS_F77 rho_eos.F ab_ratio.F alfabeta.F alfabeta_k.F)
+list(APPEND CROCO_SRCS_F77 rho_eos.F
+                           ab_ratio.F
+                           alfabeta.F
+                           alfabeta_k.F)
 # 6) vertical mixing schemes
-list(APPEND CROCO_SRCS_F77 ana_vmix.F bvf_mix.F lmd_vmix.F gls_mixing.F
-                           lmd_skpp.F lmd_bkpp.F lmd_swfrac.F lmd_wscale.F)
+list(APPEND CROCO_SRCS_F77 ana_vmix.F bvf_mix.F
+                           lmd_vmix.F gls_mixing.F
+                           lmd_skpp.F lmd_bkpp.F
+                           lmd_swfrac.F lmd_wscale.F)
 # 7) on-fly model diagnostics
-list(APPEND CROCO_SRCS_F77 diag.F wvlcty.F checkdims.F grid_stiffness.F
+list(APPEND CROCO_SRCS_F77 diag.F wvlcty.F
+                           checkdims.F grid_stiffness.F
                            bio_diag.F check_kwds.F
                            check_switches2.F debug.F)
+list(APPEND CROCO_SRCS_F77 param.F)
 # 8) netCDF I/O routines
-list(APPEND CROCO_SRCS_F77 param.F ncscrum.F scalars.F output.F
+list(APPEND CROCO_SRCS_F77 ncscrum.F scalars.F output.F
                            put_global_atts.F nf_fread.F nf_fread_x.F
                            nf_fread_y.F nf_read_bry.F get_date.F
                            closecdf.F fillvalue.F
@@ -114,73 +138,121 @@ list(APPEND CROCO_SRCS_F77 param.F ncscrum.F scalars.F output.F
                            wrt_diags_eddy_avg.F def_surf.F wrt_surf.F
                            set_surf_avg.F wrt_surf_avg.F)
 # 9) main forcing
-list(APPEND CROCO_SRCS_F77 get_grid.F get_initial.F get_vbc.F get_wwave.F
-                           get_tclima.F get_uclima.F get_ssh.F get_sss.F
-                           get_smflux.F get_stflux.F get_srflux.F get_sst.F
-                           mod_tides_mas.F tidedata.F mas.F get_tides.F
-                           clm_tides.F get_bulk.F bulk_flux.F get_bry.F
-                           get_bry_bio.F sstskin.F get_psource.F
+list(APPEND CROCO_SRCS_F77 get_grid.F get_initial.F
+                           get_vbc.F get_wwave.F
+                           get_tclima.F get_uclima.F
+                           get_ssh.F get_sss.F
+                           get_smflux.F get_stflux.F
+                           get_srflux.F get_sst.F
+                           mod_tides_mas.F tidedata.F mas.F
+                           get_tides.F
+                           clm_tides.F get_bulk.F
+                           bulk_flux.F get_bry.F
+                           get_bry_bio.F sstskin.F
+                           get_psource.F
                            get_psource_ts.F get_btflux.F)
 # 10) Wave forcing routines
 list(APPEND CROCO_SRCS_F77 mrl_wci.F wkb_wwave.F wkbbc.F get_bry_wkb.F)
 # 11) Online surface forcing
-list(APPEND CROCO_SRCS_F77 online_bulk_var.F online_get_bulk.F online_interp.F
-                           online_interpolate_bulk.F online_set_bulk.F)
+list(APPEND CROCO_SRCS_F77 online_bulk_var.F
+                           online_get_bulk.F
+                           online_interp.F
+                           online_interpolate_bulk.F
+                           online_set_bulk.F)
 # 12) Floats routines
 list(APPEND CROCO_SRCS_F77 init_floats.F wrt_floats.F step_floats.F rhs_floats.F
                            interp_rho.F def_floats.F init_arrays_floats.F
                            random_walk.F get_initial_floats.F)
 # 13) Station diagnostics
-list(APPEND CROCO_SRCS_F77 init_sta.F wrt_sta.F step_sta.F interp_sta.F
-                           def_sta.F init_arrays_sta.F)
+list(APPEND CROCO_SRCS_F77 init_sta.F
+                           wrt_sta.F
+                           step_sta.F
+                           interp_sta.F
+                           def_sta.F
+                           init_arrays_sta.F)
 # 14) biology/sediment routines
-list(APPEND CROCO_SRCS_F77 biology.F o2sato.F sediment.F bbl.F)
+list(APPEND CROCO_SRCS_F77 biology.F
+                           o2sato.F
+                           sediment.F
+                           bbl.F)
 # 16) MPI routines
 list(APPEND CROCO_SRCS_F77 MPI_Setup.F MessPass2D.F MessPass3D.F exchange.F
                            autotiling.F)
 # 16) AGRIF routines
-list(APPEND CROCO_SRCS_F77 zoom.F update2D.F set_nudgcof_fine.F zoombc_2D.F
-                           zoombc_3D.F uv3dpremix.F t3dpremix.F update3D.F
-                           zoombc_3Dfast.F Agrif2Model.F)
+list(APPEND CROCO_SRCS_F77 zoom.F
+                           update2D.F
+                           set_nudgcof_fine.F
+                           zoombc_2D.F
+                           zoombc_3D.F
+                           uv3dpremix.F
+                           t3dpremix.F
+                           update3D.F
+                           zoombc_3Dfast.F
+                           Agrif2Model.F
+)
 # 17) XIOS routines
 #list(APPEND CROCO_SRCS_F77 send_xios_diags.F)
 # 18) OASIS coupling interface
-list(APPEND CROCO_SRCS_F77 cpl_prism_define.F cpl_prism_put.F cpl_prism_init.F
-                           cpl_prism_get.F cpl_prism_getvar.F cpl_prism_grid.F)
+list(APPEND CROCO_SRCS_F77 cpl_prism_define.F
+                           cpl_prism_put.F
+                           cpl_prism_init.F
+                           cpl_prism_get.F
+                           cpl_prism_getvar.F
+                           cpl_prism_grid.F
+)
 #list(APPEND CROCO_SRCS_F77 module_substance.F module_MUSTANG.F)
-list(APPEND CROCO_SRCS_F77 online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F
-                           scal0d_oa_out_loc.F scal0d_oa_out_full.F output_oa.F
-                           copy_to_devices.F exchange_device_host.F init_acc.F)
+list(APPEND CROCO_SRCS_F77 online_spectral_diags.F
+                           var3d_oa_out.F
+                           var2d_oa_out.F
+                           scal0d_oa_out_loc.F
+                           scal0d_oa_out_full.F
+                           output_oa.F
+)
+# GPU
+list(APPEND CROCO_SRCS_F77 copy_to_devices.F exchange_device_host.F init_acc.F)
 # SRC90: additional F90 routines for PISCES code and Non-hydrostatic
 #        analysis routines
-list(APPEND CROCO_SRCS_F90 module_oa_space.F90 module_oa_periode.F90
-                           module_oa_variables.F90 module_oa_type.F90
-                           module_tile_oa.F90 module_oa_level.F90
-                           module_oa_interface.F90 var_oa.F90 tooldatosec.F90
-                           toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90
+list(APPEND CROCO_SRCS_F90 module_oa_space.F90
+                           module_oa_periode.F90
+                           module_oa_variables.F90
+                           module_oa_type.F90
+                           module_tile_oa.F90
+                           module_oa_level.F90
+                           module_oa_interface.F90
+                           var_oa.F90
                            )
+# libs
+list(APPEND CROCO_SRC_F90 tooldatosec.F90
+                          toolsectodat.F90
+                          tooldecompdat.F90
+                          tooldatetosec.F90
+                          )
 # Pices files
-#list(APPEND CROCO_SRCS_F90 par_pisces.F90 ocean2pisces.F90 trc.F90
-#                           sms_pisces.F90 p4zche.F90 p4zint.F90 p4zlys.F90
-#                           p4zflx.F90 p4zlim.F90 p4zsink.F90 p4zmicro.F90
-#                           p4zmeso.F90 p4zmort.F90 p4zopt.F90  p4zprod.F90
-#                           p4zrem.F90 p4zsbc.F90 p4zsed.F90 trcwri_pisces.F90
-#                           p4zagg.F90 p4zfechem.F90 p4zligand.F90 p4zpoc.F90
-#                           p4zsms.F90 p5zlim.F90 p5zmeso.F90 p5zmicro.F90
-#                           p5zmort.F90 p5zprod.F90 p4zbio.F90 trcsms_pisces.F90
-
-#                           sedarr.F90 sedbtb.F90 sedchem.F90 sedco3.F90
-#                           seddiff.F90 seddsr.F90 seddta.F90 sed.F90
-#                           sedini.F90 sedinitrc.F90 sedinorg.F90 sedmat.F90
-#                           sedmbc.F90 sedmodel.F90 sed_oce.F90 sedorg.F90
-#                           sedrst.F90 sedsfc.F90 sedstp.F90 sedwri.F90
-#                           setavg_sed.F90 module_parameter_oa.F90
-#
-#                           flocmod.F90 comsubstance.F90 substance.F90
-#
-#                           comMUSTANG.F90 coupler_MUSTANG.F90
-#                           sed_MUSTANG_CROCO.F90 sed_MUSTANG.F90 initMUSTANG.F90
-#                           plug_MUSTANG_CROCO.F90
+list(APPEND CROCO_SRCS_F90 ../PISCES/par_pisces.F90 ../PISCES/ocean2pisces.F90 ../PISCES/trc.F90
+                           ../PISCES/sms_pisces.F90 ../PISCES/p4zche.F90 ../PISCES/p4zint.F90
+                           ../PISCES/p4zlys.F90 ../PISCES/p4zflx.F90 ../PISCES/p4zlim.F90
+                           ../PISCES/p4zsink.F90 ../PISCES/p4zmicro.F90 ../PISCES/p4zmeso.F90
+                           ../PISCES/p4zmort.F90 ../PISCES/p4zopt.F90  ../PISCES/p4zprod.F90
+                           ../PISCES/p4zrem.F90 ../PISCES/p4zsbc.F90 ../PISCES/p4zsed.F90
+                           ../PISCES/trcwri_pisces.F90 ../PISCES/p4zagg.F90 ../PISCES/p4zfechem.F90
+                           ../PISCES/p4zligand.F90 ../PISCES/p4zpoc.F90 ../PISCES/p4zsms.F90
+                           ../PISCES/p5zlim.F90 ../PISCES/p5zmeso.F90 ../PISCES/p5zmicro.F90
+                           ../PISCES/p5zmort.F90 ../PISCES/p5zprod.F90 ../PISCES/p4zbio.F90
+                           ../PISCES/trcsms_pisces.F90 ../PISCES/SED/sedarr.F90 ../PISCES/SED/sedbtb.F90
+                           ../PISCES/SED/sedchem.F90 ../PISCES/SED/sedco3.F90 ../PISCES/SED/seddiff.F90
+                           ../PISCES/SED/seddsr.F90 ../PISCES/SED/seddta.F90 ../PISCES/SED/sed.F90
+                           ../PISCES/SED/sedini.F90 ../PISCES/SED/sedinitrc.F90 ../PISCES/SED/sedinorg.F90
+                           ../PISCES/SED/sedmat.F90 ../PISCES/SED/sedmbc.F90 ../PISCES/SED/sedmodel.F90
+                           ../PISCES/SED/sed_oce.F90 ../PISCES/SED/sedorg.F90 ../PISCES/SED/sedrst.F90
+                           ../PISCES/SED/sedsfc.F90 ../PISCES/SED/sedstp.F90 ../PISCES/SED/sedwri.F90
+                           ../PISCES/SED/setavg_sed.F90
+)
+list(APPEND CROCO_SRCS_F90 module_parameter_oa.F90)
+list(APPEND CROCO_SRCS_F90 ../MUSTANG/flocmod.F90 ../MUSTANG/comsubstance.F90 ../MUSTANG/substance.F90
+                           ../MUSTANG/comMUSTANG.F90 ../MUSTANG/coupler_MUSTANG.F90
+                           ../MUSTANG/sed_MUSTANG_CROCO.F90 ../MUSTANG/sed_MUSTANG.F90 ../MUSTANG/initMUSTANG.F90
+                           ../MUSTANG/plug_MUSTANG_CROCO.F90
+)
 
 ###########################################################
 # files for copy to device
@@ -252,8 +324,9 @@ add_custom_command(
 # check_switches1.F
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F
-	COMMAND cat cppdefs.h cppdefs_dev.h > mergcpp.txt && ${CMAKE_CURRENT_BINARY_DIR}/cppcheck && mv check_switches1.F ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	COMMAND cat ${CMAKE_CURRENT_SOURCE_DIR}/cppdefs.h ${CMAKE_CURRENT_SOURCE_DIR}/cppdefs_dev.h > mergcpp.txt
+             && ${CMAKE_CURRENT_BINARY_DIR}/cppcheck
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	DEPENDS cppcheck cppdefs.h cppdefs_dev.h
 	VERBATIM
 )
@@ -308,11 +381,6 @@ add_executable(srcscheck srcscheck.F)
 set_property(TARGET srcscheck PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
-# build cross_matrix utility
-add_executable(cross_matrix cross_matrix.F)
-set_property(TARGET cross_matrix PROPERTY LINKER_LANGUAGE Fortran)
-
-###########################################################
 # build partit utility
 add_executable(partit partit.F)
 target_link_libraries(partit ${NETCDFF_LIBRARY})
@@ -323,7 +391,7 @@ set_property(TARGET partit PROPERTY LINKER_LANGUAGE Fortran)
 # build croco ocean simulation
 
 # TODO: remove when finished
-if (WITH_PARALLEL STREQUAL "openacc-psyclone")
+if (WITH_OPTIM STREQUAL "openacc-psyclone")
 	croco_psyclone_pre_filter_acc(CROCO_SRCS_F77)
 endif ()
 
@@ -337,6 +405,9 @@ endif()
 if (OPENACC)
 	croco_change_loop_preprocess(CROCO_SRCS_F77)
 endif ()
+if (WITH_OPTIM STREQUAL "poseidon")
+    croco_poseidon_pre_process(CROCO_SRCS_F77)
+endif()
 
 # build executable
 set(CMAKE_Fortran_PREPROCESS ON)
@@ -346,7 +417,7 @@ target_link_libraries(croco croco_common)
 set_property(TARGET croco PROPERTY LINKER_LANGUAGE Fortran)
 
 # Inject psyclone in the loop if enabled
-if (WITH_PARALLEL STREQUAL "openacc-psyclone")
+if (WITH_OPTIM STREQUAL "openacc-psyclone")
 	set_target_properties(croco PROPERTIES Fortran_COMPILER_LAUNCHER ${CMAKE_SOURCE_DIR}/PSYCLONE/psyclone.compiler.wrapper.py)
 endif ()
 
@@ -357,4 +428,4 @@ endif()
 
 ###########################################################
 # Make some of the executables landing directly in root dir
-set_property(TARGET partit croco cross_matrix PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set_property(TARGET partit croco PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

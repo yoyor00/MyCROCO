@@ -81,7 +81,7 @@
 		},
 		// seq default
 		"poseidon": {
-			"configure": "--with-parallel=poseidon",
+			"configure": "--with-optim=poseidon",
 			"tuning_familly": "gnu",
 			"environ": {},
 			"command_prefix": "",
@@ -91,7 +91,7 @@
 		},
 		// openmp
 		"openmp-{threads}": {
-			"configure": "--with-parallel=openmp --with-threads={threads}",
+			"configure": "--with-optim=openmp --with-threads={threads}",
 			"tuning_familly": "gnu",
 			"environ": {
 				"OMP_NUM_THREADS": "{threads}"
@@ -106,7 +106,7 @@
 		},
 		// mpi
 		"mpi-{tasks}": {
-			"configure": "--with-parallel=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
 			"tuning_familly": "gnu",
 			"environ": {
 				"OMP_NUM_THREADS": 1
@@ -121,7 +121,7 @@
 		},
 		// openacc
 		"openacc-native": {
-			"configure": "--with-parallel=openacc-native FC=nvfortran",
+			"configure": "--with-optim=openacc-native FC=nvfortran",
 			"tuning_familly": "nvfortran",
 			"environ": {},
 			"command_prefix": "",
@@ -130,7 +130,7 @@
 			}
 		},
 		"openacc-psyclone": {
-			"configure": "--with-parallel=openacc-psyclone FC=nvfortran",
+			"configure": "--with-optim=openacc-psyclone FC=nvfortran",
 			"tuning_familly": "nvfortran",
 			"environ": {},
 			"command_prefix": "",
