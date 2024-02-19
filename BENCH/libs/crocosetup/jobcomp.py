@@ -198,7 +198,7 @@ class JobcompCrocoConfig:
         }]
 
         # apply
-        patch_lines(os.path.join(self.builddir, "jobcomp"), rules)
+        patch_lines(os.path.join(self.builddir, "jobcomp"), rules, allow_already_done=True)
 
 ##########################################################
 class JobcompCrocoSetup(AbstractCrocoSetup):
@@ -253,6 +253,12 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         '''
         self.croco_config.cppdef_h_set_key('OPENACC', status)
 
+    def cppdef_h_enable_openacc_psyclone(self, status: bool):
+        '''
+        Enable OPENACC_PSYCLONE
+        '''
+        self.croco_config.cppdef_h_set_key('OPENACC_PSYCLONE', status)
+
     def convert_patch_fnames(self, filename: str) -> str:
         '''
         Some files have been renamed between minicroco and the original one,
@@ -264,7 +270,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         else:
             return filename
 
-    def handle_variables(self, arg_vars: list, is_mpi: bool) -> dict:
+    def handle_variables(self, arg_vars: list, is_not_mpi: bool) -> dict:
         '''
         Apply to ops required when getting some variables on the command line.
         
@@ -289,7 +295,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
                 self.croco_config.jobcomp_configure_set_extra_fflags(var_value)
             elif var_name == 'FC':
                 # there is an issue if we force mpifort that way with jobcomp
-                if is_mpi:
+                if is_not_mpi:
                     self.croco_config.jobcomp_configure_set_compiler(var_value)
             else:
                 raise Exception(f"Unsupported variable : {entry}")
@@ -315,7 +321,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         
         # add options
         parser.add_argument("--with-case", required=True, help="Select the case to run.")
-        parser.add_argument("--with-parallel", required=False, help="Select the optimization mode to use.", default='seq')
+        parser.add_argument("--with-optim", required=False, help="Select the optimization mode to use.", default='seq')
         parser.add_argument("--with-threads", required=False, help="Select the number of threads.", default='4')
         parser.add_argument("--with-splitting", required=False, help="Select the MPI domain splitting.", default='1x4')
         parser.add_argument("VARS", nargs='*', type=str, help="Extra variable definitions, like compilers : FC=gfortran.")
@@ -348,6 +354,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             script which will be translated in what is needed for the old CROCO.
         '''
 
+        # configure
+        Messaging.step(f"jobcomp-configure {minicroco_args}")
+
         # get options
         options = self.emulate_cmd_line_parse_args(minicroco_args)
 
@@ -361,10 +370,11 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         use_openmp = False
         use_mpi = False
         use_openacc = False
+        use_openacc_psyclone = False
 
         # apply variable
-        is_mpi = (options.with_optim != 'mpi')
-        vars = self.handle_variables(options.VARS, is_mpi)
+        is_not_mpi = (options.with_optim != 'mpi')
+        vars = self.handle_variables(options.VARS, is_not_mpi)
 
         # apply optim mode
         if options.with_optim == 'seq':
@@ -375,9 +385,10 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             use_mpi = True
         elif options.with_optim == 'openacc-native':
             use_openacc = True
-            raise Exception(f"Variant {options.with_optim} not yet supported")
+            use_openacc_psyclone = False
         elif options.with_optim == 'openacc-psyclone':
-            raise Exception(f"Variant {options.with_optim} not yet supported")
+            use_openacc = True
+            use_openacc_psyclone = True
         elif options.with_optim == 'poseidon':
             raise Exception(f"Variant {options.with_optim} not yet supported")
         else:
@@ -386,6 +397,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # set config
         self.cppdef_h_set_openmp(use_openmp)
         self.cppdef_h_enable_openacc(use_openacc)
+        self.cppdef_h_enable_openacc_psyclone(use_openacc_psyclone)
         if use_openmp:
             self.croco_config.param_h_configure_openmp_split(options.with_threads)
         if use_mpi:

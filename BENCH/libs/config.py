@@ -41,6 +41,7 @@ class Config:
         parser.add_argument('-N', '--no-previous', help='Do not load the preivous missing results to plot full graph.', action='store_true')
         parser.add_argument(      '--build-ref', help="Build the reference directory to be stored once somewhere for validation.", type=str, default=False)
         parser.add_argument('-u', '--use-ref', help="Use the reference directory as source of compare instead of seq run.", type=str, default=False)
+        parser.add_argument(      '--jobcomp', help="Force using jobcomp instead of cmake.", action='store_true')
 
         # parse
         self.args = parser.parse_args()
@@ -60,6 +61,7 @@ class Config:
         self.no_previous = self.args.no_previous
         self.build_ref = self.args.build_ref
         self.use_ref = self.args.use_ref
+        self.force_jobcomp = self.args.jobcomp
 
         # compute clean result subdir name
         hostname = platform.node()

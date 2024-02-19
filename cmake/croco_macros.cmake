@@ -166,7 +166,8 @@ function(croco_trick_create_cpp_def_override)
 
 	# create if needs
 	if (NOT EXISTS ${CPPDEF_OVERRIDE})
-		write_file(${CPPDEF_OVERRIDE} "/* please just override the keys you needs here */")
+		#write_file(${CPPDEF_OVERRIDE} "/* please just override the keys you needs here */")
+		file(COPY_FILE ${CMAKE_SOURCE_DIR}/OCEAN/cppdefs.h ${CPPDEF_OVERRIDE})
 	endif ()
 
 	# create if needs

@@ -55,7 +55,7 @@
         ... OR REALISTIC CONFIGURATIONS
 */
 #undef  COASTAL         /* COASTAL Applications */
-#undef REGIONAL        /* REGIONAL Applications */
+#define REGIONAL        /* REGIONAL Applications */
 
 /*
 To make configuration via cmake command line directly and not edit

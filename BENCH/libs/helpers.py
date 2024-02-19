@@ -113,7 +113,7 @@ def contains_one_of(seach_in:str, elements) -> bool:
     else:
         raise Exception("Unsupported type !")
 
-def patch_lines(path: str, rules: list):
+def patch_lines(path: str, rules: list, allow_already_done = False):
     '''
     Patch a file by inserting some lines at the given place. The changes are
     requested via a list of rules to apply.
@@ -137,8 +137,9 @@ def patch_lines(path: str, rules: list):
             Messaging.step(f"Patching {fname}")
         # replace rule
         if rule['mode'] == 'replace':
-            id = lines.index(rule['what'])
-            lines[id] = rule['by']
+            if not (allow_already_done and rule['by'] in lines):
+                id = lines.index(rule['what'])
+                lines[id] = rule['by']
         # insert after a given line
         elif rule['mode'] == 'insert-after':
             id = lines.index(rule['what'])

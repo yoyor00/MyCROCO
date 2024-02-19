@@ -36,7 +36,7 @@ class Croco:
 
         # if use old croco
         #self.old_croco = None
-        if config.has_cmake:
+        if config.has_cmake and not self.config.force_jobcomp:
             self.croco_build = CMakeCrocoSetup(self.config, self.dirname)
         else:
             self.croco_build = JobcompCrocoSetup(self.config, self.dirname)

@@ -215,7 +215,6 @@ fi
 # Need to switch to the other Makedefs
 #
 if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
-	exit 1
 	if $($CPP1 testkeys.F | grep -i -q openaccpsycloneisdefined) ; then
 		cp -f Makedefs.generic.PSYCLONE Makedefs.generic
 	fi

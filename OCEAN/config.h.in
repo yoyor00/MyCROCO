@@ -2,9 +2,48 @@
 #define CMAKE_CROCO_CONFIG_H
 
 /*
+Deselect all in case there is alread one selected in cppdef.h
+*/
+#undef REGIONAL        /* REGIONAL Applications */
+#undef COASTAL         /* COASTAL Applications */
+#undef BASIN           /* Basin Example */
+#undef CANYON          /* Canyon Example */
+#undef EQUATOR         /* Equator Example  */
+#undef INNERSHELF      /* Inner Shelf Example */
+#undef SINGLE_COLUMN   /* 1DV vertical mixing Example */
+#undef RIVER           /* River run-off Example */
+#undef OVERFLOW        /* Gravitational/Overflow Example */
+#undef SEAMOUNT        /* Seamount Example */
+#undef SHELFRONT       /* Shelf Front Example */
+#undef SOLITON         /* Equatorial Rossby Wave Example */
+#undef THACKER         /* Thacker wetting-drying Example */
+#undef UPWELLING       /* Upwelling Example */
+#undef VORTEX          /* Baroclinic Vortex Example */
+#undef INTERNAL        /* Internal Tide Example */
+#undef IGW             /* COMODO Internal Tide Example */
+#undef JET             /* Baroclinic Jet Example */
+#undef SHOREFACE       /* Shoreface Test Case on a Planar Beach */
+#undef RIP             /* Rip Current Test Case */
+#undef SANDBAR         /* Bar-generating Flume Example */
+#undef SWASH           /* Swash Test Case on a Planar Beach */
+#undef TANK            /* Tank Example */
+#undef MOVING_BATHY    /* Moving Bathymetry Example */
+#undef ACOUSTIC        /* Acoustic wave Example */
+#undef GRAV_ADJ        /* Graviational Adjustment Example */
+#undef ISOLITON        /* Internal Soliton Example */
+#undef KH_INST         /* Kelvin-Helmholtz Instability Example */
+#undef TS_HADV_TEST    /* Horizontal tracer advection Example */
+#undef DUNE            /* Dune migration Example */
+#undef SED_TOY         /* 1DV sediment toy Example */
+#undef TIDAL_FLAT      /* 2DV tidal flat Example */
+#undef ESTUARY         /* 3D tidal estuary Example */
+
+/*
 Select case to run.
 CAUTION : Should enable only one at a time !
 */
+#cmakedefine REGIONAL        /* REGIONAL Applications */
+#cmakedefine COASTAL         /* COASTAL Applications */
 #cmakedefine BASIN           /* Basin Example */
 #cmakedefine CANYON          /* Canyon Example */
 #cmakedefine EQUATOR         /* Equator Example  */
