@@ -51,8 +51,8 @@ if [[ $# == 2 ]]; then
 fi
 
 # calc paths
-PREP_DIR=${BUILD_DIR}/OCEAN/prepared_sources
-NATIVE_PREP_DIR=${NATIVE_BUILD_DIR}/OCEAN/prepared_sources
+PREP_DIR=${BUILD_DIR}/OCEAN/prepared_sources/OCEAN
+NATIVE_PREP_DIR=${NATIVE_BUILD_DIR}/OCEAN/prepared_sources/OCEAN
 
 # make abos
 PREP_DIR=$(cd "${PREP_DIR}" && pwd -P)
@@ -121,12 +121,12 @@ if [[ ${NATIVE_BUILD_DIR} != 'OFF' ]]; then
 	for file in $(find ${NATIVE_PREP_DIR} -iname "*.fix.F"); do
 		orig_name=$(basename $file | sed -e 's/\.cpp\.mpc\.loops\.mpc\.fix//g')
 		fname=$(basename $file)
-		#if [[ -f ${PREP_DIR}/compare/acc/${orig_name}90 ]]; then
+		if [[ -f ${PREP_DIR}/compare/acc/${orig_name}90 ]]; then
 			#ln -sf ${NATIVE_PREP_DIR}/${fname} ${PREP_DIR}/compare/orig-acc/${orig_name}90
 			filter ${orig_name}90 && run psyclone -api nemo -l output -opsy ${PREP_DIR}/compare/orig-acc/${orig_name}90 ${NATIVE_PREP_DIR}/${fname} &
-		#fi
+		fi
 	done
-	wait || exit 1
+	wait || exit 1
 fi
 
 # kaunch
