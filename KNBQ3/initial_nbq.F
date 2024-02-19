@@ -157,8 +157,8 @@
 ! ! Depth KNHINT
 ! !
 #  ifdef KNHINT_CORR
-        alphaw_nbq  = 0.25 
-        alphaNw_nbq = 5 
+        alphaw_nbq  = 0.01 
+        alphaNw_nbq = 10 
 #  endif
 !
 ! Bulk viscosity (horizontal & vertical components)

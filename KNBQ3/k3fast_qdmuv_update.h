@@ -248,7 +248,7 @@
 ! !
 #  if defined INTERNAL || defined BODYTIDE
               dum_s=dum_s+0.5*omega*U0*cos(omega*time)
-     &                       *(Hz(i-1,j,k)+Hz(i,j,k))
+     &                       *(Hzr(i-1,j,k)+Hzr(i,j,k))
 #  endif
 ! !
 ! !................................
@@ -260,21 +260,32 @@
 #  endif
 ! !
 ! !................................
-! !  Nudging TBT
+! !  Nudging
 ! !................................
-! !       
-#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
-        cff=alphaw_nbq/dtfast*
-     &           *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
-     &                /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
-              dum_s=dum_s+qdmu_nbq(i,j,k)*(-cff)
-     &                        +u(i,j,k,nrhs)
-     &                         *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))
-     &                         *cff
+! !
+#  ifdef NBQ_NUDGING 
+              cff=NBQnudgcof(i,j)/dtfast
+#  elif defined KNHINT_CORR
+              cff=0
+#  endif
+#  ifdef KNHINT_CORR
+              if (k.ge.Max(1,N-2*alphaNw_nbq)) then
+               cff=cff+alphaw_nbq/dtfast*
+     &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
+     &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
+              endif
+#  endif
+#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
+              dum_s=dum_s-qdmu_nbq(i,j,k)*cff
+#   ifndef KNHINT_CORR
+     &                   +u(i,j,k,nrhs)
+     &                    *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))
+     &                    *cff
 #    ifdef MASKING
-     &                         *umask(i,j)
+     &                    *umask(i,j)
 #    endif  
-#   endif  
+#   endif
+#  endif
 ! !
 ! !................................
 ! !  Compute qdmu_nbq
@@ -289,15 +300,6 @@
      &                        )
 #   ifdef MASKING
      &                          *umask(i,j)
-#   endif
-#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
-!               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
-!     &                        +u(i,j,k,nrhs)
-!     &                         *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))
-!     &                         *NBQnudgcof(i,j)
-#    ifdef MASKING
-!     &                         *umask(i,j)
-#    endif  
 #   endif
 #  else   /* K3FAST_SEDLAYERS */          
               if (k.gt.0) then   
@@ -318,19 +320,6 @@
      &                          *umask(i,j)
 #   endif
               endif
-#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
-!              if (k.gt.0) then   
-!               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
-!     &                        +u(i,j,k,nrhs)
-!     &                         *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))
-!     &                         *NBQnudgcof(i,j)
-#    ifdef MASKING
-!     &                         *umask(i,j)
-#    endif  
-!	      else
-!               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
-!	      endif
-#   endif
 #  endif  /* K3FAST_SEDLAYERS */
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
@@ -479,7 +468,7 @@
 #  if defined INTERNAL || defined BODYTIDE
               dum_s=dum_s+0.25*(f(i,j)+f(i,j-1))*
      &                       U0*sin(omega*time)*
-     &                       (Hz(i,j,k)+Hz(i,j-1,k))
+     &                       (Hzr(i,j,k)+Hzr(i,j-1,k))
 #  endif
 ! !
 ! !................................
@@ -491,20 +480,31 @@
 #  endif
 ! !
 ! !................................
-! !  Nudging TBT
+! !  Nudging
 ! !................................
-! !      
-#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
-        cff=alphaw_nbq/dtfast
-     &           *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
-     &                /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
-               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(-cff)
-     &                        +v(i,j,k,nrhs)*cff
-     &                         *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))
-#     ifdef MASKING
-     &                         *vmask(i,j)
-#     endif   
+! !   
+#  ifdef NBQ_NUDGING 
+              cff=NBQnudgcof(i,j)/dtfast
+#  elif defined KNHINT_CORR
+              cff=0
+#  endif
+#  ifdef KNHINT_CORR
+              if (k.ge.Max(1,N-2*alphaNw_nbq)) then
+               cff=cff+alphaw_nbq/dtfast*
+     &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
+     &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
+              endif
+#  endif
+#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
+              dum_s=dum_s-qdmv_nbq(i,j,k)*cff
+#   ifndef KNHINT_CORR 
+     &                   +v(i,j,k,nrhs)*cff
+     &                    *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))
+#    ifdef MASKING
+     &                    *vmask(i,j)
 #    endif   
+#   endif   
+#  endif   
 ! !
 ! !................................
 ! !  Compute qdmv_nbq
@@ -520,14 +520,6 @@
 #   ifdef MASKING
      &                          *vmask(i,j)
 #   endif
-#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
-!               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
-!     &                        +v(i,j,k,nrhs)*NBQnudgcof(i,j)
-!     &                         *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))
-#     ifdef MASKING
-!     &                         *vmask(i,j)
-#     endif  
-#    endif  
 #  else   /* ! K3FAST_SEDLAYERS */          
               if (k.gt.0) then   
                qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k) + dtfast * (
@@ -547,18 +539,6 @@
      &                          *vmask(i,j)
 #   endif
               endif
-#   if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
-!              if (k.gt.0) then   
-!               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
-!     &                        +v(i,j,k,nrhs)*NBQnudgcof(i,j)
-!     &                         *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))
-#    ifdef MASKING
-!     &                         *vmask(i,j)
-#    endif  
-!	      else
-!               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
-!	      endif
-#   endif
 #  endif  /* K3FAST_SEDLAYERS */
      
 #  ifdef K3FAST_SEDLAYERS 
