@@ -277,14 +277,12 @@
 #  endif
 #  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
               dum_s=dum_s-qdmu_nbq(i,j,k)*cff
-#   ifndef KNHINT_CORR
      &                   +u(i,j,k,nrhs)
      &                    *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))
      &                    *cff
-#    ifdef MASKING
+#   ifdef MASKING
      &                    *umask(i,j)
-#    endif  
-#   endif
+#   endif  
 #  endif
 ! !
 ! !................................
@@ -497,12 +495,10 @@
 #  endif
 #  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
               dum_s=dum_s-qdmv_nbq(i,j,k)*cff
-#   ifndef KNHINT_CORR 
      &                   +v(i,j,k,nrhs)*cff
      &                    *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))
-#    ifdef MASKING
+#   ifdef MASKING
      &                    *vmask(i,j)
-#    endif   
 #   endif   
 #  endif   
 ! !
