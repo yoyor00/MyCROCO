@@ -66,11 +66,11 @@ def emulate_hyperfine(command: str, progress_bar: tqdm = None, runs: int = 2, re
         return summary
 
 ##########################################################
-def native_hyperfine(command: str, runs: int = 2) -> dict:
+def native_hyperfine(command: str, runs: int = 2, verbose: bool = False) -> dict:
     with NamedTemporaryFile() as fp:
         hyper_command = f"hyperfine --export-json={fp.name} --warmup 0 --output /tmp/croco.log --runs {runs} \"{command}\""
         try:
-            run_shell_command(hyper_command, capture=False)
+            run_shell_command(hyper_command, capture=not verbose)
             result = json.load(fp)
             return result
         except Exception as e:
@@ -80,9 +80,9 @@ def native_hyperfine(command: str, runs: int = 2) -> dict:
             raise Exception("CROCO failed to run !")
 
 ##########################################################
-def run_hyperfine(command: str, progress_bar: tqdm = None, runs: int = 2, retries: int = 8):
+def run_hyperfine(command: str, progress_bar: tqdm = None, runs: int = 2, retries: int = 8, verbose: bool = False):
     hyperfine = False #shutil.which("hyperfine")
     if hyperfine:
-        return native_hyperfine(command, runs)
+        return native_hyperfine(command, runs, verbose=verbose)
     else:
-        return emulate_hyperfine(command, progress_bar, runs)
+        return emulate_hyperfine(command, progress_bar, runs, verbose=verbose)

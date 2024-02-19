@@ -32,7 +32,7 @@ def gen_system_info() -> dict:
     infos['time'] = datetime.now().strftime("%H:%M:%S")
 
     # get hostname
-    system = infos['plateforme'] = {}
+    system = infos['plateform'] = {}
     system['hostname'] = platform.node()
     system['arch'] = platform.architecture()
     system['system'] = platform.system()
@@ -41,6 +41,10 @@ def gen_system_info() -> dict:
     # lscpu
     lscpu = get_lscpu_as_json()['lscpu']
     infos['lscpu'] = lscpu
+
+    # get proc name
+    processor_name = subprocess.getoutput("cat /proc/cpuinfo  | grep 'model name' | cut -d ':' -f 2- | head -n 1 | xargs echo")
+    system['processor_name'] = processor_name
     
     for entry in lscpu:
         if 'children' in entry:

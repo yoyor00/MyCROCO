@@ -12,6 +12,7 @@ This script aimed at benchmarking CROCO to compare the various parallel modes.
 
 ##########################################################
 from libs.config import Config
+from libs.helpers import print_exception
 from libs.benchmarking import Benchmarking
 
 ##########################################################
@@ -27,4 +28,7 @@ def main():
 
 ##########################################################
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        print_exception(e)

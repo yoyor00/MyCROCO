@@ -1,0 +1,36 @@
+{
+	// Default SOLITON case
+	"SOLITON": {
+		"title": "SOLITON (96 x 32 x 10 : 1200)",
+		"case": "SOLITON",
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#elif defined SOLITON",
+				"what":    "      parameter (LLm0=96,   MMm0=32,   N=10)",
+				"by":      "      parameter (LLm0=96,   MMm0=32,   N=10)",
+				"descr":   "Set mesh size to (96 x 32 x 10)"
+			},
+			// CHange the dt
+			"TEST_CASES/croco.in.Soliton": {
+				"next_to": "time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "               1200     0.1      1        5",
+				"by":      "               1200     0.1      1        5",
+				"descr":   "Set stepping (steps=1200, dt=0.1, fast=1)"
+			}
+		},
+		"check_outputs": [ "soliton_his.nc", "soliton_avg.nc" ],
+		"unsupported": ["openacc-native", "openacc-psyclone"]
+	}
+}

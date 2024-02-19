@@ -9,7 +9,14 @@
 		"tuning": {
 			"gnu": "-march=native",
 			"nvfortran": "-tp=native",
-			"mpi_options": "-use-hwthread-cpus"
+			"environ": {
+				"OMP_PROC_BIND": "spread"
+			},
+			"mpi_options": "-use-hwthread-cpus",
+			"hwloc_bind": {
+				"openmp": "",
+				"mpirun": ""
+			}
 		}
 	}
 }

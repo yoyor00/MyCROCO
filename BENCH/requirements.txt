@@ -13,3 +13,5 @@ pyyaml
 jsonschema
 # to check maching of seq vs parallel netcdf files
 netcdf4
+# to get term colors
+termcolor

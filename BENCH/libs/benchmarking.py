@@ -7,11 +7,13 @@
 ##########################################################
 import os
 import json
+import subprocess
 from .config import Config
 from .croco import Croco
 from .messaging import Messaging
 from .system import gen_system_info
 from .plotting import Plotting
+from .helpers import run_shell_command
 
 ##########################################################
 class Benchmarking:
@@ -19,11 +21,16 @@ class Benchmarking:
         # set
         self.config = config
 
+        # gen str
+        result_dir = self.config.results
+        case_names = ', '.join(self.config.case_names)
+        variant_names = ', '.join(self.config.variant_names)
+
         # init
         Messaging.section("Benchmark initialization")
-        Messaging.step(f"Results  = {self.config.results}")
-        Messaging.step(f"Cases    = {self.config.case_names}")
-        Messaging.step(f"Variants = {self.config.variant_names}")
+        Messaging.step(f"Results  = {result_dir}")
+        Messaging.step(f"Cases    = {case_names}")
+        Messaging.step(f"Variants = {variant_names}")
 
         # create work dir
         os.makedirs(config.workdir, exist_ok=True)
@@ -64,13 +71,23 @@ class Benchmarking:
             self.config.variant_names.insert(0, 'sequential')
 
     def create_croco_instances(self) -> [Croco]:
+        # extract some
+        config = self.config
+
         # res
         res = []
 
         # build combination
-        for case in self.config.case_names:
-            for variant in self.config.variant_names:
-                res.append(Croco(self.config, case, variant))
+        for case_name in config.case_names:
+            for variant_name in config.variant_names:
+                # get config to know how to filter
+                case_config = config.config['cases'][case_name]
+
+                # filter
+                if not variant_name in case_config.get('unsupported', []):
+                    res.append(Croco(config, case_name, variant_name))
+                else:
+                    Messaging.step(f"Skip unsupported {case_name}/{variant_name}")
 
         # ok
         return res
@@ -81,20 +98,28 @@ class Benchmarking:
         if 'build' in self.config.modes:
             for id, instance in enumerate(self.instances):
                 instance.build(extra_info=f" - [ {id + 1} / {cnt} ]", force_rebuild = self.config.rebuild)
+
         # run
         if 'run' in self.config.modes:
+            instance: Croco
             for id, instance in enumerate(self.instances):
                 # run
                 instance.run(extra_info=f" - [ {id + 1} / {cnt} ]")
                 # check
                 if 'check' in self.config.modes:
                     instance.check()
+                # if need to store the ref
+                if self.config.build_ref and instance.variant_name == "sequential":
+                    instance.make_ref()
 
         # plot
         if 'plot' in self.config.modes:
             self.plot()
 
     def dump_bench_infos(self):
+        # dump bench infos
+        Messaging.section("Dumping system infos")
+
         # get needs
         results = self.config.results
         
@@ -106,6 +131,16 @@ class Benchmarking:
         # dump config
         with open(f"{results}/config.json", "w+") as fp:
             json.dump(self.config.config, fp=fp, indent='\t')
+
+        # display some
+        hostname = system['plateform']['hostname']
+        processor_name = system['plateform']['processor_name']
+        Messaging.step(f"Hostname  : {hostname}")
+        Messaging.step(f"Processor : {processor_name}")
+
+        # dump the CPU infos
+        run_shell_command(f"hwloc-ls --of console {results}/cpu.txt")
+        run_shell_command(f"hwloc-ls --of svg {results}/cpu.svg")
 
     def plot(self):
         plot = Plotting(self.config)

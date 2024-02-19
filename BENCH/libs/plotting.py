@@ -5,6 +5,8 @@
 ##########################################################
 
 ##########################################################
+import os
+import shutil
 import glob
 import json
 import numpy
@@ -16,6 +18,7 @@ from .messaging import Messaging
 class Plotting:
     def __init__(self, config: Config):
         self.config = config
+        self.loaded_files = []
 
     def get_file_path(self, case_name: str, variant_name: str) -> str:
          # name
@@ -48,8 +51,12 @@ class Plotting:
         # progress
         Messaging.step(f"Loading {fpath}")
 
+        # keep track
+        self.loaded_files.append(fpath)
+
         # load it
         with open(fpath, 'r') as fp:
+            # load
             return json.load(fp)
 
     def load_variants(self, data: dict, case_name: str) -> bool:
@@ -107,10 +114,26 @@ class Plotting:
         # return
         return data
 
+    def keep_info_of_previous_runs(self):
+        # vars
+        results = self.config.results
+
+        # dump list of loaded paths
+        with open(f'{results}/loaded-result-files.json', 'w+') as fp:
+            json.dump(self.loaded_files, fp=fp, indent='\t')
+
+        # copy the loaded files localy to get a full view
+        target = f"{results}/imported_previous_runs"
+        os.makedirs(target, exist_ok=True)
+        for file in self.loaded_files:
+            # only the non local ones
+            if not results in file:
+                target_path = os.path.join(target, os.path.basename(file))
+                shutil.copyfile(file, target_path)
+
     def plot(self):
         # info
         Messaging.section(f'Plotting')
-
 
         # extract
         cases = self.config.config['cases']
@@ -127,7 +150,6 @@ class Plotting:
             case_config = cases[case_name]
             results = self.config.results
             title = case_config.get('title', case_name)
-            
 
             # start plot
             fig, ax = pyplot.subplots()
@@ -151,3 +173,6 @@ class Plotting:
             pyplot.tight_layout()
             pyplot.savefig(f'{results}/plot-{case_name}.png')
             pyplot.savefig(f'{results}/plot-{case_name}.svg')
+
+            # keep track of the previous run used results
+            self.keep_info_of_previous_runs()

@@ -26,9 +26,18 @@
                          "properties": {
                             "gnu": {"type" : "string"},
                             "nvfortran": {"type" : "string"},
-                            "mpi_options": {"type" : "string"}
+                            "mpi_options": {"type" : "string"},
+                            "environ": { "type": "object" },
+                            "hwloc_bind": {
+                                "type": "object",
+                                "properties": {
+                                    "openmp": {"type": "string"},
+                                    "mpirun": {"type": "string"}
+                                },
+                                "required": [ "openmp", "mpirun" ]
+                            }
                         },
-                        "required" : [ "gnu", "nvfortran", "mpi_options" ]
+                        "required" : [ "gnu", "nvfortran", "mpi_options", "environ" ]
                     }
                 },
                 "required" : [ "ressources", "tuning" ]
@@ -49,6 +58,13 @@
             "required": ["cases", "variants"]
         },
         "meta_variants": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": { "type": "string" }
+            }
+        },
+        "meta_cases": {
             "type": "object",
             "additionalProperties": {
                 "type": "array",
@@ -78,11 +94,56 @@
                         "additionalProperties": {
                             "type": ["string", "integer"]
                         }
-                    },
+                    }
                 },
                 "required": ["configure", "tuning_familly", "command_prefix", "requires"]
             }
+        },
+        "cases": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "case": {"type": "string"},
+                    "mpi": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "splitting": {"type": "string"}
+                            },
+                            "required": ["splitting"]
+                        }
+                    },
+                    "patches": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": ["array", "object"],
+                            "properties": {
+                                "next_to": {"type": "string"},
+                                "what": {"type": "string"},
+                                "by": {"type": "string"}
+                            },
+                            "required": ["next_to", "what", "by"]
+                        }
+                    },
+                    "check_outputs": {
+                        "type": "array",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "unsupported": {
+                        "type": "array",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": ["title", "case", "mpi", "patches", "check_outputs"]
+            }
         }
     },
-    "required": ["imports", "hosts", "default_selection", "meta_variants"]
+    "required": ["imports", "hosts", "default_selection", "meta_variants", "cases"]
 }

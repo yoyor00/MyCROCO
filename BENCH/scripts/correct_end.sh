@@ -16,13 +16,19 @@ logfile=$(mktemp)
 grep -q 'MAIN: DONE' ${logfile}
 status=$?
 
-# remove log
-rm -f ${logfile}
-
 # display error
 if [[ ${status} != 0 ]]; then
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" 1>&2
-    echo "CRCO didn't reached end of execution !" 1>&2
+    echo "CROCO didn't reached end of execution !" 1>&2
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" 1>&2
-    exit 1
+    tail -n 16 ${logfile}
+    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" 1>&2
+    echo "CROCO didn't reached end of execution !" 1>&2
+    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" 1>&2
 fi
+
+# remove log
+rm -f ${logfile}
+
+# finish
+exit $status

@@ -1,7 +1,8 @@
 {
 	///////////////////////////// IMPOTS ///////////////////////////////////////
 	"imports": {
-		"hosts": [ "config.d/hosts/*" ]
+		"hosts": [ "config.d/hosts/*" ],
+		"cases": [ "config.d/cases/*" ]
 	},
 	///////////////////////////// TUNING ///////////////////////////////////////
 	"hosts": {
@@ -13,7 +14,14 @@
 			"tuning": {
 				"gnu": "-march=native",
 				"nvfortran": "-tp=native",
-				"mpi_options": ""
+				"environ":{
+					"OMP_PROC_BIND": "spread"
+				},
+				"mpi_options": "",
+				"hwloc_bind": {
+					"openmp": "",
+					"mpirun": ""
+				}
 			}
 		}
 	},
@@ -47,6 +55,16 @@
 		"@gpu": [
 			"openacc-native",
 			"openacc-psyclone"
+		],
+		"@ci": [
+			"sequential",
+			"poseidon"
+		]
+	},
+	"meta_cases": {
+		"@ci": [
+			"BASIN",
+			"SOLITON"
 		]
 	},
 	////////////////////////////// VARIANTS ////////////////////////////////////
@@ -61,6 +79,16 @@
 				"cpu": 1
 			}
 		},
+		// seq default
+		"poseidon": {
+			"configure": "--with-parallel=poseidon",
+			"tuning_familly": "gnu",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
 		// openmp
 		"openmp-{threads}": {
 			"configure": "--with-parallel=openmp --with-threads={threads}",
@@ -68,7 +96,7 @@
 			"environ": {
 				"OMP_NUM_THREADS": "{threads}"
 			},
-			"command_prefix": "",
+			"command_prefix": "{tuning.hwloc_bind.openmp}",
 			"unpack": {
 				"threads": [2, 4, 6, 8, 16, 32, 64]
 			},
@@ -83,7 +111,7 @@
 			"environ": {
 				"OMP_NUM_THREADS": 1
 			},
-			"command_prefix": "mpirun -np {tasks} {tuning.mpi_options}",
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
 			"unpack": {
 				"tasks": [2, 4, 6, 8, 16, 32, 64]
 			},
@@ -113,85 +141,6 @@
 	},
 	////////////////////////////// CASES ///////////////////////////////////////
 	"cases": {
-		// Default BASIN case
-		"BASIN": {
-			"title": "BASIN (60 x 50 x 10)",
-			"case": "BASIN",
-			"steps": 200,
-			"mpi": {
-				"1":  {"splitting": "1x1",  "mpirun":""},
-				"2":  {"splitting": "1x2",  "mpirun":""},
-				"4":  {"splitting": "1x4",  "mpirun":""},
-				"6":  {"splitting": "1x6",  "mpirun":""},
-				"8":  {"splitting": "2x4",  "mpirun":""},
-				"12": {"splitting": "2x6",  "mpirun":"--use-hwthread-cpus"},
-				"16": {"splitting": "1x16", "mpirun":""},
-				"32": {"splitting": "1x32", "mpirun":""},
-				"64": {"splitting": "1x64", "mpirun":"--use-hwthread-cpus"}
-			},
-			"patches": {}
-		},
-		// BASIN a bit larger
-		"BASIN-LARGE": {
-			"title": "BASIN - LARGE - (200 x 200 x 50)",
-			"case": "BASIN",
-			"steps": 100,
-			"mpi": {
-				"1":  {"splitting": "1x1",  "mpirun":""},
-				"2":  {"splitting": "1x2",  "mpirun":""},
-				"4":  {"splitting": "1x4",  "mpirun":""},
-				"6":  {"splitting": "1x6",  "mpirun":""},
-				"8":  {"splitting": "2x4",  "mpirun":""},
-				"12": {"splitting": "2x6",  "mpirun":"--use-hwthread-cpus"},
-				"16": {"splitting": "1x16", "mpirun":""},
-				"32": {"splitting": "1x32", "mpirun":""},
-				"64": {"splitting": "1x64", "mpirun":"--use-hwthread-cpus"}
-			},
-			"patches": {
-				// Change the size of the mesh
-				"param_override.h": {
-					"next_to": "#if defined BASIN",
-					"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
-					"by":      "      parameter (LLm0=200,  MMm0=200,  N=50)"
-				},
-				// CHange the dt
-				"TEST_CASES/croco.in.Basin": {
-					"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-					"what":    "                3240     9600     65      1",
-					"by":      "                100      2400     65      1"
-				}
-			}
-		},
-		// BASIN a bit huger
-		"BASIN-HUGE": {
-			"title": "BASIN - HUGE - (400 x 400 x 100)",
-			"case": "BASIN",
-			"steps": 100,
-			"mpi": {
-				"1":  {"splitting": "1x1",  "mpirun":""},
-				"2":  {"splitting": "1x2",  "mpirun":""},
-				"4":  {"splitting": "1x4",  "mpirun":""},
-				"6":  {"splitting": "1x6",  "mpirun":""},
-				"8":  {"splitting": "2x4",  "mpirun":""},
-				"12": {"splitting": "2x6",  "mpirun":"--use-hwthread-cpus"},
-				"16": {"splitting": "1x16", "mpirun":""},
-				"32": {"splitting": "1x32", "mpirun":""},
-				"64": {"splitting": "1x64", "mpirun":"--use-hwthread-cpus"}
-			},
-			"patches": {
-				// Change the size of the mesh
-				"param_override.h": {
-					"next_to": "#if defined BASIN",
-					"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
-					"by":      "      parameter (LLm0=400,  MMm0=400,  N=100)"
-				},
-				// CHange the dt
-				"TEST_CASES/croco.in.Basin": {
-					"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-					"what":    "                3240     9600     65      1",
-					"by":      "                100      1200     65      1"
-				}
-			}
-		}
+		// Look inside condif.d/cases/* to see what is imported here from dir.
 	}
 }

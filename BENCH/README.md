@@ -11,12 +11,12 @@ First you can give a look to the `config.jsonc` file. You will see the concepts
 of :
 
 - `cases` : The cases to run (BASIN, SOLITON...) and some case size bu changing
-  the grid size (eg. BASIN-LARGE, BASIN-HUGE).
+	the grid size (eg. BASIN-LARGE, BASIN-HUGE).
 - `variants`: The parallelization mode (openmp, mpi, gpu) with specification on
-  the ressources to use because CROCO needs to be rebuilt for every case du to
-  some currently static definitions in the CROCO code on the use of those ressources.
+	the ressources to use because CROCO needs to be rebuilt for every case du to
+	some currently static definitions in the CROCO code on the use of those ressources.
 - `hosts`: You will find some variables to adapt the running to the host you
-  are running on.
+	are running on.
 
 Dependencies
 ------------
@@ -24,7 +24,7 @@ Dependencies
 **Note**: It currently uses the `cmake` build and not the `jobcomp` one.
 
 As it will build CROCO for you, you will need to have the basic dependencies
-available (see main README.cmake.md to know what is required).
+available (see main README.md to know what is required).
 
 You might need some extended dependences so if you built the deps prefix for
 CROCO with `create_prefix_with_deps.sh`, then just run:
@@ -107,10 +107,10 @@ usefull in dev process to compare without re-running everything.
 Configuration
 -------------
 
-The configuration file can be provided under `json` or `yaml` form as you
-prefer. It can also be splitted in subdirectory mode by merging sevarl subfiles.
+The configuration file can be provided under `json` which also supports comments.
+It can also be splitted in subdirectory mode by merging several subfiles.
 
-In the main `config.yaml` file, the inclusion is described by the `imports`
+In the main `config.jsonc` file, the inclusion is described by the `imports`
 section.
 
 Meta variants
@@ -146,19 +146,46 @@ It avoids duplicating too many entries in the file.
 You will mostly find them at two places : 
 
 - On the cases to unpack king of template not to fully duplicate all cases for
-  OpenMP and MPI.
+	OpenMP and MPI.
 - To inject some values from `host` into the `configure` cmake call.
 - To inject the mpi extra options in `command_prefix`.
 
 **Note**:
 
 - For the template base system you can recurse the template var (`{thread}`, `tasks`)
-  to build the final var name (as it is done in the default config).
+	to build the final var name (as it is done in the default config).
 - For the rest you cannot currently recurse even it can be trivial to patch the code to enable it
-  (just that I didn't had time to validate it really works by doing it).
-  For this case, you have acces to two base keys : `tuning` & `case`
-  corresponding to the corresponding par of the config file you are running
-  (host & current case).
+	(just that I didn't had time to validate it really works by doing it).
+	For this case, you have acces to two base keys : `tuning` & `case`
+	corresponding to the corresponding par of the config file you are running
+	(host & current case).
+
+Configuration patching
+----------------------
+
+You will notice in the cases configuration files (`config.d/cases/*`) that there
+is for most of them a patching part which explain how to modify the CROCO
+configuration files to get the case setted up.
+
+The patching is like this :
+
+```json
+"patches": {
+	// Define a file to patch
+	// Note : it can also contains an array of patch elements if needs to change
+	//        several lines.
+	"param_override.h": {
+		// Patch what is after this line
+		"next_to": "#if defined BASIN",
+		// What to replace (expected to be present)
+		"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
+		// By what to replace
+		"by":      "      parameter (LLm0=200,  MMm0=200,  N=50)",
+		// Description to be printed in the terminal when applied
+		"descr":   "Set mesh size to (200 x 200 x 50)"
+	},
+},
+```
 
 Imports
 -------

@@ -8,7 +8,15 @@
 		"tuning": {
 			"gnu": "-march=native",
 			"nvfortran": "-tp=native",
-			"mpi_options": "-use-hwthread-cpus"
+			"environ": {
+				"OMP_PROC_BIND": "spread"
+			},
+			"mpi_options": "-use-hwthread-cpus",
+			"hwloc_bind": {
+				// because I have some low & fast cores and want to run only on fast
+				"openmp": "hwloc-bind core:0-5",
+				"mpirun": "hwloc-bind core:0-5"
+			}
 		}
 	}
 }

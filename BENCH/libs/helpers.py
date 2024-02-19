@@ -10,11 +10,41 @@
 ##########################################################
 import re
 import os
+import sys
 import shutil
 import subprocess
+import tempfile
+import traceback
+from termcolor import cprint
 from timeit import timeit
 from .messaging import Messaging
 from contextlib import contextmanager
+
+##########################################################
+def display_run_error(command: str, outpout: str) -> None:
+    dir = os.getcwd()
+    keep_n_last_lines = 32
+    truncated_output = '\n'.join(outpout.split('\n')[-keep_n_last_lines:])
+    cprint("-----------------------------------------------", 'red')
+    cprint(truncated_output, 'dark_grey')
+    cprint("-----------------------------------------------", 'red')
+    cprint(f"Error from command : {command}", 'red')
+    cprint(f"Error from workdir : {dir}", 'red')
+    cprint("-----------------------------------------------", 'red')
+    print("")
+
+##########################################################
+def print_exception(exception: Exception) -> None:
+    dir = os.getcwd()
+    cprint("-----------------------------------------------", 'red')
+    cprint(''.join(traceback.format_exception(exception)), 'dark_grey')
+    cprint("-----------------------------------------------", 'red')
+    cprint(f"Error from command : {' '.join(sys.argv)}", 'red')
+    cprint(f"Error from workdir : {dir}", 'red')
+    cprint("-----------------------------------------------", 'red')
+    cprint(str(exception), 'red')
+    cprint("-----------------------------------------------", 'red')
+    print("")
 
 ##########################################################
 def run_shell_command(command, capture = True, show_on_error = True):
@@ -31,14 +61,12 @@ def run_shell_command(command, capture = True, show_on_error = True):
         # on failure
         if result.returncode != 0:
             if show_on_error:
-                print("-----------------------------------------------")
-                print(result.stdout)
-                print("-----------------------------------------------")
-                print(f"Error from command : {command}")
-                print("-----------------------------------------------")
+                display_run_error(command, result.stdout)
             raise Exception("Fail to run command !")
     else:
+        print("-----------------------------------------------")
         subprocess.run(command, shell=True, check=True)
+        print("-----------------------------------------------")
 
 def run_shell_command_time(command, verbose: bool = False):
     '''Print the command and run it by measuring time. On failure it prints the output.'''
@@ -46,7 +74,12 @@ def run_shell_command_time(command, verbose: bool = False):
     if verbose:
         return timeit(stmt = f"subprocess.run('{command}', check=True, shell=True)", setup = "import subprocess", number = 1)
     else:
-        return timeit(stmt = f"subprocess.run('{command} > /dev/null', check=True, shell=True)", setup = "import subprocess", number = 1)
+        with tempfile.NamedTemporaryFile("w+") as log_fp:
+            try:
+                return timeit(stmt = f"subprocess.run('{command} 2>&1 > {log_fp.name}', check=True, shell=True)", setup = "import subprocess", number = 1)
+            except:
+                display_run_error(command, log_fp.read())
+                raise Exception("Fail to run command !")
 
 def replace_in_file(in_path: str, out_path: str, pattern: str, replace_by:str):
     '''Patch a file by replacing some patterns inside.'''
@@ -86,7 +119,6 @@ def patch_lines(path: str, rules: list):
     requested via a list of rules to apply.
     '''
     fname = os.path.basename(path)
-    Messaging.step(f"Patching {fname}")
 
     # copy to keep old version
     shutil.copy(path, f'{path}.backup')
@@ -97,6 +129,12 @@ def patch_lines(path: str, rules: list):
 
     # loop on rules
     for rule in rules:
+        # Display
+        if 'descr' in rule:
+            descr = rule['descr']
+            Messaging.step(f"Patching {fname} [ {descr} ]")
+        else:
+            Messaging.step(f"Patching {fname}")
         # replace rule
         if rule['mode'] == 'replace':
             id = lines.index(rule['what'])
@@ -150,7 +188,7 @@ def apply_vars_in_str(value: str, vars: {}) -> str:
     if patterns:
         for pattern in patterns:
             # progress
-            Messaging.step("Apply variable {pattern}...")
+            Messaging.step(f"Apply variable {pattern}...")
 
             # fetch value
             path = pattern.replace("{", "").replace('}','').split('.')
