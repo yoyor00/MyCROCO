@@ -4,7 +4,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ## [Unreleased] - xxxx-xx-xx
 ### Added
-
 - ABL1D : 
   - TODO add description
   - Add KILPATRICK test-case
@@ -32,13 +31,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   check merge request and documentation if interested.
 
 ### Fixed
-
 - Correction of the vertical transformation function (in the NEW_S_COORD case) 
   to better handle negative values of h when using wet/dry. 
   The correction guarantees monotonicity of vertical coordinates 
   for all stretching parameters.
 
 - DIAGNOSTICS_VRT : misspelling in key name
+  [#159](https://gitlab.inria.fr/croco-ocean/croco/-/issues/159)
+
+- Averaged files not written correctly if ntsavg=0 (time-steps missing)
+  [#157](https://gitlab.inria.fr/croco-ocean/croco/-/issues/157)
 
 - Avoid unnecessary compiling of partit.F when PARALLEL_FILES is not defined 
   [#125](https://gitlab.inria.fr/croco-ocean/croco/-/issues/125)
@@ -66,6 +68,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   (thanks to ChangShui Xia )
 
 ### Changed
+
+- OUTPUT : rename Cs_r > Cs_rho, delete redundancy with sc_r and sc_w , see issue 
+  [#126](https://gitlab.inria.fr/croco-ocean/croco/-/issues/126) 
 
 - Use of separate vname(s) vector to avoid risk of overlapping 
   [#133](https://gitlab.inria.fr/croco-ocean/croco/-/issues/133)

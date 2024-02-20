@@ -208,7 +208,7 @@
             endif
             start_time=start_time*time_scale
 
-#if defined XIOS && !defined USE_CALENDAR
+# if defined XIOS && !defined USE_CALENDAR
       start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
       READ(start_date_run(6:7),fmt='(i2)') start_month

@@ -878,17 +878,11 @@ C apar_file
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='hc_units', value='meter')
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='sc_w'
-     &     , value='have a look at variable sc_w in this file')
-      CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='Cs_w'
      &     , value='have a look at variable Cs_w in this file')
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='sc_r'
-     &     , value='have a look at variable sc_r in this file')
-      CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='Cs_r'
-     &     , value='have a look at variable Cs_r in this file')
+     &     ,type='string',name='Cs_rho'
+     &     , value='have a look at variable Cs_rho in this file')
 #endif
       CALL iom_set_file_global_attr_int   (cdid
      &     ,type='int',name='ntimes', value=ntimes)
@@ -2380,12 +2374,10 @@ C 				  endif
 ! done automatically
 !
 ! S-coordinate independent variables "sc_w", "sc_r" and stretching
-! curves "Cs_w", "Cs_r" at W- and RHO-points.
+! curves "Cs_w", "Cs_rho" at W- and RHO-points.
 !
-      call xios_send_field("Cs_r",Cs_r(1:N))
+      call xios_send_field("Cs_rho",Cs_r(1:N))
       call xios_send_field("Cs_w",Cs_w(0:N))
-      call xios_send_field("sc_r",sc_r(1:N))
-      call xios_send_field("sc_w",sc_w(0:N))
       call xios_send_field("hc",hc)
       call xios_send_field("theta_s",theta_s)
       call xios_send_field("theta_b",theta_b)
