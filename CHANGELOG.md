@@ -60,6 +60,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   (thanks to ChangShui Xia )
 
 ### Changed
+
+- OUTPUT : rename Cs_r > Cs_rho, delete redundancy with sc_r and sc_w , see issue 
+  [#126](https://gitlab.inria.fr/croco-ocean/croco/-/issues/126) 
+
 - Use of separate vname(s) vector to avoid risk of overlapping 
   [#133](https://gitlab.inria.fr/croco-ocean/croco/-/issues/133)
 
