@@ -60,7 +60,7 @@ def dump_node_as_source(node: Node, variant: str = "origin"):
         fp.write(source)
 
 ##########################################################
-def handle_kji_loop(top_loop: Loop, patch_scratch_vars: list) -> None:
+def handle_kji_loop(top_loop: Loop, patch_scratch_vars: list, dump_snippets = False) -> None:
     """
     Swapping indices of 'kji' loops to TODO
 
@@ -68,7 +68,7 @@ def handle_kji_loop(top_loop: Loop, patch_scratch_vars: list) -> None:
     """
 
     # to generate source to build unit tests
-    if ENABLE_SNIPPET_DUMPS:
+    if ENABLE_SNIPPET_DUMPS or dump_snippets:
         dump_node_as_source(top_loop, "kji-origin")
 
     # help finding where it applies (debug)
@@ -127,7 +127,7 @@ def handle_kji_loop(top_loop: Loop, patch_scratch_vars: list) -> None:
                 loop_parent.addchild(new_k_loop, loop_position)
 
 ##########################################################
-def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list) -> None:
+def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list, dump_snippets = False) -> None:
     """
     TODO: Describe it
 
@@ -139,7 +139,7 @@ def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list) -> None:
     """
 
     # to generate source to build unit tests
-    if ENABLE_SNIPPET_DUMPS:
+    if ENABLE_SNIPPET_DUMPS or dump_snippets:
         dump_node_as_source(top_loop, "jki-origin")
 
     # help finding where it applies (debug)
@@ -174,7 +174,7 @@ def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list) -> None:
     top_loop.loop_body.addchild(inner_i_loop)
 
 ##########################################################
-def handle_jik_loop(top_loop: Loop, scratch_1d_vars:list, do_k_loop_fuse: bool = True) -> None:
+def handle_jik_loop(top_loop: Loop, scratch_1d_vars:list, do_k_loop_fuse: bool = True, dump_snippets = False) -> None:
     """
     Describe what it does
 
@@ -184,7 +184,7 @@ def handle_jik_loop(top_loop: Loop, scratch_1d_vars:list, do_k_loop_fuse: bool =
     """
 
     # to generate source to build unit tests
-    if ENABLE_SNIPPET_DUMPS:
+    if ENABLE_SNIPPET_DUMPS or dump_snippets:
         dump_node_as_source(top_loop, "jik-origin")
 
     # patch arrays

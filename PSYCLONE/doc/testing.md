@@ -50,6 +50,17 @@ of `random_seed` and `random_numbers` which are GNU and not supported by
 nvfortran. Then just stay to generate a third function with the
 psychlone generated version of the loop.
 
+Dumping all loops & kernels
+---------------------------
+
+You can enable the loop snippet dumping easily at any time by setting
+environnement variable before calling `make`.
+
+```sh
+# will dump all loops inside ./OCEAN/loops-snippets/:
+CROCO_PSYCLONE_SNIPPET_DUMPS=true make
+```
+
 Todo : Extend
 -------------
 

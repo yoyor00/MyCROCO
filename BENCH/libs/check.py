@@ -57,7 +57,7 @@ def recurse_compare_current_dim(varname:str, shape_ref: tuple, shape_actual: tup
             if not math.isclose(cusor_ref[i], cursor_actual[i]):
                 raise Exception(f"Non close equality in variable '{varname}': {cusor_ref[i]} !~= {cursor_actual[i]} at ({','.join(current_dims)})")
             if not cusor_ref[i] == cursor_actual[i]:
-                raise Exception(f"Non equality in variable '{varname}' : {cusor_ref[i]} != {cursor_actual[i]} at ({','.join(current_dims)})")
+                raise Exception(f"Non strict equality in variable '{varname}' : {cusor_ref[i]} != {cursor_actual[i]} at ({','.join(current_dims)})")
     else:
         for i in range(shape_actual[dim_id]):
             recurse_compare_current_dim(varname, shape_ref, shape_actual, cusor_ref[i], cursor_actual[i], dim_id+1, current_dims=current_dims+[str(i)])
@@ -111,3 +111,54 @@ def compare_netcdf_files(ref_file: str, actual_file: str) -> None:
     finally:
         ref.close()
         actual.close()
+
+##########################################################
+def compare_netcdf_files_old(ref_file: str, actuel_file: str):
+    # load
+    ref = Dataset(ref_file, "r")
+    actual = Dataset(actuel_file, "r")
+
+    # loop on vars to check
+    for var in ref.variables.keys():
+        # print
+        #print(f"---------------- Checking {var} -------------------")
+
+        # extract shapes
+        shape_ref = ref.variables[var].shape
+        shape_actual = actual.variables[var].shape
+
+        # check
+        #print("----------------------------------------------------")
+        #print(shape_ref)
+        #print(shape_actual)
+        #print("----------------------------------------------------")
+        assert shape_ref == shape_actual
+
+        # compare one var
+        if len(shape_ref) == 3:
+            for i in range(shape_actual[0]):
+                v1_i = ref.variables[var][i]
+                v2_i = actual.variables[var][i]
+                for j in range(shape_actual[1]):
+                    v1_j = v1_i[j]
+                    v2_j = v2_i[j]
+                    for k in range(shape_actual[2]):
+                        v1 = v1_j[k]
+                        v2 = v2_j[k]
+                        assert math.isclose(v1, v2), f"({i}, {j}, {k}) => {v1} != {v2}"
+                        assert v1 == v2, f"({i}, {j}, {k}) => {v1} != {v2}"
+        elif len(shape_ref) == 2:
+            for i in range(shape_actual[0]):
+                v1_i = ref.variables[var][i]
+                v2_i = actual.variables[var][i]
+                for j in range(shape_actual[1]):
+                    v1_j = v1_i[j]
+                    v2_j = v2_i[j]
+                    assert math.isclose(v1_j, v2_j), f"({i}, {j}) => {v1_j} != {v2_j}"
+                    assert v1_j == v2_j, f"({i}, {j}, {k}) => {v1} != {v2}"
+        elif len(shape_ref) == 1:
+            for i in range(shape_actual[0]):
+                v1_i = ref.variables[var][i]
+                v2_i = actual.variables[var][i]
+                assert math.isclose(v1_i, v2_i), f"({i}, {j}) => {v1_i} != {v2_i}"
+                assert v1_i == v2_i, f"({i}, {j}, {k}) => {v1} != {v2}"
