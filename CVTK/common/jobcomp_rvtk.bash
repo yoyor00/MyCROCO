@@ -261,7 +261,6 @@ fi
 # prepare and compile the library
 #
 if [[ $COMPILEAGRIF ]] ; then
-
 # Find the default C compiler
     CC1=$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)
     CFLAGS1=$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)
