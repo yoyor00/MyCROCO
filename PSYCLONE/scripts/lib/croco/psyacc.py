@@ -23,11 +23,11 @@ much code as possible in each Kernels region).
 # python
 import os
 # poesidon
-from lib.poseidon.dsl.helper import extract_kernels_from_psyir
-from lib.extensions import loops
+from scripts.lib.poseidon.dsl.helper import extract_kernels_from_psyir
+from scripts.lib.extensions import loops
 # intenral
-from lib.extensions.directives import ACCWaitDirective, ACCSetDeviceNumDirective
-from lib.from_nemo_psyclone.utils import normalise_loops
+from scripts.lib.extensions.directives import ACCWaitDirective, ACCSetDeviceNumDirective
+from scripts.lib.from_nemo_psyclone.utils import normalise_loops
 # psyclone
 from psyclone.psyir.nodes.routine import Routine
 from psyclone.psyir.nodes.if_block import IfBlock

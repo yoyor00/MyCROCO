@@ -519,43 +519,43 @@ def helper_gen_var_decl(vars: dict, common: bool = False) -> str:
     # loop on scalars
     scalars = vars['scalars_int']
     for vname in scalars:
-        decl.append(f'integer*4 {vname}')
+        decl.append(f'\tinteger*4 {vname}')
 
     # loop on scalars
     scalars = vars['scalars']
     for vname in scalars:
-        decl.append(f'real*4 {vname}')
+        decl.append(f'\treal*4 {vname}')
 
     # loop on 1d arrays
     scalars = vars['1d']
     for vname in scalars:
-        decl.append(f'real*4 {vname}(0:10)')
+        decl.append(f'\treal*4 {vname}(0:10)')
 
     # loop on 2d arrays
     scalars = vars['2d']
     for vname in scalars:
-        decl.append(f'real*4 {vname}(0:10,0:10)')
+        decl.append(f'\treal*4 {vname}(0:10,0:10)')
 
     # loop on 3d arrays
     scalars = vars['3d']
     for vname in scalars:
-        decl.append(f'real*4 {vname}(0:10,0:10,0:10)')
+        decl.append(f'\treal*4 {vname}(0:10,0:10,0:10)')
 
     # loop on 4d arrays
     scalars = vars['4d']
     for vname in scalars:
-        decl.append(f'real*4 {vname}(0:10,0:10,0:10,0:10)')
+        decl.append(f'\treal*4 {vname}(0:10,0:10,0:10,0:10)')
 
     # loop on 5d arrays
     scalars = vars['5d']
     for vname in scalars:
-        decl.append(f'real*4 {vname}(0:10,0:10,0:10,0:10,0:10)')
+        decl.append(f'\treal*4 {vname}(0:10,0:10,0:10,0:10,0:10)')
   
     # common
     if common:
         for dim in vars:
             for vname in vars[dim]:
-                decl.append(f'common {vname}')
+                decl.append(f'\tcommon {vname}')
 
     # ok
     return '\n'.join(decl)

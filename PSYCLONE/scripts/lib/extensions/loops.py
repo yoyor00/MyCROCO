@@ -32,7 +32,7 @@ from .loops_helpers import *
 ENABLE_SNIPPET_DUMPS=False
 
 ##########################################################
-def dump_node_as_source(node: Node, variant: str = "origin"):
+def dump_node_as_source(node: Node, variant: str = "origin", in_dir='./'):
     '''
     Generated the snippets to reuse in unit test. Needs to be copied
     by hand into scripts/extension/tests/croco-loops-snippets/ in right
@@ -49,12 +49,17 @@ def dump_node_as_source(node: Node, variant: str = "origin"):
         id += 1
         cursor = childs[id]
 
+    # dump
+    dump_named_node_as_source(f"{routine.name}-{id}", node, in_dir=in_dir)
+
+##########################################################
+def dump_named_node_as_source(name: str, node: Node, variant: str = "origin", in_dir='./'):
     # create directory if not exist
-    path = os.path.expanduser(f'./loops-snippets/{variant}')
+    path = os.path.expanduser(f'{in_dir}/loops-snippets/{variant}')
     os.makedirs(path, exist_ok=True)
 
     # open file
-    fname = os.path.join(path, f"snippet-{routine.name}-{id}.F")
+    fname = os.path.join(path, f"snippet-{name}.F")
     with open(fname, "w+") as fp:
         source = FortranWriter()(node)
         fp.write(source)
