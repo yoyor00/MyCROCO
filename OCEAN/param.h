@@ -242,6 +242,8 @@ Note: I don't like this way of making the trick (the one currently implemented).
       integer NP_XI, NP_ETA, NNODES
 #if defined(SPLITTING_X) && defined(SPLITTING_ETA)
       parameter (NP_XI=SPLITTING_X,  NP_ETA=SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
+#elif HAVE_CMAKE_CONFIG
+      parameter (NP_XI=WITH_SPLITTING_X,  NP_ETA=WITH_SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
 #else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
 #endif
@@ -255,6 +257,8 @@ Note: I don't like this way of making the trick (the one currently implemented).
 #elif defined OPENMP
 #ifdef NB_THREADS
       parameter (NPP=NB_THREADS)
+#elif HAVE_CMAKE_CONFIG
+      parameter (NPP=WITH_THREADS)
 #else
       parameter (NPP=4)
 #endif

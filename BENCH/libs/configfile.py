@@ -92,7 +92,7 @@ class ConfigFile:
         '''Load the config file and extract some infos'''
         # message
         Messaging.section("Loading configuration file")
-        Messaging.step("Reading {self.file_path}")
+        Messaging.step(f"Reading {self.file_path}")
 
         # load
         self.config = self.load_json_yaml_file(self.file_path)
