@@ -854,9 +854,6 @@ CR      write(*,*) '  0' MYID
 
 #ifdef SOLVE3D
       iif = -1
-# ifdef AGRIF
-      it_inside_root = 1
-# endif
       nbstep3d = 0
 #endif
       iic = ntstart

@@ -39,13 +39,11 @@
 
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3
-       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes)
+       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)
 #  ifdef AGRIF
      &  .and. it_inside_root==1  
 #  endif
      &  ) then
-         MPI_master_only 
-     &             write(*,*) 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
        endif
 !!!!!!!!!!!!!
@@ -85,7 +83,7 @@ C$OMP END PARALLEL
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3
        if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<ntimes)) then
+         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
 #  ifdef AGRIF
            if(it_inside_root==Agrif_rel_idt()) then 
 #  endif
