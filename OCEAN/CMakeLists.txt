@@ -20,6 +20,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${NETCDFF_INCLUDE_DIR})
 set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS}
                             -DHAVE_CMAKE_CONFIG
+                            -DHAVE_CMAKE_CONFIG_OVERRIDE
                             -I${NETCDFF_INCLUDE_DIR}
                             -I${CMAKE_CURRENT_SOURCE_DIR}
                             -I${CMAKE_CURRENT_BINARY_DIR}

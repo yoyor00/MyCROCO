@@ -157,17 +157,17 @@ function(croco_trick_create_cpp_def_override)
 	#  - cppdefs_override.h
 	#  - cppdefs_dev_override.h
 	#  - param_override.h
-	set(CPPDEF_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs.h)
-	set(CPPDEF_DEV_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_dev.h)
-	set(PARAM_H_OVERRIDE ${CMAKE_BINARY_DIR}/param.h)
+	set(CPPDEF_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_override.h)
+	set(CPPDEF_DEV_OVERRIDE ${CMAKE_BINARY_DIR}/cppdefs_dev_override.h)
+	set(PARAM_H_OVERRIDE ${CMAKE_BINARY_DIR}/param_override.h)
 
 	# give access to them via -I
 	include_directories(${CMAKE_BINARY_DIR})
 
 	# create if needs
 	if (NOT EXISTS ${CPPDEF_OVERRIDE})
-		#write_file(${CPPDEF_OVERRIDE} "/* please just override the keys you needs here */")
-		file(COPY_FILE ${CMAKE_SOURCE_DIR}/OCEAN/cppdefs.h ${CPPDEF_OVERRIDE})
+		write_file(${CPPDEF_OVERRIDE} "/* please just override the keys you needs here */")
+		#file(COPY_FILE ${CMAKE_SOURCE_DIR}/OCEAN/cppdefs.h ${CPPDEF_OVERRIDE})
 	endif ()
 
 	# create if needs
