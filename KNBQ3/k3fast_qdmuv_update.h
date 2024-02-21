@@ -269,11 +269,9 @@
               cff=0
 #  endif
 #  ifdef KNHINT_CORR
-              if (k.ge.Max(1,N-2*alphaNw_nbq)) then
                cff=cff+alphaw_nbq/dtfast*
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
-              endif
 #  endif
 #  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
               dum_s=dum_s-qdmu_nbq(i,j,k)*cff
@@ -487,11 +485,9 @@
               cff=0
 #  endif
 #  ifdef KNHINT_CORR
-              if (k.ge.Max(1,N-2*alphaNw_nbq)) then
                cff=cff+alphaw_nbq/dtfast*
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
-              endif
 #  endif
 #  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
               dum_s=dum_s-qdmv_nbq(i,j,k)*cff

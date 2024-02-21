@@ -702,39 +702,6 @@ C$    trd=omp_get_thread_num()
 #   include "k3fast_qdmw_implicit.h"
 #  endif  
 ! !
-! !................................
-! !  Nudging
-! !................................
-! !   
-#  if (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
-        do j=JstrV-2,Jend+1
-          do i=IstrU-2,Iend+1
-              do k=1,N
-#  ifdef NBQ_NUDGING 
-               cff=NBQnudgcof(i,j)
-#  elif defined KNHINT_CORR
-               cff=0
-#  endif
-#  ifdef KNHINT_CORR 
-               cff=cff+alphaw_nbq
-     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
-     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
-#  endif
-               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff)                  
-#  ifndef KNHINT_CORR
-     &                        +wz(i,j,k,nrhs)
-     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,min(N,k+1)))
-     &                         *cff
-#   ifdef MASKING
-     &                         *mask(i,j)
-#   endif  
-#  endif  
-!
-             enddo
-           enddo
-         enddo
-#   endif /* All NUDGING  */
-! !
 ! !--------------------------------------------------------------------
 ! !  W-momentum open boundary conditions
 ! !--------------------------------------------------------------------

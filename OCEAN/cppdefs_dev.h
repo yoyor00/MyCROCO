@@ -313,7 +313,7 @@
 #  define M2FILTER_NONE  /* no filter with KNBQ */
 #  undef  M2FILTER_POWER
 #  define NBQ_IMP
-#  define NBQ_THETAIMP
+#  undef  NBQ_THETAIMP
 #  ifdef SPONGE
 #   define  NBQ_SPONGE
 #  endif

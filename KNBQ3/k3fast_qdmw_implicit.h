@@ -229,6 +229,30 @@
      &             *Hzr_nbq_inv(i,j,N)  
      &             *DC3D(i,j,N-1))/cff
           qdmw_nbq(i,j,N)=DC3D(i,j,N) 
+! !
+! !--------------------------------
+! !  Nudging
+! !--------------------------------
+! !   
+#  if (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
+#   ifdef NBQ_NUDGING 
+               cff=NBQnudgcof(i,j)
+#   elif defined KNHINT_CORR
+               cff=0
+#   endif
+#   ifdef KNHINT_CORR 
+               cff=cff+alphaw_nbq
+#   endif
+               qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-cff) 
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif                 
+#   ifndef KNHINT_CORR
+!!     &                        +wz(i,j,N,nrhs)
+!!     &                         *Hzr(i,j,N)
+!!     &                         *cff
+#   endif    
+#  endif /* All NUDGING  */ 
         enddo
         enddo
 ! !
@@ -241,7 +265,7 @@
 !         do i=Istr,Iend
 !             qdmw_nbq(i,j,k)=DC(i,k)/(1.+CF(i,k))
 !             qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N-1)
-!          enddo
+!         enddo
 ! 
 !           do i=Istr,Iend
 !             qdmw_nbq(i,j,k)=DC(i,k)-CF(i,k)*qdmw_nbq(i,j,k+1)
@@ -253,7 +277,38 @@
 #   endif
           do j=Jstr,Jend 
           do i=Istr,Iend
+! !
+! !--------------------------------
+! !  Implicit solution
+! !--------------------------------
+! !   
             qdmw_nbq(i,j,k)=DC3D(i,j,k)-FC3D(i,j,k)*qdmw_nbq(i,j,k+1)
+! !
+! !--------------------------------
+! !  Nudging
+! !--------------------------------
+! !   
+#  if (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
+#   ifdef NBQ_NUDGING 
+               cff=NBQnudgcof(i,j)
+#   elif defined KNHINT_CORR
+               cff=0
+#   endif
+#   ifdef KNHINT_CORR 
+               cff=cff+alphaw_nbq
+     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+#   endif
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff) 
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif                 
+#   ifndef KNHINT_CORR
+!!     &                        +wz(i,j,k,nrhs)
+!!     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,k+1))
+!!     &                         *cff
+#   endif    
+#  endif /* All NUDGING  */  
           enddo            
           enddo                        
         enddo 

@@ -172,18 +172,45 @@
 ! ! (fast and slow components)
 ! !--------------------------------
 ! !
-            qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
+            qdmw_nbq(i,j,k)=(qdmw_nbq(i,j,k)   
      &                      + dtfast * ( dum_s 
 #   ifdef K3FAST_C3D_WSF
      &                      + rw_int_nbq(i,j,k)
 #   endif     
-     &                                )
+     &                                ))
 ! ! 
 ! !  Masking
 ! !
 #   ifdef MASKING
-          qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
+     &                       * rmask(i,j)
 #   endif  
+! !
+! !--------------------------------
+! !  Nudging
+! !--------------------------------
+! !   
+#  if !defined NBQ_IMP && \
+      ( (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR)
+#   ifdef NBQ_NUDGING 
+               cff=NBQnudgcof(i,j)
+#   elif defined KNHINT_CORR
+               cff=0
+#   endif
+#   ifdef KNHINT_CORR 
+               cff=cff+alphaw_nbq
+     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+#   endif
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff) 
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif                 
+#   ifndef KNHINT_CORR
+!!     &                        +wz(i,j,k,nrhs)
+!!     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,k+1))
+!!     &                         *cff
+#   endif    
+#  endif /* All NUDGING  */  
           enddo  ! i loop           
         enddo    ! k loop
 !
@@ -204,6 +231,29 @@
             dum_s = FC3D(i,j,k) - FC3D(i,j,k+1)
 #   endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) + dtfast * dum_s 
+! !
+! !
+! !--------------------------------
+! !  Nudging
+! !--------------------------------
+! !   
+#  if !defined NBQ_IMP && \
+      ( (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR)
+#   ifdef NBQ_NUDGING 
+               cff=NBQnudgcof(i,j)
+#   elif defined KNHINT_CORR
+               cff=0
+#   endif
+#   ifdef KNHINT_CORR 
+               cff=cff+alphaw_nbq
+     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+#   endif
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff) 
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif  
+#  endif /* All NUDGING  */  
           enddo
         enddo
 ! !
@@ -243,6 +293,34 @@
 #   ifdef MASKING
           qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
 #   endif  
+! !
+! !
+! !--------------------------------
+! !  Nudging
+! !--------------------------------
+! !   
+#  if !defined NBQ_IMP && \
+      ( (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR)
+#   ifdef NBQ_NUDGING 
+               cff=NBQnudgcof(i,j)
+#   elif defined KNHINT_CORR
+               cff=0
+#   endif
+#   ifdef KNHINT_CORR 
+               cff=cff+alphaw_nbq
+     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+#   endif
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff) 
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif                 
+#   ifndef KNHINT_CORR
+!!     &                        +wz(i,j,k,nrhs)
+!!     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,k+1))
+!!     &                         *cff
+#   endif    
+#  endif /* All NUDGING  */  
         enddo ! i loop
 #   endif
 ! !
@@ -271,6 +349,33 @@
 #    ifdef MASKING
            qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*rmask(i,j)
 #    endif 
+! !
+! !--------------------------------
+! !  Nudging
+! !--------------------------------
+! !   
+#  if !defined NBQ_IMP && \
+      ( (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR)
+#   ifdef NBQ_NUDGING 
+               cff=NBQnudgcof(i,j)
+#   elif defined KNHINT_CORR
+               cff=0
+#   endif
+#   ifdef KNHINT_CORR 
+               cff=cff+alphaw_nbq
+     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+#   endif
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff) 
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif                 
+#  ifndef KNHINT_CORR
+!!     &                        +wz(i,j,k,nrhs)
+!!     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,k+1))
+!!     &                         *cff
+#  endif    
+#  endif /* All NUDGING  */  
         enddo
 #  else
           do i=Istr,Iend   
@@ -365,16 +470,31 @@
 #   ifdef MASKING
           qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N) * rmask(i,j)
 #   endif
-#   if defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY
-           qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-NBQnudgcof(i,j))
-     &                        +wz(i,j,N,nrhs)
-     &                         *Hzr(i,j,N)*pm(i,j)
-     &                         *NBQnudgcof(i,j)
-#    ifdef MASKING
+! !
+! !--------------------------------
+! !  Nudging
+! !--------------------------------
+! !   
+#  if !defined NBQ_IMP && \
+      ( (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR)
+#   ifdef NBQ_NUDGING 
+               cff=NBQnudgcof(i,j)
+#   elif defined KNHINT_CORR
+               cff=0
+#   endif
+#   ifdef KNHINT_CORR 
+               cff=cff+alphaw_nbq
+#   endif
+               qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-cff) 
+#   ifdef MASKING
      &                         *rmask(i,j)
-#    endif
-#   endif  
-     
+#   endif                 
+#   ifndef KNHINT_CORR
+!!     &                        +wz(i,j,k,nrhs)
+!!     &                         *Hzr(i,j,N)
+!!     &                         *cff
+#   endif    
+#  endif /* All NUDGING  */  
         enddo
 ! !
 ! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
