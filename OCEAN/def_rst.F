@@ -75,8 +75,8 @@
 #ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
-          rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
-          rstname=TRIM(rstname)//cdate(1:2)//cdate(12:13)//cdate(15:16)
+          rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(1:4)//cdate(6:7)
+          rstname=TRIM(rstname)//cdate(9:10)//cdate(12:13)//cdate(15:16)
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
         end if 
