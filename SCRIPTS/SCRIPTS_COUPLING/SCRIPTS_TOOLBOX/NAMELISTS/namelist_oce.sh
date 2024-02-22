@@ -24,6 +24,9 @@ export AGRIF_2WAY="FALSE"
 export MPI_NOLAND="FALSE"
 export MY_NODES=18 # ONLY if MPI_NOLAND is "TRUE". It replaces NP_OCEX*NP_OCEY
 
+# wave coupling
+export OW_COUPLING_FULL="FALSE"
+
 # forcing files
 export ini_ext='ini_SODA' # ini extension file (ini_SODA,...)
 export bdy_ext='bry_SODA' # bry extension file (clm_SODA,bry_SODA,...)
