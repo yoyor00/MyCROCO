@@ -25,7 +25,8 @@ export MPI_NOLAND="FALSE"
 export MY_NODES=18 # ONLY if MPI_NOLAND is "TRUE". It replaces NP_OCEX*NP_OCEY
 
 # wave coupling
-export OW_COUPLING_FULL="FALSE"
+export OW_COUPLING_FULL="FALSE" # use all terms from the wave model (stokes, tke flux, bernouilli head, orbital velocities) if TRUE or use their monochromatic approximation if FALSE
+export WAVE_SMFLUX="FALSE" # use stress from the wave model if TRUE or that from the bulk formulation if FALSE. Not used when cpl with atm
 
 # forcing files
 export ini_ext='ini_SODA' # ini extension file (ini_SODA,...)
