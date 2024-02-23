@@ -91,14 +91,14 @@
 #ifdef AGRIF
       integer size_XI,size_ETA,se,sse, sz,ssz
       external :: step
+      integer iic_nbq
+      real csound0_nbq
 # include "zoom.h"
 # include "dynparam.h"
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-      integer iic_nbq
-      real csound0_nbq
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
 !      real*8       :: tool_datosec

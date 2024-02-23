@@ -365,16 +365,6 @@
 #   ifdef MASKING
           qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N) * rmask(i,j)
 #   endif
-#   if defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY
-           qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-NBQnudgcof(i,j))
-     &                        +wz(i,j,N,nrhs)
-     &                         *Hzr(i,j,N)*pm(i,j)
-     &                         *NBQnudgcof(i,j)
-#    ifdef MASKING
-     &                         *rmask(i,j)
-#    endif
-#   endif  
-     
         enddo
 ! !
 ! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

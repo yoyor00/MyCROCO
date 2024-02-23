@@ -24,13 +24,13 @@
       end
 
       subroutine bulk_flux_tile (Istr,Iend,Jstr,Jend, aer,cer)
-      !
-      !======================================================================
-      !                 ***  SUBROUTINE  bulk_flux  ***
-      !  This routine computes the turbulent and radiative components of
-      !  air-sea fluxes for the specification of surface boundary conditions
-      !=======================================================================
-      !
+!
+!======================================================================
+!                 ***  SUBROUTINE  bulk_flux  ***
+!  This routine computes the turbulent and radiative components of
+!  air-sea fluxes for the specification of surface boundary conditions
+!=======================================================================
+!
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -159,7 +159,8 @@
 # endif
 !++  Inverse seawater density
       rho0i=1.0/rho0
-!++  Inverse of specific heat for seawater (kg-degC/Joule) [cp is defined in scalars.h]
+!++  Inverse of specific heat for seawater (kg-degC/Joule) 
+!    [cp is defined in scalars.h]
       cpi=1.0/cp
 !++
 # ifndef READ_PATM
@@ -255,7 +256,8 @@
 !======================================================================
 !
 !++ Initial guess for ECUME algorithms
-          ddelW(1:mb)     = SIGN(MAX(ABS(delW(1:mb)),10.0*dWstar0),delW(1:mb))
+          ddelW(1:mb)     = SIGN(MAX(ABS(delW(1:mb)),10.0*dWstar0)
+     &         ,delW(1:mb))
           ddelT           = SIGN(MAX(ABS(delT),10.0*dTstar0),delT)
           ddelQ           = SIGN(MAX(ABS(delQ),10.0*dQstar0),delQ)
           deltau10n(1:mb) = ddelW(1:mb)
@@ -375,59 +377,50 @@
             cff2         = ddelQ-Qstar*(logts10-psi_t)*cff
             deltaq10n    = SIGN(MAX(ABS(cff2),10.0*dQstar0),cff2)
 !----------------------
-      ENDDO  !<-- terminate iterations-loop
+      ENDDO  
+!<-- terminate iterations-loop
 !----------------------
 #  ifdef ABL1D
             chosqrcd  = vonKar/(logts10-psi_t)
 #  endif
 # else
 !
-!======================================================================
-!   @@@@@@@@@@   @@@@@@@@@@   @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@
-!   @@          @@        @@  @@      @@  @@      @@  @@
-!   @@          @@        @@  @@@@@@@@@@  @@@@@@@@@@  @@@@@@@
-!   @@          @@        @@  @@      @@  @@    @@    @@
-!   @@@@@@@@@@   @@@@@@@@@@   @@      @@  @@      @@  @@@@@@@@@@
-!
-!                                     @@
-!                                   @@
-!                                 @@
-!                               @@
-!                             @@
-!
-!           @@      @@  @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@
-!           @@      @@  @@      @@  @@          @@      @@
-!           @@  @@  @@  @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@
-!            @@ @@ @@   @@      @@          @@  @@
-!             @@  @@    @@      @@  @@@@@@@@@@  @@
-!======================================================================
 !
 !++ Initial guess for COARE algorithm
-          Wstar(1:mb)  = 0.035*delW(1:mb)*Log10oLogZw   ! Friction velocity
-          VisAir = air_visc ( TairC )       ! Molecular viscosity
-          charn  = 0.011                    ! Charnock parameter
-          Ch10   = 0.00115                                                ! 10m exchange coefficient for heat
+          Wstar(1:mb)  = 0.035*delW(1:mb)*Log10oLogZw
+          ! Friction velocity
+          VisAir = air_visc ( TairC )       
+! Molecular viscosity
+          charn  = 0.011                    
+! Charnock parameter
+          Ch10   = 0.00115
+          ! 10m exchange coefficient for heat
           Ribcu  = -    blk_ZW / ( blk_Zabl * 0.004 * blk_beta**3 )
           DO m=1,mb
             iZo10  = g*Wstar(m) /
-     &               (charn*Wstar(m)*Wstar(m)*Wstar(m)+0.11*g*VisAir)    ! inverse of roughness length
+     &               (charn*Wstar(m)*Wstar(m)*Wstar(m)+0.11*g*VisAir) 
+! inverse of roughness length
             iZoT10 = 0.1 * exp(vonKar*vonKar /
-     &                     ( Ch10*LOG( 10.0*iZo10 ) ) ) ! inverse of thermal roughness length
+     &                     ( Ch10*LOG( 10.0*iZo10 ) ) ) 
+           ! inverse of thermal roughness length
 !++ Obukhovs stability param. z/l
             CC     = LOG( blk_ZW*iZo10 )*LOG( blk_ZW*iZo10 )/
      &               LOG( blk_ZT*iZoT10 )
             Ri     =  g * blk_ZW * ( delT+cpvir*TairK*delQ )/
      &                             ( TairK*delW(m)*delW(m) )
             IF ( Ri < 0.0 ) THEN
-              ZoLu(m)=CC*Ri/(1.0+Ri/Ribcu)       ! Unstable
+              ZoLu(m)=CC*Ri/(1.0+Ri/Ribcu)       
+! Unstable
             ELSE
-              ZoLu(m)=CC*Ri/(1.0+3.0*Ri/CC)      ! Stable
+              ZoLu(m)=CC*Ri/(1.0+3.0*Ri/CC)      
+! Stable
             ENDIF
             psi_u(m)     = bulk_psiu_coare ( ZoLu(m) )
             logus10   = LOG(blk_ZW* iZo10)
             Wstar(m)  = delW(m)*vonKar/(logus10-psi_u(m))
           ENDDO
-          ZoLt      = ZoLu(mb)*blk_ZToZW        ! rescale in case blk_ZW != blk_ZT
+          ZoLt      = ZoLu(mb)*blk_ZToZW     
+! rescale in case blk_ZW != blk_ZT
 !++ Stability functions
           psi_t     = bulk_psit_coare ( ZoLt    )
 !++ Initial guess for Monin-Obukhov similarity scales
@@ -446,7 +439,8 @@
           ELSE
             idx = 1
           ENDIF
-          chi   = CWage * ( wspd0 / Wstar(1) )   ! Wave age
+          chi   = CWage * ( wspd0 / Wstar(1) )   
+! Wave age
           IF(idx==1) chi = wspd0
           cff   = wspd0 * wspd0
           aa    =     Awasp(0,idx) + Awasp(1,idx)*wspd0
@@ -454,7 +448,8 @@
           bb    =     Bwasp(0,idx) + Bwasp(1,idx)*wspd0
      &        + cff*( Bwasp(2,idx) + Bwasp(3,idx)*wspd0 )
 !
-          charn = aa *(chi**bb)             ! Wind-dependent Charnock parameter
+          charn = aa *(chi**bb) 
+! Wind-dependent Charnock parameter
 !++  Limit Charnock parameter
           IF(idx==3 .AND. charn < Charn0 ) charn = Charn0
           IF(idx==4 .AND. charn < Charn2 ) charn = Charn2
@@ -532,20 +527,14 @@
 #  endif
             ddelW(1:mb) = delW(1:mb)
 !----------------------
-          ENDDO !<-- terminate iterations-loop
+          ENDDO 
+!<-- terminate iterations-loop
 ! ---------------------
 #  ifdef ABL1D
           chosqrcd  = vonKar/(logts10-psi_t)
 #  endif
 # endif
 
-!===============================================================================
-!   @@@@@@@@   @@@@@@@@@@      @@@@@@@@@@ @@          @@        @@  @@     @@
-!  @@      @@  @@      @@      @@         @@          @@        @@    @@  @@
-!  @@      @@  @@@@@@@@@@  &&  @@@@@@@    @@          @@        @@      @@
-!  @@      @@  @@      @@      @@         @@          @@        @@    @@  @@
-!   @@@@@@@@   @@      @@      @@         @@@@@@@@@@   @@@@@@@@@@   @@      @@
-!===============================================================================
 # ifdef ABL1D
           Cd          = (Wstar(1)/ddelW(1))**2
           Cd_du(i,j)  =                  Cd  * delW(1)
@@ -566,7 +555,8 @@
           hflat = - Hlv*rhoAir*Wstar(mb)*Qstar
 !++ Longwave Radiation.
 #  ifndef BULK_LW
-          hflw   = -radlw(i,j) ! positive downward, i.e., warming the ocean
+          hflw   = -radlw(i,j)
+! positive downward, i.e., warming the ocean
 #  else
 !++  Treat input longwave data as downwelling radiation only and add
 !++  outgoing IR from model sea surface temperature.
@@ -574,7 +564,8 @@
      &           - emiss_lw*rho0i*cpi*SigmaSB*TseaK*TseaK*TseaK*TseaK
 #  endif
 !++  Compute Webb correction (Webb effect) to latent heat flux, Hlw.
-          upvel=-1.61*Wstar(mb)*Qstar-(1.0+1.61*Q)*Wstar(mb)*Tstar/TairK
+          upvel=-1.61*Wstar(mb)*Qstar-(1.0+1.61*Q)*Wstar(mb)*Tstar
+     &   /TairK
 !++  Compute turbulent latent heat flux (W/m2).
           hflat=hflat+rhoAir*Hlv*upvel*Q
 !
@@ -607,7 +598,8 @@
 #  ifdef CFB_STRESS
           stau(i,j) = cfb_slope * delW(1) + cfb_offset
 #  endif
-!++  Store fluxes for diagnostics, when storing in netCDF file, multiplied by rho0.Cp to get W/m2
+!++  Store fluxes for diagnostics, 
+!    when storing in netCDF file, multiplied by rho0.Cp to get W/m2
           shflx_rsw(i,j)=srflx(i,j)
           shflx_lat(i,j)=hflat
           shflx_sen(i,j)=hfsen
@@ -615,8 +607,10 @@
 !----------------------
 # endif    /* ABL1D */
 !----------------------
-        ENDDO !<-- terminate i-loop
-      ENDDO   !<-- terminate j-loop
+        ENDDO 
+!<-- terminate i-loop
+      ENDDO   
+!<-- terminate j-loop
 !----------------------
 
 
@@ -699,11 +693,16 @@
       cff=(1.0007+3.46e-6*0.01*psfc)*6.1121*
      &        exp(17.502*TairC/(240.97+TairC))
 !++  Compute specific humidity, Q (kg/kg).
-      IF (RH.lt.2.0) then                             ! RH fraction
-         cff=cff*RH                                   ! Vapor pres (mb)
-         spec_hum=MvoMa*(cff/(psfc*0.01-0.378*cff))  ! Spec hum (kg/kg)
-      ELSE             !RH input was actually specific humidity in g/kg
-         spec_hum=0.001*RH                            ! Spec Hum (kg/kg)
+      IF (RH.lt.2.0) then                             
+! RH fraction
+         cff=cff*RH                                   
+! Vapor pres (mb)
+         spec_hum=MvoMa*(cff/(psfc*0.01-0.378*cff))  
+! Spec hum (kg/kg)
+      ELSE             
+!RH input was actually specific humidity in g/kg
+         spec_hum=0.001*RH                            
+! Spec Hum (kg/kg)
       ENDIF
       END FUNCTION spec_hum
 !=======================================================================
@@ -777,10 +776,12 @@
         chik  = (1.0-16.0*ZoL)**0.25
         psik  = 2.0*LOG(0.5*(1.0+chik))+LOG(0.5*(1.0+chik**2))
      &              -2.0*ATAN(chik)+pis2
-        chic  = (1.0-12.87*ZoL)**r3    !for very unstable conditions
+        chic  = (1.0-12.87*ZoL)**r3    
+!for very unstable conditions
         psic  = 1.5*LOG(r3*(chic**2+chic+1.0))
      &               - sqr3*ATAN((2.0*chic+1.0)/sqr3)+2.*pis2osqr3
-        bulk_psiu_ecume = psic+(psik-psic)/(1.0+ZoL**2) !match Kansas & free-conv. forms
+        bulk_psiu_ecume = psic+(psik-psic)/(1.0+ZoL**2) 
+        !match Kansas & free-conv. forms
       ENDIF
       return
       END FUNCTION bulk_psiu_ecume
@@ -801,11 +802,13 @@
       ELSE
         chik  = (1.0-16.0*ZoL)**0.25
         psik  = 2.0*LOG(0.5*(1.0+chik**2))
-        chic  = (1.0-12.87*ZoL)**r3     !for very unstable conditions
+        chic  = (1.0-12.87*ZoL)**r3     
+!for very unstable conditions
         psic  = 1.5*LOG((chic**2+chic+1.0)*r3)
      &               -sqr3*ATAN((2.0*chic+1.0)/sqr3)
      &               +2.*pis2osqr3
-        bulk_psit_ecume = psic+(psik-psic)/(1.0+ZoL**2)    !match Kansas & free-conv. forms
+        bulk_psit_ecume = psic+(psik-psic)/(1.0+ZoL**2) 
+         !match Kansas & free-conv. forms
       ENDIF
       return
       END FUNCTION bulk_psit_ecume
@@ -836,7 +839,8 @@
       REAL                 ::  chik, psik
       REAL                 ::  chic, psic
 !
-      IF (ZoL <= 0.0) then  !  Unstable conditions.
+      IF (ZoL <= 0.0) then  
+!  Unstable conditions.
         chik = (1.0-15.0*ZoL)**0.25
         psik = 2.0*LOG(0.5*(1.0+chik))+LOG(0.5*(1.0+chik**2))
      &                                  -2.0*ATAN(chik)+pis2
@@ -844,7 +848,8 @@
         psic  = 1.5*LOG(r3*(chic**2+chic+1.0))
      &          - sqr3*ATAN((2.0*chic+1.0)/sqr3)+2.*pis2osqr3
         bulk_psiu_coare=psic+(psik-psic)/(1.0+ZoL**2)
-      ELSE                    !  Stable conditions
+      ELSE                   
+!  Stable conditions
         chic=-MIN(50.0,0.35*ZoL)
         bulk_psiu_coare=-((1.0+ZoL)+0.6667*(ZoL-14.28)*EXP(chic)+8.525)
       ENDIF
@@ -865,11 +870,13 @@
       IF (ZoL < 0.0) THEN
         chik  = (1.0-15.0*ZoL)**0.25
         psik  = 2.0*LOG(0.5*(1.0+chik**2))
-        chic  = (1.0-34.15*ZoL)**r3     !for very unstable conditions
+        chic  = (1.0-34.15*ZoL)**r3   
+!for very unstable conditions
         psic  = 1.5*LOG((chic**2+chic+1.0)*r3)
      &               -sqr3*ATAN((2.0*chic+1.0)/sqr3)
      &               +2.*pis2osqr3
-        bulk_psit_coare = psic+(psik-psic)/(1.0+ZoL**2) !match Kansas & free-conv. forms
+        bulk_psit_coare = psic+(psik-psic)/(1.0+ZoL**2) 
+!match Kansas & free-conv. forms
       ELSE
         chic=-MIN(50.0,0.35*ZoL)
         bulk_psit_coare = -((1.0+2.0*ZoL/3.0)**1.5+

@@ -269,7 +269,7 @@
               cff=0
 #  endif
 #  ifdef KNHINT_CORR
-               cff=cff+alphaw_nbq/dtfast*
+               cff=cff+alphaw_nbq/dtfast
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
 #  endif
@@ -485,7 +485,7 @@
               cff=0
 #  endif
 #  ifdef KNHINT_CORR
-               cff=cff+alphaw_nbq/dtfast*
+               cff=cff+alphaw_nbq/dtfast 
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
 #  endif

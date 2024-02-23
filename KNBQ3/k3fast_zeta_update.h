@@ -223,7 +223,7 @@
 #  endif
 !$acc kernels if(compute_on_device) default(present)
 #  ifdef KNHINT_ZETAW
-      if (iic==1.and.iif==1) zeta=0.
+!     if (iic==1.and.iif==1) zeta=0.
 #  endif
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend

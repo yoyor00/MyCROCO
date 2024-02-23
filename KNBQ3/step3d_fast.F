@@ -221,9 +221,6 @@ C$    trd=omp_get_thread_num()
      &       rv_int2d_nbq  (PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
 # endif
-# ifdef KNHINT_CORR
-      real kzw
-# endif
         real
      &   Hzw_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,-N_sl  :N),
      &   Hzr_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,-N_sl+1:N),
@@ -726,14 +723,14 @@ C$    trd=omp_get_thread_num()
 #  endif
                qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff)           
 #  ifdef MASKING
-     &                         *mask(i,j)  
+     &                         *rmask(i,j)  
 #  endif       
 #  ifndef KNHINT_CORR
 !     &                        +wz(i,j,k,nrhs)
 !     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,min(N,k+1)))
 !     &                         *cff
 #   ifdef MASKING
-!     &                         *mask(i,j)
+!     &                         *rmask(i,j)
 #   endif  
 #  endif  
              enddo
