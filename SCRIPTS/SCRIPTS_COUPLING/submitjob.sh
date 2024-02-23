@@ -17,15 +17,39 @@ cat ./SCRIPTS_TOOLBOX/common_definitions.sh >> mynamelist.tmp
 
 [ ! -d ${JOBDIR_ROOT} ] && mkdir -p ${JOBDIR_ROOT}  # for the first submitjob.sh call
 
+# copy the base scripts into the jobdir
+cpfile myenv_mypath.sh ${JOBDIR_ROOT}
+cpfile mynamelist.sh ${JOBDIR_ROOT}
+cpfile myjob.sh ${JOBDIR_ROOT}
+
 cd ${JOBDIR_ROOT} 
 ls ${jobname}  > /dev/null  2>&1 
 if [ "$?" -eq "0" ] ; then
    if [ ${CHAINED_JOB} == "FALSE" ]; then 
-       printf "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n             => exit. \n\n  Clean up and restart\n\n\n\n"; exit
+       echo -n "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n Do you want to remove it and launch the new job? WARNING: yes will remove old job [y/n]"
+       read answer
+       if [  "x$answer" = "xy" ]; then
+          echo " Creating and launching new job"
+          echo "   "
+       else
+          echo " Exiting..."
+          echo "   "
+          exit
+       fi
+       unset -v answer
    elif [ ${CHAINED_JOB} == "TRUE" ] && [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
-       printf "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n             => exit. \n\n  Clean up and restart\n\n\n\n"; exit
+       echo -n "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n Do you want to remove it and launch the new job? WARNING: yes will remove old job [y/n]"
+       read answer
+       if [  "x$answer" = "xy" ]; then
+          echo " Creating and launching new job"
+          echo "   "
+       else
+          echo " Exiting..."
+          echo "   "
+          exit
+       fi
+       unset -v answer
    fi
-      
 fi
 cd -
 #-------------------------------------------------------------------------------

@@ -22,6 +22,9 @@ if [ ${LOADL_STEP_NAME} == "get_file" ] || [ ${LOADL_STEP_NAME} == "XXX" ]; then
 # JOBDIR: job directory
         [ -d ${JOBDIR} ] && mv ${JOBDIR} ${JOBDIR}_${OLD}
         mkdir -p ${JOBDIR}
+        cpfile ${SCRIPTDIR}/../myenv_mypath.sh ${JOBDIR}
+        cpfile ${SCRIPTDIR}/../mynamelist.sh ${JOBDIR}
+        cpfile ${SCRIPTDIR}/../myjob.sh ${JOBDIR}
 
 # some printings
 . ${SCRIPTDIR}/common_printing.sh
@@ -232,11 +235,9 @@ if [ "${MODE_TEST}" == "" ] ; then      #  en production
             -e "s/RESTART_FLAG=.*/RESTART_FLAG=\"TRUE\"/" \
             -e "s/CHAINED_JOB=.*/CHAINED_JOB=\"FALSE\"/" \
                 ${SCRIPTDIR}/../myjob.sh > tata.sh
-        mvfile2 ${SCRIPTDIR}/../myjob.sh ${JOBDIR}
+        mvfile2 ${SCRIPTDIR}/../myjob.sh ${SCRIPTDIR}/../myjob.sh.bck
         mvfile tata.sh ${SCRIPTDIR}/../myjob.sh
         chmod 755   ${SCRIPTDIR}/../myjob.sh
-
-        cpfile ${SCRIPTDIR}/../mynamelist.sh ${JOBDIR}
 
 	if [ ${DATE_END_JOB} -ne ${DATE_END_EXP} ]
 	then

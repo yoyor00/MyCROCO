@@ -57,7 +57,7 @@ if [ ${USE_ATM} == 1 ]; then
             mv tmp$$ namcouple
         fi
     done
-    if [[ ${WEIGHT_FLAG} == 1 ]]; then
+    if [[ ${WEIGHT_FLAG} == TRUE ]]; then
         for file in ${weight_a2o}; do
             sed -e "s|<mozaic_atm>|${file}|g" \
                 ./namcouple>tmp$$
@@ -94,7 +94,7 @@ if [ ${USE_OCE} == 1 ]; then
         ./namcouple>tmp$$
         mv tmp$$ namcouple    
     done
-    if [[ ${WEIGHT_FLAG} == 1 ]]; then
+    if [[ ${WEIGHT_FLAG} == TRUE ]]; then
         for file in ${weight_o2a}; do 
             sed -e "s|<mozaic_oce>|${file}|g" \
                 ./namcouple>tmp$$
