@@ -430,7 +430,6 @@ CONTAINS
     READ(50,namflocmod); rewind(50)
 #endif
     CLOSE(50) 
-   
     END SUBROUTINE MUSTANG_readnml
 !!===========================================================================
 
@@ -1656,14 +1655,14 @@ CONTAINS
         ivdiss(iv) = iv + nvp
     ENDDO  
 #endif
-
+#if ! defined key_BLOOM_insed
     ALLOCATE(D0_funcT_opt(nv_state))
     D0_funcT_opt(:)=1
     ALLOCATE(D0_m0(nv_state))
     D0_m0(:)=1.0_rsh
     ALLOCATE(D0_m1(nv_state))
     D0_m1(:)=0.0_rsh
-
+#endif
 #endif
 
     !  option morpho

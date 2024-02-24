@@ -26,9 +26,9 @@ MODULE substance
    USE comMUSTANG , ONLY : D0_funcT_opt,D0_m0,D0_m1
 #endif
 
-#if defined ECO3M || defined BLOOM
+#if defined ECO3M
 # define REPFICNAMELIST 'BIOLINK_NAMELIST'
-#elif defined MUSTANG && ! defined BLOOM
+#elif defined MUSTANG
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
 #else
 # define REPFICNAMELIST 'SUBSTANCE_NAMELIST'
@@ -814,12 +814,16 @@ CONTAINS
        MPI_master_only WRITE(stdout,*)'grain diameter                    : ',diam_r(isubs)
      END IF
 #endif
-     MPI_master_only WRITE(stdout,*)'depot atmospherique (masse/m2/seconde) : ',flx_atm_r(isubs)
+     MPI_master_only WRITE(stdout,*)'atmospheric deposition (mass/m2/second) : ',flx_atm_r(isubs)
      MPI_master_only WRITE(stdout,*)'concentration in rain water            : ',cv_rain_r(isubs)
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_r(isubs)
      MPI_master_only WRITE(stdout,*)'OBC uniforme and constant conc.        : ',cobc_wat_r(isubs)
 #ifdef MUSTANG
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in sediment      : ',cini_sed_r(isubs)
+#if defined BLOOM && defined key_BLOOM_insed
+     MPI_master_only WRITE(stdout,*)'type of calculation of in sediment diffusion/biodiff (1or2): ',D0_funcT_opt_r(isubs)
+     MPI_master_only WRITE(stdout,*)'coefs for in sediment diffusion/biodiff calculation : ',D0_m0_r(isubs),D0_m1_r(isubs)
+#endif
 #endif
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
     END DO

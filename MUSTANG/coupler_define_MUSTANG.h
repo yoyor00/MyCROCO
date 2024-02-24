@@ -118,7 +118,7 @@
 # define IV_HOSTMODEL itsubs1+iv-1
 # define ITEMP_HOSTMODEL itemp
 # define ISAL_HOSTMODEL itemp+1
-# define WATER_FLUX_INPUT_BOTCELL phieau_CROCO(:,:,1) /* Flux d eau apporte dans la maille de fond in hydro model (=phieau in MARS) */
+/*# define WATER_FLUX_INPUT_BOTCELL phieau_CROCO(:,:,1) / Flux d eau apporte dans la maille de fond in hydro model (=phieau in MARS) */
 
 /* Lateral Erosion in neighboring cells (could depend on grid architecture) */
 # define HTOT_NEAR_E htot(i+1,j)
