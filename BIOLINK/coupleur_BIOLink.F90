@@ -75,6 +75,7 @@
 #if defined MUSTANG
 
    USE comMUSTANG ,  ONLY : htot ! Height of the water column
+   USE comMUSTANG ,  ONLY : var3D_diagsed, var2D_diagsed
 
 #endif /*MUSTANG*/
 
@@ -1086,8 +1087,8 @@ END SUBROUTINE  BIOLink_alloc
       ! Here I convert the shape of the 3D diagnostics so that CROCO can use them
 !      do i=1,ndiag_3d
 
-!        diag_3D_CROCO(i,:,:,:) = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
-!                                diag_3D_wat(i,:,:,:),1,NB_LAYER_WAT)
+!        diag_3d_CROCO(i,:,:,:) = BIOLink2hydro_3D(ifirst,ilast,jfirst,jlast,1,NB_LAYER_WAT, &
+!                                diag_3d_wat(i,:,:,:),1,NB_LAYER_WAT)
   
 !      end do
 
@@ -1108,9 +1109,9 @@ END SUBROUTINE  BIOLink_alloc
         ! wind speed (m.s-1) evaluated from the surface stress values
         ! sustr and svstr  (m2.s-2)
         ! with rho_air=1.3  ; CD=0.0014  
-        WIND_SPEED(i,j) = sqrt(sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
-     &                       +(0.5*(svstr(i,j)+svstr(i,j+1)))**2)
-     &                       *RHOREF/(1.3*0.0014))
+        WIND_SPEED(i,j) = sqrt(sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2  &
+                            +(0.5*(svstr(i,j)+svstr(i,j+1)))**2)        &
+                            *RHOREF/(1.3*0.0014))
 !     &                       *rho0/(rho_air*CD))
       ENDDO
       ENDDO
@@ -1181,7 +1182,7 @@ END SUBROUTINE  BIOLink_alloc
 
     IF ( l_treat_re_dc) THEN
 
-#  endif /* METeOR && BLOOM && PEPTIC && ECO3M */   
+#  endif /* METeOR && ! BLOOM && ! PEPTIC && ! ECO3M */   
 
       CALL BIOLink_updateconc_BIO(ifirst,ilast,jfirst,jlast)
 
@@ -1189,7 +1190,7 @@ END SUBROUTINE  BIOLink_alloc
 
     ENDIF 
 
-#  endif /* METeOR && BLOOM && PEPTIC && ECO3M */
+#  endif /* METeOR && ! BLOOM && ! PEPTIC && ! ECO3M */
 
 #endif /* BIOLink_UPDATE_CONCBIO */
 
@@ -1689,9 +1690,9 @@ END SUBROUTINE  BIOLink2hydro
      ! Local declarations of variables
      !====================================================================
 
-    INTEGER                  :: i,j,k,iv ! Spatial and tracer counters
+    INTEGER                  :: i,j,ks,iv ! Spatial and tracer counters
     INTEGER                  :: i1,i2,i3,i4 ! Internal BIOLink counters
-    INTEGER                  :: isubs,ind_diag2d,ind_diag3d
+    INTEGER                  :: isubs,ind_diag2d,ind_diag3d_sed,ind_diag3d_wat
     REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0) :: xnegtr ! Variable to 
                                                            ! limit the 
                                                            ! flux out
@@ -1785,47 +1786,46 @@ END SUBROUTINE  BIOLink2hydro
 
 !$OMP END DO
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Ajout variables Diagnostiques Bio 3D dans bioFlux et 2D dans bioVSink
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (mplus oct 2022)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Mise à jourdes variables Diagnostiques Bio
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (mplus jan 2024)
 #ifdef DIAGNOSTICS_BIO
 
 !$OMP DO SCHEDULE(RUNTIME)
-         DO i2=IRANGE2
-           DO i3=IRANGE3
-             DO i4=IRANGE4
-               ind_diag2d=0
-               ind_diag3d=0
-               DO isubs=1,ndiag_tot
-!               IF(idimv_r(isubs) == 1) bioFlux(i4,i3,i2,isubs) = diag_1d(irk_diag(isubs),i2)
-                 IF(idimv_r(isubs) == 2) THEN
-                   ind_diag2d=ind_diag2d+1
-                   bioVSink(i4,i3,ind_diag2d) = diag_2d(irk_diag(isubs),i4,i3)
-                 END IF
-                 IF(idimv_r(isubs) == 3) THEN
-                   ind_diag3d=ind_diag3d+1
-                   bioFlux(i4,i3,i2,ind_diag3d) = diag_3d_wat(irk_diag(isubs),i2,i4,i3)
-                 END IF
-#if defined key_BLOOM_insed
-                 IF(idimv_r(isubs) == 4) THEN
-!                   WRITE(iscreenlog,*) 'var diag 3D',isubs,TRIM(name_vardiag(isubs)),irk_diag(isubs)
-                   ind_diag3d=ind_diag3d+1
-                   bioFlux(i4,i3,i2,ind_diag3d) = diag_3d_wat(irk_diag(isubs),i2,i4,i3)
-                 END IF
-                 IF(idimv_r(isubs) == 5) THEN
-                   ind_diag3d=ind_diag3d+1
-                   bioFlux(i4,i3,i2,ind_diag3d) = diag_3d_sed(irk_diag(isubs),i2,i4,i3)
-                 END IF
-                 IF(idimv_r(isubs) == 6) THEN 
-                   ind_diag2d=ind_diag2d+1
-                   bioVSink(i4,i3,ind_diag2d) = diag_2d_sed(irk_diag(isubs),i4,i3)
-                 END IF
+        ind_diag2d = 0
+        ind_diag3d_wat = 0
+        ind_diag3d_sed = 0
+        DO isubs=1,ndiag_tot
+          IF(idimv_r(isubs) == 2 .OR. idimv_r(isubs) == 6) THEN
+            ind_diag2d = ind_diag2d + 1 
+            DO i3=IRANGE3
+              DO i4=IRANGE4
+                biodiag2d(i4,i3,ind_diag2d) = diag_2d(irk_diag(isubs),i4,i3)
+              END DO
+            END DO
+          ELSEIF(idimv_r(isubs) == 3) THEN
+            ind_diag3d_wat = ind_diag3d_wat + 1
+            DO i2=IRANGE2
+              DO i3=IRANGE3
+                DO i4=IRANGE4
+                  biodiag3d_wat(i4,i3,i2,ind_diag3d_wat) = diag_3d_wat(irk_diag(isubs),i2,i4,i3)
+                END DO
+              END DO
+            END DO
+#ifdef key_BLOOM_insed
+          ELSEIF(idimv_r(isubs) == 5) THEN
+            ind_diag3d_sed = ind_diag3d_sed + 1
+            DO ks=ksdmin,ksdmax
+              DO i3=IRANGE3
+                DO i4=IRANGE4
+                  biodiag3d_sed(i4,i3,ks,ind_diag3d_sed) = diag_3d_sed(irk_diag(isubs),ks,i4,i3)
+                END DO
+              END DO
+            END DO
 #endif
-               END DO
-             END DO
-           END DO
-         END DO
-!$OMP END DO
+          ENDIF
+        END DO
 
+!$OMP END DO
 #endif
      
 END SUBROUTINE  BIOLink_updateconc_BIO

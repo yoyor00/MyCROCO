@@ -298,13 +298,19 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
+# ifdef BLOOM
+      wrtdiabio3d(NumBLMdiag3d+1)=.false.
+      wrtdiabio2d(NumBLMdiag2d+1)=.false.
+      wrtdiabio1d(NumBLMdiag1d+1)=.false.
+# else
       wrtdiabioFlux(NumFluxTerms+1)=.false.
       wrtdiabioVSink(NumVSinkTerms+1)=.false.
       wrtdiabioGasExc(NumGasExcTerms+1)=.false.
-# ifdef AVERAGES
-      wrtdiabioFlux_avg(NumFluxTerms+1)=.false.
-      wrtdiabioVSink_avg(NumVSinkTerms+1)=.false.
-      wrtdiabioGasExc_avg(NumGasExcTerms+1)=.false.
+#  ifdef AVERAGES
+       wrtdiabioFlux_avg(NumFluxTerms+1)=.false.
+       wrtdiabioVSink_avg(NumVSinkTerms+1)=.false.
+       wrtdiabioGasExc_avg(NumGasExcTerms+1)=.false.
+#  endif
 # endif
 #endif
 !
@@ -1532,9 +1538,9 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
 # if defined BLOOM
-     &                     (wrthis(indxBLMdiag1D+i), i=1,20)
-     &                    ,(wrthis(indxBLMdiag2D+i), i=1,30)
-     &                    ,(wrthis(indxBLMdiag3D+i), i=1,30)
+     &                     (wrthis(indxBLMdiag1d+i), i=1,20)
+     &                    ,(wrthis(indxBLMdiag2d+i), i=1,30)
+     &                    ,(wrthis(indxBLMdiag3d+i), i=1,30)
 # endif /* BLOOM */
 
 # if defined BIOLink_PAR_eval && !defined BLOOM
@@ -2255,7 +2261,7 @@ c        close(testunit)
 
 #endif /*OUTPUTS_SURFACE*/
 
-#ifdef DIAGNOSTICS_BIO
+#if defined DIAGNOSTICS_BIO && !defined BLOOM
 !
 ! Switches for fields to be saved into biology diagnostics file.
 !
@@ -2351,7 +2357,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         enddo
 #  endif
 # endif  /* AVERAGES */
-#endif /* DIAGNOSTICS_BIO */
+#endif /* DIAGNOSTICS_BIO && not BLOOM*/
 
 #ifdef STATIONS
 !

@@ -304,7 +304,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &                        NF_FOUT, ierr)
 !
 ! Time2.
@@ -335,7 +335,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &                        NF_FOUT, ierr)
 
 ! Energy diagnostics variables.
@@ -373,7 +373,7 @@
      &                      lvar, vname(4,indxekHadv+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekHadv(itrc),
-     &                          indxekHadv+itrc-1, 5,
+     &                          vname(:,indxekHadv+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -404,7 +404,7 @@
      &                      lvar, vname(4,indxekHdiff+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekHdiff(itrc),
-     &                          indxekHdiff+itrc-1, 5,
+     &                          vname(:,indxekHdiff+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -435,7 +435,7 @@
      &                      lvar, vname(4,indxekVadv+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekVadv(itrc),
-     &                          indxekVadv+itrc-1, 5,
+     &                          vname(:,indxekVadv+itrc-1), 5,
      &                           NF_FOUT, ierr)
 !
 !------------------------------
@@ -467,7 +467,7 @@
      &                      lvar, vname(4,indxekCor+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekCor(itrc),
-     &                          indxekCor+itrc-1, 5,
+     &                          vname(:,indxekCor+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -498,7 +498,7 @@
      &                      lvar, vname(4,indxekPrsgrd+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekPrsgrd(itrc),
-     &                          indxekPrsgrd+itrc-1, 5,
+     &                          vname(:,indxekPrsgrd+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -529,7 +529,7 @@
      &                      lvar, vname(4,indxekHmix+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekHmix(itrc),
-     &                          indxekHmix+itrc-1, 5,
+     &                          vname(:,indxekHmix+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -559,7 +559,7 @@
           ierr=nf_put_att_text (ncid,viddiags_ekVmix(itrc), 'field',
      &                      lvar, vname(4,indxekVmix+itrc-1)(1:lvar))
           call nf_add_attribute(ncid, viddiags_ekVmix(itrc),
-     &                          indxekVmix+itrc-1, 5,
+     &                          vname(:,indxekVmix+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -590,7 +590,7 @@
      &                      lvar, vname(4,indxekrate+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekrate(itrc),
-     &                          indxekrate+itrc-1, 5,
+     &                          vname(:,indxekrate+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -621,7 +621,7 @@
      &                      lvar, vname(4,indxekvol+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekvol(itrc),
-     &                          indxekvol+itrc-1, 5,
+     &                          vname(:,indxekvol+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -652,7 +652,7 @@
      &                    lvar, vname(4,indxekVmix2+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekVmix2(itrc),
-     &                          indxekVmix2+itrc-1, 5,
+     &                          vname(:,indxekVmix2+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -683,7 +683,7 @@
      &                    lvar, vname(4,indxekWind+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekWind(itrc),
-     &                          indxekWind+itrc-1, 5,
+     &                          vname(:,indxekWind+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -714,7 +714,7 @@
      &                    lvar, vname(4,indxekDrag+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekWind(itrc),
-     &                          indxekDrag+itrc-1, 5,
+     &                          vname(:,indxekDrag+itrc-1), 5,
      &                          NF_FOUT, ierr)
 
 # if defined DIAGNOSTICS_BARO
@@ -746,7 +746,7 @@
      &                      lvar, vname(4,indxekBaro+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekBaro(itrc),
-     &                          indxekBaro+itrc-1, 5,
+     &                          vname(:,indxekBaro+itrc-1), 5,
      &                          NF_FOUT, ierr)
 # endif
 
@@ -779,7 +779,7 @@
      &                      lvar, vname(4,indxekfast+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekfast(itrc),
-     &                          indxekfast+itrc-1, 5,
+     &                          vname(:,indxekfast+itrc-1), 5,
      &                          NF_FOUT, ierr)
 # endif
 
@@ -812,7 +812,7 @@
      &                     lvar, vname(4,indxekHadv_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekHadv_mld(itrc),
-     &                          indxekHadv_mld+itrc-1, 5,
+     &                          vname(:,indxekHadv_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -845,7 +845,7 @@
      &                          vname(4,indxekHdiff_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekHdiff_mld(itrc),
-     &                          indxekHdiff_mld+itrc-1, 5,
+     &                          vname(:,indxekHdiff_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -877,7 +877,7 @@
      &                          'field', lvar,
      &                          vname(4,indxekVadv_mld+itrc-1)(1:lvar))
           call nf_add_attribute(ncid, viddiags_ekVadv_mld(itrc),
-     &                          indxekVadv_mld+itrc-1, 5,
+     &                          vname(:,indxekVadv_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !------------------------------
 !
@@ -907,7 +907,7 @@
      &                      lvar, vname(4,indxekCor_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekCor_mld(itrc),
-     &                          indxekCor_mld+itrc-1, 5,
+     &                          vname(:,indxekCor_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -940,7 +940,7 @@
      &                         vname(4,indxekPrsgrd_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekPrsgrd_mld(itrc),
-     &                          indxekPrsgrd_mld+itrc-1, 5,
+     &                          vname(:,indxekPrsgrd_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -973,7 +973,7 @@
      &                          vname(4,indxekHmix_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekHmix_mld(itrc),
-     &                          indxekHmix_mld+itrc-1, 5,
+     &                          vname(:,indxekHmix_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -1006,7 +1006,7 @@
      &                          vname(4,indxekVmix_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekVmix_mld(itrc),
-     &                          indxekVmix_mld+itrc-1, 5,
+     &                          vname(:,indxekVmix_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -1039,7 +1039,7 @@
      &                          vname(4,indxekrate_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekrate_mld(itrc),
-     &                          indxekrate_mld+itrc-1, 5,
+     &                          vname(:,indxekrate_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -1071,7 +1071,7 @@
      &                      lvar, vname(4,indxekvol_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekvol_mld(itrc),
-     &                          indxekvol_mld+itrc-1, 5,
+     &                          vname(:,indxekvol_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 !------------------------------
@@ -1104,7 +1104,7 @@
      &                          vname(4,indxekVmix2_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekVmix2_mld(itrc),
-     &                          indxekVmix2_mld+itrc-1, 5,
+     &                          vname(:,indxekVmix2_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 !
 #  if defined DIAGNOSTICS_BARO
@@ -1138,7 +1138,7 @@
      &                          vname(4,indxekBaro_mld+itrc-1)(1:lvar))
 
           call nf_add_attribute(ncid, viddiags_ekBaro_mld(itrc),
-     &                          indxekBaro_mld+itrc-1, 5,
+     &                          vname(:,indxekBaro_mld+itrc-1), 5,
      &                          NF_FOUT, ierr)
 #  endif
 # endif /* DIAGNOSTICS_EK_MLD */

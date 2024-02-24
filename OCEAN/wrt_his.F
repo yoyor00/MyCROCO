@@ -21,11 +21,12 @@
       USE comBIOLink_helping, ONLY : PAR
 #endif /* BIOLink_PAR_eval */ 
 
-#if defined BLOOM
-      USE comBIOLINK, ONLY: diag_1D,ndiag_1d,
-     &                      diag_2D,ndiag_2d,
-     &                      diag_3D_CROCO,ndiag_3d
-#endif
+!#if defined BLOOM
+!      USE comBIOLINK, ONLY: diag_1d,ndiag_1d,
+!     &                      diag_2d,ndiag_2d,
+!     &                      diag_3d_CROCO,ndiag_3d
+!     &                      diag_3d_wat,ndiag_3d
+!#endif
 
 #ifdef MUSTANG
       USE comsubstance, ONLY : nv_adv,nvpc,nvp
@@ -231,20 +232,20 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
           enddo
         enddo
 #endif
-        call fillvalue2d(work2d,ncidhis,hisZ,indxZ,
+        call fillvalue2d(work2d,ncidhis,hisZ,vname(1,indxZ),
      &        record,r2dvar,type)
       endif
 !
       if (wrthis(indxUb)) then
         work2d(:,:)=ubar(:,:,fast_indx_out)
-        call fillvalue2d(work2d,ncidhis,hisUb,indxUb,
+        call fillvalue2d(work2d,ncidhis,hisUb,vname(1,indxUb),
      &        record,u2dvar,type)
 CR      write(*,*) 'wrt_his: wrtUBAR' MYID
       endif
 !
       if (wrthis(indxVb)) then
         work2d(:,:)=vbar(:,:,fast_indx_out)
-        call fillvalue2d(work2d,ncidhis,hisVb,indxVb,
+        call fillvalue2d(work2d,ncidhis,hisVb,vname(1,indxVb),
      &        record,v2dvar,type)
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif
@@ -255,7 +256,7 @@ CR           write(*,*) 'wrt_his: wrtVBAR' MYID
 !
       if (wrthis(indxHm)) then
         work2d(:,:)=h(:,:)
-        call fillvalue2d(work2d,ncidhis,hisHm,indxHm,
+        call fillvalue2d(work2d,ncidhis,hisHm,vname(1,indxHm),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his: wrtHm' MYID
       endif
@@ -272,7 +273,7 @@ CR      write(*,*) 'wrt_his: wrtHm' MYID
      &                                                  *rho0
           enddo
         enddo
-        call fillvalue2d(work2d,ncidhis,hisBostr,indxBostr,
+        call fillvalue2d(work2d,ncidhis,hisBostr,vname(1,indxBostr),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  bostr' MYID
       endif
@@ -282,7 +283,7 @@ CR      write(*,*) 'wrt_his:  bostr' MYID
 !
       if (wrthis(indxBustr)) then
          work2d=bustr*rho0
-         call fillvalue2d(work2d,ncidhis,hisBustr,indxBustr,
+         call fillvalue2d(work2d,ncidhis,hisBustr,vname(1,indxBustr),
      &        record,u2dvar,type)
 CR      write(*,*) 'wrt_his:  bustr' MYID
       endif
@@ -294,7 +295,7 @@ CR      write(*,*) 'wrt_his:  bustr' MYID
 !
       if (wrthis(indxBvstr)) then
          work2d=bvstr*rho0
-         call fillvalue2d(work2d,ncidhis,hisBvstr,indxBvstr,
+         call fillvalue2d(work2d,ncidhis,hisBvstr,vname(1,indxBvstr),
      &        record,v2dvar,type)
 CR      write(*,*) 'wrt_his:  bvstr' MYID
       endif
@@ -635,14 +636,14 @@ CR      write(*,*) 'wrt_his:  wrtKaps' MYID
 !
       if (wrthis(indxU)) then
         workr=u(:,:,:,nstp)
-        call fillvalue3d(workr,ncidhis,hisU,indxU,
+        call fillvalue3d(workr,ncidhis,hisU,vname(1,indxU),
      &        record,u3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtU  ' MYID
       endif
 !
       if (wrthis(indxV)) then
         workr=v(:,:,:,nstp)
-        call fillvalue3d(workr,ncidhis,hisV,indxV,
+        call fillvalue3d(workr,ncidhis,hisV,vname(1,indxV),
      &        record,v3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
@@ -667,7 +668,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
             endif
 #  endif
             call fillvalue3d(workr,ncidhis,hisT(itrc),
-     &           indxV+itrc,record,r3dvar,type)
+     &           vname(1,indxV+itrc),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
@@ -678,7 +679,7 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 !
       if (wrthis(indxR)) then
         workr=rho+rho0-1000.
-        call fillvalue3d(workr,ncidhis,hisR,indxR,
+        call fillvalue3d(workr,ncidhis,hisR,vname(1,indxR),
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
@@ -690,7 +691,7 @@ CR      write(*,*) 'wrt_his:  wrtRHO' MYID
 !
       if (wrthis(indxbvf)) then
          work=bvf
-         call fillvalue3d_w(work,ncidhis,hisbvf,indxbvf,
+         call fillvalue3d_w(work,ncidhis,hisbvf,vname(1,indxbvf),
      &           record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtbvf' MYID
       endif
@@ -714,7 +715,7 @@ CR      write(*,*) 'wrt_his:  wrtbvf' MYID
             enddo
           enddo
         enddo
-        call fillvalue3d_w(work,ncidhis,hisO,indxO,
+        call fillvalue3d_w(work,ncidhis,hisO,vname(1,indxO),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtO  ' MYID
       endif
@@ -730,12 +731,14 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
             enddo
           enddo
         enddo
-        call fillvalue3d(work,ncidhis,hisW,indxW,record,w3dvar,type)
+        call fillvalue3d(work,ncidhis,hisW,
+     &      vname(1,indxW),record,w3dvar,type)
 # else
         do tile=0,NSUB_X*NSUB_E-1
           call Wvlcty (tile, workr)
         enddo
-        call fillvalue3d(workr,ncidhis,hisW,indxW,record,r3dvar,type)
+        call fillvalue3d(workr,ncidhis,hisW,
+     &      vname(1,indxW),record,r3dvar,type)
 # endif
 
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
@@ -747,7 +750,7 @@ CR      write(*,*) 'wrt_his:  wrtW  ' MYID
 !
       if (wrthis(indxVisc)) then
         workr=visc3d_r
-        call fillvalue3d(workr,ncidhis,hisVisc,indxVisc,
+        call fillvalue3d(workr,ncidhis,hisVisc,vname(1,indxVisc),
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtVisc' MYID
       endif
@@ -780,7 +783,7 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
             enddo
           enddo
         enddo
-        call fillvalue3d(workr,ncidhis,hisDiff,indxDiff,
+        call fillvalue3d(workr,ncidhis,hisDiff,vname(1,indxDiff),
      &        record,r3dvar,type)
       endif
 CR      write(*,*) 'wrt_his:  wrtDiff' MYID
@@ -790,7 +793,7 @@ CR      write(*,*) 'wrt_his:  wrtDiff' MYID
 !
       if (wrthis(indxAkv)) then
         work=Akv
-        call fillvalue3d_w(work,ncidhis,hisAkv,indxAkv,
+        call fillvalue3d_w(work,ncidhis,hisAkv,vname(1,indxAkv),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAkv' MYID
       endif
@@ -800,7 +803,7 @@ CR      write(*,*) 'wrt_his:  wrtAkv' MYID
 # ifdef TEMPERATURE
       if (wrthis(indxAkt)) then
         work=Akt(:,:,:,itemp)
-        call fillvalue3d_w(work,ncidhis,hisAkt,indxAkt,
+        call fillvalue3d_w(work,ncidhis,hisAkt,vname(1,indxAkt),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAkt' MYID
       endif
@@ -811,7 +814,7 @@ CR      write(*,*) 'wrt_his:  wrtAkt' MYID
 !
       if (wrthis(indxAks)) then
         work=Akt(:,:,:,isalt)
-        call fillvalue3d_w(work,ncidhis,hisAks,indxAks,
+        call fillvalue3d_w(work,ncidhis,hisAks,vname(1,indxAks),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAks' MYID
       endif
@@ -827,7 +830,7 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
 #  else
         work2d=hbl
 #  endif
-        call fillvalue2d(work2d,ncidhis,hisHbl,indxHbl,
+        call fillvalue2d(work2d,ncidhis,hisHbl,vname(1,indxHbl),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  wrtHBL' MYID
       endif
@@ -838,7 +841,7 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
 !
       if (wrthis(indxHbbl)) then
         work2d=hbbl
-        call fillvalue2d(work2d,ncidhis,hisHbbl,indxHbbl,
+        call fillvalue2d(work2d,ncidhis,hisHbbl,vname(1,indxHbbl),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
@@ -849,7 +852,7 @@ CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
 !
       if (wrthis(indxTke)) then
         work=trb(:,:,:,nstp,itke)
-        call fillvalue3d_w(work,ncidhis,hisTke,indxTke,
+        call fillvalue3d_w(work,ncidhis,hisTke,vname(1,indxTke),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
       endif
@@ -858,7 +861,7 @@ CR      write(*,*) 'wrt_his:  wrtTke' MYID
 !
       if (wrthis(indxGls)) then
         work=trb(:,:,:,nstp,igls)
-        call fillvalue3d_w(work,ncidhis,hisGls,indxGls,
+        call fillvalue3d_w(work,ncidhis,hisGls,vname(1,indxGls),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtGls' MYID
       endif
@@ -867,7 +870,7 @@ CR      write(*,*) 'wrt_his:  wrtGls' MYID
 !
       if (wrthis(indxLsc)) then
         work=Lscale
-        call fillvalue3d_w(work,ncidhis,hisLsc,indxLsc,
+        call fillvalue3d_w(work,ncidhis,hisLsc,vname(1,indxLsc),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtLsc' MYID
       endif
@@ -1038,8 +1041,8 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !
       if (wrthis(indxT)) then
         work2d=sst_skin
-        call fillvalue2d(work2d,ncidhis,hisSST_skin,indxSST_skin,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisSST_skin,
+     &        vname(1,indxSST_skin), record,r2dvar,type)
       endif
 # endif
 !
@@ -1049,8 +1052,8 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !
       if (wrthis(indxHel)) then
         work2d=hel
-        call fillvalue2d(work2d,ncidhis,hisHel,indxHel,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisHel,
+     &        vname(1,indxHel), record,r2dvar,type)
       endif
 !
 !     Write out depth of the euphotic layer (m).
@@ -1058,38 +1061,38 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 #  if (defined BIO_NChlPZD ||  defined BIO_N2ChlPZD2)
       if (wrthis(indxChC)) then
         workr=theta
-        call fillvalue3d(workr,ncidhis,hisChC,indxChC,
-     &        record,r3dvar,type)
+        call fillvalue3d(workr,ncidhis,hisChC,
+     &        vname(1,indxChC),record,r3dvar,type)
       endif
 #   ifdef OXYGEN
       if (wrthis(indxU10)) then
         work2d=u10
-        call fillvalue2d(work2d,ncidhis,hisU10,indxU10,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisU10,
+     &        vname(1,indxU10),record,r2dvar,type)
       endif
 !
       if (wrthis(indxKvO2)) then
         work2d=Kv_O2
-        call fillvalue2d(work2d,ncidhis,hisKvO2,indxKvO2,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisKvO2,
+     &       vname(1,indxKvO2), record,r2dvar,type)
       endif
 !
       if (wrthis(indxO2sat)) then
         work2d=O2satu
-        call fillvalue2d(work2d,ncidhis,hisO2sat,indxO2sat,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisO2sat,
+     &        vname(1,indxO2sat),record,r2dvar,type)
       endif
 #   endif /* OXYGEN */
 #  elif defined BIO_BioEBUS
       if (wrthis(indxAOU)) then
         workr=AOU
-        call fillvalue3d(workr,ncidhis,hisAOU,indxAOU,
-     &        record,r3dvar,type)
+        call fillvalue3d(workr,ncidhis,hisAOU,
+     &       vname(1,indxAOU), record,r3dvar,type)
       endif
       if (wrthis(indxWIND10)) then
         work2d=wind10
-        call fillvalue2d(work2d,ncidhis,hiswind10,indxWIND10,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hiswind10,
+     &        vname(1,indxWIND10),record,r2dvar,type)
       endif
 #  endif
 # endif /* BIOLOGY */
@@ -1101,20 +1104,20 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !
       if (wrthis(indxATHK)) then
         work2d=bot_thick
-        call fillvalue2d(work2d,ncidhis,hisSed(1),indxATHK,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisSed(1),
+     &        vname(1,indxATHK),record,r2dvar,type)
       endif
 
       if (wrthis(indxBTHK)) then
         worksed_bed=bed_thick
-        call fillvalue3d(worksed_bed,ncidhis,hisSed(2),indxBTHK,
-     &        record,b3dvar,type)
+        call fillvalue3d(worksed_bed,ncidhis,hisSed(2),
+     &        vname(1,indxBTHK),record,b3dvar,type)
       endif
 
       if (wrthis(indxBPOR)) then
         worksed_bed=bed_poros
-        call fillvalue3d(worksed_bed,ncidhis,hisSed(3),indxBPOR,
-     &        record,b3dvar,type)
+        call fillvalue3d(worksed_bed,ncidhis,hisSed(3),
+     &        vname(1,indxBPOR),record,b3dvar,type)
       endif
 
       do itrc=1,NST
@@ -1122,7 +1125,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
         if (wrthis(indxWrk)) then
           worksed_frac=bed_frac(:,:,:,itrc)
           call fillvalue3d(worksed_frac,ncidhis,hisSed(itrc+3),
-     &           indxWrk,record,b3dvar,type)
+     &           vname(1,indxWrk),record,b3dvar,type)
          endif
       enddo
 
@@ -1132,7 +1135,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
         if (wrthis(indxWrk)) then
           work2d=settling_flux(:,:,itrc)/dt
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
         endif
       enddo
       do itrc=1,NST
@@ -1140,7 +1143,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
         if (wrthis(indxWrk)) then
           work2d=ero_flux(:,:,itrc)/dt
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+2*NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
         endif
       enddo
 #  endif
@@ -1151,10 +1154,10 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
           work2d=bedldu(:,:,itrc)
 #   ifdef SUSPLOAD
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+3*NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
 #   else
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
 #   endif
         endif
       enddo
@@ -1165,10 +1168,10 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
           work2d=bedldv(:,:,itrc)
 #   ifdef SUSPLOAD
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+4*NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
 #   else
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+2*NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
 #   endif
         endif
       enddo
@@ -1178,7 +1181,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       if (wrthis(indxBTCR)) then
         worksed_bed=bed_bctr
         call fillvalue3d(worksed_bed,ncidhis,hisSed(ubound(hisSed)),
-     &                   indxBTCR, record,b3dvar,type)
+     &                   vname(1,indxBTCR), record,b3dvar,type)
       endif
 #  endif
 
@@ -1187,35 +1190,35 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 # ifdef BBL
       if (wrthis(indxAbed)) then
         work2d=Abed
-        call fillvalue2d(work2d,ncidhis,hisBBL(1),indxAbed,
+        call fillvalue2d(work2d,ncidhis,hisBBL(1),vname(1,indxAbed),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Abed' MYID
       endif
 
       if (wrthis(indxHrip)) then
         work2d=Hripple
-        call fillvalue2d(work2d,ncidhis,hisBBL(2),indxHrip,
+        call fillvalue2d(work2d,ncidhis,hisBBL(2),vname(1,indxHrip),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Hripple' MYID
       endif
 
       if (wrthis(indxLrip)) then
         work2d=Lripple
-        call fillvalue2d(work2d,ncidhis,hisBBL(3),indxLrip,
+        call fillvalue2d(work2d,ncidhis,hisBBL(3),vname(1,indxLrip),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Lripple' MYID
       endif
 
       if (wrthis(indxZbnot)) then
         work2d=Zbnot
-        call fillvalue2d(work2d,ncidhis,hisBBL(4),indxZbnot,
+        call fillvalue2d(work2d,ncidhis,hisBBL(4),vname(1,indxZbnot),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Zbnot' MYID
       endif
 
       if (wrthis(indxZbapp)) then
          work2d=Zbapp
-         call fillvalue2d(work2d,ncidhis,hisBBL(5),indxZbapp,
+         call fillvalue2d(work2d,ncidhis,hisBBL(5),vname(1,indxZbapp),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Zbapp' MYID
       endif
@@ -1228,7 +1231,7 @@ CR        write(*,*) 'wrt_his:  Zbapp' MYID
      &                                                     *rho0
           enddo
         enddo
-        call fillvalue2d(work2d,ncidhis,hisBBL(6),indxBostrw,
+        call fillvalue2d(work2d,ncidhis,hisBBL(6),vname(1,indxBostrw),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  bostrw' MYID
       endif
@@ -1278,7 +1281,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 
 # endif
           call fillvalue3d(workr,ncidhis,hisT(itrc),
-     &                     indxT+itrc-1,record,r3dvar,type)
+     &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         endif
       enddo
@@ -1299,7 +1302,7 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 #  endif
           enddo
           call fillvalue3d(workr,ncidhis,hisT(NT+itrc),
-     &                     indxT+NT+itrc-1,record,r3dvar,type)
+     &                     vname(1,indxT+NT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
         endif
       enddo
@@ -1315,21 +1318,21 @@ CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
       indx=indxT+ntrc_salt+ntrc_substot+1
       if (wrthis(indx)) then
         work2d=var2D_ksma(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(1),indx,
+        call fillvalue2d(work2d,ncidhis,hisMust(1),vname(1,indx),
      &                   record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_ksma'  MYID
       endif
       indx=indxT+ntrc_salt+ntrc_substot+2
       if (wrthis(indx)) then
         work2d=var2D_eptot(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(2),indx,
+        call fillvalue2d(work2d,ncidhis,hisMust(2),vname(1,indx),
      &                   record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_eptot'  MYID
       endif
       indx=indxT+ntrc_salt+ntrc_substot+3
       if (wrthis(indx)) then
         work2d=var2D_tauskin(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(3),indx,
+        call fillvalue2d(work2d,ncidhis,hisMust(3),vname(1,indx),
      &                   record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_tauskin'  MYID
       endif
@@ -1338,7 +1341,7 @@ CR      write(*,*) 'wrt_his var2D_tauskin'  MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_dzs(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(4),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(4),vname(1,indx),
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var2D_dzs'   MYID
       endif
@@ -1347,7 +1350,7 @@ CR      write(*,*) 'wrt_his var2D_dzs'   MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_TEMP(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(5),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(5),vname(1,indx),
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
       endif
@@ -1356,7 +1359,7 @@ CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_SAL(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(6),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(6),vname(1,indx),
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_SAL'  MYID
       endif
@@ -1369,7 +1372,7 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
           enddo
           workrsed1=workrsed(:,:,:)
           call fillvalue3d_must(workrsed1,ncidhis,hisMust(itrc+6),
-     &                     indx,record,b3dvar,type)
+     &                     vname(1,indx),record,b3dvar,type)
 CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
         endif
       enddo
@@ -1383,7 +1386,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
           if (wrthis(indx)) then
             work2d(:,:)=varspecif3Dnv_save(k,itrc,:,:)
             call fillvalue2d(work2d,ncidhis,
-     &                 hisMust(ntrc_subs+6+ik),indx,record,r2dvar,type)
+     &          hisMust(ntrc_subs+6+ik),vname(1,indx),record,r2dvar,type)
           endif
         enddo
        enddo
@@ -1394,7 +1397,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
            work2d(:,:)=varspecif2D_save(k,:,:)
 
            call fillvalue2d(work2d,ncidhis,
-     &                 hisMust(ntrc_subs+6+ik),indx,record,r2dvar,type)
+     &         hisMust(ntrc_subs+6+ik),vname(1,indx),record,r2dvar,type)
          endif
        enddo
 #  endif
@@ -1407,66 +1410,63 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 # if defined BIOLink_PAR_eval
 
       if (wrthis(indxPAR)) then
-        call fillvalue3d(PAR,ncidhis,hisPAR,indxPAR,
+        call fillvalue3d(PAR,ncidhis,hisPAR,vname(1,indxPAR),
      &        record,r3dvar,type)
 CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
       endif
 # endif /* BIOLink_PAR_eval */
 
-# if defined BLOOM && !defined DIAGNOSTICS_BIO
+!# if defined BLOOM && !defined DIAGNOSTICS_BIO
 !
 !  BLOOM 1D diagnostics
 !
-      do i=1,ndiag_1D
-        if (wrthis(indxBLMdiag1D+i)) then
-
-          ierr=nf_put_var1_FTYPE (ncidhis, hisBLMdiag1D(i),
-     &                            record, diag_1D(i))
-          if (ierr .ne. nf_noerr) then
-            lvar=lenstr(vname(1,indxBLMdiag1D+i))
-            MPI_master_only write(stdout,1)
-     &        vname(1,indxBLMdiag1D+i)(1:lvar), record, ierr
-     &        MYID
-            goto 99                !--> ERROR
-          endif
-
-        endif
-      end do
-
-
+!      do i=1,ndiag_1d
+!        if (wrthis(indxBLMdiag1d+i)) then
+!
+!          ierr=nf_put_var1_FTYPE (ncidhis, hisBLMdiag1d(i),
+!     &                            record, diag_1d(i))
+!          if (ierr .ne. nf_noerr) then
+!            lvar=lenstr(vname(1,indxBLMdiag1d+i))
+!            MPI_master_only write(stdout,1)
+!     &        vname(1,indxBLMdiag1d+i)(1:lvar), record, ierr
+!     &        MYID
+!            goto 99                !--> ERROR
+!          endif
+!
+!        endif
+!      end do
 !
 !  BLOOM 2D diagnostics
 !
-
-      do i=1,ndiag_2D
-        if (wrthis(indxBLMdiag2D+i)) then
-          call fillvalue2d(diag_2D(i,:,:),ncidhis,hisBLMdiag2D(i),
-     &         indxBLMdiag2D+i,record,r2dvar,type)
-        endif
-      end do
-
+!
+!      do i=1,ndiag_2d
+!        if (wrthis(indxBLMdiag2d+i)) then
+!          call fillvalue2d(diag_2d(i,:,:),ncidhis,hisBLMdiag2d(i),
+!     &         vname(1,indxBLMdiag2d+i),record,r2dvar,type)
+!        endif
+!      end do
 !
 !  BLOOM 3D diagnostics
 !
+!
+!      do i=1,ndiag_3d
+!        if (wrthis(indxBLMdiag3d+i)) then
+!         workr = diag_3d_CROCO(i,:,:,:)
+!          do k=1,N
+!            workr(:,:,k)=workr(:,:,k)
+!#  ifdef WET_DRY
+!     &                SWITCH rmask_wet(:,:)
+!#  else
+!     &                SWITCH rmask(:,:)
+!#  endif
+!          enddo
+!
+!          call fillvalue3d(workr,ncidhis,
+!     &         hisBLMdiag3d(i),vname(1,indxBLMdiag3d+i),record,r3dvar,type)
+!        endif
+!      end do
 
-      do i=1,ndiag_3D
-        if (wrthis(indxBLMdiag3D+i)) then
-         workr = diag_3D_CROCO(i,:,:,:)
-          do k=1,N
-            workr(:,:,k)=workr(:,:,k)
-#  ifdef WET_DRY
-     &                SWITCH rmask_wet(:,:)
-#  else
-     &                SWITCH rmask(:,:)
-#  endif
-          enddo
-
-          call fillvalue3d(workr,ncidhis,
-     &         hisBLMdiag3D(i),indxBLMdiag3D+i,record,r3dvar,type)
-        endif
-      end do
-
-# endif /* BLOOM && ! DIAGNOSTICS_BIO*/
+!# endif /* BLOOM && ! DIAGNOSTICS_BIO*/
 
  1    format(/1x,'WRT_HIS ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',

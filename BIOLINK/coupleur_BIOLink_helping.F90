@@ -193,6 +193,7 @@ CONTAINS
       ndiag_1d = 0
       ndiag_2d = 0
       ndiag_3d = 0
+      ndiag_2d_wat = 0
       ndiag_3d_wat = 0
       ndiag_3d_sed = 0
       ndiag_2d_sed = 0
@@ -210,11 +211,11 @@ CONTAINS
 
       eof = 0
 
-      INQUIRE(file=filevardiag,exist=ex)
+      INQUIRE(file=TRIM(filevardiag),exist=ex)
 
       IF (ex) THEN
         
-        OPEN(49,file = filevardiag,form='formatted')
+        OPEN(49,file = TRIM(filevardiag),form='formatted')
      
         comment='debut'
        
@@ -353,37 +354,38 @@ CONTAINS
 
            idimv_r(isubs)=1
            ndiag_1d=ndiag_1d+1
-           vname(1,indxBLMdiag1D+ndiag_1d-1) = namvar_r
-           vname(2,indxBLMdiag1D+ndiag_1d-1) = long_name_var_r
-           vname(3,indxBLMdiag1D+ndiag_1d-1) = standard_name_var_r
-           vname(4,indxBLMdiag1D+ndiag_1d-1) = unitvar_r
+           vname(1,indxBLMdiag1d+ndiag_1d-1) = namvar_r
+           vname(2,indxBLMdiag1d+ndiag_1d-1) = long_name_var_r
+           vname(3,indxBLMdiag1d+ndiag_1d-1) = standard_name_var_r
+           vname(4,indxBLMdiag1d+ndiag_1d-1) = unitvar_r
 
          ELSE IF (dimvar==2) THEN
 
            idimv_r(isubs)=2
            ndiag_2d=ndiag_2d+1
-           vname(1,indxbioVSink+ndiag_2d-1) = namvar_r
-           vname(2,indxbioVSink+ndiag_2d-1) = long_name_var_r
-           vname(3,indxbioVSink+ndiag_2d-1) = standard_name_var_r
-           vname(4,indxbioVSink+ndiag_2d-1) = unitvar_r
+           vname(1,indxBLMdiag2d+ndiag_2d-1) = namvar_r
+           vname(2,indxBLMdiag2d+ndiag_2d-1) = long_name_var_r
+           vname(3,indxBLMdiag2d+ndiag_2d-1) = standard_name_var_r
+           vname(4,indxBLMdiag2d+ndiag_2d-1) = unitvar_r
            MPI_master_only WRITE(iscreenlog,*)'---------------'
-           MPI_master_only WRITE(iscreenlog,*) 'vname = ',TRIM(ADJUSTL(ADJUSTR(vname(2,indxbioVSink+ndiag_2d-1))))
+           MPI_master_only WRITE(iscreenlog,*) 'vname = ',TRIM(ADJUSTL(ADJUSTR(vname(2,indxBLMdiag2d+ndiag_2d-1))))
 
          ELSE IF (dimvar==3) THEN
 
            idimv_r(isubs)=3
            ndiag_3d=ndiag_3d+1
-           vname(1,indxbioFlux+ndiag_3d-1) = namvar_r
-           vname(2,indxbioFlux+ndiag_3d-1) = long_name_var_r
-           vname(3,indxbioFlux+ndiag_3d-1) = standard_name_var_r
-           vname(4,indxbioFlux+ndiag_3d-1) = unitvar_r
+           vname(1,indxBLMdiag3d+ndiag_3d-1) = namvar_r
+           vname(2,indxBLMdiag3d+ndiag_3d-1) = long_name_var_r
+           vname(3,indxBLMdiag3d+ndiag_3d-1) = standard_name_var_r
+           vname(4,indxBLMdiag3d+ndiag_3d-1) = unitvar_r
            MPI_master_only WRITE(iscreenlog,*)'---------------'
-           MPI_master_only WRITE(iscreenlog,*) 'vname = ',TRIM(ADJUSTL(ADJUSTR(vname(2,indxbioFlux+ndiag_3d-1))))
+           MPI_master_only WRITE(iscreenlog,*) 'vname = ',TRIM(ADJUSTL(ADJUSTR(vname(2,indxBLMdiag3d+ndiag_3d-1))))
 
          END IF
 
          READ(49,*,iostat=eof) l_diag_wat
 
+         IF (l_diag_wat .and. dimvar==2) ndiag_2d_wat=ndiag_2d_wat+1
          IF (l_diag_wat .and. dimvar==3) ndiag_3d_wat=ndiag_3d_wat+1
 
          READ(49,*,iostat=eof) l_diag_sed
@@ -413,9 +415,14 @@ CONTAINS
 
          READ(49,*,iostat=eof) l_diagBIOLink_out(isubs)
          IF (dimvar==3) THEN
-           wrtdiabioFlux(ndiag_3d)=l_diagBIOLink_out(isubs)
+           wrtdiabio3d(ndiag_3d)=l_diagBIOLink_out(isubs)
+           IF(wrtdiabio3d(ndiag_3d)) wrtdiabio3d(NumBLMdiag3d+1)=.TRUE.
          ELSEIF (dimvar==2) THEN
-           wrtdiabioVSink(ndiag_2d)=l_diagBIOLink_out(isubs)
+           wrtdiabio2d(ndiag_2d)=l_diagBIOLink_out(isubs)
+           IF(wrtdiabio2d(ndiag_2d)) wrtdiabio3d(NumBLMdiag2d+1)=.TRUE.
+         ELSEIF (dimvar==1) THEN
+           wrtdiabio1d(ndiag_1d)=l_diagBIOLink_out(isubs)
+           IF(wrtdiabio1d(ndiag_1d)) wrtdiabio3d(NumBLMdiag1d+1)=.TRUE.
          ENDIF
          READ(49,*,iostat=eof)
 
@@ -496,6 +503,7 @@ CONTAINS
      MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 1 dim :',ndiag_1d
      MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 2 dim :',ndiag_2d
      MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 3 dim :',ndiag_3d
+     MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 2d wat:',ndiag_2d_wat
      MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 3d wat:',ndiag_3d_wat
      MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 2d sed:',ndiag_2d_sed
      MPI_master_only WRITE(iscreenlog,*)' number of diagnostic variables 3d sed:',ndiag_3d_sed
@@ -531,16 +539,16 @@ CONTAINS
    ALLOCATE( diag_3d_wat(ndiag_2d+1:ndiag_2d+ndiag_3d_wat,NB_LAYER_WAT,PROC_IN_ARRAY) )
    diag_3d_wat(:,:,:,:)=0.0_rsh
 
-   ALLOCATE( diag_3d_CROCO(ndiag_2d+1:ndiag_2d+ndiag_3d_wat,PROC_IN_ARRAY,NB_LAYER_WAT) )
-   diag_3d_CROCO(:,:,:,:)=0.0_rsh
+!   ALLOCATE( diag_3d_CROCO(ndiag_2d+1:ndiag_2d+ndiag_3d_wat,PROC_IN_ARRAY,NB_LAYER_WAT) )
+!   diag_3d_CROCO(:,:,:,:)=0.0_rsh
 
 #if defined MUSTANG && defined key_BLOOM_insed
 
-   ALLOCATE( diag_3D_sed(ndiag_tot-ndiag_3d_sed+1:ndiag_tot,ksdmin:ksdmax,PROC_IN_ARRAY) ) 
+   ALLOCATE( diag_3d_sed(ndiag_tot-ndiag_3d_sed+1:ndiag_tot,ksdmax,PROC_IN_ARRAY) ) 
    diag_3d_sed(:,:,:,:)=0.0_rsh
 
-   ALLOCATE( diag_2D_sed(ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d,PROC_IN_ARRAY) )
-   diag_2D_sed(:,:,:)=0.0_rsh
+!   ALLOCATE( diag_2d_sed(ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d,PROC_IN_ARRAY) )
+!   diag_2d_sed(:,:,:)=0.0_rsh
 
 #endif /* MUSTANG && key_BLOOM_insed */
 
