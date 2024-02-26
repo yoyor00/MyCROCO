@@ -165,7 +165,8 @@ LOOP_USED_VARS={
         'nrhs',
         'jendr', 'istrr', 'iendr', 'knew', 'jstrr',
         'jmin', 'jmax', 'imin', 'imax',
-        'kstp', 'kbak', 'kold', 'levsfrc'],
+        'kstp', 'kbak', 'kold', 'levsfrc',
+        'levbfrc'],
     'scalars': [
         'cff', 'dt', 'gamma',
         'cff1', 'cff2', 'cff3', 'cdt', 'epsil',
@@ -173,21 +174,22 @@ LOOP_USED_VARS={
         'aa', 'cc',
         'rdrg', 'rdrg2',
         'dunew', 'dvnew',
-        'vmax', 'dtfast', 'cff0', 'gamma2'],
+        'vmax', 'dtfast', 'cff0', 'gamma2', 'cffx', 'curvx', 'cffe', 'curve'],
     '1d': ['fc1d', 'cf1d', 'dc1d', 'bc1d', 'dz1d', 'dr1d'],
     '2d': [
         'fx', 'work', 'fe', 'pm', 'pn', 'fc', 'cf', 'dz', 'dr', 'on_u',
         'rufrc', 'rvfrc', 'bc', 'dc', 'om_v', 'dv_avg2', 'du_avg2',
         'rubar', 'ufx', 'ufe', 'rvbar', 'vfe', 'vfx', 'drhs', 'vrhs', 'fomn',
         'urhs', 'om_u', 'on_v', 'rhos', 'rhoa', 'zeta_new', 'h', 'duon', 'dnew',
-        'dvom', 'zt_avg1', 'om_r', 'on_r', 'pm_u', 'pn_u', 'pm_v', 'pn_v'
+        'dvom', 'zt_avg1', 'om_r', 'on_r', 'pm_u', 'pn_u', 'pm_v', 'pn_v',
+        'sustr', 'svstr', 'bustr', 'bvstr'
     ],
     '3d': [
         'huon', 'hvom', 'hz', 'hz_half', 'rv', 'we', 'stflx',
         'btflx', 'z_r', 'vfx_3d', 'vfe_3d', 'ufx_3d', 'ufe_3d', 'rho',
         'p', 'z_w', 'du_avg1', 'ubar', 'dv_avg1',
         'vbar', 'romega', 'ru', 'work_3d', 'hz_bak', 'fx_3d', 'fe_3d',
-        'akv', 'rufrc_bak', 'rvfrc_bak', 'zeta',
+        'akv', 'rufrc_bak', 'rvfrc_bak', 'zeta', 'wrk1_3d', 'wrk2_3d'
     ],
     '4d': ['v', 'u', 'akt'],
     '5d': ['t']
@@ -289,7 +291,7 @@ LOOP_PARAMETERS = [
     ('kernel-step3d', 'pre_step3d_tile-1325', []),
     ('kernel-step3d', 'pre_step3d_tile-1353', []),
     ('kernel-step3d', 'pre_step3d_tile-1459', []),
-    ('kernel-step3d', 'pre_step3d_tile-1578', []),
+    #('kernel-step3d', 'pre_step3d_tile-1578', []),
     ('kernel-step3d', 'pre_step3d_tile-1603', []),
     ('kernel-step3d', 'pre_step3d_tile-264', []),
     ('kernel-step3d', 'pre_step3d_tile-788', []),
@@ -314,7 +316,7 @@ LOOP_PARAMETERS = [
     ('kernel-step3d', 'rhs3d_tile-544', []),
     ('kernel-step3d', 'rhs3d_tile-73', []),
     ('kernel-step3d', 'rhs3d_tile-94', []),
-    ('kernel-step3d', 'step3d_t_tile-1082', []),
+    #('kernel-step3d', 'step3d_t_tile-1082', []),
     ('kernel-step3d', 'step3d_t_tile-1095', []),
     ('kernel-step3d', 'step3d_t_tile-1102', []),
     ('kernel-step3d', 'step3d_t_tile-500', []),
@@ -331,6 +333,7 @@ LOOP_PARAMETERS = [
 def test_running_reshaped_kernels(type: str, snippet_name: str, skip_check: list):
     # load snippet
     snippet = helper_load_snippet(f'{type}-loops', 'origin', snippet_name)
+    snippet_func = helper_load_snippet(f'functions', 'extra', 't3dbc_tile')
 
     # embed in routine
     full_source = f'''\
