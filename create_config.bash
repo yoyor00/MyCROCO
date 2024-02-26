@@ -317,7 +317,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
     fi
     # AGRIF
-    if [[ ${options[@]} =~ "agrif" ]] ; then
+    if [[ ${options[@]} =~ "agrif" && ${options[@]} =~ "oce-dev" ]] ; then
 	cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
 	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
@@ -587,10 +587,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     [[ ${options[@]} =~ "toy" ]] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
     [[ ${options[@]} =~ "xios" ]] && printf "export XIOS_EXE_DIR=\${XIOS}/bin\n" >> mynamelist.sh
 
-    printf "#-------------------------------------------------------------------------------\n" >> mynamelist.sh
-    printf "# Model settings\n" >> mynamelist.sh
-    printf "# ------------------------------------------------------------------------------\n" >> mynamelist.sh
-
+    printf "\n" >> mynamelist.sh
 
     [[ ${options[@]} =~ "cpl" ]] && cat ./namelist_cpl.sh >> mynamelist.sh
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./namelist_oce.sh >> mynamelist.sh
@@ -616,18 +613,18 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     # Edit jobcomp in CROCO_IN
     if [[ ${options[@]} =~ "oce-prod" ]]; then
         cd ${MY_CONFIG_HOME}/CROCO_IN
-	sed -e "s|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${CROCO_DIR}/OCEAN|g" \
-	    -e "s|FC=gfortran|FC=\${FC}|" \
-	    -e "s|MPIF90=.*|MPIF90=\${MPIF90}|" \
+	sed -e 's|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${OCE}|g' \
+	    -e 's|FC=gfortran|FC=\${FC}|' \
+	    -e 's|MPIF90=.*|MPIF90=\${MPIF90}|' \
 	    jobcomp > jobcomp.tmp
 	mv jobcomp.tmp jobcomp
 	if [[ ${options[@]} =~ "cpl" ]]; then
-	    sed -e "s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=\${CPL}|" \
+	    sed -e 's|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=\${CPL}|' \
 		jobcomp > jobcomp.tmp
             mv jobcomp.tmp jobcomp
 	fi
         if [[ ${options[@]} =~ "xios" ]]; then
-            sed -e "s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=\${XIOS}|" \
+            sed -e 's|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=\${XIOS}|' \
                 jobcomp > jobcomp.tmp
             mv jobcomp.tmp jobcomp
         fi

@@ -70,3 +70,4 @@ export atm_his_frames=1000 # $((31*24))     # nb of outputs per file
 export atm_diag_int_m=$((${atm_his_h}*60))  # diag output interval (m)
 export atm_diag_frames=1000                 # nb of diag outputs per file
 
+

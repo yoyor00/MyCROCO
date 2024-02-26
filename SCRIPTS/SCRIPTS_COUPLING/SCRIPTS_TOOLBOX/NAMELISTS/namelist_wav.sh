@@ -35,3 +35,4 @@ export bouncin=
 export wav_int=21600  # output interval (s)
 export flagout="TRUE" # Keep (TRUE) or not (FALSE) ww3 full output binary file (out_grd.ww3)
 
+
