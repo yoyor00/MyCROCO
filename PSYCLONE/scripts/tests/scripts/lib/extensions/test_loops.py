@@ -512,7 +512,7 @@ def helper_load_snippet(kind: str, step: str, name: str, generated_node: Node = 
     return current_source
 
 ##########################################################
-def helper_gen_var_decl(vars: dict, common: bool = False) -> str:
+def helper_gen_var_decl(vars: dict, common: bool = False, size: int = 10) -> str:
     # to aggregate
     decl = []
 
@@ -529,27 +529,27 @@ def helper_gen_var_decl(vars: dict, common: bool = False) -> str:
     # loop on 1d arrays
     scalars = vars['1d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:10)')
+        decl.append(f'\treal*4 {vname}(0:{size})')
 
     # loop on 2d arrays
     scalars = vars['2d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:10,0:10)')
+        decl.append(f'\treal*4 {vname}(0:{size},0:{size})')
 
     # loop on 3d arrays
     scalars = vars['3d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:10,0:10,0:10)')
+        decl.append(f'\treal*4 {vname}(0:{size},0:{size},0:{size})')
 
     # loop on 4d arrays
     scalars = vars['4d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:10,0:10,0:10,0:10)')
+        decl.append(f'\treal*4 {vname}(0:{size},0:{size},0:{size},0:{size})')
 
     # loop on 5d arrays
     scalars = vars['5d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:10,0:10,0:10,0:10,0:10)')
+        decl.append(f'\treal*4 {vname}(0:{size},0:{size},0:{size},0:{size},0:{size})')
   
     # common
     if common:

@@ -33,6 +33,7 @@ from .test_loops import helper_load_snippet, helper_gen_var_decl
 ##########################################################
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
 VARS_3D = ['fx', 'fe', 'work', 'work2']
+GRID_SIZE = 20
 
 ##########################################################
 def helper_gen_init(vars: dict) -> str:
@@ -58,11 +59,13 @@ def helper_gen_init(vars: dict) -> str:
     scalars = vars['scalars']
     #for vname in scalars:
     #    decl.append(f'integer*4 {vname}')
-    decl.append(f'n = 10')
+    decl.append(f'n = {GRID_SIZE}')
     decl.append(f'jstr = 2')
-    decl.append(f'jend = 9')
+    decl.append(f'jstrv = jstr + 1')
+    decl.append(f'istru = jstr + 1')
+    decl.append(f'jend = {GRID_SIZE - 1}')
     decl.append(f'istr = 2')
-    decl.append(f'iend = 9')
+    decl.append(f'iend = {GRID_SIZE - 1}')
     decl.append(f'jmin = jstr-2')
     decl.append(f'jmax = jend+1')
     decl.append(f'imin = istr-2')
@@ -107,7 +110,7 @@ def helper_gen_var_decl_saved(vars: dict) -> str:
         renamed[cat] = new_names
 
     # generate vars
-    return helper_gen_var_decl(renamed, common=True)
+    return helper_gen_var_decl(renamed, common=True, size=GRID_SIZE)
 
 ##########################################################
 def helper_gen_var_saving(vars: dict) -> str:
@@ -131,11 +134,11 @@ def helper_gen_check(vars: dict, skip_check: dict) -> str:
     scalars = vars['scalars']
     #for vname in scalars:
     #    decl.append(f'integer*4 {vname}')
-    decl.append(f'n = 10')
+    decl.append(f'n = {GRID_SIZE}')
     decl.append(f'jstr = 2')
-    decl.append(f'jend = 9')
+    decl.append(f'jend = {GRID_SIZE - 1}')
     decl.append(f'istr = 2')
-    decl.append(f'iend = 9')
+    decl.append(f'iend = {GRID_SIZE - 1}')
 
     # loop on 1d arrays
     scalars = vars['1d']
@@ -149,7 +152,11 @@ def helper_gen_check(vars: dict, skip_check: dict) -> str:
             if skip_check and not vname in skip_check:
                 if not vname.endswith('_3d') and not vname.endswith('1d'):
                     decl.append(f'if (all({vname} .ne. saved_{vname})) then')
-                    decl.append(f"  write(*,*) 'Invalid value in {vname} !'")
+                    decl.append(f"  write(*,*) 'Invalid value in {vname} :'")
+                    decl.append(f"  write(*,*) ''")
+                    decl.append(f"  write(*,*) '{vname} = ', {vname}")
+                    decl.append(f"  write(*,*) ''")
+                    decl.append(f"  write(*,*) 'saved_{vname} = ', saved_{vname}")
                     decl.append(f'  call exit(1)')
                     decl.append(f'endif')
 
@@ -213,7 +220,7 @@ LOOP_PARAMETERS = [
 
     # jki loops
     ('jki', 'pre_step3d_tile-873', []),
-    ('jki', 'prsgrd_tile-83', ['dz']),
+    ('jki', 'prsgrd_tile-83', ['dz', 'dr']),
     ('jki', 'rhs3d_tile-1781', []),
     ('jki', 'rhs3d_tile-2086', []),
     ('jki', 'step3d_t_tile-526', []),
@@ -333,7 +340,6 @@ LOOP_PARAMETERS = [
 def test_running_reshaped_kernels(type: str, snippet_name: str, skip_check: list):
     # load snippet
     snippet = helper_load_snippet(f'{type}-loops', 'origin', snippet_name)
-    snippet_func = helper_load_snippet(f'functions', 'extra', 't3dbc_tile')
 
     # embed in routine
     full_source = f'''\
@@ -352,39 +358,42 @@ end
 
 subroutine init_vars()
     implicit none
-    {helper_gen_var_decl(LOOP_USED_VARS, common=True)}
+    {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
     {helper_gen_init(LOOP_USED_VARS)}
 end
 
 subroutine post_check()
     implicit none
-    {helper_gen_var_decl(LOOP_USED_VARS, common=True)}
+    {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
     {helper_gen_var_decl_saved(LOOP_USED_VARS)}
     {helper_gen_check(LOOP_USED_VARS, skip_check)}
 end
 
 subroutine save_vars()
     implicit none
-    {helper_gen_var_decl(LOOP_USED_VARS, common=True)}
+    {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
     {helper_gen_var_decl_saved(LOOP_USED_VARS)}
     {helper_gen_var_saving(LOOP_USED_VARS)}
 end
 
 subroutine snippet_cpu_default_code()
     implicit none
-    {helper_gen_var_decl(LOOP_USED_VARS, common=True)}
+    {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
     {snippet}
 end
 
 subroutine snippet_reshaped_code()
     implicit none
-    {helper_gen_var_decl(LOOP_USED_VARS, common=True)}
+    {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
     {snippet}
 end
 '''
 
     # debug
     #print(full_source)
+
+    reader = FortranReader()
+    full_source = FortranWriter()(reader.psyir_from_source(full_source))
 
     # dump
     with open(os.path.expanduser("~/source.orig.F90"), "w+") as fp:
@@ -449,7 +458,7 @@ end
 
         # compiler
         try:
-            subprocess.run(['gfortran', fp_source.name, '-o', exename, '-ffree-line-length-none', '-Wall', '-Werror', '-Wno-unused-variable'], check=True)
+            subprocess.run(['gfortran', fp_source.name, '-o', exename, '-O2', '-fcheck=all', '-ffree-line-length-none', '-Wall', '-Werror', '-Wno-unused-variable'], check=True)
 
             # run
             subprocess.run([exename], check=True)
