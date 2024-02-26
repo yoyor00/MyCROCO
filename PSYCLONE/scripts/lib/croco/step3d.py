@@ -83,7 +83,7 @@ def apply_step3d_routine_trans(routine: Routine, container: Container, dump_snip
             elif vars[0:3] == ['j','i','k']:
                 loops.handle_jik_loop(top_loop, VARS_1D, do_k_loop_fuse=True, dump_snippets=dump_snippets)
                 acc.set_private_on_loop(top_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'bc1d'])
-        
+
         ############################################################
         # add scratch 3d vars
         #if routine.name == "step3d_uv1_tile":

@@ -3,7 +3,8 @@
 ###### Requirements with Version Specifiers ######
 deepdiff == 6.6.1
 # CAUTION: I currently use a patched one, not the official one, but based on that version
-psyclone == 2.3.1
+#psyclone == 2.3.1
+psyclone @ git+https://github.com/svalat/PSyclone.git@async-and-merge-master-ok
 
 ###### Requirements to run tests ######
 pytest

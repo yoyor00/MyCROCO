@@ -13,7 +13,7 @@ from datetime import datetime
 ##########################################################
 def run_and_get_first_line(command: str) -> str:
     try:
-        return subprocess.check_output("mpirun --version").split('\n')[0]
+        return subprocess.check_output(command, shell=True).split('\n')[0]
     except:
         return "UNAVAILABLE"
 
