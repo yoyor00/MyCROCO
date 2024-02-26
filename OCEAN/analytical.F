@@ -916,8 +916,8 @@ c
         read(chain,*,iostat=eof2)  read_chain(:)
         if(eof2==0) then  ! Warning column number excludes date column
          kk=kk+1
-         write(datte,'(i2.2,1x,i2.2,1x,i4.4,1x,i2.2,1x,i2.2,1x,i2.2)')
-     &   int(read_chain(3)),int(read_chain(2)),int(read_chain(1)),
+         write(datte,'(i4.4,1x,i2.2,1x,i2.2,1x,i2.2,1x,i2.2,1x,i2.2)')
+     &   int(read_chain(1)),int(read_chain(2)),int(read_chain(3)),
      &   int(read_chain(4)),0,0  
          time_in(kk)=tool_datosec(datte)
 #if defined DYFAMED          
