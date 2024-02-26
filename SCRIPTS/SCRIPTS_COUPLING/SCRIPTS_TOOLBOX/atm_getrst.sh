@@ -37,7 +37,10 @@ then
                       lonmax=$( ncdump -v lonmax tmp.nc.1  | grep "lonmax =" | cut -d ' ' -f 4)
                       latmax=$( ncdump -v latmax tmp.nc.1  | grep "latmax =" | cut -d ' ' -f 4)
                       \rm tmp.nc.1
-
+                      ncks -A -C -v LANDMASK wrfinput_$dom tmp.nc
+                      ncks -A -C -v LAKEMASK wrfinput_$dom tmp.nc
+                      ncks -A -C -v XLAT wrfinput_$dom tmp.nc
+                      ncks -A -C -v XLONG wrfinput_$dom tmp.nc
                       ncap2 -O -F -s "CPLMASK(1,:,:,:)=(LANDMASK+LAKEMASK-1)*(-1)" tmp.nc tmp.nc.1
                       ncap2 -O -F -s "var_tmp=CPLMASK(1,:,:,:); where( XLAT < $latmin || XLONG < $lonmin || XLAT > $latmax || XLONG > $lonmax ) var_tmp=0; CPLMASK(1,:,:,:)=var_tmp" tmp.nc.1 tmp.nc.1
                       ncks -O -v var_tmp -x tmp.nc.1 tmp.nc.1
