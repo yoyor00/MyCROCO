@@ -39,13 +39,13 @@
 
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3
-       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)
+      if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)
 #  ifdef AGRIF
-     &  .and. it_inside_root==1  
+     & .and. it_inside_root==1  
 #  endif
-     &  ) then
-         call cpl_prism_get (oasis_time)
-       endif
+     & ) then
+        call cpl_prism_get (oasis_time)
+      endif
 !!!!!!!!!!!!!
 # endif /* OA_COUPLING */
 
@@ -81,23 +81,21 @@ C$OMP END PARALLEL
         nbstep3d = nbstep3d + 1
       endif
 # if defined OA_COUPLING || defined OW_COUPLING
-!--Get phase of OASIS3
-       if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
+!--Put phase of OASIS3
+      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)) then
 #  ifdef AGRIF
-           if(it_inside_root==Agrif_rel_idt()) then 
+        if(it_inside_root==Agrif_rel_idt()) then 
 #  endif
-               call cpl_prism_put (oasis_time)
-               oasis_time = oasis_time + dt
+          call cpl_prism_put (oasis_time)
+          oasis_time = oasis_time + dt
 #  ifdef AGRIF
-     &         *Agrif_rel_idt()
-             it_inside_root = 1
-           else 
-             it_inside_root = it_inside_root+1
-           endif
-#  endif
-         endif 
-       endif
+     &    *Agrif_rel_idt()
+          it_inside_root = 1
+        else 
+           it_inside_root = it_inside_root+1
+        endif
+#  endif 
+      endif
 # endif /* OA_COUPLING */
 #endif
 !#ifdef ONLINE_ANALYSIS
