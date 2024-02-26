@@ -40,7 +40,7 @@ do
 	namfile=croco.in.${nn}
         agrif_ext=".${nn}"
 	cpfile ${OCE_NAM_DIR}/croco.in.base.${nn} ${namfile}
-        cpfile ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
+        #cpfile ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
 	SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
     else
 	namfile=croco.in
