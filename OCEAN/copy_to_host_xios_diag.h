@@ -574,7 +574,8 @@ c       endif
 #  endif
 #  ifdef VIS_COEF_3D
       if (xios_field_is_active("visc3d")) then
-!$acc update host( visc3d ) 
+!$acc update host( visc3d_r )
+!$acc update host( visc3d_p )       	
       endif
 #  endif
 #  ifdef DIF_COEF_3D

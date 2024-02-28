@@ -332,6 +332,7 @@
       real    cff,cff1,rho0og
 #  ifdef NBQ_GRAV
       real rho_nh1(N),rho_nh2(N)
+!$acc declare create( rho_nh1, rho_nh2 )      
 #  endif
 
 #  include "grid.h"

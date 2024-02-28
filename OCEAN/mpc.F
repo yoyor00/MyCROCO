@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,7 +15,7 @@
 ! CPP and FORTRAN compiler.
 !-------------------------------------------------------------------
 ! Objectives:
-!------------
+!------------ 
 ! (1) Eliminate blank lines left by CPP and fortran style comments,
 !     but keep compiler directives like C$DOACROSS in place.
 !
@@ -23,25 +23,25 @@
 !     quotation is opened on one line and closes on the next line.
 !     Doing so, however, may be considered as unsafe and sloppy from
 !     stylistical point of view; mpc enforces the rule when every
-!     string inside quotation mark must be closed within the line.
+!     string inside quotation mark must be closed within the line. 
 !   --> Optional:: activated by TRAP_SINGLE_QUOTES CPP-switch.
 !
 ! (3) Convert _default_ size fortran real type declarations into
 !     real*8.  Any mixture of lower and upper cases latters is
-!     allowed in the word real.
+!     allowed in the word real. 
 !     Explicitly specified size declaration, such as real*4
 !     or real*16 will be left unchanged.
 !   --> Optional:: activated by REAL_TO_REAL8 CPP-switch.
 !
 ! (4) Enforce double precision accuracy for the real type constants
 !     appearing anywhere in the program, for example, 1. --> 1.D0;
-!     .1 --> .1D0;    9.81 --> 9.81D0;   .5e-8 --> .5D-8;
+!     .1 --> .1D0;    9.81 --> 9.81D0;   .5e-8 --> .5D-8; 
 !     1.2e+14 --> 1.2D+14 etc.
 !   --> Safe. Will distinguish real type constants from look alike
 !     combinations like, say format descriptors F8.4 or e12.5; or
 !     logical expressions like 1.eq.i etc. Will fold line of the
 !     code automatically according to fortran syntax rules, when
-!     this change causes line to increase beyond 72 characters.
+!     this change causes line to increase beyond 72 characters. 
 !   --> Optional: activated by DOUBLE_CONST CPP-switch.
 !
 !
@@ -52,7 +52,7 @@
 !                 REAL_TO_REAL8 CPP-switches are defined.
 !
 !
-! (6) Convert parallelized loops over subdomains (tiles)
+! (6) Convert parallelized loops over subdomains (tiles) 
 !
 !          do tile=0,NSUB_X*NSUB_E-1
 !
@@ -70,16 +70,16 @@
 !     regions are reversed, so that each thread "zig-zags" across
 !     the tiles it is processing. Automatically append SHARED/PRIVATE
 !     lists with the newly introduced variables.
-!   --> Optional: activated by ZIG_ZAG CPP-switch.
+!   --> Optional: activated by ZIG_ZAG CPP-switch. 
 !
 ! More detailed description for each option is available below.
 !
 ! In the case when after they were modified, lines of the fortran
-! program became longer than the prescribed width of 72 characters,
+! program became longer than the prescribed width of 72 characters, 
 ! they are automatically folded by mpc according to the fortran
-! syntax rules.
+! syntax rules. 
 !
-! Usage:
+! Usage: 
 !-------
 ! Similar to CPP
 !                  mpc source.file target.file
@@ -96,7 +96,7 @@
 ! output goes to standard output. The last option allows mpc to work
 ! as receiver in pipe with CPP:
 !
-!                /lib/cpp -P file.F | mpc > file.f
+!                /lib/cpp -P file.F | mpc > file.f          
 !
 ! WARNING: Insofar as manifestations of functional deficiencies are
 ! agreed upon by any and all concerned parties to be imperceivable,
@@ -189,28 +189,29 @@
      &                 (symbol(i), i=1,max_length)
         goto 3
    2    not_end_of_file=.false.
-        if (symbol(1).eq.'#') goto 1
+        if (symbol(1).eq.'#') goto 1 
    3    if (symbol(1).eq.'C' .or. symbol(1).eq.'c' .or.
      &                            symbol(1).eq.'!') then
           if (symbol(2).eq.'$' .or. symbol(3).eq.'$' .or.
-     &        symbol(4).eq.'$' .or. symbol(5).eq.'$') then
-            if ((symbol(2).eq.'$').and.
-     &        ((symbol(3).eq.'A').or.(symbol(3).eq.'a'))) then
+     &        symbol(4).eq.'$' .or. symbol(5).eq.'$' .or.
+     &	      symbol(3).eq.'!') then
+            if ((symbol(3).eq.'!').or.((symbol(2).eq.'$').and.
+     &        ((symbol(3).eq.'A').or.(symbol(3).eq.'a')))) then
            directive = .false.  ! this is the special !$AGRIF or C$AGRIF directive
            do i=1,max_length
             if (symbol(i).ne.' ') length = i
            enddo
                       write(iout,'(72A1)') (symbol(i),i=1,length)
-               goto 1
+               goto 1       
            else
             directive=.true.
             endif
-          else                  ! if the first symbol indicates that
+          else                  ! if the first symbol indicates that 
             goto 1              ! this line is a fortran comment, but
           endif                 ! a dollar sign is present somewhere
         endif                   ! in positions 2,3,4,5, this line is
                                 ! a directive and it should be pro-
-        lswtch=.false.          ! cessed further.
+        lswtch=.false.          ! cessed further. 
         do i=1,max_length
           if (symbol(i).eq.quote) then
             lswtch=.not.lswtch
@@ -231,7 +232,7 @@
         endif
         istrt=7
         do while (istrt.lt.length .and. symbol(istrt).eq.' ')
-          istrt=istrt+1
+          istrt=istrt+1 
         enddo
 !
 ! Recognize REAL or real and turn it into REAL*8 or real*8,
@@ -295,7 +296,7 @@
           j=i+1
           do while (j.lt.length .and. symbol(j).eq.' ')
             j=j+1
-          enddo                         ! first non-blanc symbol
+          enddo                         ! first non-blanc symbol 
                                         ! after type declaration.
 !
 ! Once it is eatablished that the line contains an "obsolecent" from
@@ -319,7 +320,7 @@
               is=is+1
             enddo
             ie=is
-            do while (symbol(ie+1).ne.' ' .and.
+            do while (symbol(ie+1).ne.' ' .and. 
      &                symbol(ie+1).ne.',' .and. ie.lt.length)
               ie=ie+1
             enddo
@@ -334,14 +335,14 @@
             enddo                        ! Finally, modify the line
                                          ! of code: add the number of
             if (type.eq.char_type) then  ! newly inserted characters
-              isft=isft+6                ! to "isft", then move the
-              do k=length,ie+1,-1        ! rest of the line to the
-                symbol(k+isft)=symbol(k) ! right in order to make
-              enddo                      ! room for the insertion,
+              isft=isft+6                ! to "isft", then move the 
+              do k=length,ie+1,-1        ! rest of the line to the 
+                symbol(k+isft)=symbol(k) ! right in order to make 
+              enddo                      ! room for the insertion, 
               length=length+isft         ! adjust the length of the
-              symbol(i+1)='('            ! line accordingly, then
-              symbol(i+2)='l'            ! insert the new-style size
-              symbol(i+3)='e'            ! specification.
+              symbol(i+1)='('            ! line accordingly, then 
+              symbol(i+2)='l'            ! insert the new-style size 
+              symbol(i+3)='e'            ! specification. 
               symbol(i+4)='n'
               symbol(i+5)='='
               do k=1,ie-is+1
@@ -420,7 +421,7 @@
               do k=length,j,-1           ! Move the rest of the line
                 symbol(k+isft)=symbol(k) ! isft symbols to the right
               enddo                      ! to make room for explicit
-              do k=j,j+isft-1            ! declaration of type size
+              do k=j,j+isft-1            ! declaration of type size  
                 symbol(k)=' '            ! and increase lenght of
               enddo                      ! the line accordingly, then
               length=length+isft         ! insert size declaration.
@@ -464,7 +465,7 @@
 !     and turns back ON again, when exiting.
 !
 ! For each dot character in the list, starting from the last one,
-! and moving from the right to the left:
+! and moving from the right to the left: 
 !
 ! (2) Scan the characters adjacent from the _left_ to the dot in
 !     order to find the first non-blank character which is not a
@@ -479,14 +480,14 @@
 !     During this search also save "is", which is position of the
 !     leftmost digit among digits adjacent to the dot on the left
 !     side (position of the dot itself, if there are no adjacent
-!     digits on the left of it).
+!     digits on the left of it). 
 !
 ! (3) Check weather this symbol is _NOT_ a letter, that is excluding
 !     ASCII characters with numbers within the ranges of numbers
 !     (65:90) or (97:122) inclusive, _OR_ weather the 7th position
 !     has been reached (in this case it does not matter what the
 !     symbol is). If either condition is true, continue processing,
-!     otherwise terminate it.
+!     otherwise terminate it.  
 !
 !     It should be noted that in a legal fortran code a constant
 !     expression may be preceded by a mathematical operation symbol,
@@ -524,8 +525,8 @@
 !          is" and no further action is taken); or a RUTGERS-style
 !          constant -- e.g., 1.0_r8 or, 1.23_e8+18 -- in this case it
 !          is converted into standard double presision syntax -->
-!          1.0D0 and 1.23D+18.
-!     or
+!          1.0D0 and 1.23D+18. 
+!     or 
 !          any other character. In this case verify that it is not a
 !          letter. (In a legal fortran code a constant expression may
 !          be followed by a mathematical/logical operation, bracket,
@@ -539,10 +540,10 @@
 ! the code, the order of processing is from the right to the left.
 ! This is done because in the case when 'D0' is pasted to the
 ! constant as in the step (5), the second case, the tail of the
-! line is shifted to the right. Processing them in the forward order
-! will also cause shift of the dots to be processed later. So that
+! line is shifted to the right. Processing them in the forward order 
+! will also cause shift of the dots to be processed later. So that 
 ! the indices indx(j+1:ndots) are no longer consistent with the
-! actual position of the dots, if the dot indx(j) was found to be
+! actual position of the dots, if the dot indx(j) was found to be  
 ! a fixed point real type constant as defined in (5), second case.
 !
 ! Limitations:  1. Real-valued constants should not be continued
@@ -580,7 +581,7 @@
             do while (lswtch .and. m.lt.length)
               m=m+1
               k=ichar(symbol(m))
-              if (k.ge.48 .and. k.le.57) then
+              if (k.ge.48 .and. k.le.57) then 
                 ie=m
               elseif (symbol(m).ne.' ') then
                 lswtch=.false.
@@ -596,9 +597,9 @@
                 do while (symbol(i).eq.' ' .and. i.lt.length)
                   i=i+1
                 enddo
-                k=ichar(symbol(i))
+                k=ichar(symbol(i)) 
                 if (k.eq.43 .or. k.eq.45 .or.
-     &              (k.ge.48 .and. k.le.57)) symbol(m)='D'
+     &              (k.ge.48 .and. k.le.57)) symbol(m)='D' 
               elseif (symbol(m).eq.'_') then
 !
 ! Rutgers compatibility mode: the following code segment searches
@@ -657,7 +658,7 @@
 ! front of the loop in order for the rearrangement to occur: it is
 ! simpy triggered by the occurrence of 'do tile=my_***' with possible
 ! blank spaces between 'tile', '=' and 'my_***', where 'my_***' may
-! be anything like handcoded 'my_first,my_last' or 'my_tile_range'.
+! be anything like handcoded 'my_first,my_last' or 'my_tile_range'. 
 !
 ! Compared to the straightforward sequence, this measure eliminates
 ! secondary cache misses, because after passing a synchronization
@@ -691,7 +692,7 @@
               do while (symbol(i).eq.' ' .and. i.lt.length)
                 i=i+1
               enddo
-
+     
               if (symbol(i).eq.'m' .and. symbol(i+1).eq.'y' .and.
      &                                   symbol(i+2).eq.'_') then
                 dir_switch=.not.dir_switch
@@ -712,7 +713,7 @@
 #ifdef ZIG_ZAG_OLD
 !
 ! Similarly as above, but designed to work for version of main.F,
-! where parallel directives are inserted in front of each parallel
+! where parallel directives are inserted in front of each parallel 
 ! loop over subdomains "tiles", i.e., loops like
 !
 !      C$DOACROSS LOCAL (tile)
@@ -724,7 +725,7 @@
 !
 !          do trd=0,numthreads-1
 !            do tile=forward_sweep
-! or
+! or 
 !          do trd=0,numthreads-1
 !            do tile=backward_sweep
 !
@@ -732,12 +733,12 @@
 ! are reversed, so that each thread zig-zags across the tiles it is
 ! processing.
 !                             ! If the line is a parallel directive
-        if (directive) then   ! containing attribute LOCAL(..) or
+        if (directive) then   ! containing attribute LOCAL(..) or 
           ip1=0               ! PRIVATE(..), and perhaps, SHARE(..),
           ip2=0               ! identify indices of the first and
           is1=0               ! the last symbol inside each bracket,
           is2=0               ! which are then used below to append
-          i=1                                        ! either list.
+          i=1                                        ! either list. 
           do while (i.lt.length)
             if (symbol(i  ).eq.'L' .or. symbol(i  ).eq.'l') then
               if (symbol(i+1).eq.'O' .or. symbol(i+1).eq.'o') then
@@ -801,9 +802,9 @@
                    endif
                  endif    ! Skip to the beginning of the next word
                 endif     ! for further checking. NOTE that 'PRIVATE'
-               endif      ! in context of 'DO PRIVATE' is recognized
-              endif       ! (as it should be), but 'PRIVATE' within
-            endif         ! 'THREADPRIVATE' is disregarded because
+               endif      ! in context of 'DO PRIVATE' is recognized 
+              endif       ! (as it should be), but 'PRIVATE' within 
+            endif         ! 'THREADPRIVATE' is disregarded because 
                           !  it not a complete word.
             i=i+1
             do while (symbol(i).ne.' ' .and. symbol(i).ne.',')
@@ -815,20 +816,20 @@
           enddo
 
           if (ip1.gt.0 .and. ip2.eq.0) write(iout,'(A)')
-     &      '### ERROR: No closing bracket in local/private list.'
+     &      '### ERROR: No closing bracket in local/private list.' 
           if (is1.gt.0 .and. is2.eq.0) write(iout,'(A)')
      &             '### ERROR: No closing bracket in shared list.'
 !
 ! It should be noted that a valid DOACROSS / DO PARALEL /DO ALL
 ! directive must have at least one valiable in its LOCAL/PRIVATE
-! list to privatize the index of do-loop which follows it. Hence,
-! the presence of non-empty local list triggers further processing
+! list to privatize the index of do-loop which follows it. Hence, 
+! the presence of non-empty local list triggers further processing 
 ! in the following code segment: paste additional variables "trd"
 ! and subs into private list and "numthreads" into shared, in order
 ! to allow loop rearrangement. There are three possibilities here:
 ! SHARE attribute goes beforeLOCAL; vise versa; and and SHARE
 ! attribute is absent.
-!                                           ! Save the whole string
+!                                           ! Save the whole string 
           if (ip1.gt.0 .and. ip2.gt.0) then ! into buffer before
             do i=1,length                   ! start messing with it.
               buffr(i)=symbol(i)
@@ -863,7 +864,7 @@
                   symbol(is1+i+9)=scratch(i:i)
                 enddo
                 do i=is1,length
-                  symbol(i+22)=buffr(i)
+                  symbol(i+22)=buffr(i) 
                 enddo
                 length=length+22
               else
@@ -902,11 +903,11 @@
                 k=ks1
               elseif (ks2.gt.6) then
                 k=ks2
-              else
+              else 
                 write(iout,*) 'MPC ERROR: Cannot split directive.'
               endif
               write(iout,'(72A1)') (symbol(i),i=1,k)
-# ifdef CRAY
+# ifdef CRAY 
               m=6
 # else
               m=3
@@ -932,7 +933,7 @@
 ! within the work zone of each thread (inner loop), in such a way
 ! that the direction of the inner loop is always reversed with respect
 ! to the direction of similar loop in the previous parallel region
-! (zig-zag sequence).
+! (zig-zag sequence).  
 !
         if (par_region) then
           is=7
@@ -949,7 +950,7 @@
      &                                   symbol(is+4).eq.'=') then
               scratch='0,NSUB_X*NSUB_E-1'
               lswtch=.true.
-              do i=1,17
+              do i=1,17 
                 if (symbol(is+4+i).ne.scratch(i:i)) lswtch=.false.
               enddo
               if (lswtch) then
@@ -990,7 +991,7 @@
 ! left; if such is not found, then the search starts from the
 ! beginning and attempt is made to split along a comma; if this is
 ! not successful, an assignment operator is being searched; then
-! a mathematical operation.
+! a mathematical operation. 
 !
         if (length.gt.6 .and. length.le.72) then
            write(iout,'(72A1)') (symbol(i),i=1,length)
@@ -1010,14 +1011,14 @@
             elseif (symbol(k).eq.'=') then
               ks3=k
             elseif (symbol(k).eq.'/') then
-              ks4=k
+              ks4=k 
             elseif (symbol(k).eq.'+' .or.
      &              symbol(k).eq.'-'  .or.
      &              symbol(k).ne.'*') then
               ks5=k
             endif
           enddo
-
+            
           if (length-ks1.gt.66) ks1=0
           if (length-ks2.gt.66) ks2=0
           if (length-ks3.gt.66) ks3=0
@@ -1028,7 +1029,7 @@
 ! special here, it is just a matter of estetics to decide which of
 ! the possible breaking points (if more than one are available) is
 ! the most appropriate; the logical sequence below is designed as
-! hierarchy of preferences.
+! hierarchy of preferences. 
 !
           if (ks1.gt.34) then
             k=ks1
@@ -1048,9 +1049,9 @@
 ! create a continuation line resetting the starting symbols to blank,
 ! and them moving the tail to the left in such a way that its end
 ! will be in the position 72. Also put a continuation character into
-! position 6.
+! position 6. 
 !
-          write(iout,'(72A1)') (symbol(i),i=1,k)
+          write(iout,'(72A1)') (symbol(i),i=1,k) 
           do i=1,k
             symbol(i)=' '
           enddo
@@ -1066,4 +1067,4 @@
       if (iin.gt.5) close(iin)
       stop
       end
-
+       

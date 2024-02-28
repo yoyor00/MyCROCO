@@ -1,6 +1,6 @@
 !$acc enter data if(compute_on_device) copyin(
 
-!../OCEAN/ocean2d.h
+!ocean2d.h
 !$acc& zeta
 !$acc&, ubar
 !$acc&, vbar
@@ -11,7 +11,7 @@
 !$acc&, DVom
 #endif
 
-!../OCEAN/scalars.h
+!scalars.h
 #ifdef SOLVE3D
 # ifndef M3FAST_SEDLAYERS
 !$acc&, sc_w, Cs_w, sc_r, Cs_r
@@ -121,7 +121,7 @@
 #else
 #endif
 
-!../OCEAN/ocean3d.h
+!ocean3d.h
 #ifdef SOLVE3D
 !$acc&, u
 !$acc&, v
@@ -177,7 +177,7 @@
 # endif /* OXYGEN */
 #endif  /* SOLVE3D */
 
-!../OCEAN/grid.h
+!grid.h
 !$acc&, h
 !$acc&, hinv
 !$acc&, f
@@ -271,7 +271,7 @@
 !$acc&, sina
 #endif
 
-!../OCEAN/coupling.h
+!coupling.h
 #ifdef SOLVE3D
 # ifdef VAR_RHO_2D
 !$acc&, rhoA
@@ -288,7 +288,7 @@
 !$acc&, DV_avg2
 #endif
 
-!../OCEAN/private_scratch.h
+!private_scratch.h
 #ifdef AUTOTILING
 !$acc&, A2d, A3d, A3dHz
 # if defined SEDIMENT || defined LMD_MIXING
@@ -310,7 +310,7 @@
 # endif
 #endif
 
-!../OCEAN/mixing.h
+!mixing.h
 #if defined UV_VIS2 || defined SPONGE_VIS2
 !$acc&, visc2_r
 !$acc&, visc2_p
@@ -408,7 +408,7 @@
 # define exchange_p3d_tile(a,b,c,d,visc3d_p) exchange_p2d_tile(a,b,c,d,visc2_p)
 #endif /* SOLVE3D */
 
-!../OCEAN/forces.h
+!forces.h
 !$acc&, sustr
 !$acc&, svstr
 #if defined OA_COUPLING || defined OW_COUPLING
@@ -658,7 +658,7 @@
 # endif
 #endif
 
-!../OCEAN/work.h
+!work.h
 #ifdef SOLVE3D
 !$acc&, work
 !$acc&, workr
@@ -669,7 +669,7 @@
 !$acc&, work2d
 !$acc&, work2d2
 
-!../OCEAN/ncscrum.h
+!ncscrum.h
 #ifdef SOLVE3D
 #  ifdef K3FAST_HIS
 #  else
@@ -1291,7 +1291,7 @@
 #elif defined MUSTANG
 #endif
 
-!../OCEAN/averages.h
+!averages.h
 #ifdef AVERAGES
 !$acc&, zeta_avg
 !$acc&, ubar_avg
@@ -1403,12 +1403,12 @@
 # endif
 #endif /* AVERAGES */
 
-!../OCEAN/lmd_kpp.h
+!lmd_kpp.h
 #if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 !$acc&, Jwtype
 #endif
 
-!../OCEAN/climat.h
+!climat.h
 #if defined ZCLIMATOLOGY || defined AGRIF
 !$acc&, ssh
 #endif
@@ -1426,10 +1426,8 @@
 # if defined TRACERS && (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY))
 !$acc&, tclm
 # endif
-# if defined TRACERS && defined TCLIMATOLOGY /* Potential pb */
-#  ifdef TNUDGING
+# if defined TRACERS && (defined TCLIMATOLOGY || defined TEMPERATURE) /* Potential pb */
 !$acc&, Tnudgcof
-#  endif
 #  ifndef ANA_TCLIMA
 !$acc&, tclima
 !$acc&, tclm_time
@@ -1502,7 +1500,7 @@
 # endif
 #endif
 
-!./nbq.h
+!nbq.h
 # define NSLP1N -N_sl+1:N
 # define NSLN -N_sl:N
 # ifdef K3FAST
@@ -1542,6 +1540,9 @@
 !$acc&, qdmu_nbq
 !$acc&, qdmv_nbq
 !$acc&, qdmw_nbq
+#     ifdef NBQ_THETAIMP
+!$acc&, qdmwold_nbq
+#     endif
 #  ifdef K3FAST_UV
 !$acc&, dZdxq_w
 !$acc&, dZdyq_w
@@ -1657,7 +1658,7 @@
 #  endif    
 # endif /* K3FAST */
 
-!../OCEAN/sources.h
+!sources.h
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
 !$acc&, Qbar0
 !$acc&, Qbar
@@ -1694,7 +1695,7 @@
 # endif
 #endif
 
-!../OCEAN/wkb_wwave.h
+!wkb_wwave.h
 #ifdef WKB_WWAVE
 !$acc&, wkx
 !$acc&, wke
@@ -1723,7 +1724,7 @@
 # endif
 #endif /* WKB_WWAVE */
 
-!../OCEAN/boundary.h
+!boundary.h
 #ifdef T_FRC_BRY
 !$acc&, got_tbry
 #endif
@@ -1958,7 +1959,7 @@
 # endif
 #endif /* NBQ || defined K3FAST */
 
-!../OCEAN/tides.h
+!tides.h
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 !$acc&, Tperiod
 #endif /* SSH_TIDES || UV_TIDES */
@@ -1978,7 +1979,7 @@
 !$acc&, PTide
 #endif
 
-!../OCEAN/bbl.h
+!bbl.h
 #if defined BBL || defined SEDIMENT
 !$acc&, Abed
 !$acc&, Hripple
