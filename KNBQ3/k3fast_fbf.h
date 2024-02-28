@@ -6,6 +6,7 @@
 #  define UBOT UFx
 #  define VBOT VFe
       if (mod(iif-1,inc_faststep).eq.0) then
+!$acc kernels if(compute_on_device) default(present)
 
         if (maxval(Zob).ne.0.) then
           do j=JstrV-1,Jend+1
@@ -92,6 +93,7 @@
             enddo
           enddo
         endif
+!$acc end kernels
       endif
 #  undef UBOT
 #  undef VBOT
