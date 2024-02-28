@@ -17,23 +17,51 @@ import pytest
 import subprocess
 import tempfile
 import shutil
+from contextlib import contextmanager
 # Psyclone
 from psyclone.psyir.nodes import Node, Loop, Routine, Call
 # internal
 from scripts.lib.extensions import acc
 from scripts.lib.extensions.loops import get_first_loop_on, handle_kji_loop, handle_jki_loop, handle_jik_loop, dump_named_node_as_source
 from scripts.lib.croco import psyacc, step3d
+from scripts.lib.extensions import scratch
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
+from psyclone.transformations import ACCDataTrans
 # internal poseidon
 from scripts.lib.poseidon.dsl.helper import extract_kernels_from_psyir
 # local test dir
-from .test_loops import helper_load_snippet, helper_gen_var_decl
+from .test_loops import helper_load_snippet, helper_gen_var_decl, helper_gen_range_assigns, helper_gen_range_assigns_str
+# psyclone
+from psyclone.line_length import FortLineLength
 
 ##########################################################
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
 VARS_3D = ['fx', 'fe', 'work', 'work2']
-GRID_SIZE = 20
+GRID_SIZE = 10
+
+##########################################################
+from psyclone.psyir.nodes import CodeBlock
+from fparser.two.Fortran2003 import End_Associate_Stmt, Associate_Stmt, Comment
+from scripts.lib.extensions.directives import ACCCustomDirective, ACCWaitDirective
+
+class  ACCManualData(CodeBlock):
+    """
+    Class representing the !$ACC PARALLEL directive of OpenACC
+    in the PSyIR. By default it includes the 'DEFAULT(PRESENT)' clause which
+    means this node must either come after an EnterDataDirective or within
+    a DataDirective.
+
+    :param bool default_present: whether this directive includes the
+        'DEFAULT(PRESENT)' clause.
+
+    """
+    def __init__(self, string, end=False, structure = CodeBlock.Structure.STATEMENT, parent=None, annotations=None):
+        if end:
+            fp2_nodes = [ End_Associate_Stmt(string)]
+        else:
+            fp2_nodes = [ Associate_Stmt(string)]
+        super().__init__(fp2_nodes, structure, parent, annotations)
 
 ##########################################################
 def helper_gen_init(vars: dict) -> str:
@@ -59,17 +87,7 @@ def helper_gen_init(vars: dict) -> str:
     scalars = vars['scalars']
     #for vname in scalars:
     #    decl.append(f'integer*4 {vname}')
-    decl.append(f'n = {GRID_SIZE}')
-    decl.append(f'jstr = 2')
-    decl.append(f'jstrv = jstr + 1')
-    decl.append(f'istru = jstr + 1')
-    decl.append(f'jend = {GRID_SIZE - 1}')
-    decl.append(f'istr = 2')
-    decl.append(f'iend = {GRID_SIZE - 1}')
-    decl.append(f'jmin = jstr-2')
-    decl.append(f'jmax = jend+1')
-    decl.append(f'imin = istr-2')
-    decl.append(f'imax = iend+1')
+    decl += helper_gen_range_assigns(GRID_SIZE)
 
     # loop on 1d arrays
     scalars = vars['1d']
@@ -100,6 +118,20 @@ def helper_gen_init(vars: dict) -> str:
     return '\n'.join(decl)
 
 ##########################################################
+def helper_copy_data_list(vars: dict) -> str:
+    # result
+    result = []
+
+    # loop
+    for cat, names in vars.items():
+        for name in names:
+            result.append(name)
+            result.append(f"saved_{name}")
+
+    # ok
+    return ', '.join(result)
+
+##########################################################
 def helper_gen_var_decl_saved(vars: dict) -> str:
     # rename cf => saved_cf
     renamed = {}
@@ -110,7 +142,7 @@ def helper_gen_var_decl_saved(vars: dict) -> str:
         renamed[cat] = new_names
 
     # generate vars
-    return helper_gen_var_decl(renamed, common=True, size=GRID_SIZE)
+    return helper_gen_var_decl(renamed, common=True, size=GRID_SIZE, scratch_params=False)
 
 ##########################################################
 def helper_gen_var_saving(vars: dict) -> str:
@@ -119,8 +151,9 @@ def helper_gen_var_saving(vars: dict) -> str:
 
     # loop on all vars
     for cat, names in vars.items():
-        for name in names:
-            decl.append(f"saved_{name} = {name}")
+        if cat != 'scalars_int':
+            for name in names:
+                decl.append(f"saved_{name} = {name}")
 
      # ok
     return '\n'.join(decl)
@@ -134,11 +167,11 @@ def helper_gen_check(vars: dict, skip_check: dict) -> str:
     scalars = vars['scalars']
     #for vname in scalars:
     #    decl.append(f'integer*4 {vname}')
-    decl.append(f'n = {GRID_SIZE}')
-    decl.append(f'jstr = 2')
-    decl.append(f'jend = {GRID_SIZE - 1}')
-    decl.append(f'istr = 2')
-    decl.append(f'iend = {GRID_SIZE - 1}')
+    #decl.append(f'n = {GRID_SIZE}')
+    #decl.append(f'jstr = 2')
+    #decl.append(f'jend = {GRID_SIZE - 1}')
+    #decl.append(f'istr = 2')
+    #decl.append(f'iend = {GRID_SIZE - 1}')
 
     # loop on 1d arrays
     scalars = vars['1d']
@@ -149,14 +182,27 @@ def helper_gen_check(vars: dict, skip_check: dict) -> str:
     for dim in range(1,5):
         scalars = vars[f'{dim}d']
         for vname in scalars:
-            if skip_check and not vname in skip_check:
+            if not skip_check or not vname in skip_check:
                 if not vname.endswith('_3d') and not vname.endswith('1d'):
-                    decl.append(f'if (all({vname} .ne. saved_{vname})) then')
+                    decl.append(f'if (.not. all({vname} .eq. saved_{vname}) ) then')
                     decl.append(f"  write(*,*) 'Invalid value in {vname} :'")
                     decl.append(f"  write(*,*) ''")
                     decl.append(f"  write(*,*) '{vname} = ', {vname}")
                     decl.append(f"  write(*,*) ''")
                     decl.append(f"  write(*,*) 'saved_{vname} = ', saved_{vname}")
+
+                    if dim > 1:
+                        indices = ['i', 'j', 'k', 'l', 'm', 'n']
+                        indices = indices[0:dim]
+                        letters = ', '.join(indices)
+                        for letter in indices:
+                            decl.append(f'  do {letter} = 0, n, 1')
+                        decl.append(f'      if ({vname}({letters}) .ne. saved_{vname}({letters})) then')
+                        decl.append(f"          write(*,*) 'Invalid value in {vname} at ', {letters}, ' values : expect=', {vname}({letters}), ' != ', saved_{vname}({letters})")
+                        decl.append(f'      endif')
+                        for letter in indices:
+                            decl.append(f'  enddo')
+
                     decl.append(f'  call exit(1)')
                     decl.append(f'endif')
 
@@ -164,9 +210,29 @@ def helper_gen_check(vars: dict, skip_check: dict) -> str:
     return '\n'.join(decl)
 
 ##########################################################
+def inject_scratch(root_node: Node, routine: Routine):
+    # add scratch 3d vars
+    if routine.name == "step3d_t_tile":
+        scratch_3d_id = 2
+        for var in ['fx', 'fe', 'work']:
+            scratch.add_3d_scratch_var(root_node, routine, var, scratch_3d_id)
+            scratch_3d_id += 1
+
+    # add scratch 3d vars
+    if routine.name == "pre_step3d_tile":
+        scratch_3d_id = 4
+        for var in ['fx', 'fe', 'work', 'ufx']:
+            scratch.add_3d_scratch_var(root_node, routine, var, scratch_3d_id)
+            scratch_3d_id += 1
+
+    # add scratch 1d vars
+    for var in VARS_1D:
+        scratch.add_1d_scratch_var(routine, var)
+
+##########################################################
 LOOP_USED_VARS={
     'scalars_int': [
-        'itrc', 'nt', 'i', 'j', 'k', 'nadv', 'iend', 'lm', 'n', 'jstr', 'jend',
+        'itrc', 'nt', 'i', 'j', 'k', 'l', 'm', 'nadv', 'iend', 'lm', 'n', 'jstr', 'jend',
         'istr', 'mm', 'iic', 'ntstart', 'nnew', 'nstp',
         'indx', 'jstrv', 'istru', 'itemp',
         'nrhs',
@@ -193,10 +259,11 @@ LOOP_USED_VARS={
     ],
     '3d': [
         'huon', 'hvom', 'hz', 'hz_half', 'rv', 'we', 'stflx',
-        'btflx', 'z_r', 'vfx_3d', 'vfe_3d', 'ufx_3d', 'ufe_3d', 'rho',
+        'btflx', 'z_r', 'rho',
         'p', 'z_w', 'du_avg1', 'ubar', 'dv_avg1',
-        'vbar', 'romega', 'ru', 'work_3d', 'hz_bak', 'fx_3d', 'fe_3d',
-        'akv', 'rufrc_bak', 'rvfrc_bak', 'zeta', 'wrk1_3d', 'wrk2_3d'
+        'vbar', 'romega', 'ru', 'hz_bak',
+        'akv', 'rufrc_bak', 'rvfrc_bak', 'zeta',
+        'ufx_3d', 'ufe_3d', 'vfx_3d', 'vfe_3d', 'work_3d', 'fe_3d', 'fx_3d', 'wrk1_3d', 'wrk2_3d'
     ],
     '4d': ['v', 'u', 'akt'],
     '5d': ['t']
@@ -211,15 +278,15 @@ LOOP_PARAMETERS = [
     ('kji', 'pre_step3d_tile-264', []),
 
     # jik loops
-    ('jik', 'omega_tile-158', []),
+    ('jik', 'omega_tile-158', ['fc', 'dc']),
     ('jik', 'step3d_uv2_tile-399', []),
     ('jik', 'step3d_uv2_tile-73', []),
     ('jik', 'rhs3d_tile-2289', []),
-    ('jik', 'step3d_uv2_tile-737', []),
-    ('jik', 'step3d_uv2_tile-926', []),
+    ('jik', 'step3d_uv2_tile-737', ['fc', 'cf', 'dc']),
+    ('jik', 'step3d_uv2_tile-926', ['fc', 'cf', 'dc']),
 
     # jki loops
-    ('jki', 'pre_step3d_tile-873', []),
+    ('jki', 'pre_step3d_tile-873', ['dc']),
     ('jki', 'prsgrd_tile-83', ['dz', 'dr']),
     ('jki', 'rhs3d_tile-1781', []),
     ('jki', 'rhs3d_tile-2086', []),
@@ -280,7 +347,7 @@ LOOP_PARAMETERS = [
     ('kernel-openacc', 'zetabc_tile-80', []),
 
     # step3d specific
-    ('kernel-step3d', 'omega_tile-158', []),
+    ('kernel-step3d', 'omega_tile-158', ['fc', 'dc']),
     ('kernel-step3d', 'omega_tile-294', []),
     ('kernel-step3d', 'omega_tile-320', []),
     ('kernel-step3d', 'omega_tile-348', []),
@@ -301,10 +368,10 @@ LOOP_PARAMETERS = [
     #('kernel-step3d', 'pre_step3d_tile-1578', []),
     ('kernel-step3d', 'pre_step3d_tile-1603', []),
     ('kernel-step3d', 'pre_step3d_tile-264', []),
-    ('kernel-step3d', 'pre_step3d_tile-788', []),
+    ('kernel-step3d', 'pre_step3d_tile-788', ['dc']),
     ('kernel-step3d', 'prsgrd_tile-449', []),
     ('kernel-step3d', 'prsgrd_tile-489', []),
-    ('kernel-step3d', 'prsgrd_tile-83', []),
+    ('kernel-step3d', 'prsgrd_tile-83', ['dz', 'dr']),
     ('kernel-step3d', 'rhs3d_tile-128', []),
     ('kernel-step3d', 'rhs3d_tile-1679', []),
     ('kernel-step3d', 'rhs3d_tile-1730', []),
@@ -328,31 +395,35 @@ LOOP_PARAMETERS = [
     ('kernel-step3d', 'step3d_t_tile-1102', []),
     ('kernel-step3d', 'step3d_t_tile-500', []),
     ('kernel-step3d', 'step3d_t_tile-76', []),
-    ('kernel-step3d', 'step3d_uv2_tile-1203', []),
+    ('kernel-step3d', 'step3d_uv2_tile-1203', ['fc', 'cf', 'dc']),
     ('kernel-step3d', 'step3d_uv2_tile-506', []),
     ('kernel-step3d', 'step3d_uv2_tile-73', []),
-    ('kernel-step3d', 'step3d_uv2_tile-951', [])
+    ('kernel-step3d', 'step3d_uv2_tile-951', ['fc', 'cf', 'dc'])
 ]
 #LOOP_PARAMETERS = [
 #    ('kji', 'pre_step3d_tile-1129'),
 #]
-@pytest.mark.parametrize(("type", "snippet_name", "skip_check"), LOOP_PARAMETERS)
-def test_running_reshaped_kernels(type: str, snippet_name: str, skip_check: list):
+
+def gen_cpu_gpu_test_code_source(type: str, snippet_name: str, skip_check: list):
     # load snippet
     snippet = helper_load_snippet(f'{type}-loops', 'origin', snippet_name)
+
+    # extract function name
+    function_name = snippet_name.split('-')[0]
 
     # embed in routine
     full_source = f'''\
 program test_snippet
     {helper_gen_var_decl(LOOP_USED_VARS, common=True)}
     {helper_gen_var_decl_saved(LOOP_USED_VARS)}
+    {helper_gen_range_assigns_str(GRID_SIZE)}
 
     call init_vars()
-    call snippet_cpu_default_code()
+    call {function_name}_origin_code()
     call save_vars()
 
     call init_vars()
-    call snippet_reshaped_code()
+    call {function_name}()
     call post_check()
 end
 
@@ -366,6 +437,7 @@ subroutine post_check()
     implicit none
     {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
     {helper_gen_var_decl_saved(LOOP_USED_VARS)}
+    {helper_gen_range_assigns_str(GRID_SIZE)}
     {helper_gen_check(LOOP_USED_VARS, skip_check)}
 end
 
@@ -373,24 +445,31 @@ subroutine save_vars()
     implicit none
     {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
     {helper_gen_var_decl_saved(LOOP_USED_VARS)}
+    {helper_gen_range_assigns_str(GRID_SIZE)}
     {helper_gen_var_saving(LOOP_USED_VARS)}
 end
 
-subroutine snippet_cpu_default_code()
+subroutine {function_name}_origin_code()
     implicit none
     {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
+    {helper_gen_range_assigns_str(GRID_SIZE)}
     {snippet}
 end
 
-subroutine snippet_reshaped_code()
+subroutine {function_name}()
     implicit none
     {helper_gen_var_decl(LOOP_USED_VARS, common=True, size=GRID_SIZE)}
+    {helper_gen_range_assigns_str(GRID_SIZE)}
     {snippet}
 end
 '''
 
     # debug
     #print(full_source)
+
+    # dump
+    with open(os.path.expanduser("~/source.orig.raw.F90"), "w+") as fp:
+        fp.write(full_source)
 
     reader = FortranReader()
     full_source = FortranWriter()(reader.psyir_from_source(full_source))
@@ -403,37 +482,35 @@ end
     top_root_node: Node
     top_root_node = FortranReader().psyir_from_source(full_source, free_form = True)
 
-    # get sub function
-    root_node: Node
-    for routine in top_root_node.walk(Routine):
-        if routine.name == 'snippet_reshaped_code':
-            root_node = routine
-            break
+    # ok
+    return top_root_node
+
+def gen_transformed_source(top_root_node: Node, routine: Routine, type: str, snippet_name: str, skip_check: list):
+    # extract function name
+    function_name = snippet_name.split('-')[0]
 
     # dump before
     dump_named_node_as_source(snippet_name, routine, f"{type}-orig", in_dir=os.path.expanduser("~/snippets/"))
 
     # patch
     if type == 'kji':
-        k_loop = get_first_loop_on(root_node.walk(Loop)[0], 'k')
+        k_loop = get_first_loop_on(routine.walk(Loop)[0], 'k')
         assert k_loop.variable.name == 'k'
         handle_kji_loop(k_loop, VARS_3D)
     elif type == 'jki':
-        j_loop = get_first_loop_on(root_node.walk(Loop)[0], 'j')
+        j_loop = get_first_loop_on(routine.walk(Loop)[0], 'j')
         assert j_loop.variable.name == 'j'
         handle_jki_loop(j_loop, VARS_1D)
     elif type == 'jik':
-        j_loop = get_first_loop_on(root_node.walk(Loop)[0], 'j')
+        j_loop = get_first_loop_on(routine.walk(Loop)[0], 'j')
         assert j_loop.variable.name == 'j'
         handle_jik_loop(j_loop, VARS_1D, do_k_loop_fuse=True)
     elif type == 'kernel-openacc':
-        assert isinstance(root_node, Routine)
-        routine: Routine = root_node
-        psyacc.apply_psyclone_original_trans(root_node)
+        assert isinstance(routine, Routine)
+        psyacc.apply_psyclone_original_trans(routine)
     elif type == 'kernel-step3d':
-        assert isinstance(root_node, Routine)
-        routine: Routine = root_node
-        step3d.apply_step3d_routine_trans(root_node, None)
+        assert isinstance(routine, Routine)
+        step3d.apply_step3d_routine_trans(routine, None)
     else:
         assert False
 
@@ -441,34 +518,88 @@ end
     dump_named_node_as_source(snippet_name, routine, f"{type}-transformed", in_dir=os.path.expanduser("~/snippets/"))
 
     # inject acc kernel directives
-    #kernels = extract_kernels_from_psyir(top_root_node)
-    #kernels.make_acc_tranformation(False)
-    #kernels.merge_joinable_kernels()
+    if type == 'ijk' or type == 'jki' or type == 'kji':
+        kernels = extract_kernels_from_psyir(routine)
+        kernels.make_acc_tranformation(False)
+        kernels.merge_joinable_kernels()
+
+    # vars
+    gpu_vars = helper_copy_data_list(LOOP_USED_VARS)
+
+    # search call to add data directive
+    for call in top_root_node.walk(Call):
+        if call.routine.name == function_name:
+            data_directive_in = ACCCustomDirective(parent=None, children=None, directive=f"acc data copyin({gpu_vars}) copyout({gpu_vars})")
+            data_directive_out = ACCCustomDirective(parent=None, children=None, directive="acc end data")
+            async_wait_directive = ACCWaitDirective(wait_queue=1)
+            call_pos = call.position
+            call.parent.addchild(data_directive_in,call_pos)
+            call.parent.addchild(async_wait_directive,call_pos+2)
+            call.parent.addchild(data_directive_out,call_pos+3)
 
     # regen
     gen_source = FortranWriter()(top_root_node)
+
+    # cut lines
+    gen_source = FortLineLength().process(gen_source)
+
+    # ok
+    return gen_source
+
+@contextmanager
+def setup_running_source_code(type: str, snippet_name: str, skip_check: list, transform, delete = True):
+    # get it
+    top_root_node = gen_cpu_gpu_test_code_source(type, snippet_name, skip_check)
+
+    # extract function name
+    function_name = snippet_name.split('-')[0]
+
+    # get sub function
+    routine: Routine
+    for node in top_root_node.walk(Routine):
+        if node.name == function_name:
+            routine = node
+            break
+
+    gen_source = transform(top_root_node, routine, type, snippet_name, skip_check)
     #print(gen_source)
 
     # save & compiler & run
-    exename = '/tmp/try_compiler_snippet'
-    with tempfile.NamedTemporaryFile("w+", suffix=".F90") as fp_source:
+    with tempfile.NamedTemporaryFile("w+", suffix=".F90", delete=delete) as fp_source:
         # write
         fp_source.write(gen_source)
         fp_source.flush()
 
-        # compiler
+        # run user code
         try:
-            subprocess.run(['gfortran', fp_source.name, '-o', exename, '-O2', '-fcheck=all', '-ffree-line-length-none', '-Wall', '-Werror', '-Wno-unused-variable'], check=True)
-
-            # run
-            subprocess.run([exename], check=True)
-        except Exception    as e:
+            yield fp_source
+        except Exception as e:
             #subprocess.run(["cat", fp_source.name], check=True)
             shutil.copyfile(fp_source.name, os.path.expanduser("~/source.F90"))
             raise e
 
-        # compiler
-        #subprocess.run(['nvfortran', fp.name, '-o', exename, '-Wall', '-Werror', '-acc=gpu'], check=True)
+@pytest.mark.parametrize(("type", "snippet_name", "skip_check"), LOOP_PARAMETERS)
+def test_running_reshaped_kernels_cpu(type: str, snippet_name: str, skip_check: list):
+    # save & compiler & run
+    exename = '/tmp/try_compiler_snippet'
+
+    # prep source
+    with setup_running_source_code(type, snippet_name, skip_check, transform=gen_transformed_source, delete=False) as fp_source:
+        # compile
+        subprocess.run(['gfortran', fp_source.name, '-g', '-o', exename, '-O2', '-fcheck=all', '-Wno-unused-dummy-argument', '-ffree-line-length-none', '-Wall', '-Werror', '-Wno-unused-variable'], check=True)
 
         # run
-        #subprocess.run([exename], check=True)
+        subprocess.run([exename], check=True)
+
+@pytest.mark.parametrize(("type", "snippet_name", "skip_check"), LOOP_PARAMETERS)
+def test_running_reshaped_kernels_gpu(type: str, snippet_name: str, skip_check: list):
+    # save & compiler & run
+    exename = '/tmp/try_compiler_snippet'
+
+    # prep source
+    with setup_running_source_code(type, snippet_name, skip_check, transform=gen_transformed_source, delete=False) as fp_source:
+        # compiler
+        subprocess.run(['nvfortran', fp_source.name, '-g', '-o', exename, '-Wall', '-Werror', '-acc=gpu'], check=True)
+
+        # run
+        subprocess.run([exename], check=True)

@@ -16,6 +16,7 @@ import pytest
 # psyclone
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
+from psyclone.psyir.nodes import CodeBlock
 # internal
 from scripts.lib.extensions.loops import *
 
@@ -512,7 +513,43 @@ def helper_load_snippet(kind: str, step: str, name: str, generated_node: Node = 
     return current_source
 
 ##########################################################
-def helper_gen_var_decl(vars: dict, common: bool = False, size: int = 10) -> str:
+def helper_gen_range_assigns(size: int = 10) -> list:
+    decl = []
+    decl.append(f'n = {size}')
+    decl.append(f'jstr = n - 1')
+    decl.append(f'jstrr = jstr - 1')
+    decl.append(f'jstrv = jstr + 1')
+    decl.append(f'istru = jstr + 1')
+    decl.append(f'istrr = jstr + 1')
+    decl.append(f'jend = n - 1')
+    decl.append(f'jendr = jend + 1')
+    decl.append(f'istr = n - 1')
+    decl.append(f'iend = n - 1')
+    decl.append(f'iendr = iend + 1')
+    decl.append(f'jmin = jstr-2')
+    decl.append(f'jmax = jend+1')
+    decl.append(f'imin = istr-2')
+    decl.append(f'imax = iend+1')
+    decl.append(f'knew = 1')
+    decl.append(f'nstp = 1')
+    decl.append(f'nnew = 1')
+    decl.append(f'lm = n - 1')
+    decl.append(f'mm = n - 1')
+    decl.append(f'nadv = nstp')
+    decl.append(f'itrc = 1')
+    decl.append(f'itemp = 1')
+    decl.append(f'kstp = 1')
+    decl.append(f'kbak = 2')
+    decl.append(f'kold = 3')
+    decl.append(f'nrhs = 1')
+    return decl
+
+##########################################################
+def helper_gen_range_assigns_str(size: int = 10) -> list:
+    return '\n'.join(helper_gen_range_assigns(size))
+
+##########################################################
+def helper_gen_var_decl(vars: dict, common: bool = False, size: int = 10, scratch_params: bool=True) -> str:
     # to aggregate
     decl = []
 
@@ -550,12 +587,30 @@ def helper_gen_var_decl(vars: dict, common: bool = False, size: int = 10) -> str
     scalars = vars['5d']
     for vname in scalars:
         decl.append(f'\treal*4 {vname}(0:{size},0:{size},0:{size},0:{size},0:{size})')
-  
+
+    # scratch
+    if scratch_params:
+        decl.append(f'integer NSA, N2d, N3d, NPP, trd')
+        decl.append(f'parameter (trd=1)')
+        decl.append(f'parameter (NPP={size})')
+        decl.append(f'parameter (NSA=28)')
+        decl.append(f'parameter (N2d=100)')
+        decl.append(f'parameter (N3d=100)')
+
+        # export
+        decl.append(f'real A2d(N2d,NSA,0:NPP-1), A3d(N3d,8,0:NPP-1)')
+        decl.append(f'common /private_scratch/ A2d')
+        decl.append(f'common /private_scratch/ A3d')
+
     # common
     if common:
         for dim in vars:
-            for vname in vars[dim]:
-                decl.append(f'\tcommon {vname}')
+            if dim != "scalars_int":
+                for vname in vars[dim]:
+                    if 'saved' in vname:
+                        decl.append(f'\tcommon /vars/ {vname}')
+                    else:
+                        decl.append(f'\tcommon /saved_vars/ {vname}')
 
     # ok
     return '\n'.join(decl)
@@ -626,6 +681,7 @@ def test_handle_loops_from_croco(type: str, snippet_name: str):
 subroutine snippet()
 implicit none
 {helper_gen_var_decl(LOOP_USED_VARS)}
+{helper_gen_range_assigns_str()}
 {snippet}
 end
 '''
@@ -636,11 +692,12 @@ end
     # parse to get IR tree
     root_node: Node
     root_node = FortranReader().psyir_from_source(full_source, free_form = True)
+    assert len(root_node.walk(CodeBlock)) == 0, root_node.view()
 
     # To use when first importing a new snippet so it generte the files
     # CAUTION : need to check that the expected sources are correct as it is the reference !
     # DO NOT FORGET : to make it again false after generating the expectation otherwise it makes the test useless !
-    dump = False
+    dump = True
 
     # ensuite we are sync with the prepared sources so we can easily kompare on the dirs
     prep_source = helper_load_snippet(f'{type}-loops', 'prepared', snippet_name, generated_node = root_node, dump = dump)

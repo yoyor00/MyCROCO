@@ -39,12 +39,15 @@ def add_1d_scratch_var(routine: Routine, var_name:str) -> None:
     This can be done automatically.
     """
     # dup 3D
-    sym_N = routine.symbol_table.lookup("N")
     sym_1d_name = f"{var_name}1d"
-    sym_1d = DataSymbol(sym_1d_name, ArrayType(REAL_TYPE, [ArrayType.ArrayBounds(Literal("0", INTEGER_TYPE), Reference(sym_N))]))
+    try:
+        routine.symbol_table.lookup(sym_1d_name)
+    except KeyError:
+        sym_N = routine.symbol_table.lookup("N")
+        sym_1d = DataSymbol(sym_1d_name, ArrayType(REAL_TYPE, [ArrayType.ArrayBounds(Literal("0", INTEGER_TYPE), Reference(sym_N))]))
 
-    # reg
-    routine.symbol_table.add(sym_1d)
+        # reg
+        routine.symbol_table.add(sym_1d)
 
 ##########################################################
 def patch_scratch_1d_arrays(top_loop: Loop, var_names: list) -> None:

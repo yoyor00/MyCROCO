@@ -1,4 +1,9 @@
 subroutine snippet()
+  integer, parameter :: nsa = 28
+  integer, parameter :: n2d = 100
+  integer, parameter :: n3d = 100
+  integer, parameter :: npp = 10
+  integer, parameter :: trd = 1
   integer*4 :: itrc
   integer*4 :: nt
   integer*4 :: i
@@ -95,6 +100,9 @@ subroutine snippet()
   real*4, dimension(0:10,0:10,0:10,0:10) :: u
   real*4, dimension(0:10,0:10,0:10,0:10) :: akt
   real*4, dimension(0:10,0:10,0:10,0:10,0:10) :: t
+  REAL :: A2d(N2d, NSA, 0 : NPP - 1)
+  REAL :: A3d(N3d, 8, 0 : NPP - 1)
+  COMMON /private_scratch/ A2d, A3d
 
   do k = 1, n, 1
     do j = jstrv - 1, jend, 1
