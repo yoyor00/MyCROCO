@@ -732,6 +732,12 @@ C$    trd=omp_get_thread_num()
 #   ifdef MASKING
 !     &                         *rmask(i,j)
 #   endif  
+#  elif defined KNHINT_WH
+     &                        +wzh_nbq(i,j,k)
+     &                         *cff
+#   ifdef MASKING
+     &                         *rmask(i,j)
+#   endif  
 #  endif  
              enddo
            enddo
