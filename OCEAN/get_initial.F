@@ -1150,7 +1150,7 @@
 #  endif
         call cpl_prism_define
         oasis_time = 0
-        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
 #  if defined EXACT_RESTART   
       endif
 #  endif
