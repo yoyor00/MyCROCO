@@ -265,15 +265,15 @@
 ! !
 #  ifdef NBQ_NUDGING 
               cff=NBQnudgcof(i,j)/dtfast
-#  elif defined KNHINT_CORR
+#  elif defined KNHINT_CORRUV
               cff=0
 #  endif
-#  ifdef KNHINT_CORR
+#  ifdef KNHINT_CORRUV
                cff=cff+alphaw_nbq/dtfast
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
 #  endif
-#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
+#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORRUV
               dum_s=dum_s-qdmu_nbq(i,j,k)*cff
      &                   +u(i,j,k,nrhs)
      &                    *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))
@@ -481,15 +481,15 @@
 ! !   
 #  ifdef NBQ_NUDGING 
               cff=NBQnudgcof(i,j)/dtfast
-#  elif defined KNHINT_CORR
+#  elif defined KNHINT_CORRUV
               cff=0
 #  endif
-#  ifdef KNHINT_CORR
+#  ifdef KNHINT_CORRUV
                cff=cff+alphaw_nbq/dtfast 
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
 #  endif
-#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
+#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORRUV
               dum_s=dum_s-qdmv_nbq(i,j,k)*cff
      &                   +v(i,j,k,nrhs)*cff
      &                    *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))

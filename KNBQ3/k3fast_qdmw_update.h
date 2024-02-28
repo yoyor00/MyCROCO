@@ -128,7 +128,6 @@
 #    endif    /*  KNHINT_NOSPDUP */
      &                   ) 
      &            *(H(i,j)+z_w(i,j,k))/(H(i,j)+z_w(i,j,N))   ! Linear evolution
-   ! &    /ndtfast
 #  endif  /* KNHINT_WH */
 ! !
 ! !--------------------------------
@@ -294,8 +293,8 @@
 ! !  Hydrostatic component of w
 ! !--------------------------------
 ! !
-         wzh_nbq(i,j,N)= !wzh_nbq(i,j,N)
-     &                    +((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
+         wzh_nbq(i,j,N)= 
+     &                     ((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
 #    ifdef KNHINT_3M
      &                         *nsdtnbq
 #    endif
@@ -316,7 +315,6 @@
      &                          )
 #    endif    /* KNHINT_NOSPDUP */
      &                )
- !   &    /ndtfast
 #  endif           /*   KNHINT_WH    */
 ! ! 
 ! !--------------------------------
