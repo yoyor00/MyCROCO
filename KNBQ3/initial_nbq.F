@@ -157,7 +157,7 @@
 ! ! Depth KNHINT
 ! !
 #  ifdef KNHINT_CORR
-        alphaw_nbq  = 0.01 
+        alphaw_nbq  = 0.05 
         alphaNw_nbq = 10 
 #  endif
 !

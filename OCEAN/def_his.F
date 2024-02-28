@@ -229,6 +229,11 @@
 #  define vidVnbq hisVnbq
 #  define vidWnbq hisWnbq
 #  define vidCnbq hisCnbq
+
+#ifdef XIOS
+        return
+#endif
+
 !
 ! K3FAST-kernel related variables:
 !
