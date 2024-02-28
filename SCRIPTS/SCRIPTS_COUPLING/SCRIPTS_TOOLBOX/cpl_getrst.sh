@@ -16,23 +16,32 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             else
                 loopoce=`seq 0 $(( $maxatmdom - 1 ))`
             fi
-         
-            for ocedom in $loopoce; do
-                domoce="d0$(( ${ocedom} + 1 ))"
-	        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUE WRF_${domatm}_EXT_${domoce}_TAUN WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_PSFC WRF_${domatm}_EXT_${domoce}_WND_E_01 WRF_${domatm}_EXT_${domoce}_WND_N_01 "
-            done
+        
             if [[ ${CPL_restart} == "TRUE" ]] && [[ ! -z ${atm_rst_file} ]]; then
                 echo "create atmosphere restart file for oasis from preexisting file ${atm_rst_file}"        
-                if [ ${domatm} == "d01" ]; then
-                    . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${atm_rst_file}" atm.nc wrf "WRF_${domatm}_EXT_${domoce}"
-                else
-                    . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${atm_rst_file}" atm${domatm}.nc wrf "WRF_${domatm}_EXT_${domoce}"
-                fi
+                for ocedom in $loopoce; do
+                    domoce="d0$(( ${ocedom} + 1 ))"
+                    echo "domoce=$domoce"
+
+                    if [ ${domatm} == "d01" ]; then
+                        . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${atm_rst_file}" atm.nc wrf "WRF_${domatm}_EXT_${domoce}"
+                    else
+                        . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${atm_rst_file}" atm${domatm}.nc wrf "WRF_${domatm}_EXT_${domoce}"
+                    fi
+                done
+
             else
                 echo 'create restart file for oasis from calm conditions for variables:'${varlist} 
+
+                for ocedom in $loopoce; do
+                    domoce="d0$(( ${ocedom} + 1 ))"
+                    echo "domoce=$domoce"
+                    varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUE WRF_${domatm}_EXT_${domoce}_TAUN WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_PSFC WRF_${domatm}_EXT_${domoce}_WND_E_01 WRF_${domatm}_EXT_${domoce}_WND_N_01 "
+                done
+
                 if [ ${domatm} == "d01" ]; then
                     . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${domatm} atm.nc wrf "${varlist}"
-                else 
+                else
                     . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${domatm} atm${domatm}.nc wrf "${varlist}"
                 fi
             fi
