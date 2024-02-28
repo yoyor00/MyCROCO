@@ -111,7 +111,10 @@
       integer xc,yc,radius,dxc,dyc
       real rr,ztarget,ztarget2,dzz,drr,grr,rhotarget,rhotarget2,drho 
       real xr(0:Lm,0:Mm)  
-      real yr(0:Lm,0:Mm)  
+      real yr(0:Lm,0:Mm)
+#if defined PORCUP
+      integer kbl
+#endif
 #endif 
 !
 #include "compute_auxiliary_bounds.h"
@@ -1231,6 +1234,50 @@ C$OMP BARRIER
 !
 # if defined PASSIVE_TRACER 
 
+        ! ------ SET UP GRID ------       
+        do j=JstrR,JendR ! compute grid coordinates (approx)  
+          do i=IstrR,IendR
+            xr(i,j) = (1./pm(1,1))*(float(i+iminmpi-1-1)+0.5)*1.e-3 ! km 
+            yr(i,j) = (1./pn(1,1))*(float(j+jminmpi-1-1)+0.5)*1.e-3
+          enddo
+        enddo
+
+
+#if defined PORCUP
+      if (.not.got_tini(itpas)) then ! consider if no tracer1 there are no other tracer either    
+
+        t(:,:,:,1,itpas)=0.0
+        t(:,:,:,1,itpas+1)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            kbl = N-1
+             do k=N-1,1,-1
+               if ((rho1(i,j,k)-rho1(i,j,N)) .lt. 0.03) then
+                 kbl = k
+               endif
+             enddo ! k loop
+
+              ztarget = z_r(i,j,kbl) * 0.6
+              dzz = -z_r(i,j,kbl)/8
+
+              do k=N,kbl+1,-1
+                t(i,j,k,1,itpas)=0.5*(1+tanh((z_r(i,j,k)-ztarget)/dzz))
+              enddo ! k loop
+
+              ztarget = z_r(i,j,kbl) * 1.4
+
+              do k=0,kbl-1,1
+                t(i,j,k,1,itpas+1)=0.5*(1-tanh((z_r(i,j,k)-ztarget)/dzz))
+              enddo ! k loop
+
+
+          enddo ! i loop # endif
+        enddo !j loop
+
+      endif ! got_tini(itpas) 
+
+#else
+
       if (.not.got_tini(itpas)) then ! consider if no tracer1 there are no other tracer either    
 
         xc = 400.
@@ -1244,13 +1291,7 @@ C$OMP BARRIER
         rhotarget2 = 1027.775
         drho = 0.02
 
-        ! ------ SET UP GRID ------       
-        do j=JstrR,JendR ! compute grid coordinates (approx)  
-          do i=IstrR,IendR
-            xr(i,j) = (1./pm(1,1))*(float(i+iminmpi-1-1)+0.5)*1.e-3 ! km 
-            yr(i,j) = (1./pn(1,1))*(float(j+jminmpi-1-1)+0.5)*1.e-3
-          enddo
-        enddo
+
 
         ! ------ TRACER 2.1 PATCH ------
 
@@ -1396,6 +1437,8 @@ C$OMP BARRIER
         enddo ! j loop
 
       endif ! got_tini(itpas) 
+
+#endif /* PORCUP or RREXNUM */
 
 # endif /* PASSIVE_TRACER */
 !
