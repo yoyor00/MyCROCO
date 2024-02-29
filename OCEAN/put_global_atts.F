@@ -303,7 +303,7 @@
 #ifdef SOLVE3D
 !
 ! S-coordinate control parameters "theta_s", "theta_b", "Tcline"
-! and "hc" (written as as global attributes).
+! and "hc" (written as global attributes).
 !
 # ifdef  NEW_S_COORD
       ierr=nf_put_att_text (ncid, nf_global, 'VertCoordType',3,'NEW')
@@ -335,14 +335,20 @@
      &                      'S-coordinate parameter, critical depth')
       ierr=nf_put_att_text (ncid, nf_global, 'hc_units', 5, 'meter')
 !
-! Stretching
-! curves "Cs_w", "Cs_rho" at W- and RHO-points.
+! S-coordinate independent variables "sc_w", "sc_r" and stretching
+! curves "Cs_w", "Cs_r" at W- and RHO-points.
 !
-
+      ierr=nf_put_att_FTYPE(ncid, nf_global,'s_w',nf_ftype, N+1,
+     &                                                          sc_w)
+       ierr=nf_put_att_text (ncid, nf_global,'s_w_expl', 24,
+     &                                    'S-coordinate at W-points')
       ierr=nf_put_att_FTYPE(ncid, nf_global,'Cs_w',nf_ftype, N+1,
      &                                                          Cs_w)
       ierr=nf_put_att_text (ncid, nf_global,'Cs_w_expl',42,
      &                  'S-coordinate stretching curves at W-points')
+      ierr=nf_put_att_FTYPE(ncid,nf_global,'s_rho',nf_ftype,N,sc_r)
+      ierr=nf_put_att_text (ncid, nf_global,'s_rho_expl', 24,
+     &                                    'S-coordinate at W-points')
       ierr=nf_put_att_FTYPE(ncid,nf_global,'Cs_rho',nf_ftype,N,Cs_r)
       ierr=nf_put_att_text (ncid, nf_global,'Cs_rho_expl',44,
      &                'S-coordinate stretching curves at RHO-points')

@@ -84,6 +84,9 @@
 
 #ifdef SOLVE3D
 !
+! S-coordinate independent variables "sc_w", "sc_r" and stretching
+! curves "Cs_w", "Cs_r" at W- and RHO-points.
+! 
 ! Variable dimension on vertical : s_rho and s_w
 !
       ierr=nf_inq_varid (ncid, 's_rho', varid)
@@ -100,10 +103,6 @@
         goto 99                !--> ERROR
       endif
 
-!
-! S-coordinate independent variables "sc_w", "sc_r" and stretching
-! curves "Cs_w", "Cs_r" at W- and RHO-points.
-!
       ierr=nf_inq_varid (ncid, 'Cs_rho', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_r)
       if (ierr.ne.nf_noerr) then
