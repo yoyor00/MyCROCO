@@ -120,5 +120,7 @@ else
    printf "To define your Machine:\n - Define your environement in ./SCRIPTS_TOOLBOX/MACHINE \n - Prepare your header \n - Prepare a launch_${MACHINE}\n - Add your machine in myjob.sh";  exit;
 fi
 
-echo ${COMPUTER}
+echo "  "
+echo "MACHINE is ${COMPUTER}"
+echo "  "
 

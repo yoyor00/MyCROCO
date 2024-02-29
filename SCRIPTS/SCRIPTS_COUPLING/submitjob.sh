@@ -17,6 +17,10 @@ cat ./SCRIPTS_TOOLBOX/common_definitions.sh >> mynamelist.tmp
 
 [ ! -d ${JOBDIR_ROOT} ] && mkdir -p ${JOBDIR_ROOT}  # for the first submitjob.sh call
 
+echo "  "
+echo "jobs and logs directory is $JOBDIR_ROOT"
+echo "  "
+
 # copy the base scripts into the jobdir
 cpfile myenv_mypath.sh ${JOBDIR_ROOT}
 cpfile mynamelist.sh ${JOBDIR_ROOT}
@@ -26,25 +30,37 @@ cd ${JOBDIR_ROOT}
 ls ${jobname}  > /dev/null  2>&1 
 if [ "$?" -eq "0" ] ; then
    if [ ${CHAINED_JOB} == "FALSE" ]; then 
-       echo -n "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n Do you want to remove it and launch the new job? WARNING: yes will remove old job [y/n]"
+       echo "  "
+       echo "!!!!!!!! WARNING !!!!!!!!!"
+       echo "  "
+       echo "A ${jobname} job already exists in  ${JOBDIR_ROOT}"
+       echo -n "  Do you want to remove it and launch the new job? [y/n]"
        read answer
        if [  "x$answer" = "xy" ]; then
-          echo " Creating and launching new job"
+          echo " " 
+          echo "Creating and launching new job"
           echo "   "
        else
-          echo " Exiting..."
+          echo "  " 
+          echo "Exiting..."
           echo "   "
           exit
        fi
        unset -v answer
    elif [ ${CHAINED_JOB} == "TRUE" ] && [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
-       echo -n "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n Do you want to remove it and launch the new job? WARNING: yes will remove old job [y/n]"
+       echo "  "
+       echo "!!!!!!!! WARNING !!!!!!!!!"
+       echo "  "
+       echo "A ${jobname} job already exists in  ${JOBDIR_ROOT}"
+       echo -n "  Do you want to remove it and launch the new job? [y/n]"
        read answer
        if [  "x$answer" = "xy" ]; then
-          echo " Creating and launching new job"
+          echo " " 
+          echo "Creating and launching new job"
           echo "   "
        else
-          echo " Exiting..."
+          echo "  " 
+          echo "Exiting..."
           echo "   "
           exit
        fi
@@ -52,9 +68,38 @@ if [ "$?" -eq "0" ] ; then
    fi
 fi
 cd -
+
 #-------------------------------------------------------------------------------
-# calendar computations (to check dates consistency)
+# Checking experiment options
 #-------------------------------------------------------------------------------
+echo "  "
+echo " Checking experiment options... "
+
+if [[ $RUNtype =~ .*a.* ]] ; then
+  if [ $USE_ATM == 0 ] && [ $USE_TOYATM == 0 ]; then
+    echo "  "
+    echo "ERROR. RUNtype=$RUNtype and no atmosphere use defined (USE_ATM or USE_TOYATM)"
+    echo " Exit"
+    exit
+  fi
+fi
+if [[ $RUNtype =~ .*o.* ]] ; then 
+  if [ $USE_OCE == 0 ] && [ $USE_TOYOCE == 0 ]; then
+    echo "  "
+    echo "ERROR. RUNtype=$RUNtype and no ocean use defined (USE_OCE or USE_TOYOCE)"
+    echo " Exit"
+    exit
+  fi
+fi
+if [[ $RUNtype =~ .*w.* ]] ; then 
+  if [ $USE_WAV == 0 ] && [ $USE_TOYWAV == 0 ]; then
+    echo "  "
+    echo "ERROR. RUNtype=$RUNtype and no wave use defined (USE_WAV or USE_TOYWAV)"
+    echo " Exit"
+    exit
+  fi
+fi
+
 if [ ${USE_CPL} -ge 1 ]; then
   if [ $(( ${CPL_FREQ} % ${DT_ATM} )) -ne 0 ] || \
      [ $(( ${CPL_FREQ} % ${DT_OCE} )) -ne 0 ] || \
@@ -69,6 +114,10 @@ if [ ${USE_CPL} -ge 1 ]; then
       done
   fi
 fi
+
+#-------------------------------------------------------------------------------
+# calendar computations (to check dates consistency)
+#-------------------------------------------------------------------------------
 
 . ${SCRIPTDIR}/caltools.sh
 
@@ -128,9 +177,9 @@ printf "  CEXPER: ${CEXPER}\n"
 echo
 printf "  jobname: ${jobname}\n"  
 echo
-printf "  ROOT_NAME_1: ${ROOT_NAME_1}\n"  
-printf "  ROOT_NAME_2: ${ROOT_NAME_2}\n"  
-printf "  ROOT_NAME_3: ${ROOT_NAME_3}\n"  
+#printf "  ROOT_NAME_1: ${ROOT_NAME_1}\n"  
+#printf "  ROOT_NAME_2: ${ROOT_NAME_2}\n"  
+#printf "  ROOT_NAME_3: ${ROOT_NAME_3}\n"  
 printf "  EXEDIR: ${EXEDIR_ROOT}\n"  
 printf "  OUTPUTDIR: ${OUTPUTDIR_ROOT}\n"  
 printf "  RESTDIR_OUT: ${RESTDIR_ROOT}\n"  
