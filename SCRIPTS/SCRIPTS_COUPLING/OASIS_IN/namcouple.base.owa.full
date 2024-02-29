@@ -10,7 +10,7 @@
 #
 # NFIELDS: total number of fields being exchanged
  $NFIELDS
- 23
+ 30
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
@@ -305,6 +305,77 @@ LOCTRANS SCRIPR
 AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
+#~~~~~~~~~~~
+# FOC computed in WW3 (N.m-2)
+#~~~~~~~~~~~
+#
+WW3__FOC CROCO_FOC 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+LOCTRANS SCRIPR
+AVERAGE
+DISTWGT LR SCALAR LATLON 1 4
+#
+##~~~~~~~~~~~
+# Drift Stokes computed in WW3 (N.m-2)
+#~~~~~~~~~~~
+#
+WW3_USSX CROCO_USSX 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+LOCTRANS SCRIPR
+AVERAGE
+DISTWGT LR SCALAR LATLON 1 4
+#~~~~~~~~~~~
+# Drift Stokes computed in WW3 (N.m-2)
+#~~~~~~~~~~~
+#
+WW3_USSY CROCO_USSY 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+LOCTRANS SCRIPR
+AVERAGE
+DISTWGT LR SCALAR LATLON 1 4
+#~~~~~~~~~~~
+# Mean wave length (wlm in m)
+#~~~~~~~~~~~
+#
+WW3___LM CROCO_LM 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+LOCTRANS SCRIPR
+AVERAGE
+DISTWGT LR SCALAR LATLON 1 4
+#~~~~~~~~~~~
+# BHD 
+#~~~~~~~~~~~
+#
+WW3__BHD CROCO_BHD 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+LOCTRANS SCRIPR
+AVERAGE
+DISTWGT LR SCALAR LATLON 1 4
+#~~~~~~~~~~~
+# UBRX 
+#~~~~~~~~~~~
+WW3_UBRX CROCO_UBRX 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+LOCTRANS SCRIPR
+AVERAGE
+DISTWGT LR SCALAR LATLON 1 4
+#~~~~~~~~~~~
+# UBRY
+#~~~~~~~~~~~
+#
+WW3_UBRY CROCO_UBRY 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
+R  0  R  0
+LOCTRANS SCRIPR
+AVERAGE
+DISTWGT LR SCALAR LATLON 1 4
+#~~~~~~~~~~~
 #                     ------------------------------------
 #                       WRF (wrfexe) ==> CROCO (crocox)
 #                     ------------------------------------
