@@ -350,7 +350,7 @@ C$OMP BARRIER
 # if defined OA_COUPLING || defined OW_COUPLING
         call cpl_prism_define
         oasis_time = 0
-        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
 # endif
       endif
 #endif
@@ -896,6 +896,9 @@ CR      write(*,*) '  0' MYID
 
 #ifdef AGRIF
       iind = -1
+# if defined OA_COUPLING || defined OW_COUPLING
+      it_inside_root = 1
+# endif
       grids_at_level = -1
       sortedint = -1
       call computenbmaxtimes
@@ -923,8 +926,6 @@ CR      write(*,*) '  0' MYID
         do iifroot = 0,nfast+2
 # else
         nbtimes = 0
-        nbmaxprttime = ntimes+1
-        nbprttime = iicroot
         do while (nbtimes.LE.nbmaxtimes)
 # endif
 #endif

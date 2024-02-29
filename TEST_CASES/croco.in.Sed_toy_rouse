@@ -8,9 +8,9 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      200000.0d0
 
 start_date:
-2019/01/01 00:00:00
+2019-01-01 00:00:00
 end_date:
-2019/01/01 12:00:00
+2019-01-01 12:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                      1         1         12
 
