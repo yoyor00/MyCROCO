@@ -686,6 +686,7 @@ C$    integer  trd, omp_get_thread_num
 !
 ! Remove mean sea level (mssh)
 !
+!$acc kernels if(compute_on_device) default(present)
       mssh=QuadZero
       area=QuadZero
       do j=Jstr,Jend
@@ -696,7 +697,9 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
       mssh=mssh/area
+!$acc end kernels
 #  ifdef MPI
+    OPEANNC see zonavg
       call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
      &                allmssh,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
@@ -711,6 +714,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
       mssh=mssh/area
 #  endif
+!$acc kernels if(compute_on_device) default(present)
       mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
       omega1=2.*pi/(14.*86400.)
       omega2=2.*pi/(12.*3600. )
@@ -726,8 +730,10 @@ C$    integer  trd, omp_get_thread_num
      &                    +time*surelev/31536000.
         enddo
       enddo
+!$acc end kernels
 
 # elif (defined TIDAL_FLAT  || defined ESTUARY ) && defined ANA_TIDES
+!$acc kernels if(compute_on_device) default(present)
       omega=2.*pi/(12.0*3600)
       ETA0=2.0
       do j=JstrR,JendR
@@ -735,7 +741,9 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j)=ETA0*sin(omega*time)
         enddo
       enddo
+!$acc end kernels
 #  if defined ESTUARY_TIDE
+!$acc kernels if(compute_on_device) default(present)
       ! adding another wave to modulate tide
       omega=2.*pi/((24.0+50./60.)/2.*3600)
       ETA0=2.0
@@ -744,9 +752,11 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j) = ssh(i,j) + ETA0*sin(omega*time)
         enddo
       enddo
+!$acc end kernels
 #  endif
 
 # elif defined INTERNAL || defined ANA_TIDES
+!$acc kernels if(compute_on_device) default(present)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -756,25 +766,31 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
         enddo
       enddo
+!$acc end kernels
 
 # elif defined DUNE
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
         enddo
       enddo
+!$acc end kernels
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 # endif
 
 # ifdef WET_DRY
 !
 !  Check that min depth > Dcrit
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           if (ssh(i,j) .lt. Dcrit(i,j)-h(i,j)) then
@@ -782,6 +798,7 @@ C$    integer  trd, omp_get_thread_num
           endif
         enddo
       enddo
+!$acc end kernels
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
@@ -897,11 +914,13 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
-          sss(i,j)=???
+          sss(i,j)=35.
         enddo
       enddo
+!$acc end kernels      
       return
       end
 #endif /* SALINITY && SFLX_CORR && ANA_SSS */
@@ -1459,6 +1478,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
 #  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT && !defined ESTUARY)
+!$acc kernels if(compute_on_device) default(present)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -1473,11 +1493,13 @@ C$    integer  trd, omp_get_thread_num
           vbclm(i,j)=V0*cos(omega*time-kwave*0.5*(xr(i,j)+xr(i,j-1)))
         enddo
       enddo
+!$acc end kernels
 #  elif defined JET
 !
 !       --> climatology computed in ana_initial
 !
 #  elif defined DUNE
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
 #   ifdef ANA_DUNE
@@ -1488,13 +1510,16 @@ C$    integer  trd, omp_get_thread_num
           vbclm(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ubclm(i,j)=0.
           vbclm(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 #  endif
 #  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  ubclm)
@@ -1508,6 +1533,7 @@ C$    integer  trd, omp_get_thread_num
 !       --> climatology computed in ana_initial
 !
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1516,6 +1542,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels
 #  endif
 #  if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  uclm)
@@ -1585,6 +1612,7 @@ C$    integer  trd, omp_get_thread_num
                     (defined AGRIF && !defined NBQ_FRC_BRY)) \
                  && (defined M3CLIMATOLOGY || \
                     (defined AGRIF && !defined M3_FRC_BRY))
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -1606,6 +1634,7 @@ C$    integer  trd, omp_get_thread_num
 #  endif
       enddo
 # else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -1627,6 +1656,7 @@ C$    integer  trd, omp_get_thread_num
 #  endif
       enddo
 # endif
+!$acc end kernels
 
 # if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
@@ -3124,6 +3154,7 @@ C$    integer  trd, omp_get_thread_num
 #  define JV_RANGE Jstr,JendR
 # endif
 
+!$acc kernels if(compute_on_device) default(present)
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
         do k=1,N
@@ -3201,7 +3232,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       endif
 # endif /* OBC_NORTH */
-
+!$acc end kernels
       return
       end
 #endif /* defined NBQ_FRC_BRY */
