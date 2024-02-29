@@ -50,8 +50,15 @@ $                 next line contains parameter name                 -- $
 $
   <yr1><mo1><dy1> <hr1>0000  <wav_int>  <yr2><mo2><dy2> <hr2>0000
   N
-  DPT WND HS FP DP T0M1 LM SPR DIR TWO TAW FOC BHD WLV CUR TUS USS
-$ DPT FP EF T02 T01 T0M1 LEV HS FP THM DIR DP WLV CUR WND BHD TWO UBR FOC TAW LM
+  DPT WLV CUR WND HS LM T02 T0M1 T01 FP DP DIR SPR CHA TAW TWA TWO BHD FOC USS UBR
+$ DPT WLV CUR WND AST ICE IBG D50 IC1 IC5
+$ HS LM T02 T0M1 T01 FP DIR DP SPR HIG MXE MXES MXH MXHC SDMH SDMHC
+$ EF TH1M STH1M TH2M STH2M WN
+$ PHS PTP PLP PSP PWS TWS PNR
+$ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM
+$ SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
+$ ABR UBR BED FBB TBB
+$ MSS M2S WL02 AXT AYT AXY
 $
 $ -------------------------------------------------------------------- $
 $ Type 2 : Point output                                             -- $
