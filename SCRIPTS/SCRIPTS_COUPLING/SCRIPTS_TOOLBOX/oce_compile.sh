@@ -72,11 +72,36 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 	    mv tmp$$ cppdefs.h
 	fi
         if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
-            sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" \
-                -e "s/# *undef *MRL_WCI/# define MRL_WCI/g" \
-                cppdefs.h > tmp$$
             printf "\n Coupling with WAV \n"
-	    mv tmp$$ cppdefs.h
+            mycase=`echo $RUNtype | tail -c 5`
+            if [ $mycase == 'full' ]; then
+                if [ ${OW_COUPLING_FULL} == "TRUE" ]; then 
+                    sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" \
+                        -e "s/# *undef *MRL_WCI/# define MRL_WCI/g" \
+                        cppdefs.h > tmp$$
+                    printf "\n OW_COUPLING_FULL option is activated \n"
+                else
+                    echo "ERROR... RUNtype contains 'full' but OW_COUPLING_FULL is not activated in mynamelist.sh. Inconsistent options. Exit"
+                    exit
+                fi
+            else 
+                if [[ ${OW_COUPLING_FULL} == "TRUE" ]]; then 
+                    echo "ERROR... RUNtype doeas not contain 'full' but OW_COUPLING_FULL is activated in mynamelist.sh. Inconsistent options. Exit"
+                    exit
+                else
+                    sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" \
+                        -e "s/# *define *OW_COUPLING_FULL/# undef OW_COUPLING_FULL/g" \
+                        -e "s/# *undef *MRL_WCI/# define MRL_WCI/g" \
+                        cppdefs.h > tmp$$
+                fi
+            fi
+            mv tmp$$ cppdefs.h
+            if [[ ${WAVE_SMFLUX} == "TRUE" ]]; then
+                sed -e "s/#  *undef  *WAVE_SMFLUX/# define WAVE_SMFLUX/g" \
+                    cppdefs.h > tmp$$
+                printf "\n WAVE_SMFLUX option is activated \n"
+	        mv tmp$$ cppdefs.h
+            fi
         else
             sed -e "s/#  *define  *OW_COUPLING/# undef OW_COUPLING/g" \
                 -e "s/# *define *MRL_WCI/# undef  MRL_WCI/g" \
