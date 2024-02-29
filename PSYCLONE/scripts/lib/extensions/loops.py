@@ -166,6 +166,7 @@ def handle_jki_loop(top_loop: Loop, scratch_1d_vars:list, dump_snippets = False)
                 op.detach()
             for op in childs:
                 parent.addchild(op, inner_loop_position)
+                inner_loop_position += 1
             inner_i_loop.detach()
 
     # put i loop on top to make j,i, k 

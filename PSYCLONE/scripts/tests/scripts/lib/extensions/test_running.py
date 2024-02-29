@@ -501,10 +501,12 @@ def gen_transformed_source(top_root_node: Node, routine: Routine, type: str, sni
         j_loop = get_first_loop_on(routine.walk(Loop)[0], 'j')
         assert j_loop.variable.name == 'j'
         handle_jki_loop(j_loop, VARS_1D)
+        acc.set_private_on_loop(j_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'dZ1D', 'dR1D'])
     elif type == 'jik':
         j_loop = get_first_loop_on(routine.walk(Loop)[0], 'j')
         assert j_loop.variable.name == 'j'
         handle_jik_loop(j_loop, VARS_1D, do_k_loop_fuse=True)
+        acc.set_private_on_loop(j_loop, 'i', ['fc1d', 'cf1d', 'dc1d', 'dZ1D', 'dR1D'])
     elif type == 'kernel-openacc':
         assert isinstance(routine, Routine)
         psyacc.apply_psyclone_original_trans(routine)
