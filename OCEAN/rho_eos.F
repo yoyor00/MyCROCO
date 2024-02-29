@@ -118,6 +118,15 @@
       implicit none
 
 #  include "param.h"
+
+#  ifdef NBQ_GRAV
+      real rho_nh1(N),rho_nh2(N)
+!$acc declare create( rho_nh1, rho_nh2 )      
+#  endif
+
+#  ifdef NBQ_GRAV
+#   include "nbq.h"
+#  endif
       integer Istr,Iend,Jstr,Jend, i,j,k
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N), K0,
      &     K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N), K1,K2,
@@ -307,6 +316,23 @@
           bvf(i,j,N)=bvf(i,j,N-1)
           bvf(i,j,0)=bvf(i,j,  1)
         enddo
+#  endif
+
+#  ifdef NBQ_GRAV
+        do i=IstrR,IendR
+           rho_nh1(1)=rho1(i,j,1)-1000.+rho0
+           do k=2,N
+            rho_nh1(k)=min(rho_nh1(k-1),rho1(i,j,k)-1000.+rho0)
+           enddo
+           rho_nh2(N)=rho1(i,j,N)-1000.+rho0
+           rho_nh(i,j,N)=rho1(i,j,N)-1000.+rho0
+     &           -0.5*(rho_nh1(N)+rho_nh2(N))
+           do k=N-1,1,-1
+             rho_nh2(k)=max(rho_nh2(k+1),rho1(i,j,k)-1000.+rho0)
+             rho_nh(i,j,k)=rho1(i,j,k)-1000.+rho0
+     &          -0.5*(rho_nh1(k)+rho_nh2(k))
+           enddo
+         enddo
 #  endif
 
 # else /* ! NONLIN_EOS */
