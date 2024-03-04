@@ -10,8 +10,10 @@ for nn in $( seq 0 ${AGRIFZ} ); do
     else
         agrif_ext=""
     fi
+    printf "Get ocean grid file(s)\n"
     ${io_getfile} ${OCE_FILES_DIR}/croco_grd.nc${agrif_ext}                croco_grd.nc${agrif_ext}
     if [ ${nn} -gt 0 ];    then
+        printf "Nesting: create AGRIF_FixedGrids.in file from infos contained in grid files"
         nest_pos=$( ncdump -h croco_grd.nc${agrif_ext} | grep 'positions in the parent grid:' | cut -d ':' -f 3 | cut -d ';' -f 1 )
         nest_coef=$( ncdump -h croco_grd.nc${agrif_ext} | grep 'positions in the parent grid:' | cut -d ':' -f 4 | cut -d '"' -f 1 )
         echo " 1" >> AGRIF_FixedGrids.in
@@ -25,10 +27,11 @@ for nn in $( seq 0 ${AGRIFZ} ); do
 done
 
 # Get boundary foring
+printf "Get ocean boundary file \n"
 . ${SCRIPTDIR}/oce_getbdy.sh
 
 # Get surface forcing if needed
-[ ${surfrc_flag} == "TRUE" ] && . ${SCRIPTDIR}/oce_getfrc.sh
+[ ${surfrc_flag} == "TRUE" ] && { printf "Get ocean surface forcing file(s) \n"; . ${SCRIPTDIR}/oce_getfrc.sh ; }
 
 # Get tide forcing if any
 for nn in $( seq 0 ${AGRIFZ} ); do
@@ -37,8 +40,8 @@ for nn in $( seq 0 ${AGRIFZ} ); do
     else
         agrif_ext=""
     fi
-    [ ${tide_flag} == "TRUE" ] && ${io_getfile} ${OCE_FILES_DIR}/croco_frc.nc${agrif_ext} ./ 
-    [ ${river_flag} == "TRUE" ] && ${io_getfile} ${OCE_FILES_DIR}/croco_runoff.nc${agrif_ext} ./
+    [ ${tide_flag} == "TRUE" ] && { printf "Get tide forcing file(s)\n"; ${io_getfile} ${OCE_FILES_DIR}/croco_frc.nc${agrif_ext} ./ ; }
+    [ ${river_flag} == "TRUE" ] && { printf "Get river forcing file(s)\n"; ${io_getfile} ${OCE_FILES_DIR}/croco_runoff.nc${agrif_ext} ./ ; }
 done
 
           
