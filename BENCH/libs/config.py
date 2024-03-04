@@ -58,7 +58,7 @@ class Config:
         self.case_names = self.args.cases.split(',')
         self.verbose = self.args.verbose
         self.capture = not self.verbose
-        self.workdir = self.args.workdir
+        self.workdir = os.path.abspath(self.args.workdir)
         self.rebuild = self.args.rebuild
         self.runs = int(self.args.runs)
         self.make_jobs = int(self.args.jobs)
@@ -70,6 +70,8 @@ class Config:
         self.force_jobcomp = self.args.jobcomp
         self.use_host_config = self.args.host
         self.debug_build = self.args.debug
+        self.rvtk = self.args.rvtk
+        self.rvtk_ref = 'sequential'
 
         # compute clean result subdir name
         use_host_config = self.use_host_config

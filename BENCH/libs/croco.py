@@ -6,6 +6,7 @@
 
 ##########################################################
 import os
+import glob
 import json
 import shutil
 import platform
@@ -96,6 +97,21 @@ class Croco:
         # jump in & build
         croco_build.make(make_jobs)
 
+    def enable_rvtk_checking(self):
+        # vars
+        croco_build = self.croco_build
+        variant_name = self.variant_name
+        rvtk_ref_variant_name = self.config.rvtk_ref
+
+        # enable what we need
+        croco_build.cppdef_h_set_key('RVTK_DEBUG', True)
+
+        # except for variant we enable RVTK_DEBUG_READ
+        if variant_name == rvtk_ref_variant_name:
+            croco_build.cppdef_h_set_key('RVTK_DEBUG_WRITE', True)
+        else:
+            croco_build.cppdef_h_set_key('RVTK_DEBUG_READ', True)
+
     def build(self, extra_info: str = "", force_rebuild: bool = False):
         # display
         Messaging.section(f"Building CROCO - {self.full_name}{extra_info}")
@@ -121,6 +137,25 @@ class Croco:
         # compile
         self.compile()
 
+    def symlink_all_rvtk_ref_files(self):
+        # vars
+        case_name = self.case_name
+        rvtk_ref_variant_name = self.config.rvtk_ref
+
+        # refdir
+        ref_rundir = self.calc_rundir(rvtk_ref_variant_name, case_name)
+        refdir = os.path.join(ref_rundir, "check_file_*")
+
+        # debug_infos
+        extra_files = [
+            f"{ref_rundir}/debug_infos"
+        ]
+
+        # link all
+        for file in glob.glob(refdir) + extra_files:
+            if not os.path.exists(os.path.basename(file)):
+                os.symlink(file, os.path.basename(file))
+
     def run(self, extra_info: str = ""):
         # display
         Messaging.section(f"Running CROCO - {self.full_name}{extra_info}")
@@ -133,6 +168,8 @@ class Croco:
         runs = self.config.runs
         results = self.config.results
         host_tuning = self.config.host['tuning']
+        rvtk = self.config.rvtk
+        is_rvtk_ref = (self.variant_name == self.config.rvtk_ref)
 
         # load tuning env & override if needed
         for key, value in host_tuning['environ'].items():
@@ -149,6 +186,11 @@ class Croco:
         # build command and run
         command = f"{env_line} ../../../scripts/correct_end.sh {command_prefix} ./croco"
         with move_in_dir(dirname):
+            # link ref files
+            if rvtk and not is_rvtk_ref:
+                self.symlink_all_rvtk_ref_files()
+
+            # run
             result = run_hyperfine(command, runs=runs, verbose=self.config.verbose)
 
         # calc output
