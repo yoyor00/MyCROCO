@@ -22,8 +22,9 @@ class JobcompCrocoConfig:
     We agregate here them to keep OldCrocoSetup readable.
     '''
 
-    def __init__(self, builddir: str):
+    def __init__(self, builddir: str, minicroco: bool = False):
         self.builddir = builddir
+        self.minicroco = minicroco
 
     def cppdef_h_select_case(self, case_name: str):
         '''
@@ -34,19 +35,24 @@ class JobcompCrocoConfig:
         Messaging.step(f"Select case : {case_name}")
 
         # set patching rules
-        rules = [
-            {
+        rules = []
+
+        # disable REGINAL (enabled by default in CROCO master, disabled by default in minicroco branch)
+        if not self.minicroco:
+            rules.append({
                 'mode'  : 'replace', 
                 'what'  : "#define REGIONAL        /* REGIONAL Applications */\n", 
                 'by'    : "#undef REGIONAL        /* REGIONAL Applications */\n",
                 'descr' : 'Disable default REGIONAL case'
-            },{
-                'mode'  : 'insert-after', 
-                'what'  : "#undef REGIONAL        /* REGIONAL Applications */\n", 
-                'insert': f'#define {case_name}\n',
-                'descr' : f'Enabled wanted {case_name} case'
-            }
-        ]
+            })
+
+        # insert the wated one
+        rules.append({
+            'mode'  : 'insert-after', 
+            'what'  : "#undef REGIONAL        /* REGIONAL Applications */\n", 
+            'insert': f'#define {case_name}\n',
+            'descr' : f'Enabled wanted {case_name} case'
+        })
 
         # apply
         patch_lines(os.path.join(self.builddir, 'cppdefs.h'), rules)
@@ -133,12 +139,20 @@ class JobcompCrocoConfig:
         Messaging.step(f"Patching jobcomp to set fortran compiler")
 
         # build the rull
-        rules = [{
-            'mode'  : 'replace',
-            'what'  :  'FC=gfortran\n',
-            'by'    : f'FC={fortran_compiler}\n',
-            'descr' : f"Set fortran compiler to FC={fortran_compiler}"
-        }]
+        if self.minicroco:
+            rules = [{
+                'mode'  :  'replace',
+                'what'  :  'test -z "$!FC" && FC=gfortran\n',
+                'by'    : f'test -z "$!FC" && FC={fortran_compiler}\n',
+                'descr' : f"Set fortran compiler to FC={fortran_compiler}"
+            }]
+        else:
+            rules = [{
+                'mode'  :  'replace',
+                'what'  :  'FC=gfortran\n',
+                'by'    : f'FC={fortran_compiler}\n',
+                'descr' : f"Set fortran compiler to FC={fortran_compiler}"
+            }]
 
         # apply
         patch_lines(os.path.join(self.builddir, 'jobcomp'), rules)
@@ -209,7 +223,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
     def __init__(self, config: Config, builddir: str):
         super().__init__(config, builddir)
-        self.croco_config = JobcompCrocoConfig(builddir)
+        self.croco_config = JobcompCrocoConfig(builddir, minicroco=config.is_minicroco_jobcomp)
 
     @staticmethod
     def convert_arg_for_argparse(arg_string: str) -> list:

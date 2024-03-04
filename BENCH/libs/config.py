@@ -83,10 +83,10 @@ class Config:
         self.croco_source_dir = os.path.abspath(f"{__file__}/../../../")
 
         # detect old way or cmake way
-        if os.path.exists(os.path.join(self.croco_source_dir, 'CMakeLists.txt')):
-            self.has_cmake = True
-        else:
-            self.has_cmake = False
+        self.has_cmake = os.path.exists(os.path.join(self.croco_source_dir, 'CMakeLists.txt'))
+
+        # detect if is minicroco jobcomp
+        self.is_minicroco_jobcomp = os.path.exists(os.path.join(self.croco_source_dir, 'OCEAN/config/cppdefs.h'))
 
     def pre_checks(self):
         # basic check
