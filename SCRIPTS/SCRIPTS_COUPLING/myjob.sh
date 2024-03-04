@@ -101,24 +101,17 @@ export io_putfile="mvfile"
 # SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95)
 if [ ${MACHINE} == "Linux" ]; then
    export QSUB="./"
-   export COMPUTER="Linux"
 elif [ ${MACHINE} == "IRENE" ]; then
    export QSUB="ccc_msub -m work,store,scratch "
-   export COMPUTER="IRENE"
-elif [ ${MACHINE} == "JEANZAY" ]; then
+elif [ ${MACHINE} == "JEANZAY" ] || [ ${MACHINE} == "LEFTRARU" ]; then
    export QSUB="sbatch "
-   export COMPUTER="JEANZAY"
-elif [ ${MACHINE} == "LEFTRARU" ]; then
-   export QSUB="sbatch "
-   export COMPUTER="LEFTRARU"
-elif [ ${MACHINE} == "DATARMOR" ]; then
+elif [ ${MACHINE} == "DATARMOR" ] || [ ${MACHINE} == "WCHPC" ]; then
    export QSUB="qsub "
-   export COMPUTER="DATARMOR"
    export jobname="job_${ROOT_NAME_1}.pbs"
 else
    printf "\n\n Machine unknown  => EXIT \n\n"
    printf "To define your Machine:\n - Define your environement in ./SCRIPTS_TOOLBOX/MACHINE \n - Prepare your header \n - Prepare a launch_${MACHINE}\n - Add your machine in myjob.sh";  exit;
 fi
 
-echo ${COMPUTER}
+echo ${MACHINE}
 

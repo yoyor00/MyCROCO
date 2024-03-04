@@ -450,10 +450,10 @@
             if (iok_etwo /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               etwo = tab_t_tmp / rho0
+               etwo = tab_t_tmp
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               etwo  = tab_t_tmp / rho0
+               etwo  = tab_t_tmp
 #  endif
             endif
          end if
@@ -465,10 +465,10 @@
             if (iok_ntwo /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ntwo = tab_t_tmp / rho0
+               ntwo = tab_t_tmp
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ntwo  = tab_t_tmp / rho0
+               ntwo  = tab_t_tmp
 #  endif
             endif
          end if
@@ -520,10 +520,10 @@
             if (iok_etaw /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               etaw = tab_t_tmp / rho0
+               etaw = tab_t_tmp
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               etaw  = tab_t_tmp / rho0
+               etaw  = tab_t_tmp
 #  endif
             endif
          end if
@@ -535,10 +535,10 @@
             if (iok_ntaw /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ntaw = tab_t_tmp / rho0
+               ntaw = tab_t_tmp
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ntaw  = tab_t_tmp / rho0
+               ntaw  = tab_t_tmp
 #  endif
             endif
          end if
