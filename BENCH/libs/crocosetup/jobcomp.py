@@ -68,9 +68,6 @@ class JobcompCrocoConfig:
         Note: It is necessary to put # undef before # define as some keys can be
               already defined.
         '''
-        # print progress
-        Messaging.step(f"Set {key_name} to {status}")
-
         # caution here, the space in '# define' is required due to croco tricks
         # do not remove it or it behave strangely
         if status:
@@ -95,15 +92,12 @@ class JobcompCrocoConfig:
         Configure the OpenMP splitting in param.h
         '''
 
-        # progress
-        Messaging.step(f"Patching param.h to configure OPENMP split [threads{threads}]")
-
         # build the patching rule
         rules = [{
             'mode'  : 'replace', 
             'what'  :  "      parameter (NPP=4)\n", 
             'by'    : f"      parameter (NPP={threads})\n",
-            'descr' : f"Set threads = {threads}"
+            'descr' : f"Set OPENMP threads = {threads}"
         }]
 
         # apply
@@ -114,9 +108,6 @@ class JobcompCrocoConfig:
         Permit to append some extra fortran flags for the compiler. Typically
         the `-march` one to be tuned for the local CPU we want.
         '''
-
-        # progress
-        Messaging.step(f"Patching jobcomp to set extra FFLAGS")
 
         # build the rule
         rules = [{
@@ -134,9 +125,6 @@ class JobcompCrocoConfig:
         '''
         Change the compiler.
         '''
-
-        # progress
-        Messaging.step(f"Patching jobcomp to set fortran compiler")
 
         # build the rull
         if self.minicroco:
@@ -175,15 +163,12 @@ class JobcompCrocoConfig:
         np_eta = int(dims[1])
         ranks = np_x * np_eta
 
-        # progress
-        Messaging.step(f"Patching param.h to configure MPI split [ranks={ranks}, NP_XI={np_x}, NP_ETA={np_eta}]")
-
         # build rule
         rules = [{
             'mode'  : 'replace', 
             'what'  :  "      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)\n", 
             'by'    : f"      parameter (NP_XI={np_x},  NP_ETA={np_eta},  NNODES=NP_XI*NP_ETA)\n",
-            'descr' : f"Set MPI splitting : {splitting} : np_xi={np_x}, np_eta={np_eta}, ranks={ranks}"
+            'descr' : f"Set MPI splitting : {splitting} : ranks={ranks}, np_xi={np_x}, np_eta={np_eta}"
         }]
 
         # apply
@@ -200,15 +185,12 @@ class JobcompCrocoConfig:
         if build has failed. Not using it without noticing it has not been rebuilt.
         '''
 
-        # progress
-        Messaging.step(f"Patching jobcomp to fix missing status")
-
         # build rule
         rules = [{
             'mode'  : 'replace', 
             'what'  :  "$MAKE\n", 
             'by'    : f"$MAKE || exit 1\n",
-            'descr' : f"Fix missing return status of jobcomp"
+            'descr' : f"Fix missing return make status in jobcomp"
         }]
 
         # apply
