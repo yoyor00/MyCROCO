@@ -2,7 +2,6 @@
 #                                                                      Average
 #-------------------------------------------------------------------------------
 
-
 if [ ${USE_XIOS_ATM} -eq 1 ] ; then
     for file in ${ATM_XIOS_NAME}; do
 	mv ${file}*.nc* ${OUTPUTDIR}/

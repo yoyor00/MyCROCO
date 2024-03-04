@@ -43,7 +43,7 @@ if [ ${interponline} -eq 1 ]; then
             cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
 
             for varname in ${vnames} ; do
-                [[ ! -f "${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc" ]] && { echo "File ${varname}_Y${cur_Y}M${cur_M}.nc is missing for online interpolation, we stop..." ; exit ;}
+                [[ ! -f "${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc" ]] && { echo "File ${varname}_Y${cur_Y}M${cur_M}.nc is missing for online interpolation, we stop..." ; exit 1 ;}
                 ${io_getfile} ${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc ./
             done
         done
@@ -94,7 +94,7 @@ else
             echo "Job is one month long or less ---> Using netcdf of the current month"
             cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
             cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
-            [[ ! -f ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc ]] && { echo "Missing ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc to build oce frc file."; exit ;}
+            [[ ! -f ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc ]] && { echo "Missing ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc to build oce frc file."; exit 1 ;}
 	    ${io_getfile} ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc croco_${extend}.nc${agrif_ext}
         else
             if [[ ${JOB_DUR_MTH} -eq 0 && ${LOCAL_MTH_END} -ne ${cur_M} ]]; then
@@ -147,7 +147,7 @@ else
                     done
                 else
                     echo "Did not understand your atmospheric forcing type, blk or frc are available ( need to be specified in input file name)"
-                    exit
+                    exit 1
                 fi
             done
         fi
