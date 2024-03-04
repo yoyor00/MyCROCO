@@ -6,7 +6,7 @@
 ##
 ##======================================================================
 ##----------------------------------------------------------------------
-##    II. modify namelist
+##    Modify ATM namelist
 ##----------------------------------------------------------------------
 ##======================================================================
 ##
@@ -20,8 +20,11 @@ else
   file="wrfrst_d01_*"
 fi
 
-# look for starting hour in input file
+## ---------------------------
+##    Deal with times
+## ---------------------------
 
+# look for starting hour in input file
 module load ${ncomod}
 if [[ ${RESTART_FLAG} == "FALSE" ]]; then
     YY=$( printf "%04d" ${YEAR_BEGIN_JOB} )
@@ -54,6 +57,10 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     -e "s/<interval_s>/${interval_seconds}/g" \
     -e "s/<nbmetlev>/${nbmetlevel}/g"     -e "s/<nbmetsoil>/${nbmetsoil}/g"  \
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
+
+## ---------------------------
+##    Deal with domains
+## ---------------------------
 
 for domnb in `seq 1 $NB_dom` ; do
     dom="d$( printf "%02d" ${domnb})"
@@ -88,12 +95,28 @@ for domnb in `seq 1 $NB_dom` ; do
         mv namelist.input.tmp namelist.input
     chmod 755 namelist.input
 done
-#
+
+## ---------------------------
+##    Deal with wave coupling
+## ---------------------------
+
+sed -e "s/<isftcflx>/${isftcflx}/g" \
+    ./namelist.input > ./namelist.input.tmp
+mv namelist.input.tmp namelist.input
+
+if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
+    [[ ${isftcflx} -ne 5 ]] && { echo "ERROR... Atm parameter (in namelist.input) isftcflx need to be 5 when coupling with WAV..." ; exit 1 ; }
+fi
+
+## ---------------------------
+##    Deal with fdda
+## ---------------------------
+
 if [[ ${switch_fdda} == 1 ]]; then
     nbdom=$( echo "${nudgedom}" | wc -w)
-    [[ ${nbdom} >  $( echo "${nudge_coef}" | wc -w) ]] && { echo "Missing values in nudge_coef for nest, we stop..."; exit ;}
-    [[ ${nbdom} >  $( echo "${nudge_interval_m}" | wc -w) ]] && { echo "Missing values in nudge_interval_m for nest, we stop..."; exit ;}
-    [[ ${nbdom} >  $( echo "${nudge_end_h}" | wc -w) ]] && { echo "Missing values in nudge_end_h for nest, we stop..."; exit ;}
+    [[ ${nbdom} >  $( echo "${nudge_coef}" | wc -w) ]] && { echo "Missing values in nudge_coef for nest, we stop..."; exit 1 ;}
+    [[ ${nbdom} >  $( echo "${nudge_interval_m}" | wc -w) ]] && { echo "Missing values in nudge_interval_m for nest, we stop..."; exit 1 ;}
+    [[ ${nbdom} >  $( echo "${nudge_end_h}" | wc -w) ]] && { echo "Missing values in nudge_end_h for nest, we stop..."; exit 1 ;}
 
     for lvl in `seq 1 ${nbdom}`; do
         dom=$(printf "d%02d" ${lvl})
@@ -121,25 +144,32 @@ else
     mv namelist.tmp namelist.input
     chmod 755 namelist.input
 fi
-#
+
+## ---------------------------
+##    Deal with nests
+## ---------------------------
+
+# feedback
 if [[ ${nestfeedback} == "FALSE" ]]; then
     sed -e "s/feedback                            = 1,/feedback                            = 0,/g" \
     ./namelist.input > ./namelist.input.tmp
     mv namelist.input.tmp namelist.input
 fi
-###### handle cpl dom ######
+
+# max_cpldom
 maxatmdom=$( echo "$wrfcpldom" | wc -w )
 if [[ ${maxatmdom} > 0 ]] ; then
     max_cpldom=$( echo "${wrfcpldom}" | cut -d ' ' -f ${maxatmdom} | cut -d '0' -f 2)
-    [[ ${max_cpldom} > 2 ]] && { echo "In the current state WRF can not couple more than 2 domains, we stop..."; exit; }
+    [[ ${max_cpldom} > 2 ]] && { echo "In the current state WRF can not couple more than 2 domains, we stop..."; exit 1; }
 else
     max_cpldom=0
 fi
-#
+
 sed -e "s/<max_cpldom>/${max_cpldom}/g" \
     ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
+# num_ext_model_couple_dom
 if [[ $maxatmdom == 1 && $AGRIFZ > 1 ]];then 
     numextmod=$(( $AGRIFZ + 1 ))
 else
@@ -148,22 +178,14 @@ fi
 sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            = $numextmod,/g" \
 ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
-####
 
-sed -e "s/<isftcflx>/${isftcflx}/g" \
-    ./namelist.input > ./namelist.input.tmp
-mv namelist.input.tmp namelist.input
-
-if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
-    [[ ${isftcflx} -ne 5 ]] && { echo "ERROR... Atm parameter (in namelist.input) isftcflx need to be 5 when coupling with WAV..." ; exit ; }
-fi
-#
+# Moving nest
 if [[ ${ATM_CASE} == "MOVING_NEST" ]]; then
-    [[ ${num_mv_nest} >  $( echo "${ref_coef}" | wc -w) ]] && { echo "Missing values in ref_coef  for nest, we stop..."; exit ;}
-    [[ ${num_mv_nest} >  $( echo "${ew_size}" | wc -w) ]] && { echo "Missing values in ew_size for nest, we stop..."; exit ;}
-    [[ ${num_mv_nest} >  $( echo "${ns_size}" | wc -w) ]] && { echo "Missing values in ns_size for nest, we stop..."; exit ;}
-    [[ ${num_mv_nest} >  $( echo "${i_prt_strt}" | wc -w) ]] && { echo "Missing values in i_prt_str for nest, we stop..."; exit ;}
-    [[ ${num_mv_nest} >  $( echo "${j_prt_strt}" | wc -w) ]] && { echo "Missing values in j_prt_str for nest, we stop..."; exit ;}
+    [[ ${num_mv_nest} >  $( echo "${ref_coef}" | wc -w) ]] && { echo "Missing values in ref_coef  for nest, we stop..."; exit 1;}
+    [[ ${num_mv_nest} >  $( echo "${ew_size}" | wc -w) ]] && { echo "Missing values in ew_size for nest, we stop..."; exit 1;}
+    [[ ${num_mv_nest} >  $( echo "${ns_size}" | wc -w) ]] && { echo "Missing values in ns_size for nest, we stop..."; exit 1;}
+    [[ ${num_mv_nest} >  $( echo "${i_prt_strt}" | wc -w) ]] && { echo "Missing values in i_prt_str for nest, we stop..."; exit 1;}
+    [[ ${num_mv_nest} >  $( echo "${j_prt_strt}" | wc -w) ]] && { echo "Missing values in j_prt_str for nest, we stop..."; exit 1;}
 
     for nest_nb in `seq 1 ${num_mv_nest}`; do
         dom=$( printf "d%02d" $(( ${nest_nb} +1 )) )
@@ -188,7 +210,7 @@ if [[ ${ATM_CASE} == "MOVING_NEST" ]]; then
         mv namelist.input.tmp namelist.input
         chmod 755 namelist.input
     done
-# add vortex_interval,max_vortex_speed,corral_dist,track_level,time_to_move
+    # add vortex_interval,max_vortex_speed,corral_dist,track_level,time_to_move
     linetoadd=("numtiles" "vortex_interval" "max_vortex_speed" "corral_dist" "track_level" "time_to_move")
     nbline=${#linetoadd[@]}
 
@@ -223,8 +245,6 @@ else
      mv namelist.input.tmp namelist.input
      chmod 755 namelist.input
 fi
-
-
 
 sed -e "s/<xdim_d.*>/1/g"  -e "s/<ydim_d.*>/1/g"\
     -e "s/<dx_d.*>/1/g"  -e "s/<dy_d.*>/1/g" \

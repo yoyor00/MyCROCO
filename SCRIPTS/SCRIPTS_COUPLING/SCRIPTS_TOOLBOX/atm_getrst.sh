@@ -1,28 +1,28 @@
 #-------------------------------------------------------------------------------
 #                                                                      Restart
 #-------------------------------------------------------------------------------
-if [[ ${RESTART_FLAG} == "FALSE" ]]
-then
+if [[ ${RESTART_FLAG} == "FALSE" ]] ; then
 
- filelist='wrfinput_d01' 
- if [ $NB_dom -ge 2 ] ; then
-  filelist="$filelist wrfinput_d02"
-  if [ $NB_dom -eq 3 ] ; then
-   filelist="$filelist wrfinput_d03"
-  fi
- fi
- cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
- cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
- for file in $filelist
-  do
-   echo "ln -sf ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ./$file"
-   ln -sf ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ./$file
-  done
+    filelist='wrfinput_d01'
+    if [ $NB_dom -ge 2 ] ; then
+        filelist="$filelist wrfinput_d02"
+          if [ $NB_dom -eq 3 ] ; then
+              filelist="$filelist wrfinput_d03"
+          fi
+    fi
+
+    cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+ 
+    for file in $filelist ; do
+        #echo "ln -sf ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ./$file"
+        lnfile ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ./$file
+    done
   
-  if [[ ${onlinecplmask} == "TRUE" ]]; then
-      echo "EDITING CPLMASK ONLINE"  
-      for dom in $wrfcpldom ; do
-          if [[ ${dom} == "d01" ]]; then
+    if [[ ${onlinecplmask} == "TRUE" ]]; then
+        echo "EDITING CPLMASK ONLINE"  
+        for dom in $wrfcpldom ; do
+            if [[ ${dom} == "d01" ]]; then
               echo "set CPLMASK to 1 in coupled domain $dom"
               echo "ncap2 -O -s \"CPLMASK(:,0,:,:)=(LANDMASK+LAKEMASK-1)*(-1)\" ./wrfinput_$dom ./wrfinput_$dom"
               module load $ncomod
@@ -52,13 +52,13 @@ then
                           ncks -O -v var_tmp -x tmp.nc.2 tmp.nc.2
                       done
                   done
-              ncpdq -O -a Time,num_ext_model_couple_dom_stag tmp.nc.2 tmp.nc.2
-              ncks -A -v CPLMASK -x wrfinput_$dom tmp.nc.2
-              mv tmp.nc.2 wrfinput_$dom
-              rm -rf tmp.nc tmp.nc.1
+                  ncpdq -O -a Time,num_ext_model_couple_dom_stag tmp.nc.2 tmp.nc.2
+                  ncks -A -v CPLMASK -x wrfinput_$dom tmp.nc.2
+                  mv tmp.nc.2 wrfinput_$dom
+                  rm -rf tmp.nc tmp.nc.1
               fi
-          module unload $ncomod
-          else
+              module unload $ncomod
+            else
               module load $ncomod
               echo "set CPLMASK to 1 in coupled domain $dom"
               num_ext_mod=$( ncdump -h wrfinput_d01 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 3)
@@ -88,14 +88,16 @@ then
               ncks -O -v var_tmp -x wrfinput_d01.tmp wrfinput_d01
               rm -rf wrfinput_d01.tmp 
               module unload $ncomod
-          fi
-      done
-  fi
-else
-    touch ls_l/getfile_atm_restarts.txt
+            fi
+        done
+    fi
+
+else ## ${RESTART_FLAG} == "TRUE"
+
+    #touch ls_l/getfile_atm_restarts.txt
     for file in `${MACHINE_STOCKAGE} ls ${RESTDIR_IN}/wrfrst_d0?_*`
-# for i in ${RESTDIR_IN}/wrfrst_d01_*
     do
-	${io_getfile} ${file} . >> ls_l/getfile_atm_restarts.txt
+	${io_getfile} ${file} . #>> ls_l/getfile_atm_restarts.txt
     done
+
 fi
