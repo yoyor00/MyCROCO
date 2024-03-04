@@ -12,7 +12,76 @@ import math
 import numpy
 
 ##########################################################
-def recurse_compare_current_dim(varname:str, shape_ref: tuple, shape_actual: tuple, cusor_ref, cursor_actual, dim_id: int, current_dims: list = []) -> None:
+class CompareErrorLogger:
+    def __init__(self, max_stored: int = 10, max_total: int = 50):
+        self.count = 0
+        self.var_error_logs = {}
+        self.var_error_count = {}
+        self.max_stored = max_stored
+        self.max_total = max_total
+
+    def append(self, varname: str, ref, actual, coord: list, is_strict_compare: bool = True):
+        # count it
+        self.count += 1
+
+        # first seen for this var
+        if not varname in self.var_error_logs:
+            self.var_error_logs[varname] = []
+            self.var_error_count[varname] = 0
+
+        # count & get log
+        self.var_error_count[varname] += 1
+        var_error_log = self.var_error_logs[varname]
+
+        # to help readability with right operator displayed
+        if is_strict_compare:
+            compare_name = "strict"
+            operator = "!="
+        else:
+            compare_name = "close"
+            operator = "!~="
+
+        # calc diff
+        diff = abs(ref - actual)
+
+        # extract some meaning on limits
+        can_still_log_var = (len(var_error_log) <= self.max_stored)
+
+        # if can still log
+        if can_still_log_var:
+            var_error_log.append(f"Non {compare_name} equality in variable '{varname}' at ({','.join(coord)}): ref {operator} actual : {ref} {operator} {actual} (diff={diff})")
+
+    def has_error(self) -> bool:
+        return self.count > 0
+
+    def __str__(self):
+        # prepare some vars
+        error_var_names = ', '.join(self.var_error_logs.keys())
+        total_error_count = self.count
+
+        # prep per variable messages
+        var_messages = []
+        log_count = 0
+        for varname, log in self.var_error_logs.items():
+            var_messages.append(f"-------------------- {varname} ---------------------")
+            for entry in log:
+                log_count += 1
+                if log_count < self.max_total:
+                    var_messages.append(entry)
+                elif log_count == self.max_total:
+                    var_messages.append(f".................... too many errors (>{self.max_total}), stop logging details .............")
+
+        # assemble details
+        details = '\n'.join(var_messages)
+
+        # build full message
+        message = f"Found {total_error_count} errors in : {error_var_names}\n{details}"
+        
+        # ok
+        return message
+
+##########################################################
+def recurse_compare_current_dim(error_log: CompareErrorLogger, varname:str, shape_ref: tuple, shape_actual: tuple, cusor_ref, cursor_actual, dim_id: int, current_dims: list = []) -> None:
     '''
     Recursively compare the values of each dimensions of the mesh.
 
@@ -55,12 +124,12 @@ def recurse_compare_current_dim(varname:str, shape_ref: tuple, shape_actual: tup
         # loop
         for i in range(shape_actual[dim_id]):
             if not math.isclose(cusor_ref[i], cursor_actual[i]):
-                raise Exception(f"Non close equality in variable '{varname}': {cusor_ref[i]} !~= {cursor_actual[i]} at ({','.join(current_dims)})")
+                error_log.append(varname, cusor_ref[i], cursor_actual[i], current_dims+[str(i)])
             if not cusor_ref[i] == cursor_actual[i]:
-                raise Exception(f"Non strict equality in variable '{varname}' : {cusor_ref[i]} != {cursor_actual[i]} at ({','.join(current_dims)})")
+                error_log.append(varname, cusor_ref[i], cursor_actual[i], current_dims+[str(i)])
     else:
         for i in range(shape_actual[dim_id]):
-            recurse_compare_current_dim(varname, shape_ref, shape_actual, cusor_ref[i], cursor_actual[i], dim_id+1, current_dims=current_dims+[str(i)])
+            recurse_compare_current_dim(error_log, varname, shape_ref, shape_actual, cusor_ref[i], cursor_actual[i], dim_id+1, current_dims=current_dims+[str(i)])
 
 ##########################################################
 def compare_netcdf_variables(ref: Dataset, actual: Dataset) -> None:
@@ -94,10 +163,18 @@ def compare_netcdf_variables(ref: Dataset, actual: Dataset) -> None:
         # Note : kept if we want to see the exact failing value for debug
         # Same but by hand recusion
         if need_value_compare:
-            recurse_compare_current_dim(var, shape_ref, shape_actual, ref.variables[var], actual.variables[var], 0)
+            # error logger
+            error_logger = CompareErrorLogger(max_stored=10, max_total=50)
+
+            # log all errors
+            recurse_compare_current_dim(error_logger, var, shape_ref, shape_actual, ref.variables[var], actual.variables[var], 0)
 
             # in case it is not compared the same way we should not let go
-            raise Exception(f"Seen error when comparing values for variable '{var}' ! This error message should never be reached !")
+            if not error_logger.has_error():
+                raise Exception(f"Seen error when comparing values for variable '{var}' ! This error message should never be reached !")
+            
+            # log errors
+            raise Exception(f"Detect some errors : \n{error_logger}")
 
 ##########################################################
 def compare_netcdf_files(ref_file: str, actual_file: str) -> None:
