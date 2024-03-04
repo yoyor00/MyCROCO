@@ -105,8 +105,6 @@
 # endif
 # ifdef OA_COUPLING
 #  undef WAVE_SMFLUX
-# else
-#  define WAVE_SMFLUX
 # endif
 #endif
 

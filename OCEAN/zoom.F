@@ -969,7 +969,9 @@ CR      write(*,*) '  0' MYID
       UVspongeTimeindex = -1
 
       iif = -1
-
+# if defined OA_COUPLING || defined OW_COUPLING
+      it_inside_root = 1
+# endif
 # ifdef AGRIF_ADAPTIVE
       ntstart = 1 + Agrif_irhot()*(Agrif_Parent(iic)-1)
       time_start=Agrif_Parent(time_start)

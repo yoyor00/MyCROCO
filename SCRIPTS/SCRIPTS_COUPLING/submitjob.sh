@@ -68,7 +68,7 @@ fi
 [ ${USE_XIOS_OCE} -eq 1 ] && TOTXIO=$(( ${TOTXIO} + ${NP_XIOS_OCE} ))
 totalcore=$(( $TOTOCE + $TOTATM + $TOTWAV + $TOTTOY + $TOTXIO ))
 
-if [[ ${COMPUTER} == "DATARMOR" ]]; then
+if [[ ${MACHINE} == "DATARMOR" ]]; then
     nbnode=$(( $totalcore /29 +1))
     [[ ${totalcore} -ge 28 ]] && totalcore=28
 else
@@ -88,7 +88,7 @@ sed -e "/< insert here variables definitions >/r mynamelist.tmp" \
     -e "s/<nmpi>/${totalcore}/g" \
     -e "s/<projectid>/${projectid}/g" \
     -e "s/<timedur>/${timedur}/g" \
-    ./SCRIPTS_TOOLBOX/MACHINE/${MACHINE}/header.${COMPUTER} > HEADER_tmp
+    ./SCRIPTS_TOOLBOX/MACHINE/${MACHINE}/header.${MACHINE} > HEADER_tmp
     cat HEADER_tmp ./SCRIPTS_TOOLBOX/job.base.sh >  ${JOBDIR_ROOT}/${jobname}
     \rm HEADER_tmp
     \rm ./mynamelist.tmp
@@ -97,7 +97,7 @@ sed -e "/< insert here variables definitions >/r mynamelist.tmp" \
 cd ${JOBDIR_ROOT}
 chmod 755 ${jobname}
 
-printf "\n  HOSTNAME: `hostname`\n     =>    COMPUTER: ${COMPUTER}\n"  
+printf "\n  HOSTNAME: `hostname`\n     =>    COMPUTER: ${MACHINE}\n"  
 echo
 printf "  CONFIG: ${CONFIG}\n"  
 printf "  CEXPER: ${CEXPER}\n"  

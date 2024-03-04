@@ -1,5 +1,5 @@
 #
-# Include file for OASIS3 Makefile for ADA 
+# Include file for OASIS3 Makefile for JEANZAY
 # using mpiifort
 #
 ###############################################################################
@@ -10,10 +10,10 @@ CHAN            = MPI1
 # Paths for libraries, object files and binaries
 #
 # COUPLE	: path for oasis3-mct main directory
-COUPLE          = $(HOME)/oasis/OASIS3-MCT_3.0_branch/oasis3-mct
+COUPLE          = $(HOME)/oasis/OASIS3-MCT_4.0_branch/oasis3-mct
 #
 # ARCHDIR       : directory created when compiling
-ARCHDIR         = $(HOME)/oasis/compile_oasis3-mct_v3_netcdf4.1.3
+ARCHDIR         = $(HOME)/oasis/compile_oasis3-mct_v4_netcdf4.5.2
 #ARCHDIR         = $(HOME)/oasis/compile_oasis3-mct_netcdf_serial
 #
 # MPI library
@@ -32,7 +32,7 @@ F90         = mpiifort
 F           = $(F90)
 f90         = $(F90)
 f           = $(F90)
-CC          = mpiicc 
+CC          = mpiicc -mt_mpi
 LD          = mpiifort
 AR          = ar
 ARFLAGS     = r
@@ -44,13 +44,13 @@ CPPDEF     = -Duse_libMPI -Duse_comm_$(CHAN)
 #
 # -g is necessary in F90FLAGS and LDFLAGS for pgf90 versions lower than 6.1
 # 
-F90FLAGS_1  = -O2 -I. 
+F90FLAGS_1  = -O2 -I. -mt_mpi
 #F90FLAGS_1  = -O3 -xAVX -I. -fp-model precise
 f90FLAGS_1  = $(F90FLAGS_1)
 FFLAGS_1    = $(F90FLAGS_1)
 fFLAGS_1    = $(F90FLAGS_1)
-CCFLAGS_1   = -O2 -xAVX
-LDFLAGS     = 
+CCFLAGS_1   = -O2 -xAVX -mt_mpi
+LDFLAGS     = -mt_mpi 
 #
 ###################
 #

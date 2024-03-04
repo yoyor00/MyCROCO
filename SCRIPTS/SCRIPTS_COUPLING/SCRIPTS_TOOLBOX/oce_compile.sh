@@ -72,11 +72,25 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 	    mv tmp$$ cppdefs.h
 	fi
         if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
-            sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" \
-                -e "s/# *undef *MRL_WCI/# define MRL_WCI/g" \
-                cppdefs.h > tmp$$
             printf "\n Coupling with WAV \n"
-	    mv tmp$$ cppdefs.h
+            if [[ ${OW_COUPLING_FULL} == "TRUE" ]]; then 
+                sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" \
+                    -e "s/# *undef *MRL_WCI/# define MRL_WCI/g" \
+                    cppdefs.h > tmp$$
+                printf "\n OW_COUPLING_FULL option is activated \n"
+            else
+                sed -e "s/#  *undef  *OW_COUPLING/# define OW_COUPLING/g" \
+                    -e "s/# *define *OW_COUPLING_FULL/# undef OW_COUPLING_FULL/g" \
+                    -e "s/# *undef *MRL_WCI/# define MRL_WCI/g" \
+                    cppdefs.h > tmp$$
+            fi
+            mv tmp$$ cppdefs.h
+            if [[ ${WAVE_SMFLUX} == "TRUE" ]]; then
+                sed -e "s/#  *undef  *WAVE_SMFLUX/# define WAVE_SMFLUX/g" \
+                    cppdefs.h > tmp$$
+                printf "\n WAVE_SMFLUX option is activated \n"
+	        mv tmp$$ cppdefs.h
+            fi
         else
             sed -e "s/#  *define  *OW_COUPLING/# undef OW_COUPLING/g" \
                 -e "s/# *define *MRL_WCI/# undef  MRL_WCI/g" \
