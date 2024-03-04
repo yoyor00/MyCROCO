@@ -24,6 +24,9 @@ class Config:
             prog = 'bench-croco.py',
             description = 'Automate the benchmarking of CROCO by doing rewrite.')
 
+        # get hostname from system
+        selected_host = platform.node()
+
         # register options
         parser.add_argument('-w', '--workdir', help="Working sub-directory name.", default='rundir')
         parser.add_argument('-c', '--cases', help="Specific case to run.", default='@default')
@@ -42,6 +45,7 @@ class Config:
         parser.add_argument(      '--build-ref', help="Build the reference directory to be stored once somewhere for validation.", type=str, default=False)
         parser.add_argument('-u', '--use-ref', help="Use the reference directory as source of compare instead of seq run.", type=str, default=False)
         parser.add_argument(      '--jobcomp', help="Force using jobcomp instead of cmake.", action='store_true')
+        parser.add_argument(      '--host', help="Force host config to use.", type=str, default=selected_host)
 
         # parse
         self.args = parser.parse_args()
@@ -62,17 +66,18 @@ class Config:
         self.build_ref = self.args.build_ref
         self.use_ref = self.args.use_ref
         self.force_jobcomp = self.args.jobcomp
+        self.use_host_config = self.args.host
 
         # compute clean result subdir name
-        hostname = platform.node()
+        use_host_config = self.use_host_config
         run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.results = os.path.join(self.args.results, self.title, f"{hostname}-{run_date}")
+        self.results = os.path.join(self.args.results, self.title, f"{use_host_config}-{run_date}")
 
         # pattern to search results files (to also take the previous runs if not re-run all)
         if self.no_previous:
             self.results = self.results
         else:
-            self.results_pattern = os.path.join(self.args.results, self.title, f"{hostname}-*")
+            self.results_pattern = os.path.join(self.args.results, self.title, f"{use_host_config}-*")
 
         # extract some many time used paths
         self.croco_source_dir = os.path.abspath(f"{__file__}/../../../")
@@ -160,16 +165,20 @@ class Config:
         self.case_names = final_cases
 
     def select_host(self):
-        # select tunning
+        # get it
         hostname = platform.node()
+
+        # select tunning
+        selected_host = self.use_host_config
         hosts = self.config['hosts']
         
         # fallback
-        if not hostname in hosts:
-            hostname = '@default'
+        if not selected_host in hosts:
+            selected_host = '@default'
             
         # display
-        Messaging.step(f"Select host : {hostname}")
+        Messaging.step(f"Hostname : {hostname}")
+        Messaging.step(f"Select host : {selected_host}")
         
         # apply
-        self.host = hosts[hostname]
+        self.host = hosts[selected_host]

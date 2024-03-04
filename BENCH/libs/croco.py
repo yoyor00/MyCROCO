@@ -142,6 +142,7 @@ class Croco:
         result['name'] = self.full_name
         result['original_path'] = output_filename
         result['hostname'] = platform.node()
+        result['selected_host_config'] = self.config.use_host_config
 
         # dump results
         with open(output_filename, "w+") as fp:
