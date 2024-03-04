@@ -16,7 +16,12 @@ if [ ${USE_ATM} -eq 1 ]; then
 fi
 #
 if [ ${USE_OCE} -eq 1 ]; then
-    [ ${USE_ATM} -eq 1 ] && { mystartproc=$(( ${myendproc} + 1 )) ; myendproc=$(( ${mystartproc} + ${NP_OCEX}*${NP_OCEY} - 1 )); } || { myendproc=$(( ${NP_OCEX} * ${NP_OCEY} - 1 )) ; }
+    if [[ ${MPI_NOLAND} == "TRUE" ]]; then
+        OCE_PROCS=${NP_OCE}
+    else
+        OCE_PROCS=$(( ${NP_OCEX}*${NP_OCEY} ))
+    fi 
+    [ ${USE_ATM} -eq 1 ] && { mystartproc=$(( ${myendproc} + 1 )) ; myendproc=$(( ${mystartproc} + ${OCE_PROCS} - 1 )); } || { myendproc=$(( ${OCE_PROCS} - 1 )) ; }
     mod_Str=$mystartproc"-"$myendproc
     echo "$mod_Str ./crocox" >> app.conf
     if [ ${USE_XIOS_OCE} -eq 1 ]; then

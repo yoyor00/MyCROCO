@@ -17,7 +17,7 @@ fi
 #
 if [ ${USE_OCE} -eq 1 ]; then
     if [[ ${MPI_NOLAND} == "TRUE" ]]; then
-        OCE_PROCS=${MY_NODES}
+        OCE_PROCS=${NP_OCE}
     else
         OCE_PROCS=$(( ${NP_OCEX}*${NP_OCEY} ))
     fi 

@@ -478,7 +478,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     # Edit myjob.sh to add CPU lines for each model
     cd $MY_CONFIG_HOME/
     [ -f myjob.tmp ] && rm -Rf myjob.tmp
-    [[ ${options[@]} =~ "oce-prod" ]] && printf "export NP_OCEX=2 \nexport NP_OCEY=2\n" >> myjob.tmp
+    [[ ${options[@]} =~ "oce-prod" ]] && printf "export NP_OCEX=2 \nexport NP_OCEY=2 \nexport NP_OCE=4 # ONLY used if MPI_NOLAND is TRUE. It replaces NP_OCEX*NP_OCEY \n" >> myjob.tmp
     [[ ${options[@]} =~ "wav" ]] && printf "export NP_WAV=14 \n" >> myjob.tmp
     [[ ${options[@]} =~ "atm" ]] && printf "export NP_ATM=12 \n" >> myjob.tmp
     [[ ${options[@]} =~ "toy" ]] && printf "export NP_TOY=2 \n" >> myjob.tmp

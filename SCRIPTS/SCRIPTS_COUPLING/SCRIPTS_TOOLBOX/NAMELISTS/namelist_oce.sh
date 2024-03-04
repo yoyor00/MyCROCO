@@ -32,7 +32,6 @@ export AGRIF_2WAY="FALSE"
 # MPI_NOLAND
 #-----------
 export MPI_NOLAND="FALSE"
-export MY_NODES=18 # ONLY if MPI_NOLAND is "TRUE". It replaces NP_OCEX*NP_OCEY
 
 # wave coupling
 #--------------

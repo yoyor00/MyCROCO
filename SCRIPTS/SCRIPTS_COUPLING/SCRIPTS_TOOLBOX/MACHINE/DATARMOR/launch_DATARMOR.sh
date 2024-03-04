@@ -9,7 +9,7 @@ fi
 
 if [ ${USE_OCE} -eq 1 ]; then
     if [[ ${MPI_NOLAND} == "TRUE" ]]; then
-        echo "-n ${MY_NODES} ./crocox croco.in" >> app.conf
+        echo "-n ${NP_OCE} ./crocox croco.in" >> app.conf
     else
         echo "-n $(( ${NP_OCEX} * ${NP_OCEY} )) ./crocox croco.in" >> app.conf
     fi
