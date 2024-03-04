@@ -26,6 +26,13 @@ subroutine snippet()
   integer*4 :: istru
   integer*4 :: itemp
   integer*4 :: nrhs
+  integer*4 :: jmin
+  integer*4 :: jmax
+  integer*4 :: imin
+  integer*4 :: imax
+  integer*4 :: kstp
+  integer*4 :: kbak
+  integer*4 :: kold
   integer*4 :: jendr
   integer*4 :: istrr
   integer*4 :: iendr
@@ -102,35 +109,64 @@ subroutine snippet()
   real*4, dimension(0:10,0:10,0:10,0:10,0:10) :: t
   REAL :: A2d(N2d, NSA, 0 : NPP - 1)
   REAL :: A3d(N3d, 8, 0 : NPP - 1)
-  COMMON /private_scratch/ A2d, A3d
+  COMMON /private_scratch/ A2d
+  COMMON /private_scratch/ A3d
 
+  n = 10
+  jstr = n - 1
+  jstrr = jstr - 1
+  jstrv = jstr + 1
+  istru = jstr + 1
+  istrr = jstr + 1
+  jend = n - 1
+  jendr = jend + 1
+  istr = n - 1
+  iend = n - 1
+  iendr = iend + 1
+  jmin = jstr - 2
+  jmax = jend + 1
+  imin = istr - 2
+  imax = iend + 1
+  knew = 1
+  nstp = 1
+  nnew = 1
+  lm = n - 1
+  mm = n - 1
+  nadv = nstp
+  itrc = 1
+  itemp = 1
+  kstp = 1
+  kbak = 2
+  kold = 3
+  nrhs = 1
+  nt = 10
   do j = jstr, jend, 1
     do i = istr, iend, 1
       do itrc = 1, nt, 1
         do k = 1, n - 1, 1
           fc1d(k) = t(i,j,k + 1,nadv,itrc) - t(i,j,k,nadv,itrc)
         enddo
-        fc1d(n) = fc1d(n - 1)
         fc1d(0) = fc1d(1)
+        fc1d(n) = fc1d(n - 1)
         do k = 1, n, 1
+          cff = 2. * fc1d(k) * fc1d(k - 1)
           if (cff > epsil) then
             cf1d(k) = cff / (fc1d(k) + fc1d(k - 1))
           else
             cf1d(k) = 0.
           end if
-          cff = 2. * fc1d(k) * fc1d(k - 1)
         enddo
         do k = 1, n - 1, 1
           fc1d(k) = 0.5 * (t(i,j,k,nadv,itrc) + t(i,j,k + 1,nadv,itrc) - 0.333333333333 * (cf1d(k + 1) - cf1d(k))) * we(i,j,k)
         enddo
-        cf1d(0) = dt * pm(i,j) * pn(i,j)
-        fc1d(n) = 0.
         fc1d(0) = 0.
+        fc1d(n) = 0.
+        cf1d(0) = dt * pm(i,j) * pn(i,j)
         do k = 1, n, 1
           t(i,j,k,nnew,itrc) = t(i,j,k,nnew,itrc) - cf1d(0) * (fc1d(k) - fc1d(k - 1))
         enddo
-        fc1d(0) = -dt * btflx(i,j,itrc)
         fc1d(n) = dt * stflx(i,j,itrc)
+        fc1d(0) = -dt * btflx(i,j,itrc)
         if (itrc == itemp) then
           do k = 1, n - 1, 1
             fc1d(k) = 0.
@@ -142,15 +178,15 @@ subroutine snippet()
           enddo
         end if
         indx = MIN(itrc, itemp)
-        dc1d(1) = cff * t(i,j,1,nnew,itrc)
-        cf1d(1) = cff * fc1d(1)
-        cff = 1. / (hz(i,j,1) + fc1d(1))
         fc1d(1) = dt * akt(i,j,1,indx) / (z_r(i,j,2) - z_r(i,j,1))
+        cff = 1. / (hz(i,j,1) + fc1d(1))
+        cf1d(1) = cff * fc1d(1)
+        dc1d(1) = cff * t(i,j,1,nnew,itrc)
         do k = 2, n - 1, +1
-          dc1d(k) = cff * (t(i,j,k,nnew,itrc) + fc1d(k - 1) * dc1d(k - 1))
-          cf1d(k) = cff * fc1d(k)
-          cff = 1. / (hz(i,j,k) + fc1d(k) + fc1d(k - 1) * (1. - cf1d(k - 1)))
           fc1d(k) = dt * akt(i,j,k,indx) / (z_r(i,j,k + 1) - z_r(i,j,k))
+          cff = 1. / (hz(i,j,k) + fc1d(k) + fc1d(k - 1) * (1. - cf1d(k - 1)))
+          cf1d(k) = cff * fc1d(k)
+          dc1d(k) = cff * (t(i,j,k,nnew,itrc) + fc1d(k - 1) * dc1d(k - 1))
         enddo
         t(i,j,n,nnew,itrc) = (t(i,j,n,nnew,itrc) + fc1d(n - 1) * dc1d(n - 1)) / (hz(i,j,n) + fc1d(n - 1) * (1. - cf1d(n - 1)))
         do k = n - 1, 1, -1

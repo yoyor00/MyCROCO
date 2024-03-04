@@ -515,7 +515,7 @@ def helper_load_snippet(kind: str, step: str, name: str, generated_node: Node = 
 ##########################################################
 def helper_gen_range_assigns(size: int = 10) -> list:
     decl = []
-    decl.append(f'n = {size}')
+    decl.append(f'n = {size} - 1')
     decl.append(f'jstr = n - 1')
     decl.append(f'jstrr = jstr - 1')
     decl.append(f'jstrv = jstr + 1')
@@ -542,6 +542,8 @@ def helper_gen_range_assigns(size: int = 10) -> list:
     decl.append(f'kbak = 2')
     decl.append(f'kold = 3')
     decl.append(f'nrhs = 1')
+    decl.append(f'nt = 9')
+    decl.append(f'indx = 3 - nstp')
     return decl
 
 ##########################################################
@@ -552,6 +554,9 @@ def helper_gen_range_assigns_str(size: int = 10) -> list:
 def helper_gen_var_decl(vars: dict, common: bool = False, size: int = 10, scratch_params: bool=True) -> str:
     # to aggregate
     decl = []
+
+    # incr mem
+    memsize = size + 1
 
     # loop on scalars
     scalars = vars['scalars_int']
@@ -566,27 +571,27 @@ def helper_gen_var_decl(vars: dict, common: bool = False, size: int = 10, scratc
     # loop on 1d arrays
     scalars = vars['1d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:{size})')
+        decl.append(f'\treal*4 {vname}(0:{memsize})')
 
     # loop on 2d arrays
     scalars = vars['2d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:{size},0:{size})')
+        decl.append(f'\treal*4 {vname}(0:{memsize},0:{memsize})')
 
     # loop on 3d arrays
     scalars = vars['3d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:{size},0:{size},0:{size})')
+        decl.append(f'\treal*4 {vname}(0:{memsize},0:{memsize},0:{memsize})')
 
     # loop on 4d arrays
     scalars = vars['4d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:{size},0:{size},0:{size},0:{size})')
+        decl.append(f'\treal*4 {vname}(0:{memsize},0:{memsize},0:{memsize},0:{memsize})')
 
     # loop on 5d arrays
     scalars = vars['5d']
     for vname in scalars:
-        decl.append(f'\treal*4 {vname}(0:{size},0:{size},0:{size},0:{size},0:{size})')
+        decl.append(f'\treal*4 {vname}(0:{memsize},0:{memsize},0:{memsize},0:{memsize},0:{memsize})')
 
     # scratch
     if scratch_params:

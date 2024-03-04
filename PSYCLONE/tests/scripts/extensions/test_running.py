@@ -192,11 +192,11 @@ def helper_gen_check(vars: dict, skip_check: dict) -> str:
                     decl.append(f"  write(*,*) 'saved_{vname} = ', saved_{vname}")
 
                     if dim > 1:
-                        indices = ['i', 'j', 'k', 'l', 'm', 'n']
+                        indices = ['i', 'j', 'k', 'l', 'm', 'iiii']
                         indices = indices[0:dim]
                         letters = ', '.join(indices)
                         for letter in indices:
-                            decl.append(f'  do {letter} = 0, n, 1')
+                            decl.append(f'  do {letter} = 0, n + 1, 1')
                         decl.append(f'      if ({vname}({letters}) .ne. saved_{vname}({letters})) then')
                         decl.append(f"          write(*,*) 'Invalid value in {vname} at ', {letters}, ' values : expect=', {vname}({letters}), ' != ', saved_{vname}({letters})")
                         decl.append(f'      endif')
@@ -516,14 +516,14 @@ def gen_transformed_source(top_root_node: Node, routine: Routine, type: str, sni
     else:
         assert False
 
-    # dump before
-    dump_named_node_as_source(snippet_name, routine, f"{type}-transformed", in_dir=os.path.expanduser("~/snippets/"))
-
     # inject acc kernel directives
-    if type == 'ijk' or type == 'jki' or type == 'kji':
+    if type == 'ijk' or type == 'jki' or type == 'jik':
         kernels = extract_kernels_from_psyir(routine)
         kernels.make_acc_tranformation(False)
         kernels.merge_joinable_kernels()
+
+    # dump before
+    dump_named_node_as_source(snippet_name, routine, f"{type}-transformed", in_dir=os.path.expanduser("~/snippets/"))
 
     # vars
     gpu_vars = helper_copy_data_list(LOOP_USED_VARS)
@@ -588,7 +588,7 @@ def test_running_reshaped_kernels_cpu(type: str, snippet_name: str, skip_check: 
     # prep source
     with setup_running_source_code(type, snippet_name, skip_check, transform=gen_transformed_source, delete=False) as fp_source:
         # compile
-        subprocess.run(['gfortran', fp_source.name, '-g', '-o', exename, '-O2', '-fcheck=all', '-Wno-unused-dummy-argument', '-ffree-line-length-none', '-Wall', '-Werror', '-Wno-unused-variable'], check=True)
+        subprocess.run(['gfortran', fp_source.name, '-g', '-o', exename, '-O2', '-fcheck=all', '-Wno-unused-dummy-argument', '-ffree-line-length-none', '-Wall', '-Werror', '-Wno-unused-variable', '-ffpe-trap=invalid,zero,overflow'], check=True)
 
         # run
         subprocess.run([exename], check=True)
@@ -601,7 +601,7 @@ def test_running_reshaped_kernels_gpu(type: str, snippet_name: str, skip_check: 
     # prep source
     with setup_running_source_code(type, snippet_name, skip_check, transform=gen_transformed_source, delete=False) as fp_source:
         # compiler
-        subprocess.run(['nvfortran', fp_source.name, '-g', '-o', exename, '-Wall', '-Werror', '-acc=gpu'], check=True)
+        subprocess.run(['nvfortran', fp_source.name, '-g', '-o', exename, '-Wall', '-Werror', '-acc=gpu', '-ffpe-trap=invalid,zero,overflow'], check=True)
 
         # run
         subprocess.run([exename], check=True)
