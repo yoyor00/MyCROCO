@@ -32,6 +32,10 @@ CSDISTRIBUTE_RESHAPE eddyvbv_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 CSDISTRIBUTE_RESHAPE eddyusu_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real eddyvsv_avg(GLOBAL_2D_ARRAY)
 CSDISTRIBUTE_RESHAPE eddyvsv_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
+      real eddyugsu_avg(GLOBAL_2D_ARRAY)
+CSDISTRIBUTE_RESHAPE eddyugsu_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
+      real eddyvgsv_avg(GLOBAL_2D_ARRAY)
+CSDISTRIBUTE_RESHAPE eddyvgsv_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
 
 # ifdef AVERAGES
@@ -49,5 +53,7 @@ CSDISTRIBUTE_RESHAPE eddyvsv_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
      &       /diag_eddyvbv_avg/eddyvbv_avg
      &       /diag_eddyusu_avg/eddyusu_avg
      &       /diag_eddyvsv_avg/eddyvsv_avg
+     &       /diag_eddyugsu_avg/eddyugsu_avg
+     &       /diag_eddyvgsv_avg/eddyvgsv_avg   
 # endif
 #endif /* DIAGNOSTICS_EDDY*/

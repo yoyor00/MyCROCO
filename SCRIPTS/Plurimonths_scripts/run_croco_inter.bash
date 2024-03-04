@@ -239,9 +239,9 @@ while [ $NY != $NY_END ]; do
         echo "Getting ${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} from $MSSDIR"
         $LN -sf $MSSDIR/${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} ${BLKFILE}.nc${ENDF}
       fi
-     if [[ ${RNF_FILES} == 1 ]]; then
-        echo "Getting ${RNFFILE}_${RUNOFF_DAT}_${TIME}.nc${ENDF} from $MSSDIR"
-        $LN -sf $MSSDIR/${RNFFILE}_${RUNOFF_DAT}_${TIME}.nc${ENDF} ${RNFFILE}.nc${ENDF}
+     if [[ ${RUNOFF_FILES} == 1 ]]; then
+        echo "Getting ${RNFFILE}.nc${ENDF} from $MSSDIR"
+        $LN -sf $MSSDIR/${RNFFILE}.nc${ENDF} ${RNFFILE}.nc${ENDF}
       fi
       
       LEVEL=$((LEVEL + 1))
@@ -360,7 +360,7 @@ while [ $NY != $NY_END ]; do
 	  exit 1
 	fi
 	sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
-	    -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/' \
+	    -e 's/\bNUMAVG\b/'$NUMAVG'/' -e 's/\bNUMHIS\b/'$NUMHIS'/' -e 's/\bNUMRST\b/'$NUMRST'/' \
 	    -e 's/NUMRECINI/'$NUMRECINI'/' \
 	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
 	

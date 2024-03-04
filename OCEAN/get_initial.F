@@ -208,7 +208,7 @@
             endif
             start_time=start_time*time_scale
 
-#if defined XIOS && !defined USE_CALENDAR
+# if defined XIOS && !defined USE_CALENDAR
       start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
       READ(start_date_run(6:7),fmt='(i2)') start_month
@@ -228,7 +228,7 @@
 #if defined USE_CALENDAR
             call tool_origindate(ncid,varid,origin_date_in_sec)
       MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &    'Origin date of time axis (YYYY/MM/DD hh:mm:ss) :',
+     &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)
       origin_date=tool_sectodat(origin_date_in_sec)
       READ(origin_date(1:4),fmt='(i4)') origin_year
@@ -321,7 +321,7 @@
       endif
 
 #ifdef XIOS
-      start_date_run = tool_sectodat(start_time+origin_date_in_sec)
+      start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
       READ(start_date_run(6:7),fmt='(i2)') start_month
       READ(start_date_run(9:10),fmt='(i2)') start_day
@@ -1150,7 +1150,7 @@
 #  endif
         call cpl_prism_define
         oasis_time = 0
-        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
 #  if defined EXACT_RESTART   
       endif
 #  endif

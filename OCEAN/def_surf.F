@@ -256,7 +256,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &                        NF_FOUT, ierr)
 !
 ! Time2.
@@ -287,7 +287,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &                        NF_FOUT, ierr)
 
 ! surface variables.
@@ -326,7 +326,7 @@
      &                      lvar, vname(4,indxsurft+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, vidsurft(itrc),
-     &                       indxsurft+itrc-1, 5,
+     &                       vname(:,indxsurft+itrc-1), 5,
      &                        NF_FOUT, ierr)
 
 
@@ -358,7 +358,7 @@
      &                      lvar, vname(4,indxsurfs+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, vidsurfs(itrc),
-     &                       indxsurfs+itrc-1, 5,
+     &                       vname(:,indxsurfs+itrc-1), 5,
      &                        NF_FOUT, ierr)
 
 !------------------------------
@@ -389,7 +389,7 @@
      &                      lvar, vname(4,indxsurfz+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, vidsurfz(itrc),
-     &                       indxsurfz+itrc-1, 5,
+     &                       vname(:,indxsurfz+itrc-1), 5,
      &                        NF_FOUT, ierr)
 
 !------------------------------
@@ -420,7 +420,7 @@
      &                      lvar, vname(4,indxsurfu+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, vidsurfu(itrc),
-     &                       indxsurfu+itrc-1, 5,
+     &                       vname(:,indxsurfu+itrc-1), 5,
      &                        NF_FOUT, ierr)
 
 !------------------------------
@@ -451,7 +451,7 @@
      &                      lvar, vname(4,indxsurfv+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, vidsurfv(itrc),
-     &                       indxsurfv+itrc-1, 5,
+     &                       vname(:,indxsurfv+itrc-1), 5,
      &                        NF_FOUT, ierr)
 
 !------------------------------

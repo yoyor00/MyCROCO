@@ -824,7 +824,7 @@
       enddo
 #   elif defined WAVE_NONBRK_VMIX_QIAO
 !
-!  Qiao et al, JPO 2004:
+!  Qiao et al, GRL 2004 and OD 2010 (eq. 41b):
 !    Akw = alpha * kw * sig * [A * sinh(k(z+d))/sinh(k*d)]^3
 !  Wang et al. JGR 2010:
 !    alpha=0.1 for KPP applications

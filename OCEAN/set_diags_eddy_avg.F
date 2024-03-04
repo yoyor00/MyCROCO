@@ -143,13 +143,17 @@
 
               if (k.eq.N) then
                   cffug = -g/f(i,j)*(
-     &                    vmask(i,j+1)
-     &              *(zeta(i,j+1,fast_indx_out)-zeta(i,j,fast_indx_out))
+# ifdef MASKING
+     &                    vmask(i,j+1)*
+# endif
+     &               (zeta(i,j+1,fast_indx_out)-zeta(i,j,fast_indx_out))
      &                   *0.5*(pm(i,j+1)+pm(i,j))
      &                    )
                   cffvg = g/f(i,j)*(
-     &                    umask(i+1,j)
-     &              *(zeta(i+1,j,fast_indx_out)-zeta(i,j,fast_indx_out))
+# ifdef MASKING
+     &                    umask(i+1,j)*
+# endif
+     &               (zeta(i+1,j,fast_indx_out)-zeta(i,j,fast_indx_out))
      &                   *0.5*(pn(i+1,j)+pn(i,j))
      &                    )
                 eddyusu_avg(i,j)= cff *

@@ -132,35 +132,35 @@
 !
            workr=TXadv(:,:,:,itrc)
            call fillvalue3d(workr,nciddia,diaTXadv(itrc),
-     &                      indxTXadv+itrc-1,
+     &                      vname(1,indxTXadv+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTYadv
 !
            workr=TYadv(:,:,:,itrc)
            call fillvalue3d(workr,nciddia,diaTYadv(itrc),
-     &                      indxTYadv+itrc-1,
+     &                      vname(1,indxTYadv+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTVadv
 !
            workr=TVadv(:,:,:,itrc)
            call fillvalue3d(workr,nciddia,diaTVadv(itrc),
-     &                      indxTVadv+itrc-1,
+     &                      vname(1,indxTVadv+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTHmix
 !
            workr=THmix(:,:,:,itrc)
            call fillvalue3d(workr,nciddia,diaTHmix(itrc),
-     &                      indxTHmix+itrc-1,
+     &                      vname(1,indxTHmix+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTVmix
 !
            workr=TVmix(:,:,:,itrc)
            call fillvalue3d(workr,nciddia,diaTVmix(itrc),
-     &                      indxTVmix+itrc-1,
+     &                      vname(1,indxTVmix+itrc-1),
      &                      record,r3dvar,type)
 # ifdef DIAGNOSTICS_TSVAR
 !
@@ -168,7 +168,7 @@
 !
            workr=TVmixt(:,:,:,itrc)
            call fillvalue3d(workr,nciddia,diaTVmixt(itrc),
-     &                      indxTVmixt+itrc-1,
+     &                      vname(1,indxTVmixt+itrc-1),
      &                      record,r3dvar,type)
 # endif
 !
@@ -176,14 +176,14 @@
 !
            workr=TForc(:,:,:,itrc)
            call fillvalue3d(workr,nciddia,diaTForc(itrc),
-     &                      indxTForc+itrc-1,
+     &                      vname(1,indxTForc+itrc-1),
      &                      record,r3dvar,type)
 !
 ! indxTrate
 !
            workr=Trate(:,:,:,itrc)
            call fillvalue3d(workr,nciddia,diaTrate(itrc),
-     &                      indxTrate+itrc-1,
+     &                      vname(1,indxTrate+itrc-1),
      &                      record,r3dvar,type)
 !
         endif
@@ -200,56 +200,56 @@
 !
            work2d=TXadv_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTXadv_mld(itrc),
-     &                      indxTXadv_mld+itrc-1,
+     &                      vname(1,indxTXadv_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTYadv_mld
 !
            work2d=TYadv_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTYadv_mld(itrc),
-     &                      indxTYadv_mld+itrc-1,
+     &                      vname(1,indxTYadv_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTVadv_mld
 !
            work2d=TVadv_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTVadv_mld(itrc),
-     &                      indxTVadv_mld+itrc-1,
+     &                      vname(1,indxTVadv_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTHmix_mld
 !
            work2d=THmix_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTHmix_mld(itrc),
-     &                      indxTHmix_mld+itrc-1,
+     &                      vname(1,indxTHmix_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTVmix_mld
 !
            work2d=TVmix_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTVmix_mld(itrc),
-     &                      indxTVmix_mld+itrc-1,
+     &                      vname(1,indxTVmix_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTForc_mld
 !
            work2d=TForc_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTForc_mld(itrc),
-     &                      indxTForc_mld+itrc-1,
+     &                      vname(1,indxTForc_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTrate_mld
 !
            work2d=Trate_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTrate_mld(itrc),
-     &                      indxTrate_mld+itrc-1,
+     &                      vname(1,indxTrate_mld+itrc-1),
      &                      record,r2dvar,type)
 !
 ! indxTentr_mld
 !
            work2d=Tentr_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTentr_mld(itrc),
-     &                      indxTentr_mld+itrc-1,
+     &                      vname(1,indxTentr_mld+itrc-1),
      &                      record,r2dvar,type)
         endif
 !

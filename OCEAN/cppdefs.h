@@ -83,6 +83,7 @@
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
+#  undef WAVE_SMFLUX
 # endif
                       /* Wave-current interactions */
 # undef  MRL_WCI
@@ -163,7 +164,7 @@
 #  undef  ABL_DYN_RESTORE_EQ
 #  undef  SFLUX_CFB
 # else
-#  undef BULK_FLUX
+#  define BULK_FLUX
 # endif
 # ifdef BULK_FLUX
 #  undef  BULK_ECUMEV0
@@ -310,9 +311,9 @@
 # undef  OBC_M3SPECIFIED
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
-# undef AVERAGES
-# undef AVERAGES_K
-# define OUTPUTS_SURFACE
+# define AVERAGES
+# define AVERAGES_K
+# undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
                      /* Exact restart */
 # undef EXACT_RESTART
