@@ -165,6 +165,8 @@ def patch_lines(path: str, rules: list, allow_already_done = False):
             while not contains_one_of(lines[id], rule['before']):
                 id += 1
             lines.insert(id, rule['insert'])
+        elif rule['mode'] == 'insert-at-end':
+            lines.append(rule['what'])
 
     # save
     with open(path, 'w+') as fp:

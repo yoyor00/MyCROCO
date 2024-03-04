@@ -111,6 +111,14 @@ class Croco:
         # effectively built
         self.configure()
         self.setup_case()
+        self.setup_variant()
+
+        # some specific handling
+        Messaging.step(f"Special command line configs...")
+        if self.config.rvtk:
+            self.enable_rvtk_checking()
+
+        # compile
         self.compile()
 
     def run(self, extra_info: str = ""):
@@ -156,14 +164,9 @@ class Croco:
         with open(output_filename, "w+") as fp:
             json.dump(result, fp=fp, indent='\t')
 
-    def setup_case(self):
-        # apply the case paches
-        case_name = self.case_name
-        patches = self.case['patches']
+    def apply_patches(self, patches):
+        # vars
         croco_build = self.croco_build
-
-        # display
-        Messaging.step(f"Apply case config : {case_name}")
 
         # loop
         with move_in_dir(self.dirname):
@@ -177,15 +180,48 @@ class Croco:
 
                 # loop on all changes
                 for change in changes:
-                    patch_lines(file_filtered, [
-                        {
-                            "mode": "replace",
-                            "after": change['next_to'],
-                            "what": change['what'] + '\n',
-                            "by": change['by'] + '\n',
-                            "descr": change['descr']
-                        }
-                    ])
+                    if change.get('mode', 'replace') == 'replace':
+                        patch_lines(file_filtered, [
+                            {
+                                "mode": "replace",
+                                "after": change['next_to'],
+                                "what": change['what'] + '\n',
+                                "by": change['by'] + '\n',
+                                "descr": change['descr']
+                            }
+                        ])
+                    else:
+                        patch_lines(file_filtered, [change])
+
+    def apply_cppkeys(self, cppkeys: dict):
+        # vars
+        croco_build = self.croco_build
+
+        # loop all
+        for key, value in cppkeys.items():
+            croco_build.cppdef_h_set_key(key, value)
+
+    def setup_case(self):
+        # apply the case paches
+        case_name = self.case_name
+        patches = self.case.get('patches', {})
+        cppkeys = self.case.get('cppkeys', {})
+
+        # display
+        Messaging.step(f"Apply case config : {case_name}")
+        self.apply_patches(patches)
+        self.apply_cppkeys(cppkeys)
+
+    def setup_variant(self):
+        # apply the case paches
+        variant_name = self.variant_name
+        patches = self.variant.get('patches', {})
+        cppkeys = self.variant.get('cppkeys', {})
+
+        # display
+        Messaging.step(f"Apply variant config : {variant_name}")
+        self.apply_patches(patches)
+        self.apply_cppkeys(cppkeys)
 
     def check_one_file_from_seq_ref(self, filename: str) -> None:
         # extract vars
@@ -246,7 +282,16 @@ class Croco:
         refdir = self.config.build_ref
         case_name = self.case_name
         dirname = self.dirname
-        case_patches = self.case['patches']
+        patches_and_keys = {
+            "case": {
+                "patches": self.case.get('patches', {}),
+                "keys": self.case.get('keys', {}),
+            },
+            "variant": {
+                "patches": self.variant.get('patches', {}),
+                "keys": self.variant.get('keys', {}),
+            }
+        }
 
         # check
         assert refdir
@@ -270,7 +315,7 @@ class Croco:
             shutil.copyfile(orig_path, dest_path)
 
         # also copy the config
-        self.croco_build.copy_config(refdir_case, case_name, case_patches)
+        self.croco_build.copy_config(refdir_case, case_name, patches_and_keys)
 
         # add the case config files
         case_capitalized = case_name.capitalize()

@@ -7,6 +7,7 @@
 ##########################################################
 # python
 import os
+import json
 import shutil
 # internal
 from ..helpers import Messaging, patch_lines, move_in_dir, run_shell_command
@@ -27,6 +28,34 @@ class CMakeCrocoSetup(AbstractCrocoSetup):
         with move_in_dir(self.builddir):
             run_shell_command(configure_command, capture=self.config.capture)
 
+    def cppdef_h_set_key(self, key_name: str, status: bool):
+        '''
+        Force enabling or disabling some cppkeys in cppdefs.h. In order to
+        be applied to all cases without having to search the in case position.
+
+        We place it just after the cases and before inclusion of cppdefs_dev.h
+        which need to have everything well defined.
+
+        Note: It is necessary to put # undef before # define as some keys can be
+              already defined.
+        '''
+        # caution here, the space in '# define' is required due to croco tricks
+        # do not remove it or it behave strangely
+        if status:
+            to_insert = f'# undef {key_name}\n# define {key_name}\n'
+        else:
+            to_insert = f'# undef {key_name}\n'
+
+        # build the patch rule
+        rules = [{
+            'mode'  : 'insert-at-end',
+            'what': to_insert,
+            'descr' : f"Set {key_name} to {status}"
+        }]
+
+        # apply
+        patch_lines(os.path.join(self.builddir, 'cppdefs_override.h'), rules)
+
     def make(self, make_jobs: str) -> None:
         with move_in_dir(self.builddir):
             run_shell_command(f"make {make_jobs}", capture=self.config.capture)
@@ -42,7 +71,7 @@ class CMakeCrocoSetup(AbstractCrocoSetup):
         else:
             return filename
 
-    def copy_config(self, refdir_case: str, case_name: str, case_patches: dict) -> None:
+    def copy_config(self, refdir_case: str, case_name: str, patches_and_keys: dict) -> None:
         '''
         Copy the required config files to pass the case in the reference dir so
         we can possibly also reproduce by hand easily if needed one day
@@ -54,7 +83,7 @@ class CMakeCrocoSetup(AbstractCrocoSetup):
             The path in which to put the files.
         case_name: str
             Name of the case to know which file to take (possibly).
-        case_patches: dict
+        patches_and_keys: dict
             The information from the case on what was patched.
         '''
 
@@ -80,3 +109,10 @@ class CMakeCrocoSetup(AbstractCrocoSetup):
         # copy them
         for file in to_copy:
             shutil.copyfile(f"{builddir}/{file}", f"{put_int}/{file}")
+
+        # write extra
+        with open(f"{put_int}/patches-and-keys.json", "w+") as fp:
+            json.dump({
+                "case": case_name,
+                "changes": patches_and_keys
+            }, fp)

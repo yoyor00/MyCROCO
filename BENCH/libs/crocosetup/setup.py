@@ -85,3 +85,19 @@ class AbstractCrocoSetup(ABC):
             The information from the case on what was patched.
         '''
         raise Exception("Not provided by implementation !")
+
+
+    @abstractmethod
+    def cppdef_h_set_key(self, key_name: str, status: bool):
+        '''
+        Enable or disable some CPP keys either in cppdefs.h or cppdefs_override.h
+        depending on build system.
+
+        Parameters
+        ----------
+        key_name: str
+            Name of the key to enable or disable.
+        status: bool
+            New status of the key.
+        '''
+        raise Exception("Not provided by implementation !")

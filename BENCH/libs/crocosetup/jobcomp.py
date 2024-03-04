@@ -10,6 +10,7 @@ import os
 import shlex
 import argparse
 import shutil
+import json
 # internal
 from ..helpers import Messaging, patch_lines, move_in_dir, run_shell_command
 from .setup import AbstractCrocoSetup
@@ -255,6 +256,12 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         '''
         self.croco_config.cppdef_h_set_key('OPENACC_PSYCLONE', status)
 
+    def cppdef_h_set_key(self, key: str, status: bool) -> None:
+        '''
+        Set any cpp key
+        '''
+        self.croco_config.cppdef_h_set_key(key, status)
+
     def convert_patch_fnames(self, filename: str) -> str:
         '''
         Some files have been renamed between minicroco and the original one,
@@ -414,7 +421,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         with move_in_dir(self.builddir):
             run_shell_command(f"./jobcomp", capture=self.config.capture)
 
-    def copy_config(self, refdir_case: str, case_name: str, case_patches: dict) -> None:
+    def copy_config(self, refdir_case: str, case_name: str, patches_and_keys: dict) -> None:
         '''
         Copy the required config files to pass the case in the reference dir so
         we can possibly also reproduce by hand easily if needed one day
@@ -426,7 +433,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             The path in which to put the files.
         case_name: str
             Name of the case to know which file to take (possibly).
-        case_patches: dict
+        patches_and_keys: dict
             The information from the case on what was patched.
         '''
 
@@ -448,3 +455,10 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # copy them
         for file in to_copy:
             shutil.copyfile(f"{builddir}/{file}", f"{put_int}/{file}")
+
+        # write extra
+        with open(f"{put_int}/patches-and-keys.json", "w+") as fp:
+            json.dump({
+                "case": case_name,
+                "changes": patches_and_keys
+            }, fp)
