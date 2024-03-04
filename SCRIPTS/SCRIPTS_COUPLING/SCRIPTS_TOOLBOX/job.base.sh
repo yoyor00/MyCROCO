@@ -206,10 +206,12 @@ cd ${EXEDIR}
         [ ${AGRIFZ} -eq 1 ] && {  for file in ${FILES_AGRIFZ}; do cpfile2 ${file} ${JOBDIR}; done; echo ""; }
 # job
         FILES_JOB="${jobname}"
-        if [ ${COMPUTER} == "IRENE" ]; then
+        if [ ${MACHINE} == "IRENE" ]; then
             FILES_JOB="${FILES_JOB} ${ROOT_NAME_1}*.o ${ROOT_NAME_1}*.e"
-        elif [ ${COMPUTER} == "JEANZAY" ]; then
+        elif [ ${MACHINE} == "JEANZAY" ] || [ ${MACHINE} == "LEFTRARU" ]; then
             FILES_JOB="${FILES_JOB} ${ROOT_NAME_1}.out"
+        elif [ ${MACHINE} == "DATARMOR" ] || [ ${MACHINE} == "WCHPC" ]; then
+            FILES_JOB="${FILES_JOB} ${ROOT_NAME_1}.o* ${ROOT_NAME_1}.e*"
         else
             FILES_JOB="${FILES_JOB} ${ROOT_NAME_1}.jobid_*.txt ${ROOT_NAME_1}.o*"
         fi
