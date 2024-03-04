@@ -87,7 +87,7 @@ if [ $model == wrf ] ; then
             ${gridlevels}_PSFC)
 
     dimtime=Time
-    timerange=2
+    timerange=$atm_rst_timeind
 
 elif  [ $model == croco ] ; then
 
@@ -102,7 +102,7 @@ elif  [ $model == croco ] ; then
             CROCO_SSH${gridlevels})
 
     dimtime=time
-    timerange=1
+    timerange=$oce_rst_timeind
 
 elif  [ $model == ww3 ] ; then
 
@@ -143,7 +143,7 @@ elif  [ $model == ww3 ] ; then
     fi
 
     dimtime=time
-    timerange=1
+    timerange=$wav_rst_timeind
 
 else
     echo 'ERROR: '$model' case is not implemented yet. Exit...'
