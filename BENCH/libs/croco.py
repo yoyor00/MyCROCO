@@ -27,7 +27,7 @@ class Croco:
         self.full_name = f"{case_name}-{variant_name}"
 
         # build directory name
-        self.dirname = f"{config.workdir}/{case_name}/{variant_name}"
+        self.dirname = self.calc_rundir(variant_name, case_name)
         self.dirname = os.path.abspath(self.dirname)
 
         # extract infos
@@ -40,6 +40,9 @@ class Croco:
             self.croco_build = CMakeCrocoSetup(self.config, self.dirname)
         else:
             self.croco_build = JobcompCrocoSetup(self.config, self.dirname)
+
+    def calc_rundir(self, variant_name, case_name):
+        return f"{self.config.workdir}/{variant_name}/{case_name}"
 
     def reset(self):
         # display
@@ -93,6 +96,7 @@ class Croco:
         # display
         Messaging.section(f"Building CROCO - {self.full_name}{extra_info}")
         Messaging.step(f"Directory: {self.dirname}")
+
         # perform steps
         if force_rebuild:
             self.reset()
@@ -192,7 +196,8 @@ class Croco:
             Messaging.step(f"Checking {case_name} / {filename}")
 
         # error
-        seq_file = f"{dirname}/../sequential/{filename}"
+        seq_dir = self.calc_rundir("sequential", case_name)
+        seq_file = os.path.join(seq_dir, filename)
         if not os.path.exists(seq_file):
             raise Exception(f"Missing '{seq_file}', are you sure you ran case 'sequential' first to get a reference for checks ?")
 
