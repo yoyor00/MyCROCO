@@ -46,6 +46,8 @@ class Config:
         parser.add_argument('-u', '--use-ref', help="Use the reference directory as source of compare instead of seq run.", type=str, default=False)
         parser.add_argument(      '--jobcomp', help="Force using jobcomp instead of cmake.", action='store_true')
         parser.add_argument(      '--host', help="Force host config to use.", type=str, default=selected_host)
+        parser.add_argument(      '--enable-debug', help="Use cmake debug build instead of release.", action='store_true')
+        parser.add_argument(      '--rvtk', help="Enable usage of RVTK_DEBUG and give name of variant reference.", action='store_true')
 
         # parse
         self.args = parser.parse_args()
@@ -67,6 +69,7 @@ class Config:
         self.use_ref = self.args.use_ref
         self.force_jobcomp = self.args.jobcomp
         self.use_host_config = self.args.host
+        self.debug_build = self.args.debug
 
         # compute clean result subdir name
         use_host_config = self.use_host_config

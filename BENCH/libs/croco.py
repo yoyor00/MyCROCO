@@ -69,13 +69,17 @@ class Croco:
         # extract options
         configure_variant_options = self.variant['configure']
         configure_case_option = f"--with-case={case_cpp_key}"
+        configure_compiler_option = ""
         if tuning_flags != '':
             configure_compiler_option = f"FFLAGS=\"{tuning_flags}\""
-        else:
-            configure_compiler_option = ""
+
+        # debug
+        debug_option = ""
+        if self.config.debug_build:
+            debug_option = "--enable-debug"
 
         # build command
-        command = f"{croco_source_dir}/configure {configure_compiler_option} {configure_case_option} {configure_variant_options}"
+        command = f"{croco_source_dir}/configure {configure_compiler_option} {configure_case_option} {configure_variant_options} {debug_option}"
         command = apply_vars_in_str(command, {'case': self.case, 'tuning': self.config.host['tuning']})
 
         # jump in & configure
