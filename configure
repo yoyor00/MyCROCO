@@ -556,7 +556,7 @@ cfg_parse_global_args()
 				ENABLE_DISPLAY_COMMAND='true'
 				;;
 			-D*)
-				cfg_push_cmake_opt "${val}"
+				cfg_push_cmake_opt "${arg}"
 				;;
 			CC=*)
 				CFG_EXTRA_CC="${val}"
