@@ -33,7 +33,10 @@ month=$( printf "%02d"  ${MONTH_BEGIN_JOB} )
 
 rstfile='mod_def.ww3 restart001.ww3'
 for k in `seq 0 $(( ${lengthforc} - 1))` ; do
-    rstfile="${rstfile} ${forcww3[$k]}.ww3"
+    [[ `echo ${forcww3[$k]} | head -c 4` == 'wind' ]] && forctype=wind
+    [[ `echo ${forcww3[$k]} | head -c 3` == 'cur' ]] && forctype=current
+    [[ `echo ${forcww3[$k]} | head -c 3` == 'lev' ]] && forctype=level
+    rstfile="${rstfile} ${forctype}.ww3"
 done
 
 for file in ${rstfile} ; do 
