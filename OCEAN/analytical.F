@@ -2024,8 +2024,10 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
+#   ifdef MPI
           if (IstrR.le.i .and. i.le.IendR .and.
      &       JstrR.le.j .and. j.le.JendR) then
+#   endif
             Hs=h(i,j)                    ! Exponential vertical distribution
             cff=5.                       ! Hs/z0  (z0 surface layer depth)
             cff1=cff/(1-exp(-cff))
@@ -2038,7 +2040,9 @@ C$    integer  trd, omp_get_thread_num
             do k=1,N
               Qshape(is,k)=Qshape(is,k)/cff2
             enddo
-          endif  
+#   ifdef MPI 
+          endif
+#   endif            
         enddo
 #  elif defined AL_SHAPE
         do is=1,Nsrc                   ! Set-up nondimensional shape
@@ -2075,8 +2079,10 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
+#   ifdef MPI
           if (IstrR.le.i .and. i.le.IendR .and.
      &       JstrR.le.j .and. j.le.JendR) then
+#   endif
             Hs=h(i,j)                    ! Exponential vertical distribution
             cff=5.                       ! Hs/z0  (z0 surface layer depth)
             cff1=cff/(1-exp(-cff))
@@ -2091,7 +2097,9 @@ C$    integer  trd, omp_get_thread_num
                 Qshape(is,k)=Qshape(is,k)/cff2
               endif
             enddo
+#   ifdef MPI
           endif
+#   endif 
         enddo
 #  endif
 
@@ -2113,8 +2121,10 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
+#   ifdef MPI
           if (IstrR.le.i .and. i.le.IendR .and.
      &        JstrR.le.j .and. j.le.JendR) then
+#   endif
             Hs=h(i,j)                    ! Exponential vertical distribution
             cff=5.                       ! Hs/z0  (z0 surface layer depth)
             cff1=cff/(1-exp(-cff))
@@ -2127,7 +2137,9 @@ C$    integer  trd, omp_get_thread_num
             do k=1,N
               Qshape(is,k)=Qshape(is,k)/cff2
             enddo
+#   ifdef MPI
           endif
+#   endif
         enddo
 #  endif
 # endif /* RIVER || REGIONAL */
