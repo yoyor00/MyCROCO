@@ -185,6 +185,8 @@ def compare_netcdf_files(ref_file: str, actual_file: str) -> None:
     # check & forward exception if has one
     try:
         compare_netcdf_variables(ref, actual)
+    except Exception as e:
+        raise Exception(f"Error while checking\n - refere : {ref_file}\n - actual : {actual_file}\n-----------------------------------------------\n" + str(e))
     finally:
         ref.close()
         actual.close()

@@ -69,7 +69,7 @@ class Config:
         self.use_ref = self.args.use_ref
         self.force_jobcomp = self.args.jobcomp
         self.use_host_config = self.args.host
-        self.debug_build = self.args.debug
+        self.debug_build = self.args.enable_debug
         self.rvtk = self.args.rvtk
         self.rvtk_ref = 'sequential'
 
