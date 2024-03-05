@@ -126,7 +126,6 @@ def helper_copy_data_list(vars: dict) -> str:
     for cat, names in vars.items():
         for name in names:
             result.append(name)
-            result.append(f"saved_{name}")
 
     # ok
     return ', '.join(result)
@@ -198,7 +197,7 @@ def helper_gen_check(vars: dict, skip_check: dict) -> str:
                         for letter in indices:
                             decl.append(f'  do {letter} = 0, n + 1, 1')
                         decl.append(f'      if ({vname}({letters}) .ne. saved_{vname}({letters})) then')
-                        decl.append(f"          write(*,*) 'Invalid value in {vname} at ', {letters}, ' values : expect=', {vname}({letters}), ' != ', saved_{vname}({letters})")
+                        decl.append(f"          write(*,*) 'Invalid value in {vname} at ', {letters}, ' values : expect=', saved_{vname}({letters}), ' != ', {vname}({letters})")
                         decl.append(f'      endif')
                         for letter in indices:
                             decl.append(f'  enddo')
@@ -270,7 +269,7 @@ LOOP_USED_VARS={
 }
 LOOP_PARAMETERS = [
     # kji loops
-    ('kji', 'pre_step3d_tile-1129', []),
+    ('kji', 'pre_step3d_tile-1129', ['fx', 'work', 'fe']),
     ('kji', 'pre_step3d_tile-1236', []),
     ('kji', 'pre_step3d_tile-1491', []),
     ('kji', 'pre_step3d_tile-115', []),
@@ -531,7 +530,7 @@ def gen_transformed_source(top_root_node: Node, routine: Routine, type: str, sni
     # search call to add data directive
     for call in top_root_node.walk(Call):
         if call.routine.name == function_name:
-            data_directive_in = ACCCustomDirective(parent=None, children=None, directive=f"acc data copyin({gpu_vars}) copyout({gpu_vars})")
+            data_directive_in = ACCCustomDirective(parent=None, children=None, directive=f"acc data copy({gpu_vars})")
             data_directive_out = ACCCustomDirective(parent=None, children=None, directive="acc end data")
             async_wait_directive = ACCWaitDirective(wait_queue=1)
             call_pos = call.position
@@ -587,11 +586,20 @@ def test_running_reshaped_kernels_cpu(type: str, snippet_name: str, skip_check: 
 
     # prep source
     with setup_running_source_code(type, snippet_name, skip_check, transform=gen_transformed_source, delete=False) as fp_source:
+        # compilation
+        compilation = ['gfortran', fp_source.name, '-g', '-o', exename, '-O2', '-fcheck=all', '-Wno-unused-dummy-argument', '-ffree-line-length-none', '-Wall', '-Werror', '-Wno-unused-variable', '-ffpe-trap=invalid,zero,overflow']
+
+        # print
+        print(' '.join(compilation))
+
         # compile
-        subprocess.run(['gfortran', fp_source.name, '-g', '-o', exename, '-O2', '-fcheck=all', '-Wno-unused-dummy-argument', '-ffree-line-length-none', '-Wall', '-Werror', '-Wno-unused-variable', '-ffpe-trap=invalid,zero,overflow'], check=True)
+        subprocess.run(compilation, check=True)
 
         # run
-        subprocess.run([exename], check=True)
+        try:
+            subprocess.run([exename], check=True)
+        finally:
+            print(' '.join(compilation))
 
 @pytest.mark.parametrize(("type", "snippet_name", "skip_check"), LOOP_PARAMETERS)
 def test_running_reshaped_kernels_gpu(type: str, snippet_name: str, skip_check: list):
@@ -600,8 +608,17 @@ def test_running_reshaped_kernels_gpu(type: str, snippet_name: str, skip_check: 
 
     # prep source
     with setup_running_source_code(type, snippet_name, skip_check, transform=gen_transformed_source, delete=False) as fp_source:
+        # gen compilation
+        compilation = ['nvfortran', fp_source.name, '-g', '-o', exename, '-Wall', '-Werror', '-acc=gpu', '-ffpe-trap=invalid,zero,overflow']
+
+        # print compilation
+        print(' '.join(compilation))
+
         # compiler
-        subprocess.run(['nvfortran', fp_source.name, '-g', '-o', exename, '-Wall', '-Werror', '-acc=gpu', '-ffpe-trap=invalid,zero,overflow'], check=True)
+        subprocess.run(compilation, check=True)
 
         # run
-        subprocess.run([exename], check=True)
+        try:
+            subprocess.run([exename], check=True)
+        finally:
+            print(' '.join(compilation))

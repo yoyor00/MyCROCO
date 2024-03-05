@@ -53,66 +53,66 @@ subroutine snippet()
   real*4 :: onetwelfth
   real*4 :: aa
   real*4 :: cc
-  real*4, dimension(0:10) :: fc1d
-  real*4, dimension(0:10) :: cf1d
-  real*4, dimension(0:10) :: dc1d
-  real*4, dimension(0:10) :: bc1d
-  real*4, dimension(0:10) :: dz1d
-  real*4, dimension(0:10) :: dr1d
-  real*4, dimension(0:10,0:10) :: fx
-  real*4, dimension(0:10,0:10) :: work
-  real*4, dimension(0:10,0:10) :: fe
-  real*4, dimension(0:10,0:10) :: pm
-  real*4, dimension(0:10,0:10) :: pn
-  real*4, dimension(0:10,0:10) :: fc
-  real*4, dimension(0:10,0:10) :: cf
-  real*4, dimension(0:10,0:10) :: dz
-  real*4, dimension(0:10,0:10) :: dr
-  real*4, dimension(0:10,0:10) :: on_u
-  real*4, dimension(0:10,0:10) :: rufrc
-  real*4, dimension(0:10,0:10) :: rvfrc
-  real*4, dimension(0:10,0:10) :: bc
-  real*4, dimension(0:10,0:10) :: dc
-  real*4, dimension(0:10,0:10) :: om_v
-  real*4, dimension(0:10,0:10) :: dv_avg2
-  real*4, dimension(0:10,0:10) :: du_avg2
-  real*4, dimension(0:10,0:10,0:10) :: huon
-  real*4, dimension(0:10,0:10,0:10) :: hvom
-  real*4, dimension(0:10,0:10,0:10) :: hz
-  real*4, dimension(0:10,0:10,0:10) :: hz_half
-  real*4, dimension(0:10,0:10,0:10) :: rv
-  real*4, dimension(0:10,0:10,0:10) :: we
-  real*4, dimension(0:10,0:10,0:10) :: stflx
-  real*4, dimension(0:10,0:10,0:10) :: btflx
-  real*4, dimension(0:10,0:10,0:10) :: z_r
-  real*4, dimension(0:10,0:10,0:10) :: vfx_3d
-  real*4, dimension(0:10,0:10,0:10) :: vfe_3d
-  real*4, dimension(0:10,0:10,0:10) :: ufx_3d
-  real*4, dimension(0:10,0:10,0:10) :: ufe_3d
-  real*4, dimension(0:10,0:10,0:10) :: rho
-  real*4, dimension(0:10,0:10,0:10) :: p
-  real*4, dimension(0:10,0:10,0:10) :: z_w
-  real*4, dimension(0:10,0:10,0:10) :: du_avg1
-  real*4, dimension(0:10,0:10,0:10) :: ubar
-  real*4, dimension(0:10,0:10,0:10) :: dv_avg1
-  real*4, dimension(0:10,0:10,0:10) :: vbar
-  real*4, dimension(0:10,0:10,0:10) :: romega
-  real*4, dimension(0:10,0:10,0:10) :: ru
-  real*4, dimension(0:10,0:10,0:10) :: work_3d
-  real*4, dimension(0:10,0:10,0:10) :: hz_bak
-  real*4, dimension(0:10,0:10,0:10) :: fx_3d
-  real*4, dimension(0:10,0:10,0:10) :: fe_3d
-  real*4, dimension(0:10,0:10,0:10) :: akv
-  real*4, dimension(0:10,0:10,0:10,0:10) :: v
-  real*4, dimension(0:10,0:10,0:10,0:10) :: u
-  real*4, dimension(0:10,0:10,0:10,0:10) :: akt
-  real*4, dimension(0:10,0:10,0:10,0:10,0:10) :: t
+  real*4, dimension(0:11) :: fc1d
+  real*4, dimension(0:11) :: cf1d
+  real*4, dimension(0:11) :: dc1d
+  real*4, dimension(0:11) :: bc1d
+  real*4, dimension(0:11) :: dz1d
+  real*4, dimension(0:11) :: dr1d
+  real*4, dimension(0:11,0:11) :: fx
+  real*4, dimension(0:11,0:11) :: work
+  real*4, dimension(0:11,0:11) :: fe
+  real*4, dimension(0:11,0:11) :: pm
+  real*4, dimension(0:11,0:11) :: pn
+  real*4, dimension(0:11,0:11) :: fc
+  real*4, dimension(0:11,0:11) :: cf
+  real*4, dimension(0:11,0:11) :: dz
+  real*4, dimension(0:11,0:11) :: dr
+  real*4, dimension(0:11,0:11) :: on_u
+  real*4, dimension(0:11,0:11) :: rufrc
+  real*4, dimension(0:11,0:11) :: rvfrc
+  real*4, dimension(0:11,0:11) :: bc
+  real*4, dimension(0:11,0:11) :: dc
+  real*4, dimension(0:11,0:11) :: om_v
+  real*4, dimension(0:11,0:11) :: dv_avg2
+  real*4, dimension(0:11,0:11) :: du_avg2
+  real*4, dimension(0:11,0:11,0:11) :: huon
+  real*4, dimension(0:11,0:11,0:11) :: hvom
+  real*4, dimension(0:11,0:11,0:11) :: hz
+  real*4, dimension(0:11,0:11,0:11) :: hz_half
+  real*4, dimension(0:11,0:11,0:11) :: rv
+  real*4, dimension(0:11,0:11,0:11) :: we
+  real*4, dimension(0:11,0:11,0:11) :: stflx
+  real*4, dimension(0:11,0:11,0:11) :: btflx
+  real*4, dimension(0:11,0:11,0:11) :: z_r
+  real*4, dimension(0:11,0:11,0:11) :: vfx_3d
+  real*4, dimension(0:11,0:11,0:11) :: vfe_3d
+  real*4, dimension(0:11,0:11,0:11) :: ufx_3d
+  real*4, dimension(0:11,0:11,0:11) :: ufe_3d
+  real*4, dimension(0:11,0:11,0:11) :: rho
+  real*4, dimension(0:11,0:11,0:11) :: p
+  real*4, dimension(0:11,0:11,0:11) :: z_w
+  real*4, dimension(0:11,0:11,0:11) :: du_avg1
+  real*4, dimension(0:11,0:11,0:11) :: ubar
+  real*4, dimension(0:11,0:11,0:11) :: dv_avg1
+  real*4, dimension(0:11,0:11,0:11) :: vbar
+  real*4, dimension(0:11,0:11,0:11) :: romega
+  real*4, dimension(0:11,0:11,0:11) :: ru
+  real*4, dimension(0:11,0:11,0:11) :: work_3d
+  real*4, dimension(0:11,0:11,0:11) :: hz_bak
+  real*4, dimension(0:11,0:11,0:11) :: fx_3d
+  real*4, dimension(0:11,0:11,0:11) :: fe_3d
+  real*4, dimension(0:11,0:11,0:11) :: akv
+  real*4, dimension(0:11,0:11,0:11,0:11) :: v
+  real*4, dimension(0:11,0:11,0:11,0:11) :: u
+  real*4, dimension(0:11,0:11,0:11,0:11) :: akt
+  real*4, dimension(0:11,0:11,0:11,0:11,0:11) :: t
   REAL :: A2d(N2d, NSA, 0 : NPP - 1)
   REAL :: A3d(N3d, 8, 0 : NPP - 1)
   COMMON /private_scratch/ A2d
   COMMON /private_scratch/ A3d
 
-  n = 10
+  n = 10 - 1
   jstr = n - 1
   jstrr = jstr - 1
   jstrv = jstr + 1
@@ -139,6 +139,8 @@ subroutine snippet()
   kbak = 2
   kold = 3
   nrhs = 1
+  nt = 9
+  indx = 3 - nstp
   do j = jstrv - 1, jend, 1
     do k = 1, n - 1, 1
       do i = istru - 1, iend, 1
