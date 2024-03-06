@@ -233,6 +233,7 @@
                        print *,'GRID# ',Agrif_CFixed()
 #  endif                    
                        mystop=.true.
+                       call abort()
                        exit DebugExit
                      endif
                    enddo
@@ -333,7 +334,7 @@
       integer :: imax,jmax,kmax
       real :: diff
 
-#ifdef OPENACC
+#if !defined RVTK_DEBUG_WRITE && defined OPENACC
       ondevice_l = .false.
       if (present(ondevice)) ondevice_l = ondevice
 #endif
@@ -457,6 +458,7 @@
                        print *,'GRID# ',Agrif_CFixed()
 #  endif    
                         mystop=.true.
+                       call abort()
                        exit DebugExit
                       endif
                      enddo
