@@ -21,6 +21,21 @@ class CompareErrorLogger:
         self.max_total = max_total
 
     def append(self, varname: str, ref, actual, coord: list, is_strict_compare: bool = True):
+        # to help readability with right operator displayed
+        if is_strict_compare:
+            compare_name = "strict"
+            operator = "!="
+        else:
+            compare_name = "close"
+            operator = "!~="
+
+        # calc diff
+        diff = abs(ref - actual)
+
+        # build message
+        self.append_raw(varname, f"Non {compare_name} equality in variable '{varname}' at ({','.join(coord)}): ref {operator} actual : {ref} {operator} {actual} (diff={diff})")
+
+    def append_raw(self, varname: str, message: str):
         # count it
         self.count += 1
 
@@ -33,23 +48,12 @@ class CompareErrorLogger:
         self.var_error_count[varname] += 1
         var_error_log = self.var_error_logs[varname]
 
-        # to help readability with right operator displayed
-        if is_strict_compare:
-            compare_name = "strict"
-            operator = "!="
-        else:
-            compare_name = "close"
-            operator = "!~="
-
-        # calc diff
-        diff = abs(ref - actual)
-
         # extract some meaning on limits
         can_still_log_var = (len(var_error_log) <= self.max_stored)
 
         # if can still log
         if can_still_log_var:
-            var_error_log.append(f"Non {compare_name} equality in variable '{varname}' at ({','.join(coord)}): ref {operator} actual : {ref} {operator} {actual} (diff={diff})")
+            var_error_log.append(message)
 
     def has_error(self) -> bool:
         return self.count > 0
@@ -132,11 +136,15 @@ def recurse_compare_current_dim(error_log: CompareErrorLogger, varname:str, shap
             recurse_compare_current_dim(error_log, varname, shape_ref, shape_actual, cusor_ref[i], cursor_actual[i], dim_id+1, current_dims=current_dims+[str(i)])
 
 ##########################################################
-def compare_netcdf_variables(ref: Dataset, actual: Dataset) -> None:
+def compare_netcdf_variables(ref: Dataset, actual: Dataset, skiped=['hc']) -> None:
     # loop on vars to check
     for var in ref.variables.keys():
         # print
         #print(f"---------------- Checking {var} -------------------")
+
+        # skip
+        if var in skiped:
+            continue
 
         # extract shapes
         shape_ref = ref.variables[var].shape
@@ -150,28 +158,30 @@ def compare_netcdf_variables(ref: Dataset, actual: Dataset) -> None:
         if var == "spherical":
             continue
 
+        # error logger
+        error_logger = CompareErrorLogger(max_stored=10, max_total=50)
+
         # faster way
         np_ref = numpy.array(ref.variables[var])
         np_actual = numpy.array(actual.variables[var])
         need_value_compare = False
         if not numpy.allclose(np_ref, np_actual):
             need_value_compare = True
+            error_logger.append_raw(var, f"Variable '{var}' not close equal via numpy.allclose()")
         if (np_ref != np_actual).any():
             need_value_compare = True
+            error_logger.append_raw(var, f"Variable '{var}' not strict equal via numpy.any()")
 
         # ------------ if needed for debug
         # Note : kept if we want to see the exact failing value for debug
         # Same but by hand recusion
         if need_value_compare:
-            # error logger
-            error_logger = CompareErrorLogger(max_stored=10, max_total=50)
-
             # log all errors
             recurse_compare_current_dim(error_logger, var, shape_ref, shape_actual, ref.variables[var], actual.variables[var], 0)
 
             # in case it is not compared the same way we should not let go
             if not error_logger.has_error():
-                raise Exception(f"Seen error when comparing values for variable '{var}' ! This error message should never be reached !")
+                raise Exception(f"Ref is different from actual because need_value_compare has been set to true. Nevertheless, error_logger did not catch the error(s). This is a bug.")
             
             # log errors
             raise Exception(f"Detect some errors : \n{error_logger}")
