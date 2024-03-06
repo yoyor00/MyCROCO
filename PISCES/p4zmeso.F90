@@ -473,7 +473,7 @@ CONTAINS
         IF( l_dia_lprodz ) THEN
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
+               zw3d(ji,jj,jkR) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
                    &          * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
            CALL iom_put( "LPRODZ2", zw3d )
