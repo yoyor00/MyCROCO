@@ -25,17 +25,11 @@
      &                                                A2d(1,4,trd)
 # ifdef VADV_ADAPT_IMP
      &                                               ,A2d(1,5,trd)
-#  ifdef LERAY_TURB
-     &                                               ,A2d(1,6,trd)     
-#  endif      
-# else
-#  ifdef LERAY_TURB
-     &                                               ,A2d(1,5,trd)
+# endif
+# ifdef LERAY_TURB      
      &                                               ,A3d(1,1,trd)
      &                                               ,A3d(1,2,trd)
      &                                               ,A3d(1,3,trd)
-     &                                               ,A3d(1,4,trd) 
-#  endif      
 # endif      
      &                                                            )
       return
@@ -46,8 +40,6 @@
      &                                                         ,WC
 # endif
 # ifdef LERAY_TURB
-     &                                                         ,wrk2
-     &                                                         ,wrk1
      &                                                         ,DC3
      &                                                         ,CF3
      &                                                         ,FC3
@@ -115,9 +107,8 @@
 # ifdef LERAY_TURB
       real DC3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     CF3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &     FC3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &     wrk1(PRIVATE_2D_SCRATCH_ARRAY, N),
-     &     wrk2(PRIVATE_2D_SCRATCH_ARRAY   ) 
+     &     FC3(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#  include "work.h"      
 # endif     
 # ifdef DIAGNOSTICS_PV
       real cff1 , cff2

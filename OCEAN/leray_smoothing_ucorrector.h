@@ -44,7 +44,7 @@
             ust(i,j,k)=ust(i,j,k)*umask_wet(i,j)
 #   endif
 #  endif
-            wrk1(i,j,k) = DC3(i,j,k)*(u(i,j,k,nstp)+u(i,j,k,nnew)
+            workr(i,j,k) = DC3(i,j,k)*(u(i,j,k,nstp)+u(i,j,k,nnew)
 #  ifdef MRL_WCI
      &                                          +2.0*ust(i,j,k)
 #  endif
@@ -57,13 +57,13 @@
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #   if defined LERAY_FILTER_9PTS
       call exchange_u3d_4pts_tile (Istr,Iend,Jstr,Jend,
-     &                             wrk1(START_2D_ARRAY,1))
+     &                             workr(START_2D_ARRAY,1))
 #   elif defined LERAY_FILTER_7PTS
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             wrk1(START_2D_ARRAY,1))
+     &                             workr(START_2D_ARRAY,1))
 #   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                             wrk1(START_2D_ARRAY,1))
+     &                             workr(START_2D_ARRAY,1))
 #   endif
 #  endif    
 !
@@ -73,44 +73,44 @@
           do i=IstrU,Iend
 # ifdef LERAY_FILTER_9PTS
             if(u_fwidth_array(i,j).eq.9) then
-              wrk2(i,j) = sum( wrk1(i-4:i+4,j-4:j+4,k)
+              work2d(i,j) = sum( workr(i-4:i+4,j-4:j+4,k)
      &                      * filter_weights(-4:4,-4:4) )
      &                   / weights_sum9
             endif
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS
             if(u_fwidth_array(i,j).eq.7) then
-              wrk2(i,j) = sum( wrk1(i-3:i+3,j-3:j+3,k)
+              work2d(i,j) = sum( workr(i-3:i+3,j-3:j+3,k)
      &                      * filter_weights(-3:3,-3:3) )
      &                   / weights_sum7
             endif
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS | defined LERAY_FILTER_5PTS
             if(u_fwidth_array(i,j).eq.5) then
-              wrk2(i,j) = sum( wrk1(i-2:i+2,j-2:j+2,k)
+              work2d(i,j) = sum( workr(i-2:i+2,j-2:j+2,k)
      &                      * filter_weights(-2:2,-2:2) )
      &                   / weights_sum5
             endif
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS | defined LERAY_FILTER_5PTS | defined LERAY_FILTER_3PTS
             if(u_fwidth_array(i,j).eq.3) then
-              wrk2(i,j) = sum( wrk1(i-1:i+1,j-1:j+1,k)
+              work2d(i,j) = sum( workr(i-1:i+1,j-1:j+1,k)
      &                      * filter_weights(-1:1,-1:1) )
      &                   / weights_sum3
             endif
 # endif
             if(u_fwidth_array(i,j).lt.3) then
-              wrk2(i,j) = wrk1(i,j,k)
+              work2d(i,j) = workr(i,j,k)
             endif
           enddo
         enddo
-        wrk1(IstrU:Iend,Jstr:Jend,k) = wrk2(IstrU:Iend,Jstr:Jend)
+        workr(IstrU:Iend,Jstr:Jend,k) = work2d(IstrU:Iend,Jstr:Jend)
       enddo
 !      
 ! Exchange MPI domain or periodic boundaries
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                             wrk1(START_2D_ARRAY,1))
+     &                             workr(START_2D_ARRAY,1))
 #  endif 
 !
       do j=JU_RANGE
@@ -118,7 +118,7 @@
           do i=IU_RANGE
 #  define EPSIL 0.125
 #  define DELTA 0.75
-            FC3(i,j,k)=DELTA*Huon(i,j,k) + EPSIL*wrk1(i,j,k)
+            FC3(i,j,k)=DELTA*Huon(i,j,k) + EPSIL*workr(i,j,k)
             FC3(i,j,0)=FC3(i,j,0)+FC3(i,j,k)
           enddo
         enddo
