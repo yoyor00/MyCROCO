@@ -39,11 +39,12 @@ class PsycloneACCKernelsDirective(ACCKernelsDirective):
     :raises NotImplementedError: if default_present is False.
 
     '''
-    def __init__(self, children=None, parent=None, default_present=True, default_async=None, default_wait=None):
+    def __init__(self, children=None, parent=None, default_present=True, default_async=None, default_wait=None, default_if=None):
         super().__init__(children=children, parent=parent)
         self._default_present = default_present
         self._default_async = default_async
         self._default_wait = default_wait
+        self._default_if = default_if
 
     def __eq__(self, other):
         '''
@@ -58,6 +59,7 @@ class PsycloneACCKernelsDirective(ACCKernelsDirective):
         is_eq = super().__eq__(other)
         is_eq = is_eq and self.default_present == other.default_present and self._default_async == other._default_async
         is_eq = is_eq and self._default_wait == other._default_wait
+        is_eq = is_eq and self._default_if == other._default_if
 
         return is_eq
    
@@ -79,6 +81,8 @@ class PsycloneACCKernelsDirective(ACCKernelsDirective):
         if self._default_wait != None:
             value = ', '.join(str(value) for value in set(self._default_wait))
             result += f" wait({value})"
+        if self._default_if != None:
+            result += f" if({self._default_if})"
 
         return result
 
@@ -106,14 +110,14 @@ class Kernel:
 
         self.extract_kernel_infos()
 
-    def make_acc_kernel(self, make_acc_in_kernel = True, stream=1, wait=None):
+    def make_acc_kernel(self, make_acc_in_kernel = True, stream=1, wait=None, if_clause=None):
         parent = self.root_node.parent
         start_index = self.root_node.position
 
         # Create a directive containing the nodes in node_list and insert it.
         directive = PsycloneACCKernelsDirective(
             parent=self.root_node.parent, children=[self.root_node.detach()],
-            default_present=True, default_async=stream, default_wait=wait)
+            default_present=True, default_async=stream, default_wait=wait, default_if=if_clause)
 
         parent.children.insert(start_index, directive)
         if make_acc_in_kernel:
@@ -425,10 +429,10 @@ class KernelList:
         # ret
         return streams
 
-    def make_acc_tranformation(self, make_acc_in_kernel = True, async_deps = False):
+    def make_acc_tranformation(self, make_acc_in_kernel = True, async_deps = False, if_clause = None):
         #self.calc_acc_async_wait(async_deps)
         for kernel in self.kernels:
-            kernel.make_acc_kernel(make_acc_in_kernel, stream=kernel.acc_async_stream, wait=kernel.acc_async_wait)
+            kernel.make_acc_kernel(make_acc_in_kernel, stream=kernel.acc_async_stream, wait=kernel.acc_async_wait, if_clause = if_clause)
 
     def merge_joinable_kernels(self):
         first_acc_to_merge = None

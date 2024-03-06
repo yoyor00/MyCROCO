@@ -544,6 +544,9 @@ def helper_gen_range_assigns(size: int = 10) -> list:
     decl.append(f'nrhs = 5')
     decl.append(f'nt = 9')
     decl.append(f'indx = 3 - nstp')
+    decl.append(f'iic = 0')
+    decl.append(f'iic = 0')
+    decl.append(f'ntstart = 1')
     return decl
 
 ##########################################################

@@ -114,14 +114,14 @@ subroutine snippet()
 
   n = 10 - 1
   jstr = n - 1
-  jstrr = jstr - 1
-  jstrv = jstr + 1
-  istru = jstr + 1
-  istrr = jstr + 1
   jend = n - 1
-  jendr = jend + 1
   istr = n - 1
   iend = n - 1
+  jstrr = jstr - 1
+  jstrv = jstr + 1
+  istru = istr + 1
+  istrr = jstr + 1
+  jendr = jend + 1
   iendr = iend + 1
   jmin = jstr - 2
   jmax = jend + 1
@@ -129,7 +129,7 @@ subroutine snippet()
   imax = iend + 1
   knew = 1
   nstp = 1
-  nnew = 1
+  nnew = 2
   lm = n - 1
   mm = n - 1
   nadv = nstp
@@ -138,9 +138,12 @@ subroutine snippet()
   kstp = 1
   kbak = 2
   kold = 3
-  nrhs = 1
+  nrhs = 5
   nt = 9
   indx = 3 - nstp
+  iic = 0
+  iic = 0
+  ntstart = 1
   do itrc = 1, nt, 1
     do k = 1, n, 1
       do j = jstr, jend, 1

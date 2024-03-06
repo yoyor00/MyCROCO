@@ -31,17 +31,25 @@ def apply_step3d_routine_trans(routine: Routine, container: Container, dump_snip
         ############################################################
         # add scratch 3d vars
         if routine.name == "step3d_t_tile" and container:
-            scratch_3d_id = 2
-            for var in ['fx', 'fe', 'work']:
-                scratch.add_3d_scratch_var(container, routine, var, scratch_3d_id)
-                scratch_3d_id += 1
+            scratch_3d_ids = {
+                'fx': 2,
+                'fe': 3,
+                'work': 4,
+                'work2': 5
+            }
+            for var in scratch_3d_ids:
+                scratch.add_3d_scratch_var(container, routine, var, scratch_3d_ids[var])
 
         # add scratch 3d vars
         if routine.name == "pre_step3d_tile" and container:
-            scratch_3d_id = 4
-            for var in ['fx', 'fe', 'work']:
-                scratch.add_3d_scratch_var(container, routine, var, scratch_3d_id)
-                scratch_3d_id += 1
+            scratch_3d_ids = {
+                'fx': 4,
+                'fe': 5,
+                'work': 6,
+                'work2': 7
+            }
+            for var in scratch_3d_ids:
+                scratch.add_3d_scratch_var(container, routine, var, scratch_3d_ids[var])
 
         ############################################################
         # add scratch 1d vars
@@ -64,6 +72,10 @@ def apply_step3d_routine_trans(routine: Routine, container: Container, dump_snip
             #print(vars[0:5])
             if vars[0:3] == ['k','j','i'] or vars[0:3] == ['j','k','i'] or vars[0:3] == ['j','i','k']:
                 loops_to_trans.append(top_loop)
+
+        # to apply work_3d on all loop, also one which is only i,j (not k)
+        if routine.name == 'pre_step3d_tile':
+            loops.patch_scratch_3d_arrays(routine, VARS_3D)
 
         # now apply
         for top_loop in loops_to_trans:

@@ -274,7 +274,7 @@ LOOP_PARAMETERS = [
     ('kji', 'pre_step3d_tile-1491', []),
     ('kji', 'pre_step3d_tile-115', []),
     ('kji', 'pre_step3d_tile-1384', []),
-    ('kji', 'pre_step3d_tile-264', []),
+    ('kji', 'pre_step3d_tile-264', ['fx', 'work', 'fe']),
 
     # jik loops
     ('jik', 'omega_tile-158', ['fc', 'dc']),
@@ -285,11 +285,11 @@ LOOP_PARAMETERS = [
     ('jik', 'step3d_uv2_tile-926', ['fc', 'cf', 'dc']),
 
     # jki loops
-    ('jki', 'pre_step3d_tile-873', ['dc']),
+    ('jki', 'pre_step3d_tile-873', ['dc', 'fc', 'cf']),
     ('jki', 'prsgrd_tile-83', ['dz', 'dr']),
     ('jki', 'rhs3d_tile-1781', []),
     ('jki', 'rhs3d_tile-2086', []),
-    ('jki', 'step3d_t_tile-526', []),
+    ('jki', 'step3d_t_tile-526', ['fc']),
 
     # step2d kernel openacc loops
     ('kernel-openacc', 'step2D_FB_tile-1054', []),
@@ -366,8 +366,8 @@ LOOP_PARAMETERS = [
     ('kernel-step3d', 'pre_step3d_tile-1459', []),
     #('kernel-step3d', 'pre_step3d_tile-1578', []),
     ('kernel-step3d', 'pre_step3d_tile-1603', []),
-    ('kernel-step3d', 'pre_step3d_tile-264', []),
-    ('kernel-step3d', 'pre_step3d_tile-788', ['dc']),
+    ('kernel-step3d', 'pre_step3d_tile-264', ['fx', 'work', 'fe']),
+    ('kernel-step3d', 'pre_step3d_tile-788', ['dc', 'fc', 'cf']),
     ('kernel-step3d', 'prsgrd_tile-449', []),
     ('kernel-step3d', 'prsgrd_tile-489', []),
     ('kernel-step3d', 'prsgrd_tile-83', ['dz', 'dr']),

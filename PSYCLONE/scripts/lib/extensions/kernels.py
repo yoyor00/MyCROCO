@@ -79,7 +79,7 @@ def apply_acc_loop_and_collapse(kernels: KernelList, options: dict) -> None:
             loop.parent.parent.collapse = num_nested_loops
 
 ##########################################################
-def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], merge_joinable: bool = False, options: dict = None) -> None:
+def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], merge_joinable: bool = False, options: dict = None, if_clause = None) -> None:
     '''
     Apply the ACC kernel directives and make source optimization (fuse...)
     '''
@@ -99,7 +99,7 @@ def apply_acc_kernel(container: Node, collapse: bool, ignore_loops: list=[], mer
         kernel.acc_async_stream = None
 
     # gen acc
-    kernels.make_acc_tranformation(False)
+    kernels.make_acc_tranformation(False, if_clause=if_clause)
     if merge_joinable:
         kernels.merge_joinable_kernels()
 
