@@ -101,7 +101,7 @@ class Croco:
         # vars
         croco_build = self.croco_build
         variant_name = self.variant_name
-        rvtk_ref_variant_name = self.config.rvtk_ref
+        rvtk_ref_variant_name = self.config.variant_ref_name
 
         # enable what we need
         croco_build.cppdef_h_set_key('RVTK_DEBUG', True)
@@ -140,7 +140,7 @@ class Croco:
     def symlink_all_rvtk_ref_files(self):
         # vars
         case_name = self.case_name
-        rvtk_ref_variant_name = self.config.rvtk_ref
+        rvtk_ref_variant_name = self.config.variant_ref_name
 
         # refdir
         ref_rundir = self.calc_rundir(rvtk_ref_variant_name, case_name)
@@ -169,7 +169,7 @@ class Croco:
         results = self.config.results
         host_tuning = self.config.host['tuning']
         rvtk = self.config.rvtk
-        is_rvtk_ref = (self.variant_name == self.config.rvtk_ref)
+        is_rvtk_ref = (self.variant_name == self.config.variant_ref_name)
 
         # load tuning env & override if needed
         for key, value in host_tuning['environ'].items():
@@ -269,19 +269,20 @@ class Croco:
         # extract vars
         case_name = self.case_name
         dirname = self.dirname
+        variant_ref_name = self.config.variant_ref_name
 
-        # if sequential skip
-        if self.variant_name == 'sequential':
-            Messaging.step(f"Checking {case_name} / {filename} skiped for sequential")
+        # if ref variant skip
+        if self.variant_name == variant_ref_name:
+            Messaging.step(f"Checking {case_name} / {filename} skiped for '{variant_ref_name}'")
             return
         else:
             Messaging.step(f"Checking {case_name} / {filename}")
 
         # error
-        seq_dir = self.calc_rundir("sequential", case_name)
+        seq_dir = self.calc_rundir(variant_ref_name, case_name)
         seq_file = os.path.join(seq_dir, filename)
         if not os.path.exists(seq_file):
-            raise Exception(f"Missing '{seq_file}', are you sure you ran case 'sequential' first to get a reference for checks ?")
+            raise Exception(f"Missing '{seq_file}', are you sure you ran case '{variant_ref_name}' first to get a reference for checks ?")
 
         # compare
         actual_file = f"{dirname}/{filename}"
@@ -321,6 +322,7 @@ class Croco:
 
     def make_ref(self):
         # extract vars
+        variant_ref_name = self.config.variant_ref_name
         refdir = self.config.build_ref
         case_name = self.case_name
         dirname = self.dirname
@@ -342,7 +344,7 @@ class Croco:
         Messaging.step(f"Storing ref {case_name} into ref={refdir}")
 
         # we create only for seq
-        if self.variant_name != 'sequential':
+        if self.variant_name != variant_ref_name:
             return
 
         # create dir if not exist

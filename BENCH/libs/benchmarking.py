@@ -8,6 +8,7 @@
 import os
 import json
 import subprocess
+from typing import Union
 from .config import Config
 from .croco import Croco
 from .messaging import Messaging
@@ -42,7 +43,7 @@ class Benchmarking:
         self.create_last_symlink()
 
         # make sequential first as we use as reference to validate the data produced
-        self.make_sequential_first()
+        self.make_ref_variant_first()
 
         # Create croco instances
         self.instances = self.create_croco_instances()
@@ -62,15 +63,19 @@ class Benchmarking:
             os.remove(link_name)
         os.symlink(basename, link_name)
 
-    def make_sequential_first(self):
+    def make_ref_variant_first(self):
         '''
         Make sequential first as we use as reference to validate the data produced
         '''
-        if 'sequential' in self.config.case_names:
-            self.config.variant_names.remove('sequential')
-            self.config.variant_names.insert(0, 'sequential')
+        # get ref
+        ref_name = self.config.variant_ref_name
 
-    def create_croco_instances(self) -> [Croco]:
+        # ref variant
+        if ref_name in self.config.case_names:
+            self.config.variant_names.remove(ref_name)
+            self.config.variant_names.insert(0, ref_name)
+
+    def create_croco_instances(self) -> Union[Croco]:
         # extract some
         config = self.config
 
@@ -93,7 +98,10 @@ class Benchmarking:
         return res
 
     def run(self):
+        # vars
         cnt = len(self.instances)
+        variant_ref_name = self.config.variant_ref_name
+
         # build
         if 'build' in self.config.modes:
             for id, instance in enumerate(self.instances):
@@ -109,7 +117,7 @@ class Benchmarking:
                 if 'check' in self.config.modes:
                     instance.check()
                 # if need to store the ref
-                if self.config.build_ref and instance.variant_name == "sequential":
+                if self.config.build_ref and instance.variant_name == variant_ref_name:
                     instance.make_ref()
 
         # plot

@@ -48,6 +48,7 @@ class Config:
         parser.add_argument(      '--host', help="Force host config to use.", type=str, default=selected_host)
         parser.add_argument(      '--enable-debug', help="Use cmake debug build instead of release.", action='store_true')
         parser.add_argument(      '--rvtk', help="Enable usage of RVTK_DEBUG and give name of variant reference.", action='store_true')
+        parser.add_argument(      '--compare-to', help="Set which variant is used as reference (default='sequential').", type=str, default='sequential')
 
         # parse
         self.args = parser.parse_args()
@@ -70,8 +71,8 @@ class Config:
         self.force_jobcomp = self.args.jobcomp
         self.use_host_config = self.args.host
         self.debug_build = self.args.enable_debug
+        self.variant_ref_name = self.args.compare_to
         self.rvtk = self.args.rvtk
-        self.rvtk_ref = 'sequential'
 
         # compute clean result subdir name
         use_host_config = self.use_host_config
@@ -97,8 +98,8 @@ class Config:
         # basic check
         if self.use_ref and not os.path.exists(self.use_ref):
             raise Exception(f"You gave --use-ref={self.use_ref}, but directory does not exist !")
-        if self.build_ref and not 'sequential' in self.variant_names:
-            raise Exception(f"You gave --build-ref={self.use_ref}, but not using the required 'sequential' variant !")
+        if self.build_ref and not self.variant_ref_name in self.variant_names:
+            raise Exception(f"You gave --build-ref={self.use_ref}, but not using the required '{self.variant_ref_name}' variant !")
 
     def filter_variant_ressources(self):
         # extract needed vars
