@@ -110,9 +110,9 @@ else
 fi
 # MPI launch commands
 # ------------------
-if [ ${MACHINE} == "JEANZAY" ]; then
+if [ ${MACHINE} == "JEANZAY" ] || [ ${MACHINE} == "LEFTRARU" ]; then
     export myMPI="srun -n $NBPROCS "
-elif [ ${MACHINE} == "DATARMOR" ]; then
+elif [ ${MACHINE} == "DATARMOR" ] || [ ${MACHINE} == "WCHPC" ]; then
     export myMPI="$MPI_LAUNCH -np $NBPROCS "
 elif [ ${MACHINE} == "IRENE" ]; then
     export myMPI="ccc_mprun -n $NBPROCS "
