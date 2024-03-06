@@ -43,7 +43,7 @@ class Croco:
             self.croco_build = JobcompCrocoSetup(self.config, self.dirname)
 
     def calc_rundir(self, variant_name, case_name):
-        return f"{self.config.workdir}/{variant_name}/{case_name}"
+        return f"{self.config.workdir}/{case_name}/{variant_name}"
 
     def reset(self):
         # display
