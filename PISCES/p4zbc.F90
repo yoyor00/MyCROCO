@@ -141,10 +141,10 @@ CONTAINS
          END_3D
          !
          IF( lk_iomput .AND. l_dia_dust ) THEN
-            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
-            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )         ;   zw2d(:,:) = 0.
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )   ;   zw3d(:,:,:) = 0._wp
+            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )       ;   zw2d(:,:) = 0._wp
             DO_3D( 0, 0, 0, 0, 1, jpk )
-               zw3d(ji,jj,jk) = zirondep(ji,jj,jk) &
+               zw3d(ji,jj,jkR) = zirondep(ji,jj,jk) &
                     &         * 1.e+3 * rfact2r * e3t(ji,jj,jk,Kmm) * tmask(ji,jj,jk)
             END_3D
             CALL iom_put( "Irondep", zw3d )  ! surface downward dust depo of iron

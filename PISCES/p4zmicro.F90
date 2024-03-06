@@ -299,13 +299,13 @@ CONTAINS
         IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
+               zw3d(ji,jj,jkR) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
             CALL iom_put( "GRAZ1" , zw3d )  ! conversion in mol/m2/s
             CALL iom_put( "MicroZo2" , zw3d * ( 1. - epsher - unass ) * (-o2ut) * sigma1 ) ! o2 consumption by Microzoo
             !
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo(ji,jj,jk) ) &
+               zw3d(ji,jj,jkR) = ( tr(ji,jj,jk,jpfer,Krhs) - zfezoo(ji,jj,jk) ) &
                   &              * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
            CALL iom_put( "FEZOO", zw3d )
@@ -315,7 +315,7 @@ CONTAINS
         IF( l_dia_lprodz ) THEN
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jk) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
+               zw3d(ji,jj,jkR) = ( tr(ji,jj,jk,jplgw,Krhs) - zzligprod(ji,jj,jk) ) &
                    &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
             END_3D
            CALL iom_put( "LPRODZ", zw3d )
