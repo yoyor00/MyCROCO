@@ -80,7 +80,7 @@ if [ ${USE_OCE} == 1 ]; then
             agrif_ext=".${nn}"
             SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
             searchf=("<ocedt${nn}>" "<ocenx${nn}>" "<oceny${nn}>" )
-            tsp=$(( ${DT_OCE} / ${SUBTIME} ))
+            tsp=$(( ${DT_OCE} )) #/ ${SUBTIME} ))
         else
             agrif_ext=""
             searchf=("<ocedt>" "<ocenx>" "<oceny>" )

@@ -881,17 +881,11 @@ C apar_file
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='hc_units', value='meter')
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='sc_w'
-     &     , value='have a look at variable sc_w in this file')
-      CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='Cs_w'
      &     , value='have a look at variable Cs_w in this file')
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='sc_r'
-     &     , value='have a look at variable sc_r in this file')
-      CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='Cs_r'
-     &     , value='have a look at variable Cs_r in this file')
+     &     ,type='string',name='Cs_rho'
+     &     , value='have a look at variable Cs_rho in this file')
 #endif
       CALL iom_set_file_global_attr_int   (cdid
      &     ,type='int',name='ntimes', value=ntimes)
@@ -2403,12 +2397,12 @@ C 				  endif
 ! done automatically
 !
 ! S-coordinate independent variables "sc_w", "sc_r" and stretching
-! curves "Cs_w", "Cs_r" at W- and RHO-points.
+! curves "Cs_w", "Cs_rho" at W- and RHO-points.
 !
-      if (xios_field_is_active("Cs_r")) then
-      call xios_send_field("Cs_r",Cs_r(1:N))
+      if (xios_field_is_active("Cs_rho")) then
+      call xios_send_field("Cs_rho",Cs_r(1:N))
 # ifdef M3FAST_SEDLAYERS   
-      call xios_send_field("Cs_r_total",Cs_r(-N_sl+1:N))
+      call xios_send_field("Cs_rho_total",Cs_r(-N_sl+1:N))
 # endif      
       endif
       if (xios_field_is_active("Cs_w")) then

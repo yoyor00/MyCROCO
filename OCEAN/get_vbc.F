@@ -67,9 +67,10 @@
 !---------------------------------------------------------------
 !
 # ifndef ANA_SMFLUX
-#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  ifndef BULK_FLUX
+#   ifndef WAVE_SMFLUX
       call get_smflux
+#   endif
 #  endif
 # endif
 !
@@ -233,9 +234,10 @@
 # ifdef ANA_SMFLUX
       call ana_smflux_tile (Istr,Iend,Jstr,Jend)
 # else
-#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  ifndef BULK_FLUX
+#   ifndef WAVE_SMFLUX
       call set_smflux_tile (Istr,Iend,Jstr,Jend)
+#   endif
 #  endif
 # endif
 

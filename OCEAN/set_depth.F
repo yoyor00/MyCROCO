@@ -34,7 +34,7 @@ C$    integer omp_get_thread_num
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
-      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp,htmp
 # include "param.h"
 # include "grid.h"
 # ifdef AGRIF
@@ -97,7 +97,7 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef SOLVE3D
 #  ifdef NEW_S_COORD
-            hinv(i,j)=1./(h(i,j)+hc)
+            hinv(i,j)=1./(abs(h(i,j))+hc)
 #  else
             hinv(i,j)=1./h(i,j)
 #  endif
@@ -176,8 +176,13 @@ C$    integer omp_get_thread_num
 #  if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #  endif
-            z_w0=cff_w+cff1_w*h(i,j)
-            z_r0=cff_r+cff1_r*h(i,j)  
+#  ifdef NEW_S_COORD
+            htmp=abs(h(i,j))
+#  else
+            htmp=h(i,j)
+#  endif
+            z_w0=cff_w+cff1_w*htmp
+            z_r0=cff_r+cff1_r*htmp
 #  ifdef NEW_S_COORD
             z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_w0*hinv(i,j))
@@ -228,7 +233,6 @@ C$    integer omp_get_thread_num
         enddo
       endif
 #  endif
-
 !$acc end kernels
 
 #  undef I_RANGE
@@ -273,7 +277,7 @@ C$    integer omp_get_thread_num
 
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
-      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp,htmp
 #   include "param.h"
 #   include "grid.h"
 #   ifdef AGRIF
@@ -329,19 +333,24 @@ C$    integer omp_get_thread_num
 #   else
             zetatmp=Zt_avg1(i,j)
 #   endif
+#  ifdef NEW_S_COORD
+            htmp=abs(h(i,j))
+            hinv(i,j)=1./(htmp+hc)
+#  else
+            htmp=h(i,j)
+            hinv(i,j)=1./htmp
+#  endif
 #   if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #   endif
-            z_w0=cff_w+cff1_w*h(i,j)
-            z_r0=cff_r+cff1_r*h(i,j)
+            z_w0=cff_w+cff1_w*htmp
+            z_r0=cff_r+cff1_r*htmp
 #   ifdef NEW_S_COORD
-            hinv(i,j)=1./(h(i,j)+hc)
             z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_r0*hinv(i,j))
 #   else
-            hinv(i,j)=1./h(i,j)
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #   endif

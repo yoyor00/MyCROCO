@@ -42,6 +42,12 @@
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
 #endif
+# if defined OA_COUPLING || defined OW_COUPLING
+#  ifdef AGRIF
+     &     , it_inside_root
+#  endif
+# endif
+
 #ifdef FLOATS
      &      , nfp1, nf, nfm1, nfm2, nfm3
 #endif
@@ -55,6 +61,12 @@
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
+# if defined OA_COUPLING || defined OW_COUPLING
+#  ifdef AGRIF
+     &      it_inside_root,
+#  endif
+# endif
+
 #ifdef FLOATS
      &                       nfp1, nf, nfm1, nfm2, nfm3,
 #endif

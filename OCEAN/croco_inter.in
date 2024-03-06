@@ -6,10 +6,10 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0     2.0d0      200.0d0
 
 start_date:
-xxxx/xx/xx xx:xx:xx
+xxxx-xx-xx xx:xx:xx
 
 end_date: 
-xxxx/xx/xx xx:xx:xx
+xxxx-xx-xx xx:xx:xx
 
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    XX       XX       XX
