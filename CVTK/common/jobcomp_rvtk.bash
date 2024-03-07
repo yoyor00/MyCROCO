@@ -269,7 +269,7 @@ if [[ $COMPILEAGRIF ]] ; then
     if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
 	echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
 	CFLAGS1="$CFLAGS1 -fcommon"
-fi
+    fi
 #
 # compile the AGRIF librairy
 #
