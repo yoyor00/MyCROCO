@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -103,12 +103,12 @@
           subroutine check_tab2d(tab,comment,typevar,ondevice,correct)
       implicit none
 # include "param.h"
-# include "scalars.h"  
-# include "ocean2d.h" 
+# include "scalars.h"
+# include "ocean2d.h"
 # ifdef MPI
 #  include "mpi_cpl.h"
       include 'mpif.h'
-# endif   
+# endif
       real,dimension(GLOBAL_2D_ARRAY) :: tab
       integer Lmseq,Mmseq
       integer lb(2),ub(2)
@@ -128,8 +128,8 @@
       logical :: correct_l
 # ifdef OPENMP
 #  undef mynode
-      integer mynode 
-# endif         
+      integer mynode
+# endif
       integer iseq1, iseq2, jseq1, jseq2
       logical mystop
 # ifdef MPI
@@ -141,7 +141,7 @@
       character*200 :: comment_bug
           
 # if defined OPENMP && !defined MPI
-      mynode=0 
+      mynode=0
 # endif
 
 !# if !defined MPI && !defined OPENMP

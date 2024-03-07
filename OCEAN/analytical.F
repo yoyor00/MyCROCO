@@ -756,7 +756,6 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
-
 # ifdef EQUATOR
 ! SST = 25C and lineraly decreases to 10C 1200km from the Equator.
       y1=1200.E+3

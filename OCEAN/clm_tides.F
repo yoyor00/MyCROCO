@@ -246,7 +246,6 @@
         end do
        ENDIF
 
-
 !$acc end kernels     
       ENDIF ! FIRST TIME STEP
 #  endif /* MAS INIT */

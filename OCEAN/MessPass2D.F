@@ -436,7 +436,7 @@ c          endif
            A(ipts-Npts,jpts-Npts)=A(ipts,jpts)
           enddo
         enddo
-       endif  
+       endif
 
       if ( CORNER_NE) then
         call MPI_Wait (req(6),status(1,6),ierr)
@@ -458,7 +458,7 @@ c          endif
             A(Lmmpi+ipts,Mmmpi+jpts)=A(Lmmpi+ipts-NPts,Mmmpi+jpts-Npts)
           enddo
         enddo
-       endif  
+       endif
 
       if (CORNER_SE) then
         call MPI_Wait (req(7),status(1,7),ierr)
@@ -471,7 +471,7 @@ c          endif
           enddo
         enddo
       endif
-      if (.not. CORNER_SE .and. 
+      if (.not. CORNER_SE .and.
      &  SOUTH_INTER .and. EAST_INTER ) then
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -479,8 +479,8 @@ c          endif
           do ipts=1,Npts
             A(Lmmpi+ipts,jpts-Npts)=A(Lmmpi+ipts-Npts,jpts)
           enddo
-        enddo      
-      endif  
+        enddo
+      endif
 
 
       if (CORNER_NW) then
@@ -503,7 +503,7 @@ c          endif
             A(ipts-Npts,Mmmpi+jpts)=A(ipts,Mmmpi+jpts-NPts)
           enddo
         enddo
-       endif 
+       endif
 
 
 c      write(*,*) 'MessPass2D:    ', mynode,' exit'
@@ -528,8 +528,6 @@ c      write(*,*) 'MessPass2D:    ', mynode,' exit'
 #   undef MP_1PTS
 #  endif
 # endif
-
-
 #else
       subroutine MessPass2D_empty
       return
