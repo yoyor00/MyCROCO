@@ -4,6 +4,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ## [Unreleased] - xxxx-xx-xx
 ### Added
+
+- GPU : 
+  - TODO add description with at least new cpp keys and general information
+
 - ABL1D : 
   - TODO add description
   - Add KILPATRICK test-case
