@@ -309,13 +309,13 @@
             Dstp(i,j)=h(i,j)+zeta(i,j,knew)
             dsup=0.0
             do k=1,4
-              dd = Dstp(i,j) + dsup         !+ wkb_tide
+              dd = max(Dstp(i,j) + dsup,eps)         !+ wkb_tide
               khd = dd*cfrq*cfrq/g
               kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
      &                      +khd*(0.3555555555 + khd*(0.1608465608
      &                      +khd*(0.0632098765 + khd*(0.0217540484
      &                                      +khd*0.0065407983)))))) )
-              kw=kh/max(dd,eps)
+              kw=kh/dd
               cw=sqrt(g/kw*tanh(kh))
               nw=0.5*(1.+2.*kh/sinh(2.*kh))  ! n=Cg/C
               ks=sqrt(cgo/(2.*nw*cw))        ! shoaling coefficient
@@ -536,7 +536,7 @@ C$OMP BARRIER
 #  if defined WKB_KZ_FILTER || defined WKB_TIME_FILTER
           Dstp(i,j)=max(h(i,j)+zwave(i,j,wmod),eps)
 #  else
-          Dstp(i,j)=h(i,j)+zeta(i,j,knew)
+          Dstp(i,j)=max(h(i,j)+zeta(i,j,knew),eps)
 #  endif
 # else
           Dstp(i,j)=h(i,j)+zeta(i,j,knew)
@@ -742,8 +742,8 @@ C$OMP BARRIER
 !---------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present)
-      do j=jstrR,jendR
-        do i=istrR,iendR
+      do j=jstr,jend
+        do i=istr,iend
           wvn(i,j,wnew)=max(sqrt(wkx(i,j,wnew)**2+wke(i,j,wnew)**2),eps)
           inv_k =1.0/wvn(i,j,wnew)
           khn =min(wvn(i,j,wnew)*Dstp(i,j),khmax)
@@ -771,7 +771,7 @@ C$OMP BARRIER
 # if defined WET_DRY && defined WAVE_BREAK_SWASH
 !  Add dissipation near shoreline (e.g., SANDBAR case)
           wsb(i,j,wnew)=wsb(i,j,wnew)*
-     &                  max(1.,(0.5/(Dstp(i,j)-Dcrit(i,j)+eps)**0.2))
+     &       max(1.,(0.5/max(Dstp(i,j)-Dcrit(i,j),eps)**0.2))
 # endif
 # ifdef WAVE_ROLLER
           wcr(i,j,wnew) = frq(i,j,wnew)*(inv_k**2)   ! c/k
@@ -918,7 +918,7 @@ C$OMP BARRIER
       do j=Jstr,Jend
         do i=Istr,Iend
 #  ifdef SOLVE3D
-          wlen=pi/wvn(i,j,wnew)  ! L/2 = (2*pi/k)/2
+          wlen=pi/max(wvn(i,j,wnew), 1.e-12)  ! L/2 = (2*pi/k)/2
           if (h(i,j)+zeta(i,j,knew).le.wlen) then
             wrk1(i,j)=0.5*(ubar(i,j,knew)+ubar(i+1,j,knew))
             wrk2(i,j)=0.5*(vbar(i,j,knew)+vbar(i,j+1,knew))

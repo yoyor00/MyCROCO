@@ -2041,18 +2041,25 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+#   ifdef MPI
+          if (IstrR.le.i .and. i.le.IendR .and.
+     &       JstrR.le.j .and. j.le.JendR) then
+#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              Qshape(is,k)=Qshape(is,k)/cff2
+            enddo
+#   ifdef MPI 
+          endif
+#   endif            
         enddo
 #  elif defined AL_SHAPE
         do is=1,Nsrc                   ! Set-up nondimensional shape
@@ -2089,20 +2096,27 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+#   ifdef MPI
+          if (IstrR.le.i .and. i.le.IendR .and.
+     &       JstrR.le.j .and. j.le.JendR) then
+#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                  (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            if (cff2 .gt. 0.0) then
-              Qshape(is,k)=Qshape(is,k)/cff2
-            endif
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              if (cff2 .gt. 0.0) then
+                Qshape(is,k)=Qshape(is,k)/cff2
+              endif
+            enddo
+#   ifdef MPI
+          endif
+#   endif 
         enddo
 #  endif
 
@@ -2124,18 +2138,25 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+#   ifdef MPI
+          if (IstrR.le.i .and. i.le.IendR .and.
+     &        JstrR.le.j .and. j.le.JendR) then
+#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              Qshape(is,k)=Qshape(is,k)/cff2
+            enddo
+#   ifdef MPI
+          endif
+#   endif
         enddo
 #  endif
 # endif /* RIVER || REGIONAL */
