@@ -167,9 +167,7 @@ C$    integer omp_get_thread_num
 #endif
         enddo
       enddo
-      
-      wvn=1
-      trb =1.e-6
+
 #ifdef SOLVE3D
 !
 !  Initialize 3-D primitive variables.
