@@ -40,8 +40,10 @@ do
 	namfile=croco.in.${nn}
         agrif_ext=".${nn}"
 	cpfile ${OCE_NAM_DIR}/croco.in.base.${nn} ${namfile}
-        cpfile ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
-	SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
+        #cpfile ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
+        #SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
+        nest_coef=$( ncdump -h croco_grd.nc${agrif_ext} | grep 'positions in the parent grid:' | cut -d ':' -f 4 | cut -d '"' -f 1 )
+        SUBTIME=$(( ${SUBTIME} * ${nest_coef} ))
     else
 	namfile=croco.in
 	agrif_ext=""
