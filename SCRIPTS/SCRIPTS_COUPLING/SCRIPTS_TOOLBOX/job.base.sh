@@ -84,7 +84,10 @@ cp ${JOBDIR_ROOT}/${jobname} ./
 	[ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_getrst.sh ; } >> ls_l/atm_getrst.txt
 
         [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE CONFIGURATION files *****************\n\n"
-        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_getfile.sh ; }
+        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_getfile.sh ;  }
+
+        [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE namelist files *****************\n\n"
+        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_nam.sh ; }
 
         [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE RESTART files *****************\n\n" |tee ls_l/wav_getrst.txt
         [ ${USE_WAV} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/wav_getrst.txt \n"

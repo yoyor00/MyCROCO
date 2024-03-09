@@ -22,6 +22,9 @@ export bouncin= # prefix for boundary files (leave empty is none)
 # output settings
 export flagout="TRUE" # Keep (TRUE) or not (FALSE) ww3 full output binary file (out_grd.ww3)
 export wav_int=21600            # output interval (s)
+export wav_pnt=21600 # point output interval. Put 0 if no point output
+export point_output_list=${WAV_FILES_DIR}/my_point_output_test.txt # file where to find list of point (format: lon lat name) to output spectrum
+export wav_trck=0 # track output interval. Put 0 is no track output  
 # ww3 file to be used for creating restart file for oasis 
 export wavfile=$CWORK/rundir/BENGUELA_LR_exp1_Wfrc_outputs/20050101_20050131/ww3_20050101_20050131.nc # Usually done by running a frc mode on the area
 

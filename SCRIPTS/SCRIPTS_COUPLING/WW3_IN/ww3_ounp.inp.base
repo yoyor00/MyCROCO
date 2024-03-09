@@ -4,7 +4,7 @@ $--------------------------------------------------------------------- $
 $ First output time (yyyymmdd hhmmss), increment of output (s),
 $ and number of output times.
 $
-  <yr1><mo1><dy1> <hr1>0000  <wav_int> 1000000
+  <yr1><mo1><dy1> <hr1>0000  <wav_pnt> 1000000
 $
 $ Points requested --------------------------------------------------- $
 $

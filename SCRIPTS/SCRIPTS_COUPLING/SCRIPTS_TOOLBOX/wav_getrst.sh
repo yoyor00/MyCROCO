@@ -22,8 +22,11 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 
         echo "${SERIAL_LAUNCH_WAV}ww3_prnc &> prnc.${forcww3[$k]}.out"
         ${SERIAL_LAUNCH_WAV}ww3_prnc &> prnc.${forcww3[$k]}.out
-        if [ ! -e ${forcww3[$k]}.ww3 ]; then
-            echo 'ERROR when running ww3_prnc for '${forcww3[$k]}
+        [[ `echo ${forcww3[$k]} | head -c 4` == 'wind' ]] && forctype=wind
+        [[ `echo ${forcww3[$k]} | head -c 3` == 'cur' ]] && forctype=current
+        [[ `echo ${forcww3[$k]} | head -c 3` == 'lev' ]] && forctype=level
+        if [ ! -e ${forctype}.ww3 ]; then
+            echo 'ERROR when running ww3_prnc for '${forctype}
             exit 1
         fi
     done
