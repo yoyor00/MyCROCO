@@ -531,7 +531,7 @@
                   ig1   = (igls-ig)
                   ig2   = (ig-itke)
                   invk  =     1. / trb( i,j,k,nstp,itke )
-                  gls   =         trb( i,j,k,nstp,igls )
+                  gls   =          trb( i,j,k,nstp,igls )
                   ! invG = 1/tke for tke ; invG = 1/psi for gls
                   invG  =  ig1*invk+ig2*(1./gls)
                   cff1  =  ig1+ig2*beta1   * invk*gls
