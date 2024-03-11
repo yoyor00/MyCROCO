@@ -59,6 +59,14 @@
 		"@ci": [
 			"sequential",
 			"poseidon"
+		],
+		"@nvhpc": [
+			"sequential",
+			"sequential-nvfortran",
+			"sequential-nvfortran-acc-multicore-2",
+			"sequential-nvfortran-acc-multicore-4",
+			"sequential-nvfortran-acc-multicore-8",
+			"openmp-8"
 		]
 	},
 	"meta_cases": {
@@ -77,6 +85,41 @@
 			"command_prefix": "",
 			"requires": {
 				"cpu": 1
+			}
+		},
+		// seq default
+		"sequential-memcheck": {
+			"configure": "FFLAGS=-fsanitize=address CFLAGS=-fsanitize=address",
+			"tuning_familly": "gnu",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// seq default
+		"sequential-nvfortran": {
+			"configure": "FC=nvfortran",
+			"tuning_familly": "nvfortran",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// seq default
+		"sequential-nvfortran-acc-multicore-{threads}": {
+			"configure": "FC=nvfortran FFLAGS=-acc=multicore -DOPENACC=yes",
+			"tuning_familly": "nvfortran",
+			"environ": {
+				"OMP_NUM_THREADS": "{threads}"
+			},
+			"command_prefix": "{tuning.hwloc_bind.openmp}",
+			"unpack": {
+				"threads": [2, 4, 6, 8, 16, 32, 64]
+			},
+			"requires": {
+				"cpu": "{threads}"
 			}
 		},
 		// seq default
@@ -122,6 +165,15 @@
 		// openacc
 		"openacc-native": {
 			"configure": "--with-optim=openacc-native FC=nvfortran",
+			"tuning_familly": "nvfortran",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"gpu": 1
+			}
+		},
+		"openacc-psyclone-cpu": {
+			"configure": "--with-optim=openacc-psyclone FC=nvfortran FFLAGS=-acc=host",
 			"tuning_familly": "nvfortran",
 			"environ": {},
 			"command_prefix": "",
