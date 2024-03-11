@@ -6,7 +6,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Added
 
 - GPU : 
-  - TODO add description with at least new cpp keys and general information
+  - OPENACC : Active GPU computation by adding OPENACC cpp keys in cppdefs.h
+  - M3FAST_HIS, MP_M3FAST_SEDLAYERS : Keys for acoustic sediment layers
+  - OPENACCNUMERIC : help on numeric validation cpu vs gpu
+          with RVTK_DEBUG (work in progress)
+  - Limitations :
+        - Test with Nvidia gpu and nvfortan (pgi also ok) 
+	- No GPU with Agrif
+	- BAND_DEBUG : No Mpi redundancy check with BAND_DEBUG key
 
 - ABL1D : 
   - TODO add description
