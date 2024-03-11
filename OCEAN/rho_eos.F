@@ -370,22 +370,6 @@
           enddo
         enddo
       enddo
-#  if defined CONVECT  && defined NBQ_GRAV
-      if (iic==0) then
-      do j=JstrR,JendR
-        do k=1,N
-          do i=IstrR,IendR
-            rhoi_nh(i,j,k)=R0 
-     &                     -Tcoef*(rhoi_nh(i,j,k)-T0)
-     &                     +1000-rho0
-#  ifdef MASKING
-            rhoi_nh(i,j,k)=rhoi_nh(i,j,k)*rmask(i,j)
-#  endif
-          enddo
-        enddo
-      enddo
-      endif
-#  endif   
 !$acc end kernels      
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #   ifdef THREE_GHOST_POINTS_TS
@@ -586,9 +570,6 @@
       enddo    ! <-- j
 # ifdef NBQ_GRAV
 !$acc update device( rho_nh )
-#  ifdef CONVECT
-!$acc update device( rhoi_nh )      
-#  endif      
 # endif
 
 c #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI

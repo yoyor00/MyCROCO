@@ -234,10 +234,6 @@ C$    integer omp_get_thread_num
                      depth=10.
                      f0=0.
                      beta=0.
-# elif defined CONVECT
-                     depth=32.
-                     f0=0.
-                     beta=0.0
 # elif defined MOVING_BATHY
                      depth=0.394
                      f0=0.
@@ -399,9 +395,6 @@ C$    integer omp_get_thread_num
 # elif defined KILPATRICK
                      Length_ETA= 18.E+3
                      Length_XI = 3600.E+3
-# elif defined CONVECT
-                     Length_XI =32.0
-                     Length_ETA=Length_ETA_ISO_GRID
 # else
                      Length_XI =???
                      Length_ETA=???
@@ -527,7 +520,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
                    || defined SOLITON || defined ISOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
-                   || defined JET      || defined CONVECT
+                   || defined JET
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
