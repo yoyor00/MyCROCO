@@ -1,0 +1,61 @@
+
+<!-- ========================================================================== -->
+<!-- ========================== FILE 1 ======================================== -->
+<!-- ========================================================================== -->
+<file_definition type="one_file" name="OUTPUT/@expname@_BR1_@freq@" sync_freq="1h" min_digits="4">
+    
+<!-- ========================================================================== -->
+<!-- ========================== File ========================================== -->
+<!-- ========================================================================== -->
+  <file_group id="main" output_freq="1h" output_level="10" enabled=".true.">
+    <file id="file" name_suffix="_inst" split_freq="10h" >
+
+<!-- ========================================================================== -->
+<!-- ========================== GRID ========================================== -->
+<!-- ========================================================================== -->
+      <field_group id="inst_grid" operation="once">
+        <field field_ref="hc"        />
+        <field field_ref="theta_s"   />
+        <field field_ref="theta_b"   />
+        <field field_ref="Tcline"    />
+        <field field_ref="Vtransform"/>
+        <field field_ref="h"         />
+        <field field_ref="f"         />
+        <field field_ref="pm"        />
+        <field field_ref="pn"        />
+        <field field_ref="x_rho"     />
+	    <field field_ref="y_rho"     />
+        <field field_ref="mask_rho"  />
+        <field field_ref="Cs_r"      />
+        <field field_ref="sc_r"      />
+        <field field_ref="Cs_w"      />
+        <field field_ref="sc_w"      />
+      </field_group>
+
+<!-- ========================================================================== -->
+<!-- ========================== FIELDS ======================================== -->
+<!-- ========================================================================== -->
+      <field_group id="inst_fields" operation="instant">
+        <field field_ref="zeta" name="zeta" />
+        <field field_ref="ubar" name="ubar" />
+        <field field_ref="vbar" name="vbar" />
+        <field field_ref="sustr" name="sustr" />
+        <field field_ref="svstr" name="svstr" />
+        <field field_ref="u" name="u" />
+        <field field_ref="v" name="v" />
+        <field field_ref="w" name="w" />
+        <field field_ref="u_nbq" name="u_nbq" />
+        <field field_ref="v_nbq" name="v_nbq" />
+        <field field_ref="w_nbq" name="w_nbq" />
+        <field field_ref="rho_nbq" name="rho_nbq" />
+        <field field_ref="temp" name="temp" />
+        <field field_ref="salt" name="salt" />
+      </field_group>
+
+<!-- ========================================================================== -->
+<!-- ========================================================================== -->      
+    </file>
+  </file_group>
+</file_definition>
+<!-- ========================================================================== -->
+<!-- ========================================================================== -->

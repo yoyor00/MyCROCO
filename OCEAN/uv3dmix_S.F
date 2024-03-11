@@ -323,7 +323,7 @@
         enddo
       enddo
 
-#if defined NBQ || defined K3FAST
+#if defined NBQ || defined K3SLOW_W 
 !
 !  Compute XI- and ETA-components of diffusive wz flux.
 !

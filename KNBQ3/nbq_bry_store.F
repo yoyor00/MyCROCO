@@ -76,19 +76,23 @@
       if (WESTERN_EDGE) then
         do k=1,N
           do j=Jstr-1,Jend+1
+#  ifdef K3FAST_UV
             qdmu_nbq_west(j,k,1)=qdmu_nbq(Istr  ,j,k)
             qdmu_nbq_west(j,k,2)=qdmu_nbq(Istr+1,j,k)
             qdmv_nbq_west(j,k,1)=qdmv_nbq(Istr-1,j,k)
             qdmv_nbq_west(j,k,2)=qdmv_nbq(Istr  ,j,k)
-#  ifdef K3FAST
+#  endif
+#  ifdef K3FAST_W
             qdmw_nbq_west(j,k,1)=qdmw_nbq(Istr-1,j,k)
             qdmw_nbq_west(j,k,2)=qdmw_nbq(Istr  ,j,k)
+#  endif
+#  ifdef K3FAST_RHO
              rho_nbq_west(j,k,1)= rho_nbq(Istr-1,j,k)
              rho_nbq_west(j,k,2)= rho_nbq(Istr  ,j,k)
 #  endif
           enddo
         enddo
-#  ifdef K3FAST
+#  ifdef K3FAST_W
         do j=Jstr-1,Jend+1
           qdmw_nbq_west(j,0,1)=qdmw_nbq(Istr-1,j,0)
           qdmw_nbq_west(j,0,2)=qdmw_nbq(Istr  ,j,0)
@@ -101,19 +105,23 @@
       if (EASTERN_EDGE) then
         do k=1,N
           do j=Jstr-1,Jend+1
+#  ifdef K3FAST_UV
             qdmu_nbq_east(j,k,1)=qdmu_nbq(Iend+1,j,k)
             qdmu_nbq_east(j,k,2)=qdmu_nbq(Iend  ,j,k)
             qdmv_nbq_east(j,k,1)=qdmv_nbq(Iend+1,j,k)
             qdmv_nbq_east(j,k,2)=qdmv_nbq(Iend  ,j,k)
-#  ifdef K3FAST
+#  endif
+#  ifdef K3FAST_w
             qdmw_nbq_east(j,k,1)=qdmw_nbq(Iend+1,j,k)
             qdmw_nbq_east(j,k,2)=qdmw_nbq(Iend  ,j,k)
+#  endif
+#  ifdef K3FAST_RHO
              rho_nbq_east(j,k,1)= rho_nbq(Iend+1,j,k)
              rho_nbq_east(j,k,2)= rho_nbq(Iend  ,j,k)
 #  endif
           enddo
         enddo
-#  ifdef K3FAST
+#  ifdef K3FAST_W
         do j=Jstr-1,Jend+1
           qdmw_nbq_east(j,0,1)=qdmw_nbq(Iend+1,j,0)
           qdmw_nbq_east(j,0,2)=qdmw_nbq(Iend  ,j,0)
@@ -126,19 +134,23 @@
       if (SOUTHERN_EDGE) then
         do k=1,N
           do i=Istr-1,Iend+1
+#  ifdef K3FAST_UV
             qdmu_nbq_south(i,k,1)=qdmu_nbq(i,Jstr-1,k)
             qdmu_nbq_south(i,k,2)=qdmu_nbq(i,Jstr  ,k)
             qdmv_nbq_south(i,k,1)=qdmv_nbq(i,Jstr  ,k)
             qdmv_nbq_south(i,k,2)=qdmv_nbq(i,Jstr+1,k)
-#  ifdef K3FAST
+#  endif
+#  ifdef K3FAST_W
             qdmw_nbq_south(i,k,1)=qdmw_nbq(i,Jstr-1,k)
             qdmw_nbq_south(i,k,2)=qdmw_nbq(i,Jstr  ,k)
+#  endif
+#  ifdef K3FAST_RHO
              rho_nbq_south(i,k,1)= rho_nbq(i,Jstr-1,k)
              rho_nbq_south(i,k,2)= rho_nbq(i,Jstr  ,k)
 #  endif
           enddo
         enddo
-#  ifdef K3FAST
+#  ifdef K3FAST_W
         do i=Istr-1,Iend+1
           qdmw_nbq_south(i,0,1)=qdmw_nbq(i,Jstr-1,0)
           qdmw_nbq_south(i,0,2)=qdmw_nbq(i,Jstr  ,0)
@@ -151,19 +163,23 @@
       if (NORTHERN_EDGE) then
         do k=1,N
           do i=Istr-1,Iend+1
+#  ifdef K3FAST_UV
             qdmu_nbq_north(i,k,1)=qdmu_nbq(i,Jend+1,k)
             qdmu_nbq_north(i,k,2)=qdmu_nbq(i,Jend  ,k)
             qdmv_nbq_north(i,k,1)=qdmv_nbq(i,Jend+1,k)
             qdmv_nbq_north(i,k,2)=qdmv_nbq(i,Jend  ,k)
-#  ifdef K3FAST
+#  endif
+#  ifdef K3FAST_W
             qdmw_nbq_north(i,k,1)=qdmw_nbq(i,Jend+1,k)
             qdmw_nbq_north(i,k,2)=qdmw_nbq(i,Jend  ,k)
+#  endif
+#  ifdef K3FAST_RHO
              rho_nbq_north(i,k,1)= rho_nbq(i,Jend+1,k)
              rho_nbq_north(i,k,2)= rho_nbq(i,Jend  ,k)
 #  endif
           enddo
         enddo
-#  ifdef K3FAST
+#  ifdef K3FAST_W
         do i=Istr-1,Iend+1
           qdmw_nbq_north(i,0,1)=qdmw_nbq(i,Jend+1,0)
           qdmw_nbq_north(i,0,2)=qdmw_nbq(i,Jend  ,0)

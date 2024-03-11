@@ -2773,8 +2773,12 @@ c !$acc wait
       enddo
       call xios_send_field("omega",work)
       endif
-
-#  ifdef K3FAST
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !     Horizontal velocity (NBQ)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
+#ifdef K3FAST
       if (xios_field_is_active("u_nbq")) then
         worknbq=0.
           do k=-N_sl+1,N
@@ -2799,9 +2803,13 @@ c !$acc wait
           enddo
           call xios_send_field(" v_nbq",worknbq(:,:,-N_sl+1:N))
       endif
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !     Vertical velocity (NBQ)
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
       if (xios_field_is_active("w_nbq")) then
       !call xios_send_field("w_nbq",wz(:,:,:,nstp))
-      
         worknbq=0.
           do k=-N_sl+1,N-1
           do j=0,Mm
@@ -2809,23 +2817,23 @@ c !$acc wait
             worknbq(i,j,k+N_sl)=2.*(
      &         qdmw_nbq(i,j,k)
      &        )/(Hz(i,j,k)+Hz(i,j,k+1))
-#  ifdef NHINT_WH
+# ifdef NHINT_WH
 !     &               +wzh_nbq(i,j,k)
-#  endif
+# endif
             enddo
           enddo
           enddo
           k=-N_sl
           do j=0,Mm
             do i=0,Lm
-#   ifndef K3FAST_SEDLAYERS
+# ifndef K3FAST_SEDLAYERS
             worknbq(i,j,k)=2.*(
      &         qdmw_nbq(i,j,k)
      &        )/Hz(i,j,k+1) 
 #  ifdef NHINT_WH
 !     &               +wzh_nbq(i,j,k)
 #  endif
-#   else
+# else
             worknbq(i,j,k)=2.*(
      &                qdmw_nbq(i,j,k)
      &                )/(Hz(i,j,k)+Hz(i,j,k+1))
@@ -2845,10 +2853,14 @@ c !$acc wait
 !     &               +wzh_nbq(i,j,k)
 #  endif
             enddo
-          enddo
-     
-      call xios_send_field(" w_nbq",worknbq(:,:,-N_sl:N))
+          enddo  
+        call xios_send_field(" w_nbq",worknbq(:,:,-N_sl:N))
       endif
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !     NBQ density
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
       if (xios_field_is_active("rho_nbq")) then
 !$acc update host ( rho_nbq
 # ifdef K3FAST_DIAGACOUS              
@@ -2861,34 +2873,37 @@ c !$acc wait
       call xios_send_field("p_nbq_max",p_nbq_max)
 # endif       
       endif
-#  endif
-
+#endif
+! !
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !     Vertical velocity
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! !
       if (xios_field_is_active("w")) then
-# if !defined M3FAST && !defined K3FAST
-      call Wvlcty (tile, workr) 
-      call xios_send_field("w",workr)
-# else        
-      worknbq=0.
-      do k=0,N
-      do j=0,Mm
-         do i=0,Lm
-            worknbq(i,j,k)=
-!          rw_int_nbq(i,j,k)
-     &         wz     (i,j,k,nstp)
-#  ifdef NHINT_WH
-     &        +wzh_nbq(i,j,k)
-#  endif
-         enddo
-      enddo
-      enddo
-      call xios_send_field("w",worknbq(:,:,0:N))
-# endif
+       call Wvlcty (tile, workr) 
+       call xios_send_field("w",workr)    
       endif
 
-#  ifdef DIAGNOSTICS_EDDY
+#ifdef K3SLOW_W
+      if (xios_field_is_active("wN")) then
+       worknbq=0.
+       do k=0,N
+       do j=0,Mm
+         do i=0,Lm
+            worknbq(i,j,k)=
+     &         wz     (i,j,k,nstp)
+# ifdef NHINT_WH
+     &        +wzh_nbq(i,j,k)
+# endif
+         enddo
+       enddo
+       enddo
+       call xios_send_field("wN",worknbq(:,:,0:N)) 
+      endif
+#endif
 
+#ifdef DIAGNOSTICS_EDDY
          GRho=-1*g/rho0
-
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
