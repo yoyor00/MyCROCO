@@ -38,11 +38,6 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 FC=gfortran
 
-# if the name of the compiler is specified in the default environment
-if [ -v CROCO_FC ]; then
-	FC=$CROCO_FC
-fi
-
 #
 # set MPI directories if needed
 #
