@@ -811,9 +811,6 @@
       char_value=trim(title)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='title', value=char_value)
-#ifdef START_DATE
-C start_date
-#endif
 C       char_value=trim(date_str)
 C        CALL iom_set_file_global_attr   (cdid
 C       &          ,type='string',name='date', value=char_value)
