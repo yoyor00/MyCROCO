@@ -273,7 +273,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         else:
             return filename
 
-    def handle_variables(self, arg_vars: list, is_not_mpi: bool) -> dict:
+    def handle_variables(self, arg_vars: list, is_not_mpi: bool, extra_vars: dict) -> dict:
         '''
         Apply to ops required when getting some variables on the command line.
         
@@ -289,6 +289,10 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             # extract
             var_name = fields[0]
             var_value = fields[1]
+
+            # append extra
+            if var_name in extra_vars:
+                var_value += ' ' + ' '.join(extra_vars[var_name])
 
             # store if we want to use latter
             vars[var_name] = var_value
@@ -327,6 +331,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         parser.add_argument("--with-optim", required=False, help="Select the optimization mode to use.", default='seq')
         parser.add_argument("--with-threads", required=False, help="Select the number of threads.", default='4')
         parser.add_argument("--with-splitting", required=False, help="Select the MPI domain splitting.", default='1x4')
+        parser.add_argument("--enable-debug", action="store_true", help="Enable debugging mode (-O0 -g)")
         parser.add_argument("VARS", nargs='*', type=str, help="Extra variable definitions, like compilers : FC=gfortran.")
 
         # parser
@@ -369,6 +374,17 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # set case
         self.croco_config.cppdef_h_select_case(options.with_case)
 
+        # extra vars to complete
+        extra_vars={
+            'FFLAGS': [],
+            'LDFLAGS': []
+        }
+
+        # enable debug
+        if options.enable_debug:
+            extra_vars['FFLAGS'].append("-O0 -DDEBUG -g")
+            extra_vars['LDFLAGS'].append("-O0 -g")
+
         # config
         use_openmp = False
         use_mpi = False
@@ -377,7 +393,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
         # apply variable
         is_not_mpi = (options.with_optim != 'mpi')
-        vars = self.handle_variables(options.VARS, is_not_mpi)
+        vars = self.handle_variables(options.VARS, is_not_mpi, extra_vars)
 
         # apply optim mode
         if options.with_optim == 'seq':
