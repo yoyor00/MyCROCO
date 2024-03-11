@@ -4920,7 +4920,7 @@ MODULE sed_MUSTANG
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_Temperatur_in_sed ***
    !&E
-   !&E ** Purpose : dynamic in sediment : processes of Tempertur diffusion in sediment 
+   !&E ** Purpose : dynamic in sediment : processes of Temperature diffusion in sediment 
    !&E
    !&E ** Description :
    !&E        arguments IN :
@@ -4928,7 +4928,7 @@ MODULE sed_MUSTANG
    !&E            parameters : 
    !&E
    !&E        variales OUT :
-   !&E            fludiff : substance flux de temperature at the  interface water/sediment due to diffusion
+   !&E            fludiff : temperature flux at the water/sediment interface due to diffusion
    !&E
    !&E ** Called by :  MUSTANG_update
    !&E
@@ -5199,7 +5199,7 @@ MODULE sed_MUSTANG
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
      dt_sed_cor=MAX(dt_dyninsed,dt_true)
-     dt_sed_eff=dt_sed_cor+(CURRENT_TIME-t_dyninsed)
+     dt_sed_eff=dt_sed_cor  ! +(CURRENT_TIME-t_dyninsed)   Fdufois: je ne comprends pas, le 1er dt est enorme. A quoi ça peut servir ce truc?
      dt_sed_inv=1.0_rsh/REAL(dt_sed_eff,rsh)
      phieau_s2w_consol(:,:)=0.0_rsh
 

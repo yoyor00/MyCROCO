@@ -928,6 +928,7 @@
           effetselnutdiat=min(effetazotediat,effetsilice,effetphosphorediat)
 
           pslimdiat=min(effetlumierediat,effetselnutdiat)
+
           rationdiat=p_diat_mumax*effetchaleur*pslimdiat
 
           !excretdiat=p_phyto_resp*effetchaleur*(1.0_rsh-effetlumierediat)   
@@ -2574,24 +2575,27 @@
              ! cycle de l azote
                ! fonctions limitantes
                cvO2old=cs(iv_oxygen)
-               IF(cs(iv_oxygen).gt.0.0001_rsh) THEN
+               IF(cs(iv_oxygen).gt.0.0_rsh) THEN
                  flim1_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_reminO2)
                  flim2_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_nit)
                  flim3_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_reoxyd)
+                 glim1_O2 = 1._rsh - cs(iv_oxygen) / (cs(iv_oxygen) + p_kiO2_remin0O2)
+                 glim2_O2 = 1._rsh - cs(iv_oxygen) / (cs(iv_oxygen) + p_kiO2_denit)
                ELSE
                  flim1_O2 = 0.0_rsh
                  flim2_O2 = 0.0_rsh
                  flim3_O2 = 0.0_rsh
+                 glim1_O2 = 1.0_rsh
+                 glim2_O2 = 1.0_rsh
                ENDIF
-               IF(cs(iv_nutr_NO3).gt.0.001_rsh) THEN
+               IF(cs(iv_nutr_NO3).gt.0.0_rsh) THEN
                  flim1_NO3 = cs(iv_nutr_NO3) / (cs(iv_nutr_NO3) + p_kNO3_reminssO2)
+                 glim1_NO3 = 1._rsh - cs(iv_nutr_NO3) / (cs(iv_nutr_NO3) + p_kiNO3_remin0O2)
                ELSE
                  flim1_NO3 = 0.0_rsh
+                 glim1_NO3 = 1.0_rsh
                ENDIF
-               glim1_O2 = 1._rsh - cs(iv_oxygen) / (cs(iv_oxygen) + p_kiO2_remin0O2)
-               glim2_O2 = 1._rsh - cs(iv_oxygen) / (cs(iv_oxygen) + p_kiO2_denit)
-               glim1_NO3 = 1._rsh - cs(iv_nutr_NO3) / (cs(iv_nutr_NO3) + p_kiNO3_remin0O2)
-               Sfliminv = 1._rsh / (flim1_O2 + flim1_NO3 * glim2_O2 + glim1_NO3 * glim1_O2)
+               Sfliminv = 1.0_rsh / (flim1_O2 + flim1_NO3 * glim2_O2 + glim1_NO3 * glim1_O2)
                !IF(flim1_O2 > 0._rsh .OR. flim1_NO3 > 0._rsh) THEN 
                !  SfliminvR = 1._rsh / (flim1_O2 + flim1_NO3 * glim2_O2)
                !ELSE
@@ -2615,8 +2619,8 @@
                
                F_denit = p_DNO3_denit * F_remin_NO3
                F_denitR = p_DNO3_denit * F_reminR_NO3
-               F_dnra = (1._rsh - p_DNO3_denit) * F_remin_NO3
-               F_dnraR = (1._rsh - p_DNO3_denit) * F_reminR_NO3
+               F_dnra = (1.0_rsh - p_DNO3_denit) * F_remin_NO3
+               F_dnraR = (1.0_rsh - p_DNO3_denit) * F_reminR_NO3
                !F_dnra = 0.0_rsh 
                !F_dnraR = 0.0_rsh
                !F_denit = 0.0_rsh
@@ -2634,18 +2638,20 @@
             
              ! cycle du phosphore
                ! fonctions limitantes
-               IF(cs(iv_oxygen).gt.0.01_rsh) THEN
+               IF(cs(iv_oxygen).gt.0.0_rsh) THEN
                  flim4_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_precPFe)
+                 glim3_O2 = 1.0_rsh - cs(iv_oxygen) / (cs(iv_oxygen) + p_kiO2_dissPFe)
                ELSE
                  flim4_O2 = 0.0_rsh
+                 glim3_O2 = 1.0_rsh
                ENDIF
-               IF(cs(iv_nutr_NO3).gt.0.001_rsh) THEN
+               IF(cs(iv_nutr_NO3).gt.0.0_rsh) THEN
                  flim2_NO3 = cs(iv_nutr_NO3) / (cs(iv_nutr_NO3) + p_kNO3_precPFe)
+                 glim2_NO3 = 1.0_rsh - cs(iv_nutr_NO3) / (cs(iv_nutr_NO3) + p_kiNO3_dissPFe)
                ELSE
                  flim2_NO3 = 0.0_rsh
+                 glim2_NO3 = 1.0_rsh
                ENDIF
-               glim3_O2 = 1._rsh - cs(iv_oxygen) / (cs(iv_oxygen) + p_kiO2_dissPFe)
-               glim2_NO3 = 1._rsh - cs(iv_nutr_NO3) / (cs(iv_nutr_NO3) + p_kiNO3_dissPFe)
   
                ! aerobiose
                xtmp = effetchaleur * flim1_O2 * dtbiojour
@@ -2753,6 +2759,7 @@
                                -F_reminR_aerN * cs(iv_detrR_N) * porosite_inv * p_GO2_NOrgR  &
                                -F_nitrif * cs(iv_nutr_NH4) * p_GO2_NH4)                      &
                               * 0.032_rsh ! transformation en mg/L
+             dcdt(iv_oxygen)=0.0
 
 !            ................................................................... 
             
@@ -2905,7 +2912,8 @@
              ! Dissolved oxygen (mg/l) 
              ! -------------------------
              dcdt(iv_oxygen)= dcdt(iv_oxygen)                                          &
-                            -F_precPFE_O2 * cs(iv_nutr_PO4) * p_GO2_PFe * 0.032_rsh                                                            
+                            -F_precPFE_O2 * cs(iv_nutr_PO4) * p_GO2_PFe * 0.032_rsh  
+             dcdt(iv_oxygen)=0.0                                                          
 !            ...................................................................       
              
              ! Nitrate (micomol/l) 

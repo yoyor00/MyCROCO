@@ -2858,68 +2858,68 @@
 #endif /* BIOLink_PAR_eval */
 
 
-!#if defined BLOOM && defined DIAGNOSTICS_BIO
+#if defined BLOOM && defined DIAGNOSTICS_BIO
 !
 ! 1D Diagnostics from BLOOM
 !
-!        do i=1,ndiag_1d
-!          if (wrtdiabio1d(i)) then
-!            lvar=lenstr(vname(1,indxBLMdiag1d+i-1))
-!            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag1d+i-1)(1:lvar) 
-!     &                          ,vidBLMdiag1d(i))
-!            if (ierr .ne. nf_noerr) then
-!              write(stdout,1) vname(1,indxBLMdiag1d+i-1)(1:lvar),
-!     &                        ncname(1:lstr)
-!              goto 99                                       !--> ERROR
-!            endif
-!          endif
-!        end do
+        do i=1,ndiag_1d
+          if (wrtdiabio1d(i)) then
+            lvar=lenstr(vname(1,indxBLMdiag1d+i-1))
+            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag1d+i-1)(1:lvar) 
+     &                          ,vidBLMdiag1d(i))
+            if (ierr .ne. nf_noerr) then
+              write(stdout,1) vname(1,indxBLMdiag1d+i-1)(1:lvar),
+     &                        ncname(1:lstr)
+              goto 99                                       !--> ERROR
+            endif
+          endif
+        end do
 !
 ! 2D Diagnostics from BLOOM
 !
-!        do i=1,ndiag_2d
-!          if (wrtdiabio2d(i)) then
-!            lvar=lenstr(vname(1,indxBLMdiag2d+i-1))
-!            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag2d+i-1)(1:lvar) 
-!     &                          ,vidBLMdiag2d(i))
-!            if (ierr .ne. nf_noerr) then
-!              write(stdout,1) vname(1,indxBLMdiag2d+i-1)(1:lvar), 
-!     &                        ncname(1:lstr)
-!              goto 99                                       !--> ERROR
-!            endif
-!          endif
-!        end do
+        do i=1,ndiag_2d
+          if (wrtdiabio2d(i)) then
+            lvar=lenstr(vname(1,indxBLMdiag2d+i-1))
+            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag2d+i-1)(1:lvar) 
+     &                          ,vidBLMdiag2d(i))
+            if (ierr .ne. nf_noerr) then
+              write(stdout,1) vname(1,indxBLMdiag2d+i-1)(1:lvar), 
+     &                        ncname(1:lstr)
+              goto 99                                       !--> ERROR
+            endif
+          endif
+        end do
 !
 ! 3D Diagnostics from BLOOM
 !
-!        do i=1,ndiag_3d_wat
-!          if (wrtdiabio3d(i)) then
-!            lvar=lenstr(vname(1,indxBLMdiag3d+i-1))
-!            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3d+i-1)(1:lvar) 
-!     &                          ,vidBLMdiag3d(i))
-!            if (ierr .ne. nf_noerr) then
-!              write(stdout,1) vname(1,indxBLMdiag3d+i-1)(1:lvar), 
-!     &                        ncname(1:lstr)
-!              goto 99                                       !--> ERROR
-!            endif
-!          endif
-!        end do
-!#  ifdef key_BLOOM_insed
-!        do i=1,ndiag_3d_sed
-!          if (wrtdiabio3d(ndiag_3d_wat+i)) then
-!            lvar=lenstr(vname(1,indxBLMdiag3d+ndiag_3d_wat+i-1))
-!            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3d+
-!     &                                     ndiag_3d_wat+i-1)(1:lvar)
-!     &                          ,vidBLMdiag3d(ndiag_3d_wat+i))
-!            if (ierr .ne. nf_noerr) then
-!              write(stdout,1) vname(1,indxBLMdiag3d+ndiag_3d_wat+i-1)
-!     &                             (1:lvar), ncname(1:lstr)
-!              goto 99                                       !--> ERROR
-!            endif
-!          endif
-!        end do
-!#  endif
-!#endif /* BLOOM */
+        do i=1,ndiag_3d_wat
+          if (wrtdiabio3d(i)) then
+            lvar=lenstr(vname(1,indxBLMdiag3d+i-1))
+            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3d+i-1)(1:lvar) 
+     &                          ,vidBLMdiag3d(i))
+            if (ierr .ne. nf_noerr) then
+              write(stdout,1) vname(1,indxBLMdiag3d+i-1)(1:lvar), 
+     &                        ncname(1:lstr)
+              goto 99                                       !--> ERROR
+            endif
+          endif
+        end do
+#  ifdef key_BLOOM_insed
+        do i=1,ndiag_3d_sed
+          if (wrtdiabio3d(ndiag_3d_wat+i)) then
+            lvar=lenstr(vname(1,indxBLMdiag3d+ndiag_3d_wat+i-1))
+            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3d+
+     &                                     ndiag_3d_wat+i-1)(1:lvar)
+     &                          ,vidBLMdiag3d(ndiag_3d_wat+i))
+            if (ierr .ne. nf_noerr) then
+              write(stdout,1) vname(1,indxBLMdiag3d+ndiag_3d_wat+i-1)
+     &                             (1:lvar), ncname(1:lstr)
+              goto 99                                       !--> ERROR
+            endif
+          endif
+        end do
+#  endif
+#endif /* BLOOM */
 
 !
 ! Density anomaly.

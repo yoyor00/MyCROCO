@@ -640,28 +640,15 @@
 !                                                 (sed. and others)
 #   ifdef SUBSTANCE
 !
-            if (itrc.ge.itsubs1+nv_grav .and.
-     &          itrc.le.itsubs1+nvp) then        ! sediment tracers
-#    if defined MUSTANG && defined key_sand2D
-              if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    endif
 #    undef TS_MIX_IMP
 #    define CD EC
 #    define NBSUBSTEP GC
-#    include "t3dmix_tridiagonal_settling.h"
+#    include "t3dmix_tridiagonal_substance.h"
 #    undef NBSUBSTEP
 #    undef CD
 #    define TS_MIX_IMP
-#    if defined MUSTANG && defined key_sand2D
-              endif
-#    endif
-            else                                 ! other tracers
-#    undef TS_MIX_IMP
-#    include "t3dmix_tridiagonal.h"
-#    define TS_MIX_IMP
-            endif
 !
-#   else  /* MUSTANG */
+#   else  /* SUBSTANCE */
 !                                                ! passive tracers
 #    ifdef BIO_HADV_WENO5
 #     undef TS_MIX_IMP
@@ -685,22 +672,13 @@
 #    include "t3dmix_tridiagonal.h"
 !
 #   else
-          if (itrc.ge.itsubs1+nv_grav .and.
-     &        itrc.le.itsubs1+nvp) then          ! sediment tracers
-#    if defined MUSTANG && defined key_sand2D
-            if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    endif
+
 #    define CD EC
 #    define NBSUBSTEP GC
-#    include "t3dmix_tridiagonal_settling.h"
+#    include "t3dmix_tridiagonal_substance.h"
 #    undef NBSUBSTEP
 #    undef CD
-#    if defined MUSTANG && defined key_sand2D
-            endif
-#    endif
-          else                                   ! all other tracers
-#    include "t3dmix_tridiagonal.h"
-          endif
+
 #   endif /* SUBSTANCE */
 
 #  endif /* TS_MIX_IMP */

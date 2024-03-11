@@ -263,7 +263,7 @@ IF(rw == 'r')THEN
 !==========================
 
 #ifdef key_BLOOM_opt2
-     filepc=REPFICNAMELIST//'/parabloom_opt2.txt'
+     filepc=REPFICNAMELIST2//'/parabloom_opt2.txt'
      IF_AGRIF (.NOT. Agrif_Root()) filepc='./parabloom_opt2'//TRIM(Agrif_Cfixed())//'.txt'
 #else
      lstr = lenstr(parafilename)
