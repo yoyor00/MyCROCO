@@ -9,6 +9,8 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+#include "cppdefs.h"
+#ifdef PARALLEL_FILES
       program partit 
 !
 ! Generic netCDF partitioning tool: reads netCDF files corresonding
@@ -823,4 +825,10 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
       enddo
       stop
       end
+
+#else
+      program partit_empty
+      stop
+      end
+#endif /* PARALLEL_FILES */
 

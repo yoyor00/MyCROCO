@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -24,19 +24,19 @@
 ! Algorithm:
 !-----------
 ! cross_matrix reads all files from the list arguments it is given,
-! and searches for the CPP command #include. If #include commands 
+! and searches for the CPP command #include. If #include commands
 ! are found, in interprets names within the "..." as new files to be
 ! open and searched for #include inside it and so on.
 !
 ! cross_matrix investigates chained include statements, for example,
 ! if file1 contains statement #include "file2", and file2 contains
 ! statement #include "file3", therefore file3 will be included into
-! list of dependencies of "file1" 
+! list of dependencies of "file1"
 !
 ! Optionally, files which are not in the list of arguments AND
 ! which are not in the present working directory can be excluded
 ! from the list of dependencies (CPP switch EXCLUDE). A warning
-! message will be issued about each file excluded from analysis. 
+! message will be issued about each file excluded from analysis.
 !
 #define EXCLUDE
 
@@ -49,11 +49,11 @@
       character*300 modname
       character*4 sufname
       character string*300, quote*1, double_quote*1, backslash*1
-      integer nsize(max_names), size,  lines, nmax,  n_disc,  n_excl, 
+      integer nsize(max_names), size,  lines, nmax,  n_disc,  n_excl,
      &                              last_arg, iargc, iocheck, i,j,k,n,
      & my_iostat
       logical matrix(max_names,max_names), new_name, not_end_of_file
-      
+
       character ctoupper,tab
       tab=char(9)
       last_arg=iargc()
@@ -69,7 +69,7 @@
       quote=char(39)          !
       double_quote=char(34)   ! Reset everything:
       backslash=char(92)      !
-      lines=0                 ! <-- line counter all files altogether 
+      lines=0                 ! <-- line counter all files altogether
       n_disc=0                ! <-- counter of newly discovered files
       n_excl=0                ! <-- counter of excluded files
       do j=1,max_names        !
@@ -89,7 +89,7 @@
          if (fname(n)(i:i).eq.' ' .and. i.gt.1) goto 1
         nsize(n)=i
       enddo
-      
+
       nmax=last_arg
       open(unit=iout, file='Make.depend', form='formatted')
       write(iout,'(3(A,1x,A/),A/A/A/A/A/A)')
@@ -102,10 +102,10 @@
      &         '#        make depend'
       n=0
   2    n=n+1
-        not_end_of_file=.true. 
+        not_end_of_file=.true.
       IF (n.GT.nmax) GOTO 29
       IF (fname(n)(nsize(n)-3:nsize(n)).EQ.'.mod') goto 2
-        open(unit=input, file=fname(n), form='formatted', 
+        open(unit=input, file=fname(n), form='formatted',
      &                               status='old', err=3)
         goto 4
   3     continue
@@ -122,22 +122,22 @@
 #endif
   4     string(1:1)=' '
          read(input,'(A)',iostat=iocheck,end=5) string
-       
+
          lines=lines+1
         if (iocheck.eq.0 .and. string(1:1).ne.'#') goto 19
         goto 6                             ! Search for word include,
-  5     not_end_of_file=.false.            ! then search for double 
+  5     not_end_of_file=.false.            ! then search for double
   6     i=2                                ! quotation marks, then
   7      if (string(i:i).ne.'i') then      ! read portion of the
-           i=i+1                           ! string between "..."s.  
+           i=i+1                           ! string between "..."s.
            if (i.lt.max_string_size) goto 7
          elseif (string(i:i+6) .eq. 'include') then
            i=i+7
-  8        if (string(i:i).eq.double_quote) then 
+  8        if (string(i:i).eq.double_quote) then
              j=i+2
-  9          if (string(j:j).eq.double_quote) then 
+  9          if (string(j:j).eq.double_quote) then
                size=j-i-1                  ! Presume that the newly
-               new_name=.true.             ! encountered name does 
+               new_name=.true.             ! encountered name does
                do k=1,nmax                 ! not exist in catalog.
                  if (size .eq. nsize(k)) then
                    if (string(i+1:j-1) .eq. fname(k)(1:size)) then
@@ -146,11 +146,11 @@
                    endif                   ! against those already in
                  endif                     ! catalog. If matches were
                enddo                       ! found, reject it as a
-               if (new_name) then          ! new name and make entry 
+               if (new_name) then          ! new name and make entry
                  n_disc=n_disc+1           ! in dependency in matrix.
                  nmax=nmax+1               ! Record the new name and
                  matrix(nmax,n)=.true.     ! its size into catalog,
-                 nsize(nmax)=size          ! if it was not rejected.  
+                 nsize(nmax)=size          ! if it was not rejected.
                  fname(nmax)(1:size)=string(i+1:j-1)
                  do i=size+1,max_name_size
                    fname(nmax)(i:i)=' '
@@ -164,16 +164,16 @@
              i=i+1
              goto 8
            endif
-         endif 
+         endif
  19      continue
- 
+
 
         if (iocheck.eq.0 .and.
      &     ((string(1:1).ne.' ').AND.
      &     (string(1:1).ne.tab))) goto 4
 
          i=2
- 
+
  17      if ((string(i:i).eq.' ').OR.(string(i:i).eq.tab)) then
            i=i+1
            if (i.lt.max_string_size) goto 17
@@ -190,21 +190,21 @@
 !       modname(k:k)=ctoupper(string(i+k-1:i+k-1))
                 modname(k:k)=string(i+k-1:i+k-1)
              end do
-      
+
              modname(size+1:size+4)='.F90'
              size=size+4
 
-             open(unit=125, file=modname(1:size), form='formatted', 
+             open(unit=125, file=modname(1:size), form='formatted',
      &                               status='old', iostat=my_iostat)
              close(125)
 
              if(my_iostat /= 0) then
                size=size-4
-               modname(size+1:size+2)='.F' 
+               modname(size+1:size+2)='.F'
                size=size+2
             endif
 
-              new_name=.true.             ! encountered name does 
+              new_name=.true.             ! encountered name does
                do k=1,nmax                 ! not exist in catalog.
                  if (size .eq. nsize(k)) then
                    if (modname(1:size) .eq. fname(k)(1:size)) then
@@ -214,11 +214,11 @@
                    endif                   ! against those already in
                  endif                     ! catalog. If matches were
                enddo                       ! found, reject it as a
-               if (new_name) then          ! new name and make entry 
+               if (new_name) then          ! new name and make entry
                  n_disc=n_disc+1           ! in dependency in matrix.
                  nmax=nmax+1               ! Record the new name and
                  matrix(nmax,n)=.true.     ! its size into catalog,
-                 nsize(nmax)=size          ! if it was not rejected.  
+                 nsize(nmax)=size          ! if it was not rejected.
                  fname(nmax)(1:size)=modname(1:size)
                  ismodule(nmax,n)=.true.
                  do i=size+1,max_name_size
@@ -227,50 +227,50 @@
                endif
           elseif (j.lt.max_string_size) then
                goto 18
-          end if        
+          end if
       end if
-         
+
       if (not_end_of_file) goto 4
         close (unit=input)
-      
+
       if (n.lt.nmax) goto 2
 
  29      continue
       i=0                         ! Investigate possible secondary
   10  do n=1,nmax                 ! dependencies. This is equivalent
-        do k=1,nmax               ! to operation of logical addition: 
-          if (matrix(k,n)) then   !  
+        do k=1,nmax               ! to operation of logical addition:
+          if (matrix(k,n)) then   !
             do j=1,nmax           ! if
               if (matrix(j,k)) then   !      file1 depends on file2
-              matrix(j,n)=.true. 
-              
+              matrix(j,n)=.true.
+
               if (ismodule(j,k)) ismodule(j,n)=.true.
           endif
-            ! and 
+            ! and
             enddo                 !      file2 depends on file3
           endif                   ! then
-        enddo                     !      file1 depends on file3 
-      enddo                       ! 
-      j=0                         ! This is an iterative 
-      do n=1,nmax                 ! procedure, since staged 
-        do k=1,nmax               ! include statements are 
-          if (matrix(k,n)) j=j+1  ! possible. The number of .true. 
-        enddo                     ! elements in the matrix grows 
-      enddo                       ! when new dependencies are 
-      if (i.ne.j) then            ! discovered. The procedure 
-        i=j                       ! repeats itself until the next 
-        goto 10                   ! iteration does not discover 
+        enddo                     !      file1 depends on file3
+      enddo                       !
+      j=0                         ! This is an iterative
+      do n=1,nmax                 ! procedure, since staged
+        do k=1,nmax               ! include statements are
+          if (matrix(k,n)) j=j+1  ! possible. The number of .true.
+        enddo                     ! elements in the matrix grows
+      enddo                       ! when new dependencies are
+      if (i.ne.j) then            ! discovered. The procedure
+        i=j                       ! repeats itself until the next
+        goto 10                   ! iteration does not discover
       endif                       ! any new dependencies.
 !
 ! Report statistics of the files:
 !
-      write(iout,'(A/A,5x,I4/A/A,18x,I4/A/A,1x,I4)') '#', 
+      write(iout,'(A/A,5x,I4/A/A,18x,I4/A/A,1x,I4)') '#',
      &  '# Number of files given for dependency analysis:', last_arg,
      &  '#', '# Number of newly discovered files:', n_disc, '#',
      &  '# Number of files excluded from dependency analysis:',n_excl
       write(iout,'(A/A,3x,I4/A/A,9x,I6/A)') '#',
      &  '# Total number of files analyzed for dependencies:', nmax,
-     &  '#', '# Total number of code lines in all files:', lines, '#' 
+     &  '#', '# Total number of code lines in all files:', lines, '#'
 !
 ! Generate list of dependencies. Two styles are supported, both
 ! work just fine. If XCOMM_FORMAT is defined, the style of the list
@@ -279,7 +279,7 @@
 ! and the column separator ':' are repeated in all lines which
 ! correspond to the target dependencies, and its name is also
 ! repeated one time more wit no characters after ':'.
-! If XCOMM_FORMAT is NOT defined, the target file name and the 
+! If XCOMM_FORMAT is NOT defined, the target file name and the
 ! column separator ':' are not repeated, while backslach symbol is
 ! used in the end of each line, if the line needs to be  continued
 ! on the next line.
@@ -288,9 +288,9 @@
         if (nsize(n).gt.0) then
 #define XCOMM_FORMAT
 #ifdef XCOMM_FORMAT
-          write(iout,'(A1)') '#' 
+          write(iout,'(A1)') '#'
           k=0
-  11      i=nsize(n) 
+  11      i=nsize(n)
            string(1:i)=fname(n)(1:i)
            if (string(i-1:i).eq.'.F') string(i:i)='o'
            if (string(i-3:i).eq.'.F90') string(i-2:i)='o'
@@ -338,13 +338,13 @@
             endif
 #else
           if (n.eq.1 .or. j.gt.0) write(iout,*)
-          j=0 
+          j=0
           i=nsize(n)
           string(1:i)=fname(n)(1:i)
           if (fname(n)(nsize(n)-1:nsize(n)).eq.'.F') then
             string(i:i)='o'
             i=i+1
-            string(i:i)=':' 
+            string(i:i)=':'
             j=1
             i=i+1
             string(i:i)=' '
@@ -352,15 +352,15 @@
             i=i+nsize(n)
           else                       ! Do not print dependency line,
             i=i+1                    ! if the file oes not depend on
-            string(i:i)=':'          ! anything, except itself. To  
-          endif                      ! detect trivial dependencies, 
-          k=0                        ! set j=0, then set it to j=1, 
-  14       k=k+1                     ! when dependency is detected. 
+            string(i:i)=':'          ! anything, except itself. To
+          endif                      ! detect trivial dependencies,
+          k=0                        ! set j=0, then set it to j=1,
+  14       k=k+1                     ! when dependency is detected.
            if (matrix(k,n)) then     ! Do not print, if j remains 0.
              j=1
   15         if (i+nsize(k).lt.max_string_size-2) then
                i=i+1
-               string(i:i)=' ' 
+               string(i:i)=' '
                string(i+1:i+nsize(k))=fname(k)(1:nsize(k))
 
                i=i+nsize(k)
@@ -376,25 +376,25 @@
            if (j.gt.0) write(iout,'(A)') string(1:i)
 #endif
         endif
-      enddo 
+      enddo
 
 
       close (iout)
       stop
       end
-      
-      
-      
-      character function ctoupper(c) 
+
+
+
+      character function ctoupper(c)
       character c
-      character temp   
-              
-      temp=c      
+      character temp
+
+      temp=c
       IF ((ichar(c).GE.ichar('a')).AND.(ichar(c).LE.ichar('z')))
      &  temp=char(ichar(c)+ichar('A')-ichar('a'))
-      
+
       ctoupper=temp
-      
+
       return
       end
 

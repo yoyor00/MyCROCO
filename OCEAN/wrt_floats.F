@@ -2,20 +2,20 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #ifdef FLOATS
                                ! Writes requested model
-      subroutine wrt_floats    ! fields at requested levels 
+      subroutine wrt_floats    ! fields at requested levels
                                ! into history netCDF file.
 # ifdef AGRIF
-      USE Agrif_Util 
+      USE Agrif_Util
 # endif
       implicit none
 # include "param.h"
@@ -44,8 +44,8 @@
 # endif
 # if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) then
-        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
-     &                 1, MPI_COMM_WORLD, status, ierr) 
+        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
+     &                 1, MPI_COMM_WORLD, status, ierr)
       endif
 # endif
 !
@@ -54,11 +54,11 @@
       newf=.false.
       call def_floats (ncidflt, nrecflt, ierr, newf)
       if (ierr .ne. nf_noerr) goto 99
-!                                       !!! WARNING: Once time  
+!                                       !!! WARNING: Once time
 ! Set record within the file.           !!! stepping has been
 !                                       !!! started, it is assumed
       if (iic.eq.0) nrecflt=nrecflt+1   !!! that the global float
-      if (nrpfflt.eq.0) then            !!!  history record index 
+      if (nrpfflt.eq.0) then            !!!  history record index
         record=nrecflt                  !!! "nrecflt" is advanced
       else                              !!! by main.
         record=1+mod(nrecflt-1, nrpfflt)
@@ -68,7 +68,7 @@
 ! Write out evolving model variables:
 ! ----- --- -------- ----- ----------
 !
-! Save indices of released and non released floats 
+! Save indices of released and non released floats
 !
       nfltrelmax=0
       nfltunrelmax=0
@@ -76,7 +76,7 @@
         if (fltgrd(iflt).ne.-1) then
           nfltrelmax=nfltrelmax+1
           indxrel(nfltrelmax)=iflt
-        else 
+        else
           nfltunrelmax=nfltunrelmax+1
           indxunrel(nfltunrelmax)=iflt
         endif
@@ -259,11 +259,11 @@
       endif
 
 !----------------------------------------------------------------
-! The following variables are to be stored with a non flospval value 
-! at the first time step. Therefore, a modification to nfltrelmax 
-! and indxrel is done at this place. 
+! The following variables are to be stored with a non flospval value
+! at the first time step. Therefore, a modification to nfltrelmax
+! and indxrel is done at this place.
 
-       if (newf) then 
+       if (newf) then
           nfltrelmax=nfloats
           do iflt=1,nfloats
               indxrel(iflt)=iflt
@@ -381,7 +381,7 @@
      &        ''' into float file.'  /11x, 'Time record:', I6,
      &        3x,'netCDF error code',i4 /11x,'Cause of error: ',
      &                                            A, 3x, A, i4)
-      goto 100 
+      goto 100
   99  may_day_flag=3
  100  continue
 
@@ -404,7 +404,7 @@
 # endif
       if (ierr .eq. nf_noerr) then
         write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 'WRT_FLT -- wrote ',
-     &            'float history fields into time record =', record, 
+     &            'float history fields into time record =', record,
      &            '/' ,nrecflt  MYID
       else
         write(stdout,'(/1x,2A/)') 'WRT_FLT ERROR: Cannot ',

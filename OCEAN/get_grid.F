@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,9 +13,9 @@
 #ifndef ANA_GRID
                              ! Read grid information
       subroutine get_grid    ! from GRID NetCDF file.
-#ifdef OPENACC
+# ifdef OPENACC
       use exchange_device_host
-#endif
+# endif
       implicit none
       character*1 char1
       integer ierr, ncid, varid, lstr, lenstr, checkdims, nf_fread
@@ -117,7 +117,7 @@
         write(stdout,1) 'h', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
-! REMOVE WET DRY    
+! REMOVE WET DRY
 !     h(:,:)=max(h(:,:),10.0)
 !
 ! Coriolis parameter.
@@ -342,18 +342,18 @@
      !&  minval(zob),maxval(zob),minloc(zob),maxloc(zob)
        zob(:,:)=max(zob(:,:),1e-7)
        zob_temp=maxval(zob)
-#ifdef MPI
+#  ifdef MPI
           if (NNODES.gt.1) then         ! Perform global max
             call MPI_allreduce(zob_temp,zobt,1,
      &              MPI_DOUBLE_PRECISION, MPI_MAX,MPI_COMM_WORLD,ierr)
           endif
+#  endif
+# else
+       zob(:,:)=zobt
 # endif
-# else 
-       zob(:,:)=zobt 
-# endif
-#ifdef OPENACC
+# ifdef OPENACC
        call update_device(zob)
-#endif
+# endif
 
 
       ierr=nf_close(ncid)

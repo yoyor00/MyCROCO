@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,13 +13,13 @@
 #ifdef SOLVE3D
 
       subroutine set_scoord     ! Input:   hmin,   Tcline,
-!                               !          theta_s, theta_b 
+!                               !          theta_s, theta_b
 ! Define S-coordinate system.   !
 !                               ! Output:  hc, sc_w(0:N), Cs_w(0:N)
                                 !              sc_r(1:N), Cs_r(1:N)
-#ifdef OPENACC
+# ifdef OPENACC
       use exchange_device_host
-#endif
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -50,25 +50,60 @@
         Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
      &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
       enddo
+#  ifdef M3FAST_SEDLAYERS
+      if (N_sl.gt.0) then
+        sc_r(0)=cff*(float(0-N)-0.5)
+        Cs_r(0)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(0))
+     &             +theta_b*(cff2*tanh(theta_s*(sc_r(0)+0.5))-0.5)
+     
+       do k=-N_sl+1,-1,+1
+        sc_w(k)=cff*float(k-N)
+        Cs_w(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_w(k))
+     &             +theta_b*(cff2*tanh(theta_s*(sc_w(k)+0.5))-0.5)
+
+        sc_r(k)=cff*(float(k-N)-0.5)
+        Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
+     &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
+       enddo
+       k=-N_sl
+       sc_w(k)=cff*float(k-N)
+       Cs_w(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_w(k))
+     &             +theta_b*(cff2*tanh(theta_s*(sc_w(k)+0.5))-0.5)
+     
+      endif
+#  endif
 # else
       hc= Tcline
-      ds=1./float(N)      
+      ds=1./float(N)
       do k=1,N,+1
+        sc     = ds*(float(k-N)-0.5)
+        Cs_r(k)=CSF(sc, theta_s,theta_b)
+        sc_r(k)=sc
+      enddo
+
+      sc_w(0) = -1.0
+      sc_w(N) =  0.
+      Cs_w(0) = -1.0
+      Cs_w(N) =  0.
+#  ifdef M3FAST_SEDLAYERS
+      do k=-N_sl+1,0
         sc     = ds*(float(k-N)-0.5)
         Cs_r(k)=CSF(sc, theta_s,theta_b)
         sc_r(k)=sc      
       enddo
-      
-      sc_w(0) = -1.0
-      sc_w(N) =  0.        
-      Cs_w(0) = -1.0
-      Cs_w(N) =  0. 
-      
+#  endif
       do k=1,N-1,+1
         sc     = ds*float(k-N)
         Cs_w(k)=CSF(sc, theta_s,theta_b)
+        sc_w(k)=sc
+      enddo
+#  ifdef M3FAST_SEDLAYERS
+      do k=-N_sl,-1,+1
+        sc     = ds*float(k-N)
+        Cs_w(k)=CSF(sc, theta_s,theta_b)
         sc_w(k)=sc      
-      enddo            
+      enddo    
+#  endif     
 # endif
 !
 ! Report information about vertical S-levels.
@@ -79,8 +114,9 @@
       MPI_master_only write(stdout,'(/1x,A/,/1x,A,10x,A/)')
      &                       'Vertical S-coordinate System:',
      &                       'level   S-coord     Cs-curve',
-     &                       'at_hmin  over_slope     at_hmax' 
-      do k=N,0,-1
+     &                       'at_hmin  over_slope     at_hmax'
+
+      do k=N,-N_sl,-1
 # ifdef NEW_S_COORD
         sc=ds*(k-N)
         cff1 = hmin*(hc*sc + hmin*Cs_w(k))/(hc+hmin)
@@ -120,17 +156,17 @@
      &                                               inc_faststep
 # endif /* BSTRESS_FAST */
 
-#ifdef OPENACC
+# ifdef OPENACC
       call update_device(sc_w)
       call update_device(sc_r)
       call update_device(Cs_w)
       call update_device(Cs_r)
-#endif
+# endif
       return
       end
 !======================================================================
-#ifdef NEW_S_COORD
-                                            ! NOTE: Mathematical 
+# ifdef NEW_S_COORD
+                                            ! NOTE: Mathematical
       function CSF (sc, theta_s,theta_b)    ! limits of CSF,csrf for
       implicit none                         ! theta_s, theta_b --> 0
       real CSF, sc, theta_s,theta_b,csrf    ! match that under "else"
@@ -141,14 +177,14 @@
         csrf=-sc**2
       endif
       if (theta_b.gt.0.D0) then
-        CSF=(exp(theta_b*csrf)-1.D0)/(1.D0-exp(-theta_b))  
+        CSF=(exp(theta_b*csrf)-1.D0)/(1.D0-exp(-theta_b))
       else
         CSF=csrf
       endif
       return
-      end      
-# endif /* NEW_S_COORD */    
-!======================================================================          
+      end
+# endif /* NEW_S_COORD */
+!======================================================================
 #else
       subroutine set_scoord_empty
       return

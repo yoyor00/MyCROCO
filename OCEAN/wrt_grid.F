@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -24,7 +24,7 @@
 !
       implicit none
       character*(*) ncname
-      integer i, j, k, ncid, lstr, varid, ierr, nf_fwrite,  
+      integer i, j, k, ncid, lstr, varid, ierr, nf_fwrite,
      &        nf_fwrite_x, nf_fwrite_y
 #include "param.h"
 #include "scalars.h"
@@ -38,7 +38,7 @@
 !# include "compute_auxiliary_bounds.h"
 !
 #if defined MPI & !defined PARALLEL_FILES
-      if (mynode.gt.0) goto 1 
+      if (mynode.gt.0) goto 1
 #endif
 !
 ! Grid type switch: Spherical or Cartesian.
@@ -84,6 +84,9 @@
 
 #ifdef SOLVE3D
 !
+! S-coordinate independent variables "sc_w", "sc_r" and stretching
+! curves "Cs_w", "Cs_r" at W- and RHO-points.
+! 
 ! Variable dimension on vertical : s_rho and s_w
 !
       ierr=nf_inq_varid (ncid, 's_rho', varid)
@@ -91,46 +94,28 @@
       if (ierr.ne.nf_noerr) then
         write(stdout,2) 's_rho', ncname(1:lstr)
         goto 99                !--> ERROR
-      endif 
+      endif
 
       ierr=nf_inq_varid (ncid, 's_w', varid)
       ierr=nf_put_var_FTYPE(ncid, varid, sc_w)
       if (ierr.ne.nf_noerr) then
         write(stdout,2) 's_w', ncname(1:lstr)
         goto 99                !--> ERROR
-      endif 
+      endif
 
-!
-! S-coordinate independent variables "sc_w", "sc_r" and stretching
-! curves "Cs_w", "Cs_r" at W- and RHO-points.
-!
-      ierr=nf_inq_varid (ncid, 'Cs_r', varid)
+      ierr=nf_inq_varid (ncid, 'Cs_rho', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_r)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'Cs_r', ncname(1:lstr)
+        write(stdout,2) 'Cs_rho', ncname(1:lstr)
         goto 99                !--> ERROR
-      endif 
+      endif
 !
       ierr=nf_inq_varid (ncid, 'Cs_w', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_w)
       if (ierr.ne.nf_noerr) then
         write(stdout,2) 'Cs_w', ncname(1:lstr)
         goto 99                !--> ERROR
-      endif 
-!
-      ierr=nf_inq_varid (ncid, 'sc_r', varid)
-      ierr=nf_put_var_FTYPE(ncid,varid ,sc_r)
-      if (ierr.ne.nf_noerr) then
-        write(stdout,2) 's_r', ncname(1:lstr)
-        goto 99                !--> ERROR
-      endif 
-!
-      ierr=nf_inq_varid (ncid, 'sc_w', varid)
-      ierr=nf_put_var_FTYPE(ncid, varid,sc_w)
-      if (ierr.ne.nf_noerr) then
-        write(stdout,2) 's_w', ncname(1:lstr)
-        goto 99                !--> ERROR
-      endif 
+      endif
 !
       ierr=nf_inq_varid (ncid, 'hc', varid)
       ierr=nf_put_var1_FTYPE (ncid, varid, 1, hc)
@@ -259,13 +244,13 @@
 
 !
 ! Variable horizontal grid indices
-! 
+!
       ierr=nf_inq_varid (ncid, 'xi_rho', varid)
       ierr=nf_fwrite_x (ncid, varid, r2dvar)
       if (ierr.ne.nf_noerr) then
         write(stdout,2) 'xi_rho', ncname(1:lstr)
         goto 99                !--> ERROR
-      endif 
+      endif
       ierr=nf_inq_varid (ncid, 'eta_rho', varid)
       ierr=nf_fwrite_y (ncid, varid, r2dvar)
       if (ierr.ne.nf_noerr) then
@@ -277,15 +262,15 @@
       if (ierr.ne.nf_noerr) then
         write(stdout,2) 'xi_u', ncname(1:lstr)
         goto 99                !--> ERROR
-      endif 
+      endif
       ierr=nf_inq_varid (ncid, 'eta_v', varid)
       ierr=nf_fwrite_y (ncid, varid, v2dvar)
       if (ierr.ne.nf_noerr) then
         write(stdout,2) 'eta_v', ncname(1:lstr)
         goto 99                !--> ERROR
-      endif   
+      endif
 
-      MPI_master_only write(stdout,'(6x,4A,2x,A,I4)') 
+      MPI_master_only write(stdout,'(6x,4A,2x,A,I4)')
      &                 'WRT_GRID -- wrote grid ',
      &                 'data into file ''', ncname(1:lstr), '''.'
      &                  MYID

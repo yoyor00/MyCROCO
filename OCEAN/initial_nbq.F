@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -54,9 +54,9 @@
 !
       implicit none
       integer  Istr, Iend, Jstr, Jend
-# ifdef MPI      
+# ifdef MPI
       include 'mpif.h'
-# endif      
+# endif
 # include "param.h"
 # include "scalars.h"
 # include "private_scratch.h"
@@ -73,7 +73,7 @@
        real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
        real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-#  ifdef NONLIN_EOS      
+#  ifdef NONLIN_EOS
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! work arrays for call
       real K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! to nonlinear EOS
 #  endif
@@ -187,7 +187,7 @@
               rho_nbq_avg1(i,j,k)=(rho0+rho(i,j,k))/rho0
             enddo
           enddo
-        enddo 
+        enddo
         do j=JR_RANGE
           do i=IR_RANGE
             work2d(i,j)      =0.
@@ -206,7 +206,7 @@
         do j=JR_RANGE       ! Add rho0 for added precision
           do i=IR_RANGE
             rhobar_nbq(i,j,:)   =rhobar_nbq(i,j,:)/work2d(i,j) + 1.
-            rhobar_nbq_avg1(i,j)=rhobar_nbq(i,j,1) 
+            rhobar_nbq_avg1(i,j)=rhobar_nbq(i,j,1)
           enddo
         enddo
 #  endif
@@ -218,8 +218,7 @@
 !----------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present)
-#ifndef EXACT_RESTART
-
+# ifndef EXACT_RESTART
 ! Note that if EXACT_RESTART CPP-switch is defined
 ! qdmu_nbq is read from rst file
 
@@ -238,7 +237,7 @@
             enddo
           enddo
         enddo
-#endif
+# endif
 
 # ifdef NBQ
         do k=1,N-1
@@ -248,13 +247,13 @@
             enddo
           enddo
         enddo
-        k=0 
+        k=0
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
             qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*Hz(i,j,k+1)
           enddo
         enddo
-        k=N 
+        k=N
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
             qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*Hz(i,j,k)
@@ -265,6 +264,8 @@
           do j=JR_RANGE
             do i=IR_RANGE
               thetadiv_nbq(i,j,k)=0.
+              thetadiv2_nbq(i,j,k)=0.
+              thetadiv3_nbq(i,j,k)=0.
             enddo
           enddo
         enddo

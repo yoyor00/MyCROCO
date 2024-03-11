@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !
 ! This routine was adapted from John Warner's code
@@ -39,7 +39,7 @@
 #  define SWITCH !
 # endif
 !
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 !
 !-----------------------------------------------------------------------
 ! If wet/drying, compute new masks for cells with depth < Dcrit.
@@ -84,7 +84,7 @@ C$OMP END MASTER
 C$OMP BARRIER
         endif
 # endif
-      
+
         DO j=JstrR,JendR
           DO i=IstrR,IendR
             rmask_wet(i,j)=wetdry(i,j)
@@ -95,7 +95,7 @@ C$OMP BARRIER
 !
         DO j=Jstr,JendR
           DO i=Istr,IendR
-            pmask_wet(i,j)=wetdry(i-1,j  )*wetdry(i  ,j  )*  
+            pmask_wet(i,j)=wetdry(i-1,j  )*wetdry(i  ,j  )*
      &                     wetdry(i-1,j-1)*wetdry(i  ,j-1)
           END DO
         END DO
@@ -203,7 +203,7 @@ C$OMP BARRIER
 !
         DO j=Jstr,JendR
           DO i=Istr,IendR
-            pmask_wet(i,j)=wetdry(i-1,j  )*wetdry(i  ,j  )* 
+            pmask_wet(i,j)=wetdry(i-1,j  )*wetdry(i  ,j  )*
      &                     wetdry(i-1,j-1)*wetdry(i  ,j-1)
           END DO
         END DO
@@ -333,7 +333,7 @@ C$OMP BARRIER
         DO is=1,Nsrc
           i=Isrc(is)
           j=Jsrc(is)
-          IF (((IstrR.le.i).and.(i.le.IendR)).and. 
+          IF (((IstrR.le.i).and.(i.le.IendR)).and.
      &        ((JstrR.le.j).and.(j.le.JendR))) THEN
             IF (INT(Dsrc(is)).eq.0) THEN
               umask_io(i,j)=1.
@@ -350,15 +350,15 @@ C$OMP BARRIER
 
       RETURN
       END SUBROUTINE wetdry_tile
-      
+
 # ifdef AGRIF
       subroutine rmask_wetinterp(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "param.h"
-# include "ocean2d.h"
-# include "scalars.h"
-# include "zoom.h"
-# include "grid.h"
+#  include "param.h"
+#  include "ocean2d.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "grid.h"
 
        integer i1,i2,j1,j2
        real tabres(i1:i2,j1:j2)
@@ -383,11 +383,11 @@ C$OMP BARRIER
 
       subroutine umask_wetinterp(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "param.h"
-# include "ocean2d.h"
-# include "scalars.h"
-# include "zoom.h"
-# include "grid.h"
+#  include "param.h"
+#  include "ocean2d.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "grid.h"
 
        integer i1,i2,j1,j2
        real tabres(i1:i2,j1:j2)
@@ -403,11 +403,11 @@ C$OMP BARRIER
 
       subroutine vmask_wetinterp(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "param.h"
-# include "ocean2d.h"
-# include "scalars.h"
-# include "zoom.h"
-# include "grid.h"
+#  include "param.h"
+#  include "ocean2d.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "grid.h"
 
        integer i1,i2,j1,j2
        real tabres(i1:i2,j1:j2)
@@ -420,7 +420,7 @@ C$OMP BARRIER
        endif
       return
       end
-# endif 
-     
+# endif
+
 #endif
 

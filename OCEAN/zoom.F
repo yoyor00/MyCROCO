@@ -2,12 +2,12 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license. 
-! 
+! CROCO specific routines (nesting) are under CeCILL-C license.
+!
 ! This routine belongs to the specific CROCO package.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -17,17 +17,17 @@
 ! AGRIF related routines:
 !
 ! Agrif_initworkspace      : initialize array sizes.zid
-! Agrif_initvalues         : perform ROMS initial procedures 
+! Agrif_initvalues         : perform ROMS initial procedures
 !                            (grid, initial conditions, etc...)
 ! declare_zoom_variables   :
 ! ResetMask                :
 ! Updateh                  :
 ! UpdateGridhis            :
-! Agrif_transfer_floatsp2c : checks if a float must be transferred 
+! Agrif_transfer_floatsp2c : checks if a float must be transferred
 !                            from parent to child grid
-! Agrif_laststep           : determines whether this time step is 
+! Agrif_laststep           : determines whether this time step is
 !                            the last one before a ROOT time step.
-! Agrif_Invloc             : MPI related 
+! Agrif_Invloc             : MPI related
 ! Agrif_detect             :
 ! Agrif_Before_Regridding  :
 ! initzeta                 :
@@ -54,8 +54,8 @@
 # endif
       implicit none
 # ifdef MPI
-      integer ierr  
-# endif          
+      integer ierr
+# endif
 # include "param.h"
 # include "private_scratch.h"
 # include "ncscrum.h"
@@ -89,7 +89,7 @@
         call Agrif_Set_coeffref_x(3)
         call Agrif_Set_coeffref_y(3)
         call Agrif_Set_coeffreft_x(3)
-        call Agrif_Set_coeffreft_y(3) 
+        call Agrif_Set_coeffreft_y(3)
         call Agrif_Set_Minwidth(18)
         call Agrif_Set_Regridding(300*(nfast+2))
       EndIf
@@ -105,7 +105,7 @@
 # include "dynderivparam.h"
 # ifdef MPI
       call MPI_Setup(ierr)
-# endif     
+# endif
 
       return
       end
@@ -124,7 +124,7 @@
       implicit none
       integer tile, ierr, trd, subs
 # ifdef WKB_WWAVE
-      integer winterp 
+      integer winterp
 # endif
 # include "param.h"
 # include "private_scratch.h"
@@ -160,7 +160,7 @@
       real hcur(GLOBAL_2D_ARRAY)
       real hmean(GLOBAL_2D_ARRAY)
       real hbis2(GLOBAL_2D_ARRAY)
-      real hbis3(GLOBAL_2D_ARRAY)      
+      real hbis3(GLOBAL_2D_ARRAY)
       real CF(GLOBAL_2D_ARRAY,0:N)
       real DC(GLOBAL_2D_ARRAY,0:N)
       integer nbloop
@@ -170,7 +170,7 @@
       integer iprmin,iprmax,jprmin,jprmax
       real,dimension(:,:),allocatable :: hconstraint,constraints,
      &gradconstraints
-      integer :: irhot   
+      integer :: irhot
       external hinterp, updateh, updatermask
       external initzeta,initubar,initvbar,inith
       external initu,initv,initt
@@ -179,18 +179,18 @@
 #  ifdef NBQ
        external initwz, initwnbq, initrhonbq
 #  endif
-# endif      
+# endif
 # ifdef WKB_WWAVE
       external initwac,initwkx,initwke
       external inithrm,initfrq,initwcg,initwsb,initwvn
-#  ifdef WAVE_ROLLER      
+#  ifdef WAVE_ROLLER
       external initwar, initwsr, initwcr
-#  endif        
+#  endif
 # endif
 !$AGRIF_DO_NOT_TREAT
        integer isens
        common/interph/isens
-!$AGRIF_END_DO_NOT_TREAT     
+!$AGRIF_END_DO_NOT_TREAT
 
 # ifdef MPI
 #  define LOCALLM Lmmpi
@@ -198,14 +198,14 @@
 # else
 #  define LOCALLM Lm
 #  define LOCALMM Mm
-# endif 
-      
+# endif
+
 # include "dynderivparam.h"
 
 # ifdef AUTOTILING
       call init_auto_tiling
 # endif
-       
+
       call declare_zoom_variables()
 
 # ifdef MPI
@@ -250,7 +250,7 @@
 # endif
 !
 !----------------------------------------------------------------------
-!  Create parallel threads 
+!  Create parallel threads
 !  initialize (FIRST-TOUCH) model global arrays (most of them
 !  are just set to to zero).
 !----------------------------------------------------------------------
@@ -258,8 +258,8 @@
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
 !        call start_timers()
-        call init_arrays (tile) 
-      enddo 
+        call init_arrays (tile)
+      enddo
 CR      write(*,*) '-11' MYID
 !
 !----------------------------------------------------------------------
@@ -270,16 +270,16 @@ CR      write(*,*) '-11' MYID
 !
 !  Set grid analytically
 !
-C$OMP PARALLEL DO PRIVATE(tile) 
-      do tile=0,NSUB_X*NSUB_E-1 
-        call ana_grid (tile) 
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call ana_grid (tile)
       enddo
       call Agrif_Init_Variable(ha_id,procname=inith)
 # else
 !
-!  Read grid from GRID NetCDF file 
+!  Read grid from GRID NetCDF file
 !
-      call get_grid 
+      call get_grid
       if (may_day_flag.ne.0) goto 99  !-->  EXIT
 # endif
 !
@@ -298,8 +298,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
 CR      write(*,*) ' -9' MYID
 !
 !----------------------------------------------------------------------
-!  Setup vertical grid variables setup vertical S-coordinates 
-!  and fast-time averaging for coupling of 
+!  Setup vertical grid variables setup vertical S-coordinates
+!  and fast-time averaging for coupling of
 !  split-explicit baroropic mode.
 !----------------------------------------------------------------------
 !
@@ -307,16 +307,16 @@ CR      write(*,*) ' -9' MYID
 !
 !  Set vertical S-coordinate functions
 !
-      call set_scoord 
+      call set_scoord
 !
 !  Set fast-time averaging for coupling of split-explicit baroropic mode.
 !
       call set_weights
 # endif
-CR      write(*,*) ' -8' MYID 
+CR      write(*,*) ' -8' MYID
 !
 !  Create three-dimensional S-coordinate system,
-!  which may be needed by ana_initial 
+!  which may be needed by ana_initial
 !  (here it is assumed that free surface zeta=0).
 !
 # ifdef SOLVE3D
@@ -330,7 +330,7 @@ CR      write(*,*) ' -7' MYID
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call grid_stiffness (tile) 
+        call grid_stiffness (tile)
       enddo
 # endif
 !
@@ -348,18 +348,18 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !! GC change for EXACT_RESTART
 !!        call get_initial
 !==================== FOR EXACT_RESTART as in main.F ====================
-#ifdef EXACT_RESTART
+#  ifdef EXACT_RESTART
         call get_initial (nrrec-1, 2) ! Set initial conditions
                                     ! in the case of restart run.
 C$OMP BARRIER
-# ifdef SOLVE3D
+#   ifdef SOLVE3D
         do tile=0,NSUB_X*NSUB_E-1
           call set_depth (tile) !<-- needed to initialize Hz_bak
         enddo
 C$OMP BARRIER
-# endif
-#endif
-      call get_initial (nrrec, 1)   ! Set initial conditions       
+#   endif
+#  endif
+      call get_initial (nrrec, 1)   ! Set initial conditions
       time=start_time
       tdays=time*sec2day
 !==================================================================
@@ -369,10 +369,10 @@ C$OMP BARRIER
         call Agrif_Declare_Variable((/1,2/),(/1,1/),(/'x','y'/)
      &   ,lbound(DU_avg2),ubound(DU_avg2),ubarid,torestore=.true.)
         call Agrif_Declare_Variable((/2,1/),(/1,1/),(/'x','y'/)
-     &   ,lbound(DV_avg2),ubound(DV_avg2),vbarid,torestore=.true.)  
-     
-        allocate(text(GLOBAL_2D_ARRAY,N,NT))  
-             
+     &   ,lbound(DV_avg2),ubound(DV_avg2),vbarid,torestore=.true.)
+
+        allocate(text(GLOBAL_2D_ARRAY,N,NT))
+
         call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
      &    (/'x','y','N','N'/),lbound(text),ubound(text),tid,
      &    torestore=.true.)
@@ -381,16 +381,16 @@ C$OMP BARRIER
      &   torestore=.true.)
         call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
      &   (/'x','y','N'/),lbound(Hvom),ubound(Hvom),vid,
-     &   torestore=.true.) 
- 
-        call Agrif_Set_bc(zetaid,(/-1,0/))     
+     &   torestore=.true.)
+
+        call Agrif_Set_bc(zetaid,(/-1,0/))
         call Agrif_Set_bc(ubarid,(/0,0/))
         call Agrif_Set_bc(vbarid,(/0,0/))
-        call Agrif_Set_bc(tid,(/-1,0/))     
+        call Agrif_Set_bc(tid,(/-1,0/))
         call Agrif_Set_bc(uid,(/0,0/))
         call Agrif_Set_bc(vid,(/0,0/))
-        
-        call Agrif_Set_bcinterp(zetaid,interp=Agrif_ppm)        
+
+        call Agrif_Set_bcinterp(zetaid,interp=Agrif_ppm)
         call Agrif_Set_bcinterp(ubarid,interp1=Agrif_linear,
      &                                 interp2=Agrif_ppm)
         call Agrif_Set_bcinterp(vbarid,interp1=Agrif_ppm,
@@ -411,7 +411,7 @@ C$OMP BARRIER
      &                            interp2=Agrif_ppm)
         call Agrif_Set_interp(vid,interp1=Agrif_ppm,
      &                            interp2=Agrif_linear)
-     
+
         call Agrif_Init_Variable(zetaid,procname=initzeta)
         call Agrif_Init_Variable(ubarid,procname=initubar)
         call Agrif_Init_Variable(vbarid,procname=initvbar)
@@ -451,23 +451,23 @@ C$OMP BARRIER
         call Agrif_Init_Variable(qdmwnbqid,procname=initwnbq)
         call Agrif_Init_Variable(rhonbqid,procname=initwnbq)
 #   endif
-#  endif        
+#  endif
 
         if (Agrif_Parent_Nb_Step() == 0) then
-!!     call get_initial 
+!!     call get_initial
 !==================== FOR EXACT_RESTART as in main.F ====================
-#ifdef EXACT_RESTART
+#  ifdef EXACT_RESTART
           call get_initial (nrrec-1, 2) ! Set initial conditions
                                         ! in the case of restart run.
 C$OMP BARRIER
-# ifdef SOLVE3D
+#   ifdef SOLVE3D
         do tile=0,NSUB_X*NSUB_E-1
           call set_depth (tile) !<-- needed to initialize Hz_bak
         enddo
 C$OMP BARRIER
-# endif
-#endif
-      call get_initial (nrrec, 1)   ! Set initial conditions        
+#   endif
+#  endif
+      call get_initial (nrrec, 1)   ! Set initial conditions
 !==================================================================
         endif
 # endif /* AGRIF_ADAPTIVE */
@@ -493,7 +493,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call  pisces_ini_tile (tile)
       enddo
 # endif
-CR      write(*,*) ' -6' MYID 
+CR      write(*,*) ' -6' MYID
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
 !
 !----------------------------------------------------------------------
@@ -510,8 +510,8 @@ C$OMP PARALLEL DO PRIVATE(tile)      ! Create three-dimensional
         call set_depth (tile)        ! time free surface is set to
                                      ! a non-zero field, either
                                      ! analytically or from restart.
-      enddo                          
-CR      write(*,*)  ' -5' MYID       
+      enddo
+CR      write(*,*)  ' -5' MYID
 # endif
 
 # ifdef SOLVE3D
@@ -523,7 +523,7 @@ CR      write(*,*)  ' -5' MYID
             CF(i,j,0)=0.
           enddo
         enddo
-      
+
         do k=1,N
           do j=0,Mm+1
             do i=1,Lm+1
@@ -533,7 +533,7 @@ CR      write(*,*)  ' -5' MYID
             enddo
           enddo
         enddo
-      
+
         do j=0,Mm+1
           do i=1,Lm+1
             DC(i,j,0)=1./DC(i,j,0)
@@ -541,7 +541,7 @@ CR      write(*,*)  ' -5' MYID
             ubar(i,j,1) = DC(i,j,0)*DU_avg1(i,j,1)
           enddo
         enddo
-      
+
         do k=N,1,-1
           do j=0,Mm+1
             do i=0,Lm+1
@@ -549,14 +549,14 @@ CR      write(*,*)  ' -5' MYID
             enddo
           enddo
         enddo
-      
+
         do j=1,Mm+1
           do i=0,Lm+1
             DC(i,j,0)=0.
             CF(i,j,0)=0.
           enddo
         enddo
-      
+
         do k=1,N
           do j=1,Mm+1
             do i=0,Lm+1
@@ -566,7 +566,7 @@ CR      write(*,*)  ' -5' MYID
             enddo
           enddo
         enddo
-      
+
         do j=1,Mm+1
           do i=0,Lm+1
             DC(i,j,0)=1./DC(i,j,0)
@@ -574,28 +574,28 @@ CR      write(*,*)  ' -5' MYID
             vbar(i,j,1) = DC(i,j,0)*DV_avg1(i,j,1)
           enddo
         enddo
-      
+
         do k=N,1,-1
           do j=1,Mm+1
             do i=0,Lm+1
               v(i,j,k,1) = (v(i,j,k,1)-CF(i,j,0))
             enddo
           enddo
-        enddo     
-          
-      endif 
+        enddo
+
+      endif
 #  endif /* AGRIF_ADAPTIVE */
 !
 !----------------------------------------------------------------------
 !  Set initial Non-boussinesq variables - Part I
 !----------------------------------------------------------------------
 !
-# ifdef M3FAST
+#  ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,1)
       enddo
-# endif
+#  endif
 !
 !----------------------------------------------------------------------
 !  Initialize diagnostic fields: mass flux, rho, omega
@@ -628,7 +628,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
-      
+
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_HUV (tile)
@@ -665,9 +665,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #  endif
       enddo !<-- tile
 # endif
-CR      write(*,*) ' -2' MYID 
+CR      write(*,*) ' -2' MYID
 !
-!  Read bottom sediment grain size [m] and density [kg/m^3] 
+!  Read bottom sediment grain size [m] and density [kg/m^3]
 !  from input NetCDF file;
 !
 # if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
@@ -698,13 +698,13 @@ CR      write(*,*) ' -2' MYID
 !----------------------------------------------------------------------
 !  WKB surface wave model:
 !
-!  initialization and initial run to equilibrium 
+!  initialization and initial run to equilibrium
 !----------------------------------------------------------------------
 !
 # ifdef WKB_WWAVE
       call Agrif_Init_Variable(wacid,procname=initwac)
       call Agrif_Init_Variable(wkxid,procname=initwkx)
-      call Agrif_Init_Variable(wkeid,procname=initwke)        
+      call Agrif_Init_Variable(wkeid,procname=initwke)
       call Agrif_Init_Variable(hrmid,procname=inithrm)
       call Agrif_Init_Variable(frqid,procname=initfrq)
       call Agrif_Init_Variable(wsbid,procname=initwsb)
@@ -786,7 +786,7 @@ C$OMP MASTER
 C$OMP END MASTER
 # endif /* WKB_WWAVE */
 !
-CR      write(*,*) ' -1' MYID 
+CR      write(*,*) ' -1' MYID
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
 
 !
@@ -798,7 +798,7 @@ CR      write(*,*) ' -1' MYID
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,3)
-      enddo     
+      enddo
 # endif
 !
 !----------------------------------------------------------------------
@@ -838,23 +838,23 @@ CR      write(*,*) '  0' MYID
       Vtimeindex = -1
 #  ifdef NBQ
       Wtimeindex = -1
-#  endif       
+#  endif
 #  ifdef AGRIF_OBC_SOUTH
-#   ifdef MPI        
+#   ifdef MPI
             if (.not.SOUTH_INTER) then
 #   endif
                 U_south(0:LOCALLM+1,0:0,1:N,4)=
      &                u(0:LOCALLM+1,0:0,1:N,1)
-     
+
                 V_south(0:LOCALLM+1,1:1,1:N,4)=
      &                v(0:LOCALLM+1,1:1,1:N,1)
-     
+
                 T_south(0:LOCALLM+1,0:1,1:N,4,1:NT)=
-     &                t(0:LOCALLM+1,0:1,1:N,1,1:NT)     
+     &                t(0:LOCALLM+1,0:1,1:N,1,1:NT)
 #   ifdef M3FAST
                 Unbq_south(0:LOCALLM+1,0:0,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
-     
+
                 Vnbq_south(0:LOCALLM+1,1:1,1:N,2)=
      &            qdmv_nbq(0:LOCALLM+1,1:1,1:N)
 #    ifdef NBQ
@@ -863,30 +863,30 @@ CR      write(*,*) '  0' MYID
 
                 Wnbq_south(0:LOCALLM+1,0:0,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
-#    endif 
+#    endif
 #   endif
-#   ifdef MPI           
-            endif          
-#   endif            
+#   ifdef MPI
+            endif
+#   endif
 #  endif
-         
+
 #  ifdef AGRIF_OBC_NORTH
-#   ifdef MPI        
-            if (.not.NORTH_INTER) then  
+#   ifdef MPI
+            if (.not.NORTH_INTER) then
 #   endif
                 U_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,4)=
      &                u(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
-     
+
                 V_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,4)=
-     &                v(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1) 
-     
+     &                v(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
+
                 T_north(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,4,1:NT)=
      &                t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,1:NT)
 
 #   ifdef M3FAST
                 Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
-     
+
                 Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
 #    ifdef NBQ
@@ -897,27 +897,27 @@ CR      write(*,*) '  0' MYID
      &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
 #    endif
 #   endif
-#   ifdef MPI                    
-            endif  
-#   endif            
-#  endif            
+#   ifdef MPI
+            endif
+#   endif
+#  endif
 
 #  ifdef AGRIF_OBC_WEST
-#   ifdef MPI        
+#   ifdef MPI
             if (.not.WEST_INTER) then
 #   endif
                 U_west(1:1,0:LOCALMM+1,1:N,4)=
      &               u(1:1,0:LOCALMM+1,1:N,1)
-     
+
                 V_west(0:0,0:LOCALMM+1,1:N,4)=
      &               v(0:0,0:LOCALMM+1,1:N,1)
-     
+
                 T_west(0:1,0:LOCALMM+1,1:N,4,1:NT)=
-     &               t(0:1,0:LOCALMM+1,1:N,1,1:NT)     
+     &               t(0:1,0:LOCALMM+1,1:N,1,1:NT)
 #   ifdef M3FAST
                 Unbq_west(1:1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
-     
+
                 Vnbq_west(0:0,0:LOCALMM+1,1:N,2)=
      &           qdmv_nbq(0:0,0:LOCALMM+1,1:N)
 #    ifdef NBQ
@@ -928,27 +928,27 @@ CR      write(*,*) '  0' MYID
      &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
 #    endif
 #   endif
-#   ifdef MPI            
+#   ifdef MPI
             endif
-#   endif            
+#   endif
 #  endif
-         
+
 #  ifdef AGRIF_OBC_EAST
-#   ifdef MPI        
+#   ifdef MPI
             if (.not.EAST_INTER) then
 #   endif
                 U_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,4)=
      &               u(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
-     
+
                 V_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,4)=
      &               v(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
-     
+
                 T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,4,1:NT)=
-     &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)     
+     &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)
 #   ifdef M3FAST
                 Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
-     
+
                 Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
 #    ifdef NBQ
@@ -959,9 +959,9 @@ CR      write(*,*) '  0' MYID
      &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
 #    endif
 #   endif
-#   ifdef MPI               
-            endif  
-#   endif                            
+#   ifdef MPI
+            endif
+#   endif
 #  endif
 # endif /* SOLVE3D */
 
@@ -969,58 +969,60 @@ CR      write(*,*) '  0' MYID
       UVspongeTimeindex = -1
 
       iif = -1
-      
+# if defined OA_COUPLING || defined OW_COUPLING
+      it_inside_root = 1
+# endif
 # ifdef AGRIF_ADAPTIVE
-      ntstart = 1 + Agrif_irhot()*(Agrif_Parent(iic)-1)   
+      ntstart = 1 + Agrif_irhot()*(Agrif_Parent(iic)-1)
       time_start=Agrif_Parent(time_start)
      &           +dt*Agrif_irhot()
      &           *float(Agrif_Parent(iic)
      &           -Agrif_Parent(ntstart))
-# endif      
+# endif
       iic = ntstart
 
       nbcoarse = 1
       nbstep3d = 0
-      
+
       TTimesponge = 1
       UVTimesponge = 1
 
       usponge = 0.
       vsponge = 0.
       wsponge = 0.
-      
+
       myfx = 0.
       myfy = 0.
       DU_avg1(:,:,4:5) = 0.
       DV_avg1(:,:,4:5) = 0.
-      
-# ifdef AGRIF_2WAY   
+
+# ifdef AGRIF_2WAY
 #  ifdef MASKING
       Agrif_UseSpecialValueInUpdate = .TRUE.
       Agrif_SpecialValueFineGrid = 0.
-      
+
       call Agrif_Update_Variable(rmaskid,procname=updatermask)
-      
-      Agrif_UseSpecialValueInUpdate = .FALSE.   
+
+      Agrif_UseSpecialValueInUpdate = .FALSE.
 
       call Agrif_ChildGrid_To_ParentGrid()
       call ResetMask()
       call Agrif_ParentGrid_To_ChildGrid()
-#  endif 
-   
+#  endif
+
       Agrif_UseSpecialValueInUpdate = .TRUE.
-      Agrif_SpecialValueFineGrid = 0.   
+      Agrif_SpecialValueFineGrid = 0.
       call Agrif_Update_Variable(hid,locupdate=(/1,0/),
      &     procname=updateh)
       Agrif_UseSpecialValueInUpdate = .FALSE.
 
-      isens = 1 
+      isens = 1
       call Agrif_Bc_Variable(ubarid,calledweight=1.,procname=hinterp)
       isens = 2
       call Agrif_Bc_Variable(vbarid,calledweight=1.,procname=hinterp)
 
       Agrif_UseSpecialValueInUpdate = .TRUE.
-      Agrif_SpecialValueFineGrid = 0.   
+      Agrif_SpecialValueFineGrid = 0.
       call Agrif_Update_Variable(hid,locupdate=(/1,0/),
      &     procname=updateh)
       Agrif_UseSpecialValueInUpdate = .FALSE.
@@ -1029,13 +1031,13 @@ CR      write(*,*) '  0' MYID
       call UpdateGridhis()
       call Agrif_ParentGrid_To_ChildGrid()
 # endif /* AGRIF_2WAY */
-    
+
 # ifdef AGRIF_ADAPTIVE
       call Agrif_Set_Regridding(300*(nfast+2))
       call Agrif_Set_Minwidth(18)
       call Agrif_Set_Rafmax(2)
 # endif
-     
+
       return
       end
 !
@@ -1052,7 +1054,7 @@ CR      write(*,*) '  0' MYID
 # include "zoom.h"
 !# include "nbq.h"
       integer :: irhot
-      
+
       i1t = 0
       i2t = Lm+1
       j1t = 0
@@ -1066,7 +1068,7 @@ CR      write(*,*) '  0' MYID
         i2t = Lmmpi+2
       else
         i2t = Lmmpi+1
-      endif 
+      endif
       if (SOUTH_INTER) then
         j1t = -1
       endif
@@ -1074,14 +1076,14 @@ CR      write(*,*) '  0' MYID
         j2t = Mmmpi+2
       else
         j2t = Mmmpi+1
-      endif           
-# endif    
+      endif
+# endif
 
       i1u = i1t
       i2u = i2t
       j1v = j1t
       j2v = j2t
-      
+
       irhot = Agrif_Irhot()
 
 ! ==================== UPDATE VARIABLES ======================
@@ -1092,7 +1094,7 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1t,j1t,1/),
      &    (/i2t,j2t,irhot+1/),updatezetaid)
 
-# if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX        
+# if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX
       call Agrif_Set_UpdateType(updatezetaid,update=
      &Agrif_Update_full_weighting)
 # endif
@@ -1114,8 +1116,8 @@ CR      write(*,*) '  0' MYID
       call Agrif_Declare_Variable((/1,2/),(/1,1/),
      &    (/'x','y'/),(/0,j1t/),
      &    (/i2u,j2t/),updateduavg2id)
-     
-# ifdef AGRIF_UPDATE_FULLWEIGHTING         
+
+# ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updateubarid,update=
      &Agrif_Update_full_weighting)
       call Agrif_Set_UpdateType(updateduavg2id,update=
@@ -1147,9 +1149,9 @@ CR      write(*,*) '  0' MYID
 # endif
 # ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updateubarid,
-     &update=Agrif_Update_Average)   
+     &update=Agrif_Update_Average)
       call Agrif_Set_UpdateType(updateduavg2id,
-     &update=Agrif_Update_Average) 
+     &update=Agrif_Update_Average)
 # endif
 
 ! ---------------------- vbar / DV_avg2 ---------------------
@@ -1157,14 +1159,14 @@ CR      write(*,*) '  0' MYID
       call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
      &    (/'x','y','N'/),(/i1t,0,1/),
      &    (/i2t,j2v,irhot+1/),updatevbarid)
-     
+
       call Agrif_Declare_Variable((/2,1/),(/1,1/),
      &    (/'x','y'/),(/i1t,0/),
      &    (/i2t,j2v/),updatedvavg2id)
 
-# ifdef AGRIF_UPDATE_FULLWEIGHTING          
+# ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updatevbarid,update=
-     &Agrif_Update_full_weighting)  
+     &Agrif_Update_full_weighting)
       call Agrif_Set_UpdateType(updatedvavg2id,update=
      &Agrif_Update_full_weighting)
 # endif
@@ -1194,9 +1196,9 @@ CR      write(*,*) '  0' MYID
 # endif
 # ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updatevbarid,
-     &update=Agrif_Update_Average)   
+     &update=Agrif_Update_Average)
       call Agrif_Set_UpdateType(updatedvavg2id,
-     &update=Agrif_Update_Average) 
+     &update=Agrif_Update_Average)
 # endif
 
 ! ----------------------     tracers      ---------------------
@@ -1224,7 +1226,7 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1u,j1t,1/),
      &    (/i2u,j2t,N/),updateuid)
 
-# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+# ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updateuid,update=
      &Agrif_Update_full_weighting)
 # endif
@@ -1245,7 +1247,7 @@ CR      write(*,*) '  0' MYID
 # endif
 # ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updateuid,
-     &update=Agrif_Update_Average)    
+     &update=Agrif_Update_Average)
 # endif
 
 ! ----------------------      Huon     ---------------------
@@ -1254,7 +1256,7 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1u,j1t,1/),
      &    (/i2u,j2t,N/),updatehuonid)
 
-# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+# ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updatehuonid,update=
      &Agrif_Update_full_weighting)
 # endif
@@ -1275,7 +1277,7 @@ CR      write(*,*) '  0' MYID
 # endif
 # ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updatehuonid,
-     &update=Agrif_Update_Average)    
+     &update=Agrif_Update_Average)
 # endif
 
 ! ----------------------      myfx      ---------------------
@@ -1284,7 +1286,7 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N','N'/),(/i1u,j1t,1,1/),
      &    (/i2u,j2t,N,NT/),updatemyfxid)
 
-# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+# ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updatemyfxid,update=
      &Agrif_Update_full_weighting)
 # endif
@@ -1305,7 +1307,7 @@ CR      write(*,*) '  0' MYID
 # endif
 # ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updatemyfxid,
-     &update=Agrif_Update_Average)    
+     &update=Agrif_Update_Average)
 # endif
 
 ! ----------------------      v      ---------------------
@@ -1314,16 +1316,16 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1t,j1v,1/),
      &    (/i2t,j2v,N/),updatevid)
 
-# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+# ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updatevid,update=
      &Agrif_Update_full_weighting)
 # endif
-# ifdef AGRIF_UPDATE_MIX     
+# ifdef AGRIF_UPDATE_MIX
       call Agrif_Set_UpdateType(updatevid,
      &update1=Agrif_Update_Full_Weighting,
      &update2=Agrif_Update_Average)
 # endif
-# ifdef AGRIF_UPDATE_MIX_HIGH  
+# ifdef AGRIF_UPDATE_MIX_HIGH
       call Agrif_Set_UpdateType(updatevid,
      &update1=Agrif_Update_4rdorder,
      &update2=Agrif_Update_Full_Weighting)
@@ -1333,9 +1335,9 @@ CR      write(*,*) '  0' MYID
      &update1=Agrif_Update_Average,
      &update2=Agrif_Update_Copy)
 # endif
-# ifdef AGRIF_UPDATE_AVERAGE     
+# ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updatevid,
-     &update=Agrif_Update_Average)     
+     &update=Agrif_Update_Average)
 # endif
 
 ! ----------------------      hvom      ---------------------
@@ -1344,16 +1346,16 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1t,j1v,1/),
      &    (/i2t,j2v,N/),updatehvomid)
 
-# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+# ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updatehvomid,update=
      &Agrif_Update_full_weighting)
 # endif
-# ifdef AGRIF_UPDATE_MIX     
+# ifdef AGRIF_UPDATE_MIX
       call Agrif_Set_UpdateType(updatehvomid,
      &update1=Agrif_Update_Full_Weighting,
      &update2=Agrif_Update_Average)
 # endif
-# ifdef AGRIF_UPDATE_MIX_HIGH 
+# ifdef AGRIF_UPDATE_MIX_HIGH
       call Agrif_Set_UpdateType(updatehvomid,
      &update1=Agrif_Update_4rdorder,
      &update2=Agrif_Update_Full_Weighting)
@@ -1363,9 +1365,9 @@ CR      write(*,*) '  0' MYID
      &update1=Agrif_Update_Average,
      &update2=Agrif_Update_Copy)
 # endif
-# ifdef AGRIF_UPDATE_AVERAGE     
+# ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updatehvomid,
-     &update=Agrif_Update_Average)     
+     &update=Agrif_Update_Average)
 # endif
 
 ! ----------------------      myfy      ---------------------
@@ -1374,16 +1376,16 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N','N'/),(/i1t,j1v,1,1/),
      &    (/i2t,j2v,N,NT/),updatemyfyid)
 
-# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+# ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updatemyfyid,update=
      &Agrif_Update_full_weighting)
 # endif
-# ifdef AGRIF_UPDATE_MIX     
+# ifdef AGRIF_UPDATE_MIX
       call Agrif_Set_UpdateType(updatemyfyid,
      &update1=Agrif_Update_Full_Weighting,
      &update2=Agrif_Update_Average)
 # endif
-# ifdef AGRIF_UPDATE_MIX_HIGH    
+# ifdef AGRIF_UPDATE_MIX_HIGH
       call Agrif_Set_UpdateType(updatemyfyid,
      &update1=Agrif_Update_4rdorder,
      &update2=Agrif_Update_Full_Weighting)
@@ -1393,9 +1395,9 @@ CR      write(*,*) '  0' MYID
      &update1=Agrif_Update_Average,
      &update2=Agrif_Update_Copy)
 # endif
-# ifdef AGRIF_UPDATE_AVERAGE     
+# ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updatemyfyid,
-     &update=Agrif_Update_Average)     
+     &update=Agrif_Update_Average)
 # endif
 
 # ifdef M3FAST
@@ -1409,7 +1411,7 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N'/),(/i1t,j1v,1/),
      &    (/i2t,j2v,N/),updatevnbqid)
 
-#  ifdef AGRIF_UPDATE_FULLWEIGHTING           
+#  ifdef AGRIF_UPDATE_FULLWEIGHTING
       call Agrif_Set_UpdateType(updateunbqid,update=
      &Agrif_Update_full_weighting)
       call Agrif_Set_UpdateType(updatevnbqid,update=
@@ -1463,11 +1465,11 @@ CR      write(*,*) '  0' MYID
 #   endif
 #   ifdef AGRIF_UPDATE_MIX_LOW
       call Agrif_Set_UpdateType(updatewnbqid,
-     &update=Agrif_Update_Average)      
+     &update=Agrif_Update_Average)
 #   endif
-#   ifdef AGRIF_UPDATE_AVERAGE     
+#   ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updatewnbqid,
-     &update=Agrif_Update_Average)     
+     &update=Agrif_Update_Average)
 #   endif
 
 ! ----------------------      rhonbq      ---------------------
@@ -1486,11 +1488,11 @@ CR      write(*,*) '  0' MYID
 #   endif
 #   ifdef AGRIF_UPDATE_MIX_LOW
       call Agrif_Set_UpdateType(updaterhonbqid,
-     &update=Agrif_Update_Average)      
+     &update=Agrif_Update_Average)
 #   endif
-#   ifdef AGRIF_UPDATE_AVERAGE     
+#   ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updaterhonbqid,
-     &update=Agrif_Update_Average)     
+     &update=Agrif_Update_Average)
 #   endif
 
 
@@ -1504,7 +1506,7 @@ CR      write(*,*) '  0' MYID
       call Agrif_Set_UpdateType(updatewid,
      &update=Agrif_Update_full_weighting)
 #   endif
-#   ifdef AGRIF_UPDATE_MIX_HIGH  
+#   ifdef AGRIF_UPDATE_MIX_HIGH
       call Agrif_Set_UpdateType(updatewid,
      &update=Agrif_Update_4rdorder)
 #   endif
@@ -1512,9 +1514,9 @@ CR      write(*,*) '  0' MYID
       call Agrif_Set_UpdateType(updatewid,
      &update=Agrif_Update_Average)
 #   endif
-#   ifdef AGRIF_UPDATE_AVERAGE     
+#   ifdef AGRIF_UPDATE_AVERAGE
       call Agrif_Set_UpdateType(updatewid,
-     &update=Agrif_Update_Average)     
+     &update=Agrif_Update_Average)
 #   endif
 
 #  endif /* NBQ */
@@ -1564,7 +1566,7 @@ CR      write(*,*) '  0' MYID
 # ifdef WET_DRY
         call Agrif_Declare_Variable((/2,2/),(/1,1/),
      &   (/'x','y'/),(/i1t,j1t/),(/i2t,j2t/),rmask_wetid)
-# endif     
+# endif
         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
      &   (/i1t,j1t/),(/i2t,j2t/),zetaid)
 
@@ -1572,7 +1574,7 @@ CR      write(*,*) '  0' MYID
      &   (/0,j1t/),(/i2u,j2t/),ubarid)
 
         call Agrif_Declare_Variable((/2,1/),(/1,1/),(/'x','y'/),
-     &   (/i1t,0/),(/i2t,j2v/),vbarid)    
+     &   (/i1t,0/),(/i2t,j2v/),vbarid)
 
 # ifdef WET_DRY
         call Agrif_Declare_Variable((/1,2/),(/1,1/),
@@ -1587,7 +1589,7 @@ CR      write(*,*) '  0' MYID
         call Agrif_Declare_Variable((/2,1/),(/1,1/),
      &   (/'x','y'/),(/i1t,j1v/),(/i2t,j2v/),vmask_wetid)
 # endif
-             
+
         call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
      &    (/i2t,j2t,N,NT/),tid)
@@ -1595,7 +1597,7 @@ CR      write(*,*) '  0' MYID
         call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
      &    (/i2t,j2t,N,NT/),tspongeid)
-          
+
         call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1u,j1t,1/),
      &   (/i2u,j2t,N/),uid)
@@ -1603,16 +1605,16 @@ CR      write(*,*) '  0' MYID
         call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1u,j1t,1/),
      &   (/i2u,j2t,N/),uspongeid)
-          
+
         call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),vid)
-     
+
         call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),vspongeid)
 
-# ifdef M3FAST      
+# ifdef M3FAST
         call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1u,j1t,1/),
      &   (/i2u,j2t,N/),qdmunbqid)
@@ -1620,7 +1622,7 @@ CR      write(*,*) '  0' MYID
         call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),qdmvnbqid)
-#  ifdef NBQ                  
+#  ifdef NBQ
         call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
      &    (/i2t,j2t,N,NT/),rhonbqid)
@@ -1645,7 +1647,7 @@ CR      write(*,*) '  0' MYID
          call Agrif_Set_bc(wacid,(/0,0/))
          call Agrif_Set_interp(wacid,interp=Agrif_ppm)
          call Agrif_Set_bcinterp(wacid,interp=Agrif_ppm)
-  
+
          call Agrif_Set_bc(wkxid,(/0,0/))
          call Agrif_Set_interp(wkxid,interp1=Agrif_lagrange,
      &                               interp2=Agrif_ppm)
@@ -1661,7 +1663,7 @@ CR      write(*,*) '  0' MYID
          call Agrif_Set_bc(hrmid,(/0,0/))
          call Agrif_Set_bcinterp(hrmid,interp=Agrif_ppm)
          call Agrif_Set_interp(hrmid,interp=Agrif_ppm)
-         
+
          call Agrif_Set_bc(frqid,(/0,0/))
          call Agrif_Set_bcinterp(frqid,interp=Agrif_ppm)
          call Agrif_Set_interp(frqid,interp=Agrif_ppm)
@@ -1673,7 +1675,7 @@ CR      write(*,*) '  0' MYID
          call Agrif_Set_bc(wvnid,(/0,0/))
          call Agrif_Set_bcinterp(wvnid,interp=Agrif_ppm)
          call Agrif_Set_interp(wvnid,interp=Agrif_ppm)
-        
+
          call Agrif_Set_bc(wcgid,(/0,0/))
          call Agrif_Set_bcinterp(wcgid,interp=Agrif_ppm)
          call Agrif_Set_interp(wcgid,interp=Agrif_ppm)
@@ -1698,11 +1700,11 @@ CR      write(*,*) '  0' MYID
 #  endif
 # endif /* WKB_WWAVE */
 
-        call Agrif_Set_bc(hid,(/0,0/)) 
-        call Agrif_Set_bc(zetaid,(/-1,0/))     
+        call Agrif_Set_bc(hid,(/0,0/))
+        call Agrif_Set_bc(zetaid,(/-1,0/))
         call Agrif_Set_bc(ubarid,(/0,0/))
         call Agrif_Set_bc(vbarid,(/0,0/))
-        call Agrif_Set_bc(tid,(/-1,0/))     
+        call Agrif_Set_bc(tid,(/-1,0/))
         call Agrif_Set_bc(uid,(/0,0/))
         call Agrif_Set_bc(vid,(/0,0/))
 # ifdef WET_DRY
@@ -1726,10 +1728,10 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bcinterp(ha_id,interp=Agrif_ppm)
         call Agrif_Set_interp(ha_id,interp=Agrif_ppm)
 # endif
-        call Agrif_Set_bcinterp(hid,interp=Agrif_linear)        
+        call Agrif_Set_bcinterp(hid,interp=Agrif_linear)
         call Agrif_Set_interp(hid,interp=Agrif_linear)
-     
-        call Agrif_Set_bcinterp(zetaid,interp=Agrif_lagrange)        
+
+        call Agrif_Set_bcinterp(zetaid,interp=Agrif_lagrange)
         call Agrif_Set_bcinterp(ubarid,interp1=Agrif_lagrange,
      &                                 interp2=Agrif_ppm)
         call Agrif_Set_bcinterp(vbarid,interp1=Agrif_ppm,
@@ -1758,7 +1760,7 @@ CR      write(*,*) '  0' MYID
      &                                    interp2=Agrif_lagrange)
 #  ifdef NBQ
         call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
-        call Agrif_Set_bcinterp(wspongeid,interp=Agrif_constant) 
+        call Agrif_Set_bcinterp(wspongeid,interp=Agrif_constant)
         call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
         !call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
         call Agrif_Set_bcinterp(rhonbqid,interp11=Agrif_constant,
@@ -1778,7 +1780,7 @@ CR      write(*,*) '  0' MYID
 
 ! ----------------------       h       ---------------------
 
-# if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX        
+# if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX
       call Agrif_Set_UpdateType(hid,update=
      &Agrif_Update_full_weighting)
 # endif
@@ -1806,7 +1808,7 @@ CR      write(*,*) '  0' MYID
 #  include "zoom.h"
       integer i,j
       external updatermask
-       
+
 #  ifdef MPI
       call exchange_r2d_tile (1,Lm,1,Mm,  rmask)
 #  endif
@@ -1822,7 +1824,7 @@ CR      write(*,*) '  0' MYID
         vmask(i,j) = rmask(i,j)*rmask(i,j-1)
        enddo
        enddo
-       
+
        do j=1,Mm+1
        do i=1,Lm+1
           pmask(i,j)=rmask(i,j)*rmask(i-1,j)*rmask(i,j-1)
@@ -1842,10 +1844,10 @@ CR      write(*,*) '  0' MYID
       if (.Not.Agrif_Root()) then
         Agrif_UseSpecialValueInUpdate = .TRUE.
         Agrif_SpecialValueFineGrid = 0.
-      
+
         call Agrif_Update_Variable(rmaskid,procname=updatermask)
-      
-        Agrif_UseSpecialValueInUpdate = .FALSE.   
+
+        Agrif_UseSpecialValueInUpdate = .FALSE.
 
         call Agrif_ChildGrid_To_ParentGrid()
         call ResetMask()
@@ -1853,7 +1855,7 @@ CR      write(*,*) '  0' MYID
       endif
 
       end subroutine ResetMask
-# endif /* MASKING */      
+# endif /* MASKING */
 !
 !====================================================================
 !                   subroutine Updateh
@@ -1872,17 +1874,17 @@ CR      write(*,*) '  0' MYID
       real tabres(i1:i2,j1:j2)
       logical before
       real cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0
-      
-      integer i,j,k  
-       real tabtemp(i1:i2,j1:j2) 
-              
+
+      integer i,j,k
+       real tabtemp(i1:i2,j1:j2)
+
       if (before) then
- 
+
         tabres(i1:i2,j1:j2) = h(i1:i2,j1:j2)
 # ifdef MASKING
      &                        *rmask(i1:i2,j1:j2)
 # endif
-         
+
        else
 
          do j=j1,j2
@@ -1892,14 +1894,14 @@ CR      write(*,*) '  0' MYID
 # else
              h(i,j)=max(tabres(i,j),hc)
 # endif
-# ifdef NEW_S_COORD 
-             hinv(i,j)=1./(h(i,j)+hc)      
+# ifdef NEW_S_COORD
+             hinv(i,j)=1./(h(i,j)+hc)
 # else
-             hinv(i,j)=1./h(i,j) 
+             hinv(i,j)=1./h(i,j)
 # endif
            enddo
          enddo
-       
+
          do j=j1,j2
            do i=i1,i2
              z_w(i,j,0) = -h(i,j)
@@ -1917,16 +1919,16 @@ CR      write(*,*) '  0' MYID
              cff1_r=Cs_r(k)
 # endif
              do i=i1,i2
-               z_w0=cff_w+cff1_w*h(i,j) 
+               z_w0=cff_w+cff1_w*h(i,j)
                z_r0=cff_r+cff1_r*h(i,j)
-# ifdef NEW_S_COORD                              
+# ifdef NEW_S_COORD
                z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+Zt_avg1(i,j)
-     &                                          *(1.+z_w0*hinv(i,j)) 
+     &                                          *(1.+z_w0*hinv(i,j))
                z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+Zt_avg1(i,j)
-     &                                          *(1.+z_r0*hinv(i,j))    
+     &                                          *(1.+z_r0*hinv(i,j))
 # else
-               z_w(i,j,k)=z_w0+Zt_avg1(i,j)*(1.+z_w0*hinv(i,j))      
-               z_r(i,j,k)=z_r0+Zt_avg1(i,j)*(1.+z_r0*hinv(i,j)) 
+               z_w(i,j,k)=z_w0+Zt_avg1(i,j)*(1.+z_w0*hinv(i,j))
+               z_r(i,j,k)=z_r0+Zt_avg1(i,j)*(1.+z_r0*hinv(i,j))
 # endif
                Hz_bak(i,j,k)=Hz(i,j,k)
                Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
@@ -1935,7 +1937,7 @@ CR      write(*,*) '  0' MYID
          enddo
 
        endif
-      
+
       return
       end
 !====================================================================
@@ -1955,15 +1957,15 @@ CR      write(*,*) '  0' MYID
       integer i1,i2,j1,j2
       real tabres(i1:i2,j1:j2)
       logical before
-      
+
       integer i,j,k
-              
+
       if (before) then
         tabres(i1:i2,j1:j2) = rmask(i1:i2,j1:j2)
       else
         rmask(i1:i2,j1:j2)=tabres(i1:i2,j1:j2)
       endif
-      
+
       return
       end
 # endif /*  MASKING */
@@ -1991,7 +1993,7 @@ CR      write(*,*) '  0' MYID
         call UpdateGridhis()
         call Agrif_ParentGrid_To_ChildGrid()
       endif
-      
+
       end subroutine UpdateGridhis
 
 !
@@ -2011,7 +2013,7 @@ CR      write(*,*) '  0' MYID
 # else
 #  define LOCALLM Lm
 #  define LOCALMM Mm
-# endif 
+# endif
 !$AGRIF_DO_NOT_TREAT
        integer isens
        common/interph/isens
@@ -2024,30 +2026,30 @@ CR      write(*,*) '  0' MYID
        integer nb,ndir
        logical :: western_side, eastern_side
        logical :: northern_side,southern_side
-       
+
        if (before) then
          if (isens == 1) THEN
            do j=j1,j2
              do i=max(i1,lbound(h,1)+1),i2
                tabres(i,j) = 0.5*(h(i-1,j)+h(i,j))
              enddo
-           enddo       
+           enddo
          else
            do j=max(j1,lbound(h,2)+1),j2
              do i=i1,i2
                tabres(i,j) = 0.5*(h(i,j-1)+h(i,j))
              enddo
-           enddo       
-         endif  
+           enddo
+         endif
        else
-       
+
          western_side  = (nb == 1).AND.(ndir == 1)
          eastern_side  = (nb == 1).AND.(ndir == 2)
          southern_side = (nb == 2).AND.(ndir == 1)
          northern_side = (nb == 2).AND.(ndir == 2)
 
          if (isens == 1) then
-           if ( western_side ) then    
+           if ( western_side ) then
              do j=j1,j2
                h(0,j) = 2.*tabres(1,j)-h(1,j)
 # ifdef NEW_S_COORD
@@ -2057,8 +2059,8 @@ CR      write(*,*) '  0' MYID
 # endif
              enddo
            endif
-           
-           if ( eastern_side ) then 
+
+           if ( eastern_side ) then
              do j=j1,j2
                h(LOCALLM+1,j) = 2.*tabres(LOCALLM+1,j)-h(LOCALLM,j)
 # ifdef NEW_S_COORD
@@ -2068,9 +2070,9 @@ CR      write(*,*) '  0' MYID
 # endif
              enddo
            endif
-           
+
          elseif (isens == 2) then
-           if ( southern_side ) then      
+           if ( southern_side ) then
              do i=i1,i2
                h(i,0) = 2.*tabres(i,1)-h(i,1)
 # ifdef NEW_S_COORD
@@ -2080,7 +2082,7 @@ CR      write(*,*) '  0' MYID
 # endif
              enddo
            endif
-           
+
            if ( northern_side ) then
              do i=i1,i2
                h(i,LOCALMM+1) = 2.*tabres(i,LOCALMM+1)-h(i,LOCALMM)
@@ -2094,10 +2096,10 @@ CR      write(*,*) '  0' MYID
          endif ! <- endif isens
 
         endif  ! <- endif before
-        
+
       return
-      end      
-      
+      end
+
       subroutine hinterp_old(tabres,i1,i2,j1,j2)
       implicit none
 # include "param.h"
@@ -2112,23 +2114,23 @@ CR      write(*,*) '  0' MYID
        integer i1,i2,j1,j2
        real tabres(i1:i2,j1:j2)
        integer i,j
-       
+
        if (isens == 1) THEN
          do j=j1,j2
            do i=max(i1,lbound(h,1)+1),i2
              tabres(i,j) = 0.5*(h(i-1,j)+h(i,j))
            enddo
-         enddo       
+         enddo
        else
          do j=max(j1,lbound(h,2)+1),j2
            do i=i1,i2
              tabres(i,j) = 0.5*(h(i,j-1)+h(i,j))
            enddo
-         enddo       
-       endif  
-       
+         enddo
+       endif
+
       return
-      end      
+      end
 
 !
 !====================================================================
@@ -2138,7 +2140,7 @@ CR      write(*,*) '  0' MYID
 # ifdef WKB_WWAVE
       subroutine initwac(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2154,7 +2156,7 @@ CR      write(*,*) '  0' MYID
         wac(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
         wac(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
       endif
-       
+
       return
       end
 
@@ -2162,7 +2164,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine inithrm(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2182,11 +2184,11 @@ CR      write(*,*) '  0' MYID
       return
       end
 
-!==================================================================== 
-  
+!====================================================================
+
       subroutine initfrq(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2210,7 +2212,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine initwsb(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2234,7 +2236,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine initwvn(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2258,7 +2260,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine initwcg(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2282,7 +2284,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine initwfc(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2307,7 +2309,7 @@ CR      write(*,*) '  0' MYID
 #  ifdef WAVE_ROLLER
       subroutine initwcr(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#   include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2331,7 +2333,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine initwsr(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#   include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2355,7 +2357,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine initwar(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#   include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2371,7 +2373,7 @@ CR      write(*,*) '  0' MYID
         war(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
         war(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
       endif
-       
+
       return
       end
 #  endif
@@ -2380,7 +2382,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine initwkx(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2396,7 +2398,7 @@ CR      write(*,*) '  0' MYID
         wkx(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
         wkx(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
       endif
-       
+
       return
       end
 
@@ -2404,7 +2406,7 @@ CR      write(*,*) '  0' MYID
 
       subroutine initwke(tabres,i1,i2,j1,j2,before)
       implicit none
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
       integer i1,i2,j1,j2
       logical before
       real tabres(i1:i2,j1:j2)
@@ -2418,9 +2420,9 @@ CR      write(*,*) '  0' MYID
         enddo
       else
         wke(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
-        wke(i1:i2,j1:j2,2)=tabres (i1:i2,j1:j2)      
+        wke(i1:i2,j1:j2,2)=tabres (i1:i2,j1:j2)
       endif
-       
+
       return
       end
 # endif
@@ -2510,12 +2512,12 @@ CR      write(*,*) '  0' MYID
         Subroutine Agrif_Invloc(indloc,proc,dir,indglob)
         implicit none
         integer indloc, proc, dir, indglob
-# include "param.h"        
+#  include "param.h"
         If (dir == 1) Then
-           indglob = indloc + iminmpi-1          
+           indglob = indloc + iminmpi-1
         Else If (dir == 2) Then
            indglob = indloc + jminmpi-1
-        Else 
+        Else
            indglob = indloc
         End If
         Return
@@ -2525,7 +2527,7 @@ CR      write(*,*) '  0' MYID
         implicit none
         integer, intent(out) :: oimin, oimax
         integer, intent(out) :: ojmin, ojmax
-# include "param.h"        
+#  include "param.h"
         oimin = iminmpi
         oimax = imaxmpi
         ojmin = jminmpi
@@ -2539,7 +2541,7 @@ CR      write(*,*) '  0' MYID
         integer, intent(in)  :: i1, i2, j1, j2, nbprocs
         real,    intent(out) :: grid_cost
 
-! grid_cost = SIZE((/i1:i2, j1:j2/)) / real(nbprocs)    
+! grid_cost = SIZE((/i1:i2, j1:j2/)) / real(nbprocs)
 ! FIXME: Does not work with conv
         grid_cost = (i2-i1+1)*(j2-j1+1) / real(nbprocs)
 
@@ -2559,10 +2561,10 @@ CR      write(*,*) '  0' MYID
 # include "grid.h"
 # include "ocean2d.h"
 # include "zoom.h"
-#ifdef SOLVE3D
-# include "coupling.h"
-# include "ocean3d.h"
-#endif
+# ifdef SOLVE3D
+#  include "coupling.h"
+#  include "ocean3d.h"
+# endif
 !
 !     Declarations:
 !
@@ -2585,7 +2587,7 @@ CR      write(*,*) '  0' MYID
      &     -(u(i,j,N,nnew)-u(i,j-1,N,nnew))
       enddo
       enddo
-!      
+!
       crit = maxval(abs(vort))
       taberr=0.
       do j=1,Mm+1
@@ -2595,7 +2597,7 @@ CR      write(*,*) '  0' MYID
           endif
       enddo
       enddo
-      
+
       Return
       End Subroutine Agrif_detect
 !
@@ -2610,25 +2612,25 @@ CR      write(*,*) '  0' MYID
 # include "scalars.h"
 # include "grid.h"
 # include "ocean2d.h"
-# include "zoom.h"   
+# include "zoom.h"
 # ifdef SOLVE3D
 #  include "coupling.h"
 #  include "ocean3d.h"
 # endif
-   
+
       real tabtemp2d(GLOBAL_2D_ARRAY)
       real tabtemp3d(GLOBAL_2D_ARRAY,N)
       real text(GLOBAL_2D_ARRAY,N,NT)
       integer itrc
-  
+
       tabtemp2d = Zt_avg1
-      
+
       call Agrif_Save_ForRestore(tabtemp2d,zetaid)
       tabtemp2d = Agrif_irhoy()*DU_avg1(:,:,nnew)
       call Agrif_Save_ForRestore(tabtemp2d,ubarid)
-      tabtemp2d = Agrif_irhox()*DV_avg1(:,:,nnew)      
+      tabtemp2d = Agrif_irhox()*DV_avg1(:,:,nnew)
       call Agrif_Save_ForRestore(tabtemp2d,vbarid)
-      
+
       tabtemp3d = u(:,:,:,nnew)
       call Agrif_Save_ForRestore(tabtemp3d,uid)
       tabtemp3d = v(:,:,:,nnew)
@@ -2637,8 +2639,8 @@ CR      write(*,*) '  0' MYID
       do itrc=1,NT
         text(:,:,:,itrc) = t(:,:,:,nnew,itrc)
       enddo
-      call Agrif_Save_ForRestore(text,tid)        
-                    
+      call Agrif_Save_ForRestore(text,tid)
+
       Return
       End Subroutine Agrif_Before_Regridding
 !
@@ -2691,12 +2693,12 @@ CR      write(*,*) '  0' MYID
       else
         zeta(i1:i2,j1:j2,1) = tabres
       endif
-             
+
       return
       end
 
 !======================================================================
- 
+
       subroutine initubar(tabres,i1,i2,j1,j2,before)
 
       implicit none
@@ -2716,9 +2718,9 @@ CR      write(*,*) '  0' MYID
       else
         DU_avg1(i1:i2,j1:j2,1) = tabres / Agrif_irhoy()
       endif
-             
+
       return
-      end 
+      end
 
 !======================================================================
 
@@ -2735,17 +2737,17 @@ CR      write(*,*) '  0' MYID
       integer i1,i2,j1,j2
       real tabres(i1:i2,j1:j2)
       logical before
- 
+
       if (before) then
         tabres = DV_avg1(i1:i2,j1:j2,nnew)
       else
         DV_avg1(i1:i2,j1:j2,1) = tabres / Agrif_irhox()
       endif
-             
-      return
-      end            
 
-!======================================================================          
+      return
+      end
+
+!======================================================================
       subroutine initu(tabres,i1,i2,j1,j2,k1,k2,before)
 
       implicit none
@@ -2757,16 +2759,16 @@ CR      write(*,*) '  0' MYID
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)
       logical before
- 
+
       if (before) then
         tabres = u(i1:i2,j1:j2,k1:k2,nnew)
       else
         u(i1:i2,j1:j2,k1:k2,1) = tabres
-      endif      
+      endif
 
       return
-      end 
-      
+      end
+
 !======================================================================
 
       subroutine initv(tabres,i1,i2,j1,j2,k1,k2,before)
@@ -2780,12 +2782,12 @@ CR      write(*,*) '  0' MYID
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)
       logical before
- 
+
       if (before) then
         tabres = v(i1:i2,j1:j2,k1:k2,nnew)
       else
         v(i1:i2,j1:j2,k1:k2,1) = tabres
-      endif      
+      endif
 
       return
       end
@@ -2805,12 +2807,12 @@ CR      write(*,*) '  0' MYID
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)
       logical before
- 
+
       if (before) then
         tabres = qdmu_nbq(i1:i2,j1:j2,k1:k2)
       else
         qdmu_nbq(i1:i2,j1:j2,k1:k2) = tabres
-      endif      
+      endif
 
       return
       end
@@ -2829,15 +2831,15 @@ CR      write(*,*) '  0' MYID
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)
       logical before
- 
+
       if (before) then
         tabres = qdmv_nbq(i1:i2,j1:j2,k1:k2)
       else
         qdmv_nbq(i1:i2,j1:j2,k1:k2) = tabres
-      endif      
+      endif
 
       return
-      end 
+      end
 
 !======================================================================
 
@@ -2858,7 +2860,7 @@ CR      write(*,*) '  0' MYID
         tabres = wz(i1:i2,j1:j2,k1:k2,nnew)
       else
         wz(i1:i2,j1:j2,k1:k2,1) = tabres
-      endif      
+      endif
 
       return
       end
@@ -2877,18 +2879,18 @@ CR      write(*,*) '  0' MYID
       integer i1,i2,j1,j2,k1,k2
       real tabres(i1:i2,j1:j2,k1:k2)
       logical before
- 
+
       if (before) then
         tabres = qdmw_nbq(i1:i2,j1:j2,k1:k2)
       else
         qdmw_nbq(i1:i2,j1:j2,k1:k2) = tabres
-      endif      
+      endif
 
       return
       end
 
 #  endif /* NBQ */
-# endif /* M3FAST */   
+# endif /* M3FAST */
 
 !======================================================================
 
@@ -2904,18 +2906,18 @@ CR      write(*,*) '  0' MYID
       real tabres(i1:i2,j1:j2,k1:k2,m1:m2)
       logical before
       integer itrc
- 
+
       if (before) then
         tabres = t(i1:i2,j1:j2,k1:k2,nnew,m1:m2)
-      else 
+      else
         do itrc=m1,m2
           got_tini(itrc) = .true.
           t(i1:i2,j1:j2,k1:k2,1,itrc) = tabres(i1:i2,j1:j2,k1:k2,itrc)
-        enddo        
-      endif   
+        enddo
+      endif
 
       return
-      end                   
+      end
 !
 !====================================================================
 !                   subroutine computenbmaxtimes
@@ -2929,27 +2931,27 @@ CR      write(*,*) '  0' MYID
       integer nunit
       integer j, jp
       integer :: nb
-      
+
       integer :: nbstep2d(0:20)
-      
+
       nunit = Agrif_Get_Unit()
-    
+
       open(nunit,file='AGRIF_FixedGrids.in',form='formatted')
       j=1
       jp = 0
       call agrif_read_fixed(jp,j,nunit)
       close(nunit)
-      
+
       nbstep2d = 0
-      
+
       call write_number(0,nbstep2d)
-      
+
       nb = 0
       do while (sortedint(nb) /= -1)
         nbmaxtimes = nb
         nb = nb + 1
       enddo
-      
+
       return
       end
 !
@@ -2966,13 +2968,13 @@ CR      write(*,*) '  0' MYID
       integer nb
       integer ngrid
       integer :: nbstep2d(0:20)
-      
+
       call write_prestep3d(j)
-      
+
       do nb=1,nfast
         call write_step2d(j,nbstep2d)
       enddo
-      
+
       end subroutine write_number
 !
 !====================================================================
@@ -2988,17 +2990,17 @@ CR      write(*,*) '  0' MYID
       integer nb
       integer ngrid
       integer :: nbstep2d(0:20)
-      
+
       iind = iind + 1
       sortedint(iind) = j
       whichstep(iind) = 0
-      
+
       ngrid = 0
       do while (grids_at_level(j,ngrid)/=-1)
       call write_prestep3d(grids_at_level(j,ngrid))
       ngrid = ngrid + 1
       enddo
-      
+
       end subroutine write_prestep3d
 !
 !====================================================================
@@ -3019,7 +3021,7 @@ CR      write(*,*) '  0' MYID
       sortedint(iind) = j
       whichstep(iind) = 1
       nbstep2d(j) = nbstep2d(j)+1
-      
+
       ngrid = 0
       do while (grids_at_level(j,ngrid)/=-1)
       do nb=1,coeff_ref_time(grids_at_level(j,ngrid))
@@ -3027,7 +3029,7 @@ CR      write(*,*) '  0' MYID
       enddo
       ngrid = ngrid + 1
       enddo
-      
+
       if (nbstep2d(j) == nfast) then
         if (j /= 0) then
           if (nbstep2d(parent_grid(j)) /= nfast) then
@@ -3042,7 +3044,7 @@ CR      write(*,*) '  0' MYID
         endif
         nbstep2d(j) = 0
       endif
-      
+
       end subroutine write_step2d
 !
 !====================================================================
@@ -3058,17 +3060,17 @@ CR      write(*,*) '  0' MYID
       integer nb
       integer ngrid
       integer :: nbstep2d(0:20)
-      
+
       iind = iind + 1
       sortedint(iind) = j
       whichstep(iind) = 2
-      
+
       ngrid = 0
       do while (grids_at_level(j,ngrid)/=-1)
         call write_step3d1(grids_at_level(j,ngrid))
         ngrid = ngrid + 1
       enddo
-      
+
       end subroutine write_step3d1
 !
 !====================================================================
@@ -3084,17 +3086,17 @@ CR      write(*,*) '  0' MYID
       integer nb
       integer ngrid
       integer :: nbstep2d(0:20)
-      
+
       iind = iind + 1
       sortedint(iind) = j
       whichstep(iind) = 3
-      
+
       ngrid = 0
       do while (grids_at_level(j,ngrid)/=-1)
         call write_step3d2(grids_at_level(j,ngrid))
         ngrid = ngrid + 1
       enddo
-      
+
       end subroutine write_step3d2
 !
 !====================================================================
@@ -3112,9 +3114,9 @@ CR      write(*,*) '  0' MYID
       integer :: grid_number
       integer :: r_imin,r_imax,r_jmin,r_jmax,r_rhox,r_rhoy,r_time
       integer :: gridnum(1000)
-      
+
       read(nunit,*)nb_grids
-      
+
       do i=1,nb_grids
         grid_number = j
         grids_at_level(jp,i-1)=j
@@ -3124,11 +3126,11 @@ CR      write(*,*) '  0' MYID
         coeff_ref_time(j)=r_time
         j=j+1
       enddo
-      
+
       do i=1,nb_grids
        call agrif_read_fixed(gridnum(i),j,nunit)
       enddo
-      
+
       return
       end
 

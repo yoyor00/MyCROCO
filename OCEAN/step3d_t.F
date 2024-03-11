@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -16,7 +16,7 @@
 !
       implicit none
       integer tile
-# ifdef TRACERS      
+# ifdef TRACERS
       integer trd, omp_get_thread_num
 #  include "param.h"
 #  include "private_scratch.h"
@@ -29,9 +29,9 @@
      &                    A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                    A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
      &                                                A3d(1,1,trd)
-#ifdef OPENACC
+#  ifdef OPENACC
      &   ,A3d(1,2,trd),A3d(1,3,trd),A3d(1,4,trd),A3d(1,5,trd)
-#endif
+#  endif
      &                            )
 # endif /* TRACERS */      
       return
@@ -40,9 +40,9 @@
 # ifdef TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk
-#ifdef OPENACC
+#  ifdef OPENACC
      &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
-#endif
+#  endif
      &  )
 
 #  ifdef SUBSTANCE
@@ -55,6 +55,11 @@
 #    ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D
 #    endif
+#   endif
+#   ifdef SUBSTANCE_SUBMASSBALANCE
+      USE submassbalance, ONLY :  submassbalance_flxcum_kiv
+      USE submassbalance, ONLY :  submassbalance_psource
+      USE submassbalance, ONLY :  submassbalance_flxcum_ws
 #   endif
 #  endif
       implicit none
@@ -98,18 +103,18 @@
      &     GC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     swdk(PRIVATE_2D_SCRATCH_ARRAY,0:N)
       real epsil
-#ifdef OPENACC
+#  ifdef OPENACC
       real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     WORK_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-#endif
+#  endif
       real cff1,cff2,gama,dRz,hbltmp,sig,dXmax,dEmax,
      &     dpth,smax,amax,amaxx
 #  ifdef TS_VADV_FCT
       real tmax,tmin,Ppos,Qpos,Pneg,Qneg,lmdmax
 #  endif
-#include "openacc_work.h"
+#  include "openacc_work.h"
       parameter (epsil=1.E-16)
 !
 #  ifdef MASKING
@@ -124,9 +129,9 @@
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
-! used in UP5 and C6 advection schemes (and order degradation near 
+! used in UP5 and C6 advection schemes (and order degradation near
 ! land masks). cdiff is part of laplacian diffusion in flux1 (used
-! near mask): 
+! near mask):
 !    0 --> flux1=flux2 (second order C2 advection scheme)
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
@@ -142,7 +147,7 @@
       flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff) -
      &      0.5*cdiff*sign(1.,ua)*(q_i-q_im1)
 
-      flux4(q_im2, q_im1, q_i, q_ip1, ua) = 
+      flux4(q_im2, q_im1, q_i, q_ip1, ua) =
      &      ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
 
       flux3(q_im2, q_im1, q_i, q_ip1, ua) =
@@ -156,7 +161,7 @@
 
       flux5(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
      &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
-     &      -sign(1.,ua)*( 
+     &      -sign(1.,ua)*(
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 #  endif
 #  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
@@ -175,9 +180,9 @@
 !
 
       do itrc=1,NT
-#if !defined OPENACC
+#  if !defined OPENACC
       do k=1,N
-#endif
+#  endif
 
 #  ifdef BIO_HADV_WENO5
 #   if defined TEMPERATURE && defined SALINITY
@@ -192,11 +197,11 @@
 !----------------------------------------------------------
 !
 #  undef PREDICTOR
-#if !defined OPENACC
-#  include "compute_horiz_tracer_fluxes.h"
-#else
-#  include "compute_horiz_tracer_fluxes_3D.h"
-#endif
+#  if !defined OPENACC
+#   include "compute_horiz_tracer_fluxes.h"
+#  else
+#   include "compute_horiz_tracer_fluxes_3D.h"
+#  endif
 !
 !----------------------------------------------------------
 ! WENO5 advection for passive tracers (biology ...)
@@ -220,27 +225,27 @@
 #  endif
 !
 #  if defined MUSTANG && defined MUSTANG_CORFLUX
-          if (k.eq.1 .and. 
+          if (k.eq.1 .and.
      &        (itrc.ge.itsubs1+nv_grav .and.
      &        itrc.le.itsubs1+nv_grav+nv_sand-1) ! isand1, isand2
-     &        .or. 
+     &        .or.
      &        (itrc.ge.itsubs1+nvpc .and.
-     &        itrc.le.itsubs1+nvp-1) ! nvpc+1, nvp      
-     &        ) then 
+     &        itrc.le.itsubs1+nvp-1) ! nvpc+1, nvp
+     &        ) then
             do j = Jstr, Jend
               do i = Istr, Iend+1
-                FX(i, j) = FX(i, j) * 
+                FX(i, j) = FX(i, j) *
      &                     corflux(itrc-itsubs1+1, i, j)
               enddo
             enddo
             do j = Jstr, Jend+1
               do i = Istr, Iend
-                FE(i, j) = FE(i, j) * 
+                FE(i, j) = FE(i, j) *
      &                     corfluy(itrc-itsubs1+1, i, j)
               enddo
             enddo
           endif
-#  endif 
+#  endif
 !
 !----------------------------------------------------------
 ! Apply point sources for river runoff simulations
@@ -303,9 +308,9 @@
 !
 !$acc parallel loop if(compute_on_device) default(present)
 !$acc& collapse(3)
-#if defined OPENACC
+#  if defined OPENACC
             DOEXTEND(k,1,N,FX,FE,WORK)
-#endif
+#  endif
           do j=Jstr,Jend
             do i=Istr,Iend
 #  if !(defined MUSTANG && defined key_sand2D)
@@ -349,9 +354,19 @@
      &      +dt*FE(IstrR:IendR,JstrR:JendR)
           endif
 #  endif
-#if defined OPENACC
+
+!add submassbalance !! in loop k
+! this has to be checked with OPENACC
+! as well as OPENACC and MUSTANG in general          
+#  if defined SUBSTANCE_SUBMASSBALANCE
+        if (itrc .ge. itsubs1) then
+            call submassbalance_flxcum_kiv(Istr, Iend, Jstr, Jend, 
+     &        FX, FE, itrc-itsubs1+1)
+        endif
+#  endif
+#  if defined OPENACC
             ENDDOEXTEND
-#endif
+# endif  
 !
 !----------------------------------------------------------
 ! Store diagnostic transport term
@@ -359,7 +374,7 @@
 !
 #  ifdef DIAGNOSTICS_TS
           do j=Jstr,Jend
-            do i=Istr,Iend 
+            do i=Istr,Iend
               TXadv(i,j,k,itrc)=-(FX(i+1,j)-FX(i,j)) SWITCH rmask(i,j)
               TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
           enddo
@@ -411,9 +426,9 @@
         enddo
 #   endif
 #  endif /* DIAGNOSTICS_TS */
-#if !defined OPENACC
+#  if !defined OPENACC
         enddo    !<-- k
-#endif
+#  endif
       enddo    !<-- itrc
 
 !
@@ -450,7 +465,7 @@
 ! Add tracer divergence due to cell-centered point sources
 !----------------------------------------------------------
 !
-#ifdef PSOURCE_MASS
+#  ifdef PSOURCE_MASS
         do itrc=1,NT
           do is=1,Nsrc
 #   ifdef MPI
@@ -463,7 +478,7 @@
            if (Istr.le.iis .and. iis.le.Iend+1
      &        .and. Jstr.le.jjs .and. jjs.le.Jend+1) then
               cff1=dt*pm(iis,jjs)*pn(iis,jjs)
-              do k=1,N 
+              do k=1,N
                 if (Lsrc(is,itrc)) then
                   cff2=Tsrc(is,k,itrc)
                 else
@@ -476,6 +491,7 @@
           enddo ! source
         enddo ! itrc
 #  endif /* PSOURCE_MASS */
+
 !
 !======================================================================
 !
@@ -505,7 +521,7 @@
 !----------------------------------------------------------
 !
 #  ifdef TS_VADV_FCT
-#   include "FCT.h"          
+#   include "FCT.h"
 #  endif
 !
 !----------------------------------------------------------
@@ -522,7 +538,7 @@
               enddo
             enddo               !--> discard FC
 #  ifdef DIAGNOSTICS_TS
-            do k=1,N 
+            do k=1,N
               do i=Istr,Iend
                 TVadv(i,j,k,itrc) = -(FC(i,k)-FC(i,k-1))
      &                                 SWITCH rmask(i,j)
@@ -556,7 +572,7 @@
 ! the Large et al. 1994 KPP scheme.
 !----------------------------------------------------------
 !
-#  ifdef TEMPERATURE          
+#  ifdef TEMPERATURE
           if (itrc.eq.itemp) then
             do k=1,N-1
               do i=Istr,Iend
@@ -571,8 +587,8 @@
               enddo
             enddo
           endif
-#  endif /* TEMPERATURE */            
-#  ifdef SALINITY 
+#  endif /* TEMPERATURE */
+#  ifdef SALINITY
           if (itrc.eq.isalt) then
             do k=1,N-1
               do i=Istr,Iend
@@ -587,12 +603,12 @@
           endif
 #  endif /* SALINITY */
 !
-#  if defined SALINITY || defined TEMPERATURE 
-#   if defined SALINITY && defined TEMPERATURE 
+#  if defined SALINITY || defined TEMPERATURE
+#   if defined SALINITY && defined TEMPERATURE
           if (itrc.eq.itemp .or. itrc.eq.isalt) then
-#   elif defined SALINITY                   
+#   elif defined SALINITY
           if (itrc.eq.isalt) then
-#   elif defined TEMPERATURE 
+#   elif defined TEMPERATURE
           if (itrc.eq.itemp) then
 #   endif
             do k=1,N
@@ -638,9 +654,9 @@
 #  endif
 
 #  ifdef TS_MIX_IMP
-#   if defined TEMPERATURE && defined SALINITY       
+#   if defined TEMPERATURE && defined SALINITY
           if (itrc .le. 2) then                  ! active tracers
-#   elif defined TEMPERATURE || defined SALINITY       
+#   elif defined TEMPERATURE || defined SALINITY
           if (itrc .le. 1) then                  ! active tracers
 #   endif
             do k=1,N
@@ -652,12 +668,12 @@
 !                                                 (sed. and others)
 #   ifdef MUSTANG
 !
-            if (itrc.ge.itsubs1+nv_grav .and. 
+            if (itrc.ge.itsubs1+nv_grav .and.
      &          itrc.le.itsubs1+nvp) then        ! sediment tracers
 #    ifdef key_sand2D
               if (.not.l_subs2D(itrc-itsubs1+1)) then
 #    endif
-#    undef TS_MIX_IMP 
+#    undef TS_MIX_IMP
 #    define CD EC
 #    define NBSUBSTEP GC
 #    include "t3dmix_tridiagonal_settling.h"
@@ -676,7 +692,7 @@
 #   else  /* MUSTANG */
 !                                                ! passive tracers
 #    ifdef BIO_HADV_WENO5
-#     undef TS_MIX_IMP 
+#     undef TS_MIX_IMP
 #     include "t3dmix_tridiagonal.h"
 #     define TS_MIX_IMP
 #    else
@@ -697,7 +713,7 @@
 #    include "t3dmix_tridiagonal.h"
 !
 #   else
-          if (itrc.ge.itsubs1+nv_grav .and. 
+          if (itrc.ge.itsubs1+nv_grav .and.
      &        itrc.le.itsubs1+nvp) then          ! sediment tracers
 #    ifdef key_sand2D
             if (.not.l_subs2D(itrc-itsubs1+1)) then
@@ -738,10 +754,12 @@
 #   endif /* DIAGNOSTICS_TS */
 #  endif /* CONST_TRACERS */
 
+
         enddo      ! <-- itrc
+
 !
 !----------------------------------------------------------
-! Compute vertical gradient in vertical T-diffusion 
+! Compute vertical gradient in vertical T-diffusion
 ! coefficient for floats random walk.
 !----------------------------------------------------------
 !
@@ -753,11 +771,18 @@
         enddo
 #  endif
 
+!add submassbalance for river!! 
+!mustang and openacc not compatible         
+# if defined SUBSTANCE_SUBMASSBALANCE
+      call submassbalance_psource(Istr, Iend, Jstr, Jend)
+#  ifdef MUSTANG
+      call submassbalance_flxcum_ws(Istr, Iend, Jstr, Jend)
+#  endif
+# endif
+!
       ENDDOLOOP2D ! <-- j
 
 !$acc end kernels
-
-!
 !======================================================================
 !  Set lateral boundary conditions; nudge toward tracer climatology;
 !  apply land-sea mask and exchange periodic boundary conditions.
@@ -827,7 +852,7 @@
             hbltmp=10.
 #    endif
             gama = 1.                                      ! mixing becomes
-            sig = (z_w(i,j,N)-z_w(i,j,k))/max(hbltmp,10.)  ! isosigma within  
+            sig = (z_w(i,j,N)-z_w(i,j,k))/max(hbltmp,10.)  ! isosigma within
             if (sig .lt. 1.) gama = sig*sig*(3.-2.*sig)    ! PBL depth (>10m)
             dXmax = max(abs(dRdx(i,j,k  )),abs(dRdx(i+1,j,k  )),
      &                  abs(dRdx(i,j,k+1)),abs(dRdx(i+1,j,k+1)),1E-14)
@@ -876,7 +901,7 @@
         endif
       enddo   ! <-- itrc
 #   endif /* ZONAL_NUDGING */
-#endif
+#  endif
 !$acc kernels if(compute_on_device) default(present)
 !$acc loop seq
       do itrc=1,NT   !<-- itrc
@@ -1011,7 +1036,7 @@
        || defined DIAGNOSTICS_DEBUG
 !
 ! Compute entrainement/detrainement term.
-! If diffusion terms are computed in t3dmix routines, entrainement 
+! If diffusion terms are computed in t3dmix routines, entrainement
 ! terms are also computed in those routines
 !
         do j=Jstr,Jend
@@ -1042,7 +1067,7 @@
           enddo
         enddo
 #    endif /* TS_DIF2 && TS_DIF4 && SPONGE_DIF2 */
-#    undef T_mld_nnew 
+#    undef T_mld_nnew
 #    undef T_mld_nstp
 #   endif /* DIAGNOSTICS_TS_MLD */
 
@@ -1107,7 +1132,7 @@
             enddo
           enddo
         enddo
-        
+
 #   undef I_RANGE
 #   undef J_RANGE
 #  endif /* MASKING */
@@ -1134,7 +1159,7 @@
 
       return
       end
-# endif  /* TRACERS */      
+# endif  /* TRACERS */
 !
 !======================================================================
 !
@@ -1143,36 +1168,36 @@
      defined UV_HADV_WENO5  || defined UV_VADV_WENO5 || \
      defined W_HADV_WENO5   || defined W_VADV_WENO5 || \
      defined BEDLOAD_WENO5
-!    
+!
       function flux5_weno(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
 !$acc routine(flux5_weno) seq
 !
-!     WENO5: Weighted Essentially Non-Oscillatory scheme 
+!     WENO5: Weighted Essentially Non-Oscillatory scheme
 !            with 5th-order accuracy
 !
-! This function computes tracer reconstruction at the grid cell's left 
-! edge (u-point i-1/2 or v-point j-1/2). WENO5 uses a convex combination 
+! This function computes tracer reconstruction at the grid cell's left
+! edge (u-point i-1/2 or v-point j-1/2). WENO5 uses a convex combination
 ! of the polynomials reconstructed on the three ENO3 stencils in order
-! to achieve higher accuracy on smooth profiles. Both left and right 
-! combinations of mirror symetric stencils around i-1/2 (j-1/2) points 
-! are computed. For stability, the upstream stencil combination, 
-! identified by the sign of ua (u or v), is selected. 
+! to achieve higher accuracy on smooth profiles. Both left and right
+! combinations of mirror symetric stencils around i-1/2 (j-1/2) points
+! are computed. For stability, the upstream stencil combination,
+! identified by the sign of ua (u or v), is selected.
 !
 ! The scheme includes improvements from Borges et al., 2008 (WENO_Z), i.e.,
-! smoothness indicators of higher order (with new non-oscillatory weights) 
-! that provide a scheme with less dissipation, higher resolution and better 
-! monotonicity preservation than the classical WENO5. In the meantime, WENO_Z 
-! removes the need to tune parameter Eps for added dissipation (needed in the 
-! original scheme due to suboptimal performance on critical points). 
-! 
+! smoothness indicators of higher order (with new non-oscillatory weights)
+! that provide a scheme with less dissipation, higher resolution and better
+! monotonicity preservation than the classical WENO5. In the meantime, WENO_Z
+! removes the need to tune parameter Eps for added dissipation (needed in the
+! original scheme due to suboptimal performance on critical points).
+!
 ! References:
-!  Guang-Shan JIANG and Chi-Wang SHU, 1996: Efficient Implementation of 
+!  Guang-Shan JIANG and Chi-Wang SHU, 1996: Efficient Implementation of
 !  Weighted ENO Schemes. JOURNAL OF COMPUTATIONAL PHYSICS 126, 202–228.
 !
-!  Rong WANG and Raymond J. SPITERI, 2007: Linear instability of the 
+!  Rong WANG and Raymond J. SPITERI, 2007: Linear instability of the
 !  fifth-order WENO method, SIAM J. Numer. Anal., 45, 1871-1901.
 !
-!  Borges R., M. Carmona, B. Costa, W.S. Don, 2008: An improved weighted 
+!  Borges R., M. Carmona, B. Costa, W.S. Don, 2008: An improved weighted
 !  essentially non-oscillatory scheme for hyperbolic conservation laws.
 !  Journal of Computational Physics 227 (2008) 3191–3211
 !
@@ -1190,7 +1215,7 @@
 
 #  define WENO_Z
 
-! Epsilon value for computing weigths 
+! Epsilon value for computing weigths
 #  ifdef WENO_Z
       Eps = 1.e-40
 #  else
@@ -1245,7 +1270,7 @@
 !
 ! Nonlinear Smoothness Indicators
         IS0 = cff1*(q_ip2 - 2.*q_ip1 +   q_i  )**2
-     &      + 0.25*(q_ip2 - 4.*q_ip1 + 3*q_i  )**2  
+     &      + 0.25*(q_ip2 - 4.*q_ip1 + 3*q_i  )**2
         IS1 = cff1*(q_ip1 - 2.*q_i   +   q_im1)**2
      &      + 0.25*(q_ip1            -   q_im1)**2
         IS2 = cff1*(q_i   - 2.*q_im1 +   q_im2)**2
@@ -1286,7 +1311,7 @@
 !
 !     WENO3: Weighted Essentially Non-Oscillatory of 3rd-order Accuracy
 !
-! This function computes tracer reconstruction at the grid cell's left 
+! This function computes tracer reconstruction at the grid cell's left
 ! edge (u-point i-1/2 or v-point j-1/2).
 !
 ! Implementation: P. Marchesiello and J. Demange 2013
@@ -1297,10 +1322,10 @@
       REAL    :: IS0, IS1
       REAl    :: a0, a1
       REAL    :: w0, w1
-      REAL    :: p0, p1 
+      REAL    :: p0, p1
       REAL    :: Eps, d0,d1, T3
 !
-! Epsilon value for computing weigths 
+! Epsilon value for computing weigths
 #  ifdef WENO_Z
       Eps = 1.e-40
 #  else

@@ -29,6 +29,7 @@ MODULE p4zligand
    REAL(wp), PUBLIC ::  rlig     !: Remin ligand production
    REAL(wp), PUBLIC ::  prlgw    !: Photochemical of weak ligand
 
+   LOGICAL  :: l_dia
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zligand.F90 10416 2018-12-19 11:45:43Z aumont $ 
@@ -47,10 +48,13 @@ CONTAINS
       INTEGER  ::   ji, jj, jk
       REAL(wp) ::   zlgwp, zlgwpr, zlgwr, zlablgw
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zligrem, zligpr, zrligprod
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zw3d
       CHARACTER (len=25) ::   charout
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
+      IF( kt == nittrc000 )  &
+         & l_dia = iom_use( "LIGREM" ) .OR. iom_use( "LPRODR" ) .OR. iom_use( "LIGPR" )
+
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
@@ -79,24 +83,38 @@ CONTAINS
       !
       !  Output of some diagnostics variables
       !     ---------------------------------
-#if defined key_iomput
-      IF( lk_iomput .AND. knt == nrdttrc ) THEN
-         ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
-         IF( iom_use( "LIGREM" ) ) THEN
-            zw3d(:,:,:) = zligrem(:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(:,:,:)
+     IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_dia ) THEN
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zligrem(ji,jj,jk) * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
             CALL iom_put( "LIGREM", zw3d )
-         ENDIF
-         IF( iom_use( "LIGPR" ) ) THEN
-            zw3d(:,:,:) = zligpr(:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(:,:,:) 
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zligpr(ji,jj,jk) * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
             CALL iom_put( "LIGPR", zw3d )
-         ENDIF
-         IF( iom_use( "LPRODR" ) ) THEN
-            zw3d(:,:,:) = zrligprod(:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(:,:,:) 
+            !
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk ) = zrligprod(ji,jj,jk) * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                  ENDDO
+               ENDDO
+            ENDDO
             CALL iom_put( "LPRODR", zw3d )
+            DEALLOCATE( zw3d )
          ENDIF
-         DEALLOCATE( zw3d )
       ENDIF
-#endif
       !
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('ligand1')")

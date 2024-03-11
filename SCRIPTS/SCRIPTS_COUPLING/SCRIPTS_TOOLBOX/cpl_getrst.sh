@@ -61,7 +61,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
     fi
 #
     if [ ${USE_WAV} -eq 1 ] ; then
-        varlist='WW3_T0M1 WW3__OHS WW3__DIR WW3_ACHA WW3_TAWX WW3_TAWY WW3_TWOX WW3_TWOY'
+        varlist='WW3_T0M1 WW3__OHS WW3__DIR WW3_ACHA WW3_TAWX WW3_TAWY WW3_TWOX WW3_TWOY WW3_USSX WW3_USSY WW3__FOC WW3___LM WW3__BHD WW3_UBRX WW3_UBRY'
         if [[ ${CPL_restart} == "TRUE" ]] && [[ ! -z ${wav_rst_file} ]]; then
             echo "create wave restart file for oasis from preexisting file ${wav_rst_file}"
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${WAV_FILES_DIR}/${wav_rst_file}" wav.nc ww3

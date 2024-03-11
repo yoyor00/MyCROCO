@@ -2,14 +2,14 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-/* This is include file "ocean3.h". 
+/* This is include file "ocean3.h".
   --------------------------------------------
 */
 #ifdef SOLVE3D
@@ -18,6 +18,7 @@
       real t(GLOBAL_2D_ARRAY,N,3,NT)
       common /ocean_u/u /ocean_v/v /ocean_t/t
 
+# ifndef M3FAST_SEDLAYERS
       real Hz(GLOBAL_2D_ARRAY,N)
       real Hz_bak(GLOBAL_2D_ARRAY,N)
       real z_r(GLOBAL_2D_ARRAY,N)
@@ -28,22 +29,27 @@
       common /grid_Hvom/Hvom
 
       real We(GLOBAL_2D_ARRAY,0:N)
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
       real Wi(GLOBAL_2D_ARRAY,0:N)
-# endif
+#  endif
       common /grid_Hz/Hz /grid_zr/z_r /grid_We/We
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
       common /grid_Wi/Wi
-# endif  
+#  endif
+# endif
 
 # ifdef NBQ
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz
 #  ifdef NBQ_MASS
+#   ifndef M3FAST_SEDLAYERS
       real Hzr(GLOBAL_2D_ARRAY,N)
+#   else
+      real Hzr(GLOBAL_2D_ARRAY,-N_sl+1:N)
+#   endif
       common /grid_Hzr/Hzr
 #  else
-#     define Hzr Hz
+#   define Hzr Hz
 #  endif
 # endif
 
@@ -70,11 +76,11 @@
 #  ifdef BIO_NChlPZD
       real theta(GLOBAL_2D_ARRAY,N)
       common /ocean_theta/theta
-#  elif defined BIO_BioEBUS  
+#  elif defined BIO_BioEBUS
       real AOU(GLOBAL_2D_ARRAY,N)
       common /ocean_AOU/AOU
       real wind10(GLOBAL_2D_ARRAY)
-      common /ocean_wind10/wind10      
+      common /ocean_wind10/wind10
 #  endif
 # endif  /* BIOLOGY */
 
@@ -82,7 +88,7 @@
       real u10(GLOBAL_2D_ARRAY)
       real Kv_O2(GLOBAL_2D_ARRAY)
       real O2satu(GLOBAL_2D_ARRAY)
-      common /gasexc_O2_u10/ u10 
+      common /gasexc_O2_u10/ u10
       common /gasexc_O2_Kv_O2/ Kv_O2
       common /gasexc_O2_O2satu/ O2satu
 # endif /* OXYGEN */

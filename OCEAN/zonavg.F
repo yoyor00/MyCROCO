@@ -1,7 +1,7 @@
 ! $Id: zonavg.F 972 2012-12-14 17:57:17Z marchesiello $
 !
 #include "cppdefs.h"
- 
+
 #ifdef ZONAL_NUDGING
 
       subroutine zonavg_2d (istr,iend,jstr,jend,A,Azon)
@@ -17,46 +17,59 @@
       integer i,j
 
 !-- for parallelization (mean of A in xi direction)
-#ifdef MPI
-# include "mpi_cpl.h"
+# ifdef MPI
+#  include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr, lenode
       real*8 allsumd(0:Mm+1,NNODES)
-#endif
+!$acc declare create( allsumd )      
+# endif
 
 !$acc kernels if(compute_on_device) default(present)
+
       Ad = A
-      
+!$acc end kernels
+
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop vector reduction(+:Azond)
       do j=jstr-1,jend+1
          Azond(j)=sum(A(istr:iend,j))
       enddo
 !$acc end kernels
 
-#ifdef MPI
-#ifdef OPENACC
-      NOTREADY
-#endif
+# ifdef MPI
+!$acc host_data if(compute_on_device)
+!$acc&   use_device (Azond,allsumd )
       call MPI_ALLGATHER(Azond,(Mm+2),MPI_DOUBLE_PRECISION,
      &                   allsumd,(Mm+2),MPI_DOUBLE_PRECISION,
      &                   MPI_COMM_WORLD,ierr)
+!$acc end host_data
 
+!$acc kernels if(compute_on_device) default(present)
       Azond=0.
+!$acc end kernels
+
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop gang reduction(+:Azond)
       do i=1,NP_XI
          lenode=jj*NP_XI + i
+!$acc loop vector reduction(+:Azond)
          do j=jstr-1,jend+1
             Azond(j)=Azond(j)+allsumd(j,lenode)
          enddo
       enddo
-#endif /* MPI */      
+!$acc end kernels
+# endif /* MPI */
 
 !$acc kernels if(compute_on_device) default(present)
       Azon=nint(Azond*1.d6,kind=8)/1.d6/float(LLm)
 !$acc end kernels
 
+
 !     rewind (80+mynode)
 !     write(80+mynode) Azon
 !     call crash
-      
+
       return
       end
 
@@ -75,16 +88,19 @@
       integer i,j,k
 
 !-- for parallelization (mean of A in xi direction)
-#ifdef MPI
-# include "mpi_cpl.h"
+# ifdef MPI
+#  include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr, lenode
       real*8 allsumd(0:Mm+1,N,NNODES)
-#endif
+!$acc declare create( allsumd )      
+# endif
 
 !$acc kernels if(compute_on_device) default(present)
       Ad = A
+!$acc end kernels
       
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
          do j=jstr-1,jend+1
          Azond(j,k)=sum(A(istr:iend,j,k))
@@ -92,24 +108,44 @@
       enddo
 !$acc end kernels
 
-#ifdef MPI
-#ifdef OPENACC
-      NOTREADY
-#endif
+# ifdef MPI
+#  ifdef OPENACC
+!$acc host_data if(compute_on_device)
+!$acc&       use_device(Azond,allsumd)           
+#  endif
       call MPI_ALLGATHER(Azond,(Mm+2)*N,MPI_DOUBLE_PRECISION,
      &                   allsumd,(Mm+2)*N,MPI_DOUBLE_PRECISION,
      &                   MPI_COMM_WORLD,ierr)
+!$acc end host_data
 
+!$acc kernels if(compute_on_device) default(present)
       Azond=0.
+!$acc end kernels      
+!$acc kernels if(compute_on_device) default(present)
       do i=1,NP_XI
          lenode=jj*NP_XI + i
-         do k=1,N
+!!$acc loop gang reduction(+:Azond)
             do j=jstr-1,jend+1
+!!$acc loop vector reduction(+:Azond)
+            do k=1,N
                Azond(j,k)=Azond(j,k)+allsumd(j,k,lenode)
             enddo
          enddo
       enddo
-#endif /* MPI */      
+!$acc end kernels
+
+!!!$acc parallel loop if(compute_on_device) default(present) 
+!!!$acc& loop gang reduction(+:Azond) collapse(3)
+!!      do i=1,NP_XI
+!!         lenode=jj*NP_XI + i
+!!         do k=1,N
+!!            do j=jstr-1,jend+1
+!!               Azond(j,k)=Azond(j,k)+allsumd(j,k,lenode)
+!!            enddo
+!!         enddo
+!!      enddo
+      
+# endif /* MPI */
 
 !$acc kernels if(compute_on_device) default(present)
        Azon=nint(Azond*1.d6,kind=8)/1.d6/float(LLm)
@@ -118,7 +154,7 @@
 !     rewind (80+mynode)
 !     write(80+mynode) Azon
 !     call crash
-      
+
 #else
       subroutine zonavg_empty
 #endif /* ZONAL_NUDGING */

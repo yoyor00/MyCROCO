@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,7 +13,7 @@
 !
 # include "cppdefs.h"
       subroutine zetabc_tile(Istr,Iend,Jstr,Jend)
-# ifdef AGRIF      
+# ifdef AGRIF
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       if (AGRIF_Root()) then
@@ -46,7 +46,7 @@ c        call zetabc_interp_tile(Istr,Iend,Jstr,Jend)
 !
 ! Common Code
 !
-# include "set_obc_definitions.h"
+#include "set_obc_definitions.h"
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
@@ -59,8 +59,8 @@ c        call zetabc_interp_tile(Istr,Iend,Jstr,Jend)
 #include "ocean2d.h"
 #include "scalars.h"
 #ifdef AGRIF
-#include "private_scratch.h"
-#include "zoom.h"
+# include "private_scratch.h"
+# include "zoom.h"
       integer trd
 C$    integer omp_get_thread_num
 #endif
@@ -76,7 +76,7 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dETA(1,9+5*NWEIGHT)
      &                    ,A1dETA(1,11+7*NWEIGHT)
      &                    ,A1dETA(1,13+9*NWEIGHT)
-     &                    ,A1dETA(1,15+9*NWEIGHT)     
+     &                    ,A1dETA(1,15+9*NWEIGHT)
      &                    ,A1dXI(1,9+5*NWEIGHT)
      &                    ,A1dXI(1,11+7*NWEIGHT)
      &                    ,A1dXI(1,13+9*NWEIGHT)
@@ -84,6 +84,7 @@ C$    trd=omp_get_thread_num()
 #endif
 ! 
 !$acc kernels if(compute_on_device) default(present) async(1)
+
 #ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -95,11 +96,11 @@ C$    trd=omp_get_thread_num()
 !                                           Western edge Specified BC
 !                                           ======= ==== ========= ==
         do j=JstrV-1,Jend
-#   ifdef Z_FRC_BRY
+#  ifdef Z_FRC_BRY
           zeta(0,j,knew)=zetabry_west(j)
-#   else
+#  else
           zeta(0,j,knew)=SSH(0,j)
-#   endif
+#  endif
 #  ifdef MASKING
      &                      *rmask(0,j)
 #  endif
@@ -123,7 +124,7 @@ C$    trd=omp_get_thread_num()
 !                                           Western edge Chapman BC
 !                                           ======= ==== ======= ==
         do j=JstrV-1,Jend
-          cx=dtfast*pm(1,j)*sqrt(g*(h(1,j)+zeta(1,j,kstp)))
+          cx=dtfast*pm(1,j)*sqrt(g*max(0.,h(1,j)+zeta(1,j,kstp)))
           zeta(0,j,knew)=(zeta(0,j,kstp)+cx*zeta(1,j,knew))/(1.+cx)
 #  ifdef MASKING
      &                      *rmask(0,j)
@@ -148,16 +149,16 @@ C$    trd=omp_get_thread_num()
 !                                           Eastern edge Specified BC
 !                                           ======= ==== ========= ==
         do j=JstrV-1,Jend
-#   ifdef Z_FRC_BRY
+#  ifdef Z_FRC_BRY
           zeta(Iend+1,j,knew)=zetabry_east(j)
-#   else
+#  else
           zeta(Iend+1,j,knew)=SSH(Iend+1,j)
-#   endif
+#  endif
 #  ifdef MASKING
      &                      *rmask(Iend+1,j)
 #  endif
         enddo
-#  elif defined OBC_COM_EAST && defined OBC_COM_ZORLANSKI
+# elif defined OBC_COM_EAST && defined OBC_COM_ZORLANSKI
 !                                           Eastern edge Radiation BC
 !                                           ======= ==== ========= ==
         do j=JstrV-1,Jend
@@ -176,14 +177,15 @@ C$    trd=omp_get_thread_num()
 !                                           Eastern edge Chapman BC
 !                                           ======= ==== ======= ==
         do j=JstrV-1,Jend
-          cx=dtfast*pm(Iend,j)*sqrt(g*(h(Iend,j)+zeta(Iend,j,kstp)))
+          cx=dtfast*pm(Iend,j)*
+     &                      sqrt(g*max(0.,h(Iend,j)+zeta(Iend,j,kstp)))
           zeta(Iend+1,j,knew)=(zeta(Iend+1,j,kstp)
      &                              +cx*zeta(Iend,j,knew))/(1.+cx)
 #  ifdef MASKING
      &                      *rmask(Iend+1,j)
 #  endif
         enddo
-#  else
+# else
         do j=JstrV-1,Jend                         ! Eastern edge gradient BC
           zeta(Iend+1,j,knew)=zeta(Iend,j,knew)   ! ======= ==== ======== ==
 #  ifdef MASKING
@@ -205,11 +207,11 @@ C$    trd=omp_get_thread_num()
 !                                           Southern edge Specified BC
 !                                           ======== ==== ========= ==
         do i=IstrU-1,Iend
-#   ifdef Z_FRC_BRY
+#  ifdef Z_FRC_BRY
           zeta(i,0,knew)=zetabry_south(i)
-#   else
+#  else
           zeta(i,0,knew)=SSH(i,0)
-#   endif
+#  endif
 #  ifdef MASKING
      &                      *rmask(i,0)
 #  endif
@@ -233,14 +235,14 @@ C$    trd=omp_get_thread_num()
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU-1,Iend
-          cx=dtfast*pn(i,1)*sqrt(g*(h(i,1)+zeta(i,1,kstp)))
+          cx=dtfast*pn(i,1)*sqrt(g*max(0.,h(i,1)+zeta(i,1,kstp)))
           zeta(i,0,knew)=(zeta(i,0,kstp)
      &                              +cx*zeta(i,1,knew))/(1.+cx)
 #  ifdef MASKING
      &                      *rmask(i,0)
 #  endif
-        enddo         
-#  else
+        enddo
+# else
         do i=IstrU-1,Iend                    ! Southern edge gradient BC
           zeta(i,0,knew)=zeta(i,1,knew)   ! ======== ==== ======== ==
 #  ifdef MASKING
@@ -259,16 +261,16 @@ C$    trd=omp_get_thread_num()
 !                                           Northern edge Specified BC
 !                                           ======== ==== ========= ==
         do i=IstrU-1,Iend
-#   ifdef Z_FRC_BRY
+#  ifdef Z_FRC_BRY
           zeta(i,Jend+1,knew)=zetabry_north(i)
-#   else
+#  else
           zeta(i,Jend+1,knew)=SSH(i,Jend+1)
-#   endif
+#  endif
 #  ifdef MASKING
      &                      *rmask(i,Jend+1)
 #  endif
         enddo
-#  elif defined OBC_COM_NORTH && defined OBC_COM_ZORLANSKI
+# elif defined OBC_COM_NORTH && defined OBC_COM_ZORLANSKI
 !                                           Northern edge Radiation BC
 !                                           ======= ==== ========= ==
         do i=IstrU-1,Iend
@@ -287,14 +289,15 @@ C$    trd=omp_get_thread_num()
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU-1,Iend
-          cx=dtfast*pn(i,Jend)*sqrt(g*(h(i,Jend)+zeta(i,Jend,kstp)))
+          cx=dtfast*pn(i,Jend)*
+     &                      sqrt(g*max(0.,h(i,Jend)+zeta(i,Jend,kstp)))
           zeta(i,Jend+1,knew)=(zeta(i,Jend+1,kstp)
      &                              +cx*zeta(i,Jend,knew))/(1.+cx)
 #  ifdef MASKING
      &                      *rmask(i,Jend+1)
 #  endif
         enddo
-# else 
+# else
 !                                            Northern edge gradient BC
 !                                            ======== ==== ======== ==
         do i=IstrU-1,Iend
@@ -313,34 +316,34 @@ C$    trd=omp_get_thread_num()
 #if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
         zeta(0,0,knew)=0.5*(zeta(1,0 ,knew)+zeta(0 ,1,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                       *rmask(0,0)
-#  endif        
+# endif
       endif
 #endif
 #if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (SOUTHERN_EDGE .and. EASTERN_EDGE) then
         zeta(Iend+1,0,knew)=0.5*(zeta(Iend+1,1 ,knew)+zeta(Iend,0,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                       *rmask(Iend+1,0)
-#  endif                
+# endif
       endif
 #endif
 #if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (NORTHERN_EDGE .and. WESTERN_EDGE) then
         zeta(0,Jend+1,knew)=0.5*(zeta(0,Jend,knew)+zeta(1 ,Jend+1,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                       *rmask(0,Jend+1)
-#  endif                
+# endif
       endif
 #endif
 #if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (NORTHERN_EDGE .and. EASTERN_EDGE) then
         zeta(Iend+1,Jend+1,knew)=0.5*(zeta(Iend+1,Jend,knew)+
      &                            zeta(Iend,Jend+1,knew))
-#  ifdef MASKING
+# ifdef MASKING
      &                       *rmask(Iend+1,Jend+1)
-#  endif             
+# endif
       endif
 #endif
 !
@@ -350,7 +353,7 @@ C$    trd=omp_get_thread_num()
 ! Ensure that water level on boundary cells is above bed elevation.
 !====================================================================
 !
-#  ifndef EW_COM_PERIODIC
+# ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
         DO j=JstrV-1,Jend
           IF (zeta(Istr-1,j,knew).le.
@@ -367,8 +370,8 @@ C$    trd=omp_get_thread_num()
           END IF
         END DO
       END IF
-#  endif
-#  ifndef NS_COM_PERIODIC
+# endif
+# ifndef NS_COM_PERIODIC
       if (SOUTHERN_EDGE) then
         DO i=IstrU-1,Iend
           IF (zeta(i,Jstr-1,knew).le.
@@ -385,8 +388,8 @@ C$    trd=omp_get_thread_num()
           END IF
         END DO
       END IF
-#  endif
-#  if !defined EW_COM_PERIODIC && !defined NS_COM_PERIODIC
+# endif
+# if !defined EW_COM_PERIODIC && !defined NS_COM_PERIODIC
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
         IF (zeta(Istr-1,Jstr-1,knew).le.
      &      (Dcrit(Istr-1,Jstr-1)-h(Istr-1,Jstr-1))) THEN
@@ -415,7 +418,7 @@ C$    trd=omp_get_thread_num()
      &            Dcrit(Iend+1,Jend+1)-h(Iend+1,Jend+1)-eps
         END IF
       END IF
-#  endif
+# endif
 
 #endif /* WET_DRY */
 
@@ -430,5 +433,5 @@ C$    trd=omp_get_thread_num()
 # endif
 # undef CHILD
 #endif  /* !CHILD */
- 
+
 

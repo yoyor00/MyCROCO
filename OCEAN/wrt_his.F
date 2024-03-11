@@ -29,12 +29,12 @@
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
       USE comMUSTANG,   ONLY : sum_tmp, rouse2d
 # endif
-#     include "coupler_define_MUSTANG.h"
+# include "coupler_define_MUSTANG.h"
 #endif
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
      &   , ibuff(6)
 #else
      &   , ibuff(4)
@@ -146,13 +146,14 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
       count(2)=1
       ierr=nf_put_vara_int (ncidhis, hisTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
+         write(*,*) nf_strerror(ierr)
          MPI_master_only write(stdout,1) 'time_step', record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
 
 
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
       count(1)=6
       ibuff(5)=nrecsurf
 # ifdef AVERAGES
@@ -175,7 +176,11 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Time
 !
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time)
+      ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)
@@ -187,7 +192,11 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Time2
 !
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time)
+      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
         MPI_master_only write(stdout,1)
@@ -203,7 +212,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
       if (wrthis(indxZ)) then
 !$acc update if(compute_on_device) host(zeta(:,:,fast_indx_out))
         work2d=zeta(:,:,fast_indx_out)
-#if defined WET_DRY && ! defined ZETA_DRY_IO 
+#if defined WET_DRY && ! defined ZETA_DRY_IO
         do j=0,Mm
           do i=0,Lm
             if (h(i,j) .le. Dcrit(i,j)) then
@@ -212,14 +221,14 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
           enddo
         enddo
 #endif
-        call fillvalue2d(work2d,ncidhis,hisZ,indxZ,
+        call fillvalue2d(work2d,ncidhis,hisZ,vname(1,indxZ),
      &        record,r2dvar,type)
       endif
 !
       if (wrthis(indxUb)) then
 !$acc update if(compute_on_device) host(ubar(:,:,fast_indx_out))
         work2d(:,:)=ubar(:,:,fast_indx_out)
-        call fillvalue2d(work2d,ncidhis,hisUb,indxUb,
+        call fillvalue2d(work2d,ncidhis,hisUb,vname(1,indxUb),
      &        record,u2dvar,type)
 CR      write(*,*) 'wrt_his: wrtUBAR' MYID
       endif
@@ -227,7 +236,7 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
       if (wrthis(indxVb)) then
 !$acc update if(compute_on_device) host(vbar(:,:,fast_indx_out))
         work2d(:,:)=vbar(:,:,fast_indx_out)
-        call fillvalue2d(work2d,ncidhis,hisVb,indxVb,
+        call fillvalue2d(work2d,ncidhis,hisVb,vname(1,indxVb),
      &        record,v2dvar,type)
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif
@@ -239,7 +248,7 @@ CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       if (wrthis(indxHm)) then
 !$acc update if(compute_on_device) host(h(:,:))
         work2d(:,:)=h(:,:)
-        call fillvalue2d(work2d,ncidhis,hisHm,indxHm,
+        call fillvalue2d(work2d,ncidhis,hisHm,vname(1,indxHm),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his: wrtHm' MYID
       endif
@@ -258,7 +267,7 @@ CR      write(*,*) 'wrt_his: wrtHm' MYID
      &                                                  *rho0
           enddo
         enddo
-        call fillvalue2d(work2d,ncidhis,hisBostr,indxBostr,
+        call fillvalue2d(work2d,ncidhis,hisBostr,vname(1,indxBostr),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  bostr' MYID
       endif
@@ -269,7 +278,7 @@ CR      write(*,*) 'wrt_his:  bostr' MYID
       if (wrthis(indxBustr)) then
 !$acc update if(compute_on_device) host(bustr(:,:))
          work2d=bustr*rho0
-         call fillvalue2d(work2d,ncidhis,hisBustr,indxBustr,
+         call fillvalue2d(work2d,ncidhis,hisBustr,vname(1,indxBustr),
      &        record,u2dvar,type)
 CR      write(*,*) 'wrt_his:  bustr' MYID
       endif
@@ -282,11 +291,11 @@ CR      write(*,*) 'wrt_his:  bustr' MYID
       if (wrthis(indxBvstr)) then
 !$acc update if(compute_on_device) host(bvstr(:,:))
          work2d=bvstr*rho0
-         call fillvalue2d(work2d,ncidhis,hisBvstr,indxBvstr,
+         call fillvalue2d(work2d,ncidhis,hisBvstr,vname(1,indxBvstr),
      &        record,v2dvar,type)
 CR      write(*,*) 'wrt_his:  bvstr' MYID
       endif
-      
+
 
 
 !
@@ -302,6 +311,9 @@ CR      write(*,*) 'wrt_his:  bvstr' MYID
           do i=1,Lm
 #ifdef OA_COUPLING
             work2d2(i,j)=smstr(i,j)*rho0
+#elif defined STRESS_AT_RHO_POINTS
+            work2d2(i,j)=sqrt(sustr(i,j)**2+svstr(i,j)**2)
+     &                                                       *rho0
 #else
             work2d2(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
      &                           +(svstr(i,j)+svstr(i,j+1))**2)
@@ -326,7 +338,11 @@ CR      write(*,*) 'wrt_his:  Wstr' MYID
       if (wrthis(indxUWstr)) then
 !$acc update if(compute_on_device) host(sustr(:,:))
         work2d=sustr*rho0
+#ifdef STRESS_AT_RHO_POINTS
+        ierr=nf_fwrite(work2d, ncidhis, hisUWstr, record, r2dvar)
+#else
         ierr=nf_fwrite(work2d, ncidhis, hisUWstr, record, u2dvar)
+#endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxUWstr))
           MPI_master_only write(stdout,1)
@@ -342,8 +358,12 @@ CR      write(*,*) 'wrt_his:  UWstr' MYID
       if (wrthis(indxVWstr)) then
 !$acc update if(compute_on_device) host(svstr(:,:))
         work2d=svstr*rho0
-        ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,v2dvar)
-        if (ierr .ne. nf_noerr) then
+#ifdef STRESS_AT_RHO_POINTS
+         ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,r2dvar)
+#else
+         ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,v2dvar)
+#endif
+         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxVWstr))
          MPI_master_only write(stdout,1)
      &        vname(1,indxVWstr)(1:lvar), record, ierr
@@ -382,7 +402,7 @@ CR      write(*,*) 'wrt_his:  wrtFrq' MYID
       endif
 # ifdef WKB_WWAVE
       if (wrthis(indxWAC)) then
-!$acc update if(compute_on_device) host(wac(:,:))
+!$acc update if(compute_on_device) host(wac(:,:,wstp))
         ierr=nf_fwrite (wac(START_2D_ARRAY,wstp), ncidhis,
      &                                   hisWAVE(3), record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -450,7 +470,7 @@ CR      write(*,*) 'wrt_his:  wrtEpd' MYID
 # ifdef WAVE_ROLLER
 #  ifdef WKB_WWAVE
       if (wrthis(indxWAR)) then
-!$acc update if(compute_on_device) host(war(:,:))
+!$acc update if(compute_on_device) host(war(:,:,wstp))
         ierr=nf_fwrite (war(START_2D_ARRAY,wstp), ncidhis,
      &                                   hisWAVE(8), record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -638,7 +658,7 @@ CR      write(*,*) 'wrt_his:  wrtKaps' MYID
       if (wrthis(indxU)) then
 !$acc update if(compute_on_device) host(u(:,:,:,nstp))
         workr=u(:,:,:,nstp)
-        call fillvalue3d(workr,ncidhis,hisU,indxU,
+        call fillvalue3d(workr,ncidhis,hisU,vname(1,indxU),
      &        record,u3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtU  ' MYID
       endif
@@ -646,45 +666,45 @@ CR      write(*,*) 'wrt_his:  wrtU  ' MYID
       if (wrthis(indxV)) then
 !$acc update if(compute_on_device) host(v(:,:,:,nstp))
         workr=v(:,:,:,nstp)
-        call fillvalue3d(workr,ncidhis,hisV,indxV,
+        call fillvalue3d(workr,ncidhis,hisV,vname(1,indxV),
      &        record,v3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
 !
 !     Tracer variables.
 !
-#ifdef TRACERS
+# ifdef TRACERS
       do itrc=1,NT
          if (wrthis(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,itrc))
             workr=t(:,:,:,nstp,itrc)
-#ifdef MASKING
+#  ifdef MASKING
             if (iic.eq.0) then
 !     We do that because the mask has been applied if iic ==0 !
                do k=1,N
                   workr(:,:,k)=workr(:,:,k)
-#ifdef WET_DRY
+#   ifdef WET_DRY
      &                         SWITCH rmask_wet(:,:)
-#else
+#   else
      &                         SWITCH rmask(:,:)
-#endif
+#   endif
                enddo
             endif
-#endif
+#  endif
             call fillvalue3d(workr,ncidhis,hisT(itrc),
-     &           indxV+itrc,record,r3dvar,type)
+     &           vname(1,indxV+itrc),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
       enddo
-#endif /* TRACERS */
+# endif /* TRACERS */
 !
 !     Density anomaly.
 !
       if (wrthis(indxR)) then
 !$acc update if(compute_on_device) host(rho(:,:,:))
         workr=rho+rho0-1000.
-        call fillvalue3d(workr,ncidhis,hisR,indxR,
+        call fillvalue3d(workr,ncidhis,hisR,vname(1,indxR),
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
@@ -697,7 +717,7 @@ CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       if (wrthis(indxbvf)) then
 !$acc update if(compute_on_device) host(bvf(:,:,:))
          work=bvf
-         call fillvalue3d_w(work,ncidhis,hisbvf,indxbvf,
+         call fillvalue3d_w(work,ncidhis,hisbvf,vname(1,indxbvf),
      &           record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtbvf' MYID
       endif
@@ -708,16 +728,16 @@ CR      write(*,*) 'wrt_his:  wrtbvf' MYID
 !
       if (wrthis(indxO)) then
 !$acc update if(compute_on_device) host(we(:,:,:))
-#ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
 !$acc update if(compute_on_device) host(wi(:,:,:))
-#endif
+# endif
         do k=0,N
           do j=0,Mm+1
             do i=0,Lm+1
               work(i,j,k)= ( We(i,j,k)
-#ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
      &                   +   Wi(i,j,k)
-#endif
+# endif
      &                              ) *pm(i,j)*pn(i,j)
 !#ifdef NBQ_MASS
 !     &                            /rho_nbq_avg1(i,j,k)
@@ -725,7 +745,7 @@ CR      write(*,*) 'wrt_his:  wrtbvf' MYID
             enddo
           enddo
         enddo
-        call fillvalue3d_w(work,ncidhis,hisO,indxO,
+        call fillvalue3d_w(work,ncidhis,hisO,vname(1,indxO),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtO  ' MYID
       endif
@@ -733,7 +753,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrthis(indxW)) then
-#ifdef NBQ
+# ifdef NBQ
 !$acc update if(compute_on_device) host(wz(:,:,:))
         do k=0,N
           do j=0,Mm+1
@@ -742,86 +762,88 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
             enddo
           enddo
         enddo
-        call fillvalue3d(work,ncidhis,hisW,indxW,record,w3dvar,type)
-#else
+        call fillvalue3d(work,ncidhis,hisW,
+     &      vname(1,indxW),record,w3dvar,type)
+# else
         do tile=0,NSUB_X*NSUB_E-1
           call Wvlcty (tile, workr)
         enddo
 !$acc update if(compute_on_device) host(workr(:,:,:))        
-        call fillvalue3d(workr,ncidhis,hisW,indxW,record,r3dvar,type)
-#endif
+        call fillvalue3d(workr,ncidhis,hisW,
+     &      vname(1,indxW),record,r3dvar,type)
+# endif
 
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
       endif
 !
-#  ifdef VIS_COEF_3D
+# ifdef VIS_COEF_3D
 !
 !     Write out Horizontal viscosity coefficient.
 !
       if (wrthis(indxVisc)) then
 !$acc update if(compute_on_device) host(visc3d_r(:,:,:))
         workr=visc3d_r
-        call fillvalue3d(workr,ncidhis,hisVisc,indxVisc,
+        call fillvalue3d(workr,ncidhis,hisVisc,vname(1,indxVisc),
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtVisc' MYID
       endif
-#  endif
+# endif
 !
-#  ifdef DIF_COEF_3D
+# ifdef DIF_COEF_3D
 !
 !     Write out Horizontal Diffusivity coefficient.
 !
       if (wrthis(indxDiff)) then
-#   ifdef TS_DIF2
-#    ifdef TEMPERATURE
+#  ifdef TS_DIF2
+#   ifdef TEMPERATURE
 !$acc update if(compute_on_device) host(diff2(:,:itemp))
-#     endif
-#    ifdef TS_DIF_SMAGO
+#   endif
+#   ifdef TS_DIF_SMAGO
 !$acc update if(compute_on_device) host(diff3d_r(:,:,:))
-#    endif
-#   elif defined TS_DIF4
+#   endif
+#  elif defined TS_DIF4
 !$acc update if(compute_on_device) host(diff4(:,:,itemp))
-#    ifdef TS_DIF_SMAGO
+#   ifdef TS_DIF_SMAGO
 !$acc update if(compute_on_device) host(diff3d_r(:,:,:))
-#    endif
+#   endif
 !$acc update if(compute_on_device) host(diff3d_u(:,:,:))
 !$acc update if(compute_on_device) host(diff3d_v(:,:,:))
-#   endif
+#  endif
  
         do k=1,N
           do j=1,Mm
             do i=1,Lm
               workr(i,j,k)=
-#   ifdef TS_DIF2
-#    ifdef TEMPERATURE
+#  ifdef TS_DIF2
+#   ifdef TEMPERATURE
      &                 diff2(i,j,itemp)
-#     endif
-#    ifdef TS_DIF_SMAGO
+#   endif
+#   ifdef TS_DIF_SMAGO
      &              +diff3d_r(i,j,k)
-#    endif
-#   elif defined TS_DIF4
+#   endif
+#  elif defined TS_DIF4
      &               diff4(i,j,itemp)
-#    ifdef TS_DIF_SMAGO
+#   ifdef TS_DIF_SMAGO
      &              +diff3d_r(i,j,k)*om_r(i,j)*on_r(i,j)
-#    endif
+#   endif
      &          +0.25*(diff3d_u(i,j,k)+diff3d_u(i+1,j,k)
      &                +diff3d_v(i,j,k)+diff3d_v(i,j+1,k))
-#   endif
+#  endif
             enddo
           enddo
         enddo
-        call fillvalue3d(workr,ncidhis,hisDiff,indxDiff,
+        call fillvalue3d(workr,ncidhis,hisDiff,vname(1,indxDiff),
      &        record,r3dvar,type)
       endif
 CR      write(*,*) 'wrt_his:  wrtDiff' MYID
-#  endif
+# endif
 !
 !     Write out vertical viscosity coefficient.
 !
       if (wrthis(indxAkv)) then
 !$acc update if(compute_on_device) host(Akv(:,:,:))
         work=Akv
-        call fillvalue3d_w(work,ncidhis,hisAkv,indxAkv,
+        call fillvalue3d_w(work,ncidhis,hisAkv,vname(1,indxAkv),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAkv' MYID
       endif
@@ -832,7 +854,7 @@ CR      write(*,*) 'wrt_his:  wrtAkv' MYID
       if (wrthis(indxAkt)) then
 !$acc update if(compute_on_device) host(Akt(:,:,:,itemp))
         work=Akt(:,:,:,itemp)
-        call fillvalue3d_w(work,ncidhis,hisAkt,indxAkt,
+        call fillvalue3d_w(work,ncidhis,hisAkt,vname(1,indxAkt),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAkt' MYID
       endif
@@ -844,7 +866,7 @@ CR      write(*,*) 'wrt_his:  wrtAkt' MYID
       if (wrthis(indxAks)) then
 !$acc update if(compute_on_device) host(Akt(:,:,:,isalt))
         work=Akt(:,:,:,isalt)
-        call fillvalue3d_w(work,ncidhis,hisAks,indxAks,
+        call fillvalue3d_w(work,ncidhis,hisAks,vname(1,indxAks),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAks' MYID
       endif
@@ -862,7 +884,7 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
 !$acc update if(compute_on_device) host(hbl(:,:))
         work2d=hbl
 #  endif
-        call fillvalue2d(work2d,ncidhis,hisHbl,indxHbl,
+        call fillvalue2d(work2d,ncidhis,hisHbl,vname(1,indxHbl),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  wrtHBL' MYID
       endif
@@ -874,7 +896,7 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
       if (wrthis(indxHbbl)) then
 !$acc update if(compute_on_device) host(hbbl(:,:))
         work2d=hbbl
-        call fillvalue2d(work2d,ncidhis,hisHbbl,indxHbbl,
+        call fillvalue2d(work2d,ncidhis,hisHbbl,vname(1,indxHbbl),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
@@ -886,7 +908,7 @@ CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       if (wrthis(indxTke)) then
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,itke))
         work=trb(:,:,:,nstp,itke)
-        call fillvalue3d_w(work,ncidhis,hisTke,indxTke,
+        call fillvalue3d_w(work,ncidhis,hisTke,vname(1,indxTke),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
       endif
@@ -896,7 +918,7 @@ CR      write(*,*) 'wrt_his:  wrtTke' MYID
       if (wrthis(indxGls)) then
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,igls))
         work=trb(:,:,:,nstp,igls)
-        call fillvalue3d_w(work,ncidhis,hisGls,indxGls,
+        call fillvalue3d_w(work,ncidhis,hisGls,vname(1,indxGls),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtGls' MYID
       endif
@@ -906,7 +928,7 @@ CR      write(*,*) 'wrt_his:  wrtGls' MYID
       if (wrthis(indxLsc)) then
 !$acc update if(compute_on_device) host(Lscale(:,:,:))
         work=Lscale
-        call fillvalue3d_w(work,ncidhis,hisLsc,indxLsc,
+        call fillvalue3d_w(work,ncidhis,hisLsc,vname(1,indxLsc),
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtLsc' MYID
       endif
@@ -915,7 +937,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
 !
 !     Write out total surface heat flux
 !
-#if defined TEMPERATURE
+# if defined TEMPERATURE
       if (wrthis(indxShflx)) then
 !$acc update if(compute_on_device) host(stflx(:,:,itemp))
         work2d=stflx(:,:,itemp)*rho0*Cp
@@ -930,9 +952,9 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
         endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
-#endif
+# endif
 
-#ifdef BHFLUX
+# ifdef BHFLUX
 !
 !     Write out bottom heat flux
 !
@@ -950,9 +972,9 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
           endif
 CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
         endif
-#endif
+# endif
 
-#ifdef SALINITY
+# ifdef SALINITY
 !     Write out surface salt flux
 !
 !       --> convert [psu.m.s-1] => [cm/days] :
@@ -981,7 +1003,7 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
          endif
 CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
        endif
-# ifdef BWFLUX
+#  ifdef BWFLUX
 !
 !     Write out bottom salt flux
 !
@@ -1010,8 +1032,8 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          endif
       write(*,*) 'wrt_his:  btflx(:,:,isalt)' MYID
       endif
+#  endif
 # endif
-#endif
 !
 !     Write out surface heat flux component (W/m2)
 !
@@ -1087,9 +1109,9 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !
       if (wrthis(indxT)) then
 !$acc update if(compute_on_device) host(sst_skin(:,:))
-       work2d=sst_skin
-        call fillvalue2d(work2d,ncidhis,hisSST_skin,indxSST_skin,
-     &        record,r2dvar,type)
+        work2d=sst_skin
+        call fillvalue2d(work2d,ncidhis,hisSST_skin,
+     &        vname(1,indxSST_skin), record,r2dvar,type)
       endif
 # endif
 !
@@ -1100,8 +1122,8 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       if (wrthis(indxHel)) then
 !$acc update if(compute_on_device) host(hel(:,:))
         work2d=hel
-        call fillvalue2d(work2d,ncidhis,hisHel,indxHel,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisHel,
+     &        vname(1,indxHel), record,r2dvar,type)
       endif
 !
 !     Write out depth of the euphotic layer (m).
@@ -1110,43 +1132,43 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       if (wrthis(indxChC)) then
 !$acc update if(compute_on_device) host(theta(:,:))
         workr=theta
-        call fillvalue3d(workr,ncidhis,hisChC,indxChC,
-     &        record,r3dvar,type)
+        call fillvalue3d(workr,ncidhis,hisChC,
+     &        vname(1,indxChC),record,r3dvar,type)
       endif
 #   ifdef OXYGEN
       if (wrthis(indxU10)) then
 !$acc update if(compute_on_device) host(u10(:,:))
         work2d=u10
-        call fillvalue2d(work2d,ncidhis,hisU10,indxU10,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisU10,
+     &        vname(1,indxU10),record,r2dvar,type)
       endif
 !
       if (wrthis(indxKvO2)) then
 !$acc update if(compute_on_device) host(Kv_O2(:,:))
         work2d=Kv_O2
-        call fillvalue2d(work2d,ncidhis,hisKvO2,indxKvO2,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisKvO2,
+     &       vname(1,indxKvO2), record,r2dvar,type)
       endif
 !
       if (wrthis(indxO2sat)) then
 !$acc update if(compute_on_device) host(O2satu(:,:))
         work2d=O2satu
-        call fillvalue2d(work2d,ncidhis,hisO2sat,indxO2sat,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisO2sat,
+     &        vname(1,indxO2sat),record,r2dvar,type)
       endif
 #   endif /* OXYGEN */
 #  elif defined BIO_BioEBUS
       if (wrthis(indxAOU)) then
 !$acc update if(compute_on_device) host(AOU(:,:))
         workr=AOU
-        call fillvalue3d(workr,ncidhis,hisAOU,indxAOU,
-     &        record,r3dvar,type)
+        call fillvalue3d(workr,ncidhis,hisAOU,
+     &       vname(1,indxAOU), record,r3dvar,type)
       endif
       if (wrthis(indxWIND10)) then
 !$acc update if(compute_on_device) host(wind10(:,:))
         work2d=wind10
-        call fillvalue2d(work2d,ncidhis,hiswind10,indxWIND10,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hiswind10,
+     &        vname(1,indxWIND10),record,r2dvar,type)
       endif
 #  endif
 # endif /* BIOLOGY */
@@ -1159,22 +1181,22 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       if (wrthis(indxATHK)) then
 !$acc update if(compute_on_device) host(bot_thick(:,:))
         work2d=bot_thick
-        call fillvalue2d(work2d,ncidhis,hisSed(1),indxATHK,
-     &        record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisSed(1),
+     &        vname(1,indxATHK),record,r2dvar,type)
       endif
 
       if (wrthis(indxBTHK)) then
 !$acc update if(compute_on_device) host(bed_thick(:,:,:))
         worksed_bed=bed_thick
-        call fillvalue3d(worksed_bed,ncidhis,hisSed(2),indxBTHK,
-     &        record,b3dvar,type)
+        call fillvalue3d(worksed_bed,ncidhis,hisSed(2),
+     &        vname(1,indxBTHK),record,b3dvar,type)
       endif
 
       if (wrthis(indxBPOR)) then
 !$acc update if(compute_on_device) host(bed_poros(:,:,:))
         worksed_bed=bed_poros
-        call fillvalue3d(worksed_bed,ncidhis,hisSed(3),indxBPOR,
-     &        record,b3dvar,type)
+        call fillvalue3d(worksed_bed,ncidhis,hisSed(3),
+     &        vname(1,indxBPOR),record,b3dvar,type)
       endif
 
       do itrc=1,NST
@@ -1183,7 +1205,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !$acc update if(compute_on_device) host(bed_frac(:,:,:,itrc))
           worksed_frac=bed_frac(:,:,:,itrc)
           call fillvalue3d(worksed_frac,ncidhis,hisSed(itrc+3),
-     &           indxWrk,record,b3dvar,type)
+     &           vname(1,indxWrk),record,b3dvar,type)
          endif
       enddo
 
@@ -1194,7 +1216,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !$acc update if(compute_on_device) host(settling_flux(:,:,itrc))
           work2d=settling_flux(:,:,itrc)/dt
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
         endif
       enddo
       do itrc=1,NST
@@ -1203,7 +1225,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !$acc update if(compute_on_device) host(ero_flux(:,:,itrc))
           work2d=ero_flux(:,:,itrc)/dt
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+2*NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
         endif
       enddo
 #  endif
@@ -1211,14 +1233,14 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       do itrc=1,NST
         indxWrk=indxBDLU(1)+itrc-1
         if (wrthis(indxWrk)) then
-!$acc update if(compute_on_device) host(bedlu(:,:,itrc))
+!$acc update if(compute_on_device) host(bedldu(:,:,itrc))
           work2d=bedldu(:,:,itrc)
 #   ifdef SUSPLOAD
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+3*NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
 #   else
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
 #   endif
         endif
       enddo
@@ -1226,14 +1248,14 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       do itrc=1,NST
         indxWrk=indxBDLV(1)+itrc-1
         if (wrthis(indxWrk)) then
-!$acc update if(compute_on_device) host(bedlv(:,:,itrc))
+!$acc update if(compute_on_device) host(bedldv(:,:,itrc))
           work2d=bedldv(:,:,itrc)
 #   ifdef SUSPLOAD
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+4*NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
 #   else
           call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+2*NST),
-     &           indxWrk,record,r2dvar,type)
+     &           vname(1,indxWrk),record,r2dvar,type)
 #   endif
         endif
       enddo
@@ -1244,7 +1266,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !$acc update if(compute_on_device) host(bed_bctr(:,:,:))
         worksed_bed=bed_bctr
         call fillvalue3d(worksed_bed,ncidhis,hisSed(ubound(hisSed)),
-     &                   indxBTCR, record,b3dvar,type)
+     &                   vname(1,indxBTCR), record,b3dvar,type)
       endif
 #  endif
 
@@ -1254,7 +1276,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       if (wrthis(indxAbed)) then
 !$acc update if(compute_on_device) host(Abed(:,:))
         work2d=Abed
-        call fillvalue2d(work2d,ncidhis,hisBBL(1),indxAbed,
+        call fillvalue2d(work2d,ncidhis,hisBBL(1),vname(1,indxAbed),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Abed' MYID
       endif
@@ -1262,7 +1284,7 @@ CR        write(*,*) 'wrt_his:  Abed' MYID
       if (wrthis(indxHrip)) then
 !$acc update if(compute_on_device) host(Hripple(:,:))
         work2d=Hripple
-        call fillvalue2d(work2d,ncidhis,hisBBL(2),indxHrip,
+        call fillvalue2d(work2d,ncidhis,hisBBL(2),vname(1,indxHrip),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Hripple' MYID
       endif
@@ -1270,7 +1292,7 @@ CR        write(*,*) 'wrt_his:  Hripple' MYID
       if (wrthis(indxLrip)) then
 !$acc update if(compute_on_device) host(Lripple(:,:))
         work2d=Lripple
-        call fillvalue2d(work2d,ncidhis,hisBBL(3),indxLrip,
+        call fillvalue2d(work2d,ncidhis,hisBBL(3),vname(1,indxLrip),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Lripple' MYID
       endif
@@ -1278,7 +1300,7 @@ CR        write(*,*) 'wrt_his:  Lripple' MYID
       if (wrthis(indxZbnot)) then
 !$acc update if(compute_on_device) host(Zbnot(:,:))
         work2d=Zbnot
-        call fillvalue2d(work2d,ncidhis,hisBBL(4),indxZbnot,
+        call fillvalue2d(work2d,ncidhis,hisBBL(4),vname(1,indxZbnot),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Zbnot' MYID
       endif
@@ -1286,7 +1308,7 @@ CR        write(*,*) 'wrt_his:  Zbnot' MYID
       if (wrthis(indxZbapp)) then
 !$acc update if(compute_on_device) host(Zbapp(:,:))
          work2d=Zbapp
-         call fillvalue2d(work2d,ncidhis,hisBBL(5),indxZbapp,
+         call fillvalue2d(work2d,ncidhis,hisBBL(5),vname(1,indxZbapp),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  Zbapp' MYID
       endif
@@ -1301,7 +1323,7 @@ CR        write(*,*) 'wrt_his:  Zbapp' MYID
      &                                                     *rho0
           enddo
         enddo
-        call fillvalue2d(work2d,ncidhis,hisBBL(6),indxBostrw,
+        call fillvalue2d(work2d,ncidhis,hisBBL(6),vname(1,indxBostrw),
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  bostrw' MYID
       endif
@@ -1340,7 +1362,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
           endif
 # endif
           call fillvalue3d(workr,ncidhis,hisT(itrc),
-     &                     indxT+itrc-1,record,r3dvar,type)
+     &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         endif
       enddo
@@ -1353,7 +1375,7 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         if (wrthis(indxT+NT+itrc-1)) then
           workr=cvfix_wat(:,:,:,itrc)
           call fillvalue3d(workr,ncidhis,hisT(NT+itrc),
-     &                     indxT+NT+itrc-1,record,r3dvar,type)
+     &                     vname(1,indxT+NT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
         endif
       enddo
@@ -1369,21 +1391,21 @@ CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
       indx=indxT+ntrc_salt+ntrc_substot+1
       if (wrthis(indx)) then
         work2d=var2D_ksma(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(1),indx,
+        call fillvalue2d(work2d,ncidhis,hisMust(1),vname(1,indx),
      &                   record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_ksma'  MYID
       endif
       indx=indxT+ntrc_salt+ntrc_substot+2
       if (wrthis(indx)) then
         work2d=var2D_eptot(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(2),indx,
+        call fillvalue2d(work2d,ncidhis,hisMust(2),vname(1,indx),
      &                   record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_eptot'  MYID
       endif
       indx=indxT+ntrc_salt+ntrc_substot+3
       if (wrthis(indx)) then
         work2d=var2D_tauskin(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(3),indx,
+        call fillvalue2d(work2d,ncidhis,hisMust(3),vname(1,indx),
      &                   record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_tauskin'  MYID
       endif
@@ -1392,7 +1414,7 @@ CR      write(*,*) 'wrt_his var2D_tauskin'  MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_dzs(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(4),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(4),vname(1,indx),
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var2D_dzs'   MYID
       endif
@@ -1401,7 +1423,7 @@ CR      write(*,*) 'wrt_his var2D_dzs'   MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_TEMP(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(5),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(5),vname(1,indx),
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
       endif
@@ -1410,7 +1432,7 @@ CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_SAL(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(6),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(6),vname(1,indx),
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_SAL'  MYID
       endif
@@ -1423,7 +1445,7 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
           enddo
           workrsed1=workrsed(:,:,:)
           call fillvalue3d_must(workrsed1,ncidhis,hisMust(itrc+6),
-     &                     indx,record,b3dvar,type)
+     &                     vname(1,indx),record,b3dvar,type)
 CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
         endif
       enddo
@@ -1437,7 +1459,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
           if (wrthis(indx)) then
             work2d(:,:)=varspecif3Dnv_save(k,itrc,:,:)
             call fillvalue2d(work2d,ncidhis,
-     &                 hisMust(ntrc_subs+6+ik),indx,record,r2dvar,type)
+     &          hisMust(ntrc_subs+6+ik),vname(1,indx),record,r2dvar,type)
           endif
         enddo
        enddo
@@ -1447,7 +1469,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
          if (wrthis(indx)) then
            work2d(:,:)=varspecif2D_save(k,:,:)
            call fillvalue2d(work2d,ncidhis,
-     &                 hisMust(ntrc_subs+6+ik),indx,record,r2dvar,type)
+     &         hisMust(ntrc_subs+6+ik),vname(1,indx),record,r2dvar,type)
          endif
        enddo
 #  endif

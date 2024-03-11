@@ -120,7 +120,7 @@ C$    trd=omp_get_thread_num()
 !
 # ifdef RVTK_DEBUG
       USE debug
-#endif
+# endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, kbak,kold,
@@ -187,8 +187,8 @@ C$    trd=omp_get_thread_num()
      &                   BC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &         FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         FY_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-#define qdmw_nbq_old FX_3D
-#define dthetadiv_nbqdz_uv FY_3D
+#  define qdmw_nbq_old FX_3D
+#  define dthetadiv_nbqdz_uv FY_3D
 # endif
 # ifdef UV_COR_NT
       real
@@ -202,13 +202,13 @@ C$    trd=omp_get_thread_num()
 # include "ocean3d.h"
 # include "coupling.h"
 # include "forces.h"
-#ifdef NBQ
+# ifdef NBQ
       real sum_nbq
-#if !defined VARYING_CSOUND
+#  if !defined VARYING_CSOUND
       real cff1_cst
-#endif
-#endif
-#include "openacc_work.h"
+#  endif
+# endif
+# include "openacc_work.h"
 # ifdef MRL_WCI
       real vstu,ustv,dudx,dvdx,dude,dvde
 # endif
@@ -598,8 +598,8 @@ C$OMP END MASTER
      &                     +ust(i,j,N)
 #   ifdef WET_DRY
      &                      *umask_wet(i,j)
+#   endif
 #  endif
-# endif
      &                     )
 #  ifdef MASKING
      &                     *umask(i,j) 
@@ -2410,10 +2410,10 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 
-#if !defined NBQ_GRID_SLOW
-#define dZdxq_u dthetadiv_nbqdz
-#define dZdxq_w dthetadiv_nbqdz_uv
-#endif
+#  if !defined NBQ_GRID_SLOW
+#   define dZdxq_u dthetadiv_nbqdz
+!#   define dZdxq_w FX_3D
+#  endif
 
 #  ifdef NBQ_GRID_SLOW
         if (NSTEP_DS) then
@@ -2486,7 +2486,7 @@ C$OMP END MASTER
 #  endif  /* NBQ_GRID_SLOW */
 
 ! Bottom boundary conditions
-#   ifdef NBQ_FREESLIP
+#  ifdef NBQ_FREESLIP
             do j=Jstr,Jend
               do i=Istr,Iend+1 
                 dZdxq_w(i,j,0)=(z_w(i,j,0)-z_w(i-1,j,0))
@@ -2500,24 +2500,24 @@ C$OMP END MASTER
                 qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i  ,j,0)*pm_u(i  ,j) 
      &                              +dZdxq_w(i+1,j,0)*pm_u(i+1,j) ) 
      &                                                  *Hzr(i,j,1)    
-#    ifdef MASKING
+#   ifdef MASKING
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
-#    endif 
+#   endif 
               enddo
             enddo 
 
-#   endif /* NBQ_FREESLIP */
+#  endif /* NBQ_FREESLIP */
 
 #  ifdef NBQ_GRID_SLOW
         endif ! NSTEP_DS
 #  endif  /* NBQ_GRID_SLOW */
 
-#if !defined NBQ_GRID_SLOW
-#undef dZdxq_u
-#undef dZdxq_w
-#endif
+#  if !defined NBQ_GRID_SLOW
+#   undef dZdxq_u
+#   undef dZdxq_w
+#  endif
 
-#define FX dthetadiv_nbqdz_uv
+#  define FX dthetadiv_nbqdz_uv
       do k=1,N
           if (IstrU.le.Iend) then
             do j=Jstr,Jend
@@ -2547,17 +2547,17 @@ C$OMP END MASTER
 
           endif 
       enddo
-#undef FX
+#  undef FX
 
 !
 !-----------------------------------------------------------------------
 !  Y-component dZdy*qdmv for horizontal divergence
 !-----------------------------------------------------------------------
 !
-#if !defined NBQ_GRID_SLOW
-#define dZdyq_v dthetadiv_nbqdz
-#define dZdyq_w dthetadiv_nbqdz_uv
-#endif
+#  if !defined NBQ_GRID_SLOW
+#   define dZdyq_v dthetadiv_nbqdz
+!#   define dZdyq_w dthetadiv_nbqdz_uv
+#  endif
 
 #  ifdef NBQ_GRID_SLOW
         if (NSTEP_DS) then
@@ -2630,7 +2630,7 @@ C$OMP END MASTER
 
 ! Bottom boundary conditions
 
-#   ifdef NBQ_FREESLIP
+#  ifdef NBQ_FREESLIP
             do j=Jstr,Jend+1
               do i=Istr,Iend
                 dZdyq_w(i,j,0)= (z_w(i,j,0)-z_w(i,j-1,0))
@@ -2644,21 +2644,21 @@ C$OMP END MASTER
      &                         +0.5*(dZdyq_w(i,j  ,k)*pn_v(i,j  )  
      &                              +dZdyq_w(i,j+1,k)*pn_v(i,j+1) )
      &                                                 * Hzr(i,j,1) 
-#    ifdef MASKING
+#   ifdef MASKING
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
-#    endif 
+#   endif 
               enddo
             enddo
-#   endif
+#  endif
 #  ifdef NBQ_GRID_SLOW
         endif ! NSTEP_DS
 #  endif /* NBQ_GRID_SLOW */
-#if !defined NBQ_GRID_SLOW
-#undef dZdyq_v
-#undef dZdyq_w
-#endif
+#  if !defined NBQ_GRID_SLOW
+#   undef dZdyq_v
+#   undef dZdyq_w
+#  endif
 
-#define FY dthetadiv_nbqdz_uv
+#  define FY dthetadiv_nbqdz_uv
           if (JstrV.le.Jend) then
           do k=1,N
             do j=Jstr,Jend+1
@@ -2678,7 +2678,7 @@ C$OMP END MASTER
             enddo
           enddo
           endif
-#undef FY
+#  undef FY
 
 
 !
@@ -2686,11 +2686,11 @@ C$OMP END MASTER
 !  Compute total horizontal Divergence divH(qdmH(m+1))
 !-----------------------------------------------------------------------
 !
-#ifdef OPENACC
+#  ifdef OPENACC
       DOEXTEND(k,1,N,FX,FY)
-#else
+#  else
       do k=1,N !<-- k loop
-#endif
+#  endif
 
         if (IstrU.le.Iend) then
           do j=Jstr,Jend
@@ -2738,11 +2738,11 @@ C$OMP END MASTER
             enddo
           enddo
         endif  
-#ifdef OPENACC
+#  ifdef OPENACC
       ENDDOEXTEND
-#else
+#  else
       enddo ! <-- k=1,N
-#endif
+#  endif
 !
 !-----------------------------------------------------------------------
 !  thetadiv2_nbq: complet time-corrective term  (dh/dt included) 
@@ -2761,14 +2761,14 @@ C$OMP END MASTER
           enddo
         enddo
 
-#define FC qdmw_nbq_old
-#define CF dthetadiv_nbqdz_uv
+#  define FC qdmw_nbq_old
+#  define CF dthetadiv_nbqdz_uv
 
         do j=JstrV-2,Jend+1 !<-- j loop
           do i=IstrU-2,Iend+1
-#ifdef NBQ_HZ_PROGNOSTIC
+#  ifdef NBQ_HZ_PROGNOSTIC
             FC(i,j,0)=0.    ! Bottom boundary condition
-#endif
+#  endif
             CF(i,j,0)=0.
           enddo
         enddo
@@ -2785,21 +2785,21 @@ C$OMP END MASTER
      &                   +rho_grd(i,j,k+1)
      &                   +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1) )
 
-#ifdef NBQ_HZ_PROGNOSTIC
+#  ifdef NBQ_HZ_PROGNOSTIC
              FC(i,j,k) = CF(i,j,k)-FC(i,j,k)
-#endif
+#  endif
             enddo
           enddo
         enddo
 
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
-#ifdef NBQ_HZ_PROGNOSTIC
+#  ifdef NBQ_HZ_PROGNOSTIC
              FC(i,j,N)=   
      &        -(zw_nbq(i,j,N,knew)-zw_nbq(i,j,N,kstp))/dtgrid_nbq
      &         *( 1.+rho_grd(i,j,N)
      &          )
-#endif
+#  endif
             CF(i,j,N)=  
      &        -(zw_nbq(i,j,N,knew)-zw_nbq(i,j,N,kstp))/dtgrid_nbq
      &         *( rho_grd(i,j,N)
@@ -2808,19 +2808,19 @@ C$OMP END MASTER
         enddo !<-- j loop
 
         do k=1,N
-          do j=JstrV-2,Jend+1
-            do i=IstrU-2,Iend+1
+          do j=Jstr,Jend
+            do i=Istr,Iend
               thetadiv3_nbq(i,j,k)=
      &    CF(i,j,k)-CF(i,j,k-1) 
-#ifdef NBQ_HZ_PROGNOSTIC
+#  ifdef NBQ_HZ_PROGNOSTIC
               thetadiv2_nbq(i,j,k)=
      &    FC(i,j,k)-FC(i,j,k-1) 
-#endif
+#  endif
             enddo
           enddo
         enddo
-#undef FC
-#undef CF
+#  undef FC
+#  undef CF
 
 #  ifdef NBQ_GRID_SLOW
        endif !<-- FIRST_FAST_STEP
@@ -2901,10 +2901,10 @@ C$OMP END MASTER
 
 !.......Compute coef.
 
-#if !defined VARYING_CSOUND
+#   if !defined VARYING_CSOUND
       cff1_cst = 1./(dtnbq*(thetaimp_nbq**2*csound_nbq**2
      &            *dtnbq+visc2_nbq))
-#endif
+#   endif
       !do j=Jstr,Jend  !<-- j loop
       DOLOOP2D(Istr,Iend,Jstr,Jend)
 
@@ -2920,12 +2920,12 @@ C$OMP END MASTER
 !..........Bottom BC
         k=1
         do i=Istr,Iend
-#if !defined VARYING_CSOUND
+#   if !defined VARYING_CSOUND
           cff1 = cff1_cst
-#else
+#   else
           cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
      &            *dtnbq+visc2_nbq)) 
-#endif
+#   endif
           cff=(cff1+FC(i,1)+BC(i,2))
           CF(i,1)=(-FC(i,2))
      &                                                          /cff
@@ -2937,12 +2937,12 @@ C$OMP END MASTER
 
         do k=2,N-1
           do i=Istr,Iend
-#if !defined VARYING_CSOUND
+#   if !defined VARYING_CSOUND
           cff1 = cff1_cst
-#else
+#   else
           cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
      &            *dtnbq+visc2_nbq)) 
-#endif
+#   endif
             cff=(cff1+
      &               FC(i,k)+BC(i,k+1)
      &              +BC(i,k)*CF(i,k-1))
@@ -2955,12 +2955,12 @@ C$OMP END MASTER
 !..........Surface BC
         k=N
         do i=Istr,Iend
-#if !defined VARYING_CSOUND
+#   if !defined VARYING_CSOUND
           cff1 = cff1_cst
-#else
+#   else
           cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
      &            *dtnbq+visc2_nbq)) 
-#endif
+#   endif
           cff=(cff1+FC(i,N)
      &             +BC(i,N)*CF(i,N-1))  
           CF(i,N)=0. 
@@ -3055,10 +3055,10 @@ C$OMP END MASTER
 !$acc end kernels
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv_nbq(START_2D_ARRAY,1))
-#ifdef NBQ_HZ_PROGNOSTIC
+#   ifdef NBQ_HZ_PROGNOSTIC
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv2_nbq(START_2D_ARRAY,1))
-#endif
+#   endif
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv3_nbq(START_2D_ARRAY,1))
 !$acc kernels if(compute_on_device) default(present)
@@ -3373,9 +3373,9 @@ C$OMP END MASTER
 # else
           DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
      &                             + cff * rubar_nbq(i,j) )
-#ifdef MASKING
+#  ifdef MASKING
      &                                     *umask(i,j)
-#endif
+#  endif
 # endif
 # ifdef WET_DRY
      &                                     *umask_wet(i,j)
@@ -3408,9 +3408,9 @@ C$OMP END MASTER
 # else
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
      &                             + cff * rvbar_nbq(i,j) )
-#ifdef MASKING
+#  ifdef MASKING
      &                                     *vmask(i,j)
-#endif
+#  endif
 # endif
 # ifdef WET_DRY
      &                                     *vmask_wet(i,j)
@@ -3686,18 +3686,18 @@ C$OMP END MASTER
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           cff=(Dnew(IstrU-1,j)+Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                              +ust2d(IstrU-1,j)
-# endif
+#  endif
      &                                              )*on_u(IstrU-1,j)
           DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)+cff1*cff
           DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)+cff2*cff
         enddo
         do j=JstrV,Jend
           cff=(Dnew(Istr-1,j)+Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                               +vst2d(Istr-1,j)
-# endif
+#  endif
      &                                               )*om_v(Istr-1,j)
           DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)+cff1*cff
           DV_avg2(Istr-1,j)=DV_avg2(Istr-1,j)+cff2*cff
@@ -3706,18 +3706,18 @@ C$OMP END MASTER
       if (EASTERN_EDGE) then
         do j=JstrR,JendR
           cff=(Dnew(Iend+1,j)+Dnew(Iend,j))*(ubar(Iend+1,j,knew)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                          +ust2d(Iend+1,j)
-# endif
+#  endif
      &                                          )*on_u(Iend+1,j)
           DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)+cff1*cff
           DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)+cff2*cff
         enddo
         do j=JstrV,Jend
           cff=(Dnew(Iend+1,j)+Dnew(Iend+1,j-1))*(vbar(Iend+1,j,knew)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                              +vst2d(Iend+1,j)
-# endif
+#  endif
      &                                              )*om_v(Iend+1,j)
           DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)+cff1*cff
           DV_avg2(Iend+1,j)=DV_avg2(Iend+1,j)+cff2*cff
@@ -4153,12 +4153,12 @@ C$OMP MASTER
      &   ondevice=.TRUE.)
       call check_tab2d(DV_avg1(:,:,nnew),'DV_avg1','v',
      &   ondevice=.TRUE.)
-# ifdef NBQ_HZCORRECT
+#  ifdef NBQ_HZCORRECT
       if (LAST_FAST_STEP) then
       call check_tab3d(Hz,'Hz last fast step','r',
      &   ondevice=.TRUE.)
       endif
-#endif
+#  endif
 C$OMP END MASTER
 # endif 
 
@@ -4174,10 +4174,10 @@ C$OMP END MASTER
         ENDIF
         imax=ijmax(1)
         jmax=ijmax(2)
-#ifdef MPI
+# ifdef MPI
         imax=imax+iminmpi-1
         jmax=jmax+jminmpi-1
-#endif
+# endif
         write(stdout,'(9(A/))')
      &     '                                         ',
      &     '                                         ',

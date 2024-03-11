@@ -106,8 +106,6 @@
       integer,dimension(:),allocatable::                              &  !  (nmc_oa+1)
            begc_oa    
 
-      integer                                   :: nper_sclg_max
-      !integer, parameter                       :: nper_sclg_max_croco = 100
 
       end module module_oa_periode
 

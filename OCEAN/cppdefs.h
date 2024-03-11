@@ -17,8 +17,8 @@
    This is "cppdefs.h": MODEL CONFIGURATION FILE
    ==== == ============ ===== ============= ====
 */
-/* 
-        SELECT ACADEMIC TEST CASES 
+/*
+        SELECT ACADEMIC TEST CASES
 */
 #undef  BASIN           /* Basin Example */
 #undef  CANYON          /* Canyon Example */
@@ -51,7 +51,8 @@
 #undef  SED_TOY         /* 1DV sediment toy Example */
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
 #undef  ESTUARY         /* 3D tidal estuary Example */
-/* 
+#undef  KILPATRICK      /* 2D sst front*/
+/*
         ... OR REALISTIC CONFIGURATIONS
 */
 #undef  COASTAL         /* COASTAL Applications */
@@ -92,6 +93,7 @@ cppdef.h by hand for the common setups.
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
+#  undef WAVE_SMFLUX
 # endif
                       /* Wave-current interactions */
 # undef  MRL_WCI
@@ -112,10 +114,10 @@ cppdef.h by hand for the common setups.
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
-# undef  USE_CALENDAR  
+# undef  USE_CALENDAR
                       /* dedicated croco.log file */
 # undef  LOGFILE
-/*    
+/*
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
 !
@@ -160,7 +162,20 @@ cppdef.h by hand for the common setups.
 ! Note : gustiness effects can be added for all params
 !        by defining BULK_GUSTINESS
 */
-# undef BULK_FLUX
+# undef  ABL1D
+# ifdef  ABL1D
+#  define BULK_FLUX
+#  undef  ANA_ABL_LSDATA
+#  undef  ANA_ABL_VGRID
+#  define STRESS_AT_RHO_POINTS
+#  define ABL_NUDGING
+#  define ABL_NUDGING_DYN
+#  define ABL_NUDGING_TRA
+#  undef  ABL_DYN_RESTORE_EQ
+#  undef  SFLUX_CFB
+# else
+#  define BULK_FLUX
+# endif
 # ifdef BULK_FLUX
 #  undef  BULK_ECUMEV0
 #  undef  BULK_ECUMEV6
@@ -174,7 +189,7 @@ cppdef.h by hand for the common setups.
 #   undef  AROME
 #   undef  ERA_ECMWF
 #  endif
-#  undef  READ_PATM
+#  undef READ_PATM
 #  ifdef READ_PATM
 #   define OBC_PATM
 #  endif
@@ -201,7 +216,7 @@ cppdef.h by hand for the common setups.
 #  undef  ROBUST_DIAG
 # endif
 
-# define  FRC_BRY
+# define FRC_BRY
 # ifdef FRC_BRY
 #  define Z_FRC_BRY
 #  define M2_FRC_BRY
@@ -325,7 +340,7 @@ cppdef.h by hand for the common setups.
 #  undef RVTK_DEBUG_ADVANCED
 #  define XXXRVTK_DEBUG_READ
 # endif
-!    RVTK test (Restartability or Parallel reproducibility)                
+!    RVTK test (Restartability or Parallel reproducibility)
 # if defined RVTK_DEBUG && defined BULK_FLUX && defined ONLINE
 #  define BULK_MONTH_1DIGIT
 # endif
@@ -351,8 +366,8 @@ cppdef.h by hand for the common setups.
 
 # undef DIAGNOSTICS_TSVAR
 # ifdef DIAGNOSTICS_TSVAR
-#  define  DIAGNOSTICS_TS
-#  define  DIAGNOSTICS_TS_ADV
+#  define DIAGNOSTICS_TS
+#  define DIAGNOSTICS_TS_ADV
 # endif
 
 # undef  DIAGNOSTICS_VRT
@@ -401,10 +416,11 @@ cppdef.h by hand for the common setups.
 #   define key_pisces
 #   define key_ligand
 #   undef key_pisces_quota
+#   undef key_pisces_light
 #   undef key_sediment
 #  endif
 #  ifdef BIO_NChlPZD
-#   define  OXYGEN
+#   define OXYGEN
 #  endif
 #  ifdef BIO_BioEBUS
 #   define NITROUS_OXIDE
@@ -451,7 +467,7 @@ cppdef.h by hand for the common setups.
 /*
 !====================================================================
 !               COASTAL (realistic) Configurations
-!==================================================================== 
+!====================================================================
 !
 !----------------------
 ! BASIC OPTIONS
@@ -483,8 +499,8 @@ cppdef.h by hand for the common setups.
 # define ZETA_DRY_IO
 # define FILLVAL
                       /* Calendar */
-# undef  START_DATE
-# define USE_CALENDAR
+
+# undef USE_CALENDAR
                       /* dedicated croco.log file */
 # undef  LOGFILE
 /*!
@@ -560,12 +576,12 @@ cppdef.h by hand for the common setups.
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
 #  define ONLINE
-#  ifdef ONLINE 
+#  ifdef ONLINE
 #   define AROME
 #   undef  ERA_ECMWF
 #  endif
 #  define READ_PATM
-#  ifdef READ_PATM 
+#  ifdef READ_PATM
 #   define OBC_PATM
 #  endif
 # else
@@ -592,8 +608,8 @@ cppdef.h by hand for the common setups.
 # define PSOURCE
 # undef  PSOURCE_MASS
 # define PSOURCE_NCFILE
-# ifdef PSOURCE_NCFILE                    
-#   define PSOURCE_NCFILE_TS
+# ifdef PSOURCE_NCFILE
+#  define PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
@@ -618,12 +634,12 @@ cppdef.h by hand for the common setups.
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations, 
+! Biology, floats, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
    Quasi-monotone lateral advection scheme (WENO5)
-   for passive/biology/sediment tracers 
+   for passive/biology/sediment tracers
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
                             || defined SUBSTANCE || defined MUSTANG
@@ -829,20 +845,20 @@ cppdef.h by hand for the common setups.
 # define NS_PERIODIC
 # ifdef INTERNALSHELF
 #  undef   EW_PERIODIC
-#  define  OBC_EAST
-#  define  OBC_WEST
-#  define  SPONGE
-#  define  ANA_SSH
-#  define  ANA_M2CLIMA
-#  define  ANA_M3CLIMA
-#  define  ANA_TCLIMA
-#  define  ZCLIMATOLOGY
-#  define  M2CLIMATOLOGY
-#  define  M3CLIMATOLOGY
-#  define  TCLIMATOLOGY
-#  define  M2NUDGING
-#  define  M3NUDGING
-#  define  TNUDGING
+#  define OBC_EAST
+#  define OBC_WEST
+#  define SPONGE
+#  define ANA_SSH
+#  define ANA_M2CLIMA
+#  define ANA_M3CLIMA
+#  define ANA_TCLIMA
+#  define ZCLIMATOLOGY
+#  define M2CLIMATOLOGY
+#  define M3CLIMATOLOGY
+#  define TCLIMATOLOGY
+#  define M2NUDGING
+#  define M3NUDGING
+#  define TNUDGING
 # endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
@@ -925,7 +941,7 @@ cppdef.h by hand for the common setups.
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define PSOURCE
-# undef PSOURCE_MASS
+# undef  PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
 # undef  FLOATS
@@ -1778,12 +1794,12 @@ cppdef.h by hand for the common setups.
 #  define BODYFORCE
 # endif
 
-# ifdef SED_TOY_FLOC_1D 
+# ifdef SED_TOY_FLOC_1D
 #  define ANA_VMIX
 #  define BODYFORCE
 # endif
 
-# ifdef SED_TOY_FLOC_0D 
+# ifdef SED_TOY_FLOC_0D
 #  define ANA_VMIX
 #  define BODYFORCE
 # endif
@@ -1793,9 +1809,9 @@ cppdef.h by hand for the common setups.
 
 # ifdef MUSTANG
 #  if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
-#    define key_MUSTANG_flocmod
-#    define GLS_MIXING
-#    define GLS_KOMEGA
+#   define key_MUSTANG_flocmod
+#   define GLS_MIXING
+#   define GLS_KOMEGA
 #  endif
 # endif
 
@@ -1828,6 +1844,39 @@ cppdef.h by hand for the common setups.
 # undef  MORPHODYN
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
+
+#elif defined KILPATRICK
+/*
+!                       KILPATRICK  Example
+!                       ==========  =======
+*/
+# define MPI
+# define AVERAGES
+# define NONLIN_EOS
+# define SOLVE3D
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# define NO_FRCFILE
+# define ABL1D
+# ifdef  ABL1D
+#  define BULK_FLUX
+#  undef  BULK_ECUMEV0
+#  undef  BULK_ECUMEV6
+#  define BULK_GUSTINESS
+#  define ANA_ABL_LSDATA
+#  define ANA_ABL_VGRID
+#  define STRESS_AT_RHO_POINTS
+#  undef  ABL_NUDGING
+#  undef  ABL_NUDGING_DYN
+#  undef  ABL_NUDGING_TRA
+#  undef  ABL_DYN_RESTORE_EQ
+#  undef  SFLUX_CFB
+# else
+#  undef BULK_FLUX
+# endif
 
 #elif defined TIDAL_FLAT
 /*

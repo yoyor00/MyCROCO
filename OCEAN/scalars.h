@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -36,12 +36,18 @@
       real dt, dtfast, time, time2, time_start, tdays, start_time
 #ifdef USE_CALENDAR
       real time_mars, time_end
-      character*19 date, run_end_date, run_start_date
+      character*19 date, end_date, start_date
 #endif
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
 #endif
+# if defined OA_COUPLING || defined OW_COUPLING
+#  ifdef AGRIF
+     &     , it_inside_root
+#  endif
+# endif
+
 #ifdef FLOATS
      &      , nfp1, nf, nfm1, nfm2, nfm3
 #endif
@@ -49,28 +55,34 @@
      &      , wstp, wnew
 #endif
       logical PREDICTOR_2D_STEP
-      common /time_indices/  dt,dtfast, time, time2,time_start, tdays, 
+      common /time_indices/  dt,dtfast, time, time2,time_start, tdays,
      &     ndtfast, iic, kstp, krhs, knew, next_kstp,
      &     start_time,
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
+# if defined OA_COUPLING || defined OW_COUPLING
+#  ifdef AGRIF
+     &      it_inside_root,
+#  endif
+# endif
+
 #ifdef FLOATS
      &                       nfp1, nf, nfm1, nfm2, nfm3,
 #endif
 #ifdef WKB_WWAVE
      &                       wstp, wnew,
 #endif
-     &                       PREDICTOR_2D_STEP 
+     &                       PREDICTOR_2D_STEP
 #ifdef USE_CALENDAR
       common /time_indices2/ time_mars, time_end,
-     &                       date, run_end_date, run_start_date
+     &                       date, end_date, start_date
 #endif
 
 !
 ! Slowly changing variables: these are typically set in the beginning
 ! of the run and either remain unchanged, or are changing only in
-! association with the I/0. 
+! association with the I/0.
 !
 ! xl, el   Physical size (m) of domain box in the XI-,ETA-directions.
 !
@@ -100,10 +112,10 @@
 ! rdrg     Linear bottom drag coefficient.
 ! rdrg2    Quadratic bottom drag coefficient.
 ! Cdb_max  Maximum bottom drag coefficient allowed.
-! Cdb_min  Minimum bottom drag coefficient to avoid the 
+! Cdb_min  Minimum bottom drag coefficient to avoid the
 !                law-of-the-wall to extend indefinitely.
 ! Zobt      Bottom roughness (m).
-! 
+!
 ! gamma2   Slipperiness parameter, either 1. (free-slip)
 !
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
@@ -132,13 +144,13 @@
 !                                                 bodyforce.
 ! levbfrc  Shallowest level to apply bottom momentum stress as
 !                                                 bodyforce.
-! got_tini Logical switch used at initialisation 
+! got_tini Logical switch used at initialisation
 !              If TRUE, the tracer is present in the initial file
-!              If FALSE, the tracer needs an analytical value  
+!              If FALSE, the tracer needs an analytical value
 !
 ! got_inised Logical switch used at initialisation  of sediments
 !              If TRUE, the sediment var. is in the initial file
-!              If FALSE, the sed. var. gets analytical value from file 
+!              If FALSE, the sed. var. gets analytical value from file
 !
 ! got_inibed Logical switch used at initialisation of ripple height, length
 !              If TRUE, the ripple var. is in the initial file
@@ -150,7 +162,12 @@
      &               , xl, el, visc2, visc4, gamma2
 #ifdef SOLVE3D
       real  theta_s,   theta_b,   Tcline,  hc
+# ifndef M3FAST_SEDLAYERS
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
+# else
+      real  sc_w(-N_sl  :N), Cs_w(-N_sl  :N) 
+     &    , sc_r(-N_sl+1:N), Cs_r(-N_sl+1:N)
+# endif
       real  rx0, rx1
 # ifdef TRACERS
       real  tnu2(NT),tnu4(NT)
@@ -161,12 +178,12 @@
       real weight(6,0:NWEIGHT)
 
 #endif
-#if  defined SPONGE || \
+#if defined SPONGE || \
      defined TNUDGING   || defined M2NUDGING  || \
      defined M3NUDGING  || defined ZNUDGING
       real  x_sponge,   v_sponge
 #endif
-#if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
      defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
@@ -187,6 +204,14 @@
 #endif
 #ifdef FLOATS
       integer nflt, nrpfflt
+#endif
+#ifdef ABL1D
+      logical ldefablhis
+      integer nwrtablhis, nrpfablhis
+# ifdef AVERAGES
+      logical ldefablavg
+      integer ntsablavg, nrpfablavg, nwrtablavg
+# endif
 #endif
 #if defined DIAGNOSTICS_TS
       integer nwrtdia
@@ -325,12 +350,12 @@
 # endif
      &                      , weight
 #endif
-#if  defined SPONGE || \
+#if defined SPONGE || \
      defined TNUDGING   || defined M2NUDGING  || \
      defined M3NUDGING  || defined ZNUDGING
      &                      , x_sponge,   v_sponge
 #endif
-#if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
      defined W_FRC_BRY     ||                          \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
@@ -356,13 +381,13 @@
      &                      , nsta, nrpfsta
 #endif
 #if defined SOLVE3D && defined TRACERS
-     &                      , got_tini 
+     &                      , got_tini
 #endif
 #ifdef SEDIMENT
-     &                      , got_inised 
+     &                      , got_inised
 #endif
 #ifdef BBL
-     &                      , got_inibed 
+     &                      , got_inibed
 #endif
 #ifdef FLOATS
      &                      , ldefflt
@@ -370,7 +395,7 @@
 #if defined DIAGNOSTICS_TS
      &                      , ldefdia, nwrtdia
 # ifdef AVERAGES
-     &                      , ldefdia_avg 
+     &                      , ldefdia_avg
      &                      , nwrtdia_avg
      &                      , ntsdia_avg
 # endif
@@ -435,18 +460,29 @@
      &                      , ldefsta
 #endif
      &                      , ldefhis
+#ifdef ABL1D
+     &                      , ldefablhis
+     &                      , nwrtablhis
+     &                      , nrpfablhis
+# ifdef AVERAGES
+     &                      , ldefablavg
+     &                      , ntsablavg
+     &                      , nrpfablavg
+     &                      , nwrtablavg
+# endif
+#endif
 
 #ifdef  BAND_DEBUG         
        common /scalchkbandname/ chkbandname
 #endif       
-# if defined SOLVE3D  && !defined LMD_MIXING
+#if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak
       common /scalars_akv/ Akv_bak
-#  ifdef TRACERS
+# ifdef TRACERS
       real Akt_bak(NT)
-      common /scalars_akt/ Akt_bak 
-#  endif
+      common /scalars_akt/ Akt_bak
 # endif
+#endif
 !
 !-----------------------------------------------------------------------
 ! This following common block contains a set of globally accessable
@@ -459,7 +495,7 @@
 ! the case of summation between the parallel threads; not doing so
 ! would make it impossible to pass an ETALON CHECK test if there is
 ! a feedback of these sums into the dynamics of the model, such as
-! in the case when global mass conservation is enforced. 
+! in the case when global mass conservation is enforced.
 !
 !  One sunny spring day, sometime in 1989 an american tourist, who
 ! happened to be an attorney, was walking along a Moscow street.

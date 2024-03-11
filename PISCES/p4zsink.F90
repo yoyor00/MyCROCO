@@ -37,6 +37,7 @@ MODULE p4zsink
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkfer2           !: Big iron sinking fluxes
 
    INTEGER  :: ik100
+   LOGICAL  :: l_dia
 
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
@@ -67,18 +68,26 @@ CONTAINS
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zw2d
       !!---------------------------------------------------------------------
+      IF( kt == nittrc000 )  &
+         l_dia =      iom_use( "EPC100" )   .OR. iom_use( "EPFE100" )  &
+           &    .OR.  iom_use( "EPCAL100" ) .OR. iom_use( "EPSI100" )  &
+           &    .OR.  iom_use( "EXPC"   )   .OR. iom_use( "EXPFE"   )  &
+           &    .OR.  iom_use( "EXPCAL"   ) .OR. iom_use( "EXPSI"   ) 
 
       ! Initialization of some global variables
       ! ---------------------------------------
       prodpoc(:,:,:) = 0.
       conspoc(:,:,:) = 0.
-      prodgoc(:,:,:) = 0.
-      consgoc(:,:,:) = 0.
+      IF( .NOT. ln_p2z ) THEN
+         prodgoc(:,:,:) = 0.
+         consgoc(:,:,:) = 0.
+      ENDIF
 
       !
       !    Sinking speeds of detritus is increased with depth as shown
       !    by data and from the coagulation theory
       !    -----------------------------------------------------------
+      !
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
@@ -96,11 +105,13 @@ CONTAINS
       !  Initializa to zero all the sinking arrays 
       !   -----------------------------------------
       sinking (:,:,:) = 0.e0
-      sinking2(:,:,:) = 0.e0
-      sinkcal (:,:,:) = 0.e0
-      sinkfer (:,:,:) = 0.e0
-      sinksil (:,:,:) = 0.e0
-      sinkfer2(:,:,:) = 0.e0
+      IF( .NOT. ln_p2z ) THEN
+         sinking2(:,:,:) = 0.e0
+         sinkcal (:,:,:) = 0.e0
+         sinkfer (:,:,:) = 0.e0
+         sinksil (:,:,:) = 0.e0
+         sinkfer2(:,:,:) = 0.e0
+      ENDIF
 
       IF( .NOT. ln_sink_new ) THEN
 
@@ -154,21 +165,25 @@ CONTAINS
                END DO
             END DO
          END DO
+
 !        Compute the sedimentation term using p4zsink2 for all
 !        the sinking particles
 !        -----------------------------------------------------
          DO jit = 1, iiter1
             CALL p4z_sink2_std( wsbio3, sinking , jppoc, iiter1 )
-            CALL p4z_sink2_std( wsbio3, sinkfer , jpsfe, iiter1 )
          END DO
 
-         DO jit = 1, iiter2
-            CALL p4z_sink2_std( wsbio4, sinking2, jpgoc, iiter2 )
-            CALL p4z_sink2_std( wsbio4, sinkfer2, jpbfe, iiter2 )
-            CALL p4z_sink2_std( wsbio4, sinksil , jpgsi, iiter2 )
-            CALL p4z_sink2_std( wsbio4, sinkcal , jpcal, iiter2 )
-         END DO
-
+         IF( .NOT. ln_p2z ) THEN
+            DO jit = 1, iiter1
+               CALL p4z_sink2_std( wsbio3, sinkfer , jpsfe, iiter1 )
+             END DO
+             DO jit = 1, iiter2
+               CALL p4z_sink2_std( wsbio4, sinking2, jpgoc, iiter2 )
+               CALL p4z_sink2_std( wsbio4, sinkfer2, jpbfe, iiter2 )
+               CALL p4z_sink2_std( wsbio4, sinksil , jpgsi, iiter2 )
+               CALL p4z_sink2_std( wsbio4, sinkcal , jpcal, iiter2 )
+            END DO
+         ENDIF
          IF( ln_p5z ) THEN
             sinkingn (:,:,:) = 0.e0
             sinking2n(:,:,:) = 0.e0
@@ -182,23 +197,21 @@ CONTAINS
                CALL p4z_sink2_std( wsbio3, sinkingp , jppop, iiter1 )
             END DO
 
-
             DO jit = 1, iiter2
                CALL p4z_sink2_std( wsbio4, sinking2n, jpgon, iiter2 )
                CALL p4z_sink2_std( wsbio4, sinking2p, jpgop, iiter2 )
             END DO
-
          ENDIF
-
       ELSE
-
          CALL p4z_sink2_new( wsbio3, sinking , jppoc )
-         CALL p4z_sink2_new( wsbio3, sinkfer , jpsfe )
-         !
-         CALL p4z_sink2_new( wsbio4, sinking2, jpgoc )
-         CALL p4z_sink2_new( wsbio4, sinkfer2, jpbfe )
-         CALL p4z_sink2_new( wsbio4, sinksil , jpdsi )
-         CALL p4z_sink2_new( wsbio4 , sinkcal , jpcal )
+         IF( .NOT. ln_p2z ) THEN
+            CALL p4z_sink2_new( wsbio3, sinkfer , jpsfe )
+            !
+            CALL p4z_sink2_new( wsbio4, sinking2, jpgoc )
+            CALL p4z_sink2_new( wsbio4, sinkfer2, jpbfe )
+            CALL p4z_sink2_new( wsbio4, sinksil , jpdsi )
+            CALL p4z_sink2_new( wsbio4, sinkcal , jpcal )
+         ENDIF
 
          IF( ln_p5z ) THEN
             sinkingn (:,:,:) = 0.e0
@@ -216,71 +229,134 @@ CONTAINS
 
      ENDIF
 
-     ik100 =10
 
-#if defined key_iomput
-     IF( lk_iomput ) THEN
-       IF( knt == nrdttrc ) THEN
-          ALLOCATE( zw2d(PRIV_2D_BIOARRAY), zw3d(PRIV_3D_BIOARRAY) )
-          zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
-          !
-          IF( iom_use( "EPC100" ) )  THEN
-              zw2d(:,:) = ( sinking(:,:,ik100) + sinking2(:,:,ik100) ) * zfact * tmask(:,:,1) ! Export of carbon at 100m
-              CALL iom_put( "EPC100"  , zw2d )
-          ENDIF
-          IF( iom_use( "EPFE100" ) )  THEN
-              zw2d(:,:) = ( sinkfer(:,:,ik100) + sinkfer2(:,:,ik100) ) * zfact * tmask(:,:,1) ! Export of iron at 100m
-              CALL iom_put( "EPFE100"  , zw2d )
-          ENDIF
-          IF( iom_use( "EPCAL100" ) )  THEN
-              zw2d(:,:) = sinkcal(:,:,ik100) * zfact * tmask(:,:,1) ! Export of calcite at 100m
-              CALL iom_put( "EPCAL100"  , zw2d )
-          ENDIF
-          IF( iom_use( "EPSI100" ) )  THEN
-              zw2d(:,:) =  sinksil(:,:,ik100) * zfact * tmask(:,:,1) ! Export of bigenic silica at 100m
-              CALL iom_put( "EPSI100"  , zw2d )
-          ENDIF
-          IF( iom_use( "EXPC" ) )  THEN
-              zw3d(:,:,:) = ( sinking(:,:,:) + sinking2(:,:,:) ) * zfact * tmask(:,:,:) ! Export of carbon in the water column
-              CALL iom_put( "EXPC"  , zw3d )
-          ENDIF
-          IF( iom_use( "EXPFE" ) )  THEN
-              zw3d(:,:,:) = ( sinkfer(:,:,:) + sinkfer2(:,:,:) ) * zfact * tmask(:,:,:) ! Export of iron 
-              CALL iom_put( "EXPFE"  , zw3d )
-          ENDIF
-          IF( iom_use( "EXPCAL" ) )  THEN
-              zw3d(:,:,:) = sinkcal(:,:,:) * zfact * tmask(:,:,:) ! Export of calcite 
-              CALL iom_put( "EXPCAL"  , zw3d )
-          ENDIF
-          IF( iom_use( "EXPSI" ) )  THEN
-              zw3d(:,:,:) = sinksil(:,:,:) * zfact * tmask(:,:,:) ! Export of bigenic silica
-              CALL iom_put( "EXPSI"  , zw3d )
-          ENDIF
-          ! 
-          DEALLOCATE( zw2d, zw3d )
-        ENDIF
+     ik100 = 10
+
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         ik1  = ik100 + 1
+         IF( l_dia ) THEN
+            IF( ln_p2z ) THEN
+               ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+               zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                        zw3d(ji,jj,jk) = sinking(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EXPC", zw3d )  ! Export of carbon in the water column
+               DEALLOCATE( zw3d )
+               !
+               ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )         ;   zw2d(:,:) = 0.
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                      zw2d(ji,jj) = sinking(ji,jj,ik1) * zfact * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EPC100", zw2d )  ! Export of carbon at 100m 
+               DEALLOCATE( zw2d )
+            ELSE
+               ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+               zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                        zw3d(ji,jj,jk) = ( sinking(ji,jj,jk) + sinking2(ji,jj,jk) ) * zfact * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EXPC", zw3d )  ! Export of carbon in the water column
+               !
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                        zw3d(ji,jj,jk) = ( sinkfer(ji,jj,jk) + sinkfer2(ji,jj,jk) ) * zfact * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EXPFE", zw3d )  ! Export of iron
+               !
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                        zw3d(ji,jj,jk) = sinkcal(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EXPCAL", zw3d )  ! Export of calcite
+               !
+               DO jk = KRANGE
+                  DO jj = JRANGE
+                     DO ji = IRANGE
+                        zw3d(ji,jj,jk) = sinksil(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+                     ENDDO
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EXPSI", zw3d )  ! Export of biogenic silica
+               DEALLOCATE( zw3d )
+               !
+               ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )         ;   zw2d(:,:) = 0.
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                      zw2d(ji,jj) = ( sinking(ji,jj,ik100) + sinking2(ji,jj,ik100) ) * zfact * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EPC100", zw2d )  ! Export of carbon at 100m 
+               !
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                      zw2d(ji,jj) = ( sinkfer(ji,jj,ik100) + sinkfer2(ji,jj,ik100) ) * zfact * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EPFE100", zw2d )  ! Export of iron
+               !
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                      zw2d(ji,jj) = sinkcal(ji,jj,ik100) * zfact * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EPCAL100", zw2d )  ! Export of calcite at 100m 
+               !
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                      zw2d(ji,jj) = sinksil(ji,jj,ik100) * zfact * tmask(ji,jj,1)
+                  ENDDO
+               ENDDO
+               CALL iom_put( "EPSI100", zw2d )  ! Export of iron
+               DEALLOCATE( zw2d )
+            ENDIF
+         ENDIF
       ENDIF
-#endif
       !
 #if defined key_trc_diaadd
       zfact = 1.e3 * rfact2r
       ik1  = ik100 + 1
-      DO jj = JRANGE
-         DO ji = IRANGE
-            zmsk = zfact * tmask(ji,jj,1)
-            trc2d(ji,jj,jp_sinkco2) = ( sinking(ji,jj,ik1) + sinking2(ji,jj,ik1) ) * zmsk ! export of carbon at 100m
-            trc2d(ji,jj,jp_sinkfer) = ( sinkfer(ji,jj,ik1) + sinkfer2(ji,jj,ik1) ) * zmsk ! export of biogenic iron
-            trc2d(ji,jj,jp_sinkcal) =   sinkcal(ji,jj,ik1)  * zmsk   ! export of calcite
-            trc2d(ji,jj,jp_sinksil) =   sinksil(ji,jj,ik1)  * zmsk   ! export of biogenic silica
+      IF( ln_p2z ) THEN
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zmsk = zfact * tmask(ji,jj,1)
+               trc2d(ji,jj,jp_sinkco2) = sinking(ji,jj,ik1) * zmsk ! export of carbon at 100m
+            END DO
          END DO
-      END DO
+      ELSE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zmsk = zfact * tmask(ji,jj,1)
+               trc2d(ji,jj,jp_sinkco2) = ( sinking(ji,jj,ik1) + sinking2(ji,jj,ik1) ) * zmsk ! export of carbon at 100m
+               trc2d(ji,jj,jp_sinkfer) = ( sinkfer(ji,jj,ik1) + sinkfer2(ji,jj,ik1) ) * zmsk ! export of biogenic iron
+               trc2d(ji,jj,jp_sinkcal) =   sinkcal(ji,jj,ik1)  * zmsk   ! export of calcite
+               trc2d(ji,jj,jp_sinksil) =   sinksil(ji,jj,ik1)  * zmsk   ! export of biogenic silica
+            END DO
+         END DO
+      ENDIF
 #endif
 
       !
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('sink')")
          CALL prt_ctl_trc_info(charout)
-         CALL prt_ctl_trc( charout, ltra='tra')
+         CALL prt_ctl_trc( charout)
 !         CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
       ENDIF
       !
@@ -714,17 +790,19 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_sink_alloc  ***
       !!----------------------------------------------------------------------
-      INTEGER :: ierr(2)
+      INTEGER :: ierr(3)
       !!----------------------------------------------------------------------
       !
       ierr(:) = 0
       !
-      ALLOCATE( sinking (PRIV_2D_BIOARRAY,1:jpk+1), sinking2(PRIV_2D_BIOARRAY,1:jpk+1),     &                
-         &      sinkcal (PRIV_2D_BIOARRAY,1:jpk+1), sinksil (PRIV_2D_BIOARRAY,1:jpk+1),     &                
-         &      sinkfer2(PRIV_2D_BIOARRAY,1:jpk+1), sinkfer (PRIV_2D_BIOARRAY,1:jpk+1), STAT=ierr(1) )
+      ALLOCATE( sinking (PRIV_2D_BIOARRAY,1:jpk+1), STAT=ierr(1) )  
+      IF( .NOT. ln_p2z ) &
+         &  ALLOCATE( sinking2(PRIV_2D_BIOARRAY,1:jpk+1),     &                
+         &            sinkcal (PRIV_2D_BIOARRAY,1:jpk+1), sinksil (PRIV_2D_BIOARRAY,1:jpk+1),     &                
+         &            sinkfer2(PRIV_2D_BIOARRAY,1:jpk+1), sinkfer (PRIV_2D_BIOARRAY,1:jpk+1), STAT=ierr(2) )
          !
       IF( ln_p5z    ) ALLOCATE( sinkingn(PRIV_2D_BIOARRAY,1:jpk+1), sinking2n(PRIV_2D_BIOARRAY,1:jpk+1),     &
-         &                      sinkingp(PRIV_2D_BIOARRAY,1:jpk+1), sinking2p(PRIV_2D_BIOARRAY,1:jpk+1)   , STAT=ierr(2) )
+         &                      sinkingp(PRIV_2D_BIOARRAY,1:jpk+1), sinking2p(PRIV_2D_BIOARRAY,1:jpk+1)   , STAT=ierr(3) )
       !
       p4z_sink_alloc = MAXVAL( ierr )
       IF( p4z_sink_alloc /= 0 ) CALL ctl_warn( 'p4z_sink_alloc : failed to allocate arrays.' )

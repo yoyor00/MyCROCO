@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -18,45 +18,45 @@
 ! diagnostics netCDF file.
 !---------------------------------------------------------------
 !
-      subroutine wrt_diagsM_avg 
+      subroutine wrt_diagsM_avg
 
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
-#if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
-#endif
-#include "param.h"
-#include "scalars.h"
-#include "ncscrum.h"
-#include "forces.h"
-#include "grid.h"
-#include "ocean2d.h"
-#include "ocean3d.h"
-#include "mixing.h"
-#include "diagnostics.h"
-#include "mpi_cpl.h"
-#ifdef SEDIMENT
-# include "sediment.h"
-#endif
-#ifdef BBL
-# include "bbl.h"
-#endif
-#ifdef SOLVE3D
-      integer tile, itrc,i,j,k,ivar
-# ifdef SEDIMENT
-     &      , indxWrk
 # endif
-# include "work.h"
-#endif
-#include "netcdf.inc"
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+# include "param.h"
+# include "scalars.h"
+# include "ncscrum.h"
+# include "forces.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
+# include "mixing.h"
+# include "diagnostics.h"
+# include "mpi_cpl.h"
+# ifdef SEDIMENT
+#  include "sediment.h"
+# endif
+# ifdef BBL
+#  include "bbl.h"
+# endif
+# ifdef SOLVE3D
+      integer tile, itrc,i,j,k,ivar
+#  ifdef SEDIMENT
+     &      , indxWrk
+#  endif
+#  include "work.h"
+# endif
+# include "netcdf.inc"
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
-        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
-     &                 1, MPI_COMM_WORLD, status, ierr) 
+        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
+     &                 1, MPI_COMM_WORLD, status, ierr)
       endif
-#endif
+# endif
 !
 # undef DEBUG
 !
@@ -66,12 +66,12 @@
       call def_diagsM_avg (nciddiaM_avg, nrecdiaM_avg, ierr)
       if (ierr .ne. nf_noerr) goto 99
       lstr=lenstr(dianameM_avg)
-!                                          !!! WARNING: Once time  
-! Set record within the file.              !!! stepping has been 
+!                                          !!! WARNING: Once time
+! Set record within the file.              !!! stepping has been
 !                                          !!! started, it is assumed
       nrecdiaM_avg=max(nrecdiaM_avg,1)     !!! that global history
       if (nrpfdiaM_avg.eq.0) then          !!! record index is
-        record=nrecdiaM_avg                !!! advanced by main.  
+        record=nrecdiaM_avg                !!! advanced by main.
       else
         record=1+mod(nrecdiaM_avg-1, nrpfdiaM_avg)
       endif
@@ -91,7 +91,7 @@
       start(2)=record
       count(1)=4
       count(2)=1
-      ierr=nf_put_vara_int (nciddiaM_avg, diaTstepM_avg, 
+      ierr=nf_put_vara_int (nciddiaM_avg, diaTstepM_avg,
      &                                             start, count, ibuff)
       if (ierr .ne. nf_noerr) then
         write(stdout,1) 'time_step_avg', record, ierr
@@ -120,7 +120,7 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
-      
+
 !---------------------------------------------------------------
 ! Momentum diagnostic variables.
 !---------------------------------------------------------------
@@ -145,63 +145,63 @@
 !
            workr=MXadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMXadv_avg(itrc),
-     &                      indxMXadv+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMXadv+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMYadv
 !
            workr=MYadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMYadv_avg(itrc),
-     &                      indxMYadv+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMYadv+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMVadv
 !
            workr=MVadv_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMVadv_avg(itrc),
-     &                      indxMVadv+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMVadv+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMCor
 !
            workr=MCor_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMCor_avg(itrc),
-     &                      indxMCor+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMCor+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMPrsgrd
 !
            workr=MPrsgrd_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMPrsgrd_avg(itrc),
-     &                      indxMPrsgrd+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMPrsgrd+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMHmix
 !
            workr=MHmix_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMHmix_avg(itrc),
-     &                      indxMHmix+itrc-1,
+     &                      vname(1,indxMHmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMHdiff
 !
            workr=MHdiff_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMHdiff_avg(itrc),
-     &                      indxMHdiff+itrc-1,
+     &                      vname(1,indxMHdiff+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVmix
 !
            workr=MVmix_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMVmix_avg(itrc),
-     &                      indxMVmix+itrc-1,
+     &                      vname(1,indxMVmix+itrc-1),
      &                      record,ivar,type)
 !
 ! indxMVmix2
 !
            workr=MVmix2_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMVmix2_avg(itrc),
-     &                      indxMVmix2+itrc-1,
+     &                      vname(1,indxMVmix2+itrc-1),
      &                      record,ivar,type)
 # if defined DIAGNOSTICS_BARO
 !
@@ -209,7 +209,7 @@
 !
            workr=MBaro_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMBaro_avg(itrc),
-     &                      indxMBaro+itrc-1,
+     &                      vname(1,indxMBaro+itrc-1),
      &                      record,ivar,type)
 # endif
 # if defined M3FAST
@@ -218,81 +218,81 @@
 !
            workr=Mfast_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMfast_avg(itrc),
-     &                      indxMfast+itrc-1,
+     &                      vname(1,indxMfast+itrc-1),
      &                      record,ivar,type)
 # endif
-#ifdef MRL_WCI
+# ifdef MRL_WCI
 !
 ! indxMvf
 !
            workr=Mvf_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMvf_avg(itrc),
-     &                      indxMvf+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMvf+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMbrk
 !
            workr=Mbrk_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMbrk_avg(itrc),
-     &                      indxMbrk+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMbrk+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMStCo
 !
            workr=MStCo_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMStCo_avg(itrc),
-     &                      indxMStCo+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMStCo+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMVvf
 !
            workr=MVvf_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMVvf_avg(itrc),
-     &                      indxMVvf+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMVvf+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMPrscrt
 !
            workr=MPrscrt_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMPrscrt_avg(itrc),
-     &                      indxMPrscrt+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMPrscrt+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMsbk
 !
            workr=Msbk_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMsbk_avg(itrc),
-     &                      indxMsbk+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMsbk+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMbwf
 !
            workr=Mbwf_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMbwf_avg(itrc),
-     &                      indxMbwf+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMbwf+itrc-1),
+     &                      record,ivar,type)
 !
 ! indxMfrc
 !
            workr=Mfrc_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMfrc_avg(itrc),
-     &                      indxMfrc+itrc-1,
-     &                      record,ivar,type)  
-#endif
+     &                      vname(1,indxMfrc+itrc-1),
+     &                      record,ivar,type)
+# endif
 !
 ! indxMrate
 !
            workr=Mrate_avg(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM_avg,diaMrate_avg(itrc),
-     &                      indxMrate+itrc-1,
-     &                      record,ivar,type)  
+     &                      vname(1,indxMrate+itrc-1),
+     &                      record,ivar,type)
 !
-      
+
         endif
       enddo
 !
 !--#define DEBUG
-#  ifdef DEBUG
+# ifdef DEBUG
       i=20
       j=20
       k=10
@@ -307,13 +307,13 @@
       write(*,*) 'MHmix_avg(i,j,k,itrc)   ',MHmix_avg(i,j,k,itrc)
       write(*,*) 'MVmix_avg(i,j,k,itrc)   ',MVmix_avg(i,j,k,itrc)
       write(*,*) 'MVmix2_avg(i,j,k,itrc)  ',MVmix2_avg(i,j,k,itrc)
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
       write(*,*) 'MBaro_avg(i,j,k,itrc) ',MBaro_avg(i,j,k,itrc)
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
       write(*,*) 'Mfast_avg(i,j,k,itrc) ',Mfast_avg(i,j,k,itrc)
-# endif
-# ifdef MRL_WCI
+#  endif
+#  ifdef MRL_WCI
       write(*,*) 'Mvf_avg(i,j,k,itrc)     ',Mvf_avg(i,j,k,itrc)
       write(*,*) 'Mbrk_avg(i,j,k,itrc)    ',Mbrk_avg(i,j,k,itrc)
       write(*,*) 'MStCo_avg(i,j,k,itrc)   ',MStCo_avg(i,j,k,itrc)
@@ -322,7 +322,7 @@
       write(*,*) 'Msbk_avg(i,j,k,itrc)    ',Msbk_avg(i,j,k,itrc)
       write(*,*) 'Mbwf_avg(i,j,k,itrc)    ',Mbwf_avg(i,j,k,itrc)
       write(*,*) 'Mfrc_avg(i,j,k,itrc)    ',Mfrc_avg(i,j,k,itrc)
-# endif
+#  endif
       write(*,*) 'Mrate_avg(i,j,k,itrc)   ',Mrate_avg(i,j,k,itrc)
 
       write(*,*) 'SumUVavg(i,j,k,itrc) = ',MXadv_avg(i,j,k,itrc)
@@ -333,10 +333,10 @@
      &                                  +  MHmix_avg(i,j,k,itrc)
      &                                  +  MVmix_avg(i,j,k,itrc)
      &                                  +  MVmix2_avg(i,j,k,itrc)
-# if defined M3FAST
+#  if defined M3FAST
      &                                  +  Mfast_avg(i,j,k,itrc)
-# endif
-# ifdef MRL_WCI
+#  endif
+#  ifdef MRL_WCI
      &                                  +  Mvf_avg(i,j,k,itrc)
      &                                  +  Mbrk_avg(i,j,k,itrc)
      &                                  +  MStCo_avg(i,j,k,itrc)
@@ -345,16 +345,16 @@
      &                                  +  Msbk_avg(i,j,k,itrc)
      &                                  +  Mbwf_avg(i,j,k,itrc)
      &                                  +  Mfrc_avg(i,j,k,itrc)
-# endif
+#  endif
      &                                  -  Mrate_avg(i,j,k,itrc)
               write(*,*) '----------------------------------'
-#  endif /* DEBUG */
+# endif /* DEBUG */
 !--# undef DEBUG
 
   1   format(/1x,'WRT_DIAG_AVG ERROR while writing variable ''', A,
      &          ''' into diag_avg file.', /11x, 'Time record:',
      &                   I6,3x,'netCDF error code',i4,3x,a,i4)
-      goto 100 
+      goto 100
   99  may_day_flag=3
  100  continue
 
@@ -364,38 +364,38 @@
 ! to access data immediately after it is written.
 !---------------------------------------------------------------
 !
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (nciddiaM_avg)
       if (nrpfdiaM_avg.gt.0 .and. record.ge.nrpfdiaM_avg) nciddiaM_avg=-1
-#else
+# else
       if (nrpfdiaM_avg.gt.0 .and. record.ge.nrpfdiaM_avg) then
         ierr=nf_close (nciddiaM_avg)
         nciddiaM_avg=-1
       else
         ierr=nf_sync(nciddiaM_avg)
       endif
-#endif
+# endif
 
 
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 
+       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAGM_AVG -- wrote ',
      &            'diagM_avg fields into time record =', record, '/',
      &             nrecdiaM_avg  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)') 
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &             'WRT_DIAGM_AVG ERROR: Cannot ',
      &             'synchronize/close diag_avg netCDF file.'
         may_day_flag=3
       endif
 
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &                        1, MPI_COMM_WORLD,  ierr)
       endif
-#endif
-#undef DEBUG
+# endif
+# undef DEBUG
       return
       end
 

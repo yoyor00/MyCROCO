@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -37,13 +37,13 @@ C$    integer omp_get_thread_num
 !
 !  OUTPUT: stored in common blocks, see files "scalars.h" "grid.h"
 !  ---------------------------------------------------------------
-!  xl,el      Physical dimensions of the computational domain 
-!                                    [usually measured in  meters];  
+!  xl,el      Physical dimensions of the computational domain
+!                                    [usually measured in  meters];
 !  h          Model bathymetry [meters, positive] at RHO-points.
 !  hmin,hmax  Minimum and maximum values of depth of bathymetry [m].
 !  f          Coriolis parameter (1/seconds) at RHO-points.
 !  pm,pn      Coordinate transformation metric "m" [1/meters]
-!                    associated with the differential distances in 
+!                    associated with the differential distances in
 !                    XI- and ETA-directions, both are at RHO-points.
 !  xp,xr      XI-coordinates [m] at PSI- and RHO-points.
 !  yp,yr      ETA-coordinates [m] at PSI- and RHO-points.
@@ -58,15 +58,15 @@ C$    integer omp_get_thread_num
 # include "grid.h"
 # include "scalars.h"
 !
-      real Length_XI, Length_ETA, depth, f0, beta, 
+      real Length_XI, Length_ETA, depth, f0, beta,
      &     cff, y, x0, y0, dx, dy, NSUB
 !
-# ifdef DUNE 
-#   ifdef DUNE3D
+# ifdef DUNE
+#  ifdef DUNE3D
       real Rij,cffi,cffj,cff1
-#   elif defined ANA_DUNE
+#  elif defined ANA_DUNE
       real cff2
-#   endif
+#  endif
 # endif
 # ifdef TIDAL_FLAT
       real depth_shallow, depth_deep
@@ -94,13 +94,13 @@ C$    integer omp_get_thread_num
       integer is,i0,j0
 #  include "sources.h"
 # endif
-#ifdef MPI
-# define LOCALLM Lmmpi
-# define LOCALMM Mmmpi
-#else
-# define LOCALLM Lm
-# define LOCALMM Mm
-#endif
+# ifdef MPI
+#  define LOCALLM Lmmpi
+#  define LOCALMM Mmmpi
+# else
+#  define LOCALLM Lm
+#  define LOCALMM Mm
+# endif
 !
 # include "compute_extended_bounds.h"
 
@@ -112,10 +112,10 @@ C$    integer omp_get_thread_num
 !
 # if defined BASIN
                      depth=5000.
-                     f0=1.E-4 
+                     f0=1.E-4
                      beta=2.E-11
 # elif defined SINGLE_COLUMN
-#  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF 
+#  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF
                      depth=50.
                      f0=0.
                      beta=0.
@@ -135,7 +135,7 @@ C$    integer omp_get_thread_num
                      depth=5.
                      f0=0.0
                      beta=0.
-#  endif 
+#  endif
 # elif defined CANYON
                      depth=4000.
                      f0=1.E-4
@@ -144,8 +144,8 @@ C$    integer omp_get_thread_num
                      depth=5000.
                      f0=0.
                      beta=2.2829e-11
-# elif defined KH_INST 
-                     depth=256.     
+# elif defined KH_INST
+                     depth=256.
                      f0=0.
                      beta=0.
 # elif defined GRAV_ADJ
@@ -177,7 +177,7 @@ C$    integer omp_get_thread_num
 # elif defined TS_HADV_TEST
                      depth=10.
                      f0=0.
-                     beta=0.                     
+                     beta=0.
 # elif defined OVERFLOW
                      depth=40.
                      f0=0.
@@ -208,19 +208,19 @@ C$    integer omp_get_thread_num
                      beta=1.6E-11
 # elif defined SHOREFACE
                      depth=15.
-                     f0=0.   
+                     f0=0.
                      beta=0.
 # elif defined SANDBAR
                      depth=4.1
-                     f0=0.   
+                     f0=0.
                      beta=0.
 # elif defined SWASH
                      depth=1.
-                     f0=0.   
+                     f0=0.
                      beta=0.
 # elif defined RIP
                      depth=15.
-                     f0=0.   
+                     f0=0.
                      beta=0.
 # elif defined THACKER
                      depth=10.
@@ -234,22 +234,26 @@ C$    integer omp_get_thread_num
                      depth=10.
                      f0=0.
                      beta=0.
+# elif defined CONVECT
+                     depth=32.
+                     f0=0.
+                     beta=0.0
 # elif defined MOVING_BATHY
                      depth=0.394
                      f0=0.
                      beta=0.
 # elif defined DUNE
 #  ifdef ANA_DUNE
-                     depth=6.                 
+                     depth=6.
 #  else
                      depth=4.
 #  endif
                      f0=0.
                      beta=0.
 # elif defined SED_TOY
-#  ifdef SED_TOY_ROUSE 
+#  ifdef SED_TOY_ROUSE
                      depth=5.
-# elif defined SED_TOY_FLOC_1D 
+#  elif defined SED_TOY_FLOC_1D
                      depth=5.
 #  else
                      depth=20.
@@ -263,6 +267,9 @@ C$    integer omp_get_thread_num
                      beta=0.
 # elif defined ESTUARY
                      f0=0.
+                     beta=0.
+# elif defined KILPATRICK
+                     f0=1.E-4
                      beta=0.
 # else
                      depth=???
@@ -292,7 +299,7 @@ C$    integer omp_get_thread_num
 # elif defined EQUATOR
                      Length_ETA=3200.0e+3
                      Length_XI =4000.0e+3
-# elif defined KH_INST 
+# elif defined KH_INST
                      Length_XI =256.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined ACOUSTIC
@@ -336,22 +343,22 @@ C$    integer omp_get_thread_num
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
 # elif defined JET
-                     Length_XI = 500.e+3 
-                     Length_ETA=2000.e+3 
+                     Length_XI = 500.e+3
+                     Length_ETA=2000.e+3
 # elif defined SHOREFACE
-                     Length_XI =1180.0 
+                     Length_XI =1180.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SANDBAR
                      Length_XI =200.
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SWASH
-                     Length_XI =110.0 
+                     Length_XI =110.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined RIP
-                     Length_XI =768.0 
+                     Length_XI =768.0
                      Length_ETA=768.0
 # elif defined THACKER
-                     Length_XI =200.e+3 
+                     Length_XI =200.e+3
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined TANK
 #  ifndef TANKY
@@ -372,7 +379,7 @@ C$    integer omp_get_thread_num
 #  endif
 #  ifdef MUSTANG
                      Length_ETA=Length_XI
-#  else                     
+#  else
                      Length_ETA=Length_ETA_ISO_GRID
 #  endif
 # elif defined SED_TOY
@@ -389,9 +396,15 @@ C$    integer omp_get_thread_num
 # elif defined ESTUARY
                      Length_ETA= 9000.0   ! dy =100m
                      Length_XI = 120000.0  ! dx = 600m or 100m if ESTUARY_SQUARE
+# elif defined KILPATRICK
+                     Length_ETA= 18.E+3
+                     Length_XI = 3600.E+3
+# elif defined CONVECT
+                     Length_XI =32.0
+                     Length_ETA=Length_ETA_ISO_GRID
 # else
                      Length_XI =???
-                     Length_ETA=??? 
+                     Length_ETA=???
 # endif
 
 # undef Length_XI_ISO_GRID
@@ -405,7 +418,7 @@ C$    integer omp_get_thread_num
         el=Length_ETA
 
 # ifdef AGRIF
-      else      
+      else
         xl=Agrif_Parent(xl)/Agrif_Parent(LLm)*LLm/Agrif_Rhox()
         el=Agrif_Parent(el)/Agrif_Parent(MMm)*MMm/Agrif_Rhoy()
         Length_XI=xl
@@ -418,8 +431,8 @@ C$    integer omp_get_thread_num
 ! Set grid spacings for rectangular grids
 !----------------------------------------------------------------------
 !
-      dx=Length_XI/float(LLm)    
-      dy=Length_ETA/float(MMm)   
+      dx=Length_XI/float(LLm)
+      dy=Length_ETA/float(MMm)
 !
 !----------------------------------------------------------------------
 ! Set reference point location
@@ -428,11 +441,15 @@ C$    integer omp_get_thread_num
       x0=0.
       y0=0.
 # ifdef EQUATOR
-      y0=y0-0.5*Length_ETA  
+      y0=y0-0.5*Length_ETA
 # endif
 # if defined INTERNAL || defined THACKER || defined MOVING_BATHY
       x0=x0-0.5*Length_XI
-      y0=y0-0.5*Length_ETA  
+      y0=y0-0.5*Length_ETA
+# endif
+# ifdef KILPATRICK
+      x0=-1800.E+3
+      y0=-9.E+3
 # endif
 
 !$acc kernels if(compute_on_device) default(present)
@@ -443,6 +460,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 ! Setup rectangular grid:  coordinates (XI,ETA) at PSI- and RHO-points.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
          xp(i,j) = x0 + dx*float(i+iminmpi-1-1)
@@ -451,6 +469,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
          yr(i,j) = y0 + dy*(float(j+jminmpi-1-1)+0.5)
         enddo
       enddo
+!$acc end kernels      
+!$acc update host( xr, yr )      
 !
 !----------------------------------------------------------------------
 ! Compute coordinate transformation metrics at RHO-points "pm" and
@@ -458,31 +478,36 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 ! ETA, respectively.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           pm(i,j)=1./dx
           pn(i,j)=1./dy
         enddo
       enddo
+!$acc end kernels      
 !
 !----------------------------------------------------------------------
 !  Set Coriolis parameter [1/s] at RHO-points.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
-#  ifdef EQUATOR
+# ifdef EQUATOR
           f(i,j)=f0+beta*yr(i,j)
-#  else
+# else
           f(i,j)=f0+beta*(yr(i,j)-(0.5*el))
-#  endif
+# endif
         enddo
       enddo
+!$acc end kernels      
 
 # if defined UV_COR_NT || defined CROCO_QH
 !
 !  Horizontal (non-traditional) Coriolis parameter
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           if (beta.eq.0) then     ! f-plan
@@ -492,6 +517,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           endif
         enddo
       enddo
+!$acc end kernels      
 # endif
 !
 !----------------------------------------------------------------------
@@ -502,7 +528,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
                    || defined SOLITON || defined ISOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
-                   || defined JET
+                   || defined JET      || defined CONVECT
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
@@ -539,11 +566,11 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
             cff=1-(xr(i,j)*xr(i,j)*cff1);
           endif
           h(i,j)=depth-ridge_height*cff*cff;
-#   ifdef INTERNALSHELF
+#  ifdef INTERNALSHELF
           if (xr(i,j).ge.0.) then
             h(i,j)=depth-ridge_height
           endif
-#   endif
+#  endif
         enddo
       enddo
 
@@ -560,7 +587,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth*(1-0.6*exp(-cff*((xr(i,j)-0.5*xl)**2+
-     &                                  (yr(i,j)-0.5*el)**2))) 
+     &                                  (yr(i,j)-0.5*el)**2)))
         enddo
       enddo
 
@@ -791,17 +818,17 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !
 !  Idealized Grand Popo Beach in Benin
 !
-      xs=85;        ! inner surf zone 
+      xs=85;        ! inner surf zone
       db=50;        ! distance from xs to sand bar
       alpha=0.01;
       do j=JstrR,JendR
         do i=IstrR,IendR
-#  ifdef OBC_EAST
+#   ifdef OBC_EAST
           xx=xr(i,j)
-#  else
+#   else
           xx=Length_XI-xr(i,j)
-#  endif
-          h(i,j)=-4.5 
+#   endif
+          h(i,j)=-4.5
      &       -1.7*exp(-6*(((xx-xs-db)/db)**2))
      &       +3.1*(1+tanh(0.025*(xx-xs)))
      &       +0.014*(xx+log(cosh(alpha*(xx-xs))/cosh(alpha*xs))/alpha)
@@ -811,22 +838,22 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !
 ! Weir et al. 2011 after Lippmann et al. 1999 (idealization of Duck beach)
 !
-      xs=150      ! inner surf zone 
+      xs=150      ! inner surf zone
       db=80       ! distance from xs to sand bar
       alpha=0.02
       lambda=256  ! sand bar perturbation wavelength
-#  ifdef RIP_TOPO_2D
+#   ifdef RIP_TOPO_2D
       eps=0.0     ! no sand bar perturbation
-#  else
+#   else
       eps=0.1     ! sand bar perturbation magnitude
-#  endif
+#   endif
       do j=JstrR,JendR
         do i=IstrR,IendR
-#  ifdef OBC_EAST
+#   ifdef OBC_EAST
           xx=xr(i,j)
-#  else
+#   else
           xx=Length_XI-xr(i,j)
-#  endif
+#   endif
           yy=yr(i,j);
           h0=-1.5*exp(-5*(((xx-xs-db)/db)**2))
      &       +1.35*(1+tanh(0.0253*(xx-xs)))
@@ -874,27 +901,27 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         do i=IstrR,IendR
 #  ifdef MPI
           cff=(float(i +ii*Lm) )
-#  else  
+#  else
           cff=(float(i       ) )
 #  endif
 #  ifdef ANA_DUNE
           h(i,j)=depth-2.*exp(-cff2*(xr(i,j)-0.5*xl)**2)
 #  elif defined DUNE3D
-#    ifdef MPI
+#   ifdef MPI
           cffi=(float(i +ii*Lm) )
           cffj=(float(j +jj*Mm) )
-#    else   
+#   else
           cffi=(float(i       ) )
           cffj=(float(j       ) )
-#    endif 
+#   endif
          if (xr(i,j).lt.4.) then
           h(i,j)=depth
-         else 
+         else
           Rij = sqrt( (cffi-28.)**2.+
      &                (cffj-25.)**2. )
           h(i,j)=depth*(1.-0.5*exp(-cff1*(2.*(Rij))**2.0))
          endif
-#  else 
+#  else
          h(i,j)=depth*(1.-0.5*exp(-5.e-3*(2.*(cff-25.))**2))
 #  endif
         enddo
@@ -913,7 +940,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         do i=IstrR,IendR
 #  ifdef MPI
           cff=(float(i +ii*Lm) )
-#  else  
+#  else
           cff=(float(i       ) )
 #  endif
           if (cff.lt.2) then
@@ -927,11 +954,11 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 
 # elif defined ESTUARY
 
-# if defined ESTUARY_SQUARE
-      imouth = 240 
-# else
+#  if defined ESTUARY_SQUARE
+      imouth = 240
+#  else
       imouth = 40
-# endif
+#  endif
       jmiddle = int(MMm/2)
       m = 2.0 ! half tide height (m)
       estCWM = 200.0 ! estuary Channel Widht at Mouth (m)
@@ -949,12 +976,12 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       do i = IstrR, IendR
 #  ifdef MPI
         cff  = (float(i +ii*Lm) )
-#  else  
+#  else
         cff  = (float(i       ) )
 #  endif
- 
+
         xboti = dx * (cff - imouth)
-        
+
         if (cff .ge. imouth) then
           l1i = estCWM * exp( - estCWM_para * xboti)
           hl1i = estHmouth + estCS * xboti
@@ -963,17 +990,17 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           l2i = 100.0
           do itmp = 1, 1000
             l2n = (shti - l1i * hl1mi) / (hl1mi + 1.5 * m +
-     &             0.5 * m * (1.0 + 4.0 * (m / hl1mi) * l2i / 
+     &             0.5 * m * (1.0 + 4.0 * (m / hl1mi) * l2i /
      &            (l1i + l2i))**2 / estGamma2)
             l2i = l2n
           enddo
           l2i = l2n
           if (l2i .ge. l1i) then
-            l3i = l2i * (1.0 + 4.0 * (m / hl1mi) * l2i / 
+            l3i = l2i * (1.0 + 4.0 * (m / hl1mi) * l2i /
      &         (l1i + l2i ))**2 / estGamma2
           else
-            l2i = l1i 
-            l3i = (shti - hl1mi * (l1i + l2i) - 2.0 * 
+            l2i = l1i
+            l3i = (shti - hl1mi * (l1i + l2i) - 2.0 *
      &              m * l2i) * 2.0 / m - l2i
           endif
         else  ! cff < imouth
@@ -991,19 +1018,19 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           enddo
           l2imouth = l2n
           if (l2imouth .ge. l1imouth) then
-            l3imouth = l2imouth * (1.0 + 4.0 * (m / hl1mimouth) * 
+            l3imouth = l2imouth * (1.0 + 4.0 * (m / hl1mimouth) *
      &            l2imouth / (l1imouth + l2imouth ))**2 / estGamma2
           else
-            l2imouth = l1imouth 
-            l3imouth = (shtimouth - hl1mimouth * (l1imouth + l2imouth) - 
+            l2imouth = l1imouth
+            l3imouth = (shtimouth - hl1mimouth * (l1imouth + l2imouth) -
      &             2.0 * m * l2imouth) * 2.0 / m - l2imouth
           endif
 
           l2ml1m = l2imouth - l1imouth
           l3ml1m = l3imouth - l1imouth
-        
+
           hl1i = estHmouth + estCS2 * xboti
-          hl1mi = hl1i - m 
+          hl1mi = hl1i - m
           shti = estMS * exp( - estMS_para2 * xboti)! section half tide
           l1i = (shti - l2ml1m * (hl1mi + 1.5 * m ) -
      &            0.5 * l3ml1m * m) / (2.0 * hl1mi + 2.0 * m)
@@ -1014,7 +1041,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         do j = JstrR, JendR
 #  ifdef MPI
           cff2 = (float(j +jj*Mm) )
-#  else  
+#  else
           cff2 = (float(j       ) )
 #  endif
           ybotj = dy * abs(cff2 - jmiddle)
@@ -1022,11 +1049,11 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           if (ybotj .le. l1i) then
             h(i,j) = hl1i
           else if (ybotj .le. l2i) then
-            h(i,j) = hl1i + (m - hl1i) / (l2i - l1i) 
+            h(i,j) = hl1i + (m - hl1i) / (l2i - l1i)
      &             * (ybotj - l1i)
           else
-            h(i,j) = amax1(-7.0, m - 2.0 * m / (l3i - l2i) 
-     &             * (ybotj-l2i))                              
+            h(i,j) = amax1(-7.0, m - 2.0 * m / (l3i - l2i)
+     &             * (ybotj-l2i))
           endif
 
           ! walls at limit East
@@ -1039,9 +1066,15 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 
         enddo  ! j
 
-        
+
       enddo ! i
 
+# elif defined KILPATRICK
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=500.0
+        enddo
+      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1071,11 +1104,11 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       enddo
 #  ifdef ESTUARY
       do i = IstrR, IendR
-#  ifdef MPI
+#   ifdef MPI
         cff  = (float(i +ii*Lm) )
-#  else  
+#   else
         cff  = (float(i       ) )
-#  endif
+#   endif
         ! limit East
         if (cff .ge. LLm) then
             rmask(i,:) = 0.
@@ -1085,7 +1118,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  endif /* ESTUARY */
 #  ifdef RIVER
 !
-! Mask out 8-point wide strip of land on the west, and 
+! Mask out 8-point wide strip of land on the west, and
 ! carve two 1-point wide channels through that strip.
 
       if (WESTERN_EDGE) then
@@ -1095,13 +1128,13 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           enddo
         enddo
         do is=1,Nsrc
-#  ifdef MPI
+#   ifdef MPI
           i0=Isrc_mpi(is,mynode)
           j0=Jsrc_mpi(is,mynode)
-#  else
+#   else
           i0=Isrc(is)
           j0=Jsrc(is)
-#  endif
+#   endif
           if (IstrR.le.i0 .and. i0.le.IendR .and.
      &        JstrR.le.j0 .and. j0.le.JendR) then
             if (is.eq.1) then

@@ -9,7 +9,7 @@ import shutil
 #                               coupling.h private_scratch.h mixing.h    \
 #                               forces.h work.h ncscrum.h averages.h      \
 #                               lmd_kpp.h climat.h nbq.h sources.h \
-#                               wkb_wwave.h boundary.h
+#                               wkb_wwave.h boundary.h tides.h bbl.h
 
 
 if __name__ == "__main__":

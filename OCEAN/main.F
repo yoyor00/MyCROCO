@@ -40,7 +40,7 @@
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
-     &                                   ,if_oa
+     &                                   ,if_oa, if_oa_fast_mode
 #endif
 #ifdef RVTK_DEBUG
       use debug
@@ -58,13 +58,13 @@
 #include "grid.h"
 #include "ocean2d.h"
 #if defined OPENACC
-#include "ocean3d.h"
-#include "coupling.h"
-#include "forces.h"
-#include "mixing.h"
-#include "climat.h"
-#include "averages.h"
-#include "work.h"
+# include "ocean3d.h"
+# include "coupling.h"
+# include "forces.h"
+# include "mixing.h"
+# include "climat.h"
+# include "averages.h"
+# include "work.h"
 #endif
 #include "mpi_cpl.h"
 #ifdef FLOATS
@@ -97,6 +97,7 @@
 #endif
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
+!      real*8       :: tool_datosec
 #endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -108,9 +109,9 @@
 
 #ifdef JEANZAY
 ! Initialise OpenACC...
-#ifdef OPENACC
+# ifdef OPENACC
         call initialisation_openacc
-#endif
+# endif
 ! ... before initialise MPI
 #endif
 !
@@ -215,26 +216,28 @@
 !
 ! Online spectral analysis module
 !
-# ifdef ONLINE_ANALYSIS
+#ifdef ONLINE_ANALYSIS
       CALL init_parameter_oa(
      &  io_unit_oa=stdout
-#ifdef MPI
+# ifdef MPI
      & ,if_print_node_oa=(mynode==0)
-#else
+# else
      & ,if_print_node_oa=.true.
-#endif
-#ifdef MPI
+# endif
+# ifdef MPI
      & ,mynode_oa=mynode
      & ,comm_oa=MPI_COMM_WORLD
-#else
+# else
      & ,mynode_oa=0
      & ,comm_oa=0
-#endif
+# endif
      & ,dti_oa=dt
      & ,kount0_oa=ntstart-1
      & ,nt_max_oa=ntimes
+     & ,dtf_oa=dtfast
+     & ,ntf_max_oa=ndtfast
      & ,ntiles=NSUB_X*NSUB_E)
-# endif
+#endif
 !
 !
 !----------------------------------------------------------------------
@@ -378,7 +381,7 @@ C$OMP BARRIER
 # if defined OA_COUPLING || defined OW_COUPLING
         call cpl_prism_define
         oasis_time = 0
-        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
 # endif
       endif
 #endif
@@ -389,11 +392,12 @@ C$OMP BARRIER
 
 #ifdef USE_CALENDAR
       ! compute start time and ntimes
-# ifdef ANA_INITIAL
-      ! if no initial file set start_date from croco.in
-      if (nrrec.eq.0) time=tool_datosec(run_start_date)
-# endif
-      time_end=tool_datosec(run_end_date)
+      time=start_time +origin_date_in_sec
+!# ifdef ANA_INITIAL
+!      ! if no initial file set start_date from croco.in
+!      if (nrrec.eq.0) time=tool_datosec(start_date)
+!# endif
+      time_end=tool_datosec(end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
@@ -455,9 +459,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
 # ifdef AGRIF
       if (Agrif_lev_sedim.EQ.0) call get_bsedim
-#  else
+# else
       call get_bsedim
-#  endif
+# endif
 #endif
 !
 #if defined SEDIMENT && !defined ANA_SEDIMENT
@@ -472,9 +476,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
-# ifdef SUBSTANCE
+#ifdef SUBSTANCE
       call substance_surfcell
-# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  MUSTANG : initialization
@@ -544,14 +548,14 @@ CR      write(*,*)  ' -2' MYID
 !  for sea surface height, momentum and tracers
 !----------------------------------------------------------------------
 !
-# if defined TNUDGING  || defined ZNUDGING  \
+#if defined TNUDGING  || defined ZNUDGING  \
   || defined M2NUDGING || defined M3NUDGING \
                        || defined SPONGE
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_nudgcof (tile)
       enddo
-# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Read initial climatology fields from NetCDF file
@@ -577,7 +581,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #if !defined ANA_BRY_WKB && defined WKB_WWAVE
       call get_bry_wkb
-# endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Set analytical initial climatology fields
@@ -631,7 +635,7 @@ CR      write(*,*) ' -1' MYID
       if ( if_oa.eqv..true. ) then
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
-           call online_spectral_diags(tile,0)
+           call online_spectral_diags(tile,-1)
          enddo
       endif
 #endif
@@ -648,6 +652,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 !
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
+!
+#ifdef ABL1D
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call abl_ini (tile)
+      enddo
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialization for Lagrangian floats
@@ -827,13 +838,25 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !
 #ifdef ONLINE_ANALYSIS
-      if ( if_oa.eqv..true. ) then
+      if_online_analysis : if ( if_oa.eqv..true. ) then
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
+! BLXD online_spectral_diags/output_oa 1st argument his the model mode 0/1 = Slow/Fast mode
+           call online_spectral_diags(tile,0)
+         enddo
+        call output_oa(0)
+! BLXD Fast mode analysis
+        if(if_oa_fast_mode.eqv..true.) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=0,NSUB_X*NSUB_E-1
+! BLXD online_spectral_diags/output_oa 1st argument his the model mode 0/1 = Slow/Fast mode
            call online_spectral_diags(tile,1)
          enddo
-        call output_oa
+! BLXD output_oa source now set to be only called within the slow mode
+!      even when the spectral online diagnostics have been calculated in the fast mode  
+         call output_oa(1)
       endif
+      endif if_online_analysis
 #endif
 !
 !----------------------------------------------------------------------
@@ -849,6 +872,16 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
+#endif
+
+#ifdef ABL1D
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call abl_ini (tile)
+      enddo
+# ifndef XIOS
+      if (ldefablhis .and. wrtabl(indxTime)) call wrt_abl_his
+# endif
 #endif
 
 CR      write(*,*) '  0' MYID
@@ -875,7 +908,7 @@ CR      write(*,*) '  0' MYID
       time_start=time
 #ifdef USE_CALENDAR
       time_mars=time
-      time_end=tool_datosec(run_end_date)
+      time_end=tool_datosec(end_date)
 #endif
 
 ! XIOS (
@@ -893,6 +926,9 @@ CR      write(*,*) '  0' MYID
 
 #ifdef AGRIF
       iind = -1
+# if defined OA_COUPLING || defined OW_COUPLING
+      it_inside_root = 1
+# endif
       grids_at_level = -1
       sortedint = -1
       call computenbmaxtimes
@@ -910,7 +946,7 @@ CR      write(*,*) '  0' MYID
 
 #ifdef USE_CALENDAR
         if (mod(iicroot-1,ninfo) .eq. 0) then
-          MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+          MPI_master_only write(stdout,'(a)') tool_sectodat(time_mars)
         endif
         if (time .gt. time_end) goto 99
 #endif
@@ -920,8 +956,6 @@ CR      write(*,*) '  0' MYID
         do iifroot = 0,nfast+2
 # else
         nbtimes = 0
-        nbmaxprttime = ntimes+1
-        nbprttime = iicroot
         do while (nbtimes.LE.nbmaxtimes)
 # endif
 #endif
@@ -992,7 +1026,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 !!!      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
 !!!#   endif
 
-#  if  !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
+#  if !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
        call MPI_Finalize (ierr)      !  if No coupling + No AGRIF : MPI_Finalize is needed
 #  endif
 

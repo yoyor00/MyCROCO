@@ -17,11 +17,11 @@
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-# ifndef MP_3PTS
+#ifndef MP_3PTS
       parameter (Npts=2)
-# else
+#else
       parameter (Npts=3)
-# endif
+#endif
       real A(GLOBAL_2D_ARRAY,KSTART:N)
       integer Istr,Iend,Jstr,Jend, i,j,k
 !
@@ -142,13 +142,22 @@
 #ifdef MPI
       k=N-KSTART+1
 # ifndef MP_3PTS
+#   ifndef MP_M3FAST_SEDLAYERS
       call MessPass3D_tile (Istr,Iend,Jstr,Jend,  A,k)
-# else
+#   else
+      call MessPass3D_sl_tile (Istr,Iend,Jstr,Jend,  A,k)
+#   endif      
+#  else
+!!  MP_3PTS        
+#   ifndef MP_M3FAST_SEDLAYERS       
       call MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend,  A,k)
-# endif
+#   else
+      call MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend,  A,k)      
+#   endif
+#endif   
 #   ifdef  BAND_DEBUG          
       chkbandname='none'
-#   endif     
+#   endif
 #endif
 #if defined OPENMP && defined OPENACC
       if (.not.SOUTHERN_EDGE) then
@@ -168,9 +177,9 @@ C$OMP BARRIER
       return
       end
 
-# ifndef MP_3PTS
-#  define MP_3PTS
-#  include "exchange_3d_tile.h"
-#  undef MP_3PTS
-# endif
+#ifndef MP_3PTS
+# define MP_3PTS
+# include "exchange_3d_tile.h"
+# undef MP_3PTS
+#endif
 

@@ -1,4 +1,10 @@
 #if defined MPI
+# undef NP1
+# define NP1 N+1
+#ifdef M3FAST_SEDLAYERS
+# undef  NP1
+# define NP1 N+N_sl+1
+#endif 
 #define MAXNPTS 3
       integer sub_X,size_X, sub_E,size_E   
 # ifndef AGRIF
@@ -33,11 +39,12 @@
       integer size_Z,sub_X_3D,size_X_3D, sub_E_3D,size_E_3D
 
 #  ifndef AGRIF
-      parameter (size_Z=MAXNPTS*MAXNPTS*(N+1),
+      parameter (size_Z=MAXNPTS*MAXNPTS*(NP1),
      &       sub_X_3D=(Lm+NSUB_X-1)/NSUB_X,
-     &     size_X_3D=(N+1)*MAXNPTS*(sub_X_3D+2*MAXNPTS),
+     &     size_X_3D=(NP1)*MAXNPTS*(sub_X_3D+2*MAXNPTS),
      &     sub_E_3D=(Mm+NSUB_E-1)/NSUB_E,
-     &     size_E_3D=(N+1)*MAXNPTS*(sub_E_3D+2*MAXNPTS))
+     &     size_E_3D=(NP1)*MAXNPTS*(sub_E_3D+2*MAXNPTS))
+
       real ibuf_sndN_3D(size_X_3D), ibuf_revN_3D(size_X_3D),
      &     ibuf_sndS_3D(size_X_3D), ibuf_revS_3D(size_X_3D),
      &     jbuf_sndW_3D(size_E_3D), jbuf_sndE_3D(size_E_3D),
@@ -66,4 +73,5 @@
      &     jbuf_sndW_3D, jbuf_sndE_3D,
      &     jbuf_revW_3D, jbuf_revE_3D
 # endif
+#undef NP1
 #endif

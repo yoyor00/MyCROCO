@@ -2,23 +2,23 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D 
-      subroutine def_grid_3d (ncid, r2dgrd, u2dgrd, v2dgrd, 
+#if defined SOLVE3D
+      subroutine def_grid_3d (ncid, r2dgrd, u2dgrd, v2dgrd,
      &                        r3dgrd, w3dgrd)
 !
-! Define grid variables in output NetCDF file for 3D configuration, 
+! Define grid variables in output NetCDF file for 3D configuration,
 ! which may be restart, history, averages, etc..
 !
 ! Arguments: ncid    NetCDF unit-ID of NetCDF file, which must be
-!                            already opened and in definition mode; 
+!                            already opened and in definition mode;
 !            r2dgrd  integer array of size 2, which contains NetCDF
 !                        IDs for dimensions 'xi_rho' and 'eta_rho'.
 !            v2dgrd  integer array of size 2, which contains NetCDF
@@ -30,12 +30,12 @@
 !            w3dgrd  integer array of size 2, which contains NetCDF
 !                        IDs for dimensions 'N+1'.
       implicit none
-      integer ncid, r2dgrd(2), u2dgrd(2), v2dgrd(2), r3dgrd(3), 
+      integer ncid, r2dgrd(2), u2dgrd(2), v2dgrd(2), r3dgrd(3),
      &        w3dgrd(3), nf_ftype, varid, ierr
       character(len=30) strtmp
-#include "param.h"
-#include "ncscrum.h"
-#include "netcdf.inc"
+# include "param.h"
+# include "ncscrum.h"
+# include "netcdf.inc"
 !
 ! Decide about precision:
 !
@@ -44,7 +44,7 @@
       else
         nf_ftype=NF_FOUT
       endif
-!   
+!
 !
 ! Grid type switch: Spherical or Cartesian.
 !
@@ -82,23 +82,23 @@
       ierr=nf_def_var (ncid, 'xi_u', nf_ftype, 1, u2dgrd(1), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   37,
      &     'x-dimension of the grid at u location')
-      ierr=nf_put_att_text (ncid, varid, 'standard_name', 26, 
+      ierr=nf_put_att_text (ncid, varid, 'standard_name', 26,
      &     'x_grid_index_at_u_location')
       ierr=nf_put_att_text (ncid, varid, 'axis', 1, 'X')
       ierr=nf_put_att_FTYPE(ncid, varid, 'c_grid_axis_shift',
      &     nf_ftype, 1, 0.5)
-#if defined EW_PERIODIC
+# if defined EW_PERIODIC
       write(strtmp,'(i0":"i0" ")') 1, xi_u-1
-#else
+# else
       write(strtmp,'(i0":"i0" ")') 2, xi_u-1
-#endif
+# endif
       ierr=nf_put_att_text (ncid, varid, 'c_grid_dynamic_range',
      &  len_trim(strtmp), trim(strtmp))
 !
       ierr=nf_def_var (ncid, 'eta_rho', nf_ftype, 1, r2dgrd(2), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   23,
      &     'y-dimension of the grid')
-      ierr=nf_put_att_text (ncid, varid, 'standard_name', 12, 
+      ierr=nf_put_att_text (ncid, varid, 'standard_name', 12,
      &     'y_grid_index')
       ierr=nf_put_att_text (ncid, varid, 'axis', 1, 'Y')
       write(strtmp,'(i0":"i0" ")') 2, eta_rho-1
@@ -108,20 +108,20 @@
       ierr=nf_def_var (ncid, 'eta_v', nf_ftype, 1, v2dgrd(2), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',    37,
      &     'y-dimension of the grid at v location')
-      ierr=nf_put_att_text (ncid, varid, 'standard_name', 26, 
+      ierr=nf_put_att_text (ncid, varid, 'standard_name', 26,
      &     'x_grid_index_at_v_location')
       ierr=nf_put_att_text (ncid, varid, 'axis', 1, 'Y')
       ierr=nf_put_att_FTYPE(ncid, varid, 'c_grid_axis_shift',
      &     nf_ftype, 1, 0.5)
-#if defined NS_PERIODIC
+# if defined NS_PERIODIC
       write(strtmp,'(i0":"i0" ")') 1, eta_v-1
-#else
+# else
       write(strtmp,'(i0":"i0" ")') 2, eta_v-1
-#endif
+# endif
       ierr=nf_put_att_text (ncid, varid, 'c_grid_dynamic_range',
      &  len_trim(strtmp), trim(strtmp))
 
-#ifdef WET_DRY
+# ifdef WET_DRY
 !
 ! Critical Depth for Drying cells
 !
@@ -129,32 +129,34 @@
       ierr=nf_put_att_text (ncid, varid, 'long_name',   31,
      &                   'Critical Depth for Drying cells')
       ierr=nf_put_att_text (ncid, varid, 'units', 5, 'meter')
-#endif
+# endif
 
-#ifdef SOLVE3D
+# ifdef SOLVE3D
 !
-! Vtransform 
+! Vtransform
 !
       ierr=nf_def_var (ncid, 'Vtransform', nf_ftype, 0, 0, varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   49,
-     &    'vertical terrain-following transformation equation')    
+     &    'vertical terrain-following transformation equation')
 !
-! Variable-dimensions vertical : s_rho and s_w 
+! Variable-dimensions vertical : s_rho and s_w
 !
       ierr=nf_def_var (ncid, 's_rho', nf_ftype, 1, r3dgrd(3), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   26,
      &     'S-coordinate at RHO-points')
       ierr=nf_put_att_text (ncid, varid, 'axis', 1, 'Z')
       ierr=nf_put_att_text (ncid, varid, 'positive', 2, 'up')
-#if defined NEW_S_COORD
+#  if defined NEW_S_COORD
       ierr=nf_put_att_text (ncid, varid, 'standard_name',21,
      &     'ocean_s_coordinate_g2')
-#else
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
+#  else
       ierr=nf_put_att_text (ncid, varid, 'standard_name',21,
      &     'ocean_s_coordinate_g1')
-#endif
-      ierr=nf_put_att_text (ncid, varid, 'formula_terms',46,
-     &     's: sc_r C: Cs_r eta: zeta depth: h depth_c: hc')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
+#  endif
+      ierr=nf_put_att_text (ncid, varid, 'formula_terms',49,
+     &     's: s_rho C: Cs_rho eta: zeta depth: h depth_c: hc')
 !-
       ierr=nf_def_var (ncid, 's_w', nf_ftype, 1, w3dgrd(3), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   24,
@@ -163,38 +165,22 @@
       ierr=nf_put_att_text (ncid, varid, 'positive', 2, 'up')
       ierr=nf_put_att_FTYPE(ncid, varid, 'c_grid_axis_shift',
      &     nf_ftype, 1, -0.5)
-#if defined NEW_S_COORD
+#  if defined NEW_S_COORD
       ierr=nf_put_att_text (ncid, varid, 'standard_name',35,
      &     'ocean_s_coordinate_g2_at_w_location')
-#else
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
+#  else
       ierr=nf_put_att_text (ncid, varid, 'standard_name',35,
      &     'ocean_s_coordinate_g1_at_w_location')
-#endif
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
+#  endif
       ierr=nf_put_att_text (ncid, varid, 'formula_terms',46,
-     &     's: sc_w C: Cs_w eta: zeta depth: h depth_c: hc')
-!----
-! S-coordinate
-      ierr=nf_def_var (ncid, 'sc_r', nf_ftype,  1, r3dgrd(3), varid)
-      ierr=nf_put_att_text (ncid, varid, 'long_name',   36,
-     &     'ocean s roms coordinate at rho point')
-#if defined NEW_S_COORD
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
-#else
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
-#endif /* NEW_S_COORD */    
-!
-      ierr=nf_def_var (ncid, 'sc_w', nf_ftype, 1, w3dgrd(3), varid)
-      ierr=nf_put_att_text (ncid, varid, 'long_name',   34,
-     &     'ocean s roms coordinate at w point')
-#if defined NEW_S_COORD
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
-#else
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
-#endif /* NEW_S_COORD */ 
+     &     's: s_w C: Cs_w eta: zeta depth: h depth_c: hc')
+
 
 !----
 ! Streching curves Cs_r, Cs_w
-      ierr=nf_def_var (ncid, 'Cs_r', nf_ftype,  1, r3dgrd(3), varid)
+      ierr=nf_def_var (ncid, 'Cs_rho', nf_ftype,  1, r3dgrd(3), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   44,
      &     'S-coordinate stretching curves at RHO-points')
 !      ierr=nf_put_att_text (ncid, varid, 'standard_name',40,
@@ -211,7 +197,7 @@
       ierr=nf_put_att_text (ncid, varid, 'long_name',   38,
      &                   'S-coordinate parameter, critical depth')
       ierr=nf_put_att_text (ncid, varid, 'units', 5, 'meter')
-#endif
+# endif
 !
 ! Bathymetry.
 !
@@ -223,13 +209,13 @@
      &     'bath, scalar')
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 33,
      &     'model_sea_floor_depth_below_geoid')
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                      'lat_rho lon_rho')
-#else
+# else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
-#endif
+# endif
 !
 ! Coriolis Parameter.
 !
@@ -241,13 +227,13 @@
      &                                        'coriolis, scalar')
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 18,
      &     'coriolis_parameter')
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                      'lat_rho lon_rho')
-#else
+# else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
-#endif
+# endif
 !
 ! Curvilinear coordinates metric coefficients pm,pn.
 !
@@ -256,13 +242,13 @@
      &                      'curvilinear coordinates metric in XI')
       ierr=nf_put_att_text (ncid, varid, 'units',  7,    'meter-1')
       ierr=nf_put_att_text (ncid, varid, 'field', 10, 'pm, scalar')
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                      'lat_rho lon_rho')
-#else
+# else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
-#endif
+# endif
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 22,
      &                      'inverse_of_cell_x_size')
 !-
@@ -271,19 +257,19 @@
      &     'curvilinear coordinates metric in ETA')
       ierr=nf_put_att_text (ncid, varid, 'units',  7,    'meter-1')
       ierr=nf_put_att_text (ncid, varid, 'field', 10, 'pn, scalar')
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                      'lat_rho lon_rho')
-#else
+# else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
-#endif
+# endif
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 22,
      &                      'inverse_of_cell_y_size')
 !
 ! Longitude/latitude or cartezian coordinatess of RHO-points.
 !
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_def_var (ncid, 'lon_rho', nf_ftype, 2, r2dgrd, varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name', 23,
      &                                   'longitude of RHO-points')
@@ -338,7 +324,7 @@
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 22,
      &                                   'latitude_at_v_location')
 !=======================================================================
-#else
+# else
       ierr=nf_def_var (ncid, 'x_rho', nf_ftype, 2, r2dgrd, varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name', 25,
      &                                   'x-locations of RHO-points')
@@ -354,8 +340,8 @@
       ierr=nf_put_att_text (ncid, varid, 'field',11, 'y_rho, scalar')
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 18,
      &                                   'plane_y_coordinate')
-#endif
-#ifdef CURVGRID
+# endif
+# ifdef CURVGRID
 !
 ! Angle between XI-axis and EAST at RHO-points
 !
@@ -367,8 +353,8 @@
 !      ierr=nf_put_att_text (ncid, varid, 'standard_name', 1,' ')
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                                   'lat_rho lon_rho')
-#endif
-#ifdef MASKING
+# endif
+# ifdef MASKING
 !
 ! Land-Sea mask at RHO-points.
 !
@@ -379,18 +365,18 @@
       ierr=nf_put_att_text (ncid, varid, 'option_1',    5,   'water')
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 16,
      &                                   'land_binary_mask')
-# ifdef SPHERICAL
+#  ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                      'lat_rho lon_rho')
-# else
+#  else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
+#  endif
 # endif
-#endif
 !
 #else /* SOLVE3D */
       subroutine def_grid_3d_empty
-#endif  /* SOLVE3D */ 
+#endif  /* SOLVE3D */
       return
       end
 

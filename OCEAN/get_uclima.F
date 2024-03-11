@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -16,9 +16,9 @@
                              ! Read tracer(s) climatology
       subroutine get_uclima  ! fields from climatology file
                              ! at appropriate time.
-#ifdef OPENACC
+# ifdef OPENACC
       use exchange_device_host
-#endif
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -96,7 +96,7 @@
           uclm_time(2)=-1.E+20
       endif
 !
-! Read in momentum climatology: Check, if if model time is within the 
+! Read in momentum climatology: Check, if if model time is within the
 ! ==== == ======== ============ bounds set by the past and future data
 ! times. If not, flip the time index, increment record and cycling
 ! indices and read a new portion of data: climatology time
@@ -122,6 +122,12 @@
         write(stdout,6) 'Xclm_time', uclm_rec
         goto 99                                        !--> ERROR
       endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidclm,uclm_tid,
+     &                       uclm_origin_date_in_sec)
+        cff=cff+uclm_origin_date_in_sec*sec2day
+# endif
+
       uclm_time(i)=cff*day2sec+uclm_cycle
      &                             *uclm_ncycle
       if (uclm_time(ituclm).eq.-1.E+20)
@@ -130,9 +136,9 @@
       ierr=nf_fread (ubclima(START_2D_ARRAY,i),
      &                           ncidclm, ubclm_id,
      &                           uclm_rec, u2dvar)
-#ifdef OPENACC
+#  ifdef OPENACC
       call update_device(ubclima(:,:,i))
-#endif
+#  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxUb))
         write(stdout,6) vname(1,indxUb)(1:lvar), uclm_rec
@@ -142,9 +148,9 @@
       ierr=nf_fread (vbclima(START_2D_ARRAY,i),
      &                           ncidclm, vbclm_id,
      &                           uclm_rec, v2dvar)
-#ifdef OPENACC
+#  ifdef OPENACC
       call update_device(vbclima(:,:,i))
-#endif
+#  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxVb))
         write(stdout,6) vname(1,indxVb)(1:lvar), uclm_rec
@@ -155,9 +161,9 @@
       ierr=nf_fread (uclima(START_2D_ARRAY,1,i),
      &                           ncidclm, uclm_id,
      &                           uclm_rec, u3dvar)
-#ifdef OPENACC
+#  ifdef OPENACC
       call update_device(uclima(:,:,:,i))
-#endif
+#  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxU))
         write(stdout,6) vname(1,indxU)(1:lvar), uclm_rec
@@ -167,9 +173,9 @@
       ierr=nf_fread (vclima(START_2D_ARRAY,1,i),
      &                           ncidclm, vclm_id,
      &                           uclm_rec, v3dvar)
-#ifdef OPENACC
+#  ifdef OPENACC
       call update_device(vclima(:,:,:,i))
-#endif
+#  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxV))
         write(stdout,6) vname(1,indxV)(1:lvar), uclm_rec
@@ -180,11 +186,14 @@
       ituclm=i
       MPI_master_only write(stdout,'(6x,A,1x,g12.4,1x,I4)')
      &'GET_UCLIMA -- Read momentum climatology      for time =', cff
-#ifdef MPI
+# ifdef USE_CALENDAR
+     &  -uclm_origin_date_in_sec*sec2day
+# endif
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
         if (ntuclm.gt.1) goto 10
-  1    continue    
+  1    continue
       return
 !
 ! Sort out error messages: The following portion of the code is
@@ -212,9 +221,9 @@
       implicit none
       integer tile
 # include "param.h"
-#ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef  ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
-#endif
+# endif
 # include "compute_tile_bounds.h"
       call set_uclima_tile (Istr,Iend,Jstr,Jend)
       return
@@ -251,7 +260,7 @@ C$    integer  trd, omp_get_thread_num
       if (ZEROTH_TILE .and. cff1.lt.dt) synchro_flag=.TRUE.
 
       if (uclm_cycle.lt.0.) then      ! Load time-invariant
-        if (iic.eq.0) then            ! momentum climatology. 
+        if (iic.eq.0) then            ! momentum climatology.
 # ifdef M2CLIMATOLOGY
 !$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
@@ -275,7 +284,7 @@ C$    integer  trd, omp_get_thread_num
         endif
       elseif (cff1.ge.0. .and. cff2.ge.0.) then
         cff=1./(cff1+cff2)                     ! Interpolate tracer
-        cff1=cff1*cff                          ! climatology in time. 
+        cff1=cff1*cff                          ! climatology in time.
         cff2=cff2*cff
 # ifdef M2CLIMATOLOGY
 !$acc parallel loop if(compute_on_device) default(present)
@@ -307,12 +316,15 @@ C$    integer  trd, omp_get_thread_num
      &            'bounds of ''uclm_time''.', 'UCLM_TSTART=',
      &             uclm_time(it1)*sec2day,     'TDAYS=',  tdays,
      &            'UCLM_TEND=',   uclm_time(it2)*sec2day
+# ifdef USE_CALENDAR
+     &  -uclm_origin_date_in_sec*sec2day
+# endif
           may_day_flag=2
       endif
       return
       end
 #else
-      subroutine get_uclima_empty 
+      subroutine get_uclima_empty
       return
       end
 #endif /* M2CLIMATOLOGY && !ANA_M2CLIMA || (M3CLIMATOLOGY && !ANA_M3CLIMA) */

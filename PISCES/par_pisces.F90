@@ -15,7 +15,10 @@ MODULE par_pisces
    !!   'key_pisces'   :                         standard PISCES bio-model
    !!---------------------------------------------------------------------
    LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .TRUE.  !: PISCES flag 
-#if defined key_pisces_quota
+
+#if defined key_pisces_light
+   INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 9      !: number of PISCES passive tracers
+#elif defined key_pisces_quota
 #   if defined key_ligand
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 40      !: number of PISCES passive tracers
 #   else
@@ -34,6 +37,48 @@ MODULE par_pisces
    ! assign an index in trc arrays for each LOBSTER prognostic variables
    !    WARNING: be carefull about the order when reading the restart
         !   !!gm  this warning should be obsolet with IOM
+#if defined key_pisces_light
+   INTEGER, PUBLIC, PARAMETER ::   jpdic =  1    !: dissolved inoganic carbon concentration 
+   INTEGER, PUBLIC, PARAMETER ::   jptal =  2    !: total alkalinity 
+   INTEGER, PUBLIC, PARAMETER ::   jpoxy =  3    !: oxygen carbon concentration 
+   INTEGER, PUBLIC, PARAMETER ::   jppoc =  4    !: small particulate organic phosphate concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpphy =  5    !: phytoplancton concentration 
+   INTEGER, PUBLIC, PARAMETER ::   jpzoo =  6    !: zooplancton concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpdoc =  7   !: dissolved organic carbon concentration 
+   INTEGER, PUBLIC, PARAMETER ::   jpno3 =  8   !: Nitrates Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpfer =  9   !: Iron Concentration
+   INTEGER, PUBLIC ::   jpcal     !: calcite  concentration 
+   INTEGER, PUBLIC ::   jppo4     !: phosphate concentration 
+   INTEGER, PUBLIC ::   jpsil     !: silicate concentration
+   INTEGER, PUBLIC ::   jpdia     !: Diatoms Concentration
+   INTEGER, PUBLIC ::   jpmes     !: Mesozooplankton Concentration
+   INTEGER, PUBLIC ::   jpgsi     !: (big) Silicate Concentration
+   INTEGER, PUBLIC ::   jpbfe     !: Big iron particles Concentration
+   INTEGER, PUBLIC ::   jpgoc     !: big particulate organic phosphate concentration
+   INTEGER, PUBLIC ::   jpsfe     !: Small iron particles Concentration
+   INTEGER, PUBLIC ::   jpdfe     !: Diatoms iron Concentration
+   INTEGER, PUBLIC ::   jpdsi     !: Diatoms Silicate Concentration
+   INTEGER, PUBLIC ::   jpnfe     !: Nano iron Concentration
+   INTEGER, PUBLIC ::   jpnch     !: Nano Chlorophyll Concentration
+   INTEGER, PUBLIC ::   jpdch     !: Diatoms Chlorophyll Concentration
+   INTEGER, PUBLIC ::   jpnh4     !: Ammonium Concentration
+   INTEGER, PUBLIC ::   jplgw    !: Ammonium Concentration
+   INTEGER, PUBLIC ::   jpdon    !: DON concentration 
+   INTEGER, PUBLIC ::   jpdop    !: DOP concentration 
+   INTEGER, PUBLIC ::   jppon    !: PON concentration
+   INTEGER, PUBLIC ::   jppop    !: POP concentration
+   INTEGER, PUBLIC ::   jpnph     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppph     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpndi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppdi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppic     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpnpi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpppi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppfe     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppch     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpgon    !: GON concentration
+   INTEGER, PUBLIC ::   jpgop    !: GOP concentration
+#   else
    INTEGER, PUBLIC, PARAMETER ::   jpdic =  1    !: dissolved inoganic carbon concentration 
    INTEGER, PUBLIC, PARAMETER ::   jptal =  2    !: total alkalinity 
    INTEGER, PUBLIC, PARAMETER ::   jpoxy =  3    !: oxygen carbon concentration 
@@ -97,6 +142,7 @@ MODULE par_pisces
    INTEGER, PUBLIC ::   jppch     !: small particulate organic phosphorus concentration
    INTEGER, PUBLIC ::   jpgon    !: GON concentration
    INTEGER, PUBLIC ::   jpgop    !: GOP concentration
+#endif
 #endif
 
    INTEGER, PUBLIC ::   jp_flxco2  

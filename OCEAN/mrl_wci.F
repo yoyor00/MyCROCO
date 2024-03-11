@@ -19,8 +19,8 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
 # ifdef WAVE_DRY
-      call wavedry_tile(istr,iend,jstr,jend)  
-# endif      
+      call wavedry_tile(istr,iend,jstr,jend)
+# endif
       call mrl_wci_tile (istr,iend,jstr,jend,
 # ifdef SOLVE3D
      &            A3d(1,1,trd),A3d(1,2,trd),
@@ -37,7 +37,7 @@
       return
       end
 
-      subroutine mrl_wci_tile (istr,iend,jstr,jend, 
+      subroutine mrl_wci_tile (istr,iend,jstr,jend,
 # ifdef SOLVE3D
      &            wrk1,wrk2,
 # endif
@@ -50,7 +50,7 @@
 !----------------------------------------------------------------------
 !   Evaluating wave-averaged terms and Stokes drift based on MRL04
 !     (McWilliams, Restrepo & Lane, 2004, JFM, 511, pp.135-178)
-!    
+!
 !   inputs: R.M.S. wave height (m);
 !           peak wave frequency (rad/s);
 !           mean wave direction: wdrx & wdre (non dimensional);
@@ -63,8 +63,8 @@
 !
 !   REFERENCE
 !   ---------
-!   Uchiyama, Y., McWilliams, J.C. and Shchepetkin, A.F. (2010): 
-!      Wave-current interaction in an oceanic circulation model with a 
+!   Uchiyama, Y., McWilliams, J.C. and Shchepetkin, A.F. (2010):
+!      Wave-current interaction in an oceanic circulation model with a
 !      vortex force formalism: Application to the surf zone.
 !      Ocean Modelling Vol. 34:1-2, pp.16-35.
 !
@@ -91,7 +91,7 @@
 # ifdef BBL
 #  include "bbl.h"
 # endif
-      integer istr,iend,jstr,jend,i,j,imin,jmin 
+      integer istr,iend,jstr,jend,i,j,imin,jmin
       real    cff,cff1,cff2,cff3,cff4,inv_g,khd,kh,
      &   eps,wave_ramp,wramp2,kbrk,fb,fb0,fb1,fb2,inv_fbs,
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
@@ -115,15 +115,16 @@
      &        ,zob_my(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
 # if defined WAVE_BREAK_BJ78
-     &        ,Q0,Qb,HmaxBJ     
-# endif      
+     &        ,Q0,Qb,HmaxBJ
+# endif
 # ifdef SOLVE3D
-      integer  k,kk 
+      integer  k,kk
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
+!$acc declare create(wrk4,wrk5,wrk6)
 # endif
-      parameter ( eps    = 1.e-10, 
+      parameter ( eps    = 1.e-10,
      &            bconst = 0.03,              ! breaking contribution to KPP
      &            a_kv   = 1.2,               ! breaking scale for eddy visc.
      &            a_brk  = 0.2,               ! breaking scale for body force
@@ -137,9 +138,9 @@
       real wave_gam,wave_btg,wave_roller      ! parameters for offline
 #  ifdef WAVE_BREAK_BJ78
       parameter (wave_gam=0.73, wave_btg=1.0)
-#  else      
+#  else
       parameter (wave_gam=0.4, wave_btg=0.8)  ! wave forcing
-#  endif      
+#  endif
 #  ifdef WAVE_ROLLER
       parameter (wave_roller=1.0)
 #  else
@@ -147,19 +148,19 @@
 #  endif
 # endif /* !WKB_WWAVE */
 !
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) || defined WAVE_STREAMING
       if (Zobt.gt.0.) then                    ! default Zob for wave
         do j=jstr-1,jend+1                    ! dissipation or streaming
-          do i=istr-1,iend+1      
+          do i=istr-1,iend+1
 #  ifdef BBL
             Zob_my(i,j)=Zbapp(i,j)
 #  else
             Zob_my(i,j)=Zob(i,j)
 #  endif
           enddo
-        enddo                         
+        enddo
       else
         Zob_my=1.e-3
       endif
@@ -180,7 +181,7 @@
 #  define SWITCH_WAVEDRY *
 # else
 #  define SWITCH_WAVEDRY !
-# endif      
+# endif
 
 ! explicit wavenumber estimator
 
@@ -218,19 +219,39 @@
 ! Evaluate 2DH wave-current interaction variables.
 ! ================================================
 !
-! 2DH Stokes velocities, breaking, roller and bottom-friction 
+! 2DH Stokes velocities, breaking, roller and bottom-friction
 ! dissipation terms, defined at horizontal rho-points.
 !
 !$acc kernels if(compute_on_device) default(present)
+#  ifdef EW_PERIODIC
+       imin= Istr-2
+#  else
+      if (WESTERN_EDGE) then
+        imin=Istr-1
+      else
+        imin=Istr-2
+      endif
+#  endif
+#  ifdef NS_PERIODIC
+        jmin=Jstr-2
+#  else
+      if (SOUTHERN_EDGE) then
+        jmin=Jstr-1
+      else
+        jmin=Jstr-2
+      endif
+#  endif
+    !  write(*,*) Istr, IstrR, IstrU, imin 
+     ! write(*,*) Jstr, JstrR, JstrV, jmin 
 
       inv_g = 1./g
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=jmin,jendR
+        do i=imin,iendR
 # ifdef SOLVE3D
           Dstp(i,j)=h(i,j)+z_w(i,j,N)
 # else
           Dstp(i,j)=h(i,j)+zeta(i,j,knew)
-# endif          
+# endif
           inv_d(i,j)=1./Dstp(i,j)
 
 # ifdef WKB_WWAVE
@@ -280,13 +301,13 @@
           Pwave(i,j) = 2.0*pi*inv_f(i,j)
           Awave(i,j) = wh(i,j)/2.0
           Dwave(i,j) = atan2(wdre(i,j),wdrx(i,j))
-#  endif  
+#  endif
 
 #  ifdef OW_COUPLING_FULL
           kw(i,j) =2.0*pi/max(wlm(i,j),0.1)
           !kw(i,j) =2.0*pi/max(wlm(i,j),eps)
           kD(i,j) =kw(i,j)*Dstp(i,j)
-#  else          
+#  else
 
 #   ifdef KH_SOULSBY
           if (khd.ge.1.) then ! explicit wavenumber estimator
@@ -306,7 +327,7 @@
 #   endif
           kD(i,j) =kh
           kw(i,j) =kh*inv_d(i,j)
-#  endif          
+#  endif
 !
 ! --- Wave breaking ---
 !   use wave_btg, wave_gam local parameters (as in WKB model)
@@ -315,8 +336,8 @@
           ebrk(i,j)=wramp2*wepb(i,j)                ! ep_b/rho (m3/s3)
 #  else
 #   ifdef OW_COUPLING_FULL
-          ebrk(i,j)=wramp2*foc(i,j)/rho0 
-#   else          
+          ebrk(i,j)=wramp2*foc(i,j)/rho0
+#   else
 #    ifdef WAVE_BREAK_TG86
            cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.*pi)
            ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! ep_b/rho/sigma (m3/s2)
@@ -364,13 +385,13 @@
                ebrk(i,j) = 0.25*wave_btg*g*Qb*HmaxBJ**2/(2.0*pi)
              else
                ebrk(i,j) = 0.25*wave_btg*g*cff1**4*HmaxBJ**2/(2.0*pi)
-             endif  
+             endif
            else
              ebrk(i,j) = 0.0
-           endif  
-#    endif  
+           endif
+#    endif
            ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
-#   endif       
+#   endif
 #  endif
 !
 #  ifdef WAVE_OFFLINE_ROLLER
@@ -392,11 +413,11 @@
 #   if defined OW_COUPLING_FULL
           urms=ubr(i,j)
           fw=1.39*(fr(i,j)*Zob(i,j)/max(urms,eps))**0.52
-#   else          
+#   else
           abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
           fw=1.39*(Zob(i,j)/max(abot,eps))**0.52    ! Soulsby (1995)
-#   endif          
+#   endif
           cff=0.5/sqrt(pi)*fw*urms**3               ! ep_d/rho
           frc(i,j)=wramp2*cff*kw(i,j)*inv_f(i,j)    ! 2DH friction term
 #  else
@@ -437,7 +458,7 @@
           act(i,j) =act(i,j)*rmask_wavewet(i,j)
           brk(i,j) =brk(i,j)*rmask_wavewet(i,j)
           frc(i,j) =frc(i,j)*rmask_wavewet(i,j)
-# endif          
+# endif
         enddo
       enddo              ! <-- discard inv_d
 
@@ -469,7 +490,7 @@
 # else
           cff = wramp2*frc(i,j)/kw(i,j)
 # endif
-          wepd(i,j)=cff*fr(i,j)       ! epsilon_d (m3/s3) 
+          wepd(i,j)=cff*fr(i,j)       ! epsilon_d (m3/s3)
 # ifdef MASKING
           wepb(i,j)=wepb(i,j)*rmask(i,j)
           wepd(i,j)=wepd(i,j)*rmask(i,j)
@@ -511,7 +532,7 @@
 ! =========================================
 !
       do j=jstrR,jendR
-        do i=istr,iendR
+        do i=IstrU,iendR
           brk2dx(i,j) =0.5*(brk(i-1,j)*wdrx(i-1,j)+brk(i,j)*wdrx(i,j))
           frc2dx(i,j) =0.5*(frc(i-1,j)*wdrx(i-1,j)+frc(i,j)*wdrx(i,j))
 # ifdef MASKING
@@ -525,10 +546,10 @@
 # ifdef WAVE_DRY
           brk2dx(i,j) =brk2dx(i,j)*umask_wavewet(i,j)
           frc2dx(i,j) =frc2dx(i,j)*umask_wavewet(i,j)
-# endif          
+# endif
         enddo
       enddo
-      do j=jstr,jendR
+      do j=JstrV,jendR
         do i=istrR,iendR
           brk2de(i,j) =0.5*(brk(i,j-1)*wdre(i,j-1)+brk(i,j)*wdre(i,j))
           frc2de(i,j) =0.5*(frc(i,j-1)*wdre(i,j-1)+frc(i,j)*wdre(i,j))
@@ -560,22 +581,22 @@
 !
 #  ifdef STOKES_DRIFT
 !
-! Cell-averaged 3D Stokes drift velocity (ust_r) is estimated 
-! assuming in surfzone that roller Stokes drift has the same 
-! z-dependency as the primary waves:  
+! Cell-averaged 3D Stokes drift velocity (ust_r) is estimated
+! assuming in surfzone that roller Stokes drift has the same
+! z-dependency as the primary waves:
 !
 !                               cosh[2k(z+h)]
 !          ust = 1/8 Hrms^2 f k -----------     (Ursell)
 !                                sinh[kD]^2
 !
 !                           cosh[2k(z+h)]
-!              = 2 act k^2  ----------- 
+!              = 2 act k^2  -----------
 !                            sinh[2kD]
 !
 ! with act=0.5gA^2/frq the wave action density (frq^2=gk*tanh(kD))
 !
-! Here, sinh and cosh functions are expanded to exponential function 
-! so as not to be singular when kD gets very large (offshore). 
+! Here, sinh and cosh functions are expanded to exponential function
+! so as not to be singular when kD gets very large (offshore).
 ! In addition, analytical volume-averaging operation at z_r levels
 ! (between surrounding z_w levels: z_dw and z_up) gives:
 !
@@ -583,13 +604,13 @@
 !                ( exp(2k(z_up+h-D)) - exp(-2k(z_up+h+D))
 !                 -exp(2k(z_dw+h-D)) + exp(-2k(z_dw+h+D)) )
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=JstrV-1,jendR
+        do i=IstrU-1,iendR
 #   ifdef OW_COUPLING_FULL
           inv_ex(i,j)=1.0/max(2.0*kw(i,j)*(1.0+exp(-4.0*kD(i,j))),eps)
           ust_ker = ust_ext(i,j)*inv_ex(i,j)
-#   else  
-          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)        
+#   else
+          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
           ust_ker=act(i,j)*kw(i,j)*inv_ex(i,j)
 #   endif
           cff1=0.
@@ -607,12 +628,12 @@
 !
       do k=1,N
         do j=jstrR,jendR
-          do i=istr,iendR
+          do i=IstrU,iendR
             ust(i,j,k)=0.5*( ust_r(i-1,j,k)*wdrx(i-1,j)
      &                      +ust_r(i  ,j,k)*wdrx(i  ,j) )
           enddo
         enddo
-        do j=jstr,jendR
+        do j=JstrV,jendR
           do i=istrR,iendR
             vst(i,j,k)=0.5*( ust_r(i,j-1,k)*wdre(i,j-1)
      &                      +ust_r(i,j  ,k)*wdre(i,j  ) )
@@ -620,16 +641,17 @@
         enddo
       enddo
 !
-!  2DH depth-averaged Stokes drift 
+!  2DH depth-averaged Stokes drift
 !
       do j=JstrR,JendR
-        do i=Istr,IendR
+        do i=IstrU,IendR
           cff1=0.5*(Hz(i-1,j,1)+Hz(i,j,1))
           ust2d(i,j)=cff1*ust(i,j,1)
           DO k=2,N
             cff1=0.5*(Hz(i-1,j,k)+Hz(i,j,k))
             ust2d(i,j)=ust2d(i,j)+cff1*ust(i,j,k)
           enddo
+       !   write(*,*) i,j
           cff2=2./(Dstp(i-1,j)+Dstp(i,j))
           ust2d(i,j)=ust2d(i,j)*cff2
 #   ifdef MASKING
@@ -637,7 +659,7 @@
 #   endif
         enddo
       enddo
-      do j=Jstr,JendR
+      do j=JstrV,JendR
         do i=IstrR,IendR
           cff1=0.5*(Hz(i,j-1,1)+Hz(i,j,1))
           vst2d(i,j)=cff1*vst(i,j,1)
@@ -706,15 +728,15 @@
           Kapsrf(i,j) = ( 0.5*Kapsrf(i,j)  ! time-filter to suppress noises
 #   ifdef OW_COUPLING_FULL
      &                   +0.5*bhd(i,j) )
-#   else          
+#   else
      &                   +0.5*cff*act(i,j)*inv_ex(i,j) )
-#   endif          
+#   endif
 #  else
 #   ifdef OW_COUPLING_FULL
           Kapsrf(i,j) = bhd(i,j)
-#   else          
+#   else
           Kapsrf(i,j) = cff*act(i,j)*inv_ex(i,j)
-#   endif          
+#   endif
 #  endif
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
@@ -826,7 +848,7 @@
       enddo
 #   elif defined WAVE_NONBRK_VMIX_QIAO
 !
-!  Qiao et al, JPO 2004:
+!  Qiao et al, GRL 2004 and OD 2010 (eq. 41b):
 !    Akw = alpha * kw * sig * [A * sinh(k(z+d))/sinh(k*d)]^3
 !  Wang et al. JGR 2010:
 !    alpha=0.1 for KPP applications
@@ -861,7 +883,7 @@
 ! a_kv and a_frc are considered O(1) parameters which determine
 ! vertical penetration of breaking-driven momenta, additional eddy
 ! kinetic energy by breaking, and streaming-induced momenta near
-! the bed.  fb (fkv and fwd) is designed with three (plus one 
+! the bed.  fb (fkv and fwd) is designed with three (plus one
 ! special case for fb) different ways:
 !
 !  FUNC1: gb~1-tanh(kb(\zeta-z))^4 : Warner et al (2008)
@@ -870,10 +892,10 @@
 !  FUNC0: gb~1                     : vertically uniform (Fb only)
 !
 ! where fb(z) = gb(z) / [\int^D gb(z') dz'] = 1, thus vertical
-! integral of fb is normalized.  Then volume-averaging operation is 
-! applied.  Exactly the same procedure is taken for fkv (not show 
-! here), while slightly different consideration is taken for fwd 
-! (see below).  In practice, vertical integrals of gb should have 
+! integral of fb is normalized.  Then volume-averaging operation is
+! applied.  Exactly the same procedure is taken for fkv (not show
+! here), while slightly different consideration is taken for fwd
+! (see below).  In practice, vertical integrals of gb should have
 ! the following forms:
 !
 !   1) FUNC1
@@ -925,8 +947,8 @@
 ! Akb: Eddy viscosity due to depth-induced wave breaking
 ! ======================================================
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=jstrR,jendR
+        do i=istrR,iendR
           inv_k =min(max(a_kv*wh(i,j),eps),Dstp(i,j))
           kbrk  =1./inv_k          ! vertical scale for breaking
 #   ifdef FKV_FUNC1
@@ -980,12 +1002,12 @@
 #   ifdef WET_DRY
           do k=0,N
             Akb(i,j,k)=Akb(i,j,k)*rmask_wet(i,j)
-          enddo          
+          enddo
 #   endif
 #   ifdef WAVE_DRY
           do k=0,N
             Akb(i,j,k)=Akb(i,j,k)*rmask_wavewet(i,j)
-          enddo          
+          enddo
 #   endif
         enddo
       enddo        ! <-- discard kb0
@@ -998,8 +1020,8 @@
 ! 3D breaking acceleration term defined as a body force.
 ! =====================================================
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=jstr-1,jend
+        do i=istr-1,iend
 #   ifdef FB_FUNC0
           do k=1,N                 ! vertically uniform case
             brk_r(i,j,k) = brk(i,j)*inv_d(i,j)
@@ -1049,8 +1071,8 @@
       enddo
 
       do k=1,N
-        do j=jstrR,jendR
-          do i=istr,iendR
+        do j=jstr,jend
+          do i=istr,iend
             brk3dx(i,j,k)=0.5*( brk_r(i-1,j,k)*wdrx(i-1,j)
      &                         +brk_r(i  ,j,k)*wdrx(i  ,j) )
      &                            SWITCH umask(i,j)
@@ -1059,8 +1081,8 @@
           enddo
         enddo
 
-        do j=jstr,jendR
-          do i=istrR,iendR
+        do j=Jstr,jend
+          do i=istr,iend
             brk3de(i,j,k)=0.5*( brk_r(i,j-1,k)*wdre(i,j-1)
      &                         +brk_r(i,j  ,k)*wdre(i,j  ) )
      &                            SWITCH vmask(i,j)
@@ -1076,7 +1098,7 @@
 !
 ! 3D bottom streaming acceleration term defined as a body force.
 ! ==============================================================
-! The effect of bottom streaming in momentum balance is accounted for 
+! The effect of bottom streaming in momentum balance is accounted for
 ! by using wave dissipation due to bottom friction frc_r (depending
 ! on bed roughness) with an upward decaying vertical distribution fb:
 !
@@ -1094,14 +1116,14 @@
 #   define frc_r wrk2
 #   define frc2d stk
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=jstr-1,jend
+        do i=istr-1,iend
           ks=30.*Zob_my(i,j)
 #   ifdef OW_COUPLING_FULL
           abot=ubr(i,j)/max(fr(i,j),eps)
-#   else          
+#   else
           abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
-#   endif          
+#   endif
           delta=0.09*ks*(abot/ks)**0.82                ! WBL thickness
           kfrc=1./min(max(a_frc*delta,eps),Dstp(i,j))  ! friction scale
           frc2d(i,j)=0.
@@ -1118,8 +1140,8 @@
         enddo
       enddo
 !
-      do j=jstrR,jendR
-        do i=istr,iendR
+      do j=jstr,jend
+        do i=istr,iend
           frc2dx(i,j)=0.5*( frc2d(i-1,j)*wdrx(i-1,j)
      &                     +frc2d(i  ,j)*wdrx(i  ,j) )
      &                            SWITCH umask(i,j)
@@ -1134,8 +1156,8 @@
           enddo
         enddo
       enddo
-      do j=jstr,jendR
-        do i=istrR,iendR
+      do j=jstr,jend
+        do i=istr,iend
           frc2de(i,j)=0.5*( frc2d(i,j-1)*wdre(i,j-1)
      &                     +frc2d(i,j  )*wdre(i,j  ) )
      &                            SWITCH vmask(i,j)
@@ -1159,7 +1181,7 @@
 
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) \
                         || defined WAVE_STREAMING
-#   undef Zob
+#  undef Zob
 # endif
 !
 ! Open boundary condition (valid only for idealized situations)
@@ -1241,7 +1263,7 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       call exchange_u3d_tile(istr,iend,jstr,jend,ust)
       call exchange_v3d_tile(istr,iend,jstr,jend,vst)
       call exchange_r3d_tile(istr,iend,jstr,jend,wst)
-      call exchange_r3d_tile(istr,iend,jstr,jend,kvf) 
+      call exchange_r3d_tile(istr,iend,jstr,jend,kvf)
 #   ifdef LMD_MIXING
       call exchange_w3d_tile(istr,iend,jstr,jend,Akb)
       call exchange_w3d_tile(istr,iend,jstr,jend,Akw)
@@ -1271,8 +1293,8 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
 
 ! Vertical Stokes drift velocity at rho-point
 ! ===========================================
-! Note "wst" is not used in prognostic computation, but only 
-! for output. 
+! Note "wst" is not used in prognostic computation, but only
+! for output.
 !
       subroutine wstokes (tile)
       implicit none

@@ -2,12 +2,12 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! This routine belongs to the specific CROCO package.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -24,7 +24,7 @@
       use AGRIF_Util
       implicit none
 # include "param.h"
-# include "boundary.h"  
+# include "boundary.h"
 # include "climat.h"
 # include "grid.h"
 # include "scalars.h"
@@ -65,80 +65,80 @@
 
 # ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        do k=1,N      
+        do k=1,N
           do i=Istr,IendR
-#  if defined NBQ_FRC_BRY     
+#  if defined NBQ_FRC_BRY
             unbqbry_south(i,k)=
 #  else
             unbqclm(i,Jstr-1,k)=
 #  endif
      &  (ainterp(1)*Unbq_south(i,Jstr-1,k,1)+
      &   ainterp(2)*Unbq_south(i,Jstr-1,k,2))
-#  ifdef MASKING     
+#  ifdef MASKING
      &    *umask(i,Jstr-1)
 #  endif
           enddo
         enddo
-      endif            
+      endif
 # endif
 
 # ifdef AGRIF_OBC_NORTH
-      if (NORTHERN_EDGE) then      
-        do k=1,N      
+      if (NORTHERN_EDGE) then
+        do k=1,N
           do i=Istr,IendR
-#  if defined NBQ_FRC_BRY     
+#  if defined NBQ_FRC_BRY
             unbqbry_north(i,k)=
-#  else   
+#  else
             unbqclm(i,Jend+1,k)=
 #  endif
      &  (ainterp(1)*Unbq_north(i,Jend+1,k,1)+
-     &   ainterp(2)*Unbq_north(i,Jend+1,k,2))     
-#  ifdef MASKING     
+     &   ainterp(2)*Unbq_north(i,Jend+1,k,2))
+#  ifdef MASKING
      &    *umask(i,Jend+1)
 #  endif
           enddo
         enddo
-      endif      
+      endif
 # endif
- 
+
 # ifdef AGRIF_OBC_WEST
-      if (WESTERN_EDGE) then      
-        do k=1,N      
+      if (WESTERN_EDGE) then
+        do k=1,N
           do j=JstrR,JendR
-#  if defined NBQ_FRC_BRY     
+#  if defined NBQ_FRC_BRY
            unbqbry_west(j,k)=
-#  else     
+#  else
             unbqclm(Istr,j,k)=
 #  endif
      &  (ainterp(1)*Unbq_west(Istr,j,k,1)+
      &   ainterp(2)*Unbq_west(Istr,j,k,2))
-#  ifdef MASKING     
+#  ifdef MASKING
      &    *umask(Istr,j)
 #  endif
           enddo
         enddo
-      endif      
+      endif
 # endif
-      
+
 # ifdef AGRIF_OBC_EAST
-      if (EASTERN_EDGE) then      
-        do k=1,N      
+      if (EASTERN_EDGE) then
+        do k=1,N
           do j=JstrR,JendR
-#  if defined NBQ_FRC_BRY  
+#  if defined NBQ_FRC_BRY
             unbqbry_east(j,k)=
 #  else
             unbqclm(Iend+1,j,k)=
 #  endif
      &  (ainterp(1)*Unbq_east(Iend+1,j,k,1)+
-     &   ainterp(2)*Unbq_east(Iend+1,j,k,2))         
-#  ifdef MASKING     
+     &   ainterp(2)*Unbq_east(Iend+1,j,k,2))
+#  ifdef MASKING
      &    *umask(Iend+1,j)
 #  endif
           enddo
         enddo
       endif
 # endif
-    
+
       return
       end
 !
@@ -162,16 +162,16 @@
       integer  :: Istr,Iend,Jstr,Jend, i,j,k
       real     :: tinterp
       real     :: ainterp(2)
-      external :: qdmvinterp   
-  
+      external :: qdmvinterp
+
 # ifdef MPI
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
 #  define LOCALLM Lm
 #  define LOCALMM Mm
-# endif   
-!          
+# endif
+!
 # include "compute_auxiliary_bounds.h"
 !
       if(Agrif_NbStepint() == 0) then
@@ -190,82 +190,82 @@
       ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
-#  ifdef AGRIF_OBC_SOUTH
+# ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        do k=1,N      
+        do k=1,N
           do i=IstrR,IendR
-#   if defined NBQ_FRC_BRY   
+#  if defined NBQ_FRC_BRY
             vnbqbry_south(i,k)=
-#   else
+#  else
             vnbqclm(i,Jstr,k)=
-#   endif
+#  endif
      &    (ainterp(1)*Vnbq_south(i,Jstr,k,1)+
      &     ainterp(2)*Vnbq_south(i,Jstr,k,2))
-#   ifdef MASKING     
+#  ifdef MASKING
      &    *vmask(i,Jstr)
-#   endif
+#  endif
           enddo
         enddo
       endif
-#  endif
+# endif
 
-#  ifdef AGRIF_OBC_NORTH
-      if (NORTHERN_EDGE) then      
-        do k=1,N      
+# ifdef AGRIF_OBC_NORTH
+      if (NORTHERN_EDGE) then
+        do k=1,N
           do i=IstrR,IendR
-#   if defined NBQ_FRC_BRY
+#  if defined NBQ_FRC_BRY
             vnbqbry_north(i,k)=
-#   else
+#  else
             vnbqclm(i,Jend+1,k)=
-#   endif
+#  endif
      &    (ainterp(1)*Vnbq_north(i,Jend+1,k,1)+
-     &     ainterp(2)*Vnbq_north(i,Jend+1,k,2))     
-#   ifdef MASKING     
+     &     ainterp(2)*Vnbq_north(i,Jend+1,k,2))
+#  ifdef MASKING
      &    *vmask(i,Jend+1)
-#   endif 
-          enddo
-        enddo
-      endif      
 #  endif
-#  ifdef AGRIF_OBC_WEST
-      if (WESTERN_EDGE) then      
-        do k=1,N      
-          do j=Jstr,JendR
-#   if defined NBQ_FRC_BRY
-            vnbqbry_west(j,k)=
-#   else
-            vnbqclm(Istr-1,j,k)=
-#   endif
-     &    (ainterp(1)*Vnbq_west(Istr-1,j,k,1)+
-     &     ainterp(2)*Vnbq_west(Istr-1,j,k,2))  
-#   ifdef MASKING     
-     &    *vmask(Istr-1,j)
-#   endif
-          enddo
-        enddo
-      endif      
-#  endif
-
-#  ifdef AGRIF_OBC_EAST
-      if (EASTERN_EDGE) then      
-        do k=1,N      
-          do j=Jstr,JendR
-#   if defined NBQ_FRC_BRY  
-            vnbqbry_east(j,k)=
-#   else
-            vnbqclm(Iend+1,j,k)=
-#   endif
-     &    (ainterp(1)*Vnbq_east(Iend+1,j,k,1)+
-     &     ainterp(2)*Vnbq_east(Iend+1,j,k,2))      
-#   ifdef MASKING     
-     &    *vmask(Iend+1,j)
-#   endif
           enddo
         enddo
       endif
-#  endif    
+# endif
+# ifdef AGRIF_OBC_WEST
+      if (WESTERN_EDGE) then
+        do k=1,N
+          do j=Jstr,JendR
+#  if defined NBQ_FRC_BRY
+            vnbqbry_west(j,k)=
+#  else
+            vnbqclm(Istr-1,j,k)=
+#  endif
+     &    (ainterp(1)*Vnbq_west(Istr-1,j,k,1)+
+     &     ainterp(2)*Vnbq_west(Istr-1,j,k,2))
+#  ifdef MASKING
+     &    *vmask(Istr-1,j)
+#  endif
+          enddo
+        enddo
+      endif
+# endif
+
+# ifdef AGRIF_OBC_EAST
+      if (EASTERN_EDGE) then
+        do k=1,N
+          do j=Jstr,JendR
+#  if defined NBQ_FRC_BRY
+            vnbqbry_east(j,k)=
+#  else
+            vnbqclm(Iend+1,j,k)=
+#  endif
+     &    (ainterp(1)*Vnbq_east(Iend+1,j,k,1)+
+     &     ainterp(2)*Vnbq_east(Iend+1,j,k,2))
+#  ifdef MASKING
+     &    *vmask(Iend+1,j)
+#  endif
+          enddo
+        enddo
+      endif
+# endif
        return
-      end       
+      end
 !
 !====================================================================
 !                   subroutine wnbq_bc_interp_tile
@@ -276,31 +276,31 @@
 
       use AGRIF_Util
 !     implicit none
-# include "param.h"
-# include "grid.h"
-# include "ocean2d.h"
-# include "scalars.h"
-# include "climat.h"
-# include "boundary.h"
-# include "zoom.h"
-# include "coupling.h"
-# include "nbq.h"
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean2d.h"
+#  include "scalars.h"
+#  include "climat.h"
+#  include "boundary.h"
+#  include "zoom.h"
+#  include "coupling.h"
+#  include "nbq.h"
       integer  :: Istr,Iend,Jstr,Jend, i,j,k
       real     :: tinterp
       real     :: ainterp(2)
       integer  :: irhot,irhox,irhoy
       real     :: rrhot,cffx,cffy
-      external :: qdmwinterp   
-# ifdef MPI
-#  define LOCALLM Lmmpi
-#  define LOCALMM Mmmpi
-# else
-#  define LOCALLM Lm
-#  define LOCALMM Mm
-# endif   
-!          
-!          
-# include "compute_auxiliary_bounds.h"
+      external :: qdmwinterp
+#  ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+#  else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+#  endif
+!
+!
+#  include "compute_auxiliary_bounds.h"
 !
 
       irhot=Agrif_Irhot()
@@ -312,9 +312,9 @@
       cffy=2./(real(irhoy)+1)
 
       if(Agrif_NbStepint() == 0) then
-# ifdef MASKING
+#  ifdef MASKING
         Agrif_UseSpecialValue = .true.
-# endif
+#  endif
         Agrif_SpecialValue = 0.
         tinterp=1.
         Call Agrif_Set_bc(qdmwnbqid,(/0,0/),
@@ -329,9 +329,9 @@
 
 #  ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        do k=0,N      
+        do k=0,N
           do i=IstrR,IendR
-#   if defined NBQ_FRC_BRY   
+#   if defined NBQ_FRC_BRY
             wnbqbry_south(i,k)=
 #   else
             wnbqclm(i,Jstr-1,k)=
@@ -340,7 +340,7 @@
      &    (ainterp(1)*Wnbq_south(i,Jstr-1,k,1)+
      &     ainterp(2)*Wnbq_south(i,Jstr-1,k,2))
      &       +(1.-cffy)*qdmw_nbq(i,Jstr  ,k))
-#   ifdef MASKING     
+#   ifdef MASKING
      &    *rmask(i,Jstr-1)
 #   endif
           enddo
@@ -349,8 +349,8 @@
 #  endif
 
 #  ifdef AGRIF_OBC_NORTH
-      if (NORTHERN_EDGE) then      
-        do k=0,N      
+      if (NORTHERN_EDGE) then
+        do k=0,N
           do i=IstrR,IendR
 #   if defined NBQ_FRC_BRY
             wnbqbry_north(i,k)=
@@ -360,17 +360,17 @@
      &    (cffy*
      &    (ainterp(1)*Wnbq_north(i,Jend+1,k,1)+
      &     ainterp(2)*Wnbq_north(i,Jend+1,k,2))
-     &       +(1.-cffy)*qdmw_nbq(i,Jend  ,k))   
-#   ifdef MASKING     
+     &       +(1.-cffy)*qdmw_nbq(i,Jend  ,k))
+#   ifdef MASKING
      &    *rmask(i,Jend+1)
-#   endif 
+#   endif
           enddo
         enddo
-      endif      
+      endif
 #  endif
 #  ifdef AGRIF_OBC_WEST
-      if (WESTERN_EDGE) then      
-        do k=0,N      
+      if (WESTERN_EDGE) then
+        do k=0,N
           do j=JstrR,JendR
 #   if defined NBQ_FRC_BRY
             wnbqbry_west(j,k)=
@@ -381,19 +381,19 @@
      &    (ainterp(1)*Wnbq_west(Istr-1,j,k,1)+
      &     ainterp(2)*Wnbq_west(Istr-1,j,k,2))
      &      +(1.-cffx)*qdmw_nbq(Istr  ,j,k))
-#   ifdef MASKING     
+#   ifdef MASKING
      &    *rmask(Istr-1,j)
 #   endif
           enddo
         enddo
-      endif      
+      endif
 #  endif
 
 #  ifdef AGRIF_OBC_EAST
-      if (EASTERN_EDGE) then      
-        do k=0,N      
+      if (EASTERN_EDGE) then
+        do k=0,N
           do j=JstrR,JendR
-#   if defined NBQ_FRC_BRY  
+#   if defined NBQ_FRC_BRY
             wnbqbry_east(j,k)=
 #   else
             wnbqclm(Iend+1,j,k)=
@@ -402,15 +402,15 @@
      &    (ainterp(1)*Wnbq_east(Iend+1,j,k,1)+
      &     ainterp(2)*Wnbq_east(Iend+1,j,k,2))
      &      +(1.-cffx)*qdmw_nbq(Iend  ,j,k))
-#   ifdef MASKING     
+#   ifdef MASKING
      &    *rmask(Iend+1,j)
 #   endif
           enddo
         enddo
       endif
-#  endif    
+#  endif
        return
-      end         
+      end
 # endif /* NBQ */
 
 !======================================================================
@@ -451,7 +451,7 @@
         northern_side = (nb == 2).AND.(ndir == 2)
 
         nsource=1
-        ndest=2 
+        ndest=2
 
 # ifdef AGRIF_OBC_SOUTH
         if (southern_side) then
@@ -561,7 +561,7 @@
         northern_side = (nb == 2).AND.(ndir == 2)
 
         nsource=1
-        ndest=2 
+        ndest=2
 
 # ifdef AGRIF_OBC_SOUTH
         if (southern_side) then
@@ -637,11 +637,11 @@
       subroutine qdmwinterp(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
       implicit none
-# include "param.h"
-# include "ocean3d.h"
-# include "scalars.h"
-# include "nbq.h"
-# include "zoom.h"
+#  include "param.h"
+#  include "ocean3d.h"
+#  include "scalars.h"
+#  include "nbq.h"
+#  include "zoom.h"
 
        integer i1,i2,j1,j2,k1,k2
        real tabres(i1:i2,j1:j2,k1:k2)
@@ -669,72 +669,72 @@
          northern_side = (nb == 2).AND.(ndir == 2)
 
       nsource=1
-      ndest=2 
+      ndest=2
 
-# ifdef AGRIF_OBC_SOUTH
+#  ifdef AGRIF_OBC_SOUTH
         if (southern_side) then
-#  ifdef MPI
+#   ifdef MPI
             if (.not.SOUTH_INTER) then
-#  endif
+#   endif
                    if (Agrif_NbStepint() == 0) then
                 Wnbq_south(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_south(i1:i2,j1:j2,0:N,nsource)
                 endif
                 Wnbq_south(i1:i2,j1:j2,0:N,nsource) = tabres
-#  ifdef MPI
+#   ifdef MPI
             endif
-#  endif
+#   endif
         endif
-# endif
-
-# ifdef AGRIF_OBC_NORTH
-        if (northern_side) then
-#  ifdef MPI
-            if (.not.NORTH_INTER) then
 #  endif
+
+#  ifdef AGRIF_OBC_NORTH
+        if (northern_side) then
+#   ifdef MPI
+            if (.not.NORTH_INTER) then
+#   endif
                    if (Agrif_NbStepint() == 0) then
                 Wnbq_north(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_north(i1:i2,j1:j2,0:N,nsource)
                endif
                 Wnbq_north(i1:i2,j1:j2,0:N,nsource) = tabres
-#  ifdef MPI
+#   ifdef MPI
             endif
-#  endif
+#   endif
         endif
-# endif
-
-# ifdef AGRIF_OBC_WEST
-        if (western_side) then
-#  ifdef MPI
-            if (.not.WEST_INTER) then
 #  endif
+
+#  ifdef AGRIF_OBC_WEST
+        if (western_side) then
+#   ifdef MPI
+            if (.not.WEST_INTER) then
+#   endif
                    if (Agrif_NbStepint() == 0) then
                 Wnbq_west(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_west(i1:i2,j1:j2,0:N,nsource)
                  endif
                 Wnbq_west(i1:i2,j1:j2,0:N,nsource) = tabres
-#  ifdef MPI
+#   ifdef MPI
             endif
-#  endif
+#   endif
         endif
-# endif
-
-# ifdef AGRIF_OBC_EAST
-        if (eastern_side) then
-#  ifdef MPI
-            if (.not.EAST_INTER) then
 #  endif
+
+#  ifdef AGRIF_OBC_EAST
+        if (eastern_side) then
+#   ifdef MPI
+            if (.not.EAST_INTER) then
+#   endif
                    if (Agrif_NbStepint() == 0) then
 
                 Wnbq_east(i1:i2,j1:j2,0:N,ndest)=
      &          Wnbq_east(i1:i2,j1:j2,0:N,nsource)
              endif
                 Wnbq_east(i1:i2,j1:j2,0:N,nsource) = tabres
-#  ifdef MPI
+#   ifdef MPI
             endif
-#  endif
+#   endif
         endif
-# endif
+#  endif
 
        endif
       return
@@ -748,35 +748,35 @@
 
       use AGRIF_Util
 !     implicit none
-# include "param.h"
-# include "grid.h"
-# include "ocean2d.h"
-# include "scalars.h"
-# include "climat.h"
-# include "boundary.h"
-# include "zoom.h"
-# include "coupling.h"
-# include "nbq.h"
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean2d.h"
+#  include "scalars.h"
+#  include "climat.h"
+#  include "boundary.h"
+#  include "zoom.h"
+#  include "coupling.h"
+#  include "nbq.h"
 
       integer  :: Istr,Iend,Jstr,Jend, i,j,k
       real     :: tinterp
       real     :: ainterp(2)
-      external :: rhointerp   
+      external :: rhointerp
 !
-# ifdef MPI
-#  define LOCALLM Lmmpi
-#  define LOCALMM Mmmpi
-# else
-#  define LOCALLM Lm
-#  define LOCALMM Mm
-# endif   
-!          
-# include "compute_auxiliary_bounds.h"
+#  ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+#  else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+#  endif
+!
+#  include "compute_auxiliary_bounds.h"
 !
       if(Agrif_NbStepint() == 0) then
-# ifdef MASKING
+#  ifdef MASKING
         Agrif_UseSpecialValue = .TRUE.
-# endif
+#  endif
         Agrif_SpecialValue = 0.
         tinterp=1.
         Call Agrif_Set_bc(rhonbqid,(/0,0/),
@@ -789,83 +789,83 @@
       ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
       ainterp(2)=1.- ainterp(1)
 
-# ifdef AGRIF_OBC_SOUTH
+#  ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        do k=1,N      
+        do k=1,N
           do i=IstrR,IendR
-#  if defined NBQ_FRC_BRY   
+#   if defined NBQ_FRC_BRY
             rnbqbry_south(i,k)=
-#  else
+#   else
             rnbqclm(i,Jstr-1,k)=
-#  endif
+#   endif
      &    (ainterp(1)*Rnbq_south(i,Jstr-1,k,1)+
      &     ainterp(2)*Rnbq_south(i,Jstr-1,k,2))
-#  ifdef MASKING     
+#   ifdef MASKING
      &    *rmask(i,Jstr-1)
-#  endif
+#   endif
           enddo
         enddo
       endif
-# endif
+#  endif
 
-# ifdef AGRIF_OBC_NORTH
-      if (NORTHERN_EDGE) then      
-        do k=1,N      
+#  ifdef AGRIF_OBC_NORTH
+      if (NORTHERN_EDGE) then
+        do k=1,N
           do i=IstrR,IendR
-#  if defined NBQ_FRC_BRY
+#   if defined NBQ_FRC_BRY
             rnbqbry_north(i,k)=
-#  else
+#   else
             rnbqclm(i,Jend+1,k)=
-#  endif
+#   endif
      &    (ainterp(1)*Rnbq_north(i,Jend+1,k,1)+
-     &     ainterp(2)*Rnbq_north(i,Jend+1,k,2))     
-#  ifdef MASKING     
+     &     ainterp(2)*Rnbq_north(i,Jend+1,k,2))
+#   ifdef MASKING
      &    *rmask(i,Jend+1)
-#  endif
-          enddo
-        enddo
-      endif      
-# endif
-
-# ifdef AGRIF_OBC_WEST
-      if (WESTERN_EDGE) then      
-        do k=1,N      
-          do j=JstrR,JendR
-#  if defined NBQ_FRC_BRY
-            rnbqbry_west(j,k)=
-#  else
-            rnbqclm(Istr-1,j,k)=
-#  endif
-     &    (ainterp(1)*Rnbq_west(Istr-1,j,k,1)+
-     &     ainterp(2)*Rnbq_west(Istr-1,j,k,2))  
-#  ifdef MASKING     
-     &    *rmask(Istr-1,j)
-#  endif
-          enddo
-        enddo
-      endif      
-# endif
-
-# ifdef AGRIF_OBC_EAST
-      if (EASTERN_EDGE) then      
-        do k=1,N      
-          do j=JstrR,JendR
-#  if defined NBQ_FRC_BRY  
-            rnbqbry_east(j,k)=
-#  else
-            rnbqclm(Iend+1,j,k)=
-#  endif
-     &    (ainterp(1)*Rnbq_east(Iend+1,j,k,1)+
-     &     ainterp(2)*Rnbq_east(Iend+1,j,k,2))      
-#  ifdef MASKING     
-     &    *rmask(Iend+1,j)
-#  endif
+#   endif
           enddo
         enddo
       endif
-# endif
+#  endif
 
-      return       
+#  ifdef AGRIF_OBC_WEST
+      if (WESTERN_EDGE) then
+        do k=1,N
+          do j=JstrR,JendR
+#   if defined NBQ_FRC_BRY
+            rnbqbry_west(j,k)=
+#   else
+            rnbqclm(Istr-1,j,k)=
+#   endif
+     &    (ainterp(1)*Rnbq_west(Istr-1,j,k,1)+
+     &     ainterp(2)*Rnbq_west(Istr-1,j,k,2))
+#   ifdef MASKING
+     &    *rmask(Istr-1,j)
+#   endif
+          enddo
+        enddo
+      endif
+#  endif
+
+#  ifdef AGRIF_OBC_EAST
+      if (EASTERN_EDGE) then
+        do k=1,N
+          do j=JstrR,JendR
+#   if defined NBQ_FRC_BRY
+            rnbqbry_east(j,k)=
+#   else
+            rnbqclm(Iend+1,j,k)=
+#   endif
+     &    (ainterp(1)*Rnbq_east(Iend+1,j,k,1)+
+     &     ainterp(2)*Rnbq_east(Iend+1,j,k,2))
+#   ifdef MASKING
+     &    *rmask(Iend+1,j)
+#   endif
+          enddo
+        enddo
+      endif
+#  endif
+
+      return
       end
 
 !====================================================================
@@ -873,11 +873,11 @@
       subroutine rhointerp(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
       implicit none
-# include "param.h"
-# include "ocean3d.h"
-# include "scalars.h"
-# include "nbq.h"
-# include "zoom.h"
+#  include "param.h"
+#  include "ocean3d.h"
+#  include "scalars.h"
+#  include "nbq.h"
+#  include "zoom.h"
 
        integer :: i1,i2,j1,j2,k1,k2
        real    :: tabres(i1:i2,j1:j2,k1:k2)
@@ -899,7 +899,7 @@
       if (before) then
 
         tabres(i1:i2,j1:j2,k1:k2) = rho_nbq(i1:i2,j1:j2,k1:k2)
-         
+
       else
 
         western_side  = (nb == 1).AND.(ndir == 1)
@@ -908,79 +908,79 @@
         northern_side = (nb == 2).AND.(ndir == 2)
 
         nsource=1
-        ndest=2 
+        ndest=2
 
-# ifdef AGRIF_OBC_SOUTH
+#  ifdef AGRIF_OBC_SOUTH
         if (southern_side) then
-#  ifdef MPI
+#   ifdef MPI
           if (.not.SOUTH_INTER) then
-#  endif
+#   endif
             if (Agrif_NbStepint() == 0) then
               Rnbq_south(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_south(i1:i2,j1:j2,1:N,nsource)
             endif
             Rnbq_south(i1:i2,j1:j2,1:N,nsource) = tabres
-#  ifdef MPI
+#   ifdef MPI
           endif
-#  endif
+#   endif
         endif
-# endif
-
-# ifdef AGRIF_OBC_NORTH
-        if (northern_side) then
-#  ifdef MPI
-          if (.not.NORTH_INTER) then
 #  endif
+
+#  ifdef AGRIF_OBC_NORTH
+        if (northern_side) then
+#   ifdef MPI
+          if (.not.NORTH_INTER) then
+#   endif
             if (Agrif_NbStepint() == 0) then
               Rnbq_north(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_north(i1:i2,j1:j2,1:N,nsource)
             endif
             Rnbq_north(i1:i2,j1:j2,1:N,nsource) = tabres
-#  ifdef MPI
+#   ifdef MPI
           endif
-#  endif
+#   endif
         endif
-# endif
-
-# ifdef AGRIF_OBC_WEST
-        if (western_side) then
-#  ifdef MPI
-          if (.not.WEST_INTER) then
 #  endif
+
+#  ifdef AGRIF_OBC_WEST
+        if (western_side) then
+#   ifdef MPI
+          if (.not.WEST_INTER) then
+#   endif
             if (Agrif_NbStepint() == 0) then
               Rnbq_west(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_west(i1:i2,j1:j2,1:N,nsource)
             endif
             Rnbq_west(i1:i2,j1:j2,1:N,nsource) = tabres
-#  ifdef MPI
+#   ifdef MPI
           endif
-#  endif
+#   endif
         endif
-# endif
-
-# ifdef AGRIF_OBC_EAST
-        if (eastern_side) then
-#  ifdef MPI
-          if (.not.EAST_INTER) then
 #  endif
+
+#  ifdef AGRIF_OBC_EAST
+        if (eastern_side) then
+#   ifdef MPI
+          if (.not.EAST_INTER) then
+#   endif
             if (Agrif_NbStepint() == 0) then
 
               Rnbq_east(i1:i2,j1:j2,1:N,ndest)=
      &        Rnbq_east(i1:i2,j1:j2,1:N,nsource)
             endif
             Rnbq_east(i1:i2,j1:j2,1:N,nsource) = tabres
-#  ifdef MPI
+#   ifdef MPI
           endif
-#  endif
+#   endif
         endif
-# endif
+#  endif
 
       endif
 
       return
       end
 
-# endif /* NBQ */    
+# endif /* NBQ */
 !
 #else
       subroutine zoombc_3Dfast_empty()

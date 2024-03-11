@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -52,7 +52,7 @@
      &          D1=-0.933746E-06, D2=+0.791325E-08, E0=-0.164759E-06,
      &          F0=-0.251520E-11, G0=+0.512857E-12, H0=-0.302285E-13,
      &          Smean=35.0)
-# define tind nstp
+#  define tind nstp
 !
 !  Compute the ratio of thermal expansion
 !  and saline contraction coefficients.

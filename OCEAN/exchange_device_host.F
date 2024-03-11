@@ -34,51 +34,51 @@
 !
           subroutine update_device_1D(tab)
           real,dimension(:) :: tab
-#include "param.h"
-#include "scalars.h"
+# include "param.h"
+# include "scalars.h"
           integer tile, subs, trd
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-#ifdef MPI
+# ifdef MPI
 !$acc set device_num(my_acc_device)
-#else
+# else
 !$acc set device_num(tile)
-#endif
+# endif
 !$acc update if(compute_on_device) device(tab)
       enddo
           end subroutine update_device_1D
 
           subroutine update_device_2D(tab)
           real,dimension(:,:) :: tab
-#include "param.h"
-#include "scalars.h"
+# include "param.h"
+# include "scalars.h"
           integer tile, subs, trd
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-#ifdef MPI
+# ifdef MPI
 !$acc set device_num(my_acc_device)
-#else
+# else
 !$acc set device_num(tile)
-#endif
+# endif
 !$acc update if(compute_on_device) device(tab)
       enddo
           end subroutine update_device_2D
 
           subroutine update_device_3D(tab)
           real,dimension(:,:,:) :: tab
-#include "param.h"
-#include "scalars.h"
+# include "param.h"
+# include "scalars.h"
           integer tile, subs, trd
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-#ifdef MPI
+# ifdef MPI
 !$acc set device_num(my_acc_device)
-#else
+# else
 !$acc set device_num(tile)
-#endif
+# endif
 !$acc update if(compute_on_device) device(tab)
       enddo
           end subroutine update_device_3D
@@ -105,10 +105,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
           subroutine do_update_host_2D(tile,tab)
           implicit none
           integer tile
-#include "param.h"
+# include "param.h"
           real,dimension(GLOBAL_2D_ARRAY) :: tab
 C$    integer omp_get_thread_num
-#include "compute_tile_bounds.h"
+# include "compute_tile_bounds.h"
 
           call do_update_host_2D_tile(Istr, Iend, Jstr, Jend, tab)
 
@@ -117,11 +117,11 @@ C$    integer omp_get_thread_num
 
           subroutine do_update_host_2D_tile(Istr, Iend, Jstr, Jend, tab)
           implicit none
-#include "param.h"
-#include "scalars.h"
+# include "param.h"
+# include "scalars.h"
           integer Istr, Iend, Jstr, Jend
           real,dimension(GLOBAL_2D_ARRAY) :: tab
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 
 !$acc update if(compute_on_device) host(tab(IstrR:IendR,JstrR:JendR))
 
@@ -145,10 +145,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
           subroutine do_update_host_3D(tile,tab)
           implicit none
           integer tile
-#include "param.h"
+# include "param.h"
           real,dimension(GLOBAL_2D_ARRAY,N) :: tab
 C$    integer omp_get_thread_num
-#include "compute_tile_bounds.h"
+# include "compute_tile_bounds.h"
 
           call do_update_host_3D_tile(Istr, Iend, Jstr, Jend, tab)
 
@@ -157,11 +157,11 @@ C$    integer omp_get_thread_num
 
           subroutine do_update_host_3D_tile(Istr, Iend, Jstr, Jend, tab)
           implicit none
-#include "param.h"
-#include "scalars.h"
+# include "param.h"
+# include "scalars.h"
           integer Istr, Iend, Jstr, Jend
           real,dimension(GLOBAL_2D_ARRAY,N) :: tab
-#include "compute_auxiliary_bounds.h"
+# include "compute_auxiliary_bounds.h"
 
 !$acc update if(compute_on_device)
 !$acc&       host(tab(IstrR:IendR,JstrR:JendR,1:N))

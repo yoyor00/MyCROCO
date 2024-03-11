@@ -71,9 +71,9 @@
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
-#ifdef PSOURCE_MASS
+# ifdef PSOURCE_MASS
       integer is,iis,jjs
-#endif
+# endif
 # include "param.h"
 
 # include "nbq.h" 
@@ -97,9 +97,9 @@
 # include "ocean3d.h"
 # include "scalars.h"
 # include "openacc_work.h"
-#ifdef PSOURCE_MASS
-# include "sources.h"
-#endif!
+# ifdef PSOURCE_MASS
+#  include "sources.h"
+# endif
 # ifdef MPI
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
@@ -127,21 +127,21 @@
 ! 
 !$acc kernels if(compute_on_device) default(present)
 
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          CF(i,j)=om_r(i,j)*on_r(i,j)/dt
-        enddo
-      enddo
-
-      do k=1,N
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            romega(i,j,k) = -Huon(i+1,j,k)+Huon(i,j,k)
-     &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
-     &                 -(Hz(i,j,k)-Hz_bak(i,j,k))*CF(i,j)
-          enddo
-        enddo
-      enddo
+  !    do j=Jstr,Jend
+  !      do i=Istr,Iend
+  !        CF(i,j)=om_r(i,j)*on_r(i,j)/dt
+  !      enddo
+  !    enddo
+  !RB loop below change the results
+  !    do k=1,N
+  !      do j=Jstr,Jend
+  !        do i=Istr,Iend
+  !          romega(i,j,k) = -Huon(i+1,j,k)+Huon(i,j,k)
+  !   &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
+  !   &                 -(Hz(i,j,k)-Hz_bak(i,j,k))*CF(i,j)
+  !        enddo
+  !      enddo
+  !    enddo
 
 !      do j=Jstr,Jend
        DOLOOP2D(Istr,Iend,Jstr,Jend)
@@ -161,7 +161,11 @@
         enddo
         do k=1,N,+1
           do i=Istr,Iend
-            FC(i,k)=FC(i,k-1) + romega(i,j,k)
+            !FC(i,k)=FC(i,k-1) + romega(i,j,k)
+            FC(i,k)=FC(i,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
+     &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
+     &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
+     &                                  *om_r(i,j)*on_r(i,j)
             DC(i,k)=DC(i,k-1) + Hz(i,j,k)
 !
 !---------------------------------------------------------
@@ -184,7 +188,7 @@
 !  (Jupiter Intelligence Inc.) and J. Wilkin
 !
 !---------------------------------------------------------
-#ifdef PSOURCE_MASS
+# ifdef PSOURCE_MASS
       do is=1,Nsrc
 #  ifdef MPI
         iis=Isrc_mpi(is,mynode)
@@ -207,7 +211,7 @@
           enddo 
         endif
       enddo
-#endif
+# endif
 !
 !---------------------------------------------------------
 !  Subtract vertical velocities of moving S-coordinate 
@@ -229,7 +233,7 @@
 # endif
         enddo
 !
-#ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
 !---------------------------------------------------------
 ! Compute the explicit and implicit components of Omega
 ! based on local Courant number Cu_adv
@@ -260,7 +264,7 @@
              We(i,j,k) = (1.-cff)*We(i,j,k)
           enddo
         enddo
-#endif
+# endif
 
       ! enddo  ! j loop
         ENDDOLOOP2D
@@ -316,33 +320,33 @@
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
           We(0,0,k)=We(1,1,k)
-#  ifdef VADV_ADAPT_IMP           
+#   ifdef VADV_ADAPT_IMP           
           Wi(0,0,k)=Wi(1,1,k)
-#  endif           
+#   endif           
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
           We(0,LOCALMM+1,k)=We(1,LOCALMM,k)
-#  ifdef VADV_ADAPT_IMP   
+#   ifdef VADV_ADAPT_IMP   
           Wi(0,LOCALMM+1,k)=Wi(1,LOCALMM,k)        
-#  endif           
+#   endif           
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
           We(LOCALLM+1,0,k)=We(LOCALLM,1,k)
-#  ifdef VADV_ADAPT_IMP 
+#   ifdef VADV_ADAPT_IMP 
           Wi(LOCALLM+1,0,k)=Wi(LOCALLM,1,k)
-#  endif 
+#   endif 
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
           We(LOCALLM+1,LOCALMM+1,k)=We(LOCALLM,LOCALMM,k)
-#  ifdef VADV_ADAPT_IMP           
+#   ifdef VADV_ADAPT_IMP           
           Wi(LOCALLM+1,LOCALMM+1,k)=Wi(LOCALLM,LOCALMM,k)
-#  endif          
+#   endif          
         enddo
       endif
 #  endif

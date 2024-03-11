@@ -222,8 +222,14 @@
 # include "climat.h"
 # include "boundary.h"
 # include "sources.h"
+# if defined TIDES
+#  include "tides.h"
+# endif
 # if defined WKB_WWAVE
 #  include "wkb_wwave.h"
+# endif
+# if defined BBL
+#  include "bbl.h"
 # endif
 # if defined NBQ
 #  include "nbq.h"

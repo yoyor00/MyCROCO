@@ -21,7 +21,7 @@
 
 #  if defined MUSTANG && defined key_sand2D
       USE comsubstance, ONLY : l_subs2D
-# endif
+#  endif
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
 #  include "param.h"
@@ -163,10 +163,10 @@
       real  TRIADS1,TRIADS2,TRIADS3,TRIADS4,sumX,sumE,sig,
      &      SLOPEXQ1,SLOPEXQ2,SLOPEXQ3,SLOPEXQ4,
      &      SLOPEYQ1,SLOPEYQ2,SLOPEYQ3,SLOPEYQ4
-# ifndef TS_MIX_S
+#  ifndef TS_MIX_S
       real,dimension(0:4),parameter ::
      &       wgt=(/0.,1.,0.5,0.33333333333,0.25/)
-# endif
+#  endif
 # endif
 # include "grid.h"
 # include "ocean3d.h"
@@ -184,7 +184,7 @@
 # ifdef AGRIF
 #  include "zoom.h"
 # endif
-#include "openacc_work.h"
+# include "openacc_work.h"
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -468,7 +468,7 @@
 #  ifdef TS_SPONGE_IMP
           Akz (i,j,0 )= 0.0   
           Akz (i,j,N )= 0.0   
-#endif
+#  endif
         enddo
       enddo
 
@@ -663,7 +663,7 @@
         enddo
 # endif
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -685,16 +685,16 @@
               cff=cff1/Hz(i,j,k)
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-# ifdef TS_SPONGE_IMP
+#  ifdef TS_SPONGE_IMP
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
-# endif
+#  endif
 
 
-# ifdef DIAGNOSTICS_TSVAR
+#  ifdef DIAGNOSTICS_TSVAR
 
-# include "finalize_diagnostics_tsadv.h"
+#   include "finalize_diagnostics_tsadv.h"
 
-# endif
+#  endif
 
             enddo
           enddo

@@ -34,8 +34,8 @@
 !        PRIVATE_SCRATCH_2D_ARRAY... 
 #if defined ONLINE_ANALYSIS && defined SOLVE3D
 
-      subroutine scal0d_oa_out_loc ( 
-     &                               scal0d_re, scal0d_im
+      subroutine scal0d_oa_out_loc (imm 
+     &                             , scal0d_re, scal0d_im
      &                             , vnam_oa_r, vnam_oa_i
      &                             , per0d
      &                             , pnam_oa
@@ -46,24 +46,28 @@
      !& ,scal0d_oa, scal0d_cr,verbose_oa, io_hist, directory_out_oa
      !& ,scalogram_analysis
 
-      use module_interface_oa, only : scal0d_oa, per0d_oa
+      use module_interface_oa, only : !scal0d_oa, per0d_oa
+     &  mdl, model_mode_loc
      & ,tvar_oa , tgv_oa, tgvnam_oa, nzvc_oa, nzupd0d_oa
+     & ,nper_sclg_max, pervnam
      & ,nsclg_loc, v2locsclg, verbose_oa
       use module_oa_variables,  only : tv_oa     
-     & ,tupd_oa, tv_sclg_oa
+     & ,tupd_oa, tv_sclg_oa, cnb_oa
       use module_oa_periode,    only : begc_oa, tvc_oa, tc_oa
-     & ,nzc_oa, swt_wfpf_oa, nper_sclg_max, nper_sclg
+     & ,nzc_oa, swt_wfpf_oa, nper_sclg
       !use module_oa_space,      only : ptij_oa
       use scalars
       implicit none
 ! >> Include with variable declaration
 ! # include "param.h"
-      real(8), intent(inout) :: scal0d_re(1:nper_sclg_max,nsclg_loc)
-     &                         ,scal0d_im(1:nper_sclg_max,nsclg_loc)
-     &                         ,per0d    (1:nper_sclg_max,nsclg_loc)
+      integer, intent(in) :: imm 
+      real(8), intent(inout) :: 
+     &        scal0d_re(1:nper_sclg_max(imm),nsclg_loc(imm))
+     &       ,scal0d_im(1:nper_sclg_max(imm),nsclg_loc(imm))
+     &       ,per0d    (1:nper_sclg_max(imm),nsclg_loc(imm))
 
       logical, intent(inout) :: if_imag_part
-      character(len=9),  intent(inout)  :: vnam_oa_r, vnam_oa_i 
+      character(len=9), intent(inout)   :: vnam_oa_r, vnam_oa_i 
       character(len=5), intent(inout)   :: pnam_oa 
       character(len=7), intent(inout)   :: inam_oa, jnam_oa
      &                                    ,knam_oa
@@ -73,14 +77,19 @@
       integer :: ip, ivc, io_node
       integer, parameter :: verbl=6
 
+      type(model_mode_loc), pointer :: pdl => null()
+
+
       if_imag_part = .false.
-      isclg=min(1,nsclg_loc)
-      scal0d_re(1:nper_sclg_max,isclg:nsclg_loc) = 0. 
-      scal0d_im(1:nper_sclg_max,isclg:nsclg_loc) = 0.
-      per0d    (1:nper_sclg_max,isclg:nsclg_loc) = 0.
+      isclg=min(1,nsclg_loc(imm))
+      scal0d_re(1:nper_sclg_max(imm),isclg:nsclg_loc(imm)) = 0. 
+      scal0d_im(1:nper_sclg_max(imm),isclg:nsclg_loc(imm)) = 0.
+      per0d    (1:nper_sclg_max(imm),isclg:nsclg_loc(imm)) = 0.
 
       oa_config_loop : do ic = 1, nzc_oa
-      
+
+        ! BLXD TODO debugging test if cppkeys      
+        ! ==>
         ivc = 0
         do iv = begc_oa(ic), begc_oa(ic+1) -1
             ivc = ivc + 1
@@ -90,36 +99,51 @@
            stop
            !MPI_master_only write(stdout,*) 'Expected total # of var nzvc_oa( tc_oa(ic) ) ',nzvc_oa( tc_oa(ic) )
         end if oa_stop1
+        ! <==
 
         !could enable to retrieve a name, requires to use tupd_oa
         ! # of variable per configuration ic
         ! do iv = 1, nzvc_oa( tc_oa(ic) )
         ivc = 0
         the_oa_var_loop : do iv = begc_oa(ic), begc_oa(ic+1) -1
+
+          is_a_scalogram : if ( tv_sclg_oa(iv) 
+     &                  .and. ( cnb_oa(iv)==imm ) ) then 
+
+        !ivc = nzvc_oa( tc_oa(ic) )
+
            ivc = ivc + 1
+ 
+        ! BLXD TODO debugging test if cppkeys      
+        ! ==>
         oa_stop2 : if ( 
      &     tvar_oa( tc_oa(ic), tvc_oa(ic), ivc ) /= tupd_oa(iv) ) 
      &     then
            MPI_master_only write(stdout,fmt='(a)') '...OA-ERR tupd_oa'
            stop
         end if oa_stop2
+        ! <==
 
 #ifdef OA_TRACES_XIOS             
+        if ( v2locsclg(iv)/=-99 ) then
         write(*,fmt='(a,4(i3))') 
      &      '>><<OA-Scalogram ALL iv node/ic/iv/begc_oa '
      &      ,mynode,ic,iv,begc_oa(ic),(begc_oa(ic+1)-1)
-#endif
-        !ivc = nzvc_oa( tc_oa(ic) )
-
-#ifdef OA_TRACES && ( MILES || IGW)
-        call traces_oa1(verbose_oa)
+        endif
 #endif
 
-          is_a_scalogram : if ( tv_sclg_oa(iv) ) then 
+#ifdef OA_TRACES
+#if defined MILES || defined IGW || defined TANK
+        if ( v2locsclg(iv)/=-99 ) call traces_oa1(verbose_oa)
+#endif
+#endif
 
                   ! iv <-> ONE SCALOGRAM 
                   ! - complex 2D array scal0d_oa( 1: nper_sclg_max, tupd_oa(iv))
                   ! - dumped in 1D array w_re(1: nper_sclg_max)
+
+
+        pdl   => mdl(imm) 
 
 #ifdef OA_TRACES_XIOS             
             write(*,fmt='(a,3(i3))') 
@@ -147,11 +171,13 @@
 #endif
                        scal0d_re(ip,v2locsclg(iv)) = 
      & REAL(
-     & DBLE( scal0d_oa( ip, v2locsclg(iv) )))
+     & DBLE( 
+     & pdl%scal0d_oa( ip, v2locsclg(iv) )))
 
                        scal0d_im(ip,v2locsclg(iv)) = 
      & REAL(
-     & DIMAG( scal0d_oa( ip, v2locsclg(iv) )))
+     & DIMAG( 
+     & pdl%scal0d_oa( ip, v2locsclg(iv) )))
 
 
         enddo loop_per_re_im
@@ -168,7 +194,7 @@
         if ( v2locsclg(iv) /= -99 ) then
         loop_per_re : do ip=1,nper_sclg(iv)
                        scal0d_re(ip,v2locsclg(iv)) = 
-     &  scal0d_oa(ip, v2locsclg(iv) )
+     &  pdl%scal0d_oa(ip, v2locsclg(iv) )
         enddo loop_per_re
         endif
 
@@ -182,25 +208,27 @@
         loop_for_per_axis : do ip=1,nper_sclg(iv)
 
                        per0d(ip,v2locsclg(iv)) = 
-     &        per0d_oa( ip, v2locsclg(iv) )
+     &  pdl%per0d_oa( ip, v2locsclg(iv) )
 
 #ifdef OA_TRACES_XIOS             
             MPI_master_only write(stdout,fmt='(a,i3,f16.2)') 
      &      '...OA-Scalogram Period axis ',ip,per0d(ip,v2locsclg(iv))
 #endif
 
-#ifdef OA_TRACES && ( MILES || IGW)
+#ifdef OA_TRACES
+#if defined MILES || defined IGW || defined TANK
                        if(verbose_oa>=verbl) then
                        call traces2_oa_scal0d(ip) 
                        !call traces_oa_scal0d(ip) 
                        endif
+#endif
 #endif
 
         enddo loop_for_per_axis
         endif
 
             pnam_oa = get_pnam_full( pnamfmt='(a5)'
-     &              ,pnamdp='perv_',verbose=verbose_oa )
+     &              ,pnamdp=pervnam(imm),verbose=verbose_oa )
 
        inam_oa = get_vnam_full( vnamfmt='(a5,a1)'
      &              ,vnams='i',verbose=verbose_oa)
@@ -208,6 +236,8 @@
      &              ,vnams='j',verbose=verbose_oa)
        knam_oa = get_vnam_full( vnamfmt='(a5,a1)'
      &              ,vnams='k',verbose=verbose_oa)
+
+            pdl => null()
 
           endif is_a_scalogram
 
@@ -221,7 +251,7 @@
 
         implicit none
         integer, intent(in)    :: verbose
-        if ( verbose >=15 ) then
+        if ( verbose >=6 ) then
             MPI_master_only write(stdout,fmt='(a13,(3(i3.3,1x)))')     
      &     'Cfg-#var-Var ',ic,ivc,iv
         end if
@@ -238,8 +268,8 @@
                 write (io_node,fmt='(a,i3.3,2(1x,ES22.15E2))') 
      &          'ip, scal0d_oa = '
      &         ,ip
-     &         ,REAL(DBLE ( scal0d_oa(ip,v2locsclg(iv)) ))
-     &         ,REAL(DIMAG( scal0d_oa(ip,v2locsclg(iv)) ))
+     &         ,REAL(DBLE ( pdl%scal0d_oa(ip,v2locsclg(iv)) ))
+     &         ,REAL(DIMAG( pdl%scal0d_oa(ip,v2locsclg(iv)) ))
                
                io_node = (20+ip)*1000+mynode
                write (io_node,fmt='(a,i3.3,2(1x,ES22.15E2))') 
@@ -261,9 +291,9 @@
                 io_node = (10+ip)*1000+mynode
                 write (io_node,fmt='(a,f16.2,2(1x,ES22.15E2))') 
      &          'ip, scal0d_oa = '
-     &         ,per0d_oa(             ip,v2locsclg(iv))
-     &         ,REAL(DBLE ( scal0d_oa(ip,v2locsclg(iv)) ))
-     &         ,REAL(DIMAG( scal0d_oa(ip,v2locsclg(iv)) ))
+     &         ,pdl%per0d_oa(             ip,v2locsclg(iv))
+     &         ,REAL(DBLE ( pdl%scal0d_oa(ip,v2locsclg(iv)) ))
+     &         ,REAL(DIMAG( pdl%scal0d_oa(ip,v2locsclg(iv)) ))
                
                io_node = (20+ip)*1000+mynode
                write (io_node,fmt='(a,f16.2,2(1x,ES22.15E2))') 

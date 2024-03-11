@@ -61,7 +61,7 @@ C$    integer trd, omp_get_thread_num
 !    Using param.h, MPI subdom. (or not) and tile var. 
 C$      trd=omp_get_thread_num()
 
-      if ( icall==0 ) then
+      if ( icall==-1 ) then
 
         call init_online_spectral_diags_tile (Istr,Iend
      &                                       ,Jstr,Jend
@@ -69,11 +69,13 @@ C$      trd=omp_get_thread_num()
 ! No need of any openMP BARRIER since included at the end 
 ! of init_online_spectral_diags_tile
 
-      else if ( icall==1 ) then
+! Select Fast/Slow mode with icall
+      !else if ( icall==0 ) then
+      else if ( (icall==0) .or. (icall==1) ) then
 
-      !endif
-      !if ( icall==0 .or. icall==1 ) then
-        call run_online_spectral_diags_tile (Istr,Iend,Jstr,Jend,tile)
+        call run_online_spectral_diags_tile (Istr,Iend,Jstr,Jend,tile
+     &                                                     ,icall)
+
       end if
       return
       end subroutine online_spectral_diags
@@ -375,7 +377,7 @@ C$OMP BARRIER
 #ifdef ONLINE_ANALYSIS
 
       subroutine run_online_spectral_diags_tile (Istr,Iend,Jstr,Jend
-     &                                          ,tile)
+     &                                          ,tile,ichoix)
 !
 !
 !#ifdef NBQ
@@ -383,6 +385,8 @@ C$OMP BARRIER
 !      use module_nbq
 !#endif
       use module_interface_oa, only : main_oa, scalogram_analysis
+     &                               ,nmsimult_oa_verif_max
+
       use module_tile_oa, only : deallocate_tile_space_str
      &                          ,deallocate_tile_sclg_str
      &                          ,deallocate_tile_test_str
@@ -398,8 +402,9 @@ C$OMP BARRIER
       implicit none
       integer, intent(in) :: Istr, Iend, Jstr, Jend
       integer, intent(in) :: tile
+      integer, intent(in) :: ichoix
 ! Local variables
-      integer :: i,j,k    
+      integer :: i,j,k,iic_oa    
 
 ! >> Include with variable declaration
 # include "param.h"
@@ -429,18 +434,30 @@ C$OMP BARRIER
 !      see st%imin,st%imax,...
 !      TODO check if removing imin,imax,... arguments 
 
+
 !$OMP MASTER
 #ifdef OA_TRACES
          print*,
-     &   'eee ENTERING main_oa iic/node ',iic,mynode
+     &   'eee ENTERING main_oa iic/iif/node ',iic,iif,mynode
 #endif
 !$OMP END MASTER
 
 
+!     BLXD TODO For isopycne tracking : 
+!     move call to main_oa within ichoix mode test
+!     with proper density anomaly args
+
+!     Slow/Fast mode
+      if ( ichoix==0 ) then
+        iic_oa = iic
+      else if ( ichoix==1 ) then
+        iic_oa = iic*ndtfast+iif
+      endif
+
       call main_oa( tile=tile+1
-     & ,ichoix=0
+     & ,ichoix=ichoix
      & ,ivar_m=0
-     & ,iic_oa=iic
+     & ,iic_oa=iic_oa
      & ,imin=Istr-2, imax=Iend+2
      & ,jmin=Jstr-2, jmax=Jend+2
      & ,kmin=1,    kmax=N
@@ -451,9 +468,15 @@ C$OMP BARRIER
 !$OMP MASTER
 #ifdef OA_TRACES
          print*,
-     &   'ooo OUT OF main_oa iic/node ',iic,mynode
+     &   'ooo OUT OF main_oa iic/iif/node ',iic,iif,mynode
 #endif
 !$OMP END MASTER
+
+      if ( mynode.eq.0 ) then
+         print*,
+     &   '>> nmsimult_oa_verif_max,iic,iif,mynode << '
+     &     ,nmsimult_oa_verif_max,iic,iif,mynode
+      endif
 
 ! At the very end icc = ntimes
 ! BLXD omp_barrier should be either here OR at the end of main_oa
@@ -479,5 +502,3 @@ C$OMP BARRIER
       subroutine run_online_spectral_diags_empty
       end subroutine run_online_spectral_diags_empty
 #endif /* ONLINE_ANALYSIS */
-
-

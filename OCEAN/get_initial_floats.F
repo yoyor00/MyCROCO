@@ -2,40 +2,40 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #ifdef FLOATS
-                                   ! Read initial conditions for 
-      subroutine get_initial_floats! the floats variables from 
+                                   ! Read initial conditions for
+      subroutine get_initial_floats! the floats variables from
                                    ! NetCDF initialization file.
       implicit none
-#include "param.h"
-#include "scalars.h"
-#include "ncscrum.h"
-#include "netcdf.inc"
-#include "floats.h"
-      real bufftrack(1:6,NFT+1,Mfloats) 
+# include "param.h"
+# include "scalars.h"
+# include "ncscrum.h"
+# include "netcdf.inc"
+# include "floats.h"
+      real bufftrack(1:6,NFT+1,Mfloats)
       integer i, j, ncid, indx, varid,  ierr, lstr, lvar, lenstr
      &    , start(2), count(2), ibuff(Mfloats), checkdims, temp(4)
      &    , startTinfo(3), countTinfo(3)
      &    , starttrack(4), counttrack(4)
 
 !
-! Open initial conditions netCDF file for floats reading. 
+! Open initial conditions netCDF file for floats reading.
 ! set record from which the data will be read.
 !
 ! The record is set as follows: (1) if only one time record is
 ! available in the file, then that record is used REGARDLESS of
 ! value of nrrec supplied from the parameter file; (2) if the
 ! file has multiple records and nrrec is positive, then nrrec is
-! used, provided that nrrec is within the available records; 
-! (3) if the file has multiple records and nrrec<0, then THE LAST 
+! used, provided that nrrec is within the available records;
+! (3) if the file has multiple records and nrrec<0, then THE LAST
 ! available record is used.
 !
       if (may_day_flag.ne.0) return      !-->  EXIT
@@ -63,8 +63,8 @@ c     endif
       ierr=nf_get_var1_int (ncid, varid, indx, nfloats)
       if (ierr .ne. nf_noerr) then
           write (stdout,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
-     &            'ERROR: Cannot read nfloats in netCDF file ', 
-     &             ininame(1:lstr),'.' 
+     &            'ERROR: Cannot read nfloats in netCDF file ',
+     &             ininame(1:lstr),'.'
               goto 99                                    !--> ERROR
       endif
 
@@ -79,7 +79,7 @@ c     endif
           countTinfo(1)=5
           countTinfo(2)=nfloats
           countTinfo(3)=1
-          ierr=nf_get_vara_FTYPE (ncid, varid, startTinfo, 
+          ierr=nf_get_vara_FTYPE (ncid, varid, startTinfo,
      &                          countTinfo, Tinfo)
           if (ierr .ne. nf_noerr) then
               write (stdout,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
@@ -121,14 +121,14 @@ c     endif
           counttrack(3)=nfloats
           counttrack(4)=1
 
-          ierr=nf_get_vara_FTYPE (ncid, varid, starttrack, 
+          ierr=nf_get_vara_FTYPE (ncid, varid, starttrack,
      &                          counttrack, bufftrack)
 
           if (ierr .eq. nf_noerr) then
 
-              temp(1)=nfp1  ! IMPORTANT: takes into account 
-              temp(2)=nf    ! that these time step indices 
-              temp(3)=nfm1  ! will be advanced once before 
+              temp(1)=nfp1  ! IMPORTANT: takes into account
+              temp(2)=nf    ! that these time step indices
+              temp(3)=nfm1  ! will be advanced once before
               temp(4)=nfm2  ! 1rst computation
 
               do 10 j=1,nfloats
@@ -157,7 +157,7 @@ c     endif
       return
       end
 
-#else 
+#else
 
       subroutine get_initial_floats_empty
       return

@@ -2,22 +2,22 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
-#if !defined SOLVE3D 
+#if !defined SOLVE3D
       subroutine def_grid_2d (ncid, r2dgrd, u2dgrd, v2dgrd)
 !
-! Define grid variables in output NetCDF file for 2D configuration, 
-! which may be restart, history, averages, etc...  
+! Define grid variables in output NetCDF file for 2D configuration,
+! which may be restart, history, averages, etc...
 !
 ! Arguments: ncid    NetCDF unit-ID of NetCDF file, which must be
-!                            already opened and in definition mode; 
+!                            already opened and in definition mode;
 !            r2dgrd  integer array of size 2, which contains NetCDF
 !                        IDs for dimensions 'xi_rho' and 'eta_rho'.
 !            v2dgrd  integer array of size 2, which contains NetCDF
@@ -28,9 +28,9 @@
       integer ncid, r2dgrd(2), u2dgrd(2), v2dgrd(2)
      &      , nf_ftype, varid, ierr
       character(len=30) strtmp
-#include "param.h"
-#include "ncscrum.h"
-#include "netcdf.inc"
+# include "param.h"
+# include "ncscrum.h"
+# include "netcdf.inc"
 !
 ! Decide about precision:
 !
@@ -39,7 +39,7 @@
       else
         nf_ftype=NF_FOUT
       endif
-!   
+!
 !
 ! Grid type switch: Spherical or Cartesian.
 !
@@ -61,7 +61,7 @@
      &                  'domain length in the ETA-direction')
       ierr=nf_put_att_text (ncid, varid, 'units', 5, 'meter')
 
-#ifdef WET_DRY
+# ifdef WET_DRY
 !
 ! Critical Depth for Drying cells
 !
@@ -69,7 +69,7 @@
       ierr=nf_put_att_text (ncid, varid, 'long_name',   31,
      &                   'Critical Depth for Drying cells')
       ierr=nf_put_att_text (ncid, varid, 'units', 5, 'meter')
-#endif
+# endif
 !
 ! Variable-dimensions : xi_rho, eta_rho, eta_v, xi_u
 !
@@ -86,23 +86,23 @@
       ierr=nf_def_var (ncid, 'xi_u', nf_ftype, 1, u2dgrd(1), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   37,
      &     'x-dimension of the grid at u location')
-      ierr=nf_put_att_text (ncid, varid, 'standard_name', 26, 
+      ierr=nf_put_att_text (ncid, varid, 'standard_name', 26,
      &     'x_grid_index_at_u_location')
       ierr=nf_put_att_text (ncid, varid, 'axis', 1, 'X')
       ierr=nf_put_att_FTYPE(ncid, varid, 'c_grid_axis_shift',
      &     nf_ftype, 1, 0.5)
-#if defined EW_PERIODIC
+# if defined EW_PERIODIC
       write(strtmp,'(i0":"i0" ")') 1, xi_u-1
-#else
+# else
       write(strtmp,'(i0":"i0" ")') 2, xi_u-1
-#endif
+# endif
       ierr=nf_put_att_text (ncid, varid, 'c_grid_dynamic_range',
      &  len_trim(strtmp), trim(strtmp))
 !
       ierr=nf_def_var (ncid, 'eta_rho', nf_ftype, 1, r2dgrd(2), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   23,
      &     'y-dimension of the grid')
-      ierr=nf_put_att_text (ncid, varid, 'standard_name', 12, 
+      ierr=nf_put_att_text (ncid, varid, 'standard_name', 12,
      &     'y_grid_index')
       ierr=nf_put_att_text (ncid, varid, 'axis', 1, 'Y')
       write(strtmp,'(i0":"i0" ")') 2, eta_rho-1
@@ -112,16 +112,16 @@
       ierr=nf_def_var (ncid, 'eta_v', nf_ftype, 1, v2dgrd(2), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',    37,
      &     'y-dimension of the grid at v location')
-      ierr=nf_put_att_text (ncid, varid, 'standard_name', 26, 
+      ierr=nf_put_att_text (ncid, varid, 'standard_name', 26,
      &     'x_grid_index_at_v_location')
       ierr=nf_put_att_text (ncid, varid, 'axis', 1, 'Y')
       ierr=nf_put_att_FTYPE(ncid, varid, 'c_grid_axis_shift',
      &     nf_ftype, 1, 0.5)
-#if defined NS_PERIODIC
+# if defined NS_PERIODIC
       write(strtmp,'(i0":"i0" ")') 1, eta_v-1
-#else
+# else
       write(strtmp,'(i0":"i0" ")') 2, eta_v-1
-#endif
+# endif
       ierr=nf_put_att_text (ncid, varid, 'c_grid_dynamic_range',
      &  len_trim(strtmp), trim(strtmp))
 !
@@ -135,13 +135,13 @@
      &     'bath, scalar')
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 33,
      &     'model_sea_floor_depth_below_geoid')
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &     'lat_rho lon_rho')
-#else
+# else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &     'x_rho y_rho')
-#endif
+# endif
 !
 ! Coriolis Parameter.
 !
@@ -153,13 +153,13 @@
      &                                        'coriolis, scalar')
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 18,
      &     'coriolis_parameter')
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &     'lat_rho lon_rho')
-#else
+# else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &     'x_rho y_rho')
-#endif
+# endif
 !
 ! Curvilinear coordinates metric coefficients pm,pn.
 !
@@ -168,13 +168,13 @@
      &                      'curvilinear coordinates metric in XI')
       ierr=nf_put_att_text (ncid, varid, 'units',  7,    'meter-1')
       ierr=nf_put_att_text (ncid, varid, 'field', 10, 'pm, scalar')
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                      'lat_rho lon_rho')
-#else
+# else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
-#endif
+# endif
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 22,
      &                      'inverse_of_cell_x_size')
 !-
@@ -183,19 +183,19 @@
      &     'curvilinear coordinates metric in ETA')
       ierr=nf_put_att_text (ncid, varid, 'units',  7,    'meter-1')
       ierr=nf_put_att_text (ncid, varid, 'field', 10, 'pn, scalar')
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                      'lat_rho lon_rho')
-#else
+# else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
-#endif
+# endif
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 22,
      &                      'inverse_of_cell_y_size')
 !
 ! Longitude/latitude or cartezian coordinatess of RHO-points.
 !
-#ifdef SPHERICAL
+# ifdef SPHERICAL
       ierr=nf_def_var (ncid, 'lon_rho', nf_ftype, 2, r2dgrd, varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name', 23,
      &                                   'longitude of RHO-points')
@@ -250,7 +250,7 @@
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 22,
      &                                   'latitude_at_v_location')
 !=======================================================================
-#else
+# else
       ierr=nf_def_var (ncid, 'x_rho', nf_ftype, 2, r2dgrd, varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name', 25,
      &                                   'x-locations of RHO-points')
@@ -266,8 +266,8 @@
       ierr=nf_put_att_text (ncid, varid, 'field',13, 'y_rho, scalar')
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 18,
      &                                   'plane_y_coordinate')
-#endif
-#ifdef CURVGRID
+# endif
+# ifdef CURVGRID
 !
 ! Angle between XI-axis and EAST at RHO-points
 !
@@ -279,8 +279,8 @@
 !      ierr=nf_put_att_text (ncid, varid, 'standard_name', 1,' ')
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                                   'lat_rho lon_rho')
-#endif
-#ifdef MASKING
+# endif
+# ifdef MASKING
 !
 ! Land-Sea mask at RHO-points.
 !
@@ -291,18 +291,18 @@
       ierr=nf_put_att_text (ncid, varid, 'option_1',    5,   'water')
       ierr=nf_put_att_text (ncid, varid, 'standard_name', 16,
      &                                   'land_binary_mask')
-#ifdef SPHERICAL
+#  ifdef SPHERICAL
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
      &                      'lat_rho lon_rho')
-#else
+#  else
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
-#endif
-#endif
+#  endif
+# endif
 !
 #else /* !SOLVE3D */
       subroutine def_grid_2d_empty
-#endif  /* !SOLVE3D */    
+#endif  /* !SOLVE3D */
       return
       end
 

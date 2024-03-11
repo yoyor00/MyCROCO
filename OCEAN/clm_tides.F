@@ -2,15 +2,15 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
       subroutine clm_tides (tile)
 !
 !================================================== Robert Hetland ===
@@ -41,26 +41,26 @@
      &                           Cphase,Sphase,Etide,Utide,Vtide)
 !*********************************************************************
 !
-#ifdef TIDES_MAS
+# ifdef TIDES_MAS
       USE MOD_TIDES_MAS
-#endif
+# endif
       implicit none
-#ifndef TIDES_MAS
-# include "param.h"
-#endif
+# ifndef TIDES_MAS
+#  include "param.h"
+# endif
 # include "climat.h"
 # include "grid.h"
 # include "scalars.h"
 # include "tides.h"
 # include "boundary.h"
 !
-#ifdef TIDES_MAS
+# ifdef TIDES_MAS
       CHARACTER (len=19)    :: cdate,tool_sectodat
       logical :: flag=.false.
       INTEGER               :: ian,imois,ijour,iheure,iminu,isec,jjulien
       integer :: nn,l,k,kk
       INTEGER, dimension(0:10) :: esp_corres=(/1,2,3,4,5,0,6,0,7,0,8/)
-#endif
+# endif
       integer
      &     Iend, Istr, Jend, Jstr, i, j, itide
       real
@@ -97,7 +97,7 @@
 ! MAS INIT
 !-------------
       IF (FIRST_RST_TIME_STEP) THEN
-
+!$acc kernels if(compute_on_device) default(present)
 
 ! lecture des conditions aux limites
 !-----------------------------------
@@ -113,11 +113,11 @@
          fr1(:,:)=0.0
          fr2(:,:)=0.0
          do i=1,tide_nbharmcp
-# ifdef TIDES_MAS_DBG
-          if(j+jminmpi-1.eq.149) then 
+#   ifdef TIDES_MAS_DBG
+          if(j+jminmpi-1.eq.149) then
              write(stdout,*) 'i=',nu(i),l_presence(nu(i))
           end if
-# endif
+#   endif
           if (l_presence(nu(i))) then
            nol=ide(nu(i))
            ir0=rr0(nu(i))
@@ -126,12 +126,12 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
-# ifdef TIDES_MAS_DBG
-           if(j+jminmpi-1.eq.149) then 
+#   ifdef TIDES_MAS_DBG
+           if(j+jminmpi-1.eq.149) then
              write(stdout,*) 'ik=',nu(i),ide(nu(i)),i,k,nn
            end if
-# endif
-           do l=1,2 
+#   endif
+           do l=1,2
             rouest(nn,k,j,l)=SSH_Tamp(Istr+l-2,j,i)*100.0
             gouest(nn,k,j,l)=SSH_Tphase(Istr+l-2,j,i)
             nomd(nn,k)=nol
@@ -142,8 +142,8 @@
            end do
           endif
          end do
-# ifdef TIDES_MAS_DBG
-        if(j+jminmpi-1.eq.149) then 
+#   ifdef TIDES_MAS_DBG
+        if(j+jminmpi-1.eq.149) then
             do k=1,8
              write(stdout,*) 'k=',k,num(k)
                do kk=1,num(k)
@@ -151,7 +151,7 @@
                end do
             end do
         endif
-# endif
+#   endif
         end do
        ENDIF
 !
@@ -172,7 +172,7 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
-           do l=1,2 
+           do l=1,2
             rest(nn,k,j,l)=SSH_Tamp(Iend+l-1,j,i)*100.0
             gest(nn,k,j,l)=SSH_Tphase(Iend+l-1,j,i)
             nomd(nn,k)=nol
@@ -202,7 +202,7 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
-           do l=1,2 
+           do l=1,2
             rnord(nn,k,i,l)=SSH_Tamp(i,Jend+l-1,j)*100.0
             gnord(nn,k,i,l)=SSH_Tphase(i,Jend+l-1,j)
             if(ir0 < 0) gnord(nn,k,i,l)=gnord(nn,k,i,l)+180.0
@@ -210,7 +210,7 @@
             fr1(nn,k)=ir1/float(ir0)
             fr2(nn,k)=ir2/float(ir0)
             hnnord(129,i,l)=-999.
-           end do 
+           end do
           end if
          end do
         end do
@@ -232,7 +232,7 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
-           do l=1,2 
+           do l=1,2
             rsud(nn,k,i,l)=SSH_Tamp(i,Jstr+l-2,j)*100.0
             gsud(nn,k,i,l)=SSH_Tphase(i,Jstr+l-2,j)
             if(ir0 < 0) gsud(nn,k,i,l)=gsud(nn,k,i,l)+180.0
@@ -240,16 +240,18 @@
             fr1(nn,k)=ir1/float(ir0)
             fr2(nn,k)=ir2/float(ir0)
             hnsud(129,i,l)=-999.
-           end do 
+           end do
           end if
          end do
         end do
        ENDIF
-     
-      ENDIF ! FIRST TIME STEP
-#  endif /* MAS INIT */ 
 
-#ifndef TIDES_MAS
+!$acc end kernels     
+      ENDIF ! FIRST TIME STEP
+#  endif /* MAS INIT */
+
+#  ifndef TIDES_MAS
+!$acc kernels if(compute_on_device) default(present)
 !---------------------------------------------------------------------
 !  Add tidal elevation (m) to sea surface height climatology.
 !---------------------------------------------------------------------
@@ -267,14 +269,15 @@
               Etide(i,j)=Etide(i,j)+ramp*
      &                   SSH_Tamp(i,j,itide)*
      &                   COS(omega_loc-SSH_Tphase(i,j,itide))
-#  ifdef MASKING
+#   ifdef MASKING
               Etide(i,j)=Etide(i,j)*rmask(i,j)
-#  endif
+#   endif
             enddo
           enddo
         endif
       enddo
-#else
+!$acc end kernels      
+#  else
 !--------------------------------------------
 ! USE MAS COMPOSITION FOR HARMONIC PREDICTION
 !--------------------------------------------
@@ -303,7 +306,7 @@
        if (NORTHERN_EDGE) then
         do i=IstrR,IendR
          do l=1,2
-           if(rmask(i,Jend+l-1)/=0)  then 
+           if(rmask(i,Jend+l-1)/=0)  then
              call ma1(flag,mynode,i,l,t_0,
      &                ijour,imois,ian,hnnord(1,i,l),rnord(1,1,i,l),
      &                gnord(1,1,i,l),nomd,fr1,fr2,num)
@@ -311,7 +314,7 @@
          end do
         end do
        end if
-       
+
        if (WESTERN_EDGE) then
         do j=JstrR,JendR
          do l=1,2
@@ -327,7 +330,7 @@
        if (EASTERN_EDGE) then
         do j=JstrR,JendR
          do l=1,2
-           if(rmask(Iend+l-1,j)/=0)   
+           if(rmask(Iend+l-1,j)/=0)
      &     call ma1(flag,mynode,j,l
      &         ,t_0,ijour,imois,ian,hnest(1,j,l),rest(1,1,j,l),
      &         gest(1,1,j,l),nomd,fr1,fr2,num)
@@ -350,7 +353,7 @@
          end do
         end do
        end if
-         
+
        if (NORTHERN_EDGE) then
         do i=IstrR,IendR
          do l=1,2
@@ -365,47 +368,48 @@
         do j=JstrR,JendR
          do l=1,2
            if(rmask(Istr+l-2,j)/=0) then
-# ifdef TIDES_MAS_DBG
+#   ifdef TIDES_MAS_DBG
             if (j+jminmpi-1 .eq. 149 .and. l .eq. 2) then
               flag=.true.
             endif
-# endif
+#   endif
             call ma7(flag,tempis,hnouest(1,j,l),Etide(Istr+l-2,j),k)
               flag=.false.
            endif
          end do
         end do
-# ifdef TIDES_MAS_DBG
+#   ifdef TIDES_MAS_DBG
         do j=JstrR,JendR
           do i=IstrR,IendR
             if (i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149) then
                write(stdout,*)'etide',Etide(i,j),
      &            tempis,ian,ijour,imois,
      &           iheure,iminu,isec,time,cdate,jourmem
-            endif 
+            endif
          enddo
         enddo
-# endif
+#   endif
 !
        end if
 
        if (EASTERN_EDGE) then
         do j=JstrR,JendR
          do l=1,2
-           if(rmask(Iend+l-1,j)/=0)   
+           if(rmask(Iend+l-1,j)/=0)
      &       call ma7(flag,tempis,hnest(1,j,l),Etide(Iend+l-1,j),k)
          end do
         end do
        end if
-#  ifdef MASKING
+#   ifdef MASKING
        do j=JRANGE
          do i=IRANGE
            Etide(i,j)=Etide(i,j)*ramp*rmask(i,j)
          end do
-       end do 
-#  endif
-#endif /* MAS COMPOSITION */
-
+       end do
+#   endif
+!$acc end kernels
+#  endif /* MAS COMPOSITION */
+!$acc kernels if(compute_on_device) default(present)
 !----------------------------------------------------------------
 !  Add sub-tidal forcing and adjust climatology to include tides.
 !----------------------------------------------------------------
@@ -429,11 +433,11 @@
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           zetabry_west(j)=zetabry_west(j)+Etide(Istr-1,j)
-#ifdef TIDES_MAS_DBG
-         if (j+jminmpi-1 .eq. 149) 
+#    ifdef TIDES_MAS_DBG
+         if (j+jminmpi-1 .eq. 149)
      &     write(102,*)'Etide',tool_sectodat(time),
      &     h(Istr-1,j),Etide(Istr-1,j),zetabry_west(j)
-#endif
+#    endif
 #    ifdef WET_DRY
           if (zetabry_west(j) .lt. Dcrit(Istr-1,j)-h(Istr-1,j)) then
             zetabry_west(j)=Dcrit(Istr-1,j)-h(Istr-1,j)
@@ -479,9 +483,11 @@
       endif
 #   endif
 #  endif /* Z_FRC_BRY */
+!$acc end kernels
 # endif /* SSH_TIDES */
 !
 # if defined UV_TIDES
+!$acc kernels if(compute_on_device) default(present)
 !
 !---------------------------------------------------------------------
 !  Add tidal currents (m/s) to 2D momentum climatologies.
@@ -606,13 +612,15 @@
         enddo
       endif
 #   endif
-# endif /* M2_FRC_BRY */
+#  endif /* M2_FRC_BRY */
+!$acc end kernels
 # endif /* UV_TIDES */
 
 # if defined POT_TIDES
+!$acc kernels if(compute_on_device) default(present)
 !
 !-----------------------------------------------------------------------
-!  Compute tidal potential (m) 
+!  Compute tidal potential (m)
 !  -- > to be applied as a pressure-gradient force
 !       in prsgrd (if SOLVE3D) or step2d (if not SOLVE3D)
 !-----------------------------------------------------------------------
@@ -627,7 +635,7 @@
           omega_loc=cff/Tperiod(itide)
           do j=JstrR,JendR
             do i=IstrR,IendR
-              Ptide(i,j)=Ptide(i,j)+ 
+              Ptide(i,j)=Ptide(i,j)+
      &                   ramp*POT_Tamp(i,j,itide)*
      &                   COS(omega_loc-POT_Tphase(i,j,itide))
 #  ifdef MASKING
@@ -638,6 +646,7 @@
         endif
       enddo
 
+!$acc end kernels
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        Ptide(START_2D_ARRAY))

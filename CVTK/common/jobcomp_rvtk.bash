@@ -168,7 +168,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
                 FFLAGS1="-O0 -mcmodel=medium -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
-			-fbounds-check -finit-real=nan -finit-integer=8888"
+			-ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
@@ -262,13 +262,22 @@ fi
 # prepare and compile the library
 #
 if [[ $COMPILEAGRIF ]] ; then
+# Find the default C compiler
+    CC1=$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)
+    CFLAGS1=$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)
+# Test if the C compiler is the GNU Compiler
+# if True add '-fcommon' to CFLAGS
+    if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
+	echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
+	CFLAGS1="$CFLAGS1 -fcommon"
+    fi
 #
 # compile the AGRIF librairy
 #
 	if [[ $COMPILEMPI ]] ; then
-		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1"
+		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
 	else
-		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1"
+		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
 	fi
 	if [[ $OS == Darwin ]] ; then          # DARWIN
 # run RANLIB on Darwin system
@@ -298,7 +307,7 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 		if [[ $FC == gfortran ]] ; then
 			FFLAGS1="$FFLAGS1 -fopenmp"
 		elif [[ $FC == ifort || $FC == ifc ]] ; then
-			FFLAGS1="$FFLAGS1 -openmp"
+			FFLAGS1="$FFLAGS1 -qopenmp"
 		else
 			FFLAGS1="$FFLAGS1 -openmp"
 		fi

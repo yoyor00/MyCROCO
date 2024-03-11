@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -44,7 +44,7 @@
      &                     A3d(1, 5,trd))
 # ifdef LMD_SKPP
 #  ifdef LMD_SKPP2005
-      call lmd_skpp_tile  (Istr,Iend,Jstr,Jend, 
+      call lmd_skpp_tile  (Istr,Iend,Jstr,Jend,
      &                     A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
      &                     A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd),
      &                     A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd),
@@ -54,15 +54,15 @@
      &                                    A3d(1, 4,trd),    B2d(1,trd))
 #  else
       call lmd_skpp_tile (Istr,Iend,Jstr,Jend,
-     &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),  
-     &                    A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd), 
-     &                    A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd), 
+     &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
+     &                    A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd),
+     &                    A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd),
      &                    A2d(1, 7,trd), A2d(1, 8,trd), A2d(1, 9,trd),
      &                    A2d(1,10,trd), A2d(1,11,trd), A2d(1,12,trd),
-     &                    A2d(1,13,trd), A3d(1, 4,trd),    B2d(1,trd)) 
+     &                    A2d(1,13,trd), A3d(1, 4,trd),    B2d(1,trd))
 #  endif
 # endif
-# if defined LMD_BKPP 
+# if defined LMD_BKPP
 C$OMP BARRIER
 #  ifdef LMD_BKPP2005
       call lmd_bkpp_tile (Istr,Iend,Jstr,Jend,
@@ -76,11 +76,11 @@ C$OMP BARRIER
      &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
      &                    A2d(1, 5,trd), A2d(1, 6,trd), A2d(1, 7,trd),
      &                    A2d(1, 8,trd), A2d(1, 9,trd), A2d(1,10,trd),
-     &                    A2d(1,12,trd), A2d(1,13,trd), A2d(1,14,trd), 
+     &                    A2d(1,12,trd), A2d(1,13,trd), A2d(1,14,trd),
      &                    A2d(1,15,trd), A2d(1,16,trd), A3d(1, 4,trd))
 #  endif
 # endif
-      call lmd_finalize_tile (Istr,Iend,Jstr,Jend, 
+      call lmd_finalize_tile (Istr,Iend,Jstr,Jend,
      &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd))
 
       return
@@ -107,39 +107,39 @@ C$OMP BARRIER
       parameter (eps=1.E-14)
 
       real lmd_Ri0,  lmd_nuwm,  lmd_nuws, lmd_nu0m,  lmd_nu0s,
-     &     lmd_nu0c, lmd_nu,   lmd_Rrho0, lmd_nuf,  
-     &     lmd_fdd,  lmd_tdd1,  lmd_tdd2, lmd_tdd3,  lmd_sdd1, 
+     &     lmd_nu0c, lmd_nu,   lmd_Rrho0, lmd_nuf,
+     &     lmd_fdd,  lmd_tdd1,  lmd_tdd2, lmd_tdd3,  lmd_sdd1,
      &     lmd_sdd2, lmd_sdd3
       parameter (
      &     lmd_Ri0=0.7,      ! Critical gradient Richardson number
                              ! below which turbulent mixing occurs.
                              !
-     &     lmd_nuwm=1.0e-4,  ! Interior viscosity and diffusivity 
-     &     lmd_nuws=0.1e-4,  ! due to wave breaking, [m^2/s] 
+     &     lmd_nuwm=1.0e-4,  ! Interior viscosity and diffusivity
+     &     lmd_nuws=0.1e-4,  ! due to wave breaking, [m^2/s]
                              !
      &     lmd_nu0m=50.e-4,  ! Maximum interior viscosity and
      &     lmd_nu0s=50.e-4,  ! diffusivity due to shear
                              ! instability  [m^2/s];
                              !
-     &     lmd_nu0c=0.1,     ! Maximum interior convective 
+     &     lmd_nu0c=0.1,     ! Maximum interior convective
                              ! viscosity and  diffusivity due
                              ! to shear instability, [m^2/s];
                              !
      &     lmd_nu=1.5e-6,    ! Molecular viscosity [m^2/s];
                              !
-                             ! Value of double-diffusive density 
-     &     lmd_Rrho0=1.9,    ! ratio where diffusivity goes to 
+                             ! Value of double-diffusive density
+     &     lmd_Rrho0=1.9,    ! ratio where diffusivity goes to
                              ! zero in salt fingering.
      &     lmd_nuf=10.0e-4,  ! Scaling factors for double diffusion
      &     lmd_fdd=0.7,      ! coefficient in salt fingering.
                              !
      &     lmd_tdd1=0.909,   !
-     &     lmd_tdd2=4.6,     ! Double diffusion constants 
-     &     lmd_tdd3=0.54,    ! for temperature (Marmorino and 
-     &     lmd_sdd1=0.15,    ! Caldwell, 1976) and salinity 
+     &     lmd_tdd2=4.6,     ! Double diffusion constants
+     &     lmd_tdd3=0.54,    ! for temperature (Marmorino and
+     &     lmd_sdd1=0.15,    ! Caldwell, 1976) and salinity
      &     lmd_sdd2=1.85,    ! (Fedorov, 1988).
      &     lmd_sdd3=0.85)    !
-     
+
 # undef  LMD_NUW_GARGETT
 
 # ifdef LMD_RIMIX
@@ -284,7 +284,7 @@ C$OMP BARRIER
           WORK(i,j,k)=0.25*(Rig(i,j  ,k)+Rig(i-1,j  ,k)
      &                    +Rig(i,j-1,k)+Rig(i-1,j-1,k))
 #   ifdef MASKING
-     &                                      *pmask2(i,j)     
+     &                                      *pmask2(i,j)
 #   endif
         enddo
       enddo
@@ -307,7 +307,7 @@ C$OMP BARRIER
 #   endif
         enddo
       enddo                     !--> discard  Rig(:,:,0)
-#   endif /* RI_HSMOOTH */
+#  endif /* RI_HSMOOTH */
       enddo  !--> k loop
 
 #  ifdef RI_VSMOOTH
@@ -324,13 +324,13 @@ C$OMP BARRIER
         enddo
       enddo
 #  endif /* RI_VSMOOTH */
-#  else
+# else
 !$acc kernels if(compute_on_device) default(present)
 # endif /* LMD_RIMIX */
 
       do k=1,N-1
 !
-! Compute "interior" viscosities and diffusivities everywhere as 
+! Compute "interior" viscosities and diffusivities everywhere as
 ! the superposition of three processes: local Richardson number
 ! instability due to resolved vertical shear, internal wave
 ! breaking, and double diffusion.
@@ -354,8 +354,8 @@ C$OMP BARRIER
 # endif
 
 !
-!  Compute interior diffusivity due to wave breaking 
-!  (choose constant values as in Large et al. or 
+!  Compute interior diffusivity due to wave breaking
+!  (choose constant values as in Large et al. or
 !   Gargett and Holloway parameterization)
 !
 # ifdef LMD_NUW_GARGETT
@@ -453,7 +453,7 @@ C$OMP BARRIER
               nu_ddt=lmd_nu*lmd_tdd1*
      &               exp(lmd_tdd2*exp(-lmd_tdd3*((1./Rrho)-1.)))
 !
-! Compute interior diffusivity for double diffusive mixing 
+! Compute interior diffusivity for double diffusive mixing
 ! of salinity (lmd_sdd1=0.15, lmd_sdd2=1.85, lmd_sdd3=0.85).
 !
               if (Rrho.lt.0.5) then
@@ -468,7 +468,7 @@ C$OMP BARRIER
 !
 ! Add double diffusion contribution to temperature and salinity
 ! mixing coefficients.
-! 
+!
             Kt(i,j,k)=Kt(i,j,k)+nu_ddt
             Ks(i,j,k)=Ks(i,j,k)+nu_dds
           enddo
@@ -604,7 +604,7 @@ C$OMP BARRIER
 # endif /* WET_DRY && LMD_VMIX_SWASH */
 !
 !------------------------------------------------
-!  Copy into shared arrays 
+!  Copy into shared arrays
 !------------------------------------------------
 !
             Akv(i,j,k)       =Kv(i,j,k) SWITCH rmask(i,j)
@@ -671,7 +671,7 @@ C$OMP BARRIER
       enddo
 
 
-      
+
 !
 !------------------------------------------------
 !  Apply background small viscosity
@@ -697,7 +697,7 @@ C$OMP BARRIER
 !  Apply lateral boundary conditions
 !------------------------------------------------
 !
-# define k0 0 
+# define k0 0
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do k=k0,N
@@ -816,6 +816,6 @@ C$OMP BARRIER
 #else
       subroutine lmd_vmix_empty
 #endif /* LMD_MIXING */
-      return    
+      return
       end
 

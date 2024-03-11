@@ -45,6 +45,8 @@ MODULE p4zmicro
    REAL(wp), PUBLIC ::   epsher      !: growth efficiency for grazing 1 
    REAL(wp), PUBLIC ::   epshermin   !: minimum growth efficiency for grazing 1
 
+   LOGICAL          :: l_fezoo, l_graz1, l_o2csp, l_lprodz
+
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zmicro.F90 10374 2018-12-06 09:49:35Z cetlod $ 
@@ -76,7 +78,13 @@ CONTAINS
       REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zw3d, zzligprod
       CHARACTER (len=25) :: charout
       !!---------------------------------------------------------------------
-      !
+      IF( kt == nittrc000 )  THEN
+         l_graz1  = iom_use( "GRAZ1" )
+         l_fezoo  = iom_use( "FEZOO" )
+         l_o2csp  = iom_use( "MicroZo2" )
+         l_lprodz = ln_ligand .AND. iom_use( "LPRODZ" )
+      ENDIF
+
       IF (ln_ligand) THEN
          ALLOCATE( zzligprod(PRIV_3D_BIOARRAY) )
          zzligprod(:,:,:) = 0.
@@ -196,27 +204,60 @@ CONTAINS
          END DO
       END DO
       !
-#if defined key_iomput
-      IF( lk_iomput ) THEN
-         IF( knt == nrdttrc ) THEN
-           ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
-           IF( iom_use( "GRAZ1" ) ) THEN
-              zw3d(:,:,:) = zgrazing(:,:,:) * 1.e+3 * rfact2r * tmask(:,:,:)  !  Total grazing of phyto by zooplankton
-              CALL iom_put( "GRAZ1", zw3d )
-           ENDIF
-           IF( iom_use( "FEZOO" ) ) THEN
-              zw3d(:,:,:) = zfezoo(:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(:,:,:)   !
-              CALL iom_put( "FEZOO", zw3d )
-           ENDIF
-           IF( iom_use( "LPRODZ" ) .AND. ln_ligand )  THEN
-              zw3d(:,:,:) = zzligprod(:,:,:) * 1e9 * 1.e+3 * rfact2r * tmask(:,:,:)
-              CALL iom_put( "LPRODZ"  , zw3d )
-           ENDIF
-           DEALLOCATE( zw3d )
+
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( l_graz1 ) THEN  !  Total grazing of phyto by zooplankton
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "GRAZ1", zw3d )
+            DEALLOCATE( zw3d )
+         ENDIF
+         IF( l_o2csp ) THEN   ! o2 consumption by Microzoo
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                   zw3d(ji,jj,jk) = zgrazing(ji,jj,jk) * ( 1.- epsher - unass ) &
+                  &                      * (-o2ut) * sigma1 * 1.e+3 * rfact2r * tmask(ji,jj,jk)   ! o2 consumption by Microzoo
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "MicroZo2", zw3d )
+            DEALLOCATE( zw3d )
+         ENDIF
+         IF( l_fezoo ) THEN  ! zooplankton iron recycling rate 
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk) = zfezoo(ji,jj,jk) * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) 
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "FEZOO", zw3d )
+            DEALLOCATE( zw3d )
+         ENDIF
+         IF( l_lprodz ) THEN  !  microzooplankton ligand production rate 
+            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                    zw3d(ji,jj,jk) = zzligprod(ji,jj,jk) &
+                   &                * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! conversion in nmol/m2/s
+                 ENDDO
+              ENDDO
+            ENDDO
+            CALL iom_put( "LPRODZ", zw3d )
+            DEALLOCATE( zw3d )
          ENDIF
       ENDIF
-#endif
-      !
+
 #if defined key_trc_diaadd
       DO jk = KRANGE
          DO jj = JRANGE

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -23,9 +23,9 @@
 !
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !
-#ifdef OPENACC
+# ifdef OPENACC
       use exchange_device_host
-#endif
+# endif
 # define SST_DATA
       implicit none
 # include "param.h"
@@ -63,7 +63,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         lvar=lenstr(vname(1,indxSST))
         ierr=nf_inq_varid (ncidfrc, vname(1,indxSST)(1:lvar), sst_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidfrc, sst_id, i) 
+          ierr=nf_inq_varndims (ncidfrc, sst_id, i)
           if (ierr. eq. nf_noerr) then
             if (i.gt.1) then
               lsstgrd=1
@@ -121,29 +121,35 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,6) 'sst_time', sst_rec
           goto 99                                         !--> ERROR
         endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidfrc,sst_tid,
+     &                       sst_origin_date_in_sec)
+        cff=cff+sst_origin_date_in_sec*sec2day
+# endif
+
         sst_time(i)=cff*day2sec+sst_cycle*sst_ncycle
         if (sst_time(itsst).eq.-1.E+20) sst_time(itsst)=sst_time(i)
 
         if (lsstgrd.eq.1) then
           ierr=nf_fread (sstg(START_2D_ARRAY,i), ncidfrc, sst_id,
      &                                           sst_rec, r2dvar)
-#ifdef OPENACC
+# ifdef OPENACC
           call update_device(sstg(:,:,i))
-#endif
+# endif
         else
           ierr=nf_get_var1_FTYPE (ncidfrc, sst_id, sst_rec, sstp(i))
         endif
         if (ierr .ne. nf_noerr) then
           write(stdout,6) 'SST', sst_rec
           goto 99                                         !--> ERROR
-        endif     
+        endif
 
         if (lsstgrd.eq.1) then
           ierr=nf_fread (dqdtg(START_2D_ARRAY,i), ncidfrc, dqdt_id,
      &                                            sst_rec,  r2dvar)
-#ifdef OPENACC
+# ifdef OPENACC
           call update_device(dqdtg(:,:,i))
-#endif
+# endif
         else
           ierr=nf_get_var1_FTYPE (ncidfrc,dqdt_id,sst_rec,dqdtp(i))
         endif
@@ -152,12 +158,15 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
        itsst=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &              'GET_SST    --',
-     &              'Read SST and dQdSST fields     for time =', cff 
-#ifdef MPI
+     &              'Read SST and dQdSST fields     for time =', cff
+# ifdef USE_CALENDAR
+     &  -sst_origin_date_in_sec*sec2day
+# endif
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
       if (ntsst.gt.1) goto 1
       if (ntsst.eq.1) return
 !
@@ -174,6 +183,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) sst_rec, ntsst, frcname(1:lstr), tdays,
      &                                      sst_time(itsst)*sec2day
+# ifdef USE_CALENDAR
+     &  -sst_origin_date_in_sec*sec2day
+# endif
   8   format(/,' GET_SST - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available',  /,  11x,'record ',I4,
      &       1x,'in forcing NetCDF file: ', a, /,   11x,'TDAYS = ',
@@ -230,7 +242,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         endif
 !
 !  Time-interpolate SST and dQdSST from grided or point data.
-!  Check that for the next time step [when time=time+dt] time+dt 
+!  Check that for the next time step [when time=time+dt] time+dt
 !  is still between sst_time(it1) and sst_time(it2); and if not,
 !  set synchro_flag top signal that the new forcing data should be
 !  read from the netCDF input file (master thread only).
@@ -264,11 +276,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         endif
 !
 !  Unable to set-up SST and dQdSST:
-!  Complain about the error and signal to quit.      
+!  Complain about the error and signal to quit.
 !
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'sst_time', tdays, sst_time(it2)*sec2day
+# ifdef USE_CALENDAR
+     &  -sst_origin_date_in_sec*sec2day
+# endif
   1       format(/,' SET_SST - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &           2x,'TEND = ',g12.4)

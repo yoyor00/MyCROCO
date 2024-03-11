@@ -2,17 +2,17 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #ifdef STATIONS
 !
-      subroutine def_sta(ncid, total_rec, ierr,res) 
+      subroutine def_sta(ncid, total_rec, ierr,res)
 !
 !====================================================================
 !                                                                    !
@@ -36,7 +36,7 @@
       integer lstr, lvar, stadim, ftimedim, twodim
       integer pgrd(2), temp(2), checkdims
       integer lenstr
-# ifdef MUSTANG 
+# ifdef MUSTANG
       integer itrc
 # endif
 # ifdef SOLVE3D
@@ -66,7 +66,7 @@
 # if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) create_new_file=.false.
 # endif
- 
+
 !
 !=================================================================
 !  Create new station file
@@ -283,7 +283,7 @@
 !
 ! Define  vertical positions S or depth(m)
 !
-#  ifdef ALL_SIGMA 
+#  ifdef ALL_SIGMA
 !     Do nothing in this case Zgrid is allways 1:N
 #  else
         vinfo(1)='Zgrid'
@@ -427,7 +427,7 @@
 !
 !  Define density anomaly.
 !
-       if (wrtsta(indxstaRho)) then 
+       if (wrtsta(indxstaRho)) then
 #  ifdef ALL_SIGMA
         vinfo(1)='rho'
         vinfo(2)='density anomaly'
@@ -540,8 +540,8 @@
      &                         vinfo(3)(1:lvar))
        endif
 # endif  /* SOLVE3D */
- 
- 
+
+
 !  Leave definition mode.
 !  ----------------------
 !
@@ -561,7 +561,7 @@
         ierr=nf_open (staname(1:lstr), nf_write, ncid)
 
         if (ierr. eq. nf_noerr) then
-          ierr=checkdims (ncid, staname, lstr, rec) 
+          ierr=checkdims (ncid, staname, lstr, rec)
           if (ierr .eq. nf_noerr) then
             if (rec_per_file.eq.0) then
               ierr=rec+1 - total_rec
@@ -620,7 +620,7 @@
         ierr=nf_inq_varid (ncid,vname(1,indxTime)(1:lvar),staTime)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxTime)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 !
 !  Define stations (lon,lat) or (x,y) and z locations.
@@ -632,7 +632,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staGlevel)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 # endif /* AGRIF */
 # ifdef SPHERICAL
@@ -641,14 +641,14 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staLon)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
         vinfo(1)='lat'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staLat)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 # endif  /* SPHERICAL */
 !
@@ -659,7 +659,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staXgrd)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 !
 ! Define float Y-position in the grid
@@ -669,7 +669,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staYgrd)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 # ifdef SOLVE3D
 !
@@ -681,16 +681,16 @@
 !
 ! Define  vertical positions S or depth(m)
 !
-#  ifndef ALL_SIGMA 
+#  ifndef ALL_SIGMA
         vinfo(1)='Zgrid'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staZgrd)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
-#   endif
-#  endif /* SOLVE3D */
+#  endif
+# endif /* SOLVE3D */
        endif ! grid parameters
 !
 ! --- Define veriables for station data ---
@@ -703,7 +703,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staZeta)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 # ifdef SOLVE3D
 !
@@ -715,7 +715,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staTemp)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
        endif
 !
@@ -728,7 +728,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staSal)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
        endif
 #  endif  /* SALINITY */
@@ -742,7 +742,7 @@
           goto 99                                         !--> ERROR
         endif
        enddo
-# endif
+#  endif
 !
 !  Define density anomaly.
 !
@@ -752,7 +752,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staDen)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
        endif
 !
@@ -764,7 +764,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staV)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 !
         vinfo(1)='u'
@@ -772,7 +772,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staU)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
        endif
 # else
@@ -785,7 +785,7 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staV)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
 !
         vinfo(1)='u'
@@ -793,13 +793,13 @@
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staU)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
-          goto 99                                         !--> ERROR 
+          goto 99                                         !--> ERROR
         endif
        endif
 # endif  /* SOLVE3D */
 
 
-      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
+      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_STA -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
@@ -822,8 +822,8 @@
 
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
-        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_STA ERROR: Cannot ', 
-     &    'switch to ''nf_nofill'' more; netCDF error code =', ierr 
+        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_STA ERROR: Cannot ',
+     &    'switch to ''nf_nofill'' more; netCDF error code =', ierr
       endif
 
    1  format(/1x,'DEF_STA ERROR: Cannot find variable ''',

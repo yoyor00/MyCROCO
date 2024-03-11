@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,7 +15,7 @@
       subroutine grid_nbq_tile(Istr,Iend,Jstr,Jend,
      &                         Hzw_half_nbq_inv,Hzr_half_nbq_inv,
      &                         Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-     &                         Hzu_half_qdmu, Hzv_half_qdmv )     
+     &                         Hzu_half_qdmu, Hzv_half_qdmv )
 !
 !**********************************************************************
 !
@@ -55,10 +55,10 @@
 ! Sets indices
 !----------------------------------------------------------------------
 !
-#  ifdef EW_PERIODIC
+# ifdef EW_PERIODIC
       imin=Istr-2
       imax=Iend+2
-#  else
+# else
       if (WESTERN_EDGE) then
         imin=Istr-1
       else
@@ -69,11 +69,11 @@
       else
         imax=Iend+2
       endif
-#  endif
-#  ifdef NS_PERIODIC
+# endif
+# ifdef NS_PERIODIC
       jmin=Jstr-2
       jmax=Jend+2
-#  else
+# else
       if (SOUTHERN_EDGE) then
         jmin=Jstr-1
       else
@@ -84,14 +84,14 @@
       else
         jmax=Jend+2
       endif
-#  endif    
+# endif    
 !$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Compute other vertical grid variables
 !          at m
 !----------------------------------------------------------------------
-!	
+!
       do k=1,N-1
         do j=jmin,jmax
           do i=imin,imax
@@ -99,13 +99,13 @@
           enddo
         enddo
       enddo
-      
+
       do j=jmin,jmax
         do i=imin,imax
           Hzw_half_nbq(i,j,0)=z_r(i,j,1)-z_w(i,j,0)
           Hzw_half_nbq(i,j,N)=z_w(i,j,N)-z_r(i,j,N)
         enddo
-      enddo 
+      enddo
 
       do k=1,N
         do j=JstrV-2,Jend+1
@@ -124,20 +124,20 @@
             Hzu_half_qdmu(i,j,k)=0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
 # ifdef MASKING
      &                                                       *umask(i,j)
-# endif  
+# endif
           enddo
         enddo
-      enddo 
+      enddo
       do k=1,N
         do j=JstrV,Jend+1
           do i=Istr,Iend
             Hzv_half_qdmv(i,j,k)=0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
 # ifdef MASKING
      &                                                       *vmask(i,j)
-# endif  
+# endif
           enddo
         enddo
-      enddo 
+      enddo
 
       do k=0,N
         do j=JstrV-2,Jend+1
@@ -155,34 +155,35 @@
           do i=IstrU-1,Iend+1
             Hzw_half_nbq_inv_u(i,j,k)=0.5/max(1.e-30,
      &                                        Hzw_half_nbq(i  ,j,k)+
-     &                                        Hzw_half_nbq(i-1,j,k)) 
+     &                                        Hzw_half_nbq(i-1,j,k))
 # ifdef MASKING
      &                                                   *umask(i,j)
-# endif      
+# endif
           enddo
         enddo
       enddo
-              
+
       do k=0,N
         do j=JstrV-1,Jend+1
           do i=IstrU-2,Iend+1
             Hzw_half_nbq_inv_v(i,j,k)=0.5/max(1.e-30,
      &                                        Hzw_half_nbq(i,j  ,k)+
-     &                                        Hzw_half_nbq(i,j-1,k)) 
-# ifdef MASKING	
+     &                                        Hzw_half_nbq(i,j-1,k))
+# ifdef MASKING
      &                                                   *vmask(i,j)
-# endif      	  
+# endif
           enddo
         enddo
       enddo          
 !$acc end kernels        
+
       return
       end subroutine grid_nbq_tile
 
 #else
       subroutine grid_nbq_tile_empty
       return
-      end 
+      end
 #endif
 
 

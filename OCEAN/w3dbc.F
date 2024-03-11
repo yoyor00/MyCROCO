@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,7 +14,7 @@
 # include "cppdefs.h"
 # ifdef NBQ
       subroutine w3dbc_tile(Istr,Iend,Jstr,Jend,grad)
-#  ifdef AGRIF      
+#  ifdef AGRIF
       use Agrif_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
@@ -79,6 +79,7 @@
       tau_out=dt*tauM_out
 # endif
 !
+!$acc kernels if(compute_on_device) default(present)
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -125,7 +126,7 @@
             dft=wz(Istr,j,k,nstp)-wz(Istr  ,j,k,nnew)
             dfx=wz(Istr,j,k,nnew)-wz(Istr+1,j,k,nnew)
             if (dfx*dft .lt. 0.) then
-              dft=0.                  ! <-- cancel, if inflow 
+              dft=0.                  ! <-- cancel, if inflow
 #    if defined W_FRC_BRY || defined WCLIMATOLOGY
               tau=tau_in
             else
@@ -148,7 +149,7 @@
 #    if defined W_FRC_BRY || defined WCLIMATOLOGY
             wz(Istr-1,j,k,nnew)=(1.-tau)*wz(Istr-1,j,k,nnew)
 #     ifdef W_FRC_BRY
-     &                                  +tau*wbry_west(j,k)     
+     &                                  +tau*wbry_west(j,k)
 #     else
      &                                  +tau*wclm(Istr-1,j,k)
 #     endif
@@ -230,7 +231,7 @@
             dft=wz(Iend,j,k,nstp)-wz(Iend  ,j,k,nnew)
             dfx=wz(Iend,j,k,nnew)-wz(Iend-1,j,k,nnew)
             if (dfx*dft .lt. 0.) then
-              dft=0.                  ! <-- cancel, if inflow 
+              dft=0.                  ! <-- cancel, if inflow
 #    if defined W_FRC_BRY || defined WCLIMATOLOGY
               tau=tau_in
             else
@@ -266,7 +267,7 @@
 #    endif
           enddo
         enddo
-#   else 
+#   else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
         do k=0,N
@@ -337,7 +338,7 @@
             dft=wz(i,Jstr,k,nstp)-wz(i,Jstr  ,k,nnew)
             dfx=wz(i,Jstr,k,nnew)-wz(i,Jstr+1,k,nnew)
             if (dfx*dft .lt. 0.) then
-              dft=0.                   ! <-- cancel, if inflow 
+              dft=0.                   ! <-- cancel, if inflow
 #    if defined W_FRC_BRY || defined WCLIMATOLOGY
               tau=tau_in
             else
@@ -445,7 +446,7 @@
             dft=wz(i,Jend,k,nstp)-wz(i,Jend  ,k,nnew)
             dfx=wz(i,Jend,k,nnew)-wz(i,Jend-1,k,nnew)
             if (dfx*dft .lt. 0.) then
-              dft=0.                          ! <-- cancel, if inflow 
+              dft=0.                          ! <-- cancel, if inflow
 #    if defined W_FRC_BRY || defined WCLIMATOLOGY
               tau=tau_in
             else
@@ -502,9 +503,9 @@
         do k=0,N                               ! Northern edge closed
           do i=Istr,Iend                       ! ======== ==== ======
             wz(i,Jend+1,k,nnew)=wz(i,Jend,k,nnew)
-#ifdef MASKING
+#   ifdef MASKING
      &                           *rmask(i,Jend+1)
-#endif            
+#   endif
           enddo
         enddo
 #  endif       /* OBC_COM_NORTH */
@@ -520,9 +521,9 @@
           wz(Istr-1,Jstr-1,k,nnew)=0.5*
      &                          ( wz(Istr  ,Jstr-1,k,nnew)
      &                           +wz(Istr-1,Jstr  ,k,nnew))
-#   ifdef MASKING
+#  ifdef MASKING
      &                                *rmask(Istr-1,Jstr-1)
-#   endif
+#  endif
         enddo
       endif
 # endif
@@ -532,9 +533,9 @@
           wz(Iend+1,Jstr-1,k,nnew)=0.5*
      &                          (wz(Iend  ,Jstr-1,k,nnew)
      &                          +wz(Iend+1,Jstr  ,k,nnew))
-#   ifdef MASKING
+#  ifdef MASKING
      &                               *rmask(Iend+1,Jstr-1)
-#   endif
+#  endif
         enddo
       endif
 # endif
@@ -544,9 +545,9 @@
           wz(Istr-1,Jend+1,k,nnew)=0.5*
      &                          ( wz(Istr  ,Jend+1,k,nnew)
      &                           +wz(Istr-1,Jend  ,k,nnew))
-#   ifdef MASKING
+#  ifdef MASKING
      &                                *rmask(Istr-1,Jend+1)
-#   endif
+#  endif
         enddo
       endif
 # endif
@@ -556,12 +557,13 @@
           wz(Iend+1,Jend+1,k,nnew)=0.5*
      &                          ( wz(Iend  ,Jend+1,k,nnew)
      &                           +wz(Iend+1,Jend  ,k,nnew))
-#   ifdef MASKING
+#  ifdef MASKING
      &                                *rmask(Iend+1,Jend+1)
-#   endif
+#  endif
         enddo
       endif
 # endif
+!$acc end kernels
       return
       end
 !

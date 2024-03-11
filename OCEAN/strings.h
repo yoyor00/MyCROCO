@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -15,5 +15,5 @@
 !                                    !
       integer max_opt_size           ! NOTE: Parameter max_opt_size
       parameter (max_opt_size=4400)  ! must be equal to the length
-      character*4400 Coptions,srcs   ! of character string. 
+      character*4400 Coptions,srcs   ! of character string.
       common /strings/ Coptions,srcs !

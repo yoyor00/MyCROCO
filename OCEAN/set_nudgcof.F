@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -37,7 +37,7 @@
 # include "scalars.h"
 # include "ocean3d.h"
 # include "mpi_cpl.h"
-# ifdef NBQ_NUDGING
+# if defined NBQ_NUDGING || defined NBQ_SPONGE
 #  include "nbq.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i, j, k, isp, itrc, ibnd
@@ -65,11 +65,11 @@
 #  ifdef MPI
       if (ii.eq.0.and.jj.eq.0.and.Istr.eq.1.and.Jstr.eq.1) then
         isp=int(x_sponge*pm(1,1))
-      endif      
+      endif
       call MPI_Bcast(isp, 1, MPI_INTEGER,
-     &                    0, MPI_COMM_WORLD, ierr)      
+     &                    0, MPI_COMM_WORLD, ierr)
 #  else
-      isp=int(x_sponge*pm(1,1)) ! number of points in layer     
+      isp=int(x_sponge*pm(1,1)) ! number of points in layer
 #  endif
 # endif /* SPONGE_GRID */
 
@@ -93,16 +93,16 @@
 #  endif
 # else
 #  ifdef OBC_WEST
-          ibnd=min(ibnd,i+iminmpi-1)          
+          ibnd=min(ibnd,i+iminmpi-1)
 #  endif
 #  ifdef OBC_EAST
-          ibnd=min(ibnd,LLm+1-(i+iminmpi-1))          
+          ibnd=min(ibnd,LLm+1-(i+iminmpi-1))
 #  endif
 #  ifdef OBC_SOUTH
-          ibnd=min(ibnd,j+jminmpi-1)          
+          ibnd=min(ibnd,j+jminmpi-1)
 #  endif
 #  ifdef OBC_NORTH
-          ibnd=min(ibnd,MMm+1-(j+jminmpi-1))          
+          ibnd=min(ibnd,MMm+1-(j+jminmpi-1))
 #  endif
 # endif
 
@@ -111,9 +111,15 @@
             wrk(i,j)=0.
           else
             wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
+#ifdef OPENACCNUMERIC 
+          wrk(i,j)=real(wrk(i,j), kind=4)
+#endif
           endif
 # else
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
+#ifdef OPENACCNUMERIC 
+          wrk(i,j)=real(wrk(i,j), kind=4)
+#endif
 !         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
 # endif
 
@@ -143,7 +149,7 @@
           M3nudgcof(i,j)=tauM_out*wrk(i,j)
 # endif
 # ifdef NBQ_NUDGING
-          NBQnudgcof(i,j)=dtfast*tauM_out*wrk(i,j) ! nudg. to internal modes (dim. less) 
+          NBQnudgcof(i,j)=dtfast*tauM_out*wrk(i,j) ! nudg. to internal modes (dim. less)
 # endif
         enddo
       enddo
@@ -155,15 +161,15 @@
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
-#   ifdef TEMPERATURE 
+#  ifdef TEMPERATURE
               Tnudgcof(i,j,k,itrc)=Tnudgcof(i,j,N,itemp)
-#   else
-#    ifdef SALINITY
+#  else
+#   ifdef SALINITY
               Tnudgcof(i,j,k,itrc)=Tnudgcof(i,j,N,isalt)
 #   else
               Tnudgcof(i,j,k,itrc)=Tnudgcof(i,j,N,1)
-#    endif
 #   endif
+#  endif
             enddo
           enddo
         enddo
@@ -174,7 +180,7 @@
 !
 # ifdef ROBUST_DIAG
 #  if defined TNUDGING  && defined TRACERS
-      do k=1,N 
+      do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
 #   ifdef TEMPERATURE
@@ -201,8 +207,8 @@
 #   endif
         enddo
       enddo
-#   endif /* JET */
-#  endif /* ROBUST_DIAG */
+#  endif /* JET */
+# endif /* ROBUST_DIAG */
 
 # ifdef SPONGE
 !
@@ -212,7 +218,7 @@
 !
 #  if defined UV_VIS2 || defined UV_VIS4 || defined SPONGE_VIS2
 !
-!  Add Viscosity at rho points 
+!  Add Viscosity at rho points
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -229,7 +235,7 @@
         do i=Istr,IendR
           visc2_sponge_p(i,j)=0.25*(0.01 /(pm(i,j)*pn(i,j)*dt))*
      &                              ( wrk(i,j  )+wrk(i-1,j  )
-     &                               +wrk(i,j-1)+wrk(i-1,j-1) ) 
+     &                               +wrk(i,j-1)+wrk(i-1,j-1) )
 #   ifdef UV_VIS4
           visc4_sponge_p(i,j)=visc2_sponge_p(i,j)/(pm(i,j)*pn(i,j))
 #   endif
@@ -252,7 +258,20 @@
        enddo
       enddo
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
-# endif /* SPONGE */          
+# endif /* SPONGE */
+
+# ifdef NBQ_SPONGE
+!
+!-------------------------------------------------------------------
+!  Add second Viscosity in SPONGE layers
+!-------------------------------------------------------------------
+!
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          visc2_nbq_sponge(i,j)=10.*wrk(i,j)
+        enddo
+      enddo
+# endif /* NBQ_SPONGE */
 !
 !-------------------------------------------------------------------
 !  add configuration specific stuff
@@ -272,14 +291,14 @@
           dr=sqrt(dx**2+dy**2)
           if (dr .lt. rsponge) then
             do k=1,N
-#   ifdef TEMPERATURE
+#  ifdef TEMPERATURE
               Tnudgcof(i,j,k,itemp)=.5*cff*(cos(pi*dr/rsponge)+1)
      &                    *(-atan((z_r(i,j,k)+750.)*2.e-2)/pi+.5)
-#   endif
-#   ifdef SALINITY
+#  endif
+#  ifdef SALINITY
              Tnudgcof(i,j,k,isalt)=.5*cff*(cos(pi*dr/rsponge)+1)
      &                    *(-atan((z_r(i,j,k)+750.)*2.e-2)/pi+.5)
-#   endif
+#  endif
             enddo
           endif
         enddo

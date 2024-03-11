@@ -13,15 +13,15 @@
 
 #if !defined M3FAST || (defined AGRIF && defined NBQ_CHILD_ONLY)
 
-#define PRED_COUPLED_MODE
+# define PRED_COUPLED_MODE
 
       subroutine step2d (tile)
       implicit none
       integer tile, trd
-#include "param.h"
-#include "private_scratch.h"
+# include "param.h"
+# include "private_scratch.h"
 C$    integer omp_get_thread_num
-#include "compute_tile_bounds.h"
+# include "compute_tile_bounds.h"
       trd=0
 C$    trd=omp_get_thread_num()
 
@@ -29,12 +29,12 @@ C$    trd=omp_get_thread_num()
      &                    , A2d(1, 2,trd), A2d(1, 3,trd), A2d(1, 4,trd)
      &                    , A2d(1, 5,trd), A2d(1, 6,trd), A2d(1, 7,trd)
      &                    , A2d(1, 8,trd), A2d(1, 9,trd)
-#ifdef M2_HADV_UP3
+# ifdef M2_HADV_UP3
      &                    , A2d(1,10,trd), A2d(1,11,trd)
-#else
+# else
      &                    , A2d(1,10,trd), A2d(1,11,trd)
      &                    , A2d(1,12,trd), A2d(1,13,trd)
-#endif
+# endif
      &                    )
 
       return
@@ -44,12 +44,12 @@ C$    trd=omp_get_thread_num()
      &                           Dnew,rubar,rvbar,
      &                           Drhs, UFx,UFe,
      &                           VFx,VFe
-#ifdef M2_HADV_UP3
+# ifdef M2_HADV_UP3
      &                          ,wrk1,wrk2
-#else
+# else
      &                          ,urhs,vrhs
      &                          ,DUon,DVom
-#endif
+# endif
      &                          )
 
 !
@@ -101,14 +101,14 @@ C$    trd=omp_get_thread_num()
 !
       USE debug
       implicit none
-#include "param.h"
+# include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
-#ifdef MPI
+# ifdef MPI
      &         err,
-#endif
-#if defined PSOURCE || defined PSOURCE_MASS
+# endif
+# if defined PSOURCE || defined PSOURCE_MASS
      &        is,
-#endif
+# endif
      &        imin,imax,jmin,jmax
       integer,dimension(2) :: ijmax
       real sum_c
@@ -122,62 +122,62 @@ C$    trd=omp_get_thread_num()
      &          UFe(PRIVATE_2D_SCRATCH_ARRAY),  DUnew,
      &          VFx(PRIVATE_2D_SCRATCH_ARRAY),  DVnew,
      &          VFe(PRIVATE_2D_SCRATCH_ARRAY)
-#ifdef M2_HADV_UP3
+# ifdef M2_HADV_UP3
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY)
       real     curvX,curvE,cffE,cffX, gamma
       parameter (gamma = -0.25)
-#else
+# else
       real     urhs(PRIVATE_2D_SCRATCH_ARRAY),
      &         vrhs(PRIVATE_2D_SCRATCH_ARRAY),
      &         DUon(PRIVATE_2D_SCRATCH_ARRAY),
      &         DVom(PRIVATE_2D_SCRATCH_ARRAY)
-#endif
-#ifdef M2FILTER_NONE
+# endif
+# ifdef M2FILTER_NONE
       real :: myepsilon,mybeta,myalpha,mygamma
-#endif
-#include "grid.h"
-#include "ocean2d.h"
-#include "ocean3d.h"
-#include "coupling.h"
-#include "forces.h"
-#ifdef MRL_WCI
+# endif
+# include "grid.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
+# include "coupling.h"
+# include "forces.h"
+# ifdef MRL_WCI
       real vstu,ustv,dudx,dvdx,dude,dvde
-#endif
-#include "mixing.h"
-#include "climat.h"
-#include "scalars.h"
-#include "sources.h"
-#ifdef POT_TIDES
-# include "tides.h"
-#endif
-#ifdef AGRIF
-# include "zoom.h"
+# endif
+# include "mixing.h"
+# include "climat.h"
+# include "scalars.h"
+# include "sources.h"
+# ifdef POT_TIDES
+#  include "tides.h"
+# endif
+# ifdef AGRIF
+#  include "zoom.h"
         integer irhox, irhoy, irhot
-#endif
-#if defined INTERNAL || defined BODYTIDE
+# endif
+# if defined INTERNAL || defined BODYTIDE
       real U0, omega
-#endif
-#ifdef WET_DRY
+# endif
+# ifdef WET_DRY
       real cff1_WD,cff2_WD
-#endif
+# endif
 !
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
+# endif
 !
-#ifdef MPI
-#include "mpi_cpl.h"
+# ifdef MPI
+#  include "mpi_cpl.h"
       include 'mpif.h'
-# define LOCALLM Lmmpi
-# define LOCALMM Mmmpi
-#else
-# define LOCALLM Lm
-# define LOCALMM Mm
-#endif
-#include "compute_auxiliary_bounds.h"
+#  define LOCALLM Lmmpi
+#  define LOCALMM Mmmpi
+# else
+#  define LOCALLM Lm
+#  define LOCALMM Mm
+# endif
+# include "compute_auxiliary_bounds.h"
 !
 !======================================================================
 ! AB3 Forward Step: Computes zeta(n+1) and zetarhs
@@ -189,21 +189,21 @@ C$    trd=omp_get_thread_num()
 ! data to compute nonlinear advection terms for the barotropic
 ! momentum equations.
 !
-#ifdef M2FILTER_NONE
-# ifdef TANK
+# ifdef M2FILTER_NONE
+#  ifdef TANK
          myalpha   = 0.01
-# else
+#  else
          myalpha   = 0.25
-# endif
+#  endif
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha
          mygamma   = 0.08344500 - 0.51358400*myalpha
-#endif
-#ifdef AGRIF
+# endif
+# ifdef AGRIF
         irhox = Agrif_Irhox()
         irhoy = Agrif_Irhoy()
         irhot = Agrif_Irhot()
-#endif
+# endif
       if (FIRST_2D_STEP) then         ! Meaning of temporal indices
         kbak=kstp                     ! ------- -- -------- -------
         kold=kstp                     ! m-2     m-1      m      m+1
@@ -222,35 +222,35 @@ C$    trd=omp_get_thread_num()
         if (kbak.lt.1) kbak=4
         kold=kbak-1
         if (kold.lt.1) kold=4
-#ifdef M2FILTER_NONE
+# ifdef M2FILTER_NONE
         cff1= 1.5+mybeta
         cff2=-2.0*mybeta-0.5
         cff3= mybeta
-#else
+# else
         cff1= 1.781105
         cff2=-1.06221
         cff3= 0.281105
-#endif
+# endif
       endif
 !
-#if defined EW_PERIODIC || defined MPI || !defined M2_HADV_UP3
+# if defined EW_PERIODIC || defined MPI || !defined M2_HADV_UP3
       imin=IstrU-2
       imax=Iend+1
-# define IV_EXT_RANGE Istr-1,Iend+1
-#else
+#  define IV_EXT_RANGE Istr-1,Iend+1
+# else
       imin=max(IstrU-3,0)
       imax=min(Iend+2,Lm+1)
-# define IV_EXT_RANGE max(Istr-2,0),min(Iend+2,Lm+1)
-#endif
-#if defined NS_PERIODIC || defined MPI || !defined M2_HADV_UP3
+#  define IV_EXT_RANGE max(Istr-2,0),min(Iend+2,Lm+1)
+# endif
+# if defined NS_PERIODIC || defined MPI || !defined M2_HADV_UP3
       jmin=JstrV-2
       jmax=Jend+1
-# define JU_EXT_RANGE Jstr-1,Jend+1
-#else
+#  define JU_EXT_RANGE Jstr-1,Jend+1
+# else
       jmin=max(JstrV-3,0)
       jmax=min(Jend+2,Mm+1)
-# define JU_EXT_RANGE max(Jstr-2,0),min(Jend+2,Mm+1)
-#endif
+#  define JU_EXT_RANGE max(Jstr-2,0),min(Jend+2,Mm+1)
+# endif
 !
 !$acc kernels if(compute_on_device) default(present) async(1)
 
@@ -266,46 +266,46 @@ C$    trd=omp_get_thread_num()
         do i=imin+1,imax
           urhs(i,j)=cff1*ubar(i,j,kstp) +cff2*ubar(i,j,kbak)
      &                                  +cff3*ubar(i,j,kold)
-#if defined MRL_WCI && defined MASKING
+# if defined MRL_WCI && defined MASKING
           urhs(i,j)=urhs(i,j)*umask(i,j)+ust2d(i,j)*(umask(i,j)-1.0)
-#endif
+# endif
           DUon(i,j)=0.5*(Drhs(i,j)+Drhs(i-1,j))*on_u(i,j)*( urhs(i,j)
-#ifdef MRL_WCI
+# ifdef MRL_WCI
      &                                                   + ust2d(i,j)
-#endif
+# endif
      &                                                              )
         enddo
       enddo
-#undef JU_EXT_RANGE
+# undef JU_EXT_RANGE
 
       do j=jmin+1,jmax
         do i=IV_EXT_RANGE
           vrhs(i,j)=cff1*vbar(i,j,kstp) +cff2*vbar(i,j,kbak)
      &                                  +cff3*vbar(i,j,kold)
-#if defined MRL_WCI && defined MASKING
+# if defined MRL_WCI && defined MASKING
           vrhs(i,j)=vrhs(i,j)*vmask(i,j)+vst2d(i,j)*(vmask(i,j)-1.0)
-#endif
+# endif
           DVom(i,j)=0.5*(Drhs(i,j)+Drhs(i,j-1))*om_v(i,j)*( vrhs(i,j)
-#ifdef MRL_WCI
+# ifdef MRL_WCI
      &                                                   + vst2d(i,j)
-#endif
+# endif
      &                                                              )
         enddo
       enddo
-#undef IV_EXT_RANGE
+# undef IV_EXT_RANGE
 
 !
 ! Apply point sources for river runoff simulations
 !
-#ifdef PSOURCE
+# ifdef PSOURCE
       do is=1,Nsrc
-# ifdef MPI
+#  ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
-# else
+#  else
         i=Isrc(is)
         j=Jsrc(is)
-# endif
+#  endif
         if ( (imin+1) .le.i .and. i.le.imax .and.
      &       (jmin+1) .le.j .and. j.le.jmax) then
           if (Dsrc(is).eq.0) then
@@ -319,10 +319,10 @@ C$    trd=omp_get_thread_num()
           endif
         endif
       enddo
-#endif
+# endif
 
-#ifdef M2_HADV_UP3
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# ifdef M2_HADV_UP3
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   urhs(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
@@ -331,14 +331,14 @@ C$    trd=omp_get_thread_num()
      &                   Duon (START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   Dvom(START_2D_ARRAY))
+#  endif
 # endif
-#endif
 
-#ifdef OBC_VOLCONS
+# ifdef OBC_VOLCONS
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
-#endif
+# endif
 
-#ifdef RVTK_DEBUG_ADVANCED
+# ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
 !$acc end kernels
@@ -351,7 +351,7 @@ C$OMP MASTER
      &   ondevice=.TRUE.)
 !$acc kernels if(compute_on_device) default(present) async(1)
 C$OMP END MASTER
-#endif
+# endif
 !
 !-----------------------------------------------------------------------
 ! Advance free-surface:   Compute zeta_new, which is at new time
@@ -373,13 +373,13 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
       if (FIRST_2D_STEP) then
-#ifdef SOLVE3D
+# ifdef SOLVE3D
         cff0=0.                !---> Compute pressure-gradient
         cff1=1.                !  terms using just zeta(:,:,kstp)
-#else
+# else
         cff0=1.
         cff1=0.
-#endif
+# endif
         cff2=0.
         cff3=0.
       elseif (FIRST_2D_STEP+1) then
@@ -388,23 +388,23 @@ C$OMP END MASTER
         cff2= 0.0833333333333    ! maximum stability, while maintaining
         cff3= 0.                 ! third-accuracy; alpha_max=1.73
       else
-#ifdef M2FILTER_NONE
+# ifdef M2FILTER_NONE
         cff0=0.5+2.*myepsilon+mygamma+2.*myalpha
         cff1=1.-cff0-mygamma-myepsilon
         cff2=mygamma
         cff3=myepsilon
-#else
+# else
         cff0=0.614
         cff1=0.285
         cff2=0.088
         cff3=0.013
-#endif
+# endif
       endif
 
-#define zwrk UFx
-#define rzeta  UFe
-#define rzeta2  VFe
-#define rzetaSA VFx
+# define zwrk UFx
+# define rzeta  UFe
+# define rzeta2  VFe
+# define rzetaSA VFx
 
 !
 !-----------------------------------------------------------------------
@@ -417,9 +417,9 @@ C$OMP END MASTER
      &                                   *(DUon(i,j)-DUon(i+1,j  )
      &                                    +DVom(i,j)-DVom(i  ,j+1))
 
-#ifdef ZONAL_NUDGING
+# ifdef ZONAL_NUDGING
           zeta(i,j,knew)=zeta_new(i,j)
-#endif
+# endif
         enddo
       enddo
 !
@@ -427,8 +427,8 @@ C$OMP END MASTER
 ! Add nudging terms
 !-----------------------------------------------------------------------
 !
-#ifdef ZNUDGING
-# ifdef ZONAL_NUDGING
+# ifdef ZNUDGING
+#  ifdef ZONAL_NUDGING
 !$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         if (FIRST_2D_STEP) then
@@ -443,35 +443,35 @@ C$OMP END MASTER
         endif
       endif
 !$acc kernels if(compute_on_device) default(present) async(1)
-# endif  /* ZONAL_NUDGING */
+#  endif  /* ZONAL_NUDGING */
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           zeta_new(i,j)=zeta_new(i,j) + dtfast*Znudgcof(i,j)
-# ifdef ZONAL_NUDGING
+#  ifdef ZONAL_NUDGING
      &                                 *(sshzon(j)-zetazon(j))
-# else
+#  else
      &                                 *(ssh(i,j)-zeta_new(i,j))
-# endif /* ZONAL_NUDGING */
+#  endif /* ZONAL_NUDGING */
         enddo
       enddo
-#endif /* ZNUDGING */
+# endif /* ZNUDGING */
 !
 !-----------------------------------------------------------------------
 ! Mask land cells & ensure that total depth in masked cells is > Dcrit
 !-----------------------------------------------------------------------
 !
-#ifdef MASKING
+# ifdef MASKING
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           zeta_new(i,j)=zeta_new(i,j)*rmask(i,j)
-# ifdef WET_DRY
+#  ifdef WET_DRY
           cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
           zeta_new(i,j)=zeta_new(i,j)+
      &                 cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
-# endif
+#  endif
         enddo
       enddo
-#endif
+# endif
 !
 !-----------------------------------------------------------------------
 ! Computes zetarhs to use in mometum equations
@@ -481,14 +481,14 @@ C$OMP END MASTER
         do i=IstrU-1,Iend
           zwrk(i,j)=cff0*zeta_new(i,j) +cff1*zeta(i,j,kstp)
      &             +cff2*zeta(i,j,kbak)+cff3*zeta(i,j,kold)
-#if defined VAR_RHO_2D && defined SOLVE3D
+# if defined VAR_RHO_2D && defined SOLVE3D
           rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
           rzeta2(i,j)=rzeta(i,j)*zwrk(i,j)
           rzetaSA(i,j)=zwrk(i,j)*(rhoS(i,j)-rhoA(i,j))
-#else
+# else
           rzeta(i,j)=zwrk(i,j)
           rzeta2(i,j)=zwrk(i,j)*zwrk(i,j)
-#endif
+# endif
         enddo
       enddo
 !
@@ -507,7 +507,7 @@ C$OMP END MASTER
 ! Load rhs values into additional AGRIF shared array for nesting
 !-----------------------------------------------------------------------
 !
-#ifdef AGRIF
+# ifdef AGRIF
       if (FIRST_2D_STEP) then
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
@@ -526,16 +526,16 @@ C$OMP END MASTER
         enddo
       endif
 
-# if defined BD_EXCHANGE
+#  if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   Zt_avg3(START_2D_ARRAY,0))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   du_avg3(START_2D_ARRAY,0))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   dv_avg3(START_2D_ARRAY,0))
-# endif
+#  endif
 
-# ifdef RVTK_DEBUG_ADVANCED
+#  ifdef RVTK_DEBUG_ADVANCED
        if (.not.agrif_Root()) then
 C$OMP BARRIER
 C$OMP MASTER
@@ -547,8 +547,8 @@ C$OMP MASTER
      &   ondevice=.TRUE.)
 C$OMP END MASTER
        endif
-# endif
-#endif /* AGRIF */
+#  endif
+# endif /* AGRIF */
 !
 !
 !-----------------------------------------------------------------------
@@ -557,19 +557,19 @@ C$OMP END MASTER
 !
 !$acc end kernels
 
-#ifdef WET_DRY
+# ifdef WET_DRY
       call wetdry_tile (Istr,Iend,Jstr,Jend)
 !RB this barrier seems to have a benefic effect
 ! in some cases with wetdry but not sure it is
 ! the proper fix
 C$OMP BARRIER
-#endif
+# endif
 
 !-----------------------------------------------------------------------
 ! Apply mass point sources (volume vertical influx) 
 !-----------------------------------------------------------------------
 !
-#ifdef PSOURCE_MASS
+# ifdef PSOURCE_MASS
       do is=1,Nsrc
 #  ifdef MPI
         i=Isrc_mpi(is,mynode)
@@ -584,20 +584,20 @@ C$OMP BARRIER
      &    Qbar(is)*pm(i,j)*pn(i,j)*dtfast 
         endif
       enddo
-#endif
+# endif
 
 !-----------------------------------------------------------------------
 ! Debug zeta
 !-----------------------------------------------------------------------
 !
-#ifdef RVTK_DEBUG_ADVANCED
+# ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
 !$acc wait
        call check_tab2d(zeta(:,:,knew),'zeta step2d #2','rint',
      &   ondevice=.TRUE.)
 C$OMP END MASTER
-#endif
+# endif
 
 !
 !-----------------------------------------------------------------------
@@ -615,7 +615,7 @@ C$OMP END MASTER
 ! computation  MPI computational margins.
 !----------------------------------------------------------------------
 !
-#ifdef SOLVE3D
+# ifdef SOLVE3D
       cff1=weight(1,iif)
       cff2=weight(2,iif)
 !$acc kernels if(compute_on_device) default(present) async(1)
@@ -638,9 +638,9 @@ C$OMP END MASTER
           enddo
         enddo
       endif
-#else      
+# else      
 !$acc kernels if(compute_on_device) default(present) async(1)
-#endif
+# endif
 
 !
 !
@@ -668,53 +668,53 @@ C$OMP END MASTER
           rubar(i,j)=cff*on_u(i,j)*(
      &                         (h(i-1,j)+h(i,j))*(rzeta(i-1,j)
      &                        -rzeta(i,j)) +rzeta2(i-1,j)-rzeta2(i,j)
-#if defined VAR_RHO_2D && defined SOLVE3D
+# if defined VAR_RHO_2D && defined SOLVE3D
      &              +(h(i-1,j)-h(i,j))*( rzetaSA(i-1,j)+rzetaSA(i,j)
      &                        +0.333333333333*(rhoA(i-1,j)-rhoA(i,j))
      &                                      *(zwrk(i-1,j)-zwrk(i,j)))
-#endif
-#ifdef MRL_WCI
+# endif
+# ifdef MRL_WCI
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                       *( sup(i,j)-sup(i-1,j) )
-#endif
-#if defined POT_TIDES && !defined SOLVE3D
+# endif
+# if defined POT_TIDES && !defined SOLVE3D
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i-1,j) )
-#endif
-#if defined READ_PATM && !defined SOLVE3D
+# endif
+# if defined READ_PATM && !defined SOLVE3D
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                   *( patm2d(i,j)-patm2d(i-1,j) )
-#endif
+# endif
      &                                                              )
 ! 
           rvbar(i,j)=cff*om_v(i,j)*(
      &            (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
      &                        -rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
-#if defined VAR_RHO_2D && defined SOLVE3D
+# if defined VAR_RHO_2D && defined SOLVE3D
      &              +(h(i,j-1)-h(i,j))*( rzetaSA(i,j-1)+rzetaSA(i,j)
      &                        +0.333333333333*(rhoA(i,j-1)-rhoA(i,j))
      &                                      *(zwrk(i,j-1)-zwrk(i,j)))
-#endif
-#ifdef MRL_WCI
+# endif
+# ifdef MRL_WCI
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                       *( sup(i,j)-sup(i,j-1) )
-#endif
-#if defined POT_TIDES && !defined SOLVE3D
+# endif
+# if defined POT_TIDES && !defined SOLVE3D
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i,j-1) )
-#endif
-#if defined READ_PATM && !defined SOLVE3D
+# endif
+# if defined READ_PATM && !defined SOLVE3D
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                   *( patm2d(i,j)-patm2d(i,j-1) )
-#endif
+# endif
      &                                                              )
         enddo
       enddo            !--> discard  zwrk, rzeta, rzeta2, rzetaSA
 
-#undef rzetaSA
-#undef rzeta2
-#undef rzeta
-#undef zwrk
+# undef rzetaSA
+# undef rzeta2
+# undef rzeta
+# undef zwrk
 !
 !========================================================================
 ! Compute horizontal advection terms for momentum equations (2D only)
@@ -732,9 +732,9 @@ C$OMP END MASTER
 ! directions.
 !========================================================================
 !
-#ifdef UV_ADV
+# ifdef UV_ADV
 !
-# if defined SOLVE3D || !defined M2_HADV_UP3
+#  if defined SOLVE3D || !defined M2_HADV_UP3
 !-----------------------------------------------------------------------
 ! Centered Second order advection scheme
 !
@@ -749,12 +749,12 @@ C$OMP END MASTER
 
           VFx(i+1,j)=0.25*(DUon(i+1,j)+DUon(i+1,j-1))
      &                   *(vrhs(i+1,j)+vrhs(i,j))
-#  ifdef MASKING
+#   ifdef MASKING
      &                                 *pmask(i+1,j)
-#  endif
-#  ifdef WET_DRY0
+#   endif
+#   ifdef WET_DRY0
      &                                 *pmask_wet(i+1,j)
-#  endif
+#   endif
         enddo
       enddo
       do j=Jstr-1,Jend
@@ -764,12 +764,12 @@ C$OMP END MASTER
 
           UFe(i,j+1)=0.25*(DVom(i,j+1)+DVom(i-1,j+1))
      &                   *(urhs(i,j+1)+urhs(i,j))
-#  ifdef MASKING
+#   ifdef MASKING
      &                                 *pmask(i,j+1)
-#  endif
-#  ifdef WET_DRY0
+#   endif
+#   ifdef WET_DRY0
      &                                 *pmask_wet(i,j+1)
-#  endif
+#   endif
         enddo
       enddo
       do j=Jstr,Jend
@@ -782,19 +782,19 @@ C$OMP END MASTER
         enddo
       enddo !--> discard UFx,VFe,UFe,VFx, DUon,DVom
 
-# else
+#  else
 !-----------------------------------------------------------------------
 !  UP3 (QUICK) spatial advection scheme as in 3D part
 !
 !  in this case, there is no numerical requirement for explicit viscosity
 !-----------------------------------------------------------------------
-#  define uxx wrk1
-#  define Huxx wrk2
+#   define uxx wrk1
+#   define Huxx wrk2
 !
-#  ifdef EW_PERIODIC
-#   define IU_EXT_RANGE IstrU-1,Iend+1
-#  else
-#   ifdef MPI
+#   ifdef EW_PERIODIC
+#    define IU_EXT_RANGE IstrU-1,Iend+1
+#   else
+#    ifdef MPI
         if (WEST_INTER) then
           imin=IstrU-1
         else
@@ -805,11 +805,11 @@ C$OMP END MASTER
         else
           imax=min(Iend+1,Lmmpi)
         endif
-#    define IU_EXT_RANGE imin,imax
-#   else
-#    define IU_EXT_RANGE max(IstrU-1,2),min(Iend+1,Lm)
+#     define IU_EXT_RANGE imin,imax
+#    else
+#     define IU_EXT_RANGE max(IstrU-1,2),min(Iend+1,Lm)
+#    endif
 #   endif
-#  endif
 
         do j=Jstr,Jend
           do i=IU_EXT_RANGE
@@ -818,7 +818,7 @@ C$OMP END MASTER
           enddo
         enddo
 #   undef IU_EXT_RANGE
-#  ifndef EW_PERIODIC
+#   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
           do j=Jstr,Jend
             uxx(1,j)=uxx(2,j)
@@ -826,19 +826,19 @@ C$OMP END MASTER
           enddo
         endif
         if (EASTERN_EDGE) then
-#   ifdef MPI
+#    ifdef MPI
           do j=Jstr,Jend
             uxx(Lmmpi+1,j)=uxx(Lmmpi,j)
             Huxx(Lmmpi+1,j)=Huxx(Lmmpi,j)
           enddo
-#   else
+#    else
           do j=Jstr,Jend
             uxx(Lm+1,j)=uxx(Lm,j)
             Huxx(Lm+1,j)=Huxx(Lm,j)
           enddo
-#   endif
+#    endif
         endif
-#  endif
+#   endif
 
         do j=Jstr,Jend
           do i=IstrU-1,Iend
@@ -852,15 +852,15 @@ C$OMP END MASTER
      &               Duon(i+1,j)-0.125*(Huxx(i,j)+Huxx(i+1,j)))
           enddo
         enddo
-#  undef Huxx
-#  undef uxx
-#  define vee wrk1
-#  define Hvee wrk2
+#   undef Huxx
+#   undef uxx
+#   define vee wrk1
+#   define Hvee wrk2
 
-#  ifdef NS_PERIODIC
-#   define JV_EXT_RANGE JstrV-1,Jend+1
-#  else
-#   ifdef MPI
+#   ifdef NS_PERIODIC
+#    define JV_EXT_RANGE JstrV-1,Jend+1
+#   else
+#    ifdef MPI
         if (SOUTH_INTER) then
           jmin=JstrV-1
         else
@@ -871,11 +871,11 @@ C$OMP END MASTER
         else
           jmax=min(Jend+1,Mmmpi)
         endif
-#    define JV_EXT_RANGE jmin,jmax
-#   else
-#    define JV_EXT_RANGE max(JstrV-1,2),min(Jend+1,Mm)
+#     define JV_EXT_RANGE jmin,jmax
+#    else
+#     define JV_EXT_RANGE max(JstrV-1,2),min(Jend+1,Mm)
+#    endif
 #   endif
-#  endif
 
         do j=JV_EXT_RANGE
           do i=Istr,Iend
@@ -884,7 +884,7 @@ C$OMP END MASTER
           enddo
         enddo
 #   undef JV_EXT_RANGE
-#  ifndef NS_PERIODIC
+#   ifndef NS_PERIODIC
         if (SOUTHERN_EDGE) then
           do i=Istr,Iend
             vee(i,1)=vee(i,2)
@@ -892,19 +892,19 @@ C$OMP END MASTER
           enddo
         endif
         if (NORTHERN_EDGE) then
-#   ifdef MPI
+#    ifdef MPI
           do i=Istr,Iend
             vee(i,Mmmpi+1)=vee(i,Mmmpi)
             Hvee(i,Mmmpi+1)=Hvee(i,Mmmpi)
           enddo
-#   else
+#    else
           do i=Istr,Iend
             vee(i,Mm+1)=vee(i,Mm)
             Hvee(i,Mm+1)=Hvee(i,Mm)
           enddo
-#   endif
+#    endif
         endif
-#  endif
+#   endif
         do j=JstrV-1,Jend
           do i=Istr,Iend
             cffE=vrhs(i,j)+vrhs(i,j+1)
@@ -917,15 +917,15 @@ C$OMP END MASTER
      &               Dvom(i,j+1)-0.125*(Hvee(i,j)+Hvee(i,j+1)))
           enddo
         enddo
-#  undef Hvee
-#  undef vee
-#  define uee wrk1
-#  define Hvxx wrk2
+#   undef Hvee
+#   undef vee
+#   define uee wrk1
+#   define Hvxx wrk2
 
-#  ifdef NS_PERIODIC
-#   define JU_EXT_RANGE Jstr-1,Jend+1
-#  else
-#   ifdef MPI
+#   ifdef NS_PERIODIC
+#    define JU_EXT_RANGE Jstr-1,Jend+1
+#   else
+#    ifdef MPI
         if (SOUTH_INTER) then
           jmin=Jstr-1
         else
@@ -936,11 +936,11 @@ C$OMP END MASTER
         else
           jmax=min(Jend+1,Mmmpi)
         endif
-#    define JU_EXT_RANGE jmin,jmax
-#   else
-#    define JU_EXT_RANGE max(Jstr-1,1),min(Jend+1,Mm)
+#     define JU_EXT_RANGE jmin,jmax
+#    else
+#     define JU_EXT_RANGE max(Jstr-1,1),min(Jend+1,Mm)
+#    endif
 #   endif
-#  endif
 
         do j=JU_EXT_RANGE
           do i=IstrU,Iend
@@ -948,24 +948,24 @@ C$OMP END MASTER
           enddo
         enddo
 #   undef JU_EXT_RANGE
-#  ifndef NS_PERIODIC
+#   ifndef NS_PERIODIC
         if (SOUTHERN_EDGE) then
           do i=IstrU,Iend
             uee(i,0)=uee(i,1)
           enddo
         endif
         if (NORTHERN_EDGE) then
-#   ifdef MPI
+#    ifdef MPI
           do i=IstrU,Iend
             uee(i,Mmmpi+1)=uee(i,Mmmpi)
           enddo
-#   else
+#    else
           do i=IstrU,Iend
             uee(i,Mm+1)=uee(i,Mm)
           enddo
-#   endif
+#    endif
         endif
-#  endif
+#   endif
         do j=Jstr,Jend+1
           do i=IstrU-1,Iend
            Hvxx(i,j)=Dvom(i-1,j)-2.*Dvom(i,j)+Dvom(i+1,j)
@@ -984,15 +984,15 @@ C$OMP END MASTER
      &                             Hvxx(i,j)+Hvxx(i-1,j) ))
           enddo
         enddo
-#  undef Hvxx
-#  undef uee
-#  define vxx wrk1
-#  define Huee wrk2
+#   undef Hvxx
+#   undef uee
+#   define vxx wrk1
+#   define Huee wrk2
 
-#  ifdef EW_PERIODIC
-#   define IV_EXT_RANGE Istr-1,Iend+1
-#  else
-#   ifdef MPI
+#   ifdef EW_PERIODIC
+#    define IV_EXT_RANGE Istr-1,Iend+1
+#   else
+#    ifdef MPI
         if (WEST_INTER) then
           imin=Istr-1
         else
@@ -1003,11 +1003,11 @@ C$OMP END MASTER
         else
           imax=min(Iend+1,Lmmpi)
         endif
-#    define IV_EXT_RANGE imin,imax
-#   else
-#    define IV_EXT_RANGE max(Istr-1,1),min(Iend+1,Lm)
+#     define IV_EXT_RANGE imin,imax
+#    else
+#     define IV_EXT_RANGE max(Istr-1,1),min(Iend+1,Lm)
+#    endif
 #   endif
-#  endif
 
         do j=JstrV,Jend
           do i=IV_EXT_RANGE
@@ -1015,25 +1015,25 @@ C$OMP END MASTER
           enddo
         enddo
 #   undef IV_EXT_RANGE
-#  ifndef EW_PERIODIC
+#   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
           do j=JstrV,Jend
             vxx(0,j)=vxx(1,j)
           enddo
         endif
         if (EASTERN_EDGE) then
-#   ifdef MPI
+#    ifdef MPI
           do j=JstrV,Jend
             vxx(Lmmpi+1,j)=vxx(Lmmpi,j)
           enddo
-#   else
+#    else
           do j=JstrV,Jend
             vxx(Lm+1,j)=vxx(Lm,j)
           enddo
-#   endif
+#    endif
         endif
 
-#  endif
+#   endif
         do j=JstrV-1,Jend
           do i=Istr,Iend+1
            Huee(i,j)=Duon(i,j-1)-2.*Duon(i,j)+Duon(i,j+1)
@@ -1052,8 +1052,8 @@ C$OMP END MASTER
      &                             Huee(i,j)+Huee(i,j-1) ))
           enddo
         enddo
-#undef Huee
-#undef vxx
+#   undef Huee
+#   undef vxx
         do j=Jstr,Jend
           do i=IstrU,Iend
             rubar(i,j)=rubar(i,j)-UFx(i,j  )+UFx(i-1,j)
@@ -1066,42 +1066,42 @@ C$OMP END MASTER
      &                           -VFe(i  ,j)+VFe(i,j-1)
           enddo
         enddo
-# endif /* !SOLVE3D && M2_HADV_UP3 */
-#endif /* UV_ADV */
+#  endif /* !SOLVE3D && M2_HADV_UP3 */
+# endif /* UV_ADV */
 !
 !-----------------------------------------------------------------------
 ! Compute Coriolis (2D and 3D) term and advective curvilinear metric
 ! terms (2D only).
 !-----------------------------------------------------------------------
 !
-#if defined UV_COR || (defined CURVGRID && defined UV_ADV)
+# if defined UV_COR || (defined CURVGRID && defined UV_ADV)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           cff=Drhs(i,j)*(
-# ifdef UV_COR
+#  ifdef UV_COR
      &                   fomn(i,j)
-# endif
-# if (defined CURVGRID && defined UV_ADV)
+#  endif
+#  if (defined CURVGRID && defined UV_ADV)
      &          +0.5*( dndx(i,j)*(vrhs(i,j)+vrhs(i,j+1))
      &                -dmde(i,j)*(urhs(i,j)+urhs(i+1,j)))
-# endif
+#  endif
      &                   )
-# ifdef MRL_WCI
-#  if defined CURVGRID && defined UV_ADV
+#  ifdef MRL_WCI
+#   if defined CURVGRID && defined UV_ADV
           cff1 = Drhs(i,j)*(
      &           0.5*( dndx(i,j)*(vst2d(i,j)+vst2d(i,j+1))
      &                -dmde(i,j)*(ust2d(i,j)+ust2d(i+1,j))) )
-#  else
+#   else
           cff1 = 0.0
-#  endif
+#   endif
           UFx(i,j)=(cff+cff1)*(vrhs(i,j)+vrhs(i,j+1))
      &                 +cff*(vst2d(i,j)+vst2d(i,j+1))
           VFe(i,j)=(cff+cff1)*(urhs(i,j)+urhs(i+1,j))
      &                 +cff*(ust2d(i,j)+ust2d(i+1,j))
-# else
+#  else
           UFx(i,j)=cff*(vrhs(i,j)+vrhs(i,j+1))
           VFe(i,j)=cff*(urhs(i,j)+urhs(i+1,j))
-# endif
+#  endif
         enddo
       enddo
       do j=Jstr,Jend
@@ -1114,16 +1114,16 @@ C$OMP END MASTER
           rvbar(i,j)=rvbar(i,j)-0.25*(VFe(i,j)+VFe(i,j-1))
         enddo
       enddo
-#endif
+# endif
 !
 !-----------------------------------------------------------------------
 ! Compute horizontal viscous stress terms (2D only).
 !-----------------------------------------------------------------------
 !
-#ifdef SOLVE3D
-# undef UV_VIS2
-#endif
-#ifdef UV_VIS2
+# ifdef SOLVE3D
+#  undef UV_VIS2
+# endif
+# ifdef UV_VIS2
       do j=Jstr-1,Jend
         do i=Istr-1,Iend
           cff=2.*Drhs(i,j)*visc2_r(i,j)
@@ -1139,9 +1139,9 @@ C$OMP END MASTER
      &         +(pm(i+1,j+1)+pm(i,j+1)+pm(i+1,j)+pm(i,j))
      &             *(vbar(i+1,j+1,kstp)-vbar(i,j+1,kstp))
      &                                                  )
-# ifdef MASKING
+#  ifdef MASKING
      &                     *pmask(i+1,j+1)
-# endif
+#  endif
           UFe(i+1,j+1)=cff1*om_p(i+1,j+1)
           VFx(i+1,j+1)=cff1*on_p(i+1,j+1)
         enddo
@@ -1155,13 +1155,13 @@ C$OMP END MASTER
      &                         +VFe(i,j)-VFe(i,j-1)
         enddo
       enddo
-#endif /* UV_VIS2 */
+# endif /* UV_VIS2 */
 !
 !-----------------------------------------------------------------------
 ! Linear and/or quadratic bottom stress.
 !-----------------------------------------------------------------------
 !
-#ifdef BBL
+# ifdef BBL
         do j=Jstr,Jend
           do i=IstrU,Iend
             rubar(i,j)=rubar(i,j) - bustr(i,j)
@@ -1174,7 +1174,7 @@ C$OMP END MASTER
      &                             *om_v(i,j)*on_v(i,j)
           enddo
         enddo
-#else
+# else
       if (rdrg2.gt.0.) then
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -1210,13 +1210,13 @@ C$OMP END MASTER
           enddo
         enddo
       endif
-#endif
+# endif
 !
 !-----------------------------------------------------------------------
 ! Add 2D vortex-force terms combined with advection terms
 !-----------------------------------------------------------------------
 !
-#ifdef MRL_WCI
+# ifdef MRL_WCI
       do j=Jstr,Jend
         do i=IstrU,Iend
           vstu = 0.25*( vst2d(i  ,j)+vst2d(i  ,j+1)
@@ -1242,7 +1242,7 @@ C$OMP END MASTER
      &               *( ustv*dude + vst2d(i,j)*dvde )
         enddo
       enddo
-#endif
+# endif
 !$acc end kernels
 !
 !-----------------------------------------------------------------------
@@ -1263,10 +1263,10 @@ C$OMP END MASTER
 ! during all subsequent barotropic time steps.
 !-----------------------------------------------------------------------
 !
-#ifdef SOLVE3D
+# ifdef SOLVE3D
       if (FIRST_2D_STEP) then
 
-# ifdef PRED_COUPLED_MODE
+#  ifdef PRED_COUPLED_MODE
         if (FIRST_TIME_STEP) then
           cff3=0.                        ! This version is designed
           cff2=0.                        ! for coupling during 3D
@@ -1297,14 +1297,14 @@ C$OMP END MASTER
             rvfrc_bak(i,j,nstp)=cff
           enddo
         enddo
-# else
+#  else
         do j=Jstr,Jend                       ! This version is
           do i=Istr,Iend                     ! designed for coupling
             rufrc(i,j)=rufrc(i,j)-rubar(i,j) ! during 3D corrector
             rvfrc(i,j)=rvfrc(i,j)-rvbar(i,j) ! sub-step: no forward
           enddo                              ! extrapolation needs
         enddo                                ! to be performed.
-# endif
+#  endif
 !
 !-----------------------------------------------------------------------
 ! Since coupling requires that pressure gradient term is computed
@@ -1314,22 +1314,22 @@ C$OMP END MASTER
 ! from Forward Euler to Forward-Backward].
 !-----------------------------------------------------------------------
 !
-# define zwrk UFx
-# define rzeta  UFe
-# define rzeta2  VFe
-# define rzetaSA VFx
+#  define zwrk UFx
+#  define rzeta  UFe
+#  define rzeta2  VFe
+#  define rzetaSA VFx
 
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             zwrk(i,j)=zeta_new(i,j)-zeta(i,j,kstp)
-# if defined VAR_RHO_2D && defined SOLVE3D
+#  if defined VAR_RHO_2D && defined SOLVE3D
             rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
             rzeta2(i,j)=rzeta(i,j)*(zeta_new(i,j)+zeta(i,j,kstp))
             rzetaSA(i,j)=zwrk(i,j)*(rhoS(i,j)-rhoA(i,j))
-# else
+#  else
             rzeta(i,j)=zwrk(i,j)
             rzeta2(i,j)=zwrk(i,j)*(zeta_new(i,j)+zeta(i,j,kstp))
-# endif
+#  endif
           enddo
         enddo
 
@@ -1338,33 +1338,33 @@ C$OMP END MASTER
           do i=Istr,Iend
             rubar(i,j)=rubar(i,j) +cff*on_u(i,j)*( (h(i-1,j)+h(i,j))
      &          *(rzeta(i-1,j)-rzeta(i,j)) +rzeta2(i-1,j)-rzeta2(i,j)
-# if defined VAR_RHO_2D && defined SOLVE3D
+#  if defined VAR_RHO_2D && defined SOLVE3D
      &              +(h(i-1,j)-h(i,j))*( rzetaSA(i-1,j)+rzetaSA(i,j)
      &                        +0.333333333333*(rhoA(i-1,j)-rhoA(i,j))
      &                                     *(zwrk(i-1,j)-zwrk(i,j)) )
-# endif
+#  endif
      &                                                              )
 !
             rvbar(i,j)=rvbar(i,j) +cff*om_v(i,j)*( (h(i,j-1)+h(i,j))
      &          *(rzeta(i,j-1)-rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
 
-# if defined VAR_RHO_2D && defined SOLVE3D
+#  if defined VAR_RHO_2D && defined SOLVE3D
      &              +(h(i,j-1)-h(i,j))*( rzetaSA(i,j-1)+rzetaSA(i,j)
      &                        +0.333333333333*(rhoA(i,j-1)-rhoA(i,j))
      &                                     *(zwrk(i,j-1)-zwrk(i,j)) )
-# endif
+#  endif
      &                                                              )
           enddo
         enddo            !--> discard  zwrk, rzeta, rzeta2, rzetaSA
 
-# undef rzetaSA
-# undef rzeta2
-# undef rzeta
-# undef zwrk
+#  undef rzetaSA
+#  undef rzeta2
+#  undef rzeta
+#  undef zwrk
 !$acc end kernels
       endif   !<-- FIRST_2D_STEP
 
-#endif /* SOLVE3D */
+# endif /* SOLVE3D */
 !
 !-----------------------------------------------------------------------
 ! Perform time step for the 2D momentum equations.
@@ -1379,7 +1379,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 
-#define Dstp DUon
+# define Dstp DUon
 !$acc kernels if(compute_on_device) default(present) async(1)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -1388,51 +1388,51 @@ C$OMP END MASTER
       enddo
 
       cff=0.5*dtfast
-#ifdef SOLVE3D
+# ifdef SOLVE3D
       cff1=0.5*weight(1,iif)
-#else
+# else
       cff2=2.*dtfast
-#endif
+# endif
       do j=Jstr,Jend
         do i=IstrU,Iend
           DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
      &        +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
-#ifdef SOLVE3D
+# ifdef SOLVE3D
      &                             *(rubar(i,j)+rufrc(i,j))
-#else
+# else
      &                          *rubar(i,j)+cff2*sustr(i,j)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                    +cff2*brk2dx(i,j)
-#  ifdef WAVE_STREAMING
+#   ifdef WAVE_STREAMING
      &                                    +cff2*frc2dx(i,j)
+#   endif
 #  endif
 # endif
-#endif
      &                                                    )
-#ifdef MASKING
+# ifdef MASKING
      &                                         *umask(i,j)
-#endif
-#ifdef WET_DRY
+# endif
+# ifdef WET_DRY
           cff1_WD=ABS(ABS(umask_wet(i,j))-1.)
           cff2_WD=0.5+SIGN(0.5,DUnew)*umask_wet(i,j)
           umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DUnew=DUnew*umask_wet(i,j)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
           ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
-# endif
-#endif
-          ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
-#ifdef SOLVE3D
-          DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*on_u(i,j)*( DUnew
-# ifdef MRL_WCI
-     &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
-#  ifdef WET_DRY
-     &                                    *umask_wet(i,j)
 #  endif
 # endif
+          ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
+# ifdef SOLVE3D
+          DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*on_u(i,j)*( DUnew
+#  ifdef MRL_WCI
+     &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
+#   ifdef WET_DRY
+     &                                    *umask_wet(i,j)
+#   endif
+#  endif
      &                                                  )
-#endif
+# endif
         enddo
       enddo
 
@@ -1440,42 +1440,42 @@ C$OMP END MASTER
         do i=Istr,Iend
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
      &        +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
-#ifdef SOLVE3D
+# ifdef SOLVE3D
      &                             *(rvbar(i,j)+rvfrc(i,j))
-#else
+# else
      &                          *rvbar(i,j)+cff2*svstr(i,j)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                                    +cff2*brk2de(i,j)
-#  ifdef WAVE_STREAMING
+#   ifdef WAVE_STREAMING
      &                                    +cff2*frc2de(i,j)
+#   endif
 #  endif
 # endif
-#endif
      &                                                    )
-#ifdef MASKING
+# ifdef MASKING
      &                                         *vmask(i,j)
-#endif
-#ifdef WET_DRY
+# endif
+# ifdef WET_DRY
           cff1_WD=ABS(ABS(vmask_wet(i,j))-1.)
           cff2_WD=0.5+SIGN(0.5,DVnew)*vmask_wet(i,j)
           vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
      &                        +cff2_WD*(1.-cff1_WD)
           DVnew=DVnew*vmask_wet(i,j)
-# ifdef MRL_WCI
+#  ifdef MRL_WCI
           vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
-# endif
-#endif
-          vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
-#ifdef SOLVE3D
-          DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*om_v(i,j)*(DVnew
-# ifdef MRL_WCI
-     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
-#  ifdef WET_DRY
-     &                                     *vmask_wet(i,j)
 #  endif
 # endif
+          vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
+# ifdef SOLVE3D
+          DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*om_v(i,j)*(DVnew
+#  ifdef MRL_WCI
+     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
+#   ifdef WET_DRY
+     &                                     *vmask_wet(i,j)
+#   endif
+#  endif
      &                                                   )
-#endif
+# endif
         enddo
       enddo
 !
@@ -1483,9 +1483,9 @@ C$OMP END MASTER
 !  Set 2D Momemtum nudging
 !-----------------------------------------------------------------------
 !
-#if defined M2NUDGING && defined M2CLIMATOLOGY
+# if defined M2NUDGING && defined M2CLIMATOLOGY
 
-# ifdef ZONAL_NUDGING
+#  ifdef ZONAL_NUDGING
 !$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         if (FIRST_2D_STEP) then
@@ -1504,93 +1504,93 @@ C$OMP END MASTER
         endif
       endif
 !$acc kernels if(compute_on_device) default(present) async(1)
-# endif /* ZONAL_NUDGING */
+#  endif /* ZONAL_NUDGING */
 
       do j=Jstr,Jend
         do i=IstrU,Iend
-# ifdef ZONAL_NUDGING
+#  ifdef ZONAL_NUDGING
           DUnew = dtfast*M2nudgcof(i,j)*(ubclmzon(j)-ubzon(j))
-# else
+#  else
           DUnew = dtfast*M2nudgcof(i,j)*(ubclm(i,j)-ubar(i,j,knew))
-# endif
-# ifdef MASKING
+#  endif
+#  ifdef MASKING
      &                 * umask(i,j)
-# endif
-# ifdef WET_DRY
+#  endif
+#  ifdef WET_DRY
      &                 * umask_wet(i,j)
-# endif
+#  endif
           ubar(i,j,knew)=ubar(i,j,knew) + DUnew
-# ifdef SOLVE3D
+#  ifdef SOLVE3D
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*DUnew*
      &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
-# endif
+#  endif
         enddo
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
-# if defined ZONAL_NUDGING
+#  if defined ZONAL_NUDGING
           DVnew = dtfast*M2nudgcof(i,j)*(vbclmzon(j)-vbzon(j))
-# else
+#  else
           DVnew = dtfast*M2nudgcof(i,j)*(vbclm(i,j)-vbar(i,j,knew))
-# endif
-# ifdef MASKING
+#  endif
+#  ifdef MASKING
      &                 * vmask(i,j)
-# endif
-# ifdef WET_DRY
+#  endif
+#  ifdef WET_DRY
      &                 * vmask_wet(i,j)
-# endif
+#  endif
           vbar(i,j,knew)=vbar(i,j,knew) + DVnew
-# ifdef SOLVE3D
+#  ifdef SOLVE3D
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*DVnew*
      &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
-# endif
+#  endif
 
         enddo
       enddo
-#endif
+# endif
 !
 !-----------------------------------------------------------------------
 !  Body force for the Internal Tide test case
 !-----------------------------------------------------------------------
 !
-#if defined INTERNAL || defined BODYTIDE
+# if defined INTERNAL || defined BODYTIDE
       omega=2.*pi/(12.4*3600.)
       U0=0.02
       do j=Jstr,Jend
         do i=IstrU,Iend
           DUnew = dtfast*omega*U0*cos(omega*time)
-# ifdef MASKING
+#  ifdef MASKING
      &                 * umask(i,j)
-# endif
-# ifdef WET_DRY
+#  endif
+#  ifdef WET_DRY
      &                 * umask_wet(i,j)
-# endif
+#  endif
           ubar(i,j,knew)=ubar(i,j,knew) + DUnew
-#ifdef SOLVE3D
+#  ifdef SOLVE3D
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*DUnew*
      &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
-#endif
+#  endif
         enddo
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
           DVnew = dtfast*0.5*(f(i,j)+f(i,j-1))*
      &                   U0*sin(omega*time)
-# ifdef MASKING
+#  ifdef MASKING
      &                 * vmask(i,j)
-# endif
-# ifdef WET_DRY
+#  endif
+#  ifdef WET_DRY
      &                 * vmask_wet(i,j)
-# endif
+#  endif
           vbar(i,j,knew)=vbar(i,j,knew) + DVnew
-#ifdef SOLVE3D
+#  ifdef SOLVE3D
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*DVnew*
      &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
-#endif
+#  endif
 
         enddo
       enddo
-#endif
+# endif
 !$acc end kernels
 !
 !-----------------------------------------------------------------------
@@ -1601,9 +1601,9 @@ C$OMP END MASTER
       call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
       call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
 
-#ifdef OBC_VOLCONS
+# ifdef OBC_VOLCONS
       call obc_flux_tile (Istr,Iend,Jstr,Jend)
-#endif
+# endif
 !
 !-----------------------------------------------------------------------
 ! Compute fast-time averaged barotropic mass fluxes along physical
@@ -1611,8 +1611,8 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present) async(1)
-#ifdef SOLVE3D
-# ifndef EW_PERIODIC
+# ifdef SOLVE3D
+#  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=Jstr-1,JendR
           Dnew(Istr-1,j)=h(Istr-1,j)+zeta(Istr-1,j,knew)
@@ -1623,8 +1623,8 @@ C$OMP END MASTER
           Dnew(Iend+1,j)=h(Iend+1,j)+zeta(Iend+1,j,knew)
         enddo
       endif
-# endif
-# ifndef NS_PERIODIC
+#  endif
+#  ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=Istr-1,IendR
           Dnew(i,Jstr-1)=h(i,Jstr-1)+zeta(i,Jstr-1,knew)
@@ -1635,29 +1635,29 @@ C$OMP END MASTER
           Dnew(i,Jend+1)=h(i,Jend+1)+zeta(i,Jend+1,knew)
         enddo
       endif
-# endif
+#  endif
 !$acc end kernels
 
       cff1=0.5*weight(1,iif)  
 !$acc kernels if(compute_on_device) default(present) async(1)
-# ifndef EW_PERIODIC
+#  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)
      &         +cff1*(Dnew(IstrU-1,j)
      &         +Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
-# ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                                             +ust2d(IstrU-1,j)
-# endif
+#   endif
      &                                             )*on_u(IstrU-1,j)
         enddo
         do j=JstrV,Jend
           DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)
      &       +cff1*(Dnew(Istr-1,j)
      &       +Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
-# ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                                              +vst2d(Istr-1,j)
-# endif
+#   endif
      &                                              )*om_v(Istr-1,j)
         enddo
       endif
@@ -1667,40 +1667,40 @@ C$OMP END MASTER
           DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)
      &            +cff1*( Dnew(Iend+1,j)
      &            +Dnew(Iend,j) )*(ubar(Iend+1,j,knew)
-# ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                                              +ust2d(Iend+1,j)
-# endif
+#   endif
      &                                              )*on_u(Iend+1,j)
         enddo
         do j=JstrV,Jend
           DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)
      &        +cff1*( Dnew(Iend+1,j)
      &        +Dnew(Iend+1,j-1) )*(vbar(Iend+1,j,knew)
-# ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                                              +vst2d(Iend+1,j)
-# endif
+#   endif
      &                                              )*om_v(Iend+1,j)
         enddo
       endif
-# endif
-# ifndef NS_PERIODIC
+#  endif
+#  ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=IstrU,Iend
           DU_avg1(i,Jstr-1,nnew)=DU_avg1(i,Jstr-1,nnew)
      &        +cff1*( Dnew(i,Jstr-1)
      &        +Dnew(i-1,Jstr-1) )*(ubar(i,Jstr-1,knew)
-# ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                                              +ust2d(i,Jstr-1)
-# endif
+#   endif
      &                                              )*on_u(i,Jstr-1)
         enddo
         do i=IstrR,IendR
           DV_avg1(i,JstrV-1,nnew)=DV_avg1(i,JstrV-1,nnew)
      &         +cff1*(Dnew(i,JstrV-1)
      &         +Dnew(i,JstrV-2))*(vbar(i,JstrV-1,knew)
-# ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                                              +vst2d(i,JstrV-1)
-# endif
+#   endif
      &                                              )*om_v(i,JstrV-1)
         enddo
       endif
@@ -1709,70 +1709,70 @@ C$OMP END MASTER
           DU_avg1(i,Jend+1,nnew)=DU_avg1(i,Jend+1,nnew)
      &        +cff1*( Dnew(i,Jend+1)
      &        +Dnew(i-1,Jend+1) )*(ubar(i,Jend+1,knew)
-# ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                                               +ust2d(i,Jend+1)
-# endif
+#   endif
      &                                               )*on_u(i,Jend+1)
         enddo
         do i=IstrR,IendR
           DV_avg1(i,Jend+1,nnew)=DV_avg1(i,Jend+1,nnew)
      &            +cff1*( Dnew(i,Jend+1)
      &            +Dnew(i,Jend) )*(vbar(i,Jend+1,knew)
-# ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                                               +vst2d(i,Jend+1)
-# endif
+#   endif
      &                                               )*om_v(i,Jend+1)
         enddo
       endif
+#  endif
 # endif
-#endif
 !
 !-----------------------------------------------------------------------
 ! Apply point sources for river runoff simulations
 !-----------------------------------------------------------------------
 !
-#ifdef PSOURCE
+# ifdef PSOURCE
       do is=1,Nsrc
-# ifdef MPI
+#  ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
-# else
+#  else
         i=Isrc(is)
         j=Jsrc(is)
-# endif
+#  endif
         if (IstrR.le.i .and. i.le.IendR .and.
      &      JstrR.le.j .and. j.le.JendR) then
           if (Dsrc(is).eq.0) then
             ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
      &                       *(Dnew(i-1,j)+Dnew(i,j)) )
-# ifdef SOLVE3D
+#  ifdef SOLVE3D
             DU_avg1(i,j,nnew)=Qbar(is)
-# endif
+#  endif
           elseif (Dsrc(is).eq.1) then
             vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
      &                       *(Dnew(i,j-1)+Dnew(i,j)) )
-# ifdef SOLVE3D
+#  ifdef SOLVE3D
             DV_avg1(i,j,nnew)=Qbar(is)
-# endif
+#  endif
           endif
         endif
       enddo
-#endif
+# endif
 !
 !-----------------------------------------------------------------------
 !  Diagnostics
 !-----------------------------------------------------------------------
 !
 !$acc end kernels
-#ifndef SOLVE3D
+# ifndef SOLVE3D
       call diag_tile (Istr,Iend,Jstr,Jend, UFx,UFe)
-#endif
+# endif
 !
 !-----------------------------------------------------------------------
 !  Exchange boundary information.
 !-----------------------------------------------------------------------
 !
-#if defined BD_EXCHANGE
+# if defined BD_EXCHANGE
 !# ifdef BASIN      
 !      call exchange_r2d_1pts_tile (Istr,Iend,Jstr,Jend,
 !     &                   zeta(START_2D_ARRAY,knew))
@@ -1784,13 +1784,13 @@ C$OMP END MASTER
      &                   ubar(START_2D_ARRAY,knew))
       call exchange_v2d_1pts_tile (Istr,Iend,Jstr,Jend,
      &                   vbar(START_2D_ARRAY,knew))
-# if defined MRL_WCI && defined WET_DRY
+#  if defined MRL_WCI && defined WET_DRY
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   ust2d(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   vst2d(START_2D_ARRAY))
+#  endif
 # endif
-#endif
 !
 !
 !-----------------------------------------------------------------------
@@ -1798,7 +1798,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present) async(1)
-#ifdef AGRIF
+# ifdef AGRIF
       if (.NOT.Agrif_Root()) THEN
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
@@ -1818,16 +1818,16 @@ C$OMP END MASTER
           enddo
         enddo
 
-# if defined BD_EXCHANGE
+#  if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        Zt_avg3(START_2D_ARRAY,iif))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        DU_avg3(START_2D_ARRAY,iif))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        DV_avg3(START_2D_ARRAY,iif))
-# endif
+#  endif
 
-# ifdef RVTK_DEBUG_ADVANCED
+#  ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step2d','r',
@@ -1837,9 +1837,9 @@ C$OMP MASTER
        call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step2d','v',
      &   ondevice=.TRUE.)
 C$OMP END MASTER
-# endif
+#  endif
       endif
-# ifdef AGRIF_CONSERV_VOL
+#  ifdef AGRIF_CONSERV_VOL
        if (iif == nfast) then
        if (agrif_root()) then
          do j=JstrR,JendR
@@ -1859,8 +1859,8 @@ C$OMP END MASTER
          enddo
        endif
        endif
-# endif
-#endif /* AGRIF */
+#  endif
+# endif /* AGRIF */
 !
 !-----------------------------------------------------------------------
 !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP
@@ -1884,7 +1884,7 @@ C$OMP END MASTER
 !  Debugging ubar,vbar
 !-----------------------------------------------------------------------
 !
-#ifdef RVTK_DEBUG_ADVANCED
+# ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(ubar(:,:,knew),'ubar step2d #2','u',
@@ -1892,7 +1892,7 @@ C$OMP MASTER
        call check_tab2d(vbar(:,:,knew),'vbar step2d #2','v',
      &   ondevice=.TRUE.)
 C$OMP END MASTER
-#endif
+# endif
 
       IF (VMAX.GT.VMAXL) THEN
 !$acc update if(compute_on_device) host(ubar(Istr:Iend,Jstr:Jend,knew))
@@ -1906,10 +1906,10 @@ C$OMP END MASTER
         ENDIF
         imax=ijmax(1)
         jmax=ijmax(2)
-#ifdef MPI
+# ifdef MPI
         imax=imax+iminmpi-1
         jmax=jmax+jminmpi-1
-#endif
+# endif
         write(stdout,'(9(A/))')
      &     '                                         ',
      &     '                                         ',
@@ -1929,31 +1929,31 @@ C$OMP END MASTER
         endif
         write(stdout,'(A,2I6)')
      &                                       '  IMAX JMAX  =',imax,jmax
-#if defined MPI
+# if defined MPI
         write(stdout,'(A,I6)')
      &                                       '  NODE  =',mynode
         write(stdout,'(A,2I6)')
      &       '  IMAX JMAX  =',imax-iminmpi+1,jmax-jminmpi+1
-#endif
-#ifdef SOLVE3D
+# endif
+# ifdef SOLVE3D
         write(stdout,'(A,2I6/)')
      &                                         '  IINT IEXT  =',iic,iif
-#else
+# else
         write(stdout,'(A,I6/)')    '  IIC        =',iic
-#endif
+# endif
         may_day_flag=1
-#ifdef MPI
+# ifdef MPI
         call mpi_abort (MPI_COMM_WORLD, err)
-#else
+# else
         stop                            !-->  EXIT
-#endif
+# endif
       ENDIF
 
-#ifdef SOLVE3D
+# ifdef SOLVE3D
       if (LAST_FAST_STEP) then
 !$acc wait
       endif
-#endif       
+# endif       
       return
       end
 #else
