@@ -222,6 +222,9 @@ class Croco:
 
                 # loop on all changes
                 for change in changes:
+                    # @todo: Force adding 'mode' in all cases and patch the
+                    # provided config JSON files to match.
+                    # Orignally 'replace' was default.
                     if change.get('mode', 'replace') == 'replace':
                         patch_lines(file_filtered, [
                             {

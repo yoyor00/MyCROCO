@@ -122,26 +122,34 @@ class JobcompCrocoConfig:
         # apply
         patch_lines(os.path.join(self.builddir, 'jobcomp'), rules)
 
-    def jobcomp_configure_set_compiler(self, fortran_compiler: str):
+    def jobcomp_configure_set_compiler(self, fortran_compiler: str, mpi: bool = False):
         '''
         Change the compiler.
         '''
 
         # build the rull
-        if self.minicroco:
+        if mpi:
             rules = [{
                 'mode'  :  'replace',
-                'what'  :  'test -z "$!FC" && FC=gfortran\n',
-                'by'    : f'test -z "$!FC" && FC={fortran_compiler}\n',
-                'descr' : f"Set fortran compiler to FC={fortran_compiler}"
+                'what'  :  'MPIF90="mpif90"\n',
+                'by'    : f'MPIF90="{fortran_compiler}"\n',
+                'descr' : f"Set fortran compiler to MPIF90={fortran_compiler}"
             }]
         else:
-            rules = [{
-                'mode'  :  'replace',
-                'what'  :  'FC=gfortran\n',
-                'by'    : f'FC={fortran_compiler}\n',
-                'descr' : f"Set fortran compiler to FC={fortran_compiler}"
-            }]
+            if self.minicroco:
+                rules = [{
+                    'mode'  :  'replace',
+                    'what'  :  'test -z "$!FC" && FC=gfortran\n',
+                    'by'    : f'test -z "$!FC" && FC={fortran_compiler}\n',
+                    'descr' : f"Set fortran compiler to FC={fortran_compiler}"
+                }]
+            else:
+                rules = [{
+                    'mode'  :  'replace',
+                    'what'  :  'FC=gfortran\n',
+                    'by'    : f'FC={fortran_compiler}\n',
+                    'descr' : f"Set fortran compiler to FC={fortran_compiler}"
+                }]
 
         # apply
         patch_lines(os.path.join(self.builddir, 'jobcomp'), rules)
@@ -273,7 +281,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         else:
             return filename
 
-    def handle_variables(self, arg_vars: list, is_not_mpi: bool, extra_vars: dict) -> dict:
+    def handle_variables(self, arg_vars: list, is_mpi: bool, extra_vars: dict) -> dict:
         '''
         Apply to ops required when getting some variables on the command line.
         
@@ -301,9 +309,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             if var_name == 'FFLAGS':
                 self.croco_config.jobcomp_configure_set_extra_fflags(var_value)
             elif var_name == 'FC':
-                # there is an issue if we force mpifort that way with jobcomp
-                if is_not_mpi:
-                    self.croco_config.jobcomp_configure_set_compiler(var_value)
+                # @todo: here there might be still something to fix when wanted to use non gfrotran
+                # mpi based due to requirement to patch FC & MPIF90.
+                self.croco_config.jobcomp_configure_set_compiler(var_value, mpi=is_mpi)
             else:
                 raise Exception(f"Unsupported variable : {entry}")
 
@@ -392,8 +400,8 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         use_openacc_psyclone = False
 
         # apply variable
-        is_not_mpi = (options.with_optim != 'mpi')
-        vars = self.handle_variables(options.VARS, is_not_mpi, extra_vars)
+        is_mpi = (options.with_optim == 'mpi')
+        vars = self.handle_variables(options.VARS, is_mpi, extra_vars)
 
         # apply optim mode
         if options.with_optim == 'seq':
