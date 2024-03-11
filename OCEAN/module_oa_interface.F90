@@ -2255,7 +2255,6 @@
 
 !$OMP END MASTER
 
-      print*,'tag1'
 !.....initialisation eventuelle des variables de test
 !     BLXD must be performed by all tile(-threads) in any order, concurrently or not 
       if (test_analysis) then
@@ -2264,7 +2263,6 @@
                           ,jmin=jmin, jmax=jmax     &
                           ,kmin=kmin, kmax=kmax )
       endif
-      print*,'tag2'
 
 !.....initialisation eventuelle des "levels"
 !     BLXD must be performed by all tile(-threads) in any order, concurrently or not 
@@ -2278,8 +2276,6 @@
         call lev_init_oa( tile, rhp_t, rhp_t_lbound, rhp_t_ubound ) 
 
       endif
-
-      print*,'tag3'
 
       ! OLD symphonie initialisations
       !......initialisation de variables symphonie:
@@ -2313,7 +2309,6 @@
            tile_count_oa=0
           end if last_tile3
 
-      print*,'aft init_scalogram_oa'
 !$OMP END CRITICAL (init_tile_count_oa)
 
       call sclg_init_coords(imd=0,tile=tile)
