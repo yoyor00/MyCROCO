@@ -4651,7 +4651,7 @@ C$OMP BARRIER
 !
 ! Ruessink et al. (2012), Eq 9
 !
-      cff=EXP((p3-log10(max(Ur,1.e-10)))/p4)
+      cff=EXP((p3-log10(Ur))/p4)
       B=p1+((p2-p1)/(1.+cff))
 !
       psi=-90.*deg2rad*(1.-TANH(p5/Ur**p6))
