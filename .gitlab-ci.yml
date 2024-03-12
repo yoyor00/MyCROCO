@@ -15,10 +15,10 @@ variables:
   #
   CVTKWORK: "$CI_PROJECT_DIR/.datawork"
   PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork"
-  CROCO_CI_MPIRUN: "mpirun.openmpi"
+  #CROCO_CI_MPIRUN: "mpirun.openmpi"
   #
-  CI_FC: "gfortran"
-  CI_MPIF90: "mpif90"
+  #CI_FC: "gfortran"
+  #CI_MPIF90: "mpif90"
   CI_CROCO_PWD: $(pwd)
   SOURCE_CROCO: "$CI_PROJECT_DIR/OCEAN"
   TESTROOTDIR: ${CVTKWORK}
@@ -55,6 +55,9 @@ reg_run_intel:
   - croco-vm-docker
   image : ubuntu_intel_parallel:0.0.1
   variables:
+    CI_FC: "ifort"
+    CI_MPIF90: "mpiifort"
+    CROCO_CI_MPIRUN: "mpirun"
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
   - mkdir -p $DATAREG
@@ -97,6 +100,10 @@ ana_run:
     - ci.inria.fr
     - large
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  variables:
+    CI_FC: "gfortran"
+    CI_MPIF90: "mpif90"
+    CROCO_CI_MPIRUN: "mpirun.openmpi"
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
@@ -124,6 +131,10 @@ vort_run:
     - ci.inria.fr
     - large
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  variables:
+    CI_FC: "gfortran"
+    CI_MPIF90: "mpif90"
+    CROCO_CI_MPIRUN: "mpirun.openmpi"
   before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
@@ -156,6 +167,9 @@ reg_run:
   - large
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   variables:
+    CI_FC: "gfortran"
+    CI_MPIF90: "mpif90"
+    CROCO_CI_MPIRUN: "mpirun.openmpi"
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
   - mkdir -p $DATAREG
@@ -195,6 +209,9 @@ reg_perfrst:
     - large
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   variables:
+    CI_FC: "gfortran"
+    CI_MPIF90: "mpif90"
+    CROCO_CI_MPIRUN: "mpirun.openmpi"
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
     - mkdir -p $DATAREG
