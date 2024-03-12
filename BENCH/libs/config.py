@@ -49,6 +49,7 @@ class Config:
         parser.add_argument(      '--enable-debug', help="Use cmake debug build instead of release.", action='store_true')
         parser.add_argument(      '--rvtk', help="Enable usage of RVTK_DEBUG and give name of variant reference.", action='store_true')
         parser.add_argument(      '--compare-to', help="Set which variant is used as reference (default='sequential').", type=str, default='sequential')
+        parser.add_argument(      '--twin-checker', help="Enable the twin checker on build.", action='store_true')
 
         # parse
         self.args = parser.parse_args()
@@ -73,6 +74,7 @@ class Config:
         self.debug_build = self.args.enable_debug
         self.variant_ref_name = self.args.compare_to
         self.rvtk = self.args.rvtk
+        self.twin_chercker = self.args.twin_checker
 
         # compute clean result subdir name
         use_host_config = self.use_host_config

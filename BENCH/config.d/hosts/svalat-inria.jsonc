@@ -7,7 +7,7 @@
 		},
 		"tuning": {
 			"gnu": "-march=native",
-			"nvfortran": "-tp=native",
+			"nvfortran": "-tp=native -nofma",
 			"environ": {
 				"OMP_PROC_BIND": "spread"
 			},

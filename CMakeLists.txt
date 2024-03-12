@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 3.1)
 project(CROCO
         VERSION 1.3.0
         DESCRIPTION "Oceanic simulation : Coastal and Regional Ocean COmmunity (CROCO)"
-        LANGUAGES Fortran C)
+        LANGUAGES Fortran C CXX)
 
 ###########################################################
 # to support old versions
@@ -32,11 +32,12 @@ include(${CMAKE_SOURCE_DIR}/cmake/croco_compiler_options.cmake)
 
 ###########################################################
 # Handle configuration
-set(WITH_OPTIM     OFF     CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
-set(WITH_SPLITTING "1x4"   CACHE STRING "Define the splitting for parallel=openmp : {NP_X}x{NP_Y}")
-set(WITH_THREADS   4       CACHE STRING "Number of threads to use with parallel=openmp")
-set(WITH_CASE      "BASIN" CACHE STRING "Select the case to run.")
-set(ENABLE_AGRIF   OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
+set(WITH_OPTIM          OFF     CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
+set(WITH_SPLITTING      "1x4"   CACHE STRING "Define the splitting for parallel=openmp : {NP_X}x{NP_Y}")
+set(WITH_THREADS        4       CACHE STRING "Number of threads to use with parallel=openmp")
+set(WITH_CASE           "BASIN" CACHE STRING "Select the case to run.")
+set(ENABLE_AGRIF        OFF     CACHE BOOL   "Enable AGRIF for mesh refinement.")
+set(ENABLE_TWIN_CHECKER OFF     CACHE BOOL   "Enable the twin checker to compare on the fly two croco runs made at same time.")
 
 ###########################################################
 # Enable case so it lands in config.h.in
@@ -95,6 +96,7 @@ croco_trick_create_cpp_def_override()
 # add subdirs
 add_subdirectory(AGRIF)
 add_subdirectory(OCEAN)
+add_subdirectory(TWINCHECKER)
 
 ###########################################################
 # Print status to help ensure everything is correct

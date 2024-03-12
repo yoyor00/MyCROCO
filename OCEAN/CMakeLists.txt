@@ -410,11 +410,15 @@ if (WITH_OPTIM STREQUAL "poseidon")
     croco_poseidon_pre_process(CROCO_SRCS_F77)
 endif()
 
+include_directories(${CMAKE_SOURCE_DIR}/TWINCHECKER/)
+list(APPEND CROCO_SRCS_F90 ${CMAKE_SOURCE_DIR}/TWINCHECKER/twin_checker_mod.F90)
+croco_psyclone_twin_checker(CROCO_SRCS_F77)
+
 # build executable
 set(CMAKE_Fortran_PREPROCESS ON)
 add_executable(croco ${CROCO_SRCS_F90} ${CROCO_SRCS_F77})
 target_link_libraries(croco ${NETCDFF_LIBRARY})
-target_link_libraries(croco croco_common)
+target_link_libraries(croco croco_common twin_checker)
 set_property(TARGET croco PROPERTY LINKER_LANGUAGE Fortran)
 
 # Inject psyclone in the loop if enabled

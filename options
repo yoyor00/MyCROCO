@@ -20,6 +20,11 @@ cfg_add_with_option   --name='optim' \
                       --var='WITH_OPTIM' \
                       --doc='Select the parallelism mode : OFF, openmp, openacc-native, openacc-psyclone'
 
+#twin checker
+cfg_add_enable_option --name='twin-checker' \
+                      --on='-DWITH_TWIN_CHECKER=${ON}' \
+                      --doc="Enable the twin checker to compare on the fly two croco runs made at same time"
+
 #openmp
 cfg_add_enable_option --name='openmp' \
                       --on='-DENABLE_OPENMP=${ON}' \

@@ -78,6 +78,8 @@ class Croco:
         debug_option = ""
         if self.config.debug_build:
             debug_option = "--enable-debug"
+        if self.config.twin_chercker:
+            debug_option += " --enable-twin-checker"
 
         # build command
         command = f"{croco_source_dir}/configure {configure_compiler_option} {configure_case_option} {configure_variant_options} {debug_option}"
