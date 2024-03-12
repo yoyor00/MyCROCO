@@ -53,6 +53,7 @@ ana_run:
   artifacts:
     paths:
       - $CVTKWORK/ftp
+      - $CVTKWORK/KTEST/*/*.log
     when: always
 
 vort_run:
