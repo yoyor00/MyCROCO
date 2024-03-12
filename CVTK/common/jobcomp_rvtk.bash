@@ -307,7 +307,7 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 		if [[ $FC == gfortran ]] ; then
 			FFLAGS1="$FFLAGS1 -fopenmp"
 		elif [[ $FC == ifort || $FC == ifc ]] ; then
-			FFLAGS1="$FFLAGS1 -qopenmp"
+			FFLAGS1="$FFLAGS1 -openmp"
 		else
 			FFLAGS1="$FFLAGS1 -openmp"
 		fi
