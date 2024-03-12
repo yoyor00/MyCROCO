@@ -134,16 +134,6 @@
       enddo
 !$acc end kernels
 
-!!!$acc parallel loop if(compute_on_device) default(present) 
-!!!$acc& loop gang reduction(+:Azond) collapse(3)
-!!      do i=1,NP_XI
-!!         lenode=jj*NP_XI + i
-!!         do k=1,N
-!!            do j=jstr-1,jend+1
-!!               Azond(j,k)=Azond(j,k)+allsumd(j,k,lenode)
-!!            enddo
-!!         enddo
-!!      enddo
       
 # endif /* MPI */
 
