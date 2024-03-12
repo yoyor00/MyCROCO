@@ -103,7 +103,7 @@ ana_run:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi"
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
@@ -134,7 +134,7 @@ vort_run:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi"
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
   before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
@@ -169,7 +169,7 @@ reg_run:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi"
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
   - mkdir -p $DATAREG
@@ -211,7 +211,7 @@ reg_perfrst:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi"
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
     - mkdir -p $DATAREG
