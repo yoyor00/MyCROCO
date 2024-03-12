@@ -69,10 +69,9 @@ CONTAINS
       INTEGER  ::   irgb
       REAL(wp) ::   zchl
       REAL(wp) ::   zc0 , zc1 , zc2, zc3, z1_dep
-      REAL(wp), DIMENSION(A2D(0)    ) :: zdepmoy, zetmp1, zetmp2
+      REAL(wp), DIMENSION(A2D(0)    ) :: zdepmoy, zetmp1
       REAL(wp), DIMENSION(A2D(0)    ) :: zqsr100, zqsr_corr
       REAL(wp), DIMENSION(A2D(0),jpk) :: ze0, ze1, ze2, ze3
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zetmp3
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zpar
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zw2d
@@ -300,8 +299,8 @@ CONTAINS
       heup_01(:,:) = MIN( 300., heup_01(:,:) )
       ! Mean PAR over the mixed layer
       ! -----------------------------
-      zdepmoy(:,:)   = 0.e0             
-      zetmp1 (:,:)   = 0.e0
+      zdepmoy(:,:) = 0.e0             
+      zetmp1 (:,:) = 0.e0
       DO_3D( 0, 0, 0, 0, 1, nksr)
          IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
             zetmp1 (ji,jj) = zetmp1 (ji,jj) + etot(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Actual PAR for remineralisation
@@ -319,13 +318,10 @@ CONTAINS
 
       ! Computation of the mean usable light for the different phytoplankton
       ! groups based on their absorption characteristics.
-      zdepmoy(:,:)   = 0.e0
-      zetmp2 (:,:)   = 0.e0
-      !
+      zetmp1(:,:)   = 0.e0
       DO_3D( 0, 0, 0, 0, 1, nksr)
          IF( gdepw(ji,jj,jk+1,Kmm) <= MIN(hmld(ji,jj), heup_01(ji,jj)) ) THEN
-            zetmp2 (ji,jj) = zetmp2(ji,jj)  + enano(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Nanophytoplankton
-            zdepmoy(ji,jj) = zdepmoy(ji,jj) +                   e3t(ji,jj,jk,Kmm)
+            zetmp1(ji,jj) = zetmp1(ji,jj) + enano(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Nanophytoplankton
          ENDIF
       END_3D
       enanom(:,:,:) = enano(:,:,:)
@@ -333,16 +329,16 @@ CONTAINS
       DO_3D( 0, 0, 0, 0, 1, nksr)
          IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
             z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
-            enanom(ji,jj,jk) = zetmp2(ji,jj) * z1_dep
+            enanom(ji,jj,jk) = zetmp1(ji,jj) * z1_dep
          ENDIF
       END_3D
       !
       IF( .NOT. ln_p2z ) THEN
          ! Diatoms when using PISCES-operational or PISCES-QUOTA
-         ALLOCATE( zetmp3(A2D(0)) )  ;   zetmp3(:,:) = 0.e0
+         zetmp1(:,:) = 0.e0
          DO_3D( 0, 0, 0, 0, 1, nksr)
             IF( gdepw(ji,jj,jk+1,Kmm) <= MIN(hmld(ji,jj), heup_01(ji,jj)) ) THEN
-               zetmp3(ji,jj) = zetmp3(ji,jj) + ediat(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Diatoms
+               zetmp1(ji,jj) = zetmp1(ji,jj) + ediat(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Diatoms
             ENDIF
          END_3D
          !
@@ -351,17 +347,16 @@ CONTAINS
          DO_3D( 0, 0, 0, 0, 1, nksr)
             IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
                z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
-               ediatm(ji,jj,jk) = zetmp3(ji,jj) * z1_dep
+               ediatm(ji,jj,jk) = zetmp1(ji,jj) * z1_dep
             ENDIF
          END_3D
-         DEALLOCATE( zetmp3 )
       ENDIF
       IF( ln_p5z ) THEN
          ! Picophytoplankton when using PISCES-QUOTA
-         ALLOCATE( zetmp3(A2D(0)) )  ;   zetmp3(:,:) = 0.e0
+         zetmp1(:,:) = 0.e0
          DO_3D( 0, 0, 0, 0, 1, nksr)
             IF( gdepw(ji,jj,jk+1,Kmm) <= MIN(hmld(ji,jj), heup_01(ji,jj)) ) THEN
-               zetmp3(ji,jj)  = zetmp3(ji,jj) + epico(ji,jj,jk) * e3t(ji,jj,jk,Kmm)
+               zetmp1(ji,jj)  = zetmp1(ji,jj) + epico(ji,jj,jk) * e3t(ji,jj,jk,Kmm)
             ENDIF
          END_3D
          !
@@ -370,12 +365,20 @@ CONTAINS
          DO_3D( 0, 0, 0, 0, 1, nksr)
             IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
                z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
-               epicom(ji,jj,jk) = zetmp3(ji,jj) * z1_dep
+               epicom(ji,jj,jk) = zetmp1(ji,jj) * z1_dep
             ENDIF
          END_3D
-         DEALLOCATE( zetmp3 )
       ENDIF
       !
+      IF( l_dia_par .OR. l_diaadd ) THEN
+        zetmp1(:,:)   = 0.e0
+        DO_3D( 0, 0, 0, 0, 1, nksr)
+           IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
+              zetmp1(ji,jj) = zetmp1(ji,jj) &
+                &       + etot_ndcy(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Par averaged over 24h for production
+           ENDIF
+        END_3D
+      ENDIF
       IF( lk_iomput .AND.  knt == nrdttrc ) THEN
          IF( l_dia_heup ) THEN
            ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;  zw2d(:,:) = 0._wp
@@ -386,36 +389,35 @@ CONTAINS
         IF( l_dia_par ) THEN   ! diagnostic : PAR with no diurnal cycle
            ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  
            DO_3D( 0, 0, 0, 0, 1, jpk)
-              zw3d(ji,jj,jkR) = etot_ndcy(ji,jj,jk)  
-           END_3D
-           ALLOCATE( zetmp3(A2D(0) ) )   ;  zetmp3(:,:)   = 0.e0
-           DO_3D( 0, 0, 0, 0, 1, nksr)
-              IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
-                 zetmp3(ji,jj) = zetmp3(ji,jj) &
-                    &       + etot_ndcy(ji,jj,jk) * e3t(ji,jj,jk,Kmm) ! Par averaged over 24h for production
-              ENDIF
+              zw3d(ji,jj,jkR) = etot_ndcy(ji,jj,jk) * tmask(ji,jj,jk) 
            END_3D
            DO_3D( 0, 0, 0, 0, 1, nksr)
               IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
                  z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
-                 zw3d(ji,jj,jkR) = zetmp3(ji,jj) * z1_dep
+                 zw3d(ji,jj,jkR) = zetmp1(ji,jj) * z1_dep
               ENDIF
-           END_3D
-           DO_3D( 0, 0, 0, 0, 1, jpk)
-              zw3d(ji,jj,jk) = zw3d(ji,jj,jk) * tmask(ji,jj,jk) 
            END_3D
            DO_2D( 0, 0, 0, 0 )
               zw3d(ji,jj,ktop) = zw3d(ji,jj,ktop) * ( 1._wp - fr_i(ji,jj) ) 
            END_2D
            CALL iom_put( "PAR", zw3d ) 
-           DEALLOCATE( zw3d, zetmp3 ) 
+           DEALLOCATE( zw3d ) 
         ENDIF
       ENDIF
       !
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk )
-         trc3d(ji,jj,jkR,jp_etot) = etot(ji,jj,jk) * tmask(ji,jj,jk)   ! PAR
+         trc3d(ji,jj,jkR,jp_etot) = etot_ndcy(ji,jj,jk) * tmask(ji,jj,jk)   ! PAR
       END_3D
+      DO_3D( 0, 0, 0, 0, 1, nksr)
+         IF( gdepw(ji,jj,jk+1,Kmm) <= hmld(ji,jj) ) THEN
+            z1_dep = 1. / ( zdepmoy(ji,jj) + rtrn )
+            trc3d(ji,jj,jkR,jp_etot) = zetmp1(ji,jj) * z1_dep
+          ENDIF
+      END_3D
+      DO_2D( 0, 0, 0, 0 )
+         trc3d(ji,jj,ktop,jp_etot) = trc3d(ji,jj,ktop,jp_etot) * ( 1._wp - fr_i(ji,jj) ) 
+      END_2D
       !
       DO_2D( 0, 0, 0, 0 )
          trc2d(ji,jj,jp_heup) = heup(ji,jj) * tmask(ji,jj,1)   ! euphotic layer
