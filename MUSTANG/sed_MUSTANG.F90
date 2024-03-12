@@ -5029,7 +5029,9 @@ MODULE sed_MUSTANG
 
          hsedloc=hsedloc+dzs(ksmax,i,j)
          phi_surfsed=phitemp_s(i,j)*dtinv
-         IF(hsedloc > 0.0_rsh)phi_bottsed=MAX(0.0_rsh,MIN(phi_surfsed,phi_surfsed*(epsedmax_tempsed-hsedloc)*(epsedmin_tempsed/hsedloc)))
+         IF(hsedloc > 0.0_rsh) phi_bottsed=MAX(0.0_rsh, &
+                                           MIN(phi_surfsed, &
+                                           phi_surfsed*(epsedmax_tempsed-hsedloc)*(epsedmin_tempsed/hsedloc)))
          ! end of cumul : reset phitemp_s (si pas le meme pas de temps , mais ici on a le meme dt_true)
          phitemp_s(i,j)=0.0_rsh
        
