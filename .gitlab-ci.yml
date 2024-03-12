@@ -51,8 +51,6 @@ download_latest:
 
 reg_run_intel:
   stage: run
-  only:
-    - schedules
   tags:
   - croco-vm-docker
   image : ubuntu_intel_parallel:0.0.1
@@ -86,7 +84,7 @@ reg_run_intel:
       - $CVTKWORK/ftp
       - $CVTKWORK/REG/*/*.log
     when: always 
-    
+
 ana_run:
   stage: run
   before_script:
