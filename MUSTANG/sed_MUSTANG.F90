@@ -5921,8 +5921,10 @@ MODULE sed_MUSTANG
                   ! mu = dynamic viscosity in centipoise 10-2 g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
                   mu = 1.791_rsh - 6.144e-02_rsh*temp_bottom_MUSTANG(i,j) + 1.451e-03_rsh*temp_bottom_MUSTANG(i,j)**2 &
                      - 1.6826e-05_rsh*temp_bottom_MUSTANG(i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
-                     + 2.4727e-03_rsh*sal_bottom_MUSTANG(i,j) + temp_bottom_MUSTANG(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
-                     + sal_bottom_MUSTANG(i,j)*(4.8429e-05_rsh*temp_bottom_MUSTANG(i,j) - 4.7172e-06_rsh*temp_bottom_MUSTANG(i,j)**2 &
+                     + 2.4727e-03_rsh*sal_bottom_MUSTANG(i,j) &
+                     + temp_bottom_MUSTANG(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
+                     + sal_bottom_MUSTANG(i,j)*(4.8429e-05_rsh*temp_bottom_MUSTANG(i,j) &
+                     - 4.7172e-06_rsh*temp_bottom_MUSTANG(i,j)**2 &
                      + 7.5986e-08_rsh*temp_bottom_MUSTANG(i,j)**3)
                   nu = mu*rowinv*1000                                ! 1/roro or rowinv in cm3/g and nu = cinematic viscosity in cm2/s
                   IF(D0_funcT_opt(iv) == 1) THEN
