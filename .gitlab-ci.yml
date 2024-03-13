@@ -88,6 +88,40 @@ reg_run_intel:
       - $CVTKWORK/REG/*/*.log
     when: always 
 
+ana_run_intel:
+  stage: run
+  before_script:
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - cd $DATADIR
+    - mkdir -p TESTROOT/KTEST
+    - cd -
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.1
+  variables:
+    CI_FC: "ifort"
+    CI_MPIF90: "mpiifort"
+    CROCO_CI_MPIRUN: "mpirun"
+  script:
+    - cd $CVTKHOME/Scripts_ana
+    - ./create_link_master_ana.sh
+    - cd -
+    - cd $CVTKWORK/KTEST
+   
+    - ./mk_TESTALL.bash CONFIGURE_ANA ana
+    - ./gather_recap.bash KTEST > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1  
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp
+      - $CVTKWORK/KTEST/*/*.log
+    when: always
+
+
 ana_run:
   stage: run
   before_script:
