@@ -56,25 +56,68 @@ struct TwinAppCheckerChannelValuesArray
 template <class T>
 struct TwinAppCheckerChannelValues
 {
+    //members
+    void set(T value, bool isMaster);
+    //vars
     volatile T masterValue{0.0};
     char __padd_3[64-sizeof(float)];
     volatile T slaveValue{0.0};
     char __padd_4[64-sizeof(float)];
 };
 
-struct TwinAppCheckerChannelMeta
+template <class T>
+void TwinAppCheckerChannelValues<T>::set(T value, bool isMaster)
 {
+    if (isMaster)
+        this->masterValue = value;
+    else
+        this->slaveValue = value;
+}
+
+struct TwinAppCheckerChannelBarrier
+{
+    //members
+    void waitAll(bool isMaster, bool logging = false);
     //in
     std::atomic<int> masterIsIn{0};
     char __padd_1[64-sizeof(int)];
     std::atomic<int> slaveIsIn{0};
     char __padd_2[64-sizeof(int)];
+};
 
-    //out
-    std::atomic<int> masterIsOut{0};
-    char __padd_3[64-sizeof(int)];
-    std::atomic<int> slaveIsOut{0};
-    char __padd_4[64-sizeof(int)];
+void TwinAppCheckerChannelBarrier::waitAll(bool isMaster, bool logging)
+{
+    //inc enter
+    const auto memoryOrder = std::memory_order_acq_rel;
+
+    //enter
+    if (logging) printf("------------- START BARRIER --------------\n");
+
+    //case
+    if (isMaster) {
+        if (logging) printf("MASTER - enter\n");
+        this->masterIsIn.store(1, memoryOrder);
+        if (logging) printf("MASTER - wait\n");
+        while (this->slaveIsIn.load() != 1){__builtin_ia32_pause();};
+        if (logging) printf("MASTER - OK\n");
+        this->slaveIsIn.store(0, memoryOrder);
+    } else {
+        if (logging) printf("SLAVE  - enter\n");
+        this->slaveIsIn.store(1, memoryOrder);
+        if (logging) printf("SLAVE  - wait\n");
+        while (this->masterIsIn.load() != 1){__builtin_ia32_pause();};
+        if (logging) printf("SLAVE  - OK\n");
+        this->masterIsIn.store(0, memoryOrder);
+    }
+
+    if (logging) printf("------------- END BARRIER --------------\n");
+}
+
+struct TwinAppCheckerChannelMeta
+{
+    //in
+    TwinAppCheckerChannelBarrier barrierIn;
+    TwinAppCheckerChannelBarrier barrierOut;
 
     //dat
     TwinAppCheckerChannelValues<double> doubles;
@@ -99,6 +142,12 @@ class TwinAppChecker
         void check(float & value, const TwinLocationInfos & infos, bool fixable = false);
         void check(int & value, const TwinLocationInfos & infos, bool fixable = false);
         void check(bool & value, const TwinLocationInfos & infos, bool fixable = false);
+
+        void checkArray(double * values, size_t count, const TwinLocationInfos & infos, bool fixable = false);
+        void checkArray(float * values, size_t count, const TwinLocationInfos & infos, bool fixable = false);
+        void checkArray(int * values, size_t count, const TwinLocationInfos & infos, bool fixable = false);
+        void checkArray(bool * values, size_t count, const TwinLocationInfos & infos, bool fixable = false);
+
         template <class T> T checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, const TwinLocationInfos & infos, bool reportError);
         void enableLoggin(void);
         void enableStopOnFirstError(void);
@@ -313,28 +362,10 @@ T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppChecker
     T result;
 
     //master mark value
-    if (this->isMaster)
-        channel.masterValue = value;
-    else
-        channel.slaveValue = value;
+    channel.set(value, this->isMaster);
 
-    //inc enter
-    const auto memoryOrder = std::memory_order_acq_rel;
-    if (this->isMaster) {
-        if (logging) printf("MASTER - enter\n");
-        this->channelMeta->masterIsIn.store(1, memoryOrder);
-        if (logging) printf("MASTER - wait\n");
-        while (this->channelMeta->slaveIsIn.load() != 1){__builtin_ia32_pause();};
-        if (logging) printf("MASTER - OK\n");
-        this->channelMeta->slaveIsIn.store(0, memoryOrder);
-    } else {
-        if (logging) printf("SLAVE  - enter\n");
-        this->channelMeta->slaveIsIn.store(1, memoryOrder);
-        if (logging) printf("SLAVE  - wait\n");
-        while (this->channelMeta->masterIsIn.load() != 1){__builtin_ia32_pause();};
-        if (logging) printf("SLAVE  - OK\n");
-        this->channelMeta->masterIsIn.store(0, memoryOrder);
-    }
+    //Barrier in
+    this->channelMeta->barrierIn.waitAll(this->isMaster, this->logging);
 
     //prepare
     char preparedFormatLog[4096] = "";
@@ -446,22 +477,8 @@ T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppChecker
         }
     }
 
-    //out handling
-    if (this->isMaster) {
-        if (logging) printf("MASTER - out\n");
-        this->channelMeta->masterIsOut.store(1, memoryOrder);
-        if (logging) printf("MASTER - wait\n");
-        while (this->channelMeta->slaveIsOut.load() != 1){__builtin_ia32_pause();};
-        if (logging) printf("MASTER - OK\n");
-        this->channelMeta->slaveIsOut.store(0, memoryOrder);
-    } else {
-        if (logging) printf("SLAVE  - out\n");
-        this->channelMeta->slaveIsOut.store(1, memoryOrder);
-        if (logging) printf("SLAVE  - wait\n");
-        while (this->channelMeta->masterIsOut.load() != 1){__builtin_ia32_pause();};
-        if (logging) printf("SLAVE  - OK\n");
-        this->channelMeta->masterIsOut.store(0, memoryOrder);
-    }
+    //barrier out
+    this->channelMeta->barrierOut.waitAll(this->isMaster, this->logging);
 
     //ok
     return result;
