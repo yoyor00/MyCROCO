@@ -733,6 +733,7 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
                 enddo     
                 if(nv_fix > 0) then
                   do k = 1, N
+                    voltot = real( surf_cell(i,j) * Hz(i,j,k) ,rlg)
                     do iv = 1, nv_fix
                         itrc = nv_adv+iv+itsubs1-1
                         do iz = 1, submassbalance_nb_close
