@@ -97,8 +97,7 @@ ana_run_intel:
     - mkdir -p TESTROOT/KTEST
     - cd -
   tags:
-    - ci.inria.fr
-    - large
+    - croco-vm-docker
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.1
   variables:
     CI_FC: "ifort"
