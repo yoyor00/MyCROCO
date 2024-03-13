@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -e
+set -u
+
+
 if [[ $# != 2 ]]; then
     echo "Usage: $0 {exe_1} {exe_2}" 1>&2
     exit 1
@@ -21,9 +25,14 @@ echo "============ TWIN CHECK | ${exe_1} | ${exe_2} =================="
 # launch slave
 #TWIN_CHECKER_MODE=slave xterm -e gdb ${exe_2} &
 
+dir_1=$(dirname ${exe_1})
+dir_2=$(dirname ${exe_2})
+
+cd ${dir_1}
 TWIN_CHECKER_MODE=master xterm -e gdb -ex run ${exe_1} &
 pid=$!
 
+cd ${dir_2}
 TWIN_CHECKER_MODE=slave gdb -ex run ${exe_2}
 
 kill $pid

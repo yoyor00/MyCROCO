@@ -12,6 +12,7 @@
 #include <map>
 #include <atomic>
 #include <stdexcept>
+#include <algorithm>
 //Linux shm
 #include <sys/mman.h>
 #include <sys/stat.h>        /* For mode constants */
@@ -22,6 +23,8 @@
 //from MALT
 #include "from-malt/SymbolSolver.hpp"
 
+#define TWIN_ARRAY_BATCH_SIZE 4096
+
 namespace twin
 {
 
@@ -30,6 +33,24 @@ enum TwinAppCheckerMode
     TWIN_MASTER,
     TWIN_SLAVE,
     TWIN_AUTO
+};
+
+struct TwinLocationInfos
+{
+    //members
+    TwinLocationInfos(const char * equation, size_t equation_size, int64_t locationId, int sourceLine);
+    //vars
+    const char * equation{nullptr};
+    size_t equation_size{0};
+    int64_t locationId{-1};
+    int sourceLine{-1};
+};
+
+template <class T>
+struct TwinAppCheckerChannelValuesArray
+{
+    volatile T masterValue[TWIN_ARRAY_BATCH_SIZE];
+    volatile T slaveValue[TWIN_ARRAY_BATCH_SIZE];
 };
 
 template <class T>
@@ -59,6 +80,13 @@ struct TwinAppCheckerChannelMeta
     TwinAppCheckerChannelValues<double> doubles;
     TwinAppCheckerChannelValues<float> floats;
     TwinAppCheckerChannelValues<int> integers;
+    TwinAppCheckerChannelValues<bool> bools;
+
+    //arrays
+    TwinAppCheckerChannelValuesArray<double> doublesArray;
+    TwinAppCheckerChannelValuesArray<float> floatsArray;
+    TwinAppCheckerChannelValuesArray<int> integersArray;
+    TwinAppCheckerChannelValuesArray<bool> boolsArray;
 };
 
 class TwinAppChecker
@@ -66,18 +94,22 @@ class TwinAppChecker
     public:
         TwinAppChecker(const std::string & meetingPointFifoFile, const std::string & name, TwinAppCheckerMode mode = TWIN_AUTO);
         ~TwinAppChecker(void);
-        void check(double & value, bool fixable = false);
-        void check(float & value, bool fixable = false);
-        void check(int & value, bool fixable = false);
-        template <class T> T checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, bool reportError);
+        void registerSiteId(int64_t id, const std::string & sourceFile);
+        void check(double & value, const TwinLocationInfos & infos, bool fixable = false);
+        void check(float & value, const TwinLocationInfos & infos, bool fixable = false);
+        void check(int & value, const TwinLocationInfos & infos, bool fixable = false);
+        void check(bool & value, const TwinLocationInfos & infos, bool fixable = false);
+        template <class T> T checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, const TwinLocationInfos & infos, bool reportError);
         void enableLoggin(void);
         void enableStopOnFirstError(void);
+        void enableResolveStack(void);
     private:
         void meetup(void);
         void goodbye(void);
     private:
         bool logging{false};
         bool stopOnFirstErrror{false};
+        bool resolveStack{false};
         std::string meetingPointFifoFile{};
         std::string name{};
         bool isMaster{false};
@@ -87,7 +119,16 @@ class TwinAppChecker
         TwinAppCheckerChannelMeta * channelMeta{nullptr};
         MALT::SymbolSolver solver;
         std::map<void*, bool> alreadySeen;
+        std::map<int64_t, std::string> siteIdToFile;
 };
+
+TwinLocationInfos::TwinLocationInfos(const char * equation, size_t equation_size, int64_t locationId, int sourceLine)
+{
+    this->equation = equation;
+    this->equation_size = equation_size;
+    this->locationId = locationId;
+    this->sourceLine = sourceLine;
+}
 
 TwinAppChecker::TwinAppChecker(const std::string & meetingPointFifoFile, const std::string & name, TwinAppCheckerMode mode)
 {
@@ -135,6 +176,17 @@ void TwinAppChecker::enableLoggin(void)
 void TwinAppChecker::enableStopOnFirstError(void)
 {
     this->stopOnFirstErrror = true;
+}
+
+void TwinAppChecker::enableResolveStack(void)
+{
+    this->resolveStack = true;
+}
+
+void TwinAppChecker::registerSiteId(int64_t id, const std::string & sourceFile)
+{
+    //@todo optimize not to redo many times & report error if has different value when exist
+    this->siteIdToFile[id] = sourceFile;
 }
 
 void TwinAppChecker::goodbye(void)
@@ -214,18 +266,26 @@ void TwinAppChecker::meetup(void)
     fclose(fp);
 }
 
-void TwinAppChecker::check(int & value, bool fixable)
+void TwinAppChecker::check(bool & value, const TwinLocationInfos & infos, bool fixable)
 {
     bool reportError = (fixable || this->stopOnFirstErrror);
-    int masterValue = this->checkGeneric(value, "%d", this->channelMeta->integers, reportError);
+    bool masterValue = this->checkGeneric(value, "%B", this->channelMeta->bools, infos, reportError);
     if (masterValue != value)
         value = masterValue;
 }
 
-void TwinAppChecker::check(float & value, bool fixable)
+void TwinAppChecker::check(int & value, const TwinLocationInfos & infos, bool fixable)
 {
     bool reportError = (fixable || this->stopOnFirstErrror);
-    float masterValue = this->checkGeneric(value, "%.15g", this->channelMeta->floats, reportError);
+    int masterValue = this->checkGeneric(value, "%d", this->channelMeta->integers, infos, reportError);
+    if (masterValue != value)
+        value = masterValue;
+}
+
+void TwinAppChecker::check(float & value, const TwinLocationInfos & infos, bool fixable)
+{
+    bool reportError = (fixable || this->stopOnFirstErrror);
+    float masterValue = this->checkGeneric(value, "%.27g", this->channelMeta->floats, infos, reportError);
     if (value == NAN || value == -NAN) {
         fprintf(stderr, "Get NaN !\n");
         abort();
@@ -234,10 +294,10 @@ void TwinAppChecker::check(float & value, bool fixable)
         value = masterValue;
 }
 
-void TwinAppChecker::check(double & value, bool fixable)
+void TwinAppChecker::check(double & value, const TwinLocationInfos & infos, bool fixable)
 {
     bool reportError = (fixable || this->stopOnFirstErrror);
-    double masterValue = this->checkGeneric(value, "%.15g", this->channelMeta->doubles, reportError);
+    double masterValue = this->checkGeneric(value, "%.27g", this->channelMeta->doubles, infos, reportError);
     if (value == NAN || value == -NAN) {
         fprintf(stderr, "Get NaN !\n");
         abort();
@@ -247,7 +307,7 @@ void TwinAppChecker::check(double & value, bool fixable)
 }
 
 template <class T>
-T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, bool reportError)
+T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, const TwinLocationInfos & infos, bool reportError)
 {
     //@todo: use atomics here
     T result;
@@ -281,7 +341,7 @@ T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppChecker
     char preparedFormatError[4096] = "";
     //if (preparedFormatLog[0] == '\0') {
         sprintf(preparedFormatLog, "%%s - value=%s\n", valueFormat);
-        sprintf(preparedFormatError, "Not maching value in %%s :\n - master = %s\n - slave  = %s\n - diff   = %s \n - local  = %s\n", valueFormat, valueFormat, valueFormat, valueFormat);
+        sprintf(preparedFormatError, "Not maching value in %%s :\n - master = %s\n - slave  = %s\n - err    = %%s\n - diff   = %s\n - local  = %s\n", valueFormat, valueFormat, valueFormat, valueFormat);
     //}
 
     //display
@@ -302,43 +362,84 @@ T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppChecker
         assert(status > 0);
         currentExe[status] = '\0';
         T delta = channel.slaveValue - channel.masterValue;
-        sprintf(message, preparedFormatError, currentExe, channel.masterValue, channel.slaveValue, delta, value);
+
+        char valueStrMaster[256];
+        char valueStrSlave[256];
+        char valueDiff[256];
+        memset(valueStrMaster, 0, 256);
+        memset(valueStrSlave, 0, 256);
+        snprintf(valueStrMaster, 256, valueFormat, channel.masterValue);
+        snprintf(valueStrSlave, 256, valueFormat, channel.slaveValue);
+
+        for (int i = 0 ; i < std::max(strlen(valueStrMaster), strlen(valueStrSlave)) ; i++) {
+            if (valueStrMaster[i] == valueStrSlave[i])
+                valueDiff[i] = ' ';
+            else if (valueStrMaster[i] != ' ' && valueStrSlave[i] != ' ')
+                valueDiff[i] = '^';
+        }
+        valueDiff[255] = '\0';
+
+
+        sprintf(message, preparedFormatError, currentExe, channel.masterValue, channel.slaveValue, valueDiff, delta, value);
+
+        //stack
         void * frames[4096];
-        int frameCount = backtrace(frames, 4096);
-        //char ** frameSymbols = backtrace_symbols(frames, frameCount);
-
-        for (int i = 3 ; i < frameCount - 3 ; i++)
-            this->solver.registerAddress(frames[i]);
-
+        int frameCount = 1;
         const int id_of_error_frame = 3;
-        void * frame_of_error = frames[id_of_error_frame];
+        void * frame_of_error = nullptr;
+
+        //extract
+        if (this->resolveStack) {
+            frameCount = backtrace(frames, 4096);
+            //char ** frameSymbols = backtrace_symbols(frames, frameCount);
+            for (int i = 3 ; i < frameCount - 3 ; i++)
+                this->solver.registerAddress(frames[i]);
+            frame_of_error = frames[id_of_error_frame];
+        } else {
+            frame_of_error = (void*)infos.locationId;
+        }
+
         if (this->alreadySeen[frame_of_error] == false)
         {
             //throw std::runtime_error(std::string(message));
             fprintf(stderr, "\n---------------------- Twin Checker Error -------------------------\n");
             fprintf(stderr, message);
             fprintf(stderr, "-------------------------------------------------------------------\n");
+            char null_terminated_eq[4096];
+            assert(infos.equation_size < 4096);
+            strncpy(null_terminated_eq, infos.equation, std::min(4096ul, infos.equation_size));
+            null_terminated_eq[infos.equation_size] = '\0';
+            fprintf(stderr, "%s\n", null_terminated_eq);
+            fprintf(stderr, "-------------------------------------------------------------------\n");
+            fprintf(stderr, "At /home/svalat/Projects/minicroco/%s:%d\n", this->siteIdToFile[infos.locationId].c_str(), infos.sourceLine);
+            fprintf(stderr, "-------------------------------------------------------------------\n");
+
             /*for (int i = 3 ; i < frameCount ; i++)
                 fprintf(stderr, "%s\n", frameSymbols[i]);*/
-            this->solver.solveNames();
-            for (int i = 3 ; i < frameCount - 3 ; i++) {
-                const MALT::CallSite * site = this->solver.getCallSiteInfo(frames[i]);
-                fprintf(stderr, "%s:%d (%s)\n", this->solver.getString(site->file).c_str(), site->line, this->solver.getString(site->function).c_str());
-            }
-
-            const MALT::CallSite * errorSite = this->solver.getCallSiteInfo(frames[id_of_error_frame]);
-            FILE * fp = fopen(this->solver.getString(errorSite->file).c_str(), "r");
-            if (fp != NULL)
+            if (this->resolveStack)
             {
-                fprintf(stderr, "-------------------------------------------------------------------\n");
-                char lineContent[4096];
-                for (int line = 0 ; line < errorSite->line ; line++)
-                    fgets(lineContent, sizeof(lineContent), fp);
-                fprintf(stderr, "%s", lineContent);
+                frameCount = backtrace(frames, 4096);
+                for (int i = 3 ; i < frameCount - 3 ; i++) {
+                    const MALT::CallSite * site = this->solver.getCallSiteInfo(frames[i]);
+                    fprintf(stderr, "%s:%d (%s)\n", this->solver.getString(site->file).c_str(), site->line, this->solver.getString(site->function).c_str());
+                }
+
+                this->solver.solveNames();
+
+                const MALT::CallSite * errorSite = this->solver.getCallSiteInfo(frames[id_of_error_frame]);
+                FILE * fp = fopen(this->solver.getString(errorSite->file).c_str(), "r");
+                if (fp != NULL)
+                {
+                    fprintf(stderr, "-------------------------------------------------------------------\n");
+                    char lineContent[4096];
+                    for (int line = 0 ; line < errorSite->line ; line++)
+                        fgets(lineContent, sizeof(lineContent), fp);
+                    fprintf(stderr, "%s", lineContent);
+                }
+                fprintf(stderr, "-------------------------------------------------------------------\n\n");
+                assert(errorSite->line != 0);
             }
 
-            fprintf(stderr, "-------------------------------------------------------------------\n\n");
-            assert(errorSite->line != 0);
             if (this->stopOnFirstErrror)
                 abort();
             this->alreadySeen[frame_of_error] = true;
@@ -382,69 +483,128 @@ twin::TwinAppChecker * twin_init(void)
     twin::TwinAppChecker * twin = new twin::TwinAppChecker(meeting_point, name, twin::TWIN_AUTO);
     //twin->enableLoggin();
     //twin->enableStopOnFirstError();
+    //twin->enableResoveStack();
 
     //ok
     return twin;
 }
 
-void twin_check_float(float value)
+void twin_check_bool(int value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
     //lazy init
     if (gbl_twin_state == nullptr)
         gbl_twin_state = twin_init();
 
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
     //check
-    gbl_twin_state->check(value);
+    gbl_twin_state->check(value, infos);
 }
 
-void twin_check_float_fixable(float * value)
+void twin_check_bool_fixable(int * value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
     //lazy init
     if (gbl_twin_state == nullptr)
         gbl_twin_state = twin_init();
 
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
     //check
-    gbl_twin_state->check(*value);
+    gbl_twin_state->check(*value, infos);
 }
 
-void twin_check_double(double value)
+void twin_check_float(float value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
     //lazy init
     if (gbl_twin_state == nullptr)
         gbl_twin_state = twin_init();
 
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
     //check
-    gbl_twin_state->check(value);
+    gbl_twin_state->check(value, infos);
 }
 
-void twin_check_double_fixable(double * value)
+void twin_check_float_fixable(float * value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
     //lazy init
     if (gbl_twin_state == nullptr)
         gbl_twin_state = twin_init();
 
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
     //check
-    gbl_twin_state->check(*value);
+    gbl_twin_state->check(*value, infos);
 }
 
-void twin_check_int(int value)
+void twin_check_double(double value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
     //lazy init
     if (gbl_twin_state == nullptr)
         gbl_twin_state = twin_init();
 
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
     //check
-    gbl_twin_state->check(value);
+    gbl_twin_state->check(value, infos);
 }
 
-void twin_check_int_fixable(int * value)
+void twin_check_double_fixable(double * value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
     //lazy init
     if (gbl_twin_state == nullptr)
         gbl_twin_state = twin_init();
 
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
     //check
-    gbl_twin_state->check(*value);
+    gbl_twin_state->check(*value, infos);
+}
+
+void twin_check_int(int value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->check(value, infos);
+}
+
+void twin_check_int_fixable(int * value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->check(*value, infos);
+}
+
+void twin_register_site(int64_t id, const char * source_file, size_t source_file_size)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    assert(source_file_size > 0 && source_file_size < 4096);
+    char null_terminated[4096];
+    strncpy(null_terminated, source_file, std::min(4096ul, source_file_size));
+    null_terminated[source_file_size] = '\0';
+
+    gbl_twin_state->registerSiteId(id, null_terminated);
 }
 
 void __attribute__((destructor)) twin_finish()
