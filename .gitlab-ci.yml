@@ -51,8 +51,10 @@ download_latest:
 
 reg_run_intel:
   stage: run
+  only:
+    - schedules
   tags:
-  - croco-vm-docker
+    - croco-vm-docker
   image : ubuntu_intel_parallel:0.0.1
   variables:
     CI_FC: "ifort"
@@ -60,16 +62,16 @@ reg_run_intel:
     CROCO_CI_MPIRUN: "mpirun"
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
-  - mkdir -p $DATAREG
-  - cd $DATAREG
-  - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-  - tar -xf ForCI-INRIA.tar.gz
-  - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
-  - mkdir -p $DATADIR
-  - mkdir -p $CVTKWORK
-  - cd $DATADIR
-  - mkdir -p TESTROOT/REG
-  - cd -
+    - mkdir -p $DATAREG
+    - cd $DATAREG
+    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    - tar -xf ForCI-INRIA.tar.gz
+    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - cd $DATADIR
+    - mkdir -p TESTROOT/REG
+    - cd -
   script:
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
@@ -119,6 +121,6 @@ ana_run_intel:
       - $CVTKWORK/ftp
       - $CVTKWORK/KTEST/*/*.log
     when: always
-    
+
 
 
