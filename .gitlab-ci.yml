@@ -98,7 +98,7 @@ ana_run_intel:
     - cd -
   tags:
     - croco-vm-docker
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.1
+  image : ubuntu_intel_parallel:0.0.1
   variables:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
