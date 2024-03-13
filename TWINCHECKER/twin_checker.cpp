@@ -149,12 +149,15 @@ class TwinAppChecker
         void checkArray(bool * values, size_t count, const TwinLocationInfos & infos, bool fixable = false);
 
         template <class T> T checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, const TwinLocationInfos & infos, bool reportError);
+        template <class T> T * checkGenericArray(T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError);
         void enableLoggin(void);
         void enableStopOnFirstError(void);
         void enableResolveStack(void);
     private:
         void meetup(void);
         void goodbye(void);
+        void performBacktrace(void);
+        template <class T> T checkGenericSingleValue(T masterValue, T slaveValue, T value, const char * valueFormat, const TwinLocationInfos & infos, bool reportError);
     private:
         bool logging{false};
         bool stopOnFirstErrror{false};
@@ -355,52 +358,55 @@ void TwinAppChecker::check(double & value, const TwinLocationInfos & infos, bool
         value = masterValue;
 }
 
-template <class T>
-T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, const TwinLocationInfos & infos, bool reportError)
+void TwinAppChecker::performBacktrace(void)
 {
-    //@todo: use atomics here
-    T result;
+    //stack
+    void * frames[4096];
+    int frameCount = 1;
+    const int id_of_error_frame = 3;
 
-    //master mark value
-    channel.set(value, this->isMaster);
-
-    //Barrier in
-    this->channelMeta->barrierIn.waitAll(this->isMaster, this->logging);
-
-    //prepare
-    char preparedFormatLog[4096] = "";
-    char preparedFormatError[4096] = "";
-    //if (preparedFormatLog[0] == '\0') {
-        sprintf(preparedFormatLog, "%%s - value=%s\n", valueFormat);
-        sprintf(preparedFormatError, "Not maching value in %%s :\n - master = %s\n - slave  = %s\n - err    = %%s\n - diff   = %s\n - local  = %s\n", valueFormat, valueFormat, valueFormat, valueFormat);
-    //}
-
-    //display
-    if (logging) {
-        if (this->isMaster) {
-            printf(preparedFormatLog, "MASTER", value);
-        } else {
-            printf(preparedFormatLog, "SLAVE", value);
-        }
+    frameCount = backtrace(frames, 4096);
+    for (int i = 3 ; i < frameCount - 3 ; i++) {
+        const MALT::CallSite * site = this->solver.getCallSiteInfo(frames[i]);
+        fprintf(stderr, "%s:%d (%s)\n", this->solver.getString(site->file).c_str(), site->line, this->solver.getString(site->function).c_str());
     }
 
+    this->solver.solveNames();
+
+    const MALT::CallSite * errorSite = this->solver.getCallSiteInfo(frames[id_of_error_frame]);
+    FILE * fp = fopen(this->solver.getString(errorSite->file).c_str(), "r");
+    if (fp != NULL)
+    {
+        fprintf(stderr, "-------------------------------------------------------------------\n");
+        char lineContent[4096];
+        for (int line = 0 ; line < errorSite->line ; line++)
+            fgets(lineContent, sizeof(lineContent), fp);
+        fprintf(stderr, "%s", lineContent);
+    }
+    fprintf(stderr, "-------------------------------------------------------------------\n\n");
+    assert(errorSite->line != 0);
+}
+
+template <class T>
+T TwinAppChecker::checkGenericSingleValue(T masterValue, T slaveValue, T value, const char * valueFormat, const TwinLocationInfos & infos, bool reportError)
+{
     //both check
-    result = channel.masterValue;
-    if (channel.masterValue != channel.slaveValue) {
+    T result = masterValue;
+    if (masterValue != slaveValue) {
         char message[4096];
         char currentExe[4096];
         int status = readlink("/proc/self/exe", currentExe, sizeof(currentExe));
         assert(status > 0);
         currentExe[status] = '\0';
-        T delta = channel.slaveValue - channel.masterValue;
+        T delta = slaveValue - masterValue;
 
         char valueStrMaster[256];
         char valueStrSlave[256];
         char valueDiff[256];
         memset(valueStrMaster, 0, 256);
         memset(valueStrSlave, 0, 256);
-        snprintf(valueStrMaster, 256, valueFormat, channel.masterValue);
-        snprintf(valueStrSlave, 256, valueFormat, channel.slaveValue);
+        snprintf(valueStrMaster, 256, valueFormat, masterValue);
+        snprintf(valueStrSlave, 256, valueFormat, slaveValue);
 
         for (int i = 0 ; i < std::max(strlen(valueStrMaster), strlen(valueStrSlave)) ; i++) {
             if (valueStrMaster[i] == valueStrSlave[i])
@@ -411,7 +417,9 @@ T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppChecker
         valueDiff[255] = '\0';
 
 
-        sprintf(message, preparedFormatError, currentExe, channel.masterValue, channel.slaveValue, valueDiff, delta, value);
+        char preparedFormatError[4096] = "";
+        sprintf(preparedFormatError, "Not maching value in %%s :\n - master = %s\n - slave  = %s\n - err    = %%s\n - diff   = %s\n - local  = %s\n", valueFormat, valueFormat, valueFormat, valueFormat);
+        sprintf(message, preparedFormatError, currentExe, masterValue, slaveValue, valueDiff, delta, value);
 
         //stack
         void * frames[4096];
@@ -444,37 +452,76 @@ T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppChecker
             fprintf(stderr, "-------------------------------------------------------------------\n");
             fprintf(stderr, "At /home/svalat/Projects/minicroco/%s:%d\n", this->siteIdToFile[infos.locationId].c_str(), infos.sourceLine);
             fprintf(stderr, "-------------------------------------------------------------------\n");
-
-            /*for (int i = 3 ; i < frameCount ; i++)
-                fprintf(stderr, "%s\n", frameSymbols[i]);*/
             if (this->resolveStack)
-            {
-                frameCount = backtrace(frames, 4096);
-                for (int i = 3 ; i < frameCount - 3 ; i++) {
-                    const MALT::CallSite * site = this->solver.getCallSiteInfo(frames[i]);
-                    fprintf(stderr, "%s:%d (%s)\n", this->solver.getString(site->file).c_str(), site->line, this->solver.getString(site->function).c_str());
-                }
-
-                this->solver.solveNames();
-
-                const MALT::CallSite * errorSite = this->solver.getCallSiteInfo(frames[id_of_error_frame]);
-                FILE * fp = fopen(this->solver.getString(errorSite->file).c_str(), "r");
-                if (fp != NULL)
-                {
-                    fprintf(stderr, "-------------------------------------------------------------------\n");
-                    char lineContent[4096];
-                    for (int line = 0 ; line < errorSite->line ; line++)
-                        fgets(lineContent, sizeof(lineContent), fp);
-                    fprintf(stderr, "%s", lineContent);
-                }
-                fprintf(stderr, "-------------------------------------------------------------------\n\n");
-                assert(errorSite->line != 0);
-            }
-
+                this->performBacktrace();
             if (this->stopOnFirstErrror)
                 abort();
             this->alreadySeen[frame_of_error] = true;
         }
+    }
+}
+
+template <class T>
+T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, const TwinLocationInfos & infos, bool reportError)
+{
+    //@todo: use atomics here
+    T result;
+
+    //master mark value
+    channel.set(value, this->isMaster);
+
+    //Barrier in
+    this->channelMeta->barrierIn.waitAll(this->isMaster, this->logging);
+
+    //display
+    if (logging) {
+        char preparedFormatLog[4096] = "";
+        sprintf(preparedFormatLog, "%%s - value=%s\n", valueFormat);
+        if (this->isMaster) {
+            printf(preparedFormatLog, "MASTER", value);
+        } else {
+            printf(preparedFormatLog, "SLAVE", value);
+        }
+    }
+
+    //both check
+    result = this->checkGenericSingleValue(channel.masterValue, channel.slaveValue, value, valueFormat, infos, reportError);
+
+    //barrier out
+    this->channelMeta->barrierOut.waitAll(this->isMaster, this->logging);
+
+    //ok
+    return result;
+}
+
+template <class T>
+T * TwinAppChecker::checkGenericArray(T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError)
+{
+    //@todo: use atomics here
+    T * result = nullptr;
+
+    //master mark value
+    channel.set(value, this->isMaster);
+
+    //Barrier in
+    this->channelMeta->barrierIn.waitAll(this->isMaster, this->logging);
+
+    //display
+    if (logging) {
+        char preparedFormatLog[4096] = "";
+        sprintf(preparedFormatLog, "%%s - value=%s\n", valueFormat);
+        if (this->isMaster) {
+            printf(preparedFormatLog, "MASTER", value);
+        } else {
+            printf(preparedFormatLog, "SLAVE", value);
+        }
+    }
+
+    //check all
+    for (size_t i = 0 ; i < count ; i++) {
+        T masterValue = this->checkGenericSingleValue(channel.masterValue[i], channel.slaveValue[i], value[i], valueFormat, infos, reportError);
+        if (masterValue != value[i])
+            result = channel.masterValue;
     }
 
     //barrier out
