@@ -22,6 +22,7 @@
 <!-- T grid -->
   <field_group id="rho" grid_ref="rho_2D">
     <field id="h" long_name="bathymetry at RHO-points" unit="meter" />
+    <field id="Dcrit" long_name="Critical Depth for Drying cells" unit="meter" />
     <field id="f" long_name="Coriolis parameter at RHO-points" unit="second-1" />
     <field id="pm" long_name="curvilinear coordinates metric in XI" unit="meter-1" />
     <field id="pn" long_name="curvilinear coordinates metric in ETA" unit="meter-1" />
@@ -69,6 +70,7 @@
     <field id="swrad" long_name="Short-wave surface radiation" unit="Watts meter-2" />
     <field id="visc3d" long_name="horizontal viscosity coefficient" unit="meter2 second-1" grid_ref="rho_3D"/>
     <field id="diff3d" long_name="horizontal diffusivity coefficient" unit="meter2 second-1" grid_ref="rho_3D"/>
+    <field id="rmask_wet" long_name="" unit=""  />
 
 </field_group>
         
@@ -83,6 +85,7 @@
       <field id="u_surf" long_name="u-momentum component" unit="meter second-1" />
       <field id="uwnd" long_name="surface u-momentum wind" unit="meter second-1" />
       <field id="vortuw_nbq" long_name="UW vorticity " unit="??????" grid_ref="u_3D"/>
+      <field id="umask_wet" long_name="" unit=""  />
     </field_group>
     
 <!-- V grid -->
@@ -94,6 +97,7 @@
       <field id="v_nbq" long_name="v-velocity" unit="meter second-1" grid_ref="v_3D"/>
       <field id="v_surf" long_name="v-momentum component" unit="meter second-1" />
       <field id="vwnd" long_name="surface v-momentum wind" unit="meter second-1" />
+      <field id="vmask_wet" long_name="" unit=""  />
     </field_group>
     
 <!-- W grid -->
@@ -110,5 +114,6 @@
       <field id="AKk" long_name="TKE vertical diffusion coefficient" unit="meter2 second-1  " grid_ref="w_3D"/>
       <field id="AKp" long_name="GLS vertical diffusion coefficient " unit="meter2 second-1  " grid_ref="w_3D"/>
     </field_group>
+
 
 </field_definition>
