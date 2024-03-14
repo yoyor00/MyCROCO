@@ -200,11 +200,11 @@ CONTAINS
          ! Allometric variations of the minimum and maximum quotas
          ! From Talmy et al. (2014) and Maranon et al. (2013)
          ! -------------------------------------------------------
-         xqnnmin(ji,jj,jk) = qnnmin * sizen(ji,jj,jk)**(-0.18)
+         xqnnmin(ji,jj,jk) = qnnmin / ( sizen(ji,jj,jk)**0.18 + rtrn )
          xqnnmax(ji,jj,jk) = qnnmax
-         xqndmin(ji,jj,jk) = qndmin * sized(ji,jj,jk)**(-0.18)
+         xqndmin(ji,jj,jk) = qndmin / ( sized(ji,jj,jk)**0.18 + rtrn )
          xqndmax(ji,jj,jk) = qndmax
-         xqnpmin(ji,jj,jk) = qnpmin * sizep(ji,jj,jk)**(-0.18)
+         xqnpmin(ji,jj,jk) = qnpmin / ( sizep(ji,jj,jk)**0.18 + rtrn )
          xqnpmax(ji,jj,jk) = qnpmax
          !
          ! Michaelis-Menten Limitation term for nutrients Small flagellates
