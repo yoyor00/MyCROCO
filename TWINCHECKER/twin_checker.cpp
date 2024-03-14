@@ -23,7 +23,7 @@
 //from MALT
 #include "from-malt/SymbolSolver.hpp"
 
-#define TWIN_ARRAY_BATCH_SIZE 4096
+#define TWIN_ARRAY_BATCH_SIZE 4096ul
 
 namespace twin
 {
@@ -49,8 +49,11 @@ struct TwinLocationInfos
 template <class T>
 struct TwinAppCheckerChannelValuesArray
 {
-    volatile T masterValue[TWIN_ARRAY_BATCH_SIZE];
-    volatile T slaveValue[TWIN_ARRAY_BATCH_SIZE];
+    //members
+    void set(const T * value, size_t count, bool isMaster);
+    //vars
+    T masterValues[TWIN_ARRAY_BATCH_SIZE];
+    T slaveValues[TWIN_ARRAY_BATCH_SIZE];
 };
 
 template <class T>
@@ -72,6 +75,17 @@ void TwinAppCheckerChannelValues<T>::set(T value, bool isMaster)
         this->masterValue = value;
     else
         this->slaveValue = value;
+}
+
+template <class T>
+void TwinAppCheckerChannelValuesArray<T>::set(const T * value, size_t count, bool isMaster)
+{
+    assert(count < TWIN_ARRAY_BATCH_SIZE);
+
+    if (isMaster)
+        memcpy(this->masterValues, value, count * sizeof(T));
+    else
+        memcpy(this->slaveValues, value, count * sizeof(T));
 }
 
 struct TwinAppCheckerChannelBarrier
@@ -149,7 +163,9 @@ class TwinAppChecker
         void checkArray(bool * values, size_t count, const TwinLocationInfos & infos, bool fixable = false);
 
         template <class T> T checkGeneric(T value, const char * valueFormat, TwinAppCheckerChannelValues<T> & channel, const TwinLocationInfos & infos, bool reportError);
-        template <class T> T * checkGenericArray(T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError);
+        template <class T> const T * checkGenericArrayBatch(const T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError);
+        template <class T> void checkGenericArray(T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError, bool fixable);
+        template <class T> void checkGenericArray(const T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError);
         void enableLoggin(void);
         void enableStopOnFirstError(void);
         void enableResolveStack(void);
@@ -160,7 +176,7 @@ class TwinAppChecker
         template <class T> T checkGenericSingleValue(T masterValue, T slaveValue, T value, const char * valueFormat, const TwinLocationInfos & infos, bool reportError);
     private:
         bool logging{false};
-        bool stopOnFirstErrror{false};
+        bool stopOnFirstError{false};
         bool resolveStack{false};
         std::string meetingPointFifoFile{};
         std::string name{};
@@ -227,7 +243,7 @@ void TwinAppChecker::enableLoggin(void)
 
 void TwinAppChecker::enableStopOnFirstError(void)
 {
-    this->stopOnFirstErrror = true;
+    this->stopOnFirstError = true;
 }
 
 void TwinAppChecker::enableResolveStack(void)
@@ -320,7 +336,7 @@ void TwinAppChecker::meetup(void)
 
 void TwinAppChecker::check(bool & value, const TwinLocationInfos & infos, bool fixable)
 {
-    bool reportError = (fixable || this->stopOnFirstErrror);
+    bool reportError = (fixable || this->stopOnFirstError);
     bool masterValue = this->checkGeneric(value, "%B", this->channelMeta->bools, infos, reportError);
     if (masterValue != value)
         value = masterValue;
@@ -328,7 +344,7 @@ void TwinAppChecker::check(bool & value, const TwinLocationInfos & infos, bool f
 
 void TwinAppChecker::check(int & value, const TwinLocationInfos & infos, bool fixable)
 {
-    bool reportError = (fixable || this->stopOnFirstErrror);
+    bool reportError = (fixable || this->stopOnFirstError);
     int masterValue = this->checkGeneric(value, "%d", this->channelMeta->integers, infos, reportError);
     if (masterValue != value)
         value = masterValue;
@@ -336,7 +352,7 @@ void TwinAppChecker::check(int & value, const TwinLocationInfos & infos, bool fi
 
 void TwinAppChecker::check(float & value, const TwinLocationInfos & infos, bool fixable)
 {
-    bool reportError = (fixable || this->stopOnFirstErrror);
+    bool reportError = (fixable || this->stopOnFirstError);
     float masterValue = this->checkGeneric(value, "%.27g", this->channelMeta->floats, infos, reportError);
     if (value == NAN || value == -NAN) {
         fprintf(stderr, "Get NaN !\n");
@@ -348,7 +364,7 @@ void TwinAppChecker::check(float & value, const TwinLocationInfos & infos, bool 
 
 void TwinAppChecker::check(double & value, const TwinLocationInfos & infos, bool fixable)
 {
-    bool reportError = (fixable || this->stopOnFirstErrror);
+    bool reportError = (fixable || this->stopOnFirstError);
     double masterValue = this->checkGeneric(value, "%.27g", this->channelMeta->doubles, infos, reportError);
     if (value == NAN || value == -NAN) {
         fprintf(stderr, "Get NaN !\n");
@@ -356,6 +372,30 @@ void TwinAppChecker::check(double & value, const TwinLocationInfos & infos, bool
     }
     if (masterValue != value)
         value = masterValue;
+}
+
+void TwinAppChecker::checkArray(double * values, size_t count, const TwinLocationInfos & infos, bool fixable)
+{
+    bool reportError = (fixable || this->stopOnFirstError);
+    this->checkGenericArray(values, count, "%.27g", this->channelMeta->doublesArray, infos, reportError);
+}
+
+void TwinAppChecker::checkArray(float * values, size_t count, const TwinLocationInfos & infos, bool fixable)
+{
+    bool reportError = (fixable || this->stopOnFirstError);
+    this->checkGenericArray(values, count, "%.27g", this->channelMeta->floatsArray, infos, reportError);
+}
+
+void TwinAppChecker::checkArray(int * values, size_t count, const TwinLocationInfos & infos, bool fixable)
+{
+    bool reportError = (fixable || this->stopOnFirstError);
+    this->checkGenericArray(values, count, "%d", this->channelMeta->integersArray, infos, reportError);
+}
+
+void TwinAppChecker::checkArray(bool * values, size_t count, const TwinLocationInfos & infos, bool fixable)
+{
+    bool reportError = (fixable || this->stopOnFirstError);
+    this->checkGenericArray(values, count, "%B", this->channelMeta->boolsArray, infos, reportError);
 }
 
 void TwinAppChecker::performBacktrace(void)
@@ -454,7 +494,7 @@ T TwinAppChecker::checkGenericSingleValue(T masterValue, T slaveValue, T value, 
             fprintf(stderr, "-------------------------------------------------------------------\n");
             if (this->resolveStack)
                 this->performBacktrace();
-            if (this->stopOnFirstErrror)
+            if (this->stopOnFirstError)
                 abort();
             this->alreadySeen[frame_of_error] = true;
         }
@@ -495,13 +535,41 @@ T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppChecker
 }
 
 template <class T>
-T * TwinAppChecker::checkGenericArray(T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError)
+void TwinAppChecker::checkGenericArray(T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError, bool fixable)
 {
+    for (size_t offset = 0 ; offset < count ; offset += TWIN_ARRAY_BATCH_SIZE) {
+        size_t batch_size = std::min(count - offset, TWIN_ARRAY_BATCH_SIZE);
+        const T * masterValue = this->checkGenericArrayBatch(value + offset, batch_size, valueFormat, channel, infos, reportError);
+        if (fixable && masterValue != nullptr) {
+            for (size_t i = 0 ; i < batch_size ; i++)
+                value[offset + i] = masterValue[i];
+        }
+    }
+}
+
+template <class T>
+void TwinAppChecker::checkGenericArray(const T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError)
+{
+    for (size_t offset = 0 ; offset < count ; offset += TWIN_ARRAY_BATCH_SIZE) {
+        size_t batch_size = std::min(count - offset, TWIN_ARRAY_BATCH_SIZE);
+        this->checkGenericArrayBatch(value + offset, batch_size, valueFormat, channel, infos, reportError);
+    }
+}
+
+template <class T>
+const T * TwinAppChecker::checkGenericArrayBatch(const T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError)
+{
+    //checj
+    assert(value != nullptr);
+    assert(count > 0);
+    assert(valueFormat != nullptr);
+    assert(count <= TWIN_ARRAY_BATCH_SIZE);
+
     //@todo: use atomics here
     T * result = nullptr;
 
     //master mark value
-    channel.set(value, this->isMaster);
+    channel.set(value, count, this->isMaster);
 
     //Barrier in
     this->channelMeta->barrierIn.waitAll(this->isMaster, this->logging);
@@ -517,11 +585,15 @@ T * TwinAppChecker::checkGenericArray(T * value, size_t count, const char * valu
         }
     }
 
+    //make volatile
+    const volatile T * masterValues = channel.masterValues;
+    const volatile T * slaveValues = channel.slaveValues;
+
     //check all
     for (size_t i = 0 ; i < count ; i++) {
-        T masterValue = this->checkGenericSingleValue(channel.masterValue[i], channel.slaveValue[i], value[i], valueFormat, infos, reportError);
+        T masterValue = this->checkGenericSingleValue(masterValues[i], slaveValues[i], value[i], valueFormat, infos, reportError);
         if (masterValue != value[i])
-            result = channel.masterValue;
+            result = channel.masterValues;
     }
 
     //barrier out
