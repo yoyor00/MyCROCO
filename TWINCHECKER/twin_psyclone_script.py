@@ -7,11 +7,13 @@ import shutil
 import random
 import argparse
 # psyclone
-from psyclone.psyir.nodes import Routine, Loop, Reference, Assignment, Call, BinaryOperation, UnaryOperation, Schedule, Literal, Node, IntrinsicCall, Container, IfBlock, Operation
+from psyclone.psyir.nodes import Routine, Loop, Reference, Assignment, Call, BinaryOperation, UnaryOperation, Schedule, Literal, Node, IntrinsicCall, Container, IfBlock, Operation, ArrayReference
 from psyclone.psyir.symbols import RoutineSymbol, NoType, ContainerSymbol, DataType, Symbol, ArrayType, CHARACTER_TYPE, INTEGER4_TYPE, INTEGER_UNDEF_TYPE, INTEGER8_TYPE, ScalarType
 from psyclone.psyir.backend.fortran import FortranWriter
 from psyclone.psyir.frontend.fortran import FortranReader
 from psyclone.line_length import FortLineLength
+# local
+from trans_array_indices_to_get_full import ReferenceIndices2ArrayRangeTrans
 
 class TwinCheckerInstrumenter:
     def __init__(self, source_file: str, dest_file: str, config: dict):
@@ -25,6 +27,7 @@ class TwinCheckerInstrumenter:
         self.enable_profile_in_values = self.config.get('profile_in_values', True)
         self.enable_profile_out_values = self.config.get('profile_out_values', True)
         self.enable_profile_integers = self.config.get('profile_integers', False)
+        self.enable_profile_after_kernel = self.config.get('profile_after_kernel', True)
 
     def gen_call(self, node: Node) -> Call:
         # vars
@@ -69,6 +72,61 @@ class TwinCheckerInstrumenter:
         self.site_ids.append(site_id)
         arguments = [
             node.copy(), 
+            Literal(equation_str, ArrayType(CHARACTER_TYPE,[len(equation_str)+1])),
+            Literal(str(len(equation_str)), INTEGER8_TYPE),
+            Literal(str(site_id), INTEGER8_TYPE),
+            Literal("__LINE__", INTEGER_UNDEF_TYPE)
+        ]
+        call = Call.create(twin_check_float, arguments)
+        return call
+
+    def gen_call_array(self, node: ArrayReference) -> Call:
+        # vars
+        enable_profile_integers = self.enable_profile_integers
+
+        t = "INTEGER"
+        for literal in node.walk((Literal, Reference, UnaryOperation, IntrinsicCall)):
+            if isinstance(literal, Reference):
+                literal = literal.symbol
+            if "REAL" in str(literal) or 'FLOAT' in str(literal):
+                t = "REAL"
+            if "BOOLEAN" in str(literal):
+                t = "BOOLEAN"
+        for literal in node.walk((Literal, Reference, UnaryOperation, IntrinsicCall)):
+            if 'NINT' in str(literal):
+                t = 'INTEGER'
+
+        if t == "BOOLEAN":
+            return None
+        if t == "INTEGER" and not enable_profile_integers:
+            return None
+
+        fixable = ""
+        if isinstance(node, Reference) and node.is_array:
+            fixable = "_fixable"
+
+        if "REAL" == t:
+            twin_check_float = RoutineSymbol(f"twin_check_double{fixable}_array", NoType())
+        elif "INTEGER" == t:
+            twin_check_float = RoutineSymbol(f"twin_check_integer{fixable}_array", NoType())
+        elif "BOOLEAN" == t:
+            twin_check_float = RoutineSymbol(f"twin_check_bool{fixable}_array", NoType())
+        else:
+            raise Exception(str(literal))
+            twin_check_float = RoutineSymbol("twin_check_float_array", NoType())
+        equation_str = node.debug_string()
+        if 'zob' == equation_str:
+            return None
+        if ':' in equation_str:
+            return None
+        site_id = random.randint(0, 10000000000)
+        self.site_ids.append(site_id)
+        name = node.name
+        reader = FortranReader()
+        routine: Routine = node.ancestor(Routine)
+        arguments = [
+            reader.psyir_from_expression(f"{name}", routine.symbol_table),
+            reader.psyir_from_expression(f"SIZE({name})", routine.symbol_table),
             Literal(equation_str, ArrayType(CHARACTER_TYPE,[len(equation_str)+1])),
             Literal(str(len(equation_str)), INTEGER8_TYPE),
             Literal(str(site_id), INTEGER8_TYPE),
@@ -145,6 +203,7 @@ class TwinCheckerInstrumenter:
         # vars
         dest_file = self.dest_file.replace('/home/svalat/Projects/minicroco/', './') #@todo: fix to keep full name but as isusue with line reshapingm
         routines = container.walk(Routine)
+        enable_profile_after_kernel = self.enable_profile_after_kernel
 
         for routine in routines:
             module_symbol = ContainerSymbol("twin_checker", True)
@@ -153,6 +212,30 @@ class TwinCheckerInstrumenter:
             self.apply_on_node(routine, stop_type=Loop)
             for loop in routine.walk(Loop, stop_type=Loop):
                 self.apply_on_node(loop)
+
+            if enable_profile_after_kernel:
+                for loop in routine.walk(Loop, stop_type=Loop):
+                    parent = loop.parent
+                    insert_pos = loop.position + 1
+                    for assign in loop.walk(Assignment):
+                        # @todo make a single if many write to same var
+                        ref: Reference = assign.lhs
+                        if isinstance(ref, ArrayReference):
+                            to_insert = {
+                                'parent': parent,
+                                'pos': insert_pos,
+                                'call': self.gen_call_array(ref)
+                            }
+                        else:
+                            to_insert = {
+                                'parent': parent,
+                                'pos': insert_pos,
+                                'call': self.gen_call(ref)
+                            }
+                        # insert
+                        if to_insert['call'] != None:
+                            insert_pos += 1
+                            parent.addchild(to_insert['call'], to_insert['pos'])
 
             for id in self.site_ids:
                 call = Call.create(RoutineSymbol(f"twin_register_site", NoType()), [

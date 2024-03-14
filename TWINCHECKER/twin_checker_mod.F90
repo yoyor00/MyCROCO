@@ -35,7 +35,7 @@ module twin_checker
             & bind(C, name="twin_check_float_array")
             use iso_c_binding, only: c_char, c_size_t, c_float, c_int, c_int64_t
             real(kind=c_float), dimension(*), intent(in) :: values
-            integer(c_size_t), value :: count
+            integer(c_int), value :: count
             character(kind=c_char), dimension(*) :: equation
             integer(c_size_t), value :: equation_size
             integer (c_int64_t), value :: location_id
@@ -46,7 +46,7 @@ module twin_checker
             & bind(C, name="twin_check_float_fixable_array")
             use iso_c_binding, only: c_char, c_size_t, c_float, c_int, c_int64_t
             real(kind=c_float), dimension(*), intent(inout) :: values
-            integer(c_size_t), value :: count
+            integer(c_int), value :: count
             character(kind=c_char), dimension(*) :: equation
             integer(c_size_t), value :: equation_size
             integer (c_int64_t), value :: location_id
@@ -78,7 +78,7 @@ module twin_checker
             & bind(C, name="twin_check_double_array")
             use iso_c_binding, only: c_char, c_size_t, c_double, c_int, c_int64_t
             real(kind=c_double), dimension(*), intent(in) :: values
-            integer(c_size_t), value :: count
+            integer(c_int), value :: count
             character(kind=c_char), dimension(*) :: equation
             integer(c_size_t), value :: equation_size
             integer (c_int64_t), value :: location_id
@@ -89,7 +89,7 @@ module twin_checker
             & bind(C, name="twin_check_double_fixable_array")
             use iso_c_binding, only: c_char, c_size_t, c_double, c_int, c_int64_t
             real(kind=c_double), dimension(*), intent(inout) :: values
-            integer(c_size_t), value :: count
+            integer(c_int), value :: count
             character(kind=c_char), dimension(*) :: equation
             integer(c_size_t), value :: equation_size
             integer (c_int64_t), value :: location_id
@@ -121,7 +121,7 @@ module twin_checker
             & bind(C, name="twin_check_integer_array")
             use iso_c_binding, only: c_char, c_size_t, c_float, c_int, c_int64_t
             integer(kind=c_int), dimension(*), intent(in) :: values
-            integer(c_size_t), value :: count
+            integer(c_int), value :: count
             character(kind=c_char), dimension(*) :: equation
             integer(c_size_t), value :: equation_size
             integer (c_int64_t), value :: location_id
@@ -132,7 +132,7 @@ module twin_checker
             & bind(C, name="twin_check_integer_fixable_array")
             use iso_c_binding, only: c_char, c_size_t, c_float, c_int, c_int64_t
             integer(kind=c_int), dimension(*), intent(inout) :: values
-            integer(c_size_t), value :: count
+            integer(c_int), value :: count
             character(kind=c_char), dimension(*) :: equation
             integer(c_size_t), value :: equation_size
             integer (c_int64_t), value :: location_id
@@ -164,7 +164,7 @@ module twin_checker
             & bind(C, name="twin_check_bool_array")
             use iso_c_binding, only: c_char, c_size_t, c_float, c_int, c_int64_t
             integer(kind=c_int), dimension(*), intent(in) :: values
-            integer(c_size_t), value :: count
+            integer(c_int), value :: count
             character(kind=c_char), dimension(*) :: equation
             integer(c_size_t), value :: equation_size
             integer (c_int64_t), value :: location_id
@@ -175,7 +175,7 @@ module twin_checker
             & bind(C, name="twin_check_bool_fixable_array")
             use iso_c_binding, only: c_char, c_size_t, c_float, c_int, c_int64_t
             integer(kind=c_int), dimension(*), intent(inout) :: values
-            integer(c_size_t), value :: count
+            integer(c_int), value :: count
             character(kind=c_char), dimension(*) :: equation
             integer(c_size_t), value :: equation_size
             integer (c_int64_t), value :: location_id
