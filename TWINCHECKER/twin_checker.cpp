@@ -625,6 +625,8 @@ twin::TwinAppChecker * twin_init(void)
     return twin;
 }
 
+//////////////////////////////////////// BOOL
+
 void twin_check_bool(int value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
     //lazy init
@@ -650,6 +652,34 @@ void twin_check_bool_fixable(int * value, const char * equation, size_t equation
     //check
     gbl_twin_state->check(*value, infos);
 }
+
+void twin_check_bool_array(int * values, size_t count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->checkArray(values, count, infos, false);
+}
+
+void twin_check_bool_fixable_array(int * values, size_t count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->checkArray(values, count, infos, true);
+}
+
+//////////////////////////////////////// FLOAT
 
 void twin_check_float(float value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
@@ -677,6 +707,34 @@ void twin_check_float_fixable(float * value, const char * equation, size_t equat
     gbl_twin_state->check(*value, infos);
 }
 
+void twin_check_float_array(float * values, size_t count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->checkArray(values, count, infos, false);
+}
+
+void twin_check_float_fixable_array(float * values, size_t count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->checkArray(values, count, infos, true);
+}
+
+//////////////////////////////////////// DOUBLE
+
 void twin_check_double(double value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
     //lazy init
@@ -702,6 +760,34 @@ void twin_check_double_fixable(double * value, const char * equation, size_t equ
     //check
     gbl_twin_state->check(*value, infos);
 }
+
+void twin_check_double_array(double * values, size_t count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->checkArray(values, count, infos, false);
+}
+
+void twin_check_double_fixable_array(double * values, size_t count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->checkArray(values, count, infos, true);
+}
+
+//////////////////////////////////////// INT
 
 void twin_check_int(int value, const char * equation, size_t equation_size, int64_t location_id, int source_line)
 {
@@ -729,6 +815,34 @@ void twin_check_int_fixable(int * value, const char * equation, size_t equation_
     gbl_twin_state->check(*value, infos);
 }
 
+void twin_check_integer_array(int * values, size_t count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->checkArray(values, count, infos, false);
+}
+
+void twin_check_integer_fixable_array(int * values, size_t count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
+{
+    //lazy init
+    if (gbl_twin_state == nullptr)
+        gbl_twin_state = twin_init();
+
+    //build infos
+    twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
+
+    //check
+    gbl_twin_state->checkArray(values, count, infos, true);
+}
+
+//////////////////////////////////////// FILE NAMES
+
 void twin_register_site(int64_t id, const char * source_file, size_t source_file_size)
 {
     //lazy init
@@ -742,6 +856,8 @@ void twin_register_site(int64_t id, const char * source_file, size_t source_file
 
     gbl_twin_state->registerSiteId(id, null_terminated);
 }
+
+//////////////////////////////////////// DESTRUCATOR
 
 void __attribute__((destructor)) twin_finish()
 {
