@@ -341,152 +341,216 @@
         <file id="file30" name_suffix="_pisces" >
             <field_group group_ref="ave_grid" />
                <field_group id="pisces_fields" operation="average">
-                   <field field_ref="DIC"       name="DIC"/>
+                   <field field_ref="DIC"       name="DIC"      />
                    <field field_ref="Alkalini"  name="Alkalini" />
-                   <field field_ref="O2"        name="O2" />
-                   <field field_ref="POC"       name="POC" />
-                   <field field_ref="DOC"       name="DOC" />
-                   <field field_ref="PHY"       name="PHY" />
-                   <field field_ref="ZOO"       name="ZOO" />
-                   <field field_ref="NO3"       name="NO3" />
-                   <field field_ref="Fer"       name="Fer" />
+                   <field field_ref="O2"        name="O2"       />
+                   <field field_ref="POC"       name="POC"      />
+                   <field field_ref="DOC"       name="DOC"      />
+                   <field field_ref="PHY"       name="PHY"      />
+                   <field field_ref="ZOO"       name="ZOO"      />
+                   <field field_ref="NO3"       name="NO3"      />
+                   <field field_ref="Fer"       name="Fer"      />
 #if ! defined key_pisces_npzd
-                   <field field_ref="NH4"       name="NH4" />
-                   <field field_ref="PO4"       name="PO4" />
-                   <field field_ref="Si"        name="Si" />
-                   <field field_ref="GOC"       name="GOC" />
+                   <field field_ref="NH4"       name="NH4"      />
+                   <field field_ref="PO4"       name="PO4"      />
+                   <field field_ref="Si"        name="Si"       />
+                   <field field_ref="GOC"       name="GOC"      />
                    <field field_ref="NCHL"      name="TCHL" > NCHL+DCHL </field>
-                   <field field_ref="PHY2"      name="PHY2" />
-                   <field field_ref="ZOO2"      name="ZOO2" />
-                   <field field_ref="DSi"      name="DSi" />
-                   <field field_ref="GSi"      name="GSi" />
-                   <field field_ref="BFe"      name="BFe" />
-                   <field field_ref="DFe"      name="DFe" />
-                   <field field_ref="SFe"      name="SFe" />
-                   <field field_ref="NFe"      name="NFe" />
-                   <field field_ref="CaCO3"     name="CaCO3" />
+                   <field field_ref="NCHL"      name="NCHL"     />
+                   <field field_ref="DCHL"      name="DCHL"     />
+                   <field field_ref="PHY2"      name="PHY2"     />
+                   <field field_ref="ZOO2"      name="ZOO2"     />
+                   <field field_ref="DSi"       name="DSi"      />
+                   <field field_ref="GSi"       name="GSi"      />
+                   <field field_ref="BFe"       name="BFe"      />
+                   <field field_ref="DFe"       name="DFe"      />
+                   <field field_ref="SFe"       name="SFe"      />
+                   <field field_ref="NFe"       name="NFe"      />
+                   <field field_ref="CaCO3"     name="CaCO3"    />
 #endif
 #if defined key_ligand
-                   <field field_ref="LGW"       name="LGW" />
+                   <field field_ref="LGW"       name="LGW"      />
 #endif
 #if defined key_pisces_quota
-                   <field field_ref="DON"       name="DON" />
-                   <field field_ref="DOP"       name="DOP" />
-                   <field field_ref="PON"       name="PON" />
-                   <field field_ref="POP"       name="POP" />
-                   <field field_ref="GON"       name="GON" />
-                   <field field_ref="GOP"       name="GOP" />
-                   <field field_ref="PHYN"      name="NANN" />
-                   <field field_ref="PHYP"      name="NANP" />
-                   <field field_ref="DIAN"      name="DIAN" />
-                   <field field_ref="DIAP"      name="DIAP" />
-                   <field field_ref="PIC"       name="PIC" />
-                   <field field_ref="PICN"      name="PICN" />
-                   <field field_ref="PICP"      name="PICP" />
-                   <field field_ref="PFe"       name="PFe" />
-                   <field field_ref="PCHL"      name="PCHL" />
+                   <field field_ref="DON"       name="DON"      />
+                   <field field_ref="DOP"       name="DOP"      />
+                   <field field_ref="PON"       name="PON"      />
+                   <field field_ref="POP"       name="POP"      />
+                   <field field_ref="GON"       name="GON"      />
+                   <field field_ref="GOP"       name="GOP"      />
+                   <field field_ref="PHYN"      name="NANN"     />
+                   <field field_ref="PHYP"      name="NANP"     />
+                   <field field_ref="DIAN"      name="DIAN"     />
+                   <field field_ref="DIAP"      name="DIAP"     />
+                   <field field_ref="PIC"       name="PIC"      />
+                   <field field_ref="PICN"      name="PICN"     />
+                   <field field_ref="PICP"      name="PICP"     />
+                   <field field_ref="PFe"       name="PFe"      />
+                   <field field_ref="PCHL"      name="PCHL"     />
 #endif
-            </field_group>
-      </file>
-      <file id="file31" name_suffix="_pisces_diag" enabled=".true." >
-           <field_group group_ref="ave_grid" />
+               </field_group>
+        </file>
+        <file id="file31" name_suffix="_pisces_diag" enabled=".true." >
+            <field_group group_ref="ave_grid" />
                <field_group id="pisces_diag_fields" operation="average">
-                   <field field_ref="PH"       name="PH"   />
-                   <field field_ref="CO3"      name="CO3" />
-                   <field field_ref="CO3sat"   name="CO3sat" />
-                   <field field_ref="PAR"      name="PAR" />
-                   <field field_ref="PPPHYN"    name="PPN" />
-                   <field field_ref="GRAZ1"  name="grapoc" />
-                   <field field_ref="MicroZo2" name="Mico2" />
-                   <field field_ref="Remino2"  name="Remo2" />
-                   <field field_ref="Nfixo2"   name="Fixo2" />
-                   <field field_ref="Cflx"     name="Cflx" />
-                   <field field_ref="EPC100"   name="EPC100" />
-                   <field field_ref="EXPC"   name="EXPC" />
-                   <field field_ref="Dpco2"    name="Dpco2" />
-                   <field field_ref="Oflx"     name="Oflx" />
-                   <field field_ref="Kg"       name="Kg" />
-                   <field field_ref="Heup"     name="Zmeu" />
-                   <field field_ref="Nfix"     name="Nfix"/>
-                   <field field_ref="Sdenit"    name="Sdenit"/>
-                   <field field_ref="SedC"    name="SedC"/>
-                   <field field_ref="LNnut"    name="LNnut"/>
-                   <field field_ref="LNFe"    name="LNFe"/>
-                   <field field_ref="xfracal"    name="xfracal"/>
-                   <field field_ref="REMIN"    name="REMIN"/>
-                   <field field_ref="REMINP"    name="REMINP"/>
-                   <field field_ref="DENIT"    name="DENIT"/>
-                   <field field_ref="BACT"    name="BACT"/>
-                   <field field_ref="Fe3"    name="Fe3"/>
-                   <field field_ref="FeL1"    name="FeL1"/>
-                   <field field_ref="TL1"    name="TL1"/>
-                   <field field_ref="Totlig"    name="Totlig"/>
-                   <field field_ref="Biron"    name="Biron"/>
-                   <field field_ref="FESCAV"    name="FESCAV"/>
-                   <field field_ref="FECOLL"    name="FECOLL"/>
-                   <field field_ref="LNlight"    name="LNlight"/>
-                   <field field_ref="MuN"    name="MuN"/>
-                   <field field_ref="Mumax"    name="Mumax"/>
-                   <field field_ref="TPP"    name="TPP"/>
-                   <field field_ref="INTPP"    name="INTPP"/>
-                   <field field_ref="PPNEWo2"    name="PPNEWo2"/>
-                   <field field_ref="Ironsed"  name="Ironsed" />
-                   <field field_ref="pdust"   name="pdust"  />
-                   <field field_ref="Irondep" name="Fedep" />
-                   <field field_ref="No3dep"  name="No3dep" />
+                   <field field_ref="PH"       name="PH"        />
+                   <field field_ref="CO3"      name="CO3"       />
+                   <field field_ref="CO3sat"   name="CO3sat"    />
+                   <field field_ref="PAR"      name="PAR"       />
+                   <field field_ref="PPPHYN"   name="PPN"       />
+                   <field field_ref="GRAZ1"    name="grapoc"    />
+                   <field field_ref="MicroZo2" name="Mico2"     />
+                   <field field_ref="Remino2"  name="Remo2"     />
+                   <field field_ref="Nfixo2"   name="Fixo2"     />
+                   <field field_ref="Cflx"     name="Cflx"      />
+                   <field field_ref="EPC100"   name="EPC100"    />
+                   <field field_ref="EXPC"     name="EXPC"      />
+                   <field field_ref="Dpco2"    name="Dpco2"     />
+                   <field field_ref="Oflx"     name="Oflx"      />
+                   <field field_ref="Kg"       name="Kg"        />
+                   <field field_ref="Heup"     name="Zmeu"      />
+                   <field field_ref="Nfix"     name="Nfix"      />
+                   <field field_ref="Sdenit"   name="Sdenit"    />
+                   <field field_ref="SedC"     name="SedC"      />
+                   <field field_ref="LNnut"    name="LNnut"     />
+                   <field field_ref="LNFe"     name="LNFe"      />
+                   <field field_ref="xfracal"  name="xfracal"   />
+                   <field field_ref="REMIN"    name="REMIN"     />
+                   <field field_ref="REMINP"   name="REMINP"    />
+                   <field field_ref="DENIT"    name="DENIT"     />
+                   <field field_ref="BACT"     name="BACT"      />
+                   <field field_ref="Fe3"      name="Fe3"       />
+                   <field field_ref="FeL1"     name="FeL1"      />
+                   <field field_ref="TL1"      name="TL1"       />
+                   <field field_ref="Totlig"   name="Totlig"    />
+                   <field field_ref="Biron"    name="Biron"     />
+                   <field field_ref="FESCAV"   name="FESCAV"    />
+                   <field field_ref="FECOLL"   name="FECOLL"    />
+                   <field field_ref="LNlight"  name="LNlight"   />
+                   <field field_ref="MuN"      name="MuN"       />
+                   <field field_ref="Mumax"    name="Mumax"     />
+                   <field field_ref="TPP"      name="TPP"       />
+                   <field field_ref="INTPP"    name="INTPP"     />
+                   <field field_ref="PPNEWo2"  name="PPNEWo2"   />
+                   <field field_ref="Ironsed"  name="Ironsed"   />
+                   <field field_ref="pdust"    name="pdust"     />
+                   <field field_ref="Irondep"  name="Fedep"     />
+                   <field field_ref="No3dep"   name="No3dep"    />
 #if defined key_pisces_npzd
-                   <field field_ref="CHL"  name="TCHL"/>
+                   <field field_ref="CHL"      name="TCHL"      />
 #else
-                   <field field_ref="NCHL"   name="TCHL" > NCHL + DCHL </field>
-                   <field field_ref="MuD"    name="MuD"/>
-                   <field field_ref="LDlight"    name="LDlight"/>
-                   <field field_ref="SedCal"    name="SedCal"/>
-                   <field field_ref="SedSi"    name="SedSi"/>
-                   <field field_ref="PPPHYD"   name="PPD" />
-                   <field field_ref="PPNEWN"   name="PNN" />
-                   <field field_ref="PPNEWD"   name="PND" />
-                   <field field_ref="PBSi"     name="PBSi" />
-                   <field field_ref="PFeN"     name="PFeN" />
-                   <field field_ref="PFeD"     name="PFeD" />
-                   <field field_ref="GRAZ2"    name="grapoc2" />
-                   <field field_ref="Nitrifo2" name="Nito2" />
-                   <field field_ref="PPRego2"  name="RPo2" />
-                   <field field_ref="MesoZo2"  name="Mso2" />
-                   <field field_ref="LDnut"    name="LDnut"/>
-                   <field field_ref="LDFe"    name="LDFe"/>
-                   <field field_ref="REMING"    name="REMING"/>
-                   <field field_ref="REMINF"    name="REMINF"/>
-                   <field field_ref="FEBACT"    name="FEBACT"/>
-                   <field field_ref="EPFE100"   name="EPFE100" />
-                   <field field_ref="EPCAL100"   name="EPCAL100" />
-                   <field field_ref="EPSI100"   name="EPSI100" />
-                   <field field_ref="EXPCAL"   name="EXPCAL" />
-                   <field field_ref="EXPSI"   name="EXPSI" />
-                   <field field_ref="EXPFE"   name="EXPFE" />
-                   <field field_ref="TPNEW"   name="TPNEW" />
-                   <field field_ref="TPBFE"   name="TPBFE" />
-                   <field field_ref="Po4dep"  name="Po4dep" />
-                   <field field_ref="Sildep"  name="Sildep" />
-                   <field field_ref="Nh4dep"  name="Nh4dep" />
+                   <field field_ref="NCHL"     name="TCHL" > NCHL + DCHL </field>
+                   <field field_ref="MuD"      name="MuD"       />
+                   <field field_ref="LDlight"  name="LDlight"   />
+                   <field field_ref="SedCal"   name="SedCal"    />
+                   <field field_ref="SedSi"    name="SedSi"     />
+                   <field field_ref="PPPHYD"   name="PPD"       />
+                   <field field_ref="PPNEWN"   name="PNN"       />
+                   <field field_ref="PPNEWD"   name="PND"       />
+                   <field field_ref="PBSi"     name="PBSi"      />
+                   <field field_ref="PFeN"     name="PFeN"      />
+                   <field field_ref="PFeD"     name="PFeD"      />
+                   <field field_ref="GRAZ2"    name="grapoc2"   />
+                   <field field_ref="Nitrifo2" name="Nito2"     />
+                   <field field_ref="PPRego2"  name="RPo2"      />
+                   <field field_ref="MesoZo2"  name="Mso2"      />
+                   <field field_ref="LDnut"    name="LDnut"     />
+                   <field field_ref="LDFe"     name="LDFe"      />
+                   <field field_ref="REMING"   name="REMING"    />
+                   <field field_ref="REMINF"   name="REMINF"    />
+                   <field field_ref="FEBACT"   name="FEBACT"    />
+                   <field field_ref="EPFE100"  name="EPFE100"   />
+                   <field field_ref="EPCAL100" name="EPCAL100"  />
+                   <field field_ref="EPSI100"  name="EPSI100"   />
+                   <field field_ref="EXPCAL"   name="EXPCAL"    />
+                   <field field_ref="EXPSI"    name="EXPSI"     />
+                   <field field_ref="EXPFE"    name="EXPFE"     />
+                   <field field_ref="TPNEW"    name="TPNEW"     />
+                   <field field_ref="TPBFE"    name="TPBFE"     />
+                   <field field_ref="Po4dep"   name="Po4dep"    />
+                   <field field_ref="Sildep"   name="Sildep"    />
+                   <field field_ref="Nh4dep"   name="Nh4dep"    />
 #endif
 #if defined key_pisces_quota
-                   <field field_ref="PFeP"     name="PFeP" />
-                   <field field_ref="PPNEWP"   name="PNP" />
-                   <field field_ref="PPPHYP"    name="PPP" />
-                   <field field_ref="MuP"    name="MuP"/>
-                   <field field_ref="MunetP"    name="MunetP"/>
-                   <field field_ref="LPlight"    name="LPlight"/>
-                   <field field_ref="MunetN"    name="MunetN"/>
-                   <field field_ref="MunetD"    name="MunetD"/>
+                   <field field_ref="PFeP"     name="PFeP"      />
+                   <field field_ref="PPNEWP"   name="PNP"       />
+                   <field field_ref="PPPHYP"   name="PPP"       />
+                   <field field_ref="MuP"      name="MuP"       />
+                   <field field_ref="MunetP"   name="MunetP"    />
+                   <field field_ref="LPlight"  name="LPlight"   />
+                   <field field_ref="MunetN"   name="MunetN"    />
+                   <field field_ref="MunetD"   name="MunetD"    />
 #endif
 #if defined key_ligand
-                   <field field_ref="LPRODR"    name="LPRODR" />
-                   <field field_ref="LIGREM"    name="LIGREM" />
-                   <field field_ref="LIGPR"     name="LIGPR" />
-                   <field field_ref="LGWCOLL"    name="LGWCOLL"/>
+                   <field field_ref="LPRODR"   name="LPRODR"    />
+                   <field field_ref="LIGREM"   name="LIGREM"    />
+                   <field field_ref="LIGPR"    name="LIGPR"     />
+                   <field field_ref="LGWCOLL"  name="LGWCOLL"   />
 #endif
-                 </field_group>
-            </file>
+               </field_group>
+        </file>
+#if defined key_sediment
+        <file id="file32" name_suffix="_pisces_sed" >
+            <field_group group_ref="ave_grid" />
+                <field_group id="sediment_fields" operation="average">
+                   <field field_ref="SedAlkalini"    />
+                   <field field_ref="SedDIC"         />
+                   <field field_ref="SedO2"          />
+                   <field field_ref="SedCaCO3"       />
+                   <field field_ref="SedPOC1"        />
+                   <field field_ref="SedPOC2"        />
+                   <field field_ref="SedPOC3"        />
+                   <field field_ref="SedPOC4"        />
+                   <field field_ref="SedPOC5"        />
+                   <field field_ref="SedPOC6"        />
+                   <field field_ref="SedSil"         />
+                   <field field_ref="SedFe2"         />
+                   <field field_ref="SedBSi"         />
+                   <field field_ref="SedNO3"         />
+                   <field field_ref="SedNH4"         />
+                   <field field_ref="SedPO4"         />
+                   <field field_ref="SedH2S"         />
+                   <field field_ref="SedSO4"         />
+                   <field field_ref="SedClay"        />
+                   <field field_ref="SedFeO"         />
+                  <field field_ref="SedFeS"          />
+                  <field field_ref="Sedligand"       />
+            </field_group>
+        </file>
+        <file id="file33" name_suffix="_pisces_sed_diag" >
+            <field_group group_ref="ave_grid" />
+                <field_group id="sediment_diag_fields" operation="average">
+                  <field field_ref="Rstepros"        />
+                  <field field_ref="FlxFe2"          />
+                  <field field_ref="FlxO2"           />
+                  <field field_ref="FlxNH4"          />
+                  <field field_ref="FlxNO3"          />
+                  <field field_ref="FlxDIC"          />
+                  <field field_ref="FlxPO4"          />
+                  <field field_ref="dzdep"           />
+                  <field field_ref="FlxCaCO3"        />
+                  <field field_ref="FlxBSi"          />
+                  <field field_ref="Flxtot"          />
+                  <field field_ref="SedpH"           />
+                  <field field_ref="sflxclay"        />
+                  <field field_ref="sflxbsi"         />
+                  <field field_ref="sflxpoc"         />
+                  <field field_ref="sflxcal"         />
+                  <field field_ref="OceDIC"          />
+                  <field field_ref="OceALK"          />
+                  <field field_ref="OceOXY"          />
+                  <field field_ref="OceSIL"          />
+                  <field field_ref="OceNO3"          />
+                  <field field_ref="OcePO4"          />
+                  <field field_ref="OceNH4"          />
+                  <field field_ref="OceSO4"          />
+                  <field field_ref="OceFE2"          />
+                  <field field_ref="OceTEM"          />
+                  <field field_ref="OceSAL"          />
+                  <field field_ref="OceSFE"          />
+            </field_group>
+        </file>
+#endif
   </file_group>
 #endif
 </file_definition>
