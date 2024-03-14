@@ -42,6 +42,7 @@
 #undef  ACOUSTIC        /* Acoustic wave Example */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  ISOLITON        /* Internal Soliton Example */
+#undef  ISOLITON_DJL    /* Internal DJL Soliton */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */
 #undef  DUNE            /* Dune migration Example */
@@ -1678,6 +1679,58 @@
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
+
+#elif defined ISOLITON_DJL
+/*
+!                       Gravitational Adjustment Example
+!                       ============= ========== =======
+!
+!  Internal soliton case ISOLITON (non-hydrostatic) is setup from:
+!  Stastna M. and K.G. Lamb, (2002).
+!  Large fully nonlinear internal solitary waves: 
+!  The effect of background current. Physics of fluids.
+!
+*/
+# define MPI
+# define KNBQ3
+# define KNBQ
+# undef  XIOS
+# define NC4PAR
+# define SOLVE3D
+# define NEW_S_COORD
+# define UV_ADV
+# define UV_COR
+# define NS_PERIODIC
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# undef  FRC_BRY
+# undef  ANA_BRY
+# undef  Z_FRC_BRY
+# undef  M2_FRC_BRY
+# undef  M3_FRC_BRY
+# undef  T_FRC_BRY
+# define ANA_SSH
+# define ZCLIMATOLOGY
+# define ANA_M2CLIMA
+# define M2CLIMATOLOGY
+# define UV_VIS2
+# define TS_DIF2
+# define ANA_GRID
+# define OBC_EAST
+# define OBC_WEST
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# undef  PASSIVE_TRACER
+# define NO_FRCFILE
+# undef  RVTK_DEBUG
+# define SPONGE
+# define DIAG_CFL
 
 #elif defined KH_INST
 /*

@@ -96,9 +96,18 @@
 #endif
 #ifdef ISOLITON
       real zint,depth,dz,gam,del
-      real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
+      real rho1_exp,rho2_exp,h1_exp,Lt
       real d(0:N)
 !$acc declare create(d)
+#endif
+#ifdef ISOLITON_DJL
+      real zint,depth,dz,dx,gam,del,Rd,prof,H1,drho,v_rhs,alpha,H2
+      real rho1_exp,rho2_exp,h1_exp,amp_exp,Lt,lambda,l,a,c
+      real d(0:N)
+      real,  allocatable :: xini(:),uini(:,:),wini(:,:),rhoini(:,:)
+      real :: kini
+      integer :: nbx,kount,eof,imem, kc, kf, f_shift
+      character(len=1000):: chain
 #endif
 #ifdef TS_HADV_TEST
       real cff,cff1,cx,cy,cmax,xx,yy
@@ -930,6 +939,162 @@ c c !$acc kernels if(compute_on_device) default(present)
 #     endif /* TEMPERATURE */
 #    endif /* HORN_PROFILE */
 !$acc end kernels
+
+#   elif defined ISOLITON_DJL
+!$acc kernels if(compute_on_device) default(present)
+
+! ! ------------------------------------------------------------
+! ! Parameters
+! ! ------------------------------------------------------------
+
+       depth = 600.
+       T0 = 11.5
+! !       
+! ! ------------------------------------------------------------
+! ! Opens log file (ASCII)
+! ! ------------------------------------------------------------
+! !       
+       open(200, file="history_sol_djl.dat",form="formatted")
+! !       
+! ! ------------------------------------------------------------
+! ! Reads input data file (ASCII)
+! ! ------------------------------------------------------------
+! !       
+       open(109, file="sol_test_DJL.dat",form="formatted")
+       read(109,*,iostat=eof) chain
+       
+       kount=0
+       do while(eof==0)
+        kount=kount+1
+        read(109,*,iostat=eof) chain
+       end do
+       nbx=kount/N
+       
+       write(200,*) "nbx",nbx,kount,N
+       
+       allocate (xini(nbx),uini(nbx,N),wini(nbx,N),rhoini(nbx,N))
+       
+       rewind(109)
+        do i=1,nbx
+          do k=1,N
+         read(109,*,iostat=eof) xini(i),kount,uini(i,k),wini(i,k),
+     &                          rhoini(i,k)
+        enddo
+       enddo
+       close(109)
+       
+       if(eof/=0) stop "Error reading DJL Input file"
+! !       
+! ! ------------------------------------------------------------
+! ! Reads input data file (ASCII)
+! ! ------------------------------------------------------------
+! !       
+!
+          do i=IstrR,IendR
+            imem =1
+            do ii =imem,nbx-1
+             if((xr(i,JstrR)-xini(ii))*(xr(i,JstrR)-xini(ii+1)) <=0.0) then
+               write(200,*) "milieu" 
+               write(200,*) i,ii,imem,mynode,xr(i,JstrR)
+     &         ,xini(ii),xini(ii+1)
+     &         ,(xr(i,JstrR)-xini(ii)),(xr(i,JstrR)-xini(ii+1))
+              imem=ii
+              f_shift = floor(nbx/4.)
+              if(ii + f_shift > nbx-1) then
+                f_shift = 0
+              endif  
+              do k=1,N
+                kini = h(i,Jstr)/depth*k+N*(depth-h(i,Jstr))/depth
+                kc = ceiling(kini)
+                kf = floor(kini)
+                if(kc>N) then 
+                  print *, h(i,Jstr), k, kini,kc, kf
+                  kc = N
+                endif  
+                u(i,JstrR,k,1)=0.5*(uini(ii+f_shift,kf)
+     &                         + uini(ii+f_shift,kc))
+                u(i,JstrR,k,2)=u(i,JstrR,k,1)
+                t(i,JstrR,k,1,itemp)=-0.5*
+     &           ( rhoini(ii+f_shift,kf)
+     &            +rhoini(ii+f_shift,kc)-2.*1028.)
+     &           /Tcoef+T0
+                t(i,JstrR,k,2,itemp)=t(i,JstrR,k,1,itemp)
+                do j=JstrR+1,JendR
+                  t(i,j,k,1,itemp)=t(i,JstrR,k,1,itemp)
+                  t(i,j,k,2,itemp)=t(i,JstrR,k,2,itemp)
+                  u(i,j,k,1)=u(i,JstrR,k,1)
+                  u(i,j,k,2)=u(i,JstrR,k,2)
+                end do
+              end do
+             end if
+             if (xr(i,JstrR) < xini(1) ) then
+              imem=1
+              write(200,*) "debut" 
+              write(200,*) i,ii,imem,mynode,xr(i,JstrR),xini(ii)
+     &                     ,xini(ii+1)
+              do k=1,N
+                kini = h(i,Jstr)/depth*k+N*(depth-h(i,Jstr))/depth
+                kc = ceiling(kini)
+                kf = floor(kini) 
+                if(kc>N) then 
+                  kc = N
+                endif  
+               !u(i,JstrR,k,1)=0.5*(uini(1,kf)+uini(1,kc))
+                u(i,JstrR,k,1)=0.5*(uini(1,kf)+uini(1,kc))
+                u(i,JstrR,k,2)=u(i,JstrR,k,1)
+!               t(i,JstrR,k,1,itemp)=-0.5*
+!     &          (rhoini(1,kf)+rhoini(1,kc)-2*1028.)
+!     &          /Tcoef+T0
+                t(i,JstrR,k,1,itemp)=-0.5*
+     &          (rhoini(floor(nbx/4.),kf)+
+     &          rhoini(floor(nbx/4.),kc)-2*1028.)
+     &          /Tcoef+T0
+                t(i,JstrR,k,2,itemp)=t(i,JstrR,k,1,itemp)
+                do j=JstrR+1,JendR
+                  t(i,j,k,1,itemp)=t(i,JstrR,k,1,itemp)
+                  t(i,j,k,2,itemp)=t(i,JstrR,k,2,itemp)
+                  u(i,j,k,1)=u(i,JstrR,k,1)
+                  u(i,j,k,2)=u(i,JstrR,k,2)
+                end do
+              end do
+             end if
+             if (xr(i,JstrR) > xini(nbx)) then 
+               write(200,*) "fin" 
+              imem=nbx-1
+              write(200,*) i,ii,imem,mynode,xr(i,JstrR)
+     &                     ,xini(ii),xini(ii+1)
+              do k=1,N
+                kini = h(i,Jstr)/depth*k+N*(depth-h(i,Jstr))/depth
+                kc = ceiling(kini)
+                kf = floor(kini) 
+                if(kc>N) then 
+                  kc = N
+                endif  
+                u(i,JstrR,k,1)=0.5*(uini(nbx,kf)+ uini(nbx,kc))
+                u(i,JstrR,k,2)=u(i,JstrR,k,1)
+                t(i,JstrR,k,1,itemp)=-0.5*
+     &          (rhoini(nbx,kf)+
+     &          rhoini(nbx,kc)-2*1028.)/Tcoef+T0
+                t(i,JstrR,k,2,itemp)=t(i,JstrR,k,1,itemp)
+                do j=JstrR+1,JendR
+                  t(i,j,k,1,itemp)=t(i,JstrR,k,1,itemp)
+                  t(i,j,k,2,itemp)=t(i,JstrR,k,2,itemp)
+                  u(i,j,k,1)=u(i,JstrR,k,1)
+                  u(i,j,k,2)=u(i,JstrR,k,2)
+                end do
+              end do
+             endif
+             if(.false.) then
+               write(200,*) "Error Soliton DJL." 
+               write(200,*) i,ii,imem,mynode,xr(i,JstrR),xini(ii)
+     &                      ,xini(ii+1)
+             end if
+            end do
+          end do
+          close(200)
+!      deallocate (xini,uini,wini,rhoini)
+!$acc end kernels
+
 #   elif defined GRAV_ADJ
 #    ifdef TEMPERATURE
 !$acc kernels if(compute_on_device) default(present)

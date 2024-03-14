@@ -152,6 +152,11 @@ C$    trd=omp_get_thread_num()
 ! !*********************************************************************
 ! !
       use debug
+# if defined ONLINE_ANALYSIS
+      use module_interface_oa, only : var3d_oa,tvar_oa,tgvnam_oa
+      use module_oa_variables, only : tv_oa
+      use module_oa_periode,   only : tvc_oa,tc_oa
+# endif
       implicit none
 ! ! 
 ! !*********************************************************************
@@ -172,6 +177,9 @@ C$    trd=omp_get_thread_num()
 # endif
 # ifdef PSOURCE
      &       ,is
+# endif
+# ifdef ONLINE_ANALYSIS
+     &       ,ic,ivc
 # endif
       real    mybeta,myalpha,myepsilon,mygamma,
      &        VMAX,VMAXL, cff,cff0,cff1,cff2,cff3,cff4, 
@@ -883,6 +891,14 @@ C$    trd=omp_get_thread_num()
 #  include "k3fast_hz_correct.h"
 # endif  /* NBQ_HZCORRECT */   
 ! !
+! !********************************************************************
+! !********************************************************************
+! ! Online Analysis
+! !********************************************************************
+! !********************************************************************
+# ifdef ONLINE_ANALYSIS
+#  include "k3fast_diagacousOA.h"
+# endif /* ONLINE_ANALYSIS */
 ! !
 ! !********************************************************************
 ! !********************************************************************

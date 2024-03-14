@@ -1453,7 +1453,7 @@ C$    integer  trd, omp_get_thread_num
 # include "climat.h"
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
-# if defined INTERNAL || defined ANA_TIDES
+# if defined INTERNAL || defined ANA_TIDES || defined ISOLITON_DJL
       real U0,omega,kwave,V0
 # endif
       real ramp
@@ -1491,6 +1491,30 @@ C$    integer  trd, omp_get_thread_num
       do j=JV_RANGE
         do i=IV_RANGE
           vbclm(i,j)=V0*cos(omega*time-kwave*0.5*(xr(i,j)+xr(i,j-1)))
+        enddo
+      enddo
+!$acc end kernels
+#  elif defined ISOLITON_DJL
+!$acc kernels if(compute_on_device) default(present)
+      U0=-0.4
+      omega=2.*pi/(12.4*3600)
+      kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
+      V0=f(1,1)*U0/omega
+      do j=JU_RANGE
+        do i=IU_RANGE
+          !if (12.4*3600 < time .and. time < 2*12.4*3600) then
+          if (.false.) then   
+          ubclm(i,j)=min(U0*
+     &    sin(omega*time-kwave*0.5*(xr(i,j)+xr(i-1,j))),0.0)
+             MPI_master_only print*, 'tide'
+          else
+             ubclm(i,j)=0.0
+          endif 
+        enddo
+      enddo
+      do j=JV_RANGE
+        do i=IV_RANGE
+          vbclm(i,j)=0.0
         enddo
       enddo
 !$acc end kernels

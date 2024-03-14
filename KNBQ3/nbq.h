@@ -242,6 +242,12 @@
       real p_nbq_max(GLOBAL_2D_ARRAY,NSLP1N)
       common/p_TL_nbq/p_nbq_max
 #  endif
+#  ifdef ONLINE_ANALYSIS
+      real mvoa1(GLOBAL_2D_ARRAY,1:N)
+      common/p_TL_nbq/mvoa1
+      real mvoa2(GLOBAL_2D_ARRAY,1:N)
+      common/p_TL_nbq/mvoa2
+#  endif
 #  ifdef NBQ_GRAV
       real rho_nh(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_nh/rho_nh

@@ -60,6 +60,8 @@
 # endif
 #elif defined ISOLITON
       parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
+#elif defined ISOLITON_DJL
+      parameter (LLm0=3600,   MMm0=2,    N=200)  
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
