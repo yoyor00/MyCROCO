@@ -14,7 +14,7 @@
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
- 2 wwatch toyexe
+ 2 wwatch toyoce
 ###########################################################################
 # RUNTIME: total simulated time for the actual run in seconds (<I8)
  $RUNTIME
@@ -163,7 +163,7 @@
 # SSH : sea surface height (m)
 #~~~~~~~~~~~
 TOY__SSH WW3__SSH 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <wavnx> <wavny> toyt ww3t LAG=<ocedt>
+<ocenx> <oceny> <wavnx> <wavny> toyot ww3t LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -173,7 +173,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # UOCE : sea surface zonal currents (m.s-1)
 #~~~~~~~~~~~
 TOY_UOCE WW3_OSSU 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <wavnx> <wavny> toyt ww3t LAG=<ocedt>
+<ocenx> <oceny> <wavnx> <wavny> toyot ww3t LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -184,7 +184,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 #
 TOY_VOCE WW3_OSSV 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <wavnx> <wavny> toyt ww3t LAG=<ocedt>
+<ocenx> <oceny> <wavnx> <wavny> toyot ww3t LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -198,7 +198,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # T0M1 / ww_tmn : mean period (s)
 #~~~~~~~~~~~
 WW3_T0M1 TOY_T0M1 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -208,7 +208,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # HS / ww_hs : HS significant wave height (m) 
 #~~~~~~~~~~~
 WW3__OHS TOY___HS 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -217,7 +217,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # COS(THM) / ww_thm : cos of mean direction  
 #~~~~~~~~~~~
 WW3__DIR TOY__DIR 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE

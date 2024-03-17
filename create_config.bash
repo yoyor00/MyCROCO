@@ -317,7 +317,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
     fi
     # AGRIF
-    if [[ ${options[@]} =~ "agrif" ]] ; then
+    if [[ ${options[@]} =~ "agrif" && ${options[@]} =~ "oce-dev" ]] ; then
 	cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
 	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
@@ -478,7 +478,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     # Edit myjob.sh to add CPU lines for each model
     cd $MY_CONFIG_HOME/
     [ -f myjob.tmp ] && rm -Rf myjob.tmp
-    [[ ${options[@]} =~ "oce-prod" ]] && printf "export NP_OCEX=2 \nexport NP_OCEY=2\n" >> myjob.tmp
+    [[ ${options[@]} =~ "oce-prod" ]] && printf "export NP_OCEX=1 \nexport NP_OCEY=2 \nexport NP_OCE=2 # ONLY used if MPI_NOLAND is TRUE. It replaces NP_OCEX*NP_OCEY \n" >> myjob.tmp
     [[ ${options[@]} =~ "wav" ]] && printf "export NP_WAV=14 \n" >> myjob.tmp
     [[ ${options[@]} =~ "atm" ]] && printf "export NP_ATM=12 \n" >> myjob.tmp
     [[ ${options[@]} =~ "toy" ]] && printf "export NP_TOY=2 \n" >> myjob.tmp
@@ -509,6 +509,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     [[ ${options[@]} =~ "wav" ]] && printf "export WAV=\"\${HOME}/WW3/model\"\n" >> tmppath
     [[ ${options[@]} =~ "toy" ]] && printf "export TOY=\"\${CHOME}/TOY_IN\"\n" >> tmppath
     [[ ${options[@]} =~ "xios" ]] && printf "export XIOS=\"\${HOME}/XIOS\"\n" >> tmppath
+    printf "\n" >> tmppath
 
     [[ ${options[@]} =~ "cpl" ]] && cat ./path_cpl.sh >> tmppath
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./path_oce.sh >> tmppath
@@ -545,52 +546,23 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     cd ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/NAMELISTS
     cp namelist_head.sh mynamelist.sh
 
-    message=" # Kind of run launched. Summaries which models are used oce=o/wav=w/atm=a. If only one model put frc. See in OASIS_IN dir for more o,w,a order details"
     if [[ ${options[@]} =~ "cpl" ]]; then
         if [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "wav" ]] && [[ ${options[@]} =~ "atm" ]] ; then
-            printf "export RUNtype=owa${message}\n#\n" >> mynamelist.sh
+            sed -i "s/export RUNtype=.*/export RUNtype=owa/g" mynamelist.sh
         elif [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "wav" ]] ; then
-            printf "export RUNtype=ow${message}\n#\n" >> mynamelist.sh
+            sed -i "s/export RUNtype=.*/export RUNtype=ow/g" mynamelist.sh
         elif [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "atm" ]]; then
-            printf "export RUNtype=oa${message}\n#\n" >> mynamelist.sh
+            sed -i "s/export RUNtype=.*/export RUNtype=oa/g" mynamelist.sh
         elif [[ ${options[@]} =~ "wav" ]] && [[ ${options[@]} =~ "atm" ]]; then
-            printf "export RUNtype=aw${message}\n#\n" >> mynamelist.sh
-        elif [[ ${options[@]} =~ "toy" ]]; then
-            printf "export RUNtype=Put the type here (ow/oa/aw/owa)${message}\n#\n" >> mynamelist.sh
+            sed -i "s/export RUNtype=.*/export RUNtype=aw/g" mynamelist.sh
         else 
-            printf "export RUNtype=frc${message}\n#\n" >> mynamelist.sh
+            sed -i "s/export RUNtype=.*/export RUNtype=/g" mynamelist.sh
         fi
     else
-        printf "export RUNtype=frc${message}\n#\n" >> mynamelist.sh
+        sed -i "s/export RUNtype=.*/export RUNtype=frc/g" mynamelist.sh
     fi
 
-    if [[ ${options[@]} =~ "atm" ]]; then
-        printf "export USE_ATM=1\n" >> mynamelist.sh
-        [[ ${options[@]} =~ "xios" ]] && printf "export USE_XIOS_ATM=0\n" >> mynamelist.sh
-    fi
-    if [[ ${options[@]} =~ "oce-prod" ]]; then
-        printf "export USE_OCE=1\n" >> mynamelist.sh
-        [[ ${options[@]} =~ "xios" ]] && printf "export USE_XIOS_OCE=0\n" >> mynamelist.sh
-    fi
-    if [[ ${options[@]} =~ "wav" ]]; then
-        printf "export USE_WAV=1\n" >> mynamelist.sh
-    fi
-    if [[ ${options[@]} =~ "toy" ]]; then
-        cat ./namelist_head_toy.sh >> mynamelist.sh
-    fi
-
-    cat ./namelist_rundir.sh >> mynamelist.sh
-
-    [[ ${options[@]} =~ "oce-prod" ]] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/CROCO_IN\n" >> mynamelist.sh
-    [[ ${options[@]} =~ "atm" ]] && printf "export ATM_EXE_DIR=\${ATM}/exe_coupled\n" >> mynamelist.sh
-    [[ ${options[@]} =~ "wav" ]] && printf "export WAV_EXE_DIR=\${WAV}/exe_\${RUNtype}\n" >> mynamelist.sh
-    [[ ${options[@]} =~ "toy" ]] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
-    [[ ${options[@]} =~ "xios" ]] && printf "export XIOS_EXE_DIR=\${XIOS}/bin\n" >> mynamelist.sh
-
-    printf "#-------------------------------------------------------------------------------\n" >> mynamelist.sh
-    printf "# Model settings\n" >> mynamelist.sh
-    printf "# ------------------------------------------------------------------------------\n" >> mynamelist.sh
-
+    sed -i "s/export CEXPER=BENGUELA/export CEXPER=${MY_CONFIG_NAME}/g" mynamelist.sh
 
     [[ ${options[@]} =~ "cpl" ]] && cat ./namelist_cpl.sh >> mynamelist.sh
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./namelist_oce.sh >> mynamelist.sh
@@ -599,35 +571,24 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     [[ ${options[@]} =~ "toy" ]] && cat ./namelist_toy.sh >> mynamelist.sh
     [[ ${options[@]} =~ "xios" ]] && cat ./namelist_xios.sh >> mynamelist.sh
 
-    if [[ ${options[@]} =~ "toy" ]] && [[ ${options[@]} =~ "cpl" ]] ; then
-        sed -e "s/export namcouplename=.*/export namcouplename=namcouple.base.\${RUNtype}\${istoy}/g" \
-        mynamelist.sh > mynamelist1.sh
-        mv mynamelist1.sh mynamelist.sh
-        chmod 755 mynamelist.sh
-    fi
-
-    sed -e "s|export CEXPER=BENGUELA|export CEXPER=${MY_CONFIG_NAME}_exp1|" \
-        mynamelist.sh > mynamelist1.sh
-
-    mv mynamelist1.sh mynamelist.sh
     chmod 755 mynamelist.sh
     mv mynamelist.sh ../../.
 
     # Edit jobcomp in CROCO_IN
     if [[ ${options[@]} =~ "oce-prod" ]]; then
         cd ${MY_CONFIG_HOME}/CROCO_IN
-	sed -e "s|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${CROCO_DIR}/OCEAN|g" \
-	    -e "s|FC=gfortran|FC=\${FC}|" \
-	    -e "s|MPIF90=.*|MPIF90=\${MPIF90}|" \
+	sed -e 's|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${OCE}|g' \
+	    -e 's|FC=gfortran|FC=\${FC}|' \
+	    -e 's|MPIF90=.*|MPIF90=\${MPIF90}|' \
 	    jobcomp > jobcomp.tmp
 	mv jobcomp.tmp jobcomp
 	if [[ ${options[@]} =~ "cpl" ]]; then
-	    sed -e "s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=\${CPL}|" \
+	    sed -e 's|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=\${CPL}|' \
 		jobcomp > jobcomp.tmp
             mv jobcomp.tmp jobcomp
 	fi
         if [[ ${options[@]} =~ "xios" ]]; then
-            sed -e "s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=\${XIOS}|" \
+            sed -e 's|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=\${XIOS}|' \
                 jobcomp > jobcomp.tmp
             mv jobcomp.tmp jobcomp
         fi

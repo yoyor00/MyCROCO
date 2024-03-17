@@ -68,7 +68,7 @@ mytmp=$mydir/from_ww3_tmp.nc
 
     # Model variables
     if [ $var == WW3_ACHA ] ; then
-      varin=MAPSTA
+      varin=hs
     elif [ $var == WW3__DIR ] ; then
       varin=dir
     elif [ $var == WW3__OHS ] ; then
@@ -111,7 +111,7 @@ mytmp=$mydir/from_ww3_tmp.nc
     # compute or rename variable
     if [ $var == WW3_ACHA ] ; then
       echo '---> Create charnock coef = 0.0185...'
-      ncap2 -A -v -s "WW3_ACHA=MAPSTA*0+0.0185" $mytmp $fileout
+      ncap2 -A -v -s "WW3_ACHA=hs*0+0.0185" $mytmp $fileout
 
 #    elif [ $var == WW3_SDIR ] ; then
 #      echo '---> Compute sin of dir...'

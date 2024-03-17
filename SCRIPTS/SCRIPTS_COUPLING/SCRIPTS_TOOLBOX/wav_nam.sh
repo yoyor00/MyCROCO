@@ -34,18 +34,23 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"
     -e "/$     <point_output_list>/r tmp_point_output_list"  \
     -e "s/$    <T>/$my_track_flag/g" \
     -e "s/<wavdt>/${DT_WAV}/g" \
-    ${WAV_NAM_DIR}/ww3_shel.inp.base.${RUNtype} > ./ww3_shel.inp
+    ${WAV_NAM_DIR}/ww3_shel.inp.base.${SHELL_EXT} > ./ww3_shel.inp
 
 echo 'Fill ww3_ounf.inp file'
 sed -e "s/<wav_int>/${wav_int}/g" \
     -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/00/g" \
     ${WAV_NAM_DIR}/ww3_ounf.inp.base > ./ww3_ounf.inp
 
-if [ ${wav_pnt} -ne 0 ]; then 
-    echo 'Fill ww3_ounp.inp file'
-    sed -e "s/<wav_pnt>/${wav_pnt}/g" \
-        -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/00/g" \
-        ${WAV_NAM_DIR}/ww3_ounp.inp.base > ./ww3_ounp.inp
+if [ ${wav_pnt} -ne 0 ]; then
+    if [ -f ${point_output_list} ] ; then  
+        echo 'Fill ww3_ounp.inp file'
+        sed -e "s/<wav_pnt>/${wav_pnt}/g" \
+            -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/00/g" \
+            ${WAV_NAM_DIR}/ww3_ounp.inp.base > ./ww3_ounp.inp
+    else
+         echo "ERROR: wav_pnt is not 0 and point_output_list=${point_output_list} file cannot be found. Exit"
+         exit 1
+    fi
 fi
 
 if [ ! -z $bouncin ]; then
