@@ -7,7 +7,7 @@
 <!-- ========================================================================== -->
 <!-- ========================== File ========================================== -->
 <!-- ========================================================================== -->
-  <file_group id="main" output_freq="100ts" output_level="10" enabled=".false.">
+  <file_group id="main" output_freq="100ts" output_level="10" enabled=".true.">
     <file id="file" name_suffix="_inst" split_freq="1000ts" >
 
 <!-- ========================================================================== -->
@@ -48,24 +48,22 @@
         <field field_ref="svstr" name="svstr" />
         <field field_ref="rho_nbq_OSed" name="rho_nbq_OSed" /> 
       </field_group>
-       </file>
-      </file_group>
 
 <!-- ========================================================================== -->
 <!-- ========================================================================== -->
       <file_group id="Z1main"  output_freq="1ts" output_level="10" enabled=".true.">
        <file id="Zfile1" name="OUTPUT/ZOOM1_@expname@_BR4_@freq@" split_freq="2ts" >
         <field_group id="Z1inst_grid" operation="once" >
-         <!-- <field field_ref="lat_rho"   grid_ref="Zrho2D" /> -->
-         <!-- <field field_ref="lon_rho"   grid_ref="Zrho2D" /> -->
-         <field field_ref="x_rho"     grid_ref="Zrho_2D" />
-         <field field_ref="y_rho"     grid_ref="Zrho_2D" />
+         <field field_ref="lat_rho"   grid_ref="Zrho2D" />
+	     <field field_ref="lon_rho"   grid_ref="Zrho2D" />
+         <field field_ref="x_rho"     grid_ref="Zrho2D" />
+         <field field_ref="y_rho"     grid_ref="Zrho2D" />
         </field_group>
 
         <field_group id="Z1inst_fields" operation="instant" freq_offset="0ts" >
-         <field field_ref="rho_nbq_OSed" name="rho_nbq_OSed" grid_ref="Zrho_3D_OSed" /> 
-         <!-- <field field_ref="u" name="u" grid_ref="Zu_3D" /> -->
-         <!-- <field field_ref="salt" name="salt" grid_ref="Zrho_3D" /> -->
+         <field field_ref="rho_nbq_OSed" name="rho_nbq_OSed" grid_ref="Zrho3D" /> 
+         <!-- <field field_ref="u" name="u" grid_ref="Zu3D" /> -->
+         <!-- <field field_ref="salt" name="salt" grid_ref="Zrho3D" /> -->
         </field_group>
        </file>
       </file_group>

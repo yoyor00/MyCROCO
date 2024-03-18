@@ -7,9 +7,17 @@
     <field id="Cs_r" long_name="ocean s roms coordinate at rho point"  />
     <field id="sc_r" long_name="S-coordinate stretching curves at RHO-points"  />
   </field_group>
+  <field_group id="Vertical_dimension_rho_OSed" grid_ref="rho_vertical_dimension_OSed" >
+    <field id="Cs_r_OSed" long_name="ocean s roms coordinate at rho point"  />
+    <field id="sc_r_OSed" long_name="S-coordinate stretching curves at RHO-points"  />
+  </field_group>
   <field_group id="Vertical_dimension_w"  grid_ref="w_vertical_dimension" >
     <field id="Cs_w" long_name="ocean s roms coordinate at w point"  />
     <field id="sc_w" long_name="S-coordinate stretching curves at W-points"  />
+  </field_group>
+  <field_group id="Vertical_dimension_w_Osed"  grid_ref="w_vertical_dimension_OSed" >
+    <field id="Cs_w_OSed" long_name="ocean s roms coordinate at w point"  />
+    <field id="sc_w_OSed" long_name="S-coordinate stretching curves at W-points"  />
   </field_group>
   <field_group id="scalar" grid_ref="scalar_grid"  >
     <field id="hc" long_name="S-coordinate parameter, critical depth"  />
@@ -22,7 +30,6 @@
 <!-- T grid -->
   <field_group id="rho" grid_ref="rho_2D">
     <field id="h" long_name="bathymetry at RHO-points" unit="meter" />
-    <field id="Dcrit" long_name="Critical Depth for Drying cells" unit="meter" />
     <field id="f" long_name="Coriolis parameter at RHO-points" unit="second-1" />
     <field id="pm" long_name="curvilinear coordinates metric in XI" unit="meter-1" />
     <field id="pn" long_name="curvilinear coordinates metric in ETA" unit="meter-1" />
@@ -65,12 +72,12 @@
     <field id="levels_v" long_name="levels depths (v)" standard_name="levels depths (v)" unit="m" grid_ref="v_3D" />
     <field id="rho" long_name="density anomaly" unit="kilogram meter-3" grid_ref="rho_3D"/>
     <field id="rho_nbq" long_name="NBQ-density anomaly" unit="kg meter-3" grid_ref="rho_3D"/>
+    <field id="rho_nbq_OSed" long_name="NBQ-density anomaly" unit="kg meter-3" grid_ref="rho_3D_OSed"/>
     <field id="bvf" long_name="Brunt Vaisala frequency" unit="second-2" grid_ref="w_3D"/>
     <field id="shflx" long_name="surface net heat flux" unit="Watts meter-2" />
     <field id="swrad" long_name="Short-wave surface radiation" unit="Watts meter-2" />
     <field id="visc3d" long_name="horizontal viscosity coefficient" unit="meter2 second-1" grid_ref="rho_3D"/>
     <field id="diff3d" long_name="horizontal diffusivity coefficient" unit="meter2 second-1" grid_ref="rho_3D"/>
-    <field id="rmask_wet" long_name="" unit=""  />
 
 </field_group>
         
@@ -82,10 +89,10 @@
       <field id="bustr" long_name="bottom  u-momentum stress" unit="N/m2" />
       <field id="u" long_name="u-momentum component" unit="meter second-1" grid_ref="u_3D"/>
       <field id="u_nbq" long_name="u-velocity" unit="meter second-1" grid_ref="u_3D"/>
+      <field id="u_nbq_OSed" long_name="u-velocity" unit="meter second-1" grid_ref="u_3D_OSed"/>
       <field id="u_surf" long_name="u-momentum component" unit="meter second-1" />
       <field id="uwnd" long_name="surface u-momentum wind" unit="meter second-1" />
       <field id="vortuw_nbq" long_name="UW vorticity " unit="??????" grid_ref="u_3D"/>
-      <field id="umask_wet" long_name="" unit=""  />
     </field_group>
     
 <!-- V grid -->
@@ -95,9 +102,9 @@
       <field id="bvstr" long_name="bottom  v-momentum stress" unit="N/m2" />
       <field id="v" long_name="v-momentum component" unit="meter second-1" grid_ref="v_3D"/>
       <field id="v_nbq" long_name="v-velocity" unit="meter second-1" grid_ref="v_3D"/>
+      <field id="v_nbq_OSed" long_name="v-velocity" unit="meter second-1" grid_ref="v_3D_OSed"/>
       <field id="v_surf" long_name="v-momentum component" unit="meter second-1" />
       <field id="vwnd" long_name="surface v-momentum wind" unit="meter second-1" />
-      <field id="vmask_wet" long_name="" unit=""  />
     </field_group>
     
 <!-- W grid -->
@@ -105,6 +112,7 @@
       <field id="omega" long_name="S-coordinate vertical momentum component" unit="meter second-1" grid_ref="w_3D"/>
       <field id="wN" long_name="w-velocity" unit="meter second-1" grid_ref="w_3D"/>
       <field id="w_nbq" long_name="w-velocity" unit="meter second-1" grid_ref="w_3D"/>
+      <field id="w_nbq_OSed" long_name="w-velocity" unit="meter second-1" grid_ref="w_3D_OSed"/>
       <field id="AKv" long_name="vertical viscosity coefficient" unit="meter2 second-1" grid_ref="w_3D"/>
       <field id="AKt" long_name="temperature vertical diffusion coefficient" unit="meter2 second-1" grid_ref="w_3D"/>
       <field id="AKs" long_name="salinity vertical diffusion coefficient" unit="meter2 second-1" grid_ref="w_3D"/>
@@ -114,6 +122,5 @@
       <field id="AKk" long_name="TKE vertical diffusion coefficient" unit="meter2 second-1  " grid_ref="w_3D"/>
       <field id="AKp" long_name="GLS vertical diffusion coefficient " unit="meter2 second-1  " grid_ref="w_3D"/>
     </field_group>
-
 
 </field_definition>

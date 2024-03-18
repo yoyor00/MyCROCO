@@ -1,0 +1,8 @@
+ <axis_definition>
+    <axis id="s_rho"/>
+    <axis id="s_w"/>
+    <axis id="s_rho_OSed"/> <!-- Acoustic SedLayers  -->
+    <axis id="s_w_OSed"/>   <!-- Acoustic SedLayers -->
+    <axis id="s_b"/>        <!-- For Sediment -->
+    <axis id="s_rhoS"/>     <!-- For Sediment + PISCES -->
+  </axis_definition>

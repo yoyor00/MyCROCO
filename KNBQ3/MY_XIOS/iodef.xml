@@ -32,7 +32,6 @@
   <!-- see commented example below                                                                                 -->
   <!-- =========================================================================================================== -->
   <context id="crocox"  src="./MY_XIOS/context_myxios.xml"/>
-  <context id="crocox.1"  src="./MY_XIOS/context_myxios.xml.1"/>
 
   <!-- Example for AGRIF with one zoom
   <context id="crocox.1"  src="./context_croco.xml.1"/>
