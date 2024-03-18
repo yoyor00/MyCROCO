@@ -232,6 +232,8 @@ if [[ ! -d $TOOLS_DIR  &&  $x_f -eq 0 ]]; then
     echo " Exiting..."
     echo "  "
     exit
+  else
+    copy_tools=0
   fi
 fi
  
@@ -354,7 +356,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	#     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CROCO_DIR.
     fi
     # PREPROCESSING
-    if [[ ${options[@]} =~ "prepro" ]] ; then
+    if [[ ${options[@]} =~ "prepro" && ${copy_tools} == 1 ]] ; then
 	cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
 	cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
 	cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.

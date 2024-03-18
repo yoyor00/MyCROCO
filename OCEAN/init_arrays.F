@@ -813,7 +813,8 @@ C$    integer omp_get_thread_num
           Hripple(i,j)=init
           Lripple(i,j)=init
           Zbnot(i,j)=init
-          Zbapp(i,j)=init
+    !      Zbapp(i,j)=init
+          Zbapp(i,j)=1.e-12
           Bustrw(i,j)=init
           Bvstrw(i,j)=init
         enddo
@@ -1502,8 +1503,8 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            trb(i,j,k,nstp,itke)=init
-            trb(i,j,k,nstp,igls)=init
+            trb(i,j,k,nstp,itke)=1.e-12
+            trb(i,j,k,nstp,igls)=1.e-12
             Lscale(i,j,k)=init
           enddo
         enddo

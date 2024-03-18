@@ -29,6 +29,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   The correction guarantees monotonicity of vertical coordinates 
   for all stretching parameters.
 
+- Correct unitialized variables and divisions by zero. 
+  [#158](https://gitlab.inria.fr/croco-ocean/croco/-/issues/158)
+
 - DIAGNOSTICS_VRT : misspelling in key name
   [#159](https://gitlab.inria.fr/croco-ocean/croco/-/issues/159)
 
