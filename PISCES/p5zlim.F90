@@ -200,11 +200,11 @@ CONTAINS
          ! Allometric variations of the minimum and maximum quotas
          ! From Talmy et al. (2014) and Maranon et al. (2013)
          ! -------------------------------------------------------
-         xqnnmin(ji,jj,jk) = qnnmin / ( sizen(ji,jj,jk)**0.18 + rtrn )
+         xqnnmin(ji,jj,jk) = qnnmin * sizen(ji,jj,jk)**(-0.18)
          xqnnmax(ji,jj,jk) = qnnmax
-         xqndmin(ji,jj,jk) = qndmin / ( sized(ji,jj,jk)**0.18 + rtrn )
+         xqndmin(ji,jj,jk) = qndmin * sized(ji,jj,jk)**(-0.18)
          xqndmax(ji,jj,jk) = qndmax
-         xqnpmin(ji,jj,jk) = qnpmin / ( sizep(ji,jj,jk)**0.18 + rtrn )
+         xqnpmin(ji,jj,jk) = qnpmin * sizep(ji,jj,jk)**(-0.18)
          xqnpmax(ji,jj,jk) = qnpmax
          !
          ! Michaelis-Menten Limitation term for nutrients Small flagellates
@@ -678,7 +678,6 @@ CONTAINS
       xnanofer(:,:,jpk) = 0._wp    ;   xdiatfer(:,:,jpk) = 0._wp   ;   xpicofer(:,:,jpk) = 0._wp
       xnanopo4(:,:,jpk) = 0._wp    ;   xdiatpo4(:,:,jpk) = 0._wp   ;   xpicopo4(:,:,jpk) = 0._wp
       xlimbac (:,:,jpk) = 0._wp    ;   xlimbacl(:,:,jpk) = 0._wp
-      sizen   (:,:,jpk) = 0._wp    ;   sizep   (:,:,jpk) = 0._wp   ;   sized   (:,:,jpk) = 0._wp
       xqfuncfecn(:,:,jpk) = 0._wp  ;   xqfuncfecd(:,:,jpk) = 0._wp ;   xqfuncfecp(:,:,jpk) = 0._wp
       fvnuptk (:,:,jpk) = 0._wp    ;   fvduptk (:,:,jpk) = 0._wp   ;   fvpuptk(:,:,jpk)  = 0._wp
       xlimphys(:,:,jpk) = 0._wp    ;   xlimdias(:,:,jpk) = 0._wp
