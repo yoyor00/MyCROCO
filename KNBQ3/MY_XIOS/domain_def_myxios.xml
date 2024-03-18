@@ -16,10 +16,10 @@
 <!-- ========================================================================== -->
 <!-- ========================================================================== -->
      
-     <domain id="Zrho" domain_ref="rho"> <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>  
-     <domain id="Zu" domain_ref="u">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>    
-     <domain id="Zv" domain_ref="v">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>   
-     <domain id="Zw" domain_ref="w">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>  
-     <domain id="Zpsi" domain_ref="psi"> <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>             
+     <domain id="Z1rho" domain_ref="rho"> <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>  
+     <domain id="Z1u" domain_ref="u">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>    
+     <domain id="Z1v" domain_ref="v">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>   
+     <domain id="Z1w" domain_ref="w">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>  
+     <domain id="Z1psi" domain_ref="psi"> <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>             
 
 </domain_definition>

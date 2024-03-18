@@ -41,20 +41,20 @@
   <!-- ========================================================================== -->
   <!-- ========================================================================== -->
     
-    <grid id="Zrho_2D">	<domain domain_ref="Zrho"/> </grid>
-    <grid id="Zu_2D">	<domain domain_ref="Zu"/> </grid>
-    <grid id="Zv_2D">	<domain domain_ref="Zv"/> </grid>
-    <grid id="Zw_2D">	<domain domain_ref="Zw"/> </grid>
-    <grid id="Zpsi_2D">	<domain domain_ref="Zpsi"/> </grid>
+    <grid id="Z1rho_2D">	<domain domain_ref="Z1rho"/> </grid>
+    <grid id="Z1u_2D">		<domain domain_ref="Z1u"/> </grid>
+    <grid id="Z1v_2D">		<domain domain_ref="Z1v"/> </grid>
+    <grid id="Z1w_2D">		<domain domain_ref="Z1w"/> </grid>
+    <grid id="Z1psi_2D">	<domain domain_ref="Z1psi"/> </grid>
     
-    <grid id="Zrho_3D">	<domain domain_ref="Zrho"/> <axis axis_ref="s_rho"/></grid>
-    <grid id="Zu_3D">	<domain domain_ref="Zu"/> <axis axis_ref="s_rho"/></grid>
-    <grid id="Zv_3D">	<domain domain_ref="Zv"/> <axis axis_ref="s_rho"/></grid>
-    <grid id="Zw_3D">	<domain domain_ref="Zw"/> <axis axis_ref="s_w"/></grid>
+    <grid id="Z1rho_3D">	<domain domain_ref="Z1rho"/> <axis axis_ref="s_rho"/></grid>
+    <grid id="Z1u_3D">		<domain domain_ref="Z1u"/> <axis axis_ref="s_rho"/></grid>
+    <grid id="Z1v_3D">		<domain domain_ref="Z1v"/> <axis axis_ref="s_rho"/></grid>
+    <grid id="Z1w_3D">		<domain domain_ref="Z1w"/> <axis axis_ref="s_w"/></grid>
     
-    <grid id="Zrho_3D_OSed"> 	<domain domain_ref="Zrho"/>	<axis axis_ref="s_rho_OSed"/></grid>
-    <grid id="Zu_3D_OSed">		<domain domain_ref="Zu"  />	<axis axis_ref="s_rho_OSed"/></grid>
-    <grid id="Zv_3D_OSed">		<domain domain_ref="Zv"  />	<axis axis_ref="s_rho_OSed"/></grid>
-    <grid id="Zw_3D_OSed">		<domain domain_ref="Zw"  />	<axis axis_ref="s_w_OSed"  /></grid>
+    <grid id="Z1rho_3D_OSed"> 	<domain domain_ref="Z1rho"/>	<axis axis_ref="s_rho_OSed"/></grid>
+    <grid id="Z1u_3D_OSed">	<domain domain_ref="Z1u"  />	<axis axis_ref="s_rho_OSed"/></grid>
+    <grid id="Z1v_3D_OSed">	<domain domain_ref="Z1v"  />	<axis axis_ref="s_rho_OSed"/></grid>
+    <grid id="Z1w_3D_OSed">	<domain domain_ref="Z1w"  />	<axis axis_ref="s_w_OSed"  /></grid>
     
   </grid_definition>
