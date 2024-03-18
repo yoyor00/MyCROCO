@@ -527,6 +527,7 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
 !      rho_sdl = 1. / rho0 
 #  endif
 # elif defined WEDGE3D
+        sacous_nbq=10
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
