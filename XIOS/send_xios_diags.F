@@ -2791,7 +2791,7 @@ c !$acc wait
             enddo
           enddo
           enddo
-          call xios_send_field(" u_nbq",worknbq(:,:,-N_sl+1:N))
+          call xios_send_field(" u_nbq",worknbq(:,:,1:N))
       endif
       if (xios_field_is_active("v_nbq")) then
         worknbq=0.
@@ -2803,7 +2803,7 @@ c !$acc wait
             enddo
           enddo
           enddo
-          call xios_send_field(" v_nbq",worknbq(:,:,-N_sl+1:N))
+          call xios_send_field(" v_nbq",worknbq(:,:,1:N))
       endif
 # ifdef K3FAST_SEDLAYERS    
       if (xios_field_is_active("u_nbq_OSed")) then
@@ -2816,7 +2816,7 @@ c !$acc wait
             enddo
           enddo
           enddo
-          call xios_send_field(" u_nbq",worknbq(:,:,-N_sl+1:N))
+          call xios_send_field(" u_nbq_OSed",worknbq(:,:,-N_sl+1:N))
       endif
       if (xios_field_is_active("v_nbq_OSed")) then
         worknbq=0.
@@ -2828,7 +2828,7 @@ c !$acc wait
             enddo
           enddo
           enddo
-          call xios_send_field(" v_nbq",worknbq(:,:,-N_sl+1:N))
+          call xios_send_field(" v_nbq_OSed",worknbq(:,:,-N_sl+1:N))
       endif
 # endif
 ! !
@@ -2839,6 +2839,54 @@ c !$acc wait
       if (xios_field_is_active("w_nbq")) then
       !call xios_send_field("w_nbq",wz(:,:,:,nstp))
         worknbq=0.
+          do k=1,N-1
+          do j=0,Mm
+            do i=0,Lm
+            worknbq(i,j,k+N_sl)=2.*(
+     &         qdmw_nbq(i,j,k)
+     &        )/(Hz(i,j,k)+Hz(i,j,k+1))
+# ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+# endif
+            enddo
+          enddo
+          enddo
+          k=0
+          do j=0,Mm
+            do i=0,Lm
+# ifndef K3FAST_SEDLAYERS
+            worknbq(i,j,k)=2.*(
+     &         qdmw_nbq(i,j,k)
+     &        )/Hz(i,j,k+1) 
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
+# else
+            worknbq(i,j,k)=2.*(
+     &                qdmw_nbq(i,j,k)
+     &                )/(Hz(i,j,k)+Hz(i,j,k+1))
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
+#   endif
+            enddo
+          enddo
+          k=N
+          do j=0,Mm
+            do i=0,Lm 
+            worknbq(i,j,k)=2.*(
+     &                qdmw_nbq(i,j,k)
+     &                )/Hz(i,j,k)
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
+            enddo
+          enddo  
+        call xios_send_field(" w_nbq",worknbq(:,:,0:N))
+      endif
+# ifdef K3FAST_SEDLAYERS 
+      if (xios_field_is_active("w_nbq_OSed")) then
+          worknbq=0.
           do k=-N_sl+1,N-1
           do j=0,Mm
             do i=0,Lm
@@ -2882,8 +2930,9 @@ c !$acc wait
 #  endif
             enddo
           enddo  
-        call xios_send_field(" w_nbq",worknbq(:,:,-N_sl:N))
-      endif
+        call xios_send_field(" w_nbq_OSed",worknbq(:,:,-N_sl:N))
+      endif   
+# endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !     NBQ density
@@ -2895,7 +2944,7 @@ c !$acc wait
 !$acc&  , p_nbq,p_nbq_max 
 # endif              
 !$acc&                  )  
-      call xios_send_field("rho_nbq",rho_nbq)
+      call xios_send_field("rho_nbq",rho_nbq(:,:,1:N))
 # ifdef K3FAST_DIAGACOUS              
       call xios_send_field("p_nbq",p_nbq)
       call xios_send_field("p_nbq_max",p_nbq_max)

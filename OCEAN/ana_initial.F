@@ -161,6 +161,7 @@
 !-------------------------------
 !
 !$acc kernels if(compute_on_device) default(present)              
+        sacous_nbq = -1
         period_exp = 1./50./2.
         for_a_exp  = 0.5
         amp_exp    = 1.e-4

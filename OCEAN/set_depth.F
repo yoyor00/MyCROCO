@@ -108,7 +108,7 @@ C$    integer omp_get_thread_num
         enddo
 
 # ifdef NBQ_MASS
-        do k=-N_sl+1,,N
+        do k=-N_sl+1,N
           do j=J_RANGE
             do i=I_RANGE
               rho_nbq(i,j,k)=0.

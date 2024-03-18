@@ -2,7 +2,7 @@
 <!-- ========================================================================== -->
 <!-- ========================== FILE 1 ======================================== -->
 <!-- ========================================================================== -->
-<file_definition type="one_file" name="OUTPUT/@expname@_BR_@freq@" sync_freq="1h" min_digits="4">
+<file_definition type="one_file" name="OUTPUT/@expname@_@freq@" sync_freq="1h" min_digits="4">
     
 <!-- ========================================================================== -->
 <!-- ========================== File ========================================== -->
@@ -65,7 +65,7 @@
 <!-- ========================================================================== -->
       <file_group id="Z1main"  output_freq="1ts" output_level="10" enabled=".false.">
 
-       <file id="Zfile1" name="OUTPUT/ZOOM1_@expname@_BR4_@freq@" split_freq="2ts" >
+       <file id="Zfile1" name="OUTPUT/ZOOM1_@expname@_@freq@" split_freq="2ts" >
         <field_group id="Z1inst_grid" operation="once" >
          <!-- <field field_ref="lat_rho"   grid_ref="Z1rho2D" /> -->
          <!-- <field field_ref="lon_rho"   grid_ref="Z1rho2D" /> -->
