@@ -128,9 +128,6 @@ include Makedefs
 	wrt_abl_his.F  def_abl_his.F\
 	wrt_abl_avg.F set_abl_avg.F\
 \
-        online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
-        scal0d_oa_out_loc.F scal0d_oa_out_full.F\
-        output_oa.F\
         copy_to_devices.F exchange_device_host.F init_acc.F
 
 
@@ -153,10 +150,6 @@ include Makedefs
 	sedmbc.F90	sedmodel.F90		sed_oce.F90	sedorg.F90\
 	sedrst.F90	sedsfc.F90		sedstp.F90	sedwri.F90\
 	setavg_sed.F90\
-	module_parameter_oa.F90 module_grd_oa.F90\
-	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
-	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
-        module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
         toolorigindate.F90 \
         flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
