@@ -270,7 +270,7 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 !
 ! Time2.
@@ -304,7 +304,7 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 
 ! eddy diagnostics variables.
@@ -341,7 +341,7 @@
      &                       lvar, vname(4,indxeddyzz+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_zz(itrc)
-     &                       ,indxeddyzz+itrc-1,5,NF_FOUT, ierr)
+     &            ,vname(:,indxeddyzz+itrc-1),5,NF_FOUT, ierr)
 
 !------------------------------
 ! indxeddyuu
@@ -370,7 +370,7 @@
      &                       lvar, vname(4,indxeddyuu+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_uu(itrc)
-     &                       ,indxeddyuu+itrc-1,5,NF_FOUT, ierr)
+     &             ,vname(:,indxeddyuu+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyvv
@@ -399,7 +399,7 @@
      &                       lvar, vname(4,indxeddyvv+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_vv(itrc)
-     &                       ,indxeddyvv+itrc-1,5,NF_FOUT, ierr)
+     &              ,vname(:,indxeddyvv+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyuv
@@ -428,7 +428,7 @@
      &                       lvar, vname(4,indxeddyuv+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_uv(itrc)
-     &                       ,indxeddyuv+itrc-1,5,NF_FOUT, ierr)
+     &               ,vname(:,indxeddyuv+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyuw
@@ -457,7 +457,7 @@
      &                       lvar, vname(4,indxeddyuw+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_uw(itrc)
-     &                       ,indxeddyuw+itrc-1,5,NF_FOUT, ierr)
+     &          ,vname(:,indxeddyuw+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyvw
@@ -486,7 +486,7 @@
      &                       lvar, vname(4,indxeddyvw+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_vw(itrc)
-     &                       ,indxeddyvw+itrc-1,5,NF_FOUT, ierr)
+     &            ,vname(:,indxeddyvw+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyub
@@ -515,7 +515,7 @@
      &                       lvar, vname(4,indxeddyub+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_ub(itrc)
-     &                       ,indxeddyub+itrc-1,5,NF_FOUT, ierr)
+     &          ,vname(:,indxeddyub+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyvb
@@ -544,7 +544,7 @@
      &                       lvar, vname(4,indxeddyvb+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_vb(itrc)
-     &                       ,indxeddyvb+itrc-1,5,NF_FOUT, ierr)
+     &          ,vname(:,indxeddyvb+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddywb
@@ -573,7 +573,7 @@
      &                       lvar, vname(4,indxeddywb+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_wb(itrc)
-     &                       ,indxeddywb+itrc-1,5,NF_FOUT, ierr)
+     &          ,vname(:,indxeddywb+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyubu
@@ -602,7 +602,7 @@
      &                       lvar, vname(4,indxeddyubu+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_ubu(itrc)
-     &                       ,indxeddyubu+itrc-1,5,NF_FOUT, ierr)
+     &           ,vname(:,indxeddyubu+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyvbv
@@ -631,7 +631,7 @@
      &                       lvar, vname(4,indxeddyvbv+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_vbv(itrc)
-     &                       ,indxeddyvbv+itrc-1,5,NF_FOUT, ierr)
+     &          ,vname(:,indxeddyvbv+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyusu
@@ -660,7 +660,7 @@
      &                       lvar, vname(4,indxeddyusu+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_usu(itrc)
-     &                       ,indxeddyusu+itrc-1,5,NF_FOUT, ierr)
+     &           ,vname(:,indxeddyusu+itrc-1),5,NF_FOUT, ierr)
 !
 !------------------------------
 ! indxeddyvsv
@@ -689,7 +689,7 @@
      &                       lvar, vname(4,indxeddyvsv+itrc-1)(1:lvar))
 
            call nf_add_attribute(ncid,viddiags_vsv(itrc)
-     &                       ,indxeddyvsv+itrc-1,5,NF_FOUT, ierr)
+     &        ,vname(:,indxeddyvsv+itrc-1),5,NF_FOUT, ierr)
 
 
 !------------------------------
@@ -720,7 +720,7 @@
      &                       lvar, vname(4,indxeddyugsu+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,viddiags_ugsu(itrc)
-     &                       ,indxeddyugsu+itrc-1,5,NF_FOUT, ierr)
+     &          ,vname(:,indxeddyugsu+itrc-1),5,NF_FOUT, ierr)
 
 !
 ! indxeddyvgsv
@@ -750,7 +750,7 @@
      &                       lvar, vname(4,indxeddyvgsv+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,viddiags_vgsv(itrc)
-     &                       ,indxeddyvgsv+itrc-1,5,NF_FOUT, ierr)
+     &          ,vname(:,indxeddyvgsv+itrc-1),5,NF_FOUT, ierr)
 
 
 !
@@ -950,7 +950,7 @@
             goto 99                                       !--> ERROR
           endif
 # ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_zw(itrc), nf_collective)
+          ierr=nf_var_par_access(ncid, viddiags_uw(itrc), nf_collective)
 # endif
 !
 ! ---------------------------------
@@ -1073,6 +1073,36 @@
           ierr=nf_var_par_access(ncid, viddiags_vsv(itrc),nf_collective)
 # endif
 !
+! ---------------------------------
+! indxeddyugsu
+!
+          lvar=lenstr(vname(1,indxeddyugsu+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyugsu+itrc-1)(1:lvar),
+     &                                            viddiags_ugsu(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyugsu+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_ugsu(itrc),nf_collective)
+# endif
+!
+! ---------------------------------
+! indxeddyvgsv
+!
+          lvar=lenstr(vname(1,indxeddyvgsv+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyvgsv+itrc-1)(1:lvar),
+     &                                            viddiags_vgsv(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyvgsv+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid, viddiags_vgsv(itrc),nf_collective)
+# endif
+!
         endif ! wrt(itrc)
 !
 ! ---------------------------------
@@ -1138,6 +1168,8 @@
 # undef viddiags_vbv
 # undef viddiags_usu
 # undef viddiags_vsv
+# undef viddiags_ugsu
+# undef viddiags_vgsv
 !
 # ifdef AVERAGES
 #  ifndef AVRH

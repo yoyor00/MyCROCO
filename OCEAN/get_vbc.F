@@ -67,9 +67,10 @@
 !---------------------------------------------------------------
 !
 # ifndef ANA_SMFLUX
-#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  ifndef BULK_FLUX
+#   ifndef WAVE_SMFLUX
       call get_smflux
+#   endif
 #  endif
 # endif
 !
@@ -245,9 +246,10 @@
 # ifdef ANA_SMFLUX
       call ana_smflux_tile (Istr,Iend,Jstr,Jend)
 # else
-#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  ifndef BULK_FLUX
+#   ifndef WAVE_SMFLUX
       call set_smflux_tile (Istr,Iend,Jstr,Jend)
+#   endif
 #  endif
 # endif
 
@@ -422,6 +424,24 @@
 #endif /* !OA_COUPLING */
 
 #if defined SOLVE3D && defined TRACERS
+!
+!---------------------------------------------------------------
+!     Simplest sea ice correction to T,S fluxes
+!     in case of OA_COUPLING
+!---------------------------------------------------------------
+!      
+#  if defined OA_COUPLING && defined SEA_ICE_NOFLUX
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          if ( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
+                   stflx(i,j,itemp)=0.
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+                   srflx(i,j)=0.
+#   endif
+          endif
+        enddo
+      enddo
+#endif  /* OA_COUPLING && defined SEA_ICE_NOFLUX */
 !
 !---------------------------------------------------------------
 !  Kinematic bottom temperature (heat) flux [degC m/s].

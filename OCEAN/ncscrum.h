@@ -477,7 +477,8 @@
      &        indxeddyuu,indxeddyvv,indxeddyuv,indxeddyub,
      &        indxeddyvb,indxeddywb,indxeddyuw,indxeddyvw,
      &        indxeddyubu,indxeddyvbv,
-     &        indxeddyusu,indxeddyvsv
+     &        indxeddyusu,indxeddyvsv,
+     &        indxeddyugsu,indxeddyvgsv
       parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt
      &                           +ntrc_pas+ntrc_bio+ntrc_sed
      &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
@@ -493,7 +494,9 @@
      &           indxeddyubu=indxeddyvw+1,
      &           indxeddyvbv=indxeddyubu+1,
      &           indxeddyusu=indxeddyvbv+1,
-     &           indxeddyvsv=indxeddyusu+1)
+     &           indxeddyvsv=indxeddyusu+1,
+     &           indxeddyugsu=indxeddyvsv+1,
+     &           indxeddyvgsv=indxeddyugsu+1)
 # endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
@@ -552,7 +555,8 @@
      &        indxabl_mxld_abl, indxabl_avm_abl, indxabl_avt_abl ,
      &        indxabl_ablh_abl, indxabl_zr_abl , indxabl_zw_abl  ,
      &        indxabl_Hzr_abl , indxabl_Hzw_abl
-      parameter (indxabl_pu_dta   = 900,
+! begin at 2 because 1 is for indxTime in wrtabl
+      parameter (indxabl_pu_dta   = 2,
      &           indxabl_pv_dta   = indxabl_pu_dta+ 1,
      &           indxabl_pt_dta   = indxabl_pu_dta+ 2,
      &           indxabl_pq_dta   = indxabl_pu_dta+ 3,
@@ -1291,6 +1295,7 @@
      &      , diags_eddyuw(2), diags_eddyvw(2)
      &      , diags_eddyubu(2), diags_eddyvbv(2)
      &      , diags_eddyusu(2), diags_eddyvsv(2)
+     &      , diags_eddyugsu(2), diags_eddyvgsv(2)
 # endif
 
 # if defined OUTPUTS_SURFACE && ! defined XIOS
@@ -1492,6 +1497,7 @@
      &      , diags_eddyuw_avg(2), diags_eddyvw_avg(2)
      &      , diags_eddyubu_avg(2), diags_eddyvbv_avg(2)
      &      , diags_eddyusu_avg(2), diags_eddyvsv_avg(2)
+     &      , diags_eddyugsu_avg(2), diags_eddyvgsv_avg(2)
 #  endif
 #  if defined OUTPUTS_SURFACE && ! defined XIOS
        integer ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg
@@ -1886,6 +1892,7 @@
      &      , diags_eddyvb, diags_eddywb, diags_eddyuw, diags_eddyvw
      &      , diags_eddyubu, diags_eddyvbv
      &      , diags_eddyusu, diags_eddyvsv
+     &      , diags_eddyugsu, diags_eddyvgsv
 # ifdef AVERAGES
      &      , nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg
      &      , diags_eddyTime_avg, diags_eddyTime2_avg, diags_eddyTstep_avg
@@ -1895,6 +1902,7 @@
      &      , diags_eddyuw_avg, diags_eddyvw_avg
      &      , diags_eddyubu_avg, diags_eddyvbv_avg
      &      , diags_eddyusu_avg, diags_eddyvsv_avg
+     &      , diags_eddyugsu_avg, diags_eddyvgsv_avg
 # endif
 #endif
 #if defined OUTPUTS_SURFACE && ! defined XIOS
@@ -2170,6 +2178,11 @@
       character*75  vname(20, 90)
 #endif
 
+#ifdef ABL1D
+      character*75  vname_abl1d(20, 27) 
+! 26 abl1d var + 1 var Time
+#endif
+
       common /cncscrum/   date_str,   title
      &         ,   origin_date, start_date_run
      &         ,   xios_origin_date
@@ -2269,3 +2282,6 @@
      &                                ,   bioname
 #endif
      &                                ,   vname
+#ifdef ABL1D
+     &                                ,   vname_abl1d
+#endif

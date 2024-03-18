@@ -102,13 +102,21 @@
           write(stdout,6) 'SSH', ssh_rec
           goto 99                                         !--> ERROR
         endif
-        MPI_master_only write(stdout,2) cff
+!!     MPI_master_only write(stdout,2) cff
+        MPI_master_only write(stdout,'(6x,A,1x,g12.4,1x,I4)')
+     &       'GET_SSH -- Read SSH climatology      for time =', cff
+# ifdef USE_CALENDAR
+     &  -ssh_origin_date_in_sec*sec2day
+# endif
+# ifdef MPI
+     &                                                      , mynode
+#endif
         itssh=i
       if (ntssh.gt.1) goto 1
       if (ntssh.eq.1) return
 
-  2   format(6x,'GET_SSH     - Read SSH climatology',11x,
-     &                                        'for time = ',g12.4)
+!!  2   format(6x,'GET_SSH     - Read SSH climatology',11x,
+!!     &                                        'for time = ',g12.4)
 !
 ! Sort out error messages: The following portion of the code is
 !===== === ===== ========= not accessed unless something goes wrong.

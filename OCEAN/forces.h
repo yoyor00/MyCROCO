@@ -20,7 +20,7 @@
       real sustr(GLOBAL_2D_ARRAY)
       real svstr(GLOBAL_2D_ARRAY)
       common /forces_sustr/sustr /forces_svstr/svstr
-#ifdef OA_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING
       real smstr(GLOBAL_2D_ARRAY)
       common /forces_smstr/smstr
 # ifdef READ_PATM
@@ -411,8 +411,7 @@
 #  endif
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
-      common /bulkdat2_tim/ bulk_time, bulk_cycle,
-     &        blk_origin_date_in_sec
+      common /bulkdat2_tim/ bulk_time, bulk_cycle, blk_origin_date_in_sec
 #  ifdef READ_PATM
       common /bulkdat2_patm/ patmp
 #  endif

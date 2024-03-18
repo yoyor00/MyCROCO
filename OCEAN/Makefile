@@ -160,8 +160,8 @@ include Makedefs
         module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
         toolorigindate.F90 \
-        flocmod.F90   comsubstance.F90        substance.F90\
-        comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+        flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
+        comMUSTANG.F90 coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
         sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 
 

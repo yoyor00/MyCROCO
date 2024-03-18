@@ -159,8 +159,8 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
 		FFLAGS1="-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy"
-#		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
-#			-fbounds-check -finit-real=nan -finit-integer=8888"
+#	        FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
+#	                -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
@@ -177,6 +177,8 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
+# Netcdf for netcdf.mod in F90
+FFLAGS1="$FFLAGS1 $NETCDFINC"
 #
 # determine if AGRIF compilation is required
 #
@@ -254,13 +256,22 @@ fi
 # prepare and compile the library
 #
 if [[ $COMPILEAGRIF ]] ; then
+# Find the default C compiler
+    CC1=$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)
+    CFLAGS1=$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)
+# Test if the C compiler is the GNU Compiler
+# if True add '-fcommon' to CFLAGS
+    if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
+	echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
+	CFLAGS1="$CFLAGS1 -fcommon"
+    fi
 #
 # compile the AGRIF librairy
 #
 	if [[ $COMPILEMPI ]] ; then
-		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1"
+		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
 	else
-		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1"
+		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
 	fi
 	if [[ $OS == Darwin ]] ; then          # DARWIN
 # run RANLIB on Darwin system
@@ -318,8 +329,8 @@ rm -f flags.tmp
 #
 # compile croco
 #
-$MAKE depend
-$MAKE
+$MAKE depend || exit 1
+$MAKE        || exit 2
   
 [[ -f croco  ]] && mv croco $RUNDIR
 [[ -f partit ]] && mv partit $RUNDIR

@@ -39,16 +39,14 @@
 
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3
-       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
-!         print *, 'oasis time before get = ', oasis_time
-         call cpl_prism_get (oasis_time)
+      if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)
 #  ifdef AGRIF
-       else if ((.not.agrif_root()).and.(iif==-1).and.
-     &          (oasis_time>=0).and.(nbtimes<=Agrif_MaxLevel()+1).and.
-     &          (nbprttime<nbmaxprttime)) then
-         call cpl_prism_get (oasis_time)
+     & .and. it_inside_root==1  
 #  endif
-       endif
+     & ) then
+        call cpl_prism_get (oasis_time)
+      endif
+!!!!!!!!!!!!!
 # endif /* OA_COUPLING */
 
        iif = iif+1
@@ -83,19 +81,21 @@ C$OMP END PARALLEL
         nbstep3d = nbstep3d + 1
       endif
 # if defined OA_COUPLING || defined OW_COUPLING
-!--Get phase of OASIS3
-       if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<=ntimes-ntstart+1)) then
-           call cpl_prism_put (oasis_time)
+!--Put phase of OASIS3
+      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)) then
 #  ifdef AGRIF
-         else if (oasis_time>=0.and.(.not.agrif_root()).and.
-     &           ((nbtimes>nbmaxtimes+1-Agrif_MaxLevel())).and.
-     &           (nbprttime<nbmaxprttime) ) then
-           call cpl_prism_put (oasis_time)
+        if(it_inside_root==Agrif_rel_idt()) then 
 #  endif
-         endif
-         oasis_time = oasis_time + dt
-       endif
+          call cpl_prism_put (oasis_time)
+          oasis_time = oasis_time + dt
+#  ifdef AGRIF
+     &    *Agrif_rel_idt()
+          it_inside_root = 1
+        else 
+           it_inside_root = it_inside_root+1
+        endif
+#  endif 
+      endif
 # endif /* OA_COUPLING */
 #endif
 !#ifdef ONLINE_ANALYSIS
@@ -982,6 +982,9 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
+#   ifdef SUBSTANCE_SUBMASSBALANCE
+      USE submassbalance, ONLY :  submassbalance_main
+#   endif
 #ifdef MUSTANG
       use plug_MUSTANG_CROCO, only: mustang_update_main
       use plug_MUSTANG_CROCO, only: mustang_deposition_main
@@ -1064,6 +1067,11 @@ C$OMP BARRIER
 # ifdef MUSTANG
         call mustang_deposition_main (tile)
 # endif
+
+# ifdef SUBSTANCE_SUBMASSBALANCE
+       call submassbalance_main(tile)
+#endif
+
 
 # ifdef SEDIMENT
 #  ifdef AGRIF
