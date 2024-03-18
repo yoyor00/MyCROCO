@@ -2,13 +2,13 @@
 <!-- ========================================================================== -->
 <!-- ========================== FILE 1 ======================================== -->
 <!-- ========================================================================== -->
-<file_definition type="one_file" name="OUTPUT/@expname@_BR4_@freq@" sync_freq="100ts" min_digits="4">
+<file_definition type="one_file" name="OUTPUT/@expname@_BR4_@freq@" sync_freq="1h" min_digits="4">
     
 <!-- ========================================================================== -->
 <!-- ========================== File ========================================== -->
 <!-- ========================================================================== -->
-  <file_group id="main" output_freq="100ts" output_level="10" enabled=".false.">
-    <file id="file" name_suffix="_inst" split_freq="1000ts" >
+  <file_group id="main" output_freq="1h" output_level="10" enabled=".true.">
+    <file id="file" name_suffix="_inst" split_freq="10h" >
 
 <!-- ========================================================================== -->
 <!-- ========================== GRID ========================================== -->
@@ -53,7 +53,8 @@
 
 <!-- ========================================================================== -->
 <!-- ========================================================================== -->
-      <file_group id="Z1main"  output_freq="1ts" output_level="10" enabled=".true.">
+      <file_group id="Z1main"  output_freq="1ts" output_level="10" enabled=".false.">
+
        <file id="Zfile1" name="OUTPUT/ZOOM1_@expname@_BR4_@freq@" split_freq="2ts" >
         <field_group id="Z1inst_grid" operation="once" >
          <!-- <field field_ref="lat_rho"   grid_ref="Zrho2D" /> -->
@@ -68,6 +69,7 @@
          <!-- <field field_ref="salt" name="salt" grid_ref="Zrho_3D" /> -->
         </field_group>
        </file>
+
       </file_group>
   
 <!-- ========================================================================== -->
