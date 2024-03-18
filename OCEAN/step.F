@@ -592,10 +592,10 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=my_first,my_last
-           ! BLXD call croco_oa(0)
-           call online_spectral_diags(tile,1)
+! BLXD online_spectral_diags/output_oa 1st argument is the model mode 0/1 = Slow/Fast mode
+           call online_spectral_diags(tile,0)
          enddo
-         call output_oa
+         call output_oa(0)
 C$OMP MASTER
       endif
 # endif
@@ -626,6 +626,9 @@ C$OMP BARRIER
 #endif
 #ifdef RVTK_DEBUG
       use debug
+#endif
+#ifdef ONLINE_ANALYSIS
+      use module_interface_oa, only : if_oa, if_oa_fast_mode
 #endif
       implicit none
 #include "param.h"
@@ -824,6 +827,23 @@ C$OMP BARRIER
 #endif
           enddo
         endif
+
+! BLXD Possible place where to call ONLINE ANALYSIS for fast mode
+!      Would work both for the fast model mode step2d and step3d_fast
+#ifdef ONLINE_ANALYSIS
+      if ( if_oa.eqv..true. .and. 
+     & if_oa_fast_mode.eqv..true.) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=my_first,my_last
+! BLXD online_spectral_diags/output_oa 1st argument is the model mode 0/1 = Slow/Fast mode
+           call online_spectral_diags(tile,1)
+         enddo
+! BLXD output_oa source now set to be only called within the slow mode
+!      even when the spectral online diagnostics have been calculated in the fast mode  
+       call output_oa(1)
+      endif
+#endif
+
 
 #if defined AGRIF && defined AGRIF_2WAY
         if (.not.agrif_root()) then

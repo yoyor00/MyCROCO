@@ -68,6 +68,9 @@
       real K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! to nonlinear EOS
 #  endif
 # endif
+# ifdef PEKERIS_ACOUS3
+      real zbar
+# endif
       integer i,j,k
 
 # include "compute_extended_bounds.h"
@@ -338,6 +341,261 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
         enddo
 # endif
 !$acc end kernels
+! !
+! ! Acoustic configurations
+! !
+!$acc kernels if(compute_on_device) default(present)
+# ifdef K3FAST_DIAGACOUS
+        do k=-N_sl+1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+               p_nbq(i,j,k)=0.
+               p_nbq_max(i,j,k)=0.
+            enddo
+          enddo
+        enddo
+# endif
+# ifdef PEKERIS_ACOUS1
+        sacous_nbq=0
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+                 soundspeed_nbq(i,j,k)=1500. ! isocelere
+                 soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+            enddo
+          enddo
+        enddo
+        do k=-N_sl+1,0
+          do j=JR_RANGE
+            do i=IR_RANGE
+                 soundspeed_nbq(i,j,k)=1500.
+                 soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+            enddo
+          enddo
+        enddo
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+               if (xr(i,j).le.1000.) then
+               visc2_nbq(i,j,k) =0.+1.e2*cos(xr(i,j)/1000.*pi/2.)
+               elseif (xr(i,j).ge.9000.) then
+               visc2_nbq(i,j,k) =0.+1.e2*sin((xr(i,j)-9000)/1000.*
+     &                           pi/2.)
+               else
+               visc2_nbq(i,j,k)=0.
+               endif
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+#  ifdef M3FAST_SEDLAYERS
+        rho_sdl = 0. / rho0 
+#  endif
+# elif defined PEKERIS_ACOUS2
+        sacous_nbq=1
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+                 soundspeed_nbq(i,j,k)=1500. ! isocelere
+!                 soundspeed_nbq(i,j,k)=1450.-z_r(i,j,k)/1000.*32. ! profil lineaire
+!                 if (-z_r(i,j,k).le.200.) then
+!                    soundspeed_nbq(i,j,k)=1500.+20*z_r(i,j,k)/200. ! sofar
+!                 else
+!                    soundspeed_nbq(i,j,k)=1480-40*(z_r(i,j,k)-200.)/(1000.-200.) ! sofar
+!                 endif
+!                 if (-z_r(i,j,k).le.100.) then
+!                    soundspeed_nbq(i,j,k)=1480.-20*z_r(i,j,k)/100. ! chenalsurface
+!                 else
+!                    soundspeed_nbq(i,j,k)=1500-20*(z_r(i,j,k)-100.)/(1000.-100.) ! chenalsurface
+!                 endif
+                 soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+            enddo
+          enddo
+        enddo
+        do k=-N_sl+1,0
+          do j=JR_RANGE
+            do i=IR_RANGE
+                 soundspeed_nbq(i,j,k)=1800.
+                 soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+            enddo
+          enddo
+        enddo
+        do k=-N_sl+1,0
+          do j=JR_RANGE
+            do i=IR_RANGE
+               if (xr(i,j).le.1000.) then
+               visc2_nbq(i,j,k) =3.5e1+1.e2*cos(xr(i,j)/1000.*pi/2.)
+               elseif (xr(i,j).ge.9000.) then
+               visc2_nbq(i,j,k) =3.5e1+1.e2*sin((xr(i,j)-9000)/1000.*
+     &                           pi/2.)
+               else
+               visc2_nbq(i,j,k)=3.5e1!3.5e0!7e1!3.5e1
+               endif
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+               if (xr(i,j).le.1000.) then
+               visc2_nbq(i,j,k) =0.+1.e2*cos(xr(i,j)/1000.*pi/2.)
+               elseif (xr(i,j).ge.9000.) then
+               visc2_nbq(i,j,k) =0.+1.e2*sin((xr(i,j)-9000)/1000.*
+     &                           pi/2.)
+               else
+               visc2_nbq(i,j,k)=0.
+               endif
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+# elif defined PEKERIS_ACOUS3
+        sacous_nbq=0
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+                 zbar = 2*(-z_r(i,j,k)-1300.0)/1300.0
+                 soundspeed_nbq(i,j,k)=1500.0*(1.0+0.00737*
+     &             (zbar-1.0+exp(-zbar)))
+!                 soundspeed_nbq(i,j,k)=1500.
+                 soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+            enddo
+          enddo
+        enddo
+        do k=-N_sl+1,0
+          do j=JR_RANGE
+            do i=IR_RANGE
+                 soundspeed_nbq(i,j,k)=1600.
+                 soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+            enddo
+          enddo
+        enddo
+#  ifdef K3FAST_DIAGACOUS
+        do k=-N_sl+1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+               p_nbq(i,j,k)=0.
+               p_nbq_max(i,j,k)=0.
+            enddo
+          enddo
+        enddo
+#  endif
+                do k=-N_sl+1,-N_sl+250
+          do j=JR_RANGE
+            do i=IR_RANGE
+               visc2_nbq(i,j,k)=5e2!3.5e0!7e1!3.5e1
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+        do k=-N_sl+250,0
+          do j=JR_RANGE
+            do i=IR_RANGE
+               if (xr(i,j).le.1000.) then
+               visc2_nbq(i,j,k) =3.5e1+1.e2*cos(xr(i,j)/1000.*pi/2.)
+               elseif (xr(i,j).ge.99000.) then
+               visc2_nbq(i,j,k) =3.5e1+1.e2*sin((xr(i,j)-99000)/1000.*
+     &                           pi/2.)
+               else
+               visc2_nbq(i,j,k)=0.!3.5e1!3.5e0!7e1!3.5e1
+               endif
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+               if (xr(i,j).le.1000.) then
+               visc2_nbq(i,j,k) =0.+1.e2*cos(xr(i,j)/1000.*pi/2.)
+               elseif (xr(i,j).ge.99000.) then
+               visc2_nbq(i,j,k) =0.+1.e2*sin((xr(i,j)-99000)/1000.*
+     &                           pi/2.)
+               else
+               visc2_nbq(i,j,k)=0.
+               endif
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+!
+! Density of sediments
+!
+#  ifdef M3FAST_SEDLAYERS
+      rho_sdl = 0. / rho0 
+!      rho_sdl = 1. / rho0 
+#  endif
+# elif defined WEDGE3D
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+                 soundspeed_nbq(i,j,k)=1500. ! isocelere
+                 soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+            enddo
+          enddo
+        enddo
+        do k=-N_sl+1,0
+          do j=JR_RANGE
+            do i=IR_RANGE
+                 soundspeed_nbq(i,j,k)=1700.
+                 soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+            enddo
+          enddo
+        enddo   
+        
+        do k=-N_sl+1,-N_sl+40
+          do j=JR_RANGE
+            do i=IR_RANGE
+               visc2_nbq(i,j,k)=5e3!3.5e0!7e1!3.5e1
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+        do k=-N_sl+40,0
+          do j=JR_RANGE
+            do i=IR_RANGE
+               if (xr(i,j).le.1100.) then
+               visc2_nbq(i,j,k) =5e3
+               elseif (xr(i,j).ge.5500.) then
+               visc2_nbq(i,j,k) =5e3
+               elseif (yr(i,j).le.1100.) then
+               visc2_nbq(i,j,k) =5e3
+               elseif (yr(i,j).ge.26000) then
+               visc2_nbq(i,j,k) =5e3
+               else
+               visc2_nbq(i,j,k)=1.25e3!1e3
+               endif
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+               if (xr(i,j).le.1000.) then
+               visc2_nbq(i,j,k) =5e3
+               elseif (xr(i,j).ge.5500.) then
+               visc2_nbq(i,j,k) =5e3
+               elseif (yr(i,j).le.500.) then
+               visc2_nbq(i,j,k) =5e3
+               elseif (yr(i,j).ge.26000) then
+               visc2_nbq(i,j,k) =5e3
+               else
+               visc2_nbq(i,j,k)=1e-6
+               endif
+               visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+!
+! Density of sediments
+!
+#  ifdef K3FAST_SEDLAYERS
+      rho_sdl = 500. / rho0 
+#  endif
+# endif
+!$acc end kernels      
 !
 !----------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.

@@ -108,7 +108,7 @@ C$    integer omp_get_thread_num
         enddo
 
 # ifdef NBQ_MASS
-        do k=1,N
+        do k=-N_sl+1,,N
           do j=J_RANGE
             do i=I_RANGE
               rho_nbq(i,j,k)=0.
@@ -152,10 +152,31 @@ C$    integer omp_get_thread_num
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent
         do i=I_RANGE            !!!          with omega.F
-          z_w(i,j,0)=-h(i,j)
+#  ifndef K3FAST_SEDLAYERS
+          z_w(i,j,0)=-h(i,j)    ! ATTENTION calcul ici! FRANCIS
+#  else
+        ! z_w(i,j,-N_sl)=-h(i,j)*(1.+float(N_sl)/float(N))
+#  ifdef M3FAST
+            zetatmp=zeta(i,j,knew)
+#  else
+            zetatmp=Zt_avg1(i,j)
+#  endif
+#  ifdef NEW_S_COORD            
+            cff_w =hc*sc_w(-N_sl)
+            cff1_w=Cs_w(-N_sl)
+            z_w0=cff_w+cff1_w*h(i,j)
+            z_w(i,j,-N_sl)=z_w0*h(i,j)*hinv(i,j)+zetatmp            
+#  else  
+            cff_w =hc*(sc_w(-N_sl)-Cs_w(-N_sl))
+            cff1_w=Cs_w(-N_sl)
+            z_w(i,j,-N_sl)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
+#  endif            
+            z_w0=cff_w+cff1_w*h(i,j) 
+            z_w(i,j,-N_sl)=z_w0*h(i,j)*hinv(i,j)+zetatmp
+     &                                       *(1.+z_w0*hinv(i,j)) 
+#  endif
         enddo
-
-        do k=1,N,+1
+        do k=-N_sl+1,N,+1
 #  ifdef NEW_S_COORD
           cff_w =hc*sc_w(k)
           cff_r =hc*sc_r(k)
@@ -196,7 +217,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-      do k=1,N
+      do k=-N_sl+1,N
         do j=J_RANGE
           do i=I_RANGE
 #  if defined NBQ || defined K3FAST
@@ -224,7 +245,7 @@ C$    integer omp_get_thread_num
 
 #  if (defined M3FAST || defined K3FAST) && ! defined EXACT_RESTART
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
-        do k=1,N,+1
+        do k=-N_sl+1,N,+1
           do j=J_RANGE
             do i=I_RANGE
               Hz_bak(i,j,k)=Hz(i,j,k)

@@ -209,6 +209,14 @@
 # else
       parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR COASTAL CONFIG
 # endif
+#elif defined PEKERIS
+# if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
+      parameter (LLm0=500,   MMm0=1,    N=50) 
+# elif defined PEKERIS_ACOUS3
+      parameter (LLm0=50000,   MMm0=1,    N=2500) 
+# endif  
+#elif defined WEDGE3D   
+      parameter (LLm0=1200,   MMm0=5400,    N=40)    
 #else
       parameter (LLm0=xxx,  MMm0=xxx,  N=xxx)
 #endif

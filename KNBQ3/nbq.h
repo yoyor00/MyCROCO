@@ -307,6 +307,10 @@
       real worknbq(GLOBAL_2D_ARRAY,0:N+N_sl)
       common /work3dnbq/ worknbq
 # endif
+# ifdef K3FAST_SACOUS 
+      integer sacous_nbq
+      common /NBQ_SACOUS/ sacous_nbq
+# endif
 
 ! !-------------------------------------------------------------------
 ! ! nbq.h: Real BC

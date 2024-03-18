@@ -51,6 +51,8 @@
 #undef  ESTUARY         /* 3D tidal estuary Example */
 #undef  KILPATRICK      /* 2D sst front*/
 #undef  CONVECT         /* 2D Convection */
+#undef  PEKERIS         /* 2Dv Pekeris acoustic Configuration */
+#undef  WEDGE3D         /* 3D Wedge Acoustic Configuration */ 
 /*
         ... OR REALISTIC CONFIGURATIONS
 */
@@ -2141,6 +2143,91 @@
 # undef  ZETA_DRY_IO
 # undef  RVTK_DEBUG
 
+# elif defined PEKERIS
+/*
+!                       Pekeris configuration
+!                       ======= =============
+*/
+# define PEKERIS_ACOUS1
+# define MPI
+# define NC4PAR
+# define KNBQ3
+# define KHCOMP
+# if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2 || defined PEKERIS_ACOUS3
+#  define K3FAST_SACOUS
+#  define K3FAST_CSVISC2K
+# endif
+# if defined PEKERIS_ACOUS2 || defined PEKERIS_ACOUS3
+#  define K3FAST_SEDLAYERS
+# endif
+# define XIOS
+# undef  K3FAST_HIS
+# define M2FILTER_NONE
+# define SOLVE3D
+# undef  UV_ADV
+# define NEW_S_COORD
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_BTFLUX
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define NO_FRCFILE
+# undef BSTRESS_FAST
+# define OBC_EAST
+# define OBC_WEST
+# define SPONGE
+# define SPONGE_GRID
+# define NBQ_NUDGING
+# ifdef PEKERIS_ACOUS3
+#  define SALINITY
+#  define ANA_SSS
+#  define ANA_BSFLUX
+#  define ANA_SSFLUX
+# endif
+
+# elif defined WEDGE3D
+/*
+!                       Wedge3D configuration
+!                       ======= =============
+*/
+# define MPI
+# define NC4PAR
+# define KNBQ3
+# define KNBQ
+# define K3FAST_SACOUS
+# define K3FAST_SEDLAYERS
+# define K3FAST_DIAGACOUS
+# define K3FAST_CSVISC2K
+# define XIOS
+# define XIOS_SLOW
+# define XIOS_SLOW_OA
+# undef  K3FAST_HIS
+# define M2FILTER_NONE
+# define SOLVE3D
+# define UV_ADV
+# define NEW_S_COORD
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_BTFLUX
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define NO_FRCFILE
+# undef  BSTRESS_FAST
+# define OBC_EAST
+# define OBC_WEST
+# define OBC_NORTH
+# define OBC_SOUTH
+# undef SPONGE
+# undef SPONGE_GRID
+# undef NBQ_NUDGING
+
+# undef ONLINE_ANALYSIS
+# undef OA_TRACES
+# undef OA_TRACES_XIOS
+# undef OA_SCALOGRAM
+# undef OA_IJKSCAL
 #endif /* END OF CONFIGURATION CHOICE */
 
 #include "cppdefs_dev.h"

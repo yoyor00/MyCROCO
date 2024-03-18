@@ -1934,9 +1934,11 @@ C 				  endif
  
       ! vertical grid definition
       CALL iom_set_axis_attr( "s_rho", sc_r(1:N) )
-      CALL iom_set_axis_attr( "s_rho_full", sc_r )
       CALL iom_set_axis_attr( "s_w"  , sc_w(0:N) )
-      CALL iom_set_axis_attr( "s_w_full"  , sc_w )
+# ifdef K3FAST_SEDLAYERS    
+      CALL iom_set_axis_attr( "s_rho_OSed", sc_r )
+      CALL iom_set_axis_attr( "s_w_OSed"  , sc_w )
+# endif
 # ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
 # elif defined MUSTANG
@@ -2408,25 +2410,25 @@ C 				  endif
       if (xios_field_is_active("Cs_r")) then
       call xios_send_field("Cs_r",Cs_r(1:N))
 # ifdef K3FAST_SEDLAYERS    
-      call xios_send_field("Cs_r_total",Cs_r(-N_sl+1:N))
+      call xios_send_field("Cs_r_OSed",Cs_r(-N_sl+1:N))
 # endif      
       endif
       if (xios_field_is_active("Cs_w")) then
       call xios_send_field("Cs_w",Cs_w(0:N))
 # ifdef K3FAST_SEDLAYERS    
-      call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
+      call xios_send_field("Cs_w_OSed",Cs_w(-N_sl:N))
 # endif      
       endif
       if (xios_field_is_active("sc_r")) then
       call xios_send_field("sc_r",sc_r(1:N))
-# ifdef K3FAST_SEDLAYERS    
-      call xios_send_field("sc_r_total",sc_r(-N_sl+1:N))
+# ifdef K3FAST_SEDLAYERS     
+      call xios_send_field("sc_r_OSed",sc_r(-N_sl+1:N))
 # endif      
       endif
       if (xios_field_is_active("sc_w")) then
       call xios_send_field("sc_w",sc_w(0:N))
-# ifdef K3FAST_SEDLAYERS    
-      call xios_send_field("sc_w_total",sc_w(-N_sl:N))
+# ifdef K3FAST_SEDLAYERS     
+      call xios_send_field("sc_w_OSed",sc_w(-N_sl:N))
 # endif      
       endif
       if (xios_field_is_active("hc")) then
@@ -2781,7 +2783,7 @@ c !$acc wait
 #ifdef K3FAST
       if (xios_field_is_active("u_nbq")) then
         worknbq=0.
-          do k=-N_sl+1,N
+          do k=1,N
           do j=0,Mm
             do i=0,Lm
             worknbq(i,j,k+N_sl)=2.*qdmu_nbq(i,j,k)
@@ -2793,6 +2795,31 @@ c !$acc wait
       endif
       if (xios_field_is_active("v_nbq")) then
         worknbq=0.
+          do k=1,N
+          do j=0,Mm
+            do i=0,Lm
+            worknbq(i,j,k+N_sl)=2.*qdmv_nbq(i,j,k)
+     &                /(Hz(i,min(Mm,j+1),k)+Hz(i,j,k))
+            enddo
+          enddo
+          enddo
+          call xios_send_field(" v_nbq",worknbq(:,:,-N_sl+1:N))
+      endif
+# ifdef K3FAST_SEDLAYERS    
+      if (xios_field_is_active("u_nbq_OSed")) then
+        worknbq=0.
+          do k=-N_sl+1,N
+          do j=0,Mm
+            do i=0,Lm
+            worknbq(i,j,k+N_sl)=2.*qdmu_nbq(i,j,k)
+     &                /(Hz(min(Lm,i+1),j,k)+Hz(i,j,k))
+            enddo
+          enddo
+          enddo
+          call xios_send_field(" u_nbq",worknbq(:,:,-N_sl+1:N))
+      endif
+      if (xios_field_is_active("v_nbq_OSed")) then
+        worknbq=0.
           do k=-N_sl+1,N
           do j=0,Mm
             do i=0,Lm
@@ -2803,6 +2830,7 @@ c !$acc wait
           enddo
           call xios_send_field(" v_nbq",worknbq(:,:,-N_sl+1:N))
       endif
+# endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !     Vertical velocity (NBQ)
@@ -2873,6 +2901,20 @@ c !$acc wait
       call xios_send_field("p_nbq_max",p_nbq_max)
 # endif       
       endif
+# ifdef K3FAST_SEDLAYERS    
+      if (xios_field_is_active("rho_nbq_OSed")) then
+!$acc update host ( rho_nbq
+#  ifdef K3FAST_DIAGACOUS              
+!$acc&  , p_nbq,p_nbq_max 
+#  endif              
+!$acc&                  )  
+      call xios_send_field("rho_nbq_OSed",rho_nbq)
+!# ifdef K3FAST_DIAGACOUS              
+!      call xios_send_field("p_nbq",p_nbq)
+!      call xios_send_field("p_nbq_max",p_nbq_max)
+!# endif       
+      endif
+# endif
 #endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

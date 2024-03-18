@@ -111,6 +111,7 @@ ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDI
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
 ls ${SOURCE}/KNBQ2/*           > /dev/null  2>&1 && \cp ${SOURCE}/KNBQ2/* $SCRDIR
 ls ${ROOT_DIR}/KNBQ3/*         > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/KNBQ3 $SCRDIR
+ls ${ROOT_DIR}/ONLINE_ANALYSIS/* > /dev/null  2>&1 && \cp ${ROOT_DIR}/ONLINE_ANALYSIS/* $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* $SCRDIR

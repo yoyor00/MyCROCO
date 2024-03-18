@@ -84,6 +84,9 @@ C$    integer omp_get_thread_num
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
 # endif
+# ifdef WEDGE3D
+      real rloc,thetaloc
+# endif
 # ifdef RIP
       real h0,per,xx,yy,xs,db,alpha,lambda,eps
 # endif
@@ -237,6 +240,20 @@ C$    integer omp_get_thread_num
 # elif defined TANK
                      depth=10.
                      f0=0.
+                     beta=0.                
+# elif defined PEKERIS
+#  if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
+                     depth=100.
+                     f0=0.
+                     beta=0.
+#  elif defined PEKERIS_ACOUS3
+                     depth=5000.
+                     f0=0.
+                     beta=0.
+#  endif   
+# elif defined WEDGE3D
+                     depth=200.
+                     f0=0.
                      beta=0.
 # elif defined AgAc
                      depth=80.
@@ -379,6 +396,17 @@ C$    integer omp_get_thread_num
                      Length_ETA=10.0
                      Length_XI =Length_XI_ISO_GRID
 #  endif
+# elif defined PEKERIS
+#  if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
+                     Length_XI =1000.0
+                     Length_ETA=Length_ETA_ISO_GRID
+#  elif defined PEKERIS_ACOUS3
+                     Length_XI =100000.0
+                     Length_ETA=Length_ETA_ISO_GRID
+#  endif
+# elif defined WEDGE3D
+                     Length_XI =6000.0
+                     Length_ETA=27000.0
 # elif defined AgAc
                      Length_XI =80.0
                      Length_ETA=80.0
@@ -911,11 +939,23 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       enddo
 !$acc end kernels
 
-# elif defined TANK
+# elif defined TANK || defined PEKERIS
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
+        enddo
+      enddo
+!$acc end kernels
+
+# elif defined WEDGE3D
+!$acc kernels if(compute_on_device) default(present)
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          !h(i,j)=depth
+          rloc = sqrt((xr(i,j)-1000)**2+(yr(i,j)-1000)**2)
+          thetaloc = ATAN2(xr(i,j)-1000,yr(i,j)-1000)-3.14/2
+          h(i,j)=max(200*(1-rloc*cos(thetaloc)/4000),40.)
         enddo
       enddo
 !$acc end kernels

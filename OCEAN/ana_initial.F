@@ -96,7 +96,7 @@
 #endif
 #ifdef ISOLITON
       real zint,depth,dz,gam,del
-      real rho1_exp,rho2_exp,h1_exp,Lt
+      real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
 !$acc declare create(d)
 #endif
@@ -788,7 +788,7 @@ c c !$acc kernels if(compute_on_device) default(present)
         enddo
 #    endif /* TEMPERATURE */
 
-#   elif defined TANK
+#   elif defined TANK || defined PEKERIS || defined WEDGE3D
 #   if defined TEMPERATURE
 !$acc kernels if(compute_on_device) default(present)
         do k=1,N

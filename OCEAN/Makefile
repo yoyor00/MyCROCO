@@ -247,6 +247,10 @@ check_srcs.F: srcscheck Makefile
 setup_kwds.F: checkkwds read_inp.F
 	./checkkwds
 
+oasrc:  oasrc1 module_oa_time.o module_tile_oa.o module_oa_space.o module_oa_level.o module_oa_periode.o  module_oa_interface.o
+
+oasrc1: param.o scalars.o module_grd_oa.o module_parameter_oa.o module_oa_type.o module_oa_variables.o
+
 partit: partit.F insert_node.o lenstr.o
 	$(CPP) -P $(CPPFLAGS) partit.F > partit._.f
 	$(CFT) -c $(FFLAGS) partit._.f -o partit.o
