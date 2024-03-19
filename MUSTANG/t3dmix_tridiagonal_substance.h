@@ -137,7 +137,7 @@
 
           else    !  dissolved tracers including T and S
 
-             NBSUBSTEP(i,0)= 1
+             NBSUBSTEP(:,0)= 1.
           endif
 
 # endif
