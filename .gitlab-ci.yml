@@ -25,6 +25,10 @@ variables:
   #
   # Here define the direcory with the input files
   # => for BENGUELA_VHR
+  DATAREG: "$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
+  #
+  # Here define the direcory with the input files
+  # => for BENGUELA_VHR
   nest_position_reg: "79 137 37 117 3 3 3 3"
   # => for VORTEX if needed
   DATAVOR: ""
@@ -62,9 +66,9 @@ reg_run_intel:
   before_script:
     - mkdir -p $DATAREG
     - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-    - tar -xf ForCI-INRIA.tar.gz
-    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    #- 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    #- tar -xf ForCI-INRIA.tar.gz
+    #- mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
