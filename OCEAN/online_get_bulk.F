@@ -219,7 +219,8 @@
 ! (i.e. when the current CFSR time limits
 !  are after the current model time)
 !
-          if ((firstiter).and.(timestp.le.(bulkstart*day2sec))) then
+          if (firstiter) then
+            if(timestp.le.(bulkstart*day2sec)) then
 !
 ! Open a new CFSR file
 !
@@ -248,6 +249,7 @@
             firstiter=.false.
             goto 10
 
+            endif
           endif
 !
 !===== ====== ========== == == ==== == ===========

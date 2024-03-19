@@ -117,13 +117,11 @@ MODULE comsubstance
     LOGICAL                 :: l_subflxatm_readfile ! - NOT USED
     REAL(KIND = rsh)        :: sflx_sub_atm_depth ! - NOT USED
 
-#if defined MUSTANG || defined BIOLink 
     ! -------------------------------------------------------------------------
     ! Declaration and evaluation of surface cells if not known in hydro host 
     ! model (for MUSTANG and Bloom/oyster)
     ! -------------------------------------------------------------------------
     REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE  :: surf_cell ! surface cells
-#endif /* ifdef MUSTANG & BIOLink */
 
 #if defined SUBSTANCE_SUBMASSBALANCE
     LOGICAL                 :: submassbalance_l

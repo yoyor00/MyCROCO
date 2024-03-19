@@ -105,8 +105,6 @@
 # endif
 # ifdef OA_COUPLING
 #  undef WAVE_SMFLUX
-# else
-#  define WAVE_SMFLUX
 # endif
 #endif
 
@@ -1026,6 +1024,9 @@
 # error "AGRIF + XIOS + OASIS coupling is not yet implemented"
 #endif
 
+#if defined AGRIF && defined USE_CALENDAR
+#error "AGRIF + USE_CALENDAR is not yet implemented"
+#endif
 /*
 ======================================================================
                             Standard I/O
