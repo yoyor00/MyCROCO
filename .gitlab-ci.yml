@@ -53,7 +53,7 @@ reg_run_intel:
   stage: run
   tags:
     - croco-vm-docker
-  image : ubuntu_intel_parallel:0.0.2
+  image : ubuntu_ifort_parallel:0.0.2
   variables:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
