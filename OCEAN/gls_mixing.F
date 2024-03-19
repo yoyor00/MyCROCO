@@ -270,23 +270,6 @@
 
 !
 !--------------------------------------------------------------------
-! Initialization 
-!--------------------------------------------------------------------
-!
-#if !defined EXACT_RESTART
-      IF (FIRST_TIME_STEP) THEN
-        DO k=0,N
-          DO j=jmin,jmax
-            DO i=imin,imax    
-              trb( i, j, k, nstp, itke ) = trb_min(itke)
-              trb( i, j, k, nstp, igls ) = trb_min(igls)
-            ENDDO
-          ENDDO  
-        ENDDO
-      ENDIF 
-#endif
-!
-!--------------------------------------------------------------------
 ! Horizontal advection (first-order upwind)
 !--------------------------------------------------------------------
 !
