@@ -36,7 +36,7 @@
 #          		 2 as 1 + one file per proc
 #          		 3 as 2 + proc 0 writes all procs results in its file
  $NLOGPRT
- 30 1
+ 1 1
 ###########################################################################
 # Beginning of fields exchange definition
  $STRINGS
@@ -342,14 +342,14 @@ AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 CROCO_SST_1 WRF_d01_EXT_d02_SST 1 <cpldt> 2 oce.nc.1 EXPORTED
-<ocenx1> <oceny1> <atmnx> <atmny> ocnt_1 atmt LAG=<ocedt1>
+<ocenx1> <oceny1> <atmnx> <atmny> ocnt_1 atmt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 CROCO_SST_1 WRF_d02_EXT_d02_SST 1 <cpldt> 2 oce.nc.1 EXPORTED
-<ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt_1 atmtd02 LAG=<ocedt1>
+<ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt_1 atmtd02 LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -365,14 +365,14 @@ AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 CROCO_EOCE_1 WRF_d01_EXT_d02_EOCE 1 <cpldt> 2 oce.nc.1 EXPORTED
-<ocenx1> <oceny1> <atmnx> <atmny> ocnt_1 atmt LAG=<ocedt1>
+<ocenx1> <oceny1> <atmnx> <atmny> ocnt_1 atmt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 CROCO_EOCE_1 WRF_d02_EXT_d02_EOCE 1 <cpldt> 2 oce.nc.1 EXPORTED
-<ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt_1 atmtd02 LAG=<ocedt1>
+<ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt_1 atmtd02 LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -389,14 +389,14 @@ AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 CROCO_NOCE_1 WRF_d01_EXT_d02_NOCE 1 <cpldt> 2 oce.nc.1 EXPORTED
-<ocenx1> <oceny1> <atmnx> <atmny> ocnt_1 atmt LAG=<ocedt1>
+<ocenx1> <oceny1> <atmnx> <atmny> ocnt_1 atmt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 CROCO_NOCE_1 WRF_d02_EXT_d02_NOCE 1 <cpldt> 2 oce.nc.1 EXPORTED
-<ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt_1 atmtd02 LAG=<ocedt1>
+<ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt_1 atmtd02 LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
