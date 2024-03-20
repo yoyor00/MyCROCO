@@ -21,6 +21,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   case, variable using #key_sand2D are exclude of the contribution. See 
   issue [#124](https://gitlab.inria.fr/croco-ocean/croco/-/issues/124)
 
+- CPL : management of WCHPC (fix issue #149)
+
 - OBSTRUCTION : Add a process-based model for 3-dimensional simulation of 
   flow in presence of various obstructions, activated with cpp key #OBSTRUCTION. Obstructions can be rigid or flexible,  and of 3 types : 
   - upward (like seagrass), 
@@ -70,6 +72,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MRL_WCI : correct references to Qiao et al. non-breaking wave diffusion
   (thanks to ChangShui Xia )
 
+- CPL : AGRIF+CPL fixed / compliant with all OASIS versions (fix issue #155),
+  corrections for create oasis from pre-existing conditions, 
+  correction for LEFTRARU machine (fix issue #149, #135)
+
 ### Changed
 
 - OUTPUT : rename Cs_r > Cs_rho, delete redundancy with sc_r and sc_w , see issue 
@@ -77,6 +83,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Use of separate vname(s) vector to avoid risk of overlapping 
   [#133](https://gitlab.inria.fr/croco-ocean/croco/-/issues/133)
+
+- CPL : scripts have been modified for easier use, and improved logs 
+  and error tracking (fix issue # 153) 
+  + add management of WW3 extra outputs (spec) 
+  + add management of OW_COUPLING_FULL and WAVE_SMFLUX croco cppkeys 
+  (solve issues #150 and #168)
 
 ### Deprecated
 

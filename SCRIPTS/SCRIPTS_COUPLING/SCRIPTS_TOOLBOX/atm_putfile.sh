@@ -2,7 +2,6 @@
 #                                                                      Average
 #-------------------------------------------------------------------------------
 
-
 if [ ${USE_XIOS_ATM} -eq 1 ] ; then
     for file in ${ATM_XIOS_NAME}; do
 	mv ${file}*.nc* ${OUTPUTDIR}/
@@ -15,10 +14,12 @@ else
         totnbdom=${NB_dom}
     fi
     for dom in `seq 1 ${totnbdom}`; do
-        ncrcat -O -F -d Time,1,-2 wrfout_d0${dom}_${YEAR_BEGIN_JOB}-* wrfout_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
-        mv wrfout_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc ${OUTPUTDIR}/.
-        \rm wrfout_d0${dom}_${YEAR_BEGIN_JOB}-*
-        mv wrfxtrm_d0${dom}_${YEAR_BEGIN_JOB}-* ${OUTPUTDIR}/wrfxtrm_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
+        mv wrfout_d0${dom}* ${OUTPUTDIR}/.
+        mv wrfxtrm_d0${dom}* ${OUTPUTDIR}/.
+        #ncrcat -O -F -d Time,1,-2 wrfout_d0${dom}_${YEAR_BEGIN_JOB}-* wrfout_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
+        #mv wrfout_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc ${OUTPUTDIR}/.
+        #\rm wrfout_d0${dom}_${YEAR_BEGIN_JOB}-*
+        #mv wrfxtrm_d0${dom}_${YEAR_BEGIN_JOB}-* ${OUTPUTDIR}/wrfxtrm_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
    done
    module unload $ncomod
 fi

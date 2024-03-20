@@ -17,7 +17,7 @@ fi
 #
 if [ ${USE_OCE} -eq 1 ]; then
     if [[ ${MPI_NOLAND} == "TRUE" ]]; then
-        OCE_PROCS=${MY_NODES}
+        OCE_PROCS=${NP_OCE}
     else
         OCE_PROCS=$(( ${NP_OCEX}*${NP_OCEY} ))
     fi 
@@ -48,17 +48,12 @@ if [ ${USE_TOY} -ge 1 ]; then
         mystartproc=$(( ${myendproc} + 1 ))
         myendproc=$(( ${mystartproc} + ${NP_TOY} - 1 ))
     fi
-    if [ ${nbtoy} -eq 1 ]; then
+    for k in `seq 0 $(( ${nbtoy} - 1 ))`; do
         mod_Str=$mystartproc"-"$myendproc
-        echo "${mod_Str} ./toyexe" >> app.conf
-     else
-        for k in `seq 0 $(( ${nbtoy} - 1 ))`; do
-            mod_Str=$mystartproc"-"$myendproc
-            echo "${mod_Str} ./toy${toytype[$k]}" >> app.conf
-            mystartproc=$(( ${myendproc} + 1 ))
-            myendproc=$(( ${mystartproc} + ${NP_TOY} - 1 ))
-        done
-     fi
+        echo "${mod_Str} ./toy${toytype[$k]}" >> app.conf
+        mystartproc=$(( ${myendproc} + 1 ))
+        myendproc=$(( ${mystartproc} + ${NP_TOY} - 1 ))
+    done
 fi
 
 

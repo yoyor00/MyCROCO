@@ -330,8 +330,8 @@ rm -f flags.tmp
 #
 # compile croco
 #
-$MAKE depend
-$MAKE
+$MAKE depend || exit 1
+$MAKE        || exit 2
   
 [[ -f croco  ]] && mv croco $RUNDIR
 [[ -f partit ]] && mv partit $RUNDIR
