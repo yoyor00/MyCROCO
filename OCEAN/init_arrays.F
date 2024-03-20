@@ -79,7 +79,7 @@ C$    integer omp_get_thread_num
      &       ,k,itrc
 # ifdef DIAGNOSTICS_BIO
      &       ,iflux
-#  ifdef BLOOM && defined key_BLOOM_insed
+#  if defined BLOOM && defined key_BLOOM_insed
      &       ,ks
 #  endif
 # endif

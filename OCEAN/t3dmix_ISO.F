@@ -909,9 +909,7 @@
 # endif
 # define FC FFC
 # ifdef MUSTANG
-# define NBSUBSTEP GC
 # include "t3dmix_tridiagonal_substance.h"
-# undef NBSUBSTEP
 # else
 # include "t3dmix_tridiagonal.h"
 # endif
