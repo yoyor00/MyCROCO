@@ -896,7 +896,6 @@
 # define USE_CALENDAR
 # define TEMPERATURE
 # define SALINITY
-# undef key_noTSdiss_insed
 # define key_nofluxwat_IWS
 #endif /* MUSTANG */
 #ifdef SUBSTANCE
