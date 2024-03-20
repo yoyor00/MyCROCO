@@ -820,7 +820,7 @@ CONTAINS
      MPI_master_only WRITE(stdout,*)'OBC uniforme and constant conc.        : ',cobc_wat_r(isubs)
 #ifdef MUSTANG
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in sediment      : ',cini_sed_r(isubs)
-#if defined BLOOM && defined key_BLOOM_insed
+#if defined BLOOM && defined key_BLOOM_insed && ! defined key_noTSdiss_insed
      MPI_master_only WRITE(stdout,*)'type of calculation of in sediment diffusion/biodiff (1or2): ',D0_funcT_opt_r(isubs)
      MPI_master_only WRITE(stdout,*)'coefs for in sediment diffusion/biodiff calculation : ',D0_m0_r(isubs),D0_m1_r(isubs)
 #endif
@@ -1478,9 +1478,12 @@ ENDDO
      !!                    *** ROUTINE substance_surfcell ***
      !!-------------------------------------------------------------------
      !
+#if defined MUSTANG || defined BIOLink
 ! evaluation of cell surface if not known in hydro model
     ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
     surf_cell(:,:)=om_r(:,:)*on_r(:,:)
+#endif
+
 
  END SUBROUTINE substance_surfcell
 
