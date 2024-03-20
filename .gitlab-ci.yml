@@ -62,10 +62,10 @@ reg_run_intel:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
-    DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
+    #DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
-    - mkdir -p $DATAREG
-    - cd $DATAREG
+    #- mkdir -p $DATAREG
+    #- cd $DATAREG
     #- 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
     #- tar -xf ForCI-INRIA.tar.gz
     #- mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
