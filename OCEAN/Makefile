@@ -1,5 +1,3 @@
-# $Id: Makefile 1483 2014-03-15 17:05:10Z rblod $
-#
 #======================================================================
 # CROCO is a branch of ROMS developped at IRD and INRIA, in France
 # The two other branches from UCLA (Shchepetkin et al)

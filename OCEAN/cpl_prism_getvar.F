@@ -1,5 +1,3 @@
-! $Id: cpl_prism_getvar.F 1574 2014-07-01 15:13:38Z gcambon $
-!
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)

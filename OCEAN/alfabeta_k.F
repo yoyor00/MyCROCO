@@ -1,7 +1,3 @@
-! alfabeta_k.F -- compute 2D fields alpha, beta (lin EOS coeff.) at 1 sigma level
-! adapted from alfabeta.F ; NJAL 2017-07-12
-! only used if defined DIAGNOSTICS_DISS
-!
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)
@@ -10,6 +6,10 @@
 !
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
+!
+! alfabeta_k.F -- compute 2D fields alpha, beta (lin EOS coeff.) at 1 sigma level
+! adapted from alfabeta.F ; NJAL 2017-07-12
+! only used if defined DIAGNOSTICS_DISS
 !
 #include "cppdefs.h"
 #if defined DIAGNOSTICS_DISS

@@ -76,6 +76,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   corrections for create oasis from pre-existing conditions, 
   correction for LEFTRARU machine (fix issue #149, #135)
 
+- Clean files header [#165](https://gitlab.inria.fr/croco-ocean/croco/-/issues/165)
+
 ### Changed
 
 - OUTPUT : rename Cs_r > Cs_rho, delete redundancy with sc_r and sc_w , see issue 

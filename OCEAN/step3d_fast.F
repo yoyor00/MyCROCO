@@ -1,5 +1,3 @@
-! $Id: step3d_fast.F 1615 2014-12-17 13:27:07Z rblod $
-!
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)

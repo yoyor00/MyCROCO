@@ -1,5 +1,3 @@
-! $Id: wrt_abl_avg.F 1571 2014-07-01 12:38:05Z jpianezze $
-!
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)

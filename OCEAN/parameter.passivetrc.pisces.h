@@ -1,5 +1,3 @@
-! $Id: parameter.passivetrc.pisces.h 1460 2014-02-03 15:02:02Z gcambon $
-!
 !=========================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France.
 ! The two other branches, from UCLA (Shchepetkin et al)

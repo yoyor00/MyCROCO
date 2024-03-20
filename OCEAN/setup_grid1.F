@@ -1,6 +1,3 @@
-!
-! $Id: setup_grid1.F 1449 2014-01-29 13:40:03Z marchesiello $
-!
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)

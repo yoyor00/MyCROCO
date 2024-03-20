@@ -1,5 +1,3 @@
-! $Id: ocean2d.h 1587 2014-08-04 14:56:01Z marchesiello $
-!
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)
