@@ -10,18 +10,27 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - SUBMASSBALANCE : Add submassbalance feature as in MARS, see issue 
   [#65](https://gitlab.inria.fr/croco-ocean/croco/-/issues/65) ; 
-  check merge request if interested
+  check merge request and documentation if interested
 
 - PISCES :
   - TODO add description
   - Update PISCES (XIOS on-the-fly, ...)
 
-- SED_DENS :  : Add suspended sediment contribution to density whith cpp key 
+- SED_DENS : Add suspended sediment contribution to density whith cpp key 
   #SED_DENS. #SED_DENS applies to #SEDIMENT and #MUSTANG cases. For MUSTANG 
   case, variable using #key_sand2D are exclude of the contribution. See 
   issue [#124](https://gitlab.inria.fr/croco-ocean/croco/-/issues/124)
 
 - CPL : management of WCHPC (fix issue #149)
+
+- OBSTRUCTION : Add a process-based model for 3-dimensional simulation of 
+  flow in presence of various obstructions, activated with cpp key #OBSTRUCTION. Obstructions can be rigid or flexible,  and of 3 types : 
+  - upward (like seagrass), 
+  - downward (like mussel long-line),
+  - 3D (like oyster tables)
+  This module requires the keys #SOLVE3D, #GLS_MIXING and #GLS_KEPSILON. See issue
+  [#123](https://gitlab.inria.fr/croco-ocean/croco/-/issues/123); 
+  check merge request and documentation if interested.
 
 ### Fixed
 - Correction of the vertical transformation function (in the NEW_S_COORD case) 

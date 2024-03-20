@@ -31,6 +31,29 @@
 # endif
 # include "coupler_define_MUSTANG.h"
 #endif
+
+#ifdef OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : obst_nbvar,
+     &     vname_obst, hisObst, l_obstout_pos,
+     &     l_obstout_height_f, l_obstout_height_e, 
+     &     l_obstout_dens_f, l_obstout_dens_e, 
+     &     l_obstout_width_f, l_obstout_width_e, 
+     &     l_obstout_thick_f, l_obstout_thick_e,
+     &     l_obstout_theta, l_obstout_frac_xy, 
+     &     l_obstout_frac_z, l_obstout_fuzvz, 
+     &     l_obstout_a2d, l_obstout_a3d, l_obstout_s2d, 
+     &     l_obstout_s3d, l_obstout_drag, l_obstout_tau,
+     &     obst_position, 
+     &     obst_height_inst, obst_height, 
+     &     obst_dens_inst, obst_dens3d, 
+     &     obst_width_inst, obst_width3d, 
+     &     obst_thick_inst, obst_thick3d,
+     &     obst_theta3d, obst_fracxy, obst_fracz3d,
+     &     obst_drag3d, obst_a2d, obst_a3d,
+     &     obst_s2d, obst_s3d,
+     &     obst_tau, obst_fuz, obst_fvz
+#endif
+
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik
@@ -1370,6 +1393,225 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
        enddo
 #  endif
 # endif /* MUSTANG */
+
+# ifdef OBSTRUCTION
+        do itrc=1,obst_nbvar
+            if (l_obstout_pos) then
+                indx=itrc
+                work2d(:,:)=obst_position(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,hisObst(itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_height_f) then
+                indx=obst_nbvar+itrc
+                work2d(:,:)=obst_height_inst(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_height_e) then
+                indx=2*obst_nbvar+itrc
+                work2d(:,:)=obst_height(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(2*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_dens_f) then
+                indx=3*obst_nbvar+itrc
+                work2d(:,:)=obst_dens_inst(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(3*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_dens_e) then
+                indx=4*obst_nbvar+itrc
+                do k=1,N
+                    workr(:,:,k)=obst_dens3d(itrc,k,:,:)
+                enddo
+                call fillvalue3d(workr,ncidhis,
+     &                     hisObst(4*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_width_f) then
+                indx=5*obst_nbvar+itrc
+                work2d(:,:)=obst_width_inst(itrc,:,:)
+                call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(5*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_width_e) then
+                indx=6*obst_nbvar+itrc
+                do k=1,N
+                    workr(:,:,k)=obst_width3d(itrc,k,:,:)
+                enddo
+                call fillvalue3d(workr,ncidhis,
+     &                     hisObst(6*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_thick_f) then
+               indx=7*obst_nbvar+itrc
+               work2d(:,:)=obst_thick_inst(itrc,:,:)
+               call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(7*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_thick_e) then
+               indx=8*obst_nbvar+itrc
+               do k=1,N
+                   workr(:,:,k)=obst_thick3d(itrc,k,:,:)
+               enddo
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(8*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_theta) then
+               indx=9*obst_nbvar+itrc
+               do k=1,N
+                   workr(:,:,k)=obst_theta3d(itrc,k,:,:)*180.0/3.1415
+               enddo
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(9*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_frac_xy) then
+               indx=10*obst_nbvar+itrc
+               work2d(:,:)=obst_fracxy(itrc,:,:)
+               call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(10*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_frac_z) then
+               indx=11*obst_nbvar+itrc
+               do k=1,N
+                   workr(:,:,k)=obst_fracz3d(itrc,k,:,:)
+               enddo
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(11*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_drag) then
+               indx=12*obst_nbvar+itrc
+               do k=1,N
+                   workr(:,:,k)=obst_drag3d(itrc,k,:,:)
+               enddo
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(12*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_a2d) then
+               indx=13*obst_nbvar+itrc
+               work2d(:,:)=obst_a2d(itrc,:,:)
+               call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(13*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_a3d) then
+               indx=14*obst_nbvar+itrc
+               do k=1,N
+                   workr(:,:,k)=obst_a3d(itrc,k,:,:)
+               enddo
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(14*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_s2d) then
+               indx=15*obst_nbvar+itrc
+               work2d(:,:)=obst_s2d(itrc,:,:)
+               call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(15*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_s3d) then
+               indx=16*obst_nbvar+itrc
+               do k=1,N
+                   workr(:,:,k)=obst_s3d(itrc,k,:,:)
+               enddo
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(16*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+        enddo
+
+        do itrc=1,3
+
+            if (l_obstout_a2d) then
+               indx=17*obst_nbvar+itrc
+               work2d(:,:)=obst_a2d(obst_nbvar+itrc,:,:)
+               call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(17*obst_nbvar+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_a3d) then
+               indx=17*obst_nbvar+3+itrc
+               do k=1,N
+                   workr(:,:,k)=obst_a3d(obst_nbvar+itrc,k,:,:)
+               enddo
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(17*obst_nbvar+3+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_s2d) then
+               indx=17*obst_nbvar+6+itrc
+               work2d(:,:)=obst_s2d(obst_nbvar+itrc,:,:)
+               call fillvalue2d(work2d,ncidhis,
+     &                     hisObst(17*obst_nbvar+6+itrc),
+     &                     vname_obst(1,indx),record,r2dvar,type)
+            endif
+
+            if (l_obstout_s3d) then
+               indx=17*obst_nbvar+9+itrc
+               do k=1,N
+                   workr(:,:,k)=obst_s3d(obst_nbvar+itrc,k,:,:)
+               enddo
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(17*obst_nbvar+9+itrc),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+         enddo
+
+            if (l_obstout_tau) then
+               indx=17*obst_nbvar+13
+               workr(:,:,:)=obst_tau(:,:,:)
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(17*obst_nbvar+13),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+            if (l_obstout_fuzvz) then
+               indx=17*obst_nbvar+14
+               workr(:,:,:)=obst_fuz(:,:,:)
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(17*obst_nbvar+14),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+
+               indx=17*obst_nbvar+15
+               workr(:,:,:)=obst_fvz(:,:,:)
+               call fillvalue3d(workr,ncidhis,
+     &                     hisObst(17*obst_nbvar+15),
+     &                     vname_obst(1,indx),record,r3dvar,type)
+            endif
+
+
+#endif /* OBSTRUCTION */
 
 #endif /* SOLVE3D */
 

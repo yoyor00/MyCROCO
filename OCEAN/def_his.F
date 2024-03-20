@@ -39,6 +39,12 @@
       USE comMUSTANG, ONLY :nk_nivsed_out, nv_out3Dnv_specif,
      &                      nv_out2D_specif, nv_out3Dk_specif
 #endif
+#ifdef OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : hisObst, avgObst, 
+     &     obst_nbvar, outObst, out2DObst, vname_obst
+#endif
+
+
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -56,10 +62,9 @@
 #ifdef MRL_WCI
      &      , iwkb
 #endif
-#ifdef MUSTANG
+#if defined MUSTANG || defined OBSTRUCTION
      &      , indx,ik
 #endif
-
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
@@ -145,6 +150,7 @@
 #  define vidSST_skin hisSST_skin
 # endif
 # define vidM hisMust
+# define vidObst hisObst
 
 #else
 
@@ -221,6 +227,7 @@
 # endif
 
 # define vidM avgMust
+# define vidObst avgObst
 #endif
 !
 ! Put time record index into file name. In  the case when model
@@ -2081,6 +2088,42 @@
 #  endif
 # endif /* MUSTANG */
 !
+!-----------------------------------------------------------------------
+!  OBSTRUCTION model output
+!-----------------------------------------------------------------------
+!
+# ifdef OBSTRUCTION
+
+        do itrv=1,17*obst_nbvar+15
+            indx = itrv
+            if (outObst(indx)) then 
+               if (out2DObst(indx)) then
+                   ierr=nf_def_var (ncid, vname_obst(1,indx),
+     &                 NF_FOUT, 3, r2dgrd, vidObst(indx))  
+               else
+                   ierr=nf_def_var (ncid, vname_obst(1,indx),
+     &                 NF_FOUT, 4, r3dgrd, vidObst(indx)) 
+               endif
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indx),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname_obst(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indx), 'long_name',
+     &                                  lvar,vname_obst(2,indx)(1:lvar))
+                lvar=lenstr(vname_obst(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indx), 'units',
+     &                                  lvar,vname_obst(3,indx)(1:lvar))
+                lvar=lenstr(vname_obst(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indx), 'field',
+     &                                  lvar,vname_obst(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indx),
+     &              vname_obst(:,indx), 5, NF_FOUT, ierr)
+            endif
+        enddo
+
+# endif /* OBSTRUCTION */
+
 #endif /* SOLVE3D */
 
 #ifdef WAVE_IO
@@ -3274,6 +3317,22 @@
       enddo
 #  endif
 # endif /* MUSTANG */
+
+# ifdef OBSTRUCTION
+      do itrv=1,17*obst_nbvar+15
+         indx=itrv
+         if (outObst(indx)) then 
+            lvar=lenstr(vname_obst(1,indx))
+            ierr=nf_inq_varid (ncid, vname_obst(1,indx)(1:lvar),
+     &                             vidObst(itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+      enddo ! itrv
+
+# endif /* OBSTRUCTION */
 !
 #endif /* SOLVE3D */
 !
@@ -3564,6 +3623,7 @@
 #undef vidKAPS
 #undef vidHm
 #undef vidM
+#undef vidObst
 
 #ifdef AVERAGES
 # ifndef AVRH

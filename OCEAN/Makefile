@@ -52,7 +52,7 @@ include Makedefs
 	step3d_fast.F\
 	step3d_w.F	rhs3d_w_nh.F	initial_nbq.F	grid_nbq.F\
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
-        w3dbc.F		nbq_bry_store.F\
+	w3dbc.F		nbq_bry_store.F\
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
@@ -64,7 +64,7 @@ include Makedefs
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
-        param.F         ncscrum.F   scalars.F\
+	param.F         ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
 	get_date.F	lenstr.F	closecdf.F	insert_node.F\
@@ -91,7 +91,7 @@ include Makedefs
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
 	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
-        clm_tides.F     get_bulk.F      bulk_flux.F\
+	clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F get_btflux.F\
 \
@@ -99,7 +99,7 @@ include Makedefs
 \
 	online_bulk_var.F		online_get_bulk.F\
 	online_interp.F			online_interpolate_bulk.F\
-	online_set_bulk.F               online_interpolate_3d_bulk.F\
+	online_set_bulk.F		online_interpolate_3d_bulk.F\
 \
 	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
 	interp_rho.F	def_floats.F	init_arrays_floats.F\
@@ -123,14 +123,14 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-        module_substance.F  module_MUSTANG.F\
-        abl_step.F  abl_ini.F  abl_tke.F\
+	module_substance.F  module_MUSTANG.F module_OBSTRUCTIONS.F\
+	abl_step.F  abl_ini.F  abl_tke.F\
 	wrt_abl_his.F  def_abl_his.F\
 	wrt_abl_avg.F set_abl_avg.F\
 \
-        online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
-        scal0d_oa_out_loc.F scal0d_oa_out_full.F\
-        output_oa.F
+	online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
+	scal0d_oa_out_loc.F scal0d_oa_out_full.F\
+	output_oa.F
 
 
 
@@ -155,12 +155,15 @@ include Makedefs
 	module_parameter_oa.F90 module_grd_oa.F90\
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
-        module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
-        toolorigindate.F90 \
-        flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
-        comMUSTANG.F90 coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-        sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
+	toolorigindate.F90 \
+	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
+	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
+	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
+	comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
+	
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
