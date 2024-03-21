@@ -62,15 +62,13 @@ reg_run_intel:
   before_script:
     - mkdir -p $DATAREG
     - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-    - tar -xf ForCI-INRIA.tar.gz
-    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
     - mkdir -p TESTROOT/REG
     - cd -
   script:
+    - ulimit -a
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
     - cd -
