@@ -53,7 +53,7 @@ reg_run_intel:
   stage: run
   tags:
   - croco-vm-docker
-  image : ubuntu_intel_parallel:0.0.1
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.3
   variables:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
@@ -71,6 +71,9 @@ reg_run_intel:
   - mkdir -p TESTROOT/REG
   - cd -
   script:
+    - ulimit -a
+    - ulimit -s unlimited
+    - ulimit -a
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
     - cd -
@@ -98,7 +101,7 @@ ana_run_intel:
     - cd -
   tags:
     - croco-vm-docker
-  image : ubuntu_intel_parallel:0.0.1
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.3
   variables:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
