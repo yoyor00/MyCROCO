@@ -72,7 +72,7 @@ reg_run_intel:
     - cd -
   script:
     - ulimit -a
-    - ulimit -s unlimmited
+    - ulimit -s unlimited
     - ulimit -a
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
