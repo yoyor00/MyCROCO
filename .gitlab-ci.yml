@@ -45,26 +45,6 @@ download_latest:
     when: always
     expire_in: 6 hour
 
-download_reg:
-  stage: download
-  only:
-    - schedules
-  tags:
-    - ci.inria.fr
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
-  script:
-    - mkdir -p $DATAREG
-    - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-    - tar -xf ForCI-INRIA.tar.gz
-    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
-  artifacts:
-    paths:
-      - $DATAREG
-    when: always
-    expire_in: 6 hour
-
-
 ana_run_gfortran:
   stage: run
   before_script:
@@ -221,11 +201,16 @@ reg_run_gfortran:
     CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   before_script:
-  - mkdir -p $DATADIR
-  - mkdir -p $CVTKWORK
-  - cd $DATADIR
-  - mkdir -p TESTROOT/REG
-  - cd -
+    - mkdir -p $DATAREG
+    - cd $DATAREG
+    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    - tar -xf ForCI-INRIA.tar.gz
+    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - cd $DATADIR
+    - mkdir -p TESTROOT/REG
+    - cd -
   script:
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
@@ -258,11 +243,16 @@ reg_run_intel:
     RUNNER_SCRIPT_TIMEOUT: 180m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
   before_script:
-  - mkdir -p $DATADIR
-  - mkdir -p $CVTKWORK
-  - cd $DATADIR
-  - mkdir -p TESTROOT/REG
-  - cd -
+    - mkdir -p $DATAREG
+    - cd $DATAREG
+    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    - tar -xf ForCI-INRIA.tar.gz
+    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - cd $DATADIR
+    - mkdir -p TESTROOT/REG
+    - cd -
   script:
     - ulimit -s unlimited
     - cd $CVTKHOME/Scripts_reg
@@ -297,6 +287,11 @@ reg_perfrst_gfortran:
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_gfortran"
   before_script:
+    - mkdir -p $DATAREG
+    - cd $DATAREG
+    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    - tar -xf ForCI-INRIA.tar.gz
+    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
@@ -338,6 +333,11 @@ reg_perfrst_intel:
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
   before_script:
+    - mkdir -p $DATAREG
+    - cd $DATAREG
+    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    - tar -xf ForCI-INRIA.tar.gz
+    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
