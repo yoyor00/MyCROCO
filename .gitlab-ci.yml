@@ -167,6 +167,7 @@ vort_run_intel:
   - mkdir -p TESTROOT/VORT
   - cd -
   script:
+    - ulimit -s unlimited
     - cd $CVTKHOME/Scripts_vort
     - ./create_link_master_vort.sh
     - cd -
@@ -253,9 +254,7 @@ reg_run_intel:
   - mkdir -p TESTROOT/REG
   - cd -
   script:
-    - ulimit -a
     - ulimit -s unlimited
-    - ulimit -a
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
     - cd -
@@ -352,6 +351,7 @@ reg_perfrst_intel:
     - cd $PERFRSTDIR
     - cd -
   script:
+    - ulimit -s unlimited
     - cd $PERFRSTHOME/Scripts_reg_perfrst
     - ./create_link_master_reg_perfrst.sh
     - cd -
