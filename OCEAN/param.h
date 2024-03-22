@@ -93,6 +93,8 @@
 # endif
 #elif defined RIVER
       parameter (LLm0=40,   MMm0=80,   N=20)
+#elif defined SEAGRASS
+      parameter (LLm0=36,   MMm0=5,   N=40)
 #elif defined SEAMOUNT
       parameter (LLm0=64,   MMm0=64,   N=20)
 #elif defined SHELFRONT
@@ -311,6 +313,8 @@
       integer Msrc               ! Number of point sources
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
+# elif defined SEAGRASS
+      parameter (Msrc=1)         ! ====== == ===== =======
 # elif defined VILAINE
       parameter (Msrc=2)        ! ====== == ===== =======
 # elif defined ESTUARY

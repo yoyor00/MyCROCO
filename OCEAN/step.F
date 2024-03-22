@@ -119,6 +119,9 @@ C$OMP END PARALLEL
 #ifdef ONLINE_ANALYSIS
       use module_interface_oa, only : if_oa
 #endif
+#ifdef OBSTRUCTION
+          USE plug_OBSTRUCTIONS, ONLY : obst_update_main
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -308,6 +311,11 @@ C$OMP BARRIER
 # else
         call diag(tile)
 # endif
+
+#ifdef OBSTRUCTION
+        call obst_update_main (tile)
+#endif
+
       enddo
 C$OMP BARRIER
       do tile=my_first,my_last

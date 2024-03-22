@@ -15,16 +15,18 @@ else
         else
             agrif_ext=""
         fi
-        for ff in croco_his.nc${agrif_ext} croco_avg.nc${agrif_ext} ; do
-            [ ${ff} == "croco_his.nc${agrif_ext}" ] && { name=croco_his ; ncrcat -O -F -d time,1,-2 croco_his.nc${agrif_ext} croco_his.nc${agrif_ext} ;} 
-            [ ${ff} == "croco_avg.nc${agrif_ext}" ] && name=croco_avg
-            mvfile2 ${ff} ${OUTPUTDIR}/${name}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc${agrif_ext}
+        for ff in croco_his croco_avg ; do
+            mvfile ${ff}.nc${agrif_ext} ${OUTPUTDIR}/${ff}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc${agrif_ext}
+        #for ff in croco_his.nc${agrif_ext} croco_avg.nc${agrif_ext} ; do
+            #[ ${ff} == "croco_his.nc${agrif_ext}" ] && { name=croco_his ; ncrcat -O -F -d time,1,-2 croco_his.nc${agrif_ext} croco_his.nc${agrif_ext} ;} 
+            #[ ${ff} == "croco_avg.nc${agrif_ext}" ] && name=croco_avg
+            #mvfile2 ${ff} ${OUTPUTDIR}/${name}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc${agrif_ext}
         done
     done
    module unload $ncomod
 fi
 
-#-------------------------------------------------------------------------------
+#o------------------------------------------------------------------------------
 #                                                                      Restart
 #-------------------------------------------------------------------------------
 for nn in $( seq 0 ${AGRIFZ} ); do

@@ -6,12 +6,13 @@
 # Machine settings
 #-------------------------------------------------------------------------------
 export MACHINE="DATARMOR" #DATARMOR / JEANZAY /IRENE
+
 #-------------------------------------------------------------------------------
 # Config paths
 #-------------------------------------------------------------------------------
 export CONFIG=BENGUELA
-export CHOME=/home2/datawork/mlecorre/COUPLING/CONFIG/$CONFIG
-export CWORK=/home2/datawork/mlecorre/COUPLING/CONFIG/$CONFIG
+export CHOME=${HOME}/CONFIGS/$CONFIG
+export CWORK=${HOME}/CONFIGS/$CONFIG
 
 #-------------------------------------------------------------------------------
 # Tools paths
@@ -21,4 +22,3 @@ export SCRIPTDIR=$CHOME/SCRIPTS_TOOLBOX
 #-------------------------------------------------------------------------------
 # Model source paths #Insert the full path ( do not use "~" for home )
 #-------------------------------------------------------------------------------
-

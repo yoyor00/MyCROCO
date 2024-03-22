@@ -2061,6 +2061,15 @@ C$    integer  trd, omp_get_thread_num
         enddo
 #  endif
 
+# elif defined SEAGRASS
+
+        cff=1./float(N)
+        do k=1,N                       ! Uniform vertical
+          do is=1,Nsrc                 ! distribution
+            Qshape(is,k)=cff
+          enddo
+        enddo
+
 # elif defined REGIONAL
 #  define EXP_SHAPE
 #  ifdef CST_SHAPE
@@ -2142,7 +2151,7 @@ C$    integer  trd, omp_get_thread_num
 #   endif
         enddo
 #  endif
-# endif /* RIVER || REGIONAL */
+# endif /* RIVER || SEAGRASS || REGIONAL */
 
         do is=1,Nsrc
           Qbar0(is)=Qbar(is)
@@ -2184,7 +2193,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
 # ifdef SOLVE3D
-#  ifdef RIVER
+#  if defined RIVER || defined SEAGRASS
       do k=1,N
         do is=1,Nsrc
 #   ifdef TEMPERATURE
@@ -2255,7 +2264,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
-#  endif /* RIVER */
+#  endif /* RIVER || SEAGRASS || REGIONAL */
 !
 !  Set-up biology tracer (tracer units) point Sources/Sinks.
 !

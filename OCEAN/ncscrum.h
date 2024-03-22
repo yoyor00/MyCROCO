@@ -544,7 +544,6 @@
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
-
 # ifdef ABL1D
       integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
      &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
@@ -2161,6 +2160,9 @@
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsname
 #endif
+#if defined OBSTRUCTION
+     &               ,    obstname
+#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
@@ -2267,6 +2269,9 @@
 #endif
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsname
+#endif
+#if defined OBSTRUCTION
+     &               ,    obstname
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname
