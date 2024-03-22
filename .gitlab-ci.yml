@@ -68,7 +68,7 @@ ana_run_gfortran:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   script:
     - cd $CVTKHOME/Scripts_ana
@@ -98,7 +98,7 @@ ana_run_intel:
     - cd -
   tags:
     - croco-vm-docker
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.3
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   variables:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
@@ -133,7 +133,7 @@ vort_run_gfortran:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   before_script:
   - mkdir -p $DATADIR
@@ -164,7 +164,7 @@ vort_run_intel:
     - schedules
   tags:
     - croco-vm-docker
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.3
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   variables:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
@@ -206,7 +206,7 @@ reg_run_gfortran:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   before_script:
     - mkdir -p $DATAREG
@@ -236,6 +236,50 @@ reg_run_gfortran:
       - $CVTKWORK/REG/*/*.log
     when: always 
 
+
+reg_run_intel:
+  stage: run
+  only:
+    - schedules
+  tags:
+    - croco-vm-docker
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
+  variables:
+    CI_FC: "ifort"
+    CI_MPIF90: "mpiifort"
+    CROCO_CI_MPIRUN: "mpirun"
+    RUNNER_SCRIPT_TIMEOUT: 180m
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
+  before_script:
+    - mkdir -p $DATAREG
+    - cd $DATAREG
+    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    - tar -xf ForCI-INRIA.tar.gz
+    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - cd $DATADIR
+    - mkdir -p TESTROOT/REG
+    - cd -
+  script:
+    - ulimit -s unlimited
+    - cd $CVTKHOME/Scripts_reg
+    - ./create_link_master_reg.sh
+    - cd -
+    - cd $CVTKWORK/REG
+    
+    - ./mk_TESTALL.bash CONFIGURE_REG reg
+    - ./gather_recap.bash REG > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp
+      - $CVTKWORK/REG/*/*.log
+    when: always 
+
+
 reg_perfrst_gfortran:
   stage: run
   only:
@@ -247,7 +291,7 @@ reg_perfrst_gfortran:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_gfortran"
   before_script:
@@ -288,7 +332,7 @@ reg_perfrst_intel:
     - schedules
   tags:
     - croco-vm-docker
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.3
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   variables:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
@@ -346,7 +390,7 @@ ana_run_gfortran_local:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   script:
     - cd $CVTKHOME/Scripts_ana
@@ -375,7 +419,7 @@ reg_run_gfortran_local:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     RUNNER_SCRIPT_TIMEOUT: 180m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
     DATAREG: $DATAREG_LOCAL"
@@ -420,7 +464,7 @@ ana_run_intel_local:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
-    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
