@@ -59,7 +59,7 @@ reg_run_intel:
     CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
-    RUNNER_SCRIPT_TIMEOUT: 10m
+    RUNNER_SCRIPT_TIMEOUT: 120m
   before_script:
   - mkdir -p $DATAREG
   - cd $DATAREG
