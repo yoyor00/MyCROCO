@@ -15,7 +15,7 @@ variables:
   #
   DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   #
-  DATAREG_LOCAL: "$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
+  DATAREG_LOCAL: $CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK
   # use in case of local gitlab-runner; VHR_CROCO_FILES_BCK at same level than croco
   # e.g : 
   # gcambon lpo 4096 mars  22 14:29 croco
@@ -25,7 +25,7 @@ variables:
   #
   CI_CROCO_PWD: $(pwd)
   SOURCE_CROCO: "$CI_PROJECT_DIR/OCEAN"
-  TESTROOTDIR: ${CVTKWORK}
+  #TESTROOTDIR: ${CVTKWORK}
   #
   # Here define the direcory with the input files
   # => for BENGUELA_VHR
@@ -422,7 +422,7 @@ reg_run_gfortran_local:
     CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     RUNNER_SCRIPT_TIMEOUT: 180m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
-    DATAREG: $DATAREG_LOCAL"
+    DATAREG: ${DATAREG_LOCAL}
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
@@ -495,7 +495,7 @@ reg_run_intel_local:
     CROCO_CI_MPIRUN: "mpirun"
     RUNNER_SCRIPT_TIMEOUT: 180m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
-    DATAREG: $DATAREG_LOCAL"
+    DATAREG: ${DATAREG_LOCAL}
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
