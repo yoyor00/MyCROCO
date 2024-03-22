@@ -13,8 +13,8 @@ variables:
   DATADIR: "$CI_PROJECT_DIR/.datadir"
   PERFRSTDIR: "$CI_PROJECT_DIR/.perfrstdir"
   #
-  CVTKWORK: "$CI_PROJECT_DIR/.datawork"
-  PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork"
+  #CVTKWORK: "$CI_PROJECT_DIR/.datawork"
+  #PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork"
   #CROCO_CI_MPIRUN: "mpirun.openmpi"
   #
   #CI_FC: "gfortran"
@@ -62,19 +62,21 @@ reg_run_intel:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
-    DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
+    #DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
   before_script:
-    - mkdir -p $DATAREG
-    - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-    - tar -xf ForCI-INRIA.tar.gz
-    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    #- mkdir -p $DATAREG
+    #- cd $DATAREG
+    #- 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    #- tar -xf ForCI-INRIA.tar.gz
+    #- mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
     - mkdir -p TESTROOT/REG
     - cd -
   script:
+    - ulimit -s unlimited
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
     - cd -
@@ -92,39 +94,50 @@ reg_run_intel:
       - $CVTKWORK/REG/*/*.log
     when: always 
 
-ana_run_intel:
+reg_perfrst_intel:
   stage: run
   only:
     - schedules
-  before_script:
-    - mkdir -p $DATADIR
-    - mkdir -p $CVTKWORK
-    - cd $DATADIR
-    - mkdir -p TESTROOT/KTEST
-    - cd -
   tags:
     - croco-vm-docker
-  image : ubuntu_intel_parallel:0.0.1
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.3
   variables:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
-  script:
-    - cd $CVTKHOME/Scripts_ana
-    - ./create_link_master_ana.sh
+    RUNNER_SCRIPT_TIMEOUT: 120m
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
+    PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
+  before_script:
+    #- mkdir -p $DATAREG
+    #- cd $DATAREG
+    #- 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
+    #- tar -xf ForCI-INRIA.tar.gz
+    #- mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - cd $DATADIR
+    - mkdir -p TESTROOT/REG
+    - mkdir -p $PERFRSTDIR
+    - mkdir -p $PERFRSTWORK
+    - cd $PERFRSTDIR
     - cd -
-    - cd $CVTKWORK/KTEST
+  script:
+    - ulimit -s unlimited
+    - cd $PERFRSTHOME/Scripts_reg_perfrst
+    - ./create_link_master_reg_perfrst.sh
+    - cd -
+    - cd $PERFRSTWORK/REG
    
-    - ./mk_TESTALL.bash CONFIGURE_ANA ana
-    - ./gather_recap.bash KTEST > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1  
+    - ./mk_TESTALL_perfrst.bash CONFIGURE_REG_PERFRST reg
+    - ./gather_recap_perfrst.bash REG > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
   artifacts:
     paths:
-      - $CVTKWORK/ftp
-      - $CVTKWORK/KTEST/*/*.log
+      - $PERFRSTWORK/ftp
+      - $PERFRSTWORK/REG/*/*.log
     when: always
-
 
 

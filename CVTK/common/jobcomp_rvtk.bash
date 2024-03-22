@@ -160,8 +160,8 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	if [[ $FC == ifort || $FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-                FFLAGS1="-O0 -mcmodel=medium -g -i4 -r8 -traceback -check all -check bounds -diag-disable=10448 \
-                       -check uninit -CA -CB -CS -ftrapuv -fpe1 -heap-arrays"
+                FFLAGS1="-O0 -mcmodel=medium -g -i4 -r8 -traceback -check bounds -diag-disable=10448 \
+                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
@@ -184,6 +184,8 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
+# Netcdf for F90
+FFLAGS1="$FFLAGS1 $NETCDFINC"
 #
 # determine if AGRIF compilation is required
 #
