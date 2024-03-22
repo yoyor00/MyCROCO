@@ -42,6 +42,7 @@
           USE coupleur_BIOLink , ONLY : BIOLink_initialization
           USE coupleur_BIOLink , ONLY : BIOLink_init_main
           integer :: icall = 0
+#endif
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_init_main
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
