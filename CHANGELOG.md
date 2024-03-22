@@ -79,9 +79,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Run issue of RIP and SANDBAR test cases : see issue
   [#130](https://gitlab.inria.fr/croco-ocean/croco/-/issues/130)
 
+- Compilation issue with ifort and openmp : see issue
+  [#140](https://gitlab.inria.fr/croco-ocean/croco/-/issues/140)
+
 ### Changed
 
 - CI runs through docker container from croco-ocean/croco_docker project
+  with both gfortran and intel compilers
   
 - OUTPUT : rename Cs_r > Cs_rho, delete redundancy with sc_r and sc_w , see issue 
   [#126](https://gitlab.inria.fr/croco-ocean/croco/-/issues/126) 
