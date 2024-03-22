@@ -255,7 +255,7 @@ reg_run_intel:
     CI_FC: "ifort"
     CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
-    RUNNER_SCRIPT_TIMEOUT: 120m
+    RUNNER_SCRIPT_TIMEOUT: 180m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
   before_script:
   - mkdir -p $DATADIR
