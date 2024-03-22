@@ -91,7 +91,7 @@ include Makedefs
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
 	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
-        clm_tides.F     get_bulk.F      bulk_flux.F\
+	clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F get_btflux.F\
 \
@@ -99,7 +99,7 @@ include Makedefs
 \
 	online_bulk_var.F		online_get_bulk.F\
 	online_interp.F			online_interpolate_bulk.F\
-	online_set_bulk.F               online_interpolate_3d_bulk.F\
+	online_set_bulk.F		online_interpolate_3d_bulk.F\
 \
 	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
 	interp_rho.F	def_floats.F	init_arrays_floats.F\
@@ -124,6 +124,7 @@ include Makedefs
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
 	module_substance.F module_BIOLink.F module_MUSTANG.F\
+	module_OBSTRUCTIONS.F\
 	abl_step.F  abl_ini.F  abl_tke.F\
 	wrt_abl_his.F  def_abl_his.F\
 	wrt_abl_avg.F set_abl_avg.F\
@@ -162,9 +163,10 @@ include Makedefs
 	bloom_initdefine.F90 bloom.F90\
 	tooljulien.F90 comBIOLink.F90 comBIOLink_physics.F90 comBIOLink_helping.F90\
 	coupleur_BIOLink_physics.F90 coupleur_BIOLink_helping.F90 coupleur_BIOLink.F90 \
+	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
+	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
 	comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
-
 
 SRCECO3M1 = \
 	eco3m_string.F90\
@@ -188,7 +190,6 @@ SRCECO3M2 = \
 	eco3m_rgb.F90\
 	eco3m_run.F90\
 
-#	    tke_init.F90\
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
 

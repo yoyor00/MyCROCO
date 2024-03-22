@@ -40,25 +40,23 @@ do
 	namfile=croco.in.${nn}
         agrif_ext=".${nn}"
 	cpfile ${OCE_NAM_DIR}/croco.in.base.${nn} ${namfile}
-        cpfile ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
-	SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
+        #cpfile ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
+	#SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
+        nest_coef=$( ncdump -h croco_grd.nc${agrif_ext} | grep 'positions in the parent grid:' | cut -d ':' -f 4 | cut -d '"' -f 1 )
+        SUBTIME=$(( ${SUBTIME} * ${nest_coef} ))
     else
 	namfile=croco.in
 	agrif_ext=""
-	cp ${OCE_NAM_DIR}/croco.in.base ${namfile}
+	cpfile ${OCE_NAM_DIR}/croco.in.base ${namfile}
 	SUBTIME=1
     fi
     DT_OCE_2=$(( ${DT_OCE} / ${SUBTIME} ))
-#-------
-## Number of time step per day
-#-------
+
+    printf "Compute number of time steps\n"
     OCE_NDT_DAY=$(( 86400 / ${DT_OCE_2} ))
     OCE_NTIMES=$(( ( ${JDAY_END_JOB} - ${JDAY_BEGIN_JOB} + 1 ) * ${OCE_NDT_DAY}     ))
-#
-#-------
-# change some namelist values
-#-------
-# Change in endding date for online interpolation
+
+    # Change in endding date for online interpolation
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     while [[ `echo ${cur_M} | cut -b 1` -eq 0 ]]; do
         cur_M=`echo ${cur_M} | cut -b 2-`
@@ -73,7 +71,7 @@ do
 	end_Y=${YEAR_END_JOB}
         end_M=${MONTH_END_JOB}
     fi
-#
+
     printf "Computing the origin_date from start_date and scrum_time\n"
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 ) 
@@ -87,7 +85,7 @@ do
     or_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
     or_D=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 2) )
 
-# find vertical streching values
+    printf "Find vertical streching values from croco_ini.nc\n"
     ts=$(ncdump -h croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
     tb=$(ncdump -h croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
     hc=$(ncdump -h croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
@@ -100,8 +98,9 @@ do
 	if [[ -z ${hc} ]]; then
         hc=$(ncdump -v hc croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
 	fi
-# find recordperdays in online bulk
+
 if [[ ${interponline} -eq 1 ]]; then
+    printf "find recordperdays for online bulk\n"
     localmth=${cur_M}
     while [ `echo $localmth | cut -b 1` -eq 0 ]; do
         localmth=`echo $localmth | cut -b 2-`
@@ -134,7 +133,9 @@ if [[ ${interponline} -eq 1 ]]; then
 else
             rpd=4
 fi
-#
+
+printf "Fill the $namfile with computed time steps, vertical stretching paramters, output frequencies, dates\n"
+
 sed -e "s/<ocentimes>/${OCE_NTIMES}/g" -e "s/<ocedt>/${DT_OCE_2}/g"   -e "s/<ocendtfast>/${NDTFAST}/g" \
     -e "s/<theta_s>/${ts}/g" -e "s/<theta_b>/${tb}/g" -e "s/<hc>/${hc}/g" \
     -e "s/<oce_nrst>/${OCE_NTIMES}/g" \

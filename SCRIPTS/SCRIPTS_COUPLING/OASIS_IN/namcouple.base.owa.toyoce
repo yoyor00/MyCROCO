@@ -14,7 +14,7 @@
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
- 3  wrfexe  wwatch  toyexe
+ 3  wrfexe  wwatch  toyoce
 ###########################################################################
 # RUNTIME: total simulated time for the actual run in seconds (<I8)
  $RUNTIME
@@ -171,7 +171,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # V_01 : wind V component at first level (m/s)
 #~~~~~~~~~~~
-WRF_d02_EXT_d01_N_01 WW3__V10 1 <cpldt> 2 atm.nc  EXPORTED
+WRF_d01_EXT_d01_WND_N_01 WW3__V10 1 <cpldt> 2 atm.nc  EXPORTED
 <atmnx> <atmny> <wavnx> <wavny> atmt ww3t LAG=<atmdt>
 R 0 R 0
 LOCTRANS SCRIPR
@@ -185,7 +185,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # CHA_COEF : Charnock coefficient
 #~~~~~~~~~~~
-WW3_ACHA WRF_d02_EXT_d01_CHA_COEF 1 <cpldt> 2 wav.nc  EXPORTED
+WW3_ACHA WRF_d01_EXT_d01_CHA_COEF 1 <cpldt> 2 wav.nc  EXPORTED
 <wavnx> <wavny> <atmnx> <atmny> ww3t atmt LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
@@ -200,7 +200,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # SSH : sea surface height (m)
 #~~~~~~~~~~~
 TOY__SSH WW3__SSH 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <wavnx> <wavny> toyt ww3t LAG=<ocedt>
+<ocenx> <oceny> <wavnx> <wavny> toyot ww3t LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -210,7 +210,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # UOCE : sea surface zonal currents (m.s-1)
 #~~~~~~~~~~~
 TOY_UOCE WW3_OSSU 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <wavnx> <wavny> ocnu ww3t LAG=<ocedt>
+<ocenx> <oceny> <wavnx> <wavny> toyot ww3t LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -221,7 +221,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 #
 TOY_VOCE WW3_OSSV 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <wavnx> <wavny> ocnv ww3t LAG=<ocedt>
+<ocenx> <oceny> <wavnx> <wavny> toyot ww3t LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -234,8 +234,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # T0M1 / ww_tmn : mean period (s)
 #~~~~~~~~~~~
-WW3_T0M1 TOY_T0M1 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+WW3_T0M1 TOYOT0M1 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -244,8 +244,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # HS / ww_hs : HS significant wave height (m) 
 #~~~~~~~~~~~
-WW3__OHS TOY___HS 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+WW3__OHS TOY__OHS 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -254,8 +254,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # THM / ww_thm : mean direction  
 #~~~~~~~~~~~
-WW3__DIR TOY__DIR 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+WW3__DIR TOY_ODIR 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -265,8 +265,8 @@ DISTWGT LR SCALAR LATLON 1 4
 # Atm to waves zonal stress computed in WW3 (N.m-2)  
 #~~~~~~~~~~~
 #
-WW3_TAWX TOY_TAWX 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+WW3_TAWX TOYOTAWX 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -276,8 +276,8 @@ DISTWGT LR SCALAR LATLON 1 4
 # Atm to waves meridional stress computed in WW3 (N.m-2)  
 #~~~~~~~~~~~
 #
-WW3_TAWY TOY_TAWY 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+WW3_TAWY TOYOTAWY 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -287,8 +287,8 @@ DISTWGT LR SCALAR LATLON 1 4
 # Waves to ocean zonal stress computed in WW3 (N.m-2)  
 #~~~~~~~~~~~
 #
-WW3_TWOX TOY_TWOX 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+WW3_TWOX TOYOTWOX 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -298,8 +298,8 @@ DISTWGT LR SCALAR LATLON 1 4
 # Waves to ocean meridional stress computed in WW3 (N.m-2) 
 #~~~~~~~~~~~
 #
-WW3_TWOY TOY_TWOY 1 <cpldt> 2 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
+WW3_TWOY TOYOTWOY 1 <cpldt> 2 wav.nc EXPORTED
+<wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -312,8 +312,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUX : zonal stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUE TOY_TAUX 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
+WRF_d01_EXT_d01_TAUE TOYOTAUX 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -322,8 +322,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUY : meridional stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUN TOY_TAUY 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
+WRF_d01_EXT_d01_TAUN TOYOTAUY 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -332,8 +332,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUMOD : stress module (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUMOD TOY_TAUM 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
+WRF_d01_EXT_d01_TAUMOD TOYOTAUM 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -342,8 +342,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # EVAP-PRECIP : E-P flux (kg.m-2.s-1)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_EVAP-PRECIP TOY__EMP 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
+WRF_d01_EXT_d01_EVAP-PRECIP TOY_OEMP 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -352,8 +352,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # NET SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_SOLAR TOYSRFLX 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
+WRF_d01_EXT_d01_SURF_NET_SOLAR TOYOSRFL 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -362,8 +362,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_NON-SOLAR TOYSTFLX 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
+WRF_d01_EXT_d01_SURF_NET_NON-SOLAR TOYOSTFL 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -372,8 +372,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # INTERFACE ATMOSPHERIC PRESSURE  (Pa)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_PSFC TOY_PSFC 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
+WRF_d01_EXT_d01_PSFC TOYOPSFC 1 <cpldt> 2 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -387,7 +387,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # SST (K)
 #~~~~~~~~~~~
 TOY__SST WRF_d01_EXT_d01_SST 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <atmnx> <atmny> toyt atmt LAG=<ocedt>
+<ocenx> <oceny> <atmnx> <atmny> toyot atmt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -397,7 +397,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # UOCE : zonal current (m.s-1)
 #~~~~~~~~~~~
 TOY_UOCE WRF_d01_EXT_d01_EOCE 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <atmnx> <atmny> toyt atmt LAG=<ocedt>
+<ocenx> <oceny> <atmnx> <atmny> toyot atmt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -407,7 +407,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # VOCE : meridonal current (m.s-1)
 #~~~~~~~~~~~
 TOY_VOCE WRF_d01_EXT_d01_NOCE 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <atmnx> <atmny> toyt atmt LAG=<ocedt>
+<ocenx> <oceny> <atmnx> <atmny> toyot atmt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE

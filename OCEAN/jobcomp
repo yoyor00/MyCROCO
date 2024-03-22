@@ -111,6 +111,8 @@ ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB6
 ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/* $SCRDIR
 ls ${ROOT_DIR}/BLOOM/*         > /dev/null 2>1 && \cp -r ${ROOT_DIR}/BLOOM/* $SCRDIR
 ls ${ROOT_DIR}/BIOLINK/*         > /dev/null 2>1 && \cp -r ${ROOT_DIR}/BIOLINK/* $SCRDIR
+ls ${ROOT_DIR}/OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/OBSTRUCTION/* $SCRDIR
+
 if [[ -e "namelist_pisces_ref" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else

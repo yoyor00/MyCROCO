@@ -42,6 +42,9 @@
           USE coupleur_BIOLink , ONLY : BIOLink_initialization
           USE coupleur_BIOLink , ONLY : BIOLink_init_main
           integer :: icall = 0
+#ifdef OBSTRUCTION
+          USE plug_OBSTRUCTIONS, ONLY : obst_init_main
+          USE plug_OBSTRUCTIONS, ONLY : obst_update_main
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
@@ -456,9 +459,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
-# ifdef SUBSTANCE 
+#ifdef SUBSTANCE 
       call substance_surfcell
-# endif
+#endif
+!
+!----------------------------------------------------------------------
+!  BIOLink : initialization
+!----------------------------------------------------------------------
+!
 
 #ifdef BIOLink
 C$OMP PARALLEL DO PRIVATE(tile)
@@ -466,6 +474,11 @@ C$OMP PARALLEL DO PRIVATE(tile)
       CALL BIOLink_init_main(tile)
       enddo
 #endif 
+!
+!----------------------------------------------------------------------
+!  MUSTANG : initialization
+!----------------------------------------------------------------------
+!
 #ifdef MUSTANG 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -473,6 +486,18 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
 #endif 
+!
+!----------------------------------------------------------------------
+! OBSTRUCTION : initialization
+!----------------------------------------------------------------------
+!
+#ifdef OBSTRUCTION
+      do tile=0,NSUB_X*NSUB_E-1
+        call obst_init_main ()
+        call obst_update_main (tile)
+      enddo
+#endif
+
 !
 !----------------------------------------------------------------------
 !  Finalize grid setup

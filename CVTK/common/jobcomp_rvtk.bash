@@ -121,7 +121,7 @@ ls ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/F_PROCESS  > /dev/null 2>1 && \cp -r ${ROOT_DI
 ls ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/config.ini > /dev/null 2>1 && \cp  ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/config.ini $SCRDIR
 ls ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/modele.def > /dev/null 2>1 && \cp  ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/modele.def $SCRDIR
 ls ${ROOT_DIR}/ECO3M/MAKE/*.inc              > /dev/null 2>1 && \cp  ${ROOT_DIR}/ECO3M/MAKE/*.inc $SCRDIR
-
+ls ${ROOT_DIR}/OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/OBSTRUCTION/* $SCRDIR
 
 if [[ -e "namelist_pisces_ref" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
@@ -200,6 +200,8 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
+# Netcdf for F90
+FFLAGS1="$FFLAGS1 $NETCDFINC"
 #
 # determine if AGRIF compilation is required
 #

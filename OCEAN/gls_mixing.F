@@ -82,7 +82,11 @@
 !      + fix OPENMP parallelization
 !
 !======================================================================
-!
+
+#ifdef OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
+     &  obst_tau, obst_t, obst_c2turb
+#endif
       IMPLICIT NONE
 # include "param.h"
 # include "mixing.h"
@@ -534,7 +538,11 @@
             DO k=2,N-1
                DO i=imin,imax
                   FC(i,k)= cff* OneOverSig(ig)*
-     &                   ( Akv_old(i,j,k)+Akv_old(i,j,k-1) ) / Hz(i,j,k)
+     &                   ( Akv_old(i,j,k)+Akv_old(i,j,k-1) ) / Hz(i,j,k) 
+# if defined OBSTRUCTION
+     &                   * (1. - (obst_a3d(obst_nbvar+2,k,i,j))) 
+                                 ! centered vertically on the cell
+# endif
                ENDDO
             ENDDO
 
@@ -557,7 +565,23 @@
                   cff3m =  ig1+ig2*beta3m  * invk*gls
                   cff3p =  ig1+ig2*beta3p  * invk*gls
                   ! Shear and buoyancy production
-                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)
+                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k) 
+# if defined OBSTRUCTION
+                  ! obst_t and obst_tau centered vertically on the cell
+                  if (ig == itke) then
+                    Sprod = Sprod + ((obst_t(i,j,k)*Hz(i,j,k) 
+     &                 + obst_t(i,j,k+1)*Hz(i,j,k+1))
+     &                 / (Hz(i,j,k) + Hz(i,j,k+1)))
+                  else
+                    Sprod = Sprod + ((obst_t(i,j,k)*Hz(i,j,k) 
+     &                 + obst_t(i,j,k+1)*Hz(i,j,k+1))
+     &                 / (Hz(i,j,k) + Hz(i,j,k+1)))
+     &              *MAX(((obst_tau(i,j,k)*Hz(i,j,k) 
+     &                 + obst_tau(i,j,k+1)*Hz(i,j,k+1))
+     &                 / (Hz(i,j,k) + Hz(i,j,k+1))),
+     &                  obst_c2turb * gls * invk)
+                  endif
+# endif
 # if defined TEMPERATURE || defined SALINITY
                   Bprod = -Akt_old(i,j,k)*( cff3m*MAX(bvf(i,j,k),0.)
      &                                   +  cff3p*MIN(bvf(i,j,k),0.) )
@@ -565,7 +589,13 @@
                   Bprod = 0.
 # endif
                   ! Patankar trick to ensure non-negative solutions
-                  cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1))
+                  cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1)) 
+# if defined OBSTRUCTION
+     &                 * (1. - (obst_a3d(obst_nbvar+2,k,i,j)*Hz(i,j,k) 
+     &                 + obst_a3d(obst_nbvar+2,k+1,i,j)*Hz(i,j,k+1))
+     &                 / (Hz(i,j,k) + Hz(i,j,k+1)) ) 
+# endif
+
                   IF( ig == itke ) THEN
                     trb_new=tke_new(i,j,k)
                   ELSE

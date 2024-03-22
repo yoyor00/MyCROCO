@@ -2239,6 +2239,9 @@
 #if defined SUBSTANCE && defined BLOOM
      &               ,    parafilename
 #endif
+#if defined OBSTRUCTION
+     &               ,    obstname
+#endif
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
 #else
@@ -2347,6 +2350,9 @@
 #endif
 #if defined SUBSTANCE && defined BLOOM
      &               ,    parafilename
+#endif
+#if defined OBSTRUCTION
+     &               ,    obstname
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname
