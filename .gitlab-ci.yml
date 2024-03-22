@@ -13,8 +13,6 @@ variables:
   DATADIR: "$CI_PROJECT_DIR/.datadir"
   PERFRSTDIR: "$CI_PROJECT_DIR/.perfrstdir"
   #
-  CVTKWORK: "$CI_PROJECT_DIR/.datawork"
-  PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork"
 
   CI_CROCO_PWD: $(pwd)
   SOURCE_CROCO: "$CI_PROJECT_DIR/OCEAN"
@@ -38,44 +36,13 @@ download_latest:
     - cd $CVTKHOME
     - mkdir -p latest
     - cd latest
-    - 'curl --location --header "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab.inria.fr/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_BRANCH/download?job=ana_run" --output artifacts_ana_run.zip'
+    - 'curl --location --header "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab.inria.fr/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_BRANCH/download?job=ana_run_gfortran" --output artifacts_ana_run_gfortran.zip'
+    - 'curl --location --header "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab.inria.fr/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_BRANCH/download?job=ana_run_intel" --output artifacts_ana_run_intel.zip'
   artifacts:
     paths:
       - $CVTKHOME/latest
     when: always
     expire_in: 6 hour
-
-ana_run_intel:
-  stage: run
-  before_script:
-    - mkdir -p $DATADIR
-    - mkdir -p $CVTKWORK
-    - cd $DATADIR
-    - mkdir -p TESTROOT/KTEST
-    - cd -
-  tags:
-    - croco-vm-docker
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.3
-  variables:
-    CI_FC: "ifort"
-    CI_MPIF90: "mpiifort"
-    CROCO_CI_MPIRUN: "mpirun"
-  script:
-    - cd $CVTKHOME/Scripts_ana
-    - ./create_link_master_ana.sh
-    - cd -
-    - cd $CVTKWORK/KTEST
-   
-    - ./mk_TESTALL.bash CONFIGURE_ANA ana
-    - ./gather_recap.bash KTEST > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1  
-  artifacts:
-    paths:
-      - $CVTKWORK/ftp
-      - $CVTKWORK/KTEST/*/*.log
-    when: always
 
 
 ana_run_gfortran:
@@ -94,6 +61,41 @@ ana_run_gfortran:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
     CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
+  script:
+    - cd $CVTKHOME/Scripts_ana
+    - ./create_link_master_ana.sh
+    - cd -
+    - cd $CVTKWORK/KTEST
+   
+    - ./mk_TESTALL.bash CONFIGURE_ANA ana
+    - ./gather_recap.bash KTEST > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1  
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp
+      - $CVTKWORK/KTEST/*/*.log
+    when: always
+
+
+ana_run_intel:
+  stage: run
+  before_script:
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - cd $DATADIR
+    - mkdir -p TESTROOT/KTEST
+    - cd -
+  tags:
+    - croco-vm-docker
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_ifort_parallel:0.0.3
+  variables:
+    CI_FC: "ifort"
+    CI_MPIF90: "mpiifort"
+    CROCO_CI_MPIRUN: "mpirun"
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
@@ -124,6 +126,7 @@ vort_run_gfortran:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
     CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
@@ -141,7 +144,6 @@ vort_run_gfortran:
     - /bin/sh -c '! grep -i "Compilation failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
-
   artifacts:
     paths:
        - $CVTKWORK/ftp
@@ -160,6 +162,7 @@ vort_run_intel:
     CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
     RUNNER_SCRIPT_TIMEOUT: 120m
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
   before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
@@ -178,7 +181,6 @@ vort_run_intel:
     - /bin/sh -c '! grep -i "Compilation failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
-
   artifacts:
     paths:
        - $CVTKWORK/ftp
@@ -198,6 +200,7 @@ reg_run_gfortran:
     CI_MPIF90: "mpif90"
     CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   before_script:
   - mkdir -p $DATAREG
   - cd $DATAREG
@@ -220,13 +223,11 @@ reg_run_gfortran:
     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
- 
   artifacts:
     paths:
       - $CVTKWORK/ftp
       - $CVTKWORK/REG/*/*.log
     when: always 
-
 
 
 reg_run_intel:
@@ -242,6 +243,7 @@ reg_run_intel:
     CROCO_CI_MPIRUN: "mpirun"
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
     RUNNER_SCRIPT_TIMEOUT: 120m
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
   before_script:
   - mkdir -p $DATAREG
   - cd $DATAREG
@@ -265,14 +267,11 @@ reg_run_intel:
     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
- 
   artifacts:
     paths:
       - $CVTKWORK/ftp
       - $CVTKWORK/REG/*/*.log
     when: always 
-
-
 
 
 reg_perfrst_gfortran:
@@ -288,6 +287,8 @@ reg_perfrst_gfortran:
     CI_MPIF90: "mpif90"
     CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
+    PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_gfortran"
   before_script:
     - mkdir -p $DATAREG
     - cd $DATAREG
@@ -313,14 +314,11 @@ reg_perfrst_gfortran:
     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
-
   artifacts:
     paths:
       - $PERFRSTWORK/ftp
       - $PERFRSTWORK/REG/*/*.log
     when: always
-
-
 
 
 reg_perfrst_intel:
@@ -336,6 +334,8 @@ reg_perfrst_intel:
     CROCO_CI_MPIRUN: "mpirun"
     DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
     RUNNER_SCRIPT_TIMEOUT: 120m
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
+    PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
   before_script:
     - mkdir -p $DATAREG
     - cd $DATAREG
@@ -362,7 +362,6 @@ reg_perfrst_intel:
     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
-
   artifacts:
     paths:
       - $PERFRSTWORK/ftp
