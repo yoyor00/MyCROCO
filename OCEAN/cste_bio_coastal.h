@@ -35,7 +35,7 @@
 !
 ! Parameters as in Table 2 of Gutknecht et al. (2013)
 !
-! Gutknecht, E., I. Dadou, B. Le Vu, G. Cambon, J. Sudre, V. Garon, E. Machu, T. Rixen,
+! Gutknecht, E., I. Dadou, B. Le Vu, G. Cambon, J. Sudre, V. Garcon, E. Machu, T. Rixen,
 ! A. Kock, A. Flohr, A. Paulmier, and G. Lavik, Coupled physical/biogeochemical modeling
 ! including O2-dependent processes in the Eastern Boundary Upwelling Systems: application
 ! in the Benguela, Biogeosciences, 10, 3559-3591, doi:10.5194/bg-10-3559-2013, 2013.

@@ -73,7 +73,7 @@ nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        72         0
-                                 CROCO_FILES/CROCO_dia.nc
+                                 CROCO_FILES/croco_dia.nc
 
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1           72            0
