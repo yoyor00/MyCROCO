@@ -201,6 +201,7 @@ vort_run_intel:
   artifacts:
     paths:
        - $CVTKWORK/ftp
+       - $CVTKWORK/VORT/*/*.log
     when: always
 
 
@@ -220,7 +221,6 @@ reg_run_gfortran:
   before_script:
     - |
       if [[ "$LOCALDATA" == "true" ]]; then
-        export DATAREG="$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
         export DATAREG=${DATAREG_LOCAL} ;
         echo "Use of local data " $DATAREG ;
       else  
@@ -318,7 +318,6 @@ reg_perfrst_gfortran:
   before_script:
     - |
       if [[ "$LOCALDATA" == "true" ]]; then
-        export DATAREG="$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
         export DATAREG=${DATAREG_LOCAL} ;
         echo "Use of local data " $DATAREG ;
       else  
