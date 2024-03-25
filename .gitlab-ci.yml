@@ -28,7 +28,7 @@ variables:
   # !! do not forget the flag LOCALDATA="true" !!
   #
   # For exact restart (aka perfrst) repro : 
-  # run local gitlab-runner using : gitlab-runner exec shell reg_run_perfrst_[intel/gfortran] --env LOCALDATA="true" --timeout=7200
+  # run local gitlab-runner using : gitlab-runner exec shell reg_perfrst_[intel/gfortran] --env LOCALDATA="true" --timeout=7200
   # !! do not forget the flag LOCALDATA="true" !!
   #
   CI_CROCO_PWD: $(pwd)
