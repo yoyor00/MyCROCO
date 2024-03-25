@@ -163,6 +163,7 @@ vort_run_gfortran:
   artifacts:
     paths:
        - $CVTKWORK/ftp
+       - $CVTKWORK/VORT/*/*.log
     when: always
 
 
