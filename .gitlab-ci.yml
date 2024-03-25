@@ -14,10 +14,25 @@ variables:
   PERFRSTDIR: "$CI_PROJECT_DIR/.perfrstdir"
   #
   DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
-
+  #
+  # use in case of local gitlab-runner; put VHR_CROCO_FILES_BCK at same level than croco
+  # e.g : 
+  # gcambon lpo 4096 mars  22 14:29 croco
+  # gcambon lpo   43 juin  28  2023 VHR_CROCO_FILES_BCK
+  #
+  # In local job variables section, use of the local data
+  DATAREG_LOCAL: "$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
+  # 
+  # For parallel repro :
+  # run local gitlab-runner using : gitlab-runner exec shell reg_run_[intel/gfortran] --env LOCALDATA="true" --timeout=7200
+  # !! do not forget the flag LOCALDATA="true" !!
+  #
+  # For exact restart (aka perfrst) repro : 
+  # run local gitlab-runner using : gitlab-runner exec shell reg_run_perfrst_[intel/gfortran] --env LOCALDATA="true" --timeout=7200
+  # !! do not forget the flag LOCALDATA="true" !!
+  #
   CI_CROCO_PWD: $(pwd)
   SOURCE_CROCO: "$CI_PROJECT_DIR/OCEAN"
-  TESTROOTDIR: ${CVTKWORK}
   #
   # Here define the direcory with the input files
   # => for BENGUELA_VHR
@@ -27,6 +42,7 @@ variables:
   nest_position_vort: ""
   # => for ANA if needed
   DATAANA: ""
+  #
 
 download_latest:
   stage: download
@@ -60,7 +76,7 @@ ana_run_gfortran:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   script:
     - cd $CVTKHOME/Scripts_ana
@@ -125,7 +141,7 @@ vort_run_gfortran:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   before_script:
   - mkdir -p $DATADIR
@@ -198,14 +214,21 @@ reg_run_gfortran:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
   before_script:
-    - mkdir -p $DATAREG
-    - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-    - tar -xf ForCI-INRIA.tar.gz
-    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - |
+      if [[ "$LOCALDATA" == "true" ]]; then
+        export DATAREG="$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
+        export DATAREG=${DATAREG_LOCAL} ;
+        echo "Use of local data " $DATAREG ;
+      else  
+        mkdir -p $DATAREG ;
+        cd $DATAREG ;
+        curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz ;
+        tar -xf ForCI-INRIA.tar.gz ;
+        mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
+      fi   
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
@@ -243,11 +266,17 @@ reg_run_intel:
     RUNNER_SCRIPT_TIMEOUT: 180m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
   before_script:
-    - mkdir -p $DATAREG
-    - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-    - tar -xf ForCI-INRIA.tar.gz
-    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - |
+      if [[ "$LOCALDATA" == "true" ]]; then
+        export DATAREG=${DATAREG_LOCAL} ;
+        echo "Use of local data: " $DATAREG;
+      else  
+        mkdir -p $DATAREG ;
+        cd $DATAREG ;
+        curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz ;
+        tar -xf ForCI-INRIA.tar.gz ;
+        mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
+      fi   
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
@@ -271,7 +300,6 @@ reg_run_intel:
       - $CVTKWORK/REG/*/*.log
     when: always 
 
-
 reg_perfrst_gfortran:
   stage: run
   only:
@@ -283,15 +311,22 @@ reg_perfrst_gfortran:
   variables:
     CI_FC: "gfortran"
     CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root "
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_gfortran"
   before_script:
-    - mkdir -p $DATAREG
-    - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-    - tar -xf ForCI-INRIA.tar.gz
-    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - |
+      if [[ "$LOCALDATA" == "true" ]]; then
+        export DATAREG="$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
+        export DATAREG=${DATAREG_LOCAL} ;
+        echo "Use of local data " $DATAREG ;
+      else  
+        mkdir -p $DATAREG ;
+        cd $DATAREG ;
+        curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz ;
+        tar -xf ForCI-INRIA.tar.gz ;
+        mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
+      fi   
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
@@ -333,11 +368,17 @@ reg_perfrst_intel:
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
   before_script:
-    - mkdir -p $DATAREG
-    - cd $DATAREG
-    - 'curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz'
-    - tar -xf ForCI-INRIA.tar.gz
-    - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* .
+    - |
+      if [[ "$LOCALDATA" == "true" ]]; then
+        export DATAREG=${DATAREG_LOCAL} ;
+        echo "Use of local data: " $DATAREG;
+      else  
+        mkdir -p $DATAREG ;
+        cd $DATAREG ;
+        curl --location "https://data-croco.ifremer.fr/ForCI-INRIA.tar.gz" --output ForCI-INRIA.tar.gz ;
+        tar -xf ForCI-INRIA.tar.gz ;
+        mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
+      fi   
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
@@ -363,7 +404,3 @@ reg_perfrst_intel:
       - $PERFRSTWORK/ftp
       - $PERFRSTWORK/REG/*/*.log
     when: always
-
-
-
-
