@@ -114,6 +114,7 @@ ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* 
 ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/* $SCRDIR
+ls ${ROOT_DIR}/OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/OBSTRUCTION/* $SCRDIR
 
 if [[ -e "namelist_pisces_ref" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
@@ -161,7 +162,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	if [[ $FC == ifort || $FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-                FFLAGS1="-O0 -mcmodel=medium -g -i4 -r8 -traceback -check all -check bounds \
+                FFLAGS1="-O0 -mcmodel=medium -g -i4 -r8 -traceback -check bounds \
                        -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
@@ -185,6 +186,8 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
+# Netcdf for F90
+FFLAGS1="$FFLAGS1 $NETCDFINC"
 #
 # determine if AGRIF compilation is required
 #
@@ -307,7 +310,13 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 		if [[ $FC == gfortran ]] ; then
 			FFLAGS1="$FFLAGS1 -fopenmp"
 		elif [[ $FC == ifort || $FC == ifc ]] ; then
-			FFLAGS1="$FFLAGS1 -openmp"
+			INTEL_VERSION=$(ifort --version 2>&1 | grep -oP "(\d+)" | head -n1)
+			# Compare the version with 18
+			if [[ "$INTEL_VERSION" -gt 18 ]]; then
+				FFLAGS1="$FFLAGS1 -qopenmp"
+			else
+				FFLAGS1="$FFLAGS1 -openmp"
+			fi
 		else
 			FFLAGS1="$FFLAGS1 -openmp"
 		fi

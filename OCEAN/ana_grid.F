@@ -90,7 +90,7 @@ C$    integer omp_get_thread_num
 # ifdef SANDBAR
       real p1,p2,p3,p4,p5,p6,p7,xx
 # endif
-# ifdef RIVER
+# if defined RIVER || defined SEAGRASS
       integer is,i0,j0
 #  include "sources.h"
 # endif
@@ -201,6 +201,10 @@ C$    integer omp_get_thread_num
 # elif defined RIVER
                      depth=150.
                      f0=8.26E-5
+                     beta=0.
+# elif defined SEAGRASS
+                     depth=0.215
+                     f0=0.
                      beta=0.
 # elif defined JET
                      depth=4000.
@@ -338,6 +342,9 @@ C$    integer omp_get_thread_num
 # elif defined RIVER
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
+# elif defined SEAGRASS
+                     Length_ETA=0.25
+                     Length_XI =36.*0.05
 # elif defined JET
                      Length_XI = 500.e+3
                      Length_ETA=2000.e+3
@@ -639,6 +646,14 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=h(i,JstrR)
         enddo
       enddo
+
+# elif defined SEAGRASS
+        do j=JstrR,JendR
+            do i=IstrR,IendR
+            h(i,j)=depth
+            enddo
+        enddo
+
 
 # elif defined SHOREFACE
       do j=JstrR,JendR
@@ -1083,6 +1098,23 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           zob(i,j)=zobt
         end do
       end do
+
+# ifdef SEAGRASS
+      do j=JstrR,JendR
+         do i=IstrR,IendR
+#   ifdef MPI
+        cff  = (float(i +ii*Lm) )
+#   else
+        cff  = (float(i       ) )
+#   endif
+             if ((cff .lt. 14) .or. (cff .gt. 31)) then
+                 zob(i,j) = 6.E-8 ! out of patch
+             else
+                 zob(i,j) = 1.E-6 ! in patch
+             end if
+         end do
+       end do
+# endif
 !
 !----------------------------------------------------------------------
 !  Set masking at RHO-points.
@@ -1145,6 +1177,26 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       endif ! WESTERN_EDGE
 #  endif /* RIVER */
+
+#  ifdef SEAGRASS
+      do j=JstrR,JendR
+         do i=IstrR,IendR
+         rmask(i,j)=0.      
+         enddo
+      enddo
+
+      if (WESTERN_EDGE) then
+         do i=IstrR+3,IendR
+            rmask(i,3)=1.
+         enddo
+      else
+         do i=IstrR,IendR
+            rmask(i,3)=1.   
+         enddo
+      endif ! WESTERN_EDGE
+
+#  endif /* SEAGRASS */
+
 # endif /* MASKING */
 !$acc end kernels
 !

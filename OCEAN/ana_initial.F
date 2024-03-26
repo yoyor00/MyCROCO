@@ -969,12 +969,28 @@
         enddo
 #    endif /* TEMPERATURE */
 
-#   elif defined RIVER
+#   elif defined RIVER 
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
 #    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=10.  !4.+10.*exp(z_r(i,j,k)/50.)
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=36.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
+            enddo
+          enddo
+        enddo
+
+#   elif defined SEAGRASS
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=10.  
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #    endif /* TEMPERATURE */
 #    ifdef SALINITY
