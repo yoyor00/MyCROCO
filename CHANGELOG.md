@@ -82,6 +82,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Compilation issue with ifort and openmp : see issue
   [#140](https://gitlab.inria.fr/croco-ocean/croco/-/issues/140)
 
+- Clean files header (fix issue #165)
+
 ### Changed
 
 - CI runs through docker container from croco-ocean/croco_docker project
@@ -94,7 +96,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   [#133](https://gitlab.inria.fr/croco-ocean/croco/-/issues/133)
 
 - CPL : scripts have been modified for easier use, and improved logs 
-  and error tracking (fix issue # 153) 
+  and error tracking (fix issue #153) 
   + add management of WW3 extra outputs (spec) 
   + add management of OW_COUPLING_FULL and WAVE_SMFLUX croco cppkeys 
   (solve issues #150 and #168)
