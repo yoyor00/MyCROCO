@@ -1,6 +1,3 @@
-!
-! $Id: MessPass3D.F 1143 2013-05-17 08:17:23Z serena $
-!
 #include "cppdefs.h"
 #if defined MPI && defined SOLVE3D
 
@@ -22,7 +19,7 @@
 !
 !======================================================================
 !
-! This subroutine is designed for ROMS-MPI code. It exchanges domain
+! This subroutine is designed for CROCO-MPI code. It exchanges domain
 ! boundary information, including 2 (or 3) ghost-cells in each
 ! direction.
 !

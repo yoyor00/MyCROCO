@@ -1,4 +1,3 @@
-# $Id: Makedefs.generic 1444 2014-01-28 15:59:33Z gcambon $
 # [1] Machine independent rules and definitions.
 #==== ======= =========== ===== === ============
 .SUFFIXES: .o .f .i .F .F90 .f90

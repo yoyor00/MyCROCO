@@ -1,6 +1,3 @@
-!
-! $Id: exchange.F 830 2012-05-16 17:02:20Z marchesiello $
-!
 #include "cppdefs.h"
 #ifdef MPI
 # define LOCALLM Lmmpi
