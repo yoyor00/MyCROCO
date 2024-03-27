@@ -17,7 +17,7 @@ MODULE trosk
 !  USE in_out_manager, ONLY : ln_timing ! I/O manager
   USE sed
   USE sedfunc
-  USE lib_mpp 
+  USE lib_mpp
 
   IMPLICIT NONE
   PRIVATE 
@@ -135,7 +135,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
 !          DECLARATIONS
 ! *** *** *** *** *** *** *** *** *** *** *** *** ***
       INTEGER, INTENT(in) :: ROSM, N, MLJAC, MUJAC
-      REAL(wp), DIMENSION(1), INTENT(in) :: ATOL, RTOL
+      REAL(wp), DIMENSION(N), INTENT(in) :: ATOL, RTOL
       INTEGER, INTENT(inout) :: IDID
       INTEGER , DIMENSION(jpoce,3), INTENT(out) :: ISTAT
 
@@ -163,6 +163,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
 
       ALLOCATE (NFCN(jpoce), NJAC(jpoce), NSTEP(jpoce), NACCPT(jpoce), NREJCT(jpoce))
 
+
       NFCN=0
       NJAC=0
       NSTEP=0
@@ -187,6 +188,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       LDJAC=MLJAC+MUJAC+1
       LDE=2*MLJAC+MUJAC+1
 ! -------- CALL TO CORE INTEGRATOR ------------
+
       SELECT CASE ( ROSM )
       CASE( 4 ) 
          CALL RO4COR(N,X,Y,XEND,HMAX,H,RTOL,ATOL,JAC,        &
@@ -206,9 +208,11 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       END SELECT
 ! ----------- RETURN -----------
 
+
       ISTAT(:,1) = NFCN(:)
       ISTAT(:,2) = NJAC(:)
       ISTAT(:,3) = NSTEP(:)
+
 
       DEALLOCATE (NFCN, NJAC, NSTEP, NACCPT, NREJCT )
 
@@ -231,7 +235,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       IMPLICIT REAL(wp) (A-H,O-Z)
       IMPLICIT INTEGER (I-N)
 
-      REAL(wp) :: ATOL(1),RTOL(1)
+      REAL(wp) :: ATOL(N),RTOL(N)
       REAL(wp), DIMENSION(jpoce,N) :: Y, YNEW, DY1, DY, AK1, AK2
       REAL(wp), DIMENSION(jpoce,LFJAC,N) :: FJAC
       REAL(wp), DIMENSION(jpoce, LE, N)  :: E
@@ -463,7 +467,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       IMPLICIT REAL(wp) (A-H,O-Z)
       IMPLICIT INTEGER (I-N)
 
-      REAL(wp) :: ATOL(1),RTOL(1)
+      REAL(wp) :: ATOL(N),RTOL(N)
       REAL(wp), DIMENSION(jpoce,N) :: Y, YNEW, DY1, DY, AK1, AK2, AK3, AK4
       REAL(wp), DIMENSION(jpoce,LFJAC,N) :: FJAC
       REAL(wp), DIMENSION(jpoce, LE, N)  :: E
@@ -476,6 +480,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
 
       IF ( ln_timing ) CALL timing_start('ro3cor')
 
+
 ! ---- PREPARE BANDWIDTHS -----
        MLE=MLJAC
        MUE=MUJAC
@@ -486,6 +491,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
 ! *** *** *** *** *** *** ***
       CALL RODAS3 (A21,A31,A32,A41,A42,A43,C21,C31,C32,C41,C42,C43,  &
                 B1,B2,B3,B4,E1,E2,E3,E4,DGAMMA)
+
 
 ! --- INITIAL PREPARATIONS
       DO ji = 1, jpoce
@@ -507,6 +513,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
          ENDIF
       END DO
 
+
       ACCMASK(:) = ENDMASK(:)
 
       IF ( COUNT( ENDMASK(:) == 1 ) == jpoce ) THEN
@@ -515,12 +522,15 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       ENDIF
       IF ( COUNT( ERRMASK(:) == 1 ) > 0 ) GOTO 79
 
+
       CALL sed_func(N,Y,DY1,ACCMASK)
+
 
       WHERE ( ACCMASK(:) == 0 ) 
             NFCN(:)=NFCN(:)+1
             NJAC(:)=NJAC(:)+1
       END WHERE
+
 
 ! *** *** *** *** *** *** ***
 !  COMPUTATION OF THE JACOBIAN
@@ -550,6 +560,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
 !      IF (J.LE.N) GOTO 14
 ! 16   CONTINUE
    2  CONTINUE
+
 
 ! *** *** *** *** *** *** ***
 !  COMPUTE THE STAGES
@@ -751,7 +762,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       IMPLICIT REAL(wp) (A-H,O-Z)
       IMPLICIT INTEGER (I-N)
 
-      REAL(wp) :: ATOL(1),RTOL(1)
+      REAL(wp) :: ATOL(N),RTOL(N)
       REAL(wp), DIMENSION(jpoce,N) :: Y, YNEW, DY1, DY, AK1, AK2, AK3, AK4
       REAL(wp), DIMENSION(jpoce,N) :: AK5, AK6
       REAL(wp), DIMENSION(jpoce,LFJAC,N) :: FJAC

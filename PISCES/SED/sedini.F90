@@ -162,8 +162,7 @@ CONTAINS
       ALLOCATE( solcp(jpoce,jpksed,jpsol) )
       ALLOCATE( rainrg(jpoce,jpsol) )        ;  ALLOCATE( xirrigtrd(jpoce,jpwat) )
       ALLOCATE( xirrigtrdtmp(jpoce,jpwat) )
-      ALLOCATE( dzdep(jpoce) )
-      ALLOCATE( slatit(jpoce) )              ;  ALLOCATE( slongit(jpoce) )
+      ALLOCATE( dzdep(jpoce) )               ;  ALLOCATE( dzkbot(jpoce) )
       ALLOCATE( zkbot(jpoce) )               ;  ALLOCATE( db(jpoce,jpksed) )
       ALLOCATE( temp(jpoce) )                ;  ALLOCATE( salt(jpoce) )  
       ALLOCATE( seddiff(jpoce,jpksed,jpwat ) )  ;  ALLOCATE( irrig(jpoce, jpksed) )
@@ -340,9 +339,7 @@ CONTAINS
       ! Computation of 1D array of sediments points
       sedmask(:,:) = 0.0
       DO_2D( 0, 0, 0, 0 )
-         IF (  epkbot(ji,jj) > 0. ) THEN
-            sedmask(ji,jj) = 1.0
-         ENDIF
+         IF (  epkbot(ji,jj) > 0. )  sedmask(ji,jj) = 1.0
       END_2D
 
       IF (lwp) WRITE(numsed,*) ' '
@@ -354,8 +351,6 @@ CONTAINS
       dzkbot = PACK( epkbot, sedmask == 1.0 )
       dzkbot(1:jpoce) = dzkbot(1:jpoce) * 1.e+2
       zkbot   = PACK( gdepbot, sedmask == 1.0 )
-      slatit  = PACK( gphit(:,:), sedmask == 1.0 )
-      slongit = PACK( glamt(:,:), sedmask == 1.0 )
 
       ! Geometry and  constants 
       ! sediment layer thickness [cm]
@@ -497,8 +492,8 @@ CONTAINS
       ENDIF
 
       ! Namelist nam_diased
-      READ_NML_REF(numnamsed,nam_diased)
-      READ_NML_CFG(numnamsed,nam_diased)
+      READ_NML_REF(numnamsed,nam_trased)
+      READ_NML_CFG(numnamsed,nam_trased)
 
       DO jn = 1, jpsol
          sedtrcd(jn) = sedsol(jn)%snamesed
@@ -526,8 +521,8 @@ CONTAINS
       ENDIF
 
       ! Namelist nam_inorg
-      READ_NML_REF(numnamsed,nam_inorg)
-      READ_NML_CFG(numnamsed,nam_inorg)
+      READ_NML_REF(numnamsed,nam_diased)
+      READ_NML_CFG(numnamsed,nam_diased)
 
       DO jn = 1, jpdia2dsed
          seddia2d(jn) = seddiag2d(jn)%snamesed
@@ -651,11 +646,18 @@ CONTAINS
       READ_NML_REF(numnamsed,nam_rst)
       READ_NML_CFG(numnamsed,nam_rst)
 
+      cn_sedrst_in  = TRIM( cn_sedrst_indir)//'/'//TRIM(cn_sedrst_in)
+      cn_sedrst_out = TRIM( cn_sedrst_outdir)//'/'//TRIM(cn_sedrst_out)
+
       IF (lwp) THEN
          WRITE(numsed,*) ' namelist  nam_rst ' 
          WRITE(numsed,*) '  boolean term for restart (T or F) ln_rst_sed = ', ln_rst_sed 
+         WRITE(numsed,*) '  Name of input restart file if needed = ', TRIM( cn_sedrst_in ) 
+         WRITE(numsed,*) '  Name of output restart file if needed = ', TRIM( cn_sedrst_out ) 
          WRITE(numsed,*) ' '
       ENDIF
+
+      ncidrstsed = -1
 
    END SUBROUTINE sed_ini_nam
 

@@ -55,11 +55,6 @@ CONTAINS
 
       IF( ln_timing )  CALL timing_start('sed_co3')
 
-      IF( kt == nitsed000 ) THEN
-         IF (lwp) WRITE(numsed,*) ' sed_co3 : carbonate ion and proton concentration calculation  '
-         IF (lwp) WRITE(numsed,*) ' '
-      ENDIF
-
       DO jk = 1, jpksed
          DO ji = 1, jpoce
             zhinit(ji,jk)   = hipor(ji,jk) / densSW(ji)

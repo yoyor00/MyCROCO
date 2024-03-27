@@ -760,6 +760,7 @@ MODULE sedmat
        IF( ln_timing )  CALL timing_start('sed_mat_dsre')
 
        jn = nvar
+       xirrigtrd(:,jn) = 0.0_wp
 
        ! First step of BDF3
        psol1(:,:) = psol(:,:)
