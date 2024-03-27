@@ -78,9 +78,6 @@ CONTAINS
 #else
       CALL sed_wri
 #endif
-      IF( kt == nitsed000 ) THEN
-          CALL iom_close( numrsr )       ! close input tracer restart file
-      ENDIF
 
       ilc = 1+iic-nit000 ! number of time step since restart
       IF (iic > nit000 .AND. MOD(ilc-1,nitrst) == 0) CALL sed_rst_wri

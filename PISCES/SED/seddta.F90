@@ -59,6 +59,8 @@ CONTAINS
       REAL(wp) :: zfact, zdep
       REAL(wp) :: zzf0, zzf1, zzf2, zzf3, zzf4, zzf5, zzf6
 
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:) ::   zw2d
+
       !----------------------------------------------------------------------
 
       ! Initialization of sediment variable 
@@ -196,26 +198,74 @@ CONTAINS
       END DO
 
       IF( lk_iomput ) THEN
+          ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;  zw2d(:,:) = 0._wp
           IF( iom_use("sflxclay" ) ) THEN 
               zddust(:,:) = UNPACK( wacc(:), sedmask == 1.0, 0.0 )
               zddust(:,:) = dust(:,:) + zddust(:,:) / ( rday * 365.0 ) * por1(jpksed) * dens_sol(jsclay) / conv2
-              CALL iom_put( "sflxclay", zddust(:,:) * 1E3 / 1.E4 )
+              zw2d(A2D(0)) = zddust(A2D(0)) * 1E3 / 1.E4
+              CALL iom_put( "sflxclay", zw2d )
           ENDIF
-          IF( iom_use("sflxcal" ) )  CALL iom_put( "sflxcal", trc_data(:,:,14) )
-          IF( iom_use("sflxbsi" ) )  CALL iom_put( "sflxbsi", trc_data(:,:,12) )
-          IF( iom_use("sflxpoc" ) )  CALL iom_put( "sflxpoc", trc_data(:,:,13) )
-          IF( iom_use("OceNO3"  ) )  CALL iom_put( "OceNO3",  trc_data(:,:,jwno3) )
-          IF( iom_use("OceDIC"  ) )  CALL iom_put( "OceDIC",  trc_data(:,:,jwdic) )
-          IF( iom_use("OceALK"  ) )  CALL iom_put( "OceALK",  trc_data(:,:,jwalk) )
-          IF( iom_use("OceOXY"  ) )  CALL iom_put( "OceOXY",  trc_data(:,:,jwoxy) )
-          IF( iom_use("OceSIL"  ) )  CALL iom_put( "OceSIL",  trc_data(:,:,jwsil) )
-          IF( iom_use("OcePO4"  ) )  CALL iom_put( "OcePO4",  trc_data(:,:,jwpo4) )
-          IF( iom_use("OceNH4"  ) )  CALL iom_put( "OceNH4",  trc_data(:,:,jwnh4) )
-          IF( iom_use("OceSO4"  ) )  CALL iom_put( "OceSO4",  trc_data(:,:,jwso4) )
-          IF( iom_use("OceFE2"  ) )  CALL iom_put( "OceFE2",  trc_data(:,:,jwfe2) )
-          IF( iom_use("OceTEM"  ) )  CALL iom_put( "OceTEM",  trc_data(:,:,15) )
-          IF( iom_use("OceSAL"  ) )  CALL iom_put( "OceSAL",  trc_data(:,:,16) )
-          IF( iom_use("OceSFE"  ) )  CALL iom_put( "OceSFE",  trc_data(:,:,17) )
+          IF( iom_use("sflxcal" ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),14) 
+              CALL iom_put( "sflxcal", zw2d )
+          ENDIF
+          IF( iom_use("sflxbsi" ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),12) 
+              CALL iom_put( "sflxbsi", zw2d )
+          ENDIF
+          IF( iom_use("sflxpoc" ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),13) 
+              CALL iom_put( "sflxpoc", zw2d )
+          ENDIF
+          IF( iom_use("OceNO3"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwno3) 
+              CALL iom_put( "OceNO3", zw2d )
+          ENDIF
+          IF( iom_use("OceDIC"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwdic) 
+              CALL iom_put( "OceDIC", zw2d )
+          ENDIF
+          IF( iom_use("OceALK"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwalk) 
+              CALL iom_put( "OceALK", zw2d )
+          ENDIF
+          IF( iom_use("OceOXY"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwoxy) 
+              CALL iom_put( "OceOXY", zw2d )
+          ENDIF
+          IF( iom_use("OceSIL"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwsil) 
+              CALL iom_put( "OceSIL", zw2d )
+          ENDIF
+          IF( iom_use("OcePO4"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwpo4) 
+              CALL iom_put( "OcePO4", zw2d )
+          ENDIF
+          IF( iom_use("OceNH4"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwnh4) 
+              CALL iom_put( "OceNH4", zw2d )
+          ENDIF
+          IF( iom_use("OceSO4"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwso4) 
+              CALL iom_put( "OceSO4", zw2d )
+          ENDIF
+          IF( iom_use("OceFE2"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),jwfe2) 
+              CALL iom_put( "OceFE2", zw2d )
+          ENDIF
+          IF( iom_use("OceTEM"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),15) 
+              CALL iom_put( "OceTEM", zw2d )
+          ENDIF
+          IF( iom_use("OceSAL"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),16) 
+              CALL iom_put( "OceSAL", zw2d )
+          ENDIF
+          IF( iom_use("OceSFE"  ) )  THEN
+              zw2d(A2D(0)) = trc_data(A2D(0),17) 
+              CALL iom_put( "OceSFE", zw2d )
+          ENDIF
+          DEALLOCATE( zw2d )
       ENDIF
 
       IF( ln_timing )  CALL timing_stop('sed_dta')

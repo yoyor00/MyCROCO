@@ -27,7 +27,9 @@ MODULE sedrst
    PUBLIC sed_rst_read
 
    !!* Substitution
+      !! * Substitutions
 #  include "ocean2pisces.h90"
+#  include "do_loop_substitute.h90"
 
 CONTAINS         
 
@@ -41,8 +43,11 @@ CONTAINS
 #ifdef NC4PAR
       &      , csize,cmode           &
 #endif
-      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
-      CHARACTER(len=20) :: cltra, cltrs, cltru
+      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc, jn
+#ifdef USE_CALENDAR
+      CHARACTER (len=19)    :: cdate,tool_sectodat
+#endif
+      CHARACTER(len=20) :: cltra
 
 !
 ! Put time record index into file name. In  the case when model
@@ -56,13 +61,23 @@ CONTAINS
 ! where, 1 =< record_within_the_file =< records_per_file, so that
 ! total_record changes continuously throughout the sequence of files.
 !
-      ierr = 0
-      lstr = lenstr(cn_sedrst_out)
-      IF (nrpfrst > 0) THEN
-         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
-         call insert_time_index (cn_sedrst_out, lstr, lvar, ierr)
-         IF (ierr .NE. 0) GOTO 99
-      ENDIF
+      ierr=0
+      lstr=lenstr(cn_sedrst_out)
+      if (nrpfrst.gt.0) then
+        lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
+        call insert_time_index (cn_sedrst_out, lstr, lvar, ierr)
+#ifdef USE_CALENDAR
+        if (nrpfrst.eq.1) then
+          cdate = tool_sectodat(time)
+          cn_sedrst_out=TRIM(cn_sedrst_out(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
+          cn_sedrst_out=TRIM(cn_sedrst_out)//cdate(1:2)//cdate(12:13)//cdate(15:16)
+          cn_sedrst_out=TRIM(cn_sedrst_out)//cdate(18:19)//'.nc'
+          lstr=lenstr(cn_sedrst_out)
+        end if
+#endif
+        if (ierr .ne. 0) goto 99
+      endif
+
 !
 ! Decide whether to create a new file, or open existing one.
 ! Overall the whole code below is organized into 3-way switch,
@@ -90,7 +105,7 @@ CONTAINS
 ! file is prepared for appending hew data; if it fails, a new file
 ! is created.
 !
-      create_new_file = ldefhis
+      create_new_file = .true.
       IF (ncid .NE. -1) create_new_file = .false.
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       IF (mynode > 0) create_new_file = .false.
@@ -102,7 +117,7 @@ CONTAINS
   10  if (create_new_file) then
 
 #ifndef NC4PAR
-        ierr  = nf_create(TRIM(cn_sedrst_out),NF_CLOBBER, ncid)
+        ierr  = nf_create(cn_sedrst_out(1:lstr),NF_CLOBBER, ncid)
 #else
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
@@ -171,7 +186,6 @@ CONTAINS
         ierr = nf_put_att_text(ncid, rstTime, 'field',     lvar,      &
         &                                  vname(4,indxTime)(1:lvar))
 
-        CALL nf_add_attribute(ncid, rstTime, vname(:,indxTime), 5, NF_DOUBLE, ierr)
 !
 ! Time2.
 !
@@ -191,7 +205,6 @@ CONTAINS
         ierr = nf_put_att_text(ncid, rstTime2, 'field',     lvar,      &
         &                                  vname(4,indxTime2)(1:lvar))
 
-        CALL nf_add_attribute(ncid, rstTime2, vname(:,indxTime2), 5, NF_DOUBLE, ierr)
 !
 ! Tracer variables.
 !
@@ -206,23 +219,7 @@ CONTAINS
            &                     lvar, TRIM(sedtrcl(itrc)))
            lvar = lenstr(TRIM(sedtrcu(itrc)))
            ierr = nf_put_att_text (ncid, rstsed(itrc), 'units', lvar, TRIM(sedtrcu(itrc)))
-           CALL nf_add_attribute(ncid, rstsed(itrc), vname(:,itrc), 5, NF_DOUBLE,ierr)
         END DO
-
-        cltra = "SedpH"
-        cltrs = "PH"
-        cltru = "-" 
-
-        ierr = nf_def_var (ncid, cltra, NF_DOUBLE, 4, r3dgrd, rstph)
-#ifdef NC4PAR
-        ierr = nf_var_par_access(ncid,rstph,nf_collective)
-#endif
-        lvar = lenstr(cltrs)
-        ierr = nf_put_att_text (ncid, rstph, 'long_name',    &
-        &                     lvar, cltrs )
-        lvar = lenstr(cltru)
-        ierr = nf_put_att_text (ncid, rstph, 'units', lvar, cltru )
-        CALL nf_add_attribute(ncid, rstph, vname(:,1), 5, NF_DOUBLE,ierr)
 
         DO itrc = 1, jpsol
            cltra = "burial"//TRIM(sedtrcd(itrc))
@@ -235,7 +232,6 @@ CONTAINS
            &                     lvar, TRIM(sedtrcl(itrc)))
            lvar = lenstr(TRIM(sedtrcu(itrc)))
            ierr = nf_put_att_text (ncid, rstsol(itrc), 'units', lvar, TRIM(sedtrcu(itrc)))
-           CALL nf_add_attribute(ncid, rstsol(itrc), vname(:,itrc), 5, NF_DOUBLE,ierr)
         END DO
 !
 ! Leave definition mode.                  Also initialize record
@@ -349,13 +345,6 @@ CONTAINS
           ENDIF
        END DO
 !
-       cltra="SedpH"
-       ierr = nf_inq_varid (ncid, TRIM(cltra), rstph)
-       IF (ierr .NE. nf_noerr) THEN
-          WRITE(stdout,1) TRIM(cltra), cn_sedrst_out(1:lstr)
-          GOTO 99                                       !--> ERROR
-       ENDIF
-
        DO itrc = 1, jpsol
           cltra = "burial"//TRIM(sedtrcd(itrc))
           ierr = nf_inq_varid (ncid, cltra, rstsol(itrc))
@@ -392,7 +381,8 @@ CONTAINS
       INTEGER :: ierr, record, lstr, lvar, lenstr   &
       &  , start(2), count(2), ibuff(4), nf_fwrite, itrc  
       INTEGER :: ji, jj, jk, jn
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: ztrcsedtmp, ztrcsedi
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: ztrcsedtmp
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: ztrcsedi
       REAL(wp), DIMENSION(jpoce,jpksed)   :: zdta
       CHARACTER(len=20) :: cltra
 
@@ -422,7 +412,7 @@ CONTAINS
 !
       CALL def_rst_sed (ncidrstsed, nrecrst, ierr)
       IF (ierr .NE. nf_noerr) GOTO 99
-      lstr = lenstr(rstname)
+      lstr = lenstr(cn_sedrst_out)
 !                                            !!! WARNING: Here it is
 ! Set record within the file.                !!! assumed that global
 !                                            !!! restart record index 
@@ -469,103 +459,53 @@ CONTAINS
 ! Tracer variables.
 !
 !
-      ALLOCATE(ztrcsedtmp(GLOBAL_2D_ARRAY,jpksed,jptrased), ztrcsedi(PRIV_2D_BIOARRAY,jpksed,jptrased) )
-      ztrcsedi(:,:,:,:)   = 0.0
+      ALLOCATE(ztrcsedtmp(GLOBAL_2D_ARRAY,jpksed,jptrased), ztrcsedi(PRIV_2D_BIOARRAY,jpksed) )
+      ztrcsedi(:,:,:)   = 0.0
       ztrcsedtmp(:,:,:,:) = 0.0
 !
-      ! Back to 2D geometry
-      DO itrc = 1, jpsol
-         DO jk = 1, jpksed
-            ztrcsedi(:,:,jk,itrc) = UNPACK( solcp(:,jk,itrc), sedmask == 1.0, 0.0 )
-         END DO
-      END DO
-      !
-      DO itrc = 1, jpwat
-         DO jk = 1, jpksed
-            ztrcsedi(:,:,jk,itrc) = UNPACK( pwcp(:,jk,itrc), sedmask == 1.0, 0.0 )
-         END DO
-      END DO
-
-      DO itrc = 1, jptrased
-         DO jk = 1, jpksed
-            DO jj = 1, LOCALMM
-               DO ji = 1, LOCALLM
-                  ztrcsedtmp(ji,jj,jk,itrc) = ztrcsedi(ji,jj,jk,itrc)
-               END DO
+     DO jn = 1, jptrased
+        IF ( jn <= jpsol ) THEN
+            DO jk = 1, jpksed
+               ztrcsedi(:,:,jk) = UNPACK( solcp(:,jk,jn), sedmask == 1.0, 0.0 )
             END DO
-         END DO
+         ELSE
+            DO jk = 1, jpksed
+               ztrcsedi(:,:,jk) = UNPACK( pwcp(:,jk,jn-jpsol), sedmask == 1.0, 0.0 )
+            END DO
+         ENDIF
+         ztrcsedtmp(A2D(0),:,jn) = ztrcsedi(A2D(0),:)
       END DO
 
-      DO itrc = 1, jptrased
-         cltra = TRIM(sedtrcd(itrc))
-         ierr = nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,itrc), ncidrstsed,   &
-         &                             rstsed(itrc), record, r3dsed)
+      DO jn = 1, jptrased
+         cltra = TRIM(sedtrcd(jn))
+         ierr = nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,jn), ncidrstsed,   &
+         &                             rstsed(jn), record, r3dsed)
         IF (ierr .NE. nf_noerr) THEN
           WRITE(stdout,1) cltra, record, ierr
           GOTO 99                                         !--> ERROR
         ENDIF
-        END DO
+      END DO
 
       DEALLOCATE(ztrcsedtmp, ztrcsedi )
 !
 ! Additional variables.
 !
 
-      ALLOCATE(ztrcsedtmp(GLOBAL_2D_ARRAY,jpksed,1), ztrcsedi(PRIV_2D_BIOARRAY,jpksed,1) )
-
-      ztrcsedi(:,:,:,:)   = 0.0
-      ztrcsedtmp(:,:,:,:) = 0.0
-
-      ! pH
-      DO jk = 1, jpksed
-         DO ji = 1, jpoce
-            zdta(ji,jk) = -LOG10( hipor(ji,jk) / ( densSW(ji) + rtrn ) + rtrn )
-         ENDDO
-      ENDDO
-
-      DO jk = 1, jpksed
-         ztrcsedi(:,:,jk,1) = UNPACK( zdta(:,jk), sedmask == 1.0, 0.0 )
-      END DO
-
-      DO jk = 1, jpksed
-         DO jj = 1, LOCALMM
-            DO ji = 1, LOCALLM
-               ztrcsedtmp(ji,jj,jk,1) = ztrcsedi(ji,jj,jk,1)
-            END DO
-         END DO
-      END DO
-
-      cltra = "SedPH"
-      ierr=nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,itrc), ncidrstsed,   &
-         &                             rstph, record, r2dsed)
-       IF (ierr .NE. nf_noerr) THEN
-          WRITE(stdout,1) cltra, record, ierr
-          GOTO 99                                         !--> ERROR
-       ENDIF
-
-      DEALLOCATE(ztrcsedtmp, ztrcsedi )
-
-      ALLOCATE(ztrcsedtmp(GLOBAL_2D_ARRAY,1,jpsol), ztrcsedi(PRIV_2D_BIOARRAY,1,jpsol) )
-      ztrcsedi(:,:,:,:)   = 0.0
+      ALLOCATE(ztrcsedtmp(GLOBAL_2D_ARRAY,1,jpsol), ztrcsedi(PRIV_2D_BIOARRAY,1) )
+      ztrcsedi(:,:,:)   = 0.0
       ztrcsedtmp(:,:,:,:) = 0.0
 !
       ! Back to 2D geometry
-      DO itrc = 1, jpsol
-         ztrcsedi(:,:,1,itrc) = UNPACK( burial(:,itrc), sedmask == 1.0, 0.0 )
+      DO jn = 1, jpsol
+         ztrcsedi(:,:,1) = UNPACK( burial(:,jn), sedmask == 1.0, 0.0 )
+         ztrcsedtmp(A2D(0),1,jn) = ztrcsedi(A2D(0),1)
       END DO
       !
-      DO itrc = 1, jpsol
-         DO jj = 1, LOCALMM
-            DO ji = 1, LOCALLM
-               ztrcsedtmp(ji,jj,1,itrc) = ztrcsedi(ji,jj,1,itrc)
-            END DO
-         END DO
-      END DO
 
-      DO itrc = 1, jpsol
-         cltra = "burial"//TRIM(sedtrcd(itrc))
-         ierr = nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,itrc), ncidrstsed,   &
-         &                             rstsed(itrc), record, r3dsol)
+      DO jn = 1, jpsol
+         cltra = "burial"//TRIM(sedtrcd(jn))
+         ierr = nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,jn), ncidrstsed,   &
+         &                             rstsed(jn), record, r3dsed)
         IF (ierr .NE. nf_noerr) THEN
           WRITE(stdout,1) cltra, record, ierr
           GOTO 99                                         !--> ERROR
@@ -814,46 +754,6 @@ CONTAINS
 !
 ! Additional variables.
 !
-      ALLOCATE(ztrcsedtmp(GLOBAL_2D_ARRAY,jpksed,1), zdta(PRIV_2D_BIOARRAY,jpksed,1) )
-
-      zdta(:,:,:,1) = 0.0
-      ztrcsedtmp(:,:,:,1) = 0.0
-
-      cltra="SedpH"
-      ierr = nf_inq_varid (ncid, TRIM(cltra), varid)
-      IF (ierr == nf_noerr) THEN
-        ierr = nf_fread (ztrcsedtmp(START_2D_ARRAY,jpksed,1), ncid,  varid,  &
-        &                                               indx, r2dsed)
-        IF (ierr .NE. nf_noerr) THEN
-          MPI_master_only WRITE(stdout,2) TRIM(cltra), indx, TRIM(cn_sedrst_in)
-          GOTO 99                                       !--> ERROR
-        ENDIF
-      ELSE
-         MPI_master_only WRITE(stdout,3) TRIM(cltra), TRIM(cn_sedrst_in)
-      ENDIF
-
-      DO jk = 1, jpksed
-         DO jj = 1, LOCALMM
-            DO ji = 1, LOCALLM
-               zdta(ji,jj,jk,1) = ztrcsedtmp(ji,jj,jk,1)
-            END DO
-         END DO
-      END DO
-
-      zhipor(:,:) = 0.
-      DO jk = 1, jpksed
-         zhipor(:,jk) = PACK(zdta(:,:,jk,1), sedmask == 1.0 )
-      END DO
-
-      ! Initialization of [h+] in mol/kg
-      DO jk = 1, jpksed
-         DO ji = 1, jpoce
-            hipor (ji,jk) = 10.**( -1. * zhipor(ji,jk) )
-         ENDDO
-      ENDDO
-
-      DEALLOCATE( zdta, ztrcsedtmp )
-
       ALLOCATE(ztrcsedtmp(GLOBAL_2D_ARRAY,1,jpsol), zdta(PRIV_2D_BIOARRAY,1,jpsol) )
 
       zdta(:,:,:,:) = 0.0
@@ -863,7 +763,7 @@ CONTAINS
         cltra = "burial"//TRIM(sedtrcd(itrc))
         ierr = nf_inq_varid (ncid, cltra, varid)
         IF (ierr == nf_noerr) THEN
-          ierr = nf_fread (ztrcsedtmp(START_2D_ARRAY,1,itrc), ncid,  varid, indx, r3dsol)
+          ierr = nf_fread (ztrcsedtmp(START_2D_ARRAY,1,itrc), ncid,  varid, indx, r3dsed)
           IF (ierr .NE. nf_noerr) THEN
             MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_sedrst_in)
             GOTO 99                                       !--> ERROR

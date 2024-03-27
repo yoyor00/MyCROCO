@@ -51,18 +51,21 @@ CONTAINS
       REAL(wp), DIMENSION(jpoce, jptrased+1) :: zflx
       REAL(wp), DIMENSION(A2D(0), jpksed)   :: trcsedi
       REAL(wp), DIMENSION(A2D(0)) :: flxsedi2d
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:)     :: zdta
+      REAL(wp), DIMENSION(A2D(0), jpksed) :: zw3d
+      REAL(wp), DIMENSION(jpoce,jpksed) :: zdta
+      !
+      REAL(wp), DIMENSION(GLOBAL_2D_ARRAY) :: zw2d_out
+      REAL(wp), DIMENSION(GLOBAL_2D_ARRAY,jpksed) :: zw3d_out
       !!-------------------------------------------------------------------
 
       ! 1.  Initilisations
       ! -----------------------------------------------------------------
       IF( ln_timing )  CALL timing_start('sed_wri')
 !
-      IF (lwp) WRITE(numsed,*) ' '
-      IF (lwp) WRITE(numsed,*) 'sed_wri '
-      IF (lwp) WRITE(numsed,*) ' '
-      
+      !
+      zw3d_out(:,:,:) = 0._wp 
+      zw2d_out(:,:)   = 0._wp 
+
       ! Initialize variables
       ! --------------------
       zinvdtsed          = 1.0_wp / dtsed
@@ -101,7 +104,8 @@ CONTAINS
                   trcsedi(:,:,jk) = UNPACK( pwcp(:,jk,jn-jpsol)*1E6, sedmask == 1.0, 0.0 )
                END DO
             ENDIF
-            CALL iom_put( cltra, trcsedi(:,:,:) )
+            zw3d_out(A2D(0),:) = trcsedi(A2D(0),:)
+            CALL iom_put( cltra, zw3d_out )
          ENDIF
       END DO
 
@@ -109,57 +113,51 @@ CONTAINS
          cltra = TRIM( seddia2d(jn) ) ! short title for 2D diagnostic
          IF ( iom_use( cltra ) ) THEN
             flxsedi2d(:,:) = UNPACK( zflx(:,jn), sedmask == 1.0, 0.0 )
-            CALL iom_put( cltra, flxsedi2d(:,:) )
+            zw2d_out(A2D(0)) = flxsedi2d(A2D(0))
+            CALL iom_put( cltra, zw2d_out )
          ENDIF
       END DO
 
       IF ( iom_use( "dzdep" ) ) THEN
          zflx(:,1) = dzdep(:) * zinvdtsed
          flxsedi2d(:,:) = UNPACK( zflx(:,1), sedmask == 1.0, 0.0 )
-         CALL iom_put( "dzdep", flxsedi2d(:,:) )
+         zw2d_out(A2D(0)) = flxsedi2d(A2D(0))
+         CALL iom_put( "dzdep", zw2d_out )
       ENDIF
 
       IF ( iom_use( "Rstepros" ) ) THEN
          flxsedi2d(:,:) = UNPACK( rstepros(:), sedmask == 1.0, 0.0 )
-         CALL iom_put( "Rstepros", flxsedi2d(:,:) ) 
+         zw2d_out(A2D(0)) = flxsedi2d(A2D(0))
+         CALL iom_put( "Rstepros", zw2d_out )
       ENDIF
 
-      IF ( iom_use( "SaturCO3" ) .OR. iom_use( "SedCO3por" ) .OR. iom_use( "SedpH" ) )  THEN
-
-         ALLOCATE( zw3d(jpi,jpj,jpksed) )
-      ENDIF
       IF ( iom_use( "SaturCO3" ) ) THEN
-
          DO jk = 1, jpksed
             DO ji = 1, jpoce
                saturco3(ji,jk) = (1.0 - co3por(ji,jk) /  co3sat(ji) )
             END DO
             zw3d(:,:,jk) = UNPACK( saturco3(:,jk), sedmask == 1.0, 0.0)
          END DO
-         CALL iom_put( "SaturCO3", zw3d )
+         zw3d_out(A2D(0),:) = zw3d(A2D(0),:)
+         CALL iom_put( "SaturCO3", zw3d_out )
       ENDIF
       IF ( iom_use( "SedCO3por" ) ) THEN
          DO jk = 1, jpksed
             zw3d(:,:,jk) = UNPACK( co3por(:,jk), sedmask == 1.0, 0.0)
          END DO
-         CALL iom_put( "SedCO3por", zw3d )
+         zw3d_out(A2D(0),:) = zw3d(A2D(0),:)
+         CALL iom_put( "SedCO3por", zw3d_out )
       ENDIF
       IF ( iom_use( "SedpH" ) ) THEN
-         ALLOCATE( zdta(jpoce,jpksed) )
-
          DO jk = 1, jpksed
             DO ji = 1, jpoce
                zdta(ji,jk) = -LOG10( hipor(ji,jk) / ( densSW(ji) + rtrn ) + rtrn )
             END DO
             zw3d(:,:,jk) = UNPACK( zdta(:,jk), sedmask == 1.0, 0.0)
          END DO
-         CALL iom_put( "SedpH", zw3d )
-         DEALLOCATE( zdta )
+         zw3d_out(A2D(0),:) = zw3d(A2D(0),:)
+         CALL iom_put( "SedpH", zw3d_out )
       ENDIF
-
-      IF ( iom_use( "SaturCO3" ) .OR. iom_use( "SedCO3por" ) .OR. iom_use( "SedpH" ) )  &
-         &     DEALLOCATE( zw3d )
-
 
       IF( ln_timing )  CALL timing_stop('sed_wri')
 

@@ -71,7 +71,7 @@ MODULE par_sed
    INTEGER, PARAMETER ::  &
       r2dsed  = 0    ,    &
       r3dsol  = 17,    &
-      r3dsed  = 18
+      r3dsed  = 20
 
 !   REAL(wp), PUBLIC  :: rtrn  = 0.5 * EPSILON( 1.e0 )    !: truncation value
 

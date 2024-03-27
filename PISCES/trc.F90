@@ -142,6 +142,12 @@ MODULE trc
    !
    ! Vertical axis used in the sediment module
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   profsed
+
+   CHARACTER(len = 80) , PUBLIC   ::  cn_pisrst_in   !: suffix of pass. tracer restart name (input)
+   CHARACTER(len = 256), PUBLIC   ::  cn_pisrst_indir  !: restart input directory
+   CHARACTER(len = 80) , PUBLIC   ::  cn_pisrst_out  !: suffix of pass. tracer restart name (output)
+   CHARACTER(len = 256), PUBLIC   ::  cn_pisrst_outdir  !: restart output directory
+
 !$AGRIF_DO_NOT_TREAT
    ! External data structure of BDY for TOP. Available elements: cn_obc, ll_trc, trcnow, dmp
 !   TYPE(OBC_DATA), PUBLIC, ALLOCATABLE, DIMENSION(:,:), TARGET ::   trcdta_bdy   !: bdy external data (local process)
