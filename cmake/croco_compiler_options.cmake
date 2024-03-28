@@ -88,9 +88,10 @@ macro(croco_tune_compile_flags)
 	#######################################################
 	# Assign default not to let cmake using -O3 which is default
 	list(JOIN CROCO_FORTRAN_FLAGS " " CROCO_FORTRAN_FLAGS_STR)
+	list(JOIN CROCO_OPTIMIZE_LEVEL " " CROCO_OPTIMIZE_LEVEL_STR)
 	if (CMAKE_Fortran_FLAGS STREQUAL "")
-		set(CMAKE_Fortran_FLAGS "-DNDEBUG ${CROCO_OPTIMIZE_LEVEL}")
+		set(CMAKE_Fortran_FLAGS "-DNDEBUG ${CROCO_OPTIMIZE_LEVEL_STR}")
 	endif()
-	set(CMAKE_Fortran_FLAGS_RELEASE "-DNDEBUG ${CROCO_OPTIMIZE_LEVEL}")
-	set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "-DNDEBUG -g ${CROCO_OPTIMIZE_LEVEL}")
+	set(CMAKE_Fortran_FLAGS_RELEASE "-DNDEBUG ${CROCO_OPTIMIZE_LEVEL_STR}")
+	set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "-DNDEBUG -g ${CROCO_OPTIMIZE_LEVEL_STR}")
 endmacro()
