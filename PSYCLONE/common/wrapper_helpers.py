@@ -48,7 +48,7 @@ def get_rules_for_file(source_file: str) -> dict:
     file_name = os.path.basename(source_file)
 
     # calc cleaned file name (without .no-acc.cpp.mpc.......)
-    file_name_simple = simplify_file_name(file_name)
+    file_name_simple = simplify_file_name(file_name).replace('.F90', '.F')
 
     # default
     rule = {

@@ -29,6 +29,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/croco_macros.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/croco_macros_psyclone.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/croco_macros_agrif.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/croco_compiler_options.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/croco_macros_twin_checker.cmake)
 
 ###########################################################
 # Handle configuration

@@ -22,3 +22,6 @@ set(sources_from_malt ./from-malt/SymbolSolver.cpp
     ./from-malt/iniparser/src/dictionary.c
     ./from-malt/iniparser/src/iniparser.c)
 add_library(twin_checker SHARED twin_checker.cpp ${sources_from_malt})
+
+add_executable(test_twin_checker test_twin_checker.cpp)
+target_link_libraries(test_twin_checker twin_checker)

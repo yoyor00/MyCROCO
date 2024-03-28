@@ -50,7 +50,10 @@ if __name__ == '__main__':
         if transformation_script is not None:
             # Generate the dummy version to be able to diff easily to see what we injected
             # Remark:  This is only for debugging purpose
-            psyclone_dummy_source_file = source_file.replace(".F", ".psyclone.dummy.F90")
+            if ".F90" in source_file:
+                psyclone_dummy_source_file = source_file.replace(".F90", ".psyclone.dummy.F90")
+            else:
+                psyclone_dummy_source_file = source_file.replace(".F", ".psyclone.dummy.F90")
             subprocess.run([
                             'psyclone',
                             '-api', 'nemo',
@@ -61,7 +64,10 @@ if __name__ == '__main__':
                         check=True)
 
             # run psyclone
-            psyclone_source_file = source_file.replace(".F", ".psyclone.F90")
+            if ".F90" in source_file:
+                psyclone_source_file = source_file.replace(".F90", ".psyclone.F90")
+            else:
+                psyclone_source_file = source_file.replace(".F", ".psyclone.F90")
             subprocess.run([
                             'psyclone',
                             '-api', 'nemo',

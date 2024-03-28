@@ -137,22 +137,29 @@ function(croco_psyclone_twin_checker list_to_update)
 
 		# set
 		set(twin_script ${CMAKE_SOURCE_DIR}/TWINCHECKER/twin_psyclone_script.py)
+		set(twin_config ${CMAKE_SOURCE_DIR}/TWINCHECKER/config.jsonc)
 
-		# set filteres
+		# simplify names
+		# extract base name
 		get_filename_component(oldfile_fname ${oldfile} NAME)
-		set(allowed_files step2d.cpp.mpc.F zetabc.cpp.mpc.F u2dbc.cpp.mpc.F v2dbc.cpp.mpc.F step3d_t.cpp.mpc.F t3dbc.cpp.mpc.F step3d_uv2.cpp.mpc.F step3d_uv1.cpp.mpc.F rhs3d.cpp.mpc.F pre_step3d.cpp.mpc.F u3dbc.cpp.mpc.F v3dbc.cpp.mpc.F t3dmix.cpp.mpc.F wvlcty.cpp.mpc.F setup_grid1.cpp.mpc.F setup_grid2.cpp.mpc.F rho_eos.cpp.mpc.F prsgrd.cpp.mpc.F omega.cpp.mpc.F grid_stiffness.cpp.mpc.F get_stflux.cpp.mpc.F get_vbc.cpp.mpc.F diag.cpp.mpc.F analytical.cpp.mpc.F ana_initial.cpp.mpc.F get_srflux.cpp.mpc.F ana_grid.cpp.mpc.F)
-		set(allowed_files ${allowed_files} set_avg.cpp.mpc.F set_bio_diags_avg.cpp.mpc.F set_cycle.cpp.mpc.F set_depth.cpp.mpc.F set_diags_avg.cpp.mpc.F set_diags_eddy_avg.cpp.mpc.F set_diags_ek_avg.cpp.mpc.F set_diags_ek.cpp.mpc.F set_diagsM_avg.cpp.mpc.F set_diags_pv_avg.cpp.mpc.F set_diags_pv.cpp.mpc.F set_diags_vrt_avg.cpp.mpc.F set_diags_vrt.cpp.mpc.F set_nudgcof.cpp.mpc.F set_nudgcof_fine.cpp.mpc.F set_scoord.cpp.mpc.F set_surf_avg.cpp.mpc.F set_weights.cpp.mpc.F)
-		set(allowed_files ${allowed_files} init_arrays.cpp.mpc.F)
-		#set(allowed_files omega.cpp.mpc.F)
-		#set(allowed_files analytical.cpp.mpc.F)
+		string(REPLACE "." ";" simplified_name_parts ${oldfile_fname})
+		list(GET simplified_name_parts 0 simplified_name)
+		set(simplified_name ${simplified_name}.F)
+
+		# get list of files to treat
+		exec_program(${CMAKE_SOURCE_DIR}/TWINCHECKER/twin_checker_extr_file_list.py ARGS ${CMAKE_SOURCE_DIR}/TWINCHECKER/config.jsonc OUTPUT_VARIABLE allow_files_str)
+		string(REPLACE " " ";" allow_files ${allow_files_str})
 
 		# build command
-		if (${oldfile_fname} IN_LIST allowed_files)
+		if (${simplified_name} IN_LIST allowed_files)
+			if (NOT simplified_name IN_LIST allow_files_2)
+				message(FALTA "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+			endif()
 			add_custom_command(
 				OUTPUT ${newfile_twin_check}
 				COMMAND ${twin_script} ${oldfile} --output ${newfile_twin_check}
 				MAIN_DEPENDENCY ${oldfile}
-				DEPENDS ${twin_script}
+				DEPENDS ${twin_script} ${twin_config}
 				VERBATIM
 			)
 		else()

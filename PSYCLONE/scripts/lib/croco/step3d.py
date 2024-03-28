@@ -17,6 +17,7 @@ from ..extensions import acc
 from ..extensions import kernels
 from ..extensions import scratch
 from ..extensions import loops
+from .psyacc import sync_twin_checker
 # poseidon
 from ..poseidon.dsl.helper import *
 from ..extensions import loops
@@ -128,3 +129,6 @@ def apply_step3d_routine_trans(routine: Routine, container: Container, dump_snip
         acc.set_private_on_loop(routine, 'j', ['dc','fc'])
     if routine.name == "prsgrd_tile":
         acc.set_private_on_loop(routine, 'i', ['dz1d','dr1d'])
+
+    ####################################################################
+    sync_twin_checker(routine)

@@ -165,6 +165,7 @@ void TwinAppChecker::meetup(void)
         shfd = shm_open(this->name.c_str(), O_RDWR, 0666);
         if (shfd < 0)
             throw std::runtime_error(std::string("Fail to open shm file : ") + this->name + " : " + std::string(std::strerror(errno)));
+        shm_unlink(this->name.c_str());
     }
 
     //mmap it
@@ -184,7 +185,7 @@ void TwinAppChecker::check(bool & value, const TwinLocationInfos & infos, bool f
 {
     bool reportError = (fixable || this->stopOnFirstError);
     bool masterValue = this->checkGeneric(value, "%B", this->channelMeta->bools, infos, reportError);
-    if (masterValue != value)
+    if (masterValue != value && fixable)
         value = masterValue;
 }
 
@@ -192,7 +193,7 @@ void TwinAppChecker::check(int & value, const TwinLocationInfos & infos, bool fi
 {
     bool reportError = (fixable || this->stopOnFirstError);
     int masterValue = this->checkGeneric(value, "%d", this->channelMeta->integers, infos, reportError);
-    if (masterValue != value)
+    if (masterValue != value && fixable)
         value = masterValue;
 }
 
@@ -204,7 +205,7 @@ void TwinAppChecker::check(float & value, const TwinLocationInfos & infos, bool 
         fprintf(stderr, "Get NaN !\n");
         abort();
     }
-    if (masterValue != value)
+    if (masterValue != value && fixable)
         value = masterValue;
 }
 
@@ -216,7 +217,7 @@ void TwinAppChecker::check(double & value, const TwinLocationInfos & infos, bool
         fprintf(stderr, "Get NaN !\n");
         abort();
     }
-    if (masterValue != value)
+    if (masterValue != value && fixable)
         value = masterValue;
 }
 
@@ -289,7 +290,7 @@ twin::TwinAppChecker * twin_init(void)
     twin::TwinAppChecker * twin = new twin::TwinAppChecker(meeting_point, name, twin::TWIN_AUTO);
     //twin->enableLoggin();
     //twin->enableStopOnFirstError();
-    //twin->enableResoveStack();
+    //twin->enableResolveStack();
 
     //ok
     return twin;
@@ -320,7 +321,7 @@ void twin_check_bool_fixable(int * value, const char * equation, size_t equation
     twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
 
     //check
-    gbl_twin_state->check(*value, infos);
+    gbl_twin_state->check(*value, infos, true);
 }
 
 void twin_check_bool_array(int * values, int count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
@@ -374,7 +375,7 @@ void twin_check_float_fixable(float * value, const char * equation, size_t equat
     twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
 
     //check
-    gbl_twin_state->check(*value, infos);
+    gbl_twin_state->check(*value, infos, true);
 }
 
 void twin_check_float_array(float * values, int count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
@@ -428,7 +429,7 @@ void twin_check_double_fixable(double * value, const char * equation, size_t equ
     twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
 
     //check
-    gbl_twin_state->check(*value, infos);
+    gbl_twin_state->check(*value, infos, true);
 }
 
 void twin_check_double_array(double * values, int count, const char * equation, size_t equation_size, int64_t location_id, int source_line)
@@ -482,7 +483,7 @@ void twin_check_int_fixable(int * value, const char * equation, size_t equation_
     twin::TwinLocationInfos infos(equation, equation_size, location_id, source_line);
 
     //check
-    gbl_twin_state->check(*value, infos);
+    gbl_twin_state->check(*value, infos, true);
 }
 
 void twin_check_integer_array(int * values, int count, const char * equation, size_t equation_size, int64_t location_id, int source_line)

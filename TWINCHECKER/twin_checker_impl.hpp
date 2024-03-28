@@ -32,10 +32,11 @@ T TwinAppChecker::checkGenericSingleValue(T masterValue, T slaveValue, T value, 
 {
     //both check
     T result = masterValue;
-    if (masterValue != slaveValue) {
+    bool tooLargeGap = (fabs(masterValue - slaveValue) > 1e-07);
+    if (masterValue != slaveValue || tooLargeGap) {
         char message[4096];
-        char currentExe[4096];
-        int status = readlink("/proc/self/exe", currentExe, sizeof(currentExe));
+        static char currentExe[4096];
+        static int status = readlink("/proc/self/exe", currentExe, sizeof(currentExe));
         assert(status > 0);
         currentExe[status] = '\0';
         T delta = slaveValue - masterValue;
@@ -43,10 +44,11 @@ T TwinAppChecker::checkGenericSingleValue(T masterValue, T slaveValue, T value, 
         char valueStrMaster[256];
         char valueStrSlave[256];
         char valueDiff[256];
+        memset(valueDiff, 0, 256);
         memset(valueStrMaster, 0, 256);
         memset(valueStrSlave, 0, 256);
-        snprintf(valueStrMaster, 256, valueFormat, masterValue);
-        snprintf(valueStrSlave, 256, valueFormat, slaveValue);
+        snprintf(valueStrMaster, 255, valueFormat, masterValue);
+        snprintf(valueStrSlave, 255, valueFormat, slaveValue);
 
         for (int i = 0 ; i < std::min(strlen(valueStrMaster), strlen(valueStrSlave)) ; i++) {
             if (valueStrMaster[i] == valueStrSlave[i])
@@ -55,11 +57,6 @@ T TwinAppChecker::checkGenericSingleValue(T masterValue, T slaveValue, T value, 
                 valueDiff[i] = '^';
         }
         valueDiff[255] = '\0';
-
-
-        char preparedFormatError[4096] = "";
-        sprintf(preparedFormatError, "Not maching value in %%s :\n - master = %s\n - slave  = %s\n - err    = %%s\n - diff   = %s\n - local  = %s\n", valueFormat, valueFormat, valueFormat, valueFormat);
-        sprintf(message, preparedFormatError, currentExe, masterValue, slaveValue, valueDiff, delta, value);
 
         //stack
         void * frames[4096];
@@ -80,6 +77,10 @@ T TwinAppChecker::checkGenericSingleValue(T masterValue, T slaveValue, T value, 
 
         if (this->alreadySeen[frame_of_error] == false)
         {
+            char preparedFormatError[4096] = "";
+            sprintf(preparedFormatError, "Not maching value in %%s :\n - master = %s\n - slave  = %s\n - err    = %%s\n - diff   = %s\n - local  = %s\n", valueFormat, valueFormat, valueFormat, valueFormat);
+            sprintf(message, preparedFormatError, currentExe, masterValue, slaveValue, valueDiff, delta, value);
+
             //throw std::runtime_error(std::string(message));
             fprintf(stderr, "\n---------------------- Twin Checker Error -------------------------\n");
             fprintf(stderr, message);
@@ -90,15 +91,18 @@ T TwinAppChecker::checkGenericSingleValue(T masterValue, T slaveValue, T value, 
             null_terminated_eq[infos.equation_size] = '\0';
             fprintf(stderr, "%s\n", null_terminated_eq);
             fprintf(stderr, "-------------------------------------------------------------------\n");
-            fprintf(stderr, "At /home/svalat/Projects/minicroco/%s:%d\n", this->siteIdToFile[infos.locationId].c_str(), infos.sourceLine);
+            fprintf(stderr, "At %s:%d\n", this->siteIdToFile[infos.locationId].c_str(), infos.sourceLine);
             fprintf(stderr, "-------------------------------------------------------------------\n");
             if (this->resolveStack)
                 this->performBacktrace();
-            if (this->stopOnFirstError)
+            tooLargeGap = false;
+            if (this->stopOnFirstError || tooLargeGap)
                 abort();
             this->alreadySeen[frame_of_error] = true;
         }
     }
+
+    return result;
 }
 
 template <class T>
@@ -137,14 +141,13 @@ T TwinAppChecker::checkGeneric(T value, const char * valueFormat, TwinAppChecker
 template <class T>
 void TwinAppChecker::checkGenericArray(T * value, size_t count, const char * valueFormat, TwinAppCheckerChannelValuesArray<T> & channel, const TwinLocationInfos & infos, bool reportError, bool fixable)
 {
-    abort();
     for (size_t offset = 0 ; offset < count ; offset += TWIN_ARRAY_BATCH_SIZE) {
         size_t batch_size = std::min(count - offset, TWIN_ARRAY_BATCH_SIZE);
+        //fprintf(stderr, "Rand : %zu[%zu] (%zu)\n", offset, batch_size, count);
         const T * masterValue = this->checkGenericArrayBatch(value + offset, batch_size, valueFormat, channel, infos, reportError);
-        if (masterValue != nullptr)
-            fprintf(stderr, "!!!!!!!!!!!!!!!!!!!! ARRAY\n");
+        /*if (masterValue != nullptr)
+            fprintf(stderr, "!!!!!!!!!!!!!!!!!!!! ARRAY ERROR %p\n", masterValue);*/
         if (fixable && masterValue != nullptr) {
-            abort();
             for (size_t i = 0 ; i < batch_size ; i++)
                 value[offset + i] = masterValue[i];
         }
