@@ -22,7 +22,7 @@ cfg_add_with_option   --name='optim' \
 
 #twin checker
 cfg_add_enable_option --name='twin-checker' \
-                      --on='-DWITH_TWIN_CHECKER=${ON}' \
+                      --on='-DENABLE_TWIN_CHECKER=${ON}' \
                       --doc="Enable the twin checker to compare on the fly two croco runs made at same time"
 
 #openmp

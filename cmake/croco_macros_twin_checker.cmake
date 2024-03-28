@@ -45,13 +45,10 @@ function(croco_psyclone_twin_checker list_to_update)
 
 		# get list of files to treat
 		exec_program(${CMAKE_SOURCE_DIR}/TWINCHECKER/twin_checker_extr_file_list.py ARGS ${CMAKE_SOURCE_DIR}/TWINCHECKER/config.jsonc OUTPUT_VARIABLE allow_files_str)
-		string(REPLACE " " ";" allow_files ${allow_files_str})
+		string(REPLACE " " ";" allowed_files ${allow_files_str})
 
 		# build command
 		if (${simplified_name} IN_LIST allowed_files)
-			if (NOT simplified_name IN_LIST allow_files_2)
-				message(FALTA "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-			endif()
 			add_custom_command(
 				OUTPUT ${newfile_twin_check}
 				COMMAND ${twin_script} ${oldfile} --output ${newfile_twin_check}

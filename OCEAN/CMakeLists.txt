@@ -409,10 +409,11 @@ endif ()
 if (WITH_OPTIM STREQUAL "poseidon")
     croco_poseidon_pre_process(CROCO_SRCS_F77)
 endif()
-
-include_directories(${CMAKE_SOURCE_DIR}/TWINCHECKER/)
-list(APPEND CROCO_SRCS_F90 ${CMAKE_SOURCE_DIR}/TWINCHECKER/twin_checker_mod.F90)
-croco_psyclone_twin_checker(CROCO_SRCS_F77)
+if (ENABLE_TWIN_CHECKER)
+    include_directories(${CMAKE_SOURCE_DIR}/TWINCHECKER/)
+    list(APPEND CROCO_SRCS_F90 ${CMAKE_SOURCE_DIR}/TWINCHECKER/twin_checker_mod.F90)
+    croco_psyclone_twin_checker(CROCO_SRCS_F77)
+endif()
 
 # build executable
 set(CMAKE_Fortran_PREPROCESS ON)

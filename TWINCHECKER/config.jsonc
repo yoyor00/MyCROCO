@@ -1,12 +1,20 @@
 {
     "defaults": {
+        /* Profile all input variables */
         "profile_in_values": true,
+        /* Profile all output variables (assigns) */
         "profile_out_values": true,
+        /* Also profile integers, not just reals */
         "profile_integers": false,
+        /* Profile the full arrays at the exit of a kernel (after it). Usefull for GPU where we cannot instrument inside */
         "profile_after_kernel": false,
+        /* Profile the full arrays before a kernel. Usefull for GPU where we cannot instrument inside */
         "profile_before_kernel": false,
+        /* Before and after kernels, instrument only the arrays, not scalars (usefull for GPU case) */
         "before_after_only_arrays": true,
+        /* If want to profile the full arrays or only scalars (considering x(i,j,k) as scalar) */
         "profile_arrays": false,
+        /* If there is a diff fix the salve value by the master one so we continue as it would be on master. */
         "fixable": true
     },
     "files": [
