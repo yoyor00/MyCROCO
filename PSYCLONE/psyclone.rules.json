@@ -9,7 +9,7 @@
         "t3dbc.F":                {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "step3d_uv2.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "step3d_uv1.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
-        "rhs3d.F":                 {"script": "acc_kernels_step3d.py", "skip-acc": true},
+        "rhs3d.F":                {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "pre_step3d.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true, "issue": "Fixed in code by WORK -> WORK_2D not to be transformed to WORK_3D"},
         "u3dbc.F":                {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "v3dbc.F":                {"script": "acc_kernels_step3d.py", "skip-acc": true},
@@ -24,7 +24,7 @@
         "get_stflux.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "get_vbc.F":              {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "diag.F":                 {"script": "acc_kernels_step3d.py", "skip-acc": true},
-        "--analytical.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true}, "issue": "CAUSE OF Cs-curve reported to be 0.0 in terminal",
+        "analytical.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true}, "issue": "CAUSE OF Cs-curve reported to be 0.0 in terminal & blow up => due to ana_smflux_tile being parased as CodeBlock",
         "ana_initial.F":          {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "get_srflux.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "ana_grid.F":             {"script": "acc_kernels_step3d.py", "skip-acc": true},
@@ -39,16 +39,5 @@
             "wrt_his.F":              {"script": "....py", "skip-acc": true},
             "wrt_rst.F":              {"script": "....py", "skip-acc": true}
         }
-    },
-
-    "array":
-    [
-        {"name": "latr"},
-        {"name": "latu"}
-    ],
-
-    "progFields" :
-    [
-        {"variable_name": "rho", "niceName": "\rho", "staggering": "[0,0]"}
-    ]
+    }
 }

@@ -356,7 +356,8 @@ C$    integer  trd, omp_get_thread_num
       real Ewind, Nwind, dircoef, windamp, wcos,wsin
       real cff1, cff2, cff3
 !     data windamp /0./
-      data Ewind, Nwind, dircoef /0., 0., 0./
+!      !! Commented to pass psyclone as not supported
+!      data Ewind, Nwind, dircoef /0., 0., 0./
 !     save windamp
 !
 # include "compute_extended_bounds.h"
@@ -366,6 +367,9 @@ C$    integer  trd, omp_get_thread_num
 !
 
       windamp = 0.
+      Ewind = 0.
+      Nwind = 0.
+      dircoef = 0.
 
 !$acc kernels if(compute_on_device) default(present)
 # ifdef BASIN
