@@ -13,8 +13,8 @@
 	#TODO: skip when finished
 	./PSYCLONE/psyclone.preprocessor.skip.acc.py $*.F $*.no-acc.F
 	$(CPP) -P $(CPPFLAGS) $*.no-acc.F > $*.no-acc.cpp-done.F
-	#python3 ./change_loops.py $*.no-acc.cpp-done.F $*.no-acc.cpp-done-loops.F
-	cp $*.no-acc.cpp-done.F $*.no-acc.cpp-done-loops.F
+	python3 ./change_loops.py $*.no-acc.cpp-done.F $*.no-acc.cpp-done-loops.F
+	#cp $*.no-acc.cpp-done.F $*.no-acc.cpp-done-loops.F
 	cat $*.no-acc.cpp-done-loops.F | ./mpc > $*.no-acc.cpp-done-loops-mpc.F
 	./PSYCLONE/psyclone.compiler.wrapper.py $(CFT) -c $(FFLAGS) -acc=gpu $*.no-acc.cpp-done-loops-mpc.F -o $*.o
 
