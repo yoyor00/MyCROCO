@@ -38,10 +38,10 @@ export DATESTR=`date +%Y-%m-%d`
 #  Define options
 #=======================================================================
 #
-echo Start forecast 
+echo Start Forecast 
 date
 #
-# Get forcing Files from DODS SERVER and process them for CROCO
+# Get forcing files from DODS SERVER and process them for CROCO
 # PRE_PROCESS=1 ==> do the work (0 otherwise)
 #
 export PRE_PROCESS=1
@@ -64,19 +64,40 @@ export CLEANING=0
 #
 export ONERUN=1
 #
+# Time section
 #
+
+# Model time step [seconds]
+DT=100
+# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
+NFAST=60
+# Hindcast depth [days] see crocotools_param (hdays/fdays)
+NDAYS_HIND=1
+# Forecast depth [days]
+NDAYS_FCST=3
+# Output frequency [hours]
+#   average
+ND_AVG=24
+#   history (if = -1 set equal to NUMTIMES)
+ND_HIS=6
+#   restart (if = -1 set equal to NUMTIMES)
+ND_RST=24
+# 
+
+
 #=======================================================================
 #  Define directories, files and running parameters
 #=======================================================================
 #
 export SCRATCHDIR=${RUNDIR}/SCRATCH
-export INPUTDIR=${RUNDIR}/CROCO_IN
+#export INPUTDIR=${RUNDIR}/CROCO_IN
+export INPUTDIR=${RUNDIR}
 export MSSDIR=${RUNDIR}/CROCO_FILES
 export MSSOUT=${RUNDIR}/FORECAST
 #
 export MODEL=croco
 export CODFILE=croco
-export EXEC="mpirun -np 2"
+export EXEC="mpirun -np 4 "
 #
 export GRDFILE=${MODEL}_grd.nc
 export INIFILE=${MODEL}_ini.nc
@@ -164,6 +185,33 @@ echo "Getting ${MODEL}_forecast.in from $INPUTDIR"
 $CP -f $INPUTDIR/${MODEL}_forecast.in $SCRATCHDIR
 echo "Getting ${MODEL}_stations.in from $INPUTDIR"
 $CP -f $INPUTDIR/${MODEL}_stations.in $SCRATCHDIR
+#
+# Time Management
+#
+if [ $ONERUN = 1 ] ; then
+  NDAYS=$((NDAYS_HIND + NDAYS_FCST ))
+fi
+
+NUMTIMES=$((NDAYS * 24 * 3600 / DT))
+if [[ ${ND_AVG} -ne -1 ]]; then
+  NUMAVG=$((ND_AVG * 3600 / DT ))
+else
+  NUMAVG=$NUMTIMES
+fi
+if [[ ${ND_HIS} -ne -1 ]]; then
+  NUMHIS=$((ND_HIS * 3600 / DT ))
+else
+  NUMHIS=$NUMTIMES
+fi
+if [[ ${ND_RST} -ne -1 ]]; then
+  NUMRST=$((ND_RST * 3600 / DT ))
+else
+  NUMRST=$NUMTIMES
+fi
+
+sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
+    -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/'  < $INPUTDIR/${MODEL}_forecast.in > $SCRATCHDIR/${MODEL}_forecast.in
+
 #
 #  Change directory
 #
