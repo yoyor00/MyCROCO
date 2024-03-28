@@ -10,7 +10,7 @@
         "step3d_uv2.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "step3d_uv1.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "rhs3d.F":                 {"script": "acc_kernels_step3d.py", "skip-acc": true},
-        "--pre_step3d.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true, "issue": "Source of blow up"},
+        "pre_step3d.F":           {"script": "acc_kernels_step3d.py", "skip-acc": true, "issue": "Fixed in code by WORK -> WORK_2D not to be transformed to WORK_3D"},
         "u3dbc.F":                {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "v3dbc.F":                {"script": "acc_kernels_step3d.py", "skip-acc": true},
         "t3dmix.F":               {"script": "acc_kernels_step3d.py", "skip-acc": true},

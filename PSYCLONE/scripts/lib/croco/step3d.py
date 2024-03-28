@@ -8,6 +8,7 @@
 # specific CROCO vars
 VARS_1D = ['fc', 'cf', 'dc', 'bc', 'dz', 'dr']
 VARS_3D = ['fx', 'fe', 'work', 'work2']
+VARS_3D_NO_WORK = ['fx', 'fe']
 
 ##########################################################
 # python

@@ -30,7 +30,7 @@
 # ifdef VADV_ADAPT_IMP
      &                                            A2d(1,4,trd),
 # endif
-     &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
+     &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd), A2d(1,5,trd)
 # ifdef OPENACC
      &   ,A3d(1,4,trd),A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd)
 # endif
@@ -44,7 +44,7 @@
 # ifdef VADV_ADAPT_IMP
      &                                                       WC,
 # endif
-     &                                               FX,FE,WORK
+     &                                               FX,FE,WORK, WORK_2D
 # ifdef OPENACC
      &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
 # endif
@@ -83,7 +83,8 @@
      &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &       FX(PRIVATE_2D_SCRATCH_ARRAY),
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
-     &     WORK(PRIVATE_2D_SCRATCH_ARRAY)
+     &     WORK(PRIVATE_2D_SCRATCH_ARRAY),
+     &     WORK_2D(PRIVATE_2D_SCRATCH_ARRAY)
       real gamma
       real epsil
 # ifdef OPENACC
@@ -603,7 +604,7 @@
 
       do j=Jstr,Jend
         do i=IstrU,Iend
-          WORK(i,j)=pm_u(i,j)*pn_u(i,j)
+          WORK_2D(i,j)=pm_u(i,j)*pn_u(i,j)
         enddo
       enddo
 
@@ -617,7 +618,7 @@
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
 # endif
               u(i,j,k,nnew)=(u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-     &                                    +cdt*WORK(i,j)*ru(i,j,k)
+     &                                    +cdt*WORK_2D(i,j)*ru(i,j,k)
      &                      )*cff
 # ifdef M3FAST
               ru_int_nbq(i,j,k) = 0.
@@ -661,10 +662,10 @@
      &                                      Hz_bak(i-1,j,k))
               u(i,j,k,nnew)=( cff1*qdm_nstp
      &                       +cff2*qdm_indx
-     &                       +cdt*WORK(i,j)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
+     &                       +cdt*WORK_2D(i,j)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
      &                                                     )*cff
               ru_int_nbq(i,j,k) = (qdm_nstp-qdm_indx) /dt
-     &                                -WORK(i,j)*ru_nbq_avg2(i,j,k)
+     &                                -WORK_2D(i,j)*ru_nbq_avg2(i,j,k)
        
               ru_int_nbq_2d(i,j)=ru_int_nbq_2d(i,j)+ru_int_nbq(i,j,k)
 # else
@@ -672,7 +673,7 @@
      &                                                Hz(i-1,j,k))
      &                       +cff2*u(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
      &                                                Hz_bak(i-1,j,k))
-     &                       +cdt*WORK(i,j)*ru(i,j,k)
+     &                       +cdt*WORK_2D(i,j)*ru(i,j,k)
      &                                                     )*cff
 # endif
               u(i,j,k,indx)=u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
@@ -702,7 +703,7 @@
 
         do j=JstrV,Jend
           do i=Istr,Iend
-            WORK(i,j)=pm_v(i,j)*pn_v(i,j)
+            WORK_2D(i,j)=pm_v(i,j)*pn_v(i,j)
           enddo
         enddo
           if (FIRST_TIME_STEP) then
@@ -715,7 +716,7 @@
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
 # endif
                 v(i,j,k,nnew)=(v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-     &                                    +cdt*WORK(i,j)*rv(i,j,k)
+     &                                    +cdt*WORK_2D(i,j)*rv(i,j,k)
      &                           )*cff
 
 # ifdef M3FAST
@@ -759,11 +760,11 @@
      &                                        Hz_bak(i,j-1,k))
                 v(i,j,k,nnew)=( cff1*qdm_nstp
      &                         +cff2*qdm_indx
-     &                     +cdt*WORK(i,j)*(rv(i,j,k)+rv_nbq_avg1(i,j,k))
+     &                     +cdt*WORK_2D(i,j)*(rv(i,j,k)+rv_nbq_avg1(i,j,k))
      &                                                           )*cff
 
                 rv_int_nbq(i,j,k) = (qdm_nstp-qdm_indx)/dt
-     &                                 -WORK(i,j)*rv_nbq_avg2(i,j,k)
+     &                                 -WORK_2D(i,j)*rv_nbq_avg2(i,j,k)
 
                 rv_int_nbq_2d(i,j)=rv_int_nbq_2d(i,j)+rv_int_nbq(i,j,k)
 # else
@@ -771,7 +772,7 @@
      &                                                  Hz(i,j-1,k))
      &                         +cff2*v(i,j,k,indx)*0.5*(Hz_bak(i,j  ,k)+
      &                                                  Hz_bak(i,j-1,k))
-     &                         +cdt*WORK(i,j)*rv(i,j,k)
+     &                         +cdt*WORK_2D(i,j)*rv(i,j,k)
      &                                                           )*cff
 # endif
 
