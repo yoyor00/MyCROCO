@@ -1302,16 +1302,14 @@ C 				  endif
       TYPE(xios_duration)   ::   output_freq
       !!----------------------------------------------------------------------
       !
-# ifdef START_DATE
-      ! start_date with format dd-mm-yyyy
-       READ(start_date(1:2),fmt='(i2)') iday
-       READ(start_date(4:5),fmt='(i2)') imonth
-       READ(start_date(7:10),fmt='(i4)') iyear
-       CALL ymds2ju( iyear, imonth,iday, 0., jday0 )  
-# elif defined USE_CALENDAR
-       CALL ymds2ju(1900, 1, 1, 0., jday0 )  
+# if !defined USE_CALENDAR
+      ! start_date with format yyyy-mm-dd
+       READ(xios_origin_date(1:4),fmt='(i4)') iyear
+       READ(xios_origin_date(6:7),fmt='(i2)') imonth
+       READ(xios_origin_date(9:10),fmt='(i2)') iday
+       CALL ymds2ju( iyear, imonth,iday, 0., jday0 )
 # else
-       CALL ymds2ju( 1, 1, 1, 0., jday0 )  
+       CALL ymds2ju(1900, 1, 1, 0., jday0 ) 
 # endif
       DO jn = 1,2
 
@@ -1869,24 +1867,17 @@ C 				  endif
 
       ! calendar parameters
 
-# ifdef START_DATE
-      ! start_date with format dd-mm-yyyy
-      READ(start_date(1:2),fmt='(i2)') iday
-      READ(start_date(4:5),fmt='(i2)') imonth
-      READ(start_date(7:10),fmt='(i4)') iyear
+# if !defined USE_CALENDAR
+! start_date with format yyyy-mm-dd
+      READ(xios_origin_date(1:4),fmt='(i4)') iyear
+      READ(xios_origin_date(6:7),fmt='(i2)') imonth
+      READ(xios_origin_date(9:10),fmt='(i2)') iday
       ihour=0
       iminute=0
       isec=0
-# elif defined USE_CALENDAR
+# else
       cldate = tool_sectodat(time)
       CALL tool_decompdate(cldate,iday,imonth,iyear,ihour,iminute,isec)
-# else
-      iday=start_day
-      imonth=start_month       
-      iyear=start_year
-      ihour=0
-      iminute=0
-      isec=0
 # endif
       CALL xios_define_calendar( TYPE = "Gregorian", 
      &      start_date  = xios_date(start_year,start_month,start_day,
