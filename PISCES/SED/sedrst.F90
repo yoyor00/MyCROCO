@@ -105,7 +105,7 @@ CONTAINS
 ! file is prepared for appending hew data; if it fails, a new file
 ! is created.
 !
-      create_new_file = .true.
+      create_new_file = ldefhis
       IF (ncid .NE. -1) create_new_file = .false.
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       IF (mynode > 0) create_new_file = .false.
@@ -161,11 +161,11 @@ CONTAINS
 ! Time step number and time record numbers:
 !
         ierr = nf_def_var (ncid, 'time_step', nf_int, 2, auxil,     &
-        &       rstTstep)
+        &       rstsedstep)
 #ifdef NC4PAR
-        ierr = nf_var_par_access(ncid,rstTstep,nf_collective)
+        ierr = nf_var_par_access(ncid,rstsedstep,nf_collective)
 #endif
-        ierr = nf_put_att_text (ncid, rstTstep, 'long_name', 48,    &
+        ierr = nf_put_att_text (ncid, rstsedstep, 'long_name', 48,    &
         &       'time step and record numbers from initialization')
 !
 ! Time.
@@ -267,9 +267,9 @@ CONTAINS
            ierr = checkdims (ncid, cn_sedrst_out, lstr, rec)
            IF (ierr == nf_noerr) THEN
               IF (nrpfrst == 0) THEN
-                 ierr = rec+1 - nrecrst
+                 ierr = rec+1 - nrecsedrst
               ELSE
-                 ierr = rec+1 - (1+mod(nrecrst-1, abs(nrpfrst)))
+                 ierr = rec+1 - (1+mod(nrecsedrst-1, abs(nrpfrst)))
               ENDIF
               IF (ierr > 0) THEN
                  MPI_master_only write( stdout,                              &
@@ -310,7 +310,7 @@ CONTAINS
 !
 ! Time step indices:
 !
-        ierr = nf_inq_varid (ncid, 'time_step', rstTstep)
+        ierr = nf_inq_varid (ncid, 'time_step', rstsedstep)
         IF (ierr .NE. nf_noerr) THEN
           WRITE(stdout,1) 'time_step', TRIM(cn_sedrst_out)
           GOTO 99                                         !--> ERROR
@@ -379,7 +379,7 @@ CONTAINS
 # include "netcdf.inc"
 
       INTEGER :: ierr, record, lstr, lvar, lenstr   &
-      &  , start(2), count(2), ibuff(4), nf_fwrite, itrc  
+      &  , start(2), count(2), ibuff(2), nf_fwrite, itrc  
       INTEGER :: ji, jj, jk, jn
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: ztrcsedtmp
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: ztrcsedi
@@ -410,17 +410,17 @@ CONTAINS
 !
 ! Create/open restart file; write grid arrays, if so needed.
 !
-      CALL def_rst_sed (ncidrstsed, nrecrst, ierr)
+      CALL def_rst_sed (ncidsedrst, nrecsedrst, ierr)
       IF (ierr .NE. nf_noerr) GOTO 99
       lstr = lenstr(cn_sedrst_out)
 !                                            !!! WARNING: Here it is
 ! Set record within the file.                !!! assumed that global
 !                                            !!! restart record index 
-      nrecrst = max(nrecrst,1)                 !!! nrecrst is already
+      nrecsedrst = max(nrecsedrst,1)                 !!! nrecrst is already
       IF (nrpfrst == 0) THEN                 !!! advanced by main.
-         record = nrecrst
+         record = nrecsedrst
       ELSE
-         record = 1+mod(nrecrst-1, abs(nrpfrst))
+         record = 1+mod(nrecsedrst-1, abs(nrpfrst))
       ENDIF
 
 !
@@ -430,18 +430,12 @@ CONTAINS
 ! Time step number and record indices. 
 !
       ibuff(1) = iic
-      ibuff(2) = nrecrst
-      ibuff(3) = nrechis
-#ifdef AVERAGES
-      ibuff(4) = nrecavg
-#else
-      ibuff(4) = 0
-#endif
+      ibuff(2) = nrecsedrst
       start(1) = 1
       start(2) = record
-      count(1) = 4
+      count(1) = 2
       count(2) = 1
-      ierr = nf_put_vara_int (ncidrstsed, rstTstep, start, count, ibuff)
+      ierr = nf_put_vara_int (ncidsedrst, rstsedstep, start, count, ibuff)
       IF (ierr .NE. nf_noerr) THEN
          WRITE(stdout,1) 'time_step', record, ierr      
          GOTO 99                                           !--> ERROR
@@ -449,7 +443,7 @@ CONTAINS
 !
 ! Time.
 !
-      ierr = nf_put_var1_FTYPE (ncidrstsed, rstTime, record, time)
+      ierr = nf_put_var1_FTYPE (ncidsedrst, rstTime, record, time)
       IF (ierr .NE. nf_noerr) THEN
          lvar = lenstr(vname(1,indxTime))
          WRITE(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
@@ -478,7 +472,7 @@ CONTAINS
 
       DO jn = 1, jptrased
          cltra = TRIM(sedtrcd(jn))
-         ierr = nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,jn), ncidrstsed,   &
+         ierr = nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,jn), ncidsedrst,   &
          &                             rstsed(jn), record, r3dsed)
         IF (ierr .NE. nf_noerr) THEN
           WRITE(stdout,1) cltra, record, ierr
@@ -504,7 +498,7 @@ CONTAINS
 
       DO jn = 1, jpsol
          cltra = "burial"//TRIM(sedtrcd(jn))
-         ierr = nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,jn), ncidrstsed,   &
+         ierr = nf_fwrite(ztrcsedtmp(START_2D_ARRAY,1,jn), ncidsedrst,   &
          &                             rstsed(jn), record, r3dsed)
         IF (ierr .NE. nf_noerr) THEN
           WRITE(stdout,1) cltra, record, ierr
@@ -526,14 +520,14 @@ CONTAINS
 ! processes to access data immediately after it is written.
 !
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
-      ierr = nf_close (ncidrstsed)
-      IF (nrpfrst > 0 .AND. record >= nrpfrst) ncidrstsed = -1
+      ierr = nf_close (ncidsedrst)
+      IF (nrpfrst > 0 .AND. record >= nrpfrst) ncidsedrst = -1
 #else
       IF (nrpfrst > 0 .AND. record >= nrpfrst) THEN
-        ierr = nf_close (ncidrstsed)
-        ncidrstsed = -1
+        ierr = nf_close (ncidsedrst)
+        ncidsedrst = -1
       ELSE
-        ierr = nf_sync(ncidrstsed)
+        ierr = nf_sync(ncidsedrst)
       ENDIF
 #endif
       IF (ierr == nf_noerr) THEN
@@ -571,7 +565,7 @@ CONTAINS
       integer  :: itrc
       integer  :: ji, jj, jk, jn
       integer  :: ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,    &
-      &        start(2), count(2), ibuff(6), nf_fread, checkdims
+      &        start(2), count(2), ibuff(2), nf_fread, checkdims
       character :: units*180
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: ztrcsedtmp
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: zdta
@@ -664,25 +658,24 @@ CONTAINS
         GOTO 99                                           !--> ERROR
       ENDIF
 
-      time = time*time_scale
-      tdays = time*sec2day
+!      time = time*time_scale
+!      tdays = time*sec2day
 
       ierr = nf_inq_varid (ncid, 'time_step', varid)
       IF (ierr == nf_noerr) THEN
          start(1) = 1
          start(2) = indx
-         count(1) = 4
+         count(1) = 2
          count(2) = 1
          ierr = nf_get_vara_int (ncid, varid, start, count, ibuff)
          IF (ierr == nf_noerr) THEN
-            ntstart = ibuff(1)
-            nrecrst = ibuff(2)
-            nrechis = ibuff(3)
+!            ntstart = ibuff(1)
+            nrecsedrst = ibuff(2)
 
             MPI_master_only WRITE(stdout,                            &
-            &     '(6x,A,G12.4,A,I2,A,I6,A,I3,A,I3,A)')              &
+            &     '(6x,A,G12.4,A,I2,A,I6,A,I3,A)')              &
             &     'SED_RST_READ: Restarted from day =', tdays, ' rec =',   &
-            &      indx, '(', ntstart, ',', nrecrst, ',', nrechis, ').'
+            &      indx, '(', ntstart, ',', nrecsedrst, ').'
 
          ELSE
             MPI_master_only write(stdout,'(/1x,2A/)')                     &
@@ -691,15 +684,14 @@ CONTAINS
             GOTO 99                                         !--> ERROR
          ENDIF
       ELSE
-         ntstart = 1
-         nrecrst = 0
-         nrechis = 0
+ !        ntstart = 1
+         nrecsedrst = 0
          MPI_master_only WRITE(stdout,'(6x,2A,G12.4,1x,A,I4)')      &
          &          'SED_RST_READ -- ',                              &
          &          'Processing data for time =', tdays, 'record =', indx
       ENDIF
-      IF (ntstart < 1) ntstart = 1
-      ntimes = ntstart+ntimes-1
+!      IF (ntstart < 1) ntstart = 1
+!      ntimes = ntstart+ntimes-1
 !
 ! Tracer variables.
 !

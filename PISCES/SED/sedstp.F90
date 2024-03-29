@@ -55,8 +55,10 @@ CONTAINS
       !!----------------------------------------------------------------------
       IF( ln_timing )           CALL timing_start('sed_stp')
         !
-!                                CALL sed_rst_opn  ( kt )       ! Open tracer restart file 
-!      IF( lrst_sed )            CALL sed_rst_cal  ( kt, 'WRITE' )   ! calenda
+#if defined NEMO        
+                                CALL sed_rst_opn  ( kt )       ! Open tracer restart file 
+      IF( lrst_sed )            CALL sed_rst_cal  ( kt, 'WRITE' )   ! calenda
+#endif
 
       dtsed  = rDt_trc
       IF (kt /= nitsed000)      CALL sed_dta( kt, Kbb, Kmm )    ! Load  Data for bot. wat. Chem and fluxes
@@ -68,6 +70,7 @@ CONTAINS
 
       IF (ln_sed_2way) CALL sed_sfc( kt, Kbb )   ! Give back new bottom wat chem to tracer model
 
+#if ! defined NEMO        
 #if ! defined XIOS  && defined AVERAGES
       CALL set_avg_sed
       ilc = 1+iic-nit000 ! number of time step since restart
@@ -80,8 +83,17 @@ CONTAINS
 #endif
 
       ilc = 1+iic-nit000 ! number of time step since restart
-      IF (iic > nit000 .AND. MOD(ilc-1,nitrst) == 0) CALL sed_rst_wri
-
+      IF( iic > nit000 ) THEN
+         IF( MOD( ilc-1, nitrst ) == 0  &
+#ifdef EXACT_RESTART
+     &                      .OR. MOD(ilc,nitrst) == 0  &
+#endif
+     &                      )  THEN
+            nrecsedrst = nrecsedrst + 1
+            CALL sed_rst_wri
+        ENDIF
+      ENDIF
+#endif
       IF( kt == nitsedend )  CLOSE( numsed )
 
       IF( ln_timing )           CALL timing_stop('sed_stp')

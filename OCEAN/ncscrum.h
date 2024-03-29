@@ -207,6 +207,7 @@
 # endif
 # ifdef BIOLOGY
 #  ifdef PISCES
+      integer ncidpisrst, nrecpisrst, ncidsedrst, nrecsedrst
       integer indxDIC, indxTAL, indxOXY, indxCAL, indxPO4,
      &        indxPOC, indxSIL, indxPHY, indxZOO, indxDOC,
      &        indxDIA, indxMES, indxDSI, indxFER, indxBFE,

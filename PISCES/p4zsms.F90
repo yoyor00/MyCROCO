@@ -42,8 +42,7 @@ MODULE p4zsms
    LOGICAL :: l_budget
 
    INTEGER  ::  rstph, rstfe, rstszn, rstszd, rstszp
-   INTEGER  ::  rstthet, rstxksi, rstxksim
-   INTEGER  ::  ncidpisrst
+   INTEGER  ::  rstthet, rstxksi, rstxksim, rstpisstep
 
    !! * Substitutions
 #  include "ocean2pisces.h90"   
@@ -92,7 +91,7 @@ CONTAINS
             CALL ahini_for_at( hi, Kbb )              !  set PH at kt=nit000
             t_oce_co2_flx_cum = 0._wp
         ELSE
-#ifdef NEMO               
+#if defined NEMO               
             CALL p4z_rst( nittrc000, Kbb, Kmm,  'READ' )  !* read or initialize all required fields
 #else
             CALL p4z_rst_read
@@ -259,7 +258,16 @@ CONTAINS
       IF( lrst_trc )  CALL p4z_rst( kt, Kbb, Kmm,  'WRITE' )           !* Write PISCES informations in restart file 
 #else
       ilc = 1+iic-nit000 ! number of time step since restart
-      IF (iic > nit000 .AND. MOD(ilc-1,nitrst) == 0) CALL p4z_rst_wri
+      IF( iic > nit000 ) THEN
+         IF( MOD( ilc-1, nitrst ) == 0  &
+#ifdef EXACT_RESTART
+     &                      .OR. MOD(ilc,nitrst) == 0  &
+#endif
+     &                      )  THEN
+            nrecpisrst = nrecpisrst + 1
+            CALL p4z_rst_wri
+       ENDIF
+     ENDIF
 #endif      
       !
       IF( lk_iomput )  CALL p4z_budget( kt, Kmm ) ! Budget checking
@@ -286,10 +294,12 @@ CONTAINS
          &                wsbio2scale, ldocp, ldocz, lthet, no3rat3, po4rat3
          !
       NAMELIST/nampisdmp/ ln_pisdmp, nn_pisdmp
+#if ! defined NEMO               
       NAMELIST/nampisdbg/ ln_bio, ln_lys, ln_sed, ln_flx, &
          &                ln_fechem, ln_micro, ln_meso, ln_mort, &
          &                ln_prod, ln_agg, ln_rem, ln_poc, ln_diaz
       NAMELIST/nampisrst/cn_pisrst_indir, cn_pisrst_outdir, cn_pisrst_in, cn_pisrst_out 
+#endif      
       !!----------------------------------------------------------------------
       !
       IF(lwp) THEN
@@ -339,6 +349,7 @@ CONTAINS
          WRITE(numout,*) ' '
       ENDIF
       !
+#if ! defined NEMO               
       READ_NML_REF(numnatp,nampisdbg)
       READ_NML_CFG(numnatp,nampisdbg)
       IF(lwm) WRITE( numonp, nampisdbg )
@@ -358,6 +369,8 @@ CONTAINS
       ENDIF
 
       ncidpisrst = -1      
+      nrecpisrst = 0
+#endif      
       !
    END SUBROUTINE p4z_sms_init
 
@@ -554,7 +567,7 @@ CONTAINS
 ! file is prepared for appending hew data; if it fails, a new file
 ! is created.
 !
-      create_new_file = .true.
+      create_new_file = ldefhis
       IF (ncid .NE. -1) create_new_file = .false.
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       IF (mynode > 0) create_new_file = .false.
@@ -610,11 +623,11 @@ CONTAINS
 ! Time step number and time record numbers:
 !
         ierr = nf_def_var (ncid, 'time_step', nf_int, 2, auxil,     &
-        &       rstTstep)
+        &       rstpisstep)
 #ifdef NC4PAR
-        ierr = nf_var_par_access(ncid,rstTstep,nf_collective)
+        ierr = nf_var_par_access(ncid,rstpisstep,nf_collective)
 #endif
-        ierr = nf_put_att_text (ncid, rstTstep, 'long_name', 48,    &
+        ierr = nf_put_att_text (ncid, rstpisstep, 'long_name', 48,    &
         &       'time step and record numbers from initialization')
 !
 ! Time.
@@ -774,24 +787,24 @@ CONTAINS
 !
       ELSEIF (ncid == -1) THEN
 #ifndef NC4PAR
-        ierr = nf_open (TRIM(cn_pisrst_out), nf_write, ncid)
+        ierr = nf_open (cn_pisrst_out(1:lstr), nf_write, ncid)
 #else
-        ierr = nf_open_par (TRIM(cn_pisrst_out), IOR(nf_write, nf_mpiio),   &
+        ierr = nf_open_par (cn_pisrst_out(1:lstr), IOR(nf_write, nf_mpiio),   &
         &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 #endif
         IF (ierr == nf_noerr) THEN
            ierr = checkdims (ncid, cn_pisrst_out, lstr, rec)
            IF (ierr == nf_noerr) THEN
               IF (nrpfrst == 0) THEN
-                 ierr = rec+1 - nrecrst
+                 ierr = rec+1 - nrecpisrst
               ELSE
-                 ierr = rec+1 - (1+mod(nrecrst-1, abs(nrpfrst)))
+                 ierr = rec+1 - (1+mod(nrecpisrst-1, abs(nrpfrst)))
               ENDIF
               IF (ierr > 0) THEN
                  MPI_master_only write( stdout,                              &
         &                 '(/1x,A,I5,1x,A/8x,3A,I5/8x,A,I5,1x,A/)'         &
         &           ) 'P4Z_DEF_RST WARNING: Actual number of records', rec,    &
-        &             'in netCDF file',  '''',  TRIM(cn_pisrst_out),       &
+        &             'in netCDF file',  '''',  cn_pisrst_out(1:lstr),       &
         &             ''' exceeds the record number from restart data',    &
         &             rec+1-ierr,'/', total_rec,', restart is assumed.'
                  rec = rec-ierr
@@ -812,7 +825,7 @@ CONTAINS
               GOTO 10
            ELSE
               WRITE(stdout,'(/1x,4A, 1x,A,I4/)')     'P4Z_DEF_RST ERROR: ',    &
-              &     'Cannot open restart netCDF file ''',TRIM(cn_pisrst_out),'''.'
+              &     'Cannot open restart netCDF file ''',cn_pisrst_out(1:lstr),'''.'
               GOTO 99                                     !--> ERROR 
            ENDIF
 #else
@@ -826,9 +839,9 @@ CONTAINS
 !
 ! Time step indices:
 !
-        ierr = nf_inq_varid (ncid, 'time_step', rstTstep)
+        ierr = nf_inq_varid (ncid, 'time_step', rstpisstep)
         IF (ierr .NE. nf_noerr) THEN
-          WRITE(stdout,1) 'time_step', TRIM(cn_pisrst_out)
+          WRITE(stdout,1) 'time_step', cn_pisrst_out(1:lstr)
           GOTO 99                                         !--> ERROR
         ENDIF
 !
@@ -837,7 +850,7 @@ CONTAINS
         lvar = lenstr(vname(1,indxTime))
         ierr = nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), rstTime)
         IF (ierr .NE. nf_noerr) THEN
-          WRITE(stdout,1) vname(1,indxTime)(1:lvar), TRIM(cn_pisrst_out)
+          WRITE(stdout,1) vname(1,indxTime)(1:lvar), cn_pisrst_out(1:lstr)
           GOTO 99                                         !--> ERROR
         ENDIF
 !
@@ -846,7 +859,7 @@ CONTAINS
         lvar = lenstr(vname(1,indxTime2))
         ierr = nf_inq_varid (ncid, vname(1,indxTime2)(1:lvar), rstTime2)
         IF (ierr .NE. nf_noerr) THEN
-          WRITE(stdout,1) vname(1,indxTime2)(1:lvar), TRIM(cn_pisrst_out)
+          WRITE(stdout,1) vname(1,indxTime2)(1:lvar), cn_pisrst_out(1:lstr)
           GOTO 99                                         !--> ERROR
         ENDIF
 
@@ -937,7 +950,7 @@ CONTAINS
 # include "netcdf.inc"
 
       INTEGER :: ierr, record, lstr, lvar, lenstr   &
-      &  , start(2), count(2), ibuff(4), nf_fwrite
+      &  , start(2), count(2), ibuff(2), nf_fwrite
       INTEGER :: ji, jj, jk, jn
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
@@ -967,17 +980,17 @@ CONTAINS
 !
 ! Create/open restart file; write grid arrays, if so needed.
 !
-      CALL p4z_def_rst(ncidpisrst, nrecrst, ierr)
+      CALL p4z_def_rst(ncidpisrst, nrecpisrst, ierr)
       IF (ierr .NE. nf_noerr) GOTO 99
       lstr = lenstr(cn_pisrst_out)
 !                                            !!! WARNING: Here it is
 ! Set record within the file.                !!! assumed that global
 !                                            !!! restart record index 
-      nrecrst = max(nrecrst,1)                 !!! nrecrst is already
+      nrecpisrst = max(nrecpisrst,1)                 !!! nrecrst is already
       IF (nrpfrst == 0) THEN                 !!! advanced by main.
-         record = nrecrst
+         record = nrecpisrst
       ELSE
-         record = 1+mod(nrecrst-1, abs(nrpfrst))
+         record = 1+mod(nrecpisrst-1, abs(nrpfrst))
       ENDIF
 
 !
@@ -987,18 +1000,12 @@ CONTAINS
 ! Time step number and record indices. 
 !
       ibuff(1) = iic
-      ibuff(2) = nrecrst
-      ibuff(3) = nrechis
-#ifdef AVERAGES
-      ibuff(4) = nrecavg
-#else
-      ibuff(4) = 0
-#endif
+      ibuff(2) = nrecpisrst
       start(1) = 1
       start(2) = record
-      count(1) = 4
+      count(1) = 2 
       count(2) = 1
-      ierr = nf_put_vara_int (ncidpisrst, rstTstep, start, count, ibuff)
+      ierr = nf_put_vara_int (ncidpisrst, rstpisstep, start, count, ibuff)
       IF (ierr .NE. nf_noerr) THEN
          WRITE(stdout,1) 'time_step', record, ierr      
          GOTO 99                                           !--> ERROR
@@ -1114,7 +1121,7 @@ CONTAINS
          MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')    & 
          &            'P4Z_RST_WRI -- wrote ',                          &
          &            'restart fields into time record =', record, '/',  &
-         &             nrecrst  
+         &             nrecpisrst  
       ELSE
          MPI_master_only  write(stdout,'(/1x,2A/)')     & 
          &             'P4Z_RST_WRI ERROR: Cannot ',        &
@@ -1144,7 +1151,7 @@ CONTAINS
       integer  :: itrc
       integer  :: ji, jj, jk, jn
       integer  :: ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,    &
-      &        start(2), count(2), ibuff(6), nf_fread, checkdims
+      &        start(2), count(2), ibuff(2), nf_fread, checkdims
       character :: units*180
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
@@ -1236,25 +1243,24 @@ CONTAINS
         GOTO 99                                           !--> ERROR
       ENDIF
 
-      time = time*time_scale
-      tdays = time*sec2day
+!      time = time*time_scale
+!      tdays = time*sec2day
 
       ierr = nf_inq_varid (ncid, 'time_step', varid)
       IF (ierr == nf_noerr) THEN
          start(1) = 1
          start(2) = indx
-         count(1) = 4
+         count(1) = 2
          count(2) = 1
          ierr = nf_get_vara_int (ncid, varid, start, count, ibuff)
          IF (ierr == nf_noerr) THEN
-            ntstart = ibuff(1)
-            nrecrst = ibuff(2)
-            nrechis = ibuff(3)
+!            ntstart = ibuff(1)
+            nrecpisrst = ibuff(2)
 
             MPI_master_only WRITE(stdout,                            &
-            &     '(6x,A,G12.4,A,I2,A,I6,A,I3,A,I3,A)')              &
+            &     '(6x,A,G12.4,A,I2,A,I6,A,I3,A)')              &
             &     'P4Z_RST_READ: Restarted from day =', tdays, ' rec =',   &
-            &      indx, '(', ntstart, ',', nrecrst, ',', nrechis, ').'
+            &      indx, '(', ntstart, ',', nrecpisrst, ').'
 
          ELSE
             MPI_master_only write(stdout,'(/1x,2A/)')                     &
@@ -1263,15 +1269,14 @@ CONTAINS
             GOTO 99                                         !--> ERROR
          ENDIF
       ELSE
-         ntstart = 1
-         nrecrst = 0
-         nrechis = 0
+!         ntstart = 1
+         nrecpisrst = 0
          MPI_master_only WRITE(stdout,'(6x,2A,G12.4,1x,A,I4)')      &
          &          'P4Z_RST_READ -- ',                              &
          &          'Processing data for time =', tdays, 'record =', indx
       ENDIF
-      IF (ntstart < 1) ntstart = 1
-      ntimes = ntstart+ntimes-1
+!      IF (ntstart < 1) ntstart = 1
+!      ntimes = ntstart+ntimes-1
 !
 ! Tracer variables.
 !

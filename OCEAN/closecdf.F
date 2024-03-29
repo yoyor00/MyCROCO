@@ -94,6 +94,12 @@
 #ifdef STATIONS
       if (ncidsta.ne.-1) ierr=nf_close(ncidsta)
 #endif
+#if defined BIOLOGY && defined PISCES
+      if (ncidpisrst.ne.-1) ierr=nf_close(ncidpisrst)
+#if defined key_sediment
+      if (ncidsedrst.ne.-1) ierr=nf_close(ncidsedrst)
+#endif      
+#endif      
 
       MPI_master_only write(stdout,'(/1x,2A,I5,18(/8x,A,I5)/)')
      &   'MAIN - '
