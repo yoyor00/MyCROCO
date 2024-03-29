@@ -173,10 +173,6 @@ CONTAINS
       USE lib_mpp, ONLY: ctl_stop
       !!-------------------------------------------------------------------
       !
-!      ALLOCATE( trc_data(jpi,jpj,jpdta), sedmask(jpi,jpj),  &
-!         &      epkbot(jpi,jpj), gdepbot(jpi,jpj),            &
-!         &      dz(jpksed)  , por(jpksed) , por1(jpksed) , vols(jpksed),     &
-!         &      xtortuosity(jpksed), mol_wgt(jpsol),                 STAT=sed_alloc )
       ALLOCATE( trc_data(A2D(0),jpdta), sedmask(A2D(0)),  &
          &      epkbot(A2D(0)), gdepbot(A2D(0)),            &
          &      dz(jpksed)  , por(jpksed) , por1(jpksed) , vols(jpksed),     &

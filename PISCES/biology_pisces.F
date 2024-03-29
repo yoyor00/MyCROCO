@@ -59,11 +59,6 @@
 #endif
       END DO   ;   END DO   ;   END DO         
 
-!       ilc=1+iic-ntstart   ! number of time step since restart
-!       ! To be conform with clasic (no xios) croco file first
-!       ! time step must be writen
-!       if (ilc == 0) ilc=1
-!       CALL iom_setkt( ilc )
       DO jn = 1, jptra
          DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
              tra(i,j,k,jn)
