@@ -145,7 +145,7 @@ fi
 #
 if [ $PRE_PROCESS = 1 ] ; then
   echo "Processing boundary and forcing files"
-  $MATLAB  -batch -nodisplay < make_forecast.m > matlab_forecast.out
+  $MATLAB -nodisplay -r "run start.m;run make_forecast.m; quit" -logfile matlab_forecast.out
 fi
 #
 # Copy files in SCRATCH dir
@@ -301,11 +301,10 @@ $LN -sf $TOOLSDIR/plot_quick_forecast.m plot_quick_forecast.m
 
 # Production plot
 #
-$MATLAB  -batch -nodisplay < plot_forecast_croco.m >  plot_forecast_croco.out
-
+$MATLAB -nodisplay -r "run plot_forecast_croco.m; quit" -logfile plot_forecast_croco.out
 # Quick plot
 #
-#$MATLAB  -batch -nodisplay < plot_quick_forecast.m >  plot_quick_forecast.out
+#$MATLAB -nodisplay -r "run plot_quick_forecast.m; quit" -logfile plot_quick_forecast.out
 
 rm -f plot_forecast_croco.m plot_quick_forecast.m
 
