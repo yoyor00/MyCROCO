@@ -428,7 +428,6 @@ CONTAINS
 # endif
       !
    END SUBROUTINE p4z_patm
-# endif
 
    INTEGER FUNCTION p4z_flx_alloc()
       !!----------------------------------------------------------------------
