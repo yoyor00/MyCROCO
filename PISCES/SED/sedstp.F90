@@ -89,7 +89,10 @@ CONTAINS
      &                      .OR. MOD(ilc,nitrst) == 0  &
 #endif
      &                      )  THEN
-            nrecsedrst = nrecsedrst + 1
+#if defined key_sediment      
+! need the CPP key to avoid compilation error
+            nrecsedrst = nrecsedrst + 1 
+#endif            
             CALL sed_rst_wri
         ENDIF
       ENDIF

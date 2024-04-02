@@ -657,9 +657,6 @@ CONTAINS
          WRITE(numsed,*) ' '
       ENDIF
 
-      ncidsedrst = -1
-      nrecsedrst = 0
-
    END SUBROUTINE sed_ini_nam
 
 END MODULE sedini

@@ -31,8 +31,9 @@ MODULE sedrst
 #  include "ocean2pisces.h90"
 #  include "do_loop_substitute.h90"
 
-CONTAINS         
+CONTAINS
 
+#if defined key_sediment
       SUBROUTINE def_rst_sed( ncid, total_rec, ierr)  ! restart netCDF
 
 # include "netcdf.inc"
@@ -799,5 +800,11 @@ CONTAINS
   99  may_day_flag = 2
       RETURN
       END SUBROUTINE sed_rst_read
+#else
+      SUBROUTINE sed_rst_wri 
+      END SUBROUTINE sed_rst_wri
+      SUBROUTINE sed_rst_read
+      END SUBROUTINE sed_rst_read
+#endif      
 
 END MODULE sedrst
