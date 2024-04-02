@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+set -e
+#set -x
 ################### USER'S DEFINED PARAMETERS ##########################
 #
 #=======================================================================
@@ -41,34 +43,38 @@ export DATESTR=`date +%Y-%m-%d`
 echo Start Forecast 
 date
 #
+# Clean results of previous forecasts
+#
+export CLEANING=0
+#
 # Get forcing files from DODS SERVER and process them for CROCO
 # PRE_PROCESS=1 ==> do the work (0 otherwise)
 #
-export PRE_PROCESS=1
+export PRE_PROCESS=0
 #
-# Perform Iterations for convergence of ROMS and OGCM
+# Perform Iterations for convergence of CROCO and OGCM
 # ITERATION=1 ==> do several hindcasts using nudging
 #
-export ITERATION=0
+export ITERATION=1
 #
 # Restart from previous forecast
 #
 export RESTART=0
 #
-# Clean results of previous forecasts
-#
-export CLEANING=0
-#
 # ONERUN process: ONERUN=1: make one run for hindcast/forecast
-#                 ONERUN=0: make two runs for hindcast and forecast
+#                 ONERUN=0: make two runs one for hindcast and one for forecast
 #
-export ONERUN=1
+export ONERUN=0
+#
+# PLOTTING
+export PLOTTING=1
+#
 #
 # Time section
 #
 
 # Model time step [seconds]
-DT=100
+DT=3600
 # Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
 NFAST=60
 # Hindcast depth [days] see crocotools_param (hdays/fdays)
@@ -83,8 +89,6 @@ ND_HIS=6
 #   restart (if = -1 set equal to NUMTIMES)
 ND_RST=24
 # 
-
-
 #=======================================================================
 #  Define directories, files and running parameters
 #=======================================================================
@@ -96,8 +100,8 @@ export MSSDIR=${RUNDIR}/CROCO_FILES
 export MSSOUT=${RUNDIR}/FORECAST
 #
 export MODEL=croco
-export CODFILE=croco
-export EXEC="mpirun -np 4 "
+export CODFILE=./croco
+export EXEC="mpirun -np 4"
 #
 export GRDFILE=${MODEL}_grd.nc
 export INIFILE=${MODEL}_ini.nc
@@ -143,10 +147,11 @@ fi
 # Compute lateral boundaries from MERCATOR
 #     and surface forcing from GFS
 #
-if [ $PRE_PROCESS = 1 ] ; then
+if [ $PRE_PROCESS = 1 ]; then
   echo "Processing boundary and forcing files"
-  $MATLAB -nodisplay -r "run start.m;run make_forecast.m; quit" -logfile matlab_forecast.out
-fi
+  [ ! -e start.m ] && { echo "==> Stop : you need a start.m file"; exit 1 ; }
+    $MATLAB -nodisplay -batch "run('start.m') ; run('make_forecast.m');" > matlab_forecast.out
+    fi
 #
 # Copy files in SCRATCH dir
 #
@@ -190,27 +195,32 @@ $CP -f $INPUTDIR/${MODEL}_stations.in $SCRATCHDIR
 #
 if [ $ONERUN = 1 ] ; then
   NDAYS=$((NDAYS_HIND + NDAYS_FCST ))
-fi
-
 NUMTIMES=$((NDAYS * 24 * 3600 / DT))
-if [[ ${ND_AVG} -ne -1 ]]; then
-  NUMAVG=$((ND_AVG * 3600 / DT ))
-else
-  NUMAVG=$NUMTIMES
-fi
-if [[ ${ND_HIS} -ne -1 ]]; then
-  NUMHIS=$((ND_HIS * 3600 / DT ))
-else
-  NUMHIS=$NUMTIMES
-fi
-if [[ ${ND_RST} -ne -1 ]]; then
-  NUMRST=$((ND_RST * 3600 / DT ))
-else
-  NUMRST=$NUMTIMES
-fi
+[[ ${ND_AVG} -ne -1 ]] &&  NUMAVG=$((ND_AVG * 3600 / DT )) ||  NUMAVG=$NUMTIMES
+[[ ${ND_HIS} -ne -1 ]] &&  NUMHIS=$((ND_HIS * 3600 / DT )) || NUMHIS=$NUMTIMES
+[[ ${ND_RST} -ne -1 ]] && NUMRST=$((ND_RST * 3600 / DT ))  || NUMRST=$NUMTIMES
 
 sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
     -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/'  < $INPUTDIR/${MODEL}_forecast.in > $SCRATCHDIR/${MODEL}_forecast.in
+else
+    # for hindcast
+    NUMTIMES_HIND=$((NDAYS_HIND * 24 * 3600 / DT))
+    [[ ${ND_AVG} -ne -1 ]] &&  NUMAVG_HIND=$((ND_AVG * 3600 / DT )) ||  NUMAVG_HIND=$NUMTIMES_HIND
+    [[ ${ND_HIS} -ne -1 ]] &&  NUMHIS_HIND=$((ND_HIS * 3600 / DT )) || NUMHIS_HIND=$NUMTIMES_HIND
+    [[ ${ND_RST} -ne -1 ]] &&  NUMRST_HIND=$((ND_RST * 3600 / DT )) || NUMRST_HIND=$NUMTIMES_HIND
+    
+    sed -e 's/NUMTIMES/'$NUMTIMES_HIND'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
+        -e 's/NUMAVG/'$NUMAVG_HIND'/' -e 's/NUMHIS/'$NUMHIS_HIND'/' -e 's/NUMRST/'$NUMRST_HIND'/'  < $INPUTDIR/${MODEL}_hindcast.in > $SCRATCHDIR/${MODEL}_hindcast.in
+    
+    # for forecast
+    NUMTIMES_FCST=$((NDAYS_FCST * 24 * 3600 / DT))
+    [[ ${ND_AVG} -ne -1 ]] &&  NUMAVG_FCST=$((ND_AVG * 3600 / DT )) ||  NUMAVG_FCST=$NUMTIMES_FCST
+    [[ ${ND_HIS} -ne -1 ]] &&  NUMHIS_FCST=$((ND_HIS * 3600 / DT )) || NUMHIS_FCST=$NUMTIMES_FCST
+    [[ ${ND_RST} -ne -1 ]] &&  NUMRST_FCST=$((ND_RST * 3600 / DT )) || NUMRST_FCST=$NUMTIMES_FCST
+    
+    sed -e 's/NUMTIMES/'$NUMTIMES_FCST'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
+        -e 's/NUMAVG/'$NUMAVG_FCST'/' -e 's/NUMHIS/'$NUMHIS_FCST'/' -e 's/NUMRST/'$NUMRST_FCST'/'  < $INPUTDIR/${MODEL}_forecast.in > $SCRATCHDIR/${MODEL}_forecast.in
+fi
 
 #
 #  Change directory
@@ -251,11 +261,15 @@ else
   #
   if [ $ITERATION = 1 ] ; then
     echo 'ITERATION ITERATION'
+[ ! -e start.m ] && { ln -sf ../start.m . ; }
+	[ ! -e crocotools_param.m ] && { ln -sf ../crocotools_param.m . ; }
     $LN -sf $TOOLSDIR/iteration.m iteration.m
-    $LN -sf $TOOLSDIR/../start.m start.m
-    $LN -sf $TOOLSDIR/../crocotools_param.m crocotools_param.m
-    $MATLAB  -nodisplay < iteration.m > iteration.out
-    rm -f iteration.m start.m crocotools_param.m
+    #$LN -sf $TOOLSDIR/../start.m start.m
+    #$LN -sf $TOOLSDIR/../crocotools_param.m crocotools_param.m
+    # $MATLAB  -nodisplay < iteration.m > iteration.out
+    # rm -f iteration.m start.m crocotools_param.m
+$MATLAB -nodisplay -batch  "run('iteration');" > iteration.out
+	
   fi
   #
   date
@@ -295,21 +309,17 @@ fi
 #=======================================================================
 #
 cd $INPUTDIR
+[ ! -e start.m ] && { echo "==> Stop : you need a start.m file"; exit 1 ; }
+    
+    #Production plot
+    [ ! -e plot_forecast_croco.m ] && $CP -f ${TOOLSDIR}/plot_forecast_croco.m .
+$MATLAB -nodisplay -batch  "run('plot_forecast_croco.m');" > plot_forecast_croco.out
 
-$LN -sf $TOOLSDIR/plot_forecast_croco.m plot_forecast_croco.m
-$LN -sf $TOOLSDIR/plot_quick_forecast.m plot_quick_forecast.m
-
-# Production plot
-#
-$MATLAB -nodisplay -r "run plot_forecast_croco.m; quit" -logfile plot_forecast_croco.out
-# Quick plot
-#
-#$MATLAB -nodisplay -r "run plot_quick_forecast.m; quit" -logfile plot_quick_forecast.out
-
-rm -f plot_forecast_croco.m plot_quick_forecast.m
+    # # Quick plot
+# [ ! -e plot_quick_forecast.m ] && $CP -f ${TOOLSDIR}/plot_quick_forecast.m .
+    # $MATLAB -nodisplay -batch "run('plot_quick_forecast.m');" > plot_quick_forecast.out
+    
+fi
 
 echo Forecast finished
 date
-
-
-
