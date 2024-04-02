@@ -33,7 +33,9 @@ MODULE p4zopt
    REAL(wp) ::   xparsw      ! parlux/3
    REAL(wp) ::   xsi0r       ! 1. /rn_si0
 
+# ifdef NEMO
    TYPE(FLD), ALLOCATABLE, DIMENSION(:) ::   sf_par      ! structure of input par
+# endif
    INTEGER , PARAMETER :: nbtimes = 366  !: maximum number of times record in a file
    INTEGER  :: ntimes_par                ! number of time steps in a file
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:)   ::   par_varsw      ! PAR fraction of shortwave
@@ -449,10 +451,13 @@ CONTAINS
       !!----------------------------------------------------------------------
 
       !  Real shortwave
+# ifdef NEMO
       IF( ln_varpar ) THEN  ;  zqsr(:,:) = par_varsw(:,:) * pqsr(:,:)
       ELSE                  ;  zqsr(:,:) = xparsw         * pqsr(:,:)
       ENDIF
-      
+# endif
+      zqsr(:,:) = xparsw         * pqsr(:,:) 
+
       !  Light at the euphotic depth 
       IF( PRESENT( pqsr100 ) )   pqsr100(:,:) = 0.01 * 3. * zqsr(:,:)
 
@@ -508,6 +513,7 @@ CONTAINS
       !
       IF( ln_timing )  CALL timing_start('p4z_optsbc')
       !
+# ifdef NEMO
       ! Compute par_varsw at nit000 or only if there is more than 1 time record in par coefficient file
       IF( ln_varpar ) THEN
          IF( kt == nit000 .OR. ( kt /= nit000 .AND. ntimes_par > 1 ) ) THEN
@@ -517,6 +523,7 @@ CONTAINS
             END_2D
          ENDIF
       ENDIF
+# endif 
       !
       IF( ln_timing )  CALL timing_stop('p4z_optsbc')
       !
@@ -535,7 +542,9 @@ CONTAINS
       INTEGER :: numpar, ierr, ios   ! Local integer 
       !
       CHARACTER(len=100) ::  cn_dir          ! Root directory for location of ssr files
+# ifdef NEMO
       TYPE(FLD_N) ::   sn_par                ! informations about the fields to be read
+# endif
       !
       NAMELIST/nampisopt/cn_dir, sn_par, ln_varpar, parlux, ln_p4z_dcyc
       !!----------------------------------------------------------------------
@@ -569,7 +578,8 @@ CONTAINS
       ENDIF
       !
       ! Variable PAR at the surface of the ocean
-      ! ----------------------------------------
+      ! ---- ------------------------------------
+# ifdef NEMO
       IF( ln_varpar ) THEN
          IF(lwp) WRITE(numout,*)
          IF(lwp) WRITE(numout,*) '   ==>>>   initialize variable par fraction (ln_varpar=T)'
@@ -586,6 +596,7 @@ CONTAINS
          CALL iom_open (  TRIM( sn_par%clname ) , numpar )
          ntimes_par = iom_getszuld( numpar )   ! get number of record in file
       ENDIF
+# endif
       !
                          ekr      (:,:,:) = 0._wp
                          ekb      (:,:,:) = 0._wp

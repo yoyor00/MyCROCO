@@ -47,9 +47,10 @@ MODULE p4zflx
    LOGICAL, PUBLIC ::   ln_presatmco2  !: accounting for spatial atm CO2 in the compuation of carbon flux (T) or not (F)
 
    REAL(wp) , ALLOCATABLE, SAVE, DIMENSION(:,:) ::   patm      ! atmospheric pressure at kt                 [N/m2]
+# ifdef NEMO
    TYPE(FLD), ALLOCATABLE,       DIMENSION(:)   ::   sf_patm   ! structure of input fields (file informations, fields read)
    TYPE(FLD), ALLOCATABLE,       DIMENSION(:)   ::   sf_atmco2 ! structure of input fields (file informations, fields read)
-
+# endif
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:) ::  satmco2   !: atmospheric pco2 
 
    REAL(wp) ::   xconv  = 0.01_wp / 3600._wp   !: coefficients for conversion 
@@ -342,7 +343,6 @@ CONTAINS
       !
    END SUBROUTINE p4z_flx_init
 
-
    SUBROUTINE p4z_patm( kt )
       !!----------------------------------------------------------------------
       !!                  ***  ROUTINE p4z_atm  ***
@@ -355,8 +355,10 @@ CONTAINS
       !
       INTEGER            ::   ierr, ios   ! Local integer
       CHARACTER(len=100) ::   cn_dir      ! Root directory for location of ssr files
+# ifdef NEMO
       TYPE(FLD_N)        ::   sn_patm     ! informations about the fields to be read
       TYPE(FLD_N)        ::   sn_atmco2   ! informations about the fields to be read
+# endif      
       INTEGER  :: ji, jj
       !!
       NAMELIST/nampisatm/ ln_presatm, ln_presatmco2, sn_patm, sn_atmco2, cn_dir
@@ -383,6 +385,7 @@ CONTAINS
             WRITE(numout,*) '      spatial atmopsheric CO2 for flux calcs                ln_presatmco2 = ', ln_presatmco2
          ENDIF
          !
+# ifdef NEMO
          IF( ln_presatm ) THEN
             ALLOCATE( sf_patm(1), STAT=ierr )           !* allocate and fill sf_patm (forcing structure) with sn_patm
             IF( ierr > 0 )   CALL ctl_stop( 'STOP', 'p4z_flx: unable to allocate sf_patm structure' )
@@ -400,11 +403,13 @@ CONTAINS
                                    ALLOCATE( sf_atmco2(1)%fnow(jpi,jpj,1)   )
             IF( sn_atmco2%ln_tint )  ALLOCATE( sf_atmco2(1)%fdta(jpi,jpj,1,2) )
          ENDIF
+# endif
          !
          IF( .NOT.ln_presatm )   patm(:,:) = 1._wp    ! Initialize patm if no reading from a file
          !
       ENDIF
       !
+# ifdef NEMO
       IF( ln_presatm ) THEN
          CALL fld_read( kt, 1, sf_patm )               !* input Patm provided at kt + 1/2
          DO_2D( 0, 0, 0, 0 )
@@ -420,9 +425,10 @@ CONTAINS
       ELSE
          satmco2(:,:) = atcco2    ! Initialize atmco2 if no reading from a file
       ENDIF
+# endif
       !
    END SUBROUTINE p4z_patm
-
+# endif
 
    INTEGER FUNCTION p4z_flx_alloc()
       !!----------------------------------------------------------------------

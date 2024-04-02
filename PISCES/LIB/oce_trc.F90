@@ -33,8 +33,9 @@ MODULE oce_trc
 
    PUBLIC   glob_sum
    PUBLIC   tracer_stat
+# ifdef NEMO
    PUBLIC   fld_read, fld_fill
-
+# endif
    INTERFACE glob_sum
       MODULE PROCEDURE  glob_sum_2d, glob_sum_3d
    END INTERFACE   
@@ -54,6 +55,7 @@ MODULE oce_trc
    REAL(wp), PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:)     ::   e1e2t
    REAL(wp) , PUBLIC, DIMENSION(3,61)   ::   rkrgb    ! tabulated attenuation coefficients for RGB absorption
 
+# if defined NEMO
    TYPE, PUBLIC ::   FLD_N      !: Namelist field informations
       CHARACTER(len = 256) ::   clname      ! generic name of the NetCDF flux file
       REAL(wp)             ::   freqh       ! frequency of each flux file
@@ -106,6 +108,7 @@ MODULE oce_trc
    TYPE(FLD), SAVE, PUBLIC, ALLOCATABLE, DIMENSION(:)  :: sf_trcsbc    ! structure of data input SBC (file informations, fields read)
    REAL(wp) , SAVE, PUBLIC, ALLOCATABLE, DIMENSION(:)  :: rf_trcfac    ! multiplicative factor for CBC tracer values
    TYPE(FLD), SAVE, PUBLIC, ALLOCATABLE, DIMENSION(:)  :: sf_trccbc    ! structure of data input CBC (file informations, fields read)
+# endif
 
   REAL, DIMENSION(GLOBAL_2D_ARRAY,N+1,3) :: gdepw   ! W-depht
   REAL, DIMENSION(GLOBAL_2D_ARRAY,N+1,3) :: e3w     ! W-vertical scale factor
@@ -481,6 +484,7 @@ CONTAINS
       !
    END SUBROUTINE tracer_stat
 
+# ifdef NEMO
    SUBROUTINE fld_read( kt, kn_fsbc, sd, kit, pt_offset, Kmm )
       !!---------------------------------------------------------------------
       !!                    ***  ROUTINE fld_read  ***
@@ -529,8 +533,7 @@ CONTAINS
       INTEGER                  , OPTIONAL, INTENT(in   ) ::   knoprint   ! no calling routine information printed
       !
    END SUBROUTINE fld_fill
-
+# endif
 #endif
-
 END MODULE oce_trc
 
