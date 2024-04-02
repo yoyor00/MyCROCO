@@ -7,6 +7,7 @@ MODULE p4zsms
    !!======================================================================
    !! History :   1.0  !  2004-03 (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_sms        : Time loop of passive tracers sms
    !!----------------------------------------------------------------------
@@ -1722,6 +1723,16 @@ CONTAINS
       RETURN
       END SUBROUTINE p4z_rst_read
 #endif
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_sms                   ! Empty routine
+   END SUBROUTINE p4z_sms
+#endif
+
    !!======================================================================
 END MODULE p4zsms 
 

@@ -5,7 +5,7 @@ MODULE seddta
    !!                     ***  MODULE  seddta  ***
    !! Sediment data  :  read sediment input data from a file
    !!=====================================================================
-
+#if defined key_pisces
    !! * Modules used
    USE trc
    USE sed
@@ -271,5 +271,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_dta')
       
    END SUBROUTINE sed_dta
+
+#endif
 
 END MODULE seddta

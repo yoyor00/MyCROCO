@@ -6,6 +6,7 @@ MODULE p4zbc
    !! TOP :   PISCES surface boundary conditions of external inputs of nutrients
    !!======================================================================
    !! History :   3.5  !  2012-07 (O. Aumont, C. Ethe) Original code
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_bc        :  Read and interpolate time-varying nutrients fluxes
    !!   p4z_bc_init   :  Initialization of p4z_bc
@@ -668,6 +669,16 @@ CONTAINS
 #endif
 
    END SUBROUTINE p4z_bc_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_sbc                        ! Empty routine
+   END SUBROUTINE p4z_sbc
+#endif
+
 
    !!======================================================================
 END MODULE p4zbc

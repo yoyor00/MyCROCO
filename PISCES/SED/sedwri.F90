@@ -14,6 +14,8 @@
 
 MODULE sedwri
 
+#if defined key_pisces
+
    USE sed
    USE sedinorg
    USE lib_mpp         ! distribued memory computing library
@@ -162,5 +164,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_wri')
 
    END SUBROUTINE sed_wri
+
+#endif
 
 END MODULE sedwri

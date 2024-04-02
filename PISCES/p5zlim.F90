@@ -10,6 +10,7 @@ MODULE p5zlim
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-04  (O. Aumont, C. Ethe) Limitation for iron modelled in quota 
    !!             3.6  !  2015-05  (O. Aumont) PISCES quota
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p5z_lim        :   Compute the nutrients limitation terms 
    !!   p5z_lim_init   :   Read the namelist 
@@ -721,5 +722,15 @@ CONTAINS
       IF( p5z_lim_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p5z_lim_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p5z_lim_alloc
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p5z_lim                   ! Empty routine
+   END SUBROUTINE p5z_lim
+#endif
+
    !!======================================================================
 END MODULE p5zlim

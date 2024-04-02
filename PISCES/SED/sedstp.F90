@@ -6,6 +6,7 @@ MODULE sedstp
    !!                       ***  MODULE sedstp   ***
    !!   Sediment model : Sediment model time-stepping
    !!======================================================================
+#if defined key_pisces
    USE sed      ! sediment global variables
    USE seddta   ! data read
    USE sedchem  ! chemical constant
@@ -102,5 +103,7 @@ CONTAINS
       IF( ln_timing )           CALL timing_stop('sed_stp')
 
    END SUBROUTINE sed_stp
+
+#endif
 
 END MODULE sedstp

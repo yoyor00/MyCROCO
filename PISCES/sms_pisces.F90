@@ -8,6 +8,8 @@ MODULE sms_pisces
    !! History :   1.0  !  2000-02 (O. Aumont) original code
    !!             3.2  !  2009-04 (C. Ethe & NEMO team) style
    !!----------------------------------------------------------------------
+#if defined key_pisces
+
 !   USE par_oce
 !   USE par_trc
     USE oce_trc
@@ -216,6 +218,12 @@ CONTAINS
       IF( sms_pisces_alloc /= 0 )   CALL ctl_stop( 'STOP', 'sms_pisces_alloc: failed to allocate arrays' ) 
       !
    END FUNCTION sms_pisces_alloc
+
+#else
+   !!----------------------------------------------------------------------
+   !!  Empty module :                                     NO PISCES model
+   !!----------------------------------------------------------------------
+#endif
 
    !!======================================================================   
 END MODULE sms_pisces    

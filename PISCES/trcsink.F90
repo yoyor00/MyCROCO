@@ -11,6 +11,7 @@ MODULE trcsink
    !!             3.5  !  2012-07  (O. Aumont) Introduce potential time-splitting
    !!             4.0  !  2018-12  (O. Aumont) Generalize the PISCES code to make it usable by any model
    !!             5.0  !  2023-10  (C. Ethe ) Introduce semi-lagragian sinking scheme
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   trc_sink       :  Compute vertical flux of particulate matter due to gravitational sinking
    !!----------------------------------------------------------------------
@@ -509,6 +510,15 @@ CONTAINS
       IF( ln_sink_slg )  nsnk = np_SLG
       !
    END SUBROUTINE trc_sink_ini
+
+#else
+   !!----------------------------------------------------------------------
+   !!   Dummy module                            No PISCES biochemical model
+   !!----------------------------------------------------------------------
+CONTAINS
+   SUBROUTINE trc_sink            ! Empty routine
+   END SUBROUTINE trc_sink
+#endif
 
    !!======================================================================
 END MODULE trcsink

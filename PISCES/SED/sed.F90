@@ -4,6 +4,7 @@ MODULE sed
    !!======================================================================
    !!                        ***  sed  ***
    !! Sediment :   set sediment global variables
+#if defined key_pisces
    !!======================================================================
    !! History :
    !!        !  06-12  (C. Ethe)  Orignal
@@ -181,5 +182,7 @@ CONTAINS
       IF( sed_alloc /= 0 )   CALL ctl_stop( 'STOP', 'sed_alloc: failed to allocate arrays' )
       !
    END FUNCTION sed_alloc
+
+#endif
 
 END MODULE sed

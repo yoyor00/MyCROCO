@@ -8,6 +8,7 @@ MODULE p2zprod
    !! History :   1.0  !  2004     (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-05  (O. Aumont, C. Ethe) New parameterization of light limitation
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p2z_prod       : Compute the growth Rate of the two phytoplanktons groups
    !!   p2z_prod_init  : Initialization of the parameters for growth
@@ -352,6 +353,16 @@ CONTAINS
       IF( p2z_prod_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p2z_prod_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p2z_prod_alloc
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p2z_prod                    ! Empty routine
+   END SUBROUTINE p2z_prod
+#endif
+
 
    !!======================================================================
 END MODULE p2zprod

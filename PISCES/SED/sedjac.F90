@@ -8,6 +8,7 @@ MODULE sedjac
    !!    related to organic matter
    !!    Diffusion of solutes in pore water
    !!=====================================================================
+#if defined key_pisces
    !! * Modules used
    USE sed     ! sediment global variable
    USE sedini
@@ -103,5 +104,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_jac')
 !      
    END SUBROUTINE sed_jac
+
+#endif
 
 END MODULE sedjac

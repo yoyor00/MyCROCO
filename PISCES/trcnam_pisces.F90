@@ -10,6 +10,7 @@ MODULE trcnam_pisces
    !!              -   !  2000-01 (L. Bopp) hamocc3, p3zd
    !!             1.0  !  2003-08 (C. Ethe)  module F90
    !!             2.0  !  2007-12  (C. Ethe, G. Madec) from trcnam.pisces.h90
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !! trc_nam_pisces   : PISCES model namelist read
    !!----------------------------------------------------------------------
@@ -156,5 +157,13 @@ CONTAINS
       !
    END SUBROUTINE trc_nam_pisces
 
+#else
+   !!----------------------------------------------------------------------
+   !!   Dummy module                            No PISCES biochemical model
+   !!----------------------------------------------------------------------
+CONTAINS
+   SUBROUTINE trc_nam_pisces             ! Empty routine
+   END SUBROUTINE trc_nam_pisces
+#endif
    !!======================================================================
 END MODULE trcnam_pisces

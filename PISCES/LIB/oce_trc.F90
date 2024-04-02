@@ -2,6 +2,8 @@
 
 MODULE oce_trc
 
+#if defined key_pisces
+
    use scalars
    use ncscrum
    USE par_pisces
@@ -527,6 +529,8 @@ CONTAINS
       INTEGER                  , OPTIONAL, INTENT(in   ) ::   knoprint   ! no calling routine information printed
       !
    END SUBROUTINE fld_fill
+
+#endif
 
 END MODULE oce_trc
 

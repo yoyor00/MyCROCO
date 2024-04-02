@@ -5,7 +5,7 @@ MODULE sedinitrc
    !!              ***  MODULE  sedinitrc  ***
    !! Sediment : define sediment variables
    !!=====================================================================
-
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   sed_init    : initialization, namelist read, and parameters control
    !!----------------------------------------------------------------------
@@ -194,5 +194,7 @@ CONTAINS
       ENDIF
 !
    END SUBROUTINE sed_init_wri
+
+#endif
 
 END MODULE sedinitrc

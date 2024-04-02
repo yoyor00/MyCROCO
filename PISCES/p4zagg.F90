@@ -12,7 +12,7 @@ MODULE p4zagg
    !!             3.5  !  2012-07  (O. Aumont) Introduce potential time-splitting
    !!             3.6  !  2015-05  (O. Aumont) PISCES quota
    !!----------------------------------------------------------------------
-
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_agg       :  Compute aggregation of particles
    !!----------------------------------------------------------------------
@@ -211,6 +211,15 @@ CONTAINS
       IF( ln_timing )   CALL timing_stop('p4z_agg')
       !
    END SUBROUTINE p4z_agg
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_agg                    ! Empty routine
+   END SUBROUTINE p4z_agg
+#endif
 
    !!======================================================================
 END MODULE p4zagg

@@ -7,6 +7,7 @@ MODULE sedfunc
    !!    related to organic matter
    !!    Diffusion of solutes in pore water
    !!=====================================================================
+#if defined key_pisces
    !! * Modules used
    USE sed     ! sediment global variable
    USE sedini
@@ -119,5 +120,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_func')
 !      
    END SUBROUTINE sed_func
+
+#endif
 
 END MODULE sedfunc

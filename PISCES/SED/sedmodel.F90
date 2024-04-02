@@ -6,6 +6,7 @@ MODULE sedmodel
    !!                       ***  MODULE sedmodel   ***
    !!   Sediment model : Main routine of sediment model 
    !!======================================================================
+#if defined key_pisces
    USE sed
    USE sedstp   ! time stepping
    USE sedinitrc
@@ -46,5 +47,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_model')
 
    END SUBROUTINE sed_model
+
+#endif
 
 END MODULE sedmodel

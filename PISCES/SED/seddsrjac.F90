@@ -6,6 +6,7 @@ MODULE seddsrjac
    !!    Sediment : dissolution and reaction in pore water related 
    !!    related to organic matter
    !!=====================================================================
+#if defined key_pisces
    !! * Modules used
    USE sed     ! sediment global variable
    USE sed_oce
@@ -451,5 +452,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_dsr_redoxbjac')
 
   END SUBROUTINE sed_dsr_redoxbjac
+
+#endif
 
 END MODULE seddsrjac

@@ -4,6 +4,7 @@ MODULE sedadv
    !!======================================================================
    !!              ***  MODULE  sedadv  ***
    !!    Sediment : vertical advection and burial
+#if defined key_pisces
    !!=====================================================================
    !! * Modules used
    !!----------------------------------------------------------------------
@@ -198,5 +199,6 @@ CONTAINS
 
    END SUBROUTINE sed_adv
 
+#endif
 
 END MODULE sedadv

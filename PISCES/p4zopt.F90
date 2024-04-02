@@ -9,6 +9,7 @@ MODULE p4zopt
    !!            2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!            3.2  !  2009-04  (C. Ethe, G. Madec)  optimisation
    !!            3.4  !  2011-06  (O. Aumont, C. Ethe) Improve light availability of nano & diat
+#if defined  key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_opt       : light availability in the water column
    !!----------------------------------------------------------------------
@@ -610,6 +611,15 @@ CONTAINS
       IF( p4z_opt_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p4z_opt_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p4z_opt_alloc
+
+#else
+   !!----------------------------------------------------------------------
+   !!  Dummy module :                                   No PISCES bio-model
+   !!----------------------------------------------------------------------
+CONTAINS
+   SUBROUTINE p4z_opt                   ! Empty routine
+   END SUBROUTINE p4z_opt
+#endif
 
    !!======================================================================
 END MODULE p4zopt

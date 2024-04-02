@@ -5,6 +5,7 @@ MODULE sedbtb
    !!              ***  MODULE  sedbtb  ***
    !!    Sediment : bioturbation of the solid components
    !!=====================================================================
+#if defined key_pisces
    !! * Modules used
    USE sed     ! sediment global variable
    USE sed_oce
@@ -134,5 +135,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_btb')
 
    END SUBROUTINE sed_btb
+
+#endif
 
 END MODULE sedbtb

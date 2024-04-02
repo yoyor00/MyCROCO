@@ -10,6 +10,7 @@ MODULE p4zrem
    !! History :   1.0  !  2004     (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Quota model for iron
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_rem       :  Compute remineralization/dissolution of organic compounds
    !!   p4z_rem_init  :  Initialisation of parameters for remineralisation
@@ -523,6 +524,15 @@ CONTAINS
       IF( p4z_rem_alloc /= 0 )   CALL ctl_stop( 'STOP', 'p4z_rem_alloc: failed to allocate arrays' )
       !
    END FUNCTION p4z_rem_alloc
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_rem                    ! Empty routine
+   END SUBROUTINE p4z_rem
+#endif
 
    !!======================================================================
 END MODULE p4zrem

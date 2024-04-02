@@ -6,6 +6,7 @@ MODULE sedinorg
    !!    Sediment : dissolution and reaction in pore water of 
    !!               inorganic species
    !!=====================================================================
+#if defined key_pisces
    !! * Modules used
    USE sed     ! sediment global variable
    USE sed_oce
@@ -240,5 +241,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_inorg')
 !      
    END SUBROUTINE sed_inorg
+
+#endif
 
 END MODULE sedinorg

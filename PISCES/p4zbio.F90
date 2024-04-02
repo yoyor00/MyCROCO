@@ -9,6 +9,7 @@ MODULE p4zbio
    !! History :   1.0  !  2004     (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.6  ! 2015 (O. Aumont) PISCES-QUOTA
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_bio        :   computes the interactions between the different
    !!                      compartments of PISCES
@@ -151,6 +152,15 @@ CONTAINS
       IF( ln_timing )   CALL timing_stop('p4z_bio')
       !
    END SUBROUTINE p4z_bio
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_bio                         ! Empty routine
+   END SUBROUTINE p4z_bio
+#endif
 
    !!======================================================================
 END MODULE p4zbio

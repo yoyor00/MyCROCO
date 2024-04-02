@@ -10,6 +10,7 @@ MODULE p5zprod
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-05  (O. Aumont, C. Ethe) New parameterization of light limitation
    !!             3.6  !  2015-05  (O. Aumont) PISCES quota
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p5z_prod       :   Compute the growth Rate of the two phytoplanktons groups
    !!   p5z_prod_init  :   Initialization of the parameters for growth
@@ -889,6 +890,15 @@ CONTAINS
       xq10_p = 1. + xpsino3 * qnpmax
       !
    END SUBROUTINE p5z_prod_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p5z_prod                    ! Empty routine
+   END SUBROUTINE p5z_prod
+#endif
 
    !!======================================================================
 END MODULE p5zprod

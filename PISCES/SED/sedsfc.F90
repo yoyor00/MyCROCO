@@ -5,6 +5,7 @@ MODULE sedsfc
    !!              ***  MODULE  sedsfc  ***
    !!    Sediment : Data at sediment surface
    !!=====================================================================
+#if defined key_pisces
    !! * Modules used
    USE sed     ! sediment global variable
    USE sedini
@@ -69,5 +70,7 @@ CONTAINS
       IF( ln_timing )  CALL timing_stop('sed_sfc')
 
    END SUBROUTINE sed_sfc
+
+#endif
 
 END MODULE sedsfc

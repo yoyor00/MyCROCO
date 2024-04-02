@@ -11,6 +11,7 @@ MODULE p4zpoc
    !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Quota model for iron
    !!             3.6  !  2016-03  (O. Aumont) Quota model and diverse
    !!             4.0  !  2018     (O. Aumont) Variable lability parameterization
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_poc       :  Compute remineralization/dissolution of organic compounds
    !!   p4z_poc_init  :  Initialisation of parameters for remineralisation
@@ -939,6 +940,15 @@ CONTAINS
   end do
 
   END FUNCTION gamain
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_poc                    ! Empty routine
+   END SUBROUTINE p4z_poc
+#endif
 
    !!======================================================================
 END MODULE p4zpoc

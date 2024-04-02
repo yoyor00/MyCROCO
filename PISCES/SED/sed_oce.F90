@@ -9,6 +9,7 @@ MODULE sed_oce
    !! History :
    !!        !  06-12  (C. Ethe)  Orignal
    !!----------------------------------------------------------------------
+#if defined key_pisces
    USE par_sed
    USE trc, ONLY : profsed
 
@@ -38,5 +39,7 @@ CONTAINS
       IF( sed_oce_alloc /= 0 )   CALL ctl_stop( 'STOP', 'sed_oce_alloc: failed to allocate arrays' )
       !
    END FUNCTION sed_oce_alloc
+
+#endif
 
 END MODULE sed_oce

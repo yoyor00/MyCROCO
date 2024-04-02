@@ -3,7 +3,7 @@ MODULE sedini
    !!              ***  MODULE  sedini  ***
    !! Sediment : define sediment variables
    !!=====================================================================
-
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   sed_ini    : initialization, namelist read, and parameters control
    !!----------------------------------------------------------------------
@@ -658,5 +658,7 @@ CONTAINS
       ENDIF
 
    END SUBROUTINE sed_ini_nam
+
+#endif
 
 END MODULE sedini

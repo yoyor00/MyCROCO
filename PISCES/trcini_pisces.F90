@@ -12,6 +12,7 @@ MODULE trcini_pisces
    !!             1.0  !  2005-03  (O. Aumont, A. El Moussaoui) F90
    !!             2.0  !  2007-12  (C. Ethe, G. Madec) from trcini.pisces.h90
    !!             3.5  !  2012-05  (C. Ethe) Merge PISCES-LOBSTER
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !! trc_ini_pisces   : PISCES biochemical model initialisation
    !!----------------------------------------------------------------------
@@ -384,6 +385,15 @@ CONTAINS
       IF(lwp) WRITE(numout,*) 
       !
    END SUBROUTINE p4z_ini
+
+#else
+   !!----------------------------------------------------------------------
+   !!   Dummy module                            No PISCES biochemical model
+   !!----------------------------------------------------------------------
+CONTAINS
+   SUBROUTINE trc_ini_pisces             ! Empty routine
+   END SUBROUTINE trc_ini_pisces
+#endif
 
    !!======================================================================
 END MODULE trcini_pisces

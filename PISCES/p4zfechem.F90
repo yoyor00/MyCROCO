@@ -7,6 +7,7 @@ MODULE p4zfechem
    !!======================================================================
    !! History :   3.5  !  2012-07 (O. Aumont, A. Tagliabue, C. Ethe) Original code
    !!             3.6  !  2015-05  (O. Aumont) PISCES quota
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_fechem       : Compute remineralization/scavenging of iron
    !!   p4z_fechem_init  : Initialisation of parameters for remineralisation
@@ -344,6 +345,15 @@ CONTAINS
       ENDIF
       !
    END SUBROUTINE p4z_fechem_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_fechem                    ! Empty routine
+   END SUBROUTINE p4z_fechem
+#endif
    
    !!======================================================================
 END MODULE p4zfechem

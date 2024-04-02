@@ -7,6 +7,7 @@ MODULE p2zmort
    !!======================================================================
    !! History :   1.0  !  2002     (O. Aumont)  Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_mort       : Compute the mortality terms for phytoplankton
    !!   p4z_mort_init  : Initialize the mortality params for phytoplankton
@@ -137,6 +138,15 @@ CONTAINS
       ENDIF
       !
    END SUBROUTINE p2z_mort_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p2z_mort                    ! Empty routine
+   END SUBROUTINE p2z_mort
+#endif
 
    !!======================================================================
 END MODULE p2zmort

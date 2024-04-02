@@ -2,6 +2,8 @@
 
 MODULE lib_mpp
 
+#if defined key_pisces
+
    use scalars
 
    IMPLICIT NONE
@@ -392,5 +394,6 @@ CONTAINS
       !
    END SUBROUTINE mpp_bcast_nml
 
+#endif
 
 END MODULE lib_mpp

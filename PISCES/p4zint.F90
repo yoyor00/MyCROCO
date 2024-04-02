@@ -7,6 +7,7 @@ MODULE p4zint
    !!=========================================================================
    !! History :   1.0  !  2004-03 (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_int        :  interpolation and computation of various accessory fields
    !!----------------------------------------------------------------------
@@ -107,6 +108,16 @@ CONTAINS
       IF( ln_timing )   CALL timing_stop('p4z_int')
       !
    END SUBROUTINE p4z_int
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_int                   ! Empty routine
+      WRITE(*,*) 'p4z_int: You should not have seen this print! error?'
+   END SUBROUTINE p4z_int
+#endif
 
    !!======================================================================
 END MODULE p4zint

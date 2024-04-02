@@ -9,6 +9,8 @@ MODULE trc
    !!              -   !  2000-04  (O. Aumont, M.A. Foujols)  HAMOCC3 and P3ZD
    !!   NEMO      1.0  !  2004-03  (C. Ethe)  Free form and module
    !!----------------------------------------------------------------------
+#if defined key_pisces
+
 !   USE par_oce
 !   USE par_trc
 !   USE bdy_oce, only: jp_bdy, ln_bdy, nb_bdy, OBC_DATA
@@ -203,6 +205,12 @@ CONTAINS
       IF( trc_alloc /= 0 )   CALL ctl_stop( 'STOP', 'trc_alloc: failed to allocate arrays' )
       !
    END FUNCTION trc_alloc
+
+#else
+   !!----------------------------------------------------------------------
+   !!  Empty module :                                     No passive tracer
+   !!----------------------------------------------------------------------
+#endif
 
    !!======================================================================
 END MODULE trc

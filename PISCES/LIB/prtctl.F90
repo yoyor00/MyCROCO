@@ -2,6 +2,8 @@
 
 MODULE prtctl
 
+#if defined key_pisces
+
    USE trc
 
    IMPLICIT NONE
@@ -66,6 +68,8 @@ CONTAINS
       END DO
 
    END SUBROUTINE prt_ctl      
+
+#endif
 
 ! Empty module
 END MODULE prtctl

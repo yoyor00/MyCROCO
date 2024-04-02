@@ -1,6 +1,7 @@
 #include "cppdefs.h"
 
 MODULE trosk
+#if defined key_pisces
 # if ! defined key_agrif
 !****************************************************************
 !* NUMERICAL SOLUTION OF A STIFF SYSTEM OF FIRST 0RDER ORDINARY *
@@ -1343,5 +1344,6 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       RETURN
 !----------------------- END OF SUBROUTINE SOLB ------------------------
       END SUBROUTINE SOLB
+#endif
 #endif
 END MODULE trosk

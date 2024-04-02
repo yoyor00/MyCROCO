@@ -14,6 +14,8 @@
 
 MODULE setavg_sed
 
+#if defined key_pisces
+
 #if ! defined XIOS
 
    !! * Modules used
@@ -144,6 +146,8 @@ CONTAINS
       endif
       return
       end SUBROUTINE set_avg_compute
+
+#endif
 
 #endif
 

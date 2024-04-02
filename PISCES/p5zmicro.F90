@@ -9,6 +9,7 @@ MODULE p5zmicro
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Quota model for iron
    !!             3.6  !  2015-05  (O. Aumont) PISCES quota
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p5z_micro       :   Compute the sources/sinks for microzooplankton
    !!   p5z_micro_init  :   Initialize and read the appropriate namelist
@@ -503,6 +504,15 @@ CONTAINS
       ENDIF
       !
    END SUBROUTINE p5z_micro_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p5z_micro                    ! Empty routine
+   END SUBROUTINE p5z_micro
+#endif
 
    !!======================================================================
 END MODULE p5zmicro

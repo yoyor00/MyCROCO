@@ -8,10 +8,12 @@ MODULE p2zlim
    !! History :   1.0  !  2004     (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-04  (O. Aumont, C. Ethe) Limitation for iron modelled in quota 
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p2z_lim        :   Compute the nutrients limitation terms 
    !!   p2z_lim_init   :   Read the namelist 
    !!----------------------------------------------------------------------
+
    USE oce_trc         ! Shared ocean-passive tracers variables
    USE trc             ! Tracers defined
    USE sms_pisces      ! PISCES variables
@@ -255,6 +257,15 @@ CONTAINS
       IF( p2z_lim_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p2z_lim_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p2z_lim_alloc
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p2z_lim                   ! Empty routine
+   END SUBROUTINE p2z_lim
+#endif
 
    !!======================================================================
 END MODULE p2zlim

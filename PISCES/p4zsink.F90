@@ -13,6 +13,7 @@ MODULE p4zsink
    !!             3.5  !  2012-07  (O. Aumont) Introduce potential time-splitting
    !!             4.0  !  2019     (O. Aumont) an external subroutine is called
    !!                                          to compute the impact of sinking
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_sink       :  Compute vertical flux of particulate matter due to gravitational sinking
    !!   p4z_sink_init  :  Unitialisation of sinking speed parameters
@@ -276,6 +277,15 @@ CONTAINS
       IF( p4z_sink_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p4z_sink_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p4z_sink_alloc
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_sink                    ! Empty routine
+   END SUBROUTINE p4z_sink
+#endif
    
    !!======================================================================
 END MODULE p4zsink

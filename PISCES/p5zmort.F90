@@ -8,6 +8,7 @@ MODULE p5zmort
    !! History :   1.0  !  2002     (O. Aumont)  Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.6  !  2015-05  (O. Aumont) PISCES quota
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p5z_mort       :   Compute the mortality terms for phytoplankton
    !!   p5z_mort_init  :   Initialize the mortality params for phytoplankton
@@ -317,6 +318,15 @@ CONTAINS
       ENDIF
       !
    END SUBROUTINE p5z_mort_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p5z_mort                    ! Empty routine
+   END SUBROUTINE p5z_mort
+#endif
 
    !!======================================================================
 END MODULE p5zmort

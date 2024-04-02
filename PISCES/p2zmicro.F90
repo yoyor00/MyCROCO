@@ -8,6 +8,7 @@ MODULE p2zmicro
    !! History :   1.0  !  2004     (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Quota model for iron
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p2z_micro      : Compute the sources/sinks for microzooplankton
    !!   p2z_micro_init : Initialize and read the appropriate namelist
@@ -318,6 +319,15 @@ CONTAINS
       ENDIF
       !
    END SUBROUTINE p2z_micro_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p2z_micro                    ! Empty routine
+   END SUBROUTINE p2z_micro
+#endif
 
    !!======================================================================
 END MODULE p2zmicro

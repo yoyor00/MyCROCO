@@ -4,6 +4,7 @@ MODULE oce_sed
    !!======================================================================
    !!                        ***  sed  ***
    !! Sediment :   set sediment global variables
+#if defined key_pisces
    !!======================================================================
    !! History :
    !!        !  06-12  (C. Ethe)  Orignal
@@ -61,5 +62,7 @@ MODULE oce_sed
    USE p4zche, ONLY     : sio3eq    =>   sio3eq          !: Chemical constants  
    USE p4zbc, ONLY      : dust      =>   dust
    USE trc  , ONLY      : rDt_trc   =>   rDt_trc
+
+#endif
 
 END MODULE oce_sed

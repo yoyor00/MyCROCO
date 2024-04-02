@@ -2,6 +2,8 @@
 
 MODULE iom
 
+#if defined key_pisces
+
 #ifdef XIOS
    USE xios
 #endif
@@ -182,5 +184,7 @@ CONTAINS
       CHARACTER(len=*)      , INTENT(in) ::   cdvar    ! time axis name
       REAL, DIMENSION(:,:,:), INTENT(in) ::   pvdp3d    ! read field (1D case), double precision
    END SUBROUTINE iom_g3d
+
+#endif
 
 END MODULE iom

@@ -9,6 +9,7 @@ MODULE p5zmeso
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Quota model for iron
    !!             3.6  !  2015-05  (O. Aumont) PISCES quota
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p5z_meso       : Compute the sources/sinks for mesozooplankton
    !!   p5z_meso_init  : Initialization of the parameters for mesozooplankton
@@ -789,6 +790,15 @@ CONTAINS
       IF( p5z_meso_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p5z_meso_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p5z_meso_alloc
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p5z_meso                    ! Empty routine
+   END SUBROUTINE p5z_meso
+#endif
 
    !!======================================================================
 END MODULE p5zmeso

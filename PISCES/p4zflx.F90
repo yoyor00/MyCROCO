@@ -12,6 +12,7 @@ MODULE p4zflx
    !!            2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!                 !  2011-02  (J. Simeon, J. Orr) Include total atm P correction 
    !!             4.2  !  2020     (J. ORR )  rhop is replaced by "in situ density" rhd
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_flx       :   CALCULATES GAS EXCHANGE AND CHEMISTRY AT SEA SURFACE
    !!   p4z_flx_init  :   Read the namelist
@@ -432,6 +433,15 @@ CONTAINS
       IF( p4z_flx_alloc /= 0 )   CALL ctl_stop( 'STOP', 'p4z_flx_alloc : failed to allocate arrays' )
       !
    END FUNCTION p4z_flx_alloc
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_flx                   ! Empty routine
+   END SUBROUTINE p4z_flx
+#endif
 
    !!======================================================================
 END MODULE p4zflx

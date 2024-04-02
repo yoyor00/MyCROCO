@@ -14,6 +14,7 @@ MODULE p4zlys
    !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Improvment of calcite dissolution
    !!             3.6  !  2015-05  (O. Aumont) PISCES quota
    !!             4.2  !  2020     (J. ORR )  rhop is replaced by "in situ density" rhd
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_lys        :   Compute the CaCO3 dissolution 
    !!   p4z_lys_init   :   Read the namelist parameters
@@ -423,6 +424,17 @@ CONTAINS
       excess(:,:,:) = 0._wp
       !
    END SUBROUTINE p4z_lys_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_lys( kt )                   ! Empty routine
+      INTEGER, INTENT( in ) ::   kt
+      WRITE(*,*) 'p4z_lys: You should not have seen this print! error?', kt
+   END SUBROUTINE p4z_lys
+#endif
 
    !!======================================================================
 END MODULE p4zlys

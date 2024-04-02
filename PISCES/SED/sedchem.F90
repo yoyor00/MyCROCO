@@ -6,6 +6,7 @@ MODULE sedchem
    !!                        ***  Module sedchem  ***
    !! sediment :   Variable for chemistry of the CO2 cycle
    !!======================================================================
+# if defined key_pisces
    !!   modules used
    USE par_sed, ONLY : jpksed
    USE sed     ! sediment global variable
@@ -810,5 +811,7 @@ FUNCTION sw_ptmp  (s,t,p,pr)
 
   RETURN
 END FUNCTION sw_ptmp
+
+#endif
 
 END MODULE sedchem

@@ -4,6 +4,7 @@ MODULE par_sed
    !!======================================================================
    !!                        ***  par_sed  ***
    !! Sediment :   set sediment parameter
+#if defined key_pisces
    !!======================================================================
    !! History :
    !!        !  06-12  (C. Ethe)  Orignal
@@ -74,5 +75,7 @@ MODULE par_sed
       r3dsed  = 20
 
 !   REAL(wp), PUBLIC  :: rtrn  = 0.5 * EPSILON( 1.e0 )    !: truncation value
+
+#endif
 
 END MODULE par_sed

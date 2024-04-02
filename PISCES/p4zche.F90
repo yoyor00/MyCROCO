@@ -14,6 +14,7 @@ MODULE p4zche
    !!                  !  2011-02  (J. Simeon, J.Orr ) update O2 solubility constants
    !!             3.6  !  2016-03  (O. Aumont) Change chemistry to MOCSY standards
    !!             4.2  !  2020     (J. ORR )  rhop is replaced by "in situ  density" rhd
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_che      :  Sea water chemistry computed following OCMIP protocol
    !!----------------------------------------------------------------------
@@ -848,6 +849,17 @@ CONTAINS
       IF( p4z_che_alloc /= 0 )   CALL ctl_stop( 'STOP', 'p4z_che_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p4z_che_alloc
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_che                   ! Empty routine
+      WRITE(*,*) 'p4z_che: You should not have seen this print! error?', kt
+   END SUBROUTINE p4z_che
+#endif
+
 
    !!======================================================================
 END MODULE p4zche

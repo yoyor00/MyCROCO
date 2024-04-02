@@ -6,6 +6,7 @@ MODULE p4zligand
    !! TOP :   PISCES Compute remineralization/dissolution of organic ligands
    !!=========================================================================
    !! History :   3.6  !  2016-03  (O. Aumont, A. Tagliabue) Quota model and reorganization
+#if defined key_pisces
    !!----------------------------------------------------------------------
    !!   p4z_ligand     :  Compute remineralization/dissolution of organic ligands
    !!   p4z_ligand_init:  Initialisation of parameters for remineralisation
@@ -176,6 +177,15 @@ CONTAINS
       xklig2 = xklig * xklig
       !
    END SUBROUTINE p4z_ligand_init
+
+#else
+   !!======================================================================
+   !!  Dummy module :                                   No PISCES bio-model
+   !!======================================================================
+CONTAINS
+   SUBROUTINE p4z_ligand                    ! Empty routine
+   END SUBROUTINE p4z_ligand
+#endif
 
    !!======================================================================
 END MODULE p4zligand

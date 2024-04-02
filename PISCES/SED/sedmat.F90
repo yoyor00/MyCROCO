@@ -8,6 +8,7 @@ MODULE sedmat
    !!=====================================================================
    !! * Modules used
    !!----------------------------------------------------------------------
+#if defined key_pisces
 
    USE sed     ! sediment global variable
    USE par_sed, ONLY : jpksed
@@ -842,5 +843,6 @@ MODULE sedmat
 
     END SUBROUTINE sed_mat_btbe
 
+#endif
 
  END MODULE sedmat

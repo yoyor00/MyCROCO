@@ -14,6 +14,8 @@
 
 MODULE sedrst
 
+#if defined key_pisces
+
    !! * Modules used
    USE sed
 #ifdef AGRIF
@@ -806,5 +808,7 @@ CONTAINS
       SUBROUTINE sed_rst_read
       END SUBROUTINE sed_rst_read
 #endif      
+
+#endif
 
 END MODULE sedrst
