@@ -188,15 +188,13 @@ C$    trd=omp_get_thread_num()
      & DIMAG( var2d_oa( i,j, tvar_oa( tc_oa(ic), tvc_oa(ic), ivc ))))
      &              SWITCH rmask(i,j)
 
-#ifdef OA_TRACES 
-!!#if defined MILES || defined IGW || defined ACOU_OCEAN
+#ifdef OA_TRACES
                        if(verbose_oa>verbl) then
-                       call traces_oa_i(i,j,itgt_glob) 
+                       call traces_oa_i(i,j,itgt_glob)
                        call trace2_oa_i
      &                    (i,j,itgt_glob,var2d_re(i,j)
      &                                  ,var2d_im(i,j) )
                        endif
-!!#endif
 #endif
                     enddo
                 enddo
