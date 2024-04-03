@@ -571,14 +571,6 @@ c          endif
         enddo
        endif
 
-!# if defined AGRIF
-!        DeAllocate(buf_snd4_3D,  ibuf_sndN_3D,  buf_snd2_3D,
-!     &     buf_rev4_3D,  ibuf_revN_3D,  buf_rev2_3D,
-!     &    jbuf_sndW_3D,                      jbuf_sndE_3D,
-!     &    jbuf_revW_3D,                      jbuf_revE_3D,
-!     &     buf_snd1_3D,  ibuf_sndS_3D,  buf_snd3_3D,
-!     &     buf_rev1_3D,  ibuf_revS_3D,  buf_rev3_3D)
-!# endif
 
       return
       end

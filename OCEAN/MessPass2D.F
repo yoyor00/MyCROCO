@@ -505,12 +505,6 @@ c          endif
 
 c      write(*,*) 'MessPass2D:    ', mynode,' exit'
 
-!#if defined AGRIF
-!         DeAllocate(ibuf_sndN, ibuf_revN, 
-!     &     ibuf_sndS, ibuf_revS,
-!     &     jbuf_sndW, jbuf_sndE,
-!     &     jbuf_revW, jbuf_revE)
-!#endif
 
       return
       end
