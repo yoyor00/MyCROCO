@@ -111,6 +111,9 @@
 !
 !======================================================================
 !
+#ifdef RVTK_DEBUG
+      use debug
+#endif
 #  ifdef MUSTANG
       USE comsubstance, ONLY : ros, nvpc, l_subs2D
 #  endif

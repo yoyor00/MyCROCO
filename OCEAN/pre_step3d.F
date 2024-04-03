@@ -67,6 +67,9 @@
 ! mode) computations.
 !--------------------------------------------------------------------
 !
+#ifdef RVTK_DEBUG
+      use debug
+#endif              
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
