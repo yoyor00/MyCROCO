@@ -9,7 +9,7 @@ MODULE prtctl
    IMPLICIT NONE
    PUBLIC
 
-   PUBLIC prt_ctl_ini, prt_ctl_info, prt_ctl      ! used in many places (masked with tmask_i = ssmask * (excludes halo+duplicated points (NP folding)) )
+   PUBLIC prt_ctl_ini, prt_ctl_info, prt_ctl   
 
    !! * Substitutions
 #  include "ocean2pisces.h90"
@@ -47,18 +47,22 @@ CONTAINS
 
    SUBROUTINE prt_ctl( ptab, pmask, clinfo )
 
-      REAL(wp), DIMENSION(A2D(0),jpk,jptra), INTENT(in) :: ptab
+      REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: ptab
       CHARACTER(len=*),  INTENT(in)           :: clinfo   ! information about the tab3d array
-      REAL(wp), DIMENSION(A2D(0),jpk), INTENT(in), OPTIONAL ::   pmask
+      REAL(wp), DIMENSION(:,:,:), INTENT(in), OPTIONAL ::   pmask
 
       INTEGER :: ji, jj, jk, jn
       REAL(wp), DIMENSION(A2D(0),jpk,jptra)        :: ztab
       REAL(wp)  :: zsum  
 
-      DO jn = 1, jptra
-         DO_3D( 0, 0, 0, 0, 1, jpk)
-            ztab(ji,jj,jk,jn) = ptab(ji,jj,jk,jn) * pmask(ji,jj,jk)
-         END_3D
+      DO jn = 1, SIZE( ptab, 4 )
+         DO jk = 1, SIZE( ptab, 3 )
+            DO jj = 1, SIZE( ptab, 2 )
+               DO ji = 1, SIZE( ptab, 1 )
+                  ztab(ji,jj,jk,jn) = ptab(ji,jj,jk,jn) * pmask(ji,jj,jk)
+               ENDDO
+            ENDDO
+         ENDDO
       ENDDO
 
       DO jn = 1, jptra
@@ -68,9 +72,7 @@ CONTAINS
       END DO
 
    END SUBROUTINE prt_ctl      
-
-#endif
-
+# endif
 ! Empty module
 END MODULE prtctl
 

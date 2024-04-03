@@ -17,10 +17,11 @@ MODULE sms_pisces
    IMPLICIT NONE
    PUBLIC
 
-
-   CHARACTER(:), ALLOCATABLE ::   numnatp_ref   !! Character buffer for reference namelist pisces
-   CHARACTER(:), ALLOCATABLE ::   numnatp_cfg   !! Character buffer for configuration namelist pisces
+!   CHARACTER(50) :: numnatp_ref   !! Character buffer for reference namelist pisces
+!   CHARACTER(50) :: numnatp_cfg   !! Character buffer for configuration namelist pisces
    INTEGER ::   numonp      = -1                !! Logical unit for namelist pisces output
+   INTEGER ::   numnatp_ref = -1                !! Logical unit for namelist pisces output
+   INTEGER ::   numnatp_cfg = -1                !! Logical unit for namelist pisces output
 
    !!* Model used
    LOGICAL  ::  ln_p2z            !: Flag to use PISCES  reduced model

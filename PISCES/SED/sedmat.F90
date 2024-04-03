@@ -8,7 +8,7 @@ MODULE sedmat
    !!=====================================================================
    !! * Modules used
    !!----------------------------------------------------------------------
-#if defined key_pisces
+#if defined key_sediment
 
    USE sed     ! sediment global variable
    USE par_sed, ONLY : jpksed

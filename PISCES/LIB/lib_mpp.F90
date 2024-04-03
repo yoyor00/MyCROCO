@@ -288,6 +288,7 @@ CONTAINS
       LOGICAL, OPTIONAL, INTENT(in) ::   ld_finalize
       !
    END SUBROUTINE timing_stop
+
    SUBROUTINE load_nml( cdnambuff , cdnamfile, kout, ldwp)
       CHARACTER(LEN=:)    , ALLOCATABLE, INTENT(INOUT) :: cdnambuff
       CHARACTER(LEN=*), INTENT(IN )                :: cdnamfile

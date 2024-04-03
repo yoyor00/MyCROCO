@@ -14,7 +14,7 @@
 
 MODULE sedwri
 
-#if defined key_pisces
+#if defined key_sediment
 
    USE sed
    USE sedinorg
@@ -163,6 +163,12 @@ CONTAINS
 
       IF( ln_timing )  CALL timing_stop('sed_wri')
 
+   END SUBROUTINE sed_wri
+#else
+
+CONTAINS
+
+   SUBROUTINE sed_wri
    END SUBROUTINE sed_wri
 
 #endif

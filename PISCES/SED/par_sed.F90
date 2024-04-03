@@ -4,7 +4,7 @@ MODULE par_sed
    !!======================================================================
    !!                        ***  par_sed  ***
    !! Sediment :   set sediment parameter
-#if defined key_pisces
+#if defined key_sediment
    !!======================================================================
    !! History :
    !!        !  06-12  (C. Ethe)  Orignal

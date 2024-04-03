@@ -9,7 +9,7 @@ MODULE p4zopt
    !!            2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!            3.2  !  2009-04  (C. Ethe, G. Madec)  optimisation
    !!            3.4  !  2011-06  (O. Aumont, C. Ethe) Improve light availability of nano & diat
-#if defined  key_pisces
+#if defined  key_pisces   
    !!----------------------------------------------------------------------
    !!   p4z_opt       : light availability in the water column
    !!----------------------------------------------------------------------
@@ -544,19 +544,23 @@ CONTAINS
       CHARACTER(len=100) ::  cn_dir          ! Root directory for location of ssr files
 # ifdef NEMO
       TYPE(FLD_N) ::   sn_par                ! informations about the fields to be read
-# endif
       !
       NAMELIST/nampisopt/cn_dir, sn_par, ln_varpar, parlux, ln_p4z_dcyc
+# endif
       !!----------------------------------------------------------------------
       IF(lwp) THEN
          WRITE(numout,*)
          WRITE(numout,*) 'p4z_opt_init : '
          WRITE(numout,*) '~~~~~~~~~~~~ '
       ENDIF
+# ifdef NEMO
       READ_NML_REF(numnatp,nampisopt)
       READ_NML_CFG(numnatp,nampisopt)
       IF(lwm) WRITE ( numonp, nampisopt )
-
+# endif
+      ln_p4z_dcyc =  .false.  ! Diurnal cycle in PISCES
+      ln_varpar   = .FALSE. 
+      parlux      =  0.43      ! Fraction of shortwave as PAR
       IF(lwp) THEN
          WRITE(numout,*) '   Namelist : nampisopt '
          WRITE(numout,*) '      PAR as a variable fraction of SW       ln_varpar      = ', ln_varpar
@@ -564,7 +568,6 @@ CONTAINS
          WRITE(numout,*) '      Activate the diurnal cycle in PISCES   ln_p4z_dcyc    = ', ln_p4z_dcyc
       ENDIF
       !
-      ln_varpar = .FALSE. 
       !
       xparsw = parlux / 3.0
       xsi0r  = 1.e0 / rn_si0

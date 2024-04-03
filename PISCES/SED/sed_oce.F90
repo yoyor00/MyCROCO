@@ -9,7 +9,7 @@ MODULE sed_oce
    !! History :
    !!        !  06-12  (C. Ethe)  Orignal
    !!----------------------------------------------------------------------
-#if defined key_pisces
+#if defined key_sediment
    USE par_sed
    USE trc, ONLY : profsed
 

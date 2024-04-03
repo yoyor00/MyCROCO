@@ -1,8 +1,8 @@
 #include "cppdefs.h"
 
 MODULE trosk
-#if defined key_pisces
-# if ! defined key_agrif
+#if defined key_sediment
+# if ! defined AGRIF
 !****************************************************************
 !* NUMERICAL SOLUTION OF A STIFF SYSTEM OF FIRST 0RDER ORDINARY *
 !* DIFFERENTIAL EQUATIONS Y'=F(X,Y) BY ROSENBROCK METHOD.       *

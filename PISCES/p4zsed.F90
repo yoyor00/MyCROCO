@@ -292,7 +292,10 @@ CONTAINS
       sedsilfrac = 0.03     ! percentage of silica loss in the sediments
       sedcalfrac = 0.99     ! percentage of calcite loss in the sediments
       !
+      lk_sed = .FALSE.
+#if defined key_sediment      
       lk_sed = ln_sediment .AND. ln_sed_2way 
+#endif      
       !
    END SUBROUTINE p4z_sed_init
 

@@ -14,7 +14,7 @@
 
 MODULE sedrst
 
-#if defined key_pisces
+#if defined key_sediment
 
    !! * Modules used
    USE sed

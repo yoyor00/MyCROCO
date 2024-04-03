@@ -5,7 +5,7 @@ MODULE sedbtb
    !!              ***  MODULE  sedbtb  ***
    !!    Sediment : bioturbation of the solid components
    !!=====================================================================
-#if defined key_pisces
+#if defined key_sediment
    !! * Modules used
    USE sed     ! sediment global variable
    USE sed_oce

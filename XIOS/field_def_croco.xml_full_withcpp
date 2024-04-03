@@ -4,8 +4,8 @@
 
 #ifdef SOLVE3D
   <field_group id="Vertical_dimension_rho" grid_ref="rho_vertical_dimension" >
-    <field id="Cs_r" long_name="ocean s croco coordinate at rho point"  />
-    <field id="sc_r" long_name="S-coordinate stretching curves at RHO-points"  />
+    <field id="Cs_rho" long_name="ocean s croco coordinate at rho point"  />
+    <field id="sc_rho" long_name="S-coordinate stretching curves at RHO-points"  />
   </field_group>
   <field_group id="Vertical_dimension_w"  grid_ref="w_vertical_dimension" >
     <field id="Cs_w" long_name="ocean s croco coordinate at w point"  />

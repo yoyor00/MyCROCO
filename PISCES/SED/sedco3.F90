@@ -6,7 +6,7 @@ MODULE sedco3
    !!    Sediment : carbonate in sediment pore water
    !!=====================================================================
    !! * Modules used
-#if defined key_pisces
+#if defined key_sediment
    USE sed     ! sediment global variable
    USE sedchem
    USE lib_mpp         ! distribued memory computing library

@@ -373,7 +373,10 @@ CONTAINS
          WRITE(numout,*) '  Name of output restart file if needed = ', TRIM( cn_pisrst_out )
          WRITE(numout,*) ' '
       ENDIF
-#endif      
+#endif    
+      !
+      ncidpisrst = -1
+      nrecpisrst = 0
       !
    END SUBROUTINE p4z_sms_init
 

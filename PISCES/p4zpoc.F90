@@ -28,8 +28,6 @@ MODULE p4zpoc
 
    PUBLIC   p4z_poc         ! called in p4zbio.F90
    PUBLIC   p4z_poc_init    ! called in trcini_pisces.F90
-   PUBLIC   alngam          ! 
-   PUBLIC   gamain          !
 
    REAL(wp), PUBLIC ::   xremipc    !: remineralisation rate of DOC
    REAL(wp), PUBLIC ::   xremipn    !: remineralisation rate of DON
@@ -509,6 +507,7 @@ CONTAINS
       INTEGER ::   jn            ! dummy loop index
       INTEGER ::   ios           ! Local integer
       REAL(wp)::   remindelta, reminup, remindown
+      REAL(wp)::   zup, zup1, zdown, zdown1
       !!
       NAMELIST/nampispoc/ jcpoc  , rshape,  &
          &                xremipc, xremipn, xremipp
@@ -550,18 +549,26 @@ CONTAINS
          ! fortran 95, they have been coded as functions in this module (gamain)
          ! ---------------------------------------------------------------------
          !
-         alphan(1) = gamain(reminup, rshape)
-         reminp(1) = gamain(reminup, rshape+1.0) * xremipc / alphan(1)
+         CALL gamain(reminup, rshape, zup )
+         CALL gamain(reminup, rshape+1.0, zup1 )
+         alphan(1) = zup
+         reminp(1) =  zup1 * xremipc / alphan(1)
          DO jn = 2, jcpoc-1
             reminup = 1./ 400. * EXP( REAL(jn, wp) * remindelta)
             remindown = 1. / 400. * EXP( REAL(jn-1, wp) * remindelta)
-            alphan(jn) = gamain(reminup, rshape) - gamain(remindown, rshape)
-            reminp(jn) = gamain(reminup, rshape+1.0) - gamain(remindown, rshape+1.0)
+            CALL gamain(reminup, rshape, zup )
+            CALL gamain(remindown, rshape, zdown )
+            alphan(jn) = zup - zdown
+            CALL gamain(reminup, rshape+1.0, zup1 )
+            CALL gamain(remindown, rshape+1.0, zdown1 )
+            reminp(jn) = zup1 -zdown1
             reminp(jn) = reminp(jn) * xremipc / alphan(jn)
          END DO
          remindown = 1. / 400. * EXP( REAL(jcpoc-1, wp) * remindelta)
-         alphan(jcpoc) = 1.0 - gamain(remindown, rshape)
-         reminp(jcpoc) = 1.0 - gamain(remindown, rshape+1.0)
+         CALL gamain(remindown, rshape, zdown )
+         CALL gamain(remindown, rshape+1.0, zdown1 )
+         alphan(jcpoc) = 1.0 - zdown
+         reminp(jcpoc) = 1.0 - zdown1
          reminp(jcpoc) = reminp(jcpoc) * xremipc / alphan(jcpoc)
 
       ELSE  ! Only one lability class is used
@@ -584,7 +591,7 @@ CONTAINS
    END SUBROUTINE p4z_poc_init
 
 
-   ELEMENTAL FUNCTION alngam( xvalue )
+   SUBROUTINE alngam( xvalue, xres )
       !*****************************************************************************80
       !
       !! ALNGAM computes the logarithm of the gamma function.
@@ -610,7 +617,6 @@ CONTAINS
       !
       !    Output, real ( kind = 8 ) ALNGAM, the logarithm of the gamma function of X.
       !*****************************************************************************80
-  REAL(wp) alngam
   real(wp), parameter :: alr2pi = 0.918938533204673E+00
   real(wp), parameter, dimension ( 9 ) :: r1 = (/ &
     -2.66685511495E+00, &
@@ -654,10 +660,11 @@ CONTAINS
   real (wp), parameter :: xlge = 5.10E+05
   real (wp), parameter :: xlgst = 1.0E+30
   REAL (wp), INTENT(in) :: xvalue
+  REAL (wp), INTENT(inout) :: xres
   real (wp) :: y
 
   x = xvalue
-  alngam = 0.0E+00
+  xres = 0.0E+00
 !
 !  Check the input.
 !
@@ -674,7 +681,7 @@ CONTAINS
   if ( x < 1.5E+00 ) then
 
     if ( x < 0.5E+00 ) then
-      alngam = - log ( x )
+      xres = - log ( x )
       y = x + 1.0E+00
 !
 !  Test whether X < machine epsilon.
@@ -685,13 +692,13 @@ CONTAINS
 
     else
 
-      alngam = 0.0E+00
+      xres = 0.0E+00
       y = x
       x = ( x - 0.5E+00 ) - 0.5E+00
 
     end if
 
-    alngam = alngam + x * (((( &
+    xres = xres + x * (((( &
         r1(5)   * y &
       + r1(4) ) * y &
       + r1(3) ) * y &
@@ -713,7 +720,7 @@ CONTAINS
 
     y = ( x - 1.0E+00 ) - 1.0E+00
 
-    alngam = y * (((( &
+    xres = y * (((( &
         r2(5)   * x &
       + r2(4) ) * x &
       + r2(3) ) * x &
@@ -729,7 +736,7 @@ CONTAINS
 !
   else if ( x < 12.0E+00 ) then
 
-    alngam = (((( &
+    xres = (((( &
         r3(5)   * x &
       + r3(4) ) * x &
       + r3(3) ) * x &
@@ -746,14 +753,14 @@ CONTAINS
   else
 
     y = log ( x )
-    alngam = x * ( y - 1.0E+00 ) - 0.5E+00 * y + alr2pi
+    xres = x * ( y - 1.0E+00 ) - 0.5E+00 * y + alr2pi
 
     if ( x <= xlge ) then
 
       x1 = 1.0E+00 / x
       x2 = x1 * x1
 
-      alngam = alngam + x1 * ( ( &
+      xres = xres + x1 * ( ( &
              r4(3)   * &
         x2 + r4(2) ) * &
         x2 + r4(1) ) / ( ( &
@@ -764,10 +771,10 @@ CONTAINS
 
    end if
 
-   END FUNCTION alngam
+   END SUBROUTINE alngam
 
 
-   ELEMENTAL FUNCTION gamain( x, p )
+   SUBROUTINE gamain( x, p, xres )
 !*****************************************************************************80
 !
 !! GAMAIN computes the incomplete gamma ratio.
@@ -809,7 +816,7 @@ CONTAINS
 !    gamma ratio.
 !
 
-  real (wp) gamain
+  real (wp), intent(out) :: xres
   real (wp) a
   real (wp), parameter :: acu = 1.0E-08
   real (wp) an
@@ -831,26 +838,26 @@ CONTAINS
 !  Check the input.
 !
   if ( p <= 0.0E+00 ) then
-    gamain = 0.0E+00
+    xres = 0.0E+00
     return
   end if
 
   if ( x < 0.0E+00 ) then
-    gamain = 0.0E+00
+    xres = 0.0E+00
     return
   end if
 
   if ( x == 0.0E+00 ) then
-    gamain = 0.0E+00
+    xres = 0.0E+00
     return
   end if
 
-  g = alngam ( p )
+  CALL alngam ( p, g )
 
   arg = p * log ( x ) - x - g
 
   if ( arg < log ( uflo ) ) then
-    gamain = 0.0E+00
+    xres = 0.0E+00
     return
   end if
 
@@ -876,7 +883,7 @@ CONTAINS
 
     end do
 
-    gamain = gin * factor / p
+    xres = gin * factor / p
     return
 
   end if
@@ -916,7 +923,7 @@ CONTAINS
 !  Relative error tolerance satisfied?
 !
         if ( dif <= acu * rn ) then
-          gamain = 1.0E+00 - factor * gin
+          xres = 1.0E+00 - factor * gin
           exit
         end if
 
@@ -939,7 +946,7 @@ CONTAINS
 
   end do
 
-  END FUNCTION gamain
+  END SUBROUTINE gamain
 
 #else
    !!======================================================================

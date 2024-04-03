@@ -12,7 +12,7 @@ MODULE p4zflx
    !!            2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!                 !  2011-02  (J. Simeon, J. Orr) Include total atm P correction 
    !!             4.2  !  2020     (J. ORR )  rhop is replaced by "in situ density" rhd
-#if defined key_pisces
+#if defined key_pisces   
    !!----------------------------------------------------------------------
    !!   p4z_flx       :   CALCULATES GAS EXCHANGE AND CHEMISTRY AT SEA SURFACE
    !!   p4z_flx_init  :   Read the namelist
@@ -358,12 +358,13 @@ CONTAINS
 # ifdef NEMO
       TYPE(FLD_N)        ::   sn_patm     ! informations about the fields to be read
       TYPE(FLD_N)        ::   sn_atmco2   ! informations about the fields to be read
+      NAMELIST/nampisatm/ ln_presatm, ln_presatmco2, sn_patm, sn_atmco2, cn_dir
 # endif      
       INTEGER  :: ji, jj
       !!
-      NAMELIST/nampisatm/ ln_presatm, ln_presatmco2, sn_patm, sn_atmco2, cn_dir
       !!----------------------------------------------------------------------
       !
+# ifdef NEMO
       IF( kt == nit000 ) THEN    !==  First call kt=nittrc000  ==!
          !
          IF(lwp) THEN
@@ -385,7 +386,6 @@ CONTAINS
             WRITE(numout,*) '      spatial atmopsheric CO2 for flux calcs                ln_presatmco2 = ', ln_presatmco2
          ENDIF
          !
-# ifdef NEMO
          IF( ln_presatm ) THEN
             ALLOCATE( sf_patm(1), STAT=ierr )           !* allocate and fill sf_patm (forcing structure) with sn_patm
             IF( ierr > 0 )   CALL ctl_stop( 'STOP', 'p4z_flx: unable to allocate sf_patm structure' )
@@ -403,13 +403,10 @@ CONTAINS
                                    ALLOCATE( sf_atmco2(1)%fnow(jpi,jpj,1)   )
             IF( sn_atmco2%ln_tint )  ALLOCATE( sf_atmco2(1)%fdta(jpi,jpj,1,2) )
          ENDIF
-# endif
          !
          IF( .NOT.ln_presatm )   patm(:,:) = 1._wp    ! Initialize patm if no reading from a file
          !
       ENDIF
-      !
-# ifdef NEMO
       IF( ln_presatm ) THEN
          CALL fld_read( kt, 1, sf_patm )               !* input Patm provided at kt + 1/2
          DO_2D( 0, 0, 0, 0 )
@@ -425,6 +422,9 @@ CONTAINS
       ELSE
          satmco2(:,:) = atcco2    ! Initialize atmco2 if no reading from a file
       ENDIF
+#else      
+         satmco2(:,:) = atcco2    ! Initialize atmco2 if no reading from a file
+         patm(:,:) = 1._wp    ! Initialize patm if no reading from a file
 # endif
       !
    END SUBROUTINE p4z_patm
@@ -447,6 +447,5 @@ CONTAINS
    SUBROUTINE p4z_flx                   ! Empty routine
    END SUBROUTINE p4z_flx
 #endif
-
    !!======================================================================
 END MODULE p4zflx

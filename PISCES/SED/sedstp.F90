@@ -6,7 +6,7 @@ MODULE sedstp
    !!                       ***  MODULE sedstp   ***
    !!   Sediment model : Sediment model time-stepping
    !!======================================================================
-#if defined key_pisces
+#if defined key_sediment
    USE sed      ! sediment global variables
    USE seddta   ! data read
    USE sedchem  ! chemical constant

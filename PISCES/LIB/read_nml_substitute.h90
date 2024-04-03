@@ -46,9 +46,9 @@
 #undef key_nomultnlg
 /*                                                                      */
 #if defined key_nomultnlg
-#    define READ_NML_(NUMNAM,NLTYPE,NAM,WARN)READ(NUMNAM(MAX(INDEX(NUMNAM,"&NAM"),1):),NAM,IOSTAT=ios);CALL ctl_nam(ios,"NAM (NLTYPE)",WARN)
+#    define READ_NML_(NUMNAM,NLTYPE,NAM,WARN)REWIND(NUMNAM);READ(NUMNAM(MAX(INDEX(NUMNAM,"&NAM"),1):),NAM,IOSTAT=ios);CALL ctl_nam(ios,"NAM (NLTYPE)",WARN)
 #else
-#    define READ_NML_(NUMNAM,NLTYPE,NAM,WARN)READ(NUMNAM,NAM,IOSTAT=ios);CALL ctl_nam(ios,"NAM (NLTYPE)",WARN)
+#    define READ_NML_(NUMNAM,NLTYPE,NAM,WARN)REWIND(NUMNAM);READ(NUMNAM,NAM,IOSTAT=ios);CALL ctl_nam(ios,"NAM (NLTYPE)",WARN)
 #endif
 #define READ_NML_REF(NUMNAM,NAM)READ_NML_(NUMNAM/**/_ref,ref,NAM,.TRUE.)
 #define READ_NML_CFG(NUMNAM,NAM)READ_NML_(NUMNAM/**/_cfg,cfg,NAM,.FALSE.)

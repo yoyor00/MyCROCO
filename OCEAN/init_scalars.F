@@ -280,14 +280,6 @@ C$OMP END PARALLEL
       nciddiabio_avg=-1
 # endif
 #endif
-#if defined BIOLOGY && defined PISCES
-      ncidpisrst = -1
-      nrecpisrst = 0
-#if defined key_sediment
-      ncidsedrst = -1
-      nrecsedrst = 0
-#endif
-#endif      
 #ifndef ANA_BRY
        bry_id=-1
 #endif

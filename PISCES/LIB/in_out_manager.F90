@@ -1,5 +1,6 @@
 MODULE in_out_manager
-#if defined key_pisces
+
+
 ! Empty module
    TYPE :: sn_ctl                !: structure for control over output selection
       LOGICAL :: l_runstat = .FALSE.  !: Produce/do not produce run.stat file (T/F)
@@ -18,5 +19,6 @@ MODULE in_out_manager
       INTEGER :: ptimincr  = 1        !: timestep increment to output (time.step and run.stat)
    END TYPE
    TYPE(sn_ctl), SAVE :: sn_cfctl     !: run control structure for selective output, must have SAVE for default init. of sn_ctl
-#endif
+
+
 END MODULE in_out_manager

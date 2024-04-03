@@ -3,7 +3,7 @@ MODULE sedini
    !!              ***  MODULE  sedini  ***
    !! Sediment : define sediment variables
    !!=====================================================================
-#if defined key_pisces
+#if defined key_sediment
    !!----------------------------------------------------------------------
    !!   sed_ini    : initialization, namelist read, and parameters control
    !!----------------------------------------------------------------------
@@ -408,8 +408,8 @@ CONTAINS
       !!        !  06-07  (C. Ethe)  Original
       !!----------------------------------------------------------------------
 
-      CHARACTER(:), ALLOCATABLE ::   numnamsed_ref   !! Character buffer for reference namelist sediment
-      CHARACTER(:), ALLOCATABLE ::   numnamsed_cfg   !! Character buffer for configuration namelist sediment
+      INTEGER :: numnamsed_ref = -1  !! Character buffer for reference namelist sediment
+      INTEGER :: numnamsed_cfg = -1   !! Character buffer for configuration namelist sediment
       CHARACTER(LEN=20)   ::   clname
       INTEGER ::   ios   ! Local integer
 
@@ -454,8 +454,10 @@ CONTAINS
       clname = 'namelist_sediment'
       IF(lwp) WRITE(numsed,*) ' sed_ini_nam : read SEDIMENT namelist'
       IF(lwp) WRITE(numsed,*) ' ~~~~~~~~~~~~~~'
-      CALL load_nml( numnamsed_ref, TRIM( clname )//'_ref', numout, lwm )
-      CALL load_nml( numnamsed_cfg, TRIM( clname )//'_cfg', numout, lwm )
+!      CALL load_nml( numnamsed_ref, TRIM( clname )//'_ref', numout, lwm )
+!      CALL load_nml( numnamsed_cfg, TRIM( clname )//'_cfg', numout, lwm )
+      CALL ctl_opn( numnamsed_ref, TRIM( clname )//'_ref', 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
+      CALL ctl_opn( numnamsed_cfg, TRIM( clname )//'_cfg', 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
 
       nitsed000 = nittrc000
       nitsedend = nitend
@@ -656,9 +658,17 @@ CONTAINS
          WRITE(numsed,*) '  Name of output restart file if needed = ', TRIM( cn_sedrst_out ) 
          WRITE(numsed,*) ' '
       ENDIF
-
+      !
+      ncidsedrst = -1
+      nrecsedrst = 0
+      !
    END SUBROUTINE sed_ini_nam
+#else
 
+CONTAINS
+
+   SUBROUTINE sed_ini
+   END SUBROUTINE sed_ini
 #endif
 
 END MODULE sedini

@@ -5,7 +5,7 @@ MODULE sedinitrc
    !!              ***  MODULE  sedinitrc  ***
    !! Sediment : define sediment variables
    !!=====================================================================
-#if defined key_pisces
+#if defined key_sediment
    !!----------------------------------------------------------------------
    !!   sed_init    : initialization, namelist read, and parameters control
    !!----------------------------------------------------------------------

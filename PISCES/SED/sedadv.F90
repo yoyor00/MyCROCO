@@ -4,7 +4,7 @@ MODULE sedadv
    !!======================================================================
    !!              ***  MODULE  sedadv  ***
    !!    Sediment : vertical advection and burial
-#if defined key_pisces
+#if defined key_sediment
    !!=====================================================================
    !! * Modules used
    !!----------------------------------------------------------------------

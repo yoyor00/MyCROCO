@@ -7,7 +7,7 @@ MODULE sedsol
    !!    related to organic matter
    !!    Diffusion of solutes in pore water
    !!=====================================================================
-#if defined key_pisces
+#if defined key_sediment
    !! * Modules used
    USE sed     ! sediment global variable
    USE sedini
@@ -15,7 +15,7 @@ MODULE sedsol
    USE sedbtb
    USE sedinorg
    USE sedorg
-# if ! defined key_agrif
+# if ! defined AGRIF
    USE trosk
 #endif
    USE lib_mpp         ! distribued memory computing library

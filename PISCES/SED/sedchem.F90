@@ -6,7 +6,7 @@ MODULE sedchem
    !!                        ***  Module sedchem  ***
    !! sediment :   Variable for chemistry of the CO2 cycle
    !!======================================================================
-# if defined key_pisces
+# if defined key_sediment
    !!   modules used
    USE par_sed, ONLY : jpksed
    USE sed     ! sediment global variable

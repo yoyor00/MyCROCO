@@ -6,7 +6,7 @@ MODULE seddsr
    !!    Sediment : dissolution and reaction in pore water related 
    !!    related to organic matter
    !!=====================================================================
-#if defined key_pisces
+#if defined key_sediment
    !! * Modules used
    USE sed     ! sediment global variable
    USE sed_oce

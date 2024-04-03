@@ -61,8 +61,11 @@ CONTAINS
       !                               ! Open the namelist file
       !                               ! ----------------------
       clname = 'namelist_pisces'
-      CALL load_nml( numnatp_ref, TRIM( clname )//'_ref', numout, lwm )
-      CALL load_nml( numnatp_cfg, TRIM( clname )//'_cfg', numout, lwm )
+      CALL ctl_opn( numnatp_ref, TRIM( clname )//'_ref', 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
+      CALL ctl_opn( numnatp_cfg, TRIM( clname )//'_cfg', 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
+      
+!      CALL load_nml( numnatp_ref, TRIM( clname )//'_ref', numout, lwm )
+!      CALL load_nml( numnatp_cfg, TRIM( clname )//'_cfg', numout, lwm )
       IF(lwm) CALL ctl_opn( numonp, 'output.namelist.pis', &
               &            'UNKNOWN', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
 
@@ -104,7 +107,7 @@ CONTAINS
       ln_sediment = .true.
 #else
       ln_sediment = .false.
-      ln_sed_2way = .false.
+!      ln_sed_2way = .false.
 #endif
 #if defined key_trc_diaadd
       l_diaadd = .true.

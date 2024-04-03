@@ -4,7 +4,7 @@ MODULE oce_sed
    !!======================================================================
    !!                        ***  sed  ***
    !! Sediment :   set sediment global variables
-#if defined key_pisces
+#if defined key_sediment
    !!======================================================================
    !! History :
    !!        !  06-12  (C. Ethe)  Orignal

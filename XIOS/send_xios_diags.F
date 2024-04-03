@@ -2372,11 +2372,13 @@ C 				  endif
 !
 ! done automatically
 !
-! S-coordinate independent variables "sc_w", "sc_r" and stretching
+! S-coordinate independent variables "sc_w", "sc_rho" and stretching
 ! curves "Cs_w", "Cs_rho" at W- and RHO-points.
 !
       call xios_send_field("Cs_rho",Cs_r(1:N))
-      call xios_send_field("Cs_w",Cs_w(0:N))
+      call xios_send_field("Cs_w"  ,Cs_w(0:N))
+      call xios_send_field("sc_rho",sc_r(1:N))
+      call xios_send_field("sc_w"  ,sc_w(0:N))
       call xios_send_field("hc",hc)
       call xios_send_field("theta_s",theta_s)
       call xios_send_field("theta_b",theta_b)

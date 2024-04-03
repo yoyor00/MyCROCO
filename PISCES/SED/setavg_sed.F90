@@ -14,7 +14,7 @@
 
 MODULE setavg_sed
 
-#if defined key_pisces
+#if defined key_sediment
 
 #if ! defined XIOS
 

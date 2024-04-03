@@ -5,7 +5,7 @@ MODULE seddta
    !!                     ***  MODULE  seddta  ***
    !! Sediment data  :  read sediment input data from a file
    !!=====================================================================
-#if defined key_pisces
+#if defined key_sediment
    !! * Modules used
    USE trc
    USE sed
