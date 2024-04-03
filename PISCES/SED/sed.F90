@@ -11,7 +11,6 @@ MODULE sed
    !!----------------------------------------------------------------------
    USE par_sed
    USE oce_sed
-   USE ncscrum
    USE in_out_manager
 
       !! * Substitutions
@@ -49,18 +48,6 @@ MODULE sed
    REAL(wp), PUBLIC               ::  spo4r 
    REAL(wp), PUBLIC               ::  srDnit 
    REAL(wp), PUBLIC               ::  dtsed               !: sedimentation time step
-   REAL(wp), PUBLIC               ::  ryear
-   REAL(wp), PUBLIC               ::  dbiot
-   REAL(wp), PUBLIC               ::  dbtbzsc
-   REAL(wp), PUBLIC               ::  xirrzsc
-   REAL(wp), PUBLIC               ::  xksedo2
-   REAL(wp), PUBLIC               ::  xksedno3
-   REAL(wp), PUBLIC               ::  xksedfeo
-   REAL(wp), PUBLIC               ::  redfep
-   REAL(wp), PUBLIC               ::  xksedso4
-   REAL(wp), PUBLIC               ::  redNo3
-   REAL(wp), PUBLIC               ::  redC
-   REAL(wp), PUBLIC               ::  redPo4
    INTEGER , PUBLIC               ::  nitsed000
    INTEGER , PUBLIC               ::  nitsedend
    LOGICAL , PUBLIC               ::  lrst_sed       !: logical to control the trc restart write

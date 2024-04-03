@@ -17,6 +17,7 @@ MODULE sedrst
 #if defined key_sediment
 
    !! * Modules used
+   USE oce_sed
    USE sed
 #ifdef AGRIF
       USE param, ONLY : Lmmpi,Mmmpi

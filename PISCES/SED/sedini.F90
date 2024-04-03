@@ -1,9 +1,11 @@
+#include "cppdefs.h"
+
 MODULE sedini
    !!======================================================================
    !!              ***  MODULE  sedini  ***
    !! Sediment : define sediment variables
    !!=====================================================================
-#if defined key_sediment
+#if defined key_sediment   
    !!----------------------------------------------------------------------
    !!   sed_ini    : initialization, namelist read, and parameters control
    !!----------------------------------------------------------------------
