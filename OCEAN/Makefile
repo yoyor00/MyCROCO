@@ -302,5 +302,3 @@ my_barrier.o: my_barrier.f
 #
 
 -include Make.depend
-step.o : debug.o
-main.o : debug.o
