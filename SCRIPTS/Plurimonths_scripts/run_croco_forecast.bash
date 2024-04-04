@@ -43,37 +43,33 @@ date
 #
 # Clean results of previous forecasts
 #
-export CLEANING=0
+export CLEAN=0
 #
 # Get forcing files from DODS SERVER and process them for CROCO
 # PRE_PROCESS=1 ==> do the work (0 otherwise)
 #
 export PRE_PROCESS=1
 #
-# Perform Iterations for convergence of CROCO and OGCM
-# ITERATION=1 ==> do several hindcasts using nudging
-#
-export ITERATION=1
-#
 # Restart from previous forecast
 #
 export RESTART=0
 #
-# ONERUN process: ONERUN=1: make one run for hindcast/forecast
-#                 ONERUN=0: make two runs one for hindcast and one for forecast
+# Run hindcast/forecast
 #
-export ONERUN=1
-#
-# PLOTTING
-export PLOTTING=1
+export RUN=1
 #
 #
-# Time section
+# Make a few plots
+export PLOT=1
 #
-
+#=======================================================================
+# Define time parameters (it will modify croco_forecast.in)
+#=======================================================================
+#
 # Model time step [seconds]
 DT=3600
-# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
+# Number of barotropic time steps within one baroclinic time step [number]
+# NDTFAST in croco.in
 NFAST=60
 # Hindcast depth [days] see crocotools_param (hdays/fdays)
 NDAYS_HIND=1
@@ -92,7 +88,6 @@ ND_RST=24
 #=======================================================================
 #
 export SCRATCHDIR=${RUNDIR}/SCRATCH
-#export INPUTDIR=${RUNDIR}/CROCO_IN
 export INPUTDIR=${RUNDIR}
 export MSSDIR=${RUNDIR}/CROCO_FILES
 export MSSOUT=${RUNDIR}/FORECAST
@@ -133,7 +128,7 @@ fi
 #
 # Clean I/O files from previous forecast
 #
-if [ $CLEANING = 1 ] ; then
+if [ $CLEAN = 1 ] ; then
   rm -f $MSSDIR/${MODEL}_blk_* $MSSDIR/${MODEL}_frc_* $MSSDIR/${MODEL}_bry_*
   rm -f $MSSDIR/${MODEL}_clm_* $MSSDIR/${MODEL}_ini_*
   rm -f $MSSOUT/${MODEL}_his_* $MSSOUT/${MODEL}_avg_* $MSSOUT/${MODEL}_rst_*
@@ -182,44 +177,22 @@ $CP -f $INPUTDIR/$CODFILE $SCRATCHDIR
 chmod u+x $CODFILE
 echo "Getting ${GRDFILE} from $MSSDIR"
 $CP -f $MSSDIR/${GRDFILE} $SCRATCHDIR
-echo "Getting ${MODEL}_hindcast.in from $INPUTDIR"
-$CP -f $INPUTDIR/${MODEL}_hindcast.in $SCRATCHDIR
 echo "Getting ${MODEL}_forecast.in from $INPUTDIR"
 $CP -f $INPUTDIR/${MODEL}_forecast.in $SCRATCHDIR
 echo "Getting ${MODEL}_stations.in from $INPUTDIR"
 $CP -f $INPUTDIR/${MODEL}_stations.in $SCRATCHDIR
 #
-# Time Management
+# Time management in croco_forecast.in
 #
-if [ $ONERUN = 1 ] ; then
-  NDAYS=$((NDAYS_HIND + NDAYS_FCST ))
-  NUMTIMES=$((NDAYS * 24 * 3600 / DT))
-  [[ ${ND_AVG} -ne -1 ]] &&  NUMAVG=$((ND_AVG * 3600 / DT )) || NUMAVG=$NUMTIMES
-  [[ ${ND_HIS} -ne -1 ]] &&  NUMHIS=$((ND_HIS * 3600 / DT )) || NUMHIS=$NUMTIMES
-  [[ ${ND_RST} -ne -1 ]] &&  NUMRST=$((ND_RST * 3600 / DT )) || NUMRST=$NUMTIMES
+NDAYS=$((NDAYS_HIND + NDAYS_FCST ))
+NUMTIMES=$((NDAYS * 24 * 3600 / DT))
+[[ ${ND_AVG} -ne -1 ]] &&  NUMAVG=$((ND_AVG * 3600 / DT )) || NUMAVG=$NUMTIMES
+[[ ${ND_HIS} -ne -1 ]] &&  NUMHIS=$((ND_HIS * 3600 / DT )) || NUMHIS=$NUMTIMES
+[[ ${ND_RST} -ne -1 ]] &&  NUMRST=$((ND_RST * 3600 / DT )) || NUMRST=$NUMTIMES
 
-  sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
-    -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/'  < $INPUTDIR/${MODEL}_forecast.in > $SCRATCHDIR/${MODEL}_forecast.in
-else
-  # for hindcast
-  NUMTIMES_HIND=$((NDAYS_HIND * 24 * 3600 / DT))
-  [[ ${ND_AVG} -ne -1 ]] &&  NUMAVG_HIND=$((ND_AVG * 3600 / DT )) || NUMAVG_HIND=$NUMTIMES_HIND
-  [[ ${ND_HIS} -ne -1 ]] &&  NUMHIS_HIND=$((ND_HIS * 3600 / DT )) || NUMHIS_HIND=$NUMTIMES_HIND
-  [[ ${ND_RST} -ne -1 ]] &&  NUMRST_HIND=$((ND_RST * 3600 / DT )) || NUMRST_HIND=$NUMTIMES_HIND
-    
-  sed -e 's/NUMTIMES/'$NUMTIMES_HIND'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
-        -e 's/NUMAVG/'$NUMAVG_HIND'/' -e 's/NUMHIS/'$NUMHIS_HIND'/' -e 's/NUMRST/'$NUMRST_HIND'/'  < $INPUTDIR/${MODEL}_hindcast.in > $SCRATCHDIR/${MODEL}_hindcast.in
-    
-  # for forecast
-  NUMTIMES_FCST=$((NDAYS_FCST * 24 * 3600 / DT))
-  [[ ${ND_AVG} -ne -1 ]] &&  NUMAVG_FCST=$((ND_AVG * 3600 / DT )) || NUMAVG_FCST=$NUMTIMES_FCST
-  [[ ${ND_HIS} -ne -1 ]] &&  NUMHIS_FCST=$((ND_HIS * 3600 / DT )) || NUMHIS_FCST=$NUMTIMES_FCST
-  [[ ${ND_RST} -ne -1 ]] &&  NUMRST_FCST=$((ND_RST * 3600 / DT )) || NUMRST_FCST=$NUMTIMES_FCST
-    
-  sed -e 's/NUMTIMES/'$NUMTIMES_FCST'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
-        -e 's/NUMAVG/'$NUMAVG_FCST'/' -e 's/NUMHIS/'$NUMHIS_FCST'/' -e 's/NUMRST/'$NUMRST_FCST'/'  < $INPUTDIR/${MODEL}_forecast.in > $SCRATCHDIR/${MODEL}_forecast.in
-fi
-
+sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
+    -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/' \
+        < $INPUTDIR/${MODEL}_forecast.in > $SCRATCHDIR/${MODEL}_forecast.in
 #
 #  Change directory
 #
@@ -229,8 +202,7 @@ cd $SCRATCHDIR
 #  HINDCAST/FORECAST RUN
 #=======================================================================
 #
-if [ $ONERUN = 1 ] ; then
-
+if [ $RUN = 1 ] ;then
   echo Hindcast/Forecast run
   date
   $EXEC $CODFILE ${MODEL}_forecast.in > ${MODEL}_forecast_${DATESTR}.out
@@ -244,64 +216,13 @@ if [ $ONERUN = 1 ] ; then
   #
   $CP $SCRATCHDIR/$HISFILE ${MSSOUT}/${MODEL}_his_forecast_${DATESTR}.nc
   $CP $SCRATCHDIR/$AVGFILE ${MSSOUT}/${MODEL}_avg_forecast_${DATESTR}.nc
-  #
-else
-  #
-  #=======================================================================
-  #  HINDCAST RUN
-  #=======================================================================
-  #
-  echo Hindcast run  
-  # Don't forget to modify NRPFRST and NRREC 
-  # in croco_hindcast.in and croco_forecast.in
-  date
-  $EXEC $CODFILE ${MODEL}_hindcast.in > ${MODEL}_hindcast_${DATESTR}.out
-  #
-  if [ $ITERATION = 1 ] ; then
-    echo 'ITERATION ITERATION'
-    [ ! -e start.m ] && { ln -sf ../start.m . ; }
-    [ ! -e crocotools_param.m ] && { ln -sf ../crocotools_param.m . ; }
-    $LN -sf $TOOLSDIR/iteration.m iteration.m
-    $MATLAB -nodisplay -batch  "run('iteration');" > iteration.out
-  fi
-  #
-  date
-  #
-  # Get the initial file for the forecast run
-  #
-  $CP -f $SCRATCHDIR/$RSTFILE ${SCRATCHDIR}/$INIFILE
-  #
-  # Store the initial file for the next hindcast run
-  #
-  $CP -f $SCRATCHDIR/$RSTFILE ${MSSOUT}/$INIFILE
-  #
-  # Store the output hindcast files
-  #
-  $MV $SCRATCHDIR/$HISFILE ${MSSOUT}/${MODEL}_his_hindcast_${DATESTR}.nc
-  $MV $SCRATCHDIR/$AVGFILE ${MSSOUT}/${MODEL}_avg_hindcast_${DATESTR}.nc
-  $MV $SCRATCHDIR/$RSTFILE ${MSSOUT}/${MODEL}_rst_hindcast_${DATESTR}.nc
-  #
-  #=======================================================================
-  #  FORECAST RUN
-  #=======================================================================
-  #
-  echo Forecast run 
-  date
-  $EXEC $CODFILE ${MODEL}_forecast.in > ${MODEL}_forecast_${DATESTR}.out
-  date
-  #
-  # Store the output forecast files
-  #
-  $CP $SCRATCHDIR/$HISFILE ${MSSOUT}/${MODEL}_his_forecast_${DATESTR}.nc
-  $CP $SCRATCHDIR/$AVGFILE ${MSSOUT}/${MODEL}_avg_forecast_${DATESTR}.nc
-  #
 fi
 #
 #=======================================================================
 #  PLOT RESULTS
 #=======================================================================
 #
-if [ $PLOTTING = 1 ] ;then
+if [ $PLOT = 1 ] ;then
   #
   cd $INPUTDIR
   [ ! -e start.m ] && { echo "==> Stop : you need a start.m file"; exit 1 ; }
@@ -310,11 +231,8 @@ if [ $PLOTTING = 1 ] ;then
   [ ! -e plot_forecast_croco.m ] && $CP -f ${TOOLSDIR}/plot_forecast_croco.m .
   $MATLAB -nodisplay -batch  "run('plot_forecast_croco.m');" > plot_forecast_croco.out
   #
-  # Quick plot
-  # [ ! -e plot_quick_forecast.m ] && $CP -f ${TOOLSDIR}/plot_quick_forecast.m .
-  # $MATLAB -nodisplay -batch "run('plot_quick_forecast.m');" > plot_quick_forecast.out
-  #
 fi
 
 echo Forecast finished
 date
+
