@@ -312,7 +312,7 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 		elif [[ $FC == ifort || $FC == ifc ]] ; then
 			INTEL_VERSION=$(ifort --version 2>&1 | grep -oP "(\d+)" | head -n1)
 			# Compare the version with 18
-			if [[ "$INTEL_VERSION" -gt 18 ]]; then
+			if [[ "$INTEL_VERSION" -ge 18 ]]; then
 				FFLAGS1="$FFLAGS1 -qopenmp"
 			else
 				FFLAGS1="$FFLAGS1 -openmp"

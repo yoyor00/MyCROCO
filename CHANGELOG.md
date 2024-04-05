@@ -5,16 +5,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ## [Unreleased] - xxxx-xx-xx
 ### Added
 
-- GPU : 
-  - OPENACC : Active GPU computation by adding OPENACC cpp keys in cppdefs.h
-  - M3FAST_HIS, MP_M3FAST_SEDLAYERS : Keys for acoustic sediment layers
-  - OPENACCNUMERIC : help on numeric validation cpu vs gpu
-          with RVTK_DEBUG (work in progress)
-  - Limitations :
-        - Test with Nvidia gpu and nvfortan (pgi also ok) 
-	- No GPU with Agrif
-	- BAND_DEBUG : No Mpi redundancy check with BAND_DEBUG key
-
 - ABL1D : 
   - TODO add description
   - Add KILPATRICK test-case
@@ -42,6 +32,21 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   This module requires the keys #SOLVE3D, #GLS_MIXING and #GLS_KEPSILON. See issue
   [#123](https://gitlab.inria.fr/croco-ocean/croco/-/issues/123); 
   check merge request and documentation if interested.
+
+- GPU :
+  - ** MAJOR ** :   Python is now required to compile croco. Even if no GPU. *****
+        A second stage of pre-processing is added before compilation
+        Dependency :  os, re, sys, argparse, tempfile, shutil
+
+  - OPENACC : Active GPU computation by adding OPENACC cpp keys in cppdefs.h
+  - M3FAST_HIS, MP_M3FAST_SEDLAYERS : Keys for acoustic sediment layers
+  - OPENACCNUMERIC : help on numeric validation cpu vs gpu
+          with RVTK_DEBUG (work in progress)
+  - Limitations :
+        - Test with Nvidia gpu and nvfortan (pgi also ok)
+        - No GPU with : AGRIF MUSTANG  OBSTRUCTION  OCEAN  PISCES modules
+        - BAND_DEBUG : Check Mpi redundancy, don't work with OpenACC directives
+
 
 ### Fixed
 - Correction of the vertical transformation function (in the NEW_S_COORD case) 
