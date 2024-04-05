@@ -19,7 +19,7 @@ if [[ $OS == Linux ]] ; then
 elif [[ $OS == Darwin ]] ; then
   source ~/.bash_profile
 else
-  echo "unkbown operating system" 1>&2
+  echo "unknown operating system" 1>&2
 fi
 #
 export TOOLSDIR=$HOME/croco/croco_tools/Forecast_tools
