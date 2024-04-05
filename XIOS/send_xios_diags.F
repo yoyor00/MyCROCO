@@ -1744,12 +1744,11 @@ C 				  endif
       END MODULE xios_module
 
 #include "cppdefs.h"
-      SUBROUTINE init_xios(tile,cdnamin)
+      SUBROUTINE init_xios(tile)
 
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) ::  tile
-      CHARACTER(len=*),OPTIONAL,INTENT(IN) :: cdnamin
 
 # include "param.h"
 
