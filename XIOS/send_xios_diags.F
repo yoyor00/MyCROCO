@@ -1744,11 +1744,12 @@ C 				  endif
       END MODULE xios_module
 
 #include "cppdefs.h"
-      SUBROUTINE init_xios(tile)
+      SUBROUTINE init_xios(tile,cdnamin)
 
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) ::  tile
+      CHARACTER(len=*),OPTIONAL,INTENT(IN) :: cdnamin
 
 # include "param.h"
 
@@ -1914,9 +1915,11 @@ C 				  endif
  
       ! vertical grid definition
       CALL iom_set_axis_attr( "s_rho", sc_r(1:N) )
-      CALL iom_set_axis_attr( "s_rho_full", sc_r )
       CALL iom_set_axis_attr( "s_w"  , sc_w(0:N) )
+# ifdef M3FAST_SEDLAYERS
+      CALL iom_set_axis_attr( "s_rho_full", sc_r )      
       CALL iom_set_axis_attr( "s_w_full"  , sc_w )
+# endif      
 # ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
 # elif defined MUSTANG
