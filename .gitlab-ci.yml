@@ -109,7 +109,7 @@ ana_run_intel:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   variables:
     CI_FC: "ifort"
-    CI_MPIF90: "mpif90"
+    CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
   script:
@@ -176,7 +176,7 @@ vort_run_intel:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   variables:
     CI_FC: "ifort"
-    CI_MPIF90: "mpif90"
+    CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
     RUNNER_SCRIPT_TIMEOUT: 120m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
@@ -262,7 +262,7 @@ reg_run_intel:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   variables:
     CI_FC: "ifort"
-    CI_MPIF90: "mpif90"
+    CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
     RUNNER_SCRIPT_TIMEOUT: 180m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
@@ -362,7 +362,7 @@ reg_perfrst_intel:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   variables:
     CI_FC: "ifort"
-    CI_MPIF90: "mpif90"
+    CI_MPIF90: "mpiifort"
     CROCO_CI_MPIRUN: "mpirun"
     RUNNER_SCRIPT_TIMEOUT: 120m
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
