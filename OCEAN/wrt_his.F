@@ -591,7 +591,6 @@ CR      write(*,*) 'wrt_his:  wrtUst' MYID
 CR      write(*,*) 'wrt_his:  wrtVst' MYID
       endif
 !Wstokes
-!RBacc
       if (wrthis(indxWST)) then
         do tile=0,NSUB_X*NSUB_E-1
           call wstokes (tile)
