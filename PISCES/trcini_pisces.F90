@@ -228,11 +228,11 @@ CONTAINS
       !
       CALL trc_oce_rgb( rkrgb )                 ! tabulated attenuation coef.
       !
-      !nksr = trc_oce_ext_lev( r_si2, 33._wp )   ! level of light extinction
-       nksr = jpk
+      nksr = trc_oce_ext_lev( r_si2, 33._wp )   ! level of light extinction
+      ! nksr = jpk
       !
       IF(lwp) WRITE(numout,*) ' level of light extinction = ', nksr, &
-              &               ' ref depth = ', MAXVAL(gdepw(:,:,nksr+1,1)), ' m'
+              &               ' ref depth = ', MAXVAL(gdepw(A2D(0),nksr+1,1)), ' m'
 
       CALL p4z_sms_init       !  Maint routine
       !
