@@ -34,7 +34,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   [#123](https://gitlab.inria.fr/croco-ocean/croco/-/issues/123); 
   check merge request and documentation if interested.
 
-- GPU :
+- GPU : [#142]
   - **MAJOR :   Python is now required to compile croco. Even if no GPU.**
     - A second stage of pre-processing is added before compilation
     - Dependency :  os, re, sys, argparse, tempfile, shutil
