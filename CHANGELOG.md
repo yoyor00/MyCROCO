@@ -84,6 +84,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Clean files header (fix issue #165)
 
+- Paths in VILAINE test case (fix issue #179)
+
 ### Changed
 
 - CI runs through docker container from croco-ocean/croco_docker project
