@@ -44,7 +44,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     with RVTK_DEBUG (work in progress)
   - Limitations :
     - Test with Nvidia gpu and nvfortan (pgi also ok)
-    - No GPU with : AGRIF MUSTANG  OBSTRUCTION  OCEAN  PISCES modules
+    - No GPU with : AGRIF MUSTANG OBSTRUCTION   PISCES modules
     - BAND_DEBUG : Check Mpi redundancy, don't work with OpenACC directives
 
 
