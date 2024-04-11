@@ -97,6 +97,7 @@ c********************************************************************
 #  ifdef SED_TOY
 #   include "forces.h"
 #  endif
+#  include "openacc_work.h"
 !
 #  ifdef MASKING
 #   define SWITCH *
@@ -154,7 +155,9 @@ c********************************************************************
       GRho=g/rho0
       HalfGRho=0.5*GRho
 
-      do j=JstrV-1,Jend
+!$acc kernels if(compute_on_device) default(present)
+      !do j=JstrV-1,Jend
+      DOLOOP2D(IstrU-1,Iend,JstrV-1,Jend)
         do k=1,N-1
           do i=IstrU-1,Iend
             dZ(i,k)=z_r(i,j,k+1)-z_r(i,j,k)
@@ -206,7 +209,7 @@ c********************************************************************
         enddo
         do k=N-1,1,-1
           do i=IstrU-1,Iend
-            P(i,j,k)=P(i,j,k+1)+HalfGRho*( (rho(i,j,k+1)+rho(i,j,k))
+            P(i,j,k)=HalfGRho*( (rho(i,j,k+1)+rho(i,j,k))
      &                                    *(z_r(i,j,k+1)-z_r(i,j,k))
      &     -OneFifth*( (dR(i,k+1)-dR(i,k))*( z_r(i,j,k+1)-z_r(i,j,k)
      &                             -OneTwelfth*(dZ(i,k+1)+dZ(i,k)) )
@@ -215,7 +218,18 @@ c********************************************************************
      &                                                            ))
           enddo
         enddo
-      enddo   !<-- j
+
+        ENDDOLOOP2D   !<-- j
+
+
+        do k=N-1,1,-1
+          do j=JstrV-1,Jend
+            do i=IstrU-1,Iend
+              P(i,j,k)=P(i,j,k)+P(i,j,k+1)
+            enddo
+          enddo
+        enddo
+
 
 !
 ! Compute XI-component of pressure gradient term:
@@ -237,8 +251,26 @@ c********************************************************************
       imin=Istr-1
       imax=Iend+1
 #   endif
+#   ifndef NS_PERIODIC
+        if (SOUTHERN_EDGE) then
+          jmin=JstrV
+        else
+          jmin=JstrV-1
+        endif
+        if (NORTHERN_EDGE) then
+          jmax=Jend
+        else
+          jmax=Jend+1
+        endif
+#   else
+        jmin=Jstr-1
+        jmax=Jend+1
+#   endif
 #  endif /* PGF_FLAT_BOTTOM */
 
+
+!!$acc loop private(FC,rx,dRx,dZx) gang vector(1)
+!$acc loop seq
       do k=N,1,-1    !<-- k loop
 
 #  ifndef PGF_FLAT_BOTTOM
@@ -359,22 +391,6 @@ c********************************************************************
 !-------------- -- -------- -------- -----
 !
 #  ifndef PGF_FLAT_BOTTOM
-#   ifndef NS_PERIODIC
-        if (SOUTHERN_EDGE) then
-          jmin=JstrV
-        else
-          jmin=JstrV-1
-        endif
-        if (NORTHERN_EDGE) then
-          jmax=Jend
-        else
-          jmax=Jend+1
-        endif
-#   else
-        jmin=Jstr-1
-        jmax=Jend+1
-#   endif
-
         do j=jmin,jmax
           do i=Istr,Iend
             FC(i,j)=(z_r(i,j,k)-z_r(i,j-1,k))
@@ -605,6 +621,7 @@ c********************************************************************
 ! rewritten in diagonal form (lile in Lin, 1997), which minimizes
 ! the number of operations relatively to any other form.
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           rsurf(i,j)=rho(i,j,N) + (rho(i,j,N)-rho(i,j,N-1))
@@ -924,6 +941,8 @@ c********************************************************************
         enddo
       enddo
 # endif
+!$acc end kernels
+
 !
 !--------------------------------------------------------------------
 !

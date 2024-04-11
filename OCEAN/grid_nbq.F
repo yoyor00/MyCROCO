@@ -83,7 +83,8 @@
       else
         jmax=Jend+2
       endif
-# endif
+# endif    
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Compute other vertical grid variables
@@ -172,7 +173,8 @@
 # endif
           enddo
         enddo
-      enddo
+      enddo          
+!$acc end kernels        
 
       return
       end subroutine grid_nbq_tile

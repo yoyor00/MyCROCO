@@ -80,6 +80,8 @@
 # else
 #  define SWITCH !
 # endif
+
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Apply right-hand-side
@@ -188,6 +190,7 @@
       ENDDO
 
 # endif /* NBQ_WDIF */
+!$acc end kernels
 !
 !--------------------------------------------------------------------
 ! Set PHYSICAL lateral boundary conditions.
@@ -199,7 +202,7 @@
 ! Exchange periodic boundaries and computational margins.
 !--------------------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,nnew))

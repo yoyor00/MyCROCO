@@ -14,6 +14,9 @@
                              ! Read tracer(s) climatology
       subroutine get_tclima  ! fields from climatology file
                              ! at appropriate time.
+# ifdef OPENACC
+      use exchange_device_host
+# endif
 # define TCLIMA_DATA
       implicit none
 # include "param.h"
@@ -685,6 +688,9 @@ c              goto 99                                     !--> ERROR
          ierr=nf_fread (tclima(START_2D_ARRAY,1,i,itrc),
      &                              ncidclm, tclm_id(itrc),
      &                              tclm_rec(itrc), r3dvar)
+# ifdef OPENACC
+         call update_device(tclima(:,:,:,i,itrc))
+# endif
          if (ierr.ne.NF_NOERR) then
            lvar=lenstr(vname(1,indxV+itrc))
            write(stdout,6) vname(1,indxV+itrc)(1:lvar),
@@ -776,6 +782,7 @@ C$    integer  trd, omp_get_thread_num
 
         if (tclm_cycle(itrc).lt.0.) then            ! Load time-
           if (iic.eq.0) then                        ! invariant
+!$acc parallel loop if(compute_on_device) default(present)
             do k=1,N                                ! tracer
               do j=JstrR,JendR                      ! climatology.
                 do i=IstrR,IendR
@@ -786,8 +793,9 @@ C$    integer  trd, omp_get_thread_num
           endif
         elseif (cff1.ge.0. .and. cff2.ge.0.) then
           cff=1./(cff1+cff2)                        ! Interpolate
-          cff1=cff1*cff                             ! tracer
-          cff2=cff2*cff                             ! climatology
+          cff1=cff1*cff                             ! tracer 
+          cff2=cff2*cff                             ! climatology 
+!$acc parallel loop if(compute_on_device) default(present)
           do k=1,N                                  ! climatology
             do j=JstrR,JendR                        ! in time.
               do i=IstrR,IendR

@@ -56,7 +56,10 @@
 #  define SWITCH !
 # endif
 
+!$acc kernels if(compute_on_device) default(present)
+
       cff=0.25*dt
+!$acc loop private(DC(:,0))
       do j=Jstr,Jend
         do i=IstrU,Iend
           DC(i,0)=cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
@@ -148,7 +151,9 @@
             enddo
           enddo
         endif
-      enddo
+      enddo 
+!$acc end kernels
+
 #else
       subroutine step3d_uv1_empty
 #endif

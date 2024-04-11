@@ -23,7 +23,9 @@
 !
 !  we use DQDSST for CST....
 !
-
+# ifdef OPENACC
+      use exchange_device_host
+# endif
 # define SSS_DATA
       implicit none
 # include "param.h"
@@ -132,6 +134,9 @@
         if (lsssgrd.eq.1) then
           ierr=nf_fread (sssg(START_2D_ARRAY,i), ncidfrc, sss_id,
      &                                           sss_rec, r2dvar)
+# ifdef OPENACC
+          call update_device(sssg(:,:,i))
+# endif
         else
           ierr=nf_get_var1_FTYPE (ncidfrc, sss_id, sss_rec, sssp(i))
         endif
@@ -144,6 +149,9 @@
         if (lsssgrd.eq.1) then
           ierr=nf_fread (dqdtg(START_2D_ARRAY,i), ncidfrc, dqdt_id,
      &                                            sss_rec,  r2dvar)
+#  ifdef OPENACC
+          call update_device(dqdtg(:,:,i))
+#  endif
         else
           ierr=nf_get_var1_FTYPE (ncidfrc,dqdt_id,sss_rec,dqdtp(i))
         endif
@@ -221,6 +229,7 @@
       if (sss_cycle.lt.0.) then
         if (FIRST_RST_TIME_STEP) then
           if (lsssgrd.eq.1) then
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 sss(i,j)=sssg(i,j,itsss)
@@ -234,6 +243,7 @@
 # if defined SFLX_CORR && !defined SFLX_CORR_COEF && !defined QCORRECTION
             val2=scldqdt*dqdtp(itsss)
 # endif
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 sss(i,j)=val1
@@ -262,6 +272,7 @@
         cff1=cff1*cff
         cff2=cff2*cff
         if (lsssgrd.eq.1) then
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               sss(i,j)=cff1*sssg(i,j,it1)+cff2*sssg(i,j,it2)
@@ -275,6 +286,7 @@
 # if defined SFLX_CORR && !defined SFLX_CORR_COEF && !defined QCORRECTION
           val2=cff3*dqdtp(it1)+cff4*dqdtp(it2)
 # endif
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               sss(i,j)=val1

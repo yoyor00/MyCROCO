@@ -15,7 +15,11 @@
 !                               !          theta_s, theta_b
 ! Define S-coordinate system.   !
 !                               ! Output:  hc, sc_w(0:N), Cs_w(0:N)
-      implicit none             !              sc_r(1:N), Cs_r(1:N)
+                                !              sc_r(1:N), Cs_r(1:N)
+# ifdef OPENACC
+      use exchange_device_host
+# endif
+      implicit none
 # include "param.h"
 # include "scalars.h"
       integer k
@@ -45,6 +49,28 @@
         Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
      &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
       enddo
+#  ifdef M3FAST_SEDLAYERS
+      if (N_sl.gt.0) then
+        sc_r(0)=cff*(float(0-N)-0.5)
+        Cs_r(0)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(0))
+     &             +theta_b*(cff2*tanh(theta_s*(sc_r(0)+0.5))-0.5)
+     
+       do k=-N_sl+1,-1,+1
+        sc_w(k)=cff*float(k-N)
+        Cs_w(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_w(k))
+     &             +theta_b*(cff2*tanh(theta_s*(sc_w(k)+0.5))-0.5)
+
+        sc_r(k)=cff*(float(k-N)-0.5)
+        Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
+     &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
+       enddo
+       k=-N_sl
+       sc_w(k)=cff*float(k-N)
+       Cs_w(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_w(k))
+     &             +theta_b*(cff2*tanh(theta_s*(sc_w(k)+0.5))-0.5)
+     
+      endif
+#  endif
 # else
       hc= Tcline
       ds=1./float(N)
@@ -58,12 +84,25 @@
       sc_w(N) =  0.
       Cs_w(0) = -1.0
       Cs_w(N) =  0.
-
+#  ifdef M3FAST_SEDLAYERS
+      do k=-N_sl+1,0
+        sc     = ds*(float(k-N)-0.5)
+        Cs_r(k)=CSF(sc, theta_s,theta_b)
+        sc_r(k)=sc      
+      enddo
+#  endif
       do k=1,N-1,+1
         sc     = ds*float(k-N)
         Cs_w(k)=CSF(sc, theta_s,theta_b)
         sc_w(k)=sc
       enddo
+#  ifdef M3FAST_SEDLAYERS
+      do k=-N_sl,-1,+1
+        sc     = ds*float(k-N)
+        Cs_w(k)=CSF(sc, theta_s,theta_b)
+        sc_w(k)=sc      
+      enddo    
+#  endif     
 # endif
 !
 ! Report information about vertical S-levels.
@@ -75,7 +114,8 @@
      &                       'Vertical S-coordinate System:',
      &                       'level   S-coord     Cs-curve',
      &                       'at_hmin  over_slope     at_hmax'
-      do k=N,0,-1
+
+      do k=N,-N_sl,-1
 # ifdef NEW_S_COORD
         sc=ds*(k-N)
         cff1 = hmin*(hc*sc + hmin*Cs_w(k))/(hc+hmin)
@@ -115,6 +155,12 @@
      &                                               inc_faststep
 # endif /* BSTRESS_FAST */
 
+# ifdef OPENACC
+      call update_device(sc_w)
+      call update_device(sc_r)
+      call update_device(Cs_w)
+      call update_device(Cs_r)
+# endif
       return
       end
 !======================================================================

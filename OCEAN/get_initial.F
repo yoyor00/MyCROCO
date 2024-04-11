@@ -242,7 +242,7 @@
               ! Modify units when using USE_CALENDAR
       vname(3,indxTime2)='seconds since '
      &                     //tool_sectodat(origin_date_in_sec)
-#  if defined XIOS
+# if defined XIOS
       MPI_master_only write(stdout,'(/3x,A,/)')
      &    '!!! WARNING: Using XIOS with USE_CALENDAR.',
      &    ' USING USE_CALENDAR origin date for XIOS ',
@@ -254,7 +254,7 @@
       READ(origin_date(12:13),fmt='(i2)') start_hour
       READ(origin_date(15:16),fmt='(i2)') start_minute
       READ(origin_date(18:19),fmt='(i2)') start_second
-#endif
+# endif
 #endif
 
 #ifdef EXACT_RESTART
@@ -1142,17 +1142,17 @@
 #endif /* SOLVE3D */
 
 #if defined OA_COUPLING || defined OW_COUPLING
-#  if defined EXACT_RESTART
+# if defined EXACT_RESTART
 !     Do cpl_prism_define just on time. 
 !     In case of EXACT_RESTART add a condition on tindx value
       if (tindx.eq.1) then
-#  endif
+# endif
         call cpl_prism_define
         oasis_time = 0
         MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
 #  if defined EXACT_RESTART   
       endif
-#  endif
+# endif
 #endif
 
   1   format(/1x,'GET_INITIAL - unable to find variable:',    1x,A,

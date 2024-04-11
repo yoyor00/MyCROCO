@@ -112,8 +112,10 @@ C$    trd=omp_get_thread_num()
       tau_in=dtfast*tauM_in
       tau_out=dtfast*tauM_out
 #endif
-!
-#if defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_EAST  || defined OBC_COM_M2CHARACT_WEST
+
+!$acc kernels if(compute_on_device) default(present) async(1)
+
+#if defined OBC_COM_M2ORLANSKI
       grad = 1.
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
@@ -963,7 +965,7 @@ C$    trd=omp_get_thread_num()
       endif ! M2bc_nbq_flag
 !
 #endif /* NBQ */
-
+!$acc end kernels
       return
       end
 #ifndef CHILD
