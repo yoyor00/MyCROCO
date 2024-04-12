@@ -37,7 +37,7 @@
 
       type tile_sclg_str
         integer, dimension(:), allocatable     :: v2sclg
-        integer                   :: nsclg
+        integer, dimension(:), allocatable     :: nsclg
         integer                   :: nper
       end type tile_sclg_str
 
@@ -280,18 +280,23 @@
         return
       end subroutine deallocate_tile_space_str
 
-      subroutine allocate_tile_sclg_oa( tile, nzv_oa, nper_sclg)
+      !subroutine allocate_tile_sclg_oa( tile, nmod_oa, nzv_oa, nper_sclg)
+      subroutine allocate_tile_sclg_oa( tile, nmod_oa, nzv_oa)
+
         implicit none
-        integer, intent(in) :: tile, nzv_oa, nper_sclg
+        integer, intent(in) :: tile, nmod_oa, nzv_oa
 
         ! BLXD this routine can eventually be called early in init_parameter_oa
         if ( .not. allocated( scl(tile)%v2sclg ) ) then
             allocate( scl(tile)%v2sclg( nzv_oa ) )
         end if 
+        if ( .not. allocated( scl(tile)%nsclg ) ) then
+            allocate( scl(tile)%nsclg( 0:nmod_oa ) )
+        end if 
         ! one scalogram per variable iv : -99 => not a iv config-var with scalogram
         scl(tile)%v2sclg( 1:nzv_oa ) = -99
-        scl(tile)%nper    = nper_sclg
-        scl(tile)%nsclg   = 0
+        !scl(tile)%nper               = nper_sclg
+        scl(tile)%nsclg(0:nmod_oa)   = 0
         
         return
       end subroutine allocate_tile_sclg_oa
@@ -299,7 +304,7 @@
       subroutine set_tile_sclg_oa( tile, nper_sclg, nzupd0d )
         implicit none
         integer, intent(in) :: tile, nper_sclg, nzupd0d
-        ! BLXD not useful anymore
+        ! TODO BLXD not useful anymore TO REMOVE
         !if ( .not. allocated( scl(tile)%scal0d ) ) then
         !    allocate( scl(tile)%scal0d( nper_sclg, nzupd0d ) )
         !end if 
@@ -314,6 +319,10 @@
  
         if ( allocated( scl(tile)%v2sclg ) ) then
             deallocate( scl(tile)%v2sclg )
+        end if 
+
+        if ( allocated( scl(tile)%nsclg ) ) then
+            deallocate( scl(tile)%nsclg )
         end if 
 
         !if ( allocated( scl(tile)%scal0d ) ) then

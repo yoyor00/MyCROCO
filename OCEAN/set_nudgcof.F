@@ -36,7 +36,7 @@
 # include "scalars.h"
 # include "ocean3d.h"
 # include "mpi_cpl.h"
-# ifdef NBQ_NUDGING
+# if defined NBQ_NUDGING || defined NBQ_SPONGE
 #  include "nbq.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i, j, k, isp, itrc, ibnd
@@ -60,6 +60,7 @@
       isp=10
 #  endif
 # else
+!$acc update host(pm(1,1))
 #  ifdef MPI
       if (ii.eq.0.and.jj.eq.0.and.Istr.eq.1.and.Jstr.eq.1) then
         isp=int(x_sponge*pm(1,1))
@@ -71,6 +72,7 @@
 #  endif
 # endif /* SPONGE_GRID */
 
+!$acc kernels if(compute_on_device) default(present)
 !
       do j=max(-1,JstrR-1),JendR
         do i=max(-1,IstrR-1),IendR
@@ -108,9 +110,15 @@
             wrk(i,j)=0.
           else
             wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
+#ifdef OPENACCNUMERIC 
+          wrk(i,j)=real(wrk(i,j), kind=4)
+#endif
           endif
 # else
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
+#ifdef OPENACCNUMERIC 
+          wrk(i,j)=real(wrk(i,j), kind=4)
+#endif
 !         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
 # endif
 
@@ -250,6 +258,19 @@
       enddo
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 # endif /* SPONGE */
+
+# ifdef NBQ_SPONGE
+!
+!-------------------------------------------------------------------
+!  Add second Viscosity in SPONGE layers
+!-------------------------------------------------------------------
+!
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          visc2_nbq_sponge(i,j)=10.*wrk(i,j)
+        enddo
+      enddo
+# endif /* NBQ_SPONGE */
 !
 !-------------------------------------------------------------------
 !  add configuration specific stuff
@@ -282,6 +303,7 @@
         enddo
       enddo
 # endif
+!$acc end kernels
 #else
       subroutine set_nudgcof_empty
 #endif /* TNUDGING || ZNUDGING || SPONGE */

@@ -12,6 +12,9 @@
 #ifndef ANA_GRID
                              ! Read grid information
       subroutine get_grid    ! from GRID NetCDF file.
+# ifdef OPENACC
+      use exchange_device_host
+# endif
       implicit none
       character*1 char1
       integer ierr, ncid, varid, lstr, lenstr, checkdims, nf_fread
@@ -346,6 +349,9 @@
 #  endif
 # else
        zob(:,:)=zobt
+# endif
+# ifdef OPENACC
+       call update_device(zob)
 # endif
 
 

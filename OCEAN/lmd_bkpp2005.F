@@ -402,7 +402,7 @@
 #  endif
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,hbbl(START_2D_ARRAY))
 # endif
 

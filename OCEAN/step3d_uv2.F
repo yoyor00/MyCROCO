@@ -21,15 +21,17 @@
 
       call step3d_uv2_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd),
      &                                  A2d(1,2,trd), A2d(1,3,trd),
-     &                                                A2d(1,4,trd)
+     &                                  A2d(1,4,trd), A2d(1,4,trd)
 # ifdef VADV_ADAPT_IMP
-     &                                               ,A2d(1,5,trd)
+     &                                               ,A2d(1,6,trd)
 # endif
      &                                                            )
       return
       end
 
-      subroutine step3d_uv2_tile (Istr,Iend,Jstr,Jend, BC,CF,FC,DC
+      subroutine step3d_uv2_tile (Istr,Iend,Jstr,Jend,BC,
+     &                            CF,FC,
+     &                             DC, grad
 # ifdef VADV_ADAPT_IMP
      &                                                         ,WC
 # endif
@@ -101,6 +103,7 @@
 # ifdef TS_MIX_ISO
       real dRx,dRe, cfilt
 # endif
+# include "openacc_work.h"
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -151,8 +154,8 @@
 # endif
 !###########################
 
-
-      do j=Jstr,Jend
+!$acc kernels if(compute_on_device) default(present)
+      DOLOOP2D(IstrU,Iend,Jstr,Jend)
 !
 ! The vertical viscosity term is not added as an explicit divergence term
 ! like the other terms due to the semi-implicit backward Euler scheme.
@@ -464,7 +467,7 @@
           enddo
         enddo        !--> discard DC,CF(:,0)
 # endif
-
+        ENDDOLOOP2D ! <- end j
 
 
 
@@ -480,7 +483,7 @@
 ! Also compute the main diagonal matrix coefficient BC.
 !--------------------------------------------------------------------
 !
-        if (j.ge.JstrV) then
+        DOLOOP2D(Istr,Iend,JstrV,Jend)
 !
 ! The vertical viscosity term is not added as an explicit divergence term
 ! like the other terms due to the semi-implicit backward Euler scheme.
@@ -776,8 +779,7 @@
           enddo
         enddo        !--> discard DC,CF(:,0)
 # endif
-        endif
-      enddo      ! <-- j
+       ENDDOLOOP2D      ! <-- j
 
 !-------------------------------------------------------------------
 ! DIAGNOSTICS
@@ -863,6 +865,7 @@
         enddo
 # endif /* DIAGNOSTICS_EK */
 
+!$acc end kernels
 
 !
 !--------------------------------------------------------------------
@@ -877,10 +880,11 @@
 ! Set PHYSICAL lateral boundary conditions.
 !--------------------------------------------------------------------
 !
+
       call v3dbc_tile (Istr,Iend,Jstr,Jend, grad)
       call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)
 
-
+!$acc kernels if(compute_on_device) default(present)
 !
 !
 !--------------------------------------------------------------------
@@ -936,7 +940,7 @@
 !  Couple XI-component of velocity
 !--------------------------------------------------
 !
-      do j=JU_RANGE
+      DOLOOP2D_R(IU_RANGE,JU_RANGE)
         do i=IU_RANGE
           DC(i,0)=0.
           CF(i,0)=0.
@@ -1072,16 +1076,17 @@
         enddo
       endif
 #  endif /* TS_MIX_ISO_FILT */
-
+        
 
 !
 # endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
+       ENDDOLOOP2D ! <- enddo j
 !
 !--------------------------------------------------
 !  Couple ETA-component of velocity
 !--------------------------------------------------
 !
-        if (j.ge.Jstr) then
+        DOLOOP2D_R(IV_RANGE,JV_RANGE)
           do i=IV_RANGE
             DC(i,0)=0.
             CF(i,0)=0.
@@ -1217,8 +1222,7 @@
 # endif /* TS_DIF2 || TS_DIF4 */
 !
 !
-        endif  !<-- j.ge.Jstr
-      enddo    !<-- j loop
+      ENDDOLOOP2D !<-- j loop
 
 !
 !--------------------------------------------------------------------
@@ -1255,7 +1259,7 @@
         enddo
       enddo
 #  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,nrhs))
@@ -1335,6 +1339,7 @@
 # if defined M3NUDGING && defined M3CLIMATOLOGY
 
 #  ifdef ZONAL_NUDGING
+!$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         call zonavg_3d(istr,iend,jstr,jend,
      &                        u(START_2D_ARRAY,1,nnew),uzon)
@@ -1347,6 +1352,7 @@
         call zonavg_3d(istr,iend,jstr,jend,
      &                        vclm(START_2D_ARRAY,1),vclmzon)
       endif
+!$acc kernels if(compute_on_device) default(present)
 #  endif /* ZONAL_NUDGING */
 
       do k=1,N
@@ -2089,6 +2095,8 @@
 
 # endif /* DIAGNOSTICS_PV */
 
+!$acc end kernels
+
 # undef IU_RANGE
 # undef JU_RANGE
 # undef IV_RANGE
@@ -2098,7 +2106,7 @@
 ! Exchange periodic boundaries and computational margins.
 !--------------------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,nnew))

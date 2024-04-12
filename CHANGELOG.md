@@ -4,6 +4,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ## [Unreleased] - xxxx-xx-xx
 ### Added
+
 - ABL1D : 
   - TODO add description
   - Add KILPATRICK test-case
@@ -24,13 +25,28 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - CPL : management of WCHPC (fix issue #149)
 
 - OBSTRUCTION : Add a process-based model for 3-dimensional simulation of 
-  flow in presence of various obstructions, activated with cpp key #OBSTRUCTION. Obstructions can be rigid or flexible,  and of 3 types : 
+  flow in presence of various obstructions, activated with cpp key #OBSTRUCTION. 
+  Obstructions can be rigid or flexible,  and of 3 types : 
   - upward (like seagrass), 
   - downward (like mussel long-line),
   - 3D (like oyster tables)
   This module requires the keys #SOLVE3D, #GLS_MIXING and #GLS_KEPSILON. See issue
   [#123](https://gitlab.inria.fr/croco-ocean/croco/-/issues/123); 
   check merge request and documentation if interested.
+
+- GPU : [#142]
+  - **MAJOR :   Python is now required to compile croco. Even if no GPU.**
+    - A second stage of pre-processing is added before compilation
+    - Dependency :  os, re, sys, argparse, tempfile, shutil
+  - OPENACC : Active GPU computation by adding OPENACC cpp keys in cppdefs.h
+  - M3FAST_HIS, MP_M3FAST_SEDLAYERS : Keys for acoustic sediment layers
+  - OPENACCNUMERIC : help on numeric validation cpu vs gpu 
+    with RVTK_DEBUG (work in progress)
+  - Limitations :
+    - Test with Nvidia gpu and nvfortan (pgi also ok)
+    - No GPU with : AGRIF MUSTANG OBSTRUCTION   PISCES modules
+    - BAND_DEBUG : Check Mpi redundancy, don't work with OpenACC directives
+
 
 ### Fixed
 - Correction of the vertical transformation function (in the NEW_S_COORD case) 
@@ -83,6 +99,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   [#140](https://gitlab.inria.fr/croco-ocean/croco/-/issues/140)
 
 - Clean files header (fix issue #165)
+
+- Paths in VILAINE test case (fix issue #179)
 
 ### Changed
 

@@ -97,7 +97,7 @@
       endif
 #  define J_EXT_RANGE jmin,jmax
 # endif
-
+!$acc kernels if(compute_on_device) default(present)
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
 # ifdef NONLIN_EOS
@@ -142,7 +142,7 @@
 # endif /* NONLIN_EOS */
         enddo
       enddo
-
+!$acc end kernels
 c*      do i=Istr,Iend,4
 c*        write(6,15) i,alpha(i,10)*1.e7,beta(i,10)*1.e7
 c*      enddo

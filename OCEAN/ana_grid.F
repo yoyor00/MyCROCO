@@ -458,6 +458,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 ! Setup rectangular grid:  coordinates (XI,ETA) at PSI- and RHO-points.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
          xp(i,j) = x0 + dx*float(i+iminmpi-1-1)
@@ -466,6 +467,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
          yr(i,j) = y0 + dy*(float(j+jminmpi-1-1)+0.5)
         enddo
       enddo
+!$acc end kernels      
+!$acc update host( xr, yr )      
 !
 !----------------------------------------------------------------------
 ! Compute coordinate transformation metrics at RHO-points "pm" and
@@ -473,17 +476,20 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 ! ETA, respectively.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           pm(i,j)=1./dx
           pn(i,j)=1./dy
         enddo
       enddo
+!$acc end kernels      
 !
 !----------------------------------------------------------------------
 !  Set Coriolis parameter [1/s] at RHO-points.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
 # ifdef EQUATOR
@@ -493,11 +499,13 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 # endif
         enddo
       enddo
+!$acc end kernels      
 
 # if defined UV_COR_NT || defined CROCO_QH
 !
 !  Horizontal (non-traditional) Coriolis parameter
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           if (beta.eq.0) then     ! f-plan
@@ -507,6 +515,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           endif
         enddo
       enddo
+!$acc end kernels      
 # endif
 !
 !----------------------------------------------------------------------
@@ -518,6 +527,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
                    || defined JET
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
@@ -1187,6 +1197,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  endif /* SEAGRASS */
 
 # endif /* MASKING */
+!$acc end kernels
 !
 #else
       subroutine ana_grid_empty

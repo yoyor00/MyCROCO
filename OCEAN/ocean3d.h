@@ -17,6 +17,7 @@
       real t(GLOBAL_2D_ARRAY,N,3,NT)
       common /ocean_u/u /ocean_v/v /ocean_t/t
 
+# ifndef M3FAST_SEDLAYERS
       real Hz(GLOBAL_2D_ARRAY,N)
       real Hz_bak(GLOBAL_2D_ARRAY,N)
       real z_r(GLOBAL_2D_ARRAY,N)
@@ -27,19 +28,24 @@
       common /grid_Hvom/Hvom
 
       real We(GLOBAL_2D_ARRAY,0:N)
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
       real Wi(GLOBAL_2D_ARRAY,0:N)
-# endif
+#  endif
       common /grid_Hz/Hz /grid_zr/z_r /grid_We/We
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
       common /grid_Wi/Wi
+#  endif
 # endif
 
 # ifdef NBQ
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz
 #  ifdef NBQ_MASS
+#   ifndef M3FAST_SEDLAYERS
       real Hzr(GLOBAL_2D_ARRAY,N)
+#   else
+      real Hzr(GLOBAL_2D_ARRAY,-N_sl+1:N)
+#   endif
       common /grid_Hzr/Hzr
 #  else
 #   define Hzr Hz
