@@ -85,7 +85,7 @@ CONTAINS
       !
       IF( kt == nittrc000 ) THEN
         !
-        ALLOCATE( xnegtr(jpi,jpj,jpk) )
+        ALLOCATE( xnegtr(A2D(0),jpk) )
         !
         IF( .NOT. ln_rsttr ) THEN
             CALL p4z_che( Kbb, Kmm )                  ! initialize the chemical constants

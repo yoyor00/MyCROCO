@@ -380,9 +380,9 @@ CONTAINS
       ! The parameterization has been published in Gorgues et al. (2019).
       ! -----------------------------------------------------------------
       IF (ln_dvm_meso) THEN
-         ALLOCATE( zgramigrem(jpi,jpj), zgramigref(jpi,jpj), &
-              &    zgramigpoc(jpi,jpj), zgramigpof(jpi,jpj) )
-         ALLOCATE( zgramigbsi(jpi,jpj) )
+         ALLOCATE( zgramigrem(A2D(0)), zgramigref(A2D(0)), &
+              &    zgramigpoc(A2D(0)), zgramigpof(A2D(0)) )
+         ALLOCATE( zgramigbsi(A2D(0)) )
          zgramigrem(:,:) = 0.0    ;   zgramigref(:,:) = 0.0
          zgramigpoc(:,:) = 0.0    ;   zgramigpof(:,:) = 0.0
          zgramigbsi(:,:) = 0.0

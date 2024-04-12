@@ -465,12 +465,12 @@ CONTAINS
       ! The parameterization has been published in Gorgues et al. (2019).
       ! -----------------------------------------------------------------
       IF( ln_dvm_meso ) THEN
-          ALLOCATE( zgramigrem(jpi,jpj), zgramigref(jpi,jpj), &
-              &     zgramigpoc(jpi,jpj), zgramigpof(jpi,jpj) )
-          ALLOCATE( zgramigrep(jpi,jpj), zgramigren(jpi,jpj), &
-              &     zgramigpop(jpi,jpj), zgramigpon(jpi,jpj) )
-          ALLOCATE( zgramigdoc(jpi,jpj), zgramigdon(jpi,jpj), &
-              &     zgramigdop(jpi,jpj), zgramigbsi(jpi,jpj) )
+          ALLOCATE( zgramigrem(A2D(0)), zgramigref(A2D(0)), &
+              &     zgramigpoc(A2D(0)), zgramigpof(A2D(0)) )
+          ALLOCATE( zgramigrep(A2D(0)), zgramigren(A2D(0)), &
+              &     zgramigpop(A2D(0)), zgramigpon(A2D(0)) )
+          ALLOCATE( zgramigdoc(A2D(0)), zgramigdon(A2D(0)), &
+              &     zgramigdop(A2D(0)), zgramigbsi(A2D(0)) )
           zgramigrem(:,:)  = 0.0   ;   zgramigref(:,:) = 0.0
           zgramigrep(:,:)  = 0.0   ;   zgramigren(:,:) = 0.0
           zgramigpoc(:,:)  = 0.0   ;   zgramigpof(:,:) = 0.0
@@ -702,7 +702,7 @@ CONTAINS
       INTEGER  :: ji, jj, jk, jkp1
       !
       REAL(wp) :: ztotchl, z1dep
-      REAL(wp), DIMENSION(jpi,jpj) :: oxymoy, tempmoy, zdepmoy
+      REAL(wp), DIMENSION(A2D(0)) :: oxymoy, tempmoy, zdepmoy
 
       !!---------------------------------------------------------------------
       !

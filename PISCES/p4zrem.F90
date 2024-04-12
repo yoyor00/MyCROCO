@@ -519,7 +519,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_rem_alloc  ***
       !!----------------------------------------------------------------------
-      ALLOCATE( denitr(jpi,jpj,jpk), STAT=p4z_rem_alloc )
+      ALLOCATE( denitr(A2D(0),jpk), STAT=p4z_rem_alloc )
       !
       IF( p4z_rem_alloc /= 0 )   CALL ctl_stop( 'STOP', 'p4z_rem_alloc: failed to allocate arrays' )
       !
