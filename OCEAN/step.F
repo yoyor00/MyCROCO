@@ -1048,6 +1048,8 @@ C$OMP END MASTER
 
       real t1,t2,t3
 
+      character(len=30) cltra
+
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
 C$OMP BARRIER
@@ -1195,7 +1197,8 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
-        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
+        write(cltra,"('( t step3d tracer nb ', i2')')")  itrc
+        call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'r')
         !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
       enddo
       call check_tab3d(u(:,:,:,nnew),'u step3d','u')

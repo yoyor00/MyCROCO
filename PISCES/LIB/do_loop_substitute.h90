@@ -90,8 +90,8 @@
 #define JPTS  :
 #define KJPT  :
 
-#define DO_1Di(L, R) DO ji=Istrp,Iendp
-#define DO_1Dj(B, T) DO jj=Jstrp,Jendp
+#define DO_1Di(L, R) DO mi=Istrp,Iendp
+#define DO_1Dj(B, T) DO mj=Jstrp,Jendp
 
 #define DO_2D(L, R, B, T) DO_1Dj(B, T) ; DO_1Di(L, R)
 #define DO_2Dik(L, R, ks, ke, ki) DO jk=ks,ke,ki ; DO_1Di(L, R)

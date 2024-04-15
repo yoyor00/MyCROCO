@@ -301,7 +301,7 @@ CONTAINS
          !
       NAMELIST/nampisdmp/ ln_pisdmp, nn_pisdmp
 #if ! defined NEMO               
-      NAMELIST/nampisdbg/ ln_bio, ln_lys, ln_sed, ln_flx, &
+      NAMELIST/nampisdbg/ ln_bio, ln_lys, ln_sed, ln_flx, ln_sink, &
          &                ln_fechem, ln_micro, ln_meso, ln_mort, &
          &                ln_prod, ln_agg, ln_rem, ln_poc, ln_diaz
       NAMELIST/nampisrst/cn_pisrst_indir, cn_pisrst_outdir, cn_pisrst_in, cn_pisrst_out 

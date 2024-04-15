@@ -30,7 +30,7 @@
 # include "ocean2pisces.h90"
 
        implicit none
-       INTEGER :: Istr,Iend,Jstr,Jend
+       INTEGER, intent(in)  :: Istr,Iend,Jstr,Jend
        INTEGER :: i, j, k, jn
        INTEGER :: Kbb, Kmm
 !----------------------------------------------------------------
@@ -39,7 +39,7 @@
 
       Kbb = nnew     ;      Kmm = nnew     ;       Krhs = nrhs
 
-      CALL ocean_2_pisces( Istr,Iend,Jstr,Jend) 
+      CALL ocean_2_pisces( iic, Istr,Iend,Jstr,Jend) 
 
       DO jn = 1, jptra
          DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp

@@ -26,8 +26,8 @@ CONTAINS
 
 #include "compute_tile_bounds.h"
       
-       Nbb = nnew
-       CALL ocean_2_pisces(Istr,Iend,Jstr,Jend)
+       Nbb = nnew 
+       CALL ocean_2_pisces( nit000,Istr,Iend,Jstr,Jend )
        CALL trc_ini_pisces( Nbb )
 
     END SUBROUTINE pisces_ini_tile

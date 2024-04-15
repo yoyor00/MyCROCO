@@ -35,6 +35,7 @@ MODULE p4zfechem
    REAL(wp), PUBLIC ::   scaveff      !: Fraction of scavenged iron that is considered as being subject to solubilization
 
    LOGICAL  :: l_dia_fechem
+   REAL(wp) :: xpow = 5.0118e-7   ! 10**(-6.3)
 
    !! * Substitutions
 #  include "ocean2pisces.h90"
@@ -114,8 +115,8 @@ CONTAINS
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
           ztl1            = ztotlig(ji,jj,jk)
           zkeq            = fekeq(ji,jj,jk)
-          zklight         = 4.77E-7 * etot(ji,jj,jk) * 0.5 / ( 10**(-6.3) )
-          zconsfe         = consfe3(ji,jj,jk) / ( 10**(-6.3) )
+          zklight         = 4.77E-7 * etot(ji,jj,jk) * 0.5 / xpow
+          zconsfe         = consfe3(ji,jj,jk) / xpow
           zfesatur        = ztl1 * 1E-9
           ztfe            = (1.0 + zklight) * tr(ji,jj,jk,jpfer,Kbb) 
           ! Fe' is the root of a 2nd order polynom

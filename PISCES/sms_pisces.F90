@@ -131,7 +131,7 @@ MODULE sms_pisces
    LOGICAL, SAVE :: lk_sed
    LOGICAL, SAVE :: l_diaadd
 
-   LOGICAL, SAVE :: ln_bio, ln_lys, ln_sed, ln_flx
+   LOGICAL, SAVE :: ln_bio, ln_lys, ln_sed, ln_flx, ln_sink
    LOGICAL, SAVE :: ln_fechem, ln_micro, ln_meso, ln_mort
    LOGICAL, SAVE :: ln_prod, ln_agg, ln_rem, ln_poc, ln_diaz
 

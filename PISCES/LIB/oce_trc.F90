@@ -128,36 +128,37 @@ MODULE oce_trc
 
 CONTAINS
 
-   SUBROUTINE ocean_2_pisces( Istr, Iend, Jstr, Jend )
+   SUBROUTINE ocean_2_pisces( kt, Istr, Iend, Jstr, Jend )
    
-      INTEGER :: Istr, Iend, Jstr, Jend
+      INTEGER, intent(in) :: kt, Istr, Iend, Jstr, Jend
       INTEGER :: ji, jj, jk, jl
 
-
-      Istrp = Istr
-      Iendp = Iend
-      Jstrp = Jstr
-      Jendp = Jend
+      IF( kt == nit000 ) THEN
+         Istrp = Istr
+         Iendp = Iend
+         Jstrp = Jstr
+         Jendp = Jend
+      ENDIF
 
       DO jl = 1, 3
          DO jk = 1, N+1
-            DO jj =  Jstr, Jend 
-               DO ji =  Istr, Iend 
+            DO jj =  Jstrp, Jendp 
+               DO ji =  Istrp, Iendp 
                   gdepw(ji,jj,N+2-jk,jl) = -(z_w(ji,jj,jk-1)-z_w(ji,jj,N))
                END DO
             END DO
          END DO
 
          DO jk = 2, N
-            DO jj =  Jstr, Jend 
-               DO ji =  Istr, Iend 
+            DO jj =  Jstrp, Jendp 
+               DO ji =  Istrp, Iendp 
                   e3w(ji,jj,jk,jl) = -z_r(ji,jj,N+1-jk) + z_r(ji,jj,N+2-jk)
               END DO
             END DO
          END DO
 
-         DO jj =  Jstr, Jend 
-            DO ji =  Istr, Iend 
+         DO jj =  Jstrp, Jendp 
+            DO ji =  Istrp, Iendp 
                e3w(ji,jj,1  ,jl) = -2 * z_r(ji,jj,N)
                e3w(ji,jj,N+1,jl) = 2 * ( -z_w(ji,jj,0) + z_r(ji,jj,1) )
             END DO

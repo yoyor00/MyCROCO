@@ -254,6 +254,16 @@ CONTAINS
       IF (lwp) WRITE(numout,*) ' Level corresponding to 100m depth ',  ik100 + 1
       IF (lwp) WRITE(numout,*)
       !
+      wsbio3(:,:,:) = wsbio
+      wsbio4(:,:,:) = wsbio2
+      sinkpocb(:,:) = 0.
+      sinkcalb(:,:) = 0.
+      IF( .NOT. ln_p2z )  sinksilb(:,:) = 0.
+      IF( ln_p5z ) THEN
+         sinkponb(:,:) = 0.
+         sinkpopb(:,:) = 0.
+      ENDIF
+
    END SUBROUTINE p4z_sink_init
 
    INTEGER FUNCTION p4z_sink_alloc()
