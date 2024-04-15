@@ -32,7 +32,7 @@ export NETCDF_LIB=$( nf-config --flibs)
 
 # -- Option for job launching
 export MPI_LAUNCH=mpirun
-export MPI_ext="-configfile"
+export MPI_ext="--app"
 export ncomod='nco'
 
 #----------------------------------------------------------------
