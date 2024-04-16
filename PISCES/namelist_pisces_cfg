@@ -42,7 +42,7 @@
    tracer(22)  = 'DCHL    ' , 'Diatoms chlorophyl Concentration       ',  'mg/m3'
    tracer(23)  = 'NO3     ' , 'Nitrates Concentration                 ',  'mmol/m3'
    tracer(24)  = 'NH4     ' , 'Ammonium Concentration                 ',  'mmol/m3'
-!   tracer(25)  = 'LGW     ' , 'Ligands Concentration                  ',  'mmol/m3'
+   tracer(25)  = 'LGW     ' , 'Ligands Concentration                  ',  'mmol/m3'
 /
 !-----------------------------------------------------------------------
 &nampisext     !   air-sea exchange
