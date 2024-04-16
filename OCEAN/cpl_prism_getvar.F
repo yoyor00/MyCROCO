@@ -75,31 +75,20 @@
 
 !
 !     1.b. Blend the borders of the fields
-#ifdef MPI
          if (.not. WEST_INTER) then
-#endif
            tab_t_tmp(0,:)=2.*tab_t_tmp(1,:)-tab_t_tmp(2,:)
-#ifdef MPI
          endif
          if (.not. EAST_INTER) then
-#endif
            tab_t_tmp(Lmmpi+1,:)=2.*tab_t_tmp(Lmmpi,:)
      &                            -tab_t_tmp(Lmmpi-1,:)
-#ifdef MPI
          endif
          if (.not. SOUTH_INTER) then
-#endif
-          tab_t_tmp(:,0)=2.*tab_t_tmp(:,1)-tab_t_tmp(:,2)
-#ifdef MPI
+           tab_t_tmp(:,0)=2.*tab_t_tmp(:,1)-tab_t_tmp(:,2)
          endif
          if (.not. NORTH_INTER) then
-#endif
-          tab_t_tmp(:,Mmmpi+1)=2.*tab_t_tmp(:,Mmmpi)
+           tab_t_tmp(:,Mmmpi+1)=2.*tab_t_tmp(:,Mmmpi)
      &                          - tab_t_tmp(:,Mmmpi-1)
-#ifdef MPI
          endif
-#endif
-
 
 !     !$
 !     !$         WRITE(333,*) '****************'
