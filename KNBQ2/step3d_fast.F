@@ -276,7 +276,7 @@ C$    trd=omp_get_thread_num()
 !----------------------------------------------------------------------
 !
 #  ifdef NBQ_GRID_SLOW
-#   define NSTEP_DS mod(iic,1).eq.1 .and. iif.eq.1
+#   define NSTEP_DS iif.eq.1
 #  else
 #   define NSTEP_DS .true. 
 #  endif
