@@ -298,9 +298,6 @@
 #  define UV_TIDES
 #  define POT_TIDES
 #  undef  TIDES_MAS
-#  ifndef UV_TIDES
-#   define OBC_REDUCED_PHYSICS
-#  endif
 #  define TIDERAMP
 # endif
 # define OBC_M2CHARACT
