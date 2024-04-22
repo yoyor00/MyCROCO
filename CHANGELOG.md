@@ -2,20 +2,18 @@
 
 Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco/-/releases
 
-## [Unreleased] - xxxx-xx-xx
+## [2.0.0] - 2024-04-22
 ### Added
 
 - ABL1D : 
-  - TODO add description
+  - Add Atmospheric Boundary Layer 1d model as in Lemarié et al. [2021]
   - Add KILPATRICK test-case
 
 - SUBMASSBALANCE : Add submassbalance feature as in MARS, see issue 
   [#65](https://gitlab.inria.fr/croco-ocean/croco/-/issues/65) ; 
   check merge request and documentation if interested
 
-- PISCES :
-  - TODO add description
-  - Update PISCES (XIOS on-the-fly, ...)
+- PISCES : update PISCES and XIOS
 
 - SED_DENS : Add suspended sediment contribution to density whith cpp key 
   #SED_DENS. #SED_DENS applies to #SEDIMENT and #MUSTANG cases. For MUSTANG 
@@ -30,6 +28,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - upward (like seagrass), 
   - downward (like mussel long-line),
   - 3D (like oyster tables)
+  
   This module requires the keys #SOLVE3D, #GLS_MIXING and #GLS_KEPSILON. See issue
   [#123](https://gitlab.inria.fr/croco-ocean/croco/-/issues/123); 
   check merge request and documentation if interested.
@@ -101,6 +100,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Clean files header (fix issue #165)
 
 - Paths in VILAINE test case (fix issue #179)
+
+- Adequation TIDES and OBC_REDUCED_PHYSICS (fix issue #183)
 
 ### Changed
 
