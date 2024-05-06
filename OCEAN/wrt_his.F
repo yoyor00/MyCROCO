@@ -1403,7 +1403,6 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
           enddo
 # endif
 
-# endif
           call fillvalue3d(workr,ncidhis,hisT(itrc),
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
