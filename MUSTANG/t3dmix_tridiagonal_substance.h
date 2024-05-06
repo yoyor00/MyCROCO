@@ -160,7 +160,7 @@
           if (itrc.ge.itsubs1+nv_grav .and.
      &        itrc.le.itsubs1+nvp) then          ! particulate tracers
               do k=1,N-1
-                CD(i,k) = t(i,j,k+1,nnew,itrc)*ws_part(i,j,k,itrc)/
+                CD(i,k) = -t(i,j,k+1,nnew,itrc)*ws_part(i,j,k,itrc)/
      &                                       (Hz(i,j,k+1)*nbsubstep)
               enddo
 # ifdef MUSTANG
