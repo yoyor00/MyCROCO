@@ -1,7 +1,6 @@
-! read_inp.F 1615 2014-12-17 13:27:07Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -344,7 +343,7 @@
    4  kwlen=ie-is
       if (is.gt.1) keyword(1:kwlen)=keyword(is:is+kwlen-1)
 !
-h! Read input parameters according to the keyword:
+! Read input parameters according to the keyword:
 ! ==== ===== ========== ========= == === ========
 !
 ! Title

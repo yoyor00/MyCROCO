@@ -1,7 +1,6 @@
-! $Id: cpl_prism_getvar.F 1574 2014-07-01 15:13:38Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -76,20 +75,20 @@
 
 !
 !     1.b. Blend the borders of the fields
-        if (WESTERN_EDGE) then
+         if (.not. WEST_INTER) then
            tab_t_tmp(0,:)=2.*tab_t_tmp(1,:)-tab_t_tmp(2,:)
-        endif
-        if (EASTERN_EDGE) then
+         endif
+         if (.not. EAST_INTER) then
            tab_t_tmp(Lmmpi+1,:)=2.*tab_t_tmp(Lmmpi,:)
      &                            -tab_t_tmp(Lmmpi-1,:)
-        endif
-        if (SOUTHERN_EDGE) then
-          tab_t_tmp(:,0)=2.*tab_t_tmp(:,1)-tab_t_tmp(:,2)
-        endif
-        if (NORTHERN_EDGE) then
-          tab_t_tmp(:,Mmmpi+1)=2.*tab_t_tmp(:,Mmmpi)
+         endif
+         if (.not. SOUTH_INTER) then
+           tab_t_tmp(:,0)=2.*tab_t_tmp(:,1)-tab_t_tmp(:,2)
+         endif
+         if (.not. NORTH_INTER) then
+           tab_t_tmp(:,Mmmpi+1)=2.*tab_t_tmp(:,Mmmpi)
      &                          - tab_t_tmp(:,Mmmpi-1)
-        endif
+         endif
 
 !     !$
 !     !$         WRITE(333,*) '****************'

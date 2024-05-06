@@ -12,6 +12,9 @@ advection and mixing, and a dedicated I/O server (XIOS).
 More informations on the croco website at 
 https://www.croco-ocean.org
 
+We provide separate DOIs (Digital Object Identifier) for the static versions 
+of the code at https://zenodo.org/doi/10.5281/zenodo.7415055
+
 CROCO documentation is available at 
 https://croco-ocean.gitlabpages.inria.fr/croco_doc
 

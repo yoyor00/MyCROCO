@@ -1,7 +1,6 @@
-! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -84,7 +83,8 @@
       else
         jmax=Jend+2
       endif
-# endif
+# endif    
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Compute other vertical grid variables
@@ -173,7 +173,8 @@
 # endif
           enddo
         enddo
-      enddo
+      enddo          
+!$acc end kernels        
 
       return
       end subroutine grid_nbq_tile

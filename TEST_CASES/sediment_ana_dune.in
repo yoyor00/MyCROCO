@@ -1,5 +1,5 @@
 1  Stitle (a80)
-ROMS - Dune Sediment - Test
+CROCO - Dune Sediment - Test
 
 2  Sd(1-NST), CSED, SRHO,  WSED,  ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
       0.255    0.0  2650.   31    0.    0.17     0.1      11*1

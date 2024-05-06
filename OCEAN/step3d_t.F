@@ -1,7 +1,6 @@
-! $Id: step3d_t.F 1576 2014-07-03 16:15:16Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -28,14 +27,22 @@
      &                    A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                    A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                    A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
-     &                                                A3d(1,1,trd))
-# endif /* TRACERS */
+     &                                                A3d(1,1,trd)
+#  ifdef OPENACC
+     &   ,A3d(1,2,trd),A3d(1,3,trd),A3d(1,4,trd),A3d(1,5,trd)
+#  endif
+     &                            )
+# endif /* TRACERS */      
       return
       end
 
 # ifdef TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
-     &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
+     &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk
+#  ifdef OPENACC
+     &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
+#  endif
+     &  )
 
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
@@ -98,11 +105,18 @@
      &     EC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     GC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     swdk(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#  ifdef OPENACC
+      real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     WORK_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#  endif
       real cff1,cff2,gama,dRz,hbltmp,sig,dXmax,dEmax,
      &     dpth,smax,amax,amaxx
 #  ifdef TS_VADV_FCT
       real tmax,tmin,Ppos,Qpos,Pneg,Qneg,lmdmax
 #  endif
+#  include "openacc_work.h"
       parameter (epsil=1.E-16)
 !
 #  ifdef MASKING
@@ -181,8 +195,11 @@
 !
 !======================================================================
 !
+
       do itrc=1,NT
-        do k=1,N
+#  if !defined OPENACC
+      do k=1,N
+#  endif
 
 #  ifdef BIO_HADV_WENO5
 #   if defined TEMPERATURE && defined SALINITY
@@ -199,7 +216,11 @@
 !----------------------------------------------------------
 !
 #  undef PREDICTOR
-#  include "compute_horiz_tracer_fluxes.h"
+#  if !defined OPENACC
+#   include "compute_horiz_tracer_fluxes.h"
+#  else
+#   include "compute_horiz_tracer_fluxes_3D.h"
+#  endif
 !
 !----------------------------------------------------------
 ! WENO5 advection for passive tracers (biology ...)
@@ -250,7 +271,12 @@
 !----------------------------------------------------------
 !
 #  ifdef PSOURCE
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(2)
           do is=1,Nsrc
+#   if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#   endif
 #   ifdef MPI
            i=Isrc_mpi(is,mynode)
            j=Jsrc_mpi(is,mynode)
@@ -289,6 +315,9 @@
                 endif
               endif
             endif
+#   if defined OPENACC
+            ENDDOEXTEND
+#   endif
           enddo
 #  endif /* PSOURCE */
 !
@@ -296,6 +325,11 @@
 ! Finalize horizontal advection: compute flux divergences
 !----------------------------------------------------------
 !
+!$acc parallel loop if(compute_on_device) default(present)
+!$acc& collapse(3)
+#  if defined OPENACC
+            DOEXTEND(k,1,N,FX,FE,WORK)
+#  endif
           do j=Jstr,Jend
             do i=Istr,Iend
 #  if !(defined MUSTANG && defined key_sand2D)
@@ -341,12 +375,17 @@
 #  endif
 
 !add submassbalance !! in loop k
+! this has to be checked with OPENACC
+! as well as OPENACC and MUSTANG in general          
 #  if defined SUBSTANCE_SUBMASSBALANCE
         if (itrc .ge. itsubs1) then
             call submassbalance_flxcum_kiv(Istr, Iend, Jstr, Jend, 
      &        FX, FE, itrc-itsubs1+1)
         endif
 #  endif
+#  if defined OPENACC
+            ENDDOEXTEND
+# endif  
 !
 !----------------------------------------------------------
 ! Store diagnostic transport term
@@ -406,9 +445,11 @@
         enddo
 #   endif
 #  endif /* DIAGNOSTICS_TS */
-
+#  if !defined OPENACC
         enddo    !<-- k
+#  endif
       enddo    !<-- itrc
+
 !
 !----------------------------------------------------------
 ! Compute fraction of the solar shortwave flux "swdk"
@@ -420,18 +461,21 @@
 #   define wrk1 FX
 #   define wrk2 FE
       do k=1,N-1
+!$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
             wrk1(i,j)=z_w(i,j,k)-z_w(i,j,N)
           enddo
         enddo
         call lmd_swfrac_tile (Istr,Iend,Jstr,Jend,1.,wrk1,wrk2)
+!$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
             swdk(i,j,k)=wrk2(i,j)
           enddo
         enddo
       enddo
+!$acc wait
 #   undef wrk1
 #   undef wrk2
 #  endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */
@@ -474,7 +518,8 @@
 !
 !======================================================================
 !
-      do j=Jstr,Jend
+!$acc kernels if(compute_on_device) default(present)
+      DOLOOP2D(Istr,Iend,Jstr,Jend)
         do itrc=1,NT
 !
 !----------------------------------------------------------
@@ -485,7 +530,9 @@
 #  include "compute_vert_tracer_fluxes.h"
 
 #  ifdef TS_HADV_TEST
-      FC(Istr:Iend,0:N) = 0.0
+        do i=Istr,Iend
+          FC(i,0:N)=0.
+        enddo
 #  endif
 
 !----------------------------------------------------------
@@ -632,7 +679,7 @@
           if (itrc .le. 1) then                  ! active tracers
 #   endif
             do k=1,N
-              do i=istr,iend
+              do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
               enddo
             enddo
@@ -669,7 +716,7 @@
 #     define TS_MIX_IMP
 #    else
             do k=1,N
-              do i=istr,iend
+              do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
               enddo
             enddo
@@ -743,9 +790,8 @@
         enddo
 #  endif
 
-      enddo      ! <-- j
-
 !add submassbalance for river!! 
+!mustang and openacc not compatible         
 # if defined SUBSTANCE_SUBMASSBALANCE
       call submassbalance_psource(Istr, Iend, Jstr, Jend)
 #  ifdef MUSTANG
@@ -753,6 +799,9 @@
 #  endif
 # endif
 !
+      ENDDOLOOP2D ! <-- j
+
+!$acc end kernels
 !======================================================================
 !  Set lateral boundary conditions; nudge toward tracer climatology;
 !  apply land-sea mask and exchange periodic boundary conditions.
@@ -780,7 +829,7 @@
 !
 #  if !defined TS_MIX_S && \
       (defined TS_DIF4 || defined TS_DIF2 || defined SPONGE_DIF2)
-
+!$acc kernels if(compute_on_device) default(present)
 #   ifdef TS_MIX_GEO
 !
 ! --- Geopotential diffusion: idRz contains idZ values ---
@@ -845,15 +894,16 @@
       enddo
 #   endif /* TS_MIX_ISO */
 !
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+#   if defined BD_EXCHANGE
       call exchange_w3d_tile (  istr,iend,jstr,jend,
      &                          idRz(START_2D_ARRAY,0)  )
 #   endif
 !
 #  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 !
-!
-      do itrc=1,NT   !<-- itrc
+! 
+
 !
 !======================================================================
 !  Compute Nudging terms
@@ -861,6 +911,7 @@
 !
 #  if defined TNUDGING && defined TCLIMATOLOGY
 #   ifdef ZONAL_NUDGING
+      do itrc=1,NT   !<-- itrc
         if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
           call zonavg_3d(istr,iend,jstr,jend,
      &               t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
@@ -869,7 +920,18 @@
           call zonavg_3d(istr,iend,jstr,jend,
      &              tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
         endif
+      enddo   ! <-- itrc
 #   endif /* ZONAL_NUDGING */
+#  endif
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop seq
+      do itrc=1,NT   !<-- itrc
+!
+!======================================================================
+!  Compute Nudging terms
+!======================================================================
+!
+#  if defined TNUDGING && defined TCLIMATOLOGY
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -1095,12 +1157,17 @@
 #   undef I_RANGE
 #   undef J_RANGE
 #  endif /* MASKING */
+
+      enddo   ! <-- itrc
+!$acc end kernels
+
+      do itrc=1,NT
 !
 !----------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.
 !----------------------------------------------------------
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
@@ -1109,8 +1176,7 @@
      &                          t(START_2D_ARRAY,1,nnew,itrc))
 #   endif
 #  endif
-
-      enddo   ! <-- itrc
+      enddo
 
       return
       end
@@ -1125,6 +1191,7 @@
      defined BEDLOAD_WENO5
 !
       function flux5_weno(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+!$acc routine(flux5_weno) seq
 !
 !     WENO5: Weighted Essentially Non-Oscillatory scheme
 !            with 5th-order accuracy
@@ -1260,6 +1327,8 @@
 !======================================================================
 !
       function flux3_weno( q_im2, q_im1, q_i, q_ip1, ua)
+!$acc routine(flux3_weno) seq
+
 !
 !     WENO3: Weighted Essentially Non-Oscillatory of 3rd-order Accuracy
 !

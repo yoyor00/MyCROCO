@@ -1,7 +1,6 @@
-! $Id: hmix_coef.F 1618 2014-12-18 14:39:51Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -304,7 +303,7 @@
       endif
 #  endif /* !EW_PERIODIC && !NS_PERIODIC */
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 !      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,visc3d_r)
 #  endif
 !
@@ -320,7 +319,7 @@
         enddo
       enddo
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_p3d_tile(Istr,Iend,Jstr,Jend,visc3d_p)
 #  endif
 
@@ -417,7 +416,8 @@
       endif
 #    endif
 #   endif
-!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+
+!#  if defined BD_EXCHANGE
 !      call exchange_w3d_tile (istr,iend,jstr,jend, Akv)
 !      call exchange_w3d_tile (istr,iend,jstr,jend,
 !     &                        Akt(START_2D_ARRAY,0,itemp))
@@ -427,7 +427,6 @@
 !#   endif
 !#  endif
 #  endif /* UV_VIS_SMAGO_3D */
-
 # endif /* UV_VIS_SMAGO  */
 #else
       subroutine hvisc_coef_empty
@@ -487,6 +486,8 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
+!$acc kernels if(compute_on_device) default(present)
+
 # if defined GLS_MIXING_3D
 !---------------------------------------------------------------
 !  GLS horizontal viscosity at RHO points
@@ -593,8 +594,8 @@
         enddo
       enddo
 # endif /* TS_HADV_RSUP3 */
-
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+# if defined BD_EXCHANGE
 #  ifdef TS_DIF_SMAGO
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,diff3d_r)
 #  endif

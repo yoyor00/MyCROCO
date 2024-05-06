@@ -105,6 +105,7 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 ls ${SOURCE}/*.F               > /dev/null  2>&1 && \cp ${SOURCE}/*.F   $SCRDIR
 ls ${SOURCE}/*.F90             > /dev/null  2>&1 && \cp ${SOURCE}/*.F90 $SCRDIR
 ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
+ls ${SOURCE}/*.py              > /dev/null  2>&1 && \cp ${SOURCE}/*.py  $SCRDIR
 ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
 ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
@@ -176,7 +177,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	if [[ $FC == ifort || $FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-                FFLAGS1="-O0 -mcmodel=medium -g -i4 -r8 -traceback -check all -check bounds \
+                FFLAGS1="-O0 -mcmodel=medium -g -i4 -r8 -traceback -check bounds \
                        -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
@@ -324,7 +325,13 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 		if [[ $FC == gfortran ]] ; then
 			FFLAGS1="$FFLAGS1 -fopenmp"
 		elif [[ $FC == ifort || $FC == ifc ]] ; then
-			FFLAGS1="$FFLAGS1 -openmp"
+			INTEL_VERSION=$(ifort --version 2>&1 | grep -oP "(\d+)" | head -n1)
+			# Compare the version with 18
+			if [[ "$INTEL_VERSION" -ge 18 ]]; then
+				FFLAGS1="$FFLAGS1 -qopenmp"
+			else
+				FFLAGS1="$FFLAGS1 -openmp"
+			fi
 		else
 			FFLAGS1="$FFLAGS1 -openmp"
 		fi

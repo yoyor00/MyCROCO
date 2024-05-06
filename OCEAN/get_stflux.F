@@ -1,7 +1,6 @@
-! $Id: get_stflux.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -16,6 +15,9 @@
                                     ! Read point or grided surface
       subroutine get_stflux (itrc)  ! flux for tracer variables itrc
                                     ! from forcing NetCDF file.
+# ifdef OPENACC
+      use exchange_device_host
+# endif
 # define STFLUX_DATA
       implicit none
 # include "param.h"
@@ -141,6 +143,9 @@ c**        call opencdf (frcname,N)
         if (lstfgrd(itrc).eq.1) then
           ierr=nf_fread(stflxg(START_2D_ARRAY,i,itrc), ncidfrc,
      &                     stf_id(itrc), stf_rec(itrc), r2dvar)
+# ifdef OPENACC
+          call update_device(stflxg(:,:,i,itrc))
+# endif
         else
           ierr=nf_get_var1_FTYPE(ncidfrc, stf_id(itrc),
      &                     stf_rec(itrc), stflxp(i,itrc))
@@ -215,6 +220,7 @@ c**        call opencdf (frcname,N)
         if (FIRST_RST_TIME_STEP) then
           if (lstfgrd(itrc).eq.1) then
             cff=stf_scale(itrc)
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 stflx(i,j,itrc)=cff*stflxg(i,j,itstf(itrc),itrc)
@@ -222,6 +228,7 @@ c**        call opencdf (frcname,N)
             enddo
           else
             cff=stf_scale(itrc)*stflxp(itstf(itrc),itrc)
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 stflx(i,j,itrc)=cff
@@ -242,6 +249,7 @@ c**        call opencdf (frcname,N)
         cff1=cff1*cff
         cff2=cff2*cff
         if (lstfgrd(itrc).eq.1) then
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               stflx(i,j,itrc)=cff1*stflxg(i,j,it1,itrc)
@@ -250,6 +258,7 @@ c**        call opencdf (frcname,N)
           enddo
         else
           cff=cff1*stflxp(it1,itrc)+cff2*stflxp(it2,itrc)
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               stflx(i,j,itrc)=cff

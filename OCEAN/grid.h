@@ -1,7 +1,6 @@
-! $Id: grid.h 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -70,7 +69,30 @@
 #ifdef MORPHODYN
       common /grid_dh/dh
 #endif
-
+# ifdef MVB
+      real x_mvb(GLOBAL_2D_ARRAY,0:2)
+      common /mvb_x/ x_mvb
+      real y_mvb(GLOBAL_2D_ARRAY,0:2)
+      common /mvb_y/ y_mvb
+      real u_mvb(GLOBAL_2D_ARRAY,0:2)
+      common /mvb_u/ u_mvb
+      real v_mvb(GLOBAL_2D_ARRAY,0:2)
+      common /mvb_v/ v_mvb
+      real w_mvb(GLOBAL_2D_ARRAY,0:2)
+      common /mvb_w/ w_mvb
+      real dh_mvb(GLOBAL_2D_ARRAY,0:2)
+      common /mvb_dh/ dh_mvb
+      integer knew2
+      common /mvb_knew2/ knew2
+      integer kstp2
+      common /mvb_kstp2/ kstp2
+      integer kbak2
+      common /mvb_kbak2/ kbak2
+      real time_mvb
+      common /mvb_time/ time_mvb
+      real h0_mvb(GLOBAL_2D_ARRAY)
+      common /mvb_h0/ h0_mvb
+# endif
 
 #ifdef CURVGRID
       real angler(GLOBAL_2D_ARRAY)

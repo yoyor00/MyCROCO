@@ -1,7 +1,6 @@
-! $Id$
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -122,6 +121,7 @@
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
+!$acc declare create(wrk4,wrk5,wrk6)
 # endif
       parameter ( eps    = 1.e-10,
      &            bconst = 0.03,              ! breaking contribution to KPP
@@ -221,6 +221,7 @@
 ! 2DH Stokes velocities, breaking, roller and bottom-friction
 ! dissipation terms, defined at horizontal rho-points.
 !
+!$acc kernels if(compute_on_device) default(present)
 #  ifdef EW_PERIODIC
        imin= Istr-2
 #  else
@@ -1239,6 +1240,8 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       endif
 #  endif  /* OBC_EAST */
 # endif  /* ANA_BRY */
+
+!$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile(istr,iend,jstr,jend,sup)

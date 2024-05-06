@@ -1,7 +1,6 @@
-! $Id: get_srflux.F 1570 2014-07-01 10:20:21Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -15,6 +14,9 @@
                               ! Read point or grided shortwave
       subroutine get_srflux   ! radiation flux at the appropriate
                               ! time from forcing NetCDF file.
+# ifdef OPENACC
+      use exchange_device_host
+# endif
 # define SRFLUX_DATA
       implicit none
 # include "param.h"
@@ -141,6 +143,9 @@
         if (lsrfgrd.eq.1) then
           ierr=nf_fread (srflxg(START_2D_ARRAY,i), ncidfrc, srf_id,
      &                                             srf_rec, r2dvar)
+# ifdef OPENACC
+          call update_device(srflxg(:,:,i))
+# endif
         else
           ierr=nf_get_var1_FTYPE (ncidfrc,srf_id,srf_rec,srflxp(i))
         endif
@@ -157,6 +162,9 @@
         if (lsrfbiogrd.eq.1) then
           ierr=nf_fread (srflxbiog(START_2D_ARRAY,i), ncidfrc,
      &                        srfbio_id, srf_rec,  r2dvar)
+#  ifdef OPENACC
+          call update_device(srflxbiog(:,:,i))
+#  endif
         else
           ierr=nf_get_var1_FTYPE (ncidfrc,srfbio_id,
      &                            srf_rec ,srflxbiop(i))
@@ -248,6 +256,7 @@
       if (srf_cycle.lt.0.) then
         if (FIRST_RST_TIME_STEP) then
           if (lsrfgrd.eq.1) then
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 srflx(i,j)=srf_scale*srflxg(i,j,itsrf)
@@ -261,6 +270,7 @@
 # ifdef DIURNAL_INPUT_SRFLX
             srflxbio=srf_scale*srflxbiop(itsrf)
 # endif
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 srflx(i,j)=srf
@@ -283,6 +293,7 @@
         cff1=cff1*cff
         cff2=cff2*cff
         if (lsrfgrd.eq.1) then
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               srflx(i,j)=cff1*srflxg(i,j,it1)+cff2*srflxg(i,j,it2)
@@ -298,6 +309,7 @@
           srfbio=cff1*srflxbiop(it1)
      &                        +cff2*srflxbiop(it2)
 # endif
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
               srflx(i,j)=srf
@@ -362,6 +374,7 @@
 ! Initialize fixed parameters
 !
       if (FIRST_RST_TIME_STEP) then
+!$acc parallel loop if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             phi=latr(i,j)*deg2rad
@@ -389,6 +402,7 @@
 !  --> use Greenwich hour angle:
 !      cos_h=1 at solar noon in Greenwich
 !
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           cos_h=cos(hour-lonr(i,j)*deg2rad)

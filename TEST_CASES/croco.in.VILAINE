@@ -23,7 +23,7 @@ bulk_forcing: filename
 climatology: filename
                  CROCO_FILES/croco_clm.nc
 boundary: filename
-                CROCO_FILES/vilaine_bry_2015.nc
+                CROCO_FILES/bry_vilaine_20150101.nc
 initial: NRREC  filename
           1
                  CROCO_FILES/vilaine_ini.nc
@@ -37,7 +37,7 @@ averages: NTSAVG, NAVG, NRPFAVG / filename
             1     1000000     0
                   croco_avg.nc
 wave_offline:   filename
-              CROCO_FILES/croco_wave_vilaine.nc
+              CROCO_FILES/wave_vilaine_20150101.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T
@@ -117,4 +117,4 @@ psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
            2014   12      24             2016     1
-   CROCO_FILES/meteo_arome_vilaine_2015.nc 
+   CROCO_FILES/met_vilaine_20150101.nc

@@ -1,7 +1,6 @@
-# $Id: Makefile 1483 2014-03-15 17:05:10Z rblod $
-#
 #======================================================================
-# CROCO is a branch of ROMS developped at IRD and INRIA, in France
+# CROCO is a branch of ROMS developped at IRD, INRIA, 
+# Ifremer, CNRS and Univ. Toulouse III  in France
 # The two other branches from UCLA (Shchepetkin et al)
 # and Rutgers University (Arango et al) are under MIT/X style license.
 # CROCO specific routines (nesting) are under CeCILL-C license.
@@ -131,7 +130,8 @@ include Makedefs
 \
 	online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
 	scal0d_oa_out_loc.F scal0d_oa_out_full.F\
-	output_oa.F
+	output_oa.F\
+	copy_to_devices.F exchange_device_host.F init_acc.F
 
 
 

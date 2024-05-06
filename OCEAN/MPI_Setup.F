@@ -1,7 +1,6 @@
-! $Id: MPI_Setup.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -13,7 +12,9 @@
 #ifdef MPI
 
       subroutine MPI_Setup (ierr)
-
+# ifdef OPENACC
+      use openacc
+# endif
 !     implicit none
 # include "param.h"
       integer ierr, nsize, ii_W, ii_E, jj_S, jj_N
@@ -34,6 +35,9 @@
 # else
       parameter (Npts=3)
 # endif
+# ifdef OPENACC
+      integer number_of_devices
+# endif
 
 
 # include "scalars.h"
@@ -51,11 +55,19 @@
         return
       endif
 
-!       write(200+mynode,*) mynode,nsize,NNODES
-!       stop'toto'
-!       write(200+mynode,*) "passe la 1"
-!       print *,"passe la 1"
-!       stop '1'
+# ifdef OPENACC 
+#  ifndef JEANZAY
+       number_of_devices=acc_get_num_devices(acc_device_default)
+       if (number_of_devices > 0) then
+        my_acc_device=mod(mynode,number_of_devices)
+        compute_on_device=.TRUE.
+       else 
+        compute_on_device=.FALSE.
+       endif
+       !if (mynode < 5) compute_on_device=.FALSE.
+#  endif       
+# endif
+
 # ifndef MPI_NOLAND
       ii=mod(mynode,NP_XI)
       jj=mynode/NP_XI

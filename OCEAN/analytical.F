@@ -1,7 +1,6 @@
-! $Id: analytical.F 1619 2015-01-07 13:53:03Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -120,6 +119,8 @@
 !
 #  include "compute_auxiliary_bounds.h"
 !
+!$acc kernels if(compute_on_device) default(present)
+!
 !----------------------------------------------------------------------
 ! Set kinematic bottom heat flux [degC m/s] at horizontal RHO-points.
 !----------------------------------------------------------------------
@@ -182,7 +183,9 @@
         enddo
 #  if defined SALINITY || defined TEMPERATURE
       endif
-#  endif /* SALINITY || TEMPERATURE*/
+#  endif /* SALINITY || TEMPERATURE*/     
+!$acc end kernels 
+
       return
       end
 # endif /* ANA_BTFLUX */
@@ -370,6 +373,7 @@ C$    integer  trd, omp_get_thread_num
 
       windamp = 0.
 
+!$acc kernels if(compute_on_device) default(present)
 # ifdef BASIN
       cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
       cff2=2.*pi/el
@@ -531,6 +535,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif
+!$acc end kernels
       return
       end
 #endif /* ANA_SMFLUX */
@@ -559,6 +564,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set kinematic surface solar shortwave radiation [degC m/s] at
 !  horizontal RHO-points.
 !
+!$acc kernels if(compute_on_device) default(present)
 # if defined INNERSHELF && !defined INNERSHELF_EKMAN
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -587,6 +593,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif /* INNERSHELF */
+!$acc end kernels
       return
       end
 #endif /* ANA_SRFLUX */
@@ -791,6 +798,7 @@ C$    integer  trd, omp_get_thread_num
       y2=1500.E+3
       sst1=10.
       sst2=25.
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=sst1
@@ -807,20 +815,25 @@ C$    integer  trd, omp_get_thread_num
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
+!$acc end kernels      
 # elif defined INNERSHELF
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=24.
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
+!$acc end kernels
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           sst(i,j)=25
           dqdt(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 # endif
       return
       end
@@ -898,8 +911,8 @@ c
 # include "compute_auxiliary_bounds.h"
 c
 # ifdef TRACERS
+!$acc kernels if(compute_on_device) default(present)
 #  ifdef TEMPERATURE
-
       if (itrc.eq.itemp) then
 !
 !  Set kinematic surface heat flux [degC m/s] at horizontal
@@ -1017,6 +1030,7 @@ c
 #  if defined SALINITY || defined TEMPERATURE
       endif
 #  endif /* SALINITY || TEMPERATURE*/
+!$acc end kernels 
 # endif /* TRACERS */
       return
       end
@@ -1410,7 +1424,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       do itrc=1,NT
 #  ifndef ANA_TCLIMA
         if (.not.got_tclm(itrc)) then
@@ -1526,7 +1540,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  ubclm)
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,  vbclm)
 #  endif
@@ -1547,7 +1561,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  uclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vclm)
 #  endif
@@ -1657,7 +1671,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vnbqclm)
 #  ifdef NBQ
@@ -2026,7 +2040,7 @@ C$    integer  trd, omp_get_thread_num
 
 # endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       do ised=1,NST
         do ilay=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -2093,6 +2107,7 @@ C$    integer  trd, omp_get_thread_num
       real    xno3,temp,SiO4,zsrc
 # include "compute_auxiliary_bounds.h"
 
+!$acc kernels if(compute_on_device) default(present)
       if (iic.eq.ntstart) then
 !
 ! Set-up nondimensional shape Qshape, must add to unity
@@ -2651,6 +2666,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 #  endif /* BIOLOGY */
 # endif /* SOLVE3D */
+!$acc end kernels 
       return
       end
 #endif /* PSOURCE && ANA_PSOURCE */

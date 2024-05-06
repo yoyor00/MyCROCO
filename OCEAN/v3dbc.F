@@ -1,7 +1,6 @@
-! $Id: v3dbc.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -82,6 +81,7 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
       tau_out=dt*tauM_out
 # endif
 !
+!$acc kernels if(compute_on_device) default(present)
 # ifndef NS_COM_PERIODIC
 !
 !====================================================================
@@ -560,6 +560,7 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
         enddo
       endif
 # endif
+!$acc end kernels
       return
       end
 #else

@@ -1,7 +1,6 @@
-! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -299,9 +298,6 @@
 #  define UV_TIDES
 #  define POT_TIDES
 #  undef  TIDES_MAS
-#  ifndef UV_TIDES
-#   define OBC_REDUCED_PHYSICS
-#  endif
 #  define TIDERAMP
 # endif
 # define OBC_M2CHARACT

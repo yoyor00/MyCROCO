@@ -1,7 +1,6 @@
-! $Id: get_ssh.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -14,6 +13,9 @@
                                          ! Read sea surface height
       subroutine get_ssh                 ! at appropriate time from
                                          ! climatology NetCDF file.
+# ifdef OPENACC
+      use exchange_device_host
+# endif
 # define SSH_DATA
       implicit none
 # include "param.h"
@@ -98,6 +100,9 @@
 
         ierr=nf_fread(sshg(START_2D_ARRAY,i), ncidclm, ssh_id,
      &                                          ssh_rec, r2dvar)
+# ifdef OPENACC
+        call update_device(sshg(:,:,i))
+# endif
         if (ierr.ne.NF_NOERR) then
           write(stdout,6) 'SSH', ssh_rec
           goto 99                                         !--> ERROR
@@ -180,6 +185,7 @@ C$    integer  trd, omp_get_thread_num
 !
       if (ssh_cycle.lt.0.) then
         if (iic.eq.0) then
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               ssh(i,j)=sshg(i,j,itssh)
@@ -198,6 +204,7 @@ C$    integer  trd, omp_get_thread_num
         cff=1./(cff1+cff2)
         cff1=cff1*cff
         cff2=cff2*cff
+!$acc parallel loop if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             ssh(i,j)=cff1*sshg(i,j,it1)+cff2*sshg(i,j,it2)
@@ -221,6 +228,7 @@ C$    integer  trd, omp_get_thread_num
       endif
 
 # ifdef WET_DRY
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
            if (ssh(i,j) .lt. Dcrit(i,j)-h(i,j)) then
