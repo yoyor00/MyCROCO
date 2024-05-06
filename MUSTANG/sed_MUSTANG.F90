@@ -183,6 +183,10 @@ MODULE sed_MUSTANG
 #if defined key_MUSTANG_flocmod
    USE flocmod,  ONLY : flocmod_main
 #endif
+#ifdef OBSTRUCTION
+   USE OBSTRUCTIONS1DV, ONLY : o1dv_comp_z0sedim
+   USE com_OBSTRUCTIONS, ONLY : obst_position, obst_height, obst_dens_inst, obst_width_inst
+#endif
 
    !! * Arguments
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
@@ -232,6 +236,15 @@ MODULE sed_MUSTANG
     if (.not. l_z0seduni) then
       call sed_MUSTANG_comp_z0sed(ifirst, ilast, jfirst, jlast, BATHY_H0)
     endif
+
+#ifdef OBSTRUCTION
+      DO j=jfirst,jlast
+         DO i=ifirst,ilast 
+            z0sed(i,j) = o1dv_comp_z0sedim(obst_position(:,i,j), obst_height(:,i,j), &
+               obst_width_inst(:,i,j), obst_dens_inst(:,i,j), z0sed(i,j))
+         END DO
+      END DO
+#endif
 
     call sed_skinstress(ifirst, ilast, jfirst, jlast)
 

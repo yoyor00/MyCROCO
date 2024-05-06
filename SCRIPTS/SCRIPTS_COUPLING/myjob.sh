@@ -110,8 +110,10 @@ elif [ ${MACHINE} == "DATARMOR" ] || [ ${MACHINE} == "WCHPC" ]; then
    export jobname="job_${ROOT_NAME_1}.pbs"
 else
    printf "\n\n Machine unknown  => EXIT \n\n"
-   printf "To define your Machine:\n - Define your environement in ./SCRIPTS_TOOLBOX/MACHINE \n - Prepare your header \n - Prepare a launch_${MACHINE}\n - Add your machine in myjob.sh";  exit;
+   printf "To define your Machine:\n - Define your environement in ${SCRIPTDIR}/MACHINE \n - Prepare your header \n - Prepare a launch_${MACHINE}\n - Add your machine in myjob.sh";  exit;
 fi
 
-echo ${MACHINE}
+echo "  "
+echo "MACHINE is ${MACHINE}"
+echo "  "
 

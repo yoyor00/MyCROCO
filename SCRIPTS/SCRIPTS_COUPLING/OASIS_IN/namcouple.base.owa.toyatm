@@ -14,7 +14,7 @@
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
- 3  toyexe  wwatch  crocox
+ 3  toyatm  wwatch  crocox
 ###########################################################################
 # RUNTIME: total simulated time for the actual run in seconds (<I8)
  $RUNTIME
@@ -162,7 +162,7 @@
 # U_01 : wind U component at first level (m/s)
 #~~~~~~~~~~~
 TOY_U_01 WW3__U10 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> toyt ww3t LAG=<atmdt>
+<atmnx> <atmny> <wavnx> <wavny> toyat ww3t LAG=<atmdt>
 R 0 R 0
 LOCTRANS SCRIPR
 AVERAGE
@@ -172,7 +172,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # V_01 : wind V component at first level (m/s)
 #~~~~~~~~~~~
 TOY_V_01 WW3__V10 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> toyt ww3t LAG=<atmdt>
+<atmnx> <atmny> <wavnx> <wavny> toyat ww3t LAG=<atmdt>
 R 0 R 0
 LOCTRANS SCRIPR
 AVERAGE
@@ -185,8 +185,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # CHA_COEF : Charnock coefficient
 #~~~~~~~~~~~
-WW3_ACHA TOY__CHA 1 <cpldt> 2 wav.nc  EXPORTED
-<wavnx> <wavny> <atmnx> <atmny> ww3t toyt LAG=<wavdt>
+WW3_ACHA TOY_ACHA 1 <cpldt> 2 wav.nc  EXPORTED
+<wavnx> <wavny> <atmnx> <atmny> ww3t toyat LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -313,7 +313,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # TAUX : zonal stress (N.m-2)
 #~~~~~~~~~~~
 TOY_TAUX CROCO_ETAU 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
+<atmnx> <atmny> <ocenx> <oceny> toyat ocnt  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -323,7 +323,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # TAUY : meridional stress (N.m-2)
 #~~~~~~~~~~~
 TOY_TAUY CROCO_NTAU 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
+<atmnx> <atmny> <ocenx> <oceny> toyat ocnt  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -333,7 +333,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # TAUMOD : stress module (N.m-2)
 #~~~~~~~~~~~
 TOY_TAUM CROCO_TAUM 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
+<atmnx> <atmny> <ocenx> <oceny> toyat ocnt  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -343,7 +343,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # EVAP-PRECIP : E-P flux (kg.m-2.s-1)
 #~~~~~~~~~~~
 TOY__EMP CROCO_EVPR 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
+<atmnx> <atmny> <ocenx> <oceny> toyat ocnt  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -353,7 +353,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # NET SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
 TOYSRFLX CROCO_SRFL 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
+<atmnx> <atmny> <ocenx> <oceny> toyat ocnt  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -363,7 +363,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
 TOYSTFLX CROCO_STFL 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
+<atmnx> <atmny> <ocenx> <oceny> toyat ocnt  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -373,7 +373,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # INTERFACE ATMOSPHERIC PRESSURE  (Pa)
 #~~~~~~~~~~~
 TOY_PSFC CROCO_PSFC 1 <cpldt> 2 atm.nc EXPORTED
-<atmnx> <atmny> <ocenx> <oceny> toyt ocnt  LAG=<atmdt>
+<atmnx> <atmny> <ocenx> <oceny> toyat ocnt  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -386,8 +386,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # SST (K)
 #~~~~~~~~~~~
-CROCO_SST TOY__SST 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <atmnx> <atmny> ocnt toyt LAG=<ocedt>
+CROCO_SST TOY_ASST 1 <cpldt> 2 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt toyat LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -396,8 +396,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # UOCE : zonal current (m.s-1)
 #~~~~~~~~~~~
-CROCO_EOCE TOY_UOCE 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <atmnx> <atmny> ocnt toyt LAG=<ocedt>
+CROCO_EOCE TOYAUOCE 1 <cpldt> 2 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt toyat LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -406,8 +406,8 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # VOCE : meridonal current (m.s-1)
 #~~~~~~~~~~~
-CROCO_NOCE TOY_VOCE 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <atmnx> <atmny> ocnt toyt LAG=<ocedt>
+CROCO_NOCE TOYAVOCE 1 <cpldt> 2 oce.nc EXPORTED
+<ocenx> <oceny> <atmnx> <atmny> ocnt toyat LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE

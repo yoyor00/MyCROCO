@@ -9,42 +9,70 @@ umask 022
 #-------------------------------------------------------------------------------
 #cat mypath.sh >> mynamelist.tmp
 cat mynamelist.sh > mynamelist.tmp
-cat ./SCRIPTS_TOOLBOX/NAMELISTS/namelist_tail.sh >> mynamelist.tmp
+cat ${SCRIPTDIR}/NAMELISTS/namelist_tail.sh >> mynamelist.tmp
 cat myjob.sh >> mynamelist.tmp
-cat ./SCRIPTS_TOOLBOX/common_definitions.sh >> mynamelist.tmp
+cat ${SCRIPTDIR}/common_definitions.sh >> mynamelist.tmp
 
 . ./mynamelist.tmp
 
 [ ! -d ${JOBDIR_ROOT} ] && mkdir -p ${JOBDIR_ROOT}  # for the first submitjob.sh call
 
+echo "  "
+echo "jobs and logs directory is $JOBDIR_ROOT"
+echo "  "
+
+# copy the base scripts into the jobdir
+cpfile myenv_mypath.sh ${JOBDIR_ROOT}
+cpfile mynamelist.sh ${JOBDIR_ROOT}
+cpfile myjob.sh ${JOBDIR_ROOT}
+cpfile submitjob.sh ${JOBDIR_ROOT}
+
 cd ${JOBDIR_ROOT} 
 ls ${jobname}  > /dev/null  2>&1 
 if [ "$?" -eq "0" ] ; then
    if [ ${CHAINED_JOB} == "FALSE" ]; then 
-       printf "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n             => exit. \n\n  Clean up and restart\n\n\n\n"; exit
+       echo "  "
+       echo "!!!!!!!! WARNING !!!!!!!!!"
+       echo "  "
+       echo "A ${jobname} job already exists in  ${JOBDIR_ROOT}"
+       echo -n "  Do you want to remove it and launch the new job? [y/n]"
+       read answer
+       if [  "x$answer" = "xy" ]; then
+          echo " " 
+          echo "Creating and launching new job"
+          echo "   "
+       else
+          echo "  " 
+          echo "Exiting..."
+          echo "   "
+          exit
+       fi
+       unset -v answer
    elif [ ${CHAINED_JOB} == "TRUE" ] && [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
-       printf "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n             => exit. \n\n  Clean up and restart\n\n\n\n"; exit
+       echo "  "
+       echo "!!!!!!!! WARNING !!!!!!!!!"
+       echo "  "
+       echo "A ${jobname} job already exists in  ${JOBDIR_ROOT}"
+       echo -n "  Do you want to remove it and launch the new job? [y/n]"
+       read answer
+       if [  "x$answer" = "xy" ]; then
+          echo " " 
+          echo "Creating and launching new job"
+          echo "   "
+       else
+          echo "  " 
+          echo "Exiting..."
+          echo "   "
+          exit
+       fi
+       unset -v answer
    fi
-      
 fi
 cd -
+
 #-------------------------------------------------------------------------------
 # calendar computations (to check dates consistency)
 #-------------------------------------------------------------------------------
-if [ ${USE_CPL} -ge 1 ]; then
-  if [ $(( ${CPL_FREQ} % ${DT_ATM} )) -ne 0 ] || \
-     [ $(( ${CPL_FREQ} % ${DT_OCE} )) -ne 0 ] || \
-     [ $(( ${CPL_FREQ} % ${DT_WAV} )) -ne 0 ] ; then
-     printf "\n\n Problem of consistency between Coupling Frequency and Time Step with ATM, OCE or WAV model, we stop...\n\n" && exit 1
-  fi
-  if [ ${USE_TOY} -eq 1 ]; then 
-      for k in `seq 0 $(( ${nbtoy} - 1))` ; do
-          if [ $(( ${CPL_FREQ} % ${DT_TOY[$k]} )) -ne 0 ] ; then
-              printf "\n\n Problem of consistency between Coupling Frequency and Time Step for TOY model, we stop...\n\n" && exit 1
-          fi
-      done
-  fi
-fi
 
 . ${SCRIPTDIR}/caltools.sh
 
@@ -54,7 +82,7 @@ fi
 
 if [ ${USE_OCE}  -eq 1 ]; then
     if [[ ${MPI_NOLAND} == "TRUE" ]]; then
-        TOTOCE=${MY_NODES}
+        TOTOCE=${NP_OCE}
     else
         TOTOCE=$(( $NP_OCEX * $NP_OCEY )) 
    fi
@@ -88,8 +116,8 @@ sed -e "/< insert here variables definitions >/r mynamelist.tmp" \
     -e "s/<nmpi>/${totalcore}/g" \
     -e "s/<projectid>/${projectid}/g" \
     -e "s/<timedur>/${timedur}/g" \
-    ./SCRIPTS_TOOLBOX/MACHINE/${MACHINE}/header.${MACHINE} > HEADER_tmp
-    cat HEADER_tmp ./SCRIPTS_TOOLBOX/job.base.sh >  ${JOBDIR_ROOT}/${jobname}
+    ${SCRIPTDIR}/MACHINE/${MACHINE}/header.${MACHINE} > HEADER_tmp
+    cat HEADER_tmp ${SCRIPTDIR}/job.base.sh >  ${JOBDIR_ROOT}/${jobname}
     \rm HEADER_tmp
     \rm ./mynamelist.tmp
 
@@ -104,9 +132,9 @@ printf "  CEXPER: ${CEXPER}\n"
 echo
 printf "  jobname: ${jobname}\n"  
 echo
-printf "  ROOT_NAME_1: ${ROOT_NAME_1}\n"  
-printf "  ROOT_NAME_2: ${ROOT_NAME_2}\n"  
-printf "  ROOT_NAME_3: ${ROOT_NAME_3}\n"  
+#printf "  ROOT_NAME_1: ${ROOT_NAME_1}\n"  
+#printf "  ROOT_NAME_2: ${ROOT_NAME_2}\n"  
+#printf "  ROOT_NAME_3: ${ROOT_NAME_3}\n"  
 printf "  EXEDIR: ${EXEDIR_ROOT}\n"  
 printf "  OUTPUTDIR: ${OUTPUTDIR_ROOT}\n"  
 printf "  RESTDIR_OUT: ${RESTDIR_ROOT}\n"  
