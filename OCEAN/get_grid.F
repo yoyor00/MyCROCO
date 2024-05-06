@@ -1,7 +1,6 @@
-! $Id: get_grid.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -13,6 +12,9 @@
 #ifndef ANA_GRID
                              ! Read grid information
       subroutine get_grid    ! from GRID NetCDF file.
+# ifdef OPENACC
+      use exchange_device_host
+# endif
       implicit none
       character*1 char1
       integer ierr, ncid, varid, lstr, lenstr, checkdims, nf_fread
@@ -347,6 +349,9 @@
 #  endif
 # else
        zob(:,:)=zobt
+# endif
+# ifdef OPENACC
+       call update_device(zob)
 # endif
 
 

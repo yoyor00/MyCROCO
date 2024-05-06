@@ -1,7 +1,6 @@
-! $Id: lmd_skpp2005.F 1526 2014-04-16 14:09:11Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -167,6 +166,8 @@
 #define beta Bo
       call alfabeta_tile (Istr,Iend,Jstr,Jend, alpha,beta)
 
+!$acc kernels if(compute_on_device) default(present)
+
 !  Compute surface turbulent buoyancy forcing "Bo" [m^2/s^3].
 !  Remove incoming solar shortwave radiation because this
 !  contribution is included in  surface radiative buoyancy
@@ -214,9 +215,11 @@
         enddo
       enddo
 
-
 #undef beta
 #undef alpha
+
+!$acc end kernels
+
 !========================================================================
 ! Compute fraction of the solar shortwave flux "swr_frac"
 ! penetrating to grid level depth (at vertical w-points).
@@ -229,12 +232,14 @@
 #define wrk1 wrk3
 #define wrk2 my_hbl
       do k=0,N-1
+!$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
             wrk1(i,j)=z_w(i,j,k)-z_w(i,j,N)
           enddo
         enddo
         call lmd_swfrac_ER_tile (Istr,Iend,Jstr,Jend,1.,wrk1,wrk2)
+!$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
             swr_frac(i,j,k)=wrk2(i,j)
@@ -243,6 +248,9 @@
       enddo
 #undef wrk1
 #undef wrk2
+!$acc wait
+
+!$acc kernels if(compute_on_device) default(present)
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
           swr_frac(i,j,N)=1.
@@ -254,6 +262,7 @@
 !---------------------------------------------------------------
 
 !======================================================================
+!$acc loop private(FC,Cr,my_kbl,wrk1,wrk2)
       do j=J_EXT_RANGE
 !======================================================================
 
@@ -354,6 +363,7 @@
 
 
 !======================================================================
+!$acc loop private(Bfsfc_bl,dGs1dS,dGt1dS,dGm1dS,Gs1,Gt1,Gm1)
       do j=Jstr,Jend
 !======================================================================
         do i=istr,iend
@@ -581,8 +591,8 @@
       endif
 # endif
 #endif
-
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+#if defined BD_EXCHANGE
       call exchange_r2d_tile (istr,iend,jstr,jend,
      &                     hbls(START_2D_ARRAY,3-nstp))
 #endif

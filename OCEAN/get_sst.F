@@ -1,7 +1,6 @@
-! $Id: get_sst.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -23,6 +22,9 @@
 !
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !
+# ifdef OPENACC
+      use exchange_device_host
+# endif
 # define SST_DATA
       implicit none
 # include "param.h"
@@ -130,6 +132,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         if (lsstgrd.eq.1) then
           ierr=nf_fread (sstg(START_2D_ARRAY,i), ncidfrc, sst_id,
      &                                           sst_rec, r2dvar)
+# ifdef OPENACC
+          call update_device(sstg(:,:,i))
+# endif
         else
           ierr=nf_get_var1_FTYPE (ncidfrc, sst_id, sst_rec, sstp(i))
         endif
@@ -141,6 +146,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         if (lsstgrd.eq.1) then
           ierr=nf_fread (dqdtg(START_2D_ARRAY,i), ncidfrc, dqdt_id,
      &                                            sst_rec,  r2dvar)
+# ifdef OPENACC
+          call update_device(dqdtg(:,:,i))
+# endif
         else
           ierr=nf_get_var1_FTYPE (ncidfrc,dqdt_id,sst_rec,dqdtp(i))
         endif
@@ -212,6 +220,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       if (sst_cycle.lt.0.) then
         if (FIRST_RST_TIME_STEP) then
           if (lsstgrd.eq.1) then
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 sst(i,j)=sstg(i,j,itsst)
@@ -221,6 +230,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           else
             val1=sstp(itsst)
             val2=scldqdt*dqdtp(itsst)
+!$acc parallel loop if(compute_on_device) default(present)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 sst(i,j)=val1
@@ -245,6 +255,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         cff1=cff1*cff
         cff2=cff2*cff
         if (lsstgrd.eq.1) then
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               sst(i,j)=cff1*sstg(i,j,it1)+cff2*sstg(i,j,it2)
@@ -254,6 +265,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         else
           val1=cff1*sstp(it1)+cff2*sstp(it2)
           val2=cff3*dqdtp(it1)+cff4*dqdtp(it2)
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               sst(i,j)=val1

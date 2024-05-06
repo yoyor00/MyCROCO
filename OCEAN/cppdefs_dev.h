@@ -1,7 +1,6 @@
-! $Id: set_global_definitions.h 1616 2014-12-18 14:39:51Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -41,6 +40,10 @@
    and parallel runs. For the umpteenth time, RVTK_DEBUG itself should
    be defined from cppdefs.h, so not undefined here !!!!!
 */
+#if !defined RVTK_DEBUG
+#undef RVTK_DEBUG_ADVANCED
+#endif
+
 #if defined RVTK_DEBUG && !defined MPI && !defined OPENMP && !defined RVTK_DEBUG_READ
 # define RVTK_DEBUG_WRITE
 #endif
@@ -1056,6 +1059,18 @@
 /*
 ======================================================================
 
+                  Exchange at boundaries
+
+======================================================================
+*/
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI || (defined OPENACC && defined OPENMP)
+#define BD_EXCHANGE
+#else
+#undef BD_EXCHANGE
+#endif
+/*
+======================================================================
+
                   Consistency for 2D configurations
 
 ======================================================================
@@ -1112,4 +1127,10 @@
 # undef BIOLOGY
 #endif
 
-
+#if !defined OPENACC
+#define ENDDOLOOP2D enddo
+#define DOLOOP2D_R(irange,jrange) do j=jrange
+#define DOLOOP2D(i1,i2,j1,j2) do j=j1,j2
+#else
+#define DOLOOP2D_R(irange,jrange) DOLOOP2D(irange,jrange)
+#endif

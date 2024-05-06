@@ -1,7 +1,6 @@
-! $Id: get_uclima.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -16,6 +15,9 @@
                              ! Read tracer(s) climatology
       subroutine get_uclima  ! fields from climatology file
                              ! at appropriate time.
+# ifdef OPENACC
+      use exchange_device_host
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -133,6 +135,9 @@
       ierr=nf_fread (ubclima(START_2D_ARRAY,i),
      &                           ncidclm, ubclm_id,
      &                           uclm_rec, u2dvar)
+#  ifdef OPENACC
+      call update_device(ubclima(:,:,i))
+#  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxUb))
         write(stdout,6) vname(1,indxUb)(1:lvar), uclm_rec
@@ -142,6 +147,9 @@
       ierr=nf_fread (vbclima(START_2D_ARRAY,i),
      &                           ncidclm, vbclm_id,
      &                           uclm_rec, v2dvar)
+#  ifdef OPENACC
+      call update_device(vbclima(:,:,i))
+#  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxVb))
         write(stdout,6) vname(1,indxVb)(1:lvar), uclm_rec
@@ -152,6 +160,9 @@
       ierr=nf_fread (uclima(START_2D_ARRAY,1,i),
      &                           ncidclm, uclm_id,
      &                           uclm_rec, u3dvar)
+#  ifdef OPENACC
+      call update_device(uclima(:,:,:,i))
+#  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxU))
         write(stdout,6) vname(1,indxU)(1:lvar), uclm_rec
@@ -161,6 +172,9 @@
       ierr=nf_fread (vclima(START_2D_ARRAY,1,i),
      &                           ncidclm, vclm_id,
      &                           uclm_rec, v3dvar)
+#  ifdef OPENACC
+      call update_device(vclima(:,:,:,i))
+#  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxV))
         write(stdout,6) vname(1,indxV)(1:lvar), uclm_rec
@@ -247,6 +261,7 @@ C$    integer  trd, omp_get_thread_num
       if (uclm_cycle.lt.0.) then      ! Load time-invariant
         if (iic.eq.0) then            ! momentum climatology.
 # ifdef M2CLIMATOLOGY
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             do i=IstrR,IendR
               ubclm(i,j)=ubclima(i,j,ituclm)
@@ -255,7 +270,8 @@ C$    integer  trd, omp_get_thread_num
           enddo
 # endif
 # if defined M3CLIMATOLOGY && defined SOLVE3D
-          do k=1,N
+!$acc parallel loop if(compute_on_device) default(present)
+          do k=1,N  
             do j=JstrR,JendR
               do i=IstrR,IendR
                 uclm(i,j,k)=uclima(i,j,k,ituclm)
@@ -270,6 +286,7 @@ C$    integer  trd, omp_get_thread_num
         cff1=cff1*cff                          ! climatology in time.
         cff2=cff2*cff
 # ifdef M2CLIMATOLOGY
+!$acc parallel loop if(compute_on_device) default(present)
         do j=JstrR,JendR
           do i=IstrR,IendR
             ubclm(i,j)=cff1*ubclima(i,j,it1)
@@ -280,6 +297,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
 # endif
 # if defined M3CLIMATOLOGY && defined SOLVE3D
+!$acc parallel loop if(compute_on_device) default(present)
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR

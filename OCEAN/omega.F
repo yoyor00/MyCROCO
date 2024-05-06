@@ -1,11 +1,10 @@
-! $Id: omega.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -21,34 +20,36 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call omega_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd)
+     &                                    , A2d(1,2,trd)
+     &                                    , A2d(1,3,trd)
 # ifdef VADV_ADAPT_IMP
-     &                                     ,A2d(1,2,trd)
+     &                                     ,A2d(1,4,trd)
 # endif
-     &                                                  )
+     &                                     ,A3d(1,3,trd))
       return
       end
 !======================================================================
 !
-      subroutine omega_tile (Istr,Iend,Jstr,Jend, wrk
+      subroutine omega_tile (Istr,Iend,Jstr,Jend, CF, DC,FC 
 # ifdef VADV_ADAPT_IMP
      &      ,Cu_adv
 # endif
-     &                      )
+     &                    ,romega)      
 !======================================================================
 !
 ! Compute S-coordinate vertical velocity, w=[Hz/(m*n)]*omega [m^3/s],
 ! which has the meaning of FINITE_VOLUME WATER FLUX through MOVING
-! grid-box interfaces of RHO-boxes.
-!
+! grid-box interfaces of RHO-boxes. 
+! 
 ! To do so, integrate divergence of horizontal mass fluxes from
-! bottom up, starting with the no-normal flow boundary condition at
+! bottom up, starting with the no-normal flow boundary condition at 
 ! the bottom (k=0); Once this operation is done, W(:,:,N) contains
 ! the vertical velocity at the free surface, which is, in its turn,
 ! the temporal tendency of the free surface, d_zeta/d_t;
 ! In order to compute the S-coordinate vertical velocity, one
 ! needs to subtract the vertical velocities of moving S-coordinate
 ! isosurfaces, which are proportional the product of d_zeta/d_t
-! and the fraction of the distance from the point to the bottom
+! and the fraction of the distance from the point to the bottom 
 ! divided by the total depth of water column, i.e. the whole
 ! S-coordinate system is "brethes" by linear in Z-space expansion
 ! and contraction set by free-surface variation.
@@ -74,10 +75,12 @@
 # endif
 # include "param.h"
 
-# include "nbq.h"
-      real wrk   (PRIVATE_1D_SCRATCH_ARRAY    )
-      real wrk2  (PRIVATE_1D_SCRATCH_ARRAY    )
-# ifdef VADV_ADAPT_IMP
+# include "nbq.h" 
+      real DC    (PRIVATE_1D_SCRATCH_ARRAY,0:N    )
+      real FC  (PRIVATE_1D_SCRATCH_ARRAY,0:N    )
+      real CF  (PRIVATE_2D_SCRATCH_ARRAY    )
+      real romega(PRIVATE_2D_SCRATCH_ARRAY,N  )
+# ifdef VADV_ADAPT_IMP      
       real cu_adv(PRIVATE_1D_SCRATCH_ARRAY,0:N)
       real gamma,Cdt,cff,my_cu_adv,c_min,c_max,cu_cut,fcu
 #  ifdef VADV_ADAPT_PRED
@@ -92,10 +95,10 @@
 # include "grid.h"
 # include "ocean3d.h"
 # include "scalars.h"
+# include "openacc_work.h"
 # ifdef PSOURCE_MASS
 #  include "sources.h"
 # endif
-!
 # ifdef MPI
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
@@ -120,42 +123,63 @@
 # endif
 !
 !---------------------------------------------------------
-!
-      do j=Jstr,Jend
+! 
+!$acc kernels if(compute_on_device) default(present)
+
+  !    do j=Jstr,Jend
+  !      do i=Istr,Iend
+  !        CF(i,j)=om_r(i,j)*on_r(i,j)/dt
+  !      enddo
+  !    enddo
+  !RB loop below change the results
+  !    do k=1,N
+  !      do j=Jstr,Jend
+  !        do i=Istr,Iend
+  !          romega(i,j,k) = -Huon(i+1,j,k)+Huon(i,j,k)
+  !   &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
+  !   &                 -(Hz(i,j,k)-Hz_bak(i,j,k))*CF(i,j)
+  !        enddo
+  !      enddo
+  !    enddo
+
+!      do j=Jstr,Jend
+       DOLOOP2D(Istr,Iend,Jstr,Jend)
 !
 !---------------------------------------------------------
 !  Integrate divergence of horizontal mass fluxes
 !  ... accounting for the breathing of grid dHz/dt
 !---------------------------------------------------------
 !
-        do i=Istr,Iend
+        do i=Istr,Iend 
 # ifdef VADV_ADAPT_IMP
           Wi(i,j,0)=0.
 # endif
           We(i,j,0)=0.
-          wrk(i)=0.
+          FC(i,0) = 0.
+          DC(i,0)=0.
         enddo
         do k=1,N,+1
           do i=Istr,Iend
-            We(i,j,k)=We(i,j,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
+            !FC(i,k)=FC(i,k-1) + romega(i,j,k)
+            FC(i,k)=FC(i,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
      &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
      &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
      &                                  *om_r(i,j)*on_r(i,j)
-            wrk(i)=wrk(i)+Hz(i,j,k)
+            DC(i,k)=DC(i,k-1) + Hz(i,j,k)
 !
 !---------------------------------------------------------
 !  Compute the horizontal Courant number
 !---------------------------------------------------------
 !
 # ifdef VADV_ADAPT_IMP
-            Cu_adv(i,k)=max(HUon(i+1,j,k),0.)-min(Huon(i,j,k),0.)
+            Cu_adv(i,k)=max(HUon(i+1,j,k),0.)-min(Huon(i,j,k),0.) 
      &                 +max(Hvom(i,j+1,k),0.)-min(Hvom(i,j,k),0.)
 # endif
           enddo
         enddo
 !
 !---------------------------------------------------------
-!  Apply mass point sources (volume vertical influx)
+!  Apply mass point sources (volume vertical influx) 
 !
 !  Overwrite W(Isrc,Jsrc,k) with the same divergence of Huon,Hvom as
 !  above but add in point source Qsrc(k) and reaccumulate the vertical
@@ -176,31 +200,29 @@
      &      JstrR.le.jjs .and. jjs.le.JendR .and.
      &      jjs.eq.j) then
           do k=1,N
-            We(iis,jjs,k)=We(iis,jjs,k-1)-
-     &                 (Huon(iis+1,jjs,k)-Huon(iis,jjs,k)+
-     &                  Hvom(iis,jjs+1,k)-Hvom(iis,jjs,k))
+            We(iis,jjs,k)=We(iis,jjs,k-1)-                           
+     &                 (Huon(iis+1,jjs,k)-Huon(iis,jjs,k)+            
+     &                  Hvom(iis,jjs+1,k)-Hvom(iis,jjs,k))          
      &                     -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
      &                                *om_r(iis,jjs)*on_r(iis,jjs)
      &                     + Qsrc(is,k)
 
-          enddo
+          enddo 
         endif
       enddo
 # endif
 !
 !---------------------------------------------------------
-!  Subtract vertical velocities of moving S-coordinate
+!  Subtract vertical velocities of moving S-coordinate 
 !  isosurfaces
 !---------------------------------------------------------
 !
         do i=Istr,Iend
-          wrk2(i)=0.
-          wrk(i)=We(i,j,N)/wrk(i)
+          DC(i,N)=FC(i,N)/DC(i,N)
         enddo
         do k=1,N-1,+1
           do i=Istr,Iend
-            wrk2(i)=wrk2(i)+Hz(i,j,k)
-            We(i,j,k)=We(i,j,k)-wrk(i)*wrk2(i)
+            We(i,j,k)=FC(i,k)-DC(i,N)*DC(i,k)
           enddo
         enddo
         do i=Istr,Iend
@@ -243,9 +265,10 @@
         enddo
 # endif
 
-      enddo  ! j loop
+      ! enddo  ! j loop
+        ENDDOLOOP2D
 !
-!---------------------------------------------------------
+!---------------------------------------------------------      
 !  Set lateral boundary conditions.
 !---------------------------------------------------------
 !
@@ -264,9 +287,9 @@
         do k=0,N
           do j=Jstr,Jend
             We(LOCALLM+1,j,k)=We(LOCALLM,j,k)
-#  ifdef VADV_ADAPT_IMP
-            Wi(LOCALLM+1,j,k)=Wi(LOCALLM,j,k)
-#  endif
+#  ifdef VADV_ADAPT_IMP            
+            Wi(LOCALLM+1,j,k)=Wi(LOCALLM,j,k)            
+#  endif            
           enddo
         enddo
       endif
@@ -276,9 +299,9 @@
         do k=0,N
           do i=Istr,Iend
             We(i,0,k)=We(i,1,k)
-#  ifdef VADV_ADAPT_IMP
-            Wi(i,0,k)=Wi(i,1,k)
-#  endif
+#  ifdef VADV_ADAPT_IMP            
+            Wi(i,0,k)=Wi(i,1,k)            
+#  endif             
           enddo
         enddo
       endif
@@ -286,9 +309,9 @@
         do k=0,N
           do i=Istr,Iend
             We(i,LOCALMM+1,k)=We(i,LOCALMM,k)
-#  ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP 
             Wi(i,LOCALMM+1,k)=Wi(i,LOCALMM,k)
-#  endif
+#  endif 
           enddo
         enddo
       endif
@@ -296,52 +319,52 @@
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
           We(0,0,k)=We(1,1,k)
-#   ifdef VADV_ADAPT_IMP
+#   ifdef VADV_ADAPT_IMP           
           Wi(0,0,k)=Wi(1,1,k)
-#   endif
+#   endif           
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
           We(0,LOCALMM+1,k)=We(1,LOCALMM,k)
-#   ifdef VADV_ADAPT_IMP
-          Wi(0,LOCALMM+1,k)=Wi(1,LOCALMM,k)
-#   endif
+#   ifdef VADV_ADAPT_IMP   
+          Wi(0,LOCALMM+1,k)=Wi(1,LOCALMM,k)        
+#   endif           
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
           We(LOCALLM+1,0,k)=We(LOCALLM,1,k)
-#   ifdef VADV_ADAPT_IMP
+#   ifdef VADV_ADAPT_IMP 
           Wi(LOCALLM+1,0,k)=Wi(LOCALLM,1,k)
-#   endif
+#   endif 
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
           We(LOCALLM+1,LOCALMM+1,k)=We(LOCALLM,LOCALMM,k)
-#   ifdef VADV_ADAPT_IMP
+#   ifdef VADV_ADAPT_IMP           
           Wi(LOCALLM+1,LOCALMM+1,k)=Wi(LOCALLM,LOCALMM,k)
-#   endif
+#   endif          
         enddo
       endif
 #  endif
 # endif
-
+!$acc end kernels
 # if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
 #  ifdef THREE_GHOST_POINTS_UV
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend, 
      &                             We(START_2D_ARRAY,0))
-#   ifdef VADV_ADAPT_IMP
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+#   ifdef VADV_ADAPT_IMP       
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend, 
      &                             Wi(START_2D_ARRAY,0))
 #   endif
 #  else
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, We(START_2D_ARRAY,0))
-#   ifdef VADV_ADAPT_IMP
+#   ifdef VADV_ADAPT_IMP       
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Wi(START_2D_ARRAY,0))
 #   endif
-#  endif
+#  endif   
 # endif
       return
       end

@@ -1,7 +1,6 @@
-! $Id:$
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -175,7 +174,7 @@
       real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods7/ dZdyq_w
 #  else
-      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY)
+      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,0:N)
       common /nbq_nods3/ dthetadiv_nbqdz
       real dZdxq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods5/ dZdxq_w

@@ -1,7 +1,6 @@
-! $Id: nbq_bry_store 1619 2015-01-07 13:53:03Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -71,6 +70,7 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
+!$acc kernels if(compute_on_device) default(present)
 # ifdef OBC_COM_WEST
       if (WESTERN_EDGE) then
         do k=1,N
@@ -171,6 +171,7 @@
       endif
 # endif /* OBC_COM_NORTH */
 !
+!$acc end kernels
       return
       end
 #else

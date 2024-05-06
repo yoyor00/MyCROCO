@@ -1,7 +1,6 @@
-! $Id: main.F 1615 2014-12-17 13:27:07Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -49,7 +48,13 @@
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
-     &                                   ,if_oa
+     &                                   ,if_oa, if_oa_fast_mode
+#endif
+#ifdef RVTK_DEBUG
+      use debug
+#endif
+#ifdef OPENACC
+      use openacc
 #endif
 !     implicit none
       integer tile, subs, trd, ierr
@@ -60,8 +65,16 @@
 #include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
-#if defined BIOLink && defined ECO3M
+#if (defined BIOLink && defined ECO3M) || defined OPENACC
 #include "ocean3d.h"
+#endif
+#if defined OPENACC
+# include "coupling.h"
+# include "forces.h"
+# include "mixing.h"
+# include "climat.h"
+# include "averages.h"
+# include "work.h"
 #endif
 #include "mpi_cpl.h"
 #ifdef FLOATS
@@ -103,6 +116,14 @@
 #endif
 !
 #include "dynderivparam.h"
+
+#ifdef JEANZAY
+! Initialise OpenACC...
+# ifdef OPENACC
+        call initialisation_openacc
+# endif
+! ... before initialise MPI
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize communicators and subgrids decomposition:
@@ -235,6 +256,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
      & ,dti_oa=dt
      & ,kount0_oa=ntstart-1
      & ,nt_max_oa=ntimes
+     & ,dtf_oa=dtfast
+     & ,ntf_max_oa=ndtfast
      & ,ntiles=NSUB_X*NSUB_E)
 #endif
 !
@@ -252,6 +275,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 CR      write(*,*) '-11' MYID
 !
+! Copy to device(s)
+!
+#if defined OPENACC
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call copy_to_devices (tile)
+      enddo
+#endif
+!
 !----------------------------------------------------------------------
 !  Set horizontal grid, model bathymetry and Land/Sea mask
 !----------------------------------------------------------------------
@@ -267,7 +299,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab2d(h(:,:),'h initialisation #1','r')
+       call check_tab2d(h(:,:),'h initialisation #1','r',
+     &      ondevice=.TRUE.)
 C$OMP END MASTER
 # endif
 #else
@@ -314,10 +347,12 @@ CR      write(*,*) ' -8' MYID
 !  which may be needed by ana_initial
 !  (here it is assumed that free surface zeta=0).
 !
+
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
+
 CR      write(*,*) ' -7' MYID
 !
 !  Make grid diagnostics
@@ -325,6 +360,20 @@ CR      write(*,*) ' -7' MYID
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call grid_stiffness (tile)
+      enddo
+#endif
+
+#if defined OPENACC
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call copy_from_devices (tile)
+      enddo
+#endif
+
+#if defined OPENACC
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call copy_to_devices_2 (tile)
       enddo
 #endif
 !
@@ -508,6 +557,7 @@ CR      write(*,*)  ' -5' MYID0
 !  zeta is also corrected here for Wetting/Drying
 !  in both 2D and 3D cases
 !
+
 #if defined SOLVE3D || defined WET_DRY
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -529,6 +579,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
       enddo
 CR      write(*,*)  ' -4' MYID
+
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call omega (tile)
@@ -620,6 +671,7 @@ CR      write(*,*) ' -2' MYID
 !  Read surface forcing from NetCDF file
 !----------------------------------------------------------------------
 !
+
       call get_vbc
 !
 !----------------------------------------------------------------------
@@ -640,7 +692,7 @@ CR      write(*,*) ' -1' MYID
       if ( if_oa.eqv..true. ) then
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
-           call online_spectral_diags(tile,0)
+           call online_spectral_diags(tile,-1)
          enddo
       endif
 #endif
@@ -843,13 +895,25 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !
 #ifdef ONLINE_ANALYSIS
-      if ( if_oa.eqv..true. ) then
+      if_online_analysis : if ( if_oa.eqv..true. ) then
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
+! BLXD online_spectral_diags/output_oa 1st argument his the model mode 0/1 = Slow/Fast mode
+           call online_spectral_diags(tile,0)
+         enddo
+        call output_oa(0)
+! BLXD Fast mode analysis
+        if(if_oa_fast_mode.eqv..true.) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=0,NSUB_X*NSUB_E-1
+! BLXD online_spectral_diags/output_oa 1st argument his the model mode 0/1 = Slow/Fast mode
            call online_spectral_diags(tile,1)
          enddo
-        call output_oa
+! BLXD output_oa source now set to be only called within the slow mode
+!      even when the spectral online diagnostics have been calculated in the fast mode  
+         call output_oa(1)
       endif
+      endif if_online_analysis
 #endif
 !
 !----------------------------------------------------------------------
@@ -972,7 +1036,6 @@ CR      write(*,*) '  0' MYID
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
-
   99  continue                             ! SHUTDOWN:
 #ifdef MPI_TIME
       start_time2=PMPI_Wtime()

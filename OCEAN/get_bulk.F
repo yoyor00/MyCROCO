@@ -1,7 +1,6 @@
-! $Id: get_bulk.F 1564 2014-06-24 17:39:21Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -1063,15 +1062,16 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           endif
 #   endif
 #  endif
+!$acc update device( wspd )
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                           wspd(START_2D_ARRAY))
+!$acc update host( wspd )    
 #   ifdef CFB_WIND_TRA
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                           wspd_cfb(START_2D_ARRAY))
 #   endif
 #  endif
-
         else
 
           val1=cff1*tairp(it1)+cff2*tairp(it2)
@@ -1113,9 +1113,25 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             enddo
           enddo
         endif
+!$acc update device( tair, rhum 
+!$acc&  ,radlw ,radsw
+!$acc&  ,srflx
+#  ifdef DIURNAL_INPUT_SRFLX
+!$acc&  ,radswbio, srflxbio
+#  endif /* DIURNAL_INPUT_SRFLX */
+#  ifdef SALINITY
+!$acc&  ,prate
+#  endif
+!$acc&  ,uwnd,vwnd
+#  ifdef READ_PATM
+!$acc&  ,patm2d
+#  endif
+!$acc&  ,wspd
+!$acc&  )
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                           wspd(START_2D_ARRAY))
+!$acc update host( wspd )    
 #   ifdef CFB_WIND_TRA
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                           wspd_cfb(START_2D_ARRAY))
@@ -1140,6 +1156,19 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 #  endif
           enddo
         enddo
+! ! update device         
+!$acc update device( radlw, radsw, srflx )
+#  ifdef READ_PATM
+!$acc update device( patm2d )
+#  endif
+#  ifdef DIURNAL_INPUT_SRFLX
+!$acc update device( radswbio, srflxbio )
+#  endif /* DIURNAL_INPUT_SRFLX */
+#  ifdef SALINITY
+!$acc update device( prate )
+#  endif
+! ! <---update device         
+
 #  ifndef ANA_ABL_LSDATA
         do k=1,N_abl
           do j=JstrR, JendR
@@ -1159,6 +1188,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             enddo
           enddo
         enddo
+!$acc update device( pt_dta, pq_dta
+!$acc&		,pu_dta, pv_dta, pgu_dta,pgv_dta
+!$acc&	)
 #  endif
 # endif
 

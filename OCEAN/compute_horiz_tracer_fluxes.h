@@ -144,6 +144,7 @@
 #  endif
 # endif
 !-------------------------------------------------------------------
+!$acc loop collapse(2)
           do j=Jstr,Jend
             do i=I_EXT_RANGE
               FX(i,j)=(t(i,j,k,nadv,itrc)-t(i-1,j,k,nadv,itrc))
@@ -173,7 +174,8 @@
           endif
 # endif
 !---------------------------------------------------------------------
-          do j=Jstr,Jend
+!$acc loop collapse(2)
+          do j=Jstr,Jend 
             do i=Istr-1,Iend+1
 # if (defined TS_HADV_C4 || defined PREDICTOR)
               grad(i,j)=0.5*(FX(i+1,j)+FX(i,j))
@@ -189,6 +191,7 @@
 # endif
             enddo
           enddo             !--> discard FX
+!$acc loop collapse(2)
           do j=Jstr,Jend
             do i=Istr,Iend+1
 # if (defined TS_HADV_UP3 && !defined PREDICTOR)
@@ -207,6 +210,7 @@
             enddo
           enddo            !--> discard grad
 !---------------------------------------------------------------------
+!$acc loop collapse(2)
           do j=J_EXT_RANGE
             do i=Istr,Iend
               FE(i,j)=(t(i,j,k,nadv,itrc)-t(i,j-1,k,nadv,itrc))
@@ -235,6 +239,7 @@
           endif
 # endif
 !---------------------------------------------------------------------
+!$acc loop collapse(2)
           do j=Jstr-1,Jend+1           !<-- C4 [only for pred]
             do i=Istr,Iend
 # if (defined TS_HADV_C4 || defined PREDICTOR)

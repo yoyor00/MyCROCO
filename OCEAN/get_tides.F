@@ -1,7 +1,6 @@
-! $Id: get_tides.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -17,6 +16,9 @@
 # ifdef TIDES_MAS
       USE MOD_TIDES_MAS
 # endif
+#ifdef OPENACC
+      use exchange_device_host
+#endif
       implicit none
 
 # ifndef TIDES_MAS
@@ -123,6 +125,9 @@
           stop                           !-->  EXIT
         endif
         Tperiod(itide)=Tperiod(itide)*3600.
+#ifdef OPENACC
+!$acc update device( Tperiod(itide) ) 
+#endif
 # endif
 
 # ifdef SSH_TIDES
@@ -132,6 +137,9 @@
         status=nf_inq_varid(ncidfrc,'tide_Eamp',varid)
         status=nf_fread(SSH_Tamp(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+#ifdef OPENACC
+          call update_device(SSH_Tamp(:,:,itide))
+#endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_Eamp',itide,frcname(1:lstr)
           stop                           !-->  EXIT
@@ -168,6 +176,9 @@
           enddo
         enddo
 #  endif
+#ifdef OPENACC
+          call update_device(SSH_Tphase(:,:,itide))
+#endif     
 
 # endif
 # ifdef UV_TIDES
@@ -202,6 +213,9 @@
         status=nf_inq_varid(ncidfrc,'tide_Cmax',varid)
         status=nf_fread(UV_Tmajor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+#ifdef OPENACC
+          call update_device(UV_Tmajor(:,:,itide))
+#endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_Cmax',itide,frcname(1:lstr)
           stop                           !-->  EXIT
@@ -213,6 +227,9 @@
         status=nf_inq_varid(ncidfrc,'tide_Cmin',varid)
         status=nf_fread(UV_Tminor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+#ifdef OPENACC
+          call update_device(UV_Tminor(:,:,itide))
+#endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_Cmin',itide,frcname(1:lstr)
           stop                           !-->  EXIT
@@ -223,6 +240,10 @@
             UV_Tphase(i,j,itide)=UV_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#ifdef OPENACC
+          call update_device(UV_Tangle(:,:,itide))
+          call update_device(UV_Tphase(:,:,itide))
+#endif
 # endif
 # ifdef POT_TIDES
 !
@@ -231,6 +252,9 @@
         status=nf_inq_varid(ncidfrc,'tide_Pamp',varid)
         status=nf_fread(POT_Tamp(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
+#ifdef OPENACC
+          call update_device(POT_Tamp(:,:,itide))
+#endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_Pamp',itide,frcname(1:lstr)
           stop                           !-->  EXIT
@@ -247,6 +271,9 @@
             POT_Tphase(i,j,itide)=POT_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#ifdef OPENACC
+          call update_device(POT_Tphase(:,:,itide))
+#endif
 # endif
 
       enddo !Ntides

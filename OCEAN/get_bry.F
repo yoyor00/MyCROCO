@@ -1,7 +1,6 @@
-! $Id: get_bry.F 1584 2014-07-15 12:27:13Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -14,7 +13,11 @@
                          defined M3_FRC_BRY || defined Z_FRC_BRY )
 
       subroutine get_bry            ! Read side boundary forcing
-      implicit none                 ! fields from boundary file
+                                    ! fields from boundary file
+# ifdef OPENACC
+      use exchange_device_host
+# endif
+      implicit none
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -289,6 +292,9 @@
      &          ), bry_id,zetabry_west_id, bry_rec, r2dvar)
             if (ierr.ne.nf_noerr) write(stdout,2) 'zeta_west'
             ierr_all=ierr_all+ierr
+#   ifdef OPENACC
+            call update_device(zetabry_west_dt(:,itbry))
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
             ierr=nf_read_bry_EW (ubarbry_west_dt(START_1D_ARRAYETA,itbry
@@ -299,6 +305,10 @@
      &          ), bry_id,vbarbry_west_id, bry_rec, v2dvar)
             if (ierr.ne.nf_noerr) write(stdout,2) 'vbar_west'
             ierr_all=ierr_all+ierr
+#   ifdef OPENACC
+            call update_device(ubarbry_west_dt(:,itbry))
+            call update_device(vbarbry_west_dt(:,itbry))
+#   endif
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
@@ -310,6 +320,10 @@
      &          , bry_id,vbry_west_id,  bry_rec,  v3dvar)
             if (ierr.ne.nf_noerr)  write(stdout,2)  'v_west'
             ierr_all=ierr_all+ierr
+#    ifdef OPENACC
+            call update_device(ubry_west_dt(:,:,itbry))
+            call update_device(vbry_west_dt(:,:,itbry))
+#    endif
 #   endif
 #   ifdef T_FRC_BRY
             do itrc=1,1+ntrc_salt
@@ -318,6 +332,9 @@
      &            r3dvar)
               if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_west'
               ierr_all=ierr_all+ierr
+#    ifdef OPENACC
+            call update_device(tbry_west_dt(:,:,itbry,itrc))
+#    endif
             enddo
 #    ifdef NETCDF_BRY_SUBSTANCE 
           do itrc=ntrc_salt+1,NT 
@@ -339,6 +356,9 @@
      &          ), bry_id,zetabry_east_id, bry_rec, r2dvar)
             if (ierr.ne.nf_noerr) write(stdout,2) 'zeta_east'
             ierr_all=ierr_all+ierr
+#   ifdef OPENACC
+            call update_device(zetabry_east_dt(:,itbry))
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
             ierr=nf_read_bry_EW (ubarbry_east_dt(START_1D_ARRAYETA,itbry
@@ -349,6 +369,10 @@
      &          ), bry_id,vbarbry_east_id, bry_rec, v2dvar)
             if (ierr.ne.nf_noerr) write(stdout,2) 'vbar_east'
             ierr_all=ierr_all+ierr
+#   ifdef OPENACC
+            call update_device(ubarbry_east_dt(:,itbry))
+            call update_device(vbarbry_east_dt(:,itbry))
+#   endif
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
@@ -360,6 +384,10 @@
      &          , bry_id,vbry_east_id,  bry_rec,  v3dvar)
             if (ierr.ne.nf_noerr)  write(stdout,2)  'v_east'
             ierr_all=ierr_all+ierr
+#    ifdef OPENACC
+            call update_device(ubry_east_dt(:,:,itbry))
+            call update_device(vbry_east_dt(:,:,itbry))
+#    endif
 #   endif
 #   ifdef T_FRC_BRY
             do itrc=1,1+ntrc_salt
@@ -368,6 +396,9 @@
      &            r3dvar)
               if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_east'
               ierr_all=ierr_all+ierr
+#    ifdef OPENACC
+            call update_device(tbry_east_dt(:,:,itbry,itrc))
+#    endif
             enddo
 
 #    ifdef NETCDF_BRY_SUBSTANCE 
@@ -390,6 +421,9 @@
      &          ), bry_id,zetabry_south_id, bry_rec,  r2dvar)
             if (ierr.ne.nf_noerr) write(stdout,2) 'zeta_south'
             ierr_all=ierr_all+ierr
+#   ifdef OPENACC
+            call update_device(zetabry_south_dt(:,itbry))
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
             ierr=nf_read_bry_NS (ubarbry_south_dt(START_1D_ARRAYXI,itbry
@@ -400,6 +434,10 @@
      &          ), bry_id,vbarbry_south_id, bry_rec, v2dvar)
             if (ierr.ne.nf_noerr) write(stdout,2) 'vbar_south'
             ierr_all=ierr_all+ierr
+#   ifdef OPENACC
+            call update_device(ubarbry_south_dt(:,itbry))
+            call update_device(vbarbry_south_dt(:,itbry))
+#   endif
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
@@ -412,6 +450,10 @@
      &          , bry_id,vbry_south_id,  bry_rec,  v3dvar)
             if (ierr.ne.nf_noerr)  write(stdout,2)  'v_south'
             ierr_all=ierr_all+ierr
+#    ifdef OPENACC
+            call update_device(ubry_south_dt(:,:,itbry))
+            call update_device(vbry_south_dt(:,:,itbry))
+#    endif
 #   endif
 #   ifdef T_FRC_BRY
             do itrc=1,1+ntrc_salt
@@ -420,6 +462,9 @@
      &            r3dvar)
               if (ierr.ne.nf_noerr) write(stdout,2) 'trc_south'
               ierr_all=ierr_all+ierr
+#    ifdef OPENACC
+            call update_device(tbry_south_dt(:,:,itbry,itrc))
+#    endif
             enddo
 
 #    ifdef NETCDF_BRY_SUBSTANCE 
@@ -442,6 +487,9 @@
      &          ), bry_id,zetabry_north_id, bry_rec, r2dvar)
             if (ierr.ne.nf_noerr) write(stdout,2) 'zeta_north'
             ierr_all=ierr_all+ierr
+#   ifdef OPENACC
+            call update_device(zetabry_north_dt(:,itbry))
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
             ierr=nf_read_bry_NS (ubarbry_north_dt(START_1D_ARRAYXI,itbry
@@ -452,6 +500,10 @@
      &          ), bry_id,vbarbry_north_id, bry_rec, v2dvar)
             if (ierr.ne.nf_noerr) write(stdout,2) 'vbar_north'
             ierr_all=ierr_all+ierr
+#   ifdef OPENACC
+            call update_device(ubarbry_north_dt(:,itbry))
+            call update_device(vbarbry_north_dt(:,itbry))
+#   endif
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
@@ -463,6 +515,10 @@
      &          , bry_id,vbry_north_id,  bry_rec,  v3dvar)
             if (ierr.ne.nf_noerr)  write(stdout,2)  'v_north'
             ierr_all=ierr_all+ierr
+#    ifdef OPENACC
+            call update_device(ubry_north_dt(:,:,itbry))
+            call update_device(vbry_north_dt(:,:,itbry))
+#    endif
 #   endif
 #   ifdef T_FRC_BRY
             do itrc=1,1+ntrc_salt
@@ -471,6 +527,9 @@
      &            r3dvar)
               if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_north'
               ierr_all=ierr_all+ierr
+#    ifdef OPENACC
+            call update_device(tbry_north_dt(:,:,itbry,itrc))
+#    endif
             enddo
 
 #    ifdef NETCDF_BRY_SUBSTANCE 
@@ -566,17 +625,20 @@
 # ifdef OBC_WEST
         if (WESTERN_EDGE) then
 #  ifdef Z_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             zetabry_west(j)=cff1*zetabry_west_dt(j,it1)
      &                     +cff2*zetabry_west_dt(j,it2)
           enddo
 #   ifdef OBC_PATM
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
            zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
           enddo
 #   endif
 #   ifdef WET_DRY
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             if (zetabry_west(j) .le. (Dcrit(IstrR,j)-h(IstrR,j))) then
               zetabry_west(j)=Dcrit(IstrR,j)-h(IstrR,j)
@@ -585,6 +647,7 @@
 #   endif
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             ubarbry_west(j)=cff1*ubarbry_west_dt(j,it1)
      &                     +cff2*ubarbry_west_dt(j,it2)
@@ -594,6 +657,7 @@
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do k=1,N
             do j=JstrR,JendR
               ubry_west(j,k)=cff1*ubry_west_dt(j,k,it1)
@@ -604,6 +668,7 @@
           enddo
 #   endif
 #   ifdef T_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do itrc=1,1+ntrc_salt
             do k=1,N
               do j=JstrR,JendR
@@ -632,17 +697,20 @@
 # ifdef OBC_EAST
         if (EASTERN_EDGE) then
 #  ifdef Z_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             zetabry_east(j)=cff1*zetabry_east_dt(j,it1)
      &                     +cff2*zetabry_east_dt(j,it2)
           enddo
 #   ifdef OBC_PATM
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
            zetabry_east(j)=zetabry_east(j)
      &                     -(patm2d(IendR,j)-paref)/(g*rho0)
           enddo
 #   endif
 #   ifdef WET_DRY
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             if (zetabry_east(j) .le. (Dcrit(IendR,j)-h(IendR,j))) then
               zetabry_east(j)=Dcrit(IendR,j)-h(IendR,j)
@@ -651,6 +719,7 @@
 #   endif
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
             ubarbry_east(j)=cff1*ubarbry_east_dt(j,it1)
      &                     +cff2*ubarbry_east_dt(j,it2)
@@ -660,6 +729,7 @@
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do k=1,N
             do j=JstrR,JendR
               ubry_east(j,k)=cff1*ubry_east_dt(j,k,it1)
@@ -670,6 +740,7 @@
           enddo
 #   endif
 #   ifdef T_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do itrc=1,1+ntrc_salt
             do k=1,N
               do j=JstrR,JendR
@@ -698,17 +769,20 @@
 # ifdef OBC_SOUTH
         if (SOUTHERN_EDGE) then
 #  ifdef Z_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do i=IstrR,IendR
             zetabry_south(i)=cff1*zetabry_south_dt(i,it1)
      &                      +cff2*zetabry_south_dt(i,it2)
           enddo
 #   ifdef OBC_PATM
+!$acc parallel loop if(compute_on_device) default(present)
           do i=IstrR,IendR
            zetabry_south(i)=zetabry_south(i)
      &                      -(patm2d(i,JstrR)-paref)/(g*rho0)
           enddo
 #   endif
 #   ifdef WET_DRY
+!$acc parallel loop if(compute_on_device) default(present)
           do i=IstrR,IendR
             if (zetabry_south(i) .le. (Dcrit(i,JstrR)-h(i,JstrR))) then
               zetabry_south(i)=Dcrit(i,JstrR)-h(i,JstrR)
@@ -717,6 +791,7 @@
 #   endif
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do i=IstrR,IendR
             ubarbry_south(i)=cff1*ubarbry_south_dt(i,it1)
      &                      +cff2*ubarbry_south_dt(i,it2)
@@ -726,6 +801,7 @@
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do k=1,N
             do i=IstrR,IendR
               ubry_south(i,k)=cff1*ubry_south_dt(i,k,it1)
@@ -736,6 +812,7 @@
           enddo
 #   endif
 #   ifdef T_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do itrc=1,1+ntrc_salt
             do k=1,N
               do i=IstrR,IendR
@@ -763,17 +840,20 @@
 # ifdef OBC_NORTH
         if (NORTHERN_EDGE) then
 #  ifdef Z_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do i=IstrR,IendR
             zetabry_north(i)=cff1*zetabry_north_dt(i,it1)
      &                      +cff2*zetabry_north_dt(i,it2)
           enddo
 #   ifdef OBC_PATM
+!$acc parallel loop if(compute_on_device) default(present)
           do i=IstrR,IendR
            zetabry_north(i)=zetabry_north(i)
      &                      -(patm2d(i,JendR)-paref)/(g*rho0)
           enddo
 #   endif
 #   ifdef WET_DRY
+!$acc parallel loop if(compute_on_device) default(present)
           do i=IstrR,IendR
             if (zetabry_north(i) .le.(Dcrit(i,JendR)-h(i,JendR))) then
               zetabry_north(i)=Dcrit(i,JendR)-h(i,JendR)
@@ -783,6 +863,7 @@
 
 #  endif
 #  ifdef M2_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do i=IstrR,IendR
             ubarbry_north(i)=cff1*ubarbry_north_dt(i,it1)
      &                      +cff2*ubarbry_north_dt(i,it2)
@@ -792,6 +873,7 @@
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do k=1,N
             do i=IstrR,IendR
               ubry_north(i,k)=cff1*ubry_north_dt(i,k,it1)
@@ -802,6 +884,7 @@
           enddo
 #   endif
 #   ifdef T_FRC_BRY
+!$acc parallel loop if(compute_on_device) default(present)
           do itrc=1,1+ntrc_salt
             do k=1,N
               do i=IstrR,IendR

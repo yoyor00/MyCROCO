@@ -1,7 +1,6 @@
-! $Id: mpc.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -135,7 +134,7 @@
 
       implicit none
       integer max_length, max_filename
-      parameter(max_length=80, max_filename=32)
+      parameter(max_length=120, max_filename=32)
       character file_in*(max_filename), file_out*(max_filename),
      &          symbol(2*max_length),   buffr(max_length),
      &          scratch*(max_length),   quote,     double_quote,
@@ -185,7 +184,7 @@
         do i=1,max_length       ! out the string itself. Then read
           symbol(i)=' '         ! in a new string.
         enddo
-        read(iin,'(80A1)',iostat=iocheck,end=2)
+        read(iin,'(120A1)',iostat=iocheck,end=2)
      &                 (symbol(i), i=1,max_length)
         goto 3
    2    not_end_of_file=.false.

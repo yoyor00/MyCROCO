@@ -1,7 +1,6 @@
-! $Id: param.h 1619 2015-01-07 13:53:03Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -195,6 +194,12 @@
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
 # elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
+#  elif defined GIBRALTAR_BR4
+       parameter (LLm0=591, MMm0=272,  N=40)
+#  elif defined GIBRALTAR_HR4
+       parameter (LLm0=575, MMm0=315,  N=40)
+#  elif defined GIBRALTAR_VHR5
+       parameter (LLm0=348, MMm0=198,  N=40)
 # else
       parameter (LLm0=xx,   MMm0=xx,   N=xx)   ! YOUR REGIONAL CONFIG
 # endif
@@ -216,6 +221,15 @@
 #else
       parameter (LLm=LLm0,  MMm=MMm0)
 #endif
+
+!
+!----------------------------------------------------------------------
+! Number of layers in Sediment (SL)
+!----------------------------------------------------------------------
+!
+      integer N_sl
+      !parameter (N_sl=40)
+      parameter (N_sl=0)
 
 !
 !----------------------------------------------------------------------
@@ -241,6 +255,11 @@
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
+#ifdef OPENACC
+      integer my_acc_device
+      logical compute_on_device
+      common/comm_my_device/my_acc_device,compute_on_device
+#endif
 #elif defined OPENMP
       parameter (NPP=4)
 # ifdef AUTOTILING
@@ -255,6 +274,10 @@
 # else
       parameter (NSUB_X=1, NSUB_E=NPP)
 # endif
+#ifdef OPENACC
+      integer,parameter :: my_acc_device = 0
+      logical,parameter :: compute_on_device = .true.
+#endif
 #endif
 
 !
@@ -343,7 +366,7 @@
 ! Derived dimension parameters
 !----------------------------------------------------------------------
 !
-      integer stdout, Np, padd_X,padd_E
+      integer stdout, Np, NpHz, padd_X,padd_E
 #ifdef AGRIF
       common/scrum_deriv_param/padd_X,padd_E
 #endif
@@ -353,6 +376,7 @@
       parameter (stdout=6)
 #endif
       parameter (Np=N+1)
+      parameter (NpHz=(N+1+N_sl))
 #ifndef AGRIF
 # ifdef MPI
       parameter (Lm=(LLm+NP_XI-1)/NP_XI, Mm=(MMm+NP_ETA-1)/NP_ETA)
@@ -364,15 +388,15 @@
 #endif
 
 #if defined AGRIF || defined AUTOTILING
-      integer NSA, N2d,N3d,N1dXI,N1dETA
+      integer NSA, N2d,N3d,N3dHz,N1dXI,N1dETA
 # if !defined NBQ
       parameter (NSA=28)
 # else
       parameter (NSA=35)
 # endif
-      common /scrum_private_param/ N2d,N3d,N1dXI,N1dETA
+      common /scrum_private_param/ N2d,N3d,N3dHz,N1dXI,N1dETA
 #else
-      integer NSA, N2d,N3d, size_XI,size_ETA
+      integer NSA, N2d,N3d,N3dHz, size_XI,size_ETA
       integer se,sse, sz,ssz
 # ifdef ABL1D
       integer N2dabl,N3dabl
@@ -393,6 +417,7 @@
       parameter (se=sse/(sse+ssz), sz=1-se)
       parameter (N2d=size_XI*(se*size_ETA+sz*Np))
       parameter (N3d=size_XI*size_ETA*Np)
+      parameter (N3dHz=size_XI*size_ETA*NpHz)
 # ifdef ABL1D
       parameter (sse_abl=size_ETA/(N_abl+1), ssz_abl=(N_abl+1)/size_ETA)
       parameter (se_abl=sse_abl/(sse_abl+ssz_abl), sz_abl=1-se_abl)

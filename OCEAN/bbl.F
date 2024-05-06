@@ -1,7 +1,6 @@
-! $Id: bbl.F 1588 2014-08-04 16:26:01Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -684,7 +683,7 @@
         bvstrw(IENDp,JENDp)=0.5*(bvstrw(IENDp,Jend)+bvstrw(Iend,JENDp))
       ENDIF
 # endif
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Abed)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Hripple)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Lripple)

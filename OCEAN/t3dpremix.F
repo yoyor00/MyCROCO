@@ -1,7 +1,6 @@
-! $Id: t3dpremix.F 1466 2014-02-06 17:37:07Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -213,7 +212,7 @@ C$OMP BARRIER
       endif
 
       do itrc=1,NT
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               tsponge(START_2D_ARRAY,1,itrc))

@@ -1,7 +1,6 @@
-! $Id: v2dbc.F 1419 2014-01-13 11:16:42Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -108,12 +107,14 @@ C$    trd=omp_get_thread_num()
 # endif
 #endif
 !
+!$acc kernels if(compute_on_device) default(present) async(1)
+
 #if defined M2_FRC_BRY || defined M2CLIMATOLOGY
       tau_in=dtfast*tauM_in
       tau_out=dtfast*tauM_out
 #endif
 !
-#if defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_WEST || defined OBC_COM_M2CHARACT_EAST
+#if defined OBC_COM_M2ORLANSKI
       grad = 1.
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
@@ -958,7 +959,7 @@ C$    trd=omp_get_thread_num()
 !
 #endif /* NBQ */
 
-
+!$acc end kernels
       return
       end
 #ifndef CHILD

@@ -1,5 +1,5 @@
 1  Stitle (a80)
-ROMS - SED_TOY (consolidation) - Test
+CROCO - SED_TOY (consolidation) - Test
 
 2  Sd(1-NST), CSED,  SRHO,   WSED,    ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
       0.0625    0.   2650.    2.     0.0015      0.1     0.1    41*0.25
