@@ -349,7 +349,6 @@
    use mod_eco3m_files
    implicit none
 
-
 ! local variables
    real(8) :: default_conc  ! default concentration if no input file is provided
    real(8) :: default_temp  ! default temperature in uncoupled mode (i.e. key COUPL not activated)
@@ -359,7 +358,6 @@
    integer :: ivar  ! index of the variable
    character(300) :: filename  ! name of the file
 
-
    namelist/nam_eco3m_ic/ic_input_directory, default_conc, default_temp, default_salt
 #if ! defined M3D_NCOUPL
    namelist/nam_eco3m_run/run_name, run_duration, dt_bio, dt_save_bio, &
@@ -368,7 +366,6 @@
    namelist/nam_eco3m_run/run_name, run_duration, dt_bio, dt_save_bio, &
             nx_min, nx_max, ny_min, ny_max, nz_max, pos_nzmax,filename_depth   
 #endif
-
 
         ! Reads the namelist parameters relative to initial conditions
         rewind(namelist_eco3m_id)
