@@ -4,8 +4,8 @@
 # include "adparam.h"
 
       CALL PUSHINTEGER4(ad_cost_counter)
-c      CALL PUSHREAL8ARRAY(svstr, (lm+padd_x+4)*(mm+padd_e+4))
-c      CALL PUSHREAL8ARRAY(sustr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(svstr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(sustr, (lm+padd_x+4)*(mm+padd_e+4))
       CALL PUSHREAL8ARRAY(vbar, (lm+padd_x+4)*(mm+padd_e+4)*4)
       CALL PUSHREAL8ARRAY(ubar, (lm+padd_x+4)*(mm+padd_e+4)*4)
       CALL PUSHREAL8ARRAY(zeta, (lm+padd_x+4)*(mm+padd_e+4)*4)
@@ -41,8 +41,8 @@ c      write(*,*) 'maxzob',maxval(zob_bck)
       CALL POPREAL8ARRAY(zeta, (lm+padd_x+4)*(mm+padd_e+4)*4)
       CALL POPREAL8ARRAY(ubar, (lm+padd_x+4)*(mm+padd_e+4)*4)
       CALL POPREAL8ARRAY(vbar, (lm+padd_x+4)*(mm+padd_e+4)*4)
-c     CALL POPREAL8ARRAY(sustr, (lm+padd_x+4)*(mm+padd_e+4))
-c     CALL POPREAL8ARRAY(svstr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(sustr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(svstr, (lm+padd_x+4)*(mm+padd_e+4))
       CALL POPINTEGER4(ad_cost_counter)
 
       write(*,*) 'restore+++'

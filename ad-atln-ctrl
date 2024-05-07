@@ -25,8 +25,8 @@ case $1 in
         netcdf netcdf-fortran \
         mpich openssh \
         openblas lapack \
-        openjdk coreutils binutils sed grep bash which time patch gdb"
-    guix_cmd="guix time-machine --commit=fa59a22140bcb98fa6e5cf895deaa5f2fbdb9bcf --"
+        openjdk coreutils binutils sed grep bash which time patch gdb python"
+    guix_cmd="guix time-machine -C AD/croco-2024-04-23.scm --"
     exec $guix_cmd environment -m $MYDIR/adjoinable-mpi.scm --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac
@@ -84,15 +84,16 @@ sed -i 's/undef[\t ]*MPI/define MPI/g' cppdefs.h
 #sed -i 's/define[\t ]*MPI/undef MPI/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
-make croco && mv croco .. || exit 1
+# make croco && mv croco .. || exit 1
 cd ..
-rm -f obs.*.dat
-$mpirun_cmd ./croco croco-atln-obs.in
+# rm -f obs.*.dat
+# $mpirun_cmd ./croco croco-atln-obs.in
 #cp CROCO_FILES/croco_his.nc CROCO_FILES/obs.nc
 #
 # 2. second run with obs.dat file
-sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
-#sed -i 's/define[\t ]*AMPI/undef AMPI/g' cppdefs.h
+#sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
+
+sed -i 's/define[\t ]*AMPI/undef AMPI/g' cppdefs.h
 
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
 #sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h

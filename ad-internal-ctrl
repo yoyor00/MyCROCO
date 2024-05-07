@@ -26,7 +26,7 @@ case $1 in
         mpich openssh \
         openblas lapack \
         openjdk coreutils binutils sed grep bash which time patch gdb"
-    guix_cmd="guix time-machine --commit=fa59a22140bcb98fa6e5cf895deaa5f2fbdb9bcf --"
+    guix_cmd="guix time-machine -C AD/croco-2024-04-23.scm --"
     exec $guix_cmd environment -m $MYDIR/adjoinable-mpi.scm --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac

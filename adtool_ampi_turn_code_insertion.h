@@ -1,4 +1,4 @@
-c     -*- fortran -*-
+!     -*- fortran -*-
       call ADTOOL_AMPI_TURN(buf_rev4,buf_rev4b)
       call ADTOOL_AMPI_TURN(buf_rev3,buf_rev3b)
       call ADTOOL_AMPI_TURN(buf_rev2,buf_rev2b)
