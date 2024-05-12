@@ -25,7 +25,7 @@ case $1 in
         netcdf netcdf-fortran \
         mpich openssh \
         openblas lapack \
-        openjdk coreutils binutils sed grep bash which time patch gdb"
+        openjdk coreutils binutils sed grep bash which time patch gdb python"
     guix_cmd="guix time-machine -C AD/croco-2024-04-23.scm --"
     exec $guix_cmd environment -m $MYDIR/adjoinable-mpi.scm --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;

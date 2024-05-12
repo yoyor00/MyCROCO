@@ -18,11 +18,7 @@ c common includes for AD tools
 # include "forces.h"
 # ifdef MPI
 # include "mpi_cpl.h"
-# ifdef AMPI
 # include "ampi/ampif.h"
-# else
-      include 'mpif.h'
-# endif
 # else
       integer nnodes
       parameter (nnodes=1)

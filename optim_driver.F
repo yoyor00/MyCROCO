@@ -55,11 +55,9 @@ c      end if
       call init_control(ad_x,ad_g)
 
 #ifdef MPI
-#ifdef AMPI
       call AMPI_Reduce(ad_array_real_node_size,
      &     ad_array_real_node_size_f,
      &     1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-#endif
 #else
       ad_array_real_node_size_f = ad_array_real_node_size
 #endif
@@ -79,7 +77,6 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       ad_g_f(:) = 0.
 
 #ifdef MPI
-#ifdef AMPI
 #ifdef DISTRIBUTED_CONTROL_VECTOR      
       call AMPI_Gather(ad_x,ad_array_node_size,
      &     AMPI_ADOUBLE_PRECISION,ad_x_f,ad_array_node_size,
@@ -94,14 +91,12 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       call AMPI_Reduce(ad_g, ad_g_f, ad_array_node_size,
      &     AMPI_ADOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 #endif
-#endif
 #else
       ad_x_f=ad_x
       ad_g_f=ad_g
 #endif
 
 #ifdef MPI
-#ifdef AMPI
       call AMPI_Reduce(cost, cost_f, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
      &     0, MPI_COMM_WORLD, ierr)
 
@@ -110,7 +105,6 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       if (mynode.eq.0) then
          cost = cost_f
       end if
-#endif
 #else
       cost_f = cost
       ad_irms_f = ad_irms
@@ -188,7 +182,6 @@ c     &           control_to_param(ad_x_f(i)),
 c     &           ad_g_f(i)
 c         end do
 #ifdef MPI
-#ifdef AMPI
 #ifdef DISTRIBUTED_CONTROL_VECTOR         
          call AMPI_Scatter(ad_x_f,ad_array_node_size,
      &        AMPI_ADOUBLE_PRECISION,ad_x,ad_array_node_size,
@@ -204,18 +197,15 @@ c     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(ad_g, ad_array_node_size,
      &        AMPI_ADOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
 #endif         
-#endif
 #else
          ad_x=ad_x_f
          ad_g=ad_g_f
 #endif
 #ifdef MPI
-#ifdef AMPI
          call AMPI_Bcast(reverse,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(indic,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
-#endif
 #endif
 
 
@@ -225,7 +215,6 @@ C        get cost & ad_g, the gradient on each proc (& ad_rms)
 
          ad_g_f(:) = 0
 #ifdef MPI
-#ifdef AMPI
 #ifdef DISTRIBUTED_CONTROL_VECTOR         
          call AMPI_Gather(ad_g,ad_array_node_size,
      &        AMPI_ADOUBLE_PRECISION,ad_g_f,ad_array_node_size,
@@ -234,13 +223,11 @@ C        get cost & ad_g, the gradient on each proc (& ad_rms)
          call AMPI_Reduce(ad_g, ad_g_f, ad_array_node_size,
      &        AMPI_ADOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 #endif         
-#endif
 #else
          ad_g_f=ad_g
 #endif
 
 #ifdef MPI
-#ifdef AMPI
          call AMPI_Reduce(cost, cost_f, 1, AMPI_ADOUBLE_PRECISION,
      &        MPI_SUM,
      &        0, MPI_COMM_WORLD, ierr)
@@ -248,7 +235,6 @@ C        get cost & ad_g, the gradient on each proc (& ad_rms)
          call AMPI_Reduce(ad_irms, ad_irms_f, 1, AMPI_ADOUBLE_PRECISION,
      &        MPI_SUM,0,MPI_COMM_WORLD,ierr)
 
-#endif
 #else
          cost_f = cost
          ad_irms_f = ad_irms
