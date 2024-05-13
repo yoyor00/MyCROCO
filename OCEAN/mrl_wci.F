@@ -279,11 +279,12 @@
 #  ifndef WAVE_ROLLER
           act(i,j)=wramp2*max(wac(i,j,wnew),0.)  ! wave action density
 #  else
-          maxwar=0.125*g*(wkb_gam*Dstp(i,j))**2/fr(i,j) ! limit roller act.
-          act(i,j)=wramp2*(max(wac(i,j,wnew),0.)        ! in shallow water
+          maxwar=0.125*g*(wkb_gam*Dstp(i,j))**2  ! limit roller action
+     &                        /max(fr(i,j),eps)  ! in shallow water 
+          act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
      &                +max(min(war(i,j,wnew),maxwar),0.))
 !         act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
-!     &                   +max(war(i,j,wnew),0.))       ! U10
+!     &                   +max(war(i,j,wnew),0.))  ! U10
 #  endif
 
 # else    /* ifndef WKB_WWAVE */
