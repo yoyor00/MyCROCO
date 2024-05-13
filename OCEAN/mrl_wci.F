@@ -96,7 +96,7 @@
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
      &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,ks,
-     &   a_frc,kfrc,Hrms,urms,fw,
+     &   a_frc,kfrc,Hrms,urms,fw, maxwar,
      &             wh(PRIVATE_2D_SCRATCH_ARRAY),
      &             fr(PRIVATE_2D_SCRATCH_ARRAY),
      &             kw(PRIVATE_2D_SCRATCH_ARRAY),
@@ -240,8 +240,6 @@
         jmin=Jstr-2
       endif
 #  endif
-    !  write(*,*) Istr, IstrR, IstrU, imin 
-     ! write(*,*) Jstr, JstrR, JstrV, jmin 
 
       inv_g = 1./g
       do j=jmin,jendR
@@ -281,8 +279,11 @@
 #  ifndef WAVE_ROLLER
           act(i,j)=wramp2*max(wac(i,j,wnew),0.)  ! wave action density
 #  else
-          act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
-     &                    +max(war(i,j,wnew),0.))
+          maxwar=0.125*g*(wkb_gam*Dstp(i,j))**2/fr(i,j) ! limit roller act.
+          act(i,j)=wramp2*(max(wac(i,j,wnew),0.)        ! in shallow water
+     &                +max(min(war(i,j,wnew),maxwar),0.))
+!         act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
+!     &                   +max(war(i,j,wnew),0.))       ! U10
 #  endif
 
 # else    /* ifndef WKB_WWAVE */
