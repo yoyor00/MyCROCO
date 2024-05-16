@@ -1,0 +1,55 @@
+/**********************************************************
+*  CROCO cmake build system, under CeCILL-C
+*  From Sébastien Valat (INRIA & LJK) - 2023
+*  CROCO website : http://www.croco-ocean.org
+**********************************************************/
+
+#ifndef CMAKE_CROCO_CONFIG_POST_H
+#define CMAKE_CROCO_CONFIG_POST_H
+
+/*
+To ensure we do not redefine
+*/
+#undef OPENMP
+#undef OPENACC
+#undef MPI
+
+/*
+Enable parallelism modes
+*/
+#cmakedefine OPENMP
+#cmakedefine OPENACC
+#cmakedefine MPI
+
+/*
+Currently support only one at a time
+Remark: It will fail if we redefine a second time HAS_PARA_MODE to habing two
+#       incompatible parallel modes
+*/
+#ifdef OPENMP
+#define HAS_ANOTHER_PARA_MODE
+#endif
+#ifdef OPENACC
+#define HAS_ANOTHER_PARA_MODE
+#endif
+#ifdef MPI
+#define HAS_ANOTHER_PARA_MODE
+#endif
+
+/*
+Enable AGRIF
+*/
+#cmakedefine AGRIF
+
+/*
+Configure OpenMP threads allowed
+*/
+#cmakedefine WITH_THREADS @WITH_THREADS@
+
+/*
+Configure MPI splitting
+*/
+#cmakedefine SPLITTING_X @SPLITTING_X@
+#cmakedefine SPLITTING_ETA @SPLITTING_ETA@
+
+#endif /* CMAKE_CROCO_CONFIG_POST_H */

@@ -8,6 +8,10 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+
+#ifndef CPPDEFS_HEADER
+#define CPPDEFS_HEADER
+
 /*
    This is "cppdefs.h": MODEL CONFIGURATION FILE
    ==== == ============ ===== ============= ====
@@ -54,7 +58,13 @@
 #undef  COASTAL         /* COASTAL Applications */
 #define REGIONAL        /* REGIONAL Applications */
 
-
+/*
+To make configuration via cmake command line directly and not edit
+cppdef.h by hand for the common setups.
+*/
+#ifdef HAVE_CMAKE_CONFIG
+#include "config.h"
+#endif
 
 #if defined REGIONAL
 /*
@@ -2027,5 +2037,29 @@
 
 #endif /* END OF CONFIGURATION CHOICE */
 
+/*
+Override the cppdef hand written value with cmake one.
+TODO: can be merged into config.h.in and avoid this trick
+if remove all "undef OPENMP/OPENACC/MPI" in case definition
+on top of this line.
+*/
+#ifdef HAVE_CMAKE_CONFIG
+#include "config_post.h"
+#ifdef HAVE_CMAKE_CONFIG_CPPDEF_EDIT
+# include "cppdefs_edit.h"
+#endif /*HAVE_CMAKE_CONFIG_CPPDEF_EDIT*/
+#ifdef HAVE_CMAKE_CONFIG_OVERRIDE
+# include "cppdefs_override.h"
+#endif /*HAVE_CMAKE_CONFIG_OVERRIDE*/
+#endif
+
+/* Note: should come after config_post.h */
+#ifdef HAVE_CMAKE_CONFIG_OVERRIDE
+#include "cppdefs_dev_override.h"
+#else /*HAVE_CMAKE_CONFIG_OVERRIDE*/
 #include "cppdefs_dev.h"
+#endif /*HAVE_CMAKE_CONFIG_OVERRIDE*/
+
 #include "set_global_definitions.h"
+
+#endif /* CPPDEFS_HEADER */

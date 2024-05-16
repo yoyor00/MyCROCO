@@ -15,4 +15,13 @@ doc/build
 Run/*
 Run/amr.in
 
+# CMake build        #
+######################
+build*
+*.pyc
+
+# IDEs               #
+######################
+.vscode
+
 OCEAN.bak/cpl_prism_getlistvals.F

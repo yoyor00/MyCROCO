@@ -92,7 +92,7 @@ CONTAINS
 
 #else
 
-      module plug_MUSTANG_CROCO_empty
-      end module plug_MUSTANG_CROCO_empty
+      module plug_MUSTANG_CROCO
+      end module plug_MUSTANG_CROCO
       
 #endif /* MUSTANG */

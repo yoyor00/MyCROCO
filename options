@@ -1,0 +1,95 @@
+#!/bin/sh
+###########################################################
+#  CROCO cmake build system, under CeCILL-C
+#  From Sébastien Valat (INRIA & LJK) - 2023
+#  CROCO website : http://www.croco-ocean.org
+###########################################################
+
+###########################################################
+#set project name
+cfg_set_projet "CROCO"
+
+###########################################################
+#this is an MPI app, we directly use the mpi wrappers
+#CFG_EXTRA_CC='mpicc'
+#CFG_EXTRA_FC='mpifort'
+
+###########################################################
+#openacc
+cfg_add_with_option   --name='optim' \
+                      --var='WITH_OPTIM' \
+                      --doc='Select the parallelism mode : OFF, openmp, openacc-native, openacc-psyclone'
+
+#twin checker
+cfg_add_enable_option --name='twin-checker' \
+                    --on='-DENABLE_TWIN_CHECKER=${ON}' \
+                    --doc="Enable the twin checker to compare on the fly two croco runs made at same time"
+
+#twin checker
+cfg_add_with_option --name='twin-checker' \
+                    --var='TWIN_CHECKER_PREFIX' \
+                    --doc="Enable the twin checker to compare on the fly two croco runs made at same time"
+
+#openmp
+cfg_add_enable_option --name='openmp' \
+                      --on='-DENABLE_OPENMP=${ON}' \
+                      --doc='Enable the OpenMP version of the code'
+
+#agrif
+cfg_add_enable_option --name='agrif' \
+                      --on='-DENABLE_AGRIF=${ON}' \
+                      --doc='Enable AGRIF to handle mesh refinement'
+
+#psyclone venv
+cfg_add_with_option   --name='netcdf' \
+                      --doc='Define prefix directory to get access to NetCDF-Fortran' \
+                      --var='NETCDF_PREFIX'
+
+#psyclone venv
+cfg_add_with_option   --name='psyclone' \
+                      --doc='Define venv directory to get access to psyclone' \
+                      --var='PSYCLONE_PREFIX'\
+                      --on='-DWITH_OPTIM=openacc-psyclone'
+
+#set mesh splitting for parallelism in MPI
+cfg_add_with_option   --name='splitting' \
+                      --doc='Define the splitting for optim=openmp : {NP_X}x{NP_Y}, (default : 1x4)' \
+                      --var='WITH_SPLITTING'
+
+#set mesh splitting for parallelism in OpenMP
+cfg_add_with_option   --name='threads' \
+                      --doc='Define the number of threads for optim=openmp (default: 4)' \
+                      --var='WITH_THREADS'
+
+#select the case to run
+cfg_add_with_option   --name='case' \
+                      --doc='Define the CASE to compiler and run (look in OCEAN/config.h.in)' \
+                      --var='WITH_CASE'
+
+#select the subcase config
+cfg_add_with_option   --name='keys' \
+                      --doc='List of CPPKEYS, comma separated to enable or disable (+NBQ,-IBM,FLOATS)' \
+                      --var='WITH_KEYS'
+
+###########################################################
+#If we want to document extra options
+#CFG_CUSTOM_HELP="My custom options:"
+
+###########################################################
+# here we can parse our own options if we want
+# Vars available are :
+#  - $arg : full argument (eg. --with-gcc=gcc)
+#  - $val : value after first '=', egg 'gcc'
+#  - $ON $OFF, $ENABLE, $DISABLE, $WIDTH, $WITHOUT
+#cfg_parse_custom_opts()
+#{
+#	return 1
+#}
+
+###########################################################
+#pre check to ease error messages
+#All cmake vars are loaded in memory as OPT_* (OPT_CMAKE_C_FLAGS)
+#cfg_custom_pre_check()
+#{
+#	return 1
+#}
