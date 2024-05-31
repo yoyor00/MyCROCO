@@ -1,0 +1,16 @@
+!!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!! STOGEN: Configuration namelist : used to overwrite defaults values defined in namelist_ref
+!!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!-----------------------------------------------------------------------
+&namsto        !   general parameters for stochastic parameterization
+!-----------------------------------------------------------------------
+   ln_rststo   = .false    ! start from mean parameter (F) or from restart file (T)
+   ln_rstseed  = .true.    ! read seed of RNG from restart file
+   cn_storst_in  = "restart_sto" !  suffix of stochastic parameter restart file (input)
+   cn_storst_out = "restart_sto" !  suffix of stochastic parameter restart file (output)
+/
+
+
+
+
