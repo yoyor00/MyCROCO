@@ -1,7 +1,6 @@
-! $Id: wetdry.F 1408 2013-12-20 12:41:14Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -45,6 +44,8 @@
 ! If wet/drying, compute new masks for cells with depth < Dcrit.
 !-----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
+
 # ifdef SOLVE3D
       IF (iif.le.nfast) THEN
 # endif
@@ -277,10 +278,12 @@ C$OMP BARRIER
 
       END IF
 # endif
+!$acc end kernels
+
 !
 !  Exchange boundary data.
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  rmask_wet)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  rmask_wet_avg)
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  umask_wet)
@@ -294,6 +297,7 @@ C$OMP BARRIER
 !  Set masks for I/O purposes.
 !-----------------------------------------------------------------------
 !
+!$acc  kernels if(compute_on_device) default(present)
 #  ifdef SOLVE3D
       IF (iif.gt.nfast) THEN
 #  else
@@ -340,6 +344,7 @@ C$OMP BARRIER
 #  endif
 
       END IF
+!$acc end kernels      
 # endif /* WETDRY_IO */
 
       RETURN

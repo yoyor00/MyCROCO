@@ -1,7 +1,6 @@
-! $Id: rhs3d.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -23,13 +22,21 @@
       call rhs3d_tile (Istr,Iend,Jstr,Jend,
      &                                    A3d(1,1,trd), A3d(1,2,trd),
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
+     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
+     &                      A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
+     &                      A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd),
+     &                      A3d(1,6,trd), A3d(1,7,trd), A3d(1,8,trd))
       return
       end
 
       subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
-     &                                 wrk1,wrk2, UFx,UFe, VFx,VFe)
+     &                                 wrk1,wrk2, UFx,UFe,
+     &                                 VFx,VFe,
+     &                                 wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
+     &                                 VFx_3D,VFe_3D)
+#ifdef OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
+#endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
@@ -70,24 +77,34 @@
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,cff1,cff2,
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffX,
      &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,
-     &   wrk1(PRIVATE_2D_SCRATCH_ARRAY),     curvX,
-     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),     curvE,
+     &   wrk1_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),     curvX,
+     &   wrk2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),     curvE,
+     &    UFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &    UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &    VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
+     &    VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),    gamma
+      real wrk1(PRIVATE_2D_SCRATCH_ARRAY),
+     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),
      &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
-     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),    u_str,
-     &    VFx(PRIVATE_2D_SCRATCH_ARRAY),    v_str,
-     &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma
+     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
+     &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
+     &    VFe(PRIVATE_2D_SCRATCH_ARRAY)
+
+
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"
+# include "weno_interfaces.h"
 # ifdef NBQ
 #  include "nbq.h"
 # endif
 # ifdef MRL_WCI
       real vstu,dudx,dvdx,ustv,dude,dvde
 # endif
+# include "openacc_work.h"
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -103,6 +120,7 @@
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
       REAL    :: ua, vel, cdiff, cdif
+!$acc declare create(vel)
       REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
       REAL    :: flx2, flx3, flx4, flx5
       REAL    :: mask0, mask1, mask2, mask3
@@ -129,9 +147,7 @@
      &      -sign(1.,ua)*(
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
-# if defined UV_HADV_WENO5 || defined UV_VADV_WENO5
-      REAL    :: flux3_weno, flux5_weno
-# endif
+
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -158,6 +174,8 @@
         cdt = (1.-1./6.)*dt        !<-- Predictor
       endif
 # endif
+
+!$acc kernels if(compute_on_device) default(present)
 
 # ifdef BODYFORCE
 !====================================================================
@@ -187,33 +205,23 @@
       enddo
       do j=Jstr,Jend
         do i=IstrU,Iend
-#  ifdef STRESS_AT_RHO_POINTS
-          u_str = 0.5*( sustr(i,j)+sustr(i-1,j) )
-#  else
-          u_str = sustr(i,j)
-#  endif
-          Uwrk(i,j)=u_str*4./((wrk(i-1,j)+wrk(i,j))
+          Uwrk(i,j)=sustr(i,j)*4./((wrk(i-1,j)+wrk(i,j))
      &                             *(pm (i-1,j)+pm (i,j))
      &                             *(pn (i-1,j)+pn (i,j)))
 #  ifdef DIAGNOSTICS_VRT
-          wrkWind(i,j,1)= u_str*om_u(i,j)
+          wrkWind(i,j,1)= sustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
 #  endif
         enddo
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
-#  ifdef STRESS_AT_RHO_POINTS
-          v_str = 0.5*( svstr(i,j)+svstr(i,j-1) )
-#  else
-          v_str = svstr(i,j)
-#  endif
-          Vwrk(i,j)=v_str*4./((wrk(i,j-1)+wrk(i,j))
+          Vwrk(i,j)=svstr(i,j)*4./((wrk(i,j-1)+wrk(i,j))
      &                             *(pm (i,j-1)+pm (i,j))
      &                             *(pn (i,j-1)+pn (i,j)))
 #  ifdef DIAGNOSTICS_VRT
-            wrkWind(i,j,2)= v_str*on_v(i,j)
-     &                    SWITCH vmask(i,j)
+            wrkWind(i,j,2)= svstr(i,j)*on_v(i,j)
+     &                      SWITCH vmask(i,j)
 #  endif
         enddo
       enddo             !--> discard wrk
@@ -419,8 +427,35 @@
 # endif /* RADIATION_WAVE_FORCE */
 
 
+! TO BE CHANGED, hugly
+# define wrk1(i,j) wrk1_3D(i,j,k)
+# define wrk2(i,j) wrk2_3D(i,j,k)
+# define UFx(i,j) UFx_3D(i,j,k)
+# define UFe(i,j) UFe_3D(i,j,k)
+# define VFx(i,j) VFx_3D(i,j,k)
+# define VFe(i,j) VFe_3D(i,j,k)
 
       do k=1,N
+
+
+# ifdef OBSTRUCTION
+        do j=Jstr,Jend
+            do i=IstrU,Iend
+              ru(i,j,k)=ru(i,j,k)-(obst_fuz(i-1,j,k)+obst_fuz(i,j,k)) !/2/2*4 half sum equilibrium
+     &                             *(Hz(i,j,k)+Hz(i-1,j,k))
+     &                             /(pm (i-1,j)+pm (i,j))
+     &                             /(pn (i-1,j)+pn (i,j))
+            enddo
+        enddo
+        do j=JstrV,Jend
+            do i=Istr,Iend
+              rv(i,j,k)=rv(i,j,k)-(obst_fvz(i,j-1,k)+obst_fvz(i,j,k)) !/2/2*4 half sum equilibrium
+     &                             *(Hz(i,j,k)+Hz(i,j-1,k))
+     &                             /(pm (i,j-1)+pm (i,j))
+     &                             /(pn (i,j-1)+pn (i,j))
+            enddo
+        enddo
+# endif
 
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)
 !
@@ -450,7 +485,7 @@
 #   else
             cff1 = 0.0
 #   endif
-            UFx(i,j)=(cff+cff1)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
+            UFx(i,j)=(cff+cff1)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))  
             VFe(i,j)=(cff+cff1)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
             UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFx(i,j)=cff*(ust(i,j,k)+ust(i+1,j,k))
@@ -700,6 +735,7 @@
 #    endif
 #   endif
 
+!$acc loop collapse(2)
         do j=Jstr,Jend
           do i=IU_EXT_RANGE
             uxx(i,j)=(u(i-1,j,k,nrhs)-2.*u(i,j,k,nrhs)
@@ -955,6 +991,7 @@
 #    endif
 #   endif
 
+!$acc loop collapse(2)
         do j=JstrV,Jend
           do i=IV_EXT_RANGE
             vxx(i,j)=(v(i-1,j,k,nrhs)-v(i,j,k,nrhs)) SWITCH pmask(i  ,j)
@@ -1261,9 +1298,38 @@
 
       enddo    ! <-- k
 
-      do j=Jstr,Jend
+!$acc end kernels
 
 # ifdef UV_ADV
+
+#  ifdef UV_VADV_SPLINES
+#  define DC3D UFx_3D
+#  define CF3D UFe_3D
+!$acc parallel loop if(compute_on_device) default(present) async(1)
+!$acc& collapse(3)
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
+     &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+          enddo
+        enddo
+       enddo
+
+!$acc parallel loop if(compute_on_device) default(present) async(1)
+!$acc& collapse(3)
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            CF3D(i,j,k)=( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
+     &                                 We(i+1,j,k)+We(i-2,j,k) ))
+          enddo
+        enddo
+       enddo
+#  endif       
+
+!$acc parallel loop if(compute_on_device) default(present) async(1)
+      DOLOOP2D(IstrU,Iend,Jstr,Jend)
 !
 !======================================================================
 !
@@ -1281,8 +1347,9 @@
 #  ifdef UV_VADV_SPLINES
         do k=1,N
           do i=IstrU,Iend
-            DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
-     &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+   !        DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
+   ! &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+            DC(i,k)=DC3D(i,j,k)
           enddo
         enddo
         do i=IstrU,Iend     ! Construct parabolic splines: here
@@ -1311,8 +1378,7 @@
 !
         do k=1,N-1
           do i=IstrU,Iend
-            FC(i,k)=( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
-     &                                 We(i+1,j,k)+We(i-2,j,k) ))
+            FC(i,k)=CF3D(i,j,k)
      &             *( u(i,j,k,nrhs)+DC(i,k)*(
      &                              0.33333333333333*CF(i,k  )
      &                             +0.16666666666667*CF(i,k-1)
@@ -1463,7 +1529,7 @@
 #    ifdef DIAGNOSTICS_EK_MLD
             ekwrkVadv_mld(i,j,1) = 0
 #    endif
-          enddo
+          enddo         
 #   endif
           do k=1,N
             do i=IstrU,Iend
@@ -1495,13 +1561,42 @@
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
-        if (j.ge.JstrV) then
+       ENDDOLOOP2D
+
+#  undef DC3D
+#  undef CF3D
+#  define DC3D VFx_3D
+#  define CF3D VFe_3D
+
+!$acc parallel loop if(compute_on_device) default(present) async(2)
+!$acc& collapse(3)
+      do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
+     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
+          enddo
+        enddo
+       enddo
+
+!$acc parallel loop if(compute_on_device) default(present) async(2)
+!$acc& collapse(3)
+      do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            CF3D(i,j,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
+     &                                   We(i,j+1,k)+We(i,j-2,k) ))
+          enddo
+        enddo
+       enddo
+
+!$acc parallel loop if(compute_on_device) default(present) async(2)
+      DOLOOP2D(Istr,Iend,JstrV,Jend)
 !
 #  ifdef UV_VADV_SPLINES
           do k=1,N
             do i=Istr,Iend
-              DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
-     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
+              DC(i,k)=DC3D(i,j,k)
             enddo
           enddo
           do i=Istr,Iend    ! Construct parabolic splines: here
@@ -1530,8 +1625,7 @@
 !
           do k=1,N-1
             do i=Istr,Iend
-              FC(i,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
-     &                                   We(i,j+1,k)+We(i,j-2,k) ))
+              FC(i,k)=CF3D(i,j,k)
      &               *( v(i,j,k,nrhs)+DC(i,k)*(
      &                                0.33333333333333*CF(i,k  )
      &                               +0.16666666666667*CF(i,k-1)
@@ -1680,7 +1774,7 @@
 #    ifdef DIAGNOSTICS_EK_MLD
               ekwrkVadv_mld(i,j,2) = 0
 #    endif
-            enddo
+            enddo         
 #   endif
             do k=1,N
               do i=Istr,Iend
@@ -1707,7 +1801,8 @@
           endif
 #  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
 
-        endif !<- j.ge.JstrV
+        ENDDOLOOP2D
+
 
 # endif /* UV_ADV */
 !
@@ -1718,6 +1813,7 @@
 !======================================================================
 !
 # ifdef MRL_WCI
+       do j=Jstr,Jend
         do k=1,N
           do i=IstrU,iend
             cff  =0.5*on_u(i,j)*(Hz(i-1,j,k)+Hz(i,j,k))
@@ -1775,7 +1871,13 @@
 #  endif /* DIAGNOSTICS_UV */
          enddo
       enddo
+      enddo
 # endif   /* MRL_WCI */
+# undef DC3D
+# undef CF3D
+!$acc wait(1,2)
+!$acc kernels if(compute_on_device) default(present)
+
 !
 !======================================================================
 !
@@ -1791,18 +1893,14 @@
 !
 !======================================================================
 !
+       do j=Jstr,Jend
         do i=IstrU,Iend
-# ifdef STRESS_AT_RHO_POINTS
-          u_str = 0.5*( sustr(i,j)+sustr(i-1,j) )
-# else
-          u_str = sustr(i,j)
-# endif
           rufrc(i,j)=ru(i,j,1)
 # ifndef BODYFORCE
 #  ifdef BSTRESS_FAST
-     &        + u_str*om_u(i,j)*on_u(i,j)
+     &        + sustr(i,j)*om_u(i,j)*on_u(i,j)
 #  else
-     &        +(u_str-bustr(i,j))*om_u(i,j)*on_u(i,j)
+     &        +(sustr(i,j)-bustr(i,j))*om_u(i,j)*on_u(i,j)
 #  endif
 # endif
 # if defined MRL_WCI && defined WAVE_SFC_BREAK
@@ -1816,17 +1914,12 @@
         enddo
         if (j.ge.JstrV) then
           do i=Istr,Iend
-# ifdef STRESS_AT_RHO_POINTS
-            v_str = 0.5*( svstr(i,j)+svstr(i,j-1) )
-# else
-            v_str = svstr(i,j)
-# endif
             rvfrc(i,j)=rv(i,j,1)
 # ifndef BODYFORCE
 #  ifdef BSTRESS_FAST
-     &       + v_str*om_v(i,j)*on_v(i,j)
+     &       + svstr(i,j)*om_v(i,j)*on_v(i,j)
 #  else
-     &       +(v_str-bvstr(i,j))*om_v(i,j)*on_v(i,j)
+     &       +(svstr(i,j)-bvstr(i,j))*om_v(i,j)*on_v(i,j)
 #  endif
 # endif
 # if defined MRL_WCI && defined WAVE_SFC_BREAK
@@ -1841,6 +1934,8 @@
         endif
 
       enddo      !<-- j loop
+
+!$acc end kernels
 
       return
       end

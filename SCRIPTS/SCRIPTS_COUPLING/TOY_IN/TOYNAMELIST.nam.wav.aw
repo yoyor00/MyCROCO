@@ -7,8 +7,8 @@
               VALUE=10 /
 
 &NAM_RECV_FIELDS NB_RECV_FIELDS=2,
-                 CRCVFIELDS(1)='TOY_U_01',
-                 CRCVFIELDS(2)='TOY_V_01' /
+                 CRCVFIELDS(1)='TOY__U10',
+                 CRCVFIELDS(2)='TOY__V10' /
 
 &NAM_SEND_FIELDS NB_SEND_FIELDS=1,
                  CSNDFIELDS(1)='TOY__CHA' /

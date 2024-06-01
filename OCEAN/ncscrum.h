@@ -1,7 +1,6 @@
-! $Id: ncscrum.h 1588 2014-08-04 16:26:01Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -189,8 +188,17 @@
       parameter (indxHm=5)
 #endif
 #ifdef SOLVE3D
+#  ifdef M3FAST_HIS
+      integer indxRnbq, indxUnbq, indxVnbq, indxWnbq, indxCnbq
+      parameter  (indxUnbq=6, indxVnbq=7, indxWnbq=8,
+     &  indxCnbq=9, indxRnbq=10)
+
+      integer indxU, indxV
+      parameter (indxU=11, indxV=12)
+#  else
       integer indxU, indxV
       parameter (indxU=6, indxV=7)
+#  endif
 
 # ifdef TRACERS
 #  ifdef TEMPERATURE
@@ -546,7 +554,6 @@
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
-
 # ifdef ABL1D
       integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
      &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
@@ -1147,6 +1154,7 @@
      &      , hisBBL(6)
 #endif
 #ifdef SOLVE3D
+     &      , hisUnbq, hisVnbq, hisWnbq, hisRnbq, hisCnbq
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
@@ -1689,6 +1697,7 @@
      &      , hisHm
 #endif
 #ifdef SOLVE3D
+     &      , hisUnbq, hisVnbq, hisWnbq, hisRnbq, hisCnbq
      &      , hisU,    hisV,     hisT,    hisR
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
@@ -2171,6 +2180,9 @@
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsname
 #endif
+#if defined OBSTRUCTION
+     &               ,    obstname
+#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
@@ -2277,6 +2289,9 @@
 #endif
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsname
+#endif
+#if defined OBSTRUCTION
+     &               ,    obstname
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname

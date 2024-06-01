@@ -1,7 +1,6 @@
-! $Id: wvlcty.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -97,6 +96,8 @@
       jmin=Jstr
       jmax=Jend
 # endif
+
+!$acc kernels if(compute_on_device) default(present)
 !
 !   Compute "omega" vertical velocity by means of integration of
 ! mass divergence of mass fluxes from bottom up. In this computation,
@@ -112,6 +113,7 @@
 ! Once omega vertical velocity is computed, interpolate it to
 ! vertical RHO-points.
 !
+!$acc loop private(Wrk)
       do j=jmin,jmax
         do i=imin,imax
           Wrk(i,0)=0.D0
@@ -221,6 +223,7 @@ c**    Wrk(i,k)=0.!(uncomment to test the second part)
       endif
 #  endif
 # endif
+!$acc end kernels
       return
       end
 #else

@@ -14,7 +14,7 @@
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
- 2  wrfexe   toyexe
+ 2  wrfexe   toywav
 ###########################################################################
 # RUNTIME: total simulated time for the actual run in seconds (<I8)
  $RUNTIME
@@ -162,7 +162,7 @@
 # U_01 : wind U component at first level (m/s)
 #~~~~~~~~~~~
 WRF_d01_EXT_d01_WND_E_01 TOY__U10 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> atmt toyt LAG=<atmdt>
+<atmnx> <atmny> <wavnx> <wavny> atmt toywt LAG=<atmdt>
 R 0 R 0
 LOCTRANS SCRIPR
 AVERAGE
@@ -172,7 +172,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # V_01 : wind V component at first level (m/s)
 #~~~~~~~~~~~
 WRF_d01_EXT_d01_WND_N_01 TOY__V10 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> atmt toyt LAG=<atmdt>
+<atmnx> <atmny> <wavnx> <wavny> atmt toywt LAG=<atmdt>
 R 0 R 0
 LOCTRANS SCRIPR
 AVERAGE
@@ -186,7 +186,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # CHA_COEF : Charnock coefficient
 #~~~~~~~~~~~
 TOY__CHA WRF_d01_EXT_d01_CHA_COEF 1 <cpldt> 2 wav.nc  EXPORTED
-<wavnx> <wavny> <atmnx> <atmny> toyt atmt LAG=<wavdt>
+<wavnx> <wavny> <atmnx> <atmny> toywt atmt LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE

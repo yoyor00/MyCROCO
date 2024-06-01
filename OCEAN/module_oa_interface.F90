@@ -143,17 +143,28 @@
       integer :: mynode, comm, comm_size
       logical :: if_print_node, if_mpi_oa
 
-      !> Test if OA analyses requested 
+      !> OA analyses requested 
       logical             :: if_oa
+
+      !> OA analyses requested for fast mode 
+      logical             :: if_oa_fast_mode
 
       !> Flag controling the type of OA outputs (forced to .true. august 2021 : XIOS version 2.5 only)
       logical             :: if_xios_output
 
+      !> Maximum number of model mode minus one
+      !! BLXD TODO to be used with arrays such as nsclg_glo, nsclg_loc,...
+      integer, parameter :: nmod_oa = 1                              
+
       !> First and last simulation iteration indices
-      integer :: kount0, nt_max                                      
+      integer, dimension(0:nmod_oa), target :: kount0, nt_max                                      
 
       !> External time step
-      double precision :: dti
+      double precision, dimension(0:nmod_oa), target :: dti
+
+      !> Scalogram index and period axe name
+      character(len=20), dimension(0:nmod_oa), target :: oa_sclg_grd, &
+     &                   oa_sclg_dgrd, oa_sclg_axis, oa_sclg_dom, pervnam
 
       !> Shared Croco log io_unit
       integer :: io_unit
@@ -161,9 +172,9 @@
       !> directory_in_oa hardcoded to INPUT, directory out_oa set in the namelist_oa 
       character(len=200)  :: directory_in_oa, directory_out_oa
       integer             :: verbose_oa
-      integer, parameter  :: io_nml=90, io_hist=91, io_hbg=92
+      integer, parameter  :: io_nml=90, io_hist=91, io_hbg=92, io_tst=93
       character(len=1), parameter :: txtslash='/'
-      character(len=250)  :: file_hbg
+      character(len=250)  :: file_hbg, file_tst
 
       !> Namelist options including Heisenberg uncertainties  
       logical             :: if_sphe_deg2rad, if_extend_dom, if_chks
@@ -198,7 +209,10 @@
 
       !> Last dimension of the allocatable array var?d_oa
       !! global dimension encompassing all the analysis shared by all tile/MPI process subdomains
-      integer :: nzupd3d_oa, nzupd2d_oa, nzupd1d_oa, nzupd0d_oa
+      integer :: nzupd3d_oa, nzupd2d_oa, nzupd1d_oa
+
+      !> Total number of requested scalogram for slow/fast model mode
+      integer, dimension(0:nmod_oa), target :: nzupd0d_oa
  
       !> Analysed 3D fields
       !! Dimensions are space dimensions i, j, k, and the index of the analysed variable has returned by tvar_oa
@@ -222,17 +236,34 @@
       real, parameter :: w0c=6.
 
 #ifdef MPI
-      !> Analysed 0D fields for scalogram global/local to tile-MPI process scal0d_oa
-      complex(8), dimension(:,:), allocatable, target   :: scal0d_oa
-      !> Array with Position/Scales of local to tile-MPI process scalogram
-      real(8), dimension(:,:) , allocatable, target  :: per0d_oa
-      integer, dimension(:)   , allocatable          :: iscal0d_oa
-      integer, dimension(:)   , allocatable          :: jscal0d_oa
-      integer, dimension(:)   , allocatable          :: kscal0d_oa
-      integer, dimension(:)   , allocatable          :: index_s_oa
+      !> Analysed 0D fields for scalogram local to tile-MPI process scal0d_oa
+      !! BLXD TODO using OQ for slow/fast model mode 
+      !!      includes now to different derived types model_mode_loc/_glo
+      !!      with fields that could have the same name, i.e., per0d_oa, per0d_cr
+      !!      renamed to per0d
+      type model_mode_loc 
+
+        !complex(8), dimension(:,:), allocatable, target   :: scal0d_oa
+        complex(8), dimension(:,:), pointer   :: scal0d_oa
+        !> Array with Position/Scales of local to tile-MPI process scalogram
+        !real(8), dimension(:,:) , allocatable, target  :: per0d_oa
+        real(8), dimension(:,:) , pointer  :: per0d_oa
+        integer, dimension(:)   , allocatable          :: iscal0d_oa
+        integer, dimension(:)   , allocatable          :: jscal0d_oa
+        integer, dimension(:)   , allocatable          :: kscal0d_oa
+        integer, dimension(:)   , allocatable          :: index_s_oa
+        !integer, dimension(:) ,   allocatable          :: v2locsclg
+
+      end type
+
+      type(model_mode_loc), dimension(0:nmod_oa), target :: mdl 
+
 #endif
-      integer, dimension(:) ,   allocatable  :: v2locsclg
+      integer, dimension(:) ,   allocatable          :: v2locsclg
       !integer, dimension(:) ,   allocatable  :: sclg2v !BLXD tmp keep
+
+
+      type model_mode_glo 
 
       complex(8), dimension(:,:), allocatable   :: scal0d_cr
       real(8), dimension(:,:)   , allocatable   :: per0d_cr
@@ -241,16 +272,25 @@
       integer, dimension(:)     , allocatable   :: kscal0d_cr
       integer, dimension(:)     , allocatable   :: index_s_cr
 
+      end type
+
+      type(model_mode_glo), dimension(0:nmod_oa), target :: mdg 
+
+      !> Maximum number of scalogram periods requested
+      integer, dimension(0:nmod_oa), target :: nper_sclg_max
+
 
       !> Number of scalograms local to the current MPI process if any
       !! For now the total number of scalogram requested by the user is nzupd0d_oa
       !! BLXD TODO change the name eventually to nsclg_glo
-      integer                                   :: nsclg_loc
+      !integer                                   :: nsclg_loc
+      integer, dimension(0:nmod_oa), target      :: nsclg_loc
 
       !> Firts global scalogram position on the current MPI process if any 
       !! (see XIOS outputs index_s indexing for scalogram distributed among MPI processes)
-      integer                                   :: isclg_beg
-  
+      ! integer                                   :: isclg_beg
+      integer, dimension(0:nmod_oa), target       :: isclg_beg
+ 
       !> Namelist options for scalogram XIOS outputs (namelist_oa) 
       logical                                   :: if_record_sclg_ijpoints, if_xios_dom_grid
 
@@ -293,6 +333,9 @@
       !logical, parameter :: if_test_mpi_blocking_send=.false., if_test_test_mpi_nonblocking_ssend=.false.
 #endif
 #endif
+
+      ! BLXD TODO REMOVE not OpenMP protected
+      integer :: nmsimult_oa_verif, nmsimult_oa_verif_max
 
       contains
 
@@ -358,6 +401,8 @@
      & ,dti_oa                          & 
      & ,kount0_oa                       &
      & ,nt_max_oa                       &
+     & ,dtf_oa                          & 
+     & ,ntf_max_oa                      &
      & ,ntiles)
 
       use module_oa_variables
@@ -373,22 +418,19 @@
       implicit none
 
       !> Time integration step (s)
-      double precision, intent(in) :: dti_oa
+      double precision, intent(in) :: dti_oa, dtf_oa
 
 !     !> Current model integration iteration
 !     integer, intent(in) :: iic_oa 
 
       !> First and last simulation iteration indices
-      integer, intent(in) :: kount0_oa, nt_max_oa                                       
+      integer, intent(in) :: kount0_oa, nt_max_oa, ntf_max_oa                                    
 
       !> Number of Croco tiles
       integer, intent(in) :: ntiles                                       
 
       integer, intent(in) :: io_unit_oa, mynode_oa, comm_oa
       logical, intent(in) :: if_print_node_oa
-
-      !integer, intent(inout) :: nper_oa
-      integer :: nper_oa
 
       integer :: ic_s
 
@@ -412,14 +454,26 @@
       ! Scalogram set to .false. by default
       scalogram_analysis = .false.
 
+
+      if ( nmod_oa /= 1 ) then
+        write (*,*) " ERROR OA : unless on going developments nmod_oa parameter must be set to 1"
+        write (*,*) "  It sets array dimensions with entries 0/1 for slow/fast mode analysis"
+        stop
+      endif
+
       ! BLXD pointers
       io_unit = io_unit_oa
       mynode  = mynode_oa
       comm    = comm_oa
       if_print_node = if_print_node_oa
-      dti = dti_oa
-      kount0 = kount0_oa 
-      nt_max = nt_max_oa
+      ! Slow mode
+      dti(0) = dti_oa
+      kount0(0) = kount0_oa 
+      nt_max(0) = nt_max_oa
+      ! Fast mode
+      dti(1) = dtf_oa
+      kount0(1) = 0 
+      nt_max(1) = ntf_max_oa*nt_max_oa ! ndtfast*ntimes
 
       !open(unit=io_unit,file=trim(directory_out)//'/'//'trace.out')    
       if(if_print_node) write(io_unit,*) ' '
@@ -446,6 +500,9 @@
       call rdnotebook_init_oa
 
 
+!.....default no fast mode analysis
+        if_oa_fast_mode = .false.
+
       if(if_print_node) write(io_unit,*) '...OA LOG FILE : # of requested analysis ',nzv_oa
 
 !.....test si calcul oa ou pas
@@ -455,13 +512,11 @@
 
 !.....flag returning false to croco, either function or module flag
 !        init_parameter_oa = .false.
-         if_oa         = .false.
-         nper_oa       = 1  ! XIOS axis s_oa minimum size 1
+         if_oa           = .false.
 
         return
 
       else
-
 
         if(if_print_node) write(io_unit,*) '...OA LOG FILE : preliminary allocation '
 
@@ -486,8 +541,7 @@
 
         if(if_print_node) write(io_unit,*) '...OA LOG FILE : Specific analysis config. soon read in namelists '
 
-!.....lecture du notebook.oa: 
-!      #BLXD removing the use of 2D grid parameter. Still contains the call to var_copy_oa
+!.....lecture du notebook.oa: if_oa_fast_mode, scalogram_analysis, isopycne_analysis updated according to user nml 
         call rdnotebook_oa( )
 
 !.....Currently output can only be handled by XIOS - Croco-Roms netCDF output types to dev.
@@ -554,6 +608,12 @@
             if(if_print_node) write(io_unit,*) '...OA in : test structure allocation ',mynode
             call allocate_tile_test_str(ntiles)
             if(if_print_node) write(io_unit,*) '...OA out : test structure allocation ',mynode
+!---->Fichier de sortie pour analyse de fonction test:
+!$OMP MASTER
+        file_tst = trim(directory_out_oa) // txtslash // 'test_oa.dat'
+
+        if (mynode==0) open(unit=io_tst,file=trim(file_tst))   
+!$OMP END MASTER
         endif
 
         call var_per_oa( .false., dti )
@@ -562,18 +622,20 @@
         
         call var_per_oa( .true., dti )
 
-        nper_oa       = max(nper_sclg_max,1)  ! BLXD TODO SEE if finally USED XIOS axis s_oa minimum size 1
+        if ( scalogram_analysis .and. if_xios_output .and. if_xios_dom_grid )  then
+            call init_xios_sclg_dom_grid()
+        endif
 
         if(if_print_node) then
             if(scalogram_analysis) then
                 if(if_print_node)then
                 write(io_unit,*) '...OA LOG FILE : Scalogram Requested '
-                write(io_unit,*) '...OA LOG FILE : Scalogram max # of period ', nper_sclg_max
+                write(io_unit,*) '...OA LOG FILE : Scalogram max # of period SLOW MODE ', nper_sclg_max(0)
+                if ( if_oa_fast_mode ) write(io_unit,*) '...OA LOG FILE : Scalogram max # of period FAST MODE ', nper_sclg_max(1)
                 endif
             else
                 if(if_print_node)then
-                write(io_unit,*) '...OA LOG FILE : NO Scalogram  => max # of period set to 0      = ', nper_sclg_max
-                write(io_unit,*) '...OA LOG FILE : NO Scalogram  => XIOS period axis dim set to 1 = ', nper_oa
+                write(io_unit,*) '...OA LOG FILE : NO Scalogram  => max # of period set to 0      = ', nper_sclg_max(0)
                 endif
             endif
         endif
@@ -581,8 +643,12 @@
         ! Counting tiles in either init_oa or main_oa
         tile_count_oa=0
 
-        ! Pre-calculation of last dimension of var?d/scal0d_oa : nzupd?d_oa
+        ! Calculation of last dimension of var?d/scal0d_oa, i.e., nzupd?d_oa ?=2,3
+        ! For model mode ichoix, calculation of the total number of scalogram nzupd0d_oa(ichoix)
+        ! call upd_init_oa(.false.,0)
+        ! if ( if_oa_fast_mode ) call upd_init_oa(.false.,1)
         call upd_init_oa(.false.)
+
    
 !.....if function returning true : init_parameter_oa = .true.
          
@@ -681,6 +747,10 @@
       if_record_sclg_ijpoints = .true.
       if_heisenberg_box = .false.
       nmsimult_oa_max   = -99
+      ! BLXD TODO REMOVE not OpenMP protected
+      nmsimult_oa_verif = 0
+      nmsimult_oa_verif_max = 0
+
 
       !if_send_xios_2Dsclg=.false.
       !if_send_zero_size_arr=.true.
@@ -1088,7 +1158,9 @@
                                DORI_W, DELTA_T_W, NZPT_PER_W, CNB_W, SWT_T_W, SWT_D_W, &
                                DATE_DEB, DATE_FIN, DT_W, T0_W, LAT_W, LON_W,           &
                                HH_W, K_W, DX_W, DY_W, DK_W, PTIJ_W
-   
+ 
+
+
       oa_analysis_requested : if (nzc_oa /=0) then
     
 !..... add unite_oa to namelist i) seconds unite_oa=1, ii) hours unite_oa=3600
@@ -1099,6 +1171,19 @@
       oa_config_loop : do ic_r = 1 , nzc_oa
        
          if(if_print_node) write(io_unit,*) '...Configuration index ', ic_r
+
+          TPSI_W=1      ! Ondelette   
+          SAVE_W=2      ! 0,1 : variable utilisateur, 2 : variable commune   
+          UPDV_W=2    
+          SWT_WFPF_W=4  ! Analyse complexe
+          FL_REC_W=0    ! 0 : coeff. brut 1 : reconstruction
+          DORI_W=1      ! 1 : periodes discretes, 2 : periodes integrees 
+          CNB_W=0       ! 0 : mode lent, 1 : mode rapide
+          SWT_T_W=4     ! analyse sur toute la simu
+          T0_W=0
+          DX_W=1
+          DY_W=1
+          DK_W=1
 
 !..... namelist lue:
  
@@ -1136,9 +1221,15 @@
          cnb_oa(izv_oa)      = CNB_W          ! call number which may be used to define where a variable needs to be called.
 !        pour les bilans energetiques cette variable est mise a jour automatiquement un peu plus loin.
 
+         if ( ( cnb_oa(izv_oa) < 0 ) .or. ( cnb_oa(izv_oa) > nmod_oa ) ) then
+            write (*,*) " ERROR OA : possible CNB_W values are currently 0/1 for slow/fast mode analysis"
+            write (*,*) "            please modify the OA namelists accordingly or developments are needed"
+            stop
+         endif
+
          if ( per_oa(1,izv_oa).gt. per_oa(2,izv_oa) ) then
-            write (*,*) " ERROR : per_oa (1,",izv_oa,") trop grand"
-            if(if_print_node) write (io_unit,*) " ERROR : per_oa (1,",izv_oa,") trop grand"
+            write (*,*) " ERROR OA : per_oa (1,",izv_oa,") trop grand"
+            if(if_print_node) write (io_unit,*) " ERROR OA : per_oa (1,",izv_oa,") trop grand"
             stop
          endif  
 
@@ -1175,87 +1266,106 @@
              endif
          endif
 
-! #BLXD 2020 dev new croco sub. tool_datetosec
-!            convert date YYYY, MM, DD, HH, MM, SS to the model time step index
-!            TODO test with swt_t_oa=4 (even though not used ) then remove
+         ! Croco Slow/Fast modes : cnb_oa=0/1
 
-         call tool_datetosec( DATE_DEB(1), DATE_DEB(2), DATE_DEB(3), &
-          &                   DATE_DEB(4), DATE_DEB(5), DATE_DEB(6), &
-          &                   time_from_croco_tref_in_sec)
-         kount_user_oa(1,izv_oa) = int(time_from_croco_tref_in_sec/dti)
-         
-         call tool_datetosec( DATE_FIN(1), DATE_FIN(2), DATE_FIN(3), &
-          &                   DATE_FIN(4), DATE_FIN(5), DATE_FIN(6), &
-          &                   time_from_croco_tref_in_sec)
-         kount_user_oa(2,izv_oa) = int(time_from_croco_tref_in_sec/dti)
-         
-!...>    (1) [T1,T2], (2) [T1,end], (3) single date T1             
-         if  ( (swt_t_oa(izv_oa) == 1) .or. ( swt_t_oa(izv_oa) == 2)  .or. ( swt_t_oa(izv_oa) == 3) ) then 
-         call tool_datetosec( DATE_DEB(1), DATE_DEB(2), DATE_DEB(3), &
-          &                   DATE_DEB(4), DATE_DEB(5), DATE_DEB(6), &
-          &                   time_from_croco_tref_in_sec)
+         croco_slow_fast : if  ( cnb_oa(izv_oa)==0 ) then
 
-             kount_user_oa(1,izv_oa) = int(time_from_croco_tref_in_sec/dti)
-         end if
-         if  (swt_t_oa(izv_oa) == 1) then 
-         call tool_datetosec( DATE_FIN(1), DATE_FIN(2), DATE_FIN(3), &
-          &                   DATE_FIN(4), DATE_FIN(5), DATE_FIN(6), &
-          &                   time_from_croco_tref_in_sec)
+            ! #BLXD 2020 dev new croco sub. tool_datetosec
+            !            convert date YYYY, MM, DD, HH, MM, SS to the model time step index
+            !            TODO test with swt_t_oa=4 (even though not used ) then remove
+            
+            call tool_datetosec( DATE_DEB(1), DATE_DEB(2), DATE_DEB(3), &
+             &                   DATE_DEB(4), DATE_DEB(5), DATE_DEB(6), &
+             &                   time_from_croco_tref_in_sec)
+            kount_user_oa(1,izv_oa) = int(time_from_croco_tref_in_sec/dti(0))
+            
+            call tool_datetosec( DATE_FIN(1), DATE_FIN(2), DATE_FIN(3), &
+             &                   DATE_FIN(4), DATE_FIN(5), DATE_FIN(6), &
+             &                   time_from_croco_tref_in_sec)
+            kount_user_oa(2,izv_oa) = int(time_from_croco_tref_in_sec/dti(0))
+            
+!...>       (1) [T1,T2], (2) [T1,end], (3) single date T1             
+            if  ( (swt_t_oa(izv_oa) == 1) .or. ( swt_t_oa(izv_oa) == 2)  .or. ( swt_t_oa(izv_oa) == 3) ) then 
+            call tool_datetosec( DATE_DEB(1), DATE_DEB(2), DATE_DEB(3), &
+             &                   DATE_DEB(4), DATE_DEB(5), DATE_DEB(6), &
+             &                   time_from_croco_tref_in_sec)
+            
+                kount_user_oa(1,izv_oa) = int(time_from_croco_tref_in_sec/dti(0))
+            end if
+            if  (swt_t_oa(izv_oa) == 1) then 
+            call tool_datetosec( DATE_FIN(1), DATE_FIN(2), DATE_FIN(3), &
+             &                   DATE_FIN(4), DATE_FIN(5), DATE_FIN(6), &
+             &                   time_from_croco_tref_in_sec)
+            
+                kount_user_oa(2,izv_oa) = int(time_from_croco_tref_in_sec/dti(0))
+            end if
+            ! #BLXD OnlineA 2020 change : nt_max-1 -> nt_max
+            ! For wavelet and Fourier ( see var_time_oa )
+            ! The nzvt_oa convolution windows are defined over the model time index 
+            ! intervals [ kountv_oa(1,:), kountv_oa(2,:) ]
+            ! Being given the width of the convolution window 2*dkount_tot_t
+            ! and its time index center at k and being given the simulation time window :
+            ! - the 1st possible convolution window can start at the 1st model time index
+            ! which is the 'now' time index of the restart just before the 1st 
+            ! model time step from now to after, ie kountv_oa(1, izvt_oa=1 ) = kount0
+            ! - the last possible convolution window can have its last window time index
+            ! at the last model time index, which is to say at 'after' state of the last
+            ! - the last time index of the last possible convolution window si allowed to 
+            !   match the 'after' index of the last time step of the model,
+            !   kountv_oa( 2, izvt_oa=nzvt_oa ) = nt_max
+            ! #BLXD TODO check with Dirac atom 
+            !     a) if perv_oa = 0. => dkount_tot_t = 0 (OK) 
+            !     b) else               dkount_tot_t =  INT(perv_oa / 2 / dti - 0.5) + 1
+            
+            !if  ( swt_t_oa(izv_oa) == 2) kount_user_oa(2,izv_oa) = nt_max-1
+            if  ( swt_t_oa(izv_oa) == 2) kount_user_oa(2,izv_oa) = nt_max(0)
+            if  ( swt_t_oa(izv_oa) == 3) kount_user_oa(2,izv_oa) = kount_user_oa(1,izv_oa)
+            
+            if (swt_t_oa(izv_oa).eq.1.and.kount_user_oa(2,izv_oa).lt.kount_user_oa(1,izv_oa))   then
+                 if(if_print_node) write (io_unit,*) "probleme dates choisies t1 > t2" 
+            end if
+            !if (swt_t_oa(izv_oa).eq.1.and.kount_user_oa(1,izv_oa).gt.nt_max-1)                  then 
+            if (swt_t_oa(izv_oa).eq.1.and.kount_user_oa(1,izv_oa).gt.nt_max(0))                  then 
+                 if(if_print_node) write (io_unit,*) "probleme dates choisies t1 > t final"
+            end if
+            if ( swt_t_oa(izv_oa) == 4) then
+               kount_user_oa(1,izv_oa) = kount0(0)
+               ! BLD 2020 change kount_user_oa(2,izv_oa) = nt_max-1
+               kount_user_oa(2,izv_oa) = nt_max(0)
+            endif
 
-             kount_user_oa(2,izv_oa) = int(time_from_croco_tref_in_sec/dti)
-         end if
-         ! #BLXD OnlineA 2020 change : nt_max-1 -> nt_max
-         ! For wavelet and Fourier ( see var_time_oa )
-         ! The nzvt_oa convolution windows are defined over the model time index 
-         ! intervals [ kountv_oa(1,:), kountv_oa(2,:) ]
-         ! Being given the width of the convolution window 2*dkount_tot_t
-         ! and its time index center at k and being given the simulation time window :
-         ! - the 1st possible convolution window can start at the 1st model time index
-         ! which is the 'now' time index of the restart just before the 1st 
-         ! model time step from now to after, ie kountv_oa(1, izvt_oa=1 ) = kount0
-         ! - the last possible convolution window can have its last window time index
-         ! at the last model time index, which is to say at 'after' state of the last
-         ! - the last time index of the last possible convolution window si allowed to 
-         !   match the 'after' index of the last time step of the model,
-         !   kountv_oa( 2, izvt_oa=nzvt_oa ) = nt_max
-         ! #BLXD TODO check with Dirac atom 
-         !     a) if perv_oa = 0. => dkount_tot_t = 0 (OK) 
-         !     b) else               dkount_tot_t =  INT(perv_oa / 2 / dti - 0.5) + 1
+            if(if_print_node) write(io_unit,*) 'Croco Slow mode => SWT_T_OA option is ',swt_t_oa(izv_oa)
+            if(if_print_node) write(io_unit,*) '   OA analysis over Time steps ',kount_user_oa(1,izv_oa),kount_user_oa(2,izv_oa)
+            if(if_print_node) write(io_unit,*) '   Simu Time step interval including initial and last',kount0(0),nt_max(0)
+            if  ( (swt_t_oa(izv_oa) == 1) .or. ( swt_t_oa(izv_oa) == 2)  .or. ( swt_t_oa(izv_oa) == 3) ) then 
+                write(*,*) 'ERROR OA : option not allowed (developments required), please set SWT_T_W to 4 in the OA namelist'  
+                if(if_print_node) write(io_unit,*) 'ERRROR OA : option not allowed (to dev.), set SWT_T_W to 4 in the OA namelist'  
+                stop
+            end if                     
 
-         !if  ( swt_t_oa(izv_oa) == 2) kount_user_oa(2,izv_oa) = nt_max-1
-         if  ( swt_t_oa(izv_oa) == 2) kount_user_oa(2,izv_oa) = nt_max
-         if  ( swt_t_oa(izv_oa) == 3) kount_user_oa(2,izv_oa) = kount_user_oa(1,izv_oa)
-       
-         if (swt_t_oa(izv_oa).eq.1.and.kount_user_oa(2,izv_oa).lt.kount_user_oa(1,izv_oa))   then
-              if(if_print_node) write (io_unit,*) "probleme dates choisies t1 > t2" 
-         end if
-         !if (swt_t_oa(izv_oa).eq.1.and.kount_user_oa(1,izv_oa).gt.nt_max-1)                  then 
-         if (swt_t_oa(izv_oa).eq.1.and.kount_user_oa(1,izv_oa).gt.nt_max)                  then 
-              if(if_print_node) write (io_unit,*) "probleme dates choisies t1 > t final"
-         end if
-         if ( swt_t_oa(izv_oa) == 4) then
-            kount_user_oa(1,izv_oa) = kount0
-            ! BLD 2020 change kount_user_oa(2,izv_oa) = nt_max-1
-            kount_user_oa(2,izv_oa) = nt_max
-         endif
+         ! Croco Fast mode
 
-         if(if_print_node) write(io_unit,*) '=> SWT_T_OA option is ',swt_t_oa(izv_oa)
-         if(if_print_node) write(io_unit,*) '   OA analysis over Time steps ',kount_user_oa(1,izv_oa),kount_user_oa(2,izv_oa)
-         if(if_print_node) write(io_unit,*) '   Simu Time step interval including initial and last',kount0,nt_max
-         if  ( (swt_t_oa(izv_oa) == 1) .or. ( swt_t_oa(izv_oa) == 2)  .or. ( swt_t_oa(izv_oa) == 3) ) then 
-             write(*,*) 'ERROR OA : option not allowed (developments required), please set SWT_T_W to 4 in the OA namelist'  
-             if(if_print_node) write(io_unit,*) 'ERRROR OA : option not allowed (to dev.), set SWT_T_W to 4 in the OA namelist'  
-             stop
-         end if                     
+         else if (cnb_oa(izv_oa)==1) then croco_slow_fast
+
+            swt_t_oa(izv_oa) = 4
+            kount_user_oa(1,izv_oa) = kount0(1)
+            kount_user_oa(2,izv_oa) = nt_max(1)
+
+            if(if_print_node) write(io_unit,*) 'Croco Fast mode => SWT_T_OA mandatory value = ',swt_t_oa(izv_oa)
+            if(if_print_node) write(io_unit,*) '   OA analysis over Time steps ',kount_user_oa(1,izv_oa),kount_user_oa(2,izv_oa)
+            if(if_print_node) write(io_unit,*) '   Simu Time step interval including initial and last',kount0(1),nt_max(1)
+
+         endif croco_slow_fast
+
         
          dt_r = DT_W
-         kount_user_oa(3,izv_oa) = max(1,int ( dt_r * unite_oa / dti ))
+         kount_user_oa(3,izv_oa) = max(1,int ( dt_r * unite_oa / dti(cnb_oa(izv_oa)) ))
 
          if(if_print_node) write(io_unit,*) '   OA analysis time discretization ',kount_user_oa(3,izv_oa)
         
          t0_oa(izv_oa) = T0_W
          t0_oa(izv_oa) = t0_oa(izv_oa) * unite_oa
-         kount_user_oa(1,izv_oa) = kount_user_oa(1,izv_oa) + int(t0_oa(izv_oa) / dti) 
+         kount_user_oa(1,izv_oa) = kount_user_oa(1,izv_oa) + int(t0_oa(izv_oa) / dti(cnb_oa(izv_oa)) ) 
 
          if(if_print_node) write(io_unit,*) '   OA analysis starting earlier with T0_W (sec) ',t0_oa(izv_oa)
          if(if_print_node) write(io_unit,*) '   OA analysis over Time steps ',kount_user_oa(1,izv_oa),kount_user_oa(2,izv_oa)
@@ -1333,17 +1443,26 @@
          if ( tv_oa (izv_oa)==20 ) then
             isopycne_analysis = .true.
             if(if_print_node) write (io_unit,*) "....Isopycne analysis requested"
-         else if ( (tv_oa (izv_oa)==99) .or. (tv_oa (izv_oa)==98) ) then
+            if ( cnb_oa(izv_oa)==1 ) then
+                write (*,*) " ERROR OA : isopycne analysis currently only available in slow mode"
+                write (*,*) "            Devevlopments required for fast model mode"
+                stop
+            endif
+         else if ( (tv_oa (izv_oa)==99) .or. (tv_oa (izv_oa)==98) .or. (tv_oa (izv_oa)==97) ) then
             test_analysis = .true.
             if(if_print_node) write (io_unit,*) "....Test analysis requested"
          endif
 
 !.....treatment of "mixed" variable configuration
-!.....HYP : config. ic_r has 1 variable ie, nzvc_oa( nzc_oa_vartyp(ic_r) ) = 1
-         !if ( nzvc_oa( nzc_oa_vartyp(ic_r) ) >= 2 ) then
          if ( nzvc_oa( tv_oa(izv_oa) ) >= 2 ) then
             if(if_print_node) write(io_unit,*) 'Composite configuration : init_configuration_oa'
             call init_configuration_oa(izv_oa)
+         endif
+
+!.....Fast mode analyses requested
+         if ( cnb_oa (izv_oa)==1 ) then
+            if_oa_fast_mode = .true.
+            if(if_print_node) write (io_unit,*) "....Fast mode analyses requested"
          endif
 
       enddo oa_config_loop
@@ -1560,6 +1679,35 @@
        return
        end subroutine var_copy_oa
 
+!------------------------------------------------------------------------------
+! PROCEDURE
+!
+! DESCRIPTION: initialise les noms des axes des scalograms pour XIOS 
+!
+!> @brief initialize scalogram axis names for XIOS outputs :
+!!        scalogram index, scalogram period
+!
+!------------------------------------------------------------------------------
+
+       subroutine init_xios_sclg_dom_grid()
+
+        implicit none
+
+        oa_sclg_grd (0)='oa_sclg_grd'
+        oa_sclg_dgrd(0)='oa_sclg_dgrd'
+        oa_sclg_axis(0)='oa_sclg_axis'
+        oa_sclg_dom (0)='oa_sclg_dom'
+        pervnam     (0)='persl'
+
+        if (nmod_oa>=1) then
+            oa_sclg_grd (1)='oa_sclg_grd_fast'
+            oa_sclg_dgrd(1)='oa_sclg_dgrd_fast'
+            oa_sclg_axis(1)='oa_sclg_axis_fast'
+            oa_sclg_dom (1)='oa_sclg_dom_fast'
+            pervnam     (1)='perfs'
+        endif
+
+       end subroutine init_xios_sclg_dom_grid
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
@@ -1587,7 +1735,10 @@
 !! - B. Lemieux-Dudon
 !!  - Croco version (2020)
 !> @date 2021
-!> @todo BLXD use croco grid definition ?
+!> @todo BLXD 
+!! - use croco grid definition ? 
+!! - finalize/test tv_oa code 100 'comp_'
+!! - Simplification ? Def. tv_oa_sgl(iv) = .true./.false. 
 !------------------------------------------------------------------------------
       subroutine var_grid_oa
     
@@ -1652,12 +1803,32 @@
       tgv3d_oa(20) = 3
       tgvnam_oa(20) = 'isplv'
 
-!.....variable scalogram ubar:
-      tgv_oa(56)   = 1 
+!.....variable density :
+      tgv_oa(21)   = 1 
+      tgv3d_oa(21) = 3
+      tgvnam_oa(21) = 'rnbq_'
+
+!.....scalogram for the fast mode density variable (must be consistent with var_oa rnbq code):
+      tgv_oa(51)   = 1 
+      tgv3d_oa(51) = 3
+      tgvnam_oa(51) = 'scaf_'
+
+!.....scalogram for the fast mode qdmu variable (must be consistent with var_oa rnbq code):
+      tgv_oa(52)   = 2 
+      tgv3d_oa(52) = 3
+      tgvnam_oa(52) = 'scaf_'
+
+!.....scalogram for the zeta variable (must be consistent with var_oa zeta code):
+      tgv_oa(54)   = 1 
+      tgv3d_oa(54) = 2
+      tgvnam_oa(54) = 'scal_'
+
+!.....scalogram for the ubar variable (must be consistent with var_oa ubar code):
+      tgv_oa(56)   = 2 
       tgv3d_oa(56) = 2
       tgvnam_oa(56) = 'scal_'
 
-!.....variable scalogram density:
+!.....scalogram for the density variable (must be consistent with the var_oa density code):
       tgv_oa(61)   = 1 
       tgv3d_oa(61) = 3
       tgvnam_oa(61) = 'scal_'
@@ -1790,7 +1961,8 @@
 
       implicit none
 
-      !> Current model integration iteration
+      !> Current model integration iteration 
+      !! BLXD TODO slow/fast mode see if iis_oa arg needed : currently for history_oa only
       integer, intent(in) :: iic_oa 
 
       !> Grid index range for the analysis of fields passed in argument to the OA module 
@@ -1835,12 +2007,15 @@
       !> Lower and upper index bounds of the 3-Dimensional density array (see if pst%imin,...)
       integer, dimension(3)  ::  rhp_t_lbound, rhp_t_ubound
 
+      !> Local count of the total size of the stock structure (adding slow + fast modes counts if necessary)
+      integer :: imsimult_oa
+
 !.....History file:
 !$OMP MASTER
 #ifdef OA_TRACES
       if(if_print_node) write(io_unit,*) '...OA history file initialization'
 #endif
-      call history_oa(4,-1,-1,-1,-1, -1)
+      call history_oa(4,-1,-1,-1,-1, -1, 0)
 !$OMP END MASTER
 
 !.....initialisation de la structure spatiale:
@@ -1885,7 +2060,8 @@
                         ,h_f_oa                           )
 
       if (scalogram_analysis) then
-        call allocate_tile_sclg_oa( tile, nzv_oa, nper_sclg_max )
+        !call allocate_tile_sclg_oa( tile, nmod_oa, nzv_oa, nper_sclg_max )
+        call allocate_tile_sclg_oa( tile, nmod_oa, nzv_oa )
       endif
 
 !$OMP MASTER
@@ -2007,12 +2183,31 @@
 
           if (nmsimult_oa_max==-99) then
 
-            call count_nmsimult_oa( 0                          & ! ichoix
+            ! SLOW mode
+      
+            imsimult_oa = 0
+ 
+            call count_nmsimult_oa( 0                          & ! ichoix -> cnb_oa = 0 Slow
                                    ,1                          & ! ivar_m
                                    ,kount0                     &
                                    ,nt_max                     &
                                    ,dti                        &
+                                   ,imsimult_oa               &
+                                   ,tile                       &
+                                   ) 
+
+            if ( if_oa_fast_mode ) then
+
+            call count_nmsimult_oa( 1                          & ! ichoix -> cnb_oa = 1 Fast
+                                   ,1                          & ! ivar_m
+                                   ,kount0                     &
+                                   ,nt_max                     &
+                                   ,dti                        &
+                                   ,imsimult_oa               &
                                    ,tile                       ) 
+
+            endif
+
           else
       
             call user_count_nmsimult_oa( ) 
@@ -2047,7 +2242,7 @@
 
 !.....History file:        
 
-      call history_oa(6,-1,-1,-1,-1, tile)
+      call history_oa(6,-1,-1,-1,-1, tile,0)
 
   
 !.....ecriture du fichier de structure:
@@ -2056,7 +2251,7 @@
 
 !.....History file:
 
-      call history_oa(5,-1,-1,-1,-1, tile, iic_oa, nt_max )
+      call history_oa(5,-1,-1,-1,-1, tile, 0, iic_oa, nt_max )
 
 !$OMP END MASTER
 
@@ -2090,8 +2285,13 @@
 
 !$OMP MASTER
       ! Output arrays var?d allocation using pre-calculated dimension nzupd?d_oa
-      ! including the output scalogram option if_mpi_oa=T (mpi not handled by XIOS) 
+      ! For model mode ichoix, use the total number of scalogram nzupd0d_oa(ichoix)
+      ! to allocate the scalogram arrays per0d_cr, (ijk)scal0d_cr, scal0d_cr
+      ! required for outputs when option if_mpi_oa=T (i.e., mpi not handled by XIOS) 
+      !call upd_init_oa(.true.,0)
+      !if ( if_oa_fast_mode ) call upd_init_oa(.true.,1)
       call upd_init_oa(.true.)
+
 !$OMP END MASTER
 ! openMP barrier called few lines later if no CRITICAL region
 
@@ -2104,12 +2304,15 @@
           tile_count_oa=tile_count_oa+1
           ! Here only the last tile will do the job
           last_tile3 : if ( tile_count_oa .eq. ntiles) then 
-             call init_scalogram_oa()
+             call init_scalogram_oa(imd=0)
+             if ( if_oa_fast_mode ) call init_scalogram_oa(imd=1)
            tile_count_oa=0
           end if last_tile3
+
 !$OMP END CRITICAL (init_tile_count_oa)
 
-      call sclg_init_coords(tile)
+      call sclg_init_coords(imd=0,tile=tile)
+      if ( if_oa_fast_mode ) call sclg_init_coords(imd=1,tile=tile)
 
       else scalogram_init
 
@@ -2166,15 +2369,15 @@
 !! @todo
 !------------------------------------------------------------------------------
 !
-      subroutine init_scalogram_oa ()
+      subroutine init_scalogram_oa (imd)
 
-      use module_oa_variables, only : nzv_oa, tupd_oa, tv_sclg_oa
-      use module_oa_periode,  only  : nper_sclg_max, nzc_oa, begc_oa, tvc_oa, tc_oa
+      use module_oa_variables, only : nzv_oa, tupd_oa, tv_sclg_oa, cnb_oa
+      use module_oa_periode,  only  : nzc_oa, begc_oa, tvc_oa, tc_oa
       use module_tile_oa, only      : scl, ntiles
-      use module_oa_time, only      : nmsimult_oa
 
       implicit none
 
+      integer, intent(in)     :: imd
       integer                 :: iv, ic, itile
       integer                 :: isclg_loc, isclg_glo
 
@@ -2184,6 +2387,7 @@
       integer :: tag, request, ierr
 #endif
 
+      ! BLXD TODO allocation elsewhere ?
       if ( .not. allocated(v2locsclg) ) then
         allocate( v2locsclg(1:nzv_oa))
         v2locsclg(1:nzv_oa) = -99 
@@ -2191,108 +2395,110 @@
 #ifdef MPI
 #endif
 #ifndef MPI
-      if ( .not. allocated(index_s_cr) ) then
-        if (nzupd0d_oa>0) then
-        allocate( index_s_cr(0:nzupd0d_oa-1) )
+      if ( .not. allocated(mdg(imd)%index_s_cr) ) then
+        if (nzupd0d_oa(imd)>0) then
+        allocate( mdg(imd)%index_s_cr(0:nzupd0d_oa(imd)-1) )
         else
-        allocate( index_s_cr(0) )
+        allocate( mdg(imd)%index_s_cr(0) )
         endif
       end if
 #else
-      !if (if_mpi_oa) then
-          if ( .not. allocated(index_s_cr) ) then
-            if (nzupd0d_oa>0) then
-            allocate( index_s_cr(0:nzupd0d_oa-1) )
+      ! BLXD Recheck ifdef MPI using index_s_cr only when if_mpi_oa ?
+      !if (if_mpi_oa) then 
+          if ( .not. allocated(mdg(imd)%index_s_cr) ) then
+            if (nzupd0d_oa(imd)>0) then
+            allocate( mdg(imd)%index_s_cr(0:nzupd0d_oa(imd)-1) )
             else
-            allocate( index_s_cr(0) )
+            allocate( mdg(imd)%index_s_cr(0) )
             endif
           end if
       !endif
 #endif
 
+      !if ( imd==0 ) then
       ! Counts the number of scalograms per MPI subprocess if any
-       nsclg_loc = 0 ! nzupd0d_oa global number of scalogram
+      !nsclg_loc(0:1) = 0 ! nzupd0d_oa global number of scalogram
+      nsclg_loc(imd) = 0 ! local number of scalogram
       ! Gives the correspondance from iv to the MPI 
       ! subdomain scalogram index v2locsclg(iv)
-       isclg_loc = 0
-      ! BLXD TODO The itile(-thread) loop order should be  controlled here
+      !endif
+      isclg_loc = 0
+
+      ! BLXD TODO The itile(-thread) loop order should be controlled here
        do itile=1,ntiles
-        nsclg_loc = nsclg_loc + scl(itile)%nsclg
+        nsclg_loc(imd) = nsclg_loc(imd) + scl(itile)%nsclg(imd)
         do iv = 1,nzv_oa
-          ! it is a scalogram analysis
-          if ( tv_sclg_oa(iv) ) then
+          ! it is a scalogram analysis to calculate for model mode imd
+          if ( tv_sclg_oa(iv) .and. (cnb_oa(iv)==imd) ) then
             ! the iv scalogram analysis is included on 
             ! the itile region and therefore on the MPI process
             if ( scl(itile)%v2sclg(iv).ne.-99 ) then
                isclg_loc = isclg_loc + 1
                v2locsclg(iv) = isclg_loc
+               !mdl(imd)%v2locsclg(iv) = isclg_loc
             endif
           endif 
         enddo
        enddo 
-      if ( isclg_loc .ne. nsclg_loc ) then
+      if ( isclg_loc .ne. nsclg_loc(imd) ) then
         write(*,*)'ERROR OA : counts of MPI scalogram mismatch'
         if(if_print_node) write(io_unit,*)'ERROR OA : counts of MPI scalogram mismatch'
         stop
-      else
       endif 
 #ifdef MPI
       ! Only MPI node zero will know the global scal
-      if ( .not. allocated( scal0d_oa) ) then
-        allocate( scal0d_oa(nper_sclg_max,nsclg_loc) )
-        scal0d_oa(:,:)=(0.D0,0.D0)
+      !if ( .not. allocated( scal0d_oa) ) then
+      if ( .not. associated( mdl(imd)%scal0d_oa) ) then
+        allocate( mdl(imd)%scal0d_oa(nper_sclg_max(imd),nsclg_loc(imd)) )
+        mdl(imd)%scal0d_oa(:,:)=(0.D0,0.D0)
       endif 
-      if ( .not. allocated( iscal0d_oa) ) then
-        allocate( iscal0d_oa(nsclg_loc) )
+      if ( .not. allocated( mdl(imd)%iscal0d_oa) ) then
+        allocate( mdl(imd)%iscal0d_oa(nsclg_loc(imd)) )
       endif 
-      if ( .not. allocated( jscal0d_oa) ) then
-        allocate( jscal0d_oa(nsclg_loc) )
+      if ( .not. allocated( mdl(imd)%jscal0d_oa) ) then
+        allocate( mdl(imd)%jscal0d_oa(nsclg_loc(imd)) )
       endif 
-      if ( .not. allocated( kscal0d_oa) ) then
-        allocate( kscal0d_oa(nsclg_loc) )
+      if ( .not. allocated( mdl(imd)%kscal0d_oa) ) then
+        allocate( mdl(imd)%kscal0d_oa(nsclg_loc(imd)) )
       endif 
-      if ( .not. allocated( per0d_oa) ) then
-        allocate( per0d_oa(nper_sclg_max,nsclg_loc) )
-        per0d_oa(:,:)=0.D0
+      !if ( .not. allocated( mdl(imd)%per0d_oa) ) then
+      if ( .not. associated( mdl(imd)%per0d_oa) ) then
+        allocate( mdl(imd)%per0d_oa(nper_sclg_max(imd),nsclg_loc(imd)) )
+        mdl(imd)%per0d_oa(:,:)=0.D0
       endif
-      if ( .not. allocated( index_s_oa ) ) then
-        if (nsclg_loc>0) then
-        allocate( index_s_oa(0:nsclg_loc-1) )
+      if ( .not. allocated( mdl(imd)%index_s_oa ) ) then
+        if (nsclg_loc(imd)>0) then
+        allocate( mdl(imd)%index_s_oa(0:nsclg_loc(imd)-1) )
         else
-        allocate( index_s_oa(0) )
+        allocate( mdl(imd)%index_s_oa(0) )
         endif
       endif 
+! BLXD TODO CHECK nper_sclg_max depnds on imd ? calc. from nper_sclg(1:nzv_oa)
       if ( .not. allocated( buff2r_s) ) then
-        allocate( buff2r_s(nper_sclg_max) )
+        allocate( buff2r_s(nper_sclg_max(imd)) )
       endif
       if ( .not. allocated( buff2r_r) ) then
-        allocate( buff2r_r(nper_sclg_max) )
+        allocate( buff2r_r(nper_sclg_max(imd)) )
       endif
 #endif 
       isclg_loc  = 0
       isclg_glo  = 0
       do iv = 1,nzv_oa
-         ! it is a scalogram analysis
-         if ( tv_sclg_oa(iv) ) then
+         ! it is a scalogram analysis for model mode imd
+         if ( tv_sclg_oa(iv) .and. (cnb_oa(iv)==imd) ) then
               isclg_glo = isclg_glo + 1
               !sclg2v(isclg_glo) = iv
 #ifdef MPI
             if ( v2locsclg(iv).ne.-99 ) then
+!            if ( mdl(imd)%v2locsclg(iv).ne.-99 ) then
                ! Local mpi process scalogram index_s_oa only allocated ifMPI
                isclg_loc = isclg_loc + 1
-               index_s_oa(isclg_loc-1) =  tupd_oa(iv)
+               mdl(imd)%index_s_oa(isclg_loc-1) =  tupd_oa(iv)
             endif
-             !eventually to test index_s_cr values and local values on mynode stored in another array ? 
-             !if (isclg_glo <= nzupd0d_oa) then
-             !   if (if_mpi_oa) index_s_cr(isclg_glo-1) =  tupd_oa(iv)
-             !else
-             !   if(if_print_node) write(io_unit,*)'ERROR OA : counts of tot. MPI scalogram mismatch for XIOS index_s_cr axis'
-             !   stop
-             !endif
 #else
             
-             if (isclg_glo <= nzupd0d_oa) then
-                index_s_cr(isclg_glo-1) =  tupd_oa(iv)
+             if (isclg_glo <= nzupd0d_oa(imd)) then
+                mdg(imd)%index_s_cr(isclg_glo-1) =  tupd_oa(iv)
              else
                 write(*,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
                 if(if_print_node) write(io_unit,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
@@ -2301,12 +2507,19 @@
 #endif
          endif 
       enddo
-      if ( isclg_loc .ne. nsclg_loc ) then
+#ifdef MPI
+      if ( isclg_loc .ne. nsclg_loc(imd) ) then
         write(*,*)'ERROR OA : counts of MPI scalogram mismatch for XIOS index_s_oa axis'
         if(if_print_node) write(io_unit,*)'ERROR OA : counts of MPI scalogram mismatch for XIOS index_s_oa axis'
         stop
       endif 
-
+#else
+      if ( isclg_glo .ne. nzupd0d_oa(imd) ) then
+        write(*,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
+        if(if_print_node) write(io_unit,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
+        stop
+      endif 
+#endif
 
 #ifdef MPI
 
@@ -2322,17 +2535,19 @@
             stop
         endif
         ! isclg_beg is the global position of the 1st scalogram hold by the MPI process mynode
+        !  BLXD Next MPI exchange REQUIRED ifdef MPI + if_mpi_oa .true./.false.
         ! isclg_beg indexing regardless the real global scalogram index hold by arrays index_s_* 
         ! isclg_beg of mynode proc. = isclg_beg of proc (mynode-1) + nsclg_loc of proc. (mynode-1)
         if ( buff_r(2) > 0 ) then
             !isclg_beg = buff_r(1) + buff_r(2) - 1
-            isclg_beg = buff_r(1) + buff_r(2)
+            isclg_beg(imd) = buff_r(1) + buff_r(2)
         else 
-            isclg_beg = buff_r(1)
+            isclg_beg(imd) = buff_r(1)
         endif
+        !  BLXD Next MPI exchange REQUIRED ifdef MPI + if_mpi_oa .true.
         !if (if_mpi_oa) then
         tag=tag+1           ! rank 1 receiving : 1+0 + 1 = 2, rank 2 receiving : 1+2 + 1=4,...
-        call MPI_Recv(index_s_cr,nzupd0d_oa, MPI_INTEGER, mynode-1, tag, comm, MPI_STATUS_IGNORE, ierr)
+        call MPI_Recv(mdg(imd)%index_s_cr,nzupd0d_oa(imd), MPI_INTEGER, mynode-1, tag, comm, MPI_STATUS_IGNORE, ierr)
         if (ierr/=0) then
             print*,'ERROR OA : MPI_Recv index_s_cr mynode(<-mynode-1)/tag ',mynode,tag
             stop
@@ -2345,9 +2560,9 @@
         ! isclg_beg is the global position of the 1st scalogram hold by the MPI process mynode
         ! MPI process zero sends this index and the local MPI process # of scalograms
         tag=mynode+mynode+1 ! rank 0 sending : 0+1=1
-        isclg_beg=0
-        buff_s(1) = isclg_beg  
-        buff_s(2) = nsclg_loc
+        isclg_beg(imd)=0
+        buff_s(1) = isclg_beg(imd)  
+        buff_s(2) = nsclg_loc(imd)
         if (snb) then
             call MPI_ISSend(buff_s, 2, MPI_INTEGER, mynode+1, tag, comm, request, ierr)
             if (ierr/=0) then
@@ -2362,7 +2577,7 @@
             endif
         endif
         !if (if_mpi_oa) then
-        index_s_cr( isclg_beg : isclg_beg + nsclg_loc - 1) = index_s_oa( 0 : nsclg_loc - 1)
+        mdg(imd)%index_s_cr( isclg_beg(imd) : isclg_beg(imd) + nsclg_loc(imd) - 1) = mdl(imd)%index_s_oa( 0 : nsclg_loc(imd) - 1)
         !endif
         if (snb) then
             CALL MPI_Wait(request, MPI_STATUS_IGNORE, ierr)
@@ -2373,7 +2588,7 @@
         endif
         !if (if_mpi_oa) then
         tag=tag+1           ! rank 0 sending : 0+1 + 1 = 2
-        call MPI_Send(index_s_cr,nzupd0d_oa, MPI_INTEGER, mynode+1, tag, comm, ierr)
+        call MPI_Send(mdg(imd)%index_s_cr,nzupd0d_oa(imd), MPI_INTEGER, mynode+1, tag, comm, ierr)
         if (ierr/=0) then
             print*,'ERROR OA : MPI_Send index_s_cr mynode(->mynode+1)/tag ',mynode,tag
             stop
@@ -2384,8 +2599,8 @@
       send2rankplus1 : if ( (mynode>=1) .and. (mynode<=comm_size-2) ) then ! 0->1,...,6->7 rank sending are [0,1,..,6]
         request=-98
         tag=mynode+mynode+1 ! rank 1 sending : 1+2=3, rank 2 sending : 2+3=5, ..., rank 6 sending : 6+7=13 
-        buff_s(1) = isclg_beg  
-        buff_s(2) = nsclg_loc
+        buff_s(1) = isclg_beg(imd)  
+        buff_s(2) = nsclg_loc(imd)
         if (snb) then
             call MPI_ISSend(buff_s,2, MPI_INTEGER, mynode+1, tag, comm, request,ierr)
             if (ierr/=0) then
@@ -2400,7 +2615,7 @@
             endif
         endif
         !if (if_mpi_oa) then
-        index_s_cr( isclg_beg : isclg_beg + nsclg_loc - 1) = index_s_oa( 0 : nsclg_loc - 1)
+        mdg(imd)%index_s_cr( isclg_beg(imd) : isclg_beg(imd) + nsclg_loc(imd) - 1) = mdl(imd)%index_s_oa( 0 : nsclg_loc(imd) - 1)
         !endif
         if (snb) then
             CALL MPI_Wait(request, MPI_STATUS_IGNORE, ierr)
@@ -2411,7 +2626,7 @@
         endif
         !if (if_mpi_oa) then
         tag=tag+1           ! rank 1 sending : 1+2 + 1 = 4, rank 2 : 6,...
-        call MPI_Send(index_s_cr,nzupd0d_oa, MPI_INTEGER, mynode+1, tag, comm, ierr)
+        call MPI_Send(mdg(imd)%index_s_cr,nzupd0d_oa(imd), MPI_INTEGER, mynode+1, tag, comm, ierr)
         if (ierr/=0) then
             print*,'ERROR OA : MPI_Send index_s_cr mynode(->mynode+1)/tag ',mynode,tag
             stop
@@ -2427,7 +2642,7 @@
           stop
       endif
       ! If global index_s_cr needed
-      call MPI_Bcast(index_s_cr,nzupd0d_oa, MPI_INTEGER, comm_size-1, comm, ierr)
+      call MPI_Bcast(mdg(imd)%index_s_cr,nzupd0d_oa(imd), MPI_INTEGER, comm_size-1, comm, ierr)
       ! isclg_glo = 0
       ! cfg_loop2 : do ic = 1,nzc_oa
       ! var_loop2 : do iv = begc_oa(ic),begc_oa(ic)-1
@@ -2637,7 +2852,7 @@
              io_nodoa = set_io_nodoa(iv_g,mynode,6,5) ! [5/6](odd/even-iv)000+mynode
          end if
 
-         if (flag_s.eq..false.) then
+         if (flag_s .eqv. .false.) then
 
 
 !.... Check user values : openMP tile-thread modifying openMP SHARED module var. implicit synchro END SINGLE
@@ -2794,8 +3009,9 @@
                 if ( tv_sclg_oa(iv_g) ) then
 !.................. BLXD Scalogram Local tile(-thread)/MPI process counts 
 !                        + convert iv_g to tile scalogram index
-                    pscl%nsclg        =  pscl%nsclg + 1
-                    pscl%v2sclg(iv_g) =  pscl%nsclg
+!                        + Handilng model mode slow/fast
+                    pscl%nsclg( cnb_oa(iv_g) ) =  pscl%nsclg( cnb_oa(iv_g) ) + 1
+                    pscl%v2sclg(iv_g)          =  pscl%nsclg( cnb_oa(iv_g) )
                 endif
                endif
 
@@ -2898,7 +3114,7 @@
 !!      either by XIOS or by MPI internal OA instructions.
 !!  - Implementation of the Heisenberg theoritical and numerical uncertainties. 
 !!    Onging (2021). 
-!
+!!  - Model temporal parameters for slow and fast modes (see pointer pdti and cnb_oa)
 !> @date 2021
 !> @todo  BLXD
 !! - remove goto syntax ? intent attribute ?
@@ -2915,13 +3131,16 @@
 
       implicit none
 
-      double precision, intent(in) :: dti                                !< Integration time step
+      double precision, dimension(0:nmod_oa), intent(in), target :: dti                !< Integration time step
+      double precision, pointer                    :: pdti
 
-      integer                                                         &
+      integer ::                                                      &
          iv_p                                                         &  !< Variable index
-        ,iv1_p
+        ,iv1_p                                                        &                                                        
+        ,imd                                                          &
+        ,itmp
 
-      real                                                            &
+      real ::                                                         &
          ip_p
 
       real ::                                                         &   
@@ -2958,8 +3177,11 @@
  
       nzvp_oa = 0
 
+      pdti    => null()
+
 !.....precalcul des periodes blxd cas discret (1 ou +s per par var iv_p) ou integre :
       iv_loop1 : do iv_p = 1, nzv_oa
+
 
 ! cas resolution reelle
         if (per_oa(3,iv_p).eq.-99.*unite_oa) then
@@ -3008,7 +3230,9 @@
 !.....precalcul des resolutions:
 
 
-      do iv_p = 1 , nzv_oa
+      iv_loop2 : do iv_p = 1 , nzv_oa
+
+        pdti    => dti( cnb_oa(iv_p) )
 
 !.......counting # of periods for scalogram variables
         nper_sclg(iv_p) = 0
@@ -3033,15 +3257,15 @@
             if ( tv_sclg_oa(iv_p) ) then
                 ! BLXD If scalogram better to calc. resolution using the smallest period
                 !      PERV_W(1):PERV_W(2) same namelist => NZPT_PER_OA identical
-                if ( MOD( perv_oa (1,begvp_oa(iv_p)), dti) /= 0 ) then   ! iv1_p replaced by begvp_oa(iv_p)
+                if ( MOD( perv_oa (1,begvp_oa(iv_p)), pdti) /= 0 ) then   ! iv1_p replaced by begvp_oa(iv_p)
                     resv_oa (iv1_p)   = max ( (  int(                         &
-                                     perv_oa (1,begvp_oa(iv_p))  /   dti      &
+                                     perv_oa (1,begvp_oa(iv_p))  /   pdti      &
                                       ) + 1 )                                 &
                                    / nzpt_per_oa (iv_p)                       &
                                              , 1 )      
                 else
                     resv_oa (iv1_p)   = max ( (  int(                         &
-                                     perv_oa (1,begvp_oa(iv_p))  /   dti      &
+                                     perv_oa (1,begvp_oa(iv_p))  /   pdti      &
                                       ) )                                     &
                                    / nzpt_per_oa (iv_p)                       &
                                              , 1 )      
@@ -3049,15 +3273,15 @@
 
             else
 
-                if ( MOD( perv_oa (1,iv1_p), dti) /= 0 ) then
+                if ( MOD( perv_oa (1,iv1_p), pdti) /= 0 ) then
                     resv_oa (iv1_p)   = max ( (  int(                         &
-                                     perv_oa (1,iv1_p)  /   dti               &
+                                     perv_oa (1,iv1_p)  /   pdti               &
                                       ) + 1 )                                 &
                                    / nzpt_per_oa (iv_p)                       &
                                              , 1 )      
                 else
                     resv_oa (iv1_p)   = max ( (  int(                         &
-                                     perv_oa (1,iv1_p)  /   dti               &
+                                     perv_oa (1,iv1_p)  /   pdti               &
                                       ) )                                     &
                                    / nzpt_per_oa (iv_p)                       &
                                              , 1 )      
@@ -3084,10 +3308,10 @@
             ! a) the smallest period of the integrated period range is used
             !   to calculate the resolution in terms of number of time steps 
             ! b) the largest period to calculate the convolution window
-            if ( MOD( perv_oa (1,begvp_oa(iv_p)), dti) /= 0 ) then
+            if ( MOD( perv_oa (1,begvp_oa(iv_p)), pdti) /= 0 ) then
                 resv_oa (iv1_p)   = max ( (  int(                         &
                                  perv_oa (1,begvp_oa(iv_p))               & 
-                               /   dti                                    &
+                               /   pdti                                    &
                                   ) + 1 )                                 &
                                / nzpt_per_oa (iv_p)                       &
                                           , 1)                            
@@ -3095,7 +3319,7 @@
             else
                 resv_oa (iv1_p)   = max ( (  int(                         &
                                  perv_oa (1,begvp_oa(iv_p))               &
-                               /   dti                                    &
+                               /   pdti                                    &
                                   ) )                                     &
                                / nzpt_per_oa (iv_p)                       &
                                          , 1 )      
@@ -3105,10 +3329,23 @@
            endif single_discrete_per
            endif wavelet
         enddo
-       enddo
 
-       nper_sclg_max = maxval( nper_sclg(:) )
+          pdti    => null()
 
+       enddo iv_loop2
+
+       if ( scalogram_analysis) then
+        ! For each model mode Max # of scalogram periods (outputs)
+        model_mode_loop : do imd=0,nmod_oa
+            itmp=0
+            iv_loop3 : do iv_p = 1 , nzv_oa
+               if ( tv_sclg_oa(iv_p) .and. (cnb_oa(iv_p)==imd) ) itmp = max( itmp, nper_sclg(iv_p) )
+            enddo iv_loop3
+            nper_sclg_max(imd) = itmp
+            ! Slow mode imd=0, Fast mode imd=1
+            if ( .not. if_oa_fast_mode ) exit model_mode_loop
+        enddo model_mode_loop
+       endif
       return
 
       end subroutine var_per_oa
@@ -3229,6 +3466,7 @@
 !!  - Croco-OnlineA module interface, 1st version, Spring 2020
 !!  - Toward Croco Tile-thread compliant OA version (2021)
 !!  - Development of scalogram analysis (ocean field time series analysis)
+!!  - Model temporal parameters for slow and fast modes (see pointer pdti and cnb_oa)
 !> @date 2021
 !> @todo BLXD
 !------------------------------------------------------------------------------
@@ -3242,9 +3480,12 @@
 
       implicit none
 
-      double precision, intent(in) :: dti                                !< Integration time step
-      integer, intent(in)          :: kount0,                         &  !< First simulation iteration
-                                      nt_max                             !< Last integration iteration
+      double precision, dimension(0:nmod_oa), intent(in), target :: dti                                !< Integration time step
+      integer, dimension(0:nmod_oa)         , intent(in), target :: kount0                          &  !< First simulation iteration
+                                                     ,nt_max                             !< Last integration iteration
+
+      double precision, pointer :: pdti
+      integer, pointer          :: pkount0, pnt_max
 
       logical, intent(in) :: flag_t
 
@@ -3263,9 +3504,16 @@
       nzvt_oa  = 0
       ncomptt  = 0
 
+      pdti    => null()
+      pnt_max => null()
+      pkount0 => null()
 
 !---- >boucle sur toutes les variables:
       loop_on_variables : do iv_t = 1, nzv_oa
+
+          pdti    => dti( cnb_oa(iv_t) )
+          pkount0 => kount0( cnb_oa(iv_t) )
+          pnt_max => nt_max( cnb_oa(iv_t) )
 
 ! #BLXD TODO simplify those variables
           if_first_rec_oa(iv_t)=0
@@ -3312,7 +3560,7 @@
                if (perv_oa(1,ip_t).eq.0.) then
                   dkount_tot_t    = 0
                else
-                  dkount_tot_t    = int(perv_oa(1,ip_t)/2./dti-0.5)+1
+                  dkount_tot_t    = int(perv_oa(1,ip_t)/2./pdti-0.5)+1
                endif
             endif   
 
@@ -3339,24 +3587,24 @@
                   ! If scalogram we use the same convolution window for all the periods
                   ! taking the limiting one which is the largest period conv. wind
                   if ( .not. tv_sclg_oa(iv_t)  ) then
-                      if ( MOD( perv_oa (1,ip_t), dti) /= 0 ) then  
+                      if ( MOD( perv_oa (1,ip_t), pdti) /= 0 ) then  
                       dkount_tot_t    = (int(                             & ! BLXD original
-                           perv_oa (1,ip_t)  /   dti                      &
+                           perv_oa (1,ip_t)  /   pdti                      &
                            ) + 1)                                         &
                            * delta_t_oa(iv_t)
                       else 
                         dkount_tot_t    = int(                            & ! MOD = 0
-                            perv_oa (1,ip_t) * delta_t_oa(iv_t) /   dti )                             
+                            perv_oa (1,ip_t) * delta_t_oa(iv_t) /   pdti )                             
                       endif 
                   else  ! Salogram con wind from largest period associated to iv_t
-                      if ( MOD( perv_oa (1,ip2_t), dti) /= 0 ) then
+                      if ( MOD( perv_oa (1,ip2_t), pdti) /= 0 ) then
                       dkount_tot_t    = (int(                             &
-                           perv_oa (1,ip2_t)  /   dti                     &
+                           perv_oa (1,ip2_t)  /   pdti                     &
                            ) + 1)                                         &
                            * delta_t_oa(iv_t)
                       else 
                         dkount_tot_t    = int(                            &
-                            perv_oa (1,ip2_t) * delta_t_oa(iv_t) /   dti )                             
+                            perv_oa (1,ip2_t) * delta_t_oa(iv_t) /   pdti )                             
                       endif 
                   endif
                else
@@ -3369,14 +3617,14 @@
                   ! For integrated period we use the same convolution window for all the periods
                   ! taking the limiting one which is the largest period conv. wind
                   ! since ip_t loop goes from ip2_t to ip2_t
-                   if ( MOD( perv_oa (1,ip_t), dti) /= 0 ) then
+                   if ( MOD( perv_oa (1,ip_t), pdti) /= 0 ) then
                    dkount_tot_t    = (int(                             & ! BLXD original
-                        perv_oa (1,ip_t)  /   dti                      &
+                        perv_oa (1,ip_t)  /   pdti                      &
                         ) + 1)                                         &
                         * delta_t_oa(iv_t)
                    else 
                      dkount_tot_t    = int(                            & ! MOD=0
-                         perv_oa (1,ip_t) * delta_t_oa(iv_t) /   dti )                             
+                         perv_oa (1,ip_t) * delta_t_oa(iv_t) /   pdti )                             
                    endif 
                endif
 
@@ -3427,10 +3675,10 @@
                    !    .or.kountv_oa(2,nzvt_oa).lt.kount0             &
                    !    .or.kountv_oa(2,nzvt_oa).gt.nt_max-1 )             &
                    !    then
-                   convwind_out_of_simulation_1 : if (    kountv_oa(1,nzvt_oa).lt.kount0  & 
-                       .or.kountv_oa(1,nzvt_oa).gt.nt_max                                 &
-                       .or.kountv_oa(2,nzvt_oa).lt.kount0                                 &
-                       .or.kountv_oa(2,nzvt_oa).gt.nt_max )                               &
+                   convwind_out_of_simulation_1 : if (    kountv_oa(1,nzvt_oa).lt.pkount0  & 
+                       .or.kountv_oa(1,nzvt_oa).gt.pnt_max                                 &
+                       .or.kountv_oa(2,nzvt_oa).lt.pkount0                                 &
+                       .or.kountv_oa(2,nzvt_oa).gt.pnt_max )                               &
                        then
 
 
@@ -3474,13 +3722,13 @@
                      ! after updv_oa can be found true
 
                      if (updv_oa(iv_t).eq.1) then
-                      if (kountv_oa(1,nzvt_oa).lt.kount0) then
-                       kountv_oa(1,nzvt_oa) = kount0
-                       kountv_oa(2,nzvt_oa) = kount0 + 2*dkount_tot_t
+                      if (kountv_oa(1,nzvt_oa).lt.pkount0) then
+                       kountv_oa(1,nzvt_oa) = pkount0
+                       kountv_oa(2,nzvt_oa) = pkount0 + 2*dkount_tot_t
                       endif
-                      if (kountv_oa(2,nzvt_oa).gt.nt_max-1) then
-                       kountv_oa(1,nzvt_oa) = nt_max     - 2*dkount_tot_t
-                       kountv_oa(2,nzvt_oa) = nt_max
+                      if (kountv_oa(2,nzvt_oa).gt.pnt_max-1) then
+                       kountv_oa(1,nzvt_oa) = pnt_max     - 2*dkount_tot_t
+                       kountv_oa(2,nzvt_oa) = pnt_max
                       endif
                      endif
 
@@ -3505,11 +3753,11 @@
                nzvt_oa             = nzvt_oa + 1
 
                if (flag_t) then
-                kountv_oa(1,nzvt_oa) = nt_max-1                       &
-                    - int ( int( real(nt_max-1-kount0+1) * dti        &
+                kountv_oa(1,nzvt_oa) = pnt_max-1                       &
+                    - int ( int( real(pnt_max-1-pkount0+1) * pdti        &
                            / perv_oa(1,ip_t) )                        &
-                         * perv_oa(1,ip_t)/dti ) + 1             
-                kountv_oa(2,nzvt_oa) = nt_max-1  
+                         * perv_oa(1,ip_t)/pdti ) + 1             
+                kountv_oa(2,nzvt_oa) = pnt_max-1  
                 per_t2p_oa (nzvt_oa) = ip_t
                 ! One single Fourier analysis using all the simulation window for integration  
                 comptt(iv_t)       = 1
@@ -3525,17 +3773,17 @@
             if (swt_t_oa(iv_t).eq.2) then
                nzvt_oa             = nzvt_oa + 1
                if (flag_t) then
-                kountv_oa(1,nzvt_oa) = nt_max - 1 - 2*dkount_tot_t
-                kountv_oa(2,nzvt_oa) = nt_max - 1      
+                kountv_oa(1,nzvt_oa) = pnt_max - 1 - 2*dkount_tot_t
+                kountv_oa(2,nzvt_oa) = pnt_max - 1      
 ! BLXD TODO test with change : nt_max - 1  to nt_max
                 !kountv_oa(1,nzvt_oa) = nt_max - 2*dkount_tot_t
                 !kountv_oa(2,nzvt_oa) = nt_max      
                 per_t2p_oa (nzvt_oa)  = ip_t
 ! BLXD TODO change nt_max - 1  to nt_max in the if instruction as well
-                if (    kountv_oa(1,nzvt_oa).lt.kount0                 &
-                    .or.kountv_oa(1,nzvt_oa).gt.nt_max-1               &
-                    .or.kountv_oa(2,nzvt_oa).lt.kount0                 &
-                    .or.kountv_oa(2,nzvt_oa).gt.nt_max-1 )             &
+                if (    kountv_oa(1,nzvt_oa).lt.pkount0                 &
+                    .or.kountv_oa(1,nzvt_oa).gt.pnt_max-1               &
+                    .or.kountv_oa(2,nzvt_oa).lt.pkount0                 &
+                    .or.kountv_oa(2,nzvt_oa).gt.pnt_max-1 )             &
                     then
                   kountv_oa(1,nzvt_oa) = -9999
                   kountv_oa(2,nzvt_oa) = -9999
@@ -3559,10 +3807,10 @@
                kountv_oa(1,nzvt_oa) = kount_user_oa(1,iv_t) - dkount_tot_t
                kountv_oa(2,nzvt_oa) = kount_user_oa(1,iv_t) + dkount_tot_t
                per_t2p_oa (nzvt_oa) = ip_t
-               if (    kountv_oa(1,nzvt_oa).lt.kount0                  &
-                    .or.kountv_oa(1,nzvt_oa).gt.nt_max - 1                 &
-                    .or.kountv_oa(2,nzvt_oa).lt.kount0                 &
-                    .or.kountv_oa(1,nzvt_oa).gt.nt_max - 1 )               &
+               if (    kountv_oa(1,nzvt_oa).lt.pkount0                  &
+                    .or.kountv_oa(1,nzvt_oa).gt.pnt_max - 1                 &
+                    .or.kountv_oa(2,nzvt_oa).lt.pkount0                 &
+                    .or.kountv_oa(1,nzvt_oa).gt.pnt_max - 1 )               &
                     then
                   kountv_oa(1,nzvt_oa) = -9999
                   kountv_oa(2,nzvt_oa) = -9999
@@ -3587,6 +3835,9 @@
 
       enddo loop_on_variables
 
+      pdti    => null()
+      pnt_max => null()
+      pkount0 => null()
 
       return
       end subroutine var_time_oa
@@ -4141,7 +4392,9 @@
                           ,kount0                          &
                           ,nt_max                          &
                           ,dti                             &
-                          ,tile                            ) 
+                          ,imsimult_oa                     &
+                          ,tile                            &
+                          ) 
 
       use module_tile_oa, only : st, tile_space_str, ntiles
       use module_oa_variables
@@ -4159,11 +4412,14 @@
       integer, intent(in), optional :: ivar_m
 
       !> Time integration step
-      double precision, intent(in) :: dti
+      double precision, dimension(0:nmod_oa), intent(in), target :: dti
 
       !> First and last simulation iteration index
-      integer, intent(in) :: nt_max, kount0                                        
+      integer, dimension(0:nmod_oa), intent(in), target :: nt_max, kount0                                        
 
+      !> Count of total size of the stock structure
+      integer, intent(inout) :: imsimult_oa
+      
       type(tile_space_str), pointer :: pst => null()
 
       !TODO declare flag here if only needed here
@@ -4184,11 +4440,15 @@
         ,lpreso_m                                                     &
         ,lpconw_m 
 
-      !> For the model integration iteration
-      integer :: iic_oa 
+      !> Model integration parameter (slow and fast mode)
+      double precision, pointer :: pdti
+      integer, pointer          :: pkount0, pnt_max
+
+      !> dummy time step index counting from pkount0 to pnt_max
+      integer                   :: iic_oa 
 
       !> Count of total size of the stock structure / process IO
-      integer :: imsimult_oa, io_nodoa
+      integer :: io_nodoa
 
       !> Tile count
       integer :: itile
@@ -4233,8 +4493,20 @@
 !     conf ic_m, var iv_m , and specific conv. window lt_m
 !     It is independent of the tile which is related to the 2D horizontal domain
 !     "tile-decomposition"
-      imsimult_oa = 0 
-      nmsimult_oa = 0 
+!     Since we can now call the online analysis for the slow and fast mode
+!     we must call count_nmsimult_oa sequentially : once with ichoix=0 for the slow mode
+!     and once with ichoix=1 for the fast mode (if the flag if_fast_mode is set to true)
+!     The routine argument imsimult_oa cumulates the slow and fasr mode counts
+
+      nmsimult_oa = imsimult_oa 
+
+      if (if_print_node) then
+        if (ichoix==0) then
+            write(io_unit,*)'... Bef SLOW OA WIND COUNT tile/imsimult/nmsimult_oa = ',tile,imsimult_oa,nmsimult_oa
+        else if (ichoix==1) then
+            write(io_unit,*)'... Bef FAST OA WIND COUNT tile/imsimult/nmsimult_oa = ',tile,imsimult_oa,nmsimult_oa
+        endif
+      endif
 
 !.... For each conf ic_m, var iv_m , and specific conv. window lt_m
 !     One can check the # of analysed spatial points i,j,k 
@@ -4249,10 +4521,22 @@
 !      pst => st(tile)
 !     endif
 
-!.....flag variable composite 
+!.....flag variable composite : move thise command below loop iv_m
       ifl_test_composite = .true.      
 
-      loop_timestepping : do iic_oa = kount0, nt_max
+!.....Select the correct model mode thanks to ichoix argument
+!     Slow mode ichoix=0, Fast mode ichoix=1
+      
+      if ( ( ichoix == 0 ) .or. ( ichoix == 1 ) ) then      
+          pdti    => dti   ( ichoix  )
+          pkount0 => kount0( ichoix  )
+          pnt_max => nt_max( ichoix  )
+      else
+        write(*,*) 'ERROR OA : dev needed to call count_nmsimult_oa with ichoix arg value other than 0 or 1'
+        stop
+      endif
+
+      loop_timestepping : do iic_oa = pkount0, pnt_max
 
       loop_ic : do ic_m = 1 , nzc_oa
       loop_iv : do iv_m = begc_oa(ic_m),begc_oa(ic_m+1)-1
@@ -4264,6 +4548,8 @@
 !        endif
 !         if ( (ichoix.ge.0.or.ifl_test_composite) .and. ( tv_oa(iv_m).ne.20) ) then
 
+
+   
 !---------------------------------------------------------------------------
 !.....periodes discretisees:
 !---------------------------------------------------------------------------
@@ -4287,8 +4573,14 @@
             .and.               ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )                                           &
                              ) then
 
-! #BLXD ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 ) = calling main_oa for particular variable
-
+!........Slow/Fast mode variables are screened thanks to ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )
+         if ( pdti /= dti( cnb_oa(iv_m ) ) ) then
+            write(*,*) &
+     &      'ERROR OA : count_nmsimult_oa discrete period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
+            if(if_print_node)write(io_unit,*) &
+     &      'ERROR OA : count_nmsimult_oa discrete period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
+            stop
+         endif
 
 !........allocation if necessary (if variable isn't allocated yet, it is done.., at user-specified kount):
 
@@ -4317,8 +4609,8 @@
                    ,psi_p2s_oa(                                                 &
                                      tpsi_oa(iv_m)                              &         
                                     ,perv_oa(1,per_t2p_oa(lt_m)),fb_oa,fc_oa )  &                                     
-                   ,real(kpt_m)* dti                                            &
-                   ,dti*resv_oa(per_t2p_oa(lt_m))                               &           
+                   ,real(kpt_m)* pdti                                            &
+                   ,pdti*resv_oa(per_t2p_oa(lt_m))                               &           
                    ,fb_oa,fc_oa  ) 
 
 !........Heisenberg box
@@ -4335,8 +4627,8 @@
                    ,psi_p2s_oa(                                                 &
                                      tpsi_oa(iv_m)                              &         
                                     ,perv_oa(1,per_t2p_oa(lt_m)),fb_oa,fc_oa )  &                                     
-                   ,real(kpt_m)* dti                                            &
-                   ,dti*resv_oa(per_t2p_oa(lt_m))                               &           
+                   ,real(kpt_m)* pdti                                            &
+                   ,pdti*resv_oa(per_t2p_oa(lt_m))                               &           
                    ,fb_oa, fc_oa, from_cplx_fun  )  
 
             if ( abs( norm_r(1) - norm_r(2) ) > myprec2 ) then
@@ -4355,7 +4647,7 @@
                                       ,t0_psi=t0                    &
                                       ,sq_dt0_psi=sq_dt0            &
                                       ,kpt=kpt_m                    &
-                                      ,dti=dti                      &
+                                      ,dti=pdti                      &
                                       ,norm=norm                    &
                                       ,ind=lp_m ) 
             endif if_mrlt_psi_dp1
@@ -4391,14 +4683,18 @@
            !enddo  horizontal_space_loop
            !endif
 
-       else if ( (kountv_oa(2,lt_m).le.iic_oa.or.iic_oa.eq.nt_max)      &
-     &        .and.(ichoix.eq.cnb_oa(iv_m).or.ichoix.lt.0)               &
-     &        .and.(ichoix.eq.des_oa(iv_m)                               &
-     &        .or.des_oa(iv_m).eq.0)                                     &
-     &                        ) then
+       else if (  ( (kountv_oa(2,lt_m)<=iic_oa).or.(iic_oa==pnt_max)     )   &
+            .and. ( (cnb_oa(iv_m)==ichoix)     .or.(ichoix<0)           )    &
+            .and. ( (des_oa(iv_m)==ichoix)     .or.(des_oa(iv_m)==0)    )    &
+                              ) then tstp_match_convol_window
+       !else if ( (kountv_oa(2,lt_m).le.iic_oa.or.iic_oa.eq.pnt_max)       &
+       !       .and. ( (cnb_oa(iv_m)==ichoix).or.(ichoix<0)           )    &
+       !       .and. ( (des_oa(iv_m)==ichoix).or.(des_oa(iv_m)==0)    )    &
+       !                       ) then tstp_match_convol_window
             if ( tallocated_oa(lt_m)==lt_m) then
                if ( imsimult_oa .lt. 1 ) then
-                write(io_unit,*)'ERROR : isimult_oa cannot be samller than 1 ',mynode
+                write(io_unit,*)'ERROR : isimult_oa cannot be smaller than 1 ',mynode
+                stop
                endif
 !..............Updating current count of total opened conv window
 
@@ -4416,7 +4712,7 @@
                lp1_m          = begvp_oa(iv_m)         ! scalog. smallest per used for reso  
                lp2_m          = begvp_oa(iv_m+1) -1    ! scalog. largest per  used for conv window
 
-               ut_m           = dble((kountv_oa(1,lt_m)+kountv_oa(2,lt_m))/2.)*dti
+               ut_m           = dble((kountv_oa(1,lt_m)+kountv_oa(2,lt_m))/2.)*pdti
                t0_theo(lp_m)  = ut_m   ! BLXD eliminate ut_m
 
                std_dt0_theo = morlet_psi_dt0_oa(                                                           & 
@@ -4442,10 +4738,10 @@
                 lpreso_m = lp_m ; lpconw_m = lp_m
                endif
 
-               if ( MOD( perv_oa (1,lpconw_m), dti) /= 0 ) then ! for resv_oa lp_m would works, see var_per_oa
-                kount_tot_hlf = int( delta_t_oa(iv_m)*( int( perv_oa (1,lpconw_m)/ dti ) + 1 ) / resv_oa(lpreso_m) )
+               if ( MOD( perv_oa (1,lpconw_m), pdti) /= 0 ) then ! for resv_oa lp_m would works, see var_per_oa
+                kount_tot_hlf = int( delta_t_oa(iv_m)*( int( perv_oa (1,lpconw_m)/ pdti ) + 1 ) / resv_oa(lpreso_m) )
                else
-                kount_tot_hlf = int( delta_t_oa(iv_m)*  int( perv_oa (1,lpconw_m)/ dti )       / resv_oa(lpreso_m) )
+                kount_tot_hlf = int( delta_t_oa(iv_m)*  int( perv_oa (1,lpconw_m)/ pdti )       / resv_oa(lpreso_m) )
                endif
                kount_tot_low = 2 * kount_tot_hlf
                kount_tot_up  = kount_tot_low + 1
@@ -4531,13 +4827,22 @@
 
 !.....test pour le calcul:
 
-       tstp_match_convol_window2 : if ( iic_oa.ge.kountv_oa(1,lt_m).and.                                     &
+       tstp_match_convol_window2 : if ( iic_oa.ge.kountv_oa(1,lt_m).and.                             &
                                iic_oa.le.kountv_oa(2,lt_m).and.                                      &
                                mod( int((iic_oa-kountv_oa(1,lt_m)),kind=8),                          &
                                     resv_oa(per_t2p_oa(lt_m)) ).eq.0                                 &
                                      .and.                                                           &
                                      (ichoix.eq.cnb_oa(iv_m).or.ichoix.lt.0)                         &
                              ) then
+
+!........Slow/Fast mode variables are screened thanks to ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )
+         if ( pdti /= dti( cnb_oa(iv_m ) ) ) then
+            write(*,*) &
+     &      'ERROR OA : count_nmsimult_oa integrated period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
+            if(if_print_node)write(io_unit,*) &
+     &      'ERROR OA : count_nmsimult_oa integrated period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
+            stop
+         endif
 
 !........allocation si necessaire:
           if (tallocated_oa(lt_m).eq.-1) then
@@ -4568,8 +4873,8 @@
                ,psi_p2s_oa(                                                     &
                                  tpsi_oa(iv_m)                                  &
                                 ,perv_oa(1,lp_m),fb_oa,fc_oa )                  &
-               ,real(kpt_m)* dti                                                &
-               ,dti*resv_oa(per_t2p_oa(lt_m))                                   &
+               ,real(kpt_m)* pdti                                                &
+               ,pdti*resv_oa(per_t2p_oa(lt_m))                                   &
                ,fb_oa,fc_oa   ) 
 
 !........Heisenberg box
@@ -4586,8 +4891,8 @@
                    ,psi_p2s_oa(                                                 &
                                      tpsi_oa(iv_m)                              &         
                                     ,perv_oa(1,lp_m),fb_oa,fc_oa )              &                                     
-                   ,real(kpt_m)* dti                                            &
-                   ,dti*resv_oa(per_t2p_oa(lt_m))                               &           
+                   ,real(kpt_m)* pdti                                            &
+                   ,pdti*resv_oa(per_t2p_oa(lt_m))                               &           
                    ,fb_oa, fc_oa, from_cplx_fun  )  
 
             if ( abs( norm_r(1) - norm_r(2) ) > myprec2 ) then
@@ -4606,7 +4911,7 @@
                                       ,t0_psi=t0                    &
                                       ,sq_dt0_psi=sq_dt0            &
                                       ,kpt=kpt_m                    &
-                                      ,dti=dti                      &
+                                      ,dti=pdti                      &
                                       ,norm=norm                    &
                                       ,ind=lp_m ) 
 
@@ -4632,16 +4937,16 @@
            !enddo horizontal_space_loop2
            !endif
 
-       else if ( (kountv_oa(2,lt_m).le.iic_oa.or.iic_oa.eq.nt_max)                   &
-             .and.(ichoix.eq.cnb_oa(iv_m).or.ichoix.lt.0)                            &
-             .and.(ichoix.eq.des_oa(iv_m)                                            &
-             .or.des_oa(iv_m).eq.0)                                                  &
-                             ) then tstp_match_convol_window2
+       else if ( (kountv_oa(2,lt_m).le.iic_oa.or.iic_oa.eq.pnt_max)        &
+              .and. ( (cnb_oa(iv_m)==ichoix).or.(ichoix<0)           )    &
+              .and. ( (des_oa(iv_m)==ichoix).or.(des_oa(iv_m)==0)    )    &
+                               ) then tstp_match_convol_window2
             
               if ( tallocated_oa(lt_m)==lt_m) then
 
                if ( imsimult_oa .lt. 1 ) then
-                write(io_unit,*)'ERROR : isimult_oa cannot be samller than 1 ',mynode
+                write(io_unit,*)'ERROR : isimult_oa cannot be smaller than 1 ',mynode
+                stop
                endif
 !..............Updating current count of total opened conv window
                imsimult_oa = imsimult_oa - 1
@@ -4655,7 +4960,7 @@
 
 !..............Center of convolution window set according to the largest period eg, pointer lp_m = bevp_oa(iv_m+1)-1
 
-               ut_m           = dble((kountv_oa(1,lt_m)+kountv_oa(2,lt_m))/2.)*dti
+               ut_m           = dble((kountv_oa(1,lt_m)+kountv_oa(2,lt_m))/2.)*pdti
 
                lp1_m          = begvp_oa(iv_m)         ! scalog. smallest per used for reso  
                lp2_m          = begvp_oa(iv_m+1) -1    ! scalog. largest per  used for conv window
@@ -4694,12 +4999,12 @@
                    ! kount = ( conv wind  of largest period) / (reso of each particular period)
                    ! dwi_p = 1 / (conv wind  of largest period)
                    ! BLXD TODO it seems that main_oa with dori_oa = 2 => resv_oa always set to per_t2p_oa(lt_m)
-                   if ( MOD( perv_oa (1,lp2_m), dti) /= 0 ) then
+                   if ( MOD( perv_oa (1,lp2_m), pdti) /= 0 ) then
                     !kount_tot_hlf = int( delta_t_oa(iv_m)*( int( perv_oa (1,lp2_m)/ dti ) + 1 ) / resv_oa(lp_m) )
-                    kount_tot_hlf = int( delta_t_oa(iv_m)*( int( perv_oa (1,lp2_m)/ dti ) + 1 ) / resv_oa(per_t2p_oa(lt_m)) )
+                    kount_tot_hlf = int( delta_t_oa(iv_m)*( int( perv_oa (1,lp2_m)/ pdti ) + 1 ) / resv_oa(per_t2p_oa(lt_m)) )
                    else
                     !kount_tot_hlf = int( delta_t_oa(iv_m)*  int( perv_oa (1,lp2_m)/ dti )        / resv_oa(lp_m) )
-                    kount_tot_hlf = int( delta_t_oa(iv_m)*  int( perv_oa (1,lp2_m)/ dti )        / resv_oa(per_t2p_oa(lt_m)) )
+                    kount_tot_hlf = int( delta_t_oa(iv_m)*  int( perv_oa (1,lp2_m)/ pdti )        / resv_oa(per_t2p_oa(lt_m)) )
                    endif
                    kount_tot_low = 2 * kount_tot_hlf
                    kount_tot_up  = kount_tot_low + 1
@@ -4760,16 +5065,44 @@
       enddo time_of_analysis_loop2
       endif if_discrete_per
 
+      if ( ( des_oa(iv_m)/=0 ).and.( ichoix==des_oa(iv_m) ) ) then
+        write (*,*) " ERROR OA : option never tested in Croco-Module OA interface"
+        write (*,*) "            developpers test => remove stop/modify/recompile"
+        stop
+      endif
+
 !.....enddo associe a iv_m et ic_m:
       enddo loop_iv
       enddo loop_ic
 
       enddo loop_timestepping
 
+      pdti    => null()
+      pnt_max => null()
+      pkount0 => null()
+
+!.....Update the imsimult_oa index to cumulate slow and fast mode wf_oa windows
+      imsimult_oa = nmsimult_oa
+
       if (if_print_node) then
-        write(io_unit,*)'... OA precalculation of wf_oa array size (ic,iv,lt) tile/nmsimult_oa = ',tile,nmsimult_oa
+        if (ichoix==0) then
+            write(io_unit,*)'... OA SLOW precal of wf_oa array size (ic,iv,lt) tile/imsimult/nmsimult_oa = ',tile,imsimult_oa,nmsimult_oa
+        else if (ichoix==1) then
+            write(io_unit,*)'... OA FAST precal of wf_oa array size (ic,iv,lt) tile/imsimult/nmsimult_oa = ',tile,imsimult_oa,nmsimult_oa
+        endif
       endif
 
+!.....This routine is called by the last tile only
+
+      if (ichoix==1) then
+        !lacking ntimes+1 I suppose ?
+        !nt_max(1) = ntf_max_oa*nt_max_oa ! ndtfast*ntimes
+        !fact=nt_max(1)/nt_max(0)
+        nmsimult_oa=2*nmsimult_oa
+      endif
+      if (if_print_node) then
+        write(io_unit,*)'... OA ALL precal of wf_oa size nmsimult_oa = ',nmsimult_oa
+      endif
       do itile=1,ntiles
         st(itile)%nzw_oa = nmsimult_oa
       enddo
@@ -4844,11 +5177,14 @@
 
       implicit none
 
-      double precision, intent(in) :: dti    !< Integration time step
+      !double precision, intent(in) :: dti    !< Integration time step
+      double precision, dimension(0:nmod_oa), intent(in), target :: dti                                !< Integration time step
 
       integer :: kpt_m
       real    :: signal_r 
    
+      double precision, pointer :: pdti
+
 ! BLXD : DBLE PRECISION ? 
       complex ::                                                      &
               signal_rec                                              &
@@ -4882,7 +5218,13 @@
 #endif
 !
 
-      do iv_p = 1 , nzv_oa
+      var_rec_oa_iv_loop : do iv_p = 1 , nzv_oa
+
+!---------------------------------------------------------------------------
+!.....select the proper mode temporal parameters :
+!---------------------------------------------------------------------------
+         pdti    => dti( cnb_oa(iv_p) )
+
 !---------------------------------------------------------------------------
 !.....initialisation (pour tous les atomes):
 !---------------------------------------------------------------------------
@@ -4891,6 +5233,7 @@
          enddo
 
 !.....pour certains atomes, reconstruction possible si demandee:
+!     BLXD if scalogram => heisenberg boxes
          reconstruct_requested : if ( (fl_rec_oa(iv_p).eq.1 ) .or. tv_sclg_oa(iv_p) ) then
 
 !---------------------------------------------------------------------------
@@ -4905,7 +5248,7 @@
                      perv_oa(2,ip_p) = 1.
                   else
                      perv_oa(2,ip_p)=real(2*(int(perv_oa(1,ip_p)      & 
-                          /2./dti-0.5) )/1)                        &
+                          /2./pdti-0.5) )/1)                        &
                           +3.
                   endif
                enddo
@@ -5009,12 +5352,12 @@
                                 ,psi_p2s_oa(                          &
                                 tpsi_oa(iv_p)                         &
                                 ,perv_oa(1,ip_p),fb_oa,fc_oa )        &
-                                ,real(kpt_m)* dti                     &   !- tempschoisi*dti
-                                ,dti*resv_oa(per_t2p_oa(lt_p))        &
+                                ,real(kpt_m)* pdti                     &   !- tempschoisi*dti
+                                ,pdti*resv_oa(per_t2p_oa(lt_p))        &
                                 ,fb_oa,fc_oa  )
 
 !     cosinus signal test
-                           signal_r=cos(2*pi_oa/perv_oa(1,ip_p) *real(kpt_m)* dti)  
+                           signal_r=cos(2*pi_oa/perv_oa(1,ip_p) *real(kpt_m)* pdti)  
 !                                                              *real(kount_p)* dti)  
 
 !     reconstruction factor
@@ -5034,8 +5377,8 @@
                                 ,psi_p2s_oa(                                  &
                                 tpsi_oa(iv_p)                                 &
                                 ,perv_oa(1,ip_p),fb_oa,fc_oa )                &
-                                ,real(kpt_m)*dti                              &
-                                ,dti*resv_oa(per_t2p_oa(lt_p))                &
+                                ,real(kpt_m)*pdti                              &
+                                ,pdti*resv_oa(per_t2p_oa(lt_p))                &
                                 ,fb_oa, fc_oa, from_cplx_fun  )  
 
                         call calc_temporal_box_oa( ndim=ndim              &
@@ -5044,7 +5387,7 @@
                                                   ,t0_psi=t0_psi          &
                                                   ,sq_dt0_psi=sq_dt0_psi  &
                                                   ,kpt=kpt_m              &
-                                                  ,dti=dti ) 
+                                                  ,dti=pdti ) 
                            endif if_hsbg_dp1 
 
 #ifdef OA_TRACES
@@ -5198,12 +5541,12 @@
                              ,psi_p2s_oa(                        &
                              tpsi_oa(iv_p)                            &
                              ,perv_oa(1,ip_p),fb_oa,fc_oa )           &
-                             ,real(kpt_m)* dti                     &  !- tempschoisi*dti
-                             ,dti*resv_oa(per_t2p_oa(lt_p))        &
+                             ,real(kpt_m)* pdti                     &  !- tempschoisi*dti
+                             ,pdti*resv_oa(per_t2p_oa(lt_p))        &
                              ,fb_oa,fc_oa  )
 
 !     cosinus signal test
-                        signal_r=cos(2*pi_oa/perv_oa(1,ip_p)*real(kpt_m) * dti)  
+                        signal_r=cos(2*pi_oa/perv_oa(1,ip_p)*real(kpt_m) * pdti)  
                         
 !     reconstruction factor
                         temp_r = temp_r + conjg(psi_m) * signal_r
@@ -5220,8 +5563,8 @@
                              ,psi_p2s_oa(                                  &
                              tpsi_oa(iv_p)                                 &
                              ,perv_oa(1,ip_p),fb_oa,fc_oa )                &
-                             ,real(kpt_m)* dti                             &   !- tempschoisi*dti
-                             ,dti*resv_oa(per_t2p_oa(lt_p))                &
+                             ,real(kpt_m)* pdti                             &   !- tempschoisi*dti
+                             ,pdti*resv_oa(per_t2p_oa(lt_p))                &
                              ,fb_oa, fc_oa, from_cplx_fun  )  
 
                         call calc_temporal_box_oa( ndim=ndim              &
@@ -5230,7 +5573,7 @@
                                                   ,t0_psi=t0_psi          &
                                                   ,sq_dt0_psi=sq_dt0_psi  &
                                                   ,kpt=kpt_m              &
-                                                  ,dti=dti ) 
+                                                  ,dti=pdti ) 
                         endif if_hsbg_ip1
 
 !     fin boucle temporelle
@@ -5298,8 +5641,10 @@
          endif reconstruct_requested
 
 !......enddo associe a la variable iv_p:
-      enddo
+      enddo var_rec_oa_iv_loop
      
+      pdti    => null()
+
       return
       end subroutine var_rec_oa
 
@@ -5363,16 +5708,17 @@
 
       use module_oa_variables
       use module_parameter_oa, only : allocate_3D_glob_array_oa_cplx  &
-                                     ,allocate_2D_glob_array_oa_cplx  &
-                                     ,allocate_0D_sclg_array_oa_cplx  &
-                                     ,allocate_0D_sclg_array_oa_real  &
-                                     ,allocate_0D_sclg_array_oa_int
+                                     ,allocate_2D_glob_array_oa_cplx  !&
+!                                     ,allocate_0D_sclg_array_oa_cplx  &
+!                                     ,allocate_0D_sclg_array_oa_real  &
+!                                     ,allocate_0D_sclg_array_oa_int
       use module_oa_periode
 
 
       implicit none
 
       logical, intent(in) :: flag_alloc
+      integer :: imm
 
       integer                                                         &
        ic_u                                                           &
@@ -5391,7 +5737,8 @@
       nzupd3d_oa = 0
       nzupd2d_oa = 0
       nzupd1d_oa = 0
-      nzupd0d_oa = 0
+      !nzupd0d_oa = 0
+      nzupd0d_oa(0:nmod_oa) = 0
 
       tvar_oa(1:maxtyp_oa,1:max_idcfg_oa,1:nmvar_oa) = 0
 
@@ -5412,34 +5759,35 @@
       if (updv_oa(iv_u).eq.2) then ! #BLXD "variable remise a jour interactivement" what if UPDV_W=1 ?
         if (tgv3d_oa(tv_oa(iv_u)).eq.3) then
           if ( .not. tv_sclg_oa(iv_u) )  then
-          nzupd3d_oa    = nzupd3d_oa + 1
-          tupd_oa(iv_u) = nzupd3d_oa 
-          tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd3d_oa
+             nzupd3d_oa    = nzupd3d_oa + 1
+             tupd_oa(iv_u) = nzupd3d_oa 
+             tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd3d_oa
           else
-          ! Currently scalogram only possible for a given point i,j,k
-          ! Parameters for the global scal0d_cr(1:nper_sclg_max,1:nzupd0d) array
-          nzupd0d_oa    = nzupd0d_oa + 1
-          tupd_oa(iv_u) = nzupd0d_oa 
-          tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd0d_oa
-          !if ( scl(tile)%v2sclg(iv_u) /= -99 ) then
-          !   ! Retrieving global scal0d_cr(1:nper_sclg_max,1:nzupd0d) array second dimension
-          !   scl(tile)%tupd(iv_u) = nzupd0d_oa
-          !endif
+             ! Currently scalogram only possible for a given point i,j,k
+             ! Parameters for the global scal0d_cr(1:nper_sclg_max,1:nzupd0d) array
+             do imm=0,nmod_oa 
+                if ( cnb_oa(iv_u) == imm ) then
+                    nzupd0d_oa(imm)    = nzupd0d_oa(imm) + 1
+                    tupd_oa(iv_u) = nzupd0d_oa(imm) 
+                    tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd0d_oa(imm)
+                endif
+             enddo
           endif
         else if (tgv3d_oa(tv_oa(iv_u)).eq.2) then
           if ( .not. tv_sclg_oa(iv_u) )  then
-          nzupd2d_oa    = nzupd2d_oa + 1
-          tupd_oa(iv_u) = nzupd2d_oa 
-          tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd2d_oa
+             nzupd2d_oa    = nzupd2d_oa + 1
+             tupd_oa(iv_u) = nzupd2d_oa 
+             tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd2d_oa
           else
-          ! Currently scalogram only possible for a given point i,j,k
-          nzupd0d_oa    = nzupd0d_oa + 1
-          tupd_oa(iv_u) = nzupd0d_oa 
-          tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd0d_oa
-          !if ( scl(tile)%v2sclg(iv_u) /= -99 ) then
-          !   ! Retrieving global scal0d_cr(1:nper_sclg_max,1:nzupd0d) array second dimension
-          !   scl(tile)%tupd(iv_u) = nzupd0d_oa
-          !endif
+             ! Currently scalogram only possible for a given point i,j,k
+             ! Parameters for the global scal0d_cr(1:nper_sclg_max,1:nzupd0d) array
+             do imm=0,nmod_oa 
+                if ( cnb_oa(iv_u) == imm ) then
+                    nzupd0d_oa(imm)    = nzupd0d_oa(imm) + 1
+                    tupd_oa(iv_u) = nzupd0d_oa(imm) 
+                    tvar_oa(tc_oa(ic_u),nzc_u,iv_u-begc_oa(ic_u)+1) = nzupd0d_oa(imm)
+                endif
+             enddo
           endif
         ! #BLXD TODO eventually see if 0D/1D analysis can be useful
         !       => var1d_oa, var0d_oa
@@ -5474,8 +5822,10 @@
       !STDALONE       enddo  
 
 !.....History file:
-
-        call history_oa(11,-1,-1,-1,-1, -1)
+        
+      do imm=0,nmod_oa 
+        call history_oa(11,-1,-1,-1,-1, -1,imm)
+      enddo
 
 !$OMP END MASTER
 
@@ -5490,8 +5840,17 @@
       !        tiles        => if ( .not. allocated then allocate(...     
       ! This routine should be called by the MASTER thread only + synchronization
 
+      !if ( imm==0 ) then
+      ! BLXD : allocation needed for the 1st model mode <=> imm=1
+      !        TODO slow/fast model mode optimization :
+      !        to reduce the size of output arrays each model mode
+      !        will have to handle
+      !        OOP with array of derived type 
+      !        having the number of model mode dimensions
+      !        => mdl(imd)%var3d( GLOBAL_2_ARRAY, kmin:N, mdl%tupd_oa )
       call allocate_3D_glob_array_oa_cplx( var3d_oa, nzupd3d_oa )
       call allocate_2D_glob_array_oa_cplx( var2d_oa, nzupd2d_oa )
+      !endif
 
       if ( scalogram_analysis ) then
           ! BLXD tmp
@@ -5499,22 +5858,23 @@
 
           ! BLXD TODO Scalogram
           ! Croco interface module_parameter_oa not really needed
-
+          do imm=0,nmod_oa 
 #ifndef MPI
-            call allocate_0D_sclg_array_oa_cplx( scal0d_cr, nper_sclg_max, nzupd0d_oa )
-            call allocate_0D_sclg_array_oa_int( iscal0d_cr, nzupd0d_oa )
-            call allocate_0D_sclg_array_oa_int( jscal0d_cr, nzupd0d_oa )
-            call allocate_0D_sclg_array_oa_int( kscal0d_cr, nzupd0d_oa )
-            call allocate_0D_sclg_array_oa_real( per0d_cr, nper_sclg_max, nzupd0d_oa )
+            call allocate_0D_sclg_array_oa_cplx( mdg(imm)%scal0d_cr, nper_sclg_max(imm), nzupd0d_oa(imm) )
+            call allocate_0D_sclg_array_oa_int ( mdg(imm)%iscal0d_cr, nzupd0d_oa(imm) )
+            call allocate_0D_sclg_array_oa_int ( mdg(imm)%jscal0d_cr, nzupd0d_oa(imm) )
+            call allocate_0D_sclg_array_oa_int ( mdg(imm)%kscal0d_cr, nzupd0d_oa(imm) )
+            call allocate_0D_sclg_array_oa_real( mdg(imm)%per0d_cr, nper_sclg_max(imm), nzupd0d_oa(imm) )
 #else
-        if ( if_mpi_oa ) then
-            call allocate_0D_sclg_array_oa_cplx( scal0d_cr, nper_sclg_max, nzupd0d_oa )
-            call allocate_0D_sclg_array_oa_int( iscal0d_cr, nzupd0d_oa )
-            call allocate_0D_sclg_array_oa_int( jscal0d_cr, nzupd0d_oa )
-            call allocate_0D_sclg_array_oa_int( kscal0d_cr, nzupd0d_oa )
-            call allocate_0D_sclg_array_oa_real( per0d_cr, nper_sclg_max, nzupd0d_oa )
-        endif
+            if ( if_mpi_oa ) then
+            call allocate_0D_sclg_array_oa_cplx( mdg(imm)%scal0d_cr, nper_sclg_max(imm), nzupd0d_oa(imm) )
+            call allocate_0D_sclg_array_oa_int   ( mdg(imm)%iscal0d_cr, nzupd0d_oa(imm) )
+            call allocate_0D_sclg_array_oa_int   ( mdg(imm)%jscal0d_cr, nzupd0d_oa(imm) )
+            call allocate_0D_sclg_array_oa_int   ( mdg(imm)%kscal0d_cr, nzupd0d_oa(imm) )
+            call allocate_0D_sclg_array_oa_real( mdg(imm)%per0d_cr, nper_sclg_max(imm), nzupd0d_oa(imm) )
+            endif
 #endif
+         enddo
       endif
 !$OMP END MASTER
 
@@ -5803,7 +6163,7 @@
 
 !.....History file:
 !$OMP MASTER
-      call history_oa(1,lz_a,lv_a,dim_a,-1, -1)
+      call history_oa(1,lz_a,lv_a,dim_a,-1, -1,0)
 !$OMP END MASTER
 
 
@@ -5844,7 +6204,7 @@
 !! @todo 
 !------------------------------------------------------------------------------
 !
-      subroutine sclg_init_coords(  tile ) 
+      subroutine sclg_init_coords( imd, tile ) 
 
       use module_tile_oa, only : tile_space_str, st, ntiles
       use module_oa_variables
@@ -5856,14 +6216,19 @@
 
       implicit none
 
-      integer, intent(in) :: tile
+      integer, intent(in) :: imd, tile
 
       type(tile_space_str), pointer :: pst => null()
+
+      type(model_mode_loc), pointer :: pdl => null() 
+      type(model_mode_glo), pointer :: pdg => null()
+
 
       integer :: ic_m, iv_m, lp_m, lps_m, ls_m, ls1_m, i_m, j_m, k_m, iu_glob, ju_glob
 #ifdef MPI
       integer :: tag, tagij, ierr, is, myrank2, myrank, req
       logical :: flag
+
 #endif
 
 
@@ -5880,7 +6245,12 @@
           endif
       endif
 !$OMP END MASTER
+
+      pdl => mdl(imd) 
+
 #endif
+
+      pdg => mdg(imd) 
 
       oa_analysis_requested : if (nzv_oa.ne.0) then
 
@@ -5893,7 +6263,7 @@
       if_discrete_per : if (dori_oa(iv_m).eq.1) then
 
 !.....If scalogram initialize once period axis and i,j points for outputs
-      if_scal_ini : if ( tv_sclg_oa(iv_m) ) then 
+      if_scal_ini_for_mode_imd : if ( tv_sclg_oa(iv_m) .and. cnb_oa(iv_m)==imd ) then 
         std_var_ini : if (iv_m.ne.-1.and.updv_oa(iv_m).eq.2) then
 
 #ifdef OA_TEST_MPI_XIOS
@@ -5922,7 +6292,7 @@
 
 !.....History file:
 !$OMP MASTER
-        call history_oa(15,lp_m,iv_m,-1,-1, -1)
+        call history_oa(15,lp_m,iv_m,-1,-1, -1,imd)
 !$OMP END MASTER
         
 #ifdef MPI
@@ -5932,12 +6302,12 @@
             ! will pass here => the thread holding this scalogram must be the one updating the variable
             ! (unless setting a barrier forcing synchronization?)
 !$OMP ATOMIC
-            per0d_oa(lps_m,v2locsclg(iv_m)) = perv_oa(1,lp_m)
+            pdl%per0d_oa(lps_m,v2locsclg(iv_m)) = perv_oa(1,lp_m)
         end if
 #else
         ! MASTER thread only + synchro ?
 !$OMP ATOMIC
-        per0d_cr(lps_m,tupd_oa(iv_m)) = perv_oa(1,lp_m)
+        pdg%per0d_cr(lps_m,tupd_oa(iv_m)) = perv_oa(1,lp_m)
 #endif
 
        enddo loop_on_periods
@@ -5975,15 +6345,15 @@
 
            k_m = pst%kmin3d_oa(ls_m) + (ls1_m-pst%begvs3d_oa(ls_m))* dk_oa(iv_m)
 #ifdef MPI
-            iscal0d_oa(v2locsclg(iv_m)) = iu_glob
-            jscal0d_oa(v2locsclg(iv_m)) = ju_glob
-            kscal0d_oa(v2locsclg(iv_m)) = k_m
+            pdl%iscal0d_oa(v2locsclg(iv_m)) = iu_glob
+            pdl%jscal0d_oa(v2locsclg(iv_m)) = ju_glob
+            pdl%kscal0d_oa(v2locsclg(iv_m)) = k_m
             ! myrank PRIVATE openMP var. changed if and only if I am the thread which holds the iv-var scalogram
             myrank    = mynode
 #else
-            iscal0d_cr(tupd_oa(iv_m)) = iu_glob 
-            jscal0d_cr(tupd_oa(iv_m)) = ju_glob 
-            kscal0d_cr(tupd_oa(iv_m)) = k_m 
+            pdg%iscal0d_cr(tupd_oa(iv_m)) = iu_glob 
+            pdg%jscal0d_cr(tupd_oa(iv_m)) = ju_glob 
+            pdg%kscal0d_cr(tupd_oa(iv_m)) = k_m 
 
 #endif
           enddo
@@ -6004,16 +6374,16 @@
 
           do ls1_m = pst%begvs3d_oa(ls_m),pst%begvs3d_oa(ls_m+1)-1
 #ifdef MPI
-            iscal0d_oa(v2locsclg(iv_m)) = iu_glob
-            jscal0d_oa(v2locsclg(iv_m)) = ju_glob
-            kscal0d_oa(v2locsclg(iv_m)) = -99 
+            pdl%iscal0d_oa(v2locsclg(iv_m)) = iu_glob
+            pdl%jscal0d_oa(v2locsclg(iv_m)) = ju_glob
+            pdl%kscal0d_oa(v2locsclg(iv_m)) = -99 
 
             myrank    = mynode
 
 #else
-            iscal0d_cr(tupd_oa(iv_m)) = iu_glob 
-            jscal0d_cr(tupd_oa(iv_m)) = ju_glob 
-            kscal0d_cr(tupd_oa(iv_m)) = -99 
+            pdg%iscal0d_cr(tupd_oa(iv_m)) = iu_glob 
+            pdg%jscal0d_cr(tupd_oa(iv_m)) = ju_glob 
+            pdg%kscal0d_cr(tupd_oa(iv_m)) = -99 
 
 #endif
           enddo
@@ -6053,12 +6423,14 @@
             tagij = tupd_oa(iv_m)
 
             nptr :if (mpi_send_buff_ptr) then
-                buffr_s(1:nper_sclg(iv_m)) => per0d_oa(1:nper_sclg(iv_m),v2locsclg(iv_m))
+                buffr_s(1:nper_sclg(iv_m)) => pdl%per0d_oa(1:nper_sclg(iv_m),v2locsclg(iv_m))
                 call MPI_Send (buffr_s, nper_sclg(iv_m), MPI_DOUBLE_PRECISION, root, tag, comm, ierr)
             else nptr
                 !buff2r_s(1:nper_sclg_max) = dble(per0d_oa(1:nper_sclg_max,v2locsclg(iv_m)))
-                buff2r_s(1:nper_sclg_max) = per0d_oa(1:nper_sclg_max,v2locsclg(iv_m))
-                call MPI_Send (buff2r_s, nper_sclg_max, MPI_DOUBLE_PRECISION, root, tag, comm, ierr)
+                !buff2r_s(1:nper_sclg_max) = pdl%per0d_oa(1:nper_sclg_max,v2locsclg(iv_m))
+                !call MPI_Send (buff2r_s, nper_sclg_max, MPI_DOUBLE_PRECISION, root, tag, comm, ierr)
+                buff2r_s(1:nper_sclg(iv_m)) = pdl%per0d_oa(1:nper_sclg(iv_m),v2locsclg(iv_m))
+                call MPI_Send (buff2r_s, nper_sclg(iv_m), MPI_DOUBLE_PRECISION, root, tag, comm, ierr)
             endif nptr
             if (ierr/=0) then
                 if(if_print_node)write(io_unit,*)'ERROR OA : MPI_(I)Send scalogram period for node/ierr/var ',mynode, ierr, iv_m
@@ -6067,9 +6439,9 @@
             else 
             endif
             if (if_record_sclg_ijpoints) then
-                buffij_s(1)=iscal0d_oa(v2locsclg(iv_m))
-                buffij_s(2)=jscal0d_oa(v2locsclg(iv_m))
-                buffij_s(3)=jscal0d_oa(v2locsclg(iv_m))
+                buffij_s(1)=pdl%iscal0d_oa(v2locsclg(iv_m))
+                buffij_s(2)=pdl%jscal0d_oa(v2locsclg(iv_m))
+                buffij_s(3)=pdl%kscal0d_oa(v2locsclg(iv_m))  ! BLXD oops k was set as j
                 call MPI_Send (buffij_s,  3, MPI_INTEGER, root, tagij, comm, ierr)
                 if (ierr/=0) then
                     if(if_print_node)write(io_unit,*)'ERROR OA : MPI_(I)Send scalogram period for node/ierr/var ',mynode, ierr, iv_m
@@ -6080,10 +6452,10 @@
             endif
             else if_scalogram_not_on_root
                ! Root rank process holds the saclogram then no MPI exchange !!!
-                per0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m))= per0d_oa(1:nper_sclg(iv_m),v2locsclg(iv_m))
-                iscal0d_cr(tupd_oa(iv_m))                = iscal0d_oa(v2locsclg(iv_m))
-                jscal0d_cr(tupd_oa(iv_m))                = jscal0d_oa(v2locsclg(iv_m))
-                kscal0d_cr(tupd_oa(iv_m))                = kscal0d_oa(v2locsclg(iv_m))
+                pdg%per0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m))= pdl%per0d_oa(1:nper_sclg(iv_m),v2locsclg(iv_m))
+                pdg%iscal0d_cr(tupd_oa(iv_m))                = pdl%iscal0d_oa(v2locsclg(iv_m))
+                pdg%jscal0d_cr(tupd_oa(iv_m))                = pdl%jscal0d_oa(v2locsclg(iv_m))
+                pdg%kscal0d_cr(tupd_oa(iv_m))                = pdl%kscal0d_oa(v2locsclg(iv_m))
             endif if_scalogram_not_on_root
 
            endif if_node_correct
@@ -6123,10 +6495,12 @@
 
             ! BLXD TO TEST reduced buffer size !!!! 
             nptrr :if (mpi_send_buff_ptr) then
-                call MPI_Recv( per0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
+                call MPI_Recv( pdg%per0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
                         MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, tag, comm, mpi_status, ierr )
             else nptrr
-                call MPI_Recv( per0d_cr(1:nper_sclg_max,tupd_oa(iv_m)), nper_sclg_max,     &
+                !call MPI_Recv( pdg%per0d_cr(1:nper_sclg_max,tupd_oa(iv_m)), nper_sclg_max,     &
+                !    MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, tag, comm, mpi_status, ierr )
+                call MPI_Recv( pdg%per0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m),     &
                     MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, tag, comm, mpi_status, ierr )
             endif nptrr
             if ( ierr /= 0 ) then
@@ -6146,10 +6520,9 @@
                 
                 ! POSSIBLEMENT TOUT bufferiser avec do ic do if if scal on MPI process
                 ! using index_s_cr
-                iscal0d_cr(tupd_oa(iv_m))=buffij_r(1)
-                jscal0d_cr(tupd_oa(iv_m))=buffij_r(2)
-                kscal0d_cr(tupd_oa(iv_m))=buffij_r(3)
-
+                pdg%iscal0d_cr(tupd_oa(iv_m))=buffij_r(1)
+                pdg%jscal0d_cr(tupd_oa(iv_m))=buffij_r(2)
+                pdg%kscal0d_cr(tupd_oa(iv_m))=buffij_r(3)
 
             endif
 
@@ -6165,12 +6538,12 @@
                stop
            endif
            tag=tupd_oa(iv_m)
-           call MPI_Bcast(per0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
+           call MPI_Bcast(pdg%per0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
                             MPI_DOUBLE_PRECISION, root, comm, ierr)
            if (if_record_sclg_ijpoints) then
-               call MPI_Bcast(iscal0d_cr(tupd_oa(iv_m)), 1, MPI_INTEGER, root, comm, ierr)
-               call MPI_Bcast(jscal0d_cr(tupd_oa(iv_m)), 1, MPI_INTEGER, root, comm, ierr)
-               call MPI_Bcast(kscal0d_cr(tupd_oa(iv_m)), 1, MPI_INTEGER, root, comm, ierr)
+               call MPI_Bcast(pdg%iscal0d_cr(tupd_oa(iv_m)), 1, MPI_INTEGER, root, comm, ierr)
+               call MPI_Bcast(pdg%jscal0d_cr(tupd_oa(iv_m)), 1, MPI_INTEGER, root, comm, ierr)
+               call MPI_Bcast(pdg%kscal0d_cr(tupd_oa(iv_m)), 1, MPI_INTEGER, root, comm, ierr)
            endif
 
 
@@ -6187,7 +6560,7 @@
 
         !endif if_first_time_a_scalogram                        
         endif std_var_ini
-      endif if_scal_ini
+      endif if_scal_ini_for_mode_imd
 
       endif if_discrete_per
       enddo var_loop
@@ -6196,6 +6569,9 @@
       pst => null()
 
       endif oa_analysis_requested 
+
+      pdl => null()
+      pdg => null()
 
       return
       end subroutine sclg_init_coords
@@ -6314,6 +6690,10 @@
 
       type(tile_space_str), pointer :: pst => null()
 
+      type(model_mode_loc), pointer :: pdl => null() 
+      type(model_mode_glo), pointer :: pdg => null()
+
+
       !logical, dimension(1:nzv_oa) :: isclg_send_recv
       !integer, dimension(1:nzv_oa) :: rank_sending  
 
@@ -6324,6 +6704,11 @@
       
       !TODO declare flag here if only needed here
       logical :: ifl_test_composite
+
+      !> Model integration parameter (slow and fast mode)
+      double precision, pointer :: pdti
+      integer, pointer          :: pnt_max
+
 
       integer                                                         &
          iv_m                                                         &
@@ -6366,12 +6751,28 @@
 !.....Pointer association to specific module_tile_oa
       pst => st(tile)
 
+!.....Select the correct model mode thanks to ichoix argument
+!     Slow mode ichoix=0, Fast mode ichoix=1
+!     To modify if ifl_test_composite and ichoix < 0 
+
+      if ( ( ichoix == 0 ) .or. ( ichoix == 1 ) ) then      
+          pdti    => dti   ( ichoix  )
+          pnt_max => nt_max( ichoix  )
+          !if ( .not. if_oa_fast_mode .and. ichoix==1 ) stop
+      else
+        write(*,*) 'ERROR OA : dev needed to call main_oa with ichoix arg value other than 0 or 1'
+        stop
+      endif
+
+      !pdl => mdl(ichoix) 
+      pdg => mdg(ichoix) 
+
 !.....flag variable composite 
       ifl_test_composite = .true.      
 
 !.....test variable
-       if (test_analysis) then
-        call test_oa( tile=tile, iic_oa=iic_oa )
+       if ( test_analysis ) then
+        call test_oa( tile=tile, ichoix=ichoix, iic_oa=iic_oa, dti=dti )
          !,imin=imin, imax=imax     &
          !,jmin=jmin, jmax=jmax     &
          !,kmin=kmin, kmax=kmax )
@@ -6379,6 +6780,7 @@
 
       !STDALONE if (flag_nrj_oa.eq.1) call nrj_upd_oa(1)
 
+!.....TODO check if suited for fast mode and with which main_oa args
       if ( isopycne_analysis ) then
         rhp_t_lbound = (/imin,jmin,kmin/)
         rhp_t_ubound = (/imax,jmax,kmax/)
@@ -6414,8 +6816,14 @@
         &  .and.               ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )                                                 &
                              ) then
 
-
-! #BLXD ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 ) = calling main_oa for particular variable
+!........Slow/Fast mode variables are screened thanks to ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )
+         if ( pdti /= dti( cnb_oa(iv_m )) ) then
+            write(*,*) &
+     &      'ERROR OA : main_oa discrete period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
+            if(if_print_node)write(io_unit,*) &
+     &      'ERROR OA : main_oa discrete period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
+            stop
+         endif
 
 !........allocation if necessary (if variable isn't allocated yet, it is done.., at user-specified kount):
 
@@ -6448,8 +6856,8 @@
                ,psi_p2s_oa(                                                   &
                                  tpsi_oa(iv_m)                                &         
                                 ,perv_oa(1,per_t2p_oa(lt_m)),fb_oa,fc_oa )    &                                     
-               ,real(kpt_m)* dti                                              &
-               ,dti*resv_oa(per_t2p_oa(lt_m))                                 &           
+               ,real(kpt_m)* pdti                                              &
+               ,pdti*resv_oa(per_t2p_oa(lt_m))                                 &           
                ,fb_oa,fc_oa  ) 
   
 !........boucle spatiale:
@@ -6503,6 +6911,14 @@
         &  .and.               ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )                                                 &
                              ) then
 
+!........Slow/Fast mode variables are screened thanks to ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )
+         if ( pdti /= dti( cnb_oa(iv_m )) ) then
+            write(*,*) &
+     &      'ERROR OA : main_oa integrated period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
+            if(if_print_node)write(io_unit,*) &
+     &      'ERROR OA : main_oa integrated period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
+            stop
+         endif
 
 !........allocation si necessaire:
 
@@ -6533,8 +6949,8 @@
                ,psi_p2s_oa(                                                     &
                                  tpsi_oa(iv_m)                                  &
                                 ,perv_oa(1,lp_m),fb_oa,fc_oa )                  &
-               ,real(kpt_m)* dti                                             &
-               ,dti*resv_oa(per_t2p_oa(lt_m))                                &
+               ,real(kpt_m)* pdti                                             &
+               ,pdti*resv_oa(per_t2p_oa(lt_m))                                &
                ,fb_oa,fc_oa   ) 
 
 !........boucle spatiale:
@@ -6590,22 +7006,25 @@
          ! and they all see the same temporal structure, and they all understand 
          ! that there is a convolution window ending
 
+         if ( associated(pst) ) then  
+         if ( pst%wf_oa(la_m)%allocated ) then
+         !if ( associated(pst%wf_oa(la_m)%coef) ) then
+         !if (.true.) then
+         !if (.false.) then
 
-         if ( associated(pst%wf_oa(la_m)%coef) ) then
-
-         if_ending_convwind : if ((kountv_oa(2,pst%wf_oa(la_m)%t_indice).le.iic_oa.or.iic_oa.eq.nt_max)      &
+         if_ending_convwind : if ((kountv_oa(2,pst%wf_oa(la_m)%t_indice).le.iic_oa.or.iic_oa.eq.pnt_max)      &
            .and.(ichoix.eq.cnb_oa(pst%wf_oa(la_m)%variable).or.ichoix.lt.0)          &
            .and.(ichoix.eq.des_oa(pst%wf_oa(la_m)%variable)                          &
                  .or.des_oa(pst%wf_oa(la_m)%variable).eq.0)                          &
                  ) then                
+
 
             lt_m = pst%wf_oa(la_m)%t_indice
             iv_m = pst%wf_oa(la_m)%variable
             ic_m = pst%wf_oa(la_m)%config
 
 
-
-            call subsave_oa ( tile, la_m, myrank )                           
+            call subsave_oa ( tile, la_m, ichoix, myrank )                           
             call deallocate_win_oa(tile, lt_m)
 
 
@@ -6642,11 +7061,11 @@
              sclg_br : if ( mpi_blocking_recv ) then
 
 
-                 call MPI_Recv( scal0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
+                 call MPI_Recv( pdg%scal0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
                                 MPI_DOUBLE_COMPLEX, MPI_ANY_SOURCE, tag, comm, mpi_status, ierr )
 
                  if ( ierr /= 0 ) then
-                     write(io_unit,*)'ERROR OA : MPI_Recv scalogram per0d_cr ierr ',mynode, ierr, iv_m
+                     write(io_unit,*)'ERROR OA : MPI_Recv scalogram scal0d_cr ierr ',mynode, ierr, iv_m
                      stop
                  endif
 
@@ -6675,7 +7094,7 @@
                print*,'ERROR OA : MPI_Barrier bef. scal Bcast mynode ',mynode
                stop
            endif
-           call MPI_Bcast(scal0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
+           call MPI_Bcast(pdg%scal0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
                             MPI_DOUBLE_COMPLEX, root, comm, ierr)
 
 ! The last tile Sets back to zero the module tile count variable
@@ -6698,19 +7117,37 @@
 
          endif if_ending_convwind
          endif
+         endif
       enddo
 
+!.....Model mode pointer nullyfied
+      !pdl => null() 
+      pdg => null() 
 
 !.....Specific module_tile_oa pointer nullyfied
       pst => null()
 
+!.....Mode temporal pointer nullyfied
+      pdti    => null()
+      pnt_max => null()
+
 !.....If end of simulation Deallocate deallocate_tile_varspace_oa
 !     consistently with the deallocate_tile_space_oa removing st
 !     in online_spectral_diags after the $OMP BARRIER
-      if (iic_oa.eq.(nt_max+1)) then
+!     End of SLOW MODE ONLY 
+!     TODI BLXD CHECK if fast mode ended or not !!!! 
+      if  ( ( ichoix == 0 ) .and. (iic_oa.eq.(nt_max(0)+1)) ) then
+        print*, 'NOW DEALLOCATING deallocate_tile_varspace_oa'
         call deallocate_tile_varspace_oa(tile)
+        print*, 'NOW DEALLOCATING SCLG IF ANY deallocate_tile_sclg_oa'
         if (scalogram_analysis) call deallocate_tile_sclg_oa(tile)
-        if (test_analysis) call deallocate_tile_test_oa(tile)
+        if (test_analysis) then
+        print*, 'NOW DEALLOCATING TEST var deallocate_tile_test_oa'
+            call deallocate_tile_test_oa(tile)
+!$OMP MASTER
+            if (mynode==0) close(io_tst)
+!$OMP MASTER
+        endif
       endif
 
       endif oa_analysis_requested
@@ -6746,7 +7183,7 @@
 !> @todo
 !----------------------------------------------------------------------
 
-      subroutine subsave_oa( tile, la_s, myrank )
+      subroutine subsave_oa( tile, la_s, imd, myrank )
  
       use module_oa_variables
       !use module_oa_stock
@@ -6755,7 +7192,7 @@
 
       implicit none
 
-      integer, intent(in)  :: tile, la_s    
+      integer, intent(in)  :: tile, la_s, imd   
       integer, intent(out) :: myrank
  
       type(tile_space_str), pointer :: pst => null()
@@ -6772,7 +7209,7 @@
       lt_s = pst%wf_oa(la_s)%t_indice
 
       if (updv_oa(iv_s).ne.0) then
-       call var_upd_oa ( tile, ic_s, iv_s, lt_s, la_s, myrank )
+       call var_upd_oa ( tile, ic_s, iv_s, lt_s, la_s, imd, myrank )
       endif
 
       pst => null()
@@ -6831,6 +7268,7 @@
       ,iv_u                                                           &
       ,lt_u                                                           &
       ,la_u                                                           &
+      ,imd                                                            &
       ,myrank                                               )
 
       use module_tile_oa, only : st, tile_space_str, ntiles
@@ -6845,11 +7283,15 @@
 #endif
       implicit none
 
-      integer, intent(in)  :: tile, ic_u, iv_u, lt_u, la_u 
+      integer, intent(in)  :: tile, ic_u, iv_u, lt_u, la_u, imd
       integer, intent(out) :: myrank
 
       !BLXD_TILE_ISSUE rm pst from list of public module variables add tile_space_str
       type(tile_space_str), pointer :: pst => null()
+
+      type(model_mode_loc), pointer :: pdl => null() 
+      type(model_mode_glo), pointer :: pdg => null()
+
 
       integer    ::                                                   &
        i_u                                                            &
@@ -6874,9 +7316,18 @@
 
 !$OMP MASTER
 
-      call history_oa(14,lt_u,iv_u,-1,-1, -1)
+      call history_oa(14,lt_u,iv_u,-1,-1,-1,imd)
+            if (mynode ==0) then
+               print *,"**********---------------"
+               print *,"iv_u=",iv_u
+            endif
 
 !$OMP END MASTER
+
+!.....Model mode pointers 
+!     BLXD at this stage iv_u is surely a imd model mode variable, no need to test with cnb_oa(iv_u)
+      pdl => mdl(imd) 
+      pdg => mdg(imd) 
 
 !.....Local pointer to module_tile_oa array structure
       ! BLXD TODO openMP SHARED issue; solution declare pst locally
@@ -6910,11 +7361,11 @@
 !...........BLXD iv is a scalogram -> unique icslg index -> hold by a unique process -> hold by a unique tile(-thread) 
 !           if tile(-thread/process passes here => the tile(-thread) process is concerned by MPI sending the scalogram
 !           tile/tile-thread will fill disjoint part of the sacl0d_oa array successively (no data race)
-            scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = real( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
+            pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = real( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
             myrank    = mynode
 
 #else
-            scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = real( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
+            pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = real( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
 #endif
            end if 
           enddo
@@ -6934,10 +7385,10 @@
             var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )**2
            else
 #ifdef MPI
-            scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )**2
+            pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )**2
             myrank    = mynode
 #else
-            scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )**2
+            pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )**2
 #endif
            endif
           enddo
@@ -6956,10 +7407,10 @@
             var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
            else
 #ifdef MPI
-            scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
+            pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
             myrank    = mynode
 #else
-            scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
+            pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = abs( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
 #endif
            endif
           enddo
@@ -6968,7 +7419,10 @@
 
 !.......sortie du coef complexe:
         else if (swt_wfpf_oa(iv_u).eq.4) then what_2_extract_3dvar
-
+            if (mynode ==0) then
+               print *,"---------------"
+               print *,"iv_u=",iv_u
+            endif
 !........BLXD 
 !        For a given iv variable the following loop is executed by a single MPI process 
 !        and by a single tile(-thread)
@@ -6995,18 +7449,20 @@
                 ju_glob = j_u 
 #endif
                  !if ( (lt_u==ltrec_fst_oa(iv_u)) ) then
-# ifdef IGW
+
+# if ( defined IGW || defined MILES || defined TANK )
+
+#   if defined IGW
                 if ( iu_glob ==itgt_glob .and. (k_u==ktgt) ) then
-# else
-#  ifdef MILES
+#   elif ( defined MILES || defined TANK )
                 if ( iu_glob==itgt_glob .and. ju_glob==jtgt_glob .and. k_u==ktgt ) then
-#  endif
-# endif
+#   endif
                      io_nodoa = set_io_nodoa(iv_u,mynode,4,3)! [3/4](odd/even-iv)000+mynode
                      ! old script iv_u =1 => 30000+mynode iv_u=2 => 40000+mynode
                      write (io_nodoa,fmt='(i5,i5,i3,2(1x,ES22.15E2))')i_u,j_u,k_u &
                          ,REAL(DBLE( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) )),REAL(DIMAG( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) ))
-                end if
+                endif
+# endif
              endif if_verb3d
 #endif
           else not_a_scalogram
@@ -7015,10 +7471,10 @@
 !............BLXD iv is a scalogram -> unique icslg index -> hold by a unique process -> hold by a unique tile(-thread) 
 !            if (tile-thread)/process passing here => the (tile-thread) process is concerned by MPI sending the scalogram
 !            tile/tile-thread will fill disjoint part of the sacl0d_oa array successively (no data race)
-             scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 )
+             pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 )
              myrank    = mynode
 #else
-             scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 )
+             pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 )
 #endif
 #if defined OA_TRACES
              if_verb0d : if (verbose_oa>=5) then
@@ -7035,10 +7491,10 @@
                      ! old script iv_u =1 => 30000+mynode iv_u=2 => 40000+mynode
 #ifdef MPI
             write (io_nodoa,fmt='(i5,i5,i3,2(1x,ES22.15E2))')i_u,j_u,k_u &
-                ,REAL(DBLE( scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) )),REAL(DIMAG( scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) ))
+                ,REAL(DBLE( pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) )),REAL(DIMAG( pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) ))
 #else
             write (io_nodoa,fmt='(i5,i5,i3,2(1x,ES22.15E2))')i_u,j_u,k_u &
-                ,REAL(DBLE( scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) )),REAL(DIMAG( scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) ))
+                ,REAL(DBLE( pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) )),REAL(DIMAG( pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) ))
 #endif
                 endif
              endif if_verb0d
@@ -7063,10 +7519,10 @@
             var2d_oa(i_u,j_u,tupd_oa(iv_u)) = real(pst%wf_oa(pla_u)%coef(ls1_u-ps1_u+1 ) )
            else
 #ifdef MPI
-            scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = real(pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ))
+            pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = real(pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ))
             myrank    = mynode
 #else
-            scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = real( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
+            pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = real( pst%wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
 
 #endif
            endif
@@ -7086,10 +7542,10 @@
             var2d_oa(i_u,j_u,tupd_oa(iv_u)) = abs(pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )**2
            else
 #ifdef MPI
-            scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = abs(pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )**2
+            pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = abs(pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )**2
             myrank    = mynode
 #else
-            scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = abs(pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )**2
+            pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = abs(pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )**2
 
 #endif
            endif
@@ -7108,10 +7564,10 @@
             var2d_oa(i_u,j_u,tupd_oa(iv_u)) = abs(pst%wf_oa(pla_u)%coef(ls1_u-ps1_u+1 ) )
            else
 #ifdef MPI
-            scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = abs(pst%wf_oa(pla_u)%coef(ls1_u-ps1_u+1 ) )
+            pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = abs(pst%wf_oa(pla_u)%coef(ls1_u-ps1_u+1 ) )
             myrank    = mynode
 #else
-            scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = abs(pst%wf_oa(pla_u)%coef(ls1_u-ps1_u+1 ) )
+            pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = abs(pst%wf_oa(pla_u)%coef(ls1_u-ps1_u+1 ) )
 
 #endif
            endif
@@ -7149,10 +7605,10 @@
 #endif
            else not_a_scalogram_2dvar
 #ifdef MPI
-            scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = (pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )
+            pdl%scal0d_oa(pers_t2p_oa(iv_u,lt_u),v2locsclg(iv_u)) = (pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )
             myrank    = mynode
 #else
-            scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = (pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )
+            pdg%scal0d_cr(pers_t2p_oa(iv_u,lt_u),tupd_oa(iv_u)) = (pst%wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )
 
 #endif
            endif not_a_scalogram_2dvar
@@ -7195,7 +7651,7 @@
                 ! MPI subprocess scalogram iv_u in buffer to send to root process
                 ! with tag set to the global scalogram index
                 itag = tupd_oa(iv_u)
-                buffx_s(1:nper_sclg(iv_u)) => scal0d_oa(1:nper_sclg(iv_u),v2locsclg(iv_u))
+                buffx_s(1:nper_sclg(iv_u)) => pdl%scal0d_oa(1:nper_sclg(iv_u),v2locsclg(iv_u))
                 bs_sclg : if ( mpi_nonblock_send) then
                     call MPI_ISend (buffx_s, nper_sclg(iv_u), MPI_DOUBLE_COMPLEX, root, itag, comm, sclg_request(iv_u), ierr)
                     if (ierr/=0) then
@@ -7213,7 +7669,7 @@
             else if_scalogram_not_on_root
                ! Root rank process holds the saclogram then no MPI exchange !!!
                ! var_upd_oa returns myrank /= -99
-                scal0d_cr(1:nper_sclg(iv_u),tupd_oa(iv_u))=scal0d_oa(1:nper_sclg(iv_u),v2locsclg(iv_u))
+                pdg%scal0d_cr(1:nper_sclg(iv_u),tupd_oa(iv_u))=pdl%scal0d_oa(1:nper_sclg(iv_u),v2locsclg(iv_u))
             endif if_scalogram_not_on_root
            endif if_node_correct
 
@@ -7306,10 +7762,10 @@
 !$OMP MASTER
          if(if_print_node) write (io_unit,*) 'Pre-calculated size for wf_oa now reached ',nmsimult_oa 
 !$OMP END MASTER
-      else if (l_a.gt.nmsimult_oa) then
-         write (*,*) 'ERROR OA : above pre-calculated size for wf_oa ',nmsimult_oa
-         if(if_print_node) write (io_unit,*) 'STOP : above pre-calculated size for wf_oa ',nmsimult_oa
-         stop
+      !else if (l_a.gt.nmsimult_oa) then
+      !   write (*,*) 'ERROR OA : above pre-calculated size for wf_oa ',nmsimult_oa
+      !   if(if_print_node) write (io_unit,*) 'STOP : above pre-calculated size for wf_oa ',nmsimult_oa
+      !   stop
       endif
 
       if (l_a.eq.nmsimult_oa.and.associated(pst%wf_oa(l_a)%coef) ) then
@@ -7321,11 +7777,19 @@
 
       ! BLXD TODO tile tile-thread loop => protect against MPI process double allocation
       ! Check if .not. associated instead allocated
-      if (.not. associated(pst%wf_oa(l_a)%coef) ) allocate( pst%wf_oa(l_a)%coef(dim_a) )
+      if (.not. associated(pst%wf_oa(l_a)%coef) ) then
+        allocate( pst%wf_oa(l_a)%coef(dim_a) )
+        pst%wf_oa(l_a)%allocated = .true.
+        nmsimult_oa_verif = nmsimult_oa_verif + 1
+        nmsimult_oa_verif_max = max(nmsimult_oa_verif,nmsimult_oa_verif_max)
+!$OMP MASTER
+         if(if_print_node) write (io_unit,*) '>> wf_oa size <<' ,nmsimult_oa_verif, nmsimult_oa
+!$OMP END MASTER
+      endif
 
 !.....History file:
 !$OMP MASTER
-      call history_oa(2,lc_a,lv_a,l_a,lti_a,-1, iic_oa)
+      call history_oa(2,lc_a,lv_a,l_a,lti_a,0,-1,iic_oa)
 !$OMP END MASTER
 
       pst%wf_oa(l_a)%coef(:)               = (0.D0,0.D0) ! #BLDX double prec
@@ -7355,7 +7819,7 @@
       
 !.....History file:
 !$OMP MASTER
-      call history_oa(3,lt_a,-1,-1,-1, -1)
+      call history_oa(3,lt_a,-1,-1,-1,-1,0)
 !$OMP END MASTER
 
       ! BLXD AUG2021 coef is an "allocated pointer"
@@ -7367,11 +7831,15 @@
 
       deallocate (pst%wf_oa(tallocated_oa(lt_a))%coef )
       nullify( pst%wf_oa(tallocated_oa(lt_a))%coef )
+      pst%wf_oa(tallocated_oa(lt_a))%allocated=.false.
 
       pst%wf_oa(tallocated_oa(lt_a))%t_indice   = -1 
       pst%wf_oa(tallocated_oa(lt_a))%config     = -1
       pst%wf_oa(tallocated_oa(lt_a))%variable   = -1 
       tallocated_oa(lt_a)                       = -1
+
+      ! BLXD TODO REMOVE not OpenMP protected
+      nmsimult_oa_verif = nmsimult_oa_verif - 1
 
       pst => null()
 
@@ -8316,7 +8784,7 @@
 !
 !> @details  the test variable is an homogeneous 3D field 
 !! varying as a LC of cosine functions with periods and amplitude
-!! set in the OA namelist 
+!! set in the OA namelist. Called in main_oa iic_oa iic/iif 
 !!
 !
 ! REVISION HISTORY:
@@ -8332,8 +8800,8 @@
 !----------------------------------------------------------------------
 
       subroutine test_oa_back( tile                     & 
-       ,iic_oa )
-!      ,dti                        & 
+       ,iic_oa                                          & !)
+       ,dti)
 !      ,imin, imax                 &
 !      ,jmin, jmax                 &
 !      ,kmin, kmax )
@@ -8348,7 +8816,7 @@
       !!double precision, intent(in) :: dti
 
       !> Croco tile(-thread)
-      integer, intent(in) :: tile 
+      integer, intent(in) :: tile, dti 
 
       !> Current model integration iteration
       integer, intent(in) :: iic_oa 
@@ -8403,7 +8871,9 @@
       end subroutine test_oa_back
 
       subroutine test_oa( tile     & 
-       ,iic_oa )
+       ,ichoix                     &
+       ,iic_oa                     & 
+       ,dti)
 !       ichoix                     & 
 !       iic_oa                     & 
 !      ,dti                        & 
@@ -8416,15 +8886,17 @@
 
       implicit none
 
-      ! BLXD TODO clean
-      !!> Time integration step
-      !!double precision, intent(in) :: dti
+      !!> Integration time step slow/fast mode
+      double precision, dimension(0:nmod_oa), intent(in), target :: dti
 
       !> Croco tile(-thread)
-      integer, intent(in) :: tile 
+      integer, intent(in) :: tile, ichoix 
 
       !> Current model integration iteration
       integer, intent(in) :: iic_oa 
+
+      !> Model integration parameter (slow and fast mode)
+      double precision, pointer :: pdti
 
       type(tile_test_str), pointer :: psts => null()
 
@@ -8432,49 +8904,164 @@
       integer           :: i, j, k, iper, iper1, iper2
       !logical           :: ll_ptra
 #ifdef IGW
-      real, parameter:: it_phy1=90.
-      real              :: it_tr12, it_phy2, it_tr23, &
+! nper3 fun2 amp 1,2,3 per 893 1132 1434
+! 576 time steps 150s 4 * per ~ 2000s
+!      real, parameter:: dit0=90., dit1=30., dit2=60, dit3=90.
+! nper3 fun3 amp 3,5,7 per 893 1132 1434
+! 864 time steps 150s 4 * per ~ 2000s _v4
+!      real, parameter:: dit0=120., dit1=60., dit2=78, dit3=90.
+! 864 time steps 150s 4 * per ~ 2000s _v5
+!      real, parameter:: dit0=120., dit1=60., dit2=120, dit3=120.
+! 4x864 time steps 150s 4 * per ~ 2000s _v5
+      real, parameter:: dit0=480., dit1=240., dit2=480, dit3=480.
+    
+      logical,parameter::old_nper_test_2=.false.
+      real              :: it_phy1, it_tr12, it_phy2, it_tr23, &
                            it_phy3, it_tr34, it_phy4, it_phy5, it_phy6
       real              :: delta_it, delta_amp
-
 #endif
+      logical,parameter::if_norm_amp=.true.
+      logical,parameter::if_norm_amp_fact=.true.
+      real,parameter:: fact=5
 
-        psts => sts(tile)
+      real              :: amp_test2_tot 
 
-        iper1=1
-        iper2=nper_test
+
+      psts => sts(tile)
+
+      iper1=1
+      iper2=nper_test
+
+      amp_test2_tot = 1.
+
+!.....Select the correct model mode thanks to ichoix argument
+!     Slow mode ichoix=0, Fast mode ichoix=1
+      
+      if ( ( ichoix == 0 ) .or. ( ichoix == 1 ) ) then      
+          pdti    => dti   ( ichoix  )
+      else
+        write(*,*) 'ERROR OA : dev needed to call test_oa with ichoix arg value other than 0 or 1'
+        stop
+      endif
+
 
 #ifdef IGW
-      
-       if_sclg : if ( scalogram_analysis ) then
 
-           nper3 : if (nper_test==2) then
+!......IGW + scalogram test function + slow mode             
+       if_sclg : if ( scalogram_analysis .and. (ichoix==0) ) then
 
-           !iper1 = 1; iper2=nper_test
-           if (iic_oa <= 52 ) then
-            iper1=1 ; iper2=1
-           else if ( (iic_oa > 52 ) .and. (iic_oa <= 96) ) then
-            iper1=1
-            iper2=nper_test
-           else if (iic_oa > 96 ) then
-            iper1 = 2; iper2=2
-           !else
-           endif
-
-           else if (nper_test==3) then nper3
-
-           it_tr12=it_phy1+30.
-           it_phy2=it_tr12+60.
-           it_tr23=it_phy2+30.
-           it_phy3=it_tr23+60.
-           it_tr34=it_phy3+30.
-           it_phy4=it_tr34+60.
-           it_phy5=it_phy4+90.
+           ! T1
+           it_phy1=dit0
+           ! T1 + inc. T2
+           it_tr12=it_phy1+dit1
+           ! T1 + T2
+           it_phy2=it_tr12+dit2
+           ! dec. T1 + T2
+           it_tr23=it_phy2+dit1
+           ! T2
+           it_phy3=it_tr23+dit2
+           ! T2 + inc. T3
+           it_tr34=it_phy3+dit1
+           ! T2 + T3
+           it_phy4=it_tr34+dit2
+           ! T3 (corr T2) 
+           it_phy5=it_phy4+dit3
+           ! T1
            it_phy6=it_phy5+126.
 
+           nper3 : if (nper_test==2) then
+          
+               if_old_nper_test_2 : if (old_nper_test_2) then 
+                   !Old test 192 ts
+                   if (iic_oa <= 52 ) then
+                    iper1=1 ; iper2=1
+                   else if ( (iic_oa > 52 ) .and. (iic_oa <= 96) ) then
+                    iper1=1
+                    iper2=nper_test
+                   else if (iic_oa > 96 ) then
+                    iper1 = 2; iper2=2
+                   !else
+                   endif
+                   do iper=iper1,iper2
+                       amp_test2_oa(iper) = amp_test_oa(iper)
+                   enddo
+
+               else if_old_nper_test_2
+
+               !it_tr12=it_phy2
+               !it_phy2=it_tr23
+               !it_tr23=it_phy3
+               !it_phy3=it_tr34
+
+               it_tr12=it_phy2
+               it_phy2=it_phy3
+               it_tr23=it_tr34
+               it_phy3=it_phy4
+
+               !iper1 = 1; iper2=nper_test
+               if (iic_oa < it_phy1 ) then
+                !T1
+                iper1=1 ; iper2=min(2,nper_test)
+                amp_test2_oa(iper1) = amp_test_oa(iper1)
+                do iper=iper2,nper_test
+                    amp_test2_oa(iper) = 0.
+                enddo
+               else if ( (iic_oa >= it_phy1 ) .and. (iic_oa <= it_tr12) ) then
+                !T1+inc.T2
+                iper1=1; iper2=min(2,nper_test)
+                delta_it  = (it_tr12 - it_phy1 )
+                delta_amp = amp_test_oa(iper2)/delta_it
+                amp_test2_oa(iper1) = amp_test_oa(iper1)
+                amp_test2_oa(iper2) = delta_amp * (iic_oa - it_phy1)
+                do iper=iper2+1,nper_test,1
+                    amp_test2_oa(iper) = 0.
+                enddo
+               else if ( (iic_oa > it_tr12 ) .and. (iic_oa <= it_phy2) ) then
+                !T1+T2
+                iper1=1; iper2=min(2,nper_test)
+                amp_test2_oa(iper1) = amp_test_oa(iper1)
+                amp_test2_oa(iper2) = amp_test_oa(iper2)
+                do iper=iper2+1,nper_test,1
+                    amp_test2_oa(iper) = 0.
+                enddo
+               else if ( (iic_oa > it_phy2 ) .and. (iic_oa <= it_tr23) ) then
+                !T2+dec.T1
+                iper1=1; iper2=min(2,nper_test)
+                delta_it  = (it_tr23 - it_phy2 )
+                delta_amp = - amp_test_oa(iper1)/delta_it
+                amp_test2_oa(iper1) = amp_test_oa(iper1)+delta_amp*(iic_oa-it_phy2)
+                amp_test2_oa(iper2) = amp_test_oa(iper2)
+                do iper=iper2+1,nper_test,1
+                    amp_test2_oa(iper) = 0.
+                enddo
+               else if ( (iic_oa > it_tr23 ) .and. (iic_oa <= it_phy3) ) then
+                !T2
+                iper1=1; iper2=min(2,nper_test)
+                amp_test2_oa(iper1) = 0. 
+                amp_test2_oa(iper2) = amp_test_oa(iper2)
+                do iper=iper2+1,nper_test,1
+                    amp_test2_oa(iper) = 0.
+                enddo
+               else if (iic_oa > it_phy3 ) then
+                !T1
+                iper1=1 ; iper2=1
+                amp_test2_oa(iper1) = amp_test_oa(iper1)
+                do iper=iper2+1,nper_test,1
+                    amp_test2_oa(iper) = 0.
+                enddo
+               endif
+               endif if_old_nper_test_2
+
+           else if (nper_test==1) then
+
+                iper1=1 ; iper2=1
+                amp_test2_oa(iper1) = amp_test_oa(iper1)
+
+           else if (nper_test==3) then nper3
+           
            !iper1 = 1; iper2=nper_test
            if (iic_oa < it_phy1 ) then
-            iper1=1 ; iper2=1
+            iper1=1 ; iper2=min(2,nper_test)
             amp_test2_oa(iper1) = amp_test_oa(iper1)
             do iper=iper2,nper_test
                 amp_test2_oa(iper) = 0.
@@ -8522,10 +9109,12 @@
             amp_test2_oa(iper1) = amp_test_oa(iper1)
             amp_test2_oa(iper2) = amp_test_oa(iper2)
            else if ( (iic_oa > it_phy4 ) .and. (iic_oa <= it_phy5) ) then
-            iper1=min(2,nper_test); iper2=min(2,nper_test)
+            iper1=min(1,nper_test); iper2=min(3,nper_test)
             amp_test2_oa(1) = 0. 
-            amp_test2_oa(2) = amp_test_oa(2)
-            amp_test2_oa(3) = 0. 
+            !amp_test2_oa(2) = amp_test_oa(2)
+            !amp_test2_oa(3) = 0. 
+            amp_test2_oa(2) = 0.
+            amp_test2_oa(3) =amp_test_oa(3)
            else if (iic_oa > it_phy5 ) then
             iper1=1 ; iper2=1
             amp_test2_oa(iper1) = amp_test_oa(iper1)
@@ -8535,21 +9124,54 @@
            endif
         endif nper3
 
-        if (nper_test/=3) then
+           if (if_norm_amp) then
+           amp_test2_tot = 0.
+           do iper=iper1,iper2
+               amp_test2_tot = amp_test2_tot + amp_test2_oa(iper)
+           enddo
+           endif
+
+       else
+
+!......IGW + test function + not a scalogram + slow mode        
             do iper=iper1,iper2
                 amp_test2_oa(iper) = amp_test_oa(iper)
             enddo
-        endif
 
        endif if_sclg
+
+#else
+    
+!......Test function       
+
+       do iper=iper1,iper2
+         amp_test2_oa(iper) = amp_test_oa(iper)
+       enddo
+
+       !write(*,*)'ERROR OA : OA test function only applied to IGW configuration ccp key'
+       !stop
 #endif
 
-       time_t = dti * real(iic_oa)
+!......Select proper mode time axis
+       time_t = pdti * real(iic_oa)
      
        var_t=0.D0 
        do iper = iper1,iper2
          var_t = var_t + amp_test2_oa(iper) * cos(2.d0*pi_oa/period_test_oa(iper)*time_t)
        end do
+
+!......Normalized CL of cosines
+       if (if_norm_amp) then
+
+        var_t = var_t/amp_test2_tot
+
+        if (if_norm_amp_fact) var_t = fact * var_t
+     
+       endif
+
+!$OMP MASTER
+        if(if_print_node) write(io_tst,fmt="(i5,2(1x,ES22.15E2))") iic_oa,time_t,var_t
+!$OMP END MASTER
 
        ! BLXD removing temporary hardcoded option 
        !if (nper_test /= -1) then 
@@ -8562,6 +9184,7 @@
        enddo
        !end if
 
+       pdti => null() 
        psts => null()
 
       return
@@ -8886,7 +9509,7 @@
 !------------------------------------------------------------------------------
 
       subroutine history_oa ( ichoix, i1_h, i2_h, i3_h, i4_h, tile &
-                              ,iic_oa, nt_max )
+                             ,imm, iic_oa, nt_max )
 
       !BLXD_TILE_ISSUE
       !use module_tile_oa, only : pst, st
@@ -8905,12 +9528,14 @@
       integer, intent(in) :: tile
       integer, intent(in) :: ichoix
       integer, intent(in) :: i1_h, i2_h, i3_h, i4_h
+      integer, intent(in) :: imm
+
 
       !> Current model integration iteration
       integer, intent(in), optional :: iic_oa 
 
       !> Last simulation iteration index
-      integer, intent(in), optional :: nt_max                                        
+      integer, dimension(0:nmod_oa), intent(in), optional :: nt_max                                        
 
       type(tile_space_str), pointer :: pst => null()
 
@@ -9115,6 +9740,8 @@
                write(io_hist,*) 'type echantillonnage       : ',swt_t_oa(iv_o)
                write(io_hist,*) 'premiere sortie (h/s)      : ',t0_oa(iv_o)
                write(io_hist,*) 'discretisation/integration : ',dori_oa(iv_o)
+               write(io_hist,*) 'mode lent/rapide 0/1       : ',cnb_oa(iv_o)
+
 
                if (swt_t_oa(iv_o).eq.1.or.swt_t_oa(iv_o).eq.4) then
                   write(io_hist,*) 'extraction: kount initial  : ',kount_user_oa(1,iv_o)
@@ -9122,15 +9749,15 @@
                   write(io_hist,*) '            delta(kount)   : ',kount_user_oa(3,iv_o)
                else if (swt_t_oa(iv_o).eq.3) then
                   write(io_hist,*) 'extraction: kount initial: ',kount_user_oa(1,iv_o)
-               !else if (swt_t_oa(iv_o).eq.3) then #BLDX croco nt_max ?
-                  write(io_hist,*) 'extraction: kount final  : ',nt_max-1
+               !else if (swt_t_oa(iv_o).eq.3) then #BLDX croco nt_max(cnb_oa(iv_oa))?
+                  write(io_hist,*) 'extraction: kount final  : ',nt_max(cnb_oa(iv_o))-1
                endif 
 
                do lt_o  = begvt_oa(iv_o) , begvt_oa(iv_o+1) - 1
                   ! #BLXD Corrected Log. 
                   ! see call var_oa if (   kountv_oa(1,lt_o).ne.-9999.or.kountv_oa(2,lt_o).ne.-9999) then
                   if (   kountv_oa(1,lt_o).ne.-9999.and.kountv_oa(2,lt_o).ne.-9999) then
-                     write(io_hist,*) 'BLXD localisation de l''atome n°',lt_o-begvt_oa(iv_o)+1,' [t1,t2]= ',kountv_oa(1,lt_o), kountv_oa(2,lt_o)
+                     write(io_hist,*) 'localisation de l''atome n°',lt_o-begvt_oa(iv_o)+1,' [t1,t2]= ',kountv_oa(1,lt_o), kountv_oa(2,lt_o)
                   else
                      write(io_hist,*) 'pas d''analyse pour la localisation n°',lt_o-begvt_oa(iv_o)+1
                   endif
@@ -9144,7 +9771,7 @@
 
                if (swt_d_oa(iv_o).eq.1.or.swt_d_oa(iv_o).eq.3) then
 #ifdef SPHERICAL
-                  write(io_hist,*) ' BLXD CHECK lon, lat min max'
+                  write(io_hist,*) 'Test lon,lat min-max'
          if ( if_sphe_deg2rad ) then
                   write(io_hist,*) 'degree    : lat min,lat max   : ',lat_oa(1,iv_o)*180/pi_oa,lat_oa(2,iv_o)*180/pi_oa
                   write(io_hist,*) '            lon min,lon max   : ',lon_oa(1,iv_o)*180/pi_oa,lon_oa(2,iv_o)*180/pi_oa
@@ -9378,7 +10005,7 @@
         write(io_hist,*) ' allocation dynamique des variables 2d/3d'
         write(io_hist,*) '  => nzupd0d_oa,nzupd2d_oa,nzupd3d_oa:',nzupd2d_oa,nzupd3d_oa
         write(io_hist,*) ' allocation dynamique des variables 0d-scalogram'
-        write(io_hist,*) '  => nzupd0d_oa                      :',nzupd0d_oa
+        write(io_hist,*) '  => nzupd0d_oa                      :',nzupd0d_oa(imm)
         write(io_hist,*) '*************************************'
         write(io_hist,*)
         close (io_hist)
@@ -9438,7 +10065,7 @@
        !if (ifl_oa_out.eq.1.or.(ifl_oa_out.eq.2.and.par%rank.eq.0)) then
         !if (ifl_oa_out.eq.1) call sequential_begin()
         open(unit=io_hist,file=trim(file_hist),position='append')   
-        write(io_hist,*) 'mise a jour des coord. des scalogram ip, perv =',i1_h,perv_oa(1,i1_h) 
+        write(io_hist,*) 'update coord. des scalogram ip, perv =',i1_h,perv_oa(1,i1_h) 
         write(io_hist,*) ' - index global du scalogram tupd_oa    ',tupd_oa(i2_h)
         close(io_hist)
         !if (ifl_oa_out.eq.1) call sequential_end()
@@ -9474,6 +10101,77 @@
        return
 
        end subroutine history_oa
+
+!BLXD TODO pointer allocatable array => single interface routine 
+     subroutine allocate_0D_sclg_pointer_oa_cplx( arr_oa, nper_sclg_oa, nzupd0d_oa )
+     implicit none
+     complex(8), dimension(:,:), pointer, intent(inout) :: arr_oa
+     integer, intent(in) :: nzupd0d_oa, nper_sclg_oa
+      
+     
+       if ( .not. associated(arr_oa) ) then
+           allocate( arr_oa( nper_sclg_oa, nzupd0d_oa) )
+           arr_oa(:,:) = ( 0.D0, 0.D0 )
+       endif
+       return
+     
+     end subroutine allocate_0D_sclg_pointer_oa_cplx
+
+
+     subroutine allocate_0D_sclg_pointer_oa_real( arr_oa, nper_sclg_oa, nzupd0d_oa )
+     implicit none
+ real(8), dimension(:,:), pointer, intent(inout) :: arr_oa
+     integer, intent(in) :: nzupd0d_oa, nper_sclg_oa
+      
+       if ( .not. associated(arr_oa) ) then
+           allocate( arr_oa(  nper_sclg_oa, nzupd0d_oa) )
+       endif
+       return
+     
+     end subroutine allocate_0D_sclg_pointer_oa_real
+
+
+!BLXD TODO scalogram arrays could be initialized elsewhere since they do not depend
+!     on Croco spatial MPI subdomain dimensions and/or tile dimensions
+     subroutine allocate_0D_sclg_array_oa_cplx( arr_oa, nper_sclg_oa, nzupd0d_oa )
+     implicit none
+     complex(8), dimension(:,:), allocatable, intent(inout) :: arr_oa
+     integer, intent(in) :: nzupd0d_oa, nper_sclg_oa
+      
+     
+       if ( .not. allocated(arr_oa) ) then
+           allocate( arr_oa( nper_sclg_oa, nzupd0d_oa) )
+           arr_oa(:,:) = ( 0.D0, 0.D0 )
+       endif
+       return
+     
+     end subroutine allocate_0D_sclg_array_oa_cplx
+
+
+     subroutine allocate_0D_sclg_array_oa_real( arr_oa, nper_sclg_oa, nzupd0d_oa )
+     implicit none
+     real(8), dimension(:,:), allocatable, intent(inout) :: arr_oa
+     integer, intent(in) :: nzupd0d_oa, nper_sclg_oa
+      
+       if ( .not. allocated(arr_oa) ) then
+           allocate( arr_oa(  nper_sclg_oa, nzupd0d_oa) )
+       endif
+       return
+     
+     end subroutine allocate_0D_sclg_array_oa_real
+
+     subroutine allocate_0D_sclg_array_oa_int( arr_oa, nzupd0d_oa )
+     implicit none
+     integer, dimension(:), allocatable, intent(inout) :: arr_oa
+     integer, intent(in) :: nzupd0d_oa
+      
+     
+       if ( .not. allocated(arr_oa) ) then
+           allocate( arr_oa( nzupd0d_oa) )
+       endif
+       return
+     
+     end subroutine allocate_0D_sclg_array_oa_int
 
        integer function pers_t2p_oa( iv, lt )
         use module_oa_periode, only : per_t2p_oa, begvp_oa
@@ -9595,6 +10293,7 @@
  
 #else /* ONLINE_ANALYSIS */
       module module_interface_oa_empty
-      end module
+      end module module_interface_oa_empty
+
 #endif /* ONLINE_ANALYSIS */
 

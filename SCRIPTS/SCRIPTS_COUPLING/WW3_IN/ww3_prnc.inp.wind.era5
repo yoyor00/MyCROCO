@@ -32,11 +32,11 @@ $
 $ Name spatial of dimensions ----------------------------------------- $
 $ NB: time dimension is expected to be called 'time' ----------------- $
 $
-  lon lat
+  longitude latitude
 $
 $ Variables to use --------------------------------------------------- $
 $
-  U10M V10M
+  u10 v10
 $
 $ Additional time input ---------------------------------------------- $
 $ If time flag is F, give time of field in yyyymmdd hhmmss format ---- $
@@ -46,7 +46,7 @@ $
 $ Define data files -------------------------------------------------- $
 $ Filename(s) of the forcing field (in quotes, one per line)        -- $
 $
-  'wind.nc'
+  'wind.era5.nc'
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

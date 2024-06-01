@@ -1,7 +1,6 @@
-! $Id: clm_tides.F 1476 2014-02-17 08:55:42Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -93,7 +92,7 @@
 ! MAS INIT
 !-------------
       IF (FIRST_RST_TIME_STEP) THEN
-
+!$acc kernels if(compute_on_device) default(present)
 
 ! lecture des conditions aux limites
 !-----------------------------------
@@ -242,10 +241,12 @@
         end do
        ENDIF
 
+!$acc end kernels     
       ENDIF ! FIRST TIME STEP
 #  endif /* MAS INIT */
 
 #  ifndef TIDES_MAS
+!$acc kernels if(compute_on_device) default(present)
 !---------------------------------------------------------------------
 !  Add tidal elevation (m) to sea surface height climatology.
 !---------------------------------------------------------------------
@@ -271,6 +272,7 @@
           enddo
         endif
       enddo
+!$acc end kernels      
 #  else
 !--------------------------------------------
 ! USE MAS COMPOSITION FOR HARMONIC PREDICTION
@@ -401,8 +403,9 @@
          end do
        end do
 #   endif
+!$acc end kernels
 #  endif /* MAS COMPOSITION */
-
+!$acc kernels if(compute_on_device) default(present)
 !----------------------------------------------------------------
 !  Add sub-tidal forcing and adjust climatology to include tides.
 !----------------------------------------------------------------
@@ -477,9 +480,11 @@
       endif
 #   endif
 #  endif /* Z_FRC_BRY */
+!$acc end kernels
 # endif /* SSH_TIDES */
 !
 # if defined UV_TIDES
+!$acc kernels if(compute_on_device) default(present)
 !
 !---------------------------------------------------------------------
 !  Add tidal currents (m/s) to 2D momentum climatologies.
@@ -605,9 +610,11 @@
       endif
 #   endif
 #  endif /* M2_FRC_BRY */
+!$acc end kernels
 # endif /* UV_TIDES */
 
 # if defined POT_TIDES
+!$acc kernels if(compute_on_device) default(present)
 !
 !-----------------------------------------------------------------------
 !  Compute tidal potential (m)
@@ -636,6 +643,7 @@
         endif
       enddo
 
+!$acc end kernels
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        Ptide(START_2D_ARRAY))

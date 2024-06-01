@@ -1,7 +1,6 @@
-! $Id: step3d_uv1.F 1613 2014-12-12 15:25:54Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -57,7 +56,10 @@
 #  define SWITCH !
 # endif
 
+!$acc kernels if(compute_on_device) default(present)
+
       cff=0.25*dt
+!$acc loop private(DC(:,0))
       do j=Jstr,Jend
         do i=IstrU,Iend
           DC(i,0)=cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
@@ -149,7 +151,9 @@
             enddo
           enddo
         endif
-      enddo
+      enddo 
+!$acc end kernels
+
 #else
       subroutine step3d_uv1_empty
 #endif

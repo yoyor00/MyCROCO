@@ -68,7 +68,7 @@ mytmp=$mydir/from_ww3_tmp.nc
 
     # Model variables
     if [ $var == WW3_ACHA ] ; then
-      varin=MAPSTA
+      varin=hs
     elif [ $var == WW3__DIR ] ; then
       varin=dir
     elif [ $var == WW3__OHS ] ; then
@@ -83,6 +83,20 @@ mytmp=$mydir/from_ww3_tmp.nc
       varin=utaw
     elif [ $var == WW3_TAWY ] ; then
       varin=vtaw
+    elif [ $var == WW3__FOC ] ; then
+      varin=foc
+    elif [ $var == WW3_USSX ] ; then
+      varin=uuss
+    elif [ $var == WW3_USSY ] ; then
+      varin=vuss
+    elif [ $var == WW3___LM ] ; then
+      varin=lm
+    elif [ $var == WW3__BHD ] ; then
+      varin=bhd
+    elif [ $var == WW3_UBRX ] ; then
+      varin=uuss
+    elif [ $var == WW3_UBRY ] ; then
+      varin=uuss
     else
       echo 'ERROR: '$var' variable not implemented yet'
       echo 'Exit...'
@@ -97,7 +111,7 @@ mytmp=$mydir/from_ww3_tmp.nc
     # compute or rename variable
     if [ $var == WW3_ACHA ] ; then
       echo '---> Create charnock coef = 0.0185...'
-      ncap2 -A -v -s "WW3_ACHA=MAPSTA*0+0.0185" $mytmp $fileout
+      ncap2 -A -v -s "WW3_ACHA=hs*0+0.0185" $mytmp $fileout
 
 #    elif [ $var == WW3_SDIR ] ; then
 #      echo '---> Compute sin of dir...'
@@ -107,6 +121,9 @@ mytmp=$mydir/from_ww3_tmp.nc
 #      echo '---> Compute cos of dir...'
 #      ncap2 -A -v -s "WW3_CDIR=cos((270-dir)*3.1415926/180)" $mytmp $fileout
 #
+    elif [ $var == WW3__DIR ] ; then
+      echo '---> From dir compute theta (THM), which is the WW3 variable that is exchanged: conversion geographic to trigonometric and degrees to radians'
+      ncap2 -A -v -s "WW3__DIR=(270-dir)*3.1415926/180" $mytmp $fileout
     else 
       echo '---> Rename '$varin' in '$var
       ncrename -v $varin,$var $mytmp

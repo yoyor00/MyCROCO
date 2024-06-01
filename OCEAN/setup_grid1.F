@@ -1,8 +1,6 @@
-!
-! $Id: setup_grid1.F 1449 2014-01-29 13:40:03Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -36,6 +34,7 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_extended_bounds.h"
+!$acc kernels if(compute_on_device) default(present)
 !
 !  Set f/mn,at horizontal RHO-points.
 !
@@ -259,8 +258,12 @@ C$    integer omp_get_thread_num
 #undef JR_RANGE
 #undef JV_RANGE
 
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+
+#if defined BD_EXCHANGE
+# ifndef BASIN      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
+# endif      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   om_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   on_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, pnom_r)

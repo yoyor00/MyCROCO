@@ -1,7 +1,6 @@
-! $Id: setup_grid2.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -69,6 +68,7 @@
       my_Cu_min=+1.E+20            !
       my_Cu_max=-1.E+20            ! where c=sqrt(g*h) is phase
                                    ! speed for barotropic mode,
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR             ! and dx,dy are grid spacings
         do i=IstrR,IendR           ! in each direction.
 
@@ -160,6 +160,8 @@
         enddo
       endif
 #endif
+!$acc end kernels
+
 !
 ! Thus far everything has ben computed within the tile. Next: combine
 ! the results to get global min/max and summations. This needs to be

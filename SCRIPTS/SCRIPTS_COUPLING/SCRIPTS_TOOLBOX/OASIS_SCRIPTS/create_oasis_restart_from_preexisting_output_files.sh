@@ -87,7 +87,7 @@ if [ $model == wrf ] ; then
             ${gridlevels}_PSFC)
 
     dimtime=Time
-    timerange=2
+    timerange=$atm_rst_timeind
 
 elif  [ $model == croco ] ; then
 
@@ -102,7 +102,7 @@ elif  [ $model == croco ] ; then
             CROCO_SSH${gridlevels})
 
     dimtime=time
-    timerange=1
+    timerange=$oce_rst_timeind
 
 elif  [ $model == ww3 ] ; then
 
@@ -115,18 +115,35 @@ elif  [ $model == ww3 ] ; then
 #            WW3_TAWX \
 #            WW3_TAWY \
 #            WW3__CHA)
-
-    varlist=(WW3_T0M1 \
-            WW3___HS \
-            WW3__DIR \
-            WW3_TWOX \
-            WW3_TWOY \
-            WW3_TAWX \
-            WW3_TAWY \
-            WW3_ACHA)
+    if [ $OW_COUPLING_FULL = 'TRUE' ] ; then
+        varlist=(WW3_T0M1 \
+                WW3__OHS \
+                WW3__DIR \
+                WW3_TWOX \
+                WW3_TWOY \
+                WW3_TAWX \
+                WW3_TAWY \
+                WW3_ACHA \
+                WW3__FOC \
+                WW3_USSX \
+                WW3_USSY \
+                WW3___LM \
+                WW3__BHD \
+                WW3_UBRX \
+                WW3_UBRY)
+    else
+        varlist=(WW3_T0M1 \
+                WW3__OHS \
+                WW3__DIR \
+                WW3_TWOX \
+                WW3_TWOY \
+                WW3_TAWX \
+                WW3_TAWY \
+                WW3_ACHA)
+    fi
 
     dimtime=time
-    timerange=1
+    timerange=$wav_rst_timeind
 
 else
     echo 'ERROR: '$model' case is not implemented yet. Exit...'
@@ -148,11 +165,13 @@ for k in `seq 0 $(( ${lengthvar} - 1))` ; do
 
     # Extract or compute var
     echo '---> Extract or compute '$var
+    echo "${SCRIPTDIR}/OASIS_SCRIPTS/from_${model}.sh $filein $filetmp $var $timerange $gridlevels"
     ${SCRIPTDIR}/OASIS_SCRIPTS/from_${model}.sh $filein $filetmp $var $timerange $gridlevels
 
     if [ $model == wrf ] ; then
         # Put them on the stag grid
-        echo '---> Put them on the stag grid' 
+        echo '---> Put them on the stag grid'
+        echo "${SCRIPTDIR}/OASIS_SCRIPTS/to_wrf_stag_grid.sh $filetmp $filetmp" 
         ${SCRIPTDIR}/OASIS_SCRIPTS/to_wrf_stag_grid.sh $filetmp $filetmp
     fi
 
