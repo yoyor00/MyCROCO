@@ -1,0 +1,38 @@
+{
+	// BASIN a bit larger
+	"JET": {
+		"title": "JET - (30 x 50 x 30 : 1200)",
+		"case": "JET",
+		"cppdeps": {
+			"ANA_JET": false
+		},
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#elif defined JET",
+				"what":    "      parameter (LLm0=30,   MMm0=50,   N=30)   ! 20 km resolution",
+				"by":      "      parameter (LLm0=30,   MMm0=50,   N=30)   ! 20 km resolution",
+				"descr":   "Set mesh size to (30 x 50 x 30)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.Jet": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                4860     3200      80      1",
+				"by":      "                1200     3200      80      1",
+				"descr":   "Set stepping (steps=1200, dt=3200, fast=80)"
+			}
+		},
+		"check_outputs": [ "jet_his.nc" ]
+	}
+}

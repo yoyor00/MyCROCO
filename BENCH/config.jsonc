@@ -1,0 +1,198 @@
+{
+	///////////////////////////// IMPOTS ///////////////////////////////////////
+	"imports": {
+		"hosts": [ "config.d/hosts/*" ],
+		"cases": [ "config.d/cases/*" ]
+	},
+	///////////////////////////// TUNING ///////////////////////////////////////
+	"hosts": {
+		"@default": {
+			"ressources": {
+				"cpu": 8,
+				"gpu": 1
+			},
+			"tuning": {
+				"gnu": "-march=native",
+				"nvfortran": "-tp=native",
+				"environ":{
+					"OMP_PROC_BIND": "spread"
+				},
+				"mpi_options": "",
+				"hwloc_bind": {
+					"openmp": "",
+					"mpirun": ""
+				}
+			}
+		}
+	},
+	////////////////////////////// DEFAULT SELECTION ///////////////////////////
+	"default_selection": {
+		"cases": ["BASIN", "BASIN-LARGE"],
+		"variants" : ["@wip-all"]
+	},
+	////////////////////////////// PRE-SELECTIONS //////////////////////////////
+	"meta_variants": {
+		"@wip-all": [
+			"sequential",
+			"openmp-2",
+			"openmp-4",
+			"openmp-8",
+			"mpi-2",
+			"mpi-4",
+			"mpi-8",
+			"openacc-native",
+			"openacc-psyclone"
+		],
+		"@cpu": [
+			"sequential",
+			"openmp-2",
+			"openmp-4",
+			"openmp-8",
+			"mpi-2",
+			"mpi-4",
+			"mpi-8"
+		],
+		"@gpu": [
+			"openacc-native",
+			"openacc-psyclone"
+		],
+		"@ci": [
+			"sequential",
+			"poseidon"
+		],
+		"@nvhpc": [
+			"sequential",
+			"sequential-nvfortran",
+			"sequential-nvfortran-acc-multicore-2",
+			"sequential-nvfortran-acc-multicore-4",
+			"sequential-nvfortran-acc-multicore-8",
+			"openmp-8"
+		]
+	},
+	"meta_cases": {
+		"@ci": [
+			"BASIN",
+			"SOLITON"
+		]
+	},
+	////////////////////////////// VARIANTS ////////////////////////////////////
+	"variants": {
+		// seq default
+		"sequential": {
+			"configure": "",
+			"tuning_familly": "gnu",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// seq default
+		"sequential-memcheck": {
+			"configure": "FFLAGS=-fsanitize=address CFLAGS=-fsanitize=address",
+			"tuning_familly": "gnu",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// seq default
+		"sequential-nvfortran": {
+			"configure": "FC=nvfortran",
+			"tuning_familly": "nvfortran",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// seq default
+		"sequential-nvfortran-acc-multicore-{threads}": {
+			"configure": "FC=nvfortran FFLAGS=-acc=multicore -DOPENACC=yes",
+			"tuning_familly": "nvfortran",
+			"environ": {
+				"OMP_NUM_THREADS": "{threads}"
+			},
+			"command_prefix": "{tuning.hwloc_bind.openmp}",
+			"unpack": {
+				"threads": [2, 4, 6, 8, 16, 32, 64]
+			},
+			"requires": {
+				"cpu": "{threads}"
+			}
+		},
+		// seq default
+		"poseidon": {
+			"configure": "--with-optim=poseidon",
+			"tuning_familly": "gnu",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// openmp
+		"openmp-{threads}": {
+			"configure": "--with-optim=openmp --with-threads={threads}",
+			"tuning_familly": "gnu",
+			"environ": {
+				"OMP_NUM_THREADS": "{threads}"
+			},
+			"command_prefix": "{tuning.hwloc_bind.openmp}",
+			"unpack": {
+				"threads": [2, 4, 6, 8, 16, 32, 64]
+			},
+			"requires": {
+				"cpu": "{threads}"
+			}
+		},
+		// mpi
+		"mpi-{tasks}": {
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
+			"tuning_familly": "gnu",
+			"environ": {
+				"OMP_NUM_THREADS": 1
+			},
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
+			"unpack": {
+				"tasks": [2, 4, 6, 8, 16, 32, 64]
+			},
+			"requires": {
+				"cpu": "{tasks}"
+			}
+		},
+		// openacc
+		"openacc-native": {
+			"configure": "--with-optim=openacc-native FC=nvfortran",
+			"tuning_familly": "nvfortran",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"gpu": 1
+			}
+		},
+		"openacc-psyclone-cpu": {
+			"configure": "--with-optim=openacc-psyclone FC=nvfortran FFLAGS=-acc=host",
+			"tuning_familly": "nvfortran",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"gpu": 1
+			}
+		},
+		"openacc-psyclone": {
+			"configure": "--with-optim=openacc-psyclone FC=nvfortran",
+			"tuning_familly": "nvfortran",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"gpu": 1
+			}
+		}
+	},
+	////////////////////////////// CASES ///////////////////////////////////////
+	"cases": {
+		// Look inside condif.d/cases/* to see what is imported here from dir.
+	}
+}

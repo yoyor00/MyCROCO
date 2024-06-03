@@ -1,0 +1,36 @@
+{
+	// BASIN a bit larger
+	"VORTEX": {
+		"title": "VORTEX - (60 x 60 x 10 : 600)",
+		"case": "VORTEX",
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#if defined VORTEX",
+				"what":    "      parameter (LLm0=60,   MMm0=60,   N=10)   ! 30 km resolution",
+				"by":      "      parameter (LLm0=60,   MMm0=60,   N=10)   ! 30 km resolution",
+				"descr":   "Set mesh size to (60 x 60 x 10)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.Vortex": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "               600      2880       50       1",
+				"by":      "               600      2880       50       1",
+				"descr":   "Set stepping (steps=600, dt=2880, fast=50)"
+			}
+		},
+		"check_outputs": [ "equator_his.nc" ],
+		"TODO": ["GRID"]
+	}
+}

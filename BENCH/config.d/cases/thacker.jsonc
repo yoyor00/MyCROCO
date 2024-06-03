@@ -1,0 +1,38 @@
+{
+	// BASIN a bit larger
+	"THACKER": {
+		"title": "THACKER - NO-2DV - (200 x 200 x 5 : 600)",
+		"case": "THACKER",
+		"cppkeys": {
+			"THACKER_2DV": false
+		},
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#if defined THACKER",
+				"what":    "      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution",
+				"by":      "      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution",
+				"descr":   "Set mesh size to (200 x 200 x 5)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.Thacker": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "               4320      60       30       1",
+				"by":      "                600      60       30       1",
+				"descr":   "Set stepping (steps=600, dt=60, fast=30)"
+			}
+		},
+		"check_outputs": [ "thacker_his.nc" ]
+	}
+}

@@ -1,0 +1,35 @@
+{
+	// BASIN a bit larger
+	"UPWELLING": {
+		"title": "UPWELLING - (16 x 64 x 16 : 410)",
+		"case": "UPWELLING",
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#if defined UPWELLING",
+				"what":    "      parameter (LLm0=16,   MMm0=64,   N=16)",
+				"by":      "      parameter (LLm0=16,   MMm0=64,   N=16)",
+				"descr":   "Set mesh size to (64 x 64 x 20)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.Upwelling": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "               410      960      48       1",
+				"by":      "               410      960      48       1",
+				"descr":   "Set stepping (steps=410, dt=960, fast=48)"
+			}
+		},
+		"check_outputs": [ "upwelling_his.nc", "upwelling_his.nc", "upwelling_avg.nc" ]
+	}
+}

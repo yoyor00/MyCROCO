@@ -1,0 +1,38 @@
+{
+	// BASIN a bit larger
+	"IGW-NBQ": {
+		"title": "IGW - NBQ - (256 x 3 x 40 : 1200)",
+		"case": "IGW",
+		"cppkeys": {
+			"NBQ": true
+		},
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#elif defined IGW",
+				"what":    "       parameter (LLm0=256, MMm0=3,    N=40)",
+				"by":      "       parameter (LLm0=256, MMm0=3,    N=40)",
+				"descr":   "Set mesh size to (257 x 3 x 40)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.IGW_nbq": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                 5    50.    60     500 ",
+				"by":      "                 5    50.    60     500 ",
+				"descr":   "Set stepping (steps=5, dt=50, fast=500)"
+			}
+		},
+		"check_outputs": [ "igw_his.nc", "igw_his.nc", "igw_avg.nc" ]
+	}
+}

@@ -1,0 +1,35 @@
+{
+	// BASIN a bit larger
+	"INTERNAL": {
+		"title": "INTERNAL - (40 x 32 x 32 : 992)",
+		"case": "INTERNAL",
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#if defined INTERNAL",
+				"what":    "      parameter (LLm0=800,  MMm0=3,    N=40)   ! 1.5 km resolution",
+				"by":      "      parameter (LLm0=800,  MMm0=3,    N=40)   ! 1.5 km resolution",
+				"descr":   "Set mesh size to (800 x 3 x 40)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.Internal": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                992     540       60       10",
+				"by":      "                992     540       60       10",
+				"descr":   "Set stepping (steps=992, dt=540, fast=60)"
+			}
+		},
+		"check_outputs": [ "internal_his.nc" ]
+	}
+}

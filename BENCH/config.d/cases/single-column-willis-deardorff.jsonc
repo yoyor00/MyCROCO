@@ -1,0 +1,39 @@
+{
+	// BASIN a bit larger
+	"SINGLE_COLUMN_WILLIS_DEARDORFF": {
+		"title": "SINGLE_COLUMN - WILLIS_DEARDORFF - (5 x 5 x 50 : 8640)",
+		"case": "SINGLE_COLUMN",
+		"cppkeys" : {
+			"KATO_PHILIPS": false,
+			"WILLIS_DEARDORFF": true
+		},
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \\",
+				"what":    "      parameter (LLm0=5 ,   MMm0=5,    N=50)",
+				"by":      "      parameter (LLm0=5 ,   MMm0=5,    N=50)",
+				"descr":   "Set mesh size to (5 x 5 x 50)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.WILLIS_DEARDORFF": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                8640      30      60      1",
+				"by":      "                8640      30      60      1",
+				"descr":   "Set stepping (steps=8640, dt=30, fast=60)"
+			}
+		},
+		"check_outputs": [ "scm_his.nc" ]
+	}
+}

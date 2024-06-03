@@ -1,0 +1,39 @@
+{
+	// BASIN a bit larger
+	"SINGLE_COLUMN_DIURNAL_CYCLE": {
+		"title": "SINGLE_COLUMN - DIURNAL_CYCLE - (5 x 5 x 150 : 23040)",
+		"case": "SINGLE_COLUMN",
+		"cppkeys" : {
+			"KATO_PHILIPS": false,
+			"DIURNAL_CYCLE": true
+		},
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "# elif defined DIURNAL_CYCLE",
+				"what":    "      parameter (LLm0=5 ,   MMm0=5,    N=150)",
+				"by":      "      parameter (LLm0=5 ,   MMm0=5,    N=150)",
+				"descr":   "Set mesh size to (5 x 5 x 150)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.DIURNALCYCLE": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                23040      30      60      1",
+				"by":      "                23040      30      60      1",
+				"descr":   "Set stepping (steps=23040, dt=30, fast=60)"
+			}
+		},
+		"check_outputs": [ "scm_his.nc" ]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	// BASIN a bit larger
+	"RIP_TOPO_2D": {
+		"title": "RIP - TOPO_2D - (48 x 48 x 20 : 1800)",
+		"case": "RIP",
+		"cppdefs": {
+            "RIP_TOPO_2D": true,
+			"BISCA": false,
+            "NBQ": false,
+            "WAVE_MAKER": false,
+            "GRANDPOPO": false
+		},
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#elif defined RIP",
+				"what":    "      parameter (LLm0= 48,  MMm0= 48,  N=20)   ! 16 m resolution",
+				"by":      "      parameter (LLm0= 48,  MMm0= 48,  N=20)   ! 16 m resolution",
+				"descr":   "Set mesh size to (48 x 48 x 20)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.Rip": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                1800      4        20      10",
+				"by":      "                1800      4        20      10",
+				"descr":   "Set stepping (steps=1800, dt=4, fast=20)"
+			}
+		},
+		"check_outputs": [ "rip_his.nc" ]
+	}
+}

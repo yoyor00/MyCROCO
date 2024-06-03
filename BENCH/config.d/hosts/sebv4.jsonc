@@ -1,0 +1,23 @@
+
+{
+	// my home workstation
+	"sebv4": {
+		"ressources": {
+			"cpu": 8,
+			"gpu": 1
+		},
+		"tuning": {
+			"gnu": "-march=native",
+			"nvfortran": "-tp=native",
+			"environ": {
+				"OMP_PROC_BIND": "spread"
+			},
+			"mpi_options": "-use-hwthread-cpus",
+			"hwloc_bind": {
+				"openmp": "",
+				"mpirun": ""
+			}
+		}
+	}
+}
+
