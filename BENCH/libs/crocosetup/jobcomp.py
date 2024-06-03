@@ -194,9 +194,6 @@ class JobcompCrocoConfig:
         if build has failed. Not using it without noticing it has not been rebuilt.
         '''
 
-        # TODO totaly remove this func in CROCO master branch as now already fixed in code
-        return
-
         # build rule
         rules = [{
             'mode'  : 'replace', 

@@ -19,6 +19,7 @@ from .hyperfine import run_hyperfine
 from .check import compare_netcdf_files
 from .crocosetup.cmake import CMakeCrocoSetup
 from .crocosetup.jobcomp import JobcompCrocoSetup
+from .meshdrawer import MeshDrawer
 
 ##########################################################
 class Croco:
@@ -384,6 +385,26 @@ class Croco:
     def check(self):
         for filename in self.case['check_outputs']:
             self.check_one_file(filename)
+
+    def dump_mesh(self, anim: bool = False):
+        # vars
+        dirname = self.dirname
+        full_name = self.full_name
+        result_dir = self.config.results
+
+        # loop each
+        for filename in self.case['check_outputs']:
+            actual_file = f"{dirname}/{filename}"
+            dump_in_file = f"{result_dir}/mesh-{full_name}/"
+            if anim:
+                Messaging.step(f"Drawing mesh-anim {full_name} / {filename}")
+            else:
+                Messaging.step(f"Drawing mesh {full_name} / {filename}")
+            mesh_drawer = MeshDrawer(actual_file, self.config, self.case_name)
+            if anim:
+                mesh_drawer.plot_all_variables_animation(dump_in_file)
+            else:
+                mesh_drawer.plot_all_variables(dump_in_file)
 
     def make_ref(self):
         # extract vars

@@ -108,14 +108,21 @@ class Benchmarking:
                 instance.build(extra_info=f" - [ {id + 1} / {cnt} ]", force_rebuild = self.config.rebuild)
 
         # run
-        if 'run' in self.config.modes:
+        if 'run' in self.config.modes or 'check' in self.config.modes or 'mesh' in self.config.modes or 'anim' in self.config.modes:
             instance: Croco
             for id, instance in enumerate(self.instances):
                 # run
-                instance.run(extra_info=f" - [ {id + 1} / {cnt} ]")
+                if 'run' in self.config.modes:
+                    instance.run(extra_info=f" - [ {id + 1} / {cnt} ]")
                 # check
                 if 'check' in self.config.modes:
                     instance.check()
+                # render meshes
+                if 'mesh' in self.config.modes:
+                    instance.dump_mesh()
+                # render meshes
+                if 'anim' in self.config.modes:
+                    instance.dump_mesh(anim=True)
                 # if need to store the ref
                 if self.config.build_ref and instance.variant_name == variant_ref_name:
                     instance.make_ref()
