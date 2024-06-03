@@ -13,6 +13,11 @@
       common /cpl_comm/ ocean_grid_comm
 !$AGRIF_END_DO_NOT_TREAT
 
+#if defined ENSEMBLE
+      INTEGER :: kmember ! index of ensemble member computed by this processor
+      common /ens_comm/ kmember ! Parameter for ensemble simulation
+#endif /* ENSEMBLE */
+
 #if defined OA_COUPLING || defined OW_COUPLING
       INTEGER :: comp_id                       ! component identification
       CHARACTER(len=6)   :: comp_name = 'crocox'

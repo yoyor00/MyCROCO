@@ -101,6 +101,10 @@
 # undef  SEDIMENT
 # undef  MUSTANG
 # undef  BBL
+
+# define STOCHASTIC
+# define ENSEMBLE
+
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */

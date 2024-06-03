@@ -124,6 +124,9 @@ C$OMP END PARALLEL
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
 #endif
+#ifdef STOCHASTIC
+          USE stomod   ! stochastic module
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -362,6 +365,10 @@ C$OMP MASTER
 C$OMP END MASTER
 #  endif
 # endif
+
+#ifdef STOCHASTIC
+      call sto_mod(ntimes) ! update stochastic fields
+#endif
 
 # ifdef BULK_FLUX
       do tile=my_first,my_last

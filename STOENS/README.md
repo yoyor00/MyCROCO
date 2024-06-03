@@ -1,4 +1,4 @@
-## Stochastic parameterization in CROCO
+# Stochastic parameterization in CROCO
 
 This directory contains modules to introduce stochastic parameterizations in CROCO.
 This includes the modules to generate stochatic processes with the required statistical properties,
@@ -109,13 +109,17 @@ At this stage, we have introduced only one:
 
 ### Modification in the CROCO code (in the OCEAN directory)
 
-These modifications are all included with the CPP key STOGEN.
+These modifications are all included with the **CPP key STOGEN**.
 Deactivating this key should remove all stochastic features.
 They include:
 
-- The initialization of the stochastic modules in main.F.
+- The definition of the CPP key STOGEN in `cppdefs.h`  
 
-- The update of the stochastic processes in step.F.
+- The compilation STOGEN scripts in `jobcomp`
+
+- The initialization of the stochastic modules in `main.F`.
+
+- The update of the stochastic processes in `step.F`.
 
 - The use of the stochastic arrays if and where needed.
 

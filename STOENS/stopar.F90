@@ -16,7 +16,7 @@ MODULE stopar
    USE stokernel       ! kernel method to generate new stochastic field
    USE stomarginal     ! transformation to requested marginal distribution
    ! user supplied external resources
-   USE stoexternal, only : wp, jpk, nmember, narea, mppsize, lbc_lnk
+   USE stoexternal , only : wp, jpk, nmember, narea, mppsize, lbc_lnk
 
    IMPLICIT NONE
    PRIVATE

@@ -42,7 +42,7 @@ MODULE storng_ziggurat
    !!   shr3_uni    : get next uniform random number using shr3
    !!   shr3_normal : get next normal random number using shr3 + simple method
    !!----------------------------------------------------------------------
-   USE stoexternal, only : sp, dp, wp, i4, i8
+   USE stoexternal , only : sp, dp, wp, i4, i8
    USE storng_kiss
 
    IMPLICIT NONE

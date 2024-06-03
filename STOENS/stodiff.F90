@@ -10,7 +10,7 @@ MODULE stodiff
    USE stoarray        ! module with stochastic arrays to update
    USE stowhite        ! uncorrelatedi normal  random number generator
    ! user supplied external resources
-   USE stoexternal, only : wp, jpi, jpj, lbc_lnk, mask_t, mask_u, mask_v
+   USE stoexternal , only : wp, jpi, jpj, lbc_lnk, mask_t, mask_u, mask_v
 
 
    IMPLICIT NONE

@@ -7,7 +7,7 @@ MODULE stokernel
    !!   sto_kernel      : generate new random field with kernel method
    !!   sto_kernel_init : initialize kernel method
    !!----------------------------------------------------------------------
-   USE stoexternal, only : wp, narea, lwp, numout, &
+   USE stoexternal , only : wp, narea, lwp, numout, &
                          & jpi, jpj, jpiglo, jpjglo, mig, mjg, &
                          & glamt, gphit, glamtglo, gphitglo, &
                          & broadcast_array

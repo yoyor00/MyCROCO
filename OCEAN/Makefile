@@ -135,7 +135,11 @@ include Makedefs
 
 
  SRCS90 = \
-	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
+	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	stowhite.F90\
+        stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90\
+        stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\
+	ensmpi.F90\
+ 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
 	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
 	p4zmort.F90	p4zopt.F90		p4zprod.F90	p4zrem.F90\
@@ -163,7 +167,6 @@ include Makedefs
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
 	comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
-	
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES

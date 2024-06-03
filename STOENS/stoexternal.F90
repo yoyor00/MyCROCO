@@ -8,10 +8,15 @@ MODULE stoexternal
    !!----------------------------------------------------------------------
 
    ! include parameters from CROCO
-   include 'param.h'
-   include 'scalars.h'
+#include "cppdefs.h"
+   USE scalars
+   IMPLICIT NONE
+   PRIVATE
    ! include definition of grid and mask from CROCO
-   include 'grid.h'
+#include "grid.h"
+
+   ! import MPI include file                                         |
+   include 'mpif.h'
 
    ! Type of variables
    INTEGER, PUBLIC, PARAMETER ::   sp = SELECTED_REAL_KIND( 6, 37)   !: single precision (real 4)
@@ -63,7 +68,7 @@ MODULE stoexternal
       MODULE PROCEDURE lbc_lnk_2d, lbc_lnk_3d
    END INTERFACE
 
-   PUBLIC ctl_nam, ocean_2_stogen, broadcast_array
+   PUBLIC ctl_nam, ocean_2_stogen, broadcast_array, lbc_lnk
 
 CONTAINS
 
@@ -81,11 +86,11 @@ CONTAINS
       REAL(wp), DIMENSION(jpi,jpj), INTENT(inout)           ::   pt2d      ! 2D array on which the lbc is applied
       REAL(wp)                    , INTENT(in   )           ::   psgn      ! control of the sign
 
-      IF (cd_type='T') THEN
+      IF (cd_type=='T') THEN
         call exchange_r2d_tile (1,jpi,1,jpj, pt2d)
-      ELSEIF (cd_type='U') THEN
+      ELSEIF (cd_type=='U') THEN
         call exchange_u2d_tile (1,jpi,1,jpj, pt2d)
-      ELSEIF (cd_type='V') THEN
+      ELSEIF (cd_type=='V') THEN
         call exchange_v2d_tile (1,jpi,1,jpj, pt2d)
       ELSE
         call exchange_r2d_tile (1,jpi,1,jpj, pt2d)
@@ -108,11 +113,11 @@ CONTAINS
       REAL(wp), DIMENSION(jpi,jpj,jpk), INTENT(inout)           ::   pt3d      ! 3D array on which the lbc is applied
       REAL(wp)                        , INTENT(in   )           ::   psgn      ! control of the sign
 
-      IF (cd_type='T') THEN
+      IF (cd_type=='T') THEN
         call exchange_r3d_tile (1,jpi,1,jpj, pt3d)
-      ELSEIF (cd_type='U') THEN
+      ELSEIF (cd_type=='U') THEN
         call exchange_u3d_tile (1,jpi,1,jpj, pt3d)
-      ELSEIF (cd_type='V') THEN
+      ELSEIF (cd_type=='V') THEN
         call exchange_v3d_tile (1,jpi,1,jpj, pt3d)
       ELSE
         call exchange_r3d_tile (1,jpi,1,jpj, pt3d)
@@ -182,9 +187,9 @@ CONTAINS
       ALLOCATE(mask_u(1:jpi,1:jpj,1:jpk))
       ALLOCATE(mask_v(1:jpi,1:jpj,1:jpk))
       DO jk1 = 1, jpk
-         mask_t(1:jpi,1:jpj,jk1) => rmask
-         mask_u(1:jpi,1:jpj,jk1) => umask
-         mask_v(1:jpi,1:jpj,jk1) => vmask
+         mask_t(1:jpi,1:jpj,jk1:jk1) => rmask(GLOBAL_2D_ARRAY)
+         mask_u(1:jpi,1:jpj,jk1:jk1) => umask(GLOBAL_2D_ARRAY)
+         mask_v(1:jpi,1:jpj,jk1:jk1) => vmask(GLOBAL_2D_ARRAY)
       ENDDO
 
       ! Define index of grid points (of local subdomain) in global grid (all subdomains)

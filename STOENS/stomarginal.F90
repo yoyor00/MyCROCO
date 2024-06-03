@@ -9,7 +9,7 @@ MODULE stomarginal
    !!----------------------------------------------------------------------
    USE stoarray        ! module with stochastic arrays to update
    ! user supplied external resources
-   USE stoexternal, only : wp, lc, jpi, jpj, jpk
+   USE stoexternal , only : wp, lc, jpi, jpj, jpk
 
    IMPLICIT NONE
    PRIVATE

@@ -30,6 +30,13 @@
           USE pisces_ini     ! PISCES modules
           USE trcini_pisces
 #endif
+#ifdef STOCHASTIC
+          USE stomod         ! Stochastic module
+          USE stoexternal    ! Provide parameters to stochastic modules
+#endif
+#ifdef ENSEMBLE
+          USE ensmpi         ! Ensemble module
+#endif
 #ifdef SUBSTANCE
           USE substance, ONLY : substance_read_alloc
           USE substance, ONLY : substance_surfcell
@@ -139,6 +146,17 @@
       call cpl_prism_init  ! In AGRIF case, cpl_prism_init is in zoom.F
 # elif defined AGRIF
       call Agrif_MPI_Init(MPI_COMM_WORLD)
+# endif
+!                                            
+!  ENSEMBLE: further split CROCO communicator
+!                                           
+# if defined ENSEMBLE                      
+# if defined XIOS                       
+      mpi_comm_all = MPI_COMM_WORLD      
+# else                                
+      mpi_comm_all = MPI_COMM_ALL   ! true world communicator
+# endif                                                   
+      call ens_comm_set ( )                                  
 # endif
 #endif /* MPI */
 !
@@ -481,6 +499,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 #ifdef SUBSTANCE
       call substance_surfcell
+#endif
+!
+!----------------------------------------------------------------------
+!  STOCHASTIC: initialization
+!----------------------------------------------------------------------
+!
+#ifdef STOCHASTIC
+      call ocean_2_stogen    ! provide parameters to STOCHASTIC module
+      call sto_mod_init      ! initialize STOCHASTIC module
 #endif
 !
 !----------------------------------------------------------------------

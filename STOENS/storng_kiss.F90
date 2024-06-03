@@ -32,7 +32,7 @@ MODULE storng_kiss
    !!   ---CURRENTLY NOT USED IN NEMO :
    !!   kiss_save, kiss_load, kiss_check, kiss_gamma, kiss_sample
    !!----------------------------------------------------------------------
-   USE stoexternal, only : wp, i4, i8
+   USE stoexternal , only : wp, i4, i8
 
    IMPLICIT NONE
    PRIVATE

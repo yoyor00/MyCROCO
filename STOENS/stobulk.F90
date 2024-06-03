@@ -10,7 +10,7 @@ MODULE stobulk
    IMPLICIT NONE
    PRIVATE
 
-   INTEGER :: jstobulk_cd  ! index of stochastic field used for the drag coefficient
+   INTEGER, PUBLIC :: jstobulk_cd  ! index of stochastic field used for the drag coefficient
 
    PUBLIC sto_bulk, sto_bulk_init
 
@@ -63,9 +63,9 @@ CONTAINS
       stofields(jstobulk_cd)%diff_passes=50
       stofields(jstobulk_cd)%diff_type=0  ! option 1 would require the mask
       ! 3. modified marginal distribution (here lognormal, with 30% std)
-      stofields(jstotemplate5)%type_variate='lognormal'
-      stofields(jstotemplate5)%ave=1.0
-      stofields(jstotemplate5)%std=0.3
+      stofields(jstobulk_cd)%type_variate='lognormal'
+      stofields(jstobulk_cd)%ave=1.0
+      stofields(jstobulk_cd)%std=0.3
 
    END SUBROUTINE sto_bulk_init
 

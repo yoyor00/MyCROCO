@@ -11,7 +11,7 @@ MODULE stoarray
    !!   sto_array_request_size : request maximum number of stochastic fields
    !!   sto_array_request_new  : request new stochastic field
    !!----------------------------------------------------------------------
-   USE stoexternal, only : wp, lc, jpi, jpj, jpk, numout, &
+   USE stoexternal , only : wp, lc, jpi, jpj, jpk, numout, &
    &                       lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam, &
    &                       ln_ens_rst_in, cn_mem
 

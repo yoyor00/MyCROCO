@@ -9,7 +9,7 @@ MODULE stowhite
    !!   sto_white      : get array of uncorrelated normal random numbers
    !!   sto_white_init : initialize random number generator
    !!----------------------------------------------------------------------
-   USE stoexternal, only : wp, i4, i8
+   USE stoexternal , only : wp, i4, i8
    USE storng_kiss      ! KISS random number generator
    USE storng_ziggurat  ! Ziggurat algorithm to generate normal numbers
 

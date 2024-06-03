@@ -5,7 +5,7 @@
 !> Note that this uses the gray code implementation, so
 !> Generated numbers are shuffled compared to the original series.
 module stosobolseq
-  USE stoexternal, only : wp
+  USE stoexternal , only : wp
   implicit none
   private
 
