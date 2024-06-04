@@ -15,3 +15,5 @@ jsonschema
 netcdf4
 # to get term colors
 termcolor
+# to treat dataset
+xarray

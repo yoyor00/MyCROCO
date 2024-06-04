@@ -33,7 +33,7 @@ CROCO with `create_prefix_with_deps.sh`, then just run:
 
 ```sh
 # if you already have an activated venv
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 Otherwise you first needs to create a `virtualenv` :
