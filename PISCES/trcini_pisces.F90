@@ -250,8 +250,8 @@ CONTAINS
          po4rat3 = po4rat3 / po4r   ! C/P ratio in zooplankton
       ENDIF
 
-!      ln_rsttr = ( nrrec /= 0 ) 
-      ln_rsttr = .FALSE.
+      ln_rsttr = ( nrrec /= 0 .AND. nit000 /= 1 ) 
+!      ln_rsttr = .FALSE.
       lrst_trc = .FALSE.         
 
 #ifdef NEMO

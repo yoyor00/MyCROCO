@@ -95,9 +95,7 @@ CONTAINS
 #if defined NEMO               
             CALL p4z_rst( nittrc000, Kbb, Kmm,  'READ' )  !* read or initialize all required fields
 #else
-#if defined PISCES
-            CALL p4z_rst_read
-#endif            
+            CALL p4z_rst_read( Kbb, Kmm )
 #endif            
         ENDIF
         !
@@ -1405,9 +1403,10 @@ CONTAINS
       END SUBROUTINE p4z_rst_wri 
 
                               ! Read initial conditions for the
-      SUBROUTINE p4z_rst_read ! primitive variables from NetCDF
+      SUBROUTINE p4z_rst_read( Kbb, Kmm ) ! primitive variables from NetCDF
                               ! initialization file.
 
+        INTEGER, INTENT( in ) ::   Kbb, Kmm  ! time level indices
 !======================================================
 !
 !======================================================
@@ -1418,8 +1417,9 @@ CONTAINS
       integer  :: itrc
       integer  :: ji, jj, jk, jn
       integer  :: ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,    &
-      &        start(2), count(2), ibuff(2), nf_fread, checkdims
+      &        start(2), count(2), ibuff(2), nf_fread, checkdims, max_rec
       character :: units*180
+      logical   :: llexist
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       CHARACTER(len=20) :: cltra
@@ -1445,28 +1445,43 @@ CONTAINS
 ! file has multiple records and nrrec is positive, then nrrec is
 ! available record is used.
 !
-      IF (may_day_flag .NE. 0) RETURN      !-->  EXIT
+      if (may_day_flag.ne.0) return      !-->  EXIT
       lstr = lenstr(cn_pisrst_in)
       ierr = nf_open(TRIM(cn_pisrst_in), nf_nowrite, ncid)
-      IF (ierr == nf_noerr) THEN
-         IF (ierr .NE. nf_noerr) THEN
-            GOTO 99
-         ELSEIF (indx == 0) then
-            indx = 1
-         ELSEIF (indx > 0 .AND. nrrec > 0 .AND. nrrec <= indx) THEN
-            indx = nrrec
-         ELSEIF (indx > 0 .AND. nrrec > indx) THEN
-            WRITE(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')                   &
-            &            'P4Z_RST_READ ERROR: requested restart time record',  &
-            &             nrrec, ' exceeds',  'number of available records',  &
-            &             indx,'in netCDF file', '''',TRIM(cn_pisrst_in),'''.'
-            GOTO 99                                        !--> ERROR
-         ENDIF
-      ELSE
-         WRITE(stdout,'(/1x,2A/15x,3A)') 'P4Z_RST_READ ERROR: Cannot ',      &
-         &               'open netCDF file', '''', TRIM(cn_pisrst_in) ,'''.'
-         GOTO 99                                           !--> ERROR
-      ENDIF
+      if (ierr .eq. nf_noerr) then
+        llexist = .true.      
+        ierr=checkdims (ncid, cn_pisrst_in, lstr, max_rec)
+        if (ierr .eq. nf_noerr) then
+          if (max_rec.gt.0) then
+            if (nrrec.gt.0) then
+              if (nrrec.le.max_rec) then
+                indx=nrrec
+              else
+       MPI_master_only write(stdout,'(/1x,2A,I4,1x,A/12x,A,I4,1x,3A/)')  &
+     &           'P4Z_RST_READ ERROR :: requested restart time ', &
+     &           'record',  nrrec, 'exceeds number',  'of records', &
+     &                       max_rec,  'available in netCDF file ''',  &
+     &                                        TRIM(cn_pisrst_in), '''.'
+
+                goto 99         !--> ERROR
+              endif
+            else
+              indx=max_rec
+            endif
+          else
+            indx=1
+          endif
+        else
+          goto 99
+        endif
+      else
+        llexist = .false.      
+        MPI_master_only write(stdout,'(/1x,4A/12x,A/)')  &
+     &               'P4Z_RST_READ WARNING :: ',    &
+     &               'Cannot open netCDF file ''',   TRIM(cn_pisrst_in),  &
+     &                                  '''.',     nf_strerror(ierr)
+!        goto 99                                           !--> ERROR
+      endif
 !
 ! Read in evolving model variables:
 ! ---- -- -------- ----- ----------
@@ -1474,6 +1489,7 @@ CONTAINS
 ! Time: find netCDF id, read value, read attribute 'units'
 ! and set starting time index and time clock in days.
 !
+      IF( llexist ) THEN
       lvar = lenstr(vname(1,indxTime))
       ierr = nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), varid)
       IF (ierr == nf_noerr) THEN
@@ -1557,16 +1573,15 @@ CONTAINS
             MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_pisrst_in)
             GOTO 99                                       !--> ERROR
          ENDIF
-      ELSE
          MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            hi(ji,jj,jk) = zw3d(ji,jj,jk)
+         END_3D
+      ELSE
+         MPI_master_only WRITE(stdout,4) cltra, TRIM(cn_pisrst_in)
+         CALL p4z_che( Kbb, Kmm )                  ! initialize the chemical constants
+         CALL ahini_for_at( hi, Kbb )
       ENDIF
-      DO jk = 1, jpk
-         DO jj = 1, LOCALMM
-            DO ji = 1, LOCALLM
-               hi(ji,jj,jk) = zw3d(ji,jj,N+1-jk)
-            END DO
-         END DO
-      END DO
 
       cltra ="Consfe3"   
       ierr = nf_inq_varid (ncid, cltra, varid)
@@ -1576,16 +1591,16 @@ CONTAINS
             MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_pisrst_in)
             GOTO 99                                       !--> ERROR
          ENDIF
-      ELSE
          MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            consfe3(ji,jj,jk) = zw3d(ji,jj,jk)
+         END_3D
+      ELSE
+         MPI_master_only WRITE(stdout,4) cltra, TRIM(cn_pisrst_in)
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+            consfe3(ji,jj,jk) = 0.
+         END_3D
       ENDIF
-      DO jk = 1, jpk
-         DO jj = 1, LOCALMM
-            DO ji = 1, LOCALLM
-               consfe3(ji,jj,jk) = zw3d(ji,jj,N+1-jk)
-            END DO
-         END DO
-      END DO
 
       cltra ="sizen"   
       ierr = nf_inq_varid (ncid, cltra, varid)
@@ -1595,18 +1610,18 @@ CONTAINS
             MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_pisrst_in)
             GOTO 99                                       !--> ERROR
          ENDIF
-      ELSE
          MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+             sizen(ji,jj,jk) = zw3d(ji,jj,jk)
+         END_3D
+      ELSE
+         MPI_master_only WRITE(stdout,4) cltra, TRIM(cn_pisrst_in)
+         DO_3D( 0, 0, 0, 0, 1, jpk)
+             sizen(ji,jj,jk) = 1.
+         END_3D
       ENDIF
-      DO jk = 1, jpk
-         DO jj = 1, LOCALMM
-            DO ji = 1, LOCALLM
-               sizen(ji,jj,jk) = zw3d(ji,jj,N+1-jk)
-            END DO
-         END DO
-      END DO
 
-     IF( ln_p2z ) THEN
+      IF( ln_p2z ) THEN
         cltra ="Thetanano"   
         ierr = nf_inq_varid (ncid, cltra, varid)
         IF(ierr == nf_noerr) THEN
@@ -1615,17 +1630,19 @@ CONTAINS
               MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_pisrst_in)
               GOTO 99                                       !--> ERROR
            ENDIF
-        ELSE
            MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              thetanano(ji,jj,jk) = zw3d(ji,jj,jk)
+           END_3D
+        ELSE
+           MPI_master_only WRITE(stdout,4) cltra, TRIM(cn_pisrst_in)
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              thetanano(ji,jj,jk) = 1.0 / 55.0
+           END_3D
         ENDIF
-        DO jk = 1, jpk
-           DO jj = 1, LOCALMM
-              DO ji = 1, LOCALLM
-                 thetanano(ji,jj,jk) = zw3d(ji,jj,N+1-jk)
-              END DO
-           END DO
-        END DO
+      ENDIF  
 
+     IF ( ln_p4z .OR. ln_p5z ) THEN
         cltra ="Silicalim"   
         ierr = nf_inq_varid (ncid, cltra, varid)
         IF(ierr == nf_noerr) THEN
@@ -1634,14 +1651,16 @@ CONTAINS
               MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_pisrst_in)
               GOTO 99                                       !--> ERROR
            ENDIF
-        ELSE
            MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
-        ENDIF
-        DO jj = 1, LOCALMM
-           DO ji = 1, LOCALLM
+           DO_2D( 0, 0, 0, 0 )
               xksi(ji,jj) = zw2d(ji,jj)
-           END DO
-        END DO
+           END_2D
+        ELSE
+           MPI_master_only WRITE(stdout,4) cltra, TRIM(cn_pisrst_in)
+           DO_2D( 0, 0, 0, 0 )
+              xksi(ji,jj) = 2.e-6
+           END_2D
+        ENDIF
 
         cltra ="Silicamax"   
         ierr = nf_inq_varid (ncid, cltra, varid)
@@ -1651,17 +1670,17 @@ CONTAINS
               MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_pisrst_in)
               GOTO 99                                       !--> ERROR
            ENDIF
-        ELSE
            MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
-        ENDIF
-        DO jj = 1, LOCALMM
-           DO ji = 1, LOCALLM
+           DO_2D( 0, 0, 0, 0 )
               xksimax(ji,jj) = zw2d(ji,jj)
-           END DO
-        END DO
-     ENDIF
+           END_2D
+        ELSE
+           MPI_master_only WRITE(stdout,4) cltra, TRIM(cn_pisrst_in)
+           DO_2D( 0, 0, 0, 0 )
+              xksimax(ji,jj) = xksi(ji,jj)
+           END_2D
+        ENDIF
 
-     IF ( ln_p4z .OR. ln_p5z ) THEN
         cltra ="sized"   
         ierr = nf_inq_varid (ncid, cltra, varid)
         IF(ierr == nf_noerr) THEN
@@ -1670,16 +1689,16 @@ CONTAINS
               MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_pisrst_in)
               GOTO 99                                       !--> ERROR
            ENDIF
-        ELSE
            MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              sized(ji,jj,jk) = zw3d(ji,jj,jk)
+           END_3D
+        ELSE
+           MPI_master_only WRITE(stdout,4) cltra, TRIM(cn_pisrst_in)
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              sized(ji,jj,jk) = 1.
+           END_3D
         ENDIF
-        DO jk = 1, jpk
-           DO jj = 1, LOCALMM
-              DO ji = 1, LOCALLM
-                 sized(ji,jj,jk) = zw3d(ji,jj,N+1-jk)
-              END DO
-           END DO
-        END DO
      ENDIF
 
      IF( ln_p5z ) THEN
@@ -1691,36 +1710,75 @@ CONTAINS
               MPI_master_only WRITE(stdout,2) cltra, indx, TRIM(cn_pisrst_in)
               GOTO 99                                       !--> ERROR
            ENDIF
+           MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              sizep(ji,jj,jk) = zw3d(ji,jj,jk)
+           END_3D
         ELSE
            MPI_master_only WRITE(stdout,3) cltra, TRIM(cn_pisrst_in)
+           DO_3D( 0, 0, 0, 0, 1, jpk)
+              sizep(ji,jj,jk) = 1.
+           END_3D
         ENDIF
-        DO jk = 1, jpk
-           DO jj = 1, LOCALMM
-              DO ji = 1, LOCALLM
-                 sizep(ji,jj,jk) = zw3d(ji,jj,N+1-jk)
-              END DO
-           END DO
-        END DO
      ENDIF
 
-      DEALLOCATE( zw3d, zw2d )
-
-!======================================================
-! END MODIF_JG_2
-!======================================================
-
+     DEALLOCATE( zw3d, zw2d )
 !
 !  Close input NetCDF file.
-!
       ierr = nf_close(ncid)
+
+     ELSE  ! llexits = .false. restart file doesn't exist. Initalisation of PISCES variable with analytical value
+         ! PH
+         cltra ="PH"   
+         MPI_master_only WRITE(stdout,5) cltra
+         CALL p4z_che( Kbb, Kmm )                  ! initialize the chemical constants
+         CALL ahini_for_at( hi, Kbb )
+         ! Consfe3
+         cltra ="Consfe3"   
+         MPI_master_only WRITE(stdout,5) cltra
+         consfe3(:,:,:) = 0.
+         ! sizen
+         cltra ="sizen"   
+         MPI_master_only WRITE(stdout,5) cltra
+         sizen(:,:,:) = 1.
+         ! Thetanano
+         IF( ln_p2z ) THEN
+            cltra ="Thetanano"   
+            MPI_master_only WRITE(stdout,5) cltra
+            thetanano(:,:,:) = 1.0 / 55.0
+         ENDIF
+         ! Xksi/Xksimax/sized
+         IF( ln_p4z .OR. ln_p5z ) THEN
+            cltra ="xksi"   
+            MPI_master_only WRITE(stdout,5) cltra
+            xksi(:,:) = 2.e-6
+            cltra ="xksimax"   
+            MPI_master_only WRITE(stdout,5) cltra
+            xksimax(:,:) = xksi(:,:)
+            cltra ="sized"   
+            MPI_master_only WRITE(stdout,5) cltra
+            sized(:,:,:) = 1.
+         ENDIF
+         ! sizep
+         IF( ln_p5z ) THEN
+            cltra ="sized"   
+            MPI_master_only WRITE(stdout,5) cltra
+            sizep(:,:,:) = 1.
+         ENDIF
+      ENDIF
+
+
 
   1   FORMAT(/1x,'P4Z_RST_READ - unable to find variable:',    1x,A,    &
       &                            /15x,'in input NetCDF file:',1x,A/)
   2   FORMAT(/1x,'P4Z_RST_READ - error while reading variable:',1x, A,  &
       &    2x,'at time record =',i4/15x,'in input NetCDF file:',1x,A/)
-  3   FORMAT(/1x,'P4Z_RST_READ - unable to find variable:',    1x,A,    &
+  3   format(/1x,'P4Z_RST_READ : Read variable ',    1x,A,    &
+     &                            /15x,'in input NetCDF file:',1x,A/)
+  4   FORMAT(/1x,'P4Z_RST_READ - Unable to find variable:',    1x,A,    &
       &                            /15x,'in input NetCDF file:',1x,A,  &
-      &    1x,'-> analytical value'/)
+      &    1x,'-> set constant value'/)
+  5   format(/1x,'P4Z_RST_READ : Initialize variable ',    1x,A/)
       RETURN
   99  may_day_flag = 2
       RETURN

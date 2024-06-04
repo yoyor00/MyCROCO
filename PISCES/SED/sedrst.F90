@@ -568,7 +568,7 @@ CONTAINS
       real(wp) :: time_scale
       integer  :: itrc
       integer  :: ji, jj, jk, jn
-      integer  :: ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,    &
+      integer  :: ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr, max_rec,  &
       &        start(2), count(2), ibuff(2), nf_fread, checkdims
       character :: units*180
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: ztrcsedtmp
@@ -597,28 +597,41 @@ CONTAINS
 ! file has multiple records and nrrec is positive, then nrrec is
 ! available record is used.
 !
-      IF (may_day_flag .NE. 0) RETURN      !-->  EXIT
+      if (may_day_flag.ne.0) return      !-->  EXIT
       lstr = lenstr(cn_sedrst_in)
       ierr = nf_open(TRIM(cn_sedrst_in), nf_nowrite, ncid)
-      IF (ierr == nf_noerr) THEN
-         IF (ierr .NE. nf_noerr) THEN
-            GOTO 99
-         ELSEIF (indx == 0) then
-            indx = 1
-         ELSEIF (indx > 0 .AND. nrrec > 0 .AND. nrrec <= indx) THEN
-            indx = nrrec
-         ELSEIF (indx > 0 .AND. nrrec > indx) THEN
-            WRITE(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')                   &
-            &            'SED_RST_READ ERROR: requested restart time record',  &
-            &             nrrec, ' exceeds',  'number of available records',  &
-            &             indx,'in netCDF file', '''',TRIM(cn_sedrst_in),'''.'
-            GOTO 99                                        !--> ERROR
-         ENDIF
-      ELSE
-         WRITE(stdout,'(/1x,2A/15x,3A)') 'SED_RST_READ ERROR: Cannot ',      &
-         &               'open netCDF file', '''', TRIM(cn_sedrst_in) ,'''.'
-         GOTO 99                                           !--> ERROR
-      ENDIF
+      if (ierr .eq. nf_noerr) then
+        ierr=checkdims (ncid, cn_sedrst_in, lstr, max_rec)
+        if (ierr .eq. nf_noerr) then
+          if (max_rec.gt.0) then
+            if (nrrec.gt.0) then
+              if (nrrec.le.max_rec) then
+                indx=nrrec
+              else
+       MPI_master_only write(stdout,'(/1x,2A,I4,1x,A/12x,A,I4,1x,3A/)')  &
+     &           'SED_RST_READ ERROR :: requested restart time ', &
+     &           'record',  nrrec, 'exceeds number',  'of records', &
+     &                       max_rec,  'available in netCDF file ''',  &
+     &                                        TRIM(cn_sedrst_in), '''.'
+
+                goto 99         !--> ERROR
+              endif
+            else
+              indx=max_rec
+            endif
+          else
+            indx=1
+          endif
+        else
+          goto 99
+        endif
+      else
+        MPI_master_only write(stdout,'(/1x,4A/12x,A/)')  &
+     &               'SED_RST_READ WARNING :: ',    &
+     &               'Cannot open netCDF file ''',   TRIM(cn_sedrst_in),  &
+     &                                  '''.',     nf_strerror(ierr)
+        goto 99                                           !--> ERROR
+      endif
 !
 ! Read in evolving model variables:
 ! ---- -- -------- ----- ----------

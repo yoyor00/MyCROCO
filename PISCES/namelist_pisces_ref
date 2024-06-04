@@ -169,7 +169,7 @@
 !              !                  !  (if <0  months)  !   name    !   (logical)  !  (T/F) ! 'monthly' ! filename ! pairing  ! filename      !
    sn_par      = 'par.orca'       ,     24.           , 'fr_par'  ,  .true.      , .true. , 'yearly'  , ''       , ''       , ''
    cn_dir      = './'      !  root directory for the location of the dynamical files
-   ln_varpar   =  .true.   ! boolean for PAR variable
+   ln_varpar   =  .false.   ! boolean for PAR variable
    parlux      =  0.43      ! Fraction of shortwave as PAR
    ln_p4z_dcyc =  .false.  ! Diurnal cycle in PISCES
 / 
@@ -420,9 +420,9 @@
 !-----------------------------------------------------------------------
 &nampisbc     !   parameters for inputs deposition
 !-----------------------------------------------------------------------
-   ln_dust     =  .true.   ! boolean for dust input from the atmosphere
-   ln_ndepo    =  .true.   ! boolean for atmospheric deposition of N
-   ln_ironsed  =  .true.   ! boolean for Fe input from sediments
+   ln_dust     =  .false.   ! boolean for dust input from the atmosphere
+   ln_ndepo    =  .false.   ! boolean for atmospheric deposition of N
+   ln_ironsed  =  .false.   ! boolean for Fe input from sediments
    sedfeinput  =  2.e-9    ! Coastal release of Iron
    mfrac       =  0.035    ! Fe mineral fraction of dust
    wdust       =  2.0      ! Dust sinking speed

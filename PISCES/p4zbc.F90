@@ -404,7 +404,7 @@ CONTAINS
       IF( ln_dust .OR. ln_ndepo ) THEN
          lstr = lenstr(bioname)
          ierr = nf_open (bioname(1:lstr), nf_nowrite, ncid)
-         IF (ierr .NE. nf_noerr .AND. lwp ) THEN
+         IF (ierr .eq. nf_noerr .AND. lwp ) THEN
             WRITE(numout,4) bioname
          ENDIF
          ierr = nf_inq_varid(ncid,"dust_time",varid)

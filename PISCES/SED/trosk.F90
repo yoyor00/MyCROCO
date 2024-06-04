@@ -272,7 +272,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       DO ji = 1, jpoce
          IF ( ENDMASK(ji) == 0 ) THEN
             IF (NSTEP(ji) > NMAX .OR. XI(ji)+0.1*H(ji) == XI(ji) .OR. H(ji) <= UROUND) ERRMASK(ji) = 1
-            IF ((XI(ji)-XEND)+UROUND > 0.0) ENDMASK(JI) = 1
+            IF ((XI(ji)-XEND)+UROUND > 0.0) ENDMASK(ji) = 1
             H(ji) = MIN( H(ji), XEND-XI(ji) )
          ENDIF
       END DO
@@ -509,7 +509,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       DO ji = 1, jpoce
          IF ( ENDMASK(ji) == 0 ) THEN
             IF (NSTEP(ji) > NMAX .OR. XI(ji)+0.1*H(ji) == XI(ji) .OR. H(ji) <= UROUND) ERRMASK(ji) = 1
-            IF ((XI(ji)-XEND)+UROUND > 0.0) ENDMASK(JI) = 1
+            IF ((XI(ji)-XEND)+UROUND > 0.0) ENDMASK(ji) = 1
             H(ji) = MIN( H(ji), XEND-XI(ji) )
          ENDIF
       END DO
@@ -802,7 +802,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       DO ji = 1, jpoce
          IF ( ENDMASK(ji) == 0 ) THEN
             IF (NSTEP(ji) > NMAX .OR. XI(ji)+0.1*H(ji) == XI(ji) .OR. H(ji) <= UROUND) ERRMASK(ji) = 1
-            IF ((XI(ji)-XEND)+UROUND > 0.0) ENDMASK(JI) = 1
+            IF ((XI(ji)-XEND)+UROUND > 0.0) ENDMASK(ji) = 1
             H(ji) = MIN( H(ji), XEND-XI(ji) )
          ENDIF
       END DO
@@ -1169,7 +1169,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       INTEGER, DIMENSION(jpoce, N), INTENT(out) :: IP
       INTEGER, DIMENSION(jpoce), INTENT(in) :: ACCMASK
       REAL(wp) :: T
-      INTEGER :: JI
+      INTEGER :: ji
       INTEGER, DIMENSION(jpoce) :: JU, M1, MM
       REAL(wp), DIMENSION(jpoce) :: T1
 !-----------------------------------------------------------------------
@@ -1205,7 +1205,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
     MDM = MD - 1
     NM1 = N - 1
     IP(:,N) = 1
-    DO JI = 1, jpoce
+    DO ji = 1, jpoce
        IF (ACCMASK(ji) == 0) THEN
           A(ji,1:ML,MU+2:N) = 0.0
        ENDIF
@@ -1216,13 +1216,13 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
        KP1 = K + 1
        M1(:) = MD
        MDL = MIN(ML,N-K) + MD
-       DO JI = 1, jpoce
+       DO ji = 1, jpoce
           IF (ACCMASK(ji) == 0) THEN
              M1(ji) = MDM + MAXLOC(ABS(A(ji,MD:MDL,K)),DIM=1)
           ENDIF
        END DO
 
-       DO JI = 1, jpoce
+       DO ji = 1, jpoce
           IF (ACCMASK(ji) == 0) THEN
              IP(ji,K) = M1(ji) + K - MD
              T = A(ji,M1(ji),K)
@@ -1237,7 +1237,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
           ENDIF
        END DO
 
-       DO JI = 1, jpoce
+       DO ji = 1, jpoce
           IF (ACCMASK(ji) == 0) THEN
              DO I = MD1, MDL
                 A(ji,I,K) = -A(ji,I,K)*T1(ji)
@@ -1245,7 +1245,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
           ENDIF
        END DO
 
-       DO JI = 1, jpoce
+       DO ji = 1, jpoce
           IF (ACCMASK(ji) == 0 .AND. JU(ji) >= KP1) THEN
              DO J = KP1, JU(ji)
                 M1(ji) = M1(ji) - 1
@@ -1304,7 +1304,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       NM1 = N - 1
       DO K = 1, NM1
          MDL = MIN(ML,N-K) + MD
-         DO JI = 1, jpoce
+         DO ji = 1, jpoce
             IF (ACCMASK(ji) == 0) THEN
                M = IP(ji,K)
                T = B(ji,M)
@@ -1321,7 +1321,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
       DO K = N, 2, -1
          KMD = MD - K
          LMN = MAX(1,KMD+1)
-         DO JI = 1, jpoce
+         DO ji = 1, jpoce
             IF (ACCMASK(ji) == 0) THEN
                B(ji,K) = B(ji,K)/A(ji,MD,K)
                T = -B(ji,K)
@@ -1333,7 +1333,7 @@ SUBROUTINE rosk(ROSM,N,X,Y,XEND,H, RTOL,ATOL,                  &
          END DO
       END DO
 
-      DO JI = 1, jpoce
+      DO ji = 1, jpoce
          IF (ACCMASK(ji) == 0) THEN
             B(ji,1) = B(ji,1)/A(ji,MD,1)
          ENDIF
