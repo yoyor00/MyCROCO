@@ -2,6 +2,7 @@
 # check this file with: https://gitlab.inria.fr/ci/lint
 
 stages:
+  - bench
   - download
   - run
 
@@ -403,4 +404,19 @@ reg_perfrst_intel:
     paths:
       - $PERFRSTWORK/ftp
       - $PERFRSTWORK/REG/*/*.log
+    when: always
+
+
+test_bench:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  script:
+    - ./bench-croco.py --case BASIN --variants sequential,mpi-4 --jobcomp --rebuild --host host_ci
+  artifacts:
+    paths:
+      - BENCH/results
+      - BENCH/rundir
     when: always
