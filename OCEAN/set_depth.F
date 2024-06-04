@@ -859,6 +859,11 @@ C$    integer omp_get_thread_num
         enddo
       enddo
        
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        pena_r(START_2D_ARRAY,1))
+#  endif
+
       do k=1,N
         do j=JstrR,JendR
           do i=Istr,Iend+1
@@ -875,8 +880,6 @@ C$    integer omp_get_thread_num
       enddo
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        pena_r(START_2D_ARRAY,1))
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        pena_u(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
