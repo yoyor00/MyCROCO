@@ -415,7 +415,7 @@ test_bench:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   script:
     - cd BENCH
-    - ./bench-croco.py --case BASIN --variants sequential,mpi-4 --jobcomp --rebuild --host host_ci
+    - ./bench-croco.py --case BASIN --variants sequential,openmp-2,openmp-4,mpi-2,mpi-4 --jobcomp --rebuild --host host_ci
   artifacts:
     paths:
       - BENCH/results

@@ -246,6 +246,12 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # fuse again vars + args
         return tmp_vars[1:] + tmp_opts
 
+    def cppdef_h_set_mpi(self, status: bool):
+        '''
+        Enable of disable MPI
+        '''
+        self.croco_config.cppdef_h_set_key('MPI', status)
+
     def cppdef_h_set_openmp(self, status: bool):
         '''
         Enable of disable OpenMP
@@ -422,6 +428,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             raise Exception("Invalid optimisation mode from commande line : {minicroco_args}")
         
         # set config
+        self.cppdef_h_set_mpi(use_mpi)
         self.cppdef_h_set_openmp(use_openmp)
         self.cppdef_h_enable_openacc(use_openacc)
         self.cppdef_h_enable_openacc_psyclone(use_openacc_psyclone)
