@@ -1918,12 +1918,6 @@
         enddo
         if (j.ge.JstrV) then
           do i=Istr,Iend
-# ifdef STRESS_AT_RHO_POINTS
-            v_str = 0.5*( svstr(i,j)+svstr(i,j-1) )
-# else
-            v_str = svstr(i,j)
-# endif
-          do i=Istr,Iend
             rvfrc(i,j)=rv(i,j,1)
 # ifndef BODYFORCE
 #  ifdef BSTRESS_FAST

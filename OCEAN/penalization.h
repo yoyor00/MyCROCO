@@ -18,7 +18,7 @@
       real pororatio(GLOBAL_2D_ARRAY,N)
       real epsilon_pena
 #if defined POROSITY
-      common/pena/pena_u, pena_v,pena_u2, pena_v2,pena_r,                                               &
+      common/pena/pena_u, pena_v, pena_r,
      &   h_pena_target,Hzf,epsilon_pena,
      &  z_poro_discrete, poro_discrete,
      &   rdrg_target,z_min_poro,z_max_poro,z_int_poro,
