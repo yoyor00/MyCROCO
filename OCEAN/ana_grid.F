@@ -521,7 +521,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
-#  if defined POROSITY || defines PERMEABILITY
+#  if defined POROSITY || defined PERMEABILITY
           cff=320000.-160000.*(sin(pi*(yr(i,j)+500000.0)/Length_ETA))**24
           cff2=320000.-160000.*(sin(pi*(yr(i,j)-500000.0)/Length_ETA))**24
           h_pena_target(i,j)=200.+0.0625*(depth-200.)*
@@ -590,6 +590,11 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         do i=IstrR,IendR
           h(i,j)=depth*(1-0.6*exp(-cff*((xr(i,j)-0.5*xl)**2+
      &                                  (yr(i,j)-0.5*el)**2)))
+#  if defined POROSITY || defined PERMEABILITY
+! Pressure gradient test
+          h_pena_target(i,j) = h(i,j)
+          h(i,j) = depth
+#endif
         enddo
       enddo
 

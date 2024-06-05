@@ -151,7 +151,7 @@
 ! Bathymetry.
 !
   1   ierr=nf_inq_varid(ncid,'h',varid)
-      ierr=nf_fwrite (h(START_2D_ARRAY), ncid, varid, 0, r2dvar)
+      ierr=nf_fwrite (hgrid(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
         write(stdout,2) 'h', ncname(1:lstr)
         goto 99                                           !--> ERROR

@@ -487,7 +487,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-      if (iic.eq.0) then
+      if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
         do k=1,N,+1
           do j=J_RANGE
             do i=I_RANGE
@@ -537,7 +537,7 @@ C$    integer omp_get_thread_num
      &                        Hz(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        pororatio(START_2D_ARRAY,1))
-      if (iic.eq.0) then
+      if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak(START_2D_ARRAY,1))
       endif

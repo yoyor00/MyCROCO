@@ -3888,6 +3888,15 @@ C$OMP END MASTER
 !  Diagnostic evaluation from zeta(m+1)
 !
         call set_depth_tile(Istr,Iend,Jstr,Jend)
+
+#  ifdef POROSITY
+        call set_depth_porosity_tile(Istr,Iend,Jstr,Jend)
+#  endif
+
+#  ifdef PERMEABILITY
+        call set_depth_permeability_tile(Istr,Iend,Jstr,Jend)
+#  endif
+
 #  endif
 !
 ! Compute derived grid parameters if fast update
