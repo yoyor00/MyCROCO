@@ -1,6 +1,6 @@
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -863,7 +863,7 @@ C$OMP BARRIER
 !
 #  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
 C$OMP BARRIER
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   if defined BD_EXCHANGE
         if (IstrU.le.Iend) then
           call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,FX_r)
         endif
@@ -1282,7 +1282,7 @@ C$OMP BARRIER
       endif
 #  endif
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 taucb(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -1400,7 +1400,7 @@ C$OMP BARRIER
       endif
 #  endif
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do ised=1,NST
         do k=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -1709,7 +1709,7 @@ C$OMP BARRIER
 !
 !  Exchange for output purpose
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do ised=1,NST
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          settling_flux(START_2D_ARRAY,ised))
@@ -1871,7 +1871,7 @@ C$OMP BARRIER
 !
 !  Exchange for output purpose
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do ised=1,NST
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          ero_flux(START_2D_ARRAY,ised))
@@ -2313,7 +2313,7 @@ C$OMP BARRIER
       endif
 #  endif
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do ised=1,NST
         do k=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -2398,7 +2398,7 @@ C$OMP BARRIER
       endif
 #   endif
 !
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   if defined BD_EXCHANGE
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                         bed_thick_tot(START_2D_ARRAY,nnew))
 #   endif
@@ -3378,7 +3378,7 @@ C$OMP BARRIER
       endif
 #  endif
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
       do ised=1,NST
         do k=1,NLAY
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -3467,7 +3467,7 @@ C$OMP BARRIER
       endif
 #   endif
 !
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   if defined BD_EXCHANGE
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                         bed_thick_tot(START_2D_ARRAY,nnew))
 #   endif
@@ -3718,7 +3718,7 @@ C$OMP BARRIER
         Sdens(Iend+1,Jend+1)=0.5*(Sdens(Iend,Jend+1)+Sdens(Iend+1,Jend))
       endif
 # endif
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 taucb(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -4647,7 +4647,7 @@ C$OMP BARRIER
 ! Ursell number defined as 3/(32*pi^2) * Hs*L^2/h^3
 !               (Fourier coeff for NL terms)
 !
-      Ur=0.375*H_s/(k_wn*k_wn*depth**3.)
+      Ur=max(0.375*H_s/(k_wn*k_wn*depth**3.),1.e-12)
 !
 ! Ruessink et al. (2012), Eq 9
 !
@@ -4926,7 +4926,7 @@ C$OMP BARRIER
       real cff, worb1, worb2, worb
 !
       worb1=pi*Hs*zws/(Td*depth)
-      worb2=worb1*2.*(RR+RR-1.)
+      worb2=max(worb1*2.*(RR+RR-1.),1.e-14)
 !
 !  Using the SANTOSS model formulation
 !

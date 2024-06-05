@@ -1,4 +1,3 @@
-# $Id$
 # [1] Machine independent rules and definitions.
 #==== ======= =========== ===== === ============
 .SUFFIXES: .o .f .i .F .F90 .f90

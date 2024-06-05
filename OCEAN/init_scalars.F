@@ -1,8 +1,6 @@
-! $Id: init_scalars.F 1564 2014-06-24 17:39:21Z gcambon $
-!
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -356,10 +354,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime2 =',indxTime2
       vname(7,indxTime2)='T '
       vname(8,indxTime2)='.NO.'
       vname(9,indxTime2)=' '
-#ifdef START_DATE
-      vname(10,indxTime2)=start_date
-!     vname(11,indxTime2)='Gregorian'
-#endif
 
 CR      write(stdout,'(1x,A,I3)') 'indxZ =',indxZ
       vname(1,indxZ)='zeta                                        '

@@ -1,7 +1,6 @@
-! $Id: wrt_grid.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -84,6 +83,9 @@
 
 #ifdef SOLVE3D
 !
+! S-coordinate independent variables "sc_w", "sc_r" and stretching
+! curves "Cs_w", "Cs_r" at W- and RHO-points.
+! 
 ! Variable dimension on vertical : s_rho and s_w
 !
       ierr=nf_inq_varid (ncid, 's_rho', varid)
@@ -100,14 +102,10 @@
         goto 99                !--> ERROR
       endif
 
-!
-! S-coordinate independent variables "sc_w", "sc_r" and stretching
-! curves "Cs_w", "Cs_r" at W- and RHO-points.
-!
-      ierr=nf_inq_varid (ncid, 'Cs_r', varid)
+      ierr=nf_inq_varid (ncid, 'Cs_rho', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_r)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'Cs_r', ncname(1:lstr)
+        write(stdout,2) 'Cs_rho', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
 !
@@ -115,20 +113,6 @@
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_w)
       if (ierr.ne.nf_noerr) then
         write(stdout,2) 'Cs_w', ncname(1:lstr)
-        goto 99                !--> ERROR
-      endif
-!
-      ierr=nf_inq_varid (ncid, 'sc_r', varid)
-      ierr=nf_put_var_FTYPE(ncid,varid ,sc_r)
-      if (ierr.ne.nf_noerr) then
-        write(stdout,2) 's_r', ncname(1:lstr)
-        goto 99                !--> ERROR
-      endif
-!
-      ierr=nf_inq_varid (ncid, 'sc_w', varid)
-      ierr=nf_put_var_FTYPE(ncid, varid,sc_w)
-      if (ierr.ne.nf_noerr) then
-        write(stdout,2) 's_w', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
 !

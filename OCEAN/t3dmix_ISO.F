@@ -1,11 +1,10 @@
-! $Id: t3dmix_ISO.F 1466 2014-02-06 17:37:07Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -38,40 +37,40 @@
      &                                                 A3d(1,2,trd),
 #  endif
      &                                    A3d(1,3,trd),A3d(1,4,trd),
-     &                    A2d(1, 1,trd), A2d(1, 2,trd),A2d(1,3,trd),
-     &                    A2d(1, 5,trd), A2d(1, 7,trd),A2d(1,9,trd)
+     &                                    A2d(1,1,trd), A2d(1,2,trd)
 #  ifdef TS_MIX_IMP
      &                   ,A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
      &                                  A2d(1,13,trd),A2d(1,14,trd)
 #  endif
+     &          ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
      &                    )
         else
-          call t3dmix_child_tile (istr,iend,jstr,jend, itrc,
+          call t3dmix_child_tile (istr,iend,jstr,jend, itrc, 
      &                                                 A3d(1,1,trd),
 #  ifdef TS_MIX_IMP
      &                                                 A3d(1,2,trd),
 #  endif
      &                                    A3d(1,3,trd),A3d(1,4,trd),
-     &                       A2d(1,1,trd),A2d(1,2,trd),A2d(1,3,trd),
-     &                       A2d(1,5,trd),A2d(1,7,trd),A2d(1,9,trd)
+     &                                    A2d(1,1,trd), A2d(1,2,trd)
 #  ifdef TS_MIX_IMP
      &                   ,A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
      &                                  A2d(1,13,trd),A2d(1,14,trd)
 #  endif
+     &          ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
      &                    )
         endif
-# else
+# else 
         call t3dmix_tile (istr,iend,jstr,jend, itrc,   A3d(1,1,trd),
 #  ifdef TS_MIX_IMP
      &                                                 A3d(1,2,trd),
 #  endif
      &                                    A3d(1,3,trd),A3d(1,4,trd),
-     &                      A2d(1,1,trd), A2d(1,2,trd),A2d(1,3,trd),
-     &                      A2d(1,5,trd), A2d(1,7,trd),A2d(1,9,trd)
+     &                                    A2d(1,1,trd), A2d(1,2,trd)
 #  ifdef TS_MIX_IMP
-     &                   ,A2d(1,10,trd),A2d(1,11,trd), A2d(1,12,trd),
+     &                   ,A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
      &                                   A2d(1,13,trd),A2d(1,14,trd)
 #  endif
+     &          ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
      &                    )
 # endif   /* AGRIF */
 
@@ -86,17 +85,17 @@
 !---------------------------------------------------------------------
 !
 !PARENT
-!
+! 
       subroutine t3dmix_tile (istr,iend,jstr,jend, itrc, LapT,
 # ifdef TS_MIX_IMP
      &                                                          Akz,
 # endif
      &                                                diff3u,diff3v,
-     &                                      FX,FE,FC,dTdr, dTdx,dTde
+     &                                      FX,FE
 # ifdef TS_MIX_IMP
      &                                              ,FFC,CF,BC,CD,DC
 # endif
-     &                        )
+     &    ,dTdr, dTdx, dTde, FC                    )
 !
 #else /* CHILD_SPG */
 !
@@ -107,11 +106,11 @@
      &                                                          Akz,
 # endif
      &                                                diff3u,diff3v,
-     &                                      FX,FE,FC,dTdr, dTdx,dTde
+     &                                      FX,FE
 # ifdef TS_MIX_IMP
      &                                              ,FFC,CF,BC,CD,DC
 # endif
-     &                        )
+     &    ,dTdr, dTdx, dTde, FC                    )
 !
 #endif /* CHILD_SPG */
 !
@@ -122,13 +121,13 @@
 !
 !========================================================================
 !
-!  This subroutine computes rotated isopycnic or geopotential horizontal
-!  mixing terms for tracer equations. The Method of Stabilizing Correction
-!  is applied to prevent a time-step constraint associated with the
+!  This subroutine computes rotated isopycnic or geopotential horizontal 
+!  mixing terms for tracer equations. The Method of Stabilizing Correction 
+!  is applied to prevent a time-step constraint associated with the 
 !  vertical fluxes of the rotated diffusion.
 !
 !  References:
-!
+!  
 !  Lemarie F. et al., 2012: On the Stability and accuracy of the hamonic
 !  and biharmonic isoneutral mixing operators in ocean models. Ocean
 !  Modelling, in press.
@@ -138,10 +137,10 @@
 !  and a solution. Ocean Modelling, 26, 156-169.
 !
 !  * 1998,     A. Shchepetkin: first implementation of explicit operators
-!  * Mar 2012, F. Lemarié: refines TRIADS/SWTRIADS operators and implements
+!  * Mar 2012, F. Lemarié: refines TRIADS/SWTRIADS operators and implements 
 !              MSC techniques in CROCO
-!  * Mai 2012, P. Marchesiello: corrections and adjustment to CROCO
-!              CPP choices
+!  * Mai 2012, P. Marchesiello: corrections and adjustment to CROCO 
+!              CPP choices 
 !
 !========================================================================
 !
@@ -162,15 +161,16 @@
 #endif
      &       FX (PRIVATE_2D_SCRATCH_ARRAY),
      &       FE (PRIVATE_2D_SCRATCH_ARRAY),
-     &       FC (PRIVATE_2D_SCRATCH_ARRAY,2),
-     &     dTdr (PRIVATE_2D_SCRATCH_ARRAY,2),
-     &     dTdx (PRIVATE_2D_SCRATCH_ARRAY,2),
-     &     dTde (PRIVATE_2D_SCRATCH_ARRAY,2)
+     &       FC (PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     dTdr (PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     dTdx (PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     dTde (PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real cff,cff1,
      &      TRIADS1,TRIADS2,TRIADS3,TRIADS4,sumX,sumE,sig,
      &      SLOPEXQ1,SLOPEXQ2,SLOPEXQ3,SLOPEXQ4,
      &      SLOPEYQ1,SLOPEYQ2,SLOPEYQ3,SLOPEYQ4
-       real wgt(0:4)
+       real, dimension(0:4), parameter :: wgt
+     &   =(/0.,1.,0.5,0.33333333333,0.25/)
 #include "grid.h"
 #include "ocean3d.h"
 #include "mixing.h"
@@ -187,6 +187,7 @@
 #ifdef AGRIF
 # include "zoom.h"
 #endif
+#include "openacc_work.h"
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -208,8 +209,6 @@
 # define LT gt
 # define GT lt
 #endif
-!
-      wgt=(/0.,1.,0.5,0.33333333333,0.25/)
 
 #ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
@@ -220,7 +219,7 @@
       if (EASTERN_EDGE) then
         imax=iend
       else
-        imax=iend+1
+        imax=iend+1 
       endif
 #else
       imin=istr-1
@@ -246,10 +245,11 @@
 ! First compute diffusivity coefficient according to model
 ! configuration
 !=============================================================
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=jmin,jmax
           do i=imin,imax+1
-            diff3u(i,j,k)=
+            diff3u(i,j,k)= 
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i-1,j,itrc))
 # if defined DIF_COEF_3D && defined TS_DIF_SMAGO
@@ -272,7 +272,7 @@
         enddo
         do j=jmin,jmax+1
           do i=imin,imax
-            diff3v(i,j,k)=
+            diff3v(i,j,k)= 
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i,j-1,itrc))
 # if defined DIF_COEF_3D && defined TS_DIF_SMAGO
@@ -301,18 +301,18 @@
 !              /                    /
 !        dTdx(i,j,k2)         dTdx(i+1,j,k2)        <---- k + 1
 !            /                    /
-!           /                    /
+!           /                    / 
 !          ---- dTdr(i,j,k2) ----                   <---- k + 1/2
 !         /                    /
 !        /                    /
-!  dTdx(i,j,k1)        dTdx(i+1,j,k1)               <---- k
+!  dTdx(i,j,k1)        dTdx(i+1,j,k1)               <---- k 
 !      /                    /
 !     /                    /
 !     ---- dTdr(i,j,k1) ---                        <---- k - 1/2
 !
 !==================================================================
 !
-!  Add in horizontal harmonic or biharmonic diffusion along
+!  Add in horizontal harmonic or biharmonic diffusion along 
 !  rotated surfaces.
 !
 !  The biharmonic operator is computed by applying the rotated
@@ -321,140 +321,73 @@
 !                                            !!! WARNING: RECURSIVE
 !    FIRST rotated Laplacian operator:           BLOCKING SEQUENCE
 !
-!==================================================================
+!==================================================================  
 
 !==========================================================
 ! Start computation of fluxes with lateral tracer gradients
 !==========================================================
-      k2=1
-      do k=0,N,+1
-       k1=k2
-       k2=3-k1
-        if (k.lt.N) then
-          do j=jmin,jmax
-            do i=imin,imax+1
-              cff=0.5*(pm(i,j)+pm(i-1,j)) SWITCH umask(i,j)
-              dTdx(i,j,k2)=cff*( t(i  ,j,k+1,nstp,itrc)
-     &                          -t(i-1,j,k+1,nstp,itrc)
+      do k=1,N
+        do j=jmin,jmax
+          do i=imin,imax+1
+            cff=0.5*(pm(i,j)+pm(i-1,j)) SWITCH umask(i,j)
+            dTdx(i,j,k)=cff*( t(i  ,j,k,nstp,itrc)
+     &                          -t(i-1,j,k,nstp,itrc)
 #if defined CLIMAT_TS_MIXH || defined CLIMAT_TS_MIXH_FINE
-     &                       -TCLM(i  ,j,k+1,itrc)
-     &                       +TCLM(i-1,j,k+1,itrc)
+     &                       -TCLM(i  ,j,k,itrc)
+     &                       +TCLM(i-1,j,k,itrc)
 #endif
      &                         )
-            enddo
           enddo
-          do j=jmin,jmax+1
-            do i=imin,imax
-              cff=0.5*(pn(i,j)+pn(i,j-1)) SWITCH vmask(i,j)
-              dTde(i,j,k2)=cff*( t(i,j  ,k+1,nstp,itrc)
-     &                          -t(i,j-1,k+1,nstp,itrc)
+        enddo   
+        do j=jmin,jmax+1
+          do i=imin,imax
+            cff=0.5*(pn(i,j)+pn(i,j-1)) SWITCH vmask(i,j)
+            dTde(i,j,k)=cff*( t(i,j  ,k,nstp,itrc)
+     &                          -t(i,j-1,k,nstp,itrc)
 #if defined CLIMAT_TS_MIXH || defined CLIMAT_TS_MIXH_FINE
-     &                       -TCLM(i,j  ,k+1,itrc)
-     &                       +TCLM(i,j-1,k+1,itrc)
+     &                       -TCLM(i,j  ,k,itrc)
+     &                       +TCLM(i,j-1,k,itrc)
 #endif
      &                         )
-            enddo
           enddo
-        endif
+        enddo 
+      enddo
 
-        if (k.eq.0 .or. k.eq.N) then
-!========================================================
-! Set bottom and top boundary condition  (FC = 0).
-!========================================================
-          do j=jmin-1,jmax+1
-            do i=imin-1,imax+1
-               FC  (i,j,k2) = 0.0
-#ifdef TS_MIX_IMP
-               Akz (i,j,k )= 0.0
-#endif
-             enddo
-          enddo
-          if (k.eq.0) then
-            do j=jmin-1,jmax+1
-              do i=imin-1,imax+1
-                dTdr(i,j,k2)= idRz(i,j,1)*( t(i,j,2,nstp,itrc)
-     &                                    - t(i,j,1,nstp,itrc)
-#if defined CLIMAT_TS_MIXH || defined CLIMAT_TS_MIXH_FINE
-     &                                 - TCLM(i,j,2,itrc)
-     &                                 + TCLM(i,j,1,itrc)
-#endif
-     &                                     )
-              enddo
-            enddo
-          endif ! <-- k.eq.0
-        else
-!========================================================
-! Compute ( delta rho )^-1
-!========================================================
-          do j=jmin-1,jmax+1
-            do i=imin-1,imax+1
-              FC(i,j,k2)  = idRz(i,j,k)*( z_r (i,j,k+1)-z_r (i,j,k) )
-              dTdr(i,j,k2)= idRz(i,j,k)*( t(i,j,k+1,nstp,itrc)
-     &                                  - t(i,j,k  ,nstp,itrc)
+      do k=1,N-1
+        do j=jmin-1,jmax+1
+          do i=imin-1,imax+1
+            dTdr(i,j,k)= idRz(i,j,k)*( t(i,j,k+1,nstp,itrc)  
+     &                                  - t(i,j,k  ,nstp,itrc) 
 #if defined CLIMAT_TS_MIXH || defined CLIMAT_TS_MIXH_FINE
      &                                -TCLM(i,j,k+1,itrc)
      &                                +TCLM(i,j,k  ,itrc)
 #endif
      &                                  )
-            enddo
           enddo
-        endif   ! --> k.eq.0 .or. k.eq.N
+        enddo
+      enddo
 
-        if (k.gt.0) then
+      do j=jmin-1,jmax+1
+        do i=imin-1,imax+1
+          dTdr(i,j,0)= dTdr(i,j,1)
+          dTdr(i,j,N)= dTdr(i,j,N-1)
+        enddo
+      enddo
+
 !========================================================
-! Compute the horizontal components of the tensor
+! Compute ( delta rho )^-1
 !========================================================
-          cff=0.5
-          do j=jmin,jmax
-            do i=imin,imax+1
-              FX(i,j)=cff*diff3u(i,j,k)*(Hz(i,j,k)+Hz(i-1,j,k))
-     &               *on_u(i,j)*(   dTdx(i,j,k1) -
-#ifdef SWTRIADS
-     &       0.5*( MAX(dRdx(i,j,k),0.)*(dTdr(i-1,j,k1)+dTdr(i,j,k2))
-     &            +MIN(dRdx(i,j,k),0.)*(dTdr(i-1,j,k2)+dTdr(i,j,k1)))
-#else
-     &                0.25*dRdx(i,j,k)*( dTdr(i-1,j,k1)+dTdr(i,j,k2)
-     &                                 + dTdr(i-1,j,k2)+dTdr(i,j,k1))
-#endif
-     &                                                              )
-            enddo
-          enddo
-
-          do j=jmin,jmax+1
-            do i=imin,imax
-              FE(i,j)=cff*diff3v(i,j,k)*(Hz(i,j,k)+Hz(i,j-1,k))
-     &               *om_v(i,j)*(   dTde(i,j,k1) -
-#ifdef SWTRIADS
-     &       0.5*( MAX(dRde(i,j,k),0.)*(dTdr(i,j-1,k1)+dTdr(i,j,k2))
-     &            +MIN(dRde(i,j,k),0.)*(dTdr(i,j-1,k2)+dTdr(i,j,k1)))
-#else
-     &              0.25*dRde(i,j,k)*(   dTdr(i,j-1,k1)+dTdr(i,j,k2)
-     &                              +    dTdr(i,j-1,k2)+dTdr(i,j,k1))
-#endif
-     &                                                              )
-            enddo
-          enddo
-
-#if defined AGRIF && defined AGRIF_CONSERV_TRA
-          MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
-     &          MYFX(IstrR:IendR,JstrR:JendR,k,itrc)+
-     &          dt*FX(IstrR:IendR,JstrR:JendR)
-          MYFY(IstrR:IendR,JstrR:JendR,k,itrc)=
-     &          MYFY(IstrR:IendR,JstrR:JendR,k,itrc)+
-     &          dt*FE(IstrR:IendR,JstrR:JendR)
-#endif
-
-
-          if (k.lt.N) then
+      do k=1,N-1
+        do j=jmin,jmax
+          do i=imin,imax
+            cff  = idRz(i,j,k)*( z_r (i,j,k+1)-z_r (i,j,k) )
 !========================================================
 ! Compute the vertical component
 !========================================================
-            do j=jmin,jmax
-              do i=imin,imax
-                TRIADS1=dRdx(i  ,j,k  )*dTdr(i,j,k2)-dTdx(i  ,j,k1)
-                TRIADS2=dRdx(i  ,j,k+1)*dTdr(i,j,k2)-dTdx(i  ,j,k2)
-                TRIADS3=dRdx(i+1,j,k+1)*dTdr(i,j,k2)-dTdx(i+1,j,k2)
-                TRIADS4=dRdx(i+1,j,k  )*dTdr(i,j,k2)-dTdx(i+1,j,k1)
+                TRIADS1=dRdx(i  ,j,k  )*dTdr(i,j,k)-dTdx(i  ,j,k)
+                TRIADS2=dRdx(i  ,j,k+1)*dTdr(i,j,k)-dTdx(i  ,j,k+1)
+                TRIADS3=dRdx(i+1,j,k+1)*dTdr(i,j,k)-dTdx(i+1,j,k+1)
+                TRIADS4=dRdx(i+1,j,k  )*dTdr(i,j,k)-dTdx(i+1,j,k)
 #ifdef SWTRIADS
                 sumX=0.
                 idx=0
@@ -482,14 +415,14 @@
                 sumX = diff3u(i  ,j,k  )*dRdx(i  ,j,k  )*TRIADS1
      &               + diff3u(i  ,j,k+1)*dRdx(i  ,j,k+1)*TRIADS2
      &               + diff3u(i+1,j,k+1)*dRdx(i+1,j,k+1)*TRIADS3
-     &               + diff3u(i+1,j,k  )*dRdx(i+1,j,k  )*TRIADS4
+     &               + diff3u(i+1,j,k  )*dRdx(i+1,j,k  )*TRIADS4  
                 idx = 4
 #endif
 
-                TRIADS1=dRde(i,j  ,k  )*dTdr(i,j,k2)-dTde(i,j  ,k1)
-                TRIADS2=dRde(i,j  ,k+1)*dTdr(i,j,k2)-dTde(i,j  ,k2)
-                TRIADS3=dRde(i,j+1,k+1)*dTdr(i,j,k2)-dTde(i,j+1,k2)
-                TRIADS4=dRde(i,j+1,k  )*dTdr(i,j,k2)-dTde(i,j+1,k1)
+                TRIADS1=dRde(i,j  ,k  )*dTdr(i,j,k)-dTde(i,j  ,k)
+                TRIADS2=dRde(i,j  ,k+1)*dTdr(i,j,k)-dTde(i,j  ,k+1)
+                TRIADS3=dRde(i,j+1,k+1)*dTdr(i,j,k)-dTde(i,j+1,k+1)
+                TRIADS4=dRde(i,j+1,k  )*dTdr(i,j,k)-dTde(i,j+1,k)
 #ifdef SWTRIADS
                 sumE=0.
                 ide=0
@@ -517,7 +450,7 @@
                 sumE = diff3v(i,j  ,k  )*dRde(i,j  ,k  )*TRIADS1
      &               + diff3v(i,j  ,k+1)*dRde(i,j  ,k+1)*TRIADS2
      &               + diff3v(i,j+1,k+1)*dRde(i,j+1,k+1)*TRIADS3
-     &               + diff3v(i,j+1,k  )*dRde(i,j+1,k  )*TRIADS4
+     &               + diff3v(i,j+1,k  )*dRde(i,j+1,k  )*TRIADS4   
                 ide = 4
 #endif
 
@@ -526,15 +459,15 @@
 ! Compute stabilizing vertical diffusivity Akz
 !========================================================
 
-                SLOPEXQ1=(FC(i,j,k2)*dRdx(i  ,j,k  ))**2
-                SLOPEXQ2=(FC(i,j,k2)*dRdx(i  ,j,k+1))**2
-                SLOPEXQ3=(FC(i,j,k2)*dRdx(i+1,j,k+1))**2
-                SLOPEXQ4=(FC(i,j,k2)*dRdx(i+1,j,k  ))**2
+                SLOPEXQ1=(cff*dRdx(i  ,j,k  ))**2
+                SLOPEXQ2=(cff*dRdx(i  ,j,k+1))**2
+                SLOPEXQ3=(cff*dRdx(i+1,j,k+1))**2
+                SLOPEXQ4=(cff*dRdx(i+1,j,k  ))**2
 
-                SLOPEYQ1=(FC(i,j,k2)*dRde(i,j  ,k  ))**2
-                SLOPEYQ2=(FC(i,j,k2)*dRde(i,j  ,k+1))**2
-                SLOPEYQ3=(FC(i,j,k2)*dRde(i,j+1,k+1))**2
-                SLOPEYQ4=(FC(i,j,k2)*dRde(i,j+1,k  ))**2
+                SLOPEYQ1=(cff*dRde(i,j  ,k  ))**2
+                SLOPEYQ2=(cff*dRde(i,j  ,k+1))**2
+                SLOPEYQ3=(cff*dRde(i,j+1,k+1))**2
+                SLOPEYQ4=(cff*dRde(i,j+1,k  ))**2
 
                 Akz(i,j,k) = max(
      &                       diff3u(i  ,j,k  )*SLOPEXQ1,
@@ -552,12 +485,70 @@
 !       endif
 #endif /* TS_DIF2 && TS_MIX_IMP */
 
-!== at this point FC(i,j,k2)=(drho/dz)^(-1)
-                FC(i,j,k2)=(sumX*wgt(idx)+sumE*wgt(ide))*FC(i,j,k2)
+!== at this point FC(i,j,k)=(drho/dz)^(-1)
+                FC(i,j,k)=(sumX*wgt(idx)+sumE*wgt(ide))*cff
+          enddo
+        enddo
+      enddo
 
-              enddo
+!========================================================
+! Set bottom and top boundary condition  (FC = 0).
+!========================================================
+      do j=jmin,jmax
+        do i=imin,imax
+          FC(i,j,0)  = 0.
+          FC(i,j,N)  = 0.
+#ifdef TS_MIX_IMP
+          Akz (i,j,0 )= 0.0   
+          Akz (i,j,N )= 0.0   
+#endif
+        enddo
+      enddo
+
+!$acc loop seq
+      do k=1,N
+!========================================================
+! Compute the horizontal components of the tensor
+!========================================================
+          cff=0.5
+          do j=jmin,jmax
+            do i=imin,imax+1
+              FX(i,j)=cff*diff3u(i,j,k)*(Hz(i,j,k)+Hz(i-1,j,k))
+     &               *on_u(i,j)*(   dTdx(i,j,k) -
+#ifdef SWTRIADS
+     &       0.5*( MAX(dRdx(i,j,k),0.)*(dTdr(i-1,j,k-1)+dTdr(i,j,k))
+     &            +MIN(dRdx(i,j,k),0.)*(dTdr(i-1,j,k)+dTdr(i,j,k-1)))
+#else
+     &                0.25*dRdx(i,j,k)*( dTdr(i-1,j,k-1)+dTdr(i,j,k)
+     &                                 + dTdr(i-1,j,k)+dTdr(i,j,k-1))
+#endif
+     &                                                              )
             enddo
-          endif  ! <-- k.lt.N
+          enddo
+ 
+          do j=jmin,jmax+1
+            do i=imin,imax
+              FE(i,j)=cff*diff3v(i,j,k)*(Hz(i,j,k)+Hz(i,j-1,k))
+     &               *om_v(i,j)*(   dTde(i,j,k) - 
+#ifdef SWTRIADS
+     &       0.5*( MAX(dRde(i,j,k),0.)*(dTdr(i,j-1,k-1)+dTdr(i,j,k))
+     &            +MIN(dRde(i,j,k),0.)*(dTdr(i,j-1,k)+dTdr(i,j,k-1)))
+#else
+     &              0.25*dRde(i,j,k)*(   dTdr(i,j-1,k-1)+dTdr(i,j,k)
+     &                              +    dTdr(i,j-1,k)+dTdr(i,j,k-1))
+#endif
+     &                                                              )
+            enddo
+          enddo
+
+#if defined AGRIF && defined AGRIF_CONSERV_TRA
+          MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
+     &          MYFX(IstrR:IendR,JstrR:JendR,k,itrc)+
+     &          dt*FX(IstrR:IendR,JstrR:JendR)
+          MYFY(IstrR:IendR,JstrR:JendR,k,itrc)=
+     &          MYFY(IstrR:IendR,JstrR:JendR,k,itrc)+
+     &          dt*FE(IstrR:IendR,JstrR:JendR)
+#endif
 
 #ifdef TS_DIF4
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -570,10 +561,9 @@
             do i=imin,imax
               LapT(i,j,k)=( pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                       +FE(i,j+1)-FE(i,j))
-     &                     +FC(i,j,k2)-FC(i,j,k1)    )/Hz(i,j,k)
+     &                     +FC(i,j,k)-FC(i,j,k-1)    )/Hz(i,j,k)
             enddo
           enddo
-        endif   ! <-- k.gt.0
       enddo   ! --> k
 
 !========================================================
@@ -584,7 +574,7 @@
         if (WESTERN_EDGE) then
           do k=1,N
             do j=jmin,jmax
-#  ifndef OBC_WEST
+#  ifndef OBC_WEST 
               LapT(istr-1,j,k)=0.
 #  else
               LapT(istr-1,j,k)=LapT(istr,j,k)
@@ -595,7 +585,7 @@
         if (EASTERN_EDGE) then
           do k=1,N
             do j=jmin,jmax
-#  ifndef OBC_EAST
+#  ifndef OBC_EAST 
               LapT(iend+1,j,k)=0.
 #  else
               LapT(iend+1,j,k)=LapT(iend,j,k)
@@ -633,103 +623,47 @@
 !  The SECOND rotated Laplacian operator:
 !========================================================
 
-      k2=1
-      do k=0,N,+1
-       k1=k2
-       k2=3-k1
-
-        if (k.lt.N) then
-          do j=jstr,jend
-            do i=istr,iend+1
-              cff=0.5*(pm(i,j)+pm(i-1,j)) SWITCH umask(i,j)
-              dTdx(i,j,k2)=cff*(LapT(i,j,k+1)-LapT(i-1,j,k+1))
-            enddo
+      do k=1,N
+        do j=jstr,jend
+          do i=istr,iend+1
+            cff=0.5*(pm(i,j)+pm(i-1,j)) SWITCH umask(i,j)
+            dTdx(i,j,k)=cff*(LapT(i,j,k)-LapT(i-1,j,k))
           enddo
-          do j=jstr,jend+1
-            do i=istr,iend
-              cff=0.5*(pn(i,j)+pn(i,j-1)) SWITCH vmask(i,j)
-              dTde(i,j,k2)=cff*(LapT(i,j,k+1)-LapT(i,j-1,k+1))
-            enddo
+        enddo
+        do j=jstr,jend+1
+          do i=istr,iend
+            cff=0.5*(pn(i,j)+pn(i,j-1)) SWITCH vmask(i,j)
+            dTde(i,j,k)=cff*(LapT(i,j,k)-LapT(i,j-1,k))
           enddo
-        endif
+        enddo
+      enddo
 
-        if (k.eq.0 .or. k.eq.N) then
-          do j=jstr-1,jend+1
-            do i=istr-1,iend+1
-              FC(i,j,k2)=0.0
-              dTdr(i,j,k2)=0.0
-# ifdef TS_MIX_IMP
-              Akz (i,j,k )= 0.0
-# endif
-            enddo
+      do k=1,N-1
+        do j=jstr-1,jend+1
+          do i=istr-1,iend+1
+            dTdr(i,j,k)= idRz(i,j,k)*( LapT(i,j,k+1)-LapT(i,j,k) )
           enddo
-          if (k.eq.0) then
-            do j=jstr-1,jend+1
-              do i=istr-1,iend+1
-                dTdr(i,j,k2)= idRz(i,j,1)
-     &                    *( LapT(i,j,2)-LapT(i,j,1) )
-              enddo
-            enddo
-          endif
+        enddo
+      enddo
 
-        else
-!========================================================
-! Compute ( delta rho )^-1
-!========================================================
-          do j=jstr-1,jend+1
-            do i=istr-1,iend+1
-              FC(i,j,k2)  = idRz(i,j,k)*( z_r (i,j,k+1)-z_r (i,j,k) )
-              dTdr(i,j,k2)= idRz(i,j,k)*( LapT(i,j,k+1)-LapT(i,j,k) )
-            enddo
-          enddo
-        endif
+      do j=jstr-1,jend+1
+        do i=istr-1,iend+1
+          dTdr(i,j,0)= dTdr(i,j,1)
+          dTdr(i,j,N)=0.
+        enddo
+      enddo
 
-        if (k.gt.0) then
-!========================================================
-! Compute the horizontal components of the tensor
-!========================================================
-          cff=0.5
-          do j=jstr,jend
-            do i=istr,iend+1
-              FX(i,j)=-cff*diff3u(i,j,k)*(Hz(i,j,k)+Hz(i-1,j,k))
-     &         *on_u(i,j)*(   dTdx(i  ,j,k1) -
-# ifdef SWTRIADS
-     &       0.5*( MAX(dRdx(i,j,k),0.)*(dTdr(i-1,j,k1)+dTdr(i,j,k2))
-     &            +MIN(dRdx(i,j,k),0.)*(dTdr(i-1,j,k2)+dTdr(i,j,k1)))
-# else
-     &                0.25*dRdx(i,j,k)*( dTdr(i-1,j,k1)+dTdr(i,j,k2)
-     &                                +  dTdr(i-1,j,k2)+dTdr(i,j,k1))
-# endif
-     &                                                              )
-            enddo
-          enddo
-
-          do j=jstr,jend+1
-            do i=istr,iend
-              FE(i,j)=-cff*diff3v(i,j,k)*(Hz(i,j,k)+Hz(i,j-1,k))
-     &        *om_v(i,j)*(  dTde(i,j  ,k1) -
-# ifdef SWTRIADS
-     &       0.5*( MAX(dRde(i,j,k),0.)*(dTdr(i,j-1,k1)+dTdr(i,j,k2))
-     &            +MIN(dRde(i,j,k),0.)*(dTdr(i,j-1,k2)+dTdr(i,j,k1)))
-# else
-     &              0.25*dRde(i,j,k)*(   dTdr(i,j-1,k1)+dTdr(i,j,k2)
-     &                              +    dTdr(i,j-1,k2)+dTdr(i,j,k1))
-# endif
-     &                                                              )
-            enddo
-          enddo
-
-          if (k.lt.N) then
+      do k=1,N-1
+        do j=jstr,jend
+          do i=istr,iend
+            FC(i,j,k)  = idRz(i,j,k)*( z_r (i,j,k+1)-z_r (i,j,k) )
 !========================================================
 ! Compute the vertical component
 !========================================================
-            do j=jstr,jend
-              do i=istr,iend
-
-                TRIADS1=dRdx(i  ,j,k  )*dTdr(i,j,k2)-dTdx(i  ,j,k1)
-                TRIADS2=dRdx(i  ,j,k+1)*dTdr(i,j,k2)-dTdx(i  ,j,k2)
-                TRIADS3=dRdx(i+1,j,k+1)*dTdr(i,j,k2)-dTdx(i+1,j,k2)
-                TRIADS4=dRdx(i+1,j,k  )*dTdr(i,j,k2)-dTdx(i+1,j,k1)
+                TRIADS1=dRdx(i  ,j,k  )*dTdr(i,j,k)-dTdx(i  ,j,k)
+                TRIADS2=dRdx(i  ,j,k+1)*dTdr(i,j,k)-dTdx(i  ,j,k+1)
+                TRIADS3=dRdx(i+1,j,k+1)*dTdr(i,j,k)-dTdx(i+1,j,k+1)
+                TRIADS4=dRdx(i+1,j,k  )*dTdr(i,j,k)-dTdx(i+1,j,k)
 # ifdef SWTRIADS
                 sumX=0.
                 idx=0
@@ -761,10 +695,10 @@
                 idx = 4
 # endif
 
-                TRIADS1=dRde(i,j  ,k  )*dTdr(i,j,k2)-dTde(i,j  ,k1)
-                TRIADS2=dRde(i,j  ,k+1)*dTdr(i,j,k2)-dTde(i,j  ,k2)
-                TRIADS3=dRde(i,j+1,k+1)*dTdr(i,j,k2)-dTde(i,j+1,k2)
-                TRIADS4=dRde(i,j+1,k  )*dTdr(i,j,k2)-dTde(i,j+1,k1)
+                TRIADS1=dRde(i,j  ,k  )*dTdr(i,j,k)-dTde(i,j  ,k)
+                TRIADS2=dRde(i,j  ,k+1)*dTdr(i,j,k)-dTde(i,j  ,k+1)
+                TRIADS3=dRde(i,j+1,k+1)*dTdr(i,j,k)-dTde(i,j+1,k+1)
+                TRIADS4=dRde(i,j+1,k  )*dTdr(i,j,k)-dTde(i,j+1,k)
 # ifdef SWTRIADS
                 sumE=0.
                 ide=0
@@ -800,15 +734,15 @@
 !========================================================
 ! Compute stabilizing vertical diffusivity Akz
 !========================================================
-                SLOPEXQ1=(FC(i,j,k2)*dRdx(i  ,j,k  ))**2
-                SLOPEXQ2=(FC(i,j,k2)*dRdx(i  ,j,k+1))**2
-                SLOPEXQ3=(FC(i,j,k2)*dRdx(i+1,j,k+1))**2
-                SLOPEXQ4=(FC(i,j,k2)*dRdx(i+1,j,k  ))**2
+                SLOPEXQ1=(FC(i,j,k)*dRdx(i  ,j,k  ))**2
+                SLOPEXQ2=(FC(i,j,k)*dRdx(i  ,j,k+1))**2
+                SLOPEXQ3=(FC(i,j,k)*dRdx(i+1,j,k+1))**2
+                SLOPEXQ4=(FC(i,j,k)*dRdx(i+1,j,k  ))**2
 
-                SLOPEYQ1=(FC(i,j,k2)*dRde(i,j  ,k  ))**2
-                SLOPEYQ2=(FC(i,j,k2)*dRde(i,j  ,k+1))**2
-                SLOPEYQ3=(FC(i,j,k2)*dRde(i,j+1,k+1))**2
-                SLOPEYQ4=(FC(i,j,k2)*dRde(i,j+1,k  ))**2
+                SLOPEYQ1=(FC(i,j,k)*dRde(i,j  ,k  ))**2
+                SLOPEYQ2=(FC(i,j,k)*dRde(i,j  ,k+1))**2
+                SLOPEYQ3=(FC(i,j,k)*dRde(i,j+1,k+1))**2
+                SLOPEYQ4=(FC(i,j,k)*dRde(i,j+1,k  ))**2
 
                 cff = 1./(z_r(i,j,k+1)-z_r(i,j,k))
 
@@ -842,15 +776,60 @@
 
 !
 ! Finalize vertical flux computation
-!   at this point FC(i,j,k2)=(drho/dz)^(-1)
-!   then FC(i,j,k2) will contain the vertical fluxes
+!   at this point FC(i,j,k)=(drho/dz)^(-1)
+!   then FC(i,j,k) will contain the vertical fluxes
 !
-                FC(i,j,k2)=-(sumX*wgt(idx)+sumE*wgt(ide))*FC(i,j,k2)
+                FC(i,j,k)=-(sumX*wgt(idx)+sumE*wgt(ide))*FC(i,j,k)
+          enddo
+        enddo
+      enddo
 
-             enddo
+      do j=jstr,jend
+        do i=istr,iend
+          FC(i,j,0)  = 0.
+          FC(i,j,N)  = 0.
+# ifdef TS_MIX_IMP
+          Akz (i,j,0 )= 0.0   
+          Akz (i,j,N )= 0.0   
+# endif
+        enddo
+      enddo
+
+!$acc loop seq
+      do k=1,N
+!========================================================
+! Compute the horizontal components of the tensor
+!========================================================            
+          cff=0.5
+          do j=jstr,jend
+            do i=istr,iend+1
+              FX(i,j)=-cff*diff3u(i,j,k)*(Hz(i,j,k)+Hz(i-1,j,k))
+     &         *on_u(i,j)*(   dTdx(i  ,j,k) -
+# ifdef SWTRIADS
+     &       0.5*( MAX(dRdx(i,j,k),0.)*(dTdr(i-1,j,k-1)+dTdr(i,j,k))
+     &            +MIN(dRdx(i,j,k),0.)*(dTdr(i-1,j,k)+dTdr(i,j,k-1)))
+# else
+     &                0.25*dRdx(i,j,k)*( dTdr(i-1,j,k-1)+dTdr(i,j,k)
+     &                                +  dTdr(i-1,j,k)+dTdr(i,j,k-1))
+# endif
+     &                                                              )
             enddo
+          enddo
 
-          endif ! --> k.lt.N
+          do j=jstr,jend+1
+            do i=istr,iend
+              FE(i,j)=-cff*diff3v(i,j,k)*(Hz(i,j,k)+Hz(i,j-1,k))
+     &        *om_v(i,j)*(  dTde(i,j  ,k) - 
+# ifdef SWTRIADS
+     &       0.5*( MAX(dRde(i,j,k),0.)*(dTdr(i,j-1,k-1)+dTdr(i,j,k))
+     &            +MIN(dRde(i,j,k),0.)*(dTdr(i,j-1,k)+dTdr(i,j,k-1)))
+# else
+     &              0.25*dRde(i,j,k)*(   dTdr(i,j-1,k-1)+dTdr(i,j,k)
+     &                              +    dTdr(i,j-1,k)+dTdr(i,j,k-1))
+# endif
+     &                                                              ) 
+            enddo
+          enddo
 #endif /* TS_DIF4 */
 
 !++========================================================
@@ -860,16 +839,16 @@
           do j=jstr,jend
             do i=istr,iend
 #ifdef TS_MIX_IMP
-              t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nnew,itrc)
+              t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nnew,itrc) 
      &         + dt*(
      &                   pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                    +FE(i,j+1)-FE(i,j))
-     &                  +FC(i,j,k2)-FC(i,j,k1)    )
+     &                  +FC(i,j,k)-FC(i,j,k-1)    )
 #else
               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) + dt*(
      &                   pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                    +FE(i,j+1)-FE(i,j))
-     &                  +FC(i,j,k2)-FC(i,j,k1)    )/Hz(i,j,k)
+     &                  +FC(i,j,k)-FC(i,j,k-1)    )/Hz(i,j,k)
 #endif
             enddo
           enddo
@@ -888,34 +867,33 @@
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
      &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
-     &                         +(FC(i,j,k2)-FC(i,j,k1))/cff1
+     &                         +(FC(i,j,k)-FC(i,j,k-1))/cff1
      &                                   SWITCH rmask(i,j)
             enddo
           enddo
 #endif
 
-        endif  ! <-- k.gt.0
       enddo   ! --> k
 
 #ifdef TS_MIX_IMP
-      do j=jstr,jend
+       DOLOOP2D(Istr,Iend,Jstr,Jend)
 # ifdef VADV_ADAPT_IMP
-       do i=Istr,Iend
+        do i=Istr,Iend
             DC(i,0)=dt*pn(i,j)*pm(i,j)
-       enddo
+        enddo
 # endif
 # define FC FFC
 # include "t3dmix_tridiagonal.h"
-# undef FC
-      enddo
+# undef FC   
+      ENDDOLOOP2D
 #endif
 
 #undef MIN
 #undef MAX
 #undef LT
 #undef GT
-#undef diff3u
-#undef diff3v
+#undef diff3u 
+#undef diff3v 
 
 #if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
@@ -1018,7 +996,7 @@
      &                          TForc_mld(i,j,itrc)
          enddo
        enddo
-#  undef T_mld_nnew
+#  undef T_mld_nnew 
 #  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
@@ -1052,12 +1030,13 @@
 # endif /* DIAGNOSTICS_DEBUG */
 #endif /* DIAGNOSTICS_TS */
 !
+!$acc end kernels
 !
 !==========================================================
 ! Data exchange at the boundaries or interfaces
 !==========================================================
 !
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#if defined BD_EXCHANGE
 # ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))
@@ -1068,7 +1047,7 @@
 #endif
       return
       end
-
+ 
 #ifndef CHILD_SPG
 # undef TCLM
 # define CHILD_SPG

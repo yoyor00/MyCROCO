@@ -1,6 +1,6 @@
-! $Id: get_vbc.F 1615 2014-12-17 13:27:07Z rblod $
-!
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+!======================================================================
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -27,6 +27,7 @@
 !                 [temperature: degC m/s; salinity: PSU m/s].
 !-------------------------------------------------------------------
 !
+      USE debug
       implicit none
 #include "param.h"
 #include "sources.h"
@@ -66,9 +67,10 @@
 !---------------------------------------------------------------
 !
 # ifndef ANA_SMFLUX
-#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  ifndef BULK_FLUX
+#   ifndef WAVE_SMFLUX
       call get_smflux
+#   endif
 #  endif
 # endif
 !
@@ -196,6 +198,7 @@
 !                                     the ETA-direction (m^2/s^2).
 !----------------------------------------------------------------
 !
+      USE debug
 #ifdef AGRIF
       use Agrif_Util
 #endif
@@ -217,6 +220,7 @@
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk2(PRIVATE_2D_SCRATCH_ARRAY)
+      real maxzob
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -230,9 +234,10 @@
 # ifdef ANA_SMFLUX
       call ana_smflux_tile (Istr,Iend,Jstr,Jend)
 # else
-#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  ifndef BULK_FLUX
+#   ifndef WAVE_SMFLUX
       call set_smflux_tile (Istr,Iend,Jstr,Jend)
+#   endif
 #  endif
 # endif
 
@@ -315,6 +320,7 @@
 !
 ! If BULK_FLUX is defined, correction is done in bulk_flux
 !
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,itemp)=stflx(i,j,itemp)+
@@ -337,6 +343,7 @@
 !
 ! Multiply flux by surface salinity.
 !
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,isalt)=stflx(i,j,isalt)*t(i,j,N,nrhs,isalt)
@@ -358,6 +365,7 @@
 !
 ! If BULK_FLUX is defined, correction is done in bulk_flux
 !
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           stflx(i,j,isalt)=stflx(i,j,isalt)
@@ -389,6 +397,7 @@
 !---------------------------------------------------------------
 !
 #  ifdef WET_DRY
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
 #   ifdef TEMPERATURE
@@ -455,6 +464,7 @@
 ! Multiply flux by bottom salinity.
 !---------------------------------------------------------------
 !
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           btflx(i,j,isalt)=btflx(i,j,isalt)*t(i,j,1,nrhs,isalt)
@@ -490,8 +500,12 @@
 !  Set bottom stress using logarithmic or linear
 !  and/or quadratic formulation.
 !
+!$acc kernels if(compute_on_device) default(present)
 #   define CDRAG wrk
-      if (maxval(Zob).ne.0.) then
+      maxzob = maxval(Zob)
+!$acc end kernels
+!$acc kernels if(compute_on_device) default(present)
+      if (maxzob.ne.0.) then
         do j=JstrV-1,Jend     !! for currents
           do i=IstrU-1,Iend
             cff=vonKar/LOG((z_r(i,j,1)+h(i,j))/Zob(i,j))
@@ -703,7 +717,8 @@
 #   endif
       ENDIF
 #  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+#  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend, bustr)
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend, bvstr)
 #   ifdef SEDIMENT
@@ -720,7 +735,7 @@
 #endif
 
 #ifdef SOLVE3D
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
 #  if defined STRESS_AT_RHO_POINTS
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
@@ -729,11 +744,13 @@
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
 #  endif
 #  ifdef TEMPERATURE
+#   ifndef BASIN
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,srflx(START_2D_ARRAY))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      btflx(START_2D_ARRAY,itemp))
+#   endif      
 #  endif
 #  ifdef SALINITY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -767,14 +784,18 @@ C$OMP END MASTER
 #if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
-      call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u')
-      call check_tab3d(v(:,:,:,nrhs),'#end v in set_vbc','v')
+      call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u',
+     &  ondevice=.TRUE.)
+      call check_tab3d(v(:,:,:,nrhs),'#end v in set_vbc','v',
+     &  ondevice=.TRUE.)
 
 # ifdef TEMPERATURE
-      call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r')
+      call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r',
+     & ondevice=.TRUE.)
 # endif
 # ifdef SALINITY
-      call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in set_vbc','r')
+      call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in set_vbc','r',
+     & ondevice=.TRUE.)
 # endif
 C$OMP END MASTER
 #endif

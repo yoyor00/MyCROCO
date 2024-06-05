@@ -1,7 +1,6 @@
-! $Id: scalars.h 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -42,6 +41,12 @@
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
 #endif
+# if defined OA_COUPLING || defined OW_COUPLING
+#  ifdef AGRIF
+     &     , it_inside_root
+#  endif
+# endif
+
 #ifdef FLOATS
      &      , nfp1, nf, nfm1, nfm2, nfm3
 #endif
@@ -55,6 +60,12 @@
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
+# if defined OA_COUPLING || defined OW_COUPLING
+#  ifdef AGRIF
+     &      it_inside_root,
+#  endif
+# endif
+
 #ifdef FLOATS
      &                       nfp1, nf, nfm1, nfm2, nfm3,
 #endif
@@ -150,7 +161,12 @@
      &               , xl, el, visc2, visc4, gamma2
 #ifdef SOLVE3D
       real  theta_s,   theta_b,   Tcline,  hc
+# ifndef M3FAST_SEDLAYERS
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
+# else
+      real  sc_w(-N_sl  :N), Cs_w(-N_sl  :N) 
+     &    , sc_r(-N_sl+1:N), Cs_r(-N_sl+1:N)
+# endif
       real  rx0, rx1
 # ifdef TRACERS
       real  tnu2(NT),tnu4(NT)
@@ -313,6 +329,10 @@
       logical ldefsta
 #endif
 
+#ifdef  BAND_DEBUG         
+      character(len=50) :: chkbandname
+      character(len=50) :: fileline
+#endif
       common /scalars_main/
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
      &           , Zobt,       Cdb_min,   Cdb_max
@@ -451,6 +471,9 @@
 # endif
 #endif
 
+#ifdef  BAND_DEBUG         
+       common /scalchkbandname/ chkbandname
+#endif       
 #if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak
       common /scalars_akv/ Akv_bak

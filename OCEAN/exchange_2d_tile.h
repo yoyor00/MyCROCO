@@ -1,5 +1,7 @@
-#ifndef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
       subroutine exchange_2d_tile (Istr,Iend,Jstr,Jend, A)
+#elif defined MP_1PTS
+      subroutine exchange_2d_1pts_tile (Istr,Iend,Jstr,Jend, A)
 #else
       subroutine exchange_2d_3pts_tile (Istr,Iend,Jstr,Jend, A)
 #endif
@@ -8,24 +10,29 @@
 ! field A of ZETA-, U-, V- or PSI-type. This file is designed to
 ! generate four different subroutines, by redefining (via CPP) the
 ! name of the subroutine exchange_2d_tile above and the starting
-! indices ISTART = [Istr for U-,PSI-type; IstrR for V-,ZETA-type]
+! indices ISTART = [Istr for U-,PSI-type; IstrR for V-,ZETA-type] 
 ! and JSTART = [Jstr for V-,PSI-type; JstrR for U-,ZETA-type]
-! below. See also mounting file exchange.F
+! below. See also mounting file exchange.F  
 !
       implicit none
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-#ifndef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
       parameter (Npts=2)
-#else
+#elif defined MP_1PTS
+      parameter (Npts=1)
+# else
       parameter (Npts=3)
-#endif
+# endif
       real A(GLOBAL_2D_ARRAY)
       integer Istr,Iend,Jstr,Jend, i,j
 !
 #include "compute_auxiliary_bounds.h"
 !
+
+
+!$acc kernels if(compute_on_device) default(present)  
 #ifdef EW_PERIODIC
 # ifdef NS_PERIODIC
 #  define J_RANGE Jstr,Jend
@@ -34,8 +41,8 @@
 # endif
 # ifdef MPI
       if (NP_XI.eq.1) then
-# endif
-        if (WESTERN_EDGE) then
+# endif	
+        if (WESTERN_EDGE) then		    
           do j=J_RANGE
             do ipts=1,Npts
               A(Lm+ipts,j)=A(ipts,j)
@@ -120,18 +127,48 @@
       endif
 # endif
 #endif
+!$acc end kernels
+		 
+		 
 #ifdef MPI
-# ifndef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
       call MessPass2D_tile (Istr,Iend,Jstr,Jend,  A)
+#elif defined MP_1PTS
+      call MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend,  A)
 # else
       call MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend,  A)
 # endif
+#   ifdef  BAND_DEBUG          
+      chkbandname='none'
+#   endif     
+
 #endif
+#if defined OPENMP && defined OPENACC
+      if (.not.SOUTHERN_EDGE) then
+!$acc update host(A(:,Jstr:Jstr+Npts-1))
+      endif
+      if (.not.NORTHERN_EDGE) then
+!$acc update host(A(:,Jend-Npts+1:Jend))
+      endif
+C$OMP BARRIER
+      if (.not.SOUTHERN_EDGE) then
+!$acc update device(A(:,Jstr-Npts:Jstr-1))
+      endif
+      if (.not.NORTHERN_EDGE) then
+!$acc update device(A(:,Jend+1:Jend+Npts))
+      endif
+#endif
+           
       return
       end
 
-#ifndef MP_3PTS
-# define MP_3PTS
-# include "exchange_2d_tile.h"
-# undef MP_3PTS
+#if (!defined MP_3PTS) && (!defined MP_1PTS)
+#  define MP_3PTS
+#  include "exchange_2d_tile.h"
+#  undef MP_3PTS
+#ifndef MP_1PTS
+#define MP_1PTS
+#include "exchange_2d_tile.h"
+#undef MP_1PTS
 #endif
+# endif

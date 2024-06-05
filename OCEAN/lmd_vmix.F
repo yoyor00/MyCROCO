@@ -1,7 +1,6 @@
-! $Id: lmd_vmix.F 1556 2014-06-19 07:42:15Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -40,7 +39,8 @@
       trd=omp_get_thread_num()
       call  lmd_vmix_tile (Istr,Iend,Jstr,Jend,
      &                     A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
-     &                                                   A3d(1, 4,trd))
+     &                                                   A3d(1, 4,trd),
+     &                     A3d(1, 5,trd))
 # ifdef LMD_SKPP
 #  ifdef LMD_SKPP2005
       call lmd_skpp_tile  (Istr,Iend,Jstr,Jend,
@@ -86,16 +86,17 @@ C$OMP BARRIER
       end
 !
 !--------------------------------------------------------------------
-      subroutine lmd_vmix_tile (Istr,Iend,Jstr,Jend, Kv,Kt,Ks,Rig)
+      subroutine lmd_vmix_tile (Istr,Iend,Jstr,Jend, Kv,Kt,Ks,Rig,WORK)
 !--------------------------------------------------------------------
 !
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
-      real Rig(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+      real Rig(PRIVATE_2D_SCRATCH_ARRAY,1:N),
      &      Kv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &      Kt(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &      Ks(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+      real WORK(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 # include "grid.h"
 # include "ocean3d.h"
 # include "mixing.h"
@@ -213,6 +214,7 @@ C$OMP BARRIER
 #   define J_EXT_RANGE jmin,jmax
 #  endif
 
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N-1
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
@@ -225,11 +227,13 @@ C$OMP BARRIER
             Rig(i,j,k)=bvf(i,j,k)/max(shear2, 1.E-10)
           enddo
         enddo
+       enddo
 
 #  ifdef RI_HSMOOTH
 !
 !    Smooth Ri horizontally
 !
+       do k=1,N-1
 #   ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
           do j=J_EXT_RANGE
@@ -268,20 +272,24 @@ C$OMP BARRIER
         endif
 #    endif
 #   endif
+        enddo
 #   undef I_EXT_RANGE
 #   undef J_EXT_RANGE
 !
-!    Smooth Rig horizontally [Array Rig(:,:,0) is used
-!                            as scratch workspace here]
-      do j=Jstr,Jend+1
+!    Smooth Rig horizontally 
+      do k=1,N-1
+       do j=Jstr,Jend+1
         do i=Istr,Iend+1
-          Rig(i,j,0)=0.25*(Rig(i,j  ,k)+Rig(i-1,j  ,k)
+          WORK(i,j,k)=0.25*(Rig(i,j  ,k)+Rig(i-1,j  ,k)
      &                    +Rig(i,j-1,k)+Rig(i-1,j-1,k))
 #   ifdef MASKING
      &                                      *pmask2(i,j)
 #   endif
         enddo
       enddo
+      enddo
+
+      do k=1,N-1
       do j=Jstr,Jend
         do i=Istr,Iend
 #   ifdef MASKING
@@ -291,8 +299,8 @@ C$OMP BARRIER
           cff=1.
 #   endif
           Rig(i,j,k)=(1-cff)*Rig(i,j,k)+
-     &                0.25*(Rig(i,j  ,0)+Rig(i+1,j  ,0)
-     &                     +Rig(i,j+1,0)+Rig(i+1,j+1,0))
+     &                0.25*(WORK(i,j,k  )+WORK(i+1,j,k  )
+     &                     +WORK(i,j+1,k)+WORK(i+1,j+1,k))
 #   ifdef MASKING
           Rig(i,j,k)=Rig(i,j,k)*rmask(i,j)
 #   endif
@@ -315,6 +323,8 @@ C$OMP BARRIER
         enddo
       enddo
 #  endif /* RI_VSMOOTH */
+# else
+!$acc kernels if(compute_on_device) default(present)
 # endif /* LMD_RIMIX */
 
       do k=1,N-1
@@ -520,7 +530,7 @@ C$OMP BARRIER
         enddo
       enddo
 # endif /* LMD_SKPP || LMD_BKPP */
-
+!$acc end kernels
       return
       end
 !
@@ -568,9 +578,11 @@ C$OMP BARRIER
 #  define SWITCH !
 # endif
 !
-      do j=jstr,jend
-        do i=istr,iend
-          do k=1,N-1
+
+!$acc kernels if(compute_on_device) default(present)
+      do k=1,N-1
+        do j=jstr,jend
+          do i=istr,iend
 !
 !------------------------------------------------
 !  First apply shallow condition effects
@@ -602,11 +614,15 @@ C$OMP BARRIER
             Akt(i,j,k,isalt) =Ks(i,j,k) SWITCH rmask(i,j)
 # endif
           enddo
+        enddo
+      enddo
 !
 !------------------------------------------------
 !  Apply surface conditions
 !------------------------------------------------
 !
+      do j=jstr,jend
+        do i=istr,iend
           Akv(i,j,N)       =max(1.5*Kv(i,j,N-1)-0.5*Kv(i,j,N-2),0.)
 # ifdef TEMPERATURE
           Akt(i,j,N,itemp) =max(1.5*Kt(i,j,N-1)-0.5*Kt(i,j,N-2),0.)
@@ -614,27 +630,35 @@ C$OMP BARRIER
 # ifdef SALINITY
           Akt(i,j,N,isalt) =max(1.5*Ks(i,j,N-1)-0.5*Ks(i,j,N-2),0.)
 # endif
+        enddo
+      enddo
 !
 !------------------------------------------------
 !  Apply wave effects
 !------------------------------------------------
 !
 # ifdef MRL_WCI
-          do k=1,N
-            Akv(i,j,k)       =Akv(i,j,k)+Akb(i,j,k)
+      do k=1,N
+          do j=jstr,jend
+            do i=istr,iend
+              Akv(i,j,k)       =Akv(i,j,k)+Akb(i,j,k)
 #  ifdef TEMPERATURE
-            Akt(i,j,k,itemp) =Akt(i,j,k,itemp)+Akb(i,j,k)+Akw(i,j,k)
+              Akt(i,j,k,itemp) =Akt(i,j,k,itemp)+Akb(i,j,k)+Akw(i,j,k)
 #  endif
 #  ifdef SALINITY
-            Akt(i,j,k,isalt) =Akt(i,j,k,isalt)+Akb(i,j,k)+Akw(i,j,k)
+              Akt(i,j,k,isalt) =Akt(i,j,k,isalt)+Akb(i,j,k)+Akw(i,j,k)
 #  endif
           enddo
+        enddo
+      enddo
 # endif
 !
 !------------------------------------------------
 !  Apply bottom conditions
 !------------------------------------------------
 !
+      do j=jstr,jend
+        do i=istr,iend
           Akv(i,j,0)       =0.
 # ifdef TEMPERATURE
           Akt(i,j,0,itemp) =0.
@@ -653,9 +677,9 @@ C$OMP BARRIER
 !------------------------------------------------
 !
 # ifdef LMD_VMIX_MIN
-      do j=jstr,jend
-        do i=istr,iend
-          do k=1,N
+      do k=1,N
+        do j=jstr,jend
+          do i=istr,iend
             Akv(i,j,k)       =max(Akv(i,j,k)       ,my_Akv_bak)
 #  ifdef TEMPERATURE
             Akt(i,j,k,itemp) =max(Akt(i,j,k,itemp) ,my_Akt_bak)
@@ -664,7 +688,6 @@ C$OMP BARRIER
             Akt(i,j,k,isalt) =max(Akt(i,j,k,isalt) ,my_Aks_bak)
 #  endif
           enddo
-
         enddo
       enddo
 # endif
@@ -676,8 +699,8 @@ C$OMP BARRIER
 # define k0 0
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
-        do j=jstr,jend
-          do k=k0,N
+        do k=k0,N
+          do j=jstr,jend
             Akv(istr-1,j,k)=Akv(istr,j,k)
 #  ifdef TEMPERATURE
             Akt(istr-1,j,k,itemp)=Akt(istr,j,k,itemp)
@@ -689,8 +712,8 @@ C$OMP BARRIER
         enddo
       endif
       if (EASTERN_EDGE) then
-        do j=jstr,jend
-          do k=k0,N
+        do k=k0,N
+          do j=jstr,jend
             Akv(iend+1,j,k)=Akv(iend,j,k)
 #  ifdef TEMPERATURE
             Akt(iend+1,j,k,itemp)=Akt(iend,j,k,itemp)
@@ -704,8 +727,8 @@ C$OMP BARRIER
 # endif
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
-        do i=istr,iend
-          do k=k0,N
+        do k=k0,N
+          do i=istr,iend
             Akv(i,jstr-1,k)=Akv(i,jstr,k)
 #  ifdef TEMPERATURE
             Akt(i,jstr-1,k,itemp)=Akt(i,jstr,k,itemp)
@@ -717,8 +740,8 @@ C$OMP BARRIER
         enddo
       endif
       if (NORTHERN_EDGE) then
-        do i=istr,iend
-          do k=k0,N
+        do k=k0,N
+          do i=istr,iend
             Akv(i,jend+1,k)=Akv(i,jend,k)
 #  ifdef TEMPERATURE
             Akt(i,jend+1,k,itemp)=Akt(i,jend,k,itemp)
@@ -776,8 +799,8 @@ C$OMP BARRIER
       endif
 #  endif
 # endif
-
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+# if defined BD_EXCHANGE
       call exchange_w3d_tile (istr,iend,jstr,jend, Akv)
 #  ifdef TEMPERATURE
       call exchange_w3d_tile (istr,iend,jstr,jend,

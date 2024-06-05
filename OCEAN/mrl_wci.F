@@ -1,7 +1,6 @@
-! $Id$
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -97,7 +96,7 @@
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
      &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,ks,
-     &   a_frc,kfrc,Hrms,urms,fw,
+     &   a_frc,kfrc,Hrms,urms,fw, maxwar,
      &             wh(PRIVATE_2D_SCRATCH_ARRAY),
      &             fr(PRIVATE_2D_SCRATCH_ARRAY),
      &             kw(PRIVATE_2D_SCRATCH_ARRAY),
@@ -122,6 +121,7 @@
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
+!$acc declare create(wrk4,wrk5,wrk6)
 # endif
       parameter ( eps    = 1.e-10,
      &            bconst = 0.03,              ! breaking contribution to KPP
@@ -221,9 +221,29 @@
 ! 2DH Stokes velocities, breaking, roller and bottom-friction
 ! dissipation terms, defined at horizontal rho-points.
 !
+!$acc kernels if(compute_on_device) default(present)
+#  ifdef EW_PERIODIC
+       imin= Istr-2
+#  else
+      if (WESTERN_EDGE) then
+        imin=Istr-1
+      else
+        imin=Istr-2
+      endif
+#  endif
+#  ifdef NS_PERIODIC
+        jmin=Jstr-2
+#  else
+      if (SOUTHERN_EDGE) then
+        jmin=Jstr-1
+      else
+        jmin=Jstr-2
+      endif
+#  endif
+
       inv_g = 1./g
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=jmin,jendR
+        do i=imin,iendR
 # ifdef SOLVE3D
           Dstp(i,j)=h(i,j)+z_w(i,j,N)
 # else
@@ -259,8 +279,12 @@
 #  ifndef WAVE_ROLLER
           act(i,j)=wramp2*max(wac(i,j,wnew),0.)  ! wave action density
 #  else
+          maxwar=0.125*g*(wkb_gam*Dstp(i,j))**2  ! limit roller action
+     &                        /max(fr(i,j),eps)  ! in shallow water 
           act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
-     &                    +max(war(i,j,wnew),0.))
+     &                +max(min(war(i,j,wnew),maxwar),0.))
+!         act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
+!     &                   +max(war(i,j,wnew),0.))  ! U10
 #  endif
 
 # else    /* ifndef WKB_WWAVE */
@@ -509,7 +533,7 @@
 ! =========================================
 !
       do j=jstrR,jendR
-        do i=istr,iendR
+        do i=IstrU,iendR
           brk2dx(i,j) =0.5*(brk(i-1,j)*wdrx(i-1,j)+brk(i,j)*wdrx(i,j))
           frc2dx(i,j) =0.5*(frc(i-1,j)*wdrx(i-1,j)+frc(i,j)*wdrx(i,j))
 # ifdef MASKING
@@ -526,7 +550,7 @@
 # endif
         enddo
       enddo
-      do j=jstr,jendR
+      do j=JstrV,jendR
         do i=istrR,iendR
           brk2de(i,j) =0.5*(brk(i,j-1)*wdre(i,j-1)+brk(i,j)*wdre(i,j))
           frc2de(i,j) =0.5*(frc(i,j-1)*wdre(i,j-1)+frc(i,j)*wdre(i,j))
@@ -581,8 +605,8 @@
 !                ( exp(2k(z_up+h-D)) - exp(-2k(z_up+h+D))
 !                 -exp(2k(z_dw+h-D)) + exp(-2k(z_dw+h+D)) )
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=JstrV-1,jendR
+        do i=IstrU-1,iendR
 #   ifdef OW_COUPLING_FULL
           inv_ex(i,j)=1.0/max(2.0*kw(i,j)*(1.0+exp(-4.0*kD(i,j))),eps)
           ust_ker = ust_ext(i,j)*inv_ex(i,j)
@@ -605,12 +629,12 @@
 !
       do k=1,N
         do j=jstrR,jendR
-          do i=istr,iendR
+          do i=IstrU,iendR
             ust(i,j,k)=0.5*( ust_r(i-1,j,k)*wdrx(i-1,j)
      &                      +ust_r(i  ,j,k)*wdrx(i  ,j) )
           enddo
         enddo
-        do j=jstr,jendR
+        do j=JstrV,jendR
           do i=istrR,iendR
             vst(i,j,k)=0.5*( ust_r(i,j-1,k)*wdre(i,j-1)
      &                      +ust_r(i,j  ,k)*wdre(i,j  ) )
@@ -621,13 +645,14 @@
 !  2DH depth-averaged Stokes drift
 !
       do j=JstrR,JendR
-        do i=Istr,IendR
+        do i=IstrU,IendR
           cff1=0.5*(Hz(i-1,j,1)+Hz(i,j,1))
           ust2d(i,j)=cff1*ust(i,j,1)
           DO k=2,N
             cff1=0.5*(Hz(i-1,j,k)+Hz(i,j,k))
             ust2d(i,j)=ust2d(i,j)+cff1*ust(i,j,k)
           enddo
+       !   write(*,*) i,j
           cff2=2./(Dstp(i-1,j)+Dstp(i,j))
           ust2d(i,j)=ust2d(i,j)*cff2
 #   ifdef MASKING
@@ -635,7 +660,7 @@
 #   endif
         enddo
       enddo
-      do j=Jstr,JendR
+      do j=JstrV,JendR
         do i=IstrR,IendR
           cff1=0.5*(Hz(i,j-1,1)+Hz(i,j,1))
           vst2d(i,j)=cff1*vst(i,j,1)
@@ -923,8 +948,8 @@
 ! Akb: Eddy viscosity due to depth-induced wave breaking
 ! ======================================================
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=jstrR,jendR
+        do i=istrR,iendR
           inv_k =min(max(a_kv*wh(i,j),eps),Dstp(i,j))
           kbrk  =1./inv_k          ! vertical scale for breaking
 #   ifdef FKV_FUNC1
@@ -996,8 +1021,8 @@
 ! 3D breaking acceleration term defined as a body force.
 ! =====================================================
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=jstr-1,jend
+        do i=istr-1,iend
 #   ifdef FB_FUNC0
           do k=1,N                 ! vertically uniform case
             brk_r(i,j,k) = brk(i,j)*inv_d(i,j)
@@ -1047,8 +1072,8 @@
       enddo
 
       do k=1,N
-        do j=jstrR,jendR
-          do i=istr,iendR
+        do j=jstr,jend
+          do i=istr,iend
             brk3dx(i,j,k)=0.5*( brk_r(i-1,j,k)*wdrx(i-1,j)
      &                         +brk_r(i  ,j,k)*wdrx(i  ,j) )
      &                            SWITCH umask(i,j)
@@ -1057,8 +1082,8 @@
           enddo
         enddo
 
-        do j=jstr,jendR
-          do i=istrR,iendR
+        do j=Jstr,jend
+          do i=istr,iend
             brk3de(i,j,k)=0.5*( brk_r(i,j-1,k)*wdre(i,j-1)
      &                         +brk_r(i,j  ,k)*wdre(i,j  ) )
      &                            SWITCH vmask(i,j)
@@ -1092,8 +1117,8 @@
 #   define frc_r wrk2
 #   define frc2d stk
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=jstr-1,jend
+        do i=istr-1,iend
           ks=30.*Zob_my(i,j)
 #   ifdef OW_COUPLING_FULL
           abot=ubr(i,j)/max(fr(i,j),eps)
@@ -1116,8 +1141,8 @@
         enddo
       enddo
 !
-      do j=jstrR,jendR
-        do i=istr,iendR
+      do j=jstr,jend
+        do i=istr,iend
           frc2dx(i,j)=0.5*( frc2d(i-1,j)*wdrx(i-1,j)
      &                     +frc2d(i  ,j)*wdrx(i  ,j) )
      &                            SWITCH umask(i,j)
@@ -1132,8 +1157,8 @@
           enddo
         enddo
       enddo
-      do j=jstr,jendR
-        do i=istrR,iendR
+      do j=jstr,jend
+        do i=istr,iend
           frc2de(i,j)=0.5*( frc2d(i,j-1)*wdre(i,j-1)
      &                     +frc2d(i,j  )*wdre(i,j  ) )
      &                            SWITCH vmask(i,j)
@@ -1217,6 +1242,8 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       endif
 #  endif  /* OBC_EAST */
 # endif  /* ANA_BRY */
+
+!$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile(istr,iend,jstr,jend,sup)

@@ -1,7 +1,6 @@
-! $Id:$
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -116,8 +115,11 @@
 !  Pseudoacoustic speed:
 !   should be around 5 times external phase speed sqrt(g*h)
 !
+
+!$acc kernels if(compute_on_device) default(present)
         soundspeed_nbq =csound_nbq
         soundspeed2_nbq=csound_nbq**2
+!$acc end kernels
 !
 !  Grid update time-step
 !
@@ -126,6 +128,7 @@
 #  else
         dtgrid_nbq = dtfast
 #  endif
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Initializes vertical grid spaces
@@ -155,11 +158,15 @@
             enddo
           enddo
         enddo
+!$acc end kernels
+
         call grid_nbq_tile(Istr,Iend,Jstr,Jend
      &                    ,Hzw_half_nbq_inv,   Hzr_half_nbq_inv
      &                    ,Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v
      &                    ,Hzu_half_qdmu,      Hzv_half_qdmv
      &                    )
+
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !   Compressible density initializations
@@ -202,15 +209,15 @@
           enddo
         enddo
 #  endif
-
+!$acc end kernels
 # endif /* NBQ */
 !
 !----------------------------------------------------------------------
 !  NBQ Momentum initialization
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
 # ifndef EXACT_RESTART
-
 ! Note that if EXACT_RESTART CPP-switch is defined
 ! qdmu_nbq is read from rst file
 
@@ -256,10 +263,13 @@
           do j=JR_RANGE
             do i=IR_RANGE
               thetadiv_nbq(i,j,k)=0.
+              thetadiv2_nbq(i,j,k)=0.
+              thetadiv3_nbq(i,j,k)=0.
             enddo
           enddo
         enddo
 # endif
+!$acc end kernels
 !
 !----------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.

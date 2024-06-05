@@ -1,7 +1,6 @@
-! $Id: bbl.F 1588 2014-08-04 16:26:01Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -271,7 +270,8 @@
 #  else
           cff=wepb(i,j)
 #  endif
-          Ut=cff/(exp(depth/whrm(i,j))-1)
+!          Ut=cff/(exp(depth/whrm(i,j))-1)
+          Ut=cff/(exp(depth/max(whrm(i,j),1.e-3))-1)
      &                              SWITCH rmask(i,j)
      &                              SWITCH_WET rmask_wet(i,j)
           Ut=500.*Ut  ! * efficient factor
@@ -364,11 +364,12 @@
 
 !  combined wave-current skin stress
             tau_cws = tau_cs*(1.+scf4*((tau_ws/(tau_ws+tau_cs))**scf5))
-            taucw(i,j) = tau_cws
+         !   taucw(i,j) = tau_cws
 
 !  Maximum of combined wave-current skin stress (for sediment model)
             taucwmax(i,j) = SQRT((tau_cws + tau_ws*COS(phicw))**2
      &                                    +(tau_ws*SIN(phicw))**2)
+            tau_cw = taucwmax(i,j)   ! from RUTGERS
 !
 !---------------------------------------------------------------------
 ! Compute apparent bedload roughness
@@ -682,7 +683,7 @@
         bvstrw(IENDp,JENDp)=0.5*(bvstrw(IENDp,Jend)+bvstrw(Iend,JENDp))
       ENDIF
 # endif
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Abed)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Hripple)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Lripple)

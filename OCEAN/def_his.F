@@ -1,7 +1,6 @@
-! $Id: def_his.F 1571 2014-07-01 12:38:05Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -39,6 +38,12 @@
       USE comMUSTANG, ONLY :nk_nivsed_out, nv_out3Dnv_specif,
      &                      nv_out2D_specif, nv_out3Dk_specif
 #endif
+#ifdef OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : hisObst, avgObst, 
+     &     obst_nbvar, outObst, out2DObst, vname_obst
+#endif
+
+
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -56,10 +61,9 @@
 #ifdef MRL_WCI
      &      , iwkb
 #endif
-#ifdef MUSTANG
+#if defined MUSTANG || defined OBSTRUCTION
      &      , indx,ik
 #endif
-
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
@@ -145,6 +149,7 @@
 #  define vidSST_skin hisSST_skin
 # endif
 # define vidM hisMust
+# define vidObst hisObst
 
 #else
 
@@ -221,7 +226,48 @@
 # endif
 
 # define vidM avgMust
+# define vidObst avgObst
 #endif
+
+# ifdef M3FAST_HIS
+#  define vidRnbq hisRnbq
+#  define vidUnbq hisUnbq
+#  define vidVnbq hisVnbq
+#  define vidWnbq hisWnbq
+#  define vidCnbq hisCnbq
+!
+! M3FAST-kernel related variables:
+!
+!****** Init parameters ******
+!
+        wrt(indxRnbq)=.true.
+        wrt(indxUnbq)=.true.
+        wrt(indxVnbq)=.true.
+        wrt(indxWnbq)=.true.
+        wrt(indxCnbq)=.true.
+        
+        vname(1,indxRnbq)="Rnbq"
+        vname(2,indxRnbq)=vname(2,indxR)
+        vname(3,indxRnbq)=vname(3,indxR)
+        vname(4,indxRnbq)=vname(4,indxR)
+        vname(1,indxUnbq)="Unbq"
+        vname(2,indxUnbq)=vname(2,indxU)
+        vname(3,indxUnbq)=vname(3,indxU)
+        vname(4,indxUnbq)=vname(4,indxU)
+        vname(1,indxVnbq)="Vnbq"
+        vname(2,indxVnbq)=vname(2,indxV)
+        vname(3,indxVnbq)=vname(3,indxV)
+        vname(4,indxVnbq)=vname(4,indxV)
+        vname(1,indxWnbq)="Wnbq"
+        vname(2,indxWnbq)=vname(2,indxW)
+        vname(3,indxWnbq)=vname(3,indxW)
+        vname(4,indxWnbq)=vname(4,indxW)
+        vname(1,indxCnbq)="Cnbq"
+        vname(2,indxCnbq)=vname(1,indxCnbq)
+        vname(3,indxCnbq)="ms-1"
+        vname(4,indxCnbq)="Sound speed, scalar."
+!
+# endif
 !
 ! Put time record index into file name. In  the case when model
 ! output is to be arranged into sequence of named files, the naming
@@ -890,6 +936,167 @@
           call nf_add_attribute(ncid, vidW, vname(:,indxW), 
      &        5, NF_FOUT, ierr)
         endif
+        
+#ifdef M3FAST_HIS
+
+!****** Rho *****
+!
+ 
+        if (wrt(indxRnbq)) then
+          lvar=lenstr(vname(1,indxRnbq))
+          ierr=nf_def_var (ncid, vname(1,indxRnbq)(1:lvar),
+     &                               NF_FOUT, 4, r3dgrd, vidRnbq)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidRnbq,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxRnbq))
+          ierr=nf_put_att_text (ncid, vidRnbq, 'long_name', lvar,
+     &                                  vname(2,indxRnbq)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxRnbq)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidRnbq, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxRnbq))
+          ierr=nf_put_att_text (ncid, vidRnbq, 'units',     lvar,
+     &                                  vname(3,indxRnbq)(1:lvar))
+          lvar=lenstr(vname(4,indxRnbq))
+          ierr=nf_put_att_text (ncid, vidRnbq, 'field',     lvar,
+     &                                  vname(4,indxRnbq)(1:lvar))
+
+          call nf_add_attribute(ncid, vidRnbq,
+     &         indxRnbq, 5, NF_FOUT, ierr)
+
+        endif
+!
+!****** U *****
+!
+        if (wrt(indxUnbq)) then
+          
+          lvar=lenstr(vname(1,indxUnbq))
+          ierr=nf_def_var (ncid, vname(1,indxUnbq)(1:lvar),
+     &                               NF_FOUT, 4, u3dgrd, vidUnbq)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidUnbq,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxUnbq))
+          ierr=nf_put_att_text (ncid, vidUnbq, 'long_name', lvar,
+     &                                  vname(2,indxUnbq)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxUnbq)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidUnbq, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxUnbq))
+          ierr=nf_put_att_text (ncid, vidUnbq, 'units',     lvar,
+     &                                  vname(3,indxUnbq)(1:lvar))
+          lvar=lenstr(vname(4,indxUnbq))
+          ierr=nf_put_att_text (ncid, vidUnbq, 'field',     lvar,
+     &                                  vname(4,indxUnbq)(1:lvar))
+
+          call nf_add_attribute(ncid, vidUnbq, 
+     &        indxUnbq, 5, NF_FOUT, ierr)
+
+        endif
+!
+!****** V *****
+!
+        if (wrt(indxVnbq)) then
+          lvar=lenstr(vname(1,indxVnbq))
+          ierr=nf_def_var (ncid, vname(1,indxVnbq)(1:lvar),
+     &                               NF_FOUT, 4, v3dgrd, vidVnbq)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidVnbq,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxVnbq))
+          ierr=nf_put_att_text (ncid, vidVnbq, 'long_name', lvar,
+     &                                  vname(2,indxVnbq)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxVnbq)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidVnbq, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxVnbq))
+          ierr=nf_put_att_text (ncid, vidVnbq, 'units',     lvar,
+     &                                  vname(3,indxVnbq)(1:lvar))
+          lvar=lenstr(vname(4,indxVnbq))
+          ierr=nf_put_att_text (ncid, vidVnbq, 'field',     lvar,
+     &                                  vname(4,indxVnbq)(1:lvar))
+
+          call nf_add_attribute(ncid, vidVnbq, 
+     &         indxVnbq, 5, NF_FOUT, ierr)
+
+        endif
+!
+!****** W *****
+!
+        if (wrt(indxWnbq)) then
+          lvar=lenstr(vname(1,indxWnbq))
+          ierr=nf_def_var (ncid, vname(1,indxWnbq)(1:lvar),
+     &                               NF_FOUT, 4, w3dgrd, vidWnbq)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidWnbq,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxWnbq))
+          ierr=nf_put_att_text (ncid, vidWnbq, 'long_name', lvar,
+     &                                  vname(2,indxWnbq)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxWnbq)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidWnbq, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxWnbq))
+          ierr=nf_put_att_text (ncid, vidWnbq, 'units',     lvar,
+     &                                  vname(3,indxWnbq)(1:lvar))
+          lvar=lenstr(vname(4,indxWnbq))
+          ierr=nf_put_att_text (ncid, vidWnbq, 'field',     lvar,
+     &                                  vname(4,indxWnbq)(1:lvar))
+
+          call nf_add_attribute(ncid, vidWnbq, 
+     &          indxWnbq, 5, NF_FOUT, ierr)
+
+        endif
+!
+!****** Csound *****
+!
+        if (wrt(indxCnbq)) then
+          lvar=lenstr(vname(1,indxCnbq))
+          ierr=nf_def_var (ncid, vname(1,indxCnbq)(1:lvar),
+     &                               NF_FOUT, 4, r3dgrd, vidCnbq)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidCnbq,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxCnbq))
+          ierr=nf_put_att_text (ncid, vidCnbq, 'long_name', lvar,
+     &                                  vname(2,indxCnbq)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxCnbq)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidCnbq, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxCnbq))
+          ierr=nf_put_att_text (ncid, vidCnbq, 'units',     lvar,
+     &                                  vname(3,indxCnbq)(1:lvar))
+          lvar=lenstr(vname(4,indxCnbq))
+          ierr=nf_put_att_text (ncid, vidCnbq, 'field',     lvar,
+     &                                  vname(4,indxCnbq)(1:lvar))
+
+          call nf_add_attribute(ncid, vidCnbq,
+     &         indxCnbq, 5, NF_FOUT, ierr)
+
+        endif
+#endif
+
 #endif /* SOLVE3D */
 
 !================================================================
@@ -2081,6 +2288,42 @@
 #  endif
 # endif /* MUSTANG */
 !
+!-----------------------------------------------------------------------
+!  OBSTRUCTION model output
+!-----------------------------------------------------------------------
+!
+# ifdef OBSTRUCTION
+
+        do itrv=1,17*obst_nbvar+15
+            indx = itrv
+            if (outObst(indx)) then 
+               if (out2DObst(indx)) then
+                   ierr=nf_def_var (ncid, vname_obst(1,indx),
+     &                 NF_FOUT, 3, r2dgrd, vidObst(indx))  
+               else
+                   ierr=nf_def_var (ncid, vname_obst(1,indx),
+     &                 NF_FOUT, 4, r3dgrd, vidObst(indx)) 
+               endif
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidObst(indx),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname_obst(2,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indx), 'long_name',
+     &                                  lvar,vname_obst(2,indx)(1:lvar))
+                lvar=lenstr(vname_obst(3,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indx), 'units',
+     &                                  lvar,vname_obst(3,indx)(1:lvar))
+                lvar=lenstr(vname_obst(4,indx))
+                ierr=nf_put_att_text (ncid, vidObst(indx), 'field',
+     &                                  lvar,vname_obst(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidObst(indx),
+     &              vname_obst(:,indx), 5, NF_FOUT, ierr)
+            endif
+        enddo
+
+# endif /* OBSTRUCTION */
+
 #endif /* SOLVE3D */
 
 #ifdef WAVE_IO
@@ -2651,6 +2894,55 @@
 !
 ! 3D momenta in XI- and ETA-directions.
 !
+#ifdef M3FAST_HIS
+!
+! M3FAST-kernel related variables:
+!
+        if (wrt(indxRnbq)) then
+          lvar=lenstr(vname(1,indxRnbq))
+          ierr=nf_inq_varid (ncid, vname(1,indxRnbq)(1:lvar), vidRnbq)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxRnbq)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+
+       if (wrt(indxUnbq)) then
+          lvar=lenstr(vname(1,indxUnbq))
+          ierr=nf_inq_varid (ncid, vname(1,indxUnbq)(1:lvar), vidUnbq)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxUnbq)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+
+        if (wrt(indxVnbq)) then
+          lvar=lenstr(vname(1,indxVnbq))
+          ierr=nf_inq_varid (ncid, vname(1,indxVnbq)(1:lvar), vidVnbq)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxVnbq)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+        
+        if (wrt(indxWnbq)) then
+          lvar=lenstr(vname(1,indxWnbq))
+          ierr=nf_inq_varid (ncid, vname(1,indxWnbq)(1:lvar), vidWnbq)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxWnbq)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+
+        if (wrt(indxCnbq)) then
+          lvar=lenstr(vname(1,indxCnbq))
+          ierr=nf_inq_varid (ncid, vname(1,indxCnbq)(1:lvar), vidCnbq)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxCnbq)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+#endif        
         if (wrt(indxU)) then
           lvar=lenstr(vname(1,indxU))
           ierr=nf_inq_varid (ncid, vname(1,indxU)(1:lvar), vidU)
@@ -3274,6 +3566,22 @@
       enddo
 #  endif
 # endif /* MUSTANG */
+
+# ifdef OBSTRUCTION
+      do itrv=1,17*obst_nbvar+15
+         indx=itrv
+         if (outObst(indx)) then 
+            lvar=lenstr(vname_obst(1,indx))
+            ierr=nf_inq_varid (ncid, vname_obst(1,indx)(1:lvar),
+     &                             vidObst(itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidObst(itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+      enddo ! itrv
+
+# endif /* OBSTRUCTION */
 !
 #endif /* SOLVE3D */
 !
@@ -3564,6 +3872,7 @@
 #undef vidKAPS
 #undef vidHm
 #undef vidM
+#undef vidObst
 
 #ifdef AVERAGES
 # ifndef AVRH

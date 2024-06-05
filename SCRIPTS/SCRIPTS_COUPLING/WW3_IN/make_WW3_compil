@@ -37,7 +37,7 @@ source ../myenv_mypath.sh
 # Environment variables requested for ww3 compilation:
 #
 # define your local ww3 environment file
-export WWATCH3_ENV=${CHOME}/wwatch3.env
+export WWATCH3_ENV=${WAV}/bin/wwatch3.env
 # define your compilers
 export WWATCH3_F77=${F77}
 export WWATCH3_CC=${CC}
@@ -52,14 +52,14 @@ export OASISDIR=${CPL}
 
 # define your compiler extension 
 # (see what is available in $ww3/bin as comp.EXTENSION)
-# for SPICA
-#mycompil=Ubuntu.intel.mpich
-# for JZA
+# for JEANZAY
 #mycompil=Altix.JZ
 # for DATARMOR
 #mycompil=DATARMOR
 # for linux Ubuntu with basic libraries (gfort,gcc,...)
 #mycompil=Gnu
+# for SPICA
+#mycompil=Ubuntu.intel.mpich
 
 mycompil=Intel
 
@@ -133,6 +133,13 @@ for k in `seq 0 $(( ${NB_switches} - 1))` ; do
     fi
     mkdir -p ../exe_$MYSWITCH
     mv -f ../exe/* ../exe_$MYSWITCH/.
+
+    if [ "$MYSWITCH" == frc ]; then
+        cd ..
+        ln -s exe_frc exe_Afrc
+        ln -s exe_frc exe_Ofrc
+        cd -
+    fi
 
 done
 

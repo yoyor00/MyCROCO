@@ -1,7 +1,6 @@
-! $Id: init_arrays.F 1554 2014-06-18 16:40:09Z ericm $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -813,7 +812,8 @@ C$    integer omp_get_thread_num
           Hripple(i,j)=init
           Lripple(i,j)=init
           Zbnot(i,j)=init
-          Zbapp(i,j)=init
+    !      Zbapp(i,j)=init
+          Zbapp(i,j)=1.e-12
           Bustrw(i,j)=init
           Bvstrw(i,j)=init
         enddo
@@ -1502,8 +1502,8 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            trb(i,j,k,nstp,itke)=init
-            trb(i,j,k,nstp,igls)=init
+            trb(i,j,k,nstp,itke)=1.e-12
+            trb(i,j,k,nstp,igls)=1.e-12
             Lscale(i,j,k)=init
           enddo
         enddo

@@ -1,7 +1,6 @@
-! $Id: zetabc.F 1409 2014-01-06 16:34:49Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -82,7 +81,9 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,13+9*NWEIGHT)
      &                    ,A1dXI(1,15+9*NWEIGHT))
 #endif
-!
+! 
+!$acc kernels if(compute_on_device) default(present) async(1)
+
 #ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -420,6 +421,7 @@ C$    trd=omp_get_thread_num()
 
 #endif /* WET_DRY */
 
+!$acc end kernels
 
       return
       end

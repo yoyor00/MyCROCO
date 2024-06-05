@@ -1,7 +1,6 @@
-! $Id: set_avg.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -152,6 +151,7 @@ C$    integer omp_get_thread_num
           endif
         endif
 
+!$acc kernels if(compute_on_device) default(present)
         if (wrtavg(indxZ)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -268,16 +268,16 @@ C$    integer omp_get_thread_num
         endif
 #  ifdef TRACERS
         do itrc=1,NT
-          if (wrtavg(indxV+itrc)) then
             do k=1,N
               do j=JstrR,JendR
                 do i=IstrR,IendR
-                  t_avg(i,j,k,itrc)=cff*( cff1*t_avg(i,j,k,itrc)
+                  if (wrtavg(indxV+itrc)) then
+                    t_avg(i,j,k,itrc)=cff*( cff1*t_avg(i,j,k,itrc)
      &                                        +t(i,j,k,nstp,itrc))
+                  endif
                 enddo
               enddo
             enddo
-          endif
         enddo
 #  endif
         if (wrtavg(indxR)) then
@@ -885,7 +885,7 @@ C$    integer omp_get_thread_num
         endif
 #  endif  /* SOLVE3D */
 # endif   /* MRL_WCI */
-
+!$acc end kernels
       endif
       return
       end

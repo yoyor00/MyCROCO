@@ -1,7 +1,6 @@
-! $Id: diag.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -154,6 +153,7 @@
 ! verical summation at this stage.
 !
       if (mod(iic-1,ninfo).eq.0) then
+!$acc kernels if(compute_on_device) default(present)
         do j=Jstr,Jend
 #ifdef SOLVE3D
           do i=Istr,Iend
@@ -222,6 +222,7 @@
           my_avgpe =my_avgpe +pe2d(i,Jstr-1)
           my_avgke =my_avgke +ke2d(i,Jstr-1)
         enddo
+!$acc end kernels
         if (SINGLE_TILE_MODE) then
           NSUB=1
         else

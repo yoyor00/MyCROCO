@@ -1,7 +1,6 @@
-! $Id: grid_stiffness.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -55,6 +54,7 @@ C$    integer omp_get_thread_num
       my_rx0=0.
       my_rx1=0.
 
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=IstrU,Iend
 # ifdef MASKING
@@ -94,6 +94,7 @@ C$    integer omp_get_thread_num
 # endif
         enddo
       enddo
+!$acc end kernels
 
       if (SINGLE_TILE_MODE) then
         NSUB=1

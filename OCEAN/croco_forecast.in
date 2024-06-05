@@ -1,7 +1,7 @@
 title:
        Benguela LR Forecast 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                600      720      60      1
+                NUMTIMES      TIMESTEP      NFAST      1
 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                      1         1000         0.01
@@ -9,10 +9,10 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0      2.0d0      200.0d0
 
 start_date:
-xxxx/xx/xx xx:xx:xx
+xxxx-xx-xx xx:xx:xx
 
 end_date: 
-xxxx/xx/xx xx:xx:xx
+xxxx-xx-xx xx:xx:xx
 
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    XX       XX       XX
@@ -31,18 +31,18 @@ initial: NRREC / filename
           1
                           croco_ini.nc
 restart:          NRST, NRPFRST / filename
-                  120   0
+                  NUMRST   0
                           croco_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     120     0
+            T     NUMHIS     0
                           croco_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
-            1     120    0
+            1     NUMAVG    0
                           croco_avg.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    40*T
-auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen Bhfl Bwfl HEL
+auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                              F   F     T   F    T    F   F    F       F       T   T    T     F      F     T    T    T    T    T   10*T
 gls_history_fields:   TKE  GLS  Lscale
                       T    T    T

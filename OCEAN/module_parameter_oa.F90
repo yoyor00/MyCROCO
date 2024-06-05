@@ -33,7 +33,7 @@
       subroutine allocate_3D_glob_array_oa_cplx( arr_oa, nzupd3d_oa, kst )
       implicit none
 
-      complex(8), dimension(:,:,:,:), allocatable, intent(out) :: arr_oa 
+      complex(8), dimension(:,:,:,:), allocatable, intent(inout) :: arr_oa 
       integer, intent(in), optional :: kst
       integer, intent(in)           :: nzupd3d_oa
       integer                       :: kmin
@@ -54,7 +54,7 @@
 
       subroutine allocate_2D_glob_array_oa_cplx( arr_oa, nzupd2d_oa )
       implicit none
-      complex(8), dimension(:,:,:), allocatable, intent(out) :: arr_oa
+      complex(8), dimension(:,:,:), allocatable, intent(inout) :: arr_oa
       integer, intent(in) :: nzupd2d_oa
        
 
@@ -68,44 +68,44 @@
 
 !BLXD TODO scalogram arrays could be initialized elsewhere since they do not depend
 !     on Croco spatial MPI subdomain dimensions and/or tile dimensions
-     subroutine allocate_0D_sclg_array_oa_cplx( arr_oa, nper_sclg_oa, nzupd0d_oa )
-     implicit none
-     complex(8), dimension(:,:), allocatable, intent(out) :: arr_oa
-     integer, intent(in) :: nzupd0d_oa, nper_sclg_oa
-      
-     
-       if ( .not. allocated(arr_oa) ) then
-           allocate( arr_oa( nper_sclg_oa, nzupd0d_oa) )
-           arr_oa(:,:) = ( 0.D0, 0.D0 )
-       endif
-       return
-     
-     end subroutine allocate_0D_sclg_array_oa_cplx
-
-     subroutine allocate_0D_sclg_array_oa_real( arr_oa, nper_sclg_oa, nzupd0d_oa )
-     implicit none
-     real(8), dimension(:,:), allocatable, intent(out) :: arr_oa
-     integer, intent(in) :: nzupd0d_oa, nper_sclg_oa
-      
-       if ( .not. allocated(arr_oa) ) then
-           allocate( arr_oa(  nper_sclg_oa, nzupd0d_oa) )
-       endif
-       return
-     
-     end subroutine allocate_0D_sclg_array_oa_real
-
-     subroutine allocate_0D_sclg_array_oa_int( arr_oa, nzupd0d_oa )
-     implicit none
-     integer, dimension(:), allocatable, intent(out) :: arr_oa
-     integer, intent(in) :: nzupd0d_oa
-      
-     
-       if ( .not. allocated(arr_oa) ) then
-           allocate( arr_oa( nzupd0d_oa) )
-       endif
-       return
-     
-     end subroutine allocate_0D_sclg_array_oa_int
+ !    subroutine allocate_0D_sclg_array_oa_cplx( arr_oa, nper_sclg_oa, nzupd0d_oa )
+ !    implicit none
+ !    complex(8), dimension(:,:), allocatable, intent(out) :: arr_oa
+ !    integer, intent(in) :: nzupd0d_oa, nper_sclg_oa
+ !     
+ !    
+ !      if ( .not. allocated(arr_oa) ) then
+ !          allocate( arr_oa( nper_sclg_oa, nzupd0d_oa) )
+ !          arr_oa(:,:) = ( 0.D0, 0.D0 )
+ !      endif
+ !      return
+ !    
+ !    end subroutine allocate_0D_sclg_array_oa_cplx
+ !
+ !    subroutine allocate_0D_sclg_array_oa_real( arr_oa, nper_sclg_oa, nzupd0d_oa )
+ !    implicit none
+ !    real(8), dimension(:,:), allocatable, intent(out) :: arr_oa
+ !    integer, intent(in) :: nzupd0d_oa, nper_sclg_oa
+ !     
+ !      if ( .not. allocated(arr_oa) ) then
+ !          allocate( arr_oa(  nper_sclg_oa, nzupd0d_oa) )
+ !      endif
+ !      return
+ !    
+ !    end subroutine allocate_0D_sclg_array_oa_real
+ !
+ !    subroutine allocate_0D_sclg_array_oa_int( arr_oa, nzupd0d_oa )
+ !    implicit none
+ !    integer, dimension(:), allocatable, intent(out) :: arr_oa
+ !    integer, intent(in) :: nzupd0d_oa
+ !     
+ !    
+ !      if ( .not. allocated(arr_oa) ) then
+ !          allocate( arr_oa( nzupd0d_oa) )
+ !      endif
+ !      return
+ !    
+ !    end subroutine allocate_0D_sclg_array_oa_int
 
 end module module_parameter_oa
 

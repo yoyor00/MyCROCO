@@ -1,7 +1,6 @@
-! $Id: ana_grid.F 1620 2015-01-08 10:47:13Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -96,7 +95,7 @@ C$    integer omp_get_thread_num
 # ifdef SANDBAR
       real p1,p2,p3,p4,p5,p6,p7,xx
 # endif
-# ifdef RIVER
+# if defined RIVER || defined SEAGRASS
       integer is,i0,j0
 #  include "sources.h"
 # endif
@@ -207,6 +206,10 @@ C$    integer omp_get_thread_num
 # elif defined RIVER
                      depth=150.
                      f0=8.26E-5
+                     beta=0.
+# elif defined SEAGRASS
+                     depth=0.215
+                     f0=0.
                      beta=0.
 # elif defined JET
                      depth=4000.
@@ -344,6 +347,9 @@ C$    integer omp_get_thread_num
 # elif defined RIVER
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
+# elif defined SEAGRASS
+                     Length_ETA=0.25
+                     Length_XI =36.*0.05
 # elif defined JET
                      Length_XI = 500.e+3
                      Length_ETA=2000.e+3
@@ -458,6 +464,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 ! Setup rectangular grid:  coordinates (XI,ETA) at PSI- and RHO-points.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
          xp(i,j) = x0 + dx*float(i+iminmpi-1-1)
@@ -466,6 +473,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
          yr(i,j) = y0 + dy*(float(j+jminmpi-1-1)+0.5)
         enddo
       enddo
+!$acc end kernels      
+!$acc update host( xr, yr )      
 !
 !----------------------------------------------------------------------
 ! Compute coordinate transformation metrics at RHO-points "pm" and
@@ -473,17 +482,20 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 ! ETA, respectively.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           pm(i,j)=1./dx
           pn(i,j)=1./dy
         enddo
       enddo
+!$acc end kernels      
 !
 !----------------------------------------------------------------------
 !  Set Coriolis parameter [1/s] at RHO-points.
 !----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
 # ifdef EQUATOR
@@ -493,11 +505,13 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 # endif
         enddo
       enddo
+!$acc end kernels      
 
 # if defined UV_COR_NT || defined CROCO_QH
 !
 !  Horizontal (non-traditional) Coriolis parameter
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           if (beta.eq.0) then     ! f-plan
@@ -507,6 +521,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           endif
         enddo
       enddo
+!$acc end kernels      
 # endif
 !
 !----------------------------------------------------------------------
@@ -518,6 +533,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
                    || defined JET
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
@@ -654,6 +670,14 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=h(i,JstrR)
         enddo
       enddo
+
+# elif defined SEAGRASS
+        do j=JstrR,JendR
+            do i=IstrR,IendR
+            h(i,j)=depth
+            enddo
+        enddo
+
 
 # elif defined SHOREFACE
       do j=JstrR,JendR
@@ -1098,6 +1122,23 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           zob(i,j)=zobt
         end do
       end do
+
+# ifdef SEAGRASS
+      do j=JstrR,JendR
+         do i=IstrR,IendR
+#   ifdef MPI
+        cff  = (float(i +ii*Lm) )
+#   else
+        cff  = (float(i       ) )
+#   endif
+             if ((cff .lt. 14) .or. (cff .gt. 31)) then
+                 zob(i,j) = 6.E-8 ! out of patch
+             else
+                 zob(i,j) = 1.E-6 ! in patch
+             end if
+         end do
+       end do
+# endif
 !
 !----------------------------------------------------------------------
 !  Set masking at RHO-points.
@@ -1160,7 +1201,28 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       endif ! WESTERN_EDGE
 #  endif /* RIVER */
+
+#  ifdef SEAGRASS
+      do j=JstrR,JendR
+         do i=IstrR,IendR
+         rmask(i,j)=0.      
+         enddo
+      enddo
+
+      if (WESTERN_EDGE) then
+         do i=IstrR+3,IendR
+            rmask(i,3)=1.
+         enddo
+      else
+         do i=IstrR,IendR
+            rmask(i,3)=1.   
+         enddo
+      endif ! WESTERN_EDGE
+
+#  endif /* SEAGRASS */
+
 # endif /* MASKING */
+!$acc end kernels
 !
 #else
       subroutine ana_grid_empty

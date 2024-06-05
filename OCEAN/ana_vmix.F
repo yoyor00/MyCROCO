@@ -1,7 +1,6 @@
-! $Id: ana_vmix.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -127,7 +126,7 @@
       enddo
 # endif /* CANYON_STRAT */
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)
 #  ifdef TEMPERATURE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,

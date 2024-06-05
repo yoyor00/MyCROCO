@@ -1,11 +1,10 @@
-! $Id: t3dmix_S.F 1466 2014-02-06 17:37:07Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -22,7 +21,7 @@
 
 # ifdef AGRIF
         if (AGRIF_Root()) then
-            call t3dmix_tile (istr,iend,jstr,jend, itrc,
+            call t3dmix_tile (istr,iend,jstr,jend, itrc, 
      &               A2d(1,1,trd),A2d(1,2,trd), A2d(1,3,trd),
      &                            A2d(1,4,trd), A2d(1,5,trd))
 
@@ -32,7 +31,7 @@
      &                             A2d(1,4,trd), A2d(1,5,trd))
 
         endif
-# else
+# else 
        call t3dmix_tile(istr,iend,jstr,jend, itrc, A2d(1,1,trd),
      &                               A2d(1,2,trd), A2d(1,3,trd),
      &                               A2d(1,4,trd), A2d(1,5,trd))
@@ -47,7 +46,7 @@
 !---------------------------------------------------------------------
 !
 !PARENT
-!
+! 
       subroutine t3dmix_tile (istr,iend,jstr,jend, itrc,
      &                    FX,FE, LapT, diff3u,diff3v)
 !
@@ -63,7 +62,7 @@
 !---------------------------------------------------------------------
 ! ******************************Common Code***************************
 !---------------------------------------------------------------------
-!!
+!!   
       implicit none
 #include "param.h"
       integer itrc, istr,iend,jstr,jend, i,j,k, kmld,
@@ -115,7 +114,7 @@
       if (EASTERN_EDGE) then
         imax=iend
       else
-        imax=iend+1
+        imax=iend+1 
       endif
 #else
       imin=istr-1
@@ -136,6 +135,8 @@
       jmin=jstr-1
       jmax=jend+1
 #endif
+
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
 
 !++=============================================================
@@ -143,7 +144,7 @@
 !++=============================================================
         do j=jmin,jmax
           do i=imin,imax+1
-            diff3u(i,j)=
+            diff3u(i,j)= 
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i-1,j,itrc))
 # if defined DIF_COEF_3D && defined TS_DIF_SMAGO
@@ -167,7 +168,7 @@
         enddo
         do j=jmin,jmax+1
           do i=imin,imax
-            diff3v(i,j)=
+            diff3v(i,j)= 
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i,j-1,itrc))
 # if defined DIF_COEF_3D && defined TS_DIF_SMAGO
@@ -189,7 +190,7 @@
 #endif
           enddo
         enddo
-
+ 
 #ifdef TS_DIF2
 !
 !--------------------------------------------------------------------
@@ -397,7 +398,7 @@
           do i=istr,iend+1
               FX(i,j)=-0.5*diff3u(i,j)
      &                    *pmon_u(i,j)*(Hz(i,j,k)+Hz(i-1,j,k))
-     &                                *(LapT(i,j)-LapT(i-1,j))
+     &                                *(LapT(i,j)-LapT(i-1,j)) 
 # ifdef MASKING
      &                                        * umask(i,j)
 # endif
@@ -455,7 +456,7 @@
 
             THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
             Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-
+            
 #  if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
 
 #   include "finalize_diagnostics_tsadv.h"
@@ -529,7 +530,7 @@
      &                          TForc_mld(i,j,itrc)
          enddo
        enddo
-#  undef T_mld_nnew
+#  undef T_mld_nnew 
 #  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
@@ -559,14 +560,19 @@
       endif
 # endif /* DIAGNOSTICS_DEBUG */
 #endif /* DIAGNOSTICS_TS */
+
+!$acc end kernels
+
 !------------------------------------------------------------------
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#if defined BD_EXCHANGE
 # ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))
 # else
+!#   ifndef BASIN        
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
+!#    endif        
 # endif
 #endif
 !

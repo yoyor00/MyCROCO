@@ -1,7 +1,6 @@
-! $Id: set_depth.F 1484 2014-03-17 14:01:55Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -65,6 +64,7 @@ C$    integer omp_get_thread_num
 # else
 #  define J_RANGE JstrR,JendR
 # endif
+
 !
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
@@ -74,6 +74,7 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
       if (iic.eq.0) then
+!$acc kernels if(compute_on_device) default(present)
         do j=J_RANGE
           do i=I_RANGE
 # ifdef WET_DRY
@@ -115,8 +116,8 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 # endif
-
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!$acc end kernels
+# if defined BD_EXCHANGE
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hgrid)
 #  ifdef WET_DRY
@@ -145,9 +146,10 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
 # ifdef SOLVE3D
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
 #  endif
+!$acc kernels if(compute_on_device) default(present)
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent
         do i=I_RANGE            !!!          with omega.F
@@ -191,7 +193,13 @@ C$    integer omp_get_thread_num
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
+          enddo
+        enddo
+      enddo
 
+      do k=1,N
+        do j=J_RANGE
+          do i=I_RANGE
 #  ifdef NBQ
 #   ifdef NBQ_GRID_SLOW
             if (LAST_FAST_STEP)  Hz_bak(i,j,k)=Hz(i,j,k)
@@ -226,12 +234,13 @@ C$    integer omp_get_thread_num
         enddo
       endif
 #  endif
- 
+!$acc end kernels
+
 #  undef I_RANGE
 #  undef J_RANGE
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+#  if defined BD_EXCHANGE
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_r(START_2D_ARRAY,1))
@@ -359,8 +368,8 @@ C$    integer omp_get_thread_num
 #   undef I_RANGE
 #   undef J_RANGE
 
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+#   if defined BD_EXCHANGE
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_r(START_2D_ARRAY,1))
@@ -937,7 +946,7 @@ C$    integer omp_get_thread_num
 #   define JU_RANGE JstrR,JendR
 #   define JV_RANGE Jstr,JendR
 #  endif
-
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -975,6 +984,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels
 #  undef IU_RANGE
 #  undef JU_RANGE
 #  undef IV_RANGE
@@ -982,7 +992,7 @@ C$    integer omp_get_thread_num
 !
 ! Exchange periodic boundaries, if so prescribed.
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
@@ -1091,7 +1101,7 @@ C$    integer omp_get_thread_num
 !
 ! Exchange periodic boundaries, if so prescribed.
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
@@ -1138,6 +1148,9 @@ C$    integer omp_get_thread_num
 #   include "forces.h"
 #  endif
 #  include "coupling.h"
+#ifdef OPENACC
+#  include "openacc_work.h"
+#endif
 !
 #  include "compute_auxiliary_bounds.h"
 !
@@ -1157,7 +1170,10 @@ C$    integer omp_get_thread_num
 #   define JV_RANGE Jstr,JendR
 #  endif
 
-      do j=JU_RANGE
+!$acc kernels if(compute_on_device) default(present)
+
+ !     do j=JU_RANGE
+        DOLOOP2D_R(IU_RANGE,JU_RANGE)
         do i=IU_RANGE
           DC(i,0)=0.
           FC(i,0)=0.
@@ -1191,9 +1207,12 @@ C$    integer omp_get_thread_num
      &                                        )
           enddo
         enddo
-      enddo
+!      enddo
+        ENDDOLOOP2D
 
-      do j=JV_RANGE
+
+!      do j=JV_RANGE
+        DOLOOP2D_R(IV_RANGE,JV_RANGE)
         do i=IV_RANGE
           DC(i,0)=0.
           FC(i,0)=0.
@@ -1227,7 +1246,10 @@ C$    integer omp_get_thread_num
      &                                        )
           enddo
         enddo
-      enddo
+!     enddo
+        ENDDOLOOP2D
+
+!$acc end kernels
 
 #  undef IU_RANGE
 #  undef JU_RANGE
@@ -1236,8 +1258,8 @@ C$    integer omp_get_thread_num
 !
 ! Exchange periodic boundaries, if so prescribed.
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   ifdef THREE_GHOST_POINTS_UV
+#  if defined BD_EXCHANGE
+#   ifdef THREE_GHOST_POINTS_UV  
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,

@@ -1,7 +1,6 @@
-! $Id: zoom.h 1615 2014-12-17 13:27:07Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -335,9 +334,8 @@
       integer :: grids_at_level(0:20,0:100)
       integer :: parent_grid(0:20)
       integer :: coeff_ref_time(0:20)
-      integer :: nbtimes, nbmaxtimes,nbmaxprttime, nbprttime
+      integer :: nbtimes, nbmaxtimes
       common/rootintegrate/nbtimes, nbmaxtimes,
-     &    nbmaxprttime, nbprttime,
      &    iind,sortedint,whichstep,
      &    grids_at_level,parent_grid,coeff_ref_time
 !$AGRIF_END_DO_NOT_TREAT

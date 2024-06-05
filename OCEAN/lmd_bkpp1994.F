@@ -1,7 +1,6 @@
-! $Id: lmd_bkpp1994.F 1526 2014-04-16 14:09:11Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -38,7 +37,7 @@
      &       my_hbbl(PRIVATE_2D_SCRATCH_ARRAY),
      &       my_kbbl(PRIVATE_2D_SCRATCH_ARRAY),
      &           wrk(PRIVATE_2D_SCRATCH_ARRAY),
-     &         Rib(PRIVATE_2D_SCRATCH_ARRAY,2)
+     &         Rib(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 # define tind nstp
       real Vtc,    hekman,  dVsq,   Vtsq,
      &     sig,    Kv_bl,   Kt_bl,  Ks_bl,
@@ -117,6 +116,8 @@
 !
       Vtc=lmd_Cv*sqrt(-lmd_betaT)/( sqrt(lmd_cs*lmd_epsilon)
      &                                        *Ric*vonKar*vonKar )
+
+!$acc kernels if(compute_on_device) default(present)
 !
 !  Compute turbulent friction velocity [m/s] "ustar" from bottom stress
 !  at RHO-points. (Bottom stress includes wave effects if activated in BBL)
@@ -154,7 +155,7 @@
         do i=I_EXT_RANGE
           my_hbbl(i,j)=z_r(i,j,N)+h(i,j)
           my_kbbl(i,j)=N
-          Rib(i,j,ku)=0.
+          Rib(i,j,1)=0.
         enddo
       enddo
 !
@@ -189,26 +190,24 @@
             Vtsq=Vtc*(z_r(i,j,k)-z_r(i,j,1))*ws(i,j)
      &          *sqrt(max(0.,0.5*(bvf(i,j,k)+bvf(i,j,k-1))))
 
-            Rib(i,j,ka)=Ritop/(dVsq+Vtsq+eps)
+            Rib(i,j,k)=Ritop/(dVsq+Vtsq+eps)
           enddo
         enddo   !--> discard ws
+      enddo
 !
 !  Linearly interpolate to find "hbbl" where Rib=Ric.
 !
+      do k=2,N
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
-
-            if (my_kbbl(i,j).eq.N .and. Rib(i,j,ka).gt.Ric) then
+            if (my_kbbl(i,j).eq.N .and. Rib(i,j,k).gt.Ric) then
               zbl=z_r(i,j,k)-(z_r(i,j,k)-z_r(i,j,k-1))*
-     &           (Ric-Rib(i,j,ka))/(Rib(i,j,ku)-Rib(i,j,ka))
+     &           (Ric-Rib(i,j,k))/(Rib(i,j,k-1)-Rib(i,j,k))
               my_hbbl(i,j)=zbl+h(i,j)
               my_kbbl(i,j)=k
             endif
           enddo
         enddo
-        ksave=ka
-        ka=ku
-        ku=ksave
       enddo    !<-- k    !--> discard Rr,Zr,Ur,Vr,Rib
 !
 !  Correct "hbbl" with physically limiting case (Ekman depth)
@@ -427,8 +426,8 @@
       endif
 #  endif
 # endif
-
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!$acc end kernels
+# if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,hbbl(START_2D_ARRAY))
 # endif
 

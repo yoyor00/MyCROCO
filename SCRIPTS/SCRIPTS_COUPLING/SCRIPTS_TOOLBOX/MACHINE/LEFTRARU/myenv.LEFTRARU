@@ -36,6 +36,6 @@ export CC=icc
 export FC=ifort
 export F77=ifort
 export F90=ifort
-export MPIF90=mpif90
-export MPICC=mpicc
+export MPIF90=mpiifort
+export MPICC=mpiicc
 

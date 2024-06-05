@@ -1,14 +1,13 @@
-!     $Id:$
-!     
 !======================================================================
-!     ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
-!     The two other branches from UCLA (Shchepetkin et al) 
-!     and Rutgers University (Arango et al) are under MIT/X style license.
-!     ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
-!     
-!     ROMS_AGRIF website : http://roms.mpl.ird.fr
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
+!
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
-!     
+!   
 #include "cppdefs.h"
 
 #ifdef XIOS
@@ -610,7 +609,7 @@
 
 #if defined ONLINE_ANALYSIS
       SUBROUTINE set_scalogram_axis( cdid
-     &                         ,nzv_oa, nsclg_glo
+     &                         ,nsclg_glo
      &                         ,nsclg_loc
      &                         ,sclg_coord1D, isclg_beg
      &                         ,mynode )
@@ -626,7 +625,7 @@
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*)      , INTENT(in) ::   cdid
       !> Module OA variable names but passed as args IN 
-      INTEGER, INTENT(IN) :: nzv_oa, nsclg_glo
+      INTEGER, INTENT(IN) :: nsclg_glo
       INTEGER, INTENT(IN) :: nsclg_loc, isclg_beg
       INTEGER, INTENT(IN) :: mynode 
       !> Local MPI process/global scalogram indices index_s_oa/index_s_cr
@@ -693,7 +692,7 @@
 
 #if defined ONLINE_ANALYSIS
       SUBROUTINE set_scalogram_dom( cdid
-     &                         ,nzv_oa, nsclg_glo
+     &                         ,nsclg_glo
      &                         ,nsclg_loc, nper_sclg_max
      &                         ,sclg_coord1D, isclg_beg
      &                         ,period_coord2D
@@ -710,7 +709,7 @@
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*)      , INTENT(in) ::   cdid
       !> Module OA variable names but passed as args IN 
-      INTEGER, INTENT(IN) :: nzv_oa, nsclg_glo,  nper_sclg_max
+      INTEGER, INTENT(IN) :: nsclg_glo,  nper_sclg_max
       INTEGER, INTENT(IN) :: nsclg_loc, isclg_beg
       INTEGER, INTENT(IN) :: mynode 
       !> Local MPI process/global scalogram indices index_s_oa/index_s_cr
@@ -878,17 +877,11 @@ C apar_file
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='hc_units', value='meter')
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='sc_w'
-     &     , value='have a look at variable sc_w in this file')
-      CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='Cs_w'
      &     , value='have a look at variable Cs_w in this file')
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='sc_r'
-     &     , value='have a look at variable sc_r in this file')
-      CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='Cs_r'
-     &     , value='have a look at variable Cs_r in this file')
+     &     ,type='string',name='Cs_rho'
+     &     , value='have a look at variable Cs_rho in this file')
 #endif
       CALL iom_set_file_global_attr_int   (cdid
      &     ,type='int',name='ntimes', value=ntimes)
@@ -1314,9 +1307,9 @@ C 				  endif
        READ(xios_origin_date(1:4),fmt='(i4)') iyear
        READ(xios_origin_date(6:7),fmt='(i2)') imonth
        READ(xios_origin_date(9:10),fmt='(i2)') iday
-       CALL ymds2ju( iyear, imonth,iday, 0., jday0 )  
+       CALL ymds2ju( iyear, imonth,iday, 0., jday0 )
 # else
-       CALL ymds2ju(1900, 1, 1, 0., jday0 )  
+       CALL ymds2ju(1900, 1, 1, 0., jday0 ) 
 # endif
       DO jn = 1,2
 
@@ -1751,11 +1744,15 @@ C 				  endif
       END MODULE xios_module
 
 #include "cppdefs.h"
-       SUBROUTINE init_xios(tile)
+      SUBROUTINE init_xios(tile,cdnamin)
 
       IMPLICIT NONE
+
+      INTEGER, INTENT(IN) ::  tile
+      CHARACTER(len=*),OPTIONAL,INTENT(IN) :: cdnamin
+
 # include "param.h"
-      INTEGER tile
+
 # include "compute_tile_bounds.h"
       
       CALL init_xios_tile (Istr,Iend,Jstr,Jend)
@@ -1786,16 +1783,19 @@ C 				  endif
 #if defined ONLINE_ANALYSIS
       use module_oa_variables, only : nzv_oa
       use module_interface_oa, only : nzupd0d_oa, nsclg_loc, isclg_beg
-     &                               ,index_s_cr, per0d_cr
+     &                               ,nper_sclg_max
+     &                               ,model_mode_glo, mdg, nmod_oa
+     &                               ,oa_sclg_grd,oa_sclg_dgrd
+     &                               ,oa_sclg_axis, oa_sclg_dom
+
 #ifdef MPI
-     &                               ,index_s_oa, per0d_oa
+     &                               ,model_mode_loc, mdl
 #endif
      &                               ,if_mpi_oa
      &                               ,scalogram_analysis
      &                               ,if_record_sclg_ijpoints
      &                               ,if_xios_dom_grid
 
-      use module_oa_periode,   only : nper_sclg_max
 #endif
       !    
       IMPLICIT NONE
@@ -1808,7 +1808,7 @@ C 				  endif
 # include "mpi_cpl.h"
 
       !
-      INTEGER Istr,Iend,Jstr,Jend
+      INTEGER :: Istr,Iend,Jstr,Jend
       !
       INTEGER tile,ji
       INTEGER ilocal_comm
@@ -1825,6 +1825,7 @@ C 				  endif
       CHARACTER(len=19) :: cldate
       CHARACTER(len=10) :: clname
       CHARACTER(len=10) :: cdname
+      INTEGER           :: imd
       INTEGER iday,imonth,iyear,ihour,iminute,isec
 #ifdef USE_CALENDAR
       CHARACTER (len=19)    :: tool_sectodat
@@ -1867,7 +1868,7 @@ C 				  endif
       ! calendar parameters
 
 # if !defined USE_CALENDAR
-      ! start_date with format yyyy-mm-dd
+! start_date with format yyyy-mm-dd
       READ(xios_origin_date(1:4),fmt='(i4)') iyear
       READ(xios_origin_date(6:7),fmt='(i2)') imonth
       READ(xios_origin_date(9:10),fmt='(i2)') iday
@@ -1913,9 +1914,13 @@ C 				  endif
 # endif
  
       ! vertical grid definition
-      CALL iom_set_axis_attr( "s_rho", sc_r )
-      CALL iom_set_axis_attr( "s_w"  , sc_w )
-# if defined SEDIMENT
+      CALL iom_set_axis_attr( "s_rho", sc_r(1:N) )
+      CALL iom_set_axis_attr( "s_w"  , sc_w(0:N) )
+# ifdef M3FAST_SEDLAYERS
+      CALL iom_set_axis_attr( "s_rho_full", sc_r )      
+      CALL iom_set_axis_attr( "s_w_full"  , sc_w )
+# endif      
+# ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
 # elif defined MUSTANG
        CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,nk_nivsed_out) /))
@@ -1929,91 +1934,105 @@ C 				  endif
 
         oa_dom : if ( if_xios_dom_grid ) then
 
-          if ( .not. xios_is_valid_grid("oa_sclg_dgrd") ) then
+          oa_mmode_loop : do imd=0,nmod_oa
+
+          if ( .not. xios_is_valid_grid(oa_sclg_dgrd(imd)) ) then
             print*,'ERROR OA : oa_sclg_dgrd XIOS INvalid grid'
+            print*,oa_sclg_dgrd(imd)
             stop
           endif
 
           if  (if_record_sclg_ijpoints) then
 
-           if ( .not. xios_is_valid_grid("oa_sclg_grd") ) then
+           if ( .not. xios_is_valid_grid(oa_sclg_grd(imd)) ) then
              print*,'ERROR OA : oa_sclg_grd XIOS INvalid grid'
+             print*,oa_sclg_grd(imd)
              stop
            endif
 
           endif
 
+          enddo oa_mmode_loop
+
+
 #ifdef MPI
           distributed_sclg_axis : if ( .not. if_mpi_oa ) then
 
-            CALL set_scalogram_dom( "oa_sclg_dom"
-     &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nsclg_loc
-     &                           ,nper_sclg_max
-     &                           ,index_s_oa, isclg_beg
-     &                           ,per0d_oa
+          oa_mmode_loop0 : do imd=0,nmod_oa
+
+            ! BLXD remove nzv_oa unused var
+            CALL set_scalogram_dom( oa_sclg_dom(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nsclg_loc(imd)
+     &                           ,nper_sclg_max(imd)
+     &                           ,mdl(imd)%index_s_oa, isclg_beg(imd)
+     &                           ,mdl(imd)%per0d_oa
      &                           ,mynode  )
 
             CALL xios_solve_inheritance()
 
             ijkscal : if  (if_record_sclg_ijpoints) then
 
-                CALL set_scalogram_axis( "oa_sclg_axis"
-     &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nsclg_loc
-     &                           ,index_s_oa, isclg_beg
+                CALL set_scalogram_axis( oa_sclg_axis(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nsclg_loc(imd)
+     &                           ,mdl(imd)%index_s_oa, isclg_beg(imd)
      &                           ,mynode  )
             else ijkscal
 
-             if(xios_is_valid_axis("oa_sclg_axis"))then
-              call xios_set_axis_attr( "oa_sclg_axis"
+             if(xios_is_valid_axis(oa_sclg_axis(imd)))then
+              call xios_set_axis_attr( oa_sclg_axis(imd)
      &                                 ,n_glo=1)
              else
 !$OMP MASTER
               print*,'WARNING OA : INvalid XIOS axis'
+              print*,oa_sclg_axis(imd)
 !$OMP END MASTER
               !stop
              endif
 
             endif ijkscal
 
+          enddo oa_mmode_loop0
+
           else distributed_sclg_axis  
 
-            CALL set_scalogram_dom( "oa_sclg_dom"
-     &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nzupd0d_oa
-     &                           ,nper_sclg_max
-     &                           ,index_s_cr, 0
-     &                           ,per0d_cr
+          oa_mmode_loop1 : do imd=0,nmod_oa
+
+            CALL set_scalogram_dom( oa_sclg_dom(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nper_sclg_max(imd)
+     &                           ,mdg(imd)%index_s_cr, 0
+     &                           ,mdg(imd)%per0d_cr
      &                           ,mynode  )
 
             CALL xios_solve_inheritance()
 
             ijkscal2 : if  (if_record_sclg_ijpoints) then
 
-                CALL set_scalogram_axis( "oa_sclg_axis"
-     &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nzupd0d_oa
-     &                           ,index_s_cr, 0
+                CALL set_scalogram_axis( oa_sclg_axis(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,mdg(imd)%index_s_cr, 0
      &                           ,mynode  )
 
             else ijkscal2
 
-             if(xios_is_valid_axis("oa_sclg_axis"))then
-              call xios_set_axis_attr( "oa_sclg_axis"
+             if(xios_is_valid_axis(oa_sclg_axis(imd)))then
+              call xios_set_axis_attr( oa_sclg_axis(imd)
      &                                 ,n_glo=1)
              else
 !$OMP MASTER
               print*,'WARNING OA : INvalid XIOS axis'
+              print*,oa_sclg_axis(imd)
 !$OMP END MASTER
               !stop
              endif
 
             endif ijkscal2
+
+          enddo oa_mmode_loop1
 
           endif distributed_sclg_axis  
 
@@ -2025,36 +2044,36 @@ C 				  endif
           print*,'- test => comment stop/compile/restart'
           stop
 
+          oa_mmode_loop2 : do imd=0,nmod_oa
 
-          CALL set_scalogram_dom( "oa_sclg_dom"
-     &                         ,nzv_oa
-     &                         ,nzupd0d_oa
-     &                         ,nzupd0d_oa
-     &                         ,nper_sclg_max
-     &                         ,index_s_cr, 0
-     &                         ,per0d_cr
+          CALL set_scalogram_dom( oa_sclg_dom(imd)
+     &                         ,nzupd0d_oa(imd)
+     &                         ,nzupd0d_oa(imd)
+     &                         ,nper_sclg_max(imd)
+     &                         ,mdg(imd)%index_s_cr, 0
+     &                         ,mdg(imd)%per0d_cr
      &                         ,mynode  )
 
           CALL xios_solve_inheritance()
 
           ijkscal3 : if  (if_record_sclg_ijpoints) then
 
-            CALL set_scalogram_axis( "oa_sclg_axis"
-     &                           ,nzv_oa
-     &                           ,nzupd0d_oa
-     &                           ,nzupd0d_oa
-     &                           ,index_s_cr, 0
+            CALL set_scalogram_axis( oa_sclg_axis(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,nzupd0d_oa(imd)
+     &                           ,mdg(imd)%index_s_cr, 0
      &                           ,mynode  )
 
 
           else ijkscal3
 
-             if(xios_is_valid_axis("oa_sclg_axis"))then
-              call xios_set_axis_attr( "oa_sclg_axis"
+             if(xios_is_valid_axis(oa_sclg_axis(imd)))then
+              call xios_set_axis_attr( oa_sclg_axis(imd)
      &                                 ,n_glo=1)
              else
 !$OMP MASTER
               print*,'WARNING OA : INvalid XIOS axis'
+              print*,oa_sclg_axis(imd)
 !$OMP END MASTER
               !stop
              endif
@@ -2062,6 +2081,8 @@ C 				  endif
           endif ijkscal3
 
           CALL xios_solve_inheritance()
+
+          enddo oa_mmode_loop2
 
 #endif /* MPI */
 
@@ -2071,15 +2092,19 @@ C 				  endif
 
       else oa_wth_sclg
 
+      oa_mmode_loop4 : do imd=0,nmod_oa
+
       !BLXD Prevent failure with potential scalogram domain/axis grid
       !     incompletely def. in xml files
-      null_sclg_dom : if ( xios_is_valid_domain("oa_sclg_dom") ) then
-         CALL xios_set_domain_attr("oa_sclg_dom"
+      null_sclg_dom : if ( xios_is_valid_domain(oa_sclg_dom(imd)) ) then
+         CALL xios_set_domain_attr(oa_sclg_dom(imd)
      &     ,ni_glo=1
      &     ,nj_glo=1
      &     )
-
       endif null_sclg_dom 
+
+      enddo oa_mmode_loop4
+
 
       endif oa_wth_sclg
 #endif  /* ONLINE_ANALYSIS */
@@ -2088,7 +2113,7 @@ C 				  endif
       IF(ALLOCATED(profsed))  CALL iom_set_axis_attr("s_rhoS", profsed)
 #endif
       
-      ! time axis (for ROMS tools)
+      ! time axis (for CROCO tools)
 
       ! automatic definitions of some of the xml attributs
       CALL set_xmlatt
@@ -2218,6 +2243,28 @@ C 				  endif
       USE comMUSTANG,   ONLY : sum_tmp, rouse2d
 #endif
 #endif
+
+#if defined OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : l_obstout_pos, l_obstout_height_f,
+     &   l_obstout_height_e, l_obstout_dens_f, l_obstout_dens_e,
+     &   l_obstout_dens_2d, l_obstout_width_f, l_obstout_width_e, 
+     &   l_obstout_width_2d, l_obstout_thick_f, l_obstout_thick_e, 
+     &   l_obstout_theta, l_obstout_frac_xy, l_obstout_frac_z, 
+     &   l_obstout_fuzvz, l_obstout_a2d, l_obstout_a3d, l_obstout_s2d, 
+     &   l_obstout_s3d, l_obstout_drag, l_obstout_tau, 
+     &   obst_nout_pos, obst_nout_height_f, 
+     &   obst_nout_height_e, obst_nout_dens_f , obst_nout_dens_e, 
+     &   obst_nout_width_f, obst_nout_width_e , obst_nout_thick_f, 
+     &   obst_nout_thick_e, obst_nout_theta, obst_nout_frac_xy, 
+     &   obst_nout_frac_z, obst_nout_fuzvz, obst_nout_a2d, 
+     &   obst_nout_a3d, obst_nout_s2d , obst_nout_s3d, 
+     &   obst_nout_drag, obst_nout_tau,
+     &   obst_varname, obst_position, obst_height_inst, obst_height, 
+     &   obst_dens_inst, obst_dens3d, obst_width_inst, obst_width3d,
+     &   obst_thick_inst, obst_thick3d, obst_theta3d, obst_fracxy, 
+     &   obst_fracz3d, obst_drag3d, obst_a2d, obst_a3d, obst_s2d, obst_s3d, 
+     &   obst_tau, obst_fuz, obst_fvz, obst_nbvar
+#endif
           IMPLICIT NONE
 
 #if defined MUSTANG
@@ -2258,7 +2305,7 @@ C 				  endif
 # else
 #  define SWITCH !
 # endif
-# ifdef NBQ
+# ifdef M3FAST
 # include "nbq.h"
 # endif
 # include "scalars.h"
@@ -2298,6 +2345,7 @@ C 				  endif
       real eps
       parameter (eps=1.D-20)
       real stf_cff
+      real zz(GLOBAL_2D_ARRAY,0:N)
       parameter(stf_cff=86400/0.01)
 !
 #if defined MUSTANG
@@ -2315,6 +2363,9 @@ C 				  endif
 
 #endif
 
+#if defined OBSTRUCTION
+      integer iv
+#endif
 
 
 # include "compute_auxiliary_bounds.h"
@@ -2338,6 +2389,9 @@ C 				  endif
 #   define JV_RANGE Jstr,JendR
 #  endif
 
+#ifdef OPENACC
+# include "copy_to_host_xios_diag.h"
+#endif
 
        ilc=1+iic-ntstart   ! number of time step since restart
        ! To be conform with clasic (no xios) croco file first 
@@ -2345,7 +2399,9 @@ C 				  endif
        if (ilc == 0) ilc=1
        call xios_update_calendar(ilc)
 
+      if (xios_field_is_active("time")) then
        call xios_send_field("time",time)
+      endif
 
 ! static attributes
 # ifdef SOLVE3D
@@ -2355,20 +2411,56 @@ C 				  endif
 ! done automatically
 !
 ! S-coordinate independent variables "sc_w", "sc_r" and stretching
-! curves "Cs_w", "Cs_r" at W- and RHO-points.
+! curves "Cs_w", "Cs_rho" at W- and RHO-points.
 !
-      call xios_send_field("Cs_r",Cs_r(1:N))
+      if (xios_field_is_active("Cs_rho")) then
+      call xios_send_field("Cs_rho",Cs_r(1:N))
+# ifdef M3FAST_SEDLAYERS   
+      call xios_send_field("Cs_rho_total",Cs_r(-N_sl+1:N))
+# endif      
+      endif
+      if (xios_field_is_active("Cs_w")) then
       call xios_send_field("Cs_w",Cs_w(0:N))
+# ifdef M3FAST_SEDLAYERS   
+      call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
+# endif      
+      endif
+      if (xios_field_is_active("sc_r")) then
       call xios_send_field("sc_r",sc_r(1:N))
+# ifdef M3FAST_SEDLAYERS   
+      call xios_send_field("sc_r_total",sc_r(-N_sl+1:N))
+# endif      
+      endif
+      if (xios_field_is_active("sc_w")) then
       call xios_send_field("sc_w",sc_w(0:N))
+# ifdef M3FAST_SEDLAYERS   
+      call xios_send_field("sc_w_total",sc_w(-N_sl:N))
+# endif      
+      endif
+      if (xios_field_is_active("hc")) then
       call xios_send_field("hc",hc)
+      endif
+      if (xios_field_is_active("theta_s")) then
       call xios_send_field("theta_s",theta_s)
+      endif
+      if (xios_field_is_active("theta_b")) then
       call xios_send_field("theta_b",theta_b)
+      endif
+      if (xios_field_is_active("Tcline")) then
       call xios_send_field("Tcline",Tcline)
+      endif
+      if (xios_field_is_active("Vtransform")) then
       call xios_send_field("Vtransform",REAL(Vtransform))
+      endif
+c !$acc wait
 
+      if (xios_field_is_active("levels_rho")) then
       call xios_send_field("levels_rho",z_r(:,:,:))
+      endif
+      if (xios_field_is_active("levels_w")) then
       call xios_send_field("levels_w"  ,z_w(:,:,:))
+      endif
+      if (xios_field_is_active("levels_u")) then
       do k=1,N
         do j=JstrR,JendR
           do i=Istr,IendR
@@ -2377,6 +2469,8 @@ C 				  endif
         enddo
       enddo
       call xios_send_field("levels_u"  ,workr(:,:,:))
+      endif
+      if (xios_field_is_active("levels_v")) then
       do k=1,N
        do j=JV_RANGE
           do i=IV_RANGE
@@ -2385,62 +2479,116 @@ C 				  endif
        enddo
       enddo
       call xios_send_field("levels_v"  ,workr(:,:,:))
+      endif
       
 # endif
 !
 ! Bathymetry.
 !
+      if (xios_field_is_active("h")) then
       call xios_send_field("h",h)
+      endif
 !
 ! Coriolis parameter.
 !
+      if (xios_field_is_active("f")) then
       call xios_send_field("f",f)
+      endif
 !
 ! Curvilinear transformation metrics.
 !
+      if (xios_field_is_active("pm")) then
       call xios_send_field("pm",pm)
+      endif
+      if (xios_field_is_active("pn")) then
       call xios_send_field("pn",pn)
+      endif
 !
 ! Longitude/latitude or cartezian coordinates of RHO-points
 !
 # ifdef SPHERICAL
+      if (xios_field_is_active("lon_rho")) then
       call xios_send_field("lon_rho",lonr)
+      endif
+      if (xios_field_is_active("lat_rho")) then
       call xios_send_field("lat_rho",latr)
+      endif
+      if (xios_field_is_active("lon_u")) then
       call xios_send_field("lon_u",lonu)
+      endif
+      if (xios_field_is_active("lat_u")) then
       call xios_send_field("lat_u",latu)
+      endif
+      if (xios_field_is_active("lon_v")) then
       call xios_send_field("lon_v",lonv)
+      endif
+      if (xios_field_is_active("lat_v")) then
       call xios_send_field("lat_v",latv)
+      endif
 # else  
+      if (xios_field_is_active("x_rho")) then
       call xios_send_field("x_rho",xr)
+      endif
+      if (xios_field_is_active("y_rho")) then
       call xios_send_field("y_rho",yr)
+      endif
 # endif
 # ifdef CURVGRID
+      if (xios_field_is_active("angle")) then
       call xios_send_field("angle",angler)
+      endif
 # endif
 # ifdef MASKING
+      if (xios_field_is_active("mask_rho")) then
       call xios_send_field("mask_rho",rmask)
+      endif
 # endif
 
 !
 ! Critical Depth for Drying cells
 !
 # ifdef WET_DRY
+      if (xios_field_is_active("Dcrit")) then
       call xios_send_field("Dcrit",Dcrit)
+      endif
 # endif
-
+      if (xios_field_is_active("zeta")) then
+!!$acc update host ( zeta )      
       call xios_send_field("zeta",zeta(:,:,fast_indx_out))
+      endif
+      if (xios_field_is_active("ubar")) then
+!!$acc update host ( ubar )              
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
+      endif
+      if (xios_field_is_active("vbar")) then
+!!$acc update host ( vbar )              
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
+      endif
 
 # ifdef MORPHODYN
+      if (xios_field_is_active("hmorph")) then
       call xios_send_field("hmorph",h)
+      endif
 # endif
 # ifdef WET_DRY
+      if (xios_field_is_active("rmask_wet")) then
       call xios_send_field("rmask_wet",rmask_wet)
+      endif
+      if (xios_field_is_active("umask_wet")) then
       call xios_send_field("umask_wet",umask_wet)
+      endif
+      if (xios_field_is_active("vmask_wet")) then
       call xios_send_field("vmask_wet",vmask_wet)
+      endif
 #endif
 
+      if (xios_field_is_active("bustr")) then
+      call xios_send_field("bustr",bustr*rho0)
+      endif
+      if (xios_field_is_active("bvstr")) then
+      call xios_send_field("bvstr",bvstr*rho0)
+      endif
+      if (xios_field_is_active("bostr")) then
       do j=0,Mm
          do i=0,Lm
             work2d(i,j)=0.5*sqrt((bustr(i,j)+bustr(i+1,j))**2
@@ -2448,92 +2596,175 @@ C 				  endif
      &                                                    *rho0
          enddo
       enddo
-      call xios_send_field("bustr",bustr*rho0)
-      call xios_send_field("bvstr",bvstr*rho0)
       call xios_send_field("bostr",work2d)
+      endif
 
+      if (xios_field_is_active("wstr")) then
       do j=1,Mm
          do i=1,Lm
-            work2d2(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
+            work2d(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
      &                           +(svstr(i,j)+svstr(i,j+1))**2)
      &                                                    *rho0
          enddo
       enddo
       call xios_send_field("wstr",work2d)
+      endif
 
+      if (xios_field_is_active("sustr")) then
       work2d=sustr*rho0
       call xios_send_field("sustr",work2d)
+      endif
+      if (xios_field_is_active("svstr")) then
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
+      endif
 # ifdef BULK_SM_UPDATE
+      if (xios_field_is_active("uwnd")) then
       call xios_send_field("uwnd",uwnd)
+      endif
+      if (xios_field_is_active("vwnd")) then
       call xios_send_field("vwnd",vwnd)
+      endif
 # endif
 # ifdef WKB_WWAVE
+      if (xios_field_is_active("hrm")) then
       call xios_send_field("hrm",hrm(:,:,wstp))
+      endif
+      if (xios_field_is_active("frq")) then
       call xios_send_field("frq",frq(:,:,wstp))
+      endif
+      if (xios_field_is_active("wac")) then
       call xios_send_field("wac",wac(:,:,wstp))
+      endif
+      if (xios_field_is_active("wkx")) then
       call xios_send_field("wkx",wkx(:,:,wstp))
+      endif
+      if (xios_field_is_active("wke")) then
       call xios_send_field("wke",wke(:,:,wstp))
+      endif
+      if (xios_field_is_active("epb")) then
       call xios_send_field("epb",wdsp)
+      endif
+      if (xios_field_is_active("epd")) then
       call xios_send_field("epd",wdrg)
+      endif
 #  ifdef WAVE_ROLLER
+      if (xios_field_is_active("war")) then
       call xios_send_field("war",war(:,:,wstp))
+      endif
+      if (xios_field_is_active("epr")) then
       call xios_send_field("epr",rdsp)
+      endif
+
 #  endif
 # endif
 
 # ifdef MRL_WCI
+      if (xios_field_is_active("sup")) then
       call xios_send_field("sup",sup)
+      endif
+      if (xios_field_is_active("ust2d")) then
       call xios_send_field("ust2d",ust2d)
+      endif
+      if (xios_field_is_active("vst2d")) then
       call xios_send_field("vst2d",vst2d)
+      endif
 #  ifdef SOLVE3D
+      if (xios_field_is_active("ust")) then
       call xios_send_field("ust",ust)
+      endif
+      if (xios_field_is_active("vst")) then
       call xios_send_field("vst",vst)
+      endif
+      if (xios_field_is_active("wst")) then
       call xios_send_field("wst",wst)
+      endif
+      if (xios_field_is_active("Akb")) then
       call xios_send_field("Akb",Akb)
+      endif
+      if (xios_field_is_active("Akw")) then
       call xios_send_field("Akw",Akw)
+      endif
+      if (xios_field_is_active("kvf")) then
       call xios_send_field("kvf",kvf)
+      endif
+      if (xios_field_is_active("calP")) then
       call xios_send_field("calP",calP)
+      endif
+      if (xios_field_is_active("Kapsrf")) then
       call xios_send_field("Kapsrf",Kapsrf)
+      endif
 #  endif
 # endif
 
 # ifdef OW_COUPLING
+      if (xios_field_is_active("hrm")) then
       call xios_send_field("hrm",whrm)
+      endif
+      if (xios_field_is_active("frq")) then
       call xios_send_field("frq",wfrq)
+      endif
+      if (xios_field_is_active("wkx")) then
       call xios_send_field("wkx",wwkx)
+      endif
+      if (xios_field_is_active("wke")) then
       call xios_send_field("wke",wwke)
+      endif
+      if (xios_field_is_active("epb")) then
       call xios_send_field("epb",wepb)
+      endif
+      if (xios_field_is_active("epd")) then
       call xios_send_field("epd",wepd)
+      endif
 #  endif
 ! ------ 3D variables
 ! nstp vs nnew : present choice follows set_avg.F
 #  ifdef SOLVE3D
+      if (xios_field_is_active("u")) then
       call xios_send_field("u",u(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("v")) then
       call xios_send_field("v",v(:,:,:,nstp)) 
+      endif
+      if (xios_field_is_active("u_surf")) then
       call xios_send_field("u_surf",u(:,:,N,nstp)) 
+      endif
+      if (xios_field_is_active("v_surf")) then
       call xios_send_field("v_surf",v(:,:,N,nstp)) 
+      endif
 # ifdef TEMPERATURE
+      if (xios_field_is_active("temp")) then
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
+      endif
+      if (xios_field_is_active("temp_surf")) then
       call xios_send_field("temp_surf",t(:,:,N,nstp,itemp)) 
+      endif
 # endif
 # ifdef SALINITY
+      if (xios_field_is_active("salt")) then
       call xios_send_field("salt",t(:,:,:,nstp,isalt))
+      endif
+      if (xios_field_is_active("salt_surf")) then
       call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
+      endif
 # endif /* SALINITY */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
 ! but I found it quiet ugly
 
+      if (xios_field_is_active("rho")) then
       call xios_send_field("rho",rho)
+      endif
 
 # if defined ANA_VMIX || defined BVF_MIXING \
 || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
 || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
+      if (xios_field_is_active("bvf")) then
       call xios_send_field("bvf",bvf)
+      endif
 # endif
 
+      if (xios_field_is_active("omega")) then
       do k=0,N
          do j=0,Mm+1
             do i=0,Lm+1
@@ -2549,14 +2780,118 @@ C 				  endif
          enddo
       enddo
       call xios_send_field("omega",work)
+      endif
 
-#  ifdef NBQ
-      call xios_send_field("w_nbq",wz(:,:,:,nstp))
+#  ifdef M3FAST
+      if (xios_field_is_active("u_nbq")) then
+        worknbq=0.
+          do k=-N_sl+1,N-1
+          do j=0,Mm
+            do i=0,Lm
+            worknbq(i,j,k+N_sl)=2.*qdmu_nbq(i,j,k)
+     &                /(Hz(min(Lm,i+1),j,k)+Hz(i,j,k))
+            enddo
+          enddo
+          enddo
+      call xios_send_field(" u_nbq",worknbq)
+      endif
+      if (xios_field_is_active("v_nbq")) then
+        worknbq=0.
+          do k=-N_sl+1,N-1
+          do j=0,Mm
+            do i=0,Lm
+            worknbq(i,j,k+N_sl)=2.*qdmv_nbq(i,j,k)
+     &                /(Hz(i,min(Mm,j+1),k)+Hz(i,j,k))
+            enddo
+          enddo
+          enddo
+      call xios_send_field(" v_nbq",worknbq)
+      endif
+      if (xios_field_is_active("w_nbq")) then
+      !call xios_send_field("w_nbq",wz(:,:,:,nstp))
+      
+        worknbq=0.
+          do k=-N_sl+1,N-1
+          do j=0,Mm
+            do i=0,Lm
+            worknbq(i,j,k+N_sl)=2.*(
+     &         qdmw_nbq(i,j,k)
+     &        )/(Hz(i,j,k)+Hz(i,j,k+1))
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
+            enddo
+          enddo
+          enddo
+          k=-N_sl
+          do j=0,Mm
+            do i=0,Lm
+#   ifndef M3FAST_SEDLAYERS
+            worknbq(i,j,k)=2.*(
+     &         qdmw_nbq(i,j,k)
+     &        )/Hz(i,j,k+1) 
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
+#   else
+            worknbq(i,j,k)=2.*(
+     &                qdmw_nbq(i,j,k)
+     &                )/(Hz(i,j,k)+Hz(i,j,k+1))
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
+#   endif
+            enddo
+          enddo
+          k=N
+          do j=0,Mm
+            do i=0,Lm 
+            worknbq(i,j,k)=2.*(
+     &                qdmw_nbq(i,j,k)
+     &                )/Hz(i,j,k)
+#  ifdef NHINT_WH
+!     &               +wzh_nbq(i,j,k)
+#  endif
+            enddo
+          enddo
+     
+      call xios_send_field(" w_nbq",worknbq)
+      endif
+      if (xios_field_is_active("rho_nbq")) then
+!$acc update host ( rho_nbq
+# ifdef M3FAST_DIAGACOUS              
+!$acc&  , p_nbq,p_nbq_max 
+# endif              
+!$acc&                  )  
       call xios_send_field("rho_nbq",rho_nbq)
+# ifdef M3FAST_DIAGACOUS              
+      call xios_send_field("p_nbq",p_nbq)
+      call xios_send_field("p_nbq_max",p_nbq_max)
+# endif       
+      endif
 #  endif
 
+      if (xios_field_is_active("w")) then
+# ifndef M3FAST
       call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
+# else        
+      worknbq=0.
+      do k=0,N
+      do j=0,Mm
+         do i=0,Lm
+            worknbq(i,j,k)=
+!          rw_int_nbq(i,j,k)
+     &         wz     (i,j,k,nstp)
+#  ifdef NHINT_WH
+     &        +wzh_nbq(i,j,k)
+#  endif
+         enddo
+      enddo
+      enddo
+      call xios_send_field("w",worknbq(:,:,0:N))
+# endif
+      endif
 
 #  ifdef DIAGNOSTICS_EDDY
 
@@ -2601,36 +2936,79 @@ C 				  endif
               enddo
            enddo
 
+      if (xios_field_is_active("uu")) then
           call xios_send_field("uu", workru**2)
+      endif
+      if (xios_field_is_active("uv")) then
           call xios_send_field("uv", workru*workrv)
+      endif
+      if (xios_field_is_active("vv")) then
           call xios_send_field("vv", workrv**2)
+      endif
+      if (xios_field_is_active("ub")) then
           call xios_send_field("ub", workru*GRho*rho)
+      endif
+      if (xios_field_is_active("vb")) then
           call xios_send_field("vb", workrv*GRho*rho)
+      endif
+      if (xios_field_is_active("wb")) then
           call xios_send_field("wb", workr *GRho*rho)
+      endif
+      if (xios_field_is_active("uw")) then
           call xios_send_field("uw", workru*workr)
+      endif
+      if (xios_field_is_active("vw")) then
           call xios_send_field("vw", workrv*workr)
+      endif
+      if (xios_field_is_active("usustr")) then
           call xios_send_field("usustr", workru(:,:,N)*workrsu)
+      endif
+      if (xios_field_is_active("vsvstr")) then
           call xios_send_field("vsvstr", workrv(:,:,N)*workrsv)
+      endif
+      if (xios_field_is_active("ugsustr")) then
           call xios_send_field("ugsustr", workrug*workrsu)
+      endif
+      if (xios_field_is_active("vgsvstr")) then
           call xios_send_field("vgsvstr", workrvg*workrsv)
+      endif
+      if (xios_field_is_active("ubustr")) then
           call xios_send_field("ubustr", workru(:,:,1)*workrbu)
+      endif
+      if (xios_field_is_active("vbvstr")) then
           call xios_send_field("vbvstr", workrv(:,:,1)*workrbv)
+      endif
+      if (xios_field_is_active("uT")) then
           call xios_send_field("uT", workru*t(:,:,:,nstp,itemp))
+      endif
+      if (xios_field_is_active("vT")) then
           call xios_send_field("vT", workrv*t(:,:,:,nstp,itemp))
+      endif
+      if (xios_field_is_active("wT")) then
           call xios_send_field("wT", workr *t(:,:,:,nstp,itemp))
+      endif
+      if (xios_field_is_active("uS")) then
           call xios_send_field("uS", workru*t(:,:,:,nstp,isalt))
+      endif
+      if (xios_field_is_active("vS")) then
           call xios_send_field("vS", workrv*t(:,:,:,nstp,isalt))
+      endif
+      if (xios_field_is_active("wS")) then
           call xios_send_field("wS", workr *t(:,:,:,nstp,isalt))
+      endif
 
 #  endif
 
 
         
 #  ifdef VIS_COEF_3D
+      if (xios_field_is_active("visc3d")) then
       call xios_send_field("visc3d",visc3d_r)
+      endif
 #  endif
 
 #  ifdef DIF_COEF_3D
+      if (xios_field_is_active("diff3d")) then
       do k=1,N
          do j=1,Mm
             do i=1,Lm
@@ -2652,47 +3030,73 @@ C 				  endif
          enddo
       enddo
       call xios_send_field("diff3d",workr)
+      endif
 #  endif
 
+      if (xios_field_is_active("AKv")) then
       call xios_send_field("AKv",Akv)
+      endif
 #  ifdef TEMPERATURE
+      if (xios_field_is_active("AKt")) then
       work=Akt(:,:,:,itemp)
       call xios_send_field("AKt",work)
+      endif
 #  endif
 #  ifdef SALINITY      
+      if (xios_field_is_active("AKs")) then
       work=Akt(:,:,:,isalt)
       call xios_send_field("AKs",work)
+      endif
 #  endif
 #  ifdef GLS_MIXING
+      if (xios_field_is_active("AKk")) then
 !      call xios_send_field("AKk",Akk)
+      endif
+      if (xios_field_is_active("AKp")) then
 !      call xios_send_field("AKp",Akp)
+      endif
 #  endif
 #  ifdef LMD_SKPP
+      if (xios_field_is_active("hbl")) then
 #   ifdef LMD_SKPP2005
       work2d=hbls(:,:,nstp)
 #   else
       work2d=hbl
 #   endif
       call xios_send_field("hbl",work2d)
+      endif
 #  elif defined GLS_MIXING
 !      work2d=hbl
+      if (xios_field_is_active("hbl")) then
 !      call xios_send_field("hbl",work2d)
+      endif
 #  endif
 #  ifdef LMD_BKPP
+      if (xios_field_is_active("hbbl")) then
       call xios_send_field("hbbl",work2d)
+      endif
 #  endif
 #  ifdef GLS_MIXING
+      if (xios_field_is_active("tke")) then
       call xios_send_field("tke",trb(:,:,:,nstp,itke))
+      endif
+      if (xios_field_is_active("gls")) then
       call xios_send_field("gls",trb(:,:,:,nstp,igls))
+      endif
+      if (xios_field_is_active("Lscale")) then
       call xios_send_field("Lscale",Lscale)
+      endif
 #  endif
 
 #  ifdef TEMPERATURE
+      if (xios_field_is_active("shflx")) then
       work2d=stflx(:,:,itemp)*rho0*Cp
      &       SWITCH rmask
       call xios_send_field("shflx",work2d)
+      endif
 #  endif      
 #  ifdef SALINITY    
+      if (xios_field_is_active("swflx")) then
          do j=0,Mm+1
             do i=0,Lm+1
                work2d(i,j)=stf_cff*stflx(i,j,isalt)/
@@ -2701,85 +3105,170 @@ C 				  endif
             enddo
         enddo
       call xios_send_field("swflx",work2d)
+      endif
 #  endif
 
 #  ifdef BULK_FLUX
+      if (xios_field_is_active("radsw")) then
       work2d=shflx_rsw*rho0*Cp
       call xios_send_field("radsw",work2d)
+      endif
 #  else 
+      if (xios_field_is_active("swrad")) then
       work2d=srflx*rho0*Cp
       call xios_send_field("swrad",work2d)
+      endif
 #  endif
       
 #  ifdef BULK_FLUX
+      if (xios_field_is_active("shflx_rlw")) then
       work2d=shflx_rlw*rho0*Cp
       call xios_send_field("shflx_rlw",work2d)
+      endif
 
+      if (xios_field_is_active("shflx_lat")) then
       work2d=shflx_lat*rho0*Cp
       call xios_send_field("shflx_lat",work2d)
+      endif
 
+      if (xios_field_is_active("shflx_sen")) then
       work2d=shflx_sen*rho0*Cp
       call xios_send_field("shflx_sen",work2d)
+      endif
 #  endif
 #  ifdef SST_SKIN
+      if (xios_field_is_active("sst_skin")) then
       call xios_send_field("sst_skin",sst_skin)
+      endif
 #  endif
      
 
 #  ifdef DIAGNOSTICS_UV
 
       itrc = 1
+      if (xios_field_is_active("u_rate")) then
           call xios_send_field("u_rate", Mrate(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_adv")) then
           call xios_send_field("u_adv", MXadv(:,:,:,itrc)
      &           + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_Cor")) then
           call xios_send_field("u_Cor",MCor(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_Prsgrd")) then
           call xios_send_field("u_Prsgrd",MPrsgrd(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_Hmix")) then
           call xios_send_field("u_Hmix",MHmix(:,:,:,itrc,nstp))
+      endif
+      if (xios_field_is_active("u_Hdiff")) then
           call xios_send_field("u_Hdiff",MHdiff(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_Vmix")) then
           call xios_send_field("u_Vmix",MVmix(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_Vmix2")) then
           call xios_send_field("u_Vmix2",MVmix2(:,:,:,itrc))
+      endif
 #  ifdef DIAGNOSTICS_BARO
+      if (xios_field_is_active("u_Baro")) then
           call xios_send_field("u_Baro",MBaro(:,:,:,itrc))
+      endif
 #  endif
 #  ifdef M3FAST
+      if (xios_field_is_active("u_fast")) then
           call xios_send_field("u_fast",Mfast(:,:,:,itrc))
+      endif
 #  endif
 #  ifdef MRL_WCI
+      if (xios_field_is_active("u_vf")) then
           call xios_send_field("u_vf",Mvf(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_brk")) then
           call xios_send_field("u_brk",Mbrk(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_StCo")) then
           call xios_send_field("u_StCo",MStCo(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_Vvf")) then
           call xios_send_field("u_Vvf",MVvf(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_Prscrt")) then
           call xios_send_field("u_Prscrt",MPrscrt(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_sbk")) then
           call xios_send_field("u_sbk",Msbk(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_bwf")) then
           call xios_send_field("u_bwf",Mbwf(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_frc")) then
           call xios_send_field("u_frc",Mfrc(:,:,:,itrc))
+      endif
 #  endif
 
       itrc = 2
+      if (xios_field_is_active("v_rate")) then
           call xios_send_field("v_rate", Mrate(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_adv")) then
           call xios_send_field("v_adv", MXadv(:,:,:,itrc)
+      endif
      &         + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
+      if (xios_field_is_active("v_Cor")) then
           call xios_send_field("v_Cor",MCor(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_Prsgrd")) then
           call xios_send_field("v_Prsgrd",MPrsgrd(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_Hmix")) then
           call xios_send_field("v_Hmix",MHmix(:,:,:,itrc,nstp))
+      endif
+      if (xios_field_is_active("v_Hdiff")) then
           call xios_send_field("v_Hdiff",MHdiff(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_Vmix")) then
           call xios_send_field("v_Vmix",MVmix(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_Vmix2")) then
           call xios_send_field("v_Vmix2",MVmix2(:,:,:,itrc))
+      endif
 #  ifdef DIAGNOSTICS_BARO
+      if (xios_field_is_active("v_Baro")) then
           call xios_send_field("v_Baro",MBaro(:,:,:,itrc))
+      endif
 #  endif
 #  ifdef M3FAST
+      if (xios_field_is_active("v_fast")) then
           call xios_send_field("v_fast",Mfast(:,:,:,itrc))
+      endif
 #  endif
 #  ifdef MRL_WCI
+      if (xios_field_is_active("v_vf")) then
           call xios_send_field("v_vf",Mvf(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_brk")) then
           call xios_send_field("v_brk",Mbrk(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_StCo")) then
           call xios_send_field("v_StCo",MStCo(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_Vvf")) then
           call xios_send_field("v_Vvf",MVvf(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_Prscrt")) then
           call xios_send_field("v_Prscrt",MPrscrt(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_sbk")) then
           call xios_send_field("v_sbk",Msbk(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_bwf")) then
           call xios_send_field("v_bwf",Mbwf(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_frc")) then
           call xios_send_field("v_frc",Mfrc(:,:,:,itrc))
+      endif
 #  endif
 
 #  endif
@@ -2789,21 +3278,41 @@ C 				  endif
 #  ifdef DIAGNOSTICS_TS
          itrc=1
 #  ifdef TEMPERATURE
+      if (xios_field_is_active("T_rate")) then
           call xios_send_field("T_rate", Trate(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_adv")) then
           call xios_send_field("T_adv", TXadv(:,:,:,itrc)
      &           + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Hmix")) then
           call xios_send_field("T_Hmix",THmix(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Vmix")) then
           call xios_send_field("T_Vmix",TVmix(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Forc")) then
           call xios_send_field("T_Forc",TForc(:,:,:,itrc))
+      endif
 #  endif          
 #  ifdef SALINITY
         itrc = 2
+      if (xios_field_is_active("S_rate")) then
           call xios_send_field("S_rate", Trate(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_adv")) then
           call xios_send_field("S_adv", TXadv(:,:,:,itrc)
      &              + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Hmix")) then
           call xios_send_field("S_Hmix",THmix(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Vmix")) then
           call xios_send_field("S_Vmix",TVmix(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Forc")) then
           call xios_send_field("S_Forc",TForc(:,:,:,itrc))
+      endif
 #  endif
 #  endif
 
@@ -2811,77 +3320,154 @@ C 				  endif
 
 
 #  ifdef DIAGNOSTICS_VRT
+      if (xios_field_is_active("vrtrate")) then
           call xios_send_field("vrtrate", vrtrate(:,:))
+      endif
+      if (xios_field_is_active("vrtadv")) then
           call xios_send_field("vrtadv", vrtXadv(:,:) + vrtYadv(:,:))
+      endif
+      if (xios_field_is_active("vrtCor")) then
           call xios_send_field("vrtCor",vrtCor(:,:))
+      endif
+      if (xios_field_is_active("vrtPrsgrd")) then
           call xios_send_field("vrtPrsgrd",vrtPrsgrd(:,:))
+      endif
+      if (xios_field_is_active("vrtHmix")) then
           call xios_send_field("vrtHmix",vrtHmix(:,:))
+      endif
+      if (xios_field_is_active("vrtHdiff")) then
           call xios_send_field("vrtHdiff",vrtHdiff(:,:))
+      endif
+      if (xios_field_is_active("vrtVmix")) then
 !          call xios_send_field("vrtVmix",vrtVmix(:,:))
+      endif
+      if (xios_field_is_active("vrtVmix2")) then
           call xios_send_field("vrtVmix2",vrtVmix2(:,:))
+      endif
 #  ifdef DIAGNOSTICS_BARO
+      if (xios_field_is_active("vrtBaro")) then
           call xios_send_field("vrtBaro",vrtBaro(:,:))
+      endif
 #  endif
+      if (xios_field_is_active("vrtDrag")) then
           call xios_send_field("vrtDrag",vrtDrag(:,:))
+      endif
+      if (xios_field_is_active("vrtWind")) then
           call xios_send_field("vrtWind",vrtWind(:,:))
+      endif
 #  ifdef M3FAST
+      if (xios_field_is_active("vrtfast")) then
           call xios_send_field("vrtfast",vrtfast(:,:))
+      endif
 #  endif
 #  endif
 
 
 #  ifdef DIAGNOSTICS_EK
 
+      if (xios_field_is_active("ekrate")) then
           call xios_send_field("ekrate", ekrate(:,:))
+      endif
+      if (xios_field_is_active("ekadv")) then
           call xios_send_field("ekadv", ekHadv(:,:) + ekVadv(:,:))
+      endif
+      if (xios_field_is_active("ekCor")) then
           call xios_send_field("ekCor",ekCor(:,:))
+      endif
+      if (xios_field_is_active("ekPrsgrd")) then
           call xios_send_field("ekPrsgrd",ekPrsgrd(:,:))
+      endif
+      if (xios_field_is_active("ekHmix")) then
           call xios_send_field("ekHmix",ekHmix(:,:))
+      endif
+      if (xios_field_is_active("ekHdiff")) then
           call xios_send_field("ekHdiff",ekHdiff(:,:))
+      endif
+      if (xios_field_is_active("ekVmix")) then
           call xios_send_field("ekVmix",ekVmix(:,:))
+      endif
+      if (xios_field_is_active("ekVmix2")) then
           call xios_send_field("ekVmix2",ekVmix2(:,:))
+      endif
 #  ifdef DIAGNOSTICS_BARO
+      if (xios_field_is_active("ekBaro")) then
           call xios_send_field("ekBaro",ekBaro(:,:))
+      endif
 #  endif
+      if (xios_field_is_active("ekvol")) then
           call xios_send_field("ekvol",ekvol(:,:))
+      endif
+      if (xios_field_is_active("ekDrag")) then
           call xios_send_field("ekDrag",ekDrag(:,:))
+      endif
+      if (xios_field_is_active("ekWind")) then
           call xios_send_field("ekWind",ekWind(:,:))
+      endif
 #  ifdef M3FAST
+      if (xios_field_is_active("ekfast")) then
           call xios_send_field("ekfast",ekfast(:,:))
+      endif
 #  endif
 #  endif
 
 
 # ifdef DIAGNOSTICS_PV
+      if (xios_field_is_active("u_rhs")) then
           call xios_send_field("u_rhs", Mrhs(:,:,:,1))
+      endif
+      if (xios_field_is_active("v_rhs")) then
           call xios_send_field("v_rhs", Mrhs(:,:,:,2))
+      endif
 # ifdef TEMPERATURE          
+      if (xios_field_is_active("T_rhs")) then
           call xios_send_field("T_rhs", Trhs(:,:,:,1))
+      endif
 #  endif
 #  ifdef SALINITY
+      if (xios_field_is_active("S_rhs")) then
           call xios_send_field("S_rhs", Trhs(:,:,:,2))
+      endif
 #  endif
 # ifdef DIAGNOSTICS_PV_FULL
+      if (xios_field_is_active("u_vmix_trans")) then
           call xios_send_field("u_vmix_trans", pv(:,:,:))
+      endif
+      if (xios_field_is_active("v_vmix_trans")) then
           call xios_send_field("v_vmix_trans", pvd(:,:,:))
+      endif
 #  endif
 #  endif
 
 #  if defined BIOLOGY
 #   if defined PISCES
       CALL trc_wri_pisces
-#   elif (defined BIO_NChlPZD ||  defined BIO_N2ChlPZD2)
+#   else
+      if (xios_field_is_active("hel")) then
+      call xios_send_field("hel",hel)     
+      endif
+#   if (defined BIO_NChlPZD ||  defined BIO_N2ChlPZD2)
+      if (xios_field_is_active("theta")) then
       call xios_send_field("theta",theta)
+      endif
 #    ifdef OXYGEN
+      if (xios_field_is_active("U10")) then
       call xios_send_field("U10",u10)
+      endif
+      if (xios_field_is_active("KvO2")) then
       call xios_send_field("KvO2",Kv_O2)
+      endif
+      if (xios_field_is_active("O2sat")) then
       call xios_send_field("O2sat",O2satu)
+      endif
 #    endif /* OXYGEN */
 #   elif defined BIO_BioEBUS 
+      if (xios_field_is_active("AOU")) then
       call xios_send_field("AOU",AOU)
+      endif
+      if (xios_field_is_active("wind10")) then
       call xios_send_field("wind10",wind10)
-#   else
-      call xios_send_field("hel",hel)     
+      endif
+#   endif
 #   endif
 #  endif /* BIOLOGY */
 
@@ -2889,99 +3475,145 @@ C 				  endif
 #  ifdef SEDIMENT
       do i=1,NGRAV
          write(nametrc,'(A,I1)') 'gravel_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    t(:,:,:,nstp,1+ntrc_salt+ntrc_pas+ntrc_bio+i))
+      endif
       enddo      
       do i=1,NSAND
          write(nametrc,'(A,I1)') 'sand_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    t(:,:,:,nstp,1+ntrc_salt+ntrc_pas+ntrc_bio+ngrav+i)) 
+      endif
       enddo      
       do i=1,NMUD
          write(nametrc,'(A,I1)') 'mud_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    t(:,:,:,nstp,1+ntrc_salt+ntrc_pas+ntrc_bio+ngrav+nsand+i)) 
+      endif
       enddo      
 
+      if (xios_field_is_active("bed_thick")) then
       call xios_send_field("bed_thick",bed_thick) 
+      endif
+      if (xios_field_is_active("bed_poros")) then
       call xios_send_field("bed_poros",bed_poros) 
+      endif
 
       do i=1,NGRAV
          write(nametrc,'(A,I1)') 'bed_frac_grav_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bed_frac(:,:,:,i))
+      endif
          write(nametrc,'(A,I1)') 'bed_mass_grav_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bed_mass(:,:,:,nstp,i))
+      endif
       enddo      
       do i=1,NSAND
          write(nametrc,'(A,I1)') 'bed_frac_sand_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bed_frac(:,:,:,NGRAV+i))
+      endif
          write(nametrc,'(A,I1)') 'bed_mass_sand_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bed_mass(:,:,:,nstp,NGRAV+i))
+      endif
       enddo      
       do i=1,NMUD
          write(nametrc,'(A,I1)') 'bed_frac_mud_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bed_frac(:,:,:,NGRAV+NSAND+i))
+      endif
          write(nametrc,'(A,I1)') 'bed_mass_mud_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bed_mass(:,:,:,nstp,NGRAV+NSAND+i))
+      endif
       enddo      
 
 #   ifdef SUSPLOAD
       do i=1,NGRAV
          write(nametrc,'(A,I1)') 'dflux_grav_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    settling_flux(:,:,i))
+      endif
          write(nametrc,'(A,I1)') 'eflux_grav_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    ero_flux(:,:,i))
+      endif
       enddo      
       do i=1,NSAND
          write(nametrc,'(A,I1)') 'dflux_sand_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    settling_flux(:,:,NGRAV+i))
+      endif
          write(nametrc,'(A,I1)') 'eflux_sand_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    ero_flux(:,:,NGRAV+i))
+      endif
       enddo      
       do i=1,NMUD
          write(nametrc,'(A,I1)') 'dflux_mud_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
+      endif
      &    settling_flux(:,:,NGRAV+NSAND+i))
          write(nametrc,'(A,I1)') 'edflux_mud_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    ero_flux(:,:,NGRAV+NSAND+i))
+      endif
       enddo      
 #   endif
 
 #   ifdef BEDLOAD
       do i=1,NGRAV
          write(nametrc,'(A,I1)') 'bdlu_gravel_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bedldu(:,:,i))
+      endif
          write(nametrc,'(A,I1)') 'bdlv_gravel_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bedldv(:,:,i))
+      endif
       enddo      
       do i=1,NSAND
          write(nametrc,'(A,I1)') 'bdlu_sand_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bedldu(:,:,NGRAV+i))
+      endif
          write(nametrc,'(A,I1)') 'bdlv_sand_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bedldv(:,:,NGRAV+i))
+      endif
       enddo      
       do i=1,NMUD
          write(nametrc,'(A,I1)') 'bdlu_mud_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bedldu(:,:,NGRAV+NSAND+i))
+      endif
          write(nametrc,'(A,I1)') 'bdlv_mud_',i
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    bedldv(:,:,NGRAV+NSAND+i))
+      endif
       enddo      
 #   endif
 #  endif /* SEDIMENT */
@@ -3023,8 +3655,10 @@ C 				  endif
 #endif
 
 
+      if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),
      &    workr)
+      endif
       enddo
 
       nv_out=ntrc_subs
@@ -3032,49 +3666,286 @@ C 				  endif
      &       nv_out,h,
      &       maskout_sed,var2D_ksma,var2D_tauskin,var2D_eptot
      &      )
+      if (xios_field_is_active("tauskin")) then
         call xios_send_field("tauskin",var2D_tauskin)
+      endif
 # ifdef WAVE_OFFLINE
+      if (xios_field_is_active("tauskin_c")) then
         call xios_send_field("tauskin_c",tauskin_c)
+      endif
+      if (xios_field_is_active("tauskin_w")) then
         call xios_send_field("tauskin_w",tauskin_w)
+      endif
 # endif
 
+      if (xios_field_is_active("ksma")) then
         call xios_send_field("ksma",var2D_ksma)
+      endif
+      if (xios_field_is_active("eptot")) then
         call xios_send_field("eptot",var2D_eptot)
+      endif
         do itrc=1,nv_out
          do k=1,nk_nivsed_out
            workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
          enddo
         write(nametrc,'(A,I1)') 'cv_sed_',itrc
+      if (xios_field_is_active(TRIM(nametrc))) then
         call xios_send_field(TRIM(nametrc),workrsed)
+      endif
         enddo
 
+      if (xios_field_is_active('dzs')) then
         do k=1,nk_nivsed_out
            workrsed(:,:,k)=var3D_dzs(k,:,:)
         enddo
         call xios_send_field('dzs',workrsed)
+      endif
 
 # endif /* MUSTANG */     
 
 #  ifdef BBL
+      if (xios_field_is_active("Abed")) then
          call xios_send_field("Abed",Abed) 
+      endif
+      if (xios_field_is_active("Hripple")) then
          call xios_send_field("Hripple",Hripple)
+      endif
+      if (xios_field_is_active("Lripple")) then
          call xios_send_field("Lripple",Lripple) 
+      endif
+      if (xios_field_is_active("Zbnot")) then
          call xios_send_field("Zbnot",Zbnot)
+      endif
+      if (xios_field_is_active("Zbapp")) then
          call xios_send_field("Zbapp",Zbapp)
+      endif
 
+      if (xios_field_is_active("bostrw")) then
          work2d=sqrt(bustrw**2
      &                             +bvstrw**2)
      &                                   *rho0
          call xios_send_field("bostrw",work2d)
+      endif
+      if (xios_field_is_active("bustrc")) then
 !         call xios_send_field("bustrc",bustrc*rho0)
+      endif
+      if (xios_field_is_active("bvstrc")) then
 !         call xios_send_field("bvstrc",bvstrc*rho0)
+      endif
+      if (xios_field_is_active("bustrw")) then
          call xios_send_field("bustrw",bustrw*rho0)
+      endif
+      if (xios_field_is_active("bvstrw")) then
          call xios_send_field("bvstrw",bvstrw*rho0)
+      endif
+      if (xios_field_is_active("bustrcwmax")) then
 !         call xios_send_field("bustrcwmax",bustrcwmax*rho0)
+      endif
+      if (xios_field_is_active("bvstrcwmax")) then
 !         call xios_send_field("bvstrcwmax",bvstrcwmax*rho0)
+      endif
 !     
 #  endif /* BBL */
 
+
+#  ifdef OBSTRUCTION
+      do iv=1,obst_nbvar
+         call xios_send_field(
+     &      TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv)),
+     &      obst_position(iv,:,:))
+
+         call xios_send_field(
+     &      TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_height_inst(iv,:,:))
+
+         call xios_send_field(
+     &      TRIM(obst_nout_height_e)//'_'//TRIM(obst_varname(iv)),
+     &      obst_height(iv,:,:))
+
+         call xios_send_field(
+     &      TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_dens_inst(iv,:,:))
+         
+         ! obst_dens3d is not allocated if not wanted in output
+         IF (l_obstout_dens_e) then
+            do k=1,N
+                  workr(:,:,k)=obst_dens3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_dens_e)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         call xios_send_field(
+     &      TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_width_inst(iv,:,:))
+
+         ! obst_width3d is not allocated if not wanted in output
+         IF (l_obstout_width_e) then
+            do k=1,N
+                  workr(:,:,k)=obst_width3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_width_e)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         call xios_send_field(
+     &      TRIM(obst_nout_thick_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_thick_inst(iv,:,:))
+
+         ! obst_thick3d is not allocated if not wanted in output
+         IF (l_obstout_thick_e) then
+            do k=1,N
+                  workr(:,:,k)=obst_thick3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_thick_e)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         ! obst_theta3d is not allocated if not wanted in output
+         IF (l_obstout_theta) then
+            do k=1,N
+                  workr(:,:,k)=obst_theta3d(iv,k,:,:)*180.0/3.1415
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_theta)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         ! obst_fracxy is not allocated if not wanted in output
+         IF (l_obstout_frac_xy) then
+            call xios_send_field(
+     &         TRIM(obst_nout_frac_xy)//'_'//TRIM(obst_varname(iv)),
+     &         obst_fracxy(iv,:,:))
+         END IF
+
+         ! obst_fracz3d is not allocated if not wanted in output
+         IF (l_obstout_frac_z) then
+            do k=1,N
+                  workr(:,:,k)=obst_fracz3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_frac_z)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         ! obst_drag3d is not allocated if not wanted in output
+         IF (l_obstout_drag) then
+            do k=1,N
+                  workr(:,:,k)=obst_drag3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_drag)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         ! obst_a2d is not allocated if not wanted in output
+         IF (l_obstout_a2d) then
+            call xios_send_field(
+     &      TRIM(obst_nout_a2d)//'_'//TRIM(obst_varname(iv)),
+     &      obst_a2d(iv,:,:))
+         END IF
+
+         do k=1,N
+            workr(:,:,k)=obst_a3d(iv,k,:,:)
+         enddo
+         call xios_send_field(
+     &      TRIM(obst_nout_a3d)//'_'//TRIM(obst_varname(iv)),
+     &      workr)
+
+         ! obst_s2d is not allocated if not wanted in output
+         IF (l_obstout_s2d) then
+            call xios_send_field(
+     &      TRIM(obst_nout_s2d)//'_'//TRIM(obst_varname(iv)),
+     &      obst_s2d(iv,:,:))
+         END IF
+
+         ! obst_s3d is not allocated if not wanted in output
+         IF (l_obstout_s3d) then
+            do k=1,N
+                  workr(:,:,k)=obst_s3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &      TRIM(obst_nout_s3d)//'_'//TRIM(obst_varname(iv)),
+     &      workr)
+         END IF
+
+      enddo
+
+      ! obst_a2d is not allocated if not wanted in output
+      IF (l_obstout_a2d) then
+         call xios_send_field(
+     &         TRIM(obst_nout_a2d)//'_NoTurb',
+     &         obst_a2d(obst_nbvar + 1,:,:))
+
+         call xios_send_field(
+     &         TRIM(obst_nout_a2d)//'_Turb',
+     &         obst_a2d(obst_nbvar + 2,:,:))
+         call xios_send_field(
+     &         TRIM(obst_nout_a2d)//'_All',
+     &         obst_a2d(obst_nbvar + 3,:,:))
+      END IF   
+
+         do k=1,N
+               workr(:,:,k)=obst_a3d(obst_nbvar + 1,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_a3d)//'_NoTurb',
+     &         workr)
+         do k=1,N
+               workr(:,:,k)=obst_a3d(obst_nbvar + 2,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_a3d)//'_Turb',
+     &         workr)
+         do k=1,N
+               workr(:,:,k)=obst_a3d(obst_nbvar + 3,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_a3d)//'_All',
+     &         workr)
+
+      ! obst_s2d is not allocated if not wanted in output
+      IF (l_obstout_s2d) then
+         call xios_send_field(
+     &         TRIM(obst_nout_s2d)//'_NoTurb',
+     &         obst_s2d(obst_nbvar + 1,:,:))
+         call xios_send_field(
+     &         TRIM(obst_nout_s2d)//'_Turb',
+     &         obst_s2d(obst_nbvar + 2,:,:))
+         call xios_send_field(
+     &         TRIM(obst_nout_s2d)//'_All',
+     &         obst_s2d(obst_nbvar + 3,:,:))
+      END IF
+
+      ! obst_s3d is not allocated if not wanted in output
+      IF (l_obstout_s3d) then
+         do k=1,N
+               workr(:,:,k)=obst_s3d(obst_nbvar + 1,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_s3d)//'_NoTurb',
+     &         workr)
+         do k=1,N
+               workr(:,:,k)=obst_s3d(obst_nbvar + 2,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_s3d)//'_Turb',
+     &         workr)
+         do k=1,N
+               workr(:,:,k)=obst_s3d(obst_nbvar + 3,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_s3d)//'_All',
+     &         workr)
+      END IF
+         call xios_send_field(TRIM(obst_nout_tau), obst_tau)
+         call xios_send_field(TRIM(obst_nout_fuzvz)//'_uz', obst_fuz)
+         call xios_send_field(TRIM(obst_nout_fuzvz)//'_vz', obst_fvz)
+
+#  endif /* OBSTRUCTION */
 
 
 # endif /* SOLVE3D */

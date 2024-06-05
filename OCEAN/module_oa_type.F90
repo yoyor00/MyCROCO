@@ -47,6 +47,7 @@
 
       integer config,variable,t_indice
       complex(8),dimension(:),pointer::coef 
+      logical :: allocated=.false.
 
       end type type_wf
 
