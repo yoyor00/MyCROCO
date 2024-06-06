@@ -131,6 +131,11 @@ CONTAINS
       IF(lwp) WRITE(numsed,*) ' sed_ini : Initialization of sediment module  '
       IF(lwp) WRITE(numsed,*) ' '
 
+      dtsed  = rDt_trc
+
+      IF(lwp) WRITE(numsed,*) ' Sediment time-step  dtsed = ', dtsed 
+      IF(lwp) WRITE(numsed,*) ' '
+
       ! Read sediment Namelist
       !-------------------------
       CALL sed_ini_nam
@@ -435,7 +440,7 @@ CONTAINS
          &             rcnh4, rch2s, rcfe2, rcfeh2s, rcfeso, rcfesp, &
          &             rcfesd, rcapat, xksedo2, xksedno3, xksedfeo, xksedso4
       NAMELIST/nam_btb/dbiot, ln_btbz, dbtbzsc, adsnh4, adsfe2, ln_irrig, xirrzsc
-      NAMELIST/nam_rst/ln_rst_sed, nn_rstsed, cn_sedrst_indir, cn_sedrst_outdir, cn_sedrst_in, cn_sedrst_out
+      NAMELIST/nam_rst/ln_rst_sed, cn_sedrst_indir, cn_sedrst_outdir, cn_sedrst_in, cn_sedrst_out
 
       INTEGER :: ji, jn, jn1
       !-------------------------------------------------------

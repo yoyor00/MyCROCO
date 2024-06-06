@@ -156,9 +156,9 @@ MODULE sed
    REAL(wp), PUBLIC, DIMENSION(:,:,:), ALLOCATABLE ::  trcsed_avg
    REAL(wp), PUBLIC, DIMENSION(:,:) , ALLOCATABLE  ::  flxsed_avg
 
-   INTEGER, DIMENSION(jptrased)   ::  rstsed, wrised
-   INTEGER, DIMENSION(jpsol)      ::  rstsol, wrisol
-   INTEGER                        ::  rstph, wriph, rstsedstep
+   INTEGER, DIMENSION(jptrased)   ::  rstsed
+   INTEGER, DIMENSION(jpsol)      ::  rstsol
+   INTEGER                        ::  rstph, rstsedstep
    INTEGER                        ::  ncidwrised, nrecsedpis_avg
    INTEGER                        ::  nwrtsedpis_avg, ntssedpis_avg
    INTEGER                        ::  nrpfsedpis_avg, sedTsteppis_avg,sedTimepis_avg, sedTime2pis_avg

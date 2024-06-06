@@ -132,8 +132,6 @@ CONTAINS
 
       ENDIF
 
-!      dtsed = rDt_trc
-
       ! Load initial Pisces Data for bot. wat. Chem and fluxes
       CALL sed_dta ( nitsed000, Kbb, Kmm ) 
 

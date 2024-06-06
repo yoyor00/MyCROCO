@@ -81,7 +81,6 @@ CONTAINS
       ! open file
       IF( kt == nitsed000 ) THEN
          IF (lwp) WRITE(numsed,*) ' sed_dta : Sediment fields'
-         dtsed = rDt_trc
          conv2 = 1.0e+3 /  1.0e+4 
       ENDIF
 

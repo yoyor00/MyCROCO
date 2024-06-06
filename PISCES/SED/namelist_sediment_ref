@@ -137,11 +137,8 @@
 &nam_rst     !   parameters for restarting the sediment module
 !-----------------------------------------------------------------------
    ln_rst_sed   =  .false.         !  restart flag
-   nn_rstsed    =  0               !  restart control = 0 initial time step is not compared to the restart file value
-                                   !                  = 1 do not use the value in the restart file
-                                   !                  = 2 calendar parameters read in the restart file
-   cn_sedrst_in  = "restart_sed.nc"   !  name of the input restart file name of the sediment module
+   cn_sedrst_in  = "croco_rst_sed_ini.nc"   !  name of the input restart file name of the sediment module
    cn_sedrst_indir = "CROCO_FILES"           !  directory from which to read input sediment restarts
-   cn_sedrst_out = "restart_sed.nc"   !  suffix of pass. [sediment] restart name (output)
+   cn_sedrst_out = "croco_rst_sed.nc"   !  suffix of pass. [sediment] restart name (output)
    cn_sedrst_outdir = "CROCO_FILES"          !  directory to which to write output sediment restarts
 /

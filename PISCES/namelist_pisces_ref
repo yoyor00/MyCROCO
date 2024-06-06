@@ -453,9 +453,9 @@
 !-----------------------------------------------------------------------
 &nampisrst     !   parameters for restarting 
 !-----------------------------------------------------------------------
-   cn_pisrst_in  = "restart_pisces.nc"   !  name of the input restart file name of pisces
+   cn_pisrst_in  = "croco_rst_pisces_ini.nc"   !  name of the input restart file name of pisces
    cn_pisrst_indir = "CROCO_FILES"           !  directory from which to read input pisces restarts
-   cn_pisrst_out = "restart_pisces.nc"   !  suffix of pass. restart name (output)
+   cn_pisrst_out = "croco_rst_pisces.nc"   !  suffix of pass. restart name (output)
    cn_pisrst_outdir = "CROCO_FILES"          !  directory to which to write output pisces restarts
 /
 !-----------------------------------------------------------------------

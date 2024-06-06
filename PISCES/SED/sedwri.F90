@@ -49,7 +49,6 @@ CONTAINS
       INTEGER  :: ji, jj, jk, jn
       INTEGER  :: it
       CHARACTER(len = 20)  ::  cltra
-      REAL(wp) :: zinvdtsed
       REAL(wp), DIMENSION(jpoce, jptrased+1) :: zflx
       REAL(wp), DIMENSION(A2D(0), jpksed)   :: trcsedi
       REAL(wp), DIMENSION(A2D(0)) :: flxsedi2d
@@ -68,16 +67,13 @@ CONTAINS
       zw3d_out(:,:,:) = 0._wp 
       zw2d_out(:,:)   = 0._wp 
 
-      ! Initialize variables
-      ! --------------------
-      zinvdtsed          = 1.0_wp / dtsed
 
       ! 2.  Back to 2D geometry
       ! -----------------------------------------------------------------
       ! Calculation of fluxes mol/cm2/s
       DO jn = 1, jpwat
          DO ji = 1, jpoce
-            zflx(ji,jn) = ( pwcp(ji,1,jn) - pwcp_dta(ji,jn) ) * ( 1.e-3 * dzkbot(ji) ) * zinvdtsed
+            zflx(ji,jn) = ( pwcp(ji,1,jn) - pwcp_dta(ji,jn) ) * ( 1.e-3 * dzkbot(ji) ) / dtsed
          ENDDO
       ENDDO
 
@@ -86,7 +82,7 @@ CONTAINS
       zflx(:,jptrased+1) = 0.0
       DO jn = 1, jpsol
          DO ji = 1, jpoce
-            zflx(ji,jpwat+jn) = ( tosed(ji,jn) - fromsed(ji,jn) ) * zinvdtsed
+            zflx(ji,jpwat+jn) = ( tosed(ji,jn) - fromsed(ji,jn) ) / dtsed
             zflx(ji,jptrased+1) = zflx(ji,jptrased+1) + ( tosed(ji,jn) - fromsed(ji,jn) ) / ( dtsed * por1(jpksed) * dens_sol(jn) )
          ENDDO
       ENDDO
@@ -121,7 +117,7 @@ CONTAINS
       END DO
 
       IF ( iom_use( "dzdep" ) ) THEN
-         zflx(:,1) = dzdep(:) * zinvdtsed
+         zflx(:,1) = dzdep(:) / dtsed
          flxsedi2d(:,:) = UNPACK( zflx(:,1), sedmask == 1.0, 0.0 )
          zw2d_out(A2D(0)) = flxsedi2d(A2D(0))
          CALL iom_put( "dzdep", zw2d_out )

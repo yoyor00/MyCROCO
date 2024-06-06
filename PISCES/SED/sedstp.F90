@@ -61,7 +61,6 @@ CONTAINS
       IF( lrst_sed )            CALL sed_rst_cal  ( kt, 'WRITE' )   ! calenda
 #endif
 
-      dtsed  = rDt_trc
       IF (kt /= nitsed000)      CALL sed_dta( kt, Kbb, Kmm )    ! Load  Data for bot. wat. Chem and fluxes
 
       IF( kt /= nitsed000 )  &
