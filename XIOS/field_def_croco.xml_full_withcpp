@@ -179,12 +179,12 @@
     <field id="Si"       long_name="Silicate Concentration"                   unit="mmol/m3" grid_ref="rho_3D" />
     <field id="PHY2"     long_name="Diatoms Concentration"                    unit="mmol/m3" grid_ref="rho_3D" />
     <field id="ZOO2"     long_name="Mesozooplankton Concentration"            unit="mmol/m3" grid_ref="rho_3D" />
-    <field id="BSi"      long_name="Diatoms Silicate Concentration"           unit="mmol/m3" grid_ref="rho_3D" />
+    <field id="DSi"      long_name="Diatoms Silicate Concentration"           unit="mmol/m3" grid_ref="rho_3D" />
     <field id="BFe"      long_name="Big iron particles Concentration"         unit="mmol/m3" grid_ref="rho_3D" />
     <field id="GOC"      long_name="Big organic carbon Concentration"         unit="mmol/m3" grid_ref="rho_3D" />
     <field id="SFe"      long_name="Small iron particles Concentration"       unit="mmol/m3" grid_ref="rho_3D" />
     <field id="DFe"      long_name="Diatoms iron  Concentration"              unit="mmol/m3" grid_ref="rho_3D" />
-    <field id="DSi"      long_name="Sinking biogenic Silicate Concentration"  unit="mmol/m3" grid_ref="rho_3D" />
+    <field id="GSi"      long_name="Sinking biogenic Silicate Concentration"  unit="mmol/m3" grid_ref="rho_3D" />
     <field id="NFe"      long_name="Nano iron Concentration"                  unit="mmol/m3" grid_ref="rho_3D" />
     <field id="NCHL"     long_name="Nano chlorophyl Concentration"            unit="mg/m3"   grid_ref="rho_3D" />
     <field id="DCHL"     long_name="Diatoms chlorophyl Concentration"         unit="mg/m3"   grid_ref="rho_3D" />
