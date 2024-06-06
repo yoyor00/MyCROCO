@@ -14,13 +14,13 @@ for nn in $( seq 0 ${AGRIFZ} ); do
     ${io_getfile} ${OCE_FILES_DIR}/croco_grd.nc${agrif_ext}                croco_grd.nc${agrif_ext}
     if [ ${nn} -gt 0 ];    then
         printf "Nesting: create AGRIF_FixedGrids.in file from infos contained in grid files"
-        nest_pos=$( ncdump -h croco_grd.nc${agrif_ext} | grep 'positions in the parent grid:' | cut -d ':' -f 3 | cut -d ';' -f 1 )
-        nest_coef=$( ncdump -h croco_grd.nc${agrif_ext} | grep 'positions in the parent grid:' | cut -d ':' -f 4 | cut -d '"' -f 1 )
+        nest_pos=$( ncdump -v grd_pos croco_grd.nc${agrif_ext} | grep 'grd_pos =' | cut -d '=' -f 2 | cut -d ';' -f 1 )
+        nest_coef=$( ncdump -v refine_coef croco_grd.nc${agrif_ext} | grep 'refine_coef =' | cut -d '=' -f 2 | cut -d ';' -f 1 )
         echo " 1" >> AGRIF_FixedGrids.in
         echo "$nest_pos $nest_coef $nest_coef $nest_coef $nest_coef" >> AGRIF_FixedGrids.in
         if [ ${nn} -eq ${AGRIFZ} ]; then
             echo " 0" >> AGRIF_FixedGrids.in
-            sed -e "s/-/ /g" AGRIF_FixedGrids.in > AGRIF_FixedGrids.in.tmp
+            sed -e "s/,/ /g" AGRIF_FixedGrids.in > AGRIF_FixedGrids.in.tmp
             mv AGRIF_FixedGrids.in.tmp AGRIF_FixedGrids.in
         fi
     fi

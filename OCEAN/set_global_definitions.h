@@ -142,10 +142,10 @@
    Message passing and shared memory versions.
 */
 #ifdef MPI
-# define WESTERN_EDGE .not.WEST_INTER
-# define EASTERN_EDGE .not.EAST_INTER
-# define SOUTHERN_EDGE .not.SOUTH_INTER
-# define NORTHERN_EDGE .not.NORTH_INTER
+# define WESTERN_EDGE  (istr.eq.1 .and. .not.WEST_INTER)
+# define EASTERN_EDGE  (iend.eq.Lmmpi .and. .not.EAST_INTER)
+# define SOUTHERN_EDGE (jstr.eq.1.and. .not.SOUTH_INTER)
+# define NORTHERN_EDGE (jend.eq.Mmmpi .and. .not.NORTH_INTER)
 #else
 # define WESTERN_EDGE istr.eq.1
 # define EASTERN_EDGE iend.eq.Lm
@@ -230,9 +230,9 @@
 !
 #ifdef M3FAST
 # define FIRST_FAST_STEP iif.eq.1
-# define LAST_FAST_STEP iif.eq.nfast
 # define NOT_LAST_FAST_STEP iif.lt.nfast+1
 #endif
+# define LAST_FAST_STEP iif.eq.nfast
 
 /* Switch ON/OFF double precision for real type variables (since this
  is mostly controlled by mpc and/or compuler options, this CPP-switch

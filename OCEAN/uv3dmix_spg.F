@@ -195,6 +195,7 @@
 
       indx=3-nstp    !--> time index for target arrays;
 
+
 # ifdef UV_MIX_S_SPONGE
 !
 !====================================================================
@@ -208,6 +209,8 @@
 !  Compute flux-components of the horizontal divergence of the stress
 !  tensor (m5/s2) in XI- and ETA-directions.
 !
+
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -229,6 +232,7 @@
             VFe(i,j)=om_r(i,j)*om_r(i,j)*cff
           enddo
         enddo
+
         do j=Jstr,Jend+1
           do i=Istr,Iend+1
             cff=0.25*visc2_sponge_p(i,j)*
@@ -261,6 +265,7 @@
 ! integral of viscous terms and add it into coupling terms for the
 ! barotropic mode
 !
+
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=pn_u(i,j)*(UFx(i,j)-UFx(i-1,j))
@@ -321,6 +326,7 @@
 #  endif
           enddo
         enddo
+
         do j=JstrV,Jend
           do i=Istr,Iend
             cff=pn_v(i,j)*(VFx(i+1,j)-VFx(i,j))
@@ -380,6 +386,7 @@
           enddo
         enddo
       enddo
+!$acc end kernels
 
 # else  /* UV_MIX_S_SPONGE */
 !

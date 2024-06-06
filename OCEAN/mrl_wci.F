@@ -96,7 +96,7 @@
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
      &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,ks,
-     &   a_frc,kfrc,Hrms,urms,fw,
+     &   a_frc,kfrc,Hrms,urms,fw, maxwar,
      &             wh(PRIVATE_2D_SCRATCH_ARRAY),
      &             fr(PRIVATE_2D_SCRATCH_ARRAY),
      &             kw(PRIVATE_2D_SCRATCH_ARRAY),
@@ -121,6 +121,7 @@
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
+!$acc declare create(wrk4,wrk5,wrk6)
 # endif
       parameter ( eps    = 1.e-10,
      &            bconst = 0.03,              ! breaking contribution to KPP
@@ -220,6 +221,7 @@
 ! 2DH Stokes velocities, breaking, roller and bottom-friction
 ! dissipation terms, defined at horizontal rho-points.
 !
+!$acc kernels if(compute_on_device) default(present)
 #  ifdef EW_PERIODIC
        imin= Istr-2
 #  else
@@ -238,8 +240,6 @@
         jmin=Jstr-2
       endif
 #  endif
-    !  write(*,*) Istr, IstrR, IstrU, imin 
-     ! write(*,*) Jstr, JstrR, JstrV, jmin 
 
       inv_g = 1./g
       do j=jmin,jendR
@@ -279,8 +279,12 @@
 #  ifndef WAVE_ROLLER
           act(i,j)=wramp2*max(wac(i,j,wnew),0.)  ! wave action density
 #  else
+          maxwar=0.125*g*(wkb_gam*Dstp(i,j))**2  ! limit roller action
+     &                        /max(fr(i,j),eps)  ! in shallow water 
           act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
-     &                    +max(war(i,j,wnew),0.))
+     &                +max(min(war(i,j,wnew),maxwar),0.))
+!         act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
+!     &                   +max(war(i,j,wnew),0.))  ! U10
 #  endif
 
 # else    /* ifndef WKB_WWAVE */
@@ -1238,6 +1242,8 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       endif
 #  endif  /* OBC_EAST */
 # endif  /* ANA_BRY */
+
+!$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile(istr,iend,jstr,jend,sup)

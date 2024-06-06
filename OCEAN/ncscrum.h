@@ -186,8 +186,17 @@
       parameter (indxHm=5)
 #endif
 #ifdef SOLVE3D
+#  ifdef M3FAST_HIS
+      integer indxRnbq, indxUnbq, indxVnbq, indxWnbq, indxCnbq
+      parameter  (indxUnbq=6, indxVnbq=7, indxWnbq=8,
+     &  indxCnbq=9, indxRnbq=10)
+
+      integer indxU, indxV
+      parameter (indxU=11, indxV=12)
+#  else
       integer indxU, indxV
       parameter (indxU=6, indxV=7)
+#  endif
 
 # ifdef TRACERS
 #  ifdef TEMPERATURE
@@ -1139,6 +1148,7 @@
      &      , hisBBL(6)
 #endif
 #ifdef SOLVE3D
+     &      , hisUnbq, hisVnbq, hisWnbq, hisRnbq, hisCnbq
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
@@ -1681,6 +1691,7 @@
      &      , hisHm
 #endif
 #ifdef SOLVE3D
+     &      , hisUnbq, hisVnbq, hisWnbq, hisRnbq, hisCnbq
      &      , hisU,    hisV,     hisT,    hisR
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks

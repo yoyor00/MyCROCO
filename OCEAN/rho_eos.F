@@ -111,6 +111,9 @@
 !
 !======================================================================
 !
+#ifdef RVTK_DEBUG
+      use debug
+#endif
 #  ifdef MUSTANG
       USE comsubstance, ONLY : ros, nvpc, l_subs2D
 #  endif
@@ -191,6 +194,7 @@
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
 #  endif
 
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
 
         do k=1,N                                       ! NONLINEAR
@@ -328,8 +332,15 @@
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    cff,cff1,rho0og
+#  ifdef NBQ_GRAV
+      real rho_nh1(N),rho_nh2(N)
+#  endif
+
 #  include "grid.h"
 #  include "ocean3d.h"
+#  ifdef NBQ_GRAV
+#   include "nbq.h"
+#  endif
 #  include "coupling.h"
 #  include "scalars.h"
 #  include "mixing.h"
@@ -342,6 +353,7 @@
 !  refered to rho0
 !-----------------------------------------------------------------------
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do k=1,N
           do i=IstrR,IendR
@@ -359,7 +371,33 @@
 #  endif
           enddo
         enddo
-!
+      enddo
+!$acc end kernels      
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   ifdef THREE_GHOST_POINTS_TS
+      call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             rho1(START_2D_ARRAY,1))
+#   else
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        rho1(START_2D_ARRAY,1))
+#   endif
+#  endif
+!$acc kernels if(compute_on_device) default(present)      
+      do j=JstrR,JendR
+#  ifdef NBQ_GRAV
+        do i=IstrR,IendR
+           rho_nh1(1)=rho1(i,j,1)
+           do k=2,N
+            rho_nh1(k)=min(rho_nh1(k-1),rho1(i,j,k))
+           enddo
+           rho_nh2(N)=rho1(i,j,N)
+           rho_nh(i,j,N)=rho1(i,j,N)-0.5*(rho_nh1(N)+rho_nh2(N))
+           do k=N-1,1,-1
+             rho_nh2(k)=max(rho_nh2(k+1),rho1(i,j,k))
+             rho_nh(i,j,k)=rho1(i,j,k)-0.5*(rho_nh1(k)+rho_nh2(k))
+           enddo
+         enddo
+#  endif
 !-----------------------------------------------------------------------
 !  Compute Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
 !  and vertical W-points.
@@ -406,7 +444,7 @@
           enddo
         enddo
       enddo
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_TS
       call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             rho1(START_2D_ARRAY,1))
@@ -532,6 +570,21 @@
 # endif /* VAR_RHO_2D */
 
       enddo    ! <-- j
+# ifdef NBQ_GRAV
+!$acc update device( rho_nh )
+# endif
+
+c #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+c #   ifdef THREE_GHOST_POINTS_TS
+c       call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+c      &                             rho_nh(START_2D_ARRAY,1))
+c #   else
+c       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+c      &                        rho_nh(START_2D_ARRAY,1))
+c #   endif
+c #  endif
+
+!$acc end kernels
       return
       end
 
@@ -604,6 +657,8 @@
 #  ifdef NONLIN_EOS
       dr00=r00-1000.
 #  endif
+
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=Jstr,Jend
           do i=Istr,Iend
@@ -650,6 +705,7 @@
           enddo
         enddo
       enddo
+!$acc end kernels
 
       mrho=mrho/vol
 !

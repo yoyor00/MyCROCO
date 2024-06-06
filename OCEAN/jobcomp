@@ -100,6 +100,7 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 ls ${SOURCE}/*.F               > /dev/null  2>&1 && \cp ${SOURCE}/*.F   $SCRDIR
 ls ${SOURCE}/*.F90             > /dev/null  2>&1 && \cp ${SOURCE}/*.F90 $SCRDIR
 ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
+ls ${SOURCE}/*.py              > /dev/null  2>&1 && \cp ${SOURCE}/*.py   $SCRDIR
 ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
 ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
@@ -166,6 +167,17 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 #	        FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
 #	                -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
+	elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+    	CPP1="cpp  -traditional -DLinux -DXLF"
+    	CFT1=$FC
+    	FFLAGS1="-g -fast -r8 -i4 -mcmodel=medium -Mbackslash"
+	#FFLAGS1="-g -O0 -C -Kieee -r8 -i4 -traceback"
+	if [[ $HOSTNAME == "jean-zay"* ]]; then
+		CPP1=$CPP1" -DJEANZAY"
+	fi
+	else
+		echo "Unknown Fortran Compiler"
+		exit
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
         CPP1="cpp -traditional -DLinux"
@@ -320,6 +332,18 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 	elif [[ $OS == AIX ]] ; then
 		FFLAGS1="$FFLAGS1 -qsmp=omp"
 		CFT1="xlf95_r"
+	fi
+fi
+
+#
+# determine if OPENACC compilation is needed
+#
+unset COMPILEOPENACC
+echo "Checking COMPILEOPENACC..."
+if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
+	COMPILEOPENACC=TRUE
+	if [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+		  FFLAGS1="$FFLAGS1 -acc -Minfo=accel"
 	fi
 fi
 

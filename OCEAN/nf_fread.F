@@ -237,6 +237,10 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
           enddo
         enddo
       enddo
+#ifndef WRITER
+!$acc update if(compute_on_device)
+!$acc&  device(A(imin:imax,jmin:jmax,1:count(3)))
+#endif
 #ifdef WRITER
 # ifdef ABL1D
       if (vert_type.eq.4) then
@@ -309,6 +313,7 @@ CC      elseif (horiz_type.eq.0 .and. vert_type.eq.3) then
 CC        call exchange_b3d_tile (1,LOCALLM,1,LOCALMM, A)
 #  endif
       endif
+!$acc update if(compute_on_device) host(A(:,:,1:count(3)))
 # endif
 #endif
       return

@@ -54,6 +54,7 @@ C$    integer omp_get_thread_num
       my_rx0=0.
       my_rx1=0.
 
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=IstrU,Iend
 # ifdef MASKING
@@ -93,6 +94,7 @@ C$    integer omp_get_thread_num
 # endif
         enddo
       enddo
+!$acc end kernels
 
       if (SINGLE_TILE_MODE) then
         NSUB=1

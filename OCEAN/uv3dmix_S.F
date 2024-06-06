@@ -28,18 +28,30 @@
        if (AGRIF_Root()) then
         call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
-     &                        A2d(1,3,trd), A2d(1,4,trd))
+     &                        A2d(1,3,trd), A2d(1,4,trd)
+#  ifdef NBQ
+     &                       ,A3d(1,3,trd), A3d(1,4,trd)
+#  endif
+     &                                                 )
        else
         call uv3dmix_child_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
-     &                        A2d(1,3,trd), A2d(1,4,trd))
-       endif
+     &                        A2d(1,3,trd), A2d(1,4,trd)
+#  ifdef NBQ
+     &                       ,A3d(1,3,trd), A3d(1,4,trd)
+#  endif
+     &                                                 )
+       endif 
       return
       end
 # else
       call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
-     &                        A2d(1,3,trd), A2d(1,4,trd))
+     &                        A2d(1,3,trd), A2d(1,4,trd)
+#  ifdef NBQ
+     &                       ,A3d(1,3,trd), A3d(1,4,trd)
+#  endif
+     &                                                 )
       return
       end
 # endif   /* AGRIF */
@@ -49,17 +61,25 @@
 !---------------------------------------------------------------------
 !
 !PARENT
-!
-      subroutine uv3dmix_tile (Istr,Iend,Jstr,Jend,
-     &                                       UFx,UFe,VFx,VFe)
+! 
+      subroutine uv3dmix_tile (Istr,Iend,Jstr,Jend, 
+     &                                       UFx,UFe,VFx,VFe
+# ifdef NBQ
+     &                                      ,FX,FE
+# endif
+     &                                                 )
 # undef CLIMAT_UV_MIXH_FINE
 !
 #else
 !
 ! CHILD
 !
-      subroutine uv3dmix_child_tile (Istr,Iend,Jstr,Jend,
-     &                                         UFx,UFe,VFx,VFe)
+      subroutine uv3dmix_child_tile (Istr,Iend,Jstr,Jend, 
+     &                                         UFx,UFe,VFx,VFe
+# ifdef NBQ
+     &                                        ,FX,FE
+# endif
+     &                                                 )
 !
 ! Diffusion always applied on U-UCLM in fine grid
 # if !defined UV_HADV_RSUP3
@@ -100,11 +120,15 @@
 !---------------------------------------------------------------------
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, indx
+#include "param.h"
       real UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &     UFx(PRIVATE_2D_SCRATCH_ARRAY), cff,
      &     VFe(PRIVATE_2D_SCRATCH_ARRAY), cff1,
      &     VFx(PRIVATE_2D_SCRATCH_ARRAY)
-#include "param.h"
+#ifdef NBQ
+      real FX(PRIVATE_2D_SCRATCH_ARRAY,1:N),
+     &     FE(PRIVATE_2D_SCRATCH_ARRAY,1:N)
+#endif
 #include "scalars.h"
 #include "grid.h"
 #include "ocean3d.h"
@@ -144,6 +168,7 @@
 #endif
 !
       indx=3-nstp    !--> time index for target arrays;
+!$acc kernels if(compute_on_device) default(present)
 !
 !  Compute flux-components of the horizontal divergence of the stress
 !  tensor (m5/s2) in XI- and ETA-directions.
@@ -301,13 +326,11 @@
 !
 !  Compute XI- and ETA-components of diffusive wz flux.
 !
-# define FX UFx
-# define FE UFe
       do k=1,N
         kp=min(k+1,N)
         do j=jstr,jend
           do i=istr,iend+1
-              FX(i,j)=0.125*
+              FX(i,j,k)=0.125*
      &                max(0.,visc2_r(i,j)+visc2_r(i-1,j)
 # ifdef SPONGE_VIS2
      &                      ,visc2_sponge_r(i,j)+visc2_sponge_r(i-1,j)
@@ -325,7 +348,7 @@
         enddo
         do j=jstr,jend+1
           do i=istr,iend
-              FE(i,j)=0.125*
+              FE(i,j,k)=0.125*
      &                max(0.,visc2_r(i,j)+visc2_r(i,j-1)
 # ifdef SPONGE_VIS2
      &                      ,visc2_sponge_r(i,j)+visc2_sponge_r(i,j-1)
@@ -347,14 +370,13 @@
           do i=istr,iend
             cff1=pm(i,j)*pn(i,j)
             wz(i,j,k,indx)=wz(i,j,k,indx)+dt*cff1
-     &                     *(FX(i+1,j)-FX(i,j)+FE(i,j+1)-FE(i,j))
+     &            *(FX(i+1,j,k)-FX(i,j,k)+FE(i,j+1,k)-FE(i,j,k))
 !    &                                    /(Hz(i,j,k)+Hz(i,j,kp))
           enddo
         enddo
       enddo ! <-- k
-# undef FX
-# undef FE
 #endif
+!$acc end kernels
 !
       return
       end

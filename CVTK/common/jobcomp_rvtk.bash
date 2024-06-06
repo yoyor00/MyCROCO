@@ -104,6 +104,7 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 ls ${SOURCE}/*.F               > /dev/null  2>&1 && \cp ${SOURCE}/*.F   $SCRDIR
 ls ${SOURCE}/*.F90             > /dev/null  2>&1 && \cp ${SOURCE}/*.F90 $SCRDIR
 ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
+ls ${SOURCE}/*.py              > /dev/null  2>&1 && \cp ${SOURCE}/*.py  $SCRDIR
 ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
 ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
@@ -312,7 +313,7 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 		elif [[ $FC == ifort || $FC == ifc ]] ; then
 			INTEL_VERSION=$(ifort --version 2>&1 | grep -oP "(\d+)" | head -n1)
 			# Compare the version with 18
-			if [[ "$INTEL_VERSION" -gt 18 ]]; then
+			if [[ "$INTEL_VERSION" -ge 18 ]]; then
 				FFLAGS1="$FFLAGS1 -qopenmp"
 			else
 				FFLAGS1="$FFLAGS1 -openmp"
