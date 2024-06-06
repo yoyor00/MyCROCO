@@ -302,7 +302,7 @@ reg_perfrst_gfortran:
         echo "Use of local data " $DATAREG ;
       else  
         mkdir -p $DATAREG ;
-        cd $DATAREG ;;
+        cd $DATAREG ;
         tar -xf ForCI-INRIA.tar.gz ;
         mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
       fi   
