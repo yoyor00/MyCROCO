@@ -157,6 +157,7 @@ C$OMP END PARALLEL
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
       integer itrc
+      character(len=30) cltra
 
 #ifdef FLOATS
       integer chunk_size_flt, Lstr,Lend, flt_str
