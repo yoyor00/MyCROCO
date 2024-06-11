@@ -2759,7 +2759,6 @@
                                -F_reminR_aerN * cs(iv_detrR_N) * porosite_inv * p_GO2_NOrgR  &
                                -F_nitrif * cs(iv_nutr_NH4) * p_GO2_NH4)                      &
                               * 0.032_rsh ! transformation en mg/L
-             dcdt(iv_oxygen)=0.0
 
 !            ................................................................... 
             
