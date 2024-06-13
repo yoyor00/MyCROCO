@@ -277,11 +277,11 @@ CONTAINS
       SELECT CASE(check_type)
       CASE('short')
          niter = 5_i8
-         correct = 542381058189297533
+         correct = 542381058189297533_i8
          print_success = .FALSE.
       CASE('long')
          niter = 100000000_i8
-         correct = 1666297717051644203 ! Check provided by G. Marsaglia
+         correct = 1666297717051644203_i8 ! Check provided by G. Marsaglia
          print_success = .TRUE.
       CASE('default')
       CASE DEFAULT

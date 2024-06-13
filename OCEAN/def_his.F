@@ -130,6 +130,9 @@
 # define vidUWstr hisUWstr
 # define vidVWstr hisVWstr
 # define vidShflx hisShflx
+# ifdef STOGEN
+#  define vidTMPsto  hisTMPsto
+# endif
 # ifdef SALINITY
 #  define vidSwflx hisSwflx
 # endif
@@ -701,6 +704,40 @@
           call nf_add_attribute(ncid, vidV, vname(:,indxV), 
      &         5, NF_FOUT, ierr)
         endif
+!
+!---------------------------------------
+! STOGEN stochastic variables.
+!---------------------------------------
+!
+# ifdef STOGEN
+        if (wrt(indxTMPsto)) then
+          lvar=lenstr(vname(1,indxTMPsto))
+          ierr=nf_def_var (ncid, vname(1,indxTMPsto)(1:lvar),
+     &                             NF_FOUT, 4, r3dgrd, vidTMPsto)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTMPsto,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxTMPsto))
+          ierr=nf_put_att_text (ncid, vidTMPsto, 'long_name', lvar,
+     &                                  vname(2,indxTMPsto)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxTMPsto)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidTMPsto, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxTMPsto))
+          ierr=nf_put_att_text (ncid, vidTMPsto, 'units',     lvar,
+     &                                  vname(3,indxTMPsto)(1:lvar))
+          lvar=lenstr(vname(4,indxTMPsto))
+          ierr=nf_put_att_text (ncid, vidTMPsto, 'field',     lvar,
+     &                                  vname(4,indxTMPsto)(1:lvar))
+
+          call nf_add_attribute(ncid, vidTMPsto, vname(:,indxTMPsto),
+     &         5, NF_FOUT, ierr)
+        endif
+# endif /* STOGEN */
 !
 !-----------------------------------------------------------------------
 ! Tracer variables.
@@ -2967,6 +3004,22 @@
 # endif
         endif
 !
+! STOGEN stochastic variables.
+!
+# ifdef STOGEN
+        if (wrt(indxTMPsto)) then
+          lvar=lenstr(vname(1,indxTMPsto))
+          ierr=nf_inq_varid (ncid, vname(1,indxTMPsto)(1:lvar), vidTMPsto)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxTMPsto)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTMPsto,nf_collective)
+# endif
+        endif
+# endif /* STOGEN */
+!
 ! Tracer variables.
 !
 # ifdef TRACERS
@@ -3873,6 +3926,10 @@
 #undef vidHm
 #undef vidM
 #undef vidObst
+#ifdef STOGEN
+# undef vidTMPsto 
+#endif
+
 
 #ifdef AVERAGES
 # ifndef AVRH

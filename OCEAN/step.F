@@ -124,7 +124,7 @@ C$OMP END PARALLEL
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
 #endif
-#ifdef STOCHASTIC
+#ifdef STOGEN
           USE stomod   ! stochastic module
 #endif
       implicit none
@@ -366,8 +366,8 @@ C$OMP END MASTER
 #  endif
 # endif
 
-#ifdef STOCHASTIC
-      call sto_mod(ntimes) ! update stochastic fields
+#ifdef STOGEN
+      call sto_mod(iic) ! update (?) stochastic fields 
 #endif
 
 # ifdef BULK_FLUX

@@ -31,7 +31,7 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
-#ifdef STOCHASTIC
+#ifdef STOGEN
       USE stoarray        ! Acces to stochastic arrays
       USE stobulk         ! Stochastic parameterization of bulk formulation
 #endif
@@ -707,9 +707,10 @@
 #   ifdef WET_DRY
           sustr(i,j)=sustr(i,j)*umask_wet(i,j)
 #   endif
-#   ifdef STOCHASTIC
+#   ifdef STOGEN
 !         apply multiplicative noise to wind stress
-          sustr(i,j)=sustr(i,j)*stofields(jstobulk_cd)%sto2d(i,j)
+          !sustr(i,j)=sustr(i,j)*stofields(jstobulk_cd)%sto2d(i,j)
+          tmpout(i,j,N)=stofields(jstobulk_cd)%sto2d(i,j)
 #   endif
         enddo
       enddo
@@ -733,9 +734,9 @@
 #   ifdef WET_DRY
           svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
 #   endif
-#   ifdef STOCHASTIC
+#   ifdef STOGEN
 !         apply multiplicative noise to wind stress
-          svstr(i,j)=svstr(i,j)*stofields(jstobulk_cd)%sto2d(i,j)
+          !svstr(i,j)=svstr(i,j)*stofields(jstobulk_cd)%sto2d(i,j)
 #   endif
         enddo
       enddo

@@ -94,6 +94,7 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_extended_bounds.h"
+
 !
 !  Initialize 2-D primitive variables.
 !
@@ -307,6 +308,9 @@ C$    integer omp_get_thread_num
 #   endif
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_UV */
+# ifdef STOGEN
+            tmpout(i,j,k)=init
+# endif
           enddo
         enddo
       enddo

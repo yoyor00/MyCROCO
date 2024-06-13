@@ -692,6 +692,18 @@ CR      write(*,*) 'wrt_his:  wrtU  ' MYID
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
 !
+!     STOGEN stochastic modeling components 
+!
+#ifdef STOGEN
+!- temporary output -
+      if (wrthis(indxTMPsto)) then
+        workr=tmpout
+        call fillvalue3d(workr,ncidhis,hisTMPsto,indxTMPsto,
+     &        record,r3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtTMPsto  ' MYID
+      endif
+#endif /* STOGEN */
+!
 !     Tracer variables.
 !
 # ifdef TRACERS

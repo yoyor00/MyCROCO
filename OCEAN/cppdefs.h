@@ -102,7 +102,7 @@
 # undef  MUSTANG
 # undef  BBL
 
-# define STOCHASTIC
+# define STOGEN
 # define ENSEMBLE
 
                       /* I/O server */

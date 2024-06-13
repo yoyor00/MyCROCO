@@ -17,7 +17,7 @@ MODULE stomod
    IMPLICIT NONE
    PRIVATE
 
-   INTEGER, PARAMETER :: jpstomax=100   ! maximum number of stochastic arrays
+   INTEGER, PARAMETER :: jpstomax2=100   ! maximum number of stochastic arrays
 
    PUBLIC sto_mod, sto_mod_init
 
@@ -52,7 +52,7 @@ CONTAINS
       !!
       !!----------------------------------------------------------------------
       ! Request maximum number of stochastic arrays
-      CALL sto_array_request_size(jpstomax)
+      CALL sto_array_request_size(jpstomax2)
 
       ! Initialization of the various stochastic schemes
       ! (including requests for stochastic arrays using sto_array_request_new)

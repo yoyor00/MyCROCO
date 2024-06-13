@@ -30,7 +30,7 @@
           USE pisces_ini     ! PISCES modules
           USE trcini_pisces
 #endif
-#ifdef STOCHASTIC
+#ifdef STOGEN
           USE stomod         ! Stochastic module
           USE stoexternal    ! Provide parameters to stochastic modules
 #endif
@@ -502,12 +502,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 !
 !----------------------------------------------------------------------
-!  STOCHASTIC: initialization
+!  STOGEN: initialization
 !----------------------------------------------------------------------
 !
-#ifdef STOCHASTIC
-      call ocean_2_stogen    ! provide parameters to STOCHASTIC module
-      call sto_mod_init      ! initialize STOCHASTIC module
+#ifdef STOGEN
+      do tile=0,NSUB_X*NSUB_E-1
+        call ocean_2_stogen (tile)    ! provide parameters to STOGEN module
+        call sto_mod_init             ! initialize STOGEN module
+      enddo
 #endif
 !
 !----------------------------------------------------------------------

@@ -37,6 +37,11 @@
 #  endif
 # endif
 
+# ifdef STOGEN
+      real tmpout(GLOBAL_2D_ARRAY,N)
+      common /stogen/ tmpout
+# endif
+
 # ifdef NBQ
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz

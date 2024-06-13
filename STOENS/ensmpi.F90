@@ -1,4 +1,5 @@
 #include "cppdefs.h"
+#ifdef ENSEMBLE
 MODULE ensmpi
    !!======================================================================
    !!                       ***  MODULE  ensmpi  ***
@@ -89,7 +90,7 @@ CONTAINS
       ! - a different name for input files
       ! - a different name for output files (needed)
       ! - a different name for XIOS context (needed if XIOS is used)
-      ! - a different seed for the random number generator (needed if STOCHASTIC is used)
+      ! - a different seed for the random number generator (needed if STOGEN is used)
       kmember = nn_ens_start + imember - 1
 
       ! Deallocate arrays
@@ -111,4 +112,4 @@ CONTAINS
    END SUBROUTINE ens_param_read
 
 END MODULE ensmpi
-
+#endif

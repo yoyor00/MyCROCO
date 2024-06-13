@@ -444,6 +444,7 @@
       integer   NT, NTA, itemp, NTot
       integer   ntrc_temp, ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed
       integer   ntrc_subs, ntrc_substot
+      integer   ntrc_stogen
 !
 # ifdef TEMPERATURE
       parameter (itemp=1)
@@ -456,6 +457,11 @@
       parameter (ntrc_salt=1)
 # else
       parameter (ntrc_salt=0)
+# endif
+# ifdef STOGEN
+      parameter (ntrc_stogen=1)
+# else
+      parameter (ntrc_stogen=0)
 # endif
 # ifdef PASSIVE_TRACER
 #  ifdef KH_INST

@@ -27,13 +27,15 @@ MODULE stoexternal
    INTEGER, PUBLIC, PARAMETER ::   lc = 256                          !: Length of Character strings
 
    ! Problem dimension
-   INTEGER, PUBLIC ::   jpi        !: size dimension 1
-   INTEGER, PUBLIC ::   jpj        !: size dimension 2
+   INTEGER, PUBLIC ::   jpi        !: size dim 1 of MPI tiles, INCLUDING ghost cells
+   INTEGER, PUBLIC ::   jpj        !: size dim 2 of MPI tiles, INCLUDING ghost cells
    INTEGER, PUBLIC ::   jpk        !: size dimension 3
    INTEGER, PUBLIC ::   narea      !: index of local domain
    INTEGER, PUBLIC ::   mppsize    !: number of processes
    INTEGER, PUBLIC ::   jpiglo     !: size of global domain (dim 1)
    INTEGER, PUBLIC ::   jpjglo     !: size of global domain (dim 2)
+   ! Starting indices of MPI tiles, EXCLUDING ghost cells
+   INTEGER, PUBLIC ::   Istr2, Iend2, Jstr2, Jend2
 
    ! Description of the grid
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:), POINTER :: glamt, gphit   ! longitude and latitude
@@ -43,9 +45,9 @@ MODULE stoexternal
    INTEGER, PUBLIC, SAVE, DIMENSION(:), ALLOCATABLE    :: mjg        ! index of grid point in global grid
 
    ! Description of the mask
-   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: mask_t  ! land/ocean mask at T-points
-   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: mask_u  ! land/ocean mask at U-points
-   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: mask_v  ! land/ocean mask at V-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: rmask_sto  ! land/ocean mask at T-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: umask_sto  ! land/ocean mask at U-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: vmask_sto  ! land/ocean mask at V-points
 
    ! I/O parameters
    INTEGER, PUBLIC ::   numout      =    6      !: logical unit for output print; set to stdout; do not change
@@ -86,15 +88,17 @@ CONTAINS
       REAL(wp), DIMENSION(jpi,jpj), INTENT(inout)           ::   pt2d      ! 2D array on which the lbc is applied
       REAL(wp)                    , INTENT(in   )           ::   psgn      ! control of the sign
 
+#    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       IF (cd_type=='T') THEN
-        call exchange_r2d_tile (1,jpi,1,jpj, pt2d)
+        call exchange_r2d_tile (Istr2,Iend2,Jstr2,Jend2, pt2d)
       ELSEIF (cd_type=='U') THEN
-        call exchange_u2d_tile (1,jpi,1,jpj, pt2d)
+        call exchange_u2d_tile (Istr2,Iend2,Jstr2,Jend2, pt2d)
       ELSEIF (cd_type=='V') THEN
-        call exchange_v2d_tile (1,jpi,1,jpj, pt2d)
+        call exchange_v2d_tile (Istr2,Iend2,Jstr2,Jend2, pt2d)
       ELSE
-        call exchange_r2d_tile (1,jpi,1,jpj, pt2d)
+        call exchange_r2d_tile (Istr2,Iend2,Jstr2,Jend2, pt2d)
       ENDIF
+#     endif
 
    END SUBROUTINE lbc_lnk_2d
 
@@ -113,15 +117,17 @@ CONTAINS
       REAL(wp), DIMENSION(jpi,jpj,jpk), INTENT(inout)           ::   pt3d      ! 3D array on which the lbc is applied
       REAL(wp)                        , INTENT(in   )           ::   psgn      ! control of the sign
 
+#    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       IF (cd_type=='T') THEN
-        call exchange_r3d_tile (1,jpi,1,jpj, pt3d)
+        call exchange_r3d_tile (Istr2,Iend2,Jstr2,Jend2, pt3d)
       ELSEIF (cd_type=='U') THEN
-        call exchange_u3d_tile (1,jpi,1,jpj, pt3d)
+        call exchange_u3d_tile (Istr2,Iend2,Jstr2,Jend2, pt3d)
       ELSEIF (cd_type=='V') THEN
-        call exchange_v3d_tile (1,jpi,1,jpj, pt3d)
+        call exchange_v3d_tile (Istr2,Iend2,Jstr2,Jend2, pt3d)
       ELSE
-        call exchange_r3d_tile (1,jpi,1,jpj, pt3d)
+        call exchange_r3d_tile (Istr2,Iend2,Jstr2,Jend2, pt3d)
       ENDIF
+#     endif
 
    END SUBROUTINE lbc_lnk_3d
 
@@ -152,22 +158,38 @@ CONTAINS
    END SUBROUTINE ctl_nam
 
 
-   SUBROUTINE ocean_2_stogen()
+   SUBROUTINE ocean_2_stogen (tile)
+      implicit none
+      integer tile
+#ifdef  ALLOW_SINGLE_BLOCK_MODE
+C$    integer  trd, omp_get_thread_num
+#endif
+# include "compute_tile_bounds.h"
+      call ocean_2_stogen_tile (Istr,Iend,Jstr,Jend)
+      return
+      end
+
+
+   SUBROUTINE ocean_2_stogen_tile (Istr,Iend,Jstr,Jend)
       !!----------------------------------------------------------------------
       !!                  ***  ROUTINE ocean_2_stogen  ***
       !!
       !! ** Purpose :   provide CROCO parameters to STOGEN
       !!----------------------------------------------------------------------
       INTEGER :: ji1, jj1, jk1
+      integer :: Istr,Iend,Jstr,Jend
 
       ! Open namelist files
       numnam_ref = 10 ; numnam_cfg = 11 ; lwm = .FALSE.
       OPEN(UNIT=numnam_ref,FILE='namelist_sto_ref',STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
       OPEN(UNIT=numnam_cfg,FILE='namelist_sto_cfg',STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
 
-      ! Define grid size (for local subdomain)
-      jpi = size_XI
-      jpj = size_ETA
+      ! Define grid size (for local subdomain) -- 
+      ! QJ: should correcpond to GLOBAL_2D_ARRAY defined in set_global_definitions.h
+      ! follow the rule: #if undef THREE_GHOST_POINTS & defined MPI
+      ! need some updates for other options ...
+      jpi = Lm+4+padd_X  !size_XI
+      jpj = Mm+4+padd_E  !size_ETA
       jpk = N
 
       ! Define global grid size (with all subdomains)
@@ -178,18 +200,24 @@ CONTAINS
       mppsize = NNODES
       narea = mynode + 1
 
+      ! Define starting and ending indices of MPI tiles, excuding ghost cells
+      Istr2 = Istr+2
+      Iend2 = Iend+2
+      Jstr2 = Jstr+2
+      Jend2 = Jend+2
+
       ! Associate the grid pointers with the CROCO common block arrays
       glamt(1:jpi,1:jpj) => lonr
       gphit(1:jpi,1:jpj) => latr
 
       ! Associate the mask pointers with the CROCO common block arrays
-      ALLOCATE(mask_t(1:jpi,1:jpj,1:jpk))
-      ALLOCATE(mask_u(1:jpi,1:jpj,1:jpk))
-      ALLOCATE(mask_v(1:jpi,1:jpj,1:jpk))
+      ALLOCATE(rmask_sto(1:jpi,1:jpj,1:jpk))
+      ALLOCATE(umask_sto(1:jpi,1:jpj,1:jpk))
+      ALLOCATE(vmask_sto(1:jpi,1:jpj,1:jpk))
       DO jk1 = 1, jpk
-         mask_t(1:jpi,1:jpj,jk1:jk1) => rmask(GLOBAL_2D_ARRAY)
-         mask_u(1:jpi,1:jpj,jk1:jk1) => umask(GLOBAL_2D_ARRAY)
-         mask_v(1:jpi,1:jpj,jk1:jk1) => vmask(GLOBAL_2D_ARRAY)
+         rmask_sto(1:jpi,1:jpj,jk1:jk1) => rmask
+         umask_sto(1:jpi,1:jpj,jk1:jk1) => umask
+         vmask_sto(1:jpi,1:jpj,jk1:jk1) => vmask
       ENDDO
 
       ! Define index of grid points (of local subdomain) in global grid (all subdomains)
@@ -206,7 +234,7 @@ CONTAINS
       ! Options using them (in stokernel) will fail
       ! (with error message: 'Incorrect grid in stokernel').
 
-   END SUBROUTINE ocean_2_stogen
+   END SUBROUTINE ocean_2_stogen_tile
 
 
    SUBROUTINE broadcast_array( ptab )

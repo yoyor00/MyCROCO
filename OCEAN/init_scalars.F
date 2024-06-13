@@ -557,6 +557,21 @@ CR      write(stdout,'(1x,A,I3)') 'indxS = ',indxS
       vname(7,indxS)='                                            '
 # endif /* SALINITY */
 
+# ifdef STOGEN
+CR      write(stdout,'(1x,A,I3)') 'indxTMPsto = ',indxTMPsto
+      vname(1,indxTMPsto)='tmpout                                    '
+      vname(2,indxTMPsto)='temporary output (def at rho-pts)         '
+      vname(3,indxTMPsto)='[units]                                   '
+      vname(4,indxTMPsto)='[attrs]                                   '
+      vname(5,indxTMPsto)='long_name                                 '
+#ifdef SPHERICAL
+      vname(6,indxTMPsto)='lat_rho lon_rho                           '
+#else
+      vname(6,indxTMPsto)='x_rho y_rho                               '
+#endif
+      vname(7,indxTMPsto)='                                          '
+# endif /* STOGEN */
+
 # ifdef PASSIVE_TRACER
       do i=1,ntrc_pas
         if( i < 10) then
