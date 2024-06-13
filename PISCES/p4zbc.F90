@@ -11,6 +11,7 @@ MODULE p4zbc
    !!   p4z_bc        :  Read and interpolate time-varying nutrients fluxes
    !!   p4z_bc_init   :  Initialization of p4z_bc
    !!----------------------------------------------------------------------
+   USE oce_trc
    USE sms_pisces      !  PISCES Source Minus Sink variables
    USE iom             !  I/O manager
 #ifdef AGRIF
@@ -404,8 +405,11 @@ CONTAINS
       IF( ln_dust .OR. ln_ndepo ) THEN
          lstr = lenstr(bioname)
          ierr = nf_open (bioname(1:lstr), nf_nowrite, ncid)
-         IF (ierr .eq. nf_noerr .AND. lwp ) THEN
-            WRITE(numout,4) bioname
+         IF (ierr .eq. nf_noerr ) THEN
+            IF( lwp) WRITE(numout,*) ' Read atmospheric deposition in file = ', TRIM(bioname)
+         ELSE
+            IF( lwp) CALL ctl_stop( 'STOP', 'p4z_bc_ini : Needed input file for atmospheric deposition &
+                & or put ln_dust and ln_ndepo to false' )
          ENDIF
          ierr = nf_inq_varid(ncid,"dust_time",varid)
 ! bug if compilation with gfortran
@@ -553,6 +557,9 @@ CONTAINS
          ierr = nf_close(ncid)
          DEALLOCATE(dustmp)
          !
+      ELSE
+         ALLOCATE( dust(PRIV_2D_BIOARRAY) )
+         dust(:,:) = 0.
       ENDIF
 !
 !    READ N DEPOSITION FROM ATMOSPHERE (use dust_time for time)
