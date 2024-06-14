@@ -200,6 +200,7 @@
 # elif defined W_HADV_WENO5
 # elif defined W_HADV_UP3
 # elif defined W_HADV_C2
+# elif defined W_HADV_C4
 # elif defined W_HADV_C6
 # else
 #  undef  W_HADV_UP5      /* 5th-order upwind horizontal advection  */
@@ -207,6 +208,7 @@
 #  define W_HADV_WENO5    /* 5th-order WENOZ horizontal advection     */
 #  undef  W_HADV_UP3      /* 3rd-order upwind horizontal advection  */
 #  undef  W_HADV_C2       /* 2nd-order centered horizontal advection  */
+#  undef  W_HADV_C4       /* 4th-order centered horizontal advection  */
 #  undef  W_HADV_C6       /* 6th-order centered horizontal advection  */
 # endif
 /*

@@ -511,7 +511,7 @@
         endif
 #   endif /* WENO5 */
 
-#  else /* W_HADV_UP3 */
+#  else /* W_HADV_UP3 or W_HADV_C4 */
 !
 ! === Third-order upwind advection scheme ===
 !
@@ -539,11 +539,19 @@
 
         DO j=Jstr,Jend
           DO i=Istr-1,Iend+1
+#   if defined W_HADV_C4
+            lap(i,j) = 0.5*(WFx(i+1,j)+WFx(i,j))
+#   elif defined W_HADV_UP3
             lap(i,j) = WFx(i+1,j) - WFx(i,j)
+#   endif
           ENDDO
         ENDDO
         DO j=Jstr,Jend
           DO i=Istr,Iend+1
+#   if defined W_HADV_C4
+            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
+     &        -0.333333333*(lap(i,j)-lap(i-1,j)) )*Huon_w(i,j,k)
+#   elif defined W_HADV_UP3
             IF ( Huon_w(i,j,k).gt. 0. ) THEN
               cff = lap( i-1, j )
             ELSE
@@ -551,6 +559,7 @@
             ENDIF
             WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
      &                           -0.25*cff )*Huon_w(i,j,k)
+#   endif
           ENDDO
         ENDDO
         DO j=jmin,jmax+1
@@ -576,11 +585,19 @@
 
         DO j=jstr-1,jend+1
           DO i=istr,iend
+#   if defined W_HADV_C4
+            lap(i,j) = 0.5*(WFe(i,j+1)+WFe(i,j))
+#   elif defined W_HADV_UP3
             lap(i,j) = WFe(i,j+1) - WFe(i,j  )
+#   endif
           ENDDO
         ENDDO
         DO j=jstr,jend+1
           DO i=istr,iend
+#   if defined W_HADV_C4
+            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
+     &        -0.333333333*(lap(i,j)-lap(i,j-1)) )*Hvom_w(i,j,k)
+#   elif defined W_HADV_UP3
             IF ( HVom_w(i,j,k).gt. 0. ) THEN
                cff = lap( i , j-1 )
             ELSE
@@ -588,6 +605,7 @@
             ENDIF
             WFe(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
      &                           -0.25*cff )*Hvom_w(i,j,k)
+#   endif
           ENDDO
         ENDDO
 #  endif /* W_HADV_C2 */
