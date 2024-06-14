@@ -199,6 +199,13 @@ C$    integer  trd, omp_get_thread_num
       ! Define number of subdomain and index of local subdomain
       mppsize = NNODES
       narea = mynode + 1
+#ifdef MPI
+      if (narea.gt.1) then 
+        lwp=.FALSE.
+        lwm=.FALSE.
+      endif
+#endif
+
 
       ! Define starting and ending indices of MPI tiles, excuding ghost cells
       Istr2 = Istr+2
