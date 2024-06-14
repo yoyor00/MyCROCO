@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -53,7 +53,7 @@
 */
 #undef  COASTAL         /* COASTAL Applications */
 #define REGIONAL        /* REGIONAL Applications */
-
+#undef  LES             /* academic LES Applications */
 
 
 #if defined REGIONAL
@@ -449,6 +449,77 @@
 #  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
+
+#elif defined LES
+/*
+!====================================================================
+!               LES (academic) Configurations
+!====================================================================
+!
+!----------------------
+! BASIC OPTIONS
+!----------------------
+!
+*/
+# define FC500
+
+# define EXPLICIT_LES
+# define MPI
+# define NBQ
+
+# ifdef IMPLICIT_LES
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+#  define UV_HADV_WENO5
+#  define UV_VADV_WENO5
+#  define TS_HADV_WENO5
+#  define TS_VADV_WENO5
+#  undef TKE3D_MIXING
+#  undef GLS_MIXING_3D
+# endif
+
+# ifdef EXPLICIT_LES
+#  define W_HADV_UP5
+#  undef  W_HADV_UP3
+#  define W_VADV_WENO5
+#  undef  W_VADV_SPLINES
+#  define UV_HADV_UP5
+#  undef  UV_HADV_UP3
+#  define UV_VADV_WENO5
+#  undef  UV_VADV_SPLINES
+#  define TS_HADV_UP5
+#  undef  TS_HADV_UP3
+#  define TS_VADV_WENO5
+#  undef TS_VADV_SPLINES
+#  define TKE3D_MIXING
+# endif
+
+# undef RESET_RHO0
+# define NEW_S_COORD
+# undef VADV_ADAPT_IMP
+# undef SPONGE
+                      /* Model dynamics */
+# define SOLVE3D
+# undef  UV_COR
+# define UV_ADV
+                      /* Equation of State */
+# define TRACERS
+# define TEMPERATURE
+# define SALINITY
+# undef  NONLIN_EOS
+                     /* Analytical forcings */
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SRFLUX
+# define ANA_BTFLUX
+# define ANA_SSFLUX
+# define ANA_BSFLUX
+# define NO_FRCFILE
+	             /* Periodic BC */
+# define EW_PERIODIC
+# define NS_PERIODIC
 
 #elif defined COASTAL
 /*

@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -147,6 +147,8 @@ C$    integer omp_get_thread_num
                      depth=256.
                      f0=0.
                      beta=0.
+# elif defined FC500
+                     depth=1000.
 # elif defined GRAV_ADJ
 #  ifdef NBQ
                      depth=0.3
@@ -300,6 +302,9 @@ C$    integer omp_get_thread_num
                      Length_XI =4000.0e+3
 # elif defined KH_INST
                      Length_XI =256.0
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined FC500
+                     Length_XI =500.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined ACOUSTIC
                      Length_XI =128.0
@@ -467,8 +472,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
          yr(i,j) = y0 + dy*(float(j+jminmpi-1-1)+0.5)
         enddo
       enddo
-!$acc end kernels      
-!$acc update host( xr, yr )      
+!$acc end kernels
+!$acc update host( xr, yr )
 !
 !----------------------------------------------------------------------
 ! Compute coordinate transformation metrics at RHO-points "pm" and
@@ -483,7 +488,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           pn(i,j)=1./dy
         enddo
       enddo
-!$acc end kernels      
+!$acc end kernels
 !
 !----------------------------------------------------------------------
 !  Set Coriolis parameter [1/s] at RHO-points.
@@ -499,7 +504,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 # endif
         enddo
       enddo
-!$acc end kernels      
+!$acc end kernels
 
 # if defined UV_COR_NT || defined CROCO_QH
 !
@@ -515,7 +520,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           endif
         enddo
       enddo
-!$acc end kernels      
+!$acc end kernels
 # endif
 !
 !----------------------------------------------------------------------
@@ -526,7 +531,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
                    || defined SOLITON || defined ISOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
-                   || defined JET
+                   || defined JET      || defined FC500
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1180,7 +1185,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  ifdef SEAGRASS
       do j=JstrR,JendR
          do i=IstrR,IendR
-         rmask(i,j)=0.      
+         rmask(i,j)=0.
          enddo
       enddo
 
@@ -1190,7 +1195,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
          enddo
       else
          do i=IstrR,IendR
-            rmask(i,3)=1.   
+            rmask(i,3)=1.
          enddo
       endif ! WESTERN_EDGE
 
@@ -1204,4 +1209,3 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #endif /* ANA_GRID */
       return
       end
-

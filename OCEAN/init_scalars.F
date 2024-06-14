@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -335,7 +335,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(7,indxTime)='T'
       vname(8,indxTime)='.NO.'
       vname(9,indxTime)=' '
-#ifdef USE_CALENDAR 
+#ifdef USE_CALENDAR
       vname(10,indxTime)=start_date
 !     vname(11,indxTime)='Gregorian'
 #endif
@@ -1860,7 +1860,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
 
 # if defined ANA_VMIX || defined BVF_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIXING
+      || defined GLS_MIXING || defined TKE3D_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
       vname(2,indxbvf)='Brunt Vaisala Frequency                   '
@@ -1985,6 +1985,36 @@ CR      write(stdout,'(1x,A,I3)') 'indxLsc =',indxLsc
       vname(6,indxLsc)='lat_rho lon_rho                           '
       vname(7,indxLsc)='                                          '
 # endif /* GLS_MIXING */
+
+# ifdef TKE3D_MIXING
+CR      write(stdout,'(1x,A,I3)') 'indxTke =',indxTke
+      vname(1,indxTke)='tke                                       '
+      vname(2,indxTke)='turbulent kinetic energy                  '
+      vname(3,indxTke)='meter2 second-2                           '
+      vname(4,indxTke)='tke, scalar, series                       '
+      vname(5,indxTke)='ocean_turbulent_kinetic_energy'
+     &                                       // '_at_rho_location '
+      vname(6,indxTke)='lat_rho lon_rho                           '
+      vname(7,indxTke)='                                          '
+CR      write(stdout,'(1x,A,I3)') 'indxGls =',indxGls
+      vname(1,indxGls)='Sprod3d                                   '
+      vname(2,indxGls)='3D shear multiplied by eddy-viscosity     '
+      vname(3,indxGls)='meter3 second-2                           '
+      vname(4,indxGls)='Sprod3d, scalar, series                   '
+      vname(5,indxGls)='ocean_tke_shear_production_term'
+     &                                       // '_at_rho_location '
+      vname(6,indxGls)='lat_rho lon_rho                           '
+      vname(7,indxGls)='                                          '
+CR      write(stdout,'(1x,A,I3)') 'indxLsc =',indxLsc
+      vname(1,indxLsc)='Lscale                                    '
+      vname(2,indxLsc)='mixing turbulent length scale             '
+      vname(3,indxLsc)='meter                                     '
+      vname(4,indxLsc)='Lscale, scalar, series                    '
+      vname(5,indxLsc)='ocean_turbulent_length_scale'
+     &                                       // '_at_rho_location '
+      vname(6,indxLsc)='lat_rho lon_rho                           '
+      vname(7,indxLsc)='                                          '
+# endif /* TKE3D_MIXING */
 
 # if defined BIOLOGY && !defined PISCES
 CR      write(stdout,'(1x,A,I3)') 'indxHel =',indxHel

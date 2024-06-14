@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -607,7 +607,7 @@
       integer indxHbbl
       parameter (indxHbbl=indxAkv+ntrc_temp+6)
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
       integer indxTke
       parameter (indxTke=indxAkv+ntrc_temp+7)
       integer indxGls
@@ -672,7 +672,7 @@
 
 #if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
       integer indxbvf
       parameter (indxbvf=indxSSH+1)
 #endif
@@ -1067,7 +1067,7 @@
 # ifdef LMD_BKPP
       integer rstHbbl
 # endif
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
       integer rstAkv,rstAkt
 #  if defined SALINITY
       integer rstAks
@@ -1075,7 +1075,7 @@
       integer rstTke,rstGls
 # endif
 # ifdef M3FAST
-#  if defined LMD_MIXING || defined GLS_MIXING
+#  if defined LMD_MIXING || defined GLS_MIXING || defined TKE3D_MIXING
       integer rstBustr, rstBvstr
 #  endif
 # endif
@@ -1150,10 +1150,10 @@
      &      , hisAkv, hisAkt, hisAks
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &      , hisbvf
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -1346,10 +1346,10 @@
      &      , avgAkv, avgAkt, avgAks
 #  if defined ANA_VMIX || defined BVF_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+ || defined GLS_MIXING || defined TKE3D_MIXING
      &      , avgbvf
 #  endif
-#  ifdef GLS_MIXING
+#  if defined GLS_MIXING || defined TKE3D_MIXING
      &      , avgTke, avgGls, avgLsc
 #  endif
 
@@ -1626,7 +1626,7 @@
 # ifdef LMD_BKPP
      &      , rstHbbl
 # endif
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
      &      , rstAkv,rstAkt
 #  if defined SALINITY
      &      , rstAks
@@ -1634,7 +1634,7 @@
      &      , rstTke,rstGls
 # endif
 # ifdef M3FAST
-#  if defined GLS_MIXING || defined LMD_MIXING
+#  if defined GLS_MIXING || defined LMD_MIXING || defined TKE3D_MIXING
      &      , rstBustr,rstBvstr
 #  endif
 # endif
@@ -1694,10 +1694,10 @@
      &      , hisHbl,  hisHbbl
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &      , hisbvf
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -1965,10 +1965,10 @@
      &      , avgHbl,  avgHbbl
 #  if defined ANA_VMIX || defined BVF_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+ || defined GLS_MIXING || defined TKE3D_MIXING
      &      , avgbvf
 #  endif
-#  ifdef GLS_MIXING
+#  if defined GLS_MIXING || defined TKE3D_MIXING
      &      , avgTke, avgGls, avgLsc
 #  endif
 #  ifdef BIOLOGY
@@ -2181,7 +2181,7 @@
 #endif
 
 #ifdef ABL1D
-      character*75  vname_abl1d(20, 27) 
+      character*75  vname_abl1d(20, 27)
 ! 26 abl1d var + 1 var Time
 #endif
 

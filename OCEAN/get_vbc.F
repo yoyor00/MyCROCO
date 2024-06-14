@@ -125,7 +125,8 @@
 !---------------------------------------------------------------
 !
 #  ifndef BULK_FLUX
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
 #    if !defined ANA_SRFLUX && defined TEMPERATURE
        call get_srflux
 #    endif
@@ -279,7 +280,8 @@
 ! Kinematic surface solar shortwave radiation flux [degC m/s].
 !---------------------------------------------------------------
 !
-#    if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#    if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
 #     ifdef ANA_SRFLUX
       call ana_srflux_tile (Istr,Iend,Jstr,Jend)
 #     else
@@ -298,7 +300,8 @@
         do i=IstrR,IendR
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
                    srflx(i,j)=0.
 #   endif
               endif
@@ -384,7 +387,8 @@
 !---------------------------------------------------------------
 !
 #  ifdef TEMPERATURE
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
 #    ifdef ANA_DIURNAL_SW
       call ana_diurnal_sw_tile (Istr,Iend,Jstr,Jend)
 #    endif
@@ -427,7 +431,8 @@
         do i=IstrR,IendR
           if ( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
                    srflx(i,j)=0.
 #   endif
           endif

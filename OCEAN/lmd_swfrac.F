@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING || defined TKE3D_MIXING
 
       subroutine lmd_swfrac_tile (Istr,Iend,Jstr,Jend, Zscale,Z,swdk)
 !
@@ -211,5 +211,3 @@
       return
       end
 #endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */
-
-

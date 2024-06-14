@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -179,8 +179,8 @@
         enddo
 #  if defined SALINITY || defined TEMPERATURE
       endif
-#  endif /* SALINITY || TEMPERATURE*/     
-!$acc end kernels 
+#  endif /* SALINITY || TEMPERATURE*/
+!$acc end kernels
 
       return
       end
@@ -778,7 +778,7 @@ C$    integer  trd, omp_get_thread_num
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
-!$acc end kernels      
+!$acc end kernels
 # elif defined INNERSHELF
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
@@ -877,6 +877,8 @@ c
             stflx(i,j,itemp)= - 100./(rho0*Cp)
 #   elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
             stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
+#   elif defined FC500
+            stflx(i,j,itemp)= - 500./(rho0*Cp)
 #   else
             stflx(i,j,itemp)=0.
 #   endif
@@ -919,7 +921,7 @@ c
 #  if defined SALINITY || defined TEMPERATURE
       endif
 #  endif /* SALINITY || TEMPERATURE*/
-!$acc end kernels 
+!$acc end kernels
 # endif /* TRACERS */
       return
       end
@@ -2055,9 +2057,9 @@ C$    integer  trd, omp_get_thread_num
             do k=1,N
               Qshape(is,k)=Qshape(is,k)/cff2
             enddo
-#   ifdef MPI 
+#   ifdef MPI
           endif
-#   endif            
+#   endif
         enddo
 #  elif defined AL_SHAPE
         do is=1,Nsrc                   ! Set-up nondimensional shape
@@ -2123,7 +2125,7 @@ C$    integer  trd, omp_get_thread_num
             enddo
 #   ifdef MPI
           endif
-#   endif 
+#   endif
         enddo
 #  endif
 
@@ -2555,7 +2557,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 #  endif /* BIOLOGY */
 # endif /* SOLVE3D */
-!$acc end kernels 
+!$acc end kernels
       return
       end
 #endif /* PSOURCE && ANA_PSOURCE */
@@ -3623,5 +3625,3 @@ C$    integer  trd, omp_get_thread_num
       return
       end
 #endif /* BIOLOGY && defined T_FRC_BRY */
-
-

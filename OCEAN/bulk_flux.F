@@ -672,7 +672,8 @@
         do i=imin,imax
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
                    srflx(i,j)=0.
 #   endif
               endif

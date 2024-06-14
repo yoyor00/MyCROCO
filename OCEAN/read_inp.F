@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -1247,7 +1247,7 @@ c        close(testunit)
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &                                          ,  wrthis(indxbvf)
 # else
      &                                          ,  dumboolean
@@ -1344,7 +1344,7 @@ c        close(testunit)
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &                                        .or. wrthis(indxbvf)
 # endif
 # ifdef VIS_COEF_3D
@@ -1417,7 +1417,7 @@ c        close(testunit)
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &  , wrthis(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
 # endif
@@ -1512,6 +1512,23 @@ c        close(testunit)
      &   , wrthis(indxLsc), 'write Lscale ',
      &                                  'vertical mixing length scale.'
 # endif
+
+# ifdef TKE3D_MIXING
+      elseif (keyword(1:kwlen).eq.'tke3d_history_fields') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wrthis(indxTke),  wrthis(indxGls)
+     &                    ,  wrthis(indxLsc)
+        if (wrthis(indxTke) .or. wrthis(indxGls) .or. wrthis(indxLsc)
+     &     ) wrthis(indxTime)=.true.
+
+        MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
+     &    'Fields to be saved in history file: (T/F)'
+     &   , wrthis(indxTke), 'write TKE ', 'turbulent kinetic energy.  '
+     &   , wrthis(indxGls), 'write Sprod3d ','tke shear production term'
+     &   , wrthis(indxLsc), 'write Lscale ',
+     &                                  'mixing length scale.'
+# endif
+
 #endif /* SOLVE3D */
 
 #ifdef AVERAGES
@@ -1568,7 +1585,7 @@ c        close(testunit)
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &                                          ,  wrtavg(indxbvf)
 #  else
      &                                          ,  dumboolean
@@ -1663,7 +1680,7 @@ c        close(testunit)
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &                                        .or. wrtavg(indxbvf)
 #  endif
 #  ifdef VIS_COEF_3D
@@ -1738,7 +1755,7 @@ c        close(testunit)
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &  , wrtavg(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
 #  endif
@@ -1831,6 +1848,24 @@ c        close(testunit)
      &    'Fields to be saved in average file: (T/F)'
      &   , wrtavg(indxTke), 'write TKE ', 'turbulent kinetic energy.  '
      &   , wrtavg(indxGls), 'write GLS ', 'generic length scale.'
+     &   , wrtavg(indxLsc), 'write Lscale ',
+     &                                  'vertical mixing length scale.'
+#  endif
+!
+! Switches for TKE3D fields to be saved into history file.
+!
+#  ifdef TKE3D_MIXING
+      elseif (keyword(1:kwlen).eq.'gls_averages') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wrtavg(indxTke),  wrtavg(indxGls)
+     &                    ,  wrtavg(indxLsc)
+        if ( wrtavg(indxTke) .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
+     &     ) wrtavg(indxTime)=.true.
+
+        MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
+     &    'Fields to be saved in average file: (T/F)'
+     &   , wrtavg(indxTke), 'write TKE ', 'turbulent kinetic energy.  '
+     &   , wrtavg(indxGls), 'write Sprod3d ','tke shear production term'
      &   , wrtavg(indxLsc), 'write Lscale ',
      &                                  'vertical mixing length scale.'
 #  endif
@@ -2427,7 +2462,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+     !defined GLS_MIXING && !defined TKE3D_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !

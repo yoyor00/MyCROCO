@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -115,8 +115,12 @@
         ! Off-diagonal terms
         DO k=1,N
           DO i=Istr,Iend
+#ifdef TKE3D_MIXING
+            FC(i,k) = -dt*Hz(i,j,k)*2.0*Akv(i,j,k)/(z_w(i,j,k)-z_w(i,j,k-1))**2
+#else
             FC(i,k) = -0.5*dt*Hz(i,j,k)*( Akv(i,j,k)+Akv(i,j,k-1) )
      &                             /    ( z_w(i,j,k)-z_w(i,j,k-1) )**2
+#endif
           ENDDO
         ENDDO
         DO i=Istr,Iend

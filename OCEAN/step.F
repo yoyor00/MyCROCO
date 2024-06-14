@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -40,7 +40,7 @@
 !--Get phase of OASIS3
       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)
 #  ifdef AGRIF
-     & .and. it_inside_root==1  
+     & .and. it_inside_root==1
 #  endif
      & ) then
         call cpl_prism_get (oasis_time)
@@ -83,17 +83,17 @@ C$OMP END PARALLEL
 !--Put phase of OASIS3
       if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)) then
 #  ifdef AGRIF
-        if(it_inside_root==Agrif_rel_idt()) then 
+        if(it_inside_root==Agrif_rel_idt()) then
 #  endif
           call cpl_prism_put (oasis_time)
           oasis_time = oasis_time + dt
 #  ifdef AGRIF
      &    *Agrif_rel_idt()
           it_inside_root = 1
-        else 
+        else
            it_inside_root = it_inside_root+1
         endif
-#  endif 
+#  endif
       endif
 # endif /* OA_COUPLING */
 #endif
@@ -1098,7 +1098,9 @@ C$OMP BARRIER
         call mustang_update_main (tile)
 # endif
         call step3d_t (tile)
-
+# if defined TKE3D_MIXING
+        CALL tke3d_mixing (tile)
+# endif 
 # ifdef MUSTANG
         call mustang_deposition_main (tile)
 # endif
@@ -1148,18 +1150,19 @@ C$OMP MASTER
 C$OMP END MASTER
 # endif
 
-# if defined TRACERS
+# if defined TRACERS || defined TKE3D_MIXING
       do tile=my_first,my_last
+# ifdef TRACERS
 #  if defined TS_DIF2 || defined TS_DIF4
         call t3dmix (tile)
 #  endif
 #  if defined SPONGE_DIF2
         call t3dmix_spg (tile)
 #  endif
-      enddo
-C$OMP BARRIER
-
 # endif /* TRACERS */
+      enddo
+# endif /* TRACERS || TKE3D_MIXING */
+C$OMP BARRIER
 
 # ifdef MORPHODYN
       do tile=my_first,my_last

@@ -43,7 +43,7 @@
       real rho_avg(GLOBAL_2D_ARRAY,N)
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
       real bvf_avg(GLOBAL_2D_ARRAY,0:N)
 #  endif
       real omega_avg(GLOBAL_2D_ARRAY,0:N)
@@ -56,7 +56,7 @@
      &       /avg_rho/rho_avg /avg_omega/omega_avg
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &       /avg_bvf/bvf_avg
 #  endif
      &       /avg_w/w_avg
@@ -80,6 +80,14 @@
       common /avg_gls/gls_avg
       common /avg_Lscale/Lscale_avg
 #  endif
+#  ifdef TKE3D_MIXING
+      real tke_avg(GLOBAL_2D_ARRAY,1:N)
+      real gls_avg(GLOBAL_2D_ARRAY,1:N)
+      real Lscale_avg(GLOBAL_2D_ARRAY,1:N)
+      common /avg_tke/tke_avg
+      common /avg_gls/gls_avg
+      common /avg_Lscale/Lscale_avg
+#  endif      
 #  ifdef BULK_FLUX
       real shflx_rsw_avg(GLOBAL_2D_ARRAY)
       real shflx_rlw_avg(GLOBAL_2D_ARRAY)

@@ -804,15 +804,20 @@
 #  endif /* LMD_BKPP */
 # endif /* LMD_MIXING */
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 !  turbulent kinetic energy.
 !
         lvar=lenstr(vname(1,indxTke))
         ierr=nf_inq_varid (ncid, vname(1,indxTke)(1:lvar), varid)
         if (ierr .eq. nf_noerr) then
+#  ifdef GLS_MIXING
           ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,itke), ncid,
      &                                    varid, record, w3dvar)
+#  else
+          ierr=nf_fread (tke(START_2D_ARRAY,1,tindx), ncid,
+     &                                    varid, record, r3dvar)
+#  endif
           if (ierr .ne. nf_noerr) then
             MPI_master_only write(stdout,2) vname(1,indxTke)(1:lvar)
      &                                     , record, ininame(1:lstr)
@@ -829,8 +834,13 @@
         lvar=lenstr(vname(1,indxGls))
         ierr=nf_inq_varid (ncid, vname(1,indxGls)(1:lvar), varid)
         if (ierr .eq. nf_noerr) then
+#  ifdef GLS_MIXING                
           ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,igls), ncid,
      &                                    varid, record, w3dvar)
+#  else 
+          ierr=nf_fread (Sprod3d(START_2D_ARRAY,1), ncid,
+     &                                    varid, record, r3dvar)
+#  endif           
           if (ierr .ne. nf_noerr) then
             MPI_master_only write(stdout,2) vname(1,indxGls)(1:lvar)
      &                                     , record, ininame(1:lstr)

@@ -112,9 +112,17 @@
 
           do i=istr,iend
 #ifdef TS_MIX_IMP
+# ifdef TKE3D_MIXING
+            FC(i,1)=dt*(0.5*(Akt(i,j,1,indx)+Akt(i,j,2,indx))+Akz(i,j,1))
+# else
             FC(i,1)=dt*(Akt(i,j,1,indx)+Akz(i,j,1))
+# endif	
 #else
+# ifdef TKE3D_MIXING
+            FC(i,1)=0.5*dt*(Akt(i,j,1,indx)+Akt(i,j,2,indx))
+# else	
             FC(i,1)=dt* Akt(i,j,1,indx)
+# endif
 #endif
      &                               /( z_r(i,j,2)-z_r(i,j,1) )
 
@@ -141,9 +149,17 @@
           do k=2,N-1,+1
             do i=istr,iend
 #ifdef TS_MIX_IMP
+# ifdef TKE3D_MIXING	   
+              FC(i,k)=dt*(0.5*(Akt(i,j,k,indx)+Akt(i,j,k+1,indx))+Akz(i,j,k))
+# else
               FC(i,k)=dt*(Akt(i,j,k,indx)+Akz(i,j,k))
+# endif	
 #else
+# ifdef TKE3D_MIXING
+              FC(i,k)=dt*0.5*(Akt(i,j,k+1,indx)+Akt(i,j,k,indx))
+# else
               FC(i,k)=dt* Akt(i,j,k,indx)
+# endif	
 #endif
      &                              /( z_r(i,j,k+1)-z_r(i,j,k) )
 
@@ -205,9 +221,17 @@
             do i=Istr,Iend
 
 # ifdef TS_MIX_IMP
+#  ifdef TKE3D_MIXING	    
+            FC(i,k)= (0.5*(Akt(i,j,k,indx)+Akt(i,j,k+1,indx))+Akz(i,j,k))
+#  else
             FC(i,k)= (Akt(i,j,k,indx)+Akz(i,j,k))
+#  endif	
 # else
+#  ifdef TKE3D_MIXING	
+            FC(i,k)=  0.5*(Akt(i,j,k,indx)+Akt(i,j,k+1,indx))
+#  else
             FC(i,k)=  Akt(i,j,k,indx)
+#  endif
 # endif
 
             cff1= (TVmix(i,j,k+1,itrc)/ Hz(i,j,k+1)

@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -500,6 +500,18 @@
         enddo
       enddo
 
+# elif defined TKE3D_MIXING
+!---------------------------------------------------------------
+!  TKE3d horizontal diffusivity at RHO points
+!
+      DO k=1,N
+        DO j=JstrV-1,Jend
+          DO i=IstrU-1,Iend
+            diff3d_r(i,j,k)=Akt(i,j,k,itemp)
+          ENDDO
+        ENDDO
+      ENDDO
+!
 # elif defined TS_DIF_SMAGO
 !---------------------------------------------------------------
 !  Smagorinsky diffusion coefficient
@@ -537,7 +549,7 @@
 !
 ! Boundary conditions
 !
-# if defined GLS_MIXING_3D || defined TS_DIF_SMAGO
+# if defined GLS_MIXING_3D || defined TS_DIF_SMAGO || defined TKE3D_MIXING
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do k=1,N
@@ -610,4 +622,3 @@
 #endif
       return
       end
-

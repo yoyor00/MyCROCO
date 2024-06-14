@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -84,6 +84,10 @@
       real hintu
       real zdye10,zdye20
       real hu0,hup0,htemp0,hsalt0,eps3D
+#endif
+#ifdef FC500
+      real cff, rand, rand2D(GLOBAL_2D_ARRAY)
+      integer irand, jrand, nrand
 #endif
 #ifdef ISOLITON
       real zint,depth,dz,gam,del
@@ -453,7 +457,7 @@
             do k=1,N
                 u(i,j,k,1) = u(i,j,k,1) - hintu
                 u(i,j,k,2) = u(i,j,k,1)
-            enddo 
+            enddo
             ubar(i,j,:) = 0.
           enddo
         enddo
@@ -780,7 +784,44 @@
             enddo
           enddo
         enddo
-
+#   elif defined FC500
+        cff = 1.9620001275490499E-006 / (g * Tcoef/rho0 )
+        DO k=1,N
+          DO j=JR_RANGE
+            DO i=IR_RANGE
+              t(i,j,k,1,itemp) = T0 - cff * ABS(z_r(i,j,k))
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+            ENDDO
+          ENDDO
+        ENDDO
+        ! QJ: add stochastic perturbation
+        nrand  = 10
+        rand2D(:,:) = 0.
+        DO jrand=1,nrand
+          DO irand=1,nrand
+            CALL random_number(rand)
+            DO j=JR_RANGE
+              DO i=IR_RANGE
+                rand2D(i,j) = rand2D(i,j)
+     &          + ( cos( (2.*pi) * ( (xp(i,j)*irand) / xl
+     &                              +(yr(i,j)*jrand) / el +rand ) )
+     &            + sin( (2.*pi) * ( (xp(i,j)*irand) / xl
+     &                              +(yr(i,j)*jrand) / el +rand ) )
+     &                                            ) * rand * 1.E-4
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        DO k=1,N
+          DO j=JR_RANGE
+            DO i=IR_RANGE
+              t(i,j,k,1,itemp) = t(i,j,k,1,itemp)
+     &             + rand2D(i,j) * exp(z_r(i,j,k)/50.0)
+        !    &             + rand2D(i,j) * exp(40*FLOAT(k-N)/FLOAT(N))
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+            ENDDO
+          ENDDO
+        ENDDO
 #   elif defined ISOLITON
 #    define HORN_PROFILE
 #    ifdef HORN_PROFILE
@@ -968,7 +1009,7 @@
         enddo
 #    endif /* TEMPERATURE */
 
-#   elif defined RIVER 
+#   elif defined RIVER
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -989,7 +1030,7 @@
           do j=JR_RANGE
             do i=IR_RANGE
 #    ifdef TEMPERATURE
-              t(i,j,k,1,itemp)=10.  
+              t(i,j,k,1,itemp)=10.
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #    endif /* TEMPERATURE */
 #    ifdef SALINITY
@@ -1717,7 +1758,7 @@ C$OMP BARRIER
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 # ifdef ANA_INITIAL
-#  ifndef BASIN      
+#  ifndef BASIN
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        zeta(START_2D_ARRAY,1))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -1730,7 +1771,7 @@ C$OMP BARRIER
      &                        ubar(START_2D_ARRAY,2))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        vbar(START_2D_ARRAY,2))
-#  endif      
+#  endif
 #  ifdef SOLVE3D
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -1754,7 +1795,7 @@ C$OMP BARRIER
      &                             wz(START_2D_ARRAY,0,2))
 #    endif
 #   else
-#    ifndef BASIN      
+#    ifndef BASIN
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
@@ -1763,7 +1804,7 @@ C$OMP BARRIER
      &                        u(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,2))
-#    endif      
+#    endif
 #    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,3))
@@ -2276,4 +2317,3 @@ C$OMP BARRIER
       return
       end
 #endif /* JET */
-

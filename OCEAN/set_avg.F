@@ -291,7 +291,7 @@ C$    integer omp_get_thread_num
         endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
         if (wrtavg(indxbvf)) then
           do k=0,N
             do j=JstrR,JendR
@@ -383,6 +383,38 @@ C$    integer omp_get_thread_num
         endif
         if (wrtavg(indxLsc)) then
           do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Lscale_avg(i,j,k)=cff*(cff1*Lscale_avg(i,j,k)
+     &                                     +Lscale(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+#  endif
+#  ifdef TKE3D_MIXING
+        if (wrtavg(indxTke)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k)
+     &                                  +tke(i,j,k,nstp))
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxGls)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                gls_avg(i,j,k)=cff*( cff1*gls_avg(i,j,k)
+     &                                   +Sprod3d(i,j,k) )
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxLsc)) then
+          do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
                 Lscale_avg(i,j,k)=cff*(cff1*Lscale_avg(i,j,k)

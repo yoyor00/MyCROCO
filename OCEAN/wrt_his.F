@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -34,18 +34,18 @@
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_nbvar,
      &     vname_obst, hisObst, l_obstout_pos,
-     &     l_obstout_height_f, l_obstout_height_e, 
-     &     l_obstout_dens_f, l_obstout_dens_e, 
-     &     l_obstout_width_f, l_obstout_width_e, 
+     &     l_obstout_height_f, l_obstout_height_e,
+     &     l_obstout_dens_f, l_obstout_dens_e,
+     &     l_obstout_width_f, l_obstout_width_e,
      &     l_obstout_thick_f, l_obstout_thick_e,
-     &     l_obstout_theta, l_obstout_frac_xy, 
-     &     l_obstout_frac_z, l_obstout_fuzvz, 
-     &     l_obstout_a2d, l_obstout_a3d, l_obstout_s2d, 
+     &     l_obstout_theta, l_obstout_frac_xy,
+     &     l_obstout_frac_z, l_obstout_fuzvz,
+     &     l_obstout_a2d, l_obstout_a3d, l_obstout_s2d,
      &     l_obstout_s3d, l_obstout_drag, l_obstout_tau,
-     &     obst_position, 
-     &     obst_height_inst, obst_height, 
-     &     obst_dens_inst, obst_dens3d, 
-     &     obst_width_inst, obst_width3d, 
+     &     obst_position,
+     &     obst_height_inst, obst_height,
+     &     obst_dens_inst, obst_dens3d,
+     &     obst_width_inst, obst_width3d,
      &     obst_thick_inst, obst_thick3d,
      &     obst_theta3d, obst_fracxy, obst_fracz3d,
      &     obst_drag3d, obst_a2d, obst_a3d,
@@ -731,7 +731,7 @@ CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 !
 !     Brunt vaisala frequency.
 !
@@ -789,7 +789,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
         do tile=0,NSUB_X*NSUB_E-1
           call Wvlcty (tile, workr)
         enddo
-!$acc update if(compute_on_device) host(workr(:,:,:))        
+!$acc update if(compute_on_device) host(workr(:,:,:))
         call fillvalue3d(workr,ncidhis,hisW,
      &      vname(1,indxW),record,r3dvar,type)
 # endif
@@ -830,7 +830,7 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
 !$acc update if(compute_on_device) host(diff3d_u(:,:,:))
 !$acc update if(compute_on_device) host(diff3d_v(:,:,:))
 #  endif
- 
+
         do k=1,N
           do j=1,Mm
             do i=1,Lm
@@ -922,35 +922,56 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 !     Write out turbulent kinetic energy.
 !
       if (wrthis(indxTke)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,itke))
         work=trb(:,:,:,nstp,itke)
         call fillvalue3d_w(work,ncidhis,hisTke,vname(1,indxTke),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(tke(:,:,:,nstp))
+        workr=tke(:,:,:,nstp)
+        call fillvalue3d(workr,ncidhis,hisTke,vname(1,indxTke),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
       endif
 !
 !     Write out generic length scale
 !
       if (wrthis(indxGls)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,igls))
         work=trb(:,:,:,nstp,igls)
         call fillvalue3d_w(work,ncidhis,hisGls,vname(1,indxGls),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(Sprod3d(:,:,:))
+        workr=Sprod3d
+        call fillvalue3d(workr,ncidhis,hisGls,vname(1,indxGls),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtGls' MYID
       endif
 !
 !     Write out vertical mixing length scale
 !
       if (wrthis(indxLsc)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(Lscale(:,:,:))
         work=Lscale
         call fillvalue3d_w(work,ncidhis,hisLsc,vname(1,indxLsc),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(Lscale(:,:,:))
+        workr=Lscale
+        call fillvalue3d(workr,ncidhis,hisLsc,vname(1,indxLsc),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtLsc' MYID
       endif
 # endif
