@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -195,17 +195,19 @@
 /*
    Options for wz HADV numerical schemes (default C4)
 */
-# ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# ifdef W_HADV_UP5  /* Check if options are defined in cppdefs.h */
 # elif defined W_HADV_TVD
 # elif defined W_HADV_WENO5
-# elif defined W_HADV_C4
+# elif defined W_HADV_UP3
 # elif defined W_HADV_C2
+# elif defined W_HADV_C6
 # else
-#  undef  W_HADV_SPLINES  /* Splines vertical advection             */
-#  undef  W_HADV_TVD      /* TVD vertical advection                 */
-#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
-#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
-#  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
+#  undef  W_HADV_UP5      /* 5th-order upwind horizontal advection  */
+#  undef  W_HADV_TVD      /* TVD horizontal advection                 */
+#  define W_HADV_WENO5    /* 5th-order WENOZ horizontal advection     */
+#  undef  W_HADV_UP3      /* 3rd-order upwind horizontal advection  */
+#  undef  W_HADV_C2       /* 2nd-order centered horizontal advection  */
+#  undef  W_HADV_C6       /* 6th-order centered horizontal advection  */
 # endif
 /*
    Options for wz VADV numerical schemes (default SPLINES)
