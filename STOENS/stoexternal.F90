@@ -208,10 +208,10 @@ C$    integer  trd, omp_get_thread_num
 
 
       ! Define starting and ending indices of MPI tiles, excuding ghost cells
-      Istr2 = Istr+2
-      Iend2 = Iend+2
-      Jstr2 = Jstr+2
-      Jend2 = Jend+2
+      Istr2 = Istr
+      Iend2 = Iend
+      Jstr2 = Jstr
+      Jend2 = Jend
 
       ! Associate the grid pointers with the CROCO common block arrays
       glamt(1:jpi,1:jpj) => lonr
@@ -233,7 +233,7 @@ C$    integer  trd, omp_get_thread_num
       DO ji1 = 1, jpi
         mig(ji1) = ji1 + ii * Lm
       ENDDO
-      DO jj = 1, jpj
+      DO jj1 = 1, jpj
         mjg(jj1) = jj1 + jj * Mm
       ENDDO
 
