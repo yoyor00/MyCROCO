@@ -188,8 +188,10 @@ C$    integer  trd, omp_get_thread_num
       ! QJ: should correcpond to GLOBAL_2D_ARRAY defined in set_global_definitions.h
       ! follow the rule: #if undef THREE_GHOST_POINTS & defined MPI
       ! need some updates for other options ...
-      jpi = Lm+4+padd_X  !size_XI
-      jpj = Mm+4+padd_E  !size_ETA
+      ! jpi = Lm+4+padd_X  !size_XI
+      ! jpj = Mm+4+padd_E  !size_ETA
+      jpi = size(lonr,1)
+      jpj = size(lonr,2)
       jpk = N
 
       ! Define global grid size (with all subdomains)
@@ -205,7 +207,6 @@ C$    integer  trd, omp_get_thread_num
         lwm=.FALSE.
       endif
 #endif
-
 
       ! Define starting and ending indices of MPI tiles, excuding ghost cells
       Istr2 = Istr

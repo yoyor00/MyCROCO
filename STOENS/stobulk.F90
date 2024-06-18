@@ -5,6 +5,7 @@ MODULE stobulk
    !! Purpose : Stochastic parameterization of the bulk formulation
    !!           for the air-sea fluxes
    !!======================================================================
+   USE stoexternal
    USE stoarray
 
    IMPLICIT NONE
@@ -12,7 +13,7 @@ MODULE stobulk
 
    INTEGER, PUBLIC :: jstobulk_cd  ! index of stochastic field used for the drag coefficient
 
-   PUBLIC sto_bulk, sto_bulk_init
+   PUBLIC sto_bulk, sto_bulk_init, sto_bulk_cd
 
 CONTAINS
 
@@ -68,6 +69,27 @@ CONTAINS
       stofields(jstobulk_cd)%std=0.3
 
    END SUBROUTINE sto_bulk_init
+
+
+   SUBROUTINE sto_bulk_cd ( suvstr )
+      !!----------------------------------------------------------------------
+      !!
+      !!                     ***  ROUTINE sto_bulk_cd  ***
+      !!
+      !! This routine implements perturbation of the cd coeffcient
+      !!
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: suvstr
+
+      print *, 'stogen bounds x:',narea-1,lbound(suvstr,1),ubound(suvstr,1)
+      print *, 'stogen bounds y:',narea-1,lbound(suvstr,2),ubound(suvstr,2)
+      print *, 'stogen first:',narea-1,suvstr(lbound(suvstr,1),lbound(suvstr,2))
+
+      suvstr(:,:) = suvstr(:,:) * stofields(jstobulk_cd)%sto2d(:,:)
+
+      print *, 'stogen after:',narea-1,suvstr(lbound(suvstr,1),lbound(suvstr,2))
+
+   END SUBROUTINE sto_bulk_cd
 
    !!======================================================================
 END MODULE stobulk

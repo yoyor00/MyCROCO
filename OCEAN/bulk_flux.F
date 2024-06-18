@@ -32,7 +32,6 @@
       !=======================================================================
       !
 #ifdef STOGEN
-      USE stoarray        ! Acces to stochastic arrays
       USE stobulk         ! Stochastic parameterization of bulk formulation
 #endif
       implicit none
@@ -707,11 +706,6 @@
 #   ifdef WET_DRY
           sustr(i,j)=sustr(i,j)*umask_wet(i,j)
 #   endif
-#   ifdef STOGEN
-!         apply multiplicative noise to wind stress
-          !sustr(i,j)=sustr(i,j)*stofields(jstobulk_cd)%sto2d(i,j)
-          tmpout(i,j,N)=stofields(jstobulk_cd)%sto2d(i,j)
-#   endif
         enddo
       enddo
 !$acc end kernels      
@@ -734,12 +728,20 @@
 #   ifdef WET_DRY
           svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
 #   endif
-#   ifdef STOGEN
-!         apply multiplicative noise to wind stress
-          !svstr(i,j)=svstr(i,j)*stofields(jstobulk_cd)%sto2d(i,j)
-#   endif
         enddo
       enddo
+#  ifdef STOGEN
+!     apply multiplicative noise to wind stress
+      tmpout(:,:,N)=1.0
+      print *, 'tmpout bounds x:',mynode,lbound(tmpout,1),ubound(tmpout,1)
+      print *, 'tmpout bounds y:',mynode,lbound(tmpout,2),ubound(tmpout,2)
+      tmpout(lbound(tmpout,1),lbound(tmpout,2),N) = mynode+2
+      print *, 'tmpout first:',mynode,tmpout(lbound(tmpout,1),lbound(tmpout,2),N)
+      call sto_bulk_cd ( tmpout(:,:,N) )
+      print *, 'tmpout after:',mynode,tmpout(lbound(tmpout,1),lbound(tmpout,2),N)
+      !call sto_bulk_cd ( sustr )
+      !call sto_bulk_cd ( svstr )
+#  endif
 !$acc end kernels      
 #  endif /* !WAVE_SMFLUX */
 # endif /* !ABL1D */
