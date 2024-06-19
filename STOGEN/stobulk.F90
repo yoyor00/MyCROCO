@@ -62,7 +62,7 @@ CONTAINS
       ! 2. space structure (with diffusive operator)
       stofields(jstobulk_cd)%type_xy='diffusive'
       stofields(jstobulk_cd)%diff_passes=50
-      stofields(jstobulk_cd)%diff_type=0  ! option 1 would require the mask
+      stofields(jstobulk_cd)%diff_type=1  ! option 1 would require the mask
       ! 3. modified marginal distribution (here lognormal, with 30% std)
       stofields(jstobulk_cd)%type_variate='lognormal'
       stofields(jstobulk_cd)%ave=1.0

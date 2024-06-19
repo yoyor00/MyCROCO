@@ -12,7 +12,6 @@ MODULE stodiff
    ! user supplied external resources
    USE stoexternal , only : wp, jpi, jpj, lbc_lnk, rmask_sto, umask_sto, vmask_sto
 
-
    IMPLICIT NONE
    PRIVATE
 
@@ -55,6 +54,8 @@ CONTAINS
 
       ! fill array with white noise
       CALL sto_white( psto2d = psto )
+      ! apply default boundary condition to white noise
+      CALL noise_boundary_condition( psto )
 
       ! apply passes of the diffusion operator
       DO jpasses = 1, stofields(jsto)%diff_passes
@@ -96,7 +97,7 @@ CONTAINS
       !!
       !! ** Purpose :   apply diffusion operator
       !!----------------------------------------------------------------------
-      REAL(wp), DIMENSION(:,:), INTENT(out)           ::   psto
+      REAL(wp), DIMENSION(:,:), INTENT(inout)           ::   psto
       INTEGER, INTENT(in) :: jsto   ! index of stochastic field in stoarray
       INTEGER, INTENT(in) :: jk     ! index of vertical level
       !!
@@ -136,6 +137,24 @@ CONTAINS
       ENDIF
 
    END SUBROUTINE diff_operator
+
+
+   SUBROUTINE noise_boundary_condition( psto )
+      !!----------------------------------------------------------------------
+      !!                  ***  ROUTINE noise_boundary_condition  ***
+      !!
+      !! ** Purpose :   apply lateral boundary conditions to input (white) noise
+      !!----------------------------------------------------------------------
+
+      REAL(wp), DIMENSION(:,:), INTENT(inout)           ::   psto
+
+      psto(1  ,:) = 0._wp
+      psto(jpi,:) = 0._wp
+
+      psto(:,  1) = 0._wp
+      psto(:,jpj) = 0._wp
+
+   END SUBROUTINE noise_boundary_condition
 
 
    FUNCTION diff_operator_factor( jsto )
