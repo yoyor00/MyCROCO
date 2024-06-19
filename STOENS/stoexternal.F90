@@ -45,9 +45,13 @@ MODULE stoexternal
    INTEGER, PUBLIC, SAVE, DIMENSION(:), ALLOCATABLE    :: mjg        ! index of grid point in global grid
 
    ! Description of the mask
-   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: rmask_sto  ! land/ocean mask at T-points
-   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: umask_sto  ! land/ocean mask at U-points
-   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: vmask_sto  ! land/ocean mask at V-points
+   LOGICAL, PUBLIC, SAVE  ::  use_msk3d = .FALSE.
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: rmask2d  ! land/ocean mask at T-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: umask2d  ! land/ocean mask at U-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: vmask2d  ! land/ocean mask at V-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: rmask3d  ! land/ocean mask at T-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: umask3d  ! land/ocean mask at U-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: vmask3d  ! land/ocean mask at V-points
 
    ! I/O parameters
    INTEGER, PUBLIC ::   numout      =    6      !: logical unit for output print; set to stdout; do not change
@@ -219,14 +223,9 @@ C$    integer  trd, omp_get_thread_num
       gphit(1:jpi,1:jpj) => latr
 
       ! Associate the mask pointers with the CROCO common block arrays
-      ALLOCATE(rmask_sto(1:jpi,1:jpj,1:jpk))
-      ALLOCATE(umask_sto(1:jpi,1:jpj,1:jpk))
-      ALLOCATE(vmask_sto(1:jpi,1:jpj,1:jpk))
-      DO jk1 = 1, jpk
-         rmask_sto(1:jpi,1:jpj,jk1:jk1) => rmask
-         umask_sto(1:jpi,1:jpj,jk1:jk1) => umask
-         vmask_sto(1:jpi,1:jpj,jk1:jk1) => vmask
-      ENDDO
+      rmask2d(1:jpi,1:jpj) => rmask
+      umask2d(1:jpi,1:jpj) => umask
+      vmask2d(1:jpi,1:jpj) => vmask
 
       ! Define index of grid points (of local subdomain) in global grid (all subdomains)
       ALLOCATE(mig(1:jpi))

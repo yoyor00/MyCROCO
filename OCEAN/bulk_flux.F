@@ -733,12 +733,7 @@
 #  ifdef STOGEN
 !     apply multiplicative noise to wind stress
       tmpout(:,:,N)=1.0
-      print *, 'tmpout bounds x:',mynode,lbound(tmpout,1),ubound(tmpout,1)
-      print *, 'tmpout bounds y:',mynode,lbound(tmpout,2),ubound(tmpout,2)
-      tmpout(lbound(tmpout,1),lbound(tmpout,2),N) = mynode+2
-      print *, 'tmpout first:',mynode,tmpout(lbound(tmpout,1),lbound(tmpout,2),N)
       call sto_bulk_cd ( tmpout(:,:,N) )
-      print *, 'tmpout after:',mynode,tmpout(lbound(tmpout,1),lbound(tmpout,2),N)
       !call sto_bulk_cd ( sustr )
       !call sto_bulk_cd ( svstr )
 #  endif

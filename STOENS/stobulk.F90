@@ -62,11 +62,11 @@ CONTAINS
       ! 2. space structure (with diffusive operator)
       stofields(jstobulk_cd)%type_xy='diffusive'
       stofields(jstobulk_cd)%diff_passes=50
-      stofields(jstobulk_cd)%diff_type=0  ! option 1 would require the mask
+      stofields(jstobulk_cd)%diff_type=1  ! option 1 would require the mask
       ! 3. modified marginal distribution (here lognormal, with 30% std)
-      stofields(jstobulk_cd)%type_variate='lognormal'
-      stofields(jstobulk_cd)%ave=1.0
-      stofields(jstobulk_cd)%std=0.3
+      !stofields(jstobulk_cd)%type_variate='lognormal'
+      !stofields(jstobulk_cd)%ave=1.0
+      !stofields(jstobulk_cd)%std=0.3
 
    END SUBROUTINE sto_bulk_init
 
@@ -81,13 +81,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: suvstr
 
-      print *, 'stogen bounds x:',narea-1,lbound(suvstr,1),ubound(suvstr,1)
-      print *, 'stogen bounds y:',narea-1,lbound(suvstr,2),ubound(suvstr,2)
-      print *, 'stogen first:',narea-1,suvstr(lbound(suvstr,1),lbound(suvstr,2))
-
       suvstr(:,:) = suvstr(:,:) * stofields(jstobulk_cd)%sto2d(:,:)
-
-      print *, 'stogen after:',narea-1,suvstr(lbound(suvstr,1),lbound(suvstr,2))
 
    END SUBROUTINE sto_bulk_cd
 
