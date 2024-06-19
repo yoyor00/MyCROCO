@@ -3442,7 +3442,7 @@
 # endif /* SST_SKIN */
 !
 # ifdef MUSTANG
-       do indx=1,9*ntrc_subs+24
+       do indx=1,outMust_nbvar
           if (outMust(indx)) then 
              lvar=lenstr(vname_Must(1,indx))
              ierr=nf_inq_varid (ncid, vname_Must(1,indx)(1:lvar),
