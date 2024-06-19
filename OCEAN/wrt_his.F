@@ -40,7 +40,7 @@
      &                         var3Dksed_stateconsol
 # ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp
+      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
 # endif
 #endif
 

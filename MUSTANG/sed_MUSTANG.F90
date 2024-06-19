@@ -1744,8 +1744,12 @@ MODULE sed_MUSTANG
                   flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+(sed_eros_flx_class_by_class(iv)/CELL_SURF(i,j))/MF 
                         ! in kg.m-2 (will be multiplied by dtinv at the end of halfdt)
 #ifdef key_MUSTANG_bedload
-                  flx_bx(iv,i,j)=flx_bx(iv,i,j)+flx_bxij(iv)/MF ! in kg
-                  flx_by(iv,i,j)=flx_by(iv,i,j)+flx_byij(iv)/MF
+                  flx_bx(iv,i,j) = flx_bx(iv,i,j) + flx_bxij(iv)/MF ! in kg
+                  flx_by(iv,i,j) = flx_by(iv,i,j) + flx_byij(iv)/MF
+                  IF (l_outsed_flx_bxy) THEN
+                    var2D_flx_bx(iv,i,j) = flx_bx(iv,i,j) 
+                    var2D_flx_by(iv,i,j) = flx_by(iv,i,j)
+                  ENDIF
 #endif
 
 #ifdef key_MUSTANG_debug
@@ -1848,6 +1852,8 @@ MODULE sed_MUSTANG
               k=ksmax
                     
               CALL sed_MUSTANG_comp_tocr_mixsed(k, i, j, xeros, excespowr, toce)
+
+              IF (l_outsed_toce) var2D_toce(:,i,j) = toce
 
               cvolgrv=0.0_rsh
               DO iv=igrav1,igrav2
