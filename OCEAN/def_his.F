@@ -34,11 +34,12 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
-#ifdef MUSTANG
-      USE comMUSTANG, ONLY :nk_nivsed_out, nv_out3Dnv_specif,
-     &                      nv_out2D_specif, nv_out3Dk_specif
+#if defined MUSTANG
+      USE comsubstance, ONLY : nvpc
+      USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,
+     &     out2DMust, out3DsedMust, vname_Must, nk_nivsed_out
 #endif
-#ifdef OBSTRUCTION
+#if defined OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : hisObst, avgObst, 
      &     obst_nbvar, outObst, out2DObst, vname_obst
 #endif
@@ -62,7 +63,7 @@
      &      , iwkb
 #endif
 #if defined MUSTANG || defined OBSTRUCTION
-     &      , indx,ik
+     &      , indx
 #endif
 #include "param.h"
 #include "scalars.h"
@@ -148,7 +149,7 @@
 # ifdef SST_SKIN
 #  define vidSST_skin hisSST_skin
 # endif
-# define vidM hisMust
+# define vidMust hisMust
 # define vidObst hisObst
 
 #else
@@ -225,7 +226,7 @@
 #  define vidSST_skin avgSST_skin
 # endif
 
-# define vidM avgMust
+# define vidMust avgMust
 # define vidObst avgObst
 #endif
 
@@ -2181,111 +2182,36 @@
 !-----------------------------------------------------------------------
 !
 # ifdef MUSTANG
-        do itrc=1,3
-          indx=indxT+ntrc_salt+ntrc_substot+itrc
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
-     &             NF_FOUT, 3, r2dgrd, vidM(itrc))  ! 2D: ksmax,Eptot,tauskin
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc), 'long_name', lvar,
-     &                                  vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc), 'units',     lvar,
-     &                                  vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc), 'field',     lvar,
-     &                                  vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(itrc),vname(:,indx),
-     &         5, NF_FOUT, ierr)
-        enddo
-!
-        do itrc=1,3
-          indx=indxT+ntrc_salt+ntrc_substot+itrc+3
-          ierr=nf_def_var (ncid, vname(1,indx),
-     &               NF_FOUT, 4, b3dgrd, vidM(itrc+3)) ! 3D: dzs,tempsed,salsed
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(itrc+3),nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'long_name', lvar,
-     &                                  vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'units',     lvar,
-     &                                  vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'field',     lvar,
-     &                                  vname(4,indx)(1:lvar))
-        enddo
-        do itrc=1,ntrc_subs
-          indx=indxT+ntrc_salt+ntrc_substot+itrc+6
-          ierr=nf_def_var (ncid, vname(1,indx),
-     &               NF_FOUT, 4, b3dgrd, vidM(itrc+6)) ! 3D: traceurSed
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(itrc+6),nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'long_name', lvar,
-     &                                  vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'units',     lvar,
-     &                                  vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'field',     lvar,
-     &                                  vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(itrc+6),vname(:,indx), 
-     &           5, NF_FOUT,ierr)
-        enddo
-#  ifdef key_MUSTANG_specif_outputs
-        ik=0
-        indx=indx+2 !ksmi,ksma
-        do itrc=1,ntrc_subs
-          do itrv=1,nv_out3Dnv_specif
-            ik=ik+1
-            indx=indx+1
-            ierr=nf_def_var (ncid, vname(1,indx),
-     &                 NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
+        do indx=1,outMust_nbvar
+            if (outMust(indx)) then 
+               if (out2DMust(indx)) then
+                   ierr=nf_def_var (ncid, vname_Must(1,indx),
+     &                 NF_FOUT, 3, r2dgrd, vidMust(indx))  
+               elseif (out3DsedMust(indx)) then
+                    ierr=nf_def_var (ncid, vname_Must(1,indx),
+     &                 NF_FOUT, 4, b3dgrd, vidMust(indx))
+               else
+                   ierr=nf_def_var (ncid, vname_Must(1,indx),
+     &                 NF_FOUT, 4, r3dgrd, vidMust(indx)) 
+               endif
 #   ifdef NC4PAR
-            ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),
-     &                             nf_collective)
-#   endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name',
-     &                                 lvar,vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',
-     &                                 lvar,vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
-     &                                 lvar,vname(4,indx)(1:lvar))
-            call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),vname(:,indx),
-     &                 5, NF_FOUT, ierr)
-          enddo
-        enddo
-        do itrv=1,nv_out2D_specif
-          ik=ik+1
-          indx=indx+1
-          ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
-#   ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),
+                ierr=nf_var_par_access(ncid,vidMust(indx),
      &                           nf_collective)
 #   endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name',
-     &                                  lvar,vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',
-     &                                  lvar,vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
-     &                                  lvar,vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),vname(:,indx), 
-     &              5, NF_FOUT, ierr)
+                lvar=lenstr(vname_Must(2,indx))
+                ierr=nf_put_att_text (ncid, vidMust(indx), 'long_name',
+     &                                  lvar,vname_Must(2,indx)(1:lvar))
+                lvar=lenstr(vname_Must(3,indx))
+                ierr=nf_put_att_text (ncid, vidMust(indx), 'units',
+     &                                  lvar,vname_Must(3,indx)(1:lvar))
+                lvar=lenstr(vname_Must(4,indx))
+                ierr=nf_put_att_text (ncid, vidMust(indx), 'field',
+     &                                  lvar,vname_Must(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidMust(indx),
+     &              vname_Must(:,indx), 5, NF_FOUT, ierr)
+            endif
         enddo
-#  endif
+
 # endif /* MUSTANG */
 !
 !-----------------------------------------------------------------------
@@ -3516,55 +3442,17 @@
 # endif /* SST_SKIN */
 !
 # ifdef MUSTANG
-      do itrc=1,3
-        indx=indxT+ntrc_salt+ntrc_substot+itrc
-        lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc)) ! 2D: ksmax,Eptot,tauskin
+       do indx=1,9*ntrc_subs+24
+          if (outMust(indx)) then 
+             lvar=lenstr(vname_Must(1,indx))
+             ierr=nf_inq_varid (ncid, vname_Must(1,indx)(1:lvar),
+     &                             vidMust(indx))
 #  ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
+             ierr=nf_var_par_access(ncid,vidMust(indx),,
+     &                             nf_collective)
 #  endif
-      enddo
-      do itrc=1,3
-        indx=indxT+ntrc_salt+ntrc_substot+itrc+3                 ! 3D: dzs,tempsed,salsed
-        lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc+3))
-#  ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidM(itrc+3),nf_collective)
-#  endif
-      enddo
-      do itrc=1,ntrc_subs
-        indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
-        lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc+6))
-#  ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidM(itrc+6),nf_collective)
-#  endif
-      enddo
-#  ifdef key_MUSTANG_specif_outputs
-      ik=0
-      do itrc=1,ntrc_subs
-        do itrv=1,nv_out3Dnv_specif
-          ik=ik+1
-          indx=indx+1
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                             vidM(ik+6+ntrc_subs))   ! 3D: traceurSe
-#   ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
-#   endif
-        enddo
-      enddo
-      do itrv=1,nv_out2D_specif
-        ik=ik+1
-        indx=indx+1
-        lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                           vidM(ik+6+ntrc_subs))   ! 3D: traceurSe
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
-#   endif
-      enddo
-#  endif
+          endif
+      enddo ! indx
 # endif /* MUSTANG */
 
 # ifdef OBSTRUCTION
@@ -3871,7 +3759,7 @@
 #undef vidCALP
 #undef vidKAPS
 #undef vidHm
-#undef vidM
+#undef vidMust
 #undef vidObst
 
 #ifdef AVERAGES

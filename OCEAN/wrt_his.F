@@ -13,22 +13,35 @@
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
 #ifdef SUBSTANCE
-      USE comsubstance, ONLY : cvfix_wat,nv_adv
+      USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif
 #ifdef MUSTANG
-      USE comsubstance, ONLY : nv_adv,nvpc,nvp
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
-      USE comMUSTANG,   ONLY : nk_nivsed_out,var3D_cvsed,var3D_dzs,
-     &                         var3D_TEMP,var3D_SAL
-# ifdef key_MUSTANG_specif_outputs
-     &                        ,nv_out3Dnv_specif, nv_out2D_specif
-     &                        ,varspecif3Dnv_save,varspecif2D_save
-# endif
+      USE comMUSTANG,   ONLY : vname_Must, hisMust, outMust,
+     &                         nk_nivsed_out, var3D_cvsed, var3D_dzs,
+     &                         var3D_TEMP, var3D_SAL, var3D_poro,
+     &                         var2D_hsed, ksma, tauskin, tauskin_c, tauskin_w,
+     &                         var2D_toce, var2D_flx_s2w, var2D_flx_w2s,
+     &                         var2D_pephm_fcor, var2D_flx_bx, var2D_flx_by, 
+     &                         var2D_bil_bedload, var2D_fsusp, 
+     &                         var2D_frmudsup, var2D_dzs_ksmax, 
+     &                         var2D_theoric_active_layer, 
+     &                         var2D_tero_noncoh, var2D_tero_coh, 
+     &                         var2D_pct_iter_noncoh, var2D_pct_iter_coh, 
+     &                         var2D_niter_ero, 
+     &                         var2D_flx_s2w_coh, var2D_flx_s2w_noncoh, 
+     &                         var2D_flx_w2s_coh, var2D_flx_w2s_noncoh, 
+     &                         var2D_flx_bx_int, var2D_flx_by_int, 
+     &                         var2D_bil_bedload_int, z0sed,
+     &                         l_dyn_insed, var3Dksed_dtsdzs, 
+     &                         var3Dksed_loadograv, var3Dksed_permeab, 
+     &                         var3Dksed_sed_rate, var3Dksed_sigmadjge, 
+     &                         var3Dksed_sigmapsg, var3Dksed_hinder, 
+     &                         var3Dksed_stateconsol
 # ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2d
+      USE comMUSTANG,   ONLY : sum_tmp
 # endif
-# include "coupler_define_MUSTANG.h"
 #endif
 
 #ifdef OBSTRUCTION
@@ -55,7 +68,7 @@
 
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
-     &   , start(2), count(2), nf_fwrite, cff,ik
+     &   , start(2), count(2), nf_fwrite, cff
 #if defined OUTPUTS_SURFACE && ! defined XIOS
      &   , ibuff(6)
 #else
@@ -98,17 +111,10 @@
 #include "netcdf.inc"
 
 #ifdef MUSTANG
-      integer  nv_out,indx2
-      logical  maskout_sed(GLOBAL_2D_ARRAY)
-      real     var2D_ksma(GLOBAL_2D_ARRAY),
-     &         var2D_eptot(GLOBAL_2D_ARRAY),
-     &         var2D_tauskin(GLOBAL_2D_ARRAY)
       real     workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
      &         workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
-# ifdef key_MUSTANG_specif_outputs
       real     workrsed_nv(GLOBAL_2D_ARRAY),
      &         workrsed1_nv(GLOBAL_2D_ARRAY)
-# endif
 #endif
 
 #ifdef MASKING
@@ -1401,98 +1407,355 @@ CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
       enddo
 # endif
 # ifdef MUSTANG
-      nv_out=ntrc_subs
-      CALL sed_MUSTANG_outres(0,Lm+1,0,Mm+1, nv_out,h,maskout_sed,
-     &                        var2D_ksma,var2D_tauskin,var2D_eptot
-!#ifdef key_MUSTANG_specif_outputs
-!     &                      ,varspecif3Dnv_out
-!#endif
-     &                        )
-      indx=indxT+ntrc_salt+ntrc_substot+1
-      if (wrthis(indx)) then
-        work2d=var2D_ksma(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(1),vname(1,indx),
+      CALL sed_MUSTANG_outres(0, Lm+1, 0, Mm+1, ntrc_subs, h)
+      
+      indx=1
+      if (outMust(indx)) then
+        work2d=ksma(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname_Must(1,indx),
      &                   record,r2dvar,type)
-CR      write(*,*) 'wrt_his var2D_ksma'  MYID
+CR      write(*,*) 'wrt_his ksma'  MYID
       endif
-      indx=indxT+ntrc_salt+ntrc_substot+2
-      if (wrthis(indx)) then
-        work2d=var2D_eptot(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(2),vname(1,indx),
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=var2D_hsed(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname_Must(1,indx),
      &                   record,r2dvar,type)
-CR      write(*,*) 'wrt_his var2D_eptot'  MYID
+CR      write(*,*) 'wrt_his var2D_hsed'  MYID
       endif
-      indx=indxT+ntrc_salt+ntrc_substot+3
-      if (wrthis(indx)) then
-        work2d=var2D_tauskin(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(3),vname(1,indx),
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=tauskin(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
      &                   record,r2dvar,type)
-CR      write(*,*) 'wrt_his var2D_tauskin'  MYID
+CR      write(*,*) 'wrt_his tauskin'  MYID
       endif
-      indx=indxT+ntrc_salt+ntrc_substot+4
-      if (wrthis(indx)) then
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=tauskin_c(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his tauskin_c'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=tauskin_w(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his tauskin_w'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_dzs(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(4),vname(1,indx),
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),vname(1,indx),
      &                   record,b3dvar,type)
-CR      write(*,*) 'wrt_his var2D_dzs'   MYID
+CR      write(*,*) 'wrt_his var3D_dzs'   MYID
       endif
-      indx=indxT+ntrc_salt+ntrc_substot+5
-      if (wrthis(indx)) then
+      indx=indx+1
+      if (outMust(indx)) then
+        do k=1,nk_nivsed_out
+          workrsed(:,:,k)=var3D_poro(k,:,:)
+        enddo
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3D_poro'   MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_TEMP(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(5),vname(1,indx),
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),vname(1,indx),
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
       endif
-      indx=indxT+ntrc_salt+ntrc_substot+6
-      if (wrthis(indx)) then
+      indx=indx+1
+      if (outMust(indx)) then
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_SAL(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(6),vname(1,indx),
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),vname(1,indx),
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_SAL'  MYID
       endif
-      do itrc=1,nv_out
-        indx=indxT+NT+ntfix+itrc+6 -1
-        indx=indxT+ntrc_salt+ntrc_substot+itrc+6
-        if (wrthis(indx)) then
+      do itrc=1,ntrc_subs
+        indx = indx + 1
+        if (outMust(indx)) then
           do k=1,nk_nivsed_out
             workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
           enddo
           workrsed1=workrsed(:,:,:)
-          call fillvalue3d_must(workrsed1,ncidhis,hisMust(itrc+6),
-     &                     vname(1,indx),record,b3dvar,type)
+          call fillvalue3d_must(workrsed1,ncidhis,hisMust(indx),
+     &                     vname_Must(1,indx),record,b3dvar,type)
 CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
         endif
       enddo
-#  ifdef key_MUSTANG_specif_outputs
-      ik=0
-      indx=indx+2 ! ksmi,ksma
-      do itrc=1,nv_out
-        do k=1,nv_out3Dnv_specif
-          ik=ik+1
-          indx=indx+1
-          if (wrthis(indx)) then
-            work2d(:,:)=varspecif3Dnv_save(k,itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,
-     &          hisMust(ntrc_subs+6+ik),vname(1,indx),record,r2dvar,type)
-          endif
-        enddo
-       enddo
-       do k=1,nv_out2D_specif
-         ik=ik+1
-         indx=indx+1
-         if (wrthis(indx)) then
-           work2d(:,:)=varspecif2D_save(k,:,:)
-           call fillvalue2d(work2d,ncidhis,
-     &         hisMust(ntrc_subs+6+ik),vname(1,indx),record,r2dvar,type)
-         endif
-       enddo
-#  endif
+
+      do itrc=1,nvpc
+            indx=indx+1
+            if (outMust(indx)) then
+            work2d=var2D_toce(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_toce'  MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            work2d=var2D_flx_s2w(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_s2w'  MYID
+            endif      
+            indx=indx+1
+            if (outMust(indx)) then
+            work2d=var2D_flx_w2s(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_w2s'  MYID
+            endif
+#ifdef  key_MUSTANG_V2
+            indx=indx+1
+            if (outMust(indx)) then
+            work2d=var2D_pephm_fcor(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_pephm_fcor'  MYID
+            endif
+#ifdef key_MUSTANG_bedload
+            indx=indx+1
+            if (outMust(indx)) then
+            work2d=var2D_flx_bx(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_bx'  MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            work2d=var2D_flx_by(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_by'  MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            work2d=var2D_bil_bedload(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_bil_bedload'  MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            work2d=var2D_fsusp(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_fsusp'  MYID
+            endif
+# endif /* key_MUSTANG_bedload */
+# endif /* key_MUSTANG_V2 */
+      enddo
+
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=var2D_frmudsup(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_frmudsup'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=var2D_dzs_ksmax(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_dzs_ksmax'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=z0sed(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his z0sed'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=zob(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his zob'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=var2D_flx_s2w_noncoh(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_s2w_noncoh'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=var2D_flx_w2s_noncoh(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_w2s_noncoh'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=var2D_flx_s2w_coh(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_s2w_ncoh'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+        work2d=var2D_flx_w2s_coh(:,:)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_w2s_coh'  MYID
+      endif
+#ifdef  key_MUSTANG_V2
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_theoric_active_layer(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_theoric_active_layer'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_tero_noncoh(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_tero_noncoh'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_tero_coh(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_tero_coh'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_pct_iter_noncoh(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_pct_iter_noncoh'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_pct_iter_coh(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_pct_iter_coh'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_niter_ero(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_niter_ero'  MYID
+      endif
+#ifdef key_MUSTANG_bedload
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_flx_bx_int(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_bx_int'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_flx_by_int(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_flx_by_int'  MYID
+      endif
+      indx=indx+1
+      if (outMust(indx)) then
+      work2d=var2D_bil_bedload_int(:,:)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
+     &                   record,r2dvar,type)
+CR      write(*,*) 'wrt_his var2D_bil_bedload_int'  MYID
+      endif
+
+# endif /* key_MUSTANG_bedload */
+# endif /* key_MUSTANG_V2 */
+
+      IF (l_dyn_insed) THEN
+            indx=indx+1
+            if (outMust(indx)) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3Dksed_loadograv(k,:,:)
+            enddo
+            call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname(1,indx),record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3Dksed_loadograv'   MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3Dksed_sigmadjge(k,:,:)
+            enddo
+            call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname(1,indx),record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3Dksed_sigmadjge'   MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3Dksed_sigmapsg(k,:,:)
+            enddo
+            call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname(1,indx),record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3Dksed_sigmapsg'   MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3Dksed_stateconsol(k,:,:)
+            enddo
+            call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname(1,indx),record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3Dksed_stateconsol'   MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3Dksed_permeab(k,:,:)
+            enddo
+            call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname(1,indx),record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3Dksed_permeab'   MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3Dksed_hinder(k,:,:)
+            enddo
+            call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname(1,indx),record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3Dksed_hinder'   MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3Dksed_sed_rate(k,:,:)
+            enddo
+            call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname(1,indx),record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3Dksed_sed_rate'   MYID
+            endif
+            indx=indx+1
+            if (outMust(indx)) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3Dksed_dtsdzs(k,:,:)
+            enddo
+            call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname(1,indx),record,b3dvar,type)
+CR      write(*,*) 'wrt_his var3Dksed_dtsdzs'   MYID
+            endif
+      ENDIF ! l_dyn_insed
+
 # endif /* MUSTANG */
 
 # ifdef OBSTRUCTION

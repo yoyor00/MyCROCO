@@ -53,8 +53,6 @@
 /* dimensions of variables in hydro modele !*/
 # define ARRAY_WATER_CONC GLOBAL_2D_ARRAY,N,3,NT
 # define ARRAY_DHSED GLOBAL_2D_ARRAY 
-# define ARRAY_FROFON GLOBAL_2D_ARRAY 
-# define ARRAY_Z0HYDRO PROC_IN_ARRAY 
 
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
 # define ARRAY_LATLON GLOBAL_2D_ARRAY
@@ -87,7 +85,6 @@
 # define SALREF_LIN 35.0
 # define GRAVITY g
 # define BOTTOM_THICK_LAYER epn_bottom
-# define Z0HYDRO zob
 # define WATER_CONCENTRATION t  /* water concentration in hydro model (=cv_wat in MARS)*/
 # define DHSED dh  
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_debug

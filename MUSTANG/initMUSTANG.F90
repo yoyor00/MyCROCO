@@ -119,16 +119,54 @@ MODULE initMUSTANG
 
     namelist /namsedoutput/ choice_nivsed_out,                                &
                             nk_nivsed_out, ep_nivsed_out, epmax_nivsed_out,   &
-                            l_outsed_flx_WS_int, l_outsed_flx_WS_all,         &
-                            l_outsed_saltemp
+                            l_outsed_nb_lay_sed, &
+                            l_outsed_hsed, &
+                            l_outsed_tauskin, &
+                            l_outsed_tauskin_c, &
+                            l_outsed_tauskin_w, &
+                            l_outsed_poro, &
+                            l_outsed_dzs, &
+                            l_outsed_temp_sed, &
+                            l_outsed_salt_sed, &
+                            l_outsed_cv_sed, &
+                            l_outsed_toce, &
+                            l_outsed_flx_s2w, &
+                            l_outsed_flx_w2s, &
+                            l_outsed_pephm_fcor, &
+                            l_outsed_flx_bxy, &
+                            l_outsed_bil_bedload, &
+                            l_outsed_fsusp, &
+                            l_outsed_frmudsup, &
+                            l_outsed_dzs_ksmax, &
+                            l_outsed_theoric_active_layer, &
+                            l_outsed_tero_noncoh, &
+                            l_outsed_tero_coh, &
+                            l_outsed_pct_ero, &
+                            l_outsed_z0sed, &
+                            l_outsed_z0hydro, &
+                            l_outsed_flx_s2w_coh, &
+                            l_outsed_flx_w2s_coh, &
+                            l_outsed_flx_s2w_noncoh, &
+                            l_outsed_flx_w2s_noncoh, &
+                            l_outsed_flx_bxy_int, &
+                            l_outsed_bil_bedload_int, &
+                            l_outsed_loadograv, &
+                            l_outsed_sigmadjge, &
+                            l_outsed_sigmapsg, &
+                            l_outsed_permeab, &
+                            l_outsed_stateconsol, &
+                            l_outsed_dtsdzs, &
+                            l_outsed_sed_rate, &
+                            l_outsed_hinder
+
 
 #ifdef key_MUSTANG_V2
     namelist /namsedim_poro/ poro_option, poro_min,                           &
                              Awooster, Bwooster, Bmax_wu 
-
+#ifdef key_MUSTANG_bedload
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
                                 alphabs, alphabn, hmin_bedload, l_fsusp
-
+#endif
 #ifdef key_MUSTANG_debug
     namelist /namsedim_debug/ lon_debug, lat_debug,                           &
                               i_MUSTANG_debug, j_MUSTANG_debug,               &
@@ -185,7 +223,7 @@ CONTAINS
     !! * Arguments
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
     REAL(KIND=rsh),INTENT(IN)              :: h0fondin
-    REAL(KIND=rsh),DIMENSION(ARRAY_Z0HYDRO),INTENT(INOUT)        :: z0hydro                         
+    REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)        :: z0hydro                         
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)       :: WATER_CONCENTRATION  
 #if defined MORPHODYN_MUSTANG_byHYDRO  
@@ -1265,25 +1303,882 @@ CONTAINS
 
     ENDIF !choice_nivsed_out
 
-    ALLOCATE(var3D_dzs(nk_nivsed_out,PROC_IN_ARRAY))     
-    ALLOCATE(var3D_TEMP(nk_nivsed_out,PROC_IN_ARRAY))
-    ALLOCATE(var3D_SAL(nk_nivsed_out,PROC_IN_ARRAY))
-#ifdef key_Pconstitonly_insed
-    nv_out=nvpc
-#else
-    nv_out=nv_adv
-#endif   
-    ALLOCATE(var3D_cvsed(nk_nivsed_out,PROC_IN_ARRAY,nv_out))
+    IF (l_outsed_hsed) THEN
+        ALLOCATE(var2D_hsed(PROC_IN_ARRAY))
+        var2D_hsed(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_dzs) THEN
+        ALLOCATE(var3D_dzs(nk_nivsed_out,PROC_IN_ARRAY))
+        var3D_dzs(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_poro) THEN
+        ALLOCATE(var3D_poro(nk_nivsed_out,PROC_IN_ARRAY))
+        var3D_poro(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_temp_sed) THEN
+        ALLOCATE(var3D_TEMP(nk_nivsed_out,PROC_IN_ARRAY))
+        var3D_TEMP(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_salt_sed) THEN
+        ALLOCATE(var3D_SAL(nk_nivsed_out,PROC_IN_ARRAY))
+        var3D_SAL(:,PROC_IN_ARRAY)= 0.0_rsh
+    ENDIF
+    IF (l_outsed_cv_sed) THEN
+        ALLOCATE(var3D_cvsed(nk_nivsed_out,PROC_IN_ARRAY,ntrc_subs))
+        var3D_cvsed(:,PROC_IN_ARRAY,ntrc_subs) = 0.0_rsh
+    ENDIF
+
 #ifdef key_BLOOM_insed
     ALLOCATE(var2D_diagsed(PROC_IN_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
     ALLOCATE(var3D_diagsed(nk_nivsed_out,PROC_IN_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
 #endif
-#if defined key_MUSTANG_specif_outputs               
-    ALLOCATE(var3D_specifout(nk_nivsed_out,PROC_IN_ARRAY,nv_out3Dk_specif))
+
+
+    IF (l_outsed_toce) THEN
+        ALLOCATE(var2D_toce(nvpc,PROC_IN_ARRAY))
+        var2D_toce(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_flx_s2w) THEN
+        ALLOCATE(var2D_flx_s2w(nvpc,PROC_IN_ARRAY))
+        var2D_flx_s2w(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_flx_w2s) THEN
+        ALLOCATE(var2D_flx_w2s(nvpc,PROC_IN_ARRAY))
+        var2D_flx_w2s(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+#ifdef key_MUSTANG_V2
+    IF (l_outsed_pephm_fcor) THEN
+        ALLOCATE(var2D_pephm_fcor(nvpc,PROC_IN_ARRAY))
+        var2D_pephm_fcor(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+#ifdef key_MUSTANG_bedload
+    IF (l_outsed_flx_bxy) THEN
+        ALLOCATE(var2D_flx_bx(nvpc,PROC_IN_ARRAY))
+        var2D_flx_bx(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_flx_bxy) THEN
+        ALLOCATE(var2D_flx_by(nvpc,PROC_IN_ARRAY))
+        var2D_flx_by(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_bil_bedload) THEN
+        ALLOCATE(var2D_bil_bedload(nvpc,PROC_IN_ARRAY))
+        var2D_bil_bedload(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_fsusp) THEN
+        ALLOCATE(var2D_fsusp(nvpc,PROC_IN_ARRAY))
+        var2D_fsusp(:,PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
 #endif
+#endif
+    IF (l_outsed_frmudsup) THEN
+        ALLOCATE(var2D_frmudsup(PROC_IN_ARRAY))
+        var2D_frmudsup(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_dzs_ksmax) THEN
+        ALLOCATE(var2D_dzs_ksmax(PROC_IN_ARRAY))
+        var2D_dzs_ksmax(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_flx_s2w_coh) THEN
+        ALLOCATE(var2D_flx_s2w_coh(PROC_IN_ARRAY))
+        var2D_flx_s2w_coh(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_flx_w2s_coh) THEN
+        ALLOCATE(var2D_flx_w2s_coh(PROC_IN_ARRAY))
+        var2D_flx_w2s_coh(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_flx_s2w_noncoh) THEN
+        ALLOCATE(var2D_flx_s2w_noncoh(PROC_IN_ARRAY))
+        var2D_flx_s2w_noncoh(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_flx_w2s_noncoh) THEN
+        ALLOCATE(var2D_flx_w2s_noncoh(PROC_IN_ARRAY))
+        var2D_flx_w2s_noncoh(PROC_IN_ARRAY)= 0.0_rsh
+    ENDIF
+#ifdef key_MUSTANG_V2
+    IF (l_outsed_theoric_active_layer) THEN
+        ALLOCATE(var2D_theoric_active_layer(PROC_IN_ARRAY))
+        var2D_theoric_active_layer(PROC_IN_ARRAY)= 0.0_rsh
+    ENDIF
+    IF (l_outsed_tero_noncoh) THEN
+        ALLOCATE(var2D_tero_noncoh(PROC_IN_ARRAY))
+        var2D_tero_noncoh(PROC_IN_ARRAY)= 0.0_rsh
+    ENDIF
+    IF (l_outsed_tero_coh) THEN
+        ALLOCATE(var2D_tero_coh(PROC_IN_ARRAY))
+        var2D_tero_coh(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_pct_ero) THEN
+        ALLOCATE(var2D_pct_iter_noncoh(PROC_IN_ARRAY))
+        var2D_pct_iter_noncoh(PROC_IN_ARRAY) = 0.0_rsh
+        ALLOCATE(var2D_pct_iter_coh(PROC_IN_ARRAY))
+        var2D_pct_iter_coh(PROC_IN_ARRAY) = 0.0_rsh
+        ALLOCATE(var2D_niter_ero(PROC_IN_ARRAY))
+        var2D_niter_ero(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+#ifdef key_MUSTANG_bedload
+    IF (l_outsed_flx_bxy_int) THEN
+        ALLOCATE(var2D_flx_bx_int(PROC_IN_ARRAY))
+        var2D_flx_bx_int(PROC_IN_ARRAY) = 0.0_rsh
+        ALLOCATE(var2D_flx_by_int(PROC_IN_ARRAY))
+        var2D_flx_by_int(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+    IF (l_outsed_bil_bedload_int) THEN
+        ALLOCATE(var2D_bil_bedload_int(PROC_IN_ARRAY)) 
+        var2D_bil_bedload_int(PROC_IN_ARRAY) = 0.0_rsh
+    ENDIF
+#endif
+#endif
+    IF (l_dyn_insed) THEN
+        IF (l_outsed_loadograv) THEN
+            IF (choice_nivsed_out == 1) then
+                ALLOCATE(var3Dksed_loadograv(nk_nivsed_out,PROC_IN_ARRAY)) 
+                var3Dksed_loadograv(:,PROC_IN_ARRAY) = 0.0_rsh
+            ELSE
+                l_outsed_loadograv = .FALSE. ! no output if not all sediment in output
+            ENDIF
+        ENDIF
+        IF (l_outsed_permeab) THEN
+            IF (choice_nivsed_out == 1) then
+                ALLOCATE(var3Dksed_permeab(nk_nivsed_out,PROC_IN_ARRAY)) 
+                var3Dksed_permeab(:,PROC_IN_ARRAY) = 0.0_rsh
+            ELSE
+                l_outsed_permeab = .FALSE. ! no output if not all sediment in output
+            ENDIF
+        ENDIF
+        IF (l_outsed_sigmapsg) THEN
+            IF (choice_nivsed_out == 1) then
+                ALLOCATE(var3Dksed_sigmapsg(nk_nivsed_out,PROC_IN_ARRAY)) 
+                var3Dksed_sigmapsg(:,PROC_IN_ARRAY) = 0.0_rsh
+            ELSE
+                l_outsed_sigmapsg = .FALSE. ! no output if not all sediment in output
+            ENDIF
+        ENDIF
+        IF (l_outsed_dtsdzs) THEN
+            IF (choice_nivsed_out == 1) then
+                ALLOCATE(var3Dksed_dtsdzs(nk_nivsed_out,PROC_IN_ARRAY)) 
+                var3Dksed_dtsdzs(:,PROC_IN_ARRAY) = 0.0_rsh
+            ELSE
+                l_outsed_dtsdzs = .FALSE. ! no output if not all sediment in output
+            ENDIF
+        ENDIF
+        IF (l_outsed_hinder) THEN
+            IF (choice_nivsed_out == 1) then
+                ALLOCATE(var3Dksed_hinder(nk_nivsed_out,PROC_IN_ARRAY)) 
+                var3Dksed_hinder(:,PROC_IN_ARRAY) = 0.0_rsh
+            ELSE
+                l_outsed_hinder = .FALSE. ! no output if not all sediment in output
+            ENDIF
+        ENDIF
+        IF (l_outsed_sed_rate) THEN
+            IF (choice_nivsed_out == 1) then
+                ALLOCATE(var3Dksed_sed_rate(nk_nivsed_out,PROC_IN_ARRAY)) 
+                var3Dksed_sed_rate(:,PROC_IN_ARRAY) = 0.0_rsh
+            ELSE
+                l_outsed_sed_rate = .FALSE. ! no output if not all sediment in output
+            ENDIF
+        ENDIF
+        IF (l_outsed_sigmadjge) THEN
+            IF (choice_nivsed_out == 1) then
+                ALLOCATE(var3Dksed_sigmadjge(nk_nivsed_out,PROC_IN_ARRAY)) 
+                var3Dksed_sigmadjge(:,PROC_IN_ARRAY) = 0.0_rsh
+            ELSE
+                l_outsed_sigmadjge = .FALSE. ! no output if not all sediment in output
+            ENDIF
+        ENDIF
+        IF (l_outsed_stateconsol) THEN
+            IF (choice_nivsed_out == 1) then
+                ALLOCATE(var3Dksed_stateconsol(nk_nivsed_out,PROC_IN_ARRAY)) 
+                var3Dksed_stateconsol(:,PROC_IN_ARRAY) = 0.0_rsh
+            ELSE
+                l_outsed_stateconsol = .FALSE. ! no output if not all sediment in output
+            ENDIF
+        ENDIF
+                
+    ENDIF
+
+    CALL MUSTANG_init_vname
+
 
     END SUBROUTINE MUSTANG_init_output
 !!===========================================================================
+
+
+    SUBROUTINE MUSTANG_init_vname
+      !!---------------------------------------------------------------------
+      !!                 *** MUSTANG_init_vname  ***
+      !!
+      !! ** Purpose : initialize MUSTANG output vname and variables
+      !!
+      !!---------------------------------------------------------------------
+        IMPLICIT NONE
+
+        INTEGER indx, isubs
+
+        ALLOCATE (rstMust(NT+3))
+        ALLOCATE (rstoutintegerMust(NT+3))
+        ALLOCATE (rstout2DMust(NT+3))
+        ALLOCATE (rstout3DsedMust(NT+3))
+        ALLOCATE (vname_rstMust(20, NT+3))
+
+        outMust_nbvar = 1*ntrc_subs + 3*nvpc + 17
+#ifdef  key_MUSTANG_V2
+        outMust_nbvar = outMust_nbvar + nvpc + 6
+#ifdef  key_MUSTANG_bedload
+        outMust_nbvar = outMust_nbvar + 4*nvpc + 3
+# endif
+# endif
+        if (l_dyn_insed) outMust_nbvar = outMust_nbvar + 8
+
+        ALLOCATE (hisMust(1:outMust_nbvar))
+        ALLOCATE (avgMust(1:outMust_nbvar))
+        ALLOCATE (outMust(1:outMust_nbvar))
+        ALLOCATE (out2DMust(1:outMust_nbvar))
+        ALLOCATE (out3DsedMust(1:outMust_nbvar))
+        ALLOCATE (vname_Must(20, 1:outMust_nbvar))
+
+        outMust(:) = .FALSE.
+
+        ! RESTART file
+        indx = 1
+        vname_rstMust(1,indx) = 'ksmi'
+        vname_rstMust(2,indx) = 'lower sediment layer index'
+        vname_rstMust(3,indx) = 'no units'
+        vname_rstMust(4,indx) = ' '
+        vname_rstMust(5,indx) = ' '
+        vname_rstMust(6,indx) = ' '
+        vname_rstMust(7,indx) = ' '
+        rstoutintegerMust(indx) = .TRUE.
+        rstout2DMust(indx) = .FALSE.
+        rstout3DsedMust(indx) = .FALSE.
+        
+        indx = 2
+        vname_rstMust(1,indx) = 'ksma'
+        vname_rstMust(2,indx) = 'upper sediment layer index'
+        vname_rstMust(3,indx) = 'no units'
+        vname_rstMust(4,indx) = ' '
+        vname_rstMust(5,indx) = ' '
+        vname_rstMust(6,indx) = ' '
+        vname_rstMust(7,indx) = ' '
+        rstoutintegerMust(indx) = .TRUE.
+        rstout2DMust(indx) = .FALSE.
+        rstout3DsedMust(indx) = .FALSE.
+
+        indx = 3
+        vname_rstMust(1,indx) = 'DZS'
+        vname_rstMust(2,indx) = 'thickness of sediment layer'
+        vname_rstMust(3,indx) = 'meter'
+        vname_rstMust(4,indx) = ' '
+        vname_rstMust(5,indx) = ' '
+        vname_rstMust(6,indx) = ' '
+        vname_rstMust(7,indx) = ' '
+        rstoutintegerMust(indx) = .FALSE.
+        rstout2DMust(indx) = .FALSE.
+        rstout3DsedMust(indx) = .TRUE.
+
+        indx = 4
+        vname_rstMust(1,indx) = 'temp_sed'
+        vname_rstMust(2,indx) = 'sediment temperature'
+        vname_rstMust(3,indx) = 'Celsius'
+        vname_rstMust(4,indx) = ' '
+        vname_rstMust(5,indx) = ' '
+        vname_rstMust(6,indx) = ' '
+        vname_rstMust(7,indx) = ' '
+        rstoutintegerMust(indx) = .FALSE.
+        rstout2DMust(indx) = .FALSE.
+        rstout3DsedMust(indx) = .TRUE.
+
+        indx = 5
+        vname_rstMust(1,indx) = 'salt_sed'
+        vname_rstMust(2,indx) = 'sediment salinity'
+        vname_rstMust(3,indx) = 'PSU'
+        vname_rstMust(4,indx) = ' '
+        vname_rstMust(5,indx) = ' '
+        vname_rstMust(6,indx) = ' '
+        vname_rstMust(7,indx) = ' '
+        rstoutintegerMust(indx) = .FALSE.
+        rstout2DMust(indx) = .FALSE.
+        rstout3DsedMust(indx) = .TRUE.
+
+        DO isubs = 1, ntrc_subs
+            indx = indx + 1
+            vname_rstMust(1,indx) = TRIM(name_var(isubs))//'_sed'
+            vname_rstMust(2,indx) = TRIM(long_name_var(isubs))//'_sed'
+            vname_rstMust(3,indx) = unit_var(isubs)
+            vname_rstMust(4,indx) = TRIM(ADJUSTL(ADJUSTR(standard_name_var(isubs))))//', scalar, series'
+            vname_rstMust(5,indx) = ' '
+            vname_rstMust(6,indx) = ' '
+            vname_rstMust(7,indx) = ' '
+            rstoutintegerMust(indx) = .FALSE.
+            rstout2DMust(indx) = .FALSE.
+            rstout3DsedMust(indx) = .TRUE.
+        ENDDO
+        ! end for RESTART file
+
+        ! HIS file
+
+#ifdef MORPHODYN
+        indx=indxHm
+        wrthis(indx)=.TRUE.
+        vname(1,indx) = 'Hm'
+        vname(2,indx) = 'evolving bathymetry'
+        vname(3,indx) = 'meter'
+        vname(4,indx) = 'evolving_bathymetry, scalar, series'
+        vname(5,indx) = ' '
+        vname(6,indx) = ' '
+        vname(7,indx) = ' '
+#endif
+
+        indx = 1
+        vname_Must(1,indx) = 'NB_LAY_SED'
+        vname_Must(2,indx) = 'number of sediment layers'
+        vname_Must(3,indx) = 'no units'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_nb_lay_sed) outMust(indx) = .TRUE.
+        out2DMust(indx) = .TRUE.
+        out3DsedMust(indx) = .FALSE.
+
+        indx = indx+1
+        vname_Must(1,indx) = 'HSED'
+        vname_Must(2,indx) = 'total thickness of sediment'
+        vname_Must(3,indx) = 'meter'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_hsed) outMust(indx) = .TRUE.
+        out2DMust(indx) = .TRUE.
+        out3DsedMust(indx) = .FALSE.
+
+        indx = indx+1
+        vname_Must(1,indx) = 'TAUSKIN'
+        vname_Must(2,indx) = 'total bottom shear stress for erosion'
+        vname_Must(3,indx) = 'N/m2'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_tauskin) outMust(indx) = .TRUE.
+        out2DMust(indx) = .TRUE.
+        out3DsedMust(indx) = .FALSE.
+
+        indx = indx+1
+        vname_Must(1,indx) = 'TAUSKIN_C'
+        vname_Must(2,indx) = 'current bottom shear stress for erosion'
+        vname_Must(3,indx) = 'N/m2'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_tauskin_c) outMust(indx) = .TRUE.
+        out2DMust(indx) = .TRUE.
+        out3DsedMust(indx) = .FALSE.
+
+        indx = indx+1
+        vname_Must(1,indx) = 'TAUSKIN_W'
+        vname_Must(2,indx) = 'wave bottom shear stress for erosion'
+        vname_Must(3,indx) = 'N/m2'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_tauskin_w) outMust(indx) = .TRUE.
+        out2DMust(indx) = .TRUE.
+        out3DsedMust(indx) = .FALSE.
+
+        indx = indx+1
+        vname_Must(1,indx) = 'DZS'
+        vname_Must(2,indx) = 'thickness of sediment layer'
+        vname_Must(3,indx) = 'meter'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_dzs) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx+1
+        vname_Must(1,indx) = 'poro'
+        vname_Must(2,indx) = 'porosity'
+        vname_Must(3,indx) = 'no unit'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_poro) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx+1
+        vname_Must(1,indx) = 'temp_sed'
+        vname_Must(2,indx) = 'sediment temperature'
+        vname_Must(3,indx) = 'Celsius'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_temp_sed) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+
+        indx = indx+1
+        vname_Must(1,indx) = 'salt_sed'
+        vname_Must(2,indx) = 'sediment salinity'
+        vname_Must(3,indx) = 'PSU'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_salt_sed) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        DO isubs = 1,ntrc_subs
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_sed'
+            vname_Must(2,indx) = TRIM(long_name_var(isubs))//'_sed'
+            vname_Must(3,indx) = unit_var(isubs)
+            vname_Must(4,indx) = TRIM(ADJUSTL(ADJUSTR(standard_name_var(isubs))))//', scalar, series'
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_cv_sed .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .FALSE.
+            out3DsedMust(indx) = .TRUE.
+        ENDDO
+    
+        DO isubs = 1,nvpc
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_toce'
+            vname_Must(2,indx) = 'critical shear stress'
+            vname_Must(3,indx) = 'N/m2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_toce .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_flx_s2w'
+            vname_Must(2,indx) = 'erosion flux'
+            vname_Must(3,indx) = 'kg.m-2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_s2w .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_flx_w2s'
+            vname_Must(2,indx) = 'deposition flux'
+            vname_Must(3,indx) = 'kg.m-2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_w2s .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+#ifdef  key_MUSTANG_V2
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_pephm_fcor'
+            vname_Must(2,indx) = 'Hindering exposure factor on toce'
+            vname_Must(3,indx) = 'no units'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_pephm_fcor .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+    
+#ifdef key_MUSTANG_bedload
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_flx_bx'
+            vname_Must(2,indx) = 'bedload flux along x-axis'
+            vname_Must(3,indx) = 'kg/m/s'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_bxy .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_flx_by'
+            vname_Must(2,indx) = 'bedload flux along y-axis'
+            vname_Must(3,indx) = 'kg/m/s'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_bxy .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_bil_bedload'
+            vname_Must(2,indx) = 'divergence of bedload flux'
+            vname_Must(3,indx) = 'kg.m-2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_bil_bedload .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_fsusp'
+            vname_Must(2,indx) = 'fraction of transport in suspension'
+            vname_Must(3,indx) = 'no units'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_fsusp .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+#endif /* key_MUSTANG_bedload */
+#endif /* key_MUSTANG_V2 */
+    ENDDO
+            indx = indx + 1
+            vname_Must(1,indx) = 'frmudsup'
+            vname_Must(2,indx) = 'mud fraction in the ksmax layer'
+            vname_Must(3,indx) = 'no units'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_frmudsup) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            indx = indx + 1
+            vname_Must(1,indx) = 'dzs_ksmax'
+            vname_Must(2,indx) = 'layer thickness at sediment surface'
+            vname_Must(3,indx) = 'meter'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_dzs_ksmax) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            indx = indx + 1
+            vname_Must(1,indx) = 'z0sed'
+            vname_Must(2,indx) = 'Skin roughness length'
+            vname_Must(3,indx) = 'meter'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_z0sed) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            indx = indx + 1
+            vname_Must(1,indx) = 'z0hydro'
+            vname_Must(2,indx) = 'hydrodynamic roughness length'
+            vname_Must(3,indx) = 'm'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_z0hydro) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+                           
+            ! 11 : flx_s2w_noncoh
+            indx = indx + 1
+            vname_Must(1,indx) = 'flx_s2w_noncoh'
+            vname_Must(2,indx) = 'erosion flux of non-cohesive sediments (sum: isand1 to isand2)' 
+            vname_Must(3,indx) = 'kg.m-2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_s2w_noncoh) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 12 : flx_w2s_noncoh
+            indx = indx + 1
+            vname_Must(1,indx) = 'flx_w2s_noncoh'
+            vname_Must(2,indx) = 'deposition flux of non-cohesive sediments (sum: isand1 to isand2)'
+            vname_Must(3,indx) = 'kg.m-2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_w2s_noncoh) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 13 : flx_s2w_coh
+            indx = indx + 1
+            vname_Must(1,indx) = 'flx_s2w_coh'
+            vname_Must(2,indx) = 'erosion flux of cohesive sediments (sum: imud1 to imud2)'
+            vname_Must(3,indx) = 'kg.m-2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_s2w_coh) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 14 : flx_w2s_coh
+            indx = indx + 1
+            vname_Must(1,indx) = 'flx_w2s_coh'
+            vname_Must(2,indx) = 'deposition flux of cohesive sediments (sum: imud1 to imud2)'
+            vname_Must(3,indx) = 'kg.m-2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_w2s_coh) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+#ifdef key_MUSTANG_V2
+            ! 3 : dzs_aclay_comp_save
+            indx = indx + 1
+            vname_Must(1,indx) = 'dzs_aclay_comp_save'
+            vname_Must(2,indx) = 'Theoretical active layer thickness Harris and Wiberg 1997'
+            vname_Must(3,indx) = 'meter'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_theoric_active_layer) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+
+            ! 5 : tero_noncoh (cumulated time (in hours) elapsed in non cohesive regime)
+            indx = indx + 1
+            vname_Must(1,indx) = 'tero_noncoh'
+            vname_Must(2,indx) = 'time elapsed in the non-cohesive erosion regime'
+            vname_Must(3,indx) = 'hours'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_tero_noncoh) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 6 : tero_coh (cumulated time (in hours) elapsed in cohesive regime)
+            indx = indx + 1
+            vname_Must(1,indx) = 'tero_coh'
+            vname_Must(2,indx) = 'time elapsed in the cohesive erosion regime'
+            vname_Must(3,indx) = 'hours'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_tero_coh) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 7 : pct_iter_noncoh
+            indx = indx + 1
+            vname_Must(1,indx) = 'pct_iter_noncoh'
+            vname_Must(2,indx) = 'part of erosion iterations in the non-cohesive regime'
+            vname_Must(3,indx) = 'percent'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_pct_ero) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 8 : pct_iter_coh
+            indx = indx + 1
+            vname_Must(1,indx) = 'pct_iter_coh'
+            vname_Must(2,indx) = 'part of erosion iterations in the cohesive regime'
+            vname_Must(3,indx) = 'percent'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_pct_ero) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 9 : niter_ero
+            indx = indx + 1
+            vname_Must(1,indx) = 'niter_ero'
+            vname_Must(2,indx) = 'Number of iterations in sed_erosion during time step'
+            vname_Must(3,indx) = 'no units'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_pct_ero) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+      
+            
+            
+#ifdef key_MUSTANG_bedload
+            ! 16 : flx_bx_int
+            indx = indx + 1
+            vname_Must(1,indx) = 'flx_bx_int'
+            vname_Must(2,indx) = 'total bedload flux along  x-axis (sum: igrav1 to isand2)'
+            vname_Must(3,indx) = 'kg/m/s'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_bxy_int) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 17 : flx_by_int
+            indx = indx + 1
+            vname_Must(1,indx) = 'flx_by_int'
+            vname_Must(2,indx) = 'total bedload flux along y-axis (sum: igrav1 to isand2)'
+            vname_Must(3,indx) = 'kg/m/s'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_flx_bxy_int) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+            ! 18 : bil_bedload_int
+            indx = indx + 1
+            vname_Must(1,indx) = 'bil_bedload_int'
+            vname_Must(2,indx) = 'divergence of total bedload flux (sum: igrav1 to isand2)'
+            vname_Must(3,indx) = 'kg/m2'
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_bil_bedload_int) outMust(indx) = .TRUE.
+            out2DMust(indx) = .TRUE.
+            out3DsedMust(indx) = .FALSE.
+            
+#endif /* key_MUSTANG_bedload */
+#endif /* key_MUSTANG_V2 */
+
+    IF (l_dyn_insed) THEN
+        indx = indx + 1
+        vname_Must(1,indx) = 'loadograv'
+        vname_Must(2,indx) = 'excess of interstitial water pressure in the middle of the layer'
+        vname_Must(3,indx) = ' '
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_loadograv) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx + 1
+        vname_Must(1,indx) = 'sigmadjge'
+        vname_Must(2,indx) = 'sigma unseparated (without the share of water)'
+        vname_Must(3,indx) = ' '
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_sigmadjge) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx + 1
+        vname_Must(1,indx) = 'sigmapsg'
+        vname_Must(2,indx) = 'effective stress (transmitted from grain to grain)'
+        vname_Must(3,indx) = ' '
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_sigmapsg) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx + 1
+        vname_Must(1,indx) = 'stateconsol'
+        vname_Must(2,indx) = 'state of consolidation indicator'
+        vname_Must(3,indx) = ' '
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_stateconsol) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx + 1
+        vname_Must(1,indx) = 'permeab'
+        vname_Must(2,indx) = 'permeability'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_permeab) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx + 1
+        vname_Must(1,indx) = 'hinder'
+        vname_Must(2,indx) = 'shackling sand / gravel between 0 and 1'
+        vname_Must(3,indx) = 'no unit'
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_hinder) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx + 1
+        vname_Must(1,indx) = 'sed_rate'
+        vname_Must(2,indx) = 'advection speed of mud particles'
+        vname_Must(3,indx) = ' '
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_sed_rate) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+
+        indx = indx + 1
+        vname_Must(1,indx) = 'dtsdzs'
+        vname_Must(2,indx) = 'dtsdzs'
+        vname_Must(3,indx) = ' '
+        vname_Must(4,indx) = ' '
+        vname_Must(5,indx) = ' '
+        vname_Must(6,indx) = ' '
+        vname_Must(7,indx) = ' '
+        IF (l_outsed_dtsdzs) outMust(indx) = .TRUE.
+        out2DMust(indx) = .FALSE.
+        out3DsedMust(indx) = .TRUE.
+    ENDIF
+
+    END SUBROUTINE MUSTANG_init_vname
+
+!!==========================================================================================================
+
 
     SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION  &
 #if defined MORPHODYN_MUSTANG_byHYDRO  
@@ -1512,77 +2407,6 @@ CONTAINS
     flu_dyninsed(-1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
     gradvit(NB_LAYER_WAT,PROC_IN_ARRAY) = 0.0_rsh
 
-#ifdef key_MUSTANG_specif_outputs
-    ! outputs
-    ! variables 3D /k
-    nv_out3Dk_specif = 1
-     ! 1 : poro_save  
-#if defined key_MUSTANG_add_consol_outputs && defined key_MUSTANG_V2
-    nv_out3Dk_specif = nv_out3Dk_specif + 8
-     ! 2 : loadograv_save
-     ! 3 : permeab_save
-     ! 4 : sigmapsg_save
-     ! 5 : dtsdzs_save
-     ! 6 : hinder_save
-     ! 7 : sed_rate_save
-     ! 8 : sigmadjge_save
-     ! 9 : stateconsol_save
-#endif
-    ALLOCATE(varspecif3Dk_save(nv_out3Dk_specif,ksdmin:ksdmax,PROC_IN_ARRAY))
-    varspecif3Dk_save(1:nv_out3Dk_specif,ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-
-    nv_out3Dnv_specif = 3
-     ! 1 : toce_save
-     ! 2 : flx_s2w_save
-     ! 3 : flx_w2s_save
-#ifdef key_MUSTANG_V2
-    nv_out3Dnv_specif = nv_out3Dnv_specif + 1
-     ! 4 : pephm_fcor_save  
-#ifdef key_MUSTANG_bedload
-    nv_out3Dnv_specif = nv_out3Dnv_specif + 4
-     ! 5 : flx_bx
-     ! 6 : flx_by
-     ! 7 : bil_bedload
-     ! 8 : fsusp
-#endif
-#endif
-    ALLOCATE(varspecif3Dnv_save(nv_out3Dnv_specif,nvpc,PROC_IN_ARRAY))
-    ALLOCATE(varspecif3Dnv_out(nv_out3Dnv_specif,nvpc,PROC_IN_ARRAY))
-    varspecif3Dnv_save(1:nv_out3Dnv_specif,1:nvpc,PROC_IN_ARRAY)= 0.0_rsh
-  
-    nv_out2D_specif = 2
-     ! 1 : frmudsup 
-     ! 2 : dzs_ksmax 
-#ifdef key_MUSTANG_V2
-    nv_out2D_specif = nv_out2D_specif + 13
-     ! 3 : dzs_aclay_comp_save
-     ! 4 : dzs_aclay_kept_save
-     ! 5 : tero_noncoh (cumulated time (in hours) elapsed in non cohesive regime)
-     ! 6 : tero_coh (cumulated time (in hours) elapsed in cohesive regime)
-     ! 7 : pct_iter_noncoh
-     ! 8 : pct_iter_coh
-     ! 9 : niter_ero
-     ! 10: z0sed
-     ! 11 : flx_s2w_noncoh
-     ! 12 : flx_w2s_noncoh
-     ! 13 : flx_s2w_coh
-     ! 14 : flx_w2s_coh
-     ! 15: z0hydro (if l_z0hydro_coupl)
-#ifdef key_MUSTANG_bedload
-    nv_out2D_specif = nv_out2D_specif + 3
-     ! 16 : flx_bx_int
-     ! 17 : flx_by_int
-     ! 18 : bil_bedload_int
-#endif
-!   end version MUSTANG V2
-#endif
-
-    ALLOCATE(varspecif2D_save(nv_out2D_specif,PROC_IN_ARRAY))
-    ALLOCATE(varspecif2D_out(nv_out2D_specif,PROC_IN_ARRAY))
-    varspecif2D_save(1:nv_out2D_specif,PROC_IN_ARRAY) = 0.0_rsh
-   
-!   end specifs output
-#endif
 
 #ifdef key_MUSTANG_V2
     ALLOCATE(poro_mud(ksdmin:ksdmax,PROC_IN_ARRAY))

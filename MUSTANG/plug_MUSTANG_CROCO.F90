@@ -35,7 +35,7 @@ CONTAINS
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
       CALL MUSTANG_update (Istr, Iend, Jstr, Jend,  & 
-                   WATER_CONCENTRATION, Z0HYDRO,    &
+                   WATER_CONCENTRATION, zob,    &
                    WATER_ELEVATION,                 &
 # if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
                    BAROTROP_VELOCITY_U,             &
@@ -70,7 +70,7 @@ CONTAINS
 # if defined MORPHODYN
                     DHSED,                                 &
 # endif
-                    RESIDUAL_THICKNESS_WAT, Z0HYDRO,       &
+                    RESIDUAL_THICKNESS_WAT, zob,       &
                     WATER_CONCENTRATION)
       end subroutine
 !
