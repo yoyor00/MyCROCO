@@ -56,17 +56,17 @@ CONTAINS
       ! Set features of the requested stochastic field from parameters
       ! 1. time structure
       stofields(jstobulk_cd)%type_t='arn'
-      stofields(jstobulk_cd)%corr_t=5.0
-      stofields(jstobulk_cd)%nar_order=2
-      stofields(jstobulk_cd)%nar_update=5
+      stofields(jstobulk_cd)%corr_t=3.0
+      stofields(jstobulk_cd)%nar_order=1
+      stofields(jstobulk_cd)%nar_update=1
       ! 2. space structure (with diffusive operator)
       stofields(jstobulk_cd)%type_xy='diffusive'
       stofields(jstobulk_cd)%diff_passes=50
       stofields(jstobulk_cd)%diff_type=1  ! option 1 would require the mask
       ! 3. modified marginal distribution (here lognormal, with 30% std)
-      !stofields(jstobulk_cd)%type_variate='lognormal'
-      !stofields(jstobulk_cd)%ave=1.0
-      !stofields(jstobulk_cd)%std=0.3
+      stofields(jstobulk_cd)%type_variate='lognormal'
+      stofields(jstobulk_cd)%ave=1.0
+      stofields(jstobulk_cd)%std=0.3
 
    END SUBROUTINE sto_bulk_init
 

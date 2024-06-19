@@ -45,7 +45,8 @@ MODULE stoexternal
    INTEGER, PUBLIC, SAVE, DIMENSION(:), ALLOCATABLE    :: mjg        ! index of grid point in global grid
 
    ! Description of the mask
-   LOGICAL, PUBLIC, SAVE  ::  use_msk3d = .FALSE.
+   LOGICAL, PUBLIC, SAVE  :: use_mask3d = .FALSE.
+   INTEGER, PUBLIC, SAVE  :: grid_type = 1
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: rmask2d  ! land/ocean mask at T-points
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: umask2d  ! land/ocean mask at U-points
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: vmask2d  ! land/ocean mask at V-points

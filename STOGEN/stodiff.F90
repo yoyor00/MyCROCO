@@ -11,7 +11,7 @@ MODULE stodiff
    USE stowhite        ! uncorrelatedi normal  random number generator
    ! user supplied external resources
    USE stoexternal , only : wp, jpi, jpj, lbc_lnk, rmask2d, umask2d, vmask2d, &
-                          & rmask3d, umask3d, vmask3d
+                          & rmask3d, umask3d, vmask3d, grid_type
 
    IMPLICIT NONE
    PRIVATE
@@ -117,22 +117,41 @@ CONTAINS
          END DO
          END DO
       ELSEIF (diff_type==1) THEN
-         ! Laplacian diffusion, with mask taken into account
-         psto(1:jpi,1:jpj) = psto(1:jpi,1:jpj) * rmask2d(1:jpi,1:jpj)
-         ! 1. Gradient computation
-         DO jj = 1, jpj-1
-         DO ji = 1, jpi-1
-            ztu(ji,jj) = ( psto(ji+1,jj  ) - psto(ji,jj) ) * umask2d(ji,jj)
-            ztv(ji,jj) = ( psto(ji  ,jj+1) - psto(ji,jj) ) * vmask2d(ji,jj)
-         END DO
-         END DO
-         ! 2. Divergence computation
-         DO jj = 2, jpj-1
-         DO ji = 2, jpi-1
+         IF (grid_type==0) THEN
+            ! Laplacian diffusion, with mask taken into account
+            psto(1:jpi,1:jpj) = psto(1:jpi,1:jpj) * rmask2d(1:jpi,1:jpj)
+            ! 1. Gradient computation
+            DO jj = 1, jpj-1
+            DO ji = 1, jpi-1
+               ztu(ji,jj) = ( psto(ji+1,jj  ) - psto(ji,jj) ) * umask2d(ji,jj)
+               ztv(ji,jj) = ( psto(ji  ,jj+1) - psto(ji,jj) ) * vmask2d(ji,jj)
+            END DO
+            END DO
+            ! 2. Divergence computation
+            DO jj = 2, jpj-1
+            DO ji = 2, jpi-1
             psto(ji,jj) = psto(ji,jj) + 0.125_wp * (  ztu(ji,jj) - ztu(ji-1,jj)   &
                &                                    + ztv(ji,jj) - ztv(ji,jj-1)  )
-         END DO
-         END DO
+            END DO
+            END DO
+         ELSE
+            ! Laplacian diffusion, with mask taken into account
+            psto(1:jpi,1:jpj) = psto(1:jpi,1:jpj) * rmask2d(1:jpi,1:jpj)
+            ! 1. Gradient computation
+            DO jj = 2, jpj
+            DO ji = 2, jpi
+               ztu(ji,jj) = ( psto(ji,jj) - psto(ji-1,jj) ) * umask2d(ji,jj)
+               ztv(ji,jj) = ( psto(ji,jj) - psto(ji,jj-1) ) * vmask2d(ji,jj)
+            END DO
+            END DO
+            ! 2. Divergence computation
+            DO jj = 2, jpj-1
+            DO ji = 2, jpi-1
+               psto(ji,jj) = psto(ji,jj) + 0.125_wp * (  ztu(ji+1,jj) - ztu(ji,jj)   &
+                  &                                    + ztv(ji,jj+1) - ztv(ji,jj)  )
+            END DO
+            END DO
+         ENDIF
       ELSE
          STOP 'Bad diffusion operator in stodiff'
       ENDIF
