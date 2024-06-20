@@ -388,8 +388,8 @@ public
     LOGICAL :: l_outsed_sed_rate ! Advection speed of mud particles
     LOGICAL :: l_outsed_hinder ! Shackling sand / gravel (dimensionless) between 0 and 1
     INTEGER :: nk_nivsed_out ! number of saved sediment layers 
-        ! unused if choice_nivsed_out = 1                     
-        ! <ksdmax if choice_nivsed_out = 2, 
+        ! =ksdmax if choice_nivsed_out = 1                     
+        ! <=ksdmax if choice_nivsed_out = 2, 
         ! unused if choice_nivsed_out = 3
         !  <6 if choice_nivsed_out = 4, 
     INTEGER :: choice_nivsed_out ! choice of saving output  (1 to 4)
@@ -600,7 +600,6 @@ public
     CHARACTER(LEN=75), DIMENSION(:, :), ALLOCATABLE :: vname_rstMust    ! Vector of characteristics of each outputed variables
 
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: ep_nivsed_outp1
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: nivsed_out
     REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE :: var2D_hsed
     REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_cvsed
     REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_poro

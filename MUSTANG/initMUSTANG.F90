@@ -1198,305 +1198,316 @@ CONTAINS
     ENDIF 
 
     END SUBROUTINE MUSTANG_sedinit
-  
+
+!!===========================================================================
+
+    SUBROUTINE MUSTANG_check_output_param
+    !&E--------------------------------------------------------------------------
+    !&E                 ***  ROUTINE MUSTANG_check_output_param  ***
+    !&E
+    !&E ** Purpose : check input options and input parameters compatibilities
+    !&E--------------------------------------------------------------------------
+        !! * Local declarations
+        INTEGER        :: k, err, nk_nivsed_outlu
+        REAL(KIND=rsh) :: dzs_estim
+
+        nk_nivsed_outlu = nk_nivsed_out
+        IF(choice_nivsed_out == 1 ) THEN
+            MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save on all the sediment layers (ksdmax)'
+            nk_nivsed_out = ksdmax
+        ELSE IF(choice_nivsed_out == 2 ) THEN
+            IF(nk_nivsed_outlu > ksdmax) THEN
+                nk_nivsed_out = ksdmax
+            ELSE IF (nk_nivsed_outlu < 1 ) THEN
+                MPI_master_only WRITE(iscreenlog,*)'Wrong nk_nivsed_out value, should be between 1 and',ksdmax
+                STOP
+            ENDIF 
+            MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save only for the first ', nk_nivsed_out, &
+                                    ' layers from sediment surface, one average for the last'
+        ELSE IF(choice_nivsed_out == 3 ) THEN
+            dzs_estim=MIN(dzsmaxuni,hseduni/ksmauni)
+            nk_nivsed_out = MIN(ksdmax, INT(epmax_nivsed_out / dzs_estim) +3) 
+            MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save from sediment surface till ',  &
+                                epmax_nivsed_out*1000,'mmeters (integration below)'
+            MPI_master_only WRITE(iscreenlog,*)'the last layer saved in the sediment output file will be that  ',  &
+                                'the bottom of which exceeds the desired maximum thickness '          
+            IF (.NOT. l_dzsmaxuni) THEN
+                MPI_master_only WRITE(iscreenlog,*)
+                MPI_master_only WRITE(iscreenlog,*)'            if dzsmax is not uniform, it could be smaller than dzsmaxuni and  &
+                            then there may be points where '
+                MPI_master_only WRITE(iscreenlog,*)'             this number is not sufficient to describe the maximum thickness'
+                MPI_master_only WRITE(iscreenlog,*)
+                MPI_master_only WRITE(iscreenlog,*)'This option is not recommended with l_dzsmaxuni=.False.'
+            ENDIF
+    
+        ELSE IF(choice_nivsed_out == 4 ) THEN
+            IF(nk_nivsed_outlu > 5 ) THEN
+                MPI_master_only WRITE(iscreenlog,*)'ERROR in namelist namsedoutput (paraMUSTANG.txt) '
+                MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out must be <=5'
+                MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out is automatically set to 5 '
+                MPI_master_only WRITE(iscreenlog,*)'and an latter layer (6th) is added to integrate till the bottom sediment  '
+                nk_nivsed_outlu = 5
+            ELSE IF (nk_nivsed_outlu < 1 ) THEN
+                MPI_master_only WRITE(iscreenlog,*)'Wrong nk_nivsed_out value, should be between 1 and 5'
+                STOP
+            ENDIF   
+            err = 0
+            DO k=1,nk_nivsed_outlu
+                IF (ep_nivsed_out(k) == 0.) THEN
+                    MPI_master_only WRITE(iscreenlog,*)'Wrong ep_nivsed_out(', k ,') value, should not be zero'
+                    err = err +1 
+                ENDIF
+            ENDDO
+            IF (err>0) THEN
+                STOP
+            ENDIF     
+            
+            nk_nivsed_out =  nk_nivsed_outlu+1   
+            ALLOCATE(ep_nivsed_outp1(nk_nivsed_out))
+            ep_nivsed_outp1(1:nk_nivsed_outlu)=ep_nivsed_out(1:nk_nivsed_outlu)
+            ep_nivsed_outp1(nk_nivsed_out)=10.0_rsh  
+    
+            MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save on ',nk_nivsed_out-1, &
+                'integrated layers whom thickness are constant and given by user - first is  sediment surface'
+            MPI_master_only WRITE(iscreenlog,*)'the ',nk_nivsed_out,'the layer will be an integrated layer till the bottom' 
+    
+        ELSE
+            MPI_master_only WRITE(iscreenlog,*)'Wrong choice_nivsed_out value, should be 1,2,3 or 4'
+            STOP
+        ENDIF !choice_nivsed_out
+
+    END SUBROUTINE MUSTANG_check_output_param
+
+!!===========================================================================
+
+    SUBROUTINE MUSTANG_allocate_output_arrays
+    !&E--------------------------------------------------------------------------
+    !&E                 ***  ROUTINE MUSTANG_allocate_output_arrays  ***
+    !&E
+    !&E ** Purpose : prepare needed output arrays
+    !&E--------------------------------------------------------------------------
+
+#if defined key_BLOOM_insed
+        USE bioloinit,  ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
+
+        ALLOCATE(var2D_diagsed(PROC_IN_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
+        ALLOCATE(var3D_diagsed(nk_nivsed_out,PROC_IN_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
+#endif
+
+        IF (l_outsed_hsed) THEN
+            ALLOCATE(var2D_hsed(PROC_IN_ARRAY))
+            var2D_hsed(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_dzs) THEN
+            ALLOCATE(var3D_dzs(nk_nivsed_out,PROC_IN_ARRAY))
+            var3D_dzs(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_poro) THEN
+            ALLOCATE(var3D_poro(nk_nivsed_out,PROC_IN_ARRAY))
+            var3D_poro(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_temp_sed) THEN
+            ALLOCATE(var3D_TEMP(nk_nivsed_out,PROC_IN_ARRAY))
+            var3D_TEMP(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_salt_sed) THEN
+            ALLOCATE(var3D_SAL(nk_nivsed_out,PROC_IN_ARRAY))
+            var3D_SAL(:,PROC_IN_ARRAY)= 0.0_rsh
+        ENDIF
+        IF (l_outsed_cv_sed) THEN
+            ALLOCATE(var3D_cvsed(nk_nivsed_out,PROC_IN_ARRAY,ntrc_subs))
+            var3D_cvsed(:,PROC_IN_ARRAY,ntrc_subs) = 0.0_rsh
+        ENDIF    
+        IF (l_outsed_toce) THEN
+            ALLOCATE(var2D_toce(nvpc,PROC_IN_ARRAY))
+            var2D_toce(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_flx_s2w) THEN
+            ALLOCATE(var2D_flx_s2w(nvpc,PROC_IN_ARRAY))
+            var2D_flx_s2w(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_flx_w2s) THEN
+            ALLOCATE(var2D_flx_w2s(nvpc,PROC_IN_ARRAY))
+            var2D_flx_w2s(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+#ifdef key_MUSTANG_V2
+        IF (l_outsed_pephm_fcor) THEN
+            ALLOCATE(var2D_pephm_fcor(nvpc,PROC_IN_ARRAY))
+            var2D_pephm_fcor(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+#ifdef key_MUSTANG_bedload
+        IF (l_outsed_flx_bxy) THEN
+            ALLOCATE(var2D_flx_bx(nvpc,PROC_IN_ARRAY))
+            var2D_flx_bx(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_flx_bxy) THEN
+            ALLOCATE(var2D_flx_by(nvpc,PROC_IN_ARRAY))
+            var2D_flx_by(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_bil_bedload) THEN
+            ALLOCATE(var2D_bil_bedload(nvpc,PROC_IN_ARRAY))
+            var2D_bil_bedload(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_fsusp) THEN
+            ALLOCATE(var2D_fsusp(nvpc,PROC_IN_ARRAY))
+            var2D_fsusp(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+#endif
+#endif
+        IF (l_outsed_frmudsup) THEN
+            ALLOCATE(var2D_frmudsup(PROC_IN_ARRAY))
+            var2D_frmudsup(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_dzs_ksmax) THEN
+            ALLOCATE(var2D_dzs_ksmax(PROC_IN_ARRAY))
+            var2D_dzs_ksmax(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_flx_s2w_coh) THEN
+            ALLOCATE(var2D_flx_s2w_coh(PROC_IN_ARRAY))
+            var2D_flx_s2w_coh(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_flx_w2s_coh) THEN
+            ALLOCATE(var2D_flx_w2s_coh(PROC_IN_ARRAY))
+            var2D_flx_w2s_coh(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_flx_s2w_noncoh) THEN
+            ALLOCATE(var2D_flx_s2w_noncoh(PROC_IN_ARRAY))
+            var2D_flx_s2w_noncoh(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_flx_w2s_noncoh) THEN
+            ALLOCATE(var2D_flx_w2s_noncoh(PROC_IN_ARRAY))
+            var2D_flx_w2s_noncoh(PROC_IN_ARRAY)= 0.0_rsh
+        ENDIF
+#ifdef key_MUSTANG_V2
+        IF (l_outsed_theoric_active_layer) THEN
+            ALLOCATE(var2D_theoric_active_layer(PROC_IN_ARRAY))
+            var2D_theoric_active_layer(PROC_IN_ARRAY)= 0.0_rsh
+        ENDIF
+        IF (l_outsed_tero_noncoh) THEN
+            ALLOCATE(var2D_tero_noncoh(PROC_IN_ARRAY))
+            var2D_tero_noncoh(PROC_IN_ARRAY)= 0.0_rsh
+        ENDIF
+        IF (l_outsed_tero_coh) THEN
+            ALLOCATE(var2D_tero_coh(PROC_IN_ARRAY))
+            var2D_tero_coh(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_pct_ero) THEN
+            ALLOCATE(var2D_pct_iter_noncoh(PROC_IN_ARRAY))
+            var2D_pct_iter_noncoh(PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_pct_iter_coh(PROC_IN_ARRAY))
+            var2D_pct_iter_coh(PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_niter_ero(PROC_IN_ARRAY))
+            var2D_niter_ero(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+#ifdef key_MUSTANG_bedload
+        IF (l_outsed_flx_bxy_int) THEN
+            ALLOCATE(var2D_flx_bx_int(PROC_IN_ARRAY))
+            var2D_flx_bx_int(PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_by_int(PROC_IN_ARRAY))
+            var2D_flx_by_int(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_bil_bedload_int) THEN
+            ALLOCATE(var2D_bil_bedload_int(PROC_IN_ARRAY)) 
+            var2D_bil_bedload_int(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+#endif
+#endif
+        IF (l_dyn_insed) THEN
+            IF (l_outsed_loadograv) THEN
+                IF (choice_nivsed_out == 1) then
+                    ALLOCATE(var3Dksed_loadograv(nk_nivsed_out,PROC_IN_ARRAY)) 
+                    var3Dksed_loadograv(:,PROC_IN_ARRAY) = 0.0_rsh
+                ELSE
+                    l_outsed_loadograv = .FALSE. ! no output if not all sediment in output
+                ENDIF
+            ENDIF
+            IF (l_outsed_permeab) THEN
+                IF (choice_nivsed_out == 1) then
+                    ALLOCATE(var3Dksed_permeab(nk_nivsed_out,PROC_IN_ARRAY)) 
+                    var3Dksed_permeab(:,PROC_IN_ARRAY) = 0.0_rsh
+                ELSE
+                    l_outsed_permeab = .FALSE. ! no output if not all sediment in output
+                ENDIF
+            ENDIF
+            IF (l_outsed_sigmapsg) THEN
+                IF (choice_nivsed_out == 1) then
+                    ALLOCATE(var3Dksed_sigmapsg(nk_nivsed_out,PROC_IN_ARRAY)) 
+                    var3Dksed_sigmapsg(:,PROC_IN_ARRAY) = 0.0_rsh
+                ELSE
+                    l_outsed_sigmapsg = .FALSE. ! no output if not all sediment in output
+                ENDIF
+            ENDIF
+            IF (l_outsed_dtsdzs) THEN
+                IF (choice_nivsed_out == 1) then
+                    ALLOCATE(var3Dksed_dtsdzs(nk_nivsed_out,PROC_IN_ARRAY)) 
+                    var3Dksed_dtsdzs(:,PROC_IN_ARRAY) = 0.0_rsh
+                ELSE
+                    l_outsed_dtsdzs = .FALSE. ! no output if not all sediment in output
+                ENDIF
+            ENDIF
+            IF (l_outsed_hinder) THEN
+                IF (choice_nivsed_out == 1) then
+                    ALLOCATE(var3Dksed_hinder(nk_nivsed_out,PROC_IN_ARRAY)) 
+                    var3Dksed_hinder(:,PROC_IN_ARRAY) = 0.0_rsh
+                ELSE
+                    l_outsed_hinder = .FALSE. ! no output if not all sediment in output
+                ENDIF
+            ENDIF
+            IF (l_outsed_sed_rate) THEN
+                IF (choice_nivsed_out == 1) then
+                    ALLOCATE(var3Dksed_sed_rate(nk_nivsed_out,PROC_IN_ARRAY)) 
+                    var3Dksed_sed_rate(:,PROC_IN_ARRAY) = 0.0_rsh
+                ELSE
+                    l_outsed_sed_rate = .FALSE. ! no output if not all sediment in output
+                ENDIF
+            ENDIF
+            IF (l_outsed_sigmadjge) THEN
+                IF (choice_nivsed_out == 1) then
+                    ALLOCATE(var3Dksed_sigmadjge(nk_nivsed_out,PROC_IN_ARRAY)) 
+                    var3Dksed_sigmadjge(:,PROC_IN_ARRAY) = 0.0_rsh
+                ELSE
+                    l_outsed_sigmadjge = .FALSE. ! no output if not all sediment in output
+                ENDIF
+            ENDIF
+            IF (l_outsed_stateconsol) THEN
+                IF (choice_nivsed_out == 1) then
+                    ALLOCATE(var3Dksed_stateconsol(nk_nivsed_out,PROC_IN_ARRAY)) 
+                    var3Dksed_stateconsol(:,PROC_IN_ARRAY) = 0.0_rsh
+                ELSE
+                    l_outsed_stateconsol = .FALSE. ! no output if not all sediment in output
+                ENDIF
+            ENDIF
+                    
+        ENDIF
+
+    END SUBROUTINE MUSTANG_allocate_output_arrays
+
 !!===========================================================================
 
     SUBROUTINE MUSTANG_init_output
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE MUSTANG_init_output  ***
     !&E
-    !&E ** Purpose : define output arrays in sediment
-    !&E
-    !&E ** Description : 
-    !&E
-    !&E ** Called by :  MUSTANG_init
-    !&E 
+    !&E ** Purpose : check parameters and prepare needed arrays
     !&E--------------------------------------------------------------------------
-    !! * Modules used
-#if defined key_BLOOM_insed
-    USE bioloinit,  ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
-#endif
-
-    !! * Local declarations
-    INTEGER        :: k, nk_nivsed_outlu, nv_out
-    REAL(KIND=rsh) :: dzs_estim
-                        
-    !!--------------------------------------------------------------------------
-    !! * Executable part
 
     MPI_master_only WRITE(iscreenlog, *)
     MPI_master_only WRITE(iscreenlog, *) '***************************************************************'
-    MPI_master_only WRITE(iscreenlog, *) '*****************     SEDIMENT OUTPUT  ************************'
+    MPI_master_only WRITE(iscreenlog, *) '*****************     SEDIMENT INIT OUTPUT  *******************'
     MPI_master_only WRITE(iscreenlog, *) '***************************************************************'
     MPI_master_only WRITE(iscreenlog, *)
-    nk_nivsed_outlu = nk_nivsed_out
-    IF(choice_nivsed_out == 1 ) THEN
-        ALLOCATE(nivsed_out(0:ksdmax+1))
-        nivsed_out(0)=0
-        DO k=ksdmin,ksdmax
-            nivsed_out(k)=ksdmax+1-k
-        END DO
-        nivsed_out(ksdmax+1)=0
-        MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save on all the sediment layers (ksdmax)'
-    ELSE IF(choice_nivsed_out == 2 ) THEN
-        IF(nk_nivsed_outlu > ksdmax) THEN
-            nk_nivsed_out=ksdmax
-        ENDIF
-        ALLOCATE(nivsed_out(0:nk_nivsed_out+1))
-        nivsed_out(0)=0
-        DO k=1,nk_nivsed_out
-            nivsed_out(k)=nk_nivsed_out+1-k
-        END DO
-        nivsed_out(nk_nivsed_out+1)=0       
-        MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save only for the first ', nk_nivsed_out, &
-                                ' layers from sediment surface, one average for the last'
-    ELSE IF(choice_nivsed_out == 3 ) THEN
-        dzs_estim=MIN(dzsmaxuni,hseduni/ksmauni)
-        nk_nivsed_out = MIN(ksdmax, INT(epmax_nivsed_out / dzs_estim) +3) 
-        ALLOCATE(nivsed_out(0:nk_nivsed_out+1))
-        nivsed_out(0)=0
-        DO k=1,nk_nivsed_out
-            nivsed_out(k)=nk_nivsed_out+1-k
-        END DO
-        nivsed_out(nk_nivsed_out+1)=0
 
-        MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save from sediment surface till ',  &
-                            epmax_nivsed_out*1000,'mmeters (integration below)'
-        MPI_master_only WRITE(iscreenlog,*)'the last layer saved in the sediment output file will be that  ',  &
-                            'the bottom of which exceeds the desired maximum thickness '          
-!           MPI_master_only WRITE(iscreenlog,*)'number of sediment layers in output file :',nk_nivsed_out,'INT(',epmax_nivsed_out,'/',dzs_estim,'+3)'
-        IF (.NOT. l_dzsmaxuni) THEN
-            MPI_master_only WRITE(iscreenlog,*)
-!             MPI_master_only WRITE(iscreenlog,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-!             MPI_master_only WRITE(iscreenlog,*)'WARNING : the maximum number of saved sed. layers has been evaluated from dzsmaxuni=',dzsmaxuni
-            MPI_master_only WRITE(iscreenlog,*)'            if dzsmax is not uniform, it could be smaller than dzsmaxuni and  &
-                        then there may be points where '
-            MPI_master_only WRITE(iscreenlog,*)'             this number is not sufficient to describe the maximum thickness'
-            MPI_master_only WRITE(iscreenlog,*)
-            MPI_master_only WRITE(iscreenlog,*)'This option is not recommended with l_dzsmaxuni=.False.'
-!             MPI_master_only WRITE(iscreenlog,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-        ENDIF
+    CALL MUSTANG_check_output_param
 
-    ELSE IF(choice_nivsed_out == 4 ) THEN
-        IF(nk_nivsed_outlu > 5 ) THEN
-            MPI_master_only WRITE(iscreenlog,*)'ERROR in namelist namsedoutput (paraMUSTANG.txt) '
-            MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out must be <=5'
-            MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out is automatically set to 5 '
-            MPI_master_only WRITE(iscreenlog,*)'and an latter layer (6th) is added to integrate till the bottom sediment  '
-            nk_nivsed_outlu = 5
-        ENDIF        
-        nk_nivsed_out =  nk_nivsed_outlu+1   
-        ALLOCATE(ep_nivsed_outp1(nk_nivsed_out))
-        ep_nivsed_outp1(1:nk_nivsed_outlu)=ep_nivsed_out(1:nk_nivsed_outlu)
-        ep_nivsed_outp1(nk_nivsed_out)=10.0_rsh  
-
-        MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save on ',nk_nivsed_out-1, &
-            'integrated layers whom thickness are constant and given by user - first is  sediment surface'
-        MPI_master_only WRITE(iscreenlog,*)'the ',nk_nivsed_out,'the layer will be an integrated layer till the bottom' 
-
-        ALLOCATE(nivsed_out(0:nk_nivsed_out+1))
-        nivsed_out(0)=0
-        DO k=1,nk_nivsed_out
-            nivsed_out(k)=nk_nivsed_out+1-k
-        END DO
-        nivsed_out(nk_nivsed_out+1)=0
-
-    ENDIF !choice_nivsed_out
-
-    IF (l_outsed_hsed) THEN
-        ALLOCATE(var2D_hsed(PROC_IN_ARRAY))
-        var2D_hsed(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_dzs) THEN
-        ALLOCATE(var3D_dzs(nk_nivsed_out,PROC_IN_ARRAY))
-        var3D_dzs(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_poro) THEN
-        ALLOCATE(var3D_poro(nk_nivsed_out,PROC_IN_ARRAY))
-        var3D_poro(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_temp_sed) THEN
-        ALLOCATE(var3D_TEMP(nk_nivsed_out,PROC_IN_ARRAY))
-        var3D_TEMP(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_salt_sed) THEN
-        ALLOCATE(var3D_SAL(nk_nivsed_out,PROC_IN_ARRAY))
-        var3D_SAL(:,PROC_IN_ARRAY)= 0.0_rsh
-    ENDIF
-    IF (l_outsed_cv_sed) THEN
-        ALLOCATE(var3D_cvsed(nk_nivsed_out,PROC_IN_ARRAY,ntrc_subs))
-        var3D_cvsed(:,PROC_IN_ARRAY,ntrc_subs) = 0.0_rsh
-    ENDIF
-
-#ifdef key_BLOOM_insed
-    ALLOCATE(var2D_diagsed(PROC_IN_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
-    ALLOCATE(var3D_diagsed(nk_nivsed_out,PROC_IN_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
-#endif
-
-
-    IF (l_outsed_toce) THEN
-        ALLOCATE(var2D_toce(nvpc,PROC_IN_ARRAY))
-        var2D_toce(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_flx_s2w) THEN
-        ALLOCATE(var2D_flx_s2w(nvpc,PROC_IN_ARRAY))
-        var2D_flx_s2w(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_flx_w2s) THEN
-        ALLOCATE(var2D_flx_w2s(nvpc,PROC_IN_ARRAY))
-        var2D_flx_w2s(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-#ifdef key_MUSTANG_V2
-    IF (l_outsed_pephm_fcor) THEN
-        ALLOCATE(var2D_pephm_fcor(nvpc,PROC_IN_ARRAY))
-        var2D_pephm_fcor(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-#ifdef key_MUSTANG_bedload
-    IF (l_outsed_flx_bxy) THEN
-        ALLOCATE(var2D_flx_bx(nvpc,PROC_IN_ARRAY))
-        var2D_flx_bx(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_flx_bxy) THEN
-        ALLOCATE(var2D_flx_by(nvpc,PROC_IN_ARRAY))
-        var2D_flx_by(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_bil_bedload) THEN
-        ALLOCATE(var2D_bil_bedload(nvpc,PROC_IN_ARRAY))
-        var2D_bil_bedload(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_fsusp) THEN
-        ALLOCATE(var2D_fsusp(nvpc,PROC_IN_ARRAY))
-        var2D_fsusp(:,PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-#endif
-#endif
-    IF (l_outsed_frmudsup) THEN
-        ALLOCATE(var2D_frmudsup(PROC_IN_ARRAY))
-        var2D_frmudsup(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_dzs_ksmax) THEN
-        ALLOCATE(var2D_dzs_ksmax(PROC_IN_ARRAY))
-        var2D_dzs_ksmax(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_flx_s2w_coh) THEN
-        ALLOCATE(var2D_flx_s2w_coh(PROC_IN_ARRAY))
-        var2D_flx_s2w_coh(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_flx_w2s_coh) THEN
-        ALLOCATE(var2D_flx_w2s_coh(PROC_IN_ARRAY))
-        var2D_flx_w2s_coh(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_flx_s2w_noncoh) THEN
-        ALLOCATE(var2D_flx_s2w_noncoh(PROC_IN_ARRAY))
-        var2D_flx_s2w_noncoh(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_flx_w2s_noncoh) THEN
-        ALLOCATE(var2D_flx_w2s_noncoh(PROC_IN_ARRAY))
-        var2D_flx_w2s_noncoh(PROC_IN_ARRAY)= 0.0_rsh
-    ENDIF
-#ifdef key_MUSTANG_V2
-    IF (l_outsed_theoric_active_layer) THEN
-        ALLOCATE(var2D_theoric_active_layer(PROC_IN_ARRAY))
-        var2D_theoric_active_layer(PROC_IN_ARRAY)= 0.0_rsh
-    ENDIF
-    IF (l_outsed_tero_noncoh) THEN
-        ALLOCATE(var2D_tero_noncoh(PROC_IN_ARRAY))
-        var2D_tero_noncoh(PROC_IN_ARRAY)= 0.0_rsh
-    ENDIF
-    IF (l_outsed_tero_coh) THEN
-        ALLOCATE(var2D_tero_coh(PROC_IN_ARRAY))
-        var2D_tero_coh(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_pct_ero) THEN
-        ALLOCATE(var2D_pct_iter_noncoh(PROC_IN_ARRAY))
-        var2D_pct_iter_noncoh(PROC_IN_ARRAY) = 0.0_rsh
-        ALLOCATE(var2D_pct_iter_coh(PROC_IN_ARRAY))
-        var2D_pct_iter_coh(PROC_IN_ARRAY) = 0.0_rsh
-        ALLOCATE(var2D_niter_ero(PROC_IN_ARRAY))
-        var2D_niter_ero(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-#ifdef key_MUSTANG_bedload
-    IF (l_outsed_flx_bxy_int) THEN
-        ALLOCATE(var2D_flx_bx_int(PROC_IN_ARRAY))
-        var2D_flx_bx_int(PROC_IN_ARRAY) = 0.0_rsh
-        ALLOCATE(var2D_flx_by_int(PROC_IN_ARRAY))
-        var2D_flx_by_int(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-    IF (l_outsed_bil_bedload_int) THEN
-        ALLOCATE(var2D_bil_bedload_int(PROC_IN_ARRAY)) 
-        var2D_bil_bedload_int(PROC_IN_ARRAY) = 0.0_rsh
-    ENDIF
-#endif
-#endif
-    IF (l_dyn_insed) THEN
-        IF (l_outsed_loadograv) THEN
-            IF (choice_nivsed_out == 1) then
-                ALLOCATE(var3Dksed_loadograv(nk_nivsed_out,PROC_IN_ARRAY)) 
-                var3Dksed_loadograv(:,PROC_IN_ARRAY) = 0.0_rsh
-            ELSE
-                l_outsed_loadograv = .FALSE. ! no output if not all sediment in output
-            ENDIF
-        ENDIF
-        IF (l_outsed_permeab) THEN
-            IF (choice_nivsed_out == 1) then
-                ALLOCATE(var3Dksed_permeab(nk_nivsed_out,PROC_IN_ARRAY)) 
-                var3Dksed_permeab(:,PROC_IN_ARRAY) = 0.0_rsh
-            ELSE
-                l_outsed_permeab = .FALSE. ! no output if not all sediment in output
-            ENDIF
-        ENDIF
-        IF (l_outsed_sigmapsg) THEN
-            IF (choice_nivsed_out == 1) then
-                ALLOCATE(var3Dksed_sigmapsg(nk_nivsed_out,PROC_IN_ARRAY)) 
-                var3Dksed_sigmapsg(:,PROC_IN_ARRAY) = 0.0_rsh
-            ELSE
-                l_outsed_sigmapsg = .FALSE. ! no output if not all sediment in output
-            ENDIF
-        ENDIF
-        IF (l_outsed_dtsdzs) THEN
-            IF (choice_nivsed_out == 1) then
-                ALLOCATE(var3Dksed_dtsdzs(nk_nivsed_out,PROC_IN_ARRAY)) 
-                var3Dksed_dtsdzs(:,PROC_IN_ARRAY) = 0.0_rsh
-            ELSE
-                l_outsed_dtsdzs = .FALSE. ! no output if not all sediment in output
-            ENDIF
-        ENDIF
-        IF (l_outsed_hinder) THEN
-            IF (choice_nivsed_out == 1) then
-                ALLOCATE(var3Dksed_hinder(nk_nivsed_out,PROC_IN_ARRAY)) 
-                var3Dksed_hinder(:,PROC_IN_ARRAY) = 0.0_rsh
-            ELSE
-                l_outsed_hinder = .FALSE. ! no output if not all sediment in output
-            ENDIF
-        ENDIF
-        IF (l_outsed_sed_rate) THEN
-            IF (choice_nivsed_out == 1) then
-                ALLOCATE(var3Dksed_sed_rate(nk_nivsed_out,PROC_IN_ARRAY)) 
-                var3Dksed_sed_rate(:,PROC_IN_ARRAY) = 0.0_rsh
-            ELSE
-                l_outsed_sed_rate = .FALSE. ! no output if not all sediment in output
-            ENDIF
-        ENDIF
-        IF (l_outsed_sigmadjge) THEN
-            IF (choice_nivsed_out == 1) then
-                ALLOCATE(var3Dksed_sigmadjge(nk_nivsed_out,PROC_IN_ARRAY)) 
-                var3Dksed_sigmadjge(:,PROC_IN_ARRAY) = 0.0_rsh
-            ELSE
-                l_outsed_sigmadjge = .FALSE. ! no output if not all sediment in output
-            ENDIF
-        ENDIF
-        IF (l_outsed_stateconsol) THEN
-            IF (choice_nivsed_out == 1) then
-                ALLOCATE(var3Dksed_stateconsol(nk_nivsed_out,PROC_IN_ARRAY)) 
-                var3Dksed_stateconsol(:,PROC_IN_ARRAY) = 0.0_rsh
-            ELSE
-                l_outsed_stateconsol = .FALSE. ! no output if not all sediment in output
-            ENDIF
-        ENDIF
-                
-    ENDIF
+    CALL MUSTANG_allocate_output_arrays
 
     CALL MUSTANG_init_vname
+
+    MPI_master_only WRITE(iscreenlog, *)
+    MPI_master_only WRITE(iscreenlog, *) '***************************************************************'
+    MPI_master_only WRITE(iscreenlog, *) '***************   SEDIMENT END INIT OUTPUT  *******************'
+    MPI_master_only WRITE(iscreenlog, *) '***************************************************************'
+    MPI_master_only WRITE(iscreenlog, *)
 
 
     END SUBROUTINE MUSTANG_init_output

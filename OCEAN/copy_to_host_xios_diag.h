@@ -1074,9 +1074,6 @@ c       endif
       if (xios_field_is_active("ksma")) then
 !$acc update host( ksma ) 
       endif
-      if (xios_field_is_active("eptot")) then
-!$acc update host( eptot ) 
-      endif
       if (xios_field_is_active(TRIM(nametrc))) then
 !$acc update host(  ) 
       endif
