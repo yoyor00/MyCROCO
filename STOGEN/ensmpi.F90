@@ -12,6 +12,8 @@ MODULE ensmpi
    !!----------------------------------------------------------------------
    ! include parameters from CROCO
    USE scalars
+   USE stoexternal , only : lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam, &
+                          & filnam_ref, filnam_cfg
 
    IMPLICIT NONE
    PRIVATE
@@ -45,7 +47,7 @@ CONTAINS
       !!
       !! ** Method  :   The global communicator is divided in nmember x mpi_com_croco
       !!----------------------------------------------------------------------
-      INTEGER                            :: jpnij          ! number of MPI subdomains in each ensemble
+      INTEGER                            :: jpnij          ! number of MPI subdomains in each ensemble member
       INTEGER                            :: jmember, jjproc
       INTEGER                            :: imember, impprank, ierr
       INTEGER, DIMENSION(:), ALLOCATABLE :: irank_member   ! list of processors for current member (dimension jpnij)
@@ -92,6 +94,7 @@ CONTAINS
       ! - a different name for XIOS context (needed if XIOS is used)
       ! - a different seed for the random number generator (needed if STOGEN is used)
       kmember = nn_ens_start + imember - 1
+      WRITE(cmember,'(i3.3)') kmember
 
       ! Deallocate arrays
       DEALLOCATE( irank_member , igrp_member )
@@ -107,7 +110,29 @@ CONTAINS
       !!
       !!----------------------------------------------------------------------
 
-      ! Get ensemble size, index of first member, and restart option
+      ! Namelist with general parameters for ensemble modules
+      NAMELIST/namens/ nn_ens_size, nn_ens_start, ln_ens_rst_in
+      !!----------------------------------------------------------------------
+      INTEGER  ::   ios                            ! Local integer output status for namelist read
+
+      ! Open namelist files
+      numnam_ref = 10 ; numnam_cfg = 11 ; lwm = .FALSE.
+      OPEN(UNIT=numnam_ref,FILE=filnam_ref,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
+      OPEN(UNIT=numnam_cfg,FILE=filnam_cfg,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
+
+
+      ! Read namens namelist : ensemble simulation
+      REWIND( numnam_ref )
+      READ  ( numnam_ref, namens, IOSTAT = ios, ERR = 901)
+901   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namens in reference namelist', lwp )
+
+      REWIND( numnam_cfg )
+      READ  ( numnam_cfg, namens, IOSTAT = ios, ERR = 902 )
+902   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namens in configuration namelist', lwp )
+      IF(lwm) WRITE ( numond, namens )
+
+      CLOSE(numnam_ref)
+      CLOSE(numnam_cfg)
 
    END SUBROUTINE ens_param_read
 

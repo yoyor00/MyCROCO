@@ -15,6 +15,11 @@ MODULE stoexternal
    ! include definition of grid and mask from CROCO
 #include "grid.h"
 
+#ifdef ENSEMBLE
+   ! include definition of local CROCO communicator (here to get member index)
+# include "mpi_cpl.h"
+#endif
+
    ! import MPI include file                                         |
    include 'mpif.h'
 
@@ -61,13 +66,10 @@ MODULE stoexternal
    INTEGER, PUBLIC ::   numnam_ref  =   -1      !: logical unit for reference namelist
    INTEGER, PUBLIC ::   numnam_cfg  =   -1      !: logical unit for configuration specific namelist
    INTEGER, PUBLIC ::   numond      =   -1      !: logical unit for Output Namelist Dynamics
+   CHARACTER(len=20), PUBLIC :: filnam_ref ='namelist_sto_ref' !: reference namelist filename
+   CHARACTER(len=20), PUBLIC :: filnam_cfg ='namelist_sto_cfg' !: configuration namelist filename
 
    ! Ensemble parameters
-   CHARACTER(len=3), PUBLIC :: cn_mem='001'            !: charcater string with ensemble member index
-   LOGICAL, PUBLIC          :: ln_ensemble = .FALSE.   !: control of ensemble simulations
-   LOGICAL, PUBLIC          :: ln_ens_rst_in = .FALSE. !: use ensemble (T) or single (F) input restart file
-   INTEGER, PUBLIC          :: nn_ens_size = 1         !: ensemble size
-   INTEGER, PUBLIC          :: nn_ens_start = 1        !: index of the first ensemble member
    INTEGER, PUBLIC          :: nmember = 1             !: index of current ensemble member
 
    ! Public routines
@@ -186,8 +188,13 @@ C$    integer  trd, omp_get_thread_num
 
       ! Open namelist files
       numnam_ref = 10 ; numnam_cfg = 11 ; lwm = .FALSE.
-      OPEN(UNIT=numnam_ref,FILE='namelist_sto_ref',STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
-      OPEN(UNIT=numnam_cfg,FILE='namelist_sto_cfg',STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
+      OPEN(UNIT=numnam_ref,FILE=filnam_ref,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
+      OPEN(UNIT=numnam_cfg,FILE=filnam_cfg,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
+
+#ifdef ENSEMBLE
+      ! Define ensemble member index
+      nmember = kmember
+#endif
 
       ! Define grid size (for local subdomain) -- 
       ! QJ: should correcpond to GLOBAL_2D_ARRAY defined in set_global_definitions.h

@@ -5,13 +5,19 @@ MODULE stobulk
    !! Purpose : Stochastic parameterization of the bulk formulation
    !!           for the air-sea fluxes
    !!======================================================================
-   USE stoexternal
+   USE stoexternal , only : wp, lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam, &
+                          & jpi, jpj
    USE stoarray
 
    IMPLICIT NONE
    PRIVATE
 
-   INTEGER, PUBLIC :: jstobulk_cd  ! index of stochastic field used for the drag coefficient
+   ! Index of stochastic field used for the drag coefficient
+   INTEGER, SAVE :: jstobulk_cd
+
+   ! Parameters of stochastic fields
+   REAL(wp), SAVE :: tcor = 3.0  ! time correlation
+   REAL(wp), SAVE :: std  = 0.3  ! standard deviation
 
    PUBLIC sto_bulk, sto_bulk_init, sto_bulk_cd
 
@@ -48,7 +54,7 @@ CONTAINS
       !!----------------------------------------------------------------------
 
       ! Read namelist block corresponding to this stochastic scheme
-      ! -> get parameters
+      CALL read_parameters
 
       ! Request index for a new stochastic array
       CALL sto_array_request_new(jstobulk_cd)
@@ -56,17 +62,19 @@ CONTAINS
       ! Set features of the requested stochastic field from parameters
       ! 1. time structure
       stofields(jstobulk_cd)%type_t='arn'
-      stofields(jstobulk_cd)%corr_t=3.0
+      stofields(jstobulk_cd)%corr_t=tcor
       stofields(jstobulk_cd)%nar_order=1
       stofields(jstobulk_cd)%nar_update=1
       ! 2. space structure (with diffusive operator)
-      stofields(jstobulk_cd)%type_xy='diffusive'
-      stofields(jstobulk_cd)%diff_passes=50
+      ! stofields(jstobulk_cd)%type_xy='diffusive'
+      stofields(jstobulk_cd)%type_xy='kernel'
+      stofields(jstobulk_cd)%corr_xy=10.
+      stofields(jstobulk_cd)%diff_passes=10
       stofields(jstobulk_cd)%diff_type=1  ! option 1 would require the mask
       ! 3. modified marginal distribution (here lognormal, with 30% std)
       stofields(jstobulk_cd)%type_variate='lognormal'
       stofields(jstobulk_cd)%ave=1.0
-      stofields(jstobulk_cd)%std=0.3
+      stofields(jstobulk_cd)%std=std
 
    END SUBROUTINE sto_bulk_init
 
@@ -84,6 +92,32 @@ CONTAINS
       suvstr(:,:) = suvstr(:,:) * stofields(jstobulk_cd)%sto2d(:,:)
 
    END SUBROUTINE sto_bulk_cd
+
+
+   SUBROUTINE read_parameters
+      !!----------------------------------------------------------------------
+      !!                  ***  routine read_parameters  ***
+      !!
+      !! ** Purpose :   Read parameters for this stochastic module
+      !!
+      !!----------------------------------------------------------------------
+
+      ! Namelist with parameters for this stochastic module
+      NAMELIST/namsto_bulk/ tcor, std
+      !!----------------------------------------------------------------------
+      INTEGER  ::   ios                            ! Local integer output status for namelist read
+
+      ! Read namsto_bulk namelist
+      REWIND( numnam_ref )
+      READ  ( numnam_ref, namsto_bulk, IOSTAT = ios, ERR = 901)
+901   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto_bulk in reference namelist', lwp )
+
+      REWIND( numnam_cfg )
+      READ  ( numnam_cfg, namsto_bulk, IOSTAT = ios, ERR = 902 )
+902   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto_bulk in configuration namelist', lwp )
+      IF(lwm) WRITE ( numond, namsto_bulk )
+
+   END SUBROUTINE read_parameters
 
    !!======================================================================
 END MODULE stobulk

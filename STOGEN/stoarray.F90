@@ -12,8 +12,7 @@ MODULE stoarray
    !!   sto_array_request_new  : request new stochastic field
    !!----------------------------------------------------------------------
    USE stoexternal , only : wp, lc, jpi, jpj, jpk, numout, &
-   &                       lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam, &
-   &                       ln_ens_rst_in, cn_mem
+   &                       lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam
 
    IMPLICIT NONE
    PRIVATE
@@ -150,9 +149,6 @@ CONTAINS
       READ  ( numnam_cfg, namsto, IOSTAT = ios, ERR = 902 )
 902   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto in configuration namelist', lwp )
       IF(lwm) WRITE ( numond, namsto )
-
-      ! define name of input restart file (if ensemble restart requred)
-      IF(ln_ens_rst_in) cn_storst_in = cn_mem//cn_storst_in
 
       ! Parameter print
       IF(lwp) THEN

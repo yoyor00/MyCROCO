@@ -102,8 +102,8 @@
 # undef  MUSTANG
 # undef  BBL
 
-# define STOGEN
-# define ENSEMBLE
+# undef STOGEN
+# undef ENSEMBLE
 
                       /* I/O server */
 # undef  XIOS

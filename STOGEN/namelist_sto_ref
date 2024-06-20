@@ -3,6 +3,13 @@
 !!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 !
 !-----------------------------------------------------------------------
+&namens        !   general parameters for ensemble simulations
+!-----------------------------------------------------------------------
+   nn_ens_size = 1         ! ensemble size
+   nn_ens_start = 1        ! index of the first ensemble member
+   ln_ens_rst_in = .FALSE. ! use ensemble (T) or single (F) input restart file
+/
+!-----------------------------------------------------------------------
 &namsto        !   general parameters for stochastic parameterization
 !-----------------------------------------------------------------------
    ln_rststo   = .false    ! start from mean parameter (F) or from restart file (T)
@@ -10,7 +17,9 @@
    cn_storst_in  = "restart_sto" !  suffix of stochastic parameter restart file (input)
    cn_storst_out = "restart_sto" !  suffix of stochastic parameter restart file (output)
 /
-
-
-
-
+!-----------------------------------------------------------------------
+&namsto_bulk   !   parameters for stochastic bulk formulation
+!-----------------------------------------------------------------------
+   tcor = 3.0  ! time correlation
+   std  = 0.3  ! standard deviation
+/

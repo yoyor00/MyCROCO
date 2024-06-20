@@ -154,7 +154,8 @@
 # if defined XIOS                       
       mpi_comm_all = MPI_COMM_WORLD      
 # else                                
-      mpi_comm_all = MPI_COMM_ALL   ! true world communicator
+!     mpi_comm_all = MPI_COMM_ALL   ! true world communicator
+      mpi_comm_all = mpi_comm_world   ! true world communicator
 # endif                                                   
       call ens_comm_set ( )                                  
 # endif

@@ -184,7 +184,11 @@
 #elif defined SEAGRASS
       fname='TEST_CASES/croco.in.Seagrass'
 #else
+# ifdef ENSEMBLE
+      fname=cmember//'croco.in'
+# else
       fname='croco.in'
+# endif
 #endif
 #ifdef MPI
       if (mynode.eq.0 .and. iargc().GT.0) call getarg(1,fname)

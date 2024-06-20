@@ -67,6 +67,20 @@
 
 /*
 ======================================================================
+   Set ENSEMBLE options:
+   Define MPI
+   Change the generic name of MPI communicator MPI_COMM_WORLD
+   to communicator used for individual member
+======================================================================
+*/
+#ifdef ENSEMBLE
+# define MPI
+# define MPI_COMM_WORLD ocean_grid_comm
+# define MPI_COMM_ALL MPI_COMM_WORLD
+#endif
+
+/*
+======================================================================
    Set OA COUPLING options:
    Define MPI
    Change the generic name of MPI communicator MPI_COMM_WORLD
