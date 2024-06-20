@@ -2226,21 +2226,39 @@ C 				  endif
 #if defined MUSTANG
       USE comsubstance, ONLY : name_var, nvpc
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
-      USE comMUSTANG, only: nk_nivsed_out, var3D_cvsed, var3D_dzs,
-     &                         var3D_TEMP, var3D_SAL, var3D_poro,
-     &                         var2D_hsed, ksma, tauskin, tauskin_c, tauskin_w,
-     &                         var2D_toce, var2D_flx_s2w, var2D_flx_w2s,
-     &                         var2D_pephm_fcor, var2D_flx_bx, var2D_flx_by, 
-     &                         var2D_bil_bedload, var2D_fsusp, 
-     &                         var2D_frmudsup, var2D_dzs_ksmax, 
-     &                         var2D_theoric_active_layer, 
-     &                         var2D_tero_noncoh, var2D_tero_coh, 
-     &                         var2D_pct_iter_noncoh, var2D_pct_iter_coh, 
-     &                         var2D_niter_ero, 
-     &                         var2D_flx_s2w_coh, var2D_flx_s2w_noncoh, 
-     &                         var2D_flx_w2s_coh, var2D_flx_w2s_noncoh, 
-     &                         var2D_flx_bx_int, var2D_flx_by_int, 
-     &                         var2D_bil_bedload_int, z0sed 
+      USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
+     &    l_outsed_poro, l_outsed_dzs, _outsed_temp_sed, l_outsed_salt_sed, 
+     &    l_outsed_cv_sed, l_outsed_toce, l_outsed_flx_s2w, l_outsed_flx_w2s,
+     &    l_outsed_pephm_fcor, l_outsed_flx_bxy, l_outsed_bil_bedload, 
+     &    l_outsed_fsusp, l_outsed_frmudsup, l_outsed_dzs_ksmax, 
+     &    l_outsed_theoric_active_layer, 
+     &    l_outsed_tero_noncoh, l_outsed_tero_coh, l_outsed_pct_ero,
+     &    l_outsed_flx_s2w_coh, l_outsed_flx_w2s_coh, 
+     &    l_outsed_flx_s2w_noncoh, l_outsed_flx_w2s_noncoh, 
+     &    l_outsed_flx_bxy_int, l_outsed_bil_bedload_int,
+     &    l_outsed_loadograv, l_outsed_sigmadjge, l_outsed_sigmapsg, 
+     &    l_outsed_permeab, l_outsed_stateconsol, l_outsed_dtsdzs, 
+     &    l_outsed_sed_rate, l_outsed_hinder,
+     &    var3D_cvsed, var3D_dzs,
+     &    var3D_TEMP, var3D_SAL, var3D_poro,
+     &    var2D_hsed, ksma, tauskin, tauskin_c, tauskin_w,
+     &    var2D_toce, var2D_flx_s2w, var2D_flx_w2s,
+     &    var2D_pephm_fcor, var2D_flx_bx, var2D_flx_by, 
+     &    var2D_bil_bedload, var2D_fsusp, 
+     &    var2D_frmudsup, var2D_dzs_ksmax, 
+     &    var2D_theoric_active_layer, 
+     &    var2D_tero_noncoh, var2D_tero_coh, 
+     &    var2D_pct_iter_noncoh, var2D_pct_iter_coh, 
+     &    var2D_niter_ero, 
+     &    var2D_flx_s2w_coh, var2D_flx_s2w_noncoh, 
+     &    var2D_flx_w2s_coh, var2D_flx_w2s_noncoh, 
+     &    var2D_flx_bx_int, var2D_flx_by_int, 
+     &    var2D_bil_bedload_int, z0sed,
+     &    l_dyn_insed, var3Dksed_dtsdzs, 
+     &    var3Dksed_loadograv, var3Dksed_permeab, 
+     &    var3Dksed_sed_rate, var3Dksed_sigmadjge, 
+     &    var3Dksed_sigmapsg, var3Dksed_hinder, 
+     &    var3Dksed_stateconsol
 
 #ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
@@ -3867,6 +3885,76 @@ c !$acc wait
       ENDIF
 #endif /* key_MUSTANG_bedload */
 #endif /* key_MUSTANG_V2 */
+
+      IF (l_dyn_insed) THEN
+            IF (l_outsed_dtsdzs) then
+                  if (xios_field_is_active('dtsdzs')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_dtsdzs(k,:,:)
+                        enddo
+                        call xios_send_field('dtsdzs',workrsed)
+                  endif
+            ENDIF
+            IF (l_outsed_loadograv) then
+                  if (xios_field_is_active('loadograv')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_loadograv(k,:,:)
+                        enddo
+                        call xios_send_field('loadograv',workrsed)
+                  endif
+            ENDIF
+            IF (l_outsed_permeab) then
+                  if (xios_field_is_active('permeab')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_permeab(k,:,:)
+                        enddo
+                        call xios_send_field('permeab',workrsed)
+                  endif
+            ENDIF
+            IF (l_outsed_sed_rate) then
+                  if (xios_field_is_active('sed_rate')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_sed_rate(k,:,:)
+                        enddo
+                        call xios_send_field('sed_rate',workrsed)
+                  endif
+            ENDIF
+            IF (l_outsed_sigmadjge) then
+                  if (xios_field_is_active('sigmadjge')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_sigmadjge(k,:,:)
+                        enddo
+                        call xios_send_field('sigmadjge',workrsed)
+                  endif
+            ENDIF
+            IF (l_outsed_sigmapsg) then
+                  if (xios_field_is_active('sigmapsg')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_sigmapsg(k,:,:)
+                        enddo
+                        call xios_send_field('sigmapsg',workrsed)
+                  endif
+            ENDIF
+            IF (l_outsed_hinder) then
+                  if (xios_field_is_active('hinder')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_hinder(k,:,:)
+                        enddo
+                        call xios_send_field('hinder',workrsed)
+                  endif
+            ENDIF
+            IF (l_outsed_stateconsol) then
+                  if (xios_field_is_active('stateconsol')) then
+                        do k=1,nk_nivsed_out
+                        workrsed(:,:,k)=var3Dksed_stateconsol(k,:,:)
+                        enddo
+                        call xios_send_field('stateconsol',workrsed)
+                  endif
+            ENDIF
+     
+      ENDIF
+
+
 # endif /* MUSTANG */     
 
 #  ifdef BBL
