@@ -65,6 +65,8 @@ download_latest:
 
 ana_run_gfortran:
   stage: run
+  only:
+    - schedules
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
