@@ -62,10 +62,12 @@ download_latest:
       - $CVTKHOME/latest
     when: always
     expire_in: 6 hour
+
 test:
-  stage:run
+  stage: run
   script:
     - echo "hello"
+    
 ana_run_gfortran:
   stage: run
   only:
