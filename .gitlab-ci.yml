@@ -46,6 +46,8 @@ variables:
 
 download_latest:
   stage: download
+  only:
+    - schedules
   tags:
     - ci.inria.fr
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
@@ -98,6 +100,8 @@ ana_run_gfortran:
 
 ana_run_intel:
   stage: run
+  only:
+    - schedules
   before_script:
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
