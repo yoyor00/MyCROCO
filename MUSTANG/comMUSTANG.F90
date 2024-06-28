@@ -347,46 +347,29 @@ public
 #endif
 
 
-    ! namsedoutput  
+    ! namsedoutput 
     LOGICAL :: l_outsed_nb_lay_sed ! To output the current number of layer
     LOGICAL :: l_outsed_hsed ! To the sediment thickness
     LOGICAL :: l_outsed_tauskin ! To output the total skin stress
-    LOGICAL :: l_outsed_tauskin_c ! To output the current skin stress
-    LOGICAL :: l_outsed_tauskin_w  ! To output the wave skin stress
+    LOGICAL :: l_outsed_tauskin_cw ! To output the current skin stress and the wave skin stress
     LOGICAL :: l_outsed_poro  ! To output the porosity
     LOGICAL :: l_outsed_dzs  ! To output the sediment thickness of each layer
     LOGICAL :: l_outsed_temp_sed ! To output the temperature in sediment 
     LOGICAL :: l_outsed_salt_sed ! To output the salinity in sediment 
     LOGICAL :: l_outsed_cv_sed ! To output each sediment class concentration
+    LOGICAL :: l_outsed_ws ! To output each MUD class settling velocities
     LOGICAL :: l_outsed_toce ! To output the critical erosion stress 
-    LOGICAL :: l_outsed_flx_s2w ! To output the sediment to water fluxes
-    LOGICAL :: l_outsed_flx_w2s ! To output the water to sediment fluxes
+    LOGICAL :: l_outsed_flx_s2w_w2s ! To output the sediment to water and the water to sediment fluxes
     LOGICAL :: l_outsed_pephm_fcor ! To output the hindering exposure factor 
-    LOGICAL :: l_outsed_flx_bxy ! To output the bedload flux along x/y-axis 
-    LOGICAL :: l_outsed_bil_bedload ! To output the divergence of bedload flux 
+    LOGICAL :: l_outsed_bedload ! To output the bedload flux along x/y-axis  andthe divergence of bedload flux 
     LOGICAL :: l_outsed_fsusp ! To output the fraction of transport in susp
     LOGICAL :: l_outsed_frmudsup ! To output mud fraction in the ksmax layer
     LOGICAL :: l_outsed_dzs_ksmax ! To output layer thickness at sed. surface
     LOGICAL :: l_outsed_theoric_active_layer ! To output theoric act. lay.
-    LOGICAL :: l_outsed_tero_noncoh ! Time elapsed in non-cohesive erosion 
-    LOGICAL :: l_outsed_tero_coh ! Time elapsed in cohesive erosion 
-    LOGICAL :: l_outsed_pct_ero ! Iterations in sed_erosion and part in coh and noncoh during time step
+    LOGICAL :: l_outsed_ero_details ! To output iterations in sed_erosion and part in coh and noncoh during time step
     LOGICAL :: l_outsed_z0sed ! Skin roughness length
     LOGICAL :: l_outsed_z0hydro ! Hydrodynamic roughness length
-    LOGICAL :: l_outsed_flx_s2w_coh ! erosion flux of cohesive sediments
-    LOGICAL :: l_outsed_flx_w2s_coh ! erosion flux of cohesive sediments
-    LOGICAL :: l_outsed_flx_s2w_noncoh ! erosion flux of non-cohesive sediments
-    LOGICAL :: l_outsed_flx_w2s_noncoh ! deposit flux of non-cohesive sediments
-    LOGICAL :: l_outsed_flx_bxy_int ! Total bedload flux along  x/y-axis
-    LOGICAL :: l_outsed_bil_bedload_int ! Divergence of total bedload flux 
-    LOGICAL :: l_outsed_loadograv ! Excess of interstitial water pressure in the middle of the layer
-    LOGICAL :: l_outsed_sigmadjge ! Sigma unseparated (without the share of water)
-    LOGICAL :: l_outsed_sigmapsg  ! Effective stress (transmitted from grain to grain) 
-    LOGICAL :: l_outsed_permeab ! Permeability
-    LOGICAL :: l_outsed_stateconsol ! State of consolidation indicator
-    LOGICAL :: l_outsed_dtsdzs ! 
-    LOGICAL :: l_outsed_sed_rate ! Advection speed of mud particles
-    LOGICAL :: l_outsed_hinder ! Shackling sand / gravel (dimensionless) between 0 and 1
+    LOGICAL :: l_outsed_consolidation ! To output consolidation variables
     INTEGER :: nk_nivsed_out ! number of saved sediment layers 
         ! =ksdmax if choice_nivsed_out = 1                     
         ! <=ksdmax if choice_nivsed_out = 2, 

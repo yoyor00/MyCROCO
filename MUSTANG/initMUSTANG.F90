@@ -122,42 +122,25 @@ MODULE initMUSTANG
                             l_outsed_nb_lay_sed, &
                             l_outsed_hsed, &
                             l_outsed_tauskin, &
-                            l_outsed_tauskin_c, &
-                            l_outsed_tauskin_w, &
+                            l_outsed_tauskin_cw, &
                             l_outsed_poro, &
                             l_outsed_dzs, &
                             l_outsed_temp_sed, &
                             l_outsed_salt_sed, &
                             l_outsed_cv_sed, &
+                            l_outsed_ws, &
                             l_outsed_toce, &
-                            l_outsed_flx_s2w, &
-                            l_outsed_flx_w2s, &
+                            l_outsed_flx_s2w_w2s, &
                             l_outsed_pephm_fcor, &
-                            l_outsed_flx_bxy, &
-                            l_outsed_bil_bedload, &
+                            l_outsed_bedload, &
                             l_outsed_fsusp, &
                             l_outsed_frmudsup, &
                             l_outsed_dzs_ksmax, &
                             l_outsed_theoric_active_layer, &
-                            l_outsed_tero_noncoh, &
-                            l_outsed_tero_coh, &
-                            l_outsed_pct_ero, &
+                            l_outsed_ero_details, &
                             l_outsed_z0sed, &
                             l_outsed_z0hydro, &
-                            l_outsed_flx_s2w_coh, &
-                            l_outsed_flx_w2s_coh, &
-                            l_outsed_flx_s2w_noncoh, &
-                            l_outsed_flx_w2s_noncoh, &
-                            l_outsed_flx_bxy_int, &
-                            l_outsed_bil_bedload_int, &
-                            l_outsed_loadograv, &
-                            l_outsed_sigmadjge, &
-                            l_outsed_sigmapsg, &
-                            l_outsed_permeab, &
-                            l_outsed_stateconsol, &
-                            l_outsed_dtsdzs, &
-                            l_outsed_sed_rate, &
-                            l_outsed_hinder
+                            l_outsed_consolidation
 
 
 #ifdef key_MUSTANG_V2
@@ -1317,43 +1300,20 @@ CONTAINS
         IF (l_outsed_cv_sed) THEN
             ALLOCATE(var3D_cvsed(nk_nivsed_out,PROC_IN_ARRAY,ntrc_subs))
             var3D_cvsed(:,PROC_IN_ARRAY,ntrc_subs) = 0.0_rsh
-        ENDIF    
+        ENDIF
         IF (l_outsed_toce) THEN
             ALLOCATE(var2D_toce(nvpc,PROC_IN_ARRAY))
             var2D_toce(:,PROC_IN_ARRAY) = 0.0_rsh
         ENDIF
-        IF (l_outsed_flx_s2w) THEN
+        IF (l_outsed_flx_s2w_w2s) THEN
             ALLOCATE(var2D_flx_s2w(nvpc,PROC_IN_ARRAY))
             var2D_flx_s2w(:,PROC_IN_ARRAY) = 0.0_rsh
         ENDIF
-        IF (l_outsed_flx_w2s) THEN
+        IF (l_outsed_flx_s2w_w2s) THEN
             ALLOCATE(var2D_flx_w2s(nvpc,PROC_IN_ARRAY))
             var2D_flx_w2s(:,PROC_IN_ARRAY) = 0.0_rsh
         ENDIF
-#ifdef key_MUSTANG_V2
-        IF (l_outsed_pephm_fcor) THEN
-            ALLOCATE(var2D_pephm_fcor(nvpc,PROC_IN_ARRAY))
-            var2D_pephm_fcor(:,PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-#ifdef key_MUSTANG_bedload
-        IF (l_outsed_flx_bxy) THEN
-            ALLOCATE(var2D_flx_bx(nvpc,PROC_IN_ARRAY))
-            var2D_flx_bx(:,PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-        IF (l_outsed_flx_bxy) THEN
-            ALLOCATE(var2D_flx_by(nvpc,PROC_IN_ARRAY))
-            var2D_flx_by(:,PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-        IF (l_outsed_bil_bedload) THEN
-            ALLOCATE(var2D_bil_bedload(nvpc,PROC_IN_ARRAY))
-            var2D_bil_bedload(:,PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-        IF (l_outsed_fsusp) THEN
-            ALLOCATE(var2D_fsusp(nvpc,PROC_IN_ARRAY))
-            var2D_fsusp(:,PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-#endif
-#endif
+
         IF (l_outsed_frmudsup) THEN
             ALLOCATE(var2D_frmudsup(PROC_IN_ARRAY))
             var2D_frmudsup(PROC_IN_ARRAY) = 0.0_rsh
@@ -1362,36 +1322,31 @@ CONTAINS
             ALLOCATE(var2D_dzs_ksmax(PROC_IN_ARRAY))
             var2D_dzs_ksmax(PROC_IN_ARRAY) = 0.0_rsh
         ENDIF
-        IF (l_outsed_flx_s2w_coh) THEN
+        IF (l_outsed_flx_s2w_w2s) THEN
             ALLOCATE(var2D_flx_s2w_coh(PROC_IN_ARRAY))
             var2D_flx_s2w_coh(PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-        IF (l_outsed_flx_w2s_coh) THEN
             ALLOCATE(var2D_flx_w2s_coh(PROC_IN_ARRAY))
             var2D_flx_w2s_coh(PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-        IF (l_outsed_flx_s2w_noncoh) THEN
             ALLOCATE(var2D_flx_s2w_noncoh(PROC_IN_ARRAY))
             var2D_flx_s2w_noncoh(PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-        IF (l_outsed_flx_w2s_noncoh) THEN
             ALLOCATE(var2D_flx_w2s_noncoh(PROC_IN_ARRAY))
             var2D_flx_w2s_noncoh(PROC_IN_ARRAY)= 0.0_rsh
         ENDIF
+
 #ifdef key_MUSTANG_V2
+        IF (l_outsed_pephm_fcor) THEN
+            ALLOCATE(var2D_pephm_fcor(nvpc,PROC_IN_ARRAY))
+            var2D_pephm_fcor(:,PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
         IF (l_outsed_theoric_active_layer) THEN
             ALLOCATE(var2D_theoric_active_layer(PROC_IN_ARRAY))
             var2D_theoric_active_layer(PROC_IN_ARRAY)= 0.0_rsh
         ENDIF
-        IF (l_outsed_tero_noncoh) THEN
+        IF (l_outsed_ero_details) THEN
             ALLOCATE(var2D_tero_noncoh(PROC_IN_ARRAY))
             var2D_tero_noncoh(PROC_IN_ARRAY)= 0.0_rsh
-        ENDIF
-        IF (l_outsed_tero_coh) THEN
             ALLOCATE(var2D_tero_coh(PROC_IN_ARRAY))
             var2D_tero_coh(PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-        IF (l_outsed_pct_ero) THEN
             ALLOCATE(var2D_pct_iter_noncoh(PROC_IN_ARRAY))
             var2D_pct_iter_noncoh(PROC_IN_ARRAY) = 0.0_rsh
             ALLOCATE(var2D_pct_iter_coh(PROC_IN_ARRAY))
@@ -1400,81 +1355,47 @@ CONTAINS
             var2D_niter_ero(PROC_IN_ARRAY) = 0.0_rsh
         ENDIF
 #ifdef key_MUSTANG_bedload
-        IF (l_outsed_flx_bxy_int) THEN
+        IF (l_outsed_bedload) THEN
+            ALLOCATE(var2D_flx_bx(nvpc,PROC_IN_ARRAY))
+            var2D_flx_bx(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_by(nvpc,PROC_IN_ARRAY))
+            var2D_flx_by(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_bil_bedload(nvpc,PROC_IN_ARRAY))
+            var2D_bil_bedload(:,PROC_IN_ARRAY) = 0.0_rsh
             ALLOCATE(var2D_flx_bx_int(PROC_IN_ARRAY))
             var2D_flx_bx_int(PROC_IN_ARRAY) = 0.0_rsh
             ALLOCATE(var2D_flx_by_int(PROC_IN_ARRAY))
             var2D_flx_by_int(PROC_IN_ARRAY) = 0.0_rsh
-        ENDIF
-        IF (l_outsed_bil_bedload_int) THEN
             ALLOCATE(var2D_bil_bedload_int(PROC_IN_ARRAY)) 
             var2D_bil_bedload_int(PROC_IN_ARRAY) = 0.0_rsh
+        ENDIF
+        IF (l_outsed_fsusp) THEN
+            ALLOCATE(var2D_fsusp(nvpc,PROC_IN_ARRAY))
+            var2D_fsusp(:,PROC_IN_ARRAY) = 0.0_rsh
         ENDIF
 #endif
 #endif
         IF (l_dyn_insed) THEN
-            IF (l_outsed_loadograv) THEN
+            IF (l_outsed_consolidation) THEN
                 IF (choice_nivsed_out == 1) then
                     ALLOCATE(var3Dksed_loadograv(nk_nivsed_out,PROC_IN_ARRAY)) 
                     var3Dksed_loadograv(:,PROC_IN_ARRAY) = 0.0_rsh
-                ELSE
-                    l_outsed_loadograv = .FALSE. ! no output if not all sediment in output
-                ENDIF
-            ENDIF
-            IF (l_outsed_permeab) THEN
-                IF (choice_nivsed_out == 1) then
                     ALLOCATE(var3Dksed_permeab(nk_nivsed_out,PROC_IN_ARRAY)) 
                     var3Dksed_permeab(:,PROC_IN_ARRAY) = 0.0_rsh
-                ELSE
-                    l_outsed_permeab = .FALSE. ! no output if not all sediment in output
-                ENDIF
-            ENDIF
-            IF (l_outsed_sigmapsg) THEN
-                IF (choice_nivsed_out == 1) then
                     ALLOCATE(var3Dksed_sigmapsg(nk_nivsed_out,PROC_IN_ARRAY)) 
                     var3Dksed_sigmapsg(:,PROC_IN_ARRAY) = 0.0_rsh
-                ELSE
-                    l_outsed_sigmapsg = .FALSE. ! no output if not all sediment in output
-                ENDIF
-            ENDIF
-            IF (l_outsed_dtsdzs) THEN
-                IF (choice_nivsed_out == 1) then
                     ALLOCATE(var3Dksed_dtsdzs(nk_nivsed_out,PROC_IN_ARRAY)) 
                     var3Dksed_dtsdzs(:,PROC_IN_ARRAY) = 0.0_rsh
-                ELSE
-                    l_outsed_dtsdzs = .FALSE. ! no output if not all sediment in output
-                ENDIF
-            ENDIF
-            IF (l_outsed_hinder) THEN
-                IF (choice_nivsed_out == 1) then
                     ALLOCATE(var3Dksed_hinder(nk_nivsed_out,PROC_IN_ARRAY)) 
                     var3Dksed_hinder(:,PROC_IN_ARRAY) = 0.0_rsh
-                ELSE
-                    l_outsed_hinder = .FALSE. ! no output if not all sediment in output
-                ENDIF
-            ENDIF
-            IF (l_outsed_sed_rate) THEN
-                IF (choice_nivsed_out == 1) then
                     ALLOCATE(var3Dksed_sed_rate(nk_nivsed_out,PROC_IN_ARRAY)) 
                     var3Dksed_sed_rate(:,PROC_IN_ARRAY) = 0.0_rsh
-                ELSE
-                    l_outsed_sed_rate = .FALSE. ! no output if not all sediment in output
-                ENDIF
-            ENDIF
-            IF (l_outsed_sigmadjge) THEN
-                IF (choice_nivsed_out == 1) then
                     ALLOCATE(var3Dksed_sigmadjge(nk_nivsed_out,PROC_IN_ARRAY)) 
                     var3Dksed_sigmadjge(:,PROC_IN_ARRAY) = 0.0_rsh
-                ELSE
-                    l_outsed_sigmadjge = .FALSE. ! no output if not all sediment in output
-                ENDIF
-            ENDIF
-            IF (l_outsed_stateconsol) THEN
-                IF (choice_nivsed_out == 1) then
                     ALLOCATE(var3Dksed_stateconsol(nk_nivsed_out,PROC_IN_ARRAY)) 
                     var3Dksed_stateconsol(:,PROC_IN_ARRAY) = 0.0_rsh
                 ELSE
-                    l_outsed_stateconsol = .FALSE. ! no output if not all sediment in output
+                    l_outsed_consolidation = .FALSE. ! no output if not all sediment in output
                 ENDIF
             ENDIF
                     
@@ -1531,7 +1452,7 @@ CONTAINS
         ALLOCATE (rstout3DsedMust(NT+3))
         ALLOCATE (vname_rstMust(20, NT+3))
 
-        outMust_nbvar = 1*ntrc_subs + 3*nvpc + 17
+        outMust_nbvar = 2*ntrc_subs + 3*nvpc + 17
 #ifdef  key_MUSTANG_V2
         outMust_nbvar = outMust_nbvar + nvpc + 6
 #ifdef  key_MUSTANG_bedload
@@ -1683,7 +1604,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_tauskin_c) outMust(indx) = .TRUE.
+        IF (l_outsed_tauskin_cw) outMust(indx) = .TRUE.
         out2DMust(indx) = .TRUE.
         out3DsedMust(indx) = .FALSE.
 
@@ -1695,7 +1616,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_tauskin_w) outMust(indx) = .TRUE.
+        IF (l_outsed_tauskin_cw) outMust(indx) = .TRUE.
         out2DMust(indx) = .TRUE.
         out3DsedMust(indx) = .FALSE.
 
@@ -1761,6 +1682,23 @@ CONTAINS
             out2DMust(indx) = .FALSE.
             out3DsedMust(indx) = .TRUE.
         ENDDO
+
+        DO isubs = 1,ntrc_subs
+            indx = indx + 1
+            vname_Must(1,indx) = TRIM(name_var(isubs))//'_ws'
+            vname_Must(2,indx) = TRIM(long_name_var(isubs))//' settling velocity'
+            vname_Must(3,indx) = "m/s"
+            vname_Must(4,indx) = ' '
+            vname_Must(5,indx) = ' '
+            vname_Must(6,indx) = ' '
+            vname_Must(7,indx) = ' '
+            IF (l_outsed_ws .and. l_out_subs(isubs) .and. &
+                ((isubs .GE. imud1) .AND. (isubs .LE. imud2))) THEN
+                outMust(indx) = .TRUE.
+            ENDIF
+            out2DMust(indx) = .FALSE.
+            out3DsedMust(indx) = .FALSE.
+        ENDDO
     
         DO isubs = 1,nvpc
             indx = indx + 1
@@ -1783,7 +1721,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_s2w .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            IF (l_outsed_flx_s2w_w2s .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
@@ -1795,7 +1733,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_w2s .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            IF (l_outsed_flx_s2w_w2s .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
@@ -1822,7 +1760,10 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_bxy .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            IF (l_outsed_bedload .and. l_out_subs(isubs) .and. &
+                ((isubs .GE. ibedload1) .AND. (isubs .LE. ibedload2))) THEN
+                outMust(indx) = .TRUE.
+            ENDIF
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
@@ -1834,7 +1775,10 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_bxy .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            IF (l_outsed_bedload .and. l_out_subs(isubs) .and. &
+                ((isubs .GE. ibedload1) .AND. (isubs .LE. ibedload2))) THEN
+                outMust(indx) = .TRUE.
+            ENDIF
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
@@ -1846,7 +1790,10 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_bil_bedload .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            IF (l_outsed_bedload .and. l_out_subs(isubs) .and. &
+                ((isubs .GE. ibedload1) .AND. (isubs .LE. ibedload2))) THEN
+                outMust(indx) = .TRUE.
+            ENDIF
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
@@ -1858,7 +1805,10 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_fsusp .and. l_out_subs(isubs)) outMust(indx) = .TRUE.
+            IF (l_outsed_bedload .and. l_out_subs(isubs) .and. &
+                ((isubs .GE. ibedload1) .AND. (isubs .LE. ibedload2))) THEN
+                outMust(indx) = .TRUE.
+            ENDIF
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 #endif /* key_MUSTANG_bedload */
@@ -1922,7 +1872,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_s2w_noncoh) outMust(indx) = .TRUE.
+            IF (l_outsed_flx_s2w_w2s) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -1935,7 +1885,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_w2s_noncoh) outMust(indx) = .TRUE.
+            IF (l_outsed_flx_s2w_w2s) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -1948,7 +1898,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_s2w_coh) outMust(indx) = .TRUE.
+            IF (l_outsed_flx_s2w_w2s) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -1961,7 +1911,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_w2s_coh) outMust(indx) = .TRUE.
+            IF (l_outsed_flx_s2w_w2s) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
@@ -1988,7 +1938,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_tero_noncoh) outMust(indx) = .TRUE.
+            IF (l_outsed_ero_details) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -2001,7 +1951,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_tero_coh) outMust(indx) = .TRUE.
+            IF (l_outsed_ero_details) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -2014,7 +1964,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_pct_ero) outMust(indx) = .TRUE.
+            IF (l_outsed_ero_details) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -2027,7 +1977,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_pct_ero) outMust(indx) = .TRUE.
+            IF (l_outsed_ero_details) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -2040,7 +1990,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_pct_ero) outMust(indx) = .TRUE.
+            IF (l_outsed_ero_details) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
       
@@ -2056,7 +2006,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_bxy_int) outMust(indx) = .TRUE.
+            IF (l_outsed_bedload) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -2069,7 +2019,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_flx_bxy_int) outMust(indx) = .TRUE.
+            IF (l_outsed_bedload) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -2082,7 +2032,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_bil_bedload_int) outMust(indx) = .TRUE.
+            IF (l_outsed_bedload) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
             
@@ -2098,7 +2048,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_loadograv) outMust(indx) = .TRUE.
+        IF (l_outsed_consolidation) outMust(indx) = .TRUE.
         out2DMust(indx) = .FALSE.
         out3DsedMust(indx) = .TRUE.
 
@@ -2110,7 +2060,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_sigmadjge) outMust(indx) = .TRUE.
+        IF (l_outsed_consolidation) outMust(indx) = .TRUE.
         out2DMust(indx) = .FALSE.
         out3DsedMust(indx) = .TRUE.
 
@@ -2122,7 +2072,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_sigmapsg) outMust(indx) = .TRUE.
+        IF (l_outsed_consolidation) outMust(indx) = .TRUE.
         out2DMust(indx) = .FALSE.
         out3DsedMust(indx) = .TRUE.
 
@@ -2134,7 +2084,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_stateconsol) outMust(indx) = .TRUE.
+        IF (l_outsed_consolidation) outMust(indx) = .TRUE.
         out2DMust(indx) = .FALSE.
         out3DsedMust(indx) = .TRUE.
 
@@ -2145,7 +2095,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_permeab) outMust(indx) = .TRUE.
+        IF (l_outsed_consolidation) outMust(indx) = .TRUE.
         out2DMust(indx) = .FALSE.
         out3DsedMust(indx) = .TRUE.
 
@@ -2157,7 +2107,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_hinder) outMust(indx) = .TRUE.
+        IF (l_outsed_consolidation) outMust(indx) = .TRUE.
         out2DMust(indx) = .FALSE.
         out3DsedMust(indx) = .TRUE.
 
@@ -2169,7 +2119,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_sed_rate) outMust(indx) = .TRUE.
+        IF (l_outsed_consolidation) outMust(indx) = .TRUE.
         out2DMust(indx) = .FALSE.
         out3DsedMust(indx) = .TRUE.
 
@@ -2181,7 +2131,7 @@ CONTAINS
         vname_Must(5,indx) = ' '
         vname_Must(6,indx) = ' '
         vname_Must(7,indx) = ' '
-        IF (l_outsed_dtsdzs) outMust(indx) = .TRUE.
+        IF (l_outsed_consolidation) outMust(indx) = .TRUE.
         out2DMust(indx) = .FALSE.
         out3DsedMust(indx) = .TRUE.
     ENDIF

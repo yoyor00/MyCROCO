@@ -17,6 +17,7 @@
 #endif
 #ifdef MUSTANG
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
+      USE comsubstance, ONLY : ws_part
       USE comMUSTANG,   ONLY : vname_Must, hisMust, outMust,
      &                         nk_nivsed_out, var3D_cvsed, var3D_dzs,
      &                         var3D_TEMP, var3D_SAL, var3D_poro,
@@ -1492,6 +1493,15 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
 CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
         endif
       enddo
+      do itrc=1,ntrc_subs
+            indx = indx + 1
+            if (outMust(indx)) then
+              workr=ws_part(:,:,:,itemp+ntrc_salt+itrc)
+              call fillvalue3d(workr,ncidhis,hisMust(indx),
+     &                     vname_Must(1,indx),record,r3dvar,type)
+CR        write(*,*) 'wrt_his ws_part'  MYID
+            endif
+          enddo
 
       do itrc=1,nvpc
             indx=indx+1

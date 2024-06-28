@@ -845,7 +845,11 @@ CONTAINS
      vname(5,indx)=' '
      vname(6,indx)=' '
      vname(7,indx)=' '
-     wrthis(indx)=l_out_subs(isubs)
+     IF (isubs .GT. igrav2) THEN
+         wrthis(indx) = l_out_subs(isubs) 
+     ELSE
+         wrthis(indx) = .FALSE. !! no output in water for gravel
+     ENDIF
    ENDDO
    DO isubs=1,nv_fix
      indx=indxT+ntrc_salt+ntrc_subs+isubs

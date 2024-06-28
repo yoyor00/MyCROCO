@@ -462,30 +462,24 @@ MODULE sed_MUSTANG
 !!! save cumulated erosion Fluxes  of constitutive particulate variables !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   IF(l_outsed_flx_s2w .OR. l_outsed_flx_s2w_noncoh .OR. l_outsed_flx_s2w_coh) THEN
+   IF(l_outsed_flx_s2w_w2s) THEN
       DO j=jfirst,jlast
         DO i=ifirst,ilast
-          IF(l_outsed_flx_s2w) THEN
             DO iv=1,nvpc
               var2D_flx_s2w(iv,i,j)=var2D_flx_s2w(iv,i,j)+  &
                                             flx_s2w(iv,i,j)*REAL(dt_true,rsh) 
               ! cumulate flx_s2w (in kg/m2 integrated on time step dt_true as for deposit flux )
             ENDDO
-          ENDIF
-          IF(l_outsed_flx_s2w_noncoh) THEN
             DO iv=isand1,isand2
               !flx_s2w_noncoh
               var2D_flx_s2w_noncoh(i,j)=var2D_flx_s2w_noncoh(i,j)+  &
                                           flx_s2w(iv,i,j)*REAL(dt_true,rsh)
             END DO
-          ENDIF
-          IF(l_outsed_flx_s2w_coh) THEN
             DO iv=imud1,imud2
               !flx_s2w_coh
               var2D_flx_s2w_coh(i,j)=var2D_flx_s2w_coh(i,j)+   &
                                           flx_s2w(iv,i,j)*REAL(dt_true,rsh)
             END DO
-          ENDIF
        END DO
      END DO
    ENDIF
@@ -791,6 +785,7 @@ MODULE sed_MUSTANG
           CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,mask_h0,  &
                                           poro(:,:,:),var3D_poro(:,:,:))
      ENDIF
+
 
 #ifdef key_BLOOM_insed
      IF (l_out_subs_diag_sed) THEN
@@ -1746,7 +1741,7 @@ MODULE sed_MUSTANG
 #ifdef key_MUSTANG_bedload
                   flx_bx(iv,i,j) = flx_bx(iv,i,j) + flx_bxij(iv)/MF ! in kg
                   flx_by(iv,i,j) = flx_by(iv,i,j) + flx_byij(iv)/MF
-                  IF (l_outsed_flx_bxy) THEN
+                  IF (l_outsed_bedload) THEN
                     var2D_flx_bx(iv,i,j) = flx_bx(iv,i,j) 
                     var2D_flx_by(iv,i,j) = flx_by(iv,i,j)
                   ENDIF
@@ -1769,7 +1764,7 @@ MODULE sed_MUSTANG
 
 
                 ! Output: cumulated time (in hours) elapsed in non cohesive regime              
-                IF (l_outsed_tero_noncoh) var2D_tero_noncoh(i,j)=var2D_tero_noncoh(i,j)+(dt_ero_max/3600.0_rsh)  !tero_non_coh
+                IF (l_outsed_ero_details) var2D_tero_noncoh(i,j)=var2D_tero_noncoh(i,j)+(dt_ero_max/3600.0_rsh)  !tero_non_coh
 
                 dt1=dt1-dt_ero_max
 
@@ -1929,7 +1924,7 @@ MODULE sed_MUSTANG
                           
                       ! Output: cumulated time (in hours) elapsed in cohesive regime
                       ! --> in this case, all sand/mud sediments can be eroded within dt1
-                   IF (l_outsed_tero_coh) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1/3600.0_rsh)  ! tero_coh
+                   IF (l_outsed_ero_details) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1/3600.0_rsh)  ! tero_coh
 
                    ddzs=erosi/csanmud
                 
@@ -2065,7 +2060,7 @@ MODULE sed_MUSTANG
                   ! ELSE ! --> suffisant car probablement inutile etant donne que l_isit_cohesive = TRUE
 
                     ! Output: cumulated time (in hours) elapsed in cohesive regime
-                    IF (l_outsed_tero_coh) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1*(erodab/erosi)/3600.0_rsh)   ! tero_coh
+                    IF (l_outsed_ero_details) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1*(erodab/erosi)/3600.0_rsh)   ! tero_coh
                     
                     ! correction PLH Juillet 2015
                     !volerod=erodab*fwet(i,j)/csanmud
@@ -2267,7 +2262,7 @@ MODULE sed_MUSTANG
           
 
           ! Stats on non-coh/coh erosion iterations during halfdt
-        IF (l_outsed_pct_ero) THEN
+        IF (l_outsed_ero_details) THEN
             var2D_niter_ero(i,j)=niter_ero_noncoh+niter_ero_coh           ! niter_ero
             var2D_pct_iter_noncoh(i,j)=niter_ero_noncoh/(var2D_niter_ero(i,j)+epsilon_MUSTANG) ! pct_iter_noncoh
             var2D_pct_iter_coh(i,j)=niter_ero_coh/(var2D_niter_ero(i,j)+epsilon_MUSTANG)    !pct_iter_coh
@@ -3103,7 +3098,7 @@ MODULE sed_MUSTANG
 
 
                 ! bil_bedload(iv,i,j) a mettre a 0 en debut de run --> cumule tout au long de la simu
-                IF (l_outsed_bil_bedload) THEN
+                IF (l_outsed_bedload) THEN
                     var2D_bil_bedload(iv,i,j) = var2D_bil_bedload(iv,i,j) + ( (flx_bedload_in(iv)  &
                                 - ABS(flx_bx(iv,i,j)) - ABS(flx_by(iv,i,j)))/CELL_SURF(i,j) ) ! cumul des bilans en kg/m2 
                 ENDIF
@@ -3128,7 +3123,7 @@ MODULE sed_MUSTANG
             
 
             !bil_bedload_int
-            IF (l_outsed_bil_bedload_int) THEN
+            IF (l_outsed_bedload) THEN
               var2D_bil_bedload_int(i,j)=SUM(var2D_bil_bedload(ibedload1:ibedload2,i,j))
             ENDIF
 
@@ -3162,7 +3157,7 @@ MODULE sed_MUSTANG
              fludep=fludep+flx_w2s_loc(iv)
 
               !flx_w2s_save
-              IF (l_outsed_flx_w2s) THEN
+              IF (l_outsed_flx_s2w_w2s) THEN
 #ifdef key_MUSTANG_bedload
               var2D_flx_w2s(iv,i,j)=var2D_flx_w2s(iv,i,j)  &
                                        +flx_w2s_loc(iv) -flx_bedload_in(iv)
@@ -3172,7 +3167,7 @@ MODULE sed_MUSTANG
               ENDIF
             ENDDO
 
-            IF (l_outsed_flx_w2s_noncoh) THEN
+            IF (l_outsed_flx_s2w_w2s) THEN
             DO iv=isand1,isand2
 #ifdef key_MUSTANG_bedload
               var2D_flx_w2s_noncoh(i,j)=var2D_flx_w2s_noncoh(i,j)  &
@@ -3182,7 +3177,7 @@ MODULE sed_MUSTANG
 #endif
             END DO
             ENDIF
-            IF (l_outsed_flx_w2s_coh) THEN
+            IF (l_outsed_flx_s2w_w2s) THEN
             DO iv=imud1,imud2
               var2D_flx_w2s_coh(i,j)=var2D_flx_w2s_coh(i,j)+flx_w2s_loc(iv) ! flx_w2s_coh
             END DO
@@ -3966,7 +3961,7 @@ MODULE sed_MUSTANG
               flx_w2s_loc(iv) = MF * flx_w2s_loc(iv)
 
               !flx_w2s_save
-              IF (l_outsed_flx_w2s) var2D_flx_w2s(iv,i,j)=var2D_flx_w2s(iv,i,j)+flx_w2s_loc(iv)
+              IF (l_outsed_flx_s2w_w2s) var2D_flx_w2s(iv,i,j)=var2D_flx_w2s(iv,i,j)+flx_w2s_loc(iv)
 
             ENDDO
 
@@ -5232,11 +5227,13 @@ MODULE sed_MUSTANG
                ! sigmapsg: effective stress (transmitted from grain to grain)
               loadograv(k)=MAX(0.0_rsh,sigmadjge-sigmapsg(k))
 
-              IF (l_outsed_loadograv) var3Dksed_loadograv(k,i,j)=loadograv(k)
-              IF (l_outsed_permeab) var3Dksed_permeab(k,i,j)=permeab(k)
-              IF (l_outsed_sigmapsg) var3Dksed_sigmapsg(k,i,j)=sigmapsg(k)
-              IF (l_outsed_sigmadjge) var3Dksed_sigmadjge(k,i,j)=sigmadjge
-              IF (l_outsed_stateconsol) var3Dksed_stateconsol(k,i,j)=stateconsol(k)
+              IF (l_outsed_consolidation) THEN
+                var3Dksed_loadograv(k,i,j)=loadograv(k)
+                var3Dksed_permeab(k,i,j)=permeab(k)
+                var3Dksed_sigmapsg(k,i,j)=sigmapsg(k)
+                var3Dksed_sigmadjge(k,i,j)=sigmadjge
+                var3Dksed_stateconsol(k,i,j)=stateconsol(k)
+              ENDIF
 
 
               ! total weight of all layers above layer k
@@ -5272,8 +5269,10 @@ MODULE sed_MUSTANG
             hinder(k)=(MAX(0.0_rsh,MIN(1.0_rsh-somcmud/(1-(somcsan+somcgrav)/ros(1))/csegreg,   &
                    1.0_rsh-(somcsan+somcgrav)/csandseg)))**4.65_rsh
 
-            IF (l_outsed_hinder) var3Dksed_hinder(k,i,j)=hinder(k)
-            IF (l_outsed_sed_rate) var3Dksed_sed_rate(k,i,j)=sed_rate(k)
+            IF (l_outsed_consolidation) THEN
+              var3Dksed_hinder(k,i,j)=hinder(k)
+              var3Dksed_sed_rate(k,i,j)=sed_rate(k)
+            ENDIF
 
                    
             DO k=ksmin+1,ksmax-1
@@ -5300,7 +5299,7 @@ MODULE sed_MUSTANG
             k=ksmax
             dtsdzs=REAL(dtiter,rsh)/dzs(k,i,j)
 
-            IF (l_outsed_dtsdzs) var3Dksed_dtsdzs(k,i,j)=dtsdzs
+            IF (l_outsed_consolidation) var3Dksed_dtsdzs(k,i,j)=dtsdzs
 
            ! implicit scheme decentred upstream -cv_sed(k+1) known just before, so implicit
             DO iv=igrav1,isand2
@@ -5316,7 +5315,7 @@ MODULE sed_MUSTANG
             DO k=ksmax-1,ksmin+1,-1
               dtsdzs=REAL(dtiter,rsh)/dzs(k,i,j)
 
-              IF (l_outsed_dtsdzs) var3Dksed_dtsdzs(k,i,j)=dtsdzs
+              IF (l_outsed_consolidation) var3Dksed_dtsdzs(k,i,j)=dtsdzs
 
               DO iv=igrav1,isand2
                 cv_sed(iv,k,i,j)=(cv_sed(iv,k,i,j)+dtsdzs*MAX(sed_rate(k),ws_sand(iv)*               &
@@ -5333,7 +5332,7 @@ MODULE sed_MUSTANG
             k=ksmin
             dtsdzs=REAL(dtiter,rsh)/dzs(k,i,j)
 
-            IF (l_outsed_dtsdzs) var3Dksed_dtsdzs(k,i,j)=dtsdzs
+            IF (l_outsed_consolidation) var3Dksed_dtsdzs(k,i,j)=dtsdzs
 
             DO iv=igrav1,isand2
               cv_sed(iv,k,i,j)=(cv_sed(iv,k,i,j)+dtsdzs*MAX(sed_rate(k),ws_sand(iv)*hinder(k))*cv_sed(iv,k+1,i,j))
@@ -8593,7 +8592,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
       
      ! flx_bx_int and flx_by_int
-      IF (l_outsed_flx_bxy_int) THEN
+      IF (l_outsed_bedload) THEN
         var2D_flx_bx_int(i,j)=var2D_flx_bx_int(i,j)+flx_bxij(iv) !pour ecriture en sortie
         var2D_flx_by_int(i,j)=var2D_flx_by_int(i,j)+flx_byij(iv) !pour ecriture en sortie
       ENDIF
