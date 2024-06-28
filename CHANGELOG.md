@@ -105,6 +105,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Fixes issue with OBC_COM_M2CHARACT_XXX (modified by mistake into OBC_COM_M2ORLANSKI in u2bc and v2bc) : fixes [#186]((https://gitlab.inria.fr/croco-ocean/croco/-/issues/186)
 
+- Fix the mismatch between PISCES code and input name variables for BSi, DSi and GSi : [#188](https://gitlab.inria.fr/croco-ocean/croco/-/issues/188)
+
 ### Changed
 
 - CI runs through docker container from croco-ocean/croco_docker project
