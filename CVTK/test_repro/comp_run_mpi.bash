@@ -27,7 +27,7 @@ msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
 msg3="- Parallel repro. failure for ${TEST_NAME} : ${par1}..."
 msg4="${FMT_REDBLD}${msg3}${FMT_ORD}"
 
-$MPIRUN --allow-run-as-root -np $NBPROCS ./croco_${par1}.exe $CROCOIN > mpi_${NBPROCS}_${TEST_NAME}.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
+$MPIRUN -np $NBPROCS ./croco_${par1}.exe $CROCOIN > mpi_${NBPROCS}_${TEST_NAME}.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
 exec_status=$?
 echo "execution_status is "$exec_status
 #  =0, OK or  clean stop before the end (bugbin or blow up)

@@ -84,7 +84,7 @@ def doextend_treat(result,lines,file_out_main):
 		replace_string_in=r"%s\(([^)]*),([^)]*)\)"  % (array)
 		replace_string_out=r"%s_3D(\1,\2,k)" % (array)
 		lines = re.sub(replace_string_in,replace_string_out,lines)
-		print("replace = ",replace_string_in,replace_string_out)
+		#print("replace = ",replace_string_in,replace_string_out)
 	file_out_main.write(lines)
 	file_out_main.write("      ENDDO\n")
 

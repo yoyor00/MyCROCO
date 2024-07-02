@@ -1,7 +1,6 @@
-! $Id: put_global_atts.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -303,10 +302,13 @@
 #ifdef SOLVE3D
 !
 ! S-coordinate control parameters "theta_s", "theta_b", "Tcline"
-! and "hc" (written as as global attributes).
+! and "hc" (written as global attributes).
 !
 # ifdef  NEW_S_COORD
       ierr=nf_put_att_text (ncid, nf_global, 'VertCoordType',3,'NEW')
+      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '2')
+# else
+      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '1')
 # endif
 # ifdef  LMD_SKPP2005
       ierr=nf_put_att_text (ncid, nf_global, 'skpp',4,'2005')
@@ -335,19 +337,19 @@
 ! S-coordinate independent variables "sc_w", "sc_r" and stretching
 ! curves "Cs_w", "Cs_r" at W- and RHO-points.
 !
-      ierr=nf_put_att_FTYPE(ncid, nf_global,'sc_w',nf_ftype, N+1,
+      ierr=nf_put_att_FTYPE(ncid, nf_global,'s_w',nf_ftype, N+1,
      &                                                          sc_w)
-      ierr=nf_put_att_text (ncid, nf_global,'sc_w_expl', 24,
+       ierr=nf_put_att_text (ncid, nf_global,'s_w_expl', 24,
      &                                    'S-coordinate at W-points')
       ierr=nf_put_att_FTYPE(ncid, nf_global,'Cs_w',nf_ftype, N+1,
      &                                                          Cs_w)
       ierr=nf_put_att_text (ncid, nf_global,'Cs_w_expl',42,
      &                  'S-coordinate stretching curves at W-points')
-      ierr=nf_put_att_FTYPE(ncid,nf_global,'sc_r',nf_ftype,N,sc_r)
-      ierr=nf_put_att_text (ncid, nf_global,'sc_r_expl', 24,
+      ierr=nf_put_att_FTYPE(ncid,nf_global,'s_rho',nf_ftype,N,sc_r)
+      ierr=nf_put_att_text (ncid, nf_global,'s_rho_expl', 24,
      &                                    'S-coordinate at W-points')
-      ierr=nf_put_att_FTYPE(ncid,nf_global,'Cs_r',nf_ftype,N,Cs_r)
-      ierr=nf_put_att_text (ncid, nf_global,'Cs_r_expl',44,
+      ierr=nf_put_att_FTYPE(ncid,nf_global,'Cs_rho',nf_ftype,N,Cs_r)
+      ierr=nf_put_att_text (ncid, nf_global,'Cs_rho_expl',44,
      &                'S-coordinate stretching curves at RHO-points')
 #endif
 !

@@ -1,7 +1,6 @@
-! read_inp.F 1615 2014-12-17 13:27:07Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -182,6 +181,8 @@
       fname='TEST_CASES/croco.in.Kilpatrick'
 #elif defined ESTUARY
       fname='TEST_CASES/croco.in.Estuary'
+#elif defined SEAGRASS
+      fname='TEST_CASES/croco.in.Seagrass'
 #else
       fname='croco.in'
 #endif
@@ -2712,6 +2713,16 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                              'Wave-induced bottom stress.'
 
 #endif /* BBL */
+
+#if defined OBSTRUCTION
+      elseif (keyword(1:kwlen).eq.'obstruction') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) obstname
+        lstr=lenstr(obstname)
+        MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for Obstruction module:' ,
+     &          obstname(1:lstr)
+#endif /* OBSTRUCTION */
 
 #ifdef MRL_WCI
 !

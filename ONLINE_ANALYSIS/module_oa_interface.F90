@@ -2313,7 +2313,6 @@
            tile_count_oa=0
           end if last_tile3
 
-      print*,'aft init_scalogram_oa'
 !$OMP END CRITICAL (init_tile_count_oa)
 
       call sclg_init_coords(imd=0,tile=tile)

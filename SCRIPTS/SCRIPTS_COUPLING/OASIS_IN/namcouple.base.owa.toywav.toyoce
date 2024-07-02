@@ -162,7 +162,7 @@
 # U_01 : wind U component at first level (m/s)
 #~~~~~~~~~~~
 WRF_d01_EXT_d01_WND_E_01 TOYWWU01 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> toyat toywt LAG=<atmdt>
+<atmnx> <atmny> <wavnx> <wavny> atmt toywt LAG=<atmdt>
 R 0 R 0
 LOCTRANS SCRIPR
 AVERAGE
@@ -172,7 +172,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # V_01 : wind V component at first level (m/s)
 #~~~~~~~~~~~
 WRF_d01_EXT_d01_WND_N_01 TOYWWV01 1 <cpldt> 2 atm.nc  EXPORTED
-<atmnx> <atmny> <wavnx> <wavny> toyat toywt LAG=<atmdt>
+<atmnx> <atmny> <wavnx> <wavny> atmt toywt LAG=<atmdt>
 R 0 R 0
 LOCTRANS SCRIPR
 AVERAGE
@@ -186,7 +186,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # CHA_COEF : Charnock coefficient
 #~~~~~~~~~~~
 TOY__CHA WRF_d01_EXT_d01_CHA_COEF 1 <cpldt> 2 wav.nc  EXPORTED
-<wavnx> <wavny> <atmnx> <atmny> toywt toyat LAG=<wavdt>
+<wavnx> <wavny> <atmnx> <atmny> toywt atmt LAG=<wavdt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -210,7 +210,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # UOCE : sea surface zonal currents (m.s-1)
 #~~~~~~~~~~~
 TOY_UOCE TOYWUOCE 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <wavnx> <wavny> ocnu toywt LAG=<ocedt>
+<ocenx> <oceny> <wavnx> <wavny> toyot toywt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -221,7 +221,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 #
 TOY_VOCE TOYWVOCE 1 <cpldt> 2 oce.nc EXPORTED
-<ocenx> <oceny> <wavnx> <wavny> ocnv toywt LAG=<ocedt>
+<ocenx> <oceny> <wavnx> <wavny> toyot toywt LAG=<ocedt>
 R  0  R  0
 LOCTRANS SCRIPR
 AVERAGE
@@ -352,7 +352,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # NET SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_SOLAR TOYSRFLO 1 <cpldt> 2 atm.nc EXPORTED
+WRF_d01_EXT_d01_SURF_NET_SOLAR TOYOSRFL 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
@@ -362,7 +362,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_NON-SOLAR TOYSTFLO 1 <cpldt> 2 atm.nc EXPORTED
+WRF_d01_EXT_d01_SURF_NET_NON-SOLAR TOYOSTFL 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR
@@ -372,7 +372,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # INTERFACE ATMOSPHERIC PRESSURE  (Pa)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_PSFC TOYPSFCO 1 <cpldt> 2 atm.nc EXPORTED
+WRF_d01_EXT_d01_PSFC TOYOPSFC 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 LOCTRANS SCRIPR

@@ -1,4 +1,3 @@
-
 #include "cppdefs.h"
 
 #if defined SOLVE3D && defined ONLINE_ANALYSIS
@@ -64,9 +63,6 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
-!#ifdef NBQ
-!# include "nbq.h"
-!#endif
 # ifdef M3FAST
 # include "nbq.h"
 # endif

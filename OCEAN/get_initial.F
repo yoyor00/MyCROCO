@@ -1,7 +1,6 @@
-! $Id: get_initial.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -208,7 +207,7 @@
             endif
             start_time=start_time*time_scale
 
-#if defined XIOS && !defined USE_CALENDAR
+# if defined XIOS && !defined USE_CALENDAR
       start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
       READ(start_date_run(6:7),fmt='(i2)') start_month
@@ -1150,8 +1149,8 @@
 # endif
         call cpl_prism_define
         oasis_time = 0
-        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
-# if defined EXACT_RESTART   
+        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
+#  if defined EXACT_RESTART   
       endif
 # endif
 #endif

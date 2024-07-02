@@ -1,7 +1,6 @@
-! $Id: analytical.F 1619 2015-01-07 13:53:03Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -1146,12 +1145,12 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iSIL_)=91.51
             tclm(i,j,k,iDIA_)=0.01
             tclm(i,j,k,iMES_)=0.01
-            tclm(i,j,k,iBSI_)=1.5e-3
+            tclm(i,j,k,iDSI_)=1.5e-3
             tclm(i,j,k,iBFE_)=1.e-2*5.e-6
             tclm(i,j,k,iGOC_)=0.01
             tclm(i,j,k,iSFE_)=1.e-2*5.e-6
             tclm(i,j,k,iDFE_)=1.e-2*5.e-6
-            tclm(i,j,k,iDSI_)=1.e-2*0.15
+            tclm(i,j,k,iGSI_)=1.e-2*0.15
             tclm(i,j,k,iNFE_)=1.e-2*5.e-6
             tclm(i,j,k,iNCH_)=1.e-2*12./55.
             tclm(i,j,k,iDCH_)=1.e-2*12./55.
@@ -1257,12 +1256,12 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iSIL_)) tclm(i,j,k,iSIL_)=91.51
             if (.not.got_tclm(iDIA_)) tclm(i,j,k,iDIA_)=0.01
             if (.not.got_tclm(iMES_)) tclm(i,j,k,iMES_)=0.01
-            if (.not.got_tclm(iBSI_)) tclm(i,j,k,iBSI_)=0.0015
+            if (.not.got_tclm(iDSI_)) tclm(i,j,k,iDSI_)=0.0015
             if (.not.got_tclm(iBFE_)) tclm(i,j,k,iBFE_)=5.e-8
             if (.not.got_tclm(iGOC_)) tclm(i,j,k,iGOC_)=0.01
             if (.not.got_tclm(iSFE_)) tclm(i,j,k,iSFE_)=5.e-8
             if (.not.got_tclm(iDFE_)) tclm(i,j,k,iDFE_)=5.e-8
-            if (.not.got_tclm(iDSI_)) tclm(i,j,k,iDSI_)=0.0015
+            if (.not.got_tclm(iGSI_)) tclm(i,j,k,iGSI_)=0.0015
             if (.not.got_tclm(iNFE_)) tclm(i,j,k,iNFE_)=5.e-8
             if (.not.got_tclm(iNCH_)) tclm(i,j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tclm(iDCH_)) tclm(i,j,k,iDCH_)=1.e-2*12./55.
@@ -2161,18 +2160,25 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+#   ifdef MPI
+          if (IstrR.le.i .and. i.le.IendR .and.
+     &       JstrR.le.j .and. j.le.JendR) then
+#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              Qshape(is,k)=Qshape(is,k)/cff2
+            enddo
+#   ifdef MPI 
+          endif
+#   endif            
         enddo
 #  elif defined AL_SHAPE
         do is=1,Nsrc                   ! Set-up nondimensional shape
@@ -2190,6 +2196,15 @@ C$    integer  trd, omp_get_thread_num
           Qshape(is,20)=0.2
         enddo
 #  endif
+
+# elif defined SEAGRASS
+
+        cff=1./float(N)
+        do k=1,N                       ! Uniform vertical
+          do is=1,Nsrc                 ! distribution
+            Qshape(is,k)=cff
+          enddo
+        enddo
 
 # elif defined REGIONAL
 #  define EXP_SHAPE
@@ -2209,20 +2224,27 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+#   ifdef MPI
+          if (IstrR.le.i .and. i.le.IendR .and.
+     &       JstrR.le.j .and. j.le.JendR) then
+#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                  (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            if (cff2 .gt. 0.0) then
-              Qshape(is,k)=Qshape(is,k)/cff2
-            endif
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              if (cff2 .gt. 0.0) then
+                Qshape(is,k)=Qshape(is,k)/cff2
+              endif
+            enddo
+#   ifdef MPI
+          endif
+#   endif 
         enddo
 #  endif
 
@@ -2244,21 +2266,28 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+#   ifdef MPI
+          if (IstrR.le.i .and. i.le.IendR .and.
+     &        JstrR.le.j .and. j.le.JendR) then
+#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              Qshape(is,k)=Qshape(is,k)/cff2
+            enddo
+#   ifdef MPI
+          endif
+#   endif
         enddo
 #  endif
-# endif /* RIVER || REGIONAL */
+# endif /* RIVER || SEAGRASS || REGIONAL */
 
         do is=1,Nsrc
           Qbar0(is)=Qbar(is)
@@ -2300,7 +2329,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
 # ifdef SOLVE3D
-#  ifdef RIVER
+#  if defined RIVER || defined SEAGRASS
       do k=1,N
         do is=1,Nsrc
 #   ifdef TEMPERATURE
@@ -2371,7 +2400,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
-#  endif /* RIVER */
+#  endif /* RIVER || SEAGRASS || REGIONAL */
 !
 !  Set-up biology tracer (tracer units) point Sources/Sinks.
 !
@@ -2422,8 +2451,8 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iDIA_)) then
             Tsrc0(is,iDIA_)=0.01
           endif
-          if (.not.got_tsrc(iBSI_)) then
-            Tsrc0(is,iBSI_)=1.5e-3
+          if (.not.got_tsrc(iDSI_)) then
+            Tsrc0(is,iDSI_)=1.5e-3
           endif
           if (.not.got_tsrc(iBFE_)) then
             Tsrc0(is,iBFE_)=1.e-2*5.e-6
@@ -2437,8 +2466,8 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iDFE_)) then
             Tsrc0(is,iDFE_)=1.e-2*5.e-6
           endif
-          if (.not.got_tsrc(iDSI_)) then
-            Tsrc0(is,iDSI_)=1.e-2*0.15
+          if (.not.got_tsrc(iGSI_)) then
+            Tsrc0(is,iGSI_)=1.e-2*0.15
           endif
           if (.not.got_tsrc(iNFE_)) then
             Tsrc0(is,iNFE_)=1.e-2*5e-6
@@ -2512,12 +2541,12 @@ C$    integer  trd, omp_get_thread_num
 #    if ! defined key_pisces_light
           Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iDIA_)=Tsrc0(is,iDIA_)
-          Tsrc(is,k,iBSI_)=Tsrc0(is,iBSI_)
+          Tsrc(is,k,iDSI_)=Tsrc0(is,iDSI_)
           Tsrc(is,k,iBFE_)=Tsrc0(is,iBFE_)
           Tsrc(is,k,iGOC_)=Tsrc0(is,iGOC_)
           Tsrc(is,k,iSFE_)=Tsrc0(is,iSFE_)
           Tsrc(is,k,iDFE_)=Tsrc0(is,iDFE_)
-          Tsrc(is,k,iDSI_)=Tsrc0(is,iDSI_)
+          Tsrc(is,k,iGSI_)=Tsrc0(is,iGSI_)
           Tsrc(is,k,iNFE_)=Tsrc0(is,iNFE_)
           Tsrc(is,k,iNCH_)=Tsrc0(is,iNCH_)
           Tsrc(is,k,iDCH_)=Tsrc0(is,iDCH_)
@@ -3330,12 +3359,12 @@ C$    integer  trd, omp_get_thread_num
 #   if ! defined key_pisces_light
             if (.not.got_tbry(iCAL_)) tbry_west(j,k,iCAL_)=0.01
             if (.not.got_tbry(iDIA_)) tbry_west(j,k,iDIA_)=0.01
-            if (.not.got_tbry(iBSI_)) tbry_west(j,k,iBSI_)=1.5e-3
+            if (.not.got_tbry(iDSI_)) tbry_west(j,k,iDSI_)=1.5e-3
             if (.not.got_tbry(iBFE_)) tbry_west(j,k,iBFE_)=1.e-2*5.e-6
             if (.not.got_tbry(iGOC_)) tbry_west(j,k,iGOC_)=0.01
             if (.not.got_tbry(iSFE_)) tbry_west(j,k,iSFE_)=1.e-2*5.e-6
             if (.not.got_tbry(iDFE_)) tbry_west(j,k,iDFE_)=1.e-2*5.e-6
-            if (.not.got_tbry(iDSI_)) tbry_west(j,k,iDSI_)=1.e-2*0.15
+            if (.not.got_tbry(iGSI_)) tbry_west(j,k,iGSI_)=1.e-2*0.15
             if (.not.got_tbry(iNFE_)) tbry_west(j,k,iNFE_)=1.e-2*5e-6
             if (.not.got_tbry(iNCH_)) tbry_west(j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tbry(iDCH_)) tbry_west(j,k,iDCH_)=1.e-2*12./55.
@@ -3432,12 +3461,12 @@ C$    integer  trd, omp_get_thread_num
 #   if ! defined key_pisces_light
             if (.not.got_tbry(iCAL_)) tbry_east(j,k,iCAL_)=0.01
             if (.not.got_tbry(iDIA_)) tbry_east(j,k,iDIA_)=0.01
-            if (.not.got_tbry(iBSI_)) tbry_east(j,k,iBSI_)=1.5e-3
+            if (.not.got_tbry(iDSI_)) tbry_east(j,k,iDSI_)=1.5e-3
             if (.not.got_tbry(iBFE_)) tbry_east(j,k,iBFE_)=1.e-2*5.e-6
             if (.not.got_tbry(iGOC_)) tbry_east(j,k,iGOC_)=0.01
             if (.not.got_tbry(iSFE_)) tbry_east(j,k,iSFE_)=1.e-2*5.e-6
             if (.not.got_tbry(iDFE_)) tbry_east(j,k,iDFE_)=1.e-2*5.e-6
-            if (.not.got_tbry(iDSI_)) tbry_east(j,k,iDSI_)=1.e-2*0.15
+            if (.not.got_tbry(iGSI_)) tbry_east(j,k,iGSI_)=1.e-2*0.15
             if (.not.got_tbry(iNFE_)) tbry_east(j,k,iNFE_)=1.e-2*5e-6
             if (.not.got_tbry(iNCH_)) tbry_east(j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tbry(iDCH_)) tbry_east(j,k,iDCH_)=1.e-2*12./55.
@@ -3534,12 +3563,12 @@ C$    integer  trd, omp_get_thread_num
 #   if ! defined key_pisces_light
              if (.not.got_tbry(iCAL_)) tbry_north(j,k,iCAL_)=0.01
              if (.not.got_tbry(iDIA_)) tbry_north(j,k,iDIA_)=0.01
-             if (.not.got_tbry(iBSI_)) tbry_north(j,k,iBSI_)=1.5e-3
+             if (.not.got_tbry(iDSI_)) tbry_north(j,k,iDSI_)=1.5e-3
              if (.not.got_tbry(iBFE_)) tbry_north(j,k,iBFE_)=1.e-2*5.e-6
              if (.not.got_tbry(iGOC_)) tbry_north(j,k,iGOC_)=0.01
              if (.not.got_tbry(iSFE_)) tbry_north(j,k,iSFE_)=1.e-2*5.e-6
              if (.not.got_tbry(iDFE_)) tbry_north(j,k,iDFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iDSI_)) tbry_north(j,k,iDSI_)=1.e-2*0.15
+             if (.not.got_tbry(iGSI_)) tbry_north(j,k,iGSI_)=1.e-2*0.15
              if (.not.got_tbry(iNFE_)) tbry_north(j,k,iNFE_)=1.e-2*5e-6
              if (.not.got_tbry(iNCH_)) tbry_north(j,k,iNCH_)=1.e-2*12./55.
              if (.not.got_tbry(iDCH_)) tbry_north(j,k,iDCH_)=1.e-2*12./55.
@@ -3636,12 +3665,12 @@ C$    integer  trd, omp_get_thread_num
 #   if ! defined key_pisces_light
              if (.not.got_tbry(iCAL_)) tbry_south(j,k,iCAL_)=0.01
              if (.not.got_tbry(iDIA_)) tbry_south(j,k,iDIA_)=0.01
-             if (.not.got_tbry(iBSI_)) tbry_south(j,k,iBSI_)=1.5e-3
+             if (.not.got_tbry(iDSI_)) tbry_south(j,k,iDSI_)=1.5e-3
              if (.not.got_tbry(iBFE_)) tbry_south(j,k,iBFE_)=1.e-2*5.e-6
              if (.not.got_tbry(iGOC_)) tbry_south(j,k,iGOC_)=0.01
              if (.not.got_tbry(iSFE_)) tbry_south(j,k,iSFE_)=1.e-2*5.e-6
              if (.not.got_tbry(iDFE_)) tbry_south(j,k,iDFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iDSI_)) tbry_south(j,k,iDSI_)=1.e-2*0.15
+             if (.not.got_tbry(iGSI_)) tbry_south(j,k,iGSI_)=1.e-2*0.15
              if (.not.got_tbry(iNFE_)) tbry_south(j,k,iNFE_)=1.e-2*5e-6
              if (.not.got_tbry(iNCH_)) tbry_south(j,k,iNCH_)=
      &                                                    1.e-2*12./55.

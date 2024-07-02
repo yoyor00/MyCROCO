@@ -1,7 +1,6 @@
-! $Id: def_grid_3d.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -149,12 +148,14 @@
 #  if defined NEW_S_COORD
       ierr=nf_put_att_text (ncid, varid, 'standard_name',21,
      &     'ocean_s_coordinate_g2')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
 #  else
       ierr=nf_put_att_text (ncid, varid, 'standard_name',21,
      &     'ocean_s_coordinate_g1')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
 #  endif
-      ierr=nf_put_att_text (ncid, varid, 'formula_terms',46,
-     &     's: sc_r C: Cs_r eta: zeta depth: h depth_c: hc')
+      ierr=nf_put_att_text (ncid, varid, 'formula_terms',49,
+     &     's: s_rho C: Cs_rho eta: zeta depth: h depth_c: hc')
 !-
       ierr=nf_def_var (ncid, 's_w', nf_ftype, 1, w3dgrd(3), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   24,
@@ -166,35 +167,19 @@
 #  if defined NEW_S_COORD
       ierr=nf_put_att_text (ncid, varid, 'standard_name',35,
      &     'ocean_s_coordinate_g2_at_w_location')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
 #  else
       ierr=nf_put_att_text (ncid, varid, 'standard_name',35,
      &     'ocean_s_coordinate_g1_at_w_location')
+      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
 #  endif
       ierr=nf_put_att_text (ncid, varid, 'formula_terms',46,
-     &     's: sc_w C: Cs_w eta: zeta depth: h depth_c: hc')
-!----
-! S-coordinate
-      ierr=nf_def_var (ncid, 'sc_r', nf_ftype,  1, r3dgrd(3), varid)
-      ierr=nf_put_att_text (ncid, varid, 'long_name',   36,
-     &     'ocean s roms coordinate at rho point')
-#  if defined NEW_S_COORD
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
-#  else
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
-#  endif /* NEW_S_COORD */
-!
-      ierr=nf_def_var (ncid, 'sc_w', nf_ftype, 1, w3dgrd(3), varid)
-      ierr=nf_put_att_text (ncid, varid, 'long_name',   34,
-     &     'ocean s roms coordinate at w point')
-#  if defined NEW_S_COORD
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
-#  else
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
-#  endif /* NEW_S_COORD */
+     &     's: s_w C: Cs_w eta: zeta depth: h depth_c: hc')
+
 
 !----
 ! Streching curves Cs_r, Cs_w
-      ierr=nf_def_var (ncid, 'Cs_r', nf_ftype,  1, r3dgrd(3), varid)
+      ierr=nf_def_var (ncid, 'Cs_rho', nf_ftype,  1, r3dgrd(3), varid)
       ierr=nf_put_att_text (ncid, varid, 'long_name',   44,
      &     'S-coordinate stretching curves at RHO-points')
 !      ierr=nf_put_att_text (ncid, varid, 'standard_name',40,

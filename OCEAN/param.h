@@ -1,7 +1,6 @@
-! $Id: param.h 1619 2015-01-07 13:53:03Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -95,6 +94,8 @@
 # endif
 #elif defined RIVER
       parameter (LLm0=40,   MMm0=80,   N=20)
+#elif defined SEAGRASS
+      parameter (LLm0=36,   MMm0=5,   N=40)
 #elif defined SEAMOUNT
       parameter (LLm0=64,   MMm0=64,   N=20)
 #elif defined SHELFRONT
@@ -345,6 +346,8 @@
       integer Msrc               ! Number of point sources
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
+# elif defined SEAGRASS
+      parameter (Msrc=1)         ! ====== == ===== =======
 # elif defined VILAINE
       parameter (Msrc=2)        ! ====== == ===== =======
 # elif defined ESTUARY
@@ -643,8 +646,8 @@
 #  ifdef PISCES
      &          , iDIC_, iTAL_, iOXY_, iCAL_, iPO4_
      &          , iPOC_, iSIL_, iPHY_, iZOO_, iDOC_
-     &          , iDIA_, iMES_, iBSI_, iFER_
-     &          , iBFE_, iGOC_, iSFE_, iDFE_, iDSI_
+     &          , iDIA_, iMES_, iDSI_, iFER_
+     &          , iBFE_, iGOC_, iSFE_, iDFE_, iGSI_
      &          , iNFE_, iNCH_, iDCH_, iNO3_, iNH4_
      &          , iLGW_, iDON_, iDOP_, iPON_, iPOP_
      &          , iNPH_, iPPH_, iNDI_, iPDI_, iPIC_
@@ -770,9 +773,9 @@
       parameter ( iCAL_=iDIC_+3,  iPO4_=iDIC_+4,
      &            iPOC_=iDIC_+5,  iSIL_=iDIC_+6,  iPHY_=iDIC_+7,
      &            iZOO_=iDIC_+8,  iDOC_=iDIC_+9,  iDIA_=iDIC_+10,
-     &            iMES_=iDIC_+11, iBSI_=iDIC_+12, iFER_=iDIC_+13,
+     &            iMES_=iDIC_+11, iDSI_=iDIC_+12, iFER_=iDIC_+13,
      &            iBFE_=iDIC_+14, iGOC_=iDIC_+15, iSFE_=iDIC_+16,
-     &            iDFE_=iDIC_+17, iDSI_=iDIC_+18, iNFE_=iDIC_+19,
+     &            iDFE_=iDIC_+17, iGSI_=iDIC_+18, iNFE_=iDIC_+19,
      &            iNCH_=iDIC_+20, iDCH_=iDIC_+21, iNO3_=iDIC_+22,
      &            iNH4_=iDIC_+23)
 #    ifdef key_ligand

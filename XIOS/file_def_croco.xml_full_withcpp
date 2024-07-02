@@ -35,10 +35,8 @@
 	<field field_ref="lat_v"     />
 	<field field_ref="angle"     />
 	<field field_ref="mask_rho"  />
-	<field field_ref="Cs_r"      />
-	<field field_ref="sc_r"      />
+	<field field_ref="Cs_rho"    />
 	<field field_ref="Cs_w"      />
-	<field field_ref="sc_w"      />
       </field_group>
 
       <field_group id="inst_fields1" operation="instant">
@@ -79,10 +77,8 @@
       <field field_ref="lat_v"     />
       <field field_ref="angle"     />
       <field field_ref="mask_rho"  />
-      <field field_ref="Cs_r"      />
-      <field field_ref="sc_r"      />
+      <field field_ref="Cs_rho"      />
       <field field_ref="Cs_w"      />
-      <field field_ref="sc_w"      />
     </field_group>
 
     <field_group id="hourly_fields" operation="average">
@@ -120,10 +116,8 @@
 	<field field_ref="lat_v"     />
 	<field field_ref="angle"     />
 	<field field_ref="mask_rho"  />
-	<field field_ref="Cs_r"      />
-	<field field_ref="sc_r"      />
+	<field field_ref="Cs_rho"    />
 	<field field_ref="Cs_w"      />
-	<field field_ref="sc_w"      />
       </field_group>
       
       <field_group id="surf_fields" operation="instant">
@@ -159,10 +153,8 @@
       <field field_ref="lat_v"     />
       <field field_ref="angle"     />
       <field field_ref="mask_rho"  />
-      <field field_ref="Cs_r"      />
-      <field field_ref="sc_r"      />
+      <field field_ref="Cs_rho"    />
       <field field_ref="Cs_w"      />
-      <field field_ref="sc_w"      />
     </field_group>
         
     <field_group id="ave_fields" operation="average">

@@ -1,7 +1,6 @@
-! $Id: get_bry_bio.F 1585 2014-07-17 14:42:34Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -192,7 +191,7 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'mes_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
-            elseif (itrc.eq.iBSI_) then
+            elseif (itrc.eq.iDSI_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'bsi_time', bry_tid(itrc))
              ! ierr_all=ierr_all+ierr
@@ -237,7 +236,7 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'dfe_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
-            elseif (itrc.eq.iDSI_) then
+            elseif (itrc.eq.iGSI_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'dsi_time', bry_tid(itrc))
              ! ierr_all=ierr_all+ierr

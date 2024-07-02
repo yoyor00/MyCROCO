@@ -1,6 +1,6 @@
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -4647,7 +4647,7 @@ C$OMP BARRIER
 ! Ursell number defined as 3/(32*pi^2) * Hs*L^2/h^3
 !               (Fourier coeff for NL terms)
 !
-      Ur=0.375*H_s/(k_wn*k_wn*depth**3.)
+      Ur=max(0.375*H_s/(k_wn*k_wn*depth**3.),1.e-12)
 !
 ! Ruessink et al. (2012), Eq 9
 !
@@ -4926,7 +4926,7 @@ C$OMP BARRIER
       real cff, worb1, worb2, worb
 !
       worb1=pi*Hs*zws/(Td*depth)
-      worb2=worb1*2.*(RR+RR-1.)
+      worb2=max(worb1*2.*(RR+RR-1.),1.e-14)
 !
 !  Using the SANTOSS model formulation
 !

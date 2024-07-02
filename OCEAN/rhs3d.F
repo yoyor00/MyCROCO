@@ -1,7 +1,6 @@
-! $Id: rhs3d.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -35,6 +34,9 @@
      &                                 VFx,VFe,
      &                                 wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
      &                                 VFx_3D,VFe_3D)
+#ifdef OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
+#endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
@@ -411,6 +413,26 @@
 # define VFe(i,j) VFe_3D(i,j,k)
 
       do k=1,N
+
+
+# ifdef OBSTRUCTION
+        do j=Jstr,Jend
+            do i=IstrU,Iend
+              ru(i,j,k)=ru(i,j,k)-(obst_fuz(i-1,j,k)+obst_fuz(i,j,k)) !/2/2*4 half sum equilibrium
+     &                             *(Hz(i,j,k)+Hz(i-1,j,k))
+     &                             /(pm (i-1,j)+pm (i,j))
+     &                             /(pn (i-1,j)+pn (i,j))
+            enddo
+        enddo
+        do j=JstrV,Jend
+            do i=Istr,Iend
+              rv(i,j,k)=rv(i,j,k)-(obst_fvz(i,j-1,k)+obst_fvz(i,j,k)) !/2/2*4 half sum equilibrium
+     &                             *(Hz(i,j,k)+Hz(i,j-1,k))
+     &                             /(pm (i,j-1)+pm (i,j))
+     &                             /(pn (i,j-1)+pn (i,j))
+            enddo
+        enddo
+# endif
 
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)
 !
@@ -1074,7 +1096,7 @@
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
                              || defined DIAGNOSTICS_EK \
                              || defined DIAGNOSTICS_PV \
-                             || defined DIAGNOSTICS_VORT
+                             || defined DIAGNOSTICS_VRT
         if (nnew.ne.3) then
           do j=Jstr,Jend
             do i=IstrU,Iend
@@ -1242,7 +1264,7 @@
      &                         SWITCH vmask(i,j)
 #    endif
               endif
-#   endif  /* DIAGNOSTICS_VORT */
+#   endif  /* DIAGNOSTICS_VRT */
             enddo
           enddo
         endif !<-- nnew.ne.3

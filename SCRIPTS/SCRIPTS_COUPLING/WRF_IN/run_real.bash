@@ -110,9 +110,9 @@ else
 fi
 # MPI launch commands
 # ------------------
-if [ ${MACHINE} == "JEANZAY" ]; then
+if [ ${MACHINE} == "JEANZAY" ] || [ ${MACHINE} == "LEFTRARU" ]; then
     export myMPI="srun -n $NBPROCS "
-elif [ ${MACHINE} == "DATARMOR" ]; then
+elif [ ${MACHINE} == "DATARMOR" ] || [ ${MACHINE} == "WCHPC" ]; then
     export myMPI="$MPI_LAUNCH -np $NBPROCS "
 elif [ ${MACHINE} == "IRENE" ]; then
     export myMPI="ccc_mprun -n $NBPROCS "
@@ -263,10 +263,10 @@ sed -e "s/<interval_s>/${interval_s}/g"         \
     -e "s/<j_str_d02>/${j_str_d02}/g"     -e "s/<j_str_d03>/${j_str_d03}/g"                                \
     -e "s/<coef_d02>/${refine_d02}/g"     -e "s/<coef_d03>/${refine_d03}/g"                                \
     -e "s/<isftcflx>/${isftcflx}/g" \
-    namelist.input.base.complete > namelist.input.prep.${domain_name}
+    namelist.input.base.complete > namelist.input.tmp
 
 # Handle fdda for different domains
-if [[ ${switch_fdda} == 1 ]]; then
+if [[ ${switch_fdda} != 0 ]]; then
     nbdom=$( echo "${nudgedom}" | wc -w)
     [[ ${nbdom} >  $( echo "${nudge_coef}" | wc -w) ]] && { echo "Missing values in nudge_coef for nest, we stop..."; exit ;}
     [[ ${nbdom} >  $( echo "${nudge_interval_m}" | wc -w) ]] && { echo "Missing values in nudge_interval_m for nest, we stop..."; exit ;}
@@ -278,25 +278,25 @@ if [[ ${switch_fdda} == 1 ]]; then
             -e "s/<nudge_coef_${dom}>/$( echo "${nudge_coef}" | cut -d " " -f $(( ${lvl})) )/g"       \
             -e "s/<nudge_end_h_${dom}>/$( echo "${nudge_end_h}" | cut -d " " -f $(( ${lvl})) )/g"      \
             -e "s/<nudge_int_m_${dom}>/$( echo "${nudge_interval_m}" | cut -d " " -f $(( ${lvl})) )/g" \
-            namelist.input.prep.${domain_name} > namelist.tmp
-            mv namelist.tmp namelist.input.prep.${domain_name}
+            namelist.input.tmp > namelist.tmp
+            mv namelist.tmp namelist.input.tmp
    done
 
     sed -e "s/<nudge_d.*>/0/g" \
         -e "s/<nudge_coef_d.*>/0/g" \
         -e "s/<nudge_end_h_d.*>/0/g" \
         -e "s/<nudge_int_m_d.*>/0/g" \
-        namelist.input.prep.${domain_name} > namelist.tmp
-    mv namelist.tmp namelist.input.prep.${domain_name}
-    chmod 755 namelist.input.prep.${domain_name}
+        namelist.input.tmp > namelist.tmp
+    mv namelist.tmp namelist.input.tmp
+    chmod 755 namelist.input.tmp
 else
     sed -e "s/<nudge_d.*>/0/g" \
         -e "s/<nudge_coef_d.*>/0/g" \
         -e "s/<nudge_end_h_d.*>/0/g" \
         -e "s/<nudge_int_m_d.*>/0/g" \
-        namelist.input.prep.${domain_name} > namelist.tmp
-    mv namelist.tmp namelist.input.prep.${domain_name}
-    chmod 755 namelist.input.prep.${domain_name}
+        namelist.input.tmp > namelist.tmp
+    mv namelist.tmp namelist.input.tmp
+    chmod 755 namelist.input.tmp
 fi  
  
     echo " "
@@ -347,12 +347,10 @@ for yy in `seq $start_y $end_y`; do
             -e "s/<nproc_x>/$nprocX/g"             -e "s/<nproc_y>/$nprocY/g"             \
             -e "s/<niotaskpg>/$niowrf/g"           -e "s/<niogp>/$niogp/g"                \
             -e "s/<dt>/${dt}/g"  \
-            namelist.input.prep.${domain_name} > namelist.input
+            namelist.input.tmp > namelist.input
 
         chmod +x namelist.input
-        cp namelist.input namelist.input.real.${domain_name}
-        cp namelist.input.prep.${domain_name} $WRF_IN_DIR
-        cp namelist.input.real.${domain_name} $WRF_IN_DIR 
+        cp namelist.input $WRF_IN_DIR/namelist.input.real
  # RUN real.exe
         echo "   Run real.exe    "
         date
@@ -362,18 +360,20 @@ for yy in `seq $start_y $end_y`; do
         ls -l *
 
 # Finalize with real outputs, rename and mov
-        tdigit=$( printf "%02d" $mm)
+        #tdigit=${yy}_$( printf "%02d" $mm)
+        tdigit=${yy}_$( printf "%02d" $mm)
+        tdigit_ini=${yy}_$( printf "%02d" $mm)_$( printf "%02d" $sday)_$( printf "%02d" $shour)
         if [ -e wrfinput_d01 -a -e wrfbdy_d01 -a -e wrflowinp_d01 ] ; then
             echo "SUCCESS d01"
         # Create output data directory if needed
             if ! [ -e ${REAL_OUT_DIR} ] ; then
                 mkdir ${REAL_OUT_DIR}
             fi 
-            mv -f wrfinput_d01 ${REAL_OUT_DIR}/wrfinput_d01_${yy}_${tdigit}
-            mv -f wrfbdy_d01 ${REAL_OUT_DIR}/wrfbdy_d01_${yy}_${tdigit}
-            mv -f wrflowinp_d01 ${REAL_OUT_DIR}/wrflowinp_d01_${yy}_${tdigit}
+            mv -f wrfinput_d01 ${REAL_OUT_DIR}/wrfinput_d01_${tdigit_ini}
+            mv -f wrfbdy_d01 ${REAL_OUT_DIR}/wrfbdy_d01_${tdigit}
+            mv -f wrflowinp_d01 ${REAL_OUT_DIR}/wrflowinp_d01_${tdigit}
             if  [ $switch_fdda -ne 0 ]; then
-                mv -f wrffdda_d01 ${REAL_OUT_DIR}/wrffdda_d01_${yy}_${tdigit}
+                mv -f wrffdda_d01 ${REAL_OUT_DIR}/wrffdda_d01_${tdigit}
             fi  
         else
             echo "REAL ERROR d01"
@@ -381,15 +381,15 @@ for yy in `seq $start_y $end_y`; do
 
         if [ $max_domains -ge 2 -a -e wrfinput_d02 -a -e wrflowinp_d02 ] ; then
             echo "SUCCESS d02"
-            mv -f wrfinput_d02 ${REAL_OUT_DIR}/wrfinput_d02_${yy}_${tdigit}
-            mv -f wrflowinp_d02 ${REAL_OUT_DIR}/wrflowinp_d02_${yy}_${tdigit}
+            mv -f wrfinput_d02 ${REAL_OUT_DIR}/wrfinput_d02_${tdigit_ini}
+            mv -f wrflowinp_d02 ${REAL_OUT_DIR}/wrflowinp_d02_${tdigit}
         else
             echo "REAL ERROR or NON-EXISTENT d02"
         fi
         if [ $max_domains -eq 3 -a -e wrfinput_d03 -a -e wrflowinp_d03 ] ; then
             echo "SUCCESS d03"
-            mv -f wrfinput_d03 ${REAL_OUT_DIR}/wrfinput_d03_${yy}_${tdigit}
-            mv -f wrflowinp_d03 ${REAL_OUT_DIR}/wrflowinp_d03_${yy}_${tdigit}
+            mv -f wrfinput_d03 ${REAL_OUT_DIR}/wrfinput_d03_${tdigit_ini}
+            mv -f wrflowinp_d03 ${REAL_OUT_DIR}/wrflowinp_d03_${tdigit}
         else
             echo "REAL ERROR or NON-EXISTENT d03"
         fi

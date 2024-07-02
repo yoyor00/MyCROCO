@@ -91,7 +91,7 @@ mytmp=$mydir/from_croco_tmp.nc
     fi
 
     # Extract number of vertical levels
-    Ns_rho=`ncdump -h $filein | grep "s_rho = " | cut -d '=' -f2 | cut -d ';' -f1`
+    Ns_rho=`ncdump -h $filein | grep "s_rho = " | head -1 | cut -d '=' -f2 | cut -d ';' -f1`
     Ns_rho=${Ns_rho// /}
 
     # Extract dimensions

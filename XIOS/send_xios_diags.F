@@ -1,14 +1,13 @@
-!     $Id:$
-!     
 !======================================================================
-!     ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
-!     The two other branches from UCLA (Shchepetkin et al) 
-!     and Rutgers University (Arango et al) are under MIT/X style license.
-!     ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
-!     
-!     ROMS_AGRIF website : http://roms.mpl.ird.fr
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
+!
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
-!     
+!   
 #include "cppdefs.h"
 
 #ifdef XIOS
@@ -881,17 +880,11 @@ C apar_file
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='hc_units', value='meter')
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='sc_w'
-     &     , value='have a look at variable sc_w in this file')
-      CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='Cs_w'
      &     , value='have a look at variable Cs_w in this file')
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='sc_r'
-     &     , value='have a look at variable sc_r in this file')
-      CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='Cs_r'
-     &     , value='have a look at variable Cs_r in this file')
+     &     ,type='string',name='Cs_rho'
+     &     , value='have a look at variable Cs_rho in this file')
 #endif
       CALL iom_set_file_global_attr_int   (cdid
      &     ,type='int',name='ntimes', value=ntimes)
@@ -1312,16 +1305,14 @@ C 				  endif
       TYPE(xios_duration)   ::   output_freq
       !!----------------------------------------------------------------------
       !
-# ifdef START_DATE
-      ! start_date with format dd-mm-yyyy
-       READ(start_date(1:2),fmt='(i2)') iday
-       READ(start_date(4:5),fmt='(i2)') imonth
-       READ(start_date(7:10),fmt='(i4)') iyear
-       CALL ymds2ju( iyear, imonth,iday, 0., jday0 )  
-# elif defined USE_CALENDAR
-       CALL ymds2ju(1900, 1, 1, 0., jday0 )  
+# if !defined USE_CALENDAR
+      ! start_date with format yyyy-mm-dd
+       READ(xios_origin_date(1:4),fmt='(i4)') iyear
+       READ(xios_origin_date(6:7),fmt='(i2)') imonth
+       READ(xios_origin_date(9:10),fmt='(i2)') iday
+       CALL ymds2ju( iyear, imonth,iday, 0., jday0 )
 # else
-       CALL ymds2ju( 1, 1, 1, 0., jday0 )  
+       CALL ymds2ju(1900, 1, 1, 0., jday0 ) 
 # endif
       DO jn = 1,2
 
@@ -1879,11 +1870,11 @@ C 				  endif
 
       ! calendar parameters
 
-# ifdef START_DATE
-      ! start_date with format dd-mm-yyyy
-      READ(start_date(1:2),fmt='(i2)') iday
-      READ(start_date(4:5),fmt='(i2)') imonth
-      READ(start_date(7:10),fmt='(i4)') iyear
+# if !defined USE_CALENDAR
+! start_date with format yyyy-mm-dd
+      READ(xios_origin_date(1:4),fmt='(i4)') iyear
+      READ(xios_origin_date(6:7),fmt='(i2)') imonth
+      READ(xios_origin_date(9:10),fmt='(i2)') iday
       ihour=0
       iminute=0
       isec=0
@@ -2132,7 +2123,7 @@ C 				  endif
       IF(ALLOCATED(profsed))  CALL iom_set_axis_attr("s_rhoS", profsed)
 #endif
       
-      ! time axis (for ROMS tools)
+      ! time axis (for CROCO tools)
 
       ! automatic definitions of some of the xml attributs
       CALL set_xmlatt
@@ -2262,6 +2253,28 @@ C 				  endif
       USE comMUSTANG,   ONLY : sum_tmp, rouse2d
 #endif
 #endif
+
+#if defined OBSTRUCTION
+      USE com_OBSTRUCTIONS, ONLY : l_obstout_pos, l_obstout_height_f,
+     &   l_obstout_height_e, l_obstout_dens_f, l_obstout_dens_e,
+     &   l_obstout_dens_2d, l_obstout_width_f, l_obstout_width_e, 
+     &   l_obstout_width_2d, l_obstout_thick_f, l_obstout_thick_e, 
+     &   l_obstout_theta, l_obstout_frac_xy, l_obstout_frac_z, 
+     &   l_obstout_fuzvz, l_obstout_a2d, l_obstout_a3d, l_obstout_s2d, 
+     &   l_obstout_s3d, l_obstout_drag, l_obstout_tau, 
+     &   obst_nout_pos, obst_nout_height_f, 
+     &   obst_nout_height_e, obst_nout_dens_f , obst_nout_dens_e, 
+     &   obst_nout_width_f, obst_nout_width_e , obst_nout_thick_f, 
+     &   obst_nout_thick_e, obst_nout_theta, obst_nout_frac_xy, 
+     &   obst_nout_frac_z, obst_nout_fuzvz, obst_nout_a2d, 
+     &   obst_nout_a3d, obst_nout_s2d , obst_nout_s3d, 
+     &   obst_nout_drag, obst_nout_tau,
+     &   obst_varname, obst_position, obst_height_inst, obst_height, 
+     &   obst_dens_inst, obst_dens3d, obst_width_inst, obst_width3d,
+     &   obst_thick_inst, obst_thick3d, obst_theta3d, obst_fracxy, 
+     &   obst_fracz3d, obst_drag3d, obst_a2d, obst_a3d, obst_s2d, obst_s3d, 
+     &   obst_tau, obst_fuz, obst_fvz, obst_nbvar
+#endif
           IMPLICIT NONE
 
 #if defined MUSTANG
@@ -2360,6 +2373,9 @@ C 				  endif
 
 #endif
 
+#if defined OBSTRUCTION
+      integer iv
+#endif
 
 
 # include "compute_auxiliary_bounds.h"
@@ -2405,7 +2421,7 @@ C 				  endif
 ! done automatically
 !
 ! S-coordinate independent variables "sc_w", "sc_r" and stretching
-! curves "Cs_w", "Cs_r" at W- and RHO-points.
+! curves "Cs_w", "Cs_rho" at W- and RHO-points.
 !
       if (xios_field_is_active("Cs_r")) then
       call xios_send_field("Cs_r",Cs_r(1:N))
@@ -3845,6 +3861,205 @@ c !$acc wait
 !     
 #  endif /* BBL */
 
+
+#  ifdef OBSTRUCTION
+      do iv=1,obst_nbvar
+         call xios_send_field(
+     &      TRIM(obst_nout_pos)//'_'//TRIM(obst_varname(iv)),
+     &      obst_position(iv,:,:))
+
+         call xios_send_field(
+     &      TRIM(obst_nout_height_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_height_inst(iv,:,:))
+
+         call xios_send_field(
+     &      TRIM(obst_nout_height_e)//'_'//TRIM(obst_varname(iv)),
+     &      obst_height(iv,:,:))
+
+         call xios_send_field(
+     &      TRIM(obst_nout_dens_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_dens_inst(iv,:,:))
+         
+         ! obst_dens3d is not allocated if not wanted in output
+         IF (l_obstout_dens_e) then
+            do k=1,N
+                  workr(:,:,k)=obst_dens3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_dens_e)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         call xios_send_field(
+     &      TRIM(obst_nout_width_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_width_inst(iv,:,:))
+
+         ! obst_width3d is not allocated if not wanted in output
+         IF (l_obstout_width_e) then
+            do k=1,N
+                  workr(:,:,k)=obst_width3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_width_e)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         call xios_send_field(
+     &      TRIM(obst_nout_thick_f)//'_'//TRIM(obst_varname(iv)),
+     &      obst_thick_inst(iv,:,:))
+
+         ! obst_thick3d is not allocated if not wanted in output
+         IF (l_obstout_thick_e) then
+            do k=1,N
+                  workr(:,:,k)=obst_thick3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_thick_e)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         ! obst_theta3d is not allocated if not wanted in output
+         IF (l_obstout_theta) then
+            do k=1,N
+                  workr(:,:,k)=obst_theta3d(iv,k,:,:)*180.0/3.1415
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_theta)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         ! obst_fracxy is not allocated if not wanted in output
+         IF (l_obstout_frac_xy) then
+            call xios_send_field(
+     &         TRIM(obst_nout_frac_xy)//'_'//TRIM(obst_varname(iv)),
+     &         obst_fracxy(iv,:,:))
+         END IF
+
+         ! obst_fracz3d is not allocated if not wanted in output
+         IF (l_obstout_frac_z) then
+            do k=1,N
+                  workr(:,:,k)=obst_fracz3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_frac_z)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         ! obst_drag3d is not allocated if not wanted in output
+         IF (l_obstout_drag) then
+            do k=1,N
+                  workr(:,:,k)=obst_drag3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &         TRIM(obst_nout_drag)//'_'//TRIM(obst_varname(iv)),
+     &         workr)
+         END IF
+
+         ! obst_a2d is not allocated if not wanted in output
+         IF (l_obstout_a2d) then
+            call xios_send_field(
+     &      TRIM(obst_nout_a2d)//'_'//TRIM(obst_varname(iv)),
+     &      obst_a2d(iv,:,:))
+         END IF
+
+         do k=1,N
+            workr(:,:,k)=obst_a3d(iv,k,:,:)
+         enddo
+         call xios_send_field(
+     &      TRIM(obst_nout_a3d)//'_'//TRIM(obst_varname(iv)),
+     &      workr)
+
+         ! obst_s2d is not allocated if not wanted in output
+         IF (l_obstout_s2d) then
+            call xios_send_field(
+     &      TRIM(obst_nout_s2d)//'_'//TRIM(obst_varname(iv)),
+     &      obst_s2d(iv,:,:))
+         END IF
+
+         ! obst_s3d is not allocated if not wanted in output
+         IF (l_obstout_s3d) then
+            do k=1,N
+                  workr(:,:,k)=obst_s3d(iv,k,:,:)
+            enddo
+            call xios_send_field(
+     &      TRIM(obst_nout_s3d)//'_'//TRIM(obst_varname(iv)),
+     &      workr)
+         END IF
+
+      enddo
+
+      ! obst_a2d is not allocated if not wanted in output
+      IF (l_obstout_a2d) then
+         call xios_send_field(
+     &         TRIM(obst_nout_a2d)//'_NoTurb',
+     &         obst_a2d(obst_nbvar + 1,:,:))
+
+         call xios_send_field(
+     &         TRIM(obst_nout_a2d)//'_Turb',
+     &         obst_a2d(obst_nbvar + 2,:,:))
+         call xios_send_field(
+     &         TRIM(obst_nout_a2d)//'_All',
+     &         obst_a2d(obst_nbvar + 3,:,:))
+      END IF   
+
+         do k=1,N
+               workr(:,:,k)=obst_a3d(obst_nbvar + 1,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_a3d)//'_NoTurb',
+     &         workr)
+         do k=1,N
+               workr(:,:,k)=obst_a3d(obst_nbvar + 2,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_a3d)//'_Turb',
+     &         workr)
+         do k=1,N
+               workr(:,:,k)=obst_a3d(obst_nbvar + 3,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_a3d)//'_All',
+     &         workr)
+
+      ! obst_s2d is not allocated if not wanted in output
+      IF (l_obstout_s2d) then
+         call xios_send_field(
+     &         TRIM(obst_nout_s2d)//'_NoTurb',
+     &         obst_s2d(obst_nbvar + 1,:,:))
+         call xios_send_field(
+     &         TRIM(obst_nout_s2d)//'_Turb',
+     &         obst_s2d(obst_nbvar + 2,:,:))
+         call xios_send_field(
+     &         TRIM(obst_nout_s2d)//'_All',
+     &         obst_s2d(obst_nbvar + 3,:,:))
+      END IF
+
+      ! obst_s3d is not allocated if not wanted in output
+      IF (l_obstout_s3d) then
+         do k=1,N
+               workr(:,:,k)=obst_s3d(obst_nbvar + 1,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_s3d)//'_NoTurb',
+     &         workr)
+         do k=1,N
+               workr(:,:,k)=obst_s3d(obst_nbvar + 2,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_s3d)//'_Turb',
+     &         workr)
+         do k=1,N
+               workr(:,:,k)=obst_s3d(obst_nbvar + 3,k,:,:)
+         enddo
+         call xios_send_field(
+     &         TRIM(obst_nout_s3d)//'_All',
+     &         workr)
+      END IF
+         call xios_send_field(TRIM(obst_nout_tau), obst_tau)
+         call xios_send_field(TRIM(obst_nout_fuzvz)//'_uz', obst_fuz)
+         call xios_send_field(TRIM(obst_nout_fuzvz)//'_vz', obst_fvz)
+
+#  endif /* OBSTRUCTION */
 
 
 # endif /* SOLVE3D */

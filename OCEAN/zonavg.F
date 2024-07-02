@@ -1,4 +1,12 @@
-! $Id: zonavg.F 972 2012-12-14 17:57:17Z marchesiello $
+!======================================================================
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
+!
+! CROCO website : http://www.croco-ocean.org
+!======================================================================
 !
 #include "cppdefs.h"
 
@@ -134,16 +142,6 @@
       enddo
 !$acc end kernels
 
-!!!$acc parallel loop if(compute_on_device) default(present) 
-!!!$acc& loop gang reduction(+:Azond) collapse(3)
-!!      do i=1,NP_XI
-!!         lenode=jj*NP_XI + i
-!!         do k=1,N
-!!            do j=jstr-1,jend+1
-!!               Azond(j,k)=Azond(j,k)+allsumd(j,k,lenode)
-!!            enddo
-!!         enddo
-!!      enddo
       
 # endif /* MPI */
 

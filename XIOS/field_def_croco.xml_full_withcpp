@@ -4,11 +4,11 @@
 
 #ifdef SOLVE3D
   <field_group id="Vertical_dimension_rho" grid_ref="rho_vertical_dimension" >
-    <field id="Cs_r" long_name="ocean s roms coordinate at rho point"  />
+    <field id="Cs_rho" long_name="ocean s croco coordinate at rho point"  />
     <field id="sc_r" long_name="S-coordinate stretching curves at RHO-points"  />
   </field_group>
   <field_group id="Vertical_dimension_w"  grid_ref="w_vertical_dimension" >
-    <field id="Cs_w" long_name="ocean s roms coordinate at w point"  />
+    <field id="Cs_w" long_name="ocean s croco coordinate at w point"  />
     <field id="sc_w" long_name="S-coordinate stretching curves at W-points"  />
   </field_group>
   <field_group id="scalar" grid_ref="scalar_grid"  >
@@ -179,12 +179,12 @@
     <field id="Si"       long_name="Silicate Concentration"                   unit="mmol/m3" grid_ref="rho_3D" />
     <field id="PHY2"     long_name="Diatoms Concentration"                    unit="mmol/m3" grid_ref="rho_3D" />
     <field id="ZOO2"     long_name="Mesozooplankton Concentration"            unit="mmol/m3" grid_ref="rho_3D" />
-    <field id="BSi"      long_name="Diatoms Silicate Concentration"           unit="mmol/m3" grid_ref="rho_3D" />
+    <field id="DSi"      long_name="Diatoms Silicate Concentration"           unit="mmol/m3" grid_ref="rho_3D" />
     <field id="BFe"      long_name="Big iron particles Concentration"         unit="mmol/m3" grid_ref="rho_3D" />
     <field id="GOC"      long_name="Big organic carbon Concentration"         unit="mmol/m3" grid_ref="rho_3D" />
     <field id="SFe"      long_name="Small iron particles Concentration"       unit="mmol/m3" grid_ref="rho_3D" />
     <field id="DFe"      long_name="Diatoms iron  Concentration"              unit="mmol/m3" grid_ref="rho_3D" />
-    <field id="DSi"      long_name="Sinking biogenic Silicate Concentration"  unit="mmol/m3" grid_ref="rho_3D" />
+    <field id="GSi"      long_name="Sinking biogenic Silicate Concentration"  unit="mmol/m3" grid_ref="rho_3D" />
     <field id="NFe"      long_name="Nano iron Concentration"                  unit="mmol/m3" grid_ref="rho_3D" />
     <field id="NCHL"     long_name="Nano chlorophyl Concentration"            unit="mg/m3"   grid_ref="rho_3D" />
     <field id="DCHL"     long_name="Diatoms chlorophyl Concentration"         unit="mg/m3"   grid_ref="rho_3D" />

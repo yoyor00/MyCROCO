@@ -1,7 +1,6 @@
-! $Id: def_rst.F 1571 2014-07-01 12:38:05Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -78,8 +77,8 @@
 #ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
-          rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
-          rstname=TRIM(rstname)//cdate(1:2)//cdate(12:13)//cdate(15:16)
+          rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(1:4)//cdate(6:7)
+          rstname=TRIM(rstname)//cdate(9:10)//cdate(12:13)//cdate(15:16)
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
         end if

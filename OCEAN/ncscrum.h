@@ -1,7 +1,6 @@
-! $Id: ncscrum.h 1588 2014-08-04 16:26:01Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -219,8 +218,8 @@
 #  ifdef PISCES
       integer indxDIC, indxTAL, indxOXY, indxCAL, indxPO4,
      &        indxPOC, indxSIL, indxPHY, indxZOO, indxDOC,
-     &        indxDIA, indxMES, indxBSI, indxFER, indxBFE,
-     &        indxGOC, indxSFE, indxDFE, indxDSI, indxNFE,
+     &        indxDIA, indxMES, indxDSI, indxFER, indxBFE,
+     &        indxGOC, indxSFE, indxDFE, indxGSI, indxNFE,
      &        indxNCH, indxDCH, indxNO3, indxNH4
       parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
      &           indxTAL =indxDIC+1, indxOXY=indxDIC+2)
@@ -234,10 +233,10 @@
      &           indxPOC=indxDIC+5, indxSIL=indxDIC+6,
      &           indxPHY =indxDIC+7, indxZOO=indxDIC+8,
      &           indxDOC =indxDIC+9, indxDIA=indxDIC+10,
-     &           indxMES =indxDIC+11, indxBSI=indxDIC+12,
+     &           indxMES =indxDIC+11, indxDSI=indxDIC+12,
      &           indxFER =indxDIC+13, indxBFE=indxDIC+14,
      &           indxGOC =indxDIC+15, indxSFE=indxDIC+16,
-     &           indxDFE =indxDIC+17, indxDSI=indxDIC+18,
+     &           indxDFE =indxDIC+17, indxGSI=indxDIC+18,
      &           indxNFE =indxDIC+19, indxNCH=indxDIC+20,
      &           indxDCH =indxDIC+21, indxNO3=indxDIC+22,
      &           indxNH4 =indxDIC+23)
@@ -553,7 +552,6 @@
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
-
 # ifdef ABL1D
       integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
      &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
@@ -2172,6 +2170,9 @@
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsname
 #endif
+#if defined OBSTRUCTION
+     &               ,    obstname
+#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
@@ -2278,6 +2279,9 @@
 #endif
 #if defined SUBSTANCE && !defined MUSTANG
      &               ,    subsname
+#endif
+#if defined OBSTRUCTION
+     &               ,    obstname
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname

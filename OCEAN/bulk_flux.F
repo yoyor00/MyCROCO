@@ -1,6 +1,6 @@
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -603,8 +603,8 @@
      &           - emiss_lw*rho0i*cpi*SigmaSB*TseaK*TseaK*TseaK*TseaK
 #  endif
 !++  Compute Webb correction (Webb effect) to latent heat flux, Hlw.
-          upvel=-1.61*Wstar(mb)*Qstar-(1.0+1.61*Q)*Wstar(mb)*Tstar
-     &   /TairK
+          upvel=-1.61*Wstar(mb)*Qstar-(1.0+1.61*Q)*Wstar(mb)
+     &                                            *Tstar/TairK
 !++  Compute turbulent latent heat flux (W/m2).
           hflat=hflat+rhoAir*Hlv*upvel*Q
 !
@@ -672,11 +672,13 @@
         enddo
       enddo
 #  endif
-! !
-! !====================================================================
-! !  Compute kinematic, surface wind stress (m2/s2).
-! !====================================================================
-! !
+!$acc loop seq
+#  ifndef WAVE_SMFLUX
+!
+!======================================================================
+!  Compute kinematic, surface wind stress (m2/s2).
+!======================================================================
+!
 !$acc loop seq
       do j=jmin,jmax
 !$acc loop seq
@@ -684,16 +686,16 @@
           cff =0.5*(cer(i-1,j)+cer(i,j))
           cff2=0.5*(aer(i-1,j)+aer(i,j))
           sustr(i,j)= ( cff*cff2*uwnd(i,j)
-#  ifdef CFB_STRESS
+#   ifdef CFB_STRESS
      &     + 0.5*(stau(i,j)+stau(i-1,j))*u(i,j,N,nrhs)
-#  endif
+#   endif
      &                             )*rho0i
-#  ifdef MASKING
+#   ifdef MASKING
           sustr(i,j)=sustr(i,j)*umask(i,j)
-#  endif
-#  ifdef WET_DRY
+#   endif
+#   ifdef WET_DRY
           sustr(i,j)=sustr(i,j)*umask_wet(i,j)
-#  endif
+#   endif
         enddo
       enddo
 !$acc end kernels      
@@ -706,19 +708,20 @@
           cff =0.5*(cer(i,j-1)+cer(i,j))
           cff2=0.5*(aer(i,j-1)+aer(i,j))
           svstr(i,j)=( cff*cff2*vwnd(i,j)
-#  ifdef CFB_STRESS
+#   ifdef CFB_STRESS
      &   + 0.5*(stau(i,j)+stau(i,j-1))*v(i,j,N,nrhs)
-#  endif
+#   endif
      &                                        )*rho0i
-#  ifdef MASKING
+#   ifdef MASKING
           svstr(i,j)=svstr(i,j)*vmask(i,j)
-#  endif
-#  ifdef WET_DRY
+#   endif
+#   ifdef WET_DRY
           svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
-#  endif
+#   endif
         enddo
       enddo
 !$acc end kernels      
+#  endif /* !WAVE_SMFLUX */
 # endif /* !ABL1D */
       return
       end

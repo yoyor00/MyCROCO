@@ -1,7 +1,6 @@
-! $Id: main.F 1615 2014-12-17 13:27:07Z rblod $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -37,6 +36,10 @@
 #endif
 #ifdef MUSTANG
           USE plug_MUSTANG_CROCO, ONLY : mustang_init_main
+#endif
+#ifdef OBSTRUCTION
+          USE plug_OBSTRUCTIONS, ONLY : obst_init_main
+          USE plug_OBSTRUCTIONS, ONLY : obst_update_main
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
@@ -385,7 +388,7 @@ C$OMP BARRIER
 # if defined OA_COUPLING || defined OW_COUPLING
         call cpl_prism_define
         oasis_time = 0
-        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
 # endif
       endif
 #endif
@@ -495,6 +498,18 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
 #endif
+!
+!----------------------------------------------------------------------
+! OBSTRUCTION : initialization
+!----------------------------------------------------------------------
+!
+#ifdef OBSTRUCTION
+      do tile=0,NSUB_X*NSUB_E-1
+        call obst_init_main ()
+        call obst_update_main (tile)
+      enddo
+#endif
+
 !
 !----------------------------------------------------------------------
 !  Finalize grid setup
@@ -940,6 +955,9 @@ CR      write(*,*) '  0' MYID
 
 #ifdef AGRIF
       iind = -1
+# if defined OA_COUPLING || defined OW_COUPLING
+      it_inside_root = 1
+# endif
       grids_at_level = -1
       sortedint = -1
       call computenbmaxtimes
@@ -967,8 +985,6 @@ CR      write(*,*) '  0' MYID
         do iifroot = 0,nfast+2
 # else
         nbtimes = 0
-        nbmaxprttime = ntimes+1
-        nbprttime = iicroot
         do while (nbtimes.LE.nbmaxtimes)
 # endif
 #endif

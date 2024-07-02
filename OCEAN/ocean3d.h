@@ -1,7 +1,6 @@
-! $Id: ocean3d.h 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -35,12 +34,13 @@
       common /grid_Hvom/Hvom
 
       real We(GLOBAL_2D_ARRAY,0:N)
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
       real Wi(GLOBAL_2D_ARRAY,0:N)
-# endif
+#  endif
       common /grid_Hz/Hz /grid_zr/z_r /grid_We/We
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
       common /grid_Wi/Wi
+#  endif
 # endif
 
 # if defined NBQ || defined K3FAST 

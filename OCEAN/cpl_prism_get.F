@@ -1,7 +1,6 @@
-! $Id: cpl_prism_get.F 1574 2014-07-01 15:13:38Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -450,10 +449,10 @@
             if (iok_etwo /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               etwo = tab_t_tmp / rho0
+               etwo = tab_t_tmp
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               etwo  = tab_t_tmp / rho0
+               etwo  = tab_t_tmp
 #  endif
             endif
          end if
@@ -465,10 +464,10 @@
             if (iok_ntwo /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ntwo = tab_t_tmp / rho0
+               ntwo = tab_t_tmp
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ntwo  = tab_t_tmp / rho0
+               ntwo  = tab_t_tmp
 #  endif
             endif
          end if
@@ -520,10 +519,10 @@
             if (iok_etaw /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               etaw = tab_t_tmp / rho0
+               etaw = tab_t_tmp
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               etaw  = tab_t_tmp / rho0
+               etaw  = tab_t_tmp
 #  endif
             endif
          end if
@@ -535,10 +534,10 @@
             if (iok_ntaw /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ntaw = tab_t_tmp / rho0
+               ntaw = tab_t_tmp
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ntaw  = tab_t_tmp / rho0
+               ntaw  = tab_t_tmp
 #  endif
             endif
          end if
@@ -660,9 +659,21 @@
 #  if defined WAVE_SMFLUX
          sustr = twox
          svstr = twoy
+         do jo=jmin_halo-1,jmax_halo+1
+         do io=imin_halo-1,imax_halo+1
+             smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
+     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) 
+         enddo
+         enddo
 #  else
          sustr = sustr - tawx + twox
          svstr = svstr - tawy + twoy
+         do jo=jmin_halo-1,jmax_halo+1
+         do io=imin_halo-1,imax_halo+1
+             smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
+     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) 
+         enddo
+         enddo
 #  endif
 # endif
       return

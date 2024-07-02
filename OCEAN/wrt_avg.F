@@ -1,7 +1,6 @@
-! $Id: wrt_avg.F 1571 2014-07-01 12:38:05Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -63,7 +62,7 @@
 !                                            !!! WARNING: Here it is
 ! Set record within the file.                !!! assumed that global
 !                                            !!! restart record index
-      nrecavg=max(nrecavg,1)                 !!! nrecrst is already
+      nrecavg=max(nrecavg,1)                 !!! nrecavg is already
       if (nrpfavg.eq.0) then                 !!! advanced by main.
         record=nrecavg
       else

@@ -1,7 +1,6 @@
-! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello$ 
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -53,6 +52,7 @@
 #undef  CONVECT         /* 2D Convection */
 #undef  PEKERIS         /* 2Dv Pekeris acoustic Configuration */
 #undef  WEDGE3D         /* 3D Wedge Acoustic Configuration */ 
+#undef  SEAGRASS        /* 2DV over seagrass using OBSTRUCTION module*/
 /*
         ... OR REALISTIC CONFIGURATIONS
 */
@@ -88,6 +88,7 @@
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
+#  undef WAVE_SMFLUX
 # endif
                       /* Wave-current interactions */
 # undef  MRL_WCI
@@ -302,9 +303,6 @@
 #  define UV_TIDES
 #  define POT_TIDES
 #  undef  TIDES_MAS
-#  ifndef UV_TIDES
-#   define OBC_REDUCED_PHYSICS
-#  endif
 #  define TIDERAMP
 # endif
 # define OBC_M2CHARACT
@@ -2228,6 +2226,51 @@
 # undef OA_TRACES_XIOS
 # undef OA_SCALOGRAM
 # undef OA_IJKSCAL
+#elif defined SEAGRASS
+/*
+!                       Seagrass example
+!                       ================
+*/
+# define OBSTRUCTION
+
+# undef  OPENMP
+# undef  MPI
+# define SOLVE3D
+# define UV_ADV
+# define UV_COR
+# define NONLIN_EOS
+# define SALINITY
+# define ANA_GRID
+# define MASKING
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SSFLUX
+# define ANA_SRFLUX
+# define ANA_BTFLUX
+# define ANA_BSFLUX
+# define GLS_MIXING
+# define PSOURCE
+# undef  PSOURCE_MASS
+# define ANA_PSOURCE
+# define NS_PERIODIC
+# undef  FLOATS
+# define NO_FRCFILE
+# define USE_CALENDAR
+# define NEW_S_COORD
+# define OBC_EAST
+# define FRC_BRY
+# ifdef FRC_BRY
+#  define ANA_BRY
+#  define Z_FRC_BRY
+#  define OBC_M2CHARACT
+#  define OBC_REDUCED_PHYSICS
+#  define M2_FRC_BRY
+#  undef  M3_FRC_BRY
+#  define T_FRC_BRY
+# endif
+# undef  RVTK_DEBUG
+
 #endif /* END OF CONFIGURATION CHOICE */
 
 #include "cppdefs_dev.h"

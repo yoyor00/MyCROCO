@@ -1,6 +1,6 @@
-! $Id: cste_bio_coastal.h 1353 2013-10-11 16:15:58Z gcambon $
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -36,7 +36,7 @@
 !
 ! Parameters as in Table 2 of Gutknecht et al. (2013)
 !
-! Gutknecht, E., I. Dadou, B. Le Vu, G. Cambon, J. Sudre, V. Garçon, E. Machu, T. Rixen,
+! Gutknecht, E., I. Dadou, B. Le Vu, G. Cambon, J. Sudre, V. Garcon, E. Machu, T. Rixen,
 ! A. Kock, A. Flohr, A. Paulmier, and G. Lavik, Coupled physical/biogeochemical modeling
 ! including O2-dependent processes in the Eastern Boundary Upwelling Systems: application
 ! in the Benguela, Biogeosciences, 10, 3559-3591, doi:10.5194/bg-10-3559-2013, 2013.
@@ -49,10 +49,10 @@
      &  , kwater     = 0.04   ! light attenuation coefficient due to pure water        [m-1]
      &  , kChla      = 0.024  ! light attenuation coefficient by phytoplankton         [m2 (mgChla)-1]
      &  , theta_m    = 0.02   ! Chl/Carbon ratio                                       [mgChla (mgC)-1]
-     &  , abio1      = 0.557  !	SPhy maximum growth rate at 0°C                        [d-1]
-     &  , abio2      = 0.6    ! LPhy maximum growth rate at 0°C                        [d-1]
+     &  , abio1      = 0.557  ! SPhy maximum growth rate at 0 degree C                 [d-1]
+     &  , abio2      = 0.6    ! LPhy maximum growth rate at 0 degree C                [d-1]
      &  , bbio       = 1.066  !                                                        [ ]
-     &  , cbio       = 1.     !                                                        [°C-1]
+     &  , cbio       = 1.     !                                                        [degreeC-1]
      &  , mu_P1_Sd   = 0.027  ! Mortality rate of SPhy                                 [d-1]
      &  , mu_P2_Sd   = 0.030  ! Mortality rate of LPhy                                 [d-1]
      &  , epsilon1   = 0.05  ! Exudation fraction of primary production (by SPhy)     [d-1]
@@ -98,7 +98,7 @@
      &  , K_DON_NH4  = 0.006  ! Decomposition rate of DON                              [d-1]
      &  , K_Sd_NH4   = 0.014  ! Decomposition rate of SDet                             [d-1]
      &  , K_Ld_NH4   = 0.014  ! Decomposition rate of LDet                             [d-1]
-     &  , Ktox       = 0.15   ! Temperature parameter                                  [°C-1]
+     &  , Ktox       = 0.15   ! Temperature parameter                                  [degreeC-1]
      &  , O2ox       = 0.     ! Oxygen parameter                                       [mmolO2 m-3]
      &  , Kox        = 15.    ! Half-saturation constant                               [mmolO2 m-3]
 !-------------------------------------------------------------------------------------------------------
@@ -127,7 +127,7 @@
 #ifdef NITROUS_OXIDE   /*Suntharalingam et al. (2000,2012)*/
      &  , alpha_N2O  = 0.75e-4! Scalar multiplier                                      [molN2O molN-1]
      &  , beta_N2O   = 0.03   ! Scalar multiplier                                      [molN2O molN-1]
-     &  , k_O2       = 0.1    !                                                        [ ]
+     &  , k_O2       = 0.1    !                                                        [ ]
      &  , O2max      = 1.     !                                                        [mmolO2 m-3]
      &  , N2O_atm    = 318.0  ! Dry mole fraction of atmospheric N2O                   [ppb]
 #endif

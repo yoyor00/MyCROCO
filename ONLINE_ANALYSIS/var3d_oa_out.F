@@ -1,8 +1,7 @@
-! $Id: var3d_oa_out.F
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
@@ -189,15 +188,13 @@ C$    trd=omp_get_thread_num()
      & DIMAG( var3d_oa( i,j,k, tvar_oa( tc_oa(ic), tvc_oa(ic), ivc ))))
      &              SWITCH rmask(i,j)
 
-#ifdef OA_TRACES 
-!!#if defined MILES || defined IGW || defined ACOU_OCEAN
+#ifdef OA_TRACES
                        if(verbose_oa>verbl) then
                        call traces_oa_ik(i,j,k,itgt_glob,ktgt) 
                        call trace2_oa_ik
      &                    (i,j,k,itgt_glob,ktgt,var3d_re(i,j,k)
      &                                         ,var3d_im(i,j,k) ) 
                        endif
-!!#endif
 #endif
                     enddo
                 enddo

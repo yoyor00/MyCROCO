@@ -1,7 +1,6 @@
-! $Id: get_tclima.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -185,7 +184,7 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'mes_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
-          elseif (itrc.eq.iBSI_) then
+          elseif (itrc.eq.iDSI_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'bsi_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -225,7 +224,7 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'dfe_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
-          elseif (itrc.eq.iDSI_) then
+          elseif (itrc.eq.iGSI_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'dsi_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then

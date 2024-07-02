@@ -1,14 +1,13 @@
-! ! $Id: pre_step3d.F 1568 2014-06-30 15:57:49Z gcambon $
-! !
-! !====================================================================
-! ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! ! The two other branches from UCLA (Shchepetkin et al)
-! ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ! CROCO specific routines (nesting) are under CeCILL-C license.
-! !
-! ! CROCO website : http://www.croco-ocean.orgPredictor
-! !====================================================================
-! !
+!======================================================================
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
+!
+! CROCO website : http://www.croco-ocean.org
+!======================================================================
+!
 #include "cppdefs.h"
 #ifdef SOLVE3D
 # ifndef VADV_ADAPT_PRED
@@ -1008,6 +1007,7 @@
 #  undef  TRIDIAG_TRA
 #  undef  TRIDIAG_U
 #  define TRIDIAG_V
+
 #  include "tridiag_pred.h"
         endif
         
@@ -1488,6 +1488,8 @@
       enddo     
 !$acc end kernels
 #  endif
+# else
+!$acc end kernels
 # endif
 # undef IU_RANGE
 # undef JU_RANGE

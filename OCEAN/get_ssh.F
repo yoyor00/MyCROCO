@@ -1,7 +1,6 @@
-! $Id: get_ssh.F 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -108,13 +107,21 @@
           write(stdout,6) 'SSH', ssh_rec
           goto 99                                         !--> ERROR
         endif
-        MPI_master_only write(stdout,2) cff
+!!     MPI_master_only write(stdout,2) cff
+        MPI_master_only write(stdout,'(6x,A,1x,g12.4,1x,I4)')
+     &       'GET_SSH -- Read SSH climatology      for time =', cff
+# ifdef USE_CALENDAR
+     &  -ssh_origin_date_in_sec*sec2day
+# endif
+# ifdef MPI
+     &                                                      , mynode
+#endif
         itssh=i
       if (ntssh.gt.1) goto 1
       if (ntssh.eq.1) return
 
-  2   format(6x,'GET_SSH     - Read SSH climatology',11x,
-     &                                        'for time = ',g12.4)
+!!  2   format(6x,'GET_SSH     - Read SSH climatology',11x,
+!!     &                                        'for time = ',g12.4)
 !
 ! Sort out error messages: The following portion of the code is
 !===== === ===== ========= not accessed unless something goes wrong.

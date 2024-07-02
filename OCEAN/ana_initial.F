@@ -1,7 +1,6 @@
-! $Id: ana_initial.F 1620 2015-01-08 10:47:13Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -149,6 +148,8 @@
 #endif
 
 #ifdef ANA_INITIAL
+
+!$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
 !  Initial conditions for acoustic forcing source.
@@ -1235,12 +1236,28 @@ c c !$acc kernels if(compute_on_device) default(present)
         enddo
 #    endif /* TEMPERATURE */
 
-#   elif defined RIVER
+#   elif defined RIVER 
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
 #    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=10.  !4.+10.*exp(z_r(i,j,k)/50.)
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=36.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
+            enddo
+          enddo
+        enddo
+
+#   elif defined SEAGRASS
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=10.  
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #    endif /* TEMPERATURE */
 #    ifdef SALINITY
@@ -1804,9 +1821,9 @@ C$OMP BARRIER
               t(i,j,k,1,iMES_)=0.01
               t(i,j,k,2,iMES_)=t(i,j,k,1,iMES_)
             endif
-            if (.not.got_tini(iBSI_))  then
-              t(i,j,k,1,iBSI_)=1.5e-3
-              t(i,j,k,2,iBSI_)=t(i,j,k,1,iBSI_)
+            if (.not.got_tini(iDSI_))  then
+              t(i,j,k,1,iDSI_)=1.5e-3
+              t(i,j,k,2,iDSI_)=t(i,j,k,1,iDSI_)
             endif
             if (.not.got_tini(iBFE_))  then
               t(i,j,k,1,iBFE_)=1.E-2*5E-6
@@ -1824,9 +1841,9 @@ C$OMP BARRIER
               t(i,j,k,1,iDFE_)=1.e-2*5.E-6
               t(i,j,k,2,iDFE_)=t(i,j,k,1,iDFE_)
             endif
-            if (.not.got_tini(iDSI_))  then
-              t(i,j,k,1,iDSI_)=1.e-2*0.15
-              t(i,j,k,2,iDSI_)=t(i,j,k,1,iDSI_)
+            if (.not.got_tini(iGSI_))  then
+              t(i,j,k,1,iGSI_)=1.e-2*0.15
+              t(i,j,k,2,iGSI_)=t(i,j,k,1,iGSI_)
             endif
             if (.not.got_tini(iNFE_))  then
               t(i,j,k,1,iNFE_)=1.e-2*5.E-6

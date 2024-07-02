@@ -5,15 +5,11 @@
 ##
 ##======================================================================
 ##----------------------------------------------------------------------
-##    II. modify namcouple
+##    Modify namcouple
 ##----------------------------------------------------------------------
 ##======================================================================
 ##
 #
-
-echo ' '
-echo '-- OASIS inputs --------------'
-echo 'fill oasis namcouple'
 
 sed -e "s/<runtime>/$(( ${TOTAL_JOB_DUR} * 86400 ))/g" \
     -e "s/<cpldt>/${CPL_FREQ}/g" \
@@ -57,7 +53,7 @@ if [ ${USE_ATM} == 1 ]; then
             mv tmp$$ namcouple
         fi
     done
-    if [[ ${WEIGHT_FLAG} == 1 ]]; then
+    if [[ ${WEIGHT_FLAG} == TRUE ]]; then
         for file in ${weight_a2o}; do
             sed -e "s|<mozaic_atm>|${file}|g" \
                 ./namcouple>tmp$$
@@ -80,7 +76,7 @@ if [ ${USE_OCE} == 1 ]; then
             agrif_ext=".${nn}"
             SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
             searchf=("<ocedt${nn}>" "<ocenx${nn}>" "<oceny${nn}>" )
-            tsp=$(( ${DT_OCE} / ${SUBTIME} ))
+            tsp=$(( ${DT_OCE} )) #/ ${SUBTIME} ))
         else
             agrif_ext=""
             searchf=("<ocedt>" "<ocenx>" "<oceny>" )
@@ -94,7 +90,7 @@ if [ ${USE_OCE} == 1 ]; then
         ./namcouple>tmp$$
         mv tmp$$ namcouple    
     done
-    if [[ ${WEIGHT_FLAG} == 1 ]]; then
+    if [[ ${WEIGHT_FLAG} == TRUE ]]; then
         for file in ${weight_o2a}; do 
             sed -e "s|<mozaic_oce>|${file}|g" \
                 ./namcouple>tmp$$

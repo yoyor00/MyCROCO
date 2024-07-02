@@ -1,7 +1,6 @@
-! $Id: scalars.h 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -42,6 +41,12 @@
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
 #endif
+# if defined OA_COUPLING || defined OW_COUPLING
+#  ifdef AGRIF
+     &     , it_inside_root
+#  endif
+# endif
+
 #ifdef FLOATS
      &      , nfp1, nf, nfm1, nfm2, nfm3
 #endif
@@ -55,6 +60,12 @@
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
+# if defined OA_COUPLING || defined OW_COUPLING
+#  ifdef AGRIF
+     &      it_inside_root,
+#  endif
+# endif
+
 #ifdef FLOATS
      &                       nfp1, nf, nfm1, nfm2, nfm3,
 #endif
