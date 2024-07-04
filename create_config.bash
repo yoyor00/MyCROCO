@@ -65,7 +65,7 @@ TOOLS_DIR=${PWD}/../croco_tools
 
 # Configuration name
 # ------------------
-MY_CONFIG_NAME=Run_SED
+MY_CONFIG_NAME=Run_VHR_SED
 
 # Home and Work configuration directories
 # ---------------------------------------

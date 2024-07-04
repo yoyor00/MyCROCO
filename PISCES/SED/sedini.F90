@@ -160,7 +160,7 @@ CONTAINS
 
       ! computation of total number of ocean points
       !--------------------------------------------
-      jpoce  = MAX( COUNT( epkbot(:,:) > 0. ) , 1 )
+      jpoce  = COUNT( epkbot(:,:) > 0. ) 
 
       ! Allocate memory size of global variables
       ALLOCATE( pwcp (jpoce,jpksed,jpwat) )  ;  ALLOCATE( pwcp_dta  (jpoce,jpwat) )
