@@ -389,7 +389,11 @@
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
                                                || defined MUSTANG
-#  define BIO_HADV_WENO5
+#  if !defined AGRIF 
+#    define BIO_HADV_WENO5
+#  else
+#    undef BIO_HADV_WENO5
+#  endif                                         
 # endif
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY
@@ -630,7 +634,11 @@
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
                             || defined SUBSTANCE || defined MUSTANG
-#  define BIO_HADV_WENO5
+#  if !defined AGRIF
+#     define BIO_HADV_WENO5
+#  else
+#     undef BIO_HADV_WENO5  /* WENO5 still not compatible with AGRIF */
+#  endif
 # endif
                       /*     USGS Sediment model     */
 # ifdef SEDIMENT
