@@ -65,7 +65,7 @@ TOOLS_DIR=${PWD}/../croco_tools
 
 # Configuration name
 # ------------------
-MY_CONFIG_NAME=Run_P4Z
+MY_CONFIG_NAME=Run
 
 # Home and Work configuration directories
 # ---------------------------------------
