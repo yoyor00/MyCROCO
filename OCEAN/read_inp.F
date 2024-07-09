@@ -437,18 +437,23 @@
      &                                      'compressible fluids.'
         if (mynode==0) print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
 # ifndef KNHINT_3M
-        ndtnbq =ndtfast
-        nsdtnbq=1
-        dtnbq  =dtfast
+#  ifdef KNBQ2
+        visc2_nbq = visc2read_nbq
+        ndtnbq    = 1   
+#  else
+        ndtnbq    = ndtfast
+#  endif
+        nsdtnbq = 1
+        dtnbq   = dtfast
 # else
         if (int(ndtfast/ndtnbq).ne.ndtfast/ndtnbq) then
           MPI_master_only write(stdout,*)
      &         'CAUTION: bad choice for ndtnbq!'
           ndtnbq=ndtfast
         endif
-        nsdtnbq=ndtfast/ndtnbq
+        nsdtnbq = ndtfast/ndtnbq
+        dtnbq   = dt/float(ndtnbq)
 # endif
-        dtnbq=dt/float(ndtnbq)
 #endif
         if (mynode==0) print *,"nsdtnbq=",nsdtnbq
 
