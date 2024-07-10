@@ -45,7 +45,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=1
+  nbcores=2
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
@@ -54,8 +54,8 @@ if [ -f AD/tapenade_3.16/bin/tapenade ]; then
     export TAPENADE=`pwd`/AD/tapenade_3.16/bin/tapenade
 fi
 
-mkdir -p RunAtlnC
-cd RunAtlnC
+mkdir -p RunAtlnCP
+cd RunAtlnCP
 [ -d CROCO_FILES ] || { echo "I need a CROCO_FILE dir!"; exit 1; }
 
 
@@ -64,7 +64,7 @@ cp -f ../AD/croco-atln-obs.in .
 cp -f ../AD/croco-atln-est.in .
 
 cp -f ../AD/cppdefs-atln.h cppdefs.h
-cp -f ../AD/param-atln.h param.h
+cp -f ../AD/param-atln-p.h param.h
 
 cp -f ../AD/read_obs_atln.F read_obs.F
 cp -f ../AD/cost_fun_atln.F cost_fun.F

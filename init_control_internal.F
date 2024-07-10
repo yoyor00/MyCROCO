@@ -6,7 +6,7 @@
       integer ierr
       integer k
 
-      do k=1,ad_array_size/nnodes
+      do k=1,ad_array_node_size
          ad_g(k)=0.
          ad_x(k)=0.
       end do
@@ -104,9 +104,9 @@ c      ad_x(3) = 1D-10 * ridge_height
       ad_array_real_node_size=1
 
 
-      write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
+      write(*,*) 'node,array_node_size,ad_array_node_size:',mynode,
      &     ad_array_real_node_size,
-     &     ad_array_size/nnodes
+     &     ad_array_node_size
 
       write(*,*) 'minad_x,maxad_x',minval(ad_x),maxval(ad_x)
       write(*,*) 'minh,maxh',minval(h),maxval(h)

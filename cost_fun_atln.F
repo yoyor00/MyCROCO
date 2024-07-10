@@ -27,17 +27,17 @@ C$AD BINOMIAL-CKP ad_ns+1 95 1
       call set_state(ad_x)
 
 c      sigma2 = ad_cost/ad_cost_counter
-      icost=0
       cost=0
       do ta=1,ad_nt
+         icost=0
          call ad_step()
          call cost_fun_step(ad_x,icost,ad_ast-1+ta*ad_ns,3)
          write(*,*) '==icost3==>',icost
-         ad_irms = cost
-      
+
          cost=cost+icost
       end do
 
+      ad_irms = cost
       ad_cost = cost
       ad_ta = ad_nt*ad_ns
       write (*,*) 'cost=',cost

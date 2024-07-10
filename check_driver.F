@@ -17,7 +17,7 @@ c     this file is not differentiated
       
 c     perturbated ad_x
       double precision ad_d(1)
-      double precision ad_x_pe(ad_array_size/nnodes)
+      double precision ad_x_pe(ad_array_node_size)
 
       double precision control_to_param,rand
 

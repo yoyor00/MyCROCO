@@ -189,9 +189,9 @@ c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # include "adinc.h"
 # include "adparam.h"
 
-      integer ntrds,trd,my_first,my_last,tile,range,k
-      character*2 mynode_str
-      
+      integer ntrds,trd,my_first,my_last,tile,range,kx
+      character*2 mynode_str, nnodes_str
+
 #ifdef OPENMP
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
@@ -204,7 +204,10 @@ c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       write(mynode_str, 910) mynode
-      open(unit=333, file='tideg-'//mynode_str//'.txt', form='formatted',
+      write(nnodes_str, 910) nnodes
+      open(unit=333,
+     &     file='tideg-'//mynode_str//'-'//nnodes_str//'.txt',
+     &     form='formatted',
      &     access='sequential',action='read')
 
       do tile=my_first,my_last
@@ -240,7 +243,9 @@ c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          read(fid,*,END=99) ad_obs_i(l), ad_obs_j(l)
       end do
  99   ad_nobs = l-1
-      if (ad_obs_i(ad_nobs).eq.0) then
-         write(*,*) 'RRRRRRRRRRRRRRRRRRR', ad_obs_i(l), l, ad_nobs
+      if (ad_nobs > 0) then
+         if (ad_obs_i(ad_nobs).eq.0) then
+            write(*,*) 'RRRRRRRRRRRRRRRRRRR', ad_obs_i(l), l, ad_nobs
+         end if
       end if
       end subroutine read_pos_2d_tile

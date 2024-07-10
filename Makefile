@@ -410,7 +410,7 @@ $(TAP_TARGET)_context2_b.o: $(TAP_TARGET)_context2_b.f
 
 $(TAP_TARGET)_d.o: $(TAP_TARGET)_d.f90
 	ln -sf empty_code_insertion.h code_insertion.h
-	$(CFT) -c $(FFLAGS90) $*.f90 -o $*.o
+	$(CFT) -c $(FFLAGS90) -ffree-line-length-0 $*.f90 -o $*.o
 
 $(TAP_TARGET)_b.o: $(TAP_TARGET)_b.f90
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h

@@ -6,7 +6,7 @@ import shutil
 import logging as log
 from fparser import api
 from fparser.common.readfortran import FortranFileReader
-from fparser.two.Fortran2003 import Subroutine_Stmt, Call_Stmt, Name, \
+from fparser.two.Fortran2003 import Include_Stmt, Subroutine_Stmt, Call_Stmt, Name, \
     Actual_Arg_Spec_List, Return_Stmt
 from fparser.two.parser import ParserFactory
 from fparser.two.utils import walk
@@ -36,7 +36,10 @@ def str_replace_start(start, r, s):
     return r + s[len(start):]  if s.lower().startswith(start.lower()) else s
 
 # transform fun
-def mpi_to_ampi_call(ast, arg_translat, tag_add):
+def mpi_to_ampi_call(ast, arg_translat, arg_tag_add):
+
+    translat = dict((k.lower(), v.lower()) for k,v in arg_translat.items())
+    tag_add = dict((k.lower(), v.lower()) for k,v in arg_tag_add.items())
     need_turn_calls = ["mpi_isend", "mpi_irecv"]
     need_turn = False
     need_turn_buffs = []
@@ -47,6 +50,13 @@ def mpi_to_ampi_call(ast, arg_translat, tag_add):
         log.debug("enter:{}".format(type(node)))
         if isinstance(node, Subroutine_Stmt):
             current_subroutine = str(node.get_name())
+        if isinstance(node, Include_Stmt):
+            include_file =  node.items[0].string
+            log.debug('include:{}'.format(include_file))
+
+            if include_file == 'mpif.h':
+                node.items[0].string = 'ampi/ampif.h'
+            
         if isinstance(node, Call_Stmt):
             call_fun = node.items[0].string.lower()
             
@@ -56,18 +66,20 @@ def mpi_to_ampi_call(ast, arg_translat, tag_add):
                     need_turn = True
                     need_turn_buffs.append(str(node.items[1].items[0]))
 
-                node.items[0].string = str_replace_start('MPI', 'AMPI',
-                                                         node.items[0].string)
+                node.items[0].string = str_replace_start('mpi', 'ampi',
+                                                         call_fun)
                 litems = list(node.items[1].items)
-                str_items = [str(i) for i in list(node.items[1].items)]
-                for key in arg_translat:
+                str_items = [str(i).lower() for i in list(node.items[1].items)]
+                for key in translat:
                     if key in str_items:
                         index = str_items.index(key)
-                        litems[index] = Name(arg_translat[key])
-                if node.items[0].string in tag_add:
+                        litems[index] = Name(translat[key])
+                if node.items[0].string.lower() in tag_add:
                     # AMPI direction tag comes before communicator spec
-                    index = str_items.index("MPI_COMM_WORLD")
+                    index = str_items.index("mpi_comm_world")
                     litems.insert(index, Name(tag_add[node.items[0].string]))
+                else:
+                    log.debug('node_items[0].string not in tag_add:{}'.format(node.items[0].string))
                 node.items[1].items = tuple(litems)
         if isinstance(node, Return_Stmt):
             assert current_subroutine is not None
