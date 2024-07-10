@@ -452,10 +452,10 @@
           ndtnbq=ndtfast
         endif
         nsdtnbq = ndtfast/ndtnbq
+        if (mynode==0) print *,"nsdtnbq=",nsdtnbq
         dtnbq   = dt/float(ndtnbq)
 # endif
 #endif
-        if (mynode==0) print *,"nsdtnbq=",nsdtnbq
 
 #ifdef SOLVE3D
 !
