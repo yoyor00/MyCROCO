@@ -437,7 +437,7 @@
      &                                      'compressible fluids.'
         if (mynode==0) print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
 # ifndef KNHINT_3M
-#  ifdef KNBQ2
+#  ifdef NBQ
         visc2_nbq = visc2read_nbq
         ndtnbq    = 1   
 #  else
