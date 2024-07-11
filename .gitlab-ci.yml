@@ -64,6 +64,8 @@ variables:
     CROCO_CI_MPIRUN: "mpirun"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
+  script:
+    - ulimit -s unlimited
 
 .ana_run_base:
   stage: run
@@ -224,6 +226,8 @@ reg_run_intel:
   extends:
     - .intel_base
     - .reg_run_base
+  variables:
+    RUNNER_SCRIPT_TIMEOUT: 180m
 
 
 reg_perfrst_gfortran:
