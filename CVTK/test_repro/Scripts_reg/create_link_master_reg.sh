@@ -21,15 +21,15 @@ for file in $(ls $CVTKHOME/../common/TEST_CASES_CVTK/VHR/croco.in)
 do 
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
-  [ ! -z $toto ] && sed -e "${line} s/$toto/3/" $file > tmp.txt && \mv tmp.txt $file
+  [ ! -z $toto ] && sed -e "${line} s/$toto/2/" $file > tmp.txt && \mv tmp.txt $file
 
   line=$(($(grep -n 'restart:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $1}')
-  [ ! -z $toto ] && sed -e "${line} s/$toto/3/" $file > tmp.txt && \mv tmp.txt $file
+  [ ! -z $toto ] && sed -e "${line} s/$toto/2/" $file > tmp.txt && \mv tmp.txt $file
   
   line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $1}')
-  [ ! -z $toto ] && sed -e "${line} s/$toto/3/" $file > tmp.txt && \mv tmp.txt $file
+  [ ! -z $toto ] && sed -e "${line} s/$toto/2/" $file > tmp.txt && \mv tmp.txt $file
 
   line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -41,11 +41,11 @@ for file in $(ls $CVTKHOME/../common/TEST_CASES_CVTK/VHR/croco.in.1)
 do 
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
-  [ ! -z $toto ] && sed -e "${line} s/$toto/9/" $file > tmp.txt && \mv tmp.txt $file
+  [ ! -z $toto ] && sed -e "${line} s/$toto/6/" $file > tmp.txt && \mv tmp.txt $file
 
   line=$(($(grep -n 'restart:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $1}')
-  [ ! -z $toto ] && sed -e "${line} s/$toto/9/" $file > tmp.txt && \mv tmp.txt $file
+  [ ! -z $toto ] && sed -e "${line} s/$toto/6/" $file > tmp.txt && \mv tmp.txt $file
 
     line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
