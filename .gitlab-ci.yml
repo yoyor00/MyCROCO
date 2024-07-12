@@ -115,27 +115,31 @@ variables:
 
 
 .ana_run_base: &ana_run_base
-  extends: .run_base
+  extends: 
+    - .run_base
+    - .get_var_repro
   variables:
     RUN_NAME: "KTEST"
     RUN_NAME_SCRIPT: "ana"
     RUN_MK_NAME: "ana"
     RUN_NAME_CONFIGURE: "CONFIGURE_ANA"
-  <<: *get_var_repro
 
 .vort_run_base: &vort_run_base
-  extends: .run_base
+  extends: 
+    - .run_base
+    - .get_var_repro
   variables:
     RUN_NAME: "VORT"
     RUN_NAME_SCRIPT: "vort"
     RUN_MK_NAME: "vort"
     RUN_NAME_CONFIGURE: "CONFIGURE_VORT"
-  <<: *get_var_repro
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
 .reg_run_base: &reg_run_base
-  extends: .run_base 
+  extends: 
+    - .run_base
+    - .get_var_repro
   before_script:
     - *get_reg_data
   variables:
@@ -144,12 +148,13 @@ variables:
     RUN_MK_NAME: "reg"
     RUN_NAME_CONFIGURE: "CONFIGURE_REG"
     RUNNER_SCRIPT_TIMEOUT: 180m
-  <<: *get_var_repro
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
 .reg_perfrst_base: &reg_perfrst_base
-  extends: .run_base 
+  extends: 
+    - .run_base
+    - .get_var_perfrst 
   before_script:
     - *get_reg_data
   variables:
@@ -158,7 +163,6 @@ variables:
     RUN_MK_NAME: "reg"
     RUN_NAME_CONFIGURE: "CONFIGURE_REG_PERFRST"
     RUNNER_SCRIPT_TIMEOUT: 120m
-  <<: *get_var_perfrst
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
