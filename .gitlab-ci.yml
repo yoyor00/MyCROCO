@@ -64,8 +64,19 @@ variables:
     CROCO_CI_MPIRUN: "mpirun"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
-  script:
-    - ulimit -s unlimited
+
+
+.get_reg_data: &get_reg_data # reusable block as YAML sequence
+  - |
+    if [[ "$LOCALDATA" == "true" ]]; then
+      export DATAREG=${DATAREG_LOCAL} ;
+      echo "Use of local data " $DATAREG ;
+    else  
+      mkdir -p $DATAREG ;
+      cd $DATAREG ;
+      tar -xf ForCI-INRIA.tar.gz ;
+      mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
+    fi   
 
 .ana_run_base:
   stage: run
@@ -102,6 +113,7 @@ variables:
   - mkdir -p TESTROOT/VORT
   - cd -
   script:
+    - ulimit -s unlimited
     - cd $CVTKHOME/Scripts_vort
     - ./create_link_master_vort.sh
     - cd -
@@ -123,22 +135,14 @@ variables:
   only:
     - schedules
   before_script:
-    - |
-      if [[ "$LOCALDATA" == "true" ]]; then
-        export DATAREG=${DATAREG_LOCAL} ;
-        echo "Use of local data " $DATAREG ;
-      else  
-        mkdir -p $DATAREG ;
-        cd $DATAREG ;
-        tar -xf ForCI-INRIA.tar.gz ;
-        mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
-      fi   
+    - *get_reg_data
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
     - mkdir -p TESTROOT/REG
     - cd -
   script:
+    - ulimit -s unlimited
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
     - cd -
@@ -160,16 +164,7 @@ variables:
   only:
     - schedules
   before_script:
-    - |
-      if [[ "$LOCALDATA" == "true" ]]; then
-        export DATAREG=${DATAREG_LOCAL} ;
-        echo "Use of local data " $DATAREG ;
-      else  
-        mkdir -p $DATAREG ;
-        cd $DATAREG ;
-        tar -xf ForCI-INRIA.tar.gz ;
-        mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
-      fi   
+    - *get_reg_data  
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
     - cd $DATADIR
@@ -179,6 +174,7 @@ variables:
     - cd $PERFRSTDIR
     - cd -
   script:
+    - ulimit -s unlimited
     - cd $PERFRSTHOME/Scripts_reg_perfrst
     - ./create_link_master_reg_perfrst.sh
     - cd -
