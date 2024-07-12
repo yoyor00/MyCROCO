@@ -53,8 +53,6 @@ variables:
     CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_gfortran"
-  rules:
-    - if: $compiler == "gfortran"
 
 .intel_base: &intel_base
   tags:
@@ -66,8 +64,6 @@ variables:
     CROCO_CI_MPIRUN: "mpirun"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
-  rules:
-    - if: $compiler == "intel"
 
 .get_reg_data: &get_reg_data # reusable block as YAML sequence
   - |
@@ -126,9 +122,6 @@ variables:
     RUN_MK_NAME: "ana"
     RUN_NAME_CONFIGURE: "CONFIGURE_ANA"
   <<: *get_var_repro
-  rules:
-    - if: $testname == "ana_run"
-
 
 .vort_run_base: &vort_run_base
   extends: .run_base
@@ -139,8 +132,7 @@ variables:
     RUN_NAME_CONFIGURE: "CONFIGURE_VORT"
   <<: *get_var_repro
   rules:
-    - if: '$testname == "vort_run" && $CI_PIPELINE_SOURCE == "schedule"'
-
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 .reg_run_base: &reg_run_base
   extends: .run_base 
@@ -154,8 +146,7 @@ variables:
     RUNNER_SCRIPT_TIMEOUT: 180m
   <<: *get_var_repro
   rules:
-    - if: '$testname == "reg_run" && $CI_PIPELINE_SOURCE == "schedule"'
-      when: always
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 .reg_perfrst_base: &reg_perfrst_base
   extends: .run_base 
@@ -169,26 +160,44 @@ variables:
     RUNNER_SCRIPT_TIMEOUT: 120m
   <<: *get_var_perfrst
   rules:
-    - if: '$testname == "reg_perfrst" && $CI_PIPELINE_SOURCE == "schedule"'
-      when: always
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
-.compiler_base:
+ana_run_gfortran:
   extends:
     - .gfortran_base
-    - .intel_base
-
-.testname_base:
-  extends:
     - .ana_run_base
+
+ana_run_intel:
+  extends:
+    - .intel_base
+    - .ana_run_base
+
+vort_run_gfortran:
+  extends:
+    - .gfortran_base
     - .vort_run_base
+
+vort_run_intel:
+  extends:
+    - .intel_base
+    - .vort_run_base
+
+reg_run_gfortran:
+  extends:
+    - .gfortran_base
     - .reg_run_base
+
+reg_run_intel:
+  extends:
+    - .intel_base
+    - .reg_run_base
+
+reg_perfrst_gfortran:
+  extends:
+    - .gfortran_base
     - .reg_perfrst_base
 
-test_run:
+reg_perfrst_intel:
   extends:
-    - .compiler_base
-    - .testname_base
-  parallel:
-    matrix:
-      - compiler: ["gfortran", "intel"]
-      - testname: ["ana_run", "vort_run", "reg_run", "reg_perfrst"]
+    - .intel_base
+    - .reg_perfrst_base
