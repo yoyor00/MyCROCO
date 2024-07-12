@@ -42,7 +42,7 @@ variables:
   DATAANA: ""
   #
 
-.gfortran_base:
+.gfortran_base: &gfortran_base
   tags:
     - ci.inria.fr
     - large
@@ -53,8 +53,10 @@ variables:
     CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_gfortran"
+  rules:
+    - if: $compiler == "gfortran"
 
-.intel_base:
+.intel_base: &intel_base
   tags:
     - croco-vm-docker
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
@@ -64,7 +66,8 @@ variables:
     CROCO_CI_MPIRUN: "mpirun"
     CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
     PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
-
+  rules:
+    - if: $compiler == "intel"
 
 .get_reg_data: &get_reg_data # reusable block as YAML sequence
   - |
@@ -78,164 +81,114 @@ variables:
       mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
     fi   
 
-.ana_run_base:
-  stage: run
-  before_script:
-    - mkdir -p $DATADIR
-    - mkdir -p $CVTKWORK
-    - cd $DATADIR
-    - mkdir -p TESTROOT/KTEST
-    - cd -
-  script:
-    - cd $CVTKHOME/Scripts_ana
-    - ./create_link_master_ana.sh
-    - cd -
-    - cd $CVTKWORK/KTEST
-    - ./mk_TESTALL.bash CONFIGURE_ANA ana
-    - ./gather_recap.bash KTEST > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1  
-  artifacts:
-    paths:
-      - $CVTKWORK/ftp
-      - $CVTKWORK/KTEST/*/*.log
-    when: always
+.get_var_repro: &get_var_repro
+  variables:
+    RUN_HOME: $CVTKHOME
+    RUN_WORK: $CVTKWORK
+    RUN_MK: "mk_TESTALL"
+    RUN_GATHER: "gather_recap"
 
-.vort_run_base:
+.get_var_perfrst: &get_var_perfrst
+  variables:
+    RUN_HOME: $PERFRSTHOME
+    RUN_WORK: $PERFRSTWORK
+    RUN_MK: "mk_TESTALL_perfrst"
+    RUN_GATHER: "gather_recap_perfrst"
+
+.run_base:
   stage: run
-  only:
-    - schedules
-  before_script:
-  - mkdir -p $DATADIR
-  - mkdir -p $CVTKWORK
-  - cd $DATADIR
-  - mkdir -p TESTROOT/VORT
-  - cd -
   script:
     - ulimit -s unlimited
-    - cd $CVTKHOME/Scripts_vort
-    - ./create_link_master_vort.sh
-    - cd -
-    - cd $CVTKWORK/VORT
-    
-    - ./mk_TESTALL.bash CONFIGURE_VORT vort
-    - ./gather_recap.bash VORT > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
-  artifacts:
-    paths:
-       - $CVTKWORK/ftp
-       - $CVTKWORK/VORT/*/*.log
-    when: always
-
-.reg_run_base:
-  stage: run
-  only:
-    - schedules
-  before_script:
-    - *get_reg_data
     - mkdir -p $DATADIR
     - mkdir -p $CVTKWORK
-    - cd $DATADIR
-    - mkdir -p TESTROOT/REG
-    - cd -
-  script:
-    - ulimit -s unlimited
-    - cd $CVTKHOME/Scripts_reg
-    - ./create_link_master_reg.sh
-    - cd -
-    - cd $CVTKWORK/REG
-    - ./mk_TESTALL.bash CONFIGURE_REG reg
-    - ./gather_recap.bash REG > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
-  artifacts:
-    paths:
-      - $CVTKWORK/ftp
-      - $CVTKWORK/REG/*/*.log
-    when: always 
-
-
-.reg_perfrst_base:
-  stage: run
-  only:
-    - schedules
-  before_script:
-    - *get_reg_data  
-    - mkdir -p $DATADIR
-    - mkdir -p $CVTKWORK
-    - cd $DATADIR
-    - mkdir -p TESTROOT/REG
     - mkdir -p $PERFRSTDIR
     - mkdir -p $PERFRSTWORK
-    - cd $PERFRSTDIR
+    - cd $RUN_HOME/Scripts_${RUN_NAME_SCRIPT}
+    - ./create_link_master_${RUN_NAME_SCRIPT}.sh
     - cd -
-  script:
-    - ulimit -s unlimited
-    - cd $PERFRSTHOME/Scripts_reg_perfrst
-    - ./create_link_master_reg_perfrst.sh
-    - cd -
-    - cd $PERFRSTWORK/REG
-   
-    - ./mk_TESTALL_perfrst.bash CONFIGURE_REG_PERFRST reg
-    - ./gather_recap_perfrst.bash REG > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - cd $RUN_WORK/${RUN_NAME}
+    - ./${RUN_MK}.bash ${RUN_NAME_CONFIGURE} ${RUN_MK_NAME}
+    - ./${RUN_GATHER}.bash ${RUN_NAME} > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1  
   artifacts:
     paths:
-      - $PERFRSTWORK/ftp
-      - $PERFRSTWORK/REG/*/*.log
-    when: always
+      - $RUN_WORK/ftp
+      - $RUN_WORK/${RUN_NAME}/*/*.log
 
 
-
-ana_run_gfortran:
-  extends:
-    - .gfortran_base
-    - .ana_run_base
-
-ana_run_intel:
-  extends:
-    - .intel_base
-    - .ana_run_base
-
-vort_run_gfortran:
-  extends:
-    - .gfortran_base
-    - .vort_run_base
-
-vort_run_intel:
-  extends:
-    - .intel_base
-    - .vort_run_base
-
-reg_run_gfortran:
-  extends:
-    - .gfortran_base
-    - .reg_run_base
-
-reg_run_intel:
-  extends:
-    - .intel_base
-    - .reg_run_base
+.ana_run_base: &ana_run_base
+  extends: .run_base
   variables:
+    RUN_NAME: "KTEST"
+    RUN_NAME_SCRIPT: "ana"
+    RUN_MK_NAME: "ana"
+    RUN_NAME_CONFIGURE: "CONFIGURE_ANA"
+  <<: *get_var_repro
+  rules:
+    - if: $testname == "ana_run"
+
+
+.vort_run_base: &vort_run_base
+  extends: .run_base
+  variables:
+    RUN_NAME: "VORT"
+    RUN_NAME_SCRIPT: "vort"
+    RUN_MK_NAME: "vort"
+    RUN_NAME_CONFIGURE: "CONFIGURE_VORT"
+  <<: *get_var_repro
+  rules:
+    - if: '$testname == "vort_run" && $CI_PIPELINE_SOURCE == "schedule"'
+
+
+.reg_run_base: &reg_run_base
+  extends: .run_base 
+  before_script:
+    - *get_reg_data
+  variables:
+    RUN_NAME: "REG"
+    RUN_NAME_SCRIPT: "reg"
+    RUN_MK_NAME: "reg"
+    RUN_NAME_CONFIGURE: "CONFIGURE_REG"
     RUNNER_SCRIPT_TIMEOUT: 180m
+  <<: *get_var_repro
+  rules:
+    - if: '$testname == "reg_run" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: always
 
+.reg_perfrst_base: &reg_perfrst_base
+  extends: .run_base 
+  before_script:
+    - *get_reg_data
+  variables:
+    RUN_NAME: "REG"
+    RUN_NAME_SCRIPT: "reg_perfrst"
+    RUN_MK_NAME: "reg"
+    RUN_NAME_CONFIGURE: "CONFIGURE_REG_PERFRST"
+    RUNNER_SCRIPT_TIMEOUT: 120m
+  <<: *get_var_perfrst
+  rules:
+    - if: '$testname == "reg_perfrst" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: always
 
-reg_perfrst_gfortran:
+.compiler_base:
   extends:
     - .gfortran_base
-    - .reg_perfrst_base
-
-
-reg_perfrst_intel:
-  extends:
     - .intel_base
+
+.testname_base:
+  extends:
+    - .ana_run_base
+    - .vort_run_base
+    - .reg_run_base
     - .reg_perfrst_base
-  variables:
-    RUNNER_SCRIPT_TIMEOUT: 120m
- 
+
+test_run:
+  extends:
+    - .compiler_base
+    - .testname_base
+  parallel:
+    matrix:
+      - compiler: ["gfortran", "intel"]
+      - testname: ["ana_run", "vort_run", "reg_run", "reg_perfrst"]
