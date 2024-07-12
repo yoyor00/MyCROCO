@@ -1,0 +1,122 @@
+#!/bin/bash
+#OAR --project airsea-modeling
+#OAR -l /nodes=4/cpu=1/core=4,walltime=48:00:00
+################################################################################
+case $1 in
+  --env-ok)
+    shift;;
+  --fast)
+    shift
+    pwd=`pwd`
+    . $pwd/.croco-guix-profile/etc/profile && $0 --env-ok $@
+    ;;
+  *)
+    set -x
+    MYDIR=`dirname $0`
+    # guix environment setup
+    # export PATH=/var/guix/profiles/per-user/root/current-guix/bin:$PATH
+    # export GUIX_DAEMON_SOCKET=guix://luke.u-ga.fr
+    [ -f /applis/site/guix-start.sh ] && . /applis/site/guix-start.sh
+    #export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
+    #export PATH="$HOME/.config/guix/current/bin:${PATH}"
+    pwd=`pwd`
+    rm -f $pwd/.croco-guix-profile
+    packages="gcc-toolchain gfortran-toolchain make \
+        netcdf netcdf-fortran \
+        mpich openssh \
+        openblas lapack \
+        openjdk coreutils binutils sed grep bash which time patch gdb python"
+    guix_cmd="guix time-machine -C AD/croco-2024-04-23.scm --"
+    exec $guix_cmd environment -m $MYDIR/adjoinable-mpi.scm --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
+    ;;
+esac
+################################################################################
+
+set -x
+set -e
+
+case $1 in
+  --exec)
+    echo $@
+    shift; exec $@;;
+esac
+
+if [ -f "$OAR_NODE_FILE" ]; then
+  nbcores=`cat $OAR_NODE_FILE|wc -l`
+  mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
+else
+  nbcores=2
+  mpirun_cmd="mpirun -n $nbcores"
+fi
+
+if [ -f AD/tapenade_3.16/bin/tapenade ]; then
+    echo found tapenade in `pwd`/AD/tapenade_3.16/bin/tapenade
+    export TAPENADE=`pwd`/AD/tapenade_3.16/bin/tapenade
+fi
+
+mkdir -p RunAtlnCP
+cd RunAtlnCP
+[ -d CROCO_FILES ] || { echo "I need a CROCO_FILE dir!"; exit 1; }
+
+
+# 1. first run: build of obs.dat
+cp -f ../AD/croco-atln-obs.in .
+cp -f ../AD/croco-atln-est.in .
+
+cp -f ../AD/cppdefs-atln.h cppdefs.h
+cp -f ../AD/param-atln-p.h param.h
+
+cp -f ../AD/read_obs_atln.F read_obs.F
+cp -f ../AD/cost_fun_atln.F cost_fun.F
+cp -f ../AD/set_state_atln.F set_state.F
+
+cp -f ../AD/init_control_atln.F init_control.F
+cp -f ../AD/save_restore_atln.F save_restore.F
+
+cp -f ../AD/data/tideg-*.txt .
+#sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/' cppdefs.h
+sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/g' cppdefs.h
+sed -i 's/undef[\t ]*MPI/define MPI/g' cppdefs.h
+
+#sed -i 's/NP_XI=1/NP_XI=4/g' param.h
+#sed -i 's/NP_ETA=1/NP_ETA=4/g' param.h
+
+#sed -i 's/define[\t ]*MPI/undef MPI/' cppdefs.h
+
+../OCEAN/jobcomp
+cd Compile
+make croco && mv croco .. || exit 1
+cd ..
+rm -f obs.*.dat
+$mpirun_cmd ./croco croco-atln-obs.in
+cp CROCO_FILES/croco_his.nc CROCO_FILES/obs.nc
+
+#
+# 2. second run with obs.dat file
+#sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
+
+sed -i 's/define[\t ]*AMPI/undef AMPI/g' cppdefs.h
+
+sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
+#sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
+#sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
+
+../OCEAN/jobcomp
+cd Compile
+#make croco_adc && mv croco_adc .. || exit 1
+make croco_adj && mv croco_adj .. || exit 1
+#make croco_tgt && mv croco_tgt .. || exit 1
+#make croco_tgt_dbg && mv croco_tgt_dbg .. || exit 1
+
+#make croco_adj_dbg1 && mv croco_adj_dbg1 .. || exit 1
+#make croco_adj_dbg2 && mv croco_adj_dbg2 .. || exit 1
+cd ..
+
+echo "in directory `pwd`"
+#$mpirun_cmd ./croco_tgt croco-atln-est.in
+$mpirun_cmd ./croco_adj croco-atln-est.in
+#$mpirun_cmd ./croco_adj croco-atln-obs.in
+#(export DBAD_PHASE=1 ; ./croco_tgt_dbg croco-atln-est.in > /tmp/l1) & (export DBAD_PHASE=2 ; ./croco_tgt_dbg croco-atln-est.in > /tmp/l2)
+#./croco_adc croco.internal-friction-obs.in
+#mpirun -np 1 ./croco_adj_dbg1 croco.internal-friction-obs.in &
+#mpirun -np 1 ./croco_adj_dbg2 croco.internal-friction-obs.in
