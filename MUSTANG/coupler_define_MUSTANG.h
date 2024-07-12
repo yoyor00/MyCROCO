@@ -66,11 +66,6 @@
 # define NB_LAYER_WAT N
 # define COORD_SIGMA sc_r
 # define BATHY_H0 h
-# ifdef WET_DRY
-# define RESIDUAL_THICKNESS_WAT D_wetdry
-# else
-# define RESIDUAL_THICKNESS_WAT 0.
-# endif
 # define WATER_ELEVATION zeta
 # define CELL_DX om_r
 # define CELL_DY on_r
@@ -78,11 +73,8 @@
 # define BAROTROP_VELOCITY_U ubar
 # define BAROTROP_VELOCITY_V vbar
 # define TIME_STEP dt   /* in MARS :  time step declared in rlg and therefore also in MUSTANG */
-# define TRANSPORT_TIME_STEP dt /* in MARS : solving equations every half time step (in rlg)*/
 # define CURRENT_TIME time
 # define RHOREF rho0
-# define TEMPREF_LIN 10.0 
-# define SALREF_LIN 35.0
 # define GRAVITY g
 # define BOTTOM_THICK_LAYER epn_bottom
 # define WATER_CONCENTRATION t  /* water concentration in hydro model (=cv_wat in MARS)*/

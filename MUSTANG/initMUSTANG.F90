@@ -209,7 +209,7 @@ CONTAINS
     REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)        :: z0hydro                         
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)       :: WATER_CONCENTRATION  
-#if defined MORPHODYN_MUSTANG_byHYDRO  
+#if defined MORPHODYN 
     REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)          :: dhsed                       
 #endif
 
@@ -289,7 +289,7 @@ CONTAINS
     ! Evaluation of slope for bedload
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-#if defined MORPHODYN_MUSTANG_byHYDRO
+#if defined MORPHODYN
     it_morphoYes=0
 #endif
     CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, BATHY_H0)
@@ -372,7 +372,7 @@ CONTAINS
     ! call even if no morpho, initialization of hsed in all cases, 
     ! even if initfromfile
     CALL MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION   &
-#if defined MORPHODYN_MUSTANG_byHYDRO  
+#if defined MORPHODYN  
                                                 ,dhsed               &
 #endif
             )
@@ -2142,7 +2142,7 @@ CONTAINS
 
 
     SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION  &
-#if defined MORPHODYN_MUSTANG_byHYDRO  
+#if defined MORPHODYN 
                   , dhsed                                                &
 #endif
                   )
@@ -2163,7 +2163,7 @@ CONTAINS
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
     REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(INOUT)        :: BATHY_H0                         
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
-#if defined MORPHODYN_MUSTANG_byHYDRO  
+#if defined MORPHODYN
     REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)           :: dhsed                       
 #endif
     !! * Local declarations
@@ -2234,7 +2234,7 @@ CONTAINS
 
 
 
-#if defined MORPHODYN_MUSTANG_byHYDRO
+#if defined MORPHODYN
         DO j=jfirst,jlast
         DO i=ifirst,ilast
             dhsed(i,j)=hsed0(i,j)-hsed(i,j)

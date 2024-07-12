@@ -12,8 +12,6 @@
       USE sed_MUSTANG, ONLY : MUSTANG_morpho
 # endif
 
-# include "coupler_define_MUSTANG.h"
-
       IMPLICIT NONE
 
       PRIVATE
@@ -31,18 +29,20 @@ CONTAINS
 !
       subroutine mustang_update_main (tile)
 
+      REAL    :: TEMPREF_LIN
+      REAL    :: SALREF_LIN
       INTEGER :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
+
+      TEMPREF_LIN = 10.0 
+      SALREF_LIN  = 35.0
       CALL MUSTANG_update (Istr, Iend, Jstr, Jend,  & 
-                   WATER_CONCENTRATION, zob,    &
-                   WATER_ELEVATION,                 &
+                   t, zob, zeta,                    &
 # if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-                   BAROTROP_VELOCITY_U,             &
-                   BAROTROP_VELOCITY_V,             &
+                   ubar, vbar,                      &
 # endif
-                   SALREF_LIN, TEMPREF_LIN,         &
-                   TRANSPORT_TIME_STEP)
+                   SALREF_LIN, TEMPREF_LIN, dt)
       end subroutine
 !
 !-----------------------------------------------------------------------
@@ -52,26 +52,30 @@ CONTAINS
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
-      CALL MUSTANG_deposition (Istr, Iend, Jstr, Jend, &
-                   WATER_ELEVATION,                    &
-                   WATER_CONCENTRATION)
+      CALL MUSTANG_deposition (Istr, Iend, Jstr, Jend, zeta, t)
       end subroutine
 !
 !-----------------------------------------------------------------------
 !
       subroutine mustang_init_main (tile)
 
+      REAL :: h0fond
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-      CALL MUSTANG_init (Istr, Iend, Jstr, Jend, &
-                    WATER_ELEVATION,                       &
-# if defined MORPHODYN
-                    DHSED,                                 &
+# ifdef WET_DRY
+            h0fond = D_wetdry
+# else
+            h0fond = 0.
 # endif
-                    RESIDUAL_THICKNESS_WAT, zob,       &
-                    WATER_CONCENTRATION)
+
+      CALL MUSTANG_init (Istr, Iend, Jstr, Jend,  &
+                    zeta,                         &
+# if defined MORPHODYN
+                    dh,                           &
+# endif
+                    h0fond, zob, t)
       end subroutine
 !
 !-----------------------------------------------------------------------
@@ -82,7 +86,7 @@ CONTAINS
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
-      CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, DHSED)
+      CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, dh)
 
       end subroutine
 # endif

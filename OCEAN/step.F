@@ -24,9 +24,6 @@
 #include "ocean3d.h"
 #include "ocean2d.h"
 #include "mpi_cpl.h"
-#ifdef MUSTANG
-# include "coupler_define_MUSTANG.h"
-#endif
 
 #ifdef AGRIF
       IF (agrif_fixed().NE.sortedint(nbtimes)) return
@@ -1026,17 +1023,16 @@ C$OMP END MASTER
 # ifdef MORPHODYN
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
       use comMUSTANG, only : l_morphocoupl, t_morpho
-# endif
+# endif /* MORPHODYN */
 # if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs
 #  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
       use comMUSTANG , only : flx_bx, flx_by
       use comsubstance, only : ibedload1, ibedload2
-#  endif
-# endif
-# include "coupler_define_MUSTANG.h"
-#endif
+#  endif /* key_MUSTANG_bedload  key_MUSTANG_V2 */
+# endif /* RVTK_DEBUG_AVANCED  SOLVE3D */
+#endif /* MUSTANG */
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -1168,7 +1164,7 @@ C$OMP BARRIER
         call ana_morphodyn (tile)
 #   endif
 #  elif defined MUSTANG
-        if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) then
+        if (l_morphocoupl .AND. time .GE. t_morpho ) then
             call mustang_morpho_main (tile)
         endif
 #  endif

@@ -445,7 +445,7 @@ public
 ! end namelist variables
 
 
-    REAL(KIND=rsh) :: h0fond  ! RESIDUAL_THICKNESS_WAT see coupler_define (m)
+    REAL(KIND=rsh) :: h0fond  ! residual thickness in water  (m)
 
     ! fwet =1 if not used  
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: fwet

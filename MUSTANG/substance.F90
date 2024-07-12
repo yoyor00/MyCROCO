@@ -1,7 +1,4 @@
 #include "cppdefs.h"
-#ifdef MUSTANG
-# include "coupler_define_MUSTANG.h"
-#endif
 
 MODULE substance
 
@@ -18,8 +15,6 @@ MODULE substance
 #ifdef SUBSTANCE_SUBMASSBALANCE 
    USE submassbalance, ONLY :  submassbalance_readdomain
 #endif
-
-# define REPFICNAMELIST 'MUSTANG_NAMELIST'
 
    IMPLICIT NONE
    PRIVATE
@@ -62,9 +57,7 @@ CONTAINS
    LOGICAL                                   :: l_varassoc
    INTEGER                                   :: ivpc, ivp, iv, iv0, indx, ivTS
    INTEGER                                   :: isubs, nballoc, ivr, it, ntypvar
-#ifdef key_CROCO
    INTEGER                                   :: lstr, lenstr
-#endif
 
 !! tables (_n) sized to read in namelist by number of substances of such and such a type
 !! tables (_r) intermediates sized to the number of substances, will then be copied into the final 
@@ -167,21 +160,13 @@ CONTAINS
 
 
 #ifdef MUSTANG
-# ifdef key_CROCO
    lstr=lenstr(sedname_subst)
    OPEN(500,file=sedname_subst(1:lstr),status='old',form='formatted',access='sequential')
-# else
-   OPEN(500,file=REPFICNAMELIST//'/parasubstance_MUSTANG.txt',status='old',form='formatted',access='sequential')
-# endif
 ! only substance
 #else 
-# ifdef key_CROCO
    lstr=lenstr(subsname)
    MPI_master_only  WRITE(stdout,*),'SUBS:',subsname(1:lstr)
    OPEN(500,file=subsname(1:lstr),status='old',form='formatted',access='sequential')
-# else
-   OPEN(500,file=REPFICNAMELIST//'/parasubstance.txt',status='old',form='formatted',access='sequential')
-# endif
    nv_grav=0
    nv_sand=0
    nv_mud=0
