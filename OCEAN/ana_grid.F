@@ -151,6 +151,10 @@ C$    integer omp_get_thread_num
                      depth=256.
                      f0=0.
                      beta=0.
+# elif defined CANON2D
+                     depth=2.
+                     f0=0.
+                     beta=0.
 # elif defined GRAV_ADJ
 #  if defined NBQ || defined K3FAST
                      depth=0.3
@@ -326,6 +330,15 @@ C$    integer omp_get_thread_num
                      Length_XI =4000.0e+3
 # elif defined KH_INST
                      Length_XI =256.0
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined CANON2D_KHI
+                     Length_XI =2.
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined CANON2D_HWI
+                     Length_XI =2.*pi/(4./3.)
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined CANON2D_TCI
+                     Length_XI =2.*pi/0.8
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined ACOUSTIC
                      Length_XI =128.0
@@ -569,7 +582,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
                    || defined SOLITON || defined ISOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
-                   || defined JET      || defined CONVECT
+                   || defined JET      || defined CONVECT \
+                   || defined CANON2D
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR

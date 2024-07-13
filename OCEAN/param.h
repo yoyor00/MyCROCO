@@ -47,6 +47,14 @@
 # else
       parameter (LLm0=1,    MMm0=256, N=256)
 # endif
+#elif defined CANON2D
+# ifdef CANON2D_KHI
+      parameter (LLm0=128,  MMm0=1,   N=128)   
+# elif defined CANON2D_HWI
+      parameter (LLm0=302,  MMm0=1,   N=128)   
+# elif defined CANON2D_TCI
+      parameter (LLm0=503,  MMm0=1,   N=128)  
+# endif
 #elif defined ACOUSTIC
       parameter (LLm0=64,   MMm0=1,    N=64)
 #elif defined GRAV_ADJ
@@ -209,6 +217,8 @@
 # else
       parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR COASTAL CONFIG
 # endif
+#elif defined CONVECT
+      parameter (LLm0=128,  MMm0=1,  N=128)
 #elif defined PEKERIS
 # if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
       parameter (LLm0=500,   MMm0=1,    N=50) 

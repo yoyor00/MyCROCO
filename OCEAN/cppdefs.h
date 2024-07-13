@@ -44,6 +44,7 @@
 #undef  ISOLITON        /* Internal Soliton Example */
 #undef  ISOLITON_DJL    /* Internal DJL Soliton */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
+#undef  CANON2D         /* Canonical Shear Instabilities Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */
 #undef  DUNE            /* Dune migration Example */
 #undef  SED_TOY         /* 1DV sediment toy Example */
@@ -1684,13 +1685,8 @@
 
 #elif defined ISOLITON_DJL
 /*
-!                       Gravitational Adjustment Example
-!                       ============= ========== =======
-!
-!  Internal soliton case ISOLITON (non-hydrostatic) is setup from:
-!  Stastna M. and K.G. Lamb, (2002).
-!  Large fully nonlinear internal solitary waves: 
-!  The effect of background current. Physics of fluids.
+!                       DJL Soliton Example
+!                       === ======= =======
 !
 */
 # define MPI
@@ -1746,6 +1742,50 @@
 # define NBQ
 # undef  NBQ_PRECISE
 # undef  XIOS
+# define SOLVE3D
+# define NEW_S_COORD
+# define UV_ADV
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# undef  SALINITY
+# undef  PASSIVE_TRACER
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# undef  ANA_SRFLUX
+# define ANA_BTFLUX
+# define ANA_SSFLUX
+# define ANA_BSFLUX
+# ifndef KH_INSTY
+#  define EW_PERIODIC
+# else
+#  define NS_PERIODIC
+# endif
+# define NO_FRCFILE
+# undef  RVTK_DEBUG
+
+#elif defined CANON2D
+/*
+!                       Canonical 2D Instabilities Example
+!                       ========= == ============= =======
+!
+*/
+# define CANON2D_TCI
+# undef  KH_INSTY
+# undef  KH_INST3D
+# define MPI
+# undef  NBQ
+# define KNBQ3
+# define KNBQ 
+# define NBQ_GRAV
+# define DIAG_CFL
+# undef  NBQ_PRECISE
+# undef XIOS
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV

@@ -144,6 +144,8 @@
       fname='TEST_CASES/croco.in.Swash'
 #elif defined KH_INST
       fname='TEST_CASES/croco.in.KH_INST'
+#elif defined CANON2D 
+      fname='TEST_CASES/croco.in.Canon2d'
 #elif defined IGW
 # if defined NBQ || defined K3FAST
       fname='TEST_CASES/croco.in.IGW_nbq'
