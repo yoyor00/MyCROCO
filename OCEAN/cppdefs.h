@@ -178,7 +178,7 @@
 #  ifdef ONLINE
 #   undef  AROME
 #   undef  ERA_ECMWF
-#  define  FORMATTED
+#   define FORMATTED
 #  endif
 #  undef READ_PATM
 #  ifdef READ_PATM
