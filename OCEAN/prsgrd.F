@@ -156,13 +156,13 @@ c********************************************************************
 ! Preliminary step (same for XI- and ETA-components:
 !------------ ---- ----- --- --- --- ---------------
 !
+!$acc kernels if(compute_on_device) default(present)
 # ifdef NBQ_GRAV
        rho=rho-rho_nh
 # endif
       GRho=g/rho0
       HalfGRho=0.5*GRho
 
-!$acc kernels if(compute_on_device) default(present)
       !do j=JstrV-1,Jend
       DOLOOP2D(IstrU-1,Iend,JstrV-1,Jend)
         do k=1,N-1
@@ -948,7 +948,6 @@ c********************************************************************
         enddo
       enddo
 # endif
-!$acc end kernels
 
 !
 !--------------------------------------------------------------------
@@ -956,6 +955,7 @@ c********************************************************************
 # ifdef NBQ_GRAV
        rho=rho+rho_nh
 # endif
+!$acc end kernels
       return
       end
 #else
