@@ -87,7 +87,7 @@
       integer iper
       real xper,yper,xx,yy,xs,db,eps
 #endif
-#ifdef KH_INST
+#if defined KH_INST || defined CANON2D
       real rho1_exp,rho2_exp,h1_exp, Lt
       real d(0:N)
 !$acc declare create(d)
@@ -228,7 +228,7 @@
           enddo
         enddo
 
-# elif defined KH_INST
+# elif defined KH_INST || defined CANON2D
         do j=JR_RANGE
           do i=IR_RANGE
             zeta(i,j,1)=0.
@@ -503,7 +503,7 @@ c c !$acc kernels if(compute_on_device) default(present)
           enddo
         enddo
 
-#  elif defined KH_INST
+#  elif defined KH_INST || defined CANON2D
 !$acc kernels if(compute_on_device) default(present)
 !
 ! Traditional KH instability:
@@ -511,8 +511,16 @@ c c !$acc kernels if(compute_on_device) default(present)
 !  Configuration from Pelletier et al.: linear shear within mixed layer
 !
         du     = 1.0    ! Value to be replaced by the RunBuilder script.
-        hu0    = 10.
         eps3D  = 0.   ! 3D perturbation
+#   ifdef KH_INST
+        hu0    = 10.
+#   elif defined CANON2D_KHI
+        hu0    = 0.1
+#   elif defined CANON2D_HWI
+        hu0    = 0.1
+#   elif defined CANON2D_TCI
+        hu0    = 0.1
+#   endif
 !
 !$acc loop private (hint,hintu)
         do j=JR_RANGE
@@ -524,12 +532,45 @@ c c !$acc kernels if(compute_on_device) default(present)
             hint = 0.
             hintu = 0.
             do k=1,N
+
+#   ifdef KH_INST
               u(i,j,k,1)  = -du*tanh((z_r(1,1,k)-zu0)/hu0)
               u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
      &                       (-2.*tanh((z_r(1,1,k)-zu0)/hup0))*
      &                       (1. -tanh((z_r(1,1,k)-zu0)/hup0)**2.)
      &                                      *sin(2.*2.*pi/xl*xp(i,j))
      &                       *(1.+eps3D*(sin( 2.*4.*pi/el*yr(i,j))))
+#   elif defined CANON2D_KHI
+               u(i,j,k,1)  = du*tanh((z_r(1,1,k)-zu0)/hu0)
+               u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
+     &                       (1. -tanh((z_r(1,1,k)-zu0
+     &                   +depth/10.*sin(2.*pi/xl*xr(i,j))
+     &                       )/hup0)**2.)
+               u(i,j,k,1)  = u(i,j,k,1) +0.01*du *               ! add perturbation
+     &                       (1. -tanh((z_r(1,1,k)-zu0
+     &                   -depth/10.*cos(2.*pi/xl*xr(i,j))
+     &                       )/hup0)**2.)
+#   elif defined CANON2D_HWI
+               u(i,j,k,1)  = 1.+4./135.*( 
+     &            30.*(z_r(1,1,k)-zu0)-30.-log(cosh(30.*(
+     &            z_r(1,1,k)-zu0-1./8.))/cosh(105./4.)))
+               u(i,j,k,1)  = u(i,j,k,1) +
+     &                         4./135.*(
+     &          -0.1*log(cosh(30.*(z_r(1,1,k)-zu0-1./8.
+     &                   +depth/10.*sin(2.*pi/xl*xr(i,j))
+     &                   ))/cosh(105./4.)))
+
+!              u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
+!    &                       (-2.*tanh((z_r(1,1,k)-zu0)/hup0))*
+!    &                       (1. -tanh((z_r(1,1,k)-zu0)/hup0)**2.)
+!    &                                      *sin(2.*pi/xl*xp(i,j))
+#   elif defined CANON2D_TCI
+               u(i,j,k,1)  = (z_r(1,1,k)-zu0)
+!               u(i,j,k,1)  = u(i,j,k,1) + 0.1*du               ! add perturbation
+!     &          *(0.5*dtanh( (z_r(1,1,k)-zr0-1./4.))
+!     &           +0.5*dtanh( (z_r(1,1,k)-zr0+1./4.)))
+!     &                                      *sin(2.*pi/xl*xp(i,j))
+#   endif
 
               u(i,j,k,2)  = u(i,j,k,1)
               hintu = hintu + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
@@ -554,13 +595,15 @@ c c !$acc kernels if(compute_on_device) default(present)
             do k=1,N
               v(i,j,k,1)  = 0.
               v(i,j,k,2)  = 0.
-#   if defined NBQ || defined K3SLOW_W
+#   ifdef KH_INST
+#    if defined NBQ || defined K3SLOW_W
               wz(i,j,k,1) = -0.01*du*hup0*
      &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
      &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
      &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
 
               wz(i,j,k,2) = wz(i,j,k,1)
+#    endif
 #   endif
             enddo
           enddo
@@ -847,7 +890,7 @@ c c !$acc kernels if(compute_on_device) default(present)
           enddo
         enddo
 
-#   elif defined KH_INST
+#   elif defined KH_INST || defined CANON2D
 !$acc kernels if(compute_on_device) default(present)
 !
 ! Traditional KH instability:
@@ -855,13 +898,28 @@ c c !$acc kernels if(compute_on_device) default(present)
 !  Configuration from Pelletier et al.: linear shear within mixed layer
 !
 #    ifdef TEMPERATURE
+#     ifdef KH_INST
         htemp0 = 10.
+#     elif defined CANON2D_KHI
+        htemp0 = 1./30.
+#     elif defined CANON2D_HWI
+        htemp0 = 1./30.
+#     elif defined CANON2D_TCI
+        htemp0 = 1./30.
+#     endif
 #    endif /* TEMPERATURE */
 #    ifdef SALINITY
         hsalt0 = 10.
 #    endif
+#    ifdef KH_INST
         drho   = 1.2    ! Value to be replaced by script (originally 1.2)
-!
+#    elif defined CANON2D_KHI
+        drho   = 5.22  
+#    elif defined CANON2D_HWI
+        drho   = 20.8  
+#    elif defined CANON2D_TCI
+        drho   = 14.6   
+#    endif
         do j=JR_RANGE
           do i=IR_RANGE
             depth=h(i,j)
@@ -870,6 +928,7 @@ c c !$acc kernels if(compute_on_device) default(present)
 
             do k=1,N
 #    ifdef TEMPERATURE
+#     ifdef KH_INST
               t(i,j,k,1,itemp) = 13.+ 1.*drho * (
      &                            0.1*(z_r(1,1,k)-zr0)/depth +
      &                          dtanh((z_r(1,1,k)-zr0)/htemp0)
@@ -878,6 +937,33 @@ c c !$acc kernels if(compute_on_device) default(present)
 !!   &                       (tanh(abs(z_r(1,1,k)-zr0)/hup0))*
 !    &                       (1. -tanh((z_r(1,1,k)-zr0)/hup0)**2.)
 !    &                                      *sin(2.*2.*pi/xl*xr(i,j))
+#    elif defined CANON2D_KHI
+              t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+     &           dtanh( (z_r(1,1,k)-zr0)/htemp0)
+     &                                          )  / Tcoef     
+#    elif defined CANON2D_HWI
+              t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+     &           dtanh( (z_r(1,1,k)-zr0+1./8.)/htemp0)
+     &                                          )  / Tcoef   
+              t(i,j,k,1,itemp) = t(i,j,k,1,itemp)+1.*drho * (
+     &           0.1*dtanh( (z_r(1,1,k)-zr0+1./8.
+     &                   +depth/10.*cos(2.*pi/xl*xr(i,j))
+     &                      )/htemp0)
+     &                                          )  / Tcoef 
+#    elif defined CANON2D_TCI
+              t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+     &           0.5*dtanh( (z_r(1,1,k)-zr0-1./4.)/htemp0)
+     &          +0.5*dtanh( (z_r(1,1,k)-zr0+1./4.)/htemp0)
+     &                                          )  / Tcoef  
+              t(i,j,k,1,itemp) = t(i,j,k,1,itemp)+1.*drho * (
+     &            0.05*dtanh( (z_r(1,1,k)+(-zr0-1./4.)
+     &                       +depth/10.*sin(2.*pi/xl*xr(i,j)))
+     &                       /htemp0)
+     &           +0.05*dtanh( (z_r(1,1,k)+(-zr0+1./4.)
+     &                       +depth/10.*cos(2.*pi/xl*xr(i,j)))
+     &                       /htemp0)
+     &                                          )  / Tcoef  
+#    endif
 
               t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
 #    endif
