@@ -1,7 +1,6 @@
-! $Id: ana_grid.F 1620 2015-01-08 10:47:13Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -93,7 +92,7 @@ C$    integer omp_get_thread_num
 # ifdef SANDBAR
       real p1,p2,p3,p4,p5,p6,p7,xx
 # endif
-# ifdef RIVER
+# if defined RIVER || defined SEAGRASS
       integer is,i0,j0
 #  include "sources.h"
 # endif
@@ -209,6 +208,10 @@ C$    integer omp_get_thread_num
                      depth=150.
                      f0=8.26E-5
                      beta=0.
+# elif defined SEAGRASS
+                     depth=0.215
+                     f0=0.
+                     beta=0.
 # elif defined JET
                      depth=4000.
                      f0=1.E-4
@@ -240,7 +243,7 @@ C$    integer omp_get_thread_num
 # elif defined TANK
                      depth=10.
                      f0=0.
-                     beta=0.                
+                     beta=0.
 # elif defined PEKERIS
 #  if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
                      depth=100.
@@ -370,6 +373,9 @@ C$    integer omp_get_thread_num
 # elif defined RIVER
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
+# elif defined SEAGRASS
+                     Length_ETA=0.25
+                     Length_XI =36.*0.05
 # elif defined JET
                      Length_XI = 500.e+3
                      Length_ETA=2000.e+3
@@ -585,7 +591,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=20.+0.5*(depth-20.)*(1.+tanh((yr(i,j)-cff)/10000.))
         enddo
       enddo
-      
+
 # elif defined ISOLITON_DJL
       cff=(1./5.e3) !(1./5.e3)**2
       do j=JstrR,JendR
@@ -705,6 +711,14 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=h(i,JstrR)
         enddo
       enddo
+
+# elif defined SEAGRASS
+        do j=JstrR,JendR
+            do i=IstrR,IendR
+            h(i,j)=depth
+            enddo
+        enddo
+
 
 # elif defined SHOREFACE
       do j=JstrR,JendR
@@ -1181,6 +1195,23 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         end do
       end do
 !$acc end kernels
+
+# ifdef SEAGRASS
+      do j=JstrR,JendR
+         do i=IstrR,IendR
+#   ifdef MPI
+        cff  = (float(i +ii*Lm) )
+#   else
+        cff  = (float(i       ) )
+#   endif
+             if ((cff .lt. 14) .or. (cff .gt. 31)) then
+                 zob(i,j) = 6.E-8 ! out of patch
+             else
+                 zob(i,j) = 1.E-6 ! in patch
+             end if
+         end do
+       end do
+# endif
 !
 !----------------------------------------------------------------------
 !  Set masking at RHO-points.
@@ -1243,8 +1274,28 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       endif ! WESTERN_EDGE
 #  endif /* RIVER */
+
+#  ifdef SEAGRASS
+      do j=JstrR,JendR
+         do i=IstrR,IendR
+         rmask(i,j)=0.      
+         enddo
+      enddo
+
+      if (WESTERN_EDGE) then
+         do i=IstrR+3,IendR
+            rmask(i,3)=1.
+         enddo
+      else
+         do i=IstrR,IendR
+            rmask(i,3)=1.   
+         enddo
+      endif ! WESTERN_EDGE
+
+#  endif /* SEAGRASS */
+
 # endif /* MASKING */
-!!$acc end kernels
+!!!$acc end kernels
 !
 #else
       subroutine ana_grid_empty

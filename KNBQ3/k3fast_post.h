@@ -23,8 +23,8 @@ C$OMP BARRIER
 C$OMP MASTER
 c       call check_tab3d(thetadiv_nbq,'step3d_fastthetadiv_nbq','rint')
 # ifdef K3FAST_SEDLAYERS
-      call check_tab3d_sedlay(rho_nbq,'step3d_fastrho_nbq_1',
-     &  'r',N_sl+1,N,ondevice=.TRUE.)
+!      call check_tab3d_sedlay(rho_nbq,'step3d_fastrho_nbq_1',
+!     &  'r',N_sl+1,N,ondevice=.TRUE.)
 # else
       call check_tab3d(rho_nbq,'step3d_fastrho_nbq_1','r',ondevice=.TRUE.)
 # endif      

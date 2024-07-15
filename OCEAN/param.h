@@ -209,6 +209,8 @@
 # else
       parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR COASTAL CONFIG
 # endif
+#elif defined CONVECT
+      parameter (LLm0=128,  MMm0=1,  N=128)
 #elif defined PEKERIS
 # if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
       parameter (LLm0=500,   MMm0=1,    N=50) 

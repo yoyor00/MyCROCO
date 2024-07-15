@@ -1,0 +1,52 @@
+#include "cppdefs.h"
+#if defined RVTK_DEBUG             
+      module my_functions_1
+      contains     
+      elemental function mylog(x)
+!$acc routine(mylog) seq
+      real,intent(in) :: x
+      real :: mylog
+      mylog = real(log(X),kind=4)
+      end function mylog
+
+      elemental function mytanh(x)
+!$acc routine(mytanh) seq
+      real,intent(in) :: x
+      real :: mytanh
+      mytanh = real(tanh(X),kind=4)
+      end function mytanh 
+
+      elemental function myexp(x)
+!$acc routine(myexp) seq
+      real,intent(in) :: x
+      real :: myexp
+      myexp = real(exp(X),kind=4)
+      end function myexp
+
+      elemental function mycos(x)
+!$acc routine(mycos) seq
+      real,intent(in) :: x
+      real :: mycos
+      mycos = real(cos(X),kind=4)
+      end function mycos
+
+      elemental function mysin(x)
+!$acc routine(mysin) seq
+      real,intent(in) :: x
+      real :: mysin
+      mysin = real(sin(X),kind=4)
+      end function mysin
+
+      end module my_functions_1 
+
+      module my_functions
+      !USE my_functions_1, only : log=>mylog
+      USE my_functions_1, only : tanh=>mytanh
+      USE my_functions_1, only : exp=>myexp
+      USE my_functions_1, only : cos=>mycos
+      USE my_functions_1, only : sin=>mysin
+      end module my_functions
+#else
+      module my_functions_empty
+      end module my_functions_empty    
+#endif

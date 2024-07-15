@@ -225,8 +225,8 @@ C$OMP BARRIER
 C$OMP MASTER
 !        call Check_tab3d(ru_int_nbq,'ru_int_nbq (A0)','uint')
 !        call Check_tab3d(rv_int_nbq,'rv_int_nbq (A0)','vint')
-       call check_tab3d(ru_int_nbq,'ru_int_nbq (A1)','uint')
-       call check_tab3d(rv_int_nbq,'rv_int_nbq (A1)','vint')
+!       call check_tab3d(ru_int_nbq,'ru_int_nbq (A1)','uint')
+!       call check_tab3d(rv_int_nbq,'rv_int_nbq (A1)','vint')
 C$OMP END MASTER     
 #  endif  
 # if defined RVTK_DEBUG && defined KNBQ

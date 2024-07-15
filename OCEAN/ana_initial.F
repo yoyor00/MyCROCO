@@ -1,7 +1,6 @@
-! $Id: ana_initial.F 1620 2015-01-08 10:47:13Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -33,6 +32,9 @@
 #ifdef SUBSTANCE
       USE comsubstance, ONLY: cini_wat
 #endif
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif      
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -160,7 +162,7 @@
 !  Acoustic wave emission
 !-------------------------------
 !
-!$acc kernels if(compute_on_device) default(present)              
+!$acc kernels if(compute_on_device) default(present)
         sacous_nbq = -1
         period_exp = 1./50./2.
         for_a_exp  = 0.5
@@ -1235,12 +1237,28 @@ c c !$acc kernels if(compute_on_device) default(present)
         enddo
 #    endif /* TEMPERATURE */
 
-#   elif defined RIVER
+#   elif defined RIVER 
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
 #    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=10.  !4.+10.*exp(z_r(i,j,k)/50.)
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=36.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
+            enddo
+          enddo
+        enddo
+
+#   elif defined SEAGRASS
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=10.  
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #    endif /* TEMPERATURE */
 #    ifdef SALINITY
@@ -1338,7 +1356,7 @@ c c !$acc kernels if(compute_on_device) default(present)
             enddo
           enddo
         enddo
-        
+
 #  elif defined CONVECT
 ! "Convection" testcase:
         drho = 0.1
@@ -2129,6 +2147,9 @@ C$OMP BARRIER
 !
 # ifdef AGRIF
       use Agrif_Util
+# endif
+# ifdef RVTK_DEBUG
+      !!use my_functions
 # endif
       implicit none
 # include "param.h"

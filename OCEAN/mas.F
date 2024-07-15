@@ -18,6 +18,9 @@
 !******************************************************
 !
       use parameters
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
      !
       logical :: flag
@@ -59,6 +62,9 @@
 !***********************************************************
 !
       use parameters
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       logical :: flag
       integer :: l,nj,i,julien2,nd0,n,m,jour,mois,ia,kg,ng,j,k
@@ -184,6 +190,9 @@
 !**********************************************************************
 !
       use parameters
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       integer                        :: k,l,i
       real                 :: fnm
@@ -227,6 +236,9 @@
 !**********************************************************************
 !
       use parameters
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       integer                        :: k
       real                 :: b,hh
@@ -260,6 +272,9 @@
 !********************************************
 !
       use parameters
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       integer                :: m,nv2,nm1,n,i,j,ip,l,k,le,le1
       real         :: fij
@@ -319,6 +334,9 @@
 !**************************************************************
 !
       use parameters
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
        implicit none
        integer                     :: i,ng,n
        integer,dimension(6)        :: nd
@@ -384,6 +402,9 @@
 !***************************************************
 !
       use parameters
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       integer,dimension(6) :: nd
       double precision       :: asfo
@@ -424,6 +445,9 @@
 !*********************************************************
 !
       use parameters
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       integer                 :: i,julien2,ia,jou,moi,ibs,jour,mois,iy,m
       integer,dimension(12,2),PARAMETER :: jo=

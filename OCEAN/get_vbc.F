@@ -1,6 +1,6 @@
-! $Id: get_vbc.F 1615 2014-12-17 13:27:07Z rblod $
-!
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+!======================================================================
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -67,9 +67,10 @@
 !---------------------------------------------------------------
 !
 # ifndef ANA_SMFLUX
-#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  ifndef BULK_FLUX
+#   ifndef WAVE_SMFLUX
       call get_smflux
+#   endif
 #  endif
 # endif
 !
@@ -201,6 +202,10 @@
 #ifdef AGRIF
       use Agrif_Util
 #endif
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 #include "param.h"
 #include "grid.h"

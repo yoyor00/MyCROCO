@@ -1,7 +1,6 @@
-! $Id: analytical.F 1619 2015-01-07 13:53:03Z marchesiello $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -72,6 +71,9 @@
 ! "bustr" and "bvstr" [m^2/s^2] using an analytical expression.
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -111,6 +113,9 @@
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -259,6 +264,9 @@ C$    integer  trd, omp_get_thread_num
 !
 #ifdef ANA_MORPHODYN
       subroutine ana_morphodyn (tile)
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
       integer tile
@@ -278,6 +286,9 @@ C$    integer  trd, omp_get_thread_num
 !  example for SEAMOUNT test case
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -325,6 +336,10 @@ C$    integer  trd, omp_get_thread_num
 !
 #if defined ANA_BSEDIM && defined BBL
       subroutine ana_bsedim (tile)
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
       integer tile
@@ -342,6 +357,10 @@ C$    integer  trd, omp_get_thread_num
 !  and density used in the bottom boundary formulation [kg/m^3].
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "bbl.h"
@@ -410,6 +429,10 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef AGRIF
       use Agrif_UTIL
+# endif
+
+# ifdef RVTK_DEBUG
+        use my_functions
 # endif
       implicit none
 # include "param.h"
@@ -583,6 +606,10 @@ C$    integer  trd, omp_get_thread_num
 !  flux "srflx" (degC m/s) using an analytical expression.
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -633,6 +660,11 @@ C$    integer  trd, omp_get_thread_num
 !
 #if defined ANA_SSH && defined ZCLIMATOLOGY
       subroutine ana_ssh (tile)
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
       integer tile
@@ -650,6 +682,11 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical sea surface height climatology [m].
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -826,6 +863,10 @@ C$    integer  trd, omp_get_thread_num
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -838,7 +879,6 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
-
 # ifdef EQUATOR
 ! SST = 25C and lineraly decreases to 10C 1200km from the Equator.
       y1=1200.E+3
@@ -905,6 +945,10 @@ C$    integer  trd, omp_get_thread_num
 !
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -940,6 +984,10 @@ C$    integer  trd, omp_get_thread_num
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1036,6 +1084,11 @@ C$    integer  trd, omp_get_thread_num
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
 # endif
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1445,6 +1498,11 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical momentum climatology fields.
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1604,6 +1662,10 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical NBQ climatology fields.
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1722,6 +1784,10 @@ C$    integer  trd, omp_get_thread_num
 !  and period used in the bottom boundary layer formulation.
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
       real wamp,wdir,wprd,
      &     ho,khd,kh,kw,kr,ks,wday,ramp,cff,co,gamw,
@@ -1876,6 +1942,10 @@ C$    integer  trd, omp_get_thread_num
 !
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+  
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -2106,6 +2176,9 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       subroutine ana_psource_tile (Istr,Iend,Jstr,Jend)
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -2161,18 +2234,25 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+!#   ifdef MPI
+!          if (IstrR.le.i .and. i.le.IendR .and.
+!     &       JstrR.le.j .and. j.le.JendR) then
+!#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              Qshape(is,k)=Qshape(is,k)/cff2
+            enddo
+!#   ifdef MPI 
+!          endif
+!#   endif            
         enddo
 #  elif defined AL_SHAPE
         do is=1,Nsrc                   ! Set-up nondimensional shape
@@ -2190,6 +2270,15 @@ C$    integer  trd, omp_get_thread_num
           Qshape(is,20)=0.2
         enddo
 #  endif
+
+# elif defined SEAGRASS
+
+        cff=1./float(N)
+        do k=1,N                       ! Uniform vertical
+          do is=1,Nsrc                 ! distribution
+            Qshape(is,k)=cff
+          enddo
+        enddo
 
 # elif defined REGIONAL
 #  define EXP_SHAPE
@@ -2209,20 +2298,27 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+!#   ifdef MPI
+!          if (IstrR.le.i .and. i.le.IendR .and.
+!     &       JstrR.le.j .and. j.le.JendR) then
+!#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                  (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            if (cff2 .gt. 0.0) then
-              Qshape(is,k)=Qshape(is,k)/cff2
-            endif
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              if (cff2 .gt. 0.0) then
+                Qshape(is,k)=Qshape(is,k)/cff2
+              endif
+            enddo
+!#   ifdef MPI
+!          endif
+!#   endif 
         enddo
 #  endif
 
@@ -2244,21 +2340,28 @@ C$    integer  trd, omp_get_thread_num
           i=Isrc(is)
           j=Jsrc(is)
 #   endif
-          Hs=h(i,j)                    ! Exponential vertical distribution
-          cff=5.                       ! Hs/z0  (z0 surface layer depth)
-          cff1=cff/(1-exp(-cff))
-          cff2=0.
-          do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+!#   ifdef MPI
+!          if (IstrR.le.i .and. i.le.IendR .and.
+!     &        JstrR.le.j .and. j.le.JendR) then
+!#   endif
+            Hs=h(i,j)                    ! Exponential vertical distribution
+            cff=5.                       ! Hs/z0  (z0 surface layer depth)
+            cff1=cff/(1-exp(-cff))
+            cff2=0.
+            do k=1,N
+              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            cff2=cff2+Qshape(is,k)
-          enddo
-          do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
-          enddo
+              cff2=cff2+Qshape(is,k)
+            enddo
+            do k=1,N
+              Qshape(is,k)=Qshape(is,k)/cff2
+            enddo
+!#   ifdef MPI
+!          endif
+!#   endif
         enddo
 #  endif
-# endif /* RIVER || REGIONAL */
+# endif /* RIVER || SEAGRASS || REGIONAL */
 
         do is=1,Nsrc
           Qbar0(is)=Qbar(is)
@@ -2300,7 +2403,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
 # ifdef SOLVE3D
-#  ifdef RIVER
+#  if defined RIVER || defined SEAGRASS
       do k=1,N
         do is=1,Nsrc
 #   ifdef TEMPERATURE
@@ -2371,7 +2474,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
-#  endif /* RIVER */
+#  endif /* RIVER || SEAGRASS || REGIONAL */
 !
 !  Set-up biology tracer (tracer units) point Sources/Sinks.
 !
@@ -2677,6 +2780,9 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
+# endif
+# ifdef RVTK_DEBUG
+      use my_functions
 # endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
@@ -3151,6 +3257,9 @@ C$    integer  trd, omp_get_thread_num
 !  Set analytical boundary forcing
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # include "param.h"
@@ -3284,6 +3393,9 @@ C$    integer  trd, omp_get_thread_num
       end
 !
       subroutine ana_bry_bio_tile (Istr,Iend,Jstr,Jend)
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    xno3,temp,SiO4,zbry
