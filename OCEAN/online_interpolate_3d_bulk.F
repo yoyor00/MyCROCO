@@ -110,8 +110,13 @@
 
         do j=J_RANGE
           do i=I_RANGE
+# ifdef FORMATTED
+            pt_dtag(i,j,:,iblkrec)=pt_dtag(i,j,:,iblkrec)
+            tairg(i,j,iblkrec)=pt_dtag(i,j,1,iblkrec)
+# else
             pt_dtag(i,j,:,iblkrec)=pt_dtag(i,j,:,iblkrec)-273.15
             tairg(i,j,iblkrec)=pt_dtag(i,j,1,iblkrec)-273.15
+#endif
           enddo
         enddo
 
@@ -145,7 +150,7 @@
           enddo
         enddo
 
-# ifndef AROME
+# ifdef ERA_ECMWF
         do j=J_RANGE
           do i=I_RANGE
             ew=6.1121*(1.0007+3.46e-6*Pref)*
