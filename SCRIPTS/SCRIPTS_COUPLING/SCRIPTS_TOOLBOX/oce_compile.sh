@@ -148,6 +148,14 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
                 sed -e "s/#  *define  *ERA_ECMWF/#   undef  ERA_ECMWF/g" \
                     cppdefs.h > tmp$$
             fi
+	    mv tmp$$ cppdefs.h
+            if [[ ${frc_ext} == *'FORMATTED'* ]]; then
+                sed -e "s/#  *undef  *FORMATTED/#   define  FORMATTED/g" \
+                    cppdefs.h > tmp$$
+            else
+                sed -e "s/#  *define  *FORMATTED/#   undef  FORMATTED/g" \
+                    cppdefs.h > tmp$$
+            fi
             printf "           Online bulk activated with ${frc_ext}\n"
             mv tmp$$ cppdefs.h
         elif [ ${interponline} == 0 ]; then

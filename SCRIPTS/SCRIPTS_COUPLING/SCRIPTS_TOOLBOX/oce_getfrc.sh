@@ -9,6 +9,8 @@ if [ ${interponline} -eq 1 ]; then
     else
         if [ ${frc_ext} == "ERA_ECMWF" ]; then
             vnames='T2M U10M V10M Q STRD SSR TP'
+	elif [ ${frc_ext} == "FORMATTED" ]; then
+	    vnames='T2M U10M V10M R STRD SSR TP'
         else
             vnames='Temperature_height_above_ground Specific_humidity Precipitation_rate Downward_Short-Wave_Rad_Flux_surface Upward_Short-Wave_Rad_Flux_surface Downward_Long-Wave_Rad_Flux Upward_Long-Wave_Rad_Flux_surface U-component_of_wind V-component_of_wind'
         fi
