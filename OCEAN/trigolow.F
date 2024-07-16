@@ -37,10 +37,25 @@
       mysin = real(sin(X),kind=4)
       end function mysin
 
+      elemental function mycosh(x)
+!$acc routine(mycos) seq
+      real,intent(in) :: x
+      real :: mycosh
+      mycosh = real(cosh(X),kind=4)
+      end function mycosh
+
+      elemental function mysinh(x)
+!$acc routine(mysin) seq
+      real,intent(in) :: x
+      real :: mysinh
+      mysinh = real(sinh(X),kind=4)
+      end function mysinh
+      
+
       end module my_functions_1 
 
       module my_functions
-      !USE my_functions_1, only : log=>mylog
+      USE my_functions_1, only : log=>mylog
       USE my_functions_1, only : tanh=>mytanh
       USE my_functions_1, only : exp=>myexp
       USE my_functions_1, only : cos=>mycos

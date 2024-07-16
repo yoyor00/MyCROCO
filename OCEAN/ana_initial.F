@@ -567,8 +567,8 @@ c c !$acc kernels if(compute_on_device) default(present)
 #   elif defined CANON2D_TCI
                u(i,j,k,1)  = (z_r(1,1,k)-zu0)
 !               u(i,j,k,1)  = u(i,j,k,1) + 0.1*du               ! add perturbation
-!     &          *(0.5*dtanh( (z_r(1,1,k)-zr0-1./4.))
-!     &           +0.5*dtanh( (z_r(1,1,k)-zr0+1./4.)))
+!     &          *(0.5*tanh( (z_r(1,1,k)-zr0-1./4.))
+!     &           +0.5*tanh( (z_r(1,1,k)-zr0+1./4.)))
 !     &                                      *sin(2.*pi/xl*xp(i,j))
 #   endif
 
@@ -931,7 +931,7 @@ c c !$acc kernels if(compute_on_device) default(present)
 #     ifdef KH_INST
               t(i,j,k,1,itemp) = 13.+ 1.*drho * (
      &                            0.1*(z_r(1,1,k)-zr0)/depth +
-     &                          dtanh((z_r(1,1,k)-zr0)/htemp0)
+     &                          tanh((z_r(1,1,k)-zr0)/htemp0)
      &                                              )  / Tcoef
 !    &            +0.001*
 !!   &                       (tanh(abs(z_r(1,1,k)-zr0)/hup0))*
@@ -939,27 +939,27 @@ c c !$acc kernels if(compute_on_device) default(present)
 !    &                                      *sin(2.*2.*pi/xl*xr(i,j))
 #    elif defined CANON2D_KHI
               t(i,j,k,1,itemp) = 13.+ 1.*drho * (
-     &           dtanh( (z_r(1,1,k)-zr0)/htemp0)
+     &           tanh( (z_r(1,1,k)-zr0)/htemp0)
      &                                          )  / Tcoef     
 #    elif defined CANON2D_HWI
               t(i,j,k,1,itemp) = 13.+ 1.*drho * (
-     &           dtanh( (z_r(1,1,k)-zr0+1./8.)/htemp0)
+     &           tanh( (z_r(1,1,k)-zr0+1./8.)/htemp0)
      &                                          )  / Tcoef   
               t(i,j,k,1,itemp) = t(i,j,k,1,itemp)+1.*drho * (
-     &           0.1*dtanh( (z_r(1,1,k)-zr0+1./8.
+     &           0.1*tanh( (z_r(1,1,k)-zr0+1./8.
      &                   +depth/10.*cos(2.*pi/xl*xr(i,j))
      &                      )/htemp0)
      &                                          )  / Tcoef 
 #    elif defined CANON2D_TCI
               t(i,j,k,1,itemp) = 13.+ 1.*drho * (
-     &           0.5*dtanh( (z_r(1,1,k)-zr0-1./4.)/htemp0)
-     &          +0.5*dtanh( (z_r(1,1,k)-zr0+1./4.)/htemp0)
+     &           0.5*tanh( (z_r(1,1,k)-zr0-1./4.)/htemp0)
+     &          +0.5*tanh( (z_r(1,1,k)-zr0+1./4.)/htemp0)
      &                                          )  / Tcoef  
               t(i,j,k,1,itemp) = t(i,j,k,1,itemp)+1.*drho * (
-     &            0.05*dtanh( (z_r(1,1,k)+(-zr0-1./4.)
+     &            0.05*tanh( (z_r(1,1,k)+(-zr0-1./4.)
      &                       +depth/10.*sin(2.*pi/xl*xr(i,j)))
      &                       /htemp0)
-     &           +0.05*dtanh( (z_r(1,1,k)+(-zr0+1./4.)
+     &           +0.05*tanh( (z_r(1,1,k)+(-zr0+1./4.)
      &                       +depth/10.*cos(2.*pi/xl*xr(i,j)))
      &                       /htemp0)
      &                                          )  / Tcoef  
@@ -969,7 +969,7 @@ c c !$acc kernels if(compute_on_device) default(present)
 #    endif
 #    ifdef SALINITY
               t(i,j,k,1,isalt) = 35. +0.05*drho* ( 1. -
-     &                             (dtanh((z_r(1,1,k)-zr0)/hsalt0))**2 )
+     &                             (tanh((z_r(1,1,k)-zr0)/hsalt0))**2 )
               t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
 #    endif
             enddo
@@ -1682,7 +1682,7 @@ C$OMP BARRIER
               zdye10 = -0.65*depth
               t(i,j,k,1,itpas) =
      &            + 35 +0.05* drho* (
-     &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hsalt0 ) )**2.
+     &              1. - (tanh( (z_r(1,1,k)-zdye10)/hsalt0 ) )**2.
      &                     )
 !
               t(i,j,k,2,itpas) = t(i,j,k,1,itpas)
@@ -1690,7 +1690,7 @@ C$OMP BARRIER
               zdye20 = -0.35*depth
               t(i,j,k,1,itpas+1) =
      &            + 35 +0.05* drho* (
-     &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hsalt0 ) )**2.
+     &              1. - (tanh( (z_r(1,1,k)-zdye20)/hsalt0 ) )**2.
      &                     )!
               t(i,j,k,2,itpas+1) = t(i,j,k,1,itpas+1)
 #  elif defined SED_TOY

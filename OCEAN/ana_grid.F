@@ -51,6 +51,9 @@ C$    integer omp_get_thread_num
 # ifdef AGRIF
       use Agrif_Util
 # endif
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
 # include "param.h"
