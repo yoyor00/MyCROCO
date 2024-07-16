@@ -509,8 +509,8 @@
       real wdrx(GLOBAL_2D_ARRAY)
       real wdre(GLOBAL_2D_ARRAY)
       common /forces_whrm/whrm /forces_wepb/wepb
-     &       /forces_wdrx/wdrx /forces_wdre/wdre
-     &       /forces_wepd/wepd
+      common /forces_wdrx/wdrx /forces_wdre/wdre
+      common /forces_wepd/wepd
       real wlm(GLOBAL_2D_ARRAY)
       common /forces_wlm/wlm
 # ifdef WAVE_ROLLER
