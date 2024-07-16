@@ -117,7 +117,7 @@ if [[ ${interponline} -eq 1 ]]; then
         echo "Online bulk is ${frc_ext}; default value for records per day is 24. (Change in the croco.in if not)"
         rpd=24
     else 
-        if [[ ${frc_ext} == "ERA_ECMWF" || ${frc_ext} == "FORMATTED"]]; then
+        if [[ ${frc_ext} == "ERA_ECMWF" || ${frc_ext} == "FORMATTED" ]]; then
             fieldname='T2M'
             online_frc="./"
         else
