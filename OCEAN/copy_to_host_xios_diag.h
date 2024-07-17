@@ -1057,9 +1057,6 @@ c       endif
 #if defined key_sand2D
 #else
 #endif
-      if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host(  ) 
-      endif
       if (xios_field_is_active("tauskin")) then
 !$acc update host( tauskin ) 
       endif
@@ -1073,9 +1070,6 @@ c       endif
 # endif
       if (xios_field_is_active("ksma")) then
 !$acc update host( ksma ) 
-      endif
-      if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host(  ) 
       endif
       if (xios_field_is_active('dzs')) then
 !$acc update host(  ) 

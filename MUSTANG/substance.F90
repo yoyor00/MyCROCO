@@ -728,11 +728,11 @@ CONTAINS
    MPI_master_only WRITE(stdout,*) 'TRACER-SUBSTANCE NUMBER        NAME             UNIT            TYPE      '
     DO isubs=1,ntrc_subs
       MPI_master_only WRITE(stdout,'(5x,i4,5x,a30,2x,a18,5x,i4)')  &
-                 isubs,TRIM(name_var(irk_fil(isubs))),TRIM(unit_var_r(isubs)),itypv_r(isubs)
+                 isubs,TRIM(name_var_r(isubs)),TRIM(unit_var_r(isubs)),itypv_r(isubs)
     END DO
     DO isubs=1,ntrc_subs
      MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'VARIABLE NAME : ',TRIM(name_var(irk_fil(isubs)))
+     MPI_master_only WRITE(stdout,*)'VARIABLE NAME : ',TRIM(name_var_r(isubs))
      IF (itypv_r(isubs)==3 .OR. itypv_r(isubs)==4) THEN
        
 #ifdef MUSTANG
@@ -855,13 +855,6 @@ CONTAINS
 #ifdef PSOURCE_NCFILE_TS
    DO isubs=1,ntrc_subs
           indx=indxT+ntrc_salt+isubs
-!          vname(1,indxTsrc+ntrc_salt+isubs)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src         '
-!          vname(2,indxTsrc+ntrc_salt+isubs)='Tracer source concentration     '
-!          vname(3,indxTsrc+ntrc_salt+isubs)=trim(ADJUSTL(ADJUSTR(vname(3,indx) )))//''
-!          vname(4,indxTsrc+ntrc_salt+isubs)='                                '
-!          vname(5,indxTsrc+ntrc_salt+isubs)='                                '
-!          vname(6,indxTsrc+ntrc_salt+isubs)='                                '
-!          vname(7,indxTsrc+ntrc_salt+isubs)='                                '
           vname(1,indxTsrc+isubs+1)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src        '
           vname(2,indxTsrc+isubs+1)='Tracer source concentration     '
           vname(3,indxTsrc+isubs+1)=trim(ADJUSTL(ADJUSTR(vname(3,indx) )))//''

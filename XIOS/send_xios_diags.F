@@ -2224,21 +2224,15 @@ C 				  endif
 #endif
 
 #if defined MUSTANG
-      USE comsubstance, ONLY : name_var, nvpc
+      USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
       USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
-     &    l_outsed_poro, l_outsed_dzs, _outsed_temp_sed, l_outsed_salt_sed, 
-     &    l_outsed_cv_sed, l_outsed_toce, l_outsed_flx_s2w, l_outsed_flx_w2s,
-     &    l_outsed_pephm_fcor, l_outsed_flx_bxy, l_outsed_bil_bedload, 
+     &    l_outsed_poro, l_outsed_dzs, l_outsed_temp_sed, l_outsed_salt_sed, 
+     &    l_outsed_cv_sed, l_outsed_toce, l_outsed_flx_s2w_w2s,
+     &    l_outsed_pephm_fcor, l_outsed_bedload, 
      &    l_outsed_fsusp, l_outsed_frmudsup, l_outsed_dzs_ksmax, 
-     &    l_outsed_theoric_active_layer, 
-     &    l_outsed_tero_noncoh, l_outsed_tero_coh, l_outsed_pct_ero,
-     &    l_outsed_flx_s2w_coh, l_outsed_flx_w2s_coh, 
-     &    l_outsed_flx_s2w_noncoh, l_outsed_flx_w2s_noncoh, 
-     &    l_outsed_flx_bxy_int, l_outsed_bil_bedload_int,
-     &    l_outsed_loadograv, l_outsed_sigmadjge, l_outsed_sigmapsg, 
-     &    l_outsed_permeab, l_outsed_stateconsol, l_outsed_dtsdzs, 
-     &    l_outsed_sed_rate, l_outsed_hinder,
+     &    l_outsed_theoric_active_layer, l_outsed_ero_details,
+     &    l_outsed_consolidation, l_outsed_ws,
      &    var3D_cvsed, var3D_dzs,
      &    var3D_TEMP, var3D_SAL, var3D_poro,
      &    var2D_hsed, ksma, tauskin, tauskin_c, tauskin_w,
@@ -2262,7 +2256,7 @@ C 				  endif
 
 #ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
-      USE comMUSTANG,   ONLY : sum_tmp
+      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
 #endif
 #endif
 
@@ -3631,7 +3625,7 @@ c !$acc wait
 
 # ifdef MUSTANG
       do itrc=3,NT
-         write(nametrc,'(A,I1)') 'cv_wat_',itrc-2
+         write(nametrc,'(a)') TRIM(name_var(itrc-2))
 #if defined key_sand2D
            if (itrc>=itsubs1+nv_grav .AND.
      &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
@@ -3663,15 +3657,12 @@ c !$acc wait
             workr=t(:,:,:,nstp,itrc)
 #endif
 
-
       if (xios_field_is_active(TRIM(nametrc))) then
-         call xios_send_field(TRIM(nametrc),
-     &    workr)
+         call xios_send_field(TRIM(nametrc),workr)
       endif
       enddo
 
-      CALL sed_MUSTANG_outres(Istr,Iend,Jstr,Jend,
-     &       ntrc_subs,h)
+      CALL sed_MUSTANG_outres(Istr,Iend,Jstr,Jend,ntrc_subs,h)
       if (xios_field_is_active("tauskin")) then
         call xios_send_field("tauskin",tauskin)
       endif
@@ -3683,7 +3674,7 @@ c !$acc wait
       endif
 
       if (xios_field_is_active("ksma")) then
-        call xios_send_field("ksma",ksma)
+        call xios_send_field("ksma",REAL(ksma))
       endif
       IF (l_outsed_hsed) then
             if (xios_field_is_active("hsed")) then
@@ -3691,7 +3682,7 @@ c !$acc wait
             endif
       ENDIF
 
-      IF (l_outsed_cv_sed) 
+      IF (l_outsed_cv_sed) THEN
         do itrc=1,ntrc_subs
          do k=1,nk_nivsed_out
            workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
@@ -3702,6 +3693,16 @@ c !$acc wait
             endif
         enddo
       ENDIF
+
+      do itrc=1,ntrc_subs
+            IF (l_outsed_ws .and. ((itrc .GE. imud1) .AND. (itrc .LE. imud2))) THEN
+                  write(nametrc,'(a,"_ws")') TRIM(name_var(itrc))
+                  workr=ws_part(:,:,:,itemp+ntrc_salt+itrc)
+                  if (xios_field_is_active(TRIM(nametrc))) then
+                        call xios_send_field(TRIM(nametrc),workr)
+                  endif
+            endif
+      enddo
       
       IF (l_outsed_dzs) then
             if (xios_field_is_active('dzs')) then
@@ -3746,13 +3747,11 @@ c !$acc wait
               call xios_send_field(TRIM(nametrc),var2D_toce(itrc,:,:))
             endif
          ENDIF
-         IF (l_outsed_flx_s2w) then
+         IF (l_outsed_flx_s2w_w2s) then
             write (nametrc, '(a,"_flx_s2w")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),var2D_flx_s2w(itrc,:,:))
             endif
-         ENDIF
-         IF (l_outsed_flx_w2s) then
             write (nametrc, '(a,"_flx_w2s")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),var2D_flx_w2s(itrc,:,:))
@@ -3767,7 +3766,7 @@ c !$acc wait
             endif
          ENDIF
 #ifdef key_MUSTANG_bedload
-         IF (l_outsed_flx_bxy) then
+         IF (l_outsed_bedload) then
             write (nametrc, '(a,"_flx_bx")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),
@@ -3778,8 +3777,6 @@ c !$acc wait
               call xios_send_field(TRIM(nametrc),
      &                             var2D_flx_by(itrc,:,:))
             endif
-         ENDIF
-         IF (l_outsed_bil_bedload) then
             write (nametrc, '(a,"_bil_bedload")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),
@@ -3813,22 +3810,16 @@ c !$acc wait
       if (xios_field_is_active("z0hydro")) then
             call xios_send_field("z0hydro",zob)
       endif
-      IF (l_outsed_flx_s2w_noncoh) then
+      IF (l_outsed_flx_s2w_w2s) then
             if (xios_field_is_active("flx_s2w_noncoh")) then
             call xios_send_field("flx_s2w_noncoh",var2D_flx_s2w_noncoh)
             endif
-      ENDIF
-      IF (l_outsed_flx_s2w_coh) then
             if (xios_field_is_active("flx_s2w_coh")) then
             call xios_send_field("flx_s2w_coh",var2D_flx_s2w_coh)
             endif
-      ENDIF
-      IF (l_outsed_flx_w2s_noncoh) then
             if (xios_field_is_active("flx_w2s_noncoh")) then
             call xios_send_field("flx_w2s_noncoh",var2D_flx_w2s_noncoh)
             endif
-      ENDIF
-      IF (l_outsed_flx_w2s_coh) then
             if (xios_field_is_active("flx_w2s_coh")) then
             call xios_send_field("flx_w2s_coh",var2D_flx_w2s_coh)
             endif
@@ -3840,19 +3831,15 @@ c !$acc wait
      &                        var2D_theoric_active_layer)
             endif
       ENDIF
-      IF (l_outsed_tero_noncoh) then
+      IF (l_outsed_ero_details) then
             if (xios_field_is_active("tero_noncoh")) then
             call xios_send_field("tero_noncoh",
      &                        var2D_tero_noncoh)
             endif
-      ENDIF
-      IF (l_outsed_tero_coh) then
             if (xios_field_is_active("tero_coh")) then
             call xios_send_field("tero_coh",
      &                        var2D_tero_coh)
             endif
-      ENDIF
-      IF (l_outsed_pct_ero) then
             if (xios_field_is_active("pct_iter_noncoh")) then
             call xios_send_field("pct_iter_noncoh",
      &                        var2D_pct_iter_noncoh)
@@ -3867,7 +3854,7 @@ c !$acc wait
             endif
       ENDIF
 #ifdef key_MUSTANG_bedload
-      IF (l_outsed_flx_bxy_int) then
+      IF (l_outsed_bedload) then
             if (xios_field_is_active("flx_bx_int")) then
             call xios_send_field("flx_bx_int",
      &                        var2D_flx_bx_int)
@@ -3876,8 +3863,6 @@ c !$acc wait
                   call xios_send_field("flx_by_int",
      &                        var2D_flx_by_int)
             endif
-      ENDIF
-      IF (l_bil_bedload_int) then
             if (xios_field_is_active("bil_bedload_int")) then
             call xios_send_field("bil_bedload_int",
      &                        var2D_bil_bedload_int)
@@ -3887,63 +3872,49 @@ c !$acc wait
 #endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN
-            IF (l_outsed_dtsdzs) then
+            IF (l_outsed_consolidation) then
                   if (xios_field_is_active('dtsdzs')) then
                         do k=1,nk_nivsed_out
                               workrsed(:,:,k)=var3Dksed_dtsdzs(k,:,:)
                         enddo
                         call xios_send_field('dtsdzs',workrsed)
                   endif
-            ENDIF
-            IF (l_outsed_loadograv) then
                   if (xios_field_is_active('loadograv')) then
                         do k=1,nk_nivsed_out
                               workrsed(:,:,k)=var3Dksed_loadograv(k,:,:)
                         enddo
                         call xios_send_field('loadograv',workrsed)
                   endif
-            ENDIF
-            IF (l_outsed_permeab) then
                   if (xios_field_is_active('permeab')) then
                         do k=1,nk_nivsed_out
                               workrsed(:,:,k)=var3Dksed_permeab(k,:,:)
                         enddo
                         call xios_send_field('permeab',workrsed)
                   endif
-            ENDIF
-            IF (l_outsed_sed_rate) then
                   if (xios_field_is_active('sed_rate')) then
                         do k=1,nk_nivsed_out
                               workrsed(:,:,k)=var3Dksed_sed_rate(k,:,:)
                         enddo
                         call xios_send_field('sed_rate',workrsed)
                   endif
-            ENDIF
-            IF (l_outsed_sigmadjge) then
                   if (xios_field_is_active('sigmadjge')) then
                         do k=1,nk_nivsed_out
                               workrsed(:,:,k)=var3Dksed_sigmadjge(k,:,:)
                         enddo
                         call xios_send_field('sigmadjge',workrsed)
                   endif
-            ENDIF
-            IF (l_outsed_sigmapsg) then
                   if (xios_field_is_active('sigmapsg')) then
                         do k=1,nk_nivsed_out
                               workrsed(:,:,k)=var3Dksed_sigmapsg(k,:,:)
                         enddo
                         call xios_send_field('sigmapsg',workrsed)
                   endif
-            ENDIF
-            IF (l_outsed_hinder) then
                   if (xios_field_is_active('hinder')) then
                         do k=1,nk_nivsed_out
                               workrsed(:,:,k)=var3Dksed_hinder(k,:,:)
                         enddo
                         call xios_send_field('hinder',workrsed)
                   endif
-            ENDIF
-            IF (l_outsed_stateconsol) then
                   if (xios_field_is_active('stateconsol')) then
                         do k=1,nk_nivsed_out
                         workrsed(:,:,k)=var3Dksed_stateconsol(k,:,:)
@@ -3951,10 +3922,7 @@ c !$acc wait
                         call xios_send_field('stateconsol',workrsed)
                   endif
             ENDIF
-     
       ENDIF
-
-
 # endif /* MUSTANG */     
 
 #  ifdef BBL
