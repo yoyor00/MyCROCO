@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 ####################################################
 #               COMPILATION JOB                    #
 ####################################################
@@ -23,7 +23,7 @@
 #
 # set source, compilation and run directories
 #
-SOURCE=../croco/OCEAN
+SOURCE=${SOURCE:-../../croco/OCEAN}
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
@@ -60,6 +60,19 @@ MPIINC=""
 NETCDFLIB=$(nf-config --flibs)
 NETCDFINC=-I$(nf-config --includedir)
 
+ENV=${GUIX_ENVIRONMENT:-../${ROOT_DIR}/.install}
+
+#
+# set MPI directories if needed
+#
+
+MPIF90="mpif90"
+MPICC="mpicc"
+MPILIB=""
+MPIINC="-I ${ENV}/include -I ${GUIX_ENVIRONMENT:-/usr/include/mpich}"
+
+CC1=gcc
+
 #
 # set OASIS-MCT (or OASIS3) directories if needed
 #
@@ -68,11 +81,7 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 #
 # set XIOS directory if needed
 #
-# if coupling with OASIS3-MCT is activated :
-# => you need to use XIOS compiled with the "--use_oasis oasis3_mct" flag
-#-----------------------------------------------------------
-XIOS_ROOT_DIR=$HOME/xios
-
+XIOS_ROOT_DIR=$HOME/xios-1.0
 #
 # END OF USER'S MODIFICATIONS
 ####################################################
@@ -86,8 +95,7 @@ which $MAKE > /dev/null 2>&1 || MAKE=make
 # clean scratch area
 #
 rm -rf $SCRDIR
-mkdir $SCRDIR
-
+mkdir -p $SCRDIR
 #
 # AGRIF sources directory
 #
@@ -145,7 +153,7 @@ cd $SCRDIR
 # generates LDFLAGS1 according to users notifications
 #
 LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
-CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
+CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC" #-I/scratch/maurice/install/maurice/AMPI/0.0/Debug/AMPI/include"
 #
 # Set compilation options
 #
@@ -153,28 +161,16 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	if [[ $FC == ifort || $FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-		FFLAGS1="-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise"
-#                FFLAGS1="-O0 -g -i4 -r8 -traceback -check bounds \
+		FFLAGS1="-O3 -fno-alias -i4 -r8 -fp-model precise"
+#                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
 #                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy"
-#	        FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
-#	                -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888"
+		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -mcmodel=large -fbacktrace -fallow-argument-mismatch" # -fbounds-check -finit-real=nan -finit-integer=8888
+#		FFLAGS1="-g -fdefault-real-8 -fdefault-double-8 -mcmodel=large -fno-align-commons -fallow-argument-mismatch -ffixed-line-length-none -fcheck=array-temps -fbacktrace -fbounds-check -finit-real=nan -finit-integer=8888 -ffpe-trap=zero,invalid,overflow"
 		LDFLAGS1="$LDFLAGS1"
-	elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
-    	CPP1="cpp  -traditional -DLinux -DXLF"
-    	CFT1=$FC
-    	FFLAGS1="-g -fast -r8 -i4 -mcmodel=medium -Mbackslash"
-	#FFLAGS1="-g -O0 -C -Kieee -r8 -i4 -traceback"
-	if [[ $HOSTNAME == "jean-zay"* ]]; then
-		CPP1=$CPP1" -DJEANZAY"
-	fi
-	else
-		echo "Unknown Fortran Compiler"
-		exit
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
         CPP1="cpp -traditional -DLinux"
@@ -190,8 +186,6 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
-# Netcdf for netcdf.mod in F90
-FFLAGS1="$FFLAGS1 $NETCDFINC"
 #
 # determine if AGRIF compilation is required
 #
@@ -207,6 +201,57 @@ if $($CPP1 testkeys.F | grep -i -q agrifisdefined) ; then
 fi
 
 #
+# determine if TAPENADE is activated
+#
+echo "Checking Tapenade activation..."
+if $($CPP1 testkeys.F | grep -i -q tapenadeisdefined) ; then
+  echo " => TAPENADE activated"
+  set -x
+  set -e
+  cd -
+  /bin/cp -f ${ROOT_DIR}/AD/*.[Fch] $SCRDIR
+  /bin/cp -f ${ROOT_DIR}/AD/*.el $SCRDIR
+  /bin/cp -f ${ROOT_DIR}/AD/*.py $SCRDIR
+  chmod +x $SCRDIR/*.py
+  cd -
+  set +e
+  set +x
+  #  cat makefile.tapenade >> $SCRDIR/Makefile
+  #LDFLAGS1="$LDFLAGS1 -L ../${ROOT_DIR}/.install/lib"
+  #CPPFLAGS1="$CPPFLAGS1 -I ../${ROOT_DIR}/.install/include"
+  AMPIINC1="$MPIINC"
+  MPI_TAPENADE_ADJ_OBJS1="fortranSupport.o ampiSupport.o"
+  MPI_TAPENADE_TGT_OBJS1="fortranSupport.o ampiSupport.o"
+  MPI_TAPENADE_DIR_OBJS1="fortranSupport.o"
+
+  if [ -f ../AD/tapenade_3.16/bin/tapenade ]; then
+    echo found tapenade in `pwd`/../AD/tapenade_3.16/bin/tapenade
+    export TAPENADE=`pwd`/../AD/tapenade_3.16/bin/tapenade
+  fi
+
+  echo "AD: Checking 3D activation..."
+  if $($CPP1 testkeys.F | grep -i -q solve3disdefined) ; then
+    echo " => SOLVE3D activated"
+    set -x
+    set -e
+    cd -
+    /bin/cp -f ${ROOT_DIR}/AD/Makefile $SCRDIR/Makefile
+    cd -
+    set +e
+    set +x
+  else
+    echo "=> this is a 2D model"
+    set -x
+    set -e
+    cd -
+    /bin/cp -f ${ROOT_DIR}/AD/Makefile $SCRDIR/Makefile
+    cd -
+    set +e
+    set +x
+  fi
+fi
+
+#
 # determine if MPI compilation is required
 #
 unset COMPILEMPI
@@ -218,6 +263,11 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 	CPPFLAGS1="$CPPFLAGS1 $MPIINC"
 	FFLAGS1="$FFLAGS1 $MPIINC"
 	CFT1="${MPIF90}"
+        CC1="${MPICC}"
+        AMPIINC="${AMPIINC1}"
+        MPI_DIR_OBJ1="$MPI_TAPENADE_DIR_OBJS1"
+        MPI_ADJ_OBJ1="$MPI_TAPENADE_ADJ_OBJS1"
+        MPI_TGT_OBJ1="$MPI_TAPENADE_TGT_OBJS1"
 fi
 
 #
@@ -227,10 +277,7 @@ FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
 CFT1=${CROCO_CFT1-$CFT1}
 
 #
-# - Determine if XIOS librairies is required 
-# - if it is the case :
-#     => if XIOS compiled with oasis, add the OASIS inc. files and librairies
-#     => pre-processing (using cpp) of the xml files required by XIOS 
+# determine if XIOS compilation is required
 #
 unset COMPILEXIOS
 echo "Checking COMPILEXIOS..."
@@ -238,15 +285,18 @@ XIOS_ROOT_DIR=${CROCO_XIOS_ROOT_DIR-$XIOS_ROOT_DIR}
 if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         echo " => XIOS activated"
         COMPILEXIOS=TRUE
-        LDFLAGS1="$LDFLAGS1 $XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff -lnetcdf"
+        LDFLAGS1="$LDFLAGS1 $XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff"
         CPPFLAGS1="$CPPFLAGS1 -I$XIOS_ROOT_DIR/inc"
         FFLAGS1="$FFLAGS1 -I$XIOS_ROOT_DIR/inc"
-	
         ln -fs $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.
+        $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/field_def.xml_full $RUNDIR/field_def.xml
+        $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/domain_def.xml $RUNDIR/domain_def.xml
+        $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/file_def.xml $RUNDIR/file_def.xml
+        $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/iodef.xml $RUNDIR/iodef.xml
 fi
 
 #
-# determine if OASIS librairies are required
+# determine if OASIS compilation is required
 #
 unset COMPILEOASIS
 echo "Checking COMPILEOASIS..."
@@ -265,26 +315,43 @@ if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
     CPPFLAGS1="$CPPFLAGS1 ${PSMILE_INCDIR} $NETCDFINC"
     FFLAGS1="$FFLAGS1 ${PSMILE_INCDIR} $NETCDFINC"
 fi
+
+
+
+#
+# rewrite Makedefs according to previous flags
+# with MPI flags if needed
+#
+rm -f Makedefs
+echo 's?$(FFLAGS1)?'$FFLAGS1'?g' > flags.tmp
+echo 's?$(LDFLAGS1)?'$LDFLAGS1'?g' >> flags.tmp
+echo 's?$(CPP1)?'$CPP1'?g' >> flags.tmp
+echo 's?$(CFT1)?'$CFT1'?g' >> flags.tmp
+echo 's?$(CPPFLAGS1)?'$CPPFLAGS1'?g' >> flags.tmp
+sed -f flags.tmp Makedefs.generic > Makedefs
+rm -f flags.tmp
+
+#
+# clean scratch
+#
+#$MAKE clobber
+
+#
+# compile the precompiling program
+#
+$MAKE mpc
+
 #
 # prepare and compile the library
 #
 if [[ $COMPILEAGRIF ]] ; then
-# Find the default C compiler
-    CC1=$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)
-    CFLAGS1=$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)
-# Test if the C compiler is the GNU Compiler
-# if True add '-fcommon' to CFLAGS
-    if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
-	echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
-	CFLAGS1="$CFLAGS1 -fcommon"
-    fi
 #
 # compile the AGRIF librairy
 #
 	if [[ $COMPILEMPI ]] ; then
-		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
+		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1"
 	else
-		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
+		$MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1"
 	fi
 	if [[ $OS == Darwin ]] ; then          # DARWIN
 # run RANLIB on Darwin system
@@ -314,13 +381,7 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 		if [[ $FC == gfortran ]] ; then
 			FFLAGS1="$FFLAGS1 -fopenmp"
 		elif [[ $FC == ifort || $FC == ifc ]] ; then
-			INTEL_VERSION=$(ifort --version 2>&1 | grep -oP "(\d+)" | head -n1)
-			# Compare the version with 18
-			if [[ "$INTEL_VERSION" -gt 18 ]]; then
-				FFLAGS1="$FFLAGS1 -qopenmp"
-			else
-				FFLAGS1="$FFLAGS1 -openmp"
-			fi
+			FFLAGS1="$FFLAGS1 -openmp"
 		else
 			FFLAGS1="$FFLAGS1 -openmp"
 		fi
@@ -333,16 +394,10 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 fi
 
 #
-# determine if OPENACC compilation is needed
+# set runtime path
 #
-unset COMPILEOPENACC
-echo "Checking COMPILEOPENACC..."
-if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
-	COMPILEOPENACC=TRUE
-	if [[ $FC == pgfortran || $FC == nvfortran ]] ; then
-		  FFLAGS1="$FFLAGS1 -acc -Minfo=accel"
-	fi
-fi
+
+LDFLAGS1="$LDFLAGS1 -L ${ENV}/lib -Wl,--rpath=${ENV}/lib" # -L/scratch/maurice/install/maurice/AMPI/0.0/Debug/AMPI/lib/ -Wl,--rpath=/scratch/maurice/install/maurice/AMPI/0.0/Debug/AMPI/lib/"
 
 #
 # rewrite Makedefs according to previous flags
@@ -353,17 +408,27 @@ echo 's?$(FFLAGS1)?'$FFLAGS1'?g' > flags.tmp
 echo 's?$(LDFLAGS1)?'$LDFLAGS1'?g' >> flags.tmp
 echo 's?$(CPP1)?'$CPP1'?g' >> flags.tmp
 echo 's?$(CFT1)?'$CFT1'?g' >> flags.tmp
+echo 's?$(CC1)?'$CC1'?g' >> flags.tmp
 echo 's?$(CPPFLAGS1)?'$CPPFLAGS1'?g' >> flags.tmp
+echo 's?$(AMPIINC1)?'$AMPIINC1'?g' >> flags.tmp
+echo 's?$(MPI_DIR_OBJ1)?'$MPI_DIR_OBJ1'?g' >> flags.tmp
+echo 's?$(MPI_ADJ_OBJ1)?'$MPI_ADJ_OBJ1'?g' >> flags.tmp
+echo 's?$(MPI_TGT_OBJ1)?'$MPI_TGT_OBJ1'?g' >> flags.tmp
 sed -f flags.tmp Makedefs.generic > Makedefs
-rm -f flags.tmp
+#rm -f flags.tmp
 
 #
 # compile croco
 #
-$MAKE depend || exit 1
-$MAKE        || exit 2
-  
-[[ -f croco  ]] && mv croco $RUNDIR
-[[ -f partit ]] && mv partit $RUNDIR
-[[ -f ncjoin ]] && mv ncjoin  $RUNDIR
+$MAKE depend
+
+# $MAKE $MAKEFLAGS || exit 1
+
+# [[ -f croco  ]] && mv croco $RUNDIR
+# [[ -f partit ]] && mv partit $RUNDIR
+# [[ -f ncjoin ]] && mv ncjoin  $RUNDIR
+# [ -f croco_tgt ] && mv croco_tgt $RUNDIR
+# [ -f croco_adj ] && mv croco_adj $RUNDIR
+# [ -f croco_adc ] && mv croco_adc $RUNDIR
+# [ -f croco_div ] && mv croco_div $RUNDIR || exit 0
 #

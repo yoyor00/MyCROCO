@@ -1174,6 +1174,42 @@ C$OMP END MASTER
           enddo
         enddo
 # else
+#ifdef Z0B_VAR
+#define zobi Zob(i,j)
+#else
+#define zobi Zobt
+#endif
+        if (zobt.gt.0.) then
+
+           do j=Jstr,Jend
+              do i=IstrU,Iend
+                 cff0=0.5*(zeta(i,j,kstp)+zeta(i-1,j,kstp)+
+     &                h(i,j)+h(i-1,j))
+                 cff1=vonKar/(log(cff0/zobi) - 1.0)
+                 cff2=cff1*cff1
+                 cff=0.25*( vbar(i  ,j,kstp)+vbar(i  ,j+1,kstp)
+     &                +vbar(i-1,j,kstp)+vbar(i-1,j+1,kstp))
+                 rubar(i,j)=rubar(i,j) - ubar(i,j,kstp)*( rdrg+
+     &                cff2
+     &                *sqrt(ubar(i,j,kstp)*ubar(i,j,kstp)+cff*cff)
+     &                )*om_u(i,j)*on_u(i,j)
+              enddo
+           enddo
+           do j=JstrV,Jend
+              do i=Istr,Iend
+                 cff0=0.5*(zeta(i,j,kstp)+zeta(i,j-1,kstp)+
+     &                h(i,j)+h(i,j-1))
+                 cff1=vonKar/(log(cff0/zobi) - 1.0)
+                 cff2=cff1*cff1
+                 cff=0.25*( ubar(i,j  ,kstp)+ubar(i+1,j  ,kstp)
+     &                +ubar(i,j-1,kstp)+ubar(i+1,j-1,kstp))
+                 rvbar(i,j)=rvbar(i,j) - vbar(i,j,kstp)*( rdrg+
+     &                cff2
+     &                *sqrt(cff*cff+vbar(i,j,kstp)*vbar(i,j,kstp))
+     &                )*om_v(i,j)*on_v(i,j)
+              enddo
+           enddo
+        end if
       if (rdrg2.gt.0.) then
         do j=Jstr,Jend
           do i=IstrU,Iend

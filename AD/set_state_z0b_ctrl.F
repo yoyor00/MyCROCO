@@ -121,6 +121,7 @@ c      call set_state_2d_2_tile(Istr, Iend, Jstr, Jend, ad_x)
       zobmax=0.
 
       k=0
+      zobt = ad_x(1)
       do j=Jstr,Jend
          do i=Istr,Iend
             if (ad_obs(i,j,1).ne.spval) then

@@ -1,6 +1,4 @@
 #!/bin/bash
-#OAR --project airsea-modeling
-#OAR -l /nodes=1/cpu=1/core=1,walltime=48:00:00
 ################################################################################
 case $1 in
   --env-ok)
@@ -64,7 +62,8 @@ cp ../AD/init_control_z0b_ctrl.F init_control.F
 cp ../AD/read_obs_z0b_ctrl.F read_obs.F
 
 ln -sf ../AD/croco.in.AD-DL-Z0B-CTRL-OBS.in
-cp -f ../OCEAN/cppdefs.h .
+cp -f ../AD/cppdefs-dl.h cppdefs.h
+cp -f ../AD/param-dl.h param.h
 sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
 sed -i 's/undef[\t ]*AD_DL_Z0B_CTRL/define AD_DL_Z0B_CTRL/' cppdefs.h
 ../OCEAN/jobcomp
@@ -77,12 +76,13 @@ cp ftides_his.nc obs.nc
 
 # 2. second run with restart and control with obs.nc file
 ln -sf ../AD/croco.in.AD-DL-Z0B-CTRL.in
-cp ../OCEAN/cppdefs.h .
+cp -f ../AD/cppdefs-dl.h cppdefs.h
 sed -i 's/define REGIONAL/undef REGIONAL/' cppdefs.h
 sed -i 's/undef[\t ]*AD_DL_Z0B_CTRL/define AD_DL_Z0B_CTRL/' cppdefs.h
 sed -i 's/define[\t ]*ANA_INITIAL/undef ANA_INITIAL/' cppdefs.h
 ../OCEAN/jobcomp
 cd Compile
+export CC=gcc
 #make croco_adc && mv croco_adc .. || exit 1
 make croco_adj && mv croco_adj .. || exit 1
 cd ..

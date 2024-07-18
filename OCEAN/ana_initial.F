@@ -51,6 +51,9 @@
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif
+#ifdef AD_DL_Z0B_CTRL
+      real x, y, x0, y0, cff
+#endif
 #ifdef BASIN
       real cff1,cff2
 #endif
@@ -186,7 +189,13 @@
             zeta(i,j,2)=0.
           enddo
         enddo
-
+# elif defined AD_DL_Z0B_CTRL
+       do j=JR_RANGE
+          do i=IR_RANGE
+             zeta(i,j,1) = 0.
+             zeta(i,j,2) = zeta(i,j,1)
+          end do
+       end do
 # elif defined THACKER
         ETA0=0.1
         depth=10.

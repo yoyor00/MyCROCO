@@ -60,16 +60,13 @@
 #include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
-#if defined OPENACC
-# include "ocean3d.h"
-# include "coupling.h"
-# include "forces.h"
-# include "mixing.h"
-# include "climat.h"
-# include "averages.h"
-# include "work.h"
-#endif
 #include "mpi_cpl.h"
+#ifdef TAPENADE
+#ifndef MPI
+      parameter (nnodes=1)
+#endif
+#include "adparam.h"
+#endif
 #ifdef FLOATS
 # include "floats.h"
 # include "ncscrum_floats.h"
@@ -101,6 +98,9 @@
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
 !      real*8       :: tool_datosec
+#endif
+#ifdef GENERATE_OBS
+      character*3 mynode_str
 #endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -941,72 +941,121 @@ CR      write(*,*) '  0' MYID
 
 #ifdef AGRIF
       iind = -1
-# if defined OA_COUPLING || defined OW_COUPLING
-      it_inside_root = 1
-# endif
       grids_at_level = -1
       sortedint = -1
       call computenbmaxtimes
 #endif
 
-#ifdef MPI_TIME
-! Start Chrono
-      start_time1=PMPI_Wtime()
+#ifndef TANGENT_CHECK
+!     correction of initial conditions
+c      nrechis_back = nrechis
+c      call step_with_cost_fun()
+c      nrechis = nrechis_back
 #endif
 
+#ifdef ATLN_CTRL      
+      call write_grid()
+#endif
+      
+#ifdef GENERATE_OBS
+      write(mynode_str, 910) mynode
+      open(unit=227, file='obs.'//mynode_str//'.dat',
+#ifdef ATLN_CTRL
+     &     form='formatted',
+#else
+     &     form='unformatted',
+#endif
+     &     access='stream')
+
+#ifdef ATLN_CTRL
+      call read_pos()           ! (i,j) of tide gauges
+#endif
+
+#endif
+      
+! call to cost function for a context check with Tapenade
+#ifdef TANGENT_CHECK
+      x(:)=2.D-5
+      call cost_fun(x, cost)
+#elif defined STATE_CONTROL
+#ifdef ATLN_CTRL
+      call read_pos()
+#endif
+      call read_obs()
+#endif
       do iicroot=ntstart,ntimes+1
-#ifdef MPI_TIME
-        start_time1_1=PMPI_Wtime()
+#ifdef USE_CALENDAR 
+        MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+        if(time > time_end) goto 99 
 #endif
 
-#ifdef USE_CALENDAR
-        if (mod(iicroot-1,ninfo) .eq. 0) then
-          MPI_master_only write(stdout,'(a)') tool_sectodat(time_mars)
-        endif
-        if (time .gt. time_end) goto 99
-#endif
 
 #ifdef SOLVE3D
-# ifndef AGRIF
+#if !defined AGRIF
         do iifroot = 0,nfast+2
-# else
+#else
         nbtimes = 0
         do while (nbtimes.LE.nbmaxtimes)
-# endif
+#endif
 #endif
 
 #ifdef AGRIF
           call Agrif_Step(step)
 #else
+
+#ifdef STATE_CONTROL
+          if (iicroot.LT.ad_main_st) then
+             write(*,*) 'iicroot=',iicroot
+             call step()
+          else
+#ifdef AD_CHECK
+             write(*,*) "=== AD check driver ==="
+             call check_driver(iicroot)
+#elif defined AD_COST
+             write(*,*) "=== cost driver ==="
+             call cost_driver(iicroot)
+#else             
+             write(*,*) "=== AD state control ==="
+             call state_control(iicroot)
+#endif
+             write(*,*) "==========================="
+             goto 99
+          endif
+#else
           call step()
+#endif
 #endif
 
 #ifdef SOLVE3D
         enddo
 #endif
-#ifdef MPI_TIME
-        start_time1_2=PMPI_Wtime()
-        exe_time_1 = start_time1_2 - start_time1_1
-          if (mynode.eq.0) write(97,*) exe_time_1
+
+#ifdef GENERATE_OBS
+c        write (*,*) 'iicroot,iifroot,kstp,knew',
+c     &       iicroot,iifroot,kstp,knew
+        if (mod(iicroot-ntstart,1).eq.0 .and. wrthis(indxTime) .and.
+     &       ((iicroot-ntstart).gt.0)) then
+c           write(*,*) 'write obs: iicroot=',iicroot
+           call write_obs(iicroot,227)
+        end if
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
+
   99  continue                             ! SHUTDOWN:
-#ifdef MPI_TIME
-      start_time2=PMPI_Wtime()
-      exe_time = start_time2 - start_time1
-      MPI_master_only write(stdout,*) '*******************************'
-      MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
-      MPI_master_only write(stdout,*) '*******************************'
-#endif
-C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
+C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()
       enddo
-      call closecdf
-#ifdef XIOS
-      call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF
+
+#ifdef GENERATE_OBS
+      close(227)
 #endif
+
+      call closecdf
+# ifdef XIOS
+      call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF 
+# endif
 #ifdef AGRIF
 !
 !  Close the netcdf files also for the child grids
@@ -1056,4 +1105,6 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 #endif
 
       stop
+ 910  format(I3.3)
       end
+

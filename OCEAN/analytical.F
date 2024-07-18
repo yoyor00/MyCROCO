@@ -592,7 +592,7 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
 # include "coupling.h"
       integer Istr,Iend,Jstr,Jend, i,j
-# if defined INTERNAL || defined ANA_TIDES
+# if defined INTERNAL || defined ANA_TIDES || defined AD_DL_Z0B_CTRL
       real U0,omega,kwave,ETA0
 # endif
 # if defined RIP && defined ANA_TIDES
@@ -704,6 +704,18 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif
+
+# ifdef AD_DL_Z0B_CTRL
+      U0=0.02
+      omega=2.*pi/(12 *3600)
+      kwave=0.
+      ETA0=1.0
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
+        enddo
+      enddo
+#endif
 
 # ifdef WET_DRY
 !

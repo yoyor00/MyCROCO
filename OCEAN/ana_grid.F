@@ -113,6 +113,10 @@ C$    integer omp_get_thread_num
                      depth=5000.
                      f0=1.E-4
                      beta=2.E-11
+# elif defined AD_DL_Z0B_CTRL
+                     depth=65.
+                     f0=1.22E-4
+                     beta=0.
 # elif defined SINGLE_COLUMN
 #  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF
                      depth=50.
@@ -401,6 +405,10 @@ C$    integer omp_get_thread_num
 # elif defined KILPATRICK
                      Length_ETA= 18.E+3
                      Length_XI = 3600.E+3
+# elif defined AD_DL_Z0B_CTRL
+                     Length_XI =40000
+                     Length_ETA=40000
+
 # else
                      Length_XI =???
                      Length_ETA=???
@@ -526,7 +534,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
                    || defined SOLITON || defined ISOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
-                   || defined JET
+                   || defined JET || defined AD_DL_Z0B_CTRL
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR

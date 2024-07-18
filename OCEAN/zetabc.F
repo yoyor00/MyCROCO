@@ -312,6 +312,13 @@ C$    trd=omp_get_thread_num()
 !====================================================================
 !                   CORNERS (between open boundaries)
 !====================================================================
+#if defined AD_DL_Z0B_CTRL
+      zeta(0,0,knew) = zeta(1,0,knew)
+      zeta(Iend+1,0,knew) = zeta(Iend,0,knew)
+      zeta(0,Jend+1,knew) = zeta(1,Jend,knew)
+      zeta(Iend+1,Jend+1,knew) = zeta(Iend,Jend+1,knew)
+#endif
+
 #if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
         zeta(0,0,knew)=0.5*(zeta(1,0 ,knew)+zeta(0 ,1,knew))

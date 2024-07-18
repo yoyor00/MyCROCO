@@ -1154,7 +1154,7 @@
       endif
 # endif
 #endif
-
+#ifndef __TAPENADE__
   1   format(/1x,'GET_INITIAL - unable to find variable:',    1x,A,
      &                            /15x,'in input NetCDF file:',1x,A/)
   2   format(/1x,'GET_INITIAL - error while reading variable:',1x, A,
@@ -1187,7 +1187,7 @@
      &     '  rec =',I4,'(',I8,',',I4,','I4,').')
  7    format(/6x,'GET_INITIAL: Restarted from day =',F12.4,
      &     ' rec=',I4,'(',I8,',',I4,','I4').')
-
+#endif
       return
   99  may_day_flag=2
       return

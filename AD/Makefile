@@ -1,16 +1,14 @@
-# -*- makefile -*-
-# $Id: Makefile 1483 2014-03-15 17:05:10Z rblod $
-#
 #======================================================================
-# CROCO is a branch of ROMS developped at IRD and INRIA, in France
-# The two other branches from UCLA (Shchepetkin et al) 
+# CROCO is a branch of ROMS developped at IRD, INRIA, 
+# Ifremer, CNRS and Univ. Toulouse III  in France
+# The two other branches from UCLA (Shchepetkin et al)
 # and Rutgers University (Arango et al) are under MIT/X style license.
 # CROCO specific routines (nesting) are under CeCILL-C license.
-# 
+#
 # CROCO website : http://www.croco-ocean.org
 #======================================================================
 #
-# Universal machine independent makefile for ROMS model 
+# Universal machine independent makefile for ROMS model
 #
 #======================================================================
 # Set machine dependent definitions and rules.
@@ -21,7 +19,6 @@
 	./mpi2ampi.py $*.tap1.f $*.tap.f90
 
 include Makedefs
-
 #======================================================================
 # Model Configuration:
 #======================================================================
@@ -29,8 +26,8 @@ include Makedefs
 # blanc lines:
 #   1) main driving part;		 2) 2D time stepping engine;
 #   3) 3D time stepping engine;		 4) non-hydrostatic engine
-#   5) sea-water EOS;			 6) vertical mixing schemes;    
-#   7) on-fly model diagnostics;	 8) netCDF I/O routines;	   
+#   5) sea-water EOS;			 6) vertical mixing schemes;
+#   7) on-fly model diagnostics;	 8) netCDF I/O routines;
 #   9) main forcing;			10) Wave forcing routines;
 #  11) Online surface forcing;		12) Floats routines;
 #  13) Station diagnostics;		14) biology/sediment routines;
@@ -100,7 +97,6 @@ include Makedefs
         clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F\
-        cfb_stress.F\
 \
 	mrl_wci.F  	wkb_wwave.F 	wkbbc.F		get_bry_wkb.F\
 \
@@ -131,21 +127,21 @@ include Makedefs
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 
  SRCS90 = \
-	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
-	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
-	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
-	p4zmort.F90	p4zopt.F90		p4zprod.F90	p4zrem.F90\
-	p4zsed.F90	p4zbio.F90		trcwri_pisces.F90\
-	trcsms_pisces.F90			trcini_pisces.F90\
-	pisces_ini.F90\
-\
-	module_parameter_oa.F90\
-	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
-	module_oa_variables.F90	module_oa_type.F90	module_oa_stock.F90\
-	module_oa_level.F90	module_oa_interface.F90\
-	module_oa_upd.F90	croco_oa.F90		var_oa.F90\
-\
-	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90
+# 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
+# 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
+# 	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
+# 	p4zmort.F90	p4zopt.F90		p4zprod.F90	p4zrem.F90\
+# 	p4zsed.F90	p4zbio.F90		trcwri_pisces.F90\
+# 	trcsms_pisces.F90			trcini_pisces.F90\
+# 	pisces_ini.F90\
+# \
+# 	module_parameter_oa.F90\
+# 	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
+# 	module_oa_variables.F90	module_oa_type.F90	module_oa_stock.F90\
+# 	module_oa_level.F90	module_oa_interface.F90\
+# 	module_oa_upd.F90	croco_oa.F90		var_oa.F90\
+# \
+# 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
 
@@ -199,8 +195,8 @@ DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs
 
 TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o init_control.o set_state.o save_restore.o contextAD.o
 
-LAMPI_PLAINC= -lampiPlainC
-LAMPI= -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
+LAMPI_PLAINC= #-lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC -lampiADtoolStubsOO
+LAMPI= #-lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
 
 #======================================================================
 
@@ -412,6 +408,9 @@ $(TAP_TARGET)_d.o: $(TAP_TARGET)_d.f90
 	ln -sf empty_code_insertion.h code_insertion.h
 	$(CFT) -c $(FFLAGS90) -ffree-line-length-0 $*.f90 -o $*.o
 
+
+$(TAP_TARGET)_b.o: debug.mod
+
 $(TAP_TARGET)_b.o: $(TAP_TARGET)_b.f90
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
 	$(CFT) -c $(FFLAGS90)  -ffree-line-length-0 $*.f90 -o $*.o
@@ -497,6 +496,8 @@ my_barrier.o: my_barrier.f
 #
 # Include automatically generated dependency list:
 #
+
+%.o : %.mod
 
 -include Make.depend
 
