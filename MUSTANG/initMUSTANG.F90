@@ -753,7 +753,7 @@ CONTAINS
     !! * Executable part
 
     IF (csed_mud_ini == 0.0_rsh ) csed_mud_ini = cfreshmud
-    tstart_dyninsed = tool_datosec(date_start_dyninsed)
+    tstart_dyninsed = max(tool_datosec(date_start_dyninsed), time)
     t_dyninsed = tstart_dyninsed
     tstart_morpho = tool_datosec(date_start_morpho)
     dtsedc = 365._rlg * 86400._rlg
