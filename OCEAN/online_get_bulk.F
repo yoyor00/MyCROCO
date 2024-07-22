@@ -69,6 +69,59 @@
       real(kind=8), dimension(:,:,:), allocatable :: var3d
 # endif
       character*16 dimname
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! GET_BUK SCRIPT : Test if go to get_bulk or continue with online !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      integer lstr
+      real interv_coord
+!
+! Initialization: Inquire about the contents of forcing NetCDF file:
+!================  variables and dimensions. Check for consistency.
+!
+      if (may_day_flag.ne.0) return      !-->  EXIT
+      lstr=lenstr(bulkname)
+!
+! If not opened yet, open forcing NetCDF file for reading.
+! Find and save IDs for relevant variables, determine whether
+! SST is a field or scalar value.
+!
+      if (ncidbulk.eq.-1) then
+        ierr=nf_open(bulkname(1:lstr), nf_nowrite, ncidbulk)
+        if (ierr. ne. nf_noerr) goto 4                  !--> ERROR
+      endif
+      
+      endif
+
+        ! For get_bulk : bulk_time, NX, NY
+      ierr=nf_inq_varid (ncidbulk, 'bulk_time', bulk_tid)
+      ierr1=nf_inq_dimid (ncidbulk, 'xi_rho', xi_id)
+      ierr2=nf_inq_dimid (ncidbulk, 'eta_rho', eta_id)
+      ! For online : min/max lat/lon, NX, NY
+      ierr3=nf_inq_dimid (ncidbulk, 'lon', blk_dimlonid)
+      ierr4=nf_inq_dimid (ncidbulk, 'lat', blk_dimlatid)
+      
+      if (ierr .eq. nf_noerr).and.(ierr1 .eq. nf_noerr).and.
+     &   (ierr2 .eq. nf_noerr) then
+         
+        ierr=nf_inq_dimlen (ncidbulk, xi_id, xi_len)
+        ierr2=nf_inq_dimlen (ncidbulk, eta_id, eta_len)
+          
+        if (xi_len.eq.xi_rho).and.(eta_len.eq.eta_rho) then
+          call get_bulk
+        else
+          write(stdout,3) 'Check bulk_time, xi, eta : ', bulkname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+
+      else
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ONLINE SCRIPT : 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 !
 ! Time of the current model step
 !
@@ -121,9 +174,15 @@
            MPI_master_only write(stdout,*) 'Open Meteo file :',
      &              bulkfilename(blkvar_id)(1:lvar)
           endif
-          ierr=nf_open(bulkfilename(blkvar_id)(1:lvar), nf_nowrite,
+
+          ! blkvar_id=1 (T2M) is already open
+          if (blkvar_id .ne. 1) then
+            ierr=nf_open(bulkfilename(blkvar_id)(1:lvar), nf_nowrite,
      &                 ncidbulkO(blkvar_id))
-          if (ierr. ne. nf_noerr) goto 4            !--> ERROR
+            if (ierr. ne. nf_noerr) goto 4            !--> ERROR
+          else
+            ncidbulkO(blkvar_id)=ncidbulk
+          endif
 !
 ! Extract the CFSR variable index
 !
@@ -651,6 +710,8 @@
 !
         if (ntbulkO(blkvar_id).gt.1) goto 1
 
+
+      endif
 !
 ! Sort out error messages: The following portion of the code is
 !===== === ===== ========= not accessed unless something goes wrong.

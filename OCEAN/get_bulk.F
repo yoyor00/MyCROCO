@@ -33,9 +33,9 @@
 ! Initialization: Inquire about the contents of forcing NetCDF file:
 !================  variables and dimensions. Check for consistency.
 !
-      if (may_day_flag.ne.0) return      !-->  EXIT
+!      if (may_day_flag.ne.0) return      !-->  EXIT
       if (itbulk.eq.0 .or. iic.eq.0) then
-        lstr=lenstr(bulkname)
+!        lstr=lenstr(bulkname)
 c*        call opencdf (bulkname,N)
 c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
@@ -43,16 +43,16 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 ! Find and save IDs for relevant variables, determine whether
 ! SST is a field or scalar value.
 !
-        if (ncidbulk.eq.-1) then
-          ierr=nf_open(bulkname(1:lstr), nf_nowrite, ncidbulk)
-          if (ierr. ne. nf_noerr) goto 4                  !--> ERROR
-        endif
+!        if (ncidbulk.eq.-1) then
+!          ierr=nf_open(bulkname(1:lstr), nf_nowrite, ncidbulk)
+!          if (ierr. ne. nf_noerr) goto 4                  !--> ERROR
+!        endif
 
-        ierr=nf_inq_varid (ncidbulk, 'bulk_time', bulk_tid)
-        if (ierr .ne. nf_noerr) then
-          write(stdout,3) 'bulk_time', bulkname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
+!        ierr=nf_inq_varid (ncidbulk, 'bulk_time', bulk_tid)
+!        if (ierr .ne. nf_noerr) then
+!          write(stdout,3) 'bulk_time', bulkname(1:lstr)
+!          goto 99                                         !--> ERROR
+!        endif
 
 !
 ! Check N_abl value and possible inconstitency between N_abl in param.h

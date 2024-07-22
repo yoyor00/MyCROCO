@@ -3025,9 +3025,9 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) yearnum, monthnum, recordsperday, yearend,
      &                       monthend
-        read(input,'(A)',err=95)  fname
-        lstr=lenstr(fname)
-        pathbulk=fname(1:lstr)
+!        read(input,'(A)',err=95)  fname
+!        lstr=lenstr(fname)
+!        pathbulk=fname(1:lstr)
         MPI_master_only write(stdout,
      &         '(7x,A,1x,I4,A,1x,I2,A)')
      &         'Online forcing: first forcing, year',yearnum,
@@ -3036,10 +3036,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         '(7x,A,1x,I4,A,1x,I2,A)')
      &         'Online forcing: last forcing year',yearend,
      &         ', month', monthend,'.'
+!        MPI_master_only write(stdout,
+!     &         '(7x,A,A,1x,A4,1x,I2,A)')
+!     &         'Online forcing: datasets in ',fname(1:lstr),
+!     &         'with',recordsperday, ' records per day.'
         MPI_master_only write(stdout,
-     &         '(7x,A,A,1x,A4,1x,I2,A)')
-     &         'Online forcing: datasets in ',fname(1:lstr),
-     &         'with',recordsperday, ' records per day.'
+     &         '(7x,A,1x,I3,1x,A)')
+     &         'Online forcing: with',recordsperday,
+     &         'records per day.'
+
 #endif /* ONLINE */
 
       else

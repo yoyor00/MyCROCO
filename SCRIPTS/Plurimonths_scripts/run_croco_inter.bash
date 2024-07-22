@@ -46,20 +46,15 @@ KMP_STACKSIZE=2m
 KMP_DUPLICATE_LIB_OK=TRUE
 
 # Define which type of inputs are used
-BULK_FILES=1
-FORCING_FILES=0
-CLIMATOLOGY_FILES=0
-BOUNDARY_FILES=1
-RUNOFF_FILES=0
-
-# Atmospheric surface forcing dataset used for the bulk formula (NCEP)
-ATMOS_BULK=ERA5
-# Atmospheric surface forcing dataset used for the wind stress (NCEP, QSCAT)
-ATMOS_FRC=QSCAT
-# Oceanic boundary and initial dataset (SODA, ECCO,...)
-OGCM=SODA
-# Runoff dataset (Daie and Trenberth,...)
-RUNOFF_DAT=DAI
+# Prefix, if not used/exist : fill with ''
+BULK_FILES='T2M'
+BULK_PATH='/home/menkes/Documents/annelou/DATA_INPUT/atmos/ERA5/BENGUELA/ERA5_dwnld/ERA5_formatted/'
+RECPERDAY=24 # Records per day for atmospheric forcings
+FORCING_FILES=''
+CLIMATOLOGY_FILES=''
+BOUNDARY_FILES='croco_bry_SODA'
+INIT_FILES='croco_ini_SODA'
+RUNOFF_FILES=''
 
 # Model time step [seconds]
 DT=3600
@@ -180,9 +175,9 @@ while [ $LEVEL != $NLEVEL ]; do
   echo "Getting ${MODEL}_inter.in${ENDF} from $INPUTDIR"
   $CP -f $INPUTDIR/${MODEL}_inter.in${ENDF} $SCRATCHDIR
   if [[ $RSTFLAG == 0 ]]; then
-    echo "Getting ${INIFILE}_${OGCM}_${TIME}.nc${ENDF} from $MSSDIR"
-    $CP -f $MSSDIR/${INIFILE}_${OGCM}_${TIME}.nc${ENDF} $SCRATCHDIR
-    $CP -f ${INIFILE}_${OGCM}_${TIME}.nc${ENDF} ${INIFILE}.nc${ENDF}
+    echo "Getting ${INIT_FILES}_${TIME}.nc${ENDF} from $MSSDIR"
+    $CP -f $MSSDIR/${INIT_FILES}_${TIME}.nc${ENDF} $SCRATCHDIR
+    $CP -f ${INIT_FILES}_${TIME}.nc${ENDF} ${INIFILE}.nc${ENDF}
   else
     echo "Getting ${RSTFILE}.nc${ENDF} from $MSSOUT"
     $CP -f $MSSOUT/${RSTFILE}.nc${ENDF} $SCRATCHDIR
@@ -231,17 +226,50 @@ while [ $NY != $NY_END ]; do
       else
         ENDF=.${LEVEL}
       fi
-      if [[ ${FORCING_FILES} == 1 ]]; then
-        echo "Getting ${FRCFILE}_${ATMOS_FRC}_${TIME}.nc${ENDF} from $MSSDIR"
-        $LN -sf $MSSDIR/${FRCFILE}_${ATMOS_FRC}_${TIME}.nc${ENDF} ${FRCFILE}.nc${ENDF}
+
+      if [[ ${FORCING_FILES} != '' ]]; then
+        echo "Getting ${FORCING_FILES}_${TIME}.nc${ENDF} from $MSSDIR"
+        $LN -sf $MSSDIR/${FORCING_FILES}}_${TIME}.nc${ENDF} ${FRCFILE}.nc${ENDF}
       fi
-      if [[ ${BULK_FILES} == 1 ]]; then
-        echo "Getting ${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} from $MSSDIR"
-        $LN -sf $MSSDIR/${BLKFILE}_${ATMOS_BULK}_${TIME}.nc${ENDF} ${BLKFILE}.nc${ENDF}
+      if [[ ${BULK_FILES} != '' ]]; then
+	if [[ ${BULK_FILES} == 'T2M' ]]; then
+          T2M=true
+          # Copy all atmospheric forcings in the current folder
+          echo "Getting T2M_${TIME}.nc${ENDF} from $BULK_PATH"
+          $LN -sf $BULK_PATH/T2M_${TIME}.nc${ENDF} T2M.nc${ENDF}
+          echo "Getting SSR_${TIME}.nc${ENDF} from $BULK_PATH"
+          $LN -sf $BULK_PATH/SSR_${TIME}.nc${ENDF} SSR.nc${ENDF}
+          echo "Getting STRD_${TIME}.nc${ENDF} from $BULK_PATH"
+          $LN -sf $BULK_PATH/STRD_${TIME}.nc${ENDF} STRD.nc${ENDF}
+          echo "Getting TP_${TIME}.nc${ENDF} from $BULK_PATH"
+          $LN -sf $BULK_PATH/TP_${TIME}.nc${ENDF} TP.nc${ENDF}
+          echo "Getting U10M_${TIME}.nc${ENDF} from $BULK_PATH"
+          $LN -sf $BULK_PATH/U10M_${TIME}.nc${ENDF} U10M.nc${ENDF}
+          echo "Getting V10M_${TIME}.nc${ENDF} from $BULK_PATH"
+          $LN -sf $BULK_PATH/V10M_${TIME}.nc${ENDF} V10M.nc${ENDF}
+	  
+	  if [[ -f $BULK_PATH/R_${TIME}.nc${ENDF} ]]; then
+            echo "Getting R_${TIME}.nc${ENDF} from $BULK_PATH"
+            $LN -sf $BULK_PATH/R_${TIME}.nc${ENDF} R.nc${ENDF}
+	  fi
+	  if [[ -f $BULK_PATH/Q_${TIME}.nc${ENDF} ]]; then
+	    echo "Getting Q_${TIME}.nc${ENDF} from $BULK_PATH"
+            $LN -sf $BULK_PATH/Q_${TIME}.nc${ENDF} Q.nc${ENDF}
+	  fi
+	  if [[ -f $BULK_PATH/MSL_${TIME}.nc${ENDF} ]]; then
+	    echo "Getting MSL_${TIME}.nc${ENDF} from $BULK_PATH"
+            $LN -sf $BULK_PATH/MSL_${TIME}.nc${ENDF} MSL.nc${ENDF}
+          fi
+	# Bulk_file already interpolated
+        else
+          echo "Getting ${BULK_FILES}_${TIME}.nc${ENDF} from $BULK_PATH"
+          $LN -sf $BULK_PATH/${BULK_FILES}_${TIME}.nc${ENDF} ${BLKFILE}.nc${ENDF}
+        fi
       fi
-     if [[ ${RUNOFF_FILES} == 1 ]]; then
-        echo "Getting ${RNFFILE}.nc${ENDF} from $MSSDIR"
-        $LN -sf $MSSDIR/${RNFFILE}.nc${ENDF} ${RNFFILE}.nc${ENDF}
+
+      if [[ ${RUNOFF_FILES} != '' ]]; then
+        echo "Getting ${RUNOFF_FILES}.nc${ENDF} from $MSSDIR"
+        $LN -sf $MSSDIR/${RUNOFF_FILES}.nc${ENDF} ${RNFFILE}.nc${ENDF}
       fi
       
       LEVEL=$((LEVEL + 1))
@@ -249,13 +277,13 @@ while [ $NY != $NY_END ]; do
 #
 # No child climatology or boundary files
 #
-    if [[ ${CLIMATOLOGY_FILES} == 1 ]]; then
-      echo "Getting ${CLMFILE}_${OGCM}_${TIME}.nc from $MSSDIR"
-      $LN -sf $MSSDIR/${CLMFILE}_${OGCM}_${TIME}.nc ${CLMFILE}.nc
+    if [[ ${CLIMATOLOGY_FILES} != '' ]]; then
+      echo "Getting ${CLIMATOLOGY_FILES}_${TIME}.nc from $MSSDIR"
+      $LN -sf $MSSDIR/${CLIMATOLOGY_FILES}_${TIME}.nc ${CLMFILE}.nc
     fi
-    if [[ ${BOUNDARY_FILES} == 1 ]]; then
-      echo "Getting ${BRYFILE}_${OGCM}_${TIME}.nc from $MSSDIR"
-      $LN -sf $MSSDIR/${BRYFILE}_${OGCM}_${TIME}.nc ${BRYFILE}.nc
+    if [[ ${BOUNDARY_FILES} != '' ]]; then
+      echo "Getting ${BOUNDARY_FILES}_${TIME}.nc from $MSSDIR"
+      $LN -sf $MSSDIR/${BOUNDARY_FILES}_${TIME}.nc ${BRYFILE}.nc
     fi
 #
 # Set the number of time steps for each month 
@@ -362,8 +390,13 @@ while [ $NY != $NY_END ]; do
 	sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
 	    -e 's/\bNUMAVG\b/'$NUMAVG'/' -e 's/\bNUMHIS\b/'$NUMHIS'/' -e 's/\bNUMRST\b/'$NUMRST'/' \
 	    -e 's/NUMRECINI/'$NUMRECINI'/' \
-	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
-	
+	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' \
+	    -e 's/NYEND/'$NY_END'/' -e 's/NMEND/'$NM_END'/' \
+            -e 's/REC_PER_D/'$RECPERDAY'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
+        if [[ $T2M == true ]]; then
+	  sed -e 's/croco_blk.nc/T2M.nc/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
+        fi
+
 	LEVEL=$((LEVEL + 1))
     done
     DT=$DT0
