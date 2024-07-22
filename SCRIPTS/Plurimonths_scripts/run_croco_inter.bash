@@ -236,34 +236,34 @@ while [ $NY != $NY_END ]; do
           T2M=true
           # Copy all atmospheric forcings in the current folder
           echo "Getting T2M_${TIME}.nc${ENDF} from $BULK_PATH"
-          $LN -sf $BULK_PATH/T2M_${TIME}.nc${ENDF} T2M.nc${ENDF}
+          $LN -sf $BULK_PATH'T2M_'${TIME}.nc${ENDF} T2M.nc${ENDF}
           echo "Getting SSR_${TIME}.nc${ENDF} from $BULK_PATH"
-          $LN -sf $BULK_PATH/SSR_${TIME}.nc${ENDF} SSR.nc${ENDF}
+          $LN -sf $BULK_PATH'SSR_'${TIME}.nc${ENDF} SSR.nc${ENDF}
           echo "Getting STRD_${TIME}.nc${ENDF} from $BULK_PATH"
-          $LN -sf $BULK_PATH/STRD_${TIME}.nc${ENDF} STRD.nc${ENDF}
+          $LN -sf $BULK_PATH'STRD_'${TIME}.nc${ENDF} STRD.nc${ENDF}
           echo "Getting TP_${TIME}.nc${ENDF} from $BULK_PATH"
-          $LN -sf $BULK_PATH/TP_${TIME}.nc${ENDF} TP.nc${ENDF}
+          $LN -sf $BULK_PATH'TP_'${TIME}.nc${ENDF} TP.nc${ENDF}
           echo "Getting U10M_${TIME}.nc${ENDF} from $BULK_PATH"
-          $LN -sf $BULK_PATH/U10M_${TIME}.nc${ENDF} U10M.nc${ENDF}
+          $LN -sf $BULK_PATH'U10M_'${TIME}.nc${ENDF} U10M.nc${ENDF}
           echo "Getting V10M_${TIME}.nc${ENDF} from $BULK_PATH"
-          $LN -sf $BULK_PATH/V10M_${TIME}.nc${ENDF} V10M.nc${ENDF}
+          $LN -sf $BULK_PATH'V10M_'${TIME}.nc${ENDF} V10M.nc${ENDF}
 	  
 	  if [[ -f $BULK_PATH/R_${TIME}.nc${ENDF} ]]; then
             echo "Getting R_${TIME}.nc${ENDF} from $BULK_PATH"
-            $LN -sf $BULK_PATH/R_${TIME}.nc${ENDF} R.nc${ENDF}
+            $LN -sf $BULK_PATH'R_'${TIME}.nc${ENDF} R.nc${ENDF}
 	  fi
 	  if [[ -f $BULK_PATH/Q_${TIME}.nc${ENDF} ]]; then
 	    echo "Getting Q_${TIME}.nc${ENDF} from $BULK_PATH"
-            $LN -sf $BULK_PATH/Q_${TIME}.nc${ENDF} Q.nc${ENDF}
+            $LN -sf $BULK_PATH'Q_'${TIME}.nc${ENDF} Q.nc${ENDF}
 	  fi
 	  if [[ -f $BULK_PATH/MSL_${TIME}.nc${ENDF} ]]; then
 	    echo "Getting MSL_${TIME}.nc${ENDF} from $BULK_PATH"
-            $LN -sf $BULK_PATH/MSL_${TIME}.nc${ENDF} MSL.nc${ENDF}
+            $LN -sf $BULK_PATH'MSL_'${TIME}.nc${ENDF} MSL.nc${ENDF}
           fi
 	# Bulk_file already interpolated
         else
           echo "Getting ${BULK_FILES}_${TIME}.nc${ENDF} from $BULK_PATH"
-          $LN -sf $BULK_PATH/${BULK_FILES}_${TIME}.nc${ENDF} ${BLKFILE}.nc${ENDF}
+          $LN -sf $BULK_PATH${BULK_FILES}_${TIME}.nc${ENDF} ${BLKFILE}.nc${ENDF}
         fi
       fi
 
