@@ -47,8 +47,8 @@ KMP_DUPLICATE_LIB_OK=TRUE
 
 # Define which type of inputs are used
 # Prefix, if not used/exist : fill with ''
-BULK_FILES='T2M'
-BULK_PATH='/home/menkes/Documents/annelou/DATA_INPUT/atmos/ERA5/BENGUELA/ERA5_dwnld/ERA5_formatted/'
+BULK_FILES='T2M' # 'croco_blk_AFORCSOURCE' OR 'T2M'
+BULK_PATH='/path/to/your/atmospheric/forcings/'
 RECPERDAY=24 # Records per day for atmospheric forcings
 FORCING_FILES=''
 CLIMATOLOGY_FILES=''
