@@ -391,10 +391,11 @@ while [ $NY != $NY_END ]; do
 	    -e 's/\bNUMAVG\b/'$NUMAVG'/' -e 's/\bNUMHIS\b/'$NUMHIS'/' -e 's/\bNUMRST\b/'$NUMRST'/' \
 	    -e 's/NUMRECINI/'$NUMRECINI'/' \
 	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' \
-	    -e 's/NYEND/'$NY_END'/' -e 's/NMEND/'$NM_END'/' \
+	    -e 's/NYEND/'$((NY_END - 1))'/' -e 's/NMEND/'$NM_END'/' \
             -e 's/REC_PER_D/'$RECPERDAY'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
         if [[ $T2M == true ]]; then
-	  sed -e 's/croco_blk.nc/T2M.nc/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
+	  sed -e 's/croco_blk.nc/T2M.nc/' < ${MODEL}_${TIME}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}.tmp
+	  mv ${MODEL}_${TIME}_inter.in${ENDF}.tmp ${MODEL}_${TIME}_inter.in${ENDF}
         fi
 
 	LEVEL=$((LEVEL + 1))
