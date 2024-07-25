@@ -1392,7 +1392,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
               enddo
             endif
           endif
-# else
+# endif
           do k=1,N
             workr(:,:,k)=workr(:,:,k) 
 #  ifdef WET_DRY
@@ -1401,7 +1401,6 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
      &                SWITCH rmask(:,:)
 #  endif
           enddo
-# endif
 
           call fillvalue3d(workr,ncidhis,hisT(itrc),
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
