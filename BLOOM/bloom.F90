@@ -2912,7 +2912,7 @@
              ! -------------------------
              dcdt(iv_oxygen)= dcdt(iv_oxygen)                                          &
                             -F_precPFE_O2 * cs(iv_nutr_PO4) * p_GO2_PFe * 0.032_rsh  
-             dcdt(iv_oxygen)=0.0                                                          
+
 !            ...................................................................       
              
              ! Nitrate (micomol/l) 
