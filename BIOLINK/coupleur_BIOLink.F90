@@ -1693,7 +1693,7 @@ END SUBROUTINE  BIOLink2hydro
     INTEGER                  :: i,j,ks,iv ! Spatial and tracer counters
     INTEGER                  :: i1,i2,i3,i4 ! Internal BIOLink counters
     INTEGER                  :: isubs,ind_diag2d,ind_diag3d_sed,ind_diag3d_wat
-    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0) :: xnegtr ! Variable to 
+    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0,nv_adv) :: xnegtr ! Variable to 
                                                            ! limit the 
                                                            ! flux out
                                                            ! or in the 
@@ -1711,7 +1711,7 @@ END SUBROUTINE  BIOLink2hydro
       !***************** We test if the tracer concentration ***************!
       !************************* becomes negative **************************!
 #if ! defined ECO3M
-         xnegtr(:,:,:) = 1.e+0 ! 
+         xnegtr(:,:,:,:) = 1.e+0 ! 
 
 !$OMP DO SCHEDULE(RUNTIME)
 
@@ -1738,7 +1738,7 @@ END SUBROUTINE  BIOLink2hydro
                             ! ratio between the concentration and the 
                             ! flux with a precision epsilon_BIOLink
 
-                     xnegtr(i4,i3,i2) = MIN( xnegtr(i4,i3,i2), ztra )
+                     xnegtr(i4,i3,i2,i1) = MIN( xnegtr(i4,i3,i2,i1), ztra )
                             ! Limiting test. If the ratio ztra is
                             ! above 1 we reduce it so that it does not
                             ! make the concentration goes to 0.
@@ -1767,7 +1767,7 @@ END SUBROUTINE  BIOLink2hydro
                DO i4=IRANGE4  
 #if !defined ECO3M
                  WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
-                                                         + xnegtr(i4,i3,i2) &
+                                                         + xnegtr(i4,i3,i2,i1) &
                                                          * BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) &
                                                          * TRANSPORT_TIME_STEP    
 #else
