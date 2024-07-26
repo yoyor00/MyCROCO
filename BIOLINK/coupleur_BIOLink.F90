@@ -811,10 +811,9 @@
 #  if defined key_oyster_benthos || defined key_oyster_DEB || defined key_oyster_SFG
 
       ALLOCATE(nbhuitre(PROC_IN_ARRAY))
-      hautable(:,:)=0.0_rsh
       ALLOCATE(hautable(PROC_IN_ARRAY))
       nbhuitre(:,:)=0.0_rsh
-
+      hautable(:,:)=0.0_rsh
 #  endif /* key_oyster_benthos */
 
 #endif /* BLOOM */
@@ -823,9 +822,6 @@
 END SUBROUTINE  BIOLink_alloc
 
   SUBROUTINE BIOLink_update(ifirst,ilast,jfirst,jlast   &
-#if defined key_oyster_SFG || defined key_oyster_DEB
-          , CELL_SURF                                                &
-#endif
          )
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_update  ***
@@ -964,9 +960,9 @@ END SUBROUTINE  BIOLink_alloc
              k=1
              iv=iv_oysdeb_res
              WAT_CONCFIX_ivkij=50.0_rsh
-             iv=iv_oysdeb_gon
+             iv=iv_oysdeb_gon-nv_adv
              WAT_CONCFIX_ivkij=500.0_rsh
-             iv=iv_oysdeb_str
+             iv=iv_oysdeb_str-nv_adv
              WAT_CONCFIX_ivkij=310.0_rsh
           ENDIF
         ENDIF
@@ -1393,12 +1389,12 @@ END SUBROUTINE  BIOLink_alloc
          ! Reinitialization of oysters for the 1rst of each year
          IF ((imois_BIOLink.eq.1).and.(ijour_BIOLink.eq.1).and.(iheure_BIOLink.eq.0)) THEN
            IF (nbhuitre(i,j).ne.0.0_rsh) THEN
-              k=1
-              iv=iv_oysdeb_res
+              k=2
+              iv=iv_oysdeb_res-nv_adv
               BENTHIC_CONCENTRATION(BENTH_INDEXij)=50.0_rsh
-              iv=iv_oysdeb_gon
+              iv=iv_oysdeb_gon-nv_adv
               BENTHIC_CONCENTRATION(BENTH_INDEXij)=500.0_rsh
-              iv=iv_oysdeb_str
+              iv=iv_oysdeb_str-nv_adv
               BENTHIC_CONCENTRATION(BENTH_INDEXij)=310.0_rsh
            ENDIF
          ENDIF
