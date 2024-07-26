@@ -74,10 +74,14 @@
          if (.not.l_subs2D(itrc-itsubs1+1)) then
 #endif
 
+# ifdef GAMELAG_MESOCOSM
+          indx=itrc
+#else
 #ifdef SALINITY
           indx=min(itrc,isalt)
 #else
           indx=min(itrc,itemp)
+#endif
 #endif
 #if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
@@ -163,6 +167,9 @@
               do k=1,N-1
                 CD(i,k) = -t(i,j,k+1,nnew,itrc)*ws_part(i,j,k,itrc)/
      &                                       (Hz(i,j,k+1)*nbsubstep)
+#ifdef GAMELAG_EXACT
+              flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_sum_CROCO(i,j,itrc)-CD(i,k)*dt
+#endif     
               enddo
 # ifdef MUSTANG
              CD(i,0) = (flx_s2w_CROCO(i,j,itrc) -
@@ -207,7 +214,11 @@
 #endif
 
 #if defined TS_MIX_IMP || defined SUBSTANCE
+#ifdef GAMELAG_EXACT
+            DC(i,1)= cff*(t(i,j,1,nnew,itrc)-dt*(-CD(i,0)))
+#else
             DC(i,1)= cff*(t(i,j,1,nnew,itrc)-dt*(CD(i,1)-CD(i,0)))
+#endif     
 #else
             DC(i,1)= cff* t(i,j,1,nnew,itrc)
 #endif
@@ -235,7 +246,12 @@
               DC(i,k)=cff*(t(i,j,k,nnew,itrc)+FC(i,k-1)*DC(i,k-1)
 #endif
 #if defined TS_MIX_IMP || defined SUBSTANCE
+#ifdef GAMELAG_EXACT
+     &                                    -dt*(-CD(i,k-1))
+#else
      &                                    -dt*(CD(i,k)-CD(i,k-1))
+#endif  
+
 #endif
      &                                                          )
             enddo
@@ -245,7 +261,11 @@
 #ifdef VADV_ADAPT_IMP
             t(i,j,N,nnew,itrc)=( t(i,j,N,nnew,itrc)
 #if defined TS_MIX_IMP || defined SUBSTANCE
+#ifdef GAMELAG_EXACT
+     &                            -dt*(-CD(i,N-1))
+#else
      &                           -dt*(CD(i,N)-CD(i,N-1))
+#endif  
 #endif
      &                                           +DC(i,N-1)*(        !<- f(j) = f(j) +
      &                                FC(i,N-1)+max(BC(i,N-1),0.) )
@@ -255,7 +275,11 @@
 #else
              t(i,j,N,nnew,itrc)=( t(i,j,N,nnew,itrc)
 # if defined TS_MIX_IMP || defined SUBSTANCE
+#ifdef GAMELAG_EXACT
+     &                            -dt*(-CD(i,N-1))
+#else
      &                           -dt*(CD(i,N)-CD(i,N-1))
+#endif 
 # endif
      &                           +FC(i,N-1)*DC(i,N-1) )
      &                        /(Hz(i,j,N)+FC(i,N-1)*(1.-CF(i,N-1)))
