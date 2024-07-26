@@ -26,6 +26,10 @@
   USE comsubstance, ONLY : lchain,rsh,rlg
   USE module_BIOLink
 
+#ifdef MUSTANG
+  USE comMUSTANG, ONLY : valmanq
+# endif
+
   IMPLICIT NONE
 
   !! * Accessibility
@@ -117,6 +121,11 @@
                        p_aging_MO,p_burried,      &
 !                       p_Si_diss,p_kiO2_precSi,p_Si_precip
                        p_Si_Eq,p_Si_EqPrec,p_BSi_dissEau,p_BSi_dissSurfSed,p_BSi_dissFondSed,   &
+#if defined GAMELAG
+                       p_kO2_nit_wat, p_nitrif_wat,p_labi,p_K_lP_max,                   &             
+                       p_K_rP_max,p_Temp_opt_OM,p_Temp_width_OM,p_Vmax_lD,p_Vmax_rD,    &
+                       p_K_l_N,p_K_r_N,p_K_l_P,p_K_r_P,p_gamma,p_epsilon,p_K_min,       &
+#endif
                        p_T_effectSi,p_k_remin,p_xflimz,p_kSi,p_Si_precip
    NAMELIST/namphosphor/ p_P_speedup_reminanaer,p_P_adsor,p_P_desor,p_P_adsormaxspim, &
                          p_P_adsormaxsed,p_P_precFeO2,p_kO2_precPFe,p_kNO3_precPFe,p_kiO2_dissPFe,p_kiO2_desorP,  &
@@ -125,8 +134,14 @@
    NAMELIST/namgenphyto/ p_phyto_ChlNratio,p_phyto_SiNratio,p_phyto_NPratio,p_phyto_CNratio, &
                          p_phyto_ChlNratiomax,p_phyto_ChlN_ksmithextinct
    NAMELIST/namnanophyto/ p_nano_mumax,p_nano_kNO3,p_nano_kNH4,p_nano_kPO4,p_nano_mort, &
+#if defined GAMELAG
+                          p_nano_phy_NH4,p_nano_excret,p_nano_aO2,p_nano_DOcrit, &
+#endif
                           p_nano_iksmith,p_nano_thhold_mort
    NAMELIST/namdiatom/ p_diat_mumax,p_diat_kNO3,p_diat_kNH4,p_diat_kSi,p_diat_kPO4,     &
+#if defined GAMELAG
+                       p_diat_excret,p_diat_aO2,p_diat_DOcrit, &
+#endif
                        p_diat_iksmith,p_diat_mort,p_diat_thhold_mort
    NAMELIST/namdino/ p_dino_mumax,p_dino_thhold_ect,p_dino_kNO3,p_dino_kNH4,p_dino_kPO4,p_dino_mort,      &
                      p_dino_iksmith,p_dino_thhold_mort
@@ -151,14 +166,24 @@
 #endif
    NAMELIST/nammesozoo/ p_mesz_thrN,p_mesz_kivlev,p_mesz_mumax,p_mesz_assim,      &
                         p_mesz_excret,p_mesz_mort1,p_mesz_mort2,p_zoo_CDWratio,    &
+#if defined GAMELAG
+                        p_mesz_reg,p_zoo_NPratio,p_mesz_DOcrit,p_mesz_aO2,           &
+#endif                        
                         p_zoo_CNratio,p_mesz_thhold_mes_kivlev,p_mesz_thhold_mort
    NAMELIST/nammicrozoo/ p_micz_mumax,p_micz_kgraz,p_micz_assim,p_micz_excret,p_micz_mort,   &
+#if defined GAMELAG
+                         p_micz_reg,p_micz_DOcrit,p_micz_aO2,  &
+#endif   
                          p_micz_thrnano,p_micz_thhold_mort
 
 #ifdef key_BLOOM_opt2
    NAMELIST/namoxygen/ p_phyto_photoratio,p_kO2_reminO2,p_nitrif,p_phyto_resp,p_zoo_resp
 #else
-   NAMELIST/namoxygen/ p_phyto_photoratio,p_phyto_resp,p_zoo_resp,p_KO2sed_aeration,p_Kzsed_aeration
+   NAMELIST/namoxygen/ p_phyto_photoratio,p_phyto_resp,p_zoo_resp,                              &
+#if defined GAMELAG
+                       p_O2_Threshold,p_O2SED_Threshold,p_R_photo,p_Q_photo,                                      &
+#endif
+                       p_KO2sed_aeration,p_Kzsed_aeration
 #endif
    NAMELIST/namoptics/ p_extincwat,p_extincspim,p_extincChl1,p_extincChl2,p_parradratio
 #if defined key_benthos
@@ -178,6 +203,9 @@
 #endif
 #endif
    NAMELIST/namgrazing/ p_mesz_captdiat,p_mesz_captdino,p_mesz_captmicz,p_micz_captdiat,      &
+#if defined GAMELAG
+                        p_mesz_captnano,                                                      &
+#endif                        
                         p_micz_captnano,p_micz_captdet,p_micz_captdino,p_txfiltbenthmax
 #ifdef key_ulvas
    NAMELIST/namulva/ p_ulv_mumax,p_ulv_iksmith,p_ulv_kNO3,p_ulv_kPO4,p_ulv_maxabsN,   &
@@ -218,7 +246,16 @@
                           p_oysDEB_ae,p_oysDEB_pm0,p_oysDEB_ERlim,p_oysDEB_kchl, &
                           p_oysDEB_muE
 #endif
-
+#ifdef key_oyster_DEB_GAMELAG
+   NAMELIST/namoysterdeb_gamelag/Ta,Tl,Th,Tal,Tah,T1 , &
+                                 Jxm,Pm_deb,XkN_SPAT,XkP_SPAT,XkN_OYST,XkP_OYST, &
+                                 KappaX,Em,Eg,Kappa,deltam,Lp,T_spawn, GSR_spawn, &
+                                 muE, d_v, T_im, dgo,Eggo,Ygo, &
+                                 Yv, KappaGo, muE_N,muV,muGo,alpha_PS,alpha_PL,alpha_ZS,alpha_ZL, &
+                                 alpha_PON,alpha_POP,NP_oyster,C_oyster, &
+                                 BioDpo,DOcrit,DOcrit_MR,bDO,OMR_DO,OMR_Dpo, &
+                                 epsOyst,oyster_mortality,DOcrit
+#endif
 #if defined key_microtracers
    NAMELIST/nammicrotrace/ p_trace_debitinject,p_trace_depth1inject,p_trace_depth2inject,p_trace_depth3inject
 #endif
@@ -326,6 +363,9 @@ IF(rw == 'r')THEN
 #endif
 #ifdef key_oyster_DEB
    READ(50,namoysterDEB)
+#endif
+#ifdef key_oyster_DEB_GAMELAG
+   READ(50,namoysterDEB_GAMELAG)
 #endif
 #if defined key_microtracers
    READ(50,nammicrotrace)
@@ -447,6 +487,9 @@ ELSE
 #ifdef key_oyster_DEB
      MPI_master_only  WRITE(iscreenlog,namoysterDEB)
 #endif
+#ifdef key_oyster_DEB_GAMELAG
+     MPI_master_only  WRITE(iscreenlog,namoysterDEB_GAMELAG)
+#endif
 #if defined key_psnz
      MPI_master_only  WRITE(iscreenlog,nampsnz)
 #endif	     
@@ -564,6 +607,16 @@ ENDIF
      CASE('cumulative_nanoflagellate_production_expressed_as_carbon_in_sea_water')
 #endif
        iv_phyto_nano_pp = irk_mod(iv)
+#if defined GAMELAG
+     CASE('mole_concentration_of_dissolved_organic_detritus_expressed_as_nitrogen_in_sea_water')
+       iv_diss_detr_N = irk_mod(iv)
+     CASE('mole_concentration_of_dissolved_refractory_organic_detritus_expressed_as_nitrogen_in_sea_water')
+       iv_diss_detrR_N = irk_mod(iv)
+     CASE('mole_concentration_of_dissolved_organic_detritus_expressed_as_phosphorus_in_sea_water')
+       iv_diss_detr_P = irk_mod(iv)
+     CASE('mole_concentration_of_dissolved_refractory_organic_detritus_expressed_as_phosphorus_in_sea_water')
+       iv_diss_detrR_P = irk_mod(iv)       
+#endif
 #if defined key_psnz
      CASE('mole_concentration_of_pseudonitzschia_expressed_as_nitrogen_in_sea_water')
        iv_phyto_psnz_N = irk_mod(iv)
@@ -717,6 +770,18 @@ ENDIF
 !       iv_oysdeb_str3 = irk_mod(iv)
 !     CASE('oysdeb_gon3')
 !       iv_oysdeb_gon3 = irk_mod(iv)
+#endif
+#ifdef key_oyster_DEB_GAMELAG
+     CASE('oysdeb')
+       iv_oysdeb = irk_mod(iv)
+     CASE('oysdeb_E_V')
+       iv_oysdeb_E_V = irk_mod(iv)
+     CASE('oysdeb_E_GO')
+       iv_oysdeb_E_GO = irk_mod(iv)
+     CASE('oysdeb_E')
+       iv_oysdeb_E = irk_mod(iv)
+     CASE('oysdeb_E_R')
+       iv_oysdeb_E_R = irk_mod(iv)
 #endif
 #ifdef key_benthos
      CASE('mole_concentration_of_organic_detritus_expressed_as_nitrogen_in_benthos')
@@ -1073,6 +1138,12 @@ ENDIF
        MPI_master_only WRITE(iscreenlog,*) 'iv_diss_Si = ',iv_diss_Si
        MPI_master_only WRITE(iscreenlog,*) 'iv_diss_fond_Nitr = ',iv_diss_fond_Nitr
 #endif
+#if defined GAMELAG
+       MPI_master_only WRITE(iscreenlog,*) 'iv_diss_detr_N = ',iv_diss_detr_N
+       MPI_master_only WRITE(iscreenlog,*) 'iv_diss_detrR_N = ',iv_diss_detrR_N
+       MPI_master_only WRITE(iscreenlog,*) 'iv_diss_detr_P = ',iv_diss_detr_P
+       MPI_master_only WRITE(iscreenlog,*) 'iv_diss_detrR_P = ',iv_diss_detrR_P
+#endif
 #if defined key_psnz
        MPI_master_only WRITE(iscreenlog,*) 'iv_phyto_psnz_N = ',iv_phyto_psnz_N
        MPI_master_only WRITE(iscreenlog,*) 'iv_phyto_psnz_Si = ',iv_phyto_psnz_Si
@@ -1152,6 +1223,13 @@ ENDIF
 !     WRITE(iscreenlog,*) 'iv_oysdeb_res3 = ',iv_oysdeb_res3
 !     WRITE(iscreenlog,*) 'iv_oysdeb_str3 = ',iv_oysdeb_str3
 !     WRITE(iscreenlog,*) 'iv_oysdeb_gon3 = ',iv_oysdeb_gon3
+#endif
+#ifdef key_oyster_DEB
+     MPI_master_only WRITE(iscreenlog,*) 'iv_oysdeb = ',iv_oysdeb
+     MPI_master_only WRITE(iscreenlog,*) 'iv_oysdeb_E = ',iv_oysdeb_E
+     MPI_master_only WRITE(iscreenlog,*) 'iv_oysdeb_E_V = ',iv_oysdeb_E_V
+     MPI_master_only WRITE(iscreenlog,*) 'iv_oysdeb_E_R = ',iv_oysdeb_E_R
+     MPI_master_only WRITE(iscreenlog,*) 'iv_oysdeb_E_GO = ',iv_oysdeb_E_GO
 #endif
 #ifdef key_benthos
        MPI_master_only WRITE(iscreenlog,*) 'iv_benth_N = ',iv_benth_N
@@ -1387,6 +1465,9 @@ ENDIF
                 iv_oysdeb_res+iv_oysdeb_str+iv_oysdeb_gon + &
                 iv_oysdeb_res2+iv_oysdeb_str2+iv_oysdeb_gon2 + &
 !                iv_oysdeb_res3+iv_oysdeb_str3+iv_oysdeb_gon3 + &
+#endif
+#ifdef key_oyster_DEB_GAMELAG
+                iv_oysdeb+iv_oysdeb_E+iv_oysdeb_E_V+iv_oysdeb_E_R+iv_oysdeb_E_GO + &
 #endif
 #ifdef key_benthos
                 iv_benth_N+iv_benth_Si+iv_benth_P + &
@@ -3088,7 +3169,7 @@ ENDIF
    INTEGER, INTENT(IN)                                        :: ifirst,ilast,jfirst,jlast
 
    !! * Local declarations
-   INTEGER  :: i,j,iv
+   INTEGER  :: i,j,iv,k
 #if defined key_oyster_benthos || defined key_oyster_DEB
    !REAL(kind=rsh)                :: surfcad,nbfilt,nbmail
    REAL(kind=rsh)                :: biom_huitre,poids_indv
@@ -3100,6 +3181,8 @@ ENDIF
 #endif
 #if defined key_oyster_DEB
    !CHARACTER(LEN=lchain)         :: fic_chloro
+#elif defined key_oyster_DEB_GAMELAG
+   REAL(kind=rsh)                :: V
 #elif defined key_oyster_SFG
     INTEGER                       :: compt,compt2   ! compteurs qui servent pour tester la profondeur de la maille
 #endif
@@ -3289,7 +3372,7 @@ ENDIF
     DO j=jfirst,jlast
       DO i=ifirst,ilast
         IF(BATHY_H0(i,j).lt.25.0_rsh .AND. BATHY_H0(i,j) > -valmanq) THEN
-            nbhuitre(i,j)=densite_huitre*CELL_SURF(i,j)
+            nbhuitre(i,j)=30
             hautable(i,j)=1.0_rsh
         ENDIF
       ENDDO
@@ -3315,15 +3398,9 @@ ENDIF
       DO i=ifirst,ilast
         !IF ((nbhuitre(i,j).ne.0.0_rsh) .and. (.NOT.l_init_rtime)) THEN
         IF ((nbhuitre(i,j).ne.0.0_rsh)) THEN
-!         WATER_CONCENTRATION(iv_oysdeb_res,1,i,j)=5000.0_rsh
-!         WATER_CONCENTRATION(iv_oysdeb_gon,1,i,j)=500.0_rsh
-!         WATER_CONCENTRATION(iv_oysdeb_str,1,i,j)=1900.0_rsh
-         iv=iv_oysdeb_res
-         BENTHIC_CONCENTRATION(BENTH_INDEXij)=50.0_rsh
-         iv=iv_oysdeb_gon
-         BENTHIC_CONCENTRATION(BENTH_INDEXij)=500.0_rsh
-         iv=iv_oysdeb_str
-         BENTHIC_CONCENTRATION(BENTH_INDEXij)=310.0_rsh
+         BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_res-nv_adv)=50.0_rsh
+         BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_gon-nv_adv)=500.0_rsh
+         BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_str-nv_adv)=310.0_rsh
 !         WATER_CONCENTRATION(iv_oysdeb_gon,1,i,j)=2656.0_rsh
         ENDIF
         !IF ((nbhuitre2(i,j).ne.0.0_rsh) .and. (.NOT.l_init_rtime)) THEN
@@ -3349,8 +3426,8 @@ ENDIF
 !         WATER_CONCENTRATION(iv_oysdeb_str3,1,i,j)=10160.0_rsh
 !        endif
       ENDDO
-      ENDDO    
-      MPI_master_only WRITE(*,*)'fin init huitre deb'
+      ENDDO 
+      MPI_master_only WRITE(*,*)'fin init. huitre deb'
 !   Mortalites journaliere par mois et par cohortes
 !       do itm=1,12
 !         txmorthuitco1(itm)=2.7e-4*2.
@@ -3417,6 +3494,28 @@ ENDIF
 !   CALL_MPI ex_i_rsh(-1,2,NBVARADV_TOT*kmax,liminm1,limaxp2,ljminm1,ljmaxp2,cv_wat(:,:,liminm1:limaxp2,ljminm1:ljmaxp2))
 
 #endif 
+
+#ifdef key_oyster_DEB_GAMELAG
+write(*,*)'debut init huitre deb'
+  DO j=jfirst,jlast
+    DO i=ifirst,ilast
+      !oyster number
+      BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb-nv_adv)=30.0_rsh
+    ENDDO
+  ENDDO 
+  DO j=jfirst,jlast
+    DO i=ifirst,ilast
+      IF ((BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb-nv_adv).ne.0.0_rsh)) THEN
+        V=4.73
+        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_V-nv_adv) = V * (muV*d_v)
+        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E-nv_adv)=14700.0_rsh
+        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_R-nv_adv)=4704.0_rsh
+        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_GO-nv_adv)=0.0_rsh      
+      ENDIF
+    ENDDO
+  ENDDO 
+#endif 
+    
 !#ifdef key_larve
 !		i_ponte=0
 !#endif

@@ -65,6 +65,13 @@
             iv_detr_fond_N,      & ! index for detritus cumulated in bottom of last wat layer
             iv_diss_fond_Nitr      ! index for diss nitr (N2) issued from det in last wat layer
 #endif
+#if defined GAMELAG
+   INTEGER, PUBLIC   :: &
+            iv_diss_detr_N,           & ! index for dissolved detrital nitrogen
+            iv_diss_detr_P,           & ! index for dissolved detrital phosphate
+            iv_diss_detrR_N,           & ! index for dissolved refractory detrital nitrogen
+            iv_diss_detrR_P           ! index for dissolved refractory detrital phosphate
+#endif           
 #if defined key_psnz
    INTEGER, PUBLIC   :: &
             iv_phyto_psnz_N, &   ! index for PseudoNitzschia as nitrogen
@@ -142,6 +149,14 @@
             iv_oysdeb_res3,     &   ! index for oyster supplies
             iv_oysdeb_str3,     &   ! index for oyster structures
             iv_oysdeb_gon3          ! index for oyster gonades
+#endif
+#ifdef key_oyster_DEB_GAMELAG
+   INTEGER, PUBLIC   :: &
+            iv_oysdeb,     &   ! index for oyster number
+            iv_oysdeb_E,     &   ! index for oyster supplies
+            iv_oysdeb_E_V,     &   ! index for oyster structures
+            iv_oysdeb_E_R,     &   ! index for oyster reproduction
+            iv_oysdeb_E_GO          ! index for oyster gonades
 #endif
 #ifdef key_benthos
    INTEGER, PUBLIC   :: &
@@ -335,6 +350,43 @@
                    p_diat_kSi,         &
                    p_diat_kPO4,        &
                    p_diat_iksmith,     &
+#ifdef GAMELAG
+                   p_diat_excret,      &
+                   p_nano_excret,      &
+                   p_nano_phy_NH4,     & 
+                   p_mesz_captnano,    &
+                   p_mesz_reg,         &
+                   p_micz_reg,         &
+                   p_O2_Threshold,     &
+                   p_O2SED_Threshold,     &
+                   p_kO2_nit_wat,      &
+                   p_nitrif_wat,       &
+                   p_R_photo,          &
+                   p_Q_photo,          &
+                   p_labi,             &
+                   p_K_lP_max,         &
+                   p_K_rP_max,         &
+                   p_Temp_opt_OM,      &
+                   p_Temp_width_OM,    &
+                   p_Vmax_lD,          &
+                   p_Vmax_rD,          &
+                   p_K_l_N,            &
+                   p_K_r_N,            &
+                   p_K_l_P,            &
+                   p_K_r_P,            &
+                   p_gamma,            &
+                   p_epsilon,          &
+                   p_K_min,            &
+                   p_zoo_NPratio,      &
+                   p_diat_DOcrit,        &
+                   p_nano_DOcrit,        &
+                   p_diat_aO2,           &
+                   p_nano_aO2,           &
+                   p_micz_DOcrit,      & 
+                   p_micz_aO2,         &
+                   p_mesz_DOcrit,      & 
+                   p_mesz_aO2,         &  
+#endif
 !#if defined key_BLOOM_opt2
                    p_diat_mort,        &
 !#else
@@ -648,23 +700,71 @@
                    p_oysDEB_ERlim,             &
                    p_oysDEB_kchl,              &
                    p_oysDEB_muE 
+#endif
+#ifdef key_oyster_DEB_GAMELAG
+           REAL(KIND=rsh), PUBLIC       ::     &
+                   Ta,                &
+                   T1,                &
+                   Tl,                &
+                   Th,                &
+                   Tal,               &
+                   Tah,               &
+                   Jxm,               &
+                   Pm_deb,                &
+                   XkN_SPAT,          &
+                   XkP_SPAT,          &
+                   XkN_OYST,          &
+                   XkP_OYST,          &
+                   KappaX,            &
+                   Em,                &
+                   Eg,                &
+                   Kappa,             &
+                   deltam,            &
+                   Lp,                &
+                   T_spawn,           &
+                   GSR_spawn,         &
+                   muE,               &
+                   d_v,               &
+                   T_im,              &
+                   dgo,               &
+                   Eggo,              &
+                   Ygo,               &
+                   Yv,                &
+                   KappaGo,           &
+                   muE_N,             &
+                   muV,               &
+                   muGo,              &
+                   alpha_PS,          &
+                   alpha_PL,          &
+                   alpha_ZS,          &
+                   alpha_ZL,          &
+                   alpha_PON,         &
+                   alpha_POP,         &
+                   NP_oyster,         &
+                   C_oyster,          &
+                   BioDpo,            &
+                   DOcrit,            &
+                   DOcrit_MR,         &
+                   bDO,               &
+                   OMR_DO,            &
+                   OMR_Dpo,           &
+                   epsOyst,           &
+                   oyster_mortality
 #endif	  
 #ifdef key_microtracers
    REAL(KIND=rsh), PUBLIC       ::      &
                    p_trace_debitinject, &
                    p_trace_depth1inject,&
-                   p_trace_depth2inject,&
+                   p_trace_depth3inject,&
                    p_trace_depth3inject
 #endif
 #if defined key_N_tracer
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE, PUBLIC       :: p_marque_tracerN
    INTEGER,PUBLIC                                          :: nb_source_tracerN,nb_source_river_tracerN,nb_source_marin_tracerN
    CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE, PUBLIC  :: name_source_tracerN
-   REAL(KIND=rsh)                                          :: p_marqueNH4,p_marqueNO3,p_marquenanoN,p_marquedinoN,p_marquediatN,  &
-                                                              p_marquemicrN,p_marquemesoN,p_marquedetN
-   REAL(KIND=rsh),PUBLIC                                   :: tdeb_tracerN
-   CHARACTER(LEN=lchain)                                   :: p_source_river1_tracerN,p_source_river2_tracerN,   &
-                                                              p_source_river3_tracerN,p_source_river4_tracerN
+   REAL(KIND=rsh)                                          :: p_marqueNH4,p_marqueNO3,p_marquenanoN,p_marquedinoN,p_marquediatN,  &p_marquemicrN,p_marquemesoN,p_marquedetNREAL(KIND=rsh),PUBLIC                                    :: tdeb_tracerN
+   CHARACTER(LEN=lchain )                                  :: p_source_river1_tracerN,p_source_river2_tracerN,   &
+                                                              p_source_river3_traerN,p_source_river4_tracerN
 #endif
 #if defined key_P_tracer
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE, PUBLIC       :: p_marque_tracerP

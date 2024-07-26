@@ -452,9 +452,9 @@
    ! variables mesozooplancton
    ! -------------------------   
    REAL(KIND=rsh) :: totproiebrut,totproie,fmesozoo
-   REAL(KIND=rsh) :: captdiatmeso,captdino,captmicrozoo,captmicrozooN
+   REAL(KIND=rsh) :: captdiatmeso,captdino,captmicrozoo,captmicrozooN,captnanomeso
    REAL(KIND=rsh) :: meso_kivlev, rationmesozoo, rNC
-   REAL(KIND=rsh) :: broumesozoodiat,broumesozoodino,broumesozoomicrozoo
+   REAL(KIND=rsh) :: broumesozoodiat,broumesozoodino,broumesozoomicrozoo,broumesozoonano
    REAL(KIND=rsh) :: txmortmesozoo,assimilmesozoo,excretionmesozoo 
      
 #ifdef key_phaeocystis
@@ -504,7 +504,14 @@
    
    ! variables mineralisation
    ! ------------------------
+   
+#ifdef GAMELAG
+   REAL(KIND=rsh) :: xnitrifeau,dissolsiliceeau,K_lP,K_rP, V_lD, V_rD
+   REAL(KIND=rsh) :: f_O2_min,elys_l_DON,elys_r_DON,elys_l_DOP,elys_r_DOP,reminpdeteau
+   REAL(KIND=rsh) :: O2_sat_deb, PO2_sat, WEISS_T,WEISS_S,tempK
+#else
    REAL(KIND=rsh) :: xnitrifeau,reminazdeteau,reminpdeteau,dissolsiliceeau 
+#endif
 
    ! parametrisation broutage par benthos
    ! ------------------------------------
@@ -674,6 +681,20 @@
    REAL(KIND=rsh) :: lysemax,amaigmax,px
 #endif
 
+#ifdef key_oyster_DEB_GAMELAG  
+   ! variables used in include incellwat_bloom_oysterDEB_GAMELAG
+   ! ---------------------------------------------------
+   REAL(KIND=rsh) :: V,V_2_3,L,L_m, DFM, kTO 
+   REAL(KIND=rsh) :: Xtot_N, Xtot_P, f_nut, oyster_density
+   REAL(KIND=rsh) :: E, E_V, E_GO, E_R, Vp, spaw
+   REAL(KIND=rsh) :: cDO
+   real(KIND=rsh) :: GSR,pA,pC1,pC2,pMt,pG,pJ,pR,pL1,pL2,pM1,pM2,pGo,pX
+   real(KIND=rsh) :: NP_X,Oyster_feces_N, Oyster_feces_P, N_regen_oyster, P_regen_oyster
+   real(KIND=rsh) :: G_oyster_PS, G_oyster_PL, G_oyster_ZS, G_oyster_ZL
+   real(KIND=rsh) :: G_oyster_POP,G_oyster_PON, NMOR_oyster, PMOR_oyster
+   real(KIND=rsh) :: NH4_oyster, PO4_oyster, respOyst
+#endif
+
 #ifdef key_N_tracer  
    ! variables used in include incellwat_bloom_nitrogentracer
    ! ---------------------------------------------------
@@ -706,6 +727,10 @@
 
 #ifdef MUSTANG
    REAL(KIND=rsh)  :: tocdpe,depo
+#endif
+#ifdef GAMELAG
+   REAL(KIND=rsh)  :: Chla,kI,z_phyto,I_phyto
+   INTEGER             :: kk     
 #endif
 
   !! * Executable part
@@ -810,6 +835,7 @@
           ! temperature & effetchaleur
           tempabs=TEMP_BIOLink(k,i,j)+273.15_rsh
           temper=max(0.0_rsh,TEMP_BIOLink(k,i,j))
+
    ! 
           IF (temper > 30.0_rsh) THEN
              write(*,*) '!!!!!tempwat>30 !!!!!!! (forcee a 30degres)',ijour_BIOLINK,imois_BIOLINK,iheure_BIOLINK,k,i,j,temper
@@ -841,6 +867,20 @@
           ENDIF
 #else
           txfiltbenthij=txfiltbenth
+#endif
+
+#ifdef GAMELAG
+              ! O2 variables 
+              !!!!!!!!!!!!!!!!!!!!
+              ! O2 saturation
+tempK=temper+273.15
+WEISS_T = 1.42905*exp(-173.4292 + 249.6329*(100./tempK) + 143.3482*log(tempK/100.)-21.8492*(tempK/100.))
+WEISS_S = exp(sali*(-0.033096 + 0.014259*(tempK/100.) - 0.0017*((tempK/100.)**2)))
+O2_sat_deb = WEISS_T * WEISS_S  ! gO2.m-3
+
+!  T. Guyondet comment in GAMELAG to include effect of low O2 on oyster physiology (19/10/2022)
+PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
+
 #endif
 
 !        Filtrage benthique par huitres/moules/crepidules
@@ -889,6 +929,53 @@
     ! ---------
           ! Effetlumiere : Formulation de Smith integree sur la profondeur de la boite
           ! ............................................................
+
+
+#ifdef GAMELAG
+            Chla =(c(iv_phyto_diat_N)+c(iv_phyto_dino_N)+c(iv_phyto_nano_N))*p_phyto_ChlNratio !! in mg Chla/m3
+            kI = 0.04 + 0.0377* (c(iv_detr_N)+c(iv_detrR_N))*8.6*12/1000/0.35 + 0.161*Chla**0.721 !! m-1   !l'equation vient de gohin et al.2005   ratio C:N MO: 8.6 Sterner et al. 2008, pour passer en gC et gdw 35% (Zaldivar et al. 2005)
+
+            
+            z_phyto=0.
+            do kk=NB_LAYER_WAT,k+1,-1
+            z_phyto=z_phyto+thicklayerW_C(kk,i,j)
+            enddo
+            z_phyto=z_phyto+0.5*thicklayerW_C(k,i,j)
+
+            I_phyto = PAR_top_layer(NB_LAYER_WAT,i,j)*exp(-kI*z_phyto) !! in W/m2
+
+            if (I_phyto<p_diat_iksmith) then 
+               effetlumierediat =   (I_phyto/p_diat_iksmith)*exp(-(I_phyto/p_diat_iksmith))
+            else
+               effetlumierediat = 1.
+            endif
+
+
+            effetnitdiat = (c(iv_nutr_NO3)/(c(iv_nutr_NO3)+c(iv_nutr_NH4)+p_diat_kNO3)) !! Adim
+            effetamdiat = (c(iv_nutr_NH4)/(c(iv_nutr_NO3)+c(iv_nutr_NH4)+p_diat_kNO3)) !! Adim
+            effetazotediat=effetnitdiat+effetamdiat
+
+            effetphosphorediat=c(iv_nutr_PO4)/(c(iv_nutr_PO4)+p_diat_kPO4)
+            effetselnutdiat=min(effetazotediat,effetphosphorediat)
+            
+            pslimdiat=effetlumierediat*effetselnutdiat
+
+            rationdiat=p_diat_mumax*effetchaleur*pslimdiat
+
+            excretdiat=p_diat_excret
+
+            !THG Modif adding low O2 effect as increased lysis  (01/11/2022)
+            if (PO2_sat.gt.p_diat_DOcrit) then
+              diatmorteau=p_diat_mort
+            else
+              diatmorteau=p_diat_aO2*(1-PO2_sat/(p_diat_DOcrit+0.1)) + p_diat_mort 
+            endif
+#ifdef GAMELAG_EXACT
+            excretdiat=excretdiat*c(iv_phyto_diat_N)/(c(iv_phyto_diat_N)+0.01)         
+            diatmorteau=diatmorteau*c(iv_phyto_diat_N)/(c(iv_phyto_diat_N)+0.01)
+#endif
+
+#else
 #ifdef key_physadaptation
 #ifdef key_MANGAbio
           ! effet de la latitude en plus
@@ -941,6 +1028,8 @@
 !#endif
           IF(c(iv_phyto_diat_N).le.p_diat_thhold_mort) diatmorteau=0.0_rsh
 
+#endif 
+
 
    ! DINOFLAGELLES
    ! -------------
@@ -984,6 +1073,47 @@
           IF(c(iv_phyto_dino_N).le.p_dino_thhold_mort) dinomorteau=0.0_rsh
 
    ! NANOPICOPLANCTON
+
+#ifdef GAMELAG      
+
+            Chla =(c(iv_phyto_diat_N)+c(iv_phyto_dino_N)+c(iv_phyto_nano_N))*p_phyto_ChlNratio !! in mg Chla/m3
+            kI = 0.04 + 0.0377* (c(iv_detr_N)+c(iv_detrR_N))*8.6*12/1000/0.35 + 0.161*Chla**0.721 !! m-1   !l'equation vient de gohin et al.2005   ratio C:N MO: 8.6 Sterner et al. 2008, pour passer en gC et gdw 35% (Zaldivar et al. 2005)
+            z_phyto=0.
+            do kk=NB_LAYER_WAT,k+1,-1
+            z_phyto=z_phyto+thicklayerW_C(kk,i,j)
+            enddo
+            z_phyto=z_phyto+0.5*thicklayerW_C(k,i,j)
+
+            I_phyto = PAR_top_layer(NB_LAYER_WAT,i,j)*exp(-kI*z_phyto) !! in W/m2
+
+            if (I_phyto<p_nano_iksmith) then 
+               effetlumierenano =   (I_phyto/p_nano_iksmith)*exp(-(I_phyto/p_nano_iksmith))
+            else
+               effetlumierenano = 1.
+            endif
+         
+
+            effetnitnano = (c(iv_nutr_NO3)/(c(iv_nutr_NO3)+p_nano_kNO3)) *exp(-p_nano_phy_NH4*c(iv_nutr_NH4))
+            effetamnano = (c(iv_nutr_NH4)/(c(iv_nutr_NH4)+p_nano_kNO3)) !! Adim
+            effetazotenano=effetnitnano+effetamnano
+
+            effetphosphorenano=c(iv_nutr_PO4)/(c(iv_nutr_PO4)+p_nano_kPO4)
+
+            effetselnutnano=min(effetazotenano,effetphosphorenano)
+            
+            pslimnano=effetlumierenano*effetselnutnano
+            rationnano=p_nano_mumax*effetchaleur*pslimnano
+
+            excretnano=p_nano_excret
+
+            !THG Modif adding low O2 effect as increased lysis  (01/11/2022)
+            if (PO2_sat.gt.p_nano_DOcrit) then
+               nanomorteau=p_nano_mort
+            else
+               nanomorteau=p_nano_aO2*(1-PO2_sat/(p_nano_DOcrit+0.1)) + p_nano_mort 
+             endif
+
+#else
    ! ----------------
           ! Effetlumiere : Formulation de Smith integree sur la profondeur de la boite
           ! ............................................................
@@ -1013,6 +1143,12 @@
           pslimnano=min(effetlumierenano,effetselnutnano)
           rationnano=p_nano_mumax*effetchaleur*pslimnano
 
+          excretnano=0.0_rsh
+          nanomorteau=p_nano_mort*effetchaleur
+          IF (c(iv_phyto_nano_N).lt.p_nano_thhold_mort) nanomorteau=0.0_rsh
+
+#endif
+
           IF (effetazotediat.gt.0.000001_rsh) THEN
            fractionno3diat=effetnitdiat/effetazotediat
            fractionnh4diat=effetamdiat/effetazotediat
@@ -1034,10 +1170,6 @@
            fractionno3nano=0.0_rsh
            fractionnh4nano=0.0_rsh
           ENDIF
-
-          excretnano=0.0_rsh
-          nanomorteau=p_nano_mort*effetchaleur
-          IF (c(iv_phyto_nano_N).lt.p_nano_thhold_mort) nanomorteau=0.0_rsh
 
    !+++++++++++++++++++++++++++++++++++++++++++++
    ! Croissance et mortalite du zooplancton
@@ -1071,11 +1203,17 @@
 #else
           ! dans l option 1 le zoo est exprime en azote
           captdiatmeso=c(iv_phyto_diat_N)*p_mesz_captdiat    !en microMolN.l-1
+#ifdef GAMELAG_EXACT
+          captdiatmeso=captdiatmeso*c(iv_phyto_diat_N)/(c(iv_phyto_diat_N)+0.01) 
+#endif
+#ifdef GAMELAG
+          captnanomeso=c(iv_phyto_nano_N)*p_mesz_captnano    !en microMolN.l-1
+#endif
           captdino=c(iv_phyto_dino_N)*p_mesz_captdino        !en microMolN.l-1
           captmicrozoo=c(iv_zoo_micr_N)*p_mesz_captmicz      !en microMolN.l-1
           rNC=1.0_rsh
           captmicrozooN=captmicrozoo*rNC                     ! en microMolN.l-1
-          totproiebrut=captdiatmeso+captdino+captmicrozoo
+          totproiebrut=captdiatmeso+captdino+captmicrozoo+captnanomeso
           p_mesz_thrN_turb=p_mesz_thrN*effetturbidite
 #endif
 
@@ -1116,14 +1254,20 @@
 
             fmesozoo=1.0_rsh-exp(-meso_kivlev*totproie)              ! food lim [0-1]
             rationmesozoo=p_mesz_mumax*effetchaleur*fmesozoo     ! specif growth rate d-1
+
 #if defined key_BLOOM_opt2
 !           Cas ou le taux d assimilation varie selon le taux de repletion  
 !           assimilation depend de quantitee ingeree Hofmann & Hambler, 1988 J.M.R  
             assimilmesozoo=0.3_rsh*(3.0_rsh-0.67_rsh*fmesozoo)       ! ass rate s.u.
+#elif defined GAMELAG
+            assimilmesozoo=p_mesz_assim
 #else
             assimilmesozoo=0.3_rsh*(3.0_rsh-0.67_rsh*fmesozoo)       ! ass rate s.u.
 #endif
             broumesozoodiat=rationmesozoo*captdiatmeso/totproiebrut                 ! d-1
+#ifdef GAMELAG
+            broumesozoonano=rationmesozoo*captnanomeso/totproiebrut                 ! d-1
+#endif                      
             broumesozoodino=rationmesozoo*captdino/totproiebrut                 ! d-1
             ! captmicrozooN=captmicrozoo dans option 1 : converti en azote dans l option2
             broumesozoomicrozoo=rationmesozoo*captmicrozooN/totproiebrut         ! d-1
@@ -1144,6 +1288,9 @@
             assimilmesozoo=0.0_rsh
             rationmesozoo=0.0_rsh
             broumesozoodiat=0.0_rsh
+#ifdef GAMELAG
+            broumesozoonano=0.0_rsh
+#endif   
             broumesozoodino=0.0_rsh
             broumesozoomicrozoo=0.0_rsh
 #ifdef key_psnz   
@@ -1157,11 +1304,28 @@
 #endif
           ENDIF
 
+#if defined GAMELAG
+          excretionmesozoo=max(p_mesz_reg*rationmesozoo, p_mesz_excret * effetchaleur) ! specif excret rate d-1
+
+
+            !THG Modif adding low O2 effect as increased lysis  (01/11/2022)
+          if (PO2_sat.gt.p_mesz_DOcrit) then
+            txmortmesozoo=p_mesz_mort1*effetchaleur
+         else
+            txmortmesozoo=p_mesz_aO2*(1-PO2_sat/(p_mesz_DOcrit+0.1)) + p_mesz_mort1*effetchaleur
+          endif
+
+#if defined GAMELAG_EXACT
+          excretionmesozoo=excretionmesozoo*c(iv_zoo_meso_N)/(c(iv_zoo_meso_N)+0.0001)
+          txmortmesozoo=txmortmesozoo*c(iv_zoo_meso_N)/(c(iv_zoo_meso_N)+0.0001)
+#endif
+
+#else
           excretionmesozoo=p_mesz_excret*effetchaleur*fmesozoo ! specif excret rate d-1
           txmortmesozoo=(p_mesz_mort1+p_mesz_mort2*c(iv_zoo_meso_N))*effetchaleur ! specif mort rate d-1
+#endif
 
           IF (c(iv_zoo_meso_N).lt.p_mesz_thhold_mort)  txmortmesozoo=0.0_rsh
-
 
    ! MICROZOOPLANCTON
    ! ----------------
@@ -1231,10 +1395,18 @@
           totproie=max(0.0_rsh,(totproiebrut-p_micz_thrnano)) ! en microgMolN.l-1
           IF (totproie .ne. 0.0_rsh) THEN
 #endif
+
+#ifdef GAMELAG
+             fmicrozoo=1.0_rsh-exp(-p_micz_kgraz*totproie)              ! food lim [0-1] 
+#else
              fmicrozoo=totproie/(p_micz_kgraz+totproie)                              ! food lim [0-1]
+#endif
              rationmicrozoo=p_micz_mumax*effetchaleur*fmicrozoo      ! specif growth rate d-1
+
 #if defined key_BLOOM_opt2
 !             version  assimilation constante
+             assimilmicrozoo=p_micz_assim
+#elif defined GAMELAG
              assimilmicrozoo=p_micz_assim
 #else
 !             assimilation depend de la quantite ingeree Hofmann & Hambler, 1988 J.M.R  
@@ -1272,32 +1444,80 @@
 #endif
           ENDIF
 
+#if defined GAMELAG
+          excretionmicrozoo=max(p_micz_reg*rationmicrozoo, p_micz_excret * effetchaleur) ! specif excret rate d-1
+         !THG Modif adding low O2 effect as increased lysis  (01/11/2022)
+
+          if (PO2_sat.gt.p_micz_DOcrit) then
+            txmortmicrozoo=p_micz_mort*effetchaleur
+         else
+            txmortmicrozoo=p_micz_aO2*(1-PO2_sat/(p_micz_DOcrit+0.1)) + p_micz_mort*effetchaleur 
+          endif
+#if defined GAMELAG_EXACT
+          excretionmicrozoo=excretionmicrozoo*c(iv_zoo_micr_N)/(c(iv_zoo_micr_N)+0.0001)
+          txmortmicrozoo=txmortmicrozoo*c(iv_zoo_micr_N)/(c(iv_zoo_micr_N)+0.0001)
+#endif
+
+#else
           excretionmicrozoo=p_micz_excret*effetchaleur*fmicrozoo ! specif excret rate d-1
           txmortmicrozoo=(p_micz_mort+p_mesz_mort2*c(iv_zoo_micr_N))*effetchaleur! specif excret rate d-1
+         
 
-          IF (c(iv_zoo_micr_N).lt.p_micz_thhold_mort) txmortmicrozoo=0.0_rsh 
-
-#if defined key_oxygen
+#if defined key_oxygen 
           IF (c(iv_oxygen).lt.0.2_rsh) THEN
             txmortmicrozoo=100.0_rsh*txmortmicrozoo
             txmortmesozoo=100.0_rsh*txmortmesozoo  
           ENDIF
 #endif
+#endif
+          IF (c(iv_zoo_micr_N).lt.p_micz_thhold_mort) txmortmicrozoo=0.0_rsh 
+
+
    !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    ! Remineralisation de la matiere detritique dans l eau
    !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-          reminazdeteau=p_N_remin*effetchaleur
-          xnitrifeau=p_nitrif*effetchaleur
+#if defined GAMELAG
+          xnitrifeau=p_nitrif_wat*effetchaleur* max(p_O2_Threshold,c(iv_oxygen))/(max(p_O2_Threshold,c(iv_oxygen))+p_kO2_nit_wat)
+#if defined GAMELAG_EXACT
+          xnitrifeau=xnitrifeau*c(iv_nutr_NH4)/(c(iv_nutr_NH4)+0.0001)
+#endif
+          ! ORGANIC MATTER (simplifiee d'apres Lancelot 2002)
+          ! Particulate organic matter
+          ! Hydrolysis of POM
+          ! Hydrolysis constante of labile POM as a function of temperature
+          K_lP = p_K_lP_max * (1/exp(-((temper-p_Temp_opt_OM)/p_Temp_width_OM)**2)) ! in d-1
+          ! Hydrolysis constante of refractory POM as a function of temperature
+          K_rP = p_K_rP_max * (1/exp(-((temper-p_Temp_opt_OM)/p_Temp_width_OM)**2)) ! in d-1  
 
+          ! Dissolved Organic Matter
+          ! Hydrolysis of DOM, temperature dependant
+          ! Max hydrolysis rate of labile DOM
+          V_lD = p_Vmax_lD * (1/exp(-((temper-p_Temp_opt_OM)/p_Temp_width_OM)**2)) ! in d-1
+          ! Max hydrolysis rate of refractory DOM
+          V_rD = p_Vmax_rD * (1/exp(-((temper-p_Temp_opt_OM)/p_Temp_width_OM)**2)) ! in d-1 
+
+          f_O2_min = max(0.,(c(iv_oxygen)/(c(iv_oxygen)+p_K_min))) ! Adim
+          ! Hydrolysis of labile DON to NH4 following M-M curve
+          elys_l_DON = V_lD * f_O2_min * (c(iv_diss_detr_N)/(c(iv_diss_detr_N) + p_K_l_N)) ! in d-1
+          ! Hydrolysis of refractory DON to NH4 (slower)
+          elys_r_DON = V_rD * f_O2_min * (c(iv_diss_detrR_N)/(c(iv_diss_detrR_N) + p_K_r_N)) ! in d-1
+          ! Hydrolysis of labile DOP to PO4 (follows M-M expression)
+          elys_l_DOP = V_lD * f_O2_min * (c(iv_diss_detr_P)/(c(iv_diss_detr_P) + p_K_l_P)) ! in d-1
+          ! Hydrolysis of refractory DOP to PO4
+          elys_r_DOP = V_rD * f_O2_min * (c(iv_diss_detrR_P)/(c(iv_diss_detrR_P) + p_K_r_P)) ! in d-1
+#else
+          xnitrifeau=p_nitrif*effetchaleur
+          reminazdeteau=p_N_remin*effetchaleur
           reminpdeteau=p_P_remin*effetchaleur
+#endif
 
           dissolsiliceeau=p_BSi_dissEau*effetchaleur
    
 #if defined key_BLOOM_opt2
           dissolMOPeau=p_det_fragm*effetchaleur
 #endif
-#if defined key_oxygen
+#if defined key_oxygen & !defined GAMELAG
           IF (c(iv_oxygen).lt.0.2_rsh) THEN
             reminazdeteau=0.0_rsh
             xnitrifeau=0.0_rsh
@@ -1356,7 +1576,6 @@
 
    ! Evolution de l ammonium
    ! -----------------------
-
           dc(iv_nutr_NH4)=-fractionnh4diat*rationdiat*c(iv_phyto_diat_N)  &
                    -fractionnh4dino*rationdino*c(iv_phyto_dino_N)          &
                    -fractionnh4nano*rationnano*c(iv_phyto_nano_N)          &
@@ -1365,10 +1584,11 @@
 #if defined key_BLOOM_opt2
                    +reminazdeteau*c(iv_diss_N)                             &                 
                    +(1.0_rsh-assimilmicrozoo)*rationmicrozoo*(1.0_rsh-p_micz_diss)*c(iv_zoo_micr_N)*rNC
+#elif defined GAMELAG
+                   + elys_r_DON*c(iv_diss_detrR_N) + elys_l_DON*c(iv_diss_detr_N)
 #else
                    +reminazdeteau*c(iv_detr_N)
 #endif
-
 
    ! Evolution du nitrate
    ! --------------------
@@ -1394,6 +1614,8 @@
 #if defined key_BLOOM_opt2
                   +reminpdeteau*c(iv_diss_P)            &
                   +(1.0_rsh-assimilmicrozoo)*rationmicrozoo*(1.0_rsh-p_micz_diss)*c(iv_zoo_micr_N)*rappaz*rNC
+#elif defined GAMELAG
+                  + elys_r_DOP*c(iv_diss_detrR_P) + elys_l_DOP*c(iv_diss_detr_P)
 #else
                   +reminpdeteau*c(iv_detr_P)
 #endif
@@ -1404,7 +1626,19 @@
 
    ! Evolution de l azote du nano_pico_phytoplancton  (micromolN.l-1)
    ! -----------------------------------------------------------------
-          dc(iv_phyto_nano_N)=c(iv_phyto_nano_N)*(rationnano-excretnano-nanomorteau)-broumicrozoonano*c(iv_zoo_micr_N)*rNC
+
+#if defined GAMELAG_MINGROWTH
+           dc(iv_phyto_nano_N)=max(0.01,c(iv_phyto_nano_N))*rationnano   &
+                 -c(iv_phyto_nano_N)*(nanomorteau+excretnano) &
+#else          
+           dc(iv_phyto_nano_N)=c(iv_phyto_nano_N)*(rationnano-excretnano-nanomorteau)    &
+#endif
+
+#ifdef GAMELAG
+                              -broumesozoonano*c(iv_zoo_meso_N)*rNC                     &
+#endif
+                              -broumicrozoonano*c(iv_zoo_micr_N)*rNC
+         
 #if ! defined key_BLOOM_opt2 && (! defined MUSTANG || defined key_Pconstitonly_insed) 
           !  pas de prise en compte du filtrage benthique ici si MUSTANG et Bio dans sedim (sera avec la bio dans les sediments)
           dc(iv_phyto_nano_N)=dc(iv_phyto_nano_N)-txfiltbenthij*ibbenth/epn*c(iv_phyto_nano_N)
@@ -1412,7 +1646,12 @@
 
    ! Evolution de l azote des diatomees
    ! ----------------------------------
-          dc(iv_phyto_diat_N)=c(iv_phyto_diat_N)*(rationdiat-diatmorteau-excretdiat) &
+#if defined GAMELAG_MINGROWTH
+            dc(iv_phyto_diat_N)=max(0.01,c(iv_phyto_diat_N))*rationdiat   &
+                   -c(iv_phyto_diat_N)*(diatmorteau+excretdiat) &
+#else          
+            dc(iv_phyto_diat_N)=c(iv_phyto_diat_N)*(rationdiat-diatmorteau-excretdiat) &
+#endif
                       -broumesozoodiat*c(iv_zoo_meso_N)*rNC                          &
                       -broumicrozoodiat*c(iv_zoo_micr_N)*rNC 
 #if defined key_BLOOM_opt2
@@ -1432,6 +1671,117 @@
           dc(iv_phyto_dino_N)=dc(iv_phyto_dino_N)-txfiltbenthij*ibbenth/epn*c(iv_phyto_dino_N)
 #endif
 
+#if defined GAMELAG
+   ! Evolution de l azote detritique
+   ! -------------------------------
+   ! In GAMELAG exudation=BLOOM excretion & lysis=BLOOM mortality
+
+          dc(iv_diss_detr_N) = K_lP*c(iv_detr_N)                                                             &     ! Hydrolysis of POM
+                + excretdiat*c(iv_phyto_diat_N)                                                              &
+                + excretdino*c(iv_phyto_dino_N)                                                              &
+                + excretnano*c(iv_phyto_nano_N)                                                              &      ! phyto exudation               
+#ifdef GAMELAG_EXACT
+                + (1.0_rsh-p_gamma)*(1.0_rsh-assimilmesozoo)*rationmesozoo*c(iv_zoo_meso_N) &
+                  *c(iv_zoo_meso_N)/(c(iv_zoo_meso_N)+0.0001)*rNC    &
+                + (1.0_rsh-p_gamma)*(1.0_rsh-assimilmicrozoo)*rationmicrozoo*c(iv_zoo_micr_N)   &
+                  *c(iv_zoo_micr_N)/(c(iv_zoo_micr_N)+0.0001)*rNC &      ! zoo egestion (fecal pellets)              
+#else
+                + (1.0_rsh-p_gamma)*(1.0_rsh-assimilmesozoo)*rationmesozoo*c(iv_zoo_meso_N)*rNC     &
+                + (1.0_rsh-p_gamma)*(1.0_rsh-assimilmicrozoo)*rationmicrozoo*c(iv_zoo_micr_N)*rNC   &      ! zoo egestion (fecal pellets)
+#endif                   
+                + p_labi*(1.0_rsh-p_epsilon)*txmortmesozoo*c(iv_zoo_meso_N)*rNC                              &
+                + p_labi*(1.0_rsh-p_epsilon)*txmortmicrozoo*c(iv_zoo_micr_N)*rNC                             &      ! Zoo Lysis
+                + p_labi*(1.0_rsh-p_epsilon)*dinomorteau*c(iv_phyto_dino_N)                                  &
+                + p_labi*(1.0_rsh-p_epsilon)*diatmorteau*c(iv_phyto_diat_N)                                  &
+                + p_labi*(1.0_rsh-p_epsilon)*nanomorteau*c(iv_phyto_nano_N)                                  &       ! Phyto Lysis   
+                - elys_l_DON*c(iv_diss_detr_N)                                                                     ! remineralization
+
+          dc(iv_diss_detrR_N) =  K_rP*c(iv_detrR_N)                                                     &     ! Hydrolysis of POM
+                + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*txmortmesozoo*c(iv_zoo_meso_N)*rNC               &
+                + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*txmortmicrozoo*c(iv_zoo_micr_N)*rNC              &    ! Zoo Lysis
+                + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*dinomorteau*c(iv_phyto_dino_N)                   &
+                + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*diatmorteau*c(iv_phyto_diat_N)                   &
+                + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*nanomorteau*c(iv_phyto_nano_N)                   &    ! Phyto Lysis  
+                - elys_r_DON*c(iv_diss_detrR_N)                                                           !remineralization
+
+          dc(iv_detr_N) = - K_lP*c(iv_detr_N)                                                      &     ! Hydrolysis of POM
+#ifdef GAMELAG_EXACT
+                + p_gamma*(1.0_rsh-assimilmesozoo)*rationmesozoo*c(iv_zoo_meso_N) &
+                   *c(iv_zoo_meso_N)/(c(iv_zoo_meso_N)+0.0001)*rNC    &
+                + p_gamma*(1.0_rsh-assimilmicrozoo)*rationmicrozoo*c(iv_zoo_micr_N)   &
+                   *c(iv_zoo_micr_N)/(c(iv_zoo_micr_N)+0.0001)*rNC &      ! zoo egestion (fecal pellets)            
+#else
+                + p_gamma*(1.0_rsh-assimilmesozoo)*rationmesozoo*c(iv_zoo_meso_N)*rNC     &
+                + p_gamma*(1.0_rsh-assimilmicrozoo)*rationmicrozoo*c(iv_zoo_micr_N)*rNC  &      ! zoo egestion (fecal pellets)
+#endif                     
+                + p_labi*p_epsilon*txmortmesozoo*c(iv_zoo_meso_N)*rNC                              &
+                + p_labi*p_epsilon*txmortmicrozoo*c(iv_zoo_micr_N)*rNC                             &    ! Zoo Lysis
+                + p_labi*p_epsilon*dinomorteau*c(iv_phyto_dino_N)                                  &
+                + p_labi*p_epsilon*diatmorteau*c(iv_phyto_diat_N)                                  &
+                + p_labi*p_epsilon*nanomorteau*c(iv_phyto_nano_N)                                      ! Phyto Lysis   
+
+
+          dc(iv_detrR_N) = -K_rP*c(iv_detrR_N)                                                               &     ! Hydrolysis of POM.
+                + (1.0_rsh-p_labi)*p_epsilon*txmortmesozoo*c(iv_zoo_meso_N)*rNC                              &
+                + (1.0_rsh-p_labi)*p_epsilon*txmortmicrozoo*c(iv_zoo_micr_N)*rNC                             &    ! Zoo Lysis
+                + (1.0_rsh-p_labi)*p_epsilon*dinomorteau*c(iv_phyto_dino_N)                                  &
+                + (1.0_rsh-p_labi)*p_epsilon*diatmorteau*c(iv_phyto_diat_N)                                  &
+                + (1.0_rsh-p_labi)*p_epsilon*nanomorteau*c(iv_phyto_nano_N)                                      ! Phyto Lysis                
+
+   ! Evolution du phosphore detritique
+   ! ---------------------------------
+          dc(iv_diss_detr_P)= K_lP*c(iv_detr_P)                                                             &     ! Hydrolysis of POM
+          + excretdiat*c(iv_phyto_diat_N)/p_phyto_NPratio                                                   &
+          + excretdino*c(iv_phyto_dino_N)/p_phyto_NPratio                                                   &
+          + excretnano*c(iv_phyto_nano_N)/p_phyto_NPratio                                                   &      ! phyto exudation
+#ifdef GAMELAG_EXACT
+          + (1.0_rsh-p_gamma)*(1.0_rsh-assimilmesozoo)*rationmesozoo*c(iv_zoo_meso_N) &
+            *c(iv_zoo_meso_N)/(c(iv_zoo_meso_N)+0.0001)*rNC/p_zoo_NPratio     &
+          + (1.0_rsh-p_gamma)*(1.0_rsh-assimilmicrozoo)*rationmicrozoo*c(iv_zoo_micr_N)   &
+            *c(iv_zoo_micr_N)/(c(iv_zoo_micr_N)+0.0001)*rNC/p_zoo_NPratio   &      ! zoo egestion (fecal pellets)              
+#else
+          + (1.0_rsh-p_gamma)*(1.0_rsh-assimilmesozoo)*rationmesozoo*c(iv_zoo_meso_N)*rNC/p_zoo_NPratio     &
+          + (1.0_rsh-p_gamma)*(1.0_rsh-assimilmicrozoo)*rationmicrozoo*c(iv_zoo_micr_N)*rNC/p_zoo_NPratio   &      ! zoo egestion (fecal pellets)
+#endif   
+          + p_labi*(1.0_rsh-p_epsilon)*txmortmesozoo*c(iv_zoo_meso_N)*rNC/p_zoo_NPratio                     &
+          + p_labi*(1.0_rsh-p_epsilon)*txmortmicrozoo*c(iv_zoo_micr_N)*rNC/p_zoo_NPratio                    &      ! Zoo Lysis
+          + p_labi*(1.0_rsh-p_epsilon)*dinomorteau*c(iv_phyto_dino_N)/p_phyto_NPratio                       &
+          + p_labi*(1.0_rsh-p_epsilon)*diatmorteau*c(iv_phyto_diat_N)/p_phyto_NPratio                       &
+          + p_labi*(1.0_rsh-p_epsilon)*nanomorteau*c(iv_phyto_nano_N)/p_phyto_NPratio                       &       ! Phyto Lysis   
+          - elys_l_DOP*c(iv_diss_detr_P) 
+ 
+          dc(iv_diss_detrR_P)=  K_rP*c(iv_detrR_P)                                                          &     ! Hydrolysis of POM
+          + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*txmortmesozoo*c(iv_zoo_meso_N)*rNC/p_zoo_NPratio           &
+          + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*txmortmicrozoo*c(iv_zoo_micr_N)*rNC/p_zoo_NPratio          &    ! Zoo Lysis
+          + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*dinomorteau*c(iv_phyto_dino_N)/p_phyto_NPratio             &
+          + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*diatmorteau*c(iv_phyto_diat_N)/p_phyto_NPratio             &
+          + (1.0_rsh-p_labi)*(1.0_rsh-p_epsilon)*nanomorteau*c(iv_phyto_nano_N)/p_phyto_NPratio             &    ! Phyto Lysis  
+          - elys_r_DOP*c(iv_diss_detrR_P)          
+          
+          dc(iv_detr_P)= - K_lP*c(iv_detr_P)                                                                 &     ! Hydrolysis of POM
+#ifdef GAMELAG_EXACT
+          + p_gamma*(1.0_rsh-assimilmesozoo)*rationmesozoo*c(iv_zoo_meso_N) &
+             *c(iv_zoo_meso_N)/(c(iv_zoo_meso_N)+0.0001)*rNC/p_zoo_NPratio     &
+          + p_gamma*(1.0_rsh-assimilmicrozoo)*rationmicrozoo*c(iv_zoo_micr_N)   &
+             *c(iv_zoo_micr_N)/(c(iv_zoo_micr_N)+0.0001)*rNC/p_zoo_NPratio   &      ! zoo egestion (fecal pellets)            
+#else
+          + p_gamma*(1.0_rsh-assimilmesozoo)*rationmesozoo*c(iv_zoo_meso_N)*rNC/p_zoo_NPratio     &
+          + p_gamma*(1.0_rsh-assimilmicrozoo)*rationmicrozoo*c(iv_zoo_micr_N)*rNC/p_zoo_NPratio   &      ! zoo egestion (fecal pellets)
+#endif           
+          + p_labi*p_epsilon*txmortmesozoo*c(iv_zoo_meso_N)*rNC/p_zoo_NPratio                                &
+          + p_labi*p_epsilon*txmortmicrozoo*c(iv_zoo_micr_N)*rNC/p_zoo_NPratio                               &    ! Zoo Lysis
+          + p_labi*p_epsilon*dinomorteau*c(iv_phyto_dino_N)/p_phyto_NPratio                                  &
+          + p_labi*p_epsilon*diatmorteau*c(iv_phyto_diat_N)/p_phyto_NPratio                                  &
+          + p_labi*p_epsilon*nanomorteau*c(iv_phyto_nano_N)/p_phyto_NPratio                                      ! Phyto Lysis   
+
+          dc(iv_detrR_P)= -K_rP*c(iv_detrR_P)                                                                  &     ! Hydrolysis of POM.
+          + (1.0_rsh-p_labi)*p_epsilon*txmortmesozoo*c(iv_zoo_meso_N)*rNC/p_zoo_NPratio                        &
+          + (1.0_rsh-p_labi)*p_epsilon*txmortmicrozoo*c(iv_zoo_micr_N)*rNC/p_zoo_NPratio                       &    ! Zoo Lysis
+          + (1.0_rsh-p_labi)*p_epsilon*dinomorteau*c(iv_phyto_dino_N)/p_phyto_NPratio                          &
+          + (1.0_rsh-p_labi)*p_epsilon*diatmorteau*c(iv_phyto_diat_N)/p_phyto_NPratio                          &
+          + (1.0_rsh-p_labi)*p_epsilon*nanomorteau*c(iv_phyto_nano_N)/p_phyto_NPratio    
+
+#else
    ! Evolution de l azote detritique
    ! -------------------------------
           dc(iv_detr_N)=(diatmorteau+excretdiat)*c(iv_phyto_diat_N)                                 &
@@ -1450,22 +1800,7 @@
 #endif
 #endif
 
-
-   ! Evolution de la silice particulaire
-   ! -----------------------------------
-          dc(iv_detr_Si)=rapsiaz*(diatmorteau+excretdiat)*c(iv_phyto_diat_N)         &
-                 +broumesozoodiat*c(iv_zoo_meso_N)*rNC*rapsiaz   &
-#if defined key_BLOOM_opt2
-                 -dissolMOPeau*c(iv_detr_Si)                     &
-                 -fractionDET_Si
-#else
-                 -dissolsiliceeau*c(iv_detr_Si)                  &
-                 +broumicrozoodiat*c(iv_zoo_micr_N)*rNC*rapsiaz
-#if ! defined key_benthos && ! defined MUSTANG
-          dc(iv_detr_Si)=dc(iv_detr_Si)+rapsiaz*txfiltbenthij*ibbenth/epn*c(iv_phyto_diat_N)
-#endif  
-#endif                     
-
+                   
    ! Evolution du phosphore detritique
    ! ---------------------------------
           dc(iv_detr_P)=(diatmorteau+excretdiat)*c(iv_phyto_diat_N)*rappaz                    &
@@ -1485,8 +1820,23 @@
 #if ! defined key_benthos && ! defined MUSTANG
           dc(iv_detr_P)=dc(iv_detr_P)+txfiltbenthij*ibbenth/epn*(c(iv_phyto_diat_N)+c(iv_phyto_dino_N)+c(iv_phyto_nano_N))*rappaz
 #endif
-#endif                                                                  
+#endif  
+#endif
 
+   ! Evolution de la silice particulaire
+   ! -----------------------------------
+          dc(iv_detr_Si)=rapsiaz*(diatmorteau+excretdiat)*c(iv_phyto_diat_N)         &
+                 +broumesozoodiat*c(iv_zoo_meso_N)*rNC*rapsiaz   &
+#if defined key_BLOOM_opt2
+                 -dissolMOPeau*c(iv_detr_Si)                     &
+                 -fractionDET_Si
+#else
+                 -dissolsiliceeau*c(iv_detr_Si)                  &
+                 +broumicrozoodiat*c(iv_zoo_micr_N)*rNC*rapsiaz
+#if ! defined key_benthos && ! defined MUSTANG
+          dc(iv_detr_Si)=dc(iv_detr_Si)+rapsiaz*txfiltbenthij*ibbenth/epn*c(iv_phyto_diat_N)
+#endif  
+#endif  
    ! Evolution de l azote du mesozooplancton (microgC/l for option 2, microgN/l for option 1)
    ! -------------------------------------------------
           dc(iv_zoo_meso_N)=(rationmesozoo*assimilmesozoo-excretionmesozoo-txmortmesozoo)*c(iv_zoo_meso_N)
@@ -1737,9 +2087,12 @@
    ! Evolution des huitres selon le modele DEB
    ! -------------------------------------------------------
 #include "incellwat_bloom_oysterDEB.h"
-   
 #endif
-
+#if defined key_oyster_DEB_GAMELAG
+   ! Evolution des huitres selon le modele DEB GAMELAG
+   ! -------------------------------------------------------
+#include "incellwat_bloom_oysterDEB_GAMELAG.h"
+#endif
 #if defined key_N_tracer
    !   Tracage de l azote 
    !   --------------------
@@ -2500,7 +2853,6 @@
         ! si matiere organique supposee constitutive du sediment
         cw_bott(1:nv_state)= cw_bott(1:nv_state)/unit_modif_mudbio_N2dw(irk_fil(1:nv_state))                            
          
-
         ! calcul des flux reactifs pour chaque variable et chaque processus dans chaque couche
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ztop=-dzs(ksmax,i,j)
@@ -2575,7 +2927,12 @@
              ! cycle de l azote
                ! fonctions limitantes
                cvO2old=cs(iv_oxygen)
+
+#ifdef GAMELAG
+               IF(cs(iv_oxygen).ge.p_O2SED_Threshold) THEN
+#else
                IF(cs(iv_oxygen).gt.0.0_rsh) THEN
+#endif                  
                  flim1_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_reminO2)
                  flim2_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_nit)
                  flim3_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_reoxyd)
@@ -2606,6 +2963,7 @@
                xtmp = effetchaleur * flim1_O2 * dtbiojour
                flimz = max(p_xflimz,exp(-p_k_remin*zmiddle))
                F_remin_aerN = p_N_remin * xtmp * Sfliminv
+
                !F_reminR_aerN = p_N_reminR * xtmp * SfliminvR
                F_reminR_aerN = p_N_reminR * flimz * xtmp * Sfliminv
                F_nitrif = p_nitrif * effetchaleur * flim2_O2 * dtbiojour
@@ -2627,7 +2985,15 @@
                !F_denitR = 0.0_rsh
                
                ! ODU
+#ifdef GAMELAG               
+               if (cs(iv_oxygen).ge.p_O2_Threshold/10.) then
+#endif
                F_oxyd_ODU = p_ODU_oxy * flim3_O2 * dtbiojour
+#ifdef GAMELAG                 
+               else
+               F_oxyd_ODU = 0.
+               endif
+#endif
                F_solid_ODU = p_ODU_precip * dtbiojour
 
                ! anaerobiose
@@ -2662,7 +3028,13 @@
  
                ! sub-oxique (NO3 comme oxydant)
                xtmp = effetchaleur * flim1_NO3 * glim2_O2 * dtbiojour
+
+#ifdef GAMELAG_EXACT 
+               F_remin_NO3_P = p_P_speedup_reminanaer * p_P_remin * xtmp * Sfliminv
+#else
                F_remin_NO3_P = p_P_remin * xtmp * Sfliminv
+#endif  
+
                !F_reminR_NO3_P = p_P_reminR * xtmp * SfliminvR
                F_reminR_NO3_P = p_P_reminR * flimz * xtmp * Sfliminv
                F_precPFE_NO3 = p_P_precFeNO3 * glim3_O2 * flim2_NO3 * dtbiojour
@@ -2682,7 +3054,20 @@
                !ELSE
                !  F_dissolPFE = 0.0_rsh                                  ! il reste toujours une base de PFe dans le sed profond
                !ENDIF            
- 
+#ifdef GAMELAG_EXACT  
+                 F_precPFE_O2 = 0.
+                 F_precPFE_NO3 = 0.
+                 F_reminR_aerN =  0.
+                 F_reminR_aerP =  0.
+                 F_reminR_anaerN =  0.
+                 F_reminR_anaerP =  0.
+                 F_reminR_NO3 = 0.
+                 F_reminR_NO3_P = 0.  
+                 F_dnraR = 0. 
+                 F_denitR = 0.               
+#endif
+                 
+
                ! adsorption / desorption sur mes 
                !adsormax = p_P_adsormaxsed * (cs(iv_MES_local) + cs(iv_spim)) * dtbiojour
                adsormax = p_P_adsormaxsed * cs(iv_spim)             
@@ -2759,7 +3144,6 @@
                                -F_reminR_aerN * cs(iv_detrR_N) * porosite_inv * p_GO2_NOrgR  &
                                -F_nitrif * cs(iv_nutr_NH4) * p_GO2_NH4)                      &
                               * 0.032_rsh ! transformation en mg/L
-
 !            ................................................................... 
             
              ! Detrital N (micromol/lsed) 
@@ -2780,10 +3164,9 @@
 #endif
 
                             +filtr_benth * dtbiojour   ! (broutage et filtre par phytoplanctons de base)
-                           
+
              dcdt(iv_detrR_N)=(-F_reminR_aerN - F_reminR_anaerN - F_reminR_NO3 - F_burried) * cs(iv_detrR_N)  &
                              +F_transf_MO * cs(iv_detr_N)
-                      
              ! var diag : flux en M/m2 cumule dans le temps 
              diag_3d_sed(id_remin_aerN,k,i,j)=diag_3d_sed(id_remin_aerN,k,i,j)          &
                                              +(F_remin_aerN * cs(iv_detr_N) + F_reminR_aerN * cs(iv_detrR_N)) * dzs(k,i,j)
@@ -2912,7 +3295,6 @@
              ! -------------------------
              dcdt(iv_oxygen)= dcdt(iv_oxygen)                                          &
                             -F_precPFE_O2 * cs(iv_nutr_PO4) * p_GO2_PFe * 0.032_rsh  
-
 !            ...................................................................       
              
              ! Nitrate (micomol/l) 

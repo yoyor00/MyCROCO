@@ -398,6 +398,8 @@
 # define SOLAR_RAD srflx /* Incoming solar radiation */
 # ifndef ANA_SRFLUX
 #   define RAD_SRFSCALE srf_scale /* Scaling factor = 1/(rho0*Cp) */
+# elif defined GAMELAG_MESOCOSM
+#   define RAD_SRFSCALE (1./(rho0*Cp)) 
 # else
 #   define RAD_SRFSCALE 0. 
 # endif

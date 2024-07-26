@@ -24,8 +24,14 @@
 
           ! production et consommation d oxygene dans l eau
           ! -----------------------------------------------
+
+#ifdef GAMELAG
+          ophotos=p_Q_photo*p_R_photo*(rationdiat*c(iv_phyto_diat_N)+ &
+                                         rationdino*c(iv_phyto_dino_N)+rationnano*c(iv_phyto_nano_N))
+#else
           ophotos=ratio_mgO_to_mumolN_anabol*(rationdiat*c(iv_phyto_diat_N)+ &
                                          rationdino*c(iv_phyto_dino_N)+rationnano*c(iv_phyto_nano_N))
+#endif
 
 #ifdef key_psnz  
           ophotos=ophotos+ratio_mgO_to_mumolN_anabol*rationpsnz*c(iv_phyto_psnz_N)
@@ -49,12 +55,27 @@
           ENDIF
 #endif
 
+
            oresphyto=0.0_rsh
-           orespzoo=0.0_rsh
+           orespzoo=0.0_rsh  
+
+#ifdef GAMELAG
+            IF (c(iv_oxygen).ge.p_O2_Threshold) then
+              oresphyto = p_R_photo*(excretdiat*c(iv_phyto_diat_N)+ &
+                                         excretnano*c(iv_phyto_nano_N))! in gO2/m3/d
+              oresphyto=oresphyto/ratio_mgO_to_mumolN_catabol/effetchaleur ! multiplied later when not using GAMELAG 
+#ifdef GAMELAG_EXACT
+              oresphyto=oresphyto*c(iv_oxygen)/(c(iv_oxygen)+0.001)
+#endif
+
+
+#else
            IF (c(iv_oxygen).gt.0.2_rsh) then  
               oresphyto=p_phyto_resp*((1.0_rsh-effetlumierediat)*c(iv_phyto_diat_N) &
                          + (1.0_rsh-effetlumieredino)*c(iv_phyto_dino_N)  &
                          +(1.0_rsh-effetlumierenano)*c(iv_phyto_nano_N))
+#endif
+
 #ifdef key_psnz
               oresphyto=oresphyto+  &
                          p_phyto_resp*(1.0_rsh-effetlumierepsnz)*c(iv_phyto_psnz_N)
@@ -68,15 +89,41 @@
               oresphyto=oresphyto+ p_phyto_resp*(1.0_rsh-effetlumierephaeocystis)* &
                         (c(iv_phyto_phaeocystis_colo_N)+ c(iv_phyto_phaeocystis_cell_N))
 #endif 
+ 
               oresphyto=oresphyto*ratio_mgO_to_mumolN_catabol*effetchaleur
+
+#ifdef GAMELAG
+              orespzoo=p_R_photo*(excretionmesozoo*c(iv_zoo_meso_N)+excretionmicrozoo*c(iv_zoo_micr_N))
+#ifdef GAMELAG_EXACT
+              orespzoo=orespzoo*c(iv_oxygen)/(c(iv_oxygen)+0.001)
+#endif
+#else
               orespzoo=p_zoo_resp*(c(iv_zoo_meso_N)+ &
                             c(iv_zoo_micr_N))*ratio_mgO_to_mumolN_catabol*effetchaleur
+#endif
           ENDIF
+
+#ifdef GAMELAG
+ ! Oxygen/lyse
+#ifdef GAMELAG_EXACT
+          oremineau=p_R_photo*(elys_r_DON*c(iv_diss_detrR_N)*c(iv_diss_detrR_N)/(c(iv_diss_detrR_N)+0.0001)  &
+                        + elys_l_DON*c(iv_diss_detr_N)*c(iv_diss_detr_N)/(c(iv_diss_detr_N)+0.0001))! Omin in GAMELAG in gO2/m3/d  
+#else
+          oremineau=p_R_photo*(elys_r_DON*c(iv_diss_detrR_N) + elys_l_DON*c(iv_diss_detr_N))! Omin in GAMELAG in gO2/m3/d  
+#endif  
+#else          
           oremineau=reminazdeteau*c(iv_detr_N)*ratio_mgO_to_mumolN_catabol
+#endif
+
 #ifdef key_benthos   
           oremineau=oremineau+(reminazdeteau*p_reminbenth)*c(iv_benth_N)*ratio_mgO_to_mumolN_catabol*ibbenth/epn
 #endif  
           onitrifeau=xnitrifeau*c(iv_nutr_NH4)*0.064_rsh
+
+#ifdef GAMELAG_EXACT
+         onitrifeau=onitrifeau*c(iv_oxygen)/(c(iv_oxygen)+0.001)
+#endif
+
           perteo2=oresphyto+orespzoo+oremineau+onitrifeau
 #ifdef key_zostera
           IF(c(iv_zost_LB)>0.0_rsh) THEN
@@ -86,6 +133,10 @@
     
           ! reoxygenation
           ! -------------
+
+#ifdef GAMELAG_MESOCOSM
+          oair=0.
+#else          
           gst=-173.4292_rsh+249.6329_rsh*100.0_rsh/tempabs+143.3483_rsh*log(tempabs/100.0_rsh)    &
                 -21.8492_rsh*tempabs/100.0_rsh+sali*(-0.033096_rsh+0.014259_rsh*tempabs/100.0_rsh &
                 -0.0017_rsh*(tempabs/100.0_rsh)**2)
@@ -102,7 +153,7 @@
           !Formule de Wanninkhof & McGillis (1999)
           !le facteur 0.0283 cm/h est converti en 24*0.0283/100=0.00679 m/jour
           !oair=0.00679_rsh*(WIND_SPEED(i,j)**3)/sqrt(schmidt/660.0_rsh)*(o2sat-c(iv_oxygen))/epn
-
+#endif
           ! Evolution de l oxygene dissous
           ! ------------------------------
           dc(iv_oxygen)=ophotos+oair*ibsurf-perteo2
