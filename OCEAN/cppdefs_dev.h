@@ -216,6 +216,7 @@
 # undef  K3FAST_W
 # undef  K3FAST_RHO
 # undef  K3FAST_ZETAW
+# undef  K3FAST_DUVNBQ
 # undef  K3FAST_C3D_UVSF
 # undef  K3FAST_C3D_UVFS
 # undef  K3FAST_C3D_WSF
@@ -242,6 +243,7 @@
 #   define K3FAST_W
 #   define K3FAST_RHO
 #   define K3FAST_ZETAW
+#   define K3FAST_DUVNBQ
 #   define K3FAST_C3D_UVSF
 #   define K3FAST_C3D_UVFS
 #   define K3FAST_C3D_WSF
@@ -284,7 +286,9 @@
 #   define K3FAST_C3D_WSF
 #   define K3FAST_C3D_WFS
 #   define K3FAST_AM4
+#   define  KNHINT_WH
 #   undef  KNHINT_ZETAW
+#   undef  K3FAST_DUVNBQ2
 #   ifdef KNHINT_ZETAW
 #    define NBQ_HZCORRECT
 #    define NBQ_HZCORRECT_ZETA

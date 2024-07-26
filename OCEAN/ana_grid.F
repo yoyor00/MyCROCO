@@ -170,7 +170,7 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined ISOLITON_DJL
-                     depth=0600.
+                     depth=600.
                      f0=1.e-4
                      beta=0.
 # elif defined ACOUSTIC
@@ -360,7 +360,7 @@ C$    integer omp_get_thread_num
                      Length_XI =6.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined ISOLITON_DJL
-                     Length_XI =180.e+3
+                     Length_XI =25.e+3
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined INNERSHELF
                      Length_XI =200.0e+3

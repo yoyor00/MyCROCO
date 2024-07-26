@@ -73,9 +73,15 @@
       do j=Jstr,Jend
         do i=Istr,Iend
           work(i,j)=pm(i,j)*pn(i,j)
-#  ifdef K3FAST_ZETAW
-          DU_nbq(i,j)=0.
-          DV_nbq(i,j)=0.
+#  if defined K3FAST_DUVNBQ || defined K3FAST_DUVNBQ2
+#   ifdef KNHINT_3M	
+       if ((iic==1.and.iif==1).or.mod(iif,nsdtnbq).eq.0) then
+#   endif
+            DU_nbq(i,j)=0.
+            DV_nbq(i,j)=0.
+#   ifdef KNHINT_3M	
+       endif
+#   endif
 #  endif
         enddo
       enddo

@@ -293,37 +293,45 @@ C$OMP END MASTER
 # endif
       do j=Jstr,Jend
         do i=IstrU,Iend
-# ifdef K3FAST_ZETAW
-          DUnew=DU_nbq(i,j) *2. 
+# ifdef K3FAST_DUVNBQ 
+          DUnew =DU_nbq(i,j) *2. 
+#  if defined WET_DRY && defined K3FAST_ZETAW
+     &           *umask_wet(i,j)
+#  endif
+          DUnew2=DUnew
 # else
-          DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
-     &     +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
+          DUnew=( (DUon(i,j)+DUon(i-1,j))*ubar(i,j,kstp)
+     &         +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
      &                                *( rubar(i,j)
      &                                  +rufrc(i,j)
-     &                          !   +ru_int2d_nbq(i,j)
      &                                 ))
 #  ifdef MASKING
      &                                     *umask(i,j)
 #  endif
-# endif
 # if defined WET_DRY && defined K3FAST_ZETAW
      &                                     *umask_wet(i,j)
 # endif
+          DUnew2=DUnew
+#  ifdef K3FAST_DUVNBQ2
+     &        +dtfast*DU_nbq(i,j)*2. 
+#  endif
+#  if defined WET_DRY && defined K3FAST_ZETAW
+     &        *umask_wet(i,j)
+#  endif
+# endif
 # if defined WET_DRY && !defined K3FAST_ZETAW
           cff1_WD=ABS(ABS(umask_wet(i,j))-1.)
-          cff2_WD=0.5+SIGN(0.5,DUnew)*umask_wet(i,j)
+          cff2_WD=0.5+SIGN(0.5,DUnew2)*umask_wet(i,j)
           umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
-          DUnew=DUnew*umask_wet(i,j)
 #  ifdef MRL_WCI
           ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
 #  endif
-   	  do k=1,N
+   	      do k=1,N
             qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask_wet(i,j)
           enddo
-
 # endif
-          ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
+          ubar(i,j,knew)=DUnew2/(Dnew(i,j)+Dnew(i-1,j))
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) 
      &                             +cff1*on_u(i,j)*( DUnew
 # ifdef MRL_WCI
@@ -347,36 +355,46 @@ C$OMP END MASTER
       enddo 
       do j=JstrV,Jend
         do i=Istr,Iend
-# ifdef K3FAST_ZETAW
+# ifdef K3FAST_DUVNBQ
           DVnew=DV_nbq(i,j) *2.
+#  if defined WET_DRY && defined K3FAST_ZETAW
+     &          *vmask_wet(i,j)
+#  endif
+          DVnew2=DVnew
 # else
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
      &     +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
      &                                *( rvbar(i,j)
      &                                  +rvfrc(i,j)
-     &                          !   +rv_int2d_nbq(i,j)
      &                                 ))
 #  ifdef MASKING
      &                                     *vmask(i,j)
 #  endif
-# endif
-# if defined WET_DRY && defined K3FAST_ZETAW
+#  if defined WET_DRY && defined K3FAST_ZETAW
      &                                     *vmask_wet(i,j)
+#  endif
+          DVnew2=DVnew
+#  ifdef K3FAST_DUVNBQ2
+     &        +dtfast*DV_nbq(i,j)*2. 
+#  endif
+#  if defined WET_DRY && defined K3FAST_ZETAW
+     &        *vmask_wet(i,j)
+#  endif
 # endif
 # if defined WET_DRY && !defined K3FAST_ZETAW
           cff1_WD=ABS(ABS(vmask_wet(i,j))-1.)
-          cff2_WD=0.5+SIGN(0.5,DVnew)*vmask_wet(i,j)
+          cff2_WD=0.5+SIGN(0.5,DVnew2)*vmask_wet(i,j)
           vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
      &                        +cff2_WD*(1.-cff1_WD)
           DVnew=DVnew*vmask_wet(i,j)
 #  ifdef MRL_WCI
           vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
 #  endif
-   	  do k=1,N
+   	      do k=1,N
             qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask_wet(i,j)
           enddo
 # endif
-          vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
+          vbar(i,j,knew)=DVnew2/(Dnew(i,j)+Dnew(i,j-1))
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) 
      &                              +cff1*om_v(i,j)*(DVnew
 # ifdef MRL_WCI

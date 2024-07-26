@@ -105,10 +105,10 @@
 ! !--------------------------------
 ! !
 #  ifdef KNHINT_WH
-           wzh_nbq(i,j,k)=  
-     &                      +((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
+           wzh_nbq(i,j,k)=    +qdmw_nbq(i,j,N)
+!    &                 +((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
 #    ifdef KNHINT_3M
-     &                         *nsdtnbq
+!    &                         *float(nsdtnbq)
 #    endif
 #    ifdef KNHINT_NOSPDUP
      &                     +0.5*(usurf_nbq(i  ,j)
@@ -126,8 +126,11 @@
      &                         *pn_v(i,j+1) 
      &                          )
 #    endif    /*  KNHINT_NOSPDUP */
-     &                   ) 
-     &            *(H(i,j)+z_w(i,j,k))/(H(i,j)+z_w(i,j,N))   ! Linear evolution
+!    &                   ) 
+!    &            *(1.+rho_grd(i,j,k))/Hzw_nbq_inv(i,j,k))
+!    &            *(H(i,j)+z_w(i,j,k))/(H(i,j)+z_w(i,j,N))   ! Linear evolution
+     &            *exp(-(z_w(i,j,k)            -z_w(i,j,N))  ! Swell-like evolution
+     &                  /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N)))
 #  endif  /* KNHINT_WH */
 ! !
 ! !--------------------------------
@@ -293,10 +296,10 @@
 ! !  Hydrostatic component of w
 ! !--------------------------------
 ! !
-         wzh_nbq(i,j,N)= 
-     &                     ((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
+         wzh_nbq(i,j,N)= qdmw_nbq(i,j,N) 
+!    &                +((zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
 #    ifdef KNHINT_3M
-     &                         *nsdtnbq
+!    &                         *float(nsdtnbq)
 #    endif
 #    ifdef KNHINT_NOSPDUP
      &                     +0.5*(usurf_nbq(i  ,j)
@@ -314,7 +317,8 @@
      &                         *pn_v(i,j+1) 
      &                          )
 #    endif    /* KNHINT_NOSPDUP */
-     &                )
+!    &                )
+!    &      *(1.+rho_grd(i,j,N))/Hzw_nbq_inv(i,j,N)
 #  endif           /*   KNHINT_WH    */
 ! ! 
 ! !--------------------------------

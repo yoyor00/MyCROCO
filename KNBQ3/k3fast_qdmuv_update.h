@@ -188,6 +188,9 @@
 ! ! Horiz. PG
 ! !................................
 ! !
+#  if defined K3FAST_DUVNBQ2
+              dum2_s=dum_s
+#  endif
 #   ifdef K3FAST_PG2
 #    ifdef EW_PERIODIC 
               dum_s=dum_s
@@ -225,13 +228,20 @@
      &                -( thetadiv_nbq(i  ,j,k)
      &                  -thetadiv_nbq(i-1,j,k))
 #   endif /* K3FAST_PG2 */
-
+#   if defined K3FAST_DUVNBQ2
+              dum2_s=(dum_s-dum2_s)
+     &           *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
+#    ifdef MASKING
+     &                   *umask(i,j)
+#    endif  
+#   endif
               dum_s=dum_s*0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
 #   ifdef MASKING
      &                   *umask(i,j)
 #   endif  
 #  else  /* ! K3FAST_RHO */
-              dum_s=0.
+              dum_s =0.
+              dum2_s=0.
 #  endif /* K3FAST_RHO */
 ! !
 ! !................................
@@ -320,10 +330,14 @@
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
-#  ifdef K3FAST_ZETAW                  
+#  ifdef K3FAST_DUVNBQ 
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
+#  elif defined K3FAST_DUVNBQ2 
+              DU_nbq(i,j)=DU_nbq(i,j)+dum2_s
+#   ifdef MASKING
+     &                          *umask(i,j)
+#   endif
 #  endif
-              
               if (LAST_FAST_STEP) ru_nbq(i,j,k)=dum_s/work(i,j)               
 #  ifdef K3FAST_SEDLAYERS 
               endif
@@ -403,6 +417,9 @@
 ! ! Horiz. PG
 ! !................................
 ! !
+#  if defined K3FAST_DUVNBQ2
+              dum2_s=dum_s
+#  endif
 #   ifdef K3FAST_PG2
 #    ifdef NS_PERIODIC
               dum_s=dum_s
@@ -440,13 +457,20 @@
      &                -( thetadiv_nbq(i,j  ,k)
      &                  -thetadiv_nbq(i,j-1,k))
 #   endif /* K3FAST_PG2 */
-     
+#   if defined K3FAST_DUVNBQ2
+              dum2_s=(dum_s-dum2_s)
+     &           *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
+#    ifdef MASKING
+     &                   *vmask(i,j)
+#    endif  
               dum_s=dum_s*0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
 #   ifdef MASKING
      &                   *vmask(i,j)
 #   endif  
+#   endif
 #  else   /* ! K3FAST_RHO */
               dum_s = 0.
+              dum2_s= 0.
 #  endif  /* K3FAST_RHO */
 ! !
 ! !................................
@@ -536,8 +560,13 @@
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
-#  ifdef K3FAST_ZETAW  
+#  ifdef K3FAST_DUVNBQ
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
+#  elif defined K3FAST_DUVNBQ2 
+              DV_nbq(i,j)=DV_nbq(i,j)+dum2_s
+#   ifdef MASKING
+     &                          *vmask(i,j)
+#   endif
 #  endif              
               if (LAST_FAST_STEP) rv_nbq(i,j,k)=dum_s/work(i,j) 
 #  ifdef K3FAST_SEDLAYERS 

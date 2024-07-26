@@ -110,6 +110,7 @@
       real :: kini
       integer :: nbx,kount,eof,imem, kc, kf, f_shift
       character(len=1000):: chain
+      real hint,hintu
 #endif
 #ifdef TS_HADV_TEST
       real cff,cff1,cx,cy,cmax,xx,yy
@@ -1040,12 +1041,6 @@ c c !$acc kernels if(compute_on_device) default(present)
        T0 = 11.5
 ! !       
 ! ! ------------------------------------------------------------
-! ! Opens log file (ASCII)
-! ! ------------------------------------------------------------
-! !       
-       open(200, file="history_sol_djl.dat",form="formatted")
-! !       
-! ! ------------------------------------------------------------
 ! ! Reads input data file (ASCII)
 ! ! ------------------------------------------------------------
 ! !       
@@ -1058,8 +1053,6 @@ c c !$acc kernels if(compute_on_device) default(present)
         read(109,*,iostat=eof) chain
        end do
        nbx=kount/N
-       
-       write(200,*) "nbx",nbx,kount,N
        
        allocate (xini(nbx),uini(nbx,N),wini(nbx,N),rhoini(nbx,N))
        
@@ -1083,10 +1076,6 @@ c c !$acc kernels if(compute_on_device) default(present)
             imem =1
             do ii =imem,nbx-1
              if((xr(i,JstrR)-xini(ii))*(xr(i,JstrR)-xini(ii+1)) <=0.0) then
-               write(200,*) "milieu" 
-               write(200,*) i,ii,imem,mynode,xr(i,JstrR)
-     &         ,xini(ii),xini(ii+1)
-     &         ,(xr(i,JstrR)-xini(ii)),(xr(i,JstrR)-xini(ii+1))
               imem=ii
               f_shift = floor(nbx/4.)
               if(ii + f_shift > nbx-1) then
@@ -1097,7 +1086,6 @@ c c !$acc kernels if(compute_on_device) default(present)
                 kc = ceiling(kini)
                 kf = floor(kini)
                 if(kc>N) then 
-                  print *, h(i,Jstr), k, kini,kc, kf
                   kc = N
                 endif  
                 u(i,JstrR,k,1)=0.5*(uini(ii+f_shift,kf)
@@ -1114,74 +1102,82 @@ c c !$acc kernels if(compute_on_device) default(present)
                   u(i,j,k,1)=u(i,JstrR,k,1)
                   u(i,j,k,2)=u(i,JstrR,k,2)
                 end do
+                kini = h(i,Jstr)/depth*(k+0.5)
+     &                +N*(depth-h(i,Jstr))/depth
+                kc = ceiling(kini)
+                kf = floor(kini)
+                 if(kc>N) then 
+                   kc = N
+                endif  
+                wz(i,JstrR,k,1)=0.5*(wini(ii+f_shift,kf)
+     &                         + wini(ii+f_shift,kc))
+                wz(i,JstrR,k,2)=wz(i,JstrR,k,1)
+                do j=JstrR+1,JendR
+                  wz(i,j,k,1)=wz(i,JstrR,k,1)
+                  wz(i,j,k,2)=wz(i,JstrR,k,2)
+                end do
               end do
              end if
              if (xr(i,JstrR) < xini(1) ) then
               imem=1
-              write(200,*) "debut" 
-              write(200,*) i,ii,imem,mynode,xr(i,JstrR),xini(ii)
-     &                     ,xini(ii+1)
               do k=1,N
-                kini = h(i,Jstr)/depth*k+N*(depth-h(i,Jstr))/depth
+                kini = h(i,Jstr)/depth*(k+0.5)
+     &                 +N*(depth-h(i,Jstr))/depth
                 kc = ceiling(kini)
                 kf = floor(kini) 
                 if(kc>N) then 
                   kc = N
                 endif  
                !u(i,JstrR,k,1)=0.5*(uini(1,kf)+uini(1,kc))
-                u(i,JstrR,k,1)=0.5*(uini(1,kf)+uini(1,kc))
-                u(i,JstrR,k,2)=u(i,JstrR,k,1)
-!               t(i,JstrR,k,1,itemp)=-0.5*
-!     &          (rhoini(1,kf)+rhoini(1,kc)-2*1028.)
-!     &          /Tcoef+T0
-                t(i,JstrR,k,1,itemp)=-0.5*
-     &          (rhoini(floor(nbx/4.),kf)+
-     &          rhoini(floor(nbx/4.),kc)-2*1028.)
-     &          /Tcoef+T0
-                t(i,JstrR,k,2,itemp)=t(i,JstrR,k,1,itemp)
+                wz(i,JstrR,k,1)=0.5*(wini(1,kf)+wini(1,kc))
+                wz(i,JstrR,k,2)=wz(i,JstrR,k,1)
                 do j=JstrR+1,JendR
-                  t(i,j,k,1,itemp)=t(i,JstrR,k,1,itemp)
-                  t(i,j,k,2,itemp)=t(i,JstrR,k,2,itemp)
-                  u(i,j,k,1)=u(i,JstrR,k,1)
-                  u(i,j,k,2)=u(i,JstrR,k,2)
+                  wz(i,j,k,1)=wz(i,JstrR,k,1)
+                  wz(i,j,k,2)=wz(i,JstrR,k,2)
                 end do
               end do
              end if
              if (xr(i,JstrR) > xini(nbx)) then 
-               write(200,*) "fin" 
               imem=nbx-1
-              write(200,*) i,ii,imem,mynode,xr(i,JstrR)
-     &                     ,xini(ii),xini(ii+1)
               do k=1,N
-                kini = h(i,Jstr)/depth*k+N*(depth-h(i,Jstr))/depth
+                kini = h(i,Jstr)/depth*(k+0.5)
+     &            +N*(depth-h(i,Jstr))/depth
                 kc = ceiling(kini)
                 kf = floor(kini) 
                 if(kc>N) then 
                   kc = N
                 endif  
-                u(i,JstrR,k,1)=0.5*(uini(nbx,kf)+ uini(nbx,kc))
-                u(i,JstrR,k,2)=u(i,JstrR,k,1)
-                t(i,JstrR,k,1,itemp)=-0.5*
-     &          (rhoini(nbx,kf)+
-     &          rhoini(nbx,kc)-2*1028.)/Tcoef+T0
-                t(i,JstrR,k,2,itemp)=t(i,JstrR,k,1,itemp)
+                wz(i,JstrR,k,1)=0.5*(wini(nbx,kf)+ wini(nbx,kc))
+                wz(i,JstrR,k,2)=wz(i,JstrR,k,1)
                 do j=JstrR+1,JendR
-                  t(i,j,k,1,itemp)=t(i,JstrR,k,1,itemp)
-                  t(i,j,k,2,itemp)=t(i,JstrR,k,2,itemp)
-                  u(i,j,k,1)=u(i,JstrR,k,1)
-                  u(i,j,k,2)=u(i,JstrR,k,2)
+                  wz(i,j,k,1)=wz(i,JstrR,k,1)
+                  wz(i,j,k,2)=wz(i,JstrR,k,2)
                 end do
               end do
              endif
-             if(.false.) then
-               write(200,*) "Error Soliton DJL." 
-               write(200,*) i,ii,imem,mynode,xr(i,JstrR),xini(ii)
-     &                      ,xini(ii+1)
-             end if
+             
+             if(.false.) write(6,*) "Error Soliton DJL." 
             end do
           end do
-          close(200)
 !      deallocate (xini,uini,wini,rhoini)
+
+             do i=IstrR,IendR
+             do j=JstrR,JendR
+              hintu=0.
+              hint=0.
+              do k=1,N
+               hintu = hintu + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &                          * u(i,j,k,1)
+               hint = hint   + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+              enddo
+              hintu = hintu / hint
+              do k=1,N
+                u(i,j,k,1) = u(i,j,k,1) - hintu
+                u(i,j,k,2) = u(i,j,k,1)
+              enddo 
+              ubar(i,j,:) = 0.
+             enddo
+             enddo
 !$acc end kernels
 
 #   elif defined GRAV_ADJ

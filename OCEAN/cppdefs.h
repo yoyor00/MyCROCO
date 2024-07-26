@@ -1697,8 +1697,9 @@
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
-# define UV_COR
-# define NS_PERIODIC
+# undef  UV_COR
+# define EW_PERIODIC
+# undef NS_PERIODIC
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
 # define UV_HADV_WENO5
@@ -1712,14 +1713,12 @@
 # undef  M3_FRC_BRY
 # undef  T_FRC_BRY
 # define ANA_SSH
-# define ZCLIMATOLOGY
-# define ANA_M2CLIMA
-# define M2CLIMATOLOGY
+# undef  ZCLIMATOLOGY
+# undef  ANA_M2CLIMA
+# undef  M2CLIMATOLOGY
 # define UV_VIS2
 # define TS_DIF2
 # define ANA_GRID
-# define OBC_EAST
-# define OBC_WEST
 # define ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
@@ -1727,7 +1726,7 @@
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
-# define SPONGE
+# undef  SPONGE
 # define DIAG_CFL
 
 #elif defined KH_INST

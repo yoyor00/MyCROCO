@@ -82,8 +82,8 @@
         cff1= 1.5
         cff2=-0.5
 # else
-        cff1= 1.   ! Just to agree with step2d
-        cff2= 0. 
+        cff1= 1.5  ! Just to agree with step2d
+        cff2=-0.5 
 # endif  
         cff3= 0.0
       else                             ! AB3 forward scheme

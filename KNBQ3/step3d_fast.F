@@ -183,7 +183,7 @@ C$    trd=omp_get_thread_num()
 # endif
       real    mybeta,myalpha,myepsilon,mygamma,
      &        VMAX,VMAXL, cff,cff0,cff1,cff2,cff3,cff4, 
-     &        DUnew,DVnew, dum_s, dum2_s
+     &        DUnew,DVnew, dum_s, dum2_s,DUnew2,DVnew2
       real  sum_nbq
 
 # ifdef NBQ_THETAIMP
@@ -712,8 +712,8 @@ C$    trd=omp_get_thread_num()
 ! !................................
 ! !   
 #  if (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
-        do j=JstrV,Jend
-          do i=IstrU,Iend
+        do j=Jstr,Jend
+          do i=Istr,Iend
 #  ifndef K3FAST_SEDLAYERS        
             do k=0,N
 #  else   
@@ -726,10 +726,10 @@ C$    trd=omp_get_thread_num()
 #  endif
 #  ifdef KNHINT_CORR 
                cff=cff+alphaw_nbq
-     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
-     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))
+     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N)))
 #  endif
-               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff)           
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-0*cff)           
 #  ifdef MASKING
      &                         *rmask(i,j)  
 #  endif       
@@ -740,8 +740,8 @@ C$    trd=omp_get_thread_num()
 #   ifdef MASKING
 !     &                         *rmask(i,j)
 #   endif  
-#  elif defined KNHINT_WH
-     &                        +wzh_nbq(i,j,k)
+#  else
+     &                        -qdmw_nbq(i,j,N)
      &                         *cff
 #   ifdef MASKING
      &                         *rmask(i,j)
