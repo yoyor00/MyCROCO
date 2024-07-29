@@ -263,7 +263,9 @@
 #  endif
 # elif defined BLOOM
       common /diag_biodiag3d_wat/biodiag3d_wat
+#  ifdef key_BLOOM_insed
       common /diag_biodiag3d_sed/biodiag3d_sed
+#  endif
       common /diag_biodiag2d/biodiag2d
 # else 
       common /diag_bioFlux/bioFlux

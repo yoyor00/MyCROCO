@@ -174,21 +174,6 @@
 
       nadv = 3   !<-- do not remove: used in compute_tracer_fluxes.h
 !
-!=======================================================================
-! I begin with the exception for the fixed tracers
-!=======================================================================
-!
-
-#  if defined SUBSTANCE
-      do itrc=1,ntfix
-         do i=Istr,Iend+1
-           do j=Jstr,Jend
-             cvfix_wat(i,j,nnew,itrc) = 0.
-           enddo
-         enddo
-      enddo
-#  endif
-
 !======================================================================
 !
 !  Compute horizontal advection
