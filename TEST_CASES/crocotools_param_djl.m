@@ -26,11 +26,10 @@
 %  Copyright (c) 2024 by Jean-Baptiste ROUSTAN & Laurent ROBLOU 
 %  e-mail:laurent.roblou@cnrs.fr
 %
-%  Ref:  Roustan, J.-B., Bordois, L., Garciá-Lafuente, J., Dumas, F., Auclair, F., & Carton, X. (2024). 
-%          Evidence of reflected internal solitary waves in the Strait of Gibraltar. 
-%          Journal of Geophysical Research: Oceans, 129, e2023JC020152. 
-%          https://doi.org/10.1029/2023JC020152 
-%
+%  Ref:    Stastna M. and K.G. Lamb, (2002).
+%          Large fully nonlinear internal solitary waves: 
+%          The effect of background current. Physics of fluids.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % SOLITON_DJL matlab package
