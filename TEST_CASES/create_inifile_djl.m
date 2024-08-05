@@ -102,6 +102,7 @@ netcdf.defVar(ncid,'hc','double',onedimid);
 netcdf.defVar(ncid,'s_rho','double',s_rhodimid); 
 netcdf.defVar(ncid,'Cs_rho','double',s_rhodimid); 
 netcdf.defVar(ncid,'ocean_time','double',timedimid); 
+netcdf.defVar(ncid,'scrum_time','double',timedimid); 
 varid = netcdf.defVar(ncid,'u','double',[xi_udimid,eta_udimid,s_rhodimid,timedimid]); 
 varid = netcdf.defVar(ncid,'v','double',[xi_vdimid,eta_vdimid,s_rhodimid,timedimid]); 
 varid = netcdf.defVar(ncid,'w','double',[xi_rhodimid,eta_rhodimid,s_wdimid,timedimid]); 
@@ -164,6 +165,9 @@ ncwriteatt(inifile,'Cs_rho','valid_max',0);
 ncwriteatt(inifile,'ocean_time','long_name','time since initialization');
 ncwriteatt(inifile,'ocean_time','units','second');
 %
+ncwriteatt(inifile,'scrum_time','long_name','time since initialization');
+ncwriteatt(inifile,'scrum_time','units','second');
+%
 ncwriteatt(inifile,'u','long_name','u-momentum component');
 ncwriteatt(inifile,'u','units','meter second-1');
 %
@@ -222,6 +226,7 @@ ncwrite(inifile,'hc',hc);
 ncwrite(inifile,'s_rho',s_rho);               
 ncwrite(inifile,'Cs_rho',Cs_rho);               
 ncwrite(inifile,'ocean_time',time*24*3600);  
+ncwrite(inifile,'scrum_time',time*24*3600);  
 ncwrite(inifile,'u',zeros(L,Mp,N,1));           
 ncwrite(inifile,'v',zeros(Lp,M,N,1));         
 ncwrite(inifile,'w',zeros(Lp,Mp,Np,1));         
