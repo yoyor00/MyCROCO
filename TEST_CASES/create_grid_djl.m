@@ -60,17 +60,17 @@ nw('one') = 1;
 %  Create variables and attributes
 %
 
-% nw{'xl'} = ncdouble('one');
-% nw{'xl'}.long_name = ncchar('domain length in the XI-direction');
-% nw{'xl'}.long_name = 'domain length in the XI-direction';
-% nw{'xl'}.units = ncchar('meter');
-% nw{'xl'}.units = 'meter';
+ nw{'xl'} = ncdouble('one');
+ nw{'xl'}.long_name = ncchar('domain length in the XI-direction');
+ nw{'xl'}.long_name = 'domain length in the XI-direction';
+ nw{'xl'}.units = ncchar('meter');
+ nw{'xl'}.units = 'meter';
 % 
-% nw{'el'} = ncdouble('one');
-% nw{'el'}.long_name = ncchar('domain length in the ETA-direction');
-% nw{'el'}.long_name = 'domain length in the ETA-direction';
-% nw{'el'}.units = ncchar('meter');
-% nw{'el'}.units = 'meter';
+ nw{'el'} = ncdouble('one');
+ nw{'el'}.long_name = ncchar('domain length in the ETA-direction');
+ nw{'el'}.long_name = 'domain length in the ETA-direction';
+ nw{'el'}.units = ncchar('meter');
+ nw{'el'}.units = 'meter';
 % 
 % nw{'depthmin'} = ncdouble('one');
 % nw{'depthmin'}.long_name = ncchar('Shallow bathymetry clipping depth');
@@ -112,23 +112,23 @@ nw{'h'}.units = 'meter';
 % nw{'alpha'}.long_name = ncchar('Weights between coarse and fine grids at RHO-points');
 % nw{'alpha'}.long_name = 'Weights between coarse and fine grids at RHO-points';
 
-% nw{'f'} = ncdouble('eta_rho', 'xi_rho');
-% nw{'f'}.long_name = ncchar('Coriolis parameter at RHO-points');
-% nw{'f'}.long_name = 'Coriolis parameter at RHO-points';
-% nw{'f'}.units = ncchar('second-1');
-% nw{'f'}.units = 'second-1';
+nw{'f'} = ncdouble('eta_rho', 'xi_rho');
+nw{'f'}.long_name = ncchar('Coriolis parameter at RHO-points');
+nw{'f'}.long_name = 'Coriolis parameter at RHO-points';
+nw{'f'}.units = ncchar('second-1');
+nw{'f'}.units = 'second-1';
 
-% nw{'pm'} = ncdouble('eta_rho', 'xi_rho');
-% nw{'pm'}.long_name = ncchar('curvilinear coordinate metric in XI');
-% nw{'pm'}.long_name = 'curvilinear coordinate metric in XI';
-% nw{'pm'}.units = ncchar('meter-1');
-% nw{'pm'}.units = 'meter-1';
-% 
-% nw{'pn'} = ncdouble('eta_rho', 'xi_rho');
-% nw{'pn'}.long_name = ncchar('curvilinear coordinate metric in ETA');
-% nw{'pn'}.long_name = 'curvilinear coordinate metric in ETA';
-% nw{'pn'}.units = ncchar('meter-1');
-% nw{'pn'}.units = 'meter-1';
+nw{'pm'} = ncdouble('eta_rho', 'xi_rho');
+nw{'pm'}.long_name = ncchar('curvilinear coordinate metric in XI');
+nw{'pm'}.long_name = 'curvilinear coordinate metric in XI';
+nw{'pm'}.units = ncchar('meter-1');
+nw{'pm'}.units = 'meter-1';
+
+nw{'pn'} = ncdouble('eta_rho', 'xi_rho');
+nw{'pn'}.long_name = ncchar('curvilinear coordinate metric in ETA');
+nw{'pn'}.long_name = 'curvilinear coordinate metric in ETA';
+nw{'pn'}.units = ncchar('meter-1');
+nw{'pn'}.units = 'meter-1';
 % 
 % nw{'dndx'} = ncdouble('eta_rho', 'xi_rho');
 % nw{'dndx'}.long_name = ncchar('xi derivative of inverse metric factor pn');

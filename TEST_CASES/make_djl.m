@@ -120,13 +120,18 @@ create_grid_djl(L,M,grdname,CROCO_title)
 disp(' ')
 disp(' Fill the grid file...')
 %
+cff=x.*0;	
 nc=netcdf(grdname,'write');
-nc{'x_rho'}(:)=x;
-nc{'y_rho'}(:)=x.*0;    
-nc{'angle'}(:)=0.;       
+nc{'xl'}(:)=dx*(L-1);
+nc{'el'}(:)=0;
 nc{'spherical'}(:)='F';
-nc{'mask_rho'}(:)=1+0.*x;
-nc{'h'}(:)=x.*0+H;              
+nc{'h'}(:)=cff+H;              
+nc{'f'}(:)=cff;              
+nc{'pm'}(:)=1/dx;
+nc{'pn'}(:)=1/dx;
+nc{'x_rho'}(:)=x;
+nc{'y_rho'}(:)=cff;    
+nc{'mask_rho'}(:)=1+cff;
 close(nc);
 
 %
