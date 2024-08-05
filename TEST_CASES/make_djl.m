@@ -31,6 +31,8 @@
 clear all
 close all
 
+addpath('./djles')
+
 %%%%%%%%%%%%%%%%%%%%% USERS DEFINED VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  Title 
@@ -46,18 +48,25 @@ crocotools_param_djl
 djles_common
 %
 %
+INTEGRATION_TEST=0;     % Set to 1 to activate debug tests  
+%
+CORRECT_UBAR=1;         % Set to 1 to correct u from vertical-averaged current
+%
+%
 %%%%%%%%%%%%%%%%%%% END USERS DEFINED VARIABLES %%%%%%%%%%%%%%%%%%%%%%%
 %
-
-addpath('./djles')
 
 if ~exist('croco_tools_path','var') | (croco_tools_path == "")
     error('ERROR: do set your croco_tools_path in crocotools_param_djl.m file')
 end
 
-addpath(croco_tools_path)
 addpath([croco_tools_path,'/Preprocessing_tools'])
-addpath([croco_tools_path,'/UTILITIES'])
+addpath([croco_tools_path,'/UTILITIES/mexcdf'])
+addpath([croco_tools_path,'/UTILITIES/mexcdf/mexnc'])
+addpath([croco_tools_path,'/UTILITIES/mexcdf/netcdf_toolbox/netcdf'])
+addpath([croco_tools_path,'/UTILITIES/mexcdf/netcdf_toolbox/netcdf/ncsource'])
+addpath([croco_tools_path,'/UTILITIES/mexcdf/netcdf_toolbox/netcdf/nctype'])
+addpath([croco_tools_path,'/UTILITIES/mexcdf/netcdf_toolbox/netcdf/ncutility'])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -130,7 +139,6 @@ theta_s=0;
 theta_b=0;
 hc=1.e16; 
 
-INTEGRATION_TEST=0
 if INTEGRATION_TEST == 1
     % test sigma coordinates stretching parameters :
     % compute ZC equiv. levels for rho grid,
@@ -175,8 +183,8 @@ nc{'temp'}(1,:,:,:)=reshape(cff1, [N Mp Lp]);
 %   to be shifted
 cff=circshift(u, [0 -f_shift]);
 cff1=rho2u_2d(cff);
-CORRECT_UBAR=1
 if CORRECT_UBAR == 1
+   disp(' Reset u removing depth-averaged current...')
    myzw=zlevs_1d(H, 0, theta_s, theta_b, hc, N, 'w', vtransform)'; 
    cff=myzw(2:end)-myzw(1:end-1); % w level heights
    mydz=repmat(cff, Lp,1)';       % conform along X direction 
