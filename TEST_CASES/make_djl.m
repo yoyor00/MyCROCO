@@ -187,6 +187,7 @@ nc{'temp'}(1,:,:,:)=cff;
 %   ubar corrected (TBC)
 %   already on inner grid
 %   to be shifted
+%   and expanded to Y direction
 cff=circshift(u, [0 -f_shift]); 	
 cff1=rho2u_2d(cff);
 if CORRECT_UBAR == 1
