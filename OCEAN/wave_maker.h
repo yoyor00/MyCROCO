@@ -211,6 +211,9 @@
             wa_bry_d(jw)=sqrt(wa_bry_d(jw)/cff4) ! normalize
           enddo
           call RANDOM_NUMBER(wpha_bry)  ! random phase
+#  ifdef OPENACC
+	  	STOP: RANDOM_NUMBER CANNOT BE ALLED INSIDE ACC LOOP MOVE OUTSIDE
+#  endif	  
           do iw=1,Nfrq
             do jw=1,Ndir
               wpha_bry(iw,jw)=wpha_bry(iw,jw)*2.*pi

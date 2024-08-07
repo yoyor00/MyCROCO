@@ -15,6 +15,9 @@
       subroutine u2dbc_tile(Istr,Iend,Jstr,Jend,grad)
 # ifdef AGRIF
       use AGRIF_Util
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif      
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
 

@@ -151,7 +151,10 @@ C$    trd=omp_get_thread_num()
 ! !*********************************************************************
 ! !*********************************************************************
 ! !
+# ifdef RVTK_DEBUG               
       use debug
+      use my_functions
+#  endif      
 # if defined ONLINE_ANALYSIS
       use module_interface_oa, only : var3d_oa,tvar_oa,tgvnam_oa
       use module_oa_variables, only : tv_oa
@@ -234,6 +237,11 @@ C$    trd=omp_get_thread_num()
      &   Hzr_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,-N_sl+1:N),
      &   Hzw_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,-N_sl:N),
      &   Hzw_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,-N_sl:N)
+# ifndef K3FAST_UV 
+!$acc declare create( Hzw_nbq_inv,
+!$acc&  Hzr_nbq_inv,Hzw_nbq_inv_u,Hzw_nbq_inv_v )        
+# endif        
+        
       real
      &    dthetadiv_nbqdz_u(PRIVATE_2D_SCRATCH_ARRAY,2),
      &    dthetadiv_nbqdz_v(PRIVATE_2D_SCRATCH_ARRAY,2),
@@ -712,6 +720,7 @@ C$    trd=omp_get_thread_num()
 ! !................................
 ! !   
 #  if (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
+!$acc kernels if(compute_on_device) default(present)    
         do j=Jstr,Jend
           do i=Istr,Iend
 #  ifndef K3FAST_SEDLAYERS        
@@ -750,6 +759,7 @@ C$    trd=omp_get_thread_num()
              enddo
            enddo
          enddo
+!$acc end kernels
 #   endif /* All NUDGING  */
 ! !
 ! !--------------------------------------------------------------------

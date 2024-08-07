@@ -217,6 +217,10 @@ C$    integer  trd, omp_get_thread_num
 !  example for SEAMOUNT test case
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+      use debug
+      use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
