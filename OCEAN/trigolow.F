@@ -60,8 +60,8 @@
       USE my_functions_1, only : exp=>myexp
       USE my_functions_1, only : cos=>mycos
       USE my_functions_1, only : sin=>mysin
-      USE my_functions_1, only : cos=>mycosh
-      USE my_functions_1, only : sin=>mysinh
+      USE my_functions_1, only : cosh=>mycosh
+      USE my_functions_1, only : sinh=>mysinh
       end module my_functions
 #else
       module my_functions_empty
