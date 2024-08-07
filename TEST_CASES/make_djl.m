@@ -106,12 +106,11 @@ disp([' Resolution: 1/',num2str(L/NX),' m'])
 %
 disp(' ')
 disp(' Create the grid file...')
-[Np,Lp]=size(w);
-Mp=1;
+[Np,Lp]=size(w); Mp=5;
 L=Lp-1; M=Mp-1; N=Np-1;
 
 disp([' LLm = ',num2str(L-1)])
-%disp([' MMm = ',num2str(M-1)])
+disp([' MMm = ',num2str(M-1)])
 create_grid_djl(L,M,grdname,CROCO_title)
 
 %
@@ -120,20 +119,19 @@ create_grid_djl(L,M,grdname,CROCO_title)
 disp(' ')
 disp(' Fill the grid file...')
 %
-cff=x.*0;	
+cff=zeros(Lp,Mp);
 nc=netcdf(grdname,'write');
 nc{'xl'}(:)=dx*(L-1);
-nc{'el'}(:)=0;
+nc{'el'}(:)=dx*(M-1);
 nc{'spherical'}(:)='F';
 nc{'h'}(:)=cff+H;              
 nc{'f'}(:)=cff;              
 nc{'pm'}(:)=1/dx;
 nc{'pn'}(:)=1/dx;
-nc{'x_rho'}(:)=x;
+nc{'x_rho'}(:)=repmat(x, Mp, 1);
 nc{'y_rho'}(:)=cff;    
-nc{'mask_rho'}(:)=1+cff;
+nc{'mask_rho'}(:)=cff+1;
 close(nc);
-
 %
 % reguraly-spaced vertical grid
 %
@@ -177,16 +175,19 @@ nc=netcdf(ininame,'write');
 % density and temperature variables, 
 %   already on inner grid, equiv. to rho grid
 %   to be shifted
-cff=circshift(density*ref0, [0 -f_shift]);  
-nc{'rho'}(1,:,:,:)=reshape(cff, [N Mp Lp]);
-cff1=(cff-ref0)/TCOEFF + T0;     
-nc{'temp'}(1,:,:,:)=reshape(cff1, [N Mp Lp]);
+%   and expanded to Y direction
+cff=circshift(density*ref0, [0 -f_shift]);  	% circular shift
+cff1=repmat(cff, [1 1 Mp]); 			% add extra dimension
+cff2=permute(cff1, [1 3 2]);			% reorder dimensions
+nc{'rho'}(1,:,:,:)=cff2;
+cff=(cff2-ref0)/TCOEFF + T0;     
+nc{'temp'}(1,:,:,:)=cff; 
 
 % horizontal velocity, 
 %   ubar corrected (TBC)
 %   already on inner grid
 %   to be shifted
-cff=circshift(u, [0 -f_shift]);
+cff=circshift(u, [0 -f_shift]); 	
 cff1=rho2u_2d(cff);
 if CORRECT_UBAR == 1
    disp(' Reset u removing depth-averaged current...')
@@ -198,18 +199,22 @@ if CORRECT_UBAR == 1
    D_u=squeeze(sum(dzu));          
    ubar=squeeze(hu./D_u);
    %mystats=sprintf('min=%e ; avg=%e ; max=%e',min(ubar),mean(ubar),max(ubar));
-   %disp(['correct u from ubar: ', mystats]);
+   %disp(mystats);
    cff1=cff1-ubar; 
 end
-nc{'u'}(1,:,:,1:L)=reshape(cff1, [N Mp L]);
+cff2=repmat(cff1, [1 1 Mp]); 
+nc{'u'}(1,:,:,:)=permute(cff2, [1 3 2]);
 
 % vertical velocity, 
 %   from inner grid to exterior grid
-%   bottom/surface already set to zero
+%   bottom/surface already set to zero in file initialization
 %   to be shifted
-cff=circshift(w, [0 -f_shift]);   
+%   and expanded to Y direction
+cff=circshift(w, [0 -f_shift]);
+cff1=repmat(cff, [1 1 Mp]); 
+cff2=permute(cff1, [1 3 2]);
 for k=2:N-1
-    nc{'w'}(1,k,:,:)=0.5*(cff(k,:)+cff(k+1,:));  
+    nc{'w'}(1,k,:,:)=0.5*(cff2(k,:)+cff2(k+1,:));  
 end
 close(nc)
 

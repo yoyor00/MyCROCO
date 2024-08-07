@@ -62,7 +62,7 @@ close(nc);
 hmin=min(min(h));
 [Mp,Lp]=size(h);
 L=Lp-1;
-M=1;    % NB: M should be Mp-1 but leads (here) to zero whitch is not relevant as a matrix rank
+M=Mp-1;    
 Np=N+1;
 %
 %  Create the initial file
