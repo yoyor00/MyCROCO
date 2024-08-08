@@ -29,7 +29,7 @@
 %  Ref:    Stastna M. and K.G. Lamb, (2002).
 %          Large fully nonlinear internal solitary waves: 
 %          The effect of background current. Physics of fluids.
-
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % SOLITON_DJL matlab package
@@ -50,7 +50,7 @@
 %%% Specify the parameters of the problem %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A  = 6*10e3;                            % APE for wave (m^4/s^2)
-L  = 45000;                             % domain width (m)
+L  = 25000;                             % domain width (m)
 H  = 600;                               % domain depth (m)
 NX = 100;                               % grid
 NZ = 50;                                % grid

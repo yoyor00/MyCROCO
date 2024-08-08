@@ -82,7 +82,7 @@ djles_refine_solution
 
 % Increase the resolution, and iterate to convergence
 epsilon=1e-6;
-NX=200; NZ=50;
+NX=500; NZ=200;
 djles_refine_solution
 
 end_time=clock;
@@ -96,10 +96,12 @@ djles_plot
 
 %%%% SAVE INPUT FILES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+dx=(L/NX);
+
 disp(' ')
 disp([' Making the grid: ',grdname])
 disp(' ')
-disp([' Resolution: 1/',num2str(L/NX),' m'])    
+disp([' Resolution: 1/',num2str(dx,' m'])    
 
 %
 % Create the grid file
@@ -107,7 +109,7 @@ disp([' Resolution: 1/',num2str(L/NX),' m'])
 disp(' ')
 disp(' Create the grid file...')
 [Np,Lp]=size(w); Mp=5;
-L=Lp-1; M=Mp-1; N=Np-1;
+L=Lp-1; M=Mp-1; N=Np-1;		% WARNING, L is now the domain rank size in X direction
 
 disp([' LLm = ',num2str(L-1)])
 disp([' MMm = ',num2str(M-1)])
