@@ -53,6 +53,16 @@
      &     obst_tau, obst_fuz, obst_fvz
 #endif
 
+#ifdef HYBIOSED
+      USE com_HYBIOSED, ONLY : hbs_nbvar,
+     &     vname_hbs, hisHbs, l_hbsout_pos,
+     &     l_hbsout_susp_trapp, l_hbsout_susp_block,
+     &     l_hbsout_rbiom, l_hbsout_zroot, l_hbsout_thickroot,
+     &     hbs_position_wat, hbs_position_bed,
+     &     hbs_zup_root, hbs_thick_root,
+     &     hbs_root_biomass, hbs_ws_trapp, hbs_ws_block
+#endif
+
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik
@@ -1713,6 +1723,64 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 
 
 #endif /* OBSTRUCTION */
+
+#if defined HYBIOSED
+
+      do itrc=1,hbs_nbvar
+         if (l_hbsout_pos) then
+            indx=itrc
+            work2d(:,:)=hbs_position_wat(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisHbs(indx),
+     &                     vname_hbs(1,indx),record,r2dvar,type)
+
+            indx=hbs_nbvar+itrc
+            work2d(:,:)=hbs_position_bed(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisHbs(indx),
+     &                     vname_hbs(1,indx),record,r2dvar,type)
+         endif
+
+         if (l_hbsout_rbiom) then
+            indx=2*hbs_nbvar+itrc
+            work2d(:,:)=hbs_root_biomass(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisHbs(indx),
+     &                     vname_hbs(1,indx),record,r2dvar,type)
+         endif
+
+         if (l_hbsout_zroot) then
+            indx=3*hbs_nbvar+itrc
+            work2d(:,:)=hbs_zup_root(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisHbs(indx),
+     &                     vname_hbs(1,indx),record,r2dvar,type)
+         endif
+
+         if (l_hbsout_thickroot) then
+            indx=4*hbs_nbvar+itrc
+            work2d(:,:)=hbs_thick_root(itrc,:,:)
+            call fillvalue2d(work2d,ncidhis,hisHbs(indx),
+     &                     vname_hbs(1,indx),record,r2dvar,type)
+         endif
+      end do
+
+      if (l_hbsout_susp_trapp) then
+            indx=5*hbs_nbvar+1
+            do k=1,N
+                  workr(:,:,k)=hbs_ws_trapp(k,:,:)
+            enddo
+            call fillvalue3d(workr,ncidhis,hisHbs(indx),
+     &                     vname_hbs(1,indx),record,r3dvar,type)
+      endif
+
+      if (l_hbsout_susp_block) then
+            indx=5*hbs_nbvar+2
+            do k=1,N
+                  workr(:,:,k)=hbs_ws_block(k,:,:)
+            enddo
+            call fillvalue3d(workr,ncidhis,hisHbs(indx),
+     &                     vname_hbs(1,indx),record,r3dvar,type)
+      endif
+
+#endif /* HYBIOSED */
+
 
 #endif /* SOLVE3D */
 

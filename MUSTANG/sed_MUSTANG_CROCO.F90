@@ -108,7 +108,9 @@ SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
 !&E ** Called by :  MUSTANG_update
 !&E
 !&E----------------------------------------------------------------------------
-
+#if defined OBSTRUCTION && defined HYBIOSED
+  USE com_HYBIOSED, ONLY : hbs_ws_trapp, hbs_ws_block
+#endif
 !! * Arguments
 INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
 REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION  
@@ -185,11 +187,19 @@ DO i = ifirst, ilast
                     ENDIF  ! ws_hind_opt(iv) == 3 only if ws_free_opt(iv) == 3
                 ENDIF
 
+                ws_part(i, j, k, itemp + ntrc_salt + iv) = WSfree * Hind
+
+#if defined OBSTRUCTION && defined HYBIOSED
+                ws_part(i, j, k, itemp + ntrc_salt + iv) = &
+                  ws_part(i, j, k, itemp + ntrc_salt + iv) * &
+                  hbs_ws_trapp(k, i, j)* hbs_ws_block(k, i, j)
+#endif
+
                 ! limiting ws with min/max values...
                 ! necessary if ndt_part not updated during the simulation, 
                 ! ndt_part calculated in t3dmix_tridiagonal_settling from max ws
                 ws_part(i, j, k, itemp + ntrc_salt + iv) = max(ws_free_min(iv), &
-                    min(ws_free_max(iv), WSfree * Hind))
+                    min(ws_free_max(iv), ws_part(i, j, k, itemp + ntrc_salt + iv)))
             ENDDO
 
 #endif  /* key_MUSTANG_flocmod */

@@ -91,15 +91,8 @@ CONTAINS
       ! ************************
       ! * READING NAMELIST
       ! ************************
-      lstr = lenstr(obstname)
-      OPEN (50, file=obstname(1:lstr), status='old', form='formatted', access='sequential')
-      READ (50, obst_main)
-      ALLOCATE (obst_fn_var(1:obst_nbvar))
-      READ (50, obst_input)
-      READ (50, obst_output)
-      CLOSE (50)
       MPI_master_only WRITE (iscreenlog, *) &
-         ' '
+      ' '
       MPI_master_only WRITE (iscreenlog, *) &
          '*****************************************************'
       MPI_master_only WRITE (iscreenlog, *) &
@@ -108,6 +101,21 @@ CONTAINS
          '*****************************************************'
       MPI_master_only WRITE (iscreenlog, *) &
          ' Reading file ', TRIM(obstname)
+      lstr = lenstr(obstname)
+      OPEN (50, file=obstname(1:lstr), status='old', form='formatted', access='sequential')
+      READ (50, obst_main); REWIND(50)
+
+      IF (obst_nbvar > 0) THEN
+         ALLOCATE (obst_fn_var(1:obst_nbvar))
+         READ (50, obst_input); REWIND(50)
+      ELSE ! obst_nbvar > 0
+         MPI_master_only WRITE (iscreenlog, *) &
+         ' No Obstruction, obst_nbvar = ', obst_nbvar
+      ENDIF
+
+      READ (50, obst_output); REWIND(50)
+      CLOSE (50)
+
 
       ! ************************************
       ! * ALLOCATION OF VARIABLES PARAMETERS
@@ -136,53 +144,57 @@ CONTAINS
       ! *******************************
       CALL obst_vname
 
-      ! ***********************
-      ! * READING POSITION FILE
-      ! ***********************
-      CALL obst_init_pos
+      IF (obst_nbvar > 0) THEN
+         ! ***********************
+         ! * READING POSITION FILE
+         ! ***********************
+         CALL obst_init_pos
 
-      ! ********************************************************
-      ! * READING SPATIAL INIT FILE or init from constant values
-      ! ********************************************************
-      CALL obst_init_spatial
+         ! ********************************************************
+         ! * READING SPATIAL INIT FILE or init from constant values
+         ! ********************************************************
+         CALL obst_init_spatial
 
-      ! ***************************
-      ! * READING DISTRIBUTION FILE
-      ! ***************************
-      CALL obst_readfile_distri
+         ! ***************************
+         ! * READING DISTRIBUTION FILE
+         ! ***************************
+         CALL obst_readfile_distri
 
-      ! *******************************
-      ! * INITIALIZATION OF TIME SERIES
-      ! *******************************
-      CALL obst_init_timeseries
+         ! *******************************
+         ! * INITIALIZATION OF TIME SERIES
+         ! *******************************
+         CALL obst_init_timeseries
 
-      ! ***********************************
-      ! * INITIALIZATION OF ROUGHNESS SEDIM
-      ! ***********************************
-      obst_l_z0bstress_tot = .FALSE.
-      DO iv = 1, obst_nbvar
-         IF (obst_l_z0bstress(iv)) THEN
-            obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
-         END IF
-      END DO
+         ! ***********************************
+         ! * INITIALIZATION OF ROUGHNESS SEDIM
+         ! ***********************************
+         obst_l_z0bstress_tot = .FALSE.
+         DO iv = 1, obst_nbvar
+            IF (obst_l_z0bstress(iv)) THEN
+               obst_l_z0bstress_tot = .TRUE. ! Only one variable used z0sed
+            END IF
+         END DO
 
-      ! ***********************
-      ! * OTHER INITIALIZATIONS
-      ! ***********************
-      obst_z0bed(:, :) = zob(:, :) ! Saving the surface z0 tables from hydraulical initialization (without obstructions)
+         ! ***********************
+         ! * OTHER INITIALIZATIONS
+         ! ***********************
+         obst_z0bed(:, :) = zob(:, :) ! Saving the surface z0 tables from hydraulical initialization (without obstructions)
 
-      CALL o1dv_alloc(obst_nbvar, obst_kmax, obst_nb_max_hnorm)
-      CALL o1dv_init(h0fond_in, obst_c_paramhuv, &
-                     obst_varname, obst_type, obst_l_flexible, obst_l_abdelposture, &
-                     obst_l_param_height, obst_l_cylinder, obst_l_noturb, obst_l_drag_cste, &
-                     obst_l_abdelrough_cste, obst_l_fracxy, obst_l_z0bstress, &
-                     obst_fracxy_type, obst_c_abdel_nmax, obst_z0bstress_option, &
-                     obst_c_rho, obst_c_height_x0, obst_c_height_x1, obst_c_shelter, &
-                     obst_c_lift, obst_c_drag, obst_c_lz, obst_c_crough_x0, obst_c_crough_x1, &
-                     obst_c_fracxy_k0, obst_c_fracxy_k1, obst_c_fracxy_l, obst_c_z0bstress, &
-                     obst_c_z0bstress_x0, obst_c_z0bstress_x1, &
-                     obst_l_filedistri, obst_nbhnorm, obst_height_norm, obst_dens_norm, &
-                     stdout)
+         
+         CALL o1dv_alloc(obst_nbvar, obst_kmax, obst_nb_max_hnorm)
+         CALL o1dv_init(h0fond_in, obst_c_paramhuv, &
+                        obst_varname, obst_type, obst_l_flexible, obst_l_abdelposture, &
+                        obst_l_param_height, obst_l_cylinder, obst_l_noturb, obst_l_drag_cste, &
+                        obst_l_abdelrough_cste, obst_l_fracxy, obst_l_z0bstress, &
+                        obst_fracxy_type, obst_c_abdel_nmax, obst_z0bstress_option, &
+                        obst_c_rho, obst_c_height_x0, obst_c_height_x1, obst_c_shelter, &
+                        obst_c_lift, obst_c_drag, obst_c_lz, obst_c_crough_x0, obst_c_crough_x1, &
+                        obst_c_fracxy_k0, obst_c_fracxy_k1, obst_c_fracxy_l, obst_c_z0bstress, &
+                        obst_c_z0bstress_x0, obst_c_z0bstress_x1, &
+                        obst_l_filedistri, obst_nbhnorm, obst_height_norm, obst_dens_norm, &
+                        stdout)
+      ENDIF ! obst_nbvar > 0
+
 
    END SUBROUTINE obst_init
 
@@ -793,13 +805,13 @@ CONTAINS
       ! ******************************
       filepc = obst_fn_var(iv)
       OPEN (55, file=filepc, status='old', form='formatted', access='sequential')
-      READ (55, obst_var_main)
-      READ (55, obst_var_option)
-      READ (55, obst_var_init)
-      READ (55, obst_var_flexibility)
-      READ (55, obst_var_roughdrag)
-      READ (55, obst_var_fracxy)
-      READ (55, obst_var_bstress)
+      READ (55, obst_var_main); REWIND(55)
+      READ (55, obst_var_option); REWIND(55)
+      READ (55, obst_var_init); REWIND(55)
+      READ (55, obst_var_flexibility); REWIND(55)
+      READ (55, obst_var_roughdrag); REWIND(55)
+      READ (55, obst_var_fracxy); REWIND(55)
+      READ (55, obst_var_bstress); REWIND(55)
       CLOSE (55)
       ! ************************************
       ! * Alocate to corresponding parameter
@@ -1277,29 +1289,6 @@ CONTAINS
       STOP
 #endif
 
-      !--------------------------------
-      ! TESTING THE NUMBER OF VARIABLES
-      !--------------------------------
-      IF (obst_nbvar > 6) THEN
-         MPI_master_only WRITE (ierrorlog, *) &
-            ' '
-         MPI_master_only WRITE (ierrorlog, *) &
-            '**********************************************************************'
-         MPI_master_only WRITE (ierrorlog, *) &
-            '********************** module OBSTRUCTIONS ***************************'
-         MPI_master_only WRITE (ierrorlog, *) &
-            '************* subroutine obst_compatibility ******************'
-         MPI_master_only WRITE (ierrorlog, *) &
-            ' ERROR : The total number of obstruction variables '
-         MPI_master_only WRITE (ierrorlog, *) &
-            '         is > 6 which is the maximum allowed for output reasons (see hisObst) '
-         MPI_master_only WRITE (ierrorlog, *) &
-            '         nbvar = ', obst_nbvar
-         MPI_master_only WRITE (ierrorlog, *) &
-            ' --> THE SIMULATION IS STOPPED !!! '
-         STOP
-      END IF
-
       !--------------------------------------------------------------
       ! TEST CONSISTENCY FOR SCHEME AND DESCRIPTION FOR EACH VARIALBE
       !--------------------------------------------------------------
@@ -1416,7 +1405,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!                 *** SUBROUTINE obst_nccheck  ***
       !!
-      !! ** Purpose : Purpose : check netcdf function
+      !! ** Purpose : check netcdf function
       !!----------------------------------------------------------------------
       USE netcdf
       IMPLICIT NONE
@@ -1439,7 +1428,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!                 *** SUBROUTINE obst_nccheck  ***
       !!
-      !! ** Purpose : Purpose : get 2D from netcdf (from nf_fread.F translate in f90)
+      !! ** Purpose : get 2D from netcdf (from nf_fread.F translate in f90)
       !!----------------------------------------------------------------------
       USE module_OBSTRUCTIONS ! for GLOBAL_2D_ARRAY
       USE netcdf
@@ -1850,6 +1839,7 @@ CONTAINS
 
       IMPLICIT NONE
 
+      IF (obst_nbvar > 0) THEN
       !-------------------------
       ! Variables on (iv)
       !--------------------
@@ -1938,6 +1928,8 @@ CONTAINS
       obst_c_z0bstress_x0(:) = 0.0_rsh
       ALLOCATE (obst_c_z0bstress_x1(1:obst_nbvar))
       obst_c_z0bstress_x1(:) = 0.0_rsh
+
+      ENDIF ! obst_nbvar > 0
       !-------------------------
    END SUBROUTINE obst_alloc_nbvar
 
@@ -1957,24 +1949,26 @@ CONTAINS
       !----------------------
       ! Variables on (iv,i,j)
       !----------------------
-      ALLOCATE (obst_dens_inst(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
-      obst_dens_inst(:, :, :) = 0.0_rsh
-      ALLOCATE (obst_width_inst(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
-      obst_width_inst(:, :, :) = 0.0_rsh
-      ALLOCATE (obst_thick_inst(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
-      obst_thick_inst(:, :, :) = 0.0_rsh
-      ALLOCATE (obst_height_inst(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
-      obst_height_inst(:, :, :) = 0.0_rsh
+      IF (obst_nbvar > 0) THEN
+         ALLOCATE (obst_dens_inst(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
+         obst_dens_inst(:, :, :) = 0.0_rsh
+         ALLOCATE (obst_width_inst(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
+         obst_width_inst(:, :, :) = 0.0_rsh
+         ALLOCATE (obst_thick_inst(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
+         obst_thick_inst(:, :, :) = 0.0_rsh
+         ALLOCATE (obst_height_inst(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
+         obst_height_inst(:, :, :) = 0.0_rsh
 
-      ALLOCATE (obst_position(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
-      obst_position(:, :, :) = 0.0_rsh
-      ALLOCATE (obst_height(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed for previous value
-      obst_height(:, :, :) = 0.0_rsh
+         ALLOCATE (obst_position(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed
+         obst_position(:, :, :) = 0.0_rsh
+         ALLOCATE (obst_height(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! always needed for previous value
+         obst_height(:, :, :) = 0.0_rsh
 
-      IF (l_obstout_frac_xy) THEN
-         ALLOCATE (obst_fracxy(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! optionnal
-         obst_fracxy(:, :, :) = 0.0_rsh
-      END IF
+         IF (l_obstout_frac_xy) THEN
+            ALLOCATE (obst_fracxy(1:obst_nbvar, GLOBAL_2D_ARRAY)) ! optionnal
+            obst_fracxy(:, :, :) = 0.0_rsh
+         END IF
+      ENDIF ! obst_nbvar> 0
       IF (l_obstout_a2d) THEN
          ALLOCATE (obst_a2d(1:obst_nbvar + 3, GLOBAL_2D_ARRAY)) ! optionnal
          obst_a2d(:, :, :) = 0.0_rsh
@@ -1999,36 +1993,37 @@ CONTAINS
       !------------------------
       ! Variables on (iv,k,i,j)
       !------------------------
-      IF (l_obstout_dens_e) THEN
-         ALLOCATE (obst_dens3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
-         obst_dens3d(:, :, :, :) = 0.0_rsh
-      END IF
-      IF (l_obstout_width_e) THEN
-         ALLOCATE (obst_width3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
-         obst_width3d(:, :, :, :) = 0.0_rsh
-      END IF
-      IF (l_obstout_thick_e) THEN
-         ALLOCATE (obst_thick3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
-         obst_thick3d(:, :, :, :) = 0.0_rsh
-      END IF
-      IF (l_obstout_theta) THEN
-         ALLOCATE (obst_theta3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
-         obst_theta3d(:, :, :, :) = 0.0_rsh
-      END IF
-      IF (l_obstout_frac_z) THEN
-         ALLOCATE (obst_fracz3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
-         obst_fracz3d(:, :, :, :) = 0.0_rsh
-      END IF
-      IF (l_obstout_drag) THEN
-         ALLOCATE (obst_drag3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
-         obst_drag3d(:, :, :, :) = 0.0_rsh
-      END IF
+      IF (obst_nbvar > 0) THEN
+         IF (l_obstout_dens_e) THEN
+            ALLOCATE (obst_dens3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
+            obst_dens3d(:, :, :, :) = 0.0_rsh
+         END IF
+         IF (l_obstout_width_e) THEN
+            ALLOCATE (obst_width3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
+            obst_width3d(:, :, :, :) = 0.0_rsh
+         END IF
+         IF (l_obstout_thick_e) THEN
+            ALLOCATE (obst_thick3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
+            obst_thick3d(:, :, :, :) = 0.0_rsh
+         END IF
+         IF (l_obstout_theta) THEN
+            ALLOCATE (obst_theta3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
+            obst_theta3d(:, :, :, :) = 0.0_rsh
+         END IF
+         IF (l_obstout_frac_z) THEN
+            ALLOCATE (obst_fracz3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
+            obst_fracz3d(:, :, :, :) = 0.0_rsh
+         END IF
+         IF (l_obstout_drag) THEN
+            ALLOCATE (obst_drag3d(1:obst_nbvar, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
+            obst_drag3d(:, :, :, :) = 0.0_rsh
+         END IF
+      ENDIF ! obst_nbvar> 0
       ALLOCATE (obst_a3d(1:obst_nbvar + 3, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! always needed
       obst_a3d(:, :, :, :) = 0.0_rsh
-      IF (l_obstout_s3d) THEN
-         ALLOCATE (obst_s3d(1:obst_nbvar + 3, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! optionnal
-         obst_s3d(:, :, :, :) = 0.0_rsh
-      END IF
+      ALLOCATE (obst_s3d(1:obst_nbvar + 3, 1:obst_kmax, GLOBAL_2D_ARRAY)) ! needed for HYBIOSED
+      obst_s3d(:, :, :, :) = 0.0_rsh
+
       !---------------------
       ! Variables on (i,j,k)
       !---------------------

@@ -42,7 +42,10 @@
       USE com_OBSTRUCTIONS, ONLY : hisObst, avgObst, 
      &     obst_nbvar, outObst, out2DObst, vname_obst
 #endif
-
+#ifdef HYBIOSED
+      USE com_HYBIOSED, ONLY : hisHbs, avgHbs, 
+     &     hbs_nbvar, outHbs, out2DHbs, vname_hbs
+#endif
 
       implicit none
       logical create_new_file
@@ -61,7 +64,7 @@
 #ifdef MRL_WCI
      &      , iwkb
 #endif
-#if defined MUSTANG || defined OBSTRUCTION
+#if defined MUSTANG || defined OBSTRUCTION || defined HYBIOSED
      &      , indx,ik
 #endif
 #include "param.h"
@@ -150,6 +153,7 @@
 # endif
 # define vidM hisMust
 # define vidObst hisObst
+# define vidHbs hisHbs
 
 #else
 
@@ -227,6 +231,7 @@
 
 # define vidM avgMust
 # define vidObst avgObst
+# define vidHbs avgHbs
 #endif
 
 # ifdef M3FAST_HIS
@@ -2323,6 +2328,42 @@
         enddo
 
 # endif /* OBSTRUCTION */
+!
+!-----------------------------------------------------------------------
+!  HYBIOSED model output
+!-----------------------------------------------------------------------
+!
+# ifdef HYBIOSED
+
+        do itrv=1,5*hbs_nbvar+2
+            indx = itrv
+            if (outHbs(indx)) then 
+               if (out2DHbs(indx)) then
+                   ierr=nf_def_var (ncid, vname_hbs(1,indx),
+     &                 NF_FOUT, 3, r2dgrd, vidHbs(indx))  
+               else
+                   ierr=nf_def_var (ncid, vname_hbs(1,indx),
+     &                 NF_FOUT, 4, r3dgrd, vidHbs(indx)) 
+               endif
+#   ifdef NC4PAR
+                ierr=nf_var_par_access(ncid,vidHbs(indx),
+     &                           nf_collective)
+#   endif
+                lvar=lenstr(vname_hbs(2,indx))
+                ierr=nf_put_att_text (ncid, vidHbs(indx), 'long_name',
+     &                                  lvar,vname_hbs(2,indx)(1:lvar))
+                lvar=lenstr(vname_hbs(3,indx))
+                ierr=nf_put_att_text (ncid, vidHbs(indx), 'units',
+     &                                  lvar,vname_hbs(3,indx)(1:lvar))
+                lvar=lenstr(vname_hbs(4,indx))
+                ierr=nf_put_att_text (ncid, vidHbs(indx), 'field',
+     &                                  lvar,vname_hbs(4,indx)(1:lvar))
+                call nf_add_attribute(ncid, vidHbs(indx),
+     &              vname_hbs(:,indx), 5, NF_FOUT, ierr)
+            endif
+        enddo
+
+# endif /* OBSTRUCTION */
 
 #endif /* SOLVE3D */
 
@@ -3582,6 +3623,22 @@
       enddo ! itrv
 
 # endif /* OBSTRUCTION */
+
+# ifdef HYBIOSED
+      do itrv=1,5*obst_nbvar+2
+         indx=itrv
+         if (outHbs(indx)) then 
+            lvar=lenstr(vname_hbs(1,indx))
+            ierr=nf_inq_varid (ncid, vname_hbs(1,indx)(1:lvar),
+     &                             vidHbs(itrv))
+#  ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidHbs(itrv),,
+     &                             nf_collective)
+#  endif
+         endif
+      enddo ! itrv
+
+# endif /* HYBIOSED */
 !
 #endif /* SOLVE3D */
 !
@@ -3873,6 +3930,7 @@
 #undef vidHm
 #undef vidM
 #undef vidObst
+#undef vidHbs
 
 #ifdef AVERAGES
 # ifndef AVRH

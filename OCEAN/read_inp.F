@@ -2710,6 +2710,16 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          obstname(1:lstr)
 #endif /* OBSTRUCTION */
 
+#if defined HYBIOSED
+      elseif (keyword(1:kwlen).eq.'hybiosed') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) hbsname
+        lstr=lenstr(hbsname)
+        MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for Hybiosed module:' ,
+     &          hbsname(1:lstr)
+#endif /* HYBIOSED */
+
 #ifdef MRL_WCI
 !
 ! MRL wave-current interaction variables history fields

@@ -49,6 +49,8 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(obst_kmax)   :: obst_dz
       INTEGER :: i, j, k
 
+      IF (obst_nbvar > 0 ) THEN
+
       ! ******************************
       ! * READING CHARACTERISTICS FILE
       ! ******************************
@@ -91,6 +93,7 @@ CONTAINS
             obst_fuz(i, j, :) = obst_output_ij%fuz(:)
             obst_fvz(i, j, :) = obst_output_ij%fvz(:)
             obst_a3d(:, :, i, j) = obst_output_ij%a3d(:, :)
+            obst_s3d(:, :, i, j) = obst_output_ij%s3d(:, :) ! needed for HYBIOSED
             obst_tau(i, j, :) = obst_output_ij%tau(:)
             obst_t(i, j, :) = obst_output_ij%t(:)
             IF (obst_nv_noturb > 0) THEN
@@ -121,9 +124,6 @@ CONTAINS
             IF (l_obstout_s2d) then
                obst_s2d(:, i, j) = obst_output_ij%s2d(:)
             END IF
-            IF (l_obstout_s3d) then
-               obst_s3d(:, :, i, j) = obst_output_ij%s3d(:, :)
-            END IF
             IF (l_obstout_drag) then
                obst_drag3d(:, :, i, j) = obst_output_ij%drag3d(:, :)
             END IF
@@ -134,6 +134,8 @@ CONTAINS
       CALL exchange_r3d_tile(limin, limax, ljmin, ljmax, obst_fuz(START_2D_ARRAY, 1))
       CALL exchange_r3d_tile(limin, limax, ljmin, ljmax, obst_fvz(START_2D_ARRAY, 1))
 #endif /* MPI */
+
+      ENDIF ! obst_nbvar >0
 
    END SUBROUTINE obst_update
 

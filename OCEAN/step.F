@@ -1037,6 +1037,9 @@ C$OMP END MASTER
 # endif
 # include "coupler_define_MUSTANG.h"
 #endif
+#ifdef HYBIOSED
+      USE plug_HYBIOSED, ONLY : hbs_update_main
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -1101,6 +1104,9 @@ C$OMP BARRIER
 
 # ifdef MUSTANG
         call mustang_deposition_main (tile)
+# endif
+# ifdef HYBIOSED
+        call hbs_update_main (tile)
 # endif
 
 # ifdef SUBSTANCE_SUBMASSBALANCE

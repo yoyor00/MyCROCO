@@ -41,6 +41,10 @@
           USE plug_OBSTRUCTIONS, ONLY : obst_init_main
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
 #endif
+#ifdef HYBIOSED
+          USE plug_HYBIOSED, ONLY : hbs_init_main
+          USE plug_HYBIOSED, ONLY : hbs_update_main
+#endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
      &                                   ,if_oa, if_oa_fast_mode
@@ -496,16 +500,23 @@ CR      write(*,*)  ' -5' MYID0
 #endif
 !
 !----------------------------------------------------------------------
-! OBSTRUCTION : initialization
+! OBSTRUCTION : initialization 
 !----------------------------------------------------------------------
 !
 #ifdef OBSTRUCTION
+      call obst_init_main ()
       do tile=0,NSUB_X*NSUB_E-1
-        call obst_init_main ()
         call obst_update_main (tile)
       enddo
 #endif
-
+!
+!----------------------------------------------------------------------
+! HYBIOSED : initialization
+!----------------------------------------------------------------------
+!
+# ifdef HYBIOSED
+      call hbs_init_main ()
+# endif
 !
 !----------------------------------------------------------------------
 !  Finalize grid setup

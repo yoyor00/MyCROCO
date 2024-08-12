@@ -184,7 +184,7 @@ MODULE sed_MUSTANG
 #endif
 #ifdef OBSTRUCTION
    USE OBSTRUCTIONS1DV, ONLY : o1dv_comp_z0sedim
-   USE com_OBSTRUCTIONS, ONLY : obst_position, obst_height, obst_dens_inst, obst_width_inst
+   USE com_OBSTRUCTIONS, ONLY : obst_position, obst_height, obst_dens_inst, obst_width_inst, obst_nbvar
 #endif
 
    !! * Arguments
@@ -237,12 +237,14 @@ MODULE sed_MUSTANG
     endif
 
 #ifdef OBSTRUCTION
+    IF (obst_nbvar > 0) THEN
       DO j=jfirst,jlast
          DO i=ifirst,ilast 
             z0sed(i,j) = o1dv_comp_z0sedim(obst_position(:,i,j), obst_height(:,i,j), &
                obst_width_inst(:,i,j), obst_dens_inst(:,i,j), z0sed(i,j))
          END DO
       END DO
+    ENDIF
 #endif
 
     call sed_skinstress(ifirst, ilast, jfirst, jlast)
@@ -2394,10 +2396,14 @@ MODULE sed_MUSTANG
    !&E
    !&E
    !&E ** Called by :  MUSTANG_update
-  !&E
+   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-
+#if defined HYBIOSED
+    USE com_HYBIOSED, ONLY : hbs_position_bed, hbs_thick_root, hbs_zup_root, &
+                            hbs_root_biomass
+    USE HYBIOSED1DV, ONLY : hbs1dv_zroot_troot_ero, hbs1dv_comp_erosion
+#endif
    INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
    REAL(KIND=rsh),INTENT(IN)                  :: dtinv
    REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
@@ -2458,11 +2464,24 @@ MODULE sed_MUSTANG
             ero=0.0_rsh
 
             IF(htot(i,j) .GT. h0fond) THEN
+
+#if defined HYBIOSED
+              CALL hbs1dv_comp_erosion(hbs_position_bed(:, i, j), &
+                                        hbs_thick_root(:, i, j), &
+                                        hbs_zup_root(:, i, j), &
+                                        hbs_root_biomass(:, i, j), &
+                                        tauskin(i, j), toce, csanmud, &
+                                        excespowr, xeros, &
+                                        dzs(k, i, j), MF, dt1, erosi)
+              ero = erosi/(MF*dt1)
+#else /*HYBIOSED*/
               IF(tauskin(i,j) .GT. toce)THEN
                 CALL sed_MUSTANG_comp_eros_flx(tauskin(i,j), toce, excespowr, xeros, sed_eros_flx)
-                ero=sed_eros_flx*fwet(i,j)    
-
+                ero=sed_eros_flx*fwet(i,j)
+              ENDIF ! tauskin(i,j) .GT. toce
+#endif /*HYBIOSED*/
 #if defined key_MUSTANG_lateralerosion
+              IF(ero > 0.0_rsh) THEN
                 ! lateral erosion :  wet cell (cellule mouillee)
                 IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN                                                              
                     heaue = HTOT_NEAR_E - htncrit_eros
@@ -2480,9 +2499,10 @@ MODULE sed_MUSTANG
                         * max(0.0_rsh, heaun - heau_milieu)
                     ero = ero + coef_erolat * (eroe + erow + eros + eron)                                                                       
                 ENDIF
-#endif
               ENDIF
-            ELSE
+#endif
+
+            ELSE !htot(i,j) .GT. h0fond
 #if defined key_MUSTANG_lateralerosion
               ! lateral erosion :  dry cell 
                 IF (coef_erolat .NE. 0.0_rsh) THEN
@@ -2503,7 +2523,7 @@ MODULE sed_MUSTANG
                     !write(*,*)'l_erolat_dry_cell',ero
                 ENDIF
 #endif
-            ENDIF
+            ENDIF !htot(i,j) .GT. h0fond
 
             erosi = MF * dt1 * ero
 
@@ -2512,6 +2532,14 @@ MODULE sed_MUSTANG
                 ddzs=erosi/csanmud
                 dzsa=dzs(k,i,j)
                 dzs(k,i,j)=MAX(dzsa-ddzs,dzsa*cvolgrv/cvolmaxsort)
+
+#if defined HYBIOSED
+                CALL hbs1dv_zroot_troot_ero(hbs_position_bed(:, i, j), &
+                                            dzsa-dzs(k, i, j),&
+                                            hbs_thick_root(:, i, j), &
+                                            hbs_zup_root(:, i, j))
+#endif
+
                 IF(dzs(k,i,j).LE.0.0_rsh)THEN
                   !WRITE(*,*)'en kij:',k,i,j,dzs(k,i,j),dzsa,ddzs,csanmud,cvolgrv
                   dzs(k,i,j)=epsilon_MUSTANG
@@ -2610,6 +2638,14 @@ MODULE sed_MUSTANG
                 phieau_ero_ij=phieau_ero_ij+ REAL(volerod*poro(k,i,j)*CELL_SURF(i,j),rlg)/MF
 #endif
                 IF(cvolgrv.LE.0.0_rsh)THEN
+
+#if defined HYBIOSED
+                  CALL hbs1dv_zroot_troot_ero(hbs_position_bed(:, i, j), &
+                                              dzs(ksmax, i, j),&
+                                              hbs_thick_root(:, i, j), &
+                                              hbs_zup_root(:, i, j))
+#endif
+
                   ! reset  dzs and poro
                   dzs(ksmax,i,j)=0.0_rsh
                   poro(ksmax,i,j)=0.0_rsh
@@ -2617,6 +2653,13 @@ MODULE sed_MUSTANG
                 ELSE
                   dzsa=dzs(k,i,j)
                   dzs(k,i,j)=dzsa*cvolgrv/cvolmaxsort
+
+#if defined HYBIOSED
+                  CALL hbs1dv_zroot_troot_ero(hbs_position_bed(:, i, j), &
+                                              dzsa-dzs(k, i, j),&
+                                              hbs_thick_root(:, i, j), &
+                                              hbs_zup_root(:, i, j))
+#endif
                   !??? dzs(k,i,j)=dzsa*cvolgrv/cvolmaxmel
                   c_sedtot(k,i,j)=0.0_rsh
                   DO iv=igrav1,igrav2

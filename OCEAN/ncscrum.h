@@ -2173,6 +2173,9 @@
 #if defined OBSTRUCTION
      &               ,    obstname
 #endif
+#if defined HYBIOSED
+     &               ,    hbsname
+#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
@@ -2282,6 +2285,9 @@
 #endif
 #if defined OBSTRUCTION
      &               ,    obstname
+#endif
+#if defined HYBIOSED
+     &               ,    hbsname
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname
