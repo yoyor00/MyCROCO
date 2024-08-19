@@ -56,7 +56,7 @@ CORRECT_UBAR=1;         % Set to 1 to correct u from vertical-averaged current
 %%%%%%%%%%%%%%%%%%% END USERS DEFINED VARIABLES %%%%%%%%%%%%%%%%%%%%%%%
 %
 
-if ~exist('croco_tools_path','var') | (croco_tools_path == "")
+if ~exist('croco_tools_path','var') | isempty(croco_tools_path)
     error('ERROR: do set your croco_tools_path in crocotools_param_djl.m file')
 end
 
@@ -82,7 +82,7 @@ djles_refine_solution
 
 % Increase the resolution, and iterate to convergence
 epsilon=1e-6;
-NX=500; NZ=200;
+NX=502; NZ=200;
 djles_refine_solution
 
 end_time=clock;
@@ -101,14 +101,14 @@ dx=(L/NX);
 disp(' ')
 disp([' Making the grid: ',grdname])
 disp(' ')
-disp([' Resolution: 1/',num2str(dx,' m'])    
+disp([' Resolution: 1/',num2str(dx),' m'])    
 
 %
 % Create the grid file
 %
 disp(' ')
 disp(' Create the grid file...')
-[Np,Lp]=size(w); Mp=5;
+[Np,Lp]=size(w); Mp=3;
 L=Lp-1; M=Mp-1; N=Np-1;		% WARNING, L is now the domain rank size in X direction
 
 disp([' LLm = ',num2str(L-1)])
@@ -182,7 +182,7 @@ cff=circshift(density*ref0, [0 -f_shift]);  	% circular shift
 cff1=repmat(cff, [1 1 Mp]); 			% add extra dimension
 cff2=permute(cff1, [1 3 2]);			% reorder dimensions
 nc{'rho'}(1,:,:,:)=cff2;
-cff=(cff2-ref0)/TCOEFF + T0;     
+cff=-(cff2-ref0)/TCOEFF + T0;     
 nc{'temp'}(1,:,:,:)=cff; 
 
 % horizontal velocity, 

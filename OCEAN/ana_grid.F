@@ -169,10 +169,6 @@ C$    integer omp_get_thread_num
                      depth=0.29 ! Horn et al. (2001)
                      f0=0.
                      beta=0.
-# elif defined ISOLITON_DJL
-                     depth=600.
-                     f0=1.e-4
-                     beta=0.
 # elif defined ACOUSTIC
                      depth=128.
                      f0=0.
@@ -358,9 +354,6 @@ C$    integer omp_get_thread_num
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined ISOLITON
                      Length_XI =6.0
-                     Length_ETA=Length_ETA_ISO_GRID
-# elif defined ISOLITON_DJL
-                     Length_XI =25.e+3
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined INNERSHELF
                      Length_XI =200.0e+3
@@ -606,22 +599,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         do i=IstrR,IendR
           cff=32000.-16000.*(sin(pi*xr(i,j)/Length_XI))**24
           h(i,j)=20.+0.5*(depth-20.)*(1.+tanh((yr(i,j)-cff)/10000.))
-        enddo
-      enddo
-
-# elif defined ISOLITON_DJL
-      cff=(1./5.e3) !(1./5.e3)**2
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          h(i,j)=depth
-          !h(i,j)=depth*(1-0.4*exp(-cff*((xr(i,j)-0.2*xl)**2)))
-          !h(i,j)=depth*(1-0.7*exp(-cff*((xr(i,j)-0.2*xl)**2)))
-          !h(i,j)=depth/3 + 2*depth/3*(1-tanh(cff*(xr(i,j) - 0.75*xl)))!shelf
-          !if (xr(i,j) < 0.75*xl) then 
-          !   h(i,j) = depth
-          !else 
-          !   h(i,j) = depth/6 
-          !endif 
         enddo
       enddo
       

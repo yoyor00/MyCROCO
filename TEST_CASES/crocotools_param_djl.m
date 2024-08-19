@@ -55,7 +55,7 @@ H  = 600;                               % domain depth (m)
 NX = 100;                               % grid
 NZ = 50;                                % grid
 %
-f_shift = floor(NX/4);                  % shift to the left along X-direction
+f_shift = floor(NX*5/4);                  % shift to the left along X-direction
 % 
 % Equation of Seawater parameters, should be identical to your croco.in
 % file

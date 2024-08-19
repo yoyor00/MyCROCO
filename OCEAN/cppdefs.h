@@ -1699,7 +1699,7 @@
 # define UV_ADV
 # undef  UV_COR
 # define EW_PERIODIC
-# undef NS_PERIODIC
+# undef  NS_PERIODIC
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
 # define UV_HADV_WENO5
@@ -1713,13 +1713,13 @@
 # undef  M3_FRC_BRY
 # undef  T_FRC_BRY
 # define ANA_SSH
-# undef  ZCLIMATOLOGY
-# undef  ANA_M2CLIMA
-# undef  M2CLIMATOLOGY
+# define ZCLIMATOLOGY
+# define ANA_M2CLIMA
+# define M2CLIMATOLOGY
 # define UV_VIS2
 # define TS_DIF2
-# define ANA_GRID
-# define ANA_INITIAL
+# undef  ANA_GRID
+# undef  ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX

@@ -670,6 +670,25 @@
         goto 99                                           !--> ERROR
       endif
 !
+! 3D momentum component in the vertical direction.	(NEW)
+!
+# ifdef K3SLOW_W
+      ierr=nf_inq_varid (ncid, 'w', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (wz(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                         record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) 'w'
+     &                                 , record, ininame(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1) 'w'
+     &                                ,ininame(1:lstr)
+        goto 99                                           !--> ERROR
+      endif
+# endif
+!
 ! Tracer variables.
 !
 # ifdef TRACERS
