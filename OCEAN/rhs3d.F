@@ -35,6 +35,10 @@
      &                                 VFx,VFe,
      &                                 wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
      &                                 VFx_3D,VFe_3D)
+# ifdef RVTK_DEBUG
+        use debug
+        use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
@@ -1831,6 +1835,12 @@
 # undef DC3D
 # undef CF3D
 !$acc wait(1,2)
+# ifdef RVTK_DEBUG
+      call check_tab2d(sustr,'sustr rhs3d','uint',
+     &  ondevice=.TRUE.)        
+      call check_tab2d(bustr,'bustr rhs3d','uint',
+     &  ondevice=.TRUE.)          
+# endif
 !$acc kernels if(compute_on_device) default(present)
 
 !

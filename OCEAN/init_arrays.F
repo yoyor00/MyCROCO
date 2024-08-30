@@ -916,7 +916,7 @@ C$    integer omp_get_thread_num
 #  endif
             btflx(i,j,itrc)=init
 
-#  if BHFLUX || defined BWFLUX
+#  if defined BHFLUX || defined BWFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
 #  endif

@@ -25,6 +25,9 @@
       end
 !
       subroutine set_nudgcof_tile (Istr,Iend,Jstr,Jend, wrk)
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
 !     implicit none
       integer ierr
 # if defined MPI
@@ -111,9 +114,15 @@
             wrk(i,j)=0.
           else
             wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
+#ifdef OPENACCNUMERIC 
+          wrk(i,j)=real(wrk(i,j), kind=4)
+#endif
           endif
 # else
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
+#ifdef OPENACCNUMERIC 
+          wrk(i,j)=real(wrk(i,j), kind=4)
+#endif
 !         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
 # endif
 
@@ -143,7 +152,7 @@
           M3nudgcof(i,j)=tauM_out*wrk(i,j)
 # endif
 # ifdef NBQ_NUDGING
-          NBQnudgcof(i,j)=dtfast*wrk(i,j)/(3600.D0) ! nudg. to internal modes (dim. less)
+          NBQnudgcof(i,j)=dtfast*tauM_out*wrk(i,j) ! nudg. to internal modes (dim. less)
 # endif
         enddo
       enddo

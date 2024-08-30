@@ -229,9 +229,10 @@ c********************************************************************
         ENDDOLOOP2D   !<-- j
 
 
-        do k=N-1,1,-1
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
+!$acc loop seq
+            do k=N-1,1,-1
               P(i,j,k)=P(i,j,k)+P(i,j,k+1)
             enddo
           enddo

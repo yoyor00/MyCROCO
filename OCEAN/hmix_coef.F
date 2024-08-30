@@ -87,6 +87,7 @@
       jmax=jend+1
 # endif
 !
+!$acc kernels if(compute_on_device) default(present)
 # if defined UV_VIS2 && defined GLS_MIXING_3D
 !---------------------------------------------------------------
 !  GLS horizontal viscosity at RHO points
@@ -320,9 +321,11 @@
         enddo
       enddo
 !
+!$acc end kernels
 #  if defined BD_EXCHANGE
       call exchange_p3d_tile(Istr,Iend,Jstr,Jend,visc3d_p)
 #  endif
+!$acc kernels if(compute_on_device) default(present)
 
 #  ifdef UV_VIS_SMAGO_3D
 !------------------------------------------------------
@@ -429,6 +432,7 @@
 !#  endif
 #  endif /* UV_VIS_SMAGO_3D */
 # endif /* UV_VIS_SMAGO  */
+!$acc end kernels
 #else
       subroutine hvisc_coef_empty
 #endif

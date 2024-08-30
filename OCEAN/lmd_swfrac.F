@@ -34,6 +34,9 @@
 !  This routine was adapted from Bill Large 1995 code.
 !--------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -50,6 +53,7 @@
      &  lmd_mu2=(/23.,20.,17.,14.,7.9/)
       real,parameter,dimension(5)::
      &  lmd_r1=(/0.58,0.62,0.67,0.77,0.78/)
+!$acc declare create(  lmd_mu1, lmd_mu2, lmd_r1 , cff1, cff2 )    
 
                         !  Set Jerlov water type to assign
       lmd_Jwt=1         !  everywhere; an integer from 1 to 5.
@@ -133,6 +137,7 @@
      &  lmd_mu2=(/23.,20.,17.,14.,7.9/)
       real,parameter,dimension(5)::
      &  lmd_r1=(/0.58,0.62,0.67,0.77,0.78/)
+!$acc declare create(  lmd_mu1, lmd_mu2, lmd_r1 )    
 
                         !  Set Jerlov water type to assign
       lmd_Jwt=1         !  everywhere; an integer from 1 to 5.

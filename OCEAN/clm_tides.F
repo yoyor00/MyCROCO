@@ -44,6 +44,10 @@
 # ifdef TIDES_MAS
       USE MOD_TIDES_MAS
 # endif
+# ifdef RVTK_DEBUG
+      use debug
+      use my_functions
+# endif
       implicit none
 # ifndef TIDES_MAS
 #  include "param.h"
@@ -65,6 +69,7 @@
      &     Iend, Istr, Jend, Jstr, i, j, itide
       real
      &     angle, phase, omega_loc, ramp, cff
+!$acc declare create( angle, phase, omega_loc, ramp, cff )     
       real
      &        Cangle(PRIVATE_2D_SCRATCH_ARRAY),
      &        Cphase(PRIVATE_2D_SCRATCH_ARRAY),
@@ -90,6 +95,7 @@
       ramp=TANH(dt*sec2day*float(iic-1))
 # endif
       cff=2.*pi*time
+!$acc update device( ramp, phase, angle, cff )     
 !
 # if defined SSH_TIDES
 #  ifdef TIDES_MAS
@@ -652,6 +658,17 @@
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        Ptide(START_2D_ARRAY))
 #  endif
+# ifdef RVTK_DEBUG
+      do itide=1,Ntides
+      call check_tab2d(POT_Tamp(:,:,itide),'POT_T clm_tides','r',
+     &  ondevice=.TRUE.)
+      call check_tab2d(POT_Tphase(:,:,itide),'Tph clm_tides','r',
+     &  ondevice=.TRUE.)
+      enddo
+      call check_tab2d(ptide,'ptide clm_tides','rint',
+     &  ondevice=.TRUE.)
+    
+# endif
 
 # endif /* POT_TIDES */
 

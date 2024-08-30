@@ -175,6 +175,8 @@
 !  tensor (m5/s2) in XI- and ETA-directions.
 !
       do k=1,N
+!$acc loop collapse(2)
+!$acc&  private( cff, cff1 )
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             cff=Hz(i,j,k)*max(0.,visc2_r(i,j)
@@ -202,6 +204,8 @@
             VFe(i,j)=om_r(i,j)*om_r(i,j)*cff
           enddo
         enddo
+!$acc loop collapse(2)
+!$acc&  private( cff, cff1 )
         do j=Jstr,Jend+1
           do i=Istr,Iend+1
             cff=0.25*max(0.,visc2_p(i,j)
@@ -244,6 +248,8 @@
 ! integral of viscous terms and add it into coupling terms for the
 ! barotropic mode
 !
+!$acc loop collapse(2)
+!$acc&  private( cff, cff1 )
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=pn_u(i,j)*(UFx(i,j)-UFx(i-1,j))
@@ -282,6 +288,8 @@
 #endif
           enddo
         enddo
+!$acc loop collapse(2)
+!$acc&  private( cff, cff1 )
         do j=JstrV,Jend
           do i=Istr,Iend
             cff=pn_v(i,j)*(VFx(i+1,j)-VFx(i,j))

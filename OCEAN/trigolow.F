@@ -50,7 +50,21 @@
       real :: mysinh
       mysinh = real(sinh(X),kind=4)
       end function mysinh
-      
+
+      elemental function myatan(x)
+!$acc routine(myatan) seq
+      real,intent(in) :: x
+      real :: myatan
+      myatan = real(atan(X),kind=4)
+      end function myatan
+
+      elemental function mysqrt(x)
+!$acc routine(mysqrt) seq
+      real,intent(in) :: x
+      real :: mysqrt
+      mysqrt = real(sqrt(X),kind=4)
+      end function mysqrt
+
 
       end module my_functions_1 
 
@@ -62,6 +76,8 @@
       USE my_functions_1, only : sin=>mysin
       USE my_functions_1, only : cosh=>mycosh
       USE my_functions_1, only : sinh=>mysinh
+      USE my_functions_1, only : atan=>myatan
+      USE my_functions_1, only : sqrt=>mysqrt
       end module my_functions
 #else
       module my_functions_empty

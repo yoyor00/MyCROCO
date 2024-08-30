@@ -140,7 +140,7 @@ C$OMP END PARALLEL
 #if ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
-#if defined RVTK_DEBUG_ADVANCED
+#if defined RVTK_DEBUG
 # include "coupling.h"
 #endif
 
@@ -568,12 +568,12 @@ C$OMP MASTER
 
 # if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r',
+       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','rint',
      &  ondevice=.TRUE.)
       enddo
-      call check_tab3d(u(:,:,:,nnew),'u prestep3d','u',
+      call check_tab3d(u(:,:,:,nnew),'u prestep3d','uint',
      &  ondevice=.TRUE.)
-      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v',
+      call check_tab3d(v(:,:,:,nnew),'v prestep3d','vint',
      &  ondevice=.TRUE.)
 # endif
 # if defined RVTK_DEBUG_ADVANCED
@@ -868,11 +868,11 @@ C$OMP MASTER
         !!call check_tab3d(qdmv_nbq,'qdmv_nbq step3d_fast','v')
 #  endif
 # else
-       call check_tab2d(zeta(:,:,knew),'zeta step2d','r',
+       call check_tab2d(zeta(:,:,knew),'zeta step2d','rint',
      &  ondevice=.TRUE.)
-       call check_tab2d(ubar(:,:,knew),'ubar step2d','u',
+       call check_tab2d(ubar(:,:,knew),'ubar step2d','uint',
      &  ondevice=.TRUE.)
-       call check_tab2d(vbar(:,:,knew),'vbar step2d','v',
+       call check_tab2d(vbar(:,:,knew),'vbar step2d','vint',
      &  ondevice=.TRUE.)
 # endif
 C$OMP END MASTER
@@ -1237,13 +1237,13 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
-        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r',
+        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','rint',
      &    ondevice=.TRUE.)
         !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
       enddo
-      call check_tab3d(u(:,:,:,nnew),'u step3d','u',
+      call check_tab3d(u(:,:,:,nnew),'u step3d','uint',
      &    ondevice=.TRUE.)
-      call check_tab3d(v(:,:,:,nnew),'v step3d','v',
+      call check_tab3d(v(:,:,:,nnew),'v step3d','vint',
      &    ondevice=.TRUE.)
 C$OMP END MASTER
 #endif

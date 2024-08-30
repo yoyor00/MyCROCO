@@ -1,4 +1,4 @@
-! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello$ 
+! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello... Please remove$ 
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -42,9 +42,7 @@
 #undef  ACOUSTIC        /* Acoustic wave Example */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  ISOLITON        /* Internal Soliton Example */
-#undef  ISOLITON_DJL    /* Internal DJL Soliton */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
-#undef  CANON2D         /* Canonical Shear Instabilities Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */
 #undef  DUNE            /* Dune migration Example */
 #undef  SED_TOY         /* 1DV sediment toy Example */
@@ -52,8 +50,6 @@
 #undef  ESTUARY         /* 3D tidal estuary Example */
 #undef  KILPATRICK      /* 2D sst front*/
 #undef  CONVECT         /* 2D Convection */
-#undef  PEKERIS         /* 2Dv Pekeris acoustic Configuration */
-#undef  WEDGE3D         /* 3D Wedge Acoustic Configuration */ 
 /*
         ... OR REALISTIC CONFIGURATIONS
 */
@@ -74,16 +70,22 @@
 !
 */
                       /* Configuration Name */
-# define BENGUELA_LR
+# define GIBRALTAR_BR4 
+# undef  GIBRALTAR_VHR5
                       /* Parallelization */
 # undef  OPENMP
-# undef  MPI
+# define MPI
+# define OPENACC
                       /* Non-hydrostatic option */
 # undef  NBQ
+# undef  KNBQ3
+# undef  KNBQ
+# undef  NBQ_GRAV
 # undef  CROCO_QH
+# define DIAG_CFL
                       /* Nesting */
 # undef  AGRIF
-# undef  AGRIF_2WAY
+# undef  AGRIF_2WAY 
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
 # undef  OW_COUPLING
@@ -93,10 +95,10 @@
                       /* Wave-current interactions */
 # undef  MRL_WCI
                       /* Open Boundary Conditions */
-# undef  TIDES
+# define TIDES
 # define OBC_EAST
 # define OBC_WEST
-# define OBC_NORTH
+# define  OBC_NORTH
 # define OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
@@ -107,7 +109,7 @@
 # undef  MUSTANG
 # undef  BBL
                       /* I/O server */
-# undef  XIOS
+# define XIOS
                       /* Calendar */
 # undef  USE_CALENDAR
                       /* dedicated croco.log file */
@@ -122,15 +124,18 @@
                       /* Parallelization */
 # ifdef MPI
 #  undef  PARALLEL_FILES
-#  undef  NC4PAR
+#  define  NC4PAR
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
 # endif
 # undef  AUTOTILING
                       /* Non-hydrostatic options */
 # if defined NBQ || defined K3FAST
-#  define W_HADV_TVD
-#  define W_VADV_TVD
+#  undef  W_HADV_TVD
+#  undef  W_VADV_TVD
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+#  define OBC_NBQ
 # endif
                       /* Grid configuration */
 # define CURVGRID
@@ -197,21 +202,21 @@
 # undef  SFLUX_CFB
 # undef  SEA_ICE_NOFLUX
                       /* Lateral Forcing */
-# undef CLIMATOLOGY
+# define CLIMATOLOGY
 # ifdef CLIMATOLOGY
 #  define ZCLIMATOLOGY
 #  define M2CLIMATOLOGY
 #  define M3CLIMATOLOGY
 #  define TCLIMATOLOGY
 
-#  define ZNUDGING
-#  define M2NUDGING
+#  undef  ZNUDGING
+#  undef  M2NUDGING
 #  define M3NUDGING
 #  define TNUDGING
 #  undef  ROBUST_DIAG
 # endif
 
-# define FRC_BRY
+# undef  FRC_BRY
 # ifdef FRC_BRY
 #  define Z_FRC_BRY
 #  define M2_FRC_BRY
@@ -219,32 +224,32 @@
 #  define T_FRC_BRY
 # endif
                       /* Lateral Momentum Advection (default UP3) */
-# define UV_HADV_UP3
+# undef  UV_HADV_UP3
 # undef  UV_HADV_UP5
-# undef  UV_HADV_WENO5
+# define UV_HADV_WENO5
 # undef  UV_HADV_TVD
                       /* Lateral Explicit Momentum Mixing */
-# undef  UV_VIS2
+# define UV_VIS2
 # ifdef UV_VIS2
 #  define UV_VIS_SMAGO
 # endif
                       /* Vertical Momentum Advection */
-# define UV_VADV_SPLINES
-# undef  UV_VADV_WENO5
+# undef  UV_VADV_SPLINES
+# define UV_VADV_WENO5
 # undef  UV_VADV_TVD
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
-# define TS_HADV_RSUP3
+# undef  TS_HADV_RSUP3
 # undef  TS_HADV_UP5
-# undef  TS_HADV_WENO5
+# define TS_HADV_WENO5
                       /* Lateral Explicit Tracer Mixing */
-# undef  TS_DIF2
+# define TS_DIF2
 # undef  TS_DIF4
 # undef  TS_MIX_S
                       /* Vertical Tracer Advection  */
-# define TS_VADV_SPLINES
+# undef  TS_VADV_SPLINES
 # undef  TS_VADV_AKIMA
-# undef  TS_VADV_WENO5
+# define TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
@@ -255,7 +260,7 @@
                       /* Vertical Mixing */
 # undef  BODYFORCE
 # undef  BVF_MIXING
-# define LMD_MIXING
+# undef  LMD_MIXING
 # undef  GLS_MIXING
 # ifdef LMD_MIXING
 #  define LMD_SKPP
@@ -316,8 +321,8 @@
 # undef  OBC_M3SPECIFIED
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
-# define AVERAGES
-# define AVERAGES_K
+# undef  AVERAGES
+# undef  AVERAGES_K
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
                      /* Exact restart */
@@ -339,6 +344,15 @@
 # if defined RVTK_DEBUG && defined BULK_FLUX && defined ONLINE
 #  define BULK_MONTH_1DIGIT
 # endif
+
+#ifdef FAITRVTK	
+# undef  MPI	
+# undef  XIOS
+# undef  NC4PAR	
+# define RVTK_DEBUG
+# define RVTK_DEBUG_WRITE
+# undef  RVTK_DEBUG_READ	
+#endif
 /*
 !                        Diagnostics
 !--------------------------------------------
@@ -1683,52 +1697,6 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
-#elif defined ISOLITON_DJL
-/*
-!                       DJL Soliton Example
-!                       === ======= =======
-!
-*/
-# define MPI
-# define KNBQ3
-# define KNBQ
-# undef  XIOS
-# define NC4PAR
-# define SOLVE3D
-# define NEW_S_COORD
-# define UV_ADV
-# undef  UV_COR
-# define EW_PERIODIC
-# undef  NS_PERIODIC
-# define TS_HADV_WENO5
-# define TS_VADV_WENO5
-# define UV_HADV_WENO5
-# define UV_VADV_WENO5
-# define W_HADV_WENO5
-# define W_VADV_WENO5
-# undef  FRC_BRY
-# undef  ANA_BRY
-# undef  Z_FRC_BRY
-# undef  M2_FRC_BRY
-# undef  M3_FRC_BRY
-# undef  T_FRC_BRY
-# define ANA_SSH
-# define ZCLIMATOLOGY
-# define ANA_M2CLIMA
-# define M2CLIMATOLOGY
-# define UV_VIS2
-# define TS_DIF2
-# undef  ANA_GRID
-# undef  ANA_INITIAL
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# define ANA_BTFLUX
-# undef  PASSIVE_TRACER
-# define NO_FRCFILE
-# undef  RVTK_DEBUG
-# undef  SPONGE
-# define DIAG_CFL
-
 #elif defined KH_INST
 /*
 !                       Kelvin-Helmholtz Instability Example
@@ -1741,50 +1709,6 @@
 # define NBQ
 # undef  NBQ_PRECISE
 # undef  XIOS
-# define SOLVE3D
-# define NEW_S_COORD
-# define UV_ADV
-# define TS_HADV_WENO5
-# define TS_VADV_WENO5
-# define UV_HADV_WENO5
-# define UV_VADV_WENO5
-# define W_HADV_WENO5
-# define W_VADV_WENO5
-# undef  SALINITY
-# undef  PASSIVE_TRACER
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# undef  ANA_SRFLUX
-# define ANA_BTFLUX
-# define ANA_SSFLUX
-# define ANA_BSFLUX
-# ifndef KH_INSTY
-#  define EW_PERIODIC
-# else
-#  define NS_PERIODIC
-# endif
-# define NO_FRCFILE
-# undef  RVTK_DEBUG
-
-#elif defined CANON2D
-/*
-!                       Canonical 2D Instabilities Example
-!                       ========= == ============= =======
-!
-*/
-# define CANON2D_TCI
-# undef  KH_INSTY
-# undef  KH_INST3D
-# define MPI
-# undef  NBQ
-# define KNBQ3
-# define KNBQ 
-# define NBQ_GRAV
-# define DIAG_CFL
-# undef  NBQ_PRECISE
-# undef XIOS
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
@@ -2182,92 +2106,10 @@
 # undef  ZETA_DRY_IO
 # undef  RVTK_DEBUG
 
-# elif defined PEKERIS
-/*
-!                       Pekeris configuration
-!                       ======= =============
-*/
-# define PEKERIS_ACOUS1
-# define MPI
-# define NC4PAR
-# define KNBQ3
-# define KHCOMP
-# if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2 || defined PEKERIS_ACOUS3
-#  define K3FAST_SACOUS
-#  define K3FAST_CSVISC2K
-# endif
-# if defined PEKERIS_ACOUS2 || defined PEKERIS_ACOUS3
-#  define K3FAST_SEDLAYERS
-# endif
-# define XIOS
-# undef  K3FAST_HIS
-# define M2FILTER_NONE
-# define SOLVE3D
-# undef  UV_ADV
-# define NEW_S_COORD
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_BTFLUX
-# define ANA_SMFLUX
-# define ANA_SRFLUX
-# define ANA_STFLUX
-# define NO_FRCFILE
-# undef BSTRESS_FAST
-# define OBC_EAST
-# define OBC_WEST
-# define SPONGE
-# define SPONGE_GRID
-# define NBQ_NUDGING
-# ifdef PEKERIS_ACOUS3
-#  define SALINITY
-#  define ANA_SSS
-#  define ANA_BSFLUX
-#  define ANA_SSFLUX
-# endif
-
-# elif defined WEDGE3D
-/*
-!                       Wedge3D configuration
-!                       ======= =============
-*/
-# define MPI
-# define NC4PAR
-# define KNBQ3
-# define KNBQ
-# define K3FAST_SACOUS
-# define K3FAST_SEDLAYERS
-# define K3FAST_DIAGACOUS
-# define K3FAST_CSVISC2K
-# define XIOS
-# define XIOS_SLOW
-# define XIOS_SLOW_OA
-# undef  K3FAST_HIS
-# define M2FILTER_NONE
-# define SOLVE3D
-# define UV_ADV
-# define NEW_S_COORD
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_BTFLUX
-# define ANA_SMFLUX
-# define ANA_SRFLUX
-# define ANA_STFLUX
-# define NO_FRCFILE
-# undef  BSTRESS_FAST
-# define OBC_EAST
-# define OBC_WEST
-# define OBC_NORTH
-# define OBC_SOUTH
-# undef SPONGE
-# undef SPONGE_GRID
-# undef NBQ_NUDGING
-
-# undef ONLINE_ANALYSIS
-# undef OA_TRACES
-# undef OA_TRACES_XIOS
-# undef OA_SCALOGRAM
-# undef OA_IJKSCAL
 #endif /* END OF CONFIGURATION CHOICE */
+#define RVTK_DEBUG
+#define RVTK_DEBUG_READ
+
 
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"
