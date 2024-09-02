@@ -1835,12 +1835,12 @@
 # undef DC3D
 # undef CF3D
 !$acc wait(1,2)
-# ifdef RVTK_DEBUG
-      call check_tab2d(sustr,'sustr rhs3d','uint',
-     &  ondevice=.TRUE.)        
-      call check_tab2d(bustr,'bustr rhs3d','uint',
-     &  ondevice=.TRUE.)          
-# endif
+!# ifdef RVTK_DEBUG
+!      call check_tab2d(sustr,'sustr rhs3d','uint',
+!     &  ondevice=.TRUE.)        
+!      call check_tab2d(bustr,'bustr rhs3d','uint',
+!     &  ondevice=.TRUE.)          
+!# endif
 !$acc kernels if(compute_on_device) default(present)
 
 !
