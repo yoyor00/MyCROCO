@@ -40,7 +40,7 @@
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3
        if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
-!         print *, 'oasis time before get = ', oasis_time
+!         pr *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
 #  ifdef AGRIF
        else if ((.not.agrif_root()).and.(iif==-1).and.
@@ -568,18 +568,18 @@ C$OMP MASTER
 
 # if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','rint',
+       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r',
      &  ondevice=.TRUE.)
       enddo
-      call check_tab3d(u(:,:,:,nnew),'u prestep3d','uint',
+      call check_tab3d(u(:,:,:,nnew),'u prestep3d','u',
      &  ondevice=.TRUE.)
-      call check_tab3d(v(:,:,:,nnew),'v prestep3d','vint',
+      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v',
      &  ondevice=.TRUE.)
 # endif
 # if defined RVTK_DEBUG_ADVANCED
-      call check_tab2d(rufrc,'rufrc prestep3d','uint',
+      call check_tab2d(rufrc,'rufrc prestep3d','u',
      &  ondevice=.TRUE.)
-      call check_tab2d(rvfrc,'rvfrc prestep3d','vint',
+      call check_tab2d(rvfrc,'rvfrc prestep3d','v',
      &  ondevice=.TRUE.)
 # endif
 
@@ -868,11 +868,11 @@ C$OMP MASTER
         !!call check_tab3d(qdmv_nbq,'qdmv_nbq step3d_fast','v')
 #  endif
 # else
-       call check_tab2d(zeta(:,:,knew),'zeta step2d','rint',
+       call check_tab2d(zeta(:,:,knew),'zeta step2d','r',
      &  ondevice=.TRUE.)
-       call check_tab2d(ubar(:,:,knew),'ubar step2d','uint',
+       call check_tab2d(ubar(:,:,knew),'ubar step2d','u',
      &  ondevice=.TRUE.)
-       call check_tab2d(vbar(:,:,knew),'vbar step2d','vint',
+       call check_tab2d(vbar(:,:,knew),'vbar step2d','v',
      &  ondevice=.TRUE.)
 # endif
 C$OMP END MASTER
@@ -1237,13 +1237,13 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
-        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','rint',
+        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r',
      &    ondevice=.TRUE.)
         !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
       enddo
-      call check_tab3d(u(:,:,:,nnew),'u step3d','uint',
+      call check_tab3d(u(:,:,:,nnew),'u step3d','u',
      &    ondevice=.TRUE.)
-      call check_tab3d(v(:,:,:,nnew),'v step3d','vint',
+      call check_tab3d(v(:,:,:,nnew),'v step3d','v',
      &    ondevice=.TRUE.)
 C$OMP END MASTER
 #endif
