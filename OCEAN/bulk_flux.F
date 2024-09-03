@@ -117,7 +117,7 @@
       PARAMETER ( Log10oLogZw = DLOG(  10.0*10000.)/
      &                          DLOG(blk_ZW*10000.) )
 #  endif
-      REAL           :: bulk_psiu_coare, bulk_psit_coare, air_visc
+      !REAL           :: bulk_psiu_coare, bulk_psit_coare, air_visc
       REAL           :: iZoW , iZoT  , CC, Ch10, Ribcu , charn
       REAL           :: iZo10, iZoT10, Ri, Rr  , VisAir
 # endif
