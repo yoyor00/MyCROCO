@@ -157,6 +157,14 @@
             iv_oysdeb_E_V,     &   ! index for oyster structures
             iv_oysdeb_E_R,     &   ! index for oyster reproduction
             iv_oysdeb_E_GO          ! index for oyster gonades
+#ifdef key_oysterspat_DEB_GAMELAG
+   INTEGER, PUBLIC   :: &
+            iv_spatdeb,     &   ! index for oyster number
+            iv_spatdeb_E,     &   ! index for oyster supplies
+            iv_spatdeb_E_V,     &   ! index for oyster structures
+            iv_spatdeb_E_R,     &   ! index for oyster reproduction
+            iv_spatdeb_E_GO          ! index for oyster gonades
+#endif            
 #endif
 #ifdef key_benthos
    INTEGER, PUBLIC   :: &

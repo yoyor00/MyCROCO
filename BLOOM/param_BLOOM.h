@@ -11,7 +11,9 @@
       INTEGER,PARAMETER :: nb_var_bio=16
       INTEGER,PARAMETER :: nb_fix_bio=4
 #else
-#ifdef key_BLOOM_insed
+#if defined GAMELAG
+      INTEGER,PARAMETER :: nb_var_bio=21
+#elif defined key_BLOOM_insed
       ! add PFe & ODU & NdetR & PdetR
       INTEGER,PARAMETER :: nb_var_bio=17
 #else
@@ -54,8 +56,12 @@
       INTEGER,PARAMETER :: nb_fix_zoo_ps=0
 #endif
 
-#if defined key_oyster_SFG || defined key_oyster_DEB
+#if defined key_oyster_SFG || defined key_oyster_DEB 
       INTEGER,PARAMETER :: nb_fix_oys=3
+#elif defined key_oyster_DEB_GAMELAG && !defined key_oysterspat_DEB_GAMELAG
+      INTEGER,PARAMETER :: nb_fix_oys=5
+#elif defined key_oyster_DEB_GAMELAG && defined key_oysterspat_DEB_GAMELAG
+      INTEGER,PARAMETER :: nb_fix_oys=10
 #else
       INTEGER,PARAMETER :: nb_fix_oys=0
 #endif

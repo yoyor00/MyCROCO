@@ -782,6 +782,18 @@ ENDIF
        iv_oysdeb_E = irk_mod(iv)
      CASE('oysdeb_E_R')
        iv_oysdeb_E_R = irk_mod(iv)
+#ifdef key_oysterspat_DEB_GAMELAG
+      CASE('spatdeb')
+        iv_spatdeb = irk_mod(iv)
+      CASE('spatdeb_E_V')
+        iv_spatdeb_E_V = irk_mod(iv)
+      CASE('spatdeb_E_GO')
+        iv_spatdeb_E_GO = irk_mod(iv)
+      CASE('spatdeb_E')
+        iv_spatdeb_E = irk_mod(iv)
+      CASE('spatdeb_E_R')
+        iv_spatdeb_E_R = irk_mod(iv)
+#endif
 #endif
 #ifdef key_benthos
      CASE('mole_concentration_of_organic_detritus_expressed_as_nitrogen_in_benthos')
@@ -3500,20 +3512,38 @@ write(*,*)'debut init huitre deb'
   DO j=jfirst,jlast
     DO i=ifirst,ilast
       !oyster number
-      BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb-nv_adv)=30.0_rsh
+      BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb-nv_adv)=cini_wat_fix(4)
     ENDDO
   ENDDO 
   DO j=jfirst,jlast
     DO i=ifirst,ilast
       IF ((BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb-nv_adv).ne.0.0_rsh)) THEN
-        V=4.73
-        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_V-nv_adv) = V * (muV*d_v)
-        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E-nv_adv)=14700.0_rsh
-        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_R-nv_adv)=4704.0_rsh
-        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_GO-nv_adv)=0.0_rsh      
+        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E-nv_adv)=cini_wat_fix(5)
+        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_V-nv_adv) = cini_wat_fix(6)
+        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_R-nv_adv)=cini_wat_fix(7)
+        BENTHIC_CONCENTRATION(i,j,2,iv_oysdeb_E_GO-nv_adv)=cini_wat_fix(8)      
       ENDIF
     ENDDO
   ENDDO 
+#ifdef key_oysterspat_DEB_GAMELAG
+  write(*,*)'debut init naissain'
+    DO j=jfirst,jlast
+      DO i=ifirst,ilast
+        !oyster number
+        BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb-nv_adv)=cini_wat_fix(9)
+      ENDDO
+    ENDDO 
+    DO j=jfirst,jlast
+      DO i=ifirst,ilast
+        IF ((BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb-nv_adv).ne.0.0_rsh)) THEN
+          BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E-nv_adv)=cini_wat_fix(10)
+          BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_V-nv_adv) = cini_wat_fix(11)
+          BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_R-nv_adv)=cini_wat_fix(12)
+          BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_GO-nv_adv)=cini_wat_fix(13)      
+        ENDIF
+      ENDDO
+    ENDDO 
+#endif
 #endif 
     
 !#ifdef key_larve

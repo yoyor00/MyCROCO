@@ -693,6 +693,8 @@
    real(KIND=rsh) :: G_oyster_PS, G_oyster_PL, G_oyster_ZS, G_oyster_ZL
    real(KIND=rsh) :: G_oyster_POP,G_oyster_PON, NMOR_oyster, PMOR_oyster
    real(KIND=rsh) :: NH4_oyster, PO4_oyster, respOyst
+   INTEGER        :: ideb,iv_ndeb,iv_E,iv_E_V,iv_E_GO,iv_E_R
+   real(KIND=rsh) ::XkN,XkP
 #endif
 
 #ifdef key_N_tracer  
