@@ -206,3 +206,24 @@ reg_perfrst_intel:
   extends:
     - .intel_base
     - .reg_perfrst_base
+
+reg_cpl_toy:
+  stage: run
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel_oasis:1.0.0
+  script:
+    - ulimit -s unlimited
+    - ./create_config.bash -o all-prod-cpl -d $CI_PROJECT_DIR/test/home -w $CI_PROJECT_DIR/test/work -n BENGUELA_TOY -s $CI_PROJECT_DIR
+    - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/cppdefs.h $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/.
+    - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/myenv_mypath.sh $CI_PROJECT_DIR/test/home/BENGUELA_TOY/myenv_mypath.sh
+    - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/Makefile.Linux $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/.
+    - cd $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/
+    - ./jobcomp >& compile_coupled.log
+    - cd $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/
+    - ./make_toy_compil.sh
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/compile_coupled.log
+      - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/*.out
