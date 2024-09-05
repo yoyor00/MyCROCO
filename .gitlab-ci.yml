@@ -242,7 +242,7 @@ reg_cpl_toy:
     - mv $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/croco crocox
     - mv $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/toy_wav toywav
     # launch
-    - mpirun --allow-run-as-root -np 2 toywav : -np 4 crocox > out.log
+    - mpirun --allow-run-as-root -np 2 toywav | -np 4 crocox > out.log
   artifacts:
     paths:
       - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/compile_coupled.log
