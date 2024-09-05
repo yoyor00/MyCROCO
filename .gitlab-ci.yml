@@ -221,9 +221,9 @@ reg_cpl_toy:
     - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/cppdefs.h $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/.
     - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/* $CI_PROJECT_DIR/test/home/BENGUELA_TOY/.
     - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/Makefile.Linux $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/.
-    - tar -xf /data/CROCO_FILES.tar.gz
+    - tar -xf /data/TEST_TOY/CROCO_FILES.tar.gz
     - mv /data/CROCO_FILES/* $CI_PROJECT_DIR/test/work/BENGUELA_TOY/CROCO_FILES/.
-    - tar -xf /data/TOY_FILES.tar.gz
+    - tar -xf /data/TEST_TOY/TOY_FILES.tar.gz
     - mv /data/CROCO_FILES/* $CI_PROJECT_DIR/test/work/BENGUELA_TOY/TOY_FILES/.
     # compile CROCO
     - cd $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/
