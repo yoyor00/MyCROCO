@@ -235,10 +235,10 @@ reg_cpl_toy:
     # prepare INPUT FILES
     - cd $CI_PROJECT_DIR/test/home/BENGUELA_TOY
     - source myenv_mypath.sh
-    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_toy_files.sh /home/test/work/BENGUELA_TOY/TOY_FILES/ww3_20050101_20050131.nc toy_wav.nc ww3 1,12
+    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_toy_files.sh $CI_PROJECT_DIR/test/work/BENGUELA_TOY/TOY_FILES/ww3_20050101_20050131.nc toy_wav.nc ww3 1,12
     - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh grid_wav.nc wav.nc toy "TOY_T0M1 TOY___HS TOY__DIR »
-    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh /home/test/work/BENGUELA_TOY/CROCO_FILES/croco_grd.nc oce.nc croco "CROCO_SSH CROCO_EOCE CROCO_NOCE »
-    - ln -s /home/test/work/BENGUELA_TOY/CROCO_FILES .
+    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh $CI_PROJECT_DIR/test/work/BENGUELA_TOY/CROCO_FILES/croco_grd.nc oce.nc croco "CROCO_SSH CROCO_EOCE CROCO_NOCE »
+    - ln -s $CI_PROJECT_DIR/test/work/BENGUELA_TOY/CROCO_FILES .
     # rename executables
     - mv $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/croco crocox
     - mv $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/toy_wav toywav
