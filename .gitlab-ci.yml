@@ -219,6 +219,7 @@ reg_cpl_toy:
     - ./create_config.bash -o all-prod-cpl -d $CI_PROJECT_DIR/test/home -w $CI_PROJECT_DIR/test/work -n BENGUELA_TOY -s $CI_PROJECT_DIR
     # copy needed files
     - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/cppdefs.h $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/.
+    - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/param.h $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/.
     - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/* $CI_PROJECT_DIR/test/home/BENGUELA_TOY/.
     - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/Makefile.Linux $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/.
     - cd /data/TEST_TOY/
