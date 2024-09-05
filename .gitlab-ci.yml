@@ -212,7 +212,7 @@ reg_cpl_toy:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel_oasis:1.0.0
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel_oasis:1.0.0
   script:
     - ulimit -s unlimited
     # prepare config structure
@@ -236,14 +236,16 @@ reg_cpl_toy:
     - cd $CI_PROJECT_DIR/test/home/BENGUELA_TOY
     - source myenv_mypath.sh
     - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_toy_files.sh $CI_PROJECT_DIR/test/work/BENGUELA_TOY/TOY_FILES/ww3_20050101_20050131.nc toy_wav.nc ww3 1,12
-    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh grid_wav.nc wav.nc toy "TOY_T0M1 TOY___HS TOY__DIR »
-    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh $CI_PROJECT_DIR/test/work/BENGUELA_TOY/CROCO_FILES/croco_grd.nc oce.nc croco "CROCO_SSH CROCO_EOCE CROCO_NOCE »
+    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh grid_wav.nc wav.nc toy "TOY_T0M1 TOY___HS TOY__DIR "
+    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh $CI_PROJECT_DIR/test/work/BENGUELA_TOY/CROCO_FILES/croco_grd.nc oce.nc croco "CROCO_SSH CROCO_EOCE CROCO_NOCE "
     - ln -s $CI_PROJECT_DIR/test/work/BENGUELA_TOY/CROCO_FILES .
     # rename executables
     - mv $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/croco crocox
     - mv $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/toy_wav toywav
     # launch
-    - mpirun --allow-run-as-root -np 2 toywav | -np 4 crocox > out.log
+    - chmod +x run_mpirun.sh
+    - ./run_mpirun.sh
+    - echo "End job"
   artifacts:
     paths:
       - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/compile_coupled.log

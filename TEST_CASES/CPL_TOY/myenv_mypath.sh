@@ -76,8 +76,8 @@ export MACHINE="Linux"
 # Config paths
 #-------------------------------------------------------------------------------
 export CONFIG=BENGUELA_TOY
-export CHOME=/home/test/home/BENGUELA_TOY
-export CWORK=/home/test/work/BENGUELA_TOY
+export CHOME="$CI_PROJECT_DIR/test/home/BENGUELA_TOY"
+export CWORK="$CI_PROJECT_DIR/test/work/BENGUELA_TOY"
 
 #-------------------------------------------------------------------------------
 # Tools paths
