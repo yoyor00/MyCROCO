@@ -215,15 +215,40 @@ reg_cpl_toy:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel_oasis:1.0.0
   script:
     - ulimit -s unlimited
+    # prepare config structure
     - ./create_config.bash -o all-prod-cpl -d $CI_PROJECT_DIR/test/home -w $CI_PROJECT_DIR/test/work -n BENGUELA_TOY -s $CI_PROJECT_DIR
+    # copy needed files
     - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/cppdefs.h $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/.
-    - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/myenv_mypath.sh $CI_PROJECT_DIR/test/home/BENGUELA_TOY/myenv_mypath.sh
+    - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/* $CI_PROJECT_DIR/test/home/BENGUELA_TOY/.
     - cp $CI_PROJECT_DIR/TEST_CASES/CPL_TOY/Makefile.Linux $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/.
+    - tar -xf /data/CROCO_FILES.tar.gz
+    - mv /data/CROCO_FILES/* $CI_PROJECT_DIR/test/work/BENGUELA_TOY/CROCO_FILES/.
+    - tar -xf /data/TOY_FILES.tar.gz
+    - mv /data/CROCO_FILES/* $CI_PROJECT_DIR/test/work/BENGUELA_TOY/TOY_FILES/.
+    # compile CROCO
     - cd $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/
     - ./jobcomp >& compile_coupled.log
+    # compile TOY
     - cd $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/
     - ./make_toy_compil.sh
+    # prepare INPUT FILES
+    - cd $CI_PROJECT_DIR/test/home/BENGUELA_TOY
+    - source myenv_mypath.sh
+    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_toy_files.sh /home/test/work/BENGUELA_TOY/TOY_FILES/ww3_20050101_20050131.nc toy_wav.nc ww3 1,12
+    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh grid_wav.nc wav.nc toy "TOY_T0M1 TOY___HS TOY__DIR »
+    - $SCRIPTDIR/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh /home/test/work/BENGUELA_TOY/CROCO_FILES/croco_grd.nc oce.nc croco "CROCO_SSH CROCO_EOCE CROCO_NOCE »
+    - ln -s /home/test/work/BENGUELA_TOY/CROCO_FILES .
+    # rename executables
+    - mv $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/croco crocox
+    - mv $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/toy_wav toywav
+    # launch
+    - mpirun --allow-run-as-root -np 2 toywav : -np 4 crocox > out.log
   artifacts:
     paths:
       - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/compile_coupled.log
       - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/TOY_IN/*.out
+      - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/debug.*
+      - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/nout.000000
+      - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/OUTPUT_TOY_wav.txt
+      - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/*timers_0000
+      - $CI_PROJECT_DIR/test/home/BENGUELA_TOY/out.log
