@@ -695,7 +695,6 @@ CONTAINS
       ws_free_max(:)=0.0
 #endif
    ENDIF
-!   ALLOCATE(l_subs2D(-1:nvp))
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
 #if defined key_sand2D
