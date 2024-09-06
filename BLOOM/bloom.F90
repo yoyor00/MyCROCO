@@ -696,6 +696,20 @@
    INTEGER        :: ideb,iv_ndeb,iv_E,iv_E_V,iv_E_GO,iv_E_R
    real(KIND=rsh) ::XkN,XkP
 #endif
+#ifdef key_ulva_GAMELAG  
+   ! variables used in include incellwat_bloom_ulva_GAMELAG
+   ! ---------------------------------------------------
+   REAL(KIND=rsh) :: photos_Ulva,respUlva,death_Ulva,growth_Ulva, mu_Ulva,f_SN_Ulva
+   REAL(KIND=rsh) :: PO4_uptake_Ulva,NH4_uptake_Ulva,NO3_uptake_Ulva,f_PO4_Ulva,f_N_Ulva
+   REAL(KIND=rsh) :: f_NH4_Ulva,f_NO3_Ulva,f_QP_Ulva,f_QN_Ulva,f_Temp_Ulva,f_I_Ulva,etaD,phiD
+#endif
+#ifdef key_gracilaria_GAMELAG  
+   ! variables used in include incellwat_bloom_gracilaria_GAMELAG
+   ! ---------------------------------------------------
+   REAL(KIND=rsh) :: photos_Graci,respGraci,death_Graci,growth_Graci, mu_Graci,f_SN_Graci
+   REAL(KIND=rsh) :: PO4_uptake_Graci,NH4_uptake_Graci,NO3_uptake_Graci,f_PO4_Graci,f_N_Graci
+   REAL(KIND=rsh) :: f_NH4_Graci,f_NO3_Graci,f_QP_Graci,f_QN_Graci,f_Temp_Graci,f_I_Graci,omegaD,thetaD
+#endif
 
 #ifdef key_N_tracer  
    ! variables used in include incellwat_bloom_nitrogentracer
@@ -2039,6 +2053,7 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
    ! -------------------
           !CALL incellwat_ulvas(k,i,j,xe,c,dc)
 #endif
+
 #if defined key_zostera
    ! Evolution des variables liees aux herbiers de zosteres  atetention a besoin de pi
    ! corrige et calcule les dc , evalue total chloro, variables diagnostiques 
@@ -2095,6 +2110,14 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
    ! -------------------------------------------------------
 #include "incellwat_bloom_oysterDEB_GAMELAG.h"
 #endif
+
+#if defined key_ulva_GAMELAG
+#include "incellwat_bloom_ulva_GAMELAG.h"
+#endif
+#if defined key_gracilaria_GAMELAG
+#include "incellwat_bloom_gracilaria_GAMELAG.h"
+#endif
+
 #if defined key_N_tracer
    !   Tracage de l azote 
    !   --------------------

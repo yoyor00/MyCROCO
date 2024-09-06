@@ -166,6 +166,18 @@
             iv_spatdeb_E_GO          ! index for oyster gonades
 #endif            
 #endif
+#ifdef key_ulva_GAMELAG
+   INTEGER, PUBLIC   :: &
+            iv_ulva,     &   ! index for ulva biomass
+            iv_ulva_N,     &   ! index for ulva N quota
+            iv_ulva_P        ! index for ulva P quota
+#endif
+#ifdef key_gracilaria_GAMELAG
+   INTEGER, PUBLIC   :: &
+            iv_graci,     &   ! index for graci biomass
+            iv_graci_N,     &   ! index for graci N quota
+            iv_graci_P        ! index for graci P quota
+#endif             
 #ifdef key_benthos
    INTEGER, PUBLIC   :: &
             iv_benth_N,     &   ! index for organic nitrogen in benthos
@@ -393,7 +405,9 @@
                    p_micz_DOcrit,      & 
                    p_micz_aO2,         &
                    p_mesz_DOcrit,      & 
-                   p_mesz_aO2,         &  
+                   p_mesz_aO2,         &
+                   p_Phi_photo,          &
+  
 #endif
 !#if defined key_BLOOM_opt2
                    p_diat_mort,        &
@@ -758,7 +772,66 @@
                    OMR_Dpo,           &
                    epsOyst,           &
                    oyster_mortality
+#endif
+#ifdef key_ulva_GAMELAG
+           REAL(KIND=rsh), PUBLIC       ::     &
+                   mu_max_Ulva,                &
+                   Iopt_Ulva,                  &
+                   Temp_Ulva,                  &
+                   zeta1_Ulva,                 &
+                   Qmin_N_Ulva,                &
+                   Qmax_N_Ulva,                &
+                   Qmin_P_Ulva,                &
+                   Qmax_P_Ulva,                &
+                   V_NO3_Ulva,                 &
+                   V_NH4_Ulva,                 &
+                   V_PO4_Ulva,                 &
+                   K_NO3_Ulva,                 &
+                   K_NH4_Ulva,                 &
+                   K_PO4_Ulva,                 &
+                   MaxMort_Ulva,               &
+                   K_death_Ulva,               &
+                   beta_death_Ulva,            &
+                   k_death_Ulva_O2,            &
+                   Temp_resp_Ulva,             &
+                   MaxTemp_Ulva,               &
+                   zeta2_Ulva,                 &
+                   RG_Ulva,                    &
+                   RD_Ulva,                    & 
+                   etaP,                       &
+                   phiP,                       &
+                   phiPO                      
+#endif
+#ifdef key_gracilaria_GAMELAG
+           REAL(KIND=rsh), PUBLIC       ::     &
+                   mu_max_Graci,                &
+                   Iopt_Graci,                  &
+                   Temp_Graci,                  &
+                   zeta1_Graci,                 &
+                   Qmin_N_Graci,                &
+                   Qmax_N_Graci,                &
+                   Qmin_P_Graci,                &
+                   Qmax_P_Graci,                &
+                   V_NO3_Graci,                 &
+                   V_NH4_Graci,                 &
+                   V_PO4_Graci,                 &
+                   K_NO3_Graci,                 &
+                   K_NH4_Graci,                 &
+                   K_PO4_Graci,                 &
+                   MaxMort_Graci,               &
+                   K_death_Graci,               &
+                   beta_death_Graci,            &
+                   k_death_Graci_O2,            &
+                   Temp_resp_Graci,             &
+                   MaxTemp_Graci,               &
+                   zeta2_Graci,                 &
+                   RG_Graci,                    &
+                   RD_Graci,                    & 
+                   omegaP,                      &
+                   thetaP,                      &
+                   thetaPO                      
 #endif	  
+
 #ifdef key_microtracers
    REAL(KIND=rsh), PUBLIC       ::      &
                    p_trace_debitinject, &

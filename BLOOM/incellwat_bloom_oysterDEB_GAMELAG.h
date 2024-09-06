@@ -17,11 +17,12 @@
    !&E                                    effetselnutdiat
    !&E      OUTPUT :   dc, diag_2d(irk_diag(id_oys_DEB....
    !&E---------------------------------------------------------------------
- 
-         IF (k.eq.2) THEN 
-          
-             IF(SUM(c) .ne. 0.0) THEN
 
+#ifdef key_oysterspat_DEB_GAMELAG          
+             IF(c(iv_oysdeb) .gt. 0.0 .or. c(iv_spatdeb) .gt. 0.0) THEN
+#else
+             IF(c(iv_oysdeb) .gt. 0.0) THEN
+#endif
               if(PO2_sat .lt. DOcrit) then
               cDO = 0.
               else
@@ -56,7 +57,7 @@
               + (alpha_ZS * c(iv_zoo_micr_N) + alpha_ZL * c(iv_zoo_meso_N)) / p_phyto_NPratio   &      ! in bloom same NP ratio for zoo and phyto
               + alpha_POP * (c(iv_detr_P) + c(iv_detrR_P)) ! mmolP/m3
 #endif
-             ENDIF 
+           
 
 #ifdef key_oysterspat_DEB_GAMELAG
             DO ideb=1,2 
@@ -336,21 +337,11 @@
                                 +(BioDpo*Oyster_feces_P+OMR_Dpo*PMOR_oyster)*dtbiojour*thicklayerW_C(k,i,j)
 #endif                                
 
-#    
-
-             ELSE  ! nbhuitre > 0 
-              
-              c(iv_E)=0.0_rsh
-              c(iv_E_V)=0.0_rsh
-              c(iv_E_GO)=0.0_rsh
-              c(iv_E_R)=0.0_rsh
 
             ENDIF
-
-
              
+            ENDDO  ! ideb loop
 
-            ENDDO
-       ENDIF 
+       ENDIF  
    !!======================================================================
 #endif

@@ -181,7 +181,7 @@
 #else
    NAMELIST/namoxygen/ p_phyto_photoratio,p_phyto_resp,p_zoo_resp,                              &
 #if defined GAMELAG
-                       p_O2_Threshold,p_O2SED_Threshold,p_R_photo,p_Q_photo,                                      &
+                       p_O2_Threshold,p_O2SED_Threshold,p_R_photo,p_Q_photo,p_Phi_photo,           &
 #endif
                        p_KO2sed_aeration,p_Kzsed_aeration
 #endif
@@ -254,7 +254,22 @@
                                  Yv, KappaGo, muE_N,muV,muGo,alpha_PS,alpha_PL,alpha_ZS,alpha_ZL, &
                                  alpha_PON,alpha_POP,NP_oyster,C_oyster, &
                                  BioDpo,DOcrit,DOcrit_MR,bDO,OMR_DO,OMR_Dpo, &
-                                 epsOyst,oyster_mortality,DOcrit
+                                 epsOyst,oyster_mortality,DOcrit             
+#endif
+
+#ifdef key_ulva_GAMELAG
+    NAMELIST/namulva_gamelag/mu_max_Ulva,Iopt_Ulva,Temp_Ulva,zeta1_Ulva,Qmin_N_Ulva,     &
+                             Qmax_N_Ulva,Qmin_P_Ulva,Qmax_P_Ulva,V_NO3_Ulva,V_NH4_Ulva,   &
+                             V_PO4_Ulva,K_NO3_Ulva,K_NH4_Ulva,K_PO4_Ulva,MaxMort_Ulva,    &
+                             K_death_Ulva,beta_death_Ulva,k_death_Ulva_O2,        &
+                             Temp_resp_Ulva,MaxTemp_Ulva,zeta2_Ulva,RG_Ulva,RD_Ulva,etaP,phiP,phiPO
+#endif
+#ifdef key_gracilaria_GAMELAG
+    NAMELIST/namgracilaria_gamelag/mu_max_Graci,Iopt_Graci,Temp_Graci,zeta1_Graci,Qmin_N_Graci,     &
+                             Qmax_N_Graci,Qmin_P_Graci,Qmax_P_Graci,V_NO3_Graci,V_NH4_Graci,   &
+                             V_PO4_Graci,K_NO3_Graci,K_NH4_Graci,K_PO4_Graci,MaxMort_Graci,    &
+                             K_death_Graci,beta_death_Graci,k_death_Graci_O2,        &
+                             Temp_resp_Graci,MaxTemp_Graci,zeta2_Graci,RG_Graci,RD_Graci,omegaP,thetaP,thetaPO
 #endif
 #if defined key_microtracers
    NAMELIST/nammicrotrace/ p_trace_debitinject,p_trace_depth1inject,p_trace_depth2inject,p_trace_depth3inject
@@ -366,6 +381,12 @@ IF(rw == 'r')THEN
 #endif
 #ifdef key_oyster_DEB_GAMELAG
    READ(50,namoysterDEB_GAMELAG)
+#endif
+#ifdef key_ulva_GAMELAG
+   READ(50,namulva_GAMELAG)
+#endif
+#ifdef key_gracilaria_GAMELAG
+   READ(50,namgracilaria_GAMELAG)
 #endif
 #if defined key_microtracers
    READ(50,nammicrotrace)
@@ -794,6 +815,22 @@ ENDIF
       CASE('spatdeb_E_R')
         iv_spatdeb_E_R = irk_mod(iv)
 #endif
+#endif
+#ifdef key_ulva_GAMELAG
+      CASE('ulva')
+        iv_ulva = irk_mod(iv)
+      CASE('ulva_N')
+        iv_ulva_N = irk_mod(iv)
+      CASE('ulva_P')
+        iv_ulva_P = irk_mod(iv)
+#endif
+#ifdef key_gracilaria_GAMELAG
+      CASE('graci')
+        iv_graci = irk_mod(iv)
+      CASE('graci_N')
+        iv_graci_N = irk_mod(iv)
+      CASE('graci_P')
+        iv_graci_P = irk_mod(iv)
 #endif
 #ifdef key_benthos
      CASE('mole_concentration_of_organic_detritus_expressed_as_nitrogen_in_benthos')
@@ -3531,21 +3568,35 @@ write(*,*)'debut init huitre deb'
       DO i=ifirst,ilast
         !oyster number
         BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb-nv_adv)=cini_wat_fix(9)
-      ENDDO
-    ENDDO 
-    DO j=jfirst,jlast
-      DO i=ifirst,ilast
-        IF ((BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb-nv_adv).ne.0.0_rsh)) THEN
-          BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E-nv_adv)=cini_wat_fix(10)
-          BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_V-nv_adv) = cini_wat_fix(11)
-          BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_R-nv_adv)=cini_wat_fix(12)
-          BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_GO-nv_adv)=cini_wat_fix(13)      
-        ENDIF
+        BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E-nv_adv)=cini_wat_fix(10)
+        BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_V-nv_adv) = cini_wat_fix(11)
+        BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_R-nv_adv)=cini_wat_fix(12)
+        BENTHIC_CONCENTRATION(i,j,2,iv_spatdeb_E_GO-nv_adv)=cini_wat_fix(13)
       ENDDO
     ENDDO 
 #endif
 #endif 
-    
+
+#ifdef key_ulva_GAMELAG
+DO j=jfirst,jlast
+  DO i=ifirst,ilast
+    !ulva 
+    BENTHIC_CONCENTRATION(i,j,1,iv_ulva-nv_adv)=cini_wat_fix(14)
+    BENTHIC_CONCENTRATION(i,j,1,iv_ulva_N-nv_adv) =cini_wat_fix(15)
+    BENTHIC_CONCENTRATION(i,j,1,iv_ulva_P-nv_adv) = cini_wat_fix(16)
+  ENDDO
+ENDDO 
+#endif
+#ifdef key_gracilaria_GAMELAG
+DO j=jfirst,jlast
+  DO i=ifirst,ilast
+    !gracilaria 
+    BENTHIC_CONCENTRATION(i,j,1,iv_graci-nv_adv)=cini_wat_fix(17)
+    BENTHIC_CONCENTRATION(i,j,1,iv_graci_N-nv_adv) =cini_wat_fix(18)
+    BENTHIC_CONCENTRATION(i,j,1,iv_graci_P-nv_adv) = cini_wat_fix(19)
+  ENDDO
+ENDDO 
+#endif
 !#ifdef key_larve
 !		i_ponte=0
 !#endif

@@ -66,6 +66,16 @@
       INTEGER,PARAMETER :: nb_fix_oys=0
 #endif
 
+#if defined key_ulva_GAMELAG && !defined key_gracilaria_GAMELAG
+      INTEGER,PARAMETER :: nb_fix_macrophytes=3
+#elif !defined key_ulva_GAMELAG && defined key_gracilaria_GAMELAG
+      INTEGER,PARAMETER :: nb_fix_macrophytes=3
+#elif defined key_ulva_GAMELAG && defined key_gracilaria_GAMELAG
+      INTEGER,PARAMETER :: nb_fix_macrophytes=6      
+#else
+      INTEGER,PARAMETER :: nb_fix_macrophytes=0
+#endif
+
 #ifdef key_oxygen
       INTEGER,PARAMETER :: nb_var_oxy=1
 #else
@@ -210,6 +220,7 @@
      &                                  nb_fix_karenia+
      &                                  nb_fix_phaeocystis+
      &                                  nb_fix_oys+
+     &                                  nb_fix_macrophytes+     
      &                                  nb_fix_zoo_ps+
      &                                  nb_fix_benth_det+
      &                                  nb_fix_benth_plus+
