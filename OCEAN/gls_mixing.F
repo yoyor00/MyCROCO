@@ -336,14 +336,15 @@
 !--------------------------------------------------------------------
 !
 
+!$acc update device( trb_min )
 !$acc kernels if(compute_on_device) default(present)
-!$acc& copyin( trb_min, gls_min, cff, itke )
+
       
 # ifdef GLS_HADV_UP1
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
       ig=itke         ! <-- TKE
-!$acc loop private(ustar_bot_sq,ustar_sfc_sq)
+!$acc loop private(ustar_bot_sq,ustar_sfc_sq,HUon_w)
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
@@ -373,7 +374,7 @@
       ENDDO
 !
       ig=igls         ! <-- GLS
-!$acc loop private(ustar_bot_sq,ustar_sfc_sq)
+!$acc loop private(ustar_bot_sq,ustar_sfc_sq,HUon_w)
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
@@ -803,10 +804,18 @@
                ! Limitation on psi (use MAX because rn is negative)
                cff = (cm0**rp)*(L_lim**rn)*(trb(i,j,k,nnew,itke)**rm)
                trb( i,j,k,nnew,igls ) = MAX( trb( i,j,k,nnew,igls ),cff)
+# ifdef RVTK_DEBUG
+               cff = real( cff, kind=4)
+               trb( i,j,k,nnew,itke ) = real( trb( i,j,k,nnew,itke ), kind=4 )
+               trb( i,j,k,nnew,igls ) = real( trb( i,j,k,nnew,igls ), kind=4 )
+# endif
                !
                ! Dissipation rate epsilon
                epsilon = (cm0**e1) * ( trb( i,j,k,nnew,itke )**e2 )
      &                             * ( trb( i,j,k,nnew,igls )**e3 )
+# ifdef RVTK_DEBUG
+		epsilon = real( epsilon, kind=4 )
+# endif
                !
                ! Limitation of epsilon
 # ifdef GLS_STRAIN_LIM
@@ -814,7 +823,9 @@
                cff = lars * (shear2(i,j,k)/MAX(vort2(i,j,k),1.e-10))**2
                epsilon = MAX(epsilon, cff*epsilon)
 # endif
+# ifdef RVTK_DEBUG
                epsilon = MAX(epsilon, eps_min)
+# endif
                !
                ! Compute alpha_n and alpha_m
                cff     = ( trb(i,j,k,nnew,itke)/epsilon )**2
@@ -841,6 +852,9 @@
                !
                ! Finalize the computation of Akv and Akt
                cff = trb( i,j,k,nnew,itke )**2 / epsilon
+# ifdef RVTK_DEBUG
+		cff = real( cff, kind=4 )
+# endif
                Akv(i,j,k) = MAX( cff*c_mu , nuwm ) SWITCH rmask(i,j)
 # ifdef TEMPERATURE
                Akt(i,j,k,itemp)= MAX( cff*c_mu_prim , nuws )

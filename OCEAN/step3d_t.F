@@ -444,14 +444,27 @@
 !$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
+#  ifndef OPENACC
             wrk1(i,j)=z_w(i,j,k)-z_w(i,j,N)
+#  else
+            FX_3D(i,j,k)=z_w(i,j,k)-z_w(i,j,N)
+#  endif
           enddo
         enddo
+#  ifndef OPENACC
         call lmd_swfrac_tile (Istr,Iend,Jstr,Jend,1.,wrk1,wrk2)
+#  else
+        call lmd_swfrac_tile (Istr,Iend,Jstr,Jend,1.,
+     &	FX_3D(:,:,k),FE_3D(:,:,k))
+#  endif
 !$acc parallel loop if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
+#  ifndef OPENACC
             swdk(i,j,k)=wrk2(i,j)
+#  else
+            swdk(i,j,k)= FE_3D(i,j,k)
+#  endif
           enddo
         enddo
       enddo
