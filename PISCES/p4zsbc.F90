@@ -255,8 +255,11 @@ CONTAINS
       IF( ln_dust .OR. ln_ndepo ) THEN
          lstr = lenstr(bioname)
          ierr = nf_open (bioname(1:lstr), nf_nowrite, ncid)
-         IF (ierr .NE. nf_noerr .AND. lwp ) THEN
-            WRITE(numout,4) bioname
+         IF (ierr .eq. nf_noerr ) THEN
+            IF( lwp) WRITE(numout,*) ' Read atmospheric deposition in file = ', TRIM(bioname)
+         ELSE
+            IF( lwp) CALL ctl_stop( 'STOP in p4z_sbc_init : Needed input file for atmospheric deposition &
+                & or put ln_dust to false' )
          ENDIF
          ierr = nf_inq_varid(ncid,"dust_time",varid)
 ! bug if compilation with gfortran
@@ -318,7 +321,10 @@ CONTAINS
          ENDDO
          !
          DEALLOCATE(dustmp)
-
+         !
+      ELSE
+         ALLOCATE( dust(PRIV_2D_BIOARRAY) )
+         dust(:,:) = 0.
       ENDIF
 !
 !    READ N DEPOSITION FROM ATMOSPHERE (use dust_time for time)
