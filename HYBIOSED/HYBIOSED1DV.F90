@@ -120,14 +120,10 @@ CONTAINS
       LOGICAL, DIMENSION(hbs1dv_nbvar), INTENT(IN) :: l_hbs_root_erosion
       LOGICAL, DIMENSION(hbs1dv_nbvar), INTENT(IN) :: l_hbs_bedsedstab
       INTEGER, DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_root_accomod_type
-      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_tauceroot_x0
-      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_tauceroot_x1
-      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_E0root_x0
-      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_E0root_x1
-      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_root_accomod_vel_max
-      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_root_accomod_day
-      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_opt_root_depth
-      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: hbs_c_opt_root_thick
+      REAL(KIND=rsh), DIMENSION(hbs1dv_nbvar), INTENT(IN) :: &
+         hbs_c_tauceroot_x0, hbs_c_tauceroot_x1, hbs_c_E0root_x0, &
+         hbs_c_E0root_x1, hbs_c_root_accomod_vel_max, hbs_c_root_accomod_day, &
+         hbs_c_opt_root_depth, hbs_c_opt_root_thick
 
       INTEGER :: iv
 
@@ -148,7 +144,8 @@ CONTAINS
          hbs1dv_param(iv)%c_tauceroot_x1 = hbs_c_tauceroot_x1(iv)
          hbs1dv_param(iv)%c_E0root_x0 = hbs_c_E0root_x0(iv)
          hbs1dv_param(iv)%c_E0root_x1 = hbs_c_E0root_x1(iv)
-         hbs1dv_param(iv)%c_root_accomod_vel_max = hbs_c_root_accomod_vel_max(iv)
+         hbs1dv_param(iv)%c_root_accomod_vel_max = &
+            hbs_c_root_accomod_vel_max(iv)
          hbs1dv_param(iv)%c_root_accomod_day = hbs_c_root_accomod_day(iv)
          hbs1dv_param(iv)%c_opt_root_depth = hbs_c_opt_root_depth(iv)
          hbs1dv_param(iv)%c_opt_root_thick = hbs_c_opt_root_thick(iv)
@@ -376,12 +373,13 @@ CONTAINS
                      dz_up = -(var%c_opt_root_depth - zup_root(iv))
                      ! Authorized upward accomodation
                      IF (dz_up .LE. dz_acc) THEN
-                        ! ******************************************************* !
-                        ! * CASE-1.2.1.1 :                                      * !
-                        ! * ACCOMODATION POTENTIAL IS HIGHER THAN AUTHORIZED    * !
-                        ! * UPWARD ACCOMODATION                                 * !
-                        ! * THERE WILL HAVE BOTH UPWARD & DOWNWARD ACCOMODATION * !
-                        ! ******************************************************* !
+                        ! **************************************************** !
+                        ! * CASE-1.2.1.1 :                                   * !
+                        ! * ACCOMODATION POTENTIAL IS HIGHER THAN AUTHORIZED * !
+                        ! * UPWARD ACCOMODATION                              * !
+                        ! * THERE WILL HAVE BOTH UPWARD & DOWNWARD           * !
+                        ! * ACCOMODATION                                     * !
+                        ! **************************************************** !
                         CaseS = '1.2.1.1'
                         zup_root(iv) = zup_root(iv) - dz_up
                         ! Root level moves upward (dz_up)
@@ -758,12 +756,12 @@ CONTAINS
                Zchange = 999.0_rsh
                CALL hbs1dv_search_next_change(zroot_tmp, troot_tmp, &
                                               Lchange, Zchange)
-               IF ((.NOT.Lchange) .OR. (Zchange .GE. dz_erod_max)) THEN
+               IF ((.NOT. Lchange) .OR. (Zchange .GE. dz_erod_max)) THEN
                   !----------------------------------------------------------
                   ! No more change in bed characteristics during the
                   ! time-step or the current sediment layer
-                  ! OR 
-                  ! erosion does not reach the change 
+                  ! OR
+                  ! erosion does not reach the change
                   !----------------------------------------------------------
                   erosi = erosi + erosi_tmp
                   dt_rest = 0.0_rsh

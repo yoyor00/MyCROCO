@@ -93,7 +93,8 @@ CONTAINS
                ! * COMPUTES day of year
                ! **************************************
                cdate = tool_sectodat(time)
-               CALL tool_decompdate(cdate, ijour, imois, ian, iheure, iminu, isec)
+               CALL tool_decompdate(cdate, &
+                                    ijour, imois, ian, iheure, iminu, isec)
                jjulien = tool_julien(ijour, imois, ian) - &
                          tool_julien(1, 1, ian) + 1
 

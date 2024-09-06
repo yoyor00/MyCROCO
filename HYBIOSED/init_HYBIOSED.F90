@@ -52,8 +52,9 @@ CONTAINS
          hbs_c_suspsed_trapp_exp, &
          l_hbs_suspsed_block, hbs_c_suspsed_block_max, &
          hbs_c_suspsed_block_exp
-      NAMELIST/hbs_output/l_hbsout_pos,l_hbsout_susp_trapp,l_hbsout_susp_block, &
-         l_hbsout_rbiom,l_hbsout_zroot,l_hbsout_thickroot
+      NAMELIST /hbs_output/ l_hbsout_pos, l_hbsout_susp_trapp, &
+         l_hbsout_susp_block, l_hbsout_rbiom, l_hbsout_zroot, &
+         l_hbsout_thickroot
 
       hbs_kmax = N
       iscreenlog = stdout
@@ -218,7 +219,8 @@ CONTAINS
       ! * Start reading variables file
       ! ******************************
       filepc = hbs_fn_var(iv)
-      OPEN (55, file=filepc, status='old', form='formatted', access='sequential')
+      OPEN (55, file=filepc, status='old', form='formatted', &
+            access='sequential')
       READ (55, hbs_var_main); REWIND (55)
       READ (55, hbs_var_option); REWIND (55)
       READ (55, hbs_var_init); REWIND (55)
@@ -372,185 +374,182 @@ CONTAINS
       MPI_master_only WRITE (iscreenlog, *) &
          '******************************************************************'
       MPI_master_only WRITE (iscreenlog, *) &
-         ' File position: ',TRIM(hbs_fn_position)
-      IF(l_hbs_suspsed_trapp) THEN
+         ' File position: ', TRIM(hbs_fn_position)
+      IF (l_hbs_suspsed_trapp) THEN
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Suspended Particle Trapping by obstructions:   TRUE'
+            ' Suspended Particle Trapping by obstructions:   TRUE'
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Maximum correction factor on settling velocity due to particles'&
-         ' trapping: ',hbs_c_suspsed_trapp_max
+            ' Maximum correction factor on settling velocity due to', &
+            ' particles trapping: ', hbs_c_suspsed_trapp_max
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Exponential coefficient for correction factor on settling velocity '&
-         'due to particles trapping: ',hbs_c_suspsed_trapp_exp
+            ' Exponential coefficient for correction factor on settling', &
+            ' velocity due to particles trapping: ', hbs_c_suspsed_trapp_exp
       ELSE
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Suspended Particle Trapping by obstructions:   FALSE'
+            ' Suspended Particle Trapping by obstructions:   FALSE'
          MPI_master_only WRITE (iscreenlog, *) &
-         'Maximum correction factor on settling velocity due to particles'&
-         ' trapping: NOT USED'
+            'Maximum correction factor on settling velocity due to particles', &
+            ' trapping: NOT USED'
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Exponential coefficient for correction factor on settling velocity '&
-         'due to particles trapping: NOT USED'
-      ENDIF
-      IF(l_hbs_suspsed_block) THEN
+            ' Exponential coefficient for correction factor on settling', &
+            ' velocity due to particles trapping: NOT USED'
+      END IF
+      IF (l_hbs_suspsed_block) THEN
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Suspended Particle Blockage by obstructions:   TRUE'
+            ' Suspended Particle Blockage by obstructions:   TRUE'
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Maximum correction factor on settling velocity due to particles '&
-         'blockage: ',hbs_c_suspsed_block_max
+            ' Maximum correction factor on settling velocity due to', &
+            ' particles blockage: ', hbs_c_suspsed_block_max
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Exponential coefficient for correction factor on settling velocity '&
-         'due to particles blockage: ',hbs_c_suspsed_block_exp
+            ' Exponential coefficient for correction factor on settling', &
+            ' velocity due to particles blockage: ', hbs_c_suspsed_block_exp
       ELSE
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Suspended Particle Blockage by obstructions:   FALSE'
+            ' Suspended Particle Blockage by obstructions:   FALSE'
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Maximum correction factor on settling velocity due to particles '&
-         'blockage: NOT USED'
+            ' Maximum correction factor on settling velocity due to', &
+            ' particles blockage: NOT USED'
          MPI_master_only WRITE (iscreenlog, *) &
-         ' Exponential coefficient for correction factor on settling velocity '&
-         'due to particles blockage: NOT USED'
-      ENDIF
+            ' Exponential coefficient for correction factor on settling', &
+            ' velocity due to particles blockage: NOT USED'
+      END IF
 
-      DO iv = 1,hbs_nbvar
+      DO iv = 1, hbs_nbvar
          MPI_master_only WRITE (iscreenlog, *) &
-         '***************************************************************'
+            '***************************************************************'
          MPI_master_only WRITE (iscreenlog, *) &
-         'NAMELIST : hbs_var_main'
+            'NAMELIST : hbs_var_main'
          MPI_master_only WRITE (iscreenlog, *) &
-         '  - Name (identifier) of the variable    : ',TRIM(hbs_varname(iv))
+            '  - Name (identifier) of the variable : ', TRIM(hbs_varname(iv))
          MPI_master_only WRITE (iscreenlog, *) &
-         '  - Short description of the variable    : ',TRIM(hbs_vardesc(iv))
+            '  - Short description of the variable : ', TRIM(hbs_vardesc(iv))
          MPI_master_only WRITE (iscreenlog, *) &
-         'NAMELIST : hbs_var_option'
+            'NAMELIST : hbs_var_option'
          MPI_master_only WRITE (iscreenlog, *) &
-         '  - If the current variable impacts bed sediment erosion/deposition '&
-         'processes : ',l_hbs_bedsedstab(iv)
+            '  - If the current variable impacts bed sediment', &
+            ' erosion/deposition processes : ', l_hbs_bedsedstab(iv)
          MPI_master_only WRITE (iscreenlog, *) &
-         'NAMELIST : hbs_var_init'
+            'NAMELIST : hbs_var_init'
          MPI_master_only WRITE (iscreenlog, *) &
-         '  - Filename for heterogeneous root biomass, root level '&
-         'depth and/or thickness : ',hbs_fn_initfile(iv)
-         IF(.not.l_hbs_initfromfile(iv))THEN
+            '  - Filename for heterogeneous root biomass, root level ', &
+            'depth and/or thickness : ', hbs_fn_initfile(iv)
+         IF (.not. l_hbs_initfromfile(iv)) THEN
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Initial homogeneous root biomass                    '&
-         '                       : ',hbs_i_rbiom(iv)
+               '  - Initial homogeneous root biomass', &
+               ' : ', hbs_i_rbiom(iv)
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Initial homogeneous root level depth                     '&
-         '                  : ',hbs_i_zroot(iv)
+               '  - Initial homogeneous root level depth', &
+               ' : ', hbs_i_zroot(iv)
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Initial homogeneous root level thickness                  '&
-         '                 : ',hbs_i_thickroot(iv)
-         ENDIF
+               '  - Initial homogeneous root level thickness', &
+               ' : ', hbs_i_thickroot(iv)
+         END IF
          MPI_master_only WRITE (iscreenlog, *) &
-         'NAMELIST : hbs_var_sedcoupl'
-         IF(l_hbs_bedsedstab(iv))THEN
+            'NAMELIST : hbs_var_sedcoupl'
+         IF (l_hbs_bedsedstab(iv)) THEN
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - To activate root accomodation to erosion or deposition       '&
-         '            : ',l_hbs_root_accomodation(iv)
+               '  - To activate root accomodation to erosion or deposition', &
+               ' : ', l_hbs_root_accomodation(iv)
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - To activate root erosion (if .FALSE. root thickness will '&
-         'never change)   : ',l_hbs_root_erosion(iv)
+               '  - To activate root erosion (if .FALSE. root thickness will', &
+               ' never change)   : ', l_hbs_root_erosion(iv)
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - First parameter for effect of root on critical shear stress'&
-         ' for erosion  : ',hbs_c_tauceroot_x0(iv)
+               '  - First parameter for effect of root on critical shear', &
+               ' stress for erosion  : ', hbs_c_tauceroot_x0(iv)
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Second parameter for effect of root on critical shear stress'&
-         ' for erosion : ',hbs_c_tauceroot_x1(iv)
+               '  - Second parameter for effect of root on critical shear', &
+               ' stress for erosion : ', hbs_c_tauceroot_x1(iv)
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - First parameter for effect of roots on erosion fluxes       '&
-         '             : ',hbs_c_E0root_x0(iv)
+               '  - First parameter for effect of roots on erosion fluxes', &
+               ' : ', hbs_c_E0root_x0(iv)
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Second parameter for effect of roots on erosion fluxes       '&
-         '            : ',hbs_c_E0root_x1(iv)
-            IF(l_hbs_root_accomodation(iv))THEN
-            IF(hbs_c_root_accomod_type(iv).EQ.0)THEN
+               '  - Second parameter for effect of roots on erosion fluxes', &
+               ' : ', hbs_c_E0root_x1(iv)
+            IF (l_hbs_root_accomodation(iv)) THEN
+            IF (hbs_c_root_accomod_type(iv) .EQ. 0) THEN
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Type of formulation for root accomodation velocity           '&
-         '            : Constant'
+                  '  - Type of formulation for root accomodation velocity', &
+                  ' : Constant'
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Maximum (or constant) root accomodation velocity (mm.month-1)  '&
-         '          : ',hbs_c_root_accomod_vel_max(iv)
+                  '  - Maximum (or constant) root accomodation velocity', &
+                  ' (mm.month-1) : ', hbs_c_root_accomod_vel_max(iv)
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Day of the year when maximum vertical root accomodation is '&
-         'reached       : NOT USED'
-            ELSEIF(hbs_c_root_accomod_type(iv).EQ.1)THEN
+                  '  - Day of the year when maximum vertical root', &
+                  ' accomodation is reached : NOT USED'
+            ELSEIF (hbs_c_root_accomod_type(iv) .EQ. 1) THEN
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Type of formulation for root accomodation velocity             '&
-         '          : Variable (day of year)'
+                  '  - Type of formulation for root accomodation velocity', &
+                  ' : Variable (day of year)'
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Maximum (or constant) root accomodation velocity (mm.month-1)   '&
-         '         : ',hbs_c_root_accomod_vel_max(iv)
+                  '  - Maximum (or constant) root accomodation velocity', &
+                  ' (mm.month-1) : ', hbs_c_root_accomod_vel_max(iv)
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Day of the year when maximum vertical root accomodation is '&
-         'reached       : ',hbs_c_root_accomod_day(iv)
-            ELSEIF(hbs_c_root_accomod_type(iv).EQ.2)THEN
+                  '  - Day of the year when maximum vertical root', &
+                  ' accomodation is reached : ', hbs_c_root_accomod_day(iv)
+            ELSEIF (hbs_c_root_accomod_type(iv) .EQ. 2) THEN
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Type of formulation for root accomodation velocity            '&
-         '           : Growth model'
+                  '  - Type of formulation for root accomodation velocity', &
+                  ' : Growth model'
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Maximum (or constant) root accomodation velocity (mm.month-1)  '&
-         '          : ',hbs_c_root_accomod_vel_max(iv)
+                  '  - Maximum (or constant) root accomodation velocity', &
+                  ' (mm.month-1) : ', hbs_c_root_accomod_vel_max(iv)
                MPI_master_only WRITE (iscreenlog, *) &
-         '  - Day of the year when maximum vertical root accomodation is '&
-         'reached       : NOT USED'
-            ENDIF
+                  '  - Day of the year when maximum vertical root', &
+                  ' accomodation is reached : NOT USED'
+            END IF
             ELSE
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Type of formulation for root accomodation velocity           '&
-         '            : NOT USED'
+               '  - Type of formulation for root accomodation velocity', &
+               ' : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Maximum (or constant) root accomodation velocity (mm.month-1)  '&
-         '          : NOT USED'
+               '  - Maximum (or constant) root accomodation velocity', &
+               ' (mm.month-1) : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Day of the year when maximum vertical root accomodation is '&
-         'reached       : NOT USED'
-            ENDIF
+               '  - Day of the year when maximum vertical root', &
+               ' accomodation is reached : NOT USED'
+            END IF
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Optimal root level depth                                     '&
-         '            : ',hbs_c_opt_root_depth(iv)
+               '  - Optimal root level depth', &
+               ' : ', hbs_c_opt_root_depth(iv)
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Optimal (maximum) root level thickness                        '&
-         '           : ',hbs_c_opt_root_thick(iv)
+               '  - Optimal (maximum) root level thickness', &
+               ' : ', hbs_c_opt_root_thick(iv)
          ELSE
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - To activate root accomodation to erosion or deposition        '&
-         '           : NOT USED'
+               '  - To activate root accomodation to erosion or deposition', &
+               ' : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - To activate root erosion (if .FALSE. root thickness will never '&
-         'change)   : NOT USED'
+               '  - To activate root erosion (if .FALSE. root thickness will', &
+               ' never change) : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - First parameter for effect of root on critical shear stress '&
-         'for erosion  : NOT USED'
+               '  - First parameter for effect of root on critical shear', &
+               ' stress for erosion : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Second parameter for effect of root on critical shear stress '&
-         'for erosion : NOT USED'
+               '  - Second parameter for effect of root on critical shear', &
+               ' stress for erosion : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - First parameter for effect of roots on erosion fluxes        '&
-         '            : NOT USED'
+               '  - First parameter for effect of roots on erosion fluxes', &
+               ' : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Second parameter for effect of roots on erosion fluxes       '&
-         '            : NOT USED'
+               '  - Second parameter for effect of roots on erosion fluxes', &
+               ' : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Type of formulation for root accomodation velocity            '&
-         '           : NOT USED'
+               '  - Type of formulation for root accomodation velocity', &
+               ' : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Maximum (or constant) root accomodation velocity (mm.month-1)  '&
-         '          : NOT USED'
+               '  - Maximum (or constant) root accomodation velocity', &
+               ' (mm.month-1) : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Day of the year when maximum vertical root accomodation is '&
-         'reached       : NOT USED'
+               '  - Day of the year when maximum vertical root accomodation', &
+               ' is reached       : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Optimal root level depth                                     '&
-         '            : NOT USED'
+               '  - Optimal root level depth : NOT USED'
             MPI_master_only WRITE (iscreenlog, *) &
-         '  - Optimal (maximum) root level thickness                       '&
-         '            : NOT USED'
-         ENDIF
-      ENDDO
+               '  - Optimal (maximum) root level thickness : NOT USED'
+         END IF
+      END DO
       MPI_master_only WRITE (iscreenlog, *) &
          '***************************************************************'
-      
 
    END SUBROUTINE hbs_write_summary
    !!===========================================================================
@@ -591,25 +590,24 @@ CONTAINS
    !! ** Description : Performed some compatibility tests
    !!
    !!---------------------------------------------------------------------------
-      USE module_HYBIOSED 
+      USE module_HYBIOSED
       IMPLICIT NONE
 
       INTEGER :: iv, indvar
 
-      hbs_nout_pos_bed       = 'pos_bed'        ! Name of in output file
-      hbs_nout_pos_wat       = 'pos_wat'        ! Name of in output file
-      hbs_nout_susp_trapp    = 'Corr_SuspTrapp' ! Name variable correction 
-                                                ! factor on settling velocity 
-                                                ! due to trapping
-      hbs_nout_susp_block    = 'Corr_SuspBlock' ! Name variable correction 
-                                                ! factor on settling velocity
-                                                ! due to blockage
-      hbs_nout_rbiom         = 'RBiom'          ! Name variable root biomass
-      hbs_nout_zroot         = 'ZRoot'          ! Name variable depth of root 
-                                                ! level
-      hbs_nout_thickroot     = 'ThickRoot'      ! Name variable thickness of 
-                                                ! root level
-
+      hbs_nout_pos_bed = 'pos_bed'        ! Name of in output file
+      hbs_nout_pos_wat = 'pos_wat'        ! Name of in output file
+      hbs_nout_susp_trapp = 'Corr_SuspTrapp' ! Name variable correction
+      ! factor on settling velocity
+      ! due to trapping
+      hbs_nout_susp_block = 'Corr_SuspBlock' ! Name variable correction
+      ! factor on settling velocity
+      ! due to blockage
+      hbs_nout_rbiom = 'RBiom'          ! Name variable root biomass
+      hbs_nout_zroot = 'ZRoot'          ! Name variable depth of root
+      ! level
+      hbs_nout_thickroot = 'ThickRoot'      ! Name variable thickness of
+      ! root level
 
       ALLOCATE (hisHbs(1:5*hbs_nbvar + 2))
       ALLOCATE (avgHbs(1:5*hbs_nbvar + 2))
@@ -705,7 +703,7 @@ CONTAINS
       vname_hbs(3, indvar) = '-                                    '
       vname_hbs(4, indvar) = '                                     '
       vname_hbs(5, indvar) = '                                     '
-      vname_hbs(6, indvar) = 'time N  lat_rho lon_rho                 '
+      vname_hbs(6, indvar) = 'time N  lat_rho lon_rho              '
       vname_hbs(7, indvar) = '                                     '
       IF (l_hbsout_susp_trapp) THEN
          outHbs(indvar) = .TRUE.
@@ -720,13 +718,13 @@ CONTAINS
       vname_hbs(3, indvar) = '-                                    '
       vname_hbs(4, indvar) = '                                     '
       vname_hbs(5, indvar) = '                                     '
-      vname_hbs(6, indvar) = 'time N  lat_rho lon_rho                 '
+      vname_hbs(6, indvar) = 'time N  lat_rho lon_rho              '
       vname_hbs(7, indvar) = '                                     '
       IF (l_hbsout_susp_block) THEN
          outHbs(indvar) = .TRUE.
          out2DHbs(indvar) = .False.
       END IF
-   
+
    END SUBROUTINE hbs_vname
    !!===========================================================================
 
@@ -757,7 +755,7 @@ CONTAINS
    !!---------------------------------------------------------------------------
    !!                 *** SUBROUTINE hbs_nccheck  ***
    !!
-   !! ** Purpose : get 2D from netcdf 
+   !! ** Purpose : get 2D from netcdf
    !!             (from nf_fread.F translate in f90)
    !!---------------------------------------------------------------------------
       USE module_HYBIOSED ! for GLOBAL_2D_ARRAY
@@ -805,7 +803,7 @@ CONTAINS
       count(3) = 1
 
       CALL hbs_nccheck(NF90_GET_VAR(ncid, varid, tmp(imin:imax, jmin:jmax), &
-                       start, count), msg)
+                                    start, count), msg)
 #ifdef MPI
 # define LOCALLM Lmmpi
 # define LOCALMM Mmmpi
@@ -813,7 +811,8 @@ CONTAINS
 # define LOCALLM Lm
 # define LOCALMM Mm
 #endif
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI /* exchange needed */
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+! /* exchange needed */
       CALL exchange_r2d_tile(1, LOCALLM, 1, LOCALMM, tmp)
 #endif /* MPI */
 
@@ -836,27 +835,27 @@ CONTAINS
       REAL tmp(GLOBAL_2D_ARRAY)
 
       CALL hbs_nccheck(NF90_OPEN(hbs_fn_position, NF90_NOWRITE, ncid), &
-                        "hbs_init_pos nf90_open "//hbs_fn_position)
+                       "hbs_init_pos nf90_open "//hbs_fn_position)
 
       DO iv = 1, hbs_nbvar
          name = TRIM(hbs_nout_pos_bed)//'_'//TRIM(hbs_varname(iv))
          CALL hbs_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                           "hbs_init_pos nf90_inq_varid "//name)
+                          "hbs_init_pos nf90_inq_varid "//name)
          CALL hbs_ncget2D(ncid, varid, tmp, &
-                           "hbs_init_pos getvar "//name)
+                          "hbs_init_pos getvar "//name)
          hbs_position_bed(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
          name = TRIM(hbs_nout_pos_wat)//'_'//TRIM(hbs_varname(iv))
          CALL hbs_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                           "hbs_init_pos nf90_inq_varid "//name)
+                          "hbs_init_pos nf90_inq_varid "//name)
          CALL hbs_ncget2D(ncid, varid, tmp, &
-                           "hbs_init_pos getvar "//name)
+                          "hbs_init_pos getvar "//name)
          hbs_position_wat(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
       END DO
 
       ! Close input NetCDF file.
       CALL hbs_nccheck(NF90_CLOSE(ncid), &
-                        "hbs_init_pos nf90_close "//hbs_fn_position)
+                       "hbs_init_pos nf90_close "//hbs_fn_position)
 
       RETURN
 
@@ -881,40 +880,51 @@ CONTAINS
 
       DO iv = 1, hbs_nbvar
          IF (l_hbs_initfromfile(iv)) THEN
-            CALL hbs_nccheck(NF90_OPEN(hbs_fn_initfile(iv), NF90_NOWRITE, ncid), &
-                              "hbs_init_spatial nf90_open "//hbs_fn_initfile(iv))
+            CALL hbs_nccheck( &
+               NF90_OPEN(hbs_fn_initfile(iv), NF90_NOWRITE, ncid), &
+               "hbs_init_spatial nf90_open "//hbs_fn_initfile(iv))
 
             name = TRIM(hbs_nout_rbiom)//'_'//TRIM(hbs_varname(iv))
-            CALL hbs_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                              "hbs_init_spatial nf90_inq_varid "//hbs_fn_initfile(iv)//" "//name)
-            CALL hbs_ncget2D(ncid, varid, tmp, &
-                              "hbs_init_spatial getvar "//hbs_fn_initfile(iv)//" "//name)
+            CALL hbs_nccheck( &
+               NF90_INQ_VARID(ncid, name, varid), &
+               "hbs_init_spatial nf90_inq_varid "//hbs_fn_initfile(iv)//" "// &
+               name)
+            CALL hbs_ncget2D( &
+               ncid, varid, tmp, &
+               "hbs_init_spatial getvar "//hbs_fn_initfile(iv)//" "//name)
             hbs_root_biomass(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
             name = TRIM(hbs_nout_zroot)//'_'//TRIM(hbs_varname(iv))
-            CALL hbs_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                              "hbs_init_spatial nf90_inq_varid "//hbs_fn_initfile(iv)//" "//name)
-            CALL hbs_ncget2D(ncid, varid, tmp, &
-                              "hbs_init_spatial getvar "//hbs_fn_initfile(iv)//" "//name)
+            CALL hbs_nccheck( &
+               NF90_INQ_VARID(ncid, name, varid), &
+               "hbs_init_spatial nf90_inq_varid "//hbs_fn_initfile(iv)//" "// &
+               name)
+            CALL hbs_ncget2D( &
+               ncid, varid, tmp, &
+               "hbs_init_spatial getvar "//hbs_fn_initfile(iv)//" "//name)
             hbs_zup_root(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
             name = TRIM(hbs_nout_thickroot)//'_'//TRIM(hbs_varname(iv))
-            CALL hbs_nccheck(NF90_INQ_VARID(ncid, name, varid), &
-                              "hbs_init_spatial nf90_inq_varid "//hbs_fn_initfile(iv)//" "//name)
-            CALL hbs_ncget2D(ncid, varid, tmp, &
-                              "hbs_init_spatial getvar "//hbs_fn_initfile(iv)//" "//name)
+            CALL hbs_nccheck( &
+               NF90_INQ_VARID(ncid, name, varid), &
+               "hbs_init_spatial nf90_inq_varid "//hbs_fn_initfile(iv)//" "// &
+               name)
+            CALL hbs_ncget2D( &
+               ncid, varid, tmp, &
+               "hbs_init_spatial getvar "//hbs_fn_initfile(iv)//" "//name)
             hbs_thick_root(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
             ! Close input NetCDF file.
-            CALL hbs_nccheck(NF90_CLOSE(ncid), &
-                              "hbs_init_spatial nf90_close "//hbs_fn_initfile(iv))
+            CALL hbs_nccheck( &
+               NF90_CLOSE(ncid), &
+               "hbs_init_spatial nf90_close "//hbs_fn_initfile(iv))
          ELSE
             hbs_root_biomass(iv, :, :) = hbs_i_rbiom(iv)
             hbs_zup_root(iv, :, :) = hbs_i_zroot(iv)
             hbs_thick_root(iv, :, :) = hbs_i_thickroot(iv)
          END IF
       END DO
-      hbs_zup_root0(:, :, :) = hbs_zup_root(:, :, :) 
+      hbs_zup_root0(:, :, :) = hbs_zup_root(:, :, :)
       hbs_thick_root0(:, :, :) = hbs_thick_root(:, :, :)
 
       WHERE (hbs_position_bed == 0.)
@@ -925,7 +935,7 @@ CONTAINS
 
       RETURN
 
-   END SUBROUTINE hbs_init_BRoot_ZDZroot 
+   END SUBROUTINE hbs_init_BRoot_ZDZroot
 
 #endif /* HYBIOSED */
 END MODULE init_HYBIOSED
