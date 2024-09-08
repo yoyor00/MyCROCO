@@ -1,7 +1,6 @@
 # ci croco
 
 stages:
-  - download
   - run
 
 variables:
@@ -12,7 +11,7 @@ variables:
   DATADIR: "$CI_PROJECT_DIR/.datadir"
   PERFRSTDIR: "$CI_PROJECT_DIR/.perfrstdir"
   #
-  DATAREG: "$CI_PROJECT_DIR/CVTK/VHR"
+  DATAREG: "/data"
   #
   # use in case of local gitlab-runner; put VHR_CROCO_FILES_BCK at same level than croco
   # e.g : 
