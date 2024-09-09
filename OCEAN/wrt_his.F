@@ -56,11 +56,11 @@
 #ifdef HYBIOSED
       USE com_HYBIOSED, ONLY : hbs_nbvar,
      &     vname_hbs, hisHbs, l_hbsout_pos,
-     &     l_hbsout_susp_trapp, l_hbsout_susp_block,
-     &     l_hbsout_rbiom, l_hbsout_zroot, l_hbsout_thickroot,
+     &     l_hbsout_ws_trapp, l_hbsout_ws_block,
+     &     l_hbsout_rbiom, l_hbsout_zup_root, l_hbsout_thick_root,
      &     hbs_position_wat, hbs_position_bed,
      &     hbs_zup_root, hbs_thick_root,
-     &     hbs_root_biomass, hbs_ws_trapp, hbs_ws_block
+     &     hbs_rbiom, hbs_ws_trapp, hbs_ws_block
 #endif
 
 !     implicit none
@@ -1741,19 +1741,19 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
 
          if (l_hbsout_rbiom) then
             indx=2*hbs_nbvar+itrc
-            work2d(:,:)=hbs_root_biomass(itrc,:,:)
+            work2d(:,:)=hbs_rbiom(itrc,:,:)
             call fillvalue2d(work2d,ncidhis,hisHbs(indx),
      &                     vname_hbs(1,indx),record,r2dvar,type)
          endif
 
-         if (l_hbsout_zroot) then
+         if (l_hbsout_zup_root) then
             indx=3*hbs_nbvar+itrc
             work2d(:,:)=hbs_zup_root(itrc,:,:)
             call fillvalue2d(work2d,ncidhis,hisHbs(indx),
      &                     vname_hbs(1,indx),record,r2dvar,type)
          endif
 
-         if (l_hbsout_thickroot) then
+         if (l_hbsout_thick_root) then
             indx=4*hbs_nbvar+itrc
             work2d(:,:)=hbs_thick_root(itrc,:,:)
             call fillvalue2d(work2d,ncidhis,hisHbs(indx),
@@ -1761,7 +1761,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
          endif
       end do
 
-      if (l_hbsout_susp_trapp) then
+      if (l_hbsout_ws_trapp) then
             indx=5*hbs_nbvar+1
             do k=1,N
                   workr(:,:,k)=hbs_ws_trapp(k,:,:)
@@ -1770,7 +1770,7 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
      &                     vname_hbs(1,indx),record,r3dvar,type)
       endif
 
-      if (l_hbsout_susp_block) then
+      if (l_hbsout_ws_block) then
             indx=5*hbs_nbvar+2
             do k=1,N
                   workr(:,:,k)=hbs_ws_block(k,:,:)

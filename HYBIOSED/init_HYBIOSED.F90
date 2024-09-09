@@ -52,9 +52,9 @@ CONTAINS
          hbs_c_suspsed_trapp_exp, &
          l_hbs_suspsed_block, hbs_c_suspsed_block_max, &
          hbs_c_suspsed_block_exp
-      NAMELIST /hbs_output/ l_hbsout_pos, l_hbsout_susp_trapp, &
-         l_hbsout_susp_block, l_hbsout_rbiom, l_hbsout_zroot, &
-         l_hbsout_thickroot
+      NAMELIST /hbs_output/ l_hbsout_pos, l_hbsout_ws_trapp, &
+         l_hbsout_ws_block, l_hbsout_rbiom, l_hbsout_zup_root, &
+         l_hbsout_thick_root
 
       hbs_kmax = N
       iscreenlog = stdout
@@ -176,7 +176,8 @@ CONTAINS
       !! hbs_var_init variables
       LOGICAL               :: r_l_hbs_initfromfile
       CHARACTER(len=lchain) :: r_hbs_fn_initfile
-      REAL(KIND=rsh)        :: r_hbs_i_rbiom, r_hbs_i_zroot, r_hbs_i_thickroot
+      REAL(KIND=rsh)        :: r_hbs_i_rbiom, r_hbs_i_zup_root, &
+                               r_hbs_i_thick_root
       !! hbs_var_sedcoupl variables
       LOGICAL               :: r_l_hbs_root_accomodation, r_l_hbs_root_erosion
       INTEGER               :: r_hbs_c_root_accomod_type
@@ -189,7 +190,7 @@ CONTAINS
       NAMELIST /hbs_var_main/ r_hbs_varname, r_hbs_vardesc
       NAMELIST /hbs_var_option/ r_l_hbs_bedsedstab
       NAMELIST /hbs_var_init/ r_l_hbs_initfromfile, &
-         r_hbs_fn_initfile, r_hbs_i_rbiom, r_hbs_i_zroot, r_hbs_i_thickroot
+         r_hbs_fn_initfile, r_hbs_i_rbiom, r_hbs_i_zup_root, r_hbs_i_thick_root
       NAMELIST /hbs_var_sedcoupl/ r_l_hbs_root_accomodation, &
          r_l_hbs_root_erosion, &
          r_hbs_c_tauceroot_x0, r_hbs_c_tauceroot_x1, &
@@ -238,8 +239,8 @@ CONTAINS
       l_hbs_initfromfile(iv) = r_l_hbs_initfromfile
       hbs_fn_initfile(iv) = TRIM(r_hbs_fn_initfile)
       hbs_i_rbiom(iv) = r_hbs_i_rbiom
-      hbs_i_zroot(iv) = r_hbs_i_zroot
-      hbs_i_thickroot(iv) = r_hbs_i_thickroot
+      hbs_i_zup_root(iv) = r_hbs_i_zup_root
+      hbs_i_thick_root(iv) = r_hbs_i_thick_root
       ! * For hbs_var_sedcoupl
       l_hbs_root_accomodation(iv) = r_l_hbs_root_accomodation
       l_hbs_root_erosion(iv) = r_l_hbs_root_erosion
@@ -302,10 +303,10 @@ CONTAINS
          hbs_fn_initfile(:) = "."
          ALLOCATE (hbs_i_rbiom(1:hbs_nbvar))
          hbs_i_rbiom(:) = 0.0_rsh
-         ALLOCATE (hbs_i_zroot(1:hbs_nbvar))
-         hbs_i_zroot(:) = 0.0_rsh
-         ALLOCATE (hbs_i_thickroot(1:hbs_nbvar))
-         hbs_i_thickroot(:) = 0.0_rsh
+         ALLOCATE (hbs_i_zup_root(1:hbs_nbvar))
+         hbs_i_zup_root(:) = 0.0_rsh
+         ALLOCATE (hbs_i_thick_root(1:hbs_nbvar))
+         hbs_i_thick_root(:) = 0.0_rsh
       END IF
 
    END SUBROUTINE hbs_alloc_nbvar
@@ -344,8 +345,8 @@ CONTAINS
          hbs_position_wat = 0.0_rsh
          ALLOCATE (hbs_position_bed(1:hbs_nbvar, GLOBAL_2D_ARRAY))
          hbs_position_bed = 0.0_rsh
-         ALLOCATE (hbs_root_biomass(1:hbs_nbvar, GLOBAL_2D_ARRAY))
-         hbs_root_biomass = 0.0_rsh
+         ALLOCATE (hbs_rbiom(1:hbs_nbvar, GLOBAL_2D_ARRAY))
+         hbs_rbiom = 0.0_rsh
       END IF
 
    END SUBROUTINE hbs_alloc_xyz
@@ -439,10 +440,10 @@ CONTAINS
                ' : ', hbs_i_rbiom(iv)
             MPI_master_only WRITE (iscreenlog, *) &
                '  - Initial homogeneous root level depth', &
-               ' : ', hbs_i_zroot(iv)
+               ' : ', hbs_i_zup_root(iv)
             MPI_master_only WRITE (iscreenlog, *) &
                '  - Initial homogeneous root level thickness', &
-               ' : ', hbs_i_thickroot(iv)
+               ' : ', hbs_i_thick_root(iv)
          END IF
          MPI_master_only WRITE (iscreenlog, *) &
             'NAMELIST : hbs_var_sedcoupl'
@@ -595,19 +596,17 @@ CONTAINS
 
       INTEGER :: iv, indvar
 
-      hbs_nout_pos_bed = 'pos_bed'        ! Name of in output file
-      hbs_nout_pos_wat = 'pos_wat'        ! Name of in output file
-      hbs_nout_susp_trapp = 'Corr_SuspTrapp' ! Name variable correction
-      ! factor on settling velocity
-      ! due to trapping
-      hbs_nout_susp_block = 'Corr_SuspBlock' ! Name variable correction
-      ! factor on settling velocity
-      ! due to blockage
-      hbs_nout_rbiom = 'RBiom'          ! Name variable root biomass
-      hbs_nout_zroot = 'ZRoot'          ! Name variable depth of root
-      ! level
-      hbs_nout_thickroot = 'ThickRoot'      ! Name variable thickness of
-      ! root level
+      hbs_nout_position_bed = 'position_bed' ! Name of obstruction occupation 
+      ! rate in output file
+      hbs_nout_position_wat = 'position_wat' ! Name of root occupation rate in 
+      ! output file
+      hbs_nout_ws_trapp = 'correction_ws_trapp' ! Name variable correction
+      ! factor on settling velocity due to trapping
+      hbs_nout_ws_block = 'correction_ws_block' ! Name variable correction
+      ! factor on settling velocity due to blockage
+      hbs_nout_rbiom = 'root_biomass' ! Name variable root biomass
+      hbs_nout_zup_root = 'zup_root' ! Name variable depth of root level
+      hbs_nout_thick_root = 'thick_root' ! Name variable thickness of root level
 
       ALLOCATE (hisHbs(1:5*hbs_nbvar + 2))
       ALLOCATE (avgHbs(1:5*hbs_nbvar + 2))
@@ -621,7 +620,7 @@ CONTAINS
       DO iv = 1, hbs_nbvar
          indvar = iv
          vname_hbs(1, indvar) = &
-            TRIM(hbs_nout_pos_wat)//'_'//TRIM(hbs_varname(iv))
+            TRIM(hbs_nout_position_wat)//'_'//TRIM(hbs_varname(iv))
          vname_hbs(2, indvar) = &
             'Obstruction occupation rate for '//TRIM(hbs_varname(iv))
          vname_hbs(3, indvar) = '-                                    '
@@ -636,7 +635,7 @@ CONTAINS
 
          indvar = hbs_nbvar + iv
          vname_hbs(1, indvar) = &
-            TRIM(hbs_nout_pos_bed)//'_'//TRIM(hbs_varname(iv))
+            TRIM(hbs_nout_position_bed)//'_'//TRIM(hbs_varname(iv))
          vname_hbs(2, indvar) = &
             'Root occupation rate for '//TRIM(hbs_varname(iv))
          vname_hbs(3, indvar) = '-                                    '
@@ -666,7 +665,7 @@ CONTAINS
 
          indvar = 3*hbs_nbvar + iv
          vname_hbs(1, indvar) = &
-            TRIM(hbs_nout_zroot)//'_'//TRIM(hbs_varname(iv))
+            TRIM(hbs_nout_zup_root)//'_'//TRIM(hbs_varname(iv))
          vname_hbs(2, indvar) = &
             'Root level depth for '//TRIM(hbs_varname(iv))
          vname_hbs(3, indvar) = 'm                                    '
@@ -674,14 +673,14 @@ CONTAINS
          vname_hbs(5, indvar) = '                                     '
          vname_hbs(6, indvar) = 'time lat_rho lon_rho                 '
          vname_hbs(7, indvar) = '                                     '
-         IF (l_hbsout_zroot) THEN
+         IF (l_hbsout_zup_root) THEN
             outHbs(indvar) = .TRUE.
             out2DHbs(indvar) = .TRUE.
          END IF
 
          indvar = 4*hbs_nbvar + iv
          vname_hbs(1, indvar) = &
-            TRIM(hbs_nout_thickroot)//'_'//TRIM(hbs_varname(iv))
+            TRIM(hbs_nout_thick_root)//'_'//TRIM(hbs_varname(iv))
          vname_hbs(2, indvar) = &
             'Root thickness for '//TRIM(hbs_varname(iv))
          vname_hbs(3, indvar) = 'm                                    '
@@ -689,7 +688,7 @@ CONTAINS
          vname_hbs(5, indvar) = '                                     '
          vname_hbs(6, indvar) = 'time lat_rho lon_rho                 '
          vname_hbs(7, indvar) = '                                     '
-         IF (l_hbsout_thickroot) THEN
+         IF (l_hbsout_thick_root) THEN
             outHbs(indvar) = .TRUE.
             out2DHbs(indvar) = .TRUE.
          END IF
@@ -697,7 +696,7 @@ CONTAINS
 
       indvar = 5*hbs_nbvar + 1
       vname_hbs(1, indvar) = &
-         TRIM(hbs_nout_susp_trapp)
+         TRIM(hbs_nout_ws_trapp)
       vname_hbs(2, indvar) = &
          'Correction factor for settling velocity due to trapping'
       vname_hbs(3, indvar) = '-                                    '
@@ -705,14 +704,14 @@ CONTAINS
       vname_hbs(5, indvar) = '                                     '
       vname_hbs(6, indvar) = 'time N  lat_rho lon_rho              '
       vname_hbs(7, indvar) = '                                     '
-      IF (l_hbsout_susp_trapp) THEN
+      IF (l_hbsout_ws_trapp) THEN
          outHbs(indvar) = .TRUE.
          out2DHbs(indvar) = .False.
       END IF
 
       indvar = 5*hbs_nbvar + 2
       vname_hbs(1, indvar) = &
-         TRIM(hbs_nout_susp_block)
+         TRIM(hbs_nout_ws_block)
       vname_hbs(2, indvar) = &
          'Correction factor for settling velocity due to blockage'
       vname_hbs(3, indvar) = '-                                    '
@@ -720,7 +719,7 @@ CONTAINS
       vname_hbs(5, indvar) = '                                     '
       vname_hbs(6, indvar) = 'time N  lat_rho lon_rho              '
       vname_hbs(7, indvar) = '                                     '
-      IF (l_hbsout_susp_block) THEN
+      IF (l_hbsout_ws_block) THEN
          outHbs(indvar) = .TRUE.
          out2DHbs(indvar) = .False.
       END IF
@@ -838,14 +837,14 @@ CONTAINS
                        "hbs_init_pos nf90_open "//hbs_fn_position)
 
       DO iv = 1, hbs_nbvar
-         name = TRIM(hbs_nout_pos_bed)//'_'//TRIM(hbs_varname(iv))
+         name = TRIM(hbs_nout_position_bed)//'_'//TRIM(hbs_varname(iv))
          CALL hbs_nccheck(NF90_INQ_VARID(ncid, name, varid), &
                           "hbs_init_pos nf90_inq_varid "//name)
          CALL hbs_ncget2D(ncid, varid, tmp, &
                           "hbs_init_pos getvar "//name)
          hbs_position_bed(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
-         name = TRIM(hbs_nout_pos_wat)//'_'//TRIM(hbs_varname(iv))
+         name = TRIM(hbs_nout_position_wat)//'_'//TRIM(hbs_varname(iv))
          CALL hbs_nccheck(NF90_INQ_VARID(ncid, name, varid), &
                           "hbs_init_pos nf90_inq_varid "//name)
          CALL hbs_ncget2D(ncid, varid, tmp, &
@@ -892,9 +891,9 @@ CONTAINS
             CALL hbs_ncget2D( &
                ncid, varid, tmp, &
                "hbs_init_spatial getvar "//hbs_fn_initfile(iv)//" "//name)
-            hbs_root_biomass(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
+            hbs_rbiom(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
-            name = TRIM(hbs_nout_zroot)//'_'//TRIM(hbs_varname(iv))
+            name = TRIM(hbs_nout_zup_root)//'_'//TRIM(hbs_varname(iv))
             CALL hbs_nccheck( &
                NF90_INQ_VARID(ncid, name, varid), &
                "hbs_init_spatial nf90_inq_varid "//hbs_fn_initfile(iv)//" "// &
@@ -904,7 +903,7 @@ CONTAINS
                "hbs_init_spatial getvar "//hbs_fn_initfile(iv)//" "//name)
             hbs_zup_root(iv, GLOBAL_2D_ARRAY) = tmp(GLOBAL_2D_ARRAY)
 
-            name = TRIM(hbs_nout_thickroot)//'_'//TRIM(hbs_varname(iv))
+            name = TRIM(hbs_nout_thick_root)//'_'//TRIM(hbs_varname(iv))
             CALL hbs_nccheck( &
                NF90_INQ_VARID(ncid, name, varid), &
                "hbs_init_spatial nf90_inq_varid "//hbs_fn_initfile(iv)//" "// &
@@ -919,16 +918,16 @@ CONTAINS
                NF90_CLOSE(ncid), &
                "hbs_init_spatial nf90_close "//hbs_fn_initfile(iv))
          ELSE
-            hbs_root_biomass(iv, :, :) = hbs_i_rbiom(iv)
-            hbs_zup_root(iv, :, :) = hbs_i_zroot(iv)
-            hbs_thick_root(iv, :, :) = hbs_i_thickroot(iv)
+            hbs_rbiom(iv, :, :) = hbs_i_rbiom(iv)
+            hbs_zup_root(iv, :, :) = hbs_i_zup_root(iv)
+            hbs_thick_root(iv, :, :) = hbs_i_thick_root(iv)
          END IF
       END DO
       hbs_zup_root0(:, :, :) = hbs_zup_root(:, :, :)
       hbs_thick_root0(:, :, :) = hbs_thick_root(:, :, :)
 
       WHERE (hbs_position_bed == 0.)
-         hbs_root_biomass = 0.
+         hbs_rbiom = 0.
          hbs_zup_root = 0.
          hbs_thick_root = 0.
       END WHERE

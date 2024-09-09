@@ -6,7 +6,7 @@ MODULE plug_HYBIOSED
    !!===========================================================================
    !!                   ***  MODULE  plug_HYBIOSED  ***
    !!
-   !! interface between CROCO and HYBIOSED module
+   !!              interface between CROCO and HYBIOSED module
    !!===========================================================================
 
    USE module_HYBIOSED

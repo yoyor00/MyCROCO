@@ -2401,7 +2401,7 @@ MODULE sed_MUSTANG
    !! * Modules used
 #if defined HYBIOSED
     USE com_HYBIOSED, ONLY : hbs_position_bed, hbs_thick_root, hbs_zup_root, &
-                            hbs_root_biomass
+                            hbs_rbiom
     USE HYBIOSED1DV, ONLY : hbs1dv_zroot_troot_ero, hbs1dv_comp_erosion
 #endif
    INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
@@ -2469,7 +2469,7 @@ MODULE sed_MUSTANG
               CALL hbs1dv_comp_erosion(hbs_position_bed(:, i, j), &
                                         hbs_thick_root(:, i, j), &
                                         hbs_zup_root(:, i, j), &
-                                        hbs_root_biomass(:, i, j), &
+                                        hbs_rbiom(:, i, j), &
                                         tauskin(i, j), toce, csanmud, &
                                         excespowr, xeros, &
                                         dzs(k, i, j), MF, dt1, erosi)

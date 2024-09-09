@@ -2265,6 +2265,16 @@ C 				  endif
      &   obst_fracz3d, obst_drag3d, obst_a2d, obst_a3d, obst_s2d, obst_s3d, 
      &   obst_tau, obst_fuz, obst_fvz, obst_nbvar
 #endif
+
+#ifdef HYBIOSED
+      USE com_HYBIOSED, ONLY : hbs_nbvar, 
+     &     hbs_nout_position_bed, hbs_nout_position_wat, 
+     &     hbs_nout_ws_trapp, hbs_nout_ws_block, hbs_nout_rbiom , 
+     &     hbs_nout_zup_root , hbs_nout_thick_root, 
+     &     hbs_position_wat, hbs_position_bed,
+     &     hbs_zup_root, hbs_thick_root,
+     &     hbs_rbiom, hbs_ws_trapp, hbs_ws_block
+#endif
           IMPLICIT NONE
 
 #if defined MUSTANG
@@ -2363,8 +2373,11 @@ C 				  endif
 
 #endif
 
-#if defined OBSTRUCTION
+#if defined OBSTRUCTION || defined HYBIOSED
       integer iv
+#endif
+#if defined HYBIOSED
+      character*20 hbs_field_name
 #endif
 
 
@@ -3947,6 +3960,51 @@ c !$acc wait
 
 #  endif /* OBSTRUCTION */
 
+#  ifdef HYBIOSED
+      do iv = 1, hbs_nbvar
+         hbs_field_name = TRIM(hbs_nout_position_bed)//'_'//TRIM(hbs_varname(iv))
+         if (xios_field_is_active(hbs_field_name)) then
+            call xios_send_field(hbs_field_name, hbs_position_bed(iv,:,:))
+         endif
+
+         hbs_field_name = TRIM(hbs_nout_position_wat)//'_'//TRIM(hbs_varname(iv))
+         if (xios_field_is_active(hbs_field_name)) then
+            call xios_send_field(hbs_field_name, hbs_position_wat(iv,:,:))
+         endif
+
+         hbs_field_name = TRIM(hbs_nout_zup_root)//'_'//TRIM(hbs_varname(iv))
+         if (xios_field_is_active(hbs_field_name)) then
+            call xios_send_field(hbs_field_name, hbs_zup_root(iv,:,:))
+         endif
+
+         hbs_field_name = TRIM(hbs_nout_thick_root)//'_'//TRIM(hbs_varname(iv))
+         if (xios_field_is_active(hbs_field_name)) then
+            call xios_send_field(hbs_field_name, hbs_thick_root(iv,:,:))
+         endif
+
+         hbs_field_name = TRIM(hbs_nout_rbiom)//'_'//TRIM(hbs_varname(iv))
+         if (xios_field_is_active(hbs_field_name)) then
+            call xios_send_field(hbs_field_name, hbs_rbiom(iv,:,:))
+         endif
+      enddo ! hbs_nbvar
+
+      hbs_field_name = TRIM(hbs_nout_ws_trapp)
+      if (xios_field_is_active(hbs_field_name)) then
+            do k = 1, N
+                  workr(:,:,k) = hbs_ws_trapp(k,:,:)
+            enddo
+            call xios_send_field(hbs_field_name, workr)
+      endif
+
+      hbs_field_name = TRIM(hbs_nout_ws_block)
+      if (xios_field_is_active(hbs_field_name)) then
+            do k = 1, N
+                  workr(:,:,k) = hbs_ws_block(k,:,:)
+            enddo
+            call xios_send_field(hbs_field_name, workr)
+      endif
+
+#  endif /* HYBIOSED */
 
 # endif /* SOLVE3D */
   

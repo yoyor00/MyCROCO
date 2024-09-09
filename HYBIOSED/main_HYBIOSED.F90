@@ -32,7 +32,8 @@ CONTAINS
       !!------------------------------------------------------------------------
       !!                 *** SUBROUTINE hbs_update  ***
       !!
-      !! ** Purpose : Update of ***TODO***
+      !! ** Purpose : Update of settling velocities correction factor due 
+      !!              to obstruction and of erosion/deposition effect on root
       !!------------------------------------------------------------------------
       USE module_HYBIOSED  ! needed for u, v, nstp, dt, time
 # if defined OBSTRUCTION

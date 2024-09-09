@@ -62,7 +62,7 @@ MODULE com_HYBIOSED
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: hbs_dthick_root ! The change of root level thickness (iv,i,j) [m]
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: hbs_position_wat ! The table where the position of the differents wat variables is defined through occupation rate (iv,i,j), [-]
    REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: hbs_position_bed ! The table where the position of the differents bed variables is defined through occupation rate (iv,i,j), [-]
-   REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: hbs_root_biomass ! The biomass of roots (iv,i,j) [gDW.m-2]
+   REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: hbs_rbiom ! The biomass of roots (iv,i,j) [gDW.m-2]
 
    ! * Variables on (i,j)
    !-----------------------
@@ -88,15 +88,15 @@ MODULE com_HYBIOSED
    LOGICAL, DIMENSION(:), ALLOCATABLE :: l_hbs_initfromfile ! If initialization from a restart file
    CHARACTER(len=lchain), DIMENSION(:), ALLOCATABLE :: hbs_fn_initfile ! Name of file for root biomass spatial initialization
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: hbs_i_rbiom ! Initial root biomass (if l_hbs_rbiom_hom=.TRUE. AND l_hbs_rbiom_stat=.TRUE.)
-   REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: hbs_i_zroot ! Initial root level depth (if l_hbs_zroot_hom=.TRUE.)
-   REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: hbs_i_thickroot ! Initial root level thickness (if l_hbs_thickroot_hom=.TRUE.)
+   REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: hbs_i_zup_root ! Initial root level depth (if l_hbs_zup_root_hom=.TRUE.)
+   REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: hbs_i_thick_root ! Initial root level thickness (if l_hbs_thick_root_hom=.TRUE.)
 
    LOGICAL :: l_hbsout_pos
-   LOGICAL :: l_hbsout_susp_trapp
-   LOGICAL :: l_hbsout_susp_block
+   LOGICAL :: l_hbsout_ws_trapp
+   LOGICAL :: l_hbsout_ws_block
    LOGICAL :: l_hbsout_rbiom
-   LOGICAL :: l_hbsout_zroot
-   LOGICAL :: l_hbsout_thickroot
+   LOGICAL :: l_hbsout_zup_root
+   LOGICAL :: l_hbsout_thick_root
 
    INTEGER, DIMENSION(:), ALLOCATABLE :: hisHbs ! Output identifier
    INTEGER, DIMENSION(:), ALLOCATABLE :: avgHbs ! Output identifier
@@ -104,15 +104,15 @@ MODULE com_HYBIOSED
    LOGICAL, DIMENSION(:), ALLOCATABLE :: out2DHbs ! To indicate if the output variable is 2D or 3D
    CHARACTER(LEN=75), DIMENSION(:, :), ALLOCATABLE :: vname_hbs
 
-   CHARACTER(LEN=lchain) :: hbs_nout_pos_bed ! Name of in output file
-   CHARACTER(LEN=lchain) :: hbs_nout_pos_wat ! Name of in output file
-   CHARACTER(LEN=lchain) :: hbs_nout_susp_trapp ! Name variable correction factor on settling velocity due to trapping
-   CHARACTER(LEN=lchain) :: hbs_nout_susp_block ! Name variable correction factor on settling velocitydue to blockage
+   CHARACTER(LEN=lchain) :: hbs_nout_position_bed ! Name of in output file
+   CHARACTER(LEN=lchain) :: hbs_nout_position_wat ! Name of in output file
+   CHARACTER(LEN=lchain) :: hbs_nout_ws_trapp ! Name variable correction factor on settling velocity due to trapping
+   CHARACTER(LEN=lchain) :: hbs_nout_ws_block ! Name variable correction factor on settling velocity due to blockage
    CHARACTER(LEN=lchain) :: hbs_nout_rbiom ! Name variable root biomass
-   CHARACTER(LEN=lchain) :: hbs_nout_zroot ! Name variable depth of root level
-   CHARACTER(LEN=lchain) :: hbs_nout_thickroot ! Name variable thickness of root level
+   CHARACTER(LEN=lchain) :: hbs_nout_zup_root ! Name variable depth of root level
+   CHARACTER(LEN=lchain) :: hbs_nout_thick_root ! Name variable thickness of root level
    CHARACTER(LEN=lchain) :: hbs_nout_dzroot ! Name variable change of depth of root level
-   CHARACTER(LEN=lchain) :: hbs_nout_dthickroot ! Name variable change of thickness of root level
+   CHARACTER(LEN=lchain) :: hbs_nout_dthick_root ! Name variable change of thickness of root level
    CHARACTER(LEN=lchain) :: hbs_nout_tauce_coef ! Name variable correction factor for critical shears stress for erosion
    CHARACTER(LEN=lchain) :: hbs_nout_E0_coef ! Name variable correction factor for erosion rate
 

@@ -10,7 +10,6 @@ MODULE HYBIOSED1DV
    !
    ! PUBLIC SUBROUTINES, VARIABLES and TYPES names of this module are precede
    ! by "hbs1dv_"
-   ! All variables are private except ***TODO***
    !
 
    IMPLICIT NONE
@@ -57,7 +56,7 @@ MODULE HYBIOSED1DV
    ! variables of the module
 
    INTEGER :: hbs1dv_nbvar    ! Total number of hybiosed variables
-   INTEGER :: hbs1dv_kmax    ! TODO
+   INTEGER :: hbs1dv_kmax
    LOGICAL :: hbs1dv_l_suspsed_trapp
    LOGICAL :: hbs1dv_l_suspsed_block
    REAL(KIND=rsh) :: hbs1dv_h0fond
@@ -159,7 +158,8 @@ CONTAINS
    !!---------------------------------------------------------------------------
    !!                 *** SUBROUTINE hbs1dv_update_ws_coeff  ***
    !!
-   !! ** Purpose : TODO
+   !! ** Purpose : Computes correction factor for settling velocities
+   !!               due to blockage and trapping by obstructions
    !!---------------------------------------------------------------------------
       IMPLICIT NONE
       !! * Arguments
