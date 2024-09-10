@@ -695,7 +695,6 @@ CONTAINS
       ws_free_max(:)=0.0
 #endif
    ENDIF
-!   ALLOCATE(l_subs2D(-1:nvp))
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
 #if defined key_sand2D
@@ -1478,12 +1477,9 @@ ENDDO
      !!                    *** ROUTINE substance_surfcell ***
      !!-------------------------------------------------------------------
      !
-#if defined MUSTANG || defined BIOLink
-! evaluation of cell surface if not known in hydro model
-    ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
-    surf_cell(:,:)=om_r(:,:)*on_r(:,:)
-#endif
-
+     ! evaluation of cell surface if not known in hydro model
+     ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
+     surf_cell(:,:)=om_r(:,:)*on_r(:,:)
 
  END SUBROUTINE substance_surfcell
 
