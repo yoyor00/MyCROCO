@@ -219,7 +219,6 @@ reg_cpl_toy:
     # usage ./run_BENGUELA_TOY.sh <test-project-dir> <test-data-dir>
     - ./run_BENGUELA_TOY.sh $CI_PROJECT_DIR /data
   artifacts:
-    when : 
-      - always
+    when : always
     paths:
       - $CI_PROJECT_DIR/BENGUELA_TOY_log
