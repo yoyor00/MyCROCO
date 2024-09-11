@@ -76,8 +76,8 @@ export MACHINE="Linux"
 # Config paths
 #-------------------------------------------------------------------------------
 export CONFIG=BENGUELA_TOY
-export CHOME="$CI_PROJECT_DIR/test/home/BENGUELA_TOY"
-export CWORK="$CI_PROJECT_DIR/test/work/BENGUELA_TOY"
+export CHOME="$TEST_PROJECT_DIR/test/home/BENGUELA_TOY"
+export CWORK="$TEST_PROJECT_DIR/test/work/BENGUELA_TOY"
 
 #-------------------------------------------------------------------------------
 # Tools paths
@@ -88,7 +88,7 @@ export SCRIPTDIR=$CHOME/SCRIPTS_TOOLBOX
 # Model source paths #Insert the full path ( do not use "~" for home )
 #-------------------------------------------------------------------------------
 export CPL="/oasis/compile_oa3-mct/"
-export OCE="$CI_PROJECT_DIR/OCEAN"
+export OCE="$TEST_PROJECT_DIR/OCEAN"
 export ATM="${HOME}/WRF"
 export WAV="${HOME}/WW3/model"
 export TOY="${CHOME}/TOY_IN"
