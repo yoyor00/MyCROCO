@@ -20,8 +20,8 @@
               f_Temp_Ulva = 1./(1.+exp(-zeta1_Ulva*(temper-Temp_Ulva))) ! Adim
         
               ! Ulva nutrient quota
-              f_QN_Ulva = (c(iv_ulva_N)- Qmin_N_Ulva)/(Qmax_N_Ulva-Qmin_N_Ulva) ! Adim
-              f_QP_Ulva = (c(iv_ulva_P) - Qmin_P_Ulva)/(Qmax_P_Ulva-Qmin_P_Ulva) ! Adim
+              f_QN_Ulva = max((c(iv_ulva_N)- Qmin_N_Ulva)/(Qmax_N_Ulva-Qmin_N_Ulva),0.0_rsh) ! Adim
+              f_QP_Ulva = max((c(iv_ulva_P) - Qmin_P_Ulva)/(Qmax_P_Ulva-Qmin_P_Ulva),0.0_rsh) ! Adim
               
               ! Limitation nutrients
               f_NO3_Ulva = c(iv_nutr_NO3)/(c(iv_nutr_NO3)+K_NO3_Ulva) ! Adim

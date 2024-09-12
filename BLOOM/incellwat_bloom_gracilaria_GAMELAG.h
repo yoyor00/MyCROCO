@@ -20,8 +20,8 @@
               f_Temp_Graci = 1./(1.+exp(-zeta1_Graci*(temper-Temp_Graci))) ! Adim
         
               ! Graci nutrient quota
-              f_QN_Graci = (c(iv_Graci_N)- Qmin_N_Graci)/(Qmax_N_Graci-Qmin_N_Graci) ! Adim
-              f_QP_Graci = (c(iv_Graci_P) - Qmin_P_Graci)/(Qmax_P_Graci-Qmin_P_Graci) ! Adim
+              f_QN_Graci = max((c(iv_Graci_N)- Qmin_N_Graci)/(Qmax_N_Graci-Qmin_N_Graci),0.0_rsh) ! Adim
+              f_QP_Graci = max((c(iv_Graci_P) - Qmin_P_Graci)/(Qmax_P_Graci-Qmin_P_Graci),0.0_rsh) ! Adim
               
               ! Limitation nutrients
               f_NO3_Graci = c(iv_nutr_NO3)/(c(iv_nutr_NO3)+K_NO3_Graci) ! Adim
