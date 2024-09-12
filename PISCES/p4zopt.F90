@@ -390,7 +390,7 @@ CONTAINS
            DEALLOCATE( zw2d ) 
         ENDIF
         IF( l_dia_par ) THEN   ! diagnostic : PAR with no diurnal cycle
-           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  
+           ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
            DO_3D( 0, 0, 0, 0, 1, jpk)
               zw3d(ji,jj,jkR) = etot_ndcy(ji,jj,jk) * tmask(ji,jj,jk) 
            END_3D
