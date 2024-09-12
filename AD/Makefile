@@ -195,8 +195,8 @@ DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs
 
 TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o init_control.o set_state.o save_restore.o contextAD.o
 
-LAMPI_PLAINC= #-lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC -lampiADtoolStubsOO
-LAMPI= #-lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
+LAMPI_PLAINC= -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC -lampiADtoolStubsOO
+LAMPI= -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
 
 #======================================================================
 
@@ -417,7 +417,7 @@ $(TAP_TARGET)_b.o: $(TAP_TARGET)_b.f90
 
 $(TAP_TARGET)_b.f90: $(TGT_PSRCS)
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^  -linelength 1024 -fixinterface -noisize -noisize77 -msglevel 10 -msginfile -nocheckpoint "uv3dmix uv3dmix_tile t3dmix t3dmix_tile step3d_uv_thread step3d_t_thread omega_tile rho_eos rho_eos_tile set_vbc prsgrd rhs3d pre_step3d pre_step3d_tile set_depth set_depth_tile set_huv set_huv_tile set_huv2 set_huv2_tile exchange_r2d_tile exchange_u2d_tile exchange_v2d_tile exchange_u3d_tile exchange_v3d_tile exchange_r3d_tile exchange_r2d_tile exchange_w3d_tile prsgrd_tile rhs3d_tile" -head "cost_fun_full_state(cost)/(ad_x)" -r8 -i4 -reverse -output $(TAP_TARGET) $(AMPIINC)
+	${TAPENADE} $^  -linelength 1024 -fixinterface -noisize -noisize77 -msglevel 10 -msginfile -nocheckpoint "uv3dmix uv3dmix_tile t3dmix t3dmix_tile step3d_uv_thread step3d_t_thread omega_tile rho_eos rho_eos_tile set_vbc prsgrd rhs3d pre_step3d pre_step3d_tile set_depth set_depth_tile set_huv set_huv_tile set_huv2 set_huv2_tile exchange_r2d_tile exchange_u2d_tile exchange_v2d_tile exchange_u3d_tile exchange_v3d_tile exchange_r3d_tile exchange_r2d_tile exchange_w3d_tile prsgrd_tile rhs3d_tile messpass2d_tile messpass2d_1pts_tile step2d_fb_tile exchange_u2d_1pts_tile exchange_v2d_1pts_tile step2d_thread ana_ssh ana_ssh_tile step2d step" -head "cost_fun_full_state(cost)/(ad_x)" -r8 -i4 -reverse -output $(TAP_TARGET) $(AMPIINC)
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h  
 #	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_b.f 
 #	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_b.f
@@ -436,8 +436,9 @@ main.f: main.F
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
 
-main_adj.f: main.F
-	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $@
+main_adj.f90: main.F
+	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $*.f
+	./mpi2ampi.py $*.f $*.f90
 
 main_adc.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL -DAD_CHECK $^ | ./mpc > $@

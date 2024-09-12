@@ -1424,7 +1424,7 @@
 # define TAPENADE
 
 # undef OPENMP
-# undef MPI
+# define MPI
 # undef AMPI
 
 # undef UV_ADV

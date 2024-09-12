@@ -6,7 +6,8 @@ import shutil
 import logging as log
 from fparser import api
 from fparser.common.readfortran import FortranFileReader
-from fparser.two.Fortran2003 import Include_Stmt, Subroutine_Stmt, Call_Stmt, Name, \
+from fparser.two.Fortran2003 import Include_Stmt, Subroutine_Stmt, Function_Stmt, \
+    Call_Stmt, Name, \
     Actual_Arg_Spec_List, Return_Stmt
 from fparser.two.parser import ParserFactory
 from fparser.two.utils import walk
@@ -36,7 +37,7 @@ def str_replace_start(start, r, s):
     return r + s[len(start):]  if s.lower().startswith(start.lower()) else s
 
 # transform fun
-def mpi_to_ampi_call(ast, arg_translat, arg_tag_add):
+def mpi_to_ampi_call(ast, arg_translat, arg_tag_add, fun_translat):
 
     translat = dict((k.lower(), v.lower()) for k,v in arg_translat.items())
     tag_add = dict((k.lower(), v.lower()) for k,v in arg_tag_add.items())
@@ -44,12 +45,15 @@ def mpi_to_ampi_call(ast, arg_translat, arg_tag_add):
     need_turn = False
     need_turn_buffs = []
     current_subroutine = None
+    current_function = None
     returns = {}
     log.debug(type(ast))
     for node in walk(ast):
         log.debug("enter:{}".format(type(node)))
         if isinstance(node, Subroutine_Stmt):
             current_subroutine = str(node.get_name())
+        elif isinstance(node, Function_Stmt):
+            current_function = str(node.get_name())
         if isinstance(node, Include_Stmt):
             include_file =  node.items[0].string
             log.debug('include:{}'.format(include_file))
@@ -59,15 +63,21 @@ def mpi_to_ampi_call(ast, arg_translat, arg_tag_add):
             
         if isinstance(node, Call_Stmt):
             call_fun = node.items[0].string.lower()
-            
+
             if call_fun.startswith('mpi'):
 
                 if call_fun in need_turn_calls:
                     need_turn = True
                     need_turn_buffs.append(str(node.items[1].items[0]))
 
-                node.items[0].string = str_replace_start('mpi', 'ampi',
-                                                         call_fun)
+
+                if call_fun in fun_translat:
+                    # translation specified
+                    node.items[0].string = fun_translat[call_fun]
+                else:
+                    # mpi_<...> -> ampi_<...>
+                    node.items[0].string = str_replace_start('mpi', 'ampi',
+                                                             call_fun)
                 litems = list(node.items[1].items)
                 str_items = [str(i).lower() for i in list(node.items[1].items)]
                 for key in translat:
@@ -82,9 +92,12 @@ def mpi_to_ampi_call(ast, arg_translat, arg_tag_add):
                     log.debug('node_items[0].string not in tag_add:{}'.format(node.items[0].string))
                 node.items[1].items = tuple(litems)
         if isinstance(node, Return_Stmt):
-            assert current_subroutine is not None
-            assert not (current_subroutine in returns)
-            returns[current_subroutine] = True
+            assert (current_subroutine is not None) or \
+                (current_function is not None)
+            if current_subroutine is not None:
+                returns[current_subroutine] = True
+            elif current_function is not None:
+                returns[current_function] = True
             #print (need_turn_buffs)
             need_turn = False
             need_turn_buffs = []
@@ -119,12 +132,18 @@ if __name__ == '__main__':
                           "AMPI_Recv": "AMPI_FROM_SEND" }
 
         # etc.
-
         if(irecv_mode):
-            ast = mpi_to_ampi_call(ast, arg_translat, ampi_tag_irecv)
+            ast = mpi_to_ampi_call(ast, arg_translat, ampi_tag_irecv, {})
             
         elif(recv_mode):
-            ast = mpi_to_ampi_call(ast, arg_translat, ampi_tag_recv)
+            ast = mpi_to_ampi_call(ast, arg_translat, ampi_tag_recv, {})
+
+        elif(found_mpi):
+            ast = mpi_to_ampi_call(ast, arg_translat, ampi_tag_recv,
+                                   { "mpi_setup": "MPI_Setup",
+                                     "mpi_abort": "MPI_abort",
+                                     "mpi_init" : "AMPI_Init_NT",
+                                     "mpi_finalize" : "AMPI_Finalize_NT"})
 
         # output
         try:
