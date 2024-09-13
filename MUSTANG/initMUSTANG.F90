@@ -1452,6 +1452,11 @@ CONTAINS
         ALLOCATE (rstout3DsedMust(NT+3))
         ALLOCATE (vname_rstMust(20, NT+3))
 
+        vname_rstMust(:,:) = ""
+        rstoutintegerMust(:) = .FALSE.
+        rstout2DMust(:) = .FALSE.
+        rstout3DsedMust(:) = .FALSE.
+
         outMust_nbvar = 2*ntrc_subs + 3*nvpc + 17
 #ifdef  key_MUSTANG_V2
         outMust_nbvar = outMust_nbvar + nvpc + 6
@@ -1468,7 +1473,11 @@ CONTAINS
         ALLOCATE (out3DsedMust(1:outMust_nbvar))
         ALLOCATE (vname_Must(20, 1:outMust_nbvar))
 
+        vname_Must(:,:) = ""
         outMust(:) = .FALSE.
+        out2DMust(:) = .FALSE.
+        out3DsedMust(:) = .FALSE.
+
 
         ! RESTART file
         indx = 1
