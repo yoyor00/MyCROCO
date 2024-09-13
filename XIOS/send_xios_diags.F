@@ -2267,7 +2267,7 @@ C 				  endif
 #endif
 
 #ifdef HYBIOSED
-      USE com_HYBIOSED, ONLY : hbs_nbvar, 
+      USE com_HYBIOSED, ONLY : hbs_nbvar, hbs_varname, 
      &     hbs_nout_position_bed, hbs_nout_position_wat, 
      &     hbs_nout_ws_trapp, hbs_nout_ws_block, hbs_nout_rbiom , 
      &     hbs_nout_zup_root , hbs_nout_thick_root, 
@@ -2377,7 +2377,7 @@ C 				  endif
       integer iv
 #endif
 #if defined HYBIOSED
-      character*20 hbs_field_name
+      character*50 hbs_field_name
 #endif
 
 
@@ -3962,27 +3962,32 @@ c !$acc wait
 
 #  ifdef HYBIOSED
       do iv = 1, hbs_nbvar
-         hbs_field_name = TRIM(hbs_nout_position_bed)//'_'//TRIM(hbs_varname(iv))
+         hbs_field_name = 
+     &       TRIM(hbs_nout_position_bed)//'_'//TRIM(hbs_varname(iv))
          if (xios_field_is_active(hbs_field_name)) then
             call xios_send_field(hbs_field_name, hbs_position_bed(iv,:,:))
          endif
 
-         hbs_field_name = TRIM(hbs_nout_position_wat)//'_'//TRIM(hbs_varname(iv))
+         hbs_field_name = 
+     &       TRIM(hbs_nout_position_wat)//'_'//TRIM(hbs_varname(iv))
          if (xios_field_is_active(hbs_field_name)) then
             call xios_send_field(hbs_field_name, hbs_position_wat(iv,:,:))
          endif
 
-         hbs_field_name = TRIM(hbs_nout_zup_root)//'_'//TRIM(hbs_varname(iv))
+         hbs_field_name = 
+     &       TRIM(hbs_nout_zup_root)//'_'//TRIM(hbs_varname(iv))
          if (xios_field_is_active(hbs_field_name)) then
             call xios_send_field(hbs_field_name, hbs_zup_root(iv,:,:))
          endif
 
-         hbs_field_name = TRIM(hbs_nout_thick_root)//'_'//TRIM(hbs_varname(iv))
+         hbs_field_name = 
+     &       TRIM(hbs_nout_thick_root)//'_'//TRIM(hbs_varname(iv))
          if (xios_field_is_active(hbs_field_name)) then
             call xios_send_field(hbs_field_name, hbs_thick_root(iv,:,:))
          endif
 
-         hbs_field_name = TRIM(hbs_nout_rbiom)//'_'//TRIM(hbs_varname(iv))
+         hbs_field_name = 
+     &       TRIM(hbs_nout_rbiom)//'_'//TRIM(hbs_varname(iv))
          if (xios_field_is_active(hbs_field_name)) then
             call xios_send_field(hbs_field_name, hbs_rbiom(iv,:,:))
          endif
