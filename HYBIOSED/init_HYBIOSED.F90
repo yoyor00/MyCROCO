@@ -163,6 +163,7 @@ CONTAINS
    !! ** Description : Load variables parameters
    !!
    !!---------------------------------------------------------------------------
+      USE module_HYBIOSED ! for mynode
       IMPLICIT NONE
 
       !! * Arguments
@@ -231,13 +232,13 @@ CONTAINS
       ! * Alocate to corresponding parameter
       ! ************************************
       ! * For namelist hbs_var_main
-      hbs_varname(iv) = TRIM(r_hbs_varname)
-      hbs_vardesc(iv) = TRIM(r_hbs_vardesc)
+      hbs_varname(iv) = r_hbs_varname
+      hbs_vardesc(iv) = r_hbs_vardesc
       ! * For namelist hbs_var_option
       l_hbs_bedsedstab(iv) = r_l_hbs_bedsedstab
       ! * For namelist hbs_var_init
       l_hbs_initfromfile(iv) = r_l_hbs_initfromfile
-      hbs_fn_initfile(iv) = TRIM(r_hbs_fn_initfile)
+      hbs_fn_initfile(iv) = r_hbs_fn_initfile
       hbs_i_rbiom(iv) = r_hbs_i_rbiom
       hbs_i_zup_root(iv) = r_hbs_i_zup_root
       hbs_i_thick_root(iv) = r_hbs_i_thick_root
@@ -613,7 +614,8 @@ CONTAINS
       ALLOCATE (outHbs(1:5*hbs_nbvar + 2))
       ALLOCATE (out2DHbs(1:5*hbs_nbvar + 2))
       ALLOCATE (vname_hbs(20, 1:5*hbs_nbvar + 2))
-
+      
+      vname_hbs(:,:) = ''
       outHbs(:) = .FALSE.
       out2DHbs(:) = .FALSE.
 
@@ -695,33 +697,31 @@ CONTAINS
       END DO
 
       indvar = 5*hbs_nbvar + 1
-      vname_hbs(1, indvar) = &
-         TRIM(hbs_nout_ws_trapp)
+      vname_hbs(1, indvar) = TRIM(hbs_nout_ws_trapp)
       vname_hbs(2, indvar) = &
          'Correction factor for settling velocity due to trapping'
       vname_hbs(3, indvar) = '-                                    '
       vname_hbs(4, indvar) = '                                     '
       vname_hbs(5, indvar) = '                                     '
-      vname_hbs(6, indvar) = 'time N  lat_rho lon_rho              '
+      vname_hbs(6, indvar) = 'time N lat_rho lon_rho               '
       vname_hbs(7, indvar) = '                                     '
       IF (l_hbsout_ws_trapp) THEN
          outHbs(indvar) = .TRUE.
-         out2DHbs(indvar) = .False.
+         out2DHbs(indvar) = .FALSE.
       END IF
 
       indvar = 5*hbs_nbvar + 2
-      vname_hbs(1, indvar) = &
-         TRIM(hbs_nout_ws_block)
+      vname_hbs(1, indvar) = TRIM(hbs_nout_ws_block)
       vname_hbs(2, indvar) = &
          'Correction factor for settling velocity due to blockage'
       vname_hbs(3, indvar) = '-                                    '
       vname_hbs(4, indvar) = '                                     '
       vname_hbs(5, indvar) = '                                     '
-      vname_hbs(6, indvar) = 'time N  lat_rho lon_rho              '
+      vname_hbs(6, indvar) = 'time N lat_rho lon_rho               '
       vname_hbs(7, indvar) = '                                     '
       IF (l_hbsout_ws_block) THEN
          outHbs(indvar) = .TRUE.
-         out2DHbs(indvar) = .False.
+         out2DHbs(indvar) = .FALSE.
       END IF
 
    END SUBROUTINE hbs_vname

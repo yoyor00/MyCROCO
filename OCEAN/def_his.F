@@ -2363,7 +2363,7 @@
             endif
         enddo
 
-# endif /* OBSTRUCTION */
+# endif /* HYBIOSED */
 
 #endif /* SOLVE3D */
 
@@ -3625,14 +3625,14 @@
 # endif /* OBSTRUCTION */
 
 # ifdef HYBIOSED
-      do itrv=1,5*obst_nbvar+2
+      do itrv=1,5*hbs_nbvar+2
          indx=itrv
          if (outHbs(indx)) then 
             lvar=lenstr(vname_hbs(1,indx))
             ierr=nf_inq_varid (ncid, vname_hbs(1,indx)(1:lvar),
      &                             vidHbs(itrv))
 #  ifdef NC4PAR
-            ierr=nf_var_par_access(ncid,vidHbs(itrv),,
+            ierr=nf_var_par_access(ncid,vidHbs(itrv),
      &                             nf_collective)
 #  endif
          endif
