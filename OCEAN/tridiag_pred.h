@@ -11,7 +11,12 @@
 #if defined TRIDIAG_TRA
           do i=istr,iend
 # ifdef VMIX_PREDICTOR
+#  ifdef TKE3D_MIXING
+            FC(i,1)=cdt*0.5*(Akt(i,j,1,iAkt)+Akt(i,j,2,iAkt)) 
+     &                                /( z_r(i,j,2)-z_r(i,j,1) )
+#  else	  
             FC(i,1)=cdt*Akt(i,j,1,iAkt)/( z_r(i,j,2)-z_r(i,j,1) )
+#  endif
 # else
             FC(i,1)= 0.
 # endif
@@ -24,7 +29,12 @@
           do k=2,N-1,+1
             do i=istr,iend
 # ifdef VMIX_PREDICTOR
+#  ifdef TKE3D_MIXING
+              FC(i,k)=0.5*cdt*( Akt(i,j,k,iAkt) + Akt(i,j,k+1,iAkt) ) 
+     &                       / ( z_r(i,j,k+1)-z_r(i,j,k) )
+#  else
               FC(i,k)=cdt*Akt(i,j,k,iAkt)/( z_r(i,j,k+1)-z_r(i,j,k) )
+#  endif
 # else
               FC(i,k)= 0.
 # endif
@@ -56,9 +66,14 @@
 #elif defined TRIDIAG_U
          do i=istrU,iend
 # ifdef VMIX_PREDICTOR
-            FC(i,1)=cdt*(Akv(i,j,1)+Akv(i-1,j,1))
-     &                 /( z_r(i,j,2)+z_r(i-1,j,2)
+	    cff = 2./( z_r(i,j,2)+z_r(i-1,j,2)
      &                   -z_r(i,j,1)-z_r(i-1,j,1))
+#  ifdef TKE3D_MIXING
+            FC(i,1)=cdt*cff*0.25*(Akv(i,j,1)+Akv(i-1,j,1)
+     &		                + Akv(i,j,2)+Akv(i-1,j,2)  )
+#  else	 
+            FC(i,1)=cdt*cff*0.5*(Akv(i,j,1)+Akv(i-1,j,1))
+#  endif
 # else
             FC(i,1)= 0.
 # endif
@@ -72,9 +87,14 @@
           do k=2,N-1,+1
             do i=istrU,iend
 # ifdef VMIX_PREDICTOR
-              FC(i,k)=cdt*(Akv(i,j,k)+Akv(i-1,j,k))
-     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
+	      cff = 2./( z_r(i,j,k+1)+z_r(i-1,j,k+1)
      &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
+#  ifdef TKE3D_MIXING
+	      FC(i,k)=cff*cdt*0.25*(Akv(i,j,k  )+Akv(i-1,j,k  )
+     &       			  + Akv(i,j,k+1)+Akv(i-1,j,k+1) )
+#  else 
+              FC(i,k)=cff*cdt*0.5*(Akv(i,j,k)+Akv(i-1,j,k))
+#  endif	
 # else
               FC(i,k)= 0.
 # endif
@@ -108,9 +128,14 @@
 #elif defined TRIDIAG_V
          do i=istr,iend
 # ifdef VMIX_PREDICTOR
-            FC(i,1)=cdt*(Akv(i,j,1)+Akv(i,j-1,1))
-     &                 /( z_r(i,j,2)+z_r(i,j-1,2)
+	    cff = 2./( z_r(i,j,2)+z_r(i,j-1,2)
      &                   -z_r(i,j,1)-z_r(i,j-1,1))
+#  ifdef TKE3D_MIXING	
+            FC(i,1)=cdt*cff*0.25*(Akv(i,j,1)+Akv(i,j-1,1) 
+     &              		+ Akv(i,j,2)+Akv(i,j-1,2) )
+#  else
+            FC(i,1)=cdt*cff*0.5*(Akv(i,j,1)+Akv(i,j-1,1))
+#  endif	
 # else
             FC(i,1)= 0.
 # endif
@@ -124,9 +149,14 @@
           do k=2,N-1,+1
             do i=istr,iend
 # ifdef VMIX_PREDICTOR
-              FC(i,k)=cdt*(Akv(i,j,k)+Akv(i,j-1,k))
-     &                 /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
+	      cff = 2./( z_r(i,j,k+1)+z_r(i,j-1,k+1)
      &                   -z_r(i,j,k  )-z_r(i,j-1,k  ))
+#  ifdef TKE3D_MIXING	
+              FC(i,k)=cdt*cff*0.25*(Akv(i,j,k  )+Akv(i,j-1,k  ) 
+     &			     +  Akv(i,j,k+1)+Akv(i,j-1,k+1) )
+#  else 
+              FC(i,k)=cdt*cff*0.5*(Akv(i,j,k  )+Akv(i,j-1,k) )
+#  endif	
 # else
               FC(i,k)= 0.
 # endif

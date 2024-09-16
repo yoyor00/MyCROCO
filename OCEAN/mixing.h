@@ -63,7 +63,7 @@
       real diff3d_v(GLOBAL_2D_ARRAY,N)
       common /mixing_diff3d_u/diff3d_u
       common /mixing_diff3d_v/diff3d_v
-# if defined TS_DIF_SMAGO || defined GLS_MIXING_3D
+# if defined TS_DIF_SMAGO || defined GLS_MIXING_3D || defined TKE3D_MIXING
       real diff3d_r(GLOBAL_2D_ARRAY,N)
       common /mixing_diff3d_r/diff3d_r
 # endif
@@ -107,7 +107,7 @@
 
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
+  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D || defined TKE3D_MIXING
       real bvf(GLOBAL_2D_ARRAY,0:N)
       common /mixing_bvf/ bvf
 # endif
@@ -168,7 +168,18 @@
       common /gls_hbl/ hbl
       real cm0
       common /gls_cm0/ cm0
-# endif /* GLS_MIXING */
+# elif defined TKE3D_MIXING
+      real tke(GLOBAL_2D_ARRAY,1:N,2)
+      common /tke_tke/tke
+      real Lscale(GLOBAL_2D_ARRAY,1:N)
+      common /tke_lscale/Lscale
+      real Sprod3d(GLOBAL_2D_ARRAY,1:N)
+      common /tke_sprod3d/Sprod3d
+      real :: tke_cm,tke_ceps,tke_ce
+      parameter( tke_cm   = 0.126 ) ! 0.0667 (RS81); 0.1 (NEMO)
+      parameter( tke_ceps = 0.7   )
+      parameter( tke_ce   = 0.34  ) ! 0.4 (RS81); 0.1 (NEMO)
+# endif /* MIXING */
 
 #else
 

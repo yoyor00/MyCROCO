@@ -301,7 +301,7 @@ CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 !
 !     Brunt vaisala frequency.
 !
@@ -468,6 +468,39 @@ CR      write(*,*) 'wrt_avg:  wrtGls' MYID
          work=Lscale_avg
          call fillvalue3d_w(work,ncidavg,avgLsc,
      &        vname(1,indxLsc), record,w3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
+      endif
+#  endif
+
+#  ifdef TKE3D_MIXING
+!
+!     Write out turbulent kinetic energy.
+!
+      if (wrtavg(indxTke)) then
+!$acc update if(compute_on_device) host(tke_avg)
+         workr=tke_avg
+         call fillvalue3d(workr,ncidavg,avgTke,
+     &        vname(1,indxTke), record,r3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtTke' MYID
+      endif
+!
+!     Write out generic length scale
+!
+      if (wrtavg(indxGls)) then
+!$acc update if(compute_on_device) host(gls_avg)
+         workr=gls_avg
+         call fillvalue3d(workr,ncidavg,avgGls,
+     &        vname(1,indxGls), record,r3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtGls' MYID
+      endif
+!
+!     Write out vertical mixing length scale
+!
+      if (wrtavg(indxLsc)) then
+!$acc update if(compute_on_device) host(Lscale_avg)
+         workr=Lscale_avg
+         call fillvalue3d(workr,ncidavg,avgLsc,
+     &        vname(1,indxLsc), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
       endif
 #  endif

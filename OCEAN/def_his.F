@@ -221,6 +221,7 @@
 # endif
 
 # define vidM avgMust
+# define vidObst avgObst
 #endif
 
 # ifdef K3FAST_HIS
@@ -779,7 +780,7 @@
 !
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
         if (wrt(indxbvf)) then
           lvar=lenstr(vname(1,indxbvf))
           ierr=nf_def_var (ncid, vname(1,indxbvf)(1:lvar),
@@ -1495,14 +1496,19 @@
         endif
 # endif
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 ! Turbulent Kinetic Energy.
 !
         if (wrt(indxTke)) then
           lvar=lenstr(vname(1,indxTke))
+#  ifdef GLS_MIXING
           ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidTke)
+#  else
+          ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
+     &                              NF_FOUT, 4, r3dgrd, vidTke)
+#  endif
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTke,nf_collective)
 #  endif
@@ -1531,8 +1537,13 @@
 !
         if (wrt(indxGls)) then
           lvar=lenstr(vname(1,indxGls))
+#  ifdef GLS_MIXING
           ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidGls)
+#  else
+          ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
+     &                              NF_FOUT, 4, r3dgrd, vidGls)
+#  endif
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidGls,nf_collective)
 #  endif
@@ -2969,7 +2980,7 @@
         endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 !-----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.
@@ -3157,7 +3168,7 @@
         endif
 # endif
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 ! Turbulent Kinetic Energy.
 !
@@ -3823,6 +3834,7 @@
 #undef vidKAPS
 #undef vidHm
 #undef vidM
+#undef vidObst
 
 #ifdef AVERAGES
 # ifndef AVRH

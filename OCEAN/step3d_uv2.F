@@ -230,9 +230,14 @@
 
         do k=1,N-1
           do i=IstrU,Iend
-            FC(i,k)=-dt*(Akv(i,j,k)+Akv(i-1,j,k))
-     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
+            cff = 2./( z_r(i,j,k+1)+z_r(i-1,j,k+1)
      &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
+# ifdef TKE3D_MIXING
+            FC(i,k)=-cff*dt*0.25*(Akv(i,j,k  )+Akv(i-1,j,k  )
+     &                          + Akv(i,j,k+1)+Akv(i-1,j,k+1))
+# else             
+            FC(i,k)=-cff*dt*0.5*(Akv(i,j,k)+Akv(i-1,j,k))
+# endif
 # ifdef VADV_ADAPT_IMP
             WC(i,k)=DC(i,0)*0.5*(Wi(i,j,k)+Wi(i-1,j,k))
 # endif
@@ -343,9 +348,12 @@
 ! ------- ------------- ------ ------ - -----
       do k=1,N-1
         do i=IstrU,Iend
-
+#  ifdef TKE3D_MIXING
+            FC(i,k)= 0.25*(Akv(i,j,k  )+Akv(i-1,j,k  )
+     &                   + Akv(i,j,k+1)+Akv(i-1,j,k+1) )       
+#  else
             FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i-1,j,k))
-
+#  endif
             cff1= 2.* (2.*MVmix(i,j,k+1,1) / (Hz(i,j,k+1)+Hz(i-1,j,k+1))
      &               - 2.*MVmix(i,j,k,1) / (Hz(i,j,k  )+Hz(i-1,j,k  )) )
      &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
@@ -540,9 +548,14 @@
 
           do k=1,N-1
             do i=Istr,Iend
-              FC(i,k)=-dt*(Akv(i,j,k)+Akv(i,j-1,k))
-     &                   /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
+              cff = 2./( z_r(i,j,k+1)+z_r(i,j-1,k+1)
      &                     -z_r(i,j,k  )-z_r(i,j-1,k  ))
+# ifdef TKE3D_MIXING
+              FC(i,k)=-cff*dt*0.25*(Akv(i,j,k  )+Akv(i,j-1,k  )
+     &                             +Akv(i,j,k+1)+Akv(i,j-1,k+1))       
+# else              
+              FC(i,k)=-cff*dt*0.5*(Akv(i,j,k)+Akv(i,j-1,k))
+# endif              
 # ifdef VADV_ADAPT_IMP
               WC(i,k)=DC(i,0)*0.5*(Wi(i,j,k)+Wi(i,j-1,k))
 # endif
@@ -658,9 +671,12 @@
 ! ------- ------------- ------ ------ - -----
       do k=1,N-1
         do i=Istr,Iend
-
+#  ifdef TKE3D_MIXING
+            FC(i,k)= 0.25*(Akv(i,j,k  )+Akv(i,j-1,k  ) 
+     &                   + Akv(i,j,k+1)+Akv(i,j-1,k+1))       
+#  else        
             FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i,j-1,k))
-
+#  endif
             cff1= 2.* (2.*MVmix(i,j,k+1,2)/(Hz(i,j,k+1)+Hz(i,j-1,k+1))
      &               - 2.*MVmix(i,j,k  ,2)/(Hz(i,j,k  )+Hz(i,j-1,k  )) )
      &                 /( z_r(i,j,k+1)+z_r(i,j-1,k+1)

@@ -169,7 +169,8 @@
 #  include "coupling.h"
 #  include "scalars.h"
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+     || defined TKE3D_MIXING
 #   include "mixing.h"
 #  endif
 #  ifdef SEDIMENT
@@ -268,7 +269,8 @@
 !-----------------------------------------------------------------------
 !
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+     || defined TKE3D_MIXING
 #   ifndef SPLIT_EOS
             dpth=z_w(i,j,N)-z_w(i,j,k)
             K_up(i,k)=K0+dpth*(K1+K2*dpth)
@@ -311,7 +313,8 @@
           enddo
         enddo
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined TKE3D_MIXING
         do i=istrR,iendR
           bvf(i,j,N)=bvf(i,j,N-1)
           bvf(i,j,0)=bvf(i,j,  1)
@@ -418,9 +421,13 @@
 #   ifdef THREE_GHOST_POINTS_TS
       call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             rho1(START_2D_ARRAY,1))
+      call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             rho(START_2D_ARRAY,1))
 #   else
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        rho1(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        rho(START_2D_ARRAY,1))
 #   endif
 #  endif
 !$acc kernels if(compute_on_device) default(present)      
@@ -445,7 +452,8 @@
 !-----------------------------------------------------------------------
 !
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined TKE3D_MIXING
         cff=g/rho0
         do k=1,N-1
           do i=IstrR,IendR
@@ -455,6 +463,10 @@
      &                                   *rmask(i,j)
 #   endif
           enddo
+        enddo
+        do i=IstrR,IendR
+          bvf(i,j,N) = bvf(i,j,N-1)
+          bvf(i,j,0) = bvf(i,j,  1)
         enddo
 #  endif
 # endif /* NONLIN_EOS */
@@ -810,4 +822,3 @@ C$OMP END CRITICAL (rho_cr_rgn)
       subroutine rho_eos_empty
       end
 #endif /* SOLVE3D */
-

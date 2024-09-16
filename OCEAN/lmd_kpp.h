@@ -9,7 +9,7 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING || defined TKE3D_MIXING
       integer Jwtype(GLOBAL_2D_ARRAY)
   !    real,parameter,dimension(5)::lmd_mu1=(/0.35,0.6,1.0,1.5,1.4/)
   !    lmd_mu1(1)=0.35    !  Define reciprocal of the absorption

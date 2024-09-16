@@ -1015,6 +1015,8 @@ c
             stflx(i,j,itemp)= - 100./(rho0*Cp)
 #   elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
             stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
+#   elif defined FC500
+            stflx(i,j,itemp)= - 500./(rho0*Cp)
 #   else
             stflx(i,j,itemp)=0.
 #   endif

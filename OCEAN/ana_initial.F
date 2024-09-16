@@ -97,6 +97,11 @@
       real zdye10,zdye20
       real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
+#ifdef FC500
+      real cff, rand, rand2D(GLOBAL_2D_ARRAY)
+      integer irand, jrand, nrand
+!$acc declare create( cff, rand, rand2D )
+#endif
 #ifdef ISOLITON
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
@@ -977,6 +982,45 @@ c c !$acc kernels if(compute_on_device) default(present)
             enddo
           enddo
         enddo
+!$acc end kernels
+#   elif defined FC500
+!$acc kernels if(compute_on_device) default(present)        cff = 1.9620001275490499E-006 / (g * Tcoef/rho0 )
+        DO k=1,N
+          DO j=JR_RANGE
+            DO i=IR_RANGE
+              t(i,j,k,1,itemp) = T0 - cff * ABS(z_r(i,j,k))
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+            ENDDO
+          ENDDO
+        ENDDO
+        ! QJ: add stochastic perturbation
+        nrand  = 10
+        rand2D(:,:) = 0.
+        DO jrand=1,nrand
+          DO irand=1,nrand
+            CALL random_number(rand)
+            DO j=JR_RANGE
+              DO i=IR_RANGE
+                rand2D(i,j) = rand2D(i,j)
+     &          + ( cos( (2.*pi) * ( (xp(i,j)*irand) / xl
+     &                              +(yr(i,j)*jrand) / el +rand ) )
+     &            + sin( (2.*pi) * ( (xp(i,j)*irand) / xl
+     &                              +(yr(i,j)*jrand) / el +rand ) )
+     &                                            ) * rand * 1.E-4
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        DO k=1,N
+          DO j=JR_RANGE
+            DO i=IR_RANGE
+              t(i,j,k,1,itemp) = t(i,j,k,1,itemp)
+     &             + rand2D(i,j) * exp(z_r(i,j,k)/50.0)
+        !    &             + rand2D(i,j) * exp(40*FLOAT(k-N)/FLOAT(N))
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+            ENDDO
+          ENDDO
+        ENDDO
 !$acc end kernels
 #   elif defined ISOLITON
 !$acc kernels if(compute_on_device) default(present)

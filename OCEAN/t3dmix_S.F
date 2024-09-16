@@ -148,7 +148,7 @@
             diff3u(i,j)= 
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i-1,j,itrc))
-# if defined DIF_COEF_3D && defined TS_DIF_SMAGO
+# if defined DIF_COEF_3D && ( defined TS_DIF_SMAGO || defined TKE3D_MIXING )
      &                     +0.5*(diff3d_r(i,j,k)+diff3d_r(i-1,j,k))
 # endif
 #elif defined TS_DIF4
@@ -172,7 +172,7 @@
             diff3v(i,j)= 
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i,j-1,itrc))
-# if defined DIF_COEF_3D && defined TS_DIF_SMAGO
+# if defined DIF_COEF_3D && ( defined TS_DIF_SMAGO || defined TKE3D_MIXING )
      &                     +0.5*(diff3d_r(i,j,k)+diff3d_r(i,j-1,k))
 # endif
 #elif defined TS_DIF4

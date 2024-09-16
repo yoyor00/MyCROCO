@@ -330,7 +330,7 @@ C$    integer omp_get_thread_num
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
             bvf_avg(i,j,k)=init
 #  endif
 # endif
@@ -1407,14 +1407,14 @@ C$    integer omp_get_thread_num
 # endif
 # if defined BVF_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIXING
+      || defined GLS_MIXING || defined TKE3D_MIXING
             bvf(i,j,k)=init
 # endif
           enddo
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING && !defined TKE3D_MIXING
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif
@@ -1423,10 +1423,10 @@ C$    integer omp_get_thread_num
 #  endif
 # else
 #  ifdef TEMPERATURE
-              Akt(i,j,k,itemp)=init
+              Akt(i,j,k,itemp)=1.0E-06
 #  endif
 #  ifdef SALINITY
-              Akt(i,j,k,isalt)=init
+              Akt(i,j,k,isalt)=1.0E-06
 #  endif
 # endif
           enddo
@@ -1507,8 +1507,20 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            trb(i,j,k,nstp,itke)=init
-            trb(i,j,k,nstp,igls)=init
+            trb(i,j,k,nstp,itke)=1.e-12
+            trb(i,j,k,nstp,igls)=1.e-12
+            Lscale(i,j,k)=init
+          enddo
+        enddo
+      enddo
+# endif
+
+# ifdef TKE3D_MIXING
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            tke(i,j,k,nstp) = 1.e-12
+            Sprod3d(i,j,k)  = 1.e-12
             Lscale(i,j,k)=init
           enddo
         enddo

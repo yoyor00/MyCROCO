@@ -714,7 +714,7 @@ CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 !
 !     Brunt vaisala frequency.
 !
@@ -905,35 +905,56 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 !     Write out turbulent kinetic energy.
 !
       if (wrthis(indxTke)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,itke))
         work=trb(:,:,:,nstp,itke)
         call fillvalue3d_w(work,ncidhis,hisTke,vname(1,indxTke),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(tke(:,:,:,nstp))
+        workr=tke(:,:,:,nstp)
+        call fillvalue3d(workr,ncidhis,hisTke,vname(1,indxTke),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
       endif
 !
 !     Write out generic length scale
 !
       if (wrthis(indxGls)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,igls))
         work=trb(:,:,:,nstp,igls)
         call fillvalue3d_w(work,ncidhis,hisGls,vname(1,indxGls),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(Sprod3d(:,:,:))
+        workr=Sprod3d
+        call fillvalue3d(workr,ncidhis,hisGls,vname(1,indxGls),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtGls' MYID
       endif
 !
 !     Write out vertical mixing length scale
 !
       if (wrthis(indxLsc)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(Lscale(:,:,:))
         work=Lscale
         call fillvalue3d_w(work,ncidhis,hisLsc,vname(1,indxLsc),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(Lscale(:,:,:))
+        workr=Lscale
+        call fillvalue3d(workr,ncidhis,hisLsc,vname(1,indxLsc),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtLsc' MYID
       endif
 # endif

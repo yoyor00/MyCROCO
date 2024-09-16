@@ -1112,7 +1112,9 @@ C$OMP BARRIER
         call mustang_update_main (tile)
 # endif
         call step3d_t (tile)
-
+# if defined TKE3D_MIXING
+        CALL tke3d_mixing (tile)
+# endif 
 # ifdef MUSTANG
         call mustang_deposition_main (tile)
 # endif

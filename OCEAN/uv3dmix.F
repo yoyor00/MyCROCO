@@ -10,7 +10,9 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && defined UV_VIS2 && defined UV_MIX_S
+#if defined SOLVE3D && defined UV_VIS2 && defined UV_MIX_S && defined TKE3D_MIXING
+# include "uv3dmix_R3d.F"
+#elif defined SOLVE3D && defined UV_VIS2 && defined UV_MIX_S  && !defined TKE3D_MIXING
 # include "uv3dmix_S.F"
 #elif defined SOLVE3D && defined UV_VIS2 && defined UV_MIX_GEO
 # include "uv3dmix_GP.F"
@@ -22,4 +24,3 @@
       subroutine uv3dmix_empty
       end
 #endif
-
