@@ -31,7 +31,7 @@
 #include "forces.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
-#if defined GLS_MIXING || defined LMD_MIXING
+#if defined GLS_MIXING || defined LMD_MIXING || defined TKE3D_MIXING
 # include "mixing.h"
 #endif
 #if defined EXACT_RESTART

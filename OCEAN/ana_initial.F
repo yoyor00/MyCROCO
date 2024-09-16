@@ -984,7 +984,8 @@ c c !$acc kernels if(compute_on_device) default(present)
         enddo
 !$acc end kernels
 #   elif defined FC500
-!$acc kernels if(compute_on_device) default(present)        cff = 1.9620001275490499E-006 / (g * Tcoef/rho0 )
+!$acc kernels if(compute_on_device) default(present)
+        cff = 1.9620001275490499E-006 / (g * Tcoef/rho0 )
         DO k=1,N
           DO j=JR_RANGE
             DO i=IR_RANGE
