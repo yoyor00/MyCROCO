@@ -29,8 +29,7 @@
 
       CHARACTER(len = 64), DIMENSION(nmaxfld) :: srcv_clname, ssnd_clname   ! Coupling fields
       INTEGER, DIMENSION(0:nmaxatm, nmaxfld) :: srcv_nid   , ssnd_nid
-      common /exchange_fields_oasis3/ srcv_clname,ssnd_clname,
-     &                                srcv_nid   ,ssnd_nid
+      common /exchange_fields_oasis3/ srcv_clname,ssnd_clname,srcv_nid,ssnd_nid
 
       INTEGER :: oasis_time, oasis_runtime
       common /exchange_times_oasis3/ oasis_time, oasis_runtime
