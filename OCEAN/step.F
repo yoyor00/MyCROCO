@@ -1223,6 +1223,10 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
+        call check_tab3d(Huon(:,:,:),'Huon step3d','u',
+     &    ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom step3d','v',
+     &    ondevice=.TRUE.)
         call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r',
      &    ondevice=.TRUE.)
         !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
