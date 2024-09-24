@@ -1085,7 +1085,18 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #ifdef SOLVE3D
-
+      
+# if defined RVTK_DEBUG_AVANCED
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+        call check_tab3d(Huon(:,:,:),'Huon bef step3d','u',
+     &       ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom bef step3d','v',
+     &       ondevice=.TRUE.)
+C     $OMP END MASTER
+# endif
+        
       do tile=my_first,my_last
 
         call omega (tile)
@@ -1135,8 +1146,10 @@ C$OMP MASTER
 #  endif
 #  if defined MUSTANG
         do ilay = ksdmin, ksdmax
-            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtotx step3d_t','r')
-            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','r')
+          call check_tab2d(c_sedtot(ilay, :, :),
+     &                                    'c_sedtotx step3d_t','r')
+          call check_tab2d(dzs(ilay, :, :),
+     &                                     'dzs step3d_t','r')
         enddo
 #   if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
         do itrc = ibedload1, ibedload2
