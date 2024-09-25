@@ -3,7 +3,7 @@
 if [ ${MACHINE} == "DATARMOR" ] ; then
     ${QSUB} -h -N ${ROOT_NAME_1} ${jobname}
     sub_ext=".pbs"
-    launchcmd="-W depend=afterany:$( echo $( qselect -N ${ROOT_NAME_1}) | cut -c 1-7 )"
+    launchcmd="-W depend=afterany:$( echo $( qselect -N ${ROOT_NAME_1}) | cut -d "." -f 1 )"
 elif [ ${MACHINE} == "IRENE" ]; then
     ${QSUB} ${jobname}
     sub_ext=".sh"
@@ -19,7 +19,9 @@ elif [ ${MACHINE} == "JEANZAY" ]; then
     cnt=$(( $(wc -l tmp.text | awk '{ print $1 }') + 1 ))
     for linenb in `seq 1 $cnt`; do 
         line=$(sed -n "${linenb}p" tmp.text  )
-	[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -c 1-7 ); break; }       
+	[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -c 1-7 ); break; }      
+        # previous line supposes that jobid has 7 characters. If not, the following line could replace it
+        #[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -d "." -f 1 | cut -d " " -f 1 ); break; } 
     done
     firstjobid=${prejobid}
 else
@@ -62,7 +64,7 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
     if [ ${MACHINE} == "DATARMOR" ] ; then 
         newjobname="${CEXPER}_${newsdate}_${newedate}${MODE_TEST}"
         ${QSUB} -N ${newjobname} ${launchcmd} ${future_job} 
-        launchcmd="-W depend=afterany:$( echo $( qselect -N ${newjobname}) | cut -c 1-7 )"
+        launchcmd="-W depend=afterany:$( echo $( qselect -N ${newjobname}) | cut -d "." -f 1 )"
         cd ${SCRIPTDIR}/
 #
     elif [ ${MACHINE} == "IRENE" ] ; then
@@ -99,6 +101,8 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
         for linenb in `seq 1 $cnt`; do
             line=$(sed -n "${linenb}p" tmp.text  )
             [[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -c 1-7 ); break; }
+            # previous line supposes that jobid has 7 characters. If not, the following line could replace it
+            #[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -d "." -f 1 | cut -d " " -f 1 ); break; } 
         done
         \rm -f tmp.text
         #
@@ -120,5 +124,5 @@ done
 #
 cd ${JOBDIR_ROOT}
 
-[ ${MACHINE} == "DATARMOR" ] && { jobid=$( echo $( qselect -N ${ROOT_NAME_1}) | cut -c 1-7 ) ; qrls ${jobid} ; }
+[ ${MACHINE} == "DATARMOR" ] && { jobid=$( echo $( qselect -N ${ROOT_NAME_1}) | cut -d "." -f 1 ) ; qrls ${jobid} ; }
 [ ${MACHINE} == "JEANZAY" ] && { scontrol release ${firstjobid} ; }
