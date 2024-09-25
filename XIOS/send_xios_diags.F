@@ -3215,7 +3215,7 @@ c !$acc wait
       if (xios_field_is_active("v_adv")) then
           call xios_send_field("v_adv", MXadv(:,:,:,itrc)
      &            + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
-     endif
+      endif
       if (xios_field_is_active("v_Cor")) then
           call xios_send_field("v_Cor",MCor(:,:,:,itrc))
       endif
