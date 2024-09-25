@@ -1139,8 +1139,8 @@ C$OMP END MASTER
 C$OMP MASTER
 #  if defined MUSTANG
         do ilay = ksdmin, ksdmax
-            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtotx step3d_t','r')
-            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','r')
+            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtot step3d_t','rint')
+            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','rint')
         enddo
 #   if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
         do itrc = ibedload1, ibedload2
