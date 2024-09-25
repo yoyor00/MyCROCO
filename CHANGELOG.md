@@ -17,6 +17,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   and strong currents (several m/s). Resolved by modifications in WKB_ADD_DIFF :
   fixes [#197] 
 
+- Fix the reading of initial state in case of MPINOLAND and different MPI 
+  decomposition [#217]
+
 ### Changed
 
 - Issue #184 : change roller contribution on Stokes Drift in very shallow water 
