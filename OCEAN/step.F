@@ -928,7 +928,15 @@ C$OMP BARRIER
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
 C$OMP BARRIER
-
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+        call check_tab3d(Huon(:,:,:),'Huon before set_depth','u',
+     &       ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom before set_depth','v',
+     &       ondevice=.TRUE.)
+C$OMP END MASTER
+# endif    
 #ifdef SOLVE3D
 # if defined NBQ && defined AGRIF && defined NBQ_CHILD_ONLY
       if (Agrif_Root()) then
@@ -943,10 +951,30 @@ C$OMP BARRIER
 # endif
 C$OMP BARRIER
 
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+        call check_tab3d(Huon(:,:,:),'Huon before set_HUV2','u',
+     &       ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom before set_HUV2','v',
+     &       ondevice=.TRUE.)
+C$OMP END MASTER
+# endif     
+      
       do tile=my_first,my_last
         call set_HUV2 (tile)
       enddo
 C$OMP BARRIER
+
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+        call check_tab3d(Huon(:,:,:),'Huon aft set_HUV2','u',
+     &       ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom aft set_HUV2','v',
+     &       ondevice=.TRUE.)
+C$OMP END MASTER
+# endif      
 
       do tile=my_first,my_last
 
@@ -978,7 +1006,20 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
 
+      call check_tab3d(z_w(:,:,:),'z_w before step3d_uv2','r',
+     &       ondevice=.TRUE.)      
+      call check_tab3d(v(:,:,:,nnew),'v before step3d_uv2','v',
+     &     ondevice=.TRUE.)
+      call check_tab3d(Huon(:,:,:),'Huon before step3d_uv2','u',
+     &     ondevice=.TRUE.)
+      call check_tab3d(Hvom(:,:,:),'Hvom before step3d_uv2','v',
+     &     ondevice=.TRUE.)
+C$OMP END MASTER
+# endif
       do tile=my_first,my_last
         call step3d_uv2 (tile)
 # ifdef DIF_COEF_3D
@@ -986,6 +1027,24 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+
+      call check_tab3d(z_w(:,:,:),'z_w after step3d_uv2','r',
+     &     ondevice=.TRUE.)      
+      call check_tab3d(u(:,:,:,nnew),'u aft step3d_uv2','u',
+     &     ondevice=.TRUE.)
+      call check_tab3d(v(:,:,:,nnew),'v aft step3d_uv2','v',
+     &     ondevice=.TRUE.)
+      call check_tab3d(Huon(:,:,:),'Huon aft step3d_uv2','u',
+     &     ondevice=.TRUE.)
+      call check_tab3d(Hvom(:,:,:),'Hvom aft step3d_uv2','v',
+     &       ondevice=.TRUE.)
+C$OMP END MASTER
+# endif
+        
 
 #endif /* SOLVE3D */
 !
@@ -1027,7 +1086,7 @@ C$OMP END MASTER
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
       use comMUSTANG, only : l_morphocoupl, t_morpho
 # endif
-# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
+# if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs
 #  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
@@ -1085,7 +1144,6 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #ifdef SOLVE3D
-
       do tile=my_first,my_last
 
         call omega (tile)
@@ -1135,8 +1193,10 @@ C$OMP MASTER
 #  endif
 #  if defined MUSTANG
         do ilay = ksdmin, ksdmax
-            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtotx step3d_t','r')
-            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','r')
+          call check_tab2d(c_sedtot(ilay, :, :),
+     &                                    'c_sedtotx step3d_t','r')
+          call check_tab2d(dzs(ilay, :, :),
+     &                                     'dzs step3d_t','r')
         enddo
 #   if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
         do itrc = ibedload1, ibedload2
@@ -1223,6 +1283,10 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
+        call check_tab3d(Huon(:,:,:),'Huon step3d','u',
+     &    ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom step3d','v',
+     &    ondevice=.TRUE.)
         call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r',
      &    ondevice=.TRUE.)
         !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')

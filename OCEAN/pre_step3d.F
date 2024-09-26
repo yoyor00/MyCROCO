@@ -195,6 +195,7 @@
        call check_tab3d(Hz(:,:,:),'Hz in prestep3d','r')
        call check_tab3d(Hz_bak(:,:,:),'Hz_bak in prestep3d','r')
        call check_tab3d(Huon(:,:,:),'Huon in prestep3d','r')
+       call check_tab3d(Hvom(:,:,:),'Hvom in prestep3d','r')
 # endif
 !$acc kernels if(compute_on_device) default(present)
 
