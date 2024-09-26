@@ -19,6 +19,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Fix typo in analytical.F for MRL_WCI (Wave-current interactions) [#208]
 
+- Fix typo in step.F on RVTK cppkey and fix reproductibility test 
+  for MUSTANG [#222]
+
 ### Changed
 
 - Issue #184 : change roller contribution on Stokes Drift in very shallow water 
