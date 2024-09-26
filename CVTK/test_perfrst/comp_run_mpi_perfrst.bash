@@ -29,8 +29,8 @@ msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
 #msg3="- Parallel repro. failure for ${TEST_NAME} : ${par1}..."
 #msg4="${FMT_REDBLD}${msg3}${FMT_ORD}"
 
-###$MPIRUN -np $NBPROCS ./croco_${par1}.exe croco.in.write > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
-./croco_${par1}.exe croco.in.write > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
+$MPIRUN -np $NBPROCS ./croco_${par1}.exe croco.in.write > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
+####./croco_${par1}.exe croco.in.write > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
 
 write_perfrst_exec_status=$?
 echo "write_perfrst_exec_status is "$write_perfrst_exec_status
@@ -56,8 +56,8 @@ msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
 msg3="- Perfrst failure for ${TEST_NAME} : ${par1}..."
 msg4="${FMT_REDBLD}${msg3}${FMT_ORD}"
 
-###$MPIRUN -np $NBPROCS ./croco_${par1}.exe croco.in.read > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 4 ; }
-./croco_${par1}.exe croco.in.read > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 4 ; }
+$MPIRUN -np $NBPROCS ./croco_${par1}.exe croco.in.read > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 4 ; }
+####./croco_${par1}.exe croco.in.read > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 4 ; }
 
 read_perfrst_exec_status=$?
 echo "read_perfrst_exec_status is "$read_perfrst_exec_status

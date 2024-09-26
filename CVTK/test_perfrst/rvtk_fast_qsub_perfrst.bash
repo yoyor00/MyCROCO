@@ -77,11 +77,11 @@ sed '/'${KEY_DEBUG}[[:graph:]]'/! s/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'
 sed '/'RVTK_DEBUG_PERFRST[[:graph:]]'/! s/'undef\ \ \*RVTK_DEBUG_PERFRST'/'define\ RVTK_DEBUG_PERFRST'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
 mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 
-# #
-# # MPI key
-# #
-# sed '/'MPI[[:graph:]]'/! s/'undef\ \ \*MPI'/'define\ MPI'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
-# mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
+#
+# MPI key
+#
+sed '/'MPI[[:graph:]]'/! s/'undef\ \ \*MPI'/'define\ MPI'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
+mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 
 #
 # 3- DEFINE THE NAME OF THE CONFIG
