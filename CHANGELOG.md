@@ -18,6 +18,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   fixes [#197] 
 
 - Fix conversion error in ripple_dim subroutine [#200]
+  
+- Fix typo in analytical.F for MRL_WCI (Wave-current interactions) [#208]
+
+- Fix typo in step.F on RVTK cppkey and fix reproductibility test 
+  for MUSTANG [#222]
 
 ### Changed
 
