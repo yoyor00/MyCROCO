@@ -16,6 +16,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   and strong currents (several m/s). Resolved by modifications in WKB_ADD_DIFF :
   fixes [#197] 
 
+- Fix typo in step.F on RVTK cppkey and fix reproductibility test 
+  for MUSTANG [#222]
+
 ### Changed
 
 ### Deprecated
