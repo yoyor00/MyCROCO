@@ -225,7 +225,7 @@ if [[ ! -d $TOOLS_DIR  &&  $x_f -eq 0 ]]; then
   echo -n " Do you want to proceed without MATLAB tools ? [Y/n] "
   read answer
   answer=`echo $answer | sed 's/^[yY].*$/y/'`
-  if [ "x$answer" = "n" ]; then
+  if [  -z "$answer" -o "x$answer" = "xn" ]; then
 #    echo " Creating configuration ..."
 #    echo "  "
 #  else
@@ -330,7 +330,6 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     # FORECAST
     if [[ ${options[@]} =~ "forc" ]] ; then
 	cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
-	cp -f ${CROCO_DIR}/OCEAN/croco_hindcast.in $MY_CROCO_DIR.
     fi
     # PISCES
     if [[ ${options[@]} =~ "pisces" ]] ; then
@@ -389,12 +388,20 @@ fi
 ### Preprocessing scripts
 if [[ ${options[@]} =~ "prepro" && ${options[@]} =~ "oce-prod" ]] ; then
     mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
-    cp -r $TOOLS_DIR/Coupling_tools/CROCO/* $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
-    mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/.
+    if [[ ${copy_tools} == 1 ]] ; then
+        cp -r $TOOLS_DIR/Coupling_tools/CROCO/* $MY_CONFIG_HOME/PREPRO/CROCO/.
+        mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+        mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+        mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+        mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
+        mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/.
+    else
+        echo " WARNING : proceed without MATLAB tools but prepro flag is activated"
+        echo " PREPRO/CROCO/ will be empty"
+        echo " You need to proceed with MATLAB tools"
+        echo ' Exiting ...'
+        exit
+    fi
 fi
 
 # OASIS
@@ -550,21 +557,28 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
 
     if [[ ${options[@]} =~ "cpl" ]]; then
         if [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "wav" ]] && [[ ${options[@]} =~ "atm" ]] ; then
-            sed -i "s/export RUNtype=.*/export RUNtype=owa/g" mynamelist.sh
+            sed "s/export RUNtype=.*/export RUNtype=owa/g" mynamelist.sh > mynamelist.sh.tmp
+            mv mynamelist.sh.tmp mynamelist.sh
         elif [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "wav" ]] ; then
-            sed -i "s/export RUNtype=.*/export RUNtype=ow/g" mynamelist.sh
+            sed "s/export RUNtype=.*/export RUNtype=ow/g" mynamelist.sh > mynamelist.sh.tmp
+            mv mynamelist.sh.tmp mynamelist.sh
         elif [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "atm" ]]; then
-            sed -i "s/export RUNtype=.*/export RUNtype=oa/g" mynamelist.sh
+            sed "s/export RUNtype=.*/export RUNtype=oa/g" mynamelist.sh > mynamelist.sh.tmp
+            mv mynamelist.sh.tmp mynamelist.sh
         elif [[ ${options[@]} =~ "wav" ]] && [[ ${options[@]} =~ "atm" ]]; then
-            sed -i "s/export RUNtype=.*/export RUNtype=aw/g" mynamelist.sh
+            sed "s/export RUNtype=.*/export RUNtype=aw/g" mynamelist.sh > mynamelist.sh.tmp
+            mv mynamelist.sh.tmp mynamelist.sh
         else 
-            sed -i "s/export RUNtype=.*/export RUNtype=/g" mynamelist.sh
+            sed "s/export RUNtype=.*/export RUNtype=/g" mynamelist.sh > mynamelist.sh.tmp
+            mv mynamelist.sh.tmp mynamelist.sh
         fi
     else
-        sed -i "s/export RUNtype=.*/export RUNtype=frc/g" mynamelist.sh
+        sed "s/export RUNtype=.*/export RUNtype=frc/g" mynamelist.sh > mynamelist.sh.tmp
+        mv mynamelist.sh.tmp mynamelist.sh
     fi
 
-    sed -i "s/export CEXPER=BENGUELA/export CEXPER=${MY_CONFIG_NAME}/g" mynamelist.sh
+    sed "s/export CEXPER=BENGUELA/export CEXPER=${MY_CONFIG_NAME}/g" mynamelist.sh > mynamelist.sh.tmp
+    mv mynamelist.sh.tmp mynamelist.sh
 
     [[ ${options[@]} =~ "cpl" ]] && cat ./namelist_cpl.sh >> mynamelist.sh
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./namelist_oce.sh >> mynamelist.sh

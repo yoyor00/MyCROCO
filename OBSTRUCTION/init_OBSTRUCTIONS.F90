@@ -226,6 +226,7 @@ CONTAINS
       ALLOCATE (out2DObst(1:17*obst_nbvar + 15))
       ALLOCATE (vname_obst(20, 1:17*obst_nbvar + 15))
 
+      vname_obst(:,:) = ""
       outObst(:) = .FALSE.
       out2DObst(:) = .FALSE.
 

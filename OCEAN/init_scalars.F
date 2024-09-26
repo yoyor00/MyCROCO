@@ -580,6 +580,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
 # endif /* PASSIVE_TRACER */
 
 # ifdef ABL1D
+      vname_abl1d(:,:) = '  '
       vname_abl1d(1,indxabl_pu_dta)='pu_dta                               '
       vname_abl1d(2,indxabl_pu_dta)='u-wind                               '
       vname_abl1d(3,indxabl_pu_dta)='m/s                                  '
