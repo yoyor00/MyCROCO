@@ -1997,7 +1997,10 @@ C$    integer  trd, omp_get_thread_num
 # include "compute_auxiliary_bounds.h"
 
 !$acc kernels if(compute_on_device) default(present)
-      if (iic.eq.ntstart) then
+!!      if (iic.eq.ntstart) then
+        write(*,*)'===================='
+        write(*,*)'IIC=',iic
+        write(*,*)'NTSTART=',ntstart
 !
 ! Set-up nondimensional shape Qshape, must add to unity
 !
@@ -2087,6 +2090,7 @@ C$    integer  trd, omp_get_thread_num
 
 # elif defined REGIONAL
 #  define EXP_SHAPE
+!# define CST_SHAPE
 #  ifdef CST_SHAPE
         cff=1./float(N)
         do k=1,N                       ! Uniform vertical
@@ -2172,8 +2176,13 @@ C$    integer  trd, omp_get_thread_num
           Qbar0(is)=Qbar(is)
         enddo
 
-      endif   ! iic.eq.ntstart
-
+        write(*,*)'QBAR0(1)=',Qbar0(1)
+        write(*,*)'QSHAPE(1,10)=',Qshape(1,10)
+        write(*,*)'===================='
+        
+!!        endif ! iic.eq.ntstart
+!!        write(*,*)'===================='
+!!        write(*,*)'iic NEQ ntstart'
 !
 !  If Qbar is read in nc file, update Qbar0 at every time step
 !
@@ -2182,6 +2191,7 @@ C$    integer  trd, omp_get_thread_num
         Qbar0(is)=Qbar(is)
       enddo
 # endif
+      
 !
 ! Set-up river ramp to avoid strong initial shocks
 !
@@ -2202,8 +2212,15 @@ C$    integer  trd, omp_get_thread_num
       do is=1,Nsrc
         do k=1,N
           Qsrc(is,k)=Qbar(is)*Qshape(is,k)
+      !    Qsrc(is,k)=100*Qshape(is,k)
         enddo
       enddo
+
+      write(*,*)'IIC=',iic
+      write(*,*)'NSTART=',ntstart
+      write(*,*)'QBAR(1)=',Qbar(1)
+      write(*,*)'QSHAPE(1,10)=',Qshape(1,10)
+      write(*,*)'QSRC(1,10)=',Qsrc(1,10)
 !
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !

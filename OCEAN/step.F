@@ -928,7 +928,15 @@ C$OMP BARRIER
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
 C$OMP BARRIER
-
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+        call check_tab3d(Huon(:,:,:),'Huon before set_depth','u',
+     &       ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom before set_depth','v',
+     &       ondevice=.TRUE.)
+C$OMP END MASTER
+# endif    
 #ifdef SOLVE3D
 # if defined NBQ && defined AGRIF && defined NBQ_CHILD_ONLY
       if (Agrif_Root()) then
@@ -943,10 +951,30 @@ C$OMP BARRIER
 # endif
 C$OMP BARRIER
 
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+        call check_tab3d(Huon(:,:,:),'Huon before set_HUV2','u',
+     &       ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom before set_HUV2','v',
+     &       ondevice=.TRUE.)
+C$OMP END MASTER
+# endif     
+      
       do tile=my_first,my_last
         call set_HUV2 (tile)
       enddo
 C$OMP BARRIER
+
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+        call check_tab3d(Huon(:,:,:),'Huon aft set_HUV2','u',
+     &       ondevice=.TRUE.)
+        call check_tab3d(Hvom(:,:,:),'Hvom aft set_HUV2','v',
+     &       ondevice=.TRUE.)
+C$OMP END MASTER
+# endif      
 
       do tile=my_first,my_last
 
@@ -978,7 +1006,20 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
 
+      call check_tab3d(z_w(:,:,:),'z_w before step3d_uv2','r',
+     &       ondevice=.TRUE.)      
+      call check_tab3d(v(:,:,:,nnew),'v before step3d_uv2','v',
+     &     ondevice=.TRUE.)
+      call check_tab3d(Huon(:,:,:),'Huon before step3d_uv2','u',
+     &     ondevice=.TRUE.)
+      call check_tab3d(Hvom(:,:,:),'Hvom before step3d_uv2','v',
+     &     ondevice=.TRUE.)
+C$OMP END MASTER
+# endif
       do tile=my_first,my_last
         call step3d_uv2 (tile)
 # ifdef DIF_COEF_3D
@@ -986,6 +1027,24 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+
+# if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+
+      call check_tab3d(z_w(:,:,:),'z_w after step3d_uv2','r',
+     &     ondevice=.TRUE.)      
+      call check_tab3d(u(:,:,:,nnew),'u aft step3d_uv2','u',
+     &     ondevice=.TRUE.)
+      call check_tab3d(v(:,:,:,nnew),'v aft step3d_uv2','v',
+     &     ondevice=.TRUE.)
+      call check_tab3d(Huon(:,:,:),'Huon aft step3d_uv2','u',
+     &     ondevice=.TRUE.)
+      call check_tab3d(Hvom(:,:,:),'Hvom aft step3d_uv2','v',
+     &       ondevice=.TRUE.)
+C$OMP END MASTER
+# endif
+        
 
 #endif /* SOLVE3D */
 !
@@ -1085,18 +1144,6 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #ifdef SOLVE3D
-      
-# if defined RVTK_DEBUG_AVANCED
-C$OMP BARRIER
-C$OMP MASTER
-      do itrc=1,NT
-        call check_tab3d(Huon(:,:,:),'Huon bef step3d','u',
-     &       ondevice=.TRUE.)
-        call check_tab3d(Hvom(:,:,:),'Hvom bef step3d','v',
-     &       ondevice=.TRUE.)
-C     $OMP END MASTER
-# endif
-        
       do tile=my_first,my_last
 
         call omega (tile)
