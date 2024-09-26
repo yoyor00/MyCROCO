@@ -1633,7 +1633,6 @@ C$    integer  trd, omp_get_thread_num
       wdir = Dwave(i,j)
       wprd = Pwave(i,j)
       cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
-      cdir = wdir*deg2rad   ! wave direction (rad)
       ho=h(1,1)             ! offshore depth
 #  ifdef OBC_EAST
       ho=h(LLm,1)
@@ -1705,8 +1704,8 @@ C$    integer  trd, omp_get_thread_num
         do i=istr-1,iend+1
           whrm(i,j)=Hrms
           wfrq(i,j)=cfrq
-          wdrx(i,j)=cos(cdir)
-          wdre(i,j)=sin(cdir)
+          wdrx(i,j)=cos(wdir)
+          wdre(i,j)=sin(wdir)
 #   ifdef WET_DRY
           if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
             whrm(i,j)=0.
