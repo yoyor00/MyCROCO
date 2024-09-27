@@ -4,7 +4,7 @@ export TEST_PROJECT_DIR=$1
 export TEST_DATA_DIR=$2
 
 # prepare config
-$TEST_PROJECT_DIR/create_config.bash -o all-prod-cpl -d $TEST_PROJECT_DIR/test/home -w $TEST_PROJECT_DIR/test/work -n BENGUELA_TOY -s $TEST_PROJECT_DIR
+$TEST_PROJECT_DIR/create_config.bash -o "oce-prod xios test_cases agrif pisces sediment mustang oanalysis cpl wav atm toy" -d $TEST_PROJECT_DIR/test/home -w $TEST_PROJECT_DIR/test/work -n BENGUELA_TOY -s $TEST_PROJECT_DIR
 
 # copy needed files
 cp $TEST_PROJECT_DIR/TEST_CASES/CPL_TOY/cppdefs.h $TEST_PROJECT_DIR/test/home/BENGUELA_TOY/CROCO_IN/.
