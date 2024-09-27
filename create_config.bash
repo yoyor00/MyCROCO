@@ -114,7 +114,7 @@ LIST_OPTIONS=$(cat << EOF
  # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif pisces sediment mustang oanalysis prepro cpl wav atm toy)
 
 EOF
-	    )
+        )
 
 # END USER MODIFICATIONS
 #==========================================================================================
@@ -196,47 +196,47 @@ echo " - CONFIG_NAME      : ${MY_CONFIG_NAME}"
 echo " - OPTIONS          : ${options[@]}"
 
 if [ $x_f -eq 0 ]; then
-echo -n " Do you want to proceed ? [Y/n] "
-read answer
-answer=`echo $answer | sed 's/^[yY].*$/y/'`
-if [  -z "$answer" -o "x$answer" = "xy" ]; then
-      echo " Creating configuration ..."
-      echo "  "
-   else
-      echo " Exiting..."
-      echo "  "
-      exit
-fi
+    echo -n " Do you want to proceed ? [Y/n] "
+    read -r answer
+    case "$answer" in
+        [nN]*) 
+        echo "Exiting..."
+        exit 1
+        ;;
+        *) 
+        echo "Creating configuration ..."
+        echo "  "
+        ;;
+    esac
 unset -v answer
 fi
 
 # Check if source are there
 if [ ! -d ${CROCO_DIR} ]; then 
-	echo 'Directory for croco not found ...'
-	echo 'Check the CROCO_DIR variable ...'
-	echo 'Exiting ...'
+    echo 'Directory for croco not found ...'
+    echo 'Check the CROCO_DIR variable ...'
+    echo 'Exiting ...'
    exit 1
 fi
 
 # Check if tools are there
 copy_tools=1
-if [[ ! -d $TOOLS_DIR  &&  $x_f -eq 0 ]]; then 
-  echo  " WARNING : croco_tools directory not found "
-  echo -n " Do you want to proceed without MATLAB tools ? [Y/n] "
-  read answer
-  answer=`echo $answer | sed 's/^[yY].*$/y/'`
-  if [  -z "$answer" -o "x$answer" = "xn" ]; then
-#    echo " Creating configuration ..."
-#    echo "  "
-#  else
-    echo " Exiting..."
-    echo "  "
-    exit
-  else
-    copy_tools=0
-  fi
+if [[ ! -d "$TOOLS_DIR" && $x_f -eq 0 ]]; then
+    echo "WARNING: croco_tools directory not found."
+    echo -n "Do you want to proceed without MATLAB tools? [Y/n] "
+    read -r answer
+    case "$answer" in
+        [nN]*) 
+        echo "Exiting..."
+        exit 1
+        ;;
+        *) 
+        echo "Proceeding without MATLAB tools..."
+        copy_tools=0
+        ;;
+    esac
 fi
- 
+
 # Create the directory
 if [ ! -d $MY_CONFIG_HOME ]; then 
     mkdir -p $MY_CONFIG_HOME
@@ -285,20 +285,20 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     echo '-----------------------------------------'
     # CROCO general
     if [[ ${options[@]} =~ "oce-prod" ]] ; then
-	# Create directories
-	mkdir -p $MY_CONFIG_HOME/CROCO_IN
-	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
-	mkdir -p $MY_CONFIG_WORK/DATA
-	MY_CROCO_DIR=$MY_CONFIG_HOME/CROCO_IN/
-	MY_XIOS_DIR=$MY_CONFIG_HOME/XIOS_IN/
-	
+    # Create directories
+    mkdir -p $MY_CONFIG_HOME/CROCO_IN
+    mkdir -p $MY_CONFIG_WORK/CROCO_FILES
+    mkdir -p $MY_CONFIG_WORK/DATA
+    MY_CROCO_DIR=$MY_CONFIG_HOME/CROCO_IN/
+    MY_XIOS_DIR=$MY_CONFIG_HOME/XIOS_IN/
+    
     elif [[ ${options[@]} =~ "oce-dev" ]] ; then
-	# Create directories
-	mkdir -p $MY_CONFIG_HOME
-	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
-	mkdir -p $MY_CONFIG_WORK/DATA
-	MY_CROCO_DIR=$MY_CONFIG_HOME/
-	MY_XIOS_DIR=$MY_CONFIG_HOME/
+    # Create directories
+    mkdir -p $MY_CONFIG_HOME
+    mkdir -p $MY_CONFIG_WORK/CROCO_FILES
+    mkdir -p $MY_CONFIG_WORK/DATA
+    MY_CROCO_DIR=$MY_CONFIG_HOME/
+    MY_XIOS_DIR=$MY_CONFIG_HOME/
     fi
     cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CROCO_DIR.
@@ -316,71 +316,71 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
     # TEST_CASES
     if [[ ${options[@]} =~ "test_cases" ]] ; then
-	cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
+    cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
     fi
     # AGRIF
     if [[ ${options[@]} =~ "agrif" && ${options[@]} =~ "oce-dev" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
-	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
     # INTER
     if [[ ${options[@]} =~ "inter" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco_inter.in* $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/OCEAN/croco_inter.in* $MY_CROCO_DIR.
     fi
     # FORECAST
     if [[ ${options[@]} =~ "forc" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
     fi
     # PISCES
     if [[ ${options[@]} =~ "pisces" ]] ; then
-	cp -f ${CROCO_DIR}/PISCES/*namelist* $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/PISCES/*namelist* $MY_CROCO_DIR.
     fi
     # SEDIMENT
     if [[ ${options[@]} =~ "sediment" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/sediment.in $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/OCEAN/sediment.in $MY_CROCO_DIR.
     fi
     # MUSTANG
     if [[ ${options[@]} =~ "mustang" ]] ; then
-	mkdir -p $MY_CROCO_DIR/MUSTANG_NAMELIST
-	cp -f ${CROCO_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
+    mkdir -p $MY_CROCO_DIR/MUSTANG_NAMELIST
+    cp -f ${CROCO_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
     fi
     # OANALYSIS
     if [[ ${options[@]} =~ "oanalysis" ]] ; then
-	cp -Rf ${CROCO_DIR}/SCRIPTS/NAMELIST_OANALYSIS $MY_CROCO_DIR.
+    cp -Rf ${CROCO_DIR}/SCRIPTS/NAMELIST_OANALYSIS $MY_CROCO_DIR.
     fi
     # XIOS
     if [[ ${options[@]} =~ "xios" ]] ; then
-	cp -Rf ${CROCO_DIR}/XIOS/process_xios_xml.sh $MY_CROCO_DIR.
-	#     cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_CROCO_DIR.
-	#     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CROCO_DIR.
+    cp -Rf ${CROCO_DIR}/XIOS/process_xios_xml.sh $MY_CROCO_DIR.
+    #     cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_CROCO_DIR.
+    #     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CROCO_DIR.
     fi
     # PREPROCESSING
     if [[ ${options[@]} =~ "prepro" && ${copy_tools} == 1 ]] ; then
-	cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/Oforc_OGCM/download_glorys_data.sh $MY_CROCO_DIR.
-	# Edit start.m
-	sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
+    cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
+    cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
+    cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
+    cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
+    cp -Rf $TOOLS_DIR/Oforc_OGCM/download_glorys_data.sh $MY_CROCO_DIR.
+    # Edit start.m
+    sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
             -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
             ${MY_CROCO_DIR}/start.m > ${MY_CROCO_DIR}/start.m.tmp
-	mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
-	# Edit oct_start.m
-	sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
+    mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
+    # Edit oct_start.m
+    sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
             -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
             ${MY_CROCO_DIR}/oct_start.m > ${MY_CROCO_DIR}/oct_start.m.tmp
-	mv ${MY_CROCO_DIR}/oct_start.m.tmp ${MY_CROCO_DIR}/oct_start.m
-	# Edit crocotools_param.h
-	sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
+    mv ${MY_CROCO_DIR}/oct_start.m.tmp ${MY_CROCO_DIR}/oct_start.m
+    # Edit crocotools_param.h
+    sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
             -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
             -e "s|DATADIR=.*|DATADIR=\'${TOOLS_DIR}/DATASETS_CROCOTOOLS/\';|g" \
             ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
-	mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
+    mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
     fi
     # SCRIPTS FOR RUNNING
     if [[ ${options[@]} =~ "inter" ]] ; then
-	cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/*.bash $MY_CONFIG_HOME/
+    cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/*.bash $MY_CONFIG_HOME/
         cp -Rf ${CROCO_DIR}/SCRIPTS/example_job* $MY_CONFIG_HOME/
     fi
 fi
@@ -593,22 +593,22 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     # Edit jobcomp in CROCO_IN
     if [[ ${options[@]} =~ "oce-prod" ]]; then
         cd ${MY_CONFIG_HOME}/CROCO_IN
-	sed -e 's|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${OCE}|g' \
-	    -e 's|FC=gfortran|FC=\${FC}|' \
-	    -e 's|MPIF90=.*|MPIF90=\${MPIF90}|' \
-	    jobcomp > jobcomp.tmp
-	mv jobcomp.tmp jobcomp
-	if [[ ${options[@]} =~ "cpl" ]]; then
-	    sed -e 's|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=\${CPL}|' \
-		jobcomp > jobcomp.tmp
+    sed -e 's|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${OCE}|g' \
+        -e 's|FC=gfortran|FC=\${FC}|' \
+        -e 's|MPIF90=.*|MPIF90=\${MPIF90}|' \
+        jobcomp > jobcomp.tmp
+    mv jobcomp.tmp jobcomp
+    if [[ ${options[@]} =~ "cpl" ]]; then
+        sed -e 's|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=\${CPL}|' \
+        jobcomp > jobcomp.tmp
             mv jobcomp.tmp jobcomp
-	fi
+    fi
         if [[ ${options[@]} =~ "xios" ]]; then
             sed -e 's|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=\${XIOS}|' \
                 jobcomp > jobcomp.tmp
             mv jobcomp.tmp jobcomp
         fi
-	chmod 755 jobcomp
+    chmod 755 jobcomp
     fi
     # 
     cp -f ${MY_CROCO_DIR}/cppdefs.h ${MY_CROCO_DIR}/cppdefs.h.base
