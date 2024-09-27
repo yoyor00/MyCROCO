@@ -1992,11 +1992,14 @@ C$    integer  trd, omp_get_thread_num
 !
       integer is, k, Istr,Iend,Jstr,Jend, i,j,itrc,ised
       real    cff, cff1, cff2, ramp, Hs
+      real    cff_w, cff_r, cff1_w, cff1_r
+      real, dimension(0:N) :: z_w0 
+      real, dimension(1:N) :: z_r0
       real    xno3,temp,SiO4,zsrc
 # include "compute_auxiliary_bounds.h"
 
 !$acc kernels if(compute_on_device) default(present)
-!!      if (iic.eq.ntstart) then
+      if (iic.eq.ntstart) then
 !
 !        write(*,*)'===================='
 !        write(*,*)'IIC=',iic
@@ -2046,13 +2049,35 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &       JstrR.le.j .and. j.le.JendR) then
 #   endif
+
+            !! Compute z_w0 and z_r0 for a zeta=0. case to initialize Qshape
+            !! without time dependancy
+            z_w0(0)=-h(i,j)
+            do k=1,N,+1
+#  ifdef NEW_S_COORD
+              cff_w =hc*sc_w(k)
+              cff_r =hc*sc_r(k)
+              cff1_w=Cs_w(k)
+              cff1_r=Cs_r(k)
+              z_w0(k)=(cff_w+cff1_w*abs(h(i,j))) *h(i,j)*hinv(i,j)
+              z_r0(k)=(cff_r+cff1_r*abs(h(i,j))) *h(i,j)*hinv(i,j)
+#  else
+              cff_w =hc*(sc_w(k)-Cs_w(k))
+              cff_r =hc*(sc_r(k)-Cs_r(k))
+              cff1_w=Cs_w(k)
+              cff1_r=Cs_r(k)
+              z_w0(k)=cff_w+cff1_w*h(i,j)
+              z_r0(k)=cff_r+cff1_r*h(i,j)
+#  endif
+            enddo
+
             Hs=h(i,j)                    ! Exponential vertical distribution
             cff=5.                       ! Hs/z0  (z0 surface layer depth)
             cff1=cff/(1-exp(-cff))
             cff2=0.
             do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
+              Qshape(is,k)=cff1*exp(z_r0(k)*cff/Hs)*
+     &                        (z_w0(k)-z_w0(k-1))/Hs
               cff2=cff2+Qshape(is,k)
             enddo
             do k=1,N
@@ -2110,13 +2135,34 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &       JstrR.le.j .and. j.le.JendR) then
 #   endif
+            !! Compute z_w0 and z_r0 for a zeta=0. case to initialize Qshape
+            !! without time dependancy
+            z_w0(0)=-h(i,j)
+            do k=1,N,+1
+#  ifdef NEW_S_COORD
+              cff_w =hc*sc_w(k)
+              cff_r =hc*sc_r(k)
+              cff1_w=Cs_w(k)
+              cff1_r=Cs_r(k)
+              z_w0(k)=(cff_w+cff1_w*abs(h(i,j)))*h(i,j)*hinv(i,j)
+              z_r0(k)=(cff_r+cff1_r*abs(h(i,j)))*h(i,j)*hinv(i,j)
+#  else
+              cff_w =hc*(sc_w(k)-Cs_w(k))
+              cff_r =hc*(sc_r(k)-Cs_r(k))
+              cff1_w=Cs_w(k)
+              cff1_r=Cs_r(k)
+              z_w0(k)=cff_w+cff1_w*h(i,j)
+              z_r0(k)=cff_r+cff1_r*h(i,j)
+#  endif
+            enddo
+
             Hs=h(i,j)                    ! Exponential vertical distribution
             cff=5.                       ! Hs/z0  (z0 surface layer depth)
             cff1=cff/(1-exp(-cff))
             cff2=0.
             do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                  (z_w(i,j,k)-z_w(i,j,k-1))/Hs
+              Qshape(is,k)=cff1*exp(z_r0(k)*cff/Hs)*
+     &                        (z_w0(k)-z_w0(k-1))/Hs
               cff2=cff2+Qshape(is,k)
             enddo
             do k=1,N
@@ -2152,13 +2198,34 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &        JstrR.le.j .and. j.le.JendR) then
 #   endif
+            !! Compute z_w0 and z_r0 for a zeta=0. case to initialize Qshape
+            !! without time dependancy
+            z_w0(0)=-h(i,j)
+            do k=1,N,+1
+#  ifdef NEW_S_COORD
+              cff_w =hc*sc_w(k)
+              cff_r =hc*sc_r(k)
+              cff1_w=Cs_w(k)
+              cff1_r=Cs_r(k)
+              z_w0(k)=(cff_w+cff1_w*abs(h(i,j))) *h(i,j)*hinv(i,j)
+              z_r0(k)=(cff_r+cff1_r*abs(h(i,j))) *h(i,j)*hinv(i,j)
+#  else
+              cff_w =hc*(sc_w(k)-Cs_w(k))
+              cff_r =hc*(sc_r(k)-Cs_r(k))
+              cff1_w=Cs_w(k)
+              cff1_r=Cs_r(k)
+              z_w0(k)=cff_w+cff1_w*h(i,j)
+              z_r0(k)=cff_r+cff1_r*h(i,j)
+#  endif
+            enddo
+
             Hs=h(i,j)                    ! Exponential vertical distribution
             cff=5.                       ! Hs/z0  (z0 surface layer depth)
             cff1=cff/(1-exp(-cff))
             cff2=0.
             do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
+              Qshape(is,k)=cff1*exp(z_r0(k)*cff/Hs)*
+     &                        (z_w0(k)-z_w0(k-1))/Hs
               cff2=cff2+Qshape(is,k)
             enddo
             do k=1,N
@@ -2179,7 +2246,7 @@ C$    integer  trd, omp_get_thread_num
 !        write(*,*)'QSHAPE(1,10)=',Qshape(1,10)
 !        write(*,*)'===================='
         
-!!        endif ! iic.eq.ntstart
+        endif ! iic.eq.ntstart
 !
 !  If Qbar is read in nc file, update Qbar0 at every time step
 !
