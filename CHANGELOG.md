@@ -19,6 +19,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   and strong currents (several m/s). Resolved by modifications in WKB_ADD_DIFF :
   fixes [#197] 
 
+- Fix conversion error in ripple_dim subroutine [#200]
+  
 - Fix typo in analytical.F for MRL_WCI (Wave-current interactions) [#208]
 
 - Fix typo in step.F on RVTK cppkey and fix reproductibility test 
