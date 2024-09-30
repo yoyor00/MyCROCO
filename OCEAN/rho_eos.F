@@ -119,10 +119,6 @@
 
 #  include "param.h"
 
-#  ifdef NBQ_GRAV
-      real rho_nh1(N),rho_nh2(N)
-!$acc declare create( rho_nh1, rho_nh2 )      
-#  endif
 
 #  ifdef NBQ_GRAV
 #   include "nbq.h"
@@ -323,17 +319,19 @@
 
 #  ifdef NBQ_GRAV
         do i=IstrR,IendR
-           rho_nh1(1)=rho1(i,j,1)-1000.+rho0
+           FC3D(i,j,1)=rho1(i,j,1)-1000.+rho0
            do k=2,N
-            rho_nh1(k)=min(rho_nh1(k-1),rho1(i,j,k)-1000.+rho0)
+            FC3D(i,j,k)=
+     &	min(FC3D(i,j,k-1),rho1(i,j,k)-1000.+rho0)
            enddo
-           rho_nh2(N)=rho1(i,j,N)-1000.+rho0
+           DC3D(i,j,N)=rho1(i,j,N)-1000.+rho0
            rho_nh(i,j,N)=rho1(i,j,N)-1000.+rho0
-     &           -0.5*(rho_nh1(N)+rho_nh2(N))
+     &           -0.5*(FC3D(i,j,N)+DC3D(i,j,N))
            do k=N-1,1,-1
-             rho_nh2(k)=max(rho_nh2(k+1),rho1(i,j,k)-1000.+rho0)
+             DC3D(i,j,k)=
+     &		max(DC3D(i,j,k+1),rho1(i,j,k)-1000.+rho0)
              rho_nh(i,j,k)=rho1(i,j,k)-1000.+rho0
-     &          -0.5*(rho_nh1(k)+rho_nh2(k))
+     &          -0.5*(FC3D(i,j,k)+DC3D(i,j,k))
            enddo
          enddo
 #  endif
@@ -359,10 +357,6 @@
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    cff,cff1,rho0og
-#  ifdef NBQ_GRAV
-      real rho_nh1(N),rho_nh2(N)
-!$acc declare create( rho_nh1, rho_nh2 )      
-#  endif
 
 #  include "grid.h"
 #  include "ocean3d.h"
@@ -434,15 +428,18 @@
       do j=JstrR,JendR
 #  ifdef NBQ_GRAV
         do i=IstrR,IendR
-           rho_nh1(1)=rho1(i,j,1)
+           FC3D(i,j,k)=rho1(i,j,1)
+!$acc loop seq           
            do k=2,N
-            rho_nh1(k)=min(rho_nh1(k-1),rho1(i,j,k))
+            FC3D(i,j,k)=min(FC3D(i,j,k-1),rho1(i,j,k))
            enddo
-           rho_nh2(N)=rho1(i,j,N)
-           rho_nh(i,j,N)=rho1(i,j,N)-0.5*(rho_nh1(N)+rho_nh2(N))
+           DC3D(i,j,N)=rho1(i,j,N)
+           rho_nh(i,j,N)=
+     &		rho1(i,j,N)-0.5*(FC3D(i,j,N)+DC3D(i,j,N))
+!$acc loop seq           
            do k=N-1,1,-1
-             rho_nh2(k)=max(rho_nh2(k+1),rho1(i,j,k))
-             rho_nh(i,j,k)=rho1(i,j,k)-0.5*(rho_nh1(k)+rho_nh2(k))
+             DC3D(i,j,k)=max(DC3D(i,j,k+1),rho1(i,j,k))
+             rho_nh(i,j,k)=rho1(i,j,k)-0.5*(FC3D(i,j,k)+DC3D(i,j,k))
            enddo
          enddo
 #  endif

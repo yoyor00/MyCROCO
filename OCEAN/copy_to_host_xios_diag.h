@@ -580,7 +580,7 @@ c       endif
 #  endif
 #  ifdef DIF_COEF_3D
       if (xios_field_is_active("diff3d")) then
-!$acc update host( diff3d ) 
+!$acc update host( diff3d_r ) 
       endif
 #   ifdef TS_DIF2
 #    ifdef TS_DIF_SMAGO

@@ -46,7 +46,7 @@
 # endif
 
 # include "compute_auxiliary_bounds.h"
-
+!$acc kernels if(compute_on_device) default(present)
 # ifdef CANYON_STRAT
       cff=1./50.                    ! Setup both top and bottom
       do k=1,N-1                    ! boundary layers.
@@ -126,7 +126,7 @@
         enddo
       enddo
 # endif /* CANYON_STRAT */
-
+!$acc end kernels
 # if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)
 #  ifdef TEMPERATURE
@@ -138,6 +138,7 @@
      &                     Akt(START_2D_ARRAY,0,isalt))
 #  endif
 # endif
+
 #else
       subroutine ana_vmix_empty
 #endif /* ANA_VMIX */
