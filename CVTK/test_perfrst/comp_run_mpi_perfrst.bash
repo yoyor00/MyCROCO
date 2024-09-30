@@ -30,6 +30,7 @@ msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
 #msg4="${FMT_REDBLD}${msg3}${FMT_ORD}"
 
 $MPIRUN -np $NBPROCS ./croco_${par1}.exe croco.in.write > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
+#### In case of test without MPI use the following line :
 ####./croco_${par1}.exe croco.in.write > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
 
 write_perfrst_exec_status=$?
@@ -57,6 +58,7 @@ msg3="- Perfrst failure for ${TEST_NAME} : ${par1}..."
 msg4="${FMT_REDBLD}${msg3}${FMT_ORD}"
 
 $MPIRUN -np $NBPROCS ./croco_${par1}.exe croco.in.read > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 4 ; }
+#### In case of test without MPI use the following line :
 ####./croco_${par1}.exe croco.in.read > mpi_${NBPROCS}_${TEST_NAME}_$par1.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 4 ; }
 
 read_perfrst_exec_status=$?
