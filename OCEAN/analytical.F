@@ -1991,7 +1991,7 @@ C$    integer  trd, omp_get_thread_num
 # include "grid.h"
 !
       integer is, k, Istr,Iend,Jstr,Jend, i,j,itrc,ised
-      real    cff, cff1, cff2, ramp, Hs
+      real    cff, cff1, cff2, ramp
       real    xno3,temp,SiO4,zsrc
 # include "compute_auxiliary_bounds.h"
 
@@ -2042,18 +2042,7 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &       JstrR.le.j .and. j.le.JendR) then
 #   endif
-            Hs=h(i,j)                    ! Exponential vertical distribution
-            cff=5.                       ! Hs/z0  (z0 surface layer depth)
-            cff1=cff/(1-exp(-cff))
-            cff2=0.
-            do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-              cff2=cff2+Qshape(is,k)
-            enddo
-            do k=1,N
-              Qshape(is,k)=Qshape(is,k)/cff2
-            enddo
+             call get_qshape_exp(Qshape(is,:), h(i,j), hinv(i,j))
 #   ifdef MPI 
           endif
 #   endif            
@@ -2106,20 +2095,7 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &       JstrR.le.j .and. j.le.JendR) then
 #   endif
-            Hs=h(i,j)                    ! Exponential vertical distribution
-            cff=5.                       ! Hs/z0  (z0 surface layer depth)
-            cff1=cff/(1-exp(-cff))
-            cff2=0.
-            do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                  (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-              cff2=cff2+Qshape(is,k)
-            enddo
-            do k=1,N
-              if (cff2 .gt. 0.0) then
-                Qshape(is,k)=Qshape(is,k)/cff2
-              endif
-            enddo
+             call get_qshape_exp(Qshape(is,:), h(i,j), hinv(i,j))
 #   ifdef MPI
           endif
 #   endif 
@@ -2148,18 +2124,7 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &        JstrR.le.j .and. j.le.JendR) then
 #   endif
-            Hs=h(i,j)                    ! Exponential vertical distribution
-            cff=5.                       ! Hs/z0  (z0 surface layer depth)
-            cff1=cff/(1-exp(-cff))
-            cff2=0.
-            do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-              cff2=cff2+Qshape(is,k)
-            enddo
-            do k=1,N
-              Qshape(is,k)=Qshape(is,k)/cff2
-            enddo
+            call get_qshape_exp(Qshape(is,:), h(i,j), hinv(i,j))
 #   ifdef MPI
           endif
 #   endif
@@ -2557,6 +2522,57 @@ C$    integer  trd, omp_get_thread_num
 !$acc end kernels 
       return
       end
+
+      subroutine get_qshape_exp(Qshapeij, hij, hinvij)
+        implicit none
+# include "param.h"
+# include "scalars.h"
+
+
+        real, dimension(N), intent(inout) :: Qshapeij
+        real, intent(in) :: hij, hinvij
+
+        real :: cff_w, cff_r, cff1_w, cff1_r, Hs, cff, cff1, cff2
+        real, dimension(0:N) :: z_w0 
+        real, dimension(1:N) :: z_r0
+        integer :: k
+
+        !! Compute z_w0 and z_r0 for a zeta=0. case to initialize Qshape
+        !! without time dependancy
+        z_w0(0)=-hij
+        do k=1,N,+1
+#  ifdef NEW_S_COORD
+          cff_w =hc*sc_w(k)
+          cff_r =hc*sc_r(k)
+          cff1_w=Cs_w(k)
+          cff1_r=Cs_r(k)
+          z_w0(k)=(cff_w+cff1_w*abs(hij)) *hij*hinvij
+          z_r0(k)=(cff_r+cff1_r*abs(hij)) *hij*hinvij
+#  else
+          cff_w =hc*(sc_w(k)-Cs_w(k))
+          cff_r =hc*(sc_r(k)-Cs_r(k))
+          cff1_w=Cs_w(k)
+          cff1_r=Cs_r(k)
+          z_w0(k)=cff_w+cff1_w*hij
+          z_r0(k)=cff_r+cff1_r*hij
+#  endif
+        enddo
+
+        Hs=hij                    ! Exponential vertical distribution
+        cff=5.                    ! Hs/z0  (z0 surface layer depth)
+        cff1=cff/(1-exp(-cff))
+        cff2=0.
+        do k=1,N
+          Qshapeij(k)=cff1*exp(z_r0(k)*cff/Hs)*(z_w0(k)-z_w0(k-1))/Hs
+          cff2=cff2+Qshapeij(k)
+        enddo
+        do k=1,N
+          Qshapeij(k)=Qshapeij(k)/cff2
+        enddo
+
+      return
+      end
+
 #endif /* PSOURCE && ANA_PSOURCE */
 !
 !======================================================================
