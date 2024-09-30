@@ -937,6 +937,47 @@
 # if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
+#ifdef DIAGNOSTICS_TS_MLD_CRIT
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               kbl(i,j)=0
+               cff=0
+               do k=N,1,-1
+                  if (itrc.eq.2) then
+                  if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_D) then
+                     kbl(i,j)=k
+                  endif
+                  if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_D)  cff=1
+
+                  if (itrc.eq.3) then
+                 if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_T2) then
+                     kbl(i,j)=k
+                  endif
+                  if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_T2)  cff=1
+
+                  else
+                  if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_T) then
+                     kbl(i,j)=k
+                  endif
+                  if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_T)  cff=1
+                
+                  endif
+     ! CALCULATE MIXED LAYER DEPTH            
+               Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbl(i,j))
+#     ifdef MASKING
+     &                        * rmask(i,j)
+#                 endif                 
+     ! CALCULATE BARRIER LAYER THICKNESS
+!                  if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
+!     &             Tcrit_mld(i,j,1)-(z_w(i,j,N)-z_r(i,j,kblt(i,j)))
+!#     ifdef MASKING
+!     &                        * rmask(i,j)
+!#     endif                                    
+               enddo
+            enddo
+         enddo
+#endif
+
        do j=Jstr,Jend
          do i=Istr,Iend
             THmix_mld(i,j,itrc)=0.
@@ -956,14 +997,26 @@
 #  endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+             if (itrc.eq.2 .or. itrc.eq.3) then 
+               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+     &                           THmix(i,j,k,itemp)*cff
+#  ifdef TS_MIX_IMP
+               TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
+     &                           TVmix(i,j,k,itemp)*cff
+#  endif
+               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
+     &                       t(i,j,k,nnew,itemp)*cff
+
+             else
+               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
 #  ifdef TS_MIX_IMP
-             TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
+               TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
      &                           TVmix(i,j,k,itrc)*cff
 #  endif
-             T_mld_nnew(i,j)=T_mld_nnew(i,j)+
+               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
+             endif
            enddo
          enddo
        enddo
@@ -978,8 +1031,14 @@
 #  endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+             if (itrc.eq.2 .or. itrc.eq.3) then 
+               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+     &                       t(i,j,k,nstp,itemp)*cff
+
+             else
+               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
+             endif
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
          enddo

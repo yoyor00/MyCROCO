@@ -1965,6 +1965,21 @@ c        close(testunit)
 # endif
 #endif /* FLOATS */
 
+
+#if defined DIAGNOSTICS_TS
+# ifdef DIAGNOSTICS_TS_MLD
+      elseif (keyword(1:kwlen).eq.'diag_mld_crit_threshold') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) mld_crit_T, mld_crit_D, mld_crit_T2
+        MPI_master_only write(stdout,'(/1x,A,3(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:', 
+     &        mld_crit_T, 'mld_crit_T     Temperature treshold [C]',
+     &        mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
+     &        mld_crit_T2, 'mld_crit_T2   Temperature threshold bis [C]'
+# endif  /* DIAGNOSTICS_TS_MLD */
+# endif  /* DIAGNOSTICS_TS */
+
+
 #if defined DIAGNOSTICS_TS
 !
 ! Switches for fields to be saved into tracer diagnostics file.

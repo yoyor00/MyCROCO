@@ -250,6 +250,27 @@
      &                      vname(1,indxTentr_mld+itrc-1),
      &                      record,r2dvar,type)
 
+
+!
+! indxTaver_mld
+!
+           work2d=Taver_mld_avg(:,:,itrc)
+           call fillvalue2d(work2d,nciddia_avg,diaTaver_mld_avg(itrc),
+     &                      vname(1,indxTaver_mld+itrc-1),
+     &                      record,r2dvar,type)
+
+
+
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+!
+! indxTcrit_mld
+!
+           work2d=Tcrit_mld_avg(:,:,itrc)
+           call fillvalue2d(work2d,nciddia_avg,diaTcrit_mld_avg(itrc),
+     &                      vname(1,indxTcrit_mld+itrc-1),
+     &                      record,r2dvar,type)
+# endif  /* DIAGNOSTICS_TS_MLD_CRIT */ 
+
         endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/

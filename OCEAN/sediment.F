@@ -4579,7 +4579,7 @@ C$OMP BARRIER
       real eps
       parameter(eps=1.0E-14)
 !
-      d50_mm=1000.*d50
+      d50_mm=0.001*d50
       if(d50_mm.lt.0.22) then
         m_eta=0.55
         m_lambda=0.73

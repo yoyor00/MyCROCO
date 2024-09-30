@@ -159,6 +159,9 @@
       real time_avg, time2_avg, rho0
      &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
      &               , xl, el, visc2, visc4, gamma2
+#if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD)
+      real mld_crit_T, mld_crit_D, mld_crit_T2
+#endif
 #ifdef SOLVE3D
       real  theta_s,   theta_b,   Tcline,  hc
 # ifndef M3FAST_SEDLAYERS
@@ -337,6 +340,9 @@
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
      &           , Zobt,       Cdb_min,   Cdb_max
      &           , xl, el,    visc2,     visc4,   gamma2
+#if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD)
+     &           , mld_crit_T, mld_crit_D, mld_crit_T2
+#endif
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r

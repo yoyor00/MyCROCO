@@ -143,6 +143,7 @@
 # include "param.h"
       integer istr,iend,jstr,jend, itrc, i,j,k,k1,k2, kmld,
      &        imin,imax,jmin,jmax, indx, idx,ide
+      integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
       real   FX (PRIVATE_2D_SCRATCH_ARRAY),
      &       FE (PRIVATE_2D_SCRATCH_ARRAY)
       real   cff,cff1
@@ -706,11 +707,66 @@
 #  if defined DIAGNOSTICS_TS_MLD
 #   define T_mld_nnew FX
 #   define T_mld_nstp FE
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+       do j=Jstr,Jend
+          do i=Istr,Iend
+             kbl(i,j)=1
+             cff=0
+             do k=N,1,-1
+                if (itrc.eq.2) then
+                if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_D) then
+                   kbl(i,j)=k
+                endif
+                if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_D)  cff=1
+
+                elseif (itrc.eq.3) then
+                if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_T2) then
+                   kbl(i,j)=k
+                endif
+                if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_T2)  cff=1
+
+                else
+                if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_T) then
+                   kbl(i,j)=k
+                endif
+                if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_T)  cff=1
+
+                endif
+             enddo
+! CALCULATE MIXED LAYER DEPTH            
+             Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbl(i,j))
+#    ifdef MASKING
+     &                        * rmask(i,j)
+#    endif
+          enddo
+       enddo
+! CALCULATE BARRIER LAYER THICKNESS
+!       do j=Jstr,Jend
+!          do i=Istr,Iend
+!             kblt(i,j)=1
+!             cff=0
+!             do k=N,1,-1
+!                if (cff.eq.0.and.t(i,j,k,nnew,1).gt.
+!     &               t(i,j,N,nnew,1)-0.2) then
+!                   kblt(i,j)=k
+!                endif
+!                if (t(i,j,k,nnew,itrc).le.t(i,j,N,nnew,1)-mld_crit_T)  cff=1
+!             enddo
+!        if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
+!     &            Tcrit_mld(i,j,1)-(z_w(i,j,N)-z_r(i,j,kblt(i,j)))
+!#    ifdef MASKING
+!     &                        * rmask(i,j)
+!#    endif
+!          enddo
+!       enddo
+#    endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
+
        do j=Jstr,Jend
          do i=Istr,Iend
             THmix_mld(i,j,itrc)=0.
             T_mld_nnew(i,j)=0.
             T_mld_nstp(i,j)=0.
+            Taver_mld(i,j,itrc)=0.
          enddo
        enddo
        do j=Jstr,Jend
@@ -722,11 +778,25 @@
 #   endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+             if (itrc.eq.2 .or. itrc.eq.3) then
+               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+     &                           THmix(i,j,k,itemp)*cff
+               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
+     &                       t(i,j,k,nnew,itemp)*cff
+             
+             else
+               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
-             T_mld_nnew(i,j)=T_mld_nnew(i,j)+
+               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
+             endif
+
+
            enddo
+          Taver_mld(i,j,itrc)=T_mld_nnew(i,j)
+#    ifdef MASKING
+     &                        * rmask(i,j)
+#    endif
          enddo
        enddo
 
@@ -740,8 +810,13 @@
 #   endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+             if (itrc.eq.2 .or. itrc.eq.3) then
+               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+     &                       t(i,j,k,nstp,itemp)*cff
+             else
+               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
+             endif
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
          enddo

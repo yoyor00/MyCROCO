@@ -540,6 +540,35 @@ CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(6,indxT)='x_rho y_rho                                 '
 #  endif
       vname(7,indxT)='                                            '
+
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+CR      write(stdout,'(1x,A,I3)') 'indxD = ',indxD
+      vname(1,indxD)='temp_Dcrit                                  '
+      vname(2,indxD)='potential temperature                       '
+      vname(3,indxD)='Celsius                                     '
+      vname(4,indxD)='temperature, scalar, series                 '
+      vname(5,indxD)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxD)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxD)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxD)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
+      vname(1,indxT2)='temp_T2crit                                '
+      vname(2,indxT2)='potential temperature                       '
+      vname(3,indxT2)='Celsius                                     '
+      vname(4,indxT2)='temperature, scalar, series                 '
+      vname(5,indxT2)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxT2)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxT2)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxT2)='                                            '
+# endif
+
 # endif /* TEMPERATURE */
 
 # ifdef SALINITY
@@ -861,7 +890,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(1,indxDSI)='DSI                                       '
       vname(2,indxDSI)='Diatoms silicon                           '
       vname(3,indxDSI)='umol Si L-1                               '
-      vname(4,indxDSI)='DSi, scalar, series                       '
+      vname(4,indxDSI)='BSi, scalar, series                       '
       vname(5,indxDSI)='                                          '
       vname(6,indxDSI)='lat_rho lon_rho                           '
       vname(7,indxDSI)='                                          '
@@ -2992,6 +3021,40 @@ CR       write(stdout,'(20x,A)') vname(1,indxTentr_mld+itrc-1)
        vname(5,indxTentr_mld+itrc-1)='                            '
        vname(6,indxTentr_mld+itrc-1)='                            '
        vname(7,indxTentr_mld+itrc-1)='                            '
+
+CR       write(stdout,'(1x,A,I3)') 'indxTaver_mld = ',indxTaver_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_aver_mld                   '
+       vname(1,indxTaver_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
+       vname(2,indxTaver_mld+itrc-1)='MLD averaged                 '
+       write(vname3,*) trim(unitt)
+       vname(3,indxTaver_mld+itrc-1)=vname3
+       vname(4,indxTaver_mld+itrc-1)='                            '
+       vname(5,indxTaver_mld+itrc-1)='                            '
+       vname(6,indxTaver_mld+itrc-1)='                            '
+       vname(7,indxTaver_mld+itrc-1)='                            '
+
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       if (itrc.eq.2 .or. itrc.eq.3) then
+         write(vname1,*) '_mld                   '
+       else
+         write(vname1,*) '_Tcrit_mld                   '
+       endif
+       vname(1,indxTcrit_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
+       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
+       write(vname3,*) ' meters                        '
+       vname(3,indxTcrit_mld+itrc-1)=vname3
+       vname(4,indxTcrit_mld+itrc-1)='                            '
+       vname(5,indxTcrit_mld+itrc-1)='                            '
+       vname(6,indxTcrit_mld+itrc-1)='                            '
+       vname(7,indxTcrit_mld+itrc-1)='                            '
+# endif /* DIAGNOSTICS_TS_MLD_CRIT */
+
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc

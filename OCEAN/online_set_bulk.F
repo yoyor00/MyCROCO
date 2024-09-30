@@ -76,7 +76,7 @@
 ! Do not process #7 :  upward longwave is obsolete
 !
       if (blkvar_id.eq.7) goto 10
-# if defined ERA_ECMWF || defined AROME
+# if defined ERA_ECMWF || defined AROME || defined FORMATTED
 !
 ! In the case of ERA the net short wave is used
 ! Net Short wave - 5 downward short wave not used

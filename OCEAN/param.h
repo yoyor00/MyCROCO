@@ -444,6 +444,7 @@
       integer   NT, NTA, itemp, NTot
       integer   ntrc_temp, ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed
       integer   ntrc_subs, ntrc_substot
+      integer   ntrc_mld
 !
 # ifdef TEMPERATURE
       parameter (itemp=1)
@@ -456,6 +457,11 @@
       parameter (ntrc_salt=1)
 # else
       parameter (ntrc_salt=0)
+# endif
+#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      parameter (ntrc_mld=2)
+# else
+      parameter (ntrc_mld=0)
 # endif
 # ifdef PASSIVE_TRACER
 #  ifdef KH_INST
@@ -574,10 +580,18 @@
 ! Total number of tracers
 !
 # ifdef SUBSTANCE
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs+2)
+# else
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)
+# endif
       parameter (NTot=NT+ntfix)
 # else
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+2)
+# else
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
+# endif
       parameter (NTot=NT)
 # endif /* SUBSTANCE */
 
@@ -1018,7 +1032,7 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=16*NT)
+      parameter (ntrc_diats=19*NT)
 #  else
       parameter (ntrc_diats=8*NT)
 #  endif
