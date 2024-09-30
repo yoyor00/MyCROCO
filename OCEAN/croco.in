@@ -262,8 +262,8 @@ station_fields:  Grdvar Temp Salt Rho Vel
 
 psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
             2
-                  24    35     0    -200.            T T      20.   15.
-                  35    13     1    -200.            T T      20.   15.
+                  3    54     1    200.            T T      20.   15.
+                  3    40     0    200.            T T      20.   15.
 
 psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
     CROCO_FILES/croco_runoff.nc

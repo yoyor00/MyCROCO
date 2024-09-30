@@ -1998,10 +1998,6 @@ C$    integer  trd, omp_get_thread_num
 !$acc kernels if(compute_on_device) default(present)
       if (iic.eq.ntstart) then
 !
-!        write(*,*)'===================='
-!        write(*,*)'IIC=',iic
-!        write(*,*)'NTSTART=',ntstart
-!
 ! Set-up nondimensional shape Qshape, must add to unity
 !
 # ifdef RIVER
@@ -2140,11 +2136,8 @@ C$    integer  trd, omp_get_thread_num
           Qbar0(is)=Qbar(is)
         enddo
 
-!        write(*,*)'QBAR0(1)=',Qbar0(1)
-!        write(*,*)'QSHAPE(1,10)=',Qshape(1,10)
-!        write(*,*)'===================='
-        
-        endif ! iic.eq.ntstart
+      endif   ! iic.eq.ntstart
+
 !
 !  If Qbar is read in nc file, update Qbar0 at every time step
 !
@@ -2153,7 +2146,6 @@ C$    integer  trd, omp_get_thread_num
         Qbar0(is)=Qbar(is)
       enddo
 # endif
-      
 !
 ! Set-up river ramp to avoid strong initial shocks
 !
@@ -2176,12 +2168,6 @@ C$    integer  trd, omp_get_thread_num
           Qsrc(is,k)=Qbar(is)*Qshape(is,k)
         enddo
       enddo
-
-    !   write(*,*)'IIC=',iic
-    !   write(*,*)'NSTART=',ntstart
-    !   write(*,*)'QBAR(1)=',Qbar(1)
-    !   write(*,*)'QSHAPE(1,10)=',Qshape(1,10)
-    !   write(*,*)'QSRC(1,10)=',Qsrc(1,10)
 !
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
