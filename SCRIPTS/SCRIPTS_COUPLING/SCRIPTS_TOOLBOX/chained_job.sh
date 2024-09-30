@@ -19,9 +19,9 @@ elif [ ${MACHINE} == "JEANZAY" ]; then
     cnt=$(( $(wc -l tmp.text | awk '{ print $1 }') + 1 ))
     for linenb in `seq 1 $cnt`; do 
         line=$(sed -n "${linenb}p" tmp.text  )
-	[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -c 1-7 ); break; }      
+	#[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -c 1-7 ); break; }      
         # previous line supposes that jobid has 7 characters. If not, the following line could replace it
-        #[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -d "." -f 1 | cut -d " " -f 1 ); break; } 
+        [[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -d "." -f 1 | cut -d " " -f 1 ); break; } 
     done
     firstjobid=${prejobid}
 else
@@ -100,9 +100,9 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
 	echo "$( squeue --format="%.18i %.100j" -u $USER )" >tmp.text
         for linenb in `seq 1 $cnt`; do
             line=$(sed -n "${linenb}p" tmp.text  )
-            [[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -c 1-7 ); break; }
+            #[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -c 1-7 ); break; }
             # previous line supposes that jobid has 7 characters. If not, the following line could replace it
-            #[[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -d "." -f 1 | cut -d " " -f 1 ); break; } 
+            [[ $line == *"${prejobname}"* ]] && { prejobid=$( echo ${line} | cut -d "." -f 1 | cut -d " " -f 1 ); break; } 
         done
         \rm -f tmp.text
         #
