@@ -770,8 +770,10 @@ END SUBROUTINE sed_gradvit
         goto 99                                           !--> ERROR
       endif
 
-     WHERE (ksmi(PROC_IN_ARRAY) < ksdmin ) ksmi(PROC_IN_ARRAY) = 1
-     WHERE (ksmi(PROC_IN_ARRAY) < ksdmin ) ksma(PROC_IN_ARRAY) = 0
+     WHERE (ksmi(PROC_IN_ARRAY) < ksdmin ) 
+        ksmi(PROC_IN_ARRAY) = 1
+        ksma(PROC_IN_ARRAY) = 0
+     END WHERE
 !  DZS
       ierr=nf_inq_varid (ncid,'DZS', varid)
       if (ierr .eq. nf_noerr) then
