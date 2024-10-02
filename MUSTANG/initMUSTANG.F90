@@ -696,7 +696,7 @@ CONTAINS
         j_MUSTANG_debug = 0            
         DO j = jfirst, jlast
             DO i = ifirst, ilast
-                IF(LATITUDE(i,j) == lat_debug .AND. LONGITUDE(i,j) == lon_debug) THEN
+                IF(latr(i,j) == lat_debug .AND. lonr(i,j) == lon_debug) THEN
                     i_MUSTANG_debug = i
                     j_MUSTANG_debug = j             
                 ENDIF

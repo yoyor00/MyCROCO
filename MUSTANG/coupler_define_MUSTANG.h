@@ -78,10 +78,7 @@
 # define BOTTOM_THICK_LAYER epn_bottom
 # define WATER_CONCENTRATION t  /* water concentration in hydro model (=cv_wat in MARS)*/
 # define DHSED dh  
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-# define LATITUDE latr
-# define LONGITUDE lonr
-#endif
+
 
 /* surface elevation (i,j) and current could have different dimensions*/
 # define SURF_ELEVATION_ij WATER_ELEVATION(i,j,3) 
