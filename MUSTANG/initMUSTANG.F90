@@ -579,7 +579,7 @@ CONTAINS
        MPI_master_only WRITE(iwarnlog, *) ' and fresh deposit concentration (cfreshmud) = ', cfreshmud
        MPI_master_only WRITE(iwarnlog, *) ' and critical stress of deposition (tocd) of each sand and mud variable are equal to :'
        DO isubs = imud1, imud2
-         MPI_master_only WRITE(iwarnlog, *) ' variable', NAME_SUBS,'  tocd=', tocd(isubs)
+         MPI_master_only WRITE(iwarnlog, *) ' variable', name_var(isubs),'  tocd=', tocd(isubs)
        ENDDO
        MPI_master_only WRITE(iwarnlog, *) ' If cfreshmud is big (> 100), you have to choose a tocd between 1 and 10'
        MPI_master_only WRITE(iwarnlog, *) ' otherwise you have to choose a tocd > 10 or 20'

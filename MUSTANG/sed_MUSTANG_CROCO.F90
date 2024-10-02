@@ -796,9 +796,14 @@ END SUBROUTINE sed_gradvit
  
       c_sedtot(:,:,:)=0.0_rsh
       do iv=-1,nv_tot 
-       
-       indWrk=indxT+ntrc_salt+ntrc_substot+iv+4+2
-       nomcv=vname(1,indWrk)
+
+       if (iv == -1) then
+          nomcv='temp_sed'
+       elseif (iv==0) then
+          nomcv='salt_sed'
+       else
+          nomcv=TRIM(name_var(iv))//'_sed'
+       endif
 
        ierr=nf_inq_varid (ncid,nomcv, varid)
        if (ierr .eq. nf_noerr) then
@@ -832,7 +837,7 @@ END SUBROUTINE sed_gradvit
           do k=ksdmin,ksdmax
             cv_sed(iv,k,:,:)=cini_sed(iv)             
           enddo
-         MPI_master_only  write(stdout,3) nomcv,vname(1,indxT+ntrc_salt+iv), &
+         MPI_master_only  write(stdout,3) nomcv,name_var(iv), &
                                           inised_name(1:lstr)
         else
          MPI_master_only  write(stdout,1) nomcv, inised_name(1:lstr)

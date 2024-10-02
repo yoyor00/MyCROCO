@@ -20,7 +20,6 @@
 # define iscreenlog stdout
 # define ierrorlog stdout
 # define iwarnlog stdout
-# define NAME_SUBS vname(1,indxT+ntrc_salt+isubs)
 
 /* Directory where are namelists files */
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
