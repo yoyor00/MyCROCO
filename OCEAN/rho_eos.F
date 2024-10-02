@@ -320,6 +320,7 @@
 #  ifdef NBQ_GRAV
         do i=IstrR,IendR
            FC3D(i,j,1)=rho1(i,j,1)-1000.+rho0
+!$acc loop seq           
            do k=2,N
             FC3D(i,j,k)=
      &	min(FC3D(i,j,k-1),rho1(i,j,k)-1000.+rho0)
@@ -327,6 +328,7 @@
            DC3D(i,j,N)=rho1(i,j,N)-1000.+rho0
            rho_nh(i,j,N)=rho1(i,j,N)-1000.+rho0
      &           -0.5*(FC3D(i,j,N)+DC3D(i,j,N))
+!$acc loop seq           
            do k=N-1,1,-1
              DC3D(i,j,k)=
      &		max(DC3D(i,j,k+1),rho1(i,j,k)-1000.+rho0)
@@ -428,7 +430,7 @@
       do j=JstrR,JendR
 #  ifdef NBQ_GRAV
         do i=IstrR,IendR
-           FC3D(i,j,k)=rho1(i,j,1)
+           FC3D(i,j,1)=rho1(i,j,1)
 !$acc loop seq           
            do k=2,N
             FC3D(i,j,k)=min(FC3D(i,j,k-1),rho1(i,j,k))
