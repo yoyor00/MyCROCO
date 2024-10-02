@@ -824,7 +824,7 @@
      &                   NF_FOUT, 3, r2dgrd, viddiags_ekHdiff_mld(itrc))
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid, viddiags_ekHdiff_mld(itrc),
-     &                   i                          nf_collective)
+     &                                             nf_collective)
 #  endif
 #  ifdef AVRH
           text='averaged '/ /vname(2,indxekHdiff_mld+itrc-1)
@@ -1274,7 +1274,8 @@
            goto 99                                       !--> ERROR
          endif
 # ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,viddiags_ekHadv(itrc),nf_collective)
+        ierr=nf_var_par_access(ncid,viddiags_ekHadv(itrc),
+     &                         nf_collective)
 # endif
 !
 ! indxekHdiff
