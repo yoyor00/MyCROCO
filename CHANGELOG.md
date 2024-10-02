@@ -23,6 +23,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   
 - Fix typo in analytical.F for MRL_WCI (Wave-current interactions) [#208]
 
+- Fix the reading of initial state in case of MPINOLAND and different MPI 
+  decomposition [#217]
+
 - Fix typo in step.F on RVTK cppkey and fix reproductibility test 
   for MUSTANG [#222]
 
