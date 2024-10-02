@@ -29,6 +29,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix typo in step.F on RVTK cppkey and fix reproductibility test 
   for MUSTANG [#222]
 
+- Fix typo in def_diags_ek in case of NC4PAR [#228]
+
 ### Changed
 
 - Issue #184 : change roller contribution on Stokes Drift in very shallow water 
