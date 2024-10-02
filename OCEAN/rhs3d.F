@@ -85,6 +85,9 @@
 # ifdef NBQ
 #  include "nbq.h"
 # endif
+# ifdef LERAY_TURB
+#  include "leray_smoothing.h"
+# endif 
 # ifdef MRL_WCI
       real vstu,dudx,dvdx,ustv,dude,dvde
 # endif
@@ -414,8 +417,13 @@
      &              fomn(i,j)
 #  endif
 #  if (defined CURVGRID && defined UV_ADV)
+#   ifdef LERAY_TURB
+     &             +0.5*( (v_smooth(i,j,k)+v_smooth(i,j+1,k))*dndx(i,j)
+     &                   -(u_smooth(i,j,k)+u_smooth(i+1,j,k))*dmde(i,j))
+#   else
      &             +0.5*( (v(i,j,k,nrhs)+v(i,j+1,k,nrhs))*dndx(i,j)
      &                   -(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))*dmde(i,j))
+#   endif
 #  endif
      &                                                             )
 #  ifdef MRL_WCI
@@ -426,13 +434,23 @@
 #   else
             cff1 = 0.0
 #   endif
+#   ifdef LERAY_TURB
+            UFx(i,j)=(cff+cff1)*(v_smooth(i,j,k)+v_smooth(i,j+1,k))
+            VFe(i,j)=(cff+cff1)*(u_smooth(i,j,k)+u_smooth(i+1,j,k))
+#   else    
             UFx(i,j)=(cff+cff1)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=(cff+cff1)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+#   endif
             UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFx(i,j)=cff*(ust(i,j,k)+ust(i+1,j,k))
 #  else
+#   ifdef LERAY_TURB
+            UFx(i,j)=cff*(v_smooth(i,j,k)+v_smooth(i,j+1,k))
+            VFe(i,j)=cff*(u_smooth(i,j,k)+u_smooth(i+1,j,k))
+#   else
             UFx(i,j)=cff*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=cff*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+#   endif             
 #  endif
           enddo
         enddo

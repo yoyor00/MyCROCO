@@ -22,9 +22,18 @@
       real inv_weight_sum3, inv_weight_sum5, 
      &     inv_weight_sum7, inv_weight_sum9
       common/fweight_sum/inv_weight_sum3, inv_weight_sum5, 
-     &                    inv_weight_sum7, inv_weight_sum9
+     &                   inv_weight_sum7, inv_weight_sum9
 !
 /* Array for filter window size reduction near boundaries*/
       integer u_fwidth_array(GLOBAL_2D_ARRAY), 
      &        v_fwidth_array(GLOBAL_2D_ARRAY)
       common/fwidth_array/u_fwidth_array,v_fwidth_array
+
+/* Smoothed velocity arrays */      
+      real u_smooth(GLOBAL_2D_ARRAY,N),
+     &     v_smooth(GLOBAL_2D_ARRAY,N)
+      real urhs_smooth(GLOBAL_2D_ARRAY),
+     &     vrhs_smooth(GLOBAL_2D_ARRAY)
+      common/uv_smooth/u_smooth,v_smooth,
+     &                 urhs_smooth,vrhs_smooth
+     

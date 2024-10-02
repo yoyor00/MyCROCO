@@ -391,6 +391,9 @@ C$    integer omp_get_thread_num
 #  ifdef MRL_WCI
 #   include "forces.h"
 #  endif
+#  ifdef LERAY_TURB
+#   include "leray_smoothing.h"
+#  endif      
 #  include "compute_auxiliary_bounds.h"
 !
 #  ifdef EW_PERIODIC
@@ -413,7 +416,11 @@ C$    integer omp_get_thread_num
         do j=JU_RANGE
           do i=IU_RANGE
             Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+#  ifdef LERAY_TURB
+     &                                       *( u_smooth(i,j,k)
+#  else                                             
      &                                       *( u(i,j,k,nrhs)
+#  endif                                             
 #  ifdef MRL_WCI
      &                                           + ust(i,j,k)
 #  endif
@@ -431,7 +438,11 @@ C$    integer omp_get_thread_num
         do j=JV_RANGE
           do i=IV_RANGE
             Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+#  ifdef LERAY_TURB
+     &                                       *( v_smooth(i,j,k)
+#  else 
      &                                       *( v(i,j,k,nrhs)
+#  endif            
 #  ifdef MRL_WCI
      &                                           + vst(i,j,k)
 #  endif
@@ -455,12 +466,7 @@ C$    integer omp_get_thread_num
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   if defined LERAY_FILTER_9PTS
-      call exchange_u3d_4pts_tile (Istr,Iend,Jstr,Jend,
-     &                             Huon(START_2D_ARRAY,1))
-      call exchange_v3d_4pts_tile (Istr,Iend,Jstr,Jend,
-     &                             Hvom(START_2D_ARRAY,1))
-#   elif defined THREE_GHOST_POINTS_UV | defined LERAY_FILTER_7PTS
+#   if defined THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -614,6 +620,9 @@ C$    integer omp_get_thread_num
 #  ifdef MRL_WCI
 #   include "forces.h"
 #  endif
+#  ifdef LERAY_TURB
+#   include "leray_smoothing.h"
+#  endif      
 #  include "coupling.h"
 !
 #  include "compute_auxiliary_bounds.h"
@@ -661,11 +670,13 @@ C$    integer omp_get_thread_num
      &               +ust(i,j,k)*(umask(i,j)-1.0)
 #   endif
 #  endif
+#  ifndef LERAY_TURB            
             Huon(i,j,k)=DC(i,k)*( u(i,j,k,nrhs)
-#  ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                             + ust(i,j,k)
-#  endif
+#   endif
      &                                        )
+#  endif            
           enddo
         enddo
       enddo
@@ -697,14 +708,65 @@ C$    integer omp_get_thread_num
      &               +vst(i,j,k)*(vmask(i,j)-1.0)
 #   endif
 #  endif
+#  ifndef LERAY_TURB 
             Hvom(i,j,k)=DC(i,k)*( v(i,j,k,nrhs)
-#  ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                             + vst(i,j,k)
-#  endif
+#   endif
      &                                        )
+#  endif            
           enddo
         enddo
       enddo
+
+#  ifdef LERAY_TURB
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI      
+#    if defined LERAY_FILTER_9PTS
+      call exchange_u3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,nrhs))
+      call exchange_v3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,nrhs))
+#    elif defined THREE_GHOST_POINTS_UV || defined LERAY_FILTER_7PTS
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,nrhs))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,nrhs))
+#    else
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,nrhs))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,nrhs))
+#    endif
+#   endif
+      call leray_smoothing_3d_tile(Istr,Iend,Jstr,Jend)
+!      
+      do k=1,N
+        do j=JU_RANGE
+          do i=IU_RANGE
+           Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+     &                                       *( u_smooth(i,j,k)
+#   ifdef MRL_WCI
+     &                                           + ust(i,j,k)
+#   endif
+     &                                                      )
+          enddo
+        enddo
+      enddo
+!           
+      do k=1,N
+        do j=JV_RANGE
+          do i=IV_RANGE
+           Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+     &                                       *( v_smooth(i,j,k)
+#   ifdef MRL_WCI
+     &                                           + vst(i,j,k)
+#   endif
+     &                                                      )
+          enddo
+        enddo
+      enddo
+
+#  endif      
 
 #  undef IU_RANGE
 #  undef JU_RANGE
@@ -715,12 +777,7 @@ C$    integer omp_get_thread_num
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   if defined LERAY_FILTER_9PTS
-      call exchange_u3d_4pts_tile (Istr,Iend,Jstr,Jend,
-     &                             Huon(START_2D_ARRAY,1))
-      call exchange_v3d_4pts_tile (Istr,Iend,Jstr,Jend,
-     &                             Hvom(START_2D_ARRAY,1))
-#   elif defined THREE_GHOST_POINTS_UV | defined LERAY_FILTER_7PTS
+#   if defined THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -731,17 +788,19 @@ C$    integer omp_get_thread_num
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hvom(START_2D_ARRAY,1))
 #   endif
-#   ifdef THREE_GHOST_POINTS_UV
+#   ifndef LERAY_TURB      
+#    ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,nrhs))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,nrhs))
-#   else
+#    else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nrhs))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nrhs))
-#   endif
+#    endif
+#   endif      
 #  endif
 # endif /* SOLVE3D */
       return

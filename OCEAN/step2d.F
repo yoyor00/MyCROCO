@@ -32,13 +32,13 @@ C$    trd=omp_get_thread_num()
 # ifdef M2_HADV_UP3
      &                    , A2d(1,10,trd), A2d(1,11,trd)
 #  ifdef LERAY_TURB
-     &                    , A2d(1,12,trd)
+     &                    , A2d(1,12,trd), A2d(1,13,trd)
 #  endif      
 # else
      &                    , A2d(1,10,trd), A2d(1,11,trd)
      &                    , A2d(1,12,trd), A2d(1,13,trd)
 #  ifdef LERAY_TURB
-     &                    , A2d(1,14,trd)
+     &                    , A2d(1,14,trd), A2d(1,15,trd)
 #  endif      
 # endif
      &                    )
@@ -53,13 +53,13 @@ C$    trd=omp_get_thread_num()
 # ifdef M2_HADV_UP3
      &                          ,wrk1,wrk2
 #  ifdef LERAY_TURB
-     &                          ,wrk3
+     &                          ,DUon_smooth,DVom_smooth
 #  endif          
 # else
      &                          ,urhs,vrhs
      &                          ,DUon,DVom
 #  ifdef LERAY_TURB
-     &                          ,wrk3
+     &                          ,DUon_smooth,DVom_smooth
 #  endif          
 # endif
      &                          )
@@ -167,7 +167,9 @@ C$    trd=omp_get_thread_num()
 # endif
 # ifdef LERAY_TURB
 #  include "leray_smoothing.h"
-        real wrk3(PRIVATE_2D_SCRATCH_ARRAY)
+#  include "work.h"        
+      real     DUon_smooth(PRIVATE_2D_SCRATCH_ARRAY),
+     &         DVom_smooth(PRIVATE_2D_SCRATCH_ARRAY)
 # endif        
 # if defined INTERNAL || defined BODYTIDE
       real U0, omega
@@ -281,6 +283,9 @@ C$    trd=omp_get_thread_num()
 # if defined MRL_WCI && defined MASKING
           urhs(i,j)=urhs(i,j)*umask(i,j)+ust2d(i,j)*(umask(i,j)-1.0)
 # endif
+# ifdef LERAY_TURB
+          work2d(i,j) = urhs(i,j)
+# endif          
           DUon(i,j)=0.5*(Drhs(i,j)+Drhs(i-1,j))*on_u(i,j)*( urhs(i,j)
 # ifdef MRL_WCI
      &                                                   + ust2d(i,j)
@@ -288,7 +293,6 @@ C$    trd=omp_get_thread_num()
      &                                                              )
         enddo
       enddo
-# undef JU_EXT_RANGE
 
       do j=jmin+1,jmax
         do i=IV_EXT_RANGE
@@ -297,6 +301,9 @@ C$    trd=omp_get_thread_num()
 # if defined MRL_WCI && defined MASKING
           vrhs(i,j)=vrhs(i,j)*vmask(i,j)+vst2d(i,j)*(vmask(i,j)-1.0)
 # endif
+# ifdef LERAY_TURB
+          work2d2(i,j) = vrhs(i,j)          
+# endif
           DVom(i,j)=0.5*(Drhs(i,j)+Drhs(i,j-1))*om_v(i,j)*( vrhs(i,j)
 # ifdef MRL_WCI
      &                                                   + vst2d(i,j)
@@ -304,6 +311,33 @@ C$    trd=omp_get_thread_num()
      &                                                              )
         enddo
       enddo
+
+# if defined LERAY_TURB
+#  include "leray_smoothing_2d.h" 
+      do j=JU_EXT_RANGE
+        do i=imin+1,imax
+          DUon_smooth(i,j)=0.5*(Drhs(i,j)+Drhs(i-1,j))*on_u(i,j)
+     &                  *(urhs_smooth(i,j)
+#  ifdef MRL_WCI
+     &                  + ust2d(i,j)
+#  endif
+     &                                                              )
+        enddo
+      enddo
+
+      do j=jmin+1,jmax
+        do i=IV_EXT_RANGE
+          DVom_smooth(i,j)=0.5*(Drhs(i,j)+Drhs(i,j-1))*om_v(i,j)
+     &                  *(vrhs_smooth(i,j)
+#  ifdef MRL_WCI
+     &                  + vst2d(i,j)
+#  endif
+     &                                                              )
+        enddo
+      enddo
+# endif      
+
+# undef JU_EXT_RANGE
 # undef IV_EXT_RANGE
 
 !
@@ -730,9 +764,6 @@ C$OMP BARRIER
 !
 # ifdef UV_ADV
 !
-#  if defined LERAY_TURB
-#   include "leray_smoothing_2d.h" 
-#  endif      
 !
 #  if defined SOLVE3D || !defined M2_HADV_UP3
 !-----------------------------------------------------------------------
@@ -744,10 +775,18 @@ C$OMP BARRIER
 !-----------------------------------------------------------------------
       do j=Jstr,Jend
         do i=Istr-1,Iend
+#   ifdef LERAY_TURB
+          UFx(i,j)=0.25*(DUon_smooth(i,j)+DUon_smooth(i+1,j))
+#   else        
           UFx(i,j)=0.25*(DUon(i,j)+DUon(i+1,j))
+#   endif          
      &                 *(urhs(i,j)+urhs(i+1,j))
 
+#   ifdef LERAY_TURB
+          VFx(i+1,j)=0.25*(DUon_smooth(i+1,j)+DUon_smooth(i+1,j-1))
+#   else          
           VFx(i+1,j)=0.25*(DUon(i+1,j)+DUon(i+1,j-1))
+#   endif          
      &                   *(vrhs(i+1,j)+vrhs(i,j))
 #   ifdef MASKING
      &                                 *pmask(i+1,j)
@@ -759,10 +798,18 @@ C$OMP BARRIER
       enddo
       do j=Jstr-1,Jend
         do i=Istr,Iend
+#   ifdef LERAY_TURB
+          VFe(i,j)=0.25*(DVom_smooth(i,j)+DVom_smooth(i,j+1))
+#   else
           VFe(i,j)=0.25*(DVom(i,j)+DVom(i,j+1))
+#   endif          
      &                 *(vrhs(i,j)+vrhs(i,j+1))
 
+#   ifdef LERAY_TURB
+          UFe(i,j+1)=0.25*(DVom_smooth(i,j+1)+DVom_smooth(i-1,j+1))
+#   else          
           UFe(i,j+1)=0.25*(DVom(i,j+1)+DVom(i-1,j+1))
+#   endif          
      &                   *(urhs(i,j+1)+urhs(i,j))
 #   ifdef MASKING
      &                                 *pmask(i,j+1)
@@ -814,7 +861,12 @@ C$OMP BARRIER
         do j=Jstr,Jend
           do i=IU_EXT_RANGE
             uxx(i,j)=urhs(i-1,j)-2.*urhs(i,j)+urhs(i+1,j)
+#   ifdef LERAY_TURB
+            Huxx(i,j)=Duon_smooth(i-1,j)-2.*Duon_smooth(i,j)
+     &               +Duon_smooth(i+1,j)
+#   else            
             Huxx(i,j)=Duon(i-1,j)-2.*Duon(i,j)+Duon(i+1,j)
+#   endif            
           enddo
         enddo
 #   undef IU_EXT_RANGE
@@ -848,8 +900,13 @@ C$OMP BARRIER
             else
               curvX=uxx(i+1,j)
             endif
+#   ifdef LERAY_TURB
+            UFx(i,j)=0.25*(cffX+gamma*curvX)*( Duon_smooth(i,j)+ 
+     &               Duon_smooth(i+1,j)-0.125*(Huxx(i,j)+Huxx(i+1,j)))
+#   else            
             UFx(i,j)=0.25*(cffX+gamma*curvX)*( Duon(i,j)+
      &               Duon(i+1,j)-0.125*(Huxx(i,j)+Huxx(i+1,j)))
+#   endif            
           enddo
         enddo
 #   undef Huxx
@@ -880,7 +937,12 @@ C$OMP BARRIER
         do j=JV_EXT_RANGE
           do i=Istr,Iend
             vee(i,j) =vrhs(i,j-1)-2.*vrhs(i,j)+vrhs(i,j+1)
+#   ifdef LERAY_TURB
+            Hvee(i,j)=Dvom_smooth(i,j-1)-2.*Dvom_smooth(i,j)
+     &               +Dvom_smooth(i,j+1)
+#   else            
             Hvee(i,j)=Dvom(i,j-1)-2.*Dvom(i,j)+Dvom(i,j+1)
+#   endif            
           enddo
         enddo
 #   undef JV_EXT_RANGE
@@ -913,8 +975,13 @@ C$OMP BARRIER
             else
               curvE=vee(i,j+1)
             endif
+#   ifdef LERAY_TURB
+            VFe(i,j)=0.25*(cffE+gamma*curvE)*( Dvom_smooth(i,j)+
+     &               Dvom_smooth(i,j+1)-0.125*(Hvee(i,j)+Hvee(i,j+1)))
+#   else            
             VFe(i,j)=0.25*(cffE+gamma*curvE)*( Dvom(i,j)+
      &               Dvom(i,j+1)-0.125*(Hvee(i,j)+Hvee(i,j+1)))
+#   endif            
           enddo
         enddo
 #   undef Hvee
@@ -968,13 +1035,22 @@ C$OMP BARRIER
 #   endif
         do j=Jstr,Jend+1
           do i=IstrU-1,Iend
+#   ifdef LERAY_TURB
+           Hvxx(i,j)=Dvom_smooth(i-1,j)-2.*Dvom_smooth(i,j)
+     &              +Dvom_smooth(i+1,j)
+#   else           
            Hvxx(i,j)=Dvom(i-1,j)-2.*Dvom(i,j)+Dvom(i+1,j)
+#   endif           
           enddo
         enddo
         do j=Jstr,Jend+1
           do i=IstrU,Iend
             cffX=urhs(i,j)+urhs(i,j-1)
+#   ifdef LERAY_TURB
+            cffE=Dvom_smooth(i,j)+Dvom_smooth(i-1,j)
+#   else            
             cffE=Dvom(i,j)+Dvom(i-1,j)
+#   endif            
             if (cffE.gt.0.) then
               curvX=uee(i,j-1)
             else
@@ -1036,13 +1112,22 @@ C$OMP BARRIER
 #   endif
         do j=JstrV-1,Jend
           do i=Istr,Iend+1
+#   ifdef LERAY_TURB
+           Huee(i,j)=Duon_smooth(i,j-1)-2.*Duon_smooth(i,j)
+     &              +Duon_smooth(i,j+1)
+#   else           
            Huee(i,j)=Duon(i,j-1)-2.*Duon(i,j)+Duon(i,j+1)
+#   endif           
           enddo
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend+1
             cffE=vrhs(i,j)+vrhs(i-1,j)
+#   ifdef LERAY_TURB
+            cffX=Duon_smooth(i,j)+Duon_smooth(i,j-1)
+#   else            
             cffX=Duon(i,j)+Duon(i,j-1)
+#   endif            
             if (cffX.gt.0.) then
               curvE=vxx(i-1,j)
             else
@@ -1082,8 +1167,13 @@ C$OMP BARRIER
      &                   fomn(i,j)
 #  endif
 #  if (defined CURVGRID && defined UV_ADV)
+#   ifdef LERAY_TURB
+     &          +0.5*( dndx(i,j)*(vrhs_smooth(i,j)+vrhs_smooth(i,j+1))
+     &                -dmde(i,j)*(urhs_smooth(i,j)+urhs_smooth(i+1,j)))
+#   else
      &          +0.5*( dndx(i,j)*(vrhs(i,j)+vrhs(i,j+1))
      &                -dmde(i,j)*(urhs(i,j)+urhs(i+1,j)))
+#   endif
 #  endif
      &                   )
 #  ifdef MRL_WCI
@@ -1094,13 +1184,26 @@ C$OMP BARRIER
 #   else
           cff1 = 0.0
 #   endif
+#   ifdef LERAY_TURB
+          UFx(i,j)=(cff+cff1)*(vrhs_smooth(i,j)+vrhs_smooth(i,j+1))
+#   else          
           UFx(i,j)=(cff+cff1)*(vrhs(i,j)+vrhs(i,j+1))
+#   endif          
      &                 +cff*(vst2d(i,j)+vst2d(i,j+1))
+#   ifdef LERAY_TURB          
+          VFe(i,j)=(cff+cff1)*(urhs_smooth(i,j)+urhs_smooth(i+1,j))
+#   else
           VFe(i,j)=(cff+cff1)*(urhs(i,j)+urhs(i+1,j))
+#   endif          
      &                 +cff*(ust2d(i,j)+ust2d(i+1,j))
 #  else
+#   ifdef LERAY_TURB
+          UFx(i,j)=cff*(vrhs_smooth(i,j)+vrhs_smooth(i,j+1))
+          VFe(i,j)=cff*(urhs_smooth(i,j)+urhs_smooth(i+1,j))
+#   else          
           UFx(i,j)=cff*(vrhs(i,j)+vrhs(i,j+1))
           VFe(i,j)=cff*(urhs(i,j)+urhs(i+1,j))
+#   endif          
 #  endif
         enddo
       enddo

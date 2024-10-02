@@ -248,6 +248,16 @@ C$OMP BARRIER
 
 #ifdef SOLVE3D
 
+# ifdef LERAY_TURB
+      do tile=my_first,my_last
+#  ifdef WET_DRY
+        call compute_fwidth_array(tile)
+#  endif
+        call leray_smoothing_3d (tile)
+      enddo
+# endif
+C$OMP BARRIER
+
       do tile=my_first,my_last
 # ifdef AGRIF
         IF (Agrif_Root()) THEN
@@ -309,16 +319,6 @@ C$OMP BARRIER
         call diag(tile)
 # endif
       enddo
-C$OMP BARRIER
-
-# ifdef LERAY_TURB
-      do tile=my_first,my_last
-#  ifdef WET_DRY
-        call compute_fwidth_array(tile)
-#  endif
-        call smooth_horiz_3d (tile)
-      enddo
-# endif
 C$OMP BARRIER
 
       do tile=my_first,my_last
@@ -925,16 +925,6 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call set_HUV2 (tile)
       enddo
-C$OMP BARRIER
-
-# ifdef LERAY_TURB
-      do tile=my_first,my_last
-#  ifdef WET_DRY      
-        call compute_fwidth_array(tile)
-#  endif
-        call smooth_horiz_3d (tile)
-      enddo
-# endif
 C$OMP BARRIER
 
       do tile=my_first,my_last

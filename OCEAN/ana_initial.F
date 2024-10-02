@@ -1707,7 +1707,43 @@ C$OMP BARRIER
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        vbar(START_2D_ARRAY,2))
 #  ifdef SOLVE3D
-#   ifdef THREE_GHOST_POINTS_UV
+#   ifdef LERAY_FILTER_9PTS
+      call exchange_u3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,1))
+      call exchange_v3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,1))
+      call exchange_u3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,2))
+      call exchange_v3d_4pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,2))
+#    ifdef THREE_GHOST_POINTS_UV
+#     if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,3))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,3))
+#     endif
+#     ifdef NBQ
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             wz(START_2D_ARRAY,0,1))
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             wz(START_2D_ARRAY,0,2))
+#     endif
+#    else
+#     if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,3))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,3))
+#     endif
+#     ifdef NBQ
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                        wz(START_2D_ARRAY,0,1))
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                        wz(START_2D_ARRAY,0,2))
+#     endif
+#    endif
+#   elif defined THREE_GHOST_POINTS_UV || defined LERAY_FILTER_7PTS
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,

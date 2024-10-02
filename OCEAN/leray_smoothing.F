@@ -317,18 +317,18 @@
       return
       end subroutine
 
-      subroutine smooth_horiz_3d(tile)
+      subroutine leray_smoothing_3d(tile)
       implicit none
       integer  tile, trd, omp_get_thread_num
 # include "param.h"
 # include "private_scratch.h"      
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      call smooth_horiz_3d_tile (istr,iend,jstr,jend,A2d(1,1,trd))
+      call leray_smoothing_3d_tile (istr,iend,jstr,jend)
       return
       end
 
-      subroutine smooth_horiz_3d_tile(istr,iend,jstr,jend,wrk)
+      subroutine leray_smoothing_3d_tile(istr,iend,jstr,jend)
       implicit none
 # include "param.h"      
 # include "ocean3d.h"
@@ -336,102 +336,114 @@
 # include "scalars.h"      
 # include "set_global_definitions.h" 
 
-      real wrk(PRIVATE_2D_SCRATCH_ARRAY)
       integer istr,iend,jstr,jend
       integer i,j,k
 
-# include "compute_auxiliary_bounds.h"      
+# include "compute_auxiliary_bounds.h"     
+#  ifdef EW_PERIODIC
+#   define IU_RANGE Istr,Iend
+#   define IV_RANGE Istr,Iend
+#  else
+#   define IU_RANGE Istr,IendR
+#   define IV_RANGE IstrR,IendR
+#  endif
+
+#  ifdef NS_PERIODIC
+#   define JU_RANGE Jstr,Jend
+#   define JV_RANGE Jstr,Jend
+#  else
+#   define JU_RANGE JstrR,JendR
+#   define JV_RANGE Jstr,JendR
+#  endif
 
       do k=1,N
-        do j=jstr,jend
-          do i=IstrU,iend
+        do j=JU_RANGE
+          do i=IU_RANGE
 # ifdef LERAY_FILTER_9PTS         
             if(u_fwidth_array(i,j).eq.9) then
-              wrk(i,j) = sum( Huon(i-4:i+4,j-4:j+4,k)
-     &                      * filter_weights(-4:4,-4:4) )
-     &                   * inv_weight_sum9
+              u_smooth(i,j,k) = sum( u(i-4:i+4,j-4:j+4,k,nrhs)
+     &                          * filter_weights(-4:4,-4:4) )
+     &                          * inv_weight_sum9
             endif 
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS
             if(u_fwidth_array(i,j).eq.7) then 
-              wrk(i,j) = sum( Huon(i-3:i+3,j-3:j+3,k)
-     &                      * filter_weights(-3:3,-3:3) )
-     &                   * inv_weight_sum7
+              u_smooth(i,j,k) = sum( u(i-3:i+3,j-3:j+3,k,nrhs)
+     &                          * filter_weights(-3:3,-3:3) )
+     &                          * inv_weight_sum7
             endif  
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS | defined LERAY_FILTER_5PTS
             if(u_fwidth_array(i,j).eq.5) then 
-              wrk(i,j) = sum( Huon(i-2:i+2,j-2:j+2,k)
-     &                      * filter_weights(-2:2,-2:2) )
-     &                   * inv_weight_sum5
+              u_smooth(i,j,k) = sum( u(i-2:i+2,j-2:j+2,k,nrhs)
+     &                          * filter_weights(-2:2,-2:2) )
+     &                          * inv_weight_sum5
             endif  
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS | defined LERAY_FILTER_5PTS | defined LERAY_FILTER_3PTS
             if(u_fwidth_array(i,j).eq.3) then 
-              wrk(i,j) = sum( Huon(i-1:i+1,j-1:j+1,k)
-     &                      * filter_weights(-1:1,-1:1) )
-     &                   * inv_weight_sum3
+              u_smooth(i,j,k) = sum( u(i-1:i+1,j-1:j+1,k,nrhs)
+     &                          * filter_weights(-1:1,-1:1) )
+     &                          * inv_weight_sum3
             endif
 # endif
             if(u_fwidth_array(i,j).lt.3) then
-                wrk(i,j) = Huon(i,j,k)
+              u_smooth(i,j,k) = u(i,j,k,nrhs)
             endif
           enddo
         enddo
-        Huon(IstrU:iend,jstr:jend,k) = wrk(IstrU:iend,jstr:jend)
       enddo  
 
       do k=1,N
-        do j=JstrV,jend
-          do i=istr,iend
+        do j=JV_RANGE
+          do i=IV_RANGE
 # ifdef LERAY_FILTER_9PTS         
             if(v_fwidth_array(i,j).eq.9) then
-              wrk(i,j) = sum( Hvom(i-4:i+4,j-4:j+4,k)
-     &                      * filter_weights(-4:4,-4:4) )
-     &                   * inv_weight_sum9
+              v_smooth(i,j,k) = sum( v(i-4:i+4,j-4:j+4,k,nrhs)
+     &                          * filter_weights(-4:4,-4:4) )
+     &                          * inv_weight_sum9
             endif 
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS
             if(v_fwidth_array(i,j).eq.7) then 
-              wrk(i,j) = sum( Hvom(i-3:i+3,j-3:j+3,k)
-     &                      * filter_weights(-3:3,-3:3) )
-     &                   * inv_weight_sum7
+              v_smooth(i,j,k) = sum( v(i-3:i+3,j-3:j+3,k,nrhs)
+     &                          * filter_weights(-3:3,-3:3) )
+     &                          * inv_weight_sum7
             endif  
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS | defined LERAY_FILTER_5PTS
             if(v_fwidth_array(i,j).eq.5) then 
-              wrk(i,j) = sum( Hvom(i-2:i+2,j-2:j+2,k)
-     &                      * filter_weights(-2:2,-2:2) )
-     &                   * inv_weight_sum5
+              v_smooth(i,j,k) = sum( v(i-2:i+2,j-2:j+2,k,nrhs)
+     &                          * filter_weights(-2:2,-2:2) )
+     &                          * inv_weight_sum5
             endif  
 # endif
 # if defined LERAY_FILTER_9PTS | defined LERAY_FILTER_7PTS | defined LERAY_FILTER_5PTS | defined LERAY_FILTER_3PTS
             if(v_fwidth_array(i,j).eq.3) then 
-              wrk(i,j) = sum( Hvom(i-1:i+1,j-1:j+1,k)
-     &                      * filter_weights(-1:1,-1:1) )
-     &                   * inv_weight_sum3
+              v_smooth(i,j,k) = sum( v(i-1:i+1,j-1:j+1,k,nrhs)
+     &                          * filter_weights(-1:1,-1:1) )
+     &                          * inv_weight_sum3
             endif
 # endif
             if(v_fwidth_array(i,j).lt.3) then
-                wrk(i,j) = Hvom(i,j,k)
+              v_smooth(i,j,k) = v(i,j,k,nrhs)
             endif
           enddo
         enddo
-        Hvom(istr:iend,JstrV:jend,k) = wrk(istr:iend,JstrV:jend)
       enddo  
 
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             Huon(START_2D_ARRAY,1))
+     &                             u_smooth(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             Hvom(START_2D_ARRAY,1))
+     &                             v_smooth(START_2D_ARRAY,1))
 #  else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend, 
-     &                        Huon(START_2D_ARRAY,1))
+     &                        u_smooth(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend, 
-     &                        Hvom(START_2D_ARRAY,1))
+     &                        v_smooth(START_2D_ARRAY,1))
 #  endif
 # endif 
 
