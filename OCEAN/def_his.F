@@ -3463,7 +3463,7 @@
             ierr=nf_inq_varid (ncid, vname_obst(1,indx)(1:lvar),
      &                             vidObst(itrv))
 #  ifdef NC4PAR
-            ierr=nf_var_par_access(ncid,vidObst(itrv),,
+            ierr=nf_var_par_access(ncid,vidObst(itrv),
      &                             nf_collective)
 #  endif
          endif
