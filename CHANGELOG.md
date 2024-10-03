@@ -29,6 +29,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix typo in step.F on RVTK cppkey and fix reproductibility test 
   for MUSTANG [#222]
 
+- Fix CPL scripts: 
+     - when running in chained_job: remove test on deprecated variable, 
+       select jobid on DATARMOR and JEAN-ZAY [#209]
+     - when using online OCE_COMPIL with new python-generated ini files [#205]
+     - for computing time steps when using nesting [#226]
+
 - Fix typo in def_diags_ek in case of NC4PAR [#228]
 
 ### Changed

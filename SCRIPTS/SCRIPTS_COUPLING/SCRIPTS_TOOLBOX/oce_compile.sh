@@ -40,7 +40,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     dimx=$( ncdump -h  ${OCE_FILES_DIR}/croco_grd.nc  | grep "xi_rho =" | cut -d ' ' -f 3)
     dimy=$( ncdump -h  ${OCE_FILES_DIR}/croco_grd.nc | grep "eta_rho =" | cut -d ' ' -f 3)
-    dimz=$( ncdump -h  ${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc | grep "s_rho =" | cut -d ' ' -f 3)
+    dimz=$( ncdump -h  ${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc | grep "s_rho =" | head -n 1 | cut -d ' ' -f 3)
     printf "          Grid size is (in Lx X Ly X Nz ) : ${dimx}X${dimy}X${dimz}\n"
 
     #   param.h
