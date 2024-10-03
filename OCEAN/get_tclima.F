@@ -188,10 +188,10 @@ c              goto 99                                     !--> ERROR
             endif
           elseif (itrc.eq.iDSI_) then
             got_tclm(itrc)=.true.
-            ierr=nf_inq_varid (ncidclm, 'bsi_time', tclm_tid(itrc))
+            ierr=nf_inq_varid (ncidclm, 'dsi_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
               got_tclm(itrc)=.false.
-              write(stdout,3) 'bsi_time', clmname(1:lstr)
+              write(stdout,3) 'dsi_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
           elseif (itrc.eq.iBFE_) then

@@ -1110,7 +1110,7 @@
            ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_DOUBLE,
      &                    3,dim_Tinfo,rstTinfo)
 # ifdef NC4PAR
-           ierr=nf_var_par_access(ncid,rstinfo,nf_collective)
+           ierr=nf_var_par_access(ncid,rstTinfo,nf_collective)
 # endif
            lvar=lenstr(vinfo(2))
            ierr=nf_put_att_text(ncid,rstTinfo,'long_name',lvar,

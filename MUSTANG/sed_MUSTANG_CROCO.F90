@@ -664,7 +664,7 @@ END SUBROUTINE sed_gradvit
 #endif /* key_MUSTANG_bedload */
 
 !!=============================================================================
-  SUBROUTINE sedinit_fromfile(BATHY_H0)
+  SUBROUTINE sedinit_fromfile
  
    !&E-------------------------------------------------------------------------
    !&E                 ***  ROUTINE sedinit_fromfile  ***
@@ -679,9 +679,7 @@ END SUBROUTINE sed_gradvit
    !&E-------------------------------------------------------------------------
    !! * Modules used
     implicit none
-
-    !! * Arguments
-    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN) :: BATHY_H0                         
+                      
 
 # include "netcdf.inc"
     real time_scale
@@ -699,10 +697,10 @@ END SUBROUTINE sed_gradvit
     dzsmax(PROC_IN_ARRAY) = dzsmaxuni
     ksmi(PROC_IN_ARRAY) = ksmiuni
     ksma(PROC_IN_ARRAY) = 0
-    hsed(PROC_IN_ARRAY) = -valmanq
-    dzs(ksdmin:ksdmax,PROC_IN_ARRAY) = -valmanq
-    cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY) = -valmanq
-    c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY) = -valmanq
+    hsed(PROC_IN_ARRAY) = 0.0_rsh
+    dzs(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
+    cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
+    c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
 !
 ! Open initial conditions netCDF file for reading. Check that all
 ! spatial dimensions in that file are consistent with the model
@@ -772,8 +770,10 @@ END SUBROUTINE sed_gradvit
         goto 99                                           !--> ERROR
       endif
 
-     WHERE (BATHY_H0(PROC_IN_ARRAY) == -valmanq) ksmi(PROC_IN_ARRAY)=1
-     WHERE (BATHY_H0(PROC_IN_ARRAY) == -valmanq) ksma(PROC_IN_ARRAY)=0
+     WHERE (ksmi(PROC_IN_ARRAY) < ksdmin ) 
+        ksmi(PROC_IN_ARRAY) = 1
+        ksma(PROC_IN_ARRAY) = 0
+     END WHERE
 !  DZS
       ierr=nf_inq_varid (ncid,'DZS', varid)
       if (ierr .eq. nf_noerr) then
@@ -842,7 +842,7 @@ END SUBROUTINE sed_gradvit
       enddo
      
      do k=ksdmin,ksdmax
-     WHERE (BATHY_H0(PROC_IN_ARRAY) == -valmanq) c_sedtot(k,PROC_IN_ARRAY)=-valmanq
+     WHERE (c_sedtot(k,PROC_IN_ARRAY) == -valmanq) c_sedtot(k,PROC_IN_ARRAY)=0.0_rsh
      enddo
 
 ! Close input NetCDF file.
