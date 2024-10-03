@@ -35,6 +35,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
      - when using online OCE_COMPIL with new python-generated ini files [#205]
      - for computing time steps when using nesting [#226]
 
+- Fix typo in def_diags_ek in case of NC4PAR [#228]
+
 ### Changed
 
 - Issue #184 : change roller contribution on Stokes Drift in very shallow water 
