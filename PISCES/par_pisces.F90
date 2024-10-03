@@ -91,13 +91,13 @@ MODULE par_pisces
    INTEGER, PUBLIC, PARAMETER ::   jpdoc = 10    !: dissolved organic carbon concentration 
    INTEGER, PUBLIC, PARAMETER ::   jpdia = 11    !: Diatoms Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpmes = 12    !: Mesozooplankton Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpgsi = 13    !: (big) Silicate Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpdsi = 13    !: (big) Silicate Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpfer = 14    !: Iron Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpbfe = 15    !: Big iron particles Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpgoc = 16    !: big particulate organic phosphate concentration
    INTEGER, PUBLIC, PARAMETER ::   jpsfe = 17    !: Small iron particles Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpdfe = 18    !: Diatoms iron Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpdsi = 19    !: Diatoms Silicate Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpgsi = 19    !: Sinking biogenic Silicate Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpnfe = 20    !: Nano iron Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpnch = 21    !: Nano Chlorophyll Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpdch = 22    !: Diatoms Chlorophyll Concentration

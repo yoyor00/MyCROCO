@@ -1033,7 +1033,7 @@ C$OMP END MASTER
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
       use comMUSTANG, only : l_morphocoupl, t_morpho
 # endif
-# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
+# if defined RVTK_DEBUG && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs
 #  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
@@ -1130,7 +1130,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
+# if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP MASTER
       do itrc = 1, NT
         call check_tab3d(Akt(:,:,1:N,itrc),'Akt step3d_t','r')
@@ -1139,10 +1139,14 @@ C$OMP MASTER
         call check_tab3d(trb(:,:,1:N,nstp,igls),'gls step3d_t','r')
         call check_tab3d(trb(:,:,1:N,nstp,itke),'tke step3d_t','r')
 #  endif
+C$OMP END MASTER
+# endif
+# if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP MASTER
 #  if defined MUSTANG
         do ilay = ksdmin, ksdmax
-            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtotx step3d_t','r')
-            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','r')
+            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtot step3d_t','rint')
+            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','rint')
         enddo
 #   if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
         do itrc = ibedload1, ibedload2
