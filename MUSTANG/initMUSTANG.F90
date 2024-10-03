@@ -279,7 +279,7 @@ CONTAINS
     ! Definition of initial conditions in sediment
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (l_repsed) THEN
-        CALL sedinit_fromfile(BATHY_H0)
+        CALL sedinit_fromfile
     ELSE
         CALL MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, BATHY_H0)
     END IF
