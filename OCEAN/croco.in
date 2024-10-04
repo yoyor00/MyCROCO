@@ -33,7 +33,7 @@ initial: NRREC / filename
           1 
     CROCO_FILES/croco_ini.nc
 restart:          NRST, NRPFRST / filename
-                   720    -1
+                   720    0
     CROCO_FILES/croco_rst.nc
     
 history: LDEFHIS, NWRT, NRPFHIS / filename 
