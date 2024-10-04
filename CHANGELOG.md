@@ -32,6 +32,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
      - when running in chained_job: remove test on deprecated variable, 
        select jobid on DATARMOR and JEAN-ZAY [#209]
      - when using online OCE_COMPIL with new python-generated ini files [#205]
+     - when using blk (not online) and nesting [#232]
      - for computing time steps when using nesting [#226]
 
 - Fix typo in def_diags_ek in case of NC4PAR [#228]
