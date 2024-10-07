@@ -131,7 +131,7 @@
 # define vidVWstr hisVWstr
 # define vidShflx hisShflx
 # ifdef STOGEN
-#  define vidTMPsto  hisTMPsto
+#  define vidTMPsto hisTMPsto
 # endif
 # ifdef SALINITY
 #  define vidSwflx hisSwflx
@@ -213,6 +213,9 @@
 # define vidShflx avgShflx
 # define vidSwflx avgSwflx
 # define vidShflx_rsw avgShflx_rsw
+# ifdef STOGEN
+#  define vidTMPsto hisTMPsto
+# endif
 # if defined BULK_FLUX
 #  define vidShflx_rlw avgShflx_rlw
 #  define vidShflx_lat avgShflx_lat

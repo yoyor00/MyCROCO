@@ -6,7 +6,7 @@ MODULE stobulk
    !!           for the air-sea fluxes
    !!======================================================================
    USE stoexternal , only : wp, lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam, &
-                          & jpi, jpj
+                          & jpi, jpj, stodt
    USE stoarray
 
    IMPLICIT NONE
@@ -16,8 +16,12 @@ MODULE stobulk
    INTEGER, SAVE :: jstobulk_cd
 
    ! Parameters of stochastic fields
-   REAL(wp), SAVE :: tcor = 3.0  ! time correlation
-   REAL(wp), SAVE :: std  = 0.3  ! standard deviation
+   ! (default values are replaced by values read in namelist)
+   REAL(wp), SAVE :: std  = 0.1   ! standard deviation of the multiplicative noise
+   REAL(wp), SAVE :: tcor = 3.0   ! time correlation (in days)
+   INTEGER,  SAVE :: npasses = 50 ! number of passes of the horizontal Laplacian filter
+   INTEGER,  SAVE :: arorder = 1  ! order of autoregressive process
+   INTEGER,  SAVE :: nupdate = 1  ! update frequency of autoregressive process (in time steps)
 
    PUBLIC sto_bulk, sto_bulk_init, sto_bulk_cd
 
@@ -59,19 +63,23 @@ CONTAINS
       ! Request index for a new stochastic array
       CALL sto_array_request_new(jstobulk_cd)
 
+      ! Convert tcor parameter from days to time steps
+      tcor = tcor * 86400. / ( stodt * nupdate )
+
       ! Set features of the requested stochastic field from parameters
       ! 1. time structure
       stofields(jstobulk_cd)%type_t='arn'
       stofields(jstobulk_cd)%corr_t=tcor
-      stofields(jstobulk_cd)%nar_order=1
-      stofields(jstobulk_cd)%nar_update=1
+      stofields(jstobulk_cd)%nar_order=arorder
+      stofields(jstobulk_cd)%nar_update=nupdate
       ! 2. space structure (with diffusive operator)
-      ! stofields(jstobulk_cd)%type_xy='diffusive'
-      stofields(jstobulk_cd)%type_xy='kernel'
-      stofields(jstobulk_cd)%corr_xy=10.
-      stofields(jstobulk_cd)%diff_passes=10
-      stofields(jstobulk_cd)%diff_type=1  ! option 1 would require the mask
-      ! 3. modified marginal distribution (here lognormal, with 30% std)
+      stofields(jstobulk_cd)%type_xy='diffusive'
+      stofields(jstobulk_cd)%diff_passes=npasses
+      stofields(jstobulk_cd)%diff_type=1
+      ! An alternative would be to use the kernel approach
+      ! stofields(jstobulk_cd)%type_xy='kernel'
+      ! stofields(jstobulk_cd)%corr_xy=10.
+      ! 3. modified marginal distribution (here lognormal, with user-defined std)
       stofields(jstobulk_cd)%type_variate='lognormal'
       stofields(jstobulk_cd)%ave=1.0
       stofields(jstobulk_cd)%std=std
@@ -103,7 +111,7 @@ CONTAINS
       !!----------------------------------------------------------------------
 
       ! Namelist with parameters for this stochastic module
-      NAMELIST/namsto_bulk/ tcor, std
+      NAMELIST/namsto_bulk/ tcor, std, npasses, arorder, nupdate
       !!----------------------------------------------------------------------
       INTEGER  ::   ios                            ! Local integer output status for namelist read
 

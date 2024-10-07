@@ -1,5 +1,4 @@
 MODULE storng_ziggurat
-!$AGRIF_DO_NOT_TREAT
    !!======================================================================
    !!                       ***  MODULE  storng_ziggurat  ***
    !! Random number generator, used in NEMO stochastic parameterization
@@ -78,7 +77,7 @@ MODULE storng_ziggurat
 
    ! Public routines
    PUBLIC  :: zig_set, zig_normal, zig_exp
-   PUBLIC  :: shr3, shr3_seed, shr3_reset, shr3_uni, shr3_normal
+   PUBLIC  :: shr3, shr3_seed, shr3_reset, shr3_uni, shr3_normal, shr3_state
 
 CONTAINS
 
@@ -324,6 +323,21 @@ CONTAINS
    END SUBROUTINE shr3_seed
 
 
+   SUBROUTINE shr3_state( jsrstate )
+      !! --------------------------------------------------------------------
+      !!                  ***  ROUTINE shr3_state  ***
+      !!
+      !! ** Purpose :   Get current state of shr3 random number generator
+      !!
+      !! --------------------------------------------------------------------
+      IMPLICIT NONE
+      INTEGER(KIND=i4) :: jsrstate
+
+      jsrstate = jsr
+
+   END SUBROUTINE shr3_state
+
+
    SUBROUTINE shr3_reset( )
       !!                  ***  SUBROUTINE shr3_reset ***
       !!
@@ -386,5 +400,4 @@ CONTAINS
       RETURN
    END FUNCTION shr3_normal
 
-!$AGRIF_END_DO_NOT_TREAT
 END MODULE storng_ziggurat

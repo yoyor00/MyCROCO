@@ -33,6 +33,7 @@
 #ifdef STOGEN
           USE stomod         ! Stochastic module
           USE stoexternal    ! Provide parameters to stochastic modules
+          USE stobulk
 #endif
 #ifdef ENSEMBLE
           USE ensmpi         ! Ensemble module
@@ -151,12 +152,11 @@
 !  ENSEMBLE: further split CROCO communicator
 !                                           
 # if defined ENSEMBLE                      
-# if defined XIOS                       
+#  if defined XIOS                       
       mpi_comm_all = MPI_COMM_WORLD      
-# else                                
-!     mpi_comm_all = MPI_COMM_ALL   ! true world communicator
-      mpi_comm_all = mpi_comm_world   ! true world communicator
-# endif                                                   
+#  else                                
+      mpi_comm_all = mpi_comm_world   ! true world communicator (keep lowercase to avoid cpp replacement!)
+#  endif                                                   
       call ens_comm_set ( )                                  
 # endif
 #endif /* MPI */
@@ -1034,6 +1034,9 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
         call stop_timers()
       enddo
       call closecdf
+#ifdef STOGEN
+      call sto_mod_finalize
+#endif
 #ifdef XIOS
       call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF
 #endif

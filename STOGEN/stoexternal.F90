@@ -68,9 +68,14 @@ MODULE stoexternal
    INTEGER, PUBLIC ::   numond      =   -1      !: logical unit for Output Namelist Dynamics
    CHARACTER(len=20), PUBLIC :: filnam_ref ='namelist_sto_ref' !: reference namelist filename
    CHARACTER(len=20), PUBLIC :: filnam_cfg ='namelist_sto_cfg' !: configuration namelist filename
+   CHARACTER(len=3), PUBLIC ::   cn_mem
 
    ! Ensemble parameters
    INTEGER, PUBLIC          :: nmember = 1             !: index of current ensemble member
+   LOGICAL, PUBLIC          :: ln_ensemble
+
+   ! Time parameter
+   REAL(wp), PUBLIC :: stodt
 
    ! Public routines
    INTERFACE lbc_lnk
@@ -193,7 +198,9 @@ C$    integer  trd, omp_get_thread_num
 
 #ifdef ENSEMBLE
       ! Define ensemble member index
+      ln_ensemble = .TRUE. 
       nmember = kmember
+      cn_mem = cmember
 #endif
 
       ! Define grid size (for local subdomain) -- 
@@ -248,7 +255,10 @@ C$    integer  trd, omp_get_thread_num
       ! Warning: glamtglo and gphitglo are left unallocated.
       ! Options using them (in stokernel) will fail
       ! (with error message: 'Incorrect grid in stokernel').
-
+      
+      ! define timestep  
+      stodt = dt
+      
    END SUBROUTINE ocean_2_stogen_tile
 
 

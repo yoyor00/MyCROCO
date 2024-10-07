@@ -1,5 +1,4 @@
 MODULE storng_kiss
-!$AGRIF_DO_NOT_TREAT
    !!======================================================================
    !!                       ***  MODULE  storng_kiss  ***
    !! Random number generator, used in NEMO stochastic parameterization
@@ -514,5 +513,4 @@ CONTAINS
       ENDDO
 
    END SUBROUTINE kiss_sample
-!$AGRIF_END_DO_NOT_TREAT
 END MODULE storng_kiss
