@@ -209,9 +209,9 @@
 #  endif
 
 # if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      integer indxD,indxT2
-      parameter (indxD=indxV+ntrc_temp+ntrc_salt+1,
-     &           indxT2=indxD+1)
+      integer indxCRT2,indxCRT3
+      parameter (indxCRT2=indxV+ntrc_temp+ntrc_salt+1,
+     &           indxCRT3=indxCRT2+1)
 # endif
 
 #  ifdef PASSIVE_TRACER

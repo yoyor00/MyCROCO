@@ -1967,16 +1967,23 @@ c        close(testunit)
 
 
 #if defined DIAGNOSTICS_TS
-# ifdef DIAGNOSTICS_TS_MLD
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       elseif (keyword(1:kwlen).eq.'diag_mld_crit_threshold') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) mld_crit_T, mld_crit_D, mld_crit_T2
+        read(input,*,err=95) mld_crit_D, mld_crit_T, mld_crit_T2
         MPI_master_only write(stdout,'(/1x,A,3(/1x,1pe10.3,2x,A))')
      &   'Tresholds for Mixed Layer calculation:', 
-     &        mld_crit_T, 'mld_crit_T     Temperature treshold [C]',
-     &        mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
-     &        mld_crit_T2, 'mld_crit_T2   Temperature threshold bis [C]'
-# endif  /* DIAGNOSTICS_TS_MLD */
+     &    mld_crit_D, 'CRT1 : mld_crit_D     Density threshold [kg/m3]',
+     &   mld_crit_T, 'CRT2 : mld_crit_T     Temperature treshold [C]',
+     & mld_crit_T2, 'CRT3 : mld_crit_T2   Temperature threshold bis [C]'
+
+      elseif (keyword(1:kwlen).eq.'diag_mld_depth_ref') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) mld_depth_ref
+        MPI_master_only write(stdout,'(/1x,A,/1x,I6,2x,A,1x/)')
+     &   'Depth reference for Mixed Layer calculation:',
+     &        mld_depth_ref, 'mld_depth_ref     Depth reference [m]'
+# endif  /* DIAGNOSTICS_TS_MLD_CRIT */
 # endif  /* DIAGNOSTICS_TS */
 
 

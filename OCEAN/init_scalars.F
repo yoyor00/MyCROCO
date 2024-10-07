@@ -542,31 +542,31 @@ CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(7,indxT)='                                            '
 
 # if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-CR      write(stdout,'(1x,A,I3)') 'indxD = ',indxD
-      vname(1,indxD)='temp_Dcrit                                  '
-      vname(2,indxD)='potential temperature                       '
-      vname(3,indxD)='Celsius                                     '
-      vname(4,indxD)='temperature, scalar, series                 '
-      vname(5,indxD)='sea_water_potential_temperature             '
+CR      write(stdout,'(1x,A,I3)') 'indxCRT2 = ',indxCRT2
+      vname(1,indxCRT2)='temp_CRT2                                  '
+      vname(2,indxCRT2)='potential temperature                       '
+      vname(3,indxCRT2)='Celsius                                     '
+      vname(4,indxCRT2)='temperature, scalar, series                 '
+      vname(5,indxCRT2)='sea_water_potential_temperature             '
 #  ifdef SPHERICAL
-      vname(6,indxD)='lat_rho lon_rho                             '
+      vname(6,indxCRT2)='lat_rho lon_rho                             '
 #  else
-      vname(6,indxD)='x_rho y_rho                                 '
+      vname(6,indxCRT2)='x_rho y_rho                                 '
 #  endif
-      vname(7,indxD)='                                            '
+      vname(7,indxCRT2)='                                            '
 
-CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
-      vname(1,indxT2)='temp_T2crit                                '
-      vname(2,indxT2)='potential temperature                       '
-      vname(3,indxT2)='Celsius                                     '
-      vname(4,indxT2)='temperature, scalar, series                 '
-      vname(5,indxT2)='sea_water_potential_temperature             '
+CR      write(stdout,'(1x,A,I3)') 'indxCRT3 = ',indxCRT3
+      vname(1,indxCRT3)='temp_CRT3                                '
+      vname(2,indxCRT3)='potential temperature                       '
+      vname(3,indxCRT3)='Celsius                                     '
+      vname(4,indxCRT3)='temperature, scalar, series                 '
+      vname(5,indxCRT3)='sea_water_potential_temperature             '
 #  ifdef SPHERICAL
-      vname(6,indxT2)='lat_rho lon_rho                             '
+      vname(6,indxCRT3)='lat_rho lon_rho                             '
 #  else
-      vname(6,indxT2)='x_rho y_rho                                 '
+      vname(6,indxCRT3)='x_rho y_rho                                 '
 #  endif
-      vname(7,indxT2)='                                            '
+      vname(7,indxCRT3)='                                            '
 # endif
 
 # endif /* TEMPERATURE */
@@ -3039,11 +3039,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
 # if defined DIAGNOSTICS_TS_MLD_CRIT
 CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
        nametrc=vname(1,indxT+itrc-1)
-       if (itrc.eq.2 .or. itrc.eq.3) then
-         write(vname1,*) '_mld                   '
-       else
-         write(vname1,*) '_Tcrit_mld                   '
-       endif
+       write(vname1,*) trim(nametrc),'_Tcrit_mld                  '
        vname(1,indxTcrit_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
        vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '

@@ -14,6 +14,7 @@
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
 # include "param.h"
+# include "ncscrum.h"
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
@@ -65,6 +66,7 @@
 !!   
       implicit none
 #include "param.h"
+#include "ncscrum.h"
       integer itrc, istr,iend,jstr,jend, i,j,k, kmld,
      &        imin,imax,jmin,jmax
       integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
@@ -73,7 +75,8 @@
      &        LapT(PRIVATE_2D_SCRATCH_ARRAY),   cff2,
      &        diff3u(PRIVATE_2D_SCRATCH_ARRAY),
      &        diff3v(PRIVATE_2D_SCRATCH_ARRAY)
-
+      real    nearest_diff
+      integer indx_depth
 #include "grid.h"
 #include "ocean3d.h"
 #include "mixing.h"
@@ -480,28 +483,50 @@
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
 #   ifdef DIAGNOSTICS_TS_MLD_CRIT
+
+
        do j=Jstr,Jend
           do i=Istr,Iend
-             kbl(i,j)=1
+
+
+              indx_depth = N
+              nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
+! Find the index corresponding to the reference depth mld_depth_ref
+              do k=N-1,1,-1
+                if (abs(z_r(i,j,k) + mld_depth_ref) < nearest_diff) then
+                  nearest_diff = abs(z_r(i,j,k) + mld_depth_ref)
+                  indx_depth = k
+                endif
+              enddo
+
+
+             kbl(i,j)=N
              cff=0
              do k=N,1,-1
-                if (itrc.eq.2) then
-                if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_D) then
+                if (itrc.eq.iCRT2) then
+                if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &                  t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
                    kbl(i,j)=k
                 endif
-                if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_D)  cff=1
+                if (t(i,j,k,nnew,itemp).le.
+     &                  t(i,j,indx_depth,nnew,itemp)-mld_crit_T)  cff=1
 
-                elseif (itrc.eq.3) then
-                if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_T2) then
+                elseif (itrc.eq.iCRT3) then
+                if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &                  t(i,j,indx_depth,nnew,itemp)-mld_crit_T2) then
                    kbl(i,j)=k
                 endif
-                if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_T2)  cff=1
+                if (t(i,j,k,nnew,itemp).le.
+     &                  t(i,j,indx_depth,nnew,itemp)-mld_crit_T2)  cff=1
             
                 else
-                if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_T) then
+
+                if (cff.eq.0.and.rho(i,j,k).lt.
+     &                 rho(i,j,indx_depth)+mld_crit_D) then
                    kbl(i,j)=k
                 endif
-                if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_T)  cff=1
+                if (rho(i,j,k).ge.rho(i,j,indx_depth)+mld_crit_D)  cff=1
+
 
                 endif
              enddo
@@ -512,25 +537,7 @@
 #    endif
           enddo
        enddo
-! CALCULATE BARRIER LAYER THICKNESS
-!       do j=Jstr,Jend
-!          do i=Istr,Iend
-!             kblt(i,j)=1
-!             cff=0
-!             do k=N,1,-1
-!                if (cff.eq.0.and.t(i,j,k,nnew,1).gt.
-!     &               t(i,j,N,nnew,1)-0.2) then
-!                   kblt(i,j)=k
-!                endif
-!                if (t(i,j,k,nnew,itrc).le.t(i,j,N,nnew,1)-mld_crit_T)  cff=1
-!             enddo
-!        if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
-!     &            Tcrit_mld(i,j,1)-(z_w(i,j,N)-z_r(i,j,kblt(i,j)))
-!#    ifdef MASKING
-!     &                        * rmask(i,j)
-!#    endif
-!          enddo
-!       enddo
+
 #    endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
        do j=Jstr,Jend
          do i=Istr,Iend
@@ -548,7 +555,7 @@
 #  endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             if (itrc.eq.2 .or. itrc.eq.3) then 
+             if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then 
                THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itemp)*cff
                T_mld_nnew(i,j)=T_mld_nnew(i,j)+
@@ -575,7 +582,7 @@
 #  endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             if (itrc.eq.2 .or. itrc.eq.3) then 
+             if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then 
                T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itemp)*cff
              else
