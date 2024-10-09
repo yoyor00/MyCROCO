@@ -52,6 +52,12 @@
       common /mixing_diff4_sponge/diff4_sponge
       common /mixing_diff4/diff4
 #endif
+#ifdef W_VIS_SMAGO_3D
+      real visc3dW_r(GLOBAL_2D_ARRAY,N)
+      common /mixing_visc3dW_r/visc3dW_r
+      real defrateW(GLOBAL_2D_ARRAY,N)
+      common /mixing_visc3dW_r2/defrateW
+#endif     
 #ifdef VIS_COEF_3D
       real visc3d_r(GLOBAL_2D_ARRAY,N)
       common /mixing_visc3d_r/visc3d_r

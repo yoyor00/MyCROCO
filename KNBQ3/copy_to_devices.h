@@ -13,7 +13,7 @@
 
 !scalars.h
 #ifdef SOLVE3D
-# ifndef M3FAST_SEDLAYERS
+# if !defined M3FAST_SEDLAYERS && !defined K3FAST_SEDLAYERS
 !$acc&, sc_w, Cs_w, sc_r, Cs_r
 # else
 # endif
@@ -131,12 +131,13 @@
 !$acc&, Hz_bak
 !$acc&, z_r
 !$acc&, z_w
+#   else
+#   endif
 !$acc&, Huon
 !$acc&, Hvom
 !$acc&, We
-#  ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
 !$acc&, Wi
-#  endif
 # endif
 # if defined NBQ || defined K3FAST 
 #  if defined NBQ || defined K3SLOW_W
@@ -338,6 +339,10 @@
 !$acc&, diff4_sponge
 !$acc&, diff4
 #endif
+#ifdef W_VIS_SMAGO_3D
+!$acc&, visc3dW_r
+!$acc&, defrateW
+#endif     
 #ifdef VIS_COEF_3D
 !$acc&, visc3d_r
 !$acc&, visc3d_p
@@ -345,7 +350,7 @@
 #ifdef DIF_COEF_3D
 !$acc&, diff3d_u
 !$acc&, diff3d_v
-# if defined TS_DIF_SMAGO || defined GLS_MIXING_3D
+# if defined TS_DIF_SMAGO || defined GLS_MIXING_3D || defined TKE3D_MIXING
 !$acc&, diff3d_r
 # endif
 #endif
@@ -369,7 +374,7 @@
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
+  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D || defined TKE3D_MIXING
 !$acc&, bvf
 # endif
 # ifdef BIOLOGY
@@ -399,7 +404,13 @@
 !$acc&, Eps_gls
 !$acc&, kbl
 !$acc&, hbl
-# endif /* GLS_MIXING */
+# elif defined TKE3D_MIXING
+!$acc&, tke
+!$acc&, Lscale
+!$acc&, Sprod3d
+!$acc&, 0667, 1
+!$acc&, 4, 1
+# endif /* MIXING */
 #else
 # define u(i,j,k,nrhs) ubar(i,j,kstp)
 # define v(i,j,k,nrhs) vbar(i,j,kstp)
@@ -748,7 +759,7 @@
 #endif /* SOLVE3D */
 #if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 #endif
 #ifdef EXACT_RESTART
 # if defined M3FAST || defined K3FAST
@@ -824,7 +835,7 @@
 # if defined TRACERS
 !$acc&, rstT
 # endif
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 # endif
 # if defined M3FAST || defined K3FAST
 # endif
@@ -851,7 +862,7 @@
 #ifdef SOLVE3D
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 # endif
 # ifdef BIOLOGY
 #  ifdef BIO_NChlPZD
@@ -964,7 +975,7 @@
 # ifdef SOLVE3D
 #  if defined ANA_VMIX || defined BVF_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+ || defined GLS_MIXING || defined TKE3D_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -1151,7 +1162,7 @@
 # endif
 #endif
 #ifdef SOLVE3D
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 # endif
 # if defined M3FAST || defined K3FAST
 # endif
@@ -1161,7 +1172,7 @@
 #ifdef SOLVE3D
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 # endif
 # ifdef BIOLOGY
 #  ifdef BIO_NChlPZD
@@ -1203,7 +1214,7 @@
 # ifdef SOLVE3D
 #  if defined ANA_VMIX || defined BVF_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+ || defined GLS_MIXING || defined TKE3D_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -1313,7 +1324,7 @@
 !$acc&, rho_avg
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 !$acc&, bvf_avg
 #  endif
 !$acc&, omega_avg
@@ -1324,7 +1335,7 @@
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
 #  endif
 !$acc&, stflx_avg
 !$acc&, btflx_avg
@@ -1335,6 +1346,11 @@
 !$acc&, hbbl_avg
 #  endif
 #  ifdef GLS_MIXING
+!$acc&, tke_avg
+!$acc&, gls_avg
+!$acc&, Lscale_avg
+#  endif
+#  ifdef TKE3D_MIXING
 !$acc&, tke_avg
 !$acc&, gls_avg
 !$acc&, Lscale_avg
@@ -1404,7 +1420,7 @@
 #endif /* AVERAGES */
 
 !lmd_kpp.h
-#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING || defined TKE3D_MIXING
 !$acc&, Jwtype
 #endif
 
@@ -1520,9 +1536,12 @@
 #  if defined NBQ_FREESLIP && ! defined K3FAST_SEDLAYERS
 !$acc&, qdmw0_nbq
 #  endif
-#  if defined K3FAST_ZETAW || defined PSOURCE || defined WET_DRY
+#  if defined K3FAST_DUVNBQ || defined K3FAST_DUVNBQ2 || defined PSOURCE || defined WET_DRY
 !$acc&, DU_nbq
 !$acc&, DV_nbq
+#  endif
+#  if defined K3FAST_ZETAW || defined PSOURCE || defined WET_DRY || defined KNHINT_ZETAW
+!$acc&, dzeta_nbq
 !$acc&, wsurf_nbq
 !$acc&, usurf_nbq
 !$acc&, vsurf_nbq
@@ -1583,6 +1602,10 @@
 #  ifdef K3FAST_DIAGACOUS
 !$acc&, p_nbq
 !$acc&, p_nbq_max
+#  endif
+#  ifdef ONLINE_ANALYSIS
+!$acc&, mvoa1
+!$acc&, mvoa2
 #  endif
 #  ifdef NBQ_GRAV
 !$acc&, rho_nh

@@ -1661,6 +1661,15 @@ C$    integer omp_get_thread_num
 !        enddo
 !      enddo
 #  endif/* K3SLOW_W */
+# ifdef W_VIS_SMAGO_3D
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+               visc3dW_r(i,j,k) = 0.d0
+            enddo
+          enddo
+        enddo
+# endif
 # endif /* K3FAST */
 
 #endif /* SOLVE3D */
