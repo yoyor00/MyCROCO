@@ -18,6 +18,9 @@ export OCE_EXE_DIR=${CHOME}/CROCO_IN
 #       FRC_BRY, CLIMATOLOGY
 #       TIDES, PSOURCE, PSOURCE_NCFILE, PSOURCE_NCFILE_TS
 # Other changes of parameterizations, numerical schemes, etc should be made "by hand" in CROCO_IN/cppdefs.h.base
+# NB: ONLINE_COMP=1 does not work when RESTART_FLAG="TRUE" in myjob.sh
+#     (this case may arise when running a coupled run after a forced spinup for instance)
+#     in such case, the user should compile "by hand" prior to the run
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 export ONLINE_COMP=1
 
