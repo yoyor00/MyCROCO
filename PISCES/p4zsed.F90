@@ -117,7 +117,6 @@ CONTAINS
       ! Thus, the amount of silica lost in the sediments equal the supply at the surface (dust+rivers)
       ! ------------------------------------------------------
       !
-      IF( .NOT.lk_sed ) THEN
          DO_2D( 0, 0, 0, 0 )
             ikt  = mbkt(ji,jj)
             zdep = 1._wp / e3t(ji,jj,ikt,Kmm)
@@ -143,12 +142,9 @@ CONTAINS
                        &                 + zsiloss * zrivsil(ji,jj)
             END_2D
          ENDIF
-      ENDIF
       !
-
       ! The 0.5 factor in zpdenit is to avoid negative NO3 concentration after
       ! denitrification in the sediments. Not very clever, but simpliest option.
-      IF( .NOT.lk_sed ) THEN
          IF( ln_p2z ) THEN
             DO_2D( 0, 0, 0, 0 )
                ikt  = mbkt(ji,jj)
@@ -214,7 +210,6 @@ CONTAINS
                        &              + ( z1pdenit - zolimit ) * zwstpop / (zwstpoc + rtrn)
             END_2D
          ENDIF
-      ENDIF
       !
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
           zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molC/m3/s
@@ -292,7 +287,6 @@ CONTAINS
       sedsilfrac = 0.03     ! percentage of silica loss in the sediments
       sedcalfrac = 0.99     ! percentage of calcite loss in the sediments
       !
-      lk_sed = .FALSE.
 #if defined key_sediment      
       lk_sed = ln_sediment .AND. ln_sed_2way 
 #endif      

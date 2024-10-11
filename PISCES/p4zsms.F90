@@ -131,7 +131,8 @@ CONTAINS
          ELSE
             IF( ln_lys ) CALL p4z_lys( kt, jnt, Kbb,      Krhs )   ! Compute CaCO3 saturation
          ENDIF
-         IF( ln_sed ) CALL p4z_sed( kt, jnt, Kbb, Kmm, Krhs )   ! Surface and Bottom boundary conditions
+         IF( .NOT. lk_sed .AND. ln_sed ) CALL p4z_sed( kt, jnt, Kbb, Kmm, Krhs )   ! Surface and Bottom boundary conditions
+
          IF( ln_flx ) CALL p4z_flx( kt, jnt, Kbb, Kmm, Krhs )   ! Compute surface fluxes
          !
          ! Handling of the negative concentrations
