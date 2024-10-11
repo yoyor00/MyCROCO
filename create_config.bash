@@ -65,7 +65,7 @@ TOOLS_DIR=${PWD}/../croco_tools
 
 # Configuration name
 # ------------------
-MY_CONFIG_NAME=Run
+MY_CONFIG_NAME=Run_SED_TST
 
 # Home and Work configuration directories
 # ---------------------------------------
@@ -334,6 +334,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     # PISCES
     if [[ ${options[@]} =~ "pisces" ]] ; then
 	cp -f ${CROCO_DIR}/PISCES/*namelist* $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/PISCES/SED/*namelist* $MY_CROCO_DIR.
     fi
     # SEDIMENT
     if [[ ${options[@]} =~ "sediment" ]] ; then
