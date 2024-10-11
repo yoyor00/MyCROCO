@@ -30,7 +30,6 @@ cpfile submitjob.sh ${JOBDIR_ROOT}
 cd ${JOBDIR_ROOT} 
 ls ${jobname}  > /dev/null  2>&1 
 if [ "$?" -eq "0" ] ; then
-   if [ ${CHAINED_JOB} == "FALSE" ]; then 
        echo "  "
        echo "!!!!!!!! WARNING !!!!!!!!!"
        echo "  "
@@ -48,25 +47,6 @@ if [ "$?" -eq "0" ] ; then
           exit
        fi
        unset -v answer
-   elif [ ${CHAINED_JOB} == "TRUE" ] && [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
-       echo "  "
-       echo "!!!!!!!! WARNING !!!!!!!!!"
-       echo "  "
-       echo "A ${jobname} job already exists in  ${JOBDIR_ROOT}"
-       echo -n "  Do you want to remove it and launch the new job? [y/n]"
-       read answer
-       if [  "x$answer" = "xy" ]; then
-          echo " " 
-          echo "Creating and launching new job"
-          echo "   "
-       else
-          echo "  " 
-          echo "Exiting..."
-          echo "   "
-          exit
-       fi
-       unset -v answer
-   fi
 fi
 cd -
 

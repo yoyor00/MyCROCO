@@ -112,6 +112,7 @@ variables:
     paths:
       - $RUN_WORK/ftp
       - $RUN_WORK/${RUN_NAME}/*/*.log
+    when: always
 
 
 .ana_run_base: &ana_run_base

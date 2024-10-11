@@ -30,20 +30,20 @@ if [ -s $filein ]; then
     echo 'res='$res >> $fileout
     if [ -n "$res" ]  ; then 
 	echo 'check [Restartability failed]'  >> $fileout
-	sed -e '4c N' ${TEST_NAME}_steps > tmp.txt 
+	sed -e '3c N' ${TEST_NAME}_steps > tmp.txt 
     else
 	if [[ $execflag == 'Y' ]]; then 
 	    echo 'check [Restartability passed]'  >> $fileout
-	    sed -e '4c Y' ${TEST_NAME}_steps > tmp.txt
+	    sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt
 	else
 	    echo '... Restartability unknown'  >> $fileout
-	    sed -e '4c ?__exec_failure' ${TEST_NAME}_steps > tmp.txt
+	    sed -e '3c ?__exec_failure' ${TEST_NAME}_steps > tmp.txt
 	fi
     fi
     \mv tmp.txt ${TEST_NAME}_steps
 else
-    #sed -e '4c ?__comp_failure' ${TEST_NAME}_steps > tmp.txt
-    sed -e '4c ?' ${TEST_NAME}_steps > tmp.txt
+    #sed -e '3c ?__comp_failure' ${TEST_NAME}_steps > tmp.txt
+    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt
     \mv tmp.txt ${TEST_NAME}_steps
 fi
 
