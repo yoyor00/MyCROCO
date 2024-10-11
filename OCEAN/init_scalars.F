@@ -580,6 +580,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
 # endif /* PASSIVE_TRACER */
 
 # ifdef ABL1D
+      vname_abl1d(:,:) = '  '
       vname_abl1d(1,indxabl_pu_dta)='pu_dta                               '
       vname_abl1d(2,indxabl_pu_dta)='u-wind                               '
       vname_abl1d(3,indxabl_pu_dta)='m/s                                  '
@@ -860,7 +861,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(1,indxDSI)='DSI                                       '
       vname(2,indxDSI)='Diatoms silicon                           '
       vname(3,indxDSI)='umol Si L-1                               '
-      vname(4,indxDSI)='BSi, scalar, series                       '
+      vname(4,indxDSI)='DSi, scalar, series                       '
       vname(5,indxDSI)='                                          '
       vname(6,indxDSI)='lat_rho lon_rho                           '
       vname(7,indxDSI)='                                          '

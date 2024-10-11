@@ -987,7 +987,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 
       do i = IstrR, IendR
 #  ifdef MPI
-        cff  = (float(i +ii*Lm) )
+        cff  = (float(i + iminmpi - 1) )
 #  else
         cff  = (float(i       ) )
 #  endif
@@ -1052,7 +1052,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 
         do j = JstrR, JendR
 #  ifdef MPI
-          cff2 = (float(j +jj*Mm) )
+          cff2 = (float(j + jminmpi - 1) )
 #  else
           cff2 = (float(j       ) )
 #  endif
@@ -1134,7 +1134,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  ifdef ESTUARY
       do i = IstrR, IendR
 #   ifdef MPI
-        cff  = (float(i +ii*Lm) )
+        cff  = (float(i + iminmpi - 1) )
 #   else
         cff  = (float(i       ) )
 #   endif
