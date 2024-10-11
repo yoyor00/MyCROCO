@@ -153,8 +153,6 @@
 #if defined MUSTANG
 # ifdef WAVE_OFFLINE
 # endif
-#if defined key_MUSTANG_specif_outputs
-#endif
 #ifdef key_sand2D
 #endif
 #endif
@@ -184,8 +182,6 @@
 #ifdef DIAGNOSTICS_EDDY
 #endif
 #if defined MUSTANG
-#if defined key_MUSTANG_specif_outputs
-#endif
 #endif
 #  define I_EXT_RANGE Istr-1,Iend+1
 #  define J_EXT_RANGE Jstr-1,Jend+1
@@ -1061,9 +1057,6 @@ c       endif
 #if defined key_sand2D
 #else
 #endif
-      if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host(  ) 
-      endif
       if (xios_field_is_active("tauskin")) then
 !$acc update host( tauskin ) 
       endif
@@ -1077,12 +1070,6 @@ c       endif
 # endif
       if (xios_field_is_active("ksma")) then
 !$acc update host( ksma ) 
-      endif
-      if (xios_field_is_active("eptot")) then
-!$acc update host( eptot ) 
-      endif
-      if (xios_field_is_active(TRIM(nametrc))) then
-!$acc update host(  ) 
       endif
       if (xios_field_is_active('dzs')) then
 !$acc update host(  ) 

@@ -56,12 +56,13 @@ MODULE comsubstance
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_wat, cini_air, cobc_wat
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: typdiss
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: sub_flx_atm, cv_rain
-    CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: obc_cv_name, name_var, standard_name_var
+    CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: obc_cv_name, long_name_var, name_var, standard_name_var
     CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: init_cv_name, unit_var
     REAL(KIND=rsh), DIMENSION(:,:,:,:),ALLOCATABLE :: ws_part
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: ws_free_min, ws_free_max
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: unit_modif_mudbio_N2dw
     LOGICAL, DIMENSION(:), ALLOCATABLE :: l_subs2D
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: l_out_subs
 
 #ifdef MUSTANG
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: ws_free_para, ws_hind_para
