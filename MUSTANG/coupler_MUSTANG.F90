@@ -89,7 +89,7 @@ MODULE coupler_MUSTANG
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(IN):: ssh                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
-   INTEGER  :: iv, i, j, n
+   INTEGER  :: iv, i, j, niter
 
    !! * Executable part
    DO j=jfirst,jlast
@@ -101,23 +101,23 @@ MODULE coupler_MUSTANG
 ! CROCO vecteur au temps 1, 2 ou 3 ????
 ! Fdufois 2024/07/03 : à vérifier mais je pense que c'est mieux comme ça. Par contre pas sur que l'appel avec iappel=1 soit vraiment util à part à l'initialisation
             IF (iappel.eq.1) THEN
-                n=nstp
+                niter=nstp
             ELSE IF (iappel.eq.2) THEN
-                n=nnew
+                niter=nnew
             ELSE
-                n=1
+                niter=1
             ENDIF
 # ifdef SALINITY
-            sal_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,n,itemp+1)
+            sal_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,niter,itemp+1)
 # else
             sal_bottom_MUSTANG(i,j)=35.
 # endif
 # ifdef TEMPERATURE
-            temp_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,n,itemp)
+            temp_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,niter,itemp)
 # else
             temp_bottom_MUSTANG(i,j)=15.
 # endif
-            cw_bottom_MUSTANG(1:nv_adv,i,j)=WATER_CONCENTRATION(i,j,1,n,itsubs1:itsubs2)
+            cw_bottom_MUSTANG(1:nv_adv,i,j)=WATER_CONCENTRATION(i,j,1,niter,itsubs1:itsubs2)
 
             ! thickness of the bottom water layer or altitude at the top of the bottom layer
             ! + water density in the bottom water layer

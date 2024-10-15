@@ -184,7 +184,7 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'mes_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
-          elseif (itrc.eq.iBSI_) then
+          elseif (itrc.eq.iDSI_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'bsi_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -224,7 +224,7 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'dfe_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
-          elseif (itrc.eq.iDSI_) then
+          elseif (itrc.eq.iGSI_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'dsi_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
