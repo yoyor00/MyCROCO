@@ -1,7 +1,4 @@
 #include "cppdefs.h"
-#ifdef MUSTANG
-# include "coupler_define_MUSTANG.h"
-#endif
 
 MODULE substance
 
@@ -19,8 +16,6 @@ MODULE substance
    USE submassbalance, ONLY :  submassbalance_readdomain
 #endif
 
-# define REPFICNAMELIST 'MUSTANG_NAMELIST'
-
    IMPLICIT NONE
    PRIVATE
     
@@ -28,7 +23,8 @@ MODULE substance
    PUBLIC   substance_surfcell     ! called by main.F
    
    ! variables for all ntrc_subs
-   CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: long_name_var, unit_var_r, init_cv_name_r, obc_cv_name_r
+   CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: name_var_r, long_name_var_r, standard_name_var_r, &
+                                                      unit_var_r, init_cv_name_r, obc_cv_name_r
    REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r, cv_rain_r, cini_wat_r, cini_air_r, cobc_wat_r
    LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r 
 
@@ -61,9 +57,7 @@ CONTAINS
    LOGICAL                                   :: l_varassoc
    INTEGER                                   :: ivpc, ivp, iv, iv0, indx, ivTS
    INTEGER                                   :: isubs, nballoc, ivr, it, ntypvar
-#ifdef key_CROCO
    INTEGER                                   :: lstr, lenstr
-#endif
 
 !! tables (_n) sized to read in namelist by number of substances of such and such a type
 !! tables (_r) intermediates sized to the number of substances, will then be copied into the final 
@@ -76,7 +70,6 @@ CONTAINS
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE       :: ws_free_min_n,ws_free_max_n
    CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)     :: name_varpc_assoc
    CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE :: name_varpc_assoc_n
-   CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE :: name_var_mod,standard_name_var_mod
 #if defined MUSTANG
    REAL(KIND=rsh),DIMENSION(ntrc_subs)        :: diam_r, ros_r, tocd_r 
    REAL(KIND=rsh), DIMENSION(4,ntrc_subs)     :: ws_free_para_r
@@ -167,21 +160,13 @@ CONTAINS
 
 
 #ifdef MUSTANG
-# ifdef key_CROCO
    lstr=lenstr(sedname_subst)
    OPEN(500,file=sedname_subst(1:lstr),status='old',form='formatted',access='sequential')
-# else
-   OPEN(500,file=REPFICNAMELIST//'/parasubstance_MUSTANG.txt',status='old',form='formatted',access='sequential')
-# endif
 ! only substance
 #else 
-# ifdef key_CROCO
    lstr=lenstr(subsname)
    MPI_master_only  WRITE(stdout,*),'SUBS:',subsname(1:lstr)
    OPEN(500,file=subsname(1:lstr),status='old',form='formatted',access='sequential')
-# else
-   OPEN(500,file=REPFICNAMELIST//'/parasubstance.txt',status='old',form='formatted',access='sequential')
-# endif
    nv_grav=0
    nv_sand=0
    nv_mud=0
@@ -235,7 +220,10 @@ CONTAINS
    ivp=0
    iv=0
    ALLOCATE(name_var(ntrc_subs))
+   ALLOCATE(long_name_var(ntrc_subs))
    ALLOCATE(standard_name_var(ntrc_subs))
+   ALLOCATE(unit_var(ntrc_subs))
+   ALLOCATE(l_out_subs(ntrc_subs))
  
     !******************************************
     !    reading NAMELISTS of parasubstance.txt
@@ -428,9 +416,9 @@ CONTAINS
    ! initialize the number of variables according to their type
    nvpc=nv_mud+nv_sand+nv_grav
    nvp=nvpc+nv_ncp+nv_sorb
-   nv_adv=nvp+nv_dis
+   nv_adv=nvp+nv_dis ! ntrc_subs
    nv_state=nv_adv+nv_fix
-   nv_tot=nv_state
+   nv_tot=nv_state ! ntrc_substot
 
 #ifdef SUBSTANCE_SUBMASSBALANCE 
     READ(500, nmlsubmassbalance)
@@ -614,16 +602,13 @@ CONTAINS
    ! tables for substances - without temperature and salinity                              
     ALLOCATE(obc_cv_name(itsubs1:itsubs2))
     ALLOCATE(init_cv_name(itsubs1:itsubs2))
-    ALLOCATE(unit_var(itsubs1:itsubs2))
     ALLOCATE(sub_flx_atm(itsubs1:itsubs2))
     ALLOCATE(cv_rain(itsubs1:itsubs2))
     ALLOCATE(cini_wat(itsubs1:itsubs2))
     ALLOCATE(cobc_wat(itsubs1:itsubs2))
     ALLOCATE(cini_air(itsubs1:itsubs2))
     ALLOCATE(ws_part(GLOBAL_2D_ARRAY,N,itsubs1:itsubs2))
-    ALLOCATE(typdiss(itsubs1:itsubs2))
-    ALLOCATE(name_var_mod(ntrc_subs))      
-    ALLOCATE(standard_name_var_mod(ntrc_subs))      
+    ALLOCATE(typdiss(itsubs1:itsubs2)) 
     ws_part(:,:,:,:)=0.0
    
    IF (nvp > 0) THEN
@@ -743,11 +728,11 @@ CONTAINS
    MPI_master_only WRITE(stdout,*) 'TRACER-SUBSTANCE NUMBER        NAME             UNIT            TYPE      '
     DO isubs=1,ntrc_subs
       MPI_master_only WRITE(stdout,'(5x,i4,5x,a30,2x,a18,5x,i4)')  &
-                 isubs,TRIM(name_var(irk_fil(isubs))),TRIM(unit_var_r(isubs)),itypv_r(isubs)
+                 isubs,TRIM(name_var_r(isubs)),TRIM(unit_var_r(isubs)),itypv_r(isubs)
     END DO
     DO isubs=1,ntrc_subs
      MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'VARIABLE NAME : ',TRIM(name_var(irk_fil(isubs)))
+     MPI_master_only WRITE(stdout,*)'VARIABLE NAME : ',TRIM(name_var_r(isubs))
      IF (itypv_r(isubs)==3 .OR. itypv_r(isubs)==4) THEN
        
 #ifdef MUSTANG
@@ -816,20 +801,40 @@ CONTAINS
    ! -------------------------------------------------------------------
    ! final tables
    ! -------------------------------------------------------------------
+    DO iv=1,ntrc_subs
+      ivr=iv+ivTS
+      name_var(iv)=name_var_r(irk_fil(iv))
+      standard_name_var(iv)=standard_name_var_r(irk_fil(iv))
+      long_name_var(iv)=long_name_var_r(irk_fil(iv))
+      unit_var(iv)=unit_var_r(irk_fil(iv))
+      l_out_subs(iv)=l_out_subs_r(irk_fil(iv)) 
 
+      cini_wat(ivr)=cini_wat_r(irk_fil(iv))
+      cobc_wat(ivr)=cobc_wat_r(irk_fil(iv))
+      cini_air(ivr)=cini_air_r(irk_fil(iv))
+      init_cv_name(ivr)=init_cv_name_r(irk_fil(iv))
+      obc_cv_name(ivr)=obc_cv_name_r(irk_fil(iv))
+      cv_rain(ivr)=cv_rain_r(irk_fil(iv))
+      sub_flx_atm(ivr)=flx_atm_r(irk_fil(iv))
+    END DO
   ! memorisation des noms des variables
   !  remplissage du tableau vname declare dans ncscrum.h
    !write(*,*)'in substance indxT=',indxT
    DO isubs=1,ntrc_subs
      indx=indxT+ntrc_salt+isubs
-     vname(1,indx)=name_var(irk_fil(isubs))
+     vname(1,indx)=name_var(isubs)
      MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
-     vname(2,indx)=long_name_var(irk_fil(isubs))
-     vname(3,indx)=unit_var_r(irk_fil(isubs))
-     vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var(irk_fil(isubs)))))//', scalar, series'
+     vname(2,indx)=long_name_var(isubs)
+     vname(3,indx)=unit_var(isubs)
+     vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var(isubs))))//', scalar, series'
      vname(5,indx)=' '
      vname(6,indx)=' '
      vname(7,indx)=' '
+     IF (isubs .GT. igrav2) THEN
+         wrthis(indx) = l_out_subs(isubs) 
+     ELSE
+         wrthis(indx) = .FALSE. !! no output in water for gravel
+     ENDIF
    ENDDO
    DO isubs=1,nv_fix
      indx=indxT+ntrc_salt+ntrc_subs+isubs
@@ -846,34 +851,10 @@ CONTAINS
     ! MPI_master_only write(*,*)'fix, indice wrthis fixed variables',indx,wrthis(indx),name_var_fix(isubs)
    ENDDO
      
-   DO iv=1,ntrc_subs
-     ivr=iv+ivTS
-     name_var_mod(iv)=name_var(irk_fil(iv))
-     standard_name_var_mod(iv)=standard_name_var(irk_fil(iv))
-     unit_var(ivr)=unit_var_r(irk_fil(iv))
-     cini_wat(ivr)=cini_wat_r(irk_fil(iv))
-     cobc_wat(ivr)=cobc_wat_r(irk_fil(iv))
-     cini_air(ivr)=cini_air_r(irk_fil(iv))
-     init_cv_name(ivr)=init_cv_name_r(irk_fil(iv))
-     wrthis(ivr)=l_out_subs_r(irk_fil(iv))  
-     obc_cv_name(ivr)=obc_cv_name_r(irk_fil(iv))
-     cv_rain(ivr)=cv_rain_r(irk_fil(iv))
-     sub_flx_atm(ivr)=flx_atm_r(irk_fil(iv))
-     !MPI_master_only  WRITE(*,*)' indice wrthis state variable',iv,  &
-     !            TRIM(ADJUSTL(ADJUSTR(name_var_mod(iv)))),ivr,irk_fil(iv),wrthis(ivr)
-   END DO
-    ! MPI_master_only write(*,*)' indice wrthis tot',wrthis(1:indX+ntrc_substot)
 
 #ifdef PSOURCE_NCFILE_TS
    DO isubs=1,ntrc_subs
           indx=indxT+ntrc_salt+isubs
-!          vname(1,indxTsrc+ntrc_salt+isubs)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src         '
-!          vname(2,indxTsrc+ntrc_salt+isubs)='Tracer source concentration     '
-!          vname(3,indxTsrc+ntrc_salt+isubs)=trim(ADJUSTL(ADJUSTR(vname(3,indx) )))//''
-!          vname(4,indxTsrc+ntrc_salt+isubs)='                                '
-!          vname(5,indxTsrc+ntrc_salt+isubs)='                                '
-!          vname(6,indxTsrc+ntrc_salt+isubs)='                                '
-!          vname(7,indxTsrc+ntrc_salt+isubs)='                                '
           vname(1,indxTsrc+isubs+1)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src        '
           vname(2,indxTsrc+isubs+1)='Tracer source concentration     '
           vname(3,indxTsrc+isubs+1)=trim(ADJUSTL(ADJUSTR(vname(3,indx) )))//''
@@ -884,388 +865,6 @@ CONTAINS
 !     write(*,*)'Traceurs SUBSTANCE:',vname(1,indxTsrc+ntrc_salt+isubs)
     enddo
 #endif
-
-#ifdef MUSTANG
-#ifdef MORPHODYN
-   indx=5
-   wrthis(indx)=.TRUE.
-   vname(1,indx)='Hm'
-   vname(2,indx)='evolving bathymetry'
-   vname(3,indx)='meter'
-   vname(4,indx)='evolving_bathymetry, scalar, series'
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-#endif
-   indx=indxT+ntrc_salt+ntrc_substot+1
-   wrthis(indx)=.TRUE.
-   vname(1,indx)='NB_LAY_SED'
-   vname(2,indx)='number of sediment layers'
-   vname(3,indx)='no units'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-   indx=indxT+ntrc_salt+ntrc_substot+2
-   wrthis(indx)=.TRUE.
-   vname(1,indx)='HSED'
-   vname(2,indx)='total thickness of sediment'
-   vname(3,indx)='meter'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-   indx=indxT+ntrc_salt+ntrc_substot+3
-   wrthis(indx)=.TRUE.
-   vname(1,indx)='TAUSKIN'
-   vname(2,indx)='total bottom shear stress for erosion'
-   vname(3,indx)='N/m2'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-   indx=indxT+ntrc_salt+ntrc_substot+4
-   wrthis(indx)=.TRUE.
-   vname(1,indx)='DZS'
-   vname(2,indx)='thickness of sediment layer'
-   vname(3,indx)='meter'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-   indx=indxT+ntrc_salt+ntrc_substot+5
-   wrthis(indx)=.TRUE.
-   vname(1,indx)='temp_sed'
-   vname(2,indx)='sediment temperature'
-   vname(3,indx)='Celsius'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-   indx=indxT+ntrc_salt+ntrc_substot+6
-   wrthis(indx)=.TRUE.
-   vname(1,indx)='salt_sed'
-   vname(2,indx)='sediment salinity'
-   vname(3,indx)='PSU'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-   DO isubs=1,ntrc_subs
-     indx=indxT+ntrc_salt+ntrc_substot+isubs+6
-     vname(1,indx)=TRIM(name_var(irk_fil(isubs)))//'_sed'
-     vname(2,indx)=TRIM(long_name_var(irk_fil(isubs)))//'_sed'
-     vname(3,indx)=unit_var_r(irk_fil(isubs))
-     vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var(irk_fil(isubs)))))//', scalar, series'
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     ivr=isubs+ivTS   !!!!!!!! ivr=iv+ivTS for iv=1,ntrc_subs avec ivTS=itsubs1-1=itemp+ntrc_salt+1-1 avec itemp=1,ntrc_salt=1
-     wrthis(indx)=wrthis(ivr)   ! name_out_cvsed   -->iv=itemp+ntrc_salt+isubs (isubs=1,ntrc_subs)
-    ! MPI_master_only  WRITE(*,*)' indice wrthis state variable MUSTANG',isubs,  &
-    !             TRIM(ADJUSTL(ADJUSTR(name_var(irk_fil(isubs)))),ivr,indx,irk_fil(isubs),wrthis(indx)
-   ENDDO
-
-   indx=indx+1
-   wrthis(indx)=.FALSE.
-   vname(1,indx)='ksmi'
-   vname(2,indx)='lower sediment layer index'
-   vname(3,indx)='no units'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-
-   indx=indx+1
-   wrthis(indx)=.FALSE.
-   vname(1,indx)='ksma'
-   vname(2,indx)='upper sediment layer index'
-   vname(3,indx)='no units'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-
-
-
-#ifdef  key_MUSTANG_specif_outputs
-! seulement variables nv_out3Dnv_specif  et  nv_out3Dk_specif RAF: nv_out2D_specif)
-   DO isubs=1,ntrc_subs
-      ! 1 : toce_save
-      ! 2 : flx_s2w_save
-      ! 3 : flx_w2s_save
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)=TRIM(name_var(isubs))//'_toce'
-     vname(2,indx)='critical shear stress'
-     vname(3,indx)='N/m2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)=TRIM(name_var(isubs))//'_flx_s2w'
-     vname(2,indx)='erosion flux'
-     vname(3,indx)='kg.m-2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)=TRIM(name_var(isubs))//'_flx_w2s'
-     vname(2,indx)='deposition flux'
-     vname(3,indx)='kg.m-2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-#ifdef  key_MUSTANG_V2
-      ! 4 : pephm_fcor_save  
-     indx=indx+1
-     wrthis(indx)=.TRUE. 
-     vname(1,indx)=TRIM(name_var(isubs))//'_pephm_fcor'
-     vname(2,indx)='Hindering exposure factor on toce'
-     vname(3,indx)='no units'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-
-#ifdef key_MUSTANG_bedload
-      ! 5 : flx_bx
-      ! 6 : flx_by
-      ! 7 : bil_bedload
-      ! 8 : fsusp
-     indx=indx+1
-     wrthis(indx)=.TRUE. 
-     vname(1,indx)=TRIM(name_var(isubs))//'_flx_bx'
-     vname(2,indx)='bedload flux along x-axis'
-     vname(3,indx)='kg/m/s'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     indx=indx+1
-     wrthis(indx)=.TRUE.  
-     vname(1,indx)=TRIM(name_var(isubs))//'_flx_by'
-     vname(2,indx)='bedload flux along y-axis'
-     vname(3,indx)='kg/m/s'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     indx=indx+1
-     wrthis(indx)=.TRUE. 
-     vname(1,indx)=TRIM(name_var(isubs))//'_bil_bedload'
-     vname(2,indx)='divergence of bedload flux'
-     vname(3,indx)='kg.m-2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     indx=indx+1
-     wrthis(indx)=.TRUE. 
-     vname(1,indx)=TRIM(name_var(isubs))//'_fsusp'
-     vname(2,indx)='fraction of transport in suspension'
-     vname(3,indx)='no units'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-#endif
-#endif
-ENDDO
-!    nv_out2D_specif
-      ! 1 : frmudsup 
-      ! 2 : dzs_ksmax 
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='frmudsup'
-     vname(2,indx)='mud fraction in the ksmax layer'
-     vname(3,indx)='no units'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='dzs_ksmax'
-     vname(2,indx)='layer thickness at sediment surface'
-     vname(3,indx)='meter'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-#ifdef key_MUSTANG_V2
-      ! 3 : dzs_aclay_comp_save
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='dzs_aclay_comp_save'
-     vname(2,indx)='Theoretical active layer thickness Harris and Wiberg 1997'
-     vname(3,indx)='meter'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 4 : dzs_aclay_kept_save
-     indx=indx+1
-     wrthis(indx)=.TRUE. 
-     vname(1,indx)='dzs_aclay_kept_save'
-     vname(2,indx)='Active layer thickness in the model'
-     vname(3,indx)='meter'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 5 : tero_noncoh (cumulated time (in hours) elapsed in non cohesive regime)
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='tero_noncoh'
-     vname(2,indx)='time elapsed in the non-cohesive erosion regime'
-     vname(3,indx)='hours'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 6 : tero_coh (cumulated time (in hours) elapsed in cohesive regime)
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='tero_coh'
-     vname(2,indx)='time elapsed in the cohesive erosion regime'
-     vname(3,indx)='hours'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 7 : pct_iter_noncoh
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='pct_iter_noncoh'
-     vname(2,indx)='part of erosion iterations in the non-cohesive regime'
-     vname(3,indx)='percent'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 8 : pct_iter_coh
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='pct_iter_coh'
-     vname(2,indx)='part of erosion iterations in the cohesive regime'
-     vname(3,indx)='percent'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 9 : niter_ero
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='niter_ero'
-     vname(2,indx)='Number of iterations in sed_erosion during time step'
-     vname(3,indx)='no units'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 10: z0sed
-     indx=indx+1
-     wrthis(indx)=.TRUE. 
-     vname(1,indx)='z0sed'
-     vname(2,indx)='Skin roughness length'
-     vname(3,indx)='meter'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 11 : flx_s2w_noncoh
-     indx=indx+1
-     wrthis(indx)=.TRUE.  
-     vname(1,indx)='flx_s2w_noncoh'
-     vname(2,indx)='erosion flux of non-cohesive sediments (sum: isand1 to isand2)' 
-     vname(3,indx)='kg.m-2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 12 : flx_w2s_noncoh
-     indx=indx+1
-     wrthis(indx)=.TRUE. 
-     vname(1,indx)='flx_w2s_noncoh'
-     vname(2,indx)='deposition flux of non-cohesive sediments (sum: isand1 to isand2)'
-     vname(3,indx)='kg.m-2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 13 : flx_s2w_coh
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='flx_s2w_coh'
-     vname(2,indx)='erosion flux of cohesive sediments (sum: imud1 to imud2)'
-     vname(3,indx)='kg.m-2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 14 : flx_w2s_coh
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='flx_w2s_coh'
-     vname(2,indx)='deposition flux of cohesive sediments (sum: imud1 to imud2)'
-     vname(3,indx)='kg.m-2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     ! 15 : z0hydro non nul only if l_z0hydro_coupl=True 
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='z0hydro'
-     vname(2,indx)='hydrodynamic roughness length'
-     vname(3,indx)='m'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-#ifdef key_MUSTANG_bedload
-      ! 16 : flx_bx_int
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='flx_bx_int'
-     vname(2,indx)='total bedload flux along  x-axis (sum: igrav1 to isand2)'
-     vname(3,indx)='kg/m/s'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 17 : flx_by_int
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='flx_by_int'
-     vname(2,indx)='total bedload flux along y-axis (sum: igrav1 to isand2)'
-     vname(3,indx)='kg/m/s'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-      ! 18 : bil_bedload_int
-     indx=indx+1
-     wrthis(indx)=.TRUE.
-     vname(1,indx)='bil_bedload_int'
-     vname(2,indx)='divergence of total bedload flux (sum: igrav1 to isand2)'
-     vname(3,indx)='kg/m2'
-     vname(4,indx)=' '
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-#endif
-#endif
-
-#endif
-#endif
-
 
 #ifdef MUSTANG
    ! ---------------------------------------------------------
@@ -1389,9 +988,9 @@ ENDDO
    ENDDO
    DO ivr=1,nballoc
      iv=iv+1
-     name_var(iv)=name_var_n(ivr)
-     long_name_var(iv)=long_name_var_n(ivr)
-     standard_name_var(iv)=standard_name_var_n(ivr)
+     name_var_r(iv)=name_var_n(ivr)
+     long_name_var_r(iv)=long_name_var_n(ivr)
+     standard_name_var_r(iv)=standard_name_var_n(ivr)
      unit_var_r(iv)=unit_var_n(ivr)
      flx_atm_r(iv)=flx_atm_n(ivr)
      cv_rain_r(iv)=cv_rain_n(ivr)
