@@ -122,6 +122,8 @@ if [[ -e "namelist_pisces_ref" ]] ; then
 else
         \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
+	\cp -f ${ROOT_DIR}/PISCES/SED/namelist_sediment* $RUNDIR
+        echo "  file namelist_sediment copied from source director"
 fi
 
 if [[ -d MUSTANG_NAMELIST ]]; then
