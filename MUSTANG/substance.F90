@@ -790,7 +790,7 @@ CONTAINS
     END DO
     DO isubs=1,ntrc_subs
      MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'VARIABLE NAME : ',TRIM(name_var(irk_fil(isubs)))
+     MPI_master_only WRITE(stdout,*)'VARIABLE NAME : ',TRIM(ADJUSTL(ADJUSTR(name_var(irk_fil(isubs)))))
      IF (itypv_r(isubs)==3 .OR. itypv_r(isubs)==4) THEN
        
 #ifdef MUSTANG
@@ -804,7 +804,7 @@ CONTAINS
 #endif
 #ifdef MUSTANG
      ELSE IF (itypv_r(isubs) == 5) THEN
-       MPI_master_only WRITE(stdout,*)'Particulate Constitutive associated Variable  : ',name_varpc_assoc(isubs)
+       MPI_master_only WRITE(stdout,*)'Particulate Constitutive associated Variable  : ',TRIM(ADJUSTL(ADJUSTR(name_varpc_assoc(isubs))))
 #endif
      ENDIF
 #ifdef MUSTANG
@@ -826,11 +826,13 @@ CONTAINS
 #endif
 #endif
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
+     MPI_master_only WRITE(stdout,*)'name of substance read from init cond file: ',TRIM(ADJUSTL(ADJUSTR(init_cv_name_r(isubs))))
+     MPI_master_only WRITE(stdout,*)'name of substance read from obc file: ',TRIM(ADJUSTL(ADJUSTR(obc_cv_name_r(isubs))))
     END DO
 
     DO isubs=1,nv_fix
      MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(name_var_fix(isubs))
+     MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(ADJUSTL(ADJUSTR(name_var_fix(isubs))))
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_fix(isubs)
     END DO
 #ifdef key_benthic
