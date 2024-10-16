@@ -273,68 +273,70 @@
       blk_vname(4,12)='??????                                   '
 #   endif
 
-#  else
 
+#  elif defined FORMATTED
       ! Temperature_height_above_ground
-      blk_vname(1,1)='Temperature_height_above_ground          '
-      blk_vname(2,1)='??????                                   '
-      blk_vname(3,1)='??????                                   '
+      blk_vname(1,1)='T2M                                      '
+      blk_vname(2,1)='Temperature                              '
+      blk_vname(3,1)='Kelvin                                   '
       blk_vname(4,1)='??????                                   '
 
       ! Specific_humidity
-      blk_vname(1,2)='Specific_humidity                        '
+      blk_vname(1,2)='R                                        '
       blk_vname(2,2)='Specific Humidity at surface             '
-      blk_vname(3,2)='Kg/Kg                                    '
+      blk_vname(3,2)='Percentage                               '
       blk_vname(4,2)='??????                                   '
 
       ! Precipitation_rate
-      blk_vname(1,3)='Precipitation_rate                       '
-      blk_vname(2,3)='??????                                   '
+      blk_vname(1,3)='TP                                       '
+      blk_vname(2,3)='Precipitation_rate                       '
       blk_vname(3,3)='kg/m^2/s                                 '
       blk_vname(4,3)='??????                                   '
 
       ! Downward_Short-Wave_Rad_Flux_surface
-      blk_vname(1,4)='Downward_Short-Wave_Rad_Flux_surface     '
-      blk_vname(2,4)='??????                                   '
+      blk_vname(1,4)='xxx                                      '
+      blk_vname(2,4)='xxx                                      '
       blk_vname(3,4)='W/m^2                                    '
       blk_vname(4,4)='??????                                   '
 
       ! Upward_Short-Wave_Rad_Flux_surface
-      blk_vname(1,5)='Upward_Short-Wave_Rad_Flux_surface       '
-      blk_vname(2,5)='??????                                   '
+      blk_vname(1,5)='SSR                                      '
+      blk_vname(2,5)='NET SHORT WAVE!!!                        '
       blk_vname(3,5)='W/m^2                                    '
       blk_vname(4,5)='??????                                   '
 
       ! Downward_Long-Wave_Rad_Flux
-      blk_vname(1,6)='Downward_Long-Wave_Rad_Flux              '
-      blk_vname(2,6)='??????                                   '
+      blk_vname(1,6)='STRD                                     '
+      blk_vname(2,6)='Downward_Long-Wave_Rad_Flux              '
       blk_vname(3,6)='W/m^2                                    '
       blk_vname(4,6)='??????                                   '
 
       ! Upward_Long-Wave_Rad_Flux_surface
-      blk_vname(1,7)='Upward_Long-Wave_Rad_Flux_surface        '
+      blk_vname(1,7)='NOPE                                     '
       blk_vname(2,7)='??????                                   '
       blk_vname(3,7)='W/m^2                                    '
       blk_vname(4,7)='??????                                   '
 
       ! U-component_of_wind
-      blk_vname(1,8)='U-component_of_wind                      '
-      blk_vname(2,8)='??????                                   '
+      blk_vname(1,8)='U10M                                     '
+      blk_vname(2,8)='U10M                                     '
       blk_vname(3,8)='m/s                                      '
       blk_vname(4,8)='??????                                   '
 
       ! V-component_of_wind
-      blk_vname(1,9)='V-component_of_wind                      '
-      blk_vname(2,9)='??????                                   '
+      blk_vname(1,9)='V10M                                     '
+      blk_vname(2,9)='V10M                                     '
       blk_vname(3,9)='m/s                                      '
       blk_vname(4,9)='??????                                   '
+
 #   ifdef READ_PATM
       ! Atm pressure
-      blk_vname(1,10)='patm                                     '
-      blk_vname(2,10)='air_pressure_at_sea_level                '
-      blk_vname(3,10)='Pa                                       '
-      blk_vname(4,10)='??????                                   '
+      blk_vname(1,10)='msl                                     '
+      blk_vname(2,10)='air_pressure_at_sea_level               '
+      blk_vname(3,10)='Pa                                      '
+      blk_vname(4,10)='??????                                  '
 #   endif
+
 
 #  endif
 

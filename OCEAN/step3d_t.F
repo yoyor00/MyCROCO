@@ -18,6 +18,7 @@
 # ifdef TRACERS
       integer trd, omp_get_thread_num
 #  include "param.h"
+#  include "ncscrum.h"
 #  include "private_scratch.h"
 #  include "ocean3d.h"
 #  include "compute_tile_bounds.h"
@@ -63,6 +64,7 @@
 #  endif
       implicit none
 #  include "param.h"
+#  include "ncscrum.h"
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "mixing.h"
@@ -72,6 +74,10 @@
 #  include "forces.h"
 #  ifdef DIAGNOSTICS_TS
 #   include "diagnostics.h"
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      real nearest_diff
+      integer indx_depth
+#  endif
 #  endif
 #  ifdef DIAGNOSTICS_PV
 #   include "diags_pv.h"
@@ -991,6 +997,55 @@
 #   ifdef DIAGNOSTICS_TS_MLD
 #    define T_mld_nnew FX
 #    define T_mld_nstp FE
+#    ifdef DIAGNOSTICS_TS_MLD_CRIT
+
+         do j=Jstr,Jend
+            do i=Istr,Iend
+
+              indx_depth = N
+              nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
+! Find the index corresponding to the reference depth mld_depth_ref
+              do k=N-1,1,-1
+                if (abs(z_r(i,j,k) + mld_depth_ref) < nearest_diff) then
+                  nearest_diff = abs(z_r(i,j,k) + mld_depth_ref)
+                  indx_depth = k
+                endif
+              enddo
+
+               kbl(i,j)=N
+               cff=0
+               do k=N,1,-1
+
+                  if (itrc.eq.iCRT2) then
+                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &                   t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
+                     kbl(i,j)=k
+                  endif
+                  if (t(i,j,k,nnew,itemp).le.
+     &                   t(i,j,indx_depth,nnew,itemp)-mld_crit_T)  cff=1
+
+                  elseif (itrc.eq.iCRT3) then
+                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &                   t(i,j,indx_depth,nnew,itemp)-mld_crit_T2) then
+                     kbl(i,j)=k
+                  endif
+                  if (t(i,j,k,nnew,itemp).le.
+     &                 t(i,j,indx_depth,nnew,itemp)-mld_crit_T2)  cff=1
+
+                  else
+                  if (cff.eq.0.and.rho(i,j,k).lt.
+     &                     rho(i,j,indx_depth)+mld_crit_D) then
+                     kbl(i,j)=k
+                  endif
+                  if (rho(i,j,k).ge.
+     &                 rho(i,j,indx_depth)+mld_crit_D)  cff=1
+                  
+                  endif
+               enddo 
+            enddo
+         enddo
+#    endif  /* DIAGNOSTICS_TS_MLD_CRIT */
+
         do j=Jstr,Jend
           do i=Istr,Iend
             TXadv_mld(i,j,itrc)=0.
@@ -1013,6 +1068,22 @@
             kmld=N-5
 #    endif
             do k=N,kmld,-1
+              if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+              TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
+     &                            TXadv(i,j,k,itemp)*cff
+              TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
+     &                            TYadv(i,j,k,itemp)*cff
+              TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
+     &                            TVadv(i,j,k,itemp)*cff
+              TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
+     &                            TVmix(i,j,k,itemp)*cff
+              TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
+     &                            TForc(i,j,k,itemp)*cff
+              T_mld_nnew(i,j)     =T_mld_nnew(i,j)+
+     &                            t(i,j,k,nnew,itemp)*cff
+
+              else
               cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
      &                            TXadv(i,j,k,itrc)*cff
@@ -1026,6 +1097,7 @@
      &                            TForc(i,j,k,itrc)*cff
               T_mld_nnew(i,j)     =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itrc)*cff
+              endif
             enddo
           enddo
         enddo
@@ -1047,8 +1119,13 @@
 #     endif
             do k=N,kmld,-1
               cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+              if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+                T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+     &                        t(i,j,k,nstp,itemp)*cff
+              else
+                T_mld_nstp(i,j)=T_mld_nstp(i,j)+              
      &                        t(i,j,k,nstp,itrc)*cff
+              endif
             enddo
             if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
           enddo
@@ -1101,6 +1178,71 @@
      &      ' STEP3D_T: T budget closure at k=N-5:', cff
         endif
 #   endif /* DIAGNOSTICS_DEBUG */
+
+        if (istr.eq.1 .and. jstr.eq.1
+#    ifdef TEMPERATURE
+     &       .and. itrc.eq.iCRT2
+#    endif /* TEMPERATURE */
+     &       ) then
+          i=5
+          j=5
+#    if defined DIAGNOSTICS_TS_MLD
+          cff=Trate_mld(i,j,itrc)-
+     &        TXadv_mld(i,j,itrc)-
+     &        TYadv_mld(i,j,itrc)-
+     &        TVadv_mld(i,j,itrc)-
+     &        TVmix_mld(i,j,itrc)-
+     &        THmix_mld(i,j,itrc)-
+     &        Tentr_mld(i,j,itrc)-
+     &        TForc_mld(i,j,itrc)
+             MPI_master_only write(stdout,'(A,2x,1pe10.3)')
+     &       ' STEP3D_T: T budget closure MLD     :', cff
+!
+#    endif /* DIAGNOSTICS_TS_MLD */
+          cff=Trate(i,j,N-5,itrc)-
+     &        TXadv(i,j,N-5,itrc)-
+     &        TYadv(i,j,N-5,itrc)-
+     &        TVadv(i,j,N-5,itrc)-
+     &        TVmix(i,j,N-5,itrc)-
+     &        THmix(i,j,N-5,itrc)-
+     &        TForc(i,j,N-5,itrc)
+            MPI_master_only write(stdout,'(A,2x,1pe10.3)')
+     &      ' STEP3D_T: T budget closure at k=N-5:', cff
+        endif
+
+        if (istr.eq.1 .and. jstr.eq.1
+#    ifdef TEMPERATURE
+     &       .and. itrc.eq.iCRT3
+#    endif /* TEMPERATURE */
+     &       ) then
+          i=5
+          j=5
+#    if defined DIAGNOSTICS_TS_MLD
+          cff=Trate_mld(i,j,itrc)-
+     &        TXadv_mld(i,j,itrc)-
+     &        TYadv_mld(i,j,itrc)-
+     &        TVadv_mld(i,j,itrc)-
+     &        TVmix_mld(i,j,itrc)-
+     &        THmix_mld(i,j,itrc)-
+     &        Tentr_mld(i,j,itrc)-
+     &        TForc_mld(i,j,itrc)
+             MPI_master_only write(stdout,'(A,2x,1pe10.3)')
+     &       ' STEP3D_T: T budget closure MLD     :', cff
+!
+#    endif /* DIAGNOSTICS_TS_MLD */
+          cff=Trate(i,j,N-5,itrc)-
+     &        TXadv(i,j,N-5,itrc)-
+     &        TYadv(i,j,N-5,itrc)-
+     &        TVadv(i,j,N-5,itrc)-
+     &        TVmix(i,j,N-5,itrc)-
+     &        THmix(i,j,N-5,itrc)-
+     &        TForc(i,j,N-5,itrc)
+            MPI_master_only write(stdout,'(A,2x,1pe10.3)')
+     &      ' STEP3D_T: T budget closure at k=N-5:', cff
+        endif
+
+
+
 #  endif /* DIAGNOSTICS_TS */
 !
 !

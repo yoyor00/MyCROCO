@@ -33,6 +33,10 @@
       real TForc_mld(GLOBAL_2D_ARRAY,NT)
       real Trate_mld(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld(GLOBAL_2D_ARRAY,NT)
+      real Taver_mld(GLOBAL_2D_ARRAY,NT)
+# ifdef DIAGNOSTICS_TS_MLD_CRIT      
+      real Tcrit_mld(GLOBAL_2D_ARRAY,NT)
+# endif
       integer kbl_nstp(GLOBAL_2D_ARRAY)
 # endif
 # ifdef AVERAGES
@@ -57,6 +61,10 @@
       real TForc_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Trate_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld_avg(GLOBAL_2D_ARRAY,NT)
+      real Taver_mld_avg(GLOBAL_2D_ARRAY,NT)
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT           
+      real Tcrit_mld_avg(GLOBAL_2D_ARRAY,NT)
+#   endif
 #  endif
 # endif
       common /diag_TXadv/TXadv
@@ -79,6 +87,10 @@
       common /diag_TForc_mld/TForc_mld
       common /diag_Trate_mld/Trate_mld
       common /diag_Tentr_mld/Tentr_mld
+      common /diag_Taver_mld/Taver_mld
+#  ifdef DIAGNOSTICS_TS_MLD_CRIT        
+      common /diag_Tcrit_mld/Tcrit_mld
+#  endif
       common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES
@@ -103,6 +115,10 @@
       common /diag_TForc_mld_avg/TForc_mld_avg
       common /diag_Trate_mld_avg/Trate_mld_avg
       common /diag_Tentr_mld_avg/Tentr_mld_avg
+      common /diag_Taver_mld_avg/Taver_mld_avg
+#  ifdef DIAGNOSTICS_TS_MLD_CRIT
+      common /diag_Tcrit_mld_avg/Tcrit_mld_avg
+#   endif
 #  endif
 # endif
 #endif /* DIAGNOSTICS_TS */

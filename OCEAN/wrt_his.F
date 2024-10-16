@@ -696,6 +696,9 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !
 # ifdef TRACERS
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3) then
+# endif
          if (wrthis(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,itrc))
             workr=t(:,:,:,nstp,itrc)
@@ -717,6 +720,9 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+      endif
+# endif
       enddo
 # endif /* TRACERS */
 !

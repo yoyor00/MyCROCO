@@ -269,6 +269,9 @@
 # ifdef TRACERS
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,:))
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3) then
+# endif
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -277,6 +280,9 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+       endif
+# endif
       enddo
 # endif
 
