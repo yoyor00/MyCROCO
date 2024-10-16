@@ -35,9 +35,17 @@
 	<field field_ref="lat_v"     />
 	<field field_ref="angle"     />
 	<field field_ref="mask_rho"  />
-	<field field_ref="Cs_rho"    />
+  <field field_ref="s_rho"     />
+  <field field_ref="s_w"       />
+  <field field_ref="Cs_rho"    />
 	<field field_ref="Cs_w"      />
-      </field_group>
+  # ifdef M3FAST_SEDLAYERS
+  <field field_ref="s_rho_total"  />
+  <field field_ref="s_w_total"    />
+  <field field_ref="Cs_rho_total" />
+  <field field_ref="Cs_w_total"   />
+  # endif
+  </field_group>
 
       <field_group id="inst_fields1" operation="instant">
 	<field field_ref="zeta" name="zeta" />
