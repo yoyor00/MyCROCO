@@ -39,8 +39,8 @@ CONTAINS
       ! Set name of restart file (function of processor index and ensemble member index)
       rstfile = cn_storst_in
       WRITE(cn_area,'(i4.4)') narea
-      IF ( narea > 1   ) rstfile = rstfile(1:len(rstfile)) //  cn_area
-      IF ( ln_ensemble ) rstfile = cn_mem // rstfile(1:len(rstfile))
+      IF ( narea > 0   ) rstfile = trim(rstfile) //  cn_area
+      IF ( ln_ensemble ) rstfile = cn_mem // trim(rstfile)
 
       ! Open NetCDF file
       ierr = NF90_OPEN(rstfile,NF90_NOWRITE,idf)
@@ -117,8 +117,8 @@ CONTAINS
       ! Set name of restart file (function of processor index and ensemble member index)
       rstfile = cn_storst_out
       WRITE(cn_area,'(i4.4)') narea
-      IF ( narea > 1   ) rstfile = rstfile(1:len(rstfile)) //  cn_area
-      IF ( ln_ensemble ) rstfile = cn_mem // rstfile(1:len(rstfile))
+      IF ( narea > 0   ) rstfile = trim(rstfile) // cn_area
+      IF ( ln_ensemble ) rstfile = cn_mem // trim(rstfile)
 
       ! Get type and state of random number generator to save in restart file
       SELECT CASE (c_rngtype)

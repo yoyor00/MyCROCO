@@ -18,7 +18,7 @@ MODULE stobulk
    ! Parameters of stochastic fields
    ! (default values are replaced by values read in namelist)
    REAL(wp), SAVE :: std  = 0.1   ! standard deviation of the multiplicative noise
-   REAL(wp), SAVE :: tcor = 3.0   ! time correlation (in days)
+   REAL(wp), SAVE :: tcor = 10.0   ! time correlation (in days)
    INTEGER,  SAVE :: npasses = 50 ! number of passes of the horizontal Laplacian filter
    INTEGER,  SAVE :: arorder = 1  ! order of autoregressive process
    INTEGER,  SAVE :: nupdate = 1  ! update frequency of autoregressive process (in time steps)
