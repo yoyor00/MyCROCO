@@ -2806,7 +2806,7 @@
 
              diag_3d_sed(id_nitrif,k,i,j)=diag_3d_sed(id_nitrif,k,i,j)  &
                                          +F_nitrif * cs(iv_nutr_NH4) * dzs(k,i,j)
-             diag_3d_sed(id_remin_drnaN,k,i,j)=diag_3d_sed(id_remin_drnaN,k,i,j)  &
+             diag_3d_sed(id_remin_dnraN,k,i,j)=diag_3d_sed(id_remin_dnraN,k,i,j)  &
                                               +F_dnra * cs(iv_detr_N) * porosite_inv * dzs(k,i,j) &
                                               +F_dnraR * cs(iv_detrR_N) * porosite_inv * dzs(k,i,j)
              
