@@ -1917,8 +1917,8 @@ C 				  endif
       CALL iom_set_axis_attr( "s_rho", sc_r(1:N) )
       CALL iom_set_axis_attr( "s_w"  , sc_w(0:N) )
 # ifdef M3FAST_SEDLAYERS
-      CALL iom_set_axis_attr( "s_rho_full", sc_r )      
-      CALL iom_set_axis_attr( "s_w_full"  , sc_w )
+      CALL iom_set_axis_attr( "s_rho_total", sc_r )      
+      CALL iom_set_axis_attr( "s_w_total"  , sc_w )
 # endif      
 # ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
