@@ -803,7 +803,9 @@ CONTAINS
 #endif
 #ifdef MUSTANG
      ELSE IF (itypv_r(isubs) == 5) THEN
-       MPI_master_only WRITE(stdout,*)'Particulate Constitutive associated Variable  : ',TRIM(ADJUSTL(ADJUSTR(name_varpc_assoc(isubs))))
+       MPI_master_only WRITE(stdout,*) &
+         'Particulate Constitutive associated Variable  : ',&
+         TRIM(ADJUSTL(ADJUSTR(name_varpc_assoc(isubs))))
 #endif
      ENDIF
 #ifdef MUSTANG
@@ -825,8 +827,12 @@ CONTAINS
 #endif
 #endif
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
-     MPI_master_only WRITE(stdout,*)'name of substance read from init cond file: ',TRIM(ADJUSTL(ADJUSTR(init_cv_name_r(isubs))))
-     MPI_master_only WRITE(stdout,*)'name of substance read from obc file: ',TRIM(ADJUSTL(ADJUSTR(obc_cv_name_r(isubs))))
+     MPI_master_only WRITE(stdout,*) &
+         'name of substance read from init cond file: ', &
+         TRIM(ADJUSTL(ADJUSTR(init_cv_name_r(isubs))))
+     MPI_master_only WRITE(stdout,*) &
+         'name of substance read from obc file: ', &
+         TRIM(ADJUSTL(ADJUSTR(obc_cv_name_r(isubs))))
     END DO
 
     DO isubs=1,nv_fix
