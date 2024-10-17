@@ -1209,10 +1209,20 @@ c        close(testunit)
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
 # ifdef TRACERS
         do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+           MPI_master_only write(stdout, '(6x,A,2x,A,I2,A,I2,A)')
+     &                     'F', 'write T(', itrc,
+     &                              ')  Tracer of index', itrc,'.'
+         else
+# endif
           if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
           MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
      &                     wrthis(indxV+itrc), 'write T(', itrc,
      &                              ')  Tracer of index', itrc,'.'
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         endif
+# endif 
         enddo
 # endif
 #endif

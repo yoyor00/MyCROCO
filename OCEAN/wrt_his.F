@@ -1360,6 +1360,9 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Tracer variables.
 !
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3) then
+# endif
         if (wrthis(indxT+itrc-1)) then
           workr=t(:,:,:,nstp,itrc)
 # if defined MUSTANG & defined key_sand2D
@@ -1391,6 +1394,9 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         endif
+# endif
       enddo
 
 !
