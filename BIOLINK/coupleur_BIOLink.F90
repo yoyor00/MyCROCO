@@ -811,10 +811,9 @@
 #  if defined key_oyster_benthos || defined key_oyster_DEB || defined key_oyster_SFG
 
       ALLOCATE(nbhuitre(PROC_IN_ARRAY))
-      hautable(:,:)=0.0_rsh
       ALLOCATE(hautable(PROC_IN_ARRAY))
       nbhuitre(:,:)=0.0_rsh
-
+      hautable(:,:)=0.0_rsh
 #  endif /* key_oyster_benthos */
 
 #endif /* BLOOM */
@@ -823,9 +822,6 @@
 END SUBROUTINE  BIOLink_alloc
 
   SUBROUTINE BIOLink_update(ifirst,ilast,jfirst,jlast   &
-#if defined key_oyster_SFG || defined key_oyster_DEB
-          , CELL_SURF                                                &
-#endif
          )
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_update  ***
@@ -964,9 +960,9 @@ END SUBROUTINE  BIOLink_alloc
              k=1
              iv=iv_oysdeb_res
              WAT_CONCFIX_ivkij=50.0_rsh
-             iv=iv_oysdeb_gon
+             iv=iv_oysdeb_gon-nv_adv
              WAT_CONCFIX_ivkij=500.0_rsh
-             iv=iv_oysdeb_str
+             iv=iv_oysdeb_str-nv_adv
              WAT_CONCFIX_ivkij=310.0_rsh
           ENDIF
         ENDIF
@@ -1393,12 +1389,12 @@ END SUBROUTINE  BIOLink_alloc
          ! Reinitialization of oysters for the 1rst of each year
          IF ((imois_BIOLink.eq.1).and.(ijour_BIOLink.eq.1).and.(iheure_BIOLink.eq.0)) THEN
            IF (nbhuitre(i,j).ne.0.0_rsh) THEN
-              k=1
-              iv=iv_oysdeb_res
+              k=2
+              iv=iv_oysdeb_res-nv_adv
               BENTHIC_CONCENTRATION(BENTH_INDEXij)=50.0_rsh
-              iv=iv_oysdeb_gon
+              iv=iv_oysdeb_gon-nv_adv
               BENTHIC_CONCENTRATION(BENTH_INDEXij)=500.0_rsh
-              iv=iv_oysdeb_str
+              iv=iv_oysdeb_str-nv_adv
               BENTHIC_CONCENTRATION(BENTH_INDEXij)=310.0_rsh
            ENDIF
          ENDIF
@@ -1693,7 +1689,7 @@ END SUBROUTINE  BIOLink2hydro
     INTEGER                  :: i,j,ks,iv ! Spatial and tracer counters
     INTEGER                  :: i1,i2,i3,i4 ! Internal BIOLink counters
     INTEGER                  :: isubs,ind_diag2d,ind_diag3d_sed,ind_diag3d_wat
-    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0) :: xnegtr ! Variable to 
+    REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC0,nv_adv) :: xnegtr ! Variable to 
                                                            ! limit the 
                                                            ! flux out
                                                            ! or in the 
@@ -1711,7 +1707,7 @@ END SUBROUTINE  BIOLink2hydro
       !***************** We test if the tracer concentration ***************!
       !************************* becomes negative **************************!
 #if ! defined ECO3M
-         xnegtr(:,:,:) = 1.e+0 ! 
+         xnegtr(:,:,:,:) = 1.e+0 ! 
 
 !$OMP DO SCHEDULE(RUNTIME)
 
@@ -1738,7 +1734,7 @@ END SUBROUTINE  BIOLink2hydro
                             ! ratio between the concentration and the 
                             ! flux with a precision epsilon_BIOLink
 
-                     xnegtr(i4,i3,i2) = MIN( xnegtr(i4,i3,i2), ztra )
+                     xnegtr(i4,i3,i2,i1) = MIN( xnegtr(i4,i3,i2,i1), ztra )
                             ! Limiting test. If the ratio ztra is
                             ! above 1 we reduce it so that it does not
                             ! make the concentration goes to 0.
@@ -1767,7 +1763,7 @@ END SUBROUTINE  BIOLink2hydro
                DO i4=IRANGE4  
 #if !defined ECO3M
                  WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
-                                                         + xnegtr(i4,i3,i2) &
+                                                         + xnegtr(i4,i3,i2,i1) &
                                                          * BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) &
                                                          * TRANSPORT_TIME_STEP    
 #else

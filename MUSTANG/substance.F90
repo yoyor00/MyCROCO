@@ -695,7 +695,6 @@ CONTAINS
       ws_free_max(:)=0.0
 #endif
    ENDIF
-!   ALLOCATE(l_subs2D(-1:nvp))
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
 #if defined key_sand2D
@@ -790,7 +789,7 @@ CONTAINS
     END DO
     DO isubs=1,ntrc_subs
      MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'VARIABLE NAME : ',TRIM(name_var(irk_fil(isubs)))
+     MPI_master_only WRITE(stdout,*)'VARIABLE NAME : ',TRIM(ADJUSTL(ADJUSTR(name_var(irk_fil(isubs)))))
      IF (itypv_r(isubs)==3 .OR. itypv_r(isubs)==4) THEN
        
 #ifdef MUSTANG
@@ -804,7 +803,9 @@ CONTAINS
 #endif
 #ifdef MUSTANG
      ELSE IF (itypv_r(isubs) == 5) THEN
-       MPI_master_only WRITE(stdout,*)'Particulate Constitutive associated Variable  : ',name_varpc_assoc(isubs)
+       MPI_master_only WRITE(stdout,*) &
+         'Particulate Constitutive associated Variable  : ',&
+         TRIM(ADJUSTL(ADJUSTR(name_varpc_assoc(isubs))))
 #endif
      ENDIF
 #ifdef MUSTANG
@@ -820,17 +821,23 @@ CONTAINS
      MPI_master_only WRITE(stdout,*)'OBC uniforme and constant conc.        : ',cobc_wat_r(isubs)
 #ifdef MUSTANG
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in sediment      : ',cini_sed_r(isubs)
-#if defined BLOOM && defined key_BLOOM_insed
+#if defined BLOOM && defined key_BLOOM_insed && ! defined key_noTSdiss_insed
      MPI_master_only WRITE(stdout,*)'type of calculation of in sediment diffusion/biodiff (1or2): ',D0_funcT_opt_r(isubs)
      MPI_master_only WRITE(stdout,*)'coefs for in sediment diffusion/biodiff calculation : ',D0_m0_r(isubs),D0_m1_r(isubs)
 #endif
 #endif
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
+     MPI_master_only WRITE(stdout,*) &
+         'name of substance read from init cond file: ', &
+         TRIM(ADJUSTL(ADJUSTR(init_cv_name_r(isubs))))
+     MPI_master_only WRITE(stdout,*) &
+         'name of substance read from obc file: ', &
+         TRIM(ADJUSTL(ADJUSTR(obc_cv_name_r(isubs))))
     END DO
 
     DO isubs=1,nv_fix
      MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(name_var_fix(isubs))
+     MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(ADJUSTL(ADJUSTR(name_var_fix(isubs))))
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_fix(isubs)
     END DO
 #ifdef key_benthic
@@ -1478,9 +1485,9 @@ ENDDO
      !!                    *** ROUTINE substance_surfcell ***
      !!-------------------------------------------------------------------
      !
-! evaluation of cell surface if not known in hydro model
-    ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
-    surf_cell(:,:)=om_r(:,:)*on_r(:,:)
+     ! evaluation of cell surface if not known in hydro model
+     ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
+     surf_cell(:,:)=om_r(:,:)*on_r(:,:)
 
  END SUBROUTINE substance_surfcell
 

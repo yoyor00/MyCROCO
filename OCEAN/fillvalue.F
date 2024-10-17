@@ -248,6 +248,8 @@
          mask2=umask_wet
       elseif (typevar3d.eq.v3dvar) then
          mask2=vmask_wet
+      elseif (typevar3d.eq.b3dvar) then
+         mask2=rmask_wet
       endif
 #  else
       if (typevar3d.eq.r3dvar) then
@@ -258,6 +260,8 @@
          mask2=umask
       elseif (typevar3d.eq.v3dvar) then
          mask2=vmask
+      elseif (typevar3d.eq.b3dvar) then
+         mask2=rmask
       endif
 
 #  endif

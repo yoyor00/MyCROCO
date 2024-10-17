@@ -448,6 +448,7 @@
 #  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
+#  define key_noTSdiss_insed
 # endif
 
 #elif defined COASTAL
@@ -648,6 +649,7 @@
 #  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
 #  undef  key_MUSTANG_specif_outputs
+#  define key_noTSdiss_insed
 # endif
 /*
 !
@@ -1741,6 +1743,7 @@
 #  define key_MUSTANG_V2
 #  define key_MUSTANG_bedload
 #  define key_tauskin_c_upwind
+#  define key_noTSdiss_insed
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
@@ -1800,6 +1803,7 @@
 #   define GLS_MIXING
 #   define GLS_KOMEGA
 #  endif
+#  define key_noTSdiss_insed
 # endif
 
 
@@ -1916,6 +1920,7 @@
 # ifdef MUSTANG
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
+#  define key_noTSdiss_insed
 # endif
 # define NO_FRCFILE
 # undef  ZETA_DRY_IO
@@ -1972,6 +1977,7 @@
 # ifdef MUSTANG
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
+#  define key_noTSdiss_insed
 # endif
 # define PSOURCE
 # define ANA_PSOURCE

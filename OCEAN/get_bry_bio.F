@@ -191,7 +191,7 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'mes_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
-            elseif (itrc.eq.iBSI_) then
+            elseif (itrc.eq.iDSI_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'bsi_time', bry_tid(itrc))
              ! ierr_all=ierr_all+ierr
@@ -236,7 +236,7 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'dfe_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
-            elseif (itrc.eq.iDSI_) then
+            elseif (itrc.eq.iGSI_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'dsi_time', bry_tid(itrc))
              ! ierr_all=ierr_all+ierr

@@ -78,7 +78,7 @@ C$    integer omp_get_thread_num
      &       ,k,itrc
 # ifdef DIAGNOSTICS_BIO
      &       ,iflux
-#  ifdef BLOOM && defined key_BLOOM_insed
+#  if defined BLOOM && defined key_BLOOM_insed
      &       ,ks
 #  endif
 # endif
@@ -741,18 +741,18 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-#   if defined BLOOM && defined key_BLOOM_insed
-!      do iflux=1,ndiag_3d_sed
-!        do ks=1,ksdmax
-!          do j=JstrR,JendR
-!            do i=IstrR,IendR
-!              biodiag3d_sed(i,j,ks,iflux) = init
-              biodiag3d_sed(:,:,:,:) = init
-!            enddo
-!          enddo
-!        enddo
-!      enddo
-#   endif
+#  if defined BLOOM && defined key_BLOOM_insed
+      do ks=1,ksdmax
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            do iflux=1,NumBLMdiag3d
+              biodiag3d_sed(i,j,ks,iflux) = init
+!              biodiag3d_sed(:,:,:,:) = init
+            enddo
+          enddo
+        enddo
+      enddo
+#  endif
 
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
         do j=JstrR,JendR

@@ -4933,7 +4933,7 @@ MODULE sed_MUSTANG
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_Temperatur_in_sed ***
    !&E
-   !&E ** Purpose : dynamic in sediment : processes of Tempertur diffusion in sediment 
+   !&E ** Purpose : dynamic in sediment : processes of Temperature diffusion in sediment 
    !&E
    !&E ** Description :
    !&E        arguments IN :
@@ -4941,7 +4941,7 @@ MODULE sed_MUSTANG
    !&E            parameters : 
    !&E
    !&E        variales OUT :
-   !&E            fludiff : substance flux de temperature at the  interface water/sediment due to diffusion
+   !&E            fludiff : temperature flux at the water/sediment interface due to diffusion
    !&E
    !&E ** Called by :  MUSTANG_update
    !&E
@@ -5042,7 +5042,9 @@ MODULE sed_MUSTANG
 
          hsedloc=hsedloc+dzs(ksmax,i,j)
          phi_surfsed=phitemp_s(i,j)*dtinv
-         IF(hsedloc > 0.0_rsh)phi_bottsed=MAX(0.0_rsh,MIN(phi_surfsed,phi_surfsed*(epsedmax_tempsed-hsedloc)*(epsedmin_tempsed/hsedloc)))
+         IF(hsedloc > 0.0_rsh) phi_bottsed=MAX(0.0_rsh, &
+                                           MIN(phi_surfsed, &
+                                           phi_surfsed*(epsedmax_tempsed-hsedloc)*(epsedmin_tempsed/hsedloc)))
          ! end of cumul : reset phitemp_s (si pas le meme pas de temps , mais ici on a le meme dt_true)
          phitemp_s(i,j)=0.0_rsh
        
@@ -5212,7 +5214,7 @@ MODULE sed_MUSTANG
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
      dt_sed_cor=MAX(dt_dyninsed,dt_true)
-     dt_sed_eff=dt_sed_cor+(CURRENT_TIME-t_dyninsed)
+     dt_sed_eff=dt_sed_cor  ! +(CURRENT_TIME-t_dyninsed)   Fdufois: je ne comprends pas, le 1er dt est enorme. A quoi ça peut servir ce truc?
      dt_sed_inv=1.0_rsh/REAL(dt_sed_eff,rsh)
      phieau_s2w_consol(:,:)=0.0_rsh
 
@@ -5932,8 +5934,10 @@ MODULE sed_MUSTANG
                   ! mu = dynamic viscosity in centipoise 10-2 g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
                   mu = 1.791_rsh - 6.144e-02_rsh*temp_bottom_MUSTANG(i,j) + 1.451e-03_rsh*temp_bottom_MUSTANG(i,j)**2 &
                      - 1.6826e-05_rsh*temp_bottom_MUSTANG(i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
-                     + 2.4727e-03_rsh*sal_bottom_MUSTANG(i,j) + temp_bottom_MUSTANG(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
-                     + sal_bottom_MUSTANG(i,j)*(4.8429e-05_rsh*temp_bottom_MUSTANG(i,j) - 4.7172e-06_rsh*temp_bottom_MUSTANG(i,j)**2 &
+                     + 2.4727e-03_rsh*sal_bottom_MUSTANG(i,j) &
+                     + temp_bottom_MUSTANG(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
+                     + sal_bottom_MUSTANG(i,j)*(4.8429e-05_rsh*temp_bottom_MUSTANG(i,j) &
+                     - 4.7172e-06_rsh*temp_bottom_MUSTANG(i,j)**2 &
                      + 7.5986e-08_rsh*temp_bottom_MUSTANG(i,j)**3)
                   nu = mu*rowinv*1000                                ! 1/roro or rowinv in cm3/g and nu = cinematic viscosity in cm2/s
                   IF(D0_funcT_opt(iv) == 1) THEN

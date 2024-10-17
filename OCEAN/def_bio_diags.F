@@ -486,7 +486,7 @@
      &                  vname(1,indxBLMdiag3d+ndiag_3d_wat+iflux-1)(1:lvar),
      &                  NF_FOUT, 4, b3dgrd,vidBLMdiag3d(ndiag_3d_wat+iflux))
 #  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidBLMdiag3d(iflux),nf_collective)
+          ierr=nf_var_par_access(ncid,vidBLMdiag3d(ndiag_3d_wat+iflux),nf_collective)
 #  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxBLMdiag3d+ndiag_3d_wat+iflux-1))
@@ -731,7 +731,7 @@
               goto 99           !--> ERROR
             endif
 #  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidVSink(iflux),nf_collective)
+          ierr=nf_var_par_access(ncid,vidBLMdiag2d(iflux),nf_collective)
 #  endif
           endif
         enddo

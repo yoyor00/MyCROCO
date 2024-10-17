@@ -94,8 +94,8 @@ else
             echo "Job is one month long or less ---> Using netcdf of the current month"
             cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
             cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
-            [[ ! -f ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc ]] && { echo "Missing ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc to build oce frc file."; exit 1 ;}
-	    ${io_getfile} ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc croco_${extend}.nc${agrif_ext}
+            [[ ! -f ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext} ]] && { echo "Missing ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc to build oce frc file."; exit 1 ;}
+	    ${io_getfile} ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext} croco_${extend}.nc${agrif_ext}
         else
             if [[ ${JOB_DUR_MTH} -eq 0 && ${LOCAL_MTH_END} -ne ${cur_M} ]]; then
                 echo "Job is less than a month BUT overlaps on next month ---> Concat netcdf of current and following month"
@@ -135,12 +135,12 @@ else
                         [[ ${var} == "sss" ]] && extract="SSS"
                         [[ ${var} == "wwv" ]] && extract="Awave Dwave Pwave"
                         if [[ $i > 0 ]]; then
-                            ncks --mk_rec_dmn "${var}_time" -F -O -d "${var}_time",${tstart},${tend} -v "${extract}" ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc tmp_${var}.nc
+                            ncks --mk_rec_dmn "${var}_time" -F -O -d "${var}_time",${tstart},${tend} -v "${extract}" ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext} tmp_${var}.nc
                             ncks -O --mk_rec_dmn "${var}_time" croco_${extend}.nc${agrif_ext} croco_${extend}.nc${agrif_ext}
                             ncrcat -A croco_${extend}.nc${agrif_ext} tmp_${var}.nc croco_${extend}.nc${agrif_ext}
                             ncks -O --fix_rec_dmn "${var}_time" croco_${extend}.nc${agrif_ext} croco_${extend}.nc${agrif_ext}
                         else
-                            ncks -F -O -d "${var}_time",${tstart},${tend} -v "${extract}" ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc tmp_${var}.nc
+                            ncks -F -O -d "${var}_time",${tstart},${tend} -v "${extract}" ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext} tmp_${var}.nc
                             ncks -A -v "${extract}" tmp_${var}.nc croco_${extend}.nc${agrif_ext}
                         fi
                         rm -rf tmp_${var}.nc

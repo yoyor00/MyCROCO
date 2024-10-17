@@ -279,7 +279,7 @@ CONTAINS
     ! Definition of initial conditions in sediment
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (l_repsed) THEN
-        CALL sedinit_fromfile(BATHY_H0)
+        CALL sedinit_fromfile
     ELSE
         CALL MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, BATHY_H0)
     END IF
@@ -1655,7 +1655,7 @@ CONTAINS
         ivdiss(iv) = iv + nvp
     ENDDO  
 #endif
-#if ! defined key_BLOOM_insed
+#if defined key_noTSdiss_insed
     ALLOCATE(D0_funcT_opt(nv_state))
     D0_funcT_opt(:)=1
     ALLOCATE(D0_m0(nv_state))

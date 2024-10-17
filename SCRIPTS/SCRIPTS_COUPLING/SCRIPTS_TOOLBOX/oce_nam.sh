@@ -40,17 +40,23 @@ do
 	namfile=croco.in.${nn}
         agrif_ext=".${nn}"
 	cpfile ${OCE_NAM_DIR}/croco.in.base.${nn} ${namfile}
-        #cpfile ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
-	#SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
-        nest_coef=$( ncdump -h croco_grd.nc${agrif_ext} | grep 'positions in the parent grid:' | cut -d ':' -f 4 | cut -d '"' -f 1 )
-        SUBTIME=$(( ${SUBTIME} * ${nest_coef} ))
+	SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
     else
 	namfile=croco.in
 	agrif_ext=""
 	cpfile ${OCE_NAM_DIR}/croco.in.base ${namfile}
 	SUBTIME=1
     fi
-    DT_OCE_2=$(( ${DT_OCE} / ${SUBTIME} ))
+    if [ ${nn} -gt 1 ];    then
+        echo 'dom is'
+        echo $nn
+        echo ${DT_OCE_2}
+        echo ${SUBTIME}
+        echo "DT_OCE_2=$(( ${DT_OCE_2} / ${SUBTIME} ))"
+        DT_OCE_2=$(( ${DT_OCE_2} / ${SUBTIME} ))
+    else
+        DT_OCE_2=$(( ${DT_OCE} / ${SUBTIME} ))
+    fi
 
     printf "Compute number of time steps\n"
     OCE_NDT_DAY=$(( 86400 / ${DT_OCE_2} ))
