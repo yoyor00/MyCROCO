@@ -882,6 +882,12 @@ C apar_file
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='Cs_rho'
      &     , value='have a look at variable Cs_rho in this file')
+      CALL iom_set_file_global_attr_char   (cdid
+     &     ,type='string',name='s_w'
+     &     , value='have a look at variable s_w in this file')
+      CALL iom_set_file_global_attr_char   (cdid
+     &     ,type='string',name='s_rho'
+     &     , value='have a look at variable s_rho in this file')     
 #endif
       CALL iom_set_file_global_attr_int   (cdid
      &     ,type='int',name='ntimes', value=ntimes)
