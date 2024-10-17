@@ -51,10 +51,16 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !
 ! Common Code
 !
+# ifdef SUBSTANCE
+      use comsubstance, ONLY : obc_cv_name
+# endif
 # include "set_obc_definitions.h"
 !
       implicit none
 # include "param.h"
+# ifdef SUBSTANCE
+#   include "ncscrum.h"
+# endif
 # include "grid.h"
 # include "ocean3d.h"
 # include "climat.h"
@@ -152,6 +158,15 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #    else
      &                                    +tau*tclm(Istr-1,j,k,itrc)
 #    endif
+#   endif
+#   if defined T_FRC_BRY && defined SUBSTANCE
+            if(itrc.ge.itsubs1) then 
+              if (obc_cv_name(itrc).eq.'nullGradient') then
+!                                            Western edge gradient BC
+!                                            ======= ==== ======== ==
+                t(Istr-1,j,k,indx,itrc)=t(Istr,j,k,indx,itrc)
+              endif
+            endif
 #   endif
 #   ifdef MASKING
             t(Istr-1,j,k,indx,itrc)=t(Istr-1,j,k,indx,itrc)
@@ -283,6 +298,15 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                    +tau*tclm(Iend+1,j,k,itrc)
 #    endif
 #   endif
+#   if defined T_FRC_BRY && defined SUBSTANCE
+            if(itrc.ge.itsubs1) then 
+              if (obc_cv_name(itrc).eq.'nullGradient') then
+!                                            Western edge gradient BC
+!                                            ======= ==== ======== ==
+                t(Iend+1,j,k,indx,itrc)=t(Iend,j,k,indx,itrc)
+              endif
+            endif
+#   endif
 #   ifdef MASKING
             t(Iend+1,j,k,indx,itrc)=t(Iend+1,j,k,indx,itrc)
      &                                     *rmask(Iend+1,j)
@@ -411,6 +435,15 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                    +tau*tclm(i,Jstr-1,k,itrc)
 #    endif
 #   endif
+#   if defined T_FRC_BRY && defined SUBSTANCE
+            if(itrc.ge.itsubs1) then 
+              if (obc_cv_name(itrc).eq.'nullGradient') then
+!                                            Western edge gradient BC
+!                                            ======= ==== ======== ==
+                t(i,Jstr-1,k,indx,itrc)=t(i,Jstr,k,indx,itrc)
+              endif
+            endif
+#   endif
 #   ifdef MASKING
             t(i,Jstr-1,k,indx,itrc)=t(i,Jstr-1,k,indx,itrc)
      &                                     *rmask(i,Jstr-1)
@@ -536,6 +569,15 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #    else
      &                                    +tau*tclm(i,Jend+1,k,itrc)
 #    endif
+#   endif
+#   if defined T_FRC_BRY && defined SUBSTANCE
+            if(itrc.ge.itsubs1) then 
+              if (obc_cv_name(itrc).eq.'nullGradient') then
+!                                            Western edge gradient BC
+!                                            ======= ==== ======== ==
+                t(i,Jend+1,k,indx,itrc)=t(i,Jend,k,indx,itrc)
+              endif
+            endif
 #   endif
 #   ifdef MASKING
             t(i,Jend+1,k,indx,itrc)=t(i,Jend+1,k,indx,itrc)
