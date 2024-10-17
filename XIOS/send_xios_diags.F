@@ -1917,8 +1917,8 @@ C 				  endif
       CALL iom_set_axis_attr( "s_rho", sc_r(1:N) )
       CALL iom_set_axis_attr( "s_w"  , sc_w(0:N) )
 # ifdef M3FAST_SEDLAYERS
-      CALL iom_set_axis_attr( "s_rho_total", sc_r )      
-      CALL iom_set_axis_attr( "s_w_total"  , sc_w )
+      CALL iom_set_axis_attr( "s_rho_total", sc_r(-N_sl+1:N) )      
+      CALL iom_set_axis_attr( "s_w_total"  , sc_w(-N_sl:N) )
 # endif      
 # ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
@@ -2428,18 +2428,6 @@ C 				  endif
       call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
 # endif      
       endif
-!       if (xios_field_is_active("s_rho")) then
-!       call xios_send_field("s_rho",sc_r(1:N))
-! # ifdef M3FAST_SEDLAYERS   
-!       call xios_send_field("s_rho_total",sc_r(-N_sl+1:N))
-! # endif      
-!       endif
-!       if (xios_field_is_active("s_w")) then
-!       call xios_send_field("s_w",sc_w(0:N))
-! # ifdef M3FAST_SEDLAYERS   
-!       call xios_send_field("s_w_total",sc_w(-N_sl:N))
-! # endif      
-!       endif
       if (xios_field_is_active("hc")) then
       call xios_send_field("hc",hc)
       endif
