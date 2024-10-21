@@ -205,7 +205,7 @@
 # endif
                       /* Bottom Forcing */
 # undef ANA_BSFLUX
-# undef ANA_BTFLUX
+# define ANA_BTFLUX
                       /* Point Sources - Rivers */
 # undef PSOURCE
 # undef PSOURCE_NCFILE

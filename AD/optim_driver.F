@@ -119,7 +119,7 @@ c     &     AMPI_ADOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       ad_counter = ad_counter + 1
 
       dx=1.e-8
-      df1=cost/10000
+      df1=cost
       epsrel=1.e-5
       niter=2000
       nsim=2000

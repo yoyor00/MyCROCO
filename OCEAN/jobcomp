@@ -38,6 +38,11 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 FC=gfortran
 
+# if the name of the compiler is specified in the default environment
+if [ -v CROCO_FC ]; then
+	FC=$CROCO_FC
+fi
+
 #
 # set MPI directories if needed
 #
@@ -119,6 +124,7 @@ ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/*
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/* $SCRDIR
 ls ${ROOT_DIR}/OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/OBSTRUCTION/* $SCRDIR
+ls ${ROOT_DIR}/PSYCLONE        >/dev/null  2>&1  && \cp -r ${ROOT_DIR}/PSYCLONE $SCRDIR
 
 if [[ -e "namelist_pisces_ref" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
@@ -169,8 +175,20 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
 		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -mcmodel=large -fbacktrace -fallow-argument-mismatch -ffixed-line-length-none -ffree-line-length-512" # -fbounds-check -finit-real=nan -finit-integer=8888
-#		FFLAGS1="-g -fdefault-real-8 -fdefault-double-8 -mcmodel=large -fno-align-commons -fallow-argument-mismatch -ffixed-line-length-none -fcheck=array-temps -fbacktrace -fbounds-check -finit-real=nan -finit-integer=8888 -ffpe-trap=zero,invalid,overflow"
+#		FFLAGS1="-g -fdefault-real-8 -fdefault-double-8 -mcmodel=large -fno-align-commons -fallow-argument-mismatch -ffixed-line-length-none -ffree-line-length-512 -fcheck=array-temps -fbacktrace -fbounds-check -finit-real=nan -finit-integer=8888 -ffpe-trap=zero,invalid,overflow"
 		LDFLAGS1="$LDFLAGS1"
+	elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+    	CPP1="cpp  -traditional -DLinux -DXLF"
+    	CFT1=$FC
+    	FFLAGS1="-g -fast -r8 -i4 -mcmodel=medium -Mbackslash"
+	#FFLAGS1="-g -O0 -C -Kieee -r8 -i4 -traceback"
+	LDFLAGS1="$LDFLAGS1 -g -acc"
+	if [[ $HOSTNAME == "jean-zay"* ]]; then
+		CPP1=$CPP1" -DJEANZAY"
+	fi
+	else
+		echo "Unknown Fortran Compiler"
+		exit
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
         CPP1="cpp -traditional -DLinux"
@@ -201,6 +219,7 @@ if $($CPP1 testkeys.F | grep -i -q agrifisdefined) ; then
 fi
 
 #
+
 # determine if TAPENADE is activated
 #
 echo "Checking Tapenade activation..."
@@ -250,6 +269,18 @@ if $($CPP1 testkeys.F | grep -i -q tapenadeisdefined) ; then
     set +x
   fi
 fi
+# Use PSyClone to generate the OpenACC version
+# Need to switch to the other Makedefs
+#
+if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
+  if $($CPP1 testkeys.F | grep -i -q openaccpsycloneisdefined) ; then
+    cp -f Makedefs.generic.PSYCLONE Makedefs.generic
+  fi
+  if [[ $FC != 'nvfortran' ]]; then
+    echo "FATAL : Invalid OpenACC compiler, should be FC=nvfortran for now !" 1>&2
+    exit 1
+  fi
+fi
 
 #
 # determine if MPI compilation is required
@@ -273,7 +304,7 @@ fi
 #
 # Take environment variables for compiler and options
 #
-FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
+FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1} ${CROCO_TUNING_FLAGS-}
 CFT1=${CROCO_CFT1-$CFT1}
 
 #
@@ -394,10 +425,22 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
 fi
 
 #
+
 # set runtime path
 #
 
 LDFLAGS1="$LDFLAGS1 -L ${ENV}/lib -Wl,--rpath=${ENV}/lib" # -L/scratch/maurice/install/maurice/AMPI/0.0/Debug/AMPI/lib/ -Wl,--rpath=/scratch/maurice/install/maurice/AMPI/0.0/Debug/AMPI/lib/"
+
+# determine if OPENACC compilation is needed
+#
+unset COMPILEOPENACC
+echo "Checking COMPILEOPENACC..."
+if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
+	COMPILEOPENACC=TRUE
+	if [[ $FC == pgfortran || $FC == nvfortran ]] ; then
+		  FFLAGS1="$FFLAGS1 -acc -Minfo=accel"
+	fi
+fi
 
 #
 # rewrite Makedefs according to previous flags
@@ -431,4 +474,4 @@ $MAKE depend
 # [ -f croco_adj ] && mv croco_adj $RUNDIR
 # [ -f croco_adc ] && mv croco_adc $RUNDIR
 # [ -f croco_div ] && mv croco_div $RUNDIR || exit 0
-#
+

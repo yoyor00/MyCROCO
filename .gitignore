@@ -16,3 +16,16 @@ Run/*
 Run/amr.in
 
 OCEAN.bak/cpl_prism_getlistvals.F
+
+/OCEAN/mergcpp.txt
+
+# for VSCode users
+.vscode
+
+# cmake usual build dir
+/build*/
+
+# do not commit psyclone pre-built packages
+__pycache__
+venv
+.vscode

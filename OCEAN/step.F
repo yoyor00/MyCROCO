@@ -876,7 +876,9 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
+#ifdef RVTK_DEBUG
       use debug
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"

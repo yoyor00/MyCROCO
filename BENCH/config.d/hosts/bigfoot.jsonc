@@ -1,0 +1,39 @@
+{
+	// bigfoot cluster from UGA
+	"bigfoot": {
+		"ressources": {
+			"cpu": 32,
+			"gpu": 1
+		},
+		"tuning": {
+			"gnu": "-march=znver2",
+			"nvfortran": "-tp=zen",
+			"environ": {
+				"OMP_PROC_BIND": "spread"
+			},
+			"mpi_options": "",
+			"hwloc_bind": {
+				"openmp": "",
+				"mpirun": ""
+			}
+		}
+	},
+	"bigfoot7": {
+		"ressources": {
+			"cpu": 32,
+			"gpu": 1
+		},
+		"tuning": {
+			"gnu": "-march=native",
+			"nvfortran": "-tp=native",
+			"environ": {
+				"OMP_PROC_BIND": "spread"
+			},
+			"mpi_options": "",
+			"hwloc_bind": {
+				"openmp": "",
+				"mpirun": ""
+			}
+		}
+	}
+}

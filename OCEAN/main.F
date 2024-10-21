@@ -60,6 +60,15 @@
 #include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
+#if defined OPENACC
+# include "ocean3d.h"
+# include "coupling.h"
+# include "forces.h"
+# include "mixing.h"
+# include "climat.h"
+# include "averages.h"
+# include "work.h"
+#endif
 #include "mpi_cpl.h"
 #ifdef TAPENADE
 #ifndef MPI
@@ -1041,7 +1050,6 @@ c           write(*,*) 'write obs: iicroot=',iicroot
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
-
   99  continue                             ! SHUTDOWN:
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.

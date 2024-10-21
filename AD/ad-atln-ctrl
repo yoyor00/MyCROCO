@@ -26,7 +26,7 @@ case $1 in
         mpich openssh \
         openblas lapack \
         openjdk coreutils binutils sed grep bash which time patch gdb python"
-    guix_cmd="guix time-machine -C AD/croco-2024-04-23.scm --"
+    guix_cmd="guix time-machine -C $MYDIR/croco-2024-04-23.scm --"
     exec $guix_cmd environment -m $MYDIR/adjoinable-mpi.scm --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac
@@ -45,7 +45,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=1
+  nbcores=16
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
@@ -73,17 +73,17 @@ cp -f ../AD/set_state_atln.F set_state.F
 cp -f ../AD/init_control_atln.F init_control.F
 cp -f ../AD/save_restore_atln.F save_restore.F
 
-cp -f ../AD/data/tideg-*.txt .
+cp -f ../AD/data/tideg-*-16.txt .
 #sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/' cppdefs.h
 sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/g' cppdefs.h
 sed -i 's/undef[\t ]*MPI/define MPI/g' cppdefs.h
+#sed -i 's/define[\t ]*MPI/undef MPI/g' cppdefs.h
 
-#sed -i 's/NP_XI=1/NP_XI=4/g' param.h
-#sed -i 's/NP_ETA=1/NP_ETA=4/g' param.h
+sed -i 's/NP_XI=1/NP_XI=4/g' param.h
+sed -i 's/NP_ETA=1/NP_ETA=4/g' param.h
 
-#sed -i 's/define[\t ]*MPI/undef MPI/' cppdefs.h
+sh -x ../OCEAN/jobcomp
 
-../OCEAN/jobcomp
 cd Compile
 make croco && mv croco .. || exit 1
 cd ..
@@ -93,14 +93,13 @@ cp CROCO_FILES/croco_his.nc CROCO_FILES/obs.nc
 
 #
 # 2. second run with obs.dat file
-#sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
-
-sed -i 's/define[\t ]*AMPI/undef AMPI/g' cppdefs.h
+sed -i 's/undef[\t ]*AMPI/define AMPI/' cppdefs.h
+#sed -i 's/define[\t ]*AMPI/undef AMPI/g' cppdefs.h
 
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
 #sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
 #sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
-
+export CC=gcc
 ../OCEAN/jobcomp
 cd Compile
 #make croco_adc && mv croco_adc .. || exit 1
@@ -118,5 +117,5 @@ $mpirun_cmd ./croco_adj croco-atln-est.in
 #$mpirun_cmd ./croco_adj croco-atln-obs.in
 #(export DBAD_PHASE=1 ; ./croco_tgt_dbg croco-atln-est.in > /tmp/l1) & (export DBAD_PHASE=2 ; ./croco_tgt_dbg croco-atln-est.in > /tmp/l2)
 #./croco_adc croco.internal-friction-obs.in
-#mpirun -np 1 ./croco_adj_dbg1 croco.internal-friction-obs.in &
-#mpirun -np 1 ./croco_adj_dbg2 croco.internal-friction-obs.in
+#(DBAD_PHASE=-1 ./croco_adj_dbg1 croco-atln-obs.in)&
+#DBAD_PHASE=-1 ./croco_adj_dbg2 croco-atln-obs.in

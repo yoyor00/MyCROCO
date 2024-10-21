@@ -342,10 +342,13 @@
        zob(:,:)=max(zob(:,:),1e-7)
        zob_temp=maxval(zob)
 #  ifdef MPI
+#   ifdef INIT_ZOBT_FROM_NC
+       ! to be fixed: atln config + adjoint needs zobt from namelist
           if (NNODES.gt.1) then         ! Perform global max
             call MPI_allreduce(zob_temp,zobt,1,
      &              MPI_DOUBLE_PRECISION, MPI_MAX,MPI_COMM_WORLD,ierr)
-          endif
+         endif
+#   endif
 #  endif
 # else
        zob(:,:)=zobt

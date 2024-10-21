@@ -239,6 +239,7 @@
                        if (.not.correct_l) then
                         write(*,'(A)')comment_bug
                        mystop=.true.
+                       call abort()
                        exit DebugExit
                       else
                         comment_bug = TRIM(comment_bug) // '-- CORRECTED'
@@ -345,7 +346,7 @@
       real :: diff
       logical :: correct_l
 
-# ifdef OPENACC
+# if !defined RVTK_DEBUG_WRITE && defined OPENACC
       ondevice_l = .false.
       if (present(ondevice)) ondevice_l = ondevice
 # endif
@@ -473,6 +474,7 @@
 #  endif    
                        if (.not.correct_l) then
                         mystop=.true.
+                       call abort()
                        exit DebugExit
                       else
                         print *,'CORRECTED'

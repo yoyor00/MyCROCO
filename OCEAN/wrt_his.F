@@ -591,6 +591,7 @@ CR      write(*,*) 'wrt_his:  wrtUst' MYID
 CR      write(*,*) 'wrt_his:  wrtVst' MYID
       endif
 !Wstokes
+!RBacc
       if (wrthis(indxWST)) then
         do tile=0,NSUB_X*NSUB_E-1
           call wstokes (tile)
@@ -1005,6 +1006,7 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
 !
       if (wrthis(indxSwflx)) then
 !$acc update if(compute_on_device) host(stflx(:,:,isalt))
+!RBacc
         do j=0,Mm+1
           do i=0,Lm+1
             work2d(i,j)=stf_cff*stflx(i,j,isalt)/
