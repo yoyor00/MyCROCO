@@ -441,7 +441,7 @@
 !
 # if defined TRACERS
         do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD
          if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3) then
 # endif
           lvar=lenstr(vname(1,indxV+itrc))
@@ -462,7 +462,7 @@
 
           call nf_add_attribute(ncid, rstT(itrc), 
      &         vname(:,indxV+itrc), 5, NF_DOUBLE,ierr)
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD
         endif
 # endif
         enddo
@@ -1348,7 +1348,7 @@
 !
 # if defined TRACERS
         do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD
          if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3) then
 # endif
           lvar=lenstr(vname(1,indxV+itrc))
@@ -1362,7 +1362,7 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD
         endif
 # endif
         enddo

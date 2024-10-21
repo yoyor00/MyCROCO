@@ -696,7 +696,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !
 # ifdef TRACERS
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD
          if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3) then
 # endif
          if (wrthis(indxV+itrc)) then
@@ -720,7 +720,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD
       endif
 # endif
       enddo
@@ -1360,7 +1360,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Tracer variables.
 !
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD
          if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3) then
 # endif
         if (wrthis(indxT+itrc-1)) then
@@ -1394,7 +1394,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD
          endif
 # endif
       enddo

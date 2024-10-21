@@ -711,11 +711,8 @@
 #  if defined DIAGNOSTICS_TS_MLD
 #   define T_mld_nnew FX
 #   define T_mld_nstp FE
-#   ifdef DIAGNOSTICS_TS_MLD_CRIT
-
        do j=Jstr,Jend
           do i=Istr,Iend
-
 
               indx_depth = N
               nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
@@ -726,8 +723,6 @@
                   indx_depth = k
                 endif
               enddo
-
-
 
              kbl(i,j)=N
              cff=0
@@ -765,7 +760,6 @@
           enddo
        enddo
 
-#    endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
 
        do j=Jstr,Jend
          do i=Istr,Iend

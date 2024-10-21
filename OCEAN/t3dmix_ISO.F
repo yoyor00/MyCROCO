@@ -941,7 +941,6 @@
 # if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
-#ifdef DIAGNOSTICS_TS_MLD_CRIT
 
          do j=Jstr,Jend
             do i=Istr,Iend
@@ -997,7 +996,6 @@
                enddo
             enddo
          enddo
-#endif
 
        do j=Jstr,Jend
          do i=Istr,Iend

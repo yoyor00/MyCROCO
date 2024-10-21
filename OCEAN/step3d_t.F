@@ -74,7 +74,7 @@
 #  include "forces.h"
 #  ifdef DIAGNOSTICS_TS
 #   include "diagnostics.h"
-#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+#  if defined DIAGNOSTICS_TS_MLD
       real nearest_diff
       integer indx_depth
 #  endif
@@ -997,7 +997,6 @@
 #   ifdef DIAGNOSTICS_TS_MLD
 #    define T_mld_nnew FX
 #    define T_mld_nstp FE
-#    ifdef DIAGNOSTICS_TS_MLD_CRIT
 
          do j=Jstr,Jend
             do i=Istr,Iend
@@ -1044,7 +1043,6 @@
                enddo 
             enddo
          enddo
-#    endif  /* DIAGNOSTICS_TS_MLD_CRIT */
 
         do j=Jstr,Jend
           do i=Istr,Iend

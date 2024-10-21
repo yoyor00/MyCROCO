@@ -147,7 +147,7 @@
       real time_avg, time2_avg, rho0  &
      &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt  &
      &               , xl, el, visc2, visc4, gamma2
-#if (defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT)
+#if defined DIAGNOSTICS_TS_MLD
       real mld_crit_T, mld_crit_D, mld_crit_T2
       integer mld_depth_ref
 #endif
@@ -312,7 +312,7 @@
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2 &
      &           , Zobt,       Cdb_min,   Cdb_max                  &
      &           , xl, el,    visc2,     visc4,   gamma2           &
-#if (defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT)
+#if defined DIAGNOSTICS_TS_MLD
      &           , mld_crit_T, mld_crit_D, mld_crit_T2             &
 #endif
 #ifdef SOLVE3D
@@ -342,7 +342,7 @@
 #endif
      &      , numthreads,     ntstart,   ntimes,  ninfo            &
      &      , nfast,  nrrec,     nrst,    nwrt                     &
-#if (defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT)
+#if defined DIAGNOSTICS_TS_MLD
      &           , mld_depth_ref                                   &
 #endif
 #ifdef EXACT_RESTART

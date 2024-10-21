@@ -482,12 +482,9 @@
 !
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
-#   ifdef DIAGNOSTICS_TS_MLD_CRIT
-
 
        do j=Jstr,Jend
           do i=Istr,Iend
-
 
               indx_depth = N
               nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
@@ -538,7 +535,6 @@
           enddo
        enddo
 
-#    endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
        do j=Jstr,Jend
          do i=Istr,Iend
             THmix_mld(i,j,itrc)=0.
