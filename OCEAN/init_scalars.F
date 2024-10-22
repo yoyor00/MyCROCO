@@ -3043,11 +3043,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
        vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
        vname(3,indxTcrit_mld+itrc-1)=' meters                     '
        if (itrc.eq.iCRT2) then
-         write(vname3,*) 'Criteria : T_ref - ',mld_crit_T,' °C'
+         write(vname3,*) 'Criterion : T_ref - ',mld_crit_T,' °C'
        elseif (itrc.eq.iCRT3) then
-         write(vname3,*) 'Criteria : T_ref - ',mld_crit_T2,' °C'
+         write(vname3,*) 'Criterion : T_ref - ',mld_crit_T2,' °C'
        else
-         write(vname3,*) 'Criteria : rho_ref - ',mld_crit_D,' kg/m3'
+         write(vname3,*) 'Criterion : rho_ref + ',mld_crit_D,' kg/m3'
        endif
        vname(4,indxTcrit_mld+itrc-1)=vname3
        if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
