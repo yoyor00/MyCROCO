@@ -1627,7 +1627,10 @@
 # undef  OPENMP
 # undef  MPI
 # undef  NBQ
+# define KNBQ3
+# define KNBQ
 # undef  XIOS
+# undef  NC4PAR
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
@@ -1639,15 +1642,18 @@
 #  define W_HADV_WENO5
 #  define W_VADV_WENO5
 # endif
-# undef  UV_VIS2
+# define UV_VIS2
+# define TS_DIF2
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
-# undef  PASSIVE_TRACER
+# define PASSIVE_TRACER
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
+# define NBQ_GRAV 
+# undef  NS_PERIODIC
 
 #elif defined ISOLITON
 /*
@@ -1738,7 +1744,8 @@
 # undef  KH_INSTY
 # undef  KH_INST3D
 # undef  MPI
-# define NBQ
+# undef  NBQ
+# define KNBQ 
 # undef  NBQ_PRECISE
 # undef  XIOS
 # define SOLVE3D

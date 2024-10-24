@@ -51,8 +51,8 @@
       parameter (LLm0=64,   MMm0=1,    N=64)
 #elif defined GRAV_ADJ
 # if defined NBQ || defined K3FAST
-!     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
-      parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
+      parameter (LLm0=600,  MMm0=1,    N=48)   !   5 mm resolution
+!     parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
 # else
 !     parameter (LLm0=32,   MMm0=1,    N=10)   !   2 km resolution
       parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
