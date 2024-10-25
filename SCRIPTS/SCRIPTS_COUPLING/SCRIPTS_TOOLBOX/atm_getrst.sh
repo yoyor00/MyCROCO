@@ -2,19 +2,18 @@
 #                                                                      Restart
 #-------------------------------------------------------------------------------
 if [[ ${RESTART_FLAG} == "FALSE" ]] ; then
-
     filelist='wrfinput_d01'
-    if [ $NB_dom -ge 2 ] ; then
-        filelist="$filelist wrfinput_d02"
-          if [ $NB_dom -eq 3 ] ; then
-              filelist="$filelist wrfinput_d03"
-          fi
+    if [[ ${idealrun} == "FALSE" ]]; then
+        if [ $NB_dom -ge 2 ] ; then
+            filelist="$filelist wrfinput_d02"
+              if [ $NB_dom -eq 3 ] ; then
+                  filelist="$filelist wrfinput_d03"
+              fi
+        fi
     fi
-
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     cur_D=$( echo $DATE_BEGIN_JOB | cut -c 7-8 )
- 
     for file in $filelist ; do
         #echo "ln -sf ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ./$file"
         lnfile ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M}_${cur_D}_00 ./$file
