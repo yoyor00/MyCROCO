@@ -36,3 +36,10 @@ export WEIGHT_FLAG="FALSE"
 export weight_o2a=""
 export weight_a2o=""
 
+# Grid files for grid interpolations
+#-------------------------------------
+# Use pre-built grids file
+# it should be placed in OASIS_FILES
+export GRIDS_FLAG="FALSE"
+export grids_file=""
+
