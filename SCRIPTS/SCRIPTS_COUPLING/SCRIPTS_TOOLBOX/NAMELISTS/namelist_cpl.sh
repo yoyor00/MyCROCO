@@ -32,9 +32,11 @@ export wav_rst_timeind=-1 # time index (-1 is last) in the file to extract as re
 export WEIGHT_FLAG="FALSE" 
 # If TRUE : filenames
 # They should be placed in OASIS_FILES
-# Note: for the moment only works with 1-atm and 1-oce domain
+# Note: for the moment only works with 1-atm and 1-oce domain, and with 1-atm and 1-wav
 export weight_o2a=""
 export weight_a2o=""
+export weight_a2w=""
+export weight_w2a=""
 
 # Grid files for grid interpolations
 #-------------------------------------
