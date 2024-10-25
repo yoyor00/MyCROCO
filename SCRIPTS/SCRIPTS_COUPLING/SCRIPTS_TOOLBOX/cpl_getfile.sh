@@ -8,3 +8,9 @@ if [[ ${WEIGHT_FLAG} == TRUE ]]; then
         ${io_getfile}  ${CPL_FILES_DIR}/${file} .
     done
 fi
+
+if [[ ${GRIDS_FLAG} == 1 ]]; then
+    printf "GRIDS_FLAG is TRUE. Getting grid files for OASIS"
+    ${io_getfile}  ${CPL_FILES_DIR}/${grids_file} grids.nc
+fi
+
