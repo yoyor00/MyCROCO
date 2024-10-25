@@ -9,6 +9,7 @@
 #  - Will select the executables, and some options (see in the following sections)
 #  - In coupled mode corresponds to the suffix of the OASIS_IN/namcouple.base.$RUNtype to use
 export RUNtype=owa
+export idealrun="FALSE" # set to true if it is an ideal run
 export MOD=`echo $RUNtype | cut -d . -f 1`
 
 #  Name of the experiment you are about to launch (max 30. CHAR)
