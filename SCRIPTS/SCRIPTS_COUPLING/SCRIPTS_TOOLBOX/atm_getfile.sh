@@ -23,7 +23,7 @@ fi
 #-------------------------------------------------------------------------------
 
 # First create the list of all necessary input files (bdy and forcings)
-if [[ ${idealrun} == 1 ]]; then
+if [[ ${idealrun} == "TRUE" ]]; then
     filelist=''
 else
     filelist='wrfbdy_d01'
