@@ -3,7 +3,7 @@
 #-------------------------------------------------------------------------------
 if [[ ${WEIGHT_FLAG} == TRUE ]]; then
     printf "WEIGHT_FLAG is TRUE. Getting weight files for OASIS"
-    weight_files="${weight_o2a} ${weight_a2o}"
+    weight_files="${weight_oce} ${weight_atm} ${weight_wav}"
     for file in ${weight_files}; do
         ${io_getfile}  ${CPL_FILES_DIR}/${file} .
     done
