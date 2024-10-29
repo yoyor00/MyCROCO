@@ -502,6 +502,14 @@
       parameter (ntrc_bio=0)
 # endif /* BIOLOGY */
 
+/*! ==== Modified by SINTEF 2024 ==== */
+# ifdef CFABM
+      parameter (NSAT = 1) /* No. surface-attached state variables */
+      parameter (NBAT = 1) /* No. bottom-attached (benthic) state variables*/
+      parameter (NPAT = 1) /* No. pelagic state variables */
+# endif
+/*! ================================= */
+
 /*! === SUBSTANCE ===*/
 !
 # if defined SUBSTANCE
@@ -565,6 +573,11 @@
 # else
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
+
+# ifdef CFABM
+      parameter (NT = isalt + NSAT + NBAT + NPAT)
+# endif /* CFABM */
+
 !
 ! Total number of active tracers
 !
